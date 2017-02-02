@@ -972,12 +972,14 @@ FROM S1AP-Containers
         id-Correlation-ID,
         id-MMERelaySupportIndicator,
         id-GWContextReleaseIndication,
-        id-PrivacyIndicator
+        id-PrivacyIndicator,
+        maxProtocolIEs
 
+FROM S1AP-Constants
 
+        IE
 
-
-FROM S1AP-Constants;
+FROM S1AP-PDU;
 
 
 -- **************************************************************
@@ -5772,5 +5774,35 @@ PrivateIE-Field {S1AP-PRIVATE-IES : IEsSetParam} ::= SEQUENCE {
         value                        S1AP-PRIVATE-IES.&Value                ({IEsSetParam}{@id})
 }
 
+
+END
+
+
+-- **************************************************************
+--
+-- for S1ap-IE
+--
+-- **************************************************************
+
+S1AP-PDU {
+    itu-t (0) identified-organization (4) etsi (0) mobileDomain (0)
+    eps-Access (21) modules (3) s1ap (1) version1 (1)
+}
+
+DEFINITIONS AUTOMATIC TAGS ::=
+
+BEGIN
+
+IMPORTS
+    Criticality,
+    ProtocolIE-ID
+
+FROM S1AP-CommonDataTypes;
+
+IE ::= SEQUENCE {
+    id          ProtocolIE-ID,
+    criticality Criticality,
+    value       ANY
+}
 
 END
