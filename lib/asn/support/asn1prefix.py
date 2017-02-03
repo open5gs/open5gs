@@ -113,21 +113,13 @@ out_file = open(out_filename, 'w')
 
 for line in in_file:
     # Extracting S1AP-PDU-Containers
-    iesName = ''
-    for i in re.findall(r'(\s*protocolIEs\s*ProtocolIE-Container\s*\{\s*\{\s*([\w-]+)\s*\}\s*\})', line):
-        iesName = re.sub('[-]*IEs', '', i[1])
-
-    if (iesName != ''):
-        line = "    s1ap-" + iesName + "-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,\n"
-    else:
-        line = structPattern.sub(lambda x: structReplacements[x.group()], line)
-        line = constantPattern.sub(lambda x: constantReplacements[x.group()], line)
-        line = line.replace('id-S1ap', 'id')
-        line = line.replace('GW-S1ap-S1ap-TransportLayerAddress', 'GW-TransportLayerAddress')
-        line = line.replace('GW-S1ap-TransportLayerAddress', 'GW-TransportLayerAddress')
-        line = line.replace('SourceMME-S1ap-S1ap-GUMMEI', 'SourceMME-GUMMEI')
-        line = line.replace('SourceMME-S1ap-GUMMEI', 'SourceMME-GUMMEI')
-#        line = re.sub(r'OF\sProtocolIE-SingleContainer\s*{\s*{\s*[\w-]+\s*}\s*}', 'OF S1ap-IE', line)
+    line = structPattern.sub(lambda x: structReplacements[x.group()], line)
+    line = constantPattern.sub(lambda x: constantReplacements[x.group()], line)
+    line = line.replace('id-S1ap', 'id')
+    line = line.replace('GW-S1ap-S1ap-TransportLayerAddress', 'GW-TransportLayerAddress')
+    line = line.replace('GW-S1ap-TransportLayerAddress', 'GW-TransportLayerAddress')
+    line = line.replace('SourceMME-S1ap-S1ap-GUMMEI', 'SourceMME-GUMMEI')
+    line = line.replace('SourceMME-S1ap-GUMMEI', 'SourceMME-GUMMEI')
     out_file.write(line)
 
 in_file.close()

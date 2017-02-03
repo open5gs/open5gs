@@ -12,25 +12,16 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include <asn_SEQUENCE_OF.h>
-#include <constr_SEQUENCE_OF.h>
+#include "ProtocolIE-Container.h"
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* Forward declarations */
-struct S1ap_IE;
-
 /* S1ap-HandoverFailure */
 typedef struct S1ap_HandoverFailure {
-	struct S1ap_HandoverFailure__s1ap_HandoverFailure_ies {
-		A_SEQUENCE_OF(struct S1ap_IE) list;
-		
-		/* Context for parsing across buffer boundaries */
-		asn_struct_ctx_t _asn_ctx;
-	} s1ap_HandoverFailure_ies;
+	ProtocolIE_Container_5893P5_t	 protocolIEs;
 	/*
 	 * This type is extensible,
 	 * possible extensions are below.
@@ -46,9 +37,6 @@ extern asn_TYPE_descriptor_t asn_DEF_S1ap_HandoverFailure;
 #ifdef __cplusplus
 }
 #endif
-
-/* Referred external types */
-#include "S1ap-IE.h"
 
 #endif	/* _S1ap_HandoverFailure_H_ */
 #include <asn_internal.h>

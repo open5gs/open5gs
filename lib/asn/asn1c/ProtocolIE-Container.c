@@ -7,3 +7,3624 @@
 
 #include "ProtocolIE-Container.h"
 
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P0_constr_1 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P1_constr_3 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P2_constr_5 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P3_constr_7 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P4_constr_9 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P5_constr_11 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P6_constr_13 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P7_constr_15 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P8_constr_17 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P9_constr_19 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P10_constr_21 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P11_constr_23 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P12_constr_25 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P13_constr_27 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P14_constr_29 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P15_constr_31 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P16_constr_33 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P17_constr_35 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P18_constr_37 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P19_constr_39 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P20_constr_41 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P21_constr_43 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P22_constr_45 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P23_constr_47 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P24_constr_49 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P25_constr_51 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P26_constr_53 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P27_constr_55 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P28_constr_57 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P29_constr_59 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P30_constr_61 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P31_constr_63 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P32_constr_65 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P33_constr_67 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P34_constr_69 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P35_constr_71 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P36_constr_73 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P37_constr_75 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P38_constr_77 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P39_constr_79 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P40_constr_81 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P41_constr_83 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P42_constr_85 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P43_constr_87 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P44_constr_89 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P45_constr_91 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P46_constr_93 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P47_constr_95 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P48_constr_97 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P49_constr_99 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P50_constr_101 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P51_constr_103 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P52_constr_105 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P53_constr_107 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P54_constr_109 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P55_constr_111 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P56_constr_113 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P57_constr_115 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P58_constr_117 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P59_constr_119 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P60_constr_121 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P61_constr_123 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P62_constr_125 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P63_constr_127 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P64_constr_129 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P65_constr_131 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P66_constr_133 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P67_constr_135 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P68_constr_137 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P69_constr_139 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_ProtocolIE_Container_5893P70_constr_141 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (SIZE(0..65535)) */,
+	0, 0	/* No PER value map */
+};
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P0_1[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P1,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P0_tags_1[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P0_specs_1 = {
+	sizeof(struct ProtocolIE_Container_5893P0),
+	offsetof(struct ProtocolIE_Container_5893P0, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P0 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P0_tags_1,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P0_tags_1)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P0_tags_1[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P0_tags_1,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P0_tags_1)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P0_tags_1[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P0_constr_1,
+	asn_MBR_ProtocolIE_Container_5893P0_1,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P0_specs_1	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P1_3[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P2,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P1_tags_3[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P1_specs_3 = {
+	sizeof(struct ProtocolIE_Container_5893P1),
+	offsetof(struct ProtocolIE_Container_5893P1, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P1 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P1_tags_3,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P1_tags_3)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P1_tags_3[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P1_tags_3,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P1_tags_3)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P1_tags_3[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P1_constr_3,
+	asn_MBR_ProtocolIE_Container_5893P1_3,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P1_specs_3	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P2_5[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P3,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P2_tags_5[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P2_specs_5 = {
+	sizeof(struct ProtocolIE_Container_5893P2),
+	offsetof(struct ProtocolIE_Container_5893P2, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P2 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P2_tags_5,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P2_tags_5)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P2_tags_5[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P2_tags_5,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P2_tags_5)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P2_tags_5[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P2_constr_5,
+	asn_MBR_ProtocolIE_Container_5893P2_5,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P2_specs_5	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P3_7[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P4,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P3_tags_7[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P3_specs_7 = {
+	sizeof(struct ProtocolIE_Container_5893P3),
+	offsetof(struct ProtocolIE_Container_5893P3, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P3 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P3_tags_7,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P3_tags_7)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P3_tags_7[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P3_tags_7,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P3_tags_7)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P3_tags_7[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P3_constr_7,
+	asn_MBR_ProtocolIE_Container_5893P3_7,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P3_specs_7	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P4_9[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P5,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P4_tags_9[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P4_specs_9 = {
+	sizeof(struct ProtocolIE_Container_5893P4),
+	offsetof(struct ProtocolIE_Container_5893P4, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P4 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P4_tags_9,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P4_tags_9)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P4_tags_9[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P4_tags_9,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P4_tags_9)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P4_tags_9[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P4_constr_9,
+	asn_MBR_ProtocolIE_Container_5893P4_9,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P4_specs_9	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P5_11[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P6,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P5_tags_11[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P5_specs_11 = {
+	sizeof(struct ProtocolIE_Container_5893P5),
+	offsetof(struct ProtocolIE_Container_5893P5, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P5 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P5_tags_11,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P5_tags_11)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P5_tags_11[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P5_tags_11,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P5_tags_11)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P5_tags_11[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P5_constr_11,
+	asn_MBR_ProtocolIE_Container_5893P5_11,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P5_specs_11	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P6_13[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P7,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P6_tags_13[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P6_specs_13 = {
+	sizeof(struct ProtocolIE_Container_5893P6),
+	offsetof(struct ProtocolIE_Container_5893P6, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P6 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P6_tags_13,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P6_tags_13)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P6_tags_13[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P6_tags_13,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P6_tags_13)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P6_tags_13[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P6_constr_13,
+	asn_MBR_ProtocolIE_Container_5893P6_13,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P6_specs_13	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P7_15[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P8,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P7_tags_15[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P7_specs_15 = {
+	sizeof(struct ProtocolIE_Container_5893P7),
+	offsetof(struct ProtocolIE_Container_5893P7, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P7 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P7_tags_15,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P7_tags_15)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P7_tags_15[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P7_tags_15,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P7_tags_15)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P7_tags_15[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P7_constr_15,
+	asn_MBR_ProtocolIE_Container_5893P7_15,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P7_specs_15	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P8_17[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P9,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P8_tags_17[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P8_specs_17 = {
+	sizeof(struct ProtocolIE_Container_5893P8),
+	offsetof(struct ProtocolIE_Container_5893P8, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P8 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P8_tags_17,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P8_tags_17)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P8_tags_17[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P8_tags_17,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P8_tags_17)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P8_tags_17[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P8_constr_17,
+	asn_MBR_ProtocolIE_Container_5893P8_17,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P8_specs_17	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P9_19[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P10,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P9_tags_19[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P9_specs_19 = {
+	sizeof(struct ProtocolIE_Container_5893P9),
+	offsetof(struct ProtocolIE_Container_5893P9, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P9 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P9_tags_19,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P9_tags_19)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P9_tags_19[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P9_tags_19,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P9_tags_19)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P9_tags_19[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P9_constr_19,
+	asn_MBR_ProtocolIE_Container_5893P9_19,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P9_specs_19	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P10_21[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P11,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P10_tags_21[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P10_specs_21 = {
+	sizeof(struct ProtocolIE_Container_5893P10),
+	offsetof(struct ProtocolIE_Container_5893P10, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P10 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P10_tags_21,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P10_tags_21)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P10_tags_21[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P10_tags_21,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P10_tags_21)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P10_tags_21[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P10_constr_21,
+	asn_MBR_ProtocolIE_Container_5893P10_21,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P10_specs_21	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P11_23[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P12,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P11_tags_23[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P11_specs_23 = {
+	sizeof(struct ProtocolIE_Container_5893P11),
+	offsetof(struct ProtocolIE_Container_5893P11, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P11 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P11_tags_23,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P11_tags_23)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P11_tags_23[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P11_tags_23,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P11_tags_23)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P11_tags_23[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P11_constr_23,
+	asn_MBR_ProtocolIE_Container_5893P11_23,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P11_specs_23	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P12_25[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P13,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P12_tags_25[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P12_specs_25 = {
+	sizeof(struct ProtocolIE_Container_5893P12),
+	offsetof(struct ProtocolIE_Container_5893P12, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P12 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P12_tags_25,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P12_tags_25)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P12_tags_25[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P12_tags_25,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P12_tags_25)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P12_tags_25[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P12_constr_25,
+	asn_MBR_ProtocolIE_Container_5893P12_25,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P12_specs_25	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P13_27[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P14,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P13_tags_27[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P13_specs_27 = {
+	sizeof(struct ProtocolIE_Container_5893P13),
+	offsetof(struct ProtocolIE_Container_5893P13, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P13 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P13_tags_27,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P13_tags_27)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P13_tags_27[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P13_tags_27,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P13_tags_27)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P13_tags_27[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P13_constr_27,
+	asn_MBR_ProtocolIE_Container_5893P13_27,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P13_specs_27	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P14_29[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P15,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P14_tags_29[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P14_specs_29 = {
+	sizeof(struct ProtocolIE_Container_5893P14),
+	offsetof(struct ProtocolIE_Container_5893P14, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P14 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P14_tags_29,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P14_tags_29)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P14_tags_29[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P14_tags_29,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P14_tags_29)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P14_tags_29[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P14_constr_29,
+	asn_MBR_ProtocolIE_Container_5893P14_29,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P14_specs_29	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P15_31[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P16,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P15_tags_31[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P15_specs_31 = {
+	sizeof(struct ProtocolIE_Container_5893P15),
+	offsetof(struct ProtocolIE_Container_5893P15, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P15 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P15_tags_31,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P15_tags_31)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P15_tags_31[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P15_tags_31,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P15_tags_31)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P15_tags_31[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P15_constr_31,
+	asn_MBR_ProtocolIE_Container_5893P15_31,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P15_specs_31	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P16_33[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P17,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P16_tags_33[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P16_specs_33 = {
+	sizeof(struct ProtocolIE_Container_5893P16),
+	offsetof(struct ProtocolIE_Container_5893P16, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P16 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P16_tags_33,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P16_tags_33)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P16_tags_33[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P16_tags_33,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P16_tags_33)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P16_tags_33[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P16_constr_33,
+	asn_MBR_ProtocolIE_Container_5893P16_33,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P16_specs_33	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P17_35[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P18,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P17_tags_35[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P17_specs_35 = {
+	sizeof(struct ProtocolIE_Container_5893P17),
+	offsetof(struct ProtocolIE_Container_5893P17, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P17 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P17_tags_35,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P17_tags_35)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P17_tags_35[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P17_tags_35,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P17_tags_35)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P17_tags_35[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P17_constr_35,
+	asn_MBR_ProtocolIE_Container_5893P17_35,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P17_specs_35	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P18_37[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P19,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P18_tags_37[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P18_specs_37 = {
+	sizeof(struct ProtocolIE_Container_5893P18),
+	offsetof(struct ProtocolIE_Container_5893P18, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P18 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P18_tags_37,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P18_tags_37)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P18_tags_37[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P18_tags_37,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P18_tags_37)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P18_tags_37[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P18_constr_37,
+	asn_MBR_ProtocolIE_Container_5893P18_37,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P18_specs_37	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P19_39[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P20,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P19_tags_39[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P19_specs_39 = {
+	sizeof(struct ProtocolIE_Container_5893P19),
+	offsetof(struct ProtocolIE_Container_5893P19, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P19 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P19_tags_39,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P19_tags_39)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P19_tags_39[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P19_tags_39,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P19_tags_39)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P19_tags_39[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P19_constr_39,
+	asn_MBR_ProtocolIE_Container_5893P19_39,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P19_specs_39	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P20_41[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P21,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P20_tags_41[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P20_specs_41 = {
+	sizeof(struct ProtocolIE_Container_5893P20),
+	offsetof(struct ProtocolIE_Container_5893P20, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P20 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P20_tags_41,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P20_tags_41)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P20_tags_41[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P20_tags_41,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P20_tags_41)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P20_tags_41[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P20_constr_41,
+	asn_MBR_ProtocolIE_Container_5893P20_41,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P20_specs_41	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P21_43[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P22,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P21_tags_43[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P21_specs_43 = {
+	sizeof(struct ProtocolIE_Container_5893P21),
+	offsetof(struct ProtocolIE_Container_5893P21, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P21 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P21_tags_43,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P21_tags_43)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P21_tags_43[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P21_tags_43,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P21_tags_43)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P21_tags_43[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P21_constr_43,
+	asn_MBR_ProtocolIE_Container_5893P21_43,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P21_specs_43	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P22_45[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P23,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P22_tags_45[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P22_specs_45 = {
+	sizeof(struct ProtocolIE_Container_5893P22),
+	offsetof(struct ProtocolIE_Container_5893P22, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P22 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P22_tags_45,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P22_tags_45)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P22_tags_45[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P22_tags_45,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P22_tags_45)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P22_tags_45[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P22_constr_45,
+	asn_MBR_ProtocolIE_Container_5893P22_45,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P22_specs_45	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P23_47[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P24,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P23_tags_47[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P23_specs_47 = {
+	sizeof(struct ProtocolIE_Container_5893P23),
+	offsetof(struct ProtocolIE_Container_5893P23, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P23 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P23_tags_47,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P23_tags_47)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P23_tags_47[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P23_tags_47,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P23_tags_47)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P23_tags_47[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P23_constr_47,
+	asn_MBR_ProtocolIE_Container_5893P23_47,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P23_specs_47	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P24_49[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P25,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P24_tags_49[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P24_specs_49 = {
+	sizeof(struct ProtocolIE_Container_5893P24),
+	offsetof(struct ProtocolIE_Container_5893P24, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P24 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P24_tags_49,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P24_tags_49)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P24_tags_49[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P24_tags_49,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P24_tags_49)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P24_tags_49[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P24_constr_49,
+	asn_MBR_ProtocolIE_Container_5893P24_49,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P24_specs_49	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P25_51[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P26,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P25_tags_51[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P25_specs_51 = {
+	sizeof(struct ProtocolIE_Container_5893P25),
+	offsetof(struct ProtocolIE_Container_5893P25, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P25 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P25_tags_51,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P25_tags_51)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P25_tags_51[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P25_tags_51,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P25_tags_51)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P25_tags_51[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P25_constr_51,
+	asn_MBR_ProtocolIE_Container_5893P25_51,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P25_specs_51	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P26_53[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P27,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P26_tags_53[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P26_specs_53 = {
+	sizeof(struct ProtocolIE_Container_5893P26),
+	offsetof(struct ProtocolIE_Container_5893P26, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P26 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P26_tags_53,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P26_tags_53)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P26_tags_53[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P26_tags_53,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P26_tags_53)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P26_tags_53[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P26_constr_53,
+	asn_MBR_ProtocolIE_Container_5893P26_53,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P26_specs_53	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P27_55[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P28,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P27_tags_55[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P27_specs_55 = {
+	sizeof(struct ProtocolIE_Container_5893P27),
+	offsetof(struct ProtocolIE_Container_5893P27, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P27 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P27_tags_55,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P27_tags_55)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P27_tags_55[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P27_tags_55,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P27_tags_55)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P27_tags_55[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P27_constr_55,
+	asn_MBR_ProtocolIE_Container_5893P27_55,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P27_specs_55	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P28_57[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P29,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P28_tags_57[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P28_specs_57 = {
+	sizeof(struct ProtocolIE_Container_5893P28),
+	offsetof(struct ProtocolIE_Container_5893P28, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P28 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P28_tags_57,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P28_tags_57)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P28_tags_57[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P28_tags_57,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P28_tags_57)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P28_tags_57[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P28_constr_57,
+	asn_MBR_ProtocolIE_Container_5893P28_57,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P28_specs_57	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P29_59[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P30,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P29_tags_59[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P29_specs_59 = {
+	sizeof(struct ProtocolIE_Container_5893P29),
+	offsetof(struct ProtocolIE_Container_5893P29, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P29 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P29_tags_59,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P29_tags_59)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P29_tags_59[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P29_tags_59,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P29_tags_59)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P29_tags_59[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P29_constr_59,
+	asn_MBR_ProtocolIE_Container_5893P29_59,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P29_specs_59	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P30_61[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P31,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P30_tags_61[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P30_specs_61 = {
+	sizeof(struct ProtocolIE_Container_5893P30),
+	offsetof(struct ProtocolIE_Container_5893P30, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P30 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P30_tags_61,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P30_tags_61)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P30_tags_61[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P30_tags_61,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P30_tags_61)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P30_tags_61[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P30_constr_61,
+	asn_MBR_ProtocolIE_Container_5893P30_61,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P30_specs_61	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P31_63[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P32,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P31_tags_63[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P31_specs_63 = {
+	sizeof(struct ProtocolIE_Container_5893P31),
+	offsetof(struct ProtocolIE_Container_5893P31, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P31 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P31_tags_63,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P31_tags_63)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P31_tags_63[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P31_tags_63,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P31_tags_63)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P31_tags_63[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P31_constr_63,
+	asn_MBR_ProtocolIE_Container_5893P31_63,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P31_specs_63	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P32_65[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P33,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P32_tags_65[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P32_specs_65 = {
+	sizeof(struct ProtocolIE_Container_5893P32),
+	offsetof(struct ProtocolIE_Container_5893P32, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P32 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P32_tags_65,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P32_tags_65)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P32_tags_65[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P32_tags_65,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P32_tags_65)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P32_tags_65[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P32_constr_65,
+	asn_MBR_ProtocolIE_Container_5893P32_65,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P32_specs_65	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P33_67[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P34,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P33_tags_67[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P33_specs_67 = {
+	sizeof(struct ProtocolIE_Container_5893P33),
+	offsetof(struct ProtocolIE_Container_5893P33, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P33 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P33_tags_67,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P33_tags_67)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P33_tags_67[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P33_tags_67,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P33_tags_67)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P33_tags_67[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P33_constr_67,
+	asn_MBR_ProtocolIE_Container_5893P33_67,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P33_specs_67	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P34_69[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P35,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P34_tags_69[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P34_specs_69 = {
+	sizeof(struct ProtocolIE_Container_5893P34),
+	offsetof(struct ProtocolIE_Container_5893P34, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P34 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P34_tags_69,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P34_tags_69)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P34_tags_69[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P34_tags_69,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P34_tags_69)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P34_tags_69[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P34_constr_69,
+	asn_MBR_ProtocolIE_Container_5893P34_69,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P34_specs_69	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P35_71[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P36,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P35_tags_71[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P35_specs_71 = {
+	sizeof(struct ProtocolIE_Container_5893P35),
+	offsetof(struct ProtocolIE_Container_5893P35, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P35 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P35_tags_71,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P35_tags_71)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P35_tags_71[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P35_tags_71,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P35_tags_71)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P35_tags_71[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P35_constr_71,
+	asn_MBR_ProtocolIE_Container_5893P35_71,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P35_specs_71	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P36_73[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P37,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P36_tags_73[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P36_specs_73 = {
+	sizeof(struct ProtocolIE_Container_5893P36),
+	offsetof(struct ProtocolIE_Container_5893P36, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P36 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P36_tags_73,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P36_tags_73)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P36_tags_73[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P36_tags_73,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P36_tags_73)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P36_tags_73[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P36_constr_73,
+	asn_MBR_ProtocolIE_Container_5893P36_73,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P36_specs_73	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P37_75[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P38,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P37_tags_75[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P37_specs_75 = {
+	sizeof(struct ProtocolIE_Container_5893P37),
+	offsetof(struct ProtocolIE_Container_5893P37, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P37 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P37_tags_75,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P37_tags_75)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P37_tags_75[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P37_tags_75,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P37_tags_75)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P37_tags_75[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P37_constr_75,
+	asn_MBR_ProtocolIE_Container_5893P37_75,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P37_specs_75	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P38_77[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P39,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P38_tags_77[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P38_specs_77 = {
+	sizeof(struct ProtocolIE_Container_5893P38),
+	offsetof(struct ProtocolIE_Container_5893P38, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P38 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P38_tags_77,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P38_tags_77)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P38_tags_77[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P38_tags_77,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P38_tags_77)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P38_tags_77[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P38_constr_77,
+	asn_MBR_ProtocolIE_Container_5893P38_77,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P38_specs_77	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P39_79[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P40,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P39_tags_79[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P39_specs_79 = {
+	sizeof(struct ProtocolIE_Container_5893P39),
+	offsetof(struct ProtocolIE_Container_5893P39, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P39 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P39_tags_79,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P39_tags_79)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P39_tags_79[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P39_tags_79,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P39_tags_79)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P39_tags_79[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P39_constr_79,
+	asn_MBR_ProtocolIE_Container_5893P39_79,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P39_specs_79	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P40_81[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P41,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P40_tags_81[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P40_specs_81 = {
+	sizeof(struct ProtocolIE_Container_5893P40),
+	offsetof(struct ProtocolIE_Container_5893P40, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P40 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P40_tags_81,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P40_tags_81)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P40_tags_81[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P40_tags_81,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P40_tags_81)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P40_tags_81[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P40_constr_81,
+	asn_MBR_ProtocolIE_Container_5893P40_81,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P40_specs_81	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P41_83[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P42,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P41_tags_83[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P41_specs_83 = {
+	sizeof(struct ProtocolIE_Container_5893P41),
+	offsetof(struct ProtocolIE_Container_5893P41, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P41 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P41_tags_83,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P41_tags_83)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P41_tags_83[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P41_tags_83,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P41_tags_83)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P41_tags_83[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P41_constr_83,
+	asn_MBR_ProtocolIE_Container_5893P41_83,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P41_specs_83	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P42_85[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P43,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P42_tags_85[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P42_specs_85 = {
+	sizeof(struct ProtocolIE_Container_5893P42),
+	offsetof(struct ProtocolIE_Container_5893P42, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P42 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P42_tags_85,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P42_tags_85)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P42_tags_85[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P42_tags_85,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P42_tags_85)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P42_tags_85[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P42_constr_85,
+	asn_MBR_ProtocolIE_Container_5893P42_85,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P42_specs_85	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P43_87[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P44,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P43_tags_87[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P43_specs_87 = {
+	sizeof(struct ProtocolIE_Container_5893P43),
+	offsetof(struct ProtocolIE_Container_5893P43, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P43 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P43_tags_87,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P43_tags_87)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P43_tags_87[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P43_tags_87,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P43_tags_87)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P43_tags_87[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P43_constr_87,
+	asn_MBR_ProtocolIE_Container_5893P43_87,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P43_specs_87	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P44_89[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P45,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P44_tags_89[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P44_specs_89 = {
+	sizeof(struct ProtocolIE_Container_5893P44),
+	offsetof(struct ProtocolIE_Container_5893P44, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P44 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P44_tags_89,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P44_tags_89)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P44_tags_89[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P44_tags_89,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P44_tags_89)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P44_tags_89[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P44_constr_89,
+	asn_MBR_ProtocolIE_Container_5893P44_89,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P44_specs_89	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P45_91[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P46,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P45_tags_91[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P45_specs_91 = {
+	sizeof(struct ProtocolIE_Container_5893P45),
+	offsetof(struct ProtocolIE_Container_5893P45, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P45 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P45_tags_91,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P45_tags_91)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P45_tags_91[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P45_tags_91,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P45_tags_91)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P45_tags_91[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P45_constr_91,
+	asn_MBR_ProtocolIE_Container_5893P45_91,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P45_specs_91	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P46_93[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P47,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P46_tags_93[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P46_specs_93 = {
+	sizeof(struct ProtocolIE_Container_5893P46),
+	offsetof(struct ProtocolIE_Container_5893P46, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P46 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P46_tags_93,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P46_tags_93)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P46_tags_93[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P46_tags_93,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P46_tags_93)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P46_tags_93[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P46_constr_93,
+	asn_MBR_ProtocolIE_Container_5893P46_93,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P46_specs_93	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P47_95[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P48,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P47_tags_95[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P47_specs_95 = {
+	sizeof(struct ProtocolIE_Container_5893P47),
+	offsetof(struct ProtocolIE_Container_5893P47, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P47 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P47_tags_95,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P47_tags_95)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P47_tags_95[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P47_tags_95,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P47_tags_95)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P47_tags_95[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P47_constr_95,
+	asn_MBR_ProtocolIE_Container_5893P47_95,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P47_specs_95	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P48_97[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P49,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P48_tags_97[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P48_specs_97 = {
+	sizeof(struct ProtocolIE_Container_5893P48),
+	offsetof(struct ProtocolIE_Container_5893P48, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P48 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P48_tags_97,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P48_tags_97)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P48_tags_97[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P48_tags_97,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P48_tags_97)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P48_tags_97[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P48_constr_97,
+	asn_MBR_ProtocolIE_Container_5893P48_97,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P48_specs_97	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P49_99[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P50,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P49_tags_99[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P49_specs_99 = {
+	sizeof(struct ProtocolIE_Container_5893P49),
+	offsetof(struct ProtocolIE_Container_5893P49, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P49 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P49_tags_99,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P49_tags_99)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P49_tags_99[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P49_tags_99,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P49_tags_99)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P49_tags_99[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P49_constr_99,
+	asn_MBR_ProtocolIE_Container_5893P49_99,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P49_specs_99	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P50_101[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P51,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P50_tags_101[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P50_specs_101 = {
+	sizeof(struct ProtocolIE_Container_5893P50),
+	offsetof(struct ProtocolIE_Container_5893P50, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P50 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P50_tags_101,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P50_tags_101)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P50_tags_101[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P50_tags_101,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P50_tags_101)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P50_tags_101[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P50_constr_101,
+	asn_MBR_ProtocolIE_Container_5893P50_101,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P50_specs_101	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P51_103[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P52,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P51_tags_103[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P51_specs_103 = {
+	sizeof(struct ProtocolIE_Container_5893P51),
+	offsetof(struct ProtocolIE_Container_5893P51, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P51 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P51_tags_103,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P51_tags_103)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P51_tags_103[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P51_tags_103,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P51_tags_103)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P51_tags_103[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P51_constr_103,
+	asn_MBR_ProtocolIE_Container_5893P51_103,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P51_specs_103	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P52_105[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P53,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P52_tags_105[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P52_specs_105 = {
+	sizeof(struct ProtocolIE_Container_5893P52),
+	offsetof(struct ProtocolIE_Container_5893P52, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P52 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P52_tags_105,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P52_tags_105)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P52_tags_105[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P52_tags_105,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P52_tags_105)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P52_tags_105[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P52_constr_105,
+	asn_MBR_ProtocolIE_Container_5893P52_105,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P52_specs_105	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P53_107[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P54,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P53_tags_107[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P53_specs_107 = {
+	sizeof(struct ProtocolIE_Container_5893P53),
+	offsetof(struct ProtocolIE_Container_5893P53, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P53 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P53_tags_107,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P53_tags_107)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P53_tags_107[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P53_tags_107,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P53_tags_107)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P53_tags_107[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P53_constr_107,
+	asn_MBR_ProtocolIE_Container_5893P53_107,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P53_specs_107	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P54_109[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P55,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P54_tags_109[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P54_specs_109 = {
+	sizeof(struct ProtocolIE_Container_5893P54),
+	offsetof(struct ProtocolIE_Container_5893P54, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P54 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P54_tags_109,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P54_tags_109)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P54_tags_109[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P54_tags_109,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P54_tags_109)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P54_tags_109[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P54_constr_109,
+	asn_MBR_ProtocolIE_Container_5893P54_109,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P54_specs_109	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P55_111[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P56,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P55_tags_111[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P55_specs_111 = {
+	sizeof(struct ProtocolIE_Container_5893P55),
+	offsetof(struct ProtocolIE_Container_5893P55, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P55 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P55_tags_111,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P55_tags_111)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P55_tags_111[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P55_tags_111,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P55_tags_111)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P55_tags_111[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P55_constr_111,
+	asn_MBR_ProtocolIE_Container_5893P55_111,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P55_specs_111	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P56_113[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P57,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P56_tags_113[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P56_specs_113 = {
+	sizeof(struct ProtocolIE_Container_5893P56),
+	offsetof(struct ProtocolIE_Container_5893P56, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P56 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P56_tags_113,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P56_tags_113)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P56_tags_113[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P56_tags_113,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P56_tags_113)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P56_tags_113[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P56_constr_113,
+	asn_MBR_ProtocolIE_Container_5893P56_113,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P56_specs_113	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P57_115[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P58,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P57_tags_115[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P57_specs_115 = {
+	sizeof(struct ProtocolIE_Container_5893P57),
+	offsetof(struct ProtocolIE_Container_5893P57, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P57 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P57_tags_115,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P57_tags_115)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P57_tags_115[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P57_tags_115,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P57_tags_115)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P57_tags_115[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P57_constr_115,
+	asn_MBR_ProtocolIE_Container_5893P57_115,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P57_specs_115	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P58_117[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P59,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P58_tags_117[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P58_specs_117 = {
+	sizeof(struct ProtocolIE_Container_5893P58),
+	offsetof(struct ProtocolIE_Container_5893P58, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P58 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P58_tags_117,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P58_tags_117)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P58_tags_117[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P58_tags_117,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P58_tags_117)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P58_tags_117[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P58_constr_117,
+	asn_MBR_ProtocolIE_Container_5893P58_117,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P58_specs_117	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P59_119[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P60,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P59_tags_119[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P59_specs_119 = {
+	sizeof(struct ProtocolIE_Container_5893P59),
+	offsetof(struct ProtocolIE_Container_5893P59, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P59 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P59_tags_119,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P59_tags_119)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P59_tags_119[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P59_tags_119,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P59_tags_119)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P59_tags_119[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P59_constr_119,
+	asn_MBR_ProtocolIE_Container_5893P59_119,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P59_specs_119	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P60_121[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P61,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P60_tags_121[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P60_specs_121 = {
+	sizeof(struct ProtocolIE_Container_5893P60),
+	offsetof(struct ProtocolIE_Container_5893P60, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P60 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P60_tags_121,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P60_tags_121)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P60_tags_121[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P60_tags_121,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P60_tags_121)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P60_tags_121[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P60_constr_121,
+	asn_MBR_ProtocolIE_Container_5893P60_121,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P60_specs_121	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P61_123[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P62,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P61_tags_123[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P61_specs_123 = {
+	sizeof(struct ProtocolIE_Container_5893P61),
+	offsetof(struct ProtocolIE_Container_5893P61, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P61 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P61_tags_123,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P61_tags_123)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P61_tags_123[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P61_tags_123,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P61_tags_123)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P61_tags_123[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P61_constr_123,
+	asn_MBR_ProtocolIE_Container_5893P61_123,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P61_specs_123	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P62_125[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P63,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P62_tags_125[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P62_specs_125 = {
+	sizeof(struct ProtocolIE_Container_5893P62),
+	offsetof(struct ProtocolIE_Container_5893P62, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P62 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P62_tags_125,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P62_tags_125)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P62_tags_125[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P62_tags_125,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P62_tags_125)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P62_tags_125[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P62_constr_125,
+	asn_MBR_ProtocolIE_Container_5893P62_125,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P62_specs_125	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P63_127[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P64,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P63_tags_127[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P63_specs_127 = {
+	sizeof(struct ProtocolIE_Container_5893P63),
+	offsetof(struct ProtocolIE_Container_5893P63, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P63 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P63_tags_127,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P63_tags_127)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P63_tags_127[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P63_tags_127,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P63_tags_127)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P63_tags_127[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P63_constr_127,
+	asn_MBR_ProtocolIE_Container_5893P63_127,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P63_specs_127	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P64_129[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P65,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P64_tags_129[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P64_specs_129 = {
+	sizeof(struct ProtocolIE_Container_5893P64),
+	offsetof(struct ProtocolIE_Container_5893P64, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P64 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P64_tags_129,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P64_tags_129)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P64_tags_129[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P64_tags_129,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P64_tags_129)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P64_tags_129[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P64_constr_129,
+	asn_MBR_ProtocolIE_Container_5893P64_129,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P64_specs_129	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P65_131[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P66,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P65_tags_131[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P65_specs_131 = {
+	sizeof(struct ProtocolIE_Container_5893P65),
+	offsetof(struct ProtocolIE_Container_5893P65, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P65 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P65_tags_131,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P65_tags_131)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P65_tags_131[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P65_tags_131,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P65_tags_131)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P65_tags_131[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P65_constr_131,
+	asn_MBR_ProtocolIE_Container_5893P65_131,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P65_specs_131	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P66_133[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P67,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P66_tags_133[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P66_specs_133 = {
+	sizeof(struct ProtocolIE_Container_5893P66),
+	offsetof(struct ProtocolIE_Container_5893P66, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P66 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P66_tags_133,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P66_tags_133)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P66_tags_133[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P66_tags_133,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P66_tags_133)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P66_tags_133[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P66_constr_133,
+	asn_MBR_ProtocolIE_Container_5893P66_133,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P66_specs_133	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P67_135[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P68,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P67_tags_135[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P67_specs_135 = {
+	sizeof(struct ProtocolIE_Container_5893P67),
+	offsetof(struct ProtocolIE_Container_5893P67, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P67 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P67_tags_135,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P67_tags_135)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P67_tags_135[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P67_tags_135,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P67_tags_135)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P67_tags_135[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P67_constr_135,
+	asn_MBR_ProtocolIE_Container_5893P67_135,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P67_specs_135	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P68_137[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P69,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P68_tags_137[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P68_specs_137 = {
+	sizeof(struct ProtocolIE_Container_5893P68),
+	offsetof(struct ProtocolIE_Container_5893P68, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P68 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P68_tags_137,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P68_tags_137)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P68_tags_137[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P68_tags_137,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P68_tags_137)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P68_tags_137[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P68_constr_137,
+	asn_MBR_ProtocolIE_Container_5893P68_137,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P68_specs_137	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P69_139[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P70,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P69_tags_139[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P69_specs_139 = {
+	sizeof(struct ProtocolIE_Container_5893P69),
+	offsetof(struct ProtocolIE_Container_5893P69, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P69 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P69_tags_139,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P69_tags_139)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P69_tags_139[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P69_tags_139,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P69_tags_139)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P69_tags_139[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P69_constr_139,
+	asn_MBR_ProtocolIE_Container_5893P69_139,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P69_specs_139	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Container_5893P70_141[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_ProtocolIE_Field_5901P71,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Container_5893P70_tags_141[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_ProtocolIE_Container_5893P70_specs_141 = {
+	sizeof(struct ProtocolIE_Container_5893P70),
+	offsetof(struct ProtocolIE_Container_5893P70, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P70 = {
+	"ProtocolIE-Container",
+	"ProtocolIE-Container",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	SEQUENCE_OF_decode_aper,
+	SEQUENCE_OF_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Container_5893P70_tags_141,
+	sizeof(asn_DEF_ProtocolIE_Container_5893P70_tags_141)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P70_tags_141[0]), /* 1 */
+	asn_DEF_ProtocolIE_Container_5893P70_tags_141,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Container_5893P70_tags_141)
+		/sizeof(asn_DEF_ProtocolIE_Container_5893P70_tags_141[0]), /* 1 */
+	&asn_PER_type_ProtocolIE_Container_5893P70_constr_141,
+	asn_MBR_ProtocolIE_Container_5893P70_141,
+	1,	/* Single element */
+	&asn_SPC_ProtocolIE_Container_5893P70_specs_141	/* Additional specs */
+};
+

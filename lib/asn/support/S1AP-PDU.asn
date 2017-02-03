@@ -1009,7 +1009,7 @@ ProtocolError-IE-ContainerList        { S1AP-PROTOCOL-IES      : IEsSetParam }  
 
 
 S1ap-HandoverRequired ::= SEQUENCE {
-    s1ap-HandoverRequired-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { { S1ap-HandoverRequiredIEs} },
         ...
 }
 
@@ -1043,7 +1043,7 @@ S1ap-HandoverRequiredIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-HandoverCommand ::= SEQUENCE {
-    s1ap-HandoverCommand-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container { { S1ap-HandoverCommandIEs} },
         ...
 }
 
@@ -1100,7 +1100,7 @@ S1ap-E-RABDataForwardingItem-ExtIEs S1AP-PROTOCOL-EXTENSION ::= {
 
 
 S1ap-HandoverPreparationFailure ::= SEQUENCE {
-    s1ap-HandoverPreparationFailure-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { { S1ap-HandoverPreparationFailureIEs} },
         ...
 }
 
@@ -1129,7 +1129,7 @@ S1ap-HandoverPreparationFailureIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-HandoverRequest ::= SEQUENCE {
-    s1ap-HandoverRequest-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { {S1ap-HandoverRequestIEs} },
         ...
 }
 
@@ -1191,7 +1191,7 @@ S1ap-E-RABToBeSetupItemHOReq-ExtIEs S1AP-PROTOCOL-EXTENSION ::= {
 
 
 S1ap-HandoverRequestAcknowledge ::= SEQUENCE {
-    s1ap-HandoverRequestAcknowledge-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { {S1ap-HandoverRequestAcknowledgeIEs} },
         ...
 }
 
@@ -1267,7 +1267,7 @@ S1ap-E-RABFailedToSetupItemHOReqAckExtIEs S1AP-PROTOCOL-EXTENSION ::= {
 
 
 S1ap-HandoverFailure ::= SEQUENCE {
-    s1ap-HandoverFailure-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { { S1ap-HandoverFailureIEs} },
         ...
 }
 
@@ -1295,7 +1295,7 @@ S1ap-HandoverFailureIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-HandoverNotify ::= SEQUENCE {
-    s1ap-HandoverNotify-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { { S1ap-HandoverNotifyIEs} },
         ...
 }
 
@@ -1324,7 +1324,7 @@ S1ap-HandoverNotifyIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-PathSwitchRequest ::= SEQUENCE {
-    s1ap-PathSwitchRequest-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { { S1ap-PathSwitchRequestIEs} },
         ...
 }
 
@@ -1374,7 +1374,7 @@ S1ap-E-RABToBeSwitchedDLItem-ExtIEs S1AP-PROTOCOL-EXTENSION ::= {
 
 
 S1ap-PathSwitchRequestAcknowledge ::= SEQUENCE {
-    s1ap-PathSwitchRequestAcknowledge-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { { S1ap-PathSwitchRequestAcknowledgeIEs} },
         ...
 }
 
@@ -1425,7 +1425,7 @@ S1ap-E-RABToBeSwitchedULItem-ExtIEs S1AP-PROTOCOL-EXTENSION ::= {
 
 
 S1ap-PathSwitchRequestFailure ::= SEQUENCE {
-    s1ap-PathSwitchRequestFailure-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { { S1ap-PathSwitchRequestFailureIEs} },
         ...
 }
 
@@ -1454,7 +1454,7 @@ S1ap-PathSwitchRequestFailureIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-HandoverCancel ::= SEQUENCE {
-    s1ap-HandoverCancel-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { { S1ap-HandoverCancelIEs} },
         ...
 }
 
@@ -1475,7 +1475,7 @@ S1ap-HandoverCancelIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-HandoverCancelAcknowledge ::= SEQUENCE {
-    s1ap-HandoverCancelAcknowledge-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { { S1ap-HandoverCancelAcknowledgeIEs} },
         ...
 }
 
@@ -1503,7 +1503,7 @@ S1ap-HandoverCancelAcknowledgeIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-E-RABSetupRequest ::= SEQUENCE {
-    s1ap-E-RABSetupRequest-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { {S1ap-E-RABSetupRequestIEs} },
         ...
 }
 
@@ -1555,7 +1555,7 @@ S1ap-E-RABToBeSetupItemBearerSUReqExtIEs S1AP-PROTOCOL-EXTENSION ::= {
 
 
 S1ap-E-RABSetupResponse ::= SEQUENCE {
-    s1ap-E-RABSetupResponse-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { {S1ap-E-RABSetupResponseIEs} },
         ...
 }
 
@@ -1616,7 +1616,7 @@ S1ap-E-RABSetupItemBearerSUResExtIEs S1AP-PROTOCOL-EXTENSION ::= {
 
 
 S1ap-E-RABModifyRequest ::= SEQUENCE {
-    s1ap-E-RABModifyRequest-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { {S1ap-E-RABModifyRequestIEs} },
         ...
 }
 
@@ -1667,7 +1667,7 @@ S1ap-E-RABToBeModifyItemBearerModReqExtIEs S1AP-PROTOCOL-EXTENSION ::= {
 
 
 S1ap-E-RABModifyResponse ::= SEQUENCE {
-    s1ap-E-RABModifyResponse-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { {S1ap-E-RABModifyResponseIEs} },
         ...
 }
 
@@ -1728,7 +1728,7 @@ S1ap-E-RABModifyItemBearerModResExtIEs S1AP-PROTOCOL-EXTENSION ::= {
 
 
 S1ap-E-RABReleaseCommand ::= SEQUENCE {
-    s1ap-E-RABReleaseCommand-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container                { {S1ap-E-RABReleaseCommandIEs} },
         ...
 }
 
@@ -1753,7 +1753,7 @@ S1ap-E-RABReleaseCommandIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-E-RABReleaseResponse ::= SEQUENCE {
-    s1ap-E-RABReleaseResponse-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { { S1ap-E-RABReleaseResponseIEs } },
         ...
 }
 
@@ -1812,7 +1812,7 @@ S1ap-E-RABReleaseItemBearerRelCompExtIEs S1AP-PROTOCOL-EXTENSION ::= {
 
 
 S1ap-E-RABReleaseIndication ::= SEQUENCE {
-    s1ap-E-RABReleaseIndication-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { {S1ap-E-RABReleaseIndicationIEs} },
         ...
 }
 
@@ -1838,7 +1838,7 @@ S1ap-E-RABReleaseIndicationIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-InitialContextSetupRequest ::= SEQUENCE {
-    s1ap-InitialContextSetupRequest-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { {S1ap-InitialContextSetupRequestIEs} },
         ...
 }
 
@@ -1909,7 +1909,7 @@ S1ap-E-RABToBeSetupItemCtxtSUReqExtIEs S1AP-PROTOCOL-EXTENSION ::= {
 
 
 S1ap-InitialContextSetupResponse ::= SEQUENCE {
-    s1ap-InitialContextSetupResponse-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { {S1ap-InitialContextSetupResponseIEs} },
         ...
 }
 
@@ -1961,7 +1961,7 @@ S1ap-E-RABSetupItemCtxtSUResExtIEs S1AP-PROTOCOL-EXTENSION ::= {
 
 
 S1ap-InitialContextSetupFailure ::= SEQUENCE {
-    s1ap-InitialContextSetupFailure-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { {S1ap-InitialContextSetupFailureIEs} },
         ...
 }
 
@@ -1992,7 +1992,7 @@ S1ap-InitialContextSetupFailureIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-Paging ::= SEQUENCE {
-    s1ap-Paging-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       {{S1ap-PagingIEs}},
         ...
 }
 
@@ -2047,7 +2047,7 @@ S1ap-TAIItemExtIEs S1AP-PROTOCOL-EXTENSION ::= {
 
 
 S1ap-UEContextReleaseRequest ::= SEQUENCE {
-    s1ap-UEContextReleaseRequest-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                     ProtocolIE-Container       {{S1ap-UEContextReleaseRequest-IEs}},
         ...
 }
 
@@ -2069,7 +2069,7 @@ S1ap-UEContextReleaseRequest-IEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-UEContextReleaseCommand ::= SEQUENCE {
-    s1ap-UEContextReleaseCommand-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                     ProtocolIE-Container       {{S1ap-UEContextReleaseCommand-IEs}},
         ...
 }
 
@@ -2090,7 +2090,7 @@ S1ap-UEContextReleaseCommand-IEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-UEContextReleaseComplete ::= SEQUENCE {
-    s1ap-UEContextReleaseComplete-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                     ProtocolIE-Container       {{S1ap-UEContextReleaseComplete-IEs}},
         ...
 }
 
@@ -2120,7 +2120,7 @@ S1ap-UEContextReleaseComplete-IEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-UEContextModificationRequest ::= SEQUENCE {
-    s1ap-UEContextModificationRequest-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { { S1ap-UEContextModificationRequestIEs} },
         ...
 }
 
@@ -2145,7 +2145,7 @@ S1ap-UEContextModificationRequestIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-UEContextModificationResponse ::= SEQUENCE {
-    s1ap-UEContextModificationResponse-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { { S1ap-UEContextModificationResponseIEs} },
         ...
 }
 
@@ -2163,7 +2163,7 @@ S1ap-UEContextModificationResponseIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-UEContextModificationFailure ::= SEQUENCE {
-    s1ap-UEContextModificationFailure-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { { S1ap-UEContextModificationFailureIEs} },
         ...
 }
 
@@ -2192,7 +2192,7 @@ S1ap-UEContextModificationFailureIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-DownlinkNASTransport ::= SEQUENCE {
-    s1ap-DownlinkNASTransport-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                     ProtocolIE-Container       {{S1ap-DownlinkNASTransport-IEs}},
         ...
 }
 
@@ -2217,7 +2217,7 @@ S1ap-DownlinkNASTransport-IEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-InitialUEMessage ::= SEQUENCE {
-    s1ap-InitialUEMessage-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                     ProtocolIE-Container       {{S1ap-InitialUEMessage-IEs}},
         ...
 }
 
@@ -2248,7 +2248,7 @@ S1ap-InitialUEMessage-IEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-UplinkNASTransport ::= SEQUENCE {
-    s1ap-UplinkNASTransport-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                     ProtocolIE-Container       {{S1ap-UplinkNASTransport-IEs}},
         ...
 }
 
@@ -2270,7 +2270,7 @@ S1ap-UplinkNASTransport-IEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-NASNonDeliveryIndication ::= SEQUENCE {
-    s1ap-NASNonDeliveryIndication-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                     ProtocolIE-Container       {{S1ap-NASNonDeliveryIndication-IEs}},
         ...
 }
 
@@ -2299,7 +2299,7 @@ S1ap-NASNonDeliveryIndication-IEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-Reset ::= SEQUENCE {
-    s1ap-Reset-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { {S1ap-ResetIEs} },
         ...
 }
 
@@ -2347,7 +2347,7 @@ S1ap-UE-associatedLogicalS1-ConnectionItemRes         S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-ResetAcknowledge ::= SEQUENCE {
-    s1ap-ResetAcknowledge-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { {S1ap-ResetAcknowledgeIEs} },
         ...
 }
 
@@ -2383,7 +2383,7 @@ S1ap-UE-associatedLogicalS1-ConnectionItemResAck         S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-ErrorIndication ::= SEQUENCE {
-    s1ap-ErrorIndication-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       {{S1ap-ErrorIndicationIEs}},
         ...
 }
 
@@ -2412,7 +2412,7 @@ S1ap-ErrorIndicationIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-S1SetupRequest ::= SEQUENCE {
-    s1ap-S1SetupRequest-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { {S1ap-S1SetupRequestIEs} },
         ...
 }
 
@@ -2435,7 +2435,7 @@ S1ap-S1SetupRequestIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-S1SetupResponse ::= SEQUENCE {
-    s1ap-S1SetupResponse-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { {S1ap-S1SetupResponseIEs} },
         ...
 }
 
@@ -2460,7 +2460,7 @@ S1ap-S1SetupResponseIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-S1SetupFailure ::= SEQUENCE {
-    s1ap-S1SetupFailure-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { {S1ap-S1SetupFailureIEs} },
         ...
 }
 
@@ -2488,7 +2488,7 @@ S1ap-S1SetupFailureIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-ENBConfigurationUpdate ::= SEQUENCE {
-    s1ap-ENBConfigurationUpdate-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { {S1ap-ENBConfigurationUpdateIEs} },
         ...
 }
 
@@ -2510,7 +2510,7 @@ S1ap-ENBConfigurationUpdateIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-ENBConfigurationUpdateAcknowledge ::= SEQUENCE {
-    s1ap-ENBConfigurationUpdateAcknowledge-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { {S1ap-ENBConfigurationUpdateAcknowledgeIEs} },
         ...
 }
 
@@ -2531,7 +2531,7 @@ S1ap-ENBConfigurationUpdateAcknowledgeIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-ENBConfigurationUpdateFailure ::= SEQUENCE {
-    s1ap-ENBConfigurationUpdateFailure-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { {S1ap-ENBConfigurationUpdateFailureIEs} },
         ...
 }
 
@@ -2561,7 +2561,7 @@ S1ap-ENBConfigurationUpdateFailureIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-MMEConfigurationUpdate ::= SEQUENCE {
-    s1ap-MMEConfigurationUpdate-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { {S1ap-MMEConfigurationUpdateIEs} },
         ...
 }
 
@@ -2582,7 +2582,7 @@ S1ap-MMEConfigurationUpdateIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-MMEConfigurationUpdateAcknowledge ::= SEQUENCE {
-    s1ap-MMEConfigurationUpdateAcknowledge-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { {S1ap-MMEConfigurationUpdateAcknowledgeIEs} },
         ...
 }
 
@@ -2603,7 +2603,7 @@ S1ap-MMEConfigurationUpdateAcknowledgeIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-MMEConfigurationUpdateFailure ::= SEQUENCE {
-    s1ap-MMEConfigurationUpdateFailure-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { {S1ap-MMEConfigurationUpdateFailureIEs} },
         ...
 }
 
@@ -2631,7 +2631,7 @@ S1ap-MMEConfigurationUpdateFailureIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-DownlinkS1cdma2000tunneling ::= SEQUENCE {
-    s1ap-DownlinkS1cdma2000tunneling-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { {S1ap-DownlinkS1cdma2000tunnelingIEs} },
         ...
 }
 
@@ -2662,7 +2662,7 @@ S1ap-DownlinkS1cdma2000tunnelingIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-UplinkS1cdma2000tunneling ::= SEQUENCE {
-    s1ap-UplinkS1cdma2000tunneling-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { {S1ap-UplinkS1cdma2000tunnelingIEs} },
         ...
 }
 
@@ -2699,7 +2699,7 @@ S1ap-UplinkS1cdma2000tunnelingIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-UECapabilityInfoIndication ::= SEQUENCE {
-    s1ap-UECapabilityInfoIndication-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { { S1ap-UECapabilityInfoIndicationIEs} },
         ...
 }
 
@@ -2727,7 +2727,7 @@ S1ap-UECapabilityInfoIndicationIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-ENBStatusTransfer ::= SEQUENCE {
-    s1ap-ENBStatusTransfer-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { {S1ap-ENBStatusTransferIEs} },
         ...
 }
 
@@ -2757,7 +2757,7 @@ S1ap-ENBStatusTransferIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-MMEStatusTransfer ::= SEQUENCE {
-    s1ap-MMEStatusTransfer-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { {S1ap-MMEStatusTransferIEs} },
         ...
 }
 
@@ -2785,7 +2785,7 @@ S1ap-MMEStatusTransferIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-TraceStart ::= SEQUENCE {
-    s1ap-TraceStart-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { {S1ap-TraceStartIEs} },
         ...
 }
 
@@ -2806,7 +2806,7 @@ S1ap-TraceStartIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-TraceFailureIndication ::= SEQUENCE {
-    s1ap-TraceFailureIndication-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { {S1ap-TraceFailureIndicationIEs} },
         ...
 }
 
@@ -2835,7 +2835,7 @@ S1ap-TraceFailureIndicationIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-DeactivateTrace ::= SEQUENCE {
-    s1ap-DeactivateTrace-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { { S1ap-DeactivateTraceIEs} },
         ...
 }
 
@@ -2863,7 +2863,7 @@ S1ap-DeactivateTraceIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-CellTrafficTrace ::= SEQUENCE {
-    s1ap-CellTrafficTrace-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+     protocolIEs                ProtocolIE-Container        { { S1ap-CellTrafficTraceIEs } },
      ...
 }
 
@@ -2894,7 +2894,7 @@ S1ap-CellTrafficTraceIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-LocationReportingControl ::= SEQUENCE {
-    s1ap-LocationReportingControl-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { { S1ap-LocationReportingControlIEs} },
         ...
 }
 
@@ -2915,7 +2915,7 @@ S1ap-LocationReportingControlIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-LocationReportingFailureIndication ::= SEQUENCE {
-    s1ap-LocationReportingFailureIndication-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { { S1ap-LocationReportingFailureIndicationIEs} },
         ...
 }
 
@@ -2936,7 +2936,7 @@ S1ap-LocationReportingFailureIndicationIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-LocationReport ::= SEQUENCE {
-    s1ap-LocationReport-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { { S1ap-LocationReportIEs} },
         ...
 }
 
@@ -2966,7 +2966,7 @@ S1ap-LocationReportIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-OverloadStart ::= SEQUENCE {
-    s1ap-OverloadStart-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { {S1ap-OverloadStartIEs} },
         ...
 }
 
@@ -2985,7 +2985,7 @@ S1ap-OverloadStartIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-OverloadStop ::= SEQUENCE {
-    s1ap-OverloadStop-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { {S1ap-OverloadStopIEs} },
         ...
 }
 
@@ -3011,7 +3011,7 @@ S1ap-OverloadStopIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-WriteReplaceWarningRequest ::= SEQUENCE {
-    s1ap-WriteReplaceWarningRequest-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { {S1ap-WriteReplaceWarningRequestIEs} },
         ...
 }
 
@@ -3038,7 +3038,7 @@ S1ap-WriteReplaceWarningRequestIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-WriteReplaceWarningResponse ::= SEQUENCE {
-    s1ap-WriteReplaceWarningResponse-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container                { {S1ap-WriteReplaceWarningResponseIEs} },
         ...
 }
 
@@ -3067,7 +3067,7 @@ S1ap-WriteReplaceWarningResponseIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-ENBDirectInformationTransfer ::= SEQUENCE {
-    s1ap-ENBDirectInformationTransfer-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       {{ S1ap-ENBDirectInformationTransferIEs}},
         ...
 }
 
@@ -3099,7 +3099,7 @@ S1ap-Inter-SystemInformationTransferType ::= CHOICE {
 
 
 S1ap-MMEDirectInformationTransfer ::= SEQUENCE {
-    s1ap-MMEDirectInformationTransfer-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       {{ S1ap-MMEDirectInformationTransferIEs}},
         ...
 }
 
@@ -3123,7 +3123,7 @@ S1ap-MMEDirectInformationTransferIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-ENBConfigurationTransfer ::= SEQUENCE {
-    s1ap-ENBConfigurationTransfer-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       {{ S1ap-ENBConfigurationTransferIEs}},
         ...
 }
 
@@ -3149,7 +3149,7 @@ S1ap-ENBConfigurationTransferIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-MMEConfigurationTransfer ::= SEQUENCE {
-    s1ap-MMEConfigurationTransfer-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       {{ S1ap-MMEConfigurationTransferIEs}},
         ...
 }
 
@@ -3195,7 +3195,7 @@ PrivateMessageIEs S1AP-PRIVATE-IES ::= {
 
 
 S1ap-KillRequest ::= SEQUENCE {
-    s1ap-KillRequest-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       { {S1ap-KillRequestIEs} },
         ...
 }
 
@@ -3216,7 +3216,7 @@ S1ap-KillRequestIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-KillResponse ::= SEQUENCE {
-    s1ap-KillResponse-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container                { {S1ap-KillResponseIEs} },
         ...
 }
 
@@ -3245,7 +3245,7 @@ S1ap-KillResponseIEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-DownlinkUEAssociatedLPPaTransport ::= SEQUENCE {
-    s1ap-DownlinkUEAssociatedLPPaTransport-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       {{S1ap-DownlinkUEAssociatedLPPaTransport-IEs}},
         ...
 }
 
@@ -3267,7 +3267,7 @@ S1ap-DownlinkUEAssociatedLPPaTransport-IEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-UplinkUEAssociatedLPPaTransport ::= SEQUENCE {
-    s1ap-UplinkUEAssociatedLPPaTransport-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       {{S1ap-UplinkUEAssociatedLPPaTransport-IEs}},
         ...
 }
 
@@ -3289,7 +3289,7 @@ S1ap-UplinkUEAssociatedLPPaTransport-IEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-DownlinkNonUEAssociatedLPPaTransport ::= SEQUENCE {
-    s1ap-DownlinkNonUEAssociatedLPPaTransport-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                        ProtocolIE-Container       {{S1ap-DownlinkNonUEAssociatedLPPaTransport-IEs}},
         ...
 }
 
@@ -3309,7 +3309,7 @@ S1ap-DownlinkNonUEAssociatedLPPaTransport-IEs S1AP-PROTOCOL-IES ::= {
 
 
 S1ap-UplinkNonUEAssociatedLPPaTransport ::= SEQUENCE {
-    s1ap-UplinkNonUEAssociatedLPPaTransport-ies SEQUENCE (SIZE (0..s1ap-maxProtocolIEs)) OF S1ap-IE,
+        protocolIEs                ProtocolIE-Container       {{S1ap-UplinkNonUEAssociatedLPPaTransport-IEs}},
         ...
 }
 

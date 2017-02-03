@@ -70,6 +70,4479 @@ memb_value_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	return td->check_constraints(td, sptr, ctfailcb, app_key);
 }
 
+static int
+memb_id_constraint_5(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_5(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_5(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_9(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_9(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_9(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_13(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_13(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_13(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_17(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_17(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_17(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_21(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_21(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_21(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_25(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_25(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_25(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_29(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_29(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_29(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_33(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_33(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_33(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_37(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_37(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_37(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_41(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_41(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_41(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_45(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_45(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_45(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_49(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_49(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_49(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_53(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_53(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_53(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_57(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_57(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_57(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_61(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_61(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_61(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_65(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_65(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_65(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_69(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_69(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_69(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_73(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_73(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_73(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_77(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_77(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_77(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_81(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_81(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_81(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_85(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_85(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_85(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_89(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_89(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_89(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_93(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_93(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_93(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_97(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_97(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_97(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_101(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_101(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_101(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_105(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_105(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_105(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_109(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_109(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_109(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_113(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_113(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_113(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_117(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_117(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_117(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_121(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_121(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_121(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_125(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_125(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_125(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_129(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_129(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_129(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_133(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_133(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_133(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_137(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_137(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_137(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_141(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_141(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_141(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_145(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_145(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_145(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_149(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_149(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_149(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_153(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_153(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_153(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_157(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_157(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_157(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_161(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_161(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_161(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_165(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_165(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_165(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_169(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_169(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_169(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_173(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_173(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_173(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_177(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_177(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_177(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_181(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_181(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_181(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_185(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_185(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_185(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_189(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_189(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_189(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_193(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_193(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_193(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_197(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_197(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_197(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_201(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_201(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_201(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_205(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_205(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_205(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_209(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_209(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_209(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_213(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_213(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_213(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_217(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_217(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_217(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_221(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_221(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_221(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_225(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_225(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_225(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_229(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_229(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_229(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_233(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_233(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_233(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_237(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_237(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_237(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_241(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_241(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_241(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_245(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_245(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_245(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_249(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_249(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_249(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_253(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_253(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_253(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_257(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_257(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_257(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_261(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_261(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_261(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_265(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_265(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_265(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_269(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_269(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_269(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_273(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_273(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_273(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_277(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_277(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_277(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_281(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_281(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_281(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_id_constraint_285(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long long *)sptr;
+	
+	if((value >= 0LL && value <= 65535LL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_criticality_constraint_285(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
+static int
+memb_value_constraint_285(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	
+	if(1 /* No applicable constraints whatsoever */) {
+		/* Nothing is here. See below */
+	}
+	
+	return td->check_constraints(td, sptr, ctfailcb, app_key);
+}
+
 static asn_per_constraints_t asn_PER_memb_id_constr_2 GCC_NOTUSED = {
 	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
@@ -81,6 +4554,1071 @@ static asn_per_constraints_t asn_PER_memb_criticality_constr_3 GCC_NOTUSED = {
 	0, 0	/* No PER value map */
 };
 static asn_per_constraints_t asn_PER_memb_value_constr_4 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_6 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_7 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_8 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_10 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_11 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_12 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_14 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_15 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_16 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_18 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_19 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_20 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_22 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_23 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_24 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_26 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_27 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_28 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_30 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_31 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_32 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_34 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_35 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_36 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_38 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_39 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_40 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_42 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_43 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_44 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_46 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_47 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_48 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_50 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_51 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_52 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_54 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_55 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_56 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_58 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_59 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_60 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_62 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_63 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_64 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_66 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_67 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_68 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_70 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_71 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_72 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_74 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_75 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_76 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_78 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_79 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_80 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_82 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_83 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_84 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_86 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_87 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_88 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_90 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_91 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_92 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_94 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_95 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_96 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_98 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_99 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_100 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_102 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_103 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_104 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_106 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_107 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_108 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_110 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_111 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_112 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_114 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_115 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_116 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_118 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_119 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_120 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_122 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_123 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_124 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_126 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_127 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_128 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_130 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_131 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_132 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_134 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_135 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_136 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_138 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_139 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_140 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_142 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_143 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_144 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_146 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_147 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_148 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_150 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_151 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_152 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_154 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_155 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_156 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_158 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_159 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_160 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_162 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_163 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_164 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_166 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_167 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_168 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_170 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_171 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_172 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_174 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_175 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_176 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_178 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_179 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_180 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_182 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_183 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_184 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_186 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_187 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_188 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_190 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_191 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_192 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_194 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_195 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_196 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_198 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_199 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_200 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_202 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_203 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_204 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_206 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_207 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_208 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_210 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_211 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_212 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_214 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_215 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_216 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_218 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_219 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_220 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_222 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_223 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_224 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_226 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_227 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_228 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_230 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_231 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_232 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_234 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_235 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_236 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_238 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_239 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_240 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_242 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_243 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_244 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_246 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_247 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_248 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_250 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_251 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_252 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_254 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_255 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_256 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_258 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_259 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_260 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_262 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_263 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_264 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_266 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_267 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_268 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_270 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_271 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_272 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_274 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_275 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_276 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_278 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_279 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_280 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_282 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_283 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_284 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_id_constr_286 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0l,  65535l }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_criticality_constr_287 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0l,  2l }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_value_constr_288 GCC_NOTUSED = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -156,5 +5694,5188 @@ asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P0 = {
 	asn_MBR_ProtocolIE_Field_5901P0_1,
 	3,	/* Elements count */
 	&asn_SPC_ProtocolIE_Field_5901P0_specs_1	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P1_5[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P1, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_5,
+		&asn_PER_memb_id_constr_6,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P1, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_5,
+		&asn_PER_memb_criticality_constr_7,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P1, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_5,
+		&asn_PER_memb_value_constr_8,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P1_tags_5[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P1_tag2el_5[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P1_specs_5 = {
+	sizeof(struct ProtocolIE_Field_5901P1),
+	offsetof(struct ProtocolIE_Field_5901P1, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P1_tag2el_5,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P1 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P1_tags_5,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P1_tags_5)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P1_tags_5[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P1_tags_5,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P1_tags_5)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P1_tags_5[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P1_5,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P1_specs_5	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P2_9[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P2, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_9,
+		&asn_PER_memb_id_constr_10,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P2, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_9,
+		&asn_PER_memb_criticality_constr_11,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P2, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_9,
+		&asn_PER_memb_value_constr_12,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P2_tags_9[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P2_tag2el_9[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P2_specs_9 = {
+	sizeof(struct ProtocolIE_Field_5901P2),
+	offsetof(struct ProtocolIE_Field_5901P2, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P2_tag2el_9,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P2 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P2_tags_9,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P2_tags_9)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P2_tags_9[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P2_tags_9,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P2_tags_9)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P2_tags_9[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P2_9,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P2_specs_9	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P3_13[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P3, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_13,
+		&asn_PER_memb_id_constr_14,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P3, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_13,
+		&asn_PER_memb_criticality_constr_15,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P3, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_13,
+		&asn_PER_memb_value_constr_16,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P3_tags_13[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P3_tag2el_13[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P3_specs_13 = {
+	sizeof(struct ProtocolIE_Field_5901P3),
+	offsetof(struct ProtocolIE_Field_5901P3, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P3_tag2el_13,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P3 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P3_tags_13,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P3_tags_13)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P3_tags_13[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P3_tags_13,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P3_tags_13)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P3_tags_13[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P3_13,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P3_specs_13	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P4_17[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P4, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_17,
+		&asn_PER_memb_id_constr_18,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P4, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_17,
+		&asn_PER_memb_criticality_constr_19,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P4, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_17,
+		&asn_PER_memb_value_constr_20,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P4_tags_17[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P4_tag2el_17[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P4_specs_17 = {
+	sizeof(struct ProtocolIE_Field_5901P4),
+	offsetof(struct ProtocolIE_Field_5901P4, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P4_tag2el_17,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P4 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P4_tags_17,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P4_tags_17)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P4_tags_17[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P4_tags_17,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P4_tags_17)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P4_tags_17[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P4_17,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P4_specs_17	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P5_21[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P5, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_21,
+		&asn_PER_memb_id_constr_22,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P5, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_21,
+		&asn_PER_memb_criticality_constr_23,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P5, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_21,
+		&asn_PER_memb_value_constr_24,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P5_tags_21[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P5_tag2el_21[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P5_specs_21 = {
+	sizeof(struct ProtocolIE_Field_5901P5),
+	offsetof(struct ProtocolIE_Field_5901P5, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P5_tag2el_21,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P5 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P5_tags_21,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P5_tags_21)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P5_tags_21[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P5_tags_21,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P5_tags_21)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P5_tags_21[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P5_21,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P5_specs_21	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P6_25[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P6, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_25,
+		&asn_PER_memb_id_constr_26,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P6, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_25,
+		&asn_PER_memb_criticality_constr_27,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P6, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_25,
+		&asn_PER_memb_value_constr_28,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P6_tags_25[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P6_tag2el_25[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P6_specs_25 = {
+	sizeof(struct ProtocolIE_Field_5901P6),
+	offsetof(struct ProtocolIE_Field_5901P6, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P6_tag2el_25,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P6 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P6_tags_25,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P6_tags_25)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P6_tags_25[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P6_tags_25,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P6_tags_25)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P6_tags_25[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P6_25,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P6_specs_25	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P7_29[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P7, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_29,
+		&asn_PER_memb_id_constr_30,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P7, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_29,
+		&asn_PER_memb_criticality_constr_31,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P7, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_29,
+		&asn_PER_memb_value_constr_32,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P7_tags_29[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P7_tag2el_29[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P7_specs_29 = {
+	sizeof(struct ProtocolIE_Field_5901P7),
+	offsetof(struct ProtocolIE_Field_5901P7, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P7_tag2el_29,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P7 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P7_tags_29,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P7_tags_29)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P7_tags_29[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P7_tags_29,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P7_tags_29)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P7_tags_29[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P7_29,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P7_specs_29	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P8_33[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P8, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_33,
+		&asn_PER_memb_id_constr_34,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P8, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_33,
+		&asn_PER_memb_criticality_constr_35,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P8, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_33,
+		&asn_PER_memb_value_constr_36,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P8_tags_33[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P8_tag2el_33[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P8_specs_33 = {
+	sizeof(struct ProtocolIE_Field_5901P8),
+	offsetof(struct ProtocolIE_Field_5901P8, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P8_tag2el_33,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P8 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P8_tags_33,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P8_tags_33)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P8_tags_33[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P8_tags_33,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P8_tags_33)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P8_tags_33[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P8_33,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P8_specs_33	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P9_37[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P9, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_37,
+		&asn_PER_memb_id_constr_38,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P9, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_37,
+		&asn_PER_memb_criticality_constr_39,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P9, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_37,
+		&asn_PER_memb_value_constr_40,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P9_tags_37[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P9_tag2el_37[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P9_specs_37 = {
+	sizeof(struct ProtocolIE_Field_5901P9),
+	offsetof(struct ProtocolIE_Field_5901P9, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P9_tag2el_37,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P9 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P9_tags_37,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P9_tags_37)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P9_tags_37[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P9_tags_37,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P9_tags_37)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P9_tags_37[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P9_37,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P9_specs_37	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P10_41[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P10, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_41,
+		&asn_PER_memb_id_constr_42,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P10, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_41,
+		&asn_PER_memb_criticality_constr_43,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P10, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_41,
+		&asn_PER_memb_value_constr_44,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P10_tags_41[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P10_tag2el_41[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P10_specs_41 = {
+	sizeof(struct ProtocolIE_Field_5901P10),
+	offsetof(struct ProtocolIE_Field_5901P10, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P10_tag2el_41,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P10 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P10_tags_41,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P10_tags_41)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P10_tags_41[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P10_tags_41,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P10_tags_41)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P10_tags_41[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P10_41,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P10_specs_41	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P11_45[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P11, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_45,
+		&asn_PER_memb_id_constr_46,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P11, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_45,
+		&asn_PER_memb_criticality_constr_47,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P11, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_45,
+		&asn_PER_memb_value_constr_48,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P11_tags_45[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P11_tag2el_45[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P11_specs_45 = {
+	sizeof(struct ProtocolIE_Field_5901P11),
+	offsetof(struct ProtocolIE_Field_5901P11, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P11_tag2el_45,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P11 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P11_tags_45,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P11_tags_45)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P11_tags_45[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P11_tags_45,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P11_tags_45)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P11_tags_45[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P11_45,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P11_specs_45	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P12_49[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P12, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_49,
+		&asn_PER_memb_id_constr_50,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P12, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_49,
+		&asn_PER_memb_criticality_constr_51,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P12, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_49,
+		&asn_PER_memb_value_constr_52,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P12_tags_49[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P12_tag2el_49[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P12_specs_49 = {
+	sizeof(struct ProtocolIE_Field_5901P12),
+	offsetof(struct ProtocolIE_Field_5901P12, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P12_tag2el_49,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P12 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P12_tags_49,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P12_tags_49)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P12_tags_49[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P12_tags_49,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P12_tags_49)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P12_tags_49[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P12_49,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P12_specs_49	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P13_53[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P13, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_53,
+		&asn_PER_memb_id_constr_54,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P13, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_53,
+		&asn_PER_memb_criticality_constr_55,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P13, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_53,
+		&asn_PER_memb_value_constr_56,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P13_tags_53[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P13_tag2el_53[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P13_specs_53 = {
+	sizeof(struct ProtocolIE_Field_5901P13),
+	offsetof(struct ProtocolIE_Field_5901P13, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P13_tag2el_53,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P13 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P13_tags_53,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P13_tags_53)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P13_tags_53[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P13_tags_53,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P13_tags_53)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P13_tags_53[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P13_53,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P13_specs_53	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P14_57[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P14, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_57,
+		&asn_PER_memb_id_constr_58,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P14, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_57,
+		&asn_PER_memb_criticality_constr_59,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P14, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_57,
+		&asn_PER_memb_value_constr_60,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P14_tags_57[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P14_tag2el_57[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P14_specs_57 = {
+	sizeof(struct ProtocolIE_Field_5901P14),
+	offsetof(struct ProtocolIE_Field_5901P14, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P14_tag2el_57,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P14 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P14_tags_57,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P14_tags_57)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P14_tags_57[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P14_tags_57,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P14_tags_57)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P14_tags_57[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P14_57,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P14_specs_57	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P15_61[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P15, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_61,
+		&asn_PER_memb_id_constr_62,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P15, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_61,
+		&asn_PER_memb_criticality_constr_63,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P15, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_61,
+		&asn_PER_memb_value_constr_64,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P15_tags_61[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P15_tag2el_61[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P15_specs_61 = {
+	sizeof(struct ProtocolIE_Field_5901P15),
+	offsetof(struct ProtocolIE_Field_5901P15, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P15_tag2el_61,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P15 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P15_tags_61,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P15_tags_61)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P15_tags_61[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P15_tags_61,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P15_tags_61)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P15_tags_61[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P15_61,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P15_specs_61	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P16_65[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P16, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_65,
+		&asn_PER_memb_id_constr_66,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P16, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_65,
+		&asn_PER_memb_criticality_constr_67,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P16, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_65,
+		&asn_PER_memb_value_constr_68,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P16_tags_65[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P16_tag2el_65[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P16_specs_65 = {
+	sizeof(struct ProtocolIE_Field_5901P16),
+	offsetof(struct ProtocolIE_Field_5901P16, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P16_tag2el_65,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P16 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P16_tags_65,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P16_tags_65)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P16_tags_65[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P16_tags_65,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P16_tags_65)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P16_tags_65[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P16_65,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P16_specs_65	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P17_69[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P17, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_69,
+		&asn_PER_memb_id_constr_70,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P17, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_69,
+		&asn_PER_memb_criticality_constr_71,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P17, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_69,
+		&asn_PER_memb_value_constr_72,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P17_tags_69[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P17_tag2el_69[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P17_specs_69 = {
+	sizeof(struct ProtocolIE_Field_5901P17),
+	offsetof(struct ProtocolIE_Field_5901P17, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P17_tag2el_69,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P17 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P17_tags_69,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P17_tags_69)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P17_tags_69[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P17_tags_69,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P17_tags_69)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P17_tags_69[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P17_69,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P17_specs_69	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P18_73[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P18, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_73,
+		&asn_PER_memb_id_constr_74,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P18, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_73,
+		&asn_PER_memb_criticality_constr_75,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P18, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_73,
+		&asn_PER_memb_value_constr_76,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P18_tags_73[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P18_tag2el_73[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P18_specs_73 = {
+	sizeof(struct ProtocolIE_Field_5901P18),
+	offsetof(struct ProtocolIE_Field_5901P18, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P18_tag2el_73,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P18 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P18_tags_73,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P18_tags_73)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P18_tags_73[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P18_tags_73,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P18_tags_73)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P18_tags_73[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P18_73,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P18_specs_73	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P19_77[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P19, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_77,
+		&asn_PER_memb_id_constr_78,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P19, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_77,
+		&asn_PER_memb_criticality_constr_79,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P19, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_77,
+		&asn_PER_memb_value_constr_80,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P19_tags_77[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P19_tag2el_77[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P19_specs_77 = {
+	sizeof(struct ProtocolIE_Field_5901P19),
+	offsetof(struct ProtocolIE_Field_5901P19, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P19_tag2el_77,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P19 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P19_tags_77,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P19_tags_77)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P19_tags_77[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P19_tags_77,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P19_tags_77)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P19_tags_77[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P19_77,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P19_specs_77	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P20_81[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P20, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_81,
+		&asn_PER_memb_id_constr_82,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P20, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_81,
+		&asn_PER_memb_criticality_constr_83,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P20, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_81,
+		&asn_PER_memb_value_constr_84,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P20_tags_81[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P20_tag2el_81[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P20_specs_81 = {
+	sizeof(struct ProtocolIE_Field_5901P20),
+	offsetof(struct ProtocolIE_Field_5901P20, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P20_tag2el_81,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P20 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P20_tags_81,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P20_tags_81)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P20_tags_81[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P20_tags_81,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P20_tags_81)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P20_tags_81[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P20_81,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P20_specs_81	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P21_85[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P21, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_85,
+		&asn_PER_memb_id_constr_86,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P21, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_85,
+		&asn_PER_memb_criticality_constr_87,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P21, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_85,
+		&asn_PER_memb_value_constr_88,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P21_tags_85[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P21_tag2el_85[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P21_specs_85 = {
+	sizeof(struct ProtocolIE_Field_5901P21),
+	offsetof(struct ProtocolIE_Field_5901P21, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P21_tag2el_85,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P21 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P21_tags_85,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P21_tags_85)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P21_tags_85[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P21_tags_85,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P21_tags_85)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P21_tags_85[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P21_85,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P21_specs_85	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P22_89[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P22, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_89,
+		&asn_PER_memb_id_constr_90,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P22, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_89,
+		&asn_PER_memb_criticality_constr_91,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P22, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_89,
+		&asn_PER_memb_value_constr_92,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P22_tags_89[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P22_tag2el_89[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P22_specs_89 = {
+	sizeof(struct ProtocolIE_Field_5901P22),
+	offsetof(struct ProtocolIE_Field_5901P22, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P22_tag2el_89,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P22 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P22_tags_89,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P22_tags_89)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P22_tags_89[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P22_tags_89,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P22_tags_89)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P22_tags_89[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P22_89,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P22_specs_89	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P23_93[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P23, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_93,
+		&asn_PER_memb_id_constr_94,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P23, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_93,
+		&asn_PER_memb_criticality_constr_95,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P23, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_93,
+		&asn_PER_memb_value_constr_96,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P23_tags_93[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P23_tag2el_93[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P23_specs_93 = {
+	sizeof(struct ProtocolIE_Field_5901P23),
+	offsetof(struct ProtocolIE_Field_5901P23, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P23_tag2el_93,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P23 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P23_tags_93,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P23_tags_93)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P23_tags_93[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P23_tags_93,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P23_tags_93)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P23_tags_93[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P23_93,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P23_specs_93	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P24_97[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P24, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_97,
+		&asn_PER_memb_id_constr_98,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P24, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_97,
+		&asn_PER_memb_criticality_constr_99,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P24, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_97,
+		&asn_PER_memb_value_constr_100,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P24_tags_97[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P24_tag2el_97[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P24_specs_97 = {
+	sizeof(struct ProtocolIE_Field_5901P24),
+	offsetof(struct ProtocolIE_Field_5901P24, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P24_tag2el_97,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P24 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P24_tags_97,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P24_tags_97)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P24_tags_97[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P24_tags_97,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P24_tags_97)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P24_tags_97[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P24_97,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P24_specs_97	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P25_101[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P25, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_101,
+		&asn_PER_memb_id_constr_102,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P25, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_101,
+		&asn_PER_memb_criticality_constr_103,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P25, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_101,
+		&asn_PER_memb_value_constr_104,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P25_tags_101[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P25_tag2el_101[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P25_specs_101 = {
+	sizeof(struct ProtocolIE_Field_5901P25),
+	offsetof(struct ProtocolIE_Field_5901P25, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P25_tag2el_101,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P25 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P25_tags_101,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P25_tags_101)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P25_tags_101[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P25_tags_101,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P25_tags_101)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P25_tags_101[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P25_101,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P25_specs_101	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P26_105[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P26, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_105,
+		&asn_PER_memb_id_constr_106,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P26, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_105,
+		&asn_PER_memb_criticality_constr_107,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P26, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_105,
+		&asn_PER_memb_value_constr_108,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P26_tags_105[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P26_tag2el_105[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P26_specs_105 = {
+	sizeof(struct ProtocolIE_Field_5901P26),
+	offsetof(struct ProtocolIE_Field_5901P26, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P26_tag2el_105,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P26 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P26_tags_105,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P26_tags_105)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P26_tags_105[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P26_tags_105,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P26_tags_105)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P26_tags_105[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P26_105,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P26_specs_105	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P27_109[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P27, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_109,
+		&asn_PER_memb_id_constr_110,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P27, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_109,
+		&asn_PER_memb_criticality_constr_111,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P27, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_109,
+		&asn_PER_memb_value_constr_112,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P27_tags_109[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P27_tag2el_109[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P27_specs_109 = {
+	sizeof(struct ProtocolIE_Field_5901P27),
+	offsetof(struct ProtocolIE_Field_5901P27, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P27_tag2el_109,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P27 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P27_tags_109,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P27_tags_109)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P27_tags_109[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P27_tags_109,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P27_tags_109)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P27_tags_109[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P27_109,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P27_specs_109	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P28_113[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P28, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_113,
+		&asn_PER_memb_id_constr_114,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P28, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_113,
+		&asn_PER_memb_criticality_constr_115,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P28, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_113,
+		&asn_PER_memb_value_constr_116,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P28_tags_113[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P28_tag2el_113[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P28_specs_113 = {
+	sizeof(struct ProtocolIE_Field_5901P28),
+	offsetof(struct ProtocolIE_Field_5901P28, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P28_tag2el_113,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P28 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P28_tags_113,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P28_tags_113)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P28_tags_113[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P28_tags_113,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P28_tags_113)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P28_tags_113[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P28_113,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P28_specs_113	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P29_117[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P29, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_117,
+		&asn_PER_memb_id_constr_118,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P29, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_117,
+		&asn_PER_memb_criticality_constr_119,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P29, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_117,
+		&asn_PER_memb_value_constr_120,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P29_tags_117[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P29_tag2el_117[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P29_specs_117 = {
+	sizeof(struct ProtocolIE_Field_5901P29),
+	offsetof(struct ProtocolIE_Field_5901P29, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P29_tag2el_117,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P29 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P29_tags_117,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P29_tags_117)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P29_tags_117[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P29_tags_117,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P29_tags_117)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P29_tags_117[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P29_117,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P29_specs_117	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P30_121[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P30, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_121,
+		&asn_PER_memb_id_constr_122,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P30, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_121,
+		&asn_PER_memb_criticality_constr_123,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P30, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_121,
+		&asn_PER_memb_value_constr_124,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P30_tags_121[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P30_tag2el_121[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P30_specs_121 = {
+	sizeof(struct ProtocolIE_Field_5901P30),
+	offsetof(struct ProtocolIE_Field_5901P30, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P30_tag2el_121,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P30 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P30_tags_121,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P30_tags_121)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P30_tags_121[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P30_tags_121,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P30_tags_121)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P30_tags_121[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P30_121,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P30_specs_121	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P31_125[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P31, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_125,
+		&asn_PER_memb_id_constr_126,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P31, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_125,
+		&asn_PER_memb_criticality_constr_127,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P31, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_125,
+		&asn_PER_memb_value_constr_128,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P31_tags_125[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P31_tag2el_125[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P31_specs_125 = {
+	sizeof(struct ProtocolIE_Field_5901P31),
+	offsetof(struct ProtocolIE_Field_5901P31, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P31_tag2el_125,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P31 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P31_tags_125,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P31_tags_125)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P31_tags_125[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P31_tags_125,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P31_tags_125)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P31_tags_125[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P31_125,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P31_specs_125	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P32_129[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P32, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_129,
+		&asn_PER_memb_id_constr_130,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P32, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_129,
+		&asn_PER_memb_criticality_constr_131,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P32, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_129,
+		&asn_PER_memb_value_constr_132,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P32_tags_129[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P32_tag2el_129[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P32_specs_129 = {
+	sizeof(struct ProtocolIE_Field_5901P32),
+	offsetof(struct ProtocolIE_Field_5901P32, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P32_tag2el_129,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P32 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P32_tags_129,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P32_tags_129)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P32_tags_129[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P32_tags_129,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P32_tags_129)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P32_tags_129[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P32_129,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P32_specs_129	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P33_133[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P33, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_133,
+		&asn_PER_memb_id_constr_134,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P33, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_133,
+		&asn_PER_memb_criticality_constr_135,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P33, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_133,
+		&asn_PER_memb_value_constr_136,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P33_tags_133[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P33_tag2el_133[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P33_specs_133 = {
+	sizeof(struct ProtocolIE_Field_5901P33),
+	offsetof(struct ProtocolIE_Field_5901P33, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P33_tag2el_133,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P33 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P33_tags_133,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P33_tags_133)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P33_tags_133[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P33_tags_133,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P33_tags_133)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P33_tags_133[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P33_133,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P33_specs_133	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P34_137[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P34, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_137,
+		&asn_PER_memb_id_constr_138,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P34, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_137,
+		&asn_PER_memb_criticality_constr_139,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P34, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_137,
+		&asn_PER_memb_value_constr_140,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P34_tags_137[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P34_tag2el_137[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P34_specs_137 = {
+	sizeof(struct ProtocolIE_Field_5901P34),
+	offsetof(struct ProtocolIE_Field_5901P34, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P34_tag2el_137,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P34 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P34_tags_137,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P34_tags_137)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P34_tags_137[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P34_tags_137,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P34_tags_137)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P34_tags_137[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P34_137,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P34_specs_137	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P35_141[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P35, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_141,
+		&asn_PER_memb_id_constr_142,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P35, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_141,
+		&asn_PER_memb_criticality_constr_143,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P35, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_141,
+		&asn_PER_memb_value_constr_144,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P35_tags_141[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P35_tag2el_141[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P35_specs_141 = {
+	sizeof(struct ProtocolIE_Field_5901P35),
+	offsetof(struct ProtocolIE_Field_5901P35, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P35_tag2el_141,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P35 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P35_tags_141,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P35_tags_141)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P35_tags_141[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P35_tags_141,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P35_tags_141)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P35_tags_141[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P35_141,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P35_specs_141	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P36_145[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P36, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_145,
+		&asn_PER_memb_id_constr_146,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P36, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_145,
+		&asn_PER_memb_criticality_constr_147,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P36, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_145,
+		&asn_PER_memb_value_constr_148,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P36_tags_145[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P36_tag2el_145[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P36_specs_145 = {
+	sizeof(struct ProtocolIE_Field_5901P36),
+	offsetof(struct ProtocolIE_Field_5901P36, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P36_tag2el_145,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P36 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P36_tags_145,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P36_tags_145)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P36_tags_145[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P36_tags_145,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P36_tags_145)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P36_tags_145[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P36_145,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P36_specs_145	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P37_149[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P37, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_149,
+		&asn_PER_memb_id_constr_150,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P37, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_149,
+		&asn_PER_memb_criticality_constr_151,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P37, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_149,
+		&asn_PER_memb_value_constr_152,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P37_tags_149[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P37_tag2el_149[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P37_specs_149 = {
+	sizeof(struct ProtocolIE_Field_5901P37),
+	offsetof(struct ProtocolIE_Field_5901P37, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P37_tag2el_149,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P37 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P37_tags_149,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P37_tags_149)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P37_tags_149[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P37_tags_149,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P37_tags_149)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P37_tags_149[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P37_149,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P37_specs_149	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P38_153[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P38, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_153,
+		&asn_PER_memb_id_constr_154,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P38, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_153,
+		&asn_PER_memb_criticality_constr_155,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P38, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_153,
+		&asn_PER_memb_value_constr_156,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P38_tags_153[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P38_tag2el_153[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P38_specs_153 = {
+	sizeof(struct ProtocolIE_Field_5901P38),
+	offsetof(struct ProtocolIE_Field_5901P38, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P38_tag2el_153,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P38 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P38_tags_153,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P38_tags_153)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P38_tags_153[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P38_tags_153,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P38_tags_153)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P38_tags_153[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P38_153,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P38_specs_153	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P39_157[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P39, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_157,
+		&asn_PER_memb_id_constr_158,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P39, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_157,
+		&asn_PER_memb_criticality_constr_159,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P39, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_157,
+		&asn_PER_memb_value_constr_160,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P39_tags_157[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P39_tag2el_157[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P39_specs_157 = {
+	sizeof(struct ProtocolIE_Field_5901P39),
+	offsetof(struct ProtocolIE_Field_5901P39, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P39_tag2el_157,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P39 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P39_tags_157,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P39_tags_157)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P39_tags_157[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P39_tags_157,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P39_tags_157)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P39_tags_157[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P39_157,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P39_specs_157	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P40_161[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P40, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_161,
+		&asn_PER_memb_id_constr_162,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P40, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_161,
+		&asn_PER_memb_criticality_constr_163,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P40, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_161,
+		&asn_PER_memb_value_constr_164,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P40_tags_161[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P40_tag2el_161[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P40_specs_161 = {
+	sizeof(struct ProtocolIE_Field_5901P40),
+	offsetof(struct ProtocolIE_Field_5901P40, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P40_tag2el_161,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P40 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P40_tags_161,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P40_tags_161)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P40_tags_161[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P40_tags_161,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P40_tags_161)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P40_tags_161[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P40_161,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P40_specs_161	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P41_165[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P41, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_165,
+		&asn_PER_memb_id_constr_166,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P41, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_165,
+		&asn_PER_memb_criticality_constr_167,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P41, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_165,
+		&asn_PER_memb_value_constr_168,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P41_tags_165[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P41_tag2el_165[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P41_specs_165 = {
+	sizeof(struct ProtocolIE_Field_5901P41),
+	offsetof(struct ProtocolIE_Field_5901P41, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P41_tag2el_165,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P41 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P41_tags_165,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P41_tags_165)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P41_tags_165[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P41_tags_165,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P41_tags_165)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P41_tags_165[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P41_165,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P41_specs_165	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P42_169[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P42, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_169,
+		&asn_PER_memb_id_constr_170,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P42, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_169,
+		&asn_PER_memb_criticality_constr_171,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P42, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_169,
+		&asn_PER_memb_value_constr_172,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P42_tags_169[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P42_tag2el_169[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P42_specs_169 = {
+	sizeof(struct ProtocolIE_Field_5901P42),
+	offsetof(struct ProtocolIE_Field_5901P42, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P42_tag2el_169,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P42 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P42_tags_169,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P42_tags_169)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P42_tags_169[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P42_tags_169,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P42_tags_169)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P42_tags_169[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P42_169,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P42_specs_169	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P43_173[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P43, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_173,
+		&asn_PER_memb_id_constr_174,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P43, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_173,
+		&asn_PER_memb_criticality_constr_175,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P43, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_173,
+		&asn_PER_memb_value_constr_176,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P43_tags_173[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P43_tag2el_173[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P43_specs_173 = {
+	sizeof(struct ProtocolIE_Field_5901P43),
+	offsetof(struct ProtocolIE_Field_5901P43, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P43_tag2el_173,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P43 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P43_tags_173,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P43_tags_173)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P43_tags_173[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P43_tags_173,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P43_tags_173)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P43_tags_173[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P43_173,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P43_specs_173	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P44_177[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P44, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_177,
+		&asn_PER_memb_id_constr_178,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P44, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_177,
+		&asn_PER_memb_criticality_constr_179,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P44, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_177,
+		&asn_PER_memb_value_constr_180,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P44_tags_177[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P44_tag2el_177[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P44_specs_177 = {
+	sizeof(struct ProtocolIE_Field_5901P44),
+	offsetof(struct ProtocolIE_Field_5901P44, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P44_tag2el_177,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P44 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P44_tags_177,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P44_tags_177)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P44_tags_177[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P44_tags_177,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P44_tags_177)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P44_tags_177[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P44_177,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P44_specs_177	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P45_181[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P45, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_181,
+		&asn_PER_memb_id_constr_182,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P45, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_181,
+		&asn_PER_memb_criticality_constr_183,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P45, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_181,
+		&asn_PER_memb_value_constr_184,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P45_tags_181[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P45_tag2el_181[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P45_specs_181 = {
+	sizeof(struct ProtocolIE_Field_5901P45),
+	offsetof(struct ProtocolIE_Field_5901P45, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P45_tag2el_181,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P45 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P45_tags_181,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P45_tags_181)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P45_tags_181[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P45_tags_181,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P45_tags_181)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P45_tags_181[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P45_181,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P45_specs_181	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P46_185[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P46, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_185,
+		&asn_PER_memb_id_constr_186,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P46, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_185,
+		&asn_PER_memb_criticality_constr_187,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P46, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_185,
+		&asn_PER_memb_value_constr_188,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P46_tags_185[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P46_tag2el_185[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P46_specs_185 = {
+	sizeof(struct ProtocolIE_Field_5901P46),
+	offsetof(struct ProtocolIE_Field_5901P46, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P46_tag2el_185,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P46 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P46_tags_185,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P46_tags_185)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P46_tags_185[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P46_tags_185,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P46_tags_185)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P46_tags_185[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P46_185,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P46_specs_185	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P47_189[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P47, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_189,
+		&asn_PER_memb_id_constr_190,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P47, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_189,
+		&asn_PER_memb_criticality_constr_191,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P47, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_189,
+		&asn_PER_memb_value_constr_192,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P47_tags_189[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P47_tag2el_189[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P47_specs_189 = {
+	sizeof(struct ProtocolIE_Field_5901P47),
+	offsetof(struct ProtocolIE_Field_5901P47, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P47_tag2el_189,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P47 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P47_tags_189,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P47_tags_189)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P47_tags_189[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P47_tags_189,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P47_tags_189)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P47_tags_189[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P47_189,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P47_specs_189	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P48_193[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P48, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_193,
+		&asn_PER_memb_id_constr_194,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P48, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_193,
+		&asn_PER_memb_criticality_constr_195,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P48, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_193,
+		&asn_PER_memb_value_constr_196,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P48_tags_193[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P48_tag2el_193[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P48_specs_193 = {
+	sizeof(struct ProtocolIE_Field_5901P48),
+	offsetof(struct ProtocolIE_Field_5901P48, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P48_tag2el_193,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P48 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P48_tags_193,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P48_tags_193)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P48_tags_193[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P48_tags_193,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P48_tags_193)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P48_tags_193[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P48_193,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P48_specs_193	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P49_197[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P49, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_197,
+		&asn_PER_memb_id_constr_198,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P49, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_197,
+		&asn_PER_memb_criticality_constr_199,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P49, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_197,
+		&asn_PER_memb_value_constr_200,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P49_tags_197[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P49_tag2el_197[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P49_specs_197 = {
+	sizeof(struct ProtocolIE_Field_5901P49),
+	offsetof(struct ProtocolIE_Field_5901P49, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P49_tag2el_197,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P49 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P49_tags_197,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P49_tags_197)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P49_tags_197[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P49_tags_197,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P49_tags_197)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P49_tags_197[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P49_197,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P49_specs_197	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P50_201[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P50, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_201,
+		&asn_PER_memb_id_constr_202,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P50, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_201,
+		&asn_PER_memb_criticality_constr_203,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P50, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_201,
+		&asn_PER_memb_value_constr_204,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P50_tags_201[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P50_tag2el_201[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P50_specs_201 = {
+	sizeof(struct ProtocolIE_Field_5901P50),
+	offsetof(struct ProtocolIE_Field_5901P50, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P50_tag2el_201,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P50 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P50_tags_201,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P50_tags_201)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P50_tags_201[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P50_tags_201,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P50_tags_201)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P50_tags_201[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P50_201,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P50_specs_201	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P51_205[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P51, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_205,
+		&asn_PER_memb_id_constr_206,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P51, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_205,
+		&asn_PER_memb_criticality_constr_207,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P51, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_205,
+		&asn_PER_memb_value_constr_208,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P51_tags_205[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P51_tag2el_205[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P51_specs_205 = {
+	sizeof(struct ProtocolIE_Field_5901P51),
+	offsetof(struct ProtocolIE_Field_5901P51, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P51_tag2el_205,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P51 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P51_tags_205,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P51_tags_205)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P51_tags_205[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P51_tags_205,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P51_tags_205)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P51_tags_205[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P51_205,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P51_specs_205	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P52_209[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P52, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_209,
+		&asn_PER_memb_id_constr_210,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P52, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_209,
+		&asn_PER_memb_criticality_constr_211,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P52, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_209,
+		&asn_PER_memb_value_constr_212,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P52_tags_209[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P52_tag2el_209[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P52_specs_209 = {
+	sizeof(struct ProtocolIE_Field_5901P52),
+	offsetof(struct ProtocolIE_Field_5901P52, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P52_tag2el_209,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P52 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P52_tags_209,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P52_tags_209)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P52_tags_209[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P52_tags_209,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P52_tags_209)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P52_tags_209[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P52_209,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P52_specs_209	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P53_213[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P53, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_213,
+		&asn_PER_memb_id_constr_214,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P53, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_213,
+		&asn_PER_memb_criticality_constr_215,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P53, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_213,
+		&asn_PER_memb_value_constr_216,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P53_tags_213[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P53_tag2el_213[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P53_specs_213 = {
+	sizeof(struct ProtocolIE_Field_5901P53),
+	offsetof(struct ProtocolIE_Field_5901P53, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P53_tag2el_213,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P53 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P53_tags_213,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P53_tags_213)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P53_tags_213[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P53_tags_213,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P53_tags_213)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P53_tags_213[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P53_213,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P53_specs_213	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P54_217[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P54, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_217,
+		&asn_PER_memb_id_constr_218,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P54, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_217,
+		&asn_PER_memb_criticality_constr_219,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P54, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_217,
+		&asn_PER_memb_value_constr_220,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P54_tags_217[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P54_tag2el_217[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P54_specs_217 = {
+	sizeof(struct ProtocolIE_Field_5901P54),
+	offsetof(struct ProtocolIE_Field_5901P54, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P54_tag2el_217,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P54 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P54_tags_217,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P54_tags_217)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P54_tags_217[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P54_tags_217,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P54_tags_217)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P54_tags_217[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P54_217,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P54_specs_217	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P55_221[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P55, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_221,
+		&asn_PER_memb_id_constr_222,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P55, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_221,
+		&asn_PER_memb_criticality_constr_223,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P55, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_221,
+		&asn_PER_memb_value_constr_224,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P55_tags_221[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P55_tag2el_221[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P55_specs_221 = {
+	sizeof(struct ProtocolIE_Field_5901P55),
+	offsetof(struct ProtocolIE_Field_5901P55, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P55_tag2el_221,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P55 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P55_tags_221,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P55_tags_221)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P55_tags_221[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P55_tags_221,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P55_tags_221)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P55_tags_221[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P55_221,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P55_specs_221	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P56_225[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P56, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_225,
+		&asn_PER_memb_id_constr_226,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P56, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_225,
+		&asn_PER_memb_criticality_constr_227,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P56, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_225,
+		&asn_PER_memb_value_constr_228,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P56_tags_225[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P56_tag2el_225[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P56_specs_225 = {
+	sizeof(struct ProtocolIE_Field_5901P56),
+	offsetof(struct ProtocolIE_Field_5901P56, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P56_tag2el_225,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P56 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P56_tags_225,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P56_tags_225)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P56_tags_225[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P56_tags_225,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P56_tags_225)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P56_tags_225[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P56_225,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P56_specs_225	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P57_229[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P57, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_229,
+		&asn_PER_memb_id_constr_230,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P57, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_229,
+		&asn_PER_memb_criticality_constr_231,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P57, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_229,
+		&asn_PER_memb_value_constr_232,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P57_tags_229[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P57_tag2el_229[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P57_specs_229 = {
+	sizeof(struct ProtocolIE_Field_5901P57),
+	offsetof(struct ProtocolIE_Field_5901P57, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P57_tag2el_229,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P57 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P57_tags_229,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P57_tags_229)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P57_tags_229[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P57_tags_229,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P57_tags_229)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P57_tags_229[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P57_229,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P57_specs_229	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P58_233[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P58, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_233,
+		&asn_PER_memb_id_constr_234,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P58, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_233,
+		&asn_PER_memb_criticality_constr_235,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P58, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_233,
+		&asn_PER_memb_value_constr_236,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P58_tags_233[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P58_tag2el_233[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P58_specs_233 = {
+	sizeof(struct ProtocolIE_Field_5901P58),
+	offsetof(struct ProtocolIE_Field_5901P58, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P58_tag2el_233,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P58 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P58_tags_233,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P58_tags_233)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P58_tags_233[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P58_tags_233,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P58_tags_233)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P58_tags_233[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P58_233,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P58_specs_233	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P59_237[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P59, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_237,
+		&asn_PER_memb_id_constr_238,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P59, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_237,
+		&asn_PER_memb_criticality_constr_239,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P59, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_237,
+		&asn_PER_memb_value_constr_240,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P59_tags_237[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P59_tag2el_237[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P59_specs_237 = {
+	sizeof(struct ProtocolIE_Field_5901P59),
+	offsetof(struct ProtocolIE_Field_5901P59, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P59_tag2el_237,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P59 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P59_tags_237,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P59_tags_237)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P59_tags_237[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P59_tags_237,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P59_tags_237)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P59_tags_237[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P59_237,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P59_specs_237	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P60_241[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P60, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_241,
+		&asn_PER_memb_id_constr_242,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P60, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_241,
+		&asn_PER_memb_criticality_constr_243,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P60, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_241,
+		&asn_PER_memb_value_constr_244,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P60_tags_241[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P60_tag2el_241[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P60_specs_241 = {
+	sizeof(struct ProtocolIE_Field_5901P60),
+	offsetof(struct ProtocolIE_Field_5901P60, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P60_tag2el_241,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P60 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P60_tags_241,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P60_tags_241)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P60_tags_241[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P60_tags_241,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P60_tags_241)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P60_tags_241[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P60_241,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P60_specs_241	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P61_245[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P61, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_245,
+		&asn_PER_memb_id_constr_246,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P61, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_245,
+		&asn_PER_memb_criticality_constr_247,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P61, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_245,
+		&asn_PER_memb_value_constr_248,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P61_tags_245[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P61_tag2el_245[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P61_specs_245 = {
+	sizeof(struct ProtocolIE_Field_5901P61),
+	offsetof(struct ProtocolIE_Field_5901P61, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P61_tag2el_245,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P61 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P61_tags_245,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P61_tags_245)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P61_tags_245[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P61_tags_245,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P61_tags_245)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P61_tags_245[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P61_245,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P61_specs_245	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P62_249[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P62, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_249,
+		&asn_PER_memb_id_constr_250,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P62, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_249,
+		&asn_PER_memb_criticality_constr_251,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P62, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_249,
+		&asn_PER_memb_value_constr_252,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P62_tags_249[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P62_tag2el_249[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P62_specs_249 = {
+	sizeof(struct ProtocolIE_Field_5901P62),
+	offsetof(struct ProtocolIE_Field_5901P62, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P62_tag2el_249,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P62 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P62_tags_249,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P62_tags_249)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P62_tags_249[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P62_tags_249,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P62_tags_249)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P62_tags_249[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P62_249,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P62_specs_249	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P63_253[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P63, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_253,
+		&asn_PER_memb_id_constr_254,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P63, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_253,
+		&asn_PER_memb_criticality_constr_255,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P63, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_253,
+		&asn_PER_memb_value_constr_256,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P63_tags_253[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P63_tag2el_253[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P63_specs_253 = {
+	sizeof(struct ProtocolIE_Field_5901P63),
+	offsetof(struct ProtocolIE_Field_5901P63, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P63_tag2el_253,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P63 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P63_tags_253,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P63_tags_253)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P63_tags_253[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P63_tags_253,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P63_tags_253)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P63_tags_253[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P63_253,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P63_specs_253	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P64_257[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P64, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_257,
+		&asn_PER_memb_id_constr_258,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P64, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_257,
+		&asn_PER_memb_criticality_constr_259,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P64, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_257,
+		&asn_PER_memb_value_constr_260,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P64_tags_257[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P64_tag2el_257[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P64_specs_257 = {
+	sizeof(struct ProtocolIE_Field_5901P64),
+	offsetof(struct ProtocolIE_Field_5901P64, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P64_tag2el_257,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P64 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P64_tags_257,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P64_tags_257)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P64_tags_257[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P64_tags_257,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P64_tags_257)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P64_tags_257[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P64_257,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P64_specs_257	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P65_261[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P65, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_261,
+		&asn_PER_memb_id_constr_262,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P65, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_261,
+		&asn_PER_memb_criticality_constr_263,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P65, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_261,
+		&asn_PER_memb_value_constr_264,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P65_tags_261[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P65_tag2el_261[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P65_specs_261 = {
+	sizeof(struct ProtocolIE_Field_5901P65),
+	offsetof(struct ProtocolIE_Field_5901P65, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P65_tag2el_261,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P65 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P65_tags_261,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P65_tags_261)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P65_tags_261[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P65_tags_261,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P65_tags_261)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P65_tags_261[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P65_261,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P65_specs_261	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P66_265[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P66, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_265,
+		&asn_PER_memb_id_constr_266,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P66, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_265,
+		&asn_PER_memb_criticality_constr_267,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P66, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_265,
+		&asn_PER_memb_value_constr_268,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P66_tags_265[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P66_tag2el_265[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P66_specs_265 = {
+	sizeof(struct ProtocolIE_Field_5901P66),
+	offsetof(struct ProtocolIE_Field_5901P66, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P66_tag2el_265,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P66 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P66_tags_265,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P66_tags_265)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P66_tags_265[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P66_tags_265,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P66_tags_265)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P66_tags_265[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P66_265,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P66_specs_265	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P67_269[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P67, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_269,
+		&asn_PER_memb_id_constr_270,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P67, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_269,
+		&asn_PER_memb_criticality_constr_271,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P67, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_269,
+		&asn_PER_memb_value_constr_272,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P67_tags_269[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P67_tag2el_269[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P67_specs_269 = {
+	sizeof(struct ProtocolIE_Field_5901P67),
+	offsetof(struct ProtocolIE_Field_5901P67, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P67_tag2el_269,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P67 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P67_tags_269,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P67_tags_269)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P67_tags_269[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P67_tags_269,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P67_tags_269)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P67_tags_269[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P67_269,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P67_specs_269	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P68_273[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P68, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_273,
+		&asn_PER_memb_id_constr_274,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P68, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_273,
+		&asn_PER_memb_criticality_constr_275,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P68, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_273,
+		&asn_PER_memb_value_constr_276,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P68_tags_273[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P68_tag2el_273[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P68_specs_273 = {
+	sizeof(struct ProtocolIE_Field_5901P68),
+	offsetof(struct ProtocolIE_Field_5901P68, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P68_tag2el_273,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P68 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P68_tags_273,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P68_tags_273)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P68_tags_273[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P68_tags_273,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P68_tags_273)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P68_tags_273[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P68_273,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P68_specs_273	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P69_277[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P69, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_277,
+		&asn_PER_memb_id_constr_278,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P69, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_277,
+		&asn_PER_memb_criticality_constr_279,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P69, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_277,
+		&asn_PER_memb_value_constr_280,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P69_tags_277[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P69_tag2el_277[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P69_specs_277 = {
+	sizeof(struct ProtocolIE_Field_5901P69),
+	offsetof(struct ProtocolIE_Field_5901P69, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P69_tag2el_277,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P69 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P69_tags_277,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P69_tags_277)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P69_tags_277[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P69_tags_277,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P69_tags_277)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P69_tags_277[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P69_277,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P69_specs_277	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P70_281[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P70, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_281,
+		&asn_PER_memb_id_constr_282,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P70, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_281,
+		&asn_PER_memb_criticality_constr_283,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P70, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_281,
+		&asn_PER_memb_value_constr_284,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P70_tags_281[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P70_tag2el_281[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P70_specs_281 = {
+	sizeof(struct ProtocolIE_Field_5901P70),
+	offsetof(struct ProtocolIE_Field_5901P70, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P70_tag2el_281,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P70 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P70_tags_281,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P70_tags_281)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P70_tags_281[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P70_tags_281,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P70_tags_281)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P70_tags_281[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P70_281,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P70_specs_281	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P71_285[] = {
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P71, id),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_ProtocolIE_ID,
+		memb_id_constraint_285,
+		&asn_PER_memb_id_constr_286,
+		0,
+		"id"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P71, criticality),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_S1ap_Criticality,
+		memb_criticality_constraint_285,
+		&asn_PER_memb_criticality_constr_287,
+		0,
+		"criticality"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P71, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
+		&asn_DEF_ANY,
+		memb_value_constraint_285,
+		&asn_PER_memb_value_constr_288,
+		0,
+		"value"
+		},
+};
+static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P71_tags_285[] = {
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P71_tag2el_285[] = {
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
+};
+static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P71_specs_285 = {
+	sizeof(struct ProtocolIE_Field_5901P71),
+	offsetof(struct ProtocolIE_Field_5901P71, _asn_ctx),
+	asn_MAP_ProtocolIE_Field_5901P71_tag2el_285,
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
+};
+asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P71 = {
+	"ProtocolIE-Field",
+	"ProtocolIE-Field",
+	SEQUENCE_free,
+	SEQUENCE_print,
+	SEQUENCE_constraint,
+	SEQUENCE_decode_ber,
+	SEQUENCE_encode_der,
+	SEQUENCE_decode_xer,
+	SEQUENCE_encode_xer,
+	SEQUENCE_decode_uper,
+	SEQUENCE_encode_uper,
+	SEQUENCE_decode_aper,
+	SEQUENCE_encode_aper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_ProtocolIE_Field_5901P71_tags_285,
+	sizeof(asn_DEF_ProtocolIE_Field_5901P71_tags_285)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P71_tags_285[0]), /* 1 */
+	asn_DEF_ProtocolIE_Field_5901P71_tags_285,	/* Same as above */
+	sizeof(asn_DEF_ProtocolIE_Field_5901P71_tags_285)
+		/sizeof(asn_DEF_ProtocolIE_Field_5901P71_tags_285[0]), /* 1 */
+	0,	/* No PER visible constraints */
+	asn_MBR_ProtocolIE_Field_5901P71_285,
+	3,	/* Elements count */
+	&asn_SPC_ProtocolIE_Field_5901P71_specs_285	/* Additional specs */
 };
 

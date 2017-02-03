@@ -11,13 +11,524 @@
 
 #include <asn_application.h>
 
+/* Including external dependencies */
+#include <asn_SEQUENCE_OF.h>
+#include <constr_SEQUENCE_OF.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/* Forward declarations */
+struct ProtocolIE_Field;
+
+/* ProtocolIE-Container */
+typedef struct ProtocolIE_Container_5893P0 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P0_t;
+typedef struct ProtocolIE_Container_5893P1 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P1_t;
+typedef struct ProtocolIE_Container_5893P2 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P2_t;
+typedef struct ProtocolIE_Container_5893P3 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P3_t;
+typedef struct ProtocolIE_Container_5893P4 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P4_t;
+typedef struct ProtocolIE_Container_5893P5 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P5_t;
+typedef struct ProtocolIE_Container_5893P6 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P6_t;
+typedef struct ProtocolIE_Container_5893P7 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P7_t;
+typedef struct ProtocolIE_Container_5893P8 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P8_t;
+typedef struct ProtocolIE_Container_5893P9 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P9_t;
+typedef struct ProtocolIE_Container_5893P10 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P10_t;
+typedef struct ProtocolIE_Container_5893P11 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P11_t;
+typedef struct ProtocolIE_Container_5893P12 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P12_t;
+typedef struct ProtocolIE_Container_5893P13 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P13_t;
+typedef struct ProtocolIE_Container_5893P14 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P14_t;
+typedef struct ProtocolIE_Container_5893P15 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P15_t;
+typedef struct ProtocolIE_Container_5893P16 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P16_t;
+typedef struct ProtocolIE_Container_5893P17 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P17_t;
+typedef struct ProtocolIE_Container_5893P18 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P18_t;
+typedef struct ProtocolIE_Container_5893P19 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P19_t;
+typedef struct ProtocolIE_Container_5893P20 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P20_t;
+typedef struct ProtocolIE_Container_5893P21 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P21_t;
+typedef struct ProtocolIE_Container_5893P22 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P22_t;
+typedef struct ProtocolIE_Container_5893P23 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P23_t;
+typedef struct ProtocolIE_Container_5893P24 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P24_t;
+typedef struct ProtocolIE_Container_5893P25 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P25_t;
+typedef struct ProtocolIE_Container_5893P26 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P26_t;
+typedef struct ProtocolIE_Container_5893P27 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P27_t;
+typedef struct ProtocolIE_Container_5893P28 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P28_t;
+typedef struct ProtocolIE_Container_5893P29 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P29_t;
+typedef struct ProtocolIE_Container_5893P30 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P30_t;
+typedef struct ProtocolIE_Container_5893P31 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P31_t;
+typedef struct ProtocolIE_Container_5893P32 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P32_t;
+typedef struct ProtocolIE_Container_5893P33 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P33_t;
+typedef struct ProtocolIE_Container_5893P34 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P34_t;
+typedef struct ProtocolIE_Container_5893P35 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P35_t;
+typedef struct ProtocolIE_Container_5893P36 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P36_t;
+typedef struct ProtocolIE_Container_5893P37 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P37_t;
+typedef struct ProtocolIE_Container_5893P38 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P38_t;
+typedef struct ProtocolIE_Container_5893P39 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P39_t;
+typedef struct ProtocolIE_Container_5893P40 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P40_t;
+typedef struct ProtocolIE_Container_5893P41 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P41_t;
+typedef struct ProtocolIE_Container_5893P42 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P42_t;
+typedef struct ProtocolIE_Container_5893P43 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P43_t;
+typedef struct ProtocolIE_Container_5893P44 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P44_t;
+typedef struct ProtocolIE_Container_5893P45 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P45_t;
+typedef struct ProtocolIE_Container_5893P46 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P46_t;
+typedef struct ProtocolIE_Container_5893P47 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P47_t;
+typedef struct ProtocolIE_Container_5893P48 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P48_t;
+typedef struct ProtocolIE_Container_5893P49 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P49_t;
+typedef struct ProtocolIE_Container_5893P50 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P50_t;
+typedef struct ProtocolIE_Container_5893P51 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P51_t;
+typedef struct ProtocolIE_Container_5893P52 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P52_t;
+typedef struct ProtocolIE_Container_5893P53 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P53_t;
+typedef struct ProtocolIE_Container_5893P54 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P54_t;
+typedef struct ProtocolIE_Container_5893P55 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P55_t;
+typedef struct ProtocolIE_Container_5893P56 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P56_t;
+typedef struct ProtocolIE_Container_5893P57 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P57_t;
+typedef struct ProtocolIE_Container_5893P58 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P58_t;
+typedef struct ProtocolIE_Container_5893P59 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P59_t;
+typedef struct ProtocolIE_Container_5893P60 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P60_t;
+typedef struct ProtocolIE_Container_5893P61 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P61_t;
+typedef struct ProtocolIE_Container_5893P62 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P62_t;
+typedef struct ProtocolIE_Container_5893P63 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P63_t;
+typedef struct ProtocolIE_Container_5893P64 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P64_t;
+typedef struct ProtocolIE_Container_5893P65 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P65_t;
+typedef struct ProtocolIE_Container_5893P66 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P66_t;
+typedef struct ProtocolIE_Container_5893P67 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P67_t;
+typedef struct ProtocolIE_Container_5893P68 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P68_t;
+typedef struct ProtocolIE_Container_5893P69 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P69_t;
+typedef struct ProtocolIE_Container_5893P70 {
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Container_5893P70_t;
+
+/* Implementation */
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P0;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P1;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P2;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P3;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P4;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P5;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P6;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P7;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P8;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P9;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P10;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P11;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P12;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P13;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P14;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P15;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P16;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P17;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P18;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P19;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P20;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P21;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P22;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P23;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P24;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P25;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P26;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P27;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P28;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P29;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P30;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P31;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P32;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P33;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P34;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P35;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P36;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P37;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P38;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P39;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P40;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P41;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P42;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P43;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P44;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P45;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P46;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P47;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P48;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P49;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P50;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P51;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P52;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P53;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P54;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P55;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P56;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P57;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P58;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P59;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P60;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P61;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P62;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P63;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P64;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P65;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P66;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P67;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P68;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P69;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Container_5893P70;
+
 #ifdef __cplusplus
 }
 #endif
+
+/* Referred external types */
+#include "ProtocolIE-Field.h"
 
 #endif	/* _ProtocolIE_Container_H_ */
 #include <asn_internal.h>

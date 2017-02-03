@@ -30,9 +30,648 @@ typedef struct ProtocolIE_Field_5901P0 {
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
 } ProtocolIE_Field_5901P0_t;
+typedef struct ProtocolIE_Field_5901P1 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P1_t;
+typedef struct ProtocolIE_Field_5901P2 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P2_t;
+typedef struct ProtocolIE_Field_5901P3 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P3_t;
+typedef struct ProtocolIE_Field_5901P4 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P4_t;
+typedef struct ProtocolIE_Field_5901P5 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P5_t;
+typedef struct ProtocolIE_Field_5901P6 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P6_t;
+typedef struct ProtocolIE_Field_5901P7 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P7_t;
+typedef struct ProtocolIE_Field_5901P8 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P8_t;
+typedef struct ProtocolIE_Field_5901P9 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P9_t;
+typedef struct ProtocolIE_Field_5901P10 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P10_t;
+typedef struct ProtocolIE_Field_5901P11 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P11_t;
+typedef struct ProtocolIE_Field_5901P12 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P12_t;
+typedef struct ProtocolIE_Field_5901P13 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P13_t;
+typedef struct ProtocolIE_Field_5901P14 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P14_t;
+typedef struct ProtocolIE_Field_5901P15 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P15_t;
+typedef struct ProtocolIE_Field_5901P16 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P16_t;
+typedef struct ProtocolIE_Field_5901P17 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P17_t;
+typedef struct ProtocolIE_Field_5901P18 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P18_t;
+typedef struct ProtocolIE_Field_5901P19 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P19_t;
+typedef struct ProtocolIE_Field_5901P20 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P20_t;
+typedef struct ProtocolIE_Field_5901P21 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P21_t;
+typedef struct ProtocolIE_Field_5901P22 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P22_t;
+typedef struct ProtocolIE_Field_5901P23 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P23_t;
+typedef struct ProtocolIE_Field_5901P24 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P24_t;
+typedef struct ProtocolIE_Field_5901P25 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P25_t;
+typedef struct ProtocolIE_Field_5901P26 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P26_t;
+typedef struct ProtocolIE_Field_5901P27 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P27_t;
+typedef struct ProtocolIE_Field_5901P28 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P28_t;
+typedef struct ProtocolIE_Field_5901P29 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P29_t;
+typedef struct ProtocolIE_Field_5901P30 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P30_t;
+typedef struct ProtocolIE_Field_5901P31 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P31_t;
+typedef struct ProtocolIE_Field_5901P32 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P32_t;
+typedef struct ProtocolIE_Field_5901P33 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P33_t;
+typedef struct ProtocolIE_Field_5901P34 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P34_t;
+typedef struct ProtocolIE_Field_5901P35 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P35_t;
+typedef struct ProtocolIE_Field_5901P36 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P36_t;
+typedef struct ProtocolIE_Field_5901P37 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P37_t;
+typedef struct ProtocolIE_Field_5901P38 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P38_t;
+typedef struct ProtocolIE_Field_5901P39 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P39_t;
+typedef struct ProtocolIE_Field_5901P40 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P40_t;
+typedef struct ProtocolIE_Field_5901P41 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P41_t;
+typedef struct ProtocolIE_Field_5901P42 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P42_t;
+typedef struct ProtocolIE_Field_5901P43 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P43_t;
+typedef struct ProtocolIE_Field_5901P44 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P44_t;
+typedef struct ProtocolIE_Field_5901P45 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P45_t;
+typedef struct ProtocolIE_Field_5901P46 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P46_t;
+typedef struct ProtocolIE_Field_5901P47 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P47_t;
+typedef struct ProtocolIE_Field_5901P48 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P48_t;
+typedef struct ProtocolIE_Field_5901P49 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P49_t;
+typedef struct ProtocolIE_Field_5901P50 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P50_t;
+typedef struct ProtocolIE_Field_5901P51 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P51_t;
+typedef struct ProtocolIE_Field_5901P52 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P52_t;
+typedef struct ProtocolIE_Field_5901P53 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P53_t;
+typedef struct ProtocolIE_Field_5901P54 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P54_t;
+typedef struct ProtocolIE_Field_5901P55 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P55_t;
+typedef struct ProtocolIE_Field_5901P56 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P56_t;
+typedef struct ProtocolIE_Field_5901P57 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P57_t;
+typedef struct ProtocolIE_Field_5901P58 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P58_t;
+typedef struct ProtocolIE_Field_5901P59 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P59_t;
+typedef struct ProtocolIE_Field_5901P60 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P60_t;
+typedef struct ProtocolIE_Field_5901P61 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P61_t;
+typedef struct ProtocolIE_Field_5901P62 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P62_t;
+typedef struct ProtocolIE_Field_5901P63 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P63_t;
+typedef struct ProtocolIE_Field_5901P64 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P64_t;
+typedef struct ProtocolIE_Field_5901P65 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P65_t;
+typedef struct ProtocolIE_Field_5901P66 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P66_t;
+typedef struct ProtocolIE_Field_5901P67 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P67_t;
+typedef struct ProtocolIE_Field_5901P68 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P68_t;
+typedef struct ProtocolIE_Field_5901P69 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P69_t;
+typedef struct ProtocolIE_Field_5901P70 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P70_t;
+typedef struct ProtocolIE_Field_5901P71 {
+	S1ap_ProtocolIE_ID_t	 id;
+	S1ap_Criticality_t	 criticality;
+	ANY_t	 value;
+	
+	/* Context for parsing across buffer boundaries */
+	asn_struct_ctx_t _asn_ctx;
+} ProtocolIE_Field_5901P71_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P0;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P1;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P2;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P3;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P4;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P5;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P6;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P7;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P8;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P9;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P10;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P11;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P12;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P13;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P14;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P15;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P16;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P17;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P18;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P19;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P20;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P21;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P22;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P23;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P24;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P25;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P26;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P27;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P28;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P29;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P30;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P31;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P32;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P33;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P34;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P35;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P36;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P37;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P38;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P39;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P40;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P41;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P42;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P43;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P44;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P45;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P46;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P47;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P48;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P49;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P50;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P51;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P52;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P53;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P54;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P55;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P56;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P57;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P58;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P59;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P60;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P61;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P62;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P63;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P64;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P65;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P66;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P67;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P68;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P69;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P70;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P71;
 
 #ifdef __cplusplus
 }

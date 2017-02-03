@@ -370,7 +370,8 @@ for key in iesDefs:
 
     iesaccess = ""
     if key not in ieofielist.values():
-        iesaccess = "%s_ies." % (firstlower)
+        iesaccess = "protocolIEs."
+#        iesaccess = "%s_ies." % (firstlower)
 
     f.write("int %s_decode_%s(\n" % (fileprefix, re.sub('-', '_', structName.lower())))
     if len(iesDefs[key]["ies"]) != 0:
@@ -502,7 +503,8 @@ for key in iesDefs:
 
     iesaccess = ""
     if key not in ieofielist.values():
-        iesaccess = "%s_ies." % (firstwordlower)
+        iesaccess = "protocolIEs."
+#        iesaccess = "%s_ies." % (firstwordlower)
 
     keyName = re.sub('-', '_', key)
     keyupperunderscore = keyName.upper()
