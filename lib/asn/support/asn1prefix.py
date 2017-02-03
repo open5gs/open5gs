@@ -35,7 +35,7 @@ def usage():
     print "Python adding prefix for asn1 v%s" % (version)
     print "Usage: python asn1prefix.py [options]"
     print "Available options:"
-    print "-f [file] Input file to parse"
+    print "-i [file] Input file to parse"
     print "-o [file] Output file for result"
     print "-h        Print this help and return"
 

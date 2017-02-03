@@ -30,7 +30,7 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-02-03 16:04:59.016341 by acetcom
+ * Created on: 2017-02-03 21:15:13.410191 by acetcom
  * from ['S1AP-PDU.asn']
  ******************************************************************************/
 #include <stdlib.h>
@@ -95,7 +95,7 @@ cb_failed:
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabfailedtosetuplisthoreqack(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABFailedtoSetupListHOReqAckIEs_t *s1ap_E_RABFailedtoSetupListHOReqAckIEs) {
+    S1ap_E_RABFailedtoSetupListHOReqAck_IEs_t *s1ap_E_RABFailedtoSetupListHOReqAckIEs) {
 
     int i;
     asn_enc_rval_t er;
@@ -129,7 +129,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_deactivatetrace(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabreleaselistbearerrelcomp(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABReleaseListBearerRelCompIEs_t *s1ap_E_RABReleaseListBearerRelCompIEs) {
+    S1ap_E_RABReleaseListBearerRelComp_IEs_t *s1ap_E_RABReleaseListBearerRelCompIEs) {
 
     int i;
     asn_enc_rval_t er;
@@ -210,7 +210,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_uplinknonueassociatedlppatransport_(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobesetuplisthoreq(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABToBeSetupListHOReqIEs_t *s1ap_E_RABToBeSetupListHOReqIEs) {
+    S1ap_E_RABToBeSetupListHOReq_IEs_t *s1ap_E_RABToBeSetupListHOReqIEs) {
 
     int i;
     asn_enc_rval_t er;
@@ -315,7 +315,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handoverpreparationfailure(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobemodifiedlistbearermodreq(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABToBeModifiedListBearerModReqIEs_t *s1ap_E_RABToBeModifiedListBearerModReqIEs) {
+    S1ap_E_RABToBeModifiedListBearerModReq_IEs_t *s1ap_E_RABToBeModifiedListBearerModReqIEs) {
 
     int i;
     asn_enc_rval_t er;
@@ -352,7 +352,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_uecontextreleaserequest_(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabadmittedlist(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABAdmittedListIEs_t *s1ap_E_RABAdmittedListIEs) {
+    S1ap_E_RABAdmittedList_IEs_t *s1ap_E_RABAdmittedListIEs) {
 
     int i;
     asn_enc_rval_t er;
@@ -493,7 +493,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_uecapabilityinfoindication(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobesetuplistbearersureq(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABToBeSetupListBearerSUReqIEs_t *s1ap_E_RABToBeSetupListBearerSUReqIEs) {
+    S1ap_E_RABToBeSetupListBearerSUReq_IEs_t *s1ap_E_RABToBeSetupListBearerSUReqIEs) {
 
     int i;
     asn_enc_rval_t er;
@@ -506,7 +506,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobesetuplistbearersureq(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabdataforwardinglist(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABDataForwardingListIEs_t *s1ap_E_RABDataForwardingListIEs) {
+    S1ap_E_RABDataForwardingList_IEs_t *s1ap_E_RABDataForwardingListIEs) {
 
     int i;
     asn_enc_rval_t er;
@@ -867,7 +867,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handoverrequired(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobeswitcheddllist(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABToBeSwitchedDLListIEs_t *s1ap_E_RABToBeSwitchedDLListIEs) {
+    S1ap_E_RABToBeSwitchedDLList_IEs_t *s1ap_E_RABToBeSwitchedDLListIEs) {
 
     int i;
     asn_enc_rval_t er;
@@ -999,7 +999,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabmodifyrequest(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabsetuplistctxtsures(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABSetupListCtxtSUResIEs_t *s1ap_E_RABSetupListCtxtSUResIEs) {
+    S1ap_E_RABSetupListCtxtSURes_IEs_t *s1ap_E_RABSetupListCtxtSUResIEs) {
 
     int i;
     asn_enc_rval_t er;
@@ -1012,7 +1012,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabsetuplistctxtsures(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobeswitchedullist(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABToBeSwitchedULListIEs_t *s1ap_E_RABToBeSwitchedULListIEs) {
+    S1ap_E_RABToBeSwitchedULList_IEs_t *s1ap_E_RABToBeSwitchedULListIEs) {
 
     int i;
     asn_enc_rval_t er;
@@ -1070,7 +1070,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_reset(
 asn_enc_rval_t s1ap_xer_print_s1ap_bearers_subjecttostatustransfer_list(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_Bearers_SubjectToStatusTransfer_ListIEs_t *s1ap_Bearers_SubjectToStatusTransfer_ListIEs) {
+    S1ap_Bearers_SubjectToStatusTransfer_List_IEs_t *s1ap_Bearers_SubjectToStatusTransfer_ListIEs) {
 
     int i;
     asn_enc_rval_t er;
@@ -1083,7 +1083,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_bearers_subjecttostatustransfer_list(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rablist(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABListIEs_t *s1ap_E_RABListIEs) {
+    S1ap_E_RABList_IEs_t *s1ap_E_RABListIEs) {
 
     int i;
     asn_enc_rval_t er;
@@ -1409,7 +1409,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_errorindication(
 asn_enc_rval_t s1ap_xer_print_s1ap_tailist(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_TAIListIEs_t *s1ap_TAIListIEs) {
+    S1ap_TAIList_IEs_t *s1ap_TAIListIEs) {
 
     int i;
     asn_enc_rval_t er;
@@ -1601,7 +1601,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_pathswitchrequestacknowledge(
 asn_enc_rval_t s1ap_xer_print_s1ap_ue_associatedlogicals1_connectionlistres(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_UE_associatedLogicalS1_ConnectionListResIEs_t *s1ap_UE_associatedLogicalS1_ConnectionListRes) {
+    S1ap_UE_associatedLogicalS1_ConnectionListRes_IEs_t *s1ap_UE_associatedLogicalS1_ConnectionListRes) {
 
     int i;
     asn_enc_rval_t er;
@@ -1740,7 +1740,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_overloadstop(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabsetuplistbearersures(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABSetupListBearerSUResIEs_t *s1ap_E_RABSetupListBearerSUResIEs) {
+    S1ap_E_RABSetupListBearerSURes_IEs_t *s1ap_E_RABSetupListBearerSUResIEs) {
 
     int i;
     asn_enc_rval_t er;
@@ -1753,7 +1753,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabsetuplistbearersures(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabmodifylistbearermodres(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABModifyListBearerModResIEs_t *s1ap_E_RABModifyListBearerModResIEs) {
+    S1ap_E_RABModifyListBearerModRes_IEs_t *s1ap_E_RABModifyListBearerModResIEs) {
 
     int i;
     asn_enc_rval_t er;
@@ -1766,7 +1766,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabmodifylistbearermodres(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobesetuplistctxtsureq(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABToBeSetupListCtxtSUReqIEs_t *s1ap_E_RABToBeSetupListCtxtSUReqIEs) {
+    S1ap_E_RABToBeSetupListCtxtSUReq_IEs_t *s1ap_E_RABToBeSetupListCtxtSUReqIEs) {
 
     int i;
     asn_enc_rval_t er;
@@ -1831,7 +1831,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_tracefailureindication(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabinformationlist(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABInformationListIEs_t *s1ap_E_RABInformationListIEs) {
+    S1ap_E_RABInformationList_IEs_t *s1ap_E_RABInformationListIEs) {
 
     int i;
     asn_enc_rval_t er;
@@ -1888,7 +1888,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handoverfailure(
 asn_enc_rval_t s1ap_xer_print_s1ap_ue_associatedlogicals1_connectionlistresack(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_UE_associatedLogicalS1_ConnectionListResAckIEs_t *s1ap_UE_associatedLogicalS1_ConnectionListResAck) {
+    S1ap_UE_associatedLogicalS1_ConnectionListResAck_IEs_t *s1ap_UE_associatedLogicalS1_ConnectionListResAck) {
 
     int i;
     asn_enc_rval_t er;

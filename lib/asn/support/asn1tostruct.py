@@ -168,7 +168,7 @@ for filename in filenames:
     for m in re.findall(r'([a-zA-Z0-9-]+)\s*::=\s+E-RAB-IE-ContainerList\s*\{\s*\{\s*([a-zA-Z0-9-]+)\s*\}\s*\}', lines, re.MULTILINE):
         ieofielist[m[0]] = m[1]
 
-    for i in re.findall(r'([a-zA-Z0-9-]+)\s+([A-Z0-9-]+)\s*::=\s*\{\s+([\,\|\{\}\t\n\.{3}\ \-a-zA-Z0-9]+)\s+}\n', lines, re.MULTILINE):
+    for i in re.findall(r'([a-zA-Z0-9-]+)\s+(S1AP-PROTOCOL-IES)\s*::=\s*\{\s+([\,\|\{\}\t\n\.{3}\ \-a-zA-Z0-9]+)\s+}\n', lines, re.MULTILINE):
         ies = []
         maxLength = 0
         # TODO: handle extensions
@@ -210,9 +210,9 @@ for key in iesDefs:
         if j == key:
             break
 
-    f.write("typedef struct %sIEs_s {\n" % (re.sub('-', '_', i)))
+    f.write("typedef struct %s_IEs_s {\n" % (re.sub('-', '_', i)))
     f.write("    A_SEQUENCE_OF(struct %s_s) %s;\n" % (re.sub('IEs', '', re.sub('-', '_', ieofielist[i])), lowerFirstCamelWord(re.sub('IEs', '', re.sub('-', '_', ieofielist[i])))))
-    f.write("} %sIEs_t;\n\n" % (re.sub('-', '_', i)))
+    f.write("} %s_IEs_t;\n\n" % (re.sub('-', '_', i)))
 
 for key in iesDefs:
     keyupperunderscore = re.sub('-', '_', key.upper())
@@ -241,7 +241,7 @@ for key in iesDefs:
         iename = re.sub('id-', '', ie[0])
         ienameunderscore = lowerFirstCamelWord(re.sub('-', '_', iename))
         if ie[2] in ieofielist:
-            f.write("    %sIEs_t %s;" % (re.sub('-', '_', ie[2]), ienameunderscore))
+            f.write("    %s_IEs_t %s;" % (re.sub('-', '_', ie[2]), ienameunderscore))
         else:
             f.write("    {0:<{pad}} {1};".format("%s_t" % ieunderscore, ienameunderscore, pad=iesDefs[key]["length"] + 2))
         if ie[3] == "optional":
@@ -311,13 +311,13 @@ for key in iesDefs:
     f.write(" **/\n")
     f.write("int %s_encode_%s(\n" % (fileprefix, firstlower.lower()))
     f.write("    %s_t *%s,\n" % (asn1cStruct, firstlower))
-    f.write("    %sIEs_t *%sIEs);\n\n" % (asn1cStruct, firstlower))
+    f.write("    %s_IEs_t *%sIEs);\n\n" % (asn1cStruct, firstlower))
     f.write("/** \\brief Decode function for %s ies.\n" % (key))
     f.write(" *  \\param any_p Pointer to the ANY value to decode.\n")
     f.write(" *  \\param callback Callback function called when any_p is successfully decoded.\n")
     f.write(" **/\n")
     f.write("int %s_decode_%s(\n" % (fileprefix, firstlower.lower()))
-    f.write("    %sIEs_t *%sIEs,\n" % (asn1cStruct, firstlower))
+    f.write("    %s_IEs_t *%sIEs,\n" % (asn1cStruct, firstlower))
     f.write("    %s_t *%s);\n\n" % (asn1cStruct, lowerFirstCamelWord(asn1cStruct)))
 
 for key in iesDefs:
@@ -333,7 +333,7 @@ for key in iesDefs:
         f.write("asn_enc_rval_t %s_xer_print_%s(\n" % (fileprefix, re.sub('item', 'list', firstlower.lower())))
         f.write("    asn_app_consume_bytes_f *cb,\n")
         f.write("    void *app_key,\n")
-        f.write("    %sIEs_t *%sIEs);\n\n" % (re.sub('item', 'list', asn1cStruct), firstlower))
+        f.write("    %s_IEs_t *%sIEs);\n\n" % (re.sub('item', 'list', asn1cStruct), firstlower))
     else:
         f.write("/** \\brief Display %s message using XER encoding.\n" % (asn1cStruct))
         f.write(" *  \\param message_p Pointer to root message.\n")
@@ -443,7 +443,7 @@ for key in iesDefs:
     keyname = re.sub('IEs', '', re.sub('Item', 'List', key))
 
     f.write("int %s_decode_%s(\n" % (fileprefix, re.sub('-', '_', keyname).lower()))
-    f.write("    %sIEs_t *%sIEs,\n" % (re.sub('-', '_', keyname), lowerFirstCamelWord(re.sub('-', '_', keyname))))
+    f.write("    %s_IEs_t *%sIEs,\n" % (re.sub('-', '_', keyname), lowerFirstCamelWord(re.sub('-', '_', keyname))))
     f.write("    %s_t *%s) {\n\n" % (re.sub('-', '_', keyname), lowerFirstCamelWord(re.sub('-', '_', keyname))))
     f.write("    int i, decoded = 0;\n")
     f.write("    int tempDecoded = 0;\n\n")
@@ -579,7 +579,7 @@ for (key, value) in iesDefs.items():
             break
     f.write("int %s_encode_%s(\n" % (fileprefix, re.sub('-', '_', i).lower()))
     f.write("    %s_t *%s,\n" % (asn1cStruct, firstwordlower))
-    f.write("    %sIEs_t *%sIEs) {\n\n" % (re.sub('-', '_', i), lowerFirstCamelWord(re.sub('-', '_', i))))
+    f.write("    %s_IEs_t *%sIEs) {\n\n" % (re.sub('-', '_', i), lowerFirstCamelWord(re.sub('-', '_', i))))
     f.write("    int i;\n")
 
     f.write("    %s_IE_t *ie;\n\n" % (fileprefix_first_upper))
@@ -679,7 +679,7 @@ for (key, value) in iesDefs.items():
     f.write("    void *app_key,\n")
     if key in ieofielist.values():
         iesStructName = lowerFirstCamelWord(re.sub('Item', 'List', re.sub('-', '_', key)))
-        f.write("    %sIEs_t *%s) {\n\n" % (re.sub('IEs', '', re.sub('Item', 'List', re.sub('-', '_', key))), iesStructName))
+        f.write("    %s_IEs_t *%s) {\n\n" % (re.sub('IEs', '', re.sub('Item', 'List', re.sub('-', '_', key))), iesStructName))
         f.write("    int i;\n")
         f.write("    asn_enc_rval_t er;\n")
     else:

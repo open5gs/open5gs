@@ -30,7 +30,7 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-02-03 16:04:58.994273 by acetcom
+ * Created on: 2017-02-03 21:15:13.396112 by acetcom
  * from ['S1AP-PDU.asn']
  ******************************************************************************/
 #include "s1ap_common.h"
@@ -4002,7 +4002,7 @@ int s1ap_encode_s1ap_uplinkueassociatedlppatransport_ies(
 
 int s1ap_encode_s1ap_e_rabfailedtosetuplisthoreqack(
     S1ap_E_RABFailedtoSetupListHOReqAck_t *s1ap_E_RABFailedtoSetupListHOReqAck,
-    S1ap_E_RABFailedtoSetupListHOReqAckIEs_t *s1ap_E_RABFailedtoSetupListHOReqAckIEs) {
+    S1ap_E_RABFailedtoSetupListHOReqAck_IEs_t *s1ap_E_RABFailedtoSetupListHOReqAckIEs) {
 
     int i;
     S1ap_IE_t *ie;
@@ -4024,7 +4024,7 @@ int s1ap_encode_s1ap_e_rabfailedtosetuplisthoreqack(
 
 int s1ap_encode_s1ap_e_rabreleaselistbearerrelcomp(
     S1ap_E_RABReleaseListBearerRelComp_t *s1ap_E_RABReleaseListBearerRelComp,
-    S1ap_E_RABReleaseListBearerRelCompIEs_t *s1ap_E_RABReleaseListBearerRelCompIEs) {
+    S1ap_E_RABReleaseListBearerRelComp_IEs_t *s1ap_E_RABReleaseListBearerRelCompIEs) {
 
     int i;
     S1ap_IE_t *ie;
@@ -4046,7 +4046,7 @@ int s1ap_encode_s1ap_e_rabreleaselistbearerrelcomp(
 
 int s1ap_encode_s1ap_e_rabtobesetuplisthoreq(
     S1ap_E_RABToBeSetupListHOReq_t *s1ap_E_RABToBeSetupListHOReq,
-    S1ap_E_RABToBeSetupListHOReqIEs_t *s1ap_E_RABToBeSetupListHOReqIEs) {
+    S1ap_E_RABToBeSetupListHOReq_IEs_t *s1ap_E_RABToBeSetupListHOReqIEs) {
 
     int i;
     S1ap_IE_t *ie;
@@ -4068,7 +4068,7 @@ int s1ap_encode_s1ap_e_rabtobesetuplisthoreq(
 
 int s1ap_encode_s1ap_e_rabtobemodifiedlistbearermodreq(
     S1ap_E_RABToBeModifiedListBearerModReq_t *s1ap_E_RABToBeModifiedListBearerModReq,
-    S1ap_E_RABToBeModifiedListBearerModReqIEs_t *s1ap_E_RABToBeModifiedListBearerModReqIEs) {
+    S1ap_E_RABToBeModifiedListBearerModReq_IEs_t *s1ap_E_RABToBeModifiedListBearerModReqIEs) {
 
     int i;
     S1ap_IE_t *ie;
@@ -4090,7 +4090,7 @@ int s1ap_encode_s1ap_e_rabtobemodifiedlistbearermodreq(
 
 int s1ap_encode_s1ap_e_rabadmittedlist(
     S1ap_E_RABAdmittedList_t *s1ap_E_RABAdmittedList,
-    S1ap_E_RABAdmittedListIEs_t *s1ap_E_RABAdmittedListIEs) {
+    S1ap_E_RABAdmittedList_IEs_t *s1ap_E_RABAdmittedListIEs) {
 
     int i;
     S1ap_IE_t *ie;
@@ -4112,7 +4112,7 @@ int s1ap_encode_s1ap_e_rabadmittedlist(
 
 int s1ap_encode_s1ap_e_rabtobesetuplistbearersureq(
     S1ap_E_RABToBeSetupListBearerSUReq_t *s1ap_E_RABToBeSetupListBearerSUReq,
-    S1ap_E_RABToBeSetupListBearerSUReqIEs_t *s1ap_E_RABToBeSetupListBearerSUReqIEs) {
+    S1ap_E_RABToBeSetupListBearerSUReq_IEs_t *s1ap_E_RABToBeSetupListBearerSUReqIEs) {
 
     int i;
     S1ap_IE_t *ie;
@@ -4134,7 +4134,7 @@ int s1ap_encode_s1ap_e_rabtobesetuplistbearersureq(
 
 int s1ap_encode_s1ap_e_rabdataforwardinglist(
     S1ap_E_RABDataForwardingList_t *s1ap_E_RABDataForwardingList,
-    S1ap_E_RABDataForwardingListIEs_t *s1ap_E_RABDataForwardingListIEs) {
+    S1ap_E_RABDataForwardingList_IEs_t *s1ap_E_RABDataForwardingListIEs) {
 
     int i;
     S1ap_IE_t *ie;
@@ -4156,7 +4156,7 @@ int s1ap_encode_s1ap_e_rabdataforwardinglist(
 
 int s1ap_encode_s1ap_e_rabtobeswitcheddllist(
     S1ap_E_RABToBeSwitchedDLList_t *s1ap_E_RABToBeSwitchedDLList,
-    S1ap_E_RABToBeSwitchedDLListIEs_t *s1ap_E_RABToBeSwitchedDLListIEs) {
+    S1ap_E_RABToBeSwitchedDLList_IEs_t *s1ap_E_RABToBeSwitchedDLListIEs) {
 
     int i;
     S1ap_IE_t *ie;
@@ -4178,7 +4178,7 @@ int s1ap_encode_s1ap_e_rabtobeswitcheddllist(
 
 int s1ap_encode_s1ap_e_rabsetuplistctxtsures(
     S1ap_E_RABSetupListCtxtSURes_t *s1ap_E_RABSetupListCtxtSURes,
-    S1ap_E_RABSetupListCtxtSUResIEs_t *s1ap_E_RABSetupListCtxtSUResIEs) {
+    S1ap_E_RABSetupListCtxtSURes_IEs_t *s1ap_E_RABSetupListCtxtSUResIEs) {
 
     int i;
     S1ap_IE_t *ie;
@@ -4200,7 +4200,7 @@ int s1ap_encode_s1ap_e_rabsetuplistctxtsures(
 
 int s1ap_encode_s1ap_e_rabtobeswitchedullist(
     S1ap_E_RABToBeSwitchedULList_t *s1ap_E_RABToBeSwitchedULList,
-    S1ap_E_RABToBeSwitchedULListIEs_t *s1ap_E_RABToBeSwitchedULListIEs) {
+    S1ap_E_RABToBeSwitchedULList_IEs_t *s1ap_E_RABToBeSwitchedULListIEs) {
 
     int i;
     S1ap_IE_t *ie;
@@ -4222,7 +4222,7 @@ int s1ap_encode_s1ap_e_rabtobeswitchedullist(
 
 int s1ap_encode_s1ap_bearers_subjecttostatustransfer_list(
     S1ap_Bearers_SubjectToStatusTransfer_List_t *s1ap_Bearers_SubjectToStatusTransfer_List,
-    S1ap_Bearers_SubjectToStatusTransfer_ListIEs_t *s1ap_Bearers_SubjectToStatusTransfer_ListIEs) {
+    S1ap_Bearers_SubjectToStatusTransfer_List_IEs_t *s1ap_Bearers_SubjectToStatusTransfer_ListIEs) {
 
     int i;
     S1ap_IE_t *ie;
@@ -4244,7 +4244,7 @@ int s1ap_encode_s1ap_bearers_subjecttostatustransfer_list(
 
 int s1ap_encode_s1ap_e_rablist(
     S1ap_E_RABList_t *s1ap_E_RABList,
-    S1ap_E_RABListIEs_t *s1ap_E_RABListIEs) {
+    S1ap_E_RABList_IEs_t *s1ap_E_RABListIEs) {
 
     int i;
     S1ap_IE_t *ie;
@@ -4266,7 +4266,7 @@ int s1ap_encode_s1ap_e_rablist(
 
 int s1ap_encode_s1ap_tailist(
     S1ap_TAIList_t *s1ap_TAIList,
-    S1ap_TAIListIEs_t *s1ap_TAIListIEs) {
+    S1ap_TAIList_IEs_t *s1ap_TAIListIEs) {
 
     int i;
     S1ap_IE_t *ie;
@@ -4288,7 +4288,7 @@ int s1ap_encode_s1ap_tailist(
 
 int s1ap_encode_s1ap_ue_associatedlogicals1_connectionlistres(
     S1ap_UE_associatedLogicalS1_ConnectionListRes_t *s1ap_UE_associatedLogicalS1_ConnectionListRes,
-    S1ap_UE_associatedLogicalS1_ConnectionListResIEs_t *s1ap_UE_associatedLogicalS1_ConnectionListResIEs) {
+    S1ap_UE_associatedLogicalS1_ConnectionListRes_IEs_t *s1ap_UE_associatedLogicalS1_ConnectionListResIEs) {
 
     int i;
     S1ap_IE_t *ie;
@@ -4310,7 +4310,7 @@ int s1ap_encode_s1ap_ue_associatedlogicals1_connectionlistres(
 
 int s1ap_encode_s1ap_e_rabsetuplistbearersures(
     S1ap_E_RABSetupListBearerSURes_t *s1ap_E_RABSetupListBearerSURes,
-    S1ap_E_RABSetupListBearerSUResIEs_t *s1ap_E_RABSetupListBearerSUResIEs) {
+    S1ap_E_RABSetupListBearerSURes_IEs_t *s1ap_E_RABSetupListBearerSUResIEs) {
 
     int i;
     S1ap_IE_t *ie;
@@ -4332,7 +4332,7 @@ int s1ap_encode_s1ap_e_rabsetuplistbearersures(
 
 int s1ap_encode_s1ap_e_rabmodifylistbearermodres(
     S1ap_E_RABModifyListBearerModRes_t *s1ap_E_RABModifyListBearerModRes,
-    S1ap_E_RABModifyListBearerModResIEs_t *s1ap_E_RABModifyListBearerModResIEs) {
+    S1ap_E_RABModifyListBearerModRes_IEs_t *s1ap_E_RABModifyListBearerModResIEs) {
 
     int i;
     S1ap_IE_t *ie;
@@ -4354,7 +4354,7 @@ int s1ap_encode_s1ap_e_rabmodifylistbearermodres(
 
 int s1ap_encode_s1ap_e_rabtobesetuplistctxtsureq(
     S1ap_E_RABToBeSetupListCtxtSUReq_t *s1ap_E_RABToBeSetupListCtxtSUReq,
-    S1ap_E_RABToBeSetupListCtxtSUReqIEs_t *s1ap_E_RABToBeSetupListCtxtSUReqIEs) {
+    S1ap_E_RABToBeSetupListCtxtSUReq_IEs_t *s1ap_E_RABToBeSetupListCtxtSUReqIEs) {
 
     int i;
     S1ap_IE_t *ie;
@@ -4376,7 +4376,7 @@ int s1ap_encode_s1ap_e_rabtobesetuplistctxtsureq(
 
 int s1ap_encode_s1ap_e_rabinformationlist(
     S1ap_E_RABInformationList_t *s1ap_E_RABInformationList,
-    S1ap_E_RABInformationListIEs_t *s1ap_E_RABInformationListIEs) {
+    S1ap_E_RABInformationList_IEs_t *s1ap_E_RABInformationListIEs) {
 
     int i;
     S1ap_IE_t *ie;
@@ -4398,7 +4398,7 @@ int s1ap_encode_s1ap_e_rabinformationlist(
 
 int s1ap_encode_s1ap_ue_associatedlogicals1_connectionlistresack(
     S1ap_UE_associatedLogicalS1_ConnectionListResAck_t *s1ap_UE_associatedLogicalS1_ConnectionListResAck,
-    S1ap_UE_associatedLogicalS1_ConnectionListResAckIEs_t *s1ap_UE_associatedLogicalS1_ConnectionListResAckIEs) {
+    S1ap_UE_associatedLogicalS1_ConnectionListResAck_IEs_t *s1ap_UE_associatedLogicalS1_ConnectionListResAckIEs) {
 
     int i;
     S1ap_IE_t *ie;

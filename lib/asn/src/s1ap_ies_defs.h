@@ -30,7 +30,7 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-02-03 16:04:58.954200 by acetcom
+ * Created on: 2017-02-03 21:15:13.355159 by acetcom
  * from ['S1AP-PDU.asn']
  ******************************************************************************/
 #include "s1ap_common.h"
@@ -41,81 +41,81 @@
 /* Define the version of script used to generate this file */
 #define S1AP_SCRIPT_VERSION (102)
 
-typedef struct S1ap_E_RABFailedtoSetupListHOReqAckIEs_s {
+typedef struct S1ap_E_RABFailedtoSetupListHOReqAck_IEs_s {
     A_SEQUENCE_OF(struct S1ap_E_RABFailedtoSetupItemHOReqAck_s) s1ap_E_RABFailedtoSetupItemHOReqAck;
-} S1ap_E_RABFailedtoSetupListHOReqAckIEs_t;
+} S1ap_E_RABFailedtoSetupListHOReqAck_IEs_t;
 
-typedef struct S1ap_E_RABReleaseListBearerRelCompIEs_s {
+typedef struct S1ap_E_RABReleaseListBearerRelComp_IEs_s {
     A_SEQUENCE_OF(struct S1ap_E_RABReleaseItemBearerRelComp_s) s1ap_E_RABReleaseItemBearerRelComp;
-} S1ap_E_RABReleaseListBearerRelCompIEs_t;
+} S1ap_E_RABReleaseListBearerRelComp_IEs_t;
 
-typedef struct S1ap_E_RABToBeSetupListHOReqIEs_s {
+typedef struct S1ap_E_RABToBeSetupListHOReq_IEs_s {
     A_SEQUENCE_OF(struct S1ap_E_RABToBeSetupItemHOReq_s) s1ap_E_RABToBeSetupItemHOReq;
-} S1ap_E_RABToBeSetupListHOReqIEs_t;
+} S1ap_E_RABToBeSetupListHOReq_IEs_t;
 
-typedef struct S1ap_E_RABToBeModifiedListBearerModReqIEs_s {
+typedef struct S1ap_E_RABToBeModifiedListBearerModReq_IEs_s {
     A_SEQUENCE_OF(struct S1ap_E_RABToBeModifiedItemBearerModReq_s) s1ap_E_RABToBeModifiedItemBearerModReq;
-} S1ap_E_RABToBeModifiedListBearerModReqIEs_t;
+} S1ap_E_RABToBeModifiedListBearerModReq_IEs_t;
 
-typedef struct S1ap_E_RABAdmittedListIEs_s {
+typedef struct S1ap_E_RABAdmittedList_IEs_s {
     A_SEQUENCE_OF(struct S1ap_E_RABAdmittedItem_s) s1ap_E_RABAdmittedItem;
-} S1ap_E_RABAdmittedListIEs_t;
+} S1ap_E_RABAdmittedList_IEs_t;
 
-typedef struct S1ap_E_RABToBeSetupListBearerSUReqIEs_s {
+typedef struct S1ap_E_RABToBeSetupListBearerSUReq_IEs_s {
     A_SEQUENCE_OF(struct S1ap_E_RABToBeSetupItemBearerSUReq_s) s1ap_E_RABToBeSetupItemBearerSUReq;
-} S1ap_E_RABToBeSetupListBearerSUReqIEs_t;
+} S1ap_E_RABToBeSetupListBearerSUReq_IEs_t;
 
-typedef struct S1ap_E_RABDataForwardingListIEs_s {
+typedef struct S1ap_E_RABDataForwardingList_IEs_s {
     A_SEQUENCE_OF(struct S1ap_E_RABDataForwardingItem_s) s1ap_E_RABDataForwardingItem;
-} S1ap_E_RABDataForwardingListIEs_t;
+} S1ap_E_RABDataForwardingList_IEs_t;
 
-typedef struct S1ap_E_RABToBeSwitchedDLListIEs_s {
+typedef struct S1ap_E_RABToBeSwitchedDLList_IEs_s {
     A_SEQUENCE_OF(struct S1ap_E_RABToBeSwitchedDLItem_s) s1ap_E_RABToBeSwitchedDLItem;
-} S1ap_E_RABToBeSwitchedDLListIEs_t;
+} S1ap_E_RABToBeSwitchedDLList_IEs_t;
 
-typedef struct S1ap_E_RABSetupListCtxtSUResIEs_s {
+typedef struct S1ap_E_RABSetupListCtxtSURes_IEs_s {
     A_SEQUENCE_OF(struct S1ap_E_RABSetupItemCtxtSURes_s) s1ap_E_RABSetupItemCtxtSURes;
-} S1ap_E_RABSetupListCtxtSUResIEs_t;
+} S1ap_E_RABSetupListCtxtSURes_IEs_t;
 
-typedef struct S1ap_E_RABToBeSwitchedULListIEs_s {
+typedef struct S1ap_E_RABToBeSwitchedULList_IEs_s {
     A_SEQUENCE_OF(struct S1ap_E_RABToBeSwitchedULItem_s) s1ap_E_RABToBeSwitchedULItem;
-} S1ap_E_RABToBeSwitchedULListIEs_t;
+} S1ap_E_RABToBeSwitchedULList_IEs_t;
 
-typedef struct S1ap_Bearers_SubjectToStatusTransfer_ListIEs_s {
+typedef struct S1ap_Bearers_SubjectToStatusTransfer_List_IEs_s {
     A_SEQUENCE_OF(struct S1ap_Bearers_SubjectToStatusTransfer_Item_s) s1ap_Bearers_SubjectToStatusTransfer_Item;
-} S1ap_Bearers_SubjectToStatusTransfer_ListIEs_t;
+} S1ap_Bearers_SubjectToStatusTransfer_List_IEs_t;
 
-typedef struct S1ap_E_RABListIEs_s {
+typedef struct S1ap_E_RABList_IEs_s {
     A_SEQUENCE_OF(struct S1ap_E_RABItem_s) s1ap_E_RABItem;
-} S1ap_E_RABListIEs_t;
+} S1ap_E_RABList_IEs_t;
 
-typedef struct S1ap_TAIListIEs_s {
+typedef struct S1ap_TAIList_IEs_s {
     A_SEQUENCE_OF(struct S1ap_TAIItem_s) s1ap_TAIItem;
-} S1ap_TAIListIEs_t;
+} S1ap_TAIList_IEs_t;
 
-typedef struct S1ap_UE_associatedLogicalS1_ConnectionListResIEs_s {
+typedef struct S1ap_UE_associatedLogicalS1_ConnectionListRes_IEs_s {
     A_SEQUENCE_OF(struct S1ap_UE_associatedLogicalS1_ConnectionItemRes_s) s1ap_UE_associatedLogicalS1_ConnectionItemRes;
-} S1ap_UE_associatedLogicalS1_ConnectionListResIEs_t;
+} S1ap_UE_associatedLogicalS1_ConnectionListRes_IEs_t;
 
-typedef struct S1ap_E_RABSetupListBearerSUResIEs_s {
+typedef struct S1ap_E_RABSetupListBearerSURes_IEs_s {
     A_SEQUENCE_OF(struct S1ap_E_RABSetupItemBearerSURes_s) s1ap_E_RABSetupItemBearerSURes;
-} S1ap_E_RABSetupListBearerSUResIEs_t;
+} S1ap_E_RABSetupListBearerSURes_IEs_t;
 
-typedef struct S1ap_E_RABModifyListBearerModResIEs_s {
+typedef struct S1ap_E_RABModifyListBearerModRes_IEs_s {
     A_SEQUENCE_OF(struct S1ap_E_RABModifyItemBearerModRes_s) s1ap_E_RABModifyItemBearerModRes;
-} S1ap_E_RABModifyListBearerModResIEs_t;
+} S1ap_E_RABModifyListBearerModRes_IEs_t;
 
-typedef struct S1ap_E_RABToBeSetupListCtxtSUReqIEs_s {
+typedef struct S1ap_E_RABToBeSetupListCtxtSUReq_IEs_s {
     A_SEQUENCE_OF(struct S1ap_E_RABToBeSetupItemCtxtSUReq_s) s1ap_E_RABToBeSetupItemCtxtSUReq;
-} S1ap_E_RABToBeSetupListCtxtSUReqIEs_t;
+} S1ap_E_RABToBeSetupListCtxtSUReq_IEs_t;
 
-typedef struct S1ap_E_RABInformationListIEs_s {
+typedef struct S1ap_E_RABInformationList_IEs_s {
     A_SEQUENCE_OF(struct S1ap_E_RABInformationList_s) s1ap_E_RABInformationList;
-} S1ap_E_RABInformationListIEs_t;
+} S1ap_E_RABInformationList_IEs_t;
 
-typedef struct S1ap_UE_associatedLogicalS1_ConnectionListResAckIEs_s {
+typedef struct S1ap_UE_associatedLogicalS1_ConnectionListResAck_IEs_s {
     A_SEQUENCE_OF(struct S1ap_UE_associatedLogicalS1_ConnectionItemResAck_s) s1ap_UE_associatedLogicalS1_ConnectionItemResAck;
-} S1ap_UE_associatedLogicalS1_ConnectionListResAckIEs_t;
+} S1ap_UE_associatedLogicalS1_ConnectionListResAck_IEs_t;
 
 typedef struct S1ap_E_RABFailedtoSetupItemHOReqAckIEs_s {
     S1ap_E_RABFailedToSetupItemHOReqAck_t e_RABFailedtoSetupItemHOReqAck;
@@ -143,8 +143,8 @@ typedef struct S1ap_E_RABReleaseResponseIEs_s {
     uint16_t                             presenceMask;
     S1ap_MME_UE_S1AP_ID_t                mme_ue_s1ap_id;
     S1ap_ENB_UE_S1AP_ID_t                eNB_UE_S1AP_ID;
-    S1ap_E_RABReleaseListBearerRelCompIEs_t e_RABReleaseListBearerRelComp; ///< Optional field
-    S1ap_E_RABListIEs_t e_RABFailedToReleaseList; ///< Optional field
+    S1ap_E_RABReleaseListBearerRelComp_IEs_t e_RABReleaseListBearerRelComp; ///< Optional field
+    S1ap_E_RABList_IEs_t e_RABFailedToReleaseList; ///< Optional field
     S1ap_CriticalityDiagnostics_t        criticalityDiagnostics; ///< Optional field
 } S1ap_E_RABReleaseResponseIEs_t;
 
@@ -299,7 +299,7 @@ typedef struct S1ap_InitialContextSetupRequestIEs_s {
     S1ap_MME_UE_S1AP_ID_t              mme_ue_s1ap_id;
     S1ap_ENB_UE_S1AP_ID_t              eNB_UE_S1AP_ID;
     S1ap_UEAggregateMaximumBitrate_t   uEaggregateMaximumBitrate;
-    S1ap_E_RABToBeSetupListCtxtSUReqIEs_t e_RABToBeSetupListCtxtSUReq;
+    S1ap_E_RABToBeSetupListCtxtSUReq_IEs_t e_RABToBeSetupListCtxtSUReq;
     S1ap_UESecurityCapabilities_t      ueSecurityCapabilities;
     S1ap_SecurityKey_t                 securityKey;
     S1ap_TraceActivation_t             traceActivation; ///< Optional field
@@ -405,7 +405,7 @@ typedef struct S1ap_HandoverRequestIEs_s {
     S1ap_HandoverType_t                         handoverType;
     S1ap_Cause_t                                cause;
     S1ap_UEAggregateMaximumBitrate_t            uEaggregateMaximumBitrate;
-    S1ap_E_RABToBeSetupListHOReqIEs_t e_RABToBeSetupListHOReq;
+    S1ap_E_RABToBeSetupListHOReq_IEs_t e_RABToBeSetupListHOReq;
     S1ap_Source_ToTarget_TransparentContainer_t source_ToTarget_TransparentContainer;
     S1ap_UESecurityCapabilities_t               ueSecurityCapabilities;
     S1ap_HandoverRestrictionList_t              handoverRestrictionList; ///< Optional field
@@ -493,7 +493,7 @@ typedef struct S1ap_E_RABModifyRequestIEs_s {
     S1ap_MME_UE_S1AP_ID_t                    mme_ue_s1ap_id;
     S1ap_ENB_UE_S1AP_ID_t                    eNB_UE_S1AP_ID;
     S1ap_UEAggregateMaximumBitrate_t         uEaggregateMaximumBitrate; ///< Optional field
-    S1ap_E_RABToBeModifiedListBearerModReqIEs_t e_RABToBeModifiedListBearerModReq;
+    S1ap_E_RABToBeModifiedListBearerModReq_IEs_t e_RABToBeModifiedListBearerModReq;
 } S1ap_E_RABModifyRequestIEs_t;
 
 typedef struct S1ap_E_RABSetupItemCtxtSUResIEs_s {
@@ -550,7 +550,7 @@ typedef struct S1ap_PagingIEs_s {
     S1ap_UEPagingID_t           uePagingID;
     S1ap_PagingDRX_t            pagingDRX; ///< Optional field
     S1ap_CNDomain_t             cnDomain;
-    S1ap_TAIListIEs_t taiList;
+    S1ap_TAIList_IEs_t taiList;
     S1ap_CSG_IdList_t           csG_IdList; ///< Optional field
     S1ap_PagingPriority_t       pagingPriority; ///< Optional field
 } S1ap_PagingIEs_t;
@@ -570,7 +570,7 @@ typedef struct S1ap_E_RABReleaseCommandIEs_s {
     S1ap_MME_UE_S1AP_ID_t            mme_ue_s1ap_id;
     S1ap_ENB_UE_S1AP_ID_t            eNB_UE_S1AP_ID;
     S1ap_UEAggregateMaximumBitrate_t uEaggregateMaximumBitrate; ///< Optional field
-    S1ap_E_RABListIEs_t e_RABToBeReleasedList;
+    S1ap_E_RABList_IEs_t e_RABToBeReleasedList;
     S1ap_NAS_PDU_t                   nas_pdu; ///< Optional field
 } S1ap_E_RABReleaseCommandIEs_t;
 
@@ -592,8 +592,8 @@ typedef struct S1ap_E_RABModifyResponseIEs_s {
     uint16_t                           presenceMask;
     S1ap_MME_UE_S1AP_ID_t              mme_ue_s1ap_id;
     S1ap_ENB_UE_S1AP_ID_t              eNB_UE_S1AP_ID;
-    S1ap_E_RABModifyListBearerModResIEs_t e_RABModifyListBearerModRes; ///< Optional field
-    S1ap_E_RABListIEs_t e_RABFailedToModifyList; ///< Optional field
+    S1ap_E_RABModifyListBearerModRes_IEs_t e_RABModifyListBearerModRes; ///< Optional field
+    S1ap_E_RABList_IEs_t e_RABFailedToModifyList; ///< Optional field
     S1ap_CriticalityDiagnostics_t      criticalityDiagnostics; ///< Optional field
 } S1ap_E_RABModifyResponseIEs_t;
 
@@ -633,8 +633,8 @@ typedef struct S1ap_HandoverCommandIEs_s {
     S1ap_MME_UE_S1AP_ID_t                       mme_ue_s1ap_id;
     S1ap_ENB_UE_S1AP_ID_t                       eNB_UE_S1AP_ID;
     S1ap_HandoverType_t                         handoverType;
-    S1ap_E_RABDataForwardingListIEs_t e_RABDataForwardingList; ///< Optional field
-    S1ap_E_RABListIEs_t e_RABtoReleaseListHOCmd; ///< Optional field
+    S1ap_E_RABDataForwardingList_IEs_t e_RABDataForwardingList; ///< Optional field
+    S1ap_E_RABList_IEs_t e_RABtoReleaseListHOCmd; ///< Optional field
     S1ap_Target_ToSource_TransparentContainer_t target_ToSource_TransparentContainer;
     S1ap_Target_ToSource_TransparentContainer_t target_ToSource_TransparentContainer_Secondary; ///< Optional field
     S1ap_CriticalityDiagnostics_t               criticalityDiagnostics; ///< Optional field
@@ -684,8 +684,8 @@ typedef struct S1ap_HandoverRequestAcknowledgeIEs_s {
     uint16_t                                    presenceMask;
     S1ap_MME_UE_S1AP_ID_t                       mme_ue_s1ap_id;
     S1ap_ENB_UE_S1AP_ID_t                       eNB_UE_S1AP_ID;
-    S1ap_E_RABAdmittedListIEs_t e_RABAdmittedList;
-    S1ap_E_RABFailedtoSetupListHOReqAckIEs_t e_RABFailedToSetupListHOReqAck; ///< Optional field
+    S1ap_E_RABAdmittedList_IEs_t e_RABAdmittedList;
+    S1ap_E_RABFailedtoSetupListHOReqAck_IEs_t e_RABFailedToSetupListHOReqAck; ///< Optional field
     S1ap_Target_ToSource_TransparentContainer_t target_ToSource_TransparentContainer;
     S1ap_CSG_Id_t                               csG_Id; ///< Optional field
     S1ap_CriticalityDiagnostics_t               criticalityDiagnostics; ///< Optional field
@@ -726,8 +726,8 @@ typedef struct S1ap_PathSwitchRequestAcknowledgeIEs_s {
     S1ap_MME_UE_S1AP_ID_t            mme_ue_s1ap_id;
     S1ap_ENB_UE_S1AP_ID_t            eNB_UE_S1AP_ID;
     S1ap_UEAggregateMaximumBitrate_t uEaggregateMaximumBitrate; ///< Optional field
-    S1ap_E_RABToBeSwitchedULListIEs_t e_RABToBeSwitchedULList; ///< Optional field
-    S1ap_E_RABListIEs_t e_RABToBeReleasedList; ///< Optional field
+    S1ap_E_RABToBeSwitchedULList_IEs_t e_RABToBeSwitchedULList; ///< Optional field
+    S1ap_E_RABList_IEs_t e_RABToBeReleasedList; ///< Optional field
     S1ap_SecurityContext_t           securityContext;
     S1ap_CriticalityDiagnostics_t    criticalityDiagnostics; ///< Optional field
     S1ap_MME_UE_S1AP_ID_t            mme_ue_s1ap_id_2; ///< Optional field
@@ -764,8 +764,8 @@ typedef struct S1ap_InitialContextSetupResponseIEs_s {
     uint16_t                       presenceMask;
     S1ap_MME_UE_S1AP_ID_t          mme_ue_s1ap_id;
     S1ap_ENB_UE_S1AP_ID_t          eNB_UE_S1AP_ID;
-    S1ap_E_RABSetupListCtxtSUResIEs_t e_RABSetupListCtxtSURes;
-    S1ap_E_RABListIEs_t e_RABFailedToSetupListCtxtSURes; ///< Optional field
+    S1ap_E_RABSetupListCtxtSURes_IEs_t e_RABSetupListCtxtSURes;
+    S1ap_E_RABList_IEs_t e_RABFailedToSetupListCtxtSURes; ///< Optional field
     S1ap_CriticalityDiagnostics_t  criticalityDiagnostics; ///< Optional field
 } S1ap_InitialContextSetupResponseIEs_t;
 
@@ -776,7 +776,7 @@ typedef struct S1ap_DownlinkS1cdma2000tunnelingIEs_s {
     uint16_t                       presenceMask;
     S1ap_MME_UE_S1AP_ID_t          mme_ue_s1ap_id;
     S1ap_ENB_UE_S1AP_ID_t          eNB_UE_S1AP_ID;
-    S1ap_E_RABDataForwardingListIEs_t e_RABDataForwardingList; ///< Optional field
+    S1ap_E_RABDataForwardingList_IEs_t e_RABDataForwardingList; ///< Optional field
     S1ap_Cdma2000HOStatus_t        cdma2000HOStatus; ///< Optional field
     S1ap_Cdma2000RATType_t         cdma2000RATType;
     S1ap_Cdma2000PDU_t             cdma2000PDU;
@@ -821,11 +821,9 @@ typedef struct S1ap_TraceFailureIndicationIEs_s {
     S1ap_Cause_t            cause;
 } S1ap_TraceFailureIndicationIEs_t;
 
-#if 0 /* modified by acetcom */
 typedef struct S1ap_E_RABInformationListIEs_s {
     S1ap_E_RABInformationListItem_t e_RABInformationListItem;
 } S1ap_E_RABInformationListIEs_t;
-#endif
 
 #define S1AP_ENBCONFIGURATIONTRANSFERIES_SONCONFIGURATIONTRANSFERECT_PRESENT   (1 << 0)
 
@@ -855,8 +853,8 @@ typedef struct S1ap_E_RABSetupResponseIEs_s {
     uint16_t                         presenceMask;
     S1ap_MME_UE_S1AP_ID_t            mme_ue_s1ap_id;
     S1ap_ENB_UE_S1AP_ID_t            eNB_UE_S1AP_ID;
-    S1ap_E_RABSetupListBearerSUResIEs_t e_RABSetupListBearerSURes; ///< Optional field
-    S1ap_E_RABListIEs_t e_RABFailedToSetupListBearerSURes; ///< Optional field
+    S1ap_E_RABSetupListBearerSURes_IEs_t e_RABSetupListBearerSURes; ///< Optional field
+    S1ap_E_RABList_IEs_t e_RABFailedToSetupListBearerSURes; ///< Optional field
     S1ap_CriticalityDiagnostics_t    criticalityDiagnostics; ///< Optional field
 } S1ap_E_RABSetupResponseIEs_t;
 
@@ -872,7 +870,7 @@ typedef struct S1ap_UEContextReleaseCommand_IEs_s {
 typedef struct S1ap_PathSwitchRequestIEs_s {
     uint16_t                       presenceMask;
     S1ap_ENB_UE_S1AP_ID_t          eNB_UE_S1AP_ID;
-    S1ap_E_RABToBeSwitchedDLListIEs_t e_RABToBeSwitchedDLList;
+    S1ap_E_RABToBeSwitchedDLList_IEs_t e_RABToBeSwitchedDLList;
     S1ap_MME_UE_S1AP_ID_t          sourceMME_UE_S1AP_ID;
     S1ap_EUTRAN_CGI_t              eutran_cgi;
     S1ap_TAI_t                     tai;
@@ -897,7 +895,7 @@ typedef struct S1ap_DownlinkNASTransport_IEs_s {
 typedef struct S1ap_E_RABReleaseIndicationIEs_s {
     S1ap_MME_UE_S1AP_ID_t mme_ue_s1ap_id;
     S1ap_ENB_UE_S1AP_ID_t eNB_UE_S1AP_ID;
-    S1ap_E_RABListIEs_t e_RABReleasedList;
+    S1ap_E_RABList_IEs_t e_RABReleasedList;
 } S1ap_E_RABReleaseIndicationIEs_t;
 
 #define S1AP_S1SETUPREQUESTIES_ENBNAME_PRESENT            (1 << 0)
@@ -938,7 +936,7 @@ typedef struct S1ap_E_RABSetupRequestIEs_s {
     S1ap_MME_UE_S1AP_ID_t                mme_ue_s1ap_id;
     S1ap_ENB_UE_S1AP_ID_t                eNB_UE_S1AP_ID;
     S1ap_UEAggregateMaximumBitrate_t     uEaggregateMaximumBitrate; ///< Optional field
-    S1ap_E_RABToBeSetupListBearerSUReqIEs_t e_RABToBeSetupListBearerSUReq;
+    S1ap_E_RABToBeSetupListBearerSUReq_IEs_t e_RABToBeSetupListBearerSUReq;
 } S1ap_E_RABSetupRequestIEs_t;
 
 typedef struct S1ap_ENBStatusTransferIEs_s {
@@ -952,7 +950,7 @@ typedef struct S1ap_ENBStatusTransferIEs_s {
 
 typedef struct S1ap_ResetAcknowledgeIEs_s {
     uint16_t                                           presenceMask;
-    S1ap_UE_associatedLogicalS1_ConnectionListResAckIEs_t uE_associatedLogicalS1_ConnectionListResAck; ///< Optional field
+    S1ap_UE_associatedLogicalS1_ConnectionListResAck_IEs_t uE_associatedLogicalS1_ConnectionListResAck; ///< Optional field
     S1ap_CriticalityDiagnostics_t                      criticalityDiagnostics; ///< Optional field
 } S1ap_ResetAcknowledgeIEs_t;
 
@@ -2193,14 +2191,14 @@ int s1ap_encode_s1ap_uplinkueassociatedlppatransport_ies(
  **/
 int s1ap_encode_s1ap_e_rabfailedtosetuplisthoreqack(
     S1ap_E_RABFailedtoSetupListHOReqAck_t *s1ap_E_RABFailedtoSetupListHOReqAck,
-    S1ap_E_RABFailedtoSetupListHOReqAckIEs_t *s1ap_E_RABFailedtoSetupListHOReqAckIEs);
+    S1ap_E_RABFailedtoSetupListHOReqAck_IEs_t *s1ap_E_RABFailedtoSetupListHOReqAckIEs);
 
 /** \brief Decode function for S1ap-E-RABFailedtoSetupItemHOReqAckIEs ies.
  *  \param any_p Pointer to the ANY value to decode.
  *  \param callback Callback function called when any_p is successfully decoded.
  **/
 int s1ap_decode_s1ap_e_rabfailedtosetuplisthoreqack(
-    S1ap_E_RABFailedtoSetupListHOReqAckIEs_t *s1ap_E_RABFailedtoSetupListHOReqAckIEs,
+    S1ap_E_RABFailedtoSetupListHOReqAck_IEs_t *s1ap_E_RABFailedtoSetupListHOReqAckIEs,
     S1ap_E_RABFailedtoSetupListHOReqAck_t *s1ap_E_RABFailedtoSetupListHOReqAck);
 
 /** \brief Encode function for S1ap-E-RABReleaseItemBearerRelCompIEs ies.
@@ -2209,14 +2207,14 @@ int s1ap_decode_s1ap_e_rabfailedtosetuplisthoreqack(
  **/
 int s1ap_encode_s1ap_e_rabreleaselistbearerrelcomp(
     S1ap_E_RABReleaseListBearerRelComp_t *s1ap_E_RABReleaseListBearerRelComp,
-    S1ap_E_RABReleaseListBearerRelCompIEs_t *s1ap_E_RABReleaseListBearerRelCompIEs);
+    S1ap_E_RABReleaseListBearerRelComp_IEs_t *s1ap_E_RABReleaseListBearerRelCompIEs);
 
 /** \brief Decode function for S1ap-E-RABReleaseItemBearerRelCompIEs ies.
  *  \param any_p Pointer to the ANY value to decode.
  *  \param callback Callback function called when any_p is successfully decoded.
  **/
 int s1ap_decode_s1ap_e_rabreleaselistbearerrelcomp(
-    S1ap_E_RABReleaseListBearerRelCompIEs_t *s1ap_E_RABReleaseListBearerRelCompIEs,
+    S1ap_E_RABReleaseListBearerRelComp_IEs_t *s1ap_E_RABReleaseListBearerRelCompIEs,
     S1ap_E_RABReleaseListBearerRelComp_t *s1ap_E_RABReleaseListBearerRelComp);
 
 /** \brief Encode function for S1ap-E-RABToBeSetupItemHOReqIEs ies.
@@ -2225,14 +2223,14 @@ int s1ap_decode_s1ap_e_rabreleaselistbearerrelcomp(
  **/
 int s1ap_encode_s1ap_e_rabtobesetuplisthoreq(
     S1ap_E_RABToBeSetupListHOReq_t *s1ap_E_RABToBeSetupListHOReq,
-    S1ap_E_RABToBeSetupListHOReqIEs_t *s1ap_E_RABToBeSetupListHOReqIEs);
+    S1ap_E_RABToBeSetupListHOReq_IEs_t *s1ap_E_RABToBeSetupListHOReqIEs);
 
 /** \brief Decode function for S1ap-E-RABToBeSetupItemHOReqIEs ies.
  *  \param any_p Pointer to the ANY value to decode.
  *  \param callback Callback function called when any_p is successfully decoded.
  **/
 int s1ap_decode_s1ap_e_rabtobesetuplisthoreq(
-    S1ap_E_RABToBeSetupListHOReqIEs_t *s1ap_E_RABToBeSetupListHOReqIEs,
+    S1ap_E_RABToBeSetupListHOReq_IEs_t *s1ap_E_RABToBeSetupListHOReqIEs,
     S1ap_E_RABToBeSetupListHOReq_t *s1ap_E_RABToBeSetupListHOReq);
 
 /** \brief Encode function for S1ap-E-RABToBeModifiedItemBearerModReqIEs ies.
@@ -2241,14 +2239,14 @@ int s1ap_decode_s1ap_e_rabtobesetuplisthoreq(
  **/
 int s1ap_encode_s1ap_e_rabtobemodifiedlistbearermodreq(
     S1ap_E_RABToBeModifiedListBearerModReq_t *s1ap_E_RABToBeModifiedListBearerModReq,
-    S1ap_E_RABToBeModifiedListBearerModReqIEs_t *s1ap_E_RABToBeModifiedListBearerModReqIEs);
+    S1ap_E_RABToBeModifiedListBearerModReq_IEs_t *s1ap_E_RABToBeModifiedListBearerModReqIEs);
 
 /** \brief Decode function for S1ap-E-RABToBeModifiedItemBearerModReqIEs ies.
  *  \param any_p Pointer to the ANY value to decode.
  *  \param callback Callback function called when any_p is successfully decoded.
  **/
 int s1ap_decode_s1ap_e_rabtobemodifiedlistbearermodreq(
-    S1ap_E_RABToBeModifiedListBearerModReqIEs_t *s1ap_E_RABToBeModifiedListBearerModReqIEs,
+    S1ap_E_RABToBeModifiedListBearerModReq_IEs_t *s1ap_E_RABToBeModifiedListBearerModReqIEs,
     S1ap_E_RABToBeModifiedListBearerModReq_t *s1ap_E_RABToBeModifiedListBearerModReq);
 
 /** \brief Encode function for S1ap-E-RABAdmittedItemIEs ies.
@@ -2257,14 +2255,14 @@ int s1ap_decode_s1ap_e_rabtobemodifiedlistbearermodreq(
  **/
 int s1ap_encode_s1ap_e_rabadmittedlist(
     S1ap_E_RABAdmittedList_t *s1ap_E_RABAdmittedList,
-    S1ap_E_RABAdmittedListIEs_t *s1ap_E_RABAdmittedListIEs);
+    S1ap_E_RABAdmittedList_IEs_t *s1ap_E_RABAdmittedListIEs);
 
 /** \brief Decode function for S1ap-E-RABAdmittedItemIEs ies.
  *  \param any_p Pointer to the ANY value to decode.
  *  \param callback Callback function called when any_p is successfully decoded.
  **/
 int s1ap_decode_s1ap_e_rabadmittedlist(
-    S1ap_E_RABAdmittedListIEs_t *s1ap_E_RABAdmittedListIEs,
+    S1ap_E_RABAdmittedList_IEs_t *s1ap_E_RABAdmittedListIEs,
     S1ap_E_RABAdmittedList_t *s1ap_E_RABAdmittedList);
 
 /** \brief Encode function for S1ap-E-RABToBeSetupItemBearerSUReqIEs ies.
@@ -2273,14 +2271,14 @@ int s1ap_decode_s1ap_e_rabadmittedlist(
  **/
 int s1ap_encode_s1ap_e_rabtobesetuplistbearersureq(
     S1ap_E_RABToBeSetupListBearerSUReq_t *s1ap_E_RABToBeSetupListBearerSUReq,
-    S1ap_E_RABToBeSetupListBearerSUReqIEs_t *s1ap_E_RABToBeSetupListBearerSUReqIEs);
+    S1ap_E_RABToBeSetupListBearerSUReq_IEs_t *s1ap_E_RABToBeSetupListBearerSUReqIEs);
 
 /** \brief Decode function for S1ap-E-RABToBeSetupItemBearerSUReqIEs ies.
  *  \param any_p Pointer to the ANY value to decode.
  *  \param callback Callback function called when any_p is successfully decoded.
  **/
 int s1ap_decode_s1ap_e_rabtobesetuplistbearersureq(
-    S1ap_E_RABToBeSetupListBearerSUReqIEs_t *s1ap_E_RABToBeSetupListBearerSUReqIEs,
+    S1ap_E_RABToBeSetupListBearerSUReq_IEs_t *s1ap_E_RABToBeSetupListBearerSUReqIEs,
     S1ap_E_RABToBeSetupListBearerSUReq_t *s1ap_E_RABToBeSetupListBearerSUReq);
 
 /** \brief Encode function for S1ap-E-RABDataForwardingItemIEs ies.
@@ -2289,14 +2287,14 @@ int s1ap_decode_s1ap_e_rabtobesetuplistbearersureq(
  **/
 int s1ap_encode_s1ap_e_rabdataforwardinglist(
     S1ap_E_RABDataForwardingList_t *s1ap_E_RABDataForwardingList,
-    S1ap_E_RABDataForwardingListIEs_t *s1ap_E_RABDataForwardingListIEs);
+    S1ap_E_RABDataForwardingList_IEs_t *s1ap_E_RABDataForwardingListIEs);
 
 /** \brief Decode function for S1ap-E-RABDataForwardingItemIEs ies.
  *  \param any_p Pointer to the ANY value to decode.
  *  \param callback Callback function called when any_p is successfully decoded.
  **/
 int s1ap_decode_s1ap_e_rabdataforwardinglist(
-    S1ap_E_RABDataForwardingListIEs_t *s1ap_E_RABDataForwardingListIEs,
+    S1ap_E_RABDataForwardingList_IEs_t *s1ap_E_RABDataForwardingListIEs,
     S1ap_E_RABDataForwardingList_t *s1ap_E_RABDataForwardingList);
 
 /** \brief Encode function for S1ap-E-RABToBeSwitchedDLItemIEs ies.
@@ -2305,14 +2303,14 @@ int s1ap_decode_s1ap_e_rabdataforwardinglist(
  **/
 int s1ap_encode_s1ap_e_rabtobeswitcheddllist(
     S1ap_E_RABToBeSwitchedDLList_t *s1ap_E_RABToBeSwitchedDLList,
-    S1ap_E_RABToBeSwitchedDLListIEs_t *s1ap_E_RABToBeSwitchedDLListIEs);
+    S1ap_E_RABToBeSwitchedDLList_IEs_t *s1ap_E_RABToBeSwitchedDLListIEs);
 
 /** \brief Decode function for S1ap-E-RABToBeSwitchedDLItemIEs ies.
  *  \param any_p Pointer to the ANY value to decode.
  *  \param callback Callback function called when any_p is successfully decoded.
  **/
 int s1ap_decode_s1ap_e_rabtobeswitcheddllist(
-    S1ap_E_RABToBeSwitchedDLListIEs_t *s1ap_E_RABToBeSwitchedDLListIEs,
+    S1ap_E_RABToBeSwitchedDLList_IEs_t *s1ap_E_RABToBeSwitchedDLListIEs,
     S1ap_E_RABToBeSwitchedDLList_t *s1ap_E_RABToBeSwitchedDLList);
 
 /** \brief Encode function for S1ap-E-RABSetupItemCtxtSUResIEs ies.
@@ -2321,14 +2319,14 @@ int s1ap_decode_s1ap_e_rabtobeswitcheddllist(
  **/
 int s1ap_encode_s1ap_e_rabsetuplistctxtsures(
     S1ap_E_RABSetupListCtxtSURes_t *s1ap_E_RABSetupListCtxtSURes,
-    S1ap_E_RABSetupListCtxtSUResIEs_t *s1ap_E_RABSetupListCtxtSUResIEs);
+    S1ap_E_RABSetupListCtxtSURes_IEs_t *s1ap_E_RABSetupListCtxtSUResIEs);
 
 /** \brief Decode function for S1ap-E-RABSetupItemCtxtSUResIEs ies.
  *  \param any_p Pointer to the ANY value to decode.
  *  \param callback Callback function called when any_p is successfully decoded.
  **/
 int s1ap_decode_s1ap_e_rabsetuplistctxtsures(
-    S1ap_E_RABSetupListCtxtSUResIEs_t *s1ap_E_RABSetupListCtxtSUResIEs,
+    S1ap_E_RABSetupListCtxtSURes_IEs_t *s1ap_E_RABSetupListCtxtSUResIEs,
     S1ap_E_RABSetupListCtxtSURes_t *s1ap_E_RABSetupListCtxtSURes);
 
 /** \brief Encode function for S1ap-E-RABToBeSwitchedULItemIEs ies.
@@ -2337,14 +2335,14 @@ int s1ap_decode_s1ap_e_rabsetuplistctxtsures(
  **/
 int s1ap_encode_s1ap_e_rabtobeswitchedullist(
     S1ap_E_RABToBeSwitchedULList_t *s1ap_E_RABToBeSwitchedULList,
-    S1ap_E_RABToBeSwitchedULListIEs_t *s1ap_E_RABToBeSwitchedULListIEs);
+    S1ap_E_RABToBeSwitchedULList_IEs_t *s1ap_E_RABToBeSwitchedULListIEs);
 
 /** \brief Decode function for S1ap-E-RABToBeSwitchedULItemIEs ies.
  *  \param any_p Pointer to the ANY value to decode.
  *  \param callback Callback function called when any_p is successfully decoded.
  **/
 int s1ap_decode_s1ap_e_rabtobeswitchedullist(
-    S1ap_E_RABToBeSwitchedULListIEs_t *s1ap_E_RABToBeSwitchedULListIEs,
+    S1ap_E_RABToBeSwitchedULList_IEs_t *s1ap_E_RABToBeSwitchedULListIEs,
     S1ap_E_RABToBeSwitchedULList_t *s1ap_E_RABToBeSwitchedULList);
 
 /** \brief Encode function for S1ap-Bearers-SubjectToStatusTransfer-ItemIEs ies.
@@ -2353,14 +2351,14 @@ int s1ap_decode_s1ap_e_rabtobeswitchedullist(
  **/
 int s1ap_encode_s1ap_bearers_subjecttostatustransfer_list(
     S1ap_Bearers_SubjectToStatusTransfer_List_t *s1ap_Bearers_SubjectToStatusTransfer_List,
-    S1ap_Bearers_SubjectToStatusTransfer_ListIEs_t *s1ap_Bearers_SubjectToStatusTransfer_ListIEs);
+    S1ap_Bearers_SubjectToStatusTransfer_List_IEs_t *s1ap_Bearers_SubjectToStatusTransfer_ListIEs);
 
 /** \brief Decode function for S1ap-Bearers-SubjectToStatusTransfer-ItemIEs ies.
  *  \param any_p Pointer to the ANY value to decode.
  *  \param callback Callback function called when any_p is successfully decoded.
  **/
 int s1ap_decode_s1ap_bearers_subjecttostatustransfer_list(
-    S1ap_Bearers_SubjectToStatusTransfer_ListIEs_t *s1ap_Bearers_SubjectToStatusTransfer_ListIEs,
+    S1ap_Bearers_SubjectToStatusTransfer_List_IEs_t *s1ap_Bearers_SubjectToStatusTransfer_ListIEs,
     S1ap_Bearers_SubjectToStatusTransfer_List_t *s1ap_Bearers_SubjectToStatusTransfer_List);
 
 /** \brief Encode function for S1ap-E-RABItemIEs ies.
@@ -2369,14 +2367,14 @@ int s1ap_decode_s1ap_bearers_subjecttostatustransfer_list(
  **/
 int s1ap_encode_s1ap_e_rablist(
     S1ap_E_RABList_t *s1ap_E_RABList,
-    S1ap_E_RABListIEs_t *s1ap_E_RABListIEs);
+    S1ap_E_RABList_IEs_t *s1ap_E_RABListIEs);
 
 /** \brief Decode function for S1ap-E-RABItemIEs ies.
  *  \param any_p Pointer to the ANY value to decode.
  *  \param callback Callback function called when any_p is successfully decoded.
  **/
 int s1ap_decode_s1ap_e_rablist(
-    S1ap_E_RABListIEs_t *s1ap_E_RABListIEs,
+    S1ap_E_RABList_IEs_t *s1ap_E_RABListIEs,
     S1ap_E_RABList_t *s1ap_E_RABList);
 
 /** \brief Encode function for S1ap-TAIItemIEs ies.
@@ -2385,14 +2383,14 @@ int s1ap_decode_s1ap_e_rablist(
  **/
 int s1ap_encode_s1ap_tailist(
     S1ap_TAIList_t *s1ap_TAIList,
-    S1ap_TAIListIEs_t *s1ap_TAIListIEs);
+    S1ap_TAIList_IEs_t *s1ap_TAIListIEs);
 
 /** \brief Decode function for S1ap-TAIItemIEs ies.
  *  \param any_p Pointer to the ANY value to decode.
  *  \param callback Callback function called when any_p is successfully decoded.
  **/
 int s1ap_decode_s1ap_tailist(
-    S1ap_TAIListIEs_t *s1ap_TAIListIEs,
+    S1ap_TAIList_IEs_t *s1ap_TAIListIEs,
     S1ap_TAIList_t *s1ap_TAIList);
 
 /** \brief Encode function for S1ap-UE-associatedLogicalS1-ConnectionItemRes ies.
@@ -2401,14 +2399,14 @@ int s1ap_decode_s1ap_tailist(
  **/
 int s1ap_encode_s1ap_ue_associatedlogicals1_connectionlistres(
     S1ap_UE_associatedLogicalS1_ConnectionListRes_t *s1ap_UE_associatedLogicalS1_ConnectionListRes,
-    S1ap_UE_associatedLogicalS1_ConnectionListResIEs_t *s1ap_UE_associatedLogicalS1_ConnectionListResIEs);
+    S1ap_UE_associatedLogicalS1_ConnectionListRes_IEs_t *s1ap_UE_associatedLogicalS1_ConnectionListResIEs);
 
 /** \brief Decode function for S1ap-UE-associatedLogicalS1-ConnectionItemRes ies.
  *  \param any_p Pointer to the ANY value to decode.
  *  \param callback Callback function called when any_p is successfully decoded.
  **/
 int s1ap_decode_s1ap_ue_associatedlogicals1_connectionlistres(
-    S1ap_UE_associatedLogicalS1_ConnectionListResIEs_t *s1ap_UE_associatedLogicalS1_ConnectionListResIEs,
+    S1ap_UE_associatedLogicalS1_ConnectionListRes_IEs_t *s1ap_UE_associatedLogicalS1_ConnectionListResIEs,
     S1ap_UE_associatedLogicalS1_ConnectionListRes_t *s1ap_UE_associatedLogicalS1_ConnectionListRes);
 
 /** \brief Encode function for S1ap-E-RABSetupItemBearerSUResIEs ies.
@@ -2417,14 +2415,14 @@ int s1ap_decode_s1ap_ue_associatedlogicals1_connectionlistres(
  **/
 int s1ap_encode_s1ap_e_rabsetuplistbearersures(
     S1ap_E_RABSetupListBearerSURes_t *s1ap_E_RABSetupListBearerSURes,
-    S1ap_E_RABSetupListBearerSUResIEs_t *s1ap_E_RABSetupListBearerSUResIEs);
+    S1ap_E_RABSetupListBearerSURes_IEs_t *s1ap_E_RABSetupListBearerSUResIEs);
 
 /** \brief Decode function for S1ap-E-RABSetupItemBearerSUResIEs ies.
  *  \param any_p Pointer to the ANY value to decode.
  *  \param callback Callback function called when any_p is successfully decoded.
  **/
 int s1ap_decode_s1ap_e_rabsetuplistbearersures(
-    S1ap_E_RABSetupListBearerSUResIEs_t *s1ap_E_RABSetupListBearerSUResIEs,
+    S1ap_E_RABSetupListBearerSURes_IEs_t *s1ap_E_RABSetupListBearerSUResIEs,
     S1ap_E_RABSetupListBearerSURes_t *s1ap_E_RABSetupListBearerSURes);
 
 /** \brief Encode function for S1ap-E-RABModifyItemBearerModResIEs ies.
@@ -2433,14 +2431,14 @@ int s1ap_decode_s1ap_e_rabsetuplistbearersures(
  **/
 int s1ap_encode_s1ap_e_rabmodifylistbearermodres(
     S1ap_E_RABModifyListBearerModRes_t *s1ap_E_RABModifyListBearerModRes,
-    S1ap_E_RABModifyListBearerModResIEs_t *s1ap_E_RABModifyListBearerModResIEs);
+    S1ap_E_RABModifyListBearerModRes_IEs_t *s1ap_E_RABModifyListBearerModResIEs);
 
 /** \brief Decode function for S1ap-E-RABModifyItemBearerModResIEs ies.
  *  \param any_p Pointer to the ANY value to decode.
  *  \param callback Callback function called when any_p is successfully decoded.
  **/
 int s1ap_decode_s1ap_e_rabmodifylistbearermodres(
-    S1ap_E_RABModifyListBearerModResIEs_t *s1ap_E_RABModifyListBearerModResIEs,
+    S1ap_E_RABModifyListBearerModRes_IEs_t *s1ap_E_RABModifyListBearerModResIEs,
     S1ap_E_RABModifyListBearerModRes_t *s1ap_E_RABModifyListBearerModRes);
 
 /** \brief Encode function for S1ap-E-RABToBeSetupItemCtxtSUReqIEs ies.
@@ -2449,14 +2447,14 @@ int s1ap_decode_s1ap_e_rabmodifylistbearermodres(
  **/
 int s1ap_encode_s1ap_e_rabtobesetuplistctxtsureq(
     S1ap_E_RABToBeSetupListCtxtSUReq_t *s1ap_E_RABToBeSetupListCtxtSUReq,
-    S1ap_E_RABToBeSetupListCtxtSUReqIEs_t *s1ap_E_RABToBeSetupListCtxtSUReqIEs);
+    S1ap_E_RABToBeSetupListCtxtSUReq_IEs_t *s1ap_E_RABToBeSetupListCtxtSUReqIEs);
 
 /** \brief Decode function for S1ap-E-RABToBeSetupItemCtxtSUReqIEs ies.
  *  \param any_p Pointer to the ANY value to decode.
  *  \param callback Callback function called when any_p is successfully decoded.
  **/
 int s1ap_decode_s1ap_e_rabtobesetuplistctxtsureq(
-    S1ap_E_RABToBeSetupListCtxtSUReqIEs_t *s1ap_E_RABToBeSetupListCtxtSUReqIEs,
+    S1ap_E_RABToBeSetupListCtxtSUReq_IEs_t *s1ap_E_RABToBeSetupListCtxtSUReqIEs,
     S1ap_E_RABToBeSetupListCtxtSUReq_t *s1ap_E_RABToBeSetupListCtxtSUReq);
 
 /** \brief Encode function for S1ap-E-RABInformationListIEs ies.
@@ -2465,14 +2463,14 @@ int s1ap_decode_s1ap_e_rabtobesetuplistctxtsureq(
  **/
 int s1ap_encode_s1ap_e_rabinformationlist(
     S1ap_E_RABInformationList_t *s1ap_E_RABInformationList,
-    S1ap_E_RABInformationListIEs_t *s1ap_E_RABInformationListIEs);
+    S1ap_E_RABInformationList_IEs_t *s1ap_E_RABInformationListIEs);
 
 /** \brief Decode function for S1ap-E-RABInformationListIEs ies.
  *  \param any_p Pointer to the ANY value to decode.
  *  \param callback Callback function called when any_p is successfully decoded.
  **/
 int s1ap_decode_s1ap_e_rabinformationlist(
-    S1ap_E_RABInformationListIEs_t *s1ap_E_RABInformationListIEs,
+    S1ap_E_RABInformationList_IEs_t *s1ap_E_RABInformationListIEs,
     S1ap_E_RABInformationList_t *s1ap_E_RABInformationList);
 
 /** \brief Encode function for S1ap-UE-associatedLogicalS1-ConnectionItemResAck ies.
@@ -2481,14 +2479,14 @@ int s1ap_decode_s1ap_e_rabinformationlist(
  **/
 int s1ap_encode_s1ap_ue_associatedlogicals1_connectionlistresack(
     S1ap_UE_associatedLogicalS1_ConnectionListResAck_t *s1ap_UE_associatedLogicalS1_ConnectionListResAck,
-    S1ap_UE_associatedLogicalS1_ConnectionListResAckIEs_t *s1ap_UE_associatedLogicalS1_ConnectionListResAckIEs);
+    S1ap_UE_associatedLogicalS1_ConnectionListResAck_IEs_t *s1ap_UE_associatedLogicalS1_ConnectionListResAckIEs);
 
 /** \brief Decode function for S1ap-UE-associatedLogicalS1-ConnectionItemResAck ies.
  *  \param any_p Pointer to the ANY value to decode.
  *  \param callback Callback function called when any_p is successfully decoded.
  **/
 int s1ap_decode_s1ap_ue_associatedlogicals1_connectionlistresack(
-    S1ap_UE_associatedLogicalS1_ConnectionListResAckIEs_t *s1ap_UE_associatedLogicalS1_ConnectionListResAckIEs,
+    S1ap_UE_associatedLogicalS1_ConnectionListResAck_IEs_t *s1ap_UE_associatedLogicalS1_ConnectionListResAckIEs,
     S1ap_UE_associatedLogicalS1_ConnectionListResAck_t *s1ap_UE_associatedLogicalS1_ConnectionListResAck);
 
 /** \brief Display S1ap_E_RABFailedtoSetupListHOReqAck encapsulated IE using XER encoding.
@@ -2498,7 +2496,7 @@ int s1ap_decode_s1ap_ue_associatedlogicals1_connectionlistresack(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabfailedtosetuplisthoreqack(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABFailedtoSetupListHOReqAckIEs_t *s1ap_E_RABFailedtoSetupListHOReqAckIEs);
+    S1ap_E_RABFailedtoSetupListHOReqAck_IEs_t *s1ap_E_RABFailedtoSetupListHOReqAckIEs);
 
 /** \brief Display S1ap_DeactivateTrace message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -2516,7 +2514,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_deactivatetrace(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabreleaselistbearerrelcomp(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABReleaseListBearerRelCompIEs_t *s1ap_E_RABReleaseListBearerRelCompIEs);
+    S1ap_E_RABReleaseListBearerRelComp_IEs_t *s1ap_E_RABReleaseListBearerRelCompIEs);
 
 /** \brief Display S1ap_ENBDirectInformationTransfer message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -2552,7 +2550,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_uplinknonueassociatedlppatransport_(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobesetuplisthoreq(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABToBeSetupListHOReqIEs_t *s1ap_E_RABToBeSetupListHOReqIEs);
+    S1ap_E_RABToBeSetupListHOReq_IEs_t *s1ap_E_RABToBeSetupListHOReqIEs);
 
 /** \brief Display S1ap_TraceStart message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -2597,7 +2595,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handoverpreparationfailure(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobemodifiedlistbearermodreq(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABToBeModifiedListBearerModReqIEs_t *s1ap_E_RABToBeModifiedListBearerModReqIEs);
+    S1ap_E_RABToBeModifiedListBearerModReq_IEs_t *s1ap_E_RABToBeModifiedListBearerModReqIEs);
 
 /** \brief Display S1ap_UEContextReleaseRequest_ message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -2615,7 +2613,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_uecontextreleaserequest_(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabadmittedlist(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABAdmittedListIEs_t *s1ap_E_RABAdmittedListIEs);
+    S1ap_E_RABAdmittedList_IEs_t *s1ap_E_RABAdmittedListIEs);
 
 /** \brief Display S1ap_InitialUEMessage_ message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -2660,7 +2658,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_uecapabilityinfoindication(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobesetuplistbearersureq(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABToBeSetupListBearerSUReqIEs_t *s1ap_E_RABToBeSetupListBearerSUReqIEs);
+    S1ap_E_RABToBeSetupListBearerSUReq_IEs_t *s1ap_E_RABToBeSetupListBearerSUReqIEs);
 
 /** \brief Display S1ap_E_RABDataForwardingList encapsulated IE using XER encoding.
  *  \param s1ap_E_RABDataForwardingItemIEs Pointer to the IES structure.
@@ -2669,7 +2667,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobesetuplistbearersureq(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabdataforwardinglist(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABDataForwardingListIEs_t *s1ap_E_RABDataForwardingListIEs);
+    S1ap_E_RABDataForwardingList_IEs_t *s1ap_E_RABDataForwardingListIEs);
 
 /** \brief Display S1ap_LocationReportingFailureIndication message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -2768,7 +2766,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handoverrequired(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobeswitcheddllist(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABToBeSwitchedDLListIEs_t *s1ap_E_RABToBeSwitchedDLListIEs);
+    S1ap_E_RABToBeSwitchedDLList_IEs_t *s1ap_E_RABToBeSwitchedDLListIEs);
 
 /** \brief Display S1ap_MMEConfigurationUpdateAcknowledge message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -2822,7 +2820,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabmodifyrequest(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabsetuplistctxtsures(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABSetupListCtxtSUResIEs_t *s1ap_E_RABSetupListCtxtSUResIEs);
+    S1ap_E_RABSetupListCtxtSURes_IEs_t *s1ap_E_RABSetupListCtxtSUResIEs);
 
 /** \brief Display S1ap_E_RABToBeSwitchedULList encapsulated IE using XER encoding.
  *  \param s1ap_E_RABToBeSwitchedULItemIEs Pointer to the IES structure.
@@ -2831,7 +2829,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabsetuplistctxtsures(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobeswitchedullist(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABToBeSwitchedULListIEs_t *s1ap_E_RABToBeSwitchedULListIEs);
+    S1ap_E_RABToBeSwitchedULList_IEs_t *s1ap_E_RABToBeSwitchedULListIEs);
 
 /** \brief Display S1ap_ENBConfigurationUpdateFailure message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -2858,7 +2856,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_reset(
 asn_enc_rval_t s1ap_xer_print_s1ap_bearers_subjecttostatustransfer_list(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_Bearers_SubjectToStatusTransfer_ListIEs_t *s1ap_Bearers_SubjectToStatusTransfer_ListIEs);
+    S1ap_Bearers_SubjectToStatusTransfer_List_IEs_t *s1ap_Bearers_SubjectToStatusTransfer_ListIEs);
 
 /** \brief Display S1ap_E_RABList encapsulated IE using XER encoding.
  *  \param s1ap_E_RABItemIEs Pointer to the IES structure.
@@ -2867,7 +2865,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_bearers_subjecttostatustransfer_list(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rablist(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABListIEs_t *s1ap_E_RABListIEs);
+    S1ap_E_RABList_IEs_t *s1ap_E_RABListIEs);
 
 /** \brief Display S1ap_S1SetupResponse message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -2984,7 +2982,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_errorindication(
 asn_enc_rval_t s1ap_xer_print_s1ap_tailist(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_TAIListIEs_t *s1ap_TAIListIEs);
+    S1ap_TAIList_IEs_t *s1ap_TAIListIEs);
 
 /** \brief Display S1ap_OverloadStart message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3056,7 +3054,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_pathswitchrequestacknowledge(
 asn_enc_rval_t s1ap_xer_print_s1ap_ue_associatedlogicals1_connectionlistres(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_UE_associatedLogicalS1_ConnectionListResIEs_t *s1ap_UE_associatedLogicalS1_ConnectionListResIEs);
+    S1ap_UE_associatedLogicalS1_ConnectionListRes_IEs_t *s1ap_UE_associatedLogicalS1_ConnectionListResIEs);
 
 /** \brief Display S1ap_S1SetupFailure message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3110,7 +3108,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_overloadstop(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabsetuplistbearersures(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABSetupListBearerSUResIEs_t *s1ap_E_RABSetupListBearerSUResIEs);
+    S1ap_E_RABSetupListBearerSURes_IEs_t *s1ap_E_RABSetupListBearerSUResIEs);
 
 /** \brief Display S1ap_E_RABModifyListBearerModRes encapsulated IE using XER encoding.
  *  \param s1ap_E_RABModifyItemBearerModResIEs Pointer to the IES structure.
@@ -3119,7 +3117,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabsetuplistbearersures(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabmodifylistbearermodres(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABModifyListBearerModResIEs_t *s1ap_E_RABModifyListBearerModResIEs);
+    S1ap_E_RABModifyListBearerModRes_IEs_t *s1ap_E_RABModifyListBearerModResIEs);
 
 /** \brief Display S1ap_E_RABToBeSetupListCtxtSUReq encapsulated IE using XER encoding.
  *  \param s1ap_E_RABToBeSetupItemCtxtSUReqIEs Pointer to the IES structure.
@@ -3128,7 +3126,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabmodifylistbearermodres(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobesetuplistctxtsureq(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABToBeSetupListCtxtSUReqIEs_t *s1ap_E_RABToBeSetupListCtxtSUReqIEs);
+    S1ap_E_RABToBeSetupListCtxtSUReq_IEs_t *s1ap_E_RABToBeSetupListCtxtSUReqIEs);
 
 /** \brief Display S1ap_ENBConfigurationUpdate message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3155,7 +3153,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_tracefailureindication(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabinformationlist(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABInformationListIEs_t *s1ap_E_RABInformationListIEs);
+    S1ap_E_RABInformationList_IEs_t *s1ap_E_RABInformationListIEs);
 
 /** \brief Display S1ap_ENBConfigurationTransfer message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3182,7 +3180,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handoverfailure(
 asn_enc_rval_t s1ap_xer_print_s1ap_ue_associatedlogicals1_connectionlistresack(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_UE_associatedLogicalS1_ConnectionListResAckIEs_t *s1ap_UE_associatedLogicalS1_ConnectionListResAckIEs);
+    S1ap_UE_associatedLogicalS1_ConnectionListResAck_IEs_t *s1ap_UE_associatedLogicalS1_ConnectionListResAckIEs);
 
 /** \brief Display S1ap_E_RABSetupResponse message using XER encoding.
  *  \param message_p Pointer to root message.

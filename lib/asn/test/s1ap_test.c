@@ -17,11 +17,9 @@ static void s1ap_test1(abts_case *tc, void *data)
     };
     s1ap_message message;
     int result;
-    char *message_string = calloc (10000, sizeof (char));
 
     result = s1ap_mme_decode_pdu(&message, (unsigned char*)s1setup_msg[0], 49);
-
-    free(message_string);
+    ABTS_INT_EQUAL(tc, 0, result);
 }
 
 abts_suite *test_s1ap(abts_suite *suite)
