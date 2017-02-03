@@ -23,15 +23,15 @@ extern "C" {
 struct ProtocolIE_Field;
 
 /* ProtocolIE-ContainerList */
-typedef struct ProtocolIE_ContainerList_5736P0 {
+typedef struct ProtocolIE_ContainerList_5937P0 {
 	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolIE_ContainerList_5736P0_t;
+} ProtocolIE_ContainerList_5937P0_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_ContainerList_5736P0;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_ContainerList_5937P0;
 
 #ifdef __cplusplus
 }

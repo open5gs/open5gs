@@ -3,9 +3,9 @@ ASN_MODULE_NODIST_SOURCES=	\
 	S1ap-InitiatingMessage.c	\
 	S1ap-SuccessfulOutcome.c	\
 	S1ap-UnsuccessfulOutcome.c	\
-	E-RAB-S1ap-IE-ContainerList.c	\
-	E-RAB-S1ap-IE-ContainerPairList.c	\
-	ProtocolError-S1ap-IE-ContainerList.c	\
+	E-RAB-IE-ContainerList.c	\
+	E-RAB-IE-ContainerPairList.c	\
+	ProtocolError-IE-ContainerList.c	\
 	S1ap-HandoverRequired.c	\
 	S1ap-HandoverCommand.c	\
 	S1ap-E-RABSubjecttoDataForwardingList.c	\
@@ -162,7 +162,7 @@ ASN_MODULE_NODIST_SOURCES=	\
 	S1ap-COUNTvalue.c	\
 	S1ap-CriticalityDiagnostics.c	\
 	S1ap-CriticalityDiagnostics-IE-List.c	\
-	S1ap-CriticalityDiagnostics-S1ap-IE-Item.c	\
+	S1ap-CriticalityDiagnostics-IE-Item.c	\
 	S1ap-DataCodingScheme.c	\
 	S1ap-DL-Forwarding.c	\
 	S1ap-Direct-Forwarding-Path-Availability.c	\
@@ -375,9 +375,9 @@ ASN_MODULE_SOURCES=	\
 	S1ap-InitiatingMessage.h	\
 	S1ap-SuccessfulOutcome.h	\
 	S1ap-UnsuccessfulOutcome.h	\
-	E-RAB-S1ap-IE-ContainerList.h	\
-	E-RAB-S1ap-IE-ContainerPairList.h	\
-	ProtocolError-S1ap-IE-ContainerList.h	\
+	E-RAB-IE-ContainerList.h	\
+	E-RAB-IE-ContainerPairList.h	\
+	ProtocolError-IE-ContainerList.h	\
 	S1ap-HandoverRequired.h	\
 	S1ap-HandoverCommand.h	\
 	S1ap-E-RABSubjecttoDataForwardingList.h	\
@@ -534,7 +534,7 @@ ASN_MODULE_SOURCES=	\
 	S1ap-COUNTvalue.h	\
 	S1ap-CriticalityDiagnostics.h	\
 	S1ap-CriticalityDiagnostics-IE-List.h	\
-	S1ap-CriticalityDiagnostics-S1ap-IE-Item.h	\
+	S1ap-CriticalityDiagnostics-IE-Item.h	\
 	S1ap-DataCodingScheme.h	\
 	S1ap-DL-Forwarding.h	\
 	S1ap-Direct-Forwarding-Path-Availability.h	\
@@ -806,7 +806,6 @@ ASN_MODULE_SOURCES+=per_encoder.h
 ASN_MODULE_NODIST_SOURCES+=per_encoder.c
 ASN_MODULE_SOURCES+=per_opentype.h
 ASN_MODULE_NODIST_SOURCES+=per_opentype.c
-
 
 lib_LTLIBRARIES=libasn1c.la
 libasn1c_la_SOURCES=$(ASN_MODULE_SOURCES)

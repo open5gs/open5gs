@@ -19,7 +19,7 @@ extern "C" {
 #endif
 
 /* S1ap-E-RABAdmittedList */
-typedef ProtocolIE_ContainerList_5736P0_t	 S1ap_E_RABAdmittedList_t;
+typedef ProtocolIE_ContainerList_5937P0_t	 S1ap_E_RABAdmittedList_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_S1ap_E_RABAdmittedList;

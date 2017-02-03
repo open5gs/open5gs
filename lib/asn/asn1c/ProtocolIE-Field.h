@@ -22,17 +22,17 @@ extern "C" {
 #endif
 
 /* ProtocolIE-Field */
-typedef struct ProtocolIE_Field_5700P0 {
+typedef struct ProtocolIE_Field_5901P0 {
 	S1ap_ProtocolIE_ID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 value;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolIE_Field_5700P0_t;
+} ProtocolIE_Field_5901P0_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5700P0;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolIE_Field_5901P0;
 
 #ifdef __cplusplus
 }

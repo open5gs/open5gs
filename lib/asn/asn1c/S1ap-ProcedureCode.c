@@ -160,7 +160,7 @@ asn_TYPE_descriptor_t asn_DEF_S1ap_ProcedureCode = {
 	sizeof(asn_DEF_S1ap_ProcedureCode_tags_1)
 		/sizeof(asn_DEF_S1ap_ProcedureCode_tags_1[0]), /* 1 */
 	&asn_PER_type_S1ap_ProcedureCode_constr_1,
-	0, 0,	/* No members */
+	0, 0,	/* Defined elsewhere */
 	0	/* No specifics */
 };
 

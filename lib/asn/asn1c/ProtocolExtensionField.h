@@ -22,692 +22,692 @@ extern "C" {
 #endif
 
 /* ProtocolExtensionField */
-typedef struct ProtocolExtensionField_5757P0 {
+typedef struct ProtocolExtensionField_5958P0 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P0_t;
-typedef struct ProtocolExtensionField_5757P1 {
+} ProtocolExtensionField_5958P0_t;
+typedef struct ProtocolExtensionField_5958P1 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P1_t;
-typedef struct ProtocolExtensionField_5757P2 {
+} ProtocolExtensionField_5958P1_t;
+typedef struct ProtocolExtensionField_5958P2 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P2_t;
-typedef struct ProtocolExtensionField_5757P3 {
+} ProtocolExtensionField_5958P2_t;
+typedef struct ProtocolExtensionField_5958P3 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P3_t;
-typedef struct ProtocolExtensionField_5757P4 {
+} ProtocolExtensionField_5958P3_t;
+typedef struct ProtocolExtensionField_5958P4 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P4_t;
-typedef struct ProtocolExtensionField_5757P5 {
+} ProtocolExtensionField_5958P4_t;
+typedef struct ProtocolExtensionField_5958P5 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P5_t;
-typedef struct ProtocolExtensionField_5757P6 {
+} ProtocolExtensionField_5958P5_t;
+typedef struct ProtocolExtensionField_5958P6 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P6_t;
-typedef struct ProtocolExtensionField_5757P7 {
+} ProtocolExtensionField_5958P6_t;
+typedef struct ProtocolExtensionField_5958P7 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P7_t;
-typedef struct ProtocolExtensionField_5757P8 {
+} ProtocolExtensionField_5958P7_t;
+typedef struct ProtocolExtensionField_5958P8 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P8_t;
-typedef struct ProtocolExtensionField_5757P9 {
+} ProtocolExtensionField_5958P8_t;
+typedef struct ProtocolExtensionField_5958P9 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P9_t;
-typedef struct ProtocolExtensionField_5757P10 {
+} ProtocolExtensionField_5958P9_t;
+typedef struct ProtocolExtensionField_5958P10 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P10_t;
-typedef struct ProtocolExtensionField_5757P11 {
+} ProtocolExtensionField_5958P10_t;
+typedef struct ProtocolExtensionField_5958P11 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P11_t;
-typedef struct ProtocolExtensionField_5757P12 {
+} ProtocolExtensionField_5958P11_t;
+typedef struct ProtocolExtensionField_5958P12 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P12_t;
-typedef struct ProtocolExtensionField_5757P13 {
+} ProtocolExtensionField_5958P12_t;
+typedef struct ProtocolExtensionField_5958P13 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P13_t;
-typedef struct ProtocolExtensionField_5757P14 {
+} ProtocolExtensionField_5958P13_t;
+typedef struct ProtocolExtensionField_5958P14 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P14_t;
-typedef struct ProtocolExtensionField_5757P15 {
+} ProtocolExtensionField_5958P14_t;
+typedef struct ProtocolExtensionField_5958P15 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P15_t;
-typedef struct ProtocolExtensionField_5757P16 {
+} ProtocolExtensionField_5958P15_t;
+typedef struct ProtocolExtensionField_5958P16 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P16_t;
-typedef struct ProtocolExtensionField_5757P17 {
+} ProtocolExtensionField_5958P16_t;
+typedef struct ProtocolExtensionField_5958P17 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P17_t;
-typedef struct ProtocolExtensionField_5757P18 {
+} ProtocolExtensionField_5958P17_t;
+typedef struct ProtocolExtensionField_5958P18 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P18_t;
-typedef struct ProtocolExtensionField_5757P19 {
+} ProtocolExtensionField_5958P18_t;
+typedef struct ProtocolExtensionField_5958P19 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P19_t;
-typedef struct ProtocolExtensionField_5757P20 {
+} ProtocolExtensionField_5958P19_t;
+typedef struct ProtocolExtensionField_5958P20 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P20_t;
-typedef struct ProtocolExtensionField_5757P21 {
+} ProtocolExtensionField_5958P20_t;
+typedef struct ProtocolExtensionField_5958P21 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P21_t;
-typedef struct ProtocolExtensionField_5757P22 {
+} ProtocolExtensionField_5958P21_t;
+typedef struct ProtocolExtensionField_5958P22 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P22_t;
-typedef struct ProtocolExtensionField_5757P23 {
+} ProtocolExtensionField_5958P22_t;
+typedef struct ProtocolExtensionField_5958P23 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P23_t;
-typedef struct ProtocolExtensionField_5757P24 {
+} ProtocolExtensionField_5958P23_t;
+typedef struct ProtocolExtensionField_5958P24 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P24_t;
-typedef struct ProtocolExtensionField_5757P25 {
+} ProtocolExtensionField_5958P24_t;
+typedef struct ProtocolExtensionField_5958P25 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P25_t;
-typedef struct ProtocolExtensionField_5757P26 {
+} ProtocolExtensionField_5958P25_t;
+typedef struct ProtocolExtensionField_5958P26 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P26_t;
-typedef struct ProtocolExtensionField_5757P27 {
+} ProtocolExtensionField_5958P26_t;
+typedef struct ProtocolExtensionField_5958P27 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P27_t;
-typedef struct ProtocolExtensionField_5757P28 {
+} ProtocolExtensionField_5958P27_t;
+typedef struct ProtocolExtensionField_5958P28 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P28_t;
-typedef struct ProtocolExtensionField_5757P29 {
+} ProtocolExtensionField_5958P28_t;
+typedef struct ProtocolExtensionField_5958P29 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P29_t;
-typedef struct ProtocolExtensionField_5757P30 {
+} ProtocolExtensionField_5958P29_t;
+typedef struct ProtocolExtensionField_5958P30 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P30_t;
-typedef struct ProtocolExtensionField_5757P31 {
+} ProtocolExtensionField_5958P30_t;
+typedef struct ProtocolExtensionField_5958P31 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P31_t;
-typedef struct ProtocolExtensionField_5757P32 {
+} ProtocolExtensionField_5958P31_t;
+typedef struct ProtocolExtensionField_5958P32 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P32_t;
-typedef struct ProtocolExtensionField_5757P33 {
+} ProtocolExtensionField_5958P32_t;
+typedef struct ProtocolExtensionField_5958P33 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P33_t;
-typedef struct ProtocolExtensionField_5757P34 {
+} ProtocolExtensionField_5958P33_t;
+typedef struct ProtocolExtensionField_5958P34 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P34_t;
-typedef struct ProtocolExtensionField_5757P35 {
+} ProtocolExtensionField_5958P34_t;
+typedef struct ProtocolExtensionField_5958P35 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P35_t;
-typedef struct ProtocolExtensionField_5757P36 {
+} ProtocolExtensionField_5958P35_t;
+typedef struct ProtocolExtensionField_5958P36 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P36_t;
-typedef struct ProtocolExtensionField_5757P37 {
+} ProtocolExtensionField_5958P36_t;
+typedef struct ProtocolExtensionField_5958P37 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P37_t;
-typedef struct ProtocolExtensionField_5757P38 {
+} ProtocolExtensionField_5958P37_t;
+typedef struct ProtocolExtensionField_5958P38 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P38_t;
-typedef struct ProtocolExtensionField_5757P39 {
+} ProtocolExtensionField_5958P38_t;
+typedef struct ProtocolExtensionField_5958P39 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P39_t;
-typedef struct ProtocolExtensionField_5757P40 {
+} ProtocolExtensionField_5958P39_t;
+typedef struct ProtocolExtensionField_5958P40 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P40_t;
-typedef struct ProtocolExtensionField_5757P41 {
+} ProtocolExtensionField_5958P40_t;
+typedef struct ProtocolExtensionField_5958P41 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P41_t;
-typedef struct ProtocolExtensionField_5757P42 {
+} ProtocolExtensionField_5958P41_t;
+typedef struct ProtocolExtensionField_5958P42 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P42_t;
-typedef struct ProtocolExtensionField_5757P43 {
+} ProtocolExtensionField_5958P42_t;
+typedef struct ProtocolExtensionField_5958P43 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P43_t;
-typedef struct ProtocolExtensionField_5757P44 {
+} ProtocolExtensionField_5958P43_t;
+typedef struct ProtocolExtensionField_5958P44 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P44_t;
-typedef struct ProtocolExtensionField_5757P45 {
+} ProtocolExtensionField_5958P44_t;
+typedef struct ProtocolExtensionField_5958P45 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P45_t;
-typedef struct ProtocolExtensionField_5757P46 {
+} ProtocolExtensionField_5958P45_t;
+typedef struct ProtocolExtensionField_5958P46 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P46_t;
-typedef struct ProtocolExtensionField_5757P47 {
+} ProtocolExtensionField_5958P46_t;
+typedef struct ProtocolExtensionField_5958P47 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P47_t;
-typedef struct ProtocolExtensionField_5757P48 {
+} ProtocolExtensionField_5958P47_t;
+typedef struct ProtocolExtensionField_5958P48 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P48_t;
-typedef struct ProtocolExtensionField_5757P49 {
+} ProtocolExtensionField_5958P48_t;
+typedef struct ProtocolExtensionField_5958P49 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P49_t;
-typedef struct ProtocolExtensionField_5757P50 {
+} ProtocolExtensionField_5958P49_t;
+typedef struct ProtocolExtensionField_5958P50 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P50_t;
-typedef struct ProtocolExtensionField_5757P51 {
+} ProtocolExtensionField_5958P50_t;
+typedef struct ProtocolExtensionField_5958P51 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P51_t;
-typedef struct ProtocolExtensionField_5757P52 {
+} ProtocolExtensionField_5958P51_t;
+typedef struct ProtocolExtensionField_5958P52 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P52_t;
-typedef struct ProtocolExtensionField_5757P53 {
+} ProtocolExtensionField_5958P52_t;
+typedef struct ProtocolExtensionField_5958P53 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P53_t;
-typedef struct ProtocolExtensionField_5757P54 {
+} ProtocolExtensionField_5958P53_t;
+typedef struct ProtocolExtensionField_5958P54 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P54_t;
-typedef struct ProtocolExtensionField_5757P55 {
+} ProtocolExtensionField_5958P54_t;
+typedef struct ProtocolExtensionField_5958P55 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P55_t;
-typedef struct ProtocolExtensionField_5757P56 {
+} ProtocolExtensionField_5958P55_t;
+typedef struct ProtocolExtensionField_5958P56 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P56_t;
-typedef struct ProtocolExtensionField_5757P57 {
+} ProtocolExtensionField_5958P56_t;
+typedef struct ProtocolExtensionField_5958P57 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P57_t;
-typedef struct ProtocolExtensionField_5757P58 {
+} ProtocolExtensionField_5958P57_t;
+typedef struct ProtocolExtensionField_5958P58 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P58_t;
-typedef struct ProtocolExtensionField_5757P59 {
+} ProtocolExtensionField_5958P58_t;
+typedef struct ProtocolExtensionField_5958P59 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P59_t;
-typedef struct ProtocolExtensionField_5757P60 {
+} ProtocolExtensionField_5958P59_t;
+typedef struct ProtocolExtensionField_5958P60 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P60_t;
-typedef struct ProtocolExtensionField_5757P61 {
+} ProtocolExtensionField_5958P60_t;
+typedef struct ProtocolExtensionField_5958P61 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P61_t;
-typedef struct ProtocolExtensionField_5757P62 {
+} ProtocolExtensionField_5958P61_t;
+typedef struct ProtocolExtensionField_5958P62 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P62_t;
-typedef struct ProtocolExtensionField_5757P63 {
+} ProtocolExtensionField_5958P62_t;
+typedef struct ProtocolExtensionField_5958P63 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P63_t;
-typedef struct ProtocolExtensionField_5757P64 {
+} ProtocolExtensionField_5958P63_t;
+typedef struct ProtocolExtensionField_5958P64 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P64_t;
-typedef struct ProtocolExtensionField_5757P65 {
+} ProtocolExtensionField_5958P64_t;
+typedef struct ProtocolExtensionField_5958P65 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P65_t;
-typedef struct ProtocolExtensionField_5757P66 {
+} ProtocolExtensionField_5958P65_t;
+typedef struct ProtocolExtensionField_5958P66 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P66_t;
-typedef struct ProtocolExtensionField_5757P67 {
+} ProtocolExtensionField_5958P66_t;
+typedef struct ProtocolExtensionField_5958P67 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P67_t;
-typedef struct ProtocolExtensionField_5757P68 {
+} ProtocolExtensionField_5958P67_t;
+typedef struct ProtocolExtensionField_5958P68 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P68_t;
-typedef struct ProtocolExtensionField_5757P69 {
+} ProtocolExtensionField_5958P68_t;
+typedef struct ProtocolExtensionField_5958P69 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P69_t;
-typedef struct ProtocolExtensionField_5757P70 {
+} ProtocolExtensionField_5958P69_t;
+typedef struct ProtocolExtensionField_5958P70 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P70_t;
-typedef struct ProtocolExtensionField_5757P71 {
+} ProtocolExtensionField_5958P70_t;
+typedef struct ProtocolExtensionField_5958P71 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P71_t;
-typedef struct ProtocolExtensionField_5757P72 {
+} ProtocolExtensionField_5958P71_t;
+typedef struct ProtocolExtensionField_5958P72 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P72_t;
-typedef struct ProtocolExtensionField_5757P73 {
+} ProtocolExtensionField_5958P72_t;
+typedef struct ProtocolExtensionField_5958P73 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P73_t;
-typedef struct ProtocolExtensionField_5757P74 {
+} ProtocolExtensionField_5958P73_t;
+typedef struct ProtocolExtensionField_5958P74 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P74_t;
-typedef struct ProtocolExtensionField_5757P75 {
+} ProtocolExtensionField_5958P74_t;
+typedef struct ProtocolExtensionField_5958P75 {
 	S1ap_ProtocolExtensionID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 extensionValue;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ProtocolExtensionField_5757P75_t;
+} ProtocolExtensionField_5958P75_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P0;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P1;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P2;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P3;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P4;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P5;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P6;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P7;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P8;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P9;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P10;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P11;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P12;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P13;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P14;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P15;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P16;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P17;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P18;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P19;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P20;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P21;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P22;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P23;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P24;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P25;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P26;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P27;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P28;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P29;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P30;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P31;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P32;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P33;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P34;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P35;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P36;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P37;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P38;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P39;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P40;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P41;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P42;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P43;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P44;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P45;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P46;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P47;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P48;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P49;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P50;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P51;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P52;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P53;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P54;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P55;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P56;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P57;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P58;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P59;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P60;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P61;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P62;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P63;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P64;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P65;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P66;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P67;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P68;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P69;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P70;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P71;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P72;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P73;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P74;
-extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5757P75;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P0;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P1;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P2;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P3;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P4;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P5;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P6;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P7;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P8;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P9;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P10;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P11;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P12;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P13;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P14;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P15;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P16;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P17;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P18;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P19;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P20;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P21;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P22;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P23;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P24;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P25;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P26;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P27;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P28;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P29;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P30;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P31;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P32;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P33;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P34;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P35;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P36;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P37;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P38;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P39;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P40;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P41;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P42;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P43;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P44;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P45;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P46;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P47;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P48;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P49;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P50;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P51;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P52;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P53;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P54;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P55;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P56;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P57;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P58;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P59;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P60;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P61;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P62;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P63;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P64;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P65;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P66;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P67;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P68;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P69;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P70;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P71;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P72;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P73;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P74;
+extern asn_TYPE_descriptor_t asn_DEF_ProtocolExtensionField_5958P75;
 
 #ifdef __cplusplus
 }
