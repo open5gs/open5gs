@@ -386,8 +386,8 @@ extern int asn_debug;
 extern int asn1_xer_print;
 extern void free_wrapper(void *ptr);
 
-# include "mme_default_values.h"
 #if 0 /* modified by acetcom */
+# include "mme_default_values.h"
 # include "common_types.h"
 #endif
 
