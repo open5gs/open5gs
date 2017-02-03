@@ -384,6 +384,7 @@ inline void ASN_DEBUG(const char *fmt, ...);
 
 extern int asn_debug;
 extern int asn1_xer_print;
+extern void free_wrapper(void *ptr);
 
 # include "mme_default_values.h"
 #if 0 /* modified by acetcom */
