@@ -12,7 +12,7 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include "S1ap-Bearers-SubjectToStatusTransferList.h"
+#include "S1ap-Bearers-SubjectToStatusTransfer-List.h"
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
@@ -24,7 +24,7 @@ struct ProtocolExtensionContainer;
 
 /* S1ap-ENB-StatusTransfer-TransparentContainer */
 typedef struct S1ap_ENB_StatusTransfer_TransparentContainer {
-	S1ap_Bearers_SubjectToStatusTransferList_t	 bearers_SubjectToStatusTransferList;
+	S1ap_Bearers_SubjectToStatusTransfer_List_t	 bearers_SubjectToStatusTransferList;
 	struct ProtocolExtensionContainer	*iE_Extensions	/* OPTIONAL */;
 	/*
 	 * This type is extensible,

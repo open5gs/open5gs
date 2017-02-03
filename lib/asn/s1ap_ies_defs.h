@@ -30,7 +30,7 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-02-03 11:00:55.351913 by acetcom
+ * Created on: 2017-02-03 13:33:42.632772 by acetcom
  * from ['S1AP-PDU.asn']
  ******************************************************************************/
 #include "s1ap_common.h"
@@ -53,9 +53,9 @@ typedef struct S1ap_E_RABAdmittedListIEs_s {
     A_SEQUENCE_OF(struct S1ap_E_RABAdmittedItem_s) s1ap_E_RABAdmittedItem;
 } S1ap_E_RABAdmittedListIEs_t;
 
-typedef struct S1ap_E_RABSubjecttoDataForwardingListIEs_s {
+typedef struct S1ap_E_RABDataForwardingListIEs_s {
     A_SEQUENCE_OF(struct S1ap_E_RABDataForwardingItem_s) s1ap_E_RABDataForwardingItem;
-} S1ap_E_RABSubjecttoDataForwardingListIEs_t;
+} S1ap_E_RABDataForwardingListIEs_t;
 
 typedef struct S1ap_E_RABToBeSwitchedDLListIEs_s {
     A_SEQUENCE_OF(struct S1ap_E_RABToBeSwitchedDLItem_s) s1ap_E_RABToBeSwitchedDLItem;
@@ -571,7 +571,7 @@ typedef struct S1ap_InitialContextSetupFailureIEs_s {
     S1ap_CriticalityDiagnostics_t criticalityDiagnostics; ///< Optional field
 } S1ap_InitialContextSetupFailureIEs_t;
 
-#define S1AP_HANDOVERCOMMANDIES_E_RABSUBJECTTODATAFORWARDINGLIST_PRESENT          (1 << 0)
+#define S1AP_HANDOVERCOMMANDIES_E_RABDATAFORWARDINGLIST_PRESENT                   (1 << 0)
 #define S1AP_HANDOVERCOMMANDIES_E_RABTORELEASELISTHOCMD_PRESENT                   (1 << 1)
 #define S1AP_HANDOVERCOMMANDIES_TARGET_TOSOURCE_TRANSPARENTCONTAINER_SECONDARY_PRESENT (1 << 2)
 #define S1AP_HANDOVERCOMMANDIES_CRITICALITYDIAGNOSTICS_PRESENT                    (1 << 3)
@@ -581,7 +581,7 @@ typedef struct S1ap_HandoverCommandIEs_s {
     S1ap_MME_UE_S1AP_ID_t                       mme_ue_s1ap_id;
     S1ap_ENB_UE_S1AP_ID_t                       eNB_UE_S1AP_ID;
     S1ap_HandoverType_t                         handoverType;
-    S1ap_E_RABSubjecttoDataForwardingListIEs_t e_RABSubjecttoDataForwardingList; ///< Optional field
+    S1ap_E_RABDataForwardingListIEs_t e_RABDataForwardingList; ///< Optional field
     S1ap_E_RABList_t                            e_RABtoReleaseListHOCmd; ///< Optional field
     S1ap_Target_ToSource_TransparentContainer_t target_ToSource_TransparentContainer;
     S1ap_Target_ToSource_TransparentContainer_t target_ToSource_TransparentContainer_Secondary; ///< Optional field
@@ -717,17 +717,17 @@ typedef struct S1ap_InitialContextSetupResponseIEs_s {
     S1ap_CriticalityDiagnostics_t  criticalityDiagnostics; ///< Optional field
 } S1ap_InitialContextSetupResponseIEs_t;
 
-#define S1AP_DOWNLINKS1CDMA2000TUNNELINGIES_E_RABSUBJECTTODATAFORWARDINGLIST_PRESENT      (1 << 0)
-#define S1AP_DOWNLINKS1CDMA2000TUNNELINGIES_CDMA2000HOSTATUS_PRESENT                      (1 << 1)
+#define S1AP_DOWNLINKS1CDMA2000TUNNELINGIES_E_RABDATAFORWARDINGLIST_PRESENT      (1 << 0)
+#define S1AP_DOWNLINKS1CDMA2000TUNNELINGIES_CDMA2000HOSTATUS_PRESENT             (1 << 1)
 
 typedef struct S1ap_DownlinkS1cdma2000tunnelingIEs_s {
-    uint16_t                                presenceMask;
-    S1ap_MME_UE_S1AP_ID_t                   mme_ue_s1ap_id;
-    S1ap_ENB_UE_S1AP_ID_t                   eNB_UE_S1AP_ID;
-    S1ap_E_RABSubjecttoDataForwardingListIEs_t e_RABSubjecttoDataForwardingList; ///< Optional field
-    S1ap_Cdma2000HOStatus_t                 cdma2000HOStatus; ///< Optional field
-    S1ap_Cdma2000RATType_t                  cdma2000RATType;
-    S1ap_Cdma2000PDU_t                      cdma2000PDU;
+    uint16_t                       presenceMask;
+    S1ap_MME_UE_S1AP_ID_t          mme_ue_s1ap_id;
+    S1ap_ENB_UE_S1AP_ID_t          eNB_UE_S1AP_ID;
+    S1ap_E_RABDataForwardingListIEs_t e_RABDataForwardingList; ///< Optional field
+    S1ap_Cdma2000HOStatus_t        cdma2000HOStatus; ///< Optional field
+    S1ap_Cdma2000RATType_t         cdma2000RATType;
+    S1ap_Cdma2000PDU_t             cdma2000PDU;
 } S1ap_DownlinkS1cdma2000tunnelingIEs_t;
 
 #define S1AP_OVERLOADSTOPIES_GUMMEILIST_PRESENT      (1 << 0)
@@ -1567,7 +1567,7 @@ int s1ap_decode_s1ap_bearers_subjecttostatustransfer_itemies(
  *  \param s1ap_Bearers_SubjectToStatusTransfer_ItemIEs Pointer to the IES structure.
  **/
 int s1ap_encode_s1ap_bearers_subjecttostatustransfer_itemies(
-    S1ap_Bearers_SubjectToStatusTransferList_t *s1ap_Bearers_SubjectToStatusTransfer_List,
+    S1ap_Bearers_SubjectToStatusTransfer_List_t *s1ap_Bearers_SubjectToStatusTransfer_List,
     S1ap_Bearers_SubjectToStatusTransfer_ItemIEs_t *s1ap_Bearers_SubjectToStatusTransfer_ItemIEs);
 
 /** \brief Decode function for S1ap-E-RABItemIEs ies.
@@ -2406,21 +2406,17 @@ int s1ap_decode_s1ap_e_rabadmittedlist(
  *  \param s1ap_E_RABDataForwardingList Pointer to the ASN1 structure.
  *  \param s1ap_E_RABDataForwardingItemIEs Pointer to the IES structure.
  **/
-/*
 int s1ap_encode_s1ap_e_rabdataforwardinglist(
     S1ap_E_RABDataForwardingList_t *s1ap_E_RABDataForwardingList,
     S1ap_E_RABDataForwardingListIEs_t *s1ap_E_RABDataForwardingListIEs);
-*/
 
 /** \brief Decode function for S1ap-E-RABDataForwardingItemIEs ies.
  *  \param any_p Pointer to the ANY value to decode.
  *  \param callback Callback function called when any_p is successfully decoded.
  **/
-/*
 int s1ap_decode_s1ap_e_rabdataforwardinglist(
     S1ap_E_RABDataForwardingListIEs_t *s1ap_E_RABDataForwardingListIEs,
     S1ap_E_RABDataForwardingList_t *s1ap_E_RABDataForwardingList);
-*/
 
 /** \brief Encode function for S1ap-E-RABToBeSwitchedDLItemIEs ies.
  *  \param s1ap_E_RABToBeSwitchedDLList Pointer to the ASN1 structure.
@@ -2629,12 +2625,10 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobesetuplistbearersureq(
  *  \param s1ap_E_RABDataForwardingItemIEs Pointer to the IES structure.
  *  \param file File descriptor to write output.
  **/
-/*
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabdataforwardinglist(
     asn_app_consume_bytes_f *cb,
     void *app_key,
     S1ap_E_RABDataForwardingListIEs_t *s1ap_E_RABDataForwardingListIEs);
-*/
 
 /** \brief Display S1ap_LocationReportingFailureIndication message using XER encoding.
  *  \param message_p Pointer to root message.

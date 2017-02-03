@@ -30,7 +30,7 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-02-03 11:00:55.366759 by acetcom
+ * Created on: 2017-02-03 13:33:42.653359 by acetcom
  * from ['S1AP-PDU.asn']
  ******************************************************************************/
 #include "s1ap_common.h"
@@ -4597,23 +4597,23 @@ int s1ap_decode_s1ap_handovercommandies(
                 memcpy(&s1ap_HandoverCommandIEs->handoverType, s1apHandoverType_p, sizeof(S1ap_HandoverType_t));
             } break;
             /* Optional field */
-            case S1ap_ProtocolIE_ID_id_E_RABSubjecttoDataForwardingList:
+            case S1ap_ProtocolIE_ID_id_E_RABDataForwardingList:
             {
-                S1ap_E_RABSubjecttoDataForwardingList_t *s1apERABSubjecttoDataForwardingList_p = NULL;
-                s1ap_HandoverCommandIEs->presenceMask |= S1AP_HANDOVERCOMMANDIES_E_RABSUBJECTTODATAFORWARDINGLIST_PRESENT;
-                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABSubjecttoDataForwardingList, (void**)&s1apERABSubjecttoDataForwardingList_p);
-                if (tempDecoded < 0 || s1apERABSubjecttoDataForwardingList_p == NULL) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE e_RABSubjecttoDataForwardingList failed\n");
-                    if (s1apERABSubjecttoDataForwardingList_p)
-                        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABSubjecttoDataForwardingList, s1apERABSubjecttoDataForwardingList_p);
+                S1ap_E_RABDataForwardingList_t *s1apERABDataForwardingList_p = NULL;
+                s1ap_HandoverCommandIEs->presenceMask |= S1AP_HANDOVERCOMMANDIES_E_RABDATAFORWARDINGLIST_PRESENT;
+                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABDataForwardingList, (void**)&s1apERABDataForwardingList_p);
+                if (tempDecoded < 0 || s1apERABDataForwardingList_p == NULL) {
+                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE e_RABDataForwardingList failed\n");
+                    if (s1apERABDataForwardingList_p)
+                        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABDataForwardingList, s1apERABDataForwardingList_p);
                     return -1;
                 }
                 decoded += tempDecoded;
                 if (asn1_xer_print)
-                    xer_fprint(stdout, &asn_DEF_S1ap_E_RABSubjecttoDataForwardingList, s1apERABSubjecttoDataForwardingList_p);
-                if (s1ap_decode_s1ap_e_rabsubjecttodataforwardinglist(&s1ap_HandoverCommandIEs->e_RABSubjecttoDataForwardingList, s1apERABSubjecttoDataForwardingList_p) < 0) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of encapsulated IE s1apERABSubjecttoDataForwardingList failed\n");
-                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABSubjecttoDataForwardingList, s1apERABSubjecttoDataForwardingList_p);
+                    xer_fprint(stdout, &asn_DEF_S1ap_E_RABDataForwardingList, s1apERABDataForwardingList_p);
+                if (s1ap_decode_s1ap_e_rabdataforwardinglist(&s1ap_HandoverCommandIEs->e_RABDataForwardingList, s1apERABDataForwardingList_p) < 0) {
+                   OAILOG_ERROR (LOG_S1AP, "Decoding of encapsulated IE s1apERABDataForwardingList failed\n");
+                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABDataForwardingList, s1apERABDataForwardingList_p);
                 }
             } break;
             /* Optional field */
@@ -5876,23 +5876,23 @@ int s1ap_decode_s1ap_downlinks1cdma2000tunnelingies(
                 memcpy(&s1ap_DownlinkS1cdma2000tunnelingIEs->eNB_UE_S1AP_ID, s1apENBUES1APID_p, sizeof(S1ap_ENB_UE_S1AP_ID_t));
             } break;
             /* Optional field */
-            case S1ap_ProtocolIE_ID_id_E_RABSubjecttoDataForwardingList:
+            case S1ap_ProtocolIE_ID_id_E_RABDataForwardingList:
             {
-                S1ap_E_RABSubjecttoDataForwardingList_t *s1apERABSubjecttoDataForwardingList_p = NULL;
-                s1ap_DownlinkS1cdma2000tunnelingIEs->presenceMask |= S1AP_DOWNLINKS1CDMA2000TUNNELINGIES_E_RABSUBJECTTODATAFORWARDINGLIST_PRESENT;
-                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABSubjecttoDataForwardingList, (void**)&s1apERABSubjecttoDataForwardingList_p);
-                if (tempDecoded < 0 || s1apERABSubjecttoDataForwardingList_p == NULL) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE e_RABSubjecttoDataForwardingList failed\n");
-                    if (s1apERABSubjecttoDataForwardingList_p)
-                        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABSubjecttoDataForwardingList, s1apERABSubjecttoDataForwardingList_p);
+                S1ap_E_RABDataForwardingList_t *s1apERABDataForwardingList_p = NULL;
+                s1ap_DownlinkS1cdma2000tunnelingIEs->presenceMask |= S1AP_DOWNLINKS1CDMA2000TUNNELINGIES_E_RABDATAFORWARDINGLIST_PRESENT;
+                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABDataForwardingList, (void**)&s1apERABDataForwardingList_p);
+                if (tempDecoded < 0 || s1apERABDataForwardingList_p == NULL) {
+                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE e_RABDataForwardingList failed\n");
+                    if (s1apERABDataForwardingList_p)
+                        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABDataForwardingList, s1apERABDataForwardingList_p);
                     return -1;
                 }
                 decoded += tempDecoded;
                 if (asn1_xer_print)
-                    xer_fprint(stdout, &asn_DEF_S1ap_E_RABSubjecttoDataForwardingList, s1apERABSubjecttoDataForwardingList_p);
-                if (s1ap_decode_s1ap_e_rabsubjecttodataforwardinglist(&s1ap_DownlinkS1cdma2000tunnelingIEs->e_RABSubjecttoDataForwardingList, s1apERABSubjecttoDataForwardingList_p) < 0) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of encapsulated IE s1apERABSubjecttoDataForwardingList failed\n");
-                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABSubjecttoDataForwardingList, s1apERABSubjecttoDataForwardingList_p);
+                    xer_fprint(stdout, &asn_DEF_S1ap_E_RABDataForwardingList, s1apERABDataForwardingList_p);
+                if (s1ap_decode_s1ap_e_rabdataforwardinglist(&s1ap_DownlinkS1cdma2000tunnelingIEs->e_RABDataForwardingList, s1apERABDataForwardingList_p) < 0) {
+                   OAILOG_ERROR (LOG_S1AP, "Decoding of encapsulated IE s1apERABDataForwardingList failed\n");
+                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABDataForwardingList, s1apERABDataForwardingList_p);
                 }
             } break;
             /* Optional field */

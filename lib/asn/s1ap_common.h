@@ -48,7 +48,7 @@ inline void ASN_DEBUG(const char *fmt, ...);
 #include "S1ap-ProtocolIE-ID.h"
 #include "S1ap-TriggeringMessage.h"
 #include "S1ap-AllocationAndRetentionPriority.h"
-#include "S1ap-Bearers-SubjectToStatusTransferList.h"
+#include "S1ap-Bearers-SubjectToStatusTransfer-List.h"
 #include "S1ap-Bearers-SubjectToStatusTransfer-Item.h"
 #include "S1ap-BitRate.h"
 #include "S1ap-BPLMNs.h"
@@ -310,7 +310,7 @@ inline void ASN_DEBUG(const char *fmt, ...);
 #include "S1ap-E-RABToBeSwitchedULItem.h"
 #include "S1ap-E-RABToBeSetupListBearerSUReq.h"
 #include "S1ap-E-RABToBeSetupItemBearerSUReq.h"
-#include "S1ap-E-RABSubjecttoDataForwardingList.h"
+#include "S1ap-E-RABDataForwardingList.h"
 #include "S1ap-E-RABDataForwardingItem.h"
 #include "S1ap-E-RABToBeSetupListHOReq.h"
 #include "S1ap-E-RABToBeSetupItemHOReq.h"
@@ -386,9 +386,22 @@ extern int asn_debug;
 extern int asn1_xer_print;
 
 # include "mme_default_values.h"
+#if 0
+# include "common_types.h"
+#endif
 
 //Forward declaration
 struct s1ap_message_s;
+
+/** \brief Function callback prototype.
+ **/
+#if 0
+typedef int (*s1ap_message_decoded_callback)(
+    const sctp_assoc_id_t             assoc_id,
+    const sctp_stream_id_t            stream,
+    struct s1ap_message_s *message_p
+);
+#endif
 
 /** \brief Encode a successfull outcome message
  \param buffer pointer to buffer in which data will be encoded
@@ -402,7 +415,7 @@ struct s1ap_message_s;
 ssize_t s1ap_generate_successfull_outcome(
   uint8_t               **buffer,
   uint32_t               *length,
-  S1ap_ProcedureCode_t    procedureCode,
+  e_S1ap_ProcedureCode    procedureCode,
   S1ap_Criticality_t      criticality,
   asn_TYPE_descriptor_t  *td,
   void                   *sptr);
@@ -419,7 +432,7 @@ ssize_t s1ap_generate_successfull_outcome(
 ssize_t s1ap_generate_initiating_message(
   uint8_t               **buffer,
   uint32_t               *length,
-  S1ap_ProcedureCode_t    procedureCode,
+  e_S1ap_ProcedureCode    procedureCode,
   S1ap_Criticality_t      criticality,
   asn_TYPE_descriptor_t  *td,
   void                   *sptr);
@@ -436,7 +449,7 @@ ssize_t s1ap_generate_initiating_message(
 ssize_t s1ap_generate_unsuccessfull_outcome(
   uint8_t               **buffer,
   uint32_t               *length,
-  S1ap_ProcedureCode_t    procedureCode,
+  e_S1ap_ProcedureCode    procedureCode,
   S1ap_Criticality_t      criticality,
   asn_TYPE_descriptor_t  *td,
   void                   *sptr);

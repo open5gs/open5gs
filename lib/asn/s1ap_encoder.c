@@ -30,7 +30,7 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-02-03 11:00:55.391999 by acetcom
+ * Created on: 2017-02-03 13:33:42.683855 by acetcom
  * from ['S1AP-PDU.asn']
  ******************************************************************************/
 #include "s1ap_common.h"
@@ -2532,11 +2532,11 @@ int s1ap_encode_s1ap_handovercommandies(
     ASN_SEQUENCE_ADD(&s1ap_HandoverCommand->s1ap_HandoverCommand_ies.list, ie);
 
     /* Optional field */
-    if (s1ap_HandoverCommandIEs->presenceMask & S1AP_HANDOVERCOMMANDIES_E_RABSUBJECTTODATAFORWARDINGLIST_PRESENT) {
-        if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABSubjecttoDataForwardingList,
+    if (s1ap_HandoverCommandIEs->presenceMask & S1AP_HANDOVERCOMMANDIES_E_RABDATAFORWARDINGLIST_PRESENT) {
+        if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABDataForwardingList,
                             S1ap_Criticality_ignore,
-                            &asn_DEF_S1ap_E_RABSubjecttoDataForwardingList,
-                            &s1ap_HandoverCommandIEs->e_RABSubjecttoDataForwardingList)) == NULL) {
+                            &asn_DEF_S1ap_E_RABDataForwardingList,
+                            &s1ap_HandoverCommandIEs->e_RABDataForwardingList)) == NULL) {
             return -1;
         }
         ASN_SEQUENCE_ADD(&s1ap_HandoverCommand->s1ap_HandoverCommand_ies.list, ie);
@@ -3230,11 +3230,11 @@ int s1ap_encode_s1ap_downlinks1cdma2000tunnelingies(
     ASN_SEQUENCE_ADD(&s1ap_DownlinkS1cdma2000tunneling->s1ap_DownlinkS1cdma2000tunneling_ies.list, ie);
 
     /* Optional field */
-    if (s1ap_DownlinkS1cdma2000tunnelingIEs->presenceMask & S1AP_DOWNLINKS1CDMA2000TUNNELINGIES_E_RABSUBJECTTODATAFORWARDINGLIST_PRESENT) {
-        if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABSubjecttoDataForwardingList,
+    if (s1ap_DownlinkS1cdma2000tunnelingIEs->presenceMask & S1AP_DOWNLINKS1CDMA2000TUNNELINGIES_E_RABDATAFORWARDINGLIST_PRESENT) {
+        if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABDataForwardingList,
                             S1ap_Criticality_ignore,
-                            &asn_DEF_S1ap_E_RABSubjecttoDataForwardingList,
-                            &s1ap_DownlinkS1cdma2000tunnelingIEs->e_RABSubjecttoDataForwardingList)) == NULL) {
+                            &asn_DEF_S1ap_E_RABDataForwardingList,
+                            &s1ap_DownlinkS1cdma2000tunnelingIEs->e_RABDataForwardingList)) == NULL) {
             return -1;
         }
         ASN_SEQUENCE_ADD(&s1ap_DownlinkS1cdma2000tunneling->s1ap_DownlinkS1cdma2000tunneling_ies.list, ie);
@@ -4270,15 +4270,15 @@ int s1ap_encode_s1ap_e_rabadmittedlist(
     return 0;
 }
 
-int s1ap_encode_s1ap_e_rabsubjecttodataforwardinglist(
+int s1ap_encode_s1ap_e_rabdataforwardinglist(
     S1ap_E_RABDataForwardingList_t *s1ap_E_RABDataForwardingList,
-    S1ap_E_RABSubjecttoDataForwardingListIEs_t *s1ap_E_RABSubjecttoDataForwardingListIEs) {
+    S1ap_E_RABDataForwardingListIEs_t *s1ap_E_RABDataForwardingListIEs) {
 
     int i;
     S1ap_IE_t *ie;
 
     assert(s1ap_E_RABDataForwardingList != NULL);
-    assert(s1ap_E_RABSubjecttoDataForwardingListIEs != NULL);
+    assert(s1ap_E_RABDataForwardingListIEs != NULL);
 
     for (i = 0; i < s1ap_E_RABDataForwardingListIEs->s1ap_E_RABDataForwardingItem.count; i++) {
         if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABDataForwardingItem,

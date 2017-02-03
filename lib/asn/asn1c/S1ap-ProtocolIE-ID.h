@@ -26,7 +26,7 @@ typedef enum S1ap_ProtocolIE_ID {
 	S1ap_ProtocolIE_ID_id_SourceID	= 3,
 	S1ap_ProtocolIE_ID_id_TargetID	= 4,
 	S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID	= 8,
-	S1ap_ProtocolIE_ID_id_E_RABSubjecttoDataForwardingList	= 12,
+	S1ap_ProtocolIE_ID_id_E_RABDataForwardingList	= 12,
 	S1ap_ProtocolIE_ID_id_E_RABtoReleaseListHOCmd	= 13,
 	S1ap_ProtocolIE_ID_id_E_RABDataForwardingItem	= 14,
 	S1ap_ProtocolIE_ID_id_E_RABReleaseItemBearerRelComp	= 15,

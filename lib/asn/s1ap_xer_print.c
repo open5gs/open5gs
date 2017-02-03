@@ -30,7 +30,7 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-02-03 11:00:55.408484 by acetcom
+ * Created on: 2017-02-03 13:33:42.703530 by acetcom
  * from ['S1AP-PDU.asn']
  ******************************************************************************/
 #include <stdlib.h>
@@ -1376,8 +1376,8 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handovercommand(
     xer_encode_local(&asn_DEF_S1ap_ENB_UE_S1AP_ID, &s1ap_HandoverCommandIEs->eNB_UE_S1AP_ID, cb, app_key, 2);
     xer_encode_local(&asn_DEF_S1ap_HandoverType, &s1ap_HandoverCommandIEs->handoverType, cb, app_key, 2);
     /* Optional field */
-    if (s1ap_HandoverCommandIEs->presenceMask & S1AP_HANDOVERCOMMANDIES_E_RABSUBJECTTODATAFORWARDINGLIST_PRESENT)
-        s1ap_xer_print_s1ap_e_rabsubjecttodataforwardinglist(cb, app_key, &s1ap_HandoverCommandIEs->e_RABSubjecttoDataForwardingList);
+    if (s1ap_HandoverCommandIEs->presenceMask & S1AP_HANDOVERCOMMANDIES_E_RABDATAFORWARDINGLIST_PRESENT)
+        s1ap_xer_print_s1ap_e_rabdataforwardinglist(cb, app_key, &s1ap_HandoverCommandIEs->e_RABDataForwardingList);
     /* Optional field */
     if (s1ap_HandoverCommandIEs->presenceMask & S1AP_HANDOVERCOMMANDIES_E_RABTORELEASELISTHOCMD_PRESENT)
         xer_encode_local(&asn_DEF_S1ap_E_RABList, &s1ap_HandoverCommandIEs->e_RABtoReleaseListHOCmd, cb, app_key, 2);
@@ -1752,8 +1752,8 @@ asn_enc_rval_t s1ap_xer_print_s1ap_downlinks1cdma2000tunneling(
     xer_encode_local(&asn_DEF_S1ap_MME_UE_S1AP_ID, &s1ap_DownlinkS1cdma2000tunnelingIEs->mme_ue_s1ap_id, cb, app_key, 2);
     xer_encode_local(&asn_DEF_S1ap_ENB_UE_S1AP_ID, &s1ap_DownlinkS1cdma2000tunnelingIEs->eNB_UE_S1AP_ID, cb, app_key, 2);
     /* Optional field */
-    if (s1ap_DownlinkS1cdma2000tunnelingIEs->presenceMask & S1AP_DOWNLINKS1CDMA2000TUNNELINGIES_E_RABSUBJECTTODATAFORWARDINGLIST_PRESENT)
-        s1ap_xer_print_s1ap_e_rabsubjecttodataforwardinglist(cb, app_key, &s1ap_DownlinkS1cdma2000tunnelingIEs->e_RABSubjecttoDataForwardingList);
+    if (s1ap_DownlinkS1cdma2000tunnelingIEs->presenceMask & S1AP_DOWNLINKS1CDMA2000TUNNELINGIES_E_RABDATAFORWARDINGLIST_PRESENT)
+        s1ap_xer_print_s1ap_e_rabdataforwardinglist(cb, app_key, &s1ap_DownlinkS1cdma2000tunnelingIEs->e_RABDataForwardingList);
     /* Optional field */
     if (s1ap_DownlinkS1cdma2000tunnelingIEs->presenceMask & S1AP_DOWNLINKS1CDMA2000TUNNELINGIES_CDMA2000HOSTATUS_PRESENT)
         xer_encode_local(&asn_DEF_S1ap_Cdma2000HOStatus, &s1ap_DownlinkS1cdma2000tunnelingIEs->cdma2000HOStatus, cb, app_key, 2);

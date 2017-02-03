@@ -5,8 +5,8 @@
  * 	`asn1c -fcompound-names`
  */
 
-#ifndef	_S1ap_Bearers_SubjectToStatusTransferList_H_
-#define	_S1ap_Bearers_SubjectToStatusTransferList_H_
+#ifndef	_S1ap_Bearers_SubjectToStatusTransfer_List_H_
+#define	_S1ap_Bearers_SubjectToStatusTransfer_List_H_
 
 
 #include <asn_application.h>
@@ -22,16 +22,16 @@ extern "C" {
 /* Forward declarations */
 struct S1ap_IE;
 
-/* S1ap-Bearers-SubjectToStatusTransferList */
-typedef struct S1ap_Bearers_SubjectToStatusTransferList {
+/* S1ap-Bearers-SubjectToStatusTransfer-List */
+typedef struct S1ap_Bearers_SubjectToStatusTransfer_List {
 	A_SEQUENCE_OF(struct S1ap_IE) list;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} S1ap_Bearers_SubjectToStatusTransferList_t;
+} S1ap_Bearers_SubjectToStatusTransfer_List_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_S1ap_Bearers_SubjectToStatusTransferList;
+extern asn_TYPE_descriptor_t asn_DEF_S1ap_Bearers_SubjectToStatusTransfer_List;
 
 #ifdef __cplusplus
 }
@@ -40,5 +40,5 @@ extern asn_TYPE_descriptor_t asn_DEF_S1ap_Bearers_SubjectToStatusTransferList;
 /* Referred external types */
 #include "S1ap-IE.h"
 
-#endif	/* _S1ap_Bearers_SubjectToStatusTransferList_H_ */
+#endif	/* _S1ap_Bearers_SubjectToStatusTransfer_List_H_ */
 #include <asn_internal.h>

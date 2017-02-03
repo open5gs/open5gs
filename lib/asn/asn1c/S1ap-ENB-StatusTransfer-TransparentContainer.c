@@ -11,7 +11,7 @@ static asn_TYPE_member_t asn_MBR_S1ap_ENB_StatusTransfer_TransparentContainer_1[
 	{ ATF_NOFLAGS, 0, offsetof(struct S1ap_ENB_StatusTransfer_TransparentContainer, bearers_SubjectToStatusTransferList),
 		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		-1,	/* IMPLICIT tag at current level */
-		&asn_DEF_S1ap_Bearers_SubjectToStatusTransferList,
+		&asn_DEF_S1ap_Bearers_SubjectToStatusTransfer_List,
 		0,	/* Defer constraints checking to the member type */
 		0,	/* No PER visible constraints */
 		0,
