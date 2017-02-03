@@ -30,7 +30,7 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-02-03 23:55:11.281621 by acetcom
+ * Created on: 2017-02-04 00:30:23.845656 by acetcom
  * from ['S1AP-PDU.asn']
  ******************************************************************************/
 #include <stdlib.h>
@@ -187,7 +187,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabreleaseresponse(
     ASN__ENCODED_OK(er);
 }
 
-asn_enc_rval_t s1ap_xer_print_s1ap_uplinknonueassociatedlppatransport_(
+asn_enc_rval_t s1ap_xer_print_s1ap_uplinknonueassociatedlppatransport(
     asn_app_consume_bytes_f *cb,
     void *app_key,
     s1ap_message *message_p)
@@ -325,7 +325,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobemodifiedlistbearermodreq(
     ASN__ENCODED_OK(er);
 }
 
-asn_enc_rval_t s1ap_xer_print_s1ap_uecontextreleaserequest_(
+asn_enc_rval_t s1ap_xer_print_s1ap_uecontextreleaserequest(
     asn_app_consume_bytes_f *cb,
     void *app_key,
     s1ap_message *message_p)
@@ -362,7 +362,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabadmittedlist(
     ASN__ENCODED_OK(er);
 }
 
-asn_enc_rval_t s1ap_xer_print_s1ap_initialuemessage_(
+asn_enc_rval_t s1ap_xer_print_s1ap_initialuemessage(
     asn_app_consume_bytes_f *cb,
     void *app_key,
     s1ap_message *message_p)
@@ -617,7 +617,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_locationreport(
     ASN__ENCODED_OK(er);
 }
 
-asn_enc_rval_t s1ap_xer_print_s1ap_uplinknastransport_(
+asn_enc_rval_t s1ap_xer_print_s1ap_uplinknastransport(
     asn_app_consume_bytes_f *cb,
     void *app_key,
     s1ap_message *message_p)
@@ -1444,7 +1444,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_overloadstart(
     ASN__ENCODED_OK(er);
 }
 
-asn_enc_rval_t s1ap_xer_print_s1ap_downlinknonueassociatedlppatransport_(
+asn_enc_rval_t s1ap_xer_print_s1ap_downlinknonueassociatedlppatransport(
     asn_app_consume_bytes_f *cb,
     void *app_key,
     s1ap_message *message_p)
@@ -1495,7 +1495,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handoverrequestacknowledge(
     ASN__ENCODED_OK(er);
 }
 
-asn_enc_rval_t s1ap_xer_print_s1ap_downlinkueassociatedlppatransport_(
+asn_enc_rval_t s1ap_xer_print_s1ap_downlinkueassociatedlppatransport(
     asn_app_consume_bytes_f *cb,
     void *app_key,
     s1ap_message *message_p)
@@ -1927,7 +1927,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabsetupresponse(
     ASN__ENCODED_OK(er);
 }
 
-asn_enc_rval_t s1ap_xer_print_s1ap_uecontextreleasecommand_(
+asn_enc_rval_t s1ap_xer_print_s1ap_uecontextreleasecommand(
     asn_app_consume_bytes_f *cb,
     void *app_key,
     s1ap_message *message_p)
@@ -1980,7 +1980,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_pathswitchrequest(
     ASN__ENCODED_OK(er);
 }
 
-asn_enc_rval_t s1ap_xer_print_s1ap_downlinknastransport_(
+asn_enc_rval_t s1ap_xer_print_s1ap_downlinknastransport(
     asn_app_consume_bytes_f *cb,
     void *app_key,
     s1ap_message *message_p)
@@ -2055,7 +2055,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_s1setuprequest(
     ASN__ENCODED_OK(er);
 }
 
-asn_enc_rval_t s1ap_xer_print_s1ap_nasnondeliveryindication_(
+asn_enc_rval_t s1ap_xer_print_s1ap_nasnondeliveryindication(
     asn_app_consume_bytes_f *cb,
     void *app_key,
     s1ap_message *message_p)
@@ -2172,7 +2172,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_resetacknowledge(
     ASN__ENCODED_OK(er);
 }
 
-asn_enc_rval_t s1ap_xer_print_s1ap_uecontextreleasecomplete_(
+asn_enc_rval_t s1ap_xer_print_s1ap_uecontextreleasecomplete(
     asn_app_consume_bytes_f *cb,
     void *app_key,
     s1ap_message *message_p)
@@ -2195,7 +2195,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_uecontextreleasecomplete_(
     ASN__ENCODED_OK(er);
 }
 
-asn_enc_rval_t s1ap_xer_print_s1ap_uplinkueassociatedlppatransport_(
+asn_enc_rval_t s1ap_xer_print_s1ap_uplinkueassociatedlppatransport(
     asn_app_consume_bytes_f *cb,
     void *app_key,
     s1ap_message *message_p)

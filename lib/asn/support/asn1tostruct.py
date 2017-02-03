@@ -321,7 +321,7 @@ for key in iesDefs:
     f.write("    %s_t *%s);\n\n" % (asn1cStruct, lowerFirstCamelWord(asn1cStruct)))
 
 for key in iesDefs:
-    asn1cStruct = re.sub('-', '_', re.sub('IEs', '', key))
+    asn1cStruct = re.sub('-', '_', re.sub('IEs', '', re.sub('-IEs', '', key)))
     asn1cStruct = re.sub('Item', 'List', asn1cStruct)
     firstlower = re.sub('Item', 'List', re.sub('enb', 'eNB', lowerFirstCamelWord(asn1cStruct)))
 
@@ -673,9 +673,9 @@ for (key, value) in iesDefs.items():
     ietypeunderscore = re.sub('-', '_', ie[2])
 
     if key in ieofielist.values():
-        f.write("asn_enc_rval_t %s_xer_print_%s(\n" % (fileprefix, re.sub('ies', '', re.sub('item', 'list', re.sub('-', '_', key).lower()))))
+        f.write("asn_enc_rval_t %s_xer_print_%s(\n" % (fileprefix, re.sub('ies', '', re.sub('_ies', '', re.sub('item', 'list', re.sub('-', '_', key).lower())))))
     else:
-        f.write("asn_enc_rval_t %s_xer_print_%s(\n" % (fileprefix, re.sub('ies', '', re.sub('-', '_', key).lower())))
+        f.write("asn_enc_rval_t %s_xer_print_%s(\n" % (fileprefix, re.sub('ies', '', re.sub('_ies', '', re.sub('-', '_', key).lower()))))
     #f.write("    FILE *file,\n")
     f.write("    asn_app_consume_bytes_f *cb,\n")
     f.write("    void *app_key,\n")

@@ -30,7 +30,7 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-02-03 23:55:11.223878 by acetcom
+ * Created on: 2017-02-04 00:30:23.783422 by acetcom
  * from ['S1AP-PDU.asn']
  ******************************************************************************/
 #include "s1ap_common.h"
@@ -2534,11 +2534,11 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabreleaseresponse(
     void *app_key,
     s1ap_message *message_p);
 
-/** \brief Display S1ap_UplinkNonUEAssociatedLPPaTransport_ message using XER encoding.
+/** \brief Display S1ap_UplinkNonUEAssociatedLPPaTransport message using XER encoding.
  *  \param message_p Pointer to root message.
  *  \param file File descriptor to write output.
  **/
-asn_enc_rval_t s1ap_xer_print_s1ap_uplinknonueassociatedlppatransport_(
+asn_enc_rval_t s1ap_xer_print_s1ap_uplinknonueassociatedlppatransport(
     asn_app_consume_bytes_f *cb,
     void *app_key,
     s1ap_message *message_p);
@@ -2597,11 +2597,11 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobemodifiedlistbearermodreq(
     void *app_key,
     S1ap_E_RABToBeModifiedListBearerModReq_IEs_t *s1ap_E_RABToBeModifiedListBearerModReqIEs);
 
-/** \brief Display S1ap_UEContextReleaseRequest_ message using XER encoding.
+/** \brief Display S1ap_UEContextReleaseRequest message using XER encoding.
  *  \param message_p Pointer to root message.
  *  \param file File descriptor to write output.
  **/
-asn_enc_rval_t s1ap_xer_print_s1ap_uecontextreleaserequest_(
+asn_enc_rval_t s1ap_xer_print_s1ap_uecontextreleaserequest(
     asn_app_consume_bytes_f *cb,
     void *app_key,
     s1ap_message *message_p);
@@ -2615,11 +2615,11 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabadmittedlist(
     void *app_key,
     S1ap_E_RABAdmittedList_IEs_t *s1ap_E_RABAdmittedListIEs);
 
-/** \brief Display S1ap_InitialUEMessage_ message using XER encoding.
+/** \brief Display S1ap_InitialUEMessage message using XER encoding.
  *  \param message_p Pointer to root message.
  *  \param file File descriptor to write output.
  **/
-asn_enc_rval_t s1ap_xer_print_s1ap_initialuemessage_(
+asn_enc_rval_t s1ap_xer_print_s1ap_initialuemessage(
     asn_app_consume_bytes_f *cb,
     void *app_key,
     s1ap_message *message_p);
@@ -2696,11 +2696,11 @@ asn_enc_rval_t s1ap_xer_print_s1ap_locationreport(
     void *app_key,
     s1ap_message *message_p);
 
-/** \brief Display S1ap_UplinkNASTransport_ message using XER encoding.
+/** \brief Display S1ap_UplinkNASTransport message using XER encoding.
  *  \param message_p Pointer to root message.
  *  \param file File descriptor to write output.
  **/
-asn_enc_rval_t s1ap_xer_print_s1ap_uplinknastransport_(
+asn_enc_rval_t s1ap_xer_print_s1ap_uplinknastransport(
     asn_app_consume_bytes_f *cb,
     void *app_key,
     s1ap_message *message_p);
@@ -2993,11 +2993,11 @@ asn_enc_rval_t s1ap_xer_print_s1ap_overloadstart(
     void *app_key,
     s1ap_message *message_p);
 
-/** \brief Display S1ap_DownlinkNonUEAssociatedLPPaTransport_ message using XER encoding.
+/** \brief Display S1ap_DownlinkNonUEAssociatedLPPaTransport message using XER encoding.
  *  \param message_p Pointer to root message.
  *  \param file File descriptor to write output.
  **/
-asn_enc_rval_t s1ap_xer_print_s1ap_downlinknonueassociatedlppatransport_(
+asn_enc_rval_t s1ap_xer_print_s1ap_downlinknonueassociatedlppatransport(
     asn_app_consume_bytes_f *cb,
     void *app_key,
     s1ap_message *message_p);
@@ -3011,11 +3011,11 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handoverrequestacknowledge(
     void *app_key,
     s1ap_message *message_p);
 
-/** \brief Display S1ap_DownlinkUEAssociatedLPPaTransport_ message using XER encoding.
+/** \brief Display S1ap_DownlinkUEAssociatedLPPaTransport message using XER encoding.
  *  \param message_p Pointer to root message.
  *  \param file File descriptor to write output.
  **/
-asn_enc_rval_t s1ap_xer_print_s1ap_downlinkueassociatedlppatransport_(
+asn_enc_rval_t s1ap_xer_print_s1ap_downlinkueassociatedlppatransport(
     asn_app_consume_bytes_f *cb,
     void *app_key,
     s1ap_message *message_p);
@@ -3191,11 +3191,11 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabsetupresponse(
     void *app_key,
     s1ap_message *message_p);
 
-/** \brief Display S1ap_UEContextReleaseCommand_ message using XER encoding.
+/** \brief Display S1ap_UEContextReleaseCommand message using XER encoding.
  *  \param message_p Pointer to root message.
  *  \param file File descriptor to write output.
  **/
-asn_enc_rval_t s1ap_xer_print_s1ap_uecontextreleasecommand_(
+asn_enc_rval_t s1ap_xer_print_s1ap_uecontextreleasecommand(
     asn_app_consume_bytes_f *cb,
     void *app_key,
     s1ap_message *message_p);
@@ -3209,11 +3209,11 @@ asn_enc_rval_t s1ap_xer_print_s1ap_pathswitchrequest(
     void *app_key,
     s1ap_message *message_p);
 
-/** \brief Display S1ap_DownlinkNASTransport_ message using XER encoding.
+/** \brief Display S1ap_DownlinkNASTransport message using XER encoding.
  *  \param message_p Pointer to root message.
  *  \param file File descriptor to write output.
  **/
-asn_enc_rval_t s1ap_xer_print_s1ap_downlinknastransport_(
+asn_enc_rval_t s1ap_xer_print_s1ap_downlinknastransport(
     asn_app_consume_bytes_f *cb,
     void *app_key,
     s1ap_message *message_p);
@@ -3236,11 +3236,11 @@ asn_enc_rval_t s1ap_xer_print_s1ap_s1setuprequest(
     void *app_key,
     s1ap_message *message_p);
 
-/** \brief Display S1ap_NASNonDeliveryIndication_ message using XER encoding.
+/** \brief Display S1ap_NASNonDeliveryIndication message using XER encoding.
  *  \param message_p Pointer to root message.
  *  \param file File descriptor to write output.
  **/
-asn_enc_rval_t s1ap_xer_print_s1ap_nasnondeliveryindication_(
+asn_enc_rval_t s1ap_xer_print_s1ap_nasnondeliveryindication(
     asn_app_consume_bytes_f *cb,
     void *app_key,
     s1ap_message *message_p);
@@ -3281,20 +3281,20 @@ asn_enc_rval_t s1ap_xer_print_s1ap_resetacknowledge(
     void *app_key,
     s1ap_message *message_p);
 
-/** \brief Display S1ap_UEContextReleaseComplete_ message using XER encoding.
+/** \brief Display S1ap_UEContextReleaseComplete message using XER encoding.
  *  \param message_p Pointer to root message.
  *  \param file File descriptor to write output.
  **/
-asn_enc_rval_t s1ap_xer_print_s1ap_uecontextreleasecomplete_(
+asn_enc_rval_t s1ap_xer_print_s1ap_uecontextreleasecomplete(
     asn_app_consume_bytes_f *cb,
     void *app_key,
     s1ap_message *message_p);
 
-/** \brief Display S1ap_UplinkUEAssociatedLPPaTransport_ message using XER encoding.
+/** \brief Display S1ap_UplinkUEAssociatedLPPaTransport message using XER encoding.
  *  \param message_p Pointer to root message.
  *  \param file File descriptor to write output.
  **/
-asn_enc_rval_t s1ap_xer_print_s1ap_uplinkueassociatedlppatransport_(
+asn_enc_rval_t s1ap_xer_print_s1ap_uplinkueassociatedlppatransport(
     asn_app_consume_bytes_f *cb,
     void *app_key,
     s1ap_message *message_p);

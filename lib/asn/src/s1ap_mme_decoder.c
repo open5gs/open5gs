@@ -71,7 +71,7 @@ s1ap_mme_decode_initiating (
   switch (initiating_p->procedureCode) {
     case S1ap_ProcedureCode_id_uplinkNASTransport: {
         ret = s1ap_decode_s1ap_uplinknastransport_ies (&message->msg.s1ap_UplinkNASTransport_IEs, &initiating_p->value);
-        s1ap_xer_print_s1ap_uplinknastransport_ (s1ap_xer__print2sp, message_string, message);
+        s1ap_xer_print_s1ap_uplinknastransport (s1ap_xer__print2sp, message_string, message);
 #if 0
         message_id = S1AP_UPLINK_NAS_LOG;
 #endif
@@ -89,7 +89,7 @@ s1ap_mme_decode_initiating (
 
     case S1ap_ProcedureCode_id_initialUEMessage: {
         ret = s1ap_decode_s1ap_initialuemessage_ies (&message->msg.s1ap_InitialUEMessage_IEs, &initiating_p->value);
-        s1ap_xer_print_s1ap_initialuemessage_ (s1ap_xer__print2sp, message_string, message);
+        s1ap_xer_print_s1ap_initialuemessage (s1ap_xer__print2sp, message_string, message);
 #if 0
         message_id = S1AP_INITIAL_UE_MESSAGE_LOG;
 #endif
@@ -98,7 +98,7 @@ s1ap_mme_decode_initiating (
 
     case S1ap_ProcedureCode_id_UEContextReleaseRequest: {
         ret = s1ap_decode_s1ap_uecontextreleaserequest_ies (&message->msg.s1ap_UEContextReleaseRequest_IEs, &initiating_p->value);
-        s1ap_xer_print_s1ap_uecontextreleaserequest_ (s1ap_xer__print2sp, message_string, message);
+        s1ap_xer_print_s1ap_uecontextreleaserequest (s1ap_xer__print2sp, message_string, message);
 #if 0
         message_id = S1AP_UE_CONTEXT_RELEASE_REQ_LOG;
 #endif
@@ -116,7 +116,7 @@ s1ap_mme_decode_initiating (
 
     case S1ap_ProcedureCode_id_NASNonDeliveryIndication: {
         ret = s1ap_decode_s1ap_nasnondeliveryindication_ies (&message->msg.s1ap_NASNonDeliveryIndication_IEs, &initiating_p->value);
-        s1ap_xer_print_s1ap_nasnondeliveryindication_ (s1ap_xer__print2sp, message_string, message);
+        s1ap_xer_print_s1ap_nasnondeliveryindication (s1ap_xer__print2sp, message_string, message);
 #if 0
         message_id = S1AP_NAS_NON_DELIVERY_IND_LOG;
 #endif
@@ -174,7 +174,7 @@ s1ap_mme_decode_successfull_outcome (
 
     case S1ap_ProcedureCode_id_UEContextRelease: {
         ret = s1ap_decode_s1ap_uecontextreleasecomplete_ies (&message->msg.s1ap_UEContextReleaseComplete_IEs, &successfullOutcome_p->value);
-        s1ap_xer_print_s1ap_uecontextreleasecomplete_ (s1ap_xer__print2sp, message_string, message);
+        s1ap_xer_print_s1ap_uecontextreleasecomplete (s1ap_xer__print2sp, message_string, message);
 #if 0
         message_id = S1AP_UE_CONTEXT_RELEASE_LOG;
 #endif
