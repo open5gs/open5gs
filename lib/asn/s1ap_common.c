@@ -31,12 +31,21 @@
 
 #include "s1ap_common.h"
 #include "S1AP-PDU.h"
+#if 0 /* modified by acetcom */
 #include "dynamic_memory_check.h"
 #include "log.h"
+#else
+#include "core_debug.h"
+#endif
 
 int                                     asn_debug = 0;
 int                                     asn1_xer_print = 0;
 
+void free_wrapper(void *ptr)
+{
+    free(ptr);
+    ptr = NULL;
+}
 
 ssize_t
 s1ap_generate_initiating_message (
@@ -66,7 +75,7 @@ s1ap_generate_initiating_message (
   ASN_STRUCT_FREE_CONTENTS_ONLY (*td, sptr);
 
   if ((encoded = aper_encode_to_new_buffer (&asn_DEF_S1AP_PDU, 0, &pdu, (void **)buffer)) < 0) {
-  OAILOG_ERROR (LOG_S1AP, "Encoding of %s failed\n", td->name);
+      d_error("Encoding of %s failed\n", td->name);
     return -1;
   }
 
@@ -102,7 +111,7 @@ s1ap_generate_successfull_outcome (
   ASN_STRUCT_FREE_CONTENTS_ONLY (*td, sptr);
 
   if ((encoded = aper_encode_to_new_buffer (&asn_DEF_S1AP_PDU, 0, &pdu, (void **)buffer)) < 0) {
-    OAILOG_ERROR (LOG_S1AP, "Encoding of %s failed\n", td->name);
+    d_error("Encoding of %s failed\n", td->name);
     return -1;
   }
 
@@ -138,7 +147,7 @@ s1ap_generate_unsuccessfull_outcome (
   ASN_STRUCT_FREE_CONTENTS_ONLY (*td, sptr);
 
   if ((encoded = aper_encode_to_new_buffer (&asn_DEF_S1AP_PDU, 0, &pdu, (void **)buffer)) < 0) {
-    OAILOG_ERROR (LOG_S1AP, "Encoding of %s failed\n", td->name);
+    d_error("Encoding of %s failed\n", td->name);
     return -1;
   }
 
@@ -165,7 +174,7 @@ s1ap_new_ie (
   buff->criticality = criticality;
 
   if (ANY_fromType_aper (&buff->value, type, sptr) < 0) {
-    OAILOG_ERROR (LOG_S1AP, "Encoding of %s failed\n", type->name);
+    d_error("Encoding of %s failed\n", type->name);
     free_wrapper (buff);
     return NULL;
   }

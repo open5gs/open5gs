@@ -87,8 +87,8 @@ static asn_per_constraints_t asn_PER_memb_value_constr_4 GCC_NOTUSED = {
 };
 static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P0_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P0, id),
-		(ASN_TAG_CLASS_UNIVERSAL | (2 << 2)),
-		0,
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
+		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_S1ap_ProtocolIE_ID,
 		memb_id_constraint_1,
 		&asn_PER_memb_id_constr_2,
@@ -96,17 +96,17 @@ static asn_TYPE_member_t asn_MBR_ProtocolIE_Field_5901P0_1[] = {
 		"id"
 		},
 	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P0, criticality),
-		(ASN_TAG_CLASS_UNIVERSAL | (10 << 2)),
-		0,
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_S1ap_Criticality,
 		memb_criticality_constraint_1,
 		&asn_PER_memb_criticality_constr_3,
 		0,
 		"criticality"
 		},
-	{ ATF_OPEN_TYPE | ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P0, value),
-		-1 /* Ambiguous tag (ANY?) */,
-		0,
+	{ ATF_NOFLAGS, 0, offsetof(struct ProtocolIE_Field_5901P0, value),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		+1,	/* EXPLICIT tag at current level */
 		&asn_DEF_ANY,
 		memb_value_constraint_1,
 		&asn_PER_memb_value_constr_4,
@@ -118,14 +118,15 @@ static const ber_tlv_tag_t asn_DEF_ProtocolIE_Field_5901P0_tags_1[] = {
 	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
 };
 static const asn_TYPE_tag2member_t asn_MAP_ProtocolIE_Field_5901P0_tag2el_1[] = {
-    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 0, 0, 0 }, /* id */
-    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 1, 0, 0 } /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* id */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* criticality */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* value */
 };
 static asn_SEQUENCE_specifics_t asn_SPC_ProtocolIE_Field_5901P0_specs_1 = {
 	sizeof(struct ProtocolIE_Field_5901P0),
 	offsetof(struct ProtocolIE_Field_5901P0, _asn_ctx),
 	asn_MAP_ProtocolIE_Field_5901P0_tag2el_1,
-	2,	/* Count of tags in the map */
+	3,	/* Count of tags in the map */
 	0, 0, 0,	/* Optional elements (not needed) */
 	-1,	/* Start extensions */
 	-1	/* Stop extensions */

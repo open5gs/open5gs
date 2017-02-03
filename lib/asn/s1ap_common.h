@@ -386,7 +386,7 @@ extern int asn_debug;
 extern int asn1_xer_print;
 
 # include "mme_default_values.h"
-#if 0
+#if 0 /* modified by acetcom */
 # include "common_types.h"
 #endif
 
@@ -395,7 +395,7 @@ struct s1ap_message_s;
 
 /** \brief Function callback prototype.
  **/
-#if 0
+#if 0 /* modified by acetcom */
 typedef int (*s1ap_message_decoded_callback)(
     const sctp_assoc_id_t             assoc_id,
     const sctp_stream_id_t            stream,

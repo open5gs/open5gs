@@ -30,7 +30,7 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-02-03 13:33:42.683855 by acetcom
+ * Created on: 2017-02-03 16:04:58.994273 by acetcom
  * from ['S1AP-PDU.asn']
  ******************************************************************************/
 #include "s1ap_common.h"
@@ -68,26 +68,6 @@ int s1ap_encode_s1ap_deactivatetraceies(
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_DeactivateTrace->s1ap_DeactivateTrace_ies.list, ie);
-
-    return 0;
-}
-
-int s1ap_encode_s1ap_e_rabreleaseitembearerrelcompies(
-    S1ap_E_RABReleaseListBearerRelComp_t *s1ap_E_RABReleaseListBearerRelComp,
-    S1ap_E_RABReleaseItemBearerRelCompIEs_t *s1ap_E_RABReleaseItemBearerRelCompIEs) {
-
-    S1ap_IE_t *ie;
-
-    assert(s1ap_E_RABReleaseListBearerRelComp != NULL);
-    assert(s1ap_E_RABReleaseItemBearerRelCompIEs != NULL);
-
-    if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABReleaseItemBearerRelComp,
-                        S1ap_Criticality_ignore,
-                        &asn_DEF_S1ap_E_RABReleaseItemBearerRelComp,
-                          &s1ap_E_RABReleaseItemBearerRelCompIEs->e_RABReleaseItemBearerRelComp)) == NULL) {
-        return -1;
-    }
-    ASN_SEQUENCE_ADD(&s1ap_E_RABReleaseListBearerRelComp->s1ap_E_RABReleaseListBearerRelComp_ies.list, ie);
 
     return 0;
 }
@@ -370,26 +350,6 @@ int s1ap_encode_s1ap_handoverpreparationfailureies(
     return 0;
 }
 
-int s1ap_encode_s1ap_e_rabtobemodifieditembearermodreqies(
-    S1ap_E_RABToBeModifiedListBearerModReq_t *s1ap_E_RABToBeModifiedListBearerModReq,
-    S1ap_E_RABToBeModifiedItemBearerModReqIEs_t *s1ap_E_RABToBeModifiedItemBearerModReqIEs) {
-
-    S1ap_IE_t *ie;
-
-    assert(s1ap_E_RABToBeModifiedListBearerModReq != NULL);
-    assert(s1ap_E_RABToBeModifiedItemBearerModReqIEs != NULL);
-
-    if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABToBeModifiedItemBearerModReq,
-                        S1ap_Criticality_reject,
-                        &asn_DEF_S1ap_E_RABToBeModifiedItemBearerModReq,
-                          &s1ap_E_RABToBeModifiedItemBearerModReqIEs->e_RABToBeModifiedItemBearerModReq)) == NULL) {
-        return -1;
-    }
-    ASN_SEQUENCE_ADD(&s1ap_E_RABToBeModifiedListBearerModReq->s1ap_E_RABToBeModifiedListBearerModReq_ies.list, ie);
-
-    return 0;
-}
-
 int s1ap_encode_s1ap_uecontextreleaserequest_ies(
     S1ap_UEContextReleaseRequest_t *s1ap_UEContextReleaseRequest,
     S1ap_UEContextReleaseRequest_IEs_t *s1ap_UEContextReleaseRequest_IEs) {
@@ -531,11 +491,11 @@ int s1ap_encode_s1ap_initialuemessage_ies(
     }
 
     /* Optional field */
-    if (s1ap_InitialUEMessage_IEs->presenceMask & S1AP_INITIALUEMESSAGE_IES_GW_S1AP_TRANSPORTLAYERADDRESS_PRESENT) {
-        if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_GW_S1ap_TransportLayerAddress,
+    if (s1ap_InitialUEMessage_IEs->presenceMask & S1AP_INITIALUEMESSAGE_IES_GW_TRANSPORTLAYERADDRESS_PRESENT) {
+        if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_GW_TransportLayerAddress,
                             S1ap_Criticality_ignore,
                             &asn_DEF_S1ap_TransportLayerAddress,
-                            &s1ap_InitialUEMessage_IEs->gW_S1ap_TransportLayerAddress)) == NULL) {
+                            &s1ap_InitialUEMessage_IEs->gW_TransportLayerAddress)) == NULL) {
             return -1;
         }
         ASN_SEQUENCE_ADD(&s1ap_InitialUEMessage->s1ap_InitialUEMessage_ies.list, ie);
@@ -751,26 +711,6 @@ int s1ap_encode_s1ap_uecapabilityinfoindicationies(
     return 0;
 }
 
-int s1ap_encode_s1ap_e_rabtobesetupitembearersureqies(
-    S1ap_E_RABToBeSetupListBearerSUReq_t *s1ap_E_RABToBeSetupListBearerSUReq,
-    S1ap_E_RABToBeSetupItemBearerSUReqIEs_t *s1ap_E_RABToBeSetupItemBearerSUReqIEs) {
-
-    S1ap_IE_t *ie;
-
-    assert(s1ap_E_RABToBeSetupListBearerSUReq != NULL);
-    assert(s1ap_E_RABToBeSetupItemBearerSUReqIEs != NULL);
-
-    if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABToBeSetupItemBearerSUReq,
-                        S1ap_Criticality_reject,
-                        &asn_DEF_S1ap_E_RABToBeSetupItemBearerSUReq,
-                          &s1ap_E_RABToBeSetupItemBearerSUReqIEs->e_RABToBeSetupItemBearerSUReq)) == NULL) {
-        return -1;
-    }
-    ASN_SEQUENCE_ADD(&s1ap_E_RABToBeSetupListBearerSUReq->s1ap_E_RABToBeSetupListBearerSUReq_ies.list, ie);
-
-    return 0;
-}
-
 int s1ap_encode_s1ap_locationreportingfailureindicationies(
     S1ap_LocationReportingFailureIndication_t *s1ap_LocationReportingFailureIndication,
     S1ap_LocationReportingFailureIndicationIEs_t *s1ap_LocationReportingFailureIndicationIEs) {
@@ -840,13 +780,21 @@ int s1ap_encode_s1ap_initialcontextsetuprequesties(
     }
     ASN_SEQUENCE_ADD(&s1ap_InitialContextSetupRequest->s1ap_InitialContextSetupRequest_ies.list, ie);
 
+    S1ap_E_RABToBeSetupListCtxtSUReq_t e_RABToBeSetupListCtxtSUReq;
+
+    memset(&e_RABToBeSetupListCtxtSUReq, 0, sizeof(S1ap_E_RABToBeSetupListCtxtSUReq_t));
+
+    if (s1ap_encode_s1ap_e_rabtobesetuplistctxtsureq(&e_RABToBeSetupListCtxtSUReq, &s1ap_InitialContextSetupRequestIEs->e_RABToBeSetupListCtxtSUReq) < 0) return -1;
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABToBeSetupListCtxtSUReq,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_E_RABToBeSetupListCtxtSUReq,
-                          &s1ap_InitialContextSetupRequestIEs->e_RABToBeSetupListCtxtSUReq)) == NULL) {
+                          &e_RABToBeSetupListCtxtSUReq)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_InitialContextSetupRequest->s1ap_InitialContextSetupRequest_ies.list, ie);
+
+    /* Free any dynamic allocation that is no more used */
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABToBeSetupListCtxtSUReq, &e_RABToBeSetupListCtxtSUReq);
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_UESecurityCapabilities,
                         S1ap_Criticality_reject,
@@ -1090,11 +1038,11 @@ int s1ap_encode_s1ap_uplinknastransport_ies(
     ASN_SEQUENCE_ADD(&s1ap_UplinkNASTransport->s1ap_UplinkNASTransport_ies.list, ie);
 
     /* Optional field */
-    if (s1ap_UplinkNASTransport_IEs->presenceMask & S1AP_UPLINKNASTRANSPORT_IES_GW_S1AP_TRANSPORTLAYERADDRESS_PRESENT) {
-        if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_GW_S1ap_TransportLayerAddress,
+    if (s1ap_UplinkNASTransport_IEs->presenceMask & S1AP_UPLINKNASTRANSPORT_IES_GW_TRANSPORTLAYERADDRESS_PRESENT) {
+        if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_GW_TransportLayerAddress,
                             S1ap_Criticality_ignore,
                             &asn_DEF_S1ap_TransportLayerAddress,
-                            &s1ap_UplinkNASTransport_IEs->gW_S1ap_TransportLayerAddress)) == NULL) {
+                            &s1ap_UplinkNASTransport_IEs->gW_TransportLayerAddress)) == NULL) {
             return -1;
         }
         ASN_SEQUENCE_ADD(&s1ap_UplinkNASTransport->s1ap_UplinkNASTransport_ies.list, ie);
@@ -1900,33 +1848,21 @@ int s1ap_encode_s1ap_e_rabmodifyrequesties(
         ASN_SEQUENCE_ADD(&s1ap_E_RABModifyRequest->s1ap_E_RABModifyRequest_ies.list, ie);
     }
 
+    S1ap_E_RABToBeModifiedListBearerModReq_t e_RABToBeModifiedListBearerModReq;
+
+    memset(&e_RABToBeModifiedListBearerModReq, 0, sizeof(S1ap_E_RABToBeModifiedListBearerModReq_t));
+
+    if (s1ap_encode_s1ap_e_rabtobemodifiedlistbearermodreq(&e_RABToBeModifiedListBearerModReq, &s1ap_E_RABModifyRequestIEs->e_RABToBeModifiedListBearerModReq) < 0) return -1;
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABToBeModifiedListBearerModReq,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_E_RABToBeModifiedListBearerModReq,
-                          &s1ap_E_RABModifyRequestIEs->e_RABToBeModifiedListBearerModReq)) == NULL) {
+                          &e_RABToBeModifiedListBearerModReq)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_E_RABModifyRequest->s1ap_E_RABModifyRequest_ies.list, ie);
 
-    return 0;
-}
-
-int s1ap_encode_s1ap_e_rabsetupitemctxtsuresies(
-    S1ap_E_RABSetupListCtxtSURes_t *s1ap_E_RABSetupListCtxtSURes,
-    S1ap_E_RABSetupItemCtxtSUResIEs_t *s1ap_E_RABSetupItemCtxtSUResIEs) {
-
-    S1ap_IE_t *ie;
-
-    assert(s1ap_E_RABSetupListCtxtSURes != NULL);
-    assert(s1ap_E_RABSetupItemCtxtSUResIEs != NULL);
-
-    if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABSetupItemCtxtSURes,
-                        S1ap_Criticality_ignore,
-                        &asn_DEF_S1ap_E_RABSetupItemCtxtSURes,
-                          &s1ap_E_RABSetupItemCtxtSUResIEs->e_RABSetupItemCtxtSURes)) == NULL) {
-        return -1;
-    }
-    ASN_SEQUENCE_ADD(&s1ap_E_RABSetupListCtxtSURes->s1ap_E_RABSetupListCtxtSURes_ies.list, ie);
+    /* Free any dynamic allocation that is no more used */
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABToBeModifiedListBearerModReq, &e_RABToBeModifiedListBearerModReq);
 
     return 0;
 }
@@ -1997,46 +1933,6 @@ int s1ap_encode_s1ap_reseties(
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_Reset->s1ap_Reset_ies.list, ie);
-
-    return 0;
-}
-
-int s1ap_encode_s1ap_bearers_subjecttostatustransfer_itemies(
-    S1ap_Bearers_SubjectToStatusTransfer_List_t *s1ap_Bearers_SubjectToStatusTransfer_List,
-    S1ap_Bearers_SubjectToStatusTransfer_ItemIEs_t *s1ap_Bearers_SubjectToStatusTransfer_ItemIEs) {
-
-    S1ap_IE_t *ie;
-
-    assert(s1ap_Bearers_SubjectToStatusTransfer_List != NULL);
-    assert(s1ap_Bearers_SubjectToStatusTransfer_ItemIEs != NULL);
-
-    if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Bearers_SubjectToStatusTransfer_Item,
-                        S1ap_Criticality_ignore,
-                        &asn_DEF_S1ap_Bearers_SubjectToStatusTransfer_Item,
-                          &s1ap_Bearers_SubjectToStatusTransfer_ItemIEs->bearers_SubjectToStatusTransfer_Item)) == NULL) {
-        return -1;
-    }
-    ASN_SEQUENCE_ADD(&s1ap_Bearers_SubjectToStatusTransfer_List->s1ap_Bearers_SubjectToStatusTransfer_List_ies.list, ie);
-
-    return 0;
-}
-
-int s1ap_encode_s1ap_e_rabitemies(
-    S1ap_E_RABList_t *s1ap_E_RABList,
-    S1ap_E_RABItemIEs_t *s1ap_E_RABItemIEs) {
-
-    S1ap_IE_t *ie;
-
-    assert(s1ap_E_RABList != NULL);
-    assert(s1ap_E_RABItemIEs != NULL);
-
-    if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABItem,
-                        S1ap_Criticality_ignore,
-                        &asn_DEF_S1ap_E_RABItem,
-                          &s1ap_E_RABItemIEs->e_RABItem)) == NULL) {
-        return -1;
-    }
-    ASN_SEQUENCE_ADD(&s1ap_E_RABList->s1ap_E_RABList_ies.list, ie);
 
     return 0;
 }
@@ -2146,13 +2042,21 @@ int s1ap_encode_s1ap_pagingies(
     }
     ASN_SEQUENCE_ADD(&s1ap_Paging->s1ap_Paging_ies.list, ie);
 
+    S1ap_TAIList_t taiList;
+
+    memset(&taiList, 0, sizeof(S1ap_TAIList_t));
+
+    if (s1ap_encode_s1ap_tailist(&taiList, &s1ap_PagingIEs->taiList) < 0) return -1;
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_TAIList,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_TAIList,
-                          &s1ap_PagingIEs->taiList)) == NULL) {
+                          &taiList)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_Paging->s1ap_Paging_ies.list, ie);
+
+    /* Free any dynamic allocation that is no more used */
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_TAIList, &taiList);
 
     /* Optional field */
     if (s1ap_PagingIEs->presenceMask & S1AP_PAGINGIES_CSG_IDLIST_PRESENT) {
@@ -2238,13 +2142,21 @@ int s1ap_encode_s1ap_e_rabreleasecommandies(
         ASN_SEQUENCE_ADD(&s1ap_E_RABReleaseCommand->s1ap_E_RABReleaseCommand_ies.list, ie);
     }
 
+    S1ap_E_RABList_t e_RABToBeReleasedList;
+
+    memset(&e_RABToBeReleasedList, 0, sizeof(S1ap_E_RABList_t));
+
+    if (s1ap_encode_s1ap_e_rablist(&e_RABToBeReleasedList, &s1ap_E_RABReleaseCommandIEs->e_RABToBeReleasedList) < 0) return -1;
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABToBeReleasedList,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_E_RABList,
-                          &s1ap_E_RABReleaseCommandIEs->e_RABToBeReleasedList)) == NULL) {
+                          &e_RABToBeReleasedList)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_E_RABReleaseCommand->s1ap_E_RABReleaseCommand_ies.list, ie);
+
+    /* Free any dynamic allocation that is no more used */
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABList, &e_RABToBeReleasedList);
 
     /* Optional field */
     if (s1ap_E_RABReleaseCommandIEs->presenceMask & S1AP_E_RABRELEASECOMMANDIES_NAS_PDU_PRESENT) {
@@ -2662,26 +2574,6 @@ int s1ap_encode_s1ap_errorindicationies(
     return 0;
 }
 
-int s1ap_encode_s1ap_taiitemies(
-    S1ap_TAIList_t *s1ap_TAIList,
-    S1ap_TAIItemIEs_t *s1ap_TAIItemIEs) {
-
-    S1ap_IE_t *ie;
-
-    assert(s1ap_TAIList != NULL);
-    assert(s1ap_TAIItemIEs != NULL);
-
-    if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_TAIItem,
-                        S1ap_Criticality_ignore,
-                        &asn_DEF_S1ap_TAIItem,
-                          &s1ap_TAIItemIEs->taiItem)) == NULL) {
-        return -1;
-    }
-    ASN_SEQUENCE_ADD(&s1ap_TAIList->s1ap_TAIList_ies.list, ie);
-
-    return 0;
-}
-
 int s1ap_encode_s1ap_overloadstarties(
     S1ap_OverloadStart_t *s1ap_OverloadStart,
     S1ap_OverloadStartIEs_t *s1ap_OverloadStartIEs) {
@@ -3042,26 +2934,6 @@ int s1ap_encode_s1ap_pathswitchrequestacknowledgeies(
     return 0;
 }
 
-int s1ap_encode_s1ap_ue_associatedlogicals1_connectionitemres(
-    S1ap_UE_associatedLogicalS1_ConnectionListRes_t *s1ap_UE_associatedLogicalS1_ConnectionListRes,
-    S1ap_UE_associatedLogicalS1_ConnectionItemRes_t *s1ap_UE_associatedLogicalS1_ConnectionItemRes) {
-
-    S1ap_IE_t *ie;
-
-    assert(s1ap_UE_associatedLogicalS1_ConnectionListRes != NULL);
-    assert(s1ap_UE_associatedLogicalS1_ConnectionItemRes != NULL);
-
-    if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_UE_associatedLogicalS1_ConnectionItem,
-                        S1ap_Criticality_reject,
-                        &asn_DEF_S1ap_UE_associatedLogicalS1_ConnectionItem,
-                          &s1ap_UE_associatedLogicalS1_ConnectionItemRes->uE_associatedLogicalS1_ConnectionItem)) == NULL) {
-        return -1;
-    }
-    ASN_SEQUENCE_ADD(&s1ap_UE_associatedLogicalS1_ConnectionListRes->s1ap_UE_associatedLogicalS1_ConnectionListRes_ies.list, ie);
-
-    return 0;
-}
-
 int s1ap_encode_s1ap_s1setupfailureies(
     S1ap_S1SetupFailure_t *s1ap_S1SetupFailure,
     S1ap_S1SetupFailureIEs_t *s1ap_S1SetupFailureIEs) {
@@ -3171,13 +3043,21 @@ int s1ap_encode_s1ap_initialcontextsetupresponseies(
     }
     ASN_SEQUENCE_ADD(&s1ap_InitialContextSetupResponse->s1ap_InitialContextSetupResponse_ies.list, ie);
 
+    S1ap_E_RABSetupListCtxtSURes_t e_RABSetupListCtxtSURes;
+
+    memset(&e_RABSetupListCtxtSURes, 0, sizeof(S1ap_E_RABSetupListCtxtSURes_t));
+
+    if (s1ap_encode_s1ap_e_rabsetuplistctxtsures(&e_RABSetupListCtxtSURes, &s1ap_InitialContextSetupResponseIEs->e_RABSetupListCtxtSURes) < 0) return -1;
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABSetupListCtxtSURes,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_E_RABSetupListCtxtSURes,
-                          &s1ap_InitialContextSetupResponseIEs->e_RABSetupListCtxtSURes)) == NULL) {
+                          &e_RABSetupListCtxtSURes)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_InitialContextSetupResponse->s1ap_InitialContextSetupResponse_ies.list, ie);
+
+    /* Free any dynamic allocation that is no more used */
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABSetupListCtxtSURes, &e_RABSetupListCtxtSURes);
 
     /* Optional field */
     if (s1ap_InitialContextSetupResponseIEs->presenceMask & S1AP_INITIALCONTEXTSETUPRESPONSEIES_E_RABFAILEDTOSETUPLISTCTXTSURES_PRESENT) {
@@ -3293,66 +3173,6 @@ int s1ap_encode_s1ap_overloadstopies(
     return 0;
 }
 
-int s1ap_encode_s1ap_e_rabsetupitembearersuresies(
-    S1ap_E_RABSetupListBearerSURes_t *s1ap_E_RABSetupListBearerSURes,
-    S1ap_E_RABSetupItemBearerSUResIEs_t *s1ap_E_RABSetupItemBearerSUResIEs) {
-
-    S1ap_IE_t *ie;
-
-    assert(s1ap_E_RABSetupListBearerSURes != NULL);
-    assert(s1ap_E_RABSetupItemBearerSUResIEs != NULL);
-
-    if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABSetupItemBearerSURes,
-                        S1ap_Criticality_ignore,
-                        &asn_DEF_S1ap_E_RABSetupItemBearerSURes,
-                          &s1ap_E_RABSetupItemBearerSUResIEs->e_RABSetupItemBearerSURes)) == NULL) {
-        return -1;
-    }
-    ASN_SEQUENCE_ADD(&s1ap_E_RABSetupListBearerSURes->s1ap_E_RABSetupListBearerSURes_ies.list, ie);
-
-    return 0;
-}
-
-int s1ap_encode_s1ap_e_rabmodifyitembearermodresies(
-    S1ap_E_RABModifyListBearerModRes_t *s1ap_E_RABModifyListBearerModRes,
-    S1ap_E_RABModifyItemBearerModResIEs_t *s1ap_E_RABModifyItemBearerModResIEs) {
-
-    S1ap_IE_t *ie;
-
-    assert(s1ap_E_RABModifyListBearerModRes != NULL);
-    assert(s1ap_E_RABModifyItemBearerModResIEs != NULL);
-
-    if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABModifyItemBearerModRes,
-                        S1ap_Criticality_ignore,
-                        &asn_DEF_S1ap_E_RABModifyItemBearerModRes,
-                          &s1ap_E_RABModifyItemBearerModResIEs->e_RABModifyItemBearerModRes)) == NULL) {
-        return -1;
-    }
-    ASN_SEQUENCE_ADD(&s1ap_E_RABModifyListBearerModRes->s1ap_E_RABModifyListBearerModRes_ies.list, ie);
-
-    return 0;
-}
-
-int s1ap_encode_s1ap_e_rabtobesetupitemctxtsureqies(
-    S1ap_E_RABToBeSetupListCtxtSUReq_t *s1ap_E_RABToBeSetupListCtxtSUReq,
-    S1ap_E_RABToBeSetupItemCtxtSUReqIEs_t *s1ap_E_RABToBeSetupItemCtxtSUReqIEs) {
-
-    S1ap_IE_t *ie;
-
-    assert(s1ap_E_RABToBeSetupListCtxtSUReq != NULL);
-    assert(s1ap_E_RABToBeSetupItemCtxtSUReqIEs != NULL);
-
-    if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABToBeSetupItemCtxtSUReq,
-                        S1ap_Criticality_reject,
-                        &asn_DEF_S1ap_E_RABToBeSetupItemCtxtSUReq,
-                          &s1ap_E_RABToBeSetupItemCtxtSUReqIEs->e_RABToBeSetupItemCtxtSUReq)) == NULL) {
-        return -1;
-    }
-    ASN_SEQUENCE_ADD(&s1ap_E_RABToBeSetupListCtxtSUReq->s1ap_E_RABToBeSetupListCtxtSUReq_ies.list, ie);
-
-    return 0;
-}
-
 int s1ap_encode_s1ap_enbconfigurationupdateies(
     S1ap_ENBConfigurationUpdate_t *s1ap_ENBConfigurationUpdate,
     S1ap_ENBConfigurationUpdateIEs_t *s1ap_ENBConfigurationUpdateIEs) {
@@ -3453,26 +3273,6 @@ int s1ap_encode_s1ap_tracefailureindicationies(
     return 0;
 }
 
-int s1ap_encode_s1ap_e_rabinformationlisties(
-    S1ap_E_RABInformationList_t *s1ap_E_RABInformationList,
-    S1ap_E_RABInformationListIEs_t *s1ap_E_RABInformationListIEs) {
-
-    S1ap_IE_t *ie;
-
-    assert(s1ap_E_RABInformationList != NULL);
-    assert(s1ap_E_RABInformationListIEs != NULL);
-
-    if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABInformationListItem,
-                        S1ap_Criticality_ignore,
-                        &asn_DEF_S1ap_E_RABInformationListItem,
-                          &s1ap_E_RABInformationListIEs->e_RABInformationListItem)) == NULL) {
-        return -1;
-    }
-    ASN_SEQUENCE_ADD(&s1ap_E_RABInformationList->s1ap_E_RABInformationList_ies.list, ie);
-
-    return 0;
-}
-
 int s1ap_encode_s1ap_enbconfigurationtransferies(
     S1ap_ENBConfigurationTransfer_t *s1ap_ENBConfigurationTransfer,
     S1ap_ENBConfigurationTransferIEs_t *s1ap_ENBConfigurationTransferIEs) {
@@ -3531,26 +3331,6 @@ int s1ap_encode_s1ap_handoverfailureies(
         }
         ASN_SEQUENCE_ADD(&s1ap_HandoverFailure->s1ap_HandoverFailure_ies.list, ie);
     }
-
-    return 0;
-}
-
-int s1ap_encode_s1ap_ue_associatedlogicals1_connectionitemresack(
-    S1ap_UE_associatedLogicalS1_ConnectionListResAck_t *s1ap_UE_associatedLogicalS1_ConnectionListResAck,
-    S1ap_UE_associatedLogicalS1_ConnectionItemResAck_t *s1ap_UE_associatedLogicalS1_ConnectionItemResAck) {
-
-    S1ap_IE_t *ie;
-
-    assert(s1ap_UE_associatedLogicalS1_ConnectionListResAck != NULL);
-    assert(s1ap_UE_associatedLogicalS1_ConnectionItemResAck != NULL);
-
-    if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_UE_associatedLogicalS1_ConnectionItem,
-                        S1ap_Criticality_ignore,
-                        &asn_DEF_S1ap_UE_associatedLogicalS1_ConnectionItem,
-                          &s1ap_UE_associatedLogicalS1_ConnectionItemResAck->uE_associatedLogicalS1_ConnectionItem)) == NULL) {
-        return -1;
-    }
-    ASN_SEQUENCE_ADD(&s1ap_UE_associatedLogicalS1_ConnectionListResAck->s1ap_UE_associatedLogicalS1_ConnectionListResAck_ies.list, ie);
 
     return 0;
 }
@@ -3732,11 +3512,11 @@ int s1ap_encode_s1ap_pathswitchrequesties(
     }
 
     /* Optional field */
-    if (s1ap_PathSwitchRequestIEs->presenceMask & S1AP_PATHSWITCHREQUESTIES_SOURCEMME_S1AP_GUMMEI_PRESENT) {
-        if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_SourceMME_S1ap_GUMMEI,
+    if (s1ap_PathSwitchRequestIEs->presenceMask & S1AP_PATHSWITCHREQUESTIES_SOURCEMME_GUMMEI_PRESENT) {
+        if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_SourceMME_GUMMEI,
                             S1ap_Criticality_ignore,
                             &asn_DEF_S1ap_GUMMEI,
-                            &s1ap_PathSwitchRequestIEs->sourceMME_S1ap_GUMMEI)) == NULL) {
+                            &s1ap_PathSwitchRequestIEs->sourceMME_GUMMEI)) == NULL) {
             return -1;
         }
         ASN_SEQUENCE_ADD(&s1ap_PathSwitchRequest->s1ap_PathSwitchRequest_ies.list, ie);
@@ -3828,13 +3608,21 @@ int s1ap_encode_s1ap_e_rabreleaseindicationies(
     }
     ASN_SEQUENCE_ADD(&s1ap_E_RABReleaseIndication->s1ap_E_RABReleaseIndication_ies.list, ie);
 
+    S1ap_E_RABList_t e_RABReleasedList;
+
+    memset(&e_RABReleasedList, 0, sizeof(S1ap_E_RABList_t));
+
+    if (s1ap_encode_s1ap_e_rablist(&e_RABReleasedList, &s1ap_E_RABReleaseIndicationIEs->e_RABReleasedList) < 0) return -1;
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABReleasedList,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_E_RABList,
-                          &s1ap_E_RABReleaseIndicationIEs->e_RABReleasedList)) == NULL) {
+                          &e_RABReleasedList)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_E_RABReleaseIndication->s1ap_E_RABReleaseIndication_ies.list, ie);
+
+    /* Free any dynamic allocation that is no more used */
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABList, &e_RABReleasedList);
 
     return 0;
 }
@@ -4040,13 +3828,21 @@ int s1ap_encode_s1ap_e_rabsetuprequesties(
         ASN_SEQUENCE_ADD(&s1ap_E_RABSetupRequest->s1ap_E_RABSetupRequest_ies.list, ie);
     }
 
+    S1ap_E_RABToBeSetupListBearerSUReq_t e_RABToBeSetupListBearerSUReq;
+
+    memset(&e_RABToBeSetupListBearerSUReq, 0, sizeof(S1ap_E_RABToBeSetupListBearerSUReq_t));
+
+    if (s1ap_encode_s1ap_e_rabtobesetuplistbearersureq(&e_RABToBeSetupListBearerSUReq, &s1ap_E_RABSetupRequestIEs->e_RABToBeSetupListBearerSUReq) < 0) return -1;
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABToBeSetupListBearerSUReq,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_E_RABToBeSetupListBearerSUReq,
-                          &s1ap_E_RABSetupRequestIEs->e_RABToBeSetupListBearerSUReq)) == NULL) {
+                          &e_RABToBeSetupListBearerSUReq)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_E_RABSetupRequest->s1ap_E_RABSetupRequest_ies.list, ie);
+
+    /* Free any dynamic allocation that is no more used */
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABToBeSetupListBearerSUReq, &e_RABToBeSetupListBearerSUReq);
 
     return 0;
 }
@@ -4226,6 +4022,28 @@ int s1ap_encode_s1ap_e_rabfailedtosetuplisthoreqack(
     return 0;
 }
 
+int s1ap_encode_s1ap_e_rabreleaselistbearerrelcomp(
+    S1ap_E_RABReleaseListBearerRelComp_t *s1ap_E_RABReleaseListBearerRelComp,
+    S1ap_E_RABReleaseListBearerRelCompIEs_t *s1ap_E_RABReleaseListBearerRelCompIEs) {
+
+    int i;
+    S1ap_IE_t *ie;
+
+    assert(s1ap_E_RABReleaseListBearerRelComp != NULL);
+    assert(s1ap_E_RABReleaseListBearerRelCompIEs != NULL);
+
+    for (i = 0; i < s1ap_E_RABReleaseListBearerRelCompIEs->s1ap_E_RABReleaseItemBearerRelComp.count; i++) {
+        if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABReleaseItemBearerRelComp,
+                            S1ap_Criticality_ignore,
+                            &asn_DEF_S1ap_E_RABReleaseItemBearerRelComp,
+                            s1ap_E_RABReleaseListBearerRelCompIEs->s1ap_E_RABReleaseItemBearerRelComp.array[i])) == NULL) {
+            return -1;
+        }
+        ASN_SEQUENCE_ADD(&s1ap_E_RABReleaseListBearerRelComp->list, ie);
+    }
+    return 0;
+}
+
 int s1ap_encode_s1ap_e_rabtobesetuplisthoreq(
     S1ap_E_RABToBeSetupListHOReq_t *s1ap_E_RABToBeSetupListHOReq,
     S1ap_E_RABToBeSetupListHOReqIEs_t *s1ap_E_RABToBeSetupListHOReqIEs) {
@@ -4248,6 +4066,28 @@ int s1ap_encode_s1ap_e_rabtobesetuplisthoreq(
     return 0;
 }
 
+int s1ap_encode_s1ap_e_rabtobemodifiedlistbearermodreq(
+    S1ap_E_RABToBeModifiedListBearerModReq_t *s1ap_E_RABToBeModifiedListBearerModReq,
+    S1ap_E_RABToBeModifiedListBearerModReqIEs_t *s1ap_E_RABToBeModifiedListBearerModReqIEs) {
+
+    int i;
+    S1ap_IE_t *ie;
+
+    assert(s1ap_E_RABToBeModifiedListBearerModReq != NULL);
+    assert(s1ap_E_RABToBeModifiedListBearerModReqIEs != NULL);
+
+    for (i = 0; i < s1ap_E_RABToBeModifiedListBearerModReqIEs->s1ap_E_RABToBeModifiedItemBearerModReq.count; i++) {
+        if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABToBeModifiedItemBearerModReq,
+                            S1ap_Criticality_reject,
+                            &asn_DEF_S1ap_E_RABToBeModifiedItemBearerModReq,
+                            s1ap_E_RABToBeModifiedListBearerModReqIEs->s1ap_E_RABToBeModifiedItemBearerModReq.array[i])) == NULL) {
+            return -1;
+        }
+        ASN_SEQUENCE_ADD(&s1ap_E_RABToBeModifiedListBearerModReq->list, ie);
+    }
+    return 0;
+}
+
 int s1ap_encode_s1ap_e_rabadmittedlist(
     S1ap_E_RABAdmittedList_t *s1ap_E_RABAdmittedList,
     S1ap_E_RABAdmittedListIEs_t *s1ap_E_RABAdmittedListIEs) {
@@ -4266,6 +4106,28 @@ int s1ap_encode_s1ap_e_rabadmittedlist(
             return -1;
         }
         ASN_SEQUENCE_ADD(&s1ap_E_RABAdmittedList->list, ie);
+    }
+    return 0;
+}
+
+int s1ap_encode_s1ap_e_rabtobesetuplistbearersureq(
+    S1ap_E_RABToBeSetupListBearerSUReq_t *s1ap_E_RABToBeSetupListBearerSUReq,
+    S1ap_E_RABToBeSetupListBearerSUReqIEs_t *s1ap_E_RABToBeSetupListBearerSUReqIEs) {
+
+    int i;
+    S1ap_IE_t *ie;
+
+    assert(s1ap_E_RABToBeSetupListBearerSUReq != NULL);
+    assert(s1ap_E_RABToBeSetupListBearerSUReqIEs != NULL);
+
+    for (i = 0; i < s1ap_E_RABToBeSetupListBearerSUReqIEs->s1ap_E_RABToBeSetupItemBearerSUReq.count; i++) {
+        if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABToBeSetupItemBearerSUReq,
+                            S1ap_Criticality_reject,
+                            &asn_DEF_S1ap_E_RABToBeSetupItemBearerSUReq,
+                            s1ap_E_RABToBeSetupListBearerSUReqIEs->s1ap_E_RABToBeSetupItemBearerSUReq.array[i])) == NULL) {
+            return -1;
+        }
+        ASN_SEQUENCE_ADD(&s1ap_E_RABToBeSetupListBearerSUReq->list, ie);
     }
     return 0;
 }
@@ -4314,6 +4176,28 @@ int s1ap_encode_s1ap_e_rabtobeswitcheddllist(
     return 0;
 }
 
+int s1ap_encode_s1ap_e_rabsetuplistctxtsures(
+    S1ap_E_RABSetupListCtxtSURes_t *s1ap_E_RABSetupListCtxtSURes,
+    S1ap_E_RABSetupListCtxtSUResIEs_t *s1ap_E_RABSetupListCtxtSUResIEs) {
+
+    int i;
+    S1ap_IE_t *ie;
+
+    assert(s1ap_E_RABSetupListCtxtSURes != NULL);
+    assert(s1ap_E_RABSetupListCtxtSUResIEs != NULL);
+
+    for (i = 0; i < s1ap_E_RABSetupListCtxtSUResIEs->s1ap_E_RABSetupItemCtxtSURes.count; i++) {
+        if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABSetupItemCtxtSURes,
+                            S1ap_Criticality_ignore,
+                            &asn_DEF_S1ap_E_RABSetupItemCtxtSURes,
+                            s1ap_E_RABSetupListCtxtSUResIEs->s1ap_E_RABSetupItemCtxtSURes.array[i])) == NULL) {
+            return -1;
+        }
+        ASN_SEQUENCE_ADD(&s1ap_E_RABSetupListCtxtSURes->list, ie);
+    }
+    return 0;
+}
+
 int s1ap_encode_s1ap_e_rabtobeswitchedullist(
     S1ap_E_RABToBeSwitchedULList_t *s1ap_E_RABToBeSwitchedULList,
     S1ap_E_RABToBeSwitchedULListIEs_t *s1ap_E_RABToBeSwitchedULListIEs) {
@@ -4332,6 +4216,204 @@ int s1ap_encode_s1ap_e_rabtobeswitchedullist(
             return -1;
         }
         ASN_SEQUENCE_ADD(&s1ap_E_RABToBeSwitchedULList->list, ie);
+    }
+    return 0;
+}
+
+int s1ap_encode_s1ap_bearers_subjecttostatustransfer_list(
+    S1ap_Bearers_SubjectToStatusTransfer_List_t *s1ap_Bearers_SubjectToStatusTransfer_List,
+    S1ap_Bearers_SubjectToStatusTransfer_ListIEs_t *s1ap_Bearers_SubjectToStatusTransfer_ListIEs) {
+
+    int i;
+    S1ap_IE_t *ie;
+
+    assert(s1ap_Bearers_SubjectToStatusTransfer_List != NULL);
+    assert(s1ap_Bearers_SubjectToStatusTransfer_ListIEs != NULL);
+
+    for (i = 0; i < s1ap_Bearers_SubjectToStatusTransfer_ListIEs->s1ap_Bearers_SubjectToStatusTransfer_Item.count; i++) {
+        if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Bearers_SubjectToStatusTransfer_Item,
+                            S1ap_Criticality_ignore,
+                            &asn_DEF_S1ap_Bearers_SubjectToStatusTransfer_Item,
+                            s1ap_Bearers_SubjectToStatusTransfer_ListIEs->s1ap_Bearers_SubjectToStatusTransfer_Item.array[i])) == NULL) {
+            return -1;
+        }
+        ASN_SEQUENCE_ADD(&s1ap_Bearers_SubjectToStatusTransfer_List->list, ie);
+    }
+    return 0;
+}
+
+int s1ap_encode_s1ap_e_rablist(
+    S1ap_E_RABList_t *s1ap_E_RABList,
+    S1ap_E_RABListIEs_t *s1ap_E_RABListIEs) {
+
+    int i;
+    S1ap_IE_t *ie;
+
+    assert(s1ap_E_RABList != NULL);
+    assert(s1ap_E_RABListIEs != NULL);
+
+    for (i = 0; i < s1ap_E_RABListIEs->s1ap_E_RABItem.count; i++) {
+        if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABItem,
+                            S1ap_Criticality_ignore,
+                            &asn_DEF_S1ap_E_RABItem,
+                            s1ap_E_RABListIEs->s1ap_E_RABItem.array[i])) == NULL) {
+            return -1;
+        }
+        ASN_SEQUENCE_ADD(&s1ap_E_RABList->list, ie);
+    }
+    return 0;
+}
+
+int s1ap_encode_s1ap_tailist(
+    S1ap_TAIList_t *s1ap_TAIList,
+    S1ap_TAIListIEs_t *s1ap_TAIListIEs) {
+
+    int i;
+    S1ap_IE_t *ie;
+
+    assert(s1ap_TAIList != NULL);
+    assert(s1ap_TAIListIEs != NULL);
+
+    for (i = 0; i < s1ap_TAIListIEs->s1ap_TAIItem.count; i++) {
+        if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_TAIItem,
+                            S1ap_Criticality_ignore,
+                            &asn_DEF_S1ap_TAIItem,
+                            s1ap_TAIListIEs->s1ap_TAIItem.array[i])) == NULL) {
+            return -1;
+        }
+        ASN_SEQUENCE_ADD(&s1ap_TAIList->list, ie);
+    }
+    return 0;
+}
+
+int s1ap_encode_s1ap_ue_associatedlogicals1_connectionlistres(
+    S1ap_UE_associatedLogicalS1_ConnectionListRes_t *s1ap_UE_associatedLogicalS1_ConnectionListRes,
+    S1ap_UE_associatedLogicalS1_ConnectionListResIEs_t *s1ap_UE_associatedLogicalS1_ConnectionListResIEs) {
+
+    int i;
+    S1ap_IE_t *ie;
+
+    assert(s1ap_UE_associatedLogicalS1_ConnectionListRes != NULL);
+    assert(s1ap_UE_associatedLogicalS1_ConnectionListResIEs != NULL);
+
+    for (i = 0; i < s1ap_UE_associatedLogicalS1_ConnectionListResIEs->s1ap_UE_associatedLogicalS1_ConnectionItemRes.count; i++) {
+        if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_UE_associatedLogicalS1_ConnectionItem,
+                            S1ap_Criticality_reject,
+                            &asn_DEF_S1ap_UE_associatedLogicalS1_ConnectionItem,
+                            s1ap_UE_associatedLogicalS1_ConnectionListResIEs->s1ap_UE_associatedLogicalS1_ConnectionItemRes.array[i])) == NULL) {
+            return -1;
+        }
+        ASN_SEQUENCE_ADD(&s1ap_UE_associatedLogicalS1_ConnectionListRes->list, ie);
+    }
+    return 0;
+}
+
+int s1ap_encode_s1ap_e_rabsetuplistbearersures(
+    S1ap_E_RABSetupListBearerSURes_t *s1ap_E_RABSetupListBearerSURes,
+    S1ap_E_RABSetupListBearerSUResIEs_t *s1ap_E_RABSetupListBearerSUResIEs) {
+
+    int i;
+    S1ap_IE_t *ie;
+
+    assert(s1ap_E_RABSetupListBearerSURes != NULL);
+    assert(s1ap_E_RABSetupListBearerSUResIEs != NULL);
+
+    for (i = 0; i < s1ap_E_RABSetupListBearerSUResIEs->s1ap_E_RABSetupItemBearerSURes.count; i++) {
+        if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABSetupItemBearerSURes,
+                            S1ap_Criticality_ignore,
+                            &asn_DEF_S1ap_E_RABSetupItemBearerSURes,
+                            s1ap_E_RABSetupListBearerSUResIEs->s1ap_E_RABSetupItemBearerSURes.array[i])) == NULL) {
+            return -1;
+        }
+        ASN_SEQUENCE_ADD(&s1ap_E_RABSetupListBearerSURes->list, ie);
+    }
+    return 0;
+}
+
+int s1ap_encode_s1ap_e_rabmodifylistbearermodres(
+    S1ap_E_RABModifyListBearerModRes_t *s1ap_E_RABModifyListBearerModRes,
+    S1ap_E_RABModifyListBearerModResIEs_t *s1ap_E_RABModifyListBearerModResIEs) {
+
+    int i;
+    S1ap_IE_t *ie;
+
+    assert(s1ap_E_RABModifyListBearerModRes != NULL);
+    assert(s1ap_E_RABModifyListBearerModResIEs != NULL);
+
+    for (i = 0; i < s1ap_E_RABModifyListBearerModResIEs->s1ap_E_RABModifyItemBearerModRes.count; i++) {
+        if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABModifyItemBearerModRes,
+                            S1ap_Criticality_ignore,
+                            &asn_DEF_S1ap_E_RABModifyItemBearerModRes,
+                            s1ap_E_RABModifyListBearerModResIEs->s1ap_E_RABModifyItemBearerModRes.array[i])) == NULL) {
+            return -1;
+        }
+        ASN_SEQUENCE_ADD(&s1ap_E_RABModifyListBearerModRes->list, ie);
+    }
+    return 0;
+}
+
+int s1ap_encode_s1ap_e_rabtobesetuplistctxtsureq(
+    S1ap_E_RABToBeSetupListCtxtSUReq_t *s1ap_E_RABToBeSetupListCtxtSUReq,
+    S1ap_E_RABToBeSetupListCtxtSUReqIEs_t *s1ap_E_RABToBeSetupListCtxtSUReqIEs) {
+
+    int i;
+    S1ap_IE_t *ie;
+
+    assert(s1ap_E_RABToBeSetupListCtxtSUReq != NULL);
+    assert(s1ap_E_RABToBeSetupListCtxtSUReqIEs != NULL);
+
+    for (i = 0; i < s1ap_E_RABToBeSetupListCtxtSUReqIEs->s1ap_E_RABToBeSetupItemCtxtSUReq.count; i++) {
+        if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABToBeSetupItemCtxtSUReq,
+                            S1ap_Criticality_reject,
+                            &asn_DEF_S1ap_E_RABToBeSetupItemCtxtSUReq,
+                            s1ap_E_RABToBeSetupListCtxtSUReqIEs->s1ap_E_RABToBeSetupItemCtxtSUReq.array[i])) == NULL) {
+            return -1;
+        }
+        ASN_SEQUENCE_ADD(&s1ap_E_RABToBeSetupListCtxtSUReq->list, ie);
+    }
+    return 0;
+}
+
+int s1ap_encode_s1ap_e_rabinformationlist(
+    S1ap_E_RABInformationList_t *s1ap_E_RABInformationList,
+    S1ap_E_RABInformationListIEs_t *s1ap_E_RABInformationListIEs) {
+
+    int i;
+    S1ap_IE_t *ie;
+
+    assert(s1ap_E_RABInformationList != NULL);
+    assert(s1ap_E_RABInformationListIEs != NULL);
+
+    for (i = 0; i < s1ap_E_RABInformationListIEs->s1ap_E_RABInformationList.count; i++) {
+        if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABInformationListItem,
+                            S1ap_Criticality_ignore,
+                            &asn_DEF_S1ap_E_RABInformationListItem,
+                            s1ap_E_RABInformationListIEs->s1ap_E_RABInformationList.array[i])) == NULL) {
+            return -1;
+        }
+        ASN_SEQUENCE_ADD(&s1ap_E_RABInformationList->list, ie);
+    }
+    return 0;
+}
+
+int s1ap_encode_s1ap_ue_associatedlogicals1_connectionlistresack(
+    S1ap_UE_associatedLogicalS1_ConnectionListResAck_t *s1ap_UE_associatedLogicalS1_ConnectionListResAck,
+    S1ap_UE_associatedLogicalS1_ConnectionListResAckIEs_t *s1ap_UE_associatedLogicalS1_ConnectionListResAckIEs) {
+
+    int i;
+    S1ap_IE_t *ie;
+
+    assert(s1ap_UE_associatedLogicalS1_ConnectionListResAck != NULL);
+    assert(s1ap_UE_associatedLogicalS1_ConnectionListResAckIEs != NULL);
+
+    for (i = 0; i < s1ap_UE_associatedLogicalS1_ConnectionListResAckIEs->s1ap_UE_associatedLogicalS1_ConnectionItemResAck.count; i++) {
+        if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_UE_associatedLogicalS1_ConnectionItem,
+                            S1ap_Criticality_ignore,
+                            &asn_DEF_S1ap_UE_associatedLogicalS1_ConnectionItem,
+                            s1ap_UE_associatedLogicalS1_ConnectionListResAckIEs->s1ap_UE_associatedLogicalS1_ConnectionItemResAck.array[i])) == NULL) {
+            return -1;
+        }
+        ASN_SEQUENCE_ADD(&s1ap_UE_associatedLogicalS1_ConnectionListResAck->list, ie);
     }
     return 0;
 }

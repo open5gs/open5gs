@@ -20,11 +20,11 @@ extern "C" {
 #endif
 
 /* Forward declarations */
-struct S1ap_IE;
+struct ProtocolIE_Field;
 
 /* S1ap-E-RABToBeModifiedListBearerModReq */
 typedef struct S1ap_E_RABToBeModifiedListBearerModReq {
-	A_SEQUENCE_OF(struct S1ap_IE) list;
+	A_SEQUENCE_OF(struct ProtocolIE_Field) list;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
@@ -38,7 +38,7 @@ extern asn_TYPE_descriptor_t asn_DEF_S1ap_E_RABToBeModifiedListBearerModReq;
 #endif
 
 /* Referred external types */
-#include "S1ap-IE.h"
+#include "ProtocolIE-Field.h"
 
 #endif	/* _S1ap_E_RABToBeModifiedListBearerModReq_H_ */
 #include <asn_internal.h>

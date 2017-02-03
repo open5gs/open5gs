@@ -25,7 +25,7 @@ AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/asn/asn1c
 
 AM_CFLAGS = \
-	-Wall -Werror
+	-Wall -Werror -Wno-incompatible-pointer-types
 
 MAINTAINERCLEANFILES = Makefile.in 
 MOSTLYCLEANFILES = *.stackdump

@@ -965,9 +965,9 @@ FROM S1AP-Containers
         id-PS-ServiceNotAvailable,
         id-RegisteredLAI,
         id-GUMMEIList,
-        id-SourceMME-S1ap-GUMMEI,
+        id-SourceMME-GUMMEI,
         id-MME-UE-S1AP-ID-2,
-        id-GW-S1ap-TransportLayerAddress,
+        id-GW-TransportLayerAddress,
         id-RelayNode-Indicator,
         id-Correlation-ID,
         id-MMERelaySupportIndicator,
@@ -1338,7 +1338,7 @@ S1ap-PathSwitchRequestIEs S1AP-PROTOCOL-IES ::= {
         { ID id-UESecurityCapabilities                        CRITICALITY ignore        TYPE S1ap-UESecurityCapabilities                PRESENCE mandatory}|
         { ID id-CSG-Id                                                        CRITICALITY ignore        TYPE S1ap-CSG-Id                                                PRESENCE optional}|
         { ID id-CellAccessMode                                        CRITICALITY ignore        TYPE S1ap-CellAccessMode                                PRESENCE optional}|
-        { ID id-SourceMME-S1ap-GUMMEI                                CRITICALITY ignore        TYPE S1ap-GUMMEI                                                PRESENCE optional},
+        { ID id-SourceMME-GUMMEI                                CRITICALITY ignore        TYPE S1ap-GUMMEI                                                PRESENCE optional},
         ...
 }
 
@@ -1517,7 +1517,7 @@ S1ap-E-RABSetupRequestIEs S1AP-PROTOCOL-IES ::= {
 }
 
 
-S1ap-E-RABToBeSetupListBearerSUReq ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfE-RABs)) OF S1ap-IE
+S1ap-E-RABToBeSetupListBearerSUReq ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfE-RABs)) OF ProtocolIE-SingleContainer { {S1ap-E-RABToBeSetupItemBearerSUReqIEs} }
 
 
 S1ap-E-RABToBeSetupItemBearerSUReqIEs         S1AP-PROTOCOL-IES ::= {
@@ -1572,7 +1572,7 @@ S1ap-E-RABSetupResponseIEs S1AP-PROTOCOL-IES ::= {
 
 
 
-S1ap-E-RABSetupListBearerSURes ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfE-RABs)) OF S1ap-IE
+S1ap-E-RABSetupListBearerSURes ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfE-RABs)) OF ProtocolIE-SingleContainer { {S1ap-E-RABSetupItemBearerSUResIEs} }
 
 
 S1ap-E-RABSetupItemBearerSUResIEs         S1AP-PROTOCOL-IES ::= {
@@ -1630,7 +1630,7 @@ S1ap-E-RABModifyRequestIEs S1AP-PROTOCOL-IES ::= {
 }
 
 
-S1ap-E-RABToBeModifiedListBearerModReq ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfE-RABs)) OF S1ap-IE
+S1ap-E-RABToBeModifiedListBearerModReq ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfE-RABs)) OF ProtocolIE-SingleContainer { {S1ap-E-RABToBeModifiedItemBearerModReqIEs} }
 
 
 S1ap-E-RABToBeModifiedItemBearerModReqIEs         S1AP-PROTOCOL-IES ::= {
@@ -1684,7 +1684,7 @@ S1ap-E-RABModifyResponseIEs S1AP-PROTOCOL-IES ::= {
 
 
 
-S1ap-E-RABModifyListBearerModRes ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfE-RABs)) OF S1ap-IE
+S1ap-E-RABModifyListBearerModRes ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfE-RABs)) OF ProtocolIE-SingleContainer { {S1ap-E-RABModifyItemBearerModResIEs} }
 
 
 S1ap-E-RABModifyItemBearerModResIEs         S1AP-PROTOCOL-IES ::= {
@@ -1770,7 +1770,7 @@ S1ap-E-RABReleaseResponseIEs S1AP-PROTOCOL-IES ::= {
 
 
 
-S1ap-E-RABReleaseListBearerRelComp ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfE-RABs)) OF S1ap-IE
+S1ap-E-RABReleaseListBearerRelComp ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfE-RABs)) OF ProtocolIE-SingleContainer { {S1ap-E-RABReleaseItemBearerRelCompIEs} }
 
 
 S1ap-E-RABReleaseItemBearerRelCompIEs         S1AP-PROTOCOL-IES ::= {
@@ -1871,7 +1871,7 @@ S1ap-InitialContextSetupRequestIEs S1AP-PROTOCOL-IES ::= {
 
 
 
-S1ap-E-RABToBeSetupListCtxtSUReq ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfE-RABs)) OF S1ap-IE
+S1ap-E-RABToBeSetupListCtxtSUReq ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfE-RABs)) OF ProtocolIE-SingleContainer { {S1ap-E-RABToBeSetupItemCtxtSUReqIEs} }
 
 
 S1ap-E-RABToBeSetupItemCtxtSUReqIEs         S1AP-PROTOCOL-IES ::= {
@@ -1926,7 +1926,7 @@ S1ap-InitialContextSetupResponseIEs S1AP-PROTOCOL-IES ::= {
 
 
 
-S1ap-E-RABSetupListCtxtSURes ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfE-RABs)) OF S1ap-IE
+S1ap-E-RABSetupListCtxtSURes ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfE-RABs)) OF ProtocolIE-SingleContainer { {S1ap-E-RABSetupItemCtxtSUResIEs} }
 
 
 S1ap-E-RABSetupItemCtxtSUResIEs         S1AP-PROTOCOL-IES ::= {
@@ -2009,7 +2009,7 @@ S1ap-PagingIEs S1AP-PROTOCOL-IES ::= {
 }
 
 
-S1ap-TAIList::= SEQUENCE (SIZE(1.. s1ap-maxnoofTAIs)) OF S1ap-IE
+S1ap-TAIList::= SEQUENCE (SIZE(1.. s1ap-maxnoofTAIs)) OF ProtocolIE-SingleContainer {{S1ap-TAIItemIEs}}
 
 
 S1ap-TAIItemIEs         S1AP-PROTOCOL-IES ::= {
@@ -2232,7 +2232,7 @@ S1ap-InitialUEMessage-IEs S1AP-PROTOCOL-IES ::= {
         { ID id-CSG-Id                                                CRITICALITY reject        TYPE S1ap-CSG-Id                                                        PRESENCE optional} |
         { ID id-GUMMEI-ID                                        CRITICALITY reject        TYPE S1ap-GUMMEI                                                        PRESENCE optional} |
         { ID id-CellAccessMode                                CRITICALITY reject        TYPE S1ap-CellAccessMode                                        PRESENCE optional} |
-        { ID id-GW-S1ap-TransportLayerAddress        CRITICALITY ignore        TYPE S1ap-TransportLayerAddress                        PRESENCE optional} |
+        { ID id-GW-TransportLayerAddress        CRITICALITY ignore        TYPE S1ap-TransportLayerAddress                        PRESENCE optional} |
         { ID id-RelayNode-Indicator                        CRITICALITY reject        TYPE S1ap-RelayNode-Indicator                        PRESENCE optional},
         ...
 }
@@ -2259,7 +2259,7 @@ S1ap-UplinkNASTransport-IEs S1AP-PROTOCOL-IES ::= {
         { ID id-NAS-PDU                                                CRITICALITY reject        TYPE S1ap-NAS-PDU                                        PRESENCE mandatory} |
         { ID id-EUTRAN-CGI                                        CRITICALITY ignore        TYPE S1ap-EUTRAN-CGI                                        PRESENCE mandatory} |
         { ID id-TAI                                                        CRITICALITY ignore        TYPE S1ap-TAI                                                PRESENCE mandatory} |
-        { ID id-GW-S1ap-TransportLayerAddress        CRITICALITY ignore        TYPE S1ap-TransportLayerAddress                PRESENCE optional},
+        { ID id-GW-TransportLayerAddress        CRITICALITY ignore        TYPE S1ap-TransportLayerAddress                PRESENCE optional},
         ...
 }
 -- **************************************************************
@@ -2328,7 +2328,7 @@ S1ap-ResetAll ::= ENUMERATED {
 }
 
 
-S1ap-UE-associatedLogicalS1-ConnectionListRes ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfIndividualS1ConnectionsToReset)) OF S1ap-IE
+S1ap-UE-associatedLogicalS1-ConnectionListRes ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfIndividualS1ConnectionsToReset)) OF ProtocolIE-SingleContainer { { S1ap-UE-associatedLogicalS1-ConnectionItemRes } }
 
 
 S1ap-UE-associatedLogicalS1-ConnectionItemRes         S1AP-PROTOCOL-IES ::= {
@@ -2359,7 +2359,7 @@ S1ap-ResetAcknowledgeIEs S1AP-PROTOCOL-IES ::= {
 }
 
 
-S1ap-UE-associatedLogicalS1-ConnectionListResAck ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfIndividualS1ConnectionsToReset)) OF S1ap-IE
+S1ap-UE-associatedLogicalS1-ConnectionListResAck ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfIndividualS1ConnectionsToReset)) OF ProtocolIE-SingleContainer { { S1ap-UE-associatedLogicalS1-ConnectionItemResAck } }
 
 
 S1ap-UE-associatedLogicalS1-ConnectionItemResAck         S1AP-PROTOCOL-IES ::= {
@@ -3438,7 +3438,7 @@ S1ap-AllocationAndRetentionPriority-ExtIEs S1AP-PROTOCOL-EXTENSION ::= {
 -- B
 
 
-S1ap-Bearers-SubjectToStatusTransfer-List ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfE-RABs)) OF S1ap-IE
+S1ap-Bearers-SubjectToStatusTransfer-List ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfE-RABs)) OF ProtocolIE-SingleContainer { { S1ap-Bearers-SubjectToStatusTransfer-ItemIEs } }
 
 
 S1ap-Bearers-SubjectToStatusTransfer-ItemIEs S1AP-PROTOCOL-IES ::= {
@@ -4009,7 +4009,7 @@ S1ap-EventType        ::= ENUMERATED {
 S1ap-E-RAB-ID                ::= INTEGER (0..15, ...)
 
 
-S1ap-E-RABInformationList        ::= SEQUENCE (SIZE (1.. s1ap-maxNrOfE-RABs)) OF S1ap-IE
+S1ap-E-RABInformationList        ::= SEQUENCE (SIZE (1.. s1ap-maxNrOfE-RABs)) OF ProtocolIE-SingleContainer { { S1ap-E-RABInformationListIEs } }
 
 
 S1ap-E-RABInformationListIEs S1AP-PROTOCOL-IES ::= {
@@ -4031,7 +4031,7 @@ S1ap-E-RABInformationListItem-ExtIEs S1AP-PROTOCOL-EXTENSION ::= {
 }
 
 
-S1ap-E-RABList ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfE-RABs)) OF S1ap-IE
+S1ap-E-RABList ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfE-RABs)) OF ProtocolIE-SingleContainer { {S1ap-E-RABItemIEs} }
 
 
 S1ap-E-RABItemIEs         S1AP-PROTOCOL-IES ::= {
@@ -5429,9 +5429,9 @@ S1ap-ProtocolIE-ID                ::= INTEGER {
         id-x2TNLConfigurationInfo(152),
         id-eNBX2ExtendedTransportLayerAddresses(153),
         id-GUMMEIList(154),
-        id-GW-S1ap-S1ap-TransportLayerAddress(155),
+        id-GW-TransportLayerAddress(155),
         id-Correlation-ID(156),
-        id-SourceMME-S1ap-S1ap-GUMMEI(157),
+        id-SourceMME-GUMMEI(157),
         id-MME-UE-S1AP-ID-2(158),
         id-RegisteredLAI(159),
         id-RelayNode-Indicator(160),
@@ -5735,9 +5735,9 @@ id-PagingPriority                                                               
 id-x2TNLConfigurationInfo                                                S1ap-ProtocolIE-ID ::= 152
 id-eNBX2ExtendedTransportLayerAddresses                        S1ap-ProtocolIE-ID ::= 153
 id-GUMMEIList                                                                        S1ap-ProtocolIE-ID ::= 154
-id-GW-S1ap-TransportLayerAddress                                                S1ap-ProtocolIE-ID ::= 155
+id-GW-TransportLayerAddress                                                S1ap-ProtocolIE-ID ::= 155
 id-Correlation-ID                                                                S1ap-ProtocolIE-ID ::= 156
-id-SourceMME-S1ap-GUMMEI                                                                S1ap-ProtocolIE-ID ::= 157
+id-SourceMME-GUMMEI                                                                S1ap-ProtocolIE-ID ::= 157
 id-MME-UE-S1AP-ID-2                                                                S1ap-ProtocolIE-ID ::= 158
 id-RegisteredLAI                                                                S1ap-ProtocolIE-ID ::= 159
 id-RelayNode-Indicator                                                        S1ap-ProtocolIE-ID ::= 160
