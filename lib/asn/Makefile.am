@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-SUBDIRS = asn1c
+SUBDIRS = asn1c test
 
 noinst_LTLIBRARIES = libasn.la
 
