@@ -1,28 +1,6 @@
-* Edit S1AP-PDU Specification 
---------------------------------------------------------------------
-S1AP-PDU {
-    itu-t (0) identified-organization (4) etsi (0) mobileDomain (0)
-    eps-Access (21) modules (3) s1ap (1) version1 (1)
-}
-
-DEFINITIONS AUTOMATIC TAGS ::=
-
-BEGIN
-
-IMPORTS
-    Criticality,
-    ProtocolIE-ID
-
-FROM S1AP-CommonDataTypes;
-
-IE ::= SEQUENCE {
-    id          ProtocolIE-ID,
-    criticality Criticality,
-    value       ANY
-}
-
-END
---------------------------------------------------------------------
+* Modify 36413-a90.txt to 36413-a90.asn
+user@host ~/Documents/git/cellwire/lib/asn/support$ \
+    diff 36413-a90.txt 36413-a90.asn
 
 * Add prefix S1AP to S1AP-PDU specification
 user@host ~/Documents/git/cellwire/lib/asn/support$ \
