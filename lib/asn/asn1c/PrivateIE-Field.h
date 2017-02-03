@@ -22,17 +22,17 @@ extern "C" {
 #endif
 
 /* PrivateIE-Field */
-typedef struct PrivateIE_Field_5772P0 {
+typedef struct PrivateIE_Field_5776P0 {
 	S1ap_PrivateIE_ID_t	 id;
 	S1ap_Criticality_t	 criticality;
 	ANY_t	 value;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} PrivateIE_Field_5772P0_t;
+} PrivateIE_Field_5776P0_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_PrivateIE_Field_5772P0;
+extern asn_TYPE_descriptor_t asn_DEF_PrivateIE_Field_5776P0;
 
 #ifdef __cplusplus
 }

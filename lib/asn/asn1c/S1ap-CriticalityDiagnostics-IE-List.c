@@ -16,7 +16,7 @@ static asn_TYPE_member_t asn_MBR_S1ap_CriticalityDiagnostics_IE_List_1[] = {
 	{ ATF_POINTER, 0, 0,
 		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		0,
-		&asn_DEF_S1ap_CriticalityDiagnostics_S1ap_IE_Item,
+		&asn_DEF_S1ap_CriticalityDiagnostics_IE_Item,
 		0,	/* Defer constraints checking to the member type */
 		0,	/* No PER visible constraints */
 		0,

@@ -38,7 +38,7 @@ static asn_TYPE_member_t asn_MBR_S1ap_GUMMEI_1[] = {
 	{ ATF_POINTER, 1, offsetof(struct S1ap_GUMMEI, iE_Extensions),
 		(ASN_TAG_CLASS_CONTEXT | (3 << 2)),
 		-1,	/* IMPLICIT tag at current level */
-		&asn_DEF_ProtocolExtensionContainer_5749P41,
+		&asn_DEF_ProtocolExtensionContainer_5753P41,
 		0,	/* Defer constraints checking to the member type */
 		0,	/* No PER visible constraints */
 		0,

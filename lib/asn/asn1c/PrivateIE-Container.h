@@ -23,15 +23,15 @@ extern "C" {
 struct PrivateIE_Field;
 
 /* PrivateIE-Container */
-typedef struct PrivateIE_Container_5768P0 {
+typedef struct PrivateIE_Container_5772P0 {
 	A_SEQUENCE_OF(struct PrivateIE_Field) list;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} PrivateIE_Container_5768P0_t;
+} PrivateIE_Container_5772P0_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_PrivateIE_Container_5768P0;
+extern asn_TYPE_descriptor_t asn_DEF_PrivateIE_Container_5772P0;
 
 #ifdef __cplusplus
 }

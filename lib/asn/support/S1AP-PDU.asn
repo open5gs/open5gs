@@ -18,7 +18,7 @@ BEGIN
 
 -- **************************************************************
 --
--- S1ap-IE parameter types from other modules.
+-- IE parameter types from other modules.
 --
 -- **************************************************************
 
@@ -683,7 +683,7 @@ BEGIN
 
 -- **************************************************************
 --
--- S1ap-IE parameter types from other modules.
+-- IE parameter types from other modules.
 --
 -- **************************************************************
 
@@ -989,9 +989,9 @@ FROM S1AP-PDU;
 -- **************************************************************
 
 
-E-RAB-S1ap-IE-ContainerList                        { S1AP-PROTOCOL-IES      : IEsSetParam }        ::= ProtocolIE-ContainerList     { 1, s1ap-maxNrOfE-RABs,   {IEsSetParam} }
-E-RAB-S1ap-IE-ContainerPairList                { S1AP-PROTOCOL-IES-PAIR : IEsSetParam }        ::= ProtocolIE-ContainerPairList { 1, s1ap-maxNrOfE-RABs,   {IEsSetParam} }
-ProtocolError-S1ap-IE-ContainerList        { S1AP-PROTOCOL-IES      : IEsSetParam }        ::= ProtocolIE-ContainerList     { 1, s1ap-maxNrOfE-RABs,   {IEsSetParam} }
+E-RAB-IE-ContainerList                        { S1AP-PROTOCOL-IES      : IEsSetParam }        ::= ProtocolIE-ContainerList     { 1, s1ap-maxNrOfE-RABs,   {IEsSetParam} }
+E-RAB-IE-ContainerPairList                { S1AP-PROTOCOL-IES-PAIR : IEsSetParam }        ::= ProtocolIE-ContainerPairList { 1, s1ap-maxNrOfE-RABs,   {IEsSetParam} }
+ProtocolError-IE-ContainerList        { S1AP-PROTOCOL-IES      : IEsSetParam }        ::= ProtocolIE-ContainerList     { 1, s1ap-maxNrOfE-RABs,   {IEsSetParam} }
 
 
 -- **************************************************************
@@ -1053,7 +1053,7 @@ S1ap-HandoverCommandIEs S1AP-PROTOCOL-IES ::= {
         { ID id-eNB-UE-S1AP-ID                                                        CRITICALITY reject        TYPE S1ap-ENB-UE-S1AP-ID                                                                                         PRESENCE mandatory        } |
         { ID id-HandoverType                                                        CRITICALITY reject        TYPE S1ap-HandoverType                                                                                         PRESENCE mandatory        } |
         { ID id-NASSecurityParametersfromE-UTRAN                CRITICALITY reject        TYPE S1ap-NASSecurityParametersfromE-UTRAN                                        PRESENCE conditional
-        -- This S1ap-IE shall be present if S1ap-HandoverType S1ap-IE is set to value "LTEtoUTRAN" or "LTEtoGERAN" --                        }|
+        -- This IE shall be present if S1ap-HandoverType IE is set to value "LTEtoUTRAN" or "LTEtoGERAN" --                        }|
         { ID id-E-RABSubjecttoDataForwardingList                CRITICALITY ignore        TYPE S1ap-E-RABSubjecttoDataForwardingList                                         PRESENCE optional        } |
         { ID id-E-RABtoReleaseListHOCmd                                        CRITICALITY ignore        TYPE S1ap-E-RABList                                                                                                 PRESENCE optional        } |
         { ID id-Target-ToSource-TransparentContainer        CRITICALITY        reject        TYPE S1ap-Target-ToSource-TransparentContainer                        PRESENCE mandatory }|
@@ -1063,7 +1063,7 @@ S1ap-HandoverCommandIEs S1AP-PROTOCOL-IES ::= {
 }
 
 
-S1ap-E-RABSubjecttoDataForwardingList ::= E-RAB-S1ap-IE-ContainerList { {S1ap-E-RABDataForwardingItemIEs} }
+S1ap-E-RABSubjecttoDataForwardingList ::= E-RAB-IE-ContainerList { {S1ap-E-RABDataForwardingItemIEs} }
 
 
 S1ap-E-RABDataForwardingItemIEs S1AP-PROTOCOL-IES ::= {
@@ -1148,7 +1148,7 @@ S1ap-HandoverRequestIEs S1AP-PROTOCOL-IES ::= {
         { ID id-SRVCCOperationPossible                                        CRITICALITY ignore        TYPE S1ap-SRVCCOperationPossible                        PRESENCE optional}|
         { ID id-SecurityContext                                                        CRITICALITY reject        TYPE S1ap-SecurityContext                                        PRESENCE mandatory}|
         { ID id-NASSecurityParameterstoE-UTRAN                        CRITICALITY reject        TYPE S1ap-NASSecurityParameterstoE-UTRAN                PRESENCE conditional
-        -- This S1ap-IE shall be present if the Handover Type S1ap-IE is set to the value "UTRANtoLTE" or "GERANtoLTE" --}|
+        -- This IE shall be present if the Handover Type IE is set to the value "UTRANtoLTE" or "GERANtoLTE" --}|
         { ID id-CSG-Id                                                                        CRITICALITY reject        TYPE S1ap-CSG-Id                                                                PRESENCE optional}|
         { ID id-CSGMembershipStatus                                                CRITICALITY ignore        TYPE S1ap-CSGMembershipStatus                                PRESENCE optional}|
         { ID id-GUMMEI-ID                                                                CRITICALITY ignore        TYPE S1ap-GUMMEI                                                                PRESENCE optional}|
@@ -1158,7 +1158,7 @@ S1ap-HandoverRequestIEs S1AP-PROTOCOL-IES ::= {
 }
 
 
-S1ap-E-RABToBeSetupListHOReq                                         ::= E-RAB-S1ap-IE-ContainerList { {S1ap-E-RABToBeSetupItemHOReqIEs} }
+S1ap-E-RABToBeSetupListHOReq                                         ::= E-RAB-IE-ContainerList { {S1ap-E-RABToBeSetupItemHOReqIEs} }
 
 
 S1ap-E-RABToBeSetupItemHOReqIEs S1AP-PROTOCOL-IES ::= {
@@ -1208,7 +1208,7 @@ S1ap-HandoverRequestAcknowledgeIEs S1AP-PROTOCOL-IES ::= {
 }
 
 
-S1ap-E-RABAdmittedList                                         ::= E-RAB-S1ap-IE-ContainerList { {S1ap-E-RABAdmittedItemIEs} }
+S1ap-E-RABAdmittedList                                         ::= E-RAB-IE-ContainerList { {S1ap-E-RABAdmittedItemIEs} }
 
 
 S1ap-E-RABAdmittedItemIEs S1AP-PROTOCOL-IES ::= {
@@ -1235,7 +1235,7 @@ S1ap-E-RABAdmittedItem-ExtIEs S1AP-PROTOCOL-EXTENSION ::= {
 }
 
 
-S1ap-E-RABFailedtoSetupListHOReqAck                                         ::= E-RAB-S1ap-IE-ContainerList { {S1ap-E-RABFailedtoSetupItemHOReqAckIEs} }
+S1ap-E-RABFailedtoSetupListHOReqAck                                         ::= E-RAB-IE-ContainerList { {S1ap-E-RABFailedtoSetupItemHOReqAckIEs} }
 
 
 S1ap-E-RABFailedtoSetupItemHOReqAckIEs S1AP-PROTOCOL-IES ::= {
@@ -1343,7 +1343,7 @@ S1ap-PathSwitchRequestIEs S1AP-PROTOCOL-IES ::= {
 }
 
 
-S1ap-E-RABToBeSwitchedDLList                                         ::= E-RAB-S1ap-IE-ContainerList { {S1ap-E-RABToBeSwitchedDLItemIEs} }
+S1ap-E-RABToBeSwitchedDLList                                         ::= E-RAB-IE-ContainerList { {S1ap-E-RABToBeSwitchedDLItemIEs} }
 
 
 S1ap-E-RABToBeSwitchedDLItemIEs S1AP-PROTOCOL-IES ::= {
@@ -1392,7 +1392,7 @@ S1ap-PathSwitchRequestAcknowledgeIEs S1AP-PROTOCOL-IES ::= {
 }
 
 
-S1ap-E-RABToBeSwitchedULList ::= E-RAB-S1ap-IE-ContainerList { {S1ap-E-RABToBeSwitchedULItemIEs} }
+S1ap-E-RABToBeSwitchedULList ::= E-RAB-IE-ContainerList { {S1ap-E-RABToBeSwitchedULItemIEs} }
 
 
 S1ap-E-RABToBeSwitchedULItemIEs S1AP-PROTOCOL-IES ::= {
@@ -1517,7 +1517,7 @@ S1ap-E-RABSetupRequestIEs S1AP-PROTOCOL-IES ::= {
 }
 
 
-S1ap-E-RABToBeSetupListBearerSUReq ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfE-RABs)) OF ProtocolIE-SingleContainer { {S1ap-E-RABToBeSetupItemBearerSUReqIEs} }
+S1ap-E-RABToBeSetupListBearerSUReq ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfE-RABs)) OF S1ap-IE
 
 
 S1ap-E-RABToBeSetupItemBearerSUReqIEs         S1AP-PROTOCOL-IES ::= {
@@ -1572,7 +1572,7 @@ S1ap-E-RABSetupResponseIEs S1AP-PROTOCOL-IES ::= {
 
 
 
-S1ap-E-RABSetupListBearerSURes ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfE-RABs)) OF ProtocolIE-SingleContainer { {S1ap-E-RABSetupItemBearerSUResIEs} }
+S1ap-E-RABSetupListBearerSURes ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfE-RABs)) OF S1ap-IE
 
 
 S1ap-E-RABSetupItemBearerSUResIEs         S1AP-PROTOCOL-IES ::= {
@@ -1630,7 +1630,7 @@ S1ap-E-RABModifyRequestIEs S1AP-PROTOCOL-IES ::= {
 }
 
 
-S1ap-E-RABToBeModifiedListBearerModReq ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfE-RABs)) OF ProtocolIE-SingleContainer { {S1ap-E-RABToBeModifiedItemBearerModReqIEs} }
+S1ap-E-RABToBeModifiedListBearerModReq ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfE-RABs)) OF S1ap-IE
 
 
 S1ap-E-RABToBeModifiedItemBearerModReqIEs         S1AP-PROTOCOL-IES ::= {
@@ -1684,7 +1684,7 @@ S1ap-E-RABModifyResponseIEs S1AP-PROTOCOL-IES ::= {
 
 
 
-S1ap-E-RABModifyListBearerModRes ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfE-RABs)) OF ProtocolIE-SingleContainer { {S1ap-E-RABModifyItemBearerModResIEs} }
+S1ap-E-RABModifyListBearerModRes ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfE-RABs)) OF S1ap-IE
 
 
 S1ap-E-RABModifyItemBearerModResIEs         S1AP-PROTOCOL-IES ::= {
@@ -1770,7 +1770,7 @@ S1ap-E-RABReleaseResponseIEs S1AP-PROTOCOL-IES ::= {
 
 
 
-S1ap-E-RABReleaseListBearerRelComp ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfE-RABs)) OF ProtocolIE-SingleContainer { {S1ap-E-RABReleaseItemBearerRelCompIEs} }
+S1ap-E-RABReleaseListBearerRelComp ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfE-RABs)) OF S1ap-IE
 
 
 S1ap-E-RABReleaseItemBearerRelCompIEs         S1AP-PROTOCOL-IES ::= {
@@ -1871,7 +1871,7 @@ S1ap-InitialContextSetupRequestIEs S1AP-PROTOCOL-IES ::= {
 
 
 
-S1ap-E-RABToBeSetupListCtxtSUReq ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfE-RABs)) OF ProtocolIE-SingleContainer { {S1ap-E-RABToBeSetupItemCtxtSUReqIEs} }
+S1ap-E-RABToBeSetupListCtxtSUReq ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfE-RABs)) OF S1ap-IE
 
 
 S1ap-E-RABToBeSetupItemCtxtSUReqIEs         S1AP-PROTOCOL-IES ::= {
@@ -1926,7 +1926,7 @@ S1ap-InitialContextSetupResponseIEs S1AP-PROTOCOL-IES ::= {
 
 
 
-S1ap-E-RABSetupListCtxtSURes ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfE-RABs)) OF ProtocolIE-SingleContainer { {S1ap-E-RABSetupItemCtxtSUResIEs} }
+S1ap-E-RABSetupListCtxtSURes ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfE-RABs)) OF S1ap-IE
 
 
 S1ap-E-RABSetupItemCtxtSUResIEs         S1AP-PROTOCOL-IES ::= {
@@ -2009,7 +2009,7 @@ S1ap-PagingIEs S1AP-PROTOCOL-IES ::= {
 }
 
 
-S1ap-TAIList::= SEQUENCE (SIZE(1.. s1ap-maxnoofTAIs)) OF ProtocolIE-SingleContainer {{S1ap-TAIItemIEs}}
+S1ap-TAIList::= SEQUENCE (SIZE(1.. s1ap-maxnoofTAIs)) OF S1ap-IE
 
 
 S1ap-TAIItemIEs         S1AP-PROTOCOL-IES ::= {
@@ -2328,7 +2328,7 @@ S1ap-ResetAll ::= ENUMERATED {
 }
 
 
-S1ap-UE-associatedLogicalS1-ConnectionListRes ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfIndividualS1ConnectionsToReset)) OF ProtocolIE-SingleContainer { { S1ap-UE-associatedLogicalS1-ConnectionItemRes } }
+S1ap-UE-associatedLogicalS1-ConnectionListRes ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfIndividualS1ConnectionsToReset)) OF S1ap-IE
 
 
 S1ap-UE-associatedLogicalS1-ConnectionItemRes         S1AP-PROTOCOL-IES ::= {
@@ -2359,7 +2359,7 @@ S1ap-ResetAcknowledgeIEs S1AP-PROTOCOL-IES ::= {
 }
 
 
-S1ap-UE-associatedLogicalS1-ConnectionListResAck ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfIndividualS1ConnectionsToReset)) OF ProtocolIE-SingleContainer { { S1ap-UE-associatedLogicalS1-ConnectionItemResAck } }
+S1ap-UE-associatedLogicalS1-ConnectionListResAck ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfIndividualS1ConnectionsToReset)) OF S1ap-IE
 
 
 S1ap-UE-associatedLogicalS1-ConnectionItemResAck         S1AP-PROTOCOL-IES ::= {
@@ -3401,7 +3401,11 @@ FROM S1AP-CommonDataTypes
         S1AP-PROTOCOL-IES
 
 
-FROM S1AP-Containers;        
+FROM S1AP-Containers
+
+        S1ap-IE
+
+FROM S1AP-PDU;
 
 
 -- A
@@ -3434,7 +3438,7 @@ S1ap-AllocationAndRetentionPriority-ExtIEs S1AP-PROTOCOL-EXTENSION ::= {
 -- B
 
 
-S1ap-Bearers-SubjectToStatusTransferList ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfE-RABs)) OF ProtocolIE-SingleContainer { { S1ap-Bearers-SubjectToStatusTransfer-ItemIEs } }
+S1ap-Bearers-SubjectToStatusTransferList ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfE-RABs)) OF S1ap-IE
 
 
 S1ap-Bearers-SubjectToStatusTransfer-ItemIEs S1AP-PROTOCOL-IES ::= {
@@ -3830,10 +3834,10 @@ S1ap-CriticalityDiagnostics-ExtIEs S1AP-PROTOCOL-EXTENSION ::= {
 }
 
 
-S1ap-CriticalityDiagnostics-IE-List ::= SEQUENCE (SIZE (1..s1ap-maxNrOfErrors)) OF S1ap-CriticalityDiagnostics-S1ap-IE-Item
+S1ap-CriticalityDiagnostics-IE-List ::= SEQUENCE (SIZE (1..s1ap-maxNrOfErrors)) OF S1ap-CriticalityDiagnostics-IE-Item
 
 
-S1ap-CriticalityDiagnostics-S1ap-IE-Item ::=         SEQUENCE {
+S1ap-CriticalityDiagnostics-IE-Item ::=         SEQUENCE {
         iECriticality                        S1ap-Criticality,
         iE-ID                                        S1ap-ProtocolIE-ID,
         typeOfError                         S1ap-TypeOfError,
@@ -4005,7 +4009,7 @@ S1ap-EventType        ::= ENUMERATED {
 S1ap-E-RAB-ID                ::= INTEGER (0..15, ...)
 
 
-S1ap-E-RABInformationList        ::= SEQUENCE (SIZE (1.. s1ap-maxNrOfE-RABs)) OF ProtocolIE-SingleContainer { { S1ap-E-RABInformationListIEs } }
+S1ap-E-RABInformationList        ::= SEQUENCE (SIZE (1.. s1ap-maxNrOfE-RABs)) OF S1ap-IE
 
 
 S1ap-E-RABInformationListIEs S1AP-PROTOCOL-IES ::= {
@@ -4027,7 +4031,7 @@ S1ap-E-RABInformationListItem-ExtIEs S1AP-PROTOCOL-EXTENSION ::= {
 }
 
 
-S1ap-E-RABList ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfE-RABs)) OF ProtocolIE-SingleContainer { {S1ap-E-RABItemIEs} }
+S1ap-E-RABList ::= SEQUENCE (SIZE(1.. s1ap-maxNrOfE-RABs)) OF S1ap-IE
 
 
 S1ap-E-RABItemIEs         S1AP-PROTOCOL-IES ::= {
@@ -4300,7 +4304,7 @@ S1ap-LastVisitedGERANCellInformation ::= CHOICE {
 
 
 S1ap-L3-Information                                ::= OCTET STRING
--- This is a dummy S1ap-IE used only as a reference to the actual definition in relevant specification.
+-- This is a dummy IE used only as a reference to the actual definition in relevant specification.
 
 
 S1ap-LPPa-PDU ::=  OCTET STRING
@@ -4418,7 +4422,7 @@ S1ap-NumberOfBroadcasts ::= INTEGER (0..65535)
 
 -- O
 S1ap-OldBSS-ToNewBSS-Information                ::= OCTET STRING
--- This is a dummy S1ap-IE used only as a reference to the actual definition in relevant specification.
+-- This is a dummy IE used only as a reference to the actual definition in relevant specification.
 
 
 S1ap-OverloadAction ::= ENUMERATED {
@@ -4681,7 +4685,7 @@ S1ap-SONConfigurationTransfer ::= SEQUENCE {
 S1ap-SONConfigurationTransfer-ExtIEs S1AP-PROTOCOL-EXTENSION ::= {
 -- Extension for Release 10 to transfer the IP addresses of the eNB initiating the ANR action --
         {ID id-x2TNLConfigurationInfo        CRITICALITY ignore        EXTENSION S1ap-X2TNLConfigurationInfo        PRESENCE conditional
-        -- This S1ap-IE shall be present if the SON Information S1ap-IE contains the SON Information Request S1ap-IE and the SON Information Request S1ap-IE is set to !^0X2TNL Configuration Info!+/- -- },
+        -- This IE shall be present if the SON Information IE contains the SON Information Request IE and the SON Information Request IE is set to !^0X2TNL Configuration Info!+/- -- },
         ...
 }
 
@@ -4691,12 +4695,12 @@ S1ap-SONConfigurationTransfer-ExtIEs S1AP-PROTOCOL-EXTENSION ::= {
 
 
 S1ap-Source-ToTarget-TransparentContainer ::= OCTET STRING
--- This S1ap-IE includes a transparent container from the source RAN node to the target RAN node. 
+-- This IE includes a transparent container from the source RAN node to the target RAN node. 
 -- The octets of the OCTET STRING are encoded according to the specifications of the target system.
 
 
 S1ap-SourceBSS-ToTargetBSS-TransparentContainer                ::= OCTET STRING
--- This is a dummy S1ap-IE used only as a reference to the actual definition in relevant specification.
+-- This is a dummy IE used only as a reference to the actual definition in relevant specification.
 
 
 S1ap-SourceeNB-ID ::= SEQUENCE {
@@ -4743,7 +4747,7 @@ S1ap-SourceeNB-ToTargeteNB-TransparentContainer-ExtIEs S1AP-PROTOCOL-EXTENSION :
 
 
 S1ap-SourceRNC-ToTargetRNC-TransparentContainer                ::= OCTET STRING
--- This is a dummy S1ap-IE used only as a reference to the actual definition in relevant specification.
+-- This is a dummy IE used only as a reference to the actual definition in relevant specification.
 
 
 
@@ -4963,16 +4967,16 @@ S1ap-TargeteNB-ToSourceeNB-TransparentContainer-ExtIEs S1AP-PROTOCOL-EXTENSION :
 
 
 S1ap-Target-ToSource-TransparentContainer ::= OCTET STRING
--- This S1ap-IE includes a transparent container from the target RAN node to the source RAN node. 
+-- This IE includes a transparent container from the target RAN node to the source RAN node. 
 -- The octets of the OCTET STRING are coded according to the specifications of the target system.
 
 
 S1ap-TargetRNC-ToSourceRNC-TransparentContainer                ::= OCTET STRING
--- This is a dummy S1ap-IE used only as a reference to the actual definition in relevant specification.
+-- This is a dummy IE used only as a reference to the actual definition in relevant specification.
 
 
 S1ap-TargetBSS-ToSourceBSS-TransparentContainer                ::= OCTET STRING
--- This is a dummy S1ap-IE used only as a reference to the actual definition in relevant specification.
+-- This is a dummy IE used only as a reference to the actual definition in relevant specification.
 
 
 S1ap-ThresholdEventA2 ::= SEQUENCE { 
@@ -5266,7 +5270,7 @@ BEGIN
 
 -- **************************************************************
 --
--- S1ap-IE parameter types from other modules.
+-- IE parameter types from other modules.
 --
 -- **************************************************************
 
@@ -5567,7 +5571,7 @@ BEGIN
 
 -- **************************************************************
 --
--- S1ap-IE parameter types from other modules.
+-- IE parameter types from other modules.
 --
 -- **************************************************************
 
@@ -5701,7 +5705,7 @@ ProtocolIE-Field {S1AP-PROTOCOL-IES : IEsSetParam} ::= SEQUENCE {
 
 -- **************************************************************
 --
--- Container for Protocol S1ap-IE Pairs
+-- Container for Protocol IE Pairs
 --
 -- **************************************************************
 
@@ -5722,7 +5726,7 @@ ProtocolIE-FieldPair {S1AP-PROTOCOL-IES-PAIR : IEsSetParam} ::= SEQUENCE {
 
 -- **************************************************************
 --
--- Container Lists for Protocol S1ap-IE Containers
+-- Container Lists for Protocol IE Containers
 --
 -- **************************************************************
 
@@ -5780,7 +5784,7 @@ END
 
 -- **************************************************************
 --
--- for S1ap-S1ap-IE
+-- for S1ap-IE
 --
 -- **************************************************************
 

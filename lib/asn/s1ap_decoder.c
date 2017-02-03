@@ -30,54 +30,12 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-02-02 21:30:57.614475 by acetcom
+ * Created on: 2017-02-03 11:00:55.366759 by acetcom
  * from ['S1AP-PDU.asn']
  ******************************************************************************/
 #include "s1ap_common.h"
 #include "s1ap_ies_defs.h"
 #include "log.h"
-
-int s1ap_decode_s1ap_e_rabfailedtosetupitemhoreqackies(
-    S1ap_E_RABFailedtoSetupItemHOReqAckIEs_t *s1ap_E_RABFailedtoSetupItemHOReqAckIEs,
-    ANY_t *any_p) {
-
-    S1ap_E_RABFailedtoSetupListHOReqAck_t  s1ap_E_RABFailedtoSetupListHOReqAck;
-    S1ap_E_RABFailedtoSetupListHOReqAck_t *s1ap_E_RABFailedtoSetupListHOReqAck_p = &s1ap_E_RABFailedtoSetupListHOReqAck;
-    int i, decoded = 0;
-    int tempDecoded = 0;
-    assert(any_p != NULL);
-    assert(s1ap_E_RABFailedtoSetupItemHOReqAckIEs != NULL);
-
-   OAILOG_DEBUG (LOG_S1AP, "Decoding message S1ap_E_RABFailedtoSetupItemHOReqAckIEs (%s:%d)\n", __FILE__, __LINE__);
-
-    ANY_to_type_aper(any_p, &asn_DEF_S1ap_E_RABFailedtoSetupListHOReqAck, (void**)&s1ap_E_RABFailedtoSetupListHOReqAck_p);
-
-    for (i = 0; i < s1ap_E_RABFailedtoSetupListHOReqAck_p->s1ap_E_RABFailedtoSetupListHOReqAck_ies.list.count; i++) {
-        S1ap_IE_t *ie_p;
-        ie_p = s1ap_E_RABFailedtoSetupListHOReqAck_p->s1ap_E_RABFailedtoSetupListHOReqAck_ies.list.array[i];
-        switch(ie_p->id) {
-            case S1ap_ProtocolIE_ID_id_E_RABFailedtoSetupItemHOReqAck:
-            {
-                S1ap_E_RABFailedToSetupItemHOReqAck_t *s1apERABFailedToSetupItemHOReqAck_p = NULL;
-                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABFailedToSetupItemHOReqAck, (void**)&s1apERABFailedToSetupItemHOReqAck_p);
-                if (tempDecoded < 0 || s1apERABFailedToSetupItemHOReqAck_p == NULL) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE e_RABFailedtoSetupItemHOReqAck failed\n");
-                    if (s1apERABFailedToSetupItemHOReqAck_p)
-                        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABFailedToSetupItemHOReqAck, s1apERABFailedToSetupItemHOReqAck_p);
-                    return -1;
-                }
-                decoded += tempDecoded;
-                if (asn1_xer_print)
-                    xer_fprint(stdout, &asn_DEF_S1ap_E_RABFailedToSetupItemHOReqAck, s1apERABFailedToSetupItemHOReqAck_p);
-                memcpy(&s1ap_E_RABFailedtoSetupItemHOReqAckIEs->e_RABFailedtoSetupItemHOReqAck, s1apERABFailedToSetupItemHOReqAck_p, sizeof(S1ap_E_RABFailedToSetupItemHOReqAck_t));
-            } break;
-            default:
-               OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_e_rabfailedtosetupitemhoreqackies\n", (int)ie_p->id);
-                return -1;
-        }
-    }
-    return decoded;
-}
 
 int s1ap_decode_s1ap_deactivatetraceies(
     S1ap_DeactivateTraceIEs_t *s1ap_DeactivateTraceIEs,
@@ -145,6 +103,48 @@ int s1ap_decode_s1ap_deactivatetraceies(
             } break;
             default:
                OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_deactivatetraceies\n", (int)ie_p->id);
+                return -1;
+        }
+    }
+    return decoded;
+}
+
+int s1ap_decode_s1ap_e_rabreleaseitembearerrelcompies(
+    S1ap_E_RABReleaseItemBearerRelCompIEs_t *s1ap_E_RABReleaseItemBearerRelCompIEs,
+    ANY_t *any_p) {
+
+    S1ap_E_RABReleaseListBearerRelComp_t  s1ap_E_RABReleaseListBearerRelComp;
+    S1ap_E_RABReleaseListBearerRelComp_t *s1ap_E_RABReleaseListBearerRelComp_p = &s1ap_E_RABReleaseListBearerRelComp;
+    int i, decoded = 0;
+    int tempDecoded = 0;
+    assert(any_p != NULL);
+    assert(s1ap_E_RABReleaseItemBearerRelCompIEs != NULL);
+
+   OAILOG_DEBUG (LOG_S1AP, "Decoding message S1ap_E_RABReleaseItemBearerRelCompIEs (%s:%d)\n", __FILE__, __LINE__);
+
+    ANY_to_type_aper(any_p, &asn_DEF_S1ap_E_RABReleaseListBearerRelComp, (void**)&s1ap_E_RABReleaseListBearerRelComp_p);
+
+    for (i = 0; i < s1ap_E_RABReleaseListBearerRelComp_p->s1ap_E_RABReleaseListBearerRelComp_ies.list.count; i++) {
+        S1ap_IE_t *ie_p;
+        ie_p = s1ap_E_RABReleaseListBearerRelComp_p->s1ap_E_RABReleaseListBearerRelComp_ies.list.array[i];
+        switch(ie_p->id) {
+            case S1ap_ProtocolIE_ID_id_E_RABReleaseItemBearerRelComp:
+            {
+                S1ap_E_RABReleaseItemBearerRelComp_t *s1apERABReleaseItemBearerRelComp_p = NULL;
+                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABReleaseItemBearerRelComp, (void**)&s1apERABReleaseItemBearerRelComp_p);
+                if (tempDecoded < 0 || s1apERABReleaseItemBearerRelComp_p == NULL) {
+                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE e_RABReleaseItemBearerRelComp failed\n");
+                    if (s1apERABReleaseItemBearerRelComp_p)
+                        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABReleaseItemBearerRelComp, s1apERABReleaseItemBearerRelComp_p);
+                    return -1;
+                }
+                decoded += tempDecoded;
+                if (asn1_xer_print)
+                    xer_fprint(stdout, &asn_DEF_S1ap_E_RABReleaseItemBearerRelComp, s1apERABReleaseItemBearerRelComp_p);
+                memcpy(&s1ap_E_RABReleaseItemBearerRelCompIEs->e_RABReleaseItemBearerRelComp, s1apERABReleaseItemBearerRelComp_p, sizeof(S1ap_E_RABReleaseItemBearerRelComp_t));
+            } break;
+            default:
+               OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_e_rabreleaseitembearerrelcompies\n", (int)ie_p->id);
                 return -1;
         }
     }
@@ -257,10 +257,7 @@ int s1ap_decode_s1ap_e_rabreleaseresponseies(
                 decoded += tempDecoded;
                 if (asn1_xer_print)
                     xer_fprint(stdout, &asn_DEF_S1ap_E_RABReleaseListBearerRelComp, s1apERABReleaseListBearerRelComp_p);
-                if (s1ap_decode_s1ap_e_rabreleaselistbearerrelcomp(&s1ap_E_RABReleaseResponseIEs->e_RABReleaseListBearerRelComp, s1apERABReleaseListBearerRelComp_p) < 0) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of encapsulated IE s1apERABReleaseListBearerRelComp failed\n");
-                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABReleaseListBearerRelComp, s1apERABReleaseListBearerRelComp_p);
-                }
+                memcpy(&s1ap_E_RABReleaseResponseIEs->e_RABReleaseListBearerRelComp, s1apERABReleaseListBearerRelComp_p, sizeof(S1ap_E_RABReleaseListBearerRelComp_t));
             } break;
             /* Optional field */
             case S1ap_ProtocolIE_ID_id_E_RABFailedToReleaseList:
@@ -277,10 +274,7 @@ int s1ap_decode_s1ap_e_rabreleaseresponseies(
                 decoded += tempDecoded;
                 if (asn1_xer_print)
                     xer_fprint(stdout, &asn_DEF_S1ap_E_RABList, s1apERABList_p);
-                if (s1ap_decode_s1ap_e_rablist(&s1ap_E_RABReleaseResponseIEs->e_RABFailedToReleaseList, s1apERABList_p) < 0) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of encapsulated IE s1apERABList failed\n");
-                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABList, s1apERABList_p);
-                }
+                memcpy(&s1ap_E_RABReleaseResponseIEs->e_RABFailedToReleaseList, s1apERABList_p, sizeof(S1ap_E_RABList_t));
             } break;
             /* Optional field */
             case S1ap_ProtocolIE_ID_id_CriticalityDiagnostics:
@@ -358,48 +352,6 @@ int s1ap_decode_s1ap_uplinknonueassociatedlppatransport_ies(
             } break;
             default:
                OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_uplinknonueassociatedlppatransport_ies\n", (int)ie_p->id);
-                return -1;
-        }
-    }
-    return decoded;
-}
-
-int s1ap_decode_s1ap_e_rabtobesetupitemhoreqies(
-    S1ap_E_RABToBeSetupItemHOReqIEs_t *s1ap_E_RABToBeSetupItemHOReqIEs,
-    ANY_t *any_p) {
-
-    S1ap_E_RABToBeSetupListHOReq_t  s1ap_E_RABToBeSetupListHOReq;
-    S1ap_E_RABToBeSetupListHOReq_t *s1ap_E_RABToBeSetupListHOReq_p = &s1ap_E_RABToBeSetupListHOReq;
-    int i, decoded = 0;
-    int tempDecoded = 0;
-    assert(any_p != NULL);
-    assert(s1ap_E_RABToBeSetupItemHOReqIEs != NULL);
-
-   OAILOG_DEBUG (LOG_S1AP, "Decoding message S1ap_E_RABToBeSetupItemHOReqIEs (%s:%d)\n", __FILE__, __LINE__);
-
-    ANY_to_type_aper(any_p, &asn_DEF_S1ap_E_RABToBeSetupListHOReq, (void**)&s1ap_E_RABToBeSetupListHOReq_p);
-
-    for (i = 0; i < s1ap_E_RABToBeSetupListHOReq_p->s1ap_E_RABToBeSetupListHOReq_ies.list.count; i++) {
-        S1ap_IE_t *ie_p;
-        ie_p = s1ap_E_RABToBeSetupListHOReq_p->s1ap_E_RABToBeSetupListHOReq_ies.list.array[i];
-        switch(ie_p->id) {
-            case S1ap_ProtocolIE_ID_id_E_RABToBeSetupItemHOReq:
-            {
-                S1ap_E_RABToBeSetupItemHOReq_t *s1apERABToBeSetupItemHOReq_p = NULL;
-                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABToBeSetupItemHOReq, (void**)&s1apERABToBeSetupItemHOReq_p);
-                if (tempDecoded < 0 || s1apERABToBeSetupItemHOReq_p == NULL) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE e_RABToBeSetupItemHOReq failed\n");
-                    if (s1apERABToBeSetupItemHOReq_p)
-                        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABToBeSetupItemHOReq, s1apERABToBeSetupItemHOReq_p);
-                    return -1;
-                }
-                decoded += tempDecoded;
-                if (asn1_xer_print)
-                    xer_fprint(stdout, &asn_DEF_S1ap_E_RABToBeSetupItemHOReq, s1apERABToBeSetupItemHOReq_p);
-                memcpy(&s1ap_E_RABToBeSetupItemHOReqIEs->e_RABToBeSetupItemHOReq, s1apERABToBeSetupItemHOReq_p, sizeof(S1ap_E_RABToBeSetupItemHOReq_t));
-            } break;
-            default:
-               OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_e_rabtobesetupitemhoreqies\n", (int)ie_p->id);
                 return -1;
         }
     }
@@ -730,6 +682,48 @@ int s1ap_decode_s1ap_handoverpreparationfailureies(
     return decoded;
 }
 
+int s1ap_decode_s1ap_e_rabtobemodifieditembearermodreqies(
+    S1ap_E_RABToBeModifiedItemBearerModReqIEs_t *s1ap_E_RABToBeModifiedItemBearerModReqIEs,
+    ANY_t *any_p) {
+
+    S1ap_E_RABToBeModifiedListBearerModReq_t  s1ap_E_RABToBeModifiedListBearerModReq;
+    S1ap_E_RABToBeModifiedListBearerModReq_t *s1ap_E_RABToBeModifiedListBearerModReq_p = &s1ap_E_RABToBeModifiedListBearerModReq;
+    int i, decoded = 0;
+    int tempDecoded = 0;
+    assert(any_p != NULL);
+    assert(s1ap_E_RABToBeModifiedItemBearerModReqIEs != NULL);
+
+   OAILOG_DEBUG (LOG_S1AP, "Decoding message S1ap_E_RABToBeModifiedItemBearerModReqIEs (%s:%d)\n", __FILE__, __LINE__);
+
+    ANY_to_type_aper(any_p, &asn_DEF_S1ap_E_RABToBeModifiedListBearerModReq, (void**)&s1ap_E_RABToBeModifiedListBearerModReq_p);
+
+    for (i = 0; i < s1ap_E_RABToBeModifiedListBearerModReq_p->s1ap_E_RABToBeModifiedListBearerModReq_ies.list.count; i++) {
+        S1ap_IE_t *ie_p;
+        ie_p = s1ap_E_RABToBeModifiedListBearerModReq_p->s1ap_E_RABToBeModifiedListBearerModReq_ies.list.array[i];
+        switch(ie_p->id) {
+            case S1ap_ProtocolIE_ID_id_E_RABToBeModifiedItemBearerModReq:
+            {
+                S1ap_E_RABToBeModifiedItemBearerModReq_t *s1apERABToBeModifiedItemBearerModReq_p = NULL;
+                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABToBeModifiedItemBearerModReq, (void**)&s1apERABToBeModifiedItemBearerModReq_p);
+                if (tempDecoded < 0 || s1apERABToBeModifiedItemBearerModReq_p == NULL) {
+                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE e_RABToBeModifiedItemBearerModReq failed\n");
+                    if (s1apERABToBeModifiedItemBearerModReq_p)
+                        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABToBeModifiedItemBearerModReq, s1apERABToBeModifiedItemBearerModReq_p);
+                    return -1;
+                }
+                decoded += tempDecoded;
+                if (asn1_xer_print)
+                    xer_fprint(stdout, &asn_DEF_S1ap_E_RABToBeModifiedItemBearerModReq, s1apERABToBeModifiedItemBearerModReq_p);
+                memcpy(&s1ap_E_RABToBeModifiedItemBearerModReqIEs->e_RABToBeModifiedItemBearerModReq, s1apERABToBeModifiedItemBearerModReq_p, sizeof(S1ap_E_RABToBeModifiedItemBearerModReq_t));
+            } break;
+            default:
+               OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_e_rabtobemodifieditembearermodreqies\n", (int)ie_p->id);
+                return -1;
+        }
+    }
+    return decoded;
+}
+
 int s1ap_decode_s1ap_uecontextreleaserequest_ies(
     S1ap_UEContextReleaseRequest_IEs_t *s1ap_UEContextReleaseRequest_IEs,
     ANY_t *any_p) {
@@ -813,48 +807,6 @@ int s1ap_decode_s1ap_uecontextreleaserequest_ies(
             } break;
             default:
                OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_uecontextreleaserequest_ies\n", (int)ie_p->id);
-                return -1;
-        }
-    }
-    return decoded;
-}
-
-int s1ap_decode_s1ap_e_rabadmitteditemies(
-    S1ap_E_RABAdmittedItemIEs_t *s1ap_E_RABAdmittedItemIEs,
-    ANY_t *any_p) {
-
-    S1ap_E_RABAdmittedList_t  s1ap_E_RABAdmittedList;
-    S1ap_E_RABAdmittedList_t *s1ap_E_RABAdmittedList_p = &s1ap_E_RABAdmittedList;
-    int i, decoded = 0;
-    int tempDecoded = 0;
-    assert(any_p != NULL);
-    assert(s1ap_E_RABAdmittedItemIEs != NULL);
-
-   OAILOG_DEBUG (LOG_S1AP, "Decoding message S1ap_E_RABAdmittedItemIEs (%s:%d)\n", __FILE__, __LINE__);
-
-    ANY_to_type_aper(any_p, &asn_DEF_S1ap_E_RABAdmittedList, (void**)&s1ap_E_RABAdmittedList_p);
-
-    for (i = 0; i < s1ap_E_RABAdmittedList_p->s1ap_E_RABAdmittedList_ies.list.count; i++) {
-        S1ap_IE_t *ie_p;
-        ie_p = s1ap_E_RABAdmittedList_p->s1ap_E_RABAdmittedList_ies.list.array[i];
-        switch(ie_p->id) {
-            case S1ap_ProtocolIE_ID_id_E_RABAdmittedItem:
-            {
-                S1ap_E_RABAdmittedItem_t *s1apERABAdmittedItem_p = NULL;
-                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABAdmittedItem, (void**)&s1apERABAdmittedItem_p);
-                if (tempDecoded < 0 || s1apERABAdmittedItem_p == NULL) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE e_RABAdmittedItem failed\n");
-                    if (s1apERABAdmittedItem_p)
-                        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABAdmittedItem, s1apERABAdmittedItem_p);
-                    return -1;
-                }
-                decoded += tempDecoded;
-                if (asn1_xer_print)
-                    xer_fprint(stdout, &asn_DEF_S1ap_E_RABAdmittedItem, s1apERABAdmittedItem_p);
-                memcpy(&s1ap_E_RABAdmittedItemIEs->e_RABAdmittedItem, s1apERABAdmittedItem_p, sizeof(S1ap_E_RABAdmittedItem_t));
-            } break;
-            default:
-               OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_e_rabadmitteditemies\n", (int)ie_p->id);
                 return -1;
         }
     }
@@ -1417,42 +1369,42 @@ int s1ap_decode_s1ap_uecapabilityinfoindicationies(
     return decoded;
 }
 
-int s1ap_decode_s1ap_e_rabdataforwardingitemies(
-    S1ap_E_RABDataForwardingItemIEs_t *s1ap_E_RABDataForwardingItemIEs,
+int s1ap_decode_s1ap_e_rabtobesetupitembearersureqies(
+    S1ap_E_RABToBeSetupItemBearerSUReqIEs_t *s1ap_E_RABToBeSetupItemBearerSUReqIEs,
     ANY_t *any_p) {
 
-    S1ap_E_RABDataForwardingList_t  s1ap_E_RABDataForwardingList;
-    S1ap_E_RABDataForwardingList_t *s1ap_E_RABDataForwardingList_p = &s1ap_E_RABDataForwardingList;
+    S1ap_E_RABToBeSetupListBearerSUReq_t  s1ap_E_RABToBeSetupListBearerSUReq;
+    S1ap_E_RABToBeSetupListBearerSUReq_t *s1ap_E_RABToBeSetupListBearerSUReq_p = &s1ap_E_RABToBeSetupListBearerSUReq;
     int i, decoded = 0;
     int tempDecoded = 0;
     assert(any_p != NULL);
-    assert(s1ap_E_RABDataForwardingItemIEs != NULL);
+    assert(s1ap_E_RABToBeSetupItemBearerSUReqIEs != NULL);
 
-   OAILOG_DEBUG (LOG_S1AP, "Decoding message S1ap_E_RABDataForwardingItemIEs (%s:%d)\n", __FILE__, __LINE__);
+   OAILOG_DEBUG (LOG_S1AP, "Decoding message S1ap_E_RABToBeSetupItemBearerSUReqIEs (%s:%d)\n", __FILE__, __LINE__);
 
-    ANY_to_type_aper(any_p, &asn_DEF_S1ap_E_RABDataForwardingList, (void**)&s1ap_E_RABDataForwardingList_p);
+    ANY_to_type_aper(any_p, &asn_DEF_S1ap_E_RABToBeSetupListBearerSUReq, (void**)&s1ap_E_RABToBeSetupListBearerSUReq_p);
 
-    for (i = 0; i < s1ap_E_RABDataForwardingList_p->s1ap_E_RABDataForwardingList_ies.list.count; i++) {
+    for (i = 0; i < s1ap_E_RABToBeSetupListBearerSUReq_p->s1ap_E_RABToBeSetupListBearerSUReq_ies.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_E_RABDataForwardingList_p->s1ap_E_RABDataForwardingList_ies.list.array[i];
+        ie_p = s1ap_E_RABToBeSetupListBearerSUReq_p->s1ap_E_RABToBeSetupListBearerSUReq_ies.list.array[i];
         switch(ie_p->id) {
-            case S1ap_ProtocolIE_ID_id_E_RABDataForwardingItem:
+            case S1ap_ProtocolIE_ID_id_E_RABToBeSetupItemBearerSUReq:
             {
-                S1ap_E_RABDataForwardingItem_t *s1apERABDataForwardingItem_p = NULL;
-                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABDataForwardingItem, (void**)&s1apERABDataForwardingItem_p);
-                if (tempDecoded < 0 || s1apERABDataForwardingItem_p == NULL) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE e_RABDataForwardingItem failed\n");
-                    if (s1apERABDataForwardingItem_p)
-                        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABDataForwardingItem, s1apERABDataForwardingItem_p);
+                S1ap_E_RABToBeSetupItemBearerSUReq_t *s1apERABToBeSetupItemBearerSUReq_p = NULL;
+                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABToBeSetupItemBearerSUReq, (void**)&s1apERABToBeSetupItemBearerSUReq_p);
+                if (tempDecoded < 0 || s1apERABToBeSetupItemBearerSUReq_p == NULL) {
+                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE e_RABToBeSetupItemBearerSUReq failed\n");
+                    if (s1apERABToBeSetupItemBearerSUReq_p)
+                        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABToBeSetupItemBearerSUReq, s1apERABToBeSetupItemBearerSUReq_p);
                     return -1;
                 }
                 decoded += tempDecoded;
                 if (asn1_xer_print)
-                    xer_fprint(stdout, &asn_DEF_S1ap_E_RABDataForwardingItem, s1apERABDataForwardingItem_p);
-                memcpy(&s1ap_E_RABDataForwardingItemIEs->e_RABDataForwardingItem, s1apERABDataForwardingItem_p, sizeof(S1ap_E_RABDataForwardingItem_t));
+                    xer_fprint(stdout, &asn_DEF_S1ap_E_RABToBeSetupItemBearerSUReq, s1apERABToBeSetupItemBearerSUReq_p);
+                memcpy(&s1ap_E_RABToBeSetupItemBearerSUReqIEs->e_RABToBeSetupItemBearerSUReq, s1apERABToBeSetupItemBearerSUReq_p, sizeof(S1ap_E_RABToBeSetupItemBearerSUReq_t));
             } break;
             default:
-               OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_e_rabdataforwardingitemies\n", (int)ie_p->id);
+               OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_e_rabtobesetupitembearersureqies\n", (int)ie_p->id);
                 return -1;
         }
     }
@@ -1608,10 +1560,7 @@ int s1ap_decode_s1ap_initialcontextsetuprequesties(
                 decoded += tempDecoded;
                 if (asn1_xer_print)
                     xer_fprint(stdout, &asn_DEF_S1ap_E_RABToBeSetupListCtxtSUReq, s1apERABToBeSetupListCtxtSUReq_p);
-                if (s1ap_decode_s1ap_e_rabtobesetuplistctxtsureq(&s1ap_InitialContextSetupRequestIEs->e_RABToBeSetupListCtxtSUReq, s1apERABToBeSetupListCtxtSUReq_p) < 0) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of encapsulated IE s1apERABToBeSetupListCtxtSUReq failed\n");
-                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABToBeSetupListCtxtSUReq, s1apERABToBeSetupListCtxtSUReq_p);
-                }
+                memcpy(&s1ap_InitialContextSetupRequestIEs->e_RABToBeSetupListCtxtSUReq, s1apERABToBeSetupListCtxtSUReq_p, sizeof(S1ap_E_RABToBeSetupListCtxtSUReq_t));
             } break;
             case S1ap_ProtocolIE_ID_id_UESecurityCapabilities:
             {
@@ -2643,7 +2592,10 @@ int s1ap_decode_s1ap_handoverrequesties(
                 decoded += tempDecoded;
                 if (asn1_xer_print)
                     xer_fprint(stdout, &asn_DEF_S1ap_E_RABToBeSetupListHOReq, s1apERABToBeSetupListHOReq_p);
-                memcpy(&s1ap_HandoverRequestIEs->e_RABToBeSetupListHOReq, s1apERABToBeSetupListHOReq_p, sizeof(S1ap_E_RABToBeSetupListHOReq_t));
+                if (s1ap_decode_s1ap_e_rabtobesetuplisthoreq(&s1ap_HandoverRequestIEs->e_RABToBeSetupListHOReq, s1apERABToBeSetupListHOReq_p) < 0) {
+                   OAILOG_ERROR (LOG_S1AP, "Decoding of encapsulated IE s1apERABToBeSetupListHOReq failed\n");
+                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABToBeSetupListHOReq, s1apERABToBeSetupListHOReq_p);
+                }
             } break;
             case S1ap_ProtocolIE_ID_id_Source_ToTarget_TransparentContainer:
             {
@@ -3104,48 +3056,6 @@ int s1ap_decode_s1ap_handoverrequiredies(
     return decoded;
 }
 
-int s1ap_decode_s1ap_e_rabtobeswitcheddlitemies(
-    S1ap_E_RABToBeSwitchedDLItemIEs_t *s1ap_E_RABToBeSwitchedDLItemIEs,
-    ANY_t *any_p) {
-
-    S1ap_E_RABToBeSwitchedDLList_t  s1ap_E_RABToBeSwitchedDLList;
-    S1ap_E_RABToBeSwitchedDLList_t *s1ap_E_RABToBeSwitchedDLList_p = &s1ap_E_RABToBeSwitchedDLList;
-    int i, decoded = 0;
-    int tempDecoded = 0;
-    assert(any_p != NULL);
-    assert(s1ap_E_RABToBeSwitchedDLItemIEs != NULL);
-
-   OAILOG_DEBUG (LOG_S1AP, "Decoding message S1ap_E_RABToBeSwitchedDLItemIEs (%s:%d)\n", __FILE__, __LINE__);
-
-    ANY_to_type_aper(any_p, &asn_DEF_S1ap_E_RABToBeSwitchedDLList, (void**)&s1ap_E_RABToBeSwitchedDLList_p);
-
-    for (i = 0; i < s1ap_E_RABToBeSwitchedDLList_p->s1ap_E_RABToBeSwitchedDLList_ies.list.count; i++) {
-        S1ap_IE_t *ie_p;
-        ie_p = s1ap_E_RABToBeSwitchedDLList_p->s1ap_E_RABToBeSwitchedDLList_ies.list.array[i];
-        switch(ie_p->id) {
-            case S1ap_ProtocolIE_ID_id_E_RABToBeSwitchedDLItem:
-            {
-                S1ap_E_RABToBeSwitchedDLItem_t *s1apERABToBeSwitchedDLItem_p = NULL;
-                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABToBeSwitchedDLItem, (void**)&s1apERABToBeSwitchedDLItem_p);
-                if (tempDecoded < 0 || s1apERABToBeSwitchedDLItem_p == NULL) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE e_RABToBeSwitchedDLItem failed\n");
-                    if (s1apERABToBeSwitchedDLItem_p)
-                        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABToBeSwitchedDLItem, s1apERABToBeSwitchedDLItem_p);
-                    return -1;
-                }
-                decoded += tempDecoded;
-                if (asn1_xer_print)
-                    xer_fprint(stdout, &asn_DEF_S1ap_E_RABToBeSwitchedDLItem, s1apERABToBeSwitchedDLItem_p);
-                memcpy(&s1ap_E_RABToBeSwitchedDLItemIEs->e_RABToBeSwitchedDLItem, s1apERABToBeSwitchedDLItem_p, sizeof(S1ap_E_RABToBeSwitchedDLItem_t));
-            } break;
-            default:
-               OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_e_rabtobeswitcheddlitemies\n", (int)ie_p->id);
-                return -1;
-        }
-    }
-    return decoded;
-}
-
 int s1ap_decode_s1ap_mmeconfigurationupdateacknowledgeies(
     S1ap_MMEConfigurationUpdateAcknowledgeIEs_t *s1ap_MMEConfigurationUpdateAcknowledgeIEs,
     ANY_t *any_p) {
@@ -3510,10 +3420,7 @@ int s1ap_decode_s1ap_e_rabmodifyrequesties(
                 decoded += tempDecoded;
                 if (asn1_xer_print)
                     xer_fprint(stdout, &asn_DEF_S1ap_E_RABToBeModifiedListBearerModReq, s1apERABToBeModifiedListBearerModReq_p);
-                if (s1ap_decode_s1ap_e_rabtobemodifiedlistbearermodreq(&s1ap_E_RABModifyRequestIEs->e_RABToBeModifiedListBearerModReq, s1apERABToBeModifiedListBearerModReq_p) < 0) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of encapsulated IE s1apERABToBeModifiedListBearerModReq failed\n");
-                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABToBeModifiedListBearerModReq, s1apERABToBeModifiedListBearerModReq_p);
-                }
+                memcpy(&s1ap_E_RABModifyRequestIEs->e_RABToBeModifiedListBearerModReq, s1apERABToBeModifiedListBearerModReq_p, sizeof(S1ap_E_RABToBeModifiedListBearerModReq_t));
             } break;
             default:
                OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_e_rabmodifyrequesties\n", (int)ie_p->id);
@@ -3523,42 +3430,42 @@ int s1ap_decode_s1ap_e_rabmodifyrequesties(
     return decoded;
 }
 
-int s1ap_decode_s1ap_e_rabtobeswitchedulitemies(
-    S1ap_E_RABToBeSwitchedULItemIEs_t *s1ap_E_RABToBeSwitchedULItemIEs,
+int s1ap_decode_s1ap_e_rabsetupitemctxtsuresies(
+    S1ap_E_RABSetupItemCtxtSUResIEs_t *s1ap_E_RABSetupItemCtxtSUResIEs,
     ANY_t *any_p) {
 
-    S1ap_E_RABToBeSwitchedULList_t  s1ap_E_RABToBeSwitchedULList;
-    S1ap_E_RABToBeSwitchedULList_t *s1ap_E_RABToBeSwitchedULList_p = &s1ap_E_RABToBeSwitchedULList;
+    S1ap_E_RABSetupListCtxtSURes_t  s1ap_E_RABSetupListCtxtSURes;
+    S1ap_E_RABSetupListCtxtSURes_t *s1ap_E_RABSetupListCtxtSURes_p = &s1ap_E_RABSetupListCtxtSURes;
     int i, decoded = 0;
     int tempDecoded = 0;
     assert(any_p != NULL);
-    assert(s1ap_E_RABToBeSwitchedULItemIEs != NULL);
+    assert(s1ap_E_RABSetupItemCtxtSUResIEs != NULL);
 
-   OAILOG_DEBUG (LOG_S1AP, "Decoding message S1ap_E_RABToBeSwitchedULItemIEs (%s:%d)\n", __FILE__, __LINE__);
+   OAILOG_DEBUG (LOG_S1AP, "Decoding message S1ap_E_RABSetupItemCtxtSUResIEs (%s:%d)\n", __FILE__, __LINE__);
 
-    ANY_to_type_aper(any_p, &asn_DEF_S1ap_E_RABToBeSwitchedULList, (void**)&s1ap_E_RABToBeSwitchedULList_p);
+    ANY_to_type_aper(any_p, &asn_DEF_S1ap_E_RABSetupListCtxtSURes, (void**)&s1ap_E_RABSetupListCtxtSURes_p);
 
-    for (i = 0; i < s1ap_E_RABToBeSwitchedULList_p->s1ap_E_RABToBeSwitchedULList_ies.list.count; i++) {
+    for (i = 0; i < s1ap_E_RABSetupListCtxtSURes_p->s1ap_E_RABSetupListCtxtSURes_ies.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_E_RABToBeSwitchedULList_p->s1ap_E_RABToBeSwitchedULList_ies.list.array[i];
+        ie_p = s1ap_E_RABSetupListCtxtSURes_p->s1ap_E_RABSetupListCtxtSURes_ies.list.array[i];
         switch(ie_p->id) {
-            case S1ap_ProtocolIE_ID_id_E_RABToBeSwitchedULItem:
+            case S1ap_ProtocolIE_ID_id_E_RABSetupItemCtxtSURes:
             {
-                S1ap_E_RABToBeSwitchedULItem_t *s1apERABToBeSwitchedULItem_p = NULL;
-                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABToBeSwitchedULItem, (void**)&s1apERABToBeSwitchedULItem_p);
-                if (tempDecoded < 0 || s1apERABToBeSwitchedULItem_p == NULL) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE e_RABToBeSwitchedULItem failed\n");
-                    if (s1apERABToBeSwitchedULItem_p)
-                        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABToBeSwitchedULItem, s1apERABToBeSwitchedULItem_p);
+                S1ap_E_RABSetupItemCtxtSURes_t *s1apERABSetupItemCtxtSURes_p = NULL;
+                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABSetupItemCtxtSURes, (void**)&s1apERABSetupItemCtxtSURes_p);
+                if (tempDecoded < 0 || s1apERABSetupItemCtxtSURes_p == NULL) {
+                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE e_RABSetupItemCtxtSURes failed\n");
+                    if (s1apERABSetupItemCtxtSURes_p)
+                        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABSetupItemCtxtSURes, s1apERABSetupItemCtxtSURes_p);
                     return -1;
                 }
                 decoded += tempDecoded;
                 if (asn1_xer_print)
-                    xer_fprint(stdout, &asn_DEF_S1ap_E_RABToBeSwitchedULItem, s1apERABToBeSwitchedULItem_p);
-                memcpy(&s1ap_E_RABToBeSwitchedULItemIEs->e_RABToBeSwitchedULItem, s1apERABToBeSwitchedULItem_p, sizeof(S1ap_E_RABToBeSwitchedULItem_t));
+                    xer_fprint(stdout, &asn_DEF_S1ap_E_RABSetupItemCtxtSURes, s1apERABSetupItemCtxtSURes_p);
+                memcpy(&s1ap_E_RABSetupItemCtxtSUResIEs->e_RABSetupItemCtxtSURes, s1apERABSetupItemCtxtSURes_p, sizeof(S1ap_E_RABSetupItemCtxtSURes_t));
             } break;
             default:
-               OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_e_rabtobeswitchedulitemies\n", (int)ie_p->id);
+               OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_e_rabsetupitemctxtsuresies\n", (int)ie_p->id);
                 return -1;
         }
     }
@@ -3692,6 +3599,90 @@ int s1ap_decode_s1ap_reseties(
             } break;
             default:
                OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_reseties\n", (int)ie_p->id);
+                return -1;
+        }
+    }
+    return decoded;
+}
+
+int s1ap_decode_s1ap_bearers_subjecttostatustransfer_itemies(
+    S1ap_Bearers_SubjectToStatusTransfer_ItemIEs_t *s1ap_Bearers_SubjectToStatusTransfer_ItemIEs,
+    ANY_t *any_p) {
+
+    S1ap_Bearers_SubjectToStatusTransfer_List_t  s1ap_Bearers_SubjectToStatusTransfer_List;
+    S1ap_Bearers_SubjectToStatusTransfer_List_t *s1ap_Bearers_SubjectToStatusTransfer_List_p = &s1ap_Bearers_SubjectToStatusTransfer_List;
+    int i, decoded = 0;
+    int tempDecoded = 0;
+    assert(any_p != NULL);
+    assert(s1ap_Bearers_SubjectToStatusTransfer_ItemIEs != NULL);
+
+   OAILOG_DEBUG (LOG_S1AP, "Decoding message S1ap_Bearers_SubjectToStatusTransfer_ItemIEs (%s:%d)\n", __FILE__, __LINE__);
+
+    ANY_to_type_aper(any_p, &asn_DEF_S1ap_Bearers_SubjectToStatusTransfer_List, (void**)&s1ap_Bearers_SubjectToStatusTransfer_List_p);
+
+    for (i = 0; i < s1ap_Bearers_SubjectToStatusTransfer_List_p->s1ap_Bearers_SubjectToStatusTransfer_List_ies.list.count; i++) {
+        S1ap_IE_t *ie_p;
+        ie_p = s1ap_Bearers_SubjectToStatusTransfer_List_p->s1ap_Bearers_SubjectToStatusTransfer_List_ies.list.array[i];
+        switch(ie_p->id) {
+            case S1ap_ProtocolIE_ID_id_Bearers_SubjectToStatusTransfer_Item:
+            {
+                S1ap_Bearers_SubjectToStatusTransfer_Item_t *s1apBearersSubjectToStatusTransferItem_p = NULL;
+                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_Bearers_SubjectToStatusTransfer_Item, (void**)&s1apBearersSubjectToStatusTransferItem_p);
+                if (tempDecoded < 0 || s1apBearersSubjectToStatusTransferItem_p == NULL) {
+                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE bearers_SubjectToStatusTransfer_Item failed\n");
+                    if (s1apBearersSubjectToStatusTransferItem_p)
+                        ASN_STRUCT_FREE(asn_DEF_S1ap_Bearers_SubjectToStatusTransfer_Item, s1apBearersSubjectToStatusTransferItem_p);
+                    return -1;
+                }
+                decoded += tempDecoded;
+                if (asn1_xer_print)
+                    xer_fprint(stdout, &asn_DEF_S1ap_Bearers_SubjectToStatusTransfer_Item, s1apBearersSubjectToStatusTransferItem_p);
+                memcpy(&s1ap_Bearers_SubjectToStatusTransfer_ItemIEs->bearers_SubjectToStatusTransfer_Item, s1apBearersSubjectToStatusTransferItem_p, sizeof(S1ap_Bearers_SubjectToStatusTransfer_Item_t));
+            } break;
+            default:
+               OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_bearers_subjecttostatustransfer_itemies\n", (int)ie_p->id);
+                return -1;
+        }
+    }
+    return decoded;
+}
+
+int s1ap_decode_s1ap_e_rabitemies(
+    S1ap_E_RABItemIEs_t *s1ap_E_RABItemIEs,
+    ANY_t *any_p) {
+
+    S1ap_E_RABList_t  s1ap_E_RABList;
+    S1ap_E_RABList_t *s1ap_E_RABList_p = &s1ap_E_RABList;
+    int i, decoded = 0;
+    int tempDecoded = 0;
+    assert(any_p != NULL);
+    assert(s1ap_E_RABItemIEs != NULL);
+
+   OAILOG_DEBUG (LOG_S1AP, "Decoding message S1ap_E_RABItemIEs (%s:%d)\n", __FILE__, __LINE__);
+
+    ANY_to_type_aper(any_p, &asn_DEF_S1ap_E_RABList, (void**)&s1ap_E_RABList_p);
+
+    for (i = 0; i < s1ap_E_RABList_p->s1ap_E_RABList_ies.list.count; i++) {
+        S1ap_IE_t *ie_p;
+        ie_p = s1ap_E_RABList_p->s1ap_E_RABList_ies.list.array[i];
+        switch(ie_p->id) {
+            case S1ap_ProtocolIE_ID_id_E_RABItem:
+            {
+                S1ap_E_RABItem_t *s1apERABItem_p = NULL;
+                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABItem, (void**)&s1apERABItem_p);
+                if (tempDecoded < 0 || s1apERABItem_p == NULL) {
+                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE e_RABItem failed\n");
+                    if (s1apERABItem_p)
+                        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABItem, s1apERABItem_p);
+                    return -1;
+                }
+                decoded += tempDecoded;
+                if (asn1_xer_print)
+                    xer_fprint(stdout, &asn_DEF_S1ap_E_RABItem, s1apERABItem_p);
+                memcpy(&s1ap_E_RABItemIEs->e_RABItem, s1apERABItem_p, sizeof(S1ap_E_RABItem_t));
+            } break;
+            default:
+               OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_e_rabitemies\n", (int)ie_p->id);
                 return -1;
         }
     }
@@ -3900,10 +3891,7 @@ int s1ap_decode_s1ap_pagingies(
                 decoded += tempDecoded;
                 if (asn1_xer_print)
                     xer_fprint(stdout, &asn_DEF_S1ap_TAIList, s1apTAIList_p);
-                if (s1ap_decode_s1ap_tailist(&s1ap_PagingIEs->taiList, s1apTAIList_p) < 0) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of encapsulated IE s1apTAIList failed\n");
-                    ASN_STRUCT_FREE(asn_DEF_S1ap_TAIList, s1apTAIList_p);
-                }
+                memcpy(&s1ap_PagingIEs->taiList, s1apTAIList_p, sizeof(S1ap_TAIList_t));
             } break;
             /* Optional field */
             case S1ap_ProtocolIE_ID_id_CSG_IdList:
@@ -4070,10 +4058,7 @@ int s1ap_decode_s1ap_e_rabreleasecommandies(
                 decoded += tempDecoded;
                 if (asn1_xer_print)
                     xer_fprint(stdout, &asn_DEF_S1ap_E_RABList, s1apERABList_p);
-                if (s1ap_decode_s1ap_e_rablist(&s1ap_E_RABReleaseCommandIEs->e_RABToBeReleasedList, s1apERABList_p) < 0) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of encapsulated IE s1apERABList failed\n");
-                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABList, s1apERABList_p);
-                }
+                memcpy(&s1ap_E_RABReleaseCommandIEs->e_RABToBeReleasedList, s1apERABList_p, sizeof(S1ap_E_RABList_t));
             } break;
             /* Optional field */
             case S1ap_ProtocolIE_ID_id_NAS_PDU:
@@ -4253,10 +4238,7 @@ int s1ap_decode_s1ap_e_rabmodifyresponseies(
                 decoded += tempDecoded;
                 if (asn1_xer_print)
                     xer_fprint(stdout, &asn_DEF_S1ap_E_RABModifyListBearerModRes, s1apERABModifyListBearerModRes_p);
-                if (s1ap_decode_s1ap_e_rabmodifylistbearermodres(&s1ap_E_RABModifyResponseIEs->e_RABModifyListBearerModRes, s1apERABModifyListBearerModRes_p) < 0) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of encapsulated IE s1apERABModifyListBearerModRes failed\n");
-                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABModifyListBearerModRes, s1apERABModifyListBearerModRes_p);
-                }
+                memcpy(&s1ap_E_RABModifyResponseIEs->e_RABModifyListBearerModRes, s1apERABModifyListBearerModRes_p, sizeof(S1ap_E_RABModifyListBearerModRes_t));
             } break;
             /* Optional field */
             case S1ap_ProtocolIE_ID_id_E_RABFailedToModifyList:
@@ -4273,10 +4255,7 @@ int s1ap_decode_s1ap_e_rabmodifyresponseies(
                 decoded += tempDecoded;
                 if (asn1_xer_print)
                     xer_fprint(stdout, &asn_DEF_S1ap_E_RABList, s1apERABList_p);
-                if (s1ap_decode_s1ap_e_rablist(&s1ap_E_RABModifyResponseIEs->e_RABFailedToModifyList, s1apERABList_p) < 0) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of encapsulated IE s1apERABList failed\n");
-                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABList, s1apERABList_p);
-                }
+                memcpy(&s1ap_E_RABModifyResponseIEs->e_RABFailedToModifyList, s1apERABList_p, sizeof(S1ap_E_RABList_t));
             } break;
             /* Optional field */
             case S1ap_ProtocolIE_ID_id_CriticalityDiagnostics:
@@ -4632,7 +4611,10 @@ int s1ap_decode_s1ap_handovercommandies(
                 decoded += tempDecoded;
                 if (asn1_xer_print)
                     xer_fprint(stdout, &asn_DEF_S1ap_E_RABSubjecttoDataForwardingList, s1apERABSubjecttoDataForwardingList_p);
-                memcpy(&s1ap_HandoverCommandIEs->e_RABSubjecttoDataForwardingList, s1apERABSubjecttoDataForwardingList_p, sizeof(S1ap_E_RABSubjecttoDataForwardingList_t));
+                if (s1ap_decode_s1ap_e_rabsubjecttodataforwardinglist(&s1ap_HandoverCommandIEs->e_RABSubjecttoDataForwardingList, s1apERABSubjecttoDataForwardingList_p) < 0) {
+                   OAILOG_ERROR (LOG_S1AP, "Decoding of encapsulated IE s1apERABSubjecttoDataForwardingList failed\n");
+                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABSubjecttoDataForwardingList, s1apERABSubjecttoDataForwardingList_p);
+                }
             } break;
             /* Optional field */
             case S1ap_ProtocolIE_ID_id_E_RABtoReleaseListHOCmd:
@@ -4649,10 +4631,7 @@ int s1ap_decode_s1ap_handovercommandies(
                 decoded += tempDecoded;
                 if (asn1_xer_print)
                     xer_fprint(stdout, &asn_DEF_S1ap_E_RABList, s1apERABList_p);
-                if (s1ap_decode_s1ap_e_rablist(&s1ap_HandoverCommandIEs->e_RABtoReleaseListHOCmd, s1apERABList_p) < 0) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of encapsulated IE s1apERABList failed\n");
-                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABList, s1apERABList_p);
-                }
+                memcpy(&s1ap_HandoverCommandIEs->e_RABtoReleaseListHOCmd, s1apERABList_p, sizeof(S1ap_E_RABList_t));
             } break;
             case S1ap_ProtocolIE_ID_id_Target_ToSource_TransparentContainer:
             {
@@ -4842,6 +4821,48 @@ int s1ap_decode_s1ap_errorindicationies(
             } break;
             default:
                OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_errorindicationies\n", (int)ie_p->id);
+                return -1;
+        }
+    }
+    return decoded;
+}
+
+int s1ap_decode_s1ap_taiitemies(
+    S1ap_TAIItemIEs_t *s1ap_TAIItemIEs,
+    ANY_t *any_p) {
+
+    S1ap_TAIList_t  s1ap_TAIList;
+    S1ap_TAIList_t *s1ap_TAIList_p = &s1ap_TAIList;
+    int i, decoded = 0;
+    int tempDecoded = 0;
+    assert(any_p != NULL);
+    assert(s1ap_TAIItemIEs != NULL);
+
+   OAILOG_DEBUG (LOG_S1AP, "Decoding message S1ap_TAIItemIEs (%s:%d)\n", __FILE__, __LINE__);
+
+    ANY_to_type_aper(any_p, &asn_DEF_S1ap_TAIList, (void**)&s1ap_TAIList_p);
+
+    for (i = 0; i < s1ap_TAIList_p->s1ap_TAIList_ies.list.count; i++) {
+        S1ap_IE_t *ie_p;
+        ie_p = s1ap_TAIList_p->s1ap_TAIList_ies.list.array[i];
+        switch(ie_p->id) {
+            case S1ap_ProtocolIE_ID_id_TAIItem:
+            {
+                S1ap_TAIItem_t *s1apTAIItem_p = NULL;
+                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_TAIItem, (void**)&s1apTAIItem_p);
+                if (tempDecoded < 0 || s1apTAIItem_p == NULL) {
+                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE taiItem failed\n");
+                    if (s1apTAIItem_p)
+                        ASN_STRUCT_FREE(asn_DEF_S1ap_TAIItem, s1apTAIItem_p);
+                    return -1;
+                }
+                decoded += tempDecoded;
+                if (asn1_xer_print)
+                    xer_fprint(stdout, &asn_DEF_S1ap_TAIItem, s1apTAIItem_p);
+                memcpy(&s1ap_TAIItemIEs->taiItem, s1apTAIItem_p, sizeof(S1ap_TAIItem_t));
+            } break;
+            default:
+               OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_taiitemies\n", (int)ie_p->id);
                 return -1;
         }
     }
@@ -5043,7 +5064,10 @@ int s1ap_decode_s1ap_handoverrequestacknowledgeies(
                 decoded += tempDecoded;
                 if (asn1_xer_print)
                     xer_fprint(stdout, &asn_DEF_S1ap_E_RABAdmittedList, s1apERABAdmittedList_p);
-                memcpy(&s1ap_HandoverRequestAcknowledgeIEs->e_RABAdmittedList, s1apERABAdmittedList_p, sizeof(S1ap_E_RABAdmittedList_t));
+                if (s1ap_decode_s1ap_e_rabadmittedlist(&s1ap_HandoverRequestAcknowledgeIEs->e_RABAdmittedList, s1apERABAdmittedList_p) < 0) {
+                   OAILOG_ERROR (LOG_S1AP, "Decoding of encapsulated IE s1apERABAdmittedList failed\n");
+                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABAdmittedList, s1apERABAdmittedList_p);
+                }
             } break;
             /* Optional field */
             case S1ap_ProtocolIE_ID_id_E_RABFailedToSetupListHOReqAck:
@@ -5060,7 +5084,10 @@ int s1ap_decode_s1ap_handoverrequestacknowledgeies(
                 decoded += tempDecoded;
                 if (asn1_xer_print)
                     xer_fprint(stdout, &asn_DEF_S1ap_E_RABFailedtoSetupListHOReqAck, s1apERABFailedtoSetupListHOReqAck_p);
-                memcpy(&s1ap_HandoverRequestAcknowledgeIEs->e_RABFailedToSetupListHOReqAck, s1apERABFailedtoSetupListHOReqAck_p, sizeof(S1ap_E_RABFailedtoSetupListHOReqAck_t));
+                if (s1ap_decode_s1ap_e_rabfailedtosetuplisthoreqack(&s1ap_HandoverRequestAcknowledgeIEs->e_RABFailedToSetupListHOReqAck, s1apERABFailedtoSetupListHOReqAck_p) < 0) {
+                   OAILOG_ERROR (LOG_S1AP, "Decoding of encapsulated IE s1apERABFailedtoSetupListHOReqAck failed\n");
+                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABFailedtoSetupListHOReqAck, s1apERABFailedtoSetupListHOReqAck_p);
+                }
             } break;
             case S1ap_ProtocolIE_ID_id_Target_ToSource_TransparentContainer:
             {
@@ -5420,7 +5447,10 @@ int s1ap_decode_s1ap_pathswitchrequestacknowledgeies(
                 decoded += tempDecoded;
                 if (asn1_xer_print)
                     xer_fprint(stdout, &asn_DEF_S1ap_E_RABToBeSwitchedULList, s1apERABToBeSwitchedULList_p);
-                memcpy(&s1ap_PathSwitchRequestAcknowledgeIEs->e_RABToBeSwitchedULList, s1apERABToBeSwitchedULList_p, sizeof(S1ap_E_RABToBeSwitchedULList_t));
+                if (s1ap_decode_s1ap_e_rabtobeswitchedullist(&s1ap_PathSwitchRequestAcknowledgeIEs->e_RABToBeSwitchedULList, s1apERABToBeSwitchedULList_p) < 0) {
+                   OAILOG_ERROR (LOG_S1AP, "Decoding of encapsulated IE s1apERABToBeSwitchedULList failed\n");
+                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABToBeSwitchedULList, s1apERABToBeSwitchedULList_p);
+                }
             } break;
             /* Optional field */
             case S1ap_ProtocolIE_ID_id_E_RABToBeReleasedList:
@@ -5437,10 +5467,7 @@ int s1ap_decode_s1ap_pathswitchrequestacknowledgeies(
                 decoded += tempDecoded;
                 if (asn1_xer_print)
                     xer_fprint(stdout, &asn_DEF_S1ap_E_RABList, s1apERABList_p);
-                if (s1ap_decode_s1ap_e_rablist(&s1ap_PathSwitchRequestAcknowledgeIEs->e_RABToBeReleasedList, s1apERABList_p) < 0) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of encapsulated IE s1apERABList failed\n");
-                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABList, s1apERABList_p);
-                }
+                memcpy(&s1ap_PathSwitchRequestAcknowledgeIEs->e_RABToBeReleasedList, s1apERABList_p, sizeof(S1ap_E_RABList_t));
             } break;
             case S1ap_ProtocolIE_ID_id_SecurityContext:
             {
@@ -5493,6 +5520,48 @@ int s1ap_decode_s1ap_pathswitchrequestacknowledgeies(
             } break;
             default:
                OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_pathswitchrequestacknowledgeies\n", (int)ie_p->id);
+                return -1;
+        }
+    }
+    return decoded;
+}
+
+int s1ap_decode_s1ap_ue_associatedlogicals1_connectionitemres(
+    S1ap_UE_associatedLogicalS1_ConnectionItemRes_t *s1ap_UE_associatedLogicalS1_ConnectionItemRes,
+    ANY_t *any_p) {
+
+    S1ap_UE_associatedLogicalS1_ConnectionListRes_t  s1ap_UE_associatedLogicalS1_ConnectionListRes;
+    S1ap_UE_associatedLogicalS1_ConnectionListRes_t *s1ap_UE_associatedLogicalS1_ConnectionListRes_p = &s1ap_UE_associatedLogicalS1_ConnectionListRes;
+    int i, decoded = 0;
+    int tempDecoded = 0;
+    assert(any_p != NULL);
+    assert(s1ap_UE_associatedLogicalS1_ConnectionItemRes != NULL);
+
+   OAILOG_DEBUG (LOG_S1AP, "Decoding message S1ap_UE_associatedLogicalS1_ConnectionItemRes (%s:%d)\n", __FILE__, __LINE__);
+
+    ANY_to_type_aper(any_p, &asn_DEF_S1ap_UE_associatedLogicalS1_ConnectionListRes, (void**)&s1ap_UE_associatedLogicalS1_ConnectionListRes_p);
+
+    for (i = 0; i < s1ap_UE_associatedLogicalS1_ConnectionListRes_p->s1ap_UE_associatedLogicalS1_ConnectionListRes_ies.list.count; i++) {
+        S1ap_IE_t *ie_p;
+        ie_p = s1ap_UE_associatedLogicalS1_ConnectionListRes_p->s1ap_UE_associatedLogicalS1_ConnectionListRes_ies.list.array[i];
+        switch(ie_p->id) {
+            case S1ap_ProtocolIE_ID_id_UE_associatedLogicalS1_ConnectionItem:
+            {
+                S1ap_UE_associatedLogicalS1_ConnectionItem_t *s1apUEassociatedLogicalS1ConnectionItem_p = NULL;
+                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_UE_associatedLogicalS1_ConnectionItem, (void**)&s1apUEassociatedLogicalS1ConnectionItem_p);
+                if (tempDecoded < 0 || s1apUEassociatedLogicalS1ConnectionItem_p == NULL) {
+                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE uE_associatedLogicalS1_ConnectionItem failed\n");
+                    if (s1apUEassociatedLogicalS1ConnectionItem_p)
+                        ASN_STRUCT_FREE(asn_DEF_S1ap_UE_associatedLogicalS1_ConnectionItem, s1apUEassociatedLogicalS1ConnectionItem_p);
+                    return -1;
+                }
+                decoded += tempDecoded;
+                if (asn1_xer_print)
+                    xer_fprint(stdout, &asn_DEF_S1ap_UE_associatedLogicalS1_ConnectionItem, s1apUEassociatedLogicalS1ConnectionItem_p);
+                memcpy(&s1ap_UE_associatedLogicalS1_ConnectionItemRes->uE_associatedLogicalS1_ConnectionItem, s1apUEassociatedLogicalS1ConnectionItem_p, sizeof(S1ap_UE_associatedLogicalS1_ConnectionItem_t));
+            } break;
+            default:
+               OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_ue_associatedlogicals1_connectionitemres\n", (int)ie_p->id);
                 return -1;
         }
     }
@@ -5713,10 +5782,7 @@ int s1ap_decode_s1ap_initialcontextsetupresponseies(
                 decoded += tempDecoded;
                 if (asn1_xer_print)
                     xer_fprint(stdout, &asn_DEF_S1ap_E_RABSetupListCtxtSURes, s1apERABSetupListCtxtSURes_p);
-                if (s1ap_decode_s1ap_e_rabsetuplistctxtsures(&s1ap_InitialContextSetupResponseIEs->e_RABSetupListCtxtSURes, s1apERABSetupListCtxtSURes_p) < 0) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of encapsulated IE s1apERABSetupListCtxtSURes failed\n");
-                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABSetupListCtxtSURes, s1apERABSetupListCtxtSURes_p);
-                }
+                memcpy(&s1ap_InitialContextSetupResponseIEs->e_RABSetupListCtxtSURes, s1apERABSetupListCtxtSURes_p, sizeof(S1ap_E_RABSetupListCtxtSURes_t));
             } break;
             /* Optional field */
             case S1ap_ProtocolIE_ID_id_E_RABFailedToSetupListCtxtSURes:
@@ -5733,10 +5799,7 @@ int s1ap_decode_s1ap_initialcontextsetupresponseies(
                 decoded += tempDecoded;
                 if (asn1_xer_print)
                     xer_fprint(stdout, &asn_DEF_S1ap_E_RABList, s1apERABList_p);
-                if (s1ap_decode_s1ap_e_rablist(&s1ap_InitialContextSetupResponseIEs->e_RABFailedToSetupListCtxtSURes, s1apERABList_p) < 0) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of encapsulated IE s1apERABList failed\n");
-                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABList, s1apERABList_p);
-                }
+                memcpy(&s1ap_InitialContextSetupResponseIEs->e_RABFailedToSetupListCtxtSURes, s1apERABList_p, sizeof(S1ap_E_RABList_t));
             } break;
             /* Optional field */
             case S1ap_ProtocolIE_ID_id_CriticalityDiagnostics:
@@ -5827,7 +5890,10 @@ int s1ap_decode_s1ap_downlinks1cdma2000tunnelingies(
                 decoded += tempDecoded;
                 if (asn1_xer_print)
                     xer_fprint(stdout, &asn_DEF_S1ap_E_RABSubjecttoDataForwardingList, s1apERABSubjecttoDataForwardingList_p);
-                memcpy(&s1ap_DownlinkS1cdma2000tunnelingIEs->e_RABSubjecttoDataForwardingList, s1apERABSubjecttoDataForwardingList_p, sizeof(S1ap_E_RABSubjecttoDataForwardingList_t));
+                if (s1ap_decode_s1ap_e_rabsubjecttodataforwardinglist(&s1ap_DownlinkS1cdma2000tunnelingIEs->e_RABSubjecttoDataForwardingList, s1apERABSubjecttoDataForwardingList_p) < 0) {
+                   OAILOG_ERROR (LOG_S1AP, "Decoding of encapsulated IE s1apERABSubjecttoDataForwardingList failed\n");
+                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABSubjecttoDataForwardingList, s1apERABSubjecttoDataForwardingList_p);
+                }
             } break;
             /* Optional field */
             case S1ap_ProtocolIE_ID_id_cdma2000HOStatus:
@@ -5922,6 +5988,132 @@ int s1ap_decode_s1ap_overloadstopies(
             } break;
             default:
                OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_overloadstopies\n", (int)ie_p->id);
+                return -1;
+        }
+    }
+    return decoded;
+}
+
+int s1ap_decode_s1ap_e_rabsetupitembearersuresies(
+    S1ap_E_RABSetupItemBearerSUResIEs_t *s1ap_E_RABSetupItemBearerSUResIEs,
+    ANY_t *any_p) {
+
+    S1ap_E_RABSetupListBearerSURes_t  s1ap_E_RABSetupListBearerSURes;
+    S1ap_E_RABSetupListBearerSURes_t *s1ap_E_RABSetupListBearerSURes_p = &s1ap_E_RABSetupListBearerSURes;
+    int i, decoded = 0;
+    int tempDecoded = 0;
+    assert(any_p != NULL);
+    assert(s1ap_E_RABSetupItemBearerSUResIEs != NULL);
+
+   OAILOG_DEBUG (LOG_S1AP, "Decoding message S1ap_E_RABSetupItemBearerSUResIEs (%s:%d)\n", __FILE__, __LINE__);
+
+    ANY_to_type_aper(any_p, &asn_DEF_S1ap_E_RABSetupListBearerSURes, (void**)&s1ap_E_RABSetupListBearerSURes_p);
+
+    for (i = 0; i < s1ap_E_RABSetupListBearerSURes_p->s1ap_E_RABSetupListBearerSURes_ies.list.count; i++) {
+        S1ap_IE_t *ie_p;
+        ie_p = s1ap_E_RABSetupListBearerSURes_p->s1ap_E_RABSetupListBearerSURes_ies.list.array[i];
+        switch(ie_p->id) {
+            case S1ap_ProtocolIE_ID_id_E_RABSetupItemBearerSURes:
+            {
+                S1ap_E_RABSetupItemBearerSURes_t *s1apERABSetupItemBearerSURes_p = NULL;
+                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABSetupItemBearerSURes, (void**)&s1apERABSetupItemBearerSURes_p);
+                if (tempDecoded < 0 || s1apERABSetupItemBearerSURes_p == NULL) {
+                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE e_RABSetupItemBearerSURes failed\n");
+                    if (s1apERABSetupItemBearerSURes_p)
+                        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABSetupItemBearerSURes, s1apERABSetupItemBearerSURes_p);
+                    return -1;
+                }
+                decoded += tempDecoded;
+                if (asn1_xer_print)
+                    xer_fprint(stdout, &asn_DEF_S1ap_E_RABSetupItemBearerSURes, s1apERABSetupItemBearerSURes_p);
+                memcpy(&s1ap_E_RABSetupItemBearerSUResIEs->e_RABSetupItemBearerSURes, s1apERABSetupItemBearerSURes_p, sizeof(S1ap_E_RABSetupItemBearerSURes_t));
+            } break;
+            default:
+               OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_e_rabsetupitembearersuresies\n", (int)ie_p->id);
+                return -1;
+        }
+    }
+    return decoded;
+}
+
+int s1ap_decode_s1ap_e_rabmodifyitembearermodresies(
+    S1ap_E_RABModifyItemBearerModResIEs_t *s1ap_E_RABModifyItemBearerModResIEs,
+    ANY_t *any_p) {
+
+    S1ap_E_RABModifyListBearerModRes_t  s1ap_E_RABModifyListBearerModRes;
+    S1ap_E_RABModifyListBearerModRes_t *s1ap_E_RABModifyListBearerModRes_p = &s1ap_E_RABModifyListBearerModRes;
+    int i, decoded = 0;
+    int tempDecoded = 0;
+    assert(any_p != NULL);
+    assert(s1ap_E_RABModifyItemBearerModResIEs != NULL);
+
+   OAILOG_DEBUG (LOG_S1AP, "Decoding message S1ap_E_RABModifyItemBearerModResIEs (%s:%d)\n", __FILE__, __LINE__);
+
+    ANY_to_type_aper(any_p, &asn_DEF_S1ap_E_RABModifyListBearerModRes, (void**)&s1ap_E_RABModifyListBearerModRes_p);
+
+    for (i = 0; i < s1ap_E_RABModifyListBearerModRes_p->s1ap_E_RABModifyListBearerModRes_ies.list.count; i++) {
+        S1ap_IE_t *ie_p;
+        ie_p = s1ap_E_RABModifyListBearerModRes_p->s1ap_E_RABModifyListBearerModRes_ies.list.array[i];
+        switch(ie_p->id) {
+            case S1ap_ProtocolIE_ID_id_E_RABModifyItemBearerModRes:
+            {
+                S1ap_E_RABModifyItemBearerModRes_t *s1apERABModifyItemBearerModRes_p = NULL;
+                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABModifyItemBearerModRes, (void**)&s1apERABModifyItemBearerModRes_p);
+                if (tempDecoded < 0 || s1apERABModifyItemBearerModRes_p == NULL) {
+                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE e_RABModifyItemBearerModRes failed\n");
+                    if (s1apERABModifyItemBearerModRes_p)
+                        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABModifyItemBearerModRes, s1apERABModifyItemBearerModRes_p);
+                    return -1;
+                }
+                decoded += tempDecoded;
+                if (asn1_xer_print)
+                    xer_fprint(stdout, &asn_DEF_S1ap_E_RABModifyItemBearerModRes, s1apERABModifyItemBearerModRes_p);
+                memcpy(&s1ap_E_RABModifyItemBearerModResIEs->e_RABModifyItemBearerModRes, s1apERABModifyItemBearerModRes_p, sizeof(S1ap_E_RABModifyItemBearerModRes_t));
+            } break;
+            default:
+               OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_e_rabmodifyitembearermodresies\n", (int)ie_p->id);
+                return -1;
+        }
+    }
+    return decoded;
+}
+
+int s1ap_decode_s1ap_e_rabtobesetupitemctxtsureqies(
+    S1ap_E_RABToBeSetupItemCtxtSUReqIEs_t *s1ap_E_RABToBeSetupItemCtxtSUReqIEs,
+    ANY_t *any_p) {
+
+    S1ap_E_RABToBeSetupListCtxtSUReq_t  s1ap_E_RABToBeSetupListCtxtSUReq;
+    S1ap_E_RABToBeSetupListCtxtSUReq_t *s1ap_E_RABToBeSetupListCtxtSUReq_p = &s1ap_E_RABToBeSetupListCtxtSUReq;
+    int i, decoded = 0;
+    int tempDecoded = 0;
+    assert(any_p != NULL);
+    assert(s1ap_E_RABToBeSetupItemCtxtSUReqIEs != NULL);
+
+   OAILOG_DEBUG (LOG_S1AP, "Decoding message S1ap_E_RABToBeSetupItemCtxtSUReqIEs (%s:%d)\n", __FILE__, __LINE__);
+
+    ANY_to_type_aper(any_p, &asn_DEF_S1ap_E_RABToBeSetupListCtxtSUReq, (void**)&s1ap_E_RABToBeSetupListCtxtSUReq_p);
+
+    for (i = 0; i < s1ap_E_RABToBeSetupListCtxtSUReq_p->s1ap_E_RABToBeSetupListCtxtSUReq_ies.list.count; i++) {
+        S1ap_IE_t *ie_p;
+        ie_p = s1ap_E_RABToBeSetupListCtxtSUReq_p->s1ap_E_RABToBeSetupListCtxtSUReq_ies.list.array[i];
+        switch(ie_p->id) {
+            case S1ap_ProtocolIE_ID_id_E_RABToBeSetupItemCtxtSUReq:
+            {
+                S1ap_E_RABToBeSetupItemCtxtSUReq_t *s1apERABToBeSetupItemCtxtSUReq_p = NULL;
+                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABToBeSetupItemCtxtSUReq, (void**)&s1apERABToBeSetupItemCtxtSUReq_p);
+                if (tempDecoded < 0 || s1apERABToBeSetupItemCtxtSUReq_p == NULL) {
+                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE e_RABToBeSetupItemCtxtSUReq failed\n");
+                    if (s1apERABToBeSetupItemCtxtSUReq_p)
+                        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABToBeSetupItemCtxtSUReq, s1apERABToBeSetupItemCtxtSUReq_p);
+                    return -1;
+                }
+                decoded += tempDecoded;
+                if (asn1_xer_print)
+                    xer_fprint(stdout, &asn_DEF_S1ap_E_RABToBeSetupItemCtxtSUReq, s1apERABToBeSetupItemCtxtSUReq_p);
+                memcpy(&s1ap_E_RABToBeSetupItemCtxtSUReqIEs->e_RABToBeSetupItemCtxtSUReq, s1apERABToBeSetupItemCtxtSUReq_p, sizeof(S1ap_E_RABToBeSetupItemCtxtSUReq_t));
+            } break;
+            default:
+               OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_e_rabtobesetupitemctxtsureqies\n", (int)ie_p->id);
                 return -1;
         }
     }
@@ -6110,6 +6302,48 @@ int s1ap_decode_s1ap_tracefailureindicationies(
     return decoded;
 }
 
+int s1ap_decode_s1ap_e_rabinformationlisties(
+    S1ap_E_RABInformationListIEs_t *s1ap_E_RABInformationListIEs,
+    ANY_t *any_p) {
+
+    S1ap_E_RABInformationList_t  s1ap_E_RABInformationList;
+    S1ap_E_RABInformationList_t *s1ap_E_RABInformationList_p = &s1ap_E_RABInformationList;
+    int i, decoded = 0;
+    int tempDecoded = 0;
+    assert(any_p != NULL);
+    assert(s1ap_E_RABInformationListIEs != NULL);
+
+   OAILOG_DEBUG (LOG_S1AP, "Decoding message S1ap_E_RABInformationListIEs (%s:%d)\n", __FILE__, __LINE__);
+
+    ANY_to_type_aper(any_p, &asn_DEF_S1ap_E_RABInformationList, (void**)&s1ap_E_RABInformationList_p);
+
+    for (i = 0; i < s1ap_E_RABInformationList_p->s1ap_E_RABInformationList_ies.list.count; i++) {
+        S1ap_IE_t *ie_p;
+        ie_p = s1ap_E_RABInformationList_p->s1ap_E_RABInformationList_ies.list.array[i];
+        switch(ie_p->id) {
+            case S1ap_ProtocolIE_ID_id_E_RABInformationListItem:
+            {
+                S1ap_E_RABInformationListItem_t *s1apERABInformationListItem_p = NULL;
+                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABInformationListItem, (void**)&s1apERABInformationListItem_p);
+                if (tempDecoded < 0 || s1apERABInformationListItem_p == NULL) {
+                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE e_RABInformationListItem failed\n");
+                    if (s1apERABInformationListItem_p)
+                        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABInformationListItem, s1apERABInformationListItem_p);
+                    return -1;
+                }
+                decoded += tempDecoded;
+                if (asn1_xer_print)
+                    xer_fprint(stdout, &asn_DEF_S1ap_E_RABInformationListItem, s1apERABInformationListItem_p);
+                memcpy(&s1ap_E_RABInformationListIEs->e_RABInformationListItem, s1apERABInformationListItem_p, sizeof(S1ap_E_RABInformationListItem_t));
+            } break;
+            default:
+               OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_e_rabinformationlisties\n", (int)ie_p->id);
+                return -1;
+        }
+    }
+    return decoded;
+}
+
 int s1ap_decode_s1ap_enbconfigurationtransferies(
     S1ap_ENBConfigurationTransferIEs_t *s1ap_ENBConfigurationTransferIEs,
     ANY_t *any_p) {
@@ -6228,6 +6462,48 @@ int s1ap_decode_s1ap_handoverfailureies(
     return decoded;
 }
 
+int s1ap_decode_s1ap_ue_associatedlogicals1_connectionitemresack(
+    S1ap_UE_associatedLogicalS1_ConnectionItemResAck_t *s1ap_UE_associatedLogicalS1_ConnectionItemResAck,
+    ANY_t *any_p) {
+
+    S1ap_UE_associatedLogicalS1_ConnectionListResAck_t  s1ap_UE_associatedLogicalS1_ConnectionListResAck;
+    S1ap_UE_associatedLogicalS1_ConnectionListResAck_t *s1ap_UE_associatedLogicalS1_ConnectionListResAck_p = &s1ap_UE_associatedLogicalS1_ConnectionListResAck;
+    int i, decoded = 0;
+    int tempDecoded = 0;
+    assert(any_p != NULL);
+    assert(s1ap_UE_associatedLogicalS1_ConnectionItemResAck != NULL);
+
+   OAILOG_DEBUG (LOG_S1AP, "Decoding message S1ap_UE_associatedLogicalS1_ConnectionItemResAck (%s:%d)\n", __FILE__, __LINE__);
+
+    ANY_to_type_aper(any_p, &asn_DEF_S1ap_UE_associatedLogicalS1_ConnectionListResAck, (void**)&s1ap_UE_associatedLogicalS1_ConnectionListResAck_p);
+
+    for (i = 0; i < s1ap_UE_associatedLogicalS1_ConnectionListResAck_p->s1ap_UE_associatedLogicalS1_ConnectionListResAck_ies.list.count; i++) {
+        S1ap_IE_t *ie_p;
+        ie_p = s1ap_UE_associatedLogicalS1_ConnectionListResAck_p->s1ap_UE_associatedLogicalS1_ConnectionListResAck_ies.list.array[i];
+        switch(ie_p->id) {
+            case S1ap_ProtocolIE_ID_id_UE_associatedLogicalS1_ConnectionItem:
+            {
+                S1ap_UE_associatedLogicalS1_ConnectionItem_t *s1apUEassociatedLogicalS1ConnectionItem_p = NULL;
+                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_UE_associatedLogicalS1_ConnectionItem, (void**)&s1apUEassociatedLogicalS1ConnectionItem_p);
+                if (tempDecoded < 0 || s1apUEassociatedLogicalS1ConnectionItem_p == NULL) {
+                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE uE_associatedLogicalS1_ConnectionItem failed\n");
+                    if (s1apUEassociatedLogicalS1ConnectionItem_p)
+                        ASN_STRUCT_FREE(asn_DEF_S1ap_UE_associatedLogicalS1_ConnectionItem, s1apUEassociatedLogicalS1ConnectionItem_p);
+                    return -1;
+                }
+                decoded += tempDecoded;
+                if (asn1_xer_print)
+                    xer_fprint(stdout, &asn_DEF_S1ap_UE_associatedLogicalS1_ConnectionItem, s1apUEassociatedLogicalS1ConnectionItem_p);
+                memcpy(&s1ap_UE_associatedLogicalS1_ConnectionItemResAck->uE_associatedLogicalS1_ConnectionItem, s1apUEassociatedLogicalS1ConnectionItem_p, sizeof(S1ap_UE_associatedLogicalS1_ConnectionItem_t));
+            } break;
+            default:
+               OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_ue_associatedlogicals1_connectionitemresack\n", (int)ie_p->id);
+                return -1;
+        }
+    }
+    return decoded;
+}
+
 int s1ap_decode_s1ap_e_rabsetupresponseies(
     S1ap_E_RABSetupResponseIEs_t *s1ap_E_RABSetupResponseIEs,
     ANY_t *any_p) {
@@ -6292,10 +6568,7 @@ int s1ap_decode_s1ap_e_rabsetupresponseies(
                 decoded += tempDecoded;
                 if (asn1_xer_print)
                     xer_fprint(stdout, &asn_DEF_S1ap_E_RABSetupListBearerSURes, s1apERABSetupListBearerSURes_p);
-                if (s1ap_decode_s1ap_e_rabsetuplistbearersures(&s1ap_E_RABSetupResponseIEs->e_RABSetupListBearerSURes, s1apERABSetupListBearerSURes_p) < 0) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of encapsulated IE s1apERABSetupListBearerSURes failed\n");
-                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABSetupListBearerSURes, s1apERABSetupListBearerSURes_p);
-                }
+                memcpy(&s1ap_E_RABSetupResponseIEs->e_RABSetupListBearerSURes, s1apERABSetupListBearerSURes_p, sizeof(S1ap_E_RABSetupListBearerSURes_t));
             } break;
             /* Optional field */
             case S1ap_ProtocolIE_ID_id_E_RABFailedToSetupListBearerSURes:
@@ -6312,10 +6585,7 @@ int s1ap_decode_s1ap_e_rabsetupresponseies(
                 decoded += tempDecoded;
                 if (asn1_xer_print)
                     xer_fprint(stdout, &asn_DEF_S1ap_E_RABList, s1apERABList_p);
-                if (s1ap_decode_s1ap_e_rablist(&s1ap_E_RABSetupResponseIEs->e_RABFailedToSetupListBearerSURes, s1apERABList_p) < 0) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of encapsulated IE s1apERABList failed\n");
-                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABList, s1apERABList_p);
-                }
+                memcpy(&s1ap_E_RABSetupResponseIEs->e_RABFailedToSetupListBearerSURes, s1apERABList_p, sizeof(S1ap_E_RABList_t));
             } break;
             /* Optional field */
             case S1ap_ProtocolIE_ID_id_CriticalityDiagnostics:
@@ -6446,7 +6716,10 @@ int s1ap_decode_s1ap_pathswitchrequesties(
                 decoded += tempDecoded;
                 if (asn1_xer_print)
                     xer_fprint(stdout, &asn_DEF_S1ap_E_RABToBeSwitchedDLList, s1apERABToBeSwitchedDLList_p);
-                memcpy(&s1ap_PathSwitchRequestIEs->e_RABToBeSwitchedDLList, s1apERABToBeSwitchedDLList_p, sizeof(S1ap_E_RABToBeSwitchedDLList_t));
+                if (s1ap_decode_s1ap_e_rabtobeswitcheddllist(&s1ap_PathSwitchRequestIEs->e_RABToBeSwitchedDLList, s1apERABToBeSwitchedDLList_p) < 0) {
+                   OAILOG_ERROR (LOG_S1AP, "Decoding of encapsulated IE s1apERABToBeSwitchedDLList failed\n");
+                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABToBeSwitchedDLList, s1apERABToBeSwitchedDLList_p);
+                }
             } break;
             case S1ap_ProtocolIE_ID_id_SourceMME_UE_S1AP_ID:
             {
@@ -6735,10 +7008,7 @@ int s1ap_decode_s1ap_e_rabreleaseindicationies(
                 decoded += tempDecoded;
                 if (asn1_xer_print)
                     xer_fprint(stdout, &asn_DEF_S1ap_E_RABList, s1apERABList_p);
-                if (s1ap_decode_s1ap_e_rablist(&s1ap_E_RABReleaseIndicationIEs->e_RABReleasedList, s1apERABList_p) < 0) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of encapsulated IE s1apERABList failed\n");
-                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABList, s1apERABList_p);
-                }
+                memcpy(&s1ap_E_RABReleaseIndicationIEs->e_RABReleasedList, s1apERABList_p, sizeof(S1ap_E_RABList_t));
             } break;
             default:
                OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_e_rabreleaseindicationies\n", (int)ie_p->id);
@@ -7139,10 +7409,7 @@ int s1ap_decode_s1ap_e_rabsetuprequesties(
                 decoded += tempDecoded;
                 if (asn1_xer_print)
                     xer_fprint(stdout, &asn_DEF_S1ap_E_RABToBeSetupListBearerSUReq, s1apERABToBeSetupListBearerSUReq_p);
-                if (s1ap_decode_s1ap_e_rabtobesetuplistbearersureq(&s1ap_E_RABSetupRequestIEs->e_RABToBeSetupListBearerSUReq, s1apERABToBeSetupListBearerSUReq_p) < 0) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of encapsulated IE s1apERABToBeSetupListBearerSUReq failed\n");
-                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABToBeSetupListBearerSUReq, s1apERABToBeSetupListBearerSUReq_p);
-                }
+                memcpy(&s1ap_E_RABSetupRequestIEs->e_RABToBeSetupListBearerSUReq, s1apERABToBeSetupListBearerSUReq_p, sizeof(S1ap_E_RABToBeSetupListBearerSUReq_t));
             } break;
             default:
                OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_e_rabsetuprequesties\n", (int)ie_p->id);
@@ -7258,10 +7525,7 @@ int s1ap_decode_s1ap_resetacknowledgeies(
                 decoded += tempDecoded;
                 if (asn1_xer_print)
                     xer_fprint(stdout, &asn_DEF_S1ap_UE_associatedLogicalS1_ConnectionListResAck, s1apUEassociatedLogicalS1ConnectionListResAck_p);
-                if (s1ap_decode_s1ap_ue_associatedlogicals1_connectionlistresack(&s1ap_ResetAcknowledgeIEs->uE_associatedLogicalS1_ConnectionListResAck, s1apUEassociatedLogicalS1ConnectionListResAck_p) < 0) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of encapsulated IE s1apUEassociatedLogicalS1ConnectionListResAck failed\n");
-                    ASN_STRUCT_FREE(asn_DEF_S1ap_UE_associatedLogicalS1_ConnectionListResAck, s1apUEassociatedLogicalS1ConnectionListResAck_p);
-                }
+                memcpy(&s1ap_ResetAcknowledgeIEs->uE_associatedLogicalS1_ConnectionListResAck, s1apUEassociatedLogicalS1ConnectionListResAck_p, sizeof(S1ap_UE_associatedLogicalS1_ConnectionListResAck_t));
             } break;
             /* Optional field */
             case S1ap_ProtocolIE_ID_id_CriticalityDiagnostics:
@@ -7449,33 +7713,33 @@ int s1ap_decode_s1ap_uplinkueassociatedlppatransport_ies(
     return decoded;
 }
 
-int s1ap_decode_s1ap_e_rabreleaselistbearerrelcomp(
-    S1ap_E_RABReleaseListBearerRelCompIEs_t *s1ap_E_RABReleaseListBearerRelCompIEs,
-    S1ap_E_RABReleaseListBearerRelComp_t *s1ap_E_RABReleaseListBearerRelComp) {
+int s1ap_decode_s1ap_e_rabfailedtosetuplisthoreqack(
+    S1ap_E_RABFailedtoSetupListHOReqAckIEs_t *s1ap_E_RABFailedtoSetupListHOReqAckIEs,
+    S1ap_E_RABFailedtoSetupListHOReqAck_t *s1ap_E_RABFailedtoSetupListHOReqAck) {
 
     int i, decoded = 0;
     int tempDecoded = 0;
 
-    assert(s1ap_E_RABReleaseListBearerRelComp != NULL);
-    assert(s1ap_E_RABReleaseListBearerRelCompIEs != NULL);
+    assert(s1ap_E_RABFailedtoSetupListHOReqAck != NULL);
+    assert(s1ap_E_RABFailedtoSetupListHOReqAckIEs != NULL);
 
-    for (i = 0; i < s1ap_E_RABReleaseListBearerRelComp->list.count; i++) {
-        S1ap_IE_t *ie_p = s1ap_E_RABReleaseListBearerRelComp->list.array[i];
+    for (i = 0; i < s1ap_E_RABFailedtoSetupListHOReqAck->list.count; i++) {
+        S1ap_IE_t *ie_p = s1ap_E_RABFailedtoSetupListHOReqAck->list.array[i];
         switch (ie_p->id) {
-            case S1ap_ProtocolIE_ID_id_E_RABReleaseItemBearerRelComp:
+            case S1ap_ProtocolIE_ID_id_E_RABFailedtoSetupItemHOReqAck:
             {
-                S1ap_E_RABReleaseItemBearerRelComp_t *s1apERABReleaseItemBearerRelComp_p = NULL;
-                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABReleaseItemBearerRelComp, (void**)&s1apERABReleaseItemBearerRelComp_p);
-                if (tempDecoded < 0 || s1apERABReleaseItemBearerRelComp_p == NULL) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE e_RABReleaseItemBearerRelComp for message S1ap_E_RABReleaseListBearerRelComp failed\n");
-                    if (s1apERABReleaseItemBearerRelComp_p)
-                        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABReleaseItemBearerRelComp, s1apERABReleaseItemBearerRelComp_p);
+                S1ap_E_RABFailedToSetupItemHOReqAck_t *s1apERABFailedToSetupItemHOReqAck_p = NULL;
+                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABFailedToSetupItemHOReqAck, (void**)&s1apERABFailedToSetupItemHOReqAck_p);
+                if (tempDecoded < 0 || s1apERABFailedToSetupItemHOReqAck_p == NULL) {
+                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE e_RABFailedtoSetupItemHOReqAck for message S1ap_E_RABFailedtoSetupListHOReqAck failed\n");
+                    if (s1apERABFailedToSetupItemHOReqAck_p)
+                        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABFailedToSetupItemHOReqAck, s1apERABFailedToSetupItemHOReqAck_p);
                     return -1;
                 }
                 decoded += tempDecoded;
                 if (asn1_xer_print)
-                    xer_fprint(stdout, &asn_DEF_S1ap_E_RABReleaseItemBearerRelComp, s1apERABReleaseItemBearerRelComp_p);
-                ASN_SEQUENCE_ADD(&s1ap_E_RABReleaseListBearerRelCompIEs->s1ap_E_RABReleaseItemBearerRelComp, s1apERABReleaseItemBearerRelComp_p);
+                    xer_fprint(stdout, &asn_DEF_S1ap_E_RABFailedToSetupItemHOReqAck, s1apERABFailedToSetupItemHOReqAck_p);
+                ASN_SEQUENCE_ADD(&s1ap_E_RABFailedtoSetupListHOReqAckIEs->s1ap_E_RABFailedtoSetupItemHOReqAck, s1apERABFailedToSetupItemHOReqAck_p);
             } break;
             default:
                OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies\n", (int)ie_p->id);
@@ -7485,33 +7749,33 @@ int s1ap_decode_s1ap_e_rabreleaselistbearerrelcomp(
     return decoded;
 }
 
-int s1ap_decode_s1ap_e_rabtobemodifiedlistbearermodreq(
-    S1ap_E_RABToBeModifiedListBearerModReqIEs_t *s1ap_E_RABToBeModifiedListBearerModReqIEs,
-    S1ap_E_RABToBeModifiedListBearerModReq_t *s1ap_E_RABToBeModifiedListBearerModReq) {
+int s1ap_decode_s1ap_e_rabtobesetuplisthoreq(
+    S1ap_E_RABToBeSetupListHOReqIEs_t *s1ap_E_RABToBeSetupListHOReqIEs,
+    S1ap_E_RABToBeSetupListHOReq_t *s1ap_E_RABToBeSetupListHOReq) {
 
     int i, decoded = 0;
     int tempDecoded = 0;
 
-    assert(s1ap_E_RABToBeModifiedListBearerModReq != NULL);
-    assert(s1ap_E_RABToBeModifiedListBearerModReqIEs != NULL);
+    assert(s1ap_E_RABToBeSetupListHOReq != NULL);
+    assert(s1ap_E_RABToBeSetupListHOReqIEs != NULL);
 
-    for (i = 0; i < s1ap_E_RABToBeModifiedListBearerModReq->list.count; i++) {
-        S1ap_IE_t *ie_p = s1ap_E_RABToBeModifiedListBearerModReq->list.array[i];
+    for (i = 0; i < s1ap_E_RABToBeSetupListHOReq->list.count; i++) {
+        S1ap_IE_t *ie_p = s1ap_E_RABToBeSetupListHOReq->list.array[i];
         switch (ie_p->id) {
-            case S1ap_ProtocolIE_ID_id_E_RABToBeModifiedItemBearerModReq:
+            case S1ap_ProtocolIE_ID_id_E_RABToBeSetupItemHOReq:
             {
-                S1ap_E_RABToBeModifiedItemBearerModReq_t *s1apERABToBeModifiedItemBearerModReq_p = NULL;
-                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABToBeModifiedItemBearerModReq, (void**)&s1apERABToBeModifiedItemBearerModReq_p);
-                if (tempDecoded < 0 || s1apERABToBeModifiedItemBearerModReq_p == NULL) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE e_RABToBeModifiedItemBearerModReq for message S1ap_E_RABToBeModifiedListBearerModReq failed\n");
-                    if (s1apERABToBeModifiedItemBearerModReq_p)
-                        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABToBeModifiedItemBearerModReq, s1apERABToBeModifiedItemBearerModReq_p);
+                S1ap_E_RABToBeSetupItemHOReq_t *s1apERABToBeSetupItemHOReq_p = NULL;
+                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABToBeSetupItemHOReq, (void**)&s1apERABToBeSetupItemHOReq_p);
+                if (tempDecoded < 0 || s1apERABToBeSetupItemHOReq_p == NULL) {
+                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE e_RABToBeSetupItemHOReq for message S1ap_E_RABToBeSetupListHOReq failed\n");
+                    if (s1apERABToBeSetupItemHOReq_p)
+                        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABToBeSetupItemHOReq, s1apERABToBeSetupItemHOReq_p);
                     return -1;
                 }
                 decoded += tempDecoded;
                 if (asn1_xer_print)
-                    xer_fprint(stdout, &asn_DEF_S1ap_E_RABToBeModifiedItemBearerModReq, s1apERABToBeModifiedItemBearerModReq_p);
-                ASN_SEQUENCE_ADD(&s1ap_E_RABToBeModifiedListBearerModReqIEs->s1ap_E_RABToBeModifiedItemBearerModReq, s1apERABToBeModifiedItemBearerModReq_p);
+                    xer_fprint(stdout, &asn_DEF_S1ap_E_RABToBeSetupItemHOReq, s1apERABToBeSetupItemHOReq_p);
+                ASN_SEQUENCE_ADD(&s1ap_E_RABToBeSetupListHOReqIEs->s1ap_E_RABToBeSetupItemHOReq, s1apERABToBeSetupItemHOReq_p);
             } break;
             default:
                OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies\n", (int)ie_p->id);
@@ -7521,33 +7785,33 @@ int s1ap_decode_s1ap_e_rabtobemodifiedlistbearermodreq(
     return decoded;
 }
 
-int s1ap_decode_s1ap_e_rabtobesetuplistbearersureq(
-    S1ap_E_RABToBeSetupListBearerSUReqIEs_t *s1ap_E_RABToBeSetupListBearerSUReqIEs,
-    S1ap_E_RABToBeSetupListBearerSUReq_t *s1ap_E_RABToBeSetupListBearerSUReq) {
+int s1ap_decode_s1ap_e_rabadmittedlist(
+    S1ap_E_RABAdmittedListIEs_t *s1ap_E_RABAdmittedListIEs,
+    S1ap_E_RABAdmittedList_t *s1ap_E_RABAdmittedList) {
 
     int i, decoded = 0;
     int tempDecoded = 0;
 
-    assert(s1ap_E_RABToBeSetupListBearerSUReq != NULL);
-    assert(s1ap_E_RABToBeSetupListBearerSUReqIEs != NULL);
+    assert(s1ap_E_RABAdmittedList != NULL);
+    assert(s1ap_E_RABAdmittedListIEs != NULL);
 
-    for (i = 0; i < s1ap_E_RABToBeSetupListBearerSUReq->list.count; i++) {
-        S1ap_IE_t *ie_p = s1ap_E_RABToBeSetupListBearerSUReq->list.array[i];
+    for (i = 0; i < s1ap_E_RABAdmittedList->list.count; i++) {
+        S1ap_IE_t *ie_p = s1ap_E_RABAdmittedList->list.array[i];
         switch (ie_p->id) {
-            case S1ap_ProtocolIE_ID_id_E_RABToBeSetupItemBearerSUReq:
+            case S1ap_ProtocolIE_ID_id_E_RABAdmittedItem:
             {
-                S1ap_E_RABToBeSetupItemBearerSUReq_t *s1apERABToBeSetupItemBearerSUReq_p = NULL;
-                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABToBeSetupItemBearerSUReq, (void**)&s1apERABToBeSetupItemBearerSUReq_p);
-                if (tempDecoded < 0 || s1apERABToBeSetupItemBearerSUReq_p == NULL) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE e_RABToBeSetupItemBearerSUReq for message S1ap_E_RABToBeSetupListBearerSUReq failed\n");
-                    if (s1apERABToBeSetupItemBearerSUReq_p)
-                        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABToBeSetupItemBearerSUReq, s1apERABToBeSetupItemBearerSUReq_p);
+                S1ap_E_RABAdmittedItem_t *s1apERABAdmittedItem_p = NULL;
+                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABAdmittedItem, (void**)&s1apERABAdmittedItem_p);
+                if (tempDecoded < 0 || s1apERABAdmittedItem_p == NULL) {
+                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE e_RABAdmittedItem for message S1ap_E_RABAdmittedList failed\n");
+                    if (s1apERABAdmittedItem_p)
+                        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABAdmittedItem, s1apERABAdmittedItem_p);
                     return -1;
                 }
                 decoded += tempDecoded;
                 if (asn1_xer_print)
-                    xer_fprint(stdout, &asn_DEF_S1ap_E_RABToBeSetupItemBearerSUReq, s1apERABToBeSetupItemBearerSUReq_p);
-                ASN_SEQUENCE_ADD(&s1ap_E_RABToBeSetupListBearerSUReqIEs->s1ap_E_RABToBeSetupItemBearerSUReq, s1apERABToBeSetupItemBearerSUReq_p);
+                    xer_fprint(stdout, &asn_DEF_S1ap_E_RABAdmittedItem, s1apERABAdmittedItem_p);
+                ASN_SEQUENCE_ADD(&s1ap_E_RABAdmittedListIEs->s1ap_E_RABAdmittedItem, s1apERABAdmittedItem_p);
             } break;
             default:
                OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies\n", (int)ie_p->id);
@@ -7557,33 +7821,33 @@ int s1ap_decode_s1ap_e_rabtobesetuplistbearersureq(
     return decoded;
 }
 
-int s1ap_decode_s1ap_e_rabsetuplistctxtsures(
-    S1ap_E_RABSetupListCtxtSUResIEs_t *s1ap_E_RABSetupListCtxtSUResIEs,
-    S1ap_E_RABSetupListCtxtSURes_t *s1ap_E_RABSetupListCtxtSURes) {
+int s1ap_decode_s1ap_e_rabdataforwardinglist(
+    S1ap_E_RABDataForwardingListIEs_t *s1ap_E_RABDataForwardingListIEs,
+    S1ap_E_RABDataForwardingList_t *s1ap_E_RABDataForwardingList) {
 
     int i, decoded = 0;
     int tempDecoded = 0;
 
-    assert(s1ap_E_RABSetupListCtxtSURes != NULL);
-    assert(s1ap_E_RABSetupListCtxtSUResIEs != NULL);
+    assert(s1ap_E_RABDataForwardingList != NULL);
+    assert(s1ap_E_RABDataForwardingListIEs != NULL);
 
-    for (i = 0; i < s1ap_E_RABSetupListCtxtSURes->list.count; i++) {
-        S1ap_IE_t *ie_p = s1ap_E_RABSetupListCtxtSURes->list.array[i];
+    for (i = 0; i < s1ap_E_RABDataForwardingList->list.count; i++) {
+        S1ap_IE_t *ie_p = s1ap_E_RABDataForwardingList->list.array[i];
         switch (ie_p->id) {
-            case S1ap_ProtocolIE_ID_id_E_RABSetupItemCtxtSURes:
+            case S1ap_ProtocolIE_ID_id_E_RABDataForwardingItem:
             {
-                S1ap_E_RABSetupItemCtxtSURes_t *s1apERABSetupItemCtxtSURes_p = NULL;
-                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABSetupItemCtxtSURes, (void**)&s1apERABSetupItemCtxtSURes_p);
-                if (tempDecoded < 0 || s1apERABSetupItemCtxtSURes_p == NULL) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE e_RABSetupItemCtxtSURes for message S1ap_E_RABSetupListCtxtSURes failed\n");
-                    if (s1apERABSetupItemCtxtSURes_p)
-                        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABSetupItemCtxtSURes, s1apERABSetupItemCtxtSURes_p);
+                S1ap_E_RABDataForwardingItem_t *s1apERABDataForwardingItem_p = NULL;
+                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABDataForwardingItem, (void**)&s1apERABDataForwardingItem_p);
+                if (tempDecoded < 0 || s1apERABDataForwardingItem_p == NULL) {
+                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE e_RABDataForwardingItem for message S1ap_E_RABDataForwardingList failed\n");
+                    if (s1apERABDataForwardingItem_p)
+                        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABDataForwardingItem, s1apERABDataForwardingItem_p);
                     return -1;
                 }
                 decoded += tempDecoded;
                 if (asn1_xer_print)
-                    xer_fprint(stdout, &asn_DEF_S1ap_E_RABSetupItemCtxtSURes, s1apERABSetupItemCtxtSURes_p);
-                ASN_SEQUENCE_ADD(&s1ap_E_RABSetupListCtxtSUResIEs->s1ap_E_RABSetupItemCtxtSURes, s1apERABSetupItemCtxtSURes_p);
+                    xer_fprint(stdout, &asn_DEF_S1ap_E_RABDataForwardingItem, s1apERABDataForwardingItem_p);
+                ASN_SEQUENCE_ADD(&s1ap_E_RABDataForwardingListIEs->s1ap_E_RABDataForwardingItem, s1apERABDataForwardingItem_p);
             } break;
             default:
                OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies\n", (int)ie_p->id);
@@ -7593,33 +7857,33 @@ int s1ap_decode_s1ap_e_rabsetuplistctxtsures(
     return decoded;
 }
 
-int s1ap_decode_s1ap_bearers_subjecttostatustransfer_list(
-    S1ap_Bearers_SubjectToStatusTransfer_ListIEs_t *s1ap_Bearers_SubjectToStatusTransfer_ListIEs,
-    S1ap_Bearers_SubjectToStatusTransfer_List_t *s1ap_Bearers_SubjectToStatusTransfer_List) {
+int s1ap_decode_s1ap_e_rabtobeswitcheddllist(
+    S1ap_E_RABToBeSwitchedDLListIEs_t *s1ap_E_RABToBeSwitchedDLListIEs,
+    S1ap_E_RABToBeSwitchedDLList_t *s1ap_E_RABToBeSwitchedDLList) {
 
     int i, decoded = 0;
     int tempDecoded = 0;
 
-    assert(s1ap_Bearers_SubjectToStatusTransfer_List != NULL);
-    assert(s1ap_Bearers_SubjectToStatusTransfer_ListIEs != NULL);
+    assert(s1ap_E_RABToBeSwitchedDLList != NULL);
+    assert(s1ap_E_RABToBeSwitchedDLListIEs != NULL);
 
-    for (i = 0; i < s1ap_Bearers_SubjectToStatusTransfer_List->list.count; i++) {
-        S1ap_IE_t *ie_p = s1ap_Bearers_SubjectToStatusTransfer_List->list.array[i];
+    for (i = 0; i < s1ap_E_RABToBeSwitchedDLList->list.count; i++) {
+        S1ap_IE_t *ie_p = s1ap_E_RABToBeSwitchedDLList->list.array[i];
         switch (ie_p->id) {
-            case S1ap_ProtocolIE_ID_id_Bearers_SubjectToStatusTransfer_Item:
+            case S1ap_ProtocolIE_ID_id_E_RABToBeSwitchedDLItem:
             {
-                S1ap_Bearers_SubjectToStatusTransfer_Item_t *s1apBearersSubjectToStatusTransferItem_p = NULL;
-                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_Bearers_SubjectToStatusTransfer_Item, (void**)&s1apBearersSubjectToStatusTransferItem_p);
-                if (tempDecoded < 0 || s1apBearersSubjectToStatusTransferItem_p == NULL) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE bearers_SubjectToStatusTransfer_Item for message S1ap_Bearers_SubjectToStatusTransfer_List failed\n");
-                    if (s1apBearersSubjectToStatusTransferItem_p)
-                        ASN_STRUCT_FREE(asn_DEF_S1ap_Bearers_SubjectToStatusTransfer_Item, s1apBearersSubjectToStatusTransferItem_p);
+                S1ap_E_RABToBeSwitchedDLItem_t *s1apERABToBeSwitchedDLItem_p = NULL;
+                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABToBeSwitchedDLItem, (void**)&s1apERABToBeSwitchedDLItem_p);
+                if (tempDecoded < 0 || s1apERABToBeSwitchedDLItem_p == NULL) {
+                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE e_RABToBeSwitchedDLItem for message S1ap_E_RABToBeSwitchedDLList failed\n");
+                    if (s1apERABToBeSwitchedDLItem_p)
+                        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABToBeSwitchedDLItem, s1apERABToBeSwitchedDLItem_p);
                     return -1;
                 }
                 decoded += tempDecoded;
                 if (asn1_xer_print)
-                    xer_fprint(stdout, &asn_DEF_S1ap_Bearers_SubjectToStatusTransfer_Item, s1apBearersSubjectToStatusTransferItem_p);
-                ASN_SEQUENCE_ADD(&s1ap_Bearers_SubjectToStatusTransfer_ListIEs->s1ap_Bearers_SubjectToStatusTransfer_Item, s1apBearersSubjectToStatusTransferItem_p);
+                    xer_fprint(stdout, &asn_DEF_S1ap_E_RABToBeSwitchedDLItem, s1apERABToBeSwitchedDLItem_p);
+                ASN_SEQUENCE_ADD(&s1ap_E_RABToBeSwitchedDLListIEs->s1ap_E_RABToBeSwitchedDLItem, s1apERABToBeSwitchedDLItem_p);
             } break;
             default:
                OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies\n", (int)ie_p->id);
@@ -7629,285 +7893,33 @@ int s1ap_decode_s1ap_bearers_subjecttostatustransfer_list(
     return decoded;
 }
 
-int s1ap_decode_s1ap_e_rablist(
-    S1ap_E_RABListIEs_t *s1ap_E_RABListIEs,
-    S1ap_E_RABList_t *s1ap_E_RABList) {
+int s1ap_decode_s1ap_e_rabtobeswitchedullist(
+    S1ap_E_RABToBeSwitchedULListIEs_t *s1ap_E_RABToBeSwitchedULListIEs,
+    S1ap_E_RABToBeSwitchedULList_t *s1ap_E_RABToBeSwitchedULList) {
 
     int i, decoded = 0;
     int tempDecoded = 0;
 
-    assert(s1ap_E_RABList != NULL);
-    assert(s1ap_E_RABListIEs != NULL);
+    assert(s1ap_E_RABToBeSwitchedULList != NULL);
+    assert(s1ap_E_RABToBeSwitchedULListIEs != NULL);
 
-    for (i = 0; i < s1ap_E_RABList->list.count; i++) {
-        S1ap_IE_t *ie_p = s1ap_E_RABList->list.array[i];
+    for (i = 0; i < s1ap_E_RABToBeSwitchedULList->list.count; i++) {
+        S1ap_IE_t *ie_p = s1ap_E_RABToBeSwitchedULList->list.array[i];
         switch (ie_p->id) {
-            case S1ap_ProtocolIE_ID_id_E_RABItem:
+            case S1ap_ProtocolIE_ID_id_E_RABToBeSwitchedULItem:
             {
-                S1ap_E_RABItem_t *s1apERABItem_p = NULL;
-                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABItem, (void**)&s1apERABItem_p);
-                if (tempDecoded < 0 || s1apERABItem_p == NULL) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE e_RABItem for message S1ap_E_RABList failed\n");
-                    if (s1apERABItem_p)
-                        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABItem, s1apERABItem_p);
+                S1ap_E_RABToBeSwitchedULItem_t *s1apERABToBeSwitchedULItem_p = NULL;
+                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABToBeSwitchedULItem, (void**)&s1apERABToBeSwitchedULItem_p);
+                if (tempDecoded < 0 || s1apERABToBeSwitchedULItem_p == NULL) {
+                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE e_RABToBeSwitchedULItem for message S1ap_E_RABToBeSwitchedULList failed\n");
+                    if (s1apERABToBeSwitchedULItem_p)
+                        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABToBeSwitchedULItem, s1apERABToBeSwitchedULItem_p);
                     return -1;
                 }
                 decoded += tempDecoded;
                 if (asn1_xer_print)
-                    xer_fprint(stdout, &asn_DEF_S1ap_E_RABItem, s1apERABItem_p);
-                ASN_SEQUENCE_ADD(&s1ap_E_RABListIEs->s1ap_E_RABItem, s1apERABItem_p);
-            } break;
-            default:
-               OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies\n", (int)ie_p->id);
-                return -1;
-        }
-    }
-    return decoded;
-}
-
-int s1ap_decode_s1ap_tailist(
-    S1ap_TAIListIEs_t *s1ap_TAIListIEs,
-    S1ap_TAIList_t *s1ap_TAIList) {
-
-    int i, decoded = 0;
-    int tempDecoded = 0;
-
-    assert(s1ap_TAIList != NULL);
-    assert(s1ap_TAIListIEs != NULL);
-
-    for (i = 0; i < s1ap_TAIList->list.count; i++) {
-        S1ap_IE_t *ie_p = s1ap_TAIList->list.array[i];
-        switch (ie_p->id) {
-            case S1ap_ProtocolIE_ID_id_TAIItem:
-            {
-                S1ap_TAIItem_t *s1apTAIItem_p = NULL;
-                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_TAIItem, (void**)&s1apTAIItem_p);
-                if (tempDecoded < 0 || s1apTAIItem_p == NULL) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE taiItem for message S1ap_TAIList failed\n");
-                    if (s1apTAIItem_p)
-                        ASN_STRUCT_FREE(asn_DEF_S1ap_TAIItem, s1apTAIItem_p);
-                    return -1;
-                }
-                decoded += tempDecoded;
-                if (asn1_xer_print)
-                    xer_fprint(stdout, &asn_DEF_S1ap_TAIItem, s1apTAIItem_p);
-                ASN_SEQUENCE_ADD(&s1ap_TAIListIEs->s1ap_TAIItem, s1apTAIItem_p);
-            } break;
-            default:
-               OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies\n", (int)ie_p->id);
-                return -1;
-        }
-    }
-    return decoded;
-}
-
-int s1ap_decode_s1ap_ue_associatedlogicals1_connectionlistres(
-    S1ap_UE_associatedLogicalS1_ConnectionListResIEs_t *s1ap_UE_associatedLogicalS1_ConnectionListResIEs,
-    S1ap_UE_associatedLogicalS1_ConnectionListRes_t *s1ap_UE_associatedLogicalS1_ConnectionListRes) {
-
-    int i, decoded = 0;
-    int tempDecoded = 0;
-
-    assert(s1ap_UE_associatedLogicalS1_ConnectionListRes != NULL);
-    assert(s1ap_UE_associatedLogicalS1_ConnectionListResIEs != NULL);
-
-    for (i = 0; i < s1ap_UE_associatedLogicalS1_ConnectionListRes->list.count; i++) {
-        S1ap_IE_t *ie_p = s1ap_UE_associatedLogicalS1_ConnectionListRes->list.array[i];
-        switch (ie_p->id) {
-            case S1ap_ProtocolIE_ID_id_UE_associatedLogicalS1_ConnectionItem:
-            {
-                S1ap_UE_associatedLogicalS1_ConnectionItem_t *s1apUEassociatedLogicalS1ConnectionItem_p = NULL;
-                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_UE_associatedLogicalS1_ConnectionItem, (void**)&s1apUEassociatedLogicalS1ConnectionItem_p);
-                if (tempDecoded < 0 || s1apUEassociatedLogicalS1ConnectionItem_p == NULL) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE uE_associatedLogicalS1_ConnectionItem for message S1ap_UE_associatedLogicalS1_ConnectionListRes failed\n");
-                    if (s1apUEassociatedLogicalS1ConnectionItem_p)
-                        ASN_STRUCT_FREE(asn_DEF_S1ap_UE_associatedLogicalS1_ConnectionItem, s1apUEassociatedLogicalS1ConnectionItem_p);
-                    return -1;
-                }
-                decoded += tempDecoded;
-                if (asn1_xer_print)
-                    xer_fprint(stdout, &asn_DEF_S1ap_UE_associatedLogicalS1_ConnectionItem, s1apUEassociatedLogicalS1ConnectionItem_p);
-                ASN_SEQUENCE_ADD(&s1ap_UE_associatedLogicalS1_ConnectionListResIEs->s1ap_UE_associatedLogicalS1_ConnectionItemRes, s1apUEassociatedLogicalS1ConnectionItem_p);
-            } break;
-            default:
-               OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies\n", (int)ie_p->id);
-                return -1;
-        }
-    }
-    return decoded;
-}
-
-int s1ap_decode_s1ap_e_rabsetuplistbearersures(
-    S1ap_E_RABSetupListBearerSUResIEs_t *s1ap_E_RABSetupListBearerSUResIEs,
-    S1ap_E_RABSetupListBearerSURes_t *s1ap_E_RABSetupListBearerSURes) {
-
-    int i, decoded = 0;
-    int tempDecoded = 0;
-
-    assert(s1ap_E_RABSetupListBearerSURes != NULL);
-    assert(s1ap_E_RABSetupListBearerSUResIEs != NULL);
-
-    for (i = 0; i < s1ap_E_RABSetupListBearerSURes->list.count; i++) {
-        S1ap_IE_t *ie_p = s1ap_E_RABSetupListBearerSURes->list.array[i];
-        switch (ie_p->id) {
-            case S1ap_ProtocolIE_ID_id_E_RABSetupItemBearerSURes:
-            {
-                S1ap_E_RABSetupItemBearerSURes_t *s1apERABSetupItemBearerSURes_p = NULL;
-                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABSetupItemBearerSURes, (void**)&s1apERABSetupItemBearerSURes_p);
-                if (tempDecoded < 0 || s1apERABSetupItemBearerSURes_p == NULL) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE e_RABSetupItemBearerSURes for message S1ap_E_RABSetupListBearerSURes failed\n");
-                    if (s1apERABSetupItemBearerSURes_p)
-                        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABSetupItemBearerSURes, s1apERABSetupItemBearerSURes_p);
-                    return -1;
-                }
-                decoded += tempDecoded;
-                if (asn1_xer_print)
-                    xer_fprint(stdout, &asn_DEF_S1ap_E_RABSetupItemBearerSURes, s1apERABSetupItemBearerSURes_p);
-                ASN_SEQUENCE_ADD(&s1ap_E_RABSetupListBearerSUResIEs->s1ap_E_RABSetupItemBearerSURes, s1apERABSetupItemBearerSURes_p);
-            } break;
-            default:
-               OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies\n", (int)ie_p->id);
-                return -1;
-        }
-    }
-    return decoded;
-}
-
-int s1ap_decode_s1ap_e_rabmodifylistbearermodres(
-    S1ap_E_RABModifyListBearerModResIEs_t *s1ap_E_RABModifyListBearerModResIEs,
-    S1ap_E_RABModifyListBearerModRes_t *s1ap_E_RABModifyListBearerModRes) {
-
-    int i, decoded = 0;
-    int tempDecoded = 0;
-
-    assert(s1ap_E_RABModifyListBearerModRes != NULL);
-    assert(s1ap_E_RABModifyListBearerModResIEs != NULL);
-
-    for (i = 0; i < s1ap_E_RABModifyListBearerModRes->list.count; i++) {
-        S1ap_IE_t *ie_p = s1ap_E_RABModifyListBearerModRes->list.array[i];
-        switch (ie_p->id) {
-            case S1ap_ProtocolIE_ID_id_E_RABModifyItemBearerModRes:
-            {
-                S1ap_E_RABModifyItemBearerModRes_t *s1apERABModifyItemBearerModRes_p = NULL;
-                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABModifyItemBearerModRes, (void**)&s1apERABModifyItemBearerModRes_p);
-                if (tempDecoded < 0 || s1apERABModifyItemBearerModRes_p == NULL) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE e_RABModifyItemBearerModRes for message S1ap_E_RABModifyListBearerModRes failed\n");
-                    if (s1apERABModifyItemBearerModRes_p)
-                        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABModifyItemBearerModRes, s1apERABModifyItemBearerModRes_p);
-                    return -1;
-                }
-                decoded += tempDecoded;
-                if (asn1_xer_print)
-                    xer_fprint(stdout, &asn_DEF_S1ap_E_RABModifyItemBearerModRes, s1apERABModifyItemBearerModRes_p);
-                ASN_SEQUENCE_ADD(&s1ap_E_RABModifyListBearerModResIEs->s1ap_E_RABModifyItemBearerModRes, s1apERABModifyItemBearerModRes_p);
-            } break;
-            default:
-               OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies\n", (int)ie_p->id);
-                return -1;
-        }
-    }
-    return decoded;
-}
-
-int s1ap_decode_s1ap_e_rabtobesetuplistctxtsureq(
-    S1ap_E_RABToBeSetupListCtxtSUReqIEs_t *s1ap_E_RABToBeSetupListCtxtSUReqIEs,
-    S1ap_E_RABToBeSetupListCtxtSUReq_t *s1ap_E_RABToBeSetupListCtxtSUReq) {
-
-    int i, decoded = 0;
-    int tempDecoded = 0;
-
-    assert(s1ap_E_RABToBeSetupListCtxtSUReq != NULL);
-    assert(s1ap_E_RABToBeSetupListCtxtSUReqIEs != NULL);
-
-    for (i = 0; i < s1ap_E_RABToBeSetupListCtxtSUReq->list.count; i++) {
-        S1ap_IE_t *ie_p = s1ap_E_RABToBeSetupListCtxtSUReq->list.array[i];
-        switch (ie_p->id) {
-            case S1ap_ProtocolIE_ID_id_E_RABToBeSetupItemCtxtSUReq:
-            {
-                S1ap_E_RABToBeSetupItemCtxtSUReq_t *s1apERABToBeSetupItemCtxtSUReq_p = NULL;
-                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABToBeSetupItemCtxtSUReq, (void**)&s1apERABToBeSetupItemCtxtSUReq_p);
-                if (tempDecoded < 0 || s1apERABToBeSetupItemCtxtSUReq_p == NULL) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE e_RABToBeSetupItemCtxtSUReq for message S1ap_E_RABToBeSetupListCtxtSUReq failed\n");
-                    if (s1apERABToBeSetupItemCtxtSUReq_p)
-                        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABToBeSetupItemCtxtSUReq, s1apERABToBeSetupItemCtxtSUReq_p);
-                    return -1;
-                }
-                decoded += tempDecoded;
-                if (asn1_xer_print)
-                    xer_fprint(stdout, &asn_DEF_S1ap_E_RABToBeSetupItemCtxtSUReq, s1apERABToBeSetupItemCtxtSUReq_p);
-                ASN_SEQUENCE_ADD(&s1ap_E_RABToBeSetupListCtxtSUReqIEs->s1ap_E_RABToBeSetupItemCtxtSUReq, s1apERABToBeSetupItemCtxtSUReq_p);
-            } break;
-            default:
-               OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies\n", (int)ie_p->id);
-                return -1;
-        }
-    }
-    return decoded;
-}
-
-int s1ap_decode_s1ap_e_rabinformationlist(
-    S1ap_E_RABInformationListIEs_t *s1ap_E_RABInformationListIEs,
-    S1ap_E_RABInformationList_t *s1ap_E_RABInformationList) {
-
-    int i, decoded = 0;
-    int tempDecoded = 0;
-
-    assert(s1ap_E_RABInformationList != NULL);
-    assert(s1ap_E_RABInformationListIEs != NULL);
-
-    for (i = 0; i < s1ap_E_RABInformationList->list.count; i++) {
-        S1ap_IE_t *ie_p = s1ap_E_RABInformationList->list.array[i];
-        switch (ie_p->id) {
-            case S1ap_ProtocolIE_ID_id_E_RABInformationListItem:
-            {
-                S1ap_E_RABInformationListItem_t *s1apERABInformationListItem_p = NULL;
-                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABInformationListItem, (void**)&s1apERABInformationListItem_p);
-                if (tempDecoded < 0 || s1apERABInformationListItem_p == NULL) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE e_RABInformationListItem for message S1ap_E_RABInformationList failed\n");
-                    if (s1apERABInformationListItem_p)
-                        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABInformationListItem, s1apERABInformationListItem_p);
-                    return -1;
-                }
-                decoded += tempDecoded;
-                if (asn1_xer_print)
-                    xer_fprint(stdout, &asn_DEF_S1ap_E_RABInformationListItem, s1apERABInformationListItem_p);
-                ASN_SEQUENCE_ADD(&s1ap_E_RABInformationListIEs->s1ap_E_RABInformationList, s1apERABInformationListItem_p);
-            } break;
-            default:
-               OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies\n", (int)ie_p->id);
-                return -1;
-        }
-    }
-    return decoded;
-}
-
-int s1ap_decode_s1ap_ue_associatedlogicals1_connectionlistresack(
-    S1ap_UE_associatedLogicalS1_ConnectionListResAckIEs_t *s1ap_UE_associatedLogicalS1_ConnectionListResAckIEs,
-    S1ap_UE_associatedLogicalS1_ConnectionListResAck_t *s1ap_UE_associatedLogicalS1_ConnectionListResAck) {
-
-    int i, decoded = 0;
-    int tempDecoded = 0;
-
-    assert(s1ap_UE_associatedLogicalS1_ConnectionListResAck != NULL);
-    assert(s1ap_UE_associatedLogicalS1_ConnectionListResAckIEs != NULL);
-
-    for (i = 0; i < s1ap_UE_associatedLogicalS1_ConnectionListResAck->list.count; i++) {
-        S1ap_IE_t *ie_p = s1ap_UE_associatedLogicalS1_ConnectionListResAck->list.array[i];
-        switch (ie_p->id) {
-            case S1ap_ProtocolIE_ID_id_UE_associatedLogicalS1_ConnectionItem:
-            {
-                S1ap_UE_associatedLogicalS1_ConnectionItem_t *s1apUEassociatedLogicalS1ConnectionItem_p = NULL;
-                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_UE_associatedLogicalS1_ConnectionItem, (void**)&s1apUEassociatedLogicalS1ConnectionItem_p);
-                if (tempDecoded < 0 || s1apUEassociatedLogicalS1ConnectionItem_p == NULL) {
-                   OAILOG_ERROR (LOG_S1AP, "Decoding of IE uE_associatedLogicalS1_ConnectionItem for message S1ap_UE_associatedLogicalS1_ConnectionListResAck failed\n");
-                    if (s1apUEassociatedLogicalS1ConnectionItem_p)
-                        ASN_STRUCT_FREE(asn_DEF_S1ap_UE_associatedLogicalS1_ConnectionItem, s1apUEassociatedLogicalS1ConnectionItem_p);
-                    return -1;
-                }
-                decoded += tempDecoded;
-                if (asn1_xer_print)
-                    xer_fprint(stdout, &asn_DEF_S1ap_UE_associatedLogicalS1_ConnectionItem, s1apUEassociatedLogicalS1ConnectionItem_p);
-                ASN_SEQUENCE_ADD(&s1ap_UE_associatedLogicalS1_ConnectionListResAckIEs->s1ap_UE_associatedLogicalS1_ConnectionItemResAck, s1apUEassociatedLogicalS1ConnectionItem_p);
+                    xer_fprint(stdout, &asn_DEF_S1ap_E_RABToBeSwitchedULItem, s1apERABToBeSwitchedULItem_p);
+                ASN_SEQUENCE_ADD(&s1ap_E_RABToBeSwitchedULListIEs->s1ap_E_RABToBeSwitchedULItem, s1apERABToBeSwitchedULItem_p);
             } break;
             default:
                OAILOG_ERROR (LOG_S1AP, "Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies\n", (int)ie_p->id);

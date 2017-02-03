@@ -19,7 +19,7 @@ extern "C" {
 #endif
 
 /* S1ap-E-RABSubjecttoDataForwardingList */
-typedef ProtocolIE_ContainerList_5732P0_t	 S1ap_E_RABSubjecttoDataForwardingList_t;
+typedef ProtocolIE_ContainerList_5736P0_t	 S1ap_E_RABSubjecttoDataForwardingList_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_S1ap_E_RABSubjecttoDataForwardingList;

@@ -1846,51 +1846,51 @@ asn_enc_rval_t
 OCTET_STRING_encode_aper(asn_TYPE_descriptor_t *td,
         asn_per_constraints_t *constraints, void *sptr, asn_per_outp_t *po) {
 
-        asn_OCTET_STRING_specifics_t *specs = td->specifics
-                ? (asn_OCTET_STRING_specifics_t *)td->specifics
-                : &asn_DEF_OCTET_STRING_specs;
-        asn_per_constraints_t *pc = constraints ? constraints
-                                : td->per_constraints;
-        asn_per_constraint_t *cval;
-        asn_per_constraint_t *csiz;
-        const BIT_STRING_t *st = (const BIT_STRING_t *)sptr;
-        asn_enc_rval_t er = { 0, 0, 0 };
-        int inext = 0;          /* Lies not within extension root */
-        unsigned int unit_bits;
-        unsigned int canonical_unit_bits;
-        unsigned int sizeinunits;
-        const uint8_t *buf;
-        int ret;
-        enum {
-                OS__BPC_BIT     = 0,
-                OS__BPC_CHAR    = 1,
-                OS__BPC_U16     = 2,
-                OS__BPC_U32     = 4
-        } bpc;  /* Bytes per character */
-        int ct_extensible;
+	asn_OCTET_STRING_specifics_t *specs = td->specifics
+	? (asn_OCTET_STRING_specifics_t *)td->specifics
+	: &asn_DEF_OCTET_STRING_specs;
+	asn_per_constraints_t *pc = constraints ? constraints
+	: td->per_constraints;
+	asn_per_constraint_t *cval;
+	asn_per_constraint_t *csiz;
+	const BIT_STRING_t *st = (const BIT_STRING_t *)sptr;
+	asn_enc_rval_t er = { 0, 0, 0 };
+	int inext = 0;          /* Lies not within extension root */
+	unsigned int unit_bits;
+	unsigned int canonical_unit_bits;
+	unsigned int sizeinunits;
+	const uint8_t *buf;
+	int ret;
+	enum {
+		OS__BPC_BIT     = 0,
+		OS__BPC_CHAR    = 1,
+		OS__BPC_U16     = 2,
+		OS__BPC_U32     = 4
+	} bpc;  /* Bytes per character */
+	int ct_extensible;
 
-        if(!st || (!st->buf && st->size))
-                ASN__ENCODE_FAILED;
+	if(!st || (!st->buf && st->size))
+		ASN__ENCODE_FAILED;
 
-        if(pc) {
-                cval = &pc->value;
-                csiz = &pc->size;
-        } else {
-                cval = &asn_DEF_OCTET_STRING_constraints.value;
-                csiz = &asn_DEF_OCTET_STRING_constraints.size;
-        }
-        ct_extensible = csiz->flags & APC_EXTENSIBLE;
+	if(pc) {
+		cval = &pc->value;
+		csiz = &pc->size;
+	} else {
+		cval = &asn_DEF_OCTET_STRING_constraints.value;
+		csiz = &asn_DEF_OCTET_STRING_constraints.size;
+	}
+	ct_extensible = csiz->flags & APC_EXTENSIBLE;
 
-        switch(specs->subvariant) {
-        default:
-//         case ASN_OSUBV_ANY:
-//                 ASN__ENCODE_FAILED;
-        case ASN_OSUBV_BIT:
-                canonical_unit_bits = unit_bits = 1;
-                bpc = OS__BPC_BIT;
-                sizeinunits = st->size * 8 - (st->bits_unused & 0x07);
-                ASN_DEBUG("BIT STRING of %d bytes",
-                                sizeinunits);
+	switch(specs->subvariant) {
+		default:
+			//         case ASN_OSUBV_ANY:
+			//                 ASN__ENCODE_FAILED;
+		case ASN_OSUBV_BIT:
+			canonical_unit_bits = unit_bits = 1;
+			bpc = OS__BPC_BIT;
+			sizeinunits = st->size * 8 - (st->bits_unused & 0x07);
+			ASN_DEBUG("BIT STRING of %d bytes",
+								sizeinunits);
 		break;
         case ASN_OSUBV_ANY:
 	case ASN_OSUBV_STR:

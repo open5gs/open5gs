@@ -30,7 +30,7 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-02-02 21:30:57.659486 by acetcom
+ * Created on: 2017-02-03 11:00:55.408484 by acetcom
  * from ['S1AP-PDU.asn']
  ******************************************************************************/
 #include <stdlib.h>
@@ -92,22 +92,16 @@ xer_encode_local(asn_TYPE_descriptor_t *td, void *sptr,
 cb_failed:
     _ASN_ENCODE_FAILED;
 }
-asn_enc_rval_t s1ap_xer_print_s1ap_e_rabfailedtosetupitemhoreqack(
+asn_enc_rval_t s1ap_xer_print_s1ap_e_rabfailedtosetuplisthoreqack(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
-{
-    S1ap_E_RABFailedtoSetupItemHOReqAckIEs_t *s1ap_E_RABFailedtoSetupItemHOReqAckIEs;
-    asn_enc_rval_t er;
-    s1ap_E_RABFailedtoSetupItemHOReqAckIEs = &message_p->msg.s1ap_E_RABFailedtoSetupItemHOReqAckIEs;
+    S1ap_E_RABFailedtoSetupListHOReqAckIEs_t *s1ap_E_RABFailedtoSetupListHOReqAckIEs) {
 
-    cb("<S1ap-E-RABFailedtoSetupItemHOReqAckIEs-PDU>\n", 45, app_key);
-    xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
-    xer_encode_local(&asn_DEF_S1ap_ProcedureCode, &message_p->procedureCode, cb, app_key, 1);
-    cb("    <S1ap-E-RABFailedtoSetupItemHOReqAckIEs>\n", 45, app_key);
-    xer_encode_local(&asn_DEF_S1ap_E_RABFailedToSetupItemHOReqAck, &s1ap_E_RABFailedtoSetupItemHOReqAckIEs->e_RABFailedtoSetupItemHOReqAck, cb, app_key, 2);
-    cb("    </S1ap-E-RABFailedtoSetupItemHOReqAckIEs>\n", 46, app_key);
-    cb("</S1ap-E-RABFailedtoSetupItemHOReqAckIEs-PDU>\n", 46, app_key);
+    int i;
+    asn_enc_rval_t er;
+    for (i = 0; i < s1ap_E_RABFailedtoSetupListHOReqAckIEs->s1ap_E_RABFailedtoSetupItemHOReqAck.count; i++) {
+        er = xer_encode(&asn_DEF_S1ap_E_RABFailedToSetupItemHOReqAck, s1ap_E_RABFailedtoSetupListHOReqAckIEs->s1ap_E_RABFailedtoSetupItemHOReqAck.array[i], XER_F_BASIC, cb, app_key);
+    }
     _ASN_ENCODED_OK(er);
 }
 
@@ -132,16 +126,22 @@ asn_enc_rval_t s1ap_xer_print_s1ap_deactivatetrace(
     _ASN_ENCODED_OK(er);
 }
 
-asn_enc_rval_t s1ap_xer_print_s1ap_e_rabreleaselistbearerrelcomp(
+asn_enc_rval_t s1ap_xer_print_s1ap_e_rabreleaseitembearerrelcomp(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABReleaseListBearerRelCompIEs_t *s1ap_E_RABReleaseListBearerRelCompIEs) {
-
-    int i;
+    s1ap_message *message_p)
+{
+    S1ap_E_RABReleaseItemBearerRelCompIEs_t *s1ap_E_RABReleaseItemBearerRelCompIEs;
     asn_enc_rval_t er;
-    for (i = 0; i < s1ap_E_RABReleaseListBearerRelCompIEs->s1ap_E_RABReleaseItemBearerRelComp.count; i++) {
-        er = xer_encode(&asn_DEF_S1ap_E_RABReleaseItemBearerRelComp, s1ap_E_RABReleaseListBearerRelCompIEs->s1ap_E_RABReleaseItemBearerRelComp.array[i], XER_F_BASIC, cb, app_key);
-    }
+    s1ap_E_RABReleaseItemBearerRelCompIEs = &message_p->msg.s1ap_E_RABReleaseItemBearerRelCompIEs;
+
+    cb("<S1ap-E-RABReleaseItemBearerRelCompIEs-PDU>\n", 44, app_key);
+    xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
+    xer_encode_local(&asn_DEF_S1ap_ProcedureCode, &message_p->procedureCode, cb, app_key, 1);
+    cb("    <S1ap-E-RABReleaseItemBearerRelCompIEs>\n", 44, app_key);
+    xer_encode_local(&asn_DEF_S1ap_E_RABReleaseItemBearerRelComp, &s1ap_E_RABReleaseItemBearerRelCompIEs->e_RABReleaseItemBearerRelComp, cb, app_key, 2);
+    cb("    </S1ap-E-RABReleaseItemBearerRelCompIEs>\n", 45, app_key);
+    cb("</S1ap-E-RABReleaseItemBearerRelCompIEs-PDU>\n", 45, app_key);
     _ASN_ENCODED_OK(er);
 }
 
@@ -181,10 +181,10 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabreleaseresponse(
     xer_encode_local(&asn_DEF_S1ap_ENB_UE_S1AP_ID, &s1ap_E_RABReleaseResponseIEs->eNB_UE_S1AP_ID, cb, app_key, 2);
     /* Optional field */
     if (s1ap_E_RABReleaseResponseIEs->presenceMask & S1AP_E_RABRELEASERESPONSEIES_E_RABRELEASELISTBEARERRELCOMP_PRESENT)
-        s1ap_xer_print_s1ap_e_rabreleaselistbearerrelcomp(cb, app_key, &s1ap_E_RABReleaseResponseIEs->e_RABReleaseListBearerRelComp);
+        xer_encode_local(&asn_DEF_S1ap_E_RABReleaseListBearerRelComp, &s1ap_E_RABReleaseResponseIEs->e_RABReleaseListBearerRelComp, cb, app_key, 2);
     /* Optional field */
     if (s1ap_E_RABReleaseResponseIEs->presenceMask & S1AP_E_RABRELEASERESPONSEIES_E_RABFAILEDTORELEASELIST_PRESENT)
-        s1ap_xer_print_s1ap_e_rablist(cb, app_key, &s1ap_E_RABReleaseResponseIEs->e_RABFailedToReleaseList);
+        xer_encode_local(&asn_DEF_S1ap_E_RABList, &s1ap_E_RABReleaseResponseIEs->e_RABFailedToReleaseList, cb, app_key, 2);
     /* Optional field */
     if (s1ap_E_RABReleaseResponseIEs->presenceMask & S1AP_E_RABRELEASERESPONSEIES_CRITICALITYDIAGNOSTICS_PRESENT)
         xer_encode_local(&asn_DEF_S1ap_CriticalityDiagnostics, &s1ap_E_RABReleaseResponseIEs->criticalityDiagnostics, cb, app_key, 2);
@@ -213,22 +213,16 @@ asn_enc_rval_t s1ap_xer_print_s1ap_uplinknonueassociatedlppatransport_(
     _ASN_ENCODED_OK(er);
 }
 
-asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobesetupitemhoreq(
+asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobesetuplisthoreq(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
-{
-    S1ap_E_RABToBeSetupItemHOReqIEs_t *s1ap_E_RABToBeSetupItemHOReqIEs;
-    asn_enc_rval_t er;
-    s1ap_E_RABToBeSetupItemHOReqIEs = &message_p->msg.s1ap_E_RABToBeSetupItemHOReqIEs;
+    S1ap_E_RABToBeSetupListHOReqIEs_t *s1ap_E_RABToBeSetupListHOReqIEs) {
 
-    cb("<S1ap-E-RABToBeSetupItemHOReqIEs-PDU>\n", 38, app_key);
-    xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
-    xer_encode_local(&asn_DEF_S1ap_ProcedureCode, &message_p->procedureCode, cb, app_key, 1);
-    cb("    <S1ap-E-RABToBeSetupItemHOReqIEs>\n", 38, app_key);
-    xer_encode_local(&asn_DEF_S1ap_E_RABToBeSetupItemHOReq, &s1ap_E_RABToBeSetupItemHOReqIEs->e_RABToBeSetupItemHOReq, cb, app_key, 2);
-    cb("    </S1ap-E-RABToBeSetupItemHOReqIEs>\n", 39, app_key);
-    cb("</S1ap-E-RABToBeSetupItemHOReqIEs-PDU>\n", 39, app_key);
+    int i;
+    asn_enc_rval_t er;
+    for (i = 0; i < s1ap_E_RABToBeSetupListHOReqIEs->s1ap_E_RABToBeSetupItemHOReq.count; i++) {
+        er = xer_encode(&asn_DEF_S1ap_E_RABToBeSetupItemHOReq, s1ap_E_RABToBeSetupListHOReqIEs->s1ap_E_RABToBeSetupItemHOReq.array[i], XER_F_BASIC, cb, app_key);
+    }
     _ASN_ENCODED_OK(er);
 }
 
@@ -324,16 +318,22 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handoverpreparationfailure(
     _ASN_ENCODED_OK(er);
 }
 
-asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobemodifiedlistbearermodreq(
+asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobemodifieditembearermodreq(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABToBeModifiedListBearerModReqIEs_t *s1ap_E_RABToBeModifiedListBearerModReqIEs) {
-
-    int i;
+    s1ap_message *message_p)
+{
+    S1ap_E_RABToBeModifiedItemBearerModReqIEs_t *s1ap_E_RABToBeModifiedItemBearerModReqIEs;
     asn_enc_rval_t er;
-    for (i = 0; i < s1ap_E_RABToBeModifiedListBearerModReqIEs->s1ap_E_RABToBeModifiedItemBearerModReq.count; i++) {
-        er = xer_encode(&asn_DEF_S1ap_E_RABToBeModifiedItemBearerModReq, s1ap_E_RABToBeModifiedListBearerModReqIEs->s1ap_E_RABToBeModifiedItemBearerModReq.array[i], XER_F_BASIC, cb, app_key);
-    }
+    s1ap_E_RABToBeModifiedItemBearerModReqIEs = &message_p->msg.s1ap_E_RABToBeModifiedItemBearerModReqIEs;
+
+    cb("<S1ap-E-RABToBeModifiedItemBearerModReqIEs-PDU>\n", 48, app_key);
+    xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
+    xer_encode_local(&asn_DEF_S1ap_ProcedureCode, &message_p->procedureCode, cb, app_key, 1);
+    cb("    <S1ap-E-RABToBeModifiedItemBearerModReqIEs>\n", 48, app_key);
+    xer_encode_local(&asn_DEF_S1ap_E_RABToBeModifiedItemBearerModReq, &s1ap_E_RABToBeModifiedItemBearerModReqIEs->e_RABToBeModifiedItemBearerModReq, cb, app_key, 2);
+    cb("    </S1ap-E-RABToBeModifiedItemBearerModReqIEs>\n", 49, app_key);
+    cb("</S1ap-E-RABToBeModifiedItemBearerModReqIEs-PDU>\n", 49, app_key);
     _ASN_ENCODED_OK(er);
 }
 
@@ -361,22 +361,16 @@ asn_enc_rval_t s1ap_xer_print_s1ap_uecontextreleaserequest_(
     _ASN_ENCODED_OK(er);
 }
 
-asn_enc_rval_t s1ap_xer_print_s1ap_e_rabadmitteditem(
+asn_enc_rval_t s1ap_xer_print_s1ap_e_rabadmittedlist(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
-{
-    S1ap_E_RABAdmittedItemIEs_t *s1ap_E_RABAdmittedItemIEs;
-    asn_enc_rval_t er;
-    s1ap_E_RABAdmittedItemIEs = &message_p->msg.s1ap_E_RABAdmittedItemIEs;
+    S1ap_E_RABAdmittedListIEs_t *s1ap_E_RABAdmittedListIEs) {
 
-    cb("<S1ap-E-RABAdmittedItemIEs-PDU>\n", 32, app_key);
-    xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
-    xer_encode_local(&asn_DEF_S1ap_ProcedureCode, &message_p->procedureCode, cb, app_key, 1);
-    cb("    <S1ap-E-RABAdmittedItemIEs>\n", 32, app_key);
-    xer_encode_local(&asn_DEF_S1ap_E_RABAdmittedItem, &s1ap_E_RABAdmittedItemIEs->e_RABAdmittedItem, cb, app_key, 2);
-    cb("    </S1ap-E-RABAdmittedItemIEs>\n", 33, app_key);
-    cb("</S1ap-E-RABAdmittedItemIEs-PDU>\n", 33, app_key);
+    int i;
+    asn_enc_rval_t er;
+    for (i = 0; i < s1ap_E_RABAdmittedListIEs->s1ap_E_RABAdmittedItem.count; i++) {
+        er = xer_encode(&asn_DEF_S1ap_E_RABAdmittedItem, s1ap_E_RABAdmittedListIEs->s1ap_E_RABAdmittedItem.array[i], XER_F_BASIC, cb, app_key);
+    }
     _ASN_ENCODED_OK(er);
 }
 
@@ -508,35 +502,35 @@ asn_enc_rval_t s1ap_xer_print_s1ap_uecapabilityinfoindication(
     _ASN_ENCODED_OK(er);
 }
 
-asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobesetuplistbearersureq(
-    asn_app_consume_bytes_f *cb,
-    void *app_key,
-    S1ap_E_RABToBeSetupListBearerSUReqIEs_t *s1ap_E_RABToBeSetupListBearerSUReqIEs) {
-
-    int i;
-    asn_enc_rval_t er;
-    for (i = 0; i < s1ap_E_RABToBeSetupListBearerSUReqIEs->s1ap_E_RABToBeSetupItemBearerSUReq.count; i++) {
-        er = xer_encode(&asn_DEF_S1ap_E_RABToBeSetupItemBearerSUReq, s1ap_E_RABToBeSetupListBearerSUReqIEs->s1ap_E_RABToBeSetupItemBearerSUReq.array[i], XER_F_BASIC, cb, app_key);
-    }
-    _ASN_ENCODED_OK(er);
-}
-
-asn_enc_rval_t s1ap_xer_print_s1ap_e_rabdataforwardingitem(
+asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobesetupitembearersureq(
     asn_app_consume_bytes_f *cb,
     void *app_key,
     s1ap_message *message_p)
 {
-    S1ap_E_RABDataForwardingItemIEs_t *s1ap_E_RABDataForwardingItemIEs;
+    S1ap_E_RABToBeSetupItemBearerSUReqIEs_t *s1ap_E_RABToBeSetupItemBearerSUReqIEs;
     asn_enc_rval_t er;
-    s1ap_E_RABDataForwardingItemIEs = &message_p->msg.s1ap_E_RABDataForwardingItemIEs;
+    s1ap_E_RABToBeSetupItemBearerSUReqIEs = &message_p->msg.s1ap_E_RABToBeSetupItemBearerSUReqIEs;
 
-    cb("<S1ap-E-RABDataForwardingItemIEs-PDU>\n", 38, app_key);
+    cb("<S1ap-E-RABToBeSetupItemBearerSUReqIEs-PDU>\n", 44, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
     xer_encode_local(&asn_DEF_S1ap_ProcedureCode, &message_p->procedureCode, cb, app_key, 1);
-    cb("    <S1ap-E-RABDataForwardingItemIEs>\n", 38, app_key);
-    xer_encode_local(&asn_DEF_S1ap_E_RABDataForwardingItem, &s1ap_E_RABDataForwardingItemIEs->e_RABDataForwardingItem, cb, app_key, 2);
-    cb("    </S1ap-E-RABDataForwardingItemIEs>\n", 39, app_key);
-    cb("</S1ap-E-RABDataForwardingItemIEs-PDU>\n", 39, app_key);
+    cb("    <S1ap-E-RABToBeSetupItemBearerSUReqIEs>\n", 44, app_key);
+    xer_encode_local(&asn_DEF_S1ap_E_RABToBeSetupItemBearerSUReq, &s1ap_E_RABToBeSetupItemBearerSUReqIEs->e_RABToBeSetupItemBearerSUReq, cb, app_key, 2);
+    cb("    </S1ap-E-RABToBeSetupItemBearerSUReqIEs>\n", 45, app_key);
+    cb("</S1ap-E-RABToBeSetupItemBearerSUReqIEs-PDU>\n", 45, app_key);
+    _ASN_ENCODED_OK(er);
+}
+
+asn_enc_rval_t s1ap_xer_print_s1ap_e_rabdataforwardinglist(
+    asn_app_consume_bytes_f *cb,
+    void *app_key,
+    S1ap_E_RABDataForwardingListIEs_t *s1ap_E_RABDataForwardingListIEs) {
+
+    int i;
+    asn_enc_rval_t er;
+    for (i = 0; i < s1ap_E_RABDataForwardingListIEs->s1ap_E_RABDataForwardingItem.count; i++) {
+        er = xer_encode(&asn_DEF_S1ap_E_RABDataForwardingItem, s1ap_E_RABDataForwardingListIEs->s1ap_E_RABDataForwardingItem.array[i], XER_F_BASIC, cb, app_key);
+    }
     _ASN_ENCODED_OK(er);
 }
 
@@ -577,7 +571,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_initialcontextsetuprequest(
     xer_encode_local(&asn_DEF_S1ap_MME_UE_S1AP_ID, &s1ap_InitialContextSetupRequestIEs->mme_ue_s1ap_id, cb, app_key, 2);
     xer_encode_local(&asn_DEF_S1ap_ENB_UE_S1AP_ID, &s1ap_InitialContextSetupRequestIEs->eNB_UE_S1AP_ID, cb, app_key, 2);
     xer_encode_local(&asn_DEF_S1ap_UEAggregateMaximumBitrate, &s1ap_InitialContextSetupRequestIEs->uEaggregateMaximumBitrate, cb, app_key, 2);
-    s1ap_xer_print_s1ap_e_rabtobesetuplistctxtsureq(cb, app_key, &s1ap_InitialContextSetupRequestIEs->e_RABToBeSetupListCtxtSUReq);
+    xer_encode_local(&asn_DEF_S1ap_E_RABToBeSetupListCtxtSUReq, &s1ap_InitialContextSetupRequestIEs->e_RABToBeSetupListCtxtSUReq, cb, app_key, 2);
     xer_encode_local(&asn_DEF_S1ap_UESecurityCapabilities, &s1ap_InitialContextSetupRequestIEs->ueSecurityCapabilities, cb, app_key, 2);
     xer_encode_local(&asn_DEF_S1ap_SecurityKey, &s1ap_InitialContextSetupRequestIEs->securityKey, cb, app_key, 2);
     /* Optional field */
@@ -804,7 +798,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handoverrequest(
     xer_encode_local(&asn_DEF_S1ap_HandoverType, &s1ap_HandoverRequestIEs->handoverType, cb, app_key, 2);
     xer_encode_local(&asn_DEF_S1ap_Cause, &s1ap_HandoverRequestIEs->cause, cb, app_key, 2);
     xer_encode_local(&asn_DEF_S1ap_UEAggregateMaximumBitrate, &s1ap_HandoverRequestIEs->uEaggregateMaximumBitrate, cb, app_key, 2);
-    xer_encode_local(&asn_DEF_S1ap_E_RABToBeSetupListHOReq, &s1ap_HandoverRequestIEs->e_RABToBeSetupListHOReq, cb, app_key, 2);
+    s1ap_xer_print_s1ap_e_rabtobesetuplisthoreq(cb, app_key, &s1ap_HandoverRequestIEs->e_RABToBeSetupListHOReq);
     xer_encode_local(&asn_DEF_S1ap_Source_ToTarget_TransparentContainer, &s1ap_HandoverRequestIEs->source_ToTarget_TransparentContainer, cb, app_key, 2);
     xer_encode_local(&asn_DEF_S1ap_UESecurityCapabilities, &s1ap_HandoverRequestIEs->ueSecurityCapabilities, cb, app_key, 2);
     /* Optional field */
@@ -888,22 +882,16 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handoverrequired(
     _ASN_ENCODED_OK(er);
 }
 
-asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobeswitcheddlitem(
+asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobeswitcheddllist(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
-{
-    S1ap_E_RABToBeSwitchedDLItemIEs_t *s1ap_E_RABToBeSwitchedDLItemIEs;
-    asn_enc_rval_t er;
-    s1ap_E_RABToBeSwitchedDLItemIEs = &message_p->msg.s1ap_E_RABToBeSwitchedDLItemIEs;
+    S1ap_E_RABToBeSwitchedDLListIEs_t *s1ap_E_RABToBeSwitchedDLListIEs) {
 
-    cb("<S1ap-E-RABToBeSwitchedDLItemIEs-PDU>\n", 38, app_key);
-    xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
-    xer_encode_local(&asn_DEF_S1ap_ProcedureCode, &message_p->procedureCode, cb, app_key, 1);
-    cb("    <S1ap-E-RABToBeSwitchedDLItemIEs>\n", 38, app_key);
-    xer_encode_local(&asn_DEF_S1ap_E_RABToBeSwitchedDLItem, &s1ap_E_RABToBeSwitchedDLItemIEs->e_RABToBeSwitchedDLItem, cb, app_key, 2);
-    cb("    </S1ap-E-RABToBeSwitchedDLItemIEs>\n", 39, app_key);
-    cb("</S1ap-E-RABToBeSwitchedDLItemIEs-PDU>\n", 39, app_key);
+    int i;
+    asn_enc_rval_t er;
+    for (i = 0; i < s1ap_E_RABToBeSwitchedDLListIEs->s1ap_E_RABToBeSwitchedDLItem.count; i++) {
+        er = xer_encode(&asn_DEF_S1ap_E_RABToBeSwitchedDLItem, s1ap_E_RABToBeSwitchedDLListIEs->s1ap_E_RABToBeSwitchedDLItem.array[i], XER_F_BASIC, cb, app_key);
+    }
     _ASN_ENCODED_OK(er);
 }
 
@@ -1020,41 +1008,41 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabmodifyrequest(
     /* Optional field */
     if (s1ap_E_RABModifyRequestIEs->presenceMask & S1AP_E_RABMODIFYREQUESTIES_UEAGGREGATEMAXIMUMBITRATE_PRESENT)
         xer_encode_local(&asn_DEF_S1ap_UEAggregateMaximumBitrate, &s1ap_E_RABModifyRequestIEs->uEaggregateMaximumBitrate, cb, app_key, 2);
-    s1ap_xer_print_s1ap_e_rabtobemodifiedlistbearermodreq(cb, app_key, &s1ap_E_RABModifyRequestIEs->e_RABToBeModifiedListBearerModReq);
+    xer_encode_local(&asn_DEF_S1ap_E_RABToBeModifiedListBearerModReq, &s1ap_E_RABModifyRequestIEs->e_RABToBeModifiedListBearerModReq, cb, app_key, 2);
     cb("    </S1ap-E-RABModifyRequestIEs>\n", 34, app_key);
     cb("</S1ap-E-RABModifyRequestIEs-PDU>\n", 34, app_key);
     _ASN_ENCODED_OK(er);
 }
 
-asn_enc_rval_t s1ap_xer_print_s1ap_e_rabsetuplistctxtsures(
-    asn_app_consume_bytes_f *cb,
-    void *app_key,
-    S1ap_E_RABSetupListCtxtSUResIEs_t *s1ap_E_RABSetupListCtxtSUResIEs) {
-
-    int i;
-    asn_enc_rval_t er;
-    for (i = 0; i < s1ap_E_RABSetupListCtxtSUResIEs->s1ap_E_RABSetupItemCtxtSURes.count; i++) {
-        er = xer_encode(&asn_DEF_S1ap_E_RABSetupItemCtxtSURes, s1ap_E_RABSetupListCtxtSUResIEs->s1ap_E_RABSetupItemCtxtSURes.array[i], XER_F_BASIC, cb, app_key);
-    }
-    _ASN_ENCODED_OK(er);
-}
-
-asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobeswitchedulitem(
+asn_enc_rval_t s1ap_xer_print_s1ap_e_rabsetupitemctxtsures(
     asn_app_consume_bytes_f *cb,
     void *app_key,
     s1ap_message *message_p)
 {
-    S1ap_E_RABToBeSwitchedULItemIEs_t *s1ap_E_RABToBeSwitchedULItemIEs;
+    S1ap_E_RABSetupItemCtxtSUResIEs_t *s1ap_E_RABSetupItemCtxtSUResIEs;
     asn_enc_rval_t er;
-    s1ap_E_RABToBeSwitchedULItemIEs = &message_p->msg.s1ap_E_RABToBeSwitchedULItemIEs;
+    s1ap_E_RABSetupItemCtxtSUResIEs = &message_p->msg.s1ap_E_RABSetupItemCtxtSUResIEs;
 
-    cb("<S1ap-E-RABToBeSwitchedULItemIEs-PDU>\n", 38, app_key);
+    cb("<S1ap-E-RABSetupItemCtxtSUResIEs-PDU>\n", 38, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
     xer_encode_local(&asn_DEF_S1ap_ProcedureCode, &message_p->procedureCode, cb, app_key, 1);
-    cb("    <S1ap-E-RABToBeSwitchedULItemIEs>\n", 38, app_key);
-    xer_encode_local(&asn_DEF_S1ap_E_RABToBeSwitchedULItem, &s1ap_E_RABToBeSwitchedULItemIEs->e_RABToBeSwitchedULItem, cb, app_key, 2);
-    cb("    </S1ap-E-RABToBeSwitchedULItemIEs>\n", 39, app_key);
-    cb("</S1ap-E-RABToBeSwitchedULItemIEs-PDU>\n", 39, app_key);
+    cb("    <S1ap-E-RABSetupItemCtxtSUResIEs>\n", 38, app_key);
+    xer_encode_local(&asn_DEF_S1ap_E_RABSetupItemCtxtSURes, &s1ap_E_RABSetupItemCtxtSUResIEs->e_RABSetupItemCtxtSURes, cb, app_key, 2);
+    cb("    </S1ap-E-RABSetupItemCtxtSUResIEs>\n", 39, app_key);
+    cb("</S1ap-E-RABSetupItemCtxtSUResIEs-PDU>\n", 39, app_key);
+    _ASN_ENCODED_OK(er);
+}
+
+asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobeswitchedullist(
+    asn_app_consume_bytes_f *cb,
+    void *app_key,
+    S1ap_E_RABToBeSwitchedULListIEs_t *s1ap_E_RABToBeSwitchedULListIEs) {
+
+    int i;
+    asn_enc_rval_t er;
+    for (i = 0; i < s1ap_E_RABToBeSwitchedULListIEs->s1ap_E_RABToBeSwitchedULItem.count; i++) {
+        er = xer_encode(&asn_DEF_S1ap_E_RABToBeSwitchedULItem, s1ap_E_RABToBeSwitchedULListIEs->s1ap_E_RABToBeSwitchedULItem.array[i], XER_F_BASIC, cb, app_key);
+    }
     _ASN_ENCODED_OK(er);
 }
 
@@ -1103,29 +1091,41 @@ asn_enc_rval_t s1ap_xer_print_s1ap_reset(
     _ASN_ENCODED_OK(er);
 }
 
-asn_enc_rval_t s1ap_xer_print_s1ap_bearers_subjecttostatustransfer_list(
+asn_enc_rval_t s1ap_xer_print_s1ap_bearers_subjecttostatustransfer_item(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_Bearers_SubjectToStatusTransfer_ListIEs_t *s1ap_Bearers_SubjectToStatusTransfer_ListIEs) {
-
-    int i;
+    s1ap_message *message_p)
+{
+    S1ap_Bearers_SubjectToStatusTransfer_ItemIEs_t *s1ap_Bearers_SubjectToStatusTransfer_ItemIEs;
     asn_enc_rval_t er;
-    for (i = 0; i < s1ap_Bearers_SubjectToStatusTransfer_ListIEs->s1ap_Bearers_SubjectToStatusTransfer_Item.count; i++) {
-        er = xer_encode(&asn_DEF_S1ap_Bearers_SubjectToStatusTransfer_Item, s1ap_Bearers_SubjectToStatusTransfer_ListIEs->s1ap_Bearers_SubjectToStatusTransfer_Item.array[i], XER_F_BASIC, cb, app_key);
-    }
+    s1ap_Bearers_SubjectToStatusTransfer_ItemIEs = &message_p->msg.s1ap_Bearers_SubjectToStatusTransfer_ItemIEs;
+
+    cb("<S1ap-Bearers-SubjectToStatusTransfer-ItemIEs-PDU>\n", 51, app_key);
+    xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
+    xer_encode_local(&asn_DEF_S1ap_ProcedureCode, &message_p->procedureCode, cb, app_key, 1);
+    cb("    <S1ap-Bearers-SubjectToStatusTransfer-ItemIEs>\n", 51, app_key);
+    xer_encode_local(&asn_DEF_S1ap_Bearers_SubjectToStatusTransfer_Item, &s1ap_Bearers_SubjectToStatusTransfer_ItemIEs->bearers_SubjectToStatusTransfer_Item, cb, app_key, 2);
+    cb("    </S1ap-Bearers-SubjectToStatusTransfer-ItemIEs>\n", 52, app_key);
+    cb("</S1ap-Bearers-SubjectToStatusTransfer-ItemIEs-PDU>\n", 52, app_key);
     _ASN_ENCODED_OK(er);
 }
 
-asn_enc_rval_t s1ap_xer_print_s1ap_e_rablist(
+asn_enc_rval_t s1ap_xer_print_s1ap_e_rabitem(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABListIEs_t *s1ap_E_RABListIEs) {
-
-    int i;
+    s1ap_message *message_p)
+{
+    S1ap_E_RABItemIEs_t *s1ap_E_RABItemIEs;
     asn_enc_rval_t er;
-    for (i = 0; i < s1ap_E_RABListIEs->s1ap_E_RABItem.count; i++) {
-        er = xer_encode(&asn_DEF_S1ap_E_RABItem, s1ap_E_RABListIEs->s1ap_E_RABItem.array[i], XER_F_BASIC, cb, app_key);
-    }
+    s1ap_E_RABItemIEs = &message_p->msg.s1ap_E_RABItemIEs;
+
+    cb("<S1ap-E-RABItemIEs-PDU>\n", 24, app_key);
+    xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
+    xer_encode_local(&asn_DEF_S1ap_ProcedureCode, &message_p->procedureCode, cb, app_key, 1);
+    cb("    <S1ap-E-RABItemIEs>\n", 24, app_key);
+    xer_encode_local(&asn_DEF_S1ap_E_RABItem, &s1ap_E_RABItemIEs->e_RABItem, cb, app_key, 2);
+    cb("    </S1ap-E-RABItemIEs>\n", 25, app_key);
+    cb("</S1ap-E-RABItemIEs-PDU>\n", 25, app_key);
     _ASN_ENCODED_OK(er);
 }
 
@@ -1177,7 +1177,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_paging(
     if (s1ap_PagingIEs->presenceMask & S1AP_PAGINGIES_PAGINGDRX_PRESENT)
         xer_encode_local(&asn_DEF_S1ap_PagingDRX, &s1ap_PagingIEs->pagingDRX, cb, app_key, 2);
     xer_encode_local(&asn_DEF_S1ap_CNDomain, &s1ap_PagingIEs->cnDomain, cb, app_key, 2);
-    s1ap_xer_print_s1ap_tailist(cb, app_key, &s1ap_PagingIEs->taiList);
+    xer_encode_local(&asn_DEF_S1ap_TAIList, &s1ap_PagingIEs->taiList, cb, app_key, 2);
     /* Optional field */
     if (s1ap_PagingIEs->presenceMask & S1AP_PAGINGIES_CSG_IDLIST_PRESENT)
         xer_encode_local(&asn_DEF_S1ap_CSG_IdList, &s1ap_PagingIEs->csG_IdList, cb, app_key, 2);
@@ -1228,7 +1228,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabreleasecommand(
     /* Optional field */
     if (s1ap_E_RABReleaseCommandIEs->presenceMask & S1AP_E_RABRELEASECOMMANDIES_UEAGGREGATEMAXIMUMBITRATE_PRESENT)
         xer_encode_local(&asn_DEF_S1ap_UEAggregateMaximumBitrate, &s1ap_E_RABReleaseCommandIEs->uEaggregateMaximumBitrate, cb, app_key, 2);
-    s1ap_xer_print_s1ap_e_rablist(cb, app_key, &s1ap_E_RABReleaseCommandIEs->e_RABToBeReleasedList);
+    xer_encode_local(&asn_DEF_S1ap_E_RABList, &s1ap_E_RABReleaseCommandIEs->e_RABToBeReleasedList, cb, app_key, 2);
     /* Optional field */
     if (s1ap_E_RABReleaseCommandIEs->presenceMask & S1AP_E_RABRELEASECOMMANDIES_NAS_PDU_PRESENT)
         xer_encode_local(&asn_DEF_S1ap_NAS_PDU, &s1ap_E_RABReleaseCommandIEs->nas_pdu, cb, app_key, 2);
@@ -1278,10 +1278,10 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabmodifyresponse(
     xer_encode_local(&asn_DEF_S1ap_ENB_UE_S1AP_ID, &s1ap_E_RABModifyResponseIEs->eNB_UE_S1AP_ID, cb, app_key, 2);
     /* Optional field */
     if (s1ap_E_RABModifyResponseIEs->presenceMask & S1AP_E_RABMODIFYRESPONSEIES_E_RABMODIFYLISTBEARERMODRES_PRESENT)
-        s1ap_xer_print_s1ap_e_rabmodifylistbearermodres(cb, app_key, &s1ap_E_RABModifyResponseIEs->e_RABModifyListBearerModRes);
+        xer_encode_local(&asn_DEF_S1ap_E_RABModifyListBearerModRes, &s1ap_E_RABModifyResponseIEs->e_RABModifyListBearerModRes, cb, app_key, 2);
     /* Optional field */
     if (s1ap_E_RABModifyResponseIEs->presenceMask & S1AP_E_RABMODIFYRESPONSEIES_E_RABFAILEDTOMODIFYLIST_PRESENT)
-        s1ap_xer_print_s1ap_e_rablist(cb, app_key, &s1ap_E_RABModifyResponseIEs->e_RABFailedToModifyList);
+        xer_encode_local(&asn_DEF_S1ap_E_RABList, &s1ap_E_RABModifyResponseIEs->e_RABFailedToModifyList, cb, app_key, 2);
     /* Optional field */
     if (s1ap_E_RABModifyResponseIEs->presenceMask & S1AP_E_RABMODIFYRESPONSEIES_CRITICALITYDIAGNOSTICS_PRESENT)
         xer_encode_local(&asn_DEF_S1ap_CriticalityDiagnostics, &s1ap_E_RABModifyResponseIEs->criticalityDiagnostics, cb, app_key, 2);
@@ -1377,10 +1377,10 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handovercommand(
     xer_encode_local(&asn_DEF_S1ap_HandoverType, &s1ap_HandoverCommandIEs->handoverType, cb, app_key, 2);
     /* Optional field */
     if (s1ap_HandoverCommandIEs->presenceMask & S1AP_HANDOVERCOMMANDIES_E_RABSUBJECTTODATAFORWARDINGLIST_PRESENT)
-        xer_encode_local(&asn_DEF_S1ap_E_RABSubjecttoDataForwardingList, &s1ap_HandoverCommandIEs->e_RABSubjecttoDataForwardingList, cb, app_key, 2);
+        s1ap_xer_print_s1ap_e_rabsubjecttodataforwardinglist(cb, app_key, &s1ap_HandoverCommandIEs->e_RABSubjecttoDataForwardingList);
     /* Optional field */
     if (s1ap_HandoverCommandIEs->presenceMask & S1AP_HANDOVERCOMMANDIES_E_RABTORELEASELISTHOCMD_PRESENT)
-        s1ap_xer_print_s1ap_e_rablist(cb, app_key, &s1ap_HandoverCommandIEs->e_RABtoReleaseListHOCmd);
+        xer_encode_local(&asn_DEF_S1ap_E_RABList, &s1ap_HandoverCommandIEs->e_RABtoReleaseListHOCmd, cb, app_key, 2);
     xer_encode_local(&asn_DEF_S1ap_Target_ToSource_TransparentContainer, &s1ap_HandoverCommandIEs->target_ToSource_TransparentContainer, cb, app_key, 2);
     /* Optional field */
     if (s1ap_HandoverCommandIEs->presenceMask & S1AP_HANDOVERCOMMANDIES_TARGET_TOSOURCE_TRANSPARENTCONTAINER_SECONDARY_PRESENT)
@@ -1442,16 +1442,22 @@ asn_enc_rval_t s1ap_xer_print_s1ap_errorindication(
     _ASN_ENCODED_OK(er);
 }
 
-asn_enc_rval_t s1ap_xer_print_s1ap_tailist(
+asn_enc_rval_t s1ap_xer_print_s1ap_taiitem(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_TAIListIEs_t *s1ap_TAIListIEs) {
-
-    int i;
+    s1ap_message *message_p)
+{
+    S1ap_TAIItemIEs_t *s1ap_TAIItemIEs;
     asn_enc_rval_t er;
-    for (i = 0; i < s1ap_TAIListIEs->s1ap_TAIItem.count; i++) {
-        er = xer_encode(&asn_DEF_S1ap_TAIItem, s1ap_TAIListIEs->s1ap_TAIItem.array[i], XER_F_BASIC, cb, app_key);
-    }
+    s1ap_TAIItemIEs = &message_p->msg.s1ap_TAIItemIEs;
+
+    cb("<S1ap-TAIItemIEs-PDU>\n", 22, app_key);
+    xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
+    xer_encode_local(&asn_DEF_S1ap_ProcedureCode, &message_p->procedureCode, cb, app_key, 1);
+    cb("    <S1ap-TAIItemIEs>\n", 22, app_key);
+    xer_encode_local(&asn_DEF_S1ap_TAIItem, &s1ap_TAIItemIEs->taiItem, cb, app_key, 2);
+    cb("    </S1ap-TAIItemIEs>\n", 23, app_key);
+    cb("</S1ap-TAIItemIEs-PDU>\n", 23, app_key);
     _ASN_ENCODED_OK(er);
 }
 
@@ -1515,10 +1521,10 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handoverrequestacknowledge(
     cb("    <S1ap-HandoverRequestAcknowledgeIEs>\n", 41, app_key);
     xer_encode_local(&asn_DEF_S1ap_MME_UE_S1AP_ID, &s1ap_HandoverRequestAcknowledgeIEs->mme_ue_s1ap_id, cb, app_key, 2);
     xer_encode_local(&asn_DEF_S1ap_ENB_UE_S1AP_ID, &s1ap_HandoverRequestAcknowledgeIEs->eNB_UE_S1AP_ID, cb, app_key, 2);
-    xer_encode_local(&asn_DEF_S1ap_E_RABAdmittedList, &s1ap_HandoverRequestAcknowledgeIEs->e_RABAdmittedList, cb, app_key, 2);
+    s1ap_xer_print_s1ap_e_rabadmittedlist(cb, app_key, &s1ap_HandoverRequestAcknowledgeIEs->e_RABAdmittedList);
     /* Optional field */
     if (s1ap_HandoverRequestAcknowledgeIEs->presenceMask & S1AP_HANDOVERREQUESTACKNOWLEDGEIES_E_RABFAILEDTOSETUPLISTHOREQACK_PRESENT)
-        xer_encode_local(&asn_DEF_S1ap_E_RABFailedtoSetupListHOReqAck, &s1ap_HandoverRequestAcknowledgeIEs->e_RABFailedToSetupListHOReqAck, cb, app_key, 2);
+        s1ap_xer_print_s1ap_e_rabfailedtosetuplisthoreqack(cb, app_key, &s1ap_HandoverRequestAcknowledgeIEs->e_RABFailedToSetupListHOReqAck);
     xer_encode_local(&asn_DEF_S1ap_Target_ToSource_TransparentContainer, &s1ap_HandoverRequestAcknowledgeIEs->target_ToSource_TransparentContainer, cb, app_key, 2);
     /* Optional field */
     if (s1ap_HandoverRequestAcknowledgeIEs->presenceMask & S1AP_HANDOVERREQUESTACKNOWLEDGEIES_CSG_ID_PRESENT)
@@ -1618,10 +1624,10 @@ asn_enc_rval_t s1ap_xer_print_s1ap_pathswitchrequestacknowledge(
         xer_encode_local(&asn_DEF_S1ap_UEAggregateMaximumBitrate, &s1ap_PathSwitchRequestAcknowledgeIEs->uEaggregateMaximumBitrate, cb, app_key, 2);
     /* Optional field */
     if (s1ap_PathSwitchRequestAcknowledgeIEs->presenceMask & S1AP_PATHSWITCHREQUESTACKNOWLEDGEIES_E_RABTOBESWITCHEDULLIST_PRESENT)
-        xer_encode_local(&asn_DEF_S1ap_E_RABToBeSwitchedULList, &s1ap_PathSwitchRequestAcknowledgeIEs->e_RABToBeSwitchedULList, cb, app_key, 2);
+        s1ap_xer_print_s1ap_e_rabtobeswitchedullist(cb, app_key, &s1ap_PathSwitchRequestAcknowledgeIEs->e_RABToBeSwitchedULList);
     /* Optional field */
     if (s1ap_PathSwitchRequestAcknowledgeIEs->presenceMask & S1AP_PATHSWITCHREQUESTACKNOWLEDGEIES_E_RABTOBERELEASEDLIST_PRESENT)
-        s1ap_xer_print_s1ap_e_rablist(cb, app_key, &s1ap_PathSwitchRequestAcknowledgeIEs->e_RABToBeReleasedList);
+        xer_encode_local(&asn_DEF_S1ap_E_RABList, &s1ap_PathSwitchRequestAcknowledgeIEs->e_RABToBeReleasedList, cb, app_key, 2);
     xer_encode_local(&asn_DEF_S1ap_SecurityContext, &s1ap_PathSwitchRequestAcknowledgeIEs->securityContext, cb, app_key, 2);
     /* Optional field */
     if (s1ap_PathSwitchRequestAcknowledgeIEs->presenceMask & S1AP_PATHSWITCHREQUESTACKNOWLEDGEIES_CRITICALITYDIAGNOSTICS_PRESENT)
@@ -1634,16 +1640,22 @@ asn_enc_rval_t s1ap_xer_print_s1ap_pathswitchrequestacknowledge(
     _ASN_ENCODED_OK(er);
 }
 
-asn_enc_rval_t s1ap_xer_print_s1ap_ue_associatedlogicals1_connectionlistres(
+asn_enc_rval_t s1ap_xer_print_s1ap_ue_associatedlogicals1_connectionitemres(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_UE_associatedLogicalS1_ConnectionListResIEs_t *s1ap_UE_associatedLogicalS1_ConnectionListRes) {
-
-    int i;
+    s1ap_message *message_p)
+{
+    S1ap_UE_associatedLogicalS1_ConnectionItemRes_t *s1ap_UE_associatedLogicalS1_ConnectionItemRes;
     asn_enc_rval_t er;
-    for (i = 0; i < s1ap_UE_associatedLogicalS1_ConnectionListRes->s1ap_UE_associatedLogicalS1_ConnectionItemRes.count; i++) {
-        er = xer_encode(&asn_DEF_S1ap_UE_associatedLogicalS1_ConnectionItem, s1ap_UE_associatedLogicalS1_ConnectionListRes->s1ap_UE_associatedLogicalS1_ConnectionItemRes.array[i], XER_F_BASIC, cb, app_key);
-    }
+    s1ap_UE_associatedLogicalS1_ConnectionItemRes = &message_p->msg.s1ap_UE_associatedLogicalS1_ConnectionItemRes;
+
+    cb("<S1ap-UE-associatedLogicalS1-ConnectionItemRes-PDU>\n", 52, app_key);
+    xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
+    xer_encode_local(&asn_DEF_S1ap_ProcedureCode, &message_p->procedureCode, cb, app_key, 1);
+    cb("    <S1ap-UE-associatedLogicalS1-ConnectionItemRes>\n", 52, app_key);
+    xer_encode_local(&asn_DEF_S1ap_UE_associatedLogicalS1_ConnectionItem, &s1ap_UE_associatedLogicalS1_ConnectionItemRes->uE_associatedLogicalS1_ConnectionItem, cb, app_key, 2);
+    cb("    </S1ap-UE-associatedLogicalS1-ConnectionItemRes>\n", 53, app_key);
+    cb("</S1ap-UE-associatedLogicalS1-ConnectionItemRes-PDU>\n", 53, app_key);
     _ASN_ENCODED_OK(er);
 }
 
@@ -1712,10 +1724,10 @@ asn_enc_rval_t s1ap_xer_print_s1ap_initialcontextsetupresponse(
     cb("    <S1ap-InitialContextSetupResponseIEs>\n", 42, app_key);
     xer_encode_local(&asn_DEF_S1ap_MME_UE_S1AP_ID, &s1ap_InitialContextSetupResponseIEs->mme_ue_s1ap_id, cb, app_key, 2);
     xer_encode_local(&asn_DEF_S1ap_ENB_UE_S1AP_ID, &s1ap_InitialContextSetupResponseIEs->eNB_UE_S1AP_ID, cb, app_key, 2);
-    s1ap_xer_print_s1ap_e_rabsetuplistctxtsures(cb, app_key, &s1ap_InitialContextSetupResponseIEs->e_RABSetupListCtxtSURes);
+    xer_encode_local(&asn_DEF_S1ap_E_RABSetupListCtxtSURes, &s1ap_InitialContextSetupResponseIEs->e_RABSetupListCtxtSURes, cb, app_key, 2);
     /* Optional field */
     if (s1ap_InitialContextSetupResponseIEs->presenceMask & S1AP_INITIALCONTEXTSETUPRESPONSEIES_E_RABFAILEDTOSETUPLISTCTXTSURES_PRESENT)
-        s1ap_xer_print_s1ap_e_rablist(cb, app_key, &s1ap_InitialContextSetupResponseIEs->e_RABFailedToSetupListCtxtSURes);
+        xer_encode_local(&asn_DEF_S1ap_E_RABList, &s1ap_InitialContextSetupResponseIEs->e_RABFailedToSetupListCtxtSURes, cb, app_key, 2);
     /* Optional field */
     if (s1ap_InitialContextSetupResponseIEs->presenceMask & S1AP_INITIALCONTEXTSETUPRESPONSEIES_CRITICALITYDIAGNOSTICS_PRESENT)
         xer_encode_local(&asn_DEF_S1ap_CriticalityDiagnostics, &s1ap_InitialContextSetupResponseIEs->criticalityDiagnostics, cb, app_key, 2);
@@ -1741,7 +1753,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_downlinks1cdma2000tunneling(
     xer_encode_local(&asn_DEF_S1ap_ENB_UE_S1AP_ID, &s1ap_DownlinkS1cdma2000tunnelingIEs->eNB_UE_S1AP_ID, cb, app_key, 2);
     /* Optional field */
     if (s1ap_DownlinkS1cdma2000tunnelingIEs->presenceMask & S1AP_DOWNLINKS1CDMA2000TUNNELINGIES_E_RABSUBJECTTODATAFORWARDINGLIST_PRESENT)
-        xer_encode_local(&asn_DEF_S1ap_E_RABSubjecttoDataForwardingList, &s1ap_DownlinkS1cdma2000tunnelingIEs->e_RABSubjecttoDataForwardingList, cb, app_key, 2);
+        s1ap_xer_print_s1ap_e_rabsubjecttodataforwardinglist(cb, app_key, &s1ap_DownlinkS1cdma2000tunnelingIEs->e_RABSubjecttoDataForwardingList);
     /* Optional field */
     if (s1ap_DownlinkS1cdma2000tunnelingIEs->presenceMask & S1AP_DOWNLINKS1CDMA2000TUNNELINGIES_CDMA2000HOSTATUS_PRESENT)
         xer_encode_local(&asn_DEF_S1ap_Cdma2000HOStatus, &s1ap_DownlinkS1cdma2000tunnelingIEs->cdma2000HOStatus, cb, app_key, 2);
@@ -1773,42 +1785,60 @@ asn_enc_rval_t s1ap_xer_print_s1ap_overloadstop(
     _ASN_ENCODED_OK(er);
 }
 
-asn_enc_rval_t s1ap_xer_print_s1ap_e_rabsetuplistbearersures(
+asn_enc_rval_t s1ap_xer_print_s1ap_e_rabsetupitembearersures(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABSetupListBearerSUResIEs_t *s1ap_E_RABSetupListBearerSUResIEs) {
-
-    int i;
+    s1ap_message *message_p)
+{
+    S1ap_E_RABSetupItemBearerSUResIEs_t *s1ap_E_RABSetupItemBearerSUResIEs;
     asn_enc_rval_t er;
-    for (i = 0; i < s1ap_E_RABSetupListBearerSUResIEs->s1ap_E_RABSetupItemBearerSURes.count; i++) {
-        er = xer_encode(&asn_DEF_S1ap_E_RABSetupItemBearerSURes, s1ap_E_RABSetupListBearerSUResIEs->s1ap_E_RABSetupItemBearerSURes.array[i], XER_F_BASIC, cb, app_key);
-    }
+    s1ap_E_RABSetupItemBearerSUResIEs = &message_p->msg.s1ap_E_RABSetupItemBearerSUResIEs;
+
+    cb("<S1ap-E-RABSetupItemBearerSUResIEs-PDU>\n", 40, app_key);
+    xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
+    xer_encode_local(&asn_DEF_S1ap_ProcedureCode, &message_p->procedureCode, cb, app_key, 1);
+    cb("    <S1ap-E-RABSetupItemBearerSUResIEs>\n", 40, app_key);
+    xer_encode_local(&asn_DEF_S1ap_E_RABSetupItemBearerSURes, &s1ap_E_RABSetupItemBearerSUResIEs->e_RABSetupItemBearerSURes, cb, app_key, 2);
+    cb("    </S1ap-E-RABSetupItemBearerSUResIEs>\n", 41, app_key);
+    cb("</S1ap-E-RABSetupItemBearerSUResIEs-PDU>\n", 41, app_key);
     _ASN_ENCODED_OK(er);
 }
 
-asn_enc_rval_t s1ap_xer_print_s1ap_e_rabmodifylistbearermodres(
+asn_enc_rval_t s1ap_xer_print_s1ap_e_rabmodifyitembearermodres(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABModifyListBearerModResIEs_t *s1ap_E_RABModifyListBearerModResIEs) {
-
-    int i;
+    s1ap_message *message_p)
+{
+    S1ap_E_RABModifyItemBearerModResIEs_t *s1ap_E_RABModifyItemBearerModResIEs;
     asn_enc_rval_t er;
-    for (i = 0; i < s1ap_E_RABModifyListBearerModResIEs->s1ap_E_RABModifyItemBearerModRes.count; i++) {
-        er = xer_encode(&asn_DEF_S1ap_E_RABModifyItemBearerModRes, s1ap_E_RABModifyListBearerModResIEs->s1ap_E_RABModifyItemBearerModRes.array[i], XER_F_BASIC, cb, app_key);
-    }
+    s1ap_E_RABModifyItemBearerModResIEs = &message_p->msg.s1ap_E_RABModifyItemBearerModResIEs;
+
+    cb("<S1ap-E-RABModifyItemBearerModResIEs-PDU>\n", 42, app_key);
+    xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
+    xer_encode_local(&asn_DEF_S1ap_ProcedureCode, &message_p->procedureCode, cb, app_key, 1);
+    cb("    <S1ap-E-RABModifyItemBearerModResIEs>\n", 42, app_key);
+    xer_encode_local(&asn_DEF_S1ap_E_RABModifyItemBearerModRes, &s1ap_E_RABModifyItemBearerModResIEs->e_RABModifyItemBearerModRes, cb, app_key, 2);
+    cb("    </S1ap-E-RABModifyItemBearerModResIEs>\n", 43, app_key);
+    cb("</S1ap-E-RABModifyItemBearerModResIEs-PDU>\n", 43, app_key);
     _ASN_ENCODED_OK(er);
 }
 
-asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobesetuplistctxtsureq(
+asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobesetupitemctxtsureq(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABToBeSetupListCtxtSUReqIEs_t *s1ap_E_RABToBeSetupListCtxtSUReqIEs) {
-
-    int i;
+    s1ap_message *message_p)
+{
+    S1ap_E_RABToBeSetupItemCtxtSUReqIEs_t *s1ap_E_RABToBeSetupItemCtxtSUReqIEs;
     asn_enc_rval_t er;
-    for (i = 0; i < s1ap_E_RABToBeSetupListCtxtSUReqIEs->s1ap_E_RABToBeSetupItemCtxtSUReq.count; i++) {
-        er = xer_encode(&asn_DEF_S1ap_E_RABToBeSetupItemCtxtSUReq, s1ap_E_RABToBeSetupListCtxtSUReqIEs->s1ap_E_RABToBeSetupItemCtxtSUReq.array[i], XER_F_BASIC, cb, app_key);
-    }
+    s1ap_E_RABToBeSetupItemCtxtSUReqIEs = &message_p->msg.s1ap_E_RABToBeSetupItemCtxtSUReqIEs;
+
+    cb("<S1ap-E-RABToBeSetupItemCtxtSUReqIEs-PDU>\n", 42, app_key);
+    xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
+    xer_encode_local(&asn_DEF_S1ap_ProcedureCode, &message_p->procedureCode, cb, app_key, 1);
+    cb("    <S1ap-E-RABToBeSetupItemCtxtSUReqIEs>\n", 42, app_key);
+    xer_encode_local(&asn_DEF_S1ap_E_RABToBeSetupItemCtxtSUReq, &s1ap_E_RABToBeSetupItemCtxtSUReqIEs->e_RABToBeSetupItemCtxtSUReq, cb, app_key, 2);
+    cb("    </S1ap-E-RABToBeSetupItemCtxtSUReqIEs>\n", 43, app_key);
+    cb("</S1ap-E-RABToBeSetupItemCtxtSUReqIEs-PDU>\n", 43, app_key);
     _ASN_ENCODED_OK(er);
 }
 
@@ -1867,13 +1897,19 @@ asn_enc_rval_t s1ap_xer_print_s1ap_tracefailureindication(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabinformationlist(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABInformationListIEs_t *s1ap_E_RABInformationListIEs) {
-
-    int i;
+    s1ap_message *message_p)
+{
+    S1ap_E_RABInformationListIEs_t *s1ap_E_RABInformationListIEs;
     asn_enc_rval_t er;
-    for (i = 0; i < s1ap_E_RABInformationListIEs->s1ap_E_RABInformationList.count; i++) {
-        er = xer_encode(&asn_DEF_S1ap_E_RABInformationListItem, s1ap_E_RABInformationListIEs->s1ap_E_RABInformationList.array[i], XER_F_BASIC, cb, app_key);
-    }
+    s1ap_E_RABInformationListIEs = &message_p->msg.s1ap_E_RABInformationListIEs;
+
+    cb("<S1ap-E-RABInformationListIEs-PDU>\n", 35, app_key);
+    xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
+    xer_encode_local(&asn_DEF_S1ap_ProcedureCode, &message_p->procedureCode, cb, app_key, 1);
+    cb("    <S1ap-E-RABInformationListIEs>\n", 35, app_key);
+    xer_encode_local(&asn_DEF_S1ap_E_RABInformationListItem, &s1ap_E_RABInformationListIEs->e_RABInformationListItem, cb, app_key, 2);
+    cb("    </S1ap-E-RABInformationListIEs>\n", 36, app_key);
+    cb("</S1ap-E-RABInformationListIEs-PDU>\n", 36, app_key);
     _ASN_ENCODED_OK(er);
 }
 
@@ -1921,16 +1957,22 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handoverfailure(
     _ASN_ENCODED_OK(er);
 }
 
-asn_enc_rval_t s1ap_xer_print_s1ap_ue_associatedlogicals1_connectionlistresack(
+asn_enc_rval_t s1ap_xer_print_s1ap_ue_associatedlogicals1_connectionitemresack(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_UE_associatedLogicalS1_ConnectionListResAckIEs_t *s1ap_UE_associatedLogicalS1_ConnectionListResAck) {
-
-    int i;
+    s1ap_message *message_p)
+{
+    S1ap_UE_associatedLogicalS1_ConnectionItemResAck_t *s1ap_UE_associatedLogicalS1_ConnectionItemResAck;
     asn_enc_rval_t er;
-    for (i = 0; i < s1ap_UE_associatedLogicalS1_ConnectionListResAck->s1ap_UE_associatedLogicalS1_ConnectionItemResAck.count; i++) {
-        er = xer_encode(&asn_DEF_S1ap_UE_associatedLogicalS1_ConnectionItem, s1ap_UE_associatedLogicalS1_ConnectionListResAck->s1ap_UE_associatedLogicalS1_ConnectionItemResAck.array[i], XER_F_BASIC, cb, app_key);
-    }
+    s1ap_UE_associatedLogicalS1_ConnectionItemResAck = &message_p->msg.s1ap_UE_associatedLogicalS1_ConnectionItemResAck;
+
+    cb("<S1ap-UE-associatedLogicalS1-ConnectionItemResAck-PDU>\n", 55, app_key);
+    xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
+    xer_encode_local(&asn_DEF_S1ap_ProcedureCode, &message_p->procedureCode, cb, app_key, 1);
+    cb("    <S1ap-UE-associatedLogicalS1-ConnectionItemResAck>\n", 55, app_key);
+    xer_encode_local(&asn_DEF_S1ap_UE_associatedLogicalS1_ConnectionItem, &s1ap_UE_associatedLogicalS1_ConnectionItemResAck->uE_associatedLogicalS1_ConnectionItem, cb, app_key, 2);
+    cb("    </S1ap-UE-associatedLogicalS1-ConnectionItemResAck>\n", 56, app_key);
+    cb("</S1ap-UE-associatedLogicalS1-ConnectionItemResAck-PDU>\n", 56, app_key);
     _ASN_ENCODED_OK(er);
 }
 
@@ -1951,10 +1993,10 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabsetupresponse(
     xer_encode_local(&asn_DEF_S1ap_ENB_UE_S1AP_ID, &s1ap_E_RABSetupResponseIEs->eNB_UE_S1AP_ID, cb, app_key, 2);
     /* Optional field */
     if (s1ap_E_RABSetupResponseIEs->presenceMask & S1AP_E_RABSETUPRESPONSEIES_E_RABSETUPLISTBEARERSURES_PRESENT)
-        s1ap_xer_print_s1ap_e_rabsetuplistbearersures(cb, app_key, &s1ap_E_RABSetupResponseIEs->e_RABSetupListBearerSURes);
+        xer_encode_local(&asn_DEF_S1ap_E_RABSetupListBearerSURes, &s1ap_E_RABSetupResponseIEs->e_RABSetupListBearerSURes, cb, app_key, 2);
     /* Optional field */
     if (s1ap_E_RABSetupResponseIEs->presenceMask & S1AP_E_RABSETUPRESPONSEIES_E_RABFAILEDTOSETUPLISTBEARERSURES_PRESENT)
-        s1ap_xer_print_s1ap_e_rablist(cb, app_key, &s1ap_E_RABSetupResponseIEs->e_RABFailedToSetupListBearerSURes);
+        xer_encode_local(&asn_DEF_S1ap_E_RABList, &s1ap_E_RABSetupResponseIEs->e_RABFailedToSetupListBearerSURes, cb, app_key, 2);
     /* Optional field */
     if (s1ap_E_RABSetupResponseIEs->presenceMask & S1AP_E_RABSETUPRESPONSEIES_CRITICALITYDIAGNOSTICS_PRESENT)
         xer_encode_local(&asn_DEF_S1ap_CriticalityDiagnostics, &s1ap_E_RABSetupResponseIEs->criticalityDiagnostics, cb, app_key, 2);
@@ -1997,7 +2039,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_pathswitchrequest(
     xer_encode_local(&asn_DEF_S1ap_ProcedureCode, &message_p->procedureCode, cb, app_key, 1);
     cb("    <S1ap-PathSwitchRequestIEs>\n", 32, app_key);
     xer_encode_local(&asn_DEF_S1ap_ENB_UE_S1AP_ID, &s1ap_PathSwitchRequestIEs->eNB_UE_S1AP_ID, cb, app_key, 2);
-    xer_encode_local(&asn_DEF_S1ap_E_RABToBeSwitchedDLList, &s1ap_PathSwitchRequestIEs->e_RABToBeSwitchedDLList, cb, app_key, 2);
+    s1ap_xer_print_s1ap_e_rabtobeswitcheddllist(cb, app_key, &s1ap_PathSwitchRequestIEs->e_RABToBeSwitchedDLList);
     xer_encode_local(&asn_DEF_S1ap_MME_UE_S1AP_ID, &s1ap_PathSwitchRequestIEs->sourceMME_UE_S1AP_ID, cb, app_key, 2);
     xer_encode_local(&asn_DEF_S1ap_EUTRAN_CGI, &s1ap_PathSwitchRequestIEs->eutran_cgi, cb, app_key, 2);
     xer_encode_local(&asn_DEF_S1ap_TAI, &s1ap_PathSwitchRequestIEs->tai, cb, app_key, 2);
@@ -2058,7 +2100,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabreleaseindication(
     cb("    <S1ap-E-RABReleaseIndicationIEs>\n", 37, app_key);
     xer_encode_local(&asn_DEF_S1ap_MME_UE_S1AP_ID, &s1ap_E_RABReleaseIndicationIEs->mme_ue_s1ap_id, cb, app_key, 2);
     xer_encode_local(&asn_DEF_S1ap_ENB_UE_S1AP_ID, &s1ap_E_RABReleaseIndicationIEs->eNB_UE_S1AP_ID, cb, app_key, 2);
-    s1ap_xer_print_s1ap_e_rablist(cb, app_key, &s1ap_E_RABReleaseIndicationIEs->e_RABReleasedList);
+    xer_encode_local(&asn_DEF_S1ap_E_RABList, &s1ap_E_RABReleaseIndicationIEs->e_RABReleasedList, cb, app_key, 2);
     cb("    </S1ap-E-RABReleaseIndicationIEs>\n", 38, app_key);
     cb("</S1ap-E-RABReleaseIndicationIEs-PDU>\n", 38, app_key);
     _ASN_ENCODED_OK(er);
@@ -2157,7 +2199,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabsetuprequest(
     /* Optional field */
     if (s1ap_E_RABSetupRequestIEs->presenceMask & S1AP_E_RABSETUPREQUESTIES_UEAGGREGATEMAXIMUMBITRATE_PRESENT)
         xer_encode_local(&asn_DEF_S1ap_UEAggregateMaximumBitrate, &s1ap_E_RABSetupRequestIEs->uEaggregateMaximumBitrate, cb, app_key, 2);
-    s1ap_xer_print_s1ap_e_rabtobesetuplistbearersureq(cb, app_key, &s1ap_E_RABSetupRequestIEs->e_RABToBeSetupListBearerSUReq);
+    xer_encode_local(&asn_DEF_S1ap_E_RABToBeSetupListBearerSUReq, &s1ap_E_RABSetupRequestIEs->e_RABToBeSetupListBearerSUReq, cb, app_key, 2);
     cb("    </S1ap-E-RABSetupRequestIEs>\n", 33, app_key);
     cb("</S1ap-E-RABSetupRequestIEs-PDU>\n", 33, app_key);
     _ASN_ENCODED_OK(er);
@@ -2199,7 +2241,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_resetacknowledge(
     cb("    <S1ap-ResetAcknowledgeIEs>\n", 31, app_key);
     /* Optional field */
     if (s1ap_ResetAcknowledgeIEs->presenceMask & S1AP_RESETACKNOWLEDGEIES_UE_ASSOCIATEDLOGICALS1_CONNECTIONLISTRESACK_PRESENT)
-        s1ap_xer_print_s1ap_ue_associatedlogicals1_connectionlistresack(cb, app_key, &s1ap_ResetAcknowledgeIEs->uE_associatedLogicalS1_ConnectionListResAck);
+        xer_encode_local(&asn_DEF_S1ap_UE_associatedLogicalS1_ConnectionListResAck, &s1ap_ResetAcknowledgeIEs->uE_associatedLogicalS1_ConnectionListResAck, cb, app_key, 2);
     /* Optional field */
     if (s1ap_ResetAcknowledgeIEs->presenceMask & S1AP_RESETACKNOWLEDGEIES_CRITICALITYDIAGNOSTICS_PRESENT)
         xer_encode_local(&asn_DEF_S1ap_CriticalityDiagnostics, &s1ap_ResetAcknowledgeIEs->criticalityDiagnostics, cb, app_key, 2);

@@ -34,27 +34,27 @@ E_RAB_S1ap_IE_ContainerList_992P0_constraint(asn_TYPE_descriptor_t *td, const vo
 }
 
 /*
- * This type is implemented using ProtocolIE_ContainerList_5732P0,
+ * This type is implemented using ProtocolIE_ContainerList_5736P0,
  * so here we adjust the DEF accordingly.
  */
 static void
 E_RAB_S1ap_IE_ContainerList_992P0_1_inherit_TYPE_descriptor(asn_TYPE_descriptor_t *td) {
-	td->free_struct    = asn_DEF_ProtocolIE_ContainerList_5732P0.free_struct;
-	td->print_struct   = asn_DEF_ProtocolIE_ContainerList_5732P0.print_struct;
-	td->check_constraints = asn_DEF_ProtocolIE_ContainerList_5732P0.check_constraints;
-	td->ber_decoder    = asn_DEF_ProtocolIE_ContainerList_5732P0.ber_decoder;
-	td->der_encoder    = asn_DEF_ProtocolIE_ContainerList_5732P0.der_encoder;
-	td->xer_decoder    = asn_DEF_ProtocolIE_ContainerList_5732P0.xer_decoder;
-	td->xer_encoder    = asn_DEF_ProtocolIE_ContainerList_5732P0.xer_encoder;
-	td->uper_decoder   = asn_DEF_ProtocolIE_ContainerList_5732P0.uper_decoder;
-	td->uper_encoder   = asn_DEF_ProtocolIE_ContainerList_5732P0.uper_encoder;
-	td->aper_decoder   = asn_DEF_ProtocolIE_ContainerList_5732P0.aper_decoder;
-	td->aper_encoder   = asn_DEF_ProtocolIE_ContainerList_5732P0.aper_encoder;
+	td->free_struct    = asn_DEF_ProtocolIE_ContainerList_5736P0.free_struct;
+	td->print_struct   = asn_DEF_ProtocolIE_ContainerList_5736P0.print_struct;
+	td->check_constraints = asn_DEF_ProtocolIE_ContainerList_5736P0.check_constraints;
+	td->ber_decoder    = asn_DEF_ProtocolIE_ContainerList_5736P0.ber_decoder;
+	td->der_encoder    = asn_DEF_ProtocolIE_ContainerList_5736P0.der_encoder;
+	td->xer_decoder    = asn_DEF_ProtocolIE_ContainerList_5736P0.xer_decoder;
+	td->xer_encoder    = asn_DEF_ProtocolIE_ContainerList_5736P0.xer_encoder;
+	td->uper_decoder   = asn_DEF_ProtocolIE_ContainerList_5736P0.uper_decoder;
+	td->uper_encoder   = asn_DEF_ProtocolIE_ContainerList_5736P0.uper_encoder;
+	td->aper_decoder   = asn_DEF_ProtocolIE_ContainerList_5736P0.aper_decoder;
+	td->aper_encoder   = asn_DEF_ProtocolIE_ContainerList_5736P0.aper_encoder;
 	if(!td->per_constraints)
-		td->per_constraints = asn_DEF_ProtocolIE_ContainerList_5732P0.per_constraints;
-	td->elements       = asn_DEF_ProtocolIE_ContainerList_5732P0.elements;
-	td->elements_count = asn_DEF_ProtocolIE_ContainerList_5732P0.elements_count;
-	td->specifics      = asn_DEF_ProtocolIE_ContainerList_5732P0.specifics;
+		td->per_constraints = asn_DEF_ProtocolIE_ContainerList_5736P0.per_constraints;
+	td->elements       = asn_DEF_ProtocolIE_ContainerList_5736P0.elements;
+	td->elements_count = asn_DEF_ProtocolIE_ContainerList_5736P0.elements_count;
+	td->specifics      = asn_DEF_ProtocolIE_ContainerList_5736P0.specifics;
 }
 
 void
@@ -158,27 +158,27 @@ E_RAB_S1ap_IE_ContainerList_992P1_constraint(asn_TYPE_descriptor_t *td, const vo
 }
 
 /*
- * This type is implemented using ProtocolIE_ContainerList_5732P0,
+ * This type is implemented using ProtocolIE_ContainerList_5736P0,
  * so here we adjust the DEF accordingly.
  */
 static void
 E_RAB_S1ap_IE_ContainerList_992P1_2_inherit_TYPE_descriptor(asn_TYPE_descriptor_t *td) {
-	td->free_struct    = asn_DEF_ProtocolIE_ContainerList_5732P0.free_struct;
-	td->print_struct   = asn_DEF_ProtocolIE_ContainerList_5732P0.print_struct;
-	td->check_constraints = asn_DEF_ProtocolIE_ContainerList_5732P0.check_constraints;
-	td->ber_decoder    = asn_DEF_ProtocolIE_ContainerList_5732P0.ber_decoder;
-	td->der_encoder    = asn_DEF_ProtocolIE_ContainerList_5732P0.der_encoder;
-	td->xer_decoder    = asn_DEF_ProtocolIE_ContainerList_5732P0.xer_decoder;
-	td->xer_encoder    = asn_DEF_ProtocolIE_ContainerList_5732P0.xer_encoder;
-	td->uper_decoder   = asn_DEF_ProtocolIE_ContainerList_5732P0.uper_decoder;
-	td->uper_encoder   = asn_DEF_ProtocolIE_ContainerList_5732P0.uper_encoder;
-	td->aper_decoder   = asn_DEF_ProtocolIE_ContainerList_5732P0.aper_decoder;
-	td->aper_encoder   = asn_DEF_ProtocolIE_ContainerList_5732P0.aper_encoder;
+	td->free_struct    = asn_DEF_ProtocolIE_ContainerList_5736P0.free_struct;
+	td->print_struct   = asn_DEF_ProtocolIE_ContainerList_5736P0.print_struct;
+	td->check_constraints = asn_DEF_ProtocolIE_ContainerList_5736P0.check_constraints;
+	td->ber_decoder    = asn_DEF_ProtocolIE_ContainerList_5736P0.ber_decoder;
+	td->der_encoder    = asn_DEF_ProtocolIE_ContainerList_5736P0.der_encoder;
+	td->xer_decoder    = asn_DEF_ProtocolIE_ContainerList_5736P0.xer_decoder;
+	td->xer_encoder    = asn_DEF_ProtocolIE_ContainerList_5736P0.xer_encoder;
+	td->uper_decoder   = asn_DEF_ProtocolIE_ContainerList_5736P0.uper_decoder;
+	td->uper_encoder   = asn_DEF_ProtocolIE_ContainerList_5736P0.uper_encoder;
+	td->aper_decoder   = asn_DEF_ProtocolIE_ContainerList_5736P0.aper_decoder;
+	td->aper_encoder   = asn_DEF_ProtocolIE_ContainerList_5736P0.aper_encoder;
 	if(!td->per_constraints)
-		td->per_constraints = asn_DEF_ProtocolIE_ContainerList_5732P0.per_constraints;
-	td->elements       = asn_DEF_ProtocolIE_ContainerList_5732P0.elements;
-	td->elements_count = asn_DEF_ProtocolIE_ContainerList_5732P0.elements_count;
-	td->specifics      = asn_DEF_ProtocolIE_ContainerList_5732P0.specifics;
+		td->per_constraints = asn_DEF_ProtocolIE_ContainerList_5736P0.per_constraints;
+	td->elements       = asn_DEF_ProtocolIE_ContainerList_5736P0.elements;
+	td->elements_count = asn_DEF_ProtocolIE_ContainerList_5736P0.elements_count;
+	td->specifics      = asn_DEF_ProtocolIE_ContainerList_5736P0.specifics;
 }
 
 void
@@ -282,27 +282,27 @@ E_RAB_S1ap_IE_ContainerList_992P2_constraint(asn_TYPE_descriptor_t *td, const vo
 }
 
 /*
- * This type is implemented using ProtocolIE_ContainerList_5732P0,
+ * This type is implemented using ProtocolIE_ContainerList_5736P0,
  * so here we adjust the DEF accordingly.
  */
 static void
 E_RAB_S1ap_IE_ContainerList_992P2_3_inherit_TYPE_descriptor(asn_TYPE_descriptor_t *td) {
-	td->free_struct    = asn_DEF_ProtocolIE_ContainerList_5732P0.free_struct;
-	td->print_struct   = asn_DEF_ProtocolIE_ContainerList_5732P0.print_struct;
-	td->check_constraints = asn_DEF_ProtocolIE_ContainerList_5732P0.check_constraints;
-	td->ber_decoder    = asn_DEF_ProtocolIE_ContainerList_5732P0.ber_decoder;
-	td->der_encoder    = asn_DEF_ProtocolIE_ContainerList_5732P0.der_encoder;
-	td->xer_decoder    = asn_DEF_ProtocolIE_ContainerList_5732P0.xer_decoder;
-	td->xer_encoder    = asn_DEF_ProtocolIE_ContainerList_5732P0.xer_encoder;
-	td->uper_decoder   = asn_DEF_ProtocolIE_ContainerList_5732P0.uper_decoder;
-	td->uper_encoder   = asn_DEF_ProtocolIE_ContainerList_5732P0.uper_encoder;
-	td->aper_decoder   = asn_DEF_ProtocolIE_ContainerList_5732P0.aper_decoder;
-	td->aper_encoder   = asn_DEF_ProtocolIE_ContainerList_5732P0.aper_encoder;
+	td->free_struct    = asn_DEF_ProtocolIE_ContainerList_5736P0.free_struct;
+	td->print_struct   = asn_DEF_ProtocolIE_ContainerList_5736P0.print_struct;
+	td->check_constraints = asn_DEF_ProtocolIE_ContainerList_5736P0.check_constraints;
+	td->ber_decoder    = asn_DEF_ProtocolIE_ContainerList_5736P0.ber_decoder;
+	td->der_encoder    = asn_DEF_ProtocolIE_ContainerList_5736P0.der_encoder;
+	td->xer_decoder    = asn_DEF_ProtocolIE_ContainerList_5736P0.xer_decoder;
+	td->xer_encoder    = asn_DEF_ProtocolIE_ContainerList_5736P0.xer_encoder;
+	td->uper_decoder   = asn_DEF_ProtocolIE_ContainerList_5736P0.uper_decoder;
+	td->uper_encoder   = asn_DEF_ProtocolIE_ContainerList_5736P0.uper_encoder;
+	td->aper_decoder   = asn_DEF_ProtocolIE_ContainerList_5736P0.aper_decoder;
+	td->aper_encoder   = asn_DEF_ProtocolIE_ContainerList_5736P0.aper_encoder;
 	if(!td->per_constraints)
-		td->per_constraints = asn_DEF_ProtocolIE_ContainerList_5732P0.per_constraints;
-	td->elements       = asn_DEF_ProtocolIE_ContainerList_5732P0.elements;
-	td->elements_count = asn_DEF_ProtocolIE_ContainerList_5732P0.elements_count;
-	td->specifics      = asn_DEF_ProtocolIE_ContainerList_5732P0.specifics;
+		td->per_constraints = asn_DEF_ProtocolIE_ContainerList_5736P0.per_constraints;
+	td->elements       = asn_DEF_ProtocolIE_ContainerList_5736P0.elements;
+	td->elements_count = asn_DEF_ProtocolIE_ContainerList_5736P0.elements_count;
+	td->specifics      = asn_DEF_ProtocolIE_ContainerList_5736P0.specifics;
 }
 
 void
@@ -406,27 +406,27 @@ E_RAB_S1ap_IE_ContainerList_992P3_constraint(asn_TYPE_descriptor_t *td, const vo
 }
 
 /*
- * This type is implemented using ProtocolIE_ContainerList_5732P0,
+ * This type is implemented using ProtocolIE_ContainerList_5736P0,
  * so here we adjust the DEF accordingly.
  */
 static void
 E_RAB_S1ap_IE_ContainerList_992P3_4_inherit_TYPE_descriptor(asn_TYPE_descriptor_t *td) {
-	td->free_struct    = asn_DEF_ProtocolIE_ContainerList_5732P0.free_struct;
-	td->print_struct   = asn_DEF_ProtocolIE_ContainerList_5732P0.print_struct;
-	td->check_constraints = asn_DEF_ProtocolIE_ContainerList_5732P0.check_constraints;
-	td->ber_decoder    = asn_DEF_ProtocolIE_ContainerList_5732P0.ber_decoder;
-	td->der_encoder    = asn_DEF_ProtocolIE_ContainerList_5732P0.der_encoder;
-	td->xer_decoder    = asn_DEF_ProtocolIE_ContainerList_5732P0.xer_decoder;
-	td->xer_encoder    = asn_DEF_ProtocolIE_ContainerList_5732P0.xer_encoder;
-	td->uper_decoder   = asn_DEF_ProtocolIE_ContainerList_5732P0.uper_decoder;
-	td->uper_encoder   = asn_DEF_ProtocolIE_ContainerList_5732P0.uper_encoder;
-	td->aper_decoder   = asn_DEF_ProtocolIE_ContainerList_5732P0.aper_decoder;
-	td->aper_encoder   = asn_DEF_ProtocolIE_ContainerList_5732P0.aper_encoder;
+	td->free_struct    = asn_DEF_ProtocolIE_ContainerList_5736P0.free_struct;
+	td->print_struct   = asn_DEF_ProtocolIE_ContainerList_5736P0.print_struct;
+	td->check_constraints = asn_DEF_ProtocolIE_ContainerList_5736P0.check_constraints;
+	td->ber_decoder    = asn_DEF_ProtocolIE_ContainerList_5736P0.ber_decoder;
+	td->der_encoder    = asn_DEF_ProtocolIE_ContainerList_5736P0.der_encoder;
+	td->xer_decoder    = asn_DEF_ProtocolIE_ContainerList_5736P0.xer_decoder;
+	td->xer_encoder    = asn_DEF_ProtocolIE_ContainerList_5736P0.xer_encoder;
+	td->uper_decoder   = asn_DEF_ProtocolIE_ContainerList_5736P0.uper_decoder;
+	td->uper_encoder   = asn_DEF_ProtocolIE_ContainerList_5736P0.uper_encoder;
+	td->aper_decoder   = asn_DEF_ProtocolIE_ContainerList_5736P0.aper_decoder;
+	td->aper_encoder   = asn_DEF_ProtocolIE_ContainerList_5736P0.aper_encoder;
 	if(!td->per_constraints)
-		td->per_constraints = asn_DEF_ProtocolIE_ContainerList_5732P0.per_constraints;
-	td->elements       = asn_DEF_ProtocolIE_ContainerList_5732P0.elements;
-	td->elements_count = asn_DEF_ProtocolIE_ContainerList_5732P0.elements_count;
-	td->specifics      = asn_DEF_ProtocolIE_ContainerList_5732P0.specifics;
+		td->per_constraints = asn_DEF_ProtocolIE_ContainerList_5736P0.per_constraints;
+	td->elements       = asn_DEF_ProtocolIE_ContainerList_5736P0.elements;
+	td->elements_count = asn_DEF_ProtocolIE_ContainerList_5736P0.elements_count;
+	td->specifics      = asn_DEF_ProtocolIE_ContainerList_5736P0.specifics;
 }
 
 void
@@ -530,27 +530,27 @@ E_RAB_S1ap_IE_ContainerList_992P4_constraint(asn_TYPE_descriptor_t *td, const vo
 }
 
 /*
- * This type is implemented using ProtocolIE_ContainerList_5732P0,
+ * This type is implemented using ProtocolIE_ContainerList_5736P0,
  * so here we adjust the DEF accordingly.
  */
 static void
 E_RAB_S1ap_IE_ContainerList_992P4_5_inherit_TYPE_descriptor(asn_TYPE_descriptor_t *td) {
-	td->free_struct    = asn_DEF_ProtocolIE_ContainerList_5732P0.free_struct;
-	td->print_struct   = asn_DEF_ProtocolIE_ContainerList_5732P0.print_struct;
-	td->check_constraints = asn_DEF_ProtocolIE_ContainerList_5732P0.check_constraints;
-	td->ber_decoder    = asn_DEF_ProtocolIE_ContainerList_5732P0.ber_decoder;
-	td->der_encoder    = asn_DEF_ProtocolIE_ContainerList_5732P0.der_encoder;
-	td->xer_decoder    = asn_DEF_ProtocolIE_ContainerList_5732P0.xer_decoder;
-	td->xer_encoder    = asn_DEF_ProtocolIE_ContainerList_5732P0.xer_encoder;
-	td->uper_decoder   = asn_DEF_ProtocolIE_ContainerList_5732P0.uper_decoder;
-	td->uper_encoder   = asn_DEF_ProtocolIE_ContainerList_5732P0.uper_encoder;
-	td->aper_decoder   = asn_DEF_ProtocolIE_ContainerList_5732P0.aper_decoder;
-	td->aper_encoder   = asn_DEF_ProtocolIE_ContainerList_5732P0.aper_encoder;
+	td->free_struct    = asn_DEF_ProtocolIE_ContainerList_5736P0.free_struct;
+	td->print_struct   = asn_DEF_ProtocolIE_ContainerList_5736P0.print_struct;
+	td->check_constraints = asn_DEF_ProtocolIE_ContainerList_5736P0.check_constraints;
+	td->ber_decoder    = asn_DEF_ProtocolIE_ContainerList_5736P0.ber_decoder;
+	td->der_encoder    = asn_DEF_ProtocolIE_ContainerList_5736P0.der_encoder;
+	td->xer_decoder    = asn_DEF_ProtocolIE_ContainerList_5736P0.xer_decoder;
+	td->xer_encoder    = asn_DEF_ProtocolIE_ContainerList_5736P0.xer_encoder;
+	td->uper_decoder   = asn_DEF_ProtocolIE_ContainerList_5736P0.uper_decoder;
+	td->uper_encoder   = asn_DEF_ProtocolIE_ContainerList_5736P0.uper_encoder;
+	td->aper_decoder   = asn_DEF_ProtocolIE_ContainerList_5736P0.aper_decoder;
+	td->aper_encoder   = asn_DEF_ProtocolIE_ContainerList_5736P0.aper_encoder;
 	if(!td->per_constraints)
-		td->per_constraints = asn_DEF_ProtocolIE_ContainerList_5732P0.per_constraints;
-	td->elements       = asn_DEF_ProtocolIE_ContainerList_5732P0.elements;
-	td->elements_count = asn_DEF_ProtocolIE_ContainerList_5732P0.elements_count;
-	td->specifics      = asn_DEF_ProtocolIE_ContainerList_5732P0.specifics;
+		td->per_constraints = asn_DEF_ProtocolIE_ContainerList_5736P0.per_constraints;
+	td->elements       = asn_DEF_ProtocolIE_ContainerList_5736P0.elements;
+	td->elements_count = asn_DEF_ProtocolIE_ContainerList_5736P0.elements_count;
+	td->specifics      = asn_DEF_ProtocolIE_ContainerList_5736P0.specifics;
 }
 
 void
@@ -654,27 +654,27 @@ E_RAB_S1ap_IE_ContainerList_992P5_constraint(asn_TYPE_descriptor_t *td, const vo
 }
 
 /*
- * This type is implemented using ProtocolIE_ContainerList_5732P0,
+ * This type is implemented using ProtocolIE_ContainerList_5736P0,
  * so here we adjust the DEF accordingly.
  */
 static void
 E_RAB_S1ap_IE_ContainerList_992P5_6_inherit_TYPE_descriptor(asn_TYPE_descriptor_t *td) {
-	td->free_struct    = asn_DEF_ProtocolIE_ContainerList_5732P0.free_struct;
-	td->print_struct   = asn_DEF_ProtocolIE_ContainerList_5732P0.print_struct;
-	td->check_constraints = asn_DEF_ProtocolIE_ContainerList_5732P0.check_constraints;
-	td->ber_decoder    = asn_DEF_ProtocolIE_ContainerList_5732P0.ber_decoder;
-	td->der_encoder    = asn_DEF_ProtocolIE_ContainerList_5732P0.der_encoder;
-	td->xer_decoder    = asn_DEF_ProtocolIE_ContainerList_5732P0.xer_decoder;
-	td->xer_encoder    = asn_DEF_ProtocolIE_ContainerList_5732P0.xer_encoder;
-	td->uper_decoder   = asn_DEF_ProtocolIE_ContainerList_5732P0.uper_decoder;
-	td->uper_encoder   = asn_DEF_ProtocolIE_ContainerList_5732P0.uper_encoder;
-	td->aper_decoder   = asn_DEF_ProtocolIE_ContainerList_5732P0.aper_decoder;
-	td->aper_encoder   = asn_DEF_ProtocolIE_ContainerList_5732P0.aper_encoder;
+	td->free_struct    = asn_DEF_ProtocolIE_ContainerList_5736P0.free_struct;
+	td->print_struct   = asn_DEF_ProtocolIE_ContainerList_5736P0.print_struct;
+	td->check_constraints = asn_DEF_ProtocolIE_ContainerList_5736P0.check_constraints;
+	td->ber_decoder    = asn_DEF_ProtocolIE_ContainerList_5736P0.ber_decoder;
+	td->der_encoder    = asn_DEF_ProtocolIE_ContainerList_5736P0.der_encoder;
+	td->xer_decoder    = asn_DEF_ProtocolIE_ContainerList_5736P0.xer_decoder;
+	td->xer_encoder    = asn_DEF_ProtocolIE_ContainerList_5736P0.xer_encoder;
+	td->uper_decoder   = asn_DEF_ProtocolIE_ContainerList_5736P0.uper_decoder;
+	td->uper_encoder   = asn_DEF_ProtocolIE_ContainerList_5736P0.uper_encoder;
+	td->aper_decoder   = asn_DEF_ProtocolIE_ContainerList_5736P0.aper_decoder;
+	td->aper_encoder   = asn_DEF_ProtocolIE_ContainerList_5736P0.aper_encoder;
 	if(!td->per_constraints)
-		td->per_constraints = asn_DEF_ProtocolIE_ContainerList_5732P0.per_constraints;
-	td->elements       = asn_DEF_ProtocolIE_ContainerList_5732P0.elements;
-	td->elements_count = asn_DEF_ProtocolIE_ContainerList_5732P0.elements_count;
-	td->specifics      = asn_DEF_ProtocolIE_ContainerList_5732P0.specifics;
+		td->per_constraints = asn_DEF_ProtocolIE_ContainerList_5736P0.per_constraints;
+	td->elements       = asn_DEF_ProtocolIE_ContainerList_5736P0.elements;
+	td->elements_count = asn_DEF_ProtocolIE_ContainerList_5736P0.elements_count;
+	td->specifics      = asn_DEF_ProtocolIE_ContainerList_5736P0.specifics;
 }
 
 void

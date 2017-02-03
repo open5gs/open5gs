@@ -20,11 +20,11 @@ extern "C" {
 #endif
 
 /* Forward declarations */
-struct S1ap_CriticalityDiagnostics_S1ap_IE_Item;
+struct S1ap_CriticalityDiagnostics_IE_Item;
 
 /* S1ap-CriticalityDiagnostics-IE-List */
 typedef struct S1ap_CriticalityDiagnostics_IE_List {
-	A_SEQUENCE_OF(struct S1ap_CriticalityDiagnostics_S1ap_IE_Item) list;
+	A_SEQUENCE_OF(struct S1ap_CriticalityDiagnostics_IE_Item) list;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
@@ -38,7 +38,7 @@ extern asn_TYPE_descriptor_t asn_DEF_S1ap_CriticalityDiagnostics_IE_List;
 #endif
 
 /* Referred external types */
-#include "S1ap-CriticalityDiagnostics-S1ap-IE-Item.h"
+#include "S1ap-CriticalityDiagnostics-IE-Item.h"
 
 #endif	/* _S1ap_CriticalityDiagnostics_IE_List_H_ */
 #include <asn_internal.h>

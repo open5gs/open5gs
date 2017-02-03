@@ -98,6 +98,7 @@ for i in re.findall(r'([\w-]+)\s*::=\s*' + asnType, lines, re.MULTILINE):
 
 # Removing not to replace structures
 del structReplacements['S1AP-PDU']
+del structReplacements['S1ap-IE']
 
 # Extracting S1AP-Constant
 for i in re.findall(r'([\w-]+)\s*INTEGER\s*::=', lines, re.MULTILINE):
@@ -122,6 +123,7 @@ for line in in_file:
         line = structPattern.sub(lambda x: structReplacements[x.group()], line)
         line = constantPattern.sub(lambda x: constantReplacements[x.group()], line)
         line = line.replace('id-S1ap', 'id')
+        line = re.sub(r'OF\sProtocolIE-SingleContainer\s*{\s*{\s*[\w-]+\s*}\s*}', 'OF S1ap-IE', line)
     out_file.write(line)
 
 in_file.close()

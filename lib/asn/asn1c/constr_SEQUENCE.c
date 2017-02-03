@@ -1456,7 +1456,59 @@ SEQUENCE_decode_aper(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 }
 
 static int
-SEQUENCE_handle_extensions(asn_TYPE_descriptor_t *td, void *sptr,
+SEQUENCE_handle_extensions_uper(asn_TYPE_descriptor_t *td, void *sptr,
+		asn_per_outp_t *po1, asn_per_outp_t *po2) {
+	asn_SEQUENCE_specifics_t *specs
+		= (asn_SEQUENCE_specifics_t *)td->specifics;
+	int exts_present = 0;
+	int exts_count = 0;
+	int edx;
+
+	if(specs->ext_before < 0)
+		return 0;
+
+	/* Find out which extensions are present */
+	for(edx = specs->ext_after + 1; edx < td->elements_count; edx++) {
+		asn_TYPE_member_t *elm = &td->elements[edx];
+		void *memb_ptr;		/* Pointer to the member */
+		void **memb_ptr2;	/* Pointer to that pointer */
+		int present;
+
+		if(!IN_EXTENSION_GROUP(specs, edx)) {
+			ASN_DEBUG("%s (@%d) is not extension", elm->type->name, edx);
+			continue;
+		}
+
+		/* Fetch the pointer to this member */
+		if(elm->flags & ATF_POINTER) {
+			memb_ptr2 = (void **)((char *)sptr + elm->memb_offset);
+			present = (*memb_ptr2 != 0);
+		} else {
+			memb_ptr = (void *)((char *)sptr + elm->memb_offset);
+			memb_ptr2 = &memb_ptr;
+			present = 1;
+		}
+
+		ASN_DEBUG("checking %s (@%d) present => %d",
+			elm->type->name, edx, present);
+		exts_count++;
+		exts_present += present;
+
+		/* Encode as presence marker */
+		if(po1 && per_put_few_bits(po1, present, 1))
+			return -1;
+		/* Encode as open type field */
+		if(po2 && present && uper_open_type_put(elm->type,
+				elm->per_constraints, *memb_ptr2, po2))
+			return -1;
+
+	}
+
+	return exts_present ? exts_count : 0;
+}
+
+static int
+SEQUENCE_handle_extensions_aper(asn_TYPE_descriptor_t *td, void *sptr,
 		asn_per_outp_t *po1, asn_per_outp_t *po2) {
 	asn_SEQUENCE_specifics_t *specs
 		= (asn_SEQUENCE_specifics_t *)td->specifics;
@@ -1532,7 +1584,7 @@ SEQUENCE_encode_uper(asn_TYPE_descriptor_t *td,
 	 * and whether to encode extensions
 	 */
 	if(specs->ext_before >= 0) {
-		n_extensions = SEQUENCE_handle_extensions(td, sptr, 0, 0);
+		n_extensions = SEQUENCE_handle_extensions_uper(td, sptr, 0, 0);
 		per_put_few_bits(po, n_extensions ? 1 : 0, 1);
 	} else {
 		n_extensions = 0;	/* There are no extensions to encode */
@@ -1625,12 +1677,12 @@ SEQUENCE_encode_uper(asn_TYPE_descriptor_t *td,
 	ASN_DEBUG("Bit-map of %d elements", n_extensions);
 	/* #18.7. Encoding the extensions presence bit-map. */
 	/* TODO: act upon NOTE in #18.7 for canonical PER */
-	if(SEQUENCE_handle_extensions(td, sptr, po, 0) != n_extensions)
+	if(SEQUENCE_handle_extensions_uper(td, sptr, po, 0) != n_extensions)
 		ASN__ENCODE_FAILED;
 
 	ASN_DEBUG("Writing %d extensions", n_extensions);
 	/* #18.9. Encode extensions as open type fields. */
-	if(SEQUENCE_handle_extensions(td, sptr, 0, po) != n_extensions)
+	if(SEQUENCE_handle_extensions_uper(td, sptr, 0, po) != n_extensions)
 		ASN__ENCODE_FAILED;
 
 	ASN__ENCODED_OK(er);
@@ -1660,7 +1712,7 @@ SEQUENCE_encode_aper(asn_TYPE_descriptor_t *td,
 	 * and whether to encode extensions
 	 */
 	if(specs->ext_before >= 0) {
-		n_extensions = SEQUENCE_handle_extensions(td, sptr, 0, 0);
+		n_extensions = SEQUENCE_handle_extensions_aper(td, sptr, 0, 0);
 		per_put_few_bits(po, n_extensions ? 1 : 0, 1);
 	} else {
 		n_extensions = 0;       /* There are no extensions to encode */
@@ -1753,12 +1805,12 @@ SEQUENCE_encode_aper(asn_TYPE_descriptor_t *td,
 	ASN_DEBUG("Bit-map of %d elements", n_extensions);
 	/* #18.7. Encoding the extensions presence bit-map. */
 	/* TODO: act upon NOTE in #18.7 for canonical PER */
-	if(SEQUENCE_handle_extensions(td, sptr, po, 0) != n_extensions)
+	if(SEQUENCE_handle_extensions_aper(td, sptr, po, 0) != n_extensions)
 		ASN__ENCODE_FAILED;
 
 	ASN_DEBUG("Writing %d extensions", n_extensions);
 	/* #18.9. Encode extensions as open type fields. */
-	if(SEQUENCE_handle_extensions(td, sptr, 0, po) != n_extensions)
+	if(SEQUENCE_handle_extensions_aper(td, sptr, 0, po) != n_extensions)
 		ASN__ENCODE_FAILED;
 
 	ASN__ENCODED_OK(er);

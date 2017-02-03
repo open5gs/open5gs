@@ -977,7 +977,7 @@ FROM S1AP-Containers
 
 FROM S1AP-Constants
 
-        IE
+        S1ap-IE
 
 FROM S1AP-PDU;
 
@@ -3401,7 +3401,11 @@ FROM S1AP-CommonDataTypes
         S1AP-PROTOCOL-IES
 
 
-FROM S1AP-Containers;        
+FROM S1AP-Containers
+
+        S1ap-IE
+
+FROM S1AP-PDU;
 
 
 -- A
@@ -5799,7 +5803,7 @@ IMPORTS
 
 FROM S1AP-CommonDataTypes;
 
-IE ::= SEQUENCE {
+S1ap-IE ::= SEQUENCE {
     id          ProtocolIE-ID,
     criticality Criticality,
     value       ANY

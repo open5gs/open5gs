@@ -19,12 +19,12 @@ extern "C" {
 #endif
 
 /* E-RAB-S1ap-IE-ContainerList */
-typedef ProtocolIE_ContainerList_5732P0_t	 E_RAB_S1ap_IE_ContainerList_992P0_t;
-typedef ProtocolIE_ContainerList_5732P0_t	 E_RAB_S1ap_IE_ContainerList_992P1_t;
-typedef ProtocolIE_ContainerList_5732P0_t	 E_RAB_S1ap_IE_ContainerList_992P2_t;
-typedef ProtocolIE_ContainerList_5732P0_t	 E_RAB_S1ap_IE_ContainerList_992P3_t;
-typedef ProtocolIE_ContainerList_5732P0_t	 E_RAB_S1ap_IE_ContainerList_992P4_t;
-typedef ProtocolIE_ContainerList_5732P0_t	 E_RAB_S1ap_IE_ContainerList_992P5_t;
+typedef ProtocolIE_ContainerList_5736P0_t	 E_RAB_S1ap_IE_ContainerList_992P0_t;
+typedef ProtocolIE_ContainerList_5736P0_t	 E_RAB_S1ap_IE_ContainerList_992P1_t;
+typedef ProtocolIE_ContainerList_5736P0_t	 E_RAB_S1ap_IE_ContainerList_992P2_t;
+typedef ProtocolIE_ContainerList_5736P0_t	 E_RAB_S1ap_IE_ContainerList_992P3_t;
+typedef ProtocolIE_ContainerList_5736P0_t	 E_RAB_S1ap_IE_ContainerList_992P4_t;
+typedef ProtocolIE_ContainerList_5736P0_t	 E_RAB_S1ap_IE_ContainerList_992P5_t;
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_E_RAB_S1ap_IE_ContainerList_992P0;

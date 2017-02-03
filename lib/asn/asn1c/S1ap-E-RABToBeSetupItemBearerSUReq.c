@@ -56,7 +56,7 @@ static asn_TYPE_member_t asn_MBR_S1ap_E_RABToBeSetupItemBearerSUReq_1[] = {
 	{ ATF_POINTER, 1, offsetof(struct S1ap_E_RABToBeSetupItemBearerSUReq, iE_Extensions),
 		(ASN_TAG_CLASS_CONTEXT | (5 << 2)),
 		-1,	/* IMPLICIT tag at current level */
-		&asn_DEF_ProtocolExtensionContainer_5749P6,
+		&asn_DEF_ProtocolExtensionContainer_5753P6,
 		0,	/* Defer constraints checking to the member type */
 		0,	/* No PER visible constraints */
 		0,
