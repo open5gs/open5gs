@@ -8,7 +8,7 @@ user@host ~/Documents/git/cellwire/lib/asn/support$ \
 
 * EUROCOM S1AP-IEs support files
 user@host ~/Documents/git/cellwire/lib/asn/support$ \
-    python asn1tostruct.py -f S1AP-PDU.asn -o ..
+    python asn1tostruct.py -f S1AP-PDU.asn -o ../src
 
 * Use AuthenticEshkinKot's fork for asn1c
 user@host ~/Documents/git/AuthenticEshkinKot$ \

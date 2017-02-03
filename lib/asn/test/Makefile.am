@@ -10,14 +10,13 @@ testasn_SOURCES = \
 testasn_LDADD = \
     $(top_srcdir)/lib/core/src/libcore.la \
     $(top_srcdir)/lib/asn/asn1c/libasn1c.la \
-    $(top_srcdir)/lib/asn/libasn.la \
+    $(top_srcdir)/lib/asn/src/libasn.la \
     -lpthread -lsctp
 
 AM_CPPFLAGS = \
-    -I$(top_srcdir)/lib/core/include/arch/@OSDIR@ \
     -I$(top_srcdir)/lib/core/include \
     -I$(top_srcdir)/lib/asn/asn1c \
-    -I$(top_srcdir)/lib/asn
+    -I$(top_srcdir)/lib/asn/src
 
 AM_CFLAGS = \
 	-Wall -Werror @OSCFLAGS@ \
