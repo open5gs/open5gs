@@ -807,7 +807,7 @@ ASN_MODULE_SOURCES+=per_encoder.c
 ASN_MODULE_INCLUDES+=per_opentype.h
 ASN_MODULE_SOURCES+=per_opentype.c
 
-lib_LTLIBRARIES=libasn1c.la
+noinst_LTLIBRARIES=libasn1c.la
 libasn1c_la_SOURCES=$(ASN_MODULE_INCLUDES)
 nodist_libasn1c_la_SOURCES=$(ASN_MODULE_SOURCES)
 

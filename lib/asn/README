@@ -18,6 +18,6 @@ user@host Documents/~/git/AuthenticEshkinKot$ \
 
 * ASN.1 encoder/decoder
 user@host ~/Documents/git/cellwire/lib/asn/asn1c$ \
-    ../../../../AuthenticEshkinKot/asn1c/asn1c/asn1c \
+    ../../../../AuthenticEshkinKot/asn1c/asn1c \
     -fcompound-names -gen-PER ../support/S1AP-PDU.asn
 
