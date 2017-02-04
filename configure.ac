@@ -244,7 +244,6 @@ AC_SUBST(OSLIBS)
 #### Conclusion. ####
 #####################
 
-AC_CONFIG_FILES([lib/Makefile])
 AC_CONFIG_FILES([lib/core/include/core.h])
 AC_CONFIG_FILES([lib/core/src/Makefile])
 case $host in
@@ -255,10 +254,11 @@ esac
 AC_CONFIG_FILES([lib/core/test/Makefile])
 AC_CONFIG_FILES([lib/core/Makefile])
 AC_CONFIG_FILES([lib/logger/Makefile])
-AC_CONFIG_FILES([lib/asn/asn1c/Makefile])
+AC_CONFIG_FILES([lib/asn/src/asn1c/Makefile])
 AC_CONFIG_FILES([lib/asn/src/Makefile])
 AC_CONFIG_FILES([lib/asn/test/Makefile])
 AC_CONFIG_FILES([lib/asn/Makefile])
+AC_CONFIG_FILES([lib/Makefile])
 AC_CONFIG_FILES([src/Makefile])
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

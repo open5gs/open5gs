@@ -14,7 +14,7 @@ testasn_LDADD = \
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \
-    -I$(top_srcdir)/lib/asn/asn1c \
+    -I$(top_srcdir)/lib/asn/src/asn1c \
     -I$(top_srcdir)/lib/asn/src
 
 AM_CFLAGS = \

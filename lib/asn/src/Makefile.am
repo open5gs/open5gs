@@ -1,5 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 
+SUBDIRS = asn1c
+
 noinst_LTLIBRARIES = libasn.la
 
 libasn_la_SOURCES = \
@@ -11,15 +13,15 @@ nodist_libasn_la_SOURCES = \
 	s1ap_mme_encoder.c s1ap_mme_decoder.c
 
 libasn_la_DEPENDENCIES = \
-    $(top_srcdir)/lib/asn/asn1c/libasn1c.la
+    $(top_srcdir)/lib/asn/src/asn1c/libasn1c.la
 
 libasn_la_LIBADD = \
-    $(top_srcdir)/lib/asn/asn1c/libasn1c.la
+    $(top_srcdir)/lib/asn/src/asn1c/libasn1c.la
 
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \
-    -I$(top_srcdir)/lib/asn/asn1c
+    -I$(top_srcdir)/lib/asn/src/asn1c
 
 AM_CFLAGS = \
 	-Wall -Werror -Wno-incompatible-pointer-types

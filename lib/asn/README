@@ -17,7 +17,7 @@ user@host Documents/~/git/AuthenticEshkinKot$ \
     autoreconf -iv;./configure;make
 
 * ASN.1 encoder/decoder
-user@host ~/Documents/git/cellwire/lib/asn/asn1c$ \
-    ../../../../AuthenticEshkinKot/asn1c/asn1c \
+user@host ~/Documents/git/cellwire/lib/asn/src/asn1c$ \
+    ../../../../../AuthenticEshkinKot/asn1c/asn1c \
     -fcompound-names -gen-PER ../support/S1AP-PDU.asn
 
