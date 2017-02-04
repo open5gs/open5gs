@@ -19,6 +19,7 @@ static void s1ap_test1(abts_case *tc, void *data)
     s1ap_message message;
     int result;
 
+    memset(&message, 0, sizeof(s1ap_message));
     result = s1ap_mme_decode_pdu(&message, (unsigned char*)buffer[0], 49);
     ABTS_INT_EQUAL(tc, 0, result);
 }
@@ -32,6 +33,7 @@ static void s1ap_test2(abts_case *tc, void *data)
     s1ap_message message;
     int result;
 
+    memset(&message, 0, sizeof(s1ap_message));
     result = s1ap_mme_decode_pdu(&message, (unsigned char*)buffer[0], 115);
     ABTS_INT_EQUAL(tc, 0, result);
 }
@@ -45,6 +47,7 @@ static void s1ap_test3(abts_case *tc, void *data)
     s1ap_message message;
     int result;
 
+    memset(&message, 0, sizeof(s1ap_message));
     result = s1ap_mme_decode_pdu(&message, (unsigned char*)buffer[0], 41);
     ABTS_INT_EQUAL(tc, 0, result);
 }
@@ -54,6 +57,7 @@ abts_suite *test_s1ap(abts_suite *suite)
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, s1ap_test1, NULL);
+    abts_run_test(suite, s1ap_test2, NULL);
     abts_run_test(suite, s1ap_test3, NULL);
 
     return suite;

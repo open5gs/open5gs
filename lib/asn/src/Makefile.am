@@ -9,7 +9,7 @@ libasn_la_SOURCES = \
 
 nodist_libasn_la_SOURCES = \
 	s1ap_common.c \
-	s1ap_encoder.c s1ap_decoder.c s1ap_xer_print.c \
+	s1ap_ies_encoder.c s1ap_ies_decoder.c s1ap_ies_xer_print.c \
 	s1ap_mme_encoder.c s1ap_mme_decoder.c
 
 libasn_la_DEPENDENCIES = \

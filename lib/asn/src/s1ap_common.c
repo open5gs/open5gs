@@ -37,7 +37,7 @@
 #endif
 
 int                                     asn_debug = 0;
-int                                     asn1_xer_print = 1;
+int                                     asn1_xer_print = 0;
 
 void free_wrapper(void *ptr)
 {

@@ -58,8 +58,8 @@ s1ap_mme_decode_initiating (
 #endif
   d_assert(initiating_p != NULL, return -1, "Null param");
   message_string = calloc (10000, sizeof (char));
-#if 0
   s1ap_string_total_size = 0;
+#if 0
   message->procedureCode = initiating_p->procedureCode;
   message->criticality = initiating_p->criticality;
 #endif
@@ -77,6 +77,7 @@ s1ap_mme_decode_initiating (
     case S1ap_ProcedureCode_id_S1Setup: {
         ret = s1ap_decode_s1ap_s1setuprequesties (&message->msg.s1ap_S1SetupRequestIEs, &initiating_p->value);
         s1ap_xer_print_s1ap_s1setuprequest (s1ap_xer__print2sp, message_string, message);
+        printf("%s\n", message_string);
 #if 0
         message_id = S1AP_S1_SETUP_LOG;
 #endif
@@ -86,6 +87,7 @@ s1ap_mme_decode_initiating (
     case S1ap_ProcedureCode_id_initialUEMessage: {
         ret = s1ap_decode_s1ap_initialuemessage_ies (&message->msg.s1ap_InitialUEMessage_IEs, &initiating_p->value);
         s1ap_xer_print_s1ap_initialuemessage (s1ap_xer__print2sp, message_string, message);
+        printf("%s\n", message_string);
 #if 0
         message_id = S1AP_INITIAL_UE_MESSAGE_LOG;
 #endif
@@ -152,8 +154,8 @@ s1ap_mme_decode_successfull_outcome (
 #endif
   d_assert(successfullOutcome_p != NULL, return -1, "Null param");
   message_string = calloc (10000, sizeof (char));
-#if 0
   s1ap_string_total_size = 0;
+#if 0
   message->procedureCode = successfullOutcome_p->procedureCode;
   message->criticality = successfullOutcome_p->criticality;
 #endif
@@ -162,6 +164,7 @@ s1ap_mme_decode_successfull_outcome (
     case S1ap_ProcedureCode_id_InitialContextSetup: {
         ret = s1ap_decode_s1ap_initialcontextsetupresponseies (&message->msg.s1ap_InitialContextSetupResponseIEs, &successfullOutcome_p->value);
         s1ap_xer_print_s1ap_initialcontextsetupresponse (s1ap_xer__print2sp, message_string, message);
+        printf("%s\n", message_string);
 #if 0
         message_id = S1AP_INITIAL_CONTEXT_SETUP_LOG;
 #endif
@@ -209,8 +212,8 @@ s1ap_mme_decode_unsuccessfull_outcome (
 #endif
   d_assert(unSuccessfulOutcome_p != NULL, return -1, "Null param");
   message_string = calloc (10000, sizeof (char));
-#if 0
   s1ap_string_total_size = 0;
+#if 0
   message->procedureCode = unSuccessfulOutcome_p->procedureCode;
   message->criticality = unSuccessfulOutcome_p->criticality;
 #endif
