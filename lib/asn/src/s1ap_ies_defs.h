@@ -33,7 +33,7 @@
  * Created on: 2017-02-04 23:11:39.374543 by acetcom
  * from ['S1AP-PDU.asn']
  ******************************************************************************/
-#include "s1ap_common.h"
+#include "s1ap_asn1c.h"
 
 #ifndef S1AP_IES_DEFS_H_
 #define S1AP_IES_DEFS_H_
@@ -3304,6 +3304,9 @@ int s1ap_xer__print2sp(const void *buffer, size_t size, void *app_key);
 int s1ap_xer__print2fp(const void *buffer, size_t size, void *app_key);
 
 extern size_t s1ap_string_total_size;
+
+S1ap_IE_t *s1ap_new_ie(S1ap_ProtocolIE_ID_t id, S1ap_Criticality_t criticality,
+    asn_TYPE_descriptor_t *type, void *sptr);
 
 #endif /* S1AP_IES_DEFS_H_ */
 

@@ -39,7 +39,6 @@
 #include <asn_application.h>
 #include <asn_internal.h>
 
-#include "s1ap_common.h"
 #include "s1ap_ies_defs.h"
 
 size_t s1ap_string_total_size = 0;

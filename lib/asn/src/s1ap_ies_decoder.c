@@ -34,7 +34,6 @@
  * from ['S1AP-PDU.asn']
  ******************************************************************************/
 #define TRACE_MODULE ies_decoder
-#include "s1ap_common.h"
 #include "s1ap_ies_defs.h"
 #include "core_debug.h"
 

@@ -33,7 +33,8 @@
  * Created on: 2017-02-04 23:11:39.421820 by acetcom
  * from ['S1AP-PDU.asn']
  ******************************************************************************/
-#include "s1ap_common.h"
+#include "core_debug.h"
+
 #include "s1ap_ies_defs.h"
 
 int s1ap_encode_s1ap_deactivatetraceies(
@@ -4416,5 +4417,31 @@ int s1ap_encode_s1ap_ue_associatedlogicals1_connectionlistresack(
         ASN_SEQUENCE_ADD(&s1ap_UE_associatedLogicalS1_ConnectionListResAck->list, ie);
     }
     return 0;
+}
+
+S1ap_IE_t *s1ap_new_ie(S1ap_ProtocolIE_ID_t id, S1ap_Criticality_t criticality,
+    asn_TYPE_descriptor_t *type, void *sptr)
+{
+    S1ap_IE_t *buff;
+
+    if ((buff = malloc (sizeof (S1ap_IE_t))) == NULL) 
+    {
+        // Possible error on malloc
+        return NULL;
+    }
+
+    memset((void *)buff, 0, sizeof(S1ap_IE_t));
+    buff->id = id;
+    buff->criticality = criticality;
+
+    if (ANY_fromType_aper(&buff->value, type, sptr) < 0) 
+    {
+        d_error("Encoding of %s failed\n", type->name);
+        free (buff);
+        buff = NULL;
+        return NULL;
+    }
+
+    return buff;
 }
 
