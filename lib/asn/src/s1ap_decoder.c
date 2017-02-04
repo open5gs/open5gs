@@ -174,16 +174,17 @@ static int s1ap_decode_unsuccessfull_outcome(s1ap_message *message,
     return ret;
 }
 
-int s1ap_decode_pdu(s1ap_message *message, uint8_t *buffer, uint32_t len) 
+int s1ap_decode_pdu(s1ap_message *message, pkbuf_t *pkb)
 {
     S1AP_PDU_t pdu = {0};
     S1AP_PDU_t *pdu_p = &pdu;
     asn_dec_rval_t dec_ret = {0};
 
-    d_assert(buffer, return -1, "Null param");
+    d_assert(pkb, return -1, "Null param");
+    d_assert(pkb->payload, return -1, "Null param");
     memset((void *)pdu_p, 0, sizeof(S1AP_PDU_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1AP_PDU, (void **)&pdu_p, 
-            buffer, len, 0, 0);
+            pkb->payload, pkb->len, 0, 0);
 
     if (dec_ret.code != RC_OK) 
     {
@@ -194,33 +195,24 @@ int s1ap_decode_pdu(s1ap_message *message, uint8_t *buffer, uint32_t len)
     memset(message, 0, sizeof(s1ap_message));
 
     message->direction = pdu_p->present;
-
     switch (pdu_p->present) 
     {
         case S1AP_PDU_PR_initiatingMessage:
-        {
             return s1ap_decode_initiating(message, 
                     &pdu_p->choice.initiatingMessage);
-        }
 
         case S1AP_PDU_PR_successfulOutcome:
-        {
             return s1ap_decode_successfull_outcome(message, 
                     &pdu_p->choice.successfulOutcome);
-        }
 
         case S1AP_PDU_PR_unsuccessfulOutcome:
-        {
             return s1ap_decode_unsuccessfull_outcome(message, 
                     &pdu_p->choice.unsuccessfulOutcome);
-        }
 
         default:
-        {
             d_error("Unknown message outcome (%d) or not implemented", 
                     (int)pdu_p->present);
             break;
-        }
     }
 
     return -1;

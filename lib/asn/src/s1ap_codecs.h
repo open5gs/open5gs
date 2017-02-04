@@ -1,7 +1,7 @@
 #ifndef _S1AP_CODECS_H__
 #define _S1AP_CODECS_H__
 
-#include "core.h"
+#include "core_pkbuf.h"
 
 #include "s1ap_ies_defs.h"
 
@@ -9,8 +9,9 @@
 extern "C" {
 #endif /* __cplusplus */
 
-CORE_DECLARE(int) s1ap_decode_pdu(s1ap_message *message, 
-        uint8_t *buffer, uint32_t len);
+#define S1AP_SDU_SIZE 2048
+
+CORE_DECLARE(int) s1ap_decode_pdu(s1ap_message *message, pkbuf_t *pkbuf);
 
 CORE_DECLARE(int) s1ap_encode_pdu(s1ap_message *message, 
         uint8_t **buffer, uint32_t *len);
