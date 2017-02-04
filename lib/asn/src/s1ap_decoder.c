@@ -8,13 +8,13 @@ void free_wrapper(void *ptr)
     ptr = NULL;
 }
 
-static status_t s1ap_decode_initiating(s1ap_message *message,
+static int s1ap_decode_initiating(s1ap_message *message,
   S1ap_InitiatingMessage_t *initiating_p)
 {
-    status_t ret;
+    int ret;
     char *message_string = NULL;
 
-    d_assert(initiating_p != NULL, return -1, "Null param");
+    d_assert(initiating_p, return -1, "Null param");
     message_string = calloc (10000, sizeof (char));
     s1ap_string_total_size = 0;
 
@@ -81,10 +81,10 @@ static status_t s1ap_decode_initiating(s1ap_message *message,
 
         default: 
         {
-            d_error("Unknown procedure ID (%d) for initiating message\n", 
+            d_error("Unknown procedure ID (%d) for initiating message", 
                     (int)initiating_p->procedureCode);
-            d_assert(0, return CORE_ERROR, 
-                    "Unknown procedure ID (%d) for initiating message\n", 
+            d_assert(0, return -1, 
+                    "Unknown procedure ID (%d) for initiating message", 
                     (int)initiating_p->procedureCode);
         }
         break;
@@ -95,13 +95,13 @@ static status_t s1ap_decode_initiating(s1ap_message *message,
     return ret;
 }
 
-static status_t s1ap_decode_successfull_outcome(s1ap_message *message,
+static int s1ap_decode_successfull_outcome(s1ap_message *message,
     S1ap_SuccessfulOutcome_t *successfullOutcome_p) 
 {
-    status_t ret = CORE_ERROR;
+    int ret = -1;
     char *message_string = NULL;
 
-    d_assert(successfullOutcome_p != NULL, return -1, "Null param");
+    d_assert(successfullOutcome_p, return -1, "Null param");
     message_string = calloc (10000, sizeof (char));
     s1ap_string_total_size = 0;
 
@@ -129,7 +129,7 @@ static status_t s1ap_decode_successfull_outcome(s1ap_message *message,
 
         default: 
             d_error("Unknown procedure ID (%ld) for successfull "
-                    "outcome message\n", successfullOutcome_p->procedureCode);
+                    "outcome message", successfullOutcome_p->procedureCode);
             break;
     }
 
@@ -138,13 +138,13 @@ static status_t s1ap_decode_successfull_outcome(s1ap_message *message,
     return ret;
 }
 
-static status_t s1ap_decode_unsuccessfull_outcome(s1ap_message *message,
+static int s1ap_decode_unsuccessfull_outcome(s1ap_message *message,
   S1ap_UnsuccessfulOutcome_t *unSuccessfulOutcome_p) 
 {
-    status_t ret = -1;
+    int ret = -1;
     char *message_string = NULL;
 
-    d_assert(unSuccessfulOutcome_p != NULL, return -1, "Null param");
+    d_assert(unSuccessfulOutcome_p, return -1, "Null param");
     message_string = calloc (10000, sizeof (char));
     s1ap_string_total_size = 0;
 
@@ -163,7 +163,7 @@ static status_t s1ap_decode_unsuccessfull_outcome(s1ap_message *message,
         default: 
         {
             d_error("Unknown procedure ID (%d) for "
-                    "unsuccessfull outcome message\n", 
+                    "unsuccessfull outcome message", 
                     (int)unSuccessfulOutcome_p->procedureCode);
         }
         break;
@@ -174,21 +174,21 @@ static status_t s1ap_decode_unsuccessfull_outcome(s1ap_message *message,
     return ret;
 }
 
-status_t s1ap_parse_pdu(s1ap_message *message, uint8_t *buffer, uint32_t len) 
+int s1ap_decode_pdu(s1ap_message *message, uint8_t *buffer, uint32_t len) 
 {
     S1AP_PDU_t pdu = {0};
     S1AP_PDU_t *pdu_p = &pdu;
     asn_dec_rval_t dec_ret = {0};
 
-    d_assert(buffer != NULL, return CORE_ERROR, "Null param");
+    d_assert(buffer, return -1, "Null param");
     memset((void *)pdu_p, 0, sizeof(S1AP_PDU_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1AP_PDU, (void **)&pdu_p, 
             buffer, len, 0, 0);
 
     if (dec_ret.code != RC_OK) 
     {
-        d_error("Failed to decode PDU\n");
-        return CORE_ERROR;
+        d_error("Failed to decode PDU");
+        return -1;
     }
 
     memset(message, 0, sizeof(s1ap_message));
@@ -223,5 +223,5 @@ status_t s1ap_parse_pdu(s1ap_message *message, uint8_t *buffer, uint32_t len)
         }
     }
 
-    return CORE_ERROR;
+    return -1;
 }

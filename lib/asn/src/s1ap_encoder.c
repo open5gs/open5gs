@@ -25,8 +25,8 @@ ssize_t s1ap_generate_initiating_message(uint8_t **buffer, uint32_t *length,
     if ((encoded = aper_encode_to_new_buffer(
                     &asn_DEF_S1AP_PDU, 0, &pdu, (void **)buffer)) < 0) 
     {
-        d_error("Encoding of %s failed\n", td->name);
-        return CORE_ERROR;
+        d_error("Encoding of %s failed", td->name);
+        return -1;
     }
 
     *length = encoded;
@@ -54,8 +54,8 @@ ssize_t s1ap_generate_successfull_outcome(uint8_t **buffer, uint32_t *length,
     if ((encoded = aper_encode_to_new_buffer (
                     &asn_DEF_S1AP_PDU, 0, &pdu, (void **)buffer)) < 0) 
     {
-        d_error("Encoding of %s failed\n", td->name);
-        return CORE_ERROR;
+        d_error("Encoding of %s failed", td->name);
+        return -1;
     }
 
     *length = encoded;
@@ -83,8 +83,8 @@ ssize_t s1ap_generate_unsuccessfull_outcome(uint8_t **buffer, uint32_t *length,
     if ((encoded = aper_encode_to_new_buffer(
                     &asn_DEF_S1AP_PDU, 0, &pdu, (void **)buffer)) < 0) 
     {
-        d_error("Encoding of %s failed\n", td->name);
-        return CORE_ERROR;
+        d_error("Encoding of %s failed", td->name);
+        return -1;
     }
 
     *length = encoded;
@@ -105,7 +105,7 @@ static inline int s1ap_encode_initial_context_setup_request(
             initialContextSetupRequest_p, 
             &message_p->msg.s1ap_InitialContextSetupRequestIEs) < 0) 
     {
-        return CORE_ERROR;
+        return -1;
     }
 
     return s1ap_generate_initiating_message(buffer, length, 
@@ -125,7 +125,7 @@ static inline int s1ap_encode_s1setupresponse(
     if (s1ap_encode_s1ap_s1setupresponseies(
             s1SetupResponse_p, &message_p->msg.s1ap_S1SetupResponseIEs) < 0) 
     {
-        return CORE_ERROR;
+        return -1;
     }
 
     return s1ap_generate_successfull_outcome(buffer, length, 
@@ -144,7 +144,7 @@ static inline int s1ap_encode_s1setupfailure(
     if (s1ap_encode_s1ap_s1setupfailureies(
             s1SetupFailure_p, &message_p->msg.s1ap_S1SetupFailureIEs) < 0) 
     {
-        return CORE_ERROR;
+        return -1;
     }
 
     return s1ap_generate_unsuccessfull_outcome(buffer, length, 
@@ -166,7 +166,7 @@ static inline int s1ap_encode_downlink_nas_transport(
     if (s1ap_encode_s1ap_downlinknastransport_ies( downlinkNasTransport_p, 
             &message_p->msg.s1ap_DownlinkNASTransport_IEs) < 0) 
     {
-        return CORE_ERROR;
+        return -1;
     }
 
     /*
@@ -193,7 +193,7 @@ static inline int s1ap_encode_ue_context_release_command (
     if (s1ap_encode_s1ap_uecontextreleasecommand_ies(ueContextReleaseCommand_p,
             &message_p->msg.s1ap_UEContextReleaseCommand_IEs) < 0) 
     {
-        return CORE_ERROR;
+        return -1;
     }
 
     return s1ap_generate_initiating_message(buffer, length,
@@ -224,7 +224,7 @@ static inline int s1ap_encode_initiating(
             break;
     }
 
-    return CORE_ERROR;
+    return -1;
 }
 
 static inline int s1ap_encode_successfull_outcome (
@@ -241,13 +241,14 @@ static inline int s1ap_encode_successfull_outcome (
         break;
     }
 
-    return CORE_ERROR;
+    return -1;
 }
 
 static inline int s1ap_encode_unsuccessfull_outcome(
     s1ap_message *message_p, uint8_t **buffer, uint32_t *length)
 {
-    switch (message_p->procedureCode) {
+    switch (message_p->procedureCode) 
+    {
         case S1ap_ProcedureCode_id_S1Setup:
             return s1ap_encode_s1setupfailure(message_p, buffer, length);
 
@@ -257,16 +258,17 @@ static inline int s1ap_encode_unsuccessfull_outcome(
         break;
     }
 
-    return CORE_ERROR;
+    return -1;
 }
 
-int s1ap_build_pdu(s1ap_message *message_p, uint8_t **buffer, uint32_t *length)
+int s1ap_encode_pdu(s1ap_message *message_p, uint8_t **buffer, uint32_t *length)
 {
-    d_assert (message_p != NULL, return CORE_ERROR, "Null param");
-    d_assert (buffer != NULL, return CORE_ERROR, "Null param");
-    d_assert (length != NULL, return CORE_ERROR, "Null param");
+    d_assert (message_p, return -1, "Null param");
+    d_assert (buffer, return -1, "Null param");
+    d_assert (length, return -1, "Null param");
 
-    switch (message_p->direction) {
+    switch (message_p->direction) 
+    {
         case S1AP_PDU_PR_initiatingMessage:
             return s1ap_encode_initiating(message_p, buffer, length);
 
@@ -282,5 +284,5 @@ int s1ap_build_pdu(s1ap_message *message_p, uint8_t **buffer, uint32_t *length)
             break;
     }
 
-    return CORE_ERROR;
+    return -1;
 }

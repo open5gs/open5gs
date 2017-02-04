@@ -17,7 +17,7 @@ static void s1ap_test1(abts_case *tc, void *data)
     s1ap_message message;
     int result;
 
-    result = s1ap_parse_pdu(&message, (unsigned char*)buffer[0], 49);
+    result = s1ap_decode_pdu(&message, (unsigned char*)buffer[0], 49);
     ABTS_INT_EQUAL(tc, 0, result);
 }
 
@@ -30,7 +30,7 @@ static void s1ap_test2(abts_case *tc, void *data)
     s1ap_message message;
     int result;
 
-    result = s1ap_parse_pdu(&message, (unsigned char*)buffer[0], 115);
+    result = s1ap_decode_pdu(&message, (unsigned char*)buffer[0], 115);
     ABTS_INT_EQUAL(tc, 0, result);
 }
 
@@ -43,7 +43,7 @@ static void s1ap_test3(abts_case *tc, void *data)
     s1ap_message message;
     int result;
 
-    result = s1ap_parse_pdu(&message, (unsigned char*)buffer[0], 41);
+    result = s1ap_decode_pdu(&message, (unsigned char*)buffer[0], 41);
     ABTS_INT_EQUAL(tc, 0, result);
 }
 

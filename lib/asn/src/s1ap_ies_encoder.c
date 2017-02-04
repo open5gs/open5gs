@@ -30,7 +30,7 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-02-05 01:02:16.452844 by acetcom
+ * Created on: 2017-02-05 01:09:14.357147 by acetcom
  * from ['S1AP-PDU.asn']
  ******************************************************************************/
 #include "core_debug.h"
@@ -42,8 +42,8 @@ int s1ap_encode_s1ap_deactivatetraceies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_DeactivateTrace != NULL);
-    assert(s1ap_DeactivateTraceIEs != NULL);
+    d_assert(s1ap_DeactivateTrace, return -1, "Null param");
+    d_assert(s1ap_DeactivateTraceIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -78,8 +78,8 @@ int s1ap_encode_s1ap_enbdirectinformationtransferies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_ENBDirectInformationTransfer != NULL);
-    assert(s1ap_ENBDirectInformationTransferIEs != NULL);
+    d_assert(s1ap_ENBDirectInformationTransfer, return -1, "Null param");
+    d_assert(s1ap_ENBDirectInformationTransferIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Inter_SystemInformationTransferTypeEDT,
                         S1ap_Criticality_reject,
@@ -98,8 +98,8 @@ int s1ap_encode_s1ap_e_rabreleaseresponseies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_E_RABReleaseResponse != NULL);
-    assert(s1ap_E_RABReleaseResponseIEs != NULL);
+    d_assert(s1ap_E_RABReleaseResponse, return -1, "Null param");
+    d_assert(s1ap_E_RABReleaseResponseIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
@@ -159,8 +159,8 @@ int s1ap_encode_s1ap_uplinknonueassociatedlppatransport_ies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_UplinkNonUEAssociatedLPPaTransport != NULL);
-    assert(s1ap_UplinkNonUEAssociatedLPPaTransport_IEs != NULL);
+    d_assert(s1ap_UplinkNonUEAssociatedLPPaTransport, return -1, "Null param");
+    d_assert(s1ap_UplinkNonUEAssociatedLPPaTransport_IEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Routing_ID,
                         S1ap_Criticality_reject,
@@ -187,8 +187,8 @@ int s1ap_encode_s1ap_tracestarties(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_TraceStart != NULL);
-    assert(s1ap_TraceStartIEs != NULL);
+    d_assert(s1ap_TraceStart, return -1, "Null param");
+    d_assert(s1ap_TraceStartIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -223,8 +223,8 @@ int s1ap_encode_s1ap_writereplacewarningresponseies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_WriteReplaceWarningResponse != NULL);
-    assert(s1ap_WriteReplaceWarningResponseIEs != NULL);
+    d_assert(s1ap_WriteReplaceWarningResponse, return -1, "Null param");
+    d_assert(s1ap_WriteReplaceWarningResponseIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MessageIdentifier,
                         S1ap_Criticality_reject,
@@ -273,8 +273,8 @@ int s1ap_encode_s1ap_handovercancelies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_HandoverCancel != NULL);
-    assert(s1ap_HandoverCancelIEs != NULL);
+    d_assert(s1ap_HandoverCancel, return -1, "Null param");
+    d_assert(s1ap_HandoverCancelIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -309,8 +309,8 @@ int s1ap_encode_s1ap_handoverpreparationfailureies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_HandoverPreparationFailure != NULL);
-    assert(s1ap_HandoverPreparationFailureIEs != NULL);
+    d_assert(s1ap_HandoverPreparationFailure, return -1, "Null param");
+    d_assert(s1ap_HandoverPreparationFailureIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
@@ -356,8 +356,8 @@ int s1ap_encode_s1ap_uecontextreleaserequest_ies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_UEContextReleaseRequest != NULL);
-    assert(s1ap_UEContextReleaseRequest_IEs != NULL);
+    d_assert(s1ap_UEContextReleaseRequest, return -1, "Null param");
+    d_assert(s1ap_UEContextReleaseRequest_IEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -403,8 +403,8 @@ int s1ap_encode_s1ap_initialuemessage_ies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_InitialUEMessage != NULL);
-    assert(s1ap_InitialUEMessage_IEs != NULL);
+    d_assert(s1ap_InitialUEMessage, return -1, "Null param");
+    d_assert(s1ap_InitialUEMessage_IEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -521,8 +521,8 @@ int s1ap_encode_s1ap_killrequesties(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_KillRequest != NULL);
-    assert(s1ap_KillRequestIEs != NULL);
+    d_assert(s1ap_KillRequest, return -1, "Null param");
+    d_assert(s1ap_KillRequestIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MessageIdentifier,
                         S1ap_Criticality_reject,
@@ -560,8 +560,8 @@ int s1ap_encode_s1ap_writereplacewarningrequesties(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_WriteReplaceWarningRequest != NULL);
-    assert(s1ap_WriteReplaceWarningRequestIEs != NULL);
+    d_assert(s1ap_WriteReplaceWarningRequest, return -1, "Null param");
+    d_assert(s1ap_WriteReplaceWarningRequestIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MessageIdentifier,
                         S1ap_Criticality_reject,
@@ -681,8 +681,8 @@ int s1ap_encode_s1ap_uecapabilityinfoindicationies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_UECapabilityInfoIndication != NULL);
-    assert(s1ap_UECapabilityInfoIndicationIEs != NULL);
+    d_assert(s1ap_UECapabilityInfoIndication, return -1, "Null param");
+    d_assert(s1ap_UECapabilityInfoIndicationIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -717,8 +717,8 @@ int s1ap_encode_s1ap_locationreportingfailureindicationies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_LocationReportingFailureIndication != NULL);
-    assert(s1ap_LocationReportingFailureIndicationIEs != NULL);
+    d_assert(s1ap_LocationReportingFailureIndication, return -1, "Null param");
+    d_assert(s1ap_LocationReportingFailureIndicationIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -753,8 +753,8 @@ int s1ap_encode_s1ap_initialcontextsetuprequesties(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_InitialContextSetupRequest != NULL);
-    assert(s1ap_InitialContextSetupRequestIEs != NULL);
+    d_assert(s1ap_InitialContextSetupRequest, return -1, "Null param");
+    d_assert(s1ap_InitialContextSetupRequestIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -942,8 +942,8 @@ int s1ap_encode_s1ap_locationreporties(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_LocationReport != NULL);
-    assert(s1ap_LocationReportIEs != NULL);
+    d_assert(s1ap_LocationReport, return -1, "Null param");
+    d_assert(s1ap_LocationReportIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -994,8 +994,8 @@ int s1ap_encode_s1ap_uplinknastransport_ies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_UplinkNASTransport != NULL);
-    assert(s1ap_UplinkNASTransport_IEs != NULL);
+    d_assert(s1ap_UplinkNASTransport, return -1, "Null param");
+    d_assert(s1ap_UplinkNASTransport_IEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -1057,8 +1057,8 @@ int s1ap_encode_s1ap_uecontextmodificationresponseies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_UEContextModificationResponse != NULL);
-    assert(s1ap_UEContextModificationResponseIEs != NULL);
+    d_assert(s1ap_UEContextModificationResponse, return -1, "Null param");
+    d_assert(s1ap_UEContextModificationResponseIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
@@ -1096,8 +1096,8 @@ int s1ap_encode_s1ap_uecontextmodificationrequesties(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_UEContextModificationRequest != NULL);
-    assert(s1ap_UEContextModificationRequestIEs != NULL);
+    d_assert(s1ap_UEContextModificationRequest, return -1, "Null param");
+    d_assert(s1ap_UEContextModificationRequestIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -1201,8 +1201,8 @@ int s1ap_encode_s1ap_locationreportingcontrolies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_LocationReportingControl != NULL);
-    assert(s1ap_LocationReportingControlIEs != NULL);
+    d_assert(s1ap_LocationReportingControl, return -1, "Null param");
+    d_assert(s1ap_LocationReportingControlIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -1237,8 +1237,8 @@ int s1ap_encode_s1ap_uplinks1cdma2000tunnelingies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_UplinkS1cdma2000tunneling != NULL);
-    assert(s1ap_UplinkS1cdma2000tunnelingIEs != NULL);
+    d_assert(s1ap_UplinkS1cdma2000tunneling, return -1, "Null param");
+    d_assert(s1ap_UplinkS1cdma2000tunnelingIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -1333,8 +1333,8 @@ int s1ap_encode_s1ap_handoverrequesties(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_HandoverRequest != NULL);
-    assert(s1ap_HandoverRequestIEs != NULL);
+    d_assert(s1ap_HandoverRequest, return -1, "Null param");
+    d_assert(s1ap_HandoverRequestIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -1516,8 +1516,8 @@ int s1ap_encode_s1ap_handoverrequiredies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_HandoverRequired != NULL);
-    assert(s1ap_HandoverRequiredIEs != NULL);
+    d_assert(s1ap_HandoverRequired, return -1, "Null param");
+    d_assert(s1ap_HandoverRequiredIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -1664,8 +1664,8 @@ int s1ap_encode_s1ap_mmeconfigurationupdateacknowledgeies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_MMEConfigurationUpdateAcknowledge != NULL);
-    assert(s1ap_MMEConfigurationUpdateAcknowledgeIEs != NULL);
+    d_assert(s1ap_MMEConfigurationUpdateAcknowledge, return -1, "Null param");
+    d_assert(s1ap_MMEConfigurationUpdateAcknowledgeIEs, return -1, "Null param");
 
     /* Optional field */
     if (s1ap_MMEConfigurationUpdateAcknowledgeIEs->presenceMask & S1AP_MMECONFIGURATIONUPDATEACKNOWLEDGEIES_CRITICALITYDIAGNOSTICS_PRESENT) {
@@ -1687,8 +1687,8 @@ int s1ap_encode_s1ap_killresponseies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_KillResponse != NULL);
-    assert(s1ap_KillResponseIEs != NULL);
+    d_assert(s1ap_KillResponse, return -1, "Null param");
+    d_assert(s1ap_KillResponseIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MessageIdentifier,
                         S1ap_Criticality_reject,
@@ -1737,8 +1737,8 @@ int s1ap_encode_s1ap_mmestatustransferies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_MMEStatusTransfer != NULL);
-    assert(s1ap_MMEStatusTransferIEs != NULL);
+    d_assert(s1ap_MMEStatusTransfer, return -1, "Null param");
+    d_assert(s1ap_MMEStatusTransferIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -1773,8 +1773,8 @@ int s1ap_encode_s1ap_mmeconfigurationupdateies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_MMEConfigurationUpdate != NULL);
-    assert(s1ap_MMEConfigurationUpdateIEs != NULL);
+    d_assert(s1ap_MMEConfigurationUpdate, return -1, "Null param");
+    d_assert(s1ap_MMEConfigurationUpdateIEs, return -1, "Null param");
 
     /* Optional field */
     if (s1ap_MMEConfigurationUpdateIEs->presenceMask & S1AP_MMECONFIGURATIONUPDATEIES_MMENAME_PRESENT) {
@@ -1818,8 +1818,8 @@ int s1ap_encode_s1ap_e_rabmodifyrequesties(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_E_RABModifyRequest != NULL);
-    assert(s1ap_E_RABModifyRequestIEs != NULL);
+    d_assert(s1ap_E_RABModifyRequest, return -1, "Null param");
+    d_assert(s1ap_E_RABModifyRequestIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -1873,8 +1873,8 @@ int s1ap_encode_s1ap_enbconfigurationupdatefailureies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_ENBConfigurationUpdateFailure != NULL);
-    assert(s1ap_ENBConfigurationUpdateFailureIEs != NULL);
+    d_assert(s1ap_ENBConfigurationUpdateFailure, return -1, "Null param");
+    d_assert(s1ap_ENBConfigurationUpdateFailureIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Cause,
                         S1ap_Criticality_ignore,
@@ -1915,8 +1915,8 @@ int s1ap_encode_s1ap_reseties(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_Reset != NULL);
-    assert(s1ap_ResetIEs != NULL);
+    d_assert(s1ap_Reset, return -1, "Null param");
+    d_assert(s1ap_ResetIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Cause,
                         S1ap_Criticality_ignore,
@@ -1943,8 +1943,8 @@ int s1ap_encode_s1ap_s1setupresponseies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_S1SetupResponse != NULL);
-    assert(s1ap_S1SetupResponseIEs != NULL);
+    d_assert(s1ap_S1SetupResponse, return -1, "Null param");
+    d_assert(s1ap_S1SetupResponseIEs, return -1, "Null param");
 
     /* Optional field */
     if (s1ap_S1SetupResponseIEs->presenceMask & S1AP_S1SETUPRESPONSEIES_MMENAME_PRESENT) {
@@ -2004,8 +2004,8 @@ int s1ap_encode_s1ap_pagingies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_Paging != NULL);
-    assert(s1ap_PagingIEs != NULL);
+    d_assert(s1ap_Paging, return -1, "Null param");
+    d_assert(s1ap_PagingIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_UEIdentityIndexValue,
                         S1ap_Criticality_ignore,
@@ -2089,8 +2089,8 @@ int s1ap_encode_s1ap_enbconfigurationupdateacknowledgeies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_ENBConfigurationUpdateAcknowledge != NULL);
-    assert(s1ap_ENBConfigurationUpdateAcknowledgeIEs != NULL);
+    d_assert(s1ap_ENBConfigurationUpdateAcknowledge, return -1, "Null param");
+    d_assert(s1ap_ENBConfigurationUpdateAcknowledgeIEs, return -1, "Null param");
 
     /* Optional field */
     if (s1ap_ENBConfigurationUpdateAcknowledgeIEs->presenceMask & S1AP_ENBCONFIGURATIONUPDATEACKNOWLEDGEIES_CRITICALITYDIAGNOSTICS_PRESENT) {
@@ -2112,8 +2112,8 @@ int s1ap_encode_s1ap_e_rabreleasecommandies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_E_RABReleaseCommand != NULL);
-    assert(s1ap_E_RABReleaseCommandIEs != NULL);
+    d_assert(s1ap_E_RABReleaseCommand, return -1, "Null param");
+    d_assert(s1ap_E_RABReleaseCommandIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -2178,8 +2178,8 @@ int s1ap_encode_s1ap_pathswitchrequestfailureies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_PathSwitchRequestFailure != NULL);
-    assert(s1ap_PathSwitchRequestFailureIEs != NULL);
+    d_assert(s1ap_PathSwitchRequestFailure, return -1, "Null param");
+    d_assert(s1ap_PathSwitchRequestFailureIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
@@ -2225,8 +2225,8 @@ int s1ap_encode_s1ap_e_rabmodifyresponseies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_E_RABModifyResponse != NULL);
-    assert(s1ap_E_RABModifyResponseIEs != NULL);
+    d_assert(s1ap_E_RABModifyResponse, return -1, "Null param");
+    d_assert(s1ap_E_RABModifyResponseIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
@@ -2286,8 +2286,8 @@ int s1ap_encode_s1ap_handovernotifyies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_HandoverNotify != NULL);
-    assert(s1ap_HandoverNotifyIEs != NULL);
+    d_assert(s1ap_HandoverNotify, return -1, "Null param");
+    d_assert(s1ap_HandoverNotifyIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -2330,8 +2330,8 @@ int s1ap_encode_s1ap_handovercancelacknowledgeies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_HandoverCancelAcknowledge != NULL);
-    assert(s1ap_HandoverCancelAcknowledgeIEs != NULL);
+    d_assert(s1ap_HandoverCancelAcknowledge, return -1, "Null param");
+    d_assert(s1ap_HandoverCancelAcknowledgeIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
@@ -2369,8 +2369,8 @@ int s1ap_encode_s1ap_initialcontextsetupfailureies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_InitialContextSetupFailure != NULL);
-    assert(s1ap_InitialContextSetupFailureIEs != NULL);
+    d_assert(s1ap_InitialContextSetupFailure, return -1, "Null param");
+    d_assert(s1ap_InitialContextSetupFailureIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
@@ -2416,8 +2416,8 @@ int s1ap_encode_s1ap_handovercommandies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_HandoverCommand != NULL);
-    assert(s1ap_HandoverCommandIEs != NULL);
+    d_assert(s1ap_HandoverCommand, return -1, "Null param");
+    d_assert(s1ap_HandoverCommandIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -2504,8 +2504,8 @@ int s1ap_encode_s1ap_mmedirectinformationtransferies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_MMEDirectInformationTransfer != NULL);
-    assert(s1ap_MMEDirectInformationTransferIEs != NULL);
+    d_assert(s1ap_MMEDirectInformationTransfer, return -1, "Null param");
+    d_assert(s1ap_MMEDirectInformationTransferIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Inter_SystemInformationTransferTypeMDT,
                         S1ap_Criticality_reject,
@@ -2524,8 +2524,8 @@ int s1ap_encode_s1ap_errorindicationies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_ErrorIndication != NULL);
-    assert(s1ap_ErrorIndicationIEs != NULL);
+    d_assert(s1ap_ErrorIndication, return -1, "Null param");
+    d_assert(s1ap_ErrorIndicationIEs, return -1, "Null param");
 
     /* Optional field */
     if (s1ap_ErrorIndicationIEs->presenceMask & S1AP_ERRORINDICATIONIES_MME_UE_S1AP_ID_PRESENT) {
@@ -2580,8 +2580,8 @@ int s1ap_encode_s1ap_overloadstarties(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_OverloadStart != NULL);
-    assert(s1ap_OverloadStartIEs != NULL);
+    d_assert(s1ap_OverloadStart, return -1, "Null param");
+    d_assert(s1ap_OverloadStartIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_OverloadResponse,
                         S1ap_Criticality_reject,
@@ -2622,8 +2622,8 @@ int s1ap_encode_s1ap_downlinknonueassociatedlppatransport_ies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_DownlinkNonUEAssociatedLPPaTransport != NULL);
-    assert(s1ap_DownlinkNonUEAssociatedLPPaTransport_IEs != NULL);
+    d_assert(s1ap_DownlinkNonUEAssociatedLPPaTransport, return -1, "Null param");
+    d_assert(s1ap_DownlinkNonUEAssociatedLPPaTransport_IEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Routing_ID,
                         S1ap_Criticality_reject,
@@ -2650,8 +2650,8 @@ int s1ap_encode_s1ap_handoverrequestacknowledgeies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_HandoverRequestAcknowledge != NULL);
-    assert(s1ap_HandoverRequestAcknowledgeIEs != NULL);
+    d_assert(s1ap_HandoverRequestAcknowledge, return -1, "Null param");
+    d_assert(s1ap_HandoverRequestAcknowledgeIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
@@ -2735,8 +2735,8 @@ int s1ap_encode_s1ap_downlinkueassociatedlppatransport_ies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_DownlinkUEAssociatedLPPaTransport != NULL);
-    assert(s1ap_DownlinkUEAssociatedLPPaTransport_IEs != NULL);
+    d_assert(s1ap_DownlinkUEAssociatedLPPaTransport, return -1, "Null param");
+    d_assert(s1ap_DownlinkUEAssociatedLPPaTransport_IEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -2779,8 +2779,8 @@ int s1ap_encode_s1ap_uecontextmodificationfailureies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_UEContextModificationFailure != NULL);
-    assert(s1ap_UEContextModificationFailureIEs != NULL);
+    d_assert(s1ap_UEContextModificationFailure, return -1, "Null param");
+    d_assert(s1ap_UEContextModificationFailureIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
@@ -2826,8 +2826,8 @@ int s1ap_encode_s1ap_mmeconfigurationtransferies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_MMEConfigurationTransfer != NULL);
-    assert(s1ap_MMEConfigurationTransferIEs != NULL);
+    d_assert(s1ap_MMEConfigurationTransfer, return -1, "Null param");
+    d_assert(s1ap_MMEConfigurationTransferIEs, return -1, "Null param");
 
     /* Optional field */
     if (s1ap_MMEConfigurationTransferIEs->presenceMask & S1AP_MMECONFIGURATIONTRANSFERIES_SONCONFIGURATIONTRANSFERMCT_PRESENT) {
@@ -2849,8 +2849,8 @@ int s1ap_encode_s1ap_pathswitchrequestacknowledgeies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_PathSwitchRequestAcknowledge != NULL);
-    assert(s1ap_PathSwitchRequestAcknowledgeIEs != NULL);
+    d_assert(s1ap_PathSwitchRequestAcknowledge, return -1, "Null param");
+    d_assert(s1ap_PathSwitchRequestAcknowledgeIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
@@ -2940,8 +2940,8 @@ int s1ap_encode_s1ap_s1setupfailureies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_S1SetupFailure != NULL);
-    assert(s1ap_S1SetupFailureIEs != NULL);
+    d_assert(s1ap_S1SetupFailure, return -1, "Null param");
+    d_assert(s1ap_S1SetupFailureIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Cause,
                         S1ap_Criticality_ignore,
@@ -2982,8 +2982,8 @@ int s1ap_encode_s1ap_mmeconfigurationupdatefailureies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_MMEConfigurationUpdateFailure != NULL);
-    assert(s1ap_MMEConfigurationUpdateFailureIEs != NULL);
+    d_assert(s1ap_MMEConfigurationUpdateFailure, return -1, "Null param");
+    d_assert(s1ap_MMEConfigurationUpdateFailureIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Cause,
                         S1ap_Criticality_ignore,
@@ -3024,8 +3024,8 @@ int s1ap_encode_s1ap_initialcontextsetupresponseies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_InitialContextSetupResponse != NULL);
-    assert(s1ap_InitialContextSetupResponseIEs != NULL);
+    d_assert(s1ap_InitialContextSetupResponse, return -1, "Null param");
+    d_assert(s1ap_InitialContextSetupResponseIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
@@ -3090,8 +3090,8 @@ int s1ap_encode_s1ap_downlinks1cdma2000tunnelingies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_DownlinkS1cdma2000tunneling != NULL);
-    assert(s1ap_DownlinkS1cdma2000tunnelingIEs != NULL);
+    d_assert(s1ap_DownlinkS1cdma2000tunneling, return -1, "Null param");
+    d_assert(s1ap_DownlinkS1cdma2000tunnelingIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -3156,8 +3156,8 @@ int s1ap_encode_s1ap_overloadstopies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_OverloadStop != NULL);
-    assert(s1ap_OverloadStopIEs != NULL);
+    d_assert(s1ap_OverloadStop, return -1, "Null param");
+    d_assert(s1ap_OverloadStopIEs, return -1, "Null param");
 
     /* Optional field */
     if (s1ap_OverloadStopIEs->presenceMask & S1AP_OVERLOADSTOPIES_GUMMEILIST_PRESENT) {
@@ -3179,8 +3179,8 @@ int s1ap_encode_s1ap_enbconfigurationupdateies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_ENBConfigurationUpdate != NULL);
-    assert(s1ap_ENBConfigurationUpdateIEs != NULL);
+    d_assert(s1ap_ENBConfigurationUpdate, return -1, "Null param");
+    d_assert(s1ap_ENBConfigurationUpdateIEs, return -1, "Null param");
 
     /* Optional field */
     if (s1ap_ENBConfigurationUpdateIEs->presenceMask & S1AP_ENBCONFIGURATIONUPDATEIES_ENBNAME_PRESENT) {
@@ -3235,8 +3235,8 @@ int s1ap_encode_s1ap_tracefailureindicationies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_TraceFailureIndication != NULL);
-    assert(s1ap_TraceFailureIndicationIEs != NULL);
+    d_assert(s1ap_TraceFailureIndication, return -1, "Null param");
+    d_assert(s1ap_TraceFailureIndicationIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -3279,8 +3279,8 @@ int s1ap_encode_s1ap_enbconfigurationtransferies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_ENBConfigurationTransfer != NULL);
-    assert(s1ap_ENBConfigurationTransferIEs != NULL);
+    d_assert(s1ap_ENBConfigurationTransfer, return -1, "Null param");
+    d_assert(s1ap_ENBConfigurationTransferIEs, return -1, "Null param");
 
     /* Optional field */
     if (s1ap_ENBConfigurationTransferIEs->presenceMask & S1AP_ENBCONFIGURATIONTRANSFERIES_SONCONFIGURATIONTRANSFERECT_PRESENT) {
@@ -3302,8 +3302,8 @@ int s1ap_encode_s1ap_handoverfailureies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_HandoverFailure != NULL);
-    assert(s1ap_HandoverFailureIEs != NULL);
+    d_assert(s1ap_HandoverFailure, return -1, "Null param");
+    d_assert(s1ap_HandoverFailureIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
@@ -3341,8 +3341,8 @@ int s1ap_encode_s1ap_e_rabsetupresponseies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_E_RABSetupResponse != NULL);
-    assert(s1ap_E_RABSetupResponseIEs != NULL);
+    d_assert(s1ap_E_RABSetupResponse, return -1, "Null param");
+    d_assert(s1ap_E_RABSetupResponseIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
@@ -3402,8 +3402,8 @@ int s1ap_encode_s1ap_uecontextreleasecommand_ies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_UEContextReleaseCommand != NULL);
-    assert(s1ap_UEContextReleaseCommand_IEs != NULL);
+    d_assert(s1ap_UEContextReleaseCommand, return -1, "Null param");
+    d_assert(s1ap_UEContextReleaseCommand_IEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_UE_S1AP_IDs,
                         S1ap_Criticality_reject,
@@ -3430,8 +3430,8 @@ int s1ap_encode_s1ap_pathswitchrequesties(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_PathSwitchRequest != NULL);
-    assert(s1ap_PathSwitchRequestIEs != NULL);
+    d_assert(s1ap_PathSwitchRequest, return -1, "Null param");
+    d_assert(s1ap_PathSwitchRequestIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -3531,8 +3531,8 @@ int s1ap_encode_s1ap_downlinknastransport_ies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_DownlinkNASTransport != NULL);
-    assert(s1ap_DownlinkNASTransport_IEs != NULL);
+    d_assert(s1ap_DownlinkNASTransport, return -1, "Null param");
+    d_assert(s1ap_DownlinkNASTransport_IEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -3589,8 +3589,8 @@ int s1ap_encode_s1ap_e_rabreleaseindicationies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_E_RABReleaseIndication != NULL);
-    assert(s1ap_E_RABReleaseIndicationIEs != NULL);
+    d_assert(s1ap_E_RABReleaseIndication, return -1, "Null param");
+    d_assert(s1ap_E_RABReleaseIndicationIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -3633,8 +3633,8 @@ int s1ap_encode_s1ap_s1setuprequesties(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_S1SetupRequest != NULL);
-    assert(s1ap_S1SetupRequestIEs != NULL);
+    d_assert(s1ap_S1SetupRequest, return -1, "Null param");
+    d_assert(s1ap_S1SetupRequestIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Global_ENB_ID,
                         S1ap_Criticality_reject,
@@ -3691,8 +3691,8 @@ int s1ap_encode_s1ap_nasnondeliveryindication_ies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_NASNonDeliveryIndication != NULL);
-    assert(s1ap_NASNonDeliveryIndication_IEs != NULL);
+    d_assert(s1ap_NASNonDeliveryIndication, return -1, "Null param");
+    d_assert(s1ap_NASNonDeliveryIndication_IEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -3735,8 +3735,8 @@ int s1ap_encode_s1ap_celltraffictraceies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_CellTrafficTrace != NULL);
-    assert(s1ap_CellTrafficTraceIEs != NULL);
+    d_assert(s1ap_CellTrafficTrace, return -1, "Null param");
+    d_assert(s1ap_CellTrafficTraceIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -3798,8 +3798,8 @@ int s1ap_encode_s1ap_e_rabsetuprequesties(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_E_RABSetupRequest != NULL);
-    assert(s1ap_E_RABSetupRequestIEs != NULL);
+    d_assert(s1ap_E_RABSetupRequest, return -1, "Null param");
+    d_assert(s1ap_E_RABSetupRequestIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -3853,8 +3853,8 @@ int s1ap_encode_s1ap_enbstatustransferies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_ENBStatusTransfer != NULL);
-    assert(s1ap_ENBStatusTransferIEs != NULL);
+    d_assert(s1ap_ENBStatusTransfer, return -1, "Null param");
+    d_assert(s1ap_ENBStatusTransferIEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -3889,8 +3889,8 @@ int s1ap_encode_s1ap_resetacknowledgeies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_ResetAcknowledge != NULL);
-    assert(s1ap_ResetAcknowledgeIEs != NULL);
+    d_assert(s1ap_ResetAcknowledge, return -1, "Null param");
+    d_assert(s1ap_ResetAcknowledgeIEs, return -1, "Null param");
 
     /* Optional field */
     if (s1ap_ResetAcknowledgeIEs->presenceMask & S1AP_RESETACKNOWLEDGEIES_UE_ASSOCIATEDLOGICALS1_CONNECTIONLISTRESACK_PRESENT) {
@@ -3923,8 +3923,8 @@ int s1ap_encode_s1ap_uecontextreleasecomplete_ies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_UEContextReleaseComplete != NULL);
-    assert(s1ap_UEContextReleaseComplete_IEs != NULL);
+    d_assert(s1ap_UEContextReleaseComplete, return -1, "Null param");
+    d_assert(s1ap_UEContextReleaseComplete_IEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
@@ -3962,8 +3962,8 @@ int s1ap_encode_s1ap_uplinkueassociatedlppatransport_ies(
 
     S1ap_IE_t *ie;
 
-    assert(s1ap_UplinkUEAssociatedLPPaTransport != NULL);
-    assert(s1ap_UplinkUEAssociatedLPPaTransport_IEs != NULL);
+    d_assert(s1ap_UplinkUEAssociatedLPPaTransport, return -1, "Null param");
+    d_assert(s1ap_UplinkUEAssociatedLPPaTransport_IEs, return -1, "Null param");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -4007,8 +4007,8 @@ int s1ap_encode_s1ap_e_rabfailedtosetuplisthoreqack(
     int i;
     S1ap_IE_t *ie;
 
-    assert(s1ap_E_RABFailedtoSetupListHOReqAck != NULL);
-    assert(s1ap_E_RABFailedtoSetupListHOReqAckIEs != NULL);
+    d_assert(s1ap_E_RABFailedtoSetupListHOReqAck, return -1, "Null param");
+    d_assert(s1ap_E_RABFailedtoSetupListHOReqAckIEs, return -1, "Null param");
 
     for (i = 0; i < s1ap_E_RABFailedtoSetupListHOReqAckIEs->s1ap_E_RABFailedtoSetupItemHOReqAck.count; i++) {
         if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABFailedtoSetupItemHOReqAck,
@@ -4029,8 +4029,8 @@ int s1ap_encode_s1ap_e_rabreleaselistbearerrelcomp(
     int i;
     S1ap_IE_t *ie;
 
-    assert(s1ap_E_RABReleaseListBearerRelComp != NULL);
-    assert(s1ap_E_RABReleaseListBearerRelCompIEs != NULL);
+    d_assert(s1ap_E_RABReleaseListBearerRelComp, return -1, "Null param");
+    d_assert(s1ap_E_RABReleaseListBearerRelCompIEs, return -1, "Null param");
 
     for (i = 0; i < s1ap_E_RABReleaseListBearerRelCompIEs->s1ap_E_RABReleaseItemBearerRelComp.count; i++) {
         if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABReleaseItemBearerRelComp,
@@ -4051,8 +4051,8 @@ int s1ap_encode_s1ap_e_rabtobesetuplisthoreq(
     int i;
     S1ap_IE_t *ie;
 
-    assert(s1ap_E_RABToBeSetupListHOReq != NULL);
-    assert(s1ap_E_RABToBeSetupListHOReqIEs != NULL);
+    d_assert(s1ap_E_RABToBeSetupListHOReq, return -1, "Null param");
+    d_assert(s1ap_E_RABToBeSetupListHOReqIEs, return -1, "Null param");
 
     for (i = 0; i < s1ap_E_RABToBeSetupListHOReqIEs->s1ap_E_RABToBeSetupItemHOReq.count; i++) {
         if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABToBeSetupItemHOReq,
@@ -4073,8 +4073,8 @@ int s1ap_encode_s1ap_e_rabtobemodifiedlistbearermodreq(
     int i;
     S1ap_IE_t *ie;
 
-    assert(s1ap_E_RABToBeModifiedListBearerModReq != NULL);
-    assert(s1ap_E_RABToBeModifiedListBearerModReqIEs != NULL);
+    d_assert(s1ap_E_RABToBeModifiedListBearerModReq, return -1, "Null param");
+    d_assert(s1ap_E_RABToBeModifiedListBearerModReqIEs, return -1, "Null param");
 
     for (i = 0; i < s1ap_E_RABToBeModifiedListBearerModReqIEs->s1ap_E_RABToBeModifiedItemBearerModReq.count; i++) {
         if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABToBeModifiedItemBearerModReq,
@@ -4095,8 +4095,8 @@ int s1ap_encode_s1ap_e_rabadmittedlist(
     int i;
     S1ap_IE_t *ie;
 
-    assert(s1ap_E_RABAdmittedList != NULL);
-    assert(s1ap_E_RABAdmittedListIEs != NULL);
+    d_assert(s1ap_E_RABAdmittedList, return -1, "Null param");
+    d_assert(s1ap_E_RABAdmittedListIEs, return -1, "Null param");
 
     for (i = 0; i < s1ap_E_RABAdmittedListIEs->s1ap_E_RABAdmittedItem.count; i++) {
         if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABAdmittedItem,
@@ -4117,8 +4117,8 @@ int s1ap_encode_s1ap_e_rabtobesetuplistbearersureq(
     int i;
     S1ap_IE_t *ie;
 
-    assert(s1ap_E_RABToBeSetupListBearerSUReq != NULL);
-    assert(s1ap_E_RABToBeSetupListBearerSUReqIEs != NULL);
+    d_assert(s1ap_E_RABToBeSetupListBearerSUReq, return -1, "Null param");
+    d_assert(s1ap_E_RABToBeSetupListBearerSUReqIEs, return -1, "Null param");
 
     for (i = 0; i < s1ap_E_RABToBeSetupListBearerSUReqIEs->s1ap_E_RABToBeSetupItemBearerSUReq.count; i++) {
         if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABToBeSetupItemBearerSUReq,
@@ -4139,8 +4139,8 @@ int s1ap_encode_s1ap_e_rabdataforwardinglist(
     int i;
     S1ap_IE_t *ie;
 
-    assert(s1ap_E_RABDataForwardingList != NULL);
-    assert(s1ap_E_RABDataForwardingListIEs != NULL);
+    d_assert(s1ap_E_RABDataForwardingList, return -1, "Null param");
+    d_assert(s1ap_E_RABDataForwardingListIEs, return -1, "Null param");
 
     for (i = 0; i < s1ap_E_RABDataForwardingListIEs->s1ap_E_RABDataForwardingItem.count; i++) {
         if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABDataForwardingItem,
@@ -4161,8 +4161,8 @@ int s1ap_encode_s1ap_e_rabtobeswitcheddllist(
     int i;
     S1ap_IE_t *ie;
 
-    assert(s1ap_E_RABToBeSwitchedDLList != NULL);
-    assert(s1ap_E_RABToBeSwitchedDLListIEs != NULL);
+    d_assert(s1ap_E_RABToBeSwitchedDLList, return -1, "Null param");
+    d_assert(s1ap_E_RABToBeSwitchedDLListIEs, return -1, "Null param");
 
     for (i = 0; i < s1ap_E_RABToBeSwitchedDLListIEs->s1ap_E_RABToBeSwitchedDLItem.count; i++) {
         if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABToBeSwitchedDLItem,
@@ -4183,8 +4183,8 @@ int s1ap_encode_s1ap_e_rabsetuplistctxtsures(
     int i;
     S1ap_IE_t *ie;
 
-    assert(s1ap_E_RABSetupListCtxtSURes != NULL);
-    assert(s1ap_E_RABSetupListCtxtSUResIEs != NULL);
+    d_assert(s1ap_E_RABSetupListCtxtSURes, return -1, "Null param");
+    d_assert(s1ap_E_RABSetupListCtxtSUResIEs, return -1, "Null param");
 
     for (i = 0; i < s1ap_E_RABSetupListCtxtSUResIEs->s1ap_E_RABSetupItemCtxtSURes.count; i++) {
         if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABSetupItemCtxtSURes,
@@ -4205,8 +4205,8 @@ int s1ap_encode_s1ap_e_rabtobeswitchedullist(
     int i;
     S1ap_IE_t *ie;
 
-    assert(s1ap_E_RABToBeSwitchedULList != NULL);
-    assert(s1ap_E_RABToBeSwitchedULListIEs != NULL);
+    d_assert(s1ap_E_RABToBeSwitchedULList, return -1, "Null param");
+    d_assert(s1ap_E_RABToBeSwitchedULListIEs, return -1, "Null param");
 
     for (i = 0; i < s1ap_E_RABToBeSwitchedULListIEs->s1ap_E_RABToBeSwitchedULItem.count; i++) {
         if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABToBeSwitchedULItem,
@@ -4227,8 +4227,8 @@ int s1ap_encode_s1ap_bearers_subjecttostatustransfer_list(
     int i;
     S1ap_IE_t *ie;
 
-    assert(s1ap_Bearers_SubjectToStatusTransfer_List != NULL);
-    assert(s1ap_Bearers_SubjectToStatusTransfer_ListIEs != NULL);
+    d_assert(s1ap_Bearers_SubjectToStatusTransfer_List, return -1, "Null param");
+    d_assert(s1ap_Bearers_SubjectToStatusTransfer_ListIEs, return -1, "Null param");
 
     for (i = 0; i < s1ap_Bearers_SubjectToStatusTransfer_ListIEs->s1ap_Bearers_SubjectToStatusTransfer_Item.count; i++) {
         if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Bearers_SubjectToStatusTransfer_Item,
@@ -4249,8 +4249,8 @@ int s1ap_encode_s1ap_e_rablist(
     int i;
     S1ap_IE_t *ie;
 
-    assert(s1ap_E_RABList != NULL);
-    assert(s1ap_E_RABListIEs != NULL);
+    d_assert(s1ap_E_RABList, return -1, "Null param");
+    d_assert(s1ap_E_RABListIEs, return -1, "Null param");
 
     for (i = 0; i < s1ap_E_RABListIEs->s1ap_E_RABItem.count; i++) {
         if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABItem,
@@ -4271,8 +4271,8 @@ int s1ap_encode_s1ap_tailist(
     int i;
     S1ap_IE_t *ie;
 
-    assert(s1ap_TAIList != NULL);
-    assert(s1ap_TAIListIEs != NULL);
+    d_assert(s1ap_TAIList, return -1, "Null param");
+    d_assert(s1ap_TAIListIEs, return -1, "Null param");
 
     for (i = 0; i < s1ap_TAIListIEs->s1ap_TAIItem.count; i++) {
         if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_TAIItem,
@@ -4293,8 +4293,8 @@ int s1ap_encode_s1ap_ue_associatedlogicals1_connectionlistres(
     int i;
     S1ap_IE_t *ie;
 
-    assert(s1ap_UE_associatedLogicalS1_ConnectionListRes != NULL);
-    assert(s1ap_UE_associatedLogicalS1_ConnectionListResIEs != NULL);
+    d_assert(s1ap_UE_associatedLogicalS1_ConnectionListRes, return -1, "Null param");
+    d_assert(s1ap_UE_associatedLogicalS1_ConnectionListResIEs, return -1, "Null param");
 
     for (i = 0; i < s1ap_UE_associatedLogicalS1_ConnectionListResIEs->s1ap_UE_associatedLogicalS1_ConnectionItemRes.count; i++) {
         if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_UE_associatedLogicalS1_ConnectionItem,
@@ -4315,8 +4315,8 @@ int s1ap_encode_s1ap_e_rabsetuplistbearersures(
     int i;
     S1ap_IE_t *ie;
 
-    assert(s1ap_E_RABSetupListBearerSURes != NULL);
-    assert(s1ap_E_RABSetupListBearerSUResIEs != NULL);
+    d_assert(s1ap_E_RABSetupListBearerSURes, return -1, "Null param");
+    d_assert(s1ap_E_RABSetupListBearerSUResIEs, return -1, "Null param");
 
     for (i = 0; i < s1ap_E_RABSetupListBearerSUResIEs->s1ap_E_RABSetupItemBearerSURes.count; i++) {
         if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABSetupItemBearerSURes,
@@ -4337,8 +4337,8 @@ int s1ap_encode_s1ap_e_rabmodifylistbearermodres(
     int i;
     S1ap_IE_t *ie;
 
-    assert(s1ap_E_RABModifyListBearerModRes != NULL);
-    assert(s1ap_E_RABModifyListBearerModResIEs != NULL);
+    d_assert(s1ap_E_RABModifyListBearerModRes, return -1, "Null param");
+    d_assert(s1ap_E_RABModifyListBearerModResIEs, return -1, "Null param");
 
     for (i = 0; i < s1ap_E_RABModifyListBearerModResIEs->s1ap_E_RABModifyItemBearerModRes.count; i++) {
         if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABModifyItemBearerModRes,
@@ -4359,8 +4359,8 @@ int s1ap_encode_s1ap_e_rabtobesetuplistctxtsureq(
     int i;
     S1ap_IE_t *ie;
 
-    assert(s1ap_E_RABToBeSetupListCtxtSUReq != NULL);
-    assert(s1ap_E_RABToBeSetupListCtxtSUReqIEs != NULL);
+    d_assert(s1ap_E_RABToBeSetupListCtxtSUReq, return -1, "Null param");
+    d_assert(s1ap_E_RABToBeSetupListCtxtSUReqIEs, return -1, "Null param");
 
     for (i = 0; i < s1ap_E_RABToBeSetupListCtxtSUReqIEs->s1ap_E_RABToBeSetupItemCtxtSUReq.count; i++) {
         if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABToBeSetupItemCtxtSUReq,
@@ -4381,8 +4381,8 @@ int s1ap_encode_s1ap_e_rabinformationlist(
     int i;
     S1ap_IE_t *ie;
 
-    assert(s1ap_E_RABInformationList != NULL);
-    assert(s1ap_E_RABInformationListIEs != NULL);
+    d_assert(s1ap_E_RABInformationList, return -1, "Null param");
+    d_assert(s1ap_E_RABInformationListIEs, return -1, "Null param");
 
     for (i = 0; i < s1ap_E_RABInformationListIEs->s1ap_E_RABInformationList.count; i++) {
         if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABInformationListItem,
@@ -4403,8 +4403,8 @@ int s1ap_encode_s1ap_ue_associatedlogicals1_connectionlistresack(
     int i;
     S1ap_IE_t *ie;
 
-    assert(s1ap_UE_associatedLogicalS1_ConnectionListResAck != NULL);
-    assert(s1ap_UE_associatedLogicalS1_ConnectionListResAckIEs != NULL);
+    d_assert(s1ap_UE_associatedLogicalS1_ConnectionListResAck, return -1, "Null param");
+    d_assert(s1ap_UE_associatedLogicalS1_ConnectionListResAckIEs, return -1, "Null param");
 
     for (i = 0; i < s1ap_UE_associatedLogicalS1_ConnectionListResAckIEs->s1ap_UE_associatedLogicalS1_ConnectionItemResAck.count; i++) {
         if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_UE_associatedLogicalS1_ConnectionItem,

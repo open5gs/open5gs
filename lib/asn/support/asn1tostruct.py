@@ -385,9 +385,9 @@ for key in iesDefs:
     if len(iesDefs[key]["ies"]) != 0:
         f.write("    int tempDecoded = 0;\n")
 
-    f.write("    assert(any_p != NULL);\n")
+    f.write("    d_assert(any_p, return -1, \"Null param\");\n")
     if len(iesDefs[key]["ies"]) != 0:
-        f.write("    assert(%s != NULL);\n\n" % (lowerFirstCamelWord(re.sub('-', '_', key))))
+        f.write("    d_assert(%s, return -1, \"Null param\");\n\n" % (lowerFirstCamelWord(re.sub('-', '_', key))))
 
     f.write("    d_trace(3, \"Decoding message %s (%%s:%%d)\\n\", __FILE__, __LINE__);\n\n" % re.sub('-', '_', keyName))
     f.write("    ANY_to_type_aper(any_p, &asn_DEF_%s, (void**)&%s_p);\n\n" % (asn1cStruct, asn1cStructfirstlower))
@@ -414,7 +414,7 @@ for key in iesDefs:
             f.write("                %s->presenceMask |= %s_%s_PRESENT;\n" % (lowerFirstCamelWord(re.sub('-', '_', key)), keyupperunderscore, ieupperunderscore))
         f.write("                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_%s, (void**)&%s_p);\n" % (ietypeunderscore, lowerFirstCamelWord(ietypesubst)))
         f.write("                if (tempDecoded < 0 || %s_p == NULL) {\n" % (lowerFirstCamelWord(ietypesubst)))
-        f.write("                    d_error(\"Decoding of IE %s failed\\n\");\n" % (ienameunderscore))
+        f.write("                    d_error(\"Decoding of IE %s failed\");\n" % (ienameunderscore))
         f.write("                    if (%s_p)\n" % (lowerFirstCamelWord(ietypesubst)))
         f.write("                        ASN_STRUCT_FREE(asn_DEF_%s, %s_p);\n" % (ietypeunderscore, lowerFirstCamelWord(ietypesubst)))
         f.write("                    return -1;\n")
@@ -422,7 +422,7 @@ for key in iesDefs:
         f.write("                decoded += tempDecoded;\n")
         if ie[2] in ieofielist.keys():
             f.write("                if (%s_decode_%s(&%s->%s, %s_p) < 0) {\n" % (fileprefix, ietypeunderscore.lower(), lowerFirstCamelWord(re.sub('-', '_', key)), ienameunderscore, lowerFirstCamelWord(ietypesubst)))
-            f.write("                    d_error(\"Decoding of encapsulated IE %s failed\\n\");\n" % (lowerFirstCamelWord(ietypesubst)))
+            f.write("                    d_error(\"Decoding of encapsulated IE %s failed\");\n" % (lowerFirstCamelWord(ietypesubst)))
             f.write("                    ASN_STRUCT_FREE(asn_DEF_%s, %s_p);\n" % (ietypeunderscore, lowerFirstCamelWord(ietypesubst)))
             f.write("                }\n")
         else:
@@ -430,7 +430,7 @@ for key in iesDefs:
             #f.write("                ASN_STRUCT_FREE(asn_DEF_%s, %s_p);\n" % (ietypeunderscore, lowerFirstCamelWord(ietypesubst)))
         f.write("            } break;\n")
     f.write("            default:\n")
-    f.write("                d_error(\"Unknown protocol IE id (%%d) for message %s\\n\", (int)ie_p->id);\n" % (re.sub('-', '_', structName.lower())))
+    f.write("                d_error(\"Unknown protocol IE id (%%d) for message %s\", (int)ie_p->id);\n" % (re.sub('-', '_', structName.lower())))
     f.write("                return -1;\n")
     f.write("        }\n")
     f.write("    }\n")
@@ -449,8 +449,8 @@ for key in iesDefs:
     f.write("    int i, decoded = 0;\n")
     f.write("    int tempDecoded = 0;\n\n")
 
-    f.write("    assert(%s != NULL);\n" % (lowerFirstCamelWord(re.sub('-', '_', keyname))));
-    f.write("    assert(%sIEs != NULL);\n\n" % (lowerFirstCamelWord(re.sub('-', '_', keyname))));
+    f.write("    d_assert(%s, return -1, \"Null param\");\n" % (lowerFirstCamelWord(re.sub('-', '_', keyname))));
+    f.write("    d_assert(%sIEs, return -1, \"Null param\");\n\n" % (lowerFirstCamelWord(re.sub('-', '_', keyname))));
 
     f.write("    for (i = 0; i < %s->list.count; i++) {\n" % (lowerFirstCamelWord(re.sub('-', '_', keyname))))
     f.write("        %s_IE_t *ie_p = (%s_IE_t *)%s->list.array[i];\n" % (fileprefix[0].upper() + fileprefix[1:], fileprefix[0].upper() + fileprefix[1:], lowerFirstCamelWord(re.sub('-', '_', keyname))))
@@ -463,7 +463,7 @@ for key in iesDefs:
         f.write("                %s_t *%s_p = NULL;\n" % (re.sub('-', '_', ie[2]), lowerFirstCamelWord(re.sub('-', '', ie[2]))))
         f.write("                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_%s, (void**)&%s_p);\n" % (re.sub('-', '_', ie[2]), lowerFirstCamelWord(re.sub('-', '', ie[2]))))
         f.write("                if (tempDecoded < 0 || %s_p == NULL) {\n" % (lowerFirstCamelWord(re.sub('-', '', ie[2]))))
-        f.write("                    d_error(\"Decoding of IE %s for message %s failed\\n\");\n" % (ienameunderscore, re.sub('-', '_', keyname)))
+        f.write("                    d_error(\"Decoding of IE %s for message %s failed\");\n" % (ienameunderscore, re.sub('-', '_', keyname)))
         f.write("                    if (%s_p)\n" % (lowerFirstCamelWord(re.sub('-', '', ie[2]))))
         #f.write("                        free(%s_p);\n" % (lowerFirstCamelWord(re.sub('-', '', ie[2]))))
         f.write("                        ASN_STRUCT_FREE(asn_DEF_%s, %s_p);\n" % (re.sub('-', '_', ie[2]), lowerFirstCamelWord(re.sub('-', '', ie[2]))))
@@ -474,7 +474,7 @@ for key in iesDefs:
         re.sub('IEs', '', lowerFirstCamelWord(re.sub('-', '_', key))), lowerFirstCamelWord(re.sub('-', '', ie[2]))))
         f.write("            } break;\n")
     f.write("            default:\n")
-    f.write("                d_error(\"Unknown protocol IE id (%%d) for message %s\\n\", (int)ie_p->id);\n" % (re.sub('-', '_', structName.lower())))
+    f.write("                d_error(\"Unknown protocol IE id (%%d) for message %s\", (int)ie_p->id);\n" % (re.sub('-', '_', structName.lower())))
     f.write("                return -1;\n")
     f.write("        }\n")
     f.write("    }\n")
@@ -516,8 +516,8 @@ for key in iesDefs:
 
     f.write("    %s_IE_t *ie;\n\n" % (fileprefix_first_upper))
 
-    f.write("    assert(%s != NULL);\n" % (firstwordlower));
-    f.write("    assert(%s != NULL);\n\n" % (lowerFirstCamelWord(re.sub('-', '_', key))));
+    f.write("    d_assert(%s, return -1, \"Null param\");\n" % (firstwordlower));
+    f.write("    d_assert(%s, return -1, \"Null param\");\n\n" % (lowerFirstCamelWord(re.sub('-', '_', key))));
 
     for ie in iesDefs[key]["ies"]:
         iename = re.sub('-', '_', re.sub('id-', '', ie[0]))
@@ -584,8 +584,8 @@ for (key, value) in iesDefs.items():
 
     f.write("    %s_IE_t *ie;\n\n" % (fileprefix_first_upper))
 
-    f.write("    assert(%s != NULL);\n" % (firstwordlower));
-    f.write("    assert(%sIEs != NULL);\n\n" % (lowerFirstCamelWord(re.sub('-', '_', i))));
+    f.write("    d_assert(%s, return -1, \"Null param\");\n" % (firstwordlower));
+    f.write("    d_assert(%sIEs, return -1, \"Null param\");\n\n" % (lowerFirstCamelWord(re.sub('-', '_', i))));
 
     f.write("    for (i = 0; i < %sIEs->%s.count; i++) {\n" % (firstwordlower, re.sub('IEs', '', lowerFirstCamelWord(re.sub('-', '_', key)))))
     f.write("        if ((ie = %s_new_ie(%s_ProtocolIE_ID_%s,\n" % (fileprefix, fileprefix_first_upper, re.sub('-', '_', ie[0])))
