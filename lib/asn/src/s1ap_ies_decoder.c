@@ -30,12 +30,12 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-02-04 23:11:39.395850 by acetcom
+ * Created on: 2017-02-05 01:02:16.427539 by acetcom
  * from ['S1AP-PDU.asn']
  ******************************************************************************/
 #define TRACE_MODULE ies_decoder
-#include "s1ap_ies_defs.h"
 #include "core_debug.h"
+#include "s1ap_ies_defs.h"
 
 int s1ap_decode_s1ap_deactivatetraceies(
     S1ap_DeactivateTraceIEs_t *s1ap_DeactivateTraceIEs,

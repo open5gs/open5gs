@@ -30,11 +30,10 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-02-04 23:11:39.421820 by acetcom
+ * Created on: 2017-02-05 01:02:16.452844 by acetcom
  * from ['S1AP-PDU.asn']
  ******************************************************************************/
 #include "core_debug.h"
-
 #include "s1ap_ies_defs.h"
 
 int s1ap_encode_s1ap_deactivatetraceies(
@@ -4436,7 +4435,7 @@ S1ap_IE_t *s1ap_new_ie(S1ap_ProtocolIE_ID_t id, S1ap_Criticality_t criticality,
 
     if (ANY_fromType_aper(&buff->value, type, sptr) < 0) 
     {
-        d_error("Encoding of %s failed\n", type->name);
+        d_error("Encoding of %s failed", type->name);
         free (buff);
         buff = NULL;
         return NULL;

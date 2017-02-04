@@ -196,7 +196,7 @@ fileprefix_first_upper = fileprefix[0].upper() + fileprefix[1:]
 
 f = open(outdir + fileprefix + '_ies_defs.h', 'w')
 outputHeaderToFile(f, filename)
-f.write("#include \"%s_common.h\"\n\n" % (fileprefix))
+f.write("#include \"%s_asn1c.h\"\n\n" % (fileprefix))
 f.write("#ifndef %s_IES_DEFS_H_\n#define %s_IES_DEFS_H_\n\n" % (fileprefix.upper(), fileprefix.upper()))
 f.write("/* Define the version of script used to generate this file */\n")
 f.write("#define %s_SCRIPT_VERSION (%s)\n\n" % (fileprefix.upper(), re.sub('\.', '', version)))
@@ -347,12 +347,14 @@ for key in iesDefs:
 f.write("int %s_xer__print2sp(const void *buffer, size_t size, void *app_key);\n\n" % (fileprefix.lower()))
 f.write("int %s_xer__print2fp(const void *buffer, size_t size, void *app_key);\n\n" % (fileprefix.lower()))
 f.write("extern size_t %s_string_total_size;\n\n" % (fileprefix.lower()))
+f.write("S1ap_IE_t *s1ap_new_ie(S1ap_ProtocolIE_ID_t id, S1ap_Criticality_t criticality,\n")
+f.write("    asn_TYPE_descriptor_t *type, void *sptr);\n\n")
 f.write("#endif /* %s_IES_DEFS_H_ */\n\n" % (fileprefix.upper()))
 
 #Generate Decode functions
 f = open(outdir + fileprefix + '_ies_decoder.c', 'w')
 outputHeaderToFile(f, filename)
-f.write("#define TRACE_MODULE ies_decoder\n#include \"%s_common.h\"\n#include \"%s_ies_defs.h\"\n#include \"core_debug.h\"\n\n" % (fileprefix, fileprefix))
+f.write("#define TRACE_MODULE ies_decoder\n#include \"core_debug.h\"\n#include \"%s_ies_defs.h\"\n\n" % (fileprefix))
 for key in iesDefs:
     if key in ieofielist.values():
         continue
@@ -483,7 +485,7 @@ for key in iesDefs:
 #Generate IES Encode functions
 f = open(outdir + fileprefix + '_ies_encoder.c', 'w')
 outputHeaderToFile(f,filename)
-f.write("#include \"%s_common.h\"\n" % (fileprefix))
+f.write("#include \"core_debug.h\"\n")
 f.write("#include \"%s_ies_defs.h\"\n\n" % (fileprefix))
 for key in iesDefs:
     if key in ieofielist.values():
@@ -596,6 +598,33 @@ for (key, value) in iesDefs.items():
     f.write("    }\n")
     f.write("    return 0;\n")
     f.write("}\n\n")
+f.write("""S1ap_IE_t *s1ap_new_ie(S1ap_ProtocolIE_ID_t id, S1ap_Criticality_t criticality,
+    asn_TYPE_descriptor_t *type, void *sptr)
+{
+    S1ap_IE_t *buff;
+
+    if ((buff = malloc (sizeof (S1ap_IE_t))) == NULL) 
+    {
+        // Possible error on malloc
+        return NULL;
+    }
+
+    memset((void *)buff, 0, sizeof(S1ap_IE_t));
+    buff->id = id;
+    buff->criticality = criticality;
+
+    if (ANY_fromType_aper(&buff->value, type, sptr) < 0) 
+    {
+        d_error("Encoding of %s failed", type->name);
+        free (buff);
+        buff = NULL;
+        return NULL;
+    }
+
+    return buff;
+}
+
+""")
 
 #Generate xer print functions
 f = open(outdir + fileprefix + '_ies_xer_print.c', 'w')
@@ -603,7 +632,7 @@ outputHeaderToFile(f, filename)
 f.write("#include <stdlib.h>\n")
 f.write("#include <stdio.h>\n\n")
 f.write("#include <asn_application.h>\n#include <asn_internal.h>\n\n")
-f.write("#include \"%s_common.h\"\n#include \"%s_ies_defs.h\"\n\n" % (fileprefix, fileprefix))
+f.write("#include \"%s_ies_defs.h\"\n\n" % (fileprefix))
 
 f.write("size_t %s_string_total_size = 0;\n\n" % (fileprefix.lower()))
 f.write("""int
