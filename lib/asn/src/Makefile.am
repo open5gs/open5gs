@@ -10,6 +10,13 @@ nodist_libasn_la_SOURCES = \
 	s1ap_encoder.c s1ap_decoder.c s1ap_xer_print.c \
 	s1ap_mme_encoder.c s1ap_mme_decoder.c
 
+libasn_la_DEPENDENCIES = \
+    $(top_srcdir)/lib/asn/asn1c/libasn1c.la
+
+libasn_la_LIBADD = \
+    $(top_srcdir)/lib/asn/asn1c/libasn1c.la
+
+
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \
     -I$(top_srcdir)/lib/asn/asn1c

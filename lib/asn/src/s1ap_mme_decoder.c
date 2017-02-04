@@ -27,10 +27,6 @@
    \version 0.1
 */
 
-#include <pthread.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 #if 0 /* modified by acetcom */
 #include "assertions.h"
 #endif

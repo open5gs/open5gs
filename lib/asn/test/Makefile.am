@@ -9,7 +9,6 @@ testasn_SOURCES = \
 
 testasn_LDADD = \
     $(top_srcdir)/lib/core/src/libcore.la \
-    $(top_srcdir)/lib/asn/asn1c/libasn1c.la \
     $(top_srcdir)/lib/asn/src/libasn.la \
     -lpthread -lsctp
 

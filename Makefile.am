@@ -12,6 +12,7 @@ nodist_cellwired_SOURCES = symtbl.c
 cellwired_LDADD = \
     $(top_srcdir)/src/libcellwire.la \
     $(top_srcdir)/lib/core/src/libcore.la \
+    $(top_srcdir)/lib/asn/src/libasn.la \
     $(top_srcdir)/lib/logger/liblogger.la \
     -lpthread -lm -lsctp @OSLIBS@
 

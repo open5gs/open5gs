@@ -27,8 +27,6 @@
    \version 0.1
 */
 
-#include <stdint.h>
-
 #include "s1ap_common.h"
 #include "S1AP-PDU.h"
 #if 0 /* modified by acetcom */

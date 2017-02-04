@@ -391,7 +391,7 @@ for key in iesDefs:
     f.write("    ANY_to_type_aper(any_p, &asn_DEF_%s, (void**)&%s_p);\n\n" % (asn1cStruct, asn1cStructfirstlower))
     f.write("    for (i = 0; i < %s_p->%slist.count; i++) {\n" % (asn1cStructfirstlower, iesaccess))
     f.write("        %s_IE_t *ie_p;\n" % (fileprefix[0].upper() + fileprefix[1:]))
-    f.write("        ie_p = %s_p->%slist.array[i];\n" % (asn1cStructfirstlower, iesaccess))
+    f.write("        ie_p = (%s_IE_t *)%s_p->%slist.array[i];\n" % (fileprefix[0].upper() + fileprefix[1:], asn1cStructfirstlower, iesaccess))
     f.write("        switch(ie_p->id) {\n")
     for ie in iesDefs[key]["ies"]:
         iename = re.sub('id-', '', ie[0])
@@ -453,7 +453,7 @@ for key in iesDefs:
     f.write("    assert(%sIEs != NULL);\n\n" % (lowerFirstCamelWord(re.sub('-', '_', keyname))));
 
     f.write("    for (i = 0; i < %s->list.count; i++) {\n" % (lowerFirstCamelWord(re.sub('-', '_', keyname))))
-    f.write("        %s_IE_t *ie_p = %s->list.array[i];\n" % (fileprefix[0].upper() + fileprefix[1:], lowerFirstCamelWord(re.sub('-', '_', keyname))))
+    f.write("        %s_IE_t *ie_p = (%s_IE_t *)%s->list.array[i];\n" % (fileprefix[0].upper() + fileprefix[1:], fileprefix[0].upper() + fileprefix[1:], lowerFirstCamelWord(re.sub('-', '_', keyname))))
     f.write("        switch (ie_p->id) {\n")
     for ie in iesDefs[key]["ies"]:
         iename = re.sub('id-', '', ie[0])

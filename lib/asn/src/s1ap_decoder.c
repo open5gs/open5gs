@@ -30,7 +30,7 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-02-04 00:30:23.802677 by acetcom
+ * Created on: 2017-02-04 15:10:49.563017 by acetcom
  * from ['S1AP-PDU.asn']
  ******************************************************************************/
 #define TRACE_MODULE s1ap_decoder
@@ -55,7 +55,7 @@ int s1ap_decode_s1ap_deactivatetraceies(
 
     for (i = 0; i < s1ap_DeactivateTrace_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_DeactivateTrace_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_DeactivateTrace_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -127,7 +127,7 @@ int s1ap_decode_s1ap_enbdirectinformationtransferies(
 
     for (i = 0; i < s1ap_ENBDirectInformationTransfer_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_ENBDirectInformationTransfer_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_ENBDirectInformationTransfer_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_Inter_SystemInformationTransferTypeEDT:
             {
@@ -169,7 +169,7 @@ int s1ap_decode_s1ap_e_rabreleaseresponseies(
 
     for (i = 0; i < s1ap_E_RABReleaseResponse_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_E_RABReleaseResponse_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_E_RABReleaseResponse_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -283,7 +283,7 @@ int s1ap_decode_s1ap_uplinknonueassociatedlppatransport_ies(
 
     for (i = 0; i < s1ap_UplinkNonUEAssociatedLPPaTransport_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_UplinkNonUEAssociatedLPPaTransport_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_UplinkNonUEAssociatedLPPaTransport_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_Routing_ID:
             {
@@ -340,7 +340,7 @@ int s1ap_decode_s1ap_tracestarties(
 
     for (i = 0; i < s1ap_TraceStart_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_TraceStart_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_TraceStart_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -412,7 +412,7 @@ int s1ap_decode_s1ap_writereplacewarningresponseies(
 
     for (i = 0; i < s1ap_WriteReplaceWarningResponse_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_WriteReplaceWarningResponse_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_WriteReplaceWarningResponse_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MessageIdentifier:
             {
@@ -503,7 +503,7 @@ int s1ap_decode_s1ap_handovercancelies(
 
     for (i = 0; i < s1ap_HandoverCancel_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_HandoverCancel_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_HandoverCancel_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -575,7 +575,7 @@ int s1ap_decode_s1ap_handoverpreparationfailureies(
 
     for (i = 0; i < s1ap_HandoverPreparationFailure_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_HandoverPreparationFailure_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_HandoverPreparationFailure_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -664,7 +664,7 @@ int s1ap_decode_s1ap_uecontextreleaserequest_ies(
 
     for (i = 0; i < s1ap_UEContextReleaseRequest_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_UEContextReleaseRequest_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_UEContextReleaseRequest_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -753,7 +753,7 @@ int s1ap_decode_s1ap_initialuemessage_ies(
 
     for (i = 0; i < s1ap_InitialUEMessage_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_InitialUEMessage_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_InitialUEMessage_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID:
             {
@@ -957,7 +957,7 @@ int s1ap_decode_s1ap_killrequesties(
 
     for (i = 0; i < s1ap_KillRequest_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_KillRequest_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_KillRequest_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MessageIdentifier:
             {
@@ -1031,7 +1031,7 @@ int s1ap_decode_s1ap_writereplacewarningrequesties(
 
     for (i = 0; i < s1ap_WriteReplaceWarningRequest_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_WriteReplaceWarningRequest_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_WriteReplaceWarningRequest_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MessageIdentifier:
             {
@@ -1237,7 +1237,7 @@ int s1ap_decode_s1ap_uecapabilityinfoindicationies(
 
     for (i = 0; i < s1ap_UECapabilityInfoIndication_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_UECapabilityInfoIndication_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_UECapabilityInfoIndication_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -1309,7 +1309,7 @@ int s1ap_decode_s1ap_locationreportingfailureindicationies(
 
     for (i = 0; i < s1ap_LocationReportingFailureIndication_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_LocationReportingFailureIndication_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_LocationReportingFailureIndication_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -1381,7 +1381,7 @@ int s1ap_decode_s1ap_initialcontextsetuprequesties(
 
     for (i = 0; i < s1ap_InitialContextSetupRequest_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_InitialContextSetupRequest_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_InitialContextSetupRequest_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -1688,7 +1688,7 @@ int s1ap_decode_s1ap_locationreporties(
 
     for (i = 0; i < s1ap_LocationReport_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_LocationReport_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_LocationReport_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -1790,7 +1790,7 @@ int s1ap_decode_s1ap_uplinknastransport_ies(
 
     for (i = 0; i < s1ap_UplinkNASTransport_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_UplinkNASTransport_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_UplinkNASTransport_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -1909,7 +1909,7 @@ int s1ap_decode_s1ap_uecontextmodificationresponseies(
 
     for (i = 0; i < s1ap_UEContextModificationResponse_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_UEContextModificationResponse_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_UEContextModificationResponse_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -1983,7 +1983,7 @@ int s1ap_decode_s1ap_uecontextmodificationrequesties(
 
     for (i = 0; i < s1ap_UEContextModificationRequest_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_UEContextModificationRequest_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_UEContextModificationRequest_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -2159,7 +2159,7 @@ int s1ap_decode_s1ap_locationreportingcontrolies(
 
     for (i = 0; i < s1ap_LocationReportingControl_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_LocationReportingControl_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_LocationReportingControl_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -2231,7 +2231,7 @@ int s1ap_decode_s1ap_uplinks1cdma2000tunnelingies(
 
     for (i = 0; i < s1ap_UplinkS1cdma2000tunneling_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_UplinkS1cdma2000tunneling_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_UplinkS1cdma2000tunneling_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -2401,7 +2401,7 @@ int s1ap_decode_s1ap_handoverrequesties(
 
     for (i = 0; i < s1ap_HandoverRequest_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_HandoverRequest_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_HandoverRequest_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -2704,7 +2704,7 @@ int s1ap_decode_s1ap_handoverrequiredies(
 
     for (i = 0; i < s1ap_HandoverRequired_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_HandoverRequired_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_HandoverRequired_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -2957,7 +2957,7 @@ int s1ap_decode_s1ap_mmeconfigurationupdateacknowledgeies(
 
     for (i = 0; i < s1ap_MMEConfigurationUpdateAcknowledge_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_MMEConfigurationUpdateAcknowledge_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_MMEConfigurationUpdateAcknowledge_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             /* Optional field */
             case S1ap_ProtocolIE_ID_id_CriticalityDiagnostics:
@@ -3001,7 +3001,7 @@ int s1ap_decode_s1ap_killresponseies(
 
     for (i = 0; i < s1ap_KillResponse_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_KillResponse_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_KillResponse_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MessageIdentifier:
             {
@@ -3092,7 +3092,7 @@ int s1ap_decode_s1ap_mmestatustransferies(
 
     for (i = 0; i < s1ap_MMEStatusTransfer_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_MMEStatusTransfer_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_MMEStatusTransfer_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -3164,7 +3164,7 @@ int s1ap_decode_s1ap_mmeconfigurationupdateies(
 
     for (i = 0; i < s1ap_MMEConfigurationUpdate_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_MMEConfigurationUpdate_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_MMEConfigurationUpdate_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             /* Optional field */
             case S1ap_ProtocolIE_ID_id_MMEname:
@@ -3242,7 +3242,7 @@ int s1ap_decode_s1ap_e_rabmodifyrequesties(
 
     for (i = 0; i < s1ap_E_RABModifyRequest_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_E_RABModifyRequest_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_E_RABModifyRequest_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -3334,7 +3334,7 @@ int s1ap_decode_s1ap_enbconfigurationupdatefailureies(
 
     for (i = 0; i < s1ap_ENBConfigurationUpdateFailure_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_ENBConfigurationUpdateFailure_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_ENBConfigurationUpdateFailure_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_Cause:
             {
@@ -3410,7 +3410,7 @@ int s1ap_decode_s1ap_reseties(
 
     for (i = 0; i < s1ap_Reset_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_Reset_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_Reset_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_Cause:
             {
@@ -3467,7 +3467,7 @@ int s1ap_decode_s1ap_s1setupresponseies(
 
     for (i = 0; i < s1ap_S1SetupResponse_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_S1SetupResponse_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_S1SetupResponse_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             /* Optional field */
             case S1ap_ProtocolIE_ID_id_MMEname:
@@ -3575,7 +3575,7 @@ int s1ap_decode_s1ap_pagingies(
 
     for (i = 0; i < s1ap_Paging_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_Paging_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_Paging_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_UEIdentityIndexValue:
             {
@@ -3716,7 +3716,7 @@ int s1ap_decode_s1ap_enbconfigurationupdateacknowledgeies(
 
     for (i = 0; i < s1ap_ENBConfigurationUpdateAcknowledge_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_ENBConfigurationUpdateAcknowledge_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_ENBConfigurationUpdateAcknowledge_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             /* Optional field */
             case S1ap_ProtocolIE_ID_id_CriticalityDiagnostics:
@@ -3760,7 +3760,7 @@ int s1ap_decode_s1ap_e_rabreleasecommandies(
 
     for (i = 0; i < s1ap_E_RABReleaseCommand_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_E_RABReleaseCommand_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_E_RABReleaseCommand_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -3869,7 +3869,7 @@ int s1ap_decode_s1ap_pathswitchrequestfailureies(
 
     for (i = 0; i < s1ap_PathSwitchRequestFailure_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_PathSwitchRequestFailure_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_PathSwitchRequestFailure_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -3958,7 +3958,7 @@ int s1ap_decode_s1ap_e_rabmodifyresponseies(
 
     for (i = 0; i < s1ap_E_RABModifyResponse_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_E_RABModifyResponse_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_E_RABModifyResponse_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -4072,7 +4072,7 @@ int s1ap_decode_s1ap_handovernotifyies(
 
     for (i = 0; i < s1ap_HandoverNotify_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_HandoverNotify_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_HandoverNotify_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -4159,7 +4159,7 @@ int s1ap_decode_s1ap_handovercancelacknowledgeies(
 
     for (i = 0; i < s1ap_HandoverCancelAcknowledge_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_HandoverCancelAcknowledge_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_HandoverCancelAcknowledge_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -4233,7 +4233,7 @@ int s1ap_decode_s1ap_initialcontextsetupfailureies(
 
     for (i = 0; i < s1ap_InitialContextSetupFailure_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_InitialContextSetupFailure_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_InitialContextSetupFailure_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -4322,7 +4322,7 @@ int s1ap_decode_s1ap_handovercommandies(
 
     for (i = 0; i < s1ap_HandoverCommand_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_HandoverCommand_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_HandoverCommand_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -4483,7 +4483,7 @@ int s1ap_decode_s1ap_mmedirectinformationtransferies(
 
     for (i = 0; i < s1ap_MMEDirectInformationTransfer_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_MMEDirectInformationTransfer_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_MMEDirectInformationTransfer_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_Inter_SystemInformationTransferTypeMDT:
             {
@@ -4525,7 +4525,7 @@ int s1ap_decode_s1ap_errorindicationies(
 
     for (i = 0; i < s1ap_ErrorIndication_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_ErrorIndication_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_ErrorIndication_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             /* Optional field */
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
@@ -4620,7 +4620,7 @@ int s1ap_decode_s1ap_overloadstarties(
 
     for (i = 0; i < s1ap_OverloadStart_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_OverloadStart_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_OverloadStart_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_OverloadResponse:
             {
@@ -4696,7 +4696,7 @@ int s1ap_decode_s1ap_downlinknonueassociatedlppatransport_ies(
 
     for (i = 0; i < s1ap_DownlinkNonUEAssociatedLPPaTransport_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_DownlinkNonUEAssociatedLPPaTransport_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_DownlinkNonUEAssociatedLPPaTransport_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_Routing_ID:
             {
@@ -4753,7 +4753,7 @@ int s1ap_decode_s1ap_handoverrequestacknowledgeies(
 
     for (i = 0; i < s1ap_HandoverRequestAcknowledge_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_HandoverRequestAcknowledge_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_HandoverRequestAcknowledge_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -4897,7 +4897,7 @@ int s1ap_decode_s1ap_downlinkueassociatedlppatransport_ies(
 
     for (i = 0; i < s1ap_DownlinkUEAssociatedLPPaTransport_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_DownlinkUEAssociatedLPPaTransport_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_DownlinkUEAssociatedLPPaTransport_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -4984,7 +4984,7 @@ int s1ap_decode_s1ap_uecontextmodificationfailureies(
 
     for (i = 0; i < s1ap_UEContextModificationFailure_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_UEContextModificationFailure_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_UEContextModificationFailure_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -5073,7 +5073,7 @@ int s1ap_decode_s1ap_mmeconfigurationtransferies(
 
     for (i = 0; i < s1ap_MMEConfigurationTransfer_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_MMEConfigurationTransfer_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_MMEConfigurationTransfer_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             /* Optional field */
             case S1ap_ProtocolIE_ID_id_SONConfigurationTransferMCT:
@@ -5117,7 +5117,7 @@ int s1ap_decode_s1ap_pathswitchrequestacknowledgeies(
 
     for (i = 0; i < s1ap_PathSwitchRequestAcknowledge_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_PathSwitchRequestAcknowledge_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_PathSwitchRequestAcknowledge_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -5280,7 +5280,7 @@ int s1ap_decode_s1ap_s1setupfailureies(
 
     for (i = 0; i < s1ap_S1SetupFailure_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_S1SetupFailure_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_S1SetupFailure_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_Cause:
             {
@@ -5356,7 +5356,7 @@ int s1ap_decode_s1ap_mmeconfigurationupdatefailureies(
 
     for (i = 0; i < s1ap_MMEConfigurationUpdateFailure_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_MMEConfigurationUpdateFailure_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_MMEConfigurationUpdateFailure_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_Cause:
             {
@@ -5432,7 +5432,7 @@ int s1ap_decode_s1ap_initialcontextsetupresponseies(
 
     for (i = 0; i < s1ap_InitialContextSetupResponse_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_InitialContextSetupResponse_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_InitialContextSetupResponse_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -5544,7 +5544,7 @@ int s1ap_decode_s1ap_downlinks1cdma2000tunnelingies(
 
     for (i = 0; i < s1ap_DownlinkS1cdma2000tunneling_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_DownlinkS1cdma2000tunneling_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_DownlinkS1cdma2000tunneling_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -5668,7 +5668,7 @@ int s1ap_decode_s1ap_overloadstopies(
 
     for (i = 0; i < s1ap_OverloadStop_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_OverloadStop_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_OverloadStop_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             /* Optional field */
             case S1ap_ProtocolIE_ID_id_GUMMEIList:
@@ -5712,7 +5712,7 @@ int s1ap_decode_s1ap_enbconfigurationupdateies(
 
     for (i = 0; i < s1ap_ENBConfigurationUpdate_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_ENBConfigurationUpdate_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_ENBConfigurationUpdate_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             /* Optional field */
             case S1ap_ProtocolIE_ID_id_eNBname:
@@ -5807,7 +5807,7 @@ int s1ap_decode_s1ap_tracefailureindicationies(
 
     for (i = 0; i < s1ap_TraceFailureIndication_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_TraceFailureIndication_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_TraceFailureIndication_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -5894,7 +5894,7 @@ int s1ap_decode_s1ap_enbconfigurationtransferies(
 
     for (i = 0; i < s1ap_ENBConfigurationTransfer_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_ENBConfigurationTransfer_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_ENBConfigurationTransfer_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             /* Optional field */
             case S1ap_ProtocolIE_ID_id_SONConfigurationTransferECT:
@@ -5938,7 +5938,7 @@ int s1ap_decode_s1ap_handoverfailureies(
 
     for (i = 0; i < s1ap_HandoverFailure_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_HandoverFailure_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_HandoverFailure_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -6012,7 +6012,7 @@ int s1ap_decode_s1ap_e_rabsetupresponseies(
 
     for (i = 0; i < s1ap_E_RABSetupResponse_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_E_RABSetupResponse_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_E_RABSetupResponse_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -6126,7 +6126,7 @@ int s1ap_decode_s1ap_uecontextreleasecommand_ies(
 
     for (i = 0; i < s1ap_UEContextReleaseCommand_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_UEContextReleaseCommand_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_UEContextReleaseCommand_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_UE_S1AP_IDs:
             {
@@ -6183,7 +6183,7 @@ int s1ap_decode_s1ap_pathswitchrequesties(
 
     for (i = 0; i < s1ap_PathSwitchRequest_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_PathSwitchRequest_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_PathSwitchRequest_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID:
             {
@@ -6354,7 +6354,7 @@ int s1ap_decode_s1ap_downlinknastransport_ies(
 
     for (i = 0; i < s1ap_DownlinkNASTransport_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_DownlinkNASTransport_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_DownlinkNASTransport_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -6460,7 +6460,7 @@ int s1ap_decode_s1ap_e_rabreleaseindicationies(
 
     for (i = 0; i < s1ap_E_RABReleaseIndication_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_E_RABReleaseIndication_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_E_RABReleaseIndication_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -6535,7 +6535,7 @@ int s1ap_decode_s1ap_s1setuprequesties(
 
     for (i = 0; i < s1ap_S1SetupRequest_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_S1SetupRequest_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_S1SetupRequest_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_Global_ENB_ID:
             {
@@ -6641,7 +6641,7 @@ int s1ap_decode_s1ap_nasnondeliveryindication_ies(
 
     for (i = 0; i < s1ap_NASNonDeliveryIndication_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_NASNonDeliveryIndication_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_NASNonDeliveryIndication_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -6728,7 +6728,7 @@ int s1ap_decode_s1ap_celltraffictraceies(
 
     for (i = 0; i < s1ap_CellTrafficTrace_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_CellTrafficTrace_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_CellTrafficTrace_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -6847,7 +6847,7 @@ int s1ap_decode_s1ap_e_rabsetuprequesties(
 
     for (i = 0; i < s1ap_E_RABSetupRequest_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_E_RABSetupRequest_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_E_RABSetupRequest_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -6939,7 +6939,7 @@ int s1ap_decode_s1ap_enbstatustransferies(
 
     for (i = 0; i < s1ap_ENBStatusTransfer_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_ENBStatusTransfer_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_ENBStatusTransfer_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -7011,7 +7011,7 @@ int s1ap_decode_s1ap_resetacknowledgeies(
 
     for (i = 0; i < s1ap_ResetAcknowledge_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_ResetAcknowledge_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_ResetAcknowledge_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             /* Optional field */
             case S1ap_ProtocolIE_ID_id_UE_associatedLogicalS1_ConnectionListResAck:
@@ -7075,7 +7075,7 @@ int s1ap_decode_s1ap_uecontextreleasecomplete_ies(
 
     for (i = 0; i < s1ap_UEContextReleaseComplete_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_UEContextReleaseComplete_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_UEContextReleaseComplete_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -7149,7 +7149,7 @@ int s1ap_decode_s1ap_uplinkueassociatedlppatransport_ies(
 
     for (i = 0; i < s1ap_UplinkUEAssociatedLPPaTransport_p->protocolIEs.list.count; i++) {
         S1ap_IE_t *ie_p;
-        ie_p = s1ap_UplinkUEAssociatedLPPaTransport_p->protocolIEs.list.array[i];
+        ie_p = (S1ap_IE_t *)s1ap_UplinkUEAssociatedLPPaTransport_p->protocolIEs.list.array[i];
         switch(ie_p->id) {
             case S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             {
@@ -7230,7 +7230,7 @@ int s1ap_decode_s1ap_e_rabfailedtosetuplisthoreqack(
     assert(s1ap_E_RABFailedtoSetupListHOReqAckIEs != NULL);
 
     for (i = 0; i < s1ap_E_RABFailedtoSetupListHOReqAck->list.count; i++) {
-        S1ap_IE_t *ie_p = s1ap_E_RABFailedtoSetupListHOReqAck->list.array[i];
+        S1ap_IE_t *ie_p = (S1ap_IE_t *)s1ap_E_RABFailedtoSetupListHOReqAck->list.array[i];
         switch (ie_p->id) {
             case S1ap_ProtocolIE_ID_id_E_RABFailedtoSetupItemHOReqAck:
             {
@@ -7266,7 +7266,7 @@ int s1ap_decode_s1ap_e_rabreleaselistbearerrelcomp(
     assert(s1ap_E_RABReleaseListBearerRelCompIEs != NULL);
 
     for (i = 0; i < s1ap_E_RABReleaseListBearerRelComp->list.count; i++) {
-        S1ap_IE_t *ie_p = s1ap_E_RABReleaseListBearerRelComp->list.array[i];
+        S1ap_IE_t *ie_p = (S1ap_IE_t *)s1ap_E_RABReleaseListBearerRelComp->list.array[i];
         switch (ie_p->id) {
             case S1ap_ProtocolIE_ID_id_E_RABReleaseItemBearerRelComp:
             {
@@ -7302,7 +7302,7 @@ int s1ap_decode_s1ap_e_rabtobesetuplisthoreq(
     assert(s1ap_E_RABToBeSetupListHOReqIEs != NULL);
 
     for (i = 0; i < s1ap_E_RABToBeSetupListHOReq->list.count; i++) {
-        S1ap_IE_t *ie_p = s1ap_E_RABToBeSetupListHOReq->list.array[i];
+        S1ap_IE_t *ie_p = (S1ap_IE_t *)s1ap_E_RABToBeSetupListHOReq->list.array[i];
         switch (ie_p->id) {
             case S1ap_ProtocolIE_ID_id_E_RABToBeSetupItemHOReq:
             {
@@ -7338,7 +7338,7 @@ int s1ap_decode_s1ap_e_rabtobemodifiedlistbearermodreq(
     assert(s1ap_E_RABToBeModifiedListBearerModReqIEs != NULL);
 
     for (i = 0; i < s1ap_E_RABToBeModifiedListBearerModReq->list.count; i++) {
-        S1ap_IE_t *ie_p = s1ap_E_RABToBeModifiedListBearerModReq->list.array[i];
+        S1ap_IE_t *ie_p = (S1ap_IE_t *)s1ap_E_RABToBeModifiedListBearerModReq->list.array[i];
         switch (ie_p->id) {
             case S1ap_ProtocolIE_ID_id_E_RABToBeModifiedItemBearerModReq:
             {
@@ -7374,7 +7374,7 @@ int s1ap_decode_s1ap_e_rabadmittedlist(
     assert(s1ap_E_RABAdmittedListIEs != NULL);
 
     for (i = 0; i < s1ap_E_RABAdmittedList->list.count; i++) {
-        S1ap_IE_t *ie_p = s1ap_E_RABAdmittedList->list.array[i];
+        S1ap_IE_t *ie_p = (S1ap_IE_t *)s1ap_E_RABAdmittedList->list.array[i];
         switch (ie_p->id) {
             case S1ap_ProtocolIE_ID_id_E_RABAdmittedItem:
             {
@@ -7410,7 +7410,7 @@ int s1ap_decode_s1ap_e_rabtobesetuplistbearersureq(
     assert(s1ap_E_RABToBeSetupListBearerSUReqIEs != NULL);
 
     for (i = 0; i < s1ap_E_RABToBeSetupListBearerSUReq->list.count; i++) {
-        S1ap_IE_t *ie_p = s1ap_E_RABToBeSetupListBearerSUReq->list.array[i];
+        S1ap_IE_t *ie_p = (S1ap_IE_t *)s1ap_E_RABToBeSetupListBearerSUReq->list.array[i];
         switch (ie_p->id) {
             case S1ap_ProtocolIE_ID_id_E_RABToBeSetupItemBearerSUReq:
             {
@@ -7446,7 +7446,7 @@ int s1ap_decode_s1ap_e_rabdataforwardinglist(
     assert(s1ap_E_RABDataForwardingListIEs != NULL);
 
     for (i = 0; i < s1ap_E_RABDataForwardingList->list.count; i++) {
-        S1ap_IE_t *ie_p = s1ap_E_RABDataForwardingList->list.array[i];
+        S1ap_IE_t *ie_p = (S1ap_IE_t *)s1ap_E_RABDataForwardingList->list.array[i];
         switch (ie_p->id) {
             case S1ap_ProtocolIE_ID_id_E_RABDataForwardingItem:
             {
@@ -7482,7 +7482,7 @@ int s1ap_decode_s1ap_e_rabtobeswitcheddllist(
     assert(s1ap_E_RABToBeSwitchedDLListIEs != NULL);
 
     for (i = 0; i < s1ap_E_RABToBeSwitchedDLList->list.count; i++) {
-        S1ap_IE_t *ie_p = s1ap_E_RABToBeSwitchedDLList->list.array[i];
+        S1ap_IE_t *ie_p = (S1ap_IE_t *)s1ap_E_RABToBeSwitchedDLList->list.array[i];
         switch (ie_p->id) {
             case S1ap_ProtocolIE_ID_id_E_RABToBeSwitchedDLItem:
             {
@@ -7518,7 +7518,7 @@ int s1ap_decode_s1ap_e_rabsetuplistctxtsures(
     assert(s1ap_E_RABSetupListCtxtSUResIEs != NULL);
 
     for (i = 0; i < s1ap_E_RABSetupListCtxtSURes->list.count; i++) {
-        S1ap_IE_t *ie_p = s1ap_E_RABSetupListCtxtSURes->list.array[i];
+        S1ap_IE_t *ie_p = (S1ap_IE_t *)s1ap_E_RABSetupListCtxtSURes->list.array[i];
         switch (ie_p->id) {
             case S1ap_ProtocolIE_ID_id_E_RABSetupItemCtxtSURes:
             {
@@ -7554,7 +7554,7 @@ int s1ap_decode_s1ap_e_rabtobeswitchedullist(
     assert(s1ap_E_RABToBeSwitchedULListIEs != NULL);
 
     for (i = 0; i < s1ap_E_RABToBeSwitchedULList->list.count; i++) {
-        S1ap_IE_t *ie_p = s1ap_E_RABToBeSwitchedULList->list.array[i];
+        S1ap_IE_t *ie_p = (S1ap_IE_t *)s1ap_E_RABToBeSwitchedULList->list.array[i];
         switch (ie_p->id) {
             case S1ap_ProtocolIE_ID_id_E_RABToBeSwitchedULItem:
             {
@@ -7590,7 +7590,7 @@ int s1ap_decode_s1ap_bearers_subjecttostatustransfer_list(
     assert(s1ap_Bearers_SubjectToStatusTransfer_ListIEs != NULL);
 
     for (i = 0; i < s1ap_Bearers_SubjectToStatusTransfer_List->list.count; i++) {
-        S1ap_IE_t *ie_p = s1ap_Bearers_SubjectToStatusTransfer_List->list.array[i];
+        S1ap_IE_t *ie_p = (S1ap_IE_t *)s1ap_Bearers_SubjectToStatusTransfer_List->list.array[i];
         switch (ie_p->id) {
             case S1ap_ProtocolIE_ID_id_Bearers_SubjectToStatusTransfer_Item:
             {
@@ -7626,7 +7626,7 @@ int s1ap_decode_s1ap_e_rablist(
     assert(s1ap_E_RABListIEs != NULL);
 
     for (i = 0; i < s1ap_E_RABList->list.count; i++) {
-        S1ap_IE_t *ie_p = s1ap_E_RABList->list.array[i];
+        S1ap_IE_t *ie_p = (S1ap_IE_t *)s1ap_E_RABList->list.array[i];
         switch (ie_p->id) {
             case S1ap_ProtocolIE_ID_id_E_RABItem:
             {
@@ -7662,7 +7662,7 @@ int s1ap_decode_s1ap_tailist(
     assert(s1ap_TAIListIEs != NULL);
 
     for (i = 0; i < s1ap_TAIList->list.count; i++) {
-        S1ap_IE_t *ie_p = s1ap_TAIList->list.array[i];
+        S1ap_IE_t *ie_p = (S1ap_IE_t *)s1ap_TAIList->list.array[i];
         switch (ie_p->id) {
             case S1ap_ProtocolIE_ID_id_TAIItem:
             {
@@ -7698,7 +7698,7 @@ int s1ap_decode_s1ap_ue_associatedlogicals1_connectionlistres(
     assert(s1ap_UE_associatedLogicalS1_ConnectionListResIEs != NULL);
 
     for (i = 0; i < s1ap_UE_associatedLogicalS1_ConnectionListRes->list.count; i++) {
-        S1ap_IE_t *ie_p = s1ap_UE_associatedLogicalS1_ConnectionListRes->list.array[i];
+        S1ap_IE_t *ie_p = (S1ap_IE_t *)s1ap_UE_associatedLogicalS1_ConnectionListRes->list.array[i];
         switch (ie_p->id) {
             case S1ap_ProtocolIE_ID_id_UE_associatedLogicalS1_ConnectionItem:
             {
@@ -7734,7 +7734,7 @@ int s1ap_decode_s1ap_e_rabsetuplistbearersures(
     assert(s1ap_E_RABSetupListBearerSUResIEs != NULL);
 
     for (i = 0; i < s1ap_E_RABSetupListBearerSURes->list.count; i++) {
-        S1ap_IE_t *ie_p = s1ap_E_RABSetupListBearerSURes->list.array[i];
+        S1ap_IE_t *ie_p = (S1ap_IE_t *)s1ap_E_RABSetupListBearerSURes->list.array[i];
         switch (ie_p->id) {
             case S1ap_ProtocolIE_ID_id_E_RABSetupItemBearerSURes:
             {
@@ -7770,7 +7770,7 @@ int s1ap_decode_s1ap_e_rabmodifylistbearermodres(
     assert(s1ap_E_RABModifyListBearerModResIEs != NULL);
 
     for (i = 0; i < s1ap_E_RABModifyListBearerModRes->list.count; i++) {
-        S1ap_IE_t *ie_p = s1ap_E_RABModifyListBearerModRes->list.array[i];
+        S1ap_IE_t *ie_p = (S1ap_IE_t *)s1ap_E_RABModifyListBearerModRes->list.array[i];
         switch (ie_p->id) {
             case S1ap_ProtocolIE_ID_id_E_RABModifyItemBearerModRes:
             {
@@ -7806,7 +7806,7 @@ int s1ap_decode_s1ap_e_rabtobesetuplistctxtsureq(
     assert(s1ap_E_RABToBeSetupListCtxtSUReqIEs != NULL);
 
     for (i = 0; i < s1ap_E_RABToBeSetupListCtxtSUReq->list.count; i++) {
-        S1ap_IE_t *ie_p = s1ap_E_RABToBeSetupListCtxtSUReq->list.array[i];
+        S1ap_IE_t *ie_p = (S1ap_IE_t *)s1ap_E_RABToBeSetupListCtxtSUReq->list.array[i];
         switch (ie_p->id) {
             case S1ap_ProtocolIE_ID_id_E_RABToBeSetupItemCtxtSUReq:
             {
@@ -7842,7 +7842,7 @@ int s1ap_decode_s1ap_e_rabinformationlist(
     assert(s1ap_E_RABInformationListIEs != NULL);
 
     for (i = 0; i < s1ap_E_RABInformationList->list.count; i++) {
-        S1ap_IE_t *ie_p = s1ap_E_RABInformationList->list.array[i];
+        S1ap_IE_t *ie_p = (S1ap_IE_t *)s1ap_E_RABInformationList->list.array[i];
         switch (ie_p->id) {
             case S1ap_ProtocolIE_ID_id_E_RABInformationListItem:
             {
@@ -7878,7 +7878,7 @@ int s1ap_decode_s1ap_ue_associatedlogicals1_connectionlistresack(
     assert(s1ap_UE_associatedLogicalS1_ConnectionListResAckIEs != NULL);
 
     for (i = 0; i < s1ap_UE_associatedLogicalS1_ConnectionListResAck->list.count; i++) {
-        S1ap_IE_t *ie_p = s1ap_UE_associatedLogicalS1_ConnectionListResAck->list.array[i];
+        S1ap_IE_t *ie_p = (S1ap_IE_t *)s1ap_UE_associatedLogicalS1_ConnectionListResAck->list.array[i];
         switch (ie_p->id) {
             case S1ap_ProtocolIE_ID_id_UE_associatedLogicalS1_ConnectionItem:
             {
