@@ -39,22 +39,27 @@ static inline int s1ap_encode_successfull_outcome(
 static inline int s1ap_encode_unsuccessfull_outcome(
     s1ap_message *message_p, uint8_t **buffer, uint32_t *length);
 
-int s1ap_encode_pdu(s1ap_message *message_p, uint8_t **buffer, uint32_t *length)
+int s1ap_encode_pdu(pkbuf_t **pkb, s1ap_message *message_p)
 {
+    int ret = -1;
+    uint8_t **buffer = 0;
+    uint32_t *length = 0;
+
     d_assert (message_p, return -1, "Null param");
-    d_assert (buffer, return -1, "Null param");
-    d_assert (length, return -1, "Null param");
 
     switch (message_p->direction) 
     {
         case S1AP_PDU_PR_initiatingMessage:
-            return s1ap_encode_initiating(message_p, buffer, length);
+            ret = s1ap_encode_initiating(message_p, buffer, length);
+            break;
 
         case S1AP_PDU_PR_successfulOutcome:
-            return s1ap_encode_successfull_outcome(message_p, buffer, length);
+            ret = s1ap_encode_successfull_outcome(message_p, buffer, length);
+            break;
 
         case S1AP_PDU_PR_unsuccessfulOutcome:
-            return s1ap_encode_unsuccessfull_outcome(message_p, buffer, length);
+            ret = s1ap_encode_unsuccessfull_outcome(message_p, buffer, length);
+            break;
 
         default:
             d_warn("Unknown message outcome (%d) or not implemented", 
@@ -62,7 +67,14 @@ int s1ap_encode_pdu(s1ap_message *message_p, uint8_t **buffer, uint32_t *length)
             break;
     }
 
-    return -1;
+    if (ret >= 0)
+    {
+        *pkb = pkbuf_alloc(0, *length);
+        d_assert(*pkb, return -1, "Null Param");
+        memcpy((*pkb)->payload, *buffer, *length);
+    }
+
+    return ret;
 }
 
 ssize_t s1ap_generate_initiating_message(uint8_t **buffer, uint32_t *length,

@@ -93,81 +93,67 @@ int s1ap_decode_pdu(s1ap_message *message, pkbuf_t *pkb)
 static int s1ap_decode_initiating(s1ap_message *message,
     S1ap_InitiatingMessage_t *initiating_p)
 {
-    int ret;
+    int ret = -1;
 
     d_assert(initiating_p, return -1, "Null param");
 
     switch (initiating_p->procedureCode) 
     {
         case S1ap_ProcedureCode_id_uplinkNASTransport: 
-        {
             ret = s1ap_decode_s1ap_uplinknastransport_ies(
                     &message->msg.s1ap_UplinkNASTransport_IEs, 
                     &initiating_p->value);
             s1ap_xer_print_message(s1ap_xer_print_s1ap_uplinknastransport, 
                     s1ap_xer__print2sp, message);
-        }
-        break;
+            break;
 
         case S1ap_ProcedureCode_id_S1Setup: 
-        {
             ret = s1ap_decode_s1ap_s1setuprequesties(
                     &message->msg.s1ap_S1SetupRequestIEs, 
                     &initiating_p->value);
             s1ap_xer_print_message(s1ap_xer_print_s1ap_s1setuprequest,
                     s1ap_xer__print2sp, message);
-        }
-        break;
+            break;
 
         case S1ap_ProcedureCode_id_initialUEMessage: 
-        {
             ret = s1ap_decode_s1ap_initialuemessage_ies(
                     &message->msg.s1ap_InitialUEMessage_IEs, 
                     &initiating_p->value);
             s1ap_xer_print_message(s1ap_xer_print_s1ap_initialuemessage,
                     s1ap_xer__print2sp, message);
-        }
-        break;
+            break;
 
         case S1ap_ProcedureCode_id_UEContextReleaseRequest: 
-        {
             ret = s1ap_decode_s1ap_uecontextreleaserequest_ies(
                     &message->msg.s1ap_UEContextReleaseRequest_IEs, &initiating_p->value);
             s1ap_xer_print_message(s1ap_xer_print_s1ap_uecontextreleaserequest,
                     s1ap_xer__print2sp, message);
-        }
-        break;
+            break;
 
         case S1ap_ProcedureCode_id_UECapabilityInfoIndication: 
-        {
             ret = s1ap_decode_s1ap_uecapabilityinfoindicationies(
                     &message->msg.s1ap_UECapabilityInfoIndicationIEs, 
                     &initiating_p->value);
             s1ap_xer_print_message(
                     s1ap_xer_print_s1ap_uecapabilityinfoindication,
                     s1ap_xer__print2sp, message);
-        }
-        break;
+            break;
 
         case S1ap_ProcedureCode_id_NASNonDeliveryIndication: 
-        {
             ret = s1ap_decode_s1ap_nasnondeliveryindication_ies(
                     &message->msg.s1ap_NASNonDeliveryIndication_IEs, 
                     &initiating_p->value);
             s1ap_xer_print_message(s1ap_xer_print_s1ap_nasnondeliveryindication,
                     s1ap_xer__print2sp, message);
-        }
-        break;
+            break;
 
         default: 
-        {
             d_error("Unknown procedure ID (%d) for initiating message", 
                     (int)initiating_p->procedureCode);
             d_assert(0, return -1, 
                     "Unknown procedure ID (%d) for initiating message", 
                     (int)initiating_p->procedureCode);
-        }
-        break;
+            break;
     }
 
     return ret;
@@ -183,26 +169,22 @@ static int s1ap_decode_successfull_outcome(s1ap_message *message,
     switch (successfullOutcome_p->procedureCode) 
     {
         case S1ap_ProcedureCode_id_InitialContextSetup: 
-        {
             ret = s1ap_decode_s1ap_initialcontextsetupresponseies(
                     &message->msg.s1ap_InitialContextSetupResponseIEs, 
                     &successfullOutcome_p->value);
             s1ap_xer_print_message(
                     s1ap_xer_print_s1ap_initialcontextsetupresponse,
                     s1ap_xer__print2sp, message);
-        }
-        break;
+            break;
 
         case S1ap_ProcedureCode_id_UEContextRelease: 
-        {
             ret = s1ap_decode_s1ap_uecontextreleasecomplete_ies(
                     &message->msg.s1ap_UEContextReleaseComplete_IEs, 
                     &successfullOutcome_p->value);
             s1ap_xer_print_message(
                     s1ap_xer_print_s1ap_uecontextreleasecomplete,
                     s1ap_xer__print2sp, message);
-        }
-        break;
+            break;
 
         default: 
             d_error("Unknown procedure ID (%ld) for successfull "
@@ -223,23 +205,19 @@ static int s1ap_decode_unsuccessfull_outcome(s1ap_message *message,
     switch (unSuccessfulOutcome_p->procedureCode) 
     {
         case S1ap_ProcedureCode_id_InitialContextSetup: 
-        {
             ret = s1ap_decode_s1ap_initialcontextsetupfailureies(
                     &message->msg.s1ap_InitialContextSetupFailureIEs, 
                     &unSuccessfulOutcome_p->value);
             s1ap_xer_print_message(
                     s1ap_xer_print_s1ap_initialcontextsetupfailure,
                     s1ap_xer__print2sp, message);
-        }
-        break;
+            break;
 
         default: 
-        {
             d_error("Unknown procedure ID (%d) for "
                     "unsuccessfull outcome message", 
                     (int)unSuccessfulOutcome_p->procedureCode);
-        }
-        break;
+            break;
     }
 
     return ret;
