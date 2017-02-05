@@ -1,8 +1,69 @@
-#include "core_debug.h"
+/*
+ * Copyright (c) 2015, EURECOM (www.eurecom.fr)
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * The views and conclusions contained in the software and documentation are those
+ * of the authors and should not be interpreted as representing official policies,
+ * either expressed or implied, of the FreeBSD Project.
+ */
 
+#define TRACE_MODULE encoder
+
+#include "core_debug.h"
 #include "s1ap_message.h"
 
-extern void free_wrapper(void *ptr);
+static inline int s1ap_encode_initiating(
+    s1ap_message *message_p, uint8_t **buffer, uint32_t *length);
+static inline int s1ap_encode_successfull_outcome(
+    s1ap_message *message_p, uint8_t **buffer, uint32_t *length);
+static inline int s1ap_encode_unsuccessfull_outcome(
+    s1ap_message *message_p, uint8_t **buffer, uint32_t *length);
+
+int s1ap_encode_pdu(s1ap_message *message_p, uint8_t **buffer, uint32_t *length)
+{
+    d_assert (message_p, return -1, "Null param");
+    d_assert (buffer, return -1, "Null param");
+    d_assert (length, return -1, "Null param");
+
+    switch (message_p->direction) 
+    {
+        case S1AP_PDU_PR_initiatingMessage:
+            return s1ap_encode_initiating(message_p, buffer, length);
+
+        case S1AP_PDU_PR_successfulOutcome:
+            return s1ap_encode_successfull_outcome(message_p, buffer, length);
+
+        case S1AP_PDU_PR_unsuccessfulOutcome:
+            return s1ap_encode_unsuccessfull_outcome(message_p, buffer, length);
+
+        default:
+            d_warn("Unknown message outcome (%d) or not implemented", 
+                    (int)message_p->direction);
+            break;
+    }
+
+    return -1;
+}
 
 ssize_t s1ap_generate_initiating_message(uint8_t **buffer, uint32_t *length,
     e_S1ap_ProcedureCode procedureCode, S1ap_Criticality_t criticality,
@@ -227,7 +288,7 @@ static inline int s1ap_encode_initiating(
     return -1;
 }
 
-static inline int s1ap_encode_successfull_outcome (
+static inline int s1ap_encode_successfull_outcome(
     s1ap_message *message_p, uint8_t **buffer, uint32_t *length)
 {
     switch (message_p->procedureCode) 
@@ -261,28 +322,3 @@ static inline int s1ap_encode_unsuccessfull_outcome(
     return -1;
 }
 
-int s1ap_encode_pdu(s1ap_message *message_p, uint8_t **buffer, uint32_t *length)
-{
-    d_assert (message_p, return -1, "Null param");
-    d_assert (buffer, return -1, "Null param");
-    d_assert (length, return -1, "Null param");
-
-    switch (message_p->direction) 
-    {
-        case S1AP_PDU_PR_initiatingMessage:
-            return s1ap_encode_initiating(message_p, buffer, length);
-
-        case S1AP_PDU_PR_successfulOutcome:
-            return s1ap_encode_successfull_outcome(message_p, buffer, length);
-
-        case S1AP_PDU_PR_unsuccessfulOutcome:
-            return s1ap_encode_unsuccessfull_outcome(message_p, buffer, length);
-
-        default:
-            d_warn("Unknown message outcome (%d) or not implemented", 
-                    (int)message_p->direction);
-            break;
-    }
-
-    return -1;
-}

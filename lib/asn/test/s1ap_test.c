@@ -71,6 +71,10 @@ static void s1ap_test3(abts_case *tc, void *data)
 abts_suite *test_s1ap(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
+    {
+        extern int _decoder;
+        d_trace_level(&_decoder, 100);
+    }
 
     abts_run_test(suite, s1ap_test1, NULL);
     abts_run_test(suite, s1ap_test2, NULL);
