@@ -1,6 +1,6 @@
 #include "core_debug.h"
 
-#include "s1ap_codecs.h"
+#include "s1ap_message.h"
 
 void free_wrapper(void *ptr)
 {

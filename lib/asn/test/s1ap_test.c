@@ -6,7 +6,7 @@
 
 #include "testutil.h"
 
-#include "s1ap_codecs.h"
+#include "s1ap_message.h"
 
 static void s1ap_test1(abts_case *tc, void *data)
 {
