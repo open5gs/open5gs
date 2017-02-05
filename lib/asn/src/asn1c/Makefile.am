@@ -815,7 +815,7 @@ AM_CFLAGS = \
 	-Wall -Werror -Wno-parentheses-equality
 
 MAINTAINERCLEANFILES = Makefile.in 
-MOSTLYCLEANFILES = core *.stackdump
+MOSTLYCLEANFILES = core *.stackdump Makefile.am.sample converter-sample.c
 
 EXTRA_DIST = .libs $(noinst_LTLIBRARIES)
 
