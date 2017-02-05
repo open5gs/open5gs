@@ -3,7 +3,7 @@
 noinst_LTLIBRARIES = libcellwire.la
 
 libcellwire_la_SOURCES = \
-    ../include/cellwire.h 
+    cellwire.h
 
 nodist_libcellwire_la_SOURCES = \
     init.c 

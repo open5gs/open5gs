@@ -31,7 +31,6 @@ MAINTAINERCLEANFILES = \
     m4/lt~obsolete.m4 m4/ltoptions.m4 \
     build-aux/depcomp build-aux/missing build-aux/config.guess \
     build-aux/config.sub build-aux/ltmain.sh build-aux/install-sh \
-    .cscope.out .cscope.out.in .cscope.files .cscope.out.po \
     Makefile.in
 MOSTLYCLEANFILES = core *.stackdump
 
