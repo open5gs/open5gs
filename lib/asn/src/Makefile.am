@@ -5,7 +5,7 @@ SUBDIRS = asn1c
 noinst_LTLIBRARIES = libasn.la
 
 libasn_la_SOURCES = \
-	s1ap_ies_defs.h s1ap_message.h
+	s1ap_ies_defs.h s1ap_codecs.h
 
 nodist_libasn_la_SOURCES = \
 	s1ap_encoder.c s1ap_decoder.c \

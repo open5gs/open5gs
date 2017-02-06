@@ -1,7 +1,7 @@
-#define TRACE_MODULE _encoder
+#define TRACE_MODULE _s1enc
 
 #include "core_debug.h"
-#include "s1ap_message.h"
+#include "s1ap_codecs.h"
 
 static inline int s1ap_encode_initiating(
     s1ap_message *message_p, pkbuf_t *pkbuf);
