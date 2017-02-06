@@ -106,7 +106,7 @@ static int check_signal(int signum)
 
             core_initialize();
 
-            cellwire_initialize();
+            cellwire_initialize(config_path);
 
             threads_start();
 
@@ -227,7 +227,7 @@ int main(int argc, char *argv[])
 
     signal_init();
 
-    if (cellwire_initialize() != CORE_OK)
+    if (cellwire_initialize(config_path) != CORE_OK)
     {
         d_fatal("CellWire initialization failed. Aborted");
         return EXIT_FAILURE;

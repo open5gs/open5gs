@@ -15,6 +15,7 @@
  */
 
 #include "core.h"
+#include "cellwire.h"
 #include "abts.h"
 #include "testutil.h"
 
@@ -33,9 +34,16 @@ void core_assert_ok(abts_case* tc, const char* context, status_t rv,
     }
 }
 
+void test_terminate(void)
+{
+    core_terminate();
+    cellwire_terminate();
+}
+
 void test_initialize(void)
 {
     core_initialize();
-    atexit(core_terminate);
+    cellwire_initialize(NULL);
+    atexit(test_terminate);
 }
 

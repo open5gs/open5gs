@@ -1,5 +1,6 @@
 #define TRACE_MODULE _s1msg
 
+#include "core_debug.h"
 #include "context.h"
 #include "s1ap_message.h"
 
@@ -12,46 +13,52 @@ status_t s1ap_build_setup_rsp(pkbuf_t **pkbuf)
     S1ap_S1SetupResponseIEs_t *ies = NULL;
     int num_of_gummei = 0;
     S1ap_ServedGUMMEIsItem_t servedGUMMEI;
-    S1ap_PLMNidentity_t plmn_id;
-    S1ap_MME_Group_ID_t grp_id;
-    S1ap_MME_Code_t code;
+    S1ap_PLMNidentity_t plmnIdentity;
+    S1ap_MME_Group_ID_t mmeGroupId;
+    S1ap_MME_Code_t mmeCode;
+
+    uint16_t mcc = 0x1234;
+    uint16_t mnc = 0x5678;
+    uint16_t mnc_digit_length = 2;
 
     memset(&message, 0, sizeof(s1ap_message));
 
     ies = &message.msg.s1ap_S1SetupResponseIEs;
     ies->relativeMMECapacity = mme_self()->relative_capacity;
 
+    memset((void*)&servedGUMMEI, 0, sizeof(S1ap_ServedGUMMEIsItem_t));
     num_of_gummei = 1;
     for (i = 0; i < num_of_gummei; i++)
     {
         srvd_gummei_t *srvd_gummei = &mme_self()->srvd_gummei;
 
-        for (j = 0; i < srvd_gummei->num_of_plmn_id; j++)
+        for (j = 0; j < srvd_gummei->num_of_plmn_id; j++)
         {
-            plmn_id.buf = calloc(3, sizeof(uint8_t));                           \
-            plmn_id.buf[0] = 0xf1;
-            plmn_id.buf[1] = 0xea;
-            plmn_id.buf[2] = 0xaa;
-            plmn_id.size = 3;
-            ASN_SEQUENCE_ADD(&servedGUMMEI.servedPLMNs.list, &plmn_id);
+            memset((void *)&plmnIdentity, 0, sizeof(S1ap_PLMNidentity_t));
+            MCC_MNC_TO_TBCD(mcc, mnc, mnc_digit_length, &plmnIdentity);
+            ASN_SEQUENCE_ADD(&servedGUMMEI.servedPLMNs.list, &plmnIdentity);
         }
 
-        for (j = 0; i < srvd_gummei->num_of_grp_id; j++)
+        for (j = 0; j < srvd_gummei->num_of_grp_id; j++)
         {
-            INT16_TO_OCTET_STRING(srvd_gummei->grp_id[j], &grp_id);
-            ASN_SEQUENCE_ADD(&servedGUMMEI.servedGroupIDs.list, &grp_id);
+            memset((void*)&mmeGroupId, 0, sizeof(S1ap_MME_Group_ID_t));
+            INT16_TO_OCTET_STRING(srvd_gummei->grp_id[j], &mmeGroupId);
+            ASN_SEQUENCE_ADD(&servedGUMMEI.servedGroupIDs.list, &mmeGroupId);
         }
 
-        for (j = 0; i < srvd_gummei->num_of_code; j++)
+        for (j = 0; j < srvd_gummei->num_of_code; j++)
         {
-            INT16_TO_OCTET_STRING(srvd_gummei->code[j], &code);
-            ASN_SEQUENCE_ADD(&servedGUMMEI.servedMMECs.list, &code);
+            memset((void*)&mmeCode, 0, sizeof(S1ap_MME_Code_t));
+            INT8_TO_OCTET_STRING(srvd_gummei->code[j], &mmeCode);
+            ASN_SEQUENCE_ADD(&servedGUMMEI.servedMMECs.list, &mmeCode);
         }
     }
 
-    ASN_SEQUENCE_ADD(&ies->servedGUMMEIs, &servedGUMMEI);
+    memset(&ies->servedGUMMEIs, 0, sizeof(S1ap_ServedGUMMEIs_t));
+    ASN_SEQUENCE_ADD(&ies->servedGUMMEIs.list, &servedGUMMEI);
     message.procedureCode = S1ap_ProcedureCode_id_S1Setup;
     message.direction = S1AP_PDU_PR_successfulOutcome;
+    message.criticality = S1ap_Criticality_reject;
 
     erval = s1ap_encode_pdu(pkbuf, &message);
     if (erval < 0)

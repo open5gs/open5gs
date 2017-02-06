@@ -74,8 +74,49 @@ static void s1ap_test4(abts_case *tc, void *data)
     pkbuf_t *pkbuf;
 
     rv = s1ap_build_setup_rsp(&pkbuf);
-    printf("rv = %d\n", rv);
-    printf("pkbuf = %p\n", pkbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+}
+
+static void s1ap_test5(abts_case *tc, void *data)
+{
+    int erval = -1;
+    pkbuf_t *pkbuf;
+
+    s1ap_message message;
+    S1ap_S1SetupRequestIEs_t *s1SetupRequestIEs;
+    S1ap_PLMNidentity_t plmnIdentity;
+    S1ap_SupportedTAs_Item_t ta;
+
+    uint16_t mcc = 0x1234;
+    uint16_t mnc = 0x5678;
+    uint16_t mnc_digit_length = 2;
+    uint32_t enb_id = 0x5f123;
+    uint32_t ttta = 0x1234;
+
+    memset(&message, 0, sizeof(s1ap_message));
+
+    s1SetupRequestIEs = &message.msg.s1ap_S1SetupRequestIEs;
+    memset((void *)&plmnIdentity, 0, sizeof(S1ap_PLMNidentity_t));
+    memset((void *)&ta, 0, sizeof(S1ap_SupportedTAs_Item_t));
+
+    s1SetupRequestIEs->global_ENB_ID.eNB_ID.present = S1ap_ENB_ID_PR_macroENB_ID;
+    MACRO_ENB_ID_TO_BIT_STRING(enb_id,
+         &s1SetupRequestIEs->global_ENB_ID.eNB_ID.choice.macroENB_ID);
+    MCC_MNC_TO_PLMNID(mcc, mnc, mnc_digit_length,
+        &s1SetupRequestIEs->global_ENB_ID.pLMNidentity);
+
+    INT16_TO_OCTET_STRING(ttta, &ta.tAC);
+    MCC_MNC_TO_TBCD(mcc, mnc, mnc_digit_length, &plmnIdentity);
+
+    ASN_SEQUENCE_ADD(&ta.broadcastPLMNs.list, &plmnIdentity);
+    ASN_SEQUENCE_ADD(&s1SetupRequestIEs->supportedTAs.list, &ta);
+
+    message.direction = S1AP_PDU_PR_initiatingMessage;
+    message.procedureCode = S1ap_ProcedureCode_id_S1Setup;
+    message.criticality = S1ap_Criticality_reject;
+
+    erval = s1ap_encode_pdu(&pkbuf, &message);
+    ABTS_INT_EQUAL(tc, 280, erval);
 }
 
 abts_suite *test_s1ap(abts_suite *suite)
@@ -89,9 +130,8 @@ abts_suite *test_s1ap(abts_suite *suite)
     abts_run_test(suite, s1ap_test1, NULL);
     abts_run_test(suite, s1ap_test2, NULL);
     abts_run_test(suite, s1ap_test3, NULL);
-#if 0
     abts_run_test(suite, s1ap_test4, NULL);
-#endif
+    abts_run_test(suite, s1ap_test5, NULL);
 
     return suite;
 }

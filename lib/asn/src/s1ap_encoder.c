@@ -12,6 +12,8 @@ static inline int s1ap_encode_unsuccessfull_outcome(
 
 static inline int s1ap_encode_initial_context_setup_request(
     s1ap_message *message_p, pkbuf_t *pkbuf);
+static inline int s1ap_encode_s1setuprequest(
+    s1ap_message *message_p, pkbuf_t *pkbuf);
 static inline int s1ap_encode_s1setupresponse(
     s1ap_message *message_p, pkbuf_t *pkbuf);
 static inline int s1ap_encode_s1setupfailure(
@@ -76,6 +78,9 @@ static inline int s1ap_encode_initiating(
 {
     switch (message_p->procedureCode) 
     {
+        case S1ap_ProcedureCode_id_S1Setup:
+            return s1ap_encode_s1setuprequest(message_p, pkbuf);
+
         case S1ap_ProcedureCode_id_downlinkNASTransport:
             return s1ap_encode_downlink_nas_transport(message_p, pkbuf);
 
@@ -149,6 +154,25 @@ static inline int s1ap_encode_initial_context_setup_request(
             S1ap_ProcedureCode_id_InitialContextSetup, 
             S1ap_Criticality_reject, &asn_DEF_S1ap_InitialContextSetupRequest, 
             initialContextSetupRequest_p);
+}
+
+static inline int s1ap_encode_s1setuprequest(
+        s1ap_message *message_p, pkbuf_t *pkbuf)
+{
+    S1ap_S1SetupRequest_t  s1SetupRequest;
+    S1ap_S1SetupRequest_t *s1SetupRequest_p = &s1SetupRequest;
+
+    memset((void *)s1SetupRequest_p, 0, sizeof(s1SetupRequest));
+
+    if (s1ap_encode_s1ap_s1setuprequesties(
+            s1SetupRequest_p, &message_p->msg.s1ap_S1SetupRequestIEs) < 0) 
+    {
+        return -1;
+    }
+
+    return s1ap_generate_initiating_message(pkbuf,
+              S1ap_ProcedureCode_id_S1Setup, S1ap_Criticality_reject,
+              &asn_DEF_S1ap_S1SetupRequest, s1SetupRequest_p);
 }
 
 static inline int s1ap_encode_s1setupresponse(

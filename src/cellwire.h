@@ -12,7 +12,7 @@ extern "C" {
 #define GTP_C_UDP_PORT              2123
 #define GTP_U_UDP_PORT              2152
 
-CORE_DECLARE(status_t) cellwire_initialize(void);
+CORE_DECLARE(status_t) cellwire_initialize(char *config_path);
 
 CORE_DECLARE_NONSTD(void) cellwire_terminate(void);
 
