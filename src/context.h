@@ -13,7 +13,7 @@ extern "C" {
 #define CODE_PER_MME                256    /* According to spec it is 256*/
 
 typedef struct _plmn_id_t {
-    c_uint8_t       len;
+    c_uint8_t       mnc_digit_len;
     c_uint8_t       mcc[3];
     c_uint8_t       mnc[3];
 } plmn_id_t;

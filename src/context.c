@@ -25,13 +25,13 @@ status_t context_init()
     /* Initialize MME context */
     memset(&self, 0, sizeof(mme_ctx_t));
 
-    self.plmn_id.len = 2;
+    self.plmn_id.mnc_digit_len = 2;
     self.plmn_id.mcc[2] = 1;
     self.plmn_id.mnc[1] = 1;
     self.relative_capacity = 0xff;
 
     self.srvd_gummei.num_of_plmn_id = 1;
-    self.srvd_gummei.plmn_id[0].len = 2;
+    self.srvd_gummei.plmn_id[0].mnc_digit_len = 2;
     self.srvd_gummei.plmn_id[0].mcc[0] = 0;
     self.srvd_gummei.plmn_id[0].mcc[1] = 0;
     self.srvd_gummei.plmn_id[0].mcc[2] = 1;
