@@ -19,6 +19,8 @@
 extern "C" {
 #endif
 
+#define EMIT_ASN_DEBUG 1
+
 /* Environment version might be used to avoid running with the old library */
 #define	ASN1C_ENVIRONMENT_VERSION	924	/* Compile-time version */
 int get_asn1c_environment_version(void);	/* Run-time version */

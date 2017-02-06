@@ -3,15 +3,16 @@
 noinst_LTLIBRARIES = libcellwire.la
 
 libcellwire_la_SOURCES = \
-    cellwire.h context.h
+    cellwire.h context.h s1ap_message.h
 
 nodist_libcellwire_la_SOURCES = \
-    init.c context.c
+    init.c context.c s1ap_message.c
 
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/include \
-	-I$(top_srcdir)/lib/core \
-	-I$(top_srcdir)/lib/core/include
+	-I$(top_srcdir)/lib/core/include \
+    -I$(top_srcdir)/lib/asn/src/asn1c \
+    -I$(top_srcdir)/lib/asn/src
 
 AM_CFLAGS = \
 	-Wall -Werror

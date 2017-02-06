@@ -68,17 +68,30 @@ static void s1ap_test3(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, 0, result);
 }
 
+static void s1ap_test4(abts_case *tc, void *data)
+{
+    status_t rv;
+    pkbuf_t *pkbuf;
+
+    rv = s1ap_build_setup_rsp(&pkbuf);
+    printf("rv = %d\n", rv);
+    printf("pkbuf = %p\n", pkbuf);
+}
+
 abts_suite *test_s1ap(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
     {
-        extern int _decoder;
-        d_trace_level(&_decoder, 100);
+        extern int _s1dec;
+        d_trace_level(&_s1dec, 100);
     }
 
     abts_run_test(suite, s1ap_test1, NULL);
     abts_run_test(suite, s1ap_test2, NULL);
     abts_run_test(suite, s1ap_test3, NULL);
+#if 0
+    abts_run_test(suite, s1ap_test4, NULL);
+#endif
 
     return suite;
 }

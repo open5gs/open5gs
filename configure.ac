@@ -256,10 +256,10 @@ AC_CONFIG_FILES([lib/core/Makefile])
 AC_CONFIG_FILES([lib/logger/Makefile])
 AC_CONFIG_FILES([lib/asn/src/asn1c/Makefile])
 AC_CONFIG_FILES([lib/asn/src/Makefile])
-AC_CONFIG_FILES([lib/asn/test/Makefile])
 AC_CONFIG_FILES([lib/asn/Makefile])
 AC_CONFIG_FILES([lib/Makefile])
 AC_CONFIG_FILES([src/Makefile])
+AC_CONFIG_FILES([test/Makefile])
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 

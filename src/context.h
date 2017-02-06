@@ -2,6 +2,7 @@
 #define __CELLWIRE_CONTEXT_H__
 
 #include "core_list.h"
+#include "core_errno.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -12,13 +13,13 @@ extern "C" {
 #define CODE_PER_MME                256    /* According to spec it is 256*/
 
 typedef struct _plmn_id_t {
-    c_uint8_t       num_mnc_digits;
+    c_uint8_t       len;
     c_uint8_t       mcc[3];
     c_uint8_t       mnc[3];
 } plmn_id_t;
 
 typedef struct _served_gummei {
-    c_uint32_t      num_of_plmn;
+    c_uint32_t      num_of_plmn_id;
     plmn_id_t       plmn_id[MAX_PLMN_ID];
 
     c_uint32_t      num_of_grp_id;
@@ -32,7 +33,7 @@ typedef struct _served_gummei {
 typedef struct _mme_ctx_t {
     plmn_id_t       plmn_id;
 
-    c_uint8_t       mme_capacity;
+    c_uint8_t       relative_capacity;
 
     srvd_gummei_t   srvd_gummei;
 } mme_ctx_t;
