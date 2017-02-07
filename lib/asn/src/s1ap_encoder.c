@@ -3,7 +3,7 @@
 #include "core_debug.h"
 #include "s1ap_codecs.h"
 
-static inline int s1ap_encode_initiating(
+static inline int s1ap_encode_initiating_message(
     s1ap_message *message_p, pkbuf_t *pkbuf);
 static inline int s1ap_encode_successfull_outcome(
     s1ap_message *message_p, pkbuf_t *pkbuf);
@@ -12,11 +12,11 @@ static inline int s1ap_encode_unsuccessfull_outcome(
 
 static inline int s1ap_encode_initial_context_setup_request(
     s1ap_message *message_p, pkbuf_t *pkbuf);
-static inline int s1ap_encode_s1setuprequest(
+static inline int s1ap_encode_s1setup_request(
     s1ap_message *message_p, pkbuf_t *pkbuf);
-static inline int s1ap_encode_s1setupresponse(
+static inline int s1ap_encode_s1setup_response(
     s1ap_message *message_p, pkbuf_t *pkbuf);
-static inline int s1ap_encode_s1setupfailure(
+static inline int s1ap_encode_s1setup_failure(
     s1ap_message *message_p, pkbuf_t *pkbuf);
 static inline int s1ap_encode_downlink_nas_transport(
   s1ap_message *message_p, pkbuf_t *pkbuf);
@@ -25,13 +25,16 @@ static inline int s1ap_encode_ue_context_release_command (
 
 ssize_t s1ap_generate_initiating_message(pkbuf_t *pkbuf,
     e_S1ap_ProcedureCode procedureCode, S1ap_Criticality_t criticality,
-    asn_TYPE_descriptor_t * td, void *sptr);
+    asn_TYPE_descriptor_t *td, void *sptr);
 ssize_t s1ap_generate_successfull_outcome(pkbuf_t *pkbuf,
     e_S1ap_ProcedureCode procedureCode, S1ap_Criticality_t criticality,
-    asn_TYPE_descriptor_t * td, void *sptr);
+    asn_TYPE_descriptor_t *td, void *sptr);
 ssize_t s1ap_generate_unsuccessfull_outcome(pkbuf_t *pkbuf,
     e_S1ap_ProcedureCode procedureCode, S1ap_Criticality_t criticality,
-    asn_TYPE_descriptor_t * td, void *sptr);
+    asn_TYPE_descriptor_t *td, void *sptr);
+
+ssize_t s1ap_encode_to_buffer(pkbuf_t *pkbuf,
+    S1AP_PDU_t *pdu, asn_TYPE_descriptor_t *td, void *sptr);
 
 int s1ap_encode_pdu(pkbuf_t **pkb, s1ap_message *message_p)
 {
@@ -45,7 +48,7 @@ int s1ap_encode_pdu(pkbuf_t **pkb, s1ap_message *message_p)
     switch (message_p->direction) 
     {
         case S1AP_PDU_PR_initiatingMessage:
-            encoded = s1ap_encode_initiating(message_p, *pkb);
+            encoded = s1ap_encode_initiating_message(message_p, *pkb);
             break;
 
         case S1AP_PDU_PR_successfulOutcome:
@@ -73,13 +76,13 @@ int s1ap_encode_pdu(pkbuf_t **pkb, s1ap_message *message_p)
     return encoded;
 }
 
-static inline int s1ap_encode_initiating(
+static inline int s1ap_encode_initiating_message(
     s1ap_message *message_p, pkbuf_t *pkbuf)
 {
     switch (message_p->procedureCode) 
     {
         case S1ap_ProcedureCode_id_S1Setup:
-            return s1ap_encode_s1setuprequest(message_p, pkbuf);
+            return s1ap_encode_s1setup_request(message_p, pkbuf);
 
         case S1ap_ProcedureCode_id_downlinkNASTransport:
             return s1ap_encode_downlink_nas_transport(message_p, pkbuf);
@@ -105,7 +108,7 @@ static inline int s1ap_encode_successfull_outcome(
     switch (message_p->procedureCode) 
     {
         case S1ap_ProcedureCode_id_S1Setup:
-            return s1ap_encode_s1setupresponse(message_p, pkbuf);
+            return s1ap_encode_s1setup_response(message_p, pkbuf);
 
         default:
             d_warn("Unknown procedure ID (%d) for successfull "
@@ -122,7 +125,7 @@ static inline int s1ap_encode_unsuccessfull_outcome(
     switch (message_p->procedureCode) 
     {
         case S1ap_ProcedureCode_id_S1Setup:
-            return s1ap_encode_s1setupfailure(message_p, pkbuf);
+            return s1ap_encode_s1setup_failure(message_p, pkbuf);
 
         default:
             d_warn("Unknown procedure ID (%d) for unsuccessfull "
@@ -156,26 +159,43 @@ static inline int s1ap_encode_initial_context_setup_request(
             initialContextSetupRequest_p);
 }
 
-static inline int s1ap_encode_s1setuprequest(
+static inline int s1ap_encode_s1setup_request(
         s1ap_message *message_p, pkbuf_t *pkbuf)
 {
-    S1ap_S1SetupRequest_t  s1SetupRequest;
-    S1ap_S1SetupRequest_t *s1SetupRequest_p = &s1SetupRequest;
+    asn_enc_rval_t enc_ret = {0};
 
-    memset((void *)s1SetupRequest_p, 0, sizeof(s1SetupRequest));
+    S1AP_PDU_t pdu;
+    S1ap_S1SetupRequest_t s1SetupRequest;
 
+    memset((void *)&s1SetupRequest, 0, sizeof(s1SetupRequest));
     if (s1ap_encode_s1ap_s1setuprequesties(
-            s1SetupRequest_p, &message_p->msg.s1ap_S1SetupRequestIEs) < 0) 
+            &s1SetupRequest, &message_p->msg.s1ap_S1SetupRequestIEs) < 0) 
     {
         return -1;
     }
 
-    return s1ap_generate_initiating_message(pkbuf,
-              S1ap_ProcedureCode_id_S1Setup, S1ap_Criticality_reject,
-              &asn_DEF_S1ap_S1SetupRequest, s1SetupRequest_p);
+    memset(&pdu, 0, sizeof (S1AP_PDU_t));
+    pdu.present = S1AP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage.procedureCode = S1ap_ProcedureCode_id_S1Setup;
+    pdu.choice.initiatingMessage.criticality = S1ap_Criticality_reject;
+    ANY_fromType_aper(&pdu.choice.initiatingMessage.value, 
+              &asn_DEF_S1ap_S1SetupRequest, &s1SetupRequest);
+
+    enc_ret = aper_encode_to_buffer(&asn_DEF_S1AP_PDU, 
+                    &pdu, pkbuf->payload, S1AP_SDU_SIZE);
+
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_S1SetupRequest, &s1SetupRequest);
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1AP_PDU, &pdu);
+
+    if (enc_ret.encoded < 0)
+    {
+        d_error("Encoding of %s failed", asn_DEF_S1ap_S1SetupRequest.name);
+    }
+
+    return enc_ret.encoded;
 }
 
-static inline int s1ap_encode_s1setupresponse(
+static inline int s1ap_encode_s1setup_response(
     s1ap_message *message_p, pkbuf_t *pkbuf)
 {
     S1ap_S1SetupResponse_t s1SetupResponse;
@@ -194,7 +214,7 @@ static inline int s1ap_encode_s1setupresponse(
             &asn_DEF_S1ap_S1SetupResponse, s1SetupResponse_p);
 }
 
-static inline int s1ap_encode_s1setupfailure(
+static inline int s1ap_encode_s1setup_failure(
     s1ap_message *message_p, pkbuf_t *pkbuf)
 {
     S1ap_S1SetupFailure_t s1SetupFailure;
@@ -238,7 +258,7 @@ static inline int s1ap_encode_downlink_nas_transport(
             &asn_DEF_S1ap_DownlinkNASTransport, downlinkNasTransport_p);
 }
 
-static inline int s1ap_encode_ue_context_release_command (
+static inline int s1ap_encode_ue_context_release_command(
   s1ap_message *message_p, pkbuf_t *pkbuf)
 {
     S1ap_UEContextReleaseCommand_t ueContextReleaseCommand;
@@ -265,10 +285,12 @@ static inline int s1ap_encode_ue_context_release_command (
 
 ssize_t s1ap_generate_initiating_message(pkbuf_t *pkbuf,
     e_S1ap_ProcedureCode procedureCode, S1ap_Criticality_t criticality,
-    asn_TYPE_descriptor_t * td, void *sptr)
+    asn_TYPE_descriptor_t *td, void *sptr)
 {
     S1AP_PDU_t pdu;
-    asn_enc_rval_t enc_ret = {0};
+
+    d_assert(td, return -1, "Null param");
+    d_assert(sptr, return -1, "Null param");
 
     memset(&pdu, 0, sizeof (S1AP_PDU_t));
     pdu.present = S1AP_PDU_PR_initiatingMessage;
@@ -276,20 +298,7 @@ ssize_t s1ap_generate_initiating_message(pkbuf_t *pkbuf,
     pdu.choice.initiatingMessage.criticality = criticality;
     ANY_fromType_aper(&pdu.choice.initiatingMessage.value, td, sptr);
 
-    /*
-    * We can safely free list of IE from sptr
-    */
-    ASN_STRUCT_FREE_CONTENTS_ONLY (*td, sptr);
-
-    enc_ret = aper_encode_to_buffer(&asn_DEF_S1AP_PDU, 
-                    &pdu, pkbuf->payload, S1AP_SDU_SIZE);
-    if (enc_ret.encoded < 0)
-    {
-        d_error("Encoding of %s failed", td->name);
-        return -1;
-    }
-
-    return enc_ret.encoded;
+    return s1ap_encode_to_buffer(pkbuf, &pdu, td, sptr);
 }
 
 ssize_t s1ap_generate_successfull_outcome(pkbuf_t *pkbuf,
@@ -297,7 +306,6 @@ ssize_t s1ap_generate_successfull_outcome(pkbuf_t *pkbuf,
     asn_TYPE_descriptor_t * td, void *sptr)
 {
     S1AP_PDU_t pdu;
-    asn_enc_rval_t enc_ret = {0};
 
     memset(&pdu, 0, sizeof (S1AP_PDU_t));
     pdu.present = S1AP_PDU_PR_successfulOutcome;
@@ -305,28 +313,14 @@ ssize_t s1ap_generate_successfull_outcome(pkbuf_t *pkbuf,
     pdu.choice.successfulOutcome.criticality = criticality;
     ANY_fromType_aper(&pdu.choice.successfulOutcome.value, td, sptr);
 
-    /*
-    * We can safely free list of IE from sptr
-    */
-    ASN_STRUCT_FREE_CONTENTS_ONLY (*td, sptr);
-
-    enc_ret = aper_encode_to_buffer(&asn_DEF_S1AP_PDU, 
-                    &pdu, pkbuf->payload, S1AP_SDU_SIZE);
-    if (enc_ret.encoded < 0)
-    {
-        d_error("Encoding of %s failed", td->name);
-        return -1;
-    }
-
-    return enc_ret.encoded;
+    return s1ap_encode_to_buffer(pkbuf, &pdu, td, sptr);
 }
 
 ssize_t s1ap_generate_unsuccessfull_outcome(pkbuf_t *pkbuf,
     e_S1ap_ProcedureCode procedureCode, S1ap_Criticality_t criticality,
-    asn_TYPE_descriptor_t * td, void *sptr)
+    asn_TYPE_descriptor_t *td, void *sptr)
 {
     S1AP_PDU_t pdu;
-    asn_enc_rval_t enc_ret = {0};
 
     memset(&pdu, 0, sizeof (S1AP_PDU_t));
     pdu.present = S1AP_PDU_PR_unsuccessfulOutcome;
@@ -334,19 +328,24 @@ ssize_t s1ap_generate_unsuccessfull_outcome(pkbuf_t *pkbuf,
     pdu.choice.successfulOutcome.criticality = criticality;
     ANY_fromType_aper(&pdu.choice.successfulOutcome.value, td, sptr);
 
-    /*
-    * We can safely free list of IE from sptr
-    */
-    ASN_STRUCT_FREE_CONTENTS_ONLY (*td, sptr);
+    return s1ap_encode_to_buffer(pkbuf, &pdu, td, sptr);
+}
+
+ssize_t s1ap_encode_to_buffer(pkbuf_t *pkbuf,
+    S1AP_PDU_t *pdu, asn_TYPE_descriptor_t *td, void *sptr)
+{
+    asn_enc_rval_t enc_ret = {0};
 
     enc_ret = aper_encode_to_buffer(&asn_DEF_S1AP_PDU, 
-                    &pdu, pkbuf->payload, S1AP_SDU_SIZE);
+                    pdu, pkbuf->payload, S1AP_SDU_SIZE);
+
+    ASN_STRUCT_FREE_CONTENTS_ONLY(*td, sptr);
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1AP_PDU, pdu);
+
     if (enc_ret.encoded < 0)
     {
         d_error("Encoding of %s failed", td->name);
-        return -1;
     }
 
     return enc_ret.encoded;
 }
-
