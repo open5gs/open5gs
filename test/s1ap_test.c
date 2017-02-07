@@ -16,16 +16,35 @@ static void s1ap_test1(abts_case *tc, void *data)
     };
 
     s1ap_message message;
-    pkbuf_t *pkb;
+#if 0
+    S1ap_S1SetupRequestIEs_t *s1SetupRequestIEs = 
+        &message.msg.s1ap_S1SetupRequestIEs;
+#endif
+    pkbuf_t *pkbuf;
     int result;
 
-    pkb = pkbuf_alloc(0, S1AP_SDU_SIZE);
-    ABTS_PTR_NOTNULL(tc, pkb);
-    pkb->len = 49;
-    memcpy(pkb->payload, payload[0], pkb->len);
+    pkbuf = pkbuf_alloc(0, S1AP_SDU_SIZE);
+    ABTS_PTR_NOTNULL(tc, pkbuf);
+    pkbuf->len = 49;
+    memcpy(pkbuf->payload, payload[0], pkbuf->len);
 
-    result = s1ap_decode_pdu(&message, pkb);
+    result = s1ap_decode_pdu(&message, pkbuf);
     ABTS_INT_EQUAL(tc, 0, result);
+
+#if 0
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Global_ENB_ID, 
+            &s1SetupRequestIEs->global_ENB_ID);
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENBname, 
+            &s1SetupRequestIEs->eNBname);
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_SupportedTAs, 
+            &s1SetupRequestIEs->supportedTAs);
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_PagingDRX, 
+            &s1SetupRequestIEs->defaultPagingDRX);
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CSG_IdList, 
+            &s1SetupRequestIEs->csG_IdList);
+#endif
+    
+    pkbuf_free(pkbuf);
 }
 
 static void s1ap_test2(abts_case *tc, void *data)
@@ -36,16 +55,18 @@ static void s1ap_test2(abts_case *tc, void *data)
     };
 
     s1ap_message message;
-    pkbuf_t *pkb;
+    pkbuf_t *pkbuf;
     int result;
 
-    pkb = pkbuf_alloc(0, S1AP_SDU_SIZE);
-    ABTS_PTR_NOTNULL(tc, pkb);
-    pkb->len = 115;
-    memcpy(pkb->payload, payload[0], pkb->len);
+    pkbuf = pkbuf_alloc(0, S1AP_SDU_SIZE);
+    ABTS_PTR_NOTNULL(tc, pkbuf);
+    pkbuf->len = 115;
+    memcpy(pkbuf->payload, payload[0], pkbuf->len);
 
-    result = s1ap_decode_pdu(&message, pkb);
+    result = s1ap_decode_pdu(&message, pkbuf);
     ABTS_INT_EQUAL(tc, 0, result);
+
+    pkbuf_free(pkbuf);
 }
 
 static void s1ap_test3(abts_case *tc, void *data)
@@ -56,16 +77,18 @@ static void s1ap_test3(abts_case *tc, void *data)
     };
 
     s1ap_message message;
-    pkbuf_t *pkb;
+    pkbuf_t *pkbuf;
     int result;
 
-    pkb = pkbuf_alloc(0, S1AP_SDU_SIZE);
-    ABTS_PTR_NOTNULL(tc, pkb);
-    pkb->len = 41;
-    memcpy(pkb->payload, payload[0], pkb->len);
+    pkbuf = pkbuf_alloc(0, S1AP_SDU_SIZE);
+    ABTS_PTR_NOTNULL(tc, pkbuf);
+    pkbuf->len = 41;
+    memcpy(pkbuf->payload, payload[0], pkbuf->len);
 
-    result = s1ap_decode_pdu(&message, pkb);
+    result = s1ap_decode_pdu(&message, pkbuf);
     ABTS_INT_EQUAL(tc, 0, result);
+
+    pkbuf_free(pkbuf);
 }
 
 static void s1ap_test4(abts_case *tc, void *data)
@@ -76,11 +99,11 @@ static void s1ap_test4(abts_case *tc, void *data)
     rv = s1ap_build_setup_rsp(&pkbuf);
 
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
-#if  0
     ABTS_PTR_NOTNULL(tc, pkbuf);
     ABTS_PTR_NOTNULL(tc, pkbuf->payload);
     ABTS_INT_EQUAL(tc, 216, pkbuf->len);
-#endif
+
+    pkbuf_free(pkbuf);
 }
 
 static void s1ap_test5(abts_case *tc, void *data)

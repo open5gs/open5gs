@@ -17,6 +17,8 @@ static void s1ap_xer_print_message(
 
 int s1ap_decode_pdu(s1ap_message *message, pkbuf_t *pkb)
 {
+    int ret = -1;
+
     S1AP_PDU_t pdu = {0};
     S1AP_PDU_t *pdu_p = &pdu;
     asn_dec_rval_t dec_ret = {0};
@@ -39,16 +41,19 @@ int s1ap_decode_pdu(s1ap_message *message, pkbuf_t *pkb)
     switch (pdu_p->present) 
     {
         case S1AP_PDU_PR_initiatingMessage:
-            return s1ap_decode_initiating(message, 
+            ret = s1ap_decode_initiating(message, 
                     &pdu_p->choice.initiatingMessage);
+            break;
 
         case S1AP_PDU_PR_successfulOutcome:
-            return s1ap_decode_successfull_outcome(message, 
+            ret = s1ap_decode_successfull_outcome(message, 
                     &pdu_p->choice.successfulOutcome);
+            break;
 
         case S1AP_PDU_PR_unsuccessfulOutcome:
-            return s1ap_decode_unsuccessfull_outcome(message, 
+            ret = s1ap_decode_unsuccessfull_outcome(message, 
                     &pdu_p->choice.unsuccessfulOutcome);
+            break;
 
         default:
             d_error("Unknown message outcome (%d) or not implemented", 
@@ -56,7 +61,9 @@ int s1ap_decode_pdu(s1ap_message *message, pkbuf_t *pkb)
             break;
     }
 
-    return -1;
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1AP_PDU, &pdu);
+
+    return ret;
 }
 
 
