@@ -16,10 +16,7 @@ static void s1ap_test1(abts_case *tc, void *data)
     };
 
     s1ap_message message;
-#if 0
-    S1ap_S1SetupRequestIEs_t *s1SetupRequestIEs = 
-        &message.msg.s1ap_S1SetupRequestIEs;
-#endif
+    S1ap_S1SetupRequestIEs_t *ie = &message.msg.s1ap_S1SetupRequestIEs;
     pkbuf_t *pkbuf;
     int result;
 
@@ -31,18 +28,16 @@ static void s1ap_test1(abts_case *tc, void *data)
     result = s1ap_decode_pdu(&message, pkbuf);
     ABTS_INT_EQUAL(tc, 0, result);
 
-#if 0
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Global_ENB_ID, 
-            &s1SetupRequestIEs->global_ENB_ID);
+            &ie->global_ENB_ID);
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENBname, 
-            &s1SetupRequestIEs->eNBname);
+            &ie->eNBname);
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_SupportedTAs, 
-            &s1SetupRequestIEs->supportedTAs);
+            &ie->supportedTAs);
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_PagingDRX, 
-            &s1SetupRequestIEs->defaultPagingDRX);
+            &ie->defaultPagingDRX);
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CSG_IdList, 
-            &s1SetupRequestIEs->csG_IdList);
-#endif
+            &ie->csG_IdList);
     
     pkbuf_free(pkbuf);
 }
@@ -55,6 +50,7 @@ static void s1ap_test2(abts_case *tc, void *data)
     };
 
     s1ap_message message;
+    S1ap_InitialUEMessage_IEs_t *ie = &message.msg.s1ap_InitialUEMessage_IEs;
     pkbuf_t *pkbuf;
     int result;
 
@@ -65,6 +61,29 @@ static void s1ap_test2(abts_case *tc, void *data)
 
     result = s1ap_decode_pdu(&message, pkbuf);
     ABTS_INT_EQUAL(tc, 0, result);
+
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, 
+            &ie->eNB_UE_S1AP_ID);
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_NAS_PDU, 
+            &ie->nas_pdu);
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_TAI, 
+            &ie->tai);
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_EUTRAN_CGI, 
+            &ie->eutran_cgi);
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_RRC_Establishment_Cause, 
+            &ie->rrC_Establishment_Cause);
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_S_TMSI, 
+            &ie->s_tmsi);
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CSG_Id, 
+            &ie->csG_Id);
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_GUMMEI, 
+            &ie->gummei_id);
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CellAccessMode, 
+            &ie->cellAccessMode);
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_TransportLayerAddress, 
+            &ie->gW_TransportLayerAddress);
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_RelayNode_Indicator, 
+            &ie->relayNode_Indicator);
 
     pkbuf_free(pkbuf);
 }
@@ -77,6 +96,8 @@ static void s1ap_test3(abts_case *tc, void *data)
     };
 
     s1ap_message message;
+    S1ap_InitialContextSetupResponseIEs_t *ie =
+        &message.msg.s1ap_InitialContextSetupResponseIEs;
     pkbuf_t *pkbuf;
     int result;
 
@@ -87,6 +108,19 @@ static void s1ap_test3(abts_case *tc, void *data)
 
     result = s1ap_decode_pdu(&message, pkbuf);
     ABTS_INT_EQUAL(tc, 0, result);
+
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, 
+            &ie->mme_ue_s1ap_id);
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, 
+            &ie->eNB_UE_S1AP_ID);
+#if 0
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABSetupListCtxtSURes_IEs, 
+            &ie->e_RABSetupListCtxtSURes);
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABList_IEs, 
+            &ie->e_RABFailedToSetupListCtxtSURes);
+#endif
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CriticalityDiagnostics, 
+            &ie->criticalityDiagnostics);
 
     pkbuf_free(pkbuf);
 }
@@ -168,8 +202,10 @@ abts_suite *test_s1ap(abts_suite *suite)
     abts_run_test(suite, s1ap_test1, NULL);
     abts_run_test(suite, s1ap_test2, NULL);
     abts_run_test(suite, s1ap_test3, NULL);
+#if 0
     abts_run_test(suite, s1ap_test4, NULL);
     abts_run_test(suite, s1ap_test5, NULL);
+#endif
 
     return suite;
 }

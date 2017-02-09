@@ -380,20 +380,29 @@ for key in iesDefs:
         f.write("    %s_t *%s,\n" % (re.sub('-', '_', key), lowerFirstCamelWord(re.sub('-', '_', key))))
     f.write("    ANY_t *any_p) {\n\n")
 
+    f.write("    asn_dec_rval_t dec_ret = {0};\n");
     f.write("    %s_t  %s;\n    %s_t *%s_p = &%s;\n" % (asn1cStruct, asn1cStructfirstlower, asn1cStruct, asn1cStructfirstlower, asn1cStructfirstlower))
-    f.write("    int i, decoded = 0;\n")
-    if len(iesDefs[key]["ies"]) != 0:
-        f.write("    int tempDecoded = 0;\n")
+    f.write("    int i;\n")
 
     f.write("    d_assert(any_p, return -1, \"Null param\");\n")
     if len(iesDefs[key]["ies"]) != 0:
         f.write("    d_assert(%s, return -1, \"Null param\");\n\n" % (lowerFirstCamelWord(re.sub('-', '_', key))))
 
-    f.write("    d_trace(3, \"Decoding message %s (%%s:%%d)\\n\", __FILE__, __LINE__);\n\n" % re.sub('-', '_', keyName))
-    f.write("    ANY_to_type_aper(any_p, &asn_DEF_%s, (void**)&%s_p);\n\n" % (asn1cStruct, asn1cStructfirstlower))
+    f.write("    d_trace(3, \"Decoding message %s\\n\");\n\n" % re.sub('-', '_', keyName))
+    f.write("    memset(&%s, 0, sizeof(%s_t));\n" % (asn1cStructfirstlower, asn1cStruct));
+    f.write("    dec_ret = aper_decode(NULL, &asn_DEF_%s, (void **)&%s_p, any_p->buf, any_p->size, 0, 0);\n" % (asn1cStruct, asn1cStructfirstlower));
+    f.write("    if (dec_ret.code != RC_OK)\n")
+    f.write("    {\n")
+    f.write("        ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_%s, %s_p);\n" % (asn1cStruct, asn1cStructfirstlower));
+    f.write("        return -1;\n")
+    f.write("    }\n\n");
     f.write("    for (i = 0; i < %s_p->%slist.count; i++) {\n" % (asn1cStructfirstlower, iesaccess))
     f.write("        %s_IE_t *ie_p;\n" % (fileprefix[0].upper() + fileprefix[1:]))
+    f.write("        ANY_t *st;\n\n")
     f.write("        ie_p = (%s_IE_t *)%s_p->%slist.array[i];\n" % (fileprefix[0].upper() + fileprefix[1:], asn1cStructfirstlower, iesaccess))
+    f.write("        d_assert(ie_p, return -1, \"Null param\");\n")
+    f.write("        st = &ie_p->value;\n")
+    f.write("        d_assert(st, return -1, \"Null param\");\n")
     f.write("        switch(ie_p->id) {\n")
     for ie in iesDefs[key]["ies"]:
         iename = re.sub('id-', '', ie[0])
@@ -409,32 +418,36 @@ for key in iesDefs:
             f.write("            /* Conditional field */\n")
         f.write("            case %s_ProtocolIE_ID_%s:\n" % (fileprefix_first_upper, re.sub('-', '_', ie[0])))
         f.write("            {\n")
-        f.write("                %s_t *%s_p = NULL;\n" % (ietypeunderscore, lowerFirstCamelWord(ietypesubst)))
-        if ie[3] != "mandatory":
-            f.write("                %s->presenceMask |= %s_%s_PRESENT;\n" % (lowerFirstCamelWord(re.sub('-', '_', key)), keyupperunderscore, ieupperunderscore))
-        f.write("                tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_%s, (void**)&%s_p);\n" % (ietypeunderscore, lowerFirstCamelWord(ietypesubst)))
-        f.write("                if (tempDecoded < 0 || %s_p == NULL) {\n" % (lowerFirstCamelWord(ietypesubst)))
-        f.write("                    d_error(\"Decoding of IE %s failed\");\n" % (ienameunderscore))
-        f.write("                    if (%s_p)\n" % (lowerFirstCamelWord(ietypesubst)))
-        f.write("                        ASN_STRUCT_FREE(asn_DEF_%s, %s_p);\n" % (ietypeunderscore, lowerFirstCamelWord(ietypesubst)))
-        f.write("                    return -1;\n")
-        f.write("                }\n")
-        f.write("                decoded += tempDecoded;\n")
         if ie[2] in ieofielist.keys():
-            f.write("                if (%s_decode_%s(&%s->%s, %s_p) < 0) {\n" % (fileprefix, ietypeunderscore.lower(), lowerFirstCamelWord(re.sub('-', '_', key)), ienameunderscore, lowerFirstCamelWord(ietypesubst)))
+            f.write("                %s_t *%s_p = NULL;\n\n" % (ietypeunderscore, lowerFirstCamelWord(ietypesubst)))
+            f.write("                ANY_to_type_aper(&ie_p->value, &asn_DEF_%s, (void**)&%s_p);\n" % (ietypeunderscore, lowerFirstCamelWord(ietypesubst)))
+            f.write("                if (%s_decode_%s(&%s->%s, %s_p) < 0)\n" % (fileprefix, ietypeunderscore.lower(), lowerFirstCamelWord(re.sub('-', '_', key)), ienameunderscore, lowerFirstCamelWord(ietypesubst)))
+            f.write("                {\n")
             f.write("                    d_error(\"Decoding of encapsulated IE %s failed\");\n" % (lowerFirstCamelWord(ietypesubst)))
-            f.write("                    ASN_STRUCT_FREE(asn_DEF_%s, %s_p);\n" % (ietypeunderscore, lowerFirstCamelWord(ietypesubst)))
+            f.write("                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_%s, %s_p);\n" % (ietypeunderscore, lowerFirstCamelWord(ietypesubst)))
+            f.write("                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_%s, %s_p);\n" % (asn1cStruct, lowerFirstCamelWord(asn1cStruct)))
+            f.write("                    return -1;\n")
             f.write("                }\n")
         else:
-            f.write("                memcpy(&%s->%s, %s_p, sizeof(%s_t));\n" % (lowerFirstCamelWord(re.sub('-', '_', key)), ienameunderscore, lowerFirstCamelWord(ietypesubst), ietypeunderscore))
-            #f.write("                ASN_STRUCT_FREE(asn_DEF_%s, %s_p);\n" % (ietypeunderscore, lowerFirstCamelWord(ietypesubst)))
+            f.write("                %s_t *%s_p = &%s->%s;\n\n" % (ietypeunderscore, lowerFirstCamelWord(ietypesubst), lowerFirstCamelWord(re.sub('-', '_', key)), ienameunderscore))
+            f.write("                dec_ret = aper_decode(NULL, &asn_DEF_%s, (void **)&%s_p, st->buf, st->size, 0, 0);\n" % (ietypeunderscore, lowerFirstCamelWord(ietypesubst)))
+            f.write("                if (dec_ret.code != RC_OK)\n")
+            f.write("                {\n")
+            f.write("                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_%s, %s_p);\n" % (ietypeunderscore, lowerFirstCamelWord(ietypesubst)))
+            f.write("                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_%s, %s_p);\n" % (asn1cStruct, lowerFirstCamelWord(asn1cStruct)))
+            f.write("                    return -1;\n")
+            f.write("                }\n")
+        if ie[3] != "mandatory":
+            f.write("                %s->presenceMask |= %s_%s_PRESENT;\n" % (lowerFirstCamelWord(re.sub('-', '_', key)), keyupperunderscore, ieupperunderscore))
         f.write("            } break;\n")
     f.write("            default:\n")
     f.write("                d_error(\"Unknown protocol IE id (%%d) for message %s\", (int)ie_p->id);\n" % (re.sub('-', '_', structName.lower())))
+    f.write("                ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_%s, %s_p);\n" % (asn1cStruct, lowerFirstCamelWord(asn1cStruct)))
     f.write("                return -1;\n")
     f.write("        }\n")
-    f.write("    }\n")
-    f.write("    return decoded;\n")
+    f.write("    }\n\n")
+    f.write("    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_%s, %s_p);\n" % (asn1cStruct, lowerFirstCamelWord(asn1cStruct)))
+    f.write("    return 0;\n")
     f.write("}\n\n")
 
 for key in iesDefs:
