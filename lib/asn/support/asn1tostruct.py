@@ -299,6 +299,12 @@ for key in iesDefs:
     f.write("    %s_t *%s,\n" % (asn1cStruct, firstlower))
     f.write("    %s_t *%s);\n\n" % (re.sub('-', '_', key), lowerFirstCamelWord(re.sub('-', '_', key))))
 
+    f.write("/** \\brief Free function for %s ies.\n" % (key))
+    f.write(" *  \\param %s Pointer to the IES structure.\n" % (lowerFirstCamelWord(re.sub('-', '_', key))))
+    f.write(" **/\n")
+    f.write("void %s_free_%s(\n" % (fileprefix, re.sub('-', '_', structName.lower())))
+    f.write("    %s_t *%s);\n\n" % (re.sub('-', '_', key), lowerFirstCamelWord(re.sub('-', '_', key))))
+
 for key in iesDefs:
     if key not in ieofielist.values():
         continue
@@ -319,6 +325,11 @@ for key in iesDefs:
     f.write("int %s_decode_%s(\n" % (fileprefix, firstlower.lower()))
     f.write("    %s_IEs_t *%sIEs,\n" % (asn1cStruct, firstlower))
     f.write("    %s_t *%s);\n\n" % (asn1cStruct, lowerFirstCamelWord(asn1cStruct)))
+    f.write("/** \\brief Free function for %s ies.\n" % (key))
+    f.write(" *  \\param %s Pointer to the IES structure.\n" % (lowerFirstCamelWord(re.sub('-', '_', key))))
+    f.write(" **/\n")
+    f.write("void %s_free_%s(\n" % (fileprefix, firstlower.lower()))
+    f.write("    %s_IEs_t *%sIEs);\n\n" % (asn1cStruct, firstlower))
 
 for key in iesDefs:
     asn1cStruct = re.sub('-', '_', re.sub('IEs', '', re.sub('-IEs', '', key)))
@@ -640,6 +651,58 @@ f.write("""S1ap_IE_t *s1ap_new_ie(S1ap_ProtocolIE_ID_t id, S1ap_Criticality_t cr
 }
 
 """)
+
+#Generate Free functions
+f = open(outdir + fileprefix + '_ies_free.c', 'w')
+outputHeaderToFile(f, filename)
+f.write("#define TRACE_MODULE ies_free\n#include \"core_debug.h\"\n#include \"%s_ies_defs.h\"\n\n" % (fileprefix))
+for key in iesDefs:
+    if key in ieofielist.values():
+        continue
+    structName = re.sub('ies', '', key)
+    asn1cStruct = re.sub('-', '_', re.sub('IEs', '', key))
+    if asn1cStruct.rfind('_') == len(asn1cStruct) - 1:
+        asn1cStruct = asn1cStruct[:-1]
+    asn1cStruct = re.sub('Item', 'List', asn1cStruct)
+    ielistname = re.sub('UE', 'ue', asn1cStruct)
+    ielistnamefirstlower = ielistname[:1].lower() + ielistname[1:]
+    asn1cStructfirstlower = asn1cStruct[:1].lower() + asn1cStruct[1:]
+    keyName = re.sub('-', '_', key)
+    keyupperunderscore = keyName.upper()
+    firstlower = re.sub('Item', 'List', re.sub('enb', 'eNB', lowerFirstCamelWord(asn1cStruct)))
+
+    f.write("void %s_free_%s(\n" % (fileprefix, re.sub('-', '_', structName.lower())))
+    f.write("    %s_t *%s)\n" % (re.sub('-', '_', key), lowerFirstCamelWord(re.sub('-', '_', key))))
+    f.write("{\n\n")
+
+    for ie in iesDefs[key]["ies"]:
+        iename = re.sub('id-', '', ie[0])
+        ienameunderscore = lowerFirstCamelWord(re.sub('-', '_', iename))
+        ienameunderscorefirstlower = lowerFirstCamelWord(ienameunderscore)
+        ietypesubst = re.sub('-', '', ie[2])
+        ietypeunderscore = re.sub('-', '_', ie[2])
+        ieupperunderscore = re.sub('-', '_', re.sub('id-', '', ie[0])).upper()
+
+        if ie[3] == "optional":
+            f.write("            /* Optional field */\n")
+        elif ie[3] == "conditional":
+            f.write("            /* Conditional field */\n")
+        if ie[2] in ieofielist.keys():
+            f.write("    %s_free_%s(&%s->%s);\n" % (fileprefix, ietypeunderscore.lower(), lowerFirstCamelWord(re.sub('-', '_', key)), ienameunderscore))
+        else:
+            f.write("    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_%s, &%s->%s);\n" % (ietypeunderscore, lowerFirstCamelWord(re.sub('-', '_', key)), ienameunderscore))
+    f.write("}\n\n")
+
+for key in iesDefs:
+    if key not in ieofielist.values():
+        continue
+
+    keyname = re.sub('IEs', '', re.sub('Item', 'List', key))
+
+    f.write("void %s_free_%s(\n" % (fileprefix, re.sub('-', '_', keyname).lower()))
+    f.write("    %s_IEs_t *%sIEs)\n" % (re.sub('-', '_', keyname), lowerFirstCamelWord(re.sub('-', '_', keyname))))
+    f.write("{\n\n")
+    f.write("}\n\n")
 
 #Generate xer print functions
 f = open(outdir + fileprefix + '_ies_xer_print.c', 'w')

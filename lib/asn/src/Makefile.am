@@ -9,7 +9,7 @@ libasn_la_SOURCES = \
 
 nodist_libasn_la_SOURCES = \
 	s1ap_encoder.c s1ap_decoder.c \
-	s1ap_ies_encoder.c s1ap_ies_decoder.c s1ap_ies_xer_print.c
+	s1ap_ies_encoder.c s1ap_ies_decoder.c s1ap_ies_free.c s1ap_ies_xer_print.c
 
 libasn_la_DEPENDENCIES = \
     $(top_srcdir)/lib/asn/src/asn1c/libasn1c.la
