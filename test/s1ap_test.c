@@ -64,8 +64,6 @@ static void s1ap_test3(abts_case *tc, void *data)
     };
 
     s1ap_message message;
-    S1ap_InitialContextSetupResponseIEs_t *ie =
-        &message.msg.s1ap_InitialContextSetupResponseIEs;
     pkbuf_t *pkbuf;
     int result;
 
@@ -77,30 +75,7 @@ static void s1ap_test3(abts_case *tc, void *data)
     result = s1ap_decode_pdu(&message, pkbuf);
     ABTS_INT_EQUAL(tc, 0, result);
 
-    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, 
-            &ie->mme_ue_s1ap_id);
-    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, 
-            &ie->eNB_UE_S1AP_ID);
-    {
-        int i = 0;
-        for (i = 0; i < ie->e_RABSetupListCtxtSURes.s1ap_E_RABSetupItemCtxtSURes.count; i++)
-        {
-            ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABSetupItemCtxtSURes, 
-                    ie->e_RABSetupListCtxtSURes.s1ap_E_RABSetupItemCtxtSURes.array[i]);
-        }
-        FREEMEM(ie->e_RABSetupListCtxtSURes.s1ap_E_RABSetupItemCtxtSURes.array);
-    }
-    {
-        int i = 0;
-        for (i = 0; i < ie->e_RABFailedToSetupListCtxtSURes.s1ap_E_RABItem.count; i++)
-        {
-            ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABItem, 
-                    ie->e_RABFailedToSetupListCtxtSURes.s1ap_E_RABItem.array[i]);
-        }
-        FREEMEM(ie->e_RABFailedToSetupListCtxtSURes.s1ap_E_RABItem.array);
-    }
-    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CriticalityDiagnostics, 
-            &ie->criticalityDiagnostics);
+    s1ap_free_s1ap_initialcontextsetupresponseies(&message.msg.s1ap_InitialContextSetupResponseIEs);
 
     pkbuf_free(pkbuf);
 }
@@ -163,10 +138,7 @@ static void s1ap_test5(abts_case *tc, void *data)
 
     erval = s1ap_encode_pdu(&pkbuf, &message);
 
-    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Global_ENB_ID, 
-            &s1SetupRequestIEs->global_ENB_ID);
-    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_SupportedTAs, 
-            &s1SetupRequestIEs->supportedTAs);
+    s1ap_free_s1ap_s1setuprequesties(s1SetupRequestIEs);
 
     ABTS_INT_EQUAL(tc, 280, erval);
 }

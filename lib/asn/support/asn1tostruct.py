@@ -491,7 +491,6 @@ for key in iesDefs:
         f.write("                if (tempDecoded < 0 || %s_p == NULL) {\n" % (lowerFirstCamelWord(re.sub('-', '', ie[2]))))
         f.write("                    d_error(\"Decoding of IE %s for message %s failed\");\n" % (ienameunderscore, re.sub('-', '_', keyname)))
         f.write("                    if (%s_p)\n" % (lowerFirstCamelWord(re.sub('-', '', ie[2]))))
-        #f.write("                        free(%s_p);\n" % (lowerFirstCamelWord(re.sub('-', '', ie[2]))))
         f.write("                        ASN_STRUCT_FREE(asn_DEF_%s, %s_p);\n" % (re.sub('-', '_', ie[2]), lowerFirstCamelWord(re.sub('-', '', ie[2]))))
         f.write("                    return -1;\n")
         f.write("                }\n")
@@ -701,7 +700,15 @@ for key in iesDefs:
 
     f.write("void %s_free_%s(\n" % (fileprefix, re.sub('-', '_', keyname).lower()))
     f.write("    %s_IEs_t *%sIEs)\n" % (re.sub('-', '_', keyname), lowerFirstCamelWord(re.sub('-', '_', keyname))))
-    f.write("{\n\n")
+    f.write("{\n")
+    for ie in iesDefs[key]["ies"]:
+        f.write("    int i = 0;\n\n")
+        f.write("    for (i = 0; i < %sIEs->%s.count; i++)\n" % (lowerFirstCamelWord(re.sub('-', '_', keyname)), re.sub('IEs', '', lowerFirstCamelWord(re.sub('-', '_', key)))))
+        f.write("    {\n")
+        f.write("        ASN_STRUCT_FREE(asn_DEF_%s, %sIEs->%s.array[i]);\n" % (re.sub('-', '_', ie[2]), lowerFirstCamelWord(re.sub('-', '_', keyname)), re.sub('IEs', '', lowerFirstCamelWord(re.sub('-', '_', key)))))
+        f.write("    }\n\n")
+        f.write("    if (%sIEs->%s.array)\n" % (lowerFirstCamelWord(re.sub('-', '_', keyname)), re.sub('IEs', '', lowerFirstCamelWord(re.sub('-', '_', key)))))
+        f.write("       FREEMEM(%sIEs->%s.array);\n" % (lowerFirstCamelWord(re.sub('-', '_', keyname)), re.sub('IEs', '', lowerFirstCamelWord(re.sub('-', '_', key)))))
     f.write("}\n\n")
 
 #Generate xer print functions

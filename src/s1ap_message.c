@@ -68,8 +68,7 @@ status_t s1ap_build_setup_rsp(pkbuf_t **pkbuf)
 
     erval = s1ap_encode_pdu(pkbuf, &message);
 
-    ASN_STRUCT_FREE_CONTENTS_ONLY(
-        asn_DEF_S1ap_ServedGUMMEIs, &ies->servedGUMMEIs);
+    s1ap_free_s1ap_s1setupresponseies(ies);
 
     if (erval < 0)
     {

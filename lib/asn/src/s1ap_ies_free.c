@@ -30,7 +30,7 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-02-09 20:10:36.311283 by acetcom
+ * Created on: 2017-02-09 22:00:13.124536 by acetcom
  * from ['S1AP-PDU.asn']
  ******************************************************************************/
 #define TRACE_MODULE ies_free
@@ -930,114 +930,266 @@ void s1ap_free_s1ap_uplinkueassociatedlppatransport_ies(
 void s1ap_free_s1ap_e_rabfailedtosetuplisthoreqack(
     S1ap_E_RABFailedtoSetupListHOReqAck_IEs_t *s1ap_E_RABFailedtoSetupListHOReqAckIEs)
 {
+    int i = 0;
 
+    for (i = 0; i < s1ap_E_RABFailedtoSetupListHOReqAckIEs->s1ap_E_RABFailedtoSetupItemHOReqAck.count; i++)
+    {
+        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABFailedToSetupItemHOReqAck, s1ap_E_RABFailedtoSetupListHOReqAckIEs->s1ap_E_RABFailedtoSetupItemHOReqAck.array[i]);
+    }
+
+    if (s1ap_E_RABFailedtoSetupListHOReqAckIEs->s1ap_E_RABFailedtoSetupItemHOReqAck.array)
+       FREEMEM(s1ap_E_RABFailedtoSetupListHOReqAckIEs->s1ap_E_RABFailedtoSetupItemHOReqAck.array);
 }
 
 void s1ap_free_s1ap_e_rabreleaselistbearerrelcomp(
     S1ap_E_RABReleaseListBearerRelComp_IEs_t *s1ap_E_RABReleaseListBearerRelCompIEs)
 {
+    int i = 0;
 
+    for (i = 0; i < s1ap_E_RABReleaseListBearerRelCompIEs->s1ap_E_RABReleaseItemBearerRelComp.count; i++)
+    {
+        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABReleaseItemBearerRelComp, s1ap_E_RABReleaseListBearerRelCompIEs->s1ap_E_RABReleaseItemBearerRelComp.array[i]);
+    }
+
+    if (s1ap_E_RABReleaseListBearerRelCompIEs->s1ap_E_RABReleaseItemBearerRelComp.array)
+       FREEMEM(s1ap_E_RABReleaseListBearerRelCompIEs->s1ap_E_RABReleaseItemBearerRelComp.array);
 }
 
 void s1ap_free_s1ap_e_rabtobesetuplisthoreq(
     S1ap_E_RABToBeSetupListHOReq_IEs_t *s1ap_E_RABToBeSetupListHOReqIEs)
 {
+    int i = 0;
 
+    for (i = 0; i < s1ap_E_RABToBeSetupListHOReqIEs->s1ap_E_RABToBeSetupItemHOReq.count; i++)
+    {
+        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABToBeSetupItemHOReq, s1ap_E_RABToBeSetupListHOReqIEs->s1ap_E_RABToBeSetupItemHOReq.array[i]);
+    }
+
+    if (s1ap_E_RABToBeSetupListHOReqIEs->s1ap_E_RABToBeSetupItemHOReq.array)
+       FREEMEM(s1ap_E_RABToBeSetupListHOReqIEs->s1ap_E_RABToBeSetupItemHOReq.array);
 }
 
 void s1ap_free_s1ap_e_rabtobemodifiedlistbearermodreq(
     S1ap_E_RABToBeModifiedListBearerModReq_IEs_t *s1ap_E_RABToBeModifiedListBearerModReqIEs)
 {
+    int i = 0;
 
+    for (i = 0; i < s1ap_E_RABToBeModifiedListBearerModReqIEs->s1ap_E_RABToBeModifiedItemBearerModReq.count; i++)
+    {
+        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABToBeModifiedItemBearerModReq, s1ap_E_RABToBeModifiedListBearerModReqIEs->s1ap_E_RABToBeModifiedItemBearerModReq.array[i]);
+    }
+
+    if (s1ap_E_RABToBeModifiedListBearerModReqIEs->s1ap_E_RABToBeModifiedItemBearerModReq.array)
+       FREEMEM(s1ap_E_RABToBeModifiedListBearerModReqIEs->s1ap_E_RABToBeModifiedItemBearerModReq.array);
 }
 
 void s1ap_free_s1ap_e_rabadmittedlist(
     S1ap_E_RABAdmittedList_IEs_t *s1ap_E_RABAdmittedListIEs)
 {
+    int i = 0;
 
+    for (i = 0; i < s1ap_E_RABAdmittedListIEs->s1ap_E_RABAdmittedItem.count; i++)
+    {
+        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABAdmittedItem, s1ap_E_RABAdmittedListIEs->s1ap_E_RABAdmittedItem.array[i]);
+    }
+
+    if (s1ap_E_RABAdmittedListIEs->s1ap_E_RABAdmittedItem.array)
+       FREEMEM(s1ap_E_RABAdmittedListIEs->s1ap_E_RABAdmittedItem.array);
 }
 
 void s1ap_free_s1ap_e_rabtobesetuplistbearersureq(
     S1ap_E_RABToBeSetupListBearerSUReq_IEs_t *s1ap_E_RABToBeSetupListBearerSUReqIEs)
 {
+    int i = 0;
 
+    for (i = 0; i < s1ap_E_RABToBeSetupListBearerSUReqIEs->s1ap_E_RABToBeSetupItemBearerSUReq.count; i++)
+    {
+        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABToBeSetupItemBearerSUReq, s1ap_E_RABToBeSetupListBearerSUReqIEs->s1ap_E_RABToBeSetupItemBearerSUReq.array[i]);
+    }
+
+    if (s1ap_E_RABToBeSetupListBearerSUReqIEs->s1ap_E_RABToBeSetupItemBearerSUReq.array)
+       FREEMEM(s1ap_E_RABToBeSetupListBearerSUReqIEs->s1ap_E_RABToBeSetupItemBearerSUReq.array);
 }
 
 void s1ap_free_s1ap_e_rabdataforwardinglist(
     S1ap_E_RABDataForwardingList_IEs_t *s1ap_E_RABDataForwardingListIEs)
 {
+    int i = 0;
 
+    for (i = 0; i < s1ap_E_RABDataForwardingListIEs->s1ap_E_RABDataForwardingItem.count; i++)
+    {
+        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABDataForwardingItem, s1ap_E_RABDataForwardingListIEs->s1ap_E_RABDataForwardingItem.array[i]);
+    }
+
+    if (s1ap_E_RABDataForwardingListIEs->s1ap_E_RABDataForwardingItem.array)
+       FREEMEM(s1ap_E_RABDataForwardingListIEs->s1ap_E_RABDataForwardingItem.array);
 }
 
 void s1ap_free_s1ap_e_rabtobeswitcheddllist(
     S1ap_E_RABToBeSwitchedDLList_IEs_t *s1ap_E_RABToBeSwitchedDLListIEs)
 {
+    int i = 0;
 
+    for (i = 0; i < s1ap_E_RABToBeSwitchedDLListIEs->s1ap_E_RABToBeSwitchedDLItem.count; i++)
+    {
+        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABToBeSwitchedDLItem, s1ap_E_RABToBeSwitchedDLListIEs->s1ap_E_RABToBeSwitchedDLItem.array[i]);
+    }
+
+    if (s1ap_E_RABToBeSwitchedDLListIEs->s1ap_E_RABToBeSwitchedDLItem.array)
+       FREEMEM(s1ap_E_RABToBeSwitchedDLListIEs->s1ap_E_RABToBeSwitchedDLItem.array);
 }
 
 void s1ap_free_s1ap_e_rabsetuplistctxtsures(
     S1ap_E_RABSetupListCtxtSURes_IEs_t *s1ap_E_RABSetupListCtxtSUResIEs)
 {
+    int i = 0;
 
+    for (i = 0; i < s1ap_E_RABSetupListCtxtSUResIEs->s1ap_E_RABSetupItemCtxtSURes.count; i++)
+    {
+        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABSetupItemCtxtSURes, s1ap_E_RABSetupListCtxtSUResIEs->s1ap_E_RABSetupItemCtxtSURes.array[i]);
+    }
+
+    if (s1ap_E_RABSetupListCtxtSUResIEs->s1ap_E_RABSetupItemCtxtSURes.array)
+       FREEMEM(s1ap_E_RABSetupListCtxtSUResIEs->s1ap_E_RABSetupItemCtxtSURes.array);
 }
 
 void s1ap_free_s1ap_e_rabtobeswitchedullist(
     S1ap_E_RABToBeSwitchedULList_IEs_t *s1ap_E_RABToBeSwitchedULListIEs)
 {
+    int i = 0;
 
+    for (i = 0; i < s1ap_E_RABToBeSwitchedULListIEs->s1ap_E_RABToBeSwitchedULItem.count; i++)
+    {
+        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABToBeSwitchedULItem, s1ap_E_RABToBeSwitchedULListIEs->s1ap_E_RABToBeSwitchedULItem.array[i]);
+    }
+
+    if (s1ap_E_RABToBeSwitchedULListIEs->s1ap_E_RABToBeSwitchedULItem.array)
+       FREEMEM(s1ap_E_RABToBeSwitchedULListIEs->s1ap_E_RABToBeSwitchedULItem.array);
 }
 
 void s1ap_free_s1ap_bearers_subjecttostatustransfer_list(
     S1ap_Bearers_SubjectToStatusTransfer_List_IEs_t *s1ap_Bearers_SubjectToStatusTransfer_ListIEs)
 {
+    int i = 0;
 
+    for (i = 0; i < s1ap_Bearers_SubjectToStatusTransfer_ListIEs->s1ap_Bearers_SubjectToStatusTransfer_Item.count; i++)
+    {
+        ASN_STRUCT_FREE(asn_DEF_S1ap_Bearers_SubjectToStatusTransfer_Item, s1ap_Bearers_SubjectToStatusTransfer_ListIEs->s1ap_Bearers_SubjectToStatusTransfer_Item.array[i]);
+    }
+
+    if (s1ap_Bearers_SubjectToStatusTransfer_ListIEs->s1ap_Bearers_SubjectToStatusTransfer_Item.array)
+       FREEMEM(s1ap_Bearers_SubjectToStatusTransfer_ListIEs->s1ap_Bearers_SubjectToStatusTransfer_Item.array);
 }
 
 void s1ap_free_s1ap_e_rablist(
     S1ap_E_RABList_IEs_t *s1ap_E_RABListIEs)
 {
+    int i = 0;
 
+    for (i = 0; i < s1ap_E_RABListIEs->s1ap_E_RABItem.count; i++)
+    {
+        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABItem, s1ap_E_RABListIEs->s1ap_E_RABItem.array[i]);
+    }
+
+    if (s1ap_E_RABListIEs->s1ap_E_RABItem.array)
+       FREEMEM(s1ap_E_RABListIEs->s1ap_E_RABItem.array);
 }
 
 void s1ap_free_s1ap_tailist(
     S1ap_TAIList_IEs_t *s1ap_TAIListIEs)
 {
+    int i = 0;
 
+    for (i = 0; i < s1ap_TAIListIEs->s1ap_TAIItem.count; i++)
+    {
+        ASN_STRUCT_FREE(asn_DEF_S1ap_TAIItem, s1ap_TAIListIEs->s1ap_TAIItem.array[i]);
+    }
+
+    if (s1ap_TAIListIEs->s1ap_TAIItem.array)
+       FREEMEM(s1ap_TAIListIEs->s1ap_TAIItem.array);
 }
 
 void s1ap_free_s1ap_ue_associatedlogicals1_connectionlistres(
     S1ap_UE_associatedLogicalS1_ConnectionListRes_IEs_t *s1ap_UE_associatedLogicalS1_ConnectionListResIEs)
 {
+    int i = 0;
 
+    for (i = 0; i < s1ap_UE_associatedLogicalS1_ConnectionListResIEs->s1ap_UE_associatedLogicalS1_ConnectionItemRes.count; i++)
+    {
+        ASN_STRUCT_FREE(asn_DEF_S1ap_UE_associatedLogicalS1_ConnectionItem, s1ap_UE_associatedLogicalS1_ConnectionListResIEs->s1ap_UE_associatedLogicalS1_ConnectionItemRes.array[i]);
+    }
+
+    if (s1ap_UE_associatedLogicalS1_ConnectionListResIEs->s1ap_UE_associatedLogicalS1_ConnectionItemRes.array)
+       FREEMEM(s1ap_UE_associatedLogicalS1_ConnectionListResIEs->s1ap_UE_associatedLogicalS1_ConnectionItemRes.array);
 }
 
 void s1ap_free_s1ap_e_rabsetuplistbearersures(
     S1ap_E_RABSetupListBearerSURes_IEs_t *s1ap_E_RABSetupListBearerSUResIEs)
 {
+    int i = 0;
 
+    for (i = 0; i < s1ap_E_RABSetupListBearerSUResIEs->s1ap_E_RABSetupItemBearerSURes.count; i++)
+    {
+        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABSetupItemBearerSURes, s1ap_E_RABSetupListBearerSUResIEs->s1ap_E_RABSetupItemBearerSURes.array[i]);
+    }
+
+    if (s1ap_E_RABSetupListBearerSUResIEs->s1ap_E_RABSetupItemBearerSURes.array)
+       FREEMEM(s1ap_E_RABSetupListBearerSUResIEs->s1ap_E_RABSetupItemBearerSURes.array);
 }
 
 void s1ap_free_s1ap_e_rabmodifylistbearermodres(
     S1ap_E_RABModifyListBearerModRes_IEs_t *s1ap_E_RABModifyListBearerModResIEs)
 {
+    int i = 0;
 
+    for (i = 0; i < s1ap_E_RABModifyListBearerModResIEs->s1ap_E_RABModifyItemBearerModRes.count; i++)
+    {
+        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABModifyItemBearerModRes, s1ap_E_RABModifyListBearerModResIEs->s1ap_E_RABModifyItemBearerModRes.array[i]);
+    }
+
+    if (s1ap_E_RABModifyListBearerModResIEs->s1ap_E_RABModifyItemBearerModRes.array)
+       FREEMEM(s1ap_E_RABModifyListBearerModResIEs->s1ap_E_RABModifyItemBearerModRes.array);
 }
 
 void s1ap_free_s1ap_e_rabtobesetuplistctxtsureq(
     S1ap_E_RABToBeSetupListCtxtSUReq_IEs_t *s1ap_E_RABToBeSetupListCtxtSUReqIEs)
 {
+    int i = 0;
 
+    for (i = 0; i < s1ap_E_RABToBeSetupListCtxtSUReqIEs->s1ap_E_RABToBeSetupItemCtxtSUReq.count; i++)
+    {
+        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABToBeSetupItemCtxtSUReq, s1ap_E_RABToBeSetupListCtxtSUReqIEs->s1ap_E_RABToBeSetupItemCtxtSUReq.array[i]);
+    }
+
+    if (s1ap_E_RABToBeSetupListCtxtSUReqIEs->s1ap_E_RABToBeSetupItemCtxtSUReq.array)
+       FREEMEM(s1ap_E_RABToBeSetupListCtxtSUReqIEs->s1ap_E_RABToBeSetupItemCtxtSUReq.array);
 }
 
 void s1ap_free_s1ap_e_rabinformationlist(
     S1ap_E_RABInformationList_IEs_t *s1ap_E_RABInformationListIEs)
 {
+    int i = 0;
 
+    for (i = 0; i < s1ap_E_RABInformationListIEs->s1ap_E_RABInformationList.count; i++)
+    {
+        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABInformationListItem, s1ap_E_RABInformationListIEs->s1ap_E_RABInformationList.array[i]);
+    }
+
+    if (s1ap_E_RABInformationListIEs->s1ap_E_RABInformationList.array)
+       FREEMEM(s1ap_E_RABInformationListIEs->s1ap_E_RABInformationList.array);
 }
 
 void s1ap_free_s1ap_ue_associatedlogicals1_connectionlistresack(
     S1ap_UE_associatedLogicalS1_ConnectionListResAck_IEs_t *s1ap_UE_associatedLogicalS1_ConnectionListResAckIEs)
 {
+    int i = 0;
 
+    for (i = 0; i < s1ap_UE_associatedLogicalS1_ConnectionListResAckIEs->s1ap_UE_associatedLogicalS1_ConnectionItemResAck.count; i++)
+    {
+        ASN_STRUCT_FREE(asn_DEF_S1ap_UE_associatedLogicalS1_ConnectionItem, s1ap_UE_associatedLogicalS1_ConnectionListResAckIEs->s1ap_UE_associatedLogicalS1_ConnectionItemResAck.array[i]);
+    }
+
+    if (s1ap_UE_associatedLogicalS1_ConnectionListResAckIEs->s1ap_UE_associatedLogicalS1_ConnectionItemResAck.array)
+       FREEMEM(s1ap_UE_associatedLogicalS1_ConnectionListResAckIEs->s1ap_UE_associatedLogicalS1_ConnectionItemResAck.array);
 }
 
