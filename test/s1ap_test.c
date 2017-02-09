@@ -26,9 +26,8 @@ static void s1ap_test1(abts_case *tc, void *data)
 
     result = s1ap_decode_pdu(&message, pkbuf);
     ABTS_INT_EQUAL(tc, 0, result);
+    s1ap_free_pdu(&message);
 
-    s1ap_free_s1ap_s1setuprequesties(&message.msg.s1ap_S1SetupRequestIEs);
-    
     pkbuf_free(pkbuf);
 }
 
@@ -50,8 +49,7 @@ static void s1ap_test2(abts_case *tc, void *data)
 
     result = s1ap_decode_pdu(&message, pkbuf);
     ABTS_INT_EQUAL(tc, 0, result);
-
-    s1ap_free_s1ap_initialuemessage_ies(&message.msg.s1ap_InitialUEMessage_IEs);
+    s1ap_free_pdu(&message);
 
     pkbuf_free(pkbuf);
 }
@@ -74,8 +72,7 @@ static void s1ap_test3(abts_case *tc, void *data)
 
     result = s1ap_decode_pdu(&message, pkbuf);
     ABTS_INT_EQUAL(tc, 0, result);
-
-    s1ap_free_s1ap_initialcontextsetupresponseies(&message.msg.s1ap_InitialContextSetupResponseIEs);
+    s1ap_free_pdu(&message);
 
     pkbuf_free(pkbuf);
 }
@@ -137,10 +134,9 @@ static void s1ap_test5(abts_case *tc, void *data)
     message.criticality = S1ap_Criticality_reject;
 
     erval = s1ap_encode_pdu(&pkbuf, &message);
-
-    s1ap_free_s1ap_s1setuprequesties(s1SetupRequestIEs);
-
     ABTS_INT_EQUAL(tc, 280, erval);
+
+    s1ap_free_pdu(&message);
 }
 
 abts_suite *test_s1ap(abts_suite *suite)

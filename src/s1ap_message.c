@@ -67,8 +67,7 @@ status_t s1ap_build_setup_rsp(pkbuf_t **pkbuf)
     message.direction = S1AP_PDU_PR_successfulOutcome;
 
     erval = s1ap_encode_pdu(pkbuf, &message);
-
-    s1ap_free_s1ap_s1setupresponseies(ies);
+    s1ap_free_pdu(&message);
 
     if (erval < 0)
     {

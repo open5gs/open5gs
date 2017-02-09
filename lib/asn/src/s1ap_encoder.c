@@ -20,7 +20,7 @@ static inline int s1ap_encode_s1setup_failure(
     s1ap_message *message_p, pkbuf_t *pkbuf);
 static inline int s1ap_encode_downlink_nas_transport(
   s1ap_message *message_p, pkbuf_t *pkbuf);
-static inline int s1ap_encode_ue_context_release_command (
+static inline int s1ap_encode_ue_context_release_command(
   s1ap_message *message_p, pkbuf_t *pkbuf);
 
 int s1ap_encode_pdu(pkbuf_t **pkb, s1ap_message *message_p)

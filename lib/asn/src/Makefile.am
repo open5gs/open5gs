@@ -8,7 +8,7 @@ libasn_la_SOURCES = \
 	s1ap_ies_defs.h s1ap_codecs.h
 
 nodist_libasn_la_SOURCES = \
-	s1ap_encoder.c s1ap_decoder.c \
+	s1ap_encoder.c s1ap_decoder.c s1ap_free.c \
 	s1ap_ies_encoder.c s1ap_ies_decoder.c s1ap_ies_free.c s1ap_ies_xer_print.c
 
 libasn_la_DEPENDENCIES = \

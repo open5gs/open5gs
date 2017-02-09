@@ -74,6 +74,7 @@ static int s1ap_decode_initiating(s1ap_message *message,
 
     d_assert(initiating_p, return -1, "Null param");
 
+    message->procedureCode = initiating_p->procedureCode;
     switch (initiating_p->procedureCode) 
     {
         case S1ap_ProcedureCode_id_uplinkNASTransport: 
@@ -143,6 +144,7 @@ static int s1ap_decode_successfull_outcome(s1ap_message *message,
 
     d_assert(successfullOutcome_p, return -1, "Null param");
 
+    message->procedureCode = successfullOutcome_p->procedureCode;
     switch (successfullOutcome_p->procedureCode) 
     {
         case S1ap_ProcedureCode_id_InitialContextSetup: 
@@ -179,6 +181,7 @@ static int s1ap_decode_unsuccessfull_outcome(s1ap_message *message,
 
     d_assert(unSuccessfulOutcome_p, return -1, "Null param");
 
+    message->procedureCode = unSuccessfulOutcome_p->procedureCode;
     switch (unSuccessfulOutcome_p->procedureCode) 
     {
         case S1ap_ProcedureCode_id_InitialContextSetup: 
