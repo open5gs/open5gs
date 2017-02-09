@@ -113,12 +113,24 @@ static void s1ap_test3(abts_case *tc, void *data)
             &ie->mme_ue_s1ap_id);
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, 
             &ie->eNB_UE_S1AP_ID);
-#if 0
-    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABSetupListCtxtSURes_IEs, 
-            &ie->e_RABSetupListCtxtSURes);
-    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABList_IEs, 
-            &ie->e_RABFailedToSetupListCtxtSURes);
-#endif
+    {
+        int i = 0;
+        for (i = 0; i < ie->e_RABSetupListCtxtSURes.s1ap_E_RABSetupItemCtxtSURes.count; i++)
+        {
+            ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABSetupItemCtxtSURes, 
+                    ie->e_RABSetupListCtxtSURes.s1ap_E_RABSetupItemCtxtSURes.array[i]);
+        }
+        FREEMEM(ie->e_RABSetupListCtxtSURes.s1ap_E_RABSetupItemCtxtSURes.array);
+    }
+    {
+        int i = 0;
+        for (i = 0; i < ie->e_RABFailedToSetupListCtxtSURes.s1ap_E_RABItem.count; i++)
+        {
+            ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABItem, 
+                    ie->e_RABFailedToSetupListCtxtSURes.s1ap_E_RABItem.array[i]);
+        }
+        FREEMEM(ie->e_RABFailedToSetupListCtxtSURes.s1ap_E_RABItem.array);
+    }
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CriticalityDiagnostics, 
             &ie->criticalityDiagnostics);
 

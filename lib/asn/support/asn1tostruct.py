@@ -393,6 +393,7 @@ for key in iesDefs:
     f.write("    dec_ret = aper_decode(NULL, &asn_DEF_%s, (void **)&%s_p, any_p->buf, any_p->size, 0, 0);\n" % (asn1cStruct, asn1cStructfirstlower));
     f.write("    if (dec_ret.code != RC_OK)\n")
     f.write("    {\n")
+    f.write("        d_error(\"Decoding of IE %s failed\");\n" % (asn1cStructfirstlower))
     f.write("        ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_%s, %s_p);\n" % (asn1cStruct, asn1cStructfirstlower));
     f.write("        return -1;\n")
     f.write("    }\n\n");
@@ -424,16 +425,17 @@ for key in iesDefs:
             f.write("                if (%s_decode_%s(&%s->%s, %s_p) < 0)\n" % (fileprefix, ietypeunderscore.lower(), lowerFirstCamelWord(re.sub('-', '_', key)), ienameunderscore, lowerFirstCamelWord(ietypesubst)))
             f.write("                {\n")
             f.write("                    d_error(\"Decoding of encapsulated IE %s failed\");\n" % (lowerFirstCamelWord(ietypesubst)))
-            f.write("                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_%s, %s_p);\n" % (ietypeunderscore, lowerFirstCamelWord(ietypesubst)))
+            f.write("                    ASN_STRUCT_FREE(asn_DEF_%s, %s_p);\n" % (ietypeunderscore, lowerFirstCamelWord(ietypesubst)))
             f.write("                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_%s, %s_p);\n" % (asn1cStruct, lowerFirstCamelWord(asn1cStruct)))
             f.write("                    return -1;\n")
             f.write("                }\n")
+            f.write("                ASN_STRUCT_FREE(asn_DEF_%s, %s_p);\n" % (ietypeunderscore, lowerFirstCamelWord(ietypesubst)))
         else:
             f.write("                %s_t *%s_p = &%s->%s;\n\n" % (ietypeunderscore, lowerFirstCamelWord(ietypesubst), lowerFirstCamelWord(re.sub('-', '_', key)), ienameunderscore))
             f.write("                dec_ret = aper_decode(NULL, &asn_DEF_%s, (void **)&%s_p, st->buf, st->size, 0, 0);\n" % (ietypeunderscore, lowerFirstCamelWord(ietypesubst)))
             f.write("                if (dec_ret.code != RC_OK)\n")
             f.write("                {\n")
-            f.write("                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_%s, %s_p);\n" % (ietypeunderscore, lowerFirstCamelWord(ietypesubst)))
+            f.write("                    d_error(\"Decoding of IE %s failed\");\n" % (lowerFirstCamelWord(ietypesubst)))
             f.write("                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_%s, %s_p);\n" % (asn1cStruct, lowerFirstCamelWord(asn1cStruct)))
             f.write("                    return -1;\n")
             f.write("                }\n")

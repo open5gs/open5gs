@@ -30,7 +30,7 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-02-09 15:35:22.469131 by acetcom
+ * Created on: 2017-02-09 17:41:53.013825 by acetcom
  * from ['S1AP-PDU.asn']
  ******************************************************************************/
 #define TRACE_MODULE ies_decoder
@@ -54,6 +54,7 @@ int s1ap_decode_s1ap_deactivatetraceies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_DeactivateTrace, (void **)&s1ap_DeactivateTrace_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_DeactivateTrace failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_DeactivateTrace, s1ap_DeactivateTrace_p);
         return -1;
     }
@@ -74,7 +75,7 @@ int s1ap_decode_s1ap_deactivatetraceies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_DeactivateTrace, s1ap_DeactivateTrace_p);
                     return -1;
                 }
@@ -86,7 +87,7 @@ int s1ap_decode_s1ap_deactivatetraceies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_DeactivateTrace, s1ap_DeactivateTrace_p);
                     return -1;
                 }
@@ -98,7 +99,7 @@ int s1ap_decode_s1ap_deactivatetraceies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_E_UTRAN_Trace_ID, (void **)&s1apEUTRANTraceID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_UTRAN_Trace_ID, s1apEUTRANTraceID_p);
+                    d_error("Decoding of IE s1apEUTRANTraceID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_DeactivateTrace, s1ap_DeactivateTrace_p);
                     return -1;
                 }
@@ -131,6 +132,7 @@ int s1ap_decode_s1ap_enbdirectinformationtransferies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENBDirectInformationTransfer, (void **)&s1ap_ENBDirectInformationTransfer_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_ENBDirectInformationTransfer failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENBDirectInformationTransfer, s1ap_ENBDirectInformationTransfer_p);
         return -1;
     }
@@ -151,7 +153,7 @@ int s1ap_decode_s1ap_enbdirectinformationtransferies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Inter_SystemInformationTransferType, (void **)&s1apInterSystemInformationTransferType_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Inter_SystemInformationTransferType, s1apInterSystemInformationTransferType_p);
+                    d_error("Decoding of IE s1apInterSystemInformationTransferType failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENBDirectInformationTransfer, s1ap_ENBDirectInformationTransfer_p);
                     return -1;
                 }
@@ -184,6 +186,7 @@ int s1ap_decode_s1ap_e_rabreleaseresponseies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_E_RABReleaseResponse, (void **)&s1ap_E_RABReleaseResponse_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_E_RABReleaseResponse failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABReleaseResponse, s1ap_E_RABReleaseResponse_p);
         return -1;
     }
@@ -204,7 +207,7 @@ int s1ap_decode_s1ap_e_rabreleaseresponseies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABReleaseResponse, s1ap_E_RABReleaseResponse_p);
                     return -1;
                 }
@@ -216,7 +219,7 @@ int s1ap_decode_s1ap_e_rabreleaseresponseies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABReleaseResponse, s1ap_E_RABReleaseResponse_p);
                     return -1;
                 }
@@ -230,10 +233,11 @@ int s1ap_decode_s1ap_e_rabreleaseresponseies(
                 if (s1ap_decode_s1ap_e_rabreleaselistbearerrelcomp(&s1ap_E_RABReleaseResponseIEs->e_RABReleaseListBearerRelComp, s1apERABReleaseListBearerRelComp_p) < 0)
                 {
                     d_error("Decoding of encapsulated IE s1apERABReleaseListBearerRelComp failed");
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABReleaseListBearerRelComp, s1apERABReleaseListBearerRelComp_p);
+                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABReleaseListBearerRelComp, s1apERABReleaseListBearerRelComp_p);
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABReleaseResponse, s1ap_E_RABReleaseResponse_p);
                     return -1;
                 }
+                ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABReleaseListBearerRelComp, s1apERABReleaseListBearerRelComp_p);
                 s1ap_E_RABReleaseResponseIEs->presenceMask |= S1AP_E_RABRELEASERESPONSEIES_E_RABRELEASELISTBEARERRELCOMP_PRESENT;
             } break;
             /* Optional field */
@@ -245,10 +249,11 @@ int s1ap_decode_s1ap_e_rabreleaseresponseies(
                 if (s1ap_decode_s1ap_e_rablist(&s1ap_E_RABReleaseResponseIEs->e_RABFailedToReleaseList, s1apERABList_p) < 0)
                 {
                     d_error("Decoding of encapsulated IE s1apERABList failed");
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABList, s1apERABList_p);
+                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABList, s1apERABList_p);
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABReleaseResponse, s1ap_E_RABReleaseResponse_p);
                     return -1;
                 }
+                ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABList, s1apERABList_p);
                 s1ap_E_RABReleaseResponseIEs->presenceMask |= S1AP_E_RABRELEASERESPONSEIES_E_RABFAILEDTORELEASELIST_PRESENT;
             } break;
             /* Optional field */
@@ -259,7 +264,7 @@ int s1ap_decode_s1ap_e_rabreleaseresponseies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CriticalityDiagnostics, (void **)&s1apCriticalityDiagnostics_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CriticalityDiagnostics, s1apCriticalityDiagnostics_p);
+                    d_error("Decoding of IE s1apCriticalityDiagnostics failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABReleaseResponse, s1ap_E_RABReleaseResponse_p);
                     return -1;
                 }
@@ -293,6 +298,7 @@ int s1ap_decode_s1ap_uplinknonueassociatedlppatransport_ies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_UplinkNonUEAssociatedLPPaTransport, (void **)&s1ap_UplinkNonUEAssociatedLPPaTransport_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_UplinkNonUEAssociatedLPPaTransport failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UplinkNonUEAssociatedLPPaTransport, s1ap_UplinkNonUEAssociatedLPPaTransport_p);
         return -1;
     }
@@ -313,7 +319,7 @@ int s1ap_decode_s1ap_uplinknonueassociatedlppatransport_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Routing_ID, (void **)&s1apRoutingID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Routing_ID, s1apRoutingID_p);
+                    d_error("Decoding of IE s1apRoutingID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UplinkNonUEAssociatedLPPaTransport, s1ap_UplinkNonUEAssociatedLPPaTransport_p);
                     return -1;
                 }
@@ -325,7 +331,7 @@ int s1ap_decode_s1ap_uplinknonueassociatedlppatransport_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_LPPa_PDU, (void **)&s1apLPPaPDU_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_LPPa_PDU, s1apLPPaPDU_p);
+                    d_error("Decoding of IE s1apLPPaPDU failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UplinkNonUEAssociatedLPPaTransport, s1ap_UplinkNonUEAssociatedLPPaTransport_p);
                     return -1;
                 }
@@ -358,6 +364,7 @@ int s1ap_decode_s1ap_tracestarties(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_TraceStart, (void **)&s1ap_TraceStart_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_TraceStart failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_TraceStart, s1ap_TraceStart_p);
         return -1;
     }
@@ -378,7 +385,7 @@ int s1ap_decode_s1ap_tracestarties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_TraceStart, s1ap_TraceStart_p);
                     return -1;
                 }
@@ -390,7 +397,7 @@ int s1ap_decode_s1ap_tracestarties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_TraceStart, s1ap_TraceStart_p);
                     return -1;
                 }
@@ -402,7 +409,7 @@ int s1ap_decode_s1ap_tracestarties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_TraceActivation, (void **)&s1apTraceActivation_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_TraceActivation, s1apTraceActivation_p);
+                    d_error("Decoding of IE s1apTraceActivation failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_TraceStart, s1ap_TraceStart_p);
                     return -1;
                 }
@@ -435,6 +442,7 @@ int s1ap_decode_s1ap_writereplacewarningresponseies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_WriteReplaceWarningResponse, (void **)&s1ap_WriteReplaceWarningResponse_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_WriteReplaceWarningResponse failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_WriteReplaceWarningResponse, s1ap_WriteReplaceWarningResponse_p);
         return -1;
     }
@@ -455,7 +463,7 @@ int s1ap_decode_s1ap_writereplacewarningresponseies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MessageIdentifier, (void **)&s1apMessageIdentifier_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MessageIdentifier, s1apMessageIdentifier_p);
+                    d_error("Decoding of IE s1apMessageIdentifier failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_WriteReplaceWarningResponse, s1ap_WriteReplaceWarningResponse_p);
                     return -1;
                 }
@@ -467,7 +475,7 @@ int s1ap_decode_s1ap_writereplacewarningresponseies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_SerialNumber, (void **)&s1apSerialNumber_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_SerialNumber, s1apSerialNumber_p);
+                    d_error("Decoding of IE s1apSerialNumber failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_WriteReplaceWarningResponse, s1ap_WriteReplaceWarningResponse_p);
                     return -1;
                 }
@@ -480,7 +488,7 @@ int s1ap_decode_s1ap_writereplacewarningresponseies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_BroadcastCompletedAreaList, (void **)&s1apBroadcastCompletedAreaList_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_BroadcastCompletedAreaList, s1apBroadcastCompletedAreaList_p);
+                    d_error("Decoding of IE s1apBroadcastCompletedAreaList failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_WriteReplaceWarningResponse, s1ap_WriteReplaceWarningResponse_p);
                     return -1;
                 }
@@ -494,7 +502,7 @@ int s1ap_decode_s1ap_writereplacewarningresponseies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CriticalityDiagnostics, (void **)&s1apCriticalityDiagnostics_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CriticalityDiagnostics, s1apCriticalityDiagnostics_p);
+                    d_error("Decoding of IE s1apCriticalityDiagnostics failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_WriteReplaceWarningResponse, s1ap_WriteReplaceWarningResponse_p);
                     return -1;
                 }
@@ -528,6 +536,7 @@ int s1ap_decode_s1ap_handovercancelies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_HandoverCancel, (void **)&s1ap_HandoverCancel_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_HandoverCancel failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverCancel, s1ap_HandoverCancel_p);
         return -1;
     }
@@ -548,7 +557,7 @@ int s1ap_decode_s1ap_handovercancelies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverCancel, s1ap_HandoverCancel_p);
                     return -1;
                 }
@@ -560,7 +569,7 @@ int s1ap_decode_s1ap_handovercancelies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverCancel, s1ap_HandoverCancel_p);
                     return -1;
                 }
@@ -572,7 +581,7 @@ int s1ap_decode_s1ap_handovercancelies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Cause, (void **)&s1apCause_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Cause, s1apCause_p);
+                    d_error("Decoding of IE s1apCause failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverCancel, s1ap_HandoverCancel_p);
                     return -1;
                 }
@@ -605,6 +614,7 @@ int s1ap_decode_s1ap_handoverpreparationfailureies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_HandoverPreparationFailure, (void **)&s1ap_HandoverPreparationFailure_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_HandoverPreparationFailure failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverPreparationFailure, s1ap_HandoverPreparationFailure_p);
         return -1;
     }
@@ -625,7 +635,7 @@ int s1ap_decode_s1ap_handoverpreparationfailureies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverPreparationFailure, s1ap_HandoverPreparationFailure_p);
                     return -1;
                 }
@@ -637,7 +647,7 @@ int s1ap_decode_s1ap_handoverpreparationfailureies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverPreparationFailure, s1ap_HandoverPreparationFailure_p);
                     return -1;
                 }
@@ -649,7 +659,7 @@ int s1ap_decode_s1ap_handoverpreparationfailureies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Cause, (void **)&s1apCause_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Cause, s1apCause_p);
+                    d_error("Decoding of IE s1apCause failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverPreparationFailure, s1ap_HandoverPreparationFailure_p);
                     return -1;
                 }
@@ -662,7 +672,7 @@ int s1ap_decode_s1ap_handoverpreparationfailureies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CriticalityDiagnostics, (void **)&s1apCriticalityDiagnostics_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CriticalityDiagnostics, s1apCriticalityDiagnostics_p);
+                    d_error("Decoding of IE s1apCriticalityDiagnostics failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverPreparationFailure, s1ap_HandoverPreparationFailure_p);
                     return -1;
                 }
@@ -696,6 +706,7 @@ int s1ap_decode_s1ap_uecontextreleaserequest_ies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_UEContextReleaseRequest, (void **)&s1ap_UEContextReleaseRequest_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_UEContextReleaseRequest failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEContextReleaseRequest, s1ap_UEContextReleaseRequest_p);
         return -1;
     }
@@ -716,7 +727,7 @@ int s1ap_decode_s1ap_uecontextreleaserequest_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEContextReleaseRequest, s1ap_UEContextReleaseRequest_p);
                     return -1;
                 }
@@ -728,7 +739,7 @@ int s1ap_decode_s1ap_uecontextreleaserequest_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEContextReleaseRequest, s1ap_UEContextReleaseRequest_p);
                     return -1;
                 }
@@ -740,7 +751,7 @@ int s1ap_decode_s1ap_uecontextreleaserequest_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Cause, (void **)&s1apCause_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Cause, s1apCause_p);
+                    d_error("Decoding of IE s1apCause failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEContextReleaseRequest, s1ap_UEContextReleaseRequest_p);
                     return -1;
                 }
@@ -753,7 +764,7 @@ int s1ap_decode_s1ap_uecontextreleaserequest_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_GWContextReleaseIndication, (void **)&s1apGWContextReleaseIndication_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_GWContextReleaseIndication, s1apGWContextReleaseIndication_p);
+                    d_error("Decoding of IE s1apGWContextReleaseIndication failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEContextReleaseRequest, s1ap_UEContextReleaseRequest_p);
                     return -1;
                 }
@@ -787,6 +798,7 @@ int s1ap_decode_s1ap_initialuemessage_ies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_InitialUEMessage, (void **)&s1ap_InitialUEMessage_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_InitialUEMessage failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialUEMessage, s1ap_InitialUEMessage_p);
         return -1;
     }
@@ -807,7 +819,7 @@ int s1ap_decode_s1ap_initialuemessage_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialUEMessage, s1ap_InitialUEMessage_p);
                     return -1;
                 }
@@ -819,7 +831,7 @@ int s1ap_decode_s1ap_initialuemessage_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_NAS_PDU, (void **)&s1apNASPDU_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_NAS_PDU, s1apNASPDU_p);
+                    d_error("Decoding of IE s1apNASPDU failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialUEMessage, s1ap_InitialUEMessage_p);
                     return -1;
                 }
@@ -831,7 +843,7 @@ int s1ap_decode_s1ap_initialuemessage_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_TAI, (void **)&s1apTAI_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_TAI, s1apTAI_p);
+                    d_error("Decoding of IE s1apTAI failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialUEMessage, s1ap_InitialUEMessage_p);
                     return -1;
                 }
@@ -843,7 +855,7 @@ int s1ap_decode_s1ap_initialuemessage_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_EUTRAN_CGI, (void **)&s1apEUTRANCGI_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_EUTRAN_CGI, s1apEUTRANCGI_p);
+                    d_error("Decoding of IE s1apEUTRANCGI failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialUEMessage, s1ap_InitialUEMessage_p);
                     return -1;
                 }
@@ -855,7 +867,7 @@ int s1ap_decode_s1ap_initialuemessage_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_RRC_Establishment_Cause, (void **)&s1apRRCEstablishmentCause_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_RRC_Establishment_Cause, s1apRRCEstablishmentCause_p);
+                    d_error("Decoding of IE s1apRRCEstablishmentCause failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialUEMessage, s1ap_InitialUEMessage_p);
                     return -1;
                 }
@@ -868,7 +880,7 @@ int s1ap_decode_s1ap_initialuemessage_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_S_TMSI, (void **)&s1apSTMSI_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_S_TMSI, s1apSTMSI_p);
+                    d_error("Decoding of IE s1apSTMSI failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialUEMessage, s1ap_InitialUEMessage_p);
                     return -1;
                 }
@@ -882,7 +894,7 @@ int s1ap_decode_s1ap_initialuemessage_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CSG_Id, (void **)&s1apCSGId_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CSG_Id, s1apCSGId_p);
+                    d_error("Decoding of IE s1apCSGId failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialUEMessage, s1ap_InitialUEMessage_p);
                     return -1;
                 }
@@ -896,7 +908,7 @@ int s1ap_decode_s1ap_initialuemessage_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_GUMMEI, (void **)&s1apGUMMEI_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_GUMMEI, s1apGUMMEI_p);
+                    d_error("Decoding of IE s1apGUMMEI failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialUEMessage, s1ap_InitialUEMessage_p);
                     return -1;
                 }
@@ -910,7 +922,7 @@ int s1ap_decode_s1ap_initialuemessage_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CellAccessMode, (void **)&s1apCellAccessMode_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CellAccessMode, s1apCellAccessMode_p);
+                    d_error("Decoding of IE s1apCellAccessMode failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialUEMessage, s1ap_InitialUEMessage_p);
                     return -1;
                 }
@@ -924,7 +936,7 @@ int s1ap_decode_s1ap_initialuemessage_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_TransportLayerAddress, (void **)&s1apTransportLayerAddress_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_TransportLayerAddress, s1apTransportLayerAddress_p);
+                    d_error("Decoding of IE s1apTransportLayerAddress failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialUEMessage, s1ap_InitialUEMessage_p);
                     return -1;
                 }
@@ -938,7 +950,7 @@ int s1ap_decode_s1ap_initialuemessage_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_RelayNode_Indicator, (void **)&s1apRelayNodeIndicator_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_RelayNode_Indicator, s1apRelayNodeIndicator_p);
+                    d_error("Decoding of IE s1apRelayNodeIndicator failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialUEMessage, s1ap_InitialUEMessage_p);
                     return -1;
                 }
@@ -972,6 +984,7 @@ int s1ap_decode_s1ap_killrequesties(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_KillRequest, (void **)&s1ap_KillRequest_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_KillRequest failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_KillRequest, s1ap_KillRequest_p);
         return -1;
     }
@@ -992,7 +1005,7 @@ int s1ap_decode_s1ap_killrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MessageIdentifier, (void **)&s1apMessageIdentifier_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MessageIdentifier, s1apMessageIdentifier_p);
+                    d_error("Decoding of IE s1apMessageIdentifier failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_KillRequest, s1ap_KillRequest_p);
                     return -1;
                 }
@@ -1004,7 +1017,7 @@ int s1ap_decode_s1ap_killrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_SerialNumber, (void **)&s1apSerialNumber_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_SerialNumber, s1apSerialNumber_p);
+                    d_error("Decoding of IE s1apSerialNumber failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_KillRequest, s1ap_KillRequest_p);
                     return -1;
                 }
@@ -1017,7 +1030,7 @@ int s1ap_decode_s1ap_killrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_WarningAreaList, (void **)&s1apWarningAreaList_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_WarningAreaList, s1apWarningAreaList_p);
+                    d_error("Decoding of IE s1apWarningAreaList failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_KillRequest, s1ap_KillRequest_p);
                     return -1;
                 }
@@ -1051,6 +1064,7 @@ int s1ap_decode_s1ap_writereplacewarningrequesties(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_WriteReplaceWarningRequest, (void **)&s1ap_WriteReplaceWarningRequest_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_WriteReplaceWarningRequest failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_WriteReplaceWarningRequest, s1ap_WriteReplaceWarningRequest_p);
         return -1;
     }
@@ -1071,7 +1085,7 @@ int s1ap_decode_s1ap_writereplacewarningrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MessageIdentifier, (void **)&s1apMessageIdentifier_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MessageIdentifier, s1apMessageIdentifier_p);
+                    d_error("Decoding of IE s1apMessageIdentifier failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_WriteReplaceWarningRequest, s1ap_WriteReplaceWarningRequest_p);
                     return -1;
                 }
@@ -1083,7 +1097,7 @@ int s1ap_decode_s1ap_writereplacewarningrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_SerialNumber, (void **)&s1apSerialNumber_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_SerialNumber, s1apSerialNumber_p);
+                    d_error("Decoding of IE s1apSerialNumber failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_WriteReplaceWarningRequest, s1ap_WriteReplaceWarningRequest_p);
                     return -1;
                 }
@@ -1096,7 +1110,7 @@ int s1ap_decode_s1ap_writereplacewarningrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_WarningAreaList, (void **)&s1apWarningAreaList_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_WarningAreaList, s1apWarningAreaList_p);
+                    d_error("Decoding of IE s1apWarningAreaList failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_WriteReplaceWarningRequest, s1ap_WriteReplaceWarningRequest_p);
                     return -1;
                 }
@@ -1109,7 +1123,7 @@ int s1ap_decode_s1ap_writereplacewarningrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_RepetitionPeriod, (void **)&s1apRepetitionPeriod_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_RepetitionPeriod, s1apRepetitionPeriod_p);
+                    d_error("Decoding of IE s1apRepetitionPeriod failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_WriteReplaceWarningRequest, s1ap_WriteReplaceWarningRequest_p);
                     return -1;
                 }
@@ -1122,7 +1136,7 @@ int s1ap_decode_s1ap_writereplacewarningrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ExtendedRepetitionPeriod, (void **)&s1apExtendedRepetitionPeriod_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ExtendedRepetitionPeriod, s1apExtendedRepetitionPeriod_p);
+                    d_error("Decoding of IE s1apExtendedRepetitionPeriod failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_WriteReplaceWarningRequest, s1ap_WriteReplaceWarningRequest_p);
                     return -1;
                 }
@@ -1135,7 +1149,7 @@ int s1ap_decode_s1ap_writereplacewarningrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_NumberofBroadcastRequest, (void **)&s1apNumberofBroadcastRequest_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_NumberofBroadcastRequest, s1apNumberofBroadcastRequest_p);
+                    d_error("Decoding of IE s1apNumberofBroadcastRequest failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_WriteReplaceWarningRequest, s1ap_WriteReplaceWarningRequest_p);
                     return -1;
                 }
@@ -1148,7 +1162,7 @@ int s1ap_decode_s1ap_writereplacewarningrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_WarningType, (void **)&s1apWarningType_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_WarningType, s1apWarningType_p);
+                    d_error("Decoding of IE s1apWarningType failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_WriteReplaceWarningRequest, s1ap_WriteReplaceWarningRequest_p);
                     return -1;
                 }
@@ -1162,7 +1176,7 @@ int s1ap_decode_s1ap_writereplacewarningrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_WarningSecurityInfo, (void **)&s1apWarningSecurityInfo_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_WarningSecurityInfo, s1apWarningSecurityInfo_p);
+                    d_error("Decoding of IE s1apWarningSecurityInfo failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_WriteReplaceWarningRequest, s1ap_WriteReplaceWarningRequest_p);
                     return -1;
                 }
@@ -1176,7 +1190,7 @@ int s1ap_decode_s1ap_writereplacewarningrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_DataCodingScheme, (void **)&s1apDataCodingScheme_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_DataCodingScheme, s1apDataCodingScheme_p);
+                    d_error("Decoding of IE s1apDataCodingScheme failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_WriteReplaceWarningRequest, s1ap_WriteReplaceWarningRequest_p);
                     return -1;
                 }
@@ -1190,7 +1204,7 @@ int s1ap_decode_s1ap_writereplacewarningrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_WarningMessageContents, (void **)&s1apWarningMessageContents_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_WarningMessageContents, s1apWarningMessageContents_p);
+                    d_error("Decoding of IE s1apWarningMessageContents failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_WriteReplaceWarningRequest, s1ap_WriteReplaceWarningRequest_p);
                     return -1;
                 }
@@ -1204,7 +1218,7 @@ int s1ap_decode_s1ap_writereplacewarningrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ConcurrentWarningMessageIndicator, (void **)&s1apConcurrentWarningMessageIndicator_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ConcurrentWarningMessageIndicator, s1apConcurrentWarningMessageIndicator_p);
+                    d_error("Decoding of IE s1apConcurrentWarningMessageIndicator failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_WriteReplaceWarningRequest, s1ap_WriteReplaceWarningRequest_p);
                     return -1;
                 }
@@ -1238,6 +1252,7 @@ int s1ap_decode_s1ap_uecapabilityinfoindicationies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_UECapabilityInfoIndication, (void **)&s1ap_UECapabilityInfoIndication_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_UECapabilityInfoIndication failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UECapabilityInfoIndication, s1ap_UECapabilityInfoIndication_p);
         return -1;
     }
@@ -1258,7 +1273,7 @@ int s1ap_decode_s1ap_uecapabilityinfoindicationies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UECapabilityInfoIndication, s1ap_UECapabilityInfoIndication_p);
                     return -1;
                 }
@@ -1270,7 +1285,7 @@ int s1ap_decode_s1ap_uecapabilityinfoindicationies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UECapabilityInfoIndication, s1ap_UECapabilityInfoIndication_p);
                     return -1;
                 }
@@ -1282,7 +1297,7 @@ int s1ap_decode_s1ap_uecapabilityinfoindicationies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_UERadioCapability, (void **)&s1apUERadioCapability_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UERadioCapability, s1apUERadioCapability_p);
+                    d_error("Decoding of IE s1apUERadioCapability failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UECapabilityInfoIndication, s1ap_UECapabilityInfoIndication_p);
                     return -1;
                 }
@@ -1315,6 +1330,7 @@ int s1ap_decode_s1ap_locationreportingfailureindicationies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_LocationReportingFailureIndication, (void **)&s1ap_LocationReportingFailureIndication_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_LocationReportingFailureIndication failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_LocationReportingFailureIndication, s1ap_LocationReportingFailureIndication_p);
         return -1;
     }
@@ -1335,7 +1351,7 @@ int s1ap_decode_s1ap_locationreportingfailureindicationies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_LocationReportingFailureIndication, s1ap_LocationReportingFailureIndication_p);
                     return -1;
                 }
@@ -1347,7 +1363,7 @@ int s1ap_decode_s1ap_locationreportingfailureindicationies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_LocationReportingFailureIndication, s1ap_LocationReportingFailureIndication_p);
                     return -1;
                 }
@@ -1359,7 +1375,7 @@ int s1ap_decode_s1ap_locationreportingfailureindicationies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Cause, (void **)&s1apCause_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Cause, s1apCause_p);
+                    d_error("Decoding of IE s1apCause failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_LocationReportingFailureIndication, s1ap_LocationReportingFailureIndication_p);
                     return -1;
                 }
@@ -1392,6 +1408,7 @@ int s1ap_decode_s1ap_initialcontextsetuprequesties(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_InitialContextSetupRequest, (void **)&s1ap_InitialContextSetupRequest_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_InitialContextSetupRequest failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialContextSetupRequest, s1ap_InitialContextSetupRequest_p);
         return -1;
     }
@@ -1412,7 +1429,7 @@ int s1ap_decode_s1ap_initialcontextsetuprequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialContextSetupRequest, s1ap_InitialContextSetupRequest_p);
                     return -1;
                 }
@@ -1424,7 +1441,7 @@ int s1ap_decode_s1ap_initialcontextsetuprequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialContextSetupRequest, s1ap_InitialContextSetupRequest_p);
                     return -1;
                 }
@@ -1436,7 +1453,7 @@ int s1ap_decode_s1ap_initialcontextsetuprequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_UEAggregateMaximumBitrate, (void **)&s1apUEAggregateMaximumBitrate_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEAggregateMaximumBitrate, s1apUEAggregateMaximumBitrate_p);
+                    d_error("Decoding of IE s1apUEAggregateMaximumBitrate failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialContextSetupRequest, s1ap_InitialContextSetupRequest_p);
                     return -1;
                 }
@@ -1449,10 +1466,11 @@ int s1ap_decode_s1ap_initialcontextsetuprequesties(
                 if (s1ap_decode_s1ap_e_rabtobesetuplistctxtsureq(&s1ap_InitialContextSetupRequestIEs->e_RABToBeSetupListCtxtSUReq, s1apERABToBeSetupListCtxtSUReq_p) < 0)
                 {
                     d_error("Decoding of encapsulated IE s1apERABToBeSetupListCtxtSUReq failed");
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABToBeSetupListCtxtSUReq, s1apERABToBeSetupListCtxtSUReq_p);
+                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABToBeSetupListCtxtSUReq, s1apERABToBeSetupListCtxtSUReq_p);
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialContextSetupRequest, s1ap_InitialContextSetupRequest_p);
                     return -1;
                 }
+                ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABToBeSetupListCtxtSUReq, s1apERABToBeSetupListCtxtSUReq_p);
             } break;
             case S1ap_ProtocolIE_ID_id_UESecurityCapabilities:
             {
@@ -1461,7 +1479,7 @@ int s1ap_decode_s1ap_initialcontextsetuprequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_UESecurityCapabilities, (void **)&s1apUESecurityCapabilities_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UESecurityCapabilities, s1apUESecurityCapabilities_p);
+                    d_error("Decoding of IE s1apUESecurityCapabilities failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialContextSetupRequest, s1ap_InitialContextSetupRequest_p);
                     return -1;
                 }
@@ -1473,7 +1491,7 @@ int s1ap_decode_s1ap_initialcontextsetuprequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_SecurityKey, (void **)&s1apSecurityKey_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_SecurityKey, s1apSecurityKey_p);
+                    d_error("Decoding of IE s1apSecurityKey failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialContextSetupRequest, s1ap_InitialContextSetupRequest_p);
                     return -1;
                 }
@@ -1486,7 +1504,7 @@ int s1ap_decode_s1ap_initialcontextsetuprequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_TraceActivation, (void **)&s1apTraceActivation_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_TraceActivation, s1apTraceActivation_p);
+                    d_error("Decoding of IE s1apTraceActivation failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialContextSetupRequest, s1ap_InitialContextSetupRequest_p);
                     return -1;
                 }
@@ -1500,7 +1518,7 @@ int s1ap_decode_s1ap_initialcontextsetuprequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_HandoverRestrictionList, (void **)&s1apHandoverRestrictionList_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRestrictionList, s1apHandoverRestrictionList_p);
+                    d_error("Decoding of IE s1apHandoverRestrictionList failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialContextSetupRequest, s1ap_InitialContextSetupRequest_p);
                     return -1;
                 }
@@ -1514,7 +1532,7 @@ int s1ap_decode_s1ap_initialcontextsetuprequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_UERadioCapability, (void **)&s1apUERadioCapability_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UERadioCapability, s1apUERadioCapability_p);
+                    d_error("Decoding of IE s1apUERadioCapability failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialContextSetupRequest, s1ap_InitialContextSetupRequest_p);
                     return -1;
                 }
@@ -1528,7 +1546,7 @@ int s1ap_decode_s1ap_initialcontextsetuprequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_SubscriberProfileIDforRFP, (void **)&s1apSubscriberProfileIDforRFP_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_SubscriberProfileIDforRFP, s1apSubscriberProfileIDforRFP_p);
+                    d_error("Decoding of IE s1apSubscriberProfileIDforRFP failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialContextSetupRequest, s1ap_InitialContextSetupRequest_p);
                     return -1;
                 }
@@ -1542,7 +1560,7 @@ int s1ap_decode_s1ap_initialcontextsetuprequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CSFallbackIndicator, (void **)&s1apCSFallbackIndicator_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CSFallbackIndicator, s1apCSFallbackIndicator_p);
+                    d_error("Decoding of IE s1apCSFallbackIndicator failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialContextSetupRequest, s1ap_InitialContextSetupRequest_p);
                     return -1;
                 }
@@ -1556,7 +1574,7 @@ int s1ap_decode_s1ap_initialcontextsetuprequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_SRVCCOperationPossible, (void **)&s1apSRVCCOperationPossible_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_SRVCCOperationPossible, s1apSRVCCOperationPossible_p);
+                    d_error("Decoding of IE s1apSRVCCOperationPossible failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialContextSetupRequest, s1ap_InitialContextSetupRequest_p);
                     return -1;
                 }
@@ -1570,7 +1588,7 @@ int s1ap_decode_s1ap_initialcontextsetuprequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CSGMembershipStatus, (void **)&s1apCSGMembershipStatus_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CSGMembershipStatus, s1apCSGMembershipStatus_p);
+                    d_error("Decoding of IE s1apCSGMembershipStatus failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialContextSetupRequest, s1ap_InitialContextSetupRequest_p);
                     return -1;
                 }
@@ -1584,7 +1602,7 @@ int s1ap_decode_s1ap_initialcontextsetuprequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_LAI, (void **)&s1apLAI_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_LAI, s1apLAI_p);
+                    d_error("Decoding of IE s1apLAI failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialContextSetupRequest, s1ap_InitialContextSetupRequest_p);
                     return -1;
                 }
@@ -1598,7 +1616,7 @@ int s1ap_decode_s1ap_initialcontextsetuprequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_GUMMEI, (void **)&s1apGUMMEI_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_GUMMEI, s1apGUMMEI_p);
+                    d_error("Decoding of IE s1apGUMMEI failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialContextSetupRequest, s1ap_InitialContextSetupRequest_p);
                     return -1;
                 }
@@ -1612,7 +1630,7 @@ int s1ap_decode_s1ap_initialcontextsetuprequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialContextSetupRequest, s1ap_InitialContextSetupRequest_p);
                     return -1;
                 }
@@ -1626,7 +1644,7 @@ int s1ap_decode_s1ap_initialcontextsetuprequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ManagementBasedMDTAllowed, (void **)&s1apManagementBasedMDTAllowed_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ManagementBasedMDTAllowed, s1apManagementBasedMDTAllowed_p);
+                    d_error("Decoding of IE s1apManagementBasedMDTAllowed failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialContextSetupRequest, s1ap_InitialContextSetupRequest_p);
                     return -1;
                 }
@@ -1660,6 +1678,7 @@ int s1ap_decode_s1ap_locationreporties(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_LocationReport, (void **)&s1ap_LocationReport_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_LocationReport failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_LocationReport, s1ap_LocationReport_p);
         return -1;
     }
@@ -1680,7 +1699,7 @@ int s1ap_decode_s1ap_locationreporties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_LocationReport, s1ap_LocationReport_p);
                     return -1;
                 }
@@ -1692,7 +1711,7 @@ int s1ap_decode_s1ap_locationreporties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_LocationReport, s1ap_LocationReport_p);
                     return -1;
                 }
@@ -1704,7 +1723,7 @@ int s1ap_decode_s1ap_locationreporties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_EUTRAN_CGI, (void **)&s1apEUTRANCGI_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_EUTRAN_CGI, s1apEUTRANCGI_p);
+                    d_error("Decoding of IE s1apEUTRANCGI failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_LocationReport, s1ap_LocationReport_p);
                     return -1;
                 }
@@ -1716,7 +1735,7 @@ int s1ap_decode_s1ap_locationreporties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_TAI, (void **)&s1apTAI_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_TAI, s1apTAI_p);
+                    d_error("Decoding of IE s1apTAI failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_LocationReport, s1ap_LocationReport_p);
                     return -1;
                 }
@@ -1728,7 +1747,7 @@ int s1ap_decode_s1ap_locationreporties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_RequestType, (void **)&s1apRequestType_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_RequestType, s1apRequestType_p);
+                    d_error("Decoding of IE s1apRequestType failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_LocationReport, s1ap_LocationReport_p);
                     return -1;
                 }
@@ -1761,6 +1780,7 @@ int s1ap_decode_s1ap_uplinknastransport_ies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_UplinkNASTransport, (void **)&s1ap_UplinkNASTransport_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_UplinkNASTransport failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UplinkNASTransport, s1ap_UplinkNASTransport_p);
         return -1;
     }
@@ -1781,7 +1801,7 @@ int s1ap_decode_s1ap_uplinknastransport_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UplinkNASTransport, s1ap_UplinkNASTransport_p);
                     return -1;
                 }
@@ -1793,7 +1813,7 @@ int s1ap_decode_s1ap_uplinknastransport_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UplinkNASTransport, s1ap_UplinkNASTransport_p);
                     return -1;
                 }
@@ -1805,7 +1825,7 @@ int s1ap_decode_s1ap_uplinknastransport_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_NAS_PDU, (void **)&s1apNASPDU_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_NAS_PDU, s1apNASPDU_p);
+                    d_error("Decoding of IE s1apNASPDU failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UplinkNASTransport, s1ap_UplinkNASTransport_p);
                     return -1;
                 }
@@ -1817,7 +1837,7 @@ int s1ap_decode_s1ap_uplinknastransport_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_EUTRAN_CGI, (void **)&s1apEUTRANCGI_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_EUTRAN_CGI, s1apEUTRANCGI_p);
+                    d_error("Decoding of IE s1apEUTRANCGI failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UplinkNASTransport, s1ap_UplinkNASTransport_p);
                     return -1;
                 }
@@ -1829,7 +1849,7 @@ int s1ap_decode_s1ap_uplinknastransport_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_TAI, (void **)&s1apTAI_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_TAI, s1apTAI_p);
+                    d_error("Decoding of IE s1apTAI failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UplinkNASTransport, s1ap_UplinkNASTransport_p);
                     return -1;
                 }
@@ -1842,7 +1862,7 @@ int s1ap_decode_s1ap_uplinknastransport_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_TransportLayerAddress, (void **)&s1apTransportLayerAddress_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_TransportLayerAddress, s1apTransportLayerAddress_p);
+                    d_error("Decoding of IE s1apTransportLayerAddress failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UplinkNASTransport, s1ap_UplinkNASTransport_p);
                     return -1;
                 }
@@ -1876,6 +1896,7 @@ int s1ap_decode_s1ap_uecontextmodificationresponseies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_UEContextModificationResponse, (void **)&s1ap_UEContextModificationResponse_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_UEContextModificationResponse failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEContextModificationResponse, s1ap_UEContextModificationResponse_p);
         return -1;
     }
@@ -1896,7 +1917,7 @@ int s1ap_decode_s1ap_uecontextmodificationresponseies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEContextModificationResponse, s1ap_UEContextModificationResponse_p);
                     return -1;
                 }
@@ -1908,7 +1929,7 @@ int s1ap_decode_s1ap_uecontextmodificationresponseies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEContextModificationResponse, s1ap_UEContextModificationResponse_p);
                     return -1;
                 }
@@ -1921,7 +1942,7 @@ int s1ap_decode_s1ap_uecontextmodificationresponseies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CriticalityDiagnostics, (void **)&s1apCriticalityDiagnostics_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CriticalityDiagnostics, s1apCriticalityDiagnostics_p);
+                    d_error("Decoding of IE s1apCriticalityDiagnostics failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEContextModificationResponse, s1ap_UEContextModificationResponse_p);
                     return -1;
                 }
@@ -1955,6 +1976,7 @@ int s1ap_decode_s1ap_uecontextmodificationrequesties(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_UEContextModificationRequest, (void **)&s1ap_UEContextModificationRequest_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_UEContextModificationRequest failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEContextModificationRequest, s1ap_UEContextModificationRequest_p);
         return -1;
     }
@@ -1975,7 +1997,7 @@ int s1ap_decode_s1ap_uecontextmodificationrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEContextModificationRequest, s1ap_UEContextModificationRequest_p);
                     return -1;
                 }
@@ -1987,7 +2009,7 @@ int s1ap_decode_s1ap_uecontextmodificationrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEContextModificationRequest, s1ap_UEContextModificationRequest_p);
                     return -1;
                 }
@@ -2000,7 +2022,7 @@ int s1ap_decode_s1ap_uecontextmodificationrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_SecurityKey, (void **)&s1apSecurityKey_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_SecurityKey, s1apSecurityKey_p);
+                    d_error("Decoding of IE s1apSecurityKey failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEContextModificationRequest, s1ap_UEContextModificationRequest_p);
                     return -1;
                 }
@@ -2014,7 +2036,7 @@ int s1ap_decode_s1ap_uecontextmodificationrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_SubscriberProfileIDforRFP, (void **)&s1apSubscriberProfileIDforRFP_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_SubscriberProfileIDforRFP, s1apSubscriberProfileIDforRFP_p);
+                    d_error("Decoding of IE s1apSubscriberProfileIDforRFP failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEContextModificationRequest, s1ap_UEContextModificationRequest_p);
                     return -1;
                 }
@@ -2028,7 +2050,7 @@ int s1ap_decode_s1ap_uecontextmodificationrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_UEAggregateMaximumBitrate, (void **)&s1apUEAggregateMaximumBitrate_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEAggregateMaximumBitrate, s1apUEAggregateMaximumBitrate_p);
+                    d_error("Decoding of IE s1apUEAggregateMaximumBitrate failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEContextModificationRequest, s1ap_UEContextModificationRequest_p);
                     return -1;
                 }
@@ -2042,7 +2064,7 @@ int s1ap_decode_s1ap_uecontextmodificationrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CSFallbackIndicator, (void **)&s1apCSFallbackIndicator_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CSFallbackIndicator, s1apCSFallbackIndicator_p);
+                    d_error("Decoding of IE s1apCSFallbackIndicator failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEContextModificationRequest, s1ap_UEContextModificationRequest_p);
                     return -1;
                 }
@@ -2056,7 +2078,7 @@ int s1ap_decode_s1ap_uecontextmodificationrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_UESecurityCapabilities, (void **)&s1apUESecurityCapabilities_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UESecurityCapabilities, s1apUESecurityCapabilities_p);
+                    d_error("Decoding of IE s1apUESecurityCapabilities failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEContextModificationRequest, s1ap_UEContextModificationRequest_p);
                     return -1;
                 }
@@ -2070,7 +2092,7 @@ int s1ap_decode_s1ap_uecontextmodificationrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CSGMembershipStatus, (void **)&s1apCSGMembershipStatus_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CSGMembershipStatus, s1apCSGMembershipStatus_p);
+                    d_error("Decoding of IE s1apCSGMembershipStatus failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEContextModificationRequest, s1ap_UEContextModificationRequest_p);
                     return -1;
                 }
@@ -2084,7 +2106,7 @@ int s1ap_decode_s1ap_uecontextmodificationrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_LAI, (void **)&s1apLAI_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_LAI, s1apLAI_p);
+                    d_error("Decoding of IE s1apLAI failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEContextModificationRequest, s1ap_UEContextModificationRequest_p);
                     return -1;
                 }
@@ -2118,6 +2140,7 @@ int s1ap_decode_s1ap_locationreportingcontrolies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_LocationReportingControl, (void **)&s1ap_LocationReportingControl_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_LocationReportingControl failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_LocationReportingControl, s1ap_LocationReportingControl_p);
         return -1;
     }
@@ -2138,7 +2161,7 @@ int s1ap_decode_s1ap_locationreportingcontrolies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_LocationReportingControl, s1ap_LocationReportingControl_p);
                     return -1;
                 }
@@ -2150,7 +2173,7 @@ int s1ap_decode_s1ap_locationreportingcontrolies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_LocationReportingControl, s1ap_LocationReportingControl_p);
                     return -1;
                 }
@@ -2162,7 +2185,7 @@ int s1ap_decode_s1ap_locationreportingcontrolies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_RequestType, (void **)&s1apRequestType_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_RequestType, s1apRequestType_p);
+                    d_error("Decoding of IE s1apRequestType failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_LocationReportingControl, s1ap_LocationReportingControl_p);
                     return -1;
                 }
@@ -2195,6 +2218,7 @@ int s1ap_decode_s1ap_uplinks1cdma2000tunnelingies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_UplinkS1cdma2000tunneling, (void **)&s1ap_UplinkS1cdma2000tunneling_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_UplinkS1cdma2000tunneling failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UplinkS1cdma2000tunneling, s1ap_UplinkS1cdma2000tunneling_p);
         return -1;
     }
@@ -2215,7 +2239,7 @@ int s1ap_decode_s1ap_uplinks1cdma2000tunnelingies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UplinkS1cdma2000tunneling, s1ap_UplinkS1cdma2000tunneling_p);
                     return -1;
                 }
@@ -2227,7 +2251,7 @@ int s1ap_decode_s1ap_uplinks1cdma2000tunnelingies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UplinkS1cdma2000tunneling, s1ap_UplinkS1cdma2000tunneling_p);
                     return -1;
                 }
@@ -2239,7 +2263,7 @@ int s1ap_decode_s1ap_uplinks1cdma2000tunnelingies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Cdma2000RATType, (void **)&s1apCdma2000RATType_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Cdma2000RATType, s1apCdma2000RATType_p);
+                    d_error("Decoding of IE s1apCdma2000RATType failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UplinkS1cdma2000tunneling, s1ap_UplinkS1cdma2000tunneling_p);
                     return -1;
                 }
@@ -2251,7 +2275,7 @@ int s1ap_decode_s1ap_uplinks1cdma2000tunnelingies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Cdma2000SectorID, (void **)&s1apCdma2000SectorID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Cdma2000SectorID, s1apCdma2000SectorID_p);
+                    d_error("Decoding of IE s1apCdma2000SectorID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UplinkS1cdma2000tunneling, s1ap_UplinkS1cdma2000tunneling_p);
                     return -1;
                 }
@@ -2264,7 +2288,7 @@ int s1ap_decode_s1ap_uplinks1cdma2000tunnelingies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Cdma2000HORequiredIndication, (void **)&s1apCdma2000HORequiredIndication_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Cdma2000HORequiredIndication, s1apCdma2000HORequiredIndication_p);
+                    d_error("Decoding of IE s1apCdma2000HORequiredIndication failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UplinkS1cdma2000tunneling, s1ap_UplinkS1cdma2000tunneling_p);
                     return -1;
                 }
@@ -2278,7 +2302,7 @@ int s1ap_decode_s1ap_uplinks1cdma2000tunnelingies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Cdma2000OneXSRVCCInfo, (void **)&s1apCdma2000OneXSRVCCInfo_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Cdma2000OneXSRVCCInfo, s1apCdma2000OneXSRVCCInfo_p);
+                    d_error("Decoding of IE s1apCdma2000OneXSRVCCInfo failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UplinkS1cdma2000tunneling, s1ap_UplinkS1cdma2000tunneling_p);
                     return -1;
                 }
@@ -2292,7 +2316,7 @@ int s1ap_decode_s1ap_uplinks1cdma2000tunnelingies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Cdma2000OneXRAND, (void **)&s1apCdma2000OneXRAND_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Cdma2000OneXRAND, s1apCdma2000OneXRAND_p);
+                    d_error("Decoding of IE s1apCdma2000OneXRAND failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UplinkS1cdma2000tunneling, s1ap_UplinkS1cdma2000tunneling_p);
                     return -1;
                 }
@@ -2305,7 +2329,7 @@ int s1ap_decode_s1ap_uplinks1cdma2000tunnelingies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Cdma2000PDU, (void **)&s1apCdma2000PDU_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Cdma2000PDU, s1apCdma2000PDU_p);
+                    d_error("Decoding of IE s1apCdma2000PDU failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UplinkS1cdma2000tunneling, s1ap_UplinkS1cdma2000tunneling_p);
                     return -1;
                 }
@@ -2318,7 +2342,7 @@ int s1ap_decode_s1ap_uplinks1cdma2000tunnelingies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_EUTRANRoundTripDelayEstimationInfo, (void **)&s1apEUTRANRoundTripDelayEstimationInfo_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_EUTRANRoundTripDelayEstimationInfo, s1apEUTRANRoundTripDelayEstimationInfo_p);
+                    d_error("Decoding of IE s1apEUTRANRoundTripDelayEstimationInfo failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UplinkS1cdma2000tunneling, s1ap_UplinkS1cdma2000tunneling_p);
                     return -1;
                 }
@@ -2352,6 +2376,7 @@ int s1ap_decode_s1ap_handoverrequesties(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_HandoverRequest, (void **)&s1ap_HandoverRequest_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_HandoverRequest failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequest, s1ap_HandoverRequest_p);
         return -1;
     }
@@ -2372,7 +2397,7 @@ int s1ap_decode_s1ap_handoverrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequest, s1ap_HandoverRequest_p);
                     return -1;
                 }
@@ -2384,7 +2409,7 @@ int s1ap_decode_s1ap_handoverrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_HandoverType, (void **)&s1apHandoverType_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverType, s1apHandoverType_p);
+                    d_error("Decoding of IE s1apHandoverType failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequest, s1ap_HandoverRequest_p);
                     return -1;
                 }
@@ -2396,7 +2421,7 @@ int s1ap_decode_s1ap_handoverrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Cause, (void **)&s1apCause_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Cause, s1apCause_p);
+                    d_error("Decoding of IE s1apCause failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequest, s1ap_HandoverRequest_p);
                     return -1;
                 }
@@ -2408,7 +2433,7 @@ int s1ap_decode_s1ap_handoverrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_UEAggregateMaximumBitrate, (void **)&s1apUEAggregateMaximumBitrate_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEAggregateMaximumBitrate, s1apUEAggregateMaximumBitrate_p);
+                    d_error("Decoding of IE s1apUEAggregateMaximumBitrate failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequest, s1ap_HandoverRequest_p);
                     return -1;
                 }
@@ -2421,10 +2446,11 @@ int s1ap_decode_s1ap_handoverrequesties(
                 if (s1ap_decode_s1ap_e_rabtobesetuplisthoreq(&s1ap_HandoverRequestIEs->e_RABToBeSetupListHOReq, s1apERABToBeSetupListHOReq_p) < 0)
                 {
                     d_error("Decoding of encapsulated IE s1apERABToBeSetupListHOReq failed");
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABToBeSetupListHOReq, s1apERABToBeSetupListHOReq_p);
+                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABToBeSetupListHOReq, s1apERABToBeSetupListHOReq_p);
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequest, s1ap_HandoverRequest_p);
                     return -1;
                 }
+                ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABToBeSetupListHOReq, s1apERABToBeSetupListHOReq_p);
             } break;
             case S1ap_ProtocolIE_ID_id_Source_ToTarget_TransparentContainer:
             {
@@ -2433,7 +2459,7 @@ int s1ap_decode_s1ap_handoverrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Source_ToTarget_TransparentContainer, (void **)&s1apSourceToTargetTransparentContainer_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Source_ToTarget_TransparentContainer, s1apSourceToTargetTransparentContainer_p);
+                    d_error("Decoding of IE s1apSourceToTargetTransparentContainer failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequest, s1ap_HandoverRequest_p);
                     return -1;
                 }
@@ -2445,7 +2471,7 @@ int s1ap_decode_s1ap_handoverrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_UESecurityCapabilities, (void **)&s1apUESecurityCapabilities_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UESecurityCapabilities, s1apUESecurityCapabilities_p);
+                    d_error("Decoding of IE s1apUESecurityCapabilities failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequest, s1ap_HandoverRequest_p);
                     return -1;
                 }
@@ -2458,7 +2484,7 @@ int s1ap_decode_s1ap_handoverrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_HandoverRestrictionList, (void **)&s1apHandoverRestrictionList_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRestrictionList, s1apHandoverRestrictionList_p);
+                    d_error("Decoding of IE s1apHandoverRestrictionList failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequest, s1ap_HandoverRequest_p);
                     return -1;
                 }
@@ -2472,7 +2498,7 @@ int s1ap_decode_s1ap_handoverrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_TraceActivation, (void **)&s1apTraceActivation_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_TraceActivation, s1apTraceActivation_p);
+                    d_error("Decoding of IE s1apTraceActivation failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequest, s1ap_HandoverRequest_p);
                     return -1;
                 }
@@ -2486,7 +2512,7 @@ int s1ap_decode_s1ap_handoverrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_RequestType, (void **)&s1apRequestType_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_RequestType, s1apRequestType_p);
+                    d_error("Decoding of IE s1apRequestType failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequest, s1ap_HandoverRequest_p);
                     return -1;
                 }
@@ -2500,7 +2526,7 @@ int s1ap_decode_s1ap_handoverrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_SRVCCOperationPossible, (void **)&s1apSRVCCOperationPossible_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_SRVCCOperationPossible, s1apSRVCCOperationPossible_p);
+                    d_error("Decoding of IE s1apSRVCCOperationPossible failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequest, s1ap_HandoverRequest_p);
                     return -1;
                 }
@@ -2513,7 +2539,7 @@ int s1ap_decode_s1ap_handoverrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_SecurityContext, (void **)&s1apSecurityContext_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_SecurityContext, s1apSecurityContext_p);
+                    d_error("Decoding of IE s1apSecurityContext failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequest, s1ap_HandoverRequest_p);
                     return -1;
                 }
@@ -2526,7 +2552,7 @@ int s1ap_decode_s1ap_handoverrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CSG_Id, (void **)&s1apCSGId_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CSG_Id, s1apCSGId_p);
+                    d_error("Decoding of IE s1apCSGId failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequest, s1ap_HandoverRequest_p);
                     return -1;
                 }
@@ -2540,7 +2566,7 @@ int s1ap_decode_s1ap_handoverrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CSGMembershipStatus, (void **)&s1apCSGMembershipStatus_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CSGMembershipStatus, s1apCSGMembershipStatus_p);
+                    d_error("Decoding of IE s1apCSGMembershipStatus failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequest, s1ap_HandoverRequest_p);
                     return -1;
                 }
@@ -2554,7 +2580,7 @@ int s1ap_decode_s1ap_handoverrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_GUMMEI, (void **)&s1apGUMMEI_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_GUMMEI, s1apGUMMEI_p);
+                    d_error("Decoding of IE s1apGUMMEI failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequest, s1ap_HandoverRequest_p);
                     return -1;
                 }
@@ -2568,7 +2594,7 @@ int s1ap_decode_s1ap_handoverrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequest, s1ap_HandoverRequest_p);
                     return -1;
                 }
@@ -2582,7 +2608,7 @@ int s1ap_decode_s1ap_handoverrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ManagementBasedMDTAllowed, (void **)&s1apManagementBasedMDTAllowed_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ManagementBasedMDTAllowed, s1apManagementBasedMDTAllowed_p);
+                    d_error("Decoding of IE s1apManagementBasedMDTAllowed failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequest, s1ap_HandoverRequest_p);
                     return -1;
                 }
@@ -2616,6 +2642,7 @@ int s1ap_decode_s1ap_handoverrequiredies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_HandoverRequired, (void **)&s1ap_HandoverRequired_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_HandoverRequired failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequired, s1ap_HandoverRequired_p);
         return -1;
     }
@@ -2636,7 +2663,7 @@ int s1ap_decode_s1ap_handoverrequiredies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequired, s1ap_HandoverRequired_p);
                     return -1;
                 }
@@ -2648,7 +2675,7 @@ int s1ap_decode_s1ap_handoverrequiredies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequired, s1ap_HandoverRequired_p);
                     return -1;
                 }
@@ -2660,7 +2687,7 @@ int s1ap_decode_s1ap_handoverrequiredies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_HandoverType, (void **)&s1apHandoverType_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverType, s1apHandoverType_p);
+                    d_error("Decoding of IE s1apHandoverType failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequired, s1ap_HandoverRequired_p);
                     return -1;
                 }
@@ -2672,7 +2699,7 @@ int s1ap_decode_s1ap_handoverrequiredies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Cause, (void **)&s1apCause_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Cause, s1apCause_p);
+                    d_error("Decoding of IE s1apCause failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequired, s1ap_HandoverRequired_p);
                     return -1;
                 }
@@ -2684,7 +2711,7 @@ int s1ap_decode_s1ap_handoverrequiredies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_TargetID, (void **)&s1apTargetID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_TargetID, s1apTargetID_p);
+                    d_error("Decoding of IE s1apTargetID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequired, s1ap_HandoverRequired_p);
                     return -1;
                 }
@@ -2697,7 +2724,7 @@ int s1ap_decode_s1ap_handoverrequiredies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Direct_Forwarding_Path_Availability, (void **)&s1apDirectForwardingPathAvailability_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Direct_Forwarding_Path_Availability, s1apDirectForwardingPathAvailability_p);
+                    d_error("Decoding of IE s1apDirectForwardingPathAvailability failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequired, s1ap_HandoverRequired_p);
                     return -1;
                 }
@@ -2711,7 +2738,7 @@ int s1ap_decode_s1ap_handoverrequiredies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_SRVCCHOIndication, (void **)&s1apSRVCCHOIndication_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_SRVCCHOIndication, s1apSRVCCHOIndication_p);
+                    d_error("Decoding of IE s1apSRVCCHOIndication failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequired, s1ap_HandoverRequired_p);
                     return -1;
                 }
@@ -2724,7 +2751,7 @@ int s1ap_decode_s1ap_handoverrequiredies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Source_ToTarget_TransparentContainer, (void **)&s1apSourceToTargetTransparentContainer_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Source_ToTarget_TransparentContainer, s1apSourceToTargetTransparentContainer_p);
+                    d_error("Decoding of IE s1apSourceToTargetTransparentContainer failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequired, s1ap_HandoverRequired_p);
                     return -1;
                 }
@@ -2737,7 +2764,7 @@ int s1ap_decode_s1ap_handoverrequiredies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Source_ToTarget_TransparentContainer, (void **)&s1apSourceToTargetTransparentContainer_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Source_ToTarget_TransparentContainer, s1apSourceToTargetTransparentContainer_p);
+                    d_error("Decoding of IE s1apSourceToTargetTransparentContainer failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequired, s1ap_HandoverRequired_p);
                     return -1;
                 }
@@ -2751,7 +2778,7 @@ int s1ap_decode_s1ap_handoverrequiredies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MSClassmark2, (void **)&s1apMSClassmark2_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MSClassmark2, s1apMSClassmark2_p);
+                    d_error("Decoding of IE s1apMSClassmark2 failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequired, s1ap_HandoverRequired_p);
                     return -1;
                 }
@@ -2765,7 +2792,7 @@ int s1ap_decode_s1ap_handoverrequiredies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MSClassmark3, (void **)&s1apMSClassmark3_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MSClassmark3, s1apMSClassmark3_p);
+                    d_error("Decoding of IE s1apMSClassmark3 failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequired, s1ap_HandoverRequired_p);
                     return -1;
                 }
@@ -2779,7 +2806,7 @@ int s1ap_decode_s1ap_handoverrequiredies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CSG_Id, (void **)&s1apCSGId_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CSG_Id, s1apCSGId_p);
+                    d_error("Decoding of IE s1apCSGId failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequired, s1ap_HandoverRequired_p);
                     return -1;
                 }
@@ -2793,7 +2820,7 @@ int s1ap_decode_s1ap_handoverrequiredies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CellAccessMode, (void **)&s1apCellAccessMode_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CellAccessMode, s1apCellAccessMode_p);
+                    d_error("Decoding of IE s1apCellAccessMode failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequired, s1ap_HandoverRequired_p);
                     return -1;
                 }
@@ -2807,7 +2834,7 @@ int s1ap_decode_s1ap_handoverrequiredies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_PS_ServiceNotAvailable, (void **)&s1apPSServiceNotAvailable_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_PS_ServiceNotAvailable, s1apPSServiceNotAvailable_p);
+                    d_error("Decoding of IE s1apPSServiceNotAvailable failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequired, s1ap_HandoverRequired_p);
                     return -1;
                 }
@@ -2841,6 +2868,7 @@ int s1ap_decode_s1ap_mmeconfigurationupdateacknowledgeies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MMEConfigurationUpdateAcknowledge, (void **)&s1ap_MMEConfigurationUpdateAcknowledge_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_MMEConfigurationUpdateAcknowledge failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MMEConfigurationUpdateAcknowledge, s1ap_MMEConfigurationUpdateAcknowledge_p);
         return -1;
     }
@@ -2862,7 +2890,7 @@ int s1ap_decode_s1ap_mmeconfigurationupdateacknowledgeies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CriticalityDiagnostics, (void **)&s1apCriticalityDiagnostics_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CriticalityDiagnostics, s1apCriticalityDiagnostics_p);
+                    d_error("Decoding of IE s1apCriticalityDiagnostics failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MMEConfigurationUpdateAcknowledge, s1ap_MMEConfigurationUpdateAcknowledge_p);
                     return -1;
                 }
@@ -2896,6 +2924,7 @@ int s1ap_decode_s1ap_killresponseies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_KillResponse, (void **)&s1ap_KillResponse_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_KillResponse failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_KillResponse, s1ap_KillResponse_p);
         return -1;
     }
@@ -2916,7 +2945,7 @@ int s1ap_decode_s1ap_killresponseies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MessageIdentifier, (void **)&s1apMessageIdentifier_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MessageIdentifier, s1apMessageIdentifier_p);
+                    d_error("Decoding of IE s1apMessageIdentifier failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_KillResponse, s1ap_KillResponse_p);
                     return -1;
                 }
@@ -2928,7 +2957,7 @@ int s1ap_decode_s1ap_killresponseies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_SerialNumber, (void **)&s1apSerialNumber_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_SerialNumber, s1apSerialNumber_p);
+                    d_error("Decoding of IE s1apSerialNumber failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_KillResponse, s1ap_KillResponse_p);
                     return -1;
                 }
@@ -2941,7 +2970,7 @@ int s1ap_decode_s1ap_killresponseies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_BroadcastCancelledAreaList, (void **)&s1apBroadcastCancelledAreaList_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_BroadcastCancelledAreaList, s1apBroadcastCancelledAreaList_p);
+                    d_error("Decoding of IE s1apBroadcastCancelledAreaList failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_KillResponse, s1ap_KillResponse_p);
                     return -1;
                 }
@@ -2955,7 +2984,7 @@ int s1ap_decode_s1ap_killresponseies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CriticalityDiagnostics, (void **)&s1apCriticalityDiagnostics_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CriticalityDiagnostics, s1apCriticalityDiagnostics_p);
+                    d_error("Decoding of IE s1apCriticalityDiagnostics failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_KillResponse, s1ap_KillResponse_p);
                     return -1;
                 }
@@ -2989,6 +3018,7 @@ int s1ap_decode_s1ap_mmestatustransferies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MMEStatusTransfer, (void **)&s1ap_MMEStatusTransfer_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_MMEStatusTransfer failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MMEStatusTransfer, s1ap_MMEStatusTransfer_p);
         return -1;
     }
@@ -3009,7 +3039,7 @@ int s1ap_decode_s1ap_mmestatustransferies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MMEStatusTransfer, s1ap_MMEStatusTransfer_p);
                     return -1;
                 }
@@ -3021,7 +3051,7 @@ int s1ap_decode_s1ap_mmestatustransferies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MMEStatusTransfer, s1ap_MMEStatusTransfer_p);
                     return -1;
                 }
@@ -3033,7 +3063,7 @@ int s1ap_decode_s1ap_mmestatustransferies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_StatusTransfer_TransparentContainer, (void **)&s1apENBStatusTransferTransparentContainer_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_StatusTransfer_TransparentContainer, s1apENBStatusTransferTransparentContainer_p);
+                    d_error("Decoding of IE s1apENBStatusTransferTransparentContainer failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MMEStatusTransfer, s1ap_MMEStatusTransfer_p);
                     return -1;
                 }
@@ -3066,6 +3096,7 @@ int s1ap_decode_s1ap_mmeconfigurationupdateies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MMEConfigurationUpdate, (void **)&s1ap_MMEConfigurationUpdate_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_MMEConfigurationUpdate failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MMEConfigurationUpdate, s1ap_MMEConfigurationUpdate_p);
         return -1;
     }
@@ -3087,7 +3118,7 @@ int s1ap_decode_s1ap_mmeconfigurationupdateies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MMEname, (void **)&s1apMMEname_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MMEname, s1apMMEname_p);
+                    d_error("Decoding of IE s1apMMEname failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MMEConfigurationUpdate, s1ap_MMEConfigurationUpdate_p);
                     return -1;
                 }
@@ -3101,7 +3132,7 @@ int s1ap_decode_s1ap_mmeconfigurationupdateies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ServedGUMMEIs, (void **)&s1apServedGUMMEIs_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ServedGUMMEIs, s1apServedGUMMEIs_p);
+                    d_error("Decoding of IE s1apServedGUMMEIs failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MMEConfigurationUpdate, s1ap_MMEConfigurationUpdate_p);
                     return -1;
                 }
@@ -3115,7 +3146,7 @@ int s1ap_decode_s1ap_mmeconfigurationupdateies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_RelativeMMECapacity, (void **)&s1apRelativeMMECapacity_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_RelativeMMECapacity, s1apRelativeMMECapacity_p);
+                    d_error("Decoding of IE s1apRelativeMMECapacity failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MMEConfigurationUpdate, s1ap_MMEConfigurationUpdate_p);
                     return -1;
                 }
@@ -3149,6 +3180,7 @@ int s1ap_decode_s1ap_e_rabmodifyrequesties(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_E_RABModifyRequest, (void **)&s1ap_E_RABModifyRequest_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_E_RABModifyRequest failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABModifyRequest, s1ap_E_RABModifyRequest_p);
         return -1;
     }
@@ -3169,7 +3201,7 @@ int s1ap_decode_s1ap_e_rabmodifyrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABModifyRequest, s1ap_E_RABModifyRequest_p);
                     return -1;
                 }
@@ -3181,7 +3213,7 @@ int s1ap_decode_s1ap_e_rabmodifyrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABModifyRequest, s1ap_E_RABModifyRequest_p);
                     return -1;
                 }
@@ -3194,7 +3226,7 @@ int s1ap_decode_s1ap_e_rabmodifyrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_UEAggregateMaximumBitrate, (void **)&s1apUEAggregateMaximumBitrate_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEAggregateMaximumBitrate, s1apUEAggregateMaximumBitrate_p);
+                    d_error("Decoding of IE s1apUEAggregateMaximumBitrate failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABModifyRequest, s1ap_E_RABModifyRequest_p);
                     return -1;
                 }
@@ -3208,10 +3240,11 @@ int s1ap_decode_s1ap_e_rabmodifyrequesties(
                 if (s1ap_decode_s1ap_e_rabtobemodifiedlistbearermodreq(&s1ap_E_RABModifyRequestIEs->e_RABToBeModifiedListBearerModReq, s1apERABToBeModifiedListBearerModReq_p) < 0)
                 {
                     d_error("Decoding of encapsulated IE s1apERABToBeModifiedListBearerModReq failed");
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABToBeModifiedListBearerModReq, s1apERABToBeModifiedListBearerModReq_p);
+                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABToBeModifiedListBearerModReq, s1apERABToBeModifiedListBearerModReq_p);
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABModifyRequest, s1ap_E_RABModifyRequest_p);
                     return -1;
                 }
+                ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABToBeModifiedListBearerModReq, s1apERABToBeModifiedListBearerModReq_p);
             } break;
             default:
                 d_error("Unknown protocol IE id (%d) for message s1ap_e_rabmodifyrequesties", (int)ie_p->id);
@@ -3241,6 +3274,7 @@ int s1ap_decode_s1ap_enbconfigurationupdatefailureies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENBConfigurationUpdateFailure, (void **)&s1ap_ENBConfigurationUpdateFailure_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_ENBConfigurationUpdateFailure failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENBConfigurationUpdateFailure, s1ap_ENBConfigurationUpdateFailure_p);
         return -1;
     }
@@ -3261,7 +3295,7 @@ int s1ap_decode_s1ap_enbconfigurationupdatefailureies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Cause, (void **)&s1apCause_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Cause, s1apCause_p);
+                    d_error("Decoding of IE s1apCause failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENBConfigurationUpdateFailure, s1ap_ENBConfigurationUpdateFailure_p);
                     return -1;
                 }
@@ -3274,7 +3308,7 @@ int s1ap_decode_s1ap_enbconfigurationupdatefailureies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_TimeToWait, (void **)&s1apTimeToWait_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_TimeToWait, s1apTimeToWait_p);
+                    d_error("Decoding of IE s1apTimeToWait failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENBConfigurationUpdateFailure, s1ap_ENBConfigurationUpdateFailure_p);
                     return -1;
                 }
@@ -3288,7 +3322,7 @@ int s1ap_decode_s1ap_enbconfigurationupdatefailureies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CriticalityDiagnostics, (void **)&s1apCriticalityDiagnostics_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CriticalityDiagnostics, s1apCriticalityDiagnostics_p);
+                    d_error("Decoding of IE s1apCriticalityDiagnostics failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENBConfigurationUpdateFailure, s1ap_ENBConfigurationUpdateFailure_p);
                     return -1;
                 }
@@ -3322,6 +3356,7 @@ int s1ap_decode_s1ap_reseties(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Reset, (void **)&s1ap_Reset_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_Reset failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Reset, s1ap_Reset_p);
         return -1;
     }
@@ -3342,7 +3377,7 @@ int s1ap_decode_s1ap_reseties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Cause, (void **)&s1apCause_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Cause, s1apCause_p);
+                    d_error("Decoding of IE s1apCause failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Reset, s1ap_Reset_p);
                     return -1;
                 }
@@ -3354,7 +3389,7 @@ int s1ap_decode_s1ap_reseties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ResetType, (void **)&s1apResetType_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ResetType, s1apResetType_p);
+                    d_error("Decoding of IE s1apResetType failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Reset, s1ap_Reset_p);
                     return -1;
                 }
@@ -3387,6 +3422,7 @@ int s1ap_decode_s1ap_s1setupresponseies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_S1SetupResponse, (void **)&s1ap_S1SetupResponse_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_S1SetupResponse failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_S1SetupResponse, s1ap_S1SetupResponse_p);
         return -1;
     }
@@ -3408,7 +3444,7 @@ int s1ap_decode_s1ap_s1setupresponseies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MMEname, (void **)&s1apMMEname_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MMEname, s1apMMEname_p);
+                    d_error("Decoding of IE s1apMMEname failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_S1SetupResponse, s1ap_S1SetupResponse_p);
                     return -1;
                 }
@@ -3421,7 +3457,7 @@ int s1ap_decode_s1ap_s1setupresponseies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ServedGUMMEIs, (void **)&s1apServedGUMMEIs_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ServedGUMMEIs, s1apServedGUMMEIs_p);
+                    d_error("Decoding of IE s1apServedGUMMEIs failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_S1SetupResponse, s1ap_S1SetupResponse_p);
                     return -1;
                 }
@@ -3433,7 +3469,7 @@ int s1ap_decode_s1ap_s1setupresponseies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_RelativeMMECapacity, (void **)&s1apRelativeMMECapacity_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_RelativeMMECapacity, s1apRelativeMMECapacity_p);
+                    d_error("Decoding of IE s1apRelativeMMECapacity failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_S1SetupResponse, s1ap_S1SetupResponse_p);
                     return -1;
                 }
@@ -3446,7 +3482,7 @@ int s1ap_decode_s1ap_s1setupresponseies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MMERelaySupportIndicator, (void **)&s1apMMERelaySupportIndicator_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MMERelaySupportIndicator, s1apMMERelaySupportIndicator_p);
+                    d_error("Decoding of IE s1apMMERelaySupportIndicator failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_S1SetupResponse, s1ap_S1SetupResponse_p);
                     return -1;
                 }
@@ -3460,7 +3496,7 @@ int s1ap_decode_s1ap_s1setupresponseies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CriticalityDiagnostics, (void **)&s1apCriticalityDiagnostics_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CriticalityDiagnostics, s1apCriticalityDiagnostics_p);
+                    d_error("Decoding of IE s1apCriticalityDiagnostics failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_S1SetupResponse, s1ap_S1SetupResponse_p);
                     return -1;
                 }
@@ -3494,6 +3530,7 @@ int s1ap_decode_s1ap_pagingies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Paging, (void **)&s1ap_Paging_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_Paging failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Paging, s1ap_Paging_p);
         return -1;
     }
@@ -3514,7 +3551,7 @@ int s1ap_decode_s1ap_pagingies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_UEIdentityIndexValue, (void **)&s1apUEIdentityIndexValue_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEIdentityIndexValue, s1apUEIdentityIndexValue_p);
+                    d_error("Decoding of IE s1apUEIdentityIndexValue failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Paging, s1ap_Paging_p);
                     return -1;
                 }
@@ -3526,7 +3563,7 @@ int s1ap_decode_s1ap_pagingies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_UEPagingID, (void **)&s1apUEPagingID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEPagingID, s1apUEPagingID_p);
+                    d_error("Decoding of IE s1apUEPagingID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Paging, s1ap_Paging_p);
                     return -1;
                 }
@@ -3539,7 +3576,7 @@ int s1ap_decode_s1ap_pagingies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_PagingDRX, (void **)&s1apPagingDRX_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_PagingDRX, s1apPagingDRX_p);
+                    d_error("Decoding of IE s1apPagingDRX failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Paging, s1ap_Paging_p);
                     return -1;
                 }
@@ -3552,7 +3589,7 @@ int s1ap_decode_s1ap_pagingies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CNDomain, (void **)&s1apCNDomain_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CNDomain, s1apCNDomain_p);
+                    d_error("Decoding of IE s1apCNDomain failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Paging, s1ap_Paging_p);
                     return -1;
                 }
@@ -3565,10 +3602,11 @@ int s1ap_decode_s1ap_pagingies(
                 if (s1ap_decode_s1ap_tailist(&s1ap_PagingIEs->taiList, s1apTAIList_p) < 0)
                 {
                     d_error("Decoding of encapsulated IE s1apTAIList failed");
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_TAIList, s1apTAIList_p);
+                    ASN_STRUCT_FREE(asn_DEF_S1ap_TAIList, s1apTAIList_p);
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Paging, s1ap_Paging_p);
                     return -1;
                 }
+                ASN_STRUCT_FREE(asn_DEF_S1ap_TAIList, s1apTAIList_p);
             } break;
             /* Optional field */
             case S1ap_ProtocolIE_ID_id_CSG_IdList:
@@ -3578,7 +3616,7 @@ int s1ap_decode_s1ap_pagingies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CSG_IdList, (void **)&s1apCSGIdList_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CSG_IdList, s1apCSGIdList_p);
+                    d_error("Decoding of IE s1apCSGIdList failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Paging, s1ap_Paging_p);
                     return -1;
                 }
@@ -3592,7 +3630,7 @@ int s1ap_decode_s1ap_pagingies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_PagingPriority, (void **)&s1apPagingPriority_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_PagingPriority, s1apPagingPriority_p);
+                    d_error("Decoding of IE s1apPagingPriority failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Paging, s1ap_Paging_p);
                     return -1;
                 }
@@ -3626,6 +3664,7 @@ int s1ap_decode_s1ap_enbconfigurationupdateacknowledgeies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENBConfigurationUpdateAcknowledge, (void **)&s1ap_ENBConfigurationUpdateAcknowledge_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_ENBConfigurationUpdateAcknowledge failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENBConfigurationUpdateAcknowledge, s1ap_ENBConfigurationUpdateAcknowledge_p);
         return -1;
     }
@@ -3647,7 +3686,7 @@ int s1ap_decode_s1ap_enbconfigurationupdateacknowledgeies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CriticalityDiagnostics, (void **)&s1apCriticalityDiagnostics_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CriticalityDiagnostics, s1apCriticalityDiagnostics_p);
+                    d_error("Decoding of IE s1apCriticalityDiagnostics failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENBConfigurationUpdateAcknowledge, s1ap_ENBConfigurationUpdateAcknowledge_p);
                     return -1;
                 }
@@ -3681,6 +3720,7 @@ int s1ap_decode_s1ap_e_rabreleasecommandies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_E_RABReleaseCommand, (void **)&s1ap_E_RABReleaseCommand_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_E_RABReleaseCommand failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABReleaseCommand, s1ap_E_RABReleaseCommand_p);
         return -1;
     }
@@ -3701,7 +3741,7 @@ int s1ap_decode_s1ap_e_rabreleasecommandies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABReleaseCommand, s1ap_E_RABReleaseCommand_p);
                     return -1;
                 }
@@ -3713,7 +3753,7 @@ int s1ap_decode_s1ap_e_rabreleasecommandies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABReleaseCommand, s1ap_E_RABReleaseCommand_p);
                     return -1;
                 }
@@ -3726,7 +3766,7 @@ int s1ap_decode_s1ap_e_rabreleasecommandies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_UEAggregateMaximumBitrate, (void **)&s1apUEAggregateMaximumBitrate_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEAggregateMaximumBitrate, s1apUEAggregateMaximumBitrate_p);
+                    d_error("Decoding of IE s1apUEAggregateMaximumBitrate failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABReleaseCommand, s1ap_E_RABReleaseCommand_p);
                     return -1;
                 }
@@ -3740,10 +3780,11 @@ int s1ap_decode_s1ap_e_rabreleasecommandies(
                 if (s1ap_decode_s1ap_e_rablist(&s1ap_E_RABReleaseCommandIEs->e_RABToBeReleasedList, s1apERABList_p) < 0)
                 {
                     d_error("Decoding of encapsulated IE s1apERABList failed");
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABList, s1apERABList_p);
+                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABList, s1apERABList_p);
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABReleaseCommand, s1ap_E_RABReleaseCommand_p);
                     return -1;
                 }
+                ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABList, s1apERABList_p);
             } break;
             /* Optional field */
             case S1ap_ProtocolIE_ID_id_NAS_PDU:
@@ -3753,7 +3794,7 @@ int s1ap_decode_s1ap_e_rabreleasecommandies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_NAS_PDU, (void **)&s1apNASPDU_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_NAS_PDU, s1apNASPDU_p);
+                    d_error("Decoding of IE s1apNASPDU failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABReleaseCommand, s1ap_E_RABReleaseCommand_p);
                     return -1;
                 }
@@ -3787,6 +3828,7 @@ int s1ap_decode_s1ap_pathswitchrequestfailureies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_PathSwitchRequestFailure, (void **)&s1ap_PathSwitchRequestFailure_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_PathSwitchRequestFailure failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_PathSwitchRequestFailure, s1ap_PathSwitchRequestFailure_p);
         return -1;
     }
@@ -3807,7 +3849,7 @@ int s1ap_decode_s1ap_pathswitchrequestfailureies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_PathSwitchRequestFailure, s1ap_PathSwitchRequestFailure_p);
                     return -1;
                 }
@@ -3819,7 +3861,7 @@ int s1ap_decode_s1ap_pathswitchrequestfailureies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_PathSwitchRequestFailure, s1ap_PathSwitchRequestFailure_p);
                     return -1;
                 }
@@ -3831,7 +3873,7 @@ int s1ap_decode_s1ap_pathswitchrequestfailureies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Cause, (void **)&s1apCause_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Cause, s1apCause_p);
+                    d_error("Decoding of IE s1apCause failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_PathSwitchRequestFailure, s1ap_PathSwitchRequestFailure_p);
                     return -1;
                 }
@@ -3844,7 +3886,7 @@ int s1ap_decode_s1ap_pathswitchrequestfailureies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CriticalityDiagnostics, (void **)&s1apCriticalityDiagnostics_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CriticalityDiagnostics, s1apCriticalityDiagnostics_p);
+                    d_error("Decoding of IE s1apCriticalityDiagnostics failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_PathSwitchRequestFailure, s1ap_PathSwitchRequestFailure_p);
                     return -1;
                 }
@@ -3878,6 +3920,7 @@ int s1ap_decode_s1ap_e_rabmodifyresponseies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_E_RABModifyResponse, (void **)&s1ap_E_RABModifyResponse_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_E_RABModifyResponse failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABModifyResponse, s1ap_E_RABModifyResponse_p);
         return -1;
     }
@@ -3898,7 +3941,7 @@ int s1ap_decode_s1ap_e_rabmodifyresponseies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABModifyResponse, s1ap_E_RABModifyResponse_p);
                     return -1;
                 }
@@ -3910,7 +3953,7 @@ int s1ap_decode_s1ap_e_rabmodifyresponseies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABModifyResponse, s1ap_E_RABModifyResponse_p);
                     return -1;
                 }
@@ -3924,10 +3967,11 @@ int s1ap_decode_s1ap_e_rabmodifyresponseies(
                 if (s1ap_decode_s1ap_e_rabmodifylistbearermodres(&s1ap_E_RABModifyResponseIEs->e_RABModifyListBearerModRes, s1apERABModifyListBearerModRes_p) < 0)
                 {
                     d_error("Decoding of encapsulated IE s1apERABModifyListBearerModRes failed");
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABModifyListBearerModRes, s1apERABModifyListBearerModRes_p);
+                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABModifyListBearerModRes, s1apERABModifyListBearerModRes_p);
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABModifyResponse, s1ap_E_RABModifyResponse_p);
                     return -1;
                 }
+                ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABModifyListBearerModRes, s1apERABModifyListBearerModRes_p);
                 s1ap_E_RABModifyResponseIEs->presenceMask |= S1AP_E_RABMODIFYRESPONSEIES_E_RABMODIFYLISTBEARERMODRES_PRESENT;
             } break;
             /* Optional field */
@@ -3939,10 +3983,11 @@ int s1ap_decode_s1ap_e_rabmodifyresponseies(
                 if (s1ap_decode_s1ap_e_rablist(&s1ap_E_RABModifyResponseIEs->e_RABFailedToModifyList, s1apERABList_p) < 0)
                 {
                     d_error("Decoding of encapsulated IE s1apERABList failed");
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABList, s1apERABList_p);
+                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABList, s1apERABList_p);
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABModifyResponse, s1ap_E_RABModifyResponse_p);
                     return -1;
                 }
+                ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABList, s1apERABList_p);
                 s1ap_E_RABModifyResponseIEs->presenceMask |= S1AP_E_RABMODIFYRESPONSEIES_E_RABFAILEDTOMODIFYLIST_PRESENT;
             } break;
             /* Optional field */
@@ -3953,7 +3998,7 @@ int s1ap_decode_s1ap_e_rabmodifyresponseies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CriticalityDiagnostics, (void **)&s1apCriticalityDiagnostics_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CriticalityDiagnostics, s1apCriticalityDiagnostics_p);
+                    d_error("Decoding of IE s1apCriticalityDiagnostics failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABModifyResponse, s1ap_E_RABModifyResponse_p);
                     return -1;
                 }
@@ -3987,6 +4032,7 @@ int s1ap_decode_s1ap_handovernotifyies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_HandoverNotify, (void **)&s1ap_HandoverNotify_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_HandoverNotify failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverNotify, s1ap_HandoverNotify_p);
         return -1;
     }
@@ -4007,7 +4053,7 @@ int s1ap_decode_s1ap_handovernotifyies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverNotify, s1ap_HandoverNotify_p);
                     return -1;
                 }
@@ -4019,7 +4065,7 @@ int s1ap_decode_s1ap_handovernotifyies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverNotify, s1ap_HandoverNotify_p);
                     return -1;
                 }
@@ -4031,7 +4077,7 @@ int s1ap_decode_s1ap_handovernotifyies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_EUTRAN_CGI, (void **)&s1apEUTRANCGI_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_EUTRAN_CGI, s1apEUTRANCGI_p);
+                    d_error("Decoding of IE s1apEUTRANCGI failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverNotify, s1ap_HandoverNotify_p);
                     return -1;
                 }
@@ -4043,7 +4089,7 @@ int s1ap_decode_s1ap_handovernotifyies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_TAI, (void **)&s1apTAI_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_TAI, s1apTAI_p);
+                    d_error("Decoding of IE s1apTAI failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverNotify, s1ap_HandoverNotify_p);
                     return -1;
                 }
@@ -4076,6 +4122,7 @@ int s1ap_decode_s1ap_handovercancelacknowledgeies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_HandoverCancelAcknowledge, (void **)&s1ap_HandoverCancelAcknowledge_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_HandoverCancelAcknowledge failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverCancelAcknowledge, s1ap_HandoverCancelAcknowledge_p);
         return -1;
     }
@@ -4096,7 +4143,7 @@ int s1ap_decode_s1ap_handovercancelacknowledgeies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverCancelAcknowledge, s1ap_HandoverCancelAcknowledge_p);
                     return -1;
                 }
@@ -4108,7 +4155,7 @@ int s1ap_decode_s1ap_handovercancelacknowledgeies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverCancelAcknowledge, s1ap_HandoverCancelAcknowledge_p);
                     return -1;
                 }
@@ -4121,7 +4168,7 @@ int s1ap_decode_s1ap_handovercancelacknowledgeies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CriticalityDiagnostics, (void **)&s1apCriticalityDiagnostics_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CriticalityDiagnostics, s1apCriticalityDiagnostics_p);
+                    d_error("Decoding of IE s1apCriticalityDiagnostics failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverCancelAcknowledge, s1ap_HandoverCancelAcknowledge_p);
                     return -1;
                 }
@@ -4155,6 +4202,7 @@ int s1ap_decode_s1ap_initialcontextsetupfailureies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_InitialContextSetupFailure, (void **)&s1ap_InitialContextSetupFailure_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_InitialContextSetupFailure failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialContextSetupFailure, s1ap_InitialContextSetupFailure_p);
         return -1;
     }
@@ -4175,7 +4223,7 @@ int s1ap_decode_s1ap_initialcontextsetupfailureies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialContextSetupFailure, s1ap_InitialContextSetupFailure_p);
                     return -1;
                 }
@@ -4187,7 +4235,7 @@ int s1ap_decode_s1ap_initialcontextsetupfailureies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialContextSetupFailure, s1ap_InitialContextSetupFailure_p);
                     return -1;
                 }
@@ -4199,7 +4247,7 @@ int s1ap_decode_s1ap_initialcontextsetupfailureies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Cause, (void **)&s1apCause_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Cause, s1apCause_p);
+                    d_error("Decoding of IE s1apCause failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialContextSetupFailure, s1ap_InitialContextSetupFailure_p);
                     return -1;
                 }
@@ -4212,7 +4260,7 @@ int s1ap_decode_s1ap_initialcontextsetupfailureies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CriticalityDiagnostics, (void **)&s1apCriticalityDiagnostics_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CriticalityDiagnostics, s1apCriticalityDiagnostics_p);
+                    d_error("Decoding of IE s1apCriticalityDiagnostics failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialContextSetupFailure, s1ap_InitialContextSetupFailure_p);
                     return -1;
                 }
@@ -4246,6 +4294,7 @@ int s1ap_decode_s1ap_handovercommandies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_HandoverCommand, (void **)&s1ap_HandoverCommand_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_HandoverCommand failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverCommand, s1ap_HandoverCommand_p);
         return -1;
     }
@@ -4266,7 +4315,7 @@ int s1ap_decode_s1ap_handovercommandies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverCommand, s1ap_HandoverCommand_p);
                     return -1;
                 }
@@ -4278,7 +4327,7 @@ int s1ap_decode_s1ap_handovercommandies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverCommand, s1ap_HandoverCommand_p);
                     return -1;
                 }
@@ -4290,7 +4339,7 @@ int s1ap_decode_s1ap_handovercommandies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_HandoverType, (void **)&s1apHandoverType_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverType, s1apHandoverType_p);
+                    d_error("Decoding of IE s1apHandoverType failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverCommand, s1ap_HandoverCommand_p);
                     return -1;
                 }
@@ -4304,10 +4353,11 @@ int s1ap_decode_s1ap_handovercommandies(
                 if (s1ap_decode_s1ap_e_rabdataforwardinglist(&s1ap_HandoverCommandIEs->e_RABDataForwardingList, s1apERABDataForwardingList_p) < 0)
                 {
                     d_error("Decoding of encapsulated IE s1apERABDataForwardingList failed");
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABDataForwardingList, s1apERABDataForwardingList_p);
+                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABDataForwardingList, s1apERABDataForwardingList_p);
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverCommand, s1ap_HandoverCommand_p);
                     return -1;
                 }
+                ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABDataForwardingList, s1apERABDataForwardingList_p);
                 s1ap_HandoverCommandIEs->presenceMask |= S1AP_HANDOVERCOMMANDIES_E_RABDATAFORWARDINGLIST_PRESENT;
             } break;
             /* Optional field */
@@ -4319,10 +4369,11 @@ int s1ap_decode_s1ap_handovercommandies(
                 if (s1ap_decode_s1ap_e_rablist(&s1ap_HandoverCommandIEs->e_RABtoReleaseListHOCmd, s1apERABList_p) < 0)
                 {
                     d_error("Decoding of encapsulated IE s1apERABList failed");
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABList, s1apERABList_p);
+                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABList, s1apERABList_p);
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverCommand, s1ap_HandoverCommand_p);
                     return -1;
                 }
+                ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABList, s1apERABList_p);
                 s1ap_HandoverCommandIEs->presenceMask |= S1AP_HANDOVERCOMMANDIES_E_RABTORELEASELISTHOCMD_PRESENT;
             } break;
             case S1ap_ProtocolIE_ID_id_Target_ToSource_TransparentContainer:
@@ -4332,7 +4383,7 @@ int s1ap_decode_s1ap_handovercommandies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Target_ToSource_TransparentContainer, (void **)&s1apTargetToSourceTransparentContainer_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Target_ToSource_TransparentContainer, s1apTargetToSourceTransparentContainer_p);
+                    d_error("Decoding of IE s1apTargetToSourceTransparentContainer failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverCommand, s1ap_HandoverCommand_p);
                     return -1;
                 }
@@ -4345,7 +4396,7 @@ int s1ap_decode_s1ap_handovercommandies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Target_ToSource_TransparentContainer, (void **)&s1apTargetToSourceTransparentContainer_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Target_ToSource_TransparentContainer, s1apTargetToSourceTransparentContainer_p);
+                    d_error("Decoding of IE s1apTargetToSourceTransparentContainer failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverCommand, s1ap_HandoverCommand_p);
                     return -1;
                 }
@@ -4359,7 +4410,7 @@ int s1ap_decode_s1ap_handovercommandies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CriticalityDiagnostics, (void **)&s1apCriticalityDiagnostics_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CriticalityDiagnostics, s1apCriticalityDiagnostics_p);
+                    d_error("Decoding of IE s1apCriticalityDiagnostics failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverCommand, s1ap_HandoverCommand_p);
                     return -1;
                 }
@@ -4393,6 +4444,7 @@ int s1ap_decode_s1ap_mmedirectinformationtransferies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MMEDirectInformationTransfer, (void **)&s1ap_MMEDirectInformationTransfer_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_MMEDirectInformationTransfer failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MMEDirectInformationTransfer, s1ap_MMEDirectInformationTransfer_p);
         return -1;
     }
@@ -4413,7 +4465,7 @@ int s1ap_decode_s1ap_mmedirectinformationtransferies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Inter_SystemInformationTransferType, (void **)&s1apInterSystemInformationTransferType_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Inter_SystemInformationTransferType, s1apInterSystemInformationTransferType_p);
+                    d_error("Decoding of IE s1apInterSystemInformationTransferType failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MMEDirectInformationTransfer, s1ap_MMEDirectInformationTransfer_p);
                     return -1;
                 }
@@ -4446,6 +4498,7 @@ int s1ap_decode_s1ap_errorindicationies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ErrorIndication, (void **)&s1ap_ErrorIndication_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_ErrorIndication failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ErrorIndication, s1ap_ErrorIndication_p);
         return -1;
     }
@@ -4467,7 +4520,7 @@ int s1ap_decode_s1ap_errorindicationies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ErrorIndication, s1ap_ErrorIndication_p);
                     return -1;
                 }
@@ -4481,7 +4534,7 @@ int s1ap_decode_s1ap_errorindicationies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ErrorIndication, s1ap_ErrorIndication_p);
                     return -1;
                 }
@@ -4495,7 +4548,7 @@ int s1ap_decode_s1ap_errorindicationies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Cause, (void **)&s1apCause_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Cause, s1apCause_p);
+                    d_error("Decoding of IE s1apCause failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ErrorIndication, s1ap_ErrorIndication_p);
                     return -1;
                 }
@@ -4509,7 +4562,7 @@ int s1ap_decode_s1ap_errorindicationies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CriticalityDiagnostics, (void **)&s1apCriticalityDiagnostics_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CriticalityDiagnostics, s1apCriticalityDiagnostics_p);
+                    d_error("Decoding of IE s1apCriticalityDiagnostics failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ErrorIndication, s1ap_ErrorIndication_p);
                     return -1;
                 }
@@ -4543,6 +4596,7 @@ int s1ap_decode_s1ap_overloadstarties(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_OverloadStart, (void **)&s1ap_OverloadStart_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_OverloadStart failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_OverloadStart, s1ap_OverloadStart_p);
         return -1;
     }
@@ -4563,7 +4617,7 @@ int s1ap_decode_s1ap_overloadstarties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_OverloadResponse, (void **)&s1apOverloadResponse_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_OverloadResponse, s1apOverloadResponse_p);
+                    d_error("Decoding of IE s1apOverloadResponse failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_OverloadStart, s1ap_OverloadStart_p);
                     return -1;
                 }
@@ -4576,7 +4630,7 @@ int s1ap_decode_s1ap_overloadstarties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_GUMMEIList, (void **)&s1apGUMMEIList_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_GUMMEIList, s1apGUMMEIList_p);
+                    d_error("Decoding of IE s1apGUMMEIList failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_OverloadStart, s1ap_OverloadStart_p);
                     return -1;
                 }
@@ -4590,7 +4644,7 @@ int s1ap_decode_s1ap_overloadstarties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_TrafficLoadReductionIndication, (void **)&s1apTrafficLoadReductionIndication_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_TrafficLoadReductionIndication, s1apTrafficLoadReductionIndication_p);
+                    d_error("Decoding of IE s1apTrafficLoadReductionIndication failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_OverloadStart, s1ap_OverloadStart_p);
                     return -1;
                 }
@@ -4624,6 +4678,7 @@ int s1ap_decode_s1ap_downlinknonueassociatedlppatransport_ies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_DownlinkNonUEAssociatedLPPaTransport, (void **)&s1ap_DownlinkNonUEAssociatedLPPaTransport_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_DownlinkNonUEAssociatedLPPaTransport failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_DownlinkNonUEAssociatedLPPaTransport, s1ap_DownlinkNonUEAssociatedLPPaTransport_p);
         return -1;
     }
@@ -4644,7 +4699,7 @@ int s1ap_decode_s1ap_downlinknonueassociatedlppatransport_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Routing_ID, (void **)&s1apRoutingID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Routing_ID, s1apRoutingID_p);
+                    d_error("Decoding of IE s1apRoutingID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_DownlinkNonUEAssociatedLPPaTransport, s1ap_DownlinkNonUEAssociatedLPPaTransport_p);
                     return -1;
                 }
@@ -4656,7 +4711,7 @@ int s1ap_decode_s1ap_downlinknonueassociatedlppatransport_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_LPPa_PDU, (void **)&s1apLPPaPDU_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_LPPa_PDU, s1apLPPaPDU_p);
+                    d_error("Decoding of IE s1apLPPaPDU failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_DownlinkNonUEAssociatedLPPaTransport, s1ap_DownlinkNonUEAssociatedLPPaTransport_p);
                     return -1;
                 }
@@ -4689,6 +4744,7 @@ int s1ap_decode_s1ap_handoverrequestacknowledgeies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_HandoverRequestAcknowledge, (void **)&s1ap_HandoverRequestAcknowledge_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_HandoverRequestAcknowledge failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequestAcknowledge, s1ap_HandoverRequestAcknowledge_p);
         return -1;
     }
@@ -4709,7 +4765,7 @@ int s1ap_decode_s1ap_handoverrequestacknowledgeies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequestAcknowledge, s1ap_HandoverRequestAcknowledge_p);
                     return -1;
                 }
@@ -4721,7 +4777,7 @@ int s1ap_decode_s1ap_handoverrequestacknowledgeies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequestAcknowledge, s1ap_HandoverRequestAcknowledge_p);
                     return -1;
                 }
@@ -4734,10 +4790,11 @@ int s1ap_decode_s1ap_handoverrequestacknowledgeies(
                 if (s1ap_decode_s1ap_e_rabadmittedlist(&s1ap_HandoverRequestAcknowledgeIEs->e_RABAdmittedList, s1apERABAdmittedList_p) < 0)
                 {
                     d_error("Decoding of encapsulated IE s1apERABAdmittedList failed");
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABAdmittedList, s1apERABAdmittedList_p);
+                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABAdmittedList, s1apERABAdmittedList_p);
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequestAcknowledge, s1ap_HandoverRequestAcknowledge_p);
                     return -1;
                 }
+                ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABAdmittedList, s1apERABAdmittedList_p);
             } break;
             /* Optional field */
             case S1ap_ProtocolIE_ID_id_E_RABFailedToSetupListHOReqAck:
@@ -4748,10 +4805,11 @@ int s1ap_decode_s1ap_handoverrequestacknowledgeies(
                 if (s1ap_decode_s1ap_e_rabfailedtosetuplisthoreqack(&s1ap_HandoverRequestAcknowledgeIEs->e_RABFailedToSetupListHOReqAck, s1apERABFailedtoSetupListHOReqAck_p) < 0)
                 {
                     d_error("Decoding of encapsulated IE s1apERABFailedtoSetupListHOReqAck failed");
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABFailedtoSetupListHOReqAck, s1apERABFailedtoSetupListHOReqAck_p);
+                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABFailedtoSetupListHOReqAck, s1apERABFailedtoSetupListHOReqAck_p);
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequestAcknowledge, s1ap_HandoverRequestAcknowledge_p);
                     return -1;
                 }
+                ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABFailedtoSetupListHOReqAck, s1apERABFailedtoSetupListHOReqAck_p);
                 s1ap_HandoverRequestAcknowledgeIEs->presenceMask |= S1AP_HANDOVERREQUESTACKNOWLEDGEIES_E_RABFAILEDTOSETUPLISTHOREQACK_PRESENT;
             } break;
             case S1ap_ProtocolIE_ID_id_Target_ToSource_TransparentContainer:
@@ -4761,7 +4819,7 @@ int s1ap_decode_s1ap_handoverrequestacknowledgeies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Target_ToSource_TransparentContainer, (void **)&s1apTargetToSourceTransparentContainer_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Target_ToSource_TransparentContainer, s1apTargetToSourceTransparentContainer_p);
+                    d_error("Decoding of IE s1apTargetToSourceTransparentContainer failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequestAcknowledge, s1ap_HandoverRequestAcknowledge_p);
                     return -1;
                 }
@@ -4774,7 +4832,7 @@ int s1ap_decode_s1ap_handoverrequestacknowledgeies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CSG_Id, (void **)&s1apCSGId_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CSG_Id, s1apCSGId_p);
+                    d_error("Decoding of IE s1apCSGId failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequestAcknowledge, s1ap_HandoverRequestAcknowledge_p);
                     return -1;
                 }
@@ -4788,7 +4846,7 @@ int s1ap_decode_s1ap_handoverrequestacknowledgeies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CriticalityDiagnostics, (void **)&s1apCriticalityDiagnostics_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CriticalityDiagnostics, s1apCriticalityDiagnostics_p);
+                    d_error("Decoding of IE s1apCriticalityDiagnostics failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequestAcknowledge, s1ap_HandoverRequestAcknowledge_p);
                     return -1;
                 }
@@ -4822,6 +4880,7 @@ int s1ap_decode_s1ap_downlinkueassociatedlppatransport_ies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_DownlinkUEAssociatedLPPaTransport, (void **)&s1ap_DownlinkUEAssociatedLPPaTransport_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_DownlinkUEAssociatedLPPaTransport failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_DownlinkUEAssociatedLPPaTransport, s1ap_DownlinkUEAssociatedLPPaTransport_p);
         return -1;
     }
@@ -4842,7 +4901,7 @@ int s1ap_decode_s1ap_downlinkueassociatedlppatransport_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_DownlinkUEAssociatedLPPaTransport, s1ap_DownlinkUEAssociatedLPPaTransport_p);
                     return -1;
                 }
@@ -4854,7 +4913,7 @@ int s1ap_decode_s1ap_downlinkueassociatedlppatransport_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_DownlinkUEAssociatedLPPaTransport, s1ap_DownlinkUEAssociatedLPPaTransport_p);
                     return -1;
                 }
@@ -4866,7 +4925,7 @@ int s1ap_decode_s1ap_downlinkueassociatedlppatransport_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Routing_ID, (void **)&s1apRoutingID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Routing_ID, s1apRoutingID_p);
+                    d_error("Decoding of IE s1apRoutingID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_DownlinkUEAssociatedLPPaTransport, s1ap_DownlinkUEAssociatedLPPaTransport_p);
                     return -1;
                 }
@@ -4878,7 +4937,7 @@ int s1ap_decode_s1ap_downlinkueassociatedlppatransport_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_LPPa_PDU, (void **)&s1apLPPaPDU_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_LPPa_PDU, s1apLPPaPDU_p);
+                    d_error("Decoding of IE s1apLPPaPDU failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_DownlinkUEAssociatedLPPaTransport, s1ap_DownlinkUEAssociatedLPPaTransport_p);
                     return -1;
                 }
@@ -4911,6 +4970,7 @@ int s1ap_decode_s1ap_uecontextmodificationfailureies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_UEContextModificationFailure, (void **)&s1ap_UEContextModificationFailure_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_UEContextModificationFailure failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEContextModificationFailure, s1ap_UEContextModificationFailure_p);
         return -1;
     }
@@ -4931,7 +4991,7 @@ int s1ap_decode_s1ap_uecontextmodificationfailureies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEContextModificationFailure, s1ap_UEContextModificationFailure_p);
                     return -1;
                 }
@@ -4943,7 +5003,7 @@ int s1ap_decode_s1ap_uecontextmodificationfailureies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEContextModificationFailure, s1ap_UEContextModificationFailure_p);
                     return -1;
                 }
@@ -4955,7 +5015,7 @@ int s1ap_decode_s1ap_uecontextmodificationfailureies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Cause, (void **)&s1apCause_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Cause, s1apCause_p);
+                    d_error("Decoding of IE s1apCause failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEContextModificationFailure, s1ap_UEContextModificationFailure_p);
                     return -1;
                 }
@@ -4968,7 +5028,7 @@ int s1ap_decode_s1ap_uecontextmodificationfailureies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CriticalityDiagnostics, (void **)&s1apCriticalityDiagnostics_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CriticalityDiagnostics, s1apCriticalityDiagnostics_p);
+                    d_error("Decoding of IE s1apCriticalityDiagnostics failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEContextModificationFailure, s1ap_UEContextModificationFailure_p);
                     return -1;
                 }
@@ -5002,6 +5062,7 @@ int s1ap_decode_s1ap_mmeconfigurationtransferies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MMEConfigurationTransfer, (void **)&s1ap_MMEConfigurationTransfer_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_MMEConfigurationTransfer failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MMEConfigurationTransfer, s1ap_MMEConfigurationTransfer_p);
         return -1;
     }
@@ -5023,7 +5084,7 @@ int s1ap_decode_s1ap_mmeconfigurationtransferies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_SONConfigurationTransfer, (void **)&s1apSONConfigurationTransfer_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_SONConfigurationTransfer, s1apSONConfigurationTransfer_p);
+                    d_error("Decoding of IE s1apSONConfigurationTransfer failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MMEConfigurationTransfer, s1ap_MMEConfigurationTransfer_p);
                     return -1;
                 }
@@ -5057,6 +5118,7 @@ int s1ap_decode_s1ap_pathswitchrequestacknowledgeies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_PathSwitchRequestAcknowledge, (void **)&s1ap_PathSwitchRequestAcknowledge_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_PathSwitchRequestAcknowledge failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_PathSwitchRequestAcknowledge, s1ap_PathSwitchRequestAcknowledge_p);
         return -1;
     }
@@ -5077,7 +5139,7 @@ int s1ap_decode_s1ap_pathswitchrequestacknowledgeies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_PathSwitchRequestAcknowledge, s1ap_PathSwitchRequestAcknowledge_p);
                     return -1;
                 }
@@ -5089,7 +5151,7 @@ int s1ap_decode_s1ap_pathswitchrequestacknowledgeies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_PathSwitchRequestAcknowledge, s1ap_PathSwitchRequestAcknowledge_p);
                     return -1;
                 }
@@ -5102,7 +5164,7 @@ int s1ap_decode_s1ap_pathswitchrequestacknowledgeies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_UEAggregateMaximumBitrate, (void **)&s1apUEAggregateMaximumBitrate_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEAggregateMaximumBitrate, s1apUEAggregateMaximumBitrate_p);
+                    d_error("Decoding of IE s1apUEAggregateMaximumBitrate failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_PathSwitchRequestAcknowledge, s1ap_PathSwitchRequestAcknowledge_p);
                     return -1;
                 }
@@ -5117,10 +5179,11 @@ int s1ap_decode_s1ap_pathswitchrequestacknowledgeies(
                 if (s1ap_decode_s1ap_e_rabtobeswitchedullist(&s1ap_PathSwitchRequestAcknowledgeIEs->e_RABToBeSwitchedULList, s1apERABToBeSwitchedULList_p) < 0)
                 {
                     d_error("Decoding of encapsulated IE s1apERABToBeSwitchedULList failed");
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABToBeSwitchedULList, s1apERABToBeSwitchedULList_p);
+                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABToBeSwitchedULList, s1apERABToBeSwitchedULList_p);
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_PathSwitchRequestAcknowledge, s1ap_PathSwitchRequestAcknowledge_p);
                     return -1;
                 }
+                ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABToBeSwitchedULList, s1apERABToBeSwitchedULList_p);
                 s1ap_PathSwitchRequestAcknowledgeIEs->presenceMask |= S1AP_PATHSWITCHREQUESTACKNOWLEDGEIES_E_RABTOBESWITCHEDULLIST_PRESENT;
             } break;
             /* Optional field */
@@ -5132,10 +5195,11 @@ int s1ap_decode_s1ap_pathswitchrequestacknowledgeies(
                 if (s1ap_decode_s1ap_e_rablist(&s1ap_PathSwitchRequestAcknowledgeIEs->e_RABToBeReleasedList, s1apERABList_p) < 0)
                 {
                     d_error("Decoding of encapsulated IE s1apERABList failed");
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABList, s1apERABList_p);
+                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABList, s1apERABList_p);
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_PathSwitchRequestAcknowledge, s1ap_PathSwitchRequestAcknowledge_p);
                     return -1;
                 }
+                ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABList, s1apERABList_p);
                 s1ap_PathSwitchRequestAcknowledgeIEs->presenceMask |= S1AP_PATHSWITCHREQUESTACKNOWLEDGEIES_E_RABTOBERELEASEDLIST_PRESENT;
             } break;
             case S1ap_ProtocolIE_ID_id_SecurityContext:
@@ -5145,7 +5209,7 @@ int s1ap_decode_s1ap_pathswitchrequestacknowledgeies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_SecurityContext, (void **)&s1apSecurityContext_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_SecurityContext, s1apSecurityContext_p);
+                    d_error("Decoding of IE s1apSecurityContext failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_PathSwitchRequestAcknowledge, s1ap_PathSwitchRequestAcknowledge_p);
                     return -1;
                 }
@@ -5158,7 +5222,7 @@ int s1ap_decode_s1ap_pathswitchrequestacknowledgeies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CriticalityDiagnostics, (void **)&s1apCriticalityDiagnostics_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CriticalityDiagnostics, s1apCriticalityDiagnostics_p);
+                    d_error("Decoding of IE s1apCriticalityDiagnostics failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_PathSwitchRequestAcknowledge, s1ap_PathSwitchRequestAcknowledge_p);
                     return -1;
                 }
@@ -5172,7 +5236,7 @@ int s1ap_decode_s1ap_pathswitchrequestacknowledgeies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_PathSwitchRequestAcknowledge, s1ap_PathSwitchRequestAcknowledge_p);
                     return -1;
                 }
@@ -5206,6 +5270,7 @@ int s1ap_decode_s1ap_s1setupfailureies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_S1SetupFailure, (void **)&s1ap_S1SetupFailure_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_S1SetupFailure failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_S1SetupFailure, s1ap_S1SetupFailure_p);
         return -1;
     }
@@ -5226,7 +5291,7 @@ int s1ap_decode_s1ap_s1setupfailureies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Cause, (void **)&s1apCause_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Cause, s1apCause_p);
+                    d_error("Decoding of IE s1apCause failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_S1SetupFailure, s1ap_S1SetupFailure_p);
                     return -1;
                 }
@@ -5239,7 +5304,7 @@ int s1ap_decode_s1ap_s1setupfailureies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_TimeToWait, (void **)&s1apTimeToWait_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_TimeToWait, s1apTimeToWait_p);
+                    d_error("Decoding of IE s1apTimeToWait failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_S1SetupFailure, s1ap_S1SetupFailure_p);
                     return -1;
                 }
@@ -5253,7 +5318,7 @@ int s1ap_decode_s1ap_s1setupfailureies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CriticalityDiagnostics, (void **)&s1apCriticalityDiagnostics_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CriticalityDiagnostics, s1apCriticalityDiagnostics_p);
+                    d_error("Decoding of IE s1apCriticalityDiagnostics failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_S1SetupFailure, s1ap_S1SetupFailure_p);
                     return -1;
                 }
@@ -5287,6 +5352,7 @@ int s1ap_decode_s1ap_mmeconfigurationupdatefailureies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MMEConfigurationUpdateFailure, (void **)&s1ap_MMEConfigurationUpdateFailure_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_MMEConfigurationUpdateFailure failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MMEConfigurationUpdateFailure, s1ap_MMEConfigurationUpdateFailure_p);
         return -1;
     }
@@ -5307,7 +5373,7 @@ int s1ap_decode_s1ap_mmeconfigurationupdatefailureies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Cause, (void **)&s1apCause_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Cause, s1apCause_p);
+                    d_error("Decoding of IE s1apCause failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MMEConfigurationUpdateFailure, s1ap_MMEConfigurationUpdateFailure_p);
                     return -1;
                 }
@@ -5320,7 +5386,7 @@ int s1ap_decode_s1ap_mmeconfigurationupdatefailureies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_TimeToWait, (void **)&s1apTimeToWait_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_TimeToWait, s1apTimeToWait_p);
+                    d_error("Decoding of IE s1apTimeToWait failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MMEConfigurationUpdateFailure, s1ap_MMEConfigurationUpdateFailure_p);
                     return -1;
                 }
@@ -5334,7 +5400,7 @@ int s1ap_decode_s1ap_mmeconfigurationupdatefailureies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CriticalityDiagnostics, (void **)&s1apCriticalityDiagnostics_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CriticalityDiagnostics, s1apCriticalityDiagnostics_p);
+                    d_error("Decoding of IE s1apCriticalityDiagnostics failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MMEConfigurationUpdateFailure, s1ap_MMEConfigurationUpdateFailure_p);
                     return -1;
                 }
@@ -5368,6 +5434,7 @@ int s1ap_decode_s1ap_initialcontextsetupresponseies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_InitialContextSetupResponse, (void **)&s1ap_InitialContextSetupResponse_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_InitialContextSetupResponse failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialContextSetupResponse, s1ap_InitialContextSetupResponse_p);
         return -1;
     }
@@ -5388,7 +5455,7 @@ int s1ap_decode_s1ap_initialcontextsetupresponseies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialContextSetupResponse, s1ap_InitialContextSetupResponse_p);
                     return -1;
                 }
@@ -5400,7 +5467,7 @@ int s1ap_decode_s1ap_initialcontextsetupresponseies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialContextSetupResponse, s1ap_InitialContextSetupResponse_p);
                     return -1;
                 }
@@ -5413,10 +5480,11 @@ int s1ap_decode_s1ap_initialcontextsetupresponseies(
                 if (s1ap_decode_s1ap_e_rabsetuplistctxtsures(&s1ap_InitialContextSetupResponseIEs->e_RABSetupListCtxtSURes, s1apERABSetupListCtxtSURes_p) < 0)
                 {
                     d_error("Decoding of encapsulated IE s1apERABSetupListCtxtSURes failed");
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABSetupListCtxtSURes, s1apERABSetupListCtxtSURes_p);
+                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABSetupListCtxtSURes, s1apERABSetupListCtxtSURes_p);
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialContextSetupResponse, s1ap_InitialContextSetupResponse_p);
                     return -1;
                 }
+                ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABSetupListCtxtSURes, s1apERABSetupListCtxtSURes_p);
             } break;
             /* Optional field */
             case S1ap_ProtocolIE_ID_id_E_RABFailedToSetupListCtxtSURes:
@@ -5427,10 +5495,11 @@ int s1ap_decode_s1ap_initialcontextsetupresponseies(
                 if (s1ap_decode_s1ap_e_rablist(&s1ap_InitialContextSetupResponseIEs->e_RABFailedToSetupListCtxtSURes, s1apERABList_p) < 0)
                 {
                     d_error("Decoding of encapsulated IE s1apERABList failed");
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABList, s1apERABList_p);
+                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABList, s1apERABList_p);
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialContextSetupResponse, s1ap_InitialContextSetupResponse_p);
                     return -1;
                 }
+                ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABList, s1apERABList_p);
                 s1ap_InitialContextSetupResponseIEs->presenceMask |= S1AP_INITIALCONTEXTSETUPRESPONSEIES_E_RABFAILEDTOSETUPLISTCTXTSURES_PRESENT;
             } break;
             /* Optional field */
@@ -5441,7 +5510,7 @@ int s1ap_decode_s1ap_initialcontextsetupresponseies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CriticalityDiagnostics, (void **)&s1apCriticalityDiagnostics_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CriticalityDiagnostics, s1apCriticalityDiagnostics_p);
+                    d_error("Decoding of IE s1apCriticalityDiagnostics failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialContextSetupResponse, s1ap_InitialContextSetupResponse_p);
                     return -1;
                 }
@@ -5475,6 +5544,7 @@ int s1ap_decode_s1ap_downlinks1cdma2000tunnelingies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_DownlinkS1cdma2000tunneling, (void **)&s1ap_DownlinkS1cdma2000tunneling_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_DownlinkS1cdma2000tunneling failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_DownlinkS1cdma2000tunneling, s1ap_DownlinkS1cdma2000tunneling_p);
         return -1;
     }
@@ -5495,7 +5565,7 @@ int s1ap_decode_s1ap_downlinks1cdma2000tunnelingies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_DownlinkS1cdma2000tunneling, s1ap_DownlinkS1cdma2000tunneling_p);
                     return -1;
                 }
@@ -5507,7 +5577,7 @@ int s1ap_decode_s1ap_downlinks1cdma2000tunnelingies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_DownlinkS1cdma2000tunneling, s1ap_DownlinkS1cdma2000tunneling_p);
                     return -1;
                 }
@@ -5521,10 +5591,11 @@ int s1ap_decode_s1ap_downlinks1cdma2000tunnelingies(
                 if (s1ap_decode_s1ap_e_rabdataforwardinglist(&s1ap_DownlinkS1cdma2000tunnelingIEs->e_RABDataForwardingList, s1apERABDataForwardingList_p) < 0)
                 {
                     d_error("Decoding of encapsulated IE s1apERABDataForwardingList failed");
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABDataForwardingList, s1apERABDataForwardingList_p);
+                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABDataForwardingList, s1apERABDataForwardingList_p);
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_DownlinkS1cdma2000tunneling, s1ap_DownlinkS1cdma2000tunneling_p);
                     return -1;
                 }
+                ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABDataForwardingList, s1apERABDataForwardingList_p);
                 s1ap_DownlinkS1cdma2000tunnelingIEs->presenceMask |= S1AP_DOWNLINKS1CDMA2000TUNNELINGIES_E_RABDATAFORWARDINGLIST_PRESENT;
             } break;
             /* Optional field */
@@ -5535,7 +5606,7 @@ int s1ap_decode_s1ap_downlinks1cdma2000tunnelingies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Cdma2000HOStatus, (void **)&s1apCdma2000HOStatus_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Cdma2000HOStatus, s1apCdma2000HOStatus_p);
+                    d_error("Decoding of IE s1apCdma2000HOStatus failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_DownlinkS1cdma2000tunneling, s1ap_DownlinkS1cdma2000tunneling_p);
                     return -1;
                 }
@@ -5548,7 +5619,7 @@ int s1ap_decode_s1ap_downlinks1cdma2000tunnelingies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Cdma2000RATType, (void **)&s1apCdma2000RATType_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Cdma2000RATType, s1apCdma2000RATType_p);
+                    d_error("Decoding of IE s1apCdma2000RATType failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_DownlinkS1cdma2000tunneling, s1ap_DownlinkS1cdma2000tunneling_p);
                     return -1;
                 }
@@ -5560,7 +5631,7 @@ int s1ap_decode_s1ap_downlinks1cdma2000tunnelingies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Cdma2000PDU, (void **)&s1apCdma2000PDU_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Cdma2000PDU, s1apCdma2000PDU_p);
+                    d_error("Decoding of IE s1apCdma2000PDU failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_DownlinkS1cdma2000tunneling, s1ap_DownlinkS1cdma2000tunneling_p);
                     return -1;
                 }
@@ -5593,6 +5664,7 @@ int s1ap_decode_s1ap_overloadstopies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_OverloadStop, (void **)&s1ap_OverloadStop_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_OverloadStop failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_OverloadStop, s1ap_OverloadStop_p);
         return -1;
     }
@@ -5614,7 +5686,7 @@ int s1ap_decode_s1ap_overloadstopies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_GUMMEIList, (void **)&s1apGUMMEIList_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_GUMMEIList, s1apGUMMEIList_p);
+                    d_error("Decoding of IE s1apGUMMEIList failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_OverloadStop, s1ap_OverloadStop_p);
                     return -1;
                 }
@@ -5648,6 +5720,7 @@ int s1ap_decode_s1ap_enbconfigurationupdateies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENBConfigurationUpdate, (void **)&s1ap_ENBConfigurationUpdate_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_ENBConfigurationUpdate failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENBConfigurationUpdate, s1ap_ENBConfigurationUpdate_p);
         return -1;
     }
@@ -5669,7 +5742,7 @@ int s1ap_decode_s1ap_enbconfigurationupdateies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENBname, (void **)&s1apENBname_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENBname, s1apENBname_p);
+                    d_error("Decoding of IE s1apENBname failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENBConfigurationUpdate, s1ap_ENBConfigurationUpdate_p);
                     return -1;
                 }
@@ -5683,7 +5756,7 @@ int s1ap_decode_s1ap_enbconfigurationupdateies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_SupportedTAs, (void **)&s1apSupportedTAs_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_SupportedTAs, s1apSupportedTAs_p);
+                    d_error("Decoding of IE s1apSupportedTAs failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENBConfigurationUpdate, s1ap_ENBConfigurationUpdate_p);
                     return -1;
                 }
@@ -5697,7 +5770,7 @@ int s1ap_decode_s1ap_enbconfigurationupdateies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CSG_IdList, (void **)&s1apCSGIdList_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CSG_IdList, s1apCSGIdList_p);
+                    d_error("Decoding of IE s1apCSGIdList failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENBConfigurationUpdate, s1ap_ENBConfigurationUpdate_p);
                     return -1;
                 }
@@ -5711,7 +5784,7 @@ int s1ap_decode_s1ap_enbconfigurationupdateies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_PagingDRX, (void **)&s1apPagingDRX_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_PagingDRX, s1apPagingDRX_p);
+                    d_error("Decoding of IE s1apPagingDRX failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENBConfigurationUpdate, s1ap_ENBConfigurationUpdate_p);
                     return -1;
                 }
@@ -5745,6 +5818,7 @@ int s1ap_decode_s1ap_tracefailureindicationies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_TraceFailureIndication, (void **)&s1ap_TraceFailureIndication_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_TraceFailureIndication failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_TraceFailureIndication, s1ap_TraceFailureIndication_p);
         return -1;
     }
@@ -5765,7 +5839,7 @@ int s1ap_decode_s1ap_tracefailureindicationies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_TraceFailureIndication, s1ap_TraceFailureIndication_p);
                     return -1;
                 }
@@ -5777,7 +5851,7 @@ int s1ap_decode_s1ap_tracefailureindicationies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_TraceFailureIndication, s1ap_TraceFailureIndication_p);
                     return -1;
                 }
@@ -5789,7 +5863,7 @@ int s1ap_decode_s1ap_tracefailureindicationies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_E_UTRAN_Trace_ID, (void **)&s1apEUTRANTraceID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_UTRAN_Trace_ID, s1apEUTRANTraceID_p);
+                    d_error("Decoding of IE s1apEUTRANTraceID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_TraceFailureIndication, s1ap_TraceFailureIndication_p);
                     return -1;
                 }
@@ -5801,7 +5875,7 @@ int s1ap_decode_s1ap_tracefailureindicationies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Cause, (void **)&s1apCause_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Cause, s1apCause_p);
+                    d_error("Decoding of IE s1apCause failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_TraceFailureIndication, s1ap_TraceFailureIndication_p);
                     return -1;
                 }
@@ -5834,6 +5908,7 @@ int s1ap_decode_s1ap_enbconfigurationtransferies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENBConfigurationTransfer, (void **)&s1ap_ENBConfigurationTransfer_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_ENBConfigurationTransfer failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENBConfigurationTransfer, s1ap_ENBConfigurationTransfer_p);
         return -1;
     }
@@ -5855,7 +5930,7 @@ int s1ap_decode_s1ap_enbconfigurationtransferies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_SONConfigurationTransfer, (void **)&s1apSONConfigurationTransfer_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_SONConfigurationTransfer, s1apSONConfigurationTransfer_p);
+                    d_error("Decoding of IE s1apSONConfigurationTransfer failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENBConfigurationTransfer, s1ap_ENBConfigurationTransfer_p);
                     return -1;
                 }
@@ -5889,6 +5964,7 @@ int s1ap_decode_s1ap_handoverfailureies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_HandoverFailure, (void **)&s1ap_HandoverFailure_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_HandoverFailure failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverFailure, s1ap_HandoverFailure_p);
         return -1;
     }
@@ -5909,7 +5985,7 @@ int s1ap_decode_s1ap_handoverfailureies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverFailure, s1ap_HandoverFailure_p);
                     return -1;
                 }
@@ -5921,7 +5997,7 @@ int s1ap_decode_s1ap_handoverfailureies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Cause, (void **)&s1apCause_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Cause, s1apCause_p);
+                    d_error("Decoding of IE s1apCause failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverFailure, s1ap_HandoverFailure_p);
                     return -1;
                 }
@@ -5934,7 +6010,7 @@ int s1ap_decode_s1ap_handoverfailureies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CriticalityDiagnostics, (void **)&s1apCriticalityDiagnostics_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CriticalityDiagnostics, s1apCriticalityDiagnostics_p);
+                    d_error("Decoding of IE s1apCriticalityDiagnostics failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverFailure, s1ap_HandoverFailure_p);
                     return -1;
                 }
@@ -5968,6 +6044,7 @@ int s1ap_decode_s1ap_e_rabsetupresponseies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_E_RABSetupResponse, (void **)&s1ap_E_RABSetupResponse_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_E_RABSetupResponse failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABSetupResponse, s1ap_E_RABSetupResponse_p);
         return -1;
     }
@@ -5988,7 +6065,7 @@ int s1ap_decode_s1ap_e_rabsetupresponseies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABSetupResponse, s1ap_E_RABSetupResponse_p);
                     return -1;
                 }
@@ -6000,7 +6077,7 @@ int s1ap_decode_s1ap_e_rabsetupresponseies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABSetupResponse, s1ap_E_RABSetupResponse_p);
                     return -1;
                 }
@@ -6014,10 +6091,11 @@ int s1ap_decode_s1ap_e_rabsetupresponseies(
                 if (s1ap_decode_s1ap_e_rabsetuplistbearersures(&s1ap_E_RABSetupResponseIEs->e_RABSetupListBearerSURes, s1apERABSetupListBearerSURes_p) < 0)
                 {
                     d_error("Decoding of encapsulated IE s1apERABSetupListBearerSURes failed");
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABSetupListBearerSURes, s1apERABSetupListBearerSURes_p);
+                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABSetupListBearerSURes, s1apERABSetupListBearerSURes_p);
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABSetupResponse, s1ap_E_RABSetupResponse_p);
                     return -1;
                 }
+                ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABSetupListBearerSURes, s1apERABSetupListBearerSURes_p);
                 s1ap_E_RABSetupResponseIEs->presenceMask |= S1AP_E_RABSETUPRESPONSEIES_E_RABSETUPLISTBEARERSURES_PRESENT;
             } break;
             /* Optional field */
@@ -6029,10 +6107,11 @@ int s1ap_decode_s1ap_e_rabsetupresponseies(
                 if (s1ap_decode_s1ap_e_rablist(&s1ap_E_RABSetupResponseIEs->e_RABFailedToSetupListBearerSURes, s1apERABList_p) < 0)
                 {
                     d_error("Decoding of encapsulated IE s1apERABList failed");
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABList, s1apERABList_p);
+                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABList, s1apERABList_p);
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABSetupResponse, s1ap_E_RABSetupResponse_p);
                     return -1;
                 }
+                ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABList, s1apERABList_p);
                 s1ap_E_RABSetupResponseIEs->presenceMask |= S1AP_E_RABSETUPRESPONSEIES_E_RABFAILEDTOSETUPLISTBEARERSURES_PRESENT;
             } break;
             /* Optional field */
@@ -6043,7 +6122,7 @@ int s1ap_decode_s1ap_e_rabsetupresponseies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CriticalityDiagnostics, (void **)&s1apCriticalityDiagnostics_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CriticalityDiagnostics, s1apCriticalityDiagnostics_p);
+                    d_error("Decoding of IE s1apCriticalityDiagnostics failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABSetupResponse, s1ap_E_RABSetupResponse_p);
                     return -1;
                 }
@@ -6077,6 +6156,7 @@ int s1ap_decode_s1ap_uecontextreleasecommand_ies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_UEContextReleaseCommand, (void **)&s1ap_UEContextReleaseCommand_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_UEContextReleaseCommand failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEContextReleaseCommand, s1ap_UEContextReleaseCommand_p);
         return -1;
     }
@@ -6097,7 +6177,7 @@ int s1ap_decode_s1ap_uecontextreleasecommand_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_UE_S1AP_IDs, (void **)&s1apUES1APIDs_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UE_S1AP_IDs, s1apUES1APIDs_p);
+                    d_error("Decoding of IE s1apUES1APIDs failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEContextReleaseCommand, s1ap_UEContextReleaseCommand_p);
                     return -1;
                 }
@@ -6109,7 +6189,7 @@ int s1ap_decode_s1ap_uecontextreleasecommand_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Cause, (void **)&s1apCause_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Cause, s1apCause_p);
+                    d_error("Decoding of IE s1apCause failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEContextReleaseCommand, s1ap_UEContextReleaseCommand_p);
                     return -1;
                 }
@@ -6142,6 +6222,7 @@ int s1ap_decode_s1ap_pathswitchrequesties(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_PathSwitchRequest, (void **)&s1ap_PathSwitchRequest_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_PathSwitchRequest failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_PathSwitchRequest, s1ap_PathSwitchRequest_p);
         return -1;
     }
@@ -6162,7 +6243,7 @@ int s1ap_decode_s1ap_pathswitchrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_PathSwitchRequest, s1ap_PathSwitchRequest_p);
                     return -1;
                 }
@@ -6175,10 +6256,11 @@ int s1ap_decode_s1ap_pathswitchrequesties(
                 if (s1ap_decode_s1ap_e_rabtobeswitcheddllist(&s1ap_PathSwitchRequestIEs->e_RABToBeSwitchedDLList, s1apERABToBeSwitchedDLList_p) < 0)
                 {
                     d_error("Decoding of encapsulated IE s1apERABToBeSwitchedDLList failed");
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABToBeSwitchedDLList, s1apERABToBeSwitchedDLList_p);
+                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABToBeSwitchedDLList, s1apERABToBeSwitchedDLList_p);
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_PathSwitchRequest, s1ap_PathSwitchRequest_p);
                     return -1;
                 }
+                ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABToBeSwitchedDLList, s1apERABToBeSwitchedDLList_p);
             } break;
             case S1ap_ProtocolIE_ID_id_SourceMME_UE_S1AP_ID:
             {
@@ -6187,7 +6269,7 @@ int s1ap_decode_s1ap_pathswitchrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_PathSwitchRequest, s1ap_PathSwitchRequest_p);
                     return -1;
                 }
@@ -6199,7 +6281,7 @@ int s1ap_decode_s1ap_pathswitchrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_EUTRAN_CGI, (void **)&s1apEUTRANCGI_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_EUTRAN_CGI, s1apEUTRANCGI_p);
+                    d_error("Decoding of IE s1apEUTRANCGI failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_PathSwitchRequest, s1ap_PathSwitchRequest_p);
                     return -1;
                 }
@@ -6211,7 +6293,7 @@ int s1ap_decode_s1ap_pathswitchrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_TAI, (void **)&s1apTAI_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_TAI, s1apTAI_p);
+                    d_error("Decoding of IE s1apTAI failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_PathSwitchRequest, s1ap_PathSwitchRequest_p);
                     return -1;
                 }
@@ -6223,7 +6305,7 @@ int s1ap_decode_s1ap_pathswitchrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_UESecurityCapabilities, (void **)&s1apUESecurityCapabilities_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UESecurityCapabilities, s1apUESecurityCapabilities_p);
+                    d_error("Decoding of IE s1apUESecurityCapabilities failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_PathSwitchRequest, s1ap_PathSwitchRequest_p);
                     return -1;
                 }
@@ -6236,7 +6318,7 @@ int s1ap_decode_s1ap_pathswitchrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CSG_Id, (void **)&s1apCSGId_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CSG_Id, s1apCSGId_p);
+                    d_error("Decoding of IE s1apCSGId failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_PathSwitchRequest, s1ap_PathSwitchRequest_p);
                     return -1;
                 }
@@ -6250,7 +6332,7 @@ int s1ap_decode_s1ap_pathswitchrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CellAccessMode, (void **)&s1apCellAccessMode_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CellAccessMode, s1apCellAccessMode_p);
+                    d_error("Decoding of IE s1apCellAccessMode failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_PathSwitchRequest, s1ap_PathSwitchRequest_p);
                     return -1;
                 }
@@ -6264,7 +6346,7 @@ int s1ap_decode_s1ap_pathswitchrequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_GUMMEI, (void **)&s1apGUMMEI_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_GUMMEI, s1apGUMMEI_p);
+                    d_error("Decoding of IE s1apGUMMEI failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_PathSwitchRequest, s1ap_PathSwitchRequest_p);
                     return -1;
                 }
@@ -6298,6 +6380,7 @@ int s1ap_decode_s1ap_downlinknastransport_ies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_DownlinkNASTransport, (void **)&s1ap_DownlinkNASTransport_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_DownlinkNASTransport failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_DownlinkNASTransport, s1ap_DownlinkNASTransport_p);
         return -1;
     }
@@ -6318,7 +6401,7 @@ int s1ap_decode_s1ap_downlinknastransport_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_DownlinkNASTransport, s1ap_DownlinkNASTransport_p);
                     return -1;
                 }
@@ -6330,7 +6413,7 @@ int s1ap_decode_s1ap_downlinknastransport_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_DownlinkNASTransport, s1ap_DownlinkNASTransport_p);
                     return -1;
                 }
@@ -6342,7 +6425,7 @@ int s1ap_decode_s1ap_downlinknastransport_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_NAS_PDU, (void **)&s1apNASPDU_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_NAS_PDU, s1apNASPDU_p);
+                    d_error("Decoding of IE s1apNASPDU failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_DownlinkNASTransport, s1ap_DownlinkNASTransport_p);
                     return -1;
                 }
@@ -6355,7 +6438,7 @@ int s1ap_decode_s1ap_downlinknastransport_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_HandoverRestrictionList, (void **)&s1apHandoverRestrictionList_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRestrictionList, s1apHandoverRestrictionList_p);
+                    d_error("Decoding of IE s1apHandoverRestrictionList failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_DownlinkNASTransport, s1ap_DownlinkNASTransport_p);
                     return -1;
                 }
@@ -6369,7 +6452,7 @@ int s1ap_decode_s1ap_downlinknastransport_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_SubscriberProfileIDforRFP, (void **)&s1apSubscriberProfileIDforRFP_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_SubscriberProfileIDforRFP, s1apSubscriberProfileIDforRFP_p);
+                    d_error("Decoding of IE s1apSubscriberProfileIDforRFP failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_DownlinkNASTransport, s1ap_DownlinkNASTransport_p);
                     return -1;
                 }
@@ -6403,6 +6486,7 @@ int s1ap_decode_s1ap_e_rabreleaseindicationies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_E_RABReleaseIndication, (void **)&s1ap_E_RABReleaseIndication_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_E_RABReleaseIndication failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABReleaseIndication, s1ap_E_RABReleaseIndication_p);
         return -1;
     }
@@ -6423,7 +6507,7 @@ int s1ap_decode_s1ap_e_rabreleaseindicationies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABReleaseIndication, s1ap_E_RABReleaseIndication_p);
                     return -1;
                 }
@@ -6435,7 +6519,7 @@ int s1ap_decode_s1ap_e_rabreleaseindicationies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABReleaseIndication, s1ap_E_RABReleaseIndication_p);
                     return -1;
                 }
@@ -6448,10 +6532,11 @@ int s1ap_decode_s1ap_e_rabreleaseindicationies(
                 if (s1ap_decode_s1ap_e_rablist(&s1ap_E_RABReleaseIndicationIEs->e_RABReleasedList, s1apERABList_p) < 0)
                 {
                     d_error("Decoding of encapsulated IE s1apERABList failed");
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABList, s1apERABList_p);
+                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABList, s1apERABList_p);
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABReleaseIndication, s1ap_E_RABReleaseIndication_p);
                     return -1;
                 }
+                ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABList, s1apERABList_p);
             } break;
             default:
                 d_error("Unknown protocol IE id (%d) for message s1ap_e_rabreleaseindicationies", (int)ie_p->id);
@@ -6481,6 +6566,7 @@ int s1ap_decode_s1ap_s1setuprequesties(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_S1SetupRequest, (void **)&s1ap_S1SetupRequest_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_S1SetupRequest failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_S1SetupRequest, s1ap_S1SetupRequest_p);
         return -1;
     }
@@ -6501,7 +6587,7 @@ int s1ap_decode_s1ap_s1setuprequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Global_ENB_ID, (void **)&s1apGlobalENBID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Global_ENB_ID, s1apGlobalENBID_p);
+                    d_error("Decoding of IE s1apGlobalENBID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_S1SetupRequest, s1ap_S1SetupRequest_p);
                     return -1;
                 }
@@ -6514,7 +6600,7 @@ int s1ap_decode_s1ap_s1setuprequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENBname, (void **)&s1apENBname_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENBname, s1apENBname_p);
+                    d_error("Decoding of IE s1apENBname failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_S1SetupRequest, s1ap_S1SetupRequest_p);
                     return -1;
                 }
@@ -6527,7 +6613,7 @@ int s1ap_decode_s1ap_s1setuprequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_SupportedTAs, (void **)&s1apSupportedTAs_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_SupportedTAs, s1apSupportedTAs_p);
+                    d_error("Decoding of IE s1apSupportedTAs failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_S1SetupRequest, s1ap_S1SetupRequest_p);
                     return -1;
                 }
@@ -6539,7 +6625,7 @@ int s1ap_decode_s1ap_s1setuprequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_PagingDRX, (void **)&s1apPagingDRX_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_PagingDRX, s1apPagingDRX_p);
+                    d_error("Decoding of IE s1apPagingDRX failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_S1SetupRequest, s1ap_S1SetupRequest_p);
                     return -1;
                 }
@@ -6552,7 +6638,7 @@ int s1ap_decode_s1ap_s1setuprequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CSG_IdList, (void **)&s1apCSGIdList_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CSG_IdList, s1apCSGIdList_p);
+                    d_error("Decoding of IE s1apCSGIdList failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_S1SetupRequest, s1ap_S1SetupRequest_p);
                     return -1;
                 }
@@ -6586,6 +6672,7 @@ int s1ap_decode_s1ap_nasnondeliveryindication_ies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_NASNonDeliveryIndication, (void **)&s1ap_NASNonDeliveryIndication_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_NASNonDeliveryIndication failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_NASNonDeliveryIndication, s1ap_NASNonDeliveryIndication_p);
         return -1;
     }
@@ -6606,7 +6693,7 @@ int s1ap_decode_s1ap_nasnondeliveryindication_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_NASNonDeliveryIndication, s1ap_NASNonDeliveryIndication_p);
                     return -1;
                 }
@@ -6618,7 +6705,7 @@ int s1ap_decode_s1ap_nasnondeliveryindication_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_NASNonDeliveryIndication, s1ap_NASNonDeliveryIndication_p);
                     return -1;
                 }
@@ -6630,7 +6717,7 @@ int s1ap_decode_s1ap_nasnondeliveryindication_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_NAS_PDU, (void **)&s1apNASPDU_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_NAS_PDU, s1apNASPDU_p);
+                    d_error("Decoding of IE s1apNASPDU failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_NASNonDeliveryIndication, s1ap_NASNonDeliveryIndication_p);
                     return -1;
                 }
@@ -6642,7 +6729,7 @@ int s1ap_decode_s1ap_nasnondeliveryindication_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Cause, (void **)&s1apCause_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Cause, s1apCause_p);
+                    d_error("Decoding of IE s1apCause failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_NASNonDeliveryIndication, s1ap_NASNonDeliveryIndication_p);
                     return -1;
                 }
@@ -6675,6 +6762,7 @@ int s1ap_decode_s1ap_celltraffictraceies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CellTrafficTrace, (void **)&s1ap_CellTrafficTrace_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_CellTrafficTrace failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CellTrafficTrace, s1ap_CellTrafficTrace_p);
         return -1;
     }
@@ -6695,7 +6783,7 @@ int s1ap_decode_s1ap_celltraffictraceies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CellTrafficTrace, s1ap_CellTrafficTrace_p);
                     return -1;
                 }
@@ -6707,7 +6795,7 @@ int s1ap_decode_s1ap_celltraffictraceies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CellTrafficTrace, s1ap_CellTrafficTrace_p);
                     return -1;
                 }
@@ -6719,7 +6807,7 @@ int s1ap_decode_s1ap_celltraffictraceies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_E_UTRAN_Trace_ID, (void **)&s1apEUTRANTraceID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_UTRAN_Trace_ID, s1apEUTRANTraceID_p);
+                    d_error("Decoding of IE s1apEUTRANTraceID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CellTrafficTrace, s1ap_CellTrafficTrace_p);
                     return -1;
                 }
@@ -6731,7 +6819,7 @@ int s1ap_decode_s1ap_celltraffictraceies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_EUTRAN_CGI, (void **)&s1apEUTRANCGI_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_EUTRAN_CGI, s1apEUTRANCGI_p);
+                    d_error("Decoding of IE s1apEUTRANCGI failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CellTrafficTrace, s1ap_CellTrafficTrace_p);
                     return -1;
                 }
@@ -6743,7 +6831,7 @@ int s1ap_decode_s1ap_celltraffictraceies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_TransportLayerAddress, (void **)&s1apTransportLayerAddress_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_TransportLayerAddress, s1apTransportLayerAddress_p);
+                    d_error("Decoding of IE s1apTransportLayerAddress failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CellTrafficTrace, s1ap_CellTrafficTrace_p);
                     return -1;
                 }
@@ -6756,7 +6844,7 @@ int s1ap_decode_s1ap_celltraffictraceies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_PrivacyIndicator, (void **)&s1apPrivacyIndicator_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_PrivacyIndicator, s1apPrivacyIndicator_p);
+                    d_error("Decoding of IE s1apPrivacyIndicator failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CellTrafficTrace, s1ap_CellTrafficTrace_p);
                     return -1;
                 }
@@ -6790,6 +6878,7 @@ int s1ap_decode_s1ap_e_rabsetuprequesties(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_E_RABSetupRequest, (void **)&s1ap_E_RABSetupRequest_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_E_RABSetupRequest failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABSetupRequest, s1ap_E_RABSetupRequest_p);
         return -1;
     }
@@ -6810,7 +6899,7 @@ int s1ap_decode_s1ap_e_rabsetuprequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABSetupRequest, s1ap_E_RABSetupRequest_p);
                     return -1;
                 }
@@ -6822,7 +6911,7 @@ int s1ap_decode_s1ap_e_rabsetuprequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABSetupRequest, s1ap_E_RABSetupRequest_p);
                     return -1;
                 }
@@ -6835,7 +6924,7 @@ int s1ap_decode_s1ap_e_rabsetuprequesties(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_UEAggregateMaximumBitrate, (void **)&s1apUEAggregateMaximumBitrate_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEAggregateMaximumBitrate, s1apUEAggregateMaximumBitrate_p);
+                    d_error("Decoding of IE s1apUEAggregateMaximumBitrate failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABSetupRequest, s1ap_E_RABSetupRequest_p);
                     return -1;
                 }
@@ -6849,10 +6938,11 @@ int s1ap_decode_s1ap_e_rabsetuprequesties(
                 if (s1ap_decode_s1ap_e_rabtobesetuplistbearersureq(&s1ap_E_RABSetupRequestIEs->e_RABToBeSetupListBearerSUReq, s1apERABToBeSetupListBearerSUReq_p) < 0)
                 {
                     d_error("Decoding of encapsulated IE s1apERABToBeSetupListBearerSUReq failed");
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABToBeSetupListBearerSUReq, s1apERABToBeSetupListBearerSUReq_p);
+                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABToBeSetupListBearerSUReq, s1apERABToBeSetupListBearerSUReq_p);
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABSetupRequest, s1ap_E_RABSetupRequest_p);
                     return -1;
                 }
+                ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABToBeSetupListBearerSUReq, s1apERABToBeSetupListBearerSUReq_p);
             } break;
             default:
                 d_error("Unknown protocol IE id (%d) for message s1ap_e_rabsetuprequesties", (int)ie_p->id);
@@ -6882,6 +6972,7 @@ int s1ap_decode_s1ap_enbstatustransferies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENBStatusTransfer, (void **)&s1ap_ENBStatusTransfer_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_ENBStatusTransfer failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENBStatusTransfer, s1ap_ENBStatusTransfer_p);
         return -1;
     }
@@ -6902,7 +6993,7 @@ int s1ap_decode_s1ap_enbstatustransferies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENBStatusTransfer, s1ap_ENBStatusTransfer_p);
                     return -1;
                 }
@@ -6914,7 +7005,7 @@ int s1ap_decode_s1ap_enbstatustransferies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENBStatusTransfer, s1ap_ENBStatusTransfer_p);
                     return -1;
                 }
@@ -6926,7 +7017,7 @@ int s1ap_decode_s1ap_enbstatustransferies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_StatusTransfer_TransparentContainer, (void **)&s1apENBStatusTransferTransparentContainer_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_StatusTransfer_TransparentContainer, s1apENBStatusTransferTransparentContainer_p);
+                    d_error("Decoding of IE s1apENBStatusTransferTransparentContainer failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENBStatusTransfer, s1ap_ENBStatusTransfer_p);
                     return -1;
                 }
@@ -6959,6 +7050,7 @@ int s1ap_decode_s1ap_resetacknowledgeies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ResetAcknowledge, (void **)&s1ap_ResetAcknowledge_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_ResetAcknowledge failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ResetAcknowledge, s1ap_ResetAcknowledge_p);
         return -1;
     }
@@ -6981,10 +7073,11 @@ int s1ap_decode_s1ap_resetacknowledgeies(
                 if (s1ap_decode_s1ap_ue_associatedlogicals1_connectionlistresack(&s1ap_ResetAcknowledgeIEs->uE_associatedLogicalS1_ConnectionListResAck, s1apUEassociatedLogicalS1ConnectionListResAck_p) < 0)
                 {
                     d_error("Decoding of encapsulated IE s1apUEassociatedLogicalS1ConnectionListResAck failed");
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UE_associatedLogicalS1_ConnectionListResAck, s1apUEassociatedLogicalS1ConnectionListResAck_p);
+                    ASN_STRUCT_FREE(asn_DEF_S1ap_UE_associatedLogicalS1_ConnectionListResAck, s1apUEassociatedLogicalS1ConnectionListResAck_p);
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ResetAcknowledge, s1ap_ResetAcknowledge_p);
                     return -1;
                 }
+                ASN_STRUCT_FREE(asn_DEF_S1ap_UE_associatedLogicalS1_ConnectionListResAck, s1apUEassociatedLogicalS1ConnectionListResAck_p);
                 s1ap_ResetAcknowledgeIEs->presenceMask |= S1AP_RESETACKNOWLEDGEIES_UE_ASSOCIATEDLOGICALS1_CONNECTIONLISTRESACK_PRESENT;
             } break;
             /* Optional field */
@@ -6995,7 +7088,7 @@ int s1ap_decode_s1ap_resetacknowledgeies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CriticalityDiagnostics, (void **)&s1apCriticalityDiagnostics_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CriticalityDiagnostics, s1apCriticalityDiagnostics_p);
+                    d_error("Decoding of IE s1apCriticalityDiagnostics failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ResetAcknowledge, s1ap_ResetAcknowledge_p);
                     return -1;
                 }
@@ -7029,6 +7122,7 @@ int s1ap_decode_s1ap_uecontextreleasecomplete_ies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_UEContextReleaseComplete, (void **)&s1ap_UEContextReleaseComplete_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_UEContextReleaseComplete failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEContextReleaseComplete, s1ap_UEContextReleaseComplete_p);
         return -1;
     }
@@ -7049,7 +7143,7 @@ int s1ap_decode_s1ap_uecontextreleasecomplete_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEContextReleaseComplete, s1ap_UEContextReleaseComplete_p);
                     return -1;
                 }
@@ -7061,7 +7155,7 @@ int s1ap_decode_s1ap_uecontextreleasecomplete_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEContextReleaseComplete, s1ap_UEContextReleaseComplete_p);
                     return -1;
                 }
@@ -7074,7 +7168,7 @@ int s1ap_decode_s1ap_uecontextreleasecomplete_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CriticalityDiagnostics, (void **)&s1apCriticalityDiagnostics_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CriticalityDiagnostics, s1apCriticalityDiagnostics_p);
+                    d_error("Decoding of IE s1apCriticalityDiagnostics failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEContextReleaseComplete, s1ap_UEContextReleaseComplete_p);
                     return -1;
                 }
@@ -7108,6 +7202,7 @@ int s1ap_decode_s1ap_uplinkueassociatedlppatransport_ies(
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_UplinkUEAssociatedLPPaTransport, (void **)&s1ap_UplinkUEAssociatedLPPaTransport_p, any_p->buf, any_p->size, 0, 0);
     if (dec_ret.code != RC_OK)
     {
+        d_error("Decoding of IE s1ap_UplinkUEAssociatedLPPaTransport failed");
         ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UplinkUEAssociatedLPPaTransport, s1ap_UplinkUEAssociatedLPPaTransport_p);
         return -1;
     }
@@ -7128,7 +7223,7 @@ int s1ap_decode_s1ap_uplinkueassociatedlppatransport_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MME_UE_S1AP_ID, (void **)&s1apMMEUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, s1apMMEUES1APID_p);
+                    d_error("Decoding of IE s1apMMEUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UplinkUEAssociatedLPPaTransport, s1ap_UplinkUEAssociatedLPPaTransport_p);
                     return -1;
                 }
@@ -7140,7 +7235,7 @@ int s1ap_decode_s1ap_uplinkueassociatedlppatransport_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENB_UE_S1AP_ID, (void **)&s1apENBUES1APID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, s1apENBUES1APID_p);
+                    d_error("Decoding of IE s1apENBUES1APID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UplinkUEAssociatedLPPaTransport, s1ap_UplinkUEAssociatedLPPaTransport_p);
                     return -1;
                 }
@@ -7152,7 +7247,7 @@ int s1ap_decode_s1ap_uplinkueassociatedlppatransport_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Routing_ID, (void **)&s1apRoutingID_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Routing_ID, s1apRoutingID_p);
+                    d_error("Decoding of IE s1apRoutingID failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UplinkUEAssociatedLPPaTransport, s1ap_UplinkUEAssociatedLPPaTransport_p);
                     return -1;
                 }
@@ -7164,7 +7259,7 @@ int s1ap_decode_s1ap_uplinkueassociatedlppatransport_ies(
                 dec_ret = aper_decode(NULL, &asn_DEF_S1ap_LPPa_PDU, (void **)&s1apLPPaPDU_p, st->buf, st->size, 0, 0);
                 if (dec_ret.code != RC_OK)
                 {
-                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_LPPa_PDU, s1apLPPaPDU_p);
+                    d_error("Decoding of IE s1apLPPaPDU failed");
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UplinkUEAssociatedLPPaTransport, s1ap_UplinkUEAssociatedLPPaTransport_p);
                     return -1;
                 }
