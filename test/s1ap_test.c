@@ -180,10 +180,10 @@ static void s1ap_test5(abts_case *tc, void *data)
         &s1SetupRequestIEs->global_ENB_ID.pLMNidentity);
 
     supportedTA = (S1ap_SupportedTAs_Item_t *)
-        calloc(1, sizeof(S1ap_SupportedTAs_Item_t));
+        CALLOC(1, sizeof(S1ap_SupportedTAs_Item_t));
     INT16_TO_OCTET_STRING(tac, &supportedTA->tAC);
     plmnIdentity = (S1ap_PLMNidentity_t *)
-        calloc(1, sizeof(S1ap_PLMNidentity_t));
+        CALLOC(1, sizeof(S1ap_PLMNidentity_t));
     MCC_MNC_TO_TBCD(mcc, mnc, mnc_digit_len, plmnIdentity);
     ASN_SEQUENCE_ADD(&supportedTA->broadcastPLMNs, plmnIdentity);
 
@@ -214,10 +214,8 @@ abts_suite *test_s1ap(abts_suite *suite)
     abts_run_test(suite, s1ap_test1, NULL);
     abts_run_test(suite, s1ap_test2, NULL);
     abts_run_test(suite, s1ap_test3, NULL);
-#if 0
     abts_run_test(suite, s1ap_test4, NULL);
     abts_run_test(suite, s1ap_test5, NULL);
-#endif
 
     return suite;
 }
