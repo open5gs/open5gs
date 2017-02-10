@@ -204,8 +204,6 @@ static int s1ap_decode_unsuccessfull_outcome(s1ap_message *message,
     return ret;
 }
 
-static char s1ap_decode_message_string[HUGE_STRING_LEN];
-
 static void s1ap_decode_xer_print_message(
     asn_enc_rval_t (*func)(asn_app_consume_bytes_f *cb,
     void *app_key, s1ap_message *message_p), 
@@ -213,12 +211,14 @@ static void s1ap_decode_xer_print_message(
 {
     if (g_trace_mask && TRACE_MODULE >= 3) 
     {
+        char *message_string = core_calloc(HUGE_STRING_LEN, sizeof(c_uint8_t));
         s1ap_string_total_size = 0;
-        memset(s1ap_decode_message_string, 0, HUGE_STRING_LEN);
+        memset(message_string, 0, HUGE_STRING_LEN);
 
-        func(cb, s1ap_decode_message_string, message_p);
+        func(cb, message_string, message_p);
 
-        printf("%s\n", s1ap_decode_message_string);
+        printf("%s\n", message_string);
+        core_free(message_string);
     }
 }
 
