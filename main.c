@@ -234,6 +234,7 @@ int main(int argc, char *argv[])
     }
 
     
+    show_version();
     d_info("CellWire daemon start");
 
     threads_start();

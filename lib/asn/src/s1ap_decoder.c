@@ -1,6 +1,7 @@
 #define TRACE_MODULE _s1dec
 
 #include "core_debug.h"
+#include "core_lib.h"
 #include "s1ap_codecs.h"
 
 static int s1ap_decode_initiating(s1ap_message *message,
@@ -10,7 +11,7 @@ static int s1ap_decode_successfull_outcome(s1ap_message *message,
 static int s1ap_decode_unsuccessfull_outcome(s1ap_message *message,
     S1ap_UnsuccessfulOutcome_t *unSuccessfulOutcome_p);
 
-static void s1ap_xer_print_message(
+static void s1ap_decode_xer_print_message(
     asn_enc_rval_t (*func)(asn_app_consume_bytes_f *cb,
     void *app_key, s1ap_message *message_p), 
     asn_app_consume_bytes_f *cb, s1ap_message *message_p);
@@ -81,7 +82,7 @@ static int s1ap_decode_initiating(s1ap_message *message,
             ret = s1ap_decode_s1ap_uplinknastransport_ies(
                     &message->msg.s1ap_UplinkNASTransport_IEs, 
                     &initiating_p->value);
-            s1ap_xer_print_message(s1ap_xer_print_s1ap_uplinknastransport, 
+            s1ap_decode_xer_print_message(s1ap_xer_print_s1ap_uplinknastransport, 
                     s1ap_xer__print2sp, message);
             break;
 
@@ -89,7 +90,7 @@ static int s1ap_decode_initiating(s1ap_message *message,
             ret = s1ap_decode_s1ap_s1setuprequesties(
                     &message->msg.s1ap_S1SetupRequestIEs, 
                     &initiating_p->value);
-            s1ap_xer_print_message(s1ap_xer_print_s1ap_s1setuprequest,
+            s1ap_decode_xer_print_message(s1ap_xer_print_s1ap_s1setuprequest,
                     s1ap_xer__print2sp, message);
             break;
 
@@ -97,14 +98,14 @@ static int s1ap_decode_initiating(s1ap_message *message,
             ret = s1ap_decode_s1ap_initialuemessage_ies(
                     &message->msg.s1ap_InitialUEMessage_IEs, 
                     &initiating_p->value);
-            s1ap_xer_print_message(s1ap_xer_print_s1ap_initialuemessage,
+            s1ap_decode_xer_print_message(s1ap_xer_print_s1ap_initialuemessage,
                     s1ap_xer__print2sp, message);
             break;
 
         case S1ap_ProcedureCode_id_UEContextReleaseRequest: 
             ret = s1ap_decode_s1ap_uecontextreleaserequest_ies(
                     &message->msg.s1ap_UEContextReleaseRequest_IEs, &initiating_p->value);
-            s1ap_xer_print_message(s1ap_xer_print_s1ap_uecontextreleaserequest,
+            s1ap_decode_xer_print_message(s1ap_xer_print_s1ap_uecontextreleaserequest,
                     s1ap_xer__print2sp, message);
             break;
 
@@ -112,7 +113,7 @@ static int s1ap_decode_initiating(s1ap_message *message,
             ret = s1ap_decode_s1ap_uecapabilityinfoindicationies(
                     &message->msg.s1ap_UECapabilityInfoIndicationIEs, 
                     &initiating_p->value);
-            s1ap_xer_print_message(
+            s1ap_decode_xer_print_message(
                     s1ap_xer_print_s1ap_uecapabilityinfoindication,
                     s1ap_xer__print2sp, message);
             break;
@@ -121,7 +122,7 @@ static int s1ap_decode_initiating(s1ap_message *message,
             ret = s1ap_decode_s1ap_nasnondeliveryindication_ies(
                     &message->msg.s1ap_NASNonDeliveryIndication_IEs, 
                     &initiating_p->value);
-            s1ap_xer_print_message(s1ap_xer_print_s1ap_nasnondeliveryindication,
+            s1ap_decode_xer_print_message(s1ap_xer_print_s1ap_nasnondeliveryindication,
                     s1ap_xer__print2sp, message);
             break;
 
@@ -151,7 +152,7 @@ static int s1ap_decode_successfull_outcome(s1ap_message *message,
             ret = s1ap_decode_s1ap_initialcontextsetupresponseies(
                     &message->msg.s1ap_InitialContextSetupResponseIEs, 
                     &successfullOutcome_p->value);
-            s1ap_xer_print_message(
+            s1ap_decode_xer_print_message(
                     s1ap_xer_print_s1ap_initialcontextsetupresponse,
                     s1ap_xer__print2sp, message);
             break;
@@ -160,7 +161,7 @@ static int s1ap_decode_successfull_outcome(s1ap_message *message,
             ret = s1ap_decode_s1ap_uecontextreleasecomplete_ies(
                     &message->msg.s1ap_UEContextReleaseComplete_IEs, 
                     &successfullOutcome_p->value);
-            s1ap_xer_print_message(
+            s1ap_decode_xer_print_message(
                     s1ap_xer_print_s1ap_uecontextreleasecomplete,
                     s1ap_xer__print2sp, message);
             break;
@@ -188,7 +189,7 @@ static int s1ap_decode_unsuccessfull_outcome(s1ap_message *message,
             ret = s1ap_decode_s1ap_initialcontextsetupfailureies(
                     &message->msg.s1ap_InitialContextSetupFailureIEs, 
                     &unSuccessfulOutcome_p->value);
-            s1ap_xer_print_message(
+            s1ap_decode_xer_print_message(
                     s1ap_xer_print_s1ap_initialcontextsetupfailure,
                     s1ap_xer__print2sp, message);
             break;
@@ -203,10 +204,9 @@ static int s1ap_decode_unsuccessfull_outcome(s1ap_message *message,
     return ret;
 }
 
-#define S1AP_MAX_MESSAGE_STRING 2048
-static char s1ap_message_string[S1AP_MAX_MESSAGE_STRING];
+static char s1ap_decode_message_string[HUGE_STRING_LEN];
 
-static void s1ap_xer_print_message(
+static void s1ap_decode_xer_print_message(
     asn_enc_rval_t (*func)(asn_app_consume_bytes_f *cb,
     void *app_key, s1ap_message *message_p), 
     asn_app_consume_bytes_f *cb, s1ap_message *message_p)
@@ -214,11 +214,11 @@ static void s1ap_xer_print_message(
     if (g_trace_mask && TRACE_MODULE >= 3) 
     {
         s1ap_string_total_size = 0;
-        memset(s1ap_message_string, 0, S1AP_MAX_MESSAGE_STRING);
+        memset(s1ap_decode_message_string, 0, HUGE_STRING_LEN);
 
-        func(cb, s1ap_message_string, message_p);
+        func(cb, s1ap_decode_message_string, message_p);
 
-        printf("%s\n", s1ap_message_string);
+        printf("%s\n", s1ap_decode_message_string);
     }
 }
 

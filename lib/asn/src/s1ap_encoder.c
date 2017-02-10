@@ -1,6 +1,7 @@
 #define TRACE_MODULE _s1enc
 
 #include "core_debug.h"
+#include "core_lib.h"
 #include "s1ap_codecs.h"
 
 static inline int s1ap_encode_initiating_message(
@@ -22,6 +23,11 @@ static inline int s1ap_encode_downlink_nas_transport(
   s1ap_message *message_p, pkbuf_t *pkbuf);
 static inline int s1ap_encode_ue_context_release_command(
   s1ap_message *message_p, pkbuf_t *pkbuf);
+
+static void s1ap_encode_xer_print_message(
+    asn_enc_rval_t (*func)(asn_app_consume_bytes_f *cb,
+    void *app_key, s1ap_message *message_p), 
+    asn_app_consume_bytes_f *cb, s1ap_message *message_p);
 
 int s1ap_encode_pdu(pkbuf_t **pkb, s1ap_message *message_p)
 {
@@ -66,53 +72,76 @@ int s1ap_encode_pdu(pkbuf_t **pkb, s1ap_message *message_p)
 static inline int s1ap_encode_initiating_message(
     s1ap_message *message_p, pkbuf_t *pkbuf)
 {
+    int ret = -1;
     switch (message_p->procedureCode) 
     {
         case S1ap_ProcedureCode_id_S1Setup:
-            return s1ap_encode_s1setup_request(message_p, pkbuf);
+            s1ap_encode_xer_print_message(
+                    s1ap_xer_print_s1ap_s1setuprequest, 
+                    s1ap_xer__print2sp, message_p);
+            ret = s1ap_encode_s1setup_request(message_p, pkbuf);
+            break;
 
         case S1ap_ProcedureCode_id_downlinkNASTransport:
-            return s1ap_encode_downlink_nas_transport(message_p, pkbuf);
-
+            s1ap_encode_xer_print_message(
+                    s1ap_xer_print_s1ap_downlinknastransport, 
+                    s1ap_xer__print2sp, message_p);
+            ret = s1ap_encode_downlink_nas_transport(message_p, pkbuf);
+            break;
         case S1ap_ProcedureCode_id_InitialContextSetup:
-            return s1ap_encode_initial_context_setup_request(message_p, pkbuf);
-
+            s1ap_encode_xer_print_message(
+                    s1ap_xer_print_s1ap_initialcontextsetuprequest, 
+                    s1ap_xer__print2sp, message_p);
+            ret = s1ap_encode_initial_context_setup_request(message_p, pkbuf);
+            break;
         case S1ap_ProcedureCode_id_UEContextRelease:
-            return s1ap_encode_ue_context_release_command(message_p, pkbuf);
-
+            s1ap_encode_xer_print_message(
+                    s1ap_xer_print_s1ap_uecontextreleasecommand, 
+                    s1ap_xer__print2sp, message_p);
+            ret = s1ap_encode_ue_context_release_command(message_p, pkbuf);
+            break;
         default:
             d_warn("Unknown procedure ID (%d) for initiating message_p\n", 
                     (int)message_p->procedureCode);
             break;
     }
 
-    return -1;
+    return ret;
 }
 
 static inline int s1ap_encode_successfull_outcome(
     s1ap_message *message_p, pkbuf_t *pkbuf)
 {
+    int ret = -1;
     switch (message_p->procedureCode) 
     {
         case S1ap_ProcedureCode_id_S1Setup:
-            return s1ap_encode_s1setup_response(message_p, pkbuf);
-
+            s1ap_encode_xer_print_message(
+                    s1ap_xer_print_s1ap_s1setupresponse, 
+                    s1ap_xer__print2sp, message_p);
+            ret = s1ap_encode_s1setup_response(message_p, pkbuf);
+            break;
         default:
             d_warn("Unknown procedure ID (%d) for successfull "
                     "outcome message\n", (int)message_p->procedureCode);
         break;
     }
 
-    return -1;
+    return ret;
 }
 
 static inline int s1ap_encode_unsuccessfull_outcome(
     s1ap_message *message_p, pkbuf_t *pkbuf)
 {
+    int ret = -1;
     switch (message_p->procedureCode) 
     {
         case S1ap_ProcedureCode_id_S1Setup:
-            return s1ap_encode_s1setup_failure(message_p, pkbuf);
+            s1ap_encode_xer_print_message(
+                    s1ap_xer_print_s1ap_s1setupfailure, 
+                    s1ap_xer__print2sp, message_p);
+            ret = s1ap_encode_s1setup_failure(message_p, pkbuf);
+            break;
 
         default:
             d_warn("Unknown procedure ID (%d) for unsuccessfull "
@@ -120,7 +149,7 @@ static inline int s1ap_encode_unsuccessfull_outcome(
         break;
     }
 
-    return -1;
+    return ret;
 }
 
 static inline int s1ap_encode_initial_context_setup_request(
@@ -353,3 +382,22 @@ static inline int s1ap_encode_ue_context_release_command(
 
     return enc_ret.encoded;
 }
+
+static char s1ap_encode_message_string[HUGE_STRING_LEN];
+
+static void s1ap_encode_xer_print_message(
+    asn_enc_rval_t (*func)(asn_app_consume_bytes_f *cb,
+    void *app_key, s1ap_message *message_p), 
+    asn_app_consume_bytes_f *cb, s1ap_message *message_p)
+{
+    if (g_trace_mask && TRACE_MODULE >= 3) 
+    {
+        s1ap_string_total_size = 0;
+        memset(s1ap_encode_message_string, 0, HUGE_STRING_LEN);
+
+        func(cb, s1ap_encode_message_string, message_p);
+
+        printf("%s\n", s1ap_encode_message_string);
+    }
+}
+
