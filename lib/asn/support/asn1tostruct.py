@@ -628,7 +628,7 @@ f.write("""S1ap_IE_t *s1ap_new_ie(S1ap_ProtocolIE_ID_t id, S1ap_Criticality_t cr
 {
     S1ap_IE_t *buff;
 
-    if ((buff = malloc (sizeof (S1ap_IE_t))) == NULL) 
+    if ((buff = MALLOC(sizeof (S1ap_IE_t))) == NULL) 
     {
         // Possible error on malloc
         return NULL;
@@ -641,8 +641,7 @@ f.write("""S1ap_IE_t *s1ap_new_ie(S1ap_ProtocolIE_ID_t id, S1ap_Criticality_t cr
     if (ANY_fromType_aper(&buff->value, type, sptr) < 0) 
     {
         d_error("Encoding of %s failed", type->name);
-        free (buff);
-        buff = NULL;
+        FREEMEM(buff);
         return NULL;
     }
 

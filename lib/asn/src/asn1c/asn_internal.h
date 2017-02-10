@@ -23,7 +23,7 @@ extern "C" {
 #define	ASN1C_ENVIRONMENT_VERSION	924	/* Compile-time version */
 int get_asn1c_environment_version(void);	/* Run-time version */
 
-#if 1 /* modified by acetcom */
+#if 0 /* modified by acetcom */
 #define	CALLOC(nmemb, size)	calloc(nmemb, size)
 #define	MALLOC(size)		malloc(size)
 #define	REALLOC(oldptr, size)	realloc(oldptr, size)

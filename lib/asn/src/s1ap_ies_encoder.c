@@ -30,7 +30,7 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-02-09 22:00:13.107167 by acetcom
+ * Created on: 2017-02-10 16:41:29.658202 by acetcom
  * from ['S1AP-PDU.asn']
  ******************************************************************************/
 #include "core_debug.h"
@@ -4423,7 +4423,7 @@ S1ap_IE_t *s1ap_new_ie(S1ap_ProtocolIE_ID_t id, S1ap_Criticality_t criticality,
 {
     S1ap_IE_t *buff;
 
-    if ((buff = malloc (sizeof (S1ap_IE_t))) == NULL) 
+    if ((buff = MALLOC(sizeof (S1ap_IE_t))) == NULL) 
     {
         // Possible error on malloc
         return NULL;
@@ -4436,8 +4436,7 @@ S1ap_IE_t *s1ap_new_ie(S1ap_ProtocolIE_ID_t id, S1ap_Criticality_t criticality,
     if (ANY_fromType_aper(&buff->value, type, sptr) < 0) 
     {
         d_error("Encoding of %s failed", type->name);
-        free (buff);
-        buff = NULL;
+        FREEMEM(buff);
         return NULL;
     }
 

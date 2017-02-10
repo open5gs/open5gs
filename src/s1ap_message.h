@@ -48,7 +48,7 @@ do {                            \
 /* Convert an integer on 32 bits to an octet string from aSN1c tool */
 #define INT32_TO_OCTET_STRING(x, aSN)           \
 do {                                            \
-    (aSN)->buf = calloc(4, sizeof(uint8_t));    \
+    (aSN)->buf = CALLOC(4, sizeof(uint8_t));    \
     INT32_TO_BUFFER(x, ((aSN)->buf));           \
     (aSN)->size = 4;                            \
 } while(0)
@@ -61,14 +61,14 @@ do {                                \
 
 #define INT16_TO_OCTET_STRING(x, aSN)           \
 do {                                            \
-    (aSN)->buf = calloc(2, sizeof(uint8_t));    \
+    (aSN)->buf = CALLOC(2, sizeof(uint8_t));    \
     (aSN)->size = 2;              \
     INT16_TO_BUFFER(x, (aSN)->buf);             \
 } while(0)
 
 #define INT8_TO_OCTET_STRING(x, aSN)            \
 do {                                            \
-    (aSN)->buf = calloc(1, sizeof(uint8_t));    \
+    (aSN)->buf = CALLOC(1, sizeof(uint8_t));    \
     (aSN)->size = 1;                            \
     INT8_TO_BUFFER(x, (aSN)->buf);              \
 } while(0)
@@ -129,7 +129,7 @@ do {                                    \
 
 #define MCC_MNC_TO_PLMNID(mCC, mNC, mNCdIGITlENGTH, oCTETsTRING)               \
 do {                                                                           \
-    (oCTETsTRING)->buf = calloc(3, sizeof(uint8_t));                           \
+    (oCTETsTRING)->buf = CALLOC(3, sizeof(uint8_t));                           \
     (oCTETsTRING)->buf[0] = (MCC_MNC_DECIMAL(mCC) << 4) | MCC_HUNDREDS(mCC);   \
     (oCTETsTRING)->buf[1] = (MNC_HUNDREDS(mNC,mNCdIGITlENGTH) << 4) | MCC_MNC_DIGIT(mCC);     \
     (oCTETsTRING)->buf[2] = (MCC_MNC_DIGIT(mNC) << 4) | MCC_MNC_DECIMAL(mNC);  \
@@ -207,7 +207,7 @@ do {                                                                    \
  */
 #define MACRO_ENB_ID_TO_BIT_STRING(mACRO, bITsTRING)    \
 do {                                                    \
-    (bITsTRING)->buf = calloc(3, sizeof(uint8_t));      \
+    (bITsTRING)->buf = CALLOC(3, sizeof(uint8_t));      \
     (bITsTRING)->buf[0] = ((mACRO) >> 12);              \
     (bITsTRING)->buf[1] = (mACRO) >> 4;                 \
     (bITsTRING)->buf[2] = ((mACRO) & 0x0f) << 4;        \
@@ -223,7 +223,7 @@ do {                                                    \
  */
 #define MACRO_ENB_ID_TO_CELL_IDENTITY(mACRO, cELL_iD, bITsTRING) \
 do {                                                    \
-    (bITsTRING)->buf = calloc(4, sizeof(uint8_t));      \
+    (bITsTRING)->buf = CALLOC(4, sizeof(uint8_t));      \
     (bITsTRING)->buf[0] = ((mACRO) >> 12);              \
     (bITsTRING)->buf[1] = (mACRO) >> 4;                 \
     (bITsTRING)->buf[2] = (((mACRO) & 0x0f) << 4) | ((cELL_iD) >> 4);        \
