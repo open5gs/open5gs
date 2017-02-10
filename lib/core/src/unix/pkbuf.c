@@ -13,7 +13,7 @@ pool_declare(clbuf_pool, clbuf_t, MAX_NUM_OF_CLBUF);
 pool_declare(pkbuf_pool, pkbuf_t, MAX_NUM_OF_PKBUF);
 
 #undef BOUNDARY
-#define BOUNDARY                4
+#define BOUNDARY                SIZEOF_VOIDP
 
 #define SIZEOF_CLUSTER_128      CORE_ALIGN(128+MAX_SIZEOF_HEADROOM, BOUNDARY)
 #define SIZEOF_CLUSTER_256      CORE_ALIGN(256+MAX_SIZEOF_HEADROOM, BOUNDARY)
@@ -63,6 +63,8 @@ status_t pkbuf_init(void)
 }
 status_t pkbuf_final(void)
 {
+    pkbuf_show();
+
     pool_final(&clbuf_pool);
     pool_final(&pkbuf_pool);
 
@@ -80,24 +82,22 @@ status_t pkbuf_final(void)
 
 void pkbuf_show(void)
 {
-    d_print("Pkbuf : Size = %d, Avail = %d\n",pool_size(&pkbuf_pool),
-            pool_avail(&pkbuf_pool));
-    d_print("clfbuf : Size = %d, Avail = %d\n\n",pool_size(&clbuf_pool),
-            pool_avail(&clbuf_pool));
-
-    d_print("cluster128 : Size = %d, Avail = %d\n",pool_size(&cluster_128_pool),
-            pool_avail(&cluster_128_pool));
-    d_print("cluster256 : Size = %d, Avail = %d\n",pool_size(&cluster_256_pool),
-            pool_avail(&cluster_256_pool));
-    d_print("cluster512 : Size = %d, Avail = %d\n",pool_size(&cluster_512_pool),
-            pool_avail(&cluster_512_pool));
-    d_print("cluster1024 : Size = %d, Avail = %d\n",
-            pool_size(&cluster_1024_pool), 
-            pool_avail(&cluster_128_pool));
-    d_print("cluster2048 : Size = %d, Avail = %d\n",
-            pool_size(&cluster_2048_pool),
-            pool_avail(&cluster_2048_pool));
-
+    d_print("%d not freed in pkbuf_t pool\n",
+            pool_size(&pkbuf_pool) - pool_avail(&pkbuf_pool));
+    d_print("%d not freed in clbuf_t pool\n",
+            pool_size(&clbuf_pool) - pool_avail(&clbuf_pool));
+    d_print("%d not freed in cluster128_t pool\n",
+            pool_size(&cluster_128_pool) - pool_avail(&cluster_128_pool));
+    d_print("%d not freed in cluster256_t pool\n",
+            pool_size(&cluster_256_pool) - pool_avail(&cluster_256_pool));
+    d_print("%d not freed in cluster512_t pool\n",
+            pool_size(&cluster_512_pool) - pool_avail(&cluster_512_pool));
+    d_print("%d not freed in cluster1024_t pool\n",
+            pool_size(&cluster_1024_pool) - pool_avail(&cluster_128_pool));
+    d_print("%d not freed in cluster2048_t pool\n",
+            pool_size(&cluster_2048_pool) - pool_avail(&cluster_2048_pool));
+    d_print("%d not freed in cluster8192_t pool\n",
+            pool_size(&cluster_8192_pool) - pool_avail(&cluster_8192_pool));
 }
 
 static clbuf_t* clbuf_alloc(c_uint16_t length);

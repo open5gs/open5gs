@@ -137,6 +137,8 @@ static void s1ap_test5(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, 280, erval);
 
     s1ap_free_pdu(&message);
+
+    pkbuf_free(pkbuf);
 }
 
 abts_suite *test_s1ap(abts_suite *suite)

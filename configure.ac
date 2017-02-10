@@ -71,12 +71,6 @@ dnl Checks for compile flag
 dnl Checks for pointer size
 AC_CHECK_SIZEOF(void*, 4)
 
-if test "x$ac_cv_sizeof_voidp" != "x"; then
-    voidp_size=$ac_cv_sizeof_voidp
-else
-    AC_ERROR([Cannot determine size of void*])
-fi
-
 dnl Checks for integer size
 AC_CHECK_SIZEOF(char, 1)
 AC_CHECK_SIZEOF(int, 4)
@@ -138,7 +132,6 @@ else
     AC_ERROR([could not detect a 64-bit integer type])
 fi
 
-AC_SUBST(voidp_size)
 AC_SUBST(short_value)
 AC_SUBST(int_value)
 AC_SUBST(long_value)

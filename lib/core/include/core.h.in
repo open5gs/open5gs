@@ -173,12 +173,10 @@ typedef  unsigned @short_value@ c_uint16_t;
 typedef  @int_value@            c_int32_t;
 typedef  unsigned @int_value@   c_uint32_t;
 
-#define C_SIZEOF_VOIDP @voidp_size@
-
 typedef  @long_value@           c_int64_t;
 typedef  unsigned @long_value@  c_uint64_t;
 
-#if C_SIZEOF_VOIDP == 8
+#if SIZEOF_VOIDP == 8
 typedef  c_uint64_t            	c_uintptr_t;
 typedef  c_int64_t             	c_intptr_t;
 #else
