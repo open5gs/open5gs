@@ -4,6 +4,7 @@
 #include "core_ringbuf.h"
 #include "core_cond.h"
 #include "core_mutex.h"
+#include "core_pkbuf.h"
 #include "core_msgq.h"
 
 typedef struct _msq_desc_t {
@@ -60,7 +61,7 @@ msgq_id msgq_create(int qdepth, int msgsize, int opt)
             goto error_final, "mutex creation failed");
 
     s = qdepth * (msgsize + 2);
-    md->pool = malloc(s);
+    md->pool = core_malloc(s);
     d_assert(md->pool != NULL,
             goto error_final, "can't allocate msg q buffer %d bytes", s);
 
@@ -74,7 +75,7 @@ msgq_id msgq_create(int qdepth, int msgsize, int opt)
     return (msgq_id)md;
 
 error_final:
-    if (md->pool) free(md->pool);
+    if (md->pool) core_free(md->pool);
     if (md->mut_c) mutex_delete(md->mut_c);
     if (md->mut_r) mutex_delete(md->mut_r);
     if (md->mut_w) mutex_delete(md->mut_w);
@@ -91,7 +92,7 @@ status_t msgq_delete(msgq_id id)
 
     d_assert(md != NULL, return CORE_ERROR, "param 'id' is null");
 
-    if (md->pool) free(md->pool);
+    if (md->pool) core_free(md->pool);
     if (md->mut_c) mutex_delete(md->mut_c);
     if (md->cond) cond_delete(md->cond);
 
