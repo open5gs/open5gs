@@ -11,7 +11,8 @@ static void pkbuf_test1(abts_case *tc, void *data)
 static void pkbuf_test2(abts_case *tc, void *data)
 {
     char *ptr = core_calloc(2, 10);
-    for (int i = 0; i < 2*10; i++)
+    int i;
+    for (i = 0; i < 2*10; i++)
     {
         ABTS_INT_EQUAL(tc, 0, ptr[i]);
     }

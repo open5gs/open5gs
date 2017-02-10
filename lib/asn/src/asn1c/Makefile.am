@@ -811,6 +811,9 @@ noinst_LTLIBRARIES=libasn1c.la
 libasn1c_la_SOURCES=$(ASN_MODULE_INCLUDES)
 nodist_libasn1c_la_SOURCES=$(ASN_MODULE_SOURCES)
 
+AM_CPPFLAGS = \
+    -I$(top_srcdir)/lib/core/include
+
 AM_CFLAGS = \
 	-Wall -Werror -Wno-parentheses-equality
 

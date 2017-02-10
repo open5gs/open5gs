@@ -524,7 +524,9 @@ void core_free(void *ptr)
 {
     c_uint16_t headroom = sizeof(pkbuf_t *);
     pkbuf_t *p = NULL;
-    d_assert(ptr, return, "Null param");
+
+    if (!ptr) 
+        return;
 
     memcpy(&p, ptr - headroom, headroom);
     d_assert(p, return, "Null param");

@@ -23,10 +23,18 @@ extern "C" {
 #define	ASN1C_ENVIRONMENT_VERSION	924	/* Compile-time version */
 int get_asn1c_environment_version(void);	/* Run-time version */
 
+#if 1 /* modified by acetcom */
 #define	CALLOC(nmemb, size)	calloc(nmemb, size)
 #define	MALLOC(size)		malloc(size)
 #define	REALLOC(oldptr, size)	realloc(oldptr, size)
 #define	FREEMEM(ptr)		free(ptr)
+#else
+#include "core_pkbuf.h"
+#define	CALLOC(nmemb, size)	core_calloc(nmemb, size)
+#define	MALLOC(size)		core_malloc(size)
+#define	REALLOC(oldptr, size)	core_realloc(oldptr, size)
+#define	FREEMEM(ptr)		core_free(ptr)
+#endif
 
 #define	asn_debug_indent	0
 #define ASN_DEBUG_INDENT_ADD(i) do{}while(0)
