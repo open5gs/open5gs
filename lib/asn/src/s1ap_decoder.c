@@ -213,7 +213,6 @@ static void s1ap_decode_xer_print_message(
     {
         char *message_string = core_calloc(HUGE_STRING_LEN, sizeof(c_uint8_t));
         s1ap_string_total_size = 0;
-        memset(message_string, 0, HUGE_STRING_LEN);
 
         func(cb, message_string, message_p);
 
