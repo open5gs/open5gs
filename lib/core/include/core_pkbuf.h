@@ -185,6 +185,12 @@ CORE_DECLARE(status_t) pkbuf_tobuf_partial(pkbuf_t *pkbuf,
  * Get the total length of packet buffer */
 #define pkbuf_length(__pkbuf) (__pkbuf) ? ((__pkbuf)->tot_len : -1)
 
+/* memory handling library like OS-function(malloc,free) */
+CORE_DECLARE(void *) core_malloc(size_t size);
+CORE_DECLARE(void) core_free(void *ptr);
+CORE_DECLARE(void *) core_calloc(size_t nmemb, size_t size);
+CORE_DECLARE(void *) core_realloc(void *ptr, size_t size);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

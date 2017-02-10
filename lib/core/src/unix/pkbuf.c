@@ -82,22 +82,30 @@ status_t pkbuf_final(void)
 
 void pkbuf_show(void)
 {
-    d_print("%d not freed in pkbuf_t pool\n",
-            pool_size(&pkbuf_pool) - pool_avail(&pkbuf_pool));
-    d_print("%d not freed in clbuf_t pool\n",
-            pool_size(&clbuf_pool) - pool_avail(&clbuf_pool));
-    d_print("%d not freed in cluster128_t pool\n",
-            pool_size(&cluster_128_pool) - pool_avail(&cluster_128_pool));
-    d_print("%d not freed in cluster256_t pool\n",
-            pool_size(&cluster_256_pool) - pool_avail(&cluster_256_pool));
-    d_print("%d not freed in cluster512_t pool\n",
-            pool_size(&cluster_512_pool) - pool_avail(&cluster_512_pool));
-    d_print("%d not freed in cluster1024_t pool\n",
-            pool_size(&cluster_1024_pool) - pool_avail(&cluster_128_pool));
-    d_print("%d not freed in cluster2048_t pool\n",
-            pool_size(&cluster_2048_pool) - pool_avail(&cluster_2048_pool));
-    d_print("%d not freed in cluster8192_t pool\n",
-            pool_size(&cluster_8192_pool) - pool_avail(&cluster_8192_pool));
+    d_print("%d not freed in pkbuf_pool[%d]\n",
+            pool_size(&pkbuf_pool) - pool_avail(&pkbuf_pool),
+            pool_size(&pkbuf_pool));
+    d_print("%d not freed in clbuf_pool[%d]\n",
+            pool_size(&clbuf_pool) - pool_avail(&clbuf_pool),
+            pool_size(&clbuf_pool));
+    d_print("%d not freed in cluster128_pool[%d]\n",
+            pool_size(&cluster_128_pool) - pool_avail(&cluster_128_pool),
+            pool_size(&cluster_128_pool));
+    d_print("%d not freed in cluster256_pool[%d]\n",
+            pool_size(&cluster_256_pool) - pool_avail(&cluster_256_pool),
+            pool_size(&cluster_256_pool));
+    d_print("%d not freed in cluster512_pool[%d]\n",
+            pool_size(&cluster_512_pool) - pool_avail(&cluster_512_pool),
+            pool_size(&cluster_512_pool));
+    d_print("%d not freed in cluster1024_pool[%d]\n",
+            pool_size(&cluster_1024_pool) - pool_avail(&cluster_128_pool),
+            pool_size(&cluster_1024_pool));
+    d_print("%d not freed in cluster2048_pool[%d]\n",
+            pool_size(&cluster_2048_pool) - pool_avail(&cluster_2048_pool),
+            pool_size(&cluster_2048_pool));
+    d_print("%d not freed in cluster8192_pool[%d]\n",
+            pool_size(&cluster_8192_pool) - pool_avail(&cluster_8192_pool),
+            pool_size(&cluster_8192_pool));
 }
 
 static clbuf_t* clbuf_alloc(c_uint16_t length);
@@ -496,3 +504,80 @@ status_t pkbuf_tobuf_partial(pkbuf_t *pkbuf, void *buf, c_uint16_t *buflen,
 
     return CORE_OK;
 }
+
+void *core_malloc(size_t size)
+{
+    c_uint16_t headroom = 0;
+    pkbuf_t *p = NULL;
+
+    d_assert(size, return NULL, "if size == 0, then returns NULL");
+    headroom = sizeof(pkbuf_t *);
+    p = pkbuf_alloc(headroom, size);
+    d_assert(p, return NULL, "pkbuf_alloc failed");
+
+    memcpy(p->payload - headroom, &p, headroom);
+
+    return p->payload;
+}
+
+void core_free(void *ptr)
+{
+    c_uint16_t headroom = sizeof(pkbuf_t *);
+    pkbuf_t *p = NULL;
+    d_assert(ptr, return, "Null param");
+
+    memcpy(&p, ptr - headroom, headroom);
+    d_assert(p, return, "Null param");
+
+    pkbuf_free(p);
+}
+
+void *core_calloc(size_t nmemb, size_t size)
+{
+    void *ptr = NULL;
+
+    ptr = core_malloc(nmemb * size);
+    d_assert(ptr, return NULL, "nmeb = %d, sizeo = %d", nmemb, size);
+
+    memset(ptr, 0, nmemb * size);
+    return ptr;
+}
+
+void *core_realloc(void *ptr, size_t size)
+{
+    c_uint16_t headroom = sizeof(pkbuf_t *);
+    pkbuf_t *p = NULL;
+
+    if (!ptr) 
+    {
+        return core_malloc(size);
+    }
+
+    memcpy(&p, ptr - headroom, headroom);
+    d_assert(p, return NULL, "Null param");
+
+    if (!size)
+    {
+        pkbuf_free(p);
+        return NULL;
+    }
+
+    d_assert(p->clbuf, return NULL, "Null param");
+    if (size > (p->clbuf->size - headroom))
+    {
+        void *new = NULL;
+
+        new = core_malloc(size);
+        d_assert(new, return NULL, "Null param");
+        memcpy(new, ptr, p->len);
+
+        pkbuf_free(p);
+
+        return new;
+    }
+    else
+    {
+        return ptr;
+    }
+}
+
