@@ -7,6 +7,7 @@
 #include "testutil.h"
 
 #include "s1ap_message.h"
+#include "s1ap_conv.h"
 
 static void s1ap_test1(abts_case *tc, void *data)
 {
@@ -102,11 +103,7 @@ static void s1ap_test5(abts_case *tc, void *data)
     S1ap_PLMNidentity_t *plmnIdentity;
     S1ap_SupportedTAs_Item_t *supportedTA;
 
-    uint16_t mcc = 0x1234;
-    uint16_t mnc = 0x5678;
-    uint16_t mnc_digit_len = 2;
     uint32_t enb_id = 0x5f123;
-    uint32_t tac = 0x1234;
 
     memset(&message, 0, sizeof(s1ap_message));
 
@@ -114,17 +111,19 @@ static void s1ap_test5(abts_case *tc, void *data)
 
     s1SetupRequestIEs->global_ENB_ID.eNB_ID.present = 
         S1ap_ENB_ID_PR_macroENB_ID;
-    MACRO_ENB_ID_TO_BIT_STRING(enb_id,
+    s1ap_conv_macro_enb_id_to_bit_string(enb_id, 
          &s1SetupRequestIEs->global_ENB_ID.eNB_ID.choice.macroENB_ID);
-    MCC_MNC_TO_PLMNID(mcc, mnc, mnc_digit_len,
-        &s1SetupRequestIEs->global_ENB_ID.pLMNidentity);
+
+    s1ap_conv_plmn_id_to_tbcd_string(
+        &mme_self()->plmn_id, &s1SetupRequestIEs->global_ENB_ID.pLMNidentity);
 
     supportedTA = (S1ap_SupportedTAs_Item_t *)
-        CALLOC(1, sizeof(S1ap_SupportedTAs_Item_t));
-    INT16_TO_OCTET_STRING(tac, &supportedTA->tAC);
+        core_calloc(1, sizeof(S1ap_SupportedTAs_Item_t));
+    s1ap_conv_uint16_to_octet_string(mme_self()->tac, &supportedTA->tAC);
     plmnIdentity = (S1ap_PLMNidentity_t *)
-        CALLOC(1, sizeof(S1ap_PLMNidentity_t));
-    MCC_MNC_TO_TBCD(mcc, mnc, mnc_digit_len, plmnIdentity);
+        core_calloc(1, sizeof(S1ap_PLMNidentity_t));
+    s1ap_conv_plmn_id_to_tbcd_string(
+        &mme_self()->plmn_id, plmnIdentity);
     ASN_SEQUENCE_ADD(&supportedTA->broadcastPLMNs, plmnIdentity);
 
     ASN_SEQUENCE_ADD(&s1SetupRequestIEs->supportedTAs, supportedTA);

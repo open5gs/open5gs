@@ -3,10 +3,10 @@
 noinst_LTLIBRARIES = libcellwire.la
 
 libcellwire_la_SOURCES = \
-    cellwire.h context.h s1ap_message.h
+    cellwire.h context.h s1ap_message.h s1ap_conv.h
 
 nodist_libcellwire_la_SOURCES = \
-    init.c context.c s1ap_message.c
+    init.c context.c s1ap_message.c s1ap_conv.c
 
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/include \

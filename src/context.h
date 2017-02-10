@@ -13,9 +13,9 @@ extern "C" {
 #define CODE_PER_MME                256    /* According to spec it is 256*/
 
 typedef struct _plmn_id_t {
-    c_uint8_t       mnc_digit_len;
-    c_uint8_t       mcc[3];
-    c_uint8_t       mnc[3];
+    c_uint16_t      mcc;
+    c_uint16_t      mnc;
+    c_uint16_t      mnc_len;
 } plmn_id_t;
 
 typedef struct _served_gummei {
@@ -32,10 +32,9 @@ typedef struct _served_gummei {
  * This structure represents HypcerCell */
 typedef struct _mme_ctx_t {
     plmn_id_t       plmn_id;
-
     c_uint8_t       relative_capacity;
-
     srvd_gummei_t   srvd_gummei;
+    c_uint16_t      tac;
 } mme_ctx_t;
 
 CORE_DECLARE(status_t)      context_init(void);
