@@ -17,6 +17,7 @@
 #include "abts.h"
 #include "abts_tests.h"
 #include "testutil.h"
+#include "core_pkbuf.h"
 
 #define ABTS_STAT_SIZE 6
 static char status[ABTS_STAT_SIZE] = {'|', '/', '-', '|', '\\', '-'};
@@ -99,7 +100,7 @@ abts_suite *abts_add_suite(abts_suite *suite, const char *suite_name_full)
         end_suite(suite);
     }
 
-    subsuite = malloc(sizeof(*subsuite));
+    subsuite = core_malloc(sizeof(*subsuite));
     subsuite->num_test = 0;
     subsuite->failed = 0;
     subsuite->next = NULL;
@@ -113,7 +114,7 @@ abts_suite *abts_add_suite(abts_suite *suite, const char *suite_name_full)
     }
     p = strrchr(suite_name, '.');
     if (p) {
-        subsuite->name = memcpy(calloc(p - suite_name + 1, 1),
+        subsuite->name = memcpy(core_calloc(p - suite_name + 1, 1),
                                 suite_name, p - suite_name);
     }
     else {
@@ -127,7 +128,7 @@ abts_suite *abts_add_suite(abts_suite *suite, const char *suite_name_full)
     subsuite->not_run = 0;
 
     if (suite == NULL) {
-        suite = malloc(sizeof(*suite));
+        suite = core_malloc(sizeof(*suite));
         suite->head = subsuite;
         suite->tail = subsuite;
     }
@@ -206,6 +207,22 @@ static int report(abts_suite *suite)
         dptr = dptr->next;
     }
     return 1;
+}
+
+static void abts_free(abts_suite *suite)
+{
+    sub_suite *ptr = NULL, *next_ptr = NULL;
+
+    ptr = suite->head;
+    while (ptr != NULL) {
+        next_ptr = ptr->next;
+
+        core_free((void*)ptr->name);
+        core_free(ptr);
+        ptr = next_ptr;
+    }
+
+    core_free(suite);
 }
 
 void abts_log_message(const char *fmt, ...)
@@ -442,7 +459,7 @@ int main(int argc, const char *const argv[]) {
         /* Waste a little space here, because it is easier than counting the
          * number of tests listed.  Besides it is at most three char *.
          */
-        testlist = calloc(argc + 1, sizeof(char *));
+        testlist = core_calloc(argc + 1, sizeof(char *));
         for (i = 1; i < argc; i++) {
             testlist[i - 1] = argv[i];
         }
@@ -453,6 +470,10 @@ int main(int argc, const char *const argv[]) {
     }
 
     rv = report(suite);
+
+    abts_free(suite);
+
+    core_free(testlist);
     return rv;
 }
 

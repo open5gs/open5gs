@@ -6,8 +6,8 @@
 #include "core_debug.h"
 #include "core_pool.h"
 
-#define MAX_NUM_OF_CLBUF 32
-#define MAX_NUM_OF_PKBUF 32
+#define MAX_NUM_OF_CLBUF 64
+#define MAX_NUM_OF_PKBUF 64
 
 pool_declare(clbuf_pool, clbuf_t, MAX_NUM_OF_CLBUF);
 pool_declare(pkbuf_pool, pkbuf_t, MAX_NUM_OF_PKBUF);
@@ -22,7 +22,7 @@ pool_declare(pkbuf_pool, pkbuf_t, MAX_NUM_OF_PKBUF);
 #define SIZEOF_CLUSTER_2048     CORE_ALIGN(2048+MAX_SIZEOF_HEADROOM, BOUNDARY)
 #define SIZEOF_CLUSTER_8192     CORE_ALIGN(8192+MAX_SIZEOF_HEADROOM, BOUNDARY)
 
-#define MAX_NUM_OF_CLUSTER_128  32
+#define MAX_NUM_OF_CLUSTER_128  64
 #define MAX_NUM_OF_CLUSTER_256  32 
 #define MAX_NUM_OF_CLUSTER_512  32
 #define MAX_NUM_OF_CLUSTER_1024 32
