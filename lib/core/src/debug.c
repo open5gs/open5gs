@@ -26,7 +26,7 @@ struct sockaddr_un g_logd_addr;
 
 void d_msg_init()
 {
-    openlog("wmcore", 0, LOG_DAEMON);
+    openlog("libcore", 0, LOG_DAEMON);
 
     g_syslog_connected = 1;
 

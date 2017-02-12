@@ -208,6 +208,22 @@ static int report(abts_suite *suite)
     return 1;
 }
 
+static void abts_free(abts_suite *suite)
+{
+    sub_suite *ptr = NULL, *next_ptr = NULL;
+
+    ptr = suite->head;
+    while (ptr != NULL) {
+        next_ptr = ptr->next;
+
+        free((void*)ptr->name);
+        free(ptr);
+        ptr = next_ptr;
+    }
+
+    free(suite);
+}
+
 void abts_log_message(const char *fmt, ...)
 {
     va_list args;
@@ -453,6 +469,10 @@ int main(int argc, const char *const argv[]) {
     }
 
     rv = report(suite);
+
+    abts_free(suite);
+
+    free(testlist);
     return rv;
 }
 

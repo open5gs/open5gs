@@ -12,7 +12,6 @@
 status_t cellwire_initialize(char *config_path)
 {
     status_t rv;
-    openlog("cellwire", 0, LOG_DAEMON);
 
     srand(time(NULL)*getpid());
 
