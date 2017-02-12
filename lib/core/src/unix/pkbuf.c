@@ -98,7 +98,7 @@ void pkbuf_show(void)
             pool_size(&cluster_512_pool) - pool_avail(&cluster_512_pool),
             pool_size(&cluster_512_pool));
     d_print("%d not freed in cluster1024_pool[%d]\n",
-            pool_size(&cluster_1024_pool) - pool_avail(&cluster_128_pool),
+            pool_size(&cluster_1024_pool) - pool_avail(&cluster_1024_pool),
             pool_size(&cluster_1024_pool));
     d_print("%d not freed in cluster2048_pool[%d]\n",
             pool_size(&cluster_2048_pool) - pool_avail(&cluster_2048_pool),
