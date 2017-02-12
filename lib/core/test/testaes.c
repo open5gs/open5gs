@@ -1,5 +1,6 @@
 #include "core_aes.h"
 #include "core_aes_cmac.h"
+#include "core_pkbuf.h"
 #include "testutil.h"
 
 typedef struct {
@@ -43,9 +44,9 @@ static void aes_test2(abts_case *tc, void *data)
 
     test_vector[0].key_bits = 128;
     test_vector[0].key =
-        malloc(sizeof(char)*KEYLENGTH(test_vector[0].key_bits));
+        core_malloc(sizeof(char)*KEYLENGTH(test_vector[0].key_bits));
     test_vector[0].rk =
-        malloc(sizeof(unsigned int)*RKLENGTH(test_vector[0].key_bits));
+        core_malloc(sizeof(unsigned int)*RKLENGTH(test_vector[0].key_bits));
     memcpy(test_vector[0].key,
             "\x95\xA8\xEE\x8E\x89\x97\x9B\x9E"
             "\xFD\xCB\xC6\xEB\x97\x97\x52\x8D",
@@ -65,9 +66,9 @@ static void aes_test2(abts_case *tc, void *data)
 
     test_vector[1].key_bits = 192;
     test_vector[1].key =
-        malloc(sizeof(char)*KEYLENGTH(test_vector[1].key_bits));
+        core_malloc(sizeof(char)*KEYLENGTH(test_vector[1].key_bits));
     test_vector[1].rk =
-        malloc(sizeof(unsigned int)*RKLENGTH(test_vector[1].key_bits));
+        core_malloc(sizeof(unsigned int)*RKLENGTH(test_vector[1].key_bits));
     memcpy(test_vector[1].key,
             "\x95\xA8\xEE\x8E\x89\x97\x9B\x9E"
             "\xFD\xCB\xC6\xEB\x97\x97\x52\x8D"
@@ -88,9 +89,9 @@ static void aes_test2(abts_case *tc, void *data)
 
     test_vector[2].key_bits = 256;
     test_vector[2].key =
-        malloc(sizeof(char)*KEYLENGTH(test_vector[2].key_bits));
+        core_malloc(sizeof(char)*KEYLENGTH(test_vector[2].key_bits));
     test_vector[2].rk =
-        malloc(sizeof(unsigned int)*RKLENGTH(test_vector[2].key_bits));
+        core_malloc(sizeof(unsigned int)*RKLENGTH(test_vector[2].key_bits));
     memcpy(test_vector[2].key,
             "\x95\xA8\xEE\x8E\x89\x97\x9B\x9E"
             "\xFD\xCB\xC6\xEB\x97\x97\x52\x8D"
@@ -125,8 +126,8 @@ static void aes_test2(abts_case *tc, void *data)
         rc = memcmp(tmp, test_vector[i].decipher_output, 16);
         ABTS_INT_EQUAL(tc, 0, rc);
 
-        free(test_vector[i].key);
-        free(test_vector[i].rk);
+        core_free(test_vector[i].key);
+        core_free(test_vector[i].rk);
     }
 }
 

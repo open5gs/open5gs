@@ -1,4 +1,5 @@
 #include "core_file.h"
+#include "core_pkbuf.h"
 #include "testutil.h"
 
 #define DIRNAME "data"
@@ -95,7 +96,7 @@ static void test_read(abts_case *tc, void *data)
 {
     status_t rv;
     size_t nbytes = 256;
-    char *str = malloc(nbytes + 1);
+    char *str = core_malloc(nbytes + 1);
     file_t *filetest = NULL;
 
     rv = file_open(&filetest, FILENAME,
@@ -108,7 +109,7 @@ static void test_read(abts_case *tc, void *data)
     ABTS_SIZE_EQUAL(tc, strlen(TESTSTR), nbytes);
     ABTS_STR_EQUAL(tc, TESTSTR, str);
 
-    free(str);
+    core_free(str);
 
     file_close(filetest);
 }
@@ -244,7 +245,7 @@ static void test_seek(abts_case *tc, void *data)
     status_t rv;
     off_t offset = 5;
     size_t nbytes = 256;
-    char *str = malloc(nbytes + 1);
+    char *str = core_malloc(nbytes + 1);
     file_t *filetest = NULL;
 
     rv = file_open(&filetest, FILENAME,
@@ -288,7 +289,7 @@ static void test_seek(abts_case *tc, void *data)
     ABTS_SIZE_EQUAL(tc, 5, nbytes);
     ABTS_STR_EQUAL(tc, TESTSTR + strlen(TESTSTR) - 5, str);
 
-    free(str);
+    core_free(str);
 
     file_close(filetest);
 }
@@ -312,7 +313,7 @@ static void test_gets(abts_case *tc, void *data)
 {
     file_t *f = NULL;
     status_t rv;
-    char *str = malloc(256);
+    char *str = core_malloc(256);
 
     rv = file_open(&f, FILENAME, FILE_READ, 0);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -328,7 +329,7 @@ static void test_gets(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_EOF, rv);
     ABTS_STR_EQUAL(tc, "", str);
 
-    free(str);
+    core_free(str);
     file_close(f);
 }
 
@@ -461,7 +462,7 @@ static void file_contents_equal(abts_case *tc,
                                 const void *expect,
                                 size_t expectlen)
 {
-    void *actual = malloc(expectlen);
+    void *actual = core_malloc(expectlen);
     file_t *f;
 
     CORE_ASSERT_OK(tc, "open file",
@@ -475,7 +476,7 @@ static void file_contents_equal(abts_case *tc,
 
     CORE_ASSERT_OK(tc, "close file", file_close(f));
 
-    free(actual);
+    core_free(actual);
 }
 
 #define LINE1 "this is a line of text\n"

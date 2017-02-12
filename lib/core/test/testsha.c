@@ -1,6 +1,7 @@
 #include "core_debug.h"
 #include "core_sha1.h"
 #include "core_sha2.h"
+#include "core_pkbuf.h"
 #include "testutil.h"
 
 static void sha1_test1(abts_case *tc, void *data)
