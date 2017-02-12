@@ -20,10 +20,12 @@ user@host Documents/~/git/AuthenticEshkinKot$ \
 [Option1] WITH skeletons
 user@host ~/Documents/git/cellwire/lib/asn/src/asn1c$ \
     ../../../../../AuthenticEshkinKot/asn1c/asn1c \
-    -fcompound-names -gen-PER ../../support/S1AP-PDU.asn
+    -fcompound-names -fincludes-quoted -gen-PER ../../support/S1AP-PDU.asn
+
+    [CHECK] asn_internal.h/core_malloc/core_free & Makefile.am
 
 [Option2] WITHOUT skeletons
 user@host ~/Documents/git/cellwire/lib/asn/src/asn1c$ \
     ../../../../../AuthenticEshkinKot/asn1c/asn1c \
-    -fcompound-names -gen-PER -S ./ ../../support/S1AP-PDU.asn
+    -fcompound-names -fincludes-quoted -gen-PER -S ./ ../../support/S1AP-PDU.asn
 
