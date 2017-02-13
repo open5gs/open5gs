@@ -22,7 +22,7 @@ AM_CPPFLAGS = \
 
 AM_CFLAGS = \
 	-Wall -Werror @OSCFLAGS@ \
-	-Wno-unused-function
+	-Wno-unused-function -Wno-unused-variable
 
 TESTS = testcellwire
 

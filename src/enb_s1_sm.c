@@ -74,7 +74,7 @@ void enb_s1_state_operational(enb_s1_sm_t *s, event_t *e)
                     {
                         case S1ap_ProcedureCode_id_S1Setup :
                         {
-                            d_info("s1setuprequest is received");
+                            d_info("S1-Setup-Request is received");
                             enb_s1_handle_s1setuprequest(enb, &message);
                             break;
                         }

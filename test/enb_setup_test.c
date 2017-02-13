@@ -11,7 +11,7 @@
 #include "s1ap_conv.h"
 #include "s1ap_path.h"
 
-net_sock_t *enb_s1ap_connect(void)
+net_sock_t *enb_net_open(void)
 {
     status_t rv;
     mme_ctx_t *mme = mme_self();
@@ -19,19 +19,21 @@ net_sock_t *enb_s1ap_connect(void)
 
     if (!mme) return NULL;
 
-    c_uint16_t rport = mme->enb_s1_port;
-    c_uint16_t lport = mme->enb_s1_port+1;
-
-    rv = net_open_with_addr(&sock, mme->enb_local_addr, "127.0.0.1", lport, 
-            rport, SOCK_STREAM, IPPROTO_SCTP, 0);
+    rv = net_open_with_addr(&sock, mme->enb_local_addr, "127.0.0.1", 0, 
+            mme->enb_s1_port, SOCK_SEQPACKET, IPPROTO_SCTP, 0);
     if (rv != CORE_OK) return NULL;
 
     return sock;
 }
 
-status_t enb_s1ap_disconnect(net_sock_t *sock)
+status_t enb_net_close(net_sock_t *sock)
 {
     return net_close(sock);
+}
+
+int enb_net_send(net_sock_t *sock, pkbuf_t *sendbuf)
+{
+    return s1ap_send(sock, sendbuf);
 }
 
 int enb_net_read(net_sock_t *sock, pkbuf_t *recvbuf, int size)
@@ -50,37 +52,56 @@ int enb_net_read(net_sock_t *sock, pkbuf_t *recvbuf, int size)
     return rc;
 }
 
+#define NUM_OF_TEST_ENB 2
 static void enb_setup_test1(abts_case *tc, void *data)
 {
     status_t rv;
-    net_sock_t *sock[2];
+    net_sock_t *sock[NUM_OF_TEST_ENB];
     pkbuf_t *sendbuf;
     pkbuf_t *recvbuf = pkbuf_alloc(0, S1AP_SDU_SIZE);
     s1ap_message message;
     int rc;
+    int i;
 
-    sock[0] = enb_s1ap_connect();
-    ABTS_PTR_NOTNULL(tc, sock[0]);
+    for (i = 0; i < NUM_OF_TEST_ENB; i++)
+    {
+        sock[i] = enb_net_open();
+        ABTS_PTR_NOTNULL(tc, sock[i]);
+    }
 
-    rv = s1ap_build_setup_req(&sendbuf, 0x54f64);
-    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    for (i = 0; i < NUM_OF_TEST_ENB; i++)
+    {
+        int size = 0;
 
-    rv = s1ap_send(sock[0], sendbuf);
-    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+        rv = s1ap_build_setup_req(&sendbuf, 0x54f64);
+        ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    pkbuf_free(sendbuf);
+        rv = enb_net_send(sock[i], sendbuf);
+        ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    rc = enb_net_read(sock[0], recvbuf, 27);
-    ABTS_INT_EQUAL(tc, 27, rc);
+        pkbuf_free(sendbuf);
 
-    rv = s1ap_decode_pdu(&message, recvbuf);
-    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+        if (i == 0) size = 27; /* S1SetupResponse size = 27 */
+        else size = 12; /* S1SetupFailure size = 12 */
 
-    s1ap_free_pdu(&message);
+        rc = enb_net_read(sock[i], recvbuf, size);
+        ABTS_INT_EQUAL(tc, size, rc);
+
+        rv = s1ap_decode_pdu(&message, recvbuf);
+        ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+        s1ap_free_pdu(&message);
+    }
+
+    for (i = 0; i < NUM_OF_TEST_ENB; i++)
+    {
+        rv = enb_net_close(sock[i]);
+        ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    }
+
     pkbuf_free(recvbuf);
 
-    rv = enb_s1ap_disconnect(sock[0]);
-    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    core_sleep(300000);
 }
 
 abts_suite *test_enb_setup(abts_suite *suite)

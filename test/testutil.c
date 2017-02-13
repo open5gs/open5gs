@@ -41,6 +41,8 @@ void test_terminate(void)
 {
     threads_stop();
     
+    d_msg_to(D_MSG_TO_STDOUT, 1);
+
     core_terminate();
     cellwire_terminate();
 }
