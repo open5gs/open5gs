@@ -13,8 +13,10 @@ extern "C" {
 #define GTP_U_UDP_PORT              2152
 
 CORE_DECLARE(status_t) cellwire_initialize(char *config_path);
-
 CORE_DECLARE_NONSTD(void) cellwire_terminate(void);
+
+CORE_DECLARE(void) threads_start(void);
+CORE_DECLARE(void) threads_stop(void);
 
 #ifdef __cplusplus
 }

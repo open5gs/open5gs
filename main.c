@@ -8,7 +8,6 @@
 #define TRACE_MODULE _main_
 #include "core_debug.h"
 #include "core_cond.h"
-#include "core_thread.h"
 #include "core_signal.h"
 #include "core_net.h"
 
@@ -17,18 +16,6 @@
 
 /* Server */
 #include "cellwire.h"
-
-thread_id thr_sm;
-#define THREAD_SM_STACK_SIZE
-#define THREAD_SM_PRIORITY
-extern void *THREAD_FUNC sm_main(void *data);
-
-thread_id thr_dp;
-#define THREAD_DP_STACK_SIZE
-#define THREAD_DP_PRIORITY
-extern void *THREAD_FUNC dp_main(void *data);
-
-thread_id thr_test;
 
 char *config_path = NULL;
 extern char g_compile_time[];
@@ -54,29 +41,6 @@ static void show_help()
            "   -l log_path          Fork log daemon with file path to be logged to\n"
            "\n"
            );
-}
-
-static void threads_start()
-{
-    status_t rv;
-
-#if 0
-    rv = thread_create(&thr_sm, NULL, sm_main, NULL);
-    d_assert(rv == CORE_OK, return,
-            "State machine thread creation failed");
-
-    rv = thread_create(&thr_dp, NULL, dp_main, NULL);
-    d_assert(rv == CORE_OK, return,
-            "Control path thread creation failed");
-#endif
-}
-
-static void threads_stop()
-{
-#if 0
-    thread_delete(thr_sm);
-    thread_delete(thr_dp);
-#endif
 }
 
 static int check_signal(int signum)
