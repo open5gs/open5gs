@@ -10,7 +10,7 @@
 /* Server */
 #include "event.h"
 
-#define EVT_Q_DEPTH 16
+#define EVT_Q_DEPTH 32
 
 msgq_id event_create(void)
 {

@@ -52,26 +52,27 @@ int enb_net_read(net_sock_t *sock, pkbuf_t *recvbuf, int size)
     return rc;
 }
 
-#define NUM_OF_TEST_ENB 4
+#define NUM_OF_TEST_DUPLICATED_ENB 4
+
 #define TEST_S1_SETUP_RESPONSE_SIZE 27 
 #define TEST_S1_SETUP_FAILURE_SIZE 12 
 static void enb_setup_test1(abts_case *tc, void *data)
 {
     status_t rv;
-    net_sock_t *sock[NUM_OF_TEST_ENB];
+    net_sock_t *sock[NUM_OF_TEST_DUPLICATED_ENB];
     pkbuf_t *sendbuf;
     pkbuf_t *recvbuf = pkbuf_alloc(0, S1AP_SDU_SIZE);
     s1ap_message message;
     int rc;
     int i;
 
-    for (i = 0; i < NUM_OF_TEST_ENB; i++)
+    for (i = 0; i < NUM_OF_TEST_DUPLICATED_ENB; i++)
     {
         sock[i] = enb_net_open();
         ABTS_PTR_NOTNULL(tc, sock[i]);
     }
 
-    for (i = 0; i < NUM_OF_TEST_ENB; i++)
+    for (i = 0; i < NUM_OF_TEST_DUPLICATED_ENB; i++)
     {
         int size = 0;
 
@@ -95,7 +96,7 @@ static void enb_setup_test1(abts_case *tc, void *data)
         s1ap_free_pdu(&message);
     }
 
-    for (i = 0; i < NUM_OF_TEST_ENB; i++)
+    for (i = 0; i < NUM_OF_TEST_DUPLICATED_ENB; i++)
     {
         rv = enb_net_close(sock[i]);
         ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -105,6 +106,8 @@ static void enb_setup_test1(abts_case *tc, void *data)
 
     core_sleep(time_from_msec(3));
 }
+
+#define NUM_OF_TEST_ENB 64
 
 static void enb_setup_test2(abts_case *tc, void *data)
 {
@@ -149,7 +152,7 @@ static void enb_setup_test2(abts_case *tc, void *data)
 
     pkbuf_free(recvbuf);
 
-    core_sleep(time_from_msec(3));
+    core_sleep(time_from_sec(1));
 }
 
 abts_suite *test_enb_setup(abts_suite *suite)

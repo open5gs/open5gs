@@ -24,7 +24,7 @@ extern "C" {
 #include <sys/socket.h>
 #endif
 
-#define MAX_NET_POOL_SIZE       100
+#define MAX_NET_POOL_SIZE       256
 
 /* Max length of interface name, ex: eth0, ath0 .. */
 #define MAX_IFNAME_LEN      16
