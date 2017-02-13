@@ -95,8 +95,8 @@ static status_t s1_recv(net_sock_t *net_sock, pkbuf_t *pkb, msgq_id queue_id)
     d_trace(1, "S1AP_PDU is received from eNB-Inf\n");
     d_trace_hex(1, pkb->payload, pkb->len);
 
-    event_set(&e, EVT_S1_ENB_INF, 0);
-    event_set_msg(&e, pkb, net_sock->remote.sin_addr.s_addr);
+    event_set(&e, EVT_S1_ENB_INF, (c_uintptr_t)net_sock);
+    event_set_msg(&e, pkb);
 
     return event_send(queue_id, &e);
 }
@@ -106,7 +106,6 @@ int _s1_recv_cb(net_sock_t *net_sock, void *data)
     status_t rv;
     pkbuf_t *pkb;
     ssize_t r;
-    c_uint32_t ip_addr = net_sock->remote.sin_addr.s_addr;
     msgq_id queue_id = (msgq_id)data;
 
     d_assert(net_sock, return -1, "Null param");
@@ -144,7 +143,6 @@ int _s1_recv_cb(net_sock_t *net_sock, void *data)
         event_t e;
 
         event_set(&e, EVT_LO_ENB_S1_CONNREFUSED, (c_uintptr_t)net_sock);
-        event_set_param2(&e, (c_uintptr_t)ip_addr);
         event_send(queue_id, &e);
 
         return -1;

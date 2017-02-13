@@ -61,12 +61,10 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
             net_sock_t *sock = (net_sock_t *)event_get_param1(e);
             d_assert(sock, break, "Null param");
 
-            c_uint32_t ip_addr = sock->remote.sin_addr.s_addr;
-
             d_trace(1, "eNB-S1 accepted[%s] in master_sm module\n", 
                 INET_NTOP(&sock->remote.sin_addr.s_addr, buf));
                     
-            enb_ctx_t *enb = enb_ctx_find_by_ip(ip_addr);
+            enb_ctx_t *enb = enb_ctx_find_by_sock(sock);
             if (!enb)
             {
                 rc = net_register_sock(sock, _s1_recv_cb, (void*)s->queue_id);
@@ -74,7 +72,6 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
 
                 enb_ctx_t *enb = enb_ctx_add();
                 d_assert(enb, break, "Null param");
-                enb->ip = sock->remote.sin_addr.s_addr;
                 enb->s1_sock = sock;
 
                 fsm_create((fsm_t*)&enb->s1_sm, 
@@ -87,7 +84,7 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
             else
             {
                 d_warn("eNB context duplicated with IP-address [%s]!!!", 
-                        INET_NTOP(&ip_addr, buf));
+                        INET_NTOP(&sock->remote.sin_addr.s_addr, buf));
                 net_close(sock);
                 d_warn("S1 Socket Closed");
             }
@@ -96,8 +93,10 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
         }
         case EVT_S1_ENB_INF:
         {
-            c_uint32_t ip_addr = event_get_msg_ip_addr(e);
-            enb_ctx_t *enb = enb_ctx_find_by_ip(ip_addr);
+            net_sock_t *sock = (net_sock_t *)event_get_param1(e);
+            d_assert(sock, break, "Null param");
+
+            enb_ctx_t *enb = enb_ctx_find_by_sock(sock);
             if (enb)
             {
                 fsm_dispatch((fsm_t*)&enb->s1_sm, (fsm_event_t*)e);
@@ -105,7 +104,7 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
             else
             {
                 d_error("eNB context is not created[%s]",
-                        INET_NTOP(&ip_addr, buf));
+                        INET_NTOP(&sock->remote.sin_addr.s_addr, buf));
             }
             break;
         }
@@ -114,13 +113,10 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
             net_sock_t *sock = (net_sock_t *)event_get_param1(e);
             d_assert(sock, break, "Null param");
 
-            c_uint32_t ip_addr = (c_uint32_t)event_get_param2(e);
-            d_info("Socket[%s] connection refused", INET_NTOP(&ip_addr, buf));
+            d_info("Socket[%s] connection refused", 
+                    INET_NTOP(&sock->remote.sin_addr.s_addr, buf));
 
-            net_unregister_sock(sock);
-            net_close(sock);
-
-            enb_ctx_t *enb = enb_ctx_find_by_ip(ip_addr);
+            enb_ctx_t *enb = enb_ctx_find_by_sock(sock);
             if (enb) 
             {
                 /* Remove eNB S1 state machine if exist */
@@ -136,8 +132,12 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
             else
             {
                 d_error("Can't find eNB-S1 for [%s]!!!", 
-                        INET_NTOP(&ip_addr, buf));
+                        INET_NTOP(&sock->remote.sin_addr.s_addr, buf));
             }
+
+            net_unregister_sock(sock);
+            net_close(sock);
+
             break;
         }
         default:
@@ -150,7 +150,7 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
     /* If event was packet type, its buffer allocated by data-plane should
      * be freed here */
     if (event_is_msg(e))
-        pkbuf_free(event_get_msg_pkb(e));
+        pkbuf_free(event_get_msg(e));
 }
 
 void mme_state_exception(mme_sm_t *s, event_t *e)

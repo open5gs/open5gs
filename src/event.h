@@ -10,6 +10,7 @@
 #include "core_timer.h"
 #include "core_fsm.h"
 #include "core_pkbuf.h"
+#include "core_net.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -47,7 +48,6 @@ typedef struct {
 
 typedef struct {
     pkbuf_t *pkb;
-    c_uint32_t ip_addr;
 } msg_event_t;
 
 typedef struct {
@@ -108,14 +108,12 @@ typedef struct {
 #define event_get_param4(__ptr_e) \
     ((__ptr_e)->param4)
 
-#define event_set_msg(__ptr_e, __p_pkb, __p_ip_addr) \
+#define event_set_msg(__ptr_e, __p_pkb) \
     (event_is_msg(__ptr_e) ? \
      (((__ptr_e)->u.m.pkb = (__p_pkb)), \
-      ((__ptr_e)->u.m.ip_addr = (__p_ip_addr)), \
       CORE_OK) : CORE_ERROR)
 
-#define event_get_msg_pkb(__ptr_e) ((__ptr_e)->u.m.pkb)
-#define event_get_msg_ip_addr(__ptr_e) ((__ptr_e)->u.m.ip_addr)
+#define event_get_msg(__ptr_e) ((__ptr_e)->u.m.pkb)
 
 /**
  * Create event message queue

@@ -61,10 +61,8 @@ typedef struct _enb_ctx_t {
     lnode_t         node; /**< A node of list_t */
 
     enb_s1_sm_t     s1_sm; /**< eNB S1 state machine */
-
     net_sock_t      *s1_sock;
 
-    c_uint32_t      ip; /** Network byte order */
     c_uint32_t      id;
 } enb_ctx_t;
 
@@ -107,7 +105,7 @@ CORE_DECLARE(mme_ctx_t*)    mme_self(void);
 CORE_DECLARE(enb_ctx_t*)    enb_ctx_add(void);
 CORE_DECLARE(status_t)      enb_ctx_remove(enb_ctx_t *enb);
 CORE_DECLARE(status_t)      enb_ctx_remove_all(void);
-CORE_DECLARE(enb_ctx_t*)    enb_ctx_find_by_ip(c_uint32_t ip);
+CORE_DECLARE(enb_ctx_t*)    enb_ctx_find_by_sock(net_sock_t *sock);
 CORE_DECLARE(enb_ctx_t*)    enb_ctx_find_by_id(c_uint32_t id);
 CORE_DECLARE(enb_ctx_t*)    enb_ctx_first(void);
 CORE_DECLARE(enb_ctx_t*)    enb_ctx_next(enb_ctx_t *enb);

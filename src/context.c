@@ -157,14 +157,14 @@ status_t enb_ctx_remove_all()
     return CORE_OK;
 }
 
-enb_ctx_t* enb_ctx_find_by_ip(c_uint32_t ip)
+enb_ctx_t* enb_ctx_find_by_sock(net_sock_t *sock)
 {
     enb_ctx_t *enb = NULL;
     
     enb = list_first(&g_enb_list);
     while (enb)
     {
-        if (ip == enb->ip)
+        if (sock == enb->s1_sock)
             break;
 
         enb = list_next(enb);
