@@ -22,6 +22,8 @@ CORE_DECLARE(void) s1ap_conv_macro_enb_id_to_bit_string(
     c_uint32_t enb_id, BIT_STRING_t *bit_string);
 CORE_DECLARE(void) s1ap_conv_home_enb_id_to_bit_string(
     c_uint32_t enb_id, BIT_STRING_t *bit_string);
+CORE_DECLARE(status_t) s1ap_conv_uint32_from_enb_id(
+        c_uint32_t *uint32, S1ap_ENB_ID_t *eNB_ID);
 
 
 #ifdef __cplusplus

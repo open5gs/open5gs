@@ -50,10 +50,10 @@ status_t context_init()
     self.srvd_gummei.plmn_id[0].mcc = 1; /* 001 */
     self.srvd_gummei.plmn_id[0].mnc = 1; /* 01 */
 
-    self.srvd_gummei.num_of_grp_id = 1;
-    self.srvd_gummei.grp_id[0] = 2;
-    self.srvd_gummei.num_of_code = 1;
-    self.srvd_gummei.code[0] = 1;
+    self.srvd_gummei.num_of_mme_gid = 1;
+    self.srvd_gummei.mme_gid[0] = 2;
+    self.srvd_gummei.num_of_mme_code = 1;
+    self.srvd_gummei.mme_code[0] = 1;
 
     g_mme_ctx_initialized = 1;
 

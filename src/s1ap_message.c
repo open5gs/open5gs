@@ -41,23 +41,23 @@ status_t s1ap_build_setup_rsp(pkbuf_t **pkbuf)
             ASN_SEQUENCE_ADD(&servedGUMMEI->servedPLMNs, plmnIdentity);
         }
 
-        for (j = 0; j < srvd_gummei->num_of_grp_id; j++)
+        for (j = 0; j < srvd_gummei->num_of_mme_gid; j++)
         {
             mmeGroupId = (S1ap_MME_Group_ID_t *)
-                core_calloc(srvd_gummei->num_of_grp_id, 
+                core_calloc(srvd_gummei->num_of_mme_gid, 
                         sizeof(S1ap_MME_Group_ID_t));
             s1ap_conv_uint16_to_octet_string(
-                srvd_gummei->grp_id[j], mmeGroupId);
+                srvd_gummei->mme_gid[j], mmeGroupId);
             ASN_SEQUENCE_ADD(&servedGUMMEI->servedGroupIDs, mmeGroupId);
         }
 
-        for (j = 0; j < srvd_gummei->num_of_code; j++)
+        for (j = 0; j < srvd_gummei->num_of_mme_code; j++)
         {
             mmeCode = (S1ap_MME_Code_t *)
-                core_calloc(srvd_gummei->num_of_grp_id, 
+                core_calloc(srvd_gummei->num_of_mme_code, 
                         sizeof(S1ap_MME_Code_t));
             s1ap_conv_uint8_to_octet_string(
-                srvd_gummei->code[j], mmeCode);
+                srvd_gummei->mme_code[j], mmeCode);
             ASN_SEQUENCE_ADD(&servedGUMMEI->servedMMECs, mmeCode);
         }
     }

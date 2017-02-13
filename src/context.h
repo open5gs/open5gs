@@ -35,10 +35,10 @@ typedef struct _served_gummei {
     c_uint32_t      num_of_plmn_id;
     plmn_id_t       plmn_id[MAX_PLMN_ID];
 
-    c_uint32_t      num_of_grp_id;
-    c_uint16_t      grp_id[GRP_PER_MME];
-    c_uint32_t      num_of_code;
-    c_uint8_t       code[CODE_PER_MME];
+    c_uint32_t      num_of_mme_gid;
+    c_uint16_t      mme_gid[GRP_PER_MME];
+    c_uint32_t      num_of_mme_code;
+    c_uint8_t       mme_code[CODE_PER_MME];
 } srvd_gummei_t;
 
 /**
