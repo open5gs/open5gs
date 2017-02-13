@@ -53,24 +53,24 @@ int enb_net_read(net_sock_t *sock, pkbuf_t *recvbuf, int size)
 static void enb_setup_test1(abts_case *tc, void *data)
 {
     status_t rv;
-    net_sock_t *sock;
+    net_sock_t *sock[2];
     pkbuf_t *sendbuf;
     pkbuf_t *recvbuf = pkbuf_alloc(0, S1AP_SDU_SIZE);
     s1ap_message message;
     int rc;
 
-    sock = enb_s1ap_connect();
-    ABTS_PTR_NOTNULL(tc, sock);
+    sock[0] = enb_s1ap_connect();
+    ABTS_PTR_NOTNULL(tc, sock[0]);
 
     rv = s1ap_build_setup_req(&sendbuf, 0x54f64);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    rv = s1ap_send(sock, sendbuf);
+    rv = s1ap_send(sock[0], sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     pkbuf_free(sendbuf);
 
-    rc = enb_net_read(sock, recvbuf, 27);
+    rc = enb_net_read(sock[0], recvbuf, 27);
     ABTS_INT_EQUAL(tc, 27, rc);
 
     rv = s1ap_decode_pdu(&message, recvbuf);
@@ -79,7 +79,7 @@ static void enb_setup_test1(abts_case *tc, void *data)
     s1ap_free_pdu(&message);
     pkbuf_free(recvbuf);
 
-    rv = enb_s1ap_disconnect(sock);
+    rv = enb_s1ap_disconnect(sock[0]);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 }
 

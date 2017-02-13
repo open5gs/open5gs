@@ -153,6 +153,7 @@ status_t enb_s1_handle_s1setuprequest(enb_ctx_t *enb, s1ap_message *message)
     S1ap_S1SetupRequestIEs_t *ies = NULL;
     status_t rv;
     pkbuf_t *sendbuf = NULL;
+    c_uint32_t enb_id;
 
     d_assert(enb, return CORE_ERROR, "Null param");
     d_assert(enb->s1_sock, return CORE_ERROR, "Null param");
@@ -161,16 +162,32 @@ status_t enb_s1_handle_s1setuprequest(enb_ctx_t *enb, s1ap_message *message)
     ies = &message->msg.s1ap_S1SetupRequestIEs;
     d_assert(ies, return CORE_ERROR, "Null param");
 
-    rv = s1ap_conv_uint32_from_enb_id(&enb->id, &ies->global_ENB_ID.eNB_ID);
+    rv = s1ap_conv_uint32_from_enb_id(&enb_id, &ies->global_ENB_ID.eNB_ID);
     d_assert(rv == CORE_OK, return rv, "Null param");
 
-    d_info("eNB-id[0x%x] sends S1-Setup-Request from [%s]", enb->id,
-            INET_NTOP(&enb->s1_sock->remote.sin_addr.s_addr, buf));
+    if (enb_ctx_find_by_id(enb_id))
+    {
+        S1ap_Cause_t cause;
+        d_error("eNB-id[0x%x] duplicated from [%s]", enb_id,
+                INET_NTOP(&enb->s1_sock->remote.sin_addr.s_addr, buf));
 
-    rv = s1ap_build_setup_rsp(&sendbuf);
+        cause.present = S1ap_Cause_PR_protocol;
+        cause.choice.protocol = 
+            S1ap_CauseProtocol_message_not_compatible_with_receiver_state;
+        rv = s1ap_build_setup_failure(&sendbuf, cause);
+    }
+    else
+    {
+        d_info("eNB-id[0x%x] sends S1-Setup-Request from [%s]", enb_id,
+                INET_NTOP(&enb->s1_sock->remote.sin_addr.s_addr, buf));
+
+        enb->id = enb_id;
+        rv = s1ap_build_setup_rsp(&sendbuf);
+    }
+
     if (rv != CORE_OK) 
     {
-        d_error("Can't build S1 Setup Response");
+        d_error("Can't build S1-Setup-Response/Failure");
         return CORE_ERROR;
     }
 

@@ -79,3 +79,29 @@ status_t s1ap_build_setup_rsp(pkbuf_t **pkbuf)
 }
 
 
+status_t s1ap_build_setup_failure(pkbuf_t **pkbuf, S1ap_Cause_t cause)
+{
+    int erval;
+
+    s1ap_message message;
+    S1ap_S1SetupFailureIEs_t *ies = NULL;
+
+    memset(&message, 0, sizeof(s1ap_message));
+
+    ies = &message.msg.s1ap_S1SetupFailureIEs;
+    ies->cause = cause;
+
+    message.procedureCode = S1ap_ProcedureCode_id_S1Setup;
+    message.direction = S1AP_PDU_PR_unsuccessfulOutcome;
+
+    erval = s1ap_encode_pdu(pkbuf, &message);
+    s1ap_free_pdu(&message);
+
+    if (erval < 0)
+    {
+        d_error("s1ap_encode_error : (%d)", erval);
+        return CORE_ERROR;
+    }
+
+    return CORE_OK;
+}

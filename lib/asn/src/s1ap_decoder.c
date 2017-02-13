@@ -190,6 +190,14 @@ static int s1ap_decode_unsuccessfull_outcome(s1ap_message *message,
     message->procedureCode = unSuccessfulOutcome_p->procedureCode;
     switch (unSuccessfulOutcome_p->procedureCode) 
     {
+        case S1ap_ProcedureCode_id_S1Setup: 
+            ret = s1ap_decode_s1ap_s1setupfailureies(
+                    &message->msg.s1ap_S1SetupFailureIEs, 
+                    &unSuccessfulOutcome_p->value);
+            s1ap_decode_xer_print_message(
+                    s1ap_xer_print_s1ap_s1setupfailure,
+                    s1ap_xer__print2sp, message);
+            break;
         case S1ap_ProcedureCode_id_InitialContextSetup: 
             ret = s1ap_decode_s1ap_initialcontextsetupfailureies(
                     &message->msg.s1ap_InitialContextSetupFailureIEs, 
