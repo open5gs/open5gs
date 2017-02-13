@@ -1,17 +1,16 @@
-#define TRACE_MODULE _s1_path
+#define TRACE_MODULE _s1ap_path
 
 #include "core.h"
 #include "core_debug.h"
 #include "core_net.h"
 
 #include "event.h"
-#include "s1_path.h"
+#include "s1ap_message.h"
+#include "s1ap_path.h"
 
-#define MAX_S1_PKBUF_SIZE 8192
+static int _s1ap_accept_cb(net_sock_t *net_sock, void *data);
 
-static int _s1_accept_cb(net_sock_t *net_sock, void *data);
-
-status_t s1_open(msgq_id queue_id)
+status_t s1ap_open(msgq_id queue_id)
 {
     char buf[INET_ADDRSTRLEN];
     int rc;
@@ -28,7 +27,7 @@ status_t s1_open(msgq_id queue_id)
     }
 
     rc = net_register_sock(
-            mme_self()->enb_s1_sock, _s1_accept_cb, (void *)queue_id);
+            mme_self()->enb_s1_sock, _s1ap_accept_cb, (void *)queue_id);
     if (rc != 0)
     {
         d_error("Can't establish S1-ENB path(%d:%s)",
@@ -44,7 +43,7 @@ status_t s1_open(msgq_id queue_id)
     return CORE_OK;
 }
 
-status_t s1_close()
+status_t s1ap_close()
 {
     d_assert(mme_self(), return CORE_ERROR, "Null param");
     d_assert(mme_self()->enb_s1_sock != NULL, return CORE_ERROR,
@@ -56,7 +55,7 @@ status_t s1_close()
     return CORE_OK;
 }
 
-static int _s1_accept_cb(net_sock_t *net_sock, void *data)
+static int _s1ap_accept_cb(net_sock_t *net_sock, void *data)
 {
     char buf[INET_ADDRSTRLEN];
     ssize_t r;
@@ -84,7 +83,7 @@ static int _s1_accept_cb(net_sock_t *net_sock, void *data)
     return r;
 }
 
-static status_t s1_recv(net_sock_t *net_sock, pkbuf_t *pkb, msgq_id queue_id)
+static status_t s1ap_recv(net_sock_t *net_sock, pkbuf_t *pkb, msgq_id queue_id)
 {
     event_t e;
 
@@ -101,7 +100,7 @@ static status_t s1_recv(net_sock_t *net_sock, pkbuf_t *pkb, msgq_id queue_id)
     return event_send(queue_id, &e);
 }
 
-int _s1_recv_cb(net_sock_t *net_sock, void *data)
+int _s1ap_recv_cb(net_sock_t *net_sock, void *data)
 {
     status_t rv;
     pkbuf_t *pkb;
@@ -111,7 +110,7 @@ int _s1_recv_cb(net_sock_t *net_sock, void *data)
     d_assert(net_sock, return -1, "Null param");
     d_assert(queue_id, return -1, "Null param");
 
-    pkb = pkbuf_alloc(0, MAX_S1_PKBUF_SIZE);
+    pkb = pkbuf_alloc(0, S1AP_SDU_SIZE);
     d_assert(pkb, return -1, "Can't allocate pkbuf");
 
     r = net_read(net_sock, pkb->payload, pkb->len, 0);
@@ -151,7 +150,7 @@ int _s1_recv_cb(net_sock_t *net_sock, void *data)
     {
         pkb->len = r;
 
-        rv = s1_recv(net_sock, pkb, queue_id);
+        rv = s1ap_recv(net_sock, pkb, queue_id);
         if (rv == CORE_ERROR)
         {
             pkbuf_free(pkb);
@@ -163,7 +162,7 @@ int _s1_recv_cb(net_sock_t *net_sock, void *data)
     return 0;
 }
 
-status_t s1_send(net_sock_t *s, pkbuf_t *pkb)
+status_t s1ap_send(net_sock_t *s, pkbuf_t *pkb)
 {
     char buf[INET_ADDRSTRLEN];
 
@@ -187,11 +186,11 @@ status_t s1_send(net_sock_t *s, pkbuf_t *pkb)
     return CORE_OK;
 }
 
-status_t s1_send_to_enb(enb_ctx_t *enb, pkbuf_t *pkb)
+status_t s1ap_send_to_enb(enb_ctx_t *enb, pkbuf_t *pkb)
 {
     d_assert(enb, return CORE_ERROR, "Null param");
     d_assert(pkb, return CORE_ERROR, "Null param");
     d_assert(enb->s1_sock, return CORE_ERROR, "No S1 path with ENB");
 
-    return s1_send(enb->s1_sock, pkb);
+    return s1ap_send(enb->s1_sock, pkb);
 }

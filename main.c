@@ -192,12 +192,10 @@ int main(int argc, char *argv[])
     /* FIXME: Pass built symbol table to HypcerCell module. */
     {
         extern int _mme_sm;
-        extern int _ctx;
-        extern int _s1_path;
+        extern int _enb_s1_sm;
 
         d_trace_level(&_mme_sm, 100);
-        d_trace_level(&_ctx, 100);
-        d_trace_level(&_s1_path, 100);
+        d_trace_level(&_enb_s1_sm, 100);
     }
 
     signal_init();

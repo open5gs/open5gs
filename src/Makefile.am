@@ -3,12 +3,12 @@
 noinst_LTLIBRARIES = libcellwire.la
 
 libcellwire_la_SOURCES = \
-    cellwire.h event.h context.h s1ap_message.h s1ap_conv.h s1_path.h \
+    cellwire.h event.h context.h s1ap_message.h s1ap_conv.h s1ap_path.h \
 	sm.h 
 
 
 nodist_libcellwire_la_SOURCES = \
-    init.c event.c context.c s1ap_message.c s1ap_conv.c s1_path.c \
+    init.c event.c context.c s1ap_message.c s1ap_conv.c s1ap_path.c \
 	mme_sm.c enb_s1_sm.c
 
 AM_CPPFLAGS = \

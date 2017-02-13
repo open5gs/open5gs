@@ -4,7 +4,7 @@
 #include "sm.h"
 #include "context.h"
 #include "event.h"
-#include "s1_path.h"
+#include "s1ap_path.h"
 
 void mme_state_initial(mme_sm_t *s, event_t *e)
 {
@@ -36,7 +36,7 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
     {
         case FSM_ENTRY_SIG:
         {
-            rv = s1_open(s->queue_id);
+            rv = s1ap_open(s->queue_id);
             if (rv != CORE_OK)
             {
                 d_error("Can't establish S1 path");
@@ -46,7 +46,7 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
         }
         case FSM_EXIT_SIG:
         {
-            rv = s1_close();
+            rv = s1ap_close();
             if (rv != CORE_OK)
             {
                 d_error("Can't close S1 path");
@@ -67,8 +67,8 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
             enb_ctx_t *enb = enb_ctx_find_by_sock(sock);
             if (!enb)
             {
-                rc = net_register_sock(sock, _s1_recv_cb, (void*)s->queue_id);
-                d_assert(rc == 0, break, "register _s1_recv_cb failed");
+                rc = net_register_sock(sock, _s1ap_recv_cb, (void*)s->queue_id);
+                d_assert(rc == 0, break, "register _s1ap_recv_cb failed");
 
                 enb_ctx_t *enb = enb_ctx_add();
                 d_assert(enb, break, "Null param");
