@@ -53,6 +53,8 @@ int enb_net_read(net_sock_t *sock, pkbuf_t *recvbuf, int size)
 }
 
 #define NUM_OF_TEST_ENB 4
+#define TEST_S1_SETUP_RESPONSE_SIZE 27 
+#define TEST_S1_SETUP_FAILURE_SIZE 12 
 static void enb_setup_test1(abts_case *tc, void *data)
 {
     status_t rv;
@@ -81,8 +83,8 @@ static void enb_setup_test1(abts_case *tc, void *data)
 
         pkbuf_free(sendbuf);
 
-        if (i == 0) size = 27; /* S1SetupResponse size = 27 */
-        else size = 12; /* S1SetupFailure size = 12 */
+        if (i == 0) size = TEST_S1_SETUP_RESPONSE_SIZE;
+        else size = TEST_S1_SETUP_FAILURE_SIZE;
 
         rc = enb_net_read(sock[i], recvbuf, size);
         ABTS_INT_EQUAL(tc, size, rc);
@@ -101,7 +103,53 @@ static void enb_setup_test1(abts_case *tc, void *data)
 
     pkbuf_free(recvbuf);
 
-    core_sleep(300000);
+    core_sleep(time_from_msec(3));
+}
+
+static void enb_setup_test2(abts_case *tc, void *data)
+{
+    status_t rv;
+    net_sock_t *sock[NUM_OF_TEST_ENB];
+    pkbuf_t *sendbuf;
+    pkbuf_t *recvbuf = pkbuf_alloc(0, S1AP_SDU_SIZE);
+    s1ap_message message;
+    int rc;
+    int i;
+
+    for (i = 0; i < NUM_OF_TEST_ENB; i++)
+    {
+        sock[i] = enb_net_open();
+        ABTS_PTR_NOTNULL(tc, sock[i]);
+    }
+
+    for (i = 0; i < NUM_OF_TEST_ENB; i++)
+    {
+        rv = s1ap_build_setup_req(&sendbuf, 0x54f64+i);
+        ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+        rv = enb_net_send(sock[i], sendbuf);
+        ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+        pkbuf_free(sendbuf);
+
+        rc = enb_net_read(sock[i], recvbuf, TEST_S1_SETUP_RESPONSE_SIZE);
+        ABTS_INT_EQUAL(tc, TEST_S1_SETUP_RESPONSE_SIZE, rc);
+
+        rv = s1ap_decode_pdu(&message, recvbuf);
+        ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+        s1ap_free_pdu(&message);
+    }
+
+    for (i = 0; i < NUM_OF_TEST_ENB; i++)
+    {
+        rv = enb_net_close(sock[i]);
+        ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    }
+
+    pkbuf_free(recvbuf);
+
+    core_sleep(time_from_msec(3));
 }
 
 abts_suite *test_enb_setup(abts_suite *suite)
@@ -109,6 +157,7 @@ abts_suite *test_enb_setup(abts_suite *suite)
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, enb_setup_test1, NULL);
+    abts_run_test(suite, enb_setup_test2, NULL);
 
     return suite;
 }
