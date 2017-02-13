@@ -20,7 +20,7 @@ msgq_id event_create(void)
     queue_id = msgq_create(EVT_Q_DEPTH, EVENT_SIZE, MSGQ_O_BLOCK);
     d_assert(queue_id != 0, return CORE_ERROR, "Message queue creation failed");
 
-    return CORE_OK;
+    return queue_id;
 }
 
 status_t event_delete(msgq_id queue_id)

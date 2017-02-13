@@ -189,6 +189,17 @@ int main(int argc, char *argv[])
         /* Parent */
     }
 
+    /* FIXME: Pass built symbol table to HypcerCell module. */
+    {
+        extern int _mme_sm;
+        extern int _ctx;
+        extern int _s1_path;
+
+        d_trace_level(&_mme_sm, 100);
+        d_trace_level(&_ctx, 100);
+        d_trace_level(&_s1_path, 100);
+    }
+
     signal_init();
 
     if (cellwire_initialize(config_path) != CORE_OK)
@@ -196,7 +207,6 @@ int main(int argc, char *argv[])
         d_fatal("CellWire initialization failed. Aborted");
         return EXIT_FAILURE;
     }
-
     
     show_version();
     d_info("CellWire daemon start");
