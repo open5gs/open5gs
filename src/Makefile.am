@@ -9,7 +9,7 @@ libcellwire_la_SOURCES = \
 
 nodist_libcellwire_la_SOURCES = \
     init.c event.c context.c s1ap_message.c s1ap_conv.c s1_path.c \
-	mme_sm.c
+	mme_sm.c enb_s1_sm.c
 
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/include \

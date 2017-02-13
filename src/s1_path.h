@@ -17,7 +17,7 @@ CORE_DECLARE(status_t) s1_close();
 CORE_DECLARE(status_t) s1_send(net_sock_t *s, pkbuf_t *pkb);
 CORE_DECLARE(status_t) s1_send_to_enb(enb_ctx_t *enb, pkbuf_t *pkb);
 
-int _s1_recv_cb(net_sock_t *net_sock, msgq_id queue_id, event_e event);
+int _s1_recv_cb(net_sock_t *net_sock, void *data);
 
 #ifdef __cplusplus
 }

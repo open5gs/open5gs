@@ -54,6 +54,61 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
             }
             break;
         }
+        case EVT_LO_ENB_S1_ACCEPT:
+        {
+            int rc;
+
+            net_sock_t *sock = (net_sock_t *)event_get_param1(e);
+            d_assert(sock, break, "Null param");
+
+            c_uint32_t ip_addr = sock->remote.sin_addr.s_addr;
+
+            d_trace(1, "eNB-S1 accepted[%s] in master_sm module\n", 
+                INET_NTOP(&sock->remote.sin_addr.s_addr, buf));
+                    
+            enb_ctx_t *enb = enb_ctx_find_by_ip(ip_addr);
+            if (!enb)
+            {
+                rc = net_register_sock(sock, _s1_recv_cb, (void*)s->queue_id);
+                d_assert(rc == 0, break, "register _s1_recv_cb failed");
+
+                enb_ctx_t *enb = enb_ctx_add();
+                d_assert(enb, break, "Null param");
+                enb->ip = sock->remote.sin_addr.s_addr;
+                enb->s1_sock = sock;
+
+                fsm_create((fsm_t*)&enb->s1_sm, 
+                        enb_s1_state_initial, enb_s1_state_final);
+                enb->s1_sm.ctx = enb;
+                enb->s1_sm.queue_id = s->queue_id;
+                enb->s1_sm.tm_service = s->tm_service;
+                fsm_init((fsm_t*)&enb->s1_sm, 0);
+            }
+            else
+            {
+                d_warn("eNB context duplicated with IP-address [%s]!!!", 
+                        INET_NTOP(&ip_addr, buf));
+                net_close(sock);
+                d_warn("S1 Socket Closed");
+            }
+            
+            break;
+        }
+        case EVT_S1_ENB_INF:
+        {
+            c_uint32_t ip_addr = event_get_msg_ip_addr(e);
+            enb_ctx_t *enb = enb_ctx_find_by_ip(ip_addr);
+            if (enb)
+            {
+                fsm_dispatch((fsm_t*)&enb->s1_sm, (fsm_event_t*)e);
+            }
+            else
+            {
+                d_error("eNB context is not created[%s]",
+                        INET_NTOP(&ip_addr, buf));
+            }
+            break;
+        }
         case EVT_LO_ENB_S1_CONNREFUSED:
         {
             net_sock_t *sock = (net_sock_t *)event_get_param1(e);

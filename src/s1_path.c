@@ -84,35 +84,32 @@ static int _s1_accept_cb(net_sock_t *net_sock, void *data)
     return r;
 }
 
-static status_t s1_recv(net_sock_t *net_sock, pkbuf_t *pkb, 
-        msgq_id queue_id, event_e event)
+static status_t s1_recv(net_sock_t *net_sock, pkbuf_t *pkb, msgq_id queue_id)
 {
     event_t e;
 
     d_assert(net_sock, return CORE_ERROR, "Null param");
     d_assert(pkb, return CORE_ERROR, "Null param");
-    d_assert(event == EVT_S1_ENB_INF, 
-            return CORE_ERROR, "Invalid event = %d", event);
     d_assert(queue_id, return -1, "Null param");
 
     d_trace(1, "S1AP_PDU is received from eNB-Inf\n");
     d_trace_hex(1, pkb->payload, pkb->len);
 
-    event_set(&e, event, 0);
+    event_set(&e, EVT_S1_ENB_INF, 0);
     event_set_msg(&e, pkb, net_sock->remote.sin_addr.s_addr);
 
     return event_send(queue_id, &e);
 }
 
-int _s1_recv_cb(net_sock_t *net_sock, msgq_id queue_id, event_e event)
+int _s1_recv_cb(net_sock_t *net_sock, void *data)
 {
     status_t rv;
     pkbuf_t *pkb;
     ssize_t r;
     c_uint32_t ip_addr = net_sock->remote.sin_addr.s_addr;
+    msgq_id queue_id = (msgq_id)data;
 
     d_assert(net_sock, return -1, "Null param");
-    d_assert(event, return -1, "Null param");
     d_assert(queue_id, return -1, "Null param");
 
     pkb = pkbuf_alloc(0, MAX_S1_PKBUF_SIZE);
@@ -129,25 +126,23 @@ int _s1_recv_cb(net_sock_t *net_sock, msgq_id queue_id, event_e event)
 
         if (net_sock->sndrcv_errno == EAGAIN)
         {
-            d_warn("net_read(event:%d) failed(%d:%s)", event, 
+            d_warn("net_read failed(%d:%s)",
                     net_sock->sndrcv_errno, strerror(net_sock->sndrcv_errno));
             return 0;
         } 
         else if (net_sock->sndrcv_errno == ECONNREFUSED)
         {
-            d_warn("net_read(event:%d) failed(%d:%s)", event, 
+            d_warn("net_read failed(%d:%s)",
                     net_sock->sndrcv_errno, strerror(net_sock->sndrcv_errno));
         }
         else
         {
-            d_error("net_read(event:%d) failed(%d:%s)", event, 
+            d_error("net_read failed(%d:%s)",
                     net_sock->sndrcv_errno, strerror(net_sock->sndrcv_errno));
         }
 
         event_t e;
 
-        d_assert(event == EVT_S1_ENB_INF, return -1, 
-                "Invalid event = %d", event);
         event_set(&e, EVT_LO_ENB_S1_CONNREFUSED, (c_uintptr_t)net_sock);
         event_set_param2(&e, (c_uintptr_t)ip_addr);
         event_send(queue_id, &e);
@@ -158,7 +153,7 @@ int _s1_recv_cb(net_sock_t *net_sock, msgq_id queue_id, event_e event)
     {
         pkb->len = r;
 
-        rv = s1_recv(net_sock, pkb, queue_id, event);
+        rv = s1_recv(net_sock, pkb, queue_id);
         if (rv == CORE_ERROR)
         {
             pkbuf_free(pkb);
