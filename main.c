@@ -189,13 +189,14 @@ int main(int argc, char *argv[])
         /* Parent */
     }
 
-    /* FIXME: Pass built symbol table to HypcerCell module. */
     {
         extern int _mme_sm;
         extern int _enb_s1_sm;
+        extern int _s1ap_path;
 
         d_trace_level(&_mme_sm, 100);
         d_trace_level(&_enb_s1_sm, 100);
+        d_trace_level(&_s1ap_path, 100);
     }
 
     signal_init();

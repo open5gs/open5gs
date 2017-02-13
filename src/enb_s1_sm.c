@@ -74,8 +74,8 @@ void enb_s1_state_operational(enb_s1_sm_t *s, event_t *e)
                     {
                         case S1ap_ProcedureCode_id_S1Setup :
                         {
-                            enb_s1_handle_s1setuprequest(enb, &message);
                             d_info("s1setuprequest is received");
+                            enb_s1_handle_s1setuprequest(enb, &message);
                             break;
                         }
                         default:
@@ -164,7 +164,7 @@ status_t enb_s1_handle_s1setuprequest(enb_ctx_t *enb, s1ap_message *message)
     rv = s1ap_conv_uint32_from_enb_id(&enb->id, &ies->global_ENB_ID.eNB_ID);
     d_assert(rv == CORE_OK, return rv, "Null param");
 
-    d_info("eNB-id[%x] sends S1-Setup-Request from [%s]", enb->id,
+    d_info("eNB-id[0x%x] sends S1-Setup-Request from [%s]", enb->id,
             INET_NTOP(&enb->s1_sock->remote.sin_addr.s_addr, buf));
 
     rv = s1ap_build_setup_rsp(&sendbuf);

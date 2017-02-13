@@ -129,9 +129,6 @@ static int s1ap_decode_initiating(s1ap_message *message,
         default: 
             d_error("Unknown procedure ID (%d) for initiating message", 
                     (int)initiating_p->procedureCode);
-            d_assert(0, return -1, 
-                    "Unknown procedure ID (%d) for initiating message", 
-                    (int)initiating_p->procedureCode);
             break;
     }
 
