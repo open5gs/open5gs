@@ -10,23 +10,21 @@
 #include "context.h"
 #include "event.h"
 
-static thread_id thr_sm;
-#define THREAD_SM_STACK_SIZE
-#define THREAD_SM_PRIORITY
-extern void *THREAD_FUNC sm_main(void *data);
+static thread_id mme_thread;
+extern void *THREAD_FUNC mme_main(void *data);
 
 void threads_start()
 {
     status_t rv;
 
-    rv = thread_create(&thr_sm, NULL, sm_main, NULL);
+    rv = thread_create(&mme_thread, NULL, mme_main, NULL);
     d_assert(rv == CORE_OK, return,
-            "State machine thread creation failed");
+            "MME State machine thread creation failed");
 }
 
 void threads_stop()
 {
-    thread_delete(thr_sm);
+    thread_delete(mme_thread);
 }
 
 status_t cellwire_initialize(char *config_path)
@@ -34,10 +32,6 @@ status_t cellwire_initialize(char *config_path)
     status_t rv;
 
     srand(time(NULL)*getpid());
-
-    rv = event_init();
-    if (rv != CORE_OK)
-        return rv;
 
     rv = context_init();
     if (rv != CORE_OK)
@@ -49,6 +43,4 @@ status_t cellwire_initialize(char *config_path)
 void cellwire_terminate(void)
 {
     context_final();
-
-    event_final();
 }

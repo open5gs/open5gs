@@ -5,6 +5,7 @@
  * @file event.h
  * @brief Event header
  */
+#include "core_msgq.h"
 #include "core_time.h"
 #include "core_timer.h"
 #include "core_fsm.h"
@@ -23,19 +24,13 @@ typedef enum {
     EVT_LO_TOP,
 
     EVT_TM_BASE,
-    EVT_TM_MME_S1_WAIT_CONN,
     EVT_TM_TOP,
 
     EVT_MSG_BASE,
-    EVT_S1_MME_INF,
     EVT_S1_ENB_INF,
     EVT_MSG_TOP,
     
     EVT_GTP_BASE,
-    EVT_GTP_C_SGW_INF,
-    EVT_GTP_C_ENB_INF,
-    EVT_GTP_U_SGW_INF,
-    EVT_GTP_U_ENB_INF,
     EVT_GTP_TOP,
 
     EVT_TOP,
@@ -123,18 +118,19 @@ typedef struct {
 #define event_get_msg_ip_addr(__ptr_e) ((__ptr_e)->u.m.ip_addr)
 
 /**
- * Initialize event framework
+ * Create event message queue
  *
- * @return CORE_OK or CORE_ERROR
+ * @return event queue or 0
  */
-CORE_DECLARE(status_t) event_init(void);
+CORE_DECLARE(msgq_id) event_create(void);
 
 /**
- * Finalize event framework
+ * Delete event message queue
  *
  * @return CORE_OK or CORE_ERROR
  */
-CORE_DECLARE(status_t) event_final(void);
+CORE_DECLARE(status_t) event_delete(msgq_id queue_id);
+
 
 /**
  * Send a event to event queue
@@ -142,7 +138,7 @@ CORE_DECLARE(status_t) event_final(void);
  * @return If success, return the size to be sent.
  *         If else, return -1
  */
-CORE_DECLARE(int) event_send(event_t *e);
+CORE_DECLARE(int) event_send(msgq_id queue_id, event_t *e);
 
 /**
  * Receive a event from event queue with timeout
@@ -151,22 +147,19 @@ CORE_DECLARE(int) event_send(event_t *e);
  *         If timout occurs, return CORE_TIMEUP.
  *         If else, return -1.
  */
-CORE_DECLARE(int) event_timedrecv(event_t *e, c_time_t timeout);
-
-CORE_DECLARE(int) event_sendto(uint32_t dest_id, event_t *e);
-
-CORE_DECLARE(int) event_recvfrom(uint32_t id, event_t *e);
+CORE_DECLARE(int) event_timedrecv(
+        msgq_id queue_id, event_t *e, c_time_t timeout);
 
 /**
  * Create a timer
  */
-CORE_DECLARE(tm_block_id) event_timer_create(void);
+CORE_DECLARE(tm_block_id) event_timer_create(tm_service_t *tm_service);
 
 /**
  * Set a timer
  */
 status_t event_timer_set(tm_block_id id, event_e te, tm_type_e type, 
-        c_uint32_t duration, c_uintptr_t param1, c_uintptr_t param2);
+        c_uint32_t duration, c_uintptr_t queue_id, c_uintptr_t param);
 
 /**
  * Delete a timer
@@ -176,7 +169,7 @@ CORE_DECLARE(status_t) event_timer_delete(tm_block_id id);
 /*
  * Execute timer engine
  */
-CORE_DECLARE(status_t) event_timer_execute(void);
+CORE_DECLARE(status_t) event_timer_execute(tm_service_t *tm_service);
 
 char* event_get_name(event_t *e);
 

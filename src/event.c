@@ -12,50 +12,32 @@
 
 #define EVT_Q_DEPTH 16
 
-int g_initialized = 0;
-
-msgq_id g_mme_evt_q = 0;
-
-tm_service_t g_tm_serv;
-
-status_t event_init(void)
+msgq_id event_create(void)
 {
-    if (g_initialized)
-        return CORE_OK;
-
-    tm_service_init(&g_tm_serv);
+    msgq_id queue_id = 0;
 
     /* Start threads */
-    g_mme_evt_q = msgq_create(EVT_Q_DEPTH, EVENT_SIZE, MSGQ_O_BLOCK);
-    d_assert(g_mme_evt_q != 0, return CORE_ERROR, 
-            "Message queue creation failed");
-
-    g_initialized = 1;
+    queue_id = msgq_create(EVT_Q_DEPTH, EVENT_SIZE, MSGQ_O_BLOCK);
+    d_assert(queue_id != 0, return CORE_ERROR, "Message queue creation failed");
 
     return CORE_OK;
 }
 
-status_t event_final(void)
+status_t event_delete(msgq_id queue_id)
 {
-    if (!g_initialized)
-        return CORE_OK;
-
-    msgq_delete(g_mme_evt_q);
-
-    g_initialized = 0;
+    msgq_delete(queue_id);
 
     return CORE_OK;
 }
 
-int event_send(event_t *e)
+int event_send(msgq_id queue_id, event_t *e)
 {
     int r;
 
-    d_assert(g_initialized, return -1, "event framework isn't initialized");
-    d_assert(g_mme_evt_q, return -1, "event queue isn't initialized");
     d_assert(e, return -1, "Null param");
+    d_assert(queue_id, return -1, "event queue isn't initialized");
 
-    r = msgq_send(g_mme_evt_q, (const char*)e, EVENT_SIZE);
+    r = msgq_send(queue_id, (const char*)e, EVENT_SIZE);
     if (r != EVENT_SIZE)
     {
         d_error("msgq_send() failed");
@@ -65,15 +47,14 @@ int event_send(event_t *e)
     return r;
 }
 
-int event_timedrecv(event_t *e, c_time_t timeout)
+int event_timedrecv(msgq_id queue_id, event_t *e, c_time_t timeout)
 {
     int r;
 
-    d_assert(g_initialized, return -1, "event framework isn't initialized");
-    d_assert(g_mme_evt_q, return -1, "event queue isn't initialized");
     d_assert(e, return -1, "Null param");
+    d_assert(queue_id, return -1, "event queue isn't initialized");
 
-    r = msgq_timedrecv(g_mme_evt_q, (char*)e, EVENT_SIZE, timeout);
+    r = msgq_timedrecv(queue_id, (char*)e, EVENT_SIZE, timeout);
     if (r != CORE_TIMEUP && r != EVENT_SIZE)
     {
         d_error("msgq_timedrecv() failed");
@@ -83,15 +64,16 @@ int event_timedrecv(event_t *e, c_time_t timeout)
     return r;
 }
 
-void* event_timer_expire_func(c_uintptr_t arg1, c_uintptr_t arg2, c_uintptr_t arg3)
+void* event_timer_expire_func(
+        c_uintptr_t queue_id, c_uintptr_t event, c_uintptr_t param)
 {
     event_t e;
     int r;
 
-    event_set(&e, arg1, arg2);
-    event_set_param2(&e, arg3);
+    d_assert(queue_id, return NULL, "Null param");
+    event_set(&e, event, param);
 
-    r = msgq_send(g_mme_evt_q, (const char*)&e, EVENT_SIZE);
+    r = msgq_send(queue_id, (const char*)&e, EVENT_SIZE);
     if (r <= 0)
     {
         d_error("msgq_send() failed");
@@ -100,35 +82,30 @@ void* event_timer_expire_func(c_uintptr_t arg1, c_uintptr_t arg2, c_uintptr_t ar
     return NULL;
 }
 
-tm_block_id event_timer_create(void)
+tm_block_id event_timer_create(tm_service_t *tm_service)
 {
     tm_block_id id;
 
-    d_assert(g_initialized, return 0, "event framework isn't initialized");
-
-    id = tm_create(&g_tm_serv);
+    id = tm_create(tm_service);
     d_assert(id, return 0, "tm_create() failed");
 
     return id;
 }
 
-status_t event_timer_set(tm_block_id id, event_e te, tm_type_e type, 
-        c_uint32_t duration, c_uintptr_t param1, c_uintptr_t param2)
+status_t event_timer_set(tm_block_id id, event_e event, tm_type_e type, 
+        c_uint32_t duration, c_uintptr_t queue_id, c_uintptr_t param)
 {
-    d_assert(g_initialized, return 0, "event framework isn't initialized");
     d_assert(type == TIMER_TYPE_ONE_SHOT || type == TIMER_TYPE_PERIODIC,
             return 0, "param 'type' is invalid");
 
     tm_set(id, type, duration, (expire_func_t)event_timer_expire_func, 
-            te, param1, param2);
+            queue_id, event, param);
 
     return id;
 }
 
 status_t event_timer_delete(tm_block_id id)
 {
-    d_assert(g_initialized, return CORE_ERROR,
-            "event framework isn't initialized");
     d_assert(id, return CORE_ERROR, "param 'id' is zero");
 
     tm_delete(id);
@@ -136,12 +113,9 @@ status_t event_timer_delete(tm_block_id id)
     return CORE_OK;
 }
 
-status_t event_timer_execute(void)
+status_t event_timer_execute(tm_service_t *tm_service)
 {
-    d_assert(g_initialized, return CORE_ERROR,
-            "event framework isn't initialized");
-
-    return tm_execute_tm_service(&g_tm_serv);
+    return tm_execute_tm_service(tm_service);
 }
 
 static char FSM_NAME_INIT_SIG[] = "INIT";
@@ -150,8 +124,6 @@ static char FSM_NAME_EXIT_SIG[] = "EXIT";
 
 static char EVT_NAME_LO_ENB_S1_ACCEPT[] = "LO_ENB_S1_ACCEPT";
 static char EVT_NAME_LO_ENB_S1_CONNREFUSED[] = "LO_ENB_S1_CONNREFUSED";
-
-static char EVT_NAME_TM_MME_S1_WAIT_CONN[] = "TM_MME_S1_WAIT_CONN";
 
 static char EVT_NAME_S1_ENB_INF[] = "S1_ENB_INF";
 
@@ -172,8 +144,6 @@ char* event_get_name(event_t *e)
             case EVT_LO_ENB_S1_ACCEPT: return EVT_NAME_LO_ENB_S1_ACCEPT;
             case EVT_LO_ENB_S1_CONNREFUSED: 
                    return EVT_NAME_LO_ENB_S1_CONNREFUSED;
-
-            case EVT_TM_MME_S1_WAIT_CONN: return EVT_NAME_TM_MME_S1_WAIT_CONN;
 
             default: return EVT_NAME_UNKNOWN;
         }

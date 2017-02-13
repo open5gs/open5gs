@@ -14,6 +14,8 @@ typedef struct _mme_sm_t {
 
     fsm_t fsm;
     void *ctx;
+    msgq_id queue_id;
+    tm_service_t tm_service;
 
 } mme_sm_t;
 
@@ -26,6 +28,8 @@ typedef struct _enb_s1_sm_t {
 
     fsm_t fsm;
     void *ctx;
+    msgq_id queue_id;
+    tm_service_t tm_service;
 
 } enb_s1_sm_t;
 
