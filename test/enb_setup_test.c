@@ -104,10 +104,10 @@ static void enb_setup_test1(abts_case *tc, void *data)
 
     pkbuf_free(recvbuf);
 
-    core_sleep(time_from_msec(3));
+    core_sleep(time_from_msec(300));
 }
 
-#define NUM_OF_TEST_ENB 64
+#define NUM_OF_TEST_ENB 32
 
 static void enb_setup_test2(abts_case *tc, void *data)
 {
