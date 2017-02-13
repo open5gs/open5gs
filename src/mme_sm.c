@@ -5,23 +5,23 @@
 #include "context.h"
 #include "event.h"
 
-void master_state_initial(master_sm_t *s, event_t *e)
+void mme_state_initial(mme_sm_t *s, event_t *e)
 {
     sm_trace(1, e);
 
     d_assert(s, return, "Null param");
 
-    FSM_TRAN(s, &master_state_operational);
+    FSM_TRAN(s, &mme_state_operational);
 }
 
-void master_state_final(master_sm_t *s, event_t *e)
+void mme_state_final(mme_sm_t *s, event_t *e)
 {
     sm_trace(1, e);
 
     d_assert(s, return, "Null param");
 }
 
-void master_state_operational(master_sm_t *s, event_t *e)
+void mme_state_operational(mme_sm_t *s, event_t *e)
 {
 #if 0
     char buf[INET_ADDRSTRLEN];
@@ -54,7 +54,7 @@ void master_state_operational(master_sm_t *s, event_t *e)
         pkbuf_free(event_get_msg_pkb(e));
 }
 
-void master_state_exception(master_sm_t *s, event_t *e)
+void mme_state_exception(mme_sm_t *s, event_t *e)
 {
     sm_trace(1, e);
 

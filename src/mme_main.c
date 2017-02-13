@@ -14,7 +14,7 @@
 
 #include "context.h"
 
-static master_sm_t g_master_sm;
+static mme_sm_t g_mme_sm;
 
 #define EVENT_WAIT_TIMEOUT 10000 /* 10 msec */
 
@@ -24,11 +24,11 @@ void *THREAD_FUNC sm_main(void *data)
     c_time_t prev_tm, now_tm;
     int r;
 
-    fsm_create(&g_master_sm.fsm, master_state_initial, master_state_final);
-    d_assert(&g_master_sm.fsm, return NULL,
+    fsm_create(&g_mme_sm.fsm, mme_state_initial, mme_state_final);
+    d_assert(&g_mme_sm.fsm, return NULL,
             "Master state machine creation failed");
 
-    fsm_init((fsm_t*)&g_master_sm, 0);
+    fsm_init((fsm_t*)&g_mme_sm, 0);
 
     prev_tm = time_now();
 
@@ -54,11 +54,11 @@ void *THREAD_FUNC sm_main(void *data)
             continue;
         }
 
-        fsm_dispatch((fsm_t*)&g_master_sm, (fsm_event_t*)&e);
+        fsm_dispatch((fsm_t*)&g_mme_sm, (fsm_event_t*)&e);
     }
 
-    fsm_final((fsm_t*)&g_master_sm, 0);
-    fsm_clear((fsm_t*)&g_master_sm);
+    fsm_final((fsm_t*)&g_mme_sm, 0);
+    fsm_clear((fsm_t*)&g_mme_sm);
 
     return NULL;
 }

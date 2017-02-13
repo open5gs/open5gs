@@ -14,8 +14,7 @@
 
 int g_initialized = 0;
 
-msgq_id g_evt_q = 0;
-msgq_id g_evt_q_dp = 0;
+msgq_id g_mme_evt_q = 0;
 
 tm_service_t g_tm_serv;
 
@@ -27,8 +26,9 @@ status_t event_init(void)
     tm_service_init(&g_tm_serv);
 
     /* Start threads */
-    g_evt_q = msgq_create(EVT_Q_DEPTH, EVENT_SIZE, MSGQ_O_BLOCK);
-    d_assert(g_evt_q != 0, return CORE_ERROR, "Message queue creation failed");
+    g_mme_evt_q = msgq_create(EVT_Q_DEPTH, EVENT_SIZE, MSGQ_O_BLOCK);
+    d_assert(g_mme_evt_q != 0, return CORE_ERROR, 
+            "Message queue creation failed");
 
     g_initialized = 1;
 
@@ -40,7 +40,7 @@ status_t event_final(void)
     if (!g_initialized)
         return CORE_OK;
 
-    msgq_delete(g_evt_q);
+    msgq_delete(g_mme_evt_q);
 
     g_initialized = 0;
 
@@ -52,10 +52,10 @@ int event_send(event_t *e)
     int r;
 
     d_assert(g_initialized, return -1, "event framework isn't initialized");
-    d_assert(g_evt_q, return -1, "event queue isn't initialized");
+    d_assert(g_mme_evt_q, return -1, "event queue isn't initialized");
     d_assert(e, return -1, "Null param");
 
-    r = msgq_send(g_evt_q, (const char*)e, EVENT_SIZE);
+    r = msgq_send(g_mme_evt_q, (const char*)e, EVENT_SIZE);
     if (r != EVENT_SIZE)
     {
         d_error("msgq_send() failed");
@@ -70,51 +70,13 @@ int event_timedrecv(event_t *e, c_time_t timeout)
     int r;
 
     d_assert(g_initialized, return -1, "event framework isn't initialized");
-    d_assert(g_evt_q, return -1, "event queue isn't initialized");
+    d_assert(g_mme_evt_q, return -1, "event queue isn't initialized");
     d_assert(e, return -1, "Null param");
 
-    r = msgq_timedrecv(g_evt_q, (char*)e, EVENT_SIZE, timeout);
+    r = msgq_timedrecv(g_mme_evt_q, (char*)e, EVENT_SIZE, timeout);
     if (r != CORE_TIMEUP && r != EVENT_SIZE)
     {
         d_error("msgq_timedrecv() failed");
-        return -1;
-    }
-
-    return r;
-}
-
-int event_sendto(uint32_t dest_id, event_t *e)
-{
-    int r;
-
-    d_assert(g_initialized, return -1, "event framework isn't initialized");
-    d_assert(g_evt_q, return -1, "event queue isn't initialized");
-    d_assert(g_evt_q_dp, return -1, "event queue isn't initialized");
-    d_assert(e, return -1, "Null param");
-
-    r = msgq_send(g_evt_q, (const char*)e, EVENT_SIZE);
-    if (r != EVENT_SIZE)
-    {
-        d_error("msgq_send() failed");
-        return -1;
-    }
-
-    return r;
-}
-
-int event_recvfrom(uint32_t id, event_t *e)
-{
-    int r;
-
-    d_assert(g_initialized, return -1, "event framework isn't initialized");
-    d_assert(g_evt_q, return -1, "event queue isn't initialized");
-    d_assert(g_evt_q_dp, return -1, "event queue isn't initialized");
-    d_assert(e, return -1, "Null param");
-
-    r = msgq_recv(g_evt_q, (char*)e, EVENT_SIZE);
-    if (r != CORE_EAGAIN && r != EVENT_SIZE)
-    {
-        d_error("msgq_recv() failed");
         return -1;
     }
 
@@ -129,7 +91,7 @@ void* event_timer_expire_func(c_uintptr_t arg1, c_uintptr_t arg2, c_uintptr_t ar
     event_set(&e, arg1, arg2);
     event_set_param2(&e, arg3);
 
-    r = msgq_send(g_evt_q, (const char*)&e, EVENT_SIZE);
+    r = msgq_send(g_mme_evt_q, (const char*)&e, EVENT_SIZE);
     if (r <= 0)
     {
         d_error("msgq_send() failed");
@@ -191,13 +153,7 @@ static char EVT_NAME_LO_ENB_S1_CONNREFUSED[] = "LO_ENB_S1_CONNREFUSED";
 
 static char EVT_NAME_TM_MME_S1_WAIT_CONN[] = "TM_MME_S1_WAIT_CONN";
 
-static char EVT_NAME_S1_MME_INF[] = "S1_MME_INF";
 static char EVT_NAME_S1_ENB_INF[] = "S1_ENB_INF";
-
-static char EVT_NAME_GTP_C_SGW_INF[] = "GTP_C_SGW_INF";
-static char EVT_NAME_GTP_C_ENB_INF[] = "GTP_C_ENB_INF";
-static char EVT_NAME_GTP_U_SGW_INF[] = "GTP_U_SGW_INF";
-static char EVT_NAME_GTP_U_ENB_INF[] = "GTP_U_ENB_INF";
 
 static char EVT_NAME_UNKNOWN[] = "UNKNOWN";
 
@@ -222,22 +178,10 @@ char* event_get_name(event_t *e)
             default: return EVT_NAME_UNKNOWN;
         }
     }
-    else if (event_get(e) > EVT_MSG_TOP)
-    {
-        switch (event_get(e))
-        {
-            case EVT_GTP_C_SGW_INF: return EVT_NAME_GTP_C_SGW_INF;
-            case EVT_GTP_C_ENB_INF: return EVT_NAME_GTP_C_ENB_INF;
-            case EVT_GTP_U_SGW_INF: return EVT_NAME_GTP_U_SGW_INF;
-            case EVT_GTP_U_ENB_INF: return EVT_NAME_GTP_U_ENB_INF;
-            default: return EVT_NAME_UNKNOWN;
-        }
-    }
     else if (event_get(e) < EVT_MSG_TOP)
     {
         switch (event_get(e))
         {
-            case EVT_S1_MME_INF: return EVT_NAME_S1_MME_INF;
             case EVT_S1_ENB_INF: return EVT_NAME_S1_ENB_INF;
             default: return EVT_NAME_UNKNOWN;
         }

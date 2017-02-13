@@ -15,11 +15,6 @@ static thread_id thr_sm;
 #define THREAD_SM_PRIORITY
 extern void *THREAD_FUNC sm_main(void *data);
 
-static thread_id thr_dp;
-#define THREAD_DP_STACK_SIZE
-#define THREAD_DP_PRIORITY
-extern void *THREAD_FUNC dp_main(void *data);
-
 void threads_start()
 {
     status_t rv;
@@ -27,16 +22,11 @@ void threads_start()
     rv = thread_create(&thr_sm, NULL, sm_main, NULL);
     d_assert(rv == CORE_OK, return,
             "State machine thread creation failed");
-
-    rv = thread_create(&thr_dp, NULL, dp_main, NULL);
-    d_assert(rv == CORE_OK, return,
-            "Control path thread creation failed");
 }
 
 void threads_stop()
 {
     thread_delete(thr_sm);
-    thread_delete(thr_dp);
 }
 
 status_t cellwire_initialize(char *config_path)
