@@ -52,7 +52,7 @@ int enb_net_read(net_sock_t *sock, pkbuf_t *recvbuf, int size)
     return rc;
 }
 
-#define NUM_OF_TEST_ENB 2
+#define NUM_OF_TEST_ENB 4
 static void enb_setup_test1(abts_case *tc, void *data)
 {
     status_t rv;
