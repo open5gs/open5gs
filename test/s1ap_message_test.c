@@ -10,7 +10,7 @@
 #include "s1ap_enb_message.h"
 #include "s1ap_conv.h"
 
-static void s1ap_test1(abts_case *tc, void *data)
+static void s1ap_message_test1(abts_case *tc, void *data)
 {
     /* S1SetupRequest */
     char *payload[] = {
@@ -33,7 +33,7 @@ static void s1ap_test1(abts_case *tc, void *data)
     pkbuf_free(pkbuf);
 }
 
-static void s1ap_test2(abts_case *tc, void *data)
+static void s1ap_message_test2(abts_case *tc, void *data)
 {
     /* InitialUE(Attach Request) */
     char *payload[] = {
@@ -56,7 +56,7 @@ static void s1ap_test2(abts_case *tc, void *data)
     pkbuf_free(pkbuf);
 }
 
-static void s1ap_test3(abts_case *tc, void *data)
+static void s1ap_message_test3(abts_case *tc, void *data)
 {
     /* initial context setup response */
     char *payload[] = {
@@ -79,7 +79,7 @@ static void s1ap_test3(abts_case *tc, void *data)
     pkbuf_free(pkbuf);
 }
 
-static void s1ap_test4(abts_case *tc, void *data)
+static void s1ap_message_test4(abts_case *tc, void *data)
 {
     s1ap_message message;
     status_t rv;
@@ -100,14 +100,14 @@ static void s1ap_test4(abts_case *tc, void *data)
     pkbuf_free(pkbuf);
 }
 
-static void s1ap_test5(abts_case *tc, void *data)
+static void s1ap_message_test5(abts_case *tc, void *data)
 {
     s1ap_message message;
     status_t rv;
     pkbuf_t *pkbuf;
     int result;
 
-    rv = s1ap_build_setup_req(&pkbuf);
+    rv = s1ap_build_setup_req(&pkbuf, 0x54f64);
 
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     ABTS_PTR_NOTNULL(tc, pkbuf);
@@ -121,7 +121,7 @@ static void s1ap_test5(abts_case *tc, void *data)
     pkbuf_free(pkbuf);
 }
 
-abts_suite *test_s1ap(abts_suite *suite)
+abts_suite *test_s1ap_message(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
     {
@@ -131,11 +131,11 @@ abts_suite *test_s1ap(abts_suite *suite)
         d_trace_level(&_s1dec, 0);
     }
 
-    abts_run_test(suite, s1ap_test1, NULL);
-    abts_run_test(suite, s1ap_test2, NULL);
-    abts_run_test(suite, s1ap_test3, NULL);
-    abts_run_test(suite, s1ap_test4, NULL);
-    abts_run_test(suite, s1ap_test5, NULL);
+    abts_run_test(suite, s1ap_message_test1, NULL);
+    abts_run_test(suite, s1ap_message_test2, NULL);
+    abts_run_test(suite, s1ap_message_test3, NULL);
+    abts_run_test(suite, s1ap_message_test4, NULL);
+    abts_run_test(suite, s1ap_message_test5, NULL);
 
     return suite;
 }

@@ -7,7 +7,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-CORE_DECLARE(status_t) s1ap_build_setup_req(pkbuf_t **pkbuf);
+CORE_DECLARE(status_t) s1ap_build_setup_req(pkbuf_t **pkbuf, c_uint32_t enb_id);
 
 #ifdef __cplusplus
 }

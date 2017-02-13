@@ -6,7 +6,7 @@
 #include "s1ap_message.h"
 #include "s1ap_conv.h"
 
-status_t s1ap_build_setup_req(pkbuf_t **pkbuf)
+status_t s1ap_build_setup_req(pkbuf_t **pkbuf, c_uint32_t enb_id)
 {
     int erval = -1;
 
@@ -20,7 +20,7 @@ status_t s1ap_build_setup_req(pkbuf_t **pkbuf)
     ies = &message.msg.s1ap_S1SetupRequestIEs;
 
     ies->global_ENB_ID.eNB_ID.present = S1ap_ENB_ID_PR_macroENB_ID;
-    s1ap_conv_macro_enb_id_to_bit_string(0x5f123, 
+    s1ap_conv_macro_enb_id_to_bit_string(enb_id, 
          &ies->global_ENB_ID.eNB_ID.choice.macroENB_ID);
     s1ap_conv_plmn_id_to_tbcd_string(
         &mme_self()->plmn_id, &ies->global_ENB_ID.pLMNidentity);

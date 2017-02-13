@@ -62,7 +62,7 @@ static void enb_setup_test1(abts_case *tc, void *data)
     sock = enb_s1ap_connect();
     ABTS_PTR_NOTNULL(tc, sock);
 
-    rv = s1ap_build_setup_req(&sendbuf);
+    rv = s1ap_build_setup_req(&sendbuf, 0x54f64);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     rv = s1ap_send(sock, sendbuf);
