@@ -70,8 +70,8 @@ static void enb_setup_test1(abts_case *tc, void *data)
 
     pkbuf_free(sendbuf);
 
-    rc = enb_net_read(sock, recvbuf, 216);
-    ABTS_INT_EQUAL(tc, 216, rc);
+    rc = enb_net_read(sock, recvbuf, 27);
+    ABTS_INT_EQUAL(tc, 27, rc);
 
     rv = s1ap_decode_pdu(&message, recvbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);

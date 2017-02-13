@@ -65,7 +65,8 @@ int s1ap_encode_pdu(pkbuf_t **pkb, s1ap_message *message_p)
         return -1;
     }
 
-    (*pkb)->len = encoded;
+    (*pkb)->len = (encoded >> 3);
+
     return encoded;
 }
 

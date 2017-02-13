@@ -81,31 +81,43 @@ static void s1ap_test3(abts_case *tc, void *data)
 
 static void s1ap_test4(abts_case *tc, void *data)
 {
+    s1ap_message message;
     status_t rv;
     pkbuf_t *pkbuf;
+    int result;
 
     rv = s1ap_build_setup_rsp(&pkbuf);
 
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     ABTS_PTR_NOTNULL(tc, pkbuf);
     ABTS_PTR_NOTNULL(tc, pkbuf->payload);
-    ABTS_INT_EQUAL(tc, 216, pkbuf->len);
+    ABTS_INT_EQUAL(tc, 27, pkbuf->len);
 
+    result = s1ap_decode_pdu(&message, pkbuf);
+    ABTS_INT_EQUAL(tc, 0, result);
+
+    s1ap_free_pdu(&message);
     pkbuf_free(pkbuf);
 }
 
 static void s1ap_test5(abts_case *tc, void *data)
 {
+    s1ap_message message;
     status_t rv;
     pkbuf_t *pkbuf;
+    int result;
 
     rv = s1ap_build_setup_req(&pkbuf);
 
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     ABTS_PTR_NOTNULL(tc, pkbuf);
     ABTS_PTR_NOTNULL(tc, pkbuf->payload);
-    ABTS_INT_EQUAL(tc, 280, pkbuf->len);
+    ABTS_INT_EQUAL(tc, 35, pkbuf->len);
 
+    result = s1ap_decode_pdu(&message, pkbuf);
+    ABTS_INT_EQUAL(tc, 0, result);
+
+    s1ap_free_pdu(&message);
     pkbuf_free(pkbuf);
 }
 

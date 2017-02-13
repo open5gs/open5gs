@@ -15,6 +15,8 @@
  */
 
 #include "core.h"
+#include "core_debug.h"
+
 #include "cellwire.h"
 #include "context.h"
 #include "abts.h"
@@ -49,6 +51,8 @@ void test_initialize(void)
     cellwire_initialize(NULL);
 
     threads_start();
+
+    d_msg_to(D_MSG_TO_STDOUT, 0);
 
     inet_pton(AF_INET, "127.0.0.1", &mme_self()->enb_local_addr);
 
