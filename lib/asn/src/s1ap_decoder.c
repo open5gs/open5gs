@@ -145,6 +145,14 @@ static int s1ap_decode_successfull_outcome(s1ap_message *message,
     message->procedureCode = successfullOutcome_p->procedureCode;
     switch (successfullOutcome_p->procedureCode) 
     {
+        case S1ap_ProcedureCode_id_S1Setup: 
+            ret = s1ap_decode_s1ap_s1setupresponseies(
+                    &message->msg.s1ap_S1SetupResponseIEs, 
+                    &successfullOutcome_p->value);
+            s1ap_decode_xer_print_message(
+                    s1ap_xer_print_s1ap_s1setupresponse,
+                    s1ap_xer__print2sp, message);
+            break;
         case S1ap_ProcedureCode_id_InitialContextSetup: 
             ret = s1ap_decode_s1ap_initialcontextsetupresponseies(
                     &message->msg.s1ap_InitialContextSetupResponseIEs, 

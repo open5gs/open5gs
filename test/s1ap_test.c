@@ -7,6 +7,7 @@
 #include "testutil.h"
 
 #include "s1ap_message.h"
+#include "s1ap_enb_message.h"
 #include "s1ap_conv.h"
 
 static void s1ap_test1(abts_case *tc, void *data)
@@ -95,42 +96,15 @@ static void s1ap_test4(abts_case *tc, void *data)
 
 static void s1ap_test5(abts_case *tc, void *data)
 {
-    int erval = -1;
+    status_t rv;
     pkbuf_t *pkbuf;
 
-    s1ap_message message;
-    S1ap_S1SetupRequestIEs_t *ies;
-    S1ap_PLMNidentity_t *plmnIdentity;
-    S1ap_SupportedTAs_Item_t *supportedTA;
+    rv = s1ap_build_setup_req(&pkbuf);
 
-    memset(&message, 0, sizeof(s1ap_message));
-
-    ies = &message.msg.s1ap_S1SetupRequestIEs;
-
-    ies->global_ENB_ID.eNB_ID.present = S1ap_ENB_ID_PR_macroENB_ID;
-    s1ap_conv_macro_enb_id_to_bit_string(0x5f123, 
-         &ies->global_ENB_ID.eNB_ID.choice.macroENB_ID);
-    s1ap_conv_plmn_id_to_tbcd_string(
-        &mme_self()->plmn_id, &ies->global_ENB_ID.pLMNidentity);
-
-    supportedTA = (S1ap_SupportedTAs_Item_t *)
-        core_calloc(1, sizeof(S1ap_SupportedTAs_Item_t));
-    s1ap_conv_uint16_to_octet_string(mme_self()->tac, &supportedTA->tAC);
-    plmnIdentity = (S1ap_PLMNidentity_t *)
-        core_calloc(1, sizeof(S1ap_PLMNidentity_t));
-    s1ap_conv_plmn_id_to_tbcd_string(
-        &mme_self()->plmn_id, plmnIdentity);
-    ASN_SEQUENCE_ADD(&supportedTA->broadcastPLMNs, plmnIdentity);
-
-    ASN_SEQUENCE_ADD(&ies->supportedTAs, supportedTA);
-
-    message.direction = S1AP_PDU_PR_initiatingMessage;
-    message.procedureCode = S1ap_ProcedureCode_id_S1Setup;
-
-    erval = s1ap_encode_pdu(&pkbuf, &message);
-    ABTS_INT_EQUAL(tc, 280, erval);
-
-    s1ap_free_pdu(&message);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    ABTS_PTR_NOTNULL(tc, pkbuf);
+    ABTS_PTR_NOTNULL(tc, pkbuf->payload);
+    ABTS_INT_EQUAL(tc, 280, pkbuf->len);
 
     pkbuf_free(pkbuf);
 }

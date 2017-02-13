@@ -5,7 +5,8 @@ bin_PROGRAMS = testcellwire
 testcellwire_SOURCES = \
 	abts.h abts_tests.h testutil.h \
 	abts.c testutil.c \
-	s1ap_test.c 
+	s1ap_enb_message.c \
+	s1ap_test.c enb_setup_test.c
 
 testcellwire_LDADD = \
     $(top_srcdir)/lib/core/src/libcore.la \

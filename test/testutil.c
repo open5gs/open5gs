@@ -16,6 +16,7 @@
 
 #include "core.h"
 #include "cellwire.h"
+#include "context.h"
 #include "abts.h"
 #include "testutil.h"
 
@@ -36,6 +37,8 @@ void core_assert_ok(abts_case* tc, const char* context, status_t rv,
 
 void test_terminate(void)
 {
+    threads_stop();
+    
     core_terminate();
     cellwire_terminate();
 }
@@ -44,6 +47,11 @@ void test_initialize(void)
 {
     core_initialize();
     cellwire_initialize(NULL);
+
+    threads_start();
+
+    inet_pton(AF_INET, "127.0.0.1", &mme_self()->enb_local_addr);
+
     atexit(test_terminate);
 }
 

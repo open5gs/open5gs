@@ -58,5 +58,6 @@ void core_assert_ok(abts_case* tc, const char *context,
 void test_initialize(void);
 
 abts_suite *test_s1ap(abts_suite *suite);
+abts_suite *test_enb_setup(abts_suite *suite);
 
 #endif /* CORE_TEST_INCLUDES */
