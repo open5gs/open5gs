@@ -126,6 +126,9 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
                     fsm_clear((fsm_t*)&enb->s1_sm);
                 }
 
+                net_unregister_sock(sock);
+                net_close(sock);
+
                 enb_ctx_remove(enb);
                 d_info("eNB-S1[%x] connection refused!!!", enb->id);
             }
@@ -134,9 +137,6 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
                 d_error("Can't find eNB-S1 for [%s]!!!", 
                         INET_NTOP(&sock->remote.sin_addr.s_addr, buf));
             }
-
-            net_unregister_sock(sock);
-            net_close(sock);
 
             break;
         }
