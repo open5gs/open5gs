@@ -631,6 +631,7 @@ int  net_accept(net_sock_t **new_accept_sock, net_sock_t *net_sock, int timeout)
         {
             net_sock_t *node = NULL;
             pool_alloc_node(&net_pool, &node);
+            d_assert(node, return -1, "Pool Allocation Failed");
             new_sock = accept(sock, NULL, NULL);
 
             node->sock_id = new_sock;
