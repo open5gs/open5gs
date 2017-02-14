@@ -36,17 +36,29 @@ int enb_net_send(net_sock_t *sock, pkbuf_t *sendbuf)
     return s1ap_send(sock, sendbuf);
 }
 
-int enb_net_read(net_sock_t *sock, pkbuf_t *recvbuf, int size)
+int enb_net_read(net_sock_t *sock, pkbuf_t *recvbuf)
 {
-    int rc;
+    int rc = 0;
 
     while(1)
     {
-        rc = net_read(sock, recvbuf->payload, recvbuf->len, 1);
-        if (rc < 0 && sock->sndrcv_errno == EAGAIN)
+        rc = net_read(sock, recvbuf->payload, recvbuf->len, 0);
+        if (rc == -2) 
+        {
             continue;
-        if (rc == size) 
+        }
+        else if (rc <= 0)
+        {
+            if (sock->sndrcv_errno == EAGAIN)
+            {
+                continue;
+            }
             break;
+        }
+        else
+        {
+            break;
+        }
     }
 
     return rc;
@@ -74,8 +86,6 @@ static void enb_setup_test1(abts_case *tc, void *data)
 
     for (i = 0; i < NUM_OF_TEST_DUPLICATED_ENB; i++)
     {
-        int size = 0;
-
         rv = s1ap_build_setup_req(&sendbuf, 0x54f64);
         ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
@@ -84,11 +94,8 @@ static void enb_setup_test1(abts_case *tc, void *data)
 
         pkbuf_free(sendbuf);
 
-        if (i == 0) size = TEST_S1_SETUP_RESPONSE_SIZE;
-        else size = TEST_S1_SETUP_FAILURE_SIZE;
-
-        rc = enb_net_read(sock[i], recvbuf, size);
-        ABTS_INT_EQUAL(tc, size, rc);
+        rc = enb_net_read(sock[i], recvbuf);
+        ABTS_INT_NEQUAL(tc, 0, rc);
 
         rv = s1ap_decode_pdu(&message, recvbuf);
         ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -135,8 +142,8 @@ static void enb_setup_test2(abts_case *tc, void *data)
 
         pkbuf_free(sendbuf);
 
-        rc = enb_net_read(sock[i], recvbuf, TEST_S1_SETUP_RESPONSE_SIZE);
-        ABTS_INT_EQUAL(tc, TEST_S1_SETUP_RESPONSE_SIZE, rc);
+        rc = enb_net_read(sock[i], recvbuf);
+        ABTS_INT_NEQUAL(tc, 0, rc);
 
         rv = s1ap_decode_pdu(&message, recvbuf);
         ABTS_INT_EQUAL(tc, CORE_OK, rv);
