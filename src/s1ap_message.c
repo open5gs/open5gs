@@ -21,10 +21,8 @@ status_t s1ap_build_setup_rsp(pkbuf_t **pkbuf)
     memset(&message, 0, sizeof(s1ap_message));
 
     ies = &message.msg.s1ap_S1SetupResponseIEs;
-    ies->relativeMMECapacity = mme_self()->relative_capacity;
 
     numServedGUMMEI = 1;
-
     servedGUMMEI = (S1ap_ServedGUMMEIsItem_t *)
         core_calloc(numServedGUMMEI, sizeof(S1ap_ServedGUMMEIsItem_t));
     for (i = 0; i < numServedGUMMEI; i++)
@@ -61,8 +59,10 @@ status_t s1ap_build_setup_rsp(pkbuf_t **pkbuf)
             ASN_SEQUENCE_ADD(&servedGUMMEI->servedMMECs, mmeCode);
         }
     }
-
     ASN_SEQUENCE_ADD(&ies->servedGUMMEIs, servedGUMMEI);
+
+    ies->relativeMMECapacity = mme_self()->relative_capacity;
+
     message.procedureCode = S1ap_ProcedureCode_id_S1Setup;
     message.direction = S1AP_PDU_PR_successfulOutcome;
 

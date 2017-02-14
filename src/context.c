@@ -6,6 +6,7 @@
 
 #include "cellwire.h"
 #include "context.h"
+#include "s1ap_message.h"
 
 static mme_ctx_t self;
 
@@ -43,6 +44,8 @@ status_t context_init()
     self.plmn_id.mnc_len = 2;
     self.plmn_id.mcc = 1; /* 001 */
     self.plmn_id.mnc = 1; /* 01 */
+    self.tracking_area_code = 12345;
+    self.default_paging_drx = S1ap_PagingDRX_v64;
     self.relative_capacity = 0xff;
 
     self.srvd_gummei.num_of_plmn_id = 1;

@@ -49,10 +49,14 @@ typedef struct _mme_ctx_t {
     c_uint32_t      enb_local_addr; /** Network byte order */
 
     plmn_id_t       plmn_id;
-    srvd_gummei_t   srvd_gummei;
 
+    /* S1SetupRequest */
+    c_uint16_t      tracking_area_code;
+    c_uint16_t      default_paging_drx;
+
+    /* S1SetupResponse */
+    srvd_gummei_t   srvd_gummei;
     c_uint8_t       relative_capacity;
-    c_uint16_t      tac;
 } mme_ctx_t;
 
 /**

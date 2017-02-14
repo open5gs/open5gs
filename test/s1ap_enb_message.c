@@ -27,7 +27,8 @@ status_t s1ap_build_setup_req(pkbuf_t **pkbuf, c_uint32_t enb_id)
 
     supportedTA = (S1ap_SupportedTAs_Item_t *)
         core_calloc(1, sizeof(S1ap_SupportedTAs_Item_t));
-    s1ap_conv_uint16_to_octet_string(mme_self()->tac, &supportedTA->tAC);
+    s1ap_conv_uint16_to_octet_string(
+            mme_self()->tracking_area_code, &supportedTA->tAC);
     plmnIdentity = (S1ap_PLMNidentity_t *)
         core_calloc(1, sizeof(S1ap_PLMNidentity_t));
     s1ap_conv_plmn_id_to_tbcd_string(
@@ -35,6 +36,8 @@ status_t s1ap_build_setup_req(pkbuf_t **pkbuf, c_uint32_t enb_id)
     ASN_SEQUENCE_ADD(&supportedTA->broadcastPLMNs, plmnIdentity);
 
     ASN_SEQUENCE_ADD(&ies->supportedTAs, supportedTA);
+
+    ies->defaultPagingDRX = mme_self()->default_paging_drx;
 
     message.direction = S1AP_PDU_PR_initiatingMessage;
     message.procedureCode = S1ap_ProcedureCode_id_S1Setup;
