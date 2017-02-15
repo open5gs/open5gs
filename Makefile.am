@@ -12,15 +12,15 @@ nodist_cellwired_SOURCES = symtbl.c
 cellwired_LDADD = \
     $(top_srcdir)/src/libcellwire.la \
     $(top_srcdir)/lib/core/src/libcore.la \
-    $(top_srcdir)/lib/asn/src/libasn.la \
     $(top_srcdir)/lib/logger/liblogger.la \
+    $(top_srcdir)/lib/message/src/libmessage.la \
     -lpthread -lm -lsctp @OSLIBS@
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \
-    -I$(top_srcdir)/lib/asn/asn1c \
-    -I$(top_srcdir)/lib/asn/src \
     -I$(top_srcdir)/lib/logger \
+    -I$(top_srcdir)/lib/message/src/s1ap \
+    -I$(top_srcdir)/lib/emssage/src \
     -I$(top_srcdir)/src
 
 CLEANFILES = symtbl.c

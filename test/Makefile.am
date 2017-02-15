@@ -10,14 +10,14 @@ testcellwire_SOURCES = \
 
 testcellwire_LDADD = \
     $(top_srcdir)/lib/core/src/libcore.la \
-    $(top_srcdir)/lib/asn/src/libasn.la \
+    $(top_srcdir)/lib/message/src/libmessage.la \
     $(top_srcdir)/src/libcellwire.la \
     -lpthread -lsctp
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \
-    -I$(top_srcdir)/lib/asn/src/asn1c \
-    -I$(top_srcdir)/lib/asn/src \
+    -I$(top_srcdir)/lib/message/src/s1ap \
+    -I$(top_srcdir)/lib/message/src \
     -I$(top_srcdir)/src
 
 AM_CFLAGS = \

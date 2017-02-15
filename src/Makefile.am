@@ -20,8 +20,8 @@ libcellwire_la_LIBADD = \
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/lib/core/include \
-    -I$(top_srcdir)/lib/asn/src/asn1c \
-    -I$(top_srcdir)/lib/asn/src
+    -I$(top_srcdir)/lib/message/src/s1ap \
+    -I$(top_srcdir)/lib/message/src
 
 AM_CFLAGS = \
 	-Wall -Werror
