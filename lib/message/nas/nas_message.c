@@ -5,12 +5,16 @@
 
 status_t nas_decode_attach_request(nas_message_t *message, pkbuf_t *pkbuf)
 {
+#if 0
     nas_attach_info_t *attach_info = NULL;
+#endif
     nas_eps_mobile_identity_t *eps_mobile_identity = NULL;
     nas_ue_network_capability_t *ue_network_capability = NULL;
     nas_esm_message_container_t *esm_message_container = NULL;
 
+#if 0
     attach_info = pkbuf->payload;
+#endif
     pkbuf_header(pkbuf, 
         -(c_int16_t)(sizeof(nas_attach_info_t)));
     eps_mobile_identity = pkbuf->payload;
