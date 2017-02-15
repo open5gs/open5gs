@@ -102,52 +102,53 @@ ED4(c_uint8_t tsc:1;,
     c_uint8_t attach_type:3;)
 } __attribute__ ((packed)) nas_attach_info_t;
 
+#define NAS_EPS_MOBILE_IDENTITY_IMSI 1
+#define NAS_EPS_MOBILE_IDENTITY_GUTI 6
+#define NAS_EPS_MOBILE_IDENTITY_IMEI 3
+
 #define NAS_EPS_MOBILE_IDENTITY_EVEN 0
 #define NAS_EPS_MOBILE_IDENTITY_ODD 1
 typedef struct _nas_eps_mobile_identity_guti_t {
-ED3(c_uint8_t  spare:4;,
-    c_uint8_t  odd_even:1;,
-    c_uint8_t  type_of_identity:3;)
-ED2(c_uint8_t  mcc_digit2:4;,
-    c_uint8_t  mcc_digit1:4;)
-ED2(c_uint8_t  mnc_digit3:4;,
-    c_uint8_t  mcc_digit3:4;)
-ED2(c_uint8_t  mnc_digit2:4;,
-    c_uint8_t  mnc_digit1:4;)
+ED2(c_uint8_t mcc_digit2:4;,
+    c_uint8_t mcc_digit1:4;)
+ED2(c_uint8_t mnc_digit3:4;,
+    c_uint8_t mcc_digit3:4;)
+ED2(c_uint8_t mnc_digit2:4;,
+    c_uint8_t mnc_digit1:4;)
     c_uint16_t mme_group_id;
     c_uint8_t mme_code;
     c_uint32_t m_tmsi;
 } __attribute__ ((packed)) nas_eps_mobile_identity_guti_t;
 
 typedef struct _nas_eps_mobile_identity_imsi_t {
-ED3(c_uint8_t  identity_digit1:4;,
-    c_uint8_t  odd_even:1;,
-    c_uint8_t  type_of_identity:3;)
-ED2(c_uint8_t  identity_digit2:4;,
-    c_uint8_t  identity_digit3:4;)
-ED2(c_uint8_t  identity_digit4:4;,
-    c_uint8_t  identity_digit5:4;)
-ED2(c_uint8_t  identity_digit6:4;,
-    c_uint8_t  identity_digit7:4;)
-ED2(c_uint8_t  identity_digit8:4;,
-    c_uint8_t  identity_digit9:4;)
-ED2(c_uint8_t  identity_digit10:4;,
-    c_uint8_t  identity_digit11:4;)
-ED2(c_uint8_t  identity_digit12:4;,
-    c_uint8_t  identity_digit13:4;)
-ED2(c_uint8_t  identity_digit14:4;,
-    c_uint8_t  identity_digit15:4;)
+ED2(c_uint8_t digit2:4;,
+    c_uint8_t digit3:4;)
+ED2(c_uint8_t digit4:4;,
+    c_uint8_t digit5:4;)
+ED2(c_uint8_t digit6:4;,
+    c_uint8_t digit7:4;)
+ED2(c_uint8_t digit8:4;,
+    c_uint8_t digit9:4;)
+ED2(c_uint8_t digit10:4;,
+    c_uint8_t digit11:4;)
+ED2(c_uint8_t digit12:4;,
+    c_uint8_t digit13:4;)
+ED2(c_uint8_t digit14:4;,
+    c_uint8_t digit15:4;)
 } __attribute__ ((packed)) nas_eps_mobile_identity_imsi_t;
 
 typedef nas_eps_mobile_identity_imsi_t nas_eps_mobile_identity_imei_t;
 
 typedef struct _nas_eps_mobile_identity_t {
     c_uint8_t len;
+ED3(c_uint8_t digit1:4;,
+    c_uint8_t odd_even:1;,
+    c_uint8_t type_of_identity:3;)
     union {
         nas_eps_mobile_identity_imsi_t imsi;
         nas_eps_mobile_identity_guti_t guti;
         nas_eps_mobile_identity_imei_t imei;
-    } i;
+    } u;
 } __attribute__ ((packed)) nas_eps_mobile_identity_t;
 
 typedef struct _nas_ue_network_capability_t {

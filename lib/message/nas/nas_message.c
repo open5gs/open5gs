@@ -3,30 +3,74 @@
 #include "core_debug.h"
 #include "nas_message.h"
 
+status_t nas_decode_attach_info(
+    nas_attach_info_t *attach_info, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = 0;
+
+    size = sizeof(nas_attach_info_t);
+    d_assert(pkbuf->len >= size, return CORE_ERROR, 
+            "pkbuf->len(%d), size(%d)\n", pkbuf->len, size);
+    memcpy(attach_info, pkbuf->payload, size);
+    pkbuf_header(pkbuf, -size);
+    
+    return CORE_OK;
+}
+
+status_t nas_decode_eps_mobile_identity(
+    nas_eps_mobile_identity_t *eps_mobile_identity, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = 0;
+    nas_eps_mobile_identity_t *header = pkbuf->payload;
+
+    size = header->len + sizeof(header->len);
+    d_assert(pkbuf->len >= size, return CORE_ERROR, 
+            "pkbuf->len(%d), size(%d)\n", pkbuf->len, size);
+    memcpy(eps_mobile_identity, pkbuf->payload, size);
+
+    if (header->type_of_identity == NAS_EPS_MOBILE_IDENTITY_GUTI)
+    {
+        eps_mobile_identity->u.guti.mme_group_id = 
+            ntohs(eps_mobile_identity->u.guti.mme_group_id);
+        eps_mobile_identity->u.guti.m_tmsi = 
+            ntohl(eps_mobile_identity->u.guti.m_tmsi);
+    }
+
+    pkbuf_header(pkbuf, -size);
+    
+    return CORE_OK;
+}
+
+status_t nas_decode_ue_network_capability(
+    nas_ue_network_capability_t *ue_network_capability, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = 0;
+    nas_ue_network_capability_t *header = pkbuf->payload;
+
+    size = header->len + sizeof(header->len);
+    d_assert(pkbuf->len >= size, return CORE_ERROR, 
+            "pkbuf->len(%d), size(%d)\n", pkbuf->len, size);
+    memcpy(ue_network_capability, pkbuf->payload, size);
+    pkbuf_header(pkbuf, -size);
+
+    return CORE_OK;
+}
+
 status_t nas_decode_attach_request(nas_message_t *message, pkbuf_t *pkbuf)
 {
-#if 0
-    nas_attach_info_t *attach_info = NULL;
-#endif
-    nas_eps_mobile_identity_t *eps_mobile_identity = NULL;
-    nas_ue_network_capability_t *ue_network_capability = NULL;
-    nas_esm_message_container_t *esm_message_container = NULL;
+    nas_attach_request_t *attach_request = &message->emm.attach_request;
+    status_t rv;
 
-#if 0
-    attach_info = pkbuf->payload;
-#endif
-    pkbuf_header(pkbuf, 
-        -(c_int16_t)(sizeof(nas_attach_info_t)));
-    eps_mobile_identity = pkbuf->payload;
-    pkbuf_header(pkbuf, -(c_uint16_t)(sizeof(eps_mobile_identity->len) + 
-                            eps_mobile_identity->len));
-    ue_network_capability = pkbuf->payload;
-    pkbuf_header(pkbuf, -(c_int16_t)(sizeof(ue_network_capability->len) +
-                ue_network_capability->len));
+    rv = nas_decode_attach_info(&attach_request->attach_info, pkbuf);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "decode failed");
 
-    esm_message_container = pkbuf->payload;
-    pkbuf_header(pkbuf, -(c_int16_t)(sizeof(esm_message_container->len) +
-                esm_message_container->len));
+    rv = nas_decode_eps_mobile_identity(
+            &attach_request->eps_mobile_identity, pkbuf);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "decode failed");
+
+    rv = nas_decode_ue_network_capability(
+            &attach_request->ue_network_capability, pkbuf);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "decode failed");
 
     return CORE_OK;
 }
