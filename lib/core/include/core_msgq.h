@@ -79,6 +79,15 @@ CORE_DECLARE(int) msgq_recv(msgq_id id, char *msg, int msglen);
 CORE_DECLARE(int) msgq_timedrecv(msgq_id id, char *msg, int msglen,
         c_time_t timeout);
 
+/**
+ * @param id
+ *
+ * @return 1(true) or 0(false)
+ * If ring buffer is empty, return 1(true)
+ * If ring buffer is not empty, return 0(false)
+ */
+CORE_DECLARE(int) msgq_is_empty(msgq_id id);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

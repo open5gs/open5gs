@@ -309,3 +309,23 @@ int msgq_timedrecv(msgq_id id, char *msg, int msglen, c_time_t timeout)
 
     return len;
 }
+
+int msgq_is_empty(msgq_id id)
+{
+    msg_desc_t *md = (msg_desc_t*)id;
+    int n;
+
+    mutex_lock(md->mut_r);
+    n = rbuf_bytes(&md->rbuf);
+    if (n < md->msgsize + 2)
+    {
+        mutex_unlock(md->mut_r);
+        return 1;
+    }
+    else
+    {
+        mutex_unlock(md->mut_r);
+        return 0;
+    }
+}
+

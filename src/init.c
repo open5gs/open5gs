@@ -55,7 +55,7 @@ void *THREAD_FUNC mme_main(void *data)
 
     prev_tm = time_now();
 
-    while (!thread_should_stop())
+    while ((!thread_should_stop()) || (!msgq_is_empty(queue_id)))
     {
         r = event_timedrecv(queue_id, &event, EVENT_WAIT_TIMEOUT);
 
