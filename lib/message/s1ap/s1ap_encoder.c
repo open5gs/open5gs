@@ -2,7 +2,7 @@
 
 #include "core_debug.h"
 #include "core_lib.h"
-#include "s1ap_codecs.h"
+#include "s1ap_message.h"
 
 static inline int s1ap_encode_initiating_message(
     s1ap_message *message_p, pkbuf_t *pkbuf);

@@ -3,7 +3,7 @@
 #include "core_debug.h"
 #include "core_pkbuf.h"
 #include "context.h"
-#include "s1ap_message.h"
+#include "s1ap_contents.h"
 #include "s1ap_conv.h"
 
 status_t s1ap_build_setup_req(pkbuf_t **pkbuf, c_uint32_t enb_id)

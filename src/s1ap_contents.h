@@ -1,7 +1,7 @@
-#ifndef _S1AP_MESSAGE_H__
-#define _S1AP_MESSAGE_H__
+#ifndef _S1AP_CONTENTS_H__
+#define _S1AP_CONTENTS_H__
 
-#include "s1ap_codecs.h"
+#include "s1ap_message.h"
 
 #ifdef __cplusplus
 extern "C" {

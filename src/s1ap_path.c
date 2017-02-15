@@ -4,7 +4,7 @@
 #include "core_debug.h"
 #include "core_net.h"
 
-#include "s1ap_codecs.h"
+#include "s1ap_message.h"
 
 #include "event.h"
 #include "s1ap_path.h"

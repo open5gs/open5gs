@@ -1,8 +1,8 @@
-#define TRACE_MODULE _s1msg
+#define TRACE_MODULE _s1contents
 
 #include "core_debug.h"
 #include "context.h"
-#include "s1ap_message.h"
+#include "s1ap_contents.h"
 #include "s1ap_conv.h"
 
 status_t s1ap_build_setup_rsp(pkbuf_t **pkbuf)

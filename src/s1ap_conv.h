@@ -1,7 +1,7 @@
 #ifndef _S1AP_CONV_H__
 #define _S1AP_CONV_H__
 
-#include "s1ap_codecs.h"
+#include "s1ap_message.h"
 #include "context.h"
 
 #ifdef __cplusplus

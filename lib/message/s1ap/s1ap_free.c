@@ -1,7 +1,7 @@
 #define TRACE_MODULE _s1free
 
 #include "core_debug.h"
-#include "s1ap_codecs.h"
+#include "s1ap_message.h"
 
 static inline int s1ap_free_initiating_message(s1ap_message *message_p);
 static inline int s1ap_free_successfull_outcome(s1ap_message *message_p);

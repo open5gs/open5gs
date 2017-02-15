@@ -2,7 +2,7 @@
 
 #include "core_debug.h"
 #include "core_lib.h"
-#include "s1ap_codecs.h"
+#include "s1ap_message.h"
 
 static int s1ap_decode_initiating(s1ap_message *message,
     S1ap_InitiatingMessage_t *initiating_p);

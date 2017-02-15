@@ -6,7 +6,7 @@
 
 #include "testutil.h"
 
-#include "s1ap_message.h"
+#include "s1ap_contents.h"
 #include "s1ap_enb_message.h"
 #include "s1ap_conv.h"
 
