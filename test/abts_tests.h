@@ -25,6 +25,7 @@ const struct testlist {
 } alltests[] = {
     {test_s1ap_message},
     {test_enb_setup},
+    {test_nas_message},
 };
 
 #endif /* APR_TEST_INCLUDES */

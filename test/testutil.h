@@ -59,5 +59,6 @@ void test_initialize(void);
 
 abts_suite *test_s1ap_message(abts_suite *suite);
 abts_suite *test_enb_setup(abts_suite *suite);
+abts_suite *test_nas_message(abts_suite *suite);
 
 #endif /* CORE_TEST_INCLUDES */
