@@ -1,26 +1,26 @@
 ## Process this file with automake to produce Makefile.in
 
-SUBDIRS = s1ap
+SUBDIRS = asn1c
 
-noinst_LTLIBRARIES = libmessage.la
+noinst_LTLIBRARIES = libmessages1ap.la
 
-libmessage_la_SOURCES = \
+libmessages1ap_la_SOURCES = \
 	s1ap_ies_defs.h s1ap_codecs.h
 
-nodist_libmessage_la_SOURCES = \
+nodist_libmessages1ap_la_SOURCES = \
 	s1ap_encoder.c s1ap_decoder.c s1ap_free.c \
 	s1ap_ies_encoder.c s1ap_ies_decoder.c s1ap_ies_free.c s1ap_ies_xer_print.c
 
-libmessage_la_DEPENDENCIES = \
-    $(top_srcdir)/lib/message/src/s1ap/libmessages1ap.la
+libmessages1ap_la_DEPENDENCIES = \
+    $(top_srcdir)/lib/message/s1ap/asn1c/libmessages1apasn1c.la
 
-libmessage_la_LIBADD = \
-    $(top_srcdir)/lib/message/src/s1ap/libmessages1ap.la
+libmessages1ap_la_LIBADD = \
+    $(top_srcdir)/lib/message/s1ap/asn1c/libmessages1apasn1c.la
 
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \
-    -I$(top_srcdir)/lib/message/src/s1ap
+    -I$(top_srcdir)/lib/message/s1ap/asn1c
 
 AM_CFLAGS = \
 	-Wall -Werror
