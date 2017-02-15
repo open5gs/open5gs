@@ -8,7 +8,7 @@ user@host ~/Documents/git/cellwire/lib/asn/support$ \
 
 * EUROCOM S1AP-IEs support files
 user@host ~/Documents/git/cellwire/lib/asn/support$ \
-    python asn1tostruct.py -f S1AP-PDU.asn -o ../src
+    python asn1tostruct.py -f S1AP-PDU.asn -o ../s1ap
 
 * Use AuthenticEshkinKot's fork for asn1c
 user@host ~/Documents/git/AuthenticEshkinKot$ \
@@ -18,14 +18,14 @@ user@host Documents/~/git/AuthenticEshkinKot$ \
 
 * ASN.1 encoder/decoder
 [Option1] WITH skeletons
-user@host ~/Documents/git/cellwire/lib/asn/src/asn1c$ \
+user@host ~/Documents/git/cellwire/lib/message/s1ap/asn1c$ \
     ../../../../../AuthenticEshkinKot/asn1c/asn1c \
     -fcompound-names -fincludes-quoted -gen-PER ../../support/S1AP-PDU.asn
 
     [CHECK] asn_internal.h/core_malloc/core_free & Makefile.am
 
 [Option2] WITHOUT skeletons
-user@host ~/Documents/git/cellwire/lib/asn/src/asn1c$ \
+user@host ~/Documents/git/cellwire/lib/message/s1ap/asn1c$ \
     ../../../../../AuthenticEshkinKot/asn1c/asn1c \
     -fcompound-names -fincludes-quoted -gen-PER -S ./ ../../support/S1AP-PDU.asn
 
