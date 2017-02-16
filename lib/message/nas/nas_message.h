@@ -220,8 +220,8 @@ typedef struct _nas_attach_request_t {
 typedef struct _nas_message_t {
     nas_header_t h;
     union {
-        nas_attach_request_t attach_request;
         nas_attach_accept_t attach_accept;
+        nas_attach_request_t attach_request;
     } emm;
 } nas_message_t;
 

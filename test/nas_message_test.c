@@ -63,13 +63,34 @@ static void nas_message_test2(abts_case *tc, void *data)
     attach_accept->tai_list.u.type0.mcc_digit3 = 7;
     attach_accept->tai_list.u.type0.mnc_digit1 = 9;
     attach_accept->tai_list.u.type0.mnc_digit2 = 9;
-    attach_accept->tai_list.u.type0.mnc_digit2 = 0xf;
+    attach_accept->tai_list.u.type0.mnc_digit3 = 0xf;
     attach_accept->tai_list.u.type0.tac[0] = 12345;
     attach_accept->esm_message_container.length = 50;
     attach_accept->esm_message_container.buffer = (c_uint8_t*)esm_payload[0];
 
+    attach_accept->presencemask |= NAS_ATTACH_ACCEPT_GUTI_PRESENT;
+    attach_accept->guti.length = 11;
+    attach_accept->guti.type_of_identity = NAS_EPS_MOBILE_IDENTITY_GUTI;
+    attach_accept->guti.u.guti.mcc_digit1 = 4;
+    attach_accept->guti.u.guti.mcc_digit2 = 1;
+    attach_accept->guti.u.guti.mcc_digit3 = 7;
+    attach_accept->guti.u.guti.mnc_digit1 = 9;
+    attach_accept->guti.u.guti.mnc_digit2 = 9;
+    attach_accept->guti.u.guti.mnc_digit3 = 0xf;
+    attach_accept->guti.u.guti.mme_group_id = 9029;
+    attach_accept->guti.u.guti.mme_code = 225;
+    attach_accept->guti.u.guti.m_tmsi = 0x00000456;
+
     rv = nas_encode_pdu(&pkbuf, &message);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    {
+        int i = 0;
+        unsigned char *p = pkbuf->payload;
+        for (i = 0; i < pkbuf->len; i++)
+            printf("0x%x, 0x%x\n", payload[0][i], p[i]);
+
+    }
+    ABTS_TRUE(tc, memcmp(pkbuf->payload, payload, pkbuf->len) == 0);
 
     pkbuf_free(pkbuf);
 }
