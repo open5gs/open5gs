@@ -35,133 +35,133 @@ c_int32_t nas_decode_attach_request(nas_message_t *message, pkbuf_t *pkbuf)
 
         switch(type)
         {
-            case NAS_ATTACH_REQUEST_OLD_P_TMSI_SIGNATURE_IEI:
+            case NAS_ATTACH_REQUEST_OLD_P_TMSI_SIGNATURE_TYPE:
                 size = nas_decode_p_tmsi_signature(
                         &attach_request->old_p_tmsi_signature, pkbuf);
                 d_assert(size >= 0, return -1, "decode failed");
                 attach_request->presencemask |=
                     NAS_ATTACH_REQUEST_OLD_P_TMSI_SIGNATURE_PRESENT;
                 break;
-            case NAS_ATTACH_REQUEST_ADDITIONAL_GUTI_IEI:
+            case NAS_ATTACH_REQUEST_ADDITIONAL_GUTI_TYPE:
                 size = nas_decode_eps_mobile_identity(
                         &attach_request->additional_guti, pkbuf);
                 d_assert(size >= 0, return -1, "decode failed");
                 attach_request->presencemask |=
                     NAS_ATTACH_REQUEST_ADDITIONAL_GUTI_PRESENT;
                 break;
-            case NAS_ATTACH_REQUEST_LAST_VISITED_REGISTERED_TAI_IEI:
+            case NAS_ATTACH_REQUEST_LAST_VISITED_REGISTERED_TAI_TYPE:
                 size = nas_decode_tracking_area_identity(
                         &attach_request->last_visited_registered_tai, pkbuf);
                 d_assert(size >= 0, return -1, "decode failed");
                 attach_request->presencemask |=
-                    NAS_ATTACH_REQUEST_LAST_VISITED_REGISTERED_TAI_IEI;
+                    NAS_ATTACH_REQUEST_LAST_VISITED_REGISTERED_TAI_TYPE;
                 break;
-            case NAS_ATTACH_REQUEST_DRX_PARAMETER_IEI:
+            case NAS_ATTACH_REQUEST_DRX_PARAMETER_TYPE:
                 size = nas_decode_drx_parameter(
                         &attach_request->drx_parameter, pkbuf);
                 d_assert(size >= 0, return -1, "decode failed");
                 attach_request->presencemask |=
                     NAS_ATTACH_REQUEST_DRX_PARAMETER_PRESENT;
                 break;
-            case NAS_ATTACH_REQUEST_MS_NETWORK_CAPABILITY_IEI:
+            case NAS_ATTACH_REQUEST_MS_NETWORK_CAPABILITY_TYPE:
                 size = nas_decode_ms_network_capability(
                         &attach_request->ms_network_capability, pkbuf);
                 d_assert(size >= 0, return -1, "decode failed");
                 attach_request->presencemask |=
                     NAS_ATTACH_REQUEST_MS_NETWORK_FEATURE_SUPPORT_PRESENT;
                 break;
-            case NAS_ATTACH_REQUEST_OLD_LOCATION_AREA_IDENTIFICATION_IEI:
+            case NAS_ATTACH_REQUEST_OLD_LOCATION_AREA_IDENTIFICATION_TYPE:
                 size = nas_decode_location_area_identification(
                         &attach_request->old_location_area_identification, pkbuf);
                 d_assert(size >= 0, return -1, "decode failed");
                 attach_request->presencemask |=
                     NAS_ATTACH_REQUEST_OLD_LOCATION_AREA_IDENTIFICATION_PRESENT;
                 break;
-            case NAS_ATTACH_REQUEST_TMSI_STATUS_IEI:
+            case NAS_ATTACH_REQUEST_TMSI_STATUS_TYPE:
                 size = nas_decode_tmsi_status(
                         &attach_request->tmsi_status, pkbuf);
                 d_assert(size >= 0, return -1, "decode failed");
                 attach_request->presencemask |=
                     NAS_ATTACH_REQUEST_TMSI_STATUS_PRESENT;
                 break;
-            case NAS_ATTACH_REQUEST_MOBILE_STATION_CLASSMARK_2_IEI:
+            case NAS_ATTACH_REQUEST_MOBILE_STATION_CLASSMARK_2_TYPE:
                 size = nas_decode_mobile_station_classmark_2(
                         &attach_request->mobile_station_classmark_2, pkbuf);
                 d_assert(size >= 0, return -1, "decode failed");
                 attach_request->presencemask |=
                     NAS_ATTACH_REQUEST_MOBILE_STATION_CLASSMARK_2_PRESENT;
                 break;
-            case NAS_ATTACH_REQUEST_MOBILE_STATION_CLASSMARK_3_IEI:
+            case NAS_ATTACH_REQUEST_MOBILE_STATION_CLASSMARK_3_TYPE:
                 size = nas_decode_mobile_station_classmark_3(
                         &attach_request->mobile_station_classmark_3, pkbuf);
                 d_assert(size >= 0, return -1, "decode failed");
                 attach_request->presencemask |=
                     NAS_ATTACH_REQUEST_MOBILE_STATION_CLASSMARK_3_PRESENT;
                 break;
-            case NAS_ATTACH_REQUEST_SUPPORTED_CODECS_IEI:
+            case NAS_ATTACH_REQUEST_SUPPORTED_CODECS_TYPE:
                 size = nas_decode_supported_codec_list(
                         &attach_request->supported_codecs, pkbuf);
                 d_assert(size >= 0, return -1, "decode failed");
                 attach_request->presencemask |=
                     NAS_ATTACH_REQUEST_SUPPORTED_CODECS_PRESENT;
                 break;
-            case NAS_ATTACH_REQUEST_ADDITIONAL_UPDATE_TYPE_IEI:
+            case NAS_ATTACH_REQUEST_ADDITIONAL_UPDATE_TYPE_TYPE:
                 size = nas_decode_additional_update_type(
                         &attach_request->additional_update_type, pkbuf);
                 d_assert(size >= 0, return -1, "decode failed");
                 attach_request->presencemask |=
                     NAS_ATTACH_REQUEST_ADDITIONAL_UPDATE_TYPE_PRESENT;
                 break;
-            case NAS_ATTACH_REQUEST_VOICE_DOMAIN_PREFERENCE_AND_UE_USAGE_SETTING_IEI:
+            case NAS_ATTACH_REQUEST_VOICE_DOMAIN_PREFERENCE_AND_UE_USAGE_SETTING_TYPE:
                 size = nas_decode_voice_domain_preference_and_ue_usage_setting(
                         &attach_request->voice_domain_preference_and_ue_usage_setting, pkbuf);
                 d_assert(size >= 0, return -1, "decode failed");
                 attach_request->presencemask |=
                     NAS_ATTACH_REQUEST_VOICE_DOMAIN_PREFERENCE_AND_UE_USAGE_SETTING_PRESENT;
                 break;
-            case NAS_ATTACH_REQUEST_DEVICE_PROPERTIES_IEI:
+            case NAS_ATTACH_REQUEST_DEVICE_PROPERTIES_TYPE:
                 size = nas_decode_device_properties(
                         &attach_request->device_properties, pkbuf);
                 d_assert(size >= 0, return -1, "decode failed");
                 attach_request->presencemask |=
                     NAS_ATTACH_REQUEST_DEVICE_PROPERTIES_PRESENT;
                 break;
-            case NAS_ATTACH_REQUEST_OLD_GUTI_TYPE_IEI:
+            case NAS_ATTACH_REQUEST_OLD_GUTI_TYPE_TYPE:
                 size = nas_decode_guti_type(
                         &attach_request->old_guti_type, pkbuf);
                 d_assert(size >= 0, return -1, "decode failed");
                 attach_request->presencemask |=
                     NAS_ATTACH_REQUEST_OLD_GUTI_TYPE_PRESENT;
                 break;
-            case NAS_ATTACH_REQUEST_MS_NETWORK_FEATURE_SUPPORT_IEI:
+            case NAS_ATTACH_REQUEST_MS_NETWORK_FEATURE_SUPPORT_TYPE:
                 size = nas_decode_ms_network_feature_support(
                         &attach_request->ms_network_feature_support, pkbuf);
                 d_assert(size >= 0, return -1, "decode failed");
                 attach_request->presencemask |=
                     NAS_ATTACH_REQUEST_MS_NETWORK_FEATURE_SUPPORT_PRESENT;
                 break;
-            case NAS_ATTACH_REQUEST_TMSI_BASED_NRI_CONTAINER_IEI:
+            case NAS_ATTACH_REQUEST_TMSI_BASED_NRI_CONTAINER_TYPE:
                 size = nas_decode_network_resource_identifier_container(
                         &attach_request->tmsi_based_nri_container, pkbuf);
                 d_assert(size >= 0, return -1, "decode failed");
                 attach_request->presencemask |=
                     NAS_ATTACH_REQUEST_TMSI_BASED_NRI_CONTAINER_PRESENT;
                 break;
-            case NAS_ATTACH_REQUEST_T3324_VALUE_IEI:
+            case NAS_ATTACH_REQUEST_T3324_VALUE_TYPE:
                 size = nas_decode_gprs_timer_2(
                         &attach_request->t3324_value, pkbuf);
                 d_assert(size >= 0, return -1, "decode failed");
                 attach_request->presencemask |=
                     NAS_ATTACH_REQUEST_T3324_VALUE_PRESENT;
                 break;
-            case NAS_ATTACH_REQUEST_T3412_EXTENDED_VALUE_IEI:
+            case NAS_ATTACH_REQUEST_T3412_EXTENDED_VALUE_TYPE:
                 size = nas_decode_gprs_timer_3(
                         &attach_request->t3412_extended_value, pkbuf);
                 d_assert(size >= 0, return -1, "decode failed");
                 attach_request->presencemask |=
                     NAS_ATTACH_REQUEST_T3412_EXTENDED_VALUE_PRESENT;
                 break;
-            case NAS_ATTACH_REQUEST_EXTENDED_DRX_PARAMETERS_IEI:
+            case NAS_ATTACH_REQUEST_EXTENDED_DRX_PARAMETERS_TYPE:
                 size = nas_decode_extended_drx_parameters(
                         &attach_request->extended_drx_parameters, pkbuf);
                 d_assert(size >= 0, return -1, "decode failed");
@@ -300,7 +300,7 @@ c_int32_t nas_encode_attach_accept(pkbuf_t *pkbuf, nas_message_t *message)
 
     if (attach_accept->presencemask & NAS_ATTACH_ACCEPT_GUTI_PRESENT)
     {
-        size = nas_encode_iei(pkbuf, NAS_ATTACH_ACCEPT_GUTI_IEI);
+        size = nas_encode_optional_type(pkbuf, NAS_ATTACH_ACCEPT_GUTI_TYPE);
         d_assert(size >= 0, return encoded, "decode failed");
         encoded += size;
 
@@ -311,45 +311,141 @@ c_int32_t nas_encode_attach_accept(pkbuf_t *pkbuf, nas_message_t *message)
     if (attach_accept->presencemask & 
             NAS_ATTACH_ACCEPT_LOCATION_AREA_IDENTIFICATION_PRESENT)
     {
+        size = nas_encode_optional_type(pkbuf, 
+                NAS_ATTACH_ACCEPT_LOCATION_AREA_IDENTIFICATION_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_location_area_identification(pkbuf, 
+                &attach_accept->location_area_identification);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
     }
     if (attach_accept->presencemask & NAS_ATTACH_ACCEPT_MS_IDENTITY_PRESENT)
     {
+        size = nas_encode_optional_type(pkbuf, 
+                NAS_ATTACH_ACCEPT_MS_IDENTITY_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_mobile_identity(pkbuf, 
+                &attach_accept->ms_identity);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
     }
     if (attach_accept->presencemask & NAS_ATTACH_ACCEPT_EMM_CAUSE_PRESENT)
     {
+        size = nas_encode_optional_type(pkbuf, 
+                NAS_ATTACH_ACCEPT_EMM_CAUSE_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_emm_cause(pkbuf, &attach_accept->emm_cause);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
     }
     if (attach_accept->presencemask & NAS_ATTACH_ACCEPT_T3402_VALUE_PRESENT)
     {
+        size = nas_encode_optional_type(pkbuf, 
+                NAS_ATTACH_ACCEPT_T3402_VALUE_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_gprs_timer(pkbuf, &attach_accept->t3402_value);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
     }
     if (attach_accept->presencemask & NAS_ATTACH_ACCEPT_T3423_VALUE_PRESENT)
     {
+        size = nas_encode_optional_type(pkbuf, 
+                NAS_ATTACH_ACCEPT_T3423_VALUE_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_gprs_timer(pkbuf, &attach_accept->t3423_value);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
     }
     if (attach_accept->presencemask & 
             NAS_ATTACH_ACCEPT_EQUIVALENT_PLMNS_PRESENT)
     {
+        size = nas_encode_optional_type(pkbuf, 
+                NAS_ATTACH_ACCEPT_EQUIVALENT_PLMNS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_plmn_list(pkbuf, &attach_accept->equivalent_plmns);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
     }
+    /* 9.9.3.37 Emergency number list
+     * See subclause 10.5.3.13 in 3GPP TS 24.008 [13].
+     * O TLV 5-50 
     if (attach_accept->presencemask & 
             NAS_ATTACH_ACCEPT_EMERGENCY_NUMBER_LIST_PRESENT)
     {
     }
+    */
     if (attach_accept->presencemask & 
             NAS_ATTACH_ACCEPT_EPS_NETWORK_FEATURE_SUPPORT_PRESENT)
     {
+        size = nas_encode_optional_type(pkbuf, 
+                NAS_ATTACH_ACCEPT_EPS_NETWORK_FEATURE_SUPPORT_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_eps_network_feature_support(pkbuf, 
+                &attach_accept->eps_network_feature_support);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
     }
     if (attach_accept->presencemask & 
             NAS_ATTACH_ACCEPT_ADDITIONAL_UPDATE_RESULT_PRESENT)
     {
+        attach_accept->additional_update_result.type = 
+            (NAS_ATTACH_ACCEPT_ADDITIONAL_UPDATE_RESULT_TYPE >> 4);
+
+        size = nas_encode_additional_update_result(pkbuf, 
+                &attach_accept->additional_update_result);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
     }
     if (attach_accept->presencemask & 
             NAS_ATTACH_ACCEPT_T3412_EXTENDED_VALUE_PRESENT)
     {
+        size = nas_encode_optional_type(pkbuf, 
+                NAS_ATTACH_ACCEPT_T3412_EXTENDED_VALUE_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_gprs_timer_3(pkbuf, 
+                &attach_accept->t3412_extended_value);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
     }
     if (attach_accept->presencemask & NAS_ATTACH_ACCEPT_T3324_VALUE_PRESENT)
     {
+        size = nas_encode_optional_type(pkbuf, 
+                NAS_ATTACH_ACCEPT_T3324_VALUE_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_gprs_timer_2(pkbuf, &attach_accept->t3324_value);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
     }
     if (attach_accept->presencemask & 
             NAS_ATTACH_ACCEPT_EXTENDED_DRX_PARAMETERS_PRESENT)
     {
+        size = nas_encode_optional_type(pkbuf, 
+                NAS_ATTACH_ACCEPT_EXTENDED_DRX_PARAMETERS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_extended_drx_parameters(pkbuf,
+                &attach_accept->extended_drx_parameters);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
     }
 
     return encoded;

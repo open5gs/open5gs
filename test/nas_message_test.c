@@ -70,7 +70,7 @@ static void nas_message_test2(abts_case *tc, void *data)
 
     attach_accept->presencemask |= NAS_ATTACH_ACCEPT_GUTI_PRESENT;
     attach_accept->guti.length = 11;
-    attach_accept->guti.type_of_identity = NAS_EPS_MOBILE_IDENTITY_GUTI;
+    attach_accept->guti.u.guti.type_of_identity = NAS_EPS_MOBILE_IDENTITY_GUTI;
     attach_accept->guti.u.guti.mcc_digit1 = 4;
     attach_accept->guti.u.guti.mcc_digit2 = 1;
     attach_accept->guti.u.guti.mcc_digit3 = 7;
@@ -81,17 +81,31 @@ static void nas_message_test2(abts_case *tc, void *data)
     attach_accept->guti.u.guti.mme_code = 225;
     attach_accept->guti.u.guti.m_tmsi = 0x00000456;
 
+    attach_accept->presencemask |= 
+        NAS_ATTACH_ACCEPT_LOCATION_AREA_IDENTIFICATION_PRESENT;
+    attach_accept->location_area_identification.mcc_digit1 = 0;
+    attach_accept->location_area_identification.mcc_digit2 = 0;
+    attach_accept->location_area_identification.mcc_digit3 = 1;
+    attach_accept->location_area_identification.mnc_digit1 = 0;
+    attach_accept->location_area_identification.mnc_digit2 = 2;
+    attach_accept->location_area_identification.mnc_digit3 = 0xf;
+    attach_accept->location_area_identification.lac = 0xfffd;
+
+    attach_accept->presencemask |= NAS_ATTACH_ACCEPT_MS_IDENTITY_PRESENT;
+    attach_accept->ms_identity.length = 5;
+    attach_accept->ms_identity.u.tmsi.type_of_identity = 
+        NAS_MOBILE_IDENTITY_TMSI;
+    attach_accept->ms_identity.u.tmsi.tmsi = 0x00e102d4;
+
+    attach_accept->presencemask |= 
+        NAS_ATTACH_ACCEPT_EPS_NETWORK_FEATURE_SUPPORT_PRESENT;
+    attach_accept->eps_network_feature_support.length = 1;
+    attach_accept->eps_network_feature_support.esr_ps = 1;
+    attach_accept->eps_network_feature_support.emc_bs = 1;
+    attach_accept->eps_network_feature_support.ims_vops = 1;
+
     rv = nas_encode_pdu(&pkbuf, &message);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
-#if 0
-    {
-        int i = 0;
-        unsigned char *p = pkbuf->payload;
-        for (i = 0; i < pkbuf->len; i++)
-            printf("0x%x, 0x%x\n", payload[0][i], p[i]);
-
-    }
-#endif
     ABTS_TRUE(tc, memcmp(pkbuf->payload, payload[0], pkbuf->len) == 0);
 
     pkbuf_free(pkbuf);

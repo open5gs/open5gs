@@ -4,14 +4,14 @@
 #include "core_lib.h"
 #include "nas_ies.h"
 
-c_int32_t nas_encode_iei(pkbuf_t *pkbuf, c_uint8_t iei)
+c_int32_t nas_encode_optional_type(pkbuf_t *pkbuf, c_uint8_t type)
 {
     c_uint16_t size = 0;
 
     size = sizeof(c_uint8_t);
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
             return -1, "pkbuf_header error");
-    memcpy(pkbuf->payload - size, &iei, size);
+    memcpy(pkbuf->payload - size, &type, size);
 
     return size;
 }
@@ -44,6 +44,53 @@ c_int32_t nas_decode_location_area_identification(
     
     location_area_identification->lac = 
         ntohs(location_area_identification->lac);
+
+    return size;
+}
+
+c_int32_t nas_encode_location_area_identification(
+    pkbuf_t *pkbuf,
+    nas_location_area_identification_t *location_area_identification)
+{
+    c_uint16_t size = 0;
+    nas_location_area_identification_t target;
+
+    d_assert(location_area_identification, return -1, "Null param");
+    memcpy(&target, location_area_identification, 
+            sizeof(nas_location_area_identification_t));
+
+    size = sizeof(nas_location_area_identification_t);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
+            return -1, "pkbuf_header error");
+
+    target.lac = htons(location_area_identification->lac);
+    memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
+/* 9.9.2.3 Mobile identity
+ * See subclause 10.5.1.4 in 3GPP TS 24.008 [13].
+ * O TLV 7-10 */
+c_int32_t nas_encode_mobile_identity(
+    pkbuf_t *pkbuf, nas_mobile_identity_t *mobile_identity)
+{
+    c_uint16_t size = 0;
+    nas_mobile_identity_t target;
+
+    d_assert(mobile_identity, return -1, "Null param");
+    memcpy(&target, mobile_identity, sizeof(nas_mobile_identity_t));
+
+    size = mobile_identity->length + sizeof(mobile_identity->length);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
+            return -1, "pkbuf_header error");
+
+    if (mobile_identity->u.tmsi.type_of_identity == NAS_MOBILE_IDENTITY_TMSI)
+    {
+        target.u.tmsi.tmsi = htonl(mobile_identity->u.tmsi.tmsi);
+        target.u.tmsi.spare = 0xf;
+    }
+    memcpy(pkbuf->payload - size, &target, size);
 
     return size;
 }
@@ -92,6 +139,25 @@ c_int32_t nas_decode_mobile_station_classmark_3(
     return size;
 }
 
+/* 9.9.2.8 PLMN list
+ * See subclause 10.5.1.13 in 3GPP TS 24.008 [13].
+ * O TLV 5-47 */
+status_t nas_encode_plmn_list(
+    pkbuf_t *pkbuf, nas_plmn_list_t *plmn_list)
+{
+    c_uint16_t size = 0;
+
+    d_assert(plmn_list, return -1, "Null param");
+
+    size = plmn_list->length + sizeof(plmn_list->length);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
+            return -1, "pkbuf_header error");
+
+    memcpy(pkbuf->payload - size, plmn_list, size);
+
+    return size;
+}
+
 /* 9.9.2.10 Supported codec list
  * See subclause 10.5.4.32 in 3GPP TS 24.008 [13].
  * O TLV 5-n */
@@ -123,6 +189,24 @@ c_int32_t nas_decode_additional_update_type(
     return size;
 }
 
+/* 9.9.3.0A Additional update result
+ * O TV 1  */
+c_int32_t nas_encode_additional_update_result(
+    pkbuf_t *pkbuf, 
+    nas_additional_update_result_t *additional_update_result)
+{
+    c_uint16_t size = 0;
+
+    d_assert(additional_update_result, return -1, "Null param");
+
+    size = sizeof(nas_additional_update_result_t);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
+            return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, additional_update_result, size);
+
+    return size;
+}
+
 /* 9.9.3.8 DRX parameter
  * See subclause 10.5.5.6 in 3GPP TS 24.008
  * O TV 3 */
@@ -135,6 +219,40 @@ c_int32_t nas_decode_drx_parameter(
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
             return -1, "pkbuf_header error");
     memcpy(drx_parameter, pkbuf->payload - size, size);
+
+    return size;
+}
+
+/* 9.9.3.9 EMM cause
+ * O TV 2 */
+c_int32_t nas_encode_emm_cause(
+    pkbuf_t *pkbuf, nas_emm_cause_t *emm_cause)
+{
+    c_uint16_t size = 0;
+
+    d_assert(emm_cause, return -1, "Null param");
+
+    size = sizeof(nas_emm_cause_t);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
+            return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, emm_cause, size);
+
+    return size;
+}
+
+/* 9.9.3.10 * EPS attach result
+ * M V 1/2 */
+c_int32_t nas_encode_attach_result(
+    pkbuf_t *pkbuf, nas_attach_result_t *attach_result)
+{
+    c_uint16_t size = 0;
+
+    d_assert(attach_result, return -1, "Null param");
+
+    size = sizeof(nas_attach_result_t);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
+            return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, attach_result, size);
 
     return size;
 }
@@ -170,8 +288,14 @@ c_int32_t nas_decode_eps_mobile_identity(
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
             return -1, "pkbuf_header error");
     memcpy(eps_mobile_identity, pkbuf->payload - size, size);
-    if (eps_mobile_identity->type_of_identity == NAS_EPS_MOBILE_IDENTITY_GUTI)
+    if (eps_mobile_identity->u.guti.type_of_identity == 
+            NAS_EPS_MOBILE_IDENTITY_GUTI)
     {
+        if (eps_mobile_identity->u.guti.spare != 0xf)
+        {
+            d_warn("Spec warning : eps_mobile_identy->spare = 0x%x", 
+                    eps_mobile_identity->u.guti.spare);
+        }
         eps_mobile_identity->u.guti.mme_group_id = 
             ntohs(eps_mobile_identity->u.guti.mme_group_id);
         eps_mobile_identity->u.guti.m_tmsi = 
@@ -194,9 +318,9 @@ status_t nas_encode_eps_mobile_identity(
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
             return -1, "pkbuf_header error");
 
-    if (target.type_of_identity == NAS_EPS_MOBILE_IDENTITY_GUTI)
+    if (target.u.guti.type_of_identity == NAS_EPS_MOBILE_IDENTITY_GUTI)
     {
-        target.digit1 = 0xf;
+        target.u.guti.spare = 0xf;
         target.u.guti.mme_group_id = 
             htons(eps_mobile_identity->u.guti.mme_group_id);
         target.u.guti.m_tmsi = 
@@ -207,6 +331,25 @@ status_t nas_encode_eps_mobile_identity(
     return size;
 }
 
+/* 9.9.3.12A EPS network feature support 
+ * O TLV 3 */
+c_int32_t nas_encode_eps_network_feature_support(
+    pkbuf_t *pkbuf, 
+    nas_eps_network_feature_support_t *eps_network_feature_support)
+{
+    c_uint16_t size = 0;
+
+    d_assert(eps_network_feature_support, return -1, "Null param");
+
+    size = eps_network_feature_support->length + 
+        sizeof(eps_network_feature_support->length);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
+            return -1, "pkbuf_header error");
+
+    memcpy(pkbuf->payload - size, eps_network_feature_support, size);
+
+    return size;
+}
 
 /* 9.9.3.15 ESM message container
  * M LV-E 5-n */
@@ -252,6 +395,26 @@ c_int32_t nas_encode_esm_message_container(
         sizeof(esm_message_container->length);
 }
 
+/* 9.9.3.16 GPRS timer
+ * See subclause 10.5.7.3 in 3GPP TS 24.008 [13].
+ * M V 1 or  O TV 2
+ *
+ * Note : Other values shall be interpreted as multiples of 1 minute 
+ * in this version of the protocol.  */
+c_int32_t nas_encode_gprs_timer(pkbuf_t *pkbuf, nas_gprs_timer_t *gprs_timer)
+{
+    c_uint16_t size = 0;
+
+    d_assert(gprs_timer, return -1, "Null param");
+
+    size = sizeof(nas_gprs_timer_t);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
+            return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, gprs_timer, size);
+
+    return size;
+}
+
 /* 9.9.3.16A GPRS timer 2
  * See subclause 10.5.7.4 in 3GPP TS 24.008 [13].
  * O TLV 3 */
@@ -267,6 +430,21 @@ c_int32_t nas_decode_gprs_timer_2(
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
             return -1, "pkbuf_header error");
     memcpy(gprs_timer_2, pkbuf->payload - size, size);
+
+    return size;
+}
+CORE_DECLARE(c_int32_t) nas_encode_gprs_timer_2(
+    pkbuf_t *pkbuf, nas_gprs_timer_2_t *gprs_timer_2)
+{
+    c_uint16_t size = 0;
+
+    d_assert(gprs_timer_2, return -1, "Null param");
+
+    size = gprs_timer_2->length + sizeof(gprs_timer_2->length);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
+            return -1, "pkbuf_header error");
+
+    memcpy(pkbuf->payload - size, gprs_timer_2, size);
 
     return size;
 }
@@ -286,6 +464,21 @@ c_int32_t nas_decode_gprs_timer_3(
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
             return -1, "pkbuf_header error");
     memcpy(gprs_timer_3, pkbuf->payload - size, size);
+
+    return size;
+}
+CORE_DECLARE(c_int32_t) nas_encode_gprs_timer_3(
+    pkbuf_t *pkbuf, nas_gprs_timer_3_t *gprs_timer_3)
+{
+    c_uint16_t size = 0;
+
+    d_assert(gprs_timer_3, return -1, "Null param");
+
+    size = gprs_timer_3->length + sizeof(gprs_timer_3->length);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
+            return -1, "pkbuf_header error");
+
+    memcpy(pkbuf->payload - size, gprs_timer_3, size);
 
     return size;
 }
@@ -391,6 +584,57 @@ c_int32_t nas_decode_tracking_area_identity(
     return size;
 }
 
+/* 9.9.3.33 Tracking area identity list
+ * M LV 7-97 */
+c_int32_t nas_encode_tracking_area_identity_list(
+    pkbuf_t *pkbuf,
+    nas_tracking_area_identity_list_t *tracking_area_identity_list)
+{
+    c_uint16_t size = 0;
+    int i = 0;
+    nas_tracking_area_identity_list_t target;
+
+    d_assert(tracking_area_identity_list, return -1, "Null param");
+    memcpy(&target, tracking_area_identity_list, 
+            sizeof(nas_tracking_area_identity_list_t));
+
+    size = tracking_area_identity_list->length + 
+        sizeof(tracking_area_identity_list->length);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
+            return -1, "pkbuf_header error");
+
+    if (tracking_area_identity_list->type_of_list == 
+        NAS_TRACKING_AREA_IDENTITY_LIST_ONE_PLMN_NON_CONSECUTIVE_TACS)
+    {
+        for (i = 0; i < tracking_area_identity_list->number_of_elements + 1&& 
+                i < NAS_MAX_TRACKING_AREA_IDENTITY; i++)
+        {
+            target.u.type0.tac[i] = 
+                htons(tracking_area_identity_list->u.type0.tac[i]);
+        }
+    }
+    else if (tracking_area_identity_list->type_of_list == 
+            NAS_TRACKING_AREA_IDENTITY_LIST_ONE_PLMN_CONSECUTIVE_TACS)
+    {
+        target.u.type1.tac = htons(tracking_area_identity_list->u.type1.tac);
+    }
+    else if (tracking_area_identity_list->type_of_list == 
+            NAS_TRACKING_AREA_IDENTITY_LIST_MANY_PLMNS)
+    {
+        for (i = 0; i < tracking_area_identity_list->number_of_elements + 1 && 
+                i < NAS_MAX_TRACKING_AREA_IDENTITY; i++)
+        {
+            target.u.type2.tai[i].tac = 
+                htons(tracking_area_identity_list->u.type2.tai[i].tac);
+        }
+    }
+    else
+        return -1;
+    memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
 /* 9.9.3.34 UE network capability
  * M LV 3-14 */
 c_int32_t nas_decode_ue_network_capability(
@@ -462,87 +706,19 @@ c_int32_t nas_decode_extended_drx_parameters(
     
     return size;
 }
-
-/* 9.9.3.10 * EPS attach result
- * M V 1/2 */
-c_int32_t nas_encode_attach_result(
-    pkbuf_t *pkbuf, nas_attach_result_t *attach_result)
+c_int32_t nas_encode_extended_drx_parameters(
+    pkbuf_t *pkbuf, nas_extended_drx_parameters_t *extended_drx_parameters)
 {
     c_uint16_t size = 0;
 
-    d_assert(attach_result, return -1, "Null param");
+    d_assert(extended_drx_parameters, return -1, "Null param");
 
-    size = sizeof(nas_attach_result_t);
-    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
-            return -1, "pkbuf_header error");
-    memcpy(pkbuf->payload - size, attach_result, size);
-
-    return size;
-}
-
-/* 9.9.3.16 GPRS timer
- * See subclause 10.5.7.3 in 3GPP TS 24.008 [13].
- * M V 1 or  O TV 2
- *
- * Note : Other values shall be interpreted as multiples of 1 minute 
- * in this version of the protocol.  */
-c_int32_t nas_encode_gprs_timer(pkbuf_t *pkbuf, nas_gprs_timer_t *gprs_timer)
-{
-    c_uint16_t size = 0;
-
-    size = sizeof(nas_gprs_timer_t);
-    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
-            return -1, "pkbuf_header error");
-    memcpy(pkbuf->payload - size, gprs_timer, size);
-
-    return size;
-}
-
-c_int32_t nas_encode_tracking_area_identity_list(
-    pkbuf_t *pkbuf,
-    nas_tracking_area_identity_list_t *tracking_area_identity_list)
-{
-    c_uint16_t size = 0;
-    int i = 0;
-    nas_tracking_area_identity_list_t target;
-
-    d_assert(tracking_area_identity_list, return -1, "Null param");
-    memcpy(&target, tracking_area_identity_list, 
-            sizeof(nas_tracking_area_identity_list_t));
-
-    size = tracking_area_identity_list->length + 
-        sizeof(tracking_area_identity_list->length);
+    size = extended_drx_parameters->length + 
+        sizeof(extended_drx_parameters->length);
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
             return -1, "pkbuf_header error");
 
-    if (tracking_area_identity_list->type_of_list == 
-        NAS_TRACKING_AREA_IDENTITY_LIST_ONE_PLMN_NON_CONSECUTIVE_TACS)
-    {
-        for (i = 0; i < tracking_area_identity_list->number_of_elements + 1&& 
-                i < NAS_MAX_TRACKING_AREA_IDENTITY; i++)
-        {
-            target.u.type0.tac[i] = 
-                htons(tracking_area_identity_list->u.type0.tac[i]);
-        }
-    }
-    else if (tracking_area_identity_list->type_of_list == 
-            NAS_TRACKING_AREA_IDENTITY_LIST_ONE_PLMN_CONSECUTIVE_TACS)
-    {
-        target.u.type1.tac = htons(tracking_area_identity_list->u.type1.tac);
-    }
-    else if (tracking_area_identity_list->type_of_list == 
-            NAS_TRACKING_AREA_IDENTITY_LIST_MANY_PLMNS)
-    {
-        for (i = 0; i < tracking_area_identity_list->number_of_elements + 1 && 
-                i < NAS_MAX_TRACKING_AREA_IDENTITY; i++)
-        {
-            target.u.type2.tai[i].tac = 
-                htons(tracking_area_identity_list->u.type2.tai[i].tac);
-        }
-    }
-    else
-        return -1;
-    memcpy(pkbuf->payload - size, &target, size);
+    memcpy(pkbuf->payload - size, extended_drx_parameters, size);
 
     return size;
 }
