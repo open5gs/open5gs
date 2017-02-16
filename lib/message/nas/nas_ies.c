@@ -22,10 +22,8 @@ c_int32_t nas_encode_optional_type(pkbuf_t *pkbuf, c_uint8_t type)
 c_int32_t nas_decode_device_properties(
     nas_device_properties_t *device_properties, pkbuf_t *pkbuf)
 {
-    c_uint16_t size = 1;
-
-    memcpy(device_properties, pkbuf->payload - size, size);
-    return size;
+    memcpy(device_properties, pkbuf->payload - 1, 1);
+    return 0;
 }
 
 /* 9.9.2.2 Location area identification
@@ -183,10 +181,8 @@ c_int32_t nas_decode_supported_codec_list(
 c_int32_t nas_decode_additional_update_type(
     nas_additional_update_type_t *additional_update_type, pkbuf_t *pkbuf)
 {
-    c_uint16_t size = 1;
-
-    memcpy(additional_update_type, pkbuf->payload - size, size);
-    return size;
+    memcpy(additional_update_type, pkbuf->payload - 1, 1);
+    return 0;
 }
 
 /* 9.9.3.0A Additional update result
@@ -510,10 +506,8 @@ c_int32_t nas_decode_ms_network_feature_support(
     nas_ms_network_feature_support_t *ms_network_feature_support, 
     pkbuf_t *pkbuf)
 {
-    c_uint16_t size = 1;
-
-    memcpy(ms_network_feature_support, pkbuf->payload - size, size);
-    return size;
+    memcpy(ms_network_feature_support, pkbuf->payload - 1, 1);
+    return 0;
 }
 
 /* 9.9.3.24A Network resource identifier container
@@ -555,16 +549,32 @@ c_int32_t nas_decode_p_tmsi_signature(
     return size;
 }
 
+/* 9.9.3.26A Extended EMM cause 
+ * O TV 1 */
+c_int32_t nas_encode_extended_emm_cause(
+    pkbuf_t *pkbuf, nas_extended_emm_cause_t *extended_emm_cause)
+{
+    c_uint16_t size = 0;
+
+    d_assert(extended_emm_cause, return -1, "Null param");
+
+    size = sizeof(nas_extended_emm_cause_t);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
+            return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, extended_emm_cause, size);
+
+    return size;
+}
+
 /* 9.9.3.31 TMSI status
  * See subclause 10.5.5.4 in 3GPP TS 24.008 [13]
  * O TV 1 */
 c_int32_t nas_decode_tmsi_status(
     nas_tmsi_status_t *tmsi_status, pkbuf_t *pkbuf)
 {
-    c_uint16_t size = 1;
+    memcpy(tmsi_status, pkbuf->payload - 1, 1);
 
-    memcpy(tmsi_status, pkbuf->payload - size, size);
-    return size;
+    return 0;
 }
 
 /* 9.9.3.32 Tracking area identity
@@ -681,10 +691,8 @@ c_int32_t nas_decode_voice_domain_preference_and_ue_usage_setting(
  * O TV 1 */
 c_int32_t nas_decode_guti_type(nas_guti_type_t *guti_type, pkbuf_t *pkbuf)
 {
-    c_uint16_t size = 1;
-
-    memcpy(guti_type, pkbuf->payload - size, size);
-    return size;
+    memcpy(guti_type, pkbuf->payload - 1, 1);
+    return 0;
 }
 
 /* 9.9.3.46 Extended DRX parameters

@@ -180,6 +180,68 @@ c_int32_t nas_encode_attach_accept(pkbuf_t *pkbuf, nas_message_t *message)
     return encoded;
 }
 
+c_int32_t nas_encode_attach_reject(pkbuf_t *pkbuf, nas_message_t *message)
+{
+    nas_attach_reject_t *attach_reject = &message->emm.attach_reject;
+    c_int32_t size = 0;
+    c_int32_t encoded = 0;
+
+    size = nas_encode_emm_cause(pkbuf, &attach_reject->emm_cause);
+    d_assert(size >= 0, return encoded, "decode failed");
+    encoded += size;
+
+    if (attach_reject->presencemask & 
+            NAS_ATTACH_REJECT_ESM_MESSAGE_CONTAINER_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, 
+                NAS_ATTACH_REJECT_ESM_MESSAGE_CONTAINER_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_esm_message_container(pkbuf, 
+                &attach_reject->esm_message_container);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (attach_reject->presencemask & NAS_ATTACH_REJECT_T3346_VALUE_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, 
+                NAS_ATTACH_REJECT_T3346_VALUE_PRESENT);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_gprs_timer_2(pkbuf, &attach_reject->t3346_value);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (attach_reject->presencemask & NAS_ATTACH_REJECT_T3402_VALUE_TYPE)
+    {
+        size = nas_encode_optional_type(pkbuf, 
+                NAS_ATTACH_REJECT_T3402_VALUE_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_gprs_timer_2(pkbuf, &attach_reject->t3402_value);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (attach_reject->presencemask & NAS_ATTACH_REJECT_EXTENDED_EMM_CAUSE_TYPE)
+    {
+        attach_reject->extended_emm_cause.type = 
+            (NAS_ATTACH_ACCEPT_ADDITIONAL_UPDATE_RESULT_TYPE >> 4);
+
+        size = nas_encode_extended_emm_cause(pkbuf, 
+                &attach_reject->extended_emm_cause);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    return encoded;
+}
+
 status_t nas_encode_pdu(pkbuf_t **pkbuf, nas_message_t *message)
 {
     status_t rv = CORE_ERROR;
@@ -200,14 +262,22 @@ status_t nas_encode_pdu(pkbuf_t **pkbuf, nas_message_t *message)
     switch(message->h.message_type)
     {
         case NAS_ATTACH_REQUEST:
-            break;
+            d_error("Not implemented", message->h.message_type);
+            pkbuf_free((*pkbuf));
+            return CORE_ERROR;
         case NAS_ATTACH_ACCEPT:
             size = nas_encode_attach_accept(*pkbuf, message);
             d_assert(size >= 0, return CORE_ERROR, "decode error");
             encoded += size;
             break;
         case NAS_ATTACH_COMPLETE:
+            d_error("Not implemented", message->h.message_type);
+            pkbuf_free((*pkbuf));
+            return CORE_ERROR;
         case NAS_ATTACH_REJECT:
+            size = nas_encode_attach_reject(*pkbuf, message);
+            d_assert(size >= 0, return CORE_ERROR, "decode error");
+            encoded += size;
         case NAS_DETACH_REQUEST:
         case NAS_DETACH_ACCEPT:
         case NAS_TRACKING_AREA_UPDATE_REQUEST:
@@ -257,11 +327,11 @@ status_t nas_encode_pdu(pkbuf_t **pkbuf, nas_message_t *message)
         case NAS_ESM_INFORMATION_REQUEST:
         case NAS_ESM_INFORMATION_RESPONSE:
         case NAS_ESM_STATUS:
-            break;
         default:
             d_error("Unknown message type (%d) or not implemented", 
                     message->h.message_type);
-            break;
+            pkbuf_free((*pkbuf));
+            return CORE_ERROR;
     }
 
     rv = pkbuf_header(*pkbuf, encoded);

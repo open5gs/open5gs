@@ -87,6 +87,9 @@ ED2(c_uint8_t security_header_type:4;,
 #define NAS_ESM_INFORMATION_RESPONSE                             218
 #define NAS_ESM_STATUS                                           232
 
+/************************
+ * 8.2.1 Attach accept
+ ************************/
 #define NAS_ATTACH_ACCEPT_GUTI_PRESENT (1<<0)
 #define NAS_ATTACH_ACCEPT_LOCATION_AREA_IDENTIFICATION_PRESENT (1<<1)
 #define NAS_ATTACH_ACCEPT_MS_IDENTITY_PRESENT (1<<2)
@@ -115,8 +118,6 @@ ED2(c_uint8_t security_header_type:4;,
 #define NAS_ATTACH_ACCEPT_T3324_VALUE_TYPE 0x6A
 #define NAS_ATTACH_ACCEPT_EXTENDED_DRX_PARAMETERS_TYPE 0x6E
 
-
-/* 8.2.1 Attach accept */
 typedef struct _nas_attach_accept_t {
     /* Mandatory fields */
     nas_attach_result_t attach_result;
@@ -145,7 +146,43 @@ typedef struct _nas_attach_accept_t {
     nas_extended_drx_parameters_t extended_drx_parameters;
 } nas_attach_accept_t;
 
-/* 8.2.4 Attach request */
+/************************
+ * 8.2.2 Attach complete
+ ************************/
+typedef struct _nas_attach_complete {
+    /* Mandatory fields */
+    nas_esm_message_container_t esm_message_container;
+
+} nas_attach_complete_t;
+
+/************************
+ * 8.2.3 Attach rejct
+ ************************/
+#define NAS_ATTACH_REJECT_ESM_MESSAGE_CONTAINER_PRESENT (1 << 0)
+#define NAS_ATTACH_REJECT_T3346_VALUE_PRESENT (1 << 1)
+#define NAS_ATTACH_REJECT_T3402_VALUE_PRESENT (1 << 2)
+#define NAS_ATTACH_REJECT_EXTENDED_EMM_CAUSE_PRESENT (1 << 3)
+
+#define NAS_ATTACH_REJECT_ESM_MESSAGE_CONTAINER_TYPE 0x78
+#define NAS_ATTACH_REJECT_T3346_VALUE_TYPE 0x5F
+#define NAS_ATTACH_REJECT_T3402_VALUE_TYPE 0x16
+#define NAS_ATTACH_REJECT_EXTENDED_EMM_CAUSE_TYPE 0xA0
+typedef struct _nas_attach_reject {
+    /* Mandatory fields */
+    nas_emm_cause_t emm_cause;
+    
+    /* Optional fields */
+    c_uint32_t presencemask;
+    nas_esm_message_container_t esm_message_container;
+    nas_gprs_timer_2_t t3346_value;
+    nas_gprs_timer_2_t t3402_value;
+    nas_extended_emm_cause_t extended_emm_cause;
+
+} nas_attach_reject_t;
+
+/************************
+ * 8.2.4 Attach request
+ ************************/
 #define NAS_ATTACH_REQUEST_OLD_P_TMSI_SIGNATURE_PRESENT (1<<0)
 #define NAS_ATTACH_REQUEST_ADDITIONAL_GUTI_PRESENT (1<<1)
 #define NAS_ATTACH_REQUEST_LAST_VISITED_REGISTERED_TAI_PRESENT (1<<2)
@@ -221,6 +258,8 @@ typedef struct _nas_message_t {
     nas_header_t h;
     union {
         nas_attach_accept_t attach_accept;
+        nas_attach_complete_t attach_complete;
+        nas_attach_reject_t attach_reject;
         nas_attach_request_t attach_request;
     } emm;
 } nas_message_t;

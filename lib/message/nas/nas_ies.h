@@ -552,6 +552,18 @@ typedef c_uint32_t nas_p_tmsi_signature_t; /* TV : 4bytes */
 CORE_DECLARE(c_int32_t) nas_decode_p_tmsi_signature(
     nas_p_tmsi_signature_t *p_tmsi_signature, pkbuf_t *pkbuf);
 
+/* 9.9.3.26A Extended EMM cause 
+ * O TV 1 */
+typedef struct _nas_extended_emm_cause_t {
+ED4(c_uint8_t type:4;,
+    c_uint8_t spare:2;,
+    c_uint8_t eps_optimization_info:1;,
+    c_uint8_t e_utran_allowed:1;)
+} nas_extended_emm_cause_t;
+
+CORE_DECLARE(c_int32_t) nas_encode_extended_emm_cause(
+    pkbuf_t *pkbuf, nas_extended_emm_cause_t *extended_emm_cause);
+
 /* 9.9.3.31 TMSI status
  * See subclause 10.5.5.4 in 3GPP TS 24.008 [13]
  * O TV 1 */

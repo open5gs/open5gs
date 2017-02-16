@@ -15,8 +15,6 @@ static void nas_message_test1(abts_case *tc, void *data)
         "\x17\xdf\x67\x5a\xa8\x05\x07\x41\x02\x0b\xf6\x00\xf1\x10\x00\x02\x01\x03\x00\x03\xe6\x05\xf0\x70\x00\x00\x10\x00\x05\x02\x15\xd0\x11\xd1\x52\x00\xf1\x10\x30\x39\x5c\x0a\x00\x31\x03\xe5\xe0\x34\x90\x11\x03\x57\x58\xa6\x5d\x01\x00\xe0\xc1"
     };
 
-    int i = 0; 
-
     nas_message_t message;
     pkbuf_t *pkbuf;
     status_t rv;
@@ -111,12 +109,59 @@ static void nas_message_test2(abts_case *tc, void *data)
     pkbuf_free(pkbuf);
 }
 
+static void nas_message_test3(abts_case *tc, void *data)
+{
+    char *payload[] = {
+        "\x07\x43\x00\x03\x52\x00\xc2"
+    };
+
+    nas_message_t message;
+    pkbuf_t *pkbuf;
+    status_t rv;
+
+    pkbuf = pkbuf_alloc(0, NAS_SDU_SIZE);
+    ABTS_PTR_NOTNULL(tc, pkbuf);
+    pkbuf->len = 7;
+    memcpy(pkbuf->payload, payload[0], pkbuf->len);
+
+    rv = nas_decode_pdu(&message, pkbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    pkbuf_free(pkbuf);
+}
+
+static void nas_message_test4(abts_case *tc, void *data)
+{
+    /* Attach Reject */
+    char *payload[] = {
+        "\x07\x44\x11"
+    };
+
+    nas_message_t message;
+    nas_attach_reject_t *attach_reject = &message.emm.attach_reject;
+
+    pkbuf_t *pkbuf = NULL;
+    status_t rv;
+
+    memset(&message, 0, sizeof(message));
+    message.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    message.h.message_type = NAS_ATTACH_REJECT;
+    attach_reject->emm_cause = NAS_EMM_CAUSE_NETWORK_FAILURE; 
+
+    rv = nas_encode_pdu(&pkbuf, &message);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    ABTS_TRUE(tc, memcmp(pkbuf->payload, payload[0], pkbuf->len) == 0);
+
+    pkbuf_free(pkbuf);
+}
+
 abts_suite *test_nas_message(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, nas_message_test1, NULL);
     abts_run_test(suite, nas_message_test2, NULL);
+    abts_run_test(suite, nas_message_test3, NULL);
 
     return suite;
 }
