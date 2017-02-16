@@ -87,6 +87,65 @@ ED2(c_uint8_t security_header_type:4;,
 #define NAS_ESM_INFORMATION_RESPONSE                             218
 #define NAS_ESM_STATUS                                           232
 
+#define NAS_ATTACH_ACCEPT_GUTI_PRESENT (1<<0)
+#define NAS_ATTACH_ACCEPT_LOCATION_AREA_IDENTIFICATION_PRESENT (1<<1)
+#define NAS_ATTACH_ACCEPT_MS_IDENTITY_PRESENT (1<<2)
+#define NAS_ATTACH_ACCEPT_EMM_CAUSE_PRESENT (1<<3)
+#define NAS_ATTACH_ACCEPT_T3402_VALUE_PRESENT (1<<4)
+#define NAS_ATTACH_ACCEPT_T3423_VALUE_PRESENT (1<<5)
+#define NAS_ATTACH_ACCEPT_EQUIVALENT_PLMNS_PRESENT (1<<6)
+#define NAS_ATTACH_ACCEPT_EMERGENCY_NUMBER_LIST_PRESENT (1<<7)
+#define NAS_ATTACH_ACCEPT_EPS_NETWORK_FEATURE_SUPPORT_PRESENT (1<<8)
+#define NAS_ATTACH_ACCEPT_ADDITIONAL_UPDATE_RESULT_PRESENT (1<<9)
+#define NAS_ATTACH_ACCEPT_T3412_EXTENDED_VALUE_PRESENT (1<<10)
+#define NAS_ATTACH_ACCEPT_T3324_VALUE_PRESENT (1<<11)
+#define NAS_ATTACH_ACCEPT_EXTENDED_DRX_PARAMETERS_PRESENT (1<<12)
+
+#define NAS_ATTACH_ACCEPT_GUTI_IEI 0x50
+#define NAS_ATTACH_ACCEPT_LOCATION_AREA_IDENTIFICATION_IEI 0x13
+#define NAS_ATTACH_ACCEPT_MS_IDENTITY_IEI 0x23
+#define NAS_ATTACH_ACCEPT_EMM_CAUSE_IEI 0x53
+#define NAS_ATTACH_ACCEPT_T3402_VALUE_IEI 0x17
+#define NAS_ATTACH_ACCEPT_T3423_VALUE_IEI 0x59
+#define NAS_ATTACH_ACCEPT_EQUIVALENT_PLMNS_IEI 0x4A
+#define NAS_ATTACH_ACCEPT_EMERGENCY_NUMBER_LIST_IEI 0x34
+#define NAS_ATTACH_ACCEPT_EPS_NETWORK_FEATURE_SUPPORT_IEI 0x64
+#define NAS_ATTACH_ACCEPT_ADDITIONAL_UPDATE_RESULT_IEI 0xF0
+#define NAS_ATTACH_ACCEPT_T3412_EXTENDED_VALUE_IEI 0x5E
+#define NAS_ATTACH_ACCEPT_T3324_VALUE_IEI 0x6A
+#define NAS_ATTACH_ACCEPT_EXTENDED_DRX_PARAMETERS_IEI 0x6E
+
+
+/* 8.2.1 Attach accept */
+typedef struct _nas_attach_accept_t {
+    /* Mandatory fields */
+    nas_attach_result_t attach_result;
+    nas_gprs_timer_t t3412_value;
+    nas_tracking_area_identity_list_t tai_list;
+    nas_esm_message_container_t esm_message_container;
+
+    /* Optional fields */
+    c_uint32_t presencemask;
+    nas_eps_mobile_identity_t guti;
+    nas_location_area_identification_t location_area_identification;
+    nas_mobile_identity_t ms_identity;
+    nas_emm_cause_t emm_cause;
+    nas_gprs_timer_t t3402_value;
+    nas_gprs_timer_t t3423_value;
+    nas_plmn_list_t equivalent_plmns;
+
+    /* 9.9.3.37 Emergency number list
+     * See subclause 10.5.3.13 in 3GPP TS 24.008 [13].
+     * O TLV 5-50 
+       nas_emergency_number_list_t emergency_number_list; */
+    nas_eps_network_feature_support_t eps_network_feature_support;
+    nas_additional_update_result_t additional_update_result;
+    nas_gprs_timer_3_t t3412_extended_value;
+    nas_gprs_timer_2_t t3324_value;
+    nas_extended_drx_parameters_t extended_drx_parameters;
+} nas_attach_accept_t;
+
+/* 8.2.4 Attach request */
 #define NAS_ATTACH_REQUEST_OLD_P_TMSI_SIGNATURE_PRESENT (1<<0)
 #define NAS_ATTACH_REQUEST_ADDITIONAL_GUTI_PRESENT (1<<1)
 #define NAS_ATTACH_REQUEST_LAST_VISITED_REGISTERED_TAI_PRESENT (1<<2)
@@ -103,9 +162,9 @@ ED2(c_uint8_t security_header_type:4;,
 #define NAS_ATTACH_REQUEST_OLD_GUTI_TYPE_PRESENT (1<<13)
 #define NAS_ATTACH_REQUEST_MS_NETWORK_FEATURE_SUPPORT_PRESENT (1<<14)
 #define NAS_ATTACH_REQUEST_TMSI_BASED_NRI_CONTAINER_PRESENT (1<<15)
-#define NAS_ATTACH_REQUEST_T3324_VALUE_PRESENT (1<16)
-#define NAS_ATTACH_REQUEST_T3412_EXTENDED_VALUE_PRESENT (1<17)
-#define NAS_ATTACH_REQUEST_EXTENDED_DRX_PARAMETERS_PRESENT (1<18)
+#define NAS_ATTACH_REQUEST_T3324_VALUE_PRESENT (1<<16)
+#define NAS_ATTACH_REQUEST_T3412_EXTENDED_VALUE_PRESENT (1<<17)
+#define NAS_ATTACH_REQUEST_EXTENDED_DRX_PARAMETERS_PRESENT (1<<18)
 
 #define NAS_ATTACH_REQUEST_OLD_P_TMSI_SIGNATURE_IEI 0x19
 #define NAS_ATTACH_REQUEST_ADDITIONAL_GUTI_IEI 0x50
@@ -129,7 +188,7 @@ ED2(c_uint8_t security_header_type:4;,
 
 typedef struct _nas_attach_request_t {
     /* Mandatory fields */
-    nas_attach_info_t attach_info;
+    nas_attach_type_t attach_type;
     nas_eps_mobile_identity_t eps_mobile_identity;
     nas_ue_network_capability_t ue_network_capability;
     nas_esm_message_container_t esm_message_container;
@@ -158,9 +217,11 @@ typedef struct _nas_attach_request_t {
     nas_extended_drx_parameters_t extended_drx_parameters;
 } nas_attach_request_t;
 
-typedef union _nas_message_t {
+typedef struct _nas_message_t {
+    nas_header_t h;
     union {
         nas_attach_request_t attach_request;
+        nas_attach_accept_t attach_accept;
     } emm;
 } nas_message_t;
 

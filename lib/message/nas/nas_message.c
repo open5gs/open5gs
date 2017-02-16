@@ -8,7 +8,7 @@ status_t nas_decode_attach_request(nas_message_t *message, pkbuf_t *pkbuf)
     nas_attach_request_t *attach_request = &message->emm.attach_request;
     status_t rv;
 
-    rv = nas_decode_attach_info(&attach_request->attach_info, pkbuf);
+    rv = nas_decode_attach_type(&attach_request->attach_type, pkbuf);
     d_assert(rv == CORE_OK, return CORE_ERROR, "decode failed");
 
     rv = nas_decode_eps_mobile_identity(
@@ -171,8 +171,8 @@ status_t nas_decode_pdu(nas_message_t *message, pkbuf_t *pkbuf)
 {
     status_t rv = CORE_ERROR;
     nas_security_header_t *security_header = NULL;
-    nas_header_t *header = NULL;
-    c_uint16_t length = pkbuf->len;
+    c_uint16_t decoded = pkbuf->len;
+    c_uint16_t size = 0;
 
     d_assert(pkbuf, return CORE_ERROR, "Null param");
     d_assert(pkbuf->payload, return CORE_ERROR, "Null param");
@@ -184,12 +184,15 @@ status_t nas_decode_pdu(nas_message_t *message, pkbuf_t *pkbuf)
         rv = pkbuf_header(pkbuf, -(c_int16_t)(sizeof(nas_security_header_t)));
         d_assert(rv == CORE_OK, return CORE_ERROR, "pkbuf_header error");
     }
-    header = pkbuf->payload;
-    rv = pkbuf_header(pkbuf, -(c_int16_t)(sizeof(nas_header_t)));
-    d_assert(rv == CORE_OK, return CORE_ERROR, "pkbuf_header error");
 
     memset(message, 0, sizeof(nas_message_t));
-    switch(header->message_type)
+
+    size = sizeof(nas_header_t);
+    rv = pkbuf_header(pkbuf, -size);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "pkbuf_header error");
+    memcpy(&message->h, pkbuf->payload - size, size);
+
+    switch(message->h.message_type)
     {
         case NAS_ATTACH_REQUEST:
             rv = nas_decode_attach_request(message, pkbuf);
@@ -250,11 +253,128 @@ status_t nas_decode_pdu(nas_message_t *message, pkbuf_t *pkbuf)
             break;
         default:
             d_error("Unknown message type (%d) or not implemented", 
-                    header->message_type);
+                    message->h.message_type);
             break;
     }
 
-    rv = pkbuf_header(pkbuf, length);
+    rv = pkbuf_header(pkbuf, decoded);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "pkbuf_header error");
+
+    return CORE_OK;
+}
+
+c_int32_t nas_encode_attach_accept(pkbuf_t *pkbuf, nas_message_t *message)
+{
+    nas_attach_accept_t *attach_accept = &message->emm.attach_accept;
+    c_int32_t size = 0;
+    c_int32_t encoded = 0;
+
+    size = nas_encode_attach_result(pkbuf, &attach_accept->attach_result);
+    d_assert(size >= 0, return encoded, "decode failed");
+    encoded += size;
+
+    size = nas_encode_gprs_timer(pkbuf, &attach_accept->t3412_value);
+    d_assert(size >= 0, return encoded, "decode failed");
+    encoded += size;
+
+    size = nas_encode_tracking_area_identity_list(pkbuf, 
+            &attach_accept->tai_list);
+    d_assert(size >= 0, return encoded, "decode failed");
+    encoded += size;
+
+    size = nas_encode_esm_message_container(pkbuf, 
+            &attach_accept->esm_message_container);
+    d_assert(size >= 0, return encoded, "decode failed");
+    encoded += size;
+
+    return encoded;
+}
+
+status_t nas_encode_pdu(pkbuf_t **pkbuf, nas_message_t *message)
+{
+    status_t rv = CORE_ERROR;
+    c_int32_t size = 0;
+    c_int32_t encoded = 0;
+
+    d_assert(message, return CORE_ERROR, "Null param");
+
+    *pkbuf = pkbuf_alloc(0, NAS_SDU_SIZE);
+    d_assert(*pkbuf, return -1, "Null Param");
+
+    size = sizeof(nas_header_t);
+    rv = pkbuf_header(*pkbuf, -size);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "pkbuf_header error");
+    memcpy((*pkbuf)->payload - size, &message->h, size);
+    encoded += size;
+
+    switch(message->h.message_type)
+    {
+        case NAS_ATTACH_REQUEST:
+            break;
+        case NAS_ATTACH_ACCEPT:
+            size = nas_encode_attach_accept(*pkbuf, message);
+            d_assert(size >= 0, return CORE_ERROR, "decode error");
+            encoded += size;
+            break;
+        case NAS_ATTACH_COMPLETE:
+        case NAS_ATTACH_REJECT:
+        case NAS_DETACH_REQUEST:
+        case NAS_DETACH_ACCEPT:
+        case NAS_TRACKING_AREA_UPDATE_REQUEST:
+        case NAS_TRACKING_AREA_UPDATE_ACCEPT:
+        case NAS_TRACKING_AREA_UPDATE_COMPLETE:
+        case NAS_TRACKING_AREA_UPDATE_REJECT:
+        case NAS_EXTENDED_SERVICE_REQUEST:
+        case NAS_SERVICE_REJECT:
+        case NAS_GUTI_REALLOCATION_COMMAND:
+        case NAS_GUTI_REALLOCATION_COMPLETE:
+        case NAS_AUTHENTICATION_REQUEST:
+        case NAS_AUTHENTICATION_RESPONSE:
+        case NAS_AUTHENTICATION_REJECT:
+        case NAS_AUTHENTICATION_FAILURE:
+        case NAS_IDENTITY_REQUEST:
+        case NAS_IDENTITY_RESPONSE:
+        case NAS_SECURITY_MODE_COMMAND:
+        case NAS_SECURITY_MODE_COMPLETE:
+        case NAS_SECURITY_MODE_REJECT:
+        case NAS_EMM_STATUS:
+        case NAS_EMM_INFORMATION:
+        case NAS_DOWNLINK_NAS_TRANSPORT:
+        case NAS_UPLINK_NAS_TRANSPORT:
+        case NAS_CS_SERVICE_NOTIFICATION:
+        case NAS_DOWNLINK_GENERIC_NAS_TRANSPORT:
+        case NAS_UPLINK_GENERIC_NAS_TRANSPORT:
+
+        case NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST:
+        case NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_ACCEPT:
+        case NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REJECT:
+        case NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST:
+        case NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_ACCEPT:
+        case NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REJECT:
+        case NAS_MODIFY_EPS_BEARER_CONTEXT_REQUEST:
+        case NAS_MODIFY_EPS_BEARER_CONTEXT_ACCEPT:
+        case NAS_MODIFY_EPS_BEARER_CONTEXT_REJECT:
+        case NAS_DEACTIVATE_EPS_BEARER_CONTEXT_REQUEST:
+        case NAS_DEACTIVATE_EPS_BEARER_CONTEXT_ACCEPT:
+        case NAS_PDN_CONNECTIVITY_REQUEST:
+        case NAS_PDN_CONNECTIVITY_REJECT:
+        case NAS_PDN_DISCONNECT_REQUEST:
+        case NAS_PDN_DISCONNECT_REJECT:
+        case NAS_BEARER_RESOURCE_ALLOCATION_REQUEST:
+        case NAS_BEARER_RESOURCE_ALLOCATION_REJECT:
+        case NAS_BEARER_RESOURCE_MODIFICATION_REQUEST:
+        case NAS_BEARER_RESOURCE_MODIFICATION_REJECT:
+        case NAS_ESM_INFORMATION_REQUEST:
+        case NAS_ESM_INFORMATION_RESPONSE:
+        case NAS_ESM_STATUS:
+            break;
+        default:
+            d_error("Unknown message type (%d) or not implemented", 
+                    message->h.message_type);
+            break;
+    }
+
+    rv = pkbuf_header(*pkbuf, encoded);
     d_assert(rv == CORE_OK, return CORE_ERROR, "pkbuf_header error");
 
     return CORE_OK;

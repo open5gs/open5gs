@@ -32,11 +32,54 @@ static void nas_message_test1(abts_case *tc, void *data)
     pkbuf_free(pkbuf);
 }
 
+static void nas_message_test2(abts_case *tc, void *data)
+{
+    /* Attach Accept */
+    char *payload[] = {
+        "\x07\x42\x02\x23\x06\x00\x14\xf7\x99\x30\x39\x00\x32\x52\x01\xc1\x01\x09\x09\x08\x69\x6e\x74\x65\x72\x6e\x65\x74\x05\x01\x0a\xe1\x00\x0a\x27\x1b\x80\x80\x21\x10\x02\x02\x00\x10\x81\x06\xc0\xa8\xa8\x01\x83\x06\xc0\xa8\xa8\x01\x00\x0d\x04\xc0\xa8\xa8\x01\x50\x0b\xf6\x14\xf7\x99\x23\x45\xe1\x00\x00\x04\x56\x13\x00\xf1\x20\xff\xfd\x23\x05\xf4\x00\xe1\x02\xd4\x64\x01\x23"
+    };
+
+    char *esm_payload[] = {
+        "\x52\x01\xc1\x01\x09\x09\x08\x69\x6e\x74\x65\x72\x6e\x65\x74\x05\x01\x0a\xe1\x00\x0a\x27\x1b\x80\x80\x21\x10\x02\x02\x00\x10\x81\x06\xc0\xa8\xa8\x01\x83\x06\xc0\xa8\xa8\x01\x00\x0d\x04\xc0\xa8\xa8\x01"
+    };
+
+    nas_message_t message;
+    nas_attach_accept_t *attach_accept = &message.emm.attach_accept;
+
+    pkbuf_t *pkbuf = NULL;
+    status_t rv;
+
+    memset(&message, 0, sizeof(message));
+    message.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    message.h.message_type = NAS_ATTACH_ACCEPT;
+    attach_accept->attach_result.result = 
+        NAS_ATTACH_RESULT_COMBINED_EPS_IMSI_ATTACH;
+    attach_accept->t3412_value.unit = 
+        NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_1_MM;
+    attach_accept->t3412_value.timer_value = 3;
+    attach_accept->tai_list.length = 6;
+    attach_accept->tai_list.u.type0.mcc_digit1 = 4;
+    attach_accept->tai_list.u.type0.mcc_digit2 = 1;
+    attach_accept->tai_list.u.type0.mcc_digit3 = 7;
+    attach_accept->tai_list.u.type0.mnc_digit1 = 9;
+    attach_accept->tai_list.u.type0.mnc_digit2 = 9;
+    attach_accept->tai_list.u.type0.mnc_digit2 = 0xf;
+    attach_accept->tai_list.u.type0.tac[0] = 12345;
+    attach_accept->esm_message_container.length = 50;
+    attach_accept->esm_message_container.buffer = (c_uint8_t*)esm_payload[0];
+
+    rv = nas_encode_pdu(&pkbuf, &message);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    pkbuf_free(pkbuf);
+}
+
 abts_suite *test_nas_message(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, nas_message_test1, NULL);
+    abts_run_test(suite, nas_message_test2, NULL);
 
     return suite;
 }

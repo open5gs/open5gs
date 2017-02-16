@@ -20,7 +20,7 @@ status_t nas_decode_device_properties(
  * See subclause 10.5.1.3 in 3GPP TS 24.008 [13]
  * O TV 6 */
 status_t nas_decode_location_area_identification(
-    nas_location_area_identification_t *old_location_area_identification, 
+    nas_location_area_identification_t *location_area_identification, 
     pkbuf_t *pkbuf)
 {
     c_uint16_t size = 0;
@@ -28,10 +28,10 @@ status_t nas_decode_location_area_identification(
     size = sizeof(nas_location_area_identification_t);
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
             return CORE_ERROR, "pkbuf_header error");
-    memcpy(old_location_area_identification, pkbuf->payload - size, size);
+    memcpy(location_area_identification, pkbuf->payload - size, size);
     
-    old_location_area_identification->lac = 
-        ntohs(old_location_area_identification->lac);
+    location_area_identification->lac = 
+        ntohs(location_area_identification->lac);
 
     return CORE_OK;
 }
@@ -84,19 +84,19 @@ status_t nas_decode_mobile_station_classmark_3(
  * See subclause 10.5.4.32 in 3GPP TS 24.008 [13].
  * O TLV 5-n */
 status_t nas_decode_supported_codec_list(
-    nas_supported_codec_list_t *supported_codecs, pkbuf_t *pkbuf)
+    nas_supported_codec_list_t *supported_codec_list, pkbuf_t *pkbuf)
 {
     c_uint16_t size = 0;
     nas_supported_codec_list_t *source = pkbuf->payload;
 
-    supported_codecs->length = source->length;
-    size = supported_codecs->length + 
-        sizeof(supported_codecs->length);
+    supported_codec_list->length = source->length;
+    size = supported_codec_list->length + 
+        sizeof(supported_codec_list->length);
 
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
             return CORE_ERROR, "pkbuf_header error");
 
-    memcpy(supported_codecs, pkbuf->payload - size, 
+    memcpy(supported_codec_list, pkbuf->payload - size, 
            c_min(size, sizeof(nas_supported_codec_list_t)));
 
     return CORE_OK;
@@ -131,15 +131,15 @@ status_t nas_decode_drx_parameter(
  * M V 1/2
  * 9.9.3.21 NAS key set identifier 
  * M V 1/2 */
-status_t nas_decode_attach_info(
-    nas_attach_info_t *attach_info, pkbuf_t *pkbuf)
+status_t nas_decode_attach_type(
+    nas_attach_type_t *attach_type, pkbuf_t *pkbuf)
 {
     c_uint16_t size = 0;
 
-    size = sizeof(nas_attach_info_t);
+    size = sizeof(nas_attach_type_t);
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
             return CORE_ERROR, "pkbuf_header error");
-    memcpy(attach_info, pkbuf->payload - size, size);
+    memcpy(attach_type, pkbuf->payload - size, size);
 
     return CORE_OK;
 }
@@ -189,21 +189,45 @@ status_t nas_decode_esm_message_container(
     return CORE_OK;
 }
 
+c_int32_t nas_encode_esm_message_container(
+    pkbuf_t *pkbuf, nas_esm_message_container_t *esm_message_container)
+{
+    c_uint16_t size = 0;
+    c_uint16_t tmp;
+
+    d_assert(esm_message_container, return -1, "Null param");
+    d_assert(esm_message_container->buffer, return -1, "Null param");
+
+    size = sizeof(esm_message_container->length);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
+            return -1, "pkbuf_header error");
+    tmp = htons(esm_message_container->length);
+    memcpy(pkbuf->payload - size, &tmp, size);
+
+    size = esm_message_container->length;
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
+            return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, esm_message_container->buffer, size);
+
+    return esm_message_container->length + 
+        sizeof(esm_message_container->length);
+}
+
 /* 9.9.3.16A GPRS timer 2
  * See subclause 10.5.7.4 in 3GPP TS 24.008 [13].
  * O TLV 3 */
 status_t nas_decode_gprs_timer_2(
-    nas_gprs_timer_2_t *t3324_value, pkbuf_t *pkbuf)
+    nas_gprs_timer_2_t *gprs_timer_2, pkbuf_t *pkbuf)
 {
     c_uint16_t size = 0;
     nas_gprs_timer_2_t *source = pkbuf->payload;
 
-    t3324_value->length = source->length;
-    size = t3324_value->length + sizeof(t3324_value->length);
+    gprs_timer_2->length = source->length;
+    size = gprs_timer_2->length + sizeof(gprs_timer_2->length);
 
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
             return CORE_ERROR, "pkbuf_header error");
-    memcpy(t3324_value, pkbuf->payload - size, size);
+    memcpy(gprs_timer_2, pkbuf->payload - size, size);
 
     return CORE_OK;
 }
@@ -212,17 +236,17 @@ status_t nas_decode_gprs_timer_2(
  * See subclause 10.5.7.4a in 3GPP TS 24.008 [13].
  * O TLV 3 */
 CORE_DECLARE(status_t) nas_decode_gprs_timer_3(
-    nas_gprs_timer_3_t *t3412_extended_value, pkbuf_t *pkbuf)
+    nas_gprs_timer_3_t *gprs_timer_3, pkbuf_t *pkbuf)
 {
     c_uint16_t size = 0;
     nas_gprs_timer_3_t *source = pkbuf->payload;
 
-    t3412_extended_value->length = source->length;
-    size = t3412_extended_value->length + sizeof(t3412_extended_value->length);
+    gprs_timer_3->length = source->length;
+    size = gprs_timer_3->length + sizeof(gprs_timer_3->length);
 
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
             return CORE_ERROR, "pkbuf_header error");
-    memcpy(t3412_extended_value, pkbuf->payload - size, size);
+    memcpy(gprs_timer_3, pkbuf->payload - size, size);
 
     return CORE_OK;
 }
@@ -264,19 +288,19 @@ status_t nas_decode_ms_network_feature_support(
  * See subclause 10.5.5.31 in 3GPP TS 24.008 [13].
  * O TLV 4 */
 status_t nas_decode_network_resource_identifier_container(
-    nas_network_resource_identifier_container_t *tmsi_based_nri_container, 
+    nas_network_resource_identifier_container_t *network_resource_identifier_container, 
     pkbuf_t *pkbuf)
 {
     c_uint16_t size = 0;
     nas_network_resource_identifier_container_t *source = pkbuf->payload;
 
-    tmsi_based_nri_container->length = source->length;
-    size = tmsi_based_nri_container->length + 
-        sizeof(tmsi_based_nri_container->length);
+    network_resource_identifier_container->length = source->length;
+    size = network_resource_identifier_container->length + 
+        sizeof(network_resource_identifier_container->length);
 
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
             return CORE_ERROR, "pkbuf_header error");
-    memcpy(tmsi_based_nri_container, pkbuf->payload - size, size);
+    memcpy(network_resource_identifier_container, pkbuf->payload - size, size);
     
     return CORE_OK;
 }
@@ -285,16 +309,16 @@ status_t nas_decode_network_resource_identifier_container(
  * See subclause 10.5.5.8 in 3GPP TS 24.008
  * O TV 4 */
 status_t nas_decode_p_tmsi_signature(
-    nas_p_tmsi_signature_t *old_p_tmsi_signature, pkbuf_t *pkbuf)
+    nas_p_tmsi_signature_t *p_tmsi_signature, pkbuf_t *pkbuf)
 {
     c_uint16_t size = 0;
 
     size = 3;
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
             return CORE_ERROR, "pkbuf_header error");
-    memcpy(old_p_tmsi_signature, pkbuf->payload - size, size);
+    memcpy(p_tmsi_signature, pkbuf->payload - size, size);
 
-    *old_p_tmsi_signature = ntohl(*old_p_tmsi_signature);
+    *p_tmsi_signature = ntohl(*p_tmsi_signature);
 
     return CORE_OK;
 }
@@ -314,16 +338,16 @@ status_t nas_decode_tmsi_status(
 /* 9.9.3.32 Tracking area identity
  * O TV 6 */
 status_t nas_decode_tracking_area_identity(
-    nas_tracking_area_identity_t *last_visited_registered_tai, pkbuf_t *pkbuf)
+    nas_tracking_area_identity_t *tracking_area_identity, pkbuf_t *pkbuf)
 {
     c_uint16_t size = 0;
 
     size = sizeof(nas_tracking_area_identity_t);
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
             return CORE_ERROR, "pkbuf_header error");
-    memcpy(last_visited_registered_tai, pkbuf->payload - size, size);
+    memcpy(tracking_area_identity, pkbuf->payload - size, size);
     
-    last_visited_registered_tai->tac = ntohs(last_visited_registered_tai->tac);
+    tracking_area_identity->tac = ntohs(tracking_area_identity->tac);
 
     return CORE_OK;
 }
@@ -372,11 +396,11 @@ status_t nas_decode_voice_domain_preference_and_ue_usage_setting(
 
 /* 9.9.3.45 GUTI type 
  * O TV 1 */
-status_t nas_decode_guti_type(nas_guti_type_t *old_guti_type, pkbuf_t *pkbuf)
+status_t nas_decode_guti_type(nas_guti_type_t *guti_type, pkbuf_t *pkbuf)
 {
     c_uint16_t size = 1;
 
-    memcpy(old_guti_type, pkbuf->payload - size, size);
+    memcpy(guti_type, pkbuf->payload - size, size);
     return CORE_OK;
 }
 
@@ -398,4 +422,87 @@ status_t nas_decode_extended_drx_parameters(
     memcpy(extended_drx_parameters, pkbuf->payload - size, size);
     
     return CORE_OK;
+}
+
+/* 9.9.3.10 * EPS attach result
+ * M V 1/2 */
+c_int32_t nas_encode_attach_result(
+    pkbuf_t *pkbuf, nas_attach_result_t *attach_result)
+{
+    c_uint16_t size = 0;
+
+    d_assert(attach_result, return -1, "Null param");
+
+    size = sizeof(nas_attach_result_t);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
+            return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, attach_result, size);
+
+    return size;
+}
+
+/* 9.9.3.16 GPRS timer
+ * See subclause 10.5.7.3 in 3GPP TS 24.008 [13].
+ * M V 1 or  O TV 2
+ *
+ * Note : Other values shall be interpreted as multiples of 1 minute 
+ * in this version of the protocol.  */
+c_int32_t nas_encode_gprs_timer(pkbuf_t *pkbuf, nas_gprs_timer_t *gprs_timer)
+{
+    c_uint16_t size = 0;
+
+    size = sizeof(nas_gprs_timer_t);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
+            return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, gprs_timer, size);
+
+    return size;
+}
+
+c_int32_t nas_encode_tracking_area_identity_list(
+    pkbuf_t *pkbuf,
+    nas_tracking_area_identity_list_t *tracking_area_identity_list)
+{
+    c_uint16_t size = 0;
+    int i = 0;
+    nas_tracking_area_identity_list_t tmp;
+
+    d_assert(tracking_area_identity_list, return -1, "Null param");
+
+    memcpy(&tmp, tracking_area_identity_list, 
+            sizeof(nas_tracking_area_identity_list_t));
+
+    size = tracking_area_identity_list->length + 
+        sizeof(tracking_area_identity_list->length);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
+            return -1, "pkbuf_header error");
+    if (tmp.type_of_list == 
+        NAS_TRACKING_AREA_IDENTITY_LIST_ONE_PLMN_NON_CONSECUTIVE_TACS)
+    {
+        for (i = 0; i < tmp.number_of_elements + 1&& 
+                i < NAS_MAX_TRACKING_AREA_IDENTITY; i++)
+        {
+            tmp.u.type0.tac[i] = htons(tmp.u.type0.tac[i]);
+        }
+    }
+    else if (tmp.type_of_list == 
+            NAS_TRACKING_AREA_IDENTITY_LIST_ONE_PLMN_CONSECUTIVE_TACS)
+    {
+        tmp.u.type1.tac = htons(tmp.u.type1.tac);
+    }
+    else if (tmp.type_of_list == 
+            NAS_TRACKING_AREA_IDENTITY_LIST_MANY_PLMNS)
+    {
+        for (i = 0; i < tmp.number_of_elements + 1 && 
+                i < NAS_MAX_TRACKING_AREA_IDENTITY; i++)
+        {
+            tmp.u.type2.tai[i].tac = htons(tmp.u.type2.tai[i].tac);
+        }
+    }
+    else
+        return -1;
+
+    memcpy(pkbuf->payload - size, &tmp, size);
+
+    return size;
 }

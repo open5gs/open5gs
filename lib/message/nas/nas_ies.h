@@ -33,7 +33,7 @@ ED2(c_uint8_t mnc_digit2:4;,
 } __attribute__ ((packed)) nas_location_area_identification_t;
 
 CORE_DECLARE(status_t) nas_decode_location_area_identification(
-    nas_location_area_identification_t *old_location_area_identification, 
+    nas_location_area_identification_t *location_area_identification, 
     pkbuf_t *pkbuf);
 
 /* 9.9.2.4 Mobile station classmark 2
@@ -99,14 +99,14 @@ typedef struct _nas_supported_codec_item_t {
     c_uint16_t codec_bitmap;
 } __attribute__ ((packed)) nas_supported_codec_item_t;
 
-#define NAS_MAX_SUPPORTED_CODECS 4
+#define NAS_MAX_SUPPORTED_CODECS 8
 typedef struct _nas_supported_codec_list_t {
     c_uint8_t length;
     nas_supported_codec_item_t item[NAS_MAX_SUPPORTED_CODECS];
 } __attribute__ ((packed)) nas_supported_codec_list_t;
 
 CORE_DECLARE(status_t) nas_decode_supported_codec_list(
-    nas_supported_codec_list_t *supported_codecs, pkbuf_t *pkbuf);
+    nas_supported_codec_list_t *supported_codec_list, pkbuf_t *pkbuf);
 
 /* 9.9.3.0B Additional update type
  * O TV 1 */
@@ -162,15 +162,15 @@ CORE_DECLARE(status_t) nas_decode_drx_parameter(
 #define NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTAACH 2
 #define NAS_ATTACH_TYPE_EPS_ERMERGENCY_ATTCH 3
 #define NAS_ATTACH_TYPE_RESERVED 4
-typedef struct _nas_attach_info_t {
+typedef struct _nas_attach_type_t {
 ED4(c_uint8_t tsc:1;,
     c_uint8_t nas_key_set_identifier:3;,
     c_uint8_t spare:1;,
     c_uint8_t attach_type:3;)
-} __attribute__ ((packed)) nas_attach_info_t;
+} __attribute__ ((packed)) nas_attach_type_t;
 
-CORE_DECLARE(status_t) nas_decode_attach_info(
-    nas_attach_info_t *attach_info, pkbuf_t *pkbuf);
+CORE_DECLARE(status_t) nas_decode_attach_type(
+    nas_attach_type_t *attach_type, pkbuf_t *pkbuf);
 
 /* 9.9.3.12 EPS mobile identity
  * M LV  5-12 */
@@ -235,6 +235,8 @@ typedef struct _nas_esm_message_container_t {
 
 CORE_DECLARE(status_t) nas_decode_esm_message_container(
     nas_esm_message_container_t *esm_message_container, pkbuf_t *pkbuf);
+CORE_DECLARE(c_int32_t) nas_encode_esm_message_container(
+    pkbuf_t *pkbuf, nas_esm_message_container_t *esm_message_container);
 
 /* 9.9.3.16A GPRS timer 2
  * See subclause 10.5.7.4 in 3GPP TS 24.008 [13].
@@ -245,7 +247,7 @@ typedef struct _nas_gprs_timer_2_t {
 } __attribute__ ((packed)) nas_gprs_timer_2_t;
 
 CORE_DECLARE(status_t) nas_decode_gprs_timer_2(
-    nas_gprs_timer_2_t *t3324_value, pkbuf_t *pkbuf);
+    nas_gprs_timer_2_t *gprs_timer_2, pkbuf_t *pkbuf);
 
 /* 9.9.3.16B GPRS timer 3
  * See subclause 10.5.7.4a in 3GPP TS 24.008 [13].
@@ -266,7 +268,7 @@ ED2(c_uint8_t unit:3;,
 } __attribute__ ((packed)) nas_gprs_timer_3_t;
 
 CORE_DECLARE(status_t) nas_decode_gprs_timer_3(
-    nas_gprs_timer_3_t *t3412_extended_value, pkbuf_t *pkbuf);
+    nas_gprs_timer_3_t *gprs_timer_3, pkbuf_t *pkbuf);
 
 /* 9.9.3.20 MS network capability
  * See subclause 10.5.5.12 in 3GPP TS 24.008
@@ -332,7 +334,8 @@ ED2(c_uint8_t nri_container_value2:2;,
 } __attribute__ ((packed)) nas_network_resource_identifier_container_t;
 
 CORE_DECLARE(status_t) nas_decode_network_resource_identifier_container(
-    nas_network_resource_identifier_container_t *tmsi_based_nri_container, 
+    nas_network_resource_identifier_container_t *
+        network_resource_identifier_container, 
     pkbuf_t *pkbuf);
 
 /* 9.9.3.26 P-TMSI signature 
@@ -341,7 +344,7 @@ CORE_DECLARE(status_t) nas_decode_network_resource_identifier_container(
 typedef c_uint32_t nas_p_tmsi_signature_t; /* TV : 4bytes */
 
 CORE_DECLARE(status_t) nas_decode_p_tmsi_signature(
-    nas_p_tmsi_signature_t *old_p_tmsi_signature, pkbuf_t *pkbuf);
+    nas_p_tmsi_signature_t *p_tmsi_signature, pkbuf_t *pkbuf);
 
 /* 9.9.3.31 TMSI status
  * See subclause 10.5.5.4 in 3GPP TS 24.008 [13]
@@ -368,7 +371,7 @@ ED2(c_uint8_t mnc_digit2:4;,
 } __attribute__ ((packed)) nas_tracking_area_identity_t;
 
 CORE_DECLARE(status_t) nas_decode_tracking_area_identity(
-    nas_tracking_area_identity_t *last_visited_registered_tai, pkbuf_t *pkbuf);
+    nas_tracking_area_identity_t *tracking_area_identity, pkbuf_t *pkbuf);
 
 /* 9.9.3.34 UE network capability
  * M LV  3-14 */
@@ -453,7 +456,7 @@ ED3(c_uint8_t type:4;,
 } __attribute__ ((packed)) nas_guti_type_t;
 
 CORE_DECLARE(status_t) nas_decode_guti_type(
-    nas_guti_type_t *old_guti_type, pkbuf_t *pkbuf);
+    nas_guti_type_t *guti_type, pkbuf_t *pkbuf);
 
 /* 9.9.3.46 Extended DRX parameters
  * See subclause 10.5.5.32 in 3GPP TS 24.008 [13].
@@ -466,6 +469,192 @@ ED2(c_uint8_t paging_time_window:4;,
 
 CORE_DECLARE(status_t) nas_decode_extended_drx_parameters(
     nas_extended_drx_parameters_t *extended_drx_parameters, pkbuf_t *pkbuf);
+
+/* 9.9.3.10 * EPS attach result
+ * M V 1/2 */
+#define NAS_ATTACH_RESULT_EPS_ONLY 1
+#define NAS_ATTACH_RESULT_COMBINED_EPS_IMSI_ATTACH 2
+typedef struct _nas_attach_result_t {
+ED2(c_uint8_t spare:5;,
+    c_uint8_t result:3;)
+} __attribute__ ((packed)) nas_attach_result_t;
+
+CORE_DECLARE(c_int32_t) nas_encode_attach_result(
+    pkbuf_t *pkbuf, nas_attach_result_t *attach_result);
+
+/* 9.9.3.33 Tracking area identity list
+ * M LV 7-97 */
+#define NAS_MAX_TRACKING_AREA_IDENTITY 16
+#define NAS_TRACKING_AREA_IDENTITY_LIST_ONE_PLMN_NON_CONSECUTIVE_TACS 0
+#define NAS_TRACKING_AREA_IDENTITY_LIST_ONE_PLMN_CONSECUTIVE_TACS     1
+#define NAS_TRACKING_AREA_IDENTITY_LIST_MANY_PLMNS                    2
+typedef struct _nas_tracking_area_identity_type0 {
+ED2(c_uint8_t mcc_digit2:4;,
+    c_uint8_t mcc_digit1:4;)
+ED2(c_uint8_t mnc_digit3:4;,
+    c_uint8_t mcc_digit3:4;)
+ED2(c_uint8_t mnc_digit2:4;,
+    c_uint8_t mnc_digit1:4;)
+    c_uint16_t tac[NAS_MAX_TRACKING_AREA_IDENTITY];
+} __attribute__ ((packed)) nas_tracking_area_identity_type0;
+
+typedef struct _nas_tracking_area_identity_type1 {
+ED2(c_uint8_t mcc_digit2:4;,
+    c_uint8_t mcc_digit1:4;)
+ED2(c_uint8_t mnc_digit3:4;,
+    c_uint8_t mcc_digit3:4;)
+ED2(c_uint8_t mnc_digit2:4;,
+    c_uint8_t mnc_digit1:4;)
+    c_uint16_t tac;
+} __attribute__ ((packed)) nas_tracking_area_identity_type1;
+
+typedef struct _nas_tracking_area_identity_type2 {
+    nas_tracking_area_identity_type1 tai[NAS_MAX_TRACKING_AREA_IDENTITY];
+} __attribute__ ((packed)) nas_tracking_area_identity_type2;
+
+typedef struct nas_tracking_area_identity_list_t {
+    c_uint8_t length;
+ED3(c_uint8_t spare:1;,
+    c_uint8_t type_of_list:2;,
+    c_uint8_t number_of_elements:5;)
+    union {
+        nas_tracking_area_identity_type0 type0;
+        nas_tracking_area_identity_type1 type1;
+        nas_tracking_area_identity_type2 type2;
+    } u;
+} __attribute__ ((packed)) nas_tracking_area_identity_list_t;
+
+CORE_DECLARE(c_int32_t) nas_encode_tracking_area_identity_list(
+    pkbuf_t *pkbuf,
+    nas_tracking_area_identity_list_t *tracking_area_identity_list);
+
+/* 9.9.3.16 GPRS timer
+ * See subclause 10.5.7.3 in 3GPP TS 24.008 [13].
+ * O TV 2
+ *
+ * Note : Other values shall be interpreted as multiples of 1 minute 
+ * in this version of the protocol.  */
+#define NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_2_SS       0
+#define NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_1_MM       1
+#define NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_DECI_HH    2
+#define NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_1_MM_3     3
+#define NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_1_MM_4     4
+#define NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_1_MM_5     5
+#define NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_1_MM_6     6
+#define NAS_GRPS_TIMER_UNIT_DEACTIVATED             7
+typedef struct _nas_gprs_timer_t {
+ED2(c_uint8_t unit:3;,
+    c_uint8_t timer_value:5;)
+} __attribute__ ((packed)) nas_gprs_timer_t;
+
+CORE_DECLARE(c_int32_t) nas_encode_gprs_timer(
+    pkbuf_t *pkbuf, nas_gprs_timer_t *gprs_timer);
+
+/* 9.9.2.3 Mobile identity
+ * See subclause 10.5.1.4 in 3GPP TS 24.008 [13].
+ * O TLV 7-10 */
+typedef nas_eps_mobile_identity_t nas_mobile_identity_t;
+
+CORE_DECLARE(c_int32_t) nas_encode_mobile_identity(
+    pkbuf_t *pkbuf, nas_mobile_identity_t *mobile_identity);
+
+/* 9.9.3.9 EMM cause
+ * O TV 2 */
+#define NAS_EMM_CAUSE_IMSI_UNKNOWN_IN_HSS 0b00000010
+#define NAS_EMM_CAUSE_ILLEGAL_UE 0b00000011
+#define NAS_EMM_CAUSE_IMEI_NOT_ACCEPTED 0b00000101
+#define NAS_EMM_CAUSE_ILLEGAL_ME 0b00000110
+#define NAS_EMM_CAUSE_EPS_SERVICES_NOT_ALLOWED 0b00000111
+#define NAS_EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED 0b00001000
+#define NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK 0b00001001
+#define NAS_EMM_CAUSE_IMPLICITLY_DETACHED 0b00001010
+#define NAS_EMM_CAUSE_PLMN_NOT_ALLOWED 0b00001011
+#define NAS_EMM_CAUSE_TRACKING_AREA_NOT_ALLOWED 0b00001100
+#define NAS_EMM_CAUSE_ROAMING_NOT_ALLOWED_IN_THIS_TRACKING_AREA 0b00001101
+#define NAS_EMM_CAUSE_EPS_SERVICES_NOT_ALLOWED_IN_THIS_PLMN 0b00001110
+#define NAS_EMM_CAUSE_NO_SUITABLE_CELLS_IN_TRACKING_AREA 0b00001111
+#define NAS_EMM_CAUSE_MSC_TEMPORARILY_NOT_REACHABLE 0b00010000
+#define NAS_EMM_CAUSE_NETWORK_FAILURE 0b00010001
+#define NAS_EMM_CAUSE_CS_DOMAIN_NOT_AVAILABLE 0b00010010
+#define NAS_EMM_CAUSE_ESM_FAILURE 0b00010011
+#define NAS_EMM_CAUSE_MAC_FAILURE 0b00010100
+#define NAS_EMM_CAUSE_SYNCH_FAILURE 0b00010101
+#define NAS_EMM_CAUSE_CONGESTION 0b00010110
+#define NAS_EMM_CAUSE_UE_SECURITY_CAPABILITIES_MISMATCH 0b00010111
+#define NAS_EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED 0b00011000
+#define NAS_EMM_CAUSE_NOT_AUTHORIZED_FOR_THIS_CSG 0b00011001
+#define NAS_EMM_CAUSE_NON_EPS_AUTHENTICATION_UNACCEPTABLE 0b00011010
+#define NAS_EMM_CAUSE_REQUESTED_SERVICE_OPTION_NOT_AUTHORIZED_IN_THIS_PLMN 0b00100011
+#define NAS_EMM_CAUSE_CS_SERVICE_TEMPORARILY_NOT_AVAILABLE 0b00100111
+#define NAS_EMM_CAUSE_NO_EPS_BEARER_CONTEXT_ACTIVATED 0b00101000
+#define NAS_EMM_CAUSE_SEVERE_NETWORK_FAILURE 0b00101010
+#define NAS_EMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE 0b01011111
+#define NAS_EMM_CAUSE_INVALID_MANDATORY_INFORMATION 0b01100000
+#define NAS_EMM_CAUSE_MESSAGE_TYPE_NON_EXISTENT_OR_NOT_IMPLEMENTED 0b01100001
+#define NAS_EMM_CAUSE_MESSAGE_TYPE_NOT_COMPATIBLE_WITH_THE_PROTOCOL_STATE 0b01100010
+#define NAS_EMM_CAUSE_INFORMATION_ELEMENT_NON_EXISTENT_OR_NOT_IMPLEMENTED 0b01100011
+#define NAS_EMM_CAUSE_CONDITIONAL_IE_ERROR 0b01100100
+#define NAS_EMM_CAUSE_MESSAGE_NOT_COMPATIBLE_WITH_THE_PROTOCOL_STATE 0b01100101
+#define NAS_EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED 0b01101111
+typedef c_uint8_t nas_emm_cause_t;
+
+CORE_DECLARE(c_int32_t) nas_encode_emm_cause(
+    pkbuf_t *pkbuf, nas_emm_cause_t *emm_cause);
+
+/* 9.9.2.8 PLMN list
+ * See subclause 10.5.1.13 in 3GPP TS 24.008 [13].
+ * O TLV 5-47 */
+#define NAS_MAX_PLMN 15
+typedef struct _nas_plmn_t {
+ED2(c_uint8_t mcc_digit2:4;,
+    c_uint8_t mcc_digit1:4;)
+ED2(c_uint8_t mnc_digit3:4;,
+    c_uint8_t mcc_digit3:4;)
+ED2(c_uint8_t mnc_digit2:4;,
+    c_uint8_t mnc_digit1:4;)
+} __attribute__ ((packed)) nas_plmn_t;
+
+typedef struct _nas_plmn_list_t {
+    c_uint8_t length;
+    nas_plmn_t plmn[NAS_MAX_PLMN];
+} __attribute__ ((packed)) nas_plmn_list_t;
+
+CORE_DECLARE(status_t) nas_encode_plmn_list(
+    pkbuf_t *pkbuf, nas_plmn_list_t *plmn_list);
+
+/* 9.9.3.12A EPS network feature support 
+ * O TLV 3 */
+typedef struct _nas_eps_network_feature_support_t {
+    c_uint8_t length;
+ED7(c_uint8_t cp_ciot:1;,
+    c_uint8_t erw_opdn:1;,
+    c_uint8_t esr_ps:1;,
+    c_uint8_t cs_lcs:2;,
+    c_uint8_t epc_lcs:1;,
+    c_uint8_t emc_bs:1;,
+    c_uint8_t ims_vops:1;)
+ED5(c_uint8_t spare:4;,
+    c_uint8_t e_pco:1;,
+    c_uint8_t hc_cp_ciot:1;,
+    c_uint8_t s1_u_data:1;,
+    c_uint8_t up_ciot :1;)
+} __attribute__ ((packed)) nas_eps_network_feature_support_t;
+
+CORE_DECLARE(c_int32_t) nas_encode_eps_network_feature_support(
+    pkbuf_t *pkbuf, 
+    nas_eps_network_feature_support_t *eps_network_feature_support);
+
+/* 9.9.3.0A Additional update result
+ * O TV 1  */
+typedef struct _nas_additional_update_result_t {
+ED3(c_uint8_t type:4;,
+    c_uint8_t spare:2;,
+    c_uint8_t additional_update_result_value:2;)
+} __attribute__ ((packed)) nas_additional_update_result_t;
+
+CORE_DECLARE(c_int32_t) nas_encode_additional_update_result(
+    pkbuf_t *pkbuf, 
+    nas_additional_update_result_t *additional_update_result);
 
 #ifdef __cplusplus
 }
