@@ -7,6 +7,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
+CORE_DECLARE(c_int32_t) nas_encode_iei(pkbuf_t *pkbuf, c_uint8_t iei);
+
 /* 9.9.2.0A Device properties
  * See subclause 10.5.7.8 in 3GPP TS 24.008 [13].
  * O TV 1 */

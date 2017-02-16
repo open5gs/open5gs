@@ -4,6 +4,18 @@
 #include "core_lib.h"
 #include "nas_ies.h"
 
+c_int32_t nas_encode_iei(pkbuf_t *pkbuf, c_uint8_t iei)
+{
+    c_uint16_t size = 0;
+
+    size = sizeof(c_uint8_t);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
+            return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &iei, size);
+
+    return size;
+}
+
 /* 9.9.2.0A Device properties
  * See subclause 10.5.7.8 in 3GPP TS 24.008 [13].
  * O TV 1 */

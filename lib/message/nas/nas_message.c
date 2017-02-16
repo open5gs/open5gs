@@ -300,6 +300,10 @@ c_int32_t nas_encode_attach_accept(pkbuf_t *pkbuf, nas_message_t *message)
 
     if (attach_accept->presencemask & NAS_ATTACH_ACCEPT_GUTI_PRESENT)
     {
+        size = nas_encode_iei(pkbuf, NAS_ATTACH_ACCEPT_GUTI_IEI);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
         size = nas_encode_eps_mobile_identity(pkbuf, &attach_accept->guti);
         d_assert(size >= 0, return encoded, "decode failed");
         encoded += size;

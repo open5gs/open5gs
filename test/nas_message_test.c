@@ -83,6 +83,7 @@ static void nas_message_test2(abts_case *tc, void *data)
 
     rv = nas_encode_pdu(&pkbuf, &message);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
+#if 0
     {
         int i = 0;
         unsigned char *p = pkbuf->payload;
@@ -90,7 +91,8 @@ static void nas_message_test2(abts_case *tc, void *data)
             printf("0x%x, 0x%x\n", payload[0][i], p[i]);
 
     }
-    ABTS_TRUE(tc, memcmp(pkbuf->payload, payload, pkbuf->len) == 0);
+#endif
+    ABTS_TRUE(tc, memcmp(pkbuf->payload, payload[0], pkbuf->len) == 0);
 
     pkbuf_free(pkbuf);
 }
