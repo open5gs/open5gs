@@ -6,7 +6,7 @@ libmessagenas_la_SOURCES = \
 	nas_message.h nas_ies.h
 
 nodist_libmessagenas_la_SOURCES = \
-	nas_message.c nas_ies.c
+	nas_decoder.c nas_encoder.c nas_ies.c
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include
