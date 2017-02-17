@@ -1,9 +1,2 @@
 {
-  "lib/freeDiameter": {
-    "url": "https://github.com/Metaswitch/freeDiameter.git",
-    "remote": "master/braid/lib/freeDiameter",
-    "branch": "master",
-    "squashed": true,
-    "revision": "bf79bb4fa239459ae7946f9250604a625f6db470"
-  }
 }
