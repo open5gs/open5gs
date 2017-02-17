@@ -252,10 +252,13 @@ status_t nas_decode_pdu(nas_message_t *message, pkbuf_t *pkbuf)
             decoded += size;
             break;
         case NAS_ATTACH_ACCEPT:
+            d_error("Not implemented");
+            return CORE_ERROR;
         case NAS_ATTACH_COMPLETE:
             size = nas_decode_attach_complete(message, pkbuf);
             d_assert(size >= CORE_OK, return CORE_ERROR, "decode error");
             decoded += size;
+            break;
         case NAS_ATTACH_REJECT:
         case NAS_DETACH_REQUEST:
         case NAS_DETACH_ACCEPT:
@@ -306,7 +309,6 @@ status_t nas_decode_pdu(nas_message_t *message, pkbuf_t *pkbuf)
         case NAS_ESM_INFORMATION_REQUEST:
         case NAS_ESM_INFORMATION_RESPONSE:
         case NAS_ESM_STATUS:
-            break;
         default:
             d_error("Unknown message type (%d) or not implemented", 
                     message->h.message_type);
