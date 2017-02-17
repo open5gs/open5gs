@@ -1,0 +1,91 @@
+# This file contains the configuration for the rt_default extension of freeDiameter.
+#
+# This extension provides configurable routing properties for freeDiameter.
+
+# Lines starting with a # are comments and ignored.
+
+##############################################################################
+# The freeDiameter daemon will not allow forwarding a message to a peer that:
+# - already forwarded the message (appear as Route-Record inside the message)
+# - connection is not in STATE_OPEN state.
+# We call here "eligible peer" a peer that is not screened out by one of these criteria.
+#
+# Even if a peer is specified as route for a message here, the daemon may
+# choose to send a message to another peer, or return a UNABLE_TO_DELIVER error, if that peer is not eligible 
+# at the time where the message is to be forwarded.
+#
+# Note also that defining a peer here will not result in the daemon trying to establish
+# a connection to this peer. For this purpose, the peer must be defined in the main
+# configuration (ConnectPeer), or connection established through other means (e.g. dynamic peer
+# discovery extension).
+#
+# The default forwarding behavior of freeDiameter is:
+# - if the message contains a Destination-Host AVP, and the designated peer is an eligible candidate, send to this peer.
+# - if a peer does not support the message application or Relay application, give it a penalty for this message 
+#    (it means that unless overwritten by an extension, the message will not be sent to that peer)
+# - if one of the eligible peer advertised a realm matching the message's Destination-Realm, send to this peer.
+#
+# The mechanism is as follow:
+# - the daemon builds a list of eligible peers, then attributes a score to these peers (see enum fd_rt_out_score in freeDiameter.h)
+# - any number of extensions can register a callback and modify the score
+# - after all callbacks have been called, the message is sent to the peer with the higher score. If an error is received, it is retried to the next peer in the list, and so on,
+#   until the list is empty. In such situation, an error UNABLE_TO_DELIVER is generated.
+#
+# This extension allows to modify the score of some peers based on some criteria of the message.
+#
+# Finally, please note that the freeDiameter daemon does not support REDIRECT indications natively. 
+# You have to load the rt_redir extension to add this support.
+##############################################################################
+
+# This file contains a list of RULE elements.
+# Each RULE is made of three components:
+#  - a CRITERIA, which specifies which messages the RULE apply to.
+#  - a TARGET string, that specifies which peer(s) in the eligible list the rule is applied to
+#  - and a SCORE, that is added to the matching peer's current score.
+#
+# In the following definitions, "STR/REG" stands for:
+#   - a quoted string "some.peer" that will match exactly this string (case-insensitive), or
+#   - a bracket-quoted string ["some regex"] that will be interpreted as a POSIX extended regular expression (case-sensitive), and attempt to match the string.
+#
+# The RULE is specified as:
+#    CRITERIA : TARGET += SCORE ;
+#
+# The CRITERIA can be:
+#    *   		-> matches any message.
+#    oh="STR/REG"	-> selects the message if the string or regular expression matches the message's Origin-Host AVP content
+#    or="STR/REG"   	-> idem with Origin-Realm
+#    dh="STR/REG"   	-> idem with Destination-Host
+#    dr="STR/REG"   	-> idem with Destination-Realm
+#    un="STR/REG"   	-> idem with User-Name
+#    si="STR/REG"   	-> idem with Session-Id
+#
+# The TARGET is also of a similar form:
+#    "STR/REG"		-> Will apply the score to this peer if its Diameter-Id is matched by the string or regular expression.
+#    rlm="STR/REG"	-> Idem with the peer's advertized Diameter-Realm.
+#
+# The SCORE is either numeric (positive or negative), or one of the following constants (see values in libfdcore.h):
+#    NO_DELIVERY
+#    DEFAULT
+#    DEFAULT_REALM
+#    REALM
+#    REDIR_HOST     
+#    REDIR_APP      
+#    REDIR_REALM    
+#    REDIR_REALM_APP
+#    REDIR_USER     
+#    REDIR_SESSION  
+#    FINALDEST
+#
+#
+# Here are some examples:
+#  1) Rule to add a default next-hop peer to all messages:
+#    * : "proxy.testbed.aaa" += DEFAULT ;
+#
+#  2) Rule to route messages for a given realm (realmA) through another realm (realmB):
+#    dr="realmA" : rlm="realmB" += DEFAULT_REALM ;
+#
+#  3) Avoid sending messages with decorated NAI to the proxy A:
+#    un=[".+!.+@.+"] : "proxy.A" += NO_DELIVERY ;
+
+
+

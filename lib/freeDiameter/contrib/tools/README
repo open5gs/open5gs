@@ -1,0 +1,2 @@
+org_to_fd.pl converts org files like diameter-rfcs.org to C fragments
+that can be included in freeDiameter code.

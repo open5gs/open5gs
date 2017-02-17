@@ -1,0 +1,7 @@
+# Defaults for freediameter initscript
+# sourced by /etc/init.d/freediameter
+# installed at /etc/default/freediameter by the maintainer scripts
+
+# Additional options that are passed to the Daemon.
+# See "freeDiameterd --help" for supported flags.
+DAEMON_OPTS=""

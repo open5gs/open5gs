@@ -1,0 +1,109 @@
+/*********************************************************************************************************
+* Software License Agreement (BSD License)                                                               *
+* Author: Sebastien Decugis <sdecugis@freediameter.net>							 *
+*													 *
+* Copyright (c) 2013, WIDE Project and NICT								 *
+* All rights reserved.											 *
+* 													 *
+* Redistribution and use of this software in source and binary forms, with or without modification, are  *
+* permitted provided that the following conditions are met:						 *
+* 													 *
+* * Redistributions of source code must retain the above 						 *
+*   copyright notice, this list of conditions and the 							 *
+*   following disclaimer.										 *
+*    													 *
+* * Redistributions in binary form must reproduce the above 						 *
+*   copyright notice, this list of conditions and the 							 *
+*   following disclaimer in the documentation and/or other						 *
+*   materials provided with the distribution.								 *
+* 													 *
+* * Neither the name of the WIDE Project or NICT nor the 						 *
+*   names of its contributors may be used to endorse or 						 *
+*   promote products derived from this software without 						 *
+*   specific prior written permission of WIDE Project and 						 *
+*   NICT.												 *
+* 													 *
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED *
+* WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A *
+* PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR *
+* ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 	 *
+* LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 	 *
+* INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR *
+* TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF   *
+* ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.								 *
+*********************************************************************************************************/
+
+/* Configuration from compile-time */
+#ifndef FD_IS_CONFIG
+#define FD_IS_CONFIG
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#cmakedefine HAVE_NTOHLL
+#cmakedefine HAVE_MALLOC_H
+#cmakedefine HAVE_SIGNALENT_H
+#cmakedefine HAVE_AI_ADDRCONFIG
+#cmakedefine HAVE_CLOCK_GETTIME
+#cmakedefine HAVE_STRNDUP
+#cmakedefine HAVE_PTHREAD_BAR
+
+#cmakedefine HOST_BIG_ENDIAN @HOST_BIG_ENDIAN@
+
+#cmakedefine DISABLE_SCTP
+#cmakedefine DEBUG_SCTP
+#cmakedefine DEBUG_WITHOUT_META
+#cmakedefine SCTP_USE_MAPPED_ADDRESSES
+#cmakedefine SCTP_CONNECTX_4_ARGS
+#cmakedefine SKIP_DLCLOSE
+#cmakedefine DIAMID_IDNA_IGNORE
+#cmakedefine DIAMID_IDNA_REJECT
+#cmakedefine DISABLE_PEER_EXPIRY
+#cmakedefine WORKAROUND_ACCEPT_INVALID_VSAI
+#cmakedefine GNUTLS_VERSION_210
+#cmakedefine GNUTLS_VERSION_212
+#cmakedefine GNUTLS_VERSION_300
+#cmakedefine GNUTLS_VERSION_310
+
+#cmakedefine ERRORS_ON_TODO
+#cmakedefine DEBUG
+
+#cmakedefine FD_PROJECT_BINARY "@FD_PROJECT_BINARY@"
+#cmakedefine FD_PROJECT_NAME "@FD_PROJECT_NAME@"
+#cmakedefine FD_PROJECT_VERSION_MAJOR @FD_PROJECT_VERSION_MAJOR@
+#ifndef FD_PROJECT_VERSION_MAJOR
+# define FD_PROJECT_VERSION_MAJOR 0
+#endif /*FD_PROJECT_VERSION_MAJOR*/
+#cmakedefine FD_PROJECT_VERSION_MINOR @FD_PROJECT_VERSION_MINOR@
+#ifndef FD_PROJECT_VERSION_MINOR
+# define FD_PROJECT_VERSION_MINOR 0
+#endif /*FD_PROJECT_VERSION_MINOR*/
+#cmakedefine FD_PROJECT_VERSION_REV   @FD_PROJECT_VERSION_REV@
+#ifndef FD_PROJECT_VERSION_REV
+# define FD_PROJECT_VERSION_REV 0
+#endif /*FD_PROJECT_VERSION_REV*/
+#cmakedefine FD_PROJECT_VERSION_API   @FD_PROJECT_VERSION_API@
+#ifndef FD_PROJECT_VERSION_API
+# define FD_PROJECT_VERSION_API 0
+#endif /*FD_PROJECT_VERSION_API*/
+#cmakedefine FD_PROJECT_COPYRIGHT "@FD_PROJECT_COPYRIGHT@"
+
+#cmakedefine DEFAULT_CONF_PATH "@DEFAULT_CONF_PATH@"
+#cmakedefine DEFAULT_EXTENSIONS_PATH "@DEFAULT_EXTENSIONS_PATH@"
+
+#cmakedefine FD_PROJECT_VENDOR_ID @FD_PROJECT_VENDOR_ID@
+#define MY_VENDOR_ID FD_PROJECT_VENDOR_ID
+
+#ifndef FD_DEFAULT_CONF_FILENAME
+#define FD_DEFAULT_CONF_FILENAME "freeDiameter.conf"
+#endif /* FD_DEFAULT_CONF_FILENAME */
+
+/* Maximum number of hooks handlers that can be registered. Make this compilation option if needed */
+#define FD_HOOK_HANDLE_LIMIT	5
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* FD_IS_CONFIG */

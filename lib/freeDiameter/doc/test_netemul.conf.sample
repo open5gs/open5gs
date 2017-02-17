@@ -1,0 +1,59 @@
+# This file contains information for configuring the test_netemul extension.
+# To find how to have freeDiameter load this extension, please refer to the freeDiameter documentation.
+#
+# The test_netemul extension implements a Diameter proxy that behaves like simple forwarding agent,
+# with the exception that it can introduce delay in the forwarding of the messages and generate duplicates
+# of messages, as can be expected from a real Diameter network. It can also generate routing errors when 
+# connected to more than 2 peers.
+
+
+# LATENCY:
+# Two parameters are used to control the delay introduced in the messages.
+#  - latency_average:
+#   This is the average delay introduced in the packets. 
+#   Set to 0 to not add any latency (beyond the normal processing time).
+#   The value is expressed as an integer followed by a unit which can 
+#   be 's' (seconds) or 'ms' (milliseconds). Example:
+#     latency_average = 700 ms;
+#
+#  - latency_deviation:
+#   This parameter controls the variance in the latency. It is expressed
+#   as a value between 0 % and 100 %. When set to 0 %, all messages will be delayed
+#   by exactly latency_average. Otherwise, it represents the width of the interval 
+#   "around" the average where "most" of the latency will be chosen (the distribution
+#   has a Gaussian shape). Example:
+#      latency_deviation = 25 %;
+#
+# The default values give an added latency "mostly" between 0.4 and 0.6 seconds:
+#  latency_average  = 500 ms;
+#  latency_deviation = 20 % ;
+
+
+# REORDERING:
+# There is no special control over the reordering of messages. It may simply happen
+# as a result of the latency. If you want to get a lot of reordering, set the 
+# latency_variance to a high value.
+
+
+# DUPLICATES:
+# Duplicate messages are expected in the Diameter protocol by design, as a consequence
+# of the failover mechanism that provides the protocol's reliability.
+#  - dupl_proba:
+#   This value gives the probability of producing a duplicate of a forwarded message. 
+#   The value is comprized between 0 (no duplicates) and 1 (duplicate all messages).
+#   Duplicates are created for requests, but may result in duplicate answers 
+#   received by your Diameter client(s), depending on your server(s)'s behavior.
+#   In the case of freeDiameter client, the duplicate answer is automatically filtered out
+#   because the hop-by-hop id has already been used.
+#   Note that each duplicate copy is an independent message,
+#   which receives a different latency, and might be routed to a different server if you
+#   use for example load-balancing.
+#   The parameter can take several forms:
+#    dupl_proba = 0 ;
+#      Disables the generation of duplicate messages completely.
+#    dupl_proba = 1 / 10000 ;
+#    dupl_proba = 0.0001 ;
+#      Around 1 messages over ten thousands will be duplicated.
+#
+# Default value:
+#  dupl_proba = 1 / 100 ;

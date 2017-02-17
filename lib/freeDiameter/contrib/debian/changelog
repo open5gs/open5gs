@@ -1,0 +1,189 @@
+freediameter (1.2.0) UNRELEASED; urgency=low
+
+  * Major changes in the logging system to be more syslog and production friendly
+  * New extension: dict_dcca_3gpp
+  * New extension: dict_dcca_starent (Starent DCCA vendor-specific AVPs)
+  * New extension: rt_ignore_dh (hide network topology by proxying Destination-Host).
+  * New extension: rt_load_balance (load balancer based on pending queue size).
+  * New extension: rt_busypeers. See doc/rt_busypeers.conf.sample.
+  * New extension: dbg_msg_timings. Measures timing of message operations.
+  * New extension: dbg_msg_dumps. Use to control hooks display.
+  * New API (fd_hook_*) for extensions to control messages logging & profiling
+  * New API (fd_stats_*) for extensions to monitor framework state (e.g. SNMP implem)
+  * API change: all the fd_*_dump functions now return malloc'd strings instead of logging directly.
+  * API change: callback parameter of fd_rt_out_register had its signature updated.
+  * Updated dbg_monitoring extension to use the new API
+  * New script to generate dictionary extensions from org file (see contrib/tools)
+  * New compilation option: WORKAROUND_ACCEPT_INVALID_VSAI to improve compatibility
+    with invalid Vendor-Specific-Application-Id AVPs received from some equipments (e.g. Cisco).
+  * New compilation option: DISABLE_PEER_EXPIRY for use in test environments.
+  * Extensions are now also searched in LD_LIBRARY_PATH.
+  * Copy Proxy-Info AVP automatically in new answers.
+  * Port value 0 allowed in configuration to disable local server (e.g. disable non-secure port).
+  * API change: fd_msg_send_timeout now takes a separate callback for timeout situation.
+  * Function changes: fd_msg_dump_* now split in three different type of output.
+  * New test testmesg_stress to measure message parser performance
+  * Fix termination of the framework to avoid failures.
+  * Fix invalid timespec value in peer PSM appearing randomly (leading to crash).
+  * Return DIAMETER_LOOP_DETECTED if local peer in the Route-Record list of a message.
+  * Allow running without TLS configuration.
+  * Upgraded SCTP code to comply with RFC 6458
+  * Using default secure Diameter port number 5658 as per RFC 6733
+  * Updated TLS code for performance improvements with new GNU TLS.
+  * Fix interlocking problem when large number of requests were failed over.
+  * New option in test_app.fdx extension for long messages payload.
+  * Performance improvement in message sending code path.
+
+ -- Sebastien Decugis <sdecugis@freediameter.net>  Sat, 14 Sep 2013 18:08:07 +0800
+
+freediameter (1.1.6) UNRELEASED; urgency=low
+
+  * Fix major issue in 1.1.5 preventing to send answers to a received message.
+  * New command-line option: --enable_msg_log=( DROPPED | RECEIVED | SENT | NODELIVER | TIMING )
+  * Improved parsing error handling and Failed-AVP generation.
+  * Added support for some timings measurements in freeDiameter (in the logs)
+  * Fix port handling when using non-default port.
+  * Some cleanups in several dictionary files.
+  * New option to fd_dict_search: AVP_BY_STRUCT
+  * Improved compatibility with C++ compilers.
+  * Cleanups in sessions creation/destruction to avoid memory corruption under stress.
+  * Add support for "include" directive in freeDiameter.conf file.
+
+ -- Sebastien Decugis <sdecugis@freediameter.net>  Sun, 03 Mar 2013 07:40:43 +0100
+
+freediameter (1.1.5) UNRELEASED; urgency=low
+
+  * Added compatibility with MAC OS X
+  * Fix behavior of timeout whe nsending messages to allow re-send.
+  * Several cleanups and new contributions included.
+  * Added dependency on C++ compiler for CMakeLists.txt
+
+ -- Sebastien Decugis <sdecugis@freediameter.net>  Sat, 03 Nov 2012 17:58:11 +0100
+
+freediameter (1.1.4) UNRELEASED; urgency=low
+
+  * Compatibility with GnuTLS 3.x versions / updated packaging files accordingly
+  * Fix crash on Sparc 64 (possibly other 64b machines)
+  * Updated dict_dcca in extensions and contrib (thanks Konstantin)
+  * Changed dumping of messages to avoid interleaved information
+
+ -- Sebastien Decugis <sdecugis@freediameter.net>  Fri, 24 Aug 2012 00:17:05 +0200
+
+freediameter (1.1.3) UNRELEASED; urgency=low
+
+  * Fixed a memory leak
+  * Clean-up of some extensions
+
+ -- Sebastien Decugis <sdecugis@freediameter.net>  Tue, 03 Jul 2012 08:15:49 +0200
+
+freediameter (1.1.2) UNRELEASED; urgency=low
+
+  * FIFO queues are now capped to avoid memory exhaustion.
+  * Cleanups in MIPv6 dictionaries.
+  * app_acct upgraded: enabled vendor-specific AVP logging, thread-safe version.
+  * New function: fd_dict_getlistof to list dictionary contents.
+  * New function: fd_dict_delete to remove an entry (dangerous function!)
+  * New function: fd_sess_getcount to get count of session objects.
+  * A few additional bug fixes, check hg log for details.
+
+ -- Sebastien Decugis <sdecugis@freediameter.net>  Tue, 21 Feb 2012 18:38:10 +0100
+
+freediameter (1.1.1) UNRELEASED; urgency=low
+
+  * Bug fix release
+  * Supports newer GNUTLS versions
+  * Allow empty OctetString AVPs (l=0)
+  * Allow two instances of freeDiameter on a single host.
+
+ -- Sebastien Decugis <sdecugis@nict.go.jp>  Fri, 30 Sep 2011 21:56:50 +0200
+
+freediameter (1.1.0) UNRELEASED; urgency=low
+
+  * Source package restructured. Most of the 
+    framework now contained in the libfdcore library.
+    libfreeDiameter renamed as libfdproto.
+    This closes #15.
+  * API version bumped to version 4.
+  * Improved fd_dict_new() when the same object already exists.
+  * Improvements to dict_legacy_xml extension.
+  * Cleanups in links to shared libraries
+  * (app_radgw.fdx) Better handling conversion of DEA with error status
+    to RADIUS (closes #25)
+  * Allow default signals such as SIGTSTP (ctrl-z) to be used with
+    freeDiameterd
+  * Improved DiameterIdentity handling (esp. interationalization issues), 
+    and improve efficiency of some string operations in peers, sessions, 
+    and dictionary modules (closes #7)
+  * Cleanup in the session module to free only unreferenced sessions (#16)
+  * Removed fd_cpu_flush_cache(), replaced by more robust alternatives.
+  * Improved peer state machine algorithm to counter SCTP multistream race 
+    condition.
+  * New extension rt_redirect.fdx that handles the Diameter Redirect errors.
+  * New extension app_redirect that allows sending Redirect indications to 
+    other peers. See doc/app_redirect.conf.sample for more information.
+  * Added incomplete dictionary extension for rfc4006 (DCCA), courtesy
+    of Konstantin Chekushin <koch@lmt.lv>
+
+ -- Sebastien Decugis <sdecugis@freediameter.net>  Tue, 29 Mar 2011 10:41:19 +0900
+
+freediameter (1.0.4) UNRELEASED; urgency=low
+
+  * Added new API to specify timeout on receiving answer (#10) 
+  * Bumped API version number accordingly.
+  * New test_netemul extension (simple network emulator proxy)
+  * Improved API compatibility to C++ compilers
+
+ -- Sebastien Decugis <sdecugis@nict.go.jp>  Tue, 11 Jan 2011 12:28:22 +0900
+
+freediameter (1.0.3) UNRELEASED; urgency=low
+
+  * Fixed a couple of issues for portability (#21, #22, #23)
+  * Fixed issue with ListenOn bit ordering (#20)
+  * Added dictionary support for MIPv6 application objects.
+  * Added dictionary support for legacy XML files.
+  * Added python interface dbg_interactive (experimental). 
+  * Added parameters to fd_disp_register() and fd_sess_handler_create(),
+    Bumped API version number accordingly.
+
+ -- Sebastien Decugis <sdecugis@nict.go.jp>  Tue, 14 Dec 2010 11:39:29 +0900
+
+freediameter (1.0.2) UNRELEASED; urgency=low
+
+  * Fix an issue in app_diameap.fdx with user names (#18)
+  * Allow DH parameters loaded from a file (#17) 
+  * Fixed a few compilation warnings on 64bits architectures.
+  * New ALL_EXTENSIONS build option.
+
+ -- Sebastien Decugis <sdecugis@nict.go.jp>  Wed, 27 Oct 2010 11:17:32 +0900
+
+freediameter (1.0.1) UNRELEASED; urgency=low
+
+  * app_acct.fdx: new set of PHP scripts available in source
+    contrib/app_acct_tools
+  * app_acct.fdx: new directive 'Server_name_field' in the
+    configuration.
+  * app_radgw.fdx: new directive 'nonai' in acct and auth plugins to
+    disable NAI processing.
+  * app_radgw.fdx: New support for RADIUS proxies.
+  * app_radgw.fdx: many bug fixes.
+  * daemon: Check the local certificate is valid during TLS
+    initialization.
+  * daemon: Fixed issue for IP addresses in the form x.x.x.235
+  * daemon: new option --dbg_gnutls to get GNUTLS debug messages.
+  * debian: some cleanups in the packaging (dependencies, meta-data)
+  * rt_ereg.fdx: New routing extension based on regular expression
+    matching in package freediameter-daemon.
+
+ -- Sebastien Decugis <sdecugis@nict.go.jp>  Wed, 15 Sep 2010 18:30:28 +0900
+
+freediameter (1.0.0-2) experimental; urgency=low
+
+  * Official release 1.0.0 
+
+ -- Sebastien Decugis <sdecugis@nict.go.jp>  Thu, 29 Jul 2010 17:27:13 +0900
+
+freediameter (1.0.0-1) experimental; urgency=low
+
+  * Initial Release.
+  
+ -- Sebastien Decugis <sdecugis@nict.go.jp>  Wed, 19 May 2010 15:36:54 +0900

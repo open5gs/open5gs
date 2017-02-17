@@ -1,0 +1,125 @@
+See INSTALL file for general instructions on building freeDiameter.
+
+------------------
+QUICK INSTRUCTIONS
+------------------
+
+On FreeBSD-8.0 at least the following ports packages were required (should be same on FreeBSD-7.x):
+ cmake flex bison gnutls
+
+Then the cmake command had to look like:
+ cmake -DFLEX_EXECUTABLE:FILEPATH=/usr/local/bin/flex -DSCTP_USE_MAPPED_ADDRESSES:BOOL=ON ...
+
+
+---------------------
+COMPLETE INSTRUCTIONS
+---------------------
+
+1) If you don't have freeBSD yet:
+   Install minimal system + ports using initial installer /usr/sbin/sysinstall
+
+
+2) Install 'cmake'
+
+ a) from sources:
+    # cd /usr/ports/devel/cmake
+    # make install
+    
+ b) or from package (don't forget to set your PACKAGEROOT appropriately. Ex: set PACKAGEROOT=ftp://ftp.jp.freebsd.org):
+    # pkg_add -v -r cmake
+	
+ 
+3) Install 'mercurial' (optional)
+  (replace 'cmake' by 'mercurial' in the previous command) 
+
+4) Install 'flex' and 'bison', same way.
+
+5) Install 'gnutls' and 'libidn', same way also.
+
+6) Retrieve freeDiameter source code:
+   # cd ~
+   # /usr/local/bin/hg clone http://www.freediameter.net/hg/freeDiameter/
+   
+6b) Make a build directory
+   # mkdir fD-build
+   # cd fD-build
+   
+7) Run cmake for freeDiameter (add other flags as you see fit, see INSTALL for more details)
+   # /usr/local/bin/cmake -DFLEX_EXECUTABLE:FILEPATH=/usr/local/bin/flex -DSCTP_USE_MAPPED_ADDRESSES:BOOL=ON ../freeDiameter
+
+8) Compile, optionnaly test
+   # make
+   # make test
+
+9) Install
+   # make install
+   
+10) Run (the install path can be changed during cmake step):
+   # /usr/local/bin/freeDiameterd --help
+
+
+------------------------------
+app_acct test ADDITIONAL STEPS
+------------------------------
+Here is additional steps in order to run the test for app_acct
+
+1) Install the required packages
+  # pkg_add -v -r postgresql84-client
+  # pkg_add -v -r postgresql84-server
+
+2) Prepare access to the database:
+  # echo postgresql_enable=YES >> /etc/rc.conf
+  # /usr/local/etc/rc.d/postgresql initdb
+  # su - pgsql
+  > /usr/local/bin/pg_ctl -D /usr/local/pgsql/data -l logfile start
+  > /usr/local/bin/createuser root
+  Shall the new user be allowed to create databases? (y/n) y
+  > logout
+  # /usr/local/bin/createdb root
+  # /usr/local/bin/psql root
+  root=# CREATE TABLE incoming_test (
+  root(# recorded_on timestamp with time zone NOT NULL,
+  root(# "Accounting-Record-Type" integer,
+  root(# "Session-Id" bytea,
+  root(# "Accounting-Record-Number" integer,
+  root(# "Route-Record1" bytea,
+  root(# "Route-Record2" bytea,
+  root(# "Route-Record3" bytea,
+  root(# "Route-Record4" bytea );
+  root=# \q
+
+3) configure the sources
+  # make edit_cache
+   BUILD_APP_ACCT:BOOL=ON
+   TEST_APP_ACCT:BOOL=ON
+   TEST_APP_ACCT_CONNINFO:STRING="user=root dbname=root"
+   
+4) run the test
+  # tests/testappacct -d
+  or
+  # make test
+  
+  
+----------------------------------
+Segmentation fault on program exit
+----------------------------------
+
+In case you encounter a segmentation fault on program termination like this:
+  [...]
+  freeDiameterd framework is terminated.
+  Segmentation fault: 11 (core dumped)
+
+with a backtrace like this:
+  #0  0x0000000801a414a0 in ?? ()
+  #1  0x0000000800f99274 in __cxa_finalize () from /lib/libc.so.7
+  #2  0x0000000800f460b7 in exit () from /lib/libc.so.7
+  
+You may try to add the following compilation directive in cmake:
+  -DSKIP_DLCLOSE:BOOL=ON
+
+Note: this segmentation fault was experienced with:
+ - FreeBSD 8.1
+ - 64 bits architecture only.
+ - Profiling mode only.
+
+

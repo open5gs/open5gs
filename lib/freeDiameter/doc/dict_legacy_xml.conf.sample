@@ -1,0 +1,15 @@
+# This file documents the configuration format for the dict_legacy_xml.fdx freeDiameter extension.
+# In order to load this extension, please refer to main freeDiameter.conf manual.
+
+# This extension allows the use of Diameter dictionary files in XML format,
+# as roughly specified in draft-frascone-xml-dictionary-00.
+# (the actual format is the one from OpenDiameter latest version)
+# Note that this format, although more widely used, is less efficient than the
+# internal freeDiameter format. It is recommended when possible to use the later.
+
+# You may refer to the contrib/dict_legacy/README file for information on where to find such resources.
+
+# This file simply consists in a list of XML dictionary files that must be parsed.
+# Example:
+#  "/etc/freeDiameter/dictionary.xml";
+

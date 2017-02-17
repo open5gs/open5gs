@@ -1,0 +1,86 @@
+This folder contains information and scripts to run a new test configuration for nightly builds 
+and reporting the results to freeDiameter dashboard at:
+  http://www.freediameter.net/CDash/index.php?project=freeDiameter
+
+The information gathered here mostly comes from the following pages:
+ http://www.itk.org/Wiki/CMake_Testing_With_CTest
+ http://www.itk.org/Wiki/CMake_Scripting_Of_CTest
+ http://www.itk.org/Wiki/CTest:Buildserver
+
+=============
+
+INSTRUCTIONS to setup a new build slave for the freeDiameter buildserver:
+-- note: the build slave should have cmake version 2.8 at least so that ctest will update the source tree properly.
+
+1) Install all dependencies for freeDiameter as follow: 
+  a) Debian / Ubuntu: See the "prereqs.ubuntu" file
+	$ sudo aptitude install `wget http://www.freediameter.net/hg/freeDiameter/raw-file/tip/contrib/nightly_tests/prereqs.ubuntu -O - | grep -v -e "^#"`
+	
+  b) FreeBSD: See the "prereqs.freebsd" file
+      - install base system and ports
+      - install freediameter dependencies as follow:
+      # pkg_add -r -v wget
+      # pkg_add -r -v `wget http://www.freediameter.net/hg/freeDiameter/raw-file/tip/contrib/nightly_tests/prereqs.freebsd -O - | grep -v -e "^#"`
+      
+  c) OpenSUSE:
+	$ sudo zypper install `wget http://www.freediameter.net/hg/freeDiameter/raw-file/tip/contrib/nightly_tests/prereqs.opensuse -O - | grep -v -e "^#"`
+  
+  d) Fedora:
+	$ sudo yum install wget
+	$ sudo yum install `wget http://www.freediameter.net/hg/freeDiameter/raw-file/tip/contrib/nightly_tests/prereqs.fedora -O - | grep -v -e "^#"`
+	
+     You may also have issues with SELinux later, an easy workaround is to disable it (until better solution)
+        # setenforce Permissive
+        
+
+2) Create the "test" database for app_acct test (we assume the tests are run as user "test" here)
+      - check INSTALL.FreeBSD file for specific PostgreSQL pre-install instructions.
+      - These are the instructions for Debian/Ubuntu/OpenSUSE,  adjust as needed:
+	# su - postgres
+	# createuser --interactive test
+	 Shall the new role be a superuser? (y/n) n
+	 Shall the new role be allowed to create databases? (y/n) y
+	 Shall the new role be allowed to create more new roles? (y/n) n
+	# logout
+	$ whoami
+	 test
+	$ createdb test
+	$ psql test
+	 psql (8.4.4)
+	 Type "help" for help.
+
+	 test=> 
+	 CREATE TABLE incoming_test (
+	 recorded_on timestamp with time zone NOT NULL,
+	 "Accounting-Record-Type" integer,
+	 "Session-Id" bytea,
+	 "Accounting-Record-Number" integer,
+	 "Route-Record1" bytea,
+	 "Route-Record2" bytea,
+	 "Route-Record3" bytea,
+	 "Route-Record4" bytea );
+	 \q
+	 
+
+3) Create a directory ~/fDtests
+	$ cd
+	$ mkdir fDtests
+	$ cd fDtests
+
+4) Retrieve the runtests.sh script and save in this directory
+	$ wget http://www.freediameter.net/hg/freeDiameter/raw-file/tip/contrib/nightly_tests/runtests.sh
+	$ chmod +x runtests.sh
+
+5) Create a file local.cmake defining the name of the build slave in this directory also.
+	$ echo "SET(CTEST_SITE \""`hostname`"\")" > local.cmake
+	
+   For FreeBSD, in addition do:
+   	$ echo "set(CTEST_BUILD_OPTIONS \"\${CTEST_BUILD_OPTIONS} -DFLEX_EXECUTABLE:FILEPATH=/usr/local/bin/flex\")" >> local.cmake
+	
+6) Run the runtests.sh script once to check it works properly (freeBSD might require: ln -s /usr/local/bin/bash /bin/bash)
+
+7) Set up a crontab to run the script
+	$ wget http://www.freediameter.net/hg/freeDiameter/raw-file/tip/contrib/nightly_tests/cronjob.sh
+	$ chmod +x cronjob.sh
+	$ crontab -l
+0 0 * * * /home/test/fDtests/cronjob.sh > /home/test/fDtests/cronjob.log 2>&1

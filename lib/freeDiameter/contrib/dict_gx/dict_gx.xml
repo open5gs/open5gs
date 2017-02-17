@@ -1,0 +1,709 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dictionary SYSTEM "dictionary.dtd">
+
+<!--******************* Diccionario Gx === German Barros ******************************************************************* -->
+
+<dictionary>
+
+
+
+	<!-- ******************************************************** -->
+	<!-- ********************* Vendors ************************** -->
+	<!-- ******************************************************** -->
+
+	<vendor id="10415" name="3GPP" />
+
+	<!-- ******************************************************** -->
+	<!-- ***************** Gx Application ********************* -->
+	<!-- ******************************************************** -->
+
+	<application id="16777238" name="Gx">
+
+
+		<!-- ====================================================================== -->
+		<!-- ========================== COMMAND CODES =========================== -->
+		<!-- ====================================================================== -->
+
+		<!-- *** Command-Codes *** -->
+
+		<!-- [3GPP TS 29.212 V7.7.0] , clause 5.6.2 and 5.6.3 -->
+		<command name="CC" code="272" vendor-id="10415">
+
+		</command>
+
+		<!-- [3GPP TS 29.212 V7.7.0] , clause 5.6.4 and 5.6.5 -->
+		<command name="RA" code="258" vendor-id="10415" />
+
+
+		<!-- ====================================================================== -->
+		<!-- ========================= Gx Specific AVPs ======================== -->
+		<!-- ====================================================================== -->
+
+
+		<!-- Ref = [3GPP - 29.214] 5.3.2 -->
+		<avp name="Access-Network-Charging-Address" code="501" mandatory="must"
+			may-encrypt="yes" vendor-id="10415">
+			<type type-name="Address" />
+		</avp>
+
+
+		<!-- [3GPP TS 29.212 V7.7.0] , clause 5.3.1 -->
+		<avp name="Bearer-Usage" vendor-id="10415" code="1000" mandatory="must"
+			may-encrypt="yes">
+			<type type-name="Enumerated" />
+			<enum name="GENERAL" code="0" />
+			<enum name="IMS_SIGNALLING" code="1" />
+		</avp>
+
+			<!-- [3GPP TS 29.212 V7.7.0] , clause 5.3.23 -->
+		<avp name="Bearer-Control-Mode" vendor-id="10415" code="1023"
+			mandatory="must" may-encrypt="yes">
+
+			<type type-name="Enumerated" />
+			<enum name="UE_ONLY" code="0" />
+			<enum name="RESERVED" code="1" />
+			<enum name="UE_NW" code="2" />
+
+		</avp>
+		
+			<!-- [3GPP TS 29.212 V7.7.0] , clause 5.3.8 -->
+		<avp name="Metering-Method" vendor-id="10415" code="1007"
+			mandatory="must" may-encrypt="yes" protected="may" type="Enumerated">
+			<type type-name="Enumerated" />
+			<enum name="DURATION" code="0" />
+			<enum name="VOLUME" code="1" />
+			<enum name="DURATION_VOLUME" code="2" />
+		</avp>
+		<!-- [3GPP TS 29.229 V7.7.0] , clause 6.3.20 -->
+		<avp name="Primary-Event-Charging-Function-Name" vendor-id="10415"
+			code="619" mandatory="must" may-encrypt="yes">
+			<type type-name="DiameterURI" />
+		</avp>
+
+		<!-- [3GPP TS 29.229 V7.7.0] , clause 6.3.21 -->
+		<avp name="Secondary-Event-Charging-Function-Name" vendor-id="10415"
+			code="620" mandatory="must" may-encrypt="yes">
+			<type type-name="DiameterURI" />
+		</avp>
+
+		<!-- [3GPP TS 29.229 V7.7.0] , clause 6.3.22 -->
+		<avp name="Primary-Charging-Collection-Function-Name" vendor-id="10415"
+			code="621" mandatory="must" may-encrypt="yes">
+			<type type-name="DiameterURI" />
+		</avp>
+
+		<!-- [3GPP TS 29.229 V7.7.0] , clause 6.3.23 -->
+		<avp name="Secondary-Charging-Collection-Function-Name" vendor-id="10415"
+			code="622" mandatory="must" may-encrypt="yes">
+			<type type-name="DiameterURI" />
+		</avp>
+
+		<!-- [3GPP TS 29.214 v7.3.0] , clause 5.3.4 -->
+		<avp name="Access-Network-Charging-Identifier-Value" vendor-id="10415"
+			code="503" mandatory="must" may-encrypt="yes">
+			<type type-name="OctetString" />
+		</avp>
+
+
+		<!-- [3GPP TS 29.061 V7.9.0] , clause 16.4.7 -->
+		<avp name="3GPP-RAT-Type" vendor-id="10415" code="21" mandatory="mustnot"
+			may-encrypt="yes">
+			<type type-name="OctetString" />
+		</avp>
+
+
+			<!-- Ref = RFC 4006 chap 8.48 -->
+		<avp name="Subscription-Id-Data" code="444" mandatory="must"
+			may-encrypt="yes">
+			<type type-name="UTF8String" />
+		</avp>
+		<!-- Ref = RFC 4006 chap 8.47 -->
+		<avp name="Subscription-Id-Type" code="450" mandatory="must"
+			protected="may" may-encrypt="yes">
+			<type type-name="Enumerated" />
+			<enum name="END_USER_E164" code="0" />
+			<enum name="END_USER_IMSI" code="1" />
+			<enum name="END_USER_SIP_URI" code="2" />
+			<enum name="END_USER_NAI" code="3" />
+			<enum name="END_USER_PRIVATE" code="4" />
+		</avp>
+
+		<!-- [RFC 4006] , clause 8.2 -->
+		<avp name="CC-Request-Number" code="415" mandatory="must"
+			may-encrypt="yes">
+			<type type-name="Unsigned32" />
+		</avp>
+
+		<!-- [RFC 4006] , clause 8.3 -->
+		<avp name="CC-Request-Type" code="416" mandatory="must"
+			may-encrypt="yes">
+			<type type-name="Enumerated" />
+			<enum name="INITIAL_REQUEST" code="1" />
+			<enum name="UPDATE_REQUEST" code="2" />
+			<enum name="TERMINATION_REQUEST" code="3" />
+			<enum name="EVENT_REQUEST" code="4" />
+		</avp>
+
+		<!-- [RFC 4006] , clause 8.38 -->
+		<avp name="Redirect-Address-Type" code="433" mandatory="must"
+			may-encrypt="yes">
+			<type type-name="Enumerated" />
+			<enum name="IPV4_ADDRESS" code="0" />
+			<enum name="IPV6_ADDRESS" code="1" />
+			<enum name="URL" code="2" />
+			<enum name="SIP_URI" code="3" />
+		</avp>
+<!-- [RFC 4006] , clause 8.39 -->
+		<avp name="Redirect-Server-Address" code="435" mandatory="must"
+			may-encrypt="yes">
+			<type type-name="UTF8String" />
+		</avp>
+		
+			<!-- [3GPP TS 29.212 V7.7.0] , clause 5.3.19 -->
+		<avp name="PCC-Rule-Status" vendor-id="10415" code="1019"
+			mandatory="must" may-encrypt="yes">
+			<type type-name="Enumerated" />
+			<enum name="ACTIVE" code="0" />
+			<enum name="INACTIVE" code="1" />
+			<enum name="TEMPORARILY INACTIVE" code="2" />
+		</avp>
+
+		<!-- [RFC 4005] , clause 6.11.1 -->
+		<avp name="Framed-IP-Address" code="8" mandatory="must"
+			may-encrypt="yes">
+			<type type-name="OctetString" />
+		</avp>
+
+		<!-- [RFC 4005] , clause 6.11.6 -->
+		<avp name="Framed-IPv6-Prefix" code="97" mandatory="must"
+			may-encrypt="yes">
+			<type type-name="OctetString" />
+		</avp>
+
+		<!-- [RFC 4005] , clause 4.5 -->
+		<avp name="Called-Station-Id" code="30" mandatory="must"
+			may-encrypt="yes">
+			<type type-name="UTF8String" />
+		</avp>
+
+		<!-- [RFC 4005] , clause 6.7 -->
+		<avp name="Filter-Id" code="11" mandatory="must" may-encrypt="yes">
+			<type type-name="UTF8String" />
+		</avp>
+
+		<!-- [3GPP TS 29.212 V7.7.0] , clause 5.3.21 -->
+		<avp name="Bearer-Operation" vendor-id="10415" code="1021"
+			mandatory="must" may-encrypt="yes">
+			<type type-name="Enumerated" />
+			<enum name="TERMINATION" code="0" />
+			<enum name="ESTABLISHMENT" code="1" />
+			<enum name="MODIFICATION" code="2" />
+		</avp>
+		
+		<!-- [3GPP TS 29.212 V7.7.0] , clause 5.3.24 -->
+		<avp name="Network-Request-Support" vendor-id="10415" code="1024"
+			mandatory="must" may-encrypt="yes">
+			<type type-name="Enumerated"/>
+      
+				<enum name="NETWORK_REQUEST_NOT_SUPPORTED" code="0" />
+				<enum name="NETWORK_REQUEST_SUPPORTED" code="1" />
+		</avp>
+
+				<!-- [3GPP TS 29.212 V7.7.0] , clause 5.3.5 -->
+		<avp name="Charging-Rule-Base-Name" vendor-id="10415" code="1004"
+			mandatory="must" may-encrypt="yes">
+			<type type-name="UTF8String" />
+		</avp>
+		<!-- [3GPP TS 29.212 V7.7.0] , clause 5.3.15 -->
+		<avp name="ToS-Traffic-Class" vendor-id="10415" code="1014"
+			mandatory="must" may-encrypt="yes">
+			<type type-name="OctetString" />
+		</avp>
+
+		<!-- [3GPP TS 29.212 V7.7.0] , clause 5.3.27 -->
+		<avp name="IP-CAN-Type" vendor-id="10415" code="1027" mandatory="must"
+			may-encrypt="yes">
+			<type type-name="Enumerated" />
+			<enum name="3GPP" code="0" />
+			<enum name="DOCSIS" code="1" />
+			<enum name="xDSL" code="2" />
+			<enum name="WiMAX" code="3" />
+			<enum name="3GPP2" code="4" />
+		</avp>
+
+		<!-- [3GPP TS 29.212 V7.7.0] , clause 5.3.28 -->
+		<avp name="QoS-Negotiation" vendor-id="10415" code="1029"
+			mandatory="must" may-encrypt="yes">
+			<type type-name="Enumerated" />
+			<enum name="NO_QOS_NEGOTIATION" code="0" />
+			<enum name="QOS_NEGOTIATION_SUPPORTED" code="1" />
+		</avp>
+
+		<!-- [3GPP TS 29.212 V7.7.0] , clause 5.3.29 -->
+		<avp name="QoS-Upgrade" vendor-id="10415" code="1030" mandatory="must"
+			may-encrypt="yes">
+			<type type-name="Enumerated" />
+			<enum name="QOS_UPGRADE_NOT_SUPPORTED" code="0" />
+			<enum name="QOS_UPGRADE_SUPPORTED" code="1" />
+		</avp>
+
+		<!-- [3GPP TS 29.212 V7.7.0] , clause 5.3.30 -->
+		<avp name="Rule-Failure-Code" vendor-id="10415" code="1031"
+			mandatory="must" may-encrypt="yes">
+			<type type-name="Enumerated" />
+			<enum name="UNKNOWN_RULE_NAME" code="1" />
+			<enum name="RATING_GROUP_ERROR" code="2" />
+			<enum name="SERVICE_IDENTIFIER_ERROR" code="3" />
+			<enum name="GW/PCEF_MALFUNCTION" code="4" />
+			<enum name="RESOURCES_LIMITATION" code="5" />
+			<enum name="MAX_NR_BEARERS_REACHED" code="6" />
+			<enum name="UNKNOWN_BEARER_ID" code="7" />
+			<enum name="MISSING_BEARER_ID" code="8" />
+			<enum name="MISSING_FLOW_DESCRIPTION" code="9" />
+		</avp>
+
+		<!-- [3GPP TS 29.212 V7.7.0] , clause 5.3.34 -->
+		<avp name="Session-Release-Cause" vendor-id="10415" code="1035"
+			mandatory="must" may-encrypt="yes">
+			<type type-name="Enumerated" />
+			<enum name="UNSPECIFIED_REASONS" code="0" />
+			<enum name="UE_SUBSCRIPTION_REASON" code="1" />
+			<enum name="INSUFFICIENT_SERVER_RESOURCES" code="2" />
+		</avp>
+
+
+
+		<!-- [3GPP TS 29.061 V7.9.0] , clause 16.4.7. -->
+		<avp name="3GPP-SGSN-MCC-MNC" vendor-id="10415" code="18"
+			mandatory="mustnot" may-encrypt="yes">
+			<type type-name="UTF8String" />
+		</avp>
+
+		<!-- [3GPP TS 29.061 V7.9.0] , clause 16.4.7 -->
+		<avp name="3GPP-User-Location-Info" vendor-id="10415" code="22"
+			mandatory="mustnot" may-encrypt="yes">
+			<type type-name="OctetString" />
+		</avp>
+
+
+		<!-- [3GPP TS 29.212 V7.7.0] , clause 5.3.31 -->
+		<avp name="Revalidation-Time" vendor-id="10415" code="1032"
+			mandatory="must" may-encrypt="yes">
+			<type type-name="Time" />
+		</avp>
+
+		<!-- [3GPP TS 29.212 V7.7.0] , clause 5.3.32 -->
+		<avp name="Rule-Activation-Time" code="1033" mandatory="must"
+			may-encrypt="yes">
+			<type type-name="Time" />
+		</avp>
+
+
+		<!-- [3GPP TS 29.212 V7.7.0] , clause 5.3.33 -->
+		<avp name="Rule-Deactivation-Time" vendor-id="10415" code="1034"
+			mandatory="must" may-encrypt="yes">
+			<type type-name="Time" />
+		</avp>
+
+		<!-- [3GPP TS 29.061 V7.7.0] , clause 16.4.7.1 -->
+		<avp name="3GPP-SGSN-Address" vendor-id="10415" code="6" mandatory="mustnot"
+			may-encrypt="yes">
+			<type type-name="OctetString" />
+		</avp>
+
+		<!-- [3GPP TS 29.061 V7.7.0] , clause 16.4.7.1 -->
+		<avp name="3GPP-SGSN-IPv6-Address" vendor-id="10415" code="15"
+			mandatory="mustnot" may-encrypt="yes">
+			<type type-name="OctetString" />
+		</avp>
+
+		<!-- [3GPP TS 29.061 V7.7.0] , clause 17.7.12 -->
+		<avp name="RAI" vendor-id="10415" code="909" mandatory="must"
+			may-encrypt="yes">
+			<type type-name="UTF8String" />
+		</avp>
+
+		<!-- [3GPP TS 29.061 V7.7.0] , clause 16.4.7 -->
+		<avp name="3GPP-MS-TimeZone" vendor-id="10415" code="23" mandatory="mustnot"
+			may-encrypt="yes">
+			<type type-name="OctetString" />
+		</avp>
+		
+		<!-- [3GPP TS 29.212 V7.7.0] , clause 5.3.20 -->
+		<avp name="Bearer-Identifier" vendor-id="10415" code="1020"
+			mandatory="must" may-encrypt="yes">
+			<type type-name="OctetString" />
+		</avp>
+
+		<!-- [3GPP TS 29.212 V7.7.0] , clause 5.3.6 -->
+		<avp name="Charging-Rule-Name" vendor-id="10415" code="1005"
+			mandatory="must" may-encrypt="yes">
+			<type type-name="OctetString" />
+		</avp>
+
+
+		<!-- [RFC 4006] , clause 8.28 -->
+		<avp name="Service-Identifier" code="439" mandatory="must"
+			may-encrypt="yes">
+			<type type-name="Unsigned32" />
+		</avp>
+		
+		<!-- [RFC 4006] , clause 8.29 -->
+		<avp name="Rating-Group" code="432" mandatory="must" may-encrypt="yes">
+			<type type-name="Unsigned32" />
+		</avp>
+		<!-- [3GPP TS 29.214 V7.3.0] , clause 5.3.11 -->
+		<avp name="Flow-Status" vendor-id="10415" code="511" mandatory="must"
+			may-encrypt="yes">
+			<type type-name="Enumerated" />
+			<enum name="ENABLED-UPLINK" code="0" />
+			<enum name="ENABLED-DOWNLINK" code="1" />
+			<enum name="ENABLED" code="2" />
+			<enum name="DISABLED" code="3" />
+			<enum name="REMOVED" code="4" />
+		</avp>
+				<!-- [3GPP TS 29.212 V7.7.0] , clause 5.3.17 -->
+		<avp name="QoS-Class-Identifier" vendor-id="10415" code="1028"
+			mandatory="must" may-encrypt="yes">
+			<type type-name="Enumerated" />
+			<enum name="FINAL_SERVICE_INFORMATION" code="0" />
+			<enum name="PRELIMINARY_SERVICE_INFORMATION" code="1" />
+		</avp>
+			<!-- Ref = [3GPP - 29.214] 5.3.15 -->
+		<avp name="Max-Requested-Bandwidth-UL" code="516" vendor-id="10415"
+			mandatory="must" may-encrypt="yes">
+			<type type-name="Unsigned32" />
+		</avp>
+		<!-- [3GPP TS 29.212 V7.7.0] , clause 5.3.25 -->
+		<avp name="Guaranteed-Bitrate-DL" vendor-id="10415" code="1025"
+			mandatory="must" may-encrypt="yes">
+			<type type-name="Unsigned32" />
+		</avp>
+
+		<!-- [3GPP TS 29.212 V7.7.0] , clause 5.3.26 -->
+		<avp name="Guaranteed-Bitrate-UL" vendor-id="10415" code="1026"
+			mandatory="must" may-encrypt="yes">
+			<type type-name="Unsigned32" />
+		</avp>
+		<!-- [3GPP TS 29.212 V7.7.0] , clause 5.3.20 -->
+		<avp name="Bearer-Identifier" vendor-id="10415" code="1020"
+			mandatory="must" may-encrypt="yes">
+			<type type-name="OctetString" />
+		</avp>
+		<avp name="Max-Requested-Bandwidth-UL" code="516" mandatory="must" vendor-id="10415" may-encrypt="yes">
+			<type type-name="Unsigned32"/>
+		</avp>
+		   <avp name="Max-Requested-Bandwidth-DL" code="515" mandatory="must" vendor-id="10415" may-encrypt="yes">
+			<type type-name="Unsigned32"/>
+		</avp>
+		<!-- [3GPP TS 29.212 V7.7.0] , clause 5.3.16 -->
+		<avp name="QoS-Information" vendor-id="10415" code="1016"
+			mandatory="must" may-encrypt="yes">
+			<grouped>
+				<required>
+					<avprule name="QoS-Class-Identifier" minimum="1" maximum="1" />
+					<avprule name="Max-Requested-Bandwidth-UL" minimum="1"
+						maximum="1" />
+					<avprule name="Max-Requested-Bandwidth-DL" minimum="1"
+						maximum="1" />
+					<avprule name="Guaranteed-Bitrate-UL" minimum="1" maximum="1" />
+					<avprule name="Guaranteed-Bitrate-DL" minimum="1" maximum="1" />
+					<avprule name="Bearer-Identifier" minimum="1" maximum="1" />
+				</required>
+			</grouped>
+		</avp>
+		<!-- [3GPP TS 29.214 V7.3.0] , clause 5.3.8 -->
+		<avp name="Flow-Description" vendor-id="10415" code="507"
+			mandatory="must" may-encrypt="yes">
+			<type type-name="IPFilterRule" />
+		</avp>
+		<!-- [3GPP TS 29.212 V7.7.0] , clause 5.3.12 -->
+		<avp name="Reporting-Level" vendor-id="10415" code="1011"
+			mandatory="must" may-encrypt="yes">
+			<type type-name="Enumerated" />
+			<enum name="SERVICE_IDENTIFIER_LEVEL" code="0" />
+			<enum name="RATING_GROUP_LEVEL" code="1" />
+		</avp>
+		<!-- [3GPP TS 29.212 V7.7.0] , clause 5.3.9 -->
+		<avp name="Offline" vendor-id="10415" code="1008" mandatory="must"
+			may-encrypt="yes">
+			<type type-name="Enumerated" />
+			<enum name="DISABLE_OFFLINE" code="0" />
+			<enum name="ENABLE_OFFLINE" code="1" />
+		</avp>
+
+		<!-- [3GPP TS 29.212 V7.7.0] , clause 5.3.10 -->
+		<avp name="Online" vendor-id="10415" code="1009" mandatory="must"
+			may-encrypt="yes">
+			<type type-name="Enumerated" />
+			<enum name="DISABLE_ONLINE" code="0" />
+			<enum name="ENABLE_ONLINE" code="1" />
+		</avp>
+
+		<!-- [3GPP TS 29.212 V7.7.0] , clause 5.3.11 -->
+		<avp name="Precedence" vendor-id="10415" code="1010" mandatory="must"
+			may-encrypt="yes">
+			<type type-name="Unsigned32" />
+		</avp>
+		
+		<!-- [3GPP TS 29.214 V7.3.0] , clause 5.3.6 -->
+		<avp name="AF-Charging-Identifier" vendor-id="10415" code="505"
+			mandatory="must" may-encrypt="yes">
+			<type type-name="OctetString" />
+		</avp>
+
+		<!-- Ref = [3GPP - 29.214] 5.3.14 -->
+		<avp name="Max-Requested-Bandwidth-DL" code="515" vendor-id="10415"
+			mandatory="must" may-encrypt="yes">
+			<type type-name="Unsigned32" />
+		</avp>
+		<!-- [3GPP TS 29.214 V7.3.0] , clause 5.3.17 -->
+		<avp name="Media-Component-Number" vendor-id="10415" code="518"
+			mandatory="must" may-encrypt="yes">
+			<type type-name="Unsigned32" />
+		</avp>
+
+		<!-- [3GPP TS 29.214 V7.3.0] , clause 5.3.9 -->
+		<avp name="Flow-Number" vendor-id="10415" code="509" mandatory="must"
+			may-encrypt="yes">
+			<type type-name="Unsigned32" />
+		</avp>
+<!-- [3GPP TS 29.214 V7.3.0] , clause 5.3.10 -->
+		<avp name="Flows" vendor-id="10415" code="510" mandatory="must"
+			may-encrypt="yes">
+			<grouped>
+				<required>
+					<avprule name="Media-Component-Number" minimum="1" maximum="1" />
+				</required>
+				<optional>
+					<avprule name="Flow-Number" maximum="1" />
+				</optional>
+			</grouped>
+		</avp>
+		<!-- [3GPP TS 29.212 V7.7.0] , clause 5.3.4 -->
+		<avp name="Charging-Rule-Definition" vendor-id="10415" code="1003"
+			mandatory="must" may-encrypt="yes">
+			<grouped>
+				<required>
+					<avprule name="Charging-Rule-Name" minimum="1" maximum="1" />
+					<avprule name="Service-Identifier" maximum="1" />
+					<avprule name="Rating-Group" maximum="1" />
+				</required>
+				<optional>
+					<avprule name="Flow-Description" maximum="1" />
+				</optional>
+				<required>
+					<avprule name="Flow-Status" maximum="1" />
+					<avprule name="QoS-Information" maximum="1" />
+					<avprule name="Reporting-Level" maximum="1" />
+					<avprule name="Online" maximum="1" />
+					<avprule name="Offline" maximum="1" />
+					<avprule name="Metering-Method" maximum="1" />
+					<avprule name="Precedence" maximum="1" />
+					<avprule name="AF-Charging-Identifier" maximum="1" />
+				</required>
+				<optional>
+					<avprule name="Flows" maximum="1" />
+				</optional>
+			</grouped>
+		</avp>
+		
+		<!-- [3GPP TS 29.212 V7.7.0] , clause 5.3.2 -->
+		<avp name="Charging-Rule-Install" vendor-id="10415" code="1001"
+			mandatory="must" may-encrypt="yes">
+			<grouped>
+				<optional>
+					<avprule name="Charging-Rule-Definition" maximum="1" />
+					<avprule name="Charging-Rule-Name" maximum="1" />
+					<avprule name="Charging-Rule-Base-Name" maximum="1" />
+				</optional>
+				<required>
+					<avprule name="Bearer-Identifier" minumin="1" maximum="1" />
+				</required>
+				<optional>
+					<avprule name="Rule-Activation-Time" maximum="1" />
+					<avprule name="Rule-Deactivation-Time" maximum="1" />
+				</optional>
+			</grouped>
+		</avp>
+
+		<!-- [3GPP TS 29.212 V7.7.0] , clause 5.3.3 -->
+		<avp name="Charging-Rule-Remove" vendor-id="10415" code="1002"
+			mandatory="must" may-encrypt="yes">
+			<grouped>
+				<optional>
+					<avprule name="Charging-Rule-Name" maximum="1" />
+					<avprule name="Charging-Rule-Base-Name" maximum="1" />
+				</optional>
+			</grouped>
+		</avp>
+
+		
+
+
+
+		
+
+		<!-- [3GPP TS 29.212 V7.7.0] , clause 5.3.7 -->
+		<avp name="Event-Trigger" vendor-id="10415" code="1006" mandatory="must"
+			may-encrypt="yes">
+			<type type-name="Enumerated" />
+			<enum name="SGSN_CHANGE" code="0" />
+			<enum name="QOS_CHANGE" code="1" />
+			<enum name="RAT_CHANGE" code="2" />
+			<enum name="TFT_CHANGE" code="3" />
+			<enum name="PLMN_CHANGE" code="4" />
+			<enum name="LOSS_OF_BEARER" code="5" />
+			<enum name="RECOVERY_OF_BEARER" code="6" />
+			<enum name="IP-CAN_CHANGE" code="7" />
+			<enum name="PCEF_MALFUNCTION" code="8" />
+			<enum name="RESOURCES_LIMITATION" code="9" />
+			<enum name="MAX_NR_BEARERS_REACHED" code="10" />
+			<enum name="QOS_CHANGE_EXCEEDING_AUTHORIZATION" code="11" />
+			<enum name="RAI_CHANGE" code="12" />
+			<enum name="USER_LOCATION_CHANGE" code="13" />
+			<enum name="NO_EVENT_TRIGGERS" code="14" />
+			<enum name="OUT_OF_CREDIT" code="15" />
+			<enum name="REALLOCATION_OF_CREDIT" code="16" />
+			<enum name="REVALIDATION_TIMEOUT" code="17" />
+		</avp>
+
+	
+
+		
+
+		
+
+		<!-- [3GPP TS 29.212 V7.7.0] , clause 5.3.13 -->
+		<avp name="TFT-Filter" vendor-id="10415" code="1012" mandatory="must"
+			may-encrypt="yes">
+			<type type-name="IPFilterRule" />
+		</avp>
+
+
+		<!-- [3GPP TS 29.212 V7.7.0] , clause 5.3.14 -->
+		<avp name="TFT-Packet-Filter-Information" vendor-id="10415" code="1013"
+			mandatory="must" may-encrypt="yes">
+			<grouped>
+				<required>
+					<avprule name="Precedence" minimum="1" maximum="1" />
+					<avprule name="TFT-Filter" minimum="1" maximum="1" />
+					<avprule name="ToS-Traffic-Class" minimum="1" maximum="1" />
+				</required>
+			</grouped>
+		</avp>
+		
+<!-- [RFC 4006] , clause 8.35 -->
+		<avp name="Final-Unit-Action" code="449" mandatory="must"
+			may-encrypt="yes">
+			<type type-name="Enumerated" />
+			<enum name="TERMINATE" code="0" />
+			<enum name="REDIRECT" code="1" />
+			<enum name="RESTRICT_ACCESS" code="2" />
+		</avp>
+		
+		<!-- [RFC 4006] , clause 8.36 -->
+		<avp name="Restriction-Filter-Rule" code="438" mandatory="must"
+			may-encrypt="yes">
+			<type type-name="IPFilterRule" />
+		</avp>
+		<!-- [RFC 4006] , clause 8.37 -->
+		<avp name="Redirect-Server" code="434" mandatory="must"
+			may-encrypt="yes">
+			<grouped>
+				<required>
+					<avprule name="Redirect-Address-Type" minimum="1" maximum="1" />
+					<avprule name="Redirect-Server-Address" minimum="1"
+						maximum="1" />
+				</required>
+			</grouped>
+		</avp>
+		<!-- [RFC 4006] , clause 8.34 -->
+		<avp name="Final-Unit-Indication" code="430" mandatory="must"
+			may-encrypt="yes">
+			<grouped>
+				<required>
+					<avprule name="Final-Unit-Action" minimum="1" maximum="1" />
+					<avprule name="Restriction-Filter-Rule" minimum="1"
+						maximum="1" />
+					<avprule name="Filter-Id" minimum="1" maximum="1" />
+					<avprule name="Redirect-Server" minimum="1" maximum="1" />
+				</required>
+			</grouped>
+		</avp>
+		
+		<!-- [3GPP TS 29.212 V7.7.0] , clause 5.3.18 -->
+		<avp name="Charging-Rule-Report" vendor-id="10415" code="1018"
+			mandatory="must" may-encrypt="yes">
+			<grouped>
+				<optional>
+					<avprule name="Charging-Rule-Name" maximum="1" />
+					<avprule name="Charging-Rule-Base-Name" maximum="1" />
+				</optional>
+				<required>
+					<avprule name="PCC-Rule-Status" minimum="1" maximum="1" />
+				</required>
+				<optional>
+					<avprule name="Rule-Failure-Code" maximum="1" />
+					<avprule name="Final-Unit-Indication" maximum="1" />
+				</optional>
+			</grouped>
+		</avp>
+
+	
+
+		<!-- [3GPP TS 29.212 V7.7.0] , clause 5.3.22 -->
+		<avp name="Access-Network-Charging-Identifier-Gx" vendor-id="10415"
+			code="1022" mandatory="must" may-encrypt="yes">
+			<grouped>
+				<required>
+					<avprule name="Access-Network-Charging-Identifier-Value"
+						minimum="1" maximum="1" />
+				</required>
+				<optional>
+					<avprule name="Charging-Rule-Base-Name" maximum="1" />
+					<avprule name="Charging-Rule-Name" maximum="1" />
+				</optional>
+			</grouped>
+		</avp>
+
+	
+
+		<!-- [3GPP TS 29.229 V7.7.0] , clause 6.3.19 -->
+		<avp name="Charging-Information" vendor-id="10415" code="618"
+			mandatory="must" may-encrypt="yes">
+			<grouped>
+				<required>
+					<avprule name="Primary-Event-Charging-Function-Name"
+						minimum="1" maximum="1" />
+					<avprule name="Secondary-Event-Charging-Function-Name"
+						minimum="1" maximum="1" />
+					<avprule name="Primary-Charging-Collection-Function-Name"
+						minimum="1" maximum="1" />
+					<avprule name="Secondary-Charging-Collection-Function-Name"
+						minimum="1" maximum="1" />
+				</required>
+			</grouped>
+		</avp>
+
+		
+		
+
+
+		<!-- Ref = RFC 4006 chap 8.46 -->
+		<avp name="Subscription-Id" code="443" mandatory="must"
+			may-encrypt="yes">
+			<grouped>
+				<required>
+					<avprule name="Subscription-Id-Type" />
+					<avprule name="Subscription-Id-Data" />
+				</required>
+			</grouped>
+		</avp>
+	
+		
+
+
+	</application>
+</dictionary>
+

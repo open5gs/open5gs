@@ -1,0 +1,19 @@
+| Attribute Name                        | Code | Section defined | Value Type  | MUST | MAY | SHLD NOT | MUST NOT | Encr |
+| # Cisco ASR 5000 Series AAA Interface |      |                 |             |      |     |          |          |      |
+| # Administration and Reference        |      |                 |             |      |     |          |          |      |
+| # Release 8.x and 9.0                 |      |                 |             |      |     |          |          |      |
+| # Last Updated June 30, 2010          |      |                 |             |      |     |          |          |      |
+| SN-Volume-Quota-Threshold             |  501 |                 | Unsigned32  | M,V  |     |          |          |      |
+| SN-Unit-Quota-Threshold               |  502 |                 | Unsigned32  | M,V  |     |          |          |      |
+| SN-Time-Quota-Threshold               |  503 |                 | Unsigned32  | M,V  |     |          |          |      |
+| SN-Total-Used-Service-Unit            |  504 |                 | Grouped     | V    |     |          |          |      |
+| SN-Absolute-Validity-Time             |  505 |                 | Time        | V    |     |          |          |      |
+| SN-Bandwidth-Control                  |  512 |                 | Enumerated  | M,V  |     |          |          |      |
+| SN-Transparent-Data                   |  513 |                 | OctetString | V    |     |          |          |      |
+| SN-Traffic-Policy                     |  514 |                 | UTF8String  | V    |     |          |          |      |
+| SN-Firewall-Policy                    |  515 |                 | UTF8String  | V    |     |          |          |      |
+| SN-Usage-Monitoring-Control           |  517 |                 | Grouped     | V    |     |          |          |      |
+| SN-Monitoring-Key                     |  518 |                 | Unsigned32  | V    |     |          |          |      |
+| SN-Usage-Volume                       |  519 |                 | Unsigned64  | V    |     |          |          |      |
+| SN-Service-Flow-Detection             |  520 |                 | Enumerated  | V    |     |          |          |      |
+| SN-Usage-Monitoring                   |  521 |                 | Enumerated  | V    |     |          |          |      |
