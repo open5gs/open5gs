@@ -1,44 +1,17 @@
+CellWire is an implementation of 3gpp EPC(MME, SGW, PGW, HSS)
 
-* Prerequisite
-    sudo apt-get install git cscope gdb
-    sudo apt-get install autoconf libtool m4
-    sudo apt-get install libsctp-dev
-    sudo apt-get install freediameter-dev
+The implemntation consists in several components:
+  - lib/core : the library contains the core of the framework.
+      memory pool, thread, lock, timer, ...
 
-* Build from Git
-    test -f configure || autoreconf -iv
-    CFLAGS='-g3' ./configure --prefix=$HOME/Documents/git/cellwire/install
-    make -j `nproc`
+  - lib/message : the message encoding/decoding library
+      S1AP, NAS, S6A
 
-* Testing
-    make check
+  - lib/logger : the logging library
 
-* Install
-    make install
-  
-* Running
-    ./cellwired
-
-* Cleaning
-    make clean
-    make distclean
-    make maintainer-clean
+  - src : the heart of EPC protocol stack
 
 
-<MAC OS X>
+See LICENSE file for legal information on this software.
 
-* Install SCTP for Mac OS X 10.11(El Captian)
-
- - Reference : https://github.com/sctplab/SCTP_NKE_ElCapitan
- - Start up in OS X Recovery by holding down Command-R while the Mac is starting up
-   Choose Terminal from the Utilities menu.
-   Type 'csrutil disable' in Terminal and Reboot
- - Download SCTP_NKE_ElCapitan_Install_01.dmg
-   xcode-select --install    
-   sudo cp -R /Volumes/SCTP_NKE_ElCapitan_01/SCTPSupport.kext /Library/Extensions
-   sudo cp -R /Volumes/SCTP_NKE_ElCapitan_01/SCTP.kext /Library/Extensions
-   sudo cp /Volumes/SCTP_NKE_ElCapitan_01/socket.h /usr/include/sys/
-   sudo cp /Volumes/SCTP_NKE_ElCapitan_01/sctp.h /usr/include/netinet/
-   sudo cp /Volumes/SCTP_NKE_ElCapitan_01/sctp_uio.h /usr/include/netinet/
-   sudo cp /Volumes/SCTP_NKE_ElCapitan_01/libsctp.dylib /usr/lib/
-   sudo kextload /Library/Extensions/SCTP.kext
+See INSTALL for information on building and using this software.
