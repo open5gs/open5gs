@@ -1,5 +1,5 @@
-#ifndef _S1AP_ENB_MESSAGE_H__
-#define _S1AP_ENB_MESSAGE_H__
+#ifndef _S1AP_ENB_BUILD_H__
+#define _S1AP_ENB_BUILD_H__
 
 #include "s1ap_message.h"
 

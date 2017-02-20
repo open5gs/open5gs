@@ -5,7 +5,7 @@ bin_PROGRAMS = testcellwire
 testcellwire_SOURCES = \
 	abts.h abts_tests.h testutil.h \
 	abts.c testutil.c \
-	s1ap_enb_message.c \
+	s1ap_enb_build.c \
 	s1ap_message_test.c nas_message_test.c \
 	enb_setup_test.c
 

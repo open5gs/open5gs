@@ -2,7 +2,7 @@
 
 #include "core_debug.h"
 #include "context.h"
-#include "s1ap_contents.h"
+#include "s1ap_build.h"
 #include "s1ap_conv.h"
 
 status_t s1ap_build_setup_rsp(pkbuf_t **pkbuf)

@@ -6,8 +6,8 @@
 
 #include "testutil.h"
 
-#include "s1ap_contents.h"
-#include "s1ap_enb_message.h"
+#include "s1ap_build.h"
+#include "s1ap_enb_build.h"
 #include "s1ap_conv.h"
 #include "s1ap_path.h"
 

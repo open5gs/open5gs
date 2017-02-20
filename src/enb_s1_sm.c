@@ -11,7 +11,7 @@
 #define TRACE_MODULE _enb_s1_sm
 #include "core_debug.h"
 
-#include "s1ap_contents.h"
+#include "s1ap_build.h"
 #include "s1ap_conv.h"
 #include "s1ap_path.h"
 
