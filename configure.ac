@@ -233,8 +233,12 @@ AC_CHECK_FUNCS(\
     sem_timedwait \
 )
 
-AC_CHECK_LIB([crypt], [crypt], [OSLIBS="-lcrypt"])
-AC_SUBST(OSLIBS)
+#AC_CHECK_LIB([crypt], [crypt], [LIBS="${LIBS} -lcrypt"])
+AC_CHECK_LIB([pthread], [pthread_mutex_init], [LIBS="${LIBS} -lpthread"])
+#AC_CHECK_LIB([m], [cos], [LIBS="${LIBS} -lm"])
+AC_CHECK_LIB([sctp], [sctp_sendmsg], [LIBS="${LIBS} -lsctp"])
+AC_CHECK_LIB([fdcore], [fd_core_initialize], [LIBS="${LIBS} -lfdcore"])
+AC_CHECK_LIB([fdproto], [fd_libproto_init], [LIBS="${LIBS} -lfdproto"])
 
 #####################
 #### Conclusion. ####

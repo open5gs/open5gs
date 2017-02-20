@@ -10,8 +10,7 @@ testcore_SOURCES = \
     abts.h  abts_tests.h  testutil.h
 
 testcore_LDADD = \
-    $(top_srcdir)/lib/core/src/libcore.la \
-    -lpthread -lsctp
+    $(top_srcdir)/lib/core/src/libcore.la
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include/arch/@OSDIR@ \

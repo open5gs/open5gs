@@ -13,8 +13,7 @@ testcellwire_LDADD = \
     $(top_srcdir)/lib/core/src/libcore.la \
     $(top_srcdir)/lib/message/s1ap/libmessages1ap.la \
     $(top_srcdir)/lib/message/nas/libmessagenas.la \
-    $(top_srcdir)/src/libcellwire.la \
-    -lpthread -lsctp
+    $(top_srcdir)/src/libcellwire.la
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \

@@ -13,8 +13,7 @@ cellwired_LDADD = \
     $(top_srcdir)/src/libcellwire.la \
     $(top_srcdir)/lib/core/src/libcore.la \
     $(top_srcdir)/lib/logger/liblogger.la \
-    $(top_srcdir)/lib/message/s1ap/libmessages1ap.la \
-    -lpthread -lm -lsctp @OSLIBS@
+    $(top_srcdir)/lib/message/s1ap/libmessages1ap.la
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \
