@@ -1,19 +1,34 @@
-* Git Config
-user@host:~/git/cellwire$ sudo apt-get install git
-user@host:~/git/cellwire$ git config --global user.name "Sukchan Lee"
-user@host:~/git/cellwire$ git config --global user.email acetcom@gmail.com
-user@host:~/git/cellwire$ git config --global core.editor vi
-user@host:~/git/cellwire$ git clone https://github.com/acetcom/cellwire.git
 
-* Initial Setup 
-user@host:~/git/cellwire$ sudo apt-get install autoconf libtool m4 libsctp-dev
-cscope gdb
-user@host:~/git/cellwire$ autoreconf -iv
-user@host:~/git/cellwire$ \
-   CFLAGS='-g3' ./configure --prefix=$HOME/Documents/git/cellwire/install 
-user@host:~/git/cellwire$ make OR make install
+* Prerequisite
+    sudo apt-get install git cscope gdb
+    sudo apt-get install autoconf libtool m4
+    sudo apt-get install libsctp-dev
+    sudo apt-get install freediameter-dev
+
+* Build from Git
+    test -f configure || autoreconf -iv
+    CFLAGS='-g3' ./configure --prefix=$HOME/Documents/git/cellwire/install
+    make -j `nproc`
+
+* Testing
+    make check
+
+* Install
+    make install
+  
+* Running
+    ./cellwired
+
+* Cleaning
+    make clean
+    make distclean
+    make maintainer-clean
+
+
+<MAC OS X>
 
 * Install SCTP for Mac OS X 10.11(El Captian)
+
  - Reference : https://github.com/sctplab/SCTP_NKE_ElCapitan
  - Start up in OS X Recovery by holding down Command-R while the Mac is starting up
    Choose Terminal from the Utilities menu.
@@ -27,38 +42,3 @@ user@host:~/git/cellwire$ make OR make install
    sudo cp /Volumes/SCTP_NKE_ElCapitan_01/sctp_uio.h /usr/include/netinet/
    sudo cp /Volumes/SCTP_NKE_ElCapitan_01/libsctp.dylib /usr/lib/
    sudo kextload /Library/Extensions/SCTP.kext
-
-* Git in Development
-user@host:~/git/cellwire$ git status -uno
-user@host:~/git/cellwire$ git add README
-user@host:~/git/cellwire$ git commit
-user@host:~/git/cellwire$ git push -u orgin master
-user@host:~/git/cellwire$ git pull
-user@host:~/git/cellwire$ git reset --hard HEAD
-user@host:~/git/cellwire$ git checkout README
-
-* CSCOPE
-Download ViM plugin to user@host:~/.vim/plugin/cscope_maps.vim
-CSCOPE_DB="/home/acetcom/git/cellwire/.cscope.out"
-export CSCOPE_DB
-user@host:~/git/cellwire$ ./mkcscope.sh
-
-* Reconfigure Build
-user@host:~/git/cellwire$ ./config.nice
-## config.nice sample script
-CFLAGS='-g3' \
-'./configure' \
-'--prefix=/home/acetcom/Documents/git/install' \
-"$@"
-
-* Testing
-user@host:~/git/cellwire$ ./lib/core/test/testcore
-
-* Running
-user@host:~/git/cellwire$ sudo ./cellwired
-
-* Cleaning
-user@host:~/git/cellwire$ make clean
-user@host:~/git/cellwire$ make distclean
-user@host:~/git/cellwire$ make maintainer-clean
-
