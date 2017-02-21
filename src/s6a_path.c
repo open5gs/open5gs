@@ -5,6 +5,7 @@
 
 #include "freeDiameter/freeDiameter-host.h"
 #include "freeDiameter/libfdcore.h"
+#include "freeDiameter/extension.h"
 
 #include "s6a_path.h"
 
@@ -54,6 +55,10 @@ static void s6a_fd_logger(int printlevel, const char *format, va_list ap)
     }
 }
 
+int fd_ext_init_dnr_entry(int major, int minor, char * conffile);
+int fd_ext_init_dict_dcca_entry(int major, int minor, char * conffile);
+int fd_ext_init_dict_dcca_3gpp_entry(int major, int minor, char * conffile);
+
 status_t s6a_open()
 {
     int ret;
@@ -74,6 +79,25 @@ status_t s6a_open()
     if (ret != 0) 
     {
         d_error("fd_core_initialize() failed");
+        return CORE_ERROR;
+    } 
+
+    ret = fd_ext_init_dnr_entry(1, 2, NULL);
+    if (ret != 0) 
+    {
+        d_error("fd_ext_init_dnr_entry() failed");
+        return CORE_ERROR;
+    } 
+    ret = fd_ext_init_dict_dcca_entry(1, 2, NULL);
+    if (ret != 0) 
+    {
+        d_error("fd_ext_init_dict_dcca_entry() failed");
+        return CORE_ERROR;
+    } 
+    ret = fd_ext_init_dict_dcca_3gpp_entry(1, 2, NULL);
+    if (ret != 0) 
+    {
+        d_error("fd_ext_init_dict_dcca_entry() failed");
         return CORE_ERROR;
     } 
 

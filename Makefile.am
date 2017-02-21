@@ -13,14 +13,14 @@ cellwired_LDADD = \
     $(top_srcdir)/src/libcellwire.la \
     $(top_srcdir)/lib/core/src/libcore.la \
     $(top_srcdir)/lib/logger/liblogger.la \
-    $(top_srcdir)/lib/message/s1ap/libmessages1ap.la
+    $(top_srcdir)/lib/message/s1ap/libmessages1ap.la \
+    $(top_srcdir)/lib/message/nas/libmessagenas.la \
+    $(top_srcdir)/lib/message/s6a/libmessages6a.la
 
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \
     -I$(top_srcdir)/lib/logger \
-    -I$(top_srcdir)/lib/message/s1ap/asn1c \
-    -I$(top_srcdir)/lib/emssage/s1ap \
     -I$(top_srcdir)/src
 
 CLEANFILES = symtbl.c
