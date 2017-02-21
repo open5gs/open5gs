@@ -20,6 +20,7 @@ static thread_id mme_net_thread;
 status_t cellwire_initialize(char *config_path)
 {
     status_t rv;
+    s6a_conf_t conf;
 
     srand(time(NULL)*getpid());
 
@@ -30,9 +31,11 @@ status_t cellwire_initialize(char *config_path)
     rv = s6a_initialize();
     if (rv != CORE_OK)
         return rv;
+    
+    conf.identity = "hss.cellwire.com";
+    conf.realm = "cellwire.com";
 
-    s6a_conf_set_identity("hss.cellwire.com");
-    s6a_conf_set_realm("cellwire.com");
+    rv = s6a_conf_handle(&conf);
     s6a_conf_show();
 
     return CORE_OK;
