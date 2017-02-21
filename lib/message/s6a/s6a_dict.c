@@ -13,7 +13,7 @@
 #define APP_S6A     (16777251)
 
 struct dict_object *s6a_vendor;
-struct dict_object *s6a_app;
+struct dict_object *s6a_appli;
 
 struct dict_object *s6a_air;
 struct dict_object *s6a_aia;
@@ -137,7 +137,7 @@ status_t s6a_dict_init()
         (void *)&vendor_3gpp, &s6a_vendor, ENOENT));
 
     CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_APPLICATION, 
-        APPLICATION_BY_ID, (void *)&app_s6a, &s6a_app, ENOENT));
+        APPLICATION_BY_ID, (void *)&app_s6a, &s6a_appli, ENOENT));
 
     CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_COMMAND, CMD_BY_NAME, 
         "Authentication-Information-Request", &s6a_air, ENOENT));

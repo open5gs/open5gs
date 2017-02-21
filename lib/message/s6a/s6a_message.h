@@ -19,13 +19,18 @@ CORE_DECLARE(status_t) s6a_initialize();
 CORE_DECLARE(status_t) s6a_conf_handle(s6a_conf_t *conf);
 CORE_DECLARE(void) s6a_conf_show();
 
+CORE_DECLARE(status_t) s6a_dict_init();
+
 CORE_DECLARE(status_t) s6a_thread_start();
 CORE_DECLARE(void) s6a_thread_stop();
 
-CORE_DECLARE(status_t) s6a_dict_init();
+CORE_DECLARE(status_t) s6a_server_start();
+CORE_DECLARE(void) s6a_server_stop();
+CORE_DECLARE(status_t) s6a_client_start();
+CORE_DECLARE(void) s6a_client_stop();
 
 extern struct dict_object *s6a_vendor;
-extern struct dict_object *s6a_app;
+extern struct dict_object *s6a_appli;
 
 extern struct dict_object *s6a_air;
 extern struct dict_object *s6a_aia;

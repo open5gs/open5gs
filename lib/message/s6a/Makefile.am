@@ -8,7 +8,7 @@ libmessages6a_la_SOURCES = \
 	s6a_message.h
 
 nodist_libmessages6a_la_SOURCES = \
-	s6a_init.c s6a_dict.c
+	s6a_init.c s6a_dict.c s6a_server.c s6a_client.c
 
 libmessages6a_la_DEPENDENCIES = \
     $(top_srcdir)/lib/message/s6a/freeDiameter/libmessages6afd.la

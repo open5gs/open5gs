@@ -75,6 +75,18 @@ status_t s6a_conf_handle(s6a_conf_t *conf)
     return CORE_OK;
 }
 
+void s6a_conf_show()
+{
+    char *buf = NULL;
+    size_t len;
+
+    if (g_trace_mask && TRACE_MODULE >= 1)
+    {
+        printf("%s\n", fd_conf_dump(&buf, &len, NULL));
+        free(buf);
+    }
+}
+
 status_t s6a_thread_start()
 {
     int ret;
@@ -93,12 +105,32 @@ status_t s6a_thread_start()
         return CORE_ERROR;
     } 
 
+    ret = s6a_server_start();
+    if (ret != 0) 
+    {
+        d_error("s6a_server_start() failed");
+        return CORE_ERROR;
+    } 
+
+    ret = s6a_client_start();
+    if (ret != 0) 
+    {
+        d_error("s6a_client_start() failed");
+        return CORE_ERROR;
+    } 
+
+	/* Advertise the support for the test application in the peer */
+	CHECK_FCT(fd_disp_app_support(s6a_appli, s6a_vendor, 1, 0));
+
     return CORE_OK;
 }
 
 void s6a_thread_stop()
 {
     int ret;
+
+    s6a_client_stop();
+    s6a_server_stop();
 
     ret = fd_core_shutdown();
     if (ret != 0) 
@@ -110,18 +142,6 @@ void s6a_thread_stop()
     if (ret != 0) 
     {
         d_error("fd_core_wait_shutdown_complete() failed");
-    }
-}
-
-void s6a_conf_show()
-{
-    char *buf = NULL;
-    size_t len;
-
-    if (g_trace_mask && TRACE_MODULE >= 1)
-    {
-        printf("%s\n", fd_conf_dump(&buf, &len, NULL));
-        free(buf);
     }
 }
 
