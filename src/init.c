@@ -14,8 +14,8 @@
 
 #define EVENT_WAIT_TIMEOUT 10000 /* 10 msec */
 
-static thread_id mme_thread;
-static thread_id path_thread;
+static thread_id mme_sm_thread;
+static thread_id mme_net_thread;
 
 status_t cellwire_initialize(char *config_path)
 {
@@ -40,12 +40,10 @@ status_t cellwire_initialize(char *config_path)
 
 void cellwire_terminate(void)
 {
-    s6a_terminate();
-    
     context_final();
 }
 
-void *THREAD_FUNC mme_main(void *data)
+void *THREAD_FUNC mme_sm_main(void *data)
 {
     event_t event;
     msgq_id queue_id;
@@ -100,7 +98,7 @@ void *THREAD_FUNC mme_main(void *data)
     return NULL;
 }
 
-void *THREAD_FUNC path_main(void *data)
+void *THREAD_FUNC mme_net_main(void *data)
 {
     while (!thread_should_stop())
     {
@@ -114,16 +112,21 @@ void threads_start()
 {
     status_t rv;
 
-    rv = thread_create(&mme_thread, NULL, mme_main, NULL);
+    rv = thread_create(&mme_sm_thread, NULL, mme_sm_main, NULL);
     d_assert(rv == CORE_OK, return,
             "MME State machine thread creation failed");
-    rv = thread_create(&path_thread, NULL, path_main, NULL);
+    rv = thread_create(&mme_net_thread, NULL, mme_net_main, NULL);
     d_assert(rv == CORE_OK, return,
-            "Network PATH thread creation failed");
+            "MME Network socket recv thread creation failed");
+
+    rv = s6a_thread_start();
+    d_assert(rv == CORE_OK, return,
+            "HSS thread creation failed");
 }
 
 void threads_stop()
 {
-    thread_delete(mme_thread);
-    thread_delete(path_thread);
+    s6a_thread_stop();
+    thread_delete(mme_net_thread);
+    thread_delete(mme_sm_thread);
 }

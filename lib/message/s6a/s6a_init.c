@@ -14,6 +14,7 @@ static void s6a_fd_logger(int printlevel, const char *format, va_list ap);
 
 static status_t s6a_conf_init();
 static status_t s6a_fd_ext_init();
+static status_t s6a_dict_objs_init();
 
 status_t s6a_initialize()
 {
@@ -52,6 +53,20 @@ status_t s6a_initialize()
         return CORE_ERROR;
     } 
 
+    ret = s6a_dict_objs_init();
+    if (ret != 0) 
+    {
+        d_error("s6a_conf_init() failed");
+        return CORE_ERROR;
+    } 
+
+    return CORE_OK;
+}
+
+status_t s6a_thread_start()
+{
+    int ret;
+
     ret = fd_core_start();
     if (ret != 0) 
     {
@@ -69,45 +84,7 @@ status_t s6a_initialize()
     return CORE_OK;
 }
 
-status_t s6a_conf_init()
-{
-    fd_g_config->cnf_flags.no_fwd = 1;
-    fd_g_config->cnf_flags.no_ip6 = 1;
-    fd_g_config->cnf_flags.no_sctp = 1;
-    fd_g_config->cnf_flags.pr_tcp = 1;
-
-    return CORE_OK;
-}
-
-status_t s6a_conf_set_identity(char *identity)
-{
-    fd_g_config->cnf_diamid = identity;
-
-    return fd_os_validate_DiameterIdentity(&fd_g_config->cnf_diamid, 
-            &fd_g_config->cnf_diamid_len, 1);
-}
-
-status_t s6a_conf_set_realm(char *realm)
-{
-    fd_g_config->cnf_diamrlm = realm;
-
-    return fd_os_validate_DiameterIdentity(&fd_g_config->cnf_diamrlm, 
-            &fd_g_config->cnf_diamrlm_len, 1);
-}
-
-void s6a_conf_show()
-{
-    char *buf = NULL;
-    size_t len;
-
-    if (g_trace_mask && TRACE_MODULE >= 1)
-    {
-        printf("%s\n", fd_conf_dump(&buf, &len, NULL));
-        free(buf);
-    }
-}
-
-void s6a_terminate()
+void s6a_thread_stop()
 {
     int ret;
 
@@ -170,6 +147,45 @@ static void s6a_fd_logger(int printlevel, const char *format, va_list ap)
     }
 }
 
+
+status_t s6a_conf_init()
+{
+    fd_g_config->cnf_flags.no_fwd = 1;
+    fd_g_config->cnf_flags.no_ip6 = 1;
+    fd_g_config->cnf_flags.no_sctp = 1;
+    fd_g_config->cnf_flags.pr_tcp = 1;
+
+    return CORE_OK;
+}
+
+status_t s6a_conf_set_identity(char *identity)
+{
+    fd_g_config->cnf_diamid = identity;
+
+    return fd_os_validate_DiameterIdentity(&fd_g_config->cnf_diamid, 
+            &fd_g_config->cnf_diamid_len, 1);
+}
+
+status_t s6a_conf_set_realm(char *realm)
+{
+    fd_g_config->cnf_diamrlm = realm;
+
+    return fd_os_validate_DiameterIdentity(&fd_g_config->cnf_diamrlm, 
+            &fd_g_config->cnf_diamrlm_len, 1);
+}
+
+void s6a_conf_show()
+{
+    char *buf = NULL;
+    size_t len;
+
+    if (g_trace_mask && TRACE_MODULE >= 1)
+    {
+        printf("%s\n", fd_conf_dump(&buf, &len, NULL));
+        free(buf);
+    }
+}
+
 status_t s6a_fd_ext_init()
 {
     int ret;
@@ -203,3 +219,7 @@ status_t s6a_fd_ext_init()
     return CORE_OK;
 }
 
+status_t s6a_dict_objs_init()
+{
+    return CORE_OK;
+}

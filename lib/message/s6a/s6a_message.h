@@ -10,7 +10,9 @@ extern "C" {
 #define S6A_SDU_SIZE 2048
 
 CORE_DECLARE(status_t) s6a_initialize();
-CORE_DECLARE(void) s6a_terminate();
+
+CORE_DECLARE(status_t) s6a_thread_start();
+CORE_DECLARE(void) s6a_thread_stop();
 
 CORE_DECLARE(status_t) s6a_conf_set_identity(char *identity);
 CORE_DECLARE(status_t) s6a_conf_set_realm(char *realm);
