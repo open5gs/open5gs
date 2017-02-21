@@ -7,8 +7,8 @@ libmessages6a_la_SOURCES = \
 	s6a_message.h
 
 nodist_libmessages6a_la_SOURCES = \
-	s6a_init.c \
-	dict_nasreq.c dict_dcca.c dict_dcca_3gpp.c
+	s6a_init.c s6a_dict.c \
+	dict_nas_mipv6.c dict_s6a.c
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include

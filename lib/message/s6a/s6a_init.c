@@ -12,9 +12,6 @@
 static void s6a_gnutls_log_func(int level, const char *str);
 static void s6a_fd_logger(int printlevel, const char *format, va_list ap);
 
-static status_t s6a_ext_init();
-static status_t s6a_dict_init();
-
 status_t s6a_initialize()
 {
     int ret;
@@ -38,13 +35,6 @@ status_t s6a_initialize()
         return CORE_ERROR;
     } 
 
-    ret = s6a_ext_init();
-    if (ret != 0) 
-    {
-        d_error("s6a_ext_init() failed");
-        return CORE_ERROR;
-    } 
-
     ret = s6a_dict_init();
     if (ret != 0) 
     {
@@ -52,44 +42,6 @@ status_t s6a_initialize()
         return CORE_ERROR;
     } 
 
-    return CORE_OK;
-}
-
-status_t s6a_ext_init()
-{
-    int ret;
-
-    int fd_ext_init_dnr_entry(int major, int minor, char *conffile);
-    int fd_ext_init_dict_dcca_entry(int major, int minor, char *conffile);
-    int fd_ext_init_dict_dcca_3gpp_entry(int major, int minor, char *conffile);
-
-    ret = fd_ext_init_dnr_entry(
-            FD_PROJECT_VERSION_MAJOR, FD_PROJECT_VERSION_MINOR, NULL);
-    if (ret != 0) 
-    {
-        d_error("fd_ext_init_dnr_entry() failed");
-        return CORE_ERROR;
-    } 
-    ret = fd_ext_init_dict_dcca_entry(
-            FD_PROJECT_VERSION_MAJOR, FD_PROJECT_VERSION_MINOR, NULL);
-    if (ret != 0) 
-    {
-        d_error("fd_ext_init_dict_dcca_entry() failed");
-        return CORE_ERROR;
-    } 
-    ret = fd_ext_init_dict_dcca_3gpp_entry(
-            FD_PROJECT_VERSION_MAJOR, FD_PROJECT_VERSION_MINOR, NULL);
-    if (ret != 0) 
-    {
-        d_error("fd_ext_init_dict_dcca_entry() failed");
-        return CORE_ERROR;
-    } 
-
-    return CORE_OK;
-}
-
-status_t s6a_dict_init()
-{
     return CORE_OK;
 }
 

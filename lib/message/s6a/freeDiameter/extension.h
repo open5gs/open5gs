@@ -48,7 +48,7 @@ extern "C" {
 #define EXTENSION_ENTRY(_name, _function, _depends...)					\
 const char *fd_ext_depends_ ## _function[] = { _name , ## _depends , NULL };				\
 static int extension_loaded_ ## _function = 0;							\
-int fd_ext_init_ ## _function(int major, int minor, char * conffile) {				\
+int fd_ext_ ## _function(int major, int minor, char * conffile) {				\
 	if ((major != FD_PROJECT_VERSION_MAJOR)						\
 		|| (minor != FD_PROJECT_VERSION_MINOR)) {				\
 		TRACE_ERROR("This extension (" _name ") was compiled for a different version of freeDiameter.");	\
