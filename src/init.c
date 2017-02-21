@@ -23,13 +23,17 @@ status_t cellwire_initialize(char *config_path)
 
     srand(time(NULL)*getpid());
 
+    rv = context_init();
+    if (rv != CORE_OK)
+        return rv;
+
     rv = s6a_initialize();
     if (rv != CORE_OK)
         return rv;
 
-    rv = context_init();
-    if (rv != CORE_OK)
-        return rv;
+    s6a_conf_set_identity("hss.cellwire.com");
+    s6a_conf_set_realm("cellwire.com");
+    s6a_conf_show();
 
     return CORE_OK;
 }

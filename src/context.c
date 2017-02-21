@@ -59,10 +59,6 @@ status_t context_init()
     self.srvd_gummei.num_of_mme_code = 1;
     self.srvd_gummei.mme_code[0] = 1;
 
-    /* Initialize S6A context */
-    s6a_set_identity("hss.cellwire.com");
-    s6a_set_realm("cellwire.com");
-
     g_mme_ctx_initialized = 1;
 
     return CORE_OK;

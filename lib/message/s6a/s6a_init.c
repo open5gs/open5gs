@@ -12,9 +12,8 @@
 static void s6a_gnutls_log_func(int level, const char *str);
 static void s6a_fd_logger(int printlevel, const char *format, va_list ap);
 
-int fd_ext_init_dnr_entry(int major, int minor, char *conffile);
-int fd_ext_init_dict_dcca_entry(int major, int minor, char *conffile);
-int fd_ext_init_dict_dcca_3gpp_entry(int major, int minor, char *conffile);
+static status_t s6a_conf_init();
+static status_t s6a_fd_ext_init();
 
 status_t s6a_initialize()
 {
@@ -39,30 +38,17 @@ status_t s6a_initialize()
         return CORE_ERROR;
     } 
 
-    fd_g_config->cnf_flags.no_fwd = 1;
-    fd_g_config->cnf_flags.no_ip6 = 1;
-    fd_g_config->cnf_flags.no_sctp = 1;
-    fd_g_config->cnf_flags.pr_tcp = 1;
+    ret = s6a_conf_init();
+    if (ret != 0) 
+    {
+        d_error("s6a_conf_init() failed");
+        return CORE_ERROR;
+    } 
 
-    ret = fd_ext_init_dnr_entry(
-            FD_PROJECT_VERSION_MAJOR, FD_PROJECT_VERSION_MINOR, NULL);
+    ret = s6a_fd_ext_init();
     if (ret != 0) 
     {
-        d_error("fd_ext_init_dnr_entry() failed");
-        return CORE_ERROR;
-    } 
-    ret = fd_ext_init_dict_dcca_entry(
-            FD_PROJECT_VERSION_MAJOR, FD_PROJECT_VERSION_MINOR, NULL);
-    if (ret != 0) 
-    {
-        d_error("fd_ext_init_dict_dcca_entry() failed");
-        return CORE_ERROR;
-    } 
-    ret = fd_ext_init_dict_dcca_3gpp_entry(
-            FD_PROJECT_VERSION_MAJOR, FD_PROJECT_VERSION_MINOR, NULL);
-    if (ret != 0) 
-    {
-        d_error("fd_ext_init_dict_dcca_entry() failed");
+        d_error("s6a_fd_ext_init() failed");
         return CORE_ERROR;
     } 
 
@@ -83,7 +69,17 @@ status_t s6a_initialize()
     return CORE_OK;
 }
 
-status_t s6a_set_identity(char *identity)
+status_t s6a_conf_init()
+{
+    fd_g_config->cnf_flags.no_fwd = 1;
+    fd_g_config->cnf_flags.no_ip6 = 1;
+    fd_g_config->cnf_flags.no_sctp = 1;
+    fd_g_config->cnf_flags.pr_tcp = 1;
+
+    return CORE_OK;
+}
+
+status_t s6a_conf_set_identity(char *identity)
 {
     fd_g_config->cnf_diamid = identity;
 
@@ -91,7 +87,7 @@ status_t s6a_set_identity(char *identity)
             &fd_g_config->cnf_diamid_len, 1);
 }
 
-status_t s6a_set_realm(char *realm)
+status_t s6a_conf_set_realm(char *realm)
 {
     fd_g_config->cnf_diamrlm = realm;
 
@@ -99,15 +95,21 @@ status_t s6a_set_realm(char *realm)
             &fd_g_config->cnf_diamrlm_len, 1);
 }
 
+void s6a_conf_show()
+{
+    char *buf = NULL;
+    size_t len;
+
+    if (g_trace_mask && TRACE_MODULE >= 1)
+    {
+        printf("%s\n", fd_conf_dump(&buf, &len, NULL));
+        free(buf);
+    }
+}
+
 void s6a_terminate()
 {
     int ret;
-
-    {
-        char *buf = NULL;
-        size_t len;
-        printf("%s\n", fd_conf_dump(&buf, &len, NULL));
-    }
 
     ret = fd_core_shutdown();
     if (ret != 0) 
@@ -166,5 +168,38 @@ static void s6a_fd_logger(int printlevel, const char *format, va_list ap)
             d_warn("%s", buffer);
             break;
     }
+}
+
+status_t s6a_fd_ext_init()
+{
+    int ret;
+
+    int fd_ext_init_dnr_entry(int major, int minor, char *conffile);
+    int fd_ext_init_dict_dcca_entry(int major, int minor, char *conffile);
+    int fd_ext_init_dict_dcca_3gpp_entry(int major, int minor, char *conffile);
+
+    ret = fd_ext_init_dnr_entry(
+            FD_PROJECT_VERSION_MAJOR, FD_PROJECT_VERSION_MINOR, NULL);
+    if (ret != 0) 
+    {
+        d_error("fd_ext_init_dnr_entry() failed");
+        return CORE_ERROR;
+    } 
+    ret = fd_ext_init_dict_dcca_entry(
+            FD_PROJECT_VERSION_MAJOR, FD_PROJECT_VERSION_MINOR, NULL);
+    if (ret != 0) 
+    {
+        d_error("fd_ext_init_dict_dcca_entry() failed");
+        return CORE_ERROR;
+    } 
+    ret = fd_ext_init_dict_dcca_3gpp_entry(
+            FD_PROJECT_VERSION_MAJOR, FD_PROJECT_VERSION_MINOR, NULL);
+    if (ret != 0) 
+    {
+        d_error("fd_ext_init_dict_dcca_entry() failed");
+        return CORE_ERROR;
+    } 
+
+    return CORE_OK;
 }
 

@@ -12,8 +12,9 @@ extern "C" {
 CORE_DECLARE(status_t) s6a_initialize();
 CORE_DECLARE(void) s6a_terminate();
 
-CORE_DECLARE(status_t) s6a_set_identity(char *identity);
-CORE_DECLARE(status_t) s6a_set_realm(char *realm);
+CORE_DECLARE(status_t) s6a_conf_set_identity(char *identity);
+CORE_DECLARE(status_t) s6a_conf_set_realm(char *realm);
+CORE_DECLARE(void) s6a_conf_show();
 
 #ifdef __cplusplus
 }
