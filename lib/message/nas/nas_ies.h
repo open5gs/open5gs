@@ -468,7 +468,7 @@ CORE_DECLARE(c_int32_t) nas_encode_gprs_timer_2(
 typedef struct _nas_gprs_timer_3_t {
     c_uint8_t length;
 ED2(c_uint8_t unit:3;,
-    c_uint8_t timer_value:6;)
+    c_uint8_t timer_value:5;)
 } __attribute__ ((packed)) nas_gprs_timer_3_t;
 
 CORE_DECLARE(c_int32_t) nas_decode_gprs_timer_3(
