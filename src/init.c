@@ -7,6 +7,8 @@
 #include "core_debug.h"
 #include "core_thread.h"
 
+#include "s6a_message.h"
+
 #include "context.h"
 #include "event.h"
 
@@ -21,6 +23,10 @@ status_t cellwire_initialize(char *config_path)
 
     srand(time(NULL)*getpid());
 
+    rv = s6a_initialize();
+    if (rv != CORE_OK)
+        return rv;
+
     rv = context_init();
     if (rv != CORE_OK)
         return rv;
@@ -30,6 +36,8 @@ status_t cellwire_initialize(char *config_path)
 
 void cellwire_terminate(void)
 {
+    s6a_terminate();
+    
     context_final();
 }
 

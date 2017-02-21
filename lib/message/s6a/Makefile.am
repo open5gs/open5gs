@@ -3,9 +3,11 @@
 noinst_LTLIBRARIES = libmessages6a.la
 
 libmessages6a_la_SOURCES = \
-	freeDiameter/extension.h
+	freeDiameter/extension.h \
+	s6a_message.h
 
 nodist_libmessages6a_la_SOURCES = \
+	s6a_init.c \
 	dict_nasreq.c dict_dcca.c dict_dcca_3gpp.c
 
 AM_CPPFLAGS = \

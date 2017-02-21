@@ -10,10 +10,6 @@ testcellwire_SOURCES = \
 	enb_setup_test.c
 
 testcellwire_LDADD = \
-    $(top_srcdir)/lib/core/src/libcore.la \
-    $(top_srcdir)/lib/message/s1ap/libmessages1ap.la \
-    $(top_srcdir)/lib/message/nas/libmessagenas.la \
-    $(top_srcdir)/lib/message/s6a/libmessages6a.la \
     $(top_srcdir)/src/libcellwire.la
 
 AM_CPPFLAGS = \
