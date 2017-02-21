@@ -1,14 +1,20 @@
 ## Process this file with automake to produce Makefile.in
 
+SUBDIRS = freeDiameter
+
 noinst_LTLIBRARIES = libmessages6a.la
 
 libmessages6a_la_SOURCES = \
-	freeDiameter/extension.h \
 	s6a_message.h
 
 nodist_libmessages6a_la_SOURCES = \
-	s6a_init.c s6a_dict.c \
-	dict_nas_mipv6.c dict_s6a.c
+	s6a_init.c s6a_dict.c
+
+libmessages6a_la_DEPENDENCIES = \
+    $(top_srcdir)/lib/message/s6a/freeDiameter/libmessages6afd.la
+
+libmessages6a_la_LIBADD = \
+    $(top_srcdir)/lib/message/s6a/freeDiameter/libmessages6afd.la
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include
