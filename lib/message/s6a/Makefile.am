@@ -20,7 +20,7 @@ AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include
 
 AM_CFLAGS = \
-	-Wall -Werror
+	-Wall -Werror -Wno-unused
 
 MAINTAINERCLEANFILES = Makefile.in 
 MOSTLYCLEANFILES = *.stackdump

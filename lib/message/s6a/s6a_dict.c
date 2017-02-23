@@ -96,7 +96,7 @@ struct dict_object *s6a_pre_emption_capability;
 struct dict_object *s6a_pre_emption_vulnerability;
 struct dict_object *s6a_served_party_ip_addr;
 
-status_t s6a_ext_init()
+status_t s6a_ext_load()
 {
     int ret;
 
@@ -127,7 +127,7 @@ status_t s6a_dict_init()
     vendor_id_t vendor_3gpp = VENDOR_3GPP;
     application_id_t app_s6a = APP_S6A;
 
-    ret = s6a_ext_init();
+    ret = s6a_ext_load();
     if (ret != 0)
     {
         return CORE_ERROR;

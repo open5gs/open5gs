@@ -35,6 +35,14 @@ status_t s6a_initialize()
         return CORE_ERROR;
     } 
 
+    int fd_msg_init(void);
+    ret = fd_msg_init();
+    if (ret != 0) 
+    {
+        d_error("fd_msg_init() failed");
+        return CORE_ERROR;
+    } 
+
     ret = s6a_dict_init();
     if (ret != 0) 
     {
@@ -80,6 +88,7 @@ void s6a_conf_show()
     char *buf = NULL;
     size_t len;
 
+    fd_g_debug_lvl = 0;
     if (g_trace_mask && TRACE_MODULE >= 1)
     {
         printf("%s\n", fd_conf_dump(&buf, &len, NULL));
@@ -112,15 +121,15 @@ status_t s6a_thread_start()
         return CORE_ERROR;
     } 
 
+	/* Advertise the support for the test application in the peer */
+	CHECK_FCT(fd_disp_app_support(s6a_appli, s6a_vendor, 1, 0));
+
     ret = s6a_client_start();
     if (ret != 0) 
     {
         d_error("s6a_client_start() failed");
         return CORE_ERROR;
     } 
-
-	/* Advertise the support for the test application in the peer */
-	CHECK_FCT(fd_disp_app_support(s6a_appli, s6a_vendor, 1, 0));
 
     return CORE_OK;
 }

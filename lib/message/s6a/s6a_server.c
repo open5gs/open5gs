@@ -23,7 +23,7 @@ static int s6a_fb_cb( struct msg ** msg, struct avp * avp,
 	return ENOTSUP;
 }
 
-/* Callback for incoming Authentication-Information-Answer messages */
+/* Callback for incoming Authentication-Information-Request messages */
 static int s6a_air_cb( struct msg ** msg, struct avp * avp, 
         struct session * sess, void * opaque, enum disp_action * act)
 {
@@ -32,7 +32,7 @@ static int s6a_air_cb( struct msg ** msg, struct avp * avp,
 	struct avp * a;
 #endif
 
-    d_info("Authentication-Information-Answer received!");
+    d_info("Authentication-Information-Request received!");
 	
 	if (msg == NULL)
 		return EINVAL;
