@@ -155,19 +155,11 @@ static void ta_hook_cb_oneline(enum fd_hook_type type, struct msg * msg, struct 
 
 
 /* entry point */
-static int ta_entry(char * conffile)
+int s6a_app_init(void)
 {
-	TRACE_ENTRY("%p", conffile);
-	
 	/* Initialize configuration */
 	CHECK_FCT( ta_conf_init() );
 	
-	/* Parse configuration file */
-	if (conffile != NULL) {
-		CHECK_FCT( ta_conf_handle(conffile) );
-	}
-	
-	TRACE_DEBUG(INFO, "Extension Test_App initialized with configuration: '%s'", conffile);
 	ta_conf_dump();
 	
 	/* Install objects definitions for this test application */
@@ -180,11 +172,7 @@ static int ta_entry(char * conffile)
 	
 	/* Start the signal handler thread */
 	if (ta_conf->mode & MODE_CLI) {
-		if (ta_conf->mode & MODE_BENCH) {
-			CHECK_FCT( ta_bench_init() );
-		} else {
-			CHECK_FCT( ta_cli_init() );
-		}
+        CHECK_FCT( ta_cli_init() );
 	}
 	
 	/* Advertise the support for the test application in the peer */
@@ -206,7 +194,7 @@ static int ta_entry(char * conffile)
 }
 
 /* Unload */
-void fd_ext_fini(void)
+void s6a_app_final(void)
 {
 	if (ta_conf->mode & MODE_CLI)
 		ta_cli_fini();
@@ -219,5 +207,3 @@ void fd_ext_fini(void)
 	CHECK_FCT_DO( fd_thr_term(&ta_stats_th), );
 	CHECK_POSIX_DO( pthread_mutex_destroy(&ta_conf->stats_lock), );
 }
-
-EXTENSION_ENTRY("test_app", ta_entry);

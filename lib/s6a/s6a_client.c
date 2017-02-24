@@ -279,7 +279,9 @@ int ta_cli_init(void)
 {
 	CHECK_FCT( fd_sess_handler_create(&ta_cli_reg, (void *)free, NULL, NULL) );
 	
+#if 0
 	CHECK_FCT( fd_event_trig_regcb(ta_conf->signal, "test_app.cli", ta_cli_test_message ) );
+#endif
 	
 	return 0;
 }

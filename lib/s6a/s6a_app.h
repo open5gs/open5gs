@@ -40,6 +40,7 @@
  *  See the app_test.conf.sample file for the format of the configuration file.
  */
  
+#include "core_errno.h"
 #include <freeDiameter/extension.h>
 #include <signal.h>
 
@@ -81,6 +82,19 @@ struct ta_conf {
 };
 extern struct ta_conf * ta_conf;
 
+typedef struct _s6a_config_t {
+    c_uint8_t *identity;
+    c_uint8_t *realm;
+} s6a_config_t;
+
+CORE_DECLARE(status_t) s6a_config_init(s6a_config_t *config);
+
+CORE_DECLARE(status_t) s6a_thread_start();
+CORE_DECLARE(void) s6a_thread_stop();
+
+int s6a_app_init(void);
+void s6a_app_final(void);
+
 /* Parse the configuration file */
 int ta_conf_handle(char * conffile);
 
@@ -91,10 +105,6 @@ void ta_serv_fini(void);
 /* Create outgoing message (client) */
 int ta_cli_init(void);
 void ta_cli_fini(void);
-
-/* Benchmark flavour */
-int ta_bench_init(void);
-void ta_bench_fini(void);
 
 /* Initialize dictionary definitions */
 int ta_dict_init(void);

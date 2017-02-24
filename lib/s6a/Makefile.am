@@ -8,7 +8,8 @@ libs6a_la_SOURCES = \
 	s6a_app.h
 
 nodist_libs6a_la_SOURCES = \
-	s6a_app.c s6a_dict.c s6a_server.c s6a_client.c
+	s6a_init.c s6a_app.c s6a_config.c \
+	s6a_dict.c s6a_server.c s6a_client.c
 
 libs6a_la_DEPENDENCIES = \
     $(top_srcdir)/lib/s6a/freeDiameter/libs6afreeDiameter.la
