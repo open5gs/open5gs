@@ -7,7 +7,6 @@
 #include "cellwire.h"
 #include "context.h"
 #include "s1ap_message.h"
-#include "s6a_message.h"
 
 static mme_ctx_t self;
 

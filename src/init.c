@@ -7,7 +7,7 @@
 #include "core_debug.h"
 #include "core_thread.h"
 
-#include "s6a_message.h"
+#include "s6a_app.h"
 
 #include "context.h"
 #include "event.h"
@@ -20,7 +20,9 @@ static thread_id mme_net_thread;
 status_t cellwire_initialize(char *config_path)
 {
     status_t rv;
+#if 0
     s6a_conf_t conf;
+#endif
 
     srand(time(NULL)*getpid());
 
@@ -28,6 +30,7 @@ status_t cellwire_initialize(char *config_path)
     if (rv != CORE_OK)
         return rv;
 
+#if 0
     rv = s6a_initialize();
     if (rv != CORE_OK)
         return rv;
@@ -37,6 +40,7 @@ status_t cellwire_initialize(char *config_path)
 
     rv = s6a_conf_handle(&conf);
     s6a_conf_show();
+#endif
 
     return CORE_OK;
 }
@@ -122,14 +126,18 @@ void threads_start()
     d_assert(rv == CORE_OK, return,
             "MME Network socket recv thread creation failed");
 
+#if 0
     rv = s6a_thread_start();
     d_assert(rv == CORE_OK, return,
             "HSS thread creation failed");
+#endif
 }
 
 void threads_stop()
 {
+#if 0
     s6a_thread_stop();
+#endif
     thread_delete(mme_net_thread);
     thread_delete(mme_sm_thread);
 }
