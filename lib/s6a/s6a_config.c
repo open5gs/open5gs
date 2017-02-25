@@ -8,12 +8,31 @@
 #include "freeDiameter/freeDiameter-host.h"
 #include "freeDiameter/libfdcore.h"
 
+#if 0
+/* The validator function */
+static int aw_validate(struct peer_info * info, int * auth, int (**cb2)(struct peer_info *))
+{
+	/* We don't use the second callback */
+	*cb2 = NULL;
+	
+	/* Default to unknown result */
+	*auth = 1;
+	
+	info->config.pic_flags.sec = PI_SEC_NONE;
+	return 0;
+}
+#endif
+
 int s6a_conf_parse()
 {
     struct peer_info fddpi;
     struct addrinfo hints, *ai;
     int ret;
     int disc = 0;
+
+#if 0
+    fd_peer_validate_register(aw_validate);
+#endif
 
 	/* Resolve hostname if not provided */
     fd_g_config->cnf_diamid = "peer1.localdomain";
@@ -29,7 +48,6 @@ int s6a_conf_parse()
     fddpi.config.pic_flags.pro4 = PI_P4_TCP;
     fddpi.config.pic_flags.alg = PI_ALGPREF_TCP;
     fddpi.config.pic_flags.sec |= PI_SEC_NONE;
-    fddpi.pi_diamid = "peer2.localdomain";
     fddpi.config.pic_port = (uint16_t)30868;
 
     memset(&hints, 0, sizeof(hints));
@@ -38,11 +56,13 @@ int s6a_conf_parse()
     if (ret) { return CORE_ERROR; }
     
     fd_list_init( &fddpi.pi_endpoints, NULL );
+
+    fddpi.pi_diamid = "peer2.localdomain";
     fd_ep_add_merge( &fddpi.pi_endpoints, ai->ai_addr, ai->ai_addrlen, EP_FL_CONF | (disc ?: EP_ACCEPTALL) );
+    fd_peer_add ( &fddpi, NULL, NULL, NULL );
+
     freeaddrinfo(ai);
 
-    fd_peer_add ( &fddpi, NULL, NULL, NULL );
-	
 	return 0;
 }
 
