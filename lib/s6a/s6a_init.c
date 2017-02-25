@@ -12,7 +12,7 @@
 static void s6a_gnutls_log_func(int level, const char *str);
 static void s6a_fd_logger(int printlevel, const char *format, va_list ap);
 
-status_t s6a_thread_start()
+status_t s6a_thread_start(int hss)
 {
     int ret;
     
@@ -35,7 +35,7 @@ status_t s6a_thread_start()
         return CORE_ERROR;
     } 
     
-    ret = s6a_config_init(NULL);
+    ret = s6a_config_init(hss);
     if (ret != 0) 
     {
         d_error("s6a_config_init() failed");

@@ -23,7 +23,7 @@ static int aw_validate(struct peer_info * info, int * auth, int (**cb2)(struct p
 }
 #endif
 
-int s6a_conf_parse()
+int s6a_conf_parse(int hss)
 {
     struct peer_info fddpi;
     struct addrinfo hints, *ai;
@@ -35,7 +35,16 @@ int s6a_conf_parse()
 #endif
 
 	/* Resolve hostname if not provided */
-    fd_g_config->cnf_diamid = "peer1.localdomain";
+    if (hss)
+    {
+        fd_g_config->cnf_diamid = "peer2.localdomain";
+        fd_g_config->cnf_port = 30868;
+        fd_g_config->cnf_port_tls = 30869;
+    }
+    else
+    {
+        fd_g_config->cnf_diamid = "peer1.localdomain";
+    }
     fd_os_validate_DiameterIdentity(&fd_g_config->cnf_diamid, &fd_g_config->cnf_diamid_len, 1);
 	
 	/* Handle the realm part */
@@ -48,7 +57,11 @@ int s6a_conf_parse()
     fddpi.config.pic_flags.pro4 = PI_P4_TCP;
     fddpi.config.pic_flags.alg = PI_ALGPREF_TCP;
     fddpi.config.pic_flags.sec |= PI_SEC_NONE;
-    fddpi.config.pic_port = (uint16_t)30868;
+    if (hss)
+        fddpi.config.pic_port = (uint16_t)3868;
+    else
+        fddpi.config.pic_port = (uint16_t)30868;
+
 
     memset(&hints, 0, sizeof(hints));
     hints.ai_flags = AI_ADDRCONFIG | AI_NUMERICHOST;
@@ -57,7 +70,10 @@ int s6a_conf_parse()
     
     fd_list_init( &fddpi.pi_endpoints, NULL );
 
-    fddpi.pi_diamid = "peer2.localdomain";
+    if (hss)
+        fddpi.pi_diamid = "peer1.localdomain";
+    else
+        fddpi.pi_diamid = "peer2.localdomain";
     fd_ep_add_merge( &fddpi.pi_endpoints, ai->ai_addr, ai->ai_addrlen, EP_FL_CONF | (disc ?: EP_ACCEPTALL) );
     fd_peer_add ( &fddpi, NULL, NULL, NULL );
 
@@ -66,12 +82,12 @@ int s6a_conf_parse()
 	return 0;
 }
 
-status_t s6a_config_init(s6a_config_t *config)
+status_t s6a_config_init(int hss)
 {
 	char * buf = NULL, *b;
 	size_t len = 0;
 	
-	CHECK_FCT( s6a_conf_parse() );
+	CHECK_FCT( s6a_conf_parse(hss) );
 	
 	/* The following module use data from the configuration */
     int fd_rtdisp_init(void);
