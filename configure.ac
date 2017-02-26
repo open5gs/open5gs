@@ -37,7 +37,7 @@ case $host in
         OSDIR="unix"
         ;;
 esac
-AC_SUBST(OSCFLAGS)
+AC_SUBST(OSCPPFLAGS)
 AC_SUBST(OSDIR)
 
 AH_TOP([
