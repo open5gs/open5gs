@@ -82,16 +82,6 @@ struct ta_conf {
 };
 extern struct ta_conf * ta_conf;
 
-typedef struct _s6a_config_t {
-    c_uint8_t *identity;
-    c_uint8_t *realm;
-} s6a_config_t;
-
-CORE_DECLARE(status_t) s6a_config_init(int hss);
-
-CORE_DECLARE(status_t) s6a_thread_start(int hss);
-CORE_DECLARE(void) s6a_thread_stop();
-
 int s6a_app_init(void);
 void s6a_app_final(void);
 

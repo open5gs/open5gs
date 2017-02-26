@@ -55,8 +55,6 @@ static int check_signal(int signum)
             d_info("%s received", 
                     signum == SIGTERM ? "SIGTERM" : "SIGINT");
 
-            s6a_fd_final();
-
             threads_stop();
 
             return 1;
@@ -105,14 +103,14 @@ void logger_signal(int signum)
     }
 }
 
-void test_signal(int signum)
+void s6a_fd_hss_signal(int signum)
 {
     fprintf(stderr, "asdfsadfsadfsdafasdfsadf = %d\n", signum);
     switch (signum)
     {
         case SIGTERM:
         case SIGINT:
-            s6a_fd_final();
+            s6a_fd_hss_final();
             break;
         case SIGHUP:
             break;
@@ -219,9 +217,9 @@ int main(int argc, char *argv[])
             /* Child */
             umask(027);
 
-            core_signal(SIGINT, test_signal);
-            core_signal(SIGTERM, test_signal);
-            core_signal(SIGHUP, test_signal);
+            core_signal(SIGINT, s6a_fd_hss_signal);
+            core_signal(SIGTERM, s6a_fd_hss_signal);
+            core_signal(SIGHUP, s6a_fd_hss_signal);
 
             s6a_fd_hss_init();
 
@@ -229,7 +227,6 @@ int main(int argc, char *argv[])
         }
 
         /* Parent */
-        s6a_fd_mme_init();
     }
 
     {

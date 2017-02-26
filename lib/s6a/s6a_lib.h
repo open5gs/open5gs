@@ -28,11 +28,11 @@ struct s6a_fd_config_t {
 extern struct s6a_fd_config_t *s6a_fd_config;
 
 CORE_DECLARE(status_t) s6a_fd_hss_init();
+CORE_DECLARE(void) s6a_fd_hss_final();
 CORE_DECLARE(status_t) s6a_fd_mme_init();
-CORE_DECLARE(void) s6a_fd_final();
+CORE_DECLARE(void) s6a_fd_mme_final();
 
 CORE_DECLARE(status_t) s6a_fd_config_apply();
-CORE_DECLARE(void) s6a_fd_config_init();
 CORE_DECLARE(char *) s6a_fd_hss_config();
 CORE_DECLARE(char *) s6a_fd_mme_config();
 

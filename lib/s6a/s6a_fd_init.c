@@ -61,7 +61,7 @@ status_t s6a_fd_init(const char *conffile)
     return CORE_OK;
 error:
 	CHECK_FCT_DO( fd_core_shutdown(),  );
-	CHECK_FCT( fd_core_wait_shutdown_complete() );
+	CHECK_FCT_DO( fd_core_wait_shutdown_complete(),  );
 
 	return CORE_ERROR;
 }
@@ -77,14 +77,19 @@ status_t s6a_fd_hss_init()
         d_error("s6a_fd_init() failed");
         return rv;
     }
-    ret = fd_core_wait_shutdown_complete();
-    if (ret != 0)
-    {
-        return CORE_ERROR;
-        d_error("fd_core_wait_shutdown_complete() failed");
-    }
+
+	CHECK_FCT_DO( fd_core_wait_shutdown_complete(), return CORE_ERROR; );
 
     return CORE_OK;
+}
+
+void s6a_fd_hss_final()
+{
+    int ret;
+    
+    s6a_app_final();
+
+	CHECK_FCT_DO( fd_core_shutdown(), d_error("fd_core_shutdown() failed") );
 }
 
 status_t s6a_fd_mme_init()
@@ -101,17 +106,13 @@ status_t s6a_fd_mme_init()
     return CORE_OK;
 }
 
-void s6a_fd_final()
+void s6a_fd_mme_final()
 {
-    int ret;
-    
     s6a_app_final();
 
-    ret = fd_core_shutdown();
-    if (ret != 0) 
-    {
-        d_error("fd_core_shutdown() failed");
-    }
+	CHECK_FCT_DO( fd_core_shutdown(), d_error("fd_core_shutdown() failed") );
+	CHECK_FCT_DO( fd_core_wait_shutdown_complete(), 
+            d_error("fd_core_wait_shutdown_complete() failed"));
 }
 
 static void s6a_gnutls_log_func(int level, const char *str)
