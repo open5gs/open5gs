@@ -223,14 +223,13 @@ int main(int argc, char *argv[])
             core_signal(SIGTERM, test_signal);
             core_signal(SIGHUP, test_signal);
 
-            s6a_fd_init(1);
-            fd_core_wait_shutdown_complete();
+            s6a_fd_hss_init();
 
             return EXIT_SUCCESS;
         }
 
         /* Parent */
-        s6a_fd_init(0);
+        s6a_fd_mme_init();
     }
 
     {

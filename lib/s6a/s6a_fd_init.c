@@ -4,6 +4,7 @@
 #include "core_lib.h"
 
 #include "s6a_app.h"
+#include "s6a_lib.h"
 
 #include "freeDiameter/freeDiameter-host.h"
 #include "freeDiameter/libfdcore.h"
@@ -12,7 +13,7 @@
 static void s6a_gnutls_log_func(int level, const char *str);
 static void s6a_fd_logger(int printlevel, const char *format, va_list ap);
 
-status_t s6a_fd_init(int hss)
+status_t s6a_fd_init()
 {
     int ret;
     
@@ -35,7 +36,7 @@ status_t s6a_fd_init(int hss)
         return CORE_ERROR;
     } 
     
-    ret = s6a_config_init(hss);
+    ret = s6a_default_fd_config();
     if (ret != 0) 
     {
         d_error("s6a_config_init() failed");
@@ -62,6 +63,43 @@ status_t s6a_fd_init(int hss)
         d_error("s6a_app_init() failed");
         return CORE_ERROR;
     } 
+
+    return CORE_OK;
+}
+
+status_t s6a_fd_hss_init()
+{
+    status_t rv;
+    int ret;
+
+    s6a_fd_hss_config();
+    rv = s6a_fd_init();
+    if (rv != CORE_OK)
+    {
+        d_error("s6a_fd_init() failed");
+        return rv;
+    }
+    ret = fd_core_wait_shutdown_complete();
+    if (ret != 0)
+    {
+        return CORE_ERROR;
+        d_error("fd_core_wait_shutdown_complete() failed");
+    }
+
+    return CORE_OK;
+}
+
+status_t s6a_fd_mme_init()
+{
+    status_t rv;
+    s6a_fd_mme_config();
+
+    rv = s6a_fd_init();
+    if (rv != CORE_OK)
+    {
+        d_error("s6a_fd_init() failed");
+        return rv;
+    }
 
     return CORE_OK;
 }
