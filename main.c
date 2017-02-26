@@ -59,8 +59,6 @@ static int check_signal(int signum)
 
             return 1;
         }
-        case SIGHUP:
-            break;
         default:
         {
             d_error("Unknown Signal Number = %d\n", signum);
@@ -79,8 +77,6 @@ void logger_signal(int signum)
         case SIGINT:
             logger_stop();
             break;
-        case SIGHUP:
-            break;
         default:
             break;
     }
@@ -94,8 +90,6 @@ void s6a_fd_hss_signal(int signum)
         case SIGTERM:
         case SIGINT:
             s6a_fd_hss_final();
-            break;
-        case SIGHUP:
             break;
         default:
             break;
@@ -180,7 +174,6 @@ int main(int argc, char *argv[])
 
             core_signal(SIGINT, logger_signal);
             core_signal(SIGTERM, logger_signal);
-            core_signal(SIGHUP, logger_signal);
 
             logger_start(log_path);
 
@@ -202,7 +195,6 @@ int main(int argc, char *argv[])
 
             core_signal(SIGINT, s6a_fd_hss_signal);
             core_signal(SIGTERM, s6a_fd_hss_signal);
-            core_signal(SIGHUP, s6a_fd_hss_signal);
 
             s6a_fd_hss_init();
 
