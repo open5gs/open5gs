@@ -14,6 +14,8 @@
 #include "logger.h"
 #include "symtbl.h"
 
+#include "s6a_lib.h"
+
 /* Server */
 #include "cellwire.h"
 
@@ -52,6 +54,8 @@ static int check_signal(int signum)
         {
             d_info("%s received", 
                     signum == SIGTERM ? "SIGTERM" : "SIGINT");
+
+            s6a_fd_final();
 
             threads_stop();
 
@@ -108,7 +112,7 @@ void test_signal(int signum)
     {
         case SIGTERM:
         case SIGINT:
-            s6a_thread_stop();
+            s6a_fd_final();
             break;
         case SIGHUP:
             break;
@@ -219,12 +223,14 @@ int main(int argc, char *argv[])
             core_signal(SIGTERM, test_signal);
             core_signal(SIGHUP, test_signal);
 
-            s6a_thread_start(1);
+            s6a_fd_init(1);
             fd_core_wait_shutdown_complete();
 
             return EXIT_SUCCESS;
         }
+
         /* Parent */
+        s6a_fd_init(0);
     }
 
     {

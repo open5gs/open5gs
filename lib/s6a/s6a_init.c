@@ -12,7 +12,7 @@
 static void s6a_gnutls_log_func(int level, const char *str);
 static void s6a_fd_logger(int printlevel, const char *format, va_list ap);
 
-status_t s6a_thread_start(int hss)
+status_t s6a_fd_init(int hss)
 {
     int ret;
     
@@ -66,7 +66,7 @@ status_t s6a_thread_start(int hss)
     return CORE_OK;
 }
 
-void s6a_thread_stop()
+void s6a_fd_final()
 {
     int ret;
     
@@ -76,12 +76,6 @@ void s6a_thread_stop()
     if (ret != 0) 
     {
         d_error("fd_core_shutdown() failed");
-    }
-
-    ret = fd_core_wait_shutdown_complete();
-    if (ret != 0) 
-    {
-        d_error("fd_core_wait_shutdown_complete() failed");
     }
 }
 
