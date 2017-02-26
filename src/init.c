@@ -6,7 +6,6 @@
 #define TRACE_MODULE _init
 #include "core_debug.h"
 #include "core_thread.h"
-#include "core_signal.h"
 
 #include "s6a_lib.h"
 
