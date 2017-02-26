@@ -124,6 +124,8 @@ int main(int argc, char *argv[])
         }
     }
 
+    core_initialize();
+
     if (opt_daemon)
     {
         pid_t pid;
@@ -141,8 +143,6 @@ int main(int argc, char *argv[])
         setsid();
         umask(027);
     }
-
-    core_initialize();
 
     if (opt_logger)
     {
@@ -165,8 +165,6 @@ int main(int argc, char *argv[])
         }
         /* Parent */
     }
-
-    signal_init();
 
     {
         pid_t pid;
@@ -198,6 +196,8 @@ int main(int argc, char *argv[])
         d_trace_level(&_enb_s1_sm, 100);
         d_trace_level(&_s1ap_path, 100);
     }
+
+    signal_init();
 
     if (cellwire_initialize(config_path) != CORE_OK)
     {
