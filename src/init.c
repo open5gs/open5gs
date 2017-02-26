@@ -110,37 +110,10 @@ void threads_start()
     rv = thread_create(&mme_net_thread, NULL, mme_net_main, NULL);
     d_assert(rv == CORE_OK, return,
             "MME Network socket recv thread creation failed");
-
-    {
-        status_t rv;
-        pid_t pid;
-        pid = fork();
-
-        d_assert(pid != -1, return, "fork() failed");
-
-        if (pid == 0)
-        {
-            /* Child */
-            setsid();
-            umask(027);
-
-            rv = s6a_thread_start(1);
-            d_assert(rv == CORE_OK, return,
-                    "HSS thread creation failed");
-
-            return;
-        }
-        /* Parent */
-        rv = s6a_thread_start(0);
-        d_assert(rv == CORE_OK, return,
-                "HSS thread creation failed");
-    }
 }
 
 void threads_stop()
 {
-    s6a_thread_stop();
-
     thread_delete(mme_net_thread);
     thread_delete(mme_sm_thread);
 }

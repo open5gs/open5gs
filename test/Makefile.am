@@ -21,7 +21,7 @@ AM_CPPFLAGS = \
     -I$(top_srcdir)/src
 
 AM_CFLAGS = \
-	-Wall -Werror @OSCFLAGS@ \
+	-Wall -Werror \
 	-Wno-unused-function -Wno-unused-variable
 
 TESTS = testcellwire

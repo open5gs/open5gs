@@ -25,13 +25,17 @@ AC_CONFIG_SRCDIR([main.c])
 AC_CANONICAL_HOST
 
 case $host in
-   *linux*)
-       OSDIR="unix"
-       OSCFLAGS="-DLINUX=1"
-       ;;
-   *)
-       OSDIR="unix"
-       ;;
+    *linux*)
+        OSDIR="unix"
+        OSCPPFLAGS="-DLINUX=1"
+        ;;
+    *-apple-darwin*)
+        OSDIR="unix"
+        OSPPCFLAGS="-DDARWIN -DSIGPROCMASK_SETS_THREAD_MASK"
+        ;;
+    *)
+        OSDIR="unix"
+        ;;
 esac
 AC_SUBST(OSCFLAGS)
 AC_SUBST(OSDIR)

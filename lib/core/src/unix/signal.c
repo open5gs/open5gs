@@ -1,6 +1,17 @@
 #include "core.h"
 #include "core_signal.h"
 
+#if defined(__NetBSD__) || defined(DARWIN)
+static void avoid_zombies(int signo)
+{
+    int exit_status;
+
+    while (waitpid(-1, &exit_status, WNOHANG) > 0) {
+        /* do nothing */
+    }
+}
+#endif /* DARWIN */
+
 /*
  * Replace standard signal() with the more reliable sigaction equivalent
  * from W. Richard Stevens' "Advanced Programming in the UNIX Environment"
@@ -183,7 +194,7 @@ status_t signal_init(void)
      * No thread should ever block synchronous signals.
      * See the Solaris man page for pthread_sigmask() for
      * some information.  Solaris chooses to knock out such
-     * processes when a blocked synchronous signal is
+     * processes when a blocked synchronous signal is 
      * delivered, skipping any registered signal handler.
      * AIX doesn't call a signal handler either.  At least
      * one level of linux+glibc does call the handler even
@@ -192,16 +203,23 @@ status_t signal_init(void)
     sigfillset(&sig_mask);
     remove_sync_sigs(&sig_mask);
 
-    if ((rv = pthread_sigmask(SIG_SETMASK, &sig_mask, NULL)) != 0)
-    {
+#if defined(SIGPROCMASK_SETS_THREAD_MASK) || ! APR_HAS_THREADS
+    if ((rv = sigprocmask(SIG_SETMASK, &sig_mask, NULL)) != 0) {
         rv = errno;
     }
+#else
+    if ((rv = pthread_sigmask(SIG_SETMASK, &sig_mask, NULL)) != 0) {
+#ifdef HAVE_ZOS_PTHREADS
+        rv = errno;
+#endif
+    }
+#endif
     return rv;
 }
 
 status_t signal_block(int signum)
 {
-#if HAVE_SIGACTION
+#if APR_HAVE_SIGACTION
     sigset_t sig_mask;
     int rv;
 
@@ -209,19 +227,26 @@ status_t signal_block(int signum)
 
     sigaddset(&sig_mask, signum);
 
-    if ((rv = pthread_sigmask(SIG_BLOCK, &sig_mask, NULL)) != 0)
-    {
+#if defined(SIGPROCMASK_SETS_THREAD_MASK)
+    if ((rv = sigprocmask(SIG_BLOCK, &sig_mask, NULL)) != 0) {
         rv = errno;
     }
+#else
+    if ((rv = pthread_sigmask(SIG_BLOCK, &sig_mask, NULL)) != 0) {
+#ifdef HAVE_ZOS_PTHREADS
+        rv = errno;
+#endif
+    }
+#endif
     return rv;
 #else
-    return ENOTIMPL;
+    return CORE_ENOTIMPL;
 #endif
 }
 
 status_t signal_unblock(int signum)
 {
-#if HAVE_SIGACTION
+#if APR_HAVE_SIGACTION
     sigset_t sig_mask;
     int rv;
 
@@ -229,11 +254,19 @@ status_t signal_unblock(int signum)
 
     sigaddset(&sig_mask, signum);
 
-    if ((rv = pthread_sigmask(SIG_UNBLOCK, &sig_mask, NULL)) != 0) {
+#if defined(SIGPROCMASK_SETS_THREAD_MASK)
+    if ((rv = sigprocmask(SIG_UNBLOCK, &sig_mask, NULL)) != 0) {
         rv = errno;
     }
+#else
+    if ((rv = pthread_sigmask(SIG_UNBLOCK, &sig_mask, NULL)) != 0) {
+#ifdef HAVE_ZOS_PTHREADS
+        rv = errno;
+#endif
+    }
+#endif
     return rv;
 #else
-    return ENOTIMPL;
+    return CORE_ENOTIMPL;
 #endif
 }

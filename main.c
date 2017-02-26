@@ -101,6 +101,22 @@ void logger_signal(int signum)
     }
 }
 
+void test_signal(int signum)
+{
+    fprintf(stderr, "asdfsadfsadfsdafasdfsadf = %d\n", signum);
+    switch (signum)
+    {
+        case SIGTERM:
+        case SIGINT:
+            s6a_thread_stop();
+            break;
+        case SIGHUP:
+            break;
+        default:
+            break;
+    }
+}
+
 int main(int argc, char *argv[])
 {
     int opt;
@@ -175,7 +191,6 @@ int main(int argc, char *argv[])
         if (pid == 0)
         {
             /* Child */
-            setsid();
             umask(027);
 
             core_signal(SIGINT, logger_signal);
@@ -183,6 +198,29 @@ int main(int argc, char *argv[])
             core_signal(SIGHUP, logger_signal);
 
             logger_start(log_path);
+
+            return EXIT_SUCCESS;
+        }
+        /* Parent */
+    }
+
+    {
+        pid_t pid;
+        pid = fork();
+
+        d_assert(pid != -1, return EXIT_FAILURE, "fork() failed");
+
+        if (pid == 0)
+        {
+            /* Child */
+            umask(027);
+
+            core_signal(SIGINT, test_signal);
+            core_signal(SIGTERM, test_signal);
+            core_signal(SIGHUP, test_signal);
+
+            s6a_thread_start(1);
+            fd_core_wait_shutdown_complete();
 
             return EXIT_SUCCESS;
         }
