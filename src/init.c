@@ -6,6 +6,7 @@
 #define TRACE_MODULE _init
 #include "core_debug.h"
 #include "core_thread.h"
+#include "core_signal.h"
 
 #include "s6a_lib.h"
 
@@ -26,15 +27,14 @@ status_t cellwire_initialize(char *config_path)
     rv = context_init();
     if (rv != CORE_OK) return rv;
 
-    rv = s6a_fd_mme_init();
+    rv = s6a_fd_init(s6a_fd_mme_config());
     if (rv != CORE_OK) return rv;
-
     return CORE_OK;
 }
 
 void cellwire_terminate(void)
 {
-    s6a_fd_mme_final();
+    s6a_fd_final();
 
     context_final();
 }

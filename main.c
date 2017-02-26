@@ -55,8 +55,6 @@ static int check_signal(int signum)
             d_info("%s received", 
                     signum == SIGTERM ? "SIGTERM" : "SIGINT");
 
-            threads_stop();
-
             return 1;
         }
         default:
@@ -76,19 +74,6 @@ void logger_signal(int signum)
         case SIGTERM:
         case SIGINT:
             logger_stop();
-            break;
-        default:
-            break;
-    }
-}
-
-void s6a_fd_hss_signal(int signum)
-{
-    switch (signum)
-    {
-        case SIGTERM:
-        case SIGINT:
-            s6a_fd_hss_final();
             break;
         default:
             break;
@@ -182,28 +167,6 @@ int main(int argc, char *argv[])
     }
 
     {
-        pid_t pid;
-        pid = fork();
-
-        d_assert(pid != -1, return EXIT_FAILURE, "fork() failed");
-
-        if (pid == 0)
-        {
-            /* Child */
-            umask(027);
-
-            core_signal(SIGINT, s6a_fd_hss_signal);
-            core_signal(SIGTERM, s6a_fd_hss_signal);
-
-            s6a_fd_hss_init();
-
-            return EXIT_SUCCESS;
-        }
-
-        /* Parent */
-    }
-
-    {
         extern int _mme_sm;
         extern int _enb_s1_sm;
         extern int _s1ap_path;
@@ -215,6 +178,27 @@ int main(int argc, char *argv[])
 
     signal_init();
 
+    {
+        pid_t pid;
+        pid = fork();
+
+        d_assert(pid != -1, return EXIT_FAILURE, "fork() failed");
+
+        if (pid == 0)
+        {
+            /* Child */
+            signal_init();
+
+            s6a_fd_init(s6a_fd_hss_config());
+            signal_thread(check_signal);
+            s6a_fd_final();
+
+            return EXIT_SUCCESS;
+        }
+
+        /* Parent */
+    }
+
     if (cellwire_initialize(config_path) != CORE_OK)
     {
         d_fatal("CellWire initialization failed. Aborted");
@@ -225,13 +209,12 @@ int main(int argc, char *argv[])
     d_info("CellWire daemon start");
 
     threads_start();
-
     signal_thread(check_signal);
 
     d_info("CellWire daemon terminating...");
 
+    threads_stop();
     cellwire_terminate();
-
     core_terminate();
 
     return EXIT_SUCCESS;

@@ -66,47 +66,7 @@ error:
 	return CORE_ERROR;
 }
 
-status_t s6a_fd_hss_init()
-{
-    status_t rv;
-    int ret;
-
-    rv = s6a_fd_init(s6a_fd_hss_config());
-    if (rv != CORE_OK)
-    {
-        d_error("s6a_fd_init() failed");
-        return rv;
-    }
-
-	CHECK_FCT_DO( fd_core_wait_shutdown_complete(), return CORE_ERROR; );
-
-    return CORE_OK;
-}
-
-void s6a_fd_hss_final()
-{
-    int ret;
-    
-    s6a_app_final();
-
-	CHECK_FCT_DO( fd_core_shutdown(), d_error("fd_core_shutdown() failed") );
-}
-
-status_t s6a_fd_mme_init()
-{
-    status_t rv;
-
-    rv = s6a_fd_init(s6a_fd_mme_config());
-    if (rv != CORE_OK)
-    {
-        d_error("s6a_fd_init() failed");
-        return rv;
-    }
-
-    return CORE_OK;
-}
-
-void s6a_fd_mme_final()
+void s6a_fd_final()
 {
     s6a_app_final();
 
