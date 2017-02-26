@@ -8,9 +8,6 @@ extern "C" {
 #endif /* __cplusplus */
 
 struct s6a_fd_config_t {
-    /* Configuration file to parse */
-	const char	*cnf_file; 
-	
     /* Diameter Identity of the local peer (FQDN -- ASCII) */
 	char *cnf_diamid; 
     /* Diameter realm of the local peer, default to realm part of cnf_diamid */

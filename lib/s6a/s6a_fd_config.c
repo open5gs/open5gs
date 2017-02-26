@@ -2,6 +2,7 @@
 
 #include "core_debug.h"
 #include "core_lib.h"
+#include "core_file.h"
 
 #include "s6a_app.h"
 #include "s6a_lib.h"
@@ -15,7 +16,7 @@ struct s6a_fd_config_t *s6a_fd_config;
 static char *s6a_fd_hss_conffile = SYSCONFDIR "hss_fd.conf";
 static char *s6a_fd_mme_conffile = SYSCONFDIR "mme_fd.conf";
 
-static int s6a_conf_parse()
+static int s6a_fd_config_apply_internal()
 {
     struct peer_info fddpi;
     struct addrinfo hints, *ai;
@@ -65,11 +66,11 @@ status_t s6a_fd_config_apply()
 	char * buf = NULL, *b;
 	size_t len = 0;
 	
-	CHECK_FCT( s6a_conf_parse() );
+	CHECK_FCT( s6a_fd_config_apply_internal() );
 	
 	/* The following module use data from the configuration */
     int fd_rtdisp_init(void);
-	fd_rtdisp_init();
+	CHECK_FCT( fd_rtdisp_init() );
 
 	/* Display configuration */
 	b = fd_conf_dump(&buf, &len, NULL);
@@ -78,39 +79,65 @@ status_t s6a_fd_config_apply()
 	
 	/* Since some extensions might have modified the definitions from the dict_base_protocol, we only load the objects now */
     int fd_msg_init(void);
-	fd_msg_init();
+	CHECK_FCT( fd_msg_init()    );
 	
     return CORE_OK;
 }
 
-void s6a_fd_config_init()
-{
-    memset(&g_conf, 0, sizeof(struct s6a_fd_config_t));
-    s6a_fd_config = &g_conf;
-}
+#define HSS_IDENTITY "peer2.localdomain"
+#define HSS_REALM "localdomain"
+#define HSS_PORT 30868
+#define HSS_SECURE_PORT 30869
+
+#define MME_IDENTITY "peer1.localdomain"
+#define MME_REALM "localdomain"
+#define MME_PORT DIAMETER_PORT
+#define MME_SECURE_PORT DIAMETER_SECURE_PORT
 
 char *s6a_fd_hss_config()
 {
-    s6a_fd_config_init();
+    status_t rv;
+    file_info_t file_info;
+    char *conffile = s6a_fd_hss_conffile;
+    
+    memset(&g_conf, 0, sizeof(struct s6a_fd_config_t));
+    s6a_fd_config = &g_conf;
 
-    s6a_fd_config->cnf_diamid = "peer2.localdomain";
-    s6a_fd_config->cnf_diamrlm = "localdomain";
-    s6a_fd_config->cnf_port = 30868;
-    s6a_fd_config->cnf_port_tls = 30869;
-    s6a_fd_config->pi_diamid = "peer1.localdomain";
-    s6a_fd_config->pic_port = (c_uint16_t)3868;
+    s6a_fd_config->cnf_diamid = HSS_IDENTITY;
+    s6a_fd_config->cnf_diamrlm = HSS_REALM;
+    s6a_fd_config->cnf_port = HSS_PORT;
+    s6a_fd_config->cnf_port_tls = HSS_SECURE_PORT;
+    s6a_fd_config->pi_diamid = MME_IDENTITY;
+    s6a_fd_config->pic_port = MME_PORT;
 
+    rv = file_stat(&file_info, conffile, FILE_INFO_TYPE);
+    if (rv == CORE_OK && file_info.filetype == FILE_REG)
+    {
+        return conffile;
+    }
+   
     return NULL;
 }
 
 char *s6a_fd_mme_config()
 {
-    s6a_fd_config_init();
+    status_t rv;
+    file_info_t file_info;
+    char *conffile = s6a_fd_mme_conffile;
 
-    s6a_fd_config->cnf_diamid = "peer1.localdomain";
-    s6a_fd_config->cnf_diamrlm = "localdomain";
-    s6a_fd_config->pi_diamid = "peer2.localdomain";
-    s6a_fd_config->pic_port = (c_uint16_t)30868;
+    memset(&g_conf, 0, sizeof(struct s6a_fd_config_t));
+    s6a_fd_config = &g_conf;
+
+    s6a_fd_config->cnf_diamid = MME_IDENTITY;
+    s6a_fd_config->cnf_diamrlm = MME_REALM;
+    s6a_fd_config->pi_diamid = HSS_IDENTITY;
+    s6a_fd_config->pic_port = HSS_PORT;
+
+    rv = file_stat(&file_info, conffile, FILE_INFO_TYPE);
+    if (rv == CORE_OK && file_info.filetype == FILE_REG)
+    {
+        return conffile;
+    }
 
     return NULL;
 }
