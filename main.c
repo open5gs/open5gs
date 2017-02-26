@@ -60,24 +60,7 @@ static int check_signal(int signum)
             return 1;
         }
         case SIGHUP:
-        {
-
-            d_info("SIGHUP received");
-
-            threads_stop();
-
-            cellwire_terminate();
-
-            core_terminate();
-
-            core_initialize();
-
-            cellwire_initialize(config_path);
-
-            threads_start();
-
             break;
-        }
         default:
         {
             d_error("Unknown Signal Number = %d\n", signum);
