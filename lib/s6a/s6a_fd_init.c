@@ -13,7 +13,7 @@
 static void s6a_gnutls_log_func(int level, const char *str);
 static void s6a_fd_logger(int printlevel, const char *format, va_list ap);
 
-status_t s6a_fd_init()
+status_t s6a_fd_init(const char *conffile)
 {
     int ret;
     
@@ -36,26 +36,20 @@ status_t s6a_fd_init()
         return CORE_ERROR;
     } 
     
-    ret = s6a_default_fd_config();
-    if (ret != 0) 
+	/* Parse the configuration file */
+    if (conffile)
     {
-        d_error("s6a_config_init() failed");
-        return CORE_ERROR;
-    } 
+        CHECK_FCT_DO( fd_core_parseconf(conffile), goto error );
+    }
+    else
+    {
+        CHECK_FCT_DO( s6a_fd_config_apply(), goto error );
+    }
 	
-    ret = fd_core_start();
-    if (ret != 0) 
-    {
-        d_error("fd_core_start() failed");
-        return CORE_ERROR;
-    } 
+	/* Start the servers */
+	CHECK_FCT_DO( fd_core_start(), goto error );
 
-    ret = fd_core_waitstartcomplete();
-    if (ret != 0) 
-    {
-        d_error("fd_core_waitstartcomplete() failed");
-        return CORE_ERROR;
-    } 
+	CHECK_FCT_DO( fd_core_waitstartcomplete(), goto error );
 
     ret = s6a_app_init();
     if (ret != 0) 
@@ -65,6 +59,11 @@ status_t s6a_fd_init()
     } 
 
     return CORE_OK;
+error:
+	CHECK_FCT_DO( fd_core_shutdown(),  );
+	CHECK_FCT( fd_core_wait_shutdown_complete() );
+
+	return CORE_ERROR;
 }
 
 status_t s6a_fd_hss_init()
@@ -72,8 +71,7 @@ status_t s6a_fd_hss_init()
     status_t rv;
     int ret;
 
-    s6a_fd_hss_config();
-    rv = s6a_fd_init();
+    rv = s6a_fd_init(s6a_fd_hss_config());
     if (rv != CORE_OK)
     {
         d_error("s6a_fd_init() failed");
@@ -92,9 +90,8 @@ status_t s6a_fd_hss_init()
 status_t s6a_fd_mme_init()
 {
     status_t rv;
-    s6a_fd_mme_config();
 
-    rv = s6a_fd_init();
+    rv = s6a_fd_init(s6a_fd_mme_config());
     if (rv != CORE_OK)
     {
         d_error("s6a_fd_init() failed");

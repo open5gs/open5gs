@@ -12,6 +12,9 @@
 static struct s6a_fd_config_t g_conf;
 struct s6a_fd_config_t *s6a_fd_config;
 
+static char *s6a_fd_hss_conffile = SYSCONFDIR "hss_fd.conf";
+static char *s6a_fd_mme_conffile = SYSCONFDIR "mme_fd.conf";
+
 static int s6a_conf_parse()
 {
     struct peer_info fddpi;
@@ -57,7 +60,7 @@ static int s6a_conf_parse()
 	return 0;
 }
 
-status_t s6a_default_fd_config()
+status_t s6a_fd_config_apply()
 {
 	char * buf = NULL, *b;
 	size_t len = 0;
@@ -86,7 +89,7 @@ void s6a_fd_config_init()
     s6a_fd_config = &g_conf;
 }
 
-void s6a_fd_hss_config()
+char *s6a_fd_hss_config()
 {
     s6a_fd_config_init();
 
@@ -96,9 +99,11 @@ void s6a_fd_hss_config()
     s6a_fd_config->cnf_port_tls = 30869;
     s6a_fd_config->pi_diamid = "peer1.localdomain";
     s6a_fd_config->pic_port = (c_uint16_t)3868;
+
+    return NULL;
 }
 
-void s6a_fd_mme_config()
+char *s6a_fd_mme_config()
 {
     s6a_fd_config_init();
 
@@ -106,4 +111,6 @@ void s6a_fd_mme_config()
     s6a_fd_config->cnf_diamrlm = "localdomain";
     s6a_fd_config->pi_diamid = "peer2.localdomain";
     s6a_fd_config->pic_port = (c_uint16_t)30868;
+
+    return NULL;
 }
