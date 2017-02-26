@@ -17,7 +17,7 @@ status_t s6a_fd_init(const char *conffile)
 {
     int ret;
     
-    d_trace_level(&_s6a_init, 100);
+    d_trace_level(&_s6a_init, 0);
 
     gnutls_global_set_log_function(s6a_gnutls_log_func);
     gnutls_global_set_log_level(TRACE_MODULE);
@@ -138,10 +138,10 @@ static void s6a_fd_logger(int printlevel, const char *format, va_list ap)
             d_trace(10, "freeDiameter[%d]: %s\n", printlevel, buffer);
             break;  
 	    case FD_LOG_DEBUG:
-            d_trace(1, "freeDiameter[%d]: %s\n", printlevel, buffer);
+            d_trace(3, "freeDiameter[%d]: %s\n", printlevel, buffer);
             break;  
 	    case FD_LOG_NOTICE:
-            d_info("%s", buffer);
+            d_trace(1, "freeDiameter[%d]: %s\n", printlevel, buffer);
             break;
 	    case FD_LOG_ERROR:
             d_error("%s", buffer);
@@ -150,7 +150,7 @@ static void s6a_fd_logger(int printlevel, const char *format, va_list ap)
             {
                 char *except = "Initiating freeDiameter shutdown sequence";
                 if (strncmp(buffer, except, strlen(except)) == 0)
-                    d_info("%s", buffer);
+                    d_trace(1, "freeDiameter[%d]: %s\n", printlevel, buffer);
                 else
                     d_fatal("%s", buffer);
             }

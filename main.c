@@ -84,7 +84,6 @@ void logger_signal(int signum)
 
 void s6a_fd_hss_signal(int signum)
 {
-    fprintf(stderr, "asdfsadfsadfsdafasdfsadf = %d\n", signum);
     switch (signum)
     {
         case SIGTERM:
