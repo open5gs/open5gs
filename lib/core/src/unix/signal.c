@@ -1,6 +1,28 @@
 #include "core.h"
 #include "core_signal.h"
 
+CORE_DECLARE(status_t) core_kill(pid_t pid, int signum)
+{
+#ifdef OS2
+    /* SIGTERM's don't work too well in OS/2 (only affects other EMX
+     * programs). CGIs may not be, esp. REXX scripts, so use a native
+     * call instead
+     */
+    if (signum == SIGTERM) {
+        return APR_FROM_OS_ERROR(DosSendSignalException(pid,
+                                                     XCPT_SIGNAL_BREAK));
+    }
+#endif /* OS2 */
+
+    if (kill(pid, signum) == -1) {
+        return errno;
+    }
+
+    return CORE_OK;
+}
+
+#if HAVE_SIGACTION
+
 #if defined(__NetBSD__) || defined(DARWIN)
 static void avoid_zombies(int signo)
 {
@@ -52,6 +74,8 @@ core_sigfunc_t *core_signal(int signo, core_sigfunc_t *func)
         return SIG_ERR;
     return oact.sa_handler;
 }
+
+#endif
 
 static void remove_sync_sigs(sigset_t *sig_mask)
 {
@@ -219,7 +243,7 @@ status_t signal_init(void)
 
 status_t signal_block(int signum)
 {
-#if APR_HAVE_SIGACTION
+#if HAVE_SIGACTION
     sigset_t sig_mask;
     int rv;
 
@@ -246,7 +270,7 @@ status_t signal_block(int signum)
 
 status_t signal_unblock(int signum)
 {
-#if APR_HAVE_SIGACTION
+#if HAVE_SIGACTION
     sigset_t sig_mask;
     int rv;
 

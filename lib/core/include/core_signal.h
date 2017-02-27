@@ -19,6 +19,13 @@ extern "C" {
  * @{
  */
 
+/** 
+ * Terminate a process.
+ * @param proc The process to terminate.
+ * @param sig How to kill the process.
+ */
+CORE_DECLARE(status_t) core_kill(pid_t pid, int sig);
+
 #if HAVE_SIGACTION
 
 #if defined(DARWIN) && !defined(__cplusplus) && !defined(_ANSI_SOURCE)

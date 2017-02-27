@@ -11,6 +11,8 @@
 #include "freeDiameter/libfdcore.h"
 #include "freeDiameter/extension.h"
 
+static pid_t s6a_fd_hss_pid;
+
 static void s6a_gnutls_log_func(int level, const char *str);
 static void s6a_fd_logger(int printlevel, const char *format, va_list ap);
 
@@ -73,12 +75,11 @@ status_t s6a_fd_init()
 {
     status_t rv;
 
-    pid_t pid;
-    pid = fork();
+    s6a_fd_hss_pid = fork();
 
-    d_assert(pid != -1, _exit(EXIT_FAILURE), "fork() failed");
+    d_assert(s6a_fd_hss_pid >= 0, _exit(EXIT_FAILURE), "fork() failed");
 
-    if (pid == 0)
+    if (s6a_fd_hss_pid == 0)
     {
         /* Child */
         rv = s6a_fd_init_internal(s6a_fd_hss_config());
@@ -102,6 +103,8 @@ void s6a_fd_final()
 	CHECK_FCT_DO( fd_core_shutdown(), d_error("fd_core_shutdown() failed") );
 	CHECK_FCT_DO( fd_core_wait_shutdown_complete(), 
             d_error("fd_core_wait_shutdown_complete() failed"));
+
+    core_kill(s6a_fd_hss_pid, SIGTERM);
 }
 
 static void s6a_gnutls_log_func(int level, const char *str)

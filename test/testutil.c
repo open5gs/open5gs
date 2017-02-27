@@ -16,6 +16,7 @@
 
 #include "core.h"
 #include "core_debug.h"
+#include "core_signal.h"
 
 #include "cellwire.h"
 #include "context.h"
@@ -50,6 +51,7 @@ void test_terminate(void)
 void test_initialize(void)
 {
     core_initialize();
+    signal_init();
     cellwire_initialize(NULL);
 
     threads_start();
