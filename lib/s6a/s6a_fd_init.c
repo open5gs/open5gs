@@ -5,12 +5,7 @@
 #include "core_signal.h"
 #include "core_semaphore.h"
 
-#include "s6a_app.h"
-#include "s6a_lib.h"
-
-#include "freeDiameter/freeDiameter-host.h"
-#include "freeDiameter/libfdcore.h"
-#include "freeDiameter/extension.h"
+#include "s6a_fd.h"
 
 static pid_t s6a_fd_hss_pid;
 
@@ -19,7 +14,7 @@ static void s6a_fd_logger(int printlevel, const char *format, va_list ap);
 
 static int check_signal(int signum);
 
-static status_t s6a_fd_init_internal(const char *conffile)
+static int s6a_fd_init_internal(const char *conffile)
 {
     int ret;
     
@@ -32,14 +27,14 @@ static status_t s6a_fd_init_internal(const char *conffile)
     if (ret != 0) 
     {
         d_error("fd_log_handler_register() failed");
-        return CORE_ERROR;
+        return ret;
     } 
 
     ret = fd_core_initialize();
     if (ret != 0) 
     {
         d_error("fd_core_initialize() failed");
-        return CORE_ERROR;
+        return ret;
     } 
     
 	/* Parse the configuration file */
@@ -57,28 +52,24 @@ static status_t s6a_fd_init_internal(const char *conffile)
 
 	CHECK_FCT_DO( fd_core_waitstartcomplete(), goto error );
 
-    ret = s6a_app_init();
-    if (ret != 0) 
-    {
-        d_error("s6a_app_init() failed");
-        return CORE_ERROR;
-    } 
+	CHECK_FCT_DO( s6a_app_init(), goto error );
 
-    return CORE_OK;
+    return 0;
 error:
 	CHECK_FCT_DO( fd_core_shutdown(),  );
 	CHECK_FCT_DO( fd_core_wait_shutdown_complete(),  );
 
-	return CORE_ERROR;
+	return -1;
 }
 
-status_t s6a_fd_init()
+int s6a_fd_init()
 {
     status_t rv;
+    int ret;
     semaphore_id semaphore;
 
     rv = semaphore_create(&semaphore, 0);
-    d_assert(rv == CORE_OK, return rv, "semaphore_create() failed");
+    d_assert(rv == CORE_OK, return -1, "semaphore_create() failed");
 
     s6a_fd_hss_pid = fork();
     d_assert(s6a_fd_hss_pid >= 0, _exit(EXIT_FAILURE), "fork() failed");
@@ -101,16 +92,17 @@ status_t s6a_fd_init()
     }
 
     /* Parent */
-    rv = s6a_fd_init_internal(s6a_fd_mme_config());
-    if (rv != CORE_OK)
+    ret = s6a_fd_init_internal(s6a_fd_mme_config());
+    if (ret != 0)
     {
         d_error("s6a_fd_init_internal() failed");
-        return CORE_ERROR;
+        return ret;
     }
-    rv = semaphore_post(semaphore);
-    d_assert(rv == CORE_OK, return rv, "semaphore_post() failed");
 
-    return CORE_OK;
+    rv = semaphore_post(semaphore);
+    d_assert(rv == CORE_OK, return -1, "semaphore_post() failed");
+
+    return 0;
 }
 
 void s6a_fd_final()

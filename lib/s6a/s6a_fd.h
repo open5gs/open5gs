@@ -1,7 +1,9 @@
-#ifndef __S6A_LIB_H__
-#define __S6A_LIB_H__
+#ifndef __S6A_FD_H__
+#define __S6A_FD_H__
 
-#include "core.h"
+#include "core_errno.h"
+
+#include "s6a_app.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -27,7 +29,7 @@ struct s6a_fd_config_t {
 
 extern struct s6a_fd_config_t *s6a_fd_config;
 
-CORE_DECLARE(status_t) s6a_fd_init();
+CORE_DECLARE(int) s6a_fd_init();
 CORE_DECLARE(void) s6a_fd_final();
 
 CORE_DECLARE(char *) s6a_fd_hss_config();
@@ -38,4 +40,4 @@ CORE_DECLARE(status_t) s6a_fd_config_apply();
 }
 #endif /* __cplusplus */
 
-#endif /* ! __S6A_LIB_H__ */
+#endif /* ! __S6A_FD_H__ */

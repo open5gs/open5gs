@@ -4,11 +4,7 @@
 #include "core_lib.h"
 #include "core_file.h"
 
-#include "s6a_app.h"
-#include "s6a_lib.h"
-
-#include "freeDiameter/freeDiameter-host.h"
-#include "freeDiameter/libfdcore.h"
+#include "s6a_fd.h"
 
 static struct s6a_fd_config_t g_conf;
 struct s6a_fd_config_t *s6a_fd_config;
@@ -74,7 +70,8 @@ status_t s6a_fd_config_apply()
 
 	/* Display configuration */
 	b = fd_conf_dump(&buf, &len, NULL);
-    LOG_SPLIT(FD_LOG_DEBUG, NULL, b ?: "<Error during configuration dump...>", NULL);
+    LOG_SPLIT(FD_LOG_NOTICE, NULL, 
+            b ?: "<Error during configuration dump...>", NULL);
 	free(buf);	
 	
 	/* Since some extensions might have modified the definitions from the dict_base_protocol, we only load the objects now */

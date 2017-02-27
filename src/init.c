@@ -9,7 +9,7 @@
 #include "core_thread.h"
 
 #include "logger.h"
-#include "s6a_lib.h"
+#include "s6a_fd.h"
 
 #include "context.h"
 #include "event.h"
@@ -22,6 +22,7 @@ static thread_id mme_net_thread;
 status_t cellwire_initialize(char *config_path, char *log_path)
 {
     status_t rv;
+    int ret;
 
     core_initialize();
 
@@ -38,8 +39,8 @@ status_t cellwire_initialize(char *config_path, char *log_path)
     rv = context_init();
     if (rv != CORE_OK) return rv;
 
-    rv = s6a_fd_init();
-    if (rv != CORE_OK) return rv;
+    ret = s6a_fd_init();
+    if (ret != 0) return CORE_ERROR;
 
     return CORE_OK;
 }
