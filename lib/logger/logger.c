@@ -4,6 +4,7 @@
 #include "core_debug.h"
 #include "core_param.h"
 #include "core_file.h"
+#include "core_signal.h"
 
 #include <stdio.h>
 #include <sys/socket.h>
@@ -20,6 +21,27 @@ static char g_path[MAX_FILENAME_SIZE] = "wemania.log";
 static file_t *g_file = NULL;
 
 static int request_stop = 0;
+
+void check_signal(int signum)
+{
+    switch (signum)
+    {
+        case SIGTERM:
+        case SIGINT:
+        {
+            d_info("%s received", 
+                    signum == SIGTERM ? "SIGTERM" : "SIGINT");
+
+            logger_stop();
+            break;
+        }
+        default:
+        {
+            d_error("Unknown signal number = %d\n", signum);
+            break;
+        }
+    }
+}
 
 status_t log_file_backup()
 {
@@ -88,7 +110,7 @@ status_t log_file_backup()
     return CORE_OK;
 }
 
-int logger_start(const char *path)
+int logger_start_internal(const char *path)
 {
     status_t rv;
     int ret, count = 0;
@@ -215,6 +237,33 @@ int logger_start(const char *path)
     close(us);
 
     return 0;
+}
+
+void logger_start(const char *path)
+{
+    pid_t pid;
+    pid = fork();
+
+    d_assert(pid >= 0, _exit(EXIT_FAILURE), "fork() failed");
+
+    if (pid == 0)
+    {
+        int ret;
+
+        /* Child */
+        umask(027);
+
+        signal_unblock(SIGINT);
+        signal_unblock(SIGTERM);
+        core_signal(SIGINT, check_signal);
+        core_signal(SIGTERM, check_signal);
+
+        ret = logger_start_internal(path);
+        d_assert(ret == 0, _exit(EXIT_FAILURE), "logger_start() failed");
+
+        _exit(EXIT_SUCCESS);
+    }
+    /* Parent */
 }
 
 void logger_stop()

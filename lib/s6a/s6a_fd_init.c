@@ -167,7 +167,7 @@ static int check_signal(int signum)
         }
         default:
         {
-            d_error("Unknown Signal Number = %d\n", signum);
+            d_error("Unknown signal number = %d\n", signum);
             break;
         }
             

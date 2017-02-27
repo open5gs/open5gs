@@ -19,7 +19,6 @@
 /* Server */
 #include "cellwire.h"
 
-char *config_path = NULL;
 extern char g_compile_time[];
 
 static void show_version()
@@ -59,7 +58,7 @@ static int check_signal(int signum)
         }
         default:
         {
-            d_error("Unknown Signal Number = %d\n", signum);
+            d_error("Unknown signal number = %d\n", signum);
             break;
         }
             
@@ -67,36 +66,20 @@ static int check_signal(int signum)
     return 0;
 }
 
-void logger_signal(int signum)
-{
-    switch (signum)
-    {
-        case SIGTERM:
-        case SIGINT:
-            logger_stop();
-            break;
-        default:
-            break;
-    }
-}
 
 int main(int argc, char *argv[])
 {
-    int opt;
-    int opt_daemon = 0;
-    int opt_logger = 0;
-
-    char *log_path = NULL;
-
     /**************************************************************************
      * Starting up process.
      *
      * Keep the order of starting-up
      */
+    char *config_path = NULL;
+    char *log_path = NULL;
 
     while (1)
     {
-        opt = getopt (argc, argv, "vhdf:l:");
+        int opt = getopt (argc, argv, "vhdf:l:");
         if (opt == -1)
             break;
 
@@ -109,62 +92,33 @@ int main(int argc, char *argv[])
                 show_help();
                 return EXIT_SUCCESS;
             case 'd':
-                opt_daemon = 1;
+            {
+                pid_t pid;
+                pid = fork();
+
+                d_assert(pid >= 0, return EXIT_FAILURE, "fork() failed");
+
+                if (pid != 0)
+                {
+                    /* Parent */
+                    return EXIT_SUCCESS;
+                }
+                /* Child */
+
+                setsid();
+                umask(027);
                 break;
+            }
             case 'f':
                 config_path = optarg;
                 break;
             case 'l':
-                opt_logger = 1;
                 log_path = optarg;
                 break;
             default:
                 show_help();
                 return EXIT_FAILURE;
         }
-    }
-
-    core_initialize();
-
-    if (opt_daemon)
-    {
-        pid_t pid;
-        pid = fork();
-
-        d_assert(pid != -1, return EXIT_FAILURE, "fork() failed");
-
-        if (pid != 0)
-        {
-            /* Parent */
-            return EXIT_SUCCESS;
-        }
-        /* Child */
-
-        setsid();
-        umask(027);
-    }
-
-    if (opt_logger)
-    {
-        pid_t pid;
-        pid = fork();
-
-        d_assert(pid != -1, return EXIT_FAILURE, "fork() failed");
-
-        if (pid == 0)
-        {
-            /* Child */
-            setsid();
-            umask(027);
-
-            core_signal(SIGINT, logger_signal);
-            core_signal(SIGTERM, logger_signal);
-
-            logger_start(log_path);
-
-            return EXIT_SUCCESS;
-        }
-        /* Parent */
     }
 
     {
@@ -177,7 +131,10 @@ int main(int argc, char *argv[])
         d_trace_level(&_s1ap_path, 100);
     }
 
-    signal_init();
+    core_initialize();
+
+    if (log_path)
+        logger_start(optarg);
 
     if (cellwire_initialize(config_path) != CORE_OK)
     {

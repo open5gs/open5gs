@@ -16,7 +16,6 @@
 
 #include "core.h"
 #include "core_debug.h"
-#include "core_signal.h"
 
 #include "cellwire.h"
 #include "context.h"
@@ -41,9 +40,9 @@ void core_assert_ok(abts_case* tc, const char* context, status_t rv,
 void test_terminate(void)
 {
     threads_stop();
-    
-    d_msg_to(D_MSG_TO_STDOUT, 1);
 
+    d_msg_to(D_MSG_TO_STDOUT, 1);
+    
     core_terminate();
     cellwire_terminate();
 }
@@ -51,7 +50,6 @@ void test_terminate(void)
 void test_initialize(void)
 {
     core_initialize();
-    signal_init();
     cellwire_initialize(NULL);
 
     threads_start();

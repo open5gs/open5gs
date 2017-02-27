@@ -13,6 +13,7 @@
 #include "core_net.h"
 #include "core_file.h"
 #include "core_pkbuf.h"
+#include "core_signal.h"
 
 status_t core_app_initialize(int *argc,
                             const char * const * *argv,
@@ -49,6 +50,7 @@ status_t core_initialize(void)
     tm_init();
     msgq_init();
     d_msg_init();
+    signal_init();
 
     return CORE_OK;
 }

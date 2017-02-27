@@ -7,7 +7,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-CORE_DECLARE(int) logger_start(const char *path);
+CORE_DECLARE(void) logger_start(const char *path);
 CORE_DECLARE(void) logger_stop();
 
 #ifdef __cplusplus
