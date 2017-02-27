@@ -26,8 +26,9 @@ status_t cellwire_initialize(char *config_path)
     rv = context_init();
     if (rv != CORE_OK) return rv;
 
-    rv = s6a_fd_init(s6a_fd_mme_config());
+    rv = s6a_fd_init();
     if (rv != CORE_OK) return rv;
+
     return CORE_OK;
 }
 

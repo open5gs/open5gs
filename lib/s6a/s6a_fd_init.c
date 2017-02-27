@@ -2,6 +2,7 @@
 
 #include "core_debug.h"
 #include "core_lib.h"
+#include "core_signal.h"
 
 #include "s6a_app.h"
 #include "s6a_lib.h"
@@ -13,7 +14,9 @@
 static void s6a_gnutls_log_func(int level, const char *str);
 static void s6a_fd_logger(int printlevel, const char *format, va_list ap);
 
-status_t s6a_fd_init(const char *conffile)
+static int check_signal(int signum);
+
+static status_t s6a_fd_init_internal(const char *conffile)
 {
     int ret;
     
@@ -64,6 +67,32 @@ error:
 	CHECK_FCT_DO( fd_core_wait_shutdown_complete(),  );
 
 	return CORE_ERROR;
+}
+
+status_t s6a_fd_init()
+{
+    status_t rv;
+
+    pid_t pid;
+    pid = fork();
+
+    d_assert(pid != -1, _exit(EXIT_FAILURE), "fork() failed");
+
+    if (pid == 0)
+    {
+        /* Child */
+        rv = s6a_fd_init_internal(s6a_fd_hss_config());
+        d_assert(rv == CORE_OK, _exit(EXIT_FAILURE), "s6a_fd_init() failed");
+        signal_thread(check_signal);
+        s6a_fd_final();
+
+        _exit(EXIT_SUCCESS);
+    }
+
+    /* Parent */
+    rv = s6a_fd_init_internal(s6a_fd_mme_config());
+    if (rv != CORE_OK) return rv;
+    return CORE_OK;
 }
 
 void s6a_fd_final()
@@ -119,4 +148,26 @@ static void s6a_fd_logger(int printlevel, const char *format, va_list ap)
             d_warn("%s", buffer);
             break;
     }
+}
+
+static int check_signal(int signum)
+{
+    switch (signum)
+    {
+        case SIGTERM:
+        case SIGINT:
+        {
+            d_info("%s received", 
+                    signum == SIGTERM ? "SIGTERM" : "SIGINT");
+
+            return 1;
+        }
+        default:
+        {
+            d_error("Unknown Signal Number = %d\n", signum);
+            break;
+        }
+            
+    }
+    return 0;
 }

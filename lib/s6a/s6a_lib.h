@@ -27,7 +27,7 @@ struct s6a_fd_config_t {
 
 extern struct s6a_fd_config_t *s6a_fd_config;
 
-CORE_DECLARE(status_t) s6a_fd_init(const char *conffile);
+CORE_DECLARE(status_t) s6a_fd_init();
 CORE_DECLARE(void) s6a_fd_final();
 
 CORE_DECLARE(char *) s6a_fd_hss_config();

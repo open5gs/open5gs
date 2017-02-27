@@ -154,6 +154,7 @@ int main(int argc, char *argv[])
         if (pid == 0)
         {
             /* Child */
+            setsid();
             umask(027);
 
             core_signal(SIGINT, logger_signal);
@@ -163,27 +164,6 @@ int main(int argc, char *argv[])
 
             return EXIT_SUCCESS;
         }
-        /* Parent */
-    }
-
-    {
-        pid_t pid;
-        pid = fork();
-
-        d_assert(pid != -1, return EXIT_FAILURE, "fork() failed");
-
-        if (pid == 0)
-        {
-            /* Child */
-            signal_init();
-
-            s6a_fd_init(s6a_fd_hss_config());
-            signal_thread(check_signal);
-            s6a_fd_final();
-
-            return EXIT_SUCCESS;
-        }
-
         /* Parent */
     }
 
