@@ -112,23 +112,15 @@ extern struct dict_object *s6a_served_party_ip_addr;
 CORE_DECLARE(int) s6a_app_init(void);
 CORE_DECLARE(void) s6a_app_final(void);
 
-/* Initialize dictionary definitions */
 CORE_DECLARE(int) s6a_dict_init(void);
 
+CORE_DECLARE(int) s6a_serv_init(void);
+CORE_DECLARE(void) s6a_serv_fini(void);
+CORE_DECLARE(int) s6a_cli_init(void);
+CORE_DECLARE(void) s6a_cli_fini(void);
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
 #endif /* ! __S6A_APP_H__ */
-
-#if 0
-/* Handle incoming messages (server) */
-int ta_serv_init(void);
-void ta_serv_fini(void);
-
-/* Create outgoing message (client) */
-int ta_cli_init(void);
-void ta_cli_fini(void);
-
-#endif

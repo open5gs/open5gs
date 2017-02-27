@@ -98,22 +98,20 @@ int s6a_app_init(void)
 	
 	/* Install objects definitions for this test application */
 	CHECK_FCT( s6a_dict_init() );
-#if 0
 	
 	/* Install the handlers for incoming messages */
-	if (ta_conf->mode & MODE_SERV) {
-		CHECK_FCT( ta_serv_init() );
+	if (s6a_conf->mode & MODE_SERV) {
+		CHECK_FCT( s6a_serv_init() );
 	}
 	
 	/* Start the signal handler thread */
-	if (ta_conf->mode & MODE_CLI) {
-        CHECK_FCT( ta_cli_init() );
+	if (s6a_conf->mode & MODE_CLI) {
+        CHECK_FCT( s6a_cli_init() );
 	}
 	
 	/* Advertise the support for the test application in the peer */
-	CHECK_FCT( fd_disp_app_support ( ta_appli, ta_vendor, 1, 0 ) );
+	CHECK_FCT( fd_disp_app_support ( s6a_appli, s6a_vendor, 1, 0 ) );
 	
-#endif
 	/* Start the statistics thread */
 	CHECK_POSIX( pthread_create(&s6a_stats_th, NULL, s6a_stats, NULL) );
 	
@@ -123,12 +121,10 @@ int s6a_app_init(void)
 /* Unload */
 void s6a_app_final(void)
 {
-#if 0
-	if (ta_conf->mode & MODE_CLI)
-		ta_cli_fini();
-	if (ta_conf->mode & MODE_SERV)
-		ta_serv_fini();
-#endif
+	if (s6a_conf->mode & MODE_CLI)
+		s6a_cli_fini();
+	if (s6a_conf->mode & MODE_SERV)
+		s6a_serv_fini();
 
 	CHECK_FCT_DO( fd_thr_term(&s6a_stats_th), );
 	CHECK_POSIX_DO( pthread_mutex_destroy(&s6a_conf->stats_lock), );
