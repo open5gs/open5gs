@@ -96,9 +96,9 @@ int s6a_app_init(void)
 	
 	s6a_conf_dump();
 	
-#if 0
 	/* Install objects definitions for this test application */
-	CHECK_FCT( ta_dict_init() );
+	CHECK_FCT( s6a_dict_init() );
+#if 0
 	
 	/* Install the handlers for incoming messages */
 	if (ta_conf->mode & MODE_SERV) {
