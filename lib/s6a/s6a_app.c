@@ -17,6 +17,7 @@ static int s6a_conf_init(void)
 	s6a_conf->mode       = MODE_SERV | MODE_CLI;
 	s6a_conf->dest_realm = strdup(fd_g_config->cnf_diamrlm);
 	s6a_conf->dest_host  = NULL;
+	s6a_conf->user_name  = strdup("01045238277");
 	
 	/* Initialize the mutex */
 	CHECK_POSIX( pthread_mutex_init(&s6a_conf->stats_lock, NULL) );

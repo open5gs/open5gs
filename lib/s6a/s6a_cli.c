@@ -121,7 +121,7 @@ static void s6a_aia_cb(void * data, struct msg ** msg)
 }
 
 /* Create a test message */
-static void s6a_cli_test_message()
+void s6a_cli_test_message()
 {
 	struct msg * req = NULL;
 	struct avp * avp;
@@ -178,6 +178,28 @@ static void s6a_cli_test_message()
 		CHECK_FCT_DO( fd_msg_avp_new ( s6a_user_name, 0, &avp ), goto out  );
 		val.os.data = (unsigned char *)(s6a_conf->user_name);
 		val.os.len  = strlen(s6a_conf->user_name);
+		CHECK_FCT_DO( fd_msg_avp_setvalue( avp, &val ), goto out  );
+		CHECK_FCT_DO( fd_msg_avp_add( req, MSG_BRW_LAST_CHILD, avp ), 
+                goto out  );
+	}
+
+	/* Set the Auth-Session-Statee AVP if needed*/
+    {
+		CHECK_FCT_DO( fd_msg_avp_new ( s6a_auth_session_state, 0, &avp ), 
+                goto out  );
+        val.i32 = 1;
+		CHECK_FCT_DO( fd_msg_avp_setvalue( avp, &val ), goto out  );
+		CHECK_FCT_DO( fd_msg_avp_add( req, MSG_BRW_LAST_CHILD, avp ), 
+                goto out  );
+	}
+
+	/* Set the Visited-PLMN-Id AVP if needed*/
+    {
+        c_uint8_t plmn[3] = { 0x00, 0xf1, 0x10 };
+		CHECK_FCT_DO( fd_msg_avp_new ( s6a_visited_plmn_id, 0, &avp ), 
+                goto out  );
+		val.os.data = plmn;
+		val.os.len  = 3;
 		CHECK_FCT_DO( fd_msg_avp_setvalue( avp, &val ), goto out  );
 		CHECK_FCT_DO( fd_msg_avp_add( req, MSG_BRW_LAST_CHILD, avp ), 
                 goto out  );

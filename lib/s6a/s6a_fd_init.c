@@ -174,6 +174,12 @@ static int check_signal(int signum)
 
             return 1;
         }
+        case SIGUSR1:
+        {
+            void s6a_cli_test_message();
+            s6a_cli_test_message();
+            break;
+        }
         default:
         {
             d_error("Unknown signal number = %d\n", signum);
