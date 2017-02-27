@@ -3,6 +3,7 @@
 #include "core_debug.h"
 #include "core_lib.h"
 #include "core_signal.h"
+#include "core_semaphore.h"
 
 #include "s6a_app.h"
 #include "s6a_lib.h"
@@ -12,6 +13,7 @@
 #include "freeDiameter/extension.h"
 
 static pid_t s6a_fd_hss_pid;
+static semaphore_id s6a_fd_semaphore;
 
 static void s6a_gnutls_log_func(int level, const char *str);
 static void s6a_fd_logger(int printlevel, const char *format, va_list ap);
@@ -75,13 +77,18 @@ status_t s6a_fd_init()
 {
     status_t rv;
 
-    s6a_fd_hss_pid = fork();
+    rv = semaphore_create(&s6a_fd_semaphore, 0);
+    d_assert(rv == CORE_OK, return rv, "semaphore_create() failed");
 
+    s6a_fd_hss_pid = fork();
     d_assert(s6a_fd_hss_pid >= 0, _exit(EXIT_FAILURE), "fork() failed");
 
     if (s6a_fd_hss_pid == 0)
     {
         /* Child */
+        rv = semaphore_wait(s6a_fd_semaphore);
+        d_assert(rv == CORE_OK, _exit(EXIT_FAILURE), "semaphore_wait() failed");
+
         rv = s6a_fd_init_internal(s6a_fd_hss_config());
         d_assert(rv == CORE_OK, _exit(EXIT_FAILURE), "s6a_fd_init() failed");
         signal_thread(check_signal);
@@ -92,12 +99,24 @@ status_t s6a_fd_init()
 
     /* Parent */
     rv = s6a_fd_init_internal(s6a_fd_mme_config());
-    if (rv != CORE_OK) return rv;
+    if (rv != CORE_OK)
+    {
+        d_error("s6a_fd_init_internal() failed");
+        return CORE_ERROR;
+    }
+    rv = semaphore_post(s6a_fd_semaphore);
+    d_assert(rv == CORE_OK, return rv, "semaphore_post() failed");
+
     return CORE_OK;
 }
 
 void s6a_fd_final()
 {
+    status_t rv;
+
+    rv = semaphore_delete(s6a_fd_semaphore);
+    d_assert(rv == CORE_OK, , "semaphore_delete() failed");
+
     s6a_app_final();
 
 	CHECK_FCT_DO( fd_core_shutdown(), d_error("fd_core_shutdown() failed") );
