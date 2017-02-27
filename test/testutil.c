@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-#include "core.h"
 #include "core_debug.h"
 
 #include "cellwire.h"
@@ -40,21 +39,15 @@ void core_assert_ok(abts_case* tc, const char* context, status_t rv,
 void test_terminate(void)
 {
     threads_stop();
-
     d_msg_to(D_MSG_TO_STDOUT, 1);
-    
-    core_terminate();
     cellwire_terminate();
 }
 
 void test_initialize(void)
 {
-    core_initialize();
-    cellwire_initialize(NULL);
-
-    threads_start();
-
+    cellwire_initialize(NULL, NULL);
     d_msg_to(D_MSG_TO_STDOUT, 0);
+    threads_start();
 
     inet_pton(AF_INET, "127.0.0.1", &mme_self()->enb_local_addr);
 

@@ -3,18 +3,11 @@
  */
 
 /* Core library */
-#include "core.h"
-#include "core_general.h"
 #define TRACE_MODULE _main_
 #include "core_debug.h"
-#include "core_cond.h"
 #include "core_signal.h"
-#include "core_net.h"
 
-#include "logger.h"
 #include "symtbl.h"
-
-#include "s6a_lib.h"
 
 /* Server */
 #include "cellwire.h"
@@ -131,28 +124,21 @@ int main(int argc, char *argv[])
         d_trace_level(&_s1ap_path, 100);
     }
 
-    core_initialize();
-
-    if (log_path)
-        logger_start(optarg);
-
-    if (cellwire_initialize(config_path) != CORE_OK)
+    if (cellwire_initialize(config_path, log_path) != CORE_OK)
     {
         d_fatal("CellWire initialization failed. Aborted");
         return EXIT_FAILURE;
     }
-    
+    threads_start();
+
     show_version();
     d_info("CellWire daemon start");
-
-    threads_start();
     signal_thread(check_signal);
 
     d_info("CellWire daemon terminating...");
 
     threads_stop();
     cellwire_terminate();
-    core_terminate();
 
     return EXIT_SUCCESS;
 }

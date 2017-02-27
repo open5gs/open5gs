@@ -4,9 +4,11 @@
 
 /* Core library */
 #define TRACE_MODULE _init
+#include "core_general.h"
 #include "core_debug.h"
 #include "core_thread.h"
 
+#include "logger.h"
 #include "s6a_lib.h"
 
 #include "context.h"
@@ -17,11 +19,21 @@
 static thread_id mme_sm_thread;
 static thread_id mme_net_thread;
 
-status_t cellwire_initialize(char *config_path)
+status_t cellwire_initialize(char *config_path, char *log_path)
 {
     status_t rv;
 
+    core_initialize();
+
     srand(time(NULL)*getpid());
+
+    if (config_path)
+    {
+        /* TODO */
+    }
+
+    if (log_path)
+        logger_start(log_path);
 
     rv = context_init();
     if (rv != CORE_OK) return rv;
@@ -35,8 +47,8 @@ status_t cellwire_initialize(char *config_path)
 void cellwire_terminate(void)
 {
     s6a_fd_final();
-
     context_final();
+    core_terminate();
 }
 
 void *THREAD_FUNC mme_sm_main(void *data)

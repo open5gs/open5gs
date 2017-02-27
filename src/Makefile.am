@@ -32,6 +32,7 @@ libcellwire_la_LIBADD = \
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/lib/core/include \
+	-I$(top_srcdir)/lib/logger \
     -I$(top_srcdir)/lib/message/s1ap/asn1c \
     -I$(top_srcdir)/lib/message/s1ap \
     -I$(top_srcdir)/lib/message/nas \
