@@ -1,22 +1,24 @@
 #define TRACE_MODULE _s6a_app
 
+#include "core_debug.h"
+
 #include "s6a_app.h"
 
 static pthread_t s6a_stats_th = (pthread_t)NULL;
 
 static void s6a_config_dump(void)
 {
-	LOG_N( "------- s6a configuration dump: ---------");
-	LOG_N( " Vendor Id .......... : %u", s6a_config->vendor_id);
-	LOG_N( " Application Id ..... : %u", s6a_config->appli_id);
-	LOG_N( " Mode ............... : %s%s", 
+	d_trace(1, "------- s6a configuration dump: ---------\n");
+	d_trace(1, " Vendor Id .......... : %u\n", s6a_config->vendor_id);
+	d_trace(1, " Application Id ..... : %u\n", s6a_config->appli_id);
+	d_trace(1, " Mode ............... : %s%s\n", 
             s6a_config->mode & MODE_MME ? "MME" : "", 
             s6a_config->mode & MODE_HSS ? "HSS" : "");
-	LOG_N( " Destination Realm .. : %s", 
-            s6a_config->dest_realm ?: "- none -");
-	LOG_N( " Destination Host ... : %s", 
-            s6a_config->dest_host ?: "- none -");
-	LOG_N( "------- /s6a configuration dump ---------");
+	d_trace(1, " Destination Realm .. : %s\n", 
+            s6a_config->dest_realm ?: "- none -\n");
+	d_trace(1, " Destination Host ... : %s\n", 
+            s6a_config->dest_host ?: "- none -\n");
+	d_trace(1, "------- /s6a configuration dump ---------\n");
 }
 
 /* Function to display statistics periodically */
@@ -42,36 +44,39 @@ static void * s6a_stats(void * arg)
 		CHECK_SYS_DO( clock_gettime(CLOCK_REALTIME, &now), );
 		
 		/* Now, display everything */
-		LOG_N( "------- app_test statistics ---------");
+		d_trace(1, "------- app_test statistics ---------\n");
 		if (now.tv_nsec >= start.tv_nsec) 
         {
-			LOG_N( " Executing for: %d.%06ld sec",
+			d_trace(1, " Executing for: %d.%06ld sec\n",
 					(int)(now.tv_sec - start.tv_sec),
 					(long)(now.tv_nsec - start.tv_nsec) / 1000);
 		} 
         else 
         {
-			LOG_N( " Executing for: %d.%06ld sec",
+			d_trace(1, " Executing for: %d.%06ld sec\n",
 					(int)(now.tv_sec - 1 - start.tv_sec),
 					(long)(now.tv_nsec + 1000000000 - start.tv_nsec) / 1000);
 		}
 		
 		if (s6a_config->mode & MODE_HSS) 
         {
-			LOG_N( " HSS: %llu message(s) echoed", 
+			d_trace(1, " HSS: %llu message(s) echoed\n", 
                     copy.nb_echoed);
 		}
 		if (s6a_config->mode & MODE_MME) 
         {
-			LOG_N( " MME:");
-			LOG_N( "   %llu message(s) sent", copy.nb_sent);
-			LOG_N( "   %llu error(s) received", copy.nb_errs);
-			LOG_N( "   %llu answer(s) received", copy.nb_recv);
-			LOG_N( "     fastest: %ld.%06ld sec.", copy.shortest / 1000000, copy.shortest % 1000000);
-			LOG_N( "     slowest: %ld.%06ld sec.", copy.longest / 1000000, copy.longest % 1000000);
-			LOG_N( "     Average: %ld.%06ld sec.", copy.avg / 1000000, copy.avg % 1000000);
+			d_trace(1, " MME:\n");
+			d_trace(1, "   %llu message(s) sent\n", copy.nb_sent);
+			d_trace(1, "   %llu error(s) received\n", copy.nb_errs);
+			d_trace(1, "   %llu answer(s) received\n", copy.nb_recv);
+			d_trace(1, "     fastest: %ld.%06ld sec.\n", 
+                    copy.shortest / 1000000, copy.shortest % 1000000);
+			d_trace(1, "     slowest: %ld.%06ld sec.\n", 
+                    copy.longest / 1000000, copy.longest % 1000000);
+			d_trace(1, "     Average: %ld.%06ld sec.\n", 
+                    copy.avg / 1000000, copy.avg % 1000000);
 		}
-		LOG_N( "-------------------------------------");
+		d_trace(1, "-------------------------------------\n");
 	}
 	
 	return NULL; /* never called */
@@ -80,6 +85,8 @@ static void * s6a_stats(void * arg)
 /* entry point */
 int s6a_app_init(int mode)
 {
+    d_trace_level(&_s6a_app, 1);
+
     /* Configure Application Mode(MME, HSS) */
     s6a_config->mode = mode;
 

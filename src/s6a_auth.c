@@ -111,8 +111,6 @@ static void s6a_aia_cb(void * data, struct msg ** msg)
 		s6a_config->stats.nb_errs++;
 	else 
 		s6a_config->stats.nb_recv++;
-	
-	
 	CHECK_POSIX_DO( pthread_mutex_unlock(&s6a_config->stats_lock), );
 	
 	/* Display how long it took */
