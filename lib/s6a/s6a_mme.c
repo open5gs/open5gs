@@ -1,3 +1,5 @@
+#define TRACE_MODULE _s6a_mme
+
 #include "core_debug.h"
 
 #include "s6a_app.h"
@@ -229,19 +231,15 @@ out:
 	return;
 }
 
-int s6a_cli_init(void)
+int s6a_mme_init(void)
 {
 	CHECK_FCT( fd_sess_handler_create(&s6a_cli_reg, (void *)free, NULL, NULL) );
-	
-//	CHECK_FCT( fd_event_trig_regcb(s6a_config->signal, "test_app.cli", s6a_cli_test_message ) );
 	
 	return 0;
 }
 
-void s6a_cli_fini(void)
+void s6a_mme_final(void)
 {
-	// CHECK_FCT_DO( fd_sig_unregister(s6a_config->signal), /* continue */ );
-	
 	CHECK_FCT_DO( fd_sess_handler_destroy(&s6a_cli_reg, NULL), /* continue */ );
 	
 	return;

@@ -131,19 +131,19 @@ CORE_DECLARE(void) s6a_final(void);
 CORE_DECLARE(int) s6a_fd_init(const char *conffile);
 CORE_DECLARE(void) s6a_fd_final();
 
+CORE_DECLARE(int) s6a_app_init(int mode);
+CORE_DECLARE(void) s6a_app_final(void);
+
+CORE_DECLARE(int) s6a_hss_init(void);
+CORE_DECLARE(void) s6a_hss_final(void);
+CORE_DECLARE(int) s6a_mme_init(void);
+CORE_DECLARE(void) s6a_mme_final(void);
+
 CORE_DECLARE(char *) s6a_hss_config();
 CORE_DECLARE(char *) s6a_mme_config();
 CORE_DECLARE(status_t) s6a_config_apply();
 
-CORE_DECLARE(int) s6a_app_init(int mode);
-CORE_DECLARE(void) s6a_app_final(void);
-
 CORE_DECLARE(int) s6a_dict_init(void);
-
-CORE_DECLARE(int) s6a_serv_init(void);
-CORE_DECLARE(void) s6a_serv_fini(void);
-CORE_DECLARE(int) s6a_cli_init(void);
-CORE_DECLARE(void) s6a_cli_fini(void);
 
 #ifdef __cplusplus
 }

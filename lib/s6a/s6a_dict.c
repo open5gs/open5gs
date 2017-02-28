@@ -1,3 +1,5 @@
+#define TRACE_MODULE _s6a_dict
+
 #include "core_debug.h"
 
 #include "s6a_app.h"

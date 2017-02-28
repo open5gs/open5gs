@@ -1,3 +1,5 @@
+#define TRACE_MODULE _s6a_hss
+
 #include "core_debug.h"
 
 #include "s6a_app.h"
@@ -73,7 +75,7 @@ static int s6a_air_cb( struct msg ** msg, struct avp * avp,
 	return 0;
 }
 
-int s6a_serv_init(void)
+int s6a_hss_init(void)
 {
 	struct disp_when data;
 	
@@ -92,7 +94,7 @@ int s6a_serv_init(void)
 	return 0;
 }
 
-void s6a_serv_fini(void)
+void s6a_hss_final(void)
 {
 	if (s6a_hdl_fb) {
 		(void) fd_disp_unregister(&s6a_hdl_fb, NULL);

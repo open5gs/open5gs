@@ -20,8 +20,8 @@ static void s6a_config_dump(void)
 }
 
 /* Function to display statistics periodically */
-static void * s6a_stats(void * arg) {
-
+static void * s6a_stats(void * arg) 
+{
 	struct timespec start, now;
 	struct ta_stats copy;
 	
@@ -42,27 +42,27 @@ static void * s6a_stats(void * arg) {
 		CHECK_SYS_DO( clock_gettime(CLOCK_REALTIME, &now), );
 		
 		/* Now, display everything */
-		fd_log_debug( "------- app_test statistics ---------");
+		LOG_N( "------- app_test statistics ---------");
 		if (now.tv_nsec >= start.tv_nsec) {
-			fd_log_debug( " Executing for: %d.%06ld sec",
+			LOG_N( " Executing for: %d.%06ld sec",
 					(int)(now.tv_sec - start.tv_sec),
 					(long)(now.tv_nsec - start.tv_nsec) / 1000);
 		} else {
-			fd_log_debug( " Executing for: %d.%06ld sec",
+			LOG_N( " Executing for: %d.%06ld sec",
 					(int)(now.tv_sec - 1 - start.tv_sec),
 					(long)(now.tv_nsec + 1000000000 - start.tv_nsec) / 1000);
 		}
 		
 		if (s6a_config->mode & MODE_HSS) {
-			fd_log_debug( " HSS: %llu message(s) echoed", copy.nb_echoed);
+			LOG_N( " HSS: %" C_UINT64_T_FMT " message(s) echoed", copy.nb_echoed);
 		}
 		if (s6a_config->mode & MODE_MME) {
-			fd_log_debug( " MME:");
-			fd_log_debug( "   %llu message(s) sent", copy.nb_sent);
-			fd_log_debug( "   %llu error(s) received", copy.nb_errs);
-			fd_log_debug( "   %llu answer(s) received", copy.nb_recv);
+			LOG_N( " MME:");
+			LOG_N( "   %" C_UINT64_T_FMT " message(s) sent", copy.nb_sent);
+			LOG_N( "   %" C_UINT64_T_FMT " error(s) received", copy.nb_errs);
+			LOG_N( "   %" C_UINT64_T_FMT " answer(s) received", copy.nb_recv);
 		}
-		fd_log_debug( "-------------------------------------");
+		LOG_N( "-------------------------------------");
 	}
 	
 	return NULL; /* never called */
@@ -71,6 +71,9 @@ static void * s6a_stats(void * arg) {
 /* entry point */
 int s6a_app_init(int mode)
 {
+    /* Configure Application Mode(MME, HSS) */
+    s6a_config->mode = mode;
+
 	/* Initialize the mutex */
 	CHECK_POSIX( pthread_mutex_init(&s6a_config->stats_lock, NULL) );
 	
@@ -81,12 +84,12 @@ int s6a_app_init(int mode)
 	
 	/* Start the signal handler thread */
 	if (s6a_config->mode & MODE_MME) {
-        CHECK_FCT( s6a_cli_init() );
+        CHECK_FCT( s6a_mme_init() );
 	}
 	
 	/* Install the handlers for incoming messages */
 	if (s6a_config->mode & MODE_HSS) {
-		CHECK_FCT( s6a_serv_init() );
+		CHECK_FCT( s6a_hss_init() );
 	}
 	
 	/* Advertise the support for the test application in the peer */
@@ -102,9 +105,9 @@ int s6a_app_init(int mode)
 void s6a_app_final(void)
 {
 	if (s6a_config->mode & MODE_MME)
-		s6a_cli_fini();
+		s6a_mme_final();
 	if (s6a_config->mode & MODE_HSS)
-		s6a_serv_fini();
+		s6a_hss_final();
 
 	CHECK_FCT_DO( fd_thr_term(&s6a_stats_th), );
 	CHECK_POSIX_DO( pthread_mutex_destroy(&s6a_config->stats_lock), );
