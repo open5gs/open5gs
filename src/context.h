@@ -5,6 +5,7 @@
 #include "core_errno.h"
 #include "core_net.h"
 
+#include "common.h"
 #include "sm.h"
 
 #ifdef __cplusplus
@@ -24,12 +25,6 @@ extern "C" {
 #define SIZE_OF_RAB_POOL            (SIZE_OF_UE_POOL * RAB_PER_UE)
 
 typedef list_t rab_list_t;
-
-typedef struct _plmn_id_t {
-    c_uint16_t      mcc;
-    c_uint16_t      mnc;
-    c_uint16_t      mnc_len;
-} plmn_id_t;
 
 typedef struct _served_gummei {
     c_uint32_t      num_of_plmn_id;

@@ -3,7 +3,7 @@
 noinst_LTLIBRARIES = libcellwire.la
 
 libcellwire_la_SOURCES = \
-    cellwire.h event.h context.h \
+    cellwire.h common.h event.h context.h \
 	s1ap_build.h s1ap_conv.h s1ap_path.h \
 	s6_path.h \
 	sm.h 
