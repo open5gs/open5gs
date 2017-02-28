@@ -1,11 +1,11 @@
 ## Process this file with automake to produce Makefile.in
 
-noinst_LTLIBRARIES = libmessagenas.la
+noinst_LTLIBRARIES = libnas.la
 
-libmessagenas_la_SOURCES = \
+libnas_la_SOURCES = \
 	nas_message.h nas_ies.h
 
-nodist_libmessagenas_la_SOURCES = \
+nodist_libnas_la_SOURCES = \
 	nas_decoder.c nas_encoder.c nas_ies.c
 
 AM_CPPFLAGS = \

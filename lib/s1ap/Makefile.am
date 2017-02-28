@@ -2,25 +2,25 @@
 
 SUBDIRS = asn1c
 
-noinst_LTLIBRARIES = libmessages1ap.la
+noinst_LTLIBRARIES = libs1ap.la
 
-libmessages1ap_la_SOURCES = \
+libs1ap_la_SOURCES = \
 	s1ap_ies_defs.h s1ap_codecs.h
 
-nodist_libmessages1ap_la_SOURCES = \
+nodist_libs1ap_la_SOURCES = \
 	s1ap_encoder.c s1ap_decoder.c s1ap_free.c \
 	s1ap_ies_encoder.c s1ap_ies_decoder.c s1ap_ies_free.c s1ap_ies_xer_print.c
 
-libmessages1ap_la_DEPENDENCIES = \
-    $(top_srcdir)/lib/message/s1ap/asn1c/libmessages1apasn1c.la
+libs1ap_la_DEPENDENCIES = \
+    $(top_srcdir)/lib/s1ap/asn1c/libs1apasn1c.la
 
-libmessages1ap_la_LIBADD = \
-    $(top_srcdir)/lib/message/s1ap/asn1c/libmessages1apasn1c.la
+libs1ap_la_LIBADD = \
+    $(top_srcdir)/lib/s1ap/asn1c/libs1apasn1c.la
 
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \
-    -I$(top_srcdir)/lib/message/s1ap/asn1c
+    -I$(top_srcdir)/lib/s1ap/asn1c
 
 AM_CFLAGS = \
 	-Wall -Werror

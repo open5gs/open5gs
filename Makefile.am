@@ -15,8 +15,6 @@ cellwired_LDADD = \
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \
-    -I$(top_srcdir)/lib/logger \
-    -I$(top_srcdir)/lib/s6a \
     -I$(top_srcdir)/src
 
 CLEANFILES = symtbl.c
