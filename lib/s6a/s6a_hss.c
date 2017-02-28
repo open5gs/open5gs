@@ -4,12 +4,12 @@
 
 #include "s6a_app.h"
 
-static struct disp_hdl * s6a_hdl_fb = NULL; /* handler for fallback cb */
-static struct disp_hdl * s6a_hdl_tr = NULL; /* handler for Test-Request req cb */
+static struct disp_hdl *s6a_hdl_fb = NULL; /* handler for fallback cb */
+static struct disp_hdl *s6a_hdl_tr = NULL; /* handler for Test-Request req cb */
 
 /* Default callback for the application. */
-static int s6a_fb_cb( struct msg ** msg, struct avp * avp, 
-        struct session * sess, void * opaque, enum disp_action * act)
+static int s6a_fb_cb(struct msg **msg, struct avp *avp, 
+        struct session *sess, void *opaque, enum disp_action *act)
 {
 	/* This CB should never be called */
 	d_warn("Unexpected message received!");
@@ -18,8 +18,8 @@ static int s6a_fb_cb( struct msg ** msg, struct avp * avp,
 }
 
 /* Callback for incoming Test-Request messages */
-static int s6a_air_cb( struct msg ** msg, struct avp * avp, 
-        struct session * sess, void * opaque, enum disp_action * act)
+static int s6a_air_cb( struct msg **msg, struct avp *avp, 
+        struct session *sess, void *opaque, enum disp_action *act)
 {
 	struct msg *ans, *qry;
 	struct avp * a;
@@ -29,50 +29,29 @@ static int s6a_air_cb( struct msg ** msg, struct avp * avp,
 	
 	/* Create answer header */
 	qry = *msg;
-	CHECK_FCT( fd_msg_new_answer_from_req ( fd_g_config->cnf_dict, msg, 0 ) );
+	d_assert(fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0) == 0, 
+            return -1,);
 	ans = *msg;
 	
-#if 0
-	/* Set the Test-AVP AVP */
-	{
-		struct avp * src = NULL;
-		struct avp_hdr * hdr = NULL;
-		
-		CHECK_FCT( fd_msg_search_avp ( qry, s6a_avp, &src) );
-		CHECK_FCT( fd_msg_avp_hdr( src, &hdr )  );
-		
-		CHECK_FCT( fd_msg_avp_new ( s6a_avp, 0, &avp ) );
-		CHECK_FCT( fd_msg_avp_setvalue( avp, hdr->avp_value ) );
-		CHECK_FCT( fd_msg_avp_add( ans, MSG_BRW_LAST_CHILD, avp ) );
-	}
-	
-	/* Set the Test-Payload-AVP AVP */
-	if (s6a_config->long_avp_id) {
-		struct avp * src = NULL;
-		struct avp_hdr * hdr = NULL;
-		
-		CHECK_FCT( fd_msg_search_avp ( qry, s6a_avp_long, &src) );
-		CHECK_FCT( fd_msg_avp_hdr( src, &hdr )  );
-		
-		CHECK_FCT( fd_msg_avp_new ( s6a_avp_long, 0, &avp ) );
-		CHECK_FCT( fd_msg_avp_setvalue( avp, hdr->avp_value ) );
-		CHECK_FCT( fd_msg_avp_add( ans, MSG_BRW_LAST_CHILD, avp ) );
-	}
-#endif
-	
-	
 	/* Set the Origin-Host, Origin-Realm, Result-Code AVPs */
-	CHECK_FCT( fd_msg_rescode_set( ans, "DIAMETER_SUCCESS", NULL, NULL, 1 ) );
+	d_assert(fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1) == 0,
+            goto out,);
 	
 	/* Send the answer */
-	CHECK_FCT( fd_msg_send( msg, NULL, NULL ) );
+	d_assert(fd_msg_send(msg, NULL, NULL) == 0, goto out,);
 	
 	/* Add this value to the stats */
-	CHECK_POSIX_DO( pthread_mutex_lock(&s6a_config->stats_lock), );
+	d_assert(pthread_mutex_lock(&s6a_config->stats_lock) == 0,,) ;
 	s6a_config->stats.nb_echoed++;
-	CHECK_POSIX_DO( pthread_mutex_unlock(&s6a_config->stats_lock), );
-	
+	d_assert(pthread_mutex_unlock(&s6a_config->stats_lock) == 0,,);
+
+    d_assert(fd_msg_free(qry) == 0,,);
+
 	return 0;
+out:
+    d_assert(fd_msg_free(ans) == 0,,);
+	
+    return -1;
 }
 
 int s6a_hss_init(void)
@@ -84,12 +63,12 @@ int s6a_hss_init(void)
 	data.command = s6a_cmd_air;
 	
 	/* fallback CB if command != unexpected message received */
-	CHECK_FCT( fd_disp_register( s6a_fb_cb, DISP_HOW_APPID, &data, NULL, 
-                &s6a_hdl_fb ) );
+	d_assert(fd_disp_register(s6a_fb_cb, DISP_HOW_APPID, &data, NULL, 
+                &s6a_hdl_fb) == 0, return -1,);
 	
 	/* Now specific handler for Authentication-Information-Request */
-	CHECK_FCT( fd_disp_register( s6a_air_cb, DISP_HOW_CC, &data, NULL, 
-                &s6a_hdl_tr ) );
+	d_assert(fd_disp_register(s6a_air_cb, DISP_HOW_CC, &data, NULL, 
+                &s6a_hdl_tr) == 0, return -1,);
 	
 	return 0;
 }

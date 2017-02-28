@@ -8,10 +8,98 @@
 struct sess_state {
     c_int32_t randval; /* a random value to store in Test-AVP */
     struct timespec ts; /* Time of sending the message */
-} ;
+};
+
+static void s6a_aia_cb(void *data, struct msg **msg);
 
 /* Cb called when an answer is received */
-static void s6a_aia_cb(void * data, struct msg ** msg)
+int s6_send_auth_req()
+{
+    struct msg *req = NULL;
+    struct avp *avp;
+    union avp_value val;
+    struct sess_state *mi = NULL, *svg;
+    struct session *sess = NULL;
+    
+    /* Create the random value to store with the session */
+    mi = malloc(sizeof(struct sess_state));
+    d_assert(mi, return -1, "malloc failed: %s", strerror(errno));
+    
+    mi->randval = (int32_t)random();
+    
+    /* Create the request */
+    d_assert(fd_msg_new( s6a_cmd_air, MSGFL_ALLOC_ETEID, &req ) == 0, 
+            free(mi); return -1,);
+    
+    /* Create a new session */
+    #define S6A_APP_SID_OPT  "app_s6a"
+    d_assert(fd_msg_new_session(req, (os0_t)S6A_APP_SID_OPT, 
+            CONSTSTRLEN(S6A_APP_SID_OPT)) == 0, goto out,);
+    d_assert(fd_msg_sess_get(fd_g_config->cnf_dict, req, &sess, NULL) == 0, 
+            goto out, );
+    
+    /* Set the Destination-Realm AVP */
+    d_assert(fd_msg_avp_new(s6a_destination_realm, 0, &avp) == 0, goto out,);
+    val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
+    val.os.len  = strlen(fd_g_config->cnf_diamrlm);
+    d_assert(fd_msg_avp_setvalue(avp, &val) == 0, goto out, );
+    d_assert(fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp) == 0, goto out, );
+    
+    /* Set Origin-Host & Origin-Realm */
+    d_assert(fd_msg_add_origin(req, 0) == 0, goto out, );
+    
+    /* Set the User-Name AVP if needed*/
+    #define S6A_USER_NAME  "01045238277"
+    d_assert(fd_msg_avp_new(s6a_user_name, 0, &avp) == 0, goto out,);
+    val.os.data = (unsigned char *)(S6A_USER_NAME);
+    val.os.len  = strlen(S6A_USER_NAME);
+    d_assert(fd_msg_avp_setvalue(avp, &val) == 0, goto out, );
+    d_assert(fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp) == 0, goto out,);
+
+    /* Set the Auth-Session-Statee AVP if needed*/
+    d_assert(fd_msg_avp_new(s6a_auth_session_state, 0, &avp) == 0, goto out,);
+    val.i32 = 1;
+    d_assert(fd_msg_avp_setvalue(avp, &val) == 0, goto out,);
+    d_assert(fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp) == 0, goto out,);
+
+    /* Set the Visited-PLMN-Id AVP if needed*/
+    c_uint8_t plmn[3] = { 0x00, 0xf1, 0x10 };
+    d_assert(fd_msg_avp_new(s6a_visited_plmn_id, 0, &avp) == 0, goto out,);
+    val.os.data = plmn;
+    val.os.len  = 3;
+    d_assert(fd_msg_avp_setvalue(avp, &val) == 0, goto out,);
+    d_assert(fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp) == 0, goto out,);
+    
+    d_assert(clock_gettime(CLOCK_REALTIME, &mi->ts) == 0, goto out,);
+    
+    /* Keep a pointer to the session data for debug purpose, 
+     * in real life we would not need it */
+    svg = mi;
+    
+    /* Store this value in the session */
+    d_assert(fd_sess_state_store(s6a_mme_reg, sess, &mi) == 0, goto out,); 
+    
+    /* Log sending the message */
+    d_info("SEND %x to '%s' (-)\n", svg->randval, fd_g_config->cnf_diamrlm);
+    
+    /* Send the request */
+    d_assert(fd_msg_send(&req, s6a_aia_cb, svg) == 0, goto out,);
+
+    /* Increment the counter */
+    d_assert(pthread_mutex_lock(&s6a_config->stats_lock) == 0,,);
+    s6a_config->stats.nb_sent++;
+    d_assert(pthread_mutex_unlock(&s6a_config->stats_lock) == 0,, );
+
+    return 0;
+
+out:
+    d_assert(fd_msg_free(req) == 0,,);
+    free(mi);
+
+    return -1;
+}
+
+static void s6a_aia_cb(void *data, struct msg **msg)
 {
     struct sess_state *mi = NULL;
     struct timespec ts;
@@ -20,64 +108,60 @@ static void s6a_aia_cb(void * data, struct msg ** msg)
     struct avp_hdr *hdr;
     unsigned long dur;
     int error = 0;
+    int new;
     
     CHECK_SYS_DO(clock_gettime(CLOCK_REALTIME, &ts), return);
 
     /* Search the session, retrieve its data */
-    {
-        int new;
-        CHECK_FCT_DO(fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &sess, &new),
-                return );
-        d_assert(new == 0, return, "fd_msg_sess_get() failed");
-        
-        CHECK_FCT_DO(fd_sess_state_retrieve( s6a_mme_reg, sess, &mi), 
-                return );
-        d_assert((void *)mi == data, return, "fd_sess_state_retrieve() failed");
-    }
+    d_assert(fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &sess, &new) == 0 && 
+            new == 0, return,);
+    
+    d_assert(fd_sess_state_retrieve(s6a_mme_reg, sess, &mi) == 0 &&
+            (void *)mi == data, fd_msg_free(*msg); *msg = NULL; return,);
     
     /* Value of Result Code */
-    CHECK_FCT_DO(fd_msg_search_avp(*msg, s6a_result_code, &avp), return);
+    d_assert(fd_msg_search_avp(*msg, s6a_result_code, &avp) == 0, goto out,);
     if (avp) 
     {
-        CHECK_FCT_DO(fd_msg_avp_hdr( avp, &hdr ), return);
-        if (hdr->avp_value->i32 != 2001)
+        d_assert(fd_msg_avp_hdr(avp, &hdr) == 0, goto out,);
+        if (hdr->avp_value->i32 != ER_DIAMETER_SUCCESS)
             error++;
     }
     else 
     {
-        d_error("no_Result-Code");
+        d_error("No 'Result-Code'");
         error++;
     }
     
     /* Value of Origin-Host */
-    CHECK_FCT_DO(fd_msg_search_avp( *msg, s6a_origin_host, &avp), return);
+    d_assert(fd_msg_search_avp(*msg, s6a_origin_host, &avp) == 0, goto out,);
     if (avp)
     {
-        CHECK_FCT_DO(fd_msg_avp_hdr( avp, &hdr ), return);
+        d_assert(fd_msg_avp_hdr(avp, &hdr) == 0, goto out,);
         d_info("From '%.*s' ", 
             (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
     } 
     else 
     {
-        d_error("no_Origin-Host ");
+        d_error("No 'Origin-Host'");
         error++;
     }
     
     /* Value of Origin-Realm */
-    CHECK_FCT_DO(fd_msg_search_avp( *msg, s6a_origin_realm, &avp), return);
+    d_assert(fd_msg_search_avp(*msg, s6a_origin_realm, &avp) == 0, goto out,);
     if (avp) 
     {
-        CHECK_FCT_DO(fd_msg_avp_hdr(avp, &hdr), return);
+        d_assert(fd_msg_avp_hdr(avp, &hdr) == 0, goto out,);
         d_info("('%.*s') ", 
             (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
     }
     else
     {
-        d_error("no_Origin-Realm ");
+        d_error("No 'Origin-Realm'");
         error++;
     }
     
-    CHECK_POSIX_DO(pthread_mutex_lock(&s6a_config->stats_lock),);
+    d_assert(pthread_mutex_lock(&s6a_config->stats_lock) == 0,,);
     dur = ((ts.tv_sec - mi->ts.tv_sec) * 1000000) + 
         ((ts.tv_nsec - mi->ts.tv_nsec) / 1000);
     if (s6a_config->stats.nb_recv)
@@ -101,7 +185,7 @@ static void s6a_aia_cb(void * data, struct msg ** msg)
         s6a_config->stats.nb_errs++;
     else 
         s6a_config->stats.nb_recv++;
-    CHECK_POSIX_DO( pthread_mutex_unlock(&s6a_config->stats_lock), );
+    d_assert(pthread_mutex_unlock(&s6a_config->stats_lock) == 0,,);
     
     /* Display how long it took */
     if (ts.tv_nsec > mi->ts.tv_nsec)
@@ -113,8 +197,9 @@ static void s6a_aia_cb(void * data, struct msg ** msg)
                 (int)(ts.tv_sec + 1 - mi->ts.tv_sec),
                 (long)(1000000000 + ts.tv_nsec - mi->ts.tv_nsec) / 1000);
     
+out:
     /* Free the message */
-    CHECK_FCT_DO(fd_msg_free(*msg), return);
+    d_assert(fd_msg_free(*msg) == 0,,);
     *msg = NULL;
     
     free(mi);
@@ -122,83 +207,3 @@ static void s6a_aia_cb(void * data, struct msg ** msg)
     return;
 }
 
-status_t s6_send_auth_req()
-{
-    struct msg *req = NULL;
-    struct avp *avp;
-    union avp_value val;
-    struct sess_state *mi = NULL, *svg;
-    struct session *sess = NULL;
-    
-    /* Create the request */
-    CHECK_FCT_DO(fd_msg_new( s6a_cmd_air, 
-                MSGFL_ALLOC_ETEID, &req ), goto out);
-    
-    /* Create a new session */
-    #define S6A_APP_SID_OPT  "app_s6a"
-    CHECK_FCT_DO(fd_msg_new_session(req, (os0_t)S6A_APP_SID_OPT, 
-            CONSTSTRLEN(S6A_APP_SID_OPT)), goto out);
-    CHECK_FCT_DO(fd_msg_sess_get(fd_g_config->cnf_dict, req, &sess, NULL), 
-            goto out);
-    
-    /* Create the random value to store with the session */
-    mi = malloc(sizeof(struct sess_state));
-    d_assert(mi, goto out, "malloc failed: %s", strerror(errno));
-    
-    mi->randval = (int32_t)random();
-    
-    /* Set the Destination-Realm AVP */
-    CHECK_FCT_DO(fd_msg_avp_new(s6a_destination_realm, 0, &avp), goto out);
-    val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
-    val.os.len  = strlen(fd_g_config->cnf_diamrlm);
-    CHECK_FCT_DO(fd_msg_avp_setvalue(avp, &val), goto out);
-    CHECK_FCT_DO(fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out);
-    
-    /* Set Origin-Host & Origin-Realm */
-    CHECK_FCT_DO(fd_msg_add_origin(req, 0), goto out);
-    
-    /* Set the User-Name AVP if needed*/
-    #define S6A_USER_NAME  "01045238277"
-    CHECK_FCT_DO(fd_msg_avp_new(s6a_user_name, 0, &avp), goto out);
-    val.os.data = (unsigned char *)(S6A_USER_NAME);
-    val.os.len  = strlen(S6A_USER_NAME);
-    CHECK_FCT_DO(fd_msg_avp_setvalue(avp, &val), goto out);
-    CHECK_FCT_DO(fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out);
-
-    /* Set the Auth-Session-Statee AVP if needed*/
-    CHECK_FCT_DO(fd_msg_avp_new(s6a_auth_session_state, 0, &avp), goto out);
-    val.i32 = 1;
-    CHECK_FCT_DO(fd_msg_avp_setvalue(avp, &val), goto out);
-    CHECK_FCT_DO(fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out);
-
-    /* Set the Visited-PLMN-Id AVP if needed*/
-    c_uint8_t plmn[3] = { 0x00, 0xf1, 0x10 };
-    CHECK_FCT_DO(fd_msg_avp_new(s6a_visited_plmn_id, 0, &avp), goto out);
-    val.os.data = plmn;
-    val.os.len  = 3;
-    CHECK_FCT_DO(fd_msg_avp_setvalue(avp, &val ), goto out);
-    CHECK_FCT_DO(fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out);
-    
-    CHECK_SYS_DO( clock_gettime(CLOCK_REALTIME, &mi->ts), goto out );
-    
-    /* Keep a pointer to the session data for debug purpose, 
-     * in real life we would not need it */
-    svg = mi;
-    
-    /* Store this value in the session */
-    CHECK_FCT_DO(fd_sess_state_store(s6a_mme_reg, sess, &mi), goto out); 
-    
-    /* Log sending the message */
-    d_info("SEND %x to '%s' (-)\n", svg->randval, fd_g_config->cnf_diamrlm);
-    
-    /* Send the request */
-    CHECK_FCT_DO(fd_msg_send(&req, s6a_aia_cb, svg), goto out);
-
-    /* Increment the counter */
-    CHECK_POSIX_DO( pthread_mutex_lock(&s6a_config->stats_lock), );
-    s6a_config->stats.nb_sent++;
-    CHECK_POSIX_DO( pthread_mutex_unlock(&s6a_config->stats_lock), );
-
-out:
-    return CORE_OK;
-}

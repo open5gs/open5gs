@@ -7,7 +7,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-CORE_DECLARE(status_t) s6_send_auth_req();
+CORE_DECLARE(int) s6_send_auth_req();
 
 #ifdef __cplusplus
 }
