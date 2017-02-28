@@ -2,41 +2,20 @@
 
 #include "s6a_app.h"
 
-struct s6a_conf *s6a_conf = NULL;
-static struct s6a_conf _conf;
 static pthread_t s6a_stats_th = (pthread_t)NULL;
 
-static int s6a_conf_init(void)
-{
-	s6a_conf = &_conf;
-	memset(s6a_conf, 0, sizeof(struct s6a_conf));
-	
-	/* Set the default values */
-	s6a_conf->vendor_id  = 10415;	/* 3GPP Vendor ID */
-	s6a_conf->appli_id   = 16777251;	/* 3GPP S6A Application ID */
-	s6a_conf->mode       = MODE_SERV | MODE_CLI;
-	s6a_conf->dest_realm = strdup(fd_g_config->cnf_diamrlm);
-	s6a_conf->dest_host  = NULL;
-	s6a_conf->user_name  = strdup("01045238277");
-	
-	/* Initialize the mutex */
-	CHECK_POSIX( pthread_mutex_init(&s6a_conf->stats_lock, NULL) );
-	
-	return 0;
-}
-
-static void s6a_conf_dump(void)
+static void s6a_config_dump(void)
 {
 	LOG_N( "------- s6a configuration dump: ---------");
-	LOG_N( " Vendor Id .......... : %u", s6a_conf->vendor_id);
-	LOG_N( " Application Id ..... : %u", s6a_conf->appli_id);
+	LOG_N( " Vendor Id .......... : %u", s6a_config->vendor_id);
+	LOG_N( " Application Id ..... : %u", s6a_config->appli_id);
 	LOG_N( " Mode ............... : %s%s", 
-            s6a_conf->mode & MODE_SERV ? "Serv" : "", 
-            s6a_conf->mode & MODE_CLI ? "Cli" : "");
+            s6a_config->mode & MODE_MME ? "MME" : "", 
+            s6a_config->mode & MODE_HSS ? "HSS" : "");
 	LOG_N( " Destination Realm .. : %s", 
-            s6a_conf->dest_realm ?: "- none -");
+            s6a_config->dest_realm ?: "- none -");
 	LOG_N( " Destination Host ... : %s", 
-            s6a_conf->dest_host ?: "- none -");
+            s6a_config->dest_host ?: "- none -");
 	LOG_N( "------- /s6a configuration dump ---------");
 }
 
@@ -55,9 +34,9 @@ static void * s6a_stats(void * arg) {
 		sleep(10);
 		
 		/* Now, get the current stats */
-		CHECK_POSIX_DO( pthread_mutex_lock(&s6a_conf->stats_lock), );
-		memcpy(&copy, &s6a_conf->stats, sizeof(struct ta_stats));
-		CHECK_POSIX_DO( pthread_mutex_unlock(&s6a_conf->stats_lock), );
+		CHECK_POSIX_DO( pthread_mutex_lock(&s6a_config->stats_lock), );
+		memcpy(&copy, &s6a_config->stats, sizeof(struct ta_stats));
+		CHECK_POSIX_DO( pthread_mutex_unlock(&s6a_config->stats_lock), );
 		
 		/* Get the current execution time */
 		CHECK_SYS_DO( clock_gettime(CLOCK_REALTIME, &now), );
@@ -74,11 +53,11 @@ static void * s6a_stats(void * arg) {
 					(long)(now.tv_nsec + 1000000000 - start.tv_nsec) / 1000);
 		}
 		
-		if (s6a_conf->mode & MODE_SERV) {
-			fd_log_debug( " Server: %llu message(s) echoed", copy.nb_echoed);
+		if (s6a_config->mode & MODE_HSS) {
+			fd_log_debug( " HSS: %llu message(s) echoed", copy.nb_echoed);
 		}
-		if (s6a_conf->mode & MODE_CLI) {
-			fd_log_debug( " Client:");
+		if (s6a_config->mode & MODE_MME) {
+			fd_log_debug( " MME:");
 			fd_log_debug( "   %llu message(s) sent", copy.nb_sent);
 			fd_log_debug( "   %llu error(s) received", copy.nb_errs);
 			fd_log_debug( "   %llu answer(s) received", copy.nb_recv);
@@ -90,24 +69,24 @@ static void * s6a_stats(void * arg) {
 }
 
 /* entry point */
-int s6a_app_init(void)
+int s6a_app_init(int mode)
 {
-	/* Initialize configuration */
-	CHECK_FCT( s6a_conf_init() );
+	/* Initialize the mutex */
+	CHECK_POSIX( pthread_mutex_init(&s6a_config->stats_lock, NULL) );
 	
-	s6a_conf_dump();
+	s6a_config_dump();
 	
 	/* Install objects definitions for this test application */
 	CHECK_FCT( s6a_dict_init() );
 	
-	/* Install the handlers for incoming messages */
-	if (s6a_conf->mode & MODE_SERV) {
-		CHECK_FCT( s6a_serv_init() );
+	/* Start the signal handler thread */
+	if (s6a_config->mode & MODE_MME) {
+        CHECK_FCT( s6a_cli_init() );
 	}
 	
-	/* Start the signal handler thread */
-	if (s6a_conf->mode & MODE_CLI) {
-        CHECK_FCT( s6a_cli_init() );
+	/* Install the handlers for incoming messages */
+	if (s6a_config->mode & MODE_HSS) {
+		CHECK_FCT( s6a_serv_init() );
 	}
 	
 	/* Advertise the support for the test application in the peer */
@@ -122,11 +101,11 @@ int s6a_app_init(void)
 /* Unload */
 void s6a_app_final(void)
 {
-	if (s6a_conf->mode & MODE_CLI)
+	if (s6a_config->mode & MODE_MME)
 		s6a_cli_fini();
-	if (s6a_conf->mode & MODE_SERV)
+	if (s6a_config->mode & MODE_HSS)
 		s6a_serv_fini();
 
 	CHECK_FCT_DO( fd_thr_term(&s6a_stats_th), );
-	CHECK_POSIX_DO( pthread_mutex_destroy(&s6a_conf->stats_lock), );
+	CHECK_POSIX_DO( pthread_mutex_destroy(&s6a_config->stats_lock), );
 }

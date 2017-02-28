@@ -105,11 +105,11 @@ int s6a_dict_init(void)
 {
     CHECK_FCT(s6a_ext_load());
 
-    CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_VENDOR, VENDOR_BY_ID, 
-        (void *)&s6a_conf->vendor_id, &s6a_vendor, ENOENT));
+    CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_VENDOR, 
+        VENDOR_BY_ID, (void *)&s6a_config->vendor_id, &s6a_vendor, ENOENT));
 
     CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_APPLICATION, 
-        APPLICATION_BY_ID, (void *)&s6a_conf->appli_id, &s6a_appli, ENOENT));
+        APPLICATION_BY_ID, (void *)&s6a_config->appli_id, &s6a_appli, ENOENT));
 
     CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_COMMAND, CMD_BY_NAME, 
         "Authentication-Information-Request", &s6a_cmd_air, ENOENT));

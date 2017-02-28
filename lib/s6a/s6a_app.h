@@ -12,11 +12,25 @@ extern "C" {
 #endif /* __cplusplus */
 
 /* Mode for the extension */
-#define MODE_SERV	0x1
-#define	MODE_CLI	0x2
+#define	MODE_MME 0x1
+#define MODE_HSS 0x2
 
-/* The module configuration */
-struct s6a_conf {
+struct s6a_config_t {
+    /* Diameter Identity of the local peer (FQDN -- ASCII) */
+	char *cnf_diamid; 
+    /* Diameter realm of the local peer, default to realm part of cnf_diamid */
+	char *cnf_diamrlm; 
+
+    /* the local port for legacy Diameter (default: 3868) in host byte order */
+	c_uint16_t cnf_port;
+    /* the local port for Diameter/TLS (default: 5658) in host byte order */
+	c_uint16_t cnf_port_tls;
+
+    /* (supposedly) UTF-8, \0 terminated. 
+     * The Diameter Identity of the remote peer. */
+	char *pi_diamid; 
+    c_uint16_t pic_port; /* port to connect to. 0: default. */
+    
     c_uint32_t vendor_id;    /* default 999999 */
     c_uint32_t appli_id;    /* default 123456 */
     int mode;        /* default MODE_SERV | MODE_CLI */
@@ -29,9 +43,11 @@ struct s6a_conf {
         c_uint64_t nb_recv;   /* client */
         c_uint64_t nb_errs;   /* client */
     } stats;
-    pthread_mutex_t        stats_lock;
+
+    pthread_mutex_t stats_lock;
 };
-extern struct s6a_conf *s6a_conf;
+
+extern struct s6a_config_t *s6a_config;
 
 /* Some global variables for dictionary */
 extern struct dict_object *s6a_vendor;
@@ -109,7 +125,17 @@ extern struct dict_object *s6a_pre_emption_capability;
 extern struct dict_object *s6a_pre_emption_vulnerability;
 extern struct dict_object *s6a_served_party_ip_addr;
 
-CORE_DECLARE(int) s6a_app_init(void);
+CORE_DECLARE(int) s6a_init(void);
+CORE_DECLARE(void) s6a_final(void);
+
+CORE_DECLARE(int) s6a_fd_init(const char *conffile);
+CORE_DECLARE(void) s6a_fd_final();
+
+CORE_DECLARE(char *) s6a_hss_config();
+CORE_DECLARE(char *) s6a_mme_config();
+CORE_DECLARE(status_t) s6a_config_apply();
+
+CORE_DECLARE(int) s6a_app_init(int mode);
 CORE_DECLARE(void) s6a_app_final(void);
 
 CORE_DECLARE(int) s6a_dict_init(void);

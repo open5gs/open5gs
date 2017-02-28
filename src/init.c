@@ -9,7 +9,7 @@
 #include "core_thread.h"
 
 #include "logger.h"
-#include "s6a_fd.h"
+#include "s6a_app.h"
 
 #include "context.h"
 #include "event.h"
@@ -39,7 +39,7 @@ status_t cellwire_initialize(char *config_path, char *log_path)
     rv = context_init();
     if (rv != CORE_OK) return rv;
 
-    ret = s6a_fd_init();
+    ret = s6a_init();
     if (ret != 0) return CORE_ERROR;
 
     return CORE_OK;
@@ -47,7 +47,7 @@ status_t cellwire_initialize(char *config_path, char *log_path)
 
 void cellwire_terminate(void)
 {
-    s6a_fd_final();
+    s6a_final();
     context_final();
     core_terminate();
 }

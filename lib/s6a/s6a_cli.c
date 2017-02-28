@@ -89,16 +89,16 @@ static void s6a_aia_cb(void * data, struct msg ** msg)
 		error++;
 	}
 	
-	CHECK_POSIX_DO( pthread_mutex_lock(&s6a_conf->stats_lock), );
+	CHECK_POSIX_DO( pthread_mutex_lock(&s6a_config->stats_lock), );
 	dur = ((ts.tv_sec - mi->ts.tv_sec) * 1000000) + 
         ((ts.tv_nsec - mi->ts.tv_nsec) / 1000);
 	if (error)
-		s6a_conf->stats.nb_errs++;
+		s6a_config->stats.nb_errs++;
 	else 
-		s6a_conf->stats.nb_recv++;
+		s6a_config->stats.nb_recv++;
 	
 	
-	CHECK_POSIX_DO( pthread_mutex_unlock(&s6a_conf->stats_lock), );
+	CHECK_POSIX_DO( pthread_mutex_unlock(&s6a_config->stats_lock), );
 	
 	/* Display how long it took */
 	if (ts.tv_nsec > mi->ts.tv_nsec) {
@@ -152,19 +152,19 @@ void s6a_cli_test_message()
 	{
 		CHECK_FCT_DO( fd_msg_avp_new ( s6a_destination_realm, 0, &avp ), 
                 goto out  );
-		val.os.data = (unsigned char *)(s6a_conf->dest_realm);
-		val.os.len  = strlen(s6a_conf->dest_realm);
+		val.os.data = (unsigned char *)(s6a_config->dest_realm);
+		val.os.len  = strlen(s6a_config->dest_realm);
 		CHECK_FCT_DO( fd_msg_avp_setvalue( avp, &val ), goto out  );
 		CHECK_FCT_DO( fd_msg_avp_add( req, MSG_BRW_LAST_CHILD, avp ), 
                 goto out  );
 	}
 	
 	/* Set the Destination-Host AVP if needed*/
-	if (s6a_conf->dest_host) {
+	if (s6a_config->dest_host) {
 		CHECK_FCT_DO( fd_msg_avp_new ( s6a_destination_host, 0, &avp ), 
                 goto out  );
-		val.os.data = (unsigned char *)(s6a_conf->dest_host);
-		val.os.len  = strlen(s6a_conf->dest_host);
+		val.os.data = (unsigned char *)(s6a_config->dest_host);
+		val.os.len  = strlen(s6a_config->dest_host);
 		CHECK_FCT_DO( fd_msg_avp_setvalue( avp, &val ), goto out  );
 		CHECK_FCT_DO( fd_msg_avp_add( req, MSG_BRW_LAST_CHILD, avp ), 
                 goto out  );
@@ -174,10 +174,10 @@ void s6a_cli_test_message()
 	CHECK_FCT_DO( fd_msg_add_origin ( req, 0 ), goto out  );
 	
 	/* Set the User-Name AVP if needed*/
-	if (s6a_conf->user_name) {
+	if (s6a_config->user_name) {
 		CHECK_FCT_DO( fd_msg_avp_new ( s6a_user_name, 0, &avp ), goto out  );
-		val.os.data = (unsigned char *)(s6a_conf->user_name);
-		val.os.len  = strlen(s6a_conf->user_name);
+		val.os.data = (unsigned char *)(s6a_config->user_name);
+		val.os.len  = strlen(s6a_config->user_name);
 		CHECK_FCT_DO( fd_msg_avp_setvalue( avp, &val ), goto out  );
 		CHECK_FCT_DO( fd_msg_avp_add( req, MSG_BRW_LAST_CHILD, avp ), 
                 goto out  );
@@ -215,15 +215,15 @@ void s6a_cli_test_message()
 	
 	/* Log sending the message */
     d_info("SEND %x to '%s' (%s)\n", svg->randval, 
-            s6a_conf->dest_realm, s6a_conf->dest_host?:"-" );
+            s6a_config->dest_realm, s6a_config->dest_host?:"-" );
 	
 	/* Send the request */
 	CHECK_FCT_DO( fd_msg_send( &req, s6a_aia_cb, svg ), goto out );
 
 	/* Increment the counter */
-	CHECK_POSIX_DO( pthread_mutex_lock(&s6a_conf->stats_lock), );
-	s6a_conf->stats.nb_sent++;
-	CHECK_POSIX_DO( pthread_mutex_unlock(&s6a_conf->stats_lock), );
+	CHECK_POSIX_DO( pthread_mutex_lock(&s6a_config->stats_lock), );
+	s6a_config->stats.nb_sent++;
+	CHECK_POSIX_DO( pthread_mutex_unlock(&s6a_config->stats_lock), );
 
 out:
 	return;
@@ -233,14 +233,14 @@ int s6a_cli_init(void)
 {
 	CHECK_FCT( fd_sess_handler_create(&s6a_cli_reg, (void *)free, NULL, NULL) );
 	
-//	CHECK_FCT( fd_event_trig_regcb(s6a_conf->signal, "test_app.cli", s6a_cli_test_message ) );
+//	CHECK_FCT( fd_event_trig_regcb(s6a_config->signal, "test_app.cli", s6a_cli_test_message ) );
 	
 	return 0;
 }
 
 void s6a_cli_fini(void)
 {
-	// CHECK_FCT_DO( fd_sig_unregister(s6a_conf->signal), /* continue */ );
+	// CHECK_FCT_DO( fd_sig_unregister(s6a_config->signal), /* continue */ );
 	
 	CHECK_FCT_DO( fd_sess_handler_destroy(&s6a_cli_reg, NULL), /* continue */ );
 	

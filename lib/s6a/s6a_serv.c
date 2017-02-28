@@ -45,7 +45,7 @@ static int s6a_air_cb( struct msg ** msg, struct avp * avp,
 	}
 	
 	/* Set the Test-Payload-AVP AVP */
-	if (s6a_conf->long_avp_id) {
+	if (s6a_config->long_avp_id) {
 		struct avp * src = NULL;
 		struct avp_hdr * hdr = NULL;
 		
@@ -66,9 +66,9 @@ static int s6a_air_cb( struct msg ** msg, struct avp * avp,
 	CHECK_FCT( fd_msg_send( msg, NULL, NULL ) );
 	
 	/* Add this value to the stats */
-	CHECK_POSIX_DO( pthread_mutex_lock(&s6a_conf->stats_lock), );
-	s6a_conf->stats.nb_echoed++;
-	CHECK_POSIX_DO( pthread_mutex_unlock(&s6a_conf->stats_lock), );
+	CHECK_POSIX_DO( pthread_mutex_lock(&s6a_config->stats_lock), );
+	s6a_config->stats.nb_echoed++;
+	CHECK_POSIX_DO( pthread_mutex_unlock(&s6a_config->stats_lock), );
 	
 	return 0;
 }

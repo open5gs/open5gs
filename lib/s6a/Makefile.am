@@ -5,10 +5,10 @@ SUBDIRS = freeDiameter
 noinst_LTLIBRARIES = libs6a.la
 
 libs6a_la_SOURCES = \
-	s6a_fd.h s6a_app.h
+	s6a_app.h
 
 nodist_libs6a_la_SOURCES = \
-	s6a_fd_init.c s6a_fd_config.c \
+	s6a_init.c s6a_fd.c s6a_config.c \
 	s6a_app.c s6a_dict.c s6a_serv.c s6a_cli.c
 
 libs6a_la_DEPENDENCIES = \
