@@ -10,6 +10,7 @@
 #include "symtbl.h"
 
 /* Server */
+#include "s6a_auth_info.h"
 #include "cellwire.h"
 
 extern char g_compile_time[];
@@ -51,8 +52,18 @@ static int check_signal(int signum)
         }
         case SIGUSR1:
         {
-            status_t s6_send_auth_req();
-            s6_send_auth_req();
+            s6a_auth_info_req_t air;
+            memset(&air, 0, sizeof(s6a_auth_info_req_t));
+
+            #define TEST_IMSI "01045238277"
+            air.imsi_len = strlen(TEST_IMSI);
+            strcpy((char*)air.imsi, TEST_IMSI);
+            air.visited_plmn_id.mcc = 1;
+            air.visited_plmn_id.mnc = 1;
+            air.visited_plmn_id.mnc_len = 2;
+            air.auth_info.num_of_eutran_vector = 1;
+            air.auth_info.immediate_response_preferred = 1;
+            s6a_send_auth_info_req(&air);
             break;
         }
         default:

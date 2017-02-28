@@ -1,6 +1,8 @@
 #define TRACE_MODULE _s1conv
 
 #include "core_debug.h"
+
+#include "common.h"
 #include "s1ap_conv.h"
 
 CORE_DECLARE(void) s1ap_conv_uint8_to_octet_string(
@@ -34,10 +36,6 @@ CORE_DECLARE(void) s1ap_conv_uint32_to_octet_string(
     octet_string->buf[0] = uint32;
 }
 
-#define S1AP_CONV_DECIMAL100(x) (((x) / 100) % 10)
-#define S1AP_CONV_DECIMAL10(x) (((x) / 10) % 10)
-#define S1AP_CONV_DECIMAL1(x) ((x) % 10)
-
 CORE_DECLARE(void) s1ap_conv_plmn_id_to_tbcd_string(
         plmn_id_t *plmn_id, S1ap_TBCD_STRING_t *tbcd_string)
 
@@ -45,17 +43,7 @@ CORE_DECLARE(void) s1ap_conv_plmn_id_to_tbcd_string(
     tbcd_string->size = 3;
     tbcd_string->buf = core_calloc(tbcd_string->size, sizeof(c_uint8_t));
 
-    tbcd_string->buf[0] = (S1AP_CONV_DECIMAL10(plmn_id->mcc) << 4) |
-                          S1AP_CONV_DECIMAL100(plmn_id->mcc);
-
-    if (plmn_id->mnc_len == 2)
-        tbcd_string->buf[1] = (0xf << 4);
-    else
-        tbcd_string->buf[1] = (S1AP_CONV_DECIMAL100(plmn_id->mnc) << 4);
-    tbcd_string->buf[1] |= S1AP_CONV_DECIMAL1(plmn_id->mcc);
-
-    tbcd_string->buf[2] = (S1AP_CONV_DECIMAL1(plmn_id->mnc) << 4) |
-                          S1AP_CONV_DECIMAL10(plmn_id->mnc);
+    encode_plmn_id(tbcd_string->buf, plmn_id);
 }
 
 CORE_DECLARE(void) s1ap_conv_macro_enb_id_to_bit_string(

@@ -2,8 +2,10 @@
 
 #include "core_debug.h"
 
+#include "common.h"
+
 #include "s6a_app.h"
-#include "s6a_auth.h"
+#include "s6a_auth_info.h"
 
 struct sess_state {
     c_int32_t randval; /* a random value to store in Test-AVP */
@@ -13,10 +15,11 @@ struct sess_state {
 static void s6a_aia_cb(void *data, struct msg **msg);
 
 /* Cb called when an answer is received */
-int s6_send_auth_req()
+int s6a_send_auth_info_req(s6a_auth_info_req_t *air)
 {
     struct msg *req = NULL;
     struct avp *avp;
+    struct avp *avpch;
     union avp_value val;
     struct sess_state *mi = NULL, *svg;
     struct session *sess = NULL;
@@ -37,6 +40,15 @@ int s6_send_auth_req()
             CONSTSTRLEN(S6A_APP_SID_OPT)) == 0, goto out,);
     d_assert(fd_msg_sess_get(fd_g_config->cnf_dict, req, &sess, NULL) == 0, 
             goto out, );
+
+    /* Set the Auth-Session-Statee AVP if needed*/
+    d_assert(fd_msg_avp_new(s6a_auth_session_state, 0, &avp) == 0, goto out,);
+    val.i32 = 1;
+    d_assert(fd_msg_avp_setvalue(avp, &val) == 0, goto out,);
+    d_assert(fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp) == 0, goto out,);
+
+    /* Set Origin-Host & Origin-Realm */
+    d_assert(fd_msg_add_origin(req, 0) == 0, goto out, );
     
     /* Set the Destination-Realm AVP */
     d_assert(fd_msg_avp_new(s6a_destination_realm, 0, &avp) == 0, goto out,);
@@ -45,30 +57,40 @@ int s6_send_auth_req()
     d_assert(fd_msg_avp_setvalue(avp, &val) == 0, goto out, );
     d_assert(fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp) == 0, goto out, );
     
-    /* Set Origin-Host & Origin-Realm */
-    d_assert(fd_msg_add_origin(req, 0) == 0, goto out, );
-    
     /* Set the User-Name AVP if needed*/
-    #define S6A_USER_NAME  "01045238277"
     d_assert(fd_msg_avp_new(s6a_user_name, 0, &avp) == 0, goto out,);
-    val.os.data = (unsigned char *)(S6A_USER_NAME);
-    val.os.len  = strlen(S6A_USER_NAME);
+    val.os.data = air->imsi;
+    val.os.len  = air->imsi_len;
     d_assert(fd_msg_avp_setvalue(avp, &val) == 0, goto out, );
     d_assert(fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp) == 0, goto out,);
 
-    /* Set the Auth-Session-Statee AVP if needed*/
-    d_assert(fd_msg_avp_new(s6a_auth_session_state, 0, &avp) == 0, goto out,);
-    val.i32 = 1;
-    d_assert(fd_msg_avp_setvalue(avp, &val) == 0, goto out,);
+    /* Add the Authentication-Info */
+    d_assert(fd_msg_avp_new(s6a_req_eutran_auth_info, 0, &avp) == 0, goto out,);
+    d_assert(fd_msg_avp_new(s6a_number_of_requested_vectors, 0, 
+                &avpch) == 0, goto out,);
+    val.u32 = air->auth_info.num_of_eutran_vector;
+    d_assert(fd_msg_avp_setvalue (avpch, &val) == 0, goto out,);
+    d_assert(fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch) == 0, goto out,);
+
+    d_assert(fd_msg_avp_new(s6a_immediate_response_preferred, 0, 
+                &avpch) == 0, goto out,);
+    val.u32 = air->auth_info.immediate_response_preferred;
+    d_assert(fd_msg_avp_setvalue(avpch, &val) == 0, goto out,);
+    d_assert(fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch) == 0, goto out,);
+
     d_assert(fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp) == 0, goto out,);
 
     /* Set the Visited-PLMN-Id AVP if needed*/
-    c_uint8_t plmn[3] = { 0x00, 0xf1, 0x10 };
-    d_assert(fd_msg_avp_new(s6a_visited_plmn_id, 0, &avp) == 0, goto out,);
-    val.os.data = plmn;
-    val.os.len  = 3;
-    d_assert(fd_msg_avp_setvalue(avp, &val) == 0, goto out,);
-    d_assert(fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp) == 0, goto out,);
+    {
+        c_uint8_t data[3] = {0, };
+        encode_plmn_id(data, &air->visited_plmn_id);
+
+        d_assert(fd_msg_avp_new(s6a_visited_plmn_id, 0, &avp) == 0, goto out,);
+        val.os.data = data;
+        val.os.len  = 3;
+        d_assert(fd_msg_avp_setvalue(avp, &val) == 0, goto out,);
+        d_assert(fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp) == 0, goto out,);
+    }
     
     d_assert(clock_gettime(CLOCK_REALTIME, &mi->ts) == 0, goto out,);
     

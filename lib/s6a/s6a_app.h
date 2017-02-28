@@ -84,7 +84,7 @@ extern struct dict_object *s6a_ula_flags;
 extern struct dict_object *s6a_subscription_data;
 extern struct dict_object *s6a_req_eutran_auth_info;
 extern struct dict_object *s6a_number_of_requested_vectors;
-extern struct dict_object *s6a_immediate_response_pref;
+extern struct dict_object *s6a_immediate_response_preferred;
 extern struct dict_object *s6a_authentication_info;
 extern struct dict_object *s6a_re_synchronization_info;
 extern struct dict_object *s6a_service_selection;

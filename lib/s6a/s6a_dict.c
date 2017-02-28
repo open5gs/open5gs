@@ -35,7 +35,7 @@ struct dict_object *s6a_ula_flags = NULL;
 struct dict_object *s6a_subscription_data = NULL;
 struct dict_object *s6a_req_eutran_auth_info = NULL;
 struct dict_object *s6a_number_of_requested_vectors = NULL;
-struct dict_object *s6a_immediate_response_pref = NULL;
+struct dict_object *s6a_immediate_response_preferred = NULL;
 struct dict_object *s6a_authentication_info = NULL;
 struct dict_object *s6a_re_synchronization_info = NULL;
 struct dict_object *s6a_service_selection = NULL;
@@ -173,7 +173,7 @@ int s6a_dict_init(void)
             &s6a_number_of_requested_vectors, ENOENT));
     CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_AVP, 
         AVP_BY_NAME_ALL_VENDORS, "Immediate-Response-Preferred", 
-            &s6a_immediate_response_pref, ENOENT));
+            &s6a_immediate_response_preferred, ENOENT));
     CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_AVP, 
         AVP_BY_NAME_ALL_VENDORS, "Authentication-Info", 
             &s6a_authentication_info, ENOENT));
