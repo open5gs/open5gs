@@ -31,13 +31,12 @@ struct s6a_config_t {
     char *pi_diamid; 
     c_uint16_t pic_port; /* port to connect to. 0: default. */
     
-    c_uint32_t vendor_id;    /* default 999999 */
-    c_uint32_t appli_id;    /* default 123456 */
-    int mode;        /* default MODE_SERV | MODE_CLI */
-    char *dest_realm;    /* default local realm */
-    char *dest_host;    /* default NULL */
-    char *user_name;    /* default NULL */
-    struct ta_stats {
+    int mode;        /* default MODE_MME | MODE_HSS */
+    c_uint32_t vendor_id;    /* default 10415 */
+    c_uint32_t appli_id;    /* default 16777251 */
+    
+    int duration; /* default 10 */
+    struct s6a_stats {
         unsigned long long nb_echoed; /* server */
         unsigned long long nb_sent;   /* client */
         unsigned long long nb_recv;   /* client */

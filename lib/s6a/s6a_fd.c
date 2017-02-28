@@ -42,7 +42,7 @@ int s6a_fd_init(const char *conffile)
     {
         CHECK_FCT_DO( s6a_config_apply(), goto error );
     }
-	
+
 	/* Start the servers */
 	CHECK_FCT_DO( fd_core_start(), goto error );
 

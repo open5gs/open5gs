@@ -97,16 +97,10 @@ static int s6a_common_config(void)
     s6a_config = &g_conf;
 
 	/* Set the default values */
+	s6a_config->mode       = MODE_MME | MODE_HSS;
 	s6a_config->vendor_id  = 10415;	/* 3GPP Vendor ID */
 	s6a_config->appli_id   = 16777251;	/* 3GPP S6A Application ID */
-	s6a_config->mode       = MODE_MME | MODE_HSS;
-#if 0
-	s6a_config->dest_realm = strdup(fd_g_config->cnf_diamrlm);
-#else
-	s6a_config->dest_realm = strdup(MME_REALM);
-#endif
-	s6a_config->dest_host  = NULL;
-	s6a_config->user_name  = strdup("01045238277");
+	s6a_config->duration   = 10; /* 10 seconds */
 	
 	return 0;
 }

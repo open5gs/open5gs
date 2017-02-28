@@ -9,15 +9,12 @@ static pthread_t s6a_stats_th = (pthread_t)NULL;
 static void s6a_config_dump(void)
 {
 	d_trace(1, "------- s6a configuration dump: ---------\n");
-	d_trace(1, " Vendor Id .......... : %u\n", s6a_config->vendor_id);
-	d_trace(1, " Application Id ..... : %u\n", s6a_config->appli_id);
 	d_trace(1, " Mode ............... : %s%s\n", 
             s6a_config->mode & MODE_MME ? "MME" : "", 
             s6a_config->mode & MODE_HSS ? "HSS" : "");
-	d_trace(1, " Destination Realm .. : %s\n", 
-            s6a_config->dest_realm ?: "- none -\n");
-	d_trace(1, " Destination Host ... : %s\n", 
-            s6a_config->dest_host ?: "- none -\n");
+	d_trace(1, " Vendor Id .......... : %u\n", s6a_config->vendor_id);
+	d_trace(1, " Application Id ..... : %u\n", s6a_config->appli_id);
+	d_trace(1, " Duration ........... : %d(sec)\n", s6a_config->duration);
 	d_trace(1, "------- /s6a configuration dump ---------\n");
 }
 
@@ -25,7 +22,7 @@ static void s6a_config_dump(void)
 static void * s6a_stats(void * arg) 
 {
 	struct timespec start, now;
-	struct ta_stats copy;
+	struct s6a_stats copy;
 	
 	/* Get the start time */
 	CHECK_SYS_DO( clock_gettime(CLOCK_REALTIME, &start), );
@@ -33,11 +30,11 @@ static void * s6a_stats(void * arg)
 	/* Now, loop until canceled */
 	while (1) {
 		/* Display statistics every XX seconds */
-		sleep(10);
+		sleep(s6a_config->duration);
 		
 		/* Now, get the current stats */
 		CHECK_POSIX_DO( pthread_mutex_lock(&s6a_config->stats_lock), );
-		memcpy(&copy, &s6a_config->stats, sizeof(struct ta_stats));
+		memcpy(&copy, &s6a_config->stats, sizeof(struct s6a_stats));
 		CHECK_POSIX_DO( pthread_mutex_unlock(&s6a_config->stats_lock), );
 		
 		/* Get the current execution time */
