@@ -48,6 +48,7 @@ struct s6a_config_t {
 };
 
 extern struct s6a_config_t *s6a_config;
+extern struct session_handler *s6a_mme_reg;
 
 /* Some global variables for dictionary */
 extern struct dict_object *s6a_vendor;

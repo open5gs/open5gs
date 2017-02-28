@@ -12,7 +12,7 @@ libcellwire_la_SOURCES = \
 nodist_libcellwire_la_SOURCES = \
     init.c event.c context.c \
 	s1ap_build.c s1ap_conv.c s1ap_path.c \
-	s6a_path.c \
+	s6a_auth.c \
 	mme_sm.c enb_s1_sm.c
 
 libcellwire_la_DEPENDENCIES = \

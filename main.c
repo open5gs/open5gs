@@ -51,8 +51,8 @@ static int check_signal(int signum)
         }
         case SIGUSR1:
         {
-            void s6a_cli_test_message();
-            s6a_cli_test_message();
+            status_t s6_send_auth_req();
+            s6_send_auth_req();
             break;
         }
         default:

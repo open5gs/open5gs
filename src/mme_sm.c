@@ -5,7 +5,6 @@
 #include "context.h"
 #include "event.h"
 #include "s1ap_path.h"
-#include "s6a_path.h"
 
 void mme_state_initial(mme_sm_t *s, event_t *e)
 {
@@ -43,22 +42,10 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
                 d_error("Can't establish S1AP path");
                 break;
             }
-            rv = s6a_open();
-            if (rv != CORE_OK)
-            {
-                d_error("Can't establish S6A path");
-                break;
-            }
             break;
         }
         case FSM_EXIT_SIG:
         {
-            rv = s6a_close();
-            if (rv != CORE_OK)
-            {
-                d_error("Can't close S6A path");
-                break;
-            }
             rv = s1ap_close();
             if (rv != CORE_OK)
             {
