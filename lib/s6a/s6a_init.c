@@ -14,7 +14,6 @@ static int check_signal(int signum);
 int s6a_init()
 {
     status_t rv;
-    int ret;
     semaphore_id semaphore;
 
     rv = semaphore_create(&semaphore, 0);

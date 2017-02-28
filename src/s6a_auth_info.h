@@ -15,8 +15,8 @@ extern "C" {
 
 #define MAX_RAND_LEN            (128/8)
 #define MAX_XRES_LEN            16
-#define MAX_KASME_LEN           (256/8)
 #define MAX_AUTN_LEN            (128/8)
+#define MAX_KASME_LEN           (256/8)
 
 typedef struct _s6a_eutran_vector_t {
     c_uint8_t rand[MAX_RAND_LEN];

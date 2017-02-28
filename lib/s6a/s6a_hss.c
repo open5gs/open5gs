@@ -22,7 +22,8 @@ static int s6a_air_cb( struct msg **msg, struct avp *avp,
         struct session *sess, void *opaque, enum disp_action *act)
 {
 	struct msg *ans, *qry;
-	struct avp * a;
+    struct avp *avpch1, *avpch2;
+    union avp_value val;
 	
 	if (msg == NULL)
 		return EINVAL;
@@ -36,6 +37,51 @@ static int s6a_air_cb( struct msg **msg, struct avp *avp,
 	/* Set the Origin-Host, Origin-Realm, Result-Code AVPs */
 	d_assert(fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1) == 0,
             goto out,);
+
+    /* Set the Auth-Session-Statee AVP */
+    d_assert(fd_msg_avp_new(s6a_auth_session_state, 0, &avp) == 0, goto out,);
+    val.i32 = 1;
+    d_assert(fd_msg_avp_setvalue(avp, &val) == 0, goto out,);
+    d_assert(fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) == 0, goto out,);
+
+    /* Set the Authentication-Info */
+    d_assert(fd_msg_avp_new(s6a_authentication_info, 0, &avp) == 0, goto out,);
+    d_assert(fd_msg_avp_new(s6a_e_utran_vector, 0, &avpch1) == 0, goto out,);
+
+    #define TEST_RAND "RAND_123456"
+    d_assert(fd_msg_avp_new(s6a_rand, 0, &avpch2) == 0, goto out,);
+    val.os.data = (unsigned char*)TEST_RAND;
+    val.os.len = strlen(TEST_RAND);
+    d_assert(fd_msg_avp_setvalue(avpch2, &val) == 0, goto out,);
+    d_assert(fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2) == 0, 
+            goto out,);
+
+    #define TEST_XRES "XRES_123456"
+    d_assert(fd_msg_avp_new(s6a_xres, 0, &avpch2) == 0, goto out,);
+    val.os.data = (unsigned char*)TEST_XRES;
+    val.os.len = strlen(TEST_XRES);
+    d_assert(fd_msg_avp_setvalue(avpch2, &val) == 0, goto out,);
+    d_assert(fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2) == 0,
+            goto out,);
+
+    #define TEST_AUTH "AUTH_123456"
+    d_assert(fd_msg_avp_new(s6a_autn, 0, &avpch2) == 0, goto out,);
+    val.os.data = (unsigned char*)TEST_AUTH;
+    val.os.len = strlen(TEST_AUTH);
+    d_assert(fd_msg_avp_setvalue(avpch2, &val) == 0, goto out,);
+    d_assert(fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2) == 0,
+            goto out,);
+
+    #define TEST_KASME "KASME_123456"
+    d_assert(fd_msg_avp_new(s6a_kasme, 0, &avpch2) == 0, goto out,);
+    val.os.data = (unsigned char*)TEST_KASME;
+    val.os.len = strlen(TEST_KASME);
+    d_assert(fd_msg_avp_setvalue(avpch2, &val) == 0, goto out,);
+    d_assert(fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2) == 0, 
+            goto out,);
+
+    d_assert(fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch1) == 0, goto out,);
+    d_assert(fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) == 0, goto out,);
 	
 	/* Send the answer */
 	d_assert(fd_msg_send(msg, NULL, NULL) == 0, goto out,);

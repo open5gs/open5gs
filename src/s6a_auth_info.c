@@ -41,7 +41,7 @@ int s6a_send_auth_info_req(s6a_auth_info_req_t *air)
     d_assert(fd_msg_sess_get(fd_g_config->cnf_dict, req, &sess, NULL) == 0, 
             goto out, );
 
-    /* Set the Auth-Session-Statee AVP if needed*/
+    /* Set the Auth-Session-Statee AVP */
     d_assert(fd_msg_avp_new(s6a_auth_session_state, 0, &avp) == 0, goto out,);
     val.i32 = 1;
     d_assert(fd_msg_avp_setvalue(avp, &val) == 0, goto out,);
@@ -100,9 +100,6 @@ int s6a_send_auth_info_req(s6a_auth_info_req_t *air)
     
     /* Store this value in the session */
     d_assert(fd_sess_state_store(s6a_mme_reg, sess, &mi) == 0, goto out,); 
-    
-    /* Log sending the message */
-    d_info("SEND %x to '%s' (-)\n", svg->randval, fd_g_config->cnf_diamrlm);
     
     /* Send the request */
     d_assert(fd_msg_send(&req, s6a_aia_cb, svg) == 0, goto out,);
