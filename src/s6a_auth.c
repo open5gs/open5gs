@@ -93,6 +93,20 @@ static void s6a_aia_cb(void * data, struct msg ** msg)
 	CHECK_POSIX_DO( pthread_mutex_lock(&s6a_config->stats_lock), );
 	dur = ((ts.tv_sec - mi->ts.tv_sec) * 1000000) + 
         ((ts.tv_nsec - mi->ts.tv_nsec) / 1000);
+	if (s6a_config->stats.nb_recv) {
+		/* Ponderate in the avg */
+		s6a_config->stats.avg = (s6a_config->stats.avg * 
+            s6a_config->stats.nb_recv + dur) / (s6a_config->stats.nb_recv + 1);
+		/* Min, max */
+		if (dur < s6a_config->stats.shortest)
+			s6a_config->stats.shortest = dur;
+		if (dur > s6a_config->stats.longest)
+			s6a_config->stats.longest = dur;
+	} else {
+		s6a_config->stats.shortest = dur;
+		s6a_config->stats.longest = dur;
+		s6a_config->stats.avg = dur;
+	}
 	if (error)
 		s6a_config->stats.nb_errs++;
 	else 

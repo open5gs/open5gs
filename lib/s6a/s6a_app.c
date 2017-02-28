@@ -43,24 +43,33 @@ static void * s6a_stats(void * arg)
 		
 		/* Now, display everything */
 		LOG_N( "------- app_test statistics ---------");
-		if (now.tv_nsec >= start.tv_nsec) {
+		if (now.tv_nsec >= start.tv_nsec) 
+        {
 			LOG_N( " Executing for: %d.%06ld sec",
 					(int)(now.tv_sec - start.tv_sec),
 					(long)(now.tv_nsec - start.tv_nsec) / 1000);
-		} else {
+		} 
+        else 
+        {
 			LOG_N( " Executing for: %d.%06ld sec",
 					(int)(now.tv_sec - 1 - start.tv_sec),
 					(long)(now.tv_nsec + 1000000000 - start.tv_nsec) / 1000);
 		}
 		
-		if (s6a_config->mode & MODE_HSS) {
-			LOG_N( " HSS: %" C_UINT64_T_FMT " message(s) echoed", copy.nb_echoed);
+		if (s6a_config->mode & MODE_HSS) 
+        {
+			LOG_N( " HSS: %llu message(s) echoed", 
+                    copy.nb_echoed);
 		}
-		if (s6a_config->mode & MODE_MME) {
+		if (s6a_config->mode & MODE_MME) 
+        {
 			LOG_N( " MME:");
-			LOG_N( "   %" C_UINT64_T_FMT " message(s) sent", copy.nb_sent);
-			LOG_N( "   %" C_UINT64_T_FMT " error(s) received", copy.nb_errs);
-			LOG_N( "   %" C_UINT64_T_FMT " answer(s) received", copy.nb_recv);
+			LOG_N( "   %llu message(s) sent", copy.nb_sent);
+			LOG_N( "   %llu error(s) received", copy.nb_errs);
+			LOG_N( "   %llu answer(s) received", copy.nb_recv);
+			LOG_N( "     fastest: %ld.%06ld sec.", copy.shortest / 1000000, copy.shortest % 1000000);
+			LOG_N( "     slowest: %ld.%06ld sec.", copy.longest / 1000000, copy.longest % 1000000);
+			LOG_N( "     Average: %ld.%06ld sec.", copy.avg / 1000000, copy.avg % 1000000);
 		}
 		LOG_N( "-------------------------------------");
 	}

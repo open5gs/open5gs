@@ -17,18 +17,18 @@ extern "C" {
 
 struct s6a_config_t {
     /* Diameter Identity of the local peer (FQDN -- ASCII) */
-	char *cnf_diamid; 
+    char *cnf_diamid; 
     /* Diameter realm of the local peer, default to realm part of cnf_diamid */
-	char *cnf_diamrlm; 
+    char *cnf_diamrlm; 
 
     /* the local port for legacy Diameter (default: 3868) in host byte order */
-	c_uint16_t cnf_port;
+    c_uint16_t cnf_port;
     /* the local port for Diameter/TLS (default: 5658) in host byte order */
-	c_uint16_t cnf_port_tls;
+    c_uint16_t cnf_port_tls;
 
     /* (supposedly) UTF-8, \0 terminated. 
      * The Diameter Identity of the remote peer. */
-	char *pi_diamid; 
+    char *pi_diamid; 
     c_uint16_t pic_port; /* port to connect to. 0: default. */
     
     c_uint32_t vendor_id;    /* default 999999 */
@@ -38,10 +38,13 @@ struct s6a_config_t {
     char *dest_host;    /* default NULL */
     char *user_name;    /* default NULL */
     struct ta_stats {
-        c_uint64_t nb_echoed; /* server */
-        c_uint64_t nb_sent;   /* client */
-        c_uint64_t nb_recv;   /* client */
-        c_uint64_t nb_errs;   /* client */
+        unsigned long long nb_echoed; /* server */
+        unsigned long long nb_sent;   /* client */
+        unsigned long long nb_recv;   /* client */
+        unsigned long long nb_errs;   /* client */
+        unsigned long shortest;  /* fastest answer, in microseconds */
+        unsigned long longest;   /* slowest answer, in microseconds */
+        unsigned long avg;       /* average answer time, in microseconds */
     } stats;
 
     pthread_mutex_t stats_lock;
