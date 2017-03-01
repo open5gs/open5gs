@@ -39,6 +39,7 @@ const struct testlist {
     {testmsgq},
     {testsleep},
     {testpkbuf},
+    {testmisc},
 };
 
 #endif /* APR_TEST_INCLUDES */

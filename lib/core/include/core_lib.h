@@ -78,6 +78,9 @@ extern "C" {
 #define c_max(x , y)  (((x) > (y)) ? (x) : (y))
 #define c_min(x , y)  (((x) < (y)) ? (x) : (y))
 
+CORE_DECLARE(status_t) core_generate_random_bytes(
+        unsigned char *buf, int length);
+
 /** @} */
 
 #ifdef __cplusplus

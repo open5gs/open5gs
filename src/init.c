@@ -26,8 +26,6 @@ status_t cellwire_initialize(char *config_path, char *log_path)
 
     core_initialize();
 
-    srand(time(NULL)*getpid());
-
     if (config_path)
     {
         /* TODO */
