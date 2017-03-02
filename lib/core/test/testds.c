@@ -20,7 +20,6 @@ typedef char type_of_tpool1;
 typedef pt_type1 type_of_tpool2;
 
 pool_declare(tpool1, type_of_tpool1, SIZE_OF_TPOOL1);
-pool_declare(tpool2, type_of_tpool2, SIZE_OF_TPOOL2);
 
 static void pool_test_core1(abts_case *tc, void *data, int start)
 {

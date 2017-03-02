@@ -70,7 +70,7 @@ AM_PROG_AR
 AM_PROG_LIBTOOL
 
 dnl Checks for compile flag
-# AX_CHECK_COMPILE_FLAG([-Wno-pointer-to-int-cast], [CFLAGS="$CFLAGS -Wno-pointer-to-int-cast"])
+AX_CHECK_COMPILE_FLAG([-Wno-unused-result], [CFLAGS="$CFLAGS -Wno-unused-result"])
 
 dnl Checks for pointer size
 AC_CHECK_SIZEOF(void*, 4)

@@ -1,14 +1,16 @@
-#define TRACE_MODULE _s6a_hss
+#define TRACE_MODULE _s6a_hss_init
 
 #include "core_debug.h"
+#include "core_pool.h"
 
+#include "hss_ctx.h"
 #include "s6a_app.h"
 
-static struct disp_hdl *s6a_hdl_fb = NULL; /* handler for fallback cb */
-static struct disp_hdl *s6a_hdl_tr = NULL; /* handler for Test-Request req cb */
+static struct disp_hdl *hss_hdl_fb = NULL; /* handler for fallback cb */
+static struct disp_hdl *hss_hdl_tr = NULL; /* handler for Test-Request req cb */
 
 /* Default callback for the application. */
-static int s6a_fb_cb(struct msg **msg, struct avp *avp, 
+static int hss_fb_cb(struct msg **msg, struct avp *avp, 
         struct session *sess, void *opaque, enum disp_action *act)
 {
 	/* This CB should never be called */
@@ -18,7 +20,7 @@ static int s6a_fb_cb(struct msg **msg, struct avp *avp,
 }
 
 /* Callback for incoming Test-Request messages */
-static int s6a_air_cb( struct msg **msg, struct avp *avp, 
+static int hss_air_cb( struct msg **msg, struct avp *avp, 
         struct session *sess, void *opaque, enum disp_action *act)
 {
 	struct msg *ans, *qry;
@@ -100,33 +102,76 @@ out:
     return -1;
 }
 
-int s6a_hss_init(void)
+int hss_init(void)
 {
 	struct disp_when data;
-	
+
+    hss_ctx_init();
+
+    /* FIXME : this is a sample UE for testing */
+    {
+        ue_ctx_t *ue;
+
+        char k[16] = "\x46\x5B\x5C\xE8\xB1\x99\xB4\x9F\xAA\x5F\x0A\x2E\xE2\x38\xA6\xBC";
+        char op[16] = "\x5F\x1D\x28\x9C\x5D\x35\x4D\x0A\x14\x0C\x25\x48\xF5\xF3\xE3\xBA";
+        char opc[16] = "\xE8\xED\x28\x9D\xEB\xA9\x52\xE4\x28\x3B\x54\xE8\x8E\x61\x83\xCA";
+        char amf[2] = { 0x80, 0x00 };
+
+        ue = hss_ue_ctx_add();
+        d_assert(ue, return -1, "UE context add failed");
+
+        #define UE1_IMSI "001010123456800"
+        strcpy((char*)ue->imsi, UE1_IMSI);
+        ue->imsi_len = strlen(UE1_IMSI);
+
+        memcpy(ue->k, k, MAX_KEY_LEN);
+        memcpy(ue->op, op, MAX_KEY_LEN);
+        memcpy(ue->opc, opc, MAX_KEY_LEN);
+        memcpy(ue->amf, amf, MAX_AMF_LEN);
+
+        ue = hss_ue_ctx_add();
+        d_assert(ue, return -1, "UE context add failed");
+
+        #define UE2_IMSI "001010123456796"
+        strcpy((char*)ue->imsi, UE2_IMSI);
+        ue->imsi_len = strlen(UE2_IMSI);
+
+        memcpy(ue->k, k, MAX_KEY_LEN);
+        memcpy(ue->op, op, MAX_KEY_LEN);
+        memcpy(ue->opc, opc, MAX_KEY_LEN);
+        memcpy(ue->amf, amf, MAX_AMF_LEN);
+    }
+
 	memset(&data, 0, sizeof(data));
 	data.app = s6a_appli;
 	data.command = s6a_cmd_air;
 	
 	/* fallback CB if command != unexpected message received */
-	d_assert(fd_disp_register(s6a_fb_cb, DISP_HOW_APPID, &data, NULL, 
-                &s6a_hdl_fb) == 0, return -1,);
+	d_assert(fd_disp_register(hss_fb_cb, DISP_HOW_APPID, &data, NULL, 
+                &hss_hdl_fb) == 0, return -1,);
 	
 	/* Now specific handler for Authentication-Information-Request */
-	d_assert(fd_disp_register(s6a_air_cb, DISP_HOW_CC, &data, NULL, 
-                &s6a_hdl_tr) == 0, return -1,);
+	d_assert(fd_disp_register(hss_air_cb, DISP_HOW_CC, &data, NULL, 
+                &hss_hdl_tr) == 0, return -1,);
 	
 	return 0;
 }
 
-void s6a_hss_final(void)
+void hss_final(void)
 {
-	if (s6a_hdl_fb) {
-		(void) fd_disp_unregister(&s6a_hdl_fb, NULL);
+	if (hss_hdl_fb) {
+		(void) fd_disp_unregister(&hss_hdl_fb, NULL);
 	}
-	if (s6a_hdl_tr) {
-		(void) fd_disp_unregister(&s6a_hdl_tr, NULL);
+	if (hss_hdl_tr) {
+		(void) fd_disp_unregister(&hss_hdl_tr, NULL);
 	}
+
+    /* FIXME : this is a sample UE for testing */
+    {
+        hss_ue_ctx_remove_all();
+    }
+
+    hss_ctx_final();
 	
 	return;
 }

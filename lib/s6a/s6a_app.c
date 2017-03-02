@@ -97,12 +97,12 @@ int s6a_app_init(int mode)
 	
 	/* Start the signal handler thread */
 	if (s6a_config->mode & MODE_MME) {
-        CHECK_FCT( s6a_mme_init() );
+        CHECK_FCT( mme_init() );
 	}
 	
 	/* Install the handlers for incoming messages */
 	if (s6a_config->mode & MODE_HSS) {
-		CHECK_FCT( s6a_hss_init() );
+		CHECK_FCT( hss_init() );
 	}
 	
 	/* Advertise the support for the test application in the peer */
@@ -118,9 +118,9 @@ int s6a_app_init(int mode)
 void s6a_app_final(void)
 {
 	if (s6a_config->mode & MODE_MME)
-		s6a_mme_final();
+		mme_final();
 	if (s6a_config->mode & MODE_HSS)
-		s6a_hss_final();
+		hss_final();
 
 	CHECK_FCT_DO( fd_thr_term(&s6a_stats_th), );
 	CHECK_POSIX_DO( pthread_mutex_destroy(&s6a_config->stats_lock), );

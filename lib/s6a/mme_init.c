@@ -1,4 +1,4 @@
-#define TRACE_MODULE _s6a_mme
+#define TRACE_MODULE _s6a_mme_init
 
 #include "core_debug.h"
 
@@ -6,7 +6,7 @@
 
 struct session_handler *s6a_mme_reg = NULL;
 
-int s6a_mme_init(void)
+int mme_init(void)
 {
 	d_assert(fd_sess_handler_create(&s6a_mme_reg, 
             (void *)free, NULL, NULL) == 0, return -1,);
@@ -14,7 +14,7 @@ int s6a_mme_init(void)
 	return 0;
 }
 
-void s6a_mme_final(void)
+void mme_final(void)
 {
 	d_assert(fd_sess_handler_destroy(&s6a_mme_reg, NULL) == 0,,);
-};
+}
