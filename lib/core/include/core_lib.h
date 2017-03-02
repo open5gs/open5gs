@@ -81,6 +81,8 @@ extern "C" {
 CORE_DECLARE(status_t) core_generate_random_bytes(
         unsigned char *buf, int length);
 
+CORE_DECLARE(void *) core_ascii_to_hex(char *in, int len, char *out);
+
 /** @} */
 
 #ifdef __cplusplus

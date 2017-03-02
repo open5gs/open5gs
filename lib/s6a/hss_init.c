@@ -2,6 +2,7 @@
 
 #include "core_debug.h"
 #include "core_pool.h"
+#include "core_lib.h"
 
 #include "hss_ctx.h"
 #include "s6a_app.h"
@@ -111,11 +112,12 @@ int hss_init(void)
     /* FIXME : this is a sample UE for testing */
     {
         ue_ctx_t *ue;
+        char buffer[MAX_KEY_LEN];
 
-        char k[16] = "\x46\x5B\x5C\xE8\xB1\x99\xB4\x9F\xAA\x5F\x0A\x2E\xE2\x38\xA6\xBC";
-        char op[16] = "\x5F\x1D\x28\x9C\x5D\x35\x4D\x0A\x14\x0C\x25\x48\xF5\xF3\xE3\xBA";
-        char opc[16] = "\xE8\xED\x28\x9D\xEB\xA9\x52\xE4\x28\x3B\x54\xE8\x8E\x61\x83\xCA";
-        char amf[2] = { 0x80, 0x00 };
+        #define K "465B5CE8B199B49FAA5F0A2EE238A6BC"
+        #define OP "5F1D289C5D354D0A140C2548F5F3E3BA"
+        #define OPc "E8ED289DEBA952E4283B54E88E6183CA"
+        #define AMF "8000"
 
         ue = hss_ue_ctx_add();
         d_assert(ue, return -1, "UE context add failed");
@@ -124,10 +126,12 @@ int hss_init(void)
         strcpy((char*)ue->imsi, UE1_IMSI);
         ue->imsi_len = strlen(UE1_IMSI);
 
-        memcpy(ue->k, k, MAX_KEY_LEN);
-        memcpy(ue->op, op, MAX_KEY_LEN);
-        memcpy(ue->opc, opc, MAX_KEY_LEN);
-        memcpy(ue->amf, amf, MAX_AMF_LEN);
+        memcpy(ue->k, core_ascii_to_hex(K, strlen(K), buffer), MAX_KEY_LEN);
+        memcpy(ue->op, core_ascii_to_hex(OP, strlen(OP), buffer), MAX_KEY_LEN);
+        memcpy(ue->opc, 
+            core_ascii_to_hex(OPc, strlen(OPc), buffer), MAX_KEY_LEN);
+        memcpy(ue->amf, 
+            core_ascii_to_hex(AMF, strlen(AMF), buffer), MAX_KEY_LEN);
 
         ue = hss_ue_ctx_add();
         d_assert(ue, return -1, "UE context add failed");
@@ -136,10 +140,12 @@ int hss_init(void)
         strcpy((char*)ue->imsi, UE2_IMSI);
         ue->imsi_len = strlen(UE2_IMSI);
 
-        memcpy(ue->k, k, MAX_KEY_LEN);
-        memcpy(ue->op, op, MAX_KEY_LEN);
-        memcpy(ue->opc, opc, MAX_KEY_LEN);
-        memcpy(ue->amf, amf, MAX_AMF_LEN);
+        memcpy(ue->k, core_ascii_to_hex(K, strlen(K), buffer), MAX_KEY_LEN);
+        memcpy(ue->op, core_ascii_to_hex(OP, strlen(OP), buffer), MAX_KEY_LEN);
+        memcpy(ue->opc, 
+            core_ascii_to_hex(OPc, strlen(OPc), buffer), MAX_KEY_LEN);
+        memcpy(ue->amf, 
+            core_ascii_to_hex(AMF, strlen(AMF), buffer), MAX_KEY_LEN);
     }
 
 	memset(&data, 0, sizeof(data));

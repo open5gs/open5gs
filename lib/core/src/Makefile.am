@@ -20,7 +20,7 @@ libcore_la_SOURCES = \
 
 nodist_libcore_la_SOURCES = \
     debug.c fsm.c msgq.c ringbuf.c timer.c tlv.c \
-	aes.c aes_cmac.c sha1.c sha1_hmac.c sha2.c sha2_hmac.c
+	aes.c aes_cmac.c sha1.c sha1_hmac.c sha2.c sha2_hmac.c misc.c
 
 libcore_la_DEPENDENCIES = \
     $(top_srcdir)/lib/core/src/@OSDIR@/libcore@OSDIR@.la
