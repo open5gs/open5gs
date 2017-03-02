@@ -33,12 +33,22 @@ static void misc_test2(abts_case *tc, void *data)
             core_ascii_to_hex(AMF, strlen(AMF), buffer), 2) == 0);
 }
 
+static void misc_test3(abts_case *tc, void *data)
+{
+    c_uint64_t num = 0x0123456789abcdef;
+    c_uint8_t array[8];
+    c_uint8_t tmp[8] = "\x01\x23\x45\x67\x89\xab\xcd\xef";
+
+    ABTS_TRUE(tc, memcmp(tmp, core_uint64_to_array(array, num), 8) == 0);
+}
+
 abts_suite *testmisc(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, misc_test1, NULL);
     abts_run_test(suite, misc_test2, NULL);
+    abts_run_test(suite, misc_test3, NULL);
 
     return suite;
 }

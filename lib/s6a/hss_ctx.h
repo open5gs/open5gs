@@ -17,24 +17,33 @@ extern "C" {
 typedef struct _ue_ctx_t {
     lnode_t         node; /**< A node of list_t */
 
-    c_uint8_t imsi[MAX_IMSI_LEN+1];
-    c_uint8_t imsi_len;
+    c_uint8_t       imsi[MAX_IMSI_LEN+1];
+    c_uint8_t       imsi_len;
 
-    c_uint8_t k[MAX_KEY_LEN];
-    c_uint8_t op[MAX_KEY_LEN];
-    c_uint8_t opc[MAX_KEY_LEN];
-    c_uint8_t amf[MAX_AMF_LEN];
+    c_uint8_t       k[MAX_KEY_LEN];
+    c_uint64_t      seq;
+    c_uint8_t       rand[MAX_KEY_LEN];
+    c_uint8_t       opc[MAX_KEY_LEN];
 } ue_ctx_t;
 
-CORE_DECLARE(status_t)  hss_ctx_init(void);
-CORE_DECLARE(void)      hss_ctx_final(void);
+typedef struct _hss_ctx_t {
+    c_uint8_t       op[MAX_KEY_LEN];
+    c_uint8_t       amf[MAX_KEY_LEN];
+} hss_ctx_t;
 
-CORE_DECLARE(ue_ctx_t*) hss_ue_ctx_add(void);
-CORE_DECLARE(status_t)  hss_ue_ctx_remove(ue_ctx_t *ue);
-CORE_DECLARE(status_t)  hss_ue_ctx_remove_all(void);
-CORE_DECLARE(ue_ctx_t*) hss_ue_ctx_find_by_imsi(c_uint8_t *imsi);
-CORE_DECLARE(ue_ctx_t*) hss_ue_ctx_first(void);
-CORE_DECLARE(ue_ctx_t*) hss_ue_ctx_next(ue_ctx_t *ue);
+CORE_DECLARE(hss_ctx_t*)    hss_self(void);
+#define self() hss_self()
+
+CORE_DECLARE(status_t)      hss_ctx_init(void);
+CORE_DECLARE(void)          hss_ctx_final(void);
+
+CORE_DECLARE(ue_ctx_t*)     hss_ue_ctx_add(void);
+CORE_DECLARE(status_t)      hss_ue_ctx_remove(ue_ctx_t *ue);
+CORE_DECLARE(status_t)      hss_ue_ctx_remove_all(void);
+CORE_DECLARE(ue_ctx_t*)     hss_ue_ctx_find_by_imsi(
+                                c_uint8_t *imsi, c_uint8_t imsi_len);
+CORE_DECLARE(ue_ctx_t*)     hss_ue_ctx_first(void);
+CORE_DECLARE(ue_ctx_t*)     hss_ue_ctx_next(ue_ctx_t *ue);
 
 #ifdef __cplusplus
 }

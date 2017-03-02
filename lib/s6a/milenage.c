@@ -341,3 +341,18 @@ int milenage_check(const c_uint8_t *opc, const c_uint8_t *k,
 
 	return 0;
 }
+
+int milenage_opc(const c_uint8_t *k, const c_uint8_t *op,  c_uint8_t *opc)
+{
+    int i;
+
+    if (aes_128_encrypt_block(k,  op, opc))
+        return -1;
+
+    for (i = 0; i < 16; i++)
+    {
+        opc[i] ^= op[i];
+    }
+
+    return 0;
+}

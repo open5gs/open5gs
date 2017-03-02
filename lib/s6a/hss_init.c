@@ -4,6 +4,8 @@
 #include "core_pool.h"
 #include "core_lib.h"
 
+#include "milenage.h"
+
 #include "hss_ctx.h"
 #include "s6a_app.h"
 
@@ -26,7 +28,16 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
 {
 	struct msg *ans, *qry;
     struct avp *avpch1, *avpch2;
+    struct avp_hdr *hdr;
     union avp_value val;
+
+    ue_ctx_t *ue = NULL;
+    c_uint8_t mac_a[8];
+    c_uint8_t seq[6];
+    c_uint8_t xres[8];
+    c_uint8_t ak[6];
+    c_uint8_t autn[16];
+    int i;
 	
 	if (msg == NULL)
 		return EINVAL;
@@ -35,7 +46,27 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
 	qry = *msg;
 	d_assert(fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0) == 0, 
             return -1,);
-	ans = *msg;
+    ans = *msg;
+
+    d_assert(fd_msg_search_avp(qry, s6a_user_name, &avp) && avp,goto out,);
+    d_assert(fd_msg_avp_hdr(avp, &hdr) && hdr,,);
+
+    ue = hss_ue_ctx_find_by_imsi(hdr->avp_value->os.data, 
+           hdr->avp_value->os.len);
+    d_assert(ue, goto out,);
+
+    core_generate_random_bytes(ue->rand, MAX_KEY_LEN);
+    milenage_opc(ue->k, hss_self()->op, ue->opc);
+    milenage_f1(ue->opc, ue->k, ue->rand, core_uint64_to_array(seq, ue->seq), 
+            hss_self()->amf, mac_a, NULL);
+    milenage_f2345(ue->opc, ue->k, ue->rand, xres, NULL, NULL, ak, NULL);
+
+    for ( i = 0; i < 6; i++)
+        autn[i] = seq[i] ^ ak[i];
+    memcpy(&autn[6], hss_self()->amf, 2);
+    memcpy(&autn[7], mac_a, 8);
+
+    ue->seq = (ue->seq + 32) & 0x7ffffffffff;
 	
 	/* Set the Origin-Host, Origin-Realm, Result-Code AVPs */
 	d_assert(fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1) == 0,
@@ -98,6 +129,7 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
 
 	return 0;
 out:
+    d_assert(fd_msg_free(qry) == 0,,);
     d_assert(fd_msg_free(ans) == 0,,);
 	
     return -1;
@@ -112,40 +144,25 @@ int hss_init(void)
     /* FIXME : this is a sample UE for testing */
     {
         ue_ctx_t *ue;
-        char buffer[MAX_KEY_LEN];
+        char buf[MAX_KEY_LEN];
 
         #define K "465B5CE8B199B49FAA5F0A2EE238A6BC"
-        #define OP "5F1D289C5D354D0A140C2548F5F3E3BA"
-        #define OPc "E8ED289DEBA952E4283B54E88E6183CA"
-        #define AMF "8000"
+        #define UE1_IMSI "001010123456800"
+        #define UE2_IMSI "001010123456796"
 
         ue = hss_ue_ctx_add();
         d_assert(ue, return -1, "UE context add failed");
 
-        #define UE1_IMSI "001010123456800"
         strcpy((char*)ue->imsi, UE1_IMSI);
         ue->imsi_len = strlen(UE1_IMSI);
-
-        memcpy(ue->k, core_ascii_to_hex(K, strlen(K), buffer), MAX_KEY_LEN);
-        memcpy(ue->op, core_ascii_to_hex(OP, strlen(OP), buffer), MAX_KEY_LEN);
-        memcpy(ue->opc, 
-            core_ascii_to_hex(OPc, strlen(OPc), buffer), MAX_KEY_LEN);
-        memcpy(ue->amf, 
-            core_ascii_to_hex(AMF, strlen(AMF), buffer), MAX_KEY_LEN);
+        memcpy(ue->k, core_ascii_to_hex(K, strlen(K), buf), MAX_KEY_LEN);
 
         ue = hss_ue_ctx_add();
         d_assert(ue, return -1, "UE context add failed");
 
-        #define UE2_IMSI "001010123456796"
         strcpy((char*)ue->imsi, UE2_IMSI);
         ue->imsi_len = strlen(UE2_IMSI);
-
-        memcpy(ue->k, core_ascii_to_hex(K, strlen(K), buffer), MAX_KEY_LEN);
-        memcpy(ue->op, core_ascii_to_hex(OP, strlen(OP), buffer), MAX_KEY_LEN);
-        memcpy(ue->opc, 
-            core_ascii_to_hex(OPc, strlen(OPc), buffer), MAX_KEY_LEN);
-        memcpy(ue->amf, 
-            core_ascii_to_hex(AMF, strlen(AMF), buffer), MAX_KEY_LEN);
+        memcpy(ue->k, core_ascii_to_hex(K, strlen(K), buf), MAX_KEY_LEN);
     }
 
 	memset(&data, 0, sizeof(data));

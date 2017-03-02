@@ -78,10 +78,17 @@ extern "C" {
 #define c_max(x , y)  (((x) > (y)) ? (x) : (y))
 #define c_min(x , y)  (((x) < (y)) ? (x) : (y))
 
+#define c_uint64_to_array(array, uint64) \
+    { \
+        int i = 0; \
+        for (i = 0; i < 8; i++) array[i] = ((uint64 >> (8-1-i) * 8) & 0xff); \
+    }
+
 CORE_DECLARE(status_t) core_generate_random_bytes(
         unsigned char *buf, int length);
 
 CORE_DECLARE(void *) core_ascii_to_hex(char *in, int len, char *out);
+CORE_DECLARE(void *) core_uint64_to_array(c_uint8_t *array, c_uint64_t num);
 
 /** @} */
 

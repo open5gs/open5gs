@@ -30,4 +30,6 @@ int milenage_f2345(const c_uint8_t *opc, const c_uint8_t *k,
     const c_uint8_t *_rand, c_uint8_t *res, c_uint8_t *ck, c_uint8_t *ik, 
     c_uint8_t *ak, c_uint8_t *akstar);
 
+int milenage_opc(const c_uint8_t *k, const c_uint8_t *op,  c_uint8_t *opc);
+
 #endif /* MILENAGE_H */
