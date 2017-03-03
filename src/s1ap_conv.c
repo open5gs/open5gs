@@ -2,7 +2,7 @@
 
 #include "core_debug.h"
 
-#include "common.h"
+#include "plmn_id.h"
 #include "s1ap_conv.h"
 
 CORE_DECLARE(void) s1ap_conv_uint8_to_octet_string(
@@ -43,7 +43,7 @@ CORE_DECLARE(void) s1ap_conv_plmn_id_to_tbcd_string(
     tbcd_string->size = 3;
     tbcd_string->buf = core_calloc(tbcd_string->size, sizeof(c_uint8_t));
 
-    encode_plmn_id(tbcd_string->buf, plmn_id);
+    plmn_id_to_buffer(plmn_id, tbcd_string->buf);
 }
 
 CORE_DECLARE(void) s1ap_conv_macro_enb_id_to_bit_string(

@@ -3,7 +3,7 @@
 
 #include "core_errno.h"
 
-#include "common.h"
+#include "plmn_id.h"
 
 #ifdef __cplusplus
 extern "C" {

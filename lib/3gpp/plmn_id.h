@@ -1,5 +1,5 @@
-#ifndef __CELLWIRE_COMMON_H__
-#define __CELLWIRE_COMMON_H__
+#ifndef __PLNN_ID_H__
+#define __PLNN_ID_H__
 
 #include "core_errno.h"
 
@@ -13,10 +13,10 @@ typedef struct _plmn_id_t {
     c_uint16_t      mnc_len;
 } plmn_id_t;
 
-CORE_DECLARE(void) encode_plmn_id(c_uint8_t *buf, plmn_id_t *plmn_id);
+CORE_DECLARE(void) plmn_id_to_buffer(plmn_id_t *plmn_id, c_uint8_t *buf);
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* !__CELLWIRE_COMMON_H__ */
+#endif /* !__PLNN_ID_H__ */

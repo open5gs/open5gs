@@ -1,12 +1,12 @@
-#define TRACE_MODULE _cw_common
+#define TRACE_MODULE _plmn_id
 
-#include "common.h"
+#include "plmn_id.h"
 
 #define PLMN_ID_DIGIT1(x) (((x) / 100) % 10)
 #define PLMN_ID_DIGIT2(x) (((x) / 10) % 10)
 #define PLMN_ID_DIGIT3(x) ((x) % 10)
 
-void encode_plmn_id(c_uint8_t *buf, plmn_id_t *plmn_id)
+void plmn_id_to_buffer(plmn_id_t *plmn_id, c_uint8_t *buf)
 {
     buf[0] = (PLMN_ID_DIGIT2(plmn_id->mcc) << 4) | PLMN_ID_DIGIT1(plmn_id->mcc);
 

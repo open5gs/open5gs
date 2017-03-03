@@ -88,7 +88,7 @@ CORE_DECLARE(status_t) core_generate_random_bytes(
         unsigned char *buf, int length);
 
 CORE_DECLARE(void *) core_ascii_to_hex(char *in, int len, char *out);
-CORE_DECLARE(void *) core_uint64_to_array(c_uint8_t *array, c_uint64_t num);
+CORE_DECLARE(void *) core_uint64_to_buffer(c_uint64_t num, c_uint8_t *array);
 
 /** @} */
 

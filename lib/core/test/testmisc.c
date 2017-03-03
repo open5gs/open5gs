@@ -36,10 +36,10 @@ static void misc_test2(abts_case *tc, void *data)
 static void misc_test3(abts_case *tc, void *data)
 {
     c_uint64_t num = 0x0123456789abcdef;
-    c_uint8_t array[8];
+    c_uint8_t buf[8];
     c_uint8_t tmp[8] = "\x01\x23\x45\x67\x89\xab\xcd\xef";
 
-    ABTS_TRUE(tc, memcmp(tmp, core_uint64_to_array(array, num), 8) == 0);
+    ABTS_TRUE(tc, memcmp(tmp, core_uint64_to_buffer(num, buf), 8) == 0);
 }
 
 abts_suite *testmisc(abts_suite *suite)

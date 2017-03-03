@@ -5,7 +5,7 @@
 #include "core_errno.h"
 #include "core_net.h"
 
-#include "common.h"
+#include "plmn_id.h"
 #include "sm.h"
 
 #ifdef __cplusplus
