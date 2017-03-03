@@ -11,7 +11,7 @@ libs6a_la_SOURCES = \
 nodist_libs6a_la_SOURCES = \
 	milenage.c \
 	s6a_init.c s6a_config.c s6a_fd.c s6a_app.c s6a_dict.c \
-	hss_ctx.c hss_init.c \
+	hss_main.c hss_ctx.c \
 	mme_init.c
 
 libs6a_la_DEPENDENCIES = \
