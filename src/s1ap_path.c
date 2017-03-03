@@ -111,7 +111,7 @@ int _s1ap_recv_cb(net_sock_t *net_sock, void *data)
     d_assert(net_sock, return -1, "Null param");
     d_assert(queue_id, return -1, "Null param");
 
-    pkb = pkbuf_alloc(0, S1AP_SDU_SIZE);
+    pkb = pkbuf_alloc(0, MSG_SDU_SIZE);
     d_assert(pkb, return -1, "Can't allocate pkbuf");
 
     r = net_read(net_sock, pkb->payload, pkb->len, 0);

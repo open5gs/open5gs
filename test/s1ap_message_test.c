@@ -21,7 +21,7 @@ static void s1ap_message_test1(abts_case *tc, void *data)
     pkbuf_t *pkbuf;
     int result;
 
-    pkbuf = pkbuf_alloc(0, S1AP_SDU_SIZE);
+    pkbuf = pkbuf_alloc(0, MSG_SDU_SIZE);
     ABTS_PTR_NOTNULL(tc, pkbuf);
     pkbuf->len = 49;
     memcpy(pkbuf->payload, payload[0], pkbuf->len);
@@ -44,7 +44,7 @@ static void s1ap_message_test2(abts_case *tc, void *data)
     pkbuf_t *pkbuf;
     int result;
 
-    pkbuf = pkbuf_alloc(0, S1AP_SDU_SIZE);
+    pkbuf = pkbuf_alloc(0, MSG_SDU_SIZE);
     ABTS_PTR_NOTNULL(tc, pkbuf);
     pkbuf->len = 115;
     memcpy(pkbuf->payload, payload[0], pkbuf->len);
@@ -67,7 +67,7 @@ static void s1ap_message_test3(abts_case *tc, void *data)
     pkbuf_t *pkbuf;
     int result;
 
-    pkbuf = pkbuf_alloc(0, S1AP_SDU_SIZE);
+    pkbuf = pkbuf_alloc(0, MSG_SDU_SIZE);
     ABTS_PTR_NOTNULL(tc, pkbuf);
     pkbuf->len = 41;
     memcpy(pkbuf->payload, payload[0], pkbuf->len);

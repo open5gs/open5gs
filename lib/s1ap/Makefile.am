@@ -20,6 +20,7 @@ libs1ap_la_LIBADD = \
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \
+    -I$(top_srcdir)/lib/3gpp \
     -I$(top_srcdir)/lib/s1ap/asn1c
 
 AM_CFLAGS = \

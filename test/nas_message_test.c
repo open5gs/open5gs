@@ -19,7 +19,7 @@ static void nas_message_test1(abts_case *tc, void *data)
     pkbuf_t *pkbuf;
     status_t rv;
 
-    pkbuf = pkbuf_alloc(0, NAS_SDU_SIZE);
+    pkbuf = pkbuf_alloc(0, MSG_SDU_SIZE);
     ABTS_PTR_NOTNULL(tc, pkbuf);
     pkbuf->len = 59;
     memcpy(pkbuf->payload, payload[0], pkbuf->len);
@@ -119,7 +119,7 @@ static void nas_message_test3(abts_case *tc, void *data)
     pkbuf_t *pkbuf;
     status_t rv;
 
-    pkbuf = pkbuf_alloc(0, NAS_SDU_SIZE);
+    pkbuf = pkbuf_alloc(0, MSG_SDU_SIZE);
     ABTS_PTR_NOTNULL(tc, pkbuf);
     pkbuf->len = 7;
     memcpy(pkbuf->payload, payload[0], pkbuf->len);

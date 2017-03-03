@@ -1,13 +1,12 @@
 #ifndef _NAS_MESSAGE_H__
 #define _NAS_MESSAGE_H__
 
+#include "3gpp_message.h"
 #include "nas_ies.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
-
-#define NAS_SDU_SIZE 2048
 
 #define NAS_SECURITY_HEADER_PLAIN_NAS_MESSAGE 0
 #define NAS_SECURITY_HEADER_INTEGRITY_PROTECTED 1

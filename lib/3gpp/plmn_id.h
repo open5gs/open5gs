@@ -1,7 +1,9 @@
-#ifndef __PLNN_ID_H__
-#define __PLNN_ID_H__
+#ifndef __PLMN_ID_H__
+#define __PLMN_ID_H__
 
 #include "core_errno.h"
+
+#define PLMN_ID_LEN 3
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,4 +21,4 @@ CORE_DECLARE(void) plmn_id_to_buffer(plmn_id_t *plmn_id, c_uint8_t *buf);
 }
 #endif /* __cplusplus */
 
-#endif /* !__PLNN_ID_H__ */
+#endif /* !__PLMN_ID_H__ */

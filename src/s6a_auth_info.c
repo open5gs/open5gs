@@ -96,12 +96,12 @@ int s6a_send_auth_info_req(s6a_auth_info_req_t *air)
 
     /* Set the Visited-PLMN-Id AVP if needed*/
     {
-        c_uint8_t buffer[3] = {0, };
-        plmn_id_to_buffer(&air->visited_plmn_id, buffer);
+        c_uint8_t plmn_id[PLMN_ID_LEN] = {0, };
+        plmn_id_to_buffer(&air->visited_plmn_id, plmn_id);
 
         d_assert(fd_msg_avp_new(s6a_visited_plmn_id, 0, &avp) == 0, goto out,);
-        val.os.data = buffer;
-        val.os.len  = 3;
+        val.os.data = plmn_id;
+        val.os.len  = PLMN_ID_LEN;
         d_assert(fd_msg_avp_setvalue(avp, &val) == 0, goto out,);
         d_assert(fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp) == 0, goto out,);
     }

@@ -4,7 +4,7 @@
 #include "core_pool.h"
 #include "core_lib.h"
 
-#include "3gpp_kdf.h"
+#include "kasme.h"
 #include "milenage.h"
 
 #include "hss_ctx.h"

@@ -2,6 +2,7 @@
 
 #include "core_debug.h"
 #include "core_lib.h"
+
 #include "s1ap_message.h"
 
 static inline int s1ap_encode_initiating_message(
@@ -35,7 +36,7 @@ int s1ap_encode_pdu(pkbuf_t **pkb, s1ap_message *message_p)
 
     d_assert (message_p, return -1, "Null param");
 
-    *pkb = pkbuf_alloc(0, S1AP_SDU_SIZE);
+    *pkb = pkbuf_alloc(0, MSG_SDU_SIZE);
     d_assert(*pkb, return -1, "Null Param");
 
     switch (message_p->direction) 
@@ -180,7 +181,7 @@ static inline int s1ap_encode_initial_context_setup_request(
             td, &initialContextSetupRequest);
 
     enc_ret = aper_encode_to_buffer(&asn_DEF_S1AP_PDU, 
-                    &pdu, pkbuf->payload, S1AP_SDU_SIZE);
+                    &pdu, pkbuf->payload, MSG_SDU_SIZE);
 
     ASN_STRUCT_FREE_CONTENTS_ONLY(*td, &initialContextSetupRequest);
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1AP_PDU, &pdu);
@@ -217,7 +218,7 @@ static inline int s1ap_encode_s1setup_request(
     ANY_fromType_aper(&pdu.choice.initiatingMessage.value, td, &s1SetupRequest);
 
     enc_ret = aper_encode_to_buffer(&asn_DEF_S1AP_PDU, 
-                    &pdu, pkbuf->payload, S1AP_SDU_SIZE);
+                    &pdu, pkbuf->payload, MSG_SDU_SIZE);
 
     ASN_STRUCT_FREE_CONTENTS_ONLY(*td, &s1SetupRequest);
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1AP_PDU, &pdu);
@@ -255,7 +256,7 @@ static inline int s1ap_encode_s1setup_response(
             td, &s1SetupResponse);
 
     enc_ret = aper_encode_to_buffer(&asn_DEF_S1AP_PDU, 
-                    &pdu, pkbuf->payload, S1AP_SDU_SIZE);
+                    &pdu, pkbuf->payload, MSG_SDU_SIZE);
 
     ASN_STRUCT_FREE_CONTENTS_ONLY(*td, &s1SetupResponse);
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1AP_PDU, &pdu);
@@ -293,7 +294,7 @@ static inline int s1ap_encode_s1setup_failure(
             td, &s1SetupFailure);
 
     enc_ret = aper_encode_to_buffer(&asn_DEF_S1AP_PDU, 
-                    &pdu, pkbuf->payload, S1AP_SDU_SIZE);
+                    &pdu, pkbuf->payload, MSG_SDU_SIZE);
 
     ASN_STRUCT_FREE_CONTENTS_ONLY(*td, &s1SetupFailure);
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1AP_PDU, &pdu);
@@ -331,7 +332,7 @@ static inline int s1ap_encode_downlink_nas_transport(
             td, &downlinkNasTransport);
 
     enc_ret = aper_encode_to_buffer(&asn_DEF_S1AP_PDU, 
-                    &pdu, pkbuf->payload, S1AP_SDU_SIZE);
+                    &pdu, pkbuf->payload, MSG_SDU_SIZE);
 
     ASN_STRUCT_FREE_CONTENTS_ONLY(*td, &downlinkNasTransport);
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1AP_PDU, &pdu);
@@ -371,7 +372,7 @@ static inline int s1ap_encode_ue_context_release_command(
             td, &ueContextReleaseCommand);
 
     enc_ret = aper_encode_to_buffer(&asn_DEF_S1AP_PDU, 
-                    &pdu, pkbuf->payload, S1AP_SDU_SIZE);
+                    &pdu, pkbuf->payload, MSG_SDU_SIZE);
 
     ASN_STRUCT_FREE_CONTENTS_ONLY(*td, &ueContextReleaseCommand);
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1AP_PDU, &pdu);

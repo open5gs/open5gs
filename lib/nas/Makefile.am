@@ -9,7 +9,8 @@ nodist_libnas_la_SOURCES = \
 	nas_decoder.c nas_encoder.c nas_ies.c
 
 AM_CPPFLAGS = \
-    -I$(top_srcdir)/lib/core/include
+    -I$(top_srcdir)/lib/core/include \
+    -I$(top_srcdir)/lib/3gpp
 
 AM_CFLAGS = \
 	-Wall -Werror
