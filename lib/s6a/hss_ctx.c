@@ -30,7 +30,7 @@ status_t hss_ctx_init(void)
     memset(&self, 0, sizeof(hss_ctx_t));
 
     memcpy(self.op, core_ascii_to_hex(OP, strlen(OP), buf), MAX_KEY_LEN);
-    memcpy(self.amf, core_ascii_to_hex(AMF, strlen(AMF), buf), MAX_KEY_LEN);
+    memcpy(self.amf, core_ascii_to_hex(AMF, strlen(AMF), buf), MAX_AMF_LEN);
 	
 	return CORE_OK;
 }
@@ -55,6 +55,9 @@ ue_ctx_t* hss_ue_ctx_add()
 
     /* Add new eNB context to list */
     list_append(&g_ue_list, ue);
+
+    memcpy(ue->op, self.op, MAX_KEY_LEN);
+    memcpy(ue->amf, self.amf, MAX_AMF_LEN);
     
     return ue;
 }

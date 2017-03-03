@@ -21,14 +21,16 @@ typedef struct _ue_ctx_t {
     c_uint8_t       imsi_len;
 
     c_uint8_t       k[MAX_KEY_LEN];
-    c_uint64_t      seq;
+    c_uint64_t      sqn;
     c_uint8_t       rand[MAX_KEY_LEN];
     c_uint8_t       opc[MAX_KEY_LEN];
+    c_uint8_t       op[MAX_KEY_LEN];
+    c_uint8_t       amf[MAX_AMF_LEN];
 } ue_ctx_t;
 
 typedef struct _hss_ctx_t {
     c_uint8_t       op[MAX_KEY_LEN];
-    c_uint8_t       amf[MAX_KEY_LEN];
+    c_uint8_t       amf[MAX_AMF_LEN];
 } hss_ctx_t;
 
 CORE_DECLARE(hss_ctx_t*)    hss_self(void);

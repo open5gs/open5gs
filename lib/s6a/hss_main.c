@@ -4,10 +4,16 @@
 #include "core_pool.h"
 #include "core_lib.h"
 
+#include "3gpp_kdf.h"
 #include "milenage.h"
 
 #include "hss_ctx.h"
 #include "s6a_app.h"
+
+#define MAX_SQN_LEN 6
+#define MAX_AK_LEN 6
+#define MAX_XRES_LEN 8
+#define MAX_KASME_LEN 32
 
 static struct disp_hdl *hdl_fb = NULL; /* handler for fallback cb */
 static struct disp_hdl *hdl_air = NULL; /* handler for Auth-Info-Request cb */
@@ -32,12 +38,15 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
     union avp_value val;
 
     ue_ctx_t *ue = NULL;
-    c_uint8_t mac_a[8];
-    c_uint8_t seq[6];
-    c_uint8_t xres[8];
-    c_uint8_t ak[6];
-    c_uint8_t autn[16];
-    int i;
+    c_uint8_t sqn[MAX_SQN_LEN];
+    c_uint8_t autn[MAX_KEY_LEN];
+    c_uint8_t ik[MAX_KEY_LEN];
+    c_uint8_t ck[MAX_KEY_LEN];
+    c_uint8_t ak[MAX_AK_LEN];
+    c_uint8_t xres[MAX_XRES_LEN];
+    c_uint8_t kasme[MAX_KASME_LEN];
+    size_t xres_len;
+    c_uint8_t plmn[3];
 	
     d_assert(msg, return EINVAL,);
 	
@@ -60,17 +69,13 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
     }
 
     core_generate_random_bytes(ue->rand, MAX_KEY_LEN);
-    milenage_opc(ue->k, hss_self()->op, ue->opc);
-    milenage_f1(ue->opc, ue->k, ue->rand, core_uint64_to_array(seq, ue->seq), 
-            hss_self()->amf, mac_a, NULL);
-    milenage_f2345(ue->opc, ue->k, ue->rand, xres, NULL, NULL, ak, NULL);
+    milenage_opc(ue->k, ue->op, ue->opc);
+    milenage_generate(ue->opc, ue->amf, ue->k, 
+        core_uint64_to_array(sqn, ue->sqn), ue->rand, 
+        autn, ik, ck, ak, xres, &xres_len);
+    derive_kasme(ck, ik, plmn, sqn, ak, kasme);
 
-    for ( i = 0; i < 6; i++)
-        autn[i] = seq[i] ^ ak[i];
-    memcpy(&autn[6], hss_self()->amf, 2);
-    memcpy(&autn[7], mac_a, 8);
-
-    ue->seq = (ue->seq + 32) & 0x7ffffffffff;
+    ue->sqn = (ue->sqn + 32) & 0x7ffffffffff;
 	
 	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
 	d_assert(fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1) == 0,
@@ -86,34 +91,30 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
     d_assert(fd_msg_avp_new(s6a_authentication_info, 0, &avp) == 0, goto out,);
     d_assert(fd_msg_avp_new(s6a_e_utran_vector, 0, &avpch1) == 0, goto out,);
 
-    #define TEST_RAND "RAND_123456"
     d_assert(fd_msg_avp_new(s6a_rand, 0, &avpch2) == 0, goto out,);
-    val.os.data = (unsigned char*)TEST_RAND;
-    val.os.len = strlen(TEST_RAND);
+    val.os.data = ue->rand;
+    val.os.len = MAX_KEY_LEN;
     d_assert(fd_msg_avp_setvalue(avpch2, &val) == 0, goto out,);
     d_assert(fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2) == 0, 
             goto out,);
 
-    #define TEST_XRES "XRES_123456"
     d_assert(fd_msg_avp_new(s6a_xres, 0, &avpch2) == 0, goto out,);
-    val.os.data = (unsigned char*)TEST_XRES;
-    val.os.len = strlen(TEST_XRES);
+    val.os.data = xres;
+    val.os.len = xres_len;
     d_assert(fd_msg_avp_setvalue(avpch2, &val) == 0, goto out,);
     d_assert(fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2) == 0,
             goto out,);
 
-    #define TEST_AUTH "AUTH_123456"
     d_assert(fd_msg_avp_new(s6a_autn, 0, &avpch2) == 0, goto out,);
-    val.os.data = (unsigned char*)TEST_AUTH;
-    val.os.len = strlen(TEST_AUTH);
+    val.os.data = autn;
+    val.os.len = MAX_KEY_LEN;
     d_assert(fd_msg_avp_setvalue(avpch2, &val) == 0, goto out,);
     d_assert(fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2) == 0,
             goto out,);
 
-    #define TEST_KASME "KASME_123456"
     d_assert(fd_msg_avp_new(s6a_kasme, 0, &avpch2) == 0, goto out,);
-    val.os.data = (unsigned char*)TEST_KASME;
-    val.os.len = strlen(TEST_KASME);
+    val.os.data = kasme;
+    val.os.len = MAX_KASME_LEN;
     d_assert(fd_msg_avp_setvalue(avpch2, &val) == 0, goto out,);
     d_assert(fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2) == 0, 
             goto out,);
@@ -159,7 +160,7 @@ int hss_init(void)
         strcpy((char*)ue->imsi, UE1_IMSI);
         ue->imsi_len = strlen(UE1_IMSI);
         memcpy(ue->k, core_ascii_to_hex(K, strlen(K), buf), MAX_KEY_LEN);
-        ue->seq = 32;
+        ue->sqn = 32;
 
         ue = hss_ue_ctx_add();
         d_assert(ue, return -1, "UE context add failed");
@@ -167,7 +168,7 @@ int hss_init(void)
         strcpy((char*)ue->imsi, UE2_IMSI);
         ue->imsi_len = strlen(UE2_IMSI);
         memcpy(ue->k, core_ascii_to_hex(K, strlen(K), buf), MAX_KEY_LEN);
-        ue->seq = 32;
+        ue->sqn = 32;
     }
 
 	memset(&data, 0, sizeof(data));

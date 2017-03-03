@@ -6,15 +6,15 @@
  * See README for more details.
  */
 
-#ifndef MILENAGE_H
-#define MILENAGE_H
+#ifndef __MILENAGE_H__
+#define __MILENAGE_H__
 
 #include "core.h"
 
 void milenage_generate(const c_uint8_t *opc, const c_uint8_t *amf, 
     const c_uint8_t *k, const c_uint8_t *sqn, const c_uint8_t *_rand, 
-    c_uint8_t *autn, c_uint8_t *ik, c_uint8_t *ck, c_uint8_t *res, 
-    size_t *res_len);
+    c_uint8_t *autn, c_uint8_t *ik, c_uint8_t *ck, c_uint8_t *ak,
+    c_uint8_t *res, size_t *res_len);
 int milenage_auts(const c_uint8_t *opc, const c_uint8_t *k, 
     const c_uint8_t *_rand, const c_uint8_t *auts, c_uint8_t *sqn);
 int gsm_milenage(const c_uint8_t *opc, const c_uint8_t *k, 
@@ -30,6 +30,9 @@ int milenage_f2345(const c_uint8_t *opc, const c_uint8_t *k,
     const c_uint8_t *_rand, c_uint8_t *res, c_uint8_t *ck, c_uint8_t *ik, 
     c_uint8_t *ak, c_uint8_t *akstar);
 
-int milenage_opc(const c_uint8_t *k, const c_uint8_t *op,  c_uint8_t *opc);
+void milenage_opc(const c_uint8_t *k, const c_uint8_t *op,  c_uint8_t *opc);
+void derive_kasme(const c_uint8_t *ck, const c_uint8_t *ik, 
+        const c_uint8_t plmn[3], const c_uint8_t *sqn,  const c_uint8_t *ak,
+        c_uint8_t *kasme);
 
-#endif /* MILENAGE_H */
+#endif /* __MILENAGE_H__ */

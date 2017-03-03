@@ -18,6 +18,7 @@
 
 #include "core_debug.h"
 #include "core_aes.h"
+#include "core_sha2.h"
 
 #include "milenage.h"
 
@@ -190,11 +191,11 @@ int milenage_f2345(const c_uint8_t *opc, const c_uint8_t *k,
  */
 void milenage_generate(const c_uint8_t *opc, const c_uint8_t *amf, 
     const c_uint8_t *k, const c_uint8_t *sqn, const c_uint8_t *_rand, 
-    c_uint8_t *autn, c_uint8_t *ik, c_uint8_t *ck, c_uint8_t *res, 
-    size_t *res_len)
+    c_uint8_t *autn, c_uint8_t *ik, c_uint8_t *ck, c_uint8_t *ak, 
+    c_uint8_t *res, size_t *res_len)
 {
 	int i;
-	c_uint8_t mac_a[8], ak[6];
+	c_uint8_t mac_a[8];
 
 	if (*res_len < 8) {
 		*res_len = 0;
@@ -342,17 +343,14 @@ int milenage_check(const c_uint8_t *opc, const c_uint8_t *k,
 	return 0;
 }
 
-int milenage_opc(const c_uint8_t *k, const c_uint8_t *op,  c_uint8_t *opc)
+void milenage_opc(const c_uint8_t *k, const c_uint8_t *op,  c_uint8_t *opc)
 {
     int i;
 
-    if (aes_128_encrypt_block(k,  op, opc))
-        return -1;
+    aes_128_encrypt_block(k,  op, opc);
 
     for (i = 0; i < 16; i++)
     {
         opc[i] ^= op[i];
     }
-
-    return 0;
 }
