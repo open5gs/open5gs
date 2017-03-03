@@ -19,6 +19,8 @@ static void misc_test2(abts_case *tc, void *data)
     c_uint8_t op[16] = "\x5F\x1D\x28\x9C\x5D\x35\x4D\x0A\x14\x0C\x25\x48\xF5\xF3\xE3\xBA";
     c_uint8_t opc[16] = "\xE8\xED\x28\x9D\xEB\xA9\x52\xE4\x28\x3B\x54\xE8\x8E\x61\x83\xCA";
     c_uint8_t amf[2] = { 0x80, 0x00 };
+#define LOWER "12abcdEF"
+    c_uint8_t lower[4] = "\x12\xab\xcd\xef";
 
     char buffer[16];
 
@@ -31,6 +33,9 @@ static void misc_test2(abts_case *tc, void *data)
 
     ABTS_TRUE(tc, memcmp(amf, 
             core_ascii_to_hex(AMF, strlen(AMF), buffer), 2) == 0);
+
+    ABTS_TRUE(tc, memcmp(lower, 
+            core_ascii_to_hex(LOWER, strlen(LOWER), buffer), 4) == 0);
 }
 
 static void misc_test3(abts_case *tc, void *data)
