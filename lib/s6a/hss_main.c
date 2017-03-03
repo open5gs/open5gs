@@ -46,7 +46,6 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
     c_uint8_t xres[MAX_XRES_LEN];
     c_uint8_t kasme[MAX_KASME_LEN];
     size_t xres_len;
-    c_uint8_t plmn[3];
 	
     d_assert(msg, return EINVAL,);
 	
@@ -55,7 +54,8 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
 	fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
     ans = *msg;
 
-    d_assert(fd_msg_search_avp(qry, s6a_user_name, &avp) == 0 && avp, goto out,);
+    d_assert(fd_msg_search_avp(qry, s6a_user_name, &avp) == 0 && avp, 
+            goto out,);
     d_assert(fd_msg_avp_hdr(avp, &hdr) == 0 && hdr,,);
 
     ue = hss_ue_ctx_find_by_imsi(
@@ -68,12 +68,16 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
         goto out;
     }
 
+    d_assert(fd_msg_search_avp(qry, s6a_visited_plmn_id, &avp) == 0 && 
+            avp, goto out,);
+    d_assert(fd_msg_avp_hdr(avp, &hdr) == 0 && hdr,,);
+
     core_generate_random_bytes(ue->rand, MAX_KEY_LEN);
     milenage_opc(ue->k, ue->op, ue->opc);
     milenage_generate(ue->opc, ue->amf, ue->k, 
         core_uint64_to_buffer(ue->sqn, sqn), ue->rand, 
         autn, ik, ck, ak, xres, &xres_len);
-    derive_kasme(ck, ik, plmn, sqn, ak, kasme);
+    derive_kasme(ck, ik, hdr->avp_value->os.data, sqn, ak, kasme);
 
     ue->sqn = (ue->sqn + 32) & 0x7ffffffffff;
 	

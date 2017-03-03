@@ -6,7 +6,7 @@
 #define PLMN_ID_DIGIT2(x) (((x) / 10) % 10)
 #define PLMN_ID_DIGIT3(x) ((x) % 10)
 
-void plmn_id_to_buffer(plmn_id_t *plmn_id, c_uint8_t *buf)
+void *plmn_id_to_buffer(plmn_id_t *plmn_id, c_uint8_t *buf)
 {
     buf[0] = (PLMN_ID_DIGIT2(plmn_id->mcc) << 4) | PLMN_ID_DIGIT1(plmn_id->mcc);
 
@@ -17,4 +17,6 @@ void plmn_id_to_buffer(plmn_id_t *plmn_id, c_uint8_t *buf)
     buf[1] |= PLMN_ID_DIGIT3(plmn_id->mcc);
 
     buf[2] = (PLMN_ID_DIGIT3(plmn_id->mnc) << 4) | PLMN_ID_DIGIT2(plmn_id->mnc);
+
+    return buf;
 }
