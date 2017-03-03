@@ -21,12 +21,8 @@ struct dict_object *s6a_origin_realm = NULL;
 struct dict_object *s6a_destination_host = NULL;
 struct dict_object *s6a_destination_realm = NULL;
 struct dict_object *s6a_user_name = NULL;
-struct dict_object *s6a_session_id = NULL;
 struct dict_object *s6a_auth_session_state = NULL;
 struct dict_object *s6a_result_code = NULL;
-struct dict_object *s6a_experimental_result = NULL;
-struct dict_object *s6a_vendor_id = NULL;
-struct dict_object *s6a_experimental_result_code = NULL;
 
 struct dict_object *s6a_visited_plmn_id = NULL;
 struct dict_object *s6a_rat_type = NULL;
@@ -131,9 +127,9 @@ int s6a_dict_init(void)
         "Cancel-Location-Answer", &s6a_cmd_cla, ENOENT));
 	
     CHECK_FCT(fd_dict_search (fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME, 
-                "Origin-Host", &s6a_origin_host, ENOENT));
+        "Origin-Host", &s6a_origin_host, ENOENT));
     CHECK_FCT(fd_dict_search (fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME, 
-                "Origin-Realm", &s6a_origin_realm, ENOENT));
+        "Origin-Realm", &s6a_origin_realm, ENOENT));
     CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME, 
         "Destination-Host", &s6a_destination_host, ENOENT));
     CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME, 
@@ -141,17 +137,9 @@ int s6a_dict_init(void)
     CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME, 
         "User-Name", &s6a_user_name, ENOENT));
     CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME, 
-        "Session-Id", &s6a_session_id, ENOENT));
-    CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME, 
         "Auth-Session-State", &s6a_auth_session_state, ENOENT));
     CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME, 
         "Result-Code", &s6a_result_code, ENOENT));
-    CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME, 
-        "Experimental-Result", &s6a_experimental_result, ENOENT));
-    CHECK_FCT(fd_dict_search (fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME, 
-        "Vendor-Id", &s6a_vendor_id, ENOENT));
-    CHECK_FCT(fd_dict_search (fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME, 
-        "Experimental-Result-Code", &s6a_experimental_result_code, ENOENT));
 
     CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_AVP, 
         AVP_BY_NAME_ALL_VENDORS, "Visited-PLMN-Id", 

@@ -70,12 +70,8 @@ extern struct dict_object *s6a_origin_realm;
 extern struct dict_object *s6a_destination_host;
 extern struct dict_object *s6a_destination_realm;
 extern struct dict_object *s6a_user_name;
-extern struct dict_object *s6a_session_id;
 extern struct dict_object *s6a_auth_session_state;
 extern struct dict_object *s6a_result_code;
-extern struct dict_object *s6a_experimental_result;
-extern struct dict_object *s6a_vendor_id;
-extern struct dict_object *s6a_experimental_result_code;
 
 extern struct dict_object *s6a_visited_plmn_id;
 extern struct dict_object *s6a_rat_type;
