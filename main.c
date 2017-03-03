@@ -55,7 +55,7 @@ static int check_signal(int signum)
             s6a_auth_info_req_t air;
             memset(&air, 0, sizeof(s6a_auth_info_req_t));
 
-            #define TEST_IMSI "01045238277"
+            #define TEST_IMSI "001010123456800"
             air.imsi_len = strlen(TEST_IMSI);
             strcpy((char*)air.imsi, TEST_IMSI);
             air.visited_plmn_id.mcc = 1;
