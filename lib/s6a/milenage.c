@@ -189,19 +189,11 @@ int milenage_f2345(const c_uint8_t *opc, const c_uint8_t *k,
  * @res: Buffer for RES = 64-bit signed response (f2), or %NULL
  * @res_len: Max length for res; set to used length or 0 on failure
  */
-void aaaa(const c_uint8_t *opc, const c_uint8_t *amf, 
-    const c_uint8_t *k, const c_uint8_t *sqn, const c_uint8_t *_rand,
-    c_uint8_t *autn, c_uint8_t *ik, c_uint8_t *ck, c_uint8_t *ak, 
-    c_uint8_t *res, size_t *res_len)
-{
-}
-
 void milenage_generate(const c_uint8_t *opc, const c_uint8_t *amf, 
     const c_uint8_t *k, const c_uint8_t *sqn, const c_uint8_t *_rand, 
     c_uint8_t *autn, c_uint8_t *ik, c_uint8_t *ck, c_uint8_t *ak, 
     c_uint8_t *res, size_t *res_len)
 {
-#if 0
 	int i;
 	c_uint8_t mac_a[8];
 
@@ -221,9 +213,7 @@ void milenage_generate(const c_uint8_t *opc, const c_uint8_t *amf,
 		autn[i] = sqn[i] ^ ak[i];
 	os_memcpy(autn + 6, amf, 2);
 	os_memcpy(autn + 8, mac_a, 8);
-#endif
 }
-
 
 /**
  * milenage_auts - Milenage AUTS validation

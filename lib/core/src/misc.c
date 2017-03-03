@@ -1,22 +1,28 @@
 #include "core_errno.h"
 #include "core_lib.h"
 
-void *core_ascii_to_hex(char *in, int len, char *out)
+void *core_ascii_to_hex(char *in, int len, void *out)
 {
-    int i, j, high, low;
-    for (i = 0, j = 0; i < len; i+=2, j+=1)
+    int i = 0, j = 0, k = 0, high, low;
+    c_uint8_t *out_p = out;
+    while(i < len)
     {
-        high = c_isdigit(in[i]) ? in[i] - '0' : 
-            c_islower(in[i]) ? in[i] - 'a' + 10 : in[i] - 'A' + 10;
-        low = c_isdigit(in[i+1]) ? in[i+1] - '0' : 
-            c_islower(in[i+1]) ? in[i+1] - 'a' + 10 : in[i+1] - 'A' + 10;
-
-#if 0
-        high = in[i]  > '9' ? in[i] - 'A' + 10 : in[i] - '0';
-        low = in[i+1] > '9' ? in[i+1] - 'A' + 10 : in[i+1] - '0';
-#endif
-
-        out[j] = (high << 4) | low;
+        if (!c_isspace(in[i]))
+        {
+            low = c_isdigit(in[i]) ? in[i] - '0' : 
+                c_islower(in[i]) ? in[i] - 'a' + 10 : in[i] - 'A' + 10;
+            if ((k & 0x1) == 0)
+            {
+                high = low;
+            }
+            else
+            {
+                out_p[j] = (high << 4) | low;
+                j++;
+            }
+            k++;
+        }
+        i++;
     }
 
     return out;

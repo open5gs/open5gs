@@ -11,15 +11,15 @@ static void misc_test1(abts_case *tc, void *data)
 
 static void misc_test2(abts_case *tc, void *data)
 {
-#define K "465B5CE8B199B49FAA5F0A2EE238A6BC"
-#define OP "5F1D289C5D354D0A140C2548F5F3E3BA"
-#define OPc "E8ED289DEBA952E4283B54E88E6183CA"
+#define K "4   6  5B5    CE8   B199B49FAA5F0A2EE238A6BC   "
+#define OP "5F1D289C  5D354D0A 140C2548   F5F3E3BA"
+#define OPc "E8ED2 89D EBA9 52E4 283B 54E8 8E61 83CA"
 #define AMF "8000"
     c_uint8_t k[16] = "\x46\x5B\x5C\xE8\xB1\x99\xB4\x9F\xAA\x5F\x0A\x2E\xE2\x38\xA6\xBC";
     c_uint8_t op[16] = "\x5F\x1D\x28\x9C\x5D\x35\x4D\x0A\x14\x0C\x25\x48\xF5\xF3\xE3\xBA";
     c_uint8_t opc[16] = "\xE8\xED\x28\x9D\xEB\xA9\x52\xE4\x28\x3B\x54\xE8\x8E\x61\x83\xCA";
     c_uint8_t amf[2] = { 0x80, 0x00 };
-#define LOWER "12abcdEF"
+#define LOWER "    12abcdE   F"
     c_uint8_t lower[4] = "\x12\xab\xcd\xef";
 
     char buffer[16];

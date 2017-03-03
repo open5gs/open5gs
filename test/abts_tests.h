@@ -26,6 +26,7 @@ const struct testlist {
     {test_s1ap_message},
     {test_enb_setup},
     {test_nas_message},
+    {test_security},
 };
 
 #endif /* APR_TEST_INCLUDES */

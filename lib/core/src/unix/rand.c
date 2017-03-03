@@ -2,7 +2,7 @@
 
 #define DEV_RANDOM "/dev/urandom"
 
-status_t core_generate_random_bytes(unsigned char *buf, int length)
+status_t core_generate_random_bytes(c_uint8_t *buf, int length)
 {
     int fd = -1;
 

@@ -4,7 +4,7 @@
 #include "core_sha2_hmac.h"
 
 void derive_kasme(const c_uint8_t *ck, const c_uint8_t *ik, 
-        const c_uint8_t plmn[3], const c_uint8_t *sqn,  const c_uint8_t *ak,
+        const c_uint8_t plmn_id[3], const c_uint8_t *sqn,  const c_uint8_t *ak,
         c_uint8_t *kasme)
 {
     c_uint8_t s[14];
@@ -12,10 +12,10 @@ void derive_kasme(const c_uint8_t *ck, const c_uint8_t *ik,
     int i;
 
     memcpy(&k[0], ck, 16);
-    memcpy(&k[0], ik, 16);
+    memcpy(&k[16], ik, 16);
 
     s[0] = 0x10;
-    memcpy(&s[1], plmn, 3);
+    memcpy(&s[1], plmn_id, 3);
     s[4] = 0x00;
     s[5] = 0x03;
 

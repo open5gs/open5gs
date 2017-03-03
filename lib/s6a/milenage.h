@@ -31,8 +31,5 @@ int milenage_f2345(const c_uint8_t *opc, const c_uint8_t *k,
     c_uint8_t *ak, c_uint8_t *akstar);
 
 void milenage_opc(const c_uint8_t *k, const c_uint8_t *op,  c_uint8_t *opc);
-void derive_kasme(const c_uint8_t *ck, const c_uint8_t *ik, 
-        const c_uint8_t plmn[3], const c_uint8_t *sqn,  const c_uint8_t *ak,
-        c_uint8_t *kasme);
 
 #endif /* __MILENAGE_H__ */
