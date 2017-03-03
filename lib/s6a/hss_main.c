@@ -38,7 +38,7 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
     union avp_value val;
 
     ue_ctx_t *ue = NULL;
-    c_uint8_t buffer[8];
+    c_uint8_t sqn[MAX_SQN_LEN];
     c_uint8_t autn[MAX_KEY_LEN];
     c_uint8_t ik[MAX_KEY_LEN];
     c_uint8_t ck[MAX_KEY_LEN];
@@ -75,9 +75,9 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
     core_generate_random_bytes(ue->rand, MAX_KEY_LEN);
     milenage_opc(ue->k, ue->op, ue->opc);
     milenage_generate(ue->opc, ue->amf, ue->k, 
-        core_uint64_to_buffer(ue->sqn, buffer), ue->rand, 
+        core_int_to_buffer(ue->sqn, sqn, MAX_SQN_LEN), ue->rand, 
         autn, ik, ck, ak, xres, &xres_len);
-    derive_kasme(ck, ik, hdr->avp_value->os.data, buffer, ak, kasme);
+    derive_kasme(ck, ik, hdr->avp_value->os.data, sqn, ak, kasme);
 
     ue->sqn = (ue->sqn + 32) & 0x7ffffffffff;
 	

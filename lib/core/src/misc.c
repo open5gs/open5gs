@@ -14,11 +14,11 @@ void *core_ascii_to_hex(char *in, int len, char *out)
     return out;
 }
 
-void *core_uint64_to_buffer(c_uint64_t num, c_uint8_t *buffer)
+void *core_int_to_buffer(c_uint64_t num, c_uint8_t *buffer, int size)
 {
     int i;
-    for (i = 0; i < 8; i++) 
-        buffer[i] = (num >> (8-1-i) * 8) & 0xff; 
+    for (i = 0; i < size; i++) 
+        buffer[i] = (num >> ((size-1-i) * 8)) & 0xff; 
 
     return buffer;
 }

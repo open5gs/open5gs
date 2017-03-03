@@ -35,11 +35,27 @@ static void misc_test2(abts_case *tc, void *data)
 
 static void misc_test3(abts_case *tc, void *data)
 {
-    c_uint64_t num = 0x0123456789abcdef;
-    c_uint8_t buf[8];
-    c_uint8_t tmp[8] = "\x01\x23\x45\x67\x89\xab\xcd\xef";
+#define MAX_SIZE 8
+    c_uint8_t tmp[MAX_SIZE] = "\x01\x23\x45\x67\x89\xab\xcd\xef";
+    c_uint8_t buf[MAX_SIZE];
+    c_uint64_t num;
 
-    ABTS_TRUE(tc, memcmp(tmp, core_uint64_to_buffer(num, buf), 8) == 0);
+    num = 0x0123456789abcdef;
+    ABTS_TRUE(tc, memcmp(tmp, core_int_to_buffer(num, buf, 8), 8) == 0);
+    num = 0x0123456789abcd;
+    ABTS_TRUE(tc, memcmp(tmp, core_int_to_buffer(num, buf, 7), 7) == 0);
+    num = 0x0123456789ab;
+    ABTS_TRUE(tc, memcmp(tmp, core_int_to_buffer(num, buf, 6), 6) == 0);
+    num = 0x0123456789;
+    ABTS_TRUE(tc, memcmp(tmp, core_int_to_buffer(num, buf, 5), 5) == 0);
+    num = 0x01234567;
+    ABTS_TRUE(tc, memcmp(tmp, core_int_to_buffer(num, buf, 4), 4) == 0);
+    num = 0x012345;
+    ABTS_TRUE(tc, memcmp(tmp, core_int_to_buffer(num, buf, 3), 3) == 0);
+    num = 0x0123;
+    ABTS_TRUE(tc, memcmp(tmp, core_int_to_buffer(num, buf, 2), 2) == 0);
+    num = 0x01;
+    ABTS_TRUE(tc, memcmp(tmp, core_int_to_buffer(num, buf, 1), 1) == 0);
 }
 
 abts_suite *testmisc(abts_suite *suite)
