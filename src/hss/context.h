@@ -1,5 +1,5 @@
-#ifndef __S6A_HSS_CTX_H__
-#define __S6A_HSS_CTX_H__
+#ifndef __CONTEXT_H__
+#define __CONTEXT_H__
 
 #include "core_list.h"
 #include "core_errno.h"
@@ -51,4 +51,4 @@ CORE_DECLARE(ue_ctx_t*)     hss_ue_ctx_next(ue_ctx_t *ue);
 }
 #endif /* __cplusplus */
 
-#endif /* !__S6A_HSS_CTX_H__ */
+#endif /* !__CONTEXT_H__ */

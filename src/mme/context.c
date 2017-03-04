@@ -1,4 +1,5 @@
-#define TRACE_MODULE _ctx
+#define TRACE_MODULE _mme_ctx
+
 #include "core_debug.h"
 #include "core_pool.h"
 #include "core_rwlock.h"

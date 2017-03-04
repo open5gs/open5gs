@@ -3,10 +3,10 @@
 noinst_LTLIBRARIES = libhss.la
 
 libhss_la_SOURCES = \
-    hss_ctx.h 
+    context.h 
 
 nodist_libhss_la_SOURCES = \
-    init.c hss_ctx.c
+    init.c context.c
 
 libhss_la_DEPENDENCIES = \
     $(top_srcdir)/lib/core/src/libcore.la \

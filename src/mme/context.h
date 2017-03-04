@@ -1,5 +1,5 @@
-#ifndef __CELLWIRE_CONTEXT_H__
-#define __CELLWIRE_CONTEXT_H__
+#ifndef __CONTEXT_H__
+#define __CONTEXT_H__
 
 #include "core_list.h"
 #include "core_errno.h"
@@ -114,4 +114,4 @@ CORE_DECLARE(enb_ctx_t*)    enb_ctx_next(enb_ctx_t *enb);
 }
 #endif /* __cplusplus */
 
-#endif /* !__CELLWIRE_CONTEXT_H__ */
+#endif /* !__CONTEXT_H__ */

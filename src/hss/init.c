@@ -6,7 +6,7 @@
 #include "kasme.h"
 #include "milenage.h"
 
-#include "hss_ctx.h"
+#include "context.h"
 #include "s6a_lib.h"
 
 #define MAX_SQN_LEN 6
