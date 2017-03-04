@@ -5,7 +5,7 @@ noinst_LTLIBRARIES = libmme.la
 libmme_la_SOURCES = \
     event.h context.h \
 	s1ap_build.h s1ap_conv.h s1ap_path.h \
-	s6_auth_info.h \
+	s6a_message.h \
 	sm.h 
 
 nodist_libmme_la_SOURCES = \

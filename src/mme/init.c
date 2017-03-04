@@ -6,7 +6,7 @@
 #include "context.h"
 #include "event.h"
 
-#include "s6a_lib.h"
+#include "s6a_message.h"
 
 #define EVENT_WAIT_TIMEOUT 10000 /* 10 msec */
 
