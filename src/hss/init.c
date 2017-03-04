@@ -57,7 +57,7 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
             goto out,);
     d_assert(fd_msg_avp_hdr(avp, &hdr) == 0 && hdr,,);
 
-    ue = hss_ue_ctx_find_by_imsi(
+    ue = hss_ctx_ue_find_by_imsi(
             hdr->avp_value->os.data, hdr->avp_value->os.len);
     if (!ue)
     {
@@ -163,7 +163,7 @@ status_t hss_initialize(void)
         #define UE1_IMSI "001010123456800"
         #define UE2_IMSI "001010123456796"
 
-        ue = hss_ue_ctx_add();
+        ue = hss_ctx_ue_add();
         d_assert(ue, return -1, "UE context add failed");
 
         strcpy((char*)ue->imsi, UE1_IMSI);
@@ -171,7 +171,7 @@ status_t hss_initialize(void)
         memcpy(ue->k, core_ascii_to_hex(K, strlen(K), buf), MAX_KEY_LEN);
         ue->sqn = 32;
 
-        ue = hss_ue_ctx_add();
+        ue = hss_ctx_ue_add();
         d_assert(ue, return -1, "UE context add failed");
 
         strcpy((char*)ue->imsi, UE2_IMSI);
@@ -206,7 +206,7 @@ void hss_terminate(void)
 
     /* FIXME : this is a sample UE for testing */
     {
-        hss_ue_ctx_remove_all();
+        hss_ctx_ue_remove_all();
     }
 
     hss_ctx_final();

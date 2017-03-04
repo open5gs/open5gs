@@ -89,25 +89,18 @@ typedef struct _rab_ctx_t {
     ue_ctx_t        *ue;
 } rab_ctx_t;
 
-CORE_DECLARE(status_t)      context_init(void);
-CORE_DECLARE(status_t)      context_final(void);
-
-CORE_DECLARE(status_t)      context_read_lock(void);
-CORE_DECLARE(status_t)      context_write_lock(void);
-CORE_DECLARE(status_t)      context_unlock(void);
-
-CORE_DECLARE(void)          context_post_cpath(void);
-CORE_DECLARE(int)           context_fetch_cpath(void);
+CORE_DECLARE(status_t)      mme_ctx_init(void);
+CORE_DECLARE(status_t)      mme_ctx_final(void);
 
 CORE_DECLARE(mme_ctx_t*)    mme_self(void);
 
-CORE_DECLARE(enb_ctx_t*)    enb_ctx_add(void);
-CORE_DECLARE(status_t)      enb_ctx_remove(enb_ctx_t *enb);
-CORE_DECLARE(status_t)      enb_ctx_remove_all(void);
-CORE_DECLARE(enb_ctx_t*)    enb_ctx_find_by_sock(net_sock_t *sock);
-CORE_DECLARE(enb_ctx_t*)    enb_ctx_find_by_id(c_uint32_t id);
-CORE_DECLARE(enb_ctx_t*)    enb_ctx_first(void);
-CORE_DECLARE(enb_ctx_t*)    enb_ctx_next(enb_ctx_t *enb);
+CORE_DECLARE(enb_ctx_t*)    mme_ctx_enb_add(void);
+CORE_DECLARE(status_t)      mme_ctx_enb_remove(enb_ctx_t *enb);
+CORE_DECLARE(status_t)      mme_ctx_enb_remove_all(void);
+CORE_DECLARE(enb_ctx_t*)    mme_ctx_enb_find_by_sock(net_sock_t *sock);
+CORE_DECLARE(enb_ctx_t*)    mme_ctx_enb_find_by_id(c_uint32_t id);
+CORE_DECLARE(enb_ctx_t*)    mme_ctx_enb_first(void);
+CORE_DECLARE(enb_ctx_t*)    mme_ctx_enb_next(enb_ctx_t *enb);
 #define self() mme_self()
 
 #ifdef __cplusplus

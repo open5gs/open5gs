@@ -165,7 +165,7 @@ status_t enb_s1_handle_s1setuprequest(enb_ctx_t *enb, s1ap_message *message)
     rv = s1ap_conv_uint32_from_enb_id(&enb_id, &ies->global_ENB_ID.eNB_ID);
     d_assert(rv == CORE_OK, return rv, "Null param");
 
-    if (enb_ctx_find_by_id(enb_id))
+    if (mme_ctx_enb_find_by_id(enb_id))
     {
         S1ap_Cause_t cause;
         d_error("eNB-id[0x%x] duplicated from [%s]", enb_id,

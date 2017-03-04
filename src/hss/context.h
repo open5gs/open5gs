@@ -39,13 +39,13 @@ CORE_DECLARE(hss_ctx_t*)    hss_self(void);
 CORE_DECLARE(status_t)      hss_ctx_init(void);
 CORE_DECLARE(void)          hss_ctx_final(void);
 
-CORE_DECLARE(ue_ctx_t*)     hss_ue_ctx_add(void);
-CORE_DECLARE(status_t)      hss_ue_ctx_remove(ue_ctx_t *ue);
-CORE_DECLARE(status_t)      hss_ue_ctx_remove_all(void);
-CORE_DECLARE(ue_ctx_t*)     hss_ue_ctx_find_by_imsi(
+CORE_DECLARE(ue_ctx_t*)     hss_ctx_ue_add(void);
+CORE_DECLARE(status_t)      hss_ctx_ue_remove(ue_ctx_t *ue);
+CORE_DECLARE(status_t)      hss_ctx_ue_remove_all(void);
+CORE_DECLARE(ue_ctx_t*)     hss_ctx_ue_find_by_imsi(
                                 c_uint8_t *imsi, c_uint8_t imsi_len);
-CORE_DECLARE(ue_ctx_t*)     hss_ue_ctx_first(void);
-CORE_DECLARE(ue_ctx_t*)     hss_ue_ctx_next(ue_ctx_t *ue);
+CORE_DECLARE(ue_ctx_t*)     hss_ctx_ue_first(void);
+CORE_DECLARE(ue_ctx_t*)     hss_ctx_ue_next(ue_ctx_t *ue);
 
 #ifdef __cplusplus
 }

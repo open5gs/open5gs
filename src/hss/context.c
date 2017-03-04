@@ -42,7 +42,7 @@ void hss_ctx_final(void)
 	return;
 }
 
-ue_ctx_t* hss_ue_ctx_add()
+ue_ctx_t* hss_ctx_ue_add()
 {
     ue_ctx_t *ue = NULL;
 
@@ -62,7 +62,7 @@ ue_ctx_t* hss_ue_ctx_add()
     return ue;
 }
 
-status_t hss_ue_ctx_remove(ue_ctx_t *ue)
+status_t hss_ctx_ue_remove(ue_ctx_t *ue)
 {
     d_assert(ue, return CORE_ERROR, "Null param");
 
@@ -72,7 +72,7 @@ status_t hss_ue_ctx_remove(ue_ctx_t *ue)
     return CORE_OK;
 }
 
-status_t hss_ue_ctx_remove_all()
+status_t hss_ctx_ue_remove_all()
 {
     ue_ctx_t *ue = NULL, *next_ue = NULL;
     
@@ -81,7 +81,7 @@ status_t hss_ue_ctx_remove_all()
     {
         next_ue = list_next(ue);
 
-        hss_ue_ctx_remove(ue);
+        hss_ctx_ue_remove(ue);
 
         ue = next_ue;
     }
@@ -89,7 +89,7 @@ status_t hss_ue_ctx_remove_all()
     return CORE_OK;
 }
 
-ue_ctx_t* hss_ue_ctx_find_by_imsi(c_uint8_t *imsi, c_uint8_t imsi_len)
+ue_ctx_t* hss_ctx_ue_find_by_imsi(c_uint8_t *imsi, c_uint8_t imsi_len)
 {
     ue_ctx_t *ue = NULL;
     
@@ -105,12 +105,12 @@ ue_ctx_t* hss_ue_ctx_find_by_imsi(c_uint8_t *imsi, c_uint8_t imsi_len)
     return ue;
 }
 
-ue_ctx_t* hss_ue_ctx_first()
+ue_ctx_t* hss_ctx_ue_first()
 {
     return list_first(&g_ue_list);
 }
 
-ue_ctx_t* hss_ue_ctx_next(ue_ctx_t *ue)
+ue_ctx_t* hss_ctx_ue_next(ue_ctx_t *ue)
 {
     return list_next(ue);
 }

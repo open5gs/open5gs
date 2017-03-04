@@ -22,10 +22,7 @@ static int g_mme_ctx_initialized = 0;
 
 static list_t g_enb_list;
 
-static rwlock_id g_rwlock;
-static int g_cpath_post_q;
-
-status_t context_init()
+status_t mme_ctx_init()
 {
     d_assert(g_mme_ctx_initialized == 0, return CORE_ERROR,
             "MME context already has been initialized");
@@ -35,9 +32,6 @@ status_t context_init()
     pool_init(&rab_pool, SIZE_OF_RAB_POOL);
 
     list_init(&g_enb_list);
-
-    rwlock_create(&g_rwlock);
-    d_assert(g_rwlock, return CORE_ERROR, "RW-lock creation failed");
 
     /* Initialize MME context */
     memset(&self, 0, sizeof(mme_ctx_t));
@@ -67,12 +61,12 @@ status_t context_init()
     return CORE_OK;
 }
 
-status_t context_final()
+status_t mme_ctx_final()
 {
     d_assert(g_mme_ctx_initialized == 1, return CORE_ERROR,
             "HyperCell context already has been finalized");
 
-    enb_ctx_remove_all();
+    mme_ctx_enb_remove_all();
 
     pool_final(&enb_pool);
     pool_final(&ue_pool);
@@ -83,43 +77,12 @@ status_t context_final()
     return CORE_OK;
 }
 
-status_t context_read_lock()
-{
-    return rwlock_rdlock(g_rwlock);
-}
-
-status_t context_write_lock()
-{
-    return rwlock_wrlock(g_rwlock);
-}
-
-status_t context_unlock()
-{
-    return rwlock_unlock(g_rwlock);
-}
-
-void context_post_cpath()
-{
-    g_cpath_post_q = 1;
-}
-
-int context_fetch_cpath()
-{
-    if (g_cpath_post_q)
-    {
-        g_cpath_post_q = 0;
-        return 1;
-    }
-
-    return 0;
-}
-
 mme_ctx_t* mme_self()
 {
     return &self;
 }
 
-enb_ctx_t* enb_ctx_add()
+enb_ctx_t* mme_ctx_enb_add()
 {
 
     enb_ctx_t *enb = NULL;
@@ -137,7 +100,7 @@ enb_ctx_t* enb_ctx_add()
     return enb;
 }
 
-status_t enb_ctx_remove(enb_ctx_t *enb)
+status_t mme_ctx_enb_remove(enb_ctx_t *enb)
 {
     d_assert(enb, return CORE_ERROR, "Null param");
 
@@ -147,7 +110,7 @@ status_t enb_ctx_remove(enb_ctx_t *enb)
     return CORE_OK;
 }
 
-status_t enb_ctx_remove_all()
+status_t mme_ctx_enb_remove_all()
 {
     enb_ctx_t *enb = NULL, *next_enb = NULL;
     
@@ -156,7 +119,7 @@ status_t enb_ctx_remove_all()
     {
         next_enb = list_next(enb);
 
-        enb_ctx_remove(enb);
+        mme_ctx_enb_remove(enb);
 
         enb = next_enb;
     }
@@ -164,7 +127,7 @@ status_t enb_ctx_remove_all()
     return CORE_OK;
 }
 
-enb_ctx_t* enb_ctx_find_by_sock(net_sock_t *sock)
+enb_ctx_t* mme_ctx_enb_find_by_sock(net_sock_t *sock)
 {
     enb_ctx_t *enb = NULL;
     
@@ -180,7 +143,7 @@ enb_ctx_t* enb_ctx_find_by_sock(net_sock_t *sock)
     return enb;
 }
 
-enb_ctx_t* enb_ctx_find_by_id(c_uint32_t id)
+enb_ctx_t* mme_ctx_enb_find_by_id(c_uint32_t id)
 {
     enb_ctx_t *enb = NULL;
     
@@ -196,12 +159,12 @@ enb_ctx_t* enb_ctx_find_by_id(c_uint32_t id)
     return enb;
 }
 
-enb_ctx_t* enb_ctx_first()
+enb_ctx_t* mme_ctx_enb_first()
 {
     return list_first(&g_enb_list);
 }
 
-enb_ctx_t* enb_ctx_next(enb_ctx_t *enb)
+enb_ctx_t* mme_ctx_enb_next(enb_ctx_t *enb)
 {
     return list_next(enb);
 }
