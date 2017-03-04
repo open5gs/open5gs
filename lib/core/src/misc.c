@@ -3,21 +3,22 @@
 
 void *core_ascii_to_hex(char *in, int len, void *out)
 {
-    int i = 0, j = 0, k = 0, high, low;
+    int i = 0, j = 0, k = 0, hex;
     c_uint8_t *out_p = out;
+
     while(i < len)
     {
         if (!c_isspace(in[i]))
         {
-            low = c_isdigit(in[i]) ? in[i] - '0' : 
+            hex = c_isdigit(in[i]) ? in[i] - '0' : 
                 c_islower(in[i]) ? in[i] - 'a' + 10 : in[i] - 'A' + 10;
             if ((k & 0x1) == 0)
             {
-                high = low;
+                out_p[j] = (hex << 4);
             }
             else
             {
-                out_p[j] = (high << 4) | low;
+                out_p[j] |= hex;
                 j++;
             }
             k++;
