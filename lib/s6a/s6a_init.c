@@ -1,4 +1,4 @@
-#define TRACE_MODULE _s6a_app
+#define TRACE_MODULE _s6a_init
 
 #include "core_debug.h"
 
@@ -80,9 +80,9 @@ static void * s6a_stats(void * arg)
 }
 
 /* entry point */
-int s6a_app_init(int mode)
+int s6a_init(int mode)
 {
-    d_trace_level(&_s6a_app, 0);
+    d_trace_level(&_s6a_init, 0);
 
     /* Configure Application Mode(MME, HSS) */
     if (mode == MODE_HSS) 
@@ -113,7 +113,7 @@ int s6a_app_init(int mode)
 }
 
 /* Unload */
-void s6a_app_final(void)
+void s6a_final(void)
 {
 	CHECK_FCT_DO( fd_thr_term(&s6a_stats_th), );
 	CHECK_POSIX_DO( pthread_mutex_destroy(&s6a_config->stats_lock), );

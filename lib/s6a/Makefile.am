@@ -10,7 +10,7 @@ libs6a_la_SOURCES = \
 
 nodist_libs6a_la_SOURCES = \
 	milenage.c kasme.c \
-	s6a_config.c s6a_fd.c s6a_app.c s6a_dict.c
+	s6a_init.c s6a_fd.c s6a_config.c s6a_dict.c
 
 libs6a_la_DEPENDENCIES = \
     $(top_srcdir)/lib/s6a/freeDiameter/libs6afreeDiameter.la

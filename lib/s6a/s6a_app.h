@@ -123,8 +123,8 @@ extern struct dict_object *s6a_pre_emption_capability;
 extern struct dict_object *s6a_pre_emption_vulnerability;
 extern struct dict_object *s6a_served_party_ip_addr;
 
-CORE_DECLARE(int) s6a_app_init(int mode);
-CORE_DECLARE(void) s6a_app_final(void);
+CORE_DECLARE(int) s6a_init(int mode);
+CORE_DECLARE(void) s6a_final(void);
 
 CORE_DECLARE(int) s6a_fd_init(const char *conffile);
 CORE_DECLARE(void) s6a_fd_final();

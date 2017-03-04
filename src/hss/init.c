@@ -148,7 +148,7 @@ status_t hss_initialize(void)
     int ret;
 	struct disp_when data;
 
-    ret = s6a_app_init(MODE_HSS);
+    ret = s6a_init(MODE_HSS);
     if (ret != 0) return CORE_ERROR;
 
     rv = hss_ctx_init();
@@ -210,7 +210,7 @@ void hss_terminate(void)
     }
 
     hss_ctx_final();
-    s6a_app_final();
+    s6a_final();
 	
 	return;
 }

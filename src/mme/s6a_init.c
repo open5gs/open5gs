@@ -10,7 +10,7 @@ status_t s6a_mme_init(void)
 {
     status_t rv;
 
-    rv = s6a_app_init(MODE_MME);
+    rv = s6a_init(MODE_MME);
     if (rv != CORE_OK) return rv;
 
 	d_assert(fd_sess_handler_create(&s6a_mme_reg, 
@@ -23,5 +23,5 @@ void s6a_mme_final(void)
 {
 	d_assert(fd_sess_handler_destroy(&s6a_mme_reg, NULL) == 0,,);
 
-    s6a_app_final();
+    s6a_final();
 }
