@@ -11,7 +11,7 @@ testcellwire_SOURCES = \
 	security_test.c
 
 testcellwire_LDADD = \
-    $(top_srcdir)/src/mme/libmme.la
+    $(top_srcdir)/src/libcellwire.la
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \
@@ -20,7 +20,8 @@ AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/s1ap \
     -I$(top_srcdir)/lib/nas \
     -I$(top_srcdir)/lib/s6a \
-    -I$(top_srcdir)/src/mme
+    -I$(top_srcdir)/src/mme \
+    -I$(top_srcdir)/src
 
 AM_CFLAGS = \
 	-Wall -Werror \

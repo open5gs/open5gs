@@ -4,9 +4,12 @@
 #include "core_rwlock.h"
 #include "core_index.h"
 
-#include "cellwire.h"
 #include "context.h"
 #include "s1ap_message.h"
+
+#define S1_SCTP_PORT                36412
+#define GTP_C_UDP_PORT              2123
+#define GTP_U_UDP_PORT              2152
 
 static mme_ctx_t self;
 

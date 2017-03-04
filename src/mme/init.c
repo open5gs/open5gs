@@ -1,14 +1,8 @@
-/**
- * @file init.c
- */
+#define TRACE_MODULE _mme_init
 
-/* Core library */
-#define TRACE_MODULE _init
-#include "core_general.h"
 #include "core_debug.h"
 #include "core_thread.h"
 
-#include "logger.h"
 #include "s6a_app.h"
 
 #include "context.h"
@@ -17,22 +11,12 @@
 #define EVENT_WAIT_TIMEOUT 10000 /* 10 msec */
 
 static thread_id mme_sm_thread;
-static thread_id mme_net_thread;
+void *THREAD_FUNC mme_sm_main(void *data);
 
-status_t cellwire_initialize(char *config_path, char *log_path)
+status_t mme_initialize()
 {
     status_t rv;
     int ret;
-
-    core_initialize();
-
-    if (config_path)
-    {
-        /* TODO */
-    }
-
-    if (log_path)
-        logger_start(log_path);
 
     rv = context_init();
     if (rv != CORE_OK) return rv;
@@ -40,14 +24,18 @@ status_t cellwire_initialize(char *config_path, char *log_path)
     ret = s6a_init();
     if (ret != 0) return CORE_ERROR;
 
+    rv = thread_create(&mme_sm_thread, NULL, mme_sm_main, NULL);
+    if (rv != CORE_OK) return rv;
+
     return CORE_OK;
 }
 
-void cellwire_terminate(void)
+void mme_terminate(void)
 {
+    thread_delete(mme_sm_thread);
+
     s6a_final();
     context_final();
-    core_terminate();
 }
 
 void *THREAD_FUNC mme_sm_main(void *data)
@@ -113,22 +101,4 @@ void *THREAD_FUNC mme_net_main(void *data)
     }
 
     return NULL;
-}
-
-void threads_start()
-{
-    status_t rv;
-
-    rv = thread_create(&mme_sm_thread, NULL, mme_sm_main, NULL);
-    d_assert(rv == CORE_OK, return,
-            "MME State machine thread creation failed");
-    rv = thread_create(&mme_net_thread, NULL, mme_net_main, NULL);
-    d_assert(rv == CORE_OK, return,
-            "MME Network socket recv thread creation failed");
-}
-
-void threads_stop()
-{
-    thread_delete(mme_net_thread);
-    thread_delete(mme_sm_thread);
 }

@@ -3,11 +3,10 @@
 noinst_LTLIBRARIES = libmme.la
 
 libmme_la_SOURCES = \
-    cellwire.h event.h context.h \
+    event.h context.h \
 	s1ap_build.h s1ap_conv.h s1ap_path.h \
 	s6_auth_info.h \
 	sm.h 
-
 
 nodist_libmme_la_SOURCES = \
     init.c event.c context.c \
@@ -32,7 +31,6 @@ libmme_la_LIBADD = \
     $(top_srcdir)/lib/s6a/libs6a.la
 
 AM_CPPFLAGS = \
-	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/lib/core/include \
 	-I$(top_srcdir)/lib/logger \
     -I$(top_srcdir)/lib/3gpp \
@@ -43,8 +41,6 @@ AM_CPPFLAGS = \
 
 AM_CFLAGS = \
 	-Wall -Werror
-
-DEFS = @DEFS@ -DSYSCONFDIR=\"$(sysconfdir)/\"
 
 MAINTAINERCLEANFILES = Makefile.in
 MOSTLYCLEANFILES = core *.stackdump

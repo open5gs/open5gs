@@ -8,15 +8,11 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define S1_SCTP_PORT                36412
-#define GTP_C_UDP_PORT              2123
-#define GTP_U_UDP_PORT              2152
-
 CORE_DECLARE(status_t) cellwire_initialize(char *config_path, char *log_path);
 CORE_DECLARE_NONSTD(void) cellwire_terminate(void);
 
-CORE_DECLARE(void) threads_start(void);
-CORE_DECLARE(void) threads_stop(void);
+CORE_DECLARE(status_t) mme_initialize();
+CORE_DECLARE_NONSTD(void) mme_terminate(void);
 
 #ifdef __cplusplus
 }

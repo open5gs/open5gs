@@ -10,12 +10,11 @@ dist_cellwired_SOURCES = main.c symtbl.h
 nodist_cellwired_SOURCES = symtbl.c
 
 cellwired_LDADD = \
-    $(top_srcdir)/src/mme/libmme.la
-
+    $(top_srcdir)/src/libcellwire.la
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \
-    -I$(top_srcdir)/src/mme
+    -I$(top_srcdir)/src
 
 CLEANFILES = symtbl.c
 DISTCLEANFILES = $(DIST_ARCHIVES)

@@ -135,7 +135,6 @@ int main(int argc, char *argv[])
         d_fatal("CellWire initialization failed. Aborted");
         return EXIT_FAILURE;
     }
-    threads_start();
 
     show_version();
     d_info("CellWire daemon start");
@@ -143,7 +142,6 @@ int main(int argc, char *argv[])
 
     d_info("CellWire daemon terminating...");
 
-    threads_stop();
     cellwire_terminate();
 
     return EXIT_SUCCESS;
