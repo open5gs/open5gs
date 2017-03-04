@@ -5,13 +5,14 @@ SUBDIRS = freeDiameter
 noinst_LTLIBRARIES = libs6a.la
 
 libs6a_la_SOURCES = \
+	hss_ctx.h hss_sm.h
 	milenage.h kasme.h \
 	s6a_app.h
 
 nodist_libs6a_la_SOURCES = \
 	milenage.c kasme.c \
 	s6a_init.c s6a_config.c s6a_fd.c s6a_app.c s6a_dict.c \
-	hss_main.c hss_ctx.c \
+	hss_main.c hss_sm.c hss_ctx.c \
 	mme_init.c
 
 libs6a_la_DEPENDENCIES = \

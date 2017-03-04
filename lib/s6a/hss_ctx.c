@@ -1,4 +1,4 @@
-#define TRACE_MODULE _s6a_hss_ctx
+#define TRACE_MODULE _hss_ctx
 
 #include "core_debug.h"
 #include "core_pool.h"

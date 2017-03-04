@@ -10,8 +10,8 @@ static void s6a_config_dump(void)
 {
 	d_trace(1, "------- s6a configuration dump: ---------\n");
 	d_trace(1, " Mode ............... : %s%s\n", 
-            s6a_config->mode & MODE_MME ? "MME" : "", 
-            s6a_config->mode & MODE_HSS ? "HSS" : "");
+            s6a_config->mode == MODE_MME ? "MME" : "", 
+            s6a_config->mode == MODE_HSS ? "HSS" : "");
 	d_trace(1, " Vendor Id .......... : %u\n", s6a_config->vendor_id);
 	d_trace(1, " Application Id ..... : %u\n", s6a_config->appli_id);
 	d_trace(1, " Duration ........... : %d(sec)\n", s6a_config->duration);
@@ -55,12 +55,12 @@ static void * s6a_stats(void * arg)
 					(long)(now.tv_nsec + 1000000000 - start.tv_nsec) / 1000);
 		}
 		
-		if (s6a_config->mode & MODE_HSS) 
+		if (s6a_config->mode == MODE_HSS) 
         {
 			d_trace(1, " HSS: %llu message(s) echoed\n", 
                     copy.nb_echoed);
 		}
-		if (s6a_config->mode & MODE_MME) 
+        else if (s6a_config->mode == MODE_MME) 
         {
 			d_trace(1, " MME:\n");
 			d_trace(1, "   %llu message(s) sent\n", copy.nb_sent);
@@ -85,6 +85,14 @@ int s6a_app_init(int mode)
     d_trace_level(&_s6a_app, 0);
 
     /* Configure Application Mode(MME, HSS) */
+    if (mode == MODE_HSS) 
+    {
+        CHECK_FCT( s6a_fd_init(s6a_hss_config()) );
+    }
+    else if (mode == MODE_MME) 
+    {
+        CHECK_FCT( s6a_fd_init(s6a_mme_config()) );
+    }
     s6a_config->mode = mode;
 
 	/* Initialize the mutex */
@@ -95,33 +103,20 @@ int s6a_app_init(int mode)
 	/* Install objects definitions for this test application */
 	CHECK_FCT( s6a_dict_init() );
 	
-	/* Start the signal handler thread */
-	if (s6a_config->mode & MODE_MME) {
-        CHECK_FCT( mme_init() );
-	}
-	
-	/* Install the handlers for incoming messages */
-	if (s6a_config->mode & MODE_HSS) {
-		CHECK_FCT( hss_init() );
-	}
-	
 	/* Advertise the support for the test application in the peer */
 	CHECK_FCT( fd_disp_app_support ( s6a_appli, s6a_vendor, 1, 0 ) );
 	
 	/* Start the statistics thread */
 	CHECK_POSIX( pthread_create(&s6a_stats_th, NULL, s6a_stats, NULL) );
-	
+
 	return 0;
 }
 
 /* Unload */
 void s6a_app_final(void)
 {
-	if (s6a_config->mode & MODE_MME)
-		mme_final();
-	if (s6a_config->mode & MODE_HSS)
-		hss_final();
-
 	CHECK_FCT_DO( fd_thr_term(&s6a_stats_th), );
 	CHECK_POSIX_DO( pthread_mutex_destroy(&s6a_config->stats_lock), );
+
+    s6a_fd_final();
 }
