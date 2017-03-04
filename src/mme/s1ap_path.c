@@ -73,7 +73,7 @@ static int _s1ap_accept_cb(net_sock_t *net_sock, void *data)
             INET_NTOP(&remote_sock->remote.sin_addr.s_addr, buf));
 
         event_t e;
-        event_set(&e, EVT_LO_ENB_S1_ACCEPT, (c_uintptr_t)remote_sock);
+        event_set(&e, EVT_LO_ENB_S1AP_ACCEPT, (c_uintptr_t)remote_sock);
         event_send(queue_id, &e);
     }
     else
@@ -95,7 +95,7 @@ static status_t s1ap_recv(net_sock_t *net_sock, pkbuf_t *pkb, msgq_id queue_id)
     d_trace(1, "S1AP_PDU is received from eNB-Inf\n");
     d_trace_hex(1, pkb->payload, pkb->len);
 
-    event_set(&e, EVT_S1_ENB_INF, (c_uintptr_t)net_sock);
+    event_set(&e, EVT_ENB_S1AP_INF, (c_uintptr_t)net_sock);
     event_set_msg(&e, pkb);
 
     return event_send(queue_id, &e);
@@ -142,7 +142,7 @@ int _s1ap_recv_cb(net_sock_t *net_sock, void *data)
 
         event_t e;
 
-        event_set(&e, EVT_LO_ENB_S1_CONNREFUSED, (c_uintptr_t)net_sock);
+        event_set(&e, EVT_LO_ENB_S1AP_CONNREFUSED, (c_uintptr_t)net_sock);
         event_send(queue_id, &e);
 
         return -1;

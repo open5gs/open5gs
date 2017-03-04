@@ -1,10 +1,6 @@
 #ifndef __EVENT_H__
 #define __EVENT_H__
 
-/**
- * @file event.h
- * @brief Event header
- */
 #include "core_msgq.h"
 #include "core_time.h"
 #include "core_timer.h"
@@ -20,15 +16,15 @@ typedef enum {
     EVT_BASE = FSM_USER_SIG,
 
     EVT_LO_BASE,
-    EVT_LO_ENB_S1_ACCEPT,
-    EVT_LO_ENB_S1_CONNREFUSED,
+    EVT_LO_ENB_S1AP_ACCEPT,
+    EVT_LO_ENB_S1AP_CONNREFUSED,
     EVT_LO_TOP,
 
     EVT_TM_BASE,
     EVT_TM_TOP,
 
     EVT_MSG_BASE,
-    EVT_S1_ENB_INF,
+    EVT_ENB_S1AP_INF,
     EVT_MSG_TOP,
     
     EVT_GTP_BASE,

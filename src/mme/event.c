@@ -122,10 +122,10 @@ static char FSM_NAME_INIT_SIG[] = "INIT";
 static char FSM_NAME_ENTRY_SIG[] = "ENTRY";
 static char FSM_NAME_EXIT_SIG[] = "EXIT";
 
-static char EVT_NAME_LO_ENB_S1_ACCEPT[] = "LO_ENB_S1_ACCEPT";
-static char EVT_NAME_LO_ENB_S1_CONNREFUSED[] = "LO_ENB_S1_CONNREFUSED";
+static char EVT_NAME_LO_ENB_S1AP_ACCEPT[] = "LO_ENB_S1AP_ACCEPT";
+static char EVT_NAME_LO_ENB_S1AP_CONNREFUSED[] = "LO_ENB_S1AP_CONNREFUSED";
 
-static char EVT_NAME_S1_ENB_INF[] = "S1_ENB_INF";
+static char EVT_NAME_ENB_S1AP_INF[] = "ENB_S1AP_INF";
 
 static char EVT_NAME_UNKNOWN[] = "UNKNOWN";
 
@@ -141,9 +141,9 @@ char* event_get_name(event_t *e)
             case FSM_ENTRY_SIG: return FSM_NAME_ENTRY_SIG;
             case FSM_EXIT_SIG: return FSM_NAME_EXIT_SIG;
 
-            case EVT_LO_ENB_S1_ACCEPT: return EVT_NAME_LO_ENB_S1_ACCEPT;
-            case EVT_LO_ENB_S1_CONNREFUSED: 
-                   return EVT_NAME_LO_ENB_S1_CONNREFUSED;
+            case EVT_LO_ENB_S1AP_ACCEPT: return EVT_NAME_LO_ENB_S1AP_ACCEPT;
+            case EVT_LO_ENB_S1AP_CONNREFUSED: 
+                   return EVT_NAME_LO_ENB_S1AP_CONNREFUSED;
 
             default: return EVT_NAME_UNKNOWN;
         }
@@ -152,7 +152,7 @@ char* event_get_name(event_t *e)
     {
         switch (event_get(e))
         {
-            case EVT_S1_ENB_INF: return EVT_NAME_S1_ENB_INF;
+            case EVT_ENB_S1AP_INF: return EVT_NAME_ENB_S1AP_INF;
             default: return EVT_NAME_UNKNOWN;
         }
     }

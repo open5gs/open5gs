@@ -53,7 +53,7 @@ void enb_s1_state_operational(enb_s1_sm_t *s, event_t *e)
         {
             break;
         }
-        case EVT_S1_ENB_INF:
+        case EVT_ENB_S1AP_INF:
         {
             s1ap_message message;
             status_t rv;
@@ -62,7 +62,7 @@ void enb_s1_state_operational(enb_s1_sm_t *s, event_t *e)
             rv = s1ap_decode_pdu(&message, recvbuf);
             if (rv != CORE_OK) 
             {
-                d_error("Can't parse S1AP_PDU in EVT_S1_ENB_INF");
+                d_error("Can't parse S1AP_PDU in EVT_ENB_S1APAP_INF");
                 break;
             }
 
