@@ -44,7 +44,6 @@ status_t cellwire_initialize(char *config_path, char *log_path)
         /* Child */
         rv = semaphore_wait(semaphore);
         d_assert(rv == CORE_OK, _exit(EXIT_FAILURE), "semaphore_wait() failed");
-
         rv = semaphore_delete(semaphore);
         d_assert(rv == CORE_OK, _exit(EXIT_FAILURE), "semaphore_delete() failed");
 
@@ -60,12 +59,11 @@ status_t cellwire_initialize(char *config_path, char *log_path)
     /* Parent */
     rv = mme_initialize();
     if (rv != CORE_OK) return rv;
+    rv = thread_create(&net_thread, NULL, net_main, NULL);
+    if (rv != CORE_OK) return rv;
 
     rv = semaphore_post(semaphore);
     d_assert(rv == CORE_OK, return -1, "semaphore_post() failed");
-
-    rv = thread_create(&net_thread, NULL, net_main, NULL);
-    if (rv != CORE_OK) return rv;
 
     return CORE_OK;
 }
@@ -73,7 +71,6 @@ status_t cellwire_initialize(char *config_path, char *log_path)
 void cellwire_terminate(void)
 {
     thread_delete(net_thread);
-
     mme_terminate();
 
     core_kill(child_pid, SIGTERM);
