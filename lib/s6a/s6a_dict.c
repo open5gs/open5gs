@@ -2,7 +2,7 @@
 
 #include "core_debug.h"
 
-#include "s6a_app.h"
+#include "s6a_lib.h"
 
 struct dict_object *s6a_vendor = NULL;
 struct dict_object *s6a_appli = NULL;

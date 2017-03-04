@@ -5,10 +5,12 @@
 #include "core_signal.h"
 #include "core_semaphore.h"
 
-#include "s6a_app.h"
+#include "s6a_lib.h"
 
 static void s6a_gnutls_log_func(int level, const char *str);
 static void s6a_fd_logger(int printlevel, const char *format, va_list ap);
+
+status_t s6a_config_apply();
 
 int s6a_fd_init(const char *conffile)
 {

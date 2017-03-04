@@ -1,5 +1,5 @@
-#ifndef __S6A_APP_H__
-#define __S6A_APP_H__
+#ifndef __S6A_LIB_H__
+#define __S6A_LIB_H__
 
 #include "core_errno.h"
 
@@ -126,17 +126,8 @@ extern struct dict_object *s6a_served_party_ip_addr;
 CORE_DECLARE(int) s6a_init(int mode);
 CORE_DECLARE(void) s6a_final(void);
 
-CORE_DECLARE(int) s6a_fd_init(const char *conffile);
-CORE_DECLARE(void) s6a_fd_final();
-
-CORE_DECLARE(char *) s6a_hss_config();
-CORE_DECLARE(char *) s6a_mme_config();
-CORE_DECLARE(status_t) s6a_config_apply();
-
-CORE_DECLARE(int) s6a_dict_init(void);
-
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* ! __S6A_APP_H__ */
+#endif /* ! __S6A_LIB_H__ */

@@ -7,7 +7,7 @@
 #include "milenage.h"
 
 #include "hss_ctx.h"
-#include "s6a_app.h"
+#include "s6a_lib.h"
 
 #define MAX_SQN_LEN 6
 #define MAX_AK_LEN 6

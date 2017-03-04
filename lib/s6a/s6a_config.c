@@ -4,7 +4,7 @@
 #include "core_lib.h"
 #include "core_file.h"
 
-#include "s6a_app.h"
+#include "s6a_lib.h"
 
 static struct s6a_config_t g_conf;
 struct s6a_config_t *s6a_config;

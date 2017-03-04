@@ -2,9 +2,17 @@
 
 #include "core_debug.h"
 
-#include "s6a_app.h"
+#include "s6a_lib.h"
 
 static pthread_t s6a_stats_th = (pthread_t)NULL;
+
+int s6a_fd_init(const char *conffile);
+void s6a_fd_final();
+
+char *s6a_hss_config();
+char *s6a_mme_config();
+
+int s6a_dict_init(void);
 
 static void s6a_config_dump(void)
 {

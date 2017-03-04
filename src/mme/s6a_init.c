@@ -2,7 +2,7 @@
 
 #include "core_debug.h"
 
-#include "s6a_app.h"
+#include "s6a_lib.h"
 
 struct session_handler *s6a_mme_reg = NULL;
 
