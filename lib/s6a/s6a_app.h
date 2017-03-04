@@ -50,7 +50,6 @@ struct s6a_config_t {
 };
 
 extern struct s6a_config_t *s6a_config;
-extern struct session_handler *s6a_mme_reg;
 
 /* Some global variables for dictionary */
 extern struct dict_object *s6a_vendor;
@@ -124,25 +123,17 @@ extern struct dict_object *s6a_pre_emption_capability;
 extern struct dict_object *s6a_pre_emption_vulnerability;
 extern struct dict_object *s6a_served_party_ip_addr;
 
-CORE_DECLARE(int) s6a_init(void);
-CORE_DECLARE(void) s6a_final(void);
+CORE_DECLARE(int) s6a_app_init(int mode);
+CORE_DECLARE(void) s6a_app_final(void);
 
 CORE_DECLARE(int) s6a_fd_init(const char *conffile);
 CORE_DECLARE(void) s6a_fd_final();
-
-CORE_DECLARE(int) s6a_app_init(int mode);
-CORE_DECLARE(void) s6a_app_final(void);
 
 CORE_DECLARE(char *) s6a_hss_config();
 CORE_DECLARE(char *) s6a_mme_config();
 CORE_DECLARE(status_t) s6a_config_apply();
 
 CORE_DECLARE(int) s6a_dict_init(void);
-
-CORE_DECLARE(int) mme_init(void);
-CORE_DECLARE(void) mme_final(void);
-CORE_DECLARE(int) hss_init(void);
-CORE_DECLARE(void) hss_final(void);
 
 #ifdef __cplusplus
 }

@@ -1,9 +1,5 @@
-/**
- * @file init.c
- */
-
-/* Core library */
 #define TRACE_MODULE _cellwire_init
+
 #include "core_general.h"
 #include "core_debug.h"
 #include "core_thread.h"
@@ -14,8 +10,6 @@
 #include "logger.h"
 
 #include "cellwire.h"
-
-#include "s6a_app.h"
 
 static pid_t child_pid;
 static thread_id net_thread;
@@ -54,11 +48,11 @@ status_t cellwire_initialize(char *config_path, char *log_path)
         rv = semaphore_delete(semaphore);
         d_assert(rv == CORE_OK, _exit(EXIT_FAILURE), "semaphore_delete() failed");
 
-        ret = hss_init();
+        ret = hss_initialize();
         if (ret != 0) _exit(EXIT_FAILURE);
 
         signal_thread(check_signal);
-        hss_final();
+        hss_terminate();
 
         _exit(EXIT_SUCCESS);
     }

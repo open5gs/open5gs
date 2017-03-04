@@ -2,8 +2,8 @@
 
 #include "core_debug.h"
 
+#include "s6a_lib.h"
 #include "s6a_app.h"
-#include "s6a_auth_info.h"
 
 struct sess_state {
     c_int32_t randval; /* a random value to store in Test-AVP */

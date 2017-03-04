@@ -6,17 +6,20 @@
 
 struct session_handler *s6a_mme_reg = NULL;
 
-int mme_init(void)
+status_t s6a_mme_init(void)
 {
-    s6a_app_init(MODE_MME);
+    status_t rv;
+
+    rv = s6a_app_init(MODE_MME);
+    if (rv != CORE_OK) return rv;
 
 	d_assert(fd_sess_handler_create(&s6a_mme_reg, 
             (void *)free, NULL, NULL) == 0, return -1,);
 	
-	return 0;
+	return CORE_OK;
 }
 
-void mme_final(void)
+void s6a_mme_final(void)
 {
 	d_assert(fd_sess_handler_destroy(&s6a_mme_reg, NULL) == 0,,);
 

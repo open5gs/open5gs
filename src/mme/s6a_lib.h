@@ -46,6 +46,11 @@ typedef struct _s6a_auth_info_ans_t {
     s6a_auth_info_t auth_info;
 } s6a_auth_info_ans_t;
 
+extern struct session_handler *s6a_mme_reg;
+
+CORE_DECLARE(status_t) s6a_mme_init(void);
+CORE_DECLARE(void) s6a_mme_final(void);
+
 CORE_DECLARE(int) s6a_send_auth_info_req(s6a_auth_info_req_t *air);
 
 #ifdef __cplusplus

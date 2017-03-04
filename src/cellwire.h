@@ -14,6 +14,9 @@ CORE_DECLARE_NONSTD(void) cellwire_terminate(void);
 CORE_DECLARE(status_t) mme_initialize();
 CORE_DECLARE_NONSTD(void) mme_terminate(void);
 
+CORE_DECLARE(status_t) hss_initialize();
+CORE_DECLARE_NONSTD(void) hss_terminate(void);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
