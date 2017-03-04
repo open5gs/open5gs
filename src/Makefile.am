@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in.
 
-SUBDIRS = mme
+SUBDIRS = mme hss
 
 noinst_LTLIBRARIES = libcellwire.la
 
@@ -11,15 +11,17 @@ nodist_libcellwire_la_SOURCES = \
     init.c 
 
 libcellwire_la_DEPENDENCIES = \
-    $(top_srcdir)/src/mme/libmme.la
+    $(top_srcdir)/src/mme/libmme.la \
+    $(top_srcdir)/src/hss/libhss.la
 
 libcellwire_la_LIBADD = \
-    $(top_srcdir)/src/mme/libmme.la
+    $(top_srcdir)/src/mme/libmme.la \
+    $(top_srcdir)/src/hss/libhss.la
 
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/lib/core/include \
 	-I$(top_srcdir)/lib/logger \
-	-I$(top_srcdir)/src/mme/include
+	-I$(top_srcdir)/lib/s6a
 
 AM_CFLAGS = \
 	-Wall -Werror
