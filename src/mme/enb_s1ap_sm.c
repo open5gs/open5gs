@@ -54,11 +54,12 @@ void enb_s1ap_state_operational(enb_s1ap_sm_t *s, event_t *e)
             s1ap_message message;
             status_t rv;
             pkbuf_t *recvbuf = (pkbuf_t *)event_get_param2(e);
+            d_assert(recvbuf, break, "Null param");
 
             rv = s1ap_decode_pdu(&message, recvbuf);
             if (rv != CORE_OK) 
             {
-                d_error("Can't parse S1AP_PDU in EVT_ENB_S1APAP_INF");
+                d_error("Can't parse S1AP_PDU");
                 break;
             }
 

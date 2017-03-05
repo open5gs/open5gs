@@ -102,7 +102,7 @@ typedef struct _nas_mobile_identity_t {
         nas_mobile_identity_imsi_t imsi;
         nas_mobile_identity_tmsi_t tmsi;
         nas_mobile_identity_tmgi_t tmgi;
-    } u;
+    };
 } nas_mobile_identity_t;
 
 CORE_DECLARE(c_int32_t) nas_encode_mobile_identity(
@@ -383,7 +383,7 @@ typedef struct _nas_eps_mobile_identity_t {
         nas_eps_mobile_identity_imsi_t imsi;
         nas_eps_mobile_identity_guti_t guti;
         nas_eps_mobile_identity_imei_t imei;
-    } u;
+    };
 } __attribute__ ((packed)) nas_eps_mobile_identity_t;
 
 CORE_DECLARE(c_int32_t) nas_decode_eps_mobile_identity(
@@ -630,7 +630,7 @@ ED3(c_uint8_t spare:1;,
         nas_tracking_area_identity_type0 type0;
         nas_tracking_area_identity_type1 type1;
         nas_tracking_area_identity_type2 type2;
-    } u;
+    };
 } __attribute__ ((packed)) nas_tracking_area_identity_list_t;
 
 CORE_DECLARE(c_int32_t) nas_encode_tracking_area_identity_list(

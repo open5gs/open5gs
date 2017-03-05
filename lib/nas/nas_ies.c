@@ -83,10 +83,10 @@ c_int32_t nas_encode_mobile_identity(
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
             return -1, "pkbuf_header error");
 
-    if (mobile_identity->u.tmsi.type_of_identity == NAS_MOBILE_IDENTITY_TMSI)
+    if (mobile_identity->tmsi.type_of_identity == NAS_MOBILE_IDENTITY_TMSI)
     {
-        target.u.tmsi.tmsi = htonl(mobile_identity->u.tmsi.tmsi);
-        target.u.tmsi.spare = 0xf;
+        target.tmsi.tmsi = htonl(mobile_identity->tmsi.tmsi);
+        target.tmsi.spare = 0xf;
     }
     memcpy(pkbuf->payload - size, &target, size);
 
@@ -284,18 +284,18 @@ c_int32_t nas_decode_eps_mobile_identity(
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
             return -1, "pkbuf_header error");
     memcpy(eps_mobile_identity, pkbuf->payload - size, size);
-    if (eps_mobile_identity->u.guti.type_of_identity == 
+    if (eps_mobile_identity->guti.type_of_identity == 
             NAS_EPS_MOBILE_IDENTITY_GUTI)
     {
-        if (eps_mobile_identity->u.guti.spare != 0xf)
+        if (eps_mobile_identity->guti.spare != 0xf)
         {
             d_warn("Spec warning : eps_mobile_identy->spare = 0x%x", 
-                    eps_mobile_identity->u.guti.spare);
+                    eps_mobile_identity->guti.spare);
         }
-        eps_mobile_identity->u.guti.mme_group_id = 
-            ntohs(eps_mobile_identity->u.guti.mme_group_id);
-        eps_mobile_identity->u.guti.m_tmsi = 
-            ntohl(eps_mobile_identity->u.guti.m_tmsi);
+        eps_mobile_identity->guti.mme_group_id = 
+            ntohs(eps_mobile_identity->guti.mme_group_id);
+        eps_mobile_identity->guti.m_tmsi = 
+            ntohl(eps_mobile_identity->guti.m_tmsi);
     }
     
     return size;
@@ -314,13 +314,13 @@ status_t nas_encode_eps_mobile_identity(
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
             return -1, "pkbuf_header error");
 
-    if (target.u.guti.type_of_identity == NAS_EPS_MOBILE_IDENTITY_GUTI)
+    if (target.guti.type_of_identity == NAS_EPS_MOBILE_IDENTITY_GUTI)
     {
-        target.u.guti.spare = 0xf;
-        target.u.guti.mme_group_id = 
-            htons(eps_mobile_identity->u.guti.mme_group_id);
-        target.u.guti.m_tmsi = 
-            htonl(eps_mobile_identity->u.guti.m_tmsi);
+        target.guti.spare = 0xf;
+        target.guti.mme_group_id = 
+            htons(eps_mobile_identity->guti.mme_group_id);
+        target.guti.m_tmsi = 
+            htonl(eps_mobile_identity->guti.m_tmsi);
     }
     memcpy(pkbuf->payload - size, &target, size);
     
@@ -619,14 +619,14 @@ c_int32_t nas_encode_tracking_area_identity_list(
         for (i = 0; i < tracking_area_identity_list->number_of_elements + 1&& 
                 i < NAS_MAX_TRACKING_AREA_IDENTITY; i++)
         {
-            target.u.type0.tac[i] = 
-                htons(tracking_area_identity_list->u.type0.tac[i]);
+            target.type0.tac[i] = 
+                htons(tracking_area_identity_list->type0.tac[i]);
         }
     }
     else if (tracking_area_identity_list->type_of_list == 
             NAS_TRACKING_AREA_IDENTITY_LIST_ONE_PLMN_CONSECUTIVE_TACS)
     {
-        target.u.type1.tac = htons(tracking_area_identity_list->u.type1.tac);
+        target.type1.tac = htons(tracking_area_identity_list->type1.tac);
     }
     else if (tracking_area_identity_list->type_of_list == 
             NAS_TRACKING_AREA_IDENTITY_LIST_MANY_PLMNS)
@@ -634,8 +634,8 @@ c_int32_t nas_encode_tracking_area_identity_list(
         for (i = 0; i < tracking_area_identity_list->number_of_elements + 1 && 
                 i < NAS_MAX_TRACKING_AREA_IDENTITY; i++)
         {
-            target.u.type2.tai[i].tac = 
-                htons(tracking_area_identity_list->u.type2.tai[i].tac);
+            target.type2.tai[i].tac = 
+                htons(tracking_area_identity_list->type2.tai[i].tac);
         }
     }
     else

@@ -2,6 +2,8 @@
 
 #include "core_debug.h"
 
+#include "nas_message.h"
+
 #include "sm.h"
 #include "context.h"
 #include "event.h"
@@ -44,11 +46,31 @@ void ue_emm_state_operational(ue_emm_sm_t *s, event_t *e)
         }
         case EVT_MSG_UE_EMM:
         {
+            nas_message_t message;
+            status_t rv;
             pkbuf_t *recvbuf = (pkbuf_t *)event_get_param2(e);
             d_assert(recvbuf, break, "Null param");
 
-            d_print_hex(recvbuf->payload, recvbuf->len);
-            d_info("Received EVT_MSG_UE_EMM");
+            rv = nas_decode_pdu(&message, recvbuf);
+            if (rv != CORE_OK) 
+            {
+                d_error("Can't parse NAS_PDU");
+                break;
+            }
+
+            switch(message.h.message_type)
+            {
+                case NAS_ATTACH_REQUEST:
+                {
+                    d_info("Received ATTACH_REQUEST");
+                    break;
+                }
+                default:
+                {
+                    d_warn("Not implemented(type:%d)", message.h.message_type);
+                    break;
+                }
+            }
 
             pkbuf_free(recvbuf);
             break;
