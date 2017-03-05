@@ -33,10 +33,10 @@ typedef struct _enb_s1_sm_t {
 
 } enb_s1_sm_t;
 
-void enb_s1_state_initial(enb_s1_sm_t *s, event_t *e);
-void enb_s1_state_final(enb_s1_sm_t *s, event_t *e);
-void enb_s1_state_operational(enb_s1_sm_t *s, event_t *e);
-void enb_s1_state_exception(enb_s1_sm_t *s, event_t *e);
+void enb_s1ap_state_initial(enb_s1_sm_t *s, event_t *e);
+void enb_s1ap_state_final(enb_s1_sm_t *s, event_t *e);
+void enb_s1ap_state_operational(enb_s1_sm_t *s, event_t *e);
+void enb_s1ap_state_exception(enb_s1_sm_t *s, event_t *e);
 
 #define sm_print(__pe) \
     d_print("%s(): %s\n", __func__, event_get_name(__pe))

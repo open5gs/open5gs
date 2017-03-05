@@ -75,7 +75,7 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
                 enb->s1_sock = sock;
 
                 fsm_create((fsm_t*)&enb->s1_sm, 
-                        enb_s1_state_initial, enb_s1_state_final);
+                        enb_s1ap_state_initial, enb_s1ap_state_final);
                 enb->s1_sm.ctx = enb;
                 enb->s1_sm.queue_id = s->queue_id;
                 enb->s1_sm.tm_service = s->tm_service;

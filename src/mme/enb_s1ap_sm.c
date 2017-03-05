@@ -1,5 +1,5 @@
 /**
- * @file enb_s1_state.c
+ * @file enb_s1ap_state.c
  */
 
 /* Server */
@@ -15,25 +15,25 @@
 #include "s1ap_conv.h"
 #include "s1ap_path.h"
 
-status_t enb_s1_handle_s1setuprequest(enb_ctx_t *enb, s1ap_message *message);
+status_t enb_s1ap_handle_s1setuprequest(enb_ctx_t *enb, s1ap_message *message);
 
-void enb_s1_state_initial(enb_s1_sm_t *s, event_t *e)
+void enb_s1ap_state_initial(enb_s1_sm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
 
     sm_trace(1, e);
 
-    FSM_TRAN(s, &enb_s1_state_operational);
+    FSM_TRAN(s, &enb_s1ap_state_operational);
 }
 
-void enb_s1_state_final(enb_s1_sm_t *s, event_t *e)
+void enb_s1ap_state_final(enb_s1_sm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
 
     sm_trace(1, e);
 }
 
-void enb_s1_state_operational(enb_s1_sm_t *s, event_t *e)
+void enb_s1ap_state_operational(enb_s1_sm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
     d_assert(e, return, "Null param");
@@ -75,7 +75,7 @@ void enb_s1_state_operational(enb_s1_sm_t *s, event_t *e)
                         case S1ap_ProcedureCode_id_S1Setup :
                         {
                             d_info("S1-Setup-Request is received");
-                            enb_s1_handle_s1setuprequest(enb, &message);
+                            enb_s1ap_handle_s1setuprequest(enb, &message);
                             break;
                         }
                         default:
@@ -121,7 +121,7 @@ void enb_s1_state_operational(enb_s1_sm_t *s, event_t *e)
     }
 }
 
-void enb_s1_state_exception(enb_s1_sm_t *s, event_t *e)
+void enb_s1ap_state_exception(enb_s1_sm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
     d_assert(e, return, "Null param");
@@ -146,7 +146,7 @@ void enb_s1_state_exception(enb_s1_sm_t *s, event_t *e)
     }
 }
 
-status_t enb_s1_handle_s1setuprequest(enb_ctx_t *enb, s1ap_message *message)
+status_t enb_s1ap_handle_s1setuprequest(enb_ctx_t *enb, s1ap_message *message)
 {
     char buf[INET_ADDRSTRLEN];
 
