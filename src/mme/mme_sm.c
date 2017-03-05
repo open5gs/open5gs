@@ -91,7 +91,7 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
             
             break;
         }
-        case EVT_ENB_S1AP_INF:
+        case EVT_MSG_ENB_S1AP:
         {
             net_sock_t *sock = (net_sock_t *)event_get_param1(e);
             pkbuf_t *recvbuf = (pkbuf_t *)event_get_param2(e);

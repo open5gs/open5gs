@@ -126,7 +126,7 @@ static char FSM_NAME_EXIT_SIG[] = "EXIT";
 static char EVT_NAME_LO_ENB_S1AP_ACCEPT[] = "LO_ENB_S1AP_ACCEPT";
 static char EVT_NAME_LO_ENB_S1AP_CONNREFUSED[] = "LO_ENB_S1AP_CONNREFUSED";
 
-static char EVT_NAME_ENB_S1AP_INF[] = "ENB_S1AP_INF";
+static char EVT_NAME_MSG_ENB_S1AP[] = "MSG_ENB_S1AP";
 
 static char EVT_NAME_UNKNOWN[] = "UNKNOWN";
 
@@ -146,8 +146,8 @@ char* event_get_name(event_t *e)
                return EVT_NAME_LO_ENB_S1AP_ACCEPT;
         case EVT_LO_ENB_S1AP_CONNREFUSED: 
                return EVT_NAME_LO_ENB_S1AP_CONNREFUSED;
-        case EVT_ENB_S1AP_INF: 
-               return EVT_NAME_ENB_S1AP_INF;
+        case EVT_MSG_ENB_S1AP: 
+               return EVT_NAME_MSG_ENB_S1AP;
 
         default: 
            break;

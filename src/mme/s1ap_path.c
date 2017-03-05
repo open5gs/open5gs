@@ -96,7 +96,7 @@ static status_t s1ap_recv(net_sock_t *net_sock, pkbuf_t *pkbuf, msgq_id queue_id
     d_trace(1, "S1AP_PDU is received from eNB-Inf\n");
     d_trace_hex(1, pkbuf->payload, pkbuf->len);
 
-    event_set(&e, EVT_ENB_S1AP_INF);
+    event_set(&e, EVT_MSG_ENB_S1AP);
     event_set_param1(&e, (c_uintptr_t)net_sock);
     event_set_param2(&e, (c_uintptr_t)pkbuf);
 

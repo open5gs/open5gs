@@ -51,7 +51,7 @@ void enb_s1ap_state_operational(enb_s1ap_sm_t *s, event_t *e)
         {
             break;
         }
-        case EVT_ENB_S1AP_INF:
+        case EVT_MSG_ENB_S1AP:
         {
             s1ap_message message;
             status_t rv;
