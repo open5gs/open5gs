@@ -17,7 +17,7 @@
 
 status_t enb_s1ap_handle_s1setuprequest(enb_ctx_t *enb, s1ap_message *message);
 
-void enb_s1ap_state_initial(enb_s1_sm_t *s, event_t *e)
+void enb_s1ap_state_initial(enb_s1ap_sm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
 
@@ -26,14 +26,14 @@ void enb_s1ap_state_initial(enb_s1_sm_t *s, event_t *e)
     FSM_TRAN(s, &enb_s1ap_state_operational);
 }
 
-void enb_s1ap_state_final(enb_s1_sm_t *s, event_t *e)
+void enb_s1ap_state_final(enb_s1ap_sm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
 
     sm_trace(1, e);
 }
 
-void enb_s1ap_state_operational(enb_s1_sm_t *s, event_t *e)
+void enb_s1ap_state_operational(enb_s1ap_sm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
     d_assert(e, return, "Null param");
@@ -121,7 +121,7 @@ void enb_s1ap_state_operational(enb_s1_sm_t *s, event_t *e)
     }
 }
 
-void enb_s1ap_state_exception(enb_s1_sm_t *s, event_t *e)
+void enb_s1ap_state_exception(enb_s1ap_sm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
     d_assert(e, return, "Null param");
@@ -156,7 +156,7 @@ status_t enb_s1ap_handle_s1setuprequest(enb_ctx_t *enb, s1ap_message *message)
     c_uint32_t enb_id;
 
     d_assert(enb, return CORE_ERROR, "Null param");
-    d_assert(enb->s1_sock, return CORE_ERROR, "Null param");
+    d_assert(enb->s1ap_sock, return CORE_ERROR, "Null param");
     d_assert(message, return CORE_ERROR, "Null param");
 
     ies = &message->s1ap_S1SetupRequestIEs;
@@ -165,11 +165,11 @@ status_t enb_s1ap_handle_s1setuprequest(enb_ctx_t *enb, s1ap_message *message)
     s1ap_ENB_ID_to_uint32(&ies->global_ENB_ID.eNB_ID, &enb_id);
 
 #if 0 /* FIXME : does it needed? */
-    if (mme_ctx_enb_find_by_id(enb_id))
+    if (mme_ctx_enb_find_by_enb_id(enb_id))
     {
         S1ap_Cause_t cause;
         d_error("eNB-id[0x%x] duplicated from [%s]", enb_id,
-                INET_NTOP(&enb->s1_sock->remote.sin_addr.s_addr, buf));
+                INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf));
 
         cause.present = S1ap_Cause_PR_protocol;
         cause.choice.protocol = 
@@ -180,9 +180,9 @@ status_t enb_s1ap_handle_s1setuprequest(enb_ctx_t *enb, s1ap_message *message)
 #endif
     {
         d_info("eNB-id[0x%x] sends S1-Setup-Request from [%s]", enb_id,
-                INET_NTOP(&enb->s1_sock->remote.sin_addr.s_addr, buf));
+                INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf));
 
-        enb->id = enb_id;
+        enb->enb_id = enb_id;
         rv = s1ap_build_setup_rsp(&sendbuf);
     }
 

@@ -14,16 +14,9 @@ extern "C" {
 
 #define MAX_PLMN_ID                 6
 #define GRP_PER_MME                 256    /* According to spec it is 65535 */
-#define CODE_PER_MME                256    /* According to spec it is 256*/
+#define CODE_PER_MME                256    /* According to spec it is 256 */
 
-#define CELL_PER_ENB                8
-#define UE_PER_ENB                  128
-#define RAB_PER_UE                  16
-
-#define SIZE_OF_ENB_POOL            128
-#define SIZE_OF_UE_POOL             (SIZE_OF_ENB_POOL * UE_PER_ENB)
-#define SIZE_OF_RAB_POOL            (SIZE_OF_UE_POOL * RAB_PER_UE)
-
+typedef list_t ue_list_t;
 typedef list_t rab_list_t;
 
 typedef struct _served_gummei {
@@ -36,11 +29,9 @@ typedef struct _served_gummei {
     c_uint8_t       mme_code[CODE_PER_MME];
 } srvd_gummei_t;
 
-/**
- * This structure represents HypcerCell */
 typedef struct _mme_ctx_t {
-    net_sock_t      *enb_s1_sock;
-    c_uint16_t      enb_s1_port;
+    net_sock_t      *enb_s1ap_sock;
+    c_uint16_t      enb_s1ap_port;
     c_uint32_t      enb_local_addr; /** Network byte order */
 
     plmn_id_t       plmn_id;
@@ -54,29 +45,27 @@ typedef struct _mme_ctx_t {
     c_uint8_t       relative_capacity;
 } mme_ctx_t;
 
-/**
- * This structure represents eNB */
 typedef struct _enb_ctx_t {
     lnode_t         node; /**< A node of list_t */
 
-    enb_s1_sm_t     s1_sm; /**< eNB S1 state machine */
-    net_sock_t      *s1_sock;
+    c_uint32_t      enb_id; /** eNB_ID received from eNB */
 
-    c_uint32_t      id;
+    enb_s1ap_sm_t   s1ap_sm;
+    net_sock_t      *s1ap_sock;
+
+    ue_list_t       ue_list;
+
 } enb_ctx_t;
 
-/**
- * This structure represents UE-S1 */
 typedef struct _ue_ctx_t {
     lnode_t         node; /**< A node of list_t */
 
-    c_uint32_t      enb_id; /** eNB-UE-S1AP-ID received from eNB */
-    c_uint32_t      mme_id; /** MME-UE-S1AP-ID received from MME */
+    c_uint32_t      enb_ue_s1ap_id; /** eNB-UE-S1AP-ID received from eNB */
+    c_uint32_t      mme_ue_s1ap_id; /** MME-UE-S1AP-ID received from MME */
 
     rab_list_t      rab_list;
 
     enb_ctx_t       *enb;
-    mme_ctx_t       *mme;
 } ue_ctx_t;
 
 /**
@@ -84,7 +73,7 @@ typedef struct _ue_ctx_t {
 typedef struct _rab_ctx_t {
     lnode_t         node; /**< A node of list_t */
 
-    c_uint32_t      id;
+    c_uint32_t      e_rab_id;
 
     ue_ctx_t        *ue;
 } rab_ctx_t;
@@ -98,10 +87,25 @@ CORE_DECLARE(enb_ctx_t*)    mme_ctx_enb_add(void);
 CORE_DECLARE(status_t)      mme_ctx_enb_remove(enb_ctx_t *enb);
 CORE_DECLARE(status_t)      mme_ctx_enb_remove_all(void);
 CORE_DECLARE(enb_ctx_t*)    mme_ctx_enb_find_by_sock(net_sock_t *sock);
-CORE_DECLARE(enb_ctx_t*)    mme_ctx_enb_find_by_id(c_uint32_t id);
+CORE_DECLARE(enb_ctx_t*)    mme_ctx_enb_find_by_enb_id(c_uint32_t enb_id);
 CORE_DECLARE(enb_ctx_t*)    mme_ctx_enb_first(void);
 CORE_DECLARE(enb_ctx_t*)    mme_ctx_enb_next(enb_ctx_t *enb);
-#define self() mme_self()
+
+CORE_DECLARE(ue_ctx_t*)     mme_ctx_ue_add(enb_ctx_t *enb);
+CORE_DECLARE(status_t)      mme_ctx_ue_remove(ue_ctx_t *ue);
+CORE_DECLARE(status_t)      mme_ctx_ue_remove_all(enb_ctx_t *enb);
+CORE_DECLARE(ue_ctx_t*)     mme_ctx_ue_find_by_enb_ue_s1ap_id(
+                                enb_ctx_t *enb, c_uint32_t enb_ue_s1ap_id);
+CORE_DECLARE(ue_ctx_t*)     mme_ctx_ue_first(enb_ctx_t *enb);
+CORE_DECLARE(ue_ctx_t*)     mme_ctx_ue_next(ue_ctx_t *ue);
+
+CORE_DECLARE(rab_ctx_t*)    mme_ctx_rab_add(ue_ctx_t *enb);
+CORE_DECLARE(status_t)      mme_ctx_rab_remove(rab_ctx_t *ue);
+CORE_DECLARE(status_t)      mme_ctx_rab_remove_all(ue_ctx_t *enb);
+CORE_DECLARE(rab_ctx_t*)    mme_ctx_rab_find_by_e_rab_id(
+                                ue_ctx_t *ue, c_uint32_t e_rab_id);
+CORE_DECLARE(rab_ctx_t*)    mme_ctx_rab_first(ue_ctx_t *enb);
+CORE_DECLARE(rab_ctx_t*)    mme_ctx_rab_next(rab_ctx_t *ue);
 
 #ifdef __cplusplus
 }

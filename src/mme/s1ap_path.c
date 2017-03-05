@@ -16,30 +16,30 @@ status_t s1ap_open(msgq_id queue_id)
     char buf[INET_ADDRSTRLEN];
     int rc;
 
-    rc = net_listen_with_addr(&mme_self()->enb_s1_sock, 
-            SOCK_STREAM, IPPROTO_SCTP, mme_self()->enb_s1_port,
+    rc = net_listen_with_addr(&mme_self()->enb_s1ap_sock, 
+            SOCK_STREAM, IPPROTO_SCTP, mme_self()->enb_s1ap_port,
             mme_self()->enb_local_addr);
     if (rc != 0)
     {
         d_error("Can't establish S1-ENB(port:%d) path(%d:%s)",
-            mme_self()->enb_s1_port, errno, strerror(errno));
-        mme_self()->enb_s1_sock = NULL;
+            mme_self()->enb_s1ap_port, errno, strerror(errno));
+        mme_self()->enb_s1ap_sock = NULL;
         return CORE_ERROR;
     }
 
     rc = net_register_sock(
-            mme_self()->enb_s1_sock, _s1ap_accept_cb, (void *)queue_id);
+            mme_self()->enb_s1ap_sock, _s1ap_accept_cb, (void *)queue_id);
     if (rc != 0)
     {
         d_error("Can't establish S1-ENB path(%d:%s)",
             errno, strerror(errno));
-        net_close(mme_self()->enb_s1_sock);
-        mme_self()->enb_s1_sock = NULL;
+        net_close(mme_self()->enb_s1ap_sock);
+        mme_self()->enb_s1ap_sock = NULL;
         return CORE_ERROR;
     }
 
     d_trace(1, "s1_enb_listen() %s:%d\n", 
-        INET_NTOP(&mme_self()->enb_local_addr, buf), mme_self()->enb_s1_port);
+        INET_NTOP(&mme_self()->enb_local_addr, buf), mme_self()->enb_s1ap_port);
 
     return CORE_OK;
 }
@@ -47,11 +47,11 @@ status_t s1ap_open(msgq_id queue_id)
 status_t s1ap_close()
 {
     d_assert(mme_self(), return CORE_ERROR, "Null param");
-    d_assert(mme_self()->enb_s1_sock != NULL, return CORE_ERROR,
+    d_assert(mme_self()->enb_s1ap_sock != NULL, return CORE_ERROR,
             "S1-ENB path already opened");
-    net_unregister_sock(mme_self()->enb_s1_sock);
-    net_close(mme_self()->enb_s1_sock);
-    mme_self()->enb_s1_sock = NULL;
+    net_unregister_sock(mme_self()->enb_s1ap_sock);
+    net_close(mme_self()->enb_s1ap_sock);
+    mme_self()->enb_s1ap_sock = NULL;
 
     return CORE_OK;
 }
@@ -191,7 +191,7 @@ status_t s1ap_send_to_enb(enb_ctx_t *enb, pkbuf_t *pkb)
 {
     d_assert(enb, return CORE_ERROR, "Null param");
     d_assert(pkb, return CORE_ERROR, "Null param");
-    d_assert(enb->s1_sock, return CORE_ERROR, "No S1 path with ENB");
+    d_assert(enb->s1ap_sock, return CORE_ERROR, "No S1 path with ENB");
 
-    return s1ap_send(enb->s1_sock, pkb);
+    return s1ap_send(enb->s1ap_sock, pkb);
 }

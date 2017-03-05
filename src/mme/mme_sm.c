@@ -72,14 +72,14 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
 
                 enb_ctx_t *enb = mme_ctx_enb_add();
                 d_assert(enb, break, "Null param");
-                enb->s1_sock = sock;
+                enb->s1ap_sock = sock;
 
-                fsm_create((fsm_t*)&enb->s1_sm, 
+                fsm_create((fsm_t*)&enb->s1ap_sm, 
                         enb_s1ap_state_initial, enb_s1ap_state_final);
-                enb->s1_sm.ctx = enb;
-                enb->s1_sm.queue_id = s->queue_id;
-                enb->s1_sm.tm_service = s->tm_service;
-                fsm_init((fsm_t*)&enb->s1_sm, 0);
+                enb->s1ap_sm.ctx = enb;
+                enb->s1ap_sm.queue_id = s->queue_id;
+                enb->s1ap_sm.tm_service = s->tm_service;
+                fsm_init((fsm_t*)&enb->s1ap_sm, 0);
             }
             else
             {
@@ -99,7 +99,8 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
             enb_ctx_t *enb = mme_ctx_enb_find_by_sock(sock);
             if (enb)
             {
-                fsm_dispatch((fsm_t*)&enb->s1_sm, (fsm_event_t*)e);
+                d_assert(FSM_STATE(&enb->s1ap_sm), break, "Null param");
+                fsm_dispatch((fsm_t*)&enb->s1ap_sm, (fsm_event_t*)e);
             }
             else
             {
@@ -120,17 +121,16 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
             if (enb) 
             {
                 /* Remove eNB S1 state machine if exist */
-                if (FSM_STATE(&enb->s1_sm))
-                {
-                    fsm_final((fsm_t*)&enb->s1_sm, 0);
-                    fsm_clear((fsm_t*)&enb->s1_sm);
-                }
+                d_assert(FSM_STATE(&enb->s1ap_sm), break, "Null param");
+
+                fsm_final((fsm_t*)&enb->s1ap_sm, 0);
+                fsm_clear((fsm_t*)&enb->s1ap_sm);
 
                 net_unregister_sock(sock);
                 net_close(sock);
 
                 mme_ctx_enb_remove(enb);
-                d_info("eNB-S1[%x] connection refused!!!", enb->id);
+                d_info("eNB-S1[%x] connection refused!!!", enb->enb_id);
             }
             else
             {
