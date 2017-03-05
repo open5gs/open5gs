@@ -34,6 +34,8 @@ typedef struct _mme_ctx_t {
     c_uint16_t      enb_s1ap_port;
     c_uint32_t      enb_local_addr; /** Network byte order */
 
+    c_uint32_t      mme_ue_s1ap_id;
+
     plmn_id_t       plmn_id;
 
     /* S1SetupRequest */

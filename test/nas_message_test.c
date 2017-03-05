@@ -157,8 +157,6 @@ static void nas_message_test4(abts_case *tc, void *data)
     message.h.message_type = NAS_ATTACH_REJECT;
     attach_reject->emm_cause = NAS_EMM_CAUSE_NETWORK_FAILURE; 
 
-    d_msg_to(D_MSG_TO_STDOUT, 1);
-
     rv = nas_encode_pdu(&pkbuf, &message);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     ABTS_INT_EQUAL(tc, sizeof(buffer), pkbuf->len);

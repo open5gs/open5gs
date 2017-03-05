@@ -191,6 +191,10 @@ ue_ctx_t* mme_ctx_ue_add(enb_ctx_t *enb)
     ue->enb = enb;
     list_init(&ue->rab_list);
 
+    self.mme_ue_s1ap_id = self.mme_ue_s1ap_id + 1;
+    if (self.mme_ue_s1ap_id == 0) self.mme_ue_s1ap_id = 1;
+    ue->mme_ue_s1ap_id = self.mme_ue_s1ap_id;
+
     list_append(&enb->ue_list, ue);
     
     return ue;

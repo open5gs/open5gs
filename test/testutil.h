@@ -60,6 +60,7 @@ void test_initialize(void);
 abts_suite *test_s1ap_message(abts_suite *suite);
 abts_suite *test_s1ap_sm(abts_suite *suite);
 abts_suite *test_nas_message(abts_suite *suite);
+abts_suite *test_nas_sm(abts_suite *suite);
 abts_suite *test_security(abts_suite *suite);
 
 #endif /* __TESTUTIL_H__ */

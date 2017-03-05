@@ -40,7 +40,7 @@ int event_send(msgq_id queue_id, event_t *e)
     r = msgq_send(queue_id, (const char*)e, EVENT_SIZE);
     if (r != EVENT_SIZE)
     {
-        d_error("msgq_send() failed");
+        d_warn("msgq_send() failed");
         return -1;
     }
 
@@ -57,7 +57,7 @@ int event_timedrecv(msgq_id queue_id, event_t *e, c_time_t timeout)
     r = msgq_timedrecv(queue_id, (char*)e, EVENT_SIZE, timeout);
     if (r != CORE_TIMEUP && r != EVENT_SIZE)
     {
-        d_error("msgq_timedrecv() failed");
+        d_warn("msgq_timedrecv() failed");
         return -1;
     }
 
@@ -76,7 +76,7 @@ void* event_timer_expire_func(
     r = msgq_send(queue_id, (const char*)&e, EVENT_SIZE);
     if (r <= 0)
     {
-        d_error("msgq_send() failed");
+        d_warn("msgq_send() failed");
     }
 
     return NULL;

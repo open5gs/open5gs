@@ -1,21 +1,19 @@
-/**
- * @file enb_s1ap_state.c
- */
-
-/* Server */
-#include "sm.h"
-#include "context.h"
-#include "event.h"
-
-/* Core libaray */
 #define TRACE_MODULE _enb_s1_sm
+
 #include "core_debug.h"
 
 #include "s1ap_build.h"
 #include "s1ap_conv.h"
 #include "s1ap_path.h"
 
-status_t enb_s1ap_handle_s1setuprequest(enb_ctx_t *enb, s1ap_message *message);
+#include "sm.h"
+#include "context.h"
+#include "event.h"
+
+static status_t enb_s1ap_handle_s1setuprequest(
+        enb_ctx_t *enb, s1ap_message *message);
+static status_t enb_s1ap_handle_initialuemessage(
+        enb_ctx_t *enb, s1ap_message *message);
 
 void enb_s1ap_state_initial(enb_s1ap_sm_t *s, event_t *e)
 {
@@ -74,8 +72,12 @@ void enb_s1ap_state_operational(enb_s1ap_sm_t *s, event_t *e)
                     {
                         case S1ap_ProcedureCode_id_S1Setup :
                         {
-                            d_info("S1-Setup-Request is received");
                             enb_s1ap_handle_s1setuprequest(enb, &message);
+                            break;
+                        }
+                        case S1ap_ProcedureCode_id_initialUEMessage :
+                        {
+                            enb_s1ap_handle_initialuemessage(enb, &message);
                             break;
                         }
                         default:
@@ -151,7 +153,6 @@ status_t enb_s1ap_handle_s1setuprequest(enb_ctx_t *enb, s1ap_message *message)
     char buf[INET_ADDRSTRLEN];
 
     S1ap_S1SetupRequestIEs_t *ies = NULL;
-    status_t rv;
     pkbuf_t *sendbuf = NULL;
     c_uint32_t enb_id;
 
@@ -176,30 +177,50 @@ status_t enb_s1ap_handle_s1setuprequest(enb_ctx_t *enb, s1ap_message *message)
             S1ap_CauseProtocol_message_not_compatible_with_receiver_state;
         rv = s1ap_build_setup_failure(&sendbuf, cause);
     }
-    else
 #endif
-    {
-        d_info("eNB-id[0x%x] sends S1-Setup-Request from [%s]", enb_id,
-                INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf));
 
-        enb->enb_id = enb_id;
-        rv = s1ap_build_setup_rsp(&sendbuf);
-    }
+    d_info("eNB[0x%x] sends S1-Setup-Request from [%s]", enb_id,
+            INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf));
 
-    if (rv != CORE_OK) 
-    {
-        d_error("Can't build S1-Setup-Response/Failure");
-        return CORE_ERROR;
-    }
+    enb->enb_id = enb_id;
 
-    rv = s1ap_send_to_enb(enb, sendbuf);
-    if (rv != CORE_OK) 
-    {
-        d_error("Can't send S1 Setup Response");
-    }
+    d_assert(s1ap_build_setup_rsp(&sendbuf) == CORE_OK, 
+            return CORE_ERROR, "build error");
+    d_assert(s1ap_send_to_enb(enb, sendbuf) == CORE_OK, 
+            return CORE_ERROR, "send error");
 
     pkbuf_free(sendbuf);
 
     return CORE_OK;
 }
 
+status_t enb_s1ap_handle_initialuemessage(
+        enb_ctx_t *enb, s1ap_message *message)
+{
+    S1ap_InitialUEMessage_IEs_t *ies = NULL;
+    ue_ctx_t *ue = NULL;
+
+    d_assert(enb, return CORE_ERROR, "Null param");
+    d_assert(message, return CORE_ERROR, "Null param");
+
+    ies = &message->s1ap_InitialUEMessage_IEs;
+    d_assert(ies, return CORE_ERROR, "Null param");
+
+    ue = mme_ctx_ue_add(enb);
+    d_assert(ue, return CORE_ERROR, "Null param");
+
+    ue->enb_ue_s1ap_id = ies->eNB_UE_S1AP_ID;
+
+    d_info("eNB[0x%x] sends Initial-UE Message[eNB-UE-S1AP-ID(%d)]",
+            enb->enb_id, ue->enb_ue_s1ap_id);
+#if 0
+    fsm_create((fsm_t*)&enb->s1ap_sm, 
+            enb_s1ap_state_initial, enb_s1ap_state_final);
+    enb->s1ap_sm.ctx = enb;
+    enb->s1ap_sm.queue_id = s->queue_id;
+    enb->s1ap_sm.tm_service = s->tm_service;
+    fsm_init((fsm_t*)&enb->s1ap_sm, 0);
+#endif
+
+    return CORE_OK;
+}

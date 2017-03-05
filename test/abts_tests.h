@@ -26,6 +26,7 @@ const struct testlist {
     {test_s1ap_message},
     {test_s1ap_sm},
     {test_nas_message},
+    {test_nas_sm},
     {test_security},
 };
 

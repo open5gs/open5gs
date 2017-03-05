@@ -2,6 +2,7 @@
 
 #include "core_debug.h"
 #include "core_pkbuf.h"
+#include "core_lib.h"
 
 #include "context.h"
 #include "s1ap_build.h"
@@ -110,3 +111,22 @@ status_t tests1ap_build_setup_req(pkbuf_t **pkbuf, c_uint32_t enb_id)
 }
 
 
+status_t tests1ap_build_initial_ue_msg(
+        pkbuf_t **pkbuf)
+{
+    char *payload = 
+        "000c405800000500 0800020001001a00"
+        "302f177ca0b38802 0741020809101010"
+        "3254869104e060c0 4000050221d011d1"
+        "5c0a003103e5e034 9011035758a65d01"
+        "00004300060000f1 105ba00064400800"
+        "00f1101079baf000 86400130";
+    
+    *pkbuf = pkbuf_alloc(0, MSG_SDU_SIZE);
+    if (!(*pkbuf)) return CORE_ERROR;
+
+    core_ascii_to_hex(payload, strlen(payload), (*pkbuf)->payload);
+    (*pkbuf)->len = 92;
+
+    return CORE_OK;
+}

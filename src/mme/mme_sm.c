@@ -134,7 +134,7 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
             }
             else
             {
-                d_error("Can't find eNB-S1 for [%s]!!!", 
+                d_warn("Can't find eNB-S1 for [%s]!!!", 
                         INET_NTOP(&sock->remote.sin_addr.s_addr, buf));
             }
 
