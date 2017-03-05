@@ -266,7 +266,7 @@ for message in messageList:
     if len(iesDefs[message]["ies"]) == 0:
         continue
     f.write("        %s_t %s;\n" % (re.sub('-', '_', message), lowerFirstCamelWord(re.sub('-', '_', message))))
-f.write("    } msg;\n")
+f.write("    };\n")
 f.write("} %s_message;\n\n" % (fileprefix))
 
 for key in iesDefs:
@@ -800,7 +800,7 @@ for (key, value) in iesDefs.items():
         #f.write("    void *app_key = (void *)file;\n")
         #f.write("    asn_app_consume_bytes_f *cb = %s_xer__print2fp;\n\n" % (fileprefix.lower()))
 
-        f.write("    %s = &message_p->msg.%s;\n\n" % (iesStructName, iesStructName))
+        f.write("    %s = &message_p->%s;\n\n" % (iesStructName, iesStructName))
 
     if key in ieofielist.values():
         # Increase indentation level

@@ -30,7 +30,7 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-02-10 16:41:29.630365 by acetcom
+ * Created on: 2017-03-05 11:42:09.750507 by acetcom
  * from ['S1AP-PDU.asn']
  ******************************************************************************/
 #include "s1ap_asn1c.h"
@@ -1046,7 +1046,7 @@ typedef struct s1ap_message_s {
         S1ap_UplinkUEAssociatedLPPaTransport_IEs_t s1ap_UplinkUEAssociatedLPPaTransport_IEs;
         S1ap_WriteReplaceWarningRequestIEs_t s1ap_WriteReplaceWarningRequestIEs;
         S1ap_WriteReplaceWarningResponseIEs_t s1ap_WriteReplaceWarningResponseIEs;
-    } msg;
+    };
 } s1ap_message;
 
 /** \brief Decode function for S1ap-DeactivateTraceIEs ies.

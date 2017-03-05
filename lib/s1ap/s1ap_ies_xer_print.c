@@ -30,7 +30,7 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-02-10 16:41:29.677364 by acetcom
+ * Created on: 2017-03-05 11:42:09.827516 by acetcom
  * from ['S1AP-PDU.asn']
  ******************************************************************************/
 #include <stdlib.h>
@@ -111,7 +111,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_deactivatetrace(
 {
     S1ap_DeactivateTraceIEs_t *s1ap_DeactivateTraceIEs;
     asn_enc_rval_t er;
-    s1ap_DeactivateTraceIEs = &message_p->msg.s1ap_DeactivateTraceIEs;
+    s1ap_DeactivateTraceIEs = &message_p->s1ap_DeactivateTraceIEs;
 
     cb("<S1ap-DeactivateTraceIEs-PDU>\n", 30, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -145,7 +145,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_enbdirectinformationtransfer(
 {
     S1ap_ENBDirectInformationTransferIEs_t *s1ap_ENBDirectInformationTransferIEs;
     asn_enc_rval_t er;
-    s1ap_ENBDirectInformationTransferIEs = &message_p->msg.s1ap_ENBDirectInformationTransferIEs;
+    s1ap_ENBDirectInformationTransferIEs = &message_p->s1ap_ENBDirectInformationTransferIEs;
 
     cb("<S1ap-ENBDirectInformationTransferIEs-PDU>\n", 43, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -164,7 +164,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabreleaseresponse(
 {
     S1ap_E_RABReleaseResponseIEs_t *s1ap_E_RABReleaseResponseIEs;
     asn_enc_rval_t er;
-    s1ap_E_RABReleaseResponseIEs = &message_p->msg.s1ap_E_RABReleaseResponseIEs;
+    s1ap_E_RABReleaseResponseIEs = &message_p->s1ap_E_RABReleaseResponseIEs;
 
     cb("<S1ap-E-RABReleaseResponseIEs-PDU>\n", 35, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -193,7 +193,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_uplinknonueassociatedlppatransport(
 {
     S1ap_UplinkNonUEAssociatedLPPaTransport_IEs_t *s1ap_UplinkNonUEAssociatedLPPaTransport_IEs;
     asn_enc_rval_t er;
-    s1ap_UplinkNonUEAssociatedLPPaTransport_IEs = &message_p->msg.s1ap_UplinkNonUEAssociatedLPPaTransport_IEs;
+    s1ap_UplinkNonUEAssociatedLPPaTransport_IEs = &message_p->s1ap_UplinkNonUEAssociatedLPPaTransport_IEs;
 
     cb("<S1ap-UplinkNonUEAssociatedLPPaTransport-IEs-PDU>\n", 50, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -226,7 +226,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_tracestart(
 {
     S1ap_TraceStartIEs_t *s1ap_TraceStartIEs;
     asn_enc_rval_t er;
-    s1ap_TraceStartIEs = &message_p->msg.s1ap_TraceStartIEs;
+    s1ap_TraceStartIEs = &message_p->s1ap_TraceStartIEs;
 
     cb("<S1ap-TraceStartIEs-PDU>\n", 25, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -247,7 +247,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_writereplacewarningresponse(
 {
     S1ap_WriteReplaceWarningResponseIEs_t *s1ap_WriteReplaceWarningResponseIEs;
     asn_enc_rval_t er;
-    s1ap_WriteReplaceWarningResponseIEs = &message_p->msg.s1ap_WriteReplaceWarningResponseIEs;
+    s1ap_WriteReplaceWarningResponseIEs = &message_p->s1ap_WriteReplaceWarningResponseIEs;
 
     cb("<S1ap-WriteReplaceWarningResponseIEs-PDU>\n", 42, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -273,7 +273,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handovercancel(
 {
     S1ap_HandoverCancelIEs_t *s1ap_HandoverCancelIEs;
     asn_enc_rval_t er;
-    s1ap_HandoverCancelIEs = &message_p->msg.s1ap_HandoverCancelIEs;
+    s1ap_HandoverCancelIEs = &message_p->s1ap_HandoverCancelIEs;
 
     cb("<S1ap-HandoverCancelIEs-PDU>\n", 29, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -294,7 +294,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handoverpreparationfailure(
 {
     S1ap_HandoverPreparationFailureIEs_t *s1ap_HandoverPreparationFailureIEs;
     asn_enc_rval_t er;
-    s1ap_HandoverPreparationFailureIEs = &message_p->msg.s1ap_HandoverPreparationFailureIEs;
+    s1ap_HandoverPreparationFailureIEs = &message_p->s1ap_HandoverPreparationFailureIEs;
 
     cb("<S1ap-HandoverPreparationFailureIEs-PDU>\n", 41, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -331,7 +331,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_uecontextreleaserequest(
 {
     S1ap_UEContextReleaseRequest_IEs_t *s1ap_UEContextReleaseRequest_IEs;
     asn_enc_rval_t er;
-    s1ap_UEContextReleaseRequest_IEs = &message_p->msg.s1ap_UEContextReleaseRequest_IEs;
+    s1ap_UEContextReleaseRequest_IEs = &message_p->s1ap_UEContextReleaseRequest_IEs;
 
     cb("<S1ap-UEContextReleaseRequest-IEs-PDU>\n", 39, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -368,7 +368,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_initialuemessage(
 {
     S1ap_InitialUEMessage_IEs_t *s1ap_InitialUEMessage_IEs;
     asn_enc_rval_t er;
-    s1ap_InitialUEMessage_IEs = &message_p->msg.s1ap_InitialUEMessage_IEs;
+    s1ap_InitialUEMessage_IEs = &message_p->s1ap_InitialUEMessage_IEs;
 
     cb("<S1ap-InitialUEMessage-IEs-PDU>\n", 32, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -409,7 +409,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_killrequest(
 {
     S1ap_KillRequestIEs_t *s1ap_KillRequestIEs;
     asn_enc_rval_t er;
-    s1ap_KillRequestIEs = &message_p->msg.s1ap_KillRequestIEs;
+    s1ap_KillRequestIEs = &message_p->s1ap_KillRequestIEs;
 
     cb("<S1ap-KillRequestIEs-PDU>\n", 26, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -432,7 +432,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_writereplacewarningrequest(
 {
     S1ap_WriteReplaceWarningRequestIEs_t *s1ap_WriteReplaceWarningRequestIEs;
     asn_enc_rval_t er;
-    s1ap_WriteReplaceWarningRequestIEs = &message_p->msg.s1ap_WriteReplaceWarningRequestIEs;
+    s1ap_WriteReplaceWarningRequestIEs = &message_p->s1ap_WriteReplaceWarningRequestIEs;
 
     cb("<S1ap-WriteReplaceWarningRequestIEs-PDU>\n", 41, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -475,7 +475,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_uecapabilityinfoindication(
 {
     S1ap_UECapabilityInfoIndicationIEs_t *s1ap_UECapabilityInfoIndicationIEs;
     asn_enc_rval_t er;
-    s1ap_UECapabilityInfoIndicationIEs = &message_p->msg.s1ap_UECapabilityInfoIndicationIEs;
+    s1ap_UECapabilityInfoIndicationIEs = &message_p->s1ap_UECapabilityInfoIndicationIEs;
 
     cb("<S1ap-UECapabilityInfoIndicationIEs-PDU>\n", 41, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -522,7 +522,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_locationreportingfailureindication(
 {
     S1ap_LocationReportingFailureIndicationIEs_t *s1ap_LocationReportingFailureIndicationIEs;
     asn_enc_rval_t er;
-    s1ap_LocationReportingFailureIndicationIEs = &message_p->msg.s1ap_LocationReportingFailureIndicationIEs;
+    s1ap_LocationReportingFailureIndicationIEs = &message_p->s1ap_LocationReportingFailureIndicationIEs;
 
     cb("<S1ap-LocationReportingFailureIndicationIEs-PDU>\n", 49, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -543,7 +543,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_initialcontextsetuprequest(
 {
     S1ap_InitialContextSetupRequestIEs_t *s1ap_InitialContextSetupRequestIEs;
     asn_enc_rval_t er;
-    s1ap_InitialContextSetupRequestIEs = &message_p->msg.s1ap_InitialContextSetupRequestIEs;
+    s1ap_InitialContextSetupRequestIEs = &message_p->s1ap_InitialContextSetupRequestIEs;
 
     cb("<S1ap-InitialContextSetupRequestIEs-PDU>\n", 41, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -600,7 +600,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_locationreport(
 {
     S1ap_LocationReportIEs_t *s1ap_LocationReportIEs;
     asn_enc_rval_t er;
-    s1ap_LocationReportIEs = &message_p->msg.s1ap_LocationReportIEs;
+    s1ap_LocationReportIEs = &message_p->s1ap_LocationReportIEs;
 
     cb("<S1ap-LocationReportIEs-PDU>\n", 29, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -623,7 +623,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_uplinknastransport(
 {
     S1ap_UplinkNASTransport_IEs_t *s1ap_UplinkNASTransport_IEs;
     asn_enc_rval_t er;
-    s1ap_UplinkNASTransport_IEs = &message_p->msg.s1ap_UplinkNASTransport_IEs;
+    s1ap_UplinkNASTransport_IEs = &message_p->s1ap_UplinkNASTransport_IEs;
 
     cb("<S1ap-UplinkNASTransport-IEs-PDU>\n", 34, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -649,7 +649,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_uecontextmodificationresponse(
 {
     S1ap_UEContextModificationResponseIEs_t *s1ap_UEContextModificationResponseIEs;
     asn_enc_rval_t er;
-    s1ap_UEContextModificationResponseIEs = &message_p->msg.s1ap_UEContextModificationResponseIEs;
+    s1ap_UEContextModificationResponseIEs = &message_p->s1ap_UEContextModificationResponseIEs;
 
     cb("<S1ap-UEContextModificationResponseIEs-PDU>\n", 44, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -672,7 +672,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_uecontextmodificationrequest(
 {
     S1ap_UEContextModificationRequestIEs_t *s1ap_UEContextModificationRequestIEs;
     asn_enc_rval_t er;
-    s1ap_UEContextModificationRequestIEs = &message_p->msg.s1ap_UEContextModificationRequestIEs;
+    s1ap_UEContextModificationRequestIEs = &message_p->s1ap_UEContextModificationRequestIEs;
 
     cb("<S1ap-UEContextModificationRequestIEs-PDU>\n", 43, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -713,7 +713,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_locationreportingcontrol(
 {
     S1ap_LocationReportingControlIEs_t *s1ap_LocationReportingControlIEs;
     asn_enc_rval_t er;
-    s1ap_LocationReportingControlIEs = &message_p->msg.s1ap_LocationReportingControlIEs;
+    s1ap_LocationReportingControlIEs = &message_p->s1ap_LocationReportingControlIEs;
 
     cb("<S1ap-LocationReportingControlIEs-PDU>\n", 39, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -734,7 +734,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_uplinks1cdma2000tunneling(
 {
     S1ap_UplinkS1cdma2000tunnelingIEs_t *s1ap_UplinkS1cdma2000tunnelingIEs;
     asn_enc_rval_t er;
-    s1ap_UplinkS1cdma2000tunnelingIEs = &message_p->msg.s1ap_UplinkS1cdma2000tunnelingIEs;
+    s1ap_UplinkS1cdma2000tunnelingIEs = &message_p->s1ap_UplinkS1cdma2000tunnelingIEs;
 
     cb("<S1ap-UplinkS1cdma2000tunnelingIEs-PDU>\n", 40, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -769,7 +769,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handoverrequest(
 {
     S1ap_HandoverRequestIEs_t *s1ap_HandoverRequestIEs;
     asn_enc_rval_t er;
-    s1ap_HandoverRequestIEs = &message_p->msg.s1ap_HandoverRequestIEs;
+    s1ap_HandoverRequestIEs = &message_p->s1ap_HandoverRequestIEs;
 
     cb("<S1ap-HandoverRequestIEs-PDU>\n", 30, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -822,7 +822,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handoverrequired(
 {
     S1ap_HandoverRequiredIEs_t *s1ap_HandoverRequiredIEs;
     asn_enc_rval_t er;
-    s1ap_HandoverRequiredIEs = &message_p->msg.s1ap_HandoverRequiredIEs;
+    s1ap_HandoverRequiredIEs = &message_p->s1ap_HandoverRequiredIEs;
 
     cb("<S1ap-HandoverRequiredIEs-PDU>\n", 31, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -883,7 +883,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_mmeconfigurationupdateacknowledge(
 {
     S1ap_MMEConfigurationUpdateAcknowledgeIEs_t *s1ap_MMEConfigurationUpdateAcknowledgeIEs;
     asn_enc_rval_t er;
-    s1ap_MMEConfigurationUpdateAcknowledgeIEs = &message_p->msg.s1ap_MMEConfigurationUpdateAcknowledgeIEs;
+    s1ap_MMEConfigurationUpdateAcknowledgeIEs = &message_p->s1ap_MMEConfigurationUpdateAcknowledgeIEs;
 
     cb("<S1ap-MMEConfigurationUpdateAcknowledgeIEs-PDU>\n", 48, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -904,7 +904,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_killresponse(
 {
     S1ap_KillResponseIEs_t *s1ap_KillResponseIEs;
     asn_enc_rval_t er;
-    s1ap_KillResponseIEs = &message_p->msg.s1ap_KillResponseIEs;
+    s1ap_KillResponseIEs = &message_p->s1ap_KillResponseIEs;
 
     cb("<S1ap-KillResponseIEs-PDU>\n", 27, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -930,7 +930,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_mmestatustransfer(
 {
     S1ap_MMEStatusTransferIEs_t *s1ap_MMEStatusTransferIEs;
     asn_enc_rval_t er;
-    s1ap_MMEStatusTransferIEs = &message_p->msg.s1ap_MMEStatusTransferIEs;
+    s1ap_MMEStatusTransferIEs = &message_p->s1ap_MMEStatusTransferIEs;
 
     cb("<S1ap-MMEStatusTransferIEs-PDU>\n", 32, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -951,7 +951,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_mmeconfigurationupdate(
 {
     S1ap_MMEConfigurationUpdateIEs_t *s1ap_MMEConfigurationUpdateIEs;
     asn_enc_rval_t er;
-    s1ap_MMEConfigurationUpdateIEs = &message_p->msg.s1ap_MMEConfigurationUpdateIEs;
+    s1ap_MMEConfigurationUpdateIEs = &message_p->s1ap_MMEConfigurationUpdateIEs;
 
     cb("<S1ap-MMEConfigurationUpdateIEs-PDU>\n", 37, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -978,7 +978,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabmodifyrequest(
 {
     S1ap_E_RABModifyRequestIEs_t *s1ap_E_RABModifyRequestIEs;
     asn_enc_rval_t er;
-    s1ap_E_RABModifyRequestIEs = &message_p->msg.s1ap_E_RABModifyRequestIEs;
+    s1ap_E_RABModifyRequestIEs = &message_p->s1ap_E_RABModifyRequestIEs;
 
     cb("<S1ap-E-RABModifyRequestIEs-PDU>\n", 33, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -1028,7 +1028,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_enbconfigurationupdatefailure(
 {
     S1ap_ENBConfigurationUpdateFailureIEs_t *s1ap_ENBConfigurationUpdateFailureIEs;
     asn_enc_rval_t er;
-    s1ap_ENBConfigurationUpdateFailureIEs = &message_p->msg.s1ap_ENBConfigurationUpdateFailureIEs;
+    s1ap_ENBConfigurationUpdateFailureIEs = &message_p->s1ap_ENBConfigurationUpdateFailureIEs;
 
     cb("<S1ap-ENBConfigurationUpdateFailureIEs-PDU>\n", 44, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -1053,7 +1053,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_reset(
 {
     S1ap_ResetIEs_t *s1ap_ResetIEs;
     asn_enc_rval_t er;
-    s1ap_ResetIEs = &message_p->msg.s1ap_ResetIEs;
+    s1ap_ResetIEs = &message_p->s1ap_ResetIEs;
 
     cb("<S1ap-ResetIEs-PDU>\n", 20, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -1099,7 +1099,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_s1setupresponse(
 {
     S1ap_S1SetupResponseIEs_t *s1ap_S1SetupResponseIEs;
     asn_enc_rval_t er;
-    s1ap_S1SetupResponseIEs = &message_p->msg.s1ap_S1SetupResponseIEs;
+    s1ap_S1SetupResponseIEs = &message_p->s1ap_S1SetupResponseIEs;
 
     cb("<S1ap-S1SetupResponseIEs-PDU>\n", 30, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -1128,7 +1128,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_paging(
 {
     S1ap_PagingIEs_t *s1ap_PagingIEs;
     asn_enc_rval_t er;
-    s1ap_PagingIEs = &message_p->msg.s1ap_PagingIEs;
+    s1ap_PagingIEs = &message_p->s1ap_PagingIEs;
 
     cb("<S1ap-PagingIEs-PDU>\n", 21, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -1159,7 +1159,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_enbconfigurationupdateacknowledge(
 {
     S1ap_ENBConfigurationUpdateAcknowledgeIEs_t *s1ap_ENBConfigurationUpdateAcknowledgeIEs;
     asn_enc_rval_t er;
-    s1ap_ENBConfigurationUpdateAcknowledgeIEs = &message_p->msg.s1ap_ENBConfigurationUpdateAcknowledgeIEs;
+    s1ap_ENBConfigurationUpdateAcknowledgeIEs = &message_p->s1ap_ENBConfigurationUpdateAcknowledgeIEs;
 
     cb("<S1ap-ENBConfigurationUpdateAcknowledgeIEs-PDU>\n", 48, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -1180,7 +1180,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabreleasecommand(
 {
     S1ap_E_RABReleaseCommandIEs_t *s1ap_E_RABReleaseCommandIEs;
     asn_enc_rval_t er;
-    s1ap_E_RABReleaseCommandIEs = &message_p->msg.s1ap_E_RABReleaseCommandIEs;
+    s1ap_E_RABReleaseCommandIEs = &message_p->s1ap_E_RABReleaseCommandIEs;
 
     cb("<S1ap-E-RABReleaseCommandIEs-PDU>\n", 34, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -1207,7 +1207,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_pathswitchrequestfailure(
 {
     S1ap_PathSwitchRequestFailureIEs_t *s1ap_PathSwitchRequestFailureIEs;
     asn_enc_rval_t er;
-    s1ap_PathSwitchRequestFailureIEs = &message_p->msg.s1ap_PathSwitchRequestFailureIEs;
+    s1ap_PathSwitchRequestFailureIEs = &message_p->s1ap_PathSwitchRequestFailureIEs;
 
     cb("<S1ap-PathSwitchRequestFailureIEs-PDU>\n", 39, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -1231,7 +1231,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabmodifyresponse(
 {
     S1ap_E_RABModifyResponseIEs_t *s1ap_E_RABModifyResponseIEs;
     asn_enc_rval_t er;
-    s1ap_E_RABModifyResponseIEs = &message_p->msg.s1ap_E_RABModifyResponseIEs;
+    s1ap_E_RABModifyResponseIEs = &message_p->s1ap_E_RABModifyResponseIEs;
 
     cb("<S1ap-E-RABModifyResponseIEs-PDU>\n", 34, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -1260,7 +1260,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handovernotify(
 {
     S1ap_HandoverNotifyIEs_t *s1ap_HandoverNotifyIEs;
     asn_enc_rval_t er;
-    s1ap_HandoverNotifyIEs = &message_p->msg.s1ap_HandoverNotifyIEs;
+    s1ap_HandoverNotifyIEs = &message_p->s1ap_HandoverNotifyIEs;
 
     cb("<S1ap-HandoverNotifyIEs-PDU>\n", 29, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -1282,7 +1282,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handovercancelacknowledge(
 {
     S1ap_HandoverCancelAcknowledgeIEs_t *s1ap_HandoverCancelAcknowledgeIEs;
     asn_enc_rval_t er;
-    s1ap_HandoverCancelAcknowledgeIEs = &message_p->msg.s1ap_HandoverCancelAcknowledgeIEs;
+    s1ap_HandoverCancelAcknowledgeIEs = &message_p->s1ap_HandoverCancelAcknowledgeIEs;
 
     cb("<S1ap-HandoverCancelAcknowledgeIEs-PDU>\n", 40, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -1305,7 +1305,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_initialcontextsetupfailure(
 {
     S1ap_InitialContextSetupFailureIEs_t *s1ap_InitialContextSetupFailureIEs;
     asn_enc_rval_t er;
-    s1ap_InitialContextSetupFailureIEs = &message_p->msg.s1ap_InitialContextSetupFailureIEs;
+    s1ap_InitialContextSetupFailureIEs = &message_p->s1ap_InitialContextSetupFailureIEs;
 
     cb("<S1ap-InitialContextSetupFailureIEs-PDU>\n", 41, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -1329,7 +1329,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handovercommand(
 {
     S1ap_HandoverCommandIEs_t *s1ap_HandoverCommandIEs;
     asn_enc_rval_t er;
-    s1ap_HandoverCommandIEs = &message_p->msg.s1ap_HandoverCommandIEs;
+    s1ap_HandoverCommandIEs = &message_p->s1ap_HandoverCommandIEs;
 
     cb("<S1ap-HandoverCommandIEs-PDU>\n", 30, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -1363,7 +1363,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_mmedirectinformationtransfer(
 {
     S1ap_MMEDirectInformationTransferIEs_t *s1ap_MMEDirectInformationTransferIEs;
     asn_enc_rval_t er;
-    s1ap_MMEDirectInformationTransferIEs = &message_p->msg.s1ap_MMEDirectInformationTransferIEs;
+    s1ap_MMEDirectInformationTransferIEs = &message_p->s1ap_MMEDirectInformationTransferIEs;
 
     cb("<S1ap-MMEDirectInformationTransferIEs-PDU>\n", 43, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -1382,7 +1382,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_errorindication(
 {
     S1ap_ErrorIndicationIEs_t *s1ap_ErrorIndicationIEs;
     asn_enc_rval_t er;
-    s1ap_ErrorIndicationIEs = &message_p->msg.s1ap_ErrorIndicationIEs;
+    s1ap_ErrorIndicationIEs = &message_p->s1ap_ErrorIndicationIEs;
 
     cb("<S1ap-ErrorIndicationIEs-PDU>\n", 30, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -1425,7 +1425,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_overloadstart(
 {
     S1ap_OverloadStartIEs_t *s1ap_OverloadStartIEs;
     asn_enc_rval_t er;
-    s1ap_OverloadStartIEs = &message_p->msg.s1ap_OverloadStartIEs;
+    s1ap_OverloadStartIEs = &message_p->s1ap_OverloadStartIEs;
 
     cb("<S1ap-OverloadStartIEs-PDU>\n", 28, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -1450,7 +1450,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_downlinknonueassociatedlppatransport(
 {
     S1ap_DownlinkNonUEAssociatedLPPaTransport_IEs_t *s1ap_DownlinkNonUEAssociatedLPPaTransport_IEs;
     asn_enc_rval_t er;
-    s1ap_DownlinkNonUEAssociatedLPPaTransport_IEs = &message_p->msg.s1ap_DownlinkNonUEAssociatedLPPaTransport_IEs;
+    s1ap_DownlinkNonUEAssociatedLPPaTransport_IEs = &message_p->s1ap_DownlinkNonUEAssociatedLPPaTransport_IEs;
 
     cb("<S1ap-DownlinkNonUEAssociatedLPPaTransport-IEs-PDU>\n", 52, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -1470,7 +1470,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handoverrequestacknowledge(
 {
     S1ap_HandoverRequestAcknowledgeIEs_t *s1ap_HandoverRequestAcknowledgeIEs;
     asn_enc_rval_t er;
-    s1ap_HandoverRequestAcknowledgeIEs = &message_p->msg.s1ap_HandoverRequestAcknowledgeIEs;
+    s1ap_HandoverRequestAcknowledgeIEs = &message_p->s1ap_HandoverRequestAcknowledgeIEs;
 
     cb("<S1ap-HandoverRequestAcknowledgeIEs-PDU>\n", 41, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -1501,7 +1501,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_downlinkueassociatedlppatransport(
 {
     S1ap_DownlinkUEAssociatedLPPaTransport_IEs_t *s1ap_DownlinkUEAssociatedLPPaTransport_IEs;
     asn_enc_rval_t er;
-    s1ap_DownlinkUEAssociatedLPPaTransport_IEs = &message_p->msg.s1ap_DownlinkUEAssociatedLPPaTransport_IEs;
+    s1ap_DownlinkUEAssociatedLPPaTransport_IEs = &message_p->s1ap_DownlinkUEAssociatedLPPaTransport_IEs;
 
     cb("<S1ap-DownlinkUEAssociatedLPPaTransport-IEs-PDU>\n", 49, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -1523,7 +1523,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_uecontextmodificationfailure(
 {
     S1ap_UEContextModificationFailureIEs_t *s1ap_UEContextModificationFailureIEs;
     asn_enc_rval_t er;
-    s1ap_UEContextModificationFailureIEs = &message_p->msg.s1ap_UEContextModificationFailureIEs;
+    s1ap_UEContextModificationFailureIEs = &message_p->s1ap_UEContextModificationFailureIEs;
 
     cb("<S1ap-UEContextModificationFailureIEs-PDU>\n", 43, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -1547,7 +1547,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_mmeconfigurationtransfer(
 {
     S1ap_MMEConfigurationTransferIEs_t *s1ap_MMEConfigurationTransferIEs;
     asn_enc_rval_t er;
-    s1ap_MMEConfigurationTransferIEs = &message_p->msg.s1ap_MMEConfigurationTransferIEs;
+    s1ap_MMEConfigurationTransferIEs = &message_p->s1ap_MMEConfigurationTransferIEs;
 
     cb("<S1ap-MMEConfigurationTransferIEs-PDU>\n", 39, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -1568,7 +1568,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_pathswitchrequestacknowledge(
 {
     S1ap_PathSwitchRequestAcknowledgeIEs_t *s1ap_PathSwitchRequestAcknowledgeIEs;
     asn_enc_rval_t er;
-    s1ap_PathSwitchRequestAcknowledgeIEs = &message_p->msg.s1ap_PathSwitchRequestAcknowledgeIEs;
+    s1ap_PathSwitchRequestAcknowledgeIEs = &message_p->s1ap_PathSwitchRequestAcknowledgeIEs;
 
     cb("<S1ap-PathSwitchRequestAcknowledgeIEs-PDU>\n", 43, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -1617,7 +1617,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_s1setupfailure(
 {
     S1ap_S1SetupFailureIEs_t *s1ap_S1SetupFailureIEs;
     asn_enc_rval_t er;
-    s1ap_S1SetupFailureIEs = &message_p->msg.s1ap_S1SetupFailureIEs;
+    s1ap_S1SetupFailureIEs = &message_p->s1ap_S1SetupFailureIEs;
 
     cb("<S1ap-S1SetupFailureIEs-PDU>\n", 29, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -1642,7 +1642,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_mmeconfigurationupdatefailure(
 {
     S1ap_MMEConfigurationUpdateFailureIEs_t *s1ap_MMEConfigurationUpdateFailureIEs;
     asn_enc_rval_t er;
-    s1ap_MMEConfigurationUpdateFailureIEs = &message_p->msg.s1ap_MMEConfigurationUpdateFailureIEs;
+    s1ap_MMEConfigurationUpdateFailureIEs = &message_p->s1ap_MMEConfigurationUpdateFailureIEs;
 
     cb("<S1ap-MMEConfigurationUpdateFailureIEs-PDU>\n", 44, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -1667,7 +1667,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_initialcontextsetupresponse(
 {
     S1ap_InitialContextSetupResponseIEs_t *s1ap_InitialContextSetupResponseIEs;
     asn_enc_rval_t er;
-    s1ap_InitialContextSetupResponseIEs = &message_p->msg.s1ap_InitialContextSetupResponseIEs;
+    s1ap_InitialContextSetupResponseIEs = &message_p->s1ap_InitialContextSetupResponseIEs;
 
     cb("<S1ap-InitialContextSetupResponseIEs-PDU>\n", 42, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -1694,7 +1694,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_downlinks1cdma2000tunneling(
 {
     S1ap_DownlinkS1cdma2000tunnelingIEs_t *s1ap_DownlinkS1cdma2000tunnelingIEs;
     asn_enc_rval_t er;
-    s1ap_DownlinkS1cdma2000tunnelingIEs = &message_p->msg.s1ap_DownlinkS1cdma2000tunnelingIEs;
+    s1ap_DownlinkS1cdma2000tunnelingIEs = &message_p->s1ap_DownlinkS1cdma2000tunnelingIEs;
 
     cb("<S1ap-DownlinkS1cdma2000tunnelingIEs-PDU>\n", 42, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -1722,7 +1722,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_overloadstop(
 {
     S1ap_OverloadStopIEs_t *s1ap_OverloadStopIEs;
     asn_enc_rval_t er;
-    s1ap_OverloadStopIEs = &message_p->msg.s1ap_OverloadStopIEs;
+    s1ap_OverloadStopIEs = &message_p->s1ap_OverloadStopIEs;
 
     cb("<S1ap-OverloadStopIEs-PDU>\n", 27, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -1782,7 +1782,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_enbconfigurationupdate(
 {
     S1ap_ENBConfigurationUpdateIEs_t *s1ap_ENBConfigurationUpdateIEs;
     asn_enc_rval_t er;
-    s1ap_ENBConfigurationUpdateIEs = &message_p->msg.s1ap_ENBConfigurationUpdateIEs;
+    s1ap_ENBConfigurationUpdateIEs = &message_p->s1ap_ENBConfigurationUpdateIEs;
 
     cb("<S1ap-ENBConfigurationUpdateIEs-PDU>\n", 37, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -1812,7 +1812,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_tracefailureindication(
 {
     S1ap_TraceFailureIndicationIEs_t *s1ap_TraceFailureIndicationIEs;
     asn_enc_rval_t er;
-    s1ap_TraceFailureIndicationIEs = &message_p->msg.s1ap_TraceFailureIndicationIEs;
+    s1ap_TraceFailureIndicationIEs = &message_p->s1ap_TraceFailureIndicationIEs;
 
     cb("<S1ap-TraceFailureIndicationIEs-PDU>\n", 37, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -1847,7 +1847,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_enbconfigurationtransfer(
 {
     S1ap_ENBConfigurationTransferIEs_t *s1ap_ENBConfigurationTransferIEs;
     asn_enc_rval_t er;
-    s1ap_ENBConfigurationTransferIEs = &message_p->msg.s1ap_ENBConfigurationTransferIEs;
+    s1ap_ENBConfigurationTransferIEs = &message_p->s1ap_ENBConfigurationTransferIEs;
 
     cb("<S1ap-ENBConfigurationTransferIEs-PDU>\n", 39, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -1868,7 +1868,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handoverfailure(
 {
     S1ap_HandoverFailureIEs_t *s1ap_HandoverFailureIEs;
     asn_enc_rval_t er;
-    s1ap_HandoverFailureIEs = &message_p->msg.s1ap_HandoverFailureIEs;
+    s1ap_HandoverFailureIEs = &message_p->s1ap_HandoverFailureIEs;
 
     cb("<S1ap-HandoverFailureIEs-PDU>\n", 30, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -1904,7 +1904,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabsetupresponse(
 {
     S1ap_E_RABSetupResponseIEs_t *s1ap_E_RABSetupResponseIEs;
     asn_enc_rval_t er;
-    s1ap_E_RABSetupResponseIEs = &message_p->msg.s1ap_E_RABSetupResponseIEs;
+    s1ap_E_RABSetupResponseIEs = &message_p->s1ap_E_RABSetupResponseIEs;
 
     cb("<S1ap-E-RABSetupResponseIEs-PDU>\n", 33, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -1933,7 +1933,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_uecontextreleasecommand(
 {
     S1ap_UEContextReleaseCommand_IEs_t *s1ap_UEContextReleaseCommand_IEs;
     asn_enc_rval_t er;
-    s1ap_UEContextReleaseCommand_IEs = &message_p->msg.s1ap_UEContextReleaseCommand_IEs;
+    s1ap_UEContextReleaseCommand_IEs = &message_p->s1ap_UEContextReleaseCommand_IEs;
 
     cb("<S1ap-UEContextReleaseCommand-IEs-PDU>\n", 39, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -1953,7 +1953,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_pathswitchrequest(
 {
     S1ap_PathSwitchRequestIEs_t *s1ap_PathSwitchRequestIEs;
     asn_enc_rval_t er;
-    s1ap_PathSwitchRequestIEs = &message_p->msg.s1ap_PathSwitchRequestIEs;
+    s1ap_PathSwitchRequestIEs = &message_p->s1ap_PathSwitchRequestIEs;
 
     cb("<S1ap-PathSwitchRequestIEs-PDU>\n", 32, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -1986,7 +1986,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_downlinknastransport(
 {
     S1ap_DownlinkNASTransport_IEs_t *s1ap_DownlinkNASTransport_IEs;
     asn_enc_rval_t er;
-    s1ap_DownlinkNASTransport_IEs = &message_p->msg.s1ap_DownlinkNASTransport_IEs;
+    s1ap_DownlinkNASTransport_IEs = &message_p->s1ap_DownlinkNASTransport_IEs;
 
     cb("<S1ap-DownlinkNASTransport-IEs-PDU>\n", 36, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -2013,7 +2013,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabreleaseindication(
 {
     S1ap_E_RABReleaseIndicationIEs_t *s1ap_E_RABReleaseIndicationIEs;
     asn_enc_rval_t er;
-    s1ap_E_RABReleaseIndicationIEs = &message_p->msg.s1ap_E_RABReleaseIndicationIEs;
+    s1ap_E_RABReleaseIndicationIEs = &message_p->s1ap_E_RABReleaseIndicationIEs;
 
     cb("<S1ap-E-RABReleaseIndicationIEs-PDU>\n", 37, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -2034,7 +2034,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_s1setuprequest(
 {
     S1ap_S1SetupRequestIEs_t *s1ap_S1SetupRequestIEs;
     asn_enc_rval_t er;
-    s1ap_S1SetupRequestIEs = &message_p->msg.s1ap_S1SetupRequestIEs;
+    s1ap_S1SetupRequestIEs = &message_p->s1ap_S1SetupRequestIEs;
 
     cb("<S1ap-S1SetupRequestIEs-PDU>\n", 29, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -2061,7 +2061,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_nasnondeliveryindication(
 {
     S1ap_NASNonDeliveryIndication_IEs_t *s1ap_NASNonDeliveryIndication_IEs;
     asn_enc_rval_t er;
-    s1ap_NASNonDeliveryIndication_IEs = &message_p->msg.s1ap_NASNonDeliveryIndication_IEs;
+    s1ap_NASNonDeliveryIndication_IEs = &message_p->s1ap_NASNonDeliveryIndication_IEs;
 
     cb("<S1ap-NASNonDeliveryIndication-IEs-PDU>\n", 40, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -2083,7 +2083,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_celltraffictrace(
 {
     S1ap_CellTrafficTraceIEs_t *s1ap_CellTrafficTraceIEs;
     asn_enc_rval_t er;
-    s1ap_CellTrafficTraceIEs = &message_p->msg.s1ap_CellTrafficTraceIEs;
+    s1ap_CellTrafficTraceIEs = &message_p->s1ap_CellTrafficTraceIEs;
 
     cb("<S1ap-CellTrafficTraceIEs-PDU>\n", 31, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -2109,7 +2109,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabsetuprequest(
 {
     S1ap_E_RABSetupRequestIEs_t *s1ap_E_RABSetupRequestIEs;
     asn_enc_rval_t er;
-    s1ap_E_RABSetupRequestIEs = &message_p->msg.s1ap_E_RABSetupRequestIEs;
+    s1ap_E_RABSetupRequestIEs = &message_p->s1ap_E_RABSetupRequestIEs;
 
     cb("<S1ap-E-RABSetupRequestIEs-PDU>\n", 32, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -2133,7 +2133,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_enbstatustransfer(
 {
     S1ap_ENBStatusTransferIEs_t *s1ap_ENBStatusTransferIEs;
     asn_enc_rval_t er;
-    s1ap_ENBStatusTransferIEs = &message_p->msg.s1ap_ENBStatusTransferIEs;
+    s1ap_ENBStatusTransferIEs = &message_p->s1ap_ENBStatusTransferIEs;
 
     cb("<S1ap-ENBStatusTransferIEs-PDU>\n", 32, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -2154,7 +2154,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_resetacknowledge(
 {
     S1ap_ResetAcknowledgeIEs_t *s1ap_ResetAcknowledgeIEs;
     asn_enc_rval_t er;
-    s1ap_ResetAcknowledgeIEs = &message_p->msg.s1ap_ResetAcknowledgeIEs;
+    s1ap_ResetAcknowledgeIEs = &message_p->s1ap_ResetAcknowledgeIEs;
 
     cb("<S1ap-ResetAcknowledgeIEs-PDU>\n", 31, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -2178,7 +2178,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_uecontextreleasecomplete(
 {
     S1ap_UEContextReleaseComplete_IEs_t *s1ap_UEContextReleaseComplete_IEs;
     asn_enc_rval_t er;
-    s1ap_UEContextReleaseComplete_IEs = &message_p->msg.s1ap_UEContextReleaseComplete_IEs;
+    s1ap_UEContextReleaseComplete_IEs = &message_p->s1ap_UEContextReleaseComplete_IEs;
 
     cb("<S1ap-UEContextReleaseComplete-IEs-PDU>\n", 40, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);
@@ -2201,7 +2201,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_uplinkueassociatedlppatransport(
 {
     S1ap_UplinkUEAssociatedLPPaTransport_IEs_t *s1ap_UplinkUEAssociatedLPPaTransport_IEs;
     asn_enc_rval_t er;
-    s1ap_UplinkUEAssociatedLPPaTransport_IEs = &message_p->msg.s1ap_UplinkUEAssociatedLPPaTransport_IEs;
+    s1ap_UplinkUEAssociatedLPPaTransport_IEs = &message_p->s1ap_UplinkUEAssociatedLPPaTransport_IEs;
 
     cb("<S1ap-UplinkUEAssociatedLPPaTransport-IEs-PDU>\n", 47, app_key);
     xer_encode_local(&asn_DEF_S1ap_Criticality, &message_p->criticality, cb, app_key, 1);

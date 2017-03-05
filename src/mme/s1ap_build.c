@@ -20,7 +20,7 @@ status_t s1ap_build_setup_rsp(pkbuf_t **pkbuf)
 
     memset(&message, 0, sizeof(s1ap_message));
 
-    ies = &message.msg.s1ap_S1SetupResponseIEs;
+    ies = &message.s1ap_S1SetupResponseIEs;
 
     numServedGUMMEI = 1;
     servedGUMMEI = (S1ap_ServedGUMMEIsItem_t *)
@@ -88,7 +88,7 @@ status_t s1ap_build_setup_failure(pkbuf_t **pkbuf, S1ap_Cause_t cause)
 
     memset(&message, 0, sizeof(s1ap_message));
 
-    ies = &message.msg.s1ap_S1SetupFailureIEs;
+    ies = &message.s1ap_S1SetupFailureIEs;
     ies->cause = cause;
 
     message.procedureCode = S1ap_ProcedureCode_id_S1Setup;

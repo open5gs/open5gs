@@ -17,7 +17,7 @@ status_t s1ap_build_setup_req(pkbuf_t **pkbuf, c_uint32_t enb_id)
 
     memset(&message, 0, sizeof(s1ap_message));
 
-    ies = &message.msg.s1ap_S1SetupRequestIEs;
+    ies = &message.s1ap_S1SetupRequestIEs;
 
     s1ap_uint32_to_ENB_ID(S1ap_ENB_ID_PR_macroENB_ID, enb_id, 
             &ies->global_ENB_ID.eNB_ID);

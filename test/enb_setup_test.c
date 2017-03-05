@@ -66,8 +66,6 @@ int enb_net_read(net_sock_t *sock, pkbuf_t *recvbuf)
 
 #define NUM_OF_TEST_DUPLICATED_ENB 4
 
-#define TEST_S1_SETUP_RESPONSE_SIZE 27 
-#define TEST_S1_SETUP_FAILURE_SIZE 12 
 static void enb_setup_test1(abts_case *tc, void *data)
 {
     status_t rv;

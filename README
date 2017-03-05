@@ -4,12 +4,17 @@ The implemntation consists in several components:
   - lib/core : the library contains the core of the framework.
       memory pool, thread, lock, timer, ...
 
-  - lib/message : the message encoding/decoding library
-      S1AP, NAS, S6A
-
   - lib/logger : the logging library
 
-  - src : the heart of EPC protocol stack
+  - lib/s1ap : the S1AP message encoding/decoding library
+
+  - lib/nas : the NAS message encoding/decoding library
+
+  - lib/s6a : the freeDiameter wrapper for S6A
+
+  - src/mme : the heart of MME protocol stack
+
+  - src/hss : the heart of HSS protocol stack
 
 
 See LICENSE file for legal information on this software.

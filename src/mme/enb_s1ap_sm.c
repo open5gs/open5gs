@@ -159,10 +159,12 @@ status_t enb_s1ap_handle_s1setuprequest(enb_ctx_t *enb, s1ap_message *message)
     d_assert(enb->s1_sock, return CORE_ERROR, "Null param");
     d_assert(message, return CORE_ERROR, "Null param");
 
-    ies = &message->msg.s1ap_S1SetupRequestIEs;
+    ies = &message->s1ap_S1SetupRequestIEs;
     d_assert(ies, return CORE_ERROR, "Null param");
 
     s1ap_ENB_ID_to_uint32(&ies->global_ENB_ID.eNB_ID, &enb_id);
+
+#if 0 /* FIXME : does it needed? */
     if (mme_ctx_enb_find_by_id(enb_id))
     {
         S1ap_Cause_t cause;
@@ -175,6 +177,7 @@ status_t enb_s1ap_handle_s1setuprequest(enb_ctx_t *enb, s1ap_message *message)
         rv = s1ap_build_setup_failure(&sendbuf, cause);
     }
     else
+#endif
     {
         d_info("eNB-id[0x%x] sends S1-Setup-Request from [%s]", enb_id,
                 INET_NTOP(&enb->s1_sock->remote.sin_addr.s_addr, buf));

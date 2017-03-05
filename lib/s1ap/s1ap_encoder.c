@@ -167,7 +167,7 @@ static inline int s1ap_encode_initial_context_setup_request(
             sizeof(S1ap_InitialContextSetupRequest_t));
     if (s1ap_encode_s1ap_initialcontextsetuprequesties(
             &initialContextSetupRequest, 
-            &message_p->msg.s1ap_InitialContextSetupRequestIEs) < 0) 
+            &message_p->s1ap_InitialContextSetupRequestIEs) < 0) 
     {
         d_error("Encoding of %s failed", td->name);
         return -1;
@@ -205,7 +205,7 @@ static inline int s1ap_encode_s1setup_request(
 
     memset(&s1SetupRequest, 0, sizeof(s1SetupRequest));
     if (s1ap_encode_s1ap_s1setuprequesties(
-            &s1SetupRequest, &message_p->msg.s1ap_S1SetupRequestIEs) < 0) 
+            &s1SetupRequest, &message_p->s1ap_S1SetupRequestIEs) < 0) 
     {
         d_error("Encoding of %s failed", td->name);
         return -1;
@@ -242,7 +242,7 @@ static inline int s1ap_encode_s1setup_response(
 
     memset(&s1SetupResponse, 0, sizeof (S1ap_S1SetupResponse_t));
     if (s1ap_encode_s1ap_s1setupresponseies(
-            &s1SetupResponse, &message_p->msg.s1ap_S1SetupResponseIEs) < 0) 
+            &s1SetupResponse, &message_p->s1ap_S1SetupResponseIEs) < 0) 
     {
         d_error("Encoding of %s failed", td->name);
         return -1;
@@ -280,7 +280,7 @@ static inline int s1ap_encode_s1setup_failure(
 
     memset(&s1SetupFailure, 0, sizeof (S1ap_S1SetupFailure_t));
     if (s1ap_encode_s1ap_s1setupfailureies(
-            &s1SetupFailure, &message_p->msg.s1ap_S1SetupFailureIEs) < 0) 
+            &s1SetupFailure, &message_p->s1ap_S1SetupFailureIEs) < 0) 
     {
         d_error("Encoding of %s failed", td->name);
         return -1;
@@ -318,7 +318,7 @@ static inline int s1ap_encode_downlink_nas_transport(
 
     memset(&downlinkNasTransport, 0, sizeof(S1ap_DownlinkNASTransport_t));
     if (s1ap_encode_s1ap_downlinknastransport_ies(&downlinkNasTransport, 
-            &message_p->msg.s1ap_DownlinkNASTransport_IEs) < 0) 
+            &message_p->s1ap_DownlinkNASTransport_IEs) < 0) 
     {
         d_error("Encoding of %s failed", td->name);
         return -1;
@@ -358,7 +358,7 @@ static inline int s1ap_encode_ue_context_release_command(
             sizeof(S1ap_UEContextReleaseCommand_t));
     if (s1ap_encode_s1ap_uecontextreleasecommand_ies(
             &ueContextReleaseCommand,
-            &message_p->msg.s1ap_UEContextReleaseCommand_IEs) < 0) 
+            &message_p->s1ap_UEContextReleaseCommand_IEs) < 0) 
     {
         d_error("Encoding of %s failed", td->name);
         return -1;
