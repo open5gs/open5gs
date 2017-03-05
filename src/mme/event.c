@@ -127,6 +127,7 @@ static char EVT_NAME_LO_ENB_S1AP_ACCEPT[] = "LO_ENB_S1AP_ACCEPT";
 static char EVT_NAME_LO_ENB_S1AP_CONNREFUSED[] = "LO_ENB_S1AP_CONNREFUSED";
 
 static char EVT_NAME_MSG_ENB_S1AP[] = "MSG_ENB_S1AP";
+static char EVT_NAME_MSG_UE_EMM[] = "MSG_UE_EMM";
 
 static char EVT_NAME_UNKNOWN[] = "UNKNOWN";
 
@@ -146,8 +147,11 @@ char* event_get_name(event_t *e)
                return EVT_NAME_LO_ENB_S1AP_ACCEPT;
         case EVT_LO_ENB_S1AP_CONNREFUSED: 
                return EVT_NAME_LO_ENB_S1AP_CONNREFUSED;
+
         case EVT_MSG_ENB_S1AP: 
                return EVT_NAME_MSG_ENB_S1AP;
+        case EVT_MSG_UE_EMM: 
+               return EVT_NAME_MSG_UE_EMM;
 
         default: 
            break;

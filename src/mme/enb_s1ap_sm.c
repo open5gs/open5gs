@@ -12,8 +12,6 @@
 
 static status_t enb_s1ap_handle_s1setuprequest(
         enb_ctx_t *enb, s1ap_message *message);
-static status_t enb_s1ap_handle_initialuemessage(
-        enb_ctx_t *enb, s1ap_message *message);
 
 void enb_s1ap_state_initial(enb_s1ap_sm_t *s, event_t *e)
 {
@@ -77,7 +75,55 @@ void enb_s1ap_state_operational(enb_s1ap_sm_t *s, event_t *e)
                         }
                         case S1ap_ProcedureCode_id_initialUEMessage :
                         {
-                            enb_s1ap_handle_initialuemessage(enb, &message);
+                            ue_ctx_t *ue = NULL;
+                            S1ap_InitialUEMessage_IEs_t *ies = NULL;
+                            S1ap_NAS_PDU_t *nasPdu = NULL;
+                            event_t e;
+                            pkbuf_t *sendbuf = NULL;
+
+                            ies = &message.s1ap_InitialUEMessage_IEs;
+                            d_assert(ies, break, "Null param");
+
+                            nasPdu = &ies->nas_pdu;
+                            d_assert(nasPdu, break, "Null param");
+
+                            sendbuf = pkbuf_alloc(0, nasPdu->size);
+                            d_assert(sendbuf, break, "Null param");
+                            memcpy(sendbuf->payload, nasPdu->buf, nasPdu->size);
+
+                            ue = mme_ctx_ue_find_by_enb_ue_s1ap_id(
+                                        enb, ies->eNB_UE_S1AP_ID);
+                            if (!ue)
+                            {
+                                ue = mme_ctx_ue_add(enb);
+                                d_assert(ue, break, "Null param");
+
+                                ue->enb_ue_s1ap_id = ies->eNB_UE_S1AP_ID;
+                            }
+                            else
+                            {
+                                d_warn("Duplicated: eNB[0x%x] sends "
+                                    "Initial-UE Message[eNB-UE-S1AP-ID(%d)]",
+                                    enb->enb_id, ue->enb_ue_s1ap_id);
+                            }
+
+                            d_info("eNB[0x%x] sends "
+                                "Initial-UE Message[eNB-UE-S1AP-ID(%d)]",
+                                enb->enb_id, ue->enb_ue_s1ap_id);
+
+                            fsm_create((fsm_t*)&ue->emm_sm, 
+                                    ue_emm_state_initial, ue_emm_state_final);
+                            ue->emm_sm.ctx = ue;
+                            ue->emm_sm.queue_id = s->queue_id;
+                            ue->emm_sm.tm_service = s->tm_service;
+
+                            fsm_init((fsm_t*)&ue->emm_sm, 0);
+
+                            event_set(&e, EVT_MSG_UE_EMM);
+                            event_set_param1(&e, (c_uintptr_t)ue);
+                            event_set_param2(&e, (c_uintptr_t)sendbuf);
+
+                            event_send(s->queue_id, &e);
                             break;
                         }
                         default:
@@ -87,6 +133,7 @@ void enb_s1ap_state_operational(enb_s1ap_sm_t *s, event_t *e)
                             break;
                         }
                     }
+
                     break;
                 }
                 case S1AP_PDU_PR_successfulOutcome :
@@ -112,6 +159,7 @@ void enb_s1ap_state_operational(enb_s1ap_sm_t *s, event_t *e)
             }
 
             s1ap_free_pdu(&message);
+            pkbuf_free(recvbuf);
             break;
         }
 
@@ -190,37 +238,6 @@ status_t enb_s1ap_handle_s1setuprequest(enb_ctx_t *enb, s1ap_message *message)
             return CORE_ERROR, "send error");
 
     pkbuf_free(sendbuf);
-
-    return CORE_OK;
-}
-
-status_t enb_s1ap_handle_initialuemessage(
-        enb_ctx_t *enb, s1ap_message *message)
-{
-    S1ap_InitialUEMessage_IEs_t *ies = NULL;
-    ue_ctx_t *ue = NULL;
-
-    d_assert(enb, return CORE_ERROR, "Null param");
-    d_assert(message, return CORE_ERROR, "Null param");
-
-    ies = &message->s1ap_InitialUEMessage_IEs;
-    d_assert(ies, return CORE_ERROR, "Null param");
-
-    ue = mme_ctx_ue_add(enb);
-    d_assert(ue, return CORE_ERROR, "Null param");
-
-    ue->enb_ue_s1ap_id = ies->eNB_UE_S1AP_ID;
-
-    d_info("eNB[0x%x] sends Initial-UE Message[eNB-UE-S1AP-ID(%d)]",
-            enb->enb_id, ue->enb_ue_s1ap_id);
-#if 0
-    fsm_create((fsm_t*)&enb->s1ap_sm, 
-            enb_s1ap_state_initial, enb_s1ap_state_final);
-    enb->s1ap_sm.ctx = enb;
-    enb->s1ap_sm.queue_id = s->queue_id;
-    enb->s1ap_sm.tm_service = s->tm_service;
-    fsm_init((fsm_t*)&enb->s1ap_sm, 0);
-#endif
 
     return CORE_OK;
 }

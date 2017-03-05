@@ -19,7 +19,7 @@ typedef enum {
     EVT_LO_ENB_S1AP_CONNREFUSED,
 
     EVT_MSG_ENB_S1AP,
-    EVT_MSG_UE_NAS,
+    EVT_MSG_UE_EMM,
     
     EVT_TOP,
 

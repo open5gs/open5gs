@@ -94,9 +94,7 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
         case EVT_MSG_ENB_S1AP:
         {
             net_sock_t *sock = (net_sock_t *)event_get_param1(e);
-            pkbuf_t *recvbuf = (pkbuf_t *)event_get_param2(e);
             d_assert(sock, break, "Null param");
-            d_assert(recvbuf, break, "Null param");
 
             enb_ctx_t *enb = mme_ctx_enb_find_by_sock(sock);
             if (enb)
@@ -110,7 +108,16 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
                         INET_NTOP(&sock->remote.sin_addr.s_addr, buf));
             }
 
-            pkbuf_free(recvbuf);
+            break;
+        }
+        case EVT_MSG_UE_EMM:
+        {
+            ue_ctx_t *ue = (ue_ctx_t *)event_get_param1(e);
+            d_assert(ue, break, "Null param");
+
+            d_assert(FSM_STATE(&ue->emm_sm), break, "Null param");
+            fsm_dispatch((fsm_t*)&ue->emm_sm, (fsm_event_t*)e);
+
             break;
         }
         case EVT_LO_ENB_S1AP_CONNREFUSED:
