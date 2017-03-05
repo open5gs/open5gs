@@ -4,6 +4,7 @@
 
 #include "nas_message.h"
 #include "nas_conv.h"
+#include "s6a_message.h"
 
 #include "sm.h"
 #include "context.h"
@@ -91,6 +92,9 @@ void ue_emm_state_operational(ue_emm_sm_t *s, event_t *e)
                                 &eps_mobile_identity->imsi, 
                                 eps_mobile_identity->length, 
                                 ue->imsi, &ue->imsi_len);
+
+                            s6a_send_auth_info_req(
+                                ue->imsi, ue->imsi_len, plmn_id);
                             break;
                         }
                         default:

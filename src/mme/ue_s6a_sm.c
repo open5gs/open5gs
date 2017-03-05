@@ -12,24 +12,9 @@ struct sess_state {
 
 static void s6a_aia_cb(void *data, struct msg **msg);
 
-void s6a_test_send()
-{
-    s6a_auth_info_req_t air;
-    memset(&air, 0, sizeof(s6a_auth_info_req_t));
-
-    #define TEST_IMSI "001010123456800"
-    air.imsi_len = strlen(TEST_IMSI);
-    strcpy((char*)air.imsi, TEST_IMSI);
-    air.visited_plmn_id.mcc = 1;
-    air.visited_plmn_id.mnc = 1;
-    air.visited_plmn_id.mnc_len = 2;
-    air.auth_info.num_of_eutran_vector = 1;
-    air.auth_info.immediate_response_preferred = 1;
-    s6a_send_auth_info_req(&air);
-}
-
 /* Cb called when an answer is received */
-int s6a_send_auth_info_req(s6a_auth_info_req_t *air)
+int s6a_send_auth_info_req(
+    c_uint8_t *imsi, c_uint8_t imsi_len, c_uint8_t *plmn_id)
 {
     struct msg *req = NULL;
     struct avp *avp;
@@ -37,7 +22,6 @@ int s6a_send_auth_info_req(s6a_auth_info_req_t *air)
     union avp_value val;
     struct sess_state *mi = NULL, *svg;
     struct session *sess = NULL;
-    c_uint8_t plmn_id[PLMN_ID_LEN] = {0, };
     
     /* Create the random value to store with the session */
     mi = malloc(sizeof(struct sess_state));
@@ -74,8 +58,8 @@ int s6a_send_auth_info_req(s6a_auth_info_req_t *air)
     
     /* Set the User-Name AVP if needed*/
     d_assert(fd_msg_avp_new(s6a_user_name, 0, &avp) == 0, goto out,);
-    val.os.data = air->imsi;
-    val.os.len  = air->imsi_len;
+    val.os.data = imsi;
+    val.os.len  = imsi_len;
     d_assert(fd_msg_avp_setvalue(avp, &val) == 0, goto out, );
     d_assert(fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp) == 0, goto out,);
 
@@ -83,13 +67,13 @@ int s6a_send_auth_info_req(s6a_auth_info_req_t *air)
     d_assert(fd_msg_avp_new(s6a_req_eutran_auth_info, 0, &avp) == 0, goto out,);
     d_assert(fd_msg_avp_new(s6a_number_of_requested_vectors, 0, 
                 &avpch) == 0, goto out,);
-    val.u32 = air->auth_info.num_of_eutran_vector;
+    val.u32 = 1;
     d_assert(fd_msg_avp_setvalue (avpch, &val) == 0, goto out,);
     d_assert(fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch) == 0, goto out,);
 
     d_assert(fd_msg_avp_new(s6a_immediate_response_preferred, 0, 
                 &avpch) == 0, goto out,);
-    val.u32 = air->auth_info.immediate_response_preferred;
+    val.u32 = 1;
     d_assert(fd_msg_avp_setvalue(avpch, &val) == 0, goto out,);
     d_assert(fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch) == 0, goto out,);
 
@@ -97,7 +81,7 @@ int s6a_send_auth_info_req(s6a_auth_info_req_t *air)
 
     /* Set the Visited-PLMN-Id AVP if needed*/
     d_assert(fd_msg_avp_new(s6a_visited_plmn_id, 0, &avp) == 0, goto out,);
-    val.os.data = plmn_id_to_buffer(&air->visited_plmn_id, plmn_id);
+    val.os.data = plmn_id;
     val.os.len  = PLMN_ID_LEN;
     d_assert(fd_msg_avp_setvalue(avp, &val) == 0, goto out,);
     d_assert(fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp) == 0, goto out,);

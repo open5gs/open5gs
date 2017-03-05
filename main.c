@@ -49,12 +49,6 @@ static int check_signal(int signum)
 
             return 1;
         }
-        case SIGUSR1:
-        {
-            void s6a_test_send();
-            s6a_test_send();
-            break;
-        }
         default:
         {
             d_error("Unknown signal number = %d\n", signum);
