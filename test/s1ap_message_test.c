@@ -1,14 +1,11 @@
-#include "core.h"
-#include "core_errno.h"
-#include "core_general.h"
 #include "core_debug.h"
 #include "core_pkbuf.h"
 
-#include "testutil.h"
-
 #include "s1ap_build.h"
-#include "s1ap_enb_build.h"
 #include "s1ap_conv.h"
+
+#include "testutil.h"
+#include "tests1ap.h"
 
 static void s1ap_message_test1(abts_case *tc, void *data)
 {
@@ -107,7 +104,7 @@ static void s1ap_message_test5(abts_case *tc, void *data)
     pkbuf_t *pkbuf;
     int result;
 
-    rv = s1ap_build_setup_req(&pkbuf, 0x54f64);
+    rv = tests1ap_build_setup_req(&pkbuf, 0x54f64);
 
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     ABTS_PTR_NOTNULL(tc, pkbuf);

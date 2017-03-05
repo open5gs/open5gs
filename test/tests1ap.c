@@ -2,11 +2,67 @@
 
 #include "core_debug.h"
 #include "core_pkbuf.h"
+
 #include "context.h"
 #include "s1ap_build.h"
 #include "s1ap_conv.h"
+#include "s1ap_path.h"
 
-status_t s1ap_build_setup_req(pkbuf_t **pkbuf, c_uint32_t enb_id)
+net_sock_t *tests1ap_enb_connect(void)
+{
+    status_t rv;
+    mme_ctx_t *mme = mme_self();
+    net_sock_t *sock = NULL;
+
+    if (!mme) return NULL;
+
+    rv = net_open_with_addr(&sock, mme->enb_local_addr, "127.0.0.1", 0, 
+            mme->enb_s1ap_port, SOCK_SEQPACKET, IPPROTO_SCTP, 0);
+    if (rv != CORE_OK) return NULL;
+
+    return sock;
+}
+
+status_t tests1ap_enb_close(net_sock_t *sock)
+{
+    return net_close(sock);
+}
+
+int tests1ap_enb_send(net_sock_t *sock, pkbuf_t *sendbuf)
+{
+    return s1ap_send(sock, sendbuf);
+}
+
+int tests1ap_enb_read(net_sock_t *sock, pkbuf_t *recvbuf)
+{
+    int rc = 0;
+
+    while(1)
+    {
+        rc = net_read(sock, recvbuf->payload, recvbuf->len, 0);
+        if (rc == -2) 
+        {
+            continue;
+        }
+        else if (rc <= 0)
+        {
+            if (sock->sndrcv_errno == EAGAIN)
+            {
+                continue;
+            }
+            break;
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    return rc;
+}
+
+
+status_t tests1ap_build_setup_req(pkbuf_t **pkbuf, c_uint32_t enb_id)
 {
     int erval = -1;
 

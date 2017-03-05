@@ -1,72 +1,15 @@
-#include "core.h"
-#include "core_errno.h"
-#include "core_general.h"
 #include "core_debug.h"
 #include "core_pkbuf.h"
 
-#include "testutil.h"
-
 #include "s1ap_build.h"
-#include "s1ap_enb_build.h"
 #include "s1ap_conv.h"
-#include "s1ap_path.h"
 
-net_sock_t *enb_net_open(void)
-{
-    status_t rv;
-    mme_ctx_t *mme = mme_self();
-    net_sock_t *sock = NULL;
-
-    if (!mme) return NULL;
-
-    rv = net_open_with_addr(&sock, mme->enb_local_addr, "127.0.0.1", 0, 
-            mme->enb_s1ap_port, SOCK_SEQPACKET, IPPROTO_SCTP, 0);
-    if (rv != CORE_OK) return NULL;
-
-    return sock;
-}
-
-status_t enb_net_close(net_sock_t *sock)
-{
-    return net_close(sock);
-}
-
-int enb_net_send(net_sock_t *sock, pkbuf_t *sendbuf)
-{
-    return s1ap_send(sock, sendbuf);
-}
-
-int enb_net_read(net_sock_t *sock, pkbuf_t *recvbuf)
-{
-    int rc = 0;
-
-    while(1)
-    {
-        rc = net_read(sock, recvbuf->payload, recvbuf->len, 0);
-        if (rc == -2) 
-        {
-            continue;
-        }
-        else if (rc <= 0)
-        {
-            if (sock->sndrcv_errno == EAGAIN)
-            {
-                continue;
-            }
-            break;
-        }
-        else
-        {
-            break;
-        }
-    }
-
-    return rc;
-}
+#include "testutil.h"
+#include "tests1ap.h"
 
 #define NUM_OF_TEST_DUPLICATED_ENB 4
 
-static void enb_setup_test1(abts_case *tc, void *data)
+static void s1ap_sm_test1(abts_case *tc, void *data)
 {
     status_t rv;
     net_sock_t *sock[NUM_OF_TEST_DUPLICATED_ENB];
@@ -78,21 +21,21 @@ static void enb_setup_test1(abts_case *tc, void *data)
 
     for (i = 0; i < NUM_OF_TEST_DUPLICATED_ENB; i++)
     {
-        sock[i] = enb_net_open();
+        sock[i] = tests1ap_enb_connect();
         ABTS_PTR_NOTNULL(tc, sock[i]);
     }
 
     for (i = 0; i < NUM_OF_TEST_DUPLICATED_ENB; i++)
     {
-        rv = s1ap_build_setup_req(&sendbuf, 0x54f64);
+        rv = tests1ap_build_setup_req(&sendbuf, 0x54f64);
         ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-        rv = enb_net_send(sock[i], sendbuf);
+        rv = tests1ap_enb_send(sock[i], sendbuf);
         ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
         pkbuf_free(sendbuf);
 
-        rc = enb_net_read(sock[i], recvbuf);
+        rc = tests1ap_enb_read(sock[i], recvbuf);
         ABTS_INT_NEQUAL(tc, 0, rc);
 
         rv = s1ap_decode_pdu(&message, recvbuf);
@@ -103,7 +46,7 @@ static void enb_setup_test1(abts_case *tc, void *data)
 
     for (i = 0; i < NUM_OF_TEST_DUPLICATED_ENB; i++)
     {
-        rv = enb_net_close(sock[i]);
+        rv = tests1ap_enb_close(sock[i]);
         ABTS_INT_EQUAL(tc, CORE_OK, rv);
     }
 
@@ -114,7 +57,7 @@ static void enb_setup_test1(abts_case *tc, void *data)
 
 #define NUM_OF_TEST_ENB 32
 
-static void enb_setup_test2(abts_case *tc, void *data)
+static void s1ap_sm_test2(abts_case *tc, void *data)
 {
     status_t rv;
     net_sock_t *sock[NUM_OF_TEST_ENB];
@@ -126,21 +69,21 @@ static void enb_setup_test2(abts_case *tc, void *data)
 
     for (i = 0; i < NUM_OF_TEST_ENB; i++)
     {
-        sock[i] = enb_net_open();
+        sock[i] = tests1ap_enb_connect();
         ABTS_PTR_NOTNULL(tc, sock[i]);
     }
 
     for (i = 0; i < NUM_OF_TEST_ENB; i++)
     {
-        rv = s1ap_build_setup_req(&sendbuf, 0x54f64+i);
+        rv = tests1ap_build_setup_req(&sendbuf, 0x54f64+i);
         ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-        rv = enb_net_send(sock[i], sendbuf);
+        rv = tests1ap_enb_send(sock[i], sendbuf);
         ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
         pkbuf_free(sendbuf);
 
-        rc = enb_net_read(sock[i], recvbuf);
+        rc = tests1ap_enb_read(sock[i], recvbuf);
         ABTS_INT_NEQUAL(tc, 0, rc);
 
         rv = s1ap_decode_pdu(&message, recvbuf);
@@ -151,7 +94,7 @@ static void enb_setup_test2(abts_case *tc, void *data)
 
     for (i = 0; i < NUM_OF_TEST_ENB; i++)
     {
-        rv = enb_net_close(sock[i]);
+        rv = tests1ap_enb_close(sock[i]);
         ABTS_INT_EQUAL(tc, CORE_OK, rv);
     }
 
@@ -160,12 +103,12 @@ static void enb_setup_test2(abts_case *tc, void *data)
     core_sleep(time_from_sec(1));
 }
 
-abts_suite *test_enb_setup(abts_suite *suite)
+abts_suite *test_s1ap_sm(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
-    abts_run_test(suite, enb_setup_test1, NULL);
-    abts_run_test(suite, enb_setup_test2, NULL);
+    abts_run_test(suite, s1ap_sm_test1, NULL);
+    abts_run_test(suite, s1ap_sm_test2, NULL);
 
     return suite;
 }

@@ -17,8 +17,8 @@
 #include "core_general.h"
 #include "abts.h"
 
-#ifndef __APR_TEST_UTIL__
-#define __APR_TEST_UTIL__
+#ifndef __TEST_UTIL__
+#define __TEST_UTIL__
 
 /* XXX: FIXME - these all should become much more utilitarian
  * and part of core, itself
@@ -58,8 +58,8 @@ void core_assert_ok(abts_case* tc, const char *context,
 void test_initialize(void);
 
 abts_suite *test_s1ap_message(abts_suite *suite);
-abts_suite *test_enb_setup(abts_suite *suite);
+abts_suite *test_s1ap_sm(abts_suite *suite);
 abts_suite *test_nas_message(abts_suite *suite);
 abts_suite *test_security(abts_suite *suite);
 
-#endif /* CORE_TEST_INCLUDES */
+#endif /* __TESTUTIL_H__ */

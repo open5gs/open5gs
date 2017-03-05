@@ -1,0 +1,22 @@
+#ifndef __TESTS1AP_H__
+#define __TESTS1AP_H__
+
+#include "core_net.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
+CORE_DECLARE(net_sock_t) *tests1ap_enb_connect(void);
+CORE_DECLARE(status_t) tests1ap_enb_close(net_sock_t *sock);
+CORE_DECLARE(int) tests1ap_enb_send(net_sock_t *sock, pkbuf_t *sendbuf);
+CORE_DECLARE(int) tests1ap_enb_read(net_sock_t *sock, pkbuf_t *recvbuf);
+
+CORE_DECLARE(status_t) tests1ap_build_setup_req(
+        pkbuf_t **pkbuf, c_uint32_t enb_id);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
+#endif /* __TESTS1AP_H__ */
