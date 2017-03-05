@@ -7,7 +7,9 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define MSG_SDU_SIZE 2048
+#define MESSAGE_SDU_SIZE    2048
+
+#define MAX_IMSI_LEN        15
 
 #ifdef __cplusplus
 }

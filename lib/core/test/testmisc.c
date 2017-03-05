@@ -46,21 +46,21 @@ static void misc_test3(abts_case *tc, void *data)
     c_uint64_t num;
 
     num = 0x0123456789abcdef;
-    ABTS_TRUE(tc, memcmp(tmp, core_uint64_to_buffer(num, buf, 8), 8) == 0);
+    ABTS_TRUE(tc, memcmp(tmp, core_uint64_to_buffer(num, 8, buf), 8) == 0);
     num = 0x0123456789abcd;
-    ABTS_TRUE(tc, memcmp(tmp, core_uint64_to_buffer(num, buf, 7), 7) == 0);
+    ABTS_TRUE(tc, memcmp(tmp, core_uint64_to_buffer(num, 7, buf), 7) == 0);
     num = 0x0123456789ab;
-    ABTS_TRUE(tc, memcmp(tmp, core_uint64_to_buffer(num, buf, 6), 6) == 0);
+    ABTS_TRUE(tc, memcmp(tmp, core_uint64_to_buffer(num, 6, buf), 6) == 0);
     num = 0x0123456789;
-    ABTS_TRUE(tc, memcmp(tmp, core_uint64_to_buffer(num, buf, 5), 5) == 0);
+    ABTS_TRUE(tc, memcmp(tmp, core_uint64_to_buffer(num, 5, buf), 5) == 0);
     num = 0x01234567;
-    ABTS_TRUE(tc, memcmp(tmp, core_uint64_to_buffer(num, buf, 4), 4) == 0);
+    ABTS_TRUE(tc, memcmp(tmp, core_uint64_to_buffer(num, 4, buf), 4) == 0);
     num = 0x012345;
-    ABTS_TRUE(tc, memcmp(tmp, core_uint64_to_buffer(num, buf, 3), 3) == 0);
+    ABTS_TRUE(tc, memcmp(tmp, core_uint64_to_buffer(num, 3, buf), 3) == 0);
     num = 0x0123;
-    ABTS_TRUE(tc, memcmp(tmp, core_uint64_to_buffer(num, buf, 2), 2) == 0);
+    ABTS_TRUE(tc, memcmp(tmp, core_uint64_to_buffer(num, 2, buf), 2) == 0);
     num = 0x01;
-    ABTS_TRUE(tc, memcmp(tmp, core_uint64_to_buffer(num, buf, 1), 1) == 0);
+    ABTS_TRUE(tc, memcmp(tmp, core_uint64_to_buffer(num, 1, buf), 1) == 0);
 }
 
 abts_suite *testmisc(abts_suite *suite)

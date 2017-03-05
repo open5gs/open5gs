@@ -7,6 +7,15 @@
 extern "C" {
 #endif /* __cplusplus */
 
+typedef struct _nas_plmn_t {
+ED2(c_uint8_t mcc_digit2:4;,
+    c_uint8_t mcc_digit1:4;)
+ED2(c_uint8_t mnc_digit3:4;,
+    c_uint8_t mcc_digit3:4;)
+ED2(c_uint8_t mnc_digit2:4;,
+    c_uint8_t mnc_digit1:4;)
+} __attribute__ ((packed)) nas_plmn_t;
+
 CORE_DECLARE(c_int32_t) nas_encode_optional_type(
         pkbuf_t *pkbuf, c_uint8_t type);
 
@@ -26,12 +35,7 @@ CORE_DECLARE(c_int32_t) nas_decode_device_properties(
  * See subclause 10.5.1.3 in 3GPP TS 24.008 [13]
  * O TV 6 */
 typedef struct _nas_location_area_identification_t {
-ED2(c_uint8_t mcc_digit2:4;,
-    c_uint8_t mcc_digit1:4;)
-ED2(c_uint8_t mnc_digit3:4;,
-    c_uint8_t mcc_digit3:4;)
-ED2(c_uint8_t mnc_digit2:4;,
-    c_uint8_t mnc_digit1:4;)
+    nas_plmn_t plmn;
     c_uint16_t lac;
 } __attribute__ ((packed)) nas_location_area_identification_t;
 
@@ -87,12 +91,7 @@ ED5(c_uint8_t spare:2;,
     c_uint8_t odd_even:1;,
     c_uint8_t type_of_identity:3;)
     c_uint8_t mbms_servicec_id[3];
-ED2(c_uint8_t mcc_digit2:4;,
-    c_uint8_t mcc_digit1:4;)
-ED2(c_uint8_t mnc_digit3:4;,
-    c_uint8_t mcc_digit3:4;)
-ED2(c_uint8_t mnc_digit2:4;,
-    c_uint8_t mnc_digit1:4;)
+    nas_plmn_t plmn;
     c_uint8_t mbms_session_identity;
 } __attribute__ ((packed)) nas_mobile_identity_tmgi_t;
 
@@ -166,15 +165,6 @@ CORE_DECLARE(c_int32_t) nas_decode_mobile_station_classmark_3(
  * See subclause 10.5.1.13 in 3GPP TS 24.008 [13].
  * O TLV 5-47 */
 #define NAS_MAX_PLMN 15
-typedef struct _nas_plmn_t {
-ED2(c_uint8_t mcc_digit2:4;,
-    c_uint8_t mcc_digit1:4;)
-ED2(c_uint8_t mnc_digit3:4;,
-    c_uint8_t mcc_digit3:4;)
-ED2(c_uint8_t mnc_digit2:4;,
-    c_uint8_t mnc_digit1:4;)
-} __attribute__ ((packed)) nas_plmn_t;
-
 typedef struct _nas_plmn_list_t {
     c_uint8_t length;
     nas_plmn_t plmn[NAS_MAX_PLMN];
@@ -344,37 +334,13 @@ typedef struct _nas_eps_mobile_identity_guti_t {
 ED3(c_uint8_t spare:4;,
     c_uint8_t odd_even:1;,
     c_uint8_t type_of_identity:3;)
-ED2(c_uint8_t mcc_digit2:4;,
-    c_uint8_t mcc_digit1:4;)
-ED2(c_uint8_t mnc_digit3:4;,
-    c_uint8_t mcc_digit3:4;)
-ED2(c_uint8_t mnc_digit2:4;,
-    c_uint8_t mnc_digit1:4;)
+    nas_plmn_t plmn;
     c_uint16_t mme_group_id;
     c_uint8_t mme_code;
     c_uint32_t m_tmsi;
 } __attribute__ ((packed)) nas_eps_mobile_identity_guti_t;
 
-typedef struct _nas_eps_mobile_identity_imsi_t {
-ED3(c_uint8_t digit1:4;,
-    c_uint8_t odd_even:1;,
-    c_uint8_t type_of_identity:3;)
-ED2(c_uint8_t digit3:4;,
-    c_uint8_t digit2:4;)
-ED2(c_uint8_t digit5:4;,
-    c_uint8_t digit4:4;)
-ED2(c_uint8_t digit7:4;,
-    c_uint8_t digit6:4;)
-ED2(c_uint8_t digit9:4;,
-    c_uint8_t digit8:4;)
-ED2(c_uint8_t digit11:4;,
-    c_uint8_t digit10:4;)
-ED2(c_uint8_t digit13:4;,
-    c_uint8_t digit12:4;)
-ED2(c_uint8_t digit15:4;,
-    c_uint8_t digit14:4;)
-} __attribute__ ((packed)) nas_eps_mobile_identity_imsi_t;
-
+typedef nas_mobile_identity_imsi_t nas_eps_mobile_identity_imsi_t;
 typedef nas_eps_mobile_identity_imsi_t nas_eps_mobile_identity_imei_t;
 
 typedef struct _nas_eps_mobile_identity_t {
@@ -579,12 +545,7 @@ CORE_DECLARE(c_int32_t) nas_decode_tmsi_status(
 /* 9.9.3.32 Tracking area identity
  * O TV 6 */
 typedef struct _nas_tracking_area_identity_t {
-ED2(c_uint8_t mcc_digit2:4;,
-    c_uint8_t mcc_digit1:4;)
-ED2(c_uint8_t mnc_digit3:4;,
-    c_uint8_t mcc_digit3:4;)
-ED2(c_uint8_t mnc_digit2:4;,
-    c_uint8_t mnc_digit1:4;)
+    nas_plmn_t plmn;
     c_uint16_t tac;
 } __attribute__ ((packed)) nas_tracking_area_identity_t;
 
@@ -598,24 +559,11 @@ CORE_DECLARE(c_int32_t) nas_decode_tracking_area_identity(
 #define NAS_TRACKING_AREA_IDENTITY_LIST_ONE_PLMN_CONSECUTIVE_TACS     1
 #define NAS_TRACKING_AREA_IDENTITY_LIST_MANY_PLMNS                    2
 typedef struct _nas_tracking_area_identity_type0 {
-ED2(c_uint8_t mcc_digit2:4;,
-    c_uint8_t mcc_digit1:4;)
-ED2(c_uint8_t mnc_digit3:4;,
-    c_uint8_t mcc_digit3:4;)
-ED2(c_uint8_t mnc_digit2:4;,
-    c_uint8_t mnc_digit1:4;)
+    nas_plmn_t plmn;
     c_uint16_t tac[NAS_MAX_TRACKING_AREA_IDENTITY];
 } __attribute__ ((packed)) nas_tracking_area_identity_type0;
 
-typedef struct _nas_tracking_area_identity_type1 {
-ED2(c_uint8_t mcc_digit2:4;,
-    c_uint8_t mcc_digit1:4;)
-ED2(c_uint8_t mnc_digit3:4;,
-    c_uint8_t mcc_digit3:4;)
-ED2(c_uint8_t mnc_digit2:4;,
-    c_uint8_t mnc_digit1:4;)
-    c_uint16_t tac;
-} __attribute__ ((packed)) nas_tracking_area_identity_type1;
+typedef nas_tracking_area_identity_t nas_tracking_area_identity_type1;
 
 typedef struct _nas_tracking_area_identity_type2 {
     nas_tracking_area_identity_type1 tai[NAS_MAX_TRACKING_AREA_IDENTITY];

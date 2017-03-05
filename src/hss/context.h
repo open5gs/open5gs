@@ -3,6 +3,7 @@
 
 #include "core_list.h"
 #include "core_errno.h"
+#include "3gpp_message.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -10,7 +11,6 @@ extern "C" {
 
 #define SIZE_OF_UE_POOL             128
 
-#define MAX_IMSI_LEN                15
 #define MAX_KEY_LEN                 16
 #define MAX_AMF_LEN                 2
 

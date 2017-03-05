@@ -6,6 +6,7 @@
 #include "core_net.h"
 
 #include "plmn_id.h"
+#include "3gpp_message.h"
 #include "sm.h"
 
 #ifdef __cplusplus
@@ -64,6 +65,8 @@ typedef struct _ue_ctx_t {
 
     c_uint32_t      enb_ue_s1ap_id; /** eNB-UE-S1AP-ID received from eNB */
     c_uint32_t      mme_ue_s1ap_id; /** MME-UE-S1AP-ID received from MME */
+    c_uint8_t       imsi[MAX_IMSI_LEN+1];
+    c_uint8_t       imsi_len;
 
     ue_emm_sm_t     emm_sm;
 

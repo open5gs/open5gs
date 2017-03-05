@@ -3,6 +3,7 @@
 #include "core_debug.h"
 
 #include "nas_message.h"
+#include "nas_conv.h"
 
 #include "sm.h"
 #include "context.h"
@@ -62,7 +63,44 @@ void ue_emm_state_operational(ue_emm_sm_t *s, event_t *e)
             {
                 case NAS_ATTACH_REQUEST:
                 {
-                    d_info("Received ATTACH_REQUEST");
+                    nas_attach_request_t *attach_request = 
+                        &message.emm.attach_request;
+                    nas_eps_mobile_identity_t *eps_mobile_identity =
+                        &attach_request->eps_mobile_identity;
+
+                    switch(eps_mobile_identity->imsi.type_of_identity)
+                    {
+                        case NAS_EPS_MOBILE_IDENTITY_IMSI:
+                        {
+                            c_uint8_t plmn_id[PLMN_ID_LEN];
+
+                            plmn_id_to_buffer(&mme_self()->plmn_id, plmn_id);
+                            if (attach_request->presencemask &
+                                NAS_ATTACH_REQUEST_LAST_VISITED_REGISTERED_TAI_PRESENT)
+                            {
+                                nas_tracking_area_identity_t 
+                                    *last_visited_registered_tai = 
+                                &attach_request->last_visited_registered_tai;
+
+                                nas_plmn_bcd_to_buffer(
+                                    &last_visited_registered_tai->plmn, 
+                                    plmn_id);
+                            }
+
+                            nas_imsi_bcd_to_buffer(
+                                &eps_mobile_identity->imsi, 
+                                eps_mobile_identity->length, 
+                                ue->imsi, &ue->imsi_len);
+                            break;
+                        }
+                        default:
+                        {
+                            d_warn("Not implemented(type:%d)", 
+                                    eps_mobile_identity->imsi.type_of_identity);
+                            
+                            break;
+                        }
+                    }
                     break;
                 }
                 default:

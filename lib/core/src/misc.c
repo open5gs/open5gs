@@ -29,7 +29,7 @@ void *core_ascii_to_hex(char *in, int len, void *out)
     return out;
 }
 
-void *core_uint64_to_buffer(c_uint64_t num, c_uint8_t *buffer, int size)
+void *core_uint64_to_buffer(c_uint64_t num, int size, c_uint8_t *buffer)
 {
     int i;
     for (i = 0; i < size; i++) 

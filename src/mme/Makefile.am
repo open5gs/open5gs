@@ -5,12 +5,14 @@ noinst_LTLIBRARIES = libmme.la
 libmme_la_SOURCES = \
     event.h context.h \
 	s1ap_build.h s1ap_conv.h s1ap_path.h \
+	nas_conv.h \
 	s6a_message.h \
 	sm.h 
 
 nodist_libmme_la_SOURCES = \
     init.c event.c context.c \
 	s1ap_build.c s1ap_conv.c s1ap_path.c \
+	nas_conv.c \
 	s6a_init.c s6a_auth_info.c \
 	mme_sm.c enb_s1ap_sm.c ue_emm_sm.c
 

@@ -122,7 +122,7 @@ status_t tests1ap_build_initial_ue_msg(
         "00004300060000f1 105ba00064400800"
         "00f1101079baf000 86400130";
     
-    *pkbuf = pkbuf_alloc(0, MSG_SDU_SIZE);
+    *pkbuf = pkbuf_alloc(0, MESSAGE_SDU_SIZE);
     if (!(*pkbuf)) return CORE_ERROR;
 
     core_ascii_to_hex(payload, strlen(payload), (*pkbuf)->payload);

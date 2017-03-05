@@ -14,7 +14,7 @@ static void s1ap_sm_test1(abts_case *tc, void *data)
     status_t rv;
     net_sock_t *sock[NUM_OF_TEST_DUPLICATED_ENB];
     pkbuf_t *sendbuf;
-    pkbuf_t *recvbuf = pkbuf_alloc(0, MSG_SDU_SIZE);
+    pkbuf_t *recvbuf = pkbuf_alloc(0, MESSAGE_SDU_SIZE);
     s1ap_message message;
     int rc;
     int i;
@@ -62,7 +62,7 @@ static void s1ap_sm_test2(abts_case *tc, void *data)
     status_t rv;
     net_sock_t *sock[NUM_OF_TEST_ENB];
     pkbuf_t *sendbuf;
-    pkbuf_t *recvbuf = pkbuf_alloc(0, MSG_SDU_SIZE);
+    pkbuf_t *recvbuf = pkbuf_alloc(0, MESSAGE_SDU_SIZE);
     s1ap_message message;
     int rc;
     int i;

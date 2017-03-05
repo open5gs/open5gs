@@ -19,7 +19,7 @@ static void nas_message_test1(abts_case *tc, void *data)
     pkbuf_t *pkbuf;
     status_t rv;
 
-    pkbuf = pkbuf_alloc(0, MSG_SDU_SIZE);
+    pkbuf = pkbuf_alloc(0, MESSAGE_SDU_SIZE);
     ABTS_PTR_NOTNULL(tc, pkbuf);
     core_ascii_to_hex(payload, strlen(payload), pkbuf->payload);
     pkbuf->len = 59;
@@ -64,12 +64,12 @@ static void nas_message_test2(abts_case *tc, void *data)
         NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_1_MM;
     attach_accept->t3412_value.timer_value = 3;
     attach_accept->tai_list.length = 6;
-    attach_accept->tai_list.type0.mcc_digit1 = 4;
-    attach_accept->tai_list.type0.mcc_digit2 = 1;
-    attach_accept->tai_list.type0.mcc_digit3 = 7;
-    attach_accept->tai_list.type0.mnc_digit1 = 9;
-    attach_accept->tai_list.type0.mnc_digit2 = 9;
-    attach_accept->tai_list.type0.mnc_digit3 = 0xf;
+    attach_accept->tai_list.type0.plmn.mcc_digit1 = 4;
+    attach_accept->tai_list.type0.plmn.mcc_digit2 = 1;
+    attach_accept->tai_list.type0.plmn.mcc_digit3 = 7;
+    attach_accept->tai_list.type0.plmn.mnc_digit1 = 9;
+    attach_accept->tai_list.type0.plmn.mnc_digit2 = 9;
+    attach_accept->tai_list.type0.plmn.mnc_digit3 = 0xf;
     attach_accept->tai_list.type0.tac[0] = 12345;
     attach_accept->esm_message_container.length = sizeof(esm_buffer);
     attach_accept->esm_message_container.buffer = 
@@ -78,24 +78,24 @@ static void nas_message_test2(abts_case *tc, void *data)
     attach_accept->presencemask |= NAS_ATTACH_ACCEPT_GUTI_PRESENT;
     attach_accept->guti.length = 11;
     attach_accept->guti.guti.type_of_identity = NAS_EPS_MOBILE_IDENTITY_GUTI;
-    attach_accept->guti.guti.mcc_digit1 = 4;
-    attach_accept->guti.guti.mcc_digit2 = 1;
-    attach_accept->guti.guti.mcc_digit3 = 7;
-    attach_accept->guti.guti.mnc_digit1 = 9;
-    attach_accept->guti.guti.mnc_digit2 = 9;
-    attach_accept->guti.guti.mnc_digit3 = 0xf;
+    attach_accept->guti.guti.plmn.mcc_digit1 = 4;
+    attach_accept->guti.guti.plmn.mcc_digit2 = 1;
+    attach_accept->guti.guti.plmn.mcc_digit3 = 7;
+    attach_accept->guti.guti.plmn.mnc_digit1 = 9;
+    attach_accept->guti.guti.plmn.mnc_digit2 = 9;
+    attach_accept->guti.guti.plmn.mnc_digit3 = 0xf;
     attach_accept->guti.guti.mme_group_id = 9029;
     attach_accept->guti.guti.mme_code = 225;
     attach_accept->guti.guti.m_tmsi = 0x00000456;
 
     attach_accept->presencemask |= 
         NAS_ATTACH_ACCEPT_LOCATION_AREA_IDENTIFICATION_PRESENT;
-    attach_accept->location_area_identification.mcc_digit1 = 0;
-    attach_accept->location_area_identification.mcc_digit2 = 0;
-    attach_accept->location_area_identification.mcc_digit3 = 1;
-    attach_accept->location_area_identification.mnc_digit1 = 0;
-    attach_accept->location_area_identification.mnc_digit2 = 2;
-    attach_accept->location_area_identification.mnc_digit3 = 0xf;
+    attach_accept->location_area_identification.plmn.mcc_digit1 = 0;
+    attach_accept->location_area_identification.plmn.mcc_digit2 = 0;
+    attach_accept->location_area_identification.plmn.mcc_digit3 = 1;
+    attach_accept->location_area_identification.plmn.mnc_digit1 = 0;
+    attach_accept->location_area_identification.plmn.mnc_digit2 = 2;
+    attach_accept->location_area_identification.plmn.mnc_digit3 = 0xf;
     attach_accept->location_area_identification.lac = 0xfffd;
 
     attach_accept->presencemask |= NAS_ATTACH_ACCEPT_MS_IDENTITY_PRESENT;
@@ -129,7 +129,7 @@ static void nas_message_test3(abts_case *tc, void *data)
     pkbuf_t *pkbuf;
     status_t rv;
 
-    pkbuf = pkbuf_alloc(0, MSG_SDU_SIZE);
+    pkbuf = pkbuf_alloc(0, MESSAGE_SDU_SIZE);
     ABTS_PTR_NOTNULL(tc, pkbuf);
     core_ascii_to_hex(payload, strlen(payload), pkbuf->payload);
     pkbuf->len = 7;

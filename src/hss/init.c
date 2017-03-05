@@ -74,7 +74,7 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
     core_generate_random_bytes(ue->rand, MAX_KEY_LEN);
     milenage_opc(ue->k, ue->op, ue->opc);
     milenage_generate(ue->opc, ue->amf, ue->k, 
-        core_uint64_to_buffer(ue->sqn, sqn, MAX_SQN_LEN), ue->rand, 
+        core_uint64_to_buffer(ue->sqn, MAX_SQN_LEN, sqn), ue->rand, 
         autn, ik, ck, ak, xres, &xres_len);
     derive_kasme(ck, ik, hdr->avp_value->os.data, sqn, ak, kasme);
 

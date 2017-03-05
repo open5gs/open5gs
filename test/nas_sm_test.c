@@ -28,7 +28,7 @@ static void nas_sm_test1(abts_case *tc, void *data)
     pkbuf_free(sendbuf);
 
     /* Receive S1-Setup Response */
-    recvbuf = pkbuf_alloc(0, MSG_SDU_SIZE);
+    recvbuf = pkbuf_alloc(0, MESSAGE_SDU_SIZE);
     rc = tests1ap_enb_read(sock, recvbuf);
     ABTS_INT_NEQUAL(tc, 0, rc);
     rv = s1ap_decode_pdu(&message, recvbuf);
@@ -45,7 +45,7 @@ static void nas_sm_test1(abts_case *tc, void *data)
 
     /* Receive XXXX */
 #if 0
-    recvbuf = pkbuf_alloc(0, MSG_SDU_SIZE);
+    recvbuf = pkbuf_alloc(0, MESSAGE_SDU_SIZE);
     rc = tests1ap_enb_read(sock, recvbuf);
     ABTS_INT_NEQUAL(tc, 0, rc);
     rv = s1ap_decode_pdu(&message, recvbuf);
