@@ -1,8 +1,6 @@
-#include "core.h"
-#include "core_errno.h"
-#include "core_general.h"
 #include "core_debug.h"
 #include "core_pkbuf.h"
+#include "core_lib.h"
 
 #include "testutil.h"
 
@@ -11,9 +9,11 @@
 static void nas_message_test1(abts_case *tc, void *data)
 {
     /* Attach Request */
-    char *payload[] = {
-        "\x17\xdf\x67\x5a\xa8\x05\x07\x41\x02\x0b\xf6\x00\xf1\x10\x00\x02\x01\x03\x00\x03\xe6\x05\xf0\x70\x00\x00\x10\x00\x05\x02\x15\xd0\x11\xd1\x52\x00\xf1\x10\x30\x39\x5c\x0a\x00\x31\x03\xe5\xe0\x34\x90\x11\x03\x57\x58\xa6\x5d\x01\x00\xe0\xc1"
-    };
+    char *payload = 
+        "17df675aa8050741020bf600f1100002"
+        "01030003e605f07000001000050215d0"
+        "11d15200f11030395c0a003103e5e034"
+        "9011035758a65d0100e0c1";
 
     nas_message_t message;
     pkbuf_t *pkbuf;
@@ -21,8 +21,8 @@ static void nas_message_test1(abts_case *tc, void *data)
 
     pkbuf = pkbuf_alloc(0, MSG_SDU_SIZE);
     ABTS_PTR_NOTNULL(tc, pkbuf);
+    core_ascii_to_hex(payload, strlen(payload), pkbuf->payload);
     pkbuf->len = 59;
-    memcpy(pkbuf->payload, payload[0], pkbuf->len);
 
     rv = nas_decode_pdu(&message, pkbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -33,13 +33,21 @@ static void nas_message_test1(abts_case *tc, void *data)
 static void nas_message_test2(abts_case *tc, void *data)
 {
     /* Attach Accept */
-    char *payload[] = {
-        "\x07\x42\x02\x23\x06\x00\x14\xf7\x99\x30\x39\x00\x32\x52\x01\xc1\x01\x09\x09\x08\x69\x6e\x74\x65\x72\x6e\x65\x74\x05\x01\x0a\xe1\x00\x0a\x27\x1b\x80\x80\x21\x10\x02\x02\x00\x10\x81\x06\xc0\xa8\xa8\x01\x83\x06\xc0\xa8\xa8\x01\x00\x0d\x04\xc0\xa8\xa8\x01\x50\x0b\xf6\x14\xf7\x99\x23\x45\xe1\x00\x00\x04\x56\x13\x00\xf1\x20\xff\xfd\x23\x05\xf4\x00\xe1\x02\xd4\x64\x01\x23"
-    };
+    char *payload = 
+        "07420223060014f799303900325201c1"
+        "01090908696e7465726e657405010ae1"
+        "000a271b80802110020200108106c0a8"
+        "a8018306c0a8a801000d04c0a8a80150"
+        "0bf614f7992345e1000004561300f120"
+        "fffd2305f400e102d4640123";
+    char buffer[92];
 
-    char *esm_payload[] = {
-        "\x52\x01\xc1\x01\x09\x09\x08\x69\x6e\x74\x65\x72\x6e\x65\x74\x05\x01\x0a\xe1\x00\x0a\x27\x1b\x80\x80\x21\x10\x02\x02\x00\x10\x81\x06\xc0\xa8\xa8\x01\x83\x06\xc0\xa8\xa8\x01\x00\x0d\x04\xc0\xa8\xa8\x01"
-    };
+    char *esm_payload = 
+        "5201c101090908696e7465726e657405"
+        "010ae1000a271b808021100202001081"
+        "06c0a8a8018306c0a8a801000d04c0a8"
+        "a801";
+    char esm_buffer[50];
 
     nas_message_t message;
     nas_attach_accept_t *attach_accept = &message.emm.attach_accept;
@@ -63,8 +71,9 @@ static void nas_message_test2(abts_case *tc, void *data)
     attach_accept->tai_list.u.type0.mnc_digit2 = 9;
     attach_accept->tai_list.u.type0.mnc_digit3 = 0xf;
     attach_accept->tai_list.u.type0.tac[0] = 12345;
-    attach_accept->esm_message_container.length = 50;
-    attach_accept->esm_message_container.buffer = (c_uint8_t*)esm_payload[0];
+    attach_accept->esm_message_container.length = sizeof(esm_buffer);
+    attach_accept->esm_message_container.buffer = 
+        core_ascii_to_hex(esm_payload, strlen(esm_payload), esm_buffer);
 
     attach_accept->presencemask |= NAS_ATTACH_ACCEPT_GUTI_PRESENT;
     attach_accept->guti.length = 11;
@@ -104,16 +113,17 @@ static void nas_message_test2(abts_case *tc, void *data)
 
     rv = nas_encode_pdu(&pkbuf, &message);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
-    ABTS_TRUE(tc, memcmp(pkbuf->payload, payload[0], pkbuf->len) == 0);
+    ABTS_INT_EQUAL(tc, sizeof(buffer), pkbuf->len);
+    ABTS_TRUE(tc, memcmp(
+            core_ascii_to_hex(payload, strlen(payload), buffer),
+            pkbuf->payload, pkbuf->len) == 0);
 
     pkbuf_free(pkbuf);
 }
 
 static void nas_message_test3(abts_case *tc, void *data)
 {
-    char *payload[] = {
-        "\x07\x43\x00\x03\x52\x00\xc2"
-    };
+    char *payload = "074300035200c2";
 
     nas_message_t message;
     pkbuf_t *pkbuf;
@@ -121,8 +131,8 @@ static void nas_message_test3(abts_case *tc, void *data)
 
     pkbuf = pkbuf_alloc(0, MSG_SDU_SIZE);
     ABTS_PTR_NOTNULL(tc, pkbuf);
+    core_ascii_to_hex(payload, strlen(payload), pkbuf->payload);
     pkbuf->len = 7;
-    memcpy(pkbuf->payload, payload[0], pkbuf->len);
 
     rv = nas_decode_pdu(&message, pkbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -133,9 +143,8 @@ static void nas_message_test3(abts_case *tc, void *data)
 static void nas_message_test4(abts_case *tc, void *data)
 {
     /* Attach Reject */
-    char *payload[] = {
-        "\x07\x44\x11"
-    };
+    char *payload = "074411";
+    char buffer[3];
 
     nas_message_t message;
     nas_attach_reject_t *attach_reject = &message.emm.attach_reject;
@@ -148,9 +157,14 @@ static void nas_message_test4(abts_case *tc, void *data)
     message.h.message_type = NAS_ATTACH_REJECT;
     attach_reject->emm_cause = NAS_EMM_CAUSE_NETWORK_FAILURE; 
 
+    d_msg_to(D_MSG_TO_STDOUT, 1);
+
     rv = nas_encode_pdu(&pkbuf, &message);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
-    ABTS_TRUE(tc, memcmp(pkbuf->payload, payload[0], pkbuf->len) == 0);
+    ABTS_INT_EQUAL(tc, sizeof(buffer), pkbuf->len);
+    ABTS_TRUE(tc, memcmp(
+            core_ascii_to_hex(payload, strlen(payload), buffer),
+            pkbuf->payload, pkbuf->len) == 0);
 
     pkbuf_free(pkbuf);
 }
@@ -162,6 +176,7 @@ abts_suite *test_nas_message(abts_suite *suite)
     abts_run_test(suite, nas_message_test1, NULL);
     abts_run_test(suite, nas_message_test2, NULL);
     abts_run_test(suite, nas_message_test3, NULL);
+    abts_run_test(suite, nas_message_test4, NULL);
 
     return suite;
 }

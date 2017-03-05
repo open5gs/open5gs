@@ -278,6 +278,7 @@ status_t nas_encode_pdu(pkbuf_t **pkbuf, nas_message_t *message)
             size = nas_encode_attach_reject(*pkbuf, message);
             d_assert(size >= 0, return CORE_ERROR, "decode error");
             encoded += size;
+            break;
         case NAS_DETACH_REQUEST:
         case NAS_DETACH_ACCEPT:
         case NAS_TRACKING_AREA_UPDATE_REQUEST:
