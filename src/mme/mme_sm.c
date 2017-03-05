@@ -94,7 +94,9 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
         case EVT_ENB_S1AP_INF:
         {
             net_sock_t *sock = (net_sock_t *)event_get_param1(e);
+            pkbuf_t *recvbuf = (pkbuf_t *)event_get_param2(e);
             d_assert(sock, break, "Null param");
+            d_assert(recvbuf, break, "Null param");
 
             enb_ctx_t *enb = mme_ctx_enb_find_by_sock(sock);
             if (enb)
@@ -107,6 +109,8 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
                 d_error("eNB context is not created[%s]",
                         INET_NTOP(&sock->remote.sin_addr.s_addr, buf));
             }
+
+            pkbuf_free(recvbuf);
             break;
         }
         case EVT_LO_ENB_S1AP_CONNREFUSED:
@@ -149,8 +153,6 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
 
     /* If event was packet type, its buffer allocated by data-plane should
      * be freed here */
-    if (event_is_msg(e))
-        pkbuf_free(event_get_msg(e));
 }
 
 void mme_state_exception(mme_sm_t *s, event_t *e)

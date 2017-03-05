@@ -71,7 +71,8 @@ void* event_timer_expire_func(
     int r;
 
     d_assert(queue_id, return NULL, "Null param");
-    event_set(&e, event, param);
+    event_set(&e, event);
+    event_set_param1(&e, param);
 
     r = msgq_send(queue_id, (const char*)&e, EVENT_SIZE);
     if (r <= 0)
@@ -134,27 +135,22 @@ char* event_get_name(event_t *e)
     if (e == NULL)
         return FSM_NAME_INIT_SIG;
 
-    if (event_get(e) < EVT_MSG_BASE)
+    switch (event_get(e))
     {
-        switch (event_get(e))
-        {
-            case FSM_ENTRY_SIG: return FSM_NAME_ENTRY_SIG;
-            case FSM_EXIT_SIG: return FSM_NAME_EXIT_SIG;
+        case FSM_ENTRY_SIG: 
+            return FSM_NAME_ENTRY_SIG;
+        case FSM_EXIT_SIG: 
+            return FSM_NAME_EXIT_SIG;
 
-            case EVT_LO_ENB_S1AP_ACCEPT: return EVT_NAME_LO_ENB_S1AP_ACCEPT;
-            case EVT_LO_ENB_S1AP_CONNREFUSED: 
-                   return EVT_NAME_LO_ENB_S1AP_CONNREFUSED;
+        case EVT_LO_ENB_S1AP_ACCEPT: 
+               return EVT_NAME_LO_ENB_S1AP_ACCEPT;
+        case EVT_LO_ENB_S1AP_CONNREFUSED: 
+               return EVT_NAME_LO_ENB_S1AP_CONNREFUSED;
+        case EVT_ENB_S1AP_INF: 
+               return EVT_NAME_ENB_S1AP_INF;
 
-            default: return EVT_NAME_UNKNOWN;
-        }
-    }
-    else if (event_get(e) < EVT_MSG_TOP)
-    {
-        switch (event_get(e))
-        {
-            case EVT_ENB_S1AP_INF: return EVT_NAME_ENB_S1AP_INF;
-            default: return EVT_NAME_UNKNOWN;
-        }
+        default: 
+           break;
     }
 
     return EVT_NAME_UNKNOWN;

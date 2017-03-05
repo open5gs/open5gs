@@ -55,7 +55,7 @@ void enb_s1ap_state_operational(enb_s1ap_sm_t *s, event_t *e)
         {
             s1ap_message message;
             status_t rv;
-            pkbuf_t *recvbuf = event_get_msg(e);
+            pkbuf_t *recvbuf = (pkbuf_t *)event_get_param2(e);
 
             rv = s1ap_decode_pdu(&message, recvbuf);
             if (rv != CORE_OK) 

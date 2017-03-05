@@ -15,36 +15,14 @@ extern "C" {
 typedef enum {
     EVT_BASE = FSM_USER_SIG,
 
-    EVT_LO_BASE,
     EVT_LO_ENB_S1AP_ACCEPT,
     EVT_LO_ENB_S1AP_CONNREFUSED,
-    EVT_LO_TOP,
 
-    EVT_TM_BASE,
-    EVT_TM_TOP,
-
-    EVT_MSG_BASE,
     EVT_ENB_S1AP_INF,
-    EVT_MSG_TOP,
     
-    EVT_GTP_BASE,
-    EVT_GTP_TOP,
-
     EVT_TOP,
 
 } event_e;
-
-typedef struct {
-    int dummy;
-} local_event_t;
-
-typedef struct {
-    int dummy;
-} timer_event_t;
-
-typedef struct {
-    pkbuf_t *pkb;
-} msg_event_t;
 
 typedef struct {
     fsm_event_t event;
@@ -52,29 +30,12 @@ typedef struct {
     c_uintptr_t param2;
     c_uintptr_t param3;
     c_uintptr_t param4;
-    union {
-        local_event_t l;
-        timer_event_t t;
-        msg_event_t m;
-    } u;
 } event_t;
 
 #define EVENT_SIZE sizeof(event_t)
 
-#define event_is_local(__ptr_e) \
-    ((__ptr_e)->event >= EVT_LO_BASE && (__ptr_e)->event <= EVT_LO_TOP)
-
-#define event_is_timer(__ptr_e) \
-    ((__ptr_e)->event >= EVT_TM_BASE && (__ptr_e)->event <= EVT_TM_TOP)
-
-#define event_is_msg(__ptr_e) \
-    ((__ptr_e)->event >= EVT_MSG_BASE && (__ptr_e)->event <= EVT_MSG_TOP)
-
-#define event_is_gtp(__ptr_e) \
-    ((__ptr_e)->event >= EVT_GTP_BASE && (__ptr_e)->event <= EVT_GTP_TOP)
-
-#define event_set(__ptr_e, __evnt, __param) \
-    ((__ptr_e)->event = (__evnt), (__ptr_e)->param1 = (__param))
+#define event_set(__ptr_e, __evnt) \
+    ((__ptr_e)->event = (__evnt))
 
 #define event_get(__ptr_e) \
     ((__ptr_e)->event)
@@ -103,13 +64,6 @@ typedef struct {
 
 #define event_get_param4(__ptr_e) \
     ((__ptr_e)->param4)
-
-#define event_set_msg(__ptr_e, __p_pkb) \
-    (event_is_msg(__ptr_e) ? \
-     (((__ptr_e)->u.m.pkb = (__p_pkb)), \
-      CORE_OK) : CORE_ERROR)
-
-#define event_get_msg(__ptr_e) ((__ptr_e)->u.m.pkb)
 
 /**
  * Create event message queue
