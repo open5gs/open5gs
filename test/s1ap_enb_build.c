@@ -19,19 +19,18 @@ status_t s1ap_build_setup_req(pkbuf_t **pkbuf, c_uint32_t enb_id)
 
     ies = &message.msg.s1ap_S1SetupRequestIEs;
 
-    ies->global_ENB_ID.eNB_ID.present = S1ap_ENB_ID_PR_macroENB_ID;
-    s1ap_conv_macro_enb_id_to_bit_string(enb_id, 
-         &ies->global_ENB_ID.eNB_ID.choice.macroENB_ID);
-    s1ap_conv_plmn_id_to_tbcd_string(
+    s1ap_uint32_to_ENB_ID(S1ap_ENB_ID_PR_macroENB_ID, enb_id, 
+            &ies->global_ENB_ID.eNB_ID);
+    s1ap_plmn_id_to_TBCD_STRING(
         &mme_self()->plmn_id, &ies->global_ENB_ID.pLMNidentity);
 
     supportedTA = (S1ap_SupportedTAs_Item_t *)
         core_calloc(1, sizeof(S1ap_SupportedTAs_Item_t));
-    s1ap_conv_uint16_to_octet_string(
+    s1ap_uint16_to_OCTET_STRING(
             mme_self()->tracking_area_code, &supportedTA->tAC);
     plmnIdentity = (S1ap_PLMNidentity_t *)
         core_calloc(1, sizeof(S1ap_PLMNidentity_t));
-    s1ap_conv_plmn_id_to_tbcd_string(
+    s1ap_plmn_id_to_TBCD_STRING(
         &mme_self()->plmn_id, plmnIdentity);
     ASN_SEQUENCE_ADD(&supportedTA->broadcastPLMNs, plmnIdentity);
 

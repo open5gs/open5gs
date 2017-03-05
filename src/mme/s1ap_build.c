@@ -34,7 +34,7 @@ status_t s1ap_build_setup_rsp(pkbuf_t **pkbuf)
             plmnIdentity = (S1ap_PLMNidentity_t *)
                 core_calloc(srvd_gummei->num_of_plmn_id, 
                     sizeof(S1ap_PLMNidentity_t));
-            s1ap_conv_plmn_id_to_tbcd_string(
+            s1ap_plmn_id_to_TBCD_STRING(
                 &srvd_gummei->plmn_id[j], plmnIdentity);
             ASN_SEQUENCE_ADD(&servedGUMMEI->servedPLMNs, plmnIdentity);
         }
@@ -44,7 +44,7 @@ status_t s1ap_build_setup_rsp(pkbuf_t **pkbuf)
             mmeGroupId = (S1ap_MME_Group_ID_t *)
                 core_calloc(srvd_gummei->num_of_mme_gid, 
                         sizeof(S1ap_MME_Group_ID_t));
-            s1ap_conv_uint16_to_octet_string(
+            s1ap_uint16_to_OCTET_STRING(
                 srvd_gummei->mme_gid[j], mmeGroupId);
             ASN_SEQUENCE_ADD(&servedGUMMEI->servedGroupIDs, mmeGroupId);
         }
@@ -54,7 +54,7 @@ status_t s1ap_build_setup_rsp(pkbuf_t **pkbuf)
             mmeCode = (S1ap_MME_Code_t *)
                 core_calloc(srvd_gummei->num_of_mme_code, 
                         sizeof(S1ap_MME_Code_t));
-            s1ap_conv_uint8_to_octet_string(
+            s1ap_uint8_to_OCTET_STRING(
                 srvd_gummei->mme_code[j], mmeCode);
             ASN_SEQUENCE_ADD(&servedGUMMEI->servedMMECs, mmeCode);
         }
