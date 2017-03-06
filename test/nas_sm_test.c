@@ -12,7 +12,7 @@ static void nas_sm_test1(abts_case *tc, void *data)
     net_sock_t *sock;
     pkbuf_t *sendbuf;
     pkbuf_t *recvbuf;
-    s1ap_message message;
+    s1ap_message_t message;
     int rc;
     int i;
 

@@ -252,7 +252,7 @@ for key in iesDefs:
 
     f.write("} %s_t;\n\n" % (re.sub('-', '_', key)))
 
-f.write("typedef struct %s_message_s {\n" % (fileprefix))
+f.write("typedef struct _%s_message_t {\n" % (fileprefix))
 f.write("    %s_ProcedureCode_t procedureCode;\n" % (fileprefix_first_upper))
 f.write("    %s_Criticality_t   criticality;\n" % (fileprefix_first_upper))
 f.write("    uint8_t            direction;\n")
@@ -267,7 +267,7 @@ for message in messageList:
         continue
     f.write("        %s_t %s;\n" % (re.sub('-', '_', message), lowerFirstCamelWord(re.sub('-', '_', message))))
 f.write("    };\n")
-f.write("} %s_message;\n\n" % (fileprefix))
+f.write("} %s_message_t;\n\n" % (fileprefix))
 
 for key in iesDefs:
     if key in ieofielist.values():
@@ -353,7 +353,7 @@ for key in iesDefs:
         f.write("asn_enc_rval_t %s_xer_print_%s(\n" % (fileprefix, firstlower.lower()))
         f.write("    asn_app_consume_bytes_f *cb,\n")
         f.write("    void *app_key,\n")
-        f.write("    %s_message *message_p);\n\n" % (fileprefix))
+        f.write("    %s_message_t *message_p);\n\n" % (fileprefix))
 
 f.write("int %s_xer__print2sp(const void *buffer, size_t size, void *app_key);\n\n" % (fileprefix.lower()))
 f.write("int %s_xer__print2fp(const void *buffer, size_t size, void *app_key);\n\n" % (fileprefix.lower()))
@@ -794,7 +794,7 @@ for (key, value) in iesDefs.items():
         f.write("    int i;\n")
         f.write("    asn_enc_rval_t er;\n")
     else:
-        f.write("    %s_message *message_p)\n{\n" % (fileprefix))
+        f.write("    %s_message_t *message_p)\n{\n" % (fileprefix))
         f.write("    %s_t *%s;\n" % (re.sub('-', '_', key), iesStructName))
         f.write("    asn_enc_rval_t er;\n")
         #f.write("    void *app_key = (void *)file;\n")

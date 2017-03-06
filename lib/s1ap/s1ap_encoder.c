@@ -6,31 +6,31 @@
 #include "s1ap_message.h"
 
 static inline int s1ap_encode_initiating_message(
-    s1ap_message *message_p, pkbuf_t *pkbuf);
+    s1ap_message_t *message_p, pkbuf_t *pkbuf);
 static inline int s1ap_encode_successfull_outcome(
-    s1ap_message *message_p, pkbuf_t *pkbuf);
+    s1ap_message_t *message_p, pkbuf_t *pkbuf);
 static inline int s1ap_encode_unsuccessfull_outcome(
-    s1ap_message *message_p, pkbuf_t *pkbuf);
+    s1ap_message_t *message_p, pkbuf_t *pkbuf);
 
 static inline int s1ap_encode_initial_context_setup_request(
-    s1ap_message *message_p, pkbuf_t *pkbuf);
+    s1ap_message_t *message_p, pkbuf_t *pkbuf);
 static inline int s1ap_encode_s1setup_request(
-    s1ap_message *message_p, pkbuf_t *pkbuf);
+    s1ap_message_t *message_p, pkbuf_t *pkbuf);
 static inline int s1ap_encode_s1setup_response(
-    s1ap_message *message_p, pkbuf_t *pkbuf);
+    s1ap_message_t *message_p, pkbuf_t *pkbuf);
 static inline int s1ap_encode_s1setup_failure(
-    s1ap_message *message_p, pkbuf_t *pkbuf);
+    s1ap_message_t *message_p, pkbuf_t *pkbuf);
 static inline int s1ap_encode_downlink_nas_transport(
-  s1ap_message *message_p, pkbuf_t *pkbuf);
+  s1ap_message_t *message_p, pkbuf_t *pkbuf);
 static inline int s1ap_encode_ue_context_release_command(
-  s1ap_message *message_p, pkbuf_t *pkbuf);
+  s1ap_message_t *message_p, pkbuf_t *pkbuf);
 
 static void s1ap_encode_xer_print_message(
     asn_enc_rval_t (*func)(asn_app_consume_bytes_f *cb,
-    void *app_key, s1ap_message *message_p), 
-    asn_app_consume_bytes_f *cb, s1ap_message *message_p);
+    void *app_key, s1ap_message_t *message_p), 
+    asn_app_consume_bytes_f *cb, s1ap_message_t *message_p);
 
-int s1ap_encode_pdu(pkbuf_t **pkb, s1ap_message *message_p)
+int s1ap_encode_pdu(pkbuf_t **pkb, s1ap_message_t *message_p)
 {
     int encoded = -1;
 
@@ -72,7 +72,7 @@ int s1ap_encode_pdu(pkbuf_t **pkb, s1ap_message *message_p)
 }
 
 static inline int s1ap_encode_initiating_message(
-    s1ap_message *message_p, pkbuf_t *pkbuf)
+    s1ap_message_t *message_p, pkbuf_t *pkbuf)
 {
     int ret = -1;
     switch (message_p->procedureCode) 
@@ -112,7 +112,7 @@ static inline int s1ap_encode_initiating_message(
 }
 
 static inline int s1ap_encode_successfull_outcome(
-    s1ap_message *message_p, pkbuf_t *pkbuf)
+    s1ap_message_t *message_p, pkbuf_t *pkbuf)
 {
     int ret = -1;
     switch (message_p->procedureCode) 
@@ -133,7 +133,7 @@ static inline int s1ap_encode_successfull_outcome(
 }
 
 static inline int s1ap_encode_unsuccessfull_outcome(
-    s1ap_message *message_p, pkbuf_t *pkbuf)
+    s1ap_message_t *message_p, pkbuf_t *pkbuf)
 {
     int ret = -1;
     switch (message_p->procedureCode) 
@@ -155,7 +155,7 @@ static inline int s1ap_encode_unsuccessfull_outcome(
 }
 
 static inline int s1ap_encode_initial_context_setup_request(
-        s1ap_message *message_p, pkbuf_t *pkbuf)
+        s1ap_message_t *message_p, pkbuf_t *pkbuf)
 {
     asn_enc_rval_t enc_ret = {0};
 
@@ -195,7 +195,7 @@ static inline int s1ap_encode_initial_context_setup_request(
 }
 
 static inline int s1ap_encode_s1setup_request(
-        s1ap_message *message_p, pkbuf_t *pkbuf)
+        s1ap_message_t *message_p, pkbuf_t *pkbuf)
 {
     asn_enc_rval_t enc_ret = {0};
 
@@ -232,7 +232,7 @@ static inline int s1ap_encode_s1setup_request(
 }
 
 static inline int s1ap_encode_s1setup_response(
-        s1ap_message *message_p, pkbuf_t *pkbuf)
+        s1ap_message_t *message_p, pkbuf_t *pkbuf)
 {
     asn_enc_rval_t enc_ret = {0};
 
@@ -270,7 +270,7 @@ static inline int s1ap_encode_s1setup_response(
 }
 
 static inline int s1ap_encode_s1setup_failure(
-    s1ap_message *message_p, pkbuf_t *pkbuf)
+    s1ap_message_t *message_p, pkbuf_t *pkbuf)
 {
     asn_enc_rval_t enc_ret = {0};
 
@@ -308,7 +308,7 @@ static inline int s1ap_encode_s1setup_failure(
 }
 
 static inline int s1ap_encode_downlink_nas_transport(
-        s1ap_message *message_p, pkbuf_t *pkbuf)
+        s1ap_message_t *message_p, pkbuf_t *pkbuf)
 {
     asn_enc_rval_t enc_ret = {0};
 
@@ -346,7 +346,7 @@ static inline int s1ap_encode_downlink_nas_transport(
 }
 
 static inline int s1ap_encode_ue_context_release_command(
-      s1ap_message *message_p, pkbuf_t *pkbuf)
+      s1ap_message_t *message_p, pkbuf_t *pkbuf)
 {
     asn_enc_rval_t enc_ret = {0};
 
@@ -387,8 +387,8 @@ static inline int s1ap_encode_ue_context_release_command(
 
 static void s1ap_encode_xer_print_message(
     asn_enc_rval_t (*func)(asn_app_consume_bytes_f *cb,
-    void *app_key, s1ap_message *message_p), 
-    asn_app_consume_bytes_f *cb, s1ap_message *message_p)
+    void *app_key, s1ap_message_t *message_p), 
+    asn_app_consume_bytes_f *cb, s1ap_message_t *message_p)
 {
     if (g_trace_mask && TRACE_MODULE >= 3) 
     {

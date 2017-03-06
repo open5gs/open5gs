@@ -67,12 +67,12 @@ status_t tests1ap_build_setup_req(pkbuf_t **pkbuf, c_uint32_t enb_id)
 {
     int erval = -1;
 
-    s1ap_message message;
+    s1ap_message_t message;
     S1ap_S1SetupRequestIEs_t *ies;
     S1ap_PLMNidentity_t *plmnIdentity;
     S1ap_SupportedTAs_Item_t *supportedTA;
 
-    memset(&message, 0, sizeof(s1ap_message));
+    memset(&message, 0, sizeof(s1ap_message_t));
 
     ies = &message.s1ap_S1SetupRequestIEs;
 

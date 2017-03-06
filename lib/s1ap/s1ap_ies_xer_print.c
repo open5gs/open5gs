@@ -30,7 +30,7 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-03-05 11:42:09.827516 by acetcom
+ * Created on: 2017-03-06 09:01:40.391167 by acetcom
  * from ['S1AP-PDU.asn']
  ******************************************************************************/
 #include <stdlib.h>
@@ -107,7 +107,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabfailedtosetuplisthoreqack(
 asn_enc_rval_t s1ap_xer_print_s1ap_deactivatetrace(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_DeactivateTraceIEs_t *s1ap_DeactivateTraceIEs;
     asn_enc_rval_t er;
@@ -141,7 +141,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabreleaselistbearerrelcomp(
 asn_enc_rval_t s1ap_xer_print_s1ap_enbdirectinformationtransfer(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_ENBDirectInformationTransferIEs_t *s1ap_ENBDirectInformationTransferIEs;
     asn_enc_rval_t er;
@@ -160,7 +160,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_enbdirectinformationtransfer(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabreleaseresponse(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_E_RABReleaseResponseIEs_t *s1ap_E_RABReleaseResponseIEs;
     asn_enc_rval_t er;
@@ -189,7 +189,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabreleaseresponse(
 asn_enc_rval_t s1ap_xer_print_s1ap_uplinknonueassociatedlppatransport(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_UplinkNonUEAssociatedLPPaTransport_IEs_t *s1ap_UplinkNonUEAssociatedLPPaTransport_IEs;
     asn_enc_rval_t er;
@@ -222,7 +222,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobesetuplisthoreq(
 asn_enc_rval_t s1ap_xer_print_s1ap_tracestart(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_TraceStartIEs_t *s1ap_TraceStartIEs;
     asn_enc_rval_t er;
@@ -243,7 +243,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_tracestart(
 asn_enc_rval_t s1ap_xer_print_s1ap_writereplacewarningresponse(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_WriteReplaceWarningResponseIEs_t *s1ap_WriteReplaceWarningResponseIEs;
     asn_enc_rval_t er;
@@ -269,7 +269,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_writereplacewarningresponse(
 asn_enc_rval_t s1ap_xer_print_s1ap_handovercancel(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_HandoverCancelIEs_t *s1ap_HandoverCancelIEs;
     asn_enc_rval_t er;
@@ -290,7 +290,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handovercancel(
 asn_enc_rval_t s1ap_xer_print_s1ap_handoverpreparationfailure(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_HandoverPreparationFailureIEs_t *s1ap_HandoverPreparationFailureIEs;
     asn_enc_rval_t er;
@@ -327,7 +327,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobemodifiedlistbearermodreq(
 asn_enc_rval_t s1ap_xer_print_s1ap_uecontextreleaserequest(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_UEContextReleaseRequest_IEs_t *s1ap_UEContextReleaseRequest_IEs;
     asn_enc_rval_t er;
@@ -364,7 +364,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabadmittedlist(
 asn_enc_rval_t s1ap_xer_print_s1ap_initialuemessage(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_InitialUEMessage_IEs_t *s1ap_InitialUEMessage_IEs;
     asn_enc_rval_t er;
@@ -405,7 +405,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_initialuemessage(
 asn_enc_rval_t s1ap_xer_print_s1ap_killrequest(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_KillRequestIEs_t *s1ap_KillRequestIEs;
     asn_enc_rval_t er;
@@ -428,7 +428,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_killrequest(
 asn_enc_rval_t s1ap_xer_print_s1ap_writereplacewarningrequest(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_WriteReplaceWarningRequestIEs_t *s1ap_WriteReplaceWarningRequestIEs;
     asn_enc_rval_t er;
@@ -471,7 +471,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_writereplacewarningrequest(
 asn_enc_rval_t s1ap_xer_print_s1ap_uecapabilityinfoindication(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_UECapabilityInfoIndicationIEs_t *s1ap_UECapabilityInfoIndicationIEs;
     asn_enc_rval_t er;
@@ -518,7 +518,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabdataforwardinglist(
 asn_enc_rval_t s1ap_xer_print_s1ap_locationreportingfailureindication(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_LocationReportingFailureIndicationIEs_t *s1ap_LocationReportingFailureIndicationIEs;
     asn_enc_rval_t er;
@@ -539,7 +539,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_locationreportingfailureindication(
 asn_enc_rval_t s1ap_xer_print_s1ap_initialcontextsetuprequest(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_InitialContextSetupRequestIEs_t *s1ap_InitialContextSetupRequestIEs;
     asn_enc_rval_t er;
@@ -596,7 +596,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_initialcontextsetuprequest(
 asn_enc_rval_t s1ap_xer_print_s1ap_locationreport(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_LocationReportIEs_t *s1ap_LocationReportIEs;
     asn_enc_rval_t er;
@@ -619,7 +619,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_locationreport(
 asn_enc_rval_t s1ap_xer_print_s1ap_uplinknastransport(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_UplinkNASTransport_IEs_t *s1ap_UplinkNASTransport_IEs;
     asn_enc_rval_t er;
@@ -645,7 +645,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_uplinknastransport(
 asn_enc_rval_t s1ap_xer_print_s1ap_uecontextmodificationresponse(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_UEContextModificationResponseIEs_t *s1ap_UEContextModificationResponseIEs;
     asn_enc_rval_t er;
@@ -668,7 +668,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_uecontextmodificationresponse(
 asn_enc_rval_t s1ap_xer_print_s1ap_uecontextmodificationrequest(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_UEContextModificationRequestIEs_t *s1ap_UEContextModificationRequestIEs;
     asn_enc_rval_t er;
@@ -709,7 +709,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_uecontextmodificationrequest(
 asn_enc_rval_t s1ap_xer_print_s1ap_locationreportingcontrol(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_LocationReportingControlIEs_t *s1ap_LocationReportingControlIEs;
     asn_enc_rval_t er;
@@ -730,7 +730,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_locationreportingcontrol(
 asn_enc_rval_t s1ap_xer_print_s1ap_uplinks1cdma2000tunneling(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_UplinkS1cdma2000tunnelingIEs_t *s1ap_UplinkS1cdma2000tunnelingIEs;
     asn_enc_rval_t er;
@@ -765,7 +765,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_uplinks1cdma2000tunneling(
 asn_enc_rval_t s1ap_xer_print_s1ap_handoverrequest(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_HandoverRequestIEs_t *s1ap_HandoverRequestIEs;
     asn_enc_rval_t er;
@@ -818,7 +818,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handoverrequest(
 asn_enc_rval_t s1ap_xer_print_s1ap_handoverrequired(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_HandoverRequiredIEs_t *s1ap_HandoverRequiredIEs;
     asn_enc_rval_t er;
@@ -879,7 +879,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobeswitcheddllist(
 asn_enc_rval_t s1ap_xer_print_s1ap_mmeconfigurationupdateacknowledge(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_MMEConfigurationUpdateAcknowledgeIEs_t *s1ap_MMEConfigurationUpdateAcknowledgeIEs;
     asn_enc_rval_t er;
@@ -900,7 +900,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_mmeconfigurationupdateacknowledge(
 asn_enc_rval_t s1ap_xer_print_s1ap_killresponse(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_KillResponseIEs_t *s1ap_KillResponseIEs;
     asn_enc_rval_t er;
@@ -926,7 +926,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_killresponse(
 asn_enc_rval_t s1ap_xer_print_s1ap_mmestatustransfer(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_MMEStatusTransferIEs_t *s1ap_MMEStatusTransferIEs;
     asn_enc_rval_t er;
@@ -947,7 +947,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_mmestatustransfer(
 asn_enc_rval_t s1ap_xer_print_s1ap_mmeconfigurationupdate(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_MMEConfigurationUpdateIEs_t *s1ap_MMEConfigurationUpdateIEs;
     asn_enc_rval_t er;
@@ -974,7 +974,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_mmeconfigurationupdate(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabmodifyrequest(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_E_RABModifyRequestIEs_t *s1ap_E_RABModifyRequestIEs;
     asn_enc_rval_t er;
@@ -1024,7 +1024,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobeswitchedullist(
 asn_enc_rval_t s1ap_xer_print_s1ap_enbconfigurationupdatefailure(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_ENBConfigurationUpdateFailureIEs_t *s1ap_ENBConfigurationUpdateFailureIEs;
     asn_enc_rval_t er;
@@ -1049,7 +1049,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_enbconfigurationupdatefailure(
 asn_enc_rval_t s1ap_xer_print_s1ap_reset(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_ResetIEs_t *s1ap_ResetIEs;
     asn_enc_rval_t er;
@@ -1095,7 +1095,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rablist(
 asn_enc_rval_t s1ap_xer_print_s1ap_s1setupresponse(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_S1SetupResponseIEs_t *s1ap_S1SetupResponseIEs;
     asn_enc_rval_t er;
@@ -1124,7 +1124,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_s1setupresponse(
 asn_enc_rval_t s1ap_xer_print_s1ap_paging(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_PagingIEs_t *s1ap_PagingIEs;
     asn_enc_rval_t er;
@@ -1155,7 +1155,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_paging(
 asn_enc_rval_t s1ap_xer_print_s1ap_enbconfigurationupdateacknowledge(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_ENBConfigurationUpdateAcknowledgeIEs_t *s1ap_ENBConfigurationUpdateAcknowledgeIEs;
     asn_enc_rval_t er;
@@ -1176,7 +1176,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_enbconfigurationupdateacknowledge(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabreleasecommand(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_E_RABReleaseCommandIEs_t *s1ap_E_RABReleaseCommandIEs;
     asn_enc_rval_t er;
@@ -1203,7 +1203,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabreleasecommand(
 asn_enc_rval_t s1ap_xer_print_s1ap_pathswitchrequestfailure(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_PathSwitchRequestFailureIEs_t *s1ap_PathSwitchRequestFailureIEs;
     asn_enc_rval_t er;
@@ -1227,7 +1227,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_pathswitchrequestfailure(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabmodifyresponse(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_E_RABModifyResponseIEs_t *s1ap_E_RABModifyResponseIEs;
     asn_enc_rval_t er;
@@ -1256,7 +1256,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabmodifyresponse(
 asn_enc_rval_t s1ap_xer_print_s1ap_handovernotify(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_HandoverNotifyIEs_t *s1ap_HandoverNotifyIEs;
     asn_enc_rval_t er;
@@ -1278,7 +1278,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handovernotify(
 asn_enc_rval_t s1ap_xer_print_s1ap_handovercancelacknowledge(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_HandoverCancelAcknowledgeIEs_t *s1ap_HandoverCancelAcknowledgeIEs;
     asn_enc_rval_t er;
@@ -1301,7 +1301,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handovercancelacknowledge(
 asn_enc_rval_t s1ap_xer_print_s1ap_initialcontextsetupfailure(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_InitialContextSetupFailureIEs_t *s1ap_InitialContextSetupFailureIEs;
     asn_enc_rval_t er;
@@ -1325,7 +1325,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_initialcontextsetupfailure(
 asn_enc_rval_t s1ap_xer_print_s1ap_handovercommand(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_HandoverCommandIEs_t *s1ap_HandoverCommandIEs;
     asn_enc_rval_t er;
@@ -1359,7 +1359,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handovercommand(
 asn_enc_rval_t s1ap_xer_print_s1ap_mmedirectinformationtransfer(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_MMEDirectInformationTransferIEs_t *s1ap_MMEDirectInformationTransferIEs;
     asn_enc_rval_t er;
@@ -1378,7 +1378,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_mmedirectinformationtransfer(
 asn_enc_rval_t s1ap_xer_print_s1ap_errorindication(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_ErrorIndicationIEs_t *s1ap_ErrorIndicationIEs;
     asn_enc_rval_t er;
@@ -1421,7 +1421,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_tailist(
 asn_enc_rval_t s1ap_xer_print_s1ap_overloadstart(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_OverloadStartIEs_t *s1ap_OverloadStartIEs;
     asn_enc_rval_t er;
@@ -1446,7 +1446,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_overloadstart(
 asn_enc_rval_t s1ap_xer_print_s1ap_downlinknonueassociatedlppatransport(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_DownlinkNonUEAssociatedLPPaTransport_IEs_t *s1ap_DownlinkNonUEAssociatedLPPaTransport_IEs;
     asn_enc_rval_t er;
@@ -1466,7 +1466,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_downlinknonueassociatedlppatransport(
 asn_enc_rval_t s1ap_xer_print_s1ap_handoverrequestacknowledge(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_HandoverRequestAcknowledgeIEs_t *s1ap_HandoverRequestAcknowledgeIEs;
     asn_enc_rval_t er;
@@ -1497,7 +1497,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handoverrequestacknowledge(
 asn_enc_rval_t s1ap_xer_print_s1ap_downlinkueassociatedlppatransport(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_DownlinkUEAssociatedLPPaTransport_IEs_t *s1ap_DownlinkUEAssociatedLPPaTransport_IEs;
     asn_enc_rval_t er;
@@ -1519,7 +1519,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_downlinkueassociatedlppatransport(
 asn_enc_rval_t s1ap_xer_print_s1ap_uecontextmodificationfailure(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_UEContextModificationFailureIEs_t *s1ap_UEContextModificationFailureIEs;
     asn_enc_rval_t er;
@@ -1543,7 +1543,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_uecontextmodificationfailure(
 asn_enc_rval_t s1ap_xer_print_s1ap_mmeconfigurationtransfer(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_MMEConfigurationTransferIEs_t *s1ap_MMEConfigurationTransferIEs;
     asn_enc_rval_t er;
@@ -1564,7 +1564,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_mmeconfigurationtransfer(
 asn_enc_rval_t s1ap_xer_print_s1ap_pathswitchrequestacknowledge(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_PathSwitchRequestAcknowledgeIEs_t *s1ap_PathSwitchRequestAcknowledgeIEs;
     asn_enc_rval_t er;
@@ -1613,7 +1613,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_ue_associatedlogicals1_connectionlistres(
 asn_enc_rval_t s1ap_xer_print_s1ap_s1setupfailure(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_S1SetupFailureIEs_t *s1ap_S1SetupFailureIEs;
     asn_enc_rval_t er;
@@ -1638,7 +1638,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_s1setupfailure(
 asn_enc_rval_t s1ap_xer_print_s1ap_mmeconfigurationupdatefailure(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_MMEConfigurationUpdateFailureIEs_t *s1ap_MMEConfigurationUpdateFailureIEs;
     asn_enc_rval_t er;
@@ -1663,7 +1663,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_mmeconfigurationupdatefailure(
 asn_enc_rval_t s1ap_xer_print_s1ap_initialcontextsetupresponse(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_InitialContextSetupResponseIEs_t *s1ap_InitialContextSetupResponseIEs;
     asn_enc_rval_t er;
@@ -1690,7 +1690,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_initialcontextsetupresponse(
 asn_enc_rval_t s1ap_xer_print_s1ap_downlinks1cdma2000tunneling(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_DownlinkS1cdma2000tunnelingIEs_t *s1ap_DownlinkS1cdma2000tunnelingIEs;
     asn_enc_rval_t er;
@@ -1718,7 +1718,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_downlinks1cdma2000tunneling(
 asn_enc_rval_t s1ap_xer_print_s1ap_overloadstop(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_OverloadStopIEs_t *s1ap_OverloadStopIEs;
     asn_enc_rval_t er;
@@ -1778,7 +1778,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobesetuplistctxtsureq(
 asn_enc_rval_t s1ap_xer_print_s1ap_enbconfigurationupdate(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_ENBConfigurationUpdateIEs_t *s1ap_ENBConfigurationUpdateIEs;
     asn_enc_rval_t er;
@@ -1808,7 +1808,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_enbconfigurationupdate(
 asn_enc_rval_t s1ap_xer_print_s1ap_tracefailureindication(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_TraceFailureIndicationIEs_t *s1ap_TraceFailureIndicationIEs;
     asn_enc_rval_t er;
@@ -1843,7 +1843,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabinformationlist(
 asn_enc_rval_t s1ap_xer_print_s1ap_enbconfigurationtransfer(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_ENBConfigurationTransferIEs_t *s1ap_ENBConfigurationTransferIEs;
     asn_enc_rval_t er;
@@ -1864,7 +1864,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_enbconfigurationtransfer(
 asn_enc_rval_t s1ap_xer_print_s1ap_handoverfailure(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_HandoverFailureIEs_t *s1ap_HandoverFailureIEs;
     asn_enc_rval_t er;
@@ -1900,7 +1900,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_ue_associatedlogicals1_connectionlistresack(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabsetupresponse(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_E_RABSetupResponseIEs_t *s1ap_E_RABSetupResponseIEs;
     asn_enc_rval_t er;
@@ -1929,7 +1929,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabsetupresponse(
 asn_enc_rval_t s1ap_xer_print_s1ap_uecontextreleasecommand(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_UEContextReleaseCommand_IEs_t *s1ap_UEContextReleaseCommand_IEs;
     asn_enc_rval_t er;
@@ -1949,7 +1949,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_uecontextreleasecommand(
 asn_enc_rval_t s1ap_xer_print_s1ap_pathswitchrequest(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_PathSwitchRequestIEs_t *s1ap_PathSwitchRequestIEs;
     asn_enc_rval_t er;
@@ -1982,7 +1982,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_pathswitchrequest(
 asn_enc_rval_t s1ap_xer_print_s1ap_downlinknastransport(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_DownlinkNASTransport_IEs_t *s1ap_DownlinkNASTransport_IEs;
     asn_enc_rval_t er;
@@ -2009,7 +2009,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_downlinknastransport(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabreleaseindication(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_E_RABReleaseIndicationIEs_t *s1ap_E_RABReleaseIndicationIEs;
     asn_enc_rval_t er;
@@ -2030,7 +2030,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabreleaseindication(
 asn_enc_rval_t s1ap_xer_print_s1ap_s1setuprequest(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_S1SetupRequestIEs_t *s1ap_S1SetupRequestIEs;
     asn_enc_rval_t er;
@@ -2057,7 +2057,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_s1setuprequest(
 asn_enc_rval_t s1ap_xer_print_s1ap_nasnondeliveryindication(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_NASNonDeliveryIndication_IEs_t *s1ap_NASNonDeliveryIndication_IEs;
     asn_enc_rval_t er;
@@ -2079,7 +2079,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_nasnondeliveryindication(
 asn_enc_rval_t s1ap_xer_print_s1ap_celltraffictrace(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_CellTrafficTraceIEs_t *s1ap_CellTrafficTraceIEs;
     asn_enc_rval_t er;
@@ -2105,7 +2105,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_celltraffictrace(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabsetuprequest(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_E_RABSetupRequestIEs_t *s1ap_E_RABSetupRequestIEs;
     asn_enc_rval_t er;
@@ -2129,7 +2129,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabsetuprequest(
 asn_enc_rval_t s1ap_xer_print_s1ap_enbstatustransfer(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_ENBStatusTransferIEs_t *s1ap_ENBStatusTransferIEs;
     asn_enc_rval_t er;
@@ -2150,7 +2150,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_enbstatustransfer(
 asn_enc_rval_t s1ap_xer_print_s1ap_resetacknowledge(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_ResetAcknowledgeIEs_t *s1ap_ResetAcknowledgeIEs;
     asn_enc_rval_t er;
@@ -2174,7 +2174,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_resetacknowledge(
 asn_enc_rval_t s1ap_xer_print_s1ap_uecontextreleasecomplete(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_UEContextReleaseComplete_IEs_t *s1ap_UEContextReleaseComplete_IEs;
     asn_enc_rval_t er;
@@ -2197,7 +2197,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_uecontextreleasecomplete(
 asn_enc_rval_t s1ap_xer_print_s1ap_uplinkueassociatedlppatransport(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p)
+    s1ap_message_t *message_p)
 {
     S1ap_UplinkUEAssociatedLPPaTransport_IEs_t *s1ap_UplinkUEAssociatedLPPaTransport_IEs;
     asn_enc_rval_t er;

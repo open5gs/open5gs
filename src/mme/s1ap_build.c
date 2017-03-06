@@ -10,7 +10,7 @@ status_t s1ap_build_setup_rsp(pkbuf_t **pkbuf)
     int erval;
     int i, j;
 
-    s1ap_message message;
+    s1ap_message_t message;
     S1ap_S1SetupResponseIEs_t *ies = NULL;
     int numServedGUMMEI = 0;
     S1ap_ServedGUMMEIsItem_t *servedGUMMEI;
@@ -18,7 +18,7 @@ status_t s1ap_build_setup_rsp(pkbuf_t **pkbuf)
     S1ap_MME_Group_ID_t *mmeGroupId;
     S1ap_MME_Code_t *mmeCode;
 
-    memset(&message, 0, sizeof(s1ap_message));
+    memset(&message, 0, sizeof(s1ap_message_t));
 
     ies = &message.s1ap_S1SetupResponseIEs;
 
@@ -83,10 +83,10 @@ status_t s1ap_build_setup_failure(pkbuf_t **pkbuf, S1ap_Cause_t cause)
 {
     int erval;
 
-    s1ap_message message;
+    s1ap_message_t message;
     S1ap_S1SetupFailureIEs_t *ies = NULL;
 
-    memset(&message, 0, sizeof(s1ap_message));
+    memset(&message, 0, sizeof(s1ap_message_t));
 
     ies = &message.s1ap_S1SetupFailureIEs;
     ies->cause = cause;

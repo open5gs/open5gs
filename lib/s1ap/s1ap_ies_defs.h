@@ -30,7 +30,7 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-03-05 11:42:09.750507 by acetcom
+ * Created on: 2017-03-06 09:01:40.300407 by acetcom
  * from ['S1AP-PDU.asn']
  ******************************************************************************/
 #include "s1ap_asn1c.h"
@@ -970,7 +970,7 @@ typedef struct S1ap_UplinkUEAssociatedLPPaTransport_IEs_s {
     S1ap_LPPa_PDU_t       lpPa_PDU;
 } S1ap_UplinkUEAssociatedLPPaTransport_IEs_t;
 
-typedef struct s1ap_message_s {
+typedef struct _s1ap_message_t {
     S1ap_ProcedureCode_t procedureCode;
     S1ap_Criticality_t   criticality;
     uint8_t            direction;
@@ -1047,7 +1047,7 @@ typedef struct s1ap_message_s {
         S1ap_WriteReplaceWarningRequestIEs_t s1ap_WriteReplaceWarningRequestIEs;
         S1ap_WriteReplaceWarningResponseIEs_t s1ap_WriteReplaceWarningResponseIEs;
     };
-} s1ap_message;
+} s1ap_message_t;
 
 /** \brief Decode function for S1ap-DeactivateTraceIEs ies.
  * \param s1ap_DeactivateTraceIEs Pointer to ASN1 structure in which data will be stored
@@ -3045,7 +3045,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabfailedtosetuplisthoreqack(
 asn_enc_rval_t s1ap_xer_print_s1ap_deactivatetrace(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_E_RABReleaseListBearerRelComp encapsulated IE using XER encoding.
  *  \param s1ap_E_RABReleaseItemBearerRelCompIEs Pointer to the IES structure.
@@ -3063,7 +3063,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabreleaselistbearerrelcomp(
 asn_enc_rval_t s1ap_xer_print_s1ap_enbdirectinformationtransfer(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_E_RABReleaseResponse message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3072,7 +3072,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_enbdirectinformationtransfer(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabreleaseresponse(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_UplinkNonUEAssociatedLPPaTransport message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3081,7 +3081,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabreleaseresponse(
 asn_enc_rval_t s1ap_xer_print_s1ap_uplinknonueassociatedlppatransport(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_E_RABToBeSetupListHOReq encapsulated IE using XER encoding.
  *  \param s1ap_E_RABToBeSetupItemHOReqIEs Pointer to the IES structure.
@@ -3099,7 +3099,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobesetuplisthoreq(
 asn_enc_rval_t s1ap_xer_print_s1ap_tracestart(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_WriteReplaceWarningResponse message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3108,7 +3108,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_tracestart(
 asn_enc_rval_t s1ap_xer_print_s1ap_writereplacewarningresponse(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_HandoverCancel message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3117,7 +3117,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_writereplacewarningresponse(
 asn_enc_rval_t s1ap_xer_print_s1ap_handovercancel(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_HandoverPreparationFailure message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3126,7 +3126,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handovercancel(
 asn_enc_rval_t s1ap_xer_print_s1ap_handoverpreparationfailure(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_E_RABToBeModifiedListBearerModReq encapsulated IE using XER encoding.
  *  \param s1ap_E_RABToBeModifiedItemBearerModReqIEs Pointer to the IES structure.
@@ -3144,7 +3144,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobemodifiedlistbearermodreq(
 asn_enc_rval_t s1ap_xer_print_s1ap_uecontextreleaserequest(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_E_RABAdmittedList encapsulated IE using XER encoding.
  *  \param s1ap_E_RABAdmittedItemIEs Pointer to the IES structure.
@@ -3162,7 +3162,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabadmittedlist(
 asn_enc_rval_t s1ap_xer_print_s1ap_initialuemessage(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_KillRequest message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3171,7 +3171,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_initialuemessage(
 asn_enc_rval_t s1ap_xer_print_s1ap_killrequest(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_WriteReplaceWarningRequest message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3180,7 +3180,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_killrequest(
 asn_enc_rval_t s1ap_xer_print_s1ap_writereplacewarningrequest(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_UECapabilityInfoIndication message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3189,7 +3189,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_writereplacewarningrequest(
 asn_enc_rval_t s1ap_xer_print_s1ap_uecapabilityinfoindication(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_E_RABToBeSetupListBearerSUReq encapsulated IE using XER encoding.
  *  \param s1ap_E_RABToBeSetupItemBearerSUReqIEs Pointer to the IES structure.
@@ -3216,7 +3216,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabdataforwardinglist(
 asn_enc_rval_t s1ap_xer_print_s1ap_locationreportingfailureindication(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_InitialContextSetupRequest message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3225,7 +3225,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_locationreportingfailureindication(
 asn_enc_rval_t s1ap_xer_print_s1ap_initialcontextsetuprequest(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_LocationReport message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3234,7 +3234,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_initialcontextsetuprequest(
 asn_enc_rval_t s1ap_xer_print_s1ap_locationreport(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_UplinkNASTransport message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3243,7 +3243,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_locationreport(
 asn_enc_rval_t s1ap_xer_print_s1ap_uplinknastransport(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_UEContextModificationResponse message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3252,7 +3252,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_uplinknastransport(
 asn_enc_rval_t s1ap_xer_print_s1ap_uecontextmodificationresponse(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_UEContextModificationRequest message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3261,7 +3261,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_uecontextmodificationresponse(
 asn_enc_rval_t s1ap_xer_print_s1ap_uecontextmodificationrequest(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_LocationReportingControl message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3270,7 +3270,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_uecontextmodificationrequest(
 asn_enc_rval_t s1ap_xer_print_s1ap_locationreportingcontrol(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_UplinkS1cdma2000tunneling message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3279,7 +3279,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_locationreportingcontrol(
 asn_enc_rval_t s1ap_xer_print_s1ap_uplinks1cdma2000tunneling(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_HandoverRequest message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3288,7 +3288,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_uplinks1cdma2000tunneling(
 asn_enc_rval_t s1ap_xer_print_s1ap_handoverrequest(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_HandoverRequired message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3297,7 +3297,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handoverrequest(
 asn_enc_rval_t s1ap_xer_print_s1ap_handoverrequired(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_E_RABToBeSwitchedDLList encapsulated IE using XER encoding.
  *  \param s1ap_E_RABToBeSwitchedDLItemIEs Pointer to the IES structure.
@@ -3315,7 +3315,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobeswitcheddllist(
 asn_enc_rval_t s1ap_xer_print_s1ap_mmeconfigurationupdateacknowledge(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_KillResponse message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3324,7 +3324,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_mmeconfigurationupdateacknowledge(
 asn_enc_rval_t s1ap_xer_print_s1ap_killresponse(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_MMEStatusTransfer message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3333,7 +3333,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_killresponse(
 asn_enc_rval_t s1ap_xer_print_s1ap_mmestatustransfer(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_MMEConfigurationUpdate message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3342,7 +3342,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_mmestatustransfer(
 asn_enc_rval_t s1ap_xer_print_s1ap_mmeconfigurationupdate(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_E_RABModifyRequest message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3351,7 +3351,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_mmeconfigurationupdate(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabmodifyrequest(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_E_RABSetupListCtxtSURes encapsulated IE using XER encoding.
  *  \param s1ap_E_RABSetupItemCtxtSUResIEs Pointer to the IES structure.
@@ -3378,7 +3378,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobeswitchedullist(
 asn_enc_rval_t s1ap_xer_print_s1ap_enbconfigurationupdatefailure(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_Reset message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3387,7 +3387,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_enbconfigurationupdatefailure(
 asn_enc_rval_t s1ap_xer_print_s1ap_reset(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_Bearers_SubjectToStatusTransfer_List encapsulated IE using XER encoding.
  *  \param s1ap_Bearers_SubjectToStatusTransfer_ItemIEs Pointer to the IES structure.
@@ -3414,7 +3414,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rablist(
 asn_enc_rval_t s1ap_xer_print_s1ap_s1setupresponse(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_Paging message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3423,7 +3423,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_s1setupresponse(
 asn_enc_rval_t s1ap_xer_print_s1ap_paging(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_ENBConfigurationUpdateAcknowledge message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3432,7 +3432,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_paging(
 asn_enc_rval_t s1ap_xer_print_s1ap_enbconfigurationupdateacknowledge(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_E_RABReleaseCommand message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3441,7 +3441,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_enbconfigurationupdateacknowledge(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabreleasecommand(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_PathSwitchRequestFailure message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3450,7 +3450,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabreleasecommand(
 asn_enc_rval_t s1ap_xer_print_s1ap_pathswitchrequestfailure(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_E_RABModifyResponse message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3459,7 +3459,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_pathswitchrequestfailure(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabmodifyresponse(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_HandoverNotify message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3468,7 +3468,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabmodifyresponse(
 asn_enc_rval_t s1ap_xer_print_s1ap_handovernotify(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_HandoverCancelAcknowledge message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3477,7 +3477,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handovernotify(
 asn_enc_rval_t s1ap_xer_print_s1ap_handovercancelacknowledge(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_InitialContextSetupFailure message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3486,7 +3486,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handovercancelacknowledge(
 asn_enc_rval_t s1ap_xer_print_s1ap_initialcontextsetupfailure(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_HandoverCommand message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3495,7 +3495,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_initialcontextsetupfailure(
 asn_enc_rval_t s1ap_xer_print_s1ap_handovercommand(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_MMEDirectInformationTransfer message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3504,7 +3504,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handovercommand(
 asn_enc_rval_t s1ap_xer_print_s1ap_mmedirectinformationtransfer(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_ErrorIndication message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3513,7 +3513,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_mmedirectinformationtransfer(
 asn_enc_rval_t s1ap_xer_print_s1ap_errorindication(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_TAIList encapsulated IE using XER encoding.
  *  \param s1ap_TAIItemIEs Pointer to the IES structure.
@@ -3531,7 +3531,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_tailist(
 asn_enc_rval_t s1ap_xer_print_s1ap_overloadstart(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_DownlinkNonUEAssociatedLPPaTransport message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3540,7 +3540,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_overloadstart(
 asn_enc_rval_t s1ap_xer_print_s1ap_downlinknonueassociatedlppatransport(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_HandoverRequestAcknowledge message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3549,7 +3549,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_downlinknonueassociatedlppatransport(
 asn_enc_rval_t s1ap_xer_print_s1ap_handoverrequestacknowledge(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_DownlinkUEAssociatedLPPaTransport message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3558,7 +3558,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handoverrequestacknowledge(
 asn_enc_rval_t s1ap_xer_print_s1ap_downlinkueassociatedlppatransport(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_UEContextModificationFailure message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3567,7 +3567,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_downlinkueassociatedlppatransport(
 asn_enc_rval_t s1ap_xer_print_s1ap_uecontextmodificationfailure(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_MMEConfigurationTransfer message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3576,7 +3576,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_uecontextmodificationfailure(
 asn_enc_rval_t s1ap_xer_print_s1ap_mmeconfigurationtransfer(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_PathSwitchRequestAcknowledge message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3585,7 +3585,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_mmeconfigurationtransfer(
 asn_enc_rval_t s1ap_xer_print_s1ap_pathswitchrequestacknowledge(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_UE_associatedLogicalS1_ConnectionListRes encapsulated IE using XER encoding.
  *  \param s1ap_UE_associatedLogicalS1_ConnectionItemRes Pointer to the IES structure.
@@ -3603,7 +3603,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_ue_associatedlogicals1_connectionlistres(
 asn_enc_rval_t s1ap_xer_print_s1ap_s1setupfailure(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_MMEConfigurationUpdateFailure message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3612,7 +3612,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_s1setupfailure(
 asn_enc_rval_t s1ap_xer_print_s1ap_mmeconfigurationupdatefailure(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_InitialContextSetupResponse message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3621,7 +3621,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_mmeconfigurationupdatefailure(
 asn_enc_rval_t s1ap_xer_print_s1ap_initialcontextsetupresponse(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_DownlinkS1cdma2000tunneling message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3630,7 +3630,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_initialcontextsetupresponse(
 asn_enc_rval_t s1ap_xer_print_s1ap_downlinks1cdma2000tunneling(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_OverloadStop message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3639,7 +3639,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_downlinks1cdma2000tunneling(
 asn_enc_rval_t s1ap_xer_print_s1ap_overloadstop(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_E_RABSetupListBearerSURes encapsulated IE using XER encoding.
  *  \param s1ap_E_RABSetupItemBearerSUResIEs Pointer to the IES structure.
@@ -3675,7 +3675,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobesetuplistctxtsureq(
 asn_enc_rval_t s1ap_xer_print_s1ap_enbconfigurationupdate(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_TraceFailureIndication message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3684,7 +3684,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_enbconfigurationupdate(
 asn_enc_rval_t s1ap_xer_print_s1ap_tracefailureindication(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_E_RABInformationList encapsulated IE using XER encoding.
  *  \param s1ap_E_RABInformationListIEs Pointer to the IES structure.
@@ -3702,7 +3702,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabinformationlist(
 asn_enc_rval_t s1ap_xer_print_s1ap_enbconfigurationtransfer(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_HandoverFailure message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3711,7 +3711,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_enbconfigurationtransfer(
 asn_enc_rval_t s1ap_xer_print_s1ap_handoverfailure(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_UE_associatedLogicalS1_ConnectionListResAck encapsulated IE using XER encoding.
  *  \param s1ap_UE_associatedLogicalS1_ConnectionItemResAck Pointer to the IES structure.
@@ -3729,7 +3729,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_ue_associatedlogicals1_connectionlistresack(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabsetupresponse(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_UEContextReleaseCommand message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3738,7 +3738,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabsetupresponse(
 asn_enc_rval_t s1ap_xer_print_s1ap_uecontextreleasecommand(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_PathSwitchRequest message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3747,7 +3747,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_uecontextreleasecommand(
 asn_enc_rval_t s1ap_xer_print_s1ap_pathswitchrequest(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_DownlinkNASTransport message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3756,7 +3756,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_pathswitchrequest(
 asn_enc_rval_t s1ap_xer_print_s1ap_downlinknastransport(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_E_RABReleaseIndication message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3765,7 +3765,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_downlinknastransport(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabreleaseindication(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_S1SetupRequest message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3774,7 +3774,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabreleaseindication(
 asn_enc_rval_t s1ap_xer_print_s1ap_s1setuprequest(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_NASNonDeliveryIndication message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3783,7 +3783,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_s1setuprequest(
 asn_enc_rval_t s1ap_xer_print_s1ap_nasnondeliveryindication(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_CellTrafficTrace message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3792,7 +3792,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_nasnondeliveryindication(
 asn_enc_rval_t s1ap_xer_print_s1ap_celltraffictrace(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_E_RABSetupRequest message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3801,7 +3801,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_celltraffictrace(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabsetuprequest(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_ENBStatusTransfer message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3810,7 +3810,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabsetuprequest(
 asn_enc_rval_t s1ap_xer_print_s1ap_enbstatustransfer(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_ResetAcknowledge message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3819,7 +3819,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_enbstatustransfer(
 asn_enc_rval_t s1ap_xer_print_s1ap_resetacknowledge(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_UEContextReleaseComplete message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3828,7 +3828,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_resetacknowledge(
 asn_enc_rval_t s1ap_xer_print_s1ap_uecontextreleasecomplete(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 /** \brief Display S1ap_UplinkUEAssociatedLPPaTransport message using XER encoding.
  *  \param message_p Pointer to root message.
@@ -3837,7 +3837,7 @@ asn_enc_rval_t s1ap_xer_print_s1ap_uecontextreleasecomplete(
 asn_enc_rval_t s1ap_xer_print_s1ap_uplinkueassociatedlppatransport(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    s1ap_message *message_p);
+    s1ap_message_t *message_p);
 
 int s1ap_xer__print2sp(const void *buffer, size_t size, void *app_key);
 

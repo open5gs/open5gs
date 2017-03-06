@@ -3,11 +3,11 @@
 #include "core_debug.h"
 #include "s1ap_message.h"
 
-static inline int s1ap_free_initiating_message(s1ap_message *message);
-static inline int s1ap_free_successfull_outcome(s1ap_message *message);
-static inline int s1ap_free_unsuccessfull_outcome(s1ap_message *message);
+static inline int s1ap_free_initiating_message(s1ap_message_t *message);
+static inline int s1ap_free_successfull_outcome(s1ap_message_t *message);
+static inline int s1ap_free_unsuccessfull_outcome(s1ap_message_t *message);
 
-int s1ap_free_pdu(s1ap_message *message)
+int s1ap_free_pdu(s1ap_message_t *message)
 {
     d_assert (message, return -1, "Null param");
 
@@ -31,7 +31,7 @@ int s1ap_free_pdu(s1ap_message *message)
     return -1;
 }
 
-static inline int s1ap_free_initiating_message(s1ap_message *message)
+static inline int s1ap_free_initiating_message(s1ap_message_t *message)
 {
     switch (message->procedureCode) 
     {
@@ -89,7 +89,7 @@ static inline int s1ap_free_initiating_message(s1ap_message *message)
     return 0;
 }
 
-static inline int s1ap_free_successfull_outcome(s1ap_message *message)
+static inline int s1ap_free_successfull_outcome(s1ap_message_t *message)
 {
     switch (message->procedureCode) 
     {
@@ -117,7 +117,7 @@ static inline int s1ap_free_successfull_outcome(s1ap_message *message)
     return 0;
 }
 
-static inline int s1ap_free_unsuccessfull_outcome(s1ap_message *message)
+static inline int s1ap_free_unsuccessfull_outcome(s1ap_message_t *message)
 {
     switch (message->procedureCode) 
     {

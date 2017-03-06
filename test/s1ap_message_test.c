@@ -17,7 +17,7 @@ static void s1ap_message_test1(abts_case *tc, void *data)
         "3100400007000c0e4000f11000894001"
         "00";
 
-    s1ap_message message;
+    s1ap_message_t message;
     pkbuf_t *pkbuf;
     int result;
 
@@ -46,7 +46,7 @@ static void s1ap_message_test2(abts_case *tc, void *data)
         "3378200086400130004b00070000f110"
         "000201";
 
-    s1ap_message message;
+    s1ap_message_t message;
     pkbuf_t *pkbuf;
     int result;
 
@@ -70,7 +70,7 @@ static void s1ap_message_test3(abts_case *tc, void *data)
         "0008400200010033400f000032400a0a"
         "1f0a0123c601000908";
 
-    s1ap_message message;
+    s1ap_message_t message;
     pkbuf_t *pkbuf;
     int result;
 
@@ -88,7 +88,7 @@ static void s1ap_message_test3(abts_case *tc, void *data)
 
 static void s1ap_message_test4(abts_case *tc, void *data)
 {
-    s1ap_message message;
+    s1ap_message_t message;
     status_t rv;
     pkbuf_t *pkbuf;
     int result;
@@ -109,7 +109,7 @@ static void s1ap_message_test4(abts_case *tc, void *data)
 
 static void s1ap_message_test5(abts_case *tc, void *data)
 {
-    s1ap_message message;
+    s1ap_message_t message;
     status_t rv;
     pkbuf_t *pkbuf;
     int result;

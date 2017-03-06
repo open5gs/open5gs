@@ -11,7 +11,7 @@
 #include "event.h"
 
 static status_t enb_s1ap_handle_s1setuprequest(
-        enb_ctx_t *enb, s1ap_message *message);
+        enb_ctx_t *enb, s1ap_message_t *message);
 
 void enb_s1ap_state_initial(enb_s1ap_sm_t *s, event_t *e)
 {
@@ -51,7 +51,7 @@ void enb_s1ap_state_operational(enb_s1ap_sm_t *s, event_t *e)
         }
         case EVT_MSG_ENB_S1AP:
         {
-            s1ap_message message;
+            s1ap_message_t message;
             status_t rv;
             pkbuf_t *recvbuf = (pkbuf_t *)event_get_param2(e);
             d_assert(recvbuf, break, "Null param");
@@ -197,7 +197,7 @@ void enb_s1ap_state_exception(enb_s1ap_sm_t *s, event_t *e)
     }
 }
 
-status_t enb_s1ap_handle_s1setuprequest(enb_ctx_t *enb, s1ap_message *message)
+status_t enb_s1ap_handle_s1setuprequest(enb_ctx_t *enb, s1ap_message_t *message)
 {
     char buf[INET_ADDRSTRLEN];
 

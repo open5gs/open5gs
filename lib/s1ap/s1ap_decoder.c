@@ -4,19 +4,19 @@
 #include "core_lib.h"
 #include "s1ap_message.h"
 
-static int s1ap_decode_initiating(s1ap_message *message,
+static int s1ap_decode_initiating(s1ap_message_t *message,
     S1ap_InitiatingMessage_t *initiating_p);
-static int s1ap_decode_successfull_outcome(s1ap_message *message,
+static int s1ap_decode_successfull_outcome(s1ap_message_t *message,
     S1ap_SuccessfulOutcome_t *successfullOutcome_p);
-static int s1ap_decode_unsuccessfull_outcome(s1ap_message *message,
+static int s1ap_decode_unsuccessfull_outcome(s1ap_message_t *message,
     S1ap_UnsuccessfulOutcome_t *unSuccessfulOutcome_p);
 
 static void s1ap_decode_xer_print_message(
     asn_enc_rval_t (*func)(asn_app_consume_bytes_f *cb,
-    void *app_key, s1ap_message *message_p), 
-    asn_app_consume_bytes_f *cb, s1ap_message *message_p);
+    void *app_key, s1ap_message_t *message_p), 
+    asn_app_consume_bytes_f *cb, s1ap_message_t *message_p);
 
-int s1ap_decode_pdu(s1ap_message *message, pkbuf_t *pkb)
+int s1ap_decode_pdu(s1ap_message_t *message, pkbuf_t *pkb)
 {
     int ret = -1;
 
@@ -36,7 +36,7 @@ int s1ap_decode_pdu(s1ap_message *message, pkbuf_t *pkb)
         return -1;
     }
 
-    memset(message, 0, sizeof(s1ap_message));
+    memset(message, 0, sizeof(s1ap_message_t));
 
     message->direction = pdu_p->present;
     switch (pdu_p->present) 
@@ -68,7 +68,7 @@ int s1ap_decode_pdu(s1ap_message *message, pkbuf_t *pkb)
 }
 
 
-static int s1ap_decode_initiating(s1ap_message *message,
+static int s1ap_decode_initiating(s1ap_message_t *message,
     S1ap_InitiatingMessage_t *initiating_p)
 {
     int ret = -1;
@@ -135,7 +135,7 @@ static int s1ap_decode_initiating(s1ap_message *message,
     return ret;
 }
 
-static int s1ap_decode_successfull_outcome(s1ap_message *message,
+static int s1ap_decode_successfull_outcome(s1ap_message_t *message,
     S1ap_SuccessfulOutcome_t *successfullOutcome_p) 
 {
     int ret = -1;
@@ -180,7 +180,7 @@ static int s1ap_decode_successfull_outcome(s1ap_message *message,
     return ret;
 }
 
-static int s1ap_decode_unsuccessfull_outcome(s1ap_message *message,
+static int s1ap_decode_unsuccessfull_outcome(s1ap_message_t *message,
     S1ap_UnsuccessfulOutcome_t *unSuccessfulOutcome_p) 
 {
     int ret = -1;
@@ -219,8 +219,8 @@ static int s1ap_decode_unsuccessfull_outcome(s1ap_message *message,
 
 static void s1ap_decode_xer_print_message(
     asn_enc_rval_t (*func)(asn_app_consume_bytes_f *cb,
-    void *app_key, s1ap_message *message_p), 
-    asn_app_consume_bytes_f *cb, s1ap_message *message_p)
+    void *app_key, s1ap_message_t *message_p), 
+    asn_app_consume_bytes_f *cb, s1ap_message_t *message_p)
 {
     if (g_trace_mask && TRACE_MODULE >= 3) 
     {
