@@ -3,10 +3,10 @@
 noinst_LTLIBRARIES = libhss.la
 
 libhss_la_SOURCES = \
-	milenage.h context.h
+	milenage.h kdf.h context.h
 
 nodist_libhss_la_SOURCES = \
-	milenage.c init.c context.c
+	milenage.c kdf.c init.c context.c
 
 libhss_la_DEPENDENCIES = \
     $(top_srcdir)/lib/core/src/libcore.la \

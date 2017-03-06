@@ -3,12 +3,14 @@
 noinst_LTLIBRARIES = libmme.la
 
 libmme_la_SOURCES = \
+	kdf.h \
     event.h context.h \
 	s1ap_build.h s1ap_conv.h s1ap_path.h \
 	nas_conv.h \
 	sm.h s6a_sm.h
 
 nodist_libmme_la_SOURCES = \
+	kdf.c \
     init.c event.c context.c \
 	s1ap_build.c s1ap_conv.c s1ap_path.c \
 	nas_conv.c \

@@ -1,5 +1,5 @@
-#ifndef __CONTEXT_H__
-#define __CONTEXT_H__
+#ifndef __MME_CTX_H__
+#define __MME_CTX_H__
 
 #include "core_list.h"
 #include "core_errno.h"
@@ -128,4 +128,4 @@ CORE_DECLARE(rab_ctx_t*)    mme_ctx_rab_next(rab_ctx_t *ue);
 }
 #endif /* __cplusplus */
 
-#endif /* !__CONTEXT_H__ */
+#endif /* __MME_CTX_H__ */

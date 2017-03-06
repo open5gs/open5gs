@@ -4,7 +4,7 @@
 #include "core_lib.h"
 #include "core_sha2.h"
 
-#include "key_derive.h"
+#include "kdf.h"
 #include "milenage.h"
 
 #include "context.h"
@@ -74,7 +74,7 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
     milenage_generate(ue->opc, ue->amf, ue->k, 
         core_uint64_to_buffer(ue->sqn, MAX_SQN_LEN, sqn), ue->rand, 
         autn, ik, ck, ak, xres, &xres_len);
-    key_derive_kasme(ck, ik, hdr->avp_value->os.data, sqn, ak, kasme);
+    hss_kdf_kasme(ck, ik, hdr->avp_value->os.data, sqn, ak, kasme);
 
     ue->sqn = (ue->sqn + 32) & 0x7ffffffffff;
 	

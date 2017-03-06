@@ -3,10 +3,10 @@
 noinst_LTLIBRARIES = lib3gpp.la
 
 lib3gpp_la_SOURCES = \
-	3gpp_common.h plmn_id.h key_derive.h
+	3gpp_common.h plmn_id.h 
 
 nodist_lib3gpp_la_SOURCES = \
-	plmn_id.c key_derive.c
+	plmn_id.c
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include

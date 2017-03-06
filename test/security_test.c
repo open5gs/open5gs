@@ -3,7 +3,7 @@
 #include "core_sha2_hmac.h"
 
 #include "milenage.h"
-#include "key_derive.h"
+#include "hss/kdf.h"
 
 #include "testutil.h"
 
@@ -107,7 +107,7 @@ static void security_test3(abts_case *tc, void *data)
     c_uint8_t kasme[32];
     c_uint8_t tmp[32];
 
-    key_derive_kasme(
+    hss_kdf_kasme(
         core_ascii_to_hex(_ck, strlen(_ck), ck),
         core_ascii_to_hex(_ik, strlen(_ik), ik),
         core_ascii_to_hex(_plmn_id, strlen(_plmn_id), plmn_id),
