@@ -1,16 +1,21 @@
 #define TRACE_MODULE _s6a_auth
 
 #include "core_debug.h"
+#include "core_pool.h"
 
 #include "s6a_lib.h"
 #include "s6a_sm.h"
 
+#define SIZE_OF_SESS_STATE_POOL 32
+
 static struct session_handler *s6a_mme_reg = NULL;
 
 struct sess_state {
-    c_int32_t randval; /* a random value to store in Test-AVP */
+    ue_ctx_t *ue;
     struct timespec ts; /* Time of sending the message */
 };
+
+pool_declare(sess_state_pool, struct sess_state, SIZE_OF_SESS_STATE_POOL);
 
 static void s6a_aia_cb(void *data, struct msg **msg);
 
@@ -27,14 +32,14 @@ int s6a_send_auth_info_req(ue_ctx_t *ue, c_uint8_t *plmn_id)
     d_assert(ue, return -1, "Null Param");
     
     /* Create the random value to store with the session */
-    mi = malloc(sizeof(struct sess_state));
+    pool_alloc_node(&sess_state_pool, &mi);
     d_assert(mi, return -1, "malloc failed: %s", strerror(errno));
     
-    mi->randval = (int32_t)random();
+    mi->ue = ue;
     
     /* Create the request */
     d_assert(fd_msg_new(s6a_cmd_air, MSGFL_ALLOC_ETEID, &req) == 0, 
-            free(mi); return -1,);
+            pool_free_node(&sess_state_pool, mi); return -1,);
     
     /* Create a new session */
     #define S6A_APP_SID_OPT  "app_s6a"
@@ -110,7 +115,7 @@ int s6a_send_auth_info_req(ue_ctx_t *ue, c_uint8_t *plmn_id)
 
 out:
     d_assert(fd_msg_free(req) == 0,,);
-    free(mi);
+    pool_free_node(&sess_state_pool, mi);
 
     return -1;
 }
@@ -125,6 +130,7 @@ static void s6a_aia_cb(void *data, struct msg **msg)
     unsigned long dur;
     int error = 0;
     int new;
+    ue_ctx_t *ue = NULL;
     
     CHECK_SYS_DO(clock_gettime(CLOCK_REALTIME, &ts), return);
 
@@ -133,50 +139,34 @@ static void s6a_aia_cb(void *data, struct msg **msg)
             new == 0, return,);
     
     d_assert(fd_sess_state_retrieve(s6a_mme_reg, sess, &mi) == 0 &&
-            (void *)mi == data, fd_msg_free(*msg); *msg = NULL; return,);
+            mi && (void *)mi == data, fd_msg_free(*msg); *msg = NULL; return,);
+
+    ue = mi->ue;
+    d_assert(ue, error++; goto out,);
     
     /* Value of Result Code */
-    d_assert(fd_msg_search_avp(*msg, s6a_result_code, &avp) == 0, goto out,);
-    if (avp) 
+    d_assert(fd_msg_search_avp(*msg, s6a_result_code, &avp) == 0 && avp, 
+            error++; goto out,);
+    d_assert(fd_msg_avp_hdr(avp, &hdr) == 0 && hdr, error++; goto out,);
+    if (hdr->avp_value->i32 != ER_DIAMETER_SUCCESS)
     {
-        d_assert(fd_msg_avp_hdr(avp, &hdr) == 0, goto out,);
-        if (hdr->avp_value->i32 != ER_DIAMETER_SUCCESS)
-            error++;
-    }
-    else 
-    {
-        d_error("No 'Result-Code'");
+        d_error("ERROR DIAMETER Result Code(%d)", hdr->avp_value->i32);
         error++;
+        goto out;
     }
     
     /* Value of Origin-Host */
-    d_assert(fd_msg_search_avp(*msg, s6a_origin_host, &avp) == 0, goto out,);
-    if (avp)
-    {
-        d_assert(fd_msg_avp_hdr(avp, &hdr) == 0, goto out,);
-        d_info("From '%.*s' ", 
-            (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
-    } 
-    else 
-    {
-        d_error("No 'Origin-Host'");
-        error++;
-    }
+    d_assert(fd_msg_search_avp(*msg, s6a_origin_host, &avp) == 0 && avp, 
+            error++; goto out,);
+    d_assert(fd_msg_avp_hdr(avp, &hdr) == 0 && hdr, error++; goto out,);
     
     /* Value of Origin-Realm */
-    d_assert(fd_msg_search_avp(*msg, s6a_origin_realm, &avp) == 0, goto out,);
-    if (avp) 
-    {
-        d_assert(fd_msg_avp_hdr(avp, &hdr) == 0, goto out,);
-        d_info("('%.*s') ", 
-            (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
-    }
-    else
-    {
-        d_error("No 'Origin-Realm'");
-        error++;
-    }
+    d_assert(fd_msg_search_avp(*msg, s6a_origin_realm, &avp) == 0 && avp,
+            error++; goto out,);
+    d_assert(fd_msg_avp_hdr(avp, &hdr) == 0 && hdr, error++; goto out,);
     
+out:
+    /* Free the message */
     d_assert(pthread_mutex_lock(&s6a_config->stats_lock) == 0,,);
     dur = ((ts.tv_sec - mi->ts.tv_sec) * 1000000) + 
         ((ts.tv_nsec - mi->ts.tv_nsec) / 1000);
@@ -213,14 +203,9 @@ static void s6a_aia_cb(void *data, struct msg **msg)
                 (int)(ts.tv_sec + 1 - mi->ts.tv_sec),
                 (long)(1000000000 + ts.tv_nsec - mi->ts.tv_nsec) / 1000);
     
-out:
-    /* Free the message */
     d_assert(fd_msg_free(*msg) == 0,,);
     *msg = NULL;
-    
-    free(mi);
-    
-    return;
+    pool_free_node(&sess_state_pool, mi);
 }
 
 status_t s6a_sm_init(void)
@@ -229,6 +214,8 @@ status_t s6a_sm_init(void)
 
     rv = s6a_init(MODE_MME);
     if (rv != CORE_OK) return rv;
+
+    pool_init(&sess_state_pool, SIZE_OF_SESS_STATE_POOL);
 
 	d_assert(fd_sess_handler_create(&s6a_mme_reg, 
             (void *)free, NULL, NULL) == 0, return -1,);
@@ -239,6 +226,12 @@ status_t s6a_sm_init(void)
 void s6a_sm_final(void)
 {
 	d_assert(fd_sess_handler_destroy(&s6a_mme_reg, NULL) == 0,,);
+
+    d_print("%d not freed in sess_state_pool[%d] of S6A-SM\n",
+            pool_size(&sess_state_pool) - pool_avail(&sess_state_pool),
+            pool_size(&sess_state_pool));
+
+    pool_final(&sess_state_pool);
 
     s6a_final();
 }
