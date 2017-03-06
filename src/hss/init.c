@@ -69,7 +69,6 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
             avp, goto out,);
     d_assert(fd_msg_avp_hdr(avp, &hdr) == 0 && hdr,,);
 
-    core_generate_random_bytes(ue->rand, MAX_KEY_LEN);
     milenage_opc(ue->k, ue->op, ue->opc);
     milenage_generate(ue->opc, ue->amf, ue->k, 
         core_uint64_to_buffer(ue->sqn, MAX_SQN_LEN, sqn), ue->rand, 
@@ -160,7 +159,9 @@ status_t hss_initialize(void)
         #define K "465B5CE8B199B49FAA5F0A2EE238A6BC"
         #define UE1_IMSI "001010123456800"
         #define UE2_IMSI "001010123456796"
+
         #define UE3_IMSI "001010123456819"
+        #define UE3_RAND "20080c3818183b52 2614162c07601d0d"
 
         ue = hss_ctx_ue_add();
         d_assert(ue, return -1, "UE context add failed");
@@ -168,7 +169,8 @@ status_t hss_initialize(void)
         strcpy((char*)ue->imsi, UE1_IMSI);
         ue->imsi_len = strlen(UE1_IMSI);
         memcpy(ue->k, core_ascii_to_hex(K, strlen(K), buf), MAX_KEY_LEN);
-        ue->sqn = 32;
+        core_generate_random_bytes(ue->rand, MAX_KEY_LEN);
+        ue->sqn = 64;
 
         ue = hss_ctx_ue_add();
         d_assert(ue, return -1, "UE context add failed");
@@ -176,7 +178,8 @@ status_t hss_initialize(void)
         strcpy((char*)ue->imsi, UE2_IMSI);
         ue->imsi_len = strlen(UE2_IMSI);
         memcpy(ue->k, core_ascii_to_hex(K, strlen(K), buf), MAX_KEY_LEN);
-        ue->sqn = 32;
+        core_generate_random_bytes(ue->rand, MAX_KEY_LEN);
+        ue->sqn = 64;
 
         ue = hss_ctx_ue_add();
         d_assert(ue, return -1, "UE context add failed");
@@ -184,7 +187,8 @@ status_t hss_initialize(void)
         strcpy((char*)ue->imsi, UE3_IMSI);
         ue->imsi_len = strlen(UE3_IMSI);
         memcpy(ue->k, core_ascii_to_hex(K, strlen(K), buf), MAX_KEY_LEN);
-        ue->sqn = 32;
+        memcpy(ue->rand, core_ascii_to_hex(UE3_RAND, strlen(UE3_RAND), buf), MAX_KEY_LEN);
+        ue->sqn = 64;
     }
 
 	memset(&data, 0, sizeof(data));
