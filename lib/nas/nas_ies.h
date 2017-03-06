@@ -3,6 +3,8 @@
 
 #include "core_pkbuf.h"
 
+#include "3gpp_message.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -219,6 +221,50 @@ ED4(c_uint8_t type:4;,
 CORE_DECLARE(c_int32_t) nas_decode_additional_update_type(
     nas_additional_update_type_t *additional_update_type, pkbuf_t *pkbuf);
 
+/* 9.9.3.1 Authentication failure parameter
+ * See subclause 10.5.3.2.2 in 3GPP TS 24.008 [13].
+ * O TLV 16 */
+typedef struct _nas_authentication_failure_parameter_t {
+    c_uint8_t length;
+    c_uint8_t parameter[14];
+} __attribute__ ((packed)) nas_authentication_failure_parameter_t;
+
+CORE_DECLARE(c_int32_t) nas_decode_authentication_failure_parameter(
+    nas_authentication_failure_parameter_t *authentication_failure_parameter,
+    pkbuf_t *pkbuf);
+
+/* 9.9.3.2 Authentication parameter AUTN
+ * See subclause 10.5.3.1.1 in 3GPP TS 24.008 [13].
+ * M LV 17 */
+typedef struct _nas_authentication_parameter_autn_t {
+    c_uint8_t length;
+    c_uint8_t authentication_parameter_autn[MAX_AUTN_LEN];
+} nas_authentication_parameter_autn_t;
+
+CORE_DECLARE(c_int32_t) nas_encode_authentication_parameter_autn(pkbuf_t *pkbuf, 
+    nas_authentication_parameter_autn_t *authentication_parameter_autn);
+
+/* 9.9.3.3 Authentication parameter RAND
+ * See subclause 10.5.3.1 in 3GPP TS 24.008 [13].
+ * M V 16 */
+typedef struct _nas_authentication_parameter_rand_t {
+    c_uint8_t authentication_parameter_rand[MAX_RAND_LEN];
+} nas_authentication_parameter_rand_t;
+
+CORE_DECLARE(c_int32_t) nas_encode_authentication_parameter_rand(pkbuf_t *pkbuf, 
+    nas_authentication_parameter_rand_t *authentication_parameter_rand);
+
+/* 9.9.3.4 Authentication response parameter
+ * M LV 5-17 */
+typedef struct _nas_authentication_response_parameter_t {
+    c_uint8_t length;
+    c_uint8_t res[MAX_RES_LEN];
+} nas_authentication_response_parameter_t;
+
+CORE_DECLARE(c_int32_t) nas_decode_authentication_response_parameter(
+    nas_authentication_response_parameter_t *authentication_response_parameter,
+    pkbuf_t *pkbuf);
+
 /* 9.9.3.8 DRX parameter
  * See subclause 10.5.5.6 in 3GPP TS 24.008
  * O TV 3 */
@@ -287,6 +333,8 @@ typedef c_uint8_t nas_emm_cause_t;
 
 CORE_DECLARE(c_int32_t) nas_encode_emm_cause(
     pkbuf_t *pkbuf, nas_emm_cause_t *emm_cause);
+CORE_DECLARE(c_int32_t) nas_decode_emm_cause(
+    nas_emm_cause_t *emm_cause, pkbuf_t *pkbuf);
 
 /* 9.9.3.10 * EPS attach result
  * M V 1/2 */
@@ -494,6 +542,19 @@ ED3(c_uint8_t type:4;,
 CORE_DECLARE(c_int32_t) nas_decode_ms_network_feature_support(
     nas_ms_network_feature_support_t *ms_network_feature_support, 
     pkbuf_t *pkbuf);
+
+/* 9.9.3.21 NAS key set identifier
+ * M V 1/2
+ * 9.9.2.9 Spare half octet
+ * M V 1/2 */
+typedef struct _nas_key_set_identifier_t {
+ED3(c_uint8_t spare:4;,
+    c_uint8_t tsc:1;,
+    c_uint8_t nas_key_set_identifier:3;)
+} __attribute__ ((packed)) nas_key_set_identifier_t;
+
+CORE_DECLARE(c_int32_t) nas_encode_nas_key_set_identifier(
+    pkbuf_t *pkbuf, nas_key_set_identifier_t *nas_key_set_identifier);
 
 /* 9.9.3.24A Network resource identifier container
  * See subclause 10.5.5.31 in 3GPP TS 24.008 [13].

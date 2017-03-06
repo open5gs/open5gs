@@ -22,7 +22,7 @@ typedef struct _ue_ctx_t {
 
     c_uint8_t       k[MAX_KEY_LEN];
     c_uint64_t      sqn;
-    c_uint8_t       rand[MAX_KEY_LEN];
+    c_uint8_t       rand[MAX_RAND_LEN];
     c_uint8_t       opc[MAX_KEY_LEN];
     c_uint8_t       op[MAX_KEY_LEN];
     c_uint8_t       amf[MAX_AMF_LEN];

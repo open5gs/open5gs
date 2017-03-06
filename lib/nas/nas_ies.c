@@ -203,6 +203,85 @@ c_int32_t nas_encode_additional_update_result(
     return size;
 }
 
+/* 9.9.3.1 Authentication failure parameter
+ * See subclause 10.5.3.2.2 in 3GPP TS 24.008 [13].
+ * O TLV 16 */
+c_int32_t nas_decode_authentication_failure_parameter(
+    nas_authentication_failure_parameter_t *authentication_failure_parameter,
+    pkbuf_t *pkbuf)
+{
+    c_uint16_t size = 0;
+    nas_authentication_failure_parameter_t *source = pkbuf->payload;
+
+    authentication_failure_parameter->length = source->length;
+    size = authentication_failure_parameter->length + 
+        sizeof(authentication_failure_parameter->length);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
+            return -1, "pkbuf_header error");
+    memcpy(authentication_failure_parameter, pkbuf->payload - size, size);
+    
+    return size;
+}
+
+/* 9.9.3.2 Authentication parameter AUTN
+ * See subclause 10.5.3.1.1 in 3GPP TS 24.008 [13].
+ * M LV 17 */
+c_int32_t nas_encode_authentication_parameter_autn(pkbuf_t *pkbuf, 
+    nas_authentication_parameter_autn_t *authentication_parameter_autn)
+{
+    c_uint16_t size = 0;
+    nas_authentication_parameter_autn_t *source = pkbuf->payload;
+
+    authentication_parameter_autn->length = source->length;
+    size = authentication_parameter_autn->length + 
+            sizeof(authentication_parameter_autn->length);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
+            return -1, "pkbuf_header error");
+    memcpy(authentication_parameter_autn, pkbuf->payload - size, size);
+
+    return size;
+}
+
+/* 9.9.3.3 Authentication parameter RAND
+ * See subclause 10.5.3.1 in 3GPP TS 24.008 [13].
+ * M V 16 */
+c_int32_t nas_encode_authentication_parameter_rand(pkbuf_t *pkbuf, 
+    nas_authentication_parameter_rand_t *authentication_parameter_rand)
+{
+    c_uint16_t size = 0;
+
+    d_assert(authentication_parameter_rand, return -1, "Null param");
+
+    size = sizeof(nas_authentication_parameter_rand_t);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
+            return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, authentication_parameter_rand, size);
+
+    return size;
+}
+
+/* 9.9.3.4 Authentication response parameter
+ * M LV 5-17 */
+c_int32_t nas_decode_authentication_response_parameter(
+    nas_authentication_response_parameter_t *authentication_response_parameter,
+    pkbuf_t *pkbuf)
+{
+    c_uint16_t size = 0;
+    nas_authentication_response_parameter_t *source = pkbuf->payload;
+
+    authentication_response_parameter->length = source->length;
+    size = authentication_response_parameter->length + 
+            sizeof(authentication_response_parameter->length);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
+            return -1, "pkbuf_header error");
+    memcpy(authentication_response_parameter, pkbuf->payload - size, size);
+
+    return size;
+}
+
 /* 9.9.3.8 DRX parameter
  * See subclause 10.5.5.6 in 3GPP TS 24.008
  * O TV 3 */
@@ -221,8 +300,7 @@ c_int32_t nas_decode_drx_parameter(
 
 /* 9.9.3.9 EMM cause
  * O TV 2 */
-c_int32_t nas_encode_emm_cause(
-    pkbuf_t *pkbuf, nas_emm_cause_t *emm_cause)
+c_int32_t nas_encode_emm_cause(pkbuf_t *pkbuf, nas_emm_cause_t *emm_cause)
 {
     c_uint16_t size = 0;
 
@@ -232,6 +310,18 @@ c_int32_t nas_encode_emm_cause(
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
             return -1, "pkbuf_header error");
     memcpy(pkbuf->payload - size, emm_cause, size);
+
+    return size;
+}
+
+c_int32_t nas_decode_emm_cause(nas_emm_cause_t *emm_cause, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = 0;
+
+    size = sizeof(nas_emm_cause_t);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
+            return -1, "pkbuf_header error");
+    memcpy(emm_cause, pkbuf->payload - size, size);
 
     return size;
 }
@@ -508,6 +598,25 @@ c_int32_t nas_decode_ms_network_feature_support(
 {
     memcpy(ms_network_feature_support, pkbuf->payload - 1, 1);
     return 0;
+}
+
+/* 9.9.3.21 NAS key set identifier
+ * M V 1/2
+ * 9.9.2.9 Spare half octet
+ * M V 1/2 */
+c_int32_t nas_encode_nas_key_set_identifier(
+    pkbuf_t *pkbuf, nas_key_set_identifier_t *nas_key_set_identifier)
+{
+    c_uint16_t size = 0;
+
+    d_assert(nas_key_set_identifier, return -1, "Null param");
+
+    size = sizeof(nas_key_set_identifier_t);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
+            return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, nas_key_set_identifier, size);
+
+    return size;
 }
 
 /* 9.9.3.24A Network resource identifier container

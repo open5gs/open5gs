@@ -216,6 +216,65 @@ c_int32_t nas_decode_attach_complete(nas_message_t *message, pkbuf_t *pkbuf)
     return decoded;
 }
 
+c_int32_t nas_decode_authentication_failure(nas_message_t *message, 
+        pkbuf_t *pkbuf)
+{
+    nas_authentication_failure_t *authentication_failure = 
+        &message->emm.authentication_failure;
+    c_uint16_t decoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_decode_emm_cause(&authentication_failure->emm_cause, pkbuf);
+    d_assert(size >= 0, return -1, "decode failed");
+    decoded += size;
+
+    while(pkbuf->len > 0) 
+    {
+        c_uint8_t *buffer = pkbuf->payload;
+        c_uint8_t type = (*buffer) >= 0x80 ? ((*buffer) & 0xf0) : (*buffer);
+
+        size = sizeof(c_uint8_t);
+        d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, 
+                "pkbuf_header error");
+        decoded += size;
+
+        switch(type)
+        {
+            case NAS_AUTHENTICATION_FAILURE_AUTHENTICATION_FAILURE_PARAMETER_TYPE:
+                size = nas_decode_authentication_failure_parameter(
+                        &authentication_failure->
+                        authentication_failure_parameter, pkbuf);
+                d_assert(size >= 0, return -1, "decode failed");
+                authentication_failure->presencemask |=
+                    NAS_AUTHENTICATION_FAILURE_AUTHENTICATION_FAILURE_PARAMETER_PRESENT;
+                decoded += size;
+                break;
+            default:
+                d_error("Unknown type(0x%x) or not implemented\n", type);
+                return -1;
+        }
+
+    }
+
+    return decoded;
+}
+
+c_int32_t nas_decode_authentication_response(nas_message_t *message, 
+        pkbuf_t *pkbuf)
+{
+    nas_authentication_response_t *authentication_response = 
+        &message->emm.authentication_response;
+    c_uint16_t decoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_decode_authentication_response_parameter(
+            &authentication_response->authentication_response_parameter, pkbuf);
+    d_assert(size >= 0, return -1, "decode failed");
+    decoded += size;
+
+    return decoded;
+}
+
 status_t nas_decode_pdu(nas_message_t *message, pkbuf_t *pkbuf)
 {
     status_t rv = CORE_ERROR;
@@ -272,8 +331,18 @@ status_t nas_decode_pdu(nas_message_t *message, pkbuf_t *pkbuf)
         case NAS_GUTI_REALLOCATION_COMPLETE:
         case NAS_AUTHENTICATION_REQUEST:
         case NAS_AUTHENTICATION_RESPONSE:
+            size = nas_decode_authentication_response(message, pkbuf);
+            d_assert(size >= CORE_OK, return CORE_ERROR, "decode error");
+            decoded += size;
+            break;
         case NAS_AUTHENTICATION_REJECT:
+            d_error("Not implemented");
+            return CORE_ERROR;
         case NAS_AUTHENTICATION_FAILURE:
+            size = nas_decode_authentication_failure(message, pkbuf);
+            d_assert(size >= CORE_OK, return CORE_ERROR, "decode error");
+            decoded += size;
+            break;
         case NAS_IDENTITY_REQUEST:
         case NAS_IDENTITY_RESPONSE:
         case NAS_SECURITY_MODE_COMMAND:

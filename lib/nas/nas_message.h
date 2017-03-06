@@ -253,6 +253,47 @@ typedef struct _nas_attach_request_t {
     nas_extended_drx_parameters_t extended_drx_parameters;
 } nas_attach_request_t;
 
+/******************************
+ * 8.2.5 Authentication failure
+ ******************************/
+#define NAS_AUTHENTICATION_FAILURE_AUTHENTICATION_FAILURE_PARAMETER_PRESENT (1<<0)
+#define NAS_AUTHENTICATION_FAILURE_AUTHENTICATION_FAILURE_PARAMETER_TYPE 0x30
+
+typedef struct _nas_authentication_failure_t {
+    /* Mandatory fields */
+    nas_emm_cause_t emm_cause;
+
+    /* Optional fields */
+    c_uint32_t presencemask;
+    nas_authentication_failure_parameter_t authentication_failure_parameter;
+} nas_authentication_failure_t;
+
+/******************************
+ * 8.2.6 Authentication reject
+ ******************************/
+
+/******************************
+ * 8.2.7 Authentication request
+ ******************************/
+typedef struct _nas_authentication_request_t {
+    /* Mandatory fields */
+    nas_key_set_identifier_t nas_key_set_identifier;
+    nas_authentication_parameter_rand_t authentication_parameter_rand;
+    nas_authentication_parameter_autn_t authentication_parameter_autn;
+
+    /* Optional fields */
+} nas_authentication_request_t;
+
+/*******************************
+ * 8.2.7 Authentication response
+ *******************************/
+typedef struct _nas_authentication_response_t {
+    /* Mandatory fields */
+    nas_authentication_response_parameter_t authentication_response_parameter;
+
+    /* Optional fields */
+} nas_authentication_response_t;
+
 typedef struct _nas_message_t {
     nas_header_t h;
     union {
@@ -260,6 +301,9 @@ typedef struct _nas_message_t {
         nas_attach_complete_t attach_complete;
         nas_attach_reject_t attach_reject;
         nas_attach_request_t attach_request;
+        nas_authentication_failure_t authentication_failure;
+        nas_authentication_request_t authentication_request;
+        nas_authentication_response_t authentication_response;
     } emm;
 } nas_message_t;
 

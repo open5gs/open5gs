@@ -11,6 +11,10 @@ extern "C" {
 
 #define MAX_IMSI_LEN        15
 
+#define MAX_RAND_LEN        16
+#define MAX_AUTN_LEN        16
+#define MAX_RES_LEN         16
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

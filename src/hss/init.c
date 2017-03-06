@@ -11,7 +11,6 @@
 
 #define MAX_SQN_LEN 6
 #define MAX_AK_LEN 6
-#define MAX_XRES_LEN 8
 #define MAX_KASME_LEN 32
 
 static struct disp_hdl *hdl_fb = NULL; /* handler for fallback cb */
@@ -42,7 +41,7 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
     c_uint8_t ik[MAX_KEY_LEN];
     c_uint8_t ck[MAX_KEY_LEN];
     c_uint8_t ak[MAX_AK_LEN];
-    c_uint8_t xres[MAX_XRES_LEN];
+    c_uint8_t xres[MAX_RES_LEN];
     c_uint8_t kasme[MAX_KASME_LEN];
     size_t xres_len = 8;
 	

@@ -242,6 +242,32 @@ c_int32_t nas_encode_attach_reject(pkbuf_t *pkbuf, nas_message_t *message)
     return encoded;
 }
 
+c_int32_t nas_encode_authentication_request(
+        pkbuf_t *pkbuf, nas_message_t *message)
+{
+    nas_authentication_request_t *authentication_request = 
+        &message->emm.authentication_request;
+    c_int32_t size = 0;
+    c_int32_t encoded = 0;
+
+    size = nas_encode_nas_key_set_identifier(pkbuf, 
+            &authentication_request->nas_key_set_identifier);
+    d_assert(size >= 0, return encoded, "decode failed");
+    encoded += size;
+
+    size = nas_encode_authentication_parameter_rand(pkbuf, 
+            &authentication_request->authentication_parameter_rand);
+    d_assert(size >= 0, return encoded, "decode failed");
+    encoded += size;
+
+    size = nas_encode_authentication_parameter_autn(pkbuf, 
+            &authentication_request->authentication_parameter_autn);
+    d_assert(size >= 0, return encoded, "decode failed");
+    encoded += size;
+
+    return encoded;
+}
+
 status_t nas_encode_pdu(pkbuf_t **pkbuf, nas_message_t *message)
 {
     status_t rv = CORE_ERROR;
@@ -290,8 +316,15 @@ status_t nas_encode_pdu(pkbuf_t **pkbuf, nas_message_t *message)
         case NAS_GUTI_REALLOCATION_COMMAND:
         case NAS_GUTI_REALLOCATION_COMPLETE:
         case NAS_AUTHENTICATION_REQUEST:
+            size = nas_encode_authentication_request(*pkbuf, message);
+            d_assert(size >= 0, return CORE_ERROR, "decode error");
+            encoded += size;
         case NAS_AUTHENTICATION_RESPONSE:
+            d_error("Not implemented", message->h.message_type);
+            pkbuf_free((*pkbuf));
+            return CORE_ERROR;
         case NAS_AUTHENTICATION_REJECT:
+            break;
         case NAS_AUTHENTICATION_FAILURE:
         case NAS_IDENTITY_REQUEST:
         case NAS_IDENTITY_RESPONSE:
