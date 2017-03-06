@@ -576,10 +576,9 @@ CORE_DECLARE(c_int32_t) nas_encode_nas_key_set_identifier(
 #define NAS_SECURITY_ALGORITHMS_128_EIA1 1
 #define NAS_SECURITY_ALGORITHMS_128_EIA2 2
 #define NAS_SECURITY_ALGORITHMS_128_EIA3 3
-#define NAS_SECURITY_ALGORITHMS_EIA4 4
-#define NAS_SECURITY_ALGORITHMS_EIA5 5
-#define NAS_SECURITY_ALGORITHMS_EIA6 6
-#define NAS_SECURITY_ALGORITHMS_EIA7 7
+#define NAS_SECURITY_ALGORITHMS_128_EEA1 1
+#define NAS_SECURITY_ALGORITHMS_128_EEA2 2
+#define NAS_SECURITY_ALGORITHMS_128_EEA3 3
 typedef struct _nas_security_algorithms_t {
 ED4(c_uint8_t spare1:1;,
     c_uint8_t type_of_ciphering_algorithm:1;,

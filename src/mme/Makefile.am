@@ -18,14 +18,12 @@ nodist_libmme_la_SOURCES = \
 
 libmme_la_DEPENDENCIES = \
     $(top_srcdir)/lib/core/src/libcore.la \
-    $(top_srcdir)/lib/3gpp/lib3gpp.la \
     $(top_srcdir)/lib/s1ap/libs1ap.la \
     $(top_srcdir)/lib/nas/libnas.la \
     $(top_srcdir)/lib/s6a/libs6a.la
 
 libmme_la_LIBADD = \
     $(top_srcdir)/lib/core/src/libcore.la \
-    $(top_srcdir)/lib/3gpp/lib3gpp.la \
     $(top_srcdir)/lib/s1ap/libs1ap.la \
     $(top_srcdir)/lib/nas/libnas.la \
     $(top_srcdir)/lib/s6a/libs6a.la

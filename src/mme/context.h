@@ -6,7 +6,6 @@
 #include "core_net.h"
 #include "core_sha2.h"
 
-#include "plmn_id.h"
 #include "3gpp_message.h"
 #include "sm.h"
 
@@ -14,12 +13,20 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#define PLMN_ID_LEN                 3
+
 #define MAX_PLMN_ID                 6
 #define GRP_PER_MME                 256    /* According to spec it is 65535 */
 #define CODE_PER_MME                256    /* According to spec it is 256 */
 
 typedef list_t ue_list_t;
 typedef list_t rab_list_t;
+
+typedef struct _plmn_id_t {
+    c_uint16_t      mcc;
+    c_uint16_t      mnc;
+    c_uint16_t      mnc_len;
+} plmn_id_t;
 
 typedef struct _served_gummei {
     c_uint32_t      num_of_plmn_id;

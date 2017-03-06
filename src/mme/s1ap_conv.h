@@ -1,7 +1,7 @@
 #ifndef __S1AP_CONV_H__
 #define __S1AP_CONV_H__
 
-#include "plmn_id.h"
+#include "context.h"
 #include "s1ap_message.h"
 
 #ifdef __cplusplus
@@ -15,6 +15,8 @@ CORE_DECLARE(void) s1ap_uint16_to_OCTET_STRING(
 CORE_DECLARE(void) s1ap_uint32_to_OCTET_STRING(
         c_uint32_t uint32, OCTET_STRING_t *octet_string);
 
+CORE_DECLARE(void *) s1ap_plmn_id_to_buffer(
+        plmn_id_t *plmn_id, c_uint8_t *buf);
 CORE_DECLARE(void) s1ap_plmn_id_to_TBCD_STRING(
         plmn_id_t *plmn_id, S1ap_TBCD_STRING_t *tbcd_string);
 

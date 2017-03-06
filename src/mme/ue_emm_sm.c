@@ -9,9 +9,10 @@
 #include "context.h"
 #include "event.h"
 
+#include "s1ap_path.h"
+#include "s1ap_conv.h"
 #include "nas_conv.h"
 #include "s6a_sm.h"
-#include "s1ap_path.h"
 
 static void ue_emm_handle_attach_request(ue_ctx_t *ue, nas_message_t *message);
 static void ue_emm_handle_authentication_request(
@@ -142,7 +143,7 @@ static void ue_emm_handle_attach_request(ue_ctx_t *ue, nas_message_t *message)
         {
             c_uint8_t plmn_id[PLMN_ID_LEN];
 
-            plmn_id_to_buffer(&mme_self()->plmn_id, plmn_id);
+            s1ap_plmn_id_to_buffer(&mme_self()->plmn_id, plmn_id);
             if (attach_request->presencemask &
                 NAS_ATTACH_REQUEST_LAST_VISITED_REGISTERED_TAI_PRESENT)
             {
