@@ -2,8 +2,10 @@
 
 #include "core_debug.h"
 
-#include "s6a_message.h"
 #include "s6a_lib.h"
+#include "s6a_sm.h"
+
+static struct session_handler *s6a_mme_reg = NULL;
 
 struct sess_state {
     c_int32_t randval; /* a random value to store in Test-AVP */
@@ -31,7 +33,7 @@ int s6a_send_auth_info_req(ue_ctx_t *ue, c_uint8_t *plmn_id)
     mi->randval = (int32_t)random();
     
     /* Create the request */
-    d_assert(fd_msg_new( s6a_cmd_air, MSGFL_ALLOC_ETEID, &req ) == 0, 
+    d_assert(fd_msg_new(s6a_cmd_air, MSGFL_ALLOC_ETEID, &req) == 0, 
             free(mi); return -1,);
     
     /* Create a new session */
@@ -221,3 +223,22 @@ out:
     return;
 }
 
+status_t s6a_sm_init(void)
+{
+    status_t rv;
+
+    rv = s6a_init(MODE_MME);
+    if (rv != CORE_OK) return rv;
+
+	d_assert(fd_sess_handler_create(&s6a_mme_reg, 
+            (void *)free, NULL, NULL) == 0, return -1,);
+	
+	return CORE_OK;
+}
+
+void s6a_sm_final(void)
+{
+	d_assert(fd_sess_handler_destroy(&s6a_mme_reg, NULL) == 0,,);
+
+    s6a_final();
+}

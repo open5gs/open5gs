@@ -6,7 +6,7 @@
 #include "context.h"
 #include "event.h"
 
-#include "s6a_message.h"
+#include "s6a_sm.h"
 
 #define EVENT_WAIT_TIMEOUT 10000 /* 10 msec */
 
@@ -21,7 +21,7 @@ status_t mme_initialize()
     rv = mme_ctx_init();
     if (rv != CORE_OK) return rv;
 
-    ret = s6a_mme_init();
+    ret = s6a_sm_init();
     if (ret != 0) return -1;
 
     rv = thread_create(&mme_sm_thread, NULL, mme_sm_main, NULL);
@@ -34,7 +34,7 @@ void mme_terminate(void)
 {
     thread_delete(mme_sm_thread);
 
-    s6a_mme_final();
+    s6a_sm_final();
 
     mme_ctx_final();
 }

@@ -4,7 +4,7 @@
 
 #include "nas_message.h"
 #include "nas_conv.h"
-#include "s6a_message.h"
+#include "s6a_sm.h"
 
 #include "sm.h"
 #include "context.h"
