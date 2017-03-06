@@ -35,6 +35,9 @@ typedef struct _mme_ctx_t {
     c_uint16_t      enb_s1ap_port;
     c_uint32_t      enb_local_addr; /** Network byte order */
 
+    msgq_id         queue_id;
+    tm_service_t    tm_service;
+
     c_uint32_t      mme_ue_s1ap_id;
 
     plmn_id_t       plmn_id;
@@ -63,12 +66,16 @@ typedef struct _enb_ctx_t {
 typedef struct _ue_ctx_t {
     lnode_t         node; /**< A node of list_t */
 
+    ue_emm_sm_t     emm_sm;
+
     c_uint32_t      enb_ue_s1ap_id; /** eNB-UE-S1AP-ID received from eNB */
     c_uint32_t      mme_ue_s1ap_id; /** MME-UE-S1AP-ID received from MME */
     c_uint8_t       imsi[MAX_IMSI_LEN+1];
     c_uint8_t       imsi_len;
 
-    ue_emm_sm_t     emm_sm;
+    c_uint8_t       xres[MAX_RES_LEN];
+    c_uint8_t       xres_len;
+    c_uint8_t       kasme[MAX_KASME_LEN];
 
     rab_list_t      rab_list;
 

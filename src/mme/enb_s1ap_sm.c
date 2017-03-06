@@ -10,7 +10,9 @@
 #include "context.h"
 #include "event.h"
 
-static status_t enb_s1ap_handle_s1setuprequest(
+static void enb_s1ap_handle_s1_setup_request(
+        enb_ctx_t *enb, s1ap_message_t *message);
+static void enb_s1ap_handle_initial_ue_message(
         enb_ctx_t *enb, s1ap_message_t *message);
 
 void enb_s1ap_state_initial(enb_s1ap_sm_t *s, event_t *e)
@@ -71,60 +73,12 @@ void enb_s1ap_state_operational(enb_s1ap_sm_t *s, event_t *e)
                     {
                         case S1ap_ProcedureCode_id_S1Setup :
                         {
-                            enb_s1ap_handle_s1setuprequest(enb, &message);
+                            enb_s1ap_handle_s1_setup_request(enb, &message);
                             break;
                         }
                         case S1ap_ProcedureCode_id_initialUEMessage :
                         {
-                            ue_ctx_t *ue = NULL;
-                            S1ap_InitialUEMessage_IEs_t *ies = NULL;
-                            S1ap_NAS_PDU_t *nasPdu = NULL;
-                            event_t e;
-                            pkbuf_t *sendbuf = NULL;
-
-                            ies = &message.s1ap_InitialUEMessage_IEs;
-                            d_assert(ies, break, "Null param");
-
-                            nasPdu = &ies->nas_pdu;
-                            d_assert(nasPdu, break, "Null param");
-
-                            sendbuf = pkbuf_alloc(0, nasPdu->size);
-                            d_assert(sendbuf, break, "Null param");
-                            memcpy(sendbuf->payload, nasPdu->buf, nasPdu->size);
-
-                            ue = mme_ctx_ue_find_by_enb_ue_s1ap_id(
-                                        enb, ies->eNB_UE_S1AP_ID);
-                            if (!ue)
-                            {
-                                ue = mme_ctx_ue_add(enb);
-                                d_assert(ue, break, "Null param");
-
-                                ue->enb_ue_s1ap_id = ies->eNB_UE_S1AP_ID;
-                            }
-                            else
-                            {
-                                d_warn("Duplicated: eNB[0x%x] sends "
-                                    "Initial-UE Message[eNB-UE-S1AP-ID(%d)]",
-                                    enb->enb_id, ue->enb_ue_s1ap_id);
-                            }
-
-                            d_info("eNB[0x%x] sends "
-                                "Initial-UE Message[eNB-UE-S1AP-ID(%d)]",
-                                enb->enb_id, ue->enb_ue_s1ap_id);
-
-                            fsm_create((fsm_t*)&ue->emm_sm, 
-                                    ue_emm_state_initial, ue_emm_state_final);
-                            ue->emm_sm.ctx = ue;
-                            ue->emm_sm.queue_id = s->queue_id;
-                            ue->emm_sm.tm_service = s->tm_service;
-
-                            fsm_init((fsm_t*)&ue->emm_sm, 0);
-
-                            event_set(&e, EVT_MSG_UE_EMM);
-                            event_set_param1(&e, (c_uintptr_t)ue);
-                            event_set_param2(&e, (c_uintptr_t)sendbuf);
-
-                            event_send(s->queue_id, &e);
+                            enb_s1ap_handle_initial_ue_message(enb, &message);
                             break;
                         }
                         default:
@@ -197,7 +151,8 @@ void enb_s1ap_state_exception(enb_s1ap_sm_t *s, event_t *e)
     }
 }
 
-status_t enb_s1ap_handle_s1setuprequest(enb_ctx_t *enb, s1ap_message_t *message)
+static void enb_s1ap_handle_s1_setup_request(
+        enb_ctx_t *enb, s1ap_message_t *message)
 {
     char buf[INET_ADDRSTRLEN];
 
@@ -205,12 +160,12 @@ status_t enb_s1ap_handle_s1setuprequest(enb_ctx_t *enb, s1ap_message_t *message)
     pkbuf_t *sendbuf = NULL;
     c_uint32_t enb_id;
 
-    d_assert(enb, return CORE_ERROR, "Null param");
-    d_assert(enb->s1ap_sock, return CORE_ERROR, "Null param");
-    d_assert(message, return CORE_ERROR, "Null param");
+    d_assert(enb, return, "Null param");
+    d_assert(enb->s1ap_sock, return, "Null param");
+    d_assert(message, return, "Null param");
 
     ies = &message->s1ap_S1SetupRequestIEs;
-    d_assert(ies, return CORE_ERROR, "Null param");
+    d_assert(ies, return, "Null param");
 
     s1ap_ENB_ID_to_uint32(&ies->global_ENB_ID.eNB_ID, &enb_id);
 
@@ -234,11 +189,58 @@ status_t enb_s1ap_handle_s1setuprequest(enb_ctx_t *enb, s1ap_message_t *message)
     enb->enb_id = enb_id;
 
     d_assert(s1ap_build_setup_rsp(&sendbuf) == CORE_OK, 
-            return CORE_ERROR, "build error");
-    d_assert(s1ap_send_to_enb(enb, sendbuf) == CORE_OK, 
-            return CORE_ERROR, "send error");
+            return, "build error");
+    d_assert(s1ap_send_to_enb(enb, sendbuf) == CORE_OK, , "send error");
 
     pkbuf_free(sendbuf);
+}
 
-    return CORE_OK;
+static void enb_s1ap_handle_initial_ue_message(
+        enb_ctx_t *enb, s1ap_message_t *message)
+{
+    ue_ctx_t *ue = NULL;
+    S1ap_InitialUEMessage_IEs_t *ies = NULL;
+    S1ap_NAS_PDU_t *nasPdu = NULL;
+    event_t e;
+    pkbuf_t *sendbuf = NULL;
+
+    ies = &message->s1ap_InitialUEMessage_IEs;
+    d_assert(ies, return, "Null param");
+
+    nasPdu = &ies->nas_pdu;
+    d_assert(nasPdu, return, "Null param");
+
+    sendbuf = pkbuf_alloc(0, nasPdu->size);
+    d_assert(sendbuf, return, "Null param");
+    memcpy(sendbuf->payload, nasPdu->buf, nasPdu->size);
+
+    ue = mme_ctx_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
+    if (!ue)
+    {
+        ue = mme_ctx_ue_add(enb);
+        d_assert(ue, pkbuf_free(sendbuf);return, "Null param");
+
+        ue->enb_ue_s1ap_id = ies->eNB_UE_S1AP_ID;
+    }
+    else
+    {
+        d_warn("Duplicated: eNB[0x%x] sends "
+            "Initial-UE Message[eNB-UE-S1AP-ID(%d)]",
+            enb->enb_id, ue->enb_ue_s1ap_id);
+    }
+
+    d_info("eNB[0x%x] sends Initial-UE Message[eNB-UE-S1AP-ID(%d)]",
+        enb->enb_id, ue->enb_ue_s1ap_id);
+
+    fsm_create((fsm_t*)&ue->emm_sm, 
+            ue_emm_state_initial, ue_emm_state_final);
+    ue->emm_sm.ctx = ue;
+
+    fsm_init((fsm_t*)&ue->emm_sm, 0);
+
+    event_set(&e, EVT_MSG_UE_EMM);
+    event_set_param1(&e, (c_uintptr_t)ue);
+    event_set_param2(&e, (c_uintptr_t)sendbuf);
+
+    event_send(mme_self()->queue_id, &e);
 }

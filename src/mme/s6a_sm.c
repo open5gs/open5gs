@@ -3,6 +3,8 @@
 #include "core_debug.h"
 #include "core_pool.h"
 
+#include "context.h"
+#include "nas_message.h"
 #include "s6a_lib.h"
 #include "s6a_sm.h"
 
@@ -126,11 +128,18 @@ static void s6a_aia_cb(void *data, struct msg **msg)
     struct timespec ts;
     struct session *sess;
     struct avp *avp;
+    struct avp *avpch1, *avpch2;
     struct avp_hdr *hdr;
     unsigned long dur;
     int error = 0;
     int new;
+
     ue_ctx_t *ue = NULL;
+    nas_message_t message;
+    pkbuf_t *sendbuf = NULL;
+    event_t e;
+    nas_authentication_request_t *authentication_request = 
+        &message.emm.authentication_request;
     
     CHECK_SYS_DO(clock_gettime(CLOCK_REALTIME, &ts), return);
 
@@ -155,16 +164,50 @@ static void s6a_aia_cb(void *data, struct msg **msg)
         goto out;
     }
     
-    /* Value of Origin-Host */
-    d_assert(fd_msg_search_avp(*msg, s6a_origin_host, &avp) == 0 && avp, 
+    memset(&message, 0, sizeof(message));
+    message.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    message.h.message_type = NAS_AUTHENTICATION_REQUEST;
+
+    d_assert(fd_msg_search_avp(*msg, s6a_authentication_info, &avp) == 0 && avp, 
             error++; goto out,);
     d_assert(fd_msg_avp_hdr(avp, &hdr) == 0 && hdr, error++; goto out,);
-    
-    /* Value of Origin-Realm */
-    d_assert(fd_msg_search_avp(*msg, s6a_origin_realm, &avp) == 0 && avp,
+    d_assert(fd_avp_search_avp(avp, s6a_e_utran_vector, &avpch1) == 0 && avp, 
             error++; goto out,);
-    d_assert(fd_msg_avp_hdr(avp, &hdr) == 0 && hdr, error++; goto out,);
-    
+    d_assert(fd_msg_avp_hdr(avpch1, &hdr) == 0 && hdr, error++; goto out,);
+
+    d_assert(fd_avp_search_avp(avpch1, s6a_xres, &avpch2) == 0 && avp, 
+            error++; goto out,);
+    d_assert(fd_msg_avp_hdr(avpch2, &hdr) == 0 && hdr, error++; goto out,);
+    memcpy(ue->xres, hdr->avp_value->os.data, hdr->avp_value->os.len);
+    ue->xres_len = hdr->avp_value->os.len;
+
+    d_assert(fd_avp_search_avp(avpch1, s6a_kasme, &avpch2) == 0 && avp, 
+            error++; goto out,);
+    d_assert(fd_msg_avp_hdr(avpch2, &hdr) == 0 && hdr, error++; goto out,);
+    memcpy(ue->kasme, hdr->avp_value->os.data, hdr->avp_value->os.len);
+
+    d_assert(fd_avp_search_avp(avpch1, s6a_rand, &avpch2) == 0 && avp, 
+            error++; goto out,);
+    d_assert(fd_msg_avp_hdr(avpch2, &hdr) == 0 && hdr, error++; goto out,);
+    memcpy(authentication_request->authentication_parameter_rand.rand,
+            hdr->avp_value->os.data, hdr->avp_value->os.len);
+
+    d_assert(fd_avp_search_avp(avpch1, s6a_autn, &avpch2) == 0 && avp, 
+            error++; goto out,);
+    d_assert(fd_msg_avp_hdr(avpch2, &hdr) == 0 && hdr, error++; goto out,);
+    authentication_request->authentication_parameter_autn.length = 
+        hdr->avp_value->os.len;
+    memcpy(authentication_request->authentication_parameter_autn.autn,
+            hdr->avp_value->os.data, hdr->avp_value->os.len);
+
+    d_assert(nas_encode_pdu(&sendbuf, &message) == CORE_OK && sendbuf, 
+            error++; goto out,);
+
+    event_set(&e, EVT_MSG_UE_EMM);
+    event_set_param1(&e, (c_uintptr_t)ue);
+    event_set_param2(&e, (c_uintptr_t)sendbuf);
+
+    event_send(mme_self()->queue_id, &e);
 out:
     /* Free the message */
     d_assert(pthread_mutex_lock(&s6a_config->stats_lock) == 0,,);

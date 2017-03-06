@@ -11,12 +11,8 @@ extern "C" {
 #endif /* __cplusplus */
 
 typedef struct _mme_sm_t {
-
     fsm_t fsm;
     void *ctx;
-    msgq_id queue_id;
-    tm_service_t tm_service;
-
 } mme_sm_t;
 
 void mme_state_initial(mme_sm_t *s, event_t *e);
@@ -25,12 +21,8 @@ void mme_state_operational(mme_sm_t *s, event_t *e);
 void mme_state_exception(mme_sm_t *s, event_t *e);
 
 typedef struct _enb_s1ap_sm_t {
-
     fsm_t fsm;
     void *ctx;
-    msgq_id queue_id;
-    tm_service_t tm_service;
-
 } enb_s1ap_sm_t;
 
 void enb_s1ap_state_initial(enb_s1ap_sm_t *s, event_t *e);
@@ -39,12 +31,8 @@ void enb_s1ap_state_operational(enb_s1ap_sm_t *s, event_t *e);
 void enb_s1ap_state_exception(enb_s1ap_sm_t *s, event_t *e);
 
 typedef struct _ue_emm_sm_t {
-
     fsm_t fsm;
     void *ctx;
-    msgq_id queue_id;
-    tm_service_t tm_service;
-
 } ue_emm_sm_t;
 
 void ue_emm_state_initial(ue_emm_sm_t *s, event_t *e);

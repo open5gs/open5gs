@@ -364,14 +364,14 @@ status_t nas_decode_pdu(nas_message_t *message, pkbuf_t *pkbuf)
             decoded += size;
             break;
         case NAS_ATTACH_ACCEPT:
-            d_error("Not implemented(0x%x)", message->h.message_type);
-            return CORE_ERROR;
+            break;
         case NAS_ATTACH_COMPLETE:
             size = nas_decode_attach_complete(message, pkbuf);
             d_assert(size >= CORE_OK, return CORE_ERROR, "decode error");
             decoded += size;
             break;
         case NAS_ATTACH_REJECT:
+            break;
         case NAS_DETACH_REQUEST:
         case NAS_DETACH_ACCEPT:
         case NAS_TRACKING_AREA_UPDATE_REQUEST:
@@ -382,15 +382,17 @@ status_t nas_decode_pdu(nas_message_t *message, pkbuf_t *pkbuf)
         case NAS_SERVICE_REJECT:
         case NAS_GUTI_REALLOCATION_COMMAND:
         case NAS_GUTI_REALLOCATION_COMPLETE:
+            d_error("Not implemented(0x%x)", message->h.message_type);
+            return CORE_ERROR;
         case NAS_AUTHENTICATION_REQUEST:
+            break;
         case NAS_AUTHENTICATION_RESPONSE:
             size = nas_decode_authentication_response(message, pkbuf);
             d_assert(size >= CORE_OK, return CORE_ERROR, "decode error");
             decoded += size;
             break;
         case NAS_AUTHENTICATION_REJECT:
-            d_error("Not implemented(0x%x)", message->h.message_type);
-            return CORE_ERROR;
+            break;
         case NAS_AUTHENTICATION_FAILURE:
             size = nas_decode_authentication_failure(message, pkbuf);
             d_assert(size >= CORE_OK, return CORE_ERROR, "decode error");

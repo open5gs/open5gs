@@ -247,15 +247,15 @@ c_int32_t nas_encode_authentication_parameter_autn(pkbuf_t *pkbuf,
     nas_authentication_parameter_autn_t *authentication_parameter_autn)
 {
     c_uint16_t size = 0;
-    nas_authentication_parameter_autn_t *source = pkbuf->payload;
 
-    authentication_parameter_autn->length = source->length;
+    d_assert(authentication_parameter_autn, return -1, "Null param");
+
     size = authentication_parameter_autn->length + 
-            sizeof(authentication_parameter_autn->length);
-
+        sizeof(authentication_parameter_autn->length);
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
             return -1, "pkbuf_header error");
-    memcpy(authentication_parameter_autn, pkbuf->payload - size, size);
+
+    memcpy(pkbuf->payload - size, authentication_parameter_autn, size);
 
     return size;
 }
@@ -840,15 +840,15 @@ c_int32_t nas_encode_ue_security_capability(
     pkbuf_t *pkbuf, nas_ue_security_capability_t *ue_security_capability)
 {
     c_uint16_t size = 0;
-    nas_ue_security_capability_t *source = pkbuf->payload;
 
-    ue_security_capability->length = source->length;
+    d_assert(ue_security_capability, return -1, "Null param");
+
     size = ue_security_capability->length + 
-            sizeof(ue_security_capability->length);
-
+        sizeof(ue_security_capability->length);
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
             return -1, "pkbuf_header error");
-    memcpy(ue_security_capability, pkbuf->payload - size, size);
+
+    memcpy(pkbuf->payload - size, ue_security_capability, size);
 
     return size;
 }

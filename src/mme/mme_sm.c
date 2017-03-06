@@ -30,13 +30,12 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
     sm_trace(1, e);
 
     d_assert(s, return, "Null param");
-    d_assert(s->queue_id, return, "Null param");
 
     switch (event_get(e))
     {
         case FSM_ENTRY_SIG:
         {
-            rv = s1ap_open(s->queue_id);
+            rv = s1ap_open();
             if (rv != CORE_OK)
             {
                 d_error("Can't establish S1AP path");
@@ -67,7 +66,7 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
             enb_ctx_t *enb = mme_ctx_enb_find_by_sock(sock);
             if (!enb)
             {
-                rc = net_register_sock(sock, _s1ap_recv_cb, (void*)s->queue_id);
+                rc = net_register_sock(sock, _s1ap_recv_cb, NULL);
                 d_assert(rc == 0, break, "register _s1ap_recv_cb failed");
 
                 enb_ctx_t *enb = mme_ctx_enb_add();
@@ -77,8 +76,6 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
                 fsm_create((fsm_t*)&enb->s1ap_sm, 
                         enb_s1ap_state_initial, enb_s1ap_state_final);
                 enb->s1ap_sm.ctx = enb;
-                enb->s1ap_sm.queue_id = s->queue_id;
-                enb->s1ap_sm.tm_service = s->tm_service;
                 fsm_init((fsm_t*)&enb->s1ap_sm, 0);
             }
             else

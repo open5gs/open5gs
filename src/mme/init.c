@@ -42,20 +42,19 @@ void mme_terminate(void)
 void *THREAD_FUNC mme_sm_main(void *data)
 {
     event_t event;
-    msgq_id queue_id;
     mme_sm_t mme_sm;
     c_time_t prev_tm, now_tm;
     int r;
 
     memset(&event, 0, sizeof(event_t));
 
-    queue_id = event_create();
-    d_assert(queue_id, return NULL, "MME event queue creation failed");
+    mme_self()->queue_id = event_create();
+    d_assert(mme_self()->queue_id, return NULL, 
+            "MME event queue creation failed");
 
     fsm_create(&mme_sm.fsm, mme_state_initial, mme_state_final);
     d_assert(&mme_sm.fsm, return NULL, "MME state machine creation failed");
-    mme_sm.queue_id = queue_id;
-    tm_service_init(&mme_sm.tm_service);
+    tm_service_init(&mme_self()->tm_service);
 
     fsm_init((fsm_t*)&mme_sm, 0);
 
@@ -63,7 +62,7 @@ void *THREAD_FUNC mme_sm_main(void *data)
 
     while ((!thread_should_stop()))
     {
-        r = event_timedrecv(queue_id, &event, EVENT_WAIT_TIMEOUT);
+        r = event_timedrecv(mme_self()->queue_id, &event, EVENT_WAIT_TIMEOUT);
 
         d_assert(r != CORE_ERROR, continue,
                 "While receiving a event message, error occurs");
@@ -73,7 +72,7 @@ void *THREAD_FUNC mme_sm_main(void *data)
         /* if the gap is over 10 ms, execute preriodic jobs */
         if (now_tm - prev_tm > EVENT_WAIT_TIMEOUT)
         {
-            event_timer_execute(&mme_sm.tm_service);
+            event_timer_execute(&mme_self()->tm_service);
 
             prev_tm = now_tm;
         }
@@ -89,7 +88,7 @@ void *THREAD_FUNC mme_sm_main(void *data)
     fsm_final((fsm_t*)&mme_sm, 0);
     fsm_clear((fsm_t*)&mme_sm);
 
-    event_delete(queue_id);
+    event_delete(mme_self()->queue_id);
 
     return NULL;
 }

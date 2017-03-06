@@ -240,7 +240,7 @@ CORE_DECLARE(c_int32_t) nas_decode_authentication_failure_parameter(
  * M LV 17 */
 typedef struct _nas_authentication_parameter_autn_t {
     c_uint8_t length;
-    c_uint8_t authentication_parameter_autn[MAX_AUTN_LEN];
+    c_uint8_t autn[MAX_AUTN_LEN];
 } nas_authentication_parameter_autn_t;
 
 CORE_DECLARE(c_int32_t) nas_encode_authentication_parameter_autn(pkbuf_t *pkbuf, 
@@ -250,7 +250,7 @@ CORE_DECLARE(c_int32_t) nas_encode_authentication_parameter_autn(pkbuf_t *pkbuf,
  * See subclause 10.5.3.1 in 3GPP TS 24.008 [13].
  * M V 16 */
 typedef struct _nas_authentication_parameter_rand_t {
-    c_uint8_t authentication_parameter_rand[MAX_RAND_LEN];
+    c_uint8_t rand[MAX_RAND_LEN];
 } nas_authentication_parameter_rand_t;
 
 CORE_DECLARE(c_int32_t) nas_encode_authentication_parameter_rand(pkbuf_t *pkbuf, 

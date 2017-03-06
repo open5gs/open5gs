@@ -7,11 +7,12 @@
 #include "s1ap_message.h"
 
 #include "event.h"
+#include "context.h"
 #include "s1ap_path.h"
 
 static int _s1ap_accept_cb(net_sock_t *net_sock, void *data);
 
-status_t s1ap_open(msgq_id queue_id)
+status_t s1ap_open(void)
 {
     char buf[INET_ADDRSTRLEN];
     int rc;
@@ -28,7 +29,7 @@ status_t s1ap_open(msgq_id queue_id)
     }
 
     rc = net_register_sock(
-            mme_self()->enb_s1ap_sock, _s1ap_accept_cb, (void *)queue_id);
+            mme_self()->enb_s1ap_sock, _s1ap_accept_cb, NULL);
     if (rc != 0)
     {
         d_error("Can't establish S1-ENB path(%d:%s)",
@@ -61,10 +62,8 @@ static int _s1ap_accept_cb(net_sock_t *net_sock, void *data)
     char buf[INET_ADDRSTRLEN];
     ssize_t r;
     net_sock_t *remote_sock;
-    msgq_id queue_id = (msgq_id)data;
 
     d_assert(net_sock, return -1, "Null param");
-    d_assert(queue_id, return -1, "Null param");
 
     r = net_accept(&remote_sock, net_sock, 0);
     if (r > 0)
@@ -75,7 +74,7 @@ static int _s1ap_accept_cb(net_sock_t *net_sock, void *data)
         event_t e;
         event_set(&e, EVT_LO_ENB_S1AP_ACCEPT);
         event_set_param1(&e, (c_uintptr_t)remote_sock);
-        event_send(queue_id, &e);
+        event_send(mme_self()->queue_id, &e);
     }
     else
     {
@@ -85,13 +84,12 @@ static int _s1ap_accept_cb(net_sock_t *net_sock, void *data)
     return r;
 }
 
-static status_t s1ap_recv(net_sock_t *net_sock, pkbuf_t *pkbuf, msgq_id queue_id)
+static status_t s1ap_recv(net_sock_t *net_sock, pkbuf_t *pkbuf)
 {
     event_t e;
 
     d_assert(net_sock, return CORE_ERROR, "Null param");
     d_assert(pkbuf, return CORE_ERROR, "Null param");
-    d_assert(queue_id, return -1, "Null param");
 
     d_trace(1, "S1AP_PDU is received from eNB-Inf\n");
     d_trace_hex(1, pkbuf->payload, pkbuf->len);
@@ -100,7 +98,7 @@ static status_t s1ap_recv(net_sock_t *net_sock, pkbuf_t *pkbuf, msgq_id queue_id
     event_set_param1(&e, (c_uintptr_t)net_sock);
     event_set_param2(&e, (c_uintptr_t)pkbuf);
 
-    return event_send(queue_id, &e);
+    return event_send(mme_self()->queue_id, &e);
 }
 
 int _s1ap_recv_cb(net_sock_t *net_sock, void *data)
@@ -108,10 +106,8 @@ int _s1ap_recv_cb(net_sock_t *net_sock, void *data)
     status_t rv;
     pkbuf_t *pkbuf;
     ssize_t r;
-    msgq_id queue_id = (msgq_id)data;
 
     d_assert(net_sock, return -1, "Null param");
-    d_assert(queue_id, return -1, "Null param");
 
     pkbuf = pkbuf_alloc(0, MESSAGE_SDU_SIZE);
     d_assert(pkbuf, return -1, "Can't allocate pkbufuf");
@@ -146,7 +142,7 @@ int _s1ap_recv_cb(net_sock_t *net_sock, void *data)
 
         event_set(&e, EVT_LO_ENB_S1AP_CONNREFUSED);
         event_set_param1(&e, (c_uintptr_t)net_sock);
-        event_send(queue_id, &e);
+        event_send(mme_self()->queue_id, &e);
 
         return -1;
     }
@@ -154,7 +150,7 @@ int _s1ap_recv_cb(net_sock_t *net_sock, void *data)
     {
         pkbuf->len = r;
 
-        rv = s1ap_recv(net_sock, pkbuf, queue_id);
+        rv = s1ap_recv(net_sock, pkbuf);
         if (rv == CORE_ERROR)
         {
             pkbuf_free(pkbuf);

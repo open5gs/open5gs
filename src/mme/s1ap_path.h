@@ -11,7 +11,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-CORE_DECLARE(status_t) s1ap_open(msgq_id queue_id);
+CORE_DECLARE(status_t) s1ap_open();
 CORE_DECLARE(status_t) s1ap_close();
 
 CORE_DECLARE(status_t) s1ap_send(net_sock_t *s, pkbuf_t *pkb);

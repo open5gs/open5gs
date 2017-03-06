@@ -6,7 +6,7 @@ libs6afreeDiameter_la_SOURCES = \
 	extension.h
 
 nodist_libs6afreeDiameter_la_SOURCES = \
-	dict_nas_mipv6.c dict_s6a.c
+	dict_nas_mipv6.c dict_s6a.c libapp_sip.c
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/s6a

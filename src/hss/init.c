@@ -11,7 +11,6 @@
 
 #define MAX_SQN_LEN 6
 #define MAX_AK_LEN 6
-#define MAX_KASME_LEN 32
 
 static struct disp_hdl *hdl_fb = NULL; /* handler for fallback cb */
 static struct disp_hdl *hdl_air = NULL; /* handler for Auth-Info-Request cb */
