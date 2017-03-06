@@ -13,8 +13,7 @@ struct sess_state {
 static void s6a_aia_cb(void *data, struct msg **msg);
 
 /* Cb called when an answer is received */
-int s6a_send_auth_info_req(
-    c_uint8_t *imsi, c_uint8_t imsi_len, c_uint8_t *plmn_id)
+int s6a_send_auth_info_req(ue_ctx_t *ue, c_uint8_t *plmn_id)
 {
     struct msg *req = NULL;
     struct avp *avp;
@@ -22,6 +21,8 @@ int s6a_send_auth_info_req(
     union avp_value val;
     struct sess_state *mi = NULL, *svg;
     struct session *sess = NULL;
+
+    d_assert(ue, return -1, "Null Param");
     
     /* Create the random value to store with the session */
     mi = malloc(sizeof(struct sess_state));
@@ -58,8 +59,8 @@ int s6a_send_auth_info_req(
     
     /* Set the User-Name AVP if needed*/
     d_assert(fd_msg_avp_new(s6a_user_name, 0, &avp) == 0, goto out,);
-    val.os.data = imsi;
-    val.os.len  = imsi_len;
+    val.os.data = ue->imsi;
+    val.os.len  = ue->imsi_len;
     d_assert(fd_msg_avp_setvalue(avp, &val) == 0, goto out, );
     d_assert(fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp) == 0, goto out,);
 
