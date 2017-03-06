@@ -294,6 +294,51 @@ typedef struct _nas_authentication_response_t {
     /* Optional fields */
 } nas_authentication_response_t;
 
+/******************************
+ * 8.2.20 Security mode command
+ ******************************/
+#define NAS_SECURITY_MODE_COMMAND_IMEISV_REQUEST_PRESENT (1<<0)
+#define NAS_SECURITY_MODE_COMMAND_REPLAYED_NONCE_PRESENT (1<<1)
+#define NAS_SECURITY_MODE_COMMAND_NONCE_PRESENT (1<<2)
+
+#define NAS_SECURITY_MODE_COMMAND_IMEISV_REQUEST_TYPE 0xC0
+#define NAS_SECURITY_MODE_COMMAND_REPLAYED_NONCE_TYPE 0x55
+#define NAS_SECURITY_MODE_COMMAND_NONCE_TYPE 0x56
+
+typedef struct _nas_security_mode_command_t {
+    /* Mandatory fields */
+    nas_security_algorithms_t selected_nas_security_algorithms;
+    nas_key_set_identifier_t nas_key_set_identifier;
+    nas_ue_security_capability_t replayed_ue_security_capabilities;
+
+    /* Optional fields */
+    c_uint32_t presencemask;
+    nas_imeisv_request_t imeisv_request;
+    nas_nonce_t replayed_nonce;
+    nas_nonce_t nonce;
+} nas_security_mode_command_t;
+
+/*******************************
+ * 8.2.21 Security mode complete
+ *******************************/
+#define NAS_SECURITY_MODE_COMPLETE_IMEISV_PRESENT (1<<0)
+#define NAS_SECURITY_MODE_COMPLETE_IMEISV_TYPE 0x23
+typedef struct _nas_security_mode_complete_t {
+    /* Optional fields */
+    c_uint32_t presencemask;
+    nas_mobile_identity_t imeisv;
+} nas_security_mode_complete_t;
+
+/******************************
+ * 8.2.22 Security mode reject
+ ******************************/
+typedef struct _nas_security_mode_reject_t {
+    /* Mandatory fields */
+    nas_emm_cause_t emm_cause;
+
+    /* Optional fields */
+} nas_security_mode_reject_t;
+
 typedef struct _nas_message_t {
     nas_header_t h;
     union {
@@ -304,6 +349,9 @@ typedef struct _nas_message_t {
         nas_authentication_failure_t authentication_failure;
         nas_authentication_request_t authentication_request;
         nas_authentication_response_t authentication_response;
+        nas_security_mode_command_t security_mode_command;
+        nas_security_mode_complete_t security_mode_complete;
+        nas_security_mode_reject_t security_mode_reject;
     } emm;
 } nas_message_t;
 

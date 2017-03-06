@@ -93,6 +93,22 @@ c_int32_t nas_encode_mobile_identity(
     return size;
 }
 
+c_int32_t nas_decode_mobile_identity(
+    nas_mobile_identity_t *mobile_identity, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = 0;
+    nas_mobile_identity_t *source = pkbuf->payload;
+
+    mobile_identity->length = source->length;
+    size = mobile_identity->length + sizeof(mobile_identity->length);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
+            return -1, "pkbuf_header error");
+    memcpy(mobile_identity, pkbuf->payload - size, size);
+    
+    return size;
+}
+
 /* 9.9.2.4 Mobile station classmark 2
  * See subclause 10.5.1.6 in 3GPP TS 24.008
  * O TLV 5 */
@@ -569,6 +585,16 @@ CORE_DECLARE(c_int32_t) nas_encode_gprs_timer_3(
     return size;
 }
 
+/* 9.9.3.18 IMEISV request
+ * See subclause 10.5.5.10 in 3GPP TS 24.008 [13].
+ * O TV 1 */
+c_int32_t nas_encode_imeisv_request(
+    pkbuf_t *pkbuf, nas_imeisv_request_t *imeisv_request)
+{
+    memcpy(imeisv_request, pkbuf->payload - 1, 1);
+    return 0;
+}
+
 /* 9.9.3.20 MS network capability
  * See subclause 10.5.5.12 in 3GPP TS 24.008
  * O TLV 4-10 */
@@ -591,7 +617,6 @@ c_int32_t nas_decode_ms_network_capability(
 /* 9.9.3.20A MS network feature support 
  * See subclause 10.5.1.15 in 3GPP TS 24.008 [13].
  * O TV 1 */
-
 c_int32_t nas_decode_ms_network_feature_support(
     nas_ms_network_feature_support_t *ms_network_feature_support, 
     pkbuf_t *pkbuf)
@@ -619,6 +644,23 @@ c_int32_t nas_encode_nas_key_set_identifier(
     return size;
 }
 
+/* 9.9.3.23 NAS security algorithms
+ * M V 1 */
+c_int32_t nas_encode_nas_security_algorithms(
+    pkbuf_t *pkbuf, nas_security_algorithms_t *nas_security_algorithms)
+{
+    c_uint16_t size = 0;
+
+    d_assert(nas_security_algorithms, return -1, "Null param");
+
+    size = sizeof(nas_security_algorithms_t);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
+            return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, nas_security_algorithms, size);
+
+    return size;
+}
+
 /* 9.9.3.24A Network resource identifier container
  * See subclause 10.5.5.31 in 3GPP TS 24.008 [13].
  * O TLV 4 */
@@ -637,6 +679,25 @@ c_int32_t nas_decode_network_resource_identifier_container(
             return -1, "pkbuf_header error");
     memcpy(network_resource_identifier_container, pkbuf->payload - size, size);
     
+    return size;
+}
+
+/* 9.9.3.25 Nonce
+ * O TV 5 */
+c_int32_t nas_encode_nonce(pkbuf_t *pkbuf, nas_nonce_t *nonce)
+{
+    c_uint16_t size = 0;
+    c_uint32_t target;
+
+    d_assert(nonce, return -1, "Null param");
+
+    size = sizeof(nas_nonce_t);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
+            return -1, "pkbuf_header error");
+
+    target = htonl(*nonce);
+    memcpy(pkbuf->payload - size, &target, size);
+
     return size;
 }
 
@@ -769,6 +830,25 @@ c_int32_t nas_decode_ue_network_capability(
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
             return -1, "pkbuf_header error");
     memcpy(ue_network_capability, pkbuf->payload - size, size);
+
+    return size;
+}
+
+/* 9.9.3.36 UE security capability
+ * M LV 3-6 */
+c_int32_t nas_encode_ue_security_capability(
+    pkbuf_t *pkbuf, nas_ue_security_capability_t *ue_security_capability)
+{
+    c_uint16_t size = 0;
+    nas_ue_security_capability_t *source = pkbuf->payload;
+
+    ue_security_capability->length = source->length;
+    size = ue_security_capability->length + 
+            sizeof(ue_security_capability->length);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
+            return -1, "pkbuf_header error");
+    memcpy(ue_security_capability, pkbuf->payload - size, size);
 
     return size;
 }

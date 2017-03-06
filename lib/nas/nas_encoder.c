@@ -207,7 +207,7 @@ c_int32_t nas_encode_attach_reject(pkbuf_t *pkbuf, nas_message_t *message)
     if (attach_reject->presencemask & NAS_ATTACH_REJECT_T3346_VALUE_PRESENT)
     {
         size = nas_encode_optional_type(pkbuf, 
-                NAS_ATTACH_REJECT_T3346_VALUE_PRESENT);
+                NAS_ATTACH_REJECT_T3346_VALUE_TYPE);
         d_assert(size >= 0, return encoded, "decode failed");
         encoded += size;
 
@@ -216,7 +216,7 @@ c_int32_t nas_encode_attach_reject(pkbuf_t *pkbuf, nas_message_t *message)
         encoded += size;
     }
 
-    if (attach_reject->presencemask & NAS_ATTACH_REJECT_T3402_VALUE_TYPE)
+    if (attach_reject->presencemask & NAS_ATTACH_REJECT_T3402_VALUE_PRESENT)
     {
         size = nas_encode_optional_type(pkbuf, 
                 NAS_ATTACH_REJECT_T3402_VALUE_TYPE);
@@ -228,7 +228,8 @@ c_int32_t nas_encode_attach_reject(pkbuf_t *pkbuf, nas_message_t *message)
         encoded += size;
     }
 
-    if (attach_reject->presencemask & NAS_ATTACH_REJECT_EXTENDED_EMM_CAUSE_TYPE)
+    if (attach_reject->presencemask & 
+            NAS_ATTACH_REJECT_EXTENDED_EMM_CAUSE_PRESENT)
     {
         attach_reject->extended_emm_cause.type = 
             (NAS_ATTACH_ACCEPT_ADDITIONAL_UPDATE_RESULT_TYPE >> 4);
@@ -268,6 +269,70 @@ c_int32_t nas_encode_authentication_request(
     return encoded;
 }
 
+c_int32_t nas_encode_security_mode_command(
+        pkbuf_t *pkbuf, nas_message_t *message)
+{
+    nas_security_mode_command_t *security_mode_command = 
+        &message->emm.security_mode_command;
+    c_int32_t size = 0;
+    c_int32_t encoded = 0;
+
+    size = nas_encode_nas_security_algorithms(
+            pkbuf, &security_mode_command->selected_nas_security_algorithms);
+    d_assert(size >= 0, return encoded, "decode failed");
+    encoded += size;
+
+    size = nas_encode_nas_key_set_identifier(
+            pkbuf, &security_mode_command->nas_key_set_identifier);
+    d_assert(size >= 0, return encoded, "decode failed");
+    encoded += size;
+
+    size = nas_encode_ue_security_capability(
+            pkbuf, &security_mode_command->replayed_ue_security_capabilities);
+    d_assert(size >= 0, return encoded, "decode failed");
+    encoded += size;
+
+    if (security_mode_command->presencemask & 
+            NAS_SECURITY_MODE_COMMAND_IMEISV_REQUEST_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, 
+                NAS_SECURITY_MODE_COMMAND_IMEISV_REQUEST_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_imeisv_request(pkbuf, 
+                &security_mode_command->imeisv_request);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+    if (security_mode_command->presencemask & 
+            NAS_SECURITY_MODE_COMMAND_REPLAYED_NONCE_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, 
+                NAS_SECURITY_MODE_COMMAND_REPLAYED_NONCE_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_nonce(pkbuf, &security_mode_command->replayed_nonce);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+    if (security_mode_command->presencemask & 
+            NAS_SECURITY_MODE_COMMAND_NONCE_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, 
+                NAS_SECURITY_MODE_COMMAND_NONCE_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_nonce(pkbuf, &security_mode_command->nonce);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    return encoded;
+}
+
 status_t nas_encode_pdu(pkbuf_t **pkbuf, nas_message_t *message)
 {
     status_t rv = CORE_ERROR;
@@ -288,7 +353,7 @@ status_t nas_encode_pdu(pkbuf_t **pkbuf, nas_message_t *message)
     switch(message->h.message_type)
     {
         case NAS_ATTACH_REQUEST:
-            d_error("Not implemented", message->h.message_type);
+            d_error("Not implemented(0x%x)", message->h.message_type);
             pkbuf_free((*pkbuf));
             return CORE_ERROR;
         case NAS_ATTACH_ACCEPT:
@@ -297,7 +362,7 @@ status_t nas_encode_pdu(pkbuf_t **pkbuf, nas_message_t *message)
             encoded += size;
             break;
         case NAS_ATTACH_COMPLETE:
-            d_error("Not implemented", message->h.message_type);
+            d_error("Not implemented(0x%x)", message->h.message_type);
             pkbuf_free((*pkbuf));
             return CORE_ERROR;
         case NAS_ATTACH_REJECT:
@@ -319,8 +384,9 @@ status_t nas_encode_pdu(pkbuf_t **pkbuf, nas_message_t *message)
             size = nas_encode_authentication_request(*pkbuf, message);
             d_assert(size >= 0, return CORE_ERROR, "decode error");
             encoded += size;
+            break;
         case NAS_AUTHENTICATION_RESPONSE:
-            d_error("Not implemented", message->h.message_type);
+            d_error("Not implemented(0x%x)", message->h.message_type);
             pkbuf_free((*pkbuf));
             return CORE_ERROR;
         case NAS_AUTHENTICATION_REJECT:
@@ -329,6 +395,10 @@ status_t nas_encode_pdu(pkbuf_t **pkbuf, nas_message_t *message)
         case NAS_IDENTITY_REQUEST:
         case NAS_IDENTITY_RESPONSE:
         case NAS_SECURITY_MODE_COMMAND:
+            size = nas_encode_security_mode_command(*pkbuf, message);
+            d_assert(size >= 0, return CORE_ERROR, "decode error");
+            encoded += size;
+            break;
         case NAS_SECURITY_MODE_COMPLETE:
         case NAS_SECURITY_MODE_REJECT:
         case NAS_EMM_STATUS:
@@ -362,7 +432,7 @@ status_t nas_encode_pdu(pkbuf_t **pkbuf, nas_message_t *message)
         case NAS_ESM_INFORMATION_RESPONSE:
         case NAS_ESM_STATUS:
         default:
-            d_error("Unknown message type (%d) or not implemented", 
+            d_error("Unknown message type (0x%x) or not implemented", 
                     message->h.message_type);
             pkbuf_free((*pkbuf));
             return CORE_ERROR;

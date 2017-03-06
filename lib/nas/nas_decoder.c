@@ -275,6 +275,59 @@ c_int32_t nas_decode_authentication_response(nas_message_t *message,
     return decoded;
 }
 
+c_int32_t nas_decode_security_mode_complete(nas_message_t *message, 
+        pkbuf_t *pkbuf)
+{
+    nas_security_mode_complete_t *security_mode_complete = 
+        &message->emm.security_mode_complete;
+    c_uint16_t decoded = 0;
+    c_int32_t size = 0;
+
+    while(pkbuf->len > 0) 
+    {
+        c_uint8_t *buffer = pkbuf->payload;
+        c_uint8_t type = (*buffer) >= 0x80 ? ((*buffer) & 0xf0) : (*buffer);
+
+        size = sizeof(c_uint8_t);
+        d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, 
+                "pkbuf_header error");
+        decoded += size;
+
+        switch(type)
+        {
+            case NAS_SECURITY_MODE_COMPLETE_IMEISV_TYPE:
+                size = nas_decode_mobile_identity(
+                        &security_mode_complete->imeisv, pkbuf);
+                d_assert(size >= 0, return -1, "decode failed");
+                security_mode_complete->presencemask |=
+                    NAS_SECURITY_MODE_COMPLETE_IMEISV_PRESENT;
+                decoded += size;
+                break;
+            default:
+                d_error("Unknown type(0x%x) or not implemented\n", type);
+                return -1;
+        }
+
+    }
+
+    return decoded;
+}
+
+c_int32_t nas_decode_security_mode_reject(nas_message_t *message, 
+        pkbuf_t *pkbuf)
+{
+    nas_security_mode_reject_t *security_mode_reject = 
+        &message->emm.security_mode_reject;
+    c_uint16_t decoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_decode_emm_cause(&security_mode_reject->emm_cause, pkbuf);
+    d_assert(size >= 0, return -1, "decode failed");
+    decoded += size;
+
+    return decoded;
+}
+
 status_t nas_decode_pdu(nas_message_t *message, pkbuf_t *pkbuf)
 {
     status_t rv = CORE_ERROR;
@@ -311,7 +364,7 @@ status_t nas_decode_pdu(nas_message_t *message, pkbuf_t *pkbuf)
             decoded += size;
             break;
         case NAS_ATTACH_ACCEPT:
-            d_error("Not implemented");
+            d_error("Not implemented(0x%x)", message->h.message_type);
             return CORE_ERROR;
         case NAS_ATTACH_COMPLETE:
             size = nas_decode_attach_complete(message, pkbuf);
@@ -336,7 +389,7 @@ status_t nas_decode_pdu(nas_message_t *message, pkbuf_t *pkbuf)
             decoded += size;
             break;
         case NAS_AUTHENTICATION_REJECT:
-            d_error("Not implemented");
+            d_error("Not implemented(0x%x)", message->h.message_type);
             return CORE_ERROR;
         case NAS_AUTHENTICATION_FAILURE:
             size = nas_decode_authentication_failure(message, pkbuf);
@@ -346,8 +399,18 @@ status_t nas_decode_pdu(nas_message_t *message, pkbuf_t *pkbuf)
         case NAS_IDENTITY_REQUEST:
         case NAS_IDENTITY_RESPONSE:
         case NAS_SECURITY_MODE_COMMAND:
+            d_error("Not implemented(0x%x)", message->h.message_type);
+            return CORE_ERROR;
         case NAS_SECURITY_MODE_COMPLETE:
+            size = nas_decode_security_mode_complete(message, pkbuf);
+            d_assert(size >= CORE_OK, return CORE_ERROR, "decode error");
+            decoded += size;
+            break;
         case NAS_SECURITY_MODE_REJECT:
+            size = nas_decode_security_mode_reject(message, pkbuf);
+            d_assert(size >= CORE_OK, return CORE_ERROR, "decode error");
+            decoded += size;
+            break;
         case NAS_EMM_STATUS:
         case NAS_EMM_INFORMATION:
         case NAS_DOWNLINK_NAS_TRANSPORT:
@@ -379,7 +442,7 @@ status_t nas_decode_pdu(nas_message_t *message, pkbuf_t *pkbuf)
         case NAS_ESM_INFORMATION_RESPONSE:
         case NAS_ESM_STATUS:
         default:
-            d_error("Unknown message type (%d) or not implemented", 
+            d_error("Unknown message type (0x%x) or not implemented", 
                     message->h.message_type);
             break;
     }

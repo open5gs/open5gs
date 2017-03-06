@@ -108,6 +108,8 @@ typedef struct _nas_mobile_identity_t {
 
 CORE_DECLARE(c_int32_t) nas_encode_mobile_identity(
     pkbuf_t *pkbuf, nas_mobile_identity_t *mobile_identity);
+CORE_DECLARE(c_int32_t) nas_decode_mobile_identity(
+    nas_mobile_identity_t *mobile_identity, pkbuf_t *pkbuf);
 
 /* 9.9.2.4 Mobile station classmark 2
  * See subclause 10.5.1.6 in 3GPP TS 24.008
@@ -490,6 +492,18 @@ CORE_DECLARE(c_int32_t) nas_decode_gprs_timer_3(
 CORE_DECLARE(c_int32_t) nas_encode_gprs_timer_3(
     pkbuf_t *pkbuf, nas_gprs_timer_3_t *gprs_timer_3);
 
+/* 9.9.3.18 IMEISV request
+ * See subclause 10.5.5.10 in 3GPP TS 24.008 [13].
+ * O TV 1 */
+typedef struct _nas_imeisv_request_t {
+ED3(c_uint8_t type:4;,
+    c_uint8_t spare:1;,
+    c_uint8_t imeisv_request_value:3;)
+} __attribute__ ((packed)) nas_imeisv_request_t;
+
+CORE_DECLARE(c_int32_t) nas_encode_imeisv_request(
+    pkbuf_t *pkbuf, nas_imeisv_request_t *imeisv_request);
+
 /* 9.9.3.20 MS network capability
  * See subclause 10.5.5.12 in 3GPP TS 24.008
  * O TLV 4-10 */
@@ -556,6 +570,26 @@ ED3(c_uint8_t spare:4;,
 CORE_DECLARE(c_int32_t) nas_encode_nas_key_set_identifier(
     pkbuf_t *pkbuf, nas_key_set_identifier_t *nas_key_set_identifier);
 
+/* 9.9.3.23 NAS security algorithms
+ * M V 1 */
+#define NAS_SECURITY_ALGORITHMS_EIA0 0
+#define NAS_SECURITY_ALGORITHMS_128_EIA1 1
+#define NAS_SECURITY_ALGORITHMS_128_EIA2 2
+#define NAS_SECURITY_ALGORITHMS_128_EIA3 3
+#define NAS_SECURITY_ALGORITHMS_EIA4 4
+#define NAS_SECURITY_ALGORITHMS_EIA5 5
+#define NAS_SECURITY_ALGORITHMS_EIA6 6
+#define NAS_SECURITY_ALGORITHMS_EIA7 7
+typedef struct _nas_security_algorithms_t {
+ED4(c_uint8_t spare1:1;,
+    c_uint8_t type_of_ciphering_algorithm:1;,
+    c_uint8_t spare2:1;,
+    c_uint8_t type_of_integrity_protection_algorithm:1;)
+} __attribute__ ((packed)) nas_security_algorithms_t;
+
+CORE_DECLARE(c_int32_t) nas_encode_nas_security_algorithms(
+    pkbuf_t *pkbuf, nas_security_algorithms_t *nas_security_algorithms);
+
 /* 9.9.3.24A Network resource identifier container
  * See subclause 10.5.5.31 in 3GPP TS 24.008 [13].
  * O TLV 4 */
@@ -570,6 +604,12 @@ CORE_DECLARE(c_int32_t) nas_decode_network_resource_identifier_container(
     nas_network_resource_identifier_container_t *
         network_resource_identifier_container, 
     pkbuf_t *pkbuf);
+
+/* 9.9.3.25 Nonce
+ * O TV 5 */
+typedef c_uint32_t nas_nonce_t;
+
+CORE_DECLARE(c_int32_t) nas_encode_nonce(pkbuf_t *pkbuf, nas_nonce_t *nonce);
 
 /* 9.9.3.26 P-TMSI signature 
  * See subclause 10.5.5.8 in 3GPP TS 24.008
@@ -704,6 +744,55 @@ ED2(c_uint8_t spare:7;,
 
 CORE_DECLARE(c_int32_t) nas_decode_ue_network_capability(
     nas_ue_network_capability_t *ue_network_capability, pkbuf_t *pkbuf);
+
+/* 9.9.3.36 UE security capability
+ * M LV 3-6 */
+typedef struct _nas_ue_security_capability_t {
+    c_uint8_t length;
+ED8(c_uint8_t eea0:1;,
+    c_uint8_t eea1:1;,
+    c_uint8_t eea2:1;,
+    c_uint8_t eea3:1;,
+    c_uint8_t eea4:1;,
+    c_uint8_t eea5:1;,
+    c_uint8_t eea6:1;,
+    c_uint8_t eea7:1;)
+ED8(c_uint8_t eia0:1;,
+    c_uint8_t eia1:1;,
+    c_uint8_t eia2:1;,
+    c_uint8_t eia3:1;,
+    c_uint8_t eia4:1;,
+    c_uint8_t eia5:1;,
+    c_uint8_t eia6:1;,
+    c_uint8_t eia7:1;)
+ED8(c_uint8_t uea0:1;,
+    c_uint8_t uea1:1;,
+    c_uint8_t uea2:1;,
+    c_uint8_t uea3:1;,
+    c_uint8_t uea4:1;,
+    c_uint8_t uea5:1;,
+    c_uint8_t uea6:1;,
+    c_uint8_t uea7:1;)
+ED8(c_uint8_t spare1:1;,
+    c_uint8_t uia1:1;,
+    c_uint8_t uia2:1;,
+    c_uint8_t uia3:1;,
+    c_uint8_t uia4:1;,
+    c_uint8_t uia5:1;,
+    c_uint8_t uia6:1;,
+    c_uint8_t uia7:1;)
+ED8(c_uint8_t spare2:1;,
+    c_uint8_t gea1:1;,
+    c_uint8_t gea2:1;,
+    c_uint8_t gea3:1;,
+    c_uint8_t gea4:1;,
+    c_uint8_t gea5:1;,
+    c_uint8_t gea6:1;,
+    c_uint8_t gea7:1;)
+} __attribute__ ((packed)) nas_ue_security_capability_t;
+
+CORE_DECLARE(c_int32_t) nas_encode_ue_security_capability(
+    pkbuf_t *pkbuf, nas_ue_security_capability_t *ue_security_capability);
 
 /* 9.9.3.44 Voice domain preference and UE's usage setting
  * See subclause 10.5.5.28 in 3GPP TS 24.008 [13].
