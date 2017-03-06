@@ -14,6 +14,8 @@ static void enb_s1ap_handle_s1_setup_request(
         enb_ctx_t *enb, s1ap_message_t *message);
 static void enb_s1ap_handle_initial_ue_message(
         enb_ctx_t *enb, s1ap_message_t *message);
+static void enb_s1ap_handle_uplink_nas_transport(
+        enb_ctx_t *enb, s1ap_message_t *message);
 
 void enb_s1ap_state_initial(enb_s1ap_sm_t *s, event_t *e)
 {
@@ -79,6 +81,11 @@ void enb_s1ap_state_operational(enb_s1ap_sm_t *s, event_t *e)
                         case S1ap_ProcedureCode_id_initialUEMessage :
                         {
                             enb_s1ap_handle_initial_ue_message(enb, &message);
+                            break;
+                        }
+                        case S1ap_ProcedureCode_id_uplinkNASTransport :
+                        {
+                            enb_s1ap_handle_uplink_nas_transport(enb, &message);
                             break;
                         }
                         default:
@@ -207,18 +214,11 @@ static void enb_s1ap_handle_initial_ue_message(
     ies = &message->s1ap_InitialUEMessage_IEs;
     d_assert(ies, return, "Null param");
 
-    nasPdu = &ies->nas_pdu;
-    d_assert(nasPdu, return, "Null param");
-
-    sendbuf = pkbuf_alloc(0, nasPdu->size);
-    d_assert(sendbuf, return, "Null param");
-    memcpy(sendbuf->payload, nasPdu->buf, nasPdu->size);
-
     ue = mme_ctx_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
     if (!ue)
     {
         ue = mme_ctx_ue_add(enb);
-        d_assert(ue, pkbuf_free(sendbuf);return, "Null param");
+        d_assert(ue, return, "Null param");
 
         ue->enb_ue_s1ap_id = ies->eNB_UE_S1AP_ID;
     }
@@ -232,11 +232,50 @@ static void enb_s1ap_handle_initial_ue_message(
     d_info("eNB[0x%x] sends Initial-UE Message[eNB-UE-S1AP-ID(%d)]",
         enb->enb_id, ue->enb_ue_s1ap_id);
 
+    nasPdu = &ies->nas_pdu;
+    d_assert(nasPdu, mme_ctx_ue_remove(ue); return, "Null param");
+
+    sendbuf = pkbuf_alloc(0, nasPdu->size);
+    d_assert(sendbuf, mme_ctx_ue_remove(ue); return, "Null param");
+    memcpy(sendbuf->payload, nasPdu->buf, nasPdu->size);
+
     fsm_create((fsm_t*)&ue->emm_sm, 
             ue_emm_state_initial, ue_emm_state_final);
     ue->emm_sm.ctx = ue;
 
     fsm_init((fsm_t*)&ue->emm_sm, 0);
+
+    event_set(&e, EVT_MSG_UE_EMM);
+    event_set_param1(&e, (c_uintptr_t)ue);
+    event_set_param2(&e, (c_uintptr_t)sendbuf);
+
+    event_send(mme_self()->queue_id, &e);
+}
+
+static void enb_s1ap_handle_uplink_nas_transport(
+        enb_ctx_t *enb, s1ap_message_t *message)
+{
+    ue_ctx_t *ue = NULL;
+    S1ap_UplinkNASTransport_IEs_t *ies = NULL;
+    S1ap_NAS_PDU_t *nasPdu = NULL;
+    event_t e;
+    pkbuf_t *sendbuf = NULL;
+
+    ies = &message->s1ap_UplinkNASTransport_IEs;
+    d_assert(ies, return, "Null param");
+
+    ue = mme_ctx_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
+    d_assert(ue, return, "Null param");
+
+    d_info("eNB[0x%x] sends uplinkNASTransport Message[eNB-UE-S1AP-ID(%d)]",
+        enb->enb_id, ue->enb_ue_s1ap_id);
+
+    nasPdu = &ies->nas_pdu;
+    d_assert(nasPdu, mme_ctx_ue_remove(ue); return, "Null param");
+
+    sendbuf = pkbuf_alloc(0, nasPdu->size);
+    d_assert(sendbuf, mme_ctx_ue_remove(ue); return, "Null param");
+    memcpy(sendbuf->payload, nasPdu->buf, nasPdu->size);
 
     event_set(&e, EVT_MSG_UE_EMM);
     event_set_param1(&e, (c_uintptr_t)ue);

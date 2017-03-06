@@ -14,7 +14,6 @@ extern "C" {
 #define MAX_RAND_LEN        16
 #define MAX_AUTN_LEN        16
 #define MAX_RES_LEN         16
-#define MAX_KASME_LEN       32
 
 #ifdef __cplusplus
 }

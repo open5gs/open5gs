@@ -16,6 +16,8 @@
 static void ue_emm_handle_attach_request(ue_ctx_t *ue, nas_message_t *message);
 static void ue_emm_handle_authentication_request(
         ue_ctx_t *ue, pkbuf_t *recvbuf);
+static void ue_emm_handle_authentication_response(
+        ue_ctx_t *ue, nas_message_t *message);
 
 void ue_emm_state_initial(ue_emm_sm_t *s, event_t *e)
 {
@@ -77,6 +79,11 @@ void ue_emm_state_operational(ue_emm_sm_t *s, event_t *e)
                 case NAS_AUTHENTICATION_REQUEST:
                 {
                     ue_emm_handle_authentication_request(ue, recvbuf);
+                    break;
+                }
+                case NAS_AUTHENTICATION_RESPONSE:
+                {
+                    ue_emm_handle_authentication_response(ue, &message);
                     break;
                 }
                 default:
@@ -190,4 +197,24 @@ static void ue_emm_handle_authentication_request(ue_ctx_t *ue, pkbuf_t *recvbuf)
 
     d_assert(s1ap_send_to_enb(ue->enb, sendbuf) == CORE_OK, , "send error");
     pkbuf_free(recvbuf);
+}
+
+static void ue_emm_handle_authentication_response(
+        ue_ctx_t *ue, nas_message_t *message)
+{
+    nas_authentication_response_t *authentication_response = 
+        &message->emm.authentication_response;
+    nas_authentication_response_parameter_t *authentication_response_parameter =
+        &authentication_response->authentication_response_parameter;
+
+    if (authentication_response_parameter->length != ue->xres_len ||
+        memcmp(authentication_response_parameter->res,
+            ue->xres, ue->xres_len) != 0)
+    {
+        d_error("authentication failed");
+        return;
+    }
+
+    d_print_hex(authentication_response_parameter->res, 
+            authentication_response_parameter->length);
 }

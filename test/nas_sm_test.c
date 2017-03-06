@@ -43,16 +43,18 @@ static void nas_sm_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(sendbuf);
 
-    /* Receive XXXX */
-#if 0
+    /* Receive Authentication-Request */
     recvbuf = pkbuf_alloc(0, MESSAGE_SDU_SIZE);
     rc = tests1ap_enb_read(sock, recvbuf);
     ABTS_INT_NEQUAL(tc, 0, rc);
-    rv = s1ap_decode_pdu(&message, recvbuf);
-    ABTS_INT_EQUAL(tc, CORE_OK, rv);
-    s1ap_free_pdu(&message);
     pkbuf_free(recvbuf);
-#endif
+
+    /* Send Authentication-Response */
+    rv = tests1ap_build_authentication_response(&sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    pkbuf_free(sendbuf);
 
     /* eNB disonncect from MME */
     rv = tests1ap_enb_close(sock);

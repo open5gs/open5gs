@@ -4,6 +4,7 @@
 #include "core_list.h"
 #include "core_errno.h"
 #include "core_net.h"
+#include "core_sha2.h"
 
 #include "plmn_id.h"
 #include "3gpp_message.h"
@@ -75,7 +76,9 @@ typedef struct _ue_ctx_t {
 
     c_uint8_t       xres[MAX_RES_LEN];
     c_uint8_t       xres_len;
-    c_uint8_t       kasme[MAX_KASME_LEN];
+    c_uint8_t       kasme[SHA256_DIGEST_SIZE];
+    c_uint8_t       knasenc[SHA256_DIGEST_SIZE];
+    c_uint8_t       knasint[SHA256_DIGEST_SIZE];
 
     rab_list_t      rab_list;
 

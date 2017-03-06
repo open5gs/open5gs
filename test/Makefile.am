@@ -19,6 +19,7 @@ AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/nas \
     -I$(top_srcdir)/lib/s6a \
     -I$(top_srcdir)/src/mme \
+    -I$(top_srcdir)/src/hss \
     -I$(top_srcdir)/src
 
 AM_CFLAGS = \

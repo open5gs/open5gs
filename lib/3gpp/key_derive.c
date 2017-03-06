@@ -3,7 +3,7 @@
 #include "core_debug.h"
 #include "core_sha2_hmac.h"
 
-void derive_kasme(const c_uint8_t *ck, const c_uint8_t *ik, 
+void key_derive_kasme(const c_uint8_t *ck, const c_uint8_t *ik, 
         const c_uint8_t plmn_id[3], const c_uint8_t *sqn,  const c_uint8_t *ak,
         c_uint8_t *kasme)
 {

@@ -2,8 +2,9 @@
 
 #include "core_debug.h"
 #include "core_lib.h"
+#include "core_sha2.h"
 
-#include "kasme.h"
+#include "key_derive.h"
 #include "milenage.h"
 
 #include "context.h"
@@ -41,7 +42,7 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
     c_uint8_t ck[MAX_KEY_LEN];
     c_uint8_t ak[MAX_AK_LEN];
     c_uint8_t xres[MAX_RES_LEN];
-    c_uint8_t kasme[MAX_KASME_LEN];
+    c_uint8_t kasme[SHA256_DIGEST_SIZE];
     size_t xres_len = 8;
 	
     d_assert(msg, return EINVAL,);
@@ -73,7 +74,7 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
     milenage_generate(ue->opc, ue->amf, ue->k, 
         core_uint64_to_buffer(ue->sqn, MAX_SQN_LEN, sqn), ue->rand, 
         autn, ik, ck, ak, xres, &xres_len);
-    derive_kasme(ck, ik, hdr->avp_value->os.data, sqn, ak, kasme);
+    key_derive_kasme(ck, ik, hdr->avp_value->os.data, sqn, ak, kasme);
 
     ue->sqn = (ue->sqn + 32) & 0x7ffffffffff;
 	
@@ -114,7 +115,7 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
 
     d_assert(fd_msg_avp_new(s6a_kasme, 0, &avpch2) == 0, goto out,);
     val.os.data = kasme;
-    val.os.len = MAX_KASME_LEN;
+    val.os.len = SHA256_DIGEST_SIZE;
     d_assert(fd_msg_avp_setvalue(avpch2, &val) == 0, goto out,);
     d_assert(fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2) == 0, 
             goto out,);
