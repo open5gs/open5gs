@@ -1,4 +1,4 @@
-#define TRACE_MODULE _s1dec
+#define TRACE_MODULE _s1ap_recv
 
 #include "core_debug.h"
 #include "core_lib.h"

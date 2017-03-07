@@ -188,10 +188,10 @@ status_t s1ap_send(net_sock_t *s, pkbuf_t *pkbuf)
 
 status_t s1ap_send_to_enb(enb_ctx_t *enb, pkbuf_t *pkbuf)
 {
-    status_t rv;
-    d_assert(enb, return CORE_ERROR, "Null param");
-    d_assert(pkbuf, return CORE_ERROR, "Null param");
-    d_assert(enb->s1ap_sock, return CORE_ERROR, "No S1 path with ENB");
+    status_t rv = CORE_ERROR;
+    d_assert(enb,,);
+    d_assert(pkbuf,,);
+    d_assert(enb->s1ap_sock,,);
 
     rv = s1ap_send(enb->s1ap_sock, pkbuf);
     pkbuf_free(pkbuf);

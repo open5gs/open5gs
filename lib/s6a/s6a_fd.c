@@ -1,4 +1,4 @@
-#define TRACE_MODULE _s6a_fd
+#define TRACE_MODULE _s6a
 
 #include "core_debug.h"
 #include "core_lib.h"

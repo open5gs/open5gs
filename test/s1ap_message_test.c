@@ -131,12 +131,6 @@ static void s1ap_message_test5(abts_case *tc, void *data)
 abts_suite *test_s1ap_message(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
-    {
-        extern int _s1enc;
-        extern int _s1dec;
-        d_trace_level(&_s1enc, 0);
-        d_trace_level(&_s1dec, 0);
-    }
 
     abts_run_test(suite, s1ap_message_test1, NULL);
     abts_run_test(suite, s1ap_message_test2, NULL);

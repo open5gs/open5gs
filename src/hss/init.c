@@ -152,46 +152,6 @@ status_t hss_initialize(void)
     rv = hss_ctx_init();
     if (rv != CORE_OK) return rv;
 
-    /* FIXME : this is a sample UE for testing */
-    {
-        ue_ctx_t *ue;
-        char buf[MAX_KEY_LEN];
-
-        #define K "465B5CE8B199B49FAA5F0A2EE238A6BC"
-        #define UE1_IMSI "001010123456800"
-        #define UE2_IMSI "001010123456796"
-
-        #define UE3_IMSI "001010123456819"
-        #define UE3_RAND "20080c3818183b52 2614162c07601d0d"
-
-        ue = hss_ctx_ue_add();
-        d_assert(ue, return -1, "UE context add failed");
-
-        strcpy((char*)ue->imsi, UE1_IMSI);
-        ue->imsi_len = strlen(UE1_IMSI);
-        memcpy(ue->k, core_ascii_to_hex(K, strlen(K), buf), MAX_KEY_LEN);
-        core_generate_random_bytes(ue->rand, MAX_KEY_LEN);
-        ue->sqn = 64;
-
-        ue = hss_ctx_ue_add();
-        d_assert(ue, return -1, "UE context add failed");
-
-        strcpy((char*)ue->imsi, UE2_IMSI);
-        ue->imsi_len = strlen(UE2_IMSI);
-        memcpy(ue->k, core_ascii_to_hex(K, strlen(K), buf), MAX_KEY_LEN);
-        core_generate_random_bytes(ue->rand, MAX_KEY_LEN);
-        ue->sqn = 64;
-
-        ue = hss_ctx_ue_add();
-        d_assert(ue, return -1, "UE context add failed");
-
-        strcpy((char*)ue->imsi, UE3_IMSI);
-        ue->imsi_len = strlen(UE3_IMSI);
-        memcpy(ue->k, core_ascii_to_hex(K, strlen(K), buf), MAX_KEY_LEN);
-        memcpy(ue->rand, core_ascii_to_hex(UE3_RAND, strlen(UE3_RAND), buf), MAX_KEY_LEN);
-        ue->sqn = 64;
-    }
-
 	memset(&data, 0, sizeof(data));
 	data.app = s6a_appli;
 	data.command = s6a_cmd_air;
@@ -215,11 +175,6 @@ void hss_terminate(void)
 	if (hdl_air) {
 		(void) fd_disp_unregister(&hdl_air, NULL);
 	}
-
-    /* FIXME : this is a sample UE for testing */
-    {
-        hss_ctx_ue_remove_all();
-    }
 
     hss_ctx_final();
     s6a_final();

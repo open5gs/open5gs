@@ -24,6 +24,7 @@ hss_ctx_t* hss_self()
 status_t hss_ctx_init(void)
 {
     char buf[MAX_KEY_LEN];
+    ue_ctx_t *ue;
 
     pool_init(&ue_pool, SIZE_OF_UE_POOL);
 
@@ -31,12 +32,48 @@ status_t hss_ctx_init(void)
 
     memcpy(self.op, core_ascii_to_hex(OP, strlen(OP), buf), MAX_KEY_LEN);
     memcpy(self.amf, core_ascii_to_hex(AMF, strlen(AMF), buf), MAX_AMF_LEN);
-	
+
+    #define K "465B5CE8B199B49FAA5F0A2EE238A6BC"
+    #define UE1_IMSI "001010123456800"
+    #define UE2_IMSI "001010123456796"
+
+    #define UE3_IMSI "001010123456819"
+    #define UE3_RAND "20080c3818183b52 2614162c07601d0d"
+
+    ue = hss_ctx_ue_add();
+    d_assert(ue, return -1, "UE context add failed");
+
+    strcpy((char*)ue->imsi, UE1_IMSI);
+    ue->imsi_len = strlen(UE1_IMSI);
+    memcpy(ue->k, core_ascii_to_hex(K, strlen(K), buf), MAX_KEY_LEN);
+    core_generate_random_bytes(ue->rand, MAX_KEY_LEN);
+    ue->sqn = 64;
+
+    ue = hss_ctx_ue_add();
+    d_assert(ue, return -1, "UE context add failed");
+
+    strcpy((char*)ue->imsi, UE2_IMSI);
+    ue->imsi_len = strlen(UE2_IMSI);
+    memcpy(ue->k, core_ascii_to_hex(K, strlen(K), buf), MAX_KEY_LEN);
+    core_generate_random_bytes(ue->rand, MAX_KEY_LEN);
+    ue->sqn = 64;
+
+    ue = hss_ctx_ue_add();
+    d_assert(ue, return -1, "UE context add failed");
+
+    strcpy((char*)ue->imsi, UE3_IMSI);
+    ue->imsi_len = strlen(UE3_IMSI);
+    memcpy(ue->k, core_ascii_to_hex(K, strlen(K), buf), MAX_KEY_LEN);
+    memcpy(ue->rand, core_ascii_to_hex(UE3_RAND, strlen(UE3_RAND), buf), MAX_KEY_LEN);
+    ue->sqn = 64;
+
 	return CORE_OK;
 }
 
 void hss_ctx_final(void)
 {
+    hss_ctx_ue_remove_all();
+
     pool_final(&ue_pool);
 	
 	return;

@@ -82,7 +82,8 @@ void ue_emm_state_operational(ue_emm_sm_t *s, event_t *e)
                 }
                 case NAS_AUTHENTICATION_REQUEST:
                 {
-                    ue_emm_send_to_ue(ue, recvbuf);
+                    pkbuf_t *pkbuf = pkbuf_copy(recvbuf);
+                    ue_emm_send_to_ue(ue, pkbuf);
 
                     d_assert(ue->imsi, return,);
                     d_info("[NAS] Authentication request : UE[%s] <-- EMM",
@@ -288,11 +289,12 @@ static void ue_emm_send_to_ue(ue_ctx_t *ue, pkbuf_t *pkbuf)
 
     encoded = s1ap_encode_pdu(&sendbuf, &message);
     s1ap_free_pdu(&message);
-    d_assert(encoded >= 0, , "encode failed");
 
-    d_assert(s1ap_send_to_enb(ue->enb, sendbuf) == CORE_OK, , "send error");
+    d_assert(sendbuf && encoded >= 0,,);
+    d_assert(s1ap_send_to_enb(ue->enb, sendbuf) == CORE_OK,,);
+    pkbuf_free(pkbuf);
 
-    d_assert(ue->enb, return,);
+    d_assert(ue->enb,,);
     d_info("[S1AP] downlinkNASTransport : "
             "UE[eNB-UE-S1AP-ID(%d)] <-- eNB[%s:%d]",
         ue->enb_ue_s1ap_id,
