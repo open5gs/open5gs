@@ -7,6 +7,7 @@
 #include "milenage.h"
 #include "hss/kdf.h"
 #include "snow_3g.h"
+#include "zuc.h"
 
 #include "testutil.h"
 
@@ -235,6 +236,45 @@ static void security_test7(abts_case *tc, void *data)
         core_ascii_to_hex(_mact, strlen(_mact), tmp, 4), 4) == 0);
 }
 
+static void security_test8(abts_case *tc, void *data)
+{
+    char *_ik = "c9 e6 ce c4 60 7c 72 db 00 0a ef a8 83 85 ab 0a";
+    char *_message = 
+    "983b41d4 7d780c9e 1ad11d7e b70391b1 de0b35da 2dc62f83 e7b78d63 06ca0ea0"
+    "7e941b7b e91348f9 fcb170e2 217fecd9 7f9f68ad b16e5d7d 21e569d2 80ed775c"
+    "ebde3f40 93c53881 00000000";
+    char *_mact = "fae8ff0b";
+    c_uint8_t ik[16];
+    c_uint8_t message[577/8+1];
+    c_uint8_t mact[4];
+    c_uint8_t tmp[4];
+    c_uint32_t mac;
+    c_uint32_t hex[19] = {
+        0x983b41d4, 0x7d780c9e, 0x1ad11d7e, 0xb70391b1, 0xde0b35da, 0x2dc62f83, 0xe7b78d63, 0x06ca0ea0,
+        0x7e941b7b, 0xe91348f9, 0xfcb170e2, 0x217fecd9, 0x7f9f68ad, 0xb16e5d7d, 0x21e569d2, 0x80ed775c,
+        0xebde3f40, 0x93c53881, 0x00000000
+    };
+
+
+    zuc_eia3(
+        core_ascii_to_hex(_ik, strlen(_ik), ik, sizeof(ik)),
+        0xa94059da,
+        0xa,
+        1,
+        577,
+#if 0
+        core_ascii_to_hex(_message, strlen(_message), message, sizeof(message)),
+#else
+        hex,
+#endif
+        &mac);
+
+#if 0
+    ABTS_TRUE(tc, memcmp(mact, 
+        core_ascii_to_hex(_mact, strlen(_mact), tmp, 4), 4) == 0);
+#endif
+}
+
 abts_suite *test_security(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -246,6 +286,7 @@ abts_suite *test_security(abts_suite *suite)
     abts_run_test(suite, security_test5, NULL);
     abts_run_test(suite, security_test6, NULL);
     abts_run_test(suite, security_test7, NULL);
+    abts_run_test(suite, security_test8, NULL);
 
     return suite;
 }

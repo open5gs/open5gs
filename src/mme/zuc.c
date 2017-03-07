@@ -1,7 +1,7 @@
 /*---------------------------------------------
  * ZUC / EEA3 / EIA3 : LTE security algorithm
  *--------------------------------------------*/
-
+#include "core_pkbuf.h"
 #include "zuc.h"
 
 /*--------------------------------------------
@@ -9,35 +9,35 @@
  *------------------------------------------*/
 
 /* the state registers of LFSR */ 
-u32 LFSR_S0;
-u32 LFSR_S1;
-u32 LFSR_S2;
-u32 LFSR_S3;
-u32 LFSR_S4;
-u32 LFSR_S5;
-u32 LFSR_S6;
-u32 LFSR_S7;
-u32 LFSR_S8;
-u32 LFSR_S9;
-u32 LFSR_S10;
-u32 LFSR_S11;
-u32 LFSR_S12;
-u32 LFSR_S13;
-u32 LFSR_S14;
-u32 LFSR_S15;
+static u32 LFSR_S0;
+static u32 LFSR_S1;
+static u32 LFSR_S2;
+static u32 LFSR_S3;
+static u32 LFSR_S4;
+static u32 LFSR_S5;
+static u32 LFSR_S6;
+static u32 LFSR_S7;
+static u32 LFSR_S8;
+static u32 LFSR_S9;
+static u32 LFSR_S10;
+static u32 LFSR_S11;
+static u32 LFSR_S12;
+static u32 LFSR_S13;
+static u32 LFSR_S14;
+static u32 LFSR_S15;
 
 /* the registers of F */
-u32 F_R1;
-u32 F_R2;
+static u32 F_R1;
+static u32 F_R2;
 
 /* the outputs of BitReorganization */
-u32 BRC_X0;
-u32 BRC_X1;
-u32 BRC_X2;
-u32 BRC_X3;
+static u32 BRC_X0;
+static u32 BRC_X1;
+static u32 BRC_X2;
+static u32 BRC_X3;
 
 /* the s-boxes */ 
-u8 S0[256] = {
+static u8 S0[256] = {
 0x3e,0x72,0x5b,0x47,0xca,0xe0,0x00,0x33,0x04,0xd1,0x54,0x98,0x09,0xb9,0x6d,0xcb,
 0x7b,0x1b,0xf9,0x32,0xaf,0x9d,0x6a,0xa5,0xb8,0x2d,0xfc,0x1d,0x08,0x53,0x03,0x90,
 0x4d,0x4e,0x84,0x99,0xe4,0xce,0xd9,0x91,0xdd,0xb6,0x85,0x48,0x8b,0x29,0x6e,0xac,
@@ -56,7 +56,7 @@ u8 S0[256] = {
 0x8d,0x27,0x1a,0xdb,0x81,0xb3,0xa0,0xf4,0x45,0x7a,0x19,0xdf,0xee,0x78,0x34,0x60
 }; 
 
-u8 S1[256] =  {
+static u8 S1[256] =  {
 0x55,0xc2,0x63,0x71,0x3b,0xc8,0x47,0x86,0x9f,0x3c,0xda,0x5b,0x29,0xaa,0xfd,0x77,
 0x8c,0xc5,0x94,0x0c,0xa6,0x1a,0x13,0x00,0xe3,0xa8,0x16,0x72,0x40,0xf9,0xf8,0x42,
 0x44,0x26,0x68,0x96,0x81,0xd9,0x45,0x3e,0x10,0x76,0xc6,0xa7,0x8b,0x39,0x43,0xe1,
@@ -76,7 +76,7 @@ u8 S1[256] =  {
 };
  
 /* the constants D */
-u32 EK_d[16] = {
+static u32 EK_d[16] = {
 0x44D7, 0x26BC, 0x626B, 0x135E, 0x5789, 0x35E2, 0x7135, 0x09AF,
 0x4D78, 0x2F13, 0x6BC4, 0x1AF1, 0x5E26, 0x3C4D, 0x789A, 0x47AC
 };
@@ -286,7 +286,7 @@ void zuc_eea3(u8* CK, u32 COUNT, u32 BEARER, u32 DIRECTION,
 	u32 lastbits = (32-(LENGTH%32))%32;
     
 	L 	= (LENGTH+31)/32;
-	z 	= (u32 *) malloc(L*sizeof(u32));
+	z 	= (u32 *) core_malloc(L*sizeof(u32));
 	
 	IV[0]	= (COUNT>>24) & 0xFF;
 	IV[1]	= (COUNT>>16) & 0xFF;
@@ -319,7 +319,7 @@ void zuc_eea3(u8* CK, u32 COUNT, u32 BEARER, u32 DIRECTION,
         i--;
 		C[i] &= 0x100000000 - (1<<lastbits);
 	
-	free(z);
+	core_free(z);
 }
 /* end of EEA3.c */
 
@@ -347,11 +347,14 @@ u8 GET_BIT(u32 * DATA, u32 i)
 	return (DATA[i/32] & (1<<(31-(i%32)))) ? 1 : 0;
 }
 
+#include "core_debug.h"
 void zuc_eia3(u8* IK, u32 COUNT, u32 BEARER, u32 DIRECTION,
 				   u32 LENGTH, u32* M, u32* MAC)
 {
 	u32	*z, N, L, T, i;
 	u8 IV[16];
+
+    d_print_hex(IK, 16);
 	
 	IV[0]	= (COUNT>>24) & 0xFF;
 	IV[1]	= (COUNT>>16) & 0xFF;
@@ -373,7 +376,7 @@ void zuc_eia3(u8* IK, u32 COUNT, u32 BEARER, u32 DIRECTION,
 	
 	N	= LENGTH + 64;
 	L	= (N + 31) / 32;
-	z	= (u32 *) malloc(L*sizeof(u32));
+	z	= (u32 *) core_malloc(L*sizeof(u32));
 	ZUC(IK, IV, z, L);
 	
 	T = 0;
@@ -385,6 +388,6 @@ void zuc_eia3(u8* IK, u32 COUNT, u32 BEARER, u32 DIRECTION,
 	T ^= GET_WORD(z,LENGTH);
 	
 	*MAC = T ^ z[L-1];
-	free(z);
+	core_free(z);
 }
 /* end of EIA3.c */
