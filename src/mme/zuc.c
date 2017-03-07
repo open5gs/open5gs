@@ -342,13 +342,13 @@ u32 GET_WORD(u32 * DATA, u32 i)
 	return WORD;
 }
 
-u8 GET_BIT(u32 * DATA, u32 i)
+u8 GET_BIT(u8 * DATA, u32 i)
 {
-	return (DATA[i/32] & (1<<(31-(i%32)))) ? 1 : 0;
+	return (DATA[i/8] & (1<<(7-(i%8)))) ? 1 : 0;
 }
 
 void zuc_eia3(u8* IK, u32 COUNT, u32 BEARER, u32 DIRECTION,
-				   u32 LENGTH, u32* M, u32* MAC)
+				   u32 LENGTH, u8* M, u32* MAC)
 {
 	u32	*z, N, L, T, i;
 	u8 IV[16];

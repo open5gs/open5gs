@@ -49,7 +49,7 @@ CORE_DECLARE(void) zuc_eea3(u8* CK, u32 COUNT, u32 BEARER, u32 DIRECTION,
  * C: processed message (output)
 */
 CORE_DECLARE(void) zuc_eia3(u8* IK, u32 COUNT, u32 BEARER, u32 DIRECTION,
-		           u32 LENGTH, u32* M, u32* MAC);
+		           u32 LENGTH, u8* M, u32* MAC);
 
 #ifdef __cplusplus
 }

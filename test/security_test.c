@@ -247,14 +247,7 @@ static void security_test8(abts_case *tc, void *data)
     c_uint8_t ik[16];
     c_uint8_t message[577/8+1];
     c_uint8_t mact[4];
-    c_uint8_t tmp[4];
     c_uint32_t mac;
-    c_uint32_t hex[19] = {
-        0x983b41d4, 0x7d780c9e, 0x1ad11d7e, 0xb70391b1, 0xde0b35da, 0x2dc62f83, 0xe7b78d63, 0x06ca0ea0,
-        0x7e941b7b, 0xe91348f9, 0xfcb170e2, 0x217fecd9, 0x7f9f68ad, 0xb16e5d7d, 0x21e569d2, 0x80ed775c,
-        0xebde3f40, 0x93c53881, 0x00000000
-    };
-
 
     zuc_eia3(
         core_ascii_to_hex(_ik, strlen(_ik), ik, sizeof(ik)),
@@ -262,17 +255,12 @@ static void security_test8(abts_case *tc, void *data)
         0xa,
         1,
         577,
-#if 0
         core_ascii_to_hex(_message, strlen(_message), message, sizeof(message)),
-#else
-        hex,
-#endif
         &mac);
+    mac = ntohl(mac);
 
-#if 0
-    ABTS_TRUE(tc, memcmp(mact, 
-        core_ascii_to_hex(_mact, strlen(_mact), tmp, 4), 4) == 0);
-#endif
+    ABTS_TRUE(tc, memcmp(&mac, 
+        core_ascii_to_hex(_mact, strlen(_mact), mact, 4), 4) == 0);
 }
 
 abts_suite *test_security(abts_suite *suite)
