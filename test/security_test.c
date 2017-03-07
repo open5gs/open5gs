@@ -142,8 +142,7 @@ static void security_test4(abts_case *tc, void *data)
 
 static void security_test5(abts_case *tc, void *data)
 {
-    char *_ck = 
-        "2bd6459f 82c5b300 952c4910 4881ff48";
+    char *_ck = "2bd6459f 82c5b300 952c4910 4881ff48";
     char *_message = 
         "7ec61272 743bf161 4726446a 6c38ced1"
         "66f6ca76 eb543004 4286346c ef130f92"
