@@ -1,6 +1,8 @@
 #include "core_lib.h"
 #include "core_debug.h"
 #include "core_sha2_hmac.h"
+#include "core_aes_cmac.h"
+#include "core_pkbuf.h"
 
 #include "milenage.h"
 #include "hss/kdf.h"
@@ -171,6 +173,69 @@ static void security_test5(abts_case *tc, void *data)
             _cmessage, strlen(_cmessage), tmp, 798/8+1), 798/8+1) == 0);
 }
 
+static void security_test6(abts_case *tc, void *data)
+{
+#if 0 /* Not supported */
+    char *_ik = "2bd6459f 82c5b300 952c4910 4881ff48";
+    char *_message = "33323462 63393840";
+    char *_mact = "118c6eb8";
+    c_uint8_t ik[16];
+    c_uint8_t message[58/8+1];
+    c_uint8_t mact[16];
+    c_uint8_t tmp[4];
+    c_uint8_t *m = NULL;
+    c_uint32_t count = htonl(0x38a6f056);
+    int msg_len = 58/8+1;
+    int m_len = 8+msg_len;
+
+    m = core_calloc(m_len, sizeof(c_uint8_t));
+    memcpy(m, &count, sizeof(c_uint32_t));
+    m[4] = ((0x18 << 3) | (0 << 2));
+    memcpy(m+8, 
+        core_ascii_to_hex(_message, strlen(_message), message, sizeof(message)),
+        msg_len);
+
+    aes_cmac_calculate(mact, 
+            core_ascii_to_hex(_ik, strlen(_ik), ik, sizeof(ik)), m, m_len);
+    d_print_hex(mact, 4);
+
+    core_free(m);
+
+    ABTS_TRUE(tc, memcmp(mact, 
+        core_ascii_to_hex(_mact, strlen(_mact), tmp, 4), 4) == 0);
+#endif
+}
+
+static void security_test7(abts_case *tc, void *data)
+{
+    char *_ik = "d3c5d592 327fb11c 4035c668 0af8c6d1";
+    char *_message = "484583d5 afe082ae";
+    char *_mact = "b93787e6";
+    c_uint8_t ik[16];
+    c_uint8_t message[64/8];
+    c_uint8_t mact[16];
+    c_uint8_t tmp[4];
+    c_uint8_t *m = NULL;
+    c_uint32_t count = htonl(0x398a59b4);
+    int msg_len = 64/8;
+    int m_len = 8+msg_len;
+
+    m = core_calloc(m_len, sizeof(c_uint8_t));
+    memcpy(m, &count, sizeof(c_uint32_t));
+    m[4] = ((0x1a << 3) | (1 << 2));
+    memcpy(m+8, 
+        core_ascii_to_hex(_message, strlen(_message), message, sizeof(message)),
+        msg_len);
+
+    aes_cmac_calculate(mact, 
+            core_ascii_to_hex(_ik, strlen(_ik), ik, sizeof(ik)), m, m_len);
+
+    core_free(m);
+
+    ABTS_TRUE(tc, memcmp(mact, 
+        core_ascii_to_hex(_mact, strlen(_mact), tmp, 4), 4) == 0);
+}
+
 abts_suite *test_security(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -180,6 +245,8 @@ abts_suite *test_security(abts_suite *suite)
     abts_run_test(suite, security_test3, NULL);
     abts_run_test(suite, security_test4, NULL);
     abts_run_test(suite, security_test5, NULL);
+    abts_run_test(suite, security_test6, NULL);
+    abts_run_test(suite, security_test7, NULL);
 
     return suite;
 }
