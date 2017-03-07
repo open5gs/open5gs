@@ -113,6 +113,10 @@ int s6a_send_auth_info_req(ue_ctx_t *ue, c_uint8_t *plmn_id)
     s6a_config->stats.nb_sent++;
     d_assert(pthread_mutex_unlock(&s6a_config->stats_lock) == 0,, );
 
+    d_assert(ue->imsi, return 0,);
+    d_info("[S6A] Authentication-Information-Request : UE[%s] --> HSS", 
+            ue->imsi);
+
     return 0;
 
 out:
@@ -152,6 +156,10 @@ static void s6a_aia_cb(void *data, struct msg **msg)
 
     ue = mi->ue;
     d_assert(ue, error++; goto out,);
+
+    d_assert(ue->imsi, error++; goto out,);
+    d_info("[S6A] Authentication-Information-Response : UE[%s] <-- HSS", 
+            ue->imsi);
     
     /* Value of Result Code */
     d_assert(fd_msg_search_avp(*msg, s6a_result_code, &avp) == 0 && avp, 
@@ -238,11 +246,11 @@ out:
     
     /* Display how long it took */
     if (ts.tv_nsec > mi->ts.tv_nsec)
-        d_info("in %d.%06ld sec", 
+        d_trace(1, "in %d.%06ld sec\n", 
                 (int)(ts.tv_sec - mi->ts.tv_sec),
                 (long)(ts.tv_nsec - mi->ts.tv_nsec) / 1000);
     else
-        d_info("in %d.%06ld sec", 
+        d_trace(1, "in %d.%06ld sec\n", 
                 (int)(ts.tv_sec + 1 - mi->ts.tv_sec),
                 (long)(1000000000 + ts.tv_nsec - mi->ts.tv_nsec) / 1000);
     

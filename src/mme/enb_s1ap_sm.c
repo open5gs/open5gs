@@ -189,25 +189,35 @@ static void enb_s1ap_handle_s1_setup_request(
         rv = s1ap_build_setup_failure(&sendbuf, cause);
     }
 #endif
-
-    d_info("eNB[0x%x] sends S1-Setup-Request from [%s]", enb_id,
-            INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf));
+    d_assert(enb->s1ap_sock, return,);
+    d_info("[S1AP] S1SetupRequest : eNB[%s:%d] --> MME",
+        INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+        enb_id);
 
     enb->enb_id = enb_id;
 
     d_assert(s1ap_build_setup_rsp(&sendbuf) == CORE_OK, 
             return, "build error");
     d_assert(s1ap_send_to_enb(enb, sendbuf) == CORE_OK, , "send error");
+
+    d_assert(enb->s1ap_sock, return,);
+    d_info("[S1AP] S1SetupResponse: eNB[%s:%d] <-- MME",
+        INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+        enb_id);
 }
 
 static void enb_s1ap_handle_initial_ue_message(
         enb_ctx_t *enb, s1ap_message_t *message)
 {
+    char buf[INET_ADDRSTRLEN];
+
     ue_ctx_t *ue = NULL;
     S1ap_InitialUEMessage_IEs_t *ies = NULL;
     S1ap_NAS_PDU_t *nasPdu = NULL;
     event_t e;
     pkbuf_t *sendbuf = NULL;
+
+    d_assert(enb, return, "Null param");
 
     ies = &message->s1ap_InitialUEMessage_IEs;
     d_assert(ies, return, "Null param");
@@ -227,8 +237,11 @@ static void enb_s1ap_handle_initial_ue_message(
             enb->enb_id, ue->enb_ue_s1ap_id);
     }
 
-    d_info("eNB[0x%x] sends Initial-UE Message[eNB-UE-S1AP-ID(%d)]",
-        enb->enb_id, ue->enb_ue_s1ap_id);
+    d_assert(enb->s1ap_sock, mme_ctx_ue_remove(ue);return,);
+    d_info("[S1AP] InitialUEMessage : UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]",
+        ue->enb_ue_s1ap_id,
+        INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+        enb->enb_id);
 
     nasPdu = &ies->nas_pdu;
     d_assert(nasPdu, mme_ctx_ue_remove(ue); return, "Null param");
@@ -253,6 +266,8 @@ static void enb_s1ap_handle_initial_ue_message(
 static void enb_s1ap_handle_uplink_nas_transport(
         enb_ctx_t *enb, s1ap_message_t *message)
 {
+    char buf[INET_ADDRSTRLEN];
+
     ue_ctx_t *ue = NULL;
     S1ap_UplinkNASTransport_IEs_t *ies = NULL;
     S1ap_NAS_PDU_t *nasPdu = NULL;
@@ -265,8 +280,10 @@ static void enb_s1ap_handle_uplink_nas_transport(
     ue = mme_ctx_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
     d_assert(ue, return, "Null param");
 
-    d_info("eNB[0x%x] sends uplinkNASTransport Message[eNB-UE-S1AP-ID(%d)]",
-        enb->enb_id, ue->enb_ue_s1ap_id);
+    d_info("[S1AP] uplinkNASTransport : UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]",
+        ue->enb_ue_s1ap_id,
+        INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+        enb->enb_id);
 
     nasPdu = &ies->nas_pdu;
     d_assert(nasPdu, mme_ctx_ue_remove(ue); return, "Null param");

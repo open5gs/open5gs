@@ -84,8 +84,8 @@ void ue_emm_state_operational(ue_emm_sm_t *s, event_t *e)
                 {
                     ue_emm_send_to_ue(ue, recvbuf);
 
-                    d_assert(ue->imsi, return, "no UE-IMSI");
-                    d_info("EMM sends Authentication-Request to UE[%s]", 
+                    d_assert(ue->imsi, return,);
+                    d_info("[NAS] Authentication request : UE[%s] <-- EMM",
                             ue->imsi);
                     break;
                 }
@@ -97,6 +97,9 @@ void ue_emm_state_operational(ue_emm_sm_t *s, event_t *e)
                 }
                 case NAS_SECURITY_MODE_COMPLETE:
                 {
+                    d_assert(ue->imsi, return,);
+                    d_info("[NAS] Security mode complete : UE[%s] --> EMM",
+                            ue->imsi);
                     break;
                 }
                 default:
@@ -176,6 +179,9 @@ static void ue_emm_handle_attach_request(
                     &attach_request->ms_network_capability,
                     sizeof(attach_request->ms_network_capability));
 
+            d_assert(ue->imsi, return,);
+            d_info("[NAS] Attach request : UE[%s] --> EMM", ue->imsi);
+
             s6a_send_auth_info_req(ue, plmn_id);
             break;
         }
@@ -187,9 +193,6 @@ static void ue_emm_handle_attach_request(
             return;
         }
     }
-
-    d_assert(ue->imsi, return, "no UE-IMSI");
-    d_info("UE[%s] sends Attach-Request", ue->imsi);
 }
 
 static void ue_emm_handle_authentication_response(
@@ -218,6 +221,9 @@ static void ue_emm_handle_authentication_response(
         d_error("authentication failed");
         return;
     }
+
+    d_assert(ue->imsi, return, );
+    d_info("[NAS] Authentication response : UE[%s] --> EMM", ue->imsi);
 
     memset(&message, 0, sizeof(message));
     message.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
@@ -253,13 +259,14 @@ static void ue_emm_handle_authentication_response(
     d_assert(nas_encode_pdu(&sendbuf, &message) == CORE_OK && sendbuf,,);
     ue_emm_send_to_ue(ue, sendbuf);
 
-    d_assert(ue->imsi, return, "no UE-IMSI");
-    d_info("EMM sends Security-mode Command to UE[%s]", 
-            ue->imsi);
+    d_assert(ue->imsi, return,);
+    d_info("[NAS] Security mode command : UE[%s] <-- EMM", ue->imsi);
 }
 
 static void ue_emm_send_to_ue(ue_ctx_t *ue, pkbuf_t *pkbuf)
 {
+    char buf[INET_ADDRSTRLEN];
+
     int encoded;
     s1ap_message_t message;
     S1ap_DownlinkNASTransport_IEs_t *ies = 
@@ -284,4 +291,11 @@ static void ue_emm_send_to_ue(ue_ctx_t *ue, pkbuf_t *pkbuf)
     d_assert(encoded >= 0, , "encode failed");
 
     d_assert(s1ap_send_to_enb(ue->enb, sendbuf) == CORE_OK, , "send error");
+
+    d_assert(ue->enb, return,);
+    d_info("[S1AP] downlinkNASTransport : "
+            "UE[eNB-UE-S1AP-ID(%d)] <-- eNB[%s:%d]",
+        ue->enb_ue_s1ap_id,
+        INET_NTOP(&ue->enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+        ue->enb->enb_id);
 }
