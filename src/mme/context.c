@@ -6,6 +6,7 @@
 #include "core_index.h"
 
 #include "context.h"
+#include "nas_ies.h"
 #include "s1ap_message.h"
 
 #define CELL_PER_ENB                8
@@ -63,6 +64,9 @@ status_t mme_ctx_init()
     self.srvd_gummei.mme_gid[0] = 2;
     self.srvd_gummei.num_of_mme_code = 1;
     self.srvd_gummei.mme_code[0] = 1;
+
+    self.selected_int_algorithm = NAS_SECURITY_ALGORITHMS_128_EIA1;
+    self.selected_enc_algorithm = NAS_SECURITY_ALGORITHMS_EIA0;
 
     g_mme_ctx_initialized = 1;
 

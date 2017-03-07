@@ -9,6 +9,7 @@
 #include "context.h"
 #include "event.h"
 
+#include "kdf.h"
 #include "s1ap_path.h"
 #include "s1ap_conv.h"
 #include "nas_conv.h"
@@ -208,6 +209,8 @@ static void ue_emm_handle_authentication_response(
     nas_authentication_response_parameter_t *authentication_response_parameter =
         &authentication_response->authentication_response_parameter;
 
+    d_assert(ue, return, "Null param");
+
     if (authentication_response_parameter->length != ue->xres_len ||
         memcmp(authentication_response_parameter->res,
             ue->xres, ue->xres_len) != 0)
@@ -216,6 +219,8 @@ static void ue_emm_handle_authentication_response(
         return;
     }
 
-    d_print_hex(authentication_response_parameter->res, 
-            authentication_response_parameter->length);
+    mme_kdf_nas(MME_KDF_NAS_INT_ALG, mme_self()->selected_int_algorithm,
+            ue->kasme, ue->knas_int);
+    mme_kdf_nas(MME_KDF_NAS_ENC_ALG, mme_self()->selected_enc_algorithm,
+            ue->kasme, ue->knas_enc);
 }

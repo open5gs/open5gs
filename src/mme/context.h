@@ -46,9 +46,21 @@ typedef struct _mme_ctx_t {
     msgq_id         queue_id;
     tm_service_t    tm_service;
 
-    c_uint32_t      mme_ue_s1ap_id;
-
+    c_uint32_t      mme_ue_s1ap_id; /** mme_ue_s1ap_id generator */
     plmn_id_t       plmn_id;
+
+    /* defined in 'nas_ies.h'
+     * #define NAS_SECURITY_ALGORITHMS_EIA0        0
+     * #define NAS_SECURITY_ALGORITHMS_128_EIA1    1
+     * #define NAS_SECURITY_ALGORITHMS_128_EIA1    2
+     * #define NAS_SECURITY_ALGORITHMS_128_EIA3    3 */
+    c_uint8_t       selected_int_algorithm;
+    /* defined in 'nas_ies.h'
+     * #define NAS_SECURITY_ALGORITHMS_EIA0        0
+     * #define NAS_SECURITY_ALGORITHMS_128_EEA1    1
+     * #define NAS_SECURITY_ALGORITHMS_128_EEA2    2
+     * #define NAS_SECURITY_ALGORITHMS_128_EEA3    3 */
+    c_uint8_t       selected_enc_algorithm;
 
     /* S1SetupRequest */
     c_uint16_t      tracking_area_code;
@@ -74,21 +86,24 @@ typedef struct _enb_ctx_t {
 typedef struct _ue_ctx_t {
     lnode_t         node; /**< A node of list_t */
 
+    /* State Machine */
     ue_emm_sm_t     emm_sm;
 
+    /* UE identity */
     c_uint32_t      enb_ue_s1ap_id; /** eNB-UE-S1AP-ID received from eNB */
     c_uint32_t      mme_ue_s1ap_id; /** MME-UE-S1AP-ID received from MME */
     c_uint8_t       imsi[MAX_IMSI_LEN+1];
     c_uint8_t       imsi_len;
 
+    /* Security Context */
     c_uint8_t       xres[MAX_RES_LEN];
     c_uint8_t       xres_len;
     c_uint8_t       kasme[SHA256_DIGEST_SIZE];
-    c_uint8_t       knasenc[SHA256_DIGEST_SIZE];
-    c_uint8_t       knasint[SHA256_DIGEST_SIZE];
+    c_uint8_t       knas_int[SHA256_DIGEST_SIZE/2]; 
+    c_uint8_t       knas_enc[SHA256_DIGEST_SIZE/2];
 
+    /* Related Context for UE */
     rab_list_t      rab_list;
-
     enb_ctx_t       *enb;
 } ue_ctx_t;
 
