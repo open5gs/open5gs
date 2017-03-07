@@ -138,6 +138,39 @@ static void security_test4(abts_case *tc, void *data)
         core_ascii_to_hex(_mact, strlen(_mact), tmp, 4), 4) == 0);
 }
 
+static void security_test5(abts_case *tc, void *data)
+{
+    char *_ck = 
+        "2bd6459f 82c5b300 952c4910 4881ff48";
+    char *_message = 
+        "7ec61272 743bf161 4726446a 6c38ced1"
+        "66f6ca76 eb543004 4286346c ef130f92"
+        "922b0345 0d3a9975 e5bd2ea0 eb55ad8e"
+        "1b199e3e c4316020 e9a1b285 e7627953"
+        "59b7bdfd 39bef4b2 484583d5 afe082ae"
+        "e638bf5f d5a60619 3901a08f 4ab41aab"
+        "9b134880";
+    char *_cmessage = 
+        "8ceba629 43dced3a 0990b06e a1b0a2c4"
+        "fb3cedc7 1b369f42 ba64c1eb 6665e72a"
+        "a1c9bb0d eaa20fe8 6058b8ba ee2c2e7f"
+        "0becce48 b52932a5 3c9d5f93 1a3a7c53"
+        "2259af43 25e2a65e 3084ad5f 6a513b7b"
+        "ddc1b65f 0aa0d97a 053db55a 88c4c4f9"
+        "605e4140";
+    c_uint8_t ck[16];
+    c_uint8_t message[798/8+1];
+    c_uint8_t tmp[798/8+1];
+
+    snow_3g_f8(
+        core_ascii_to_hex(_ck, strlen(_ck), ck, sizeof(ck)),
+        0x72a4f20f, 0x0c, 1,
+        core_ascii_to_hex(_message, strlen(_message), message, sizeof(message)),
+        798);
+    ABTS_TRUE(tc, memcmp(message, core_ascii_to_hex(
+            _cmessage, strlen(_cmessage), tmp, 798/8+1), 798/8+1) == 0);
+}
+
 abts_suite *test_security(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -146,6 +179,7 @@ abts_suite *test_security(abts_suite *suite)
     abts_run_test(suite, security_test2, NULL);
     abts_run_test(suite, security_test3, NULL);
     abts_run_test(suite, security_test4, NULL);
+    abts_run_test(suite, security_test5, NULL);
 
     return suite;
 }
