@@ -23,8 +23,8 @@ static void s1ap_message_test1(abts_case *tc, void *data)
 
     pkbuf = pkbuf_alloc(0, MESSAGE_SDU_SIZE);
     ABTS_PTR_NOTNULL(tc, pkbuf);
-    core_ascii_to_hex(payload, strlen(payload), pkbuf->payload);
     pkbuf->len = 49;
+    core_ascii_to_hex(payload, strlen(payload), pkbuf->payload, pkbuf->len);
 
     result = s1ap_decode_pdu(&message, pkbuf);
     ABTS_INT_EQUAL(tc, 0, result);
@@ -52,8 +52,8 @@ static void s1ap_message_test2(abts_case *tc, void *data)
 
     pkbuf = pkbuf_alloc(0, MESSAGE_SDU_SIZE);
     ABTS_PTR_NOTNULL(tc, pkbuf);
-    core_ascii_to_hex(payload, strlen(payload), pkbuf->payload);
     pkbuf->len = 115;
+    core_ascii_to_hex(payload, strlen(payload), pkbuf->payload, pkbuf->len);
 
     result = s1ap_decode_pdu(&message, pkbuf);
     ABTS_INT_EQUAL(tc, 0, result);
@@ -76,8 +76,8 @@ static void s1ap_message_test3(abts_case *tc, void *data)
 
     pkbuf = pkbuf_alloc(0, MESSAGE_SDU_SIZE);
     ABTS_PTR_NOTNULL(tc, pkbuf);
-    core_ascii_to_hex(payload, strlen(payload), pkbuf->payload);
     pkbuf->len = 41;
+    core_ascii_to_hex(payload, strlen(payload), pkbuf->payload, pkbuf->len);
 
     result = s1ap_decode_pdu(&message, pkbuf);
     ABTS_INT_EQUAL(tc, 0, result);

@@ -2,6 +2,7 @@
 * SNOW_3G.c
 *------------------------------------------------------------------------*/
 
+#include "core_pkbuf.h"
 #include "snow_3g.h"
 
 /* LFSR */
@@ -399,7 +400,7 @@ void snow_3g_f8(u8 *key, u32 count, u32 bearer, u32 dir, u8 *data, u32 length)
 	
 	/* Run SNOW 3G algorithm to generate sequence of key stream bits KS*/
 	snow_3g_initialize(K,IV);
-	KS = (u32 *)malloc(4*n);
+	KS = (u32 *)core_malloc(4*n);
 	snow_3g_generate_key_stream(n,(u32*)KS);
 	
 	/* Exclusive-OR the input data with keystream to generate the output bit
@@ -412,7 +413,7 @@ void snow_3g_f8(u8 *key, u32 count, u32 bearer, u32 dir, u8 *data, u32 length)
 		data[4*i+3] ^= (u8) (KS[i] ) & 0xff;
 	}
 	
-	free(KS);
+	core_free(KS);
 	
 	/* zero last bits of data in case its length is not byte-aligned 
 	   this is an addition to the C reference code, which did not handle it */
@@ -499,11 +500,11 @@ u8 mask8bit(int n)
  * Output  : 32 bit block used as MAC 
  * Generates 32-bit MAC using UIA2 algorithm as defined in Section 4.
  */
-u8* snow_3g_f9( u8* key, u32 count, u32 fresh, u32 dir, u8 *data, u64 length)
+void snow_3g_f9(u8* key, u32 count, u32 fresh, u32 dir, u8 *data, u64 length, 
+        u8 *out)
 {
 	u32 K[4],IV[4], z[5];
 	u32 i=0, D;
-	static u8 MAC_I[4] = {0,0,0,0}; /* static memory for the result */
 	u64 EVAL;
 	u64 V;
 	u64 P;
@@ -515,8 +516,10 @@ u8* snow_3g_f9( u8* key, u32 count, u32 fresh, u32 dir, u8 *data, u64 length)
 	
 	/* Load the Integrity Key for SNOW3G initialization as in section 4.4. */
 	for (i=0; i<4; i++)
+    {
 		K[3-i] = (key[4*i] << 24) ^ (key[4*i+1] << 16) ^
 				 (key[4*i+2] << 8) ^ (key[4*i+3]);
+    }
 	
 	/* Prepare the Initialization Vector (IV) for SNOW3G initialization as 
 	   in section 4.4. */
@@ -583,9 +586,7 @@ u8* snow_3g_f9( u8* key, u32 count, u32 fresh, u32 dir, u8 *data, u64 length)
 		/*
 		MAC_I[i] = (mac32 >> (8*(3-i))) & 0xff;
 		*/
-		MAC_I[i] = ((EVAL >> (56-(i*8))) ^ (z[4] >> (24-(i*8)))) & 0xff;
-	
-	return MAC_I;
+		out[i] = ((EVAL >> (56-(i*8))) ^ (z[4] >> (24-(i*8)))) & 0xff;
 }
 
 /* End of f9.c */

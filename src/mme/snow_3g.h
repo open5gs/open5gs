@@ -44,7 +44,7 @@ CORE_DECLARE(void) snow_3g_generate_key_stream(u32 n, u32 *z);
 * defined in Section 3.
 */
 
-CORE_DECLARE(void) snow_3g_f8( u8 *key, u32 count, u32 bearer, u32 dir, \
+CORE_DECLARE(void) snow_3g_f8( u8 *key, u32 count, u32 bearer, u32 dir,
                   u8 *data, u32 length );
 
 /* f9.
@@ -58,8 +58,8 @@ CORE_DECLARE(void) snow_3g_f8( u8 *key, u32 count, u32 bearer, u32 dir, \
 * Generates 32-bit MAC using UIA2 algorithm as defined in Section 4.
 */
 
-CORE_DECLARE(u8*) snow_3g_f9( u8* key, u32 count, u32 fresh, u32 dir, \
-                 u8 *data, u64 length);
+CORE_DECLARE(void) snow_3g_f9( u8* key, u32 count, u32 fresh, u32 dir,
+                 u8 *data, u64 length, u8 *out);
 
 #ifdef __cplusplus
 }

@@ -21,8 +21,8 @@ static void nas_message_test1(abts_case *tc, void *data)
 
     pkbuf = pkbuf_alloc(0, MESSAGE_SDU_SIZE);
     ABTS_PTR_NOTNULL(tc, pkbuf);
-    core_ascii_to_hex(payload, strlen(payload), pkbuf->payload);
     pkbuf->len = 59;
+    core_ascii_to_hex(payload, strlen(payload), pkbuf->payload, pkbuf->len);
 
     rv = nas_decode_pdu(&message, pkbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -73,7 +73,8 @@ static void nas_message_test2(abts_case *tc, void *data)
     attach_accept->tai_list.type0.tac[0] = 12345;
     attach_accept->esm_message_container.length = sizeof(esm_buffer);
     attach_accept->esm_message_container.buffer = 
-        core_ascii_to_hex(esm_payload, strlen(esm_payload), esm_buffer);
+        core_ascii_to_hex(esm_payload, strlen(esm_payload), 
+                esm_buffer, sizeof(esm_buffer));
 
     attach_accept->presencemask |= NAS_ATTACH_ACCEPT_GUTI_PRESENT;
     attach_accept->guti.length = 11;
@@ -115,7 +116,7 @@ static void nas_message_test2(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     ABTS_INT_EQUAL(tc, sizeof(buffer), pkbuf->len);
     ABTS_TRUE(tc, memcmp(
-            core_ascii_to_hex(payload, strlen(payload), buffer),
+            core_ascii_to_hex(payload, strlen(payload), buffer, sizeof(buffer)),
             pkbuf->payload, pkbuf->len) == 0);
 
     pkbuf_free(pkbuf);
@@ -131,8 +132,8 @@ static void nas_message_test3(abts_case *tc, void *data)
 
     pkbuf = pkbuf_alloc(0, MESSAGE_SDU_SIZE);
     ABTS_PTR_NOTNULL(tc, pkbuf);
-    core_ascii_to_hex(payload, strlen(payload), pkbuf->payload);
     pkbuf->len = 7;
+    core_ascii_to_hex(payload, strlen(payload), pkbuf->payload, pkbuf->len);
 
     rv = nas_decode_pdu(&message, pkbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -161,7 +162,7 @@ static void nas_message_test4(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     ABTS_INT_EQUAL(tc, sizeof(buffer), pkbuf->len);
     ABTS_TRUE(tc, memcmp(
-            core_ascii_to_hex(payload, strlen(payload), buffer),
+            core_ascii_to_hex(payload, strlen(payload), buffer, sizeof(buffer)),
             pkbuf->payload, pkbuf->len) == 0);
 
     pkbuf_free(pkbuf);

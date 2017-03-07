@@ -1,12 +1,12 @@
 #include "core_errno.h"
 #include "core_lib.h"
 
-void *core_ascii_to_hex(char *in, int len, void *out)
+void *core_ascii_to_hex(char *in, int in_len, void *out, int out_len)
 {
     int i = 0, j = 0, k = 0, hex;
     c_uint8_t *out_p = out;
 
-    while(i < len)
+    while(i < in_len && j < out_len)
     {
         if (!c_isspace(in[i]))
         {

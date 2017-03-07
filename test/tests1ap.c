@@ -124,8 +124,9 @@ status_t tests1ap_build_initial_ue_msg(pkbuf_t **pkbuf)
     *pkbuf = pkbuf_alloc(0, MESSAGE_SDU_SIZE);
     if (!(*pkbuf)) return CORE_ERROR;
 
-    core_ascii_to_hex(payload, strlen(payload), (*pkbuf)->payload);
     (*pkbuf)->len = 92;
+    core_ascii_to_hex(payload, strlen(payload), 
+            (*pkbuf)->payload, (*pkbuf)->len);
 
     return CORE_OK;
 }
@@ -142,8 +143,9 @@ status_t tests1ap_build_authentication_response(pkbuf_t **pkbuf)
     *pkbuf = pkbuf_alloc(0, MESSAGE_SDU_SIZE);
     if (!(*pkbuf)) return CORE_ERROR;
 
-    core_ascii_to_hex(payload, strlen(payload), (*pkbuf)->payload);
     (*pkbuf)->len = 66;
+    core_ascii_to_hex(payload, strlen(payload), 
+            (*pkbuf)->payload, (*pkbuf)->len);
 
     return CORE_OK;
 }
@@ -159,8 +161,9 @@ status_t tests1ap_build_security_mode_complete(pkbuf_t **pkbuf)
     *pkbuf = pkbuf_alloc(0, MESSAGE_SDU_SIZE);
     if (!(*pkbuf)) return CORE_ERROR;
 
-    core_ascii_to_hex(payload, strlen(payload), (*pkbuf)->payload);
     (*pkbuf)->len = 57;
+    core_ascii_to_hex(payload, strlen(payload), 
+            (*pkbuf)->payload, (*pkbuf)->len);
 
     return CORE_OK;
 }

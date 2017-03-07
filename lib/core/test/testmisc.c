@@ -24,18 +24,20 @@ static void misc_test2(abts_case *tc, void *data)
 
     char buffer[16];
 
-    ABTS_TRUE(tc, memcmp(k, core_ascii_to_hex(K, strlen(K), buffer), 16) == 0);
+    ABTS_TRUE(tc, memcmp(k, 
+        core_ascii_to_hex(K, strlen(K), buffer, 16), 16) == 0);
 
-    ABTS_TRUE(tc, memcmp(op, core_ascii_to_hex(OP, strlen(OP), buffer), 16) == 0);
+    ABTS_TRUE(tc, memcmp(op, 
+        core_ascii_to_hex(OP, strlen(OP), buffer, 16), 16) == 0);
 
     ABTS_TRUE(tc, memcmp(opc, 
-            core_ascii_to_hex(OPc, strlen(OPc), buffer), 16) == 0);
+            core_ascii_to_hex(OPc, strlen(OPc), buffer, 16), 16) == 0);
 
     ABTS_TRUE(tc, memcmp(amf, 
-            core_ascii_to_hex(AMF, strlen(AMF), buffer), 2) == 0);
+            core_ascii_to_hex(AMF, strlen(AMF), buffer, 2), 2) == 0);
 
     ABTS_TRUE(tc, memcmp(lower, 
-            core_ascii_to_hex(LOWER, strlen(LOWER), buffer), 4) == 0);
+            core_ascii_to_hex(LOWER, strlen(LOWER), buffer, 4), 4) == 0);
 }
 
 static void misc_test3(abts_case *tc, void *data)

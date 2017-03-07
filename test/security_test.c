@@ -4,6 +4,7 @@
 
 #include "milenage.h"
 #include "hss/kdf.h"
+#include "snow_3g.h"
 
 #include "testutil.h"
 
@@ -40,33 +41,33 @@ static void security_test1(abts_case *tc, void *data)
     c_uint8_t tmp[16];
 
     milenage_opc(
-        core_ascii_to_hex(_k, strlen(_k), k), 
-        core_ascii_to_hex(_op, strlen(_op), op),
+        core_ascii_to_hex(_k, strlen(_k), k, sizeof(k)), 
+        core_ascii_to_hex(_op, strlen(_op), op, sizeof(op)),
         opc);
     ABTS_TRUE(tc, memcmp(opc, 
-        core_ascii_to_hex(_opc, strlen(_opc), tmp), 16) == 0);
+        core_ascii_to_hex(_opc, strlen(_opc), tmp, 16), 16) == 0);
 
     milenage_f1(opc, k, 
-        core_ascii_to_hex(_rand, strlen(_rand), rand),
-        core_ascii_to_hex(_sqn, strlen(_sqn), sqn),
-        core_ascii_to_hex(_amf, strlen(_amf), amf),
+        core_ascii_to_hex(_rand, strlen(_rand), rand, sizeof(rand)),
+        core_ascii_to_hex(_sqn, strlen(_sqn), sqn, sizeof(sqn)),
+        core_ascii_to_hex(_amf, strlen(_amf), amf, sizeof(amf)),
         mac_a, mac_s);
     ABTS_TRUE(tc, memcmp(mac_a, 
-        core_ascii_to_hex(_mac_a, strlen(_mac_a), tmp), 8) == 0);
+        core_ascii_to_hex(_mac_a, strlen(_mac_a), tmp, 8), 8) == 0);
     ABTS_TRUE(tc, memcmp(mac_s, 
-        core_ascii_to_hex(_mac_s, strlen(_mac_s), tmp), 8) == 0);
+        core_ascii_to_hex(_mac_s, strlen(_mac_s), tmp, 8), 8) == 0);
 
     milenage_f2345(opc, k, rand, res, ck, ik, ak, akstar);
     ABTS_TRUE(tc, memcmp(res, 
-        core_ascii_to_hex(_res, strlen(_res), tmp), 8) == 0);
+        core_ascii_to_hex(_res, strlen(_res), tmp, 8), 8) == 0);
     ABTS_TRUE(tc, memcmp(ck, 
-        core_ascii_to_hex(_ck, strlen(_ck), tmp), 16) == 0);
+        core_ascii_to_hex(_ck, strlen(_ck), tmp, 16), 16) == 0);
     ABTS_TRUE(tc, memcmp(ik, 
-        core_ascii_to_hex(_ik, strlen(_ik), tmp), 16) == 0);
+        core_ascii_to_hex(_ik, strlen(_ik), tmp, 16), 16) == 0);
     ABTS_TRUE(tc, memcmp(ak, 
-        core_ascii_to_hex(_ak, strlen(_ak), tmp), 6) == 0);
+        core_ascii_to_hex(_ak, strlen(_ak), tmp, 6), 6) == 0);
     ABTS_TRUE(tc, memcmp(akstar, 
-        core_ascii_to_hex(_akstar, strlen(_akstar), tmp), 6) == 0);
+        core_ascii_to_hex(_akstar, strlen(_akstar), tmp, 6), 6) == 0);
 }
 
 static void security_test2(abts_case *tc, void *data)
@@ -81,14 +82,14 @@ static void security_test2(abts_case *tc, void *data)
     c_uint8_t tmp[32];
 
     hmac_sha256(
-        core_ascii_to_hex(_key, strlen(_key), key),
+        core_ascii_to_hex(_key, strlen(_key), key, sizeof(key)),
         4,
-        core_ascii_to_hex(_message, strlen(_message), message),
+        core_ascii_to_hex(_message, strlen(_message), message, sizeof(message)),
         28,
         hmac, 32);
 
     ABTS_TRUE(tc, memcmp(hmac, 
-        core_ascii_to_hex(_hmac, strlen(_hmac), tmp), 32) == 0);
+        core_ascii_to_hex(_hmac, strlen(_hmac), tmp, 32), 32) == 0);
 }
 
 static void security_test3(abts_case *tc, void *data)
@@ -108,15 +109,33 @@ static void security_test3(abts_case *tc, void *data)
     c_uint8_t tmp[32];
 
     hss_kdf_kasme(
-        core_ascii_to_hex(_ck, strlen(_ck), ck),
-        core_ascii_to_hex(_ik, strlen(_ik), ik),
-        core_ascii_to_hex(_plmn_id, strlen(_plmn_id), plmn_id),
-        core_ascii_to_hex(_sqn, strlen(_sqn), sqn),
-        core_ascii_to_hex(_ak, strlen(_ak), ak),
+        core_ascii_to_hex(_ck, strlen(_ck), ck, sizeof(ck)),
+        core_ascii_to_hex(_ik, strlen(_ik), ik, sizeof(ik)),
+        core_ascii_to_hex(_plmn_id, strlen(_plmn_id), plmn_id, sizeof(plmn_id)),
+        core_ascii_to_hex(_sqn, strlen(_sqn), sqn, sizeof(sqn)),
+        core_ascii_to_hex(_ak, strlen(_ak), ak, sizeof(ak)),
         kasme);
 
     ABTS_TRUE(tc, memcmp(kasme, 
-        core_ascii_to_hex(_kasme, strlen(_kasme), tmp), 32) == 0);
+        core_ascii_to_hex(_kasme, strlen(_kasme), tmp, 32), 32) == 0);
+}
+
+static void security_test4(abts_case *tc, void *data)
+{
+    char *_ik = "2bd6459f 82c5b300 952c4910 4881ff48";
+    char *_message = "33323462 63393861 373479";
+    char *_mact = "731f1165";
+    c_uint8_t ik[16];
+    c_uint8_t message[88/8];
+    c_uint8_t mact[4];
+    c_uint8_t tmp[4];
+
+    snow_3g_f9(core_ascii_to_hex(_ik, strlen(_ik), ik, sizeof(ik)),
+        0x38a6f056, (0x1f << 27), 0, 
+        core_ascii_to_hex(_message, strlen(_message), message, sizeof(message)),
+        88, mact);
+    ABTS_TRUE(tc, memcmp(mact, 
+        core_ascii_to_hex(_mact, strlen(_mact), tmp, 4), 4) == 0);
 }
 
 abts_suite *test_security(abts_suite *suite)
@@ -126,6 +145,7 @@ abts_suite *test_security(abts_suite *suite)
     abts_run_test(suite, security_test1, NULL);
     abts_run_test(suite, security_test2, NULL);
     abts_run_test(suite, security_test3, NULL);
+    abts_run_test(suite, security_test4, NULL);
 
     return suite;
 }
