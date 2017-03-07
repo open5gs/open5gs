@@ -123,7 +123,7 @@ static void security_test3(abts_case *tc, void *data)
 static void security_test4(abts_case *tc, void *data)
 {
     char *_ik = "2bd6459f 82c5b300 952c4910 4881ff48";
-    char *_message = "33323462 63393861 373479";
+    char *_message = "33323462 63393861 37347900 00000000";
     char *_mact = "731f1165";
     c_uint8_t ik[16];
     c_uint8_t message[88/8];
