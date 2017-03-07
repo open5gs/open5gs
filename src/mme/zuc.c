@@ -347,15 +347,12 @@ u8 GET_BIT(u32 * DATA, u32 i)
 	return (DATA[i/32] & (1<<(31-(i%32)))) ? 1 : 0;
 }
 
-#include "core_debug.h"
 void zuc_eia3(u8* IK, u32 COUNT, u32 BEARER, u32 DIRECTION,
 				   u32 LENGTH, u32* M, u32* MAC)
 {
 	u32	*z, N, L, T, i;
 	u8 IV[16];
 
-    d_print_hex(IK, 16);
-	
 	IV[0]	= (COUNT>>24) & 0xFF;
 	IV[1]	= (COUNT>>16) & 0xFF;
 	IV[2]	= (COUNT>>8) & 0xFF;
