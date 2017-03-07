@@ -15,11 +15,12 @@
 #include "nas_conv.h"
 #include "s6a_sm.h"
 
-static void ue_emm_handle_attach_request(ue_ctx_t *ue, nas_message_t *message);
-static void ue_emm_handle_authentication_request(
-        ue_ctx_t *ue, pkbuf_t *recvbuf);
+static void ue_emm_handle_attach_request(
+        ue_ctx_t *ue, nas_attach_request_t *attach_request);
 static void ue_emm_handle_authentication_response(
-        ue_ctx_t *ue, nas_message_t *message);
+        ue_ctx_t *ue, nas_authentication_response_t *authentication_response);
+
+static void ue_emm_send_to_ue(ue_ctx_t *ue, pkbuf_t *pkbuf);
 
 void ue_emm_state_initial(ue_emm_sm_t *s, event_t *e)
 {
@@ -75,17 +76,27 @@ void ue_emm_state_operational(ue_emm_sm_t *s, event_t *e)
             {
                 case NAS_ATTACH_REQUEST:
                 {
-                    ue_emm_handle_attach_request(ue, &message);
+                    ue_emm_handle_attach_request(
+                            ue, &message.emm.attach_request);
                     break;
                 }
                 case NAS_AUTHENTICATION_REQUEST:
                 {
-                    ue_emm_handle_authentication_request(ue, recvbuf);
+                    ue_emm_send_to_ue(ue, recvbuf);
+
+                    d_assert(ue->imsi, return, "no UE-IMSI");
+                    d_info("EMM sends Authentication-Request to UE[%s]", 
+                            ue->imsi);
                     break;
                 }
                 case NAS_AUTHENTICATION_RESPONSE:
                 {
-                    ue_emm_handle_authentication_response(ue, &message);
+                    ue_emm_handle_authentication_response(
+                            ue, &message.emm.authentication_response);
+                    break;
+                }
+                case NAS_SECURITY_MODE_COMPLETE:
+                {
                     break;
                 }
                 default:
@@ -132,9 +143,9 @@ void ue_emm_state_exception(ue_emm_sm_t *s, event_t *e)
     }
 }
 
-static void ue_emm_handle_attach_request(ue_ctx_t *ue, nas_message_t *message)
+static void ue_emm_handle_attach_request(
+        ue_ctx_t *ue, nas_attach_request_t *attach_request)
 {
-    nas_attach_request_t *attach_request = &message->emm.attach_request;
     nas_eps_mobile_identity_t *eps_mobile_identity =
         &attach_request->eps_mobile_identity;
 
@@ -154,10 +165,16 @@ static void ue_emm_handle_attach_request(ue_ctx_t *ue, nas_message_t *message)
                 nas_plmn_bcd_to_buffer(
                     &last_visited_registered_tai->plmn, plmn_id);
             }
-
             nas_imsi_bcd_to_buffer(
                 &eps_mobile_identity->imsi, eps_mobile_identity->length, 
                 ue->imsi, &ue->imsi_len);
+
+            memcpy(&ue->ue_network_capability, 
+                    &attach_request->ue_network_capability,
+                    sizeof(attach_request->ue_network_capability));
+            memcpy(&ue->ms_network_capability, 
+                    &attach_request->ms_network_capability,
+                    sizeof(attach_request->ms_network_capability));
 
             s6a_send_auth_info_req(ue, plmn_id);
             break;
@@ -167,12 +184,81 @@ static void ue_emm_handle_attach_request(ue_ctx_t *ue, nas_message_t *message)
             d_warn("Not implemented(type:%d)", 
                     eps_mobile_identity->imsi.type_of_identity);
             
-            break;
+            return;
         }
     }
+
+    d_assert(ue->imsi, return, "no UE-IMSI");
+    d_info("UE[%s] sends Attach-Request", ue->imsi);
 }
 
-static void ue_emm_handle_authentication_request(ue_ctx_t *ue, pkbuf_t *recvbuf)
+static void ue_emm_handle_authentication_response(
+        ue_ctx_t *ue, nas_authentication_response_t *authentication_response)
+{
+    nas_authentication_response_parameter_t *authentication_response_parameter =
+        &authentication_response->authentication_response_parameter;
+
+    nas_message_t message;
+    pkbuf_t *sendbuf = NULL;
+    nas_security_mode_command_t *security_mode_command = 
+        &message.emm.security_mode_command;
+    nas_security_algorithms_t *selected_nas_security_algorithms =
+        &security_mode_command->selected_nas_security_algorithms;
+    nas_key_set_identifier_t *nas_key_set_identifier =
+        &security_mode_command->nas_key_set_identifier;
+    nas_ue_security_capability_t *replayed_ue_security_capabilities = 
+        &security_mode_command->replayed_ue_security_capabilities;
+
+    d_assert(ue, return, "Null param");
+
+    if (authentication_response_parameter->length != ue->xres_len ||
+        memcmp(authentication_response_parameter->res,
+            ue->xres, ue->xres_len) != 0)
+    {
+        d_error("authentication failed");
+        return;
+    }
+
+    memset(&message, 0, sizeof(message));
+    message.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    message.h.message_type = NAS_SECURITY_MODE_COMMAND;
+
+    selected_nas_security_algorithms->type_of_ciphering_algorithm =
+        mme_self()->selected_enc_algorithm;
+    selected_nas_security_algorithms->type_of_integrity_protection_algorithm =
+        mme_self()->selected_int_algorithm;
+
+    nas_key_set_identifier->tsc = 0;
+    nas_key_set_identifier->nas_key_set_identifier = 0;
+
+    replayed_ue_security_capabilities->length =
+        sizeof(replayed_ue_security_capabilities->eea) +
+        sizeof(replayed_ue_security_capabilities->eia) +
+        sizeof(replayed_ue_security_capabilities->uea) +
+        sizeof(replayed_ue_security_capabilities->uia) +
+        sizeof(replayed_ue_security_capabilities->gea);
+    replayed_ue_security_capabilities->eea = ue->ue_network_capability.eea;
+    replayed_ue_security_capabilities->eia = ue->ue_network_capability.eia;
+    replayed_ue_security_capabilities->uea = ue->ue_network_capability.uea;
+    replayed_ue_security_capabilities->uia = ue->ue_network_capability.uia;
+    replayed_ue_security_capabilities->gea = 
+        (ue->ms_network_capability.gea1 << 6) | 
+        ue->ms_network_capability.extended_gea;
+
+    mme_kdf_nas(MME_KDF_NAS_INT_ALG, mme_self()->selected_int_algorithm,
+            ue->kasme, ue->knas_int);
+    mme_kdf_nas(MME_KDF_NAS_ENC_ALG, mme_self()->selected_enc_algorithm,
+            ue->kasme, ue->knas_enc);
+
+    d_assert(nas_encode_pdu(&sendbuf, &message) == CORE_OK && sendbuf,,);
+    ue_emm_send_to_ue(ue, sendbuf);
+
+    d_assert(ue->imsi, return, "no UE-IMSI");
+    d_info("EMM sends Security-mode Command to UE[%s]", 
+            ue->imsi);
+}
+
+static void ue_emm_send_to_ue(ue_ctx_t *ue, pkbuf_t *pkbuf)
 {
     int encoded;
     s1ap_message_t message;
@@ -186,9 +272,9 @@ static void ue_emm_handle_authentication_request(ue_ctx_t *ue, pkbuf_t *recvbuf)
     ies->mme_ue_s1ap_id = ue->mme_ue_s1ap_id;
     ies->eNB_UE_S1AP_ID = ue->enb_ue_s1ap_id;
 
-    nasPdu->size = recvbuf->len;
+    nasPdu->size = pkbuf->len;
     nasPdu->buf = core_calloc(nasPdu->size, sizeof(c_uint8_t));
-    memcpy(nasPdu->buf, recvbuf->payload, nasPdu->size);
+    memcpy(nasPdu->buf, pkbuf->payload, nasPdu->size);
 
     message.procedureCode = S1ap_ProcedureCode_id_downlinkNASTransport;
     message.direction = S1AP_PDU_PR_initiatingMessage;
@@ -198,29 +284,4 @@ static void ue_emm_handle_authentication_request(ue_ctx_t *ue, pkbuf_t *recvbuf)
     d_assert(encoded >= 0, , "encode failed");
 
     d_assert(s1ap_send_to_enb(ue->enb, sendbuf) == CORE_OK, , "send error");
-    pkbuf_free(recvbuf);
-}
-
-static void ue_emm_handle_authentication_response(
-        ue_ctx_t *ue, nas_message_t *message)
-{
-    nas_authentication_response_t *authentication_response = 
-        &message->emm.authentication_response;
-    nas_authentication_response_parameter_t *authentication_response_parameter =
-        &authentication_response->authentication_response_parameter;
-
-    d_assert(ue, return, "Null param");
-
-    if (authentication_response_parameter->length != ue->xres_len ||
-        memcmp(authentication_response_parameter->res,
-            ue->xres, ue->xres_len) != 0)
-    {
-        d_error("authentication failed");
-        return;
-    }
-
-    mme_kdf_nas(MME_KDF_NAS_INT_ALG, mme_self()->selected_int_algorithm,
-            ue->kasme, ue->knas_int);
-    mme_kdf_nas(MME_KDF_NAS_ENC_ALG, mme_self()->selected_enc_algorithm,
-            ue->kasme, ue->knas_enc);
 }

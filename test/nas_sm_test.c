@@ -56,6 +56,19 @@ static void nas_sm_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(sendbuf);
 
+    /* Receive Security-mode-Command */
+    recvbuf = pkbuf_alloc(0, MESSAGE_SDU_SIZE);
+    rc = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_NEQUAL(tc, 0, rc);
+    pkbuf_free(recvbuf);
+
+    /* Send Security-mode-Complete */
+    rv = tests1ap_build_security_mode_complete(&sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    pkbuf_free(sendbuf);
+
     /* eNB disonncect from MME */
     rv = tests1ap_enb_close(sock);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);

@@ -16,6 +16,7 @@ CORE_DECLARE(status_t) tests1ap_build_setup_req(
         pkbuf_t **pkbuf, c_uint32_t enb_id);
 CORE_DECLARE(status_t) tests1ap_build_initial_ue_msg(pkbuf_t **pkbuf);
 CORE_DECLARE(status_t) tests1ap_build_authentication_response(pkbuf_t **pkbuf);
+CORE_DECLARE(status_t) tests1ap_build_security_mode_complete(pkbuf_t **pkbuf);
 
 #ifdef __cplusplus
 }

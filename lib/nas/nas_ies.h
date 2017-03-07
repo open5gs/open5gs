@@ -690,38 +690,58 @@ CORE_DECLARE(c_int32_t) nas_encode_tracking_area_identity_list(
  * M LV  3-14 */
 typedef struct _nas_ue_network_capability_t {
     c_uint8_t length;
-ED8(c_uint8_t eea0:1;,
-    c_uint8_t eea1:1;,
-    c_uint8_t eea2:1;,
-    c_uint8_t eea3:1;,
-    c_uint8_t eea4:1;,
-    c_uint8_t eea5:1;,
-    c_uint8_t eea6:1;,
-    c_uint8_t eea7:1;)
-ED8(c_uint8_t eia0:1;,
-    c_uint8_t eia1:1;,
-    c_uint8_t eia2:1;,
-    c_uint8_t eia3:1;,
-    c_uint8_t eia4:1;,
-    c_uint8_t eia5:1;,
-    c_uint8_t eia6:1;,
-    c_uint8_t eia7:1;)
-ED8(c_uint8_t uea0:1;,
-    c_uint8_t uea1:1;,
-    c_uint8_t uea2:1;,
-    c_uint8_t uea3:1;,
-    c_uint8_t uea4:1;,
-    c_uint8_t uea5:1;,
-    c_uint8_t uea6:1;,
-    c_uint8_t uea7:1;)
-ED8(c_uint8_t ucs2:1;,
-    c_uint8_t uia1:1;,
-    c_uint8_t uia2:1;,
-    c_uint8_t uia3:1;,
-    c_uint8_t uia4:1;,
-    c_uint8_t uia5:1;,
-    c_uint8_t uia6:1;,
-    c_uint8_t uia7:1;)
+    union { 
+        struct {
+        ED8(c_uint8_t eea0:1;,
+            c_uint8_t eea1:1;,
+            c_uint8_t eea2:1;,
+            c_uint8_t eea3:1;,
+            c_uint8_t eea4:1;,
+            c_uint8_t eea5:1;,
+            c_uint8_t eea6:1;,
+            c_uint8_t eea7:1;)
+        };
+        c_uint8_t eea; 
+    };
+    union { 
+        struct {
+        ED8(c_uint8_t eia0:1;,
+            c_uint8_t eia1:1;,
+            c_uint8_t eia2:1;,
+            c_uint8_t eia3:1;,
+            c_uint8_t eia4:1;,
+            c_uint8_t eia5:1;,
+            c_uint8_t eia6:1;,
+            c_uint8_t eia7:1;)
+        };
+        c_uint8_t eia; 
+    };
+    union { 
+        struct {
+        ED8(c_uint8_t uea0:1;,
+            c_uint8_t uea1:1;,
+            c_uint8_t uea2:1;,
+            c_uint8_t uea3:1;,
+            c_uint8_t uea4:1;,
+            c_uint8_t uea5:1;,
+            c_uint8_t uea6:1;,
+            c_uint8_t uea7:1;)
+        };
+        c_uint8_t uea; 
+    };
+    union { 
+        struct {
+        ED8(c_uint8_t ucs2:1;,
+            c_uint8_t uia1:1;,
+            c_uint8_t uia2:1;,
+            c_uint8_t uia3:1;,
+            c_uint8_t uia4:1;,
+            c_uint8_t uia5:1;,
+            c_uint8_t uia6:1;,
+            c_uint8_t uia7:1;)
+        };
+        c_uint8_t uia; 
+    };
 ED8(c_uint8_t prose_dd:1;,
     c_uint8_t prose:1;,
     c_uint8_t h_245_ash:1;,
@@ -749,46 +769,71 @@ CORE_DECLARE(c_int32_t) nas_decode_ue_network_capability(
  * M LV 3-6 */
 typedef struct _nas_ue_security_capability_t {
     c_uint8_t length;
-ED8(c_uint8_t eea0:1;,
-    c_uint8_t eea1:1;,
-    c_uint8_t eea2:1;,
-    c_uint8_t eea3:1;,
-    c_uint8_t eea4:1;,
-    c_uint8_t eea5:1;,
-    c_uint8_t eea6:1;,
-    c_uint8_t eea7:1;)
-ED8(c_uint8_t eia0:1;,
-    c_uint8_t eia1:1;,
-    c_uint8_t eia2:1;,
-    c_uint8_t eia3:1;,
-    c_uint8_t eia4:1;,
-    c_uint8_t eia5:1;,
-    c_uint8_t eia6:1;,
-    c_uint8_t eia7:1;)
-ED8(c_uint8_t uea0:1;,
-    c_uint8_t uea1:1;,
-    c_uint8_t uea2:1;,
-    c_uint8_t uea3:1;,
-    c_uint8_t uea4:1;,
-    c_uint8_t uea5:1;,
-    c_uint8_t uea6:1;,
-    c_uint8_t uea7:1;)
-ED8(c_uint8_t spare1:1;,
-    c_uint8_t uia1:1;,
-    c_uint8_t uia2:1;,
-    c_uint8_t uia3:1;,
-    c_uint8_t uia4:1;,
-    c_uint8_t uia5:1;,
-    c_uint8_t uia6:1;,
-    c_uint8_t uia7:1;)
-ED8(c_uint8_t spare2:1;,
-    c_uint8_t gea1:1;,
-    c_uint8_t gea2:1;,
-    c_uint8_t gea3:1;,
-    c_uint8_t gea4:1;,
-    c_uint8_t gea5:1;,
-    c_uint8_t gea6:1;,
-    c_uint8_t gea7:1;)
+    union { 
+        struct {
+        ED8(c_uint8_t eea0:1;,
+            c_uint8_t eea1:1;,
+            c_uint8_t eea2:1;,
+            c_uint8_t eea3:1;,
+            c_uint8_t eea4:1;,
+            c_uint8_t eea5:1;,
+            c_uint8_t eea6:1;,
+            c_uint8_t eea7:1;)
+        };
+        c_uint8_t eea; 
+    };
+    union { 
+        struct {
+        ED8(c_uint8_t eia0:1;,
+            c_uint8_t eia1:1;,
+            c_uint8_t eia2:1;,
+            c_uint8_t eia3:1;,
+            c_uint8_t eia4:1;,
+            c_uint8_t eia5:1;,
+            c_uint8_t eia6:1;,
+            c_uint8_t eia7:1;)
+        };
+        c_uint8_t eia; 
+    };
+    union { 
+        struct {
+        ED8(c_uint8_t uea0:1;,
+            c_uint8_t uea1:1;,
+            c_uint8_t uea2:1;,
+            c_uint8_t uea3:1;,
+            c_uint8_t uea4:1;,
+            c_uint8_t uea5:1;,
+            c_uint8_t uea6:1;,
+            c_uint8_t uea7:1;)
+        };
+        c_uint8_t uea; 
+    };
+    union { 
+        struct {
+        ED8(c_uint8_t spare1:1;,
+            c_uint8_t uia1:1;,
+            c_uint8_t uia2:1;,
+            c_uint8_t uia3:1;,
+            c_uint8_t uia4:1;,
+            c_uint8_t uia5:1;,
+            c_uint8_t uia6:1;,
+            c_uint8_t uia7:1;)
+        };
+        c_uint8_t uia; 
+    };
+    union { 
+        struct {
+        ED8(c_uint8_t spare2:1;,
+            c_uint8_t gea1:1;,
+            c_uint8_t gea2:1;,
+            c_uint8_t gea3:1;,
+            c_uint8_t gea4:1;,
+            c_uint8_t gea5:1;,
+            c_uint8_t gea6:1;,
+            c_uint8_t gea7:1;)
+        };
+        c_uint8_t gea; 
+    };
 } __attribute__ ((packed)) nas_ue_security_capability_t;
 
 CORE_DECLARE(c_int32_t) nas_encode_ue_security_capability(

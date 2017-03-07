@@ -147,3 +147,20 @@ status_t tests1ap_build_authentication_response(pkbuf_t **pkbuf)
 
     return CORE_OK;
 }
+
+status_t tests1ap_build_security_mode_complete(pkbuf_t **pkbuf)
+{
+    char *payload = 
+        "000d403500000500 000005c00100009d"
+        "000800020001001a 000908476b8f5f64"
+        "00075e0064400800 00f1101079baf000"
+        "4340060000f1105b a0";
+    
+    *pkbuf = pkbuf_alloc(0, MESSAGE_SDU_SIZE);
+    if (!(*pkbuf)) return CORE_ERROR;
+
+    core_ascii_to_hex(payload, strlen(payload), (*pkbuf)->payload);
+    (*pkbuf)->len = 57;
+
+    return CORE_OK;
+}

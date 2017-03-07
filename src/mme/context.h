@@ -7,6 +7,7 @@
 #include "core_sha2.h"
 
 #include "3gpp_message.h"
+#include "nas_ies.h"
 #include "sm.h"
 
 #ifdef __cplusplus
@@ -51,16 +52,16 @@ typedef struct _mme_ctx_t {
 
     /* defined in 'nas_ies.h'
      * #define NAS_SECURITY_ALGORITHMS_EIA0        0
-     * #define NAS_SECURITY_ALGORITHMS_128_EIA1    1
-     * #define NAS_SECURITY_ALGORITHMS_128_EIA1    2
-     * #define NAS_SECURITY_ALGORITHMS_128_EIA3    3 */
-    c_uint8_t       selected_int_algorithm;
-    /* defined in 'nas_ies.h'
-     * #define NAS_SECURITY_ALGORITHMS_EIA0        0
      * #define NAS_SECURITY_ALGORITHMS_128_EEA1    1
      * #define NAS_SECURITY_ALGORITHMS_128_EEA2    2
      * #define NAS_SECURITY_ALGORITHMS_128_EEA3    3 */
     c_uint8_t       selected_enc_algorithm;
+    /* defined in 'nas_ies.h'
+     * #define NAS_SECURITY_ALGORITHMS_EIA0        0
+     * #define NAS_SECURITY_ALGORITHMS_128_EIA1    1
+     * #define NAS_SECURITY_ALGORITHMS_128_EIA1    2
+     * #define NAS_SECURITY_ALGORITHMS_128_EIA3    3 */
+    c_uint8_t       selected_int_algorithm;
 
     /* S1SetupRequest */
     c_uint16_t      tracking_area_code;
@@ -96,6 +97,8 @@ typedef struct _ue_ctx_t {
     c_uint8_t       imsi_len;
 
     /* Security Context */
+    nas_ue_network_capability_t ue_network_capability;
+    nas_ms_network_capability_t ms_network_capability;
     c_uint8_t       xres[MAX_RES_LEN];
     c_uint8_t       xres_len;
     c_uint8_t       kasme[SHA256_DIGEST_SIZE];

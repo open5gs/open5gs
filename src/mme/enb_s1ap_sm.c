@@ -198,8 +198,6 @@ static void enb_s1ap_handle_s1_setup_request(
     d_assert(s1ap_build_setup_rsp(&sendbuf) == CORE_OK, 
             return, "build error");
     d_assert(s1ap_send_to_enb(enb, sendbuf) == CORE_OK, , "send error");
-
-    pkbuf_free(sendbuf);
 }
 
 static void enb_s1ap_handle_initial_ue_message(
