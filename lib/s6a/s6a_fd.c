@@ -16,8 +16,6 @@ int s6a_fd_init(const char *conffile)
 {
     int ret;
     
-    d_trace_level(&_s6a_fd, 0);
-
     gnutls_global_set_log_function(s6a_gnutls_log_func);
     gnutls_global_set_log_level(TRACE_MODULE);
 

@@ -90,8 +90,6 @@ static void * s6a_stats(void * arg)
 /* entry point */
 int s6a_init(int mode)
 {
-    d_trace_level(&_s6a_init, 0);
-
     /* Configure Application Mode(MME, HSS) */
     if (mode == MODE_HSS) 
     {

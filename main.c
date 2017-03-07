@@ -115,13 +115,23 @@ int main(int argc, char *argv[])
     }
 
     {
+#if 0
         extern int _mme_sm;
         extern int _enb_s1_sm;
-        extern int _s1ap_path;
+        extern int _s1dec;
+        extern int _s1enc;
+        extern int _s6a_fd;
+#endif
+        extern int _ue_emm_sm;
 
+#if 0
         d_trace_level(&_mme_sm, 100);
         d_trace_level(&_enb_s1_sm, 100);
-        d_trace_level(&_s1ap_path, 100);
+        d_trace_level(&_s1dec, 100);
+        d_trace_level(&_s1enc, 100);
+        d_trace_level(&_s6a_fd, 100);
+#endif
+        d_trace_level(&_ue_emm_sm, 100);
     }
 
     if (cellwire_initialize(config_path, log_path) != CORE_OK)
