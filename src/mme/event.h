@@ -126,4 +126,4 @@ char* event_get_name(event_t *e);
 }
 #endif /* __cplusplus */
 
-#endif /* !__EVENT_H__ */
+#endif /* __EVENT_H__ */
