@@ -125,26 +125,30 @@ static void security_test3(abts_case *tc, void *data)
 
 static void security_test4(abts_case *tc, void *data)
 {
+#define SECURITY_TEST4_BIT_LEN 88
+#define SECURITY_TEST4_LEN ((SECURITY_TEST4_BIT_LEN+7)/8)
     char *_ik = "2bd6459f 82c5b300 952c4910 4881ff48";
     char *_message = "33323462 63393861 37347900 00000000";
     char *_mact = "731f1165";
     c_uint8_t ik[16];
-    c_uint8_t message[88/8];
+    c_uint8_t message[SECURITY_TEST4_LEN];
     c_uint8_t mact[4];
     c_uint8_t tmp[4];
 
     snow_3g_f9(core_ascii_to_hex(_ik, strlen(_ik), ik, sizeof(ik)),
         0x38a6f056, (0x1f << 27), 0, 
         core_ascii_to_hex(_message, strlen(_message), message, sizeof(message)),
-        88, mact);
+        SECURITY_TEST4_BIT_LEN, mact);
     ABTS_TRUE(tc, memcmp(mact, 
         core_ascii_to_hex(_mact, strlen(_mact), tmp, 4), 4) == 0);
 }
 
 static void security_test5(abts_case *tc, void *data)
 {
+#define SECURITY_TEST5_BIT_LEN 798
+#define SECURITY_TEST5_LEN ((SECURITY_TEST5_BIT_LEN+7)/8)
     char *_ck = "2bd6459f 82c5b300 952c4910 4881ff48";
-    char *_message = 
+    char *_plain = 
         "7ec61272 743bf161 4726446a 6c38ced1"
         "66f6ca76 eb543004 4286346c ef130f92"
         "922b0345 0d3a9975 e5bd2ea0 eb55ad8e"
@@ -152,7 +156,7 @@ static void security_test5(abts_case *tc, void *data)
         "59b7bdfd 39bef4b2 484583d5 afe082ae"
         "e638bf5f d5a60619 3901a08f 4ab41aab"
         "9b134880";
-    char *_cmessage = 
+    char *_cipher = 
         "8ceba629 43dced3a 0990b06e a1b0a2c4"
         "fb3cedc7 1b369f42 ba64c1eb 6665e72a"
         "a1c9bb0d eaa20fe8 6058b8ba ee2c2e7f"
@@ -161,63 +165,33 @@ static void security_test5(abts_case *tc, void *data)
         "ddc1b65f 0aa0d97a 053db55a 88c4c4f9"
         "605e4140";
     c_uint8_t ck[16];
-    c_uint8_t message[798/8+1];
-    c_uint8_t tmp[798/8+1];
+    c_uint8_t plain[SECURITY_TEST5_BIT_LEN];
+    c_uint8_t tmp[SECURITY_TEST5_BIT_LEN];
 
     snow_3g_f8(
         core_ascii_to_hex(_ck, strlen(_ck), ck, sizeof(ck)),
         0x72a4f20f, 0x0c, 1,
-        core_ascii_to_hex(_message, strlen(_message), message, sizeof(message)),
-        798);
-    ABTS_TRUE(tc, memcmp(message, core_ascii_to_hex(
-            _cmessage, strlen(_cmessage), tmp, 798/8+1), 798/8+1) == 0);
+        core_ascii_to_hex(_plain, strlen(_plain), plain, sizeof(plain)),
+        SECURITY_TEST5_BIT_LEN);
+    ABTS_TRUE(tc, memcmp(plain, 
+        core_ascii_to_hex(_cipher, strlen(_cipher), tmp, SECURITY_TEST5_LEN), 
+        SECURITY_TEST5_LEN) == 0);
 }
 
 static void security_test6(abts_case *tc, void *data)
 {
-#if 0 /* Not supported */
-    char *_ik = "2bd6459f 82c5b300 952c4910 4881ff48";
-    char *_message = "33323462 63393840";
-    char *_mact = "118c6eb8";
-    c_uint8_t ik[16];
-    c_uint8_t message[58/8+1];
-    c_uint8_t mact[16];
-    c_uint8_t tmp[4];
-    c_uint8_t *m = NULL;
-    c_uint32_t count = htonl(0x38a6f056);
-    int msg_len = 58/8+1;
-    int m_len = 8+msg_len;
-
-    m = core_calloc(m_len, sizeof(c_uint8_t));
-    memcpy(m, &count, sizeof(c_uint32_t));
-    m[4] = ((0x18 << 3) | (0 << 2));
-    memcpy(m+8, 
-        core_ascii_to_hex(_message, strlen(_message), message, sizeof(message)),
-        msg_len);
-
-    aes_cmac_calculate(mact, 
-            core_ascii_to_hex(_ik, strlen(_ik), ik, sizeof(ik)), m, m_len);
-    d_print_hex(mact, 4);
-
-    core_free(m);
-
-    ABTS_TRUE(tc, memcmp(mact, 
-        core_ascii_to_hex(_mact, strlen(_mact), tmp, 4), 4) == 0);
-#endif
-}
-
-static void security_test7(abts_case *tc, void *data)
-{
+#define SECURITY_TEST6_BIT_LEN 64
+#define SECURITY_TEST6_LEN ((SECURITY_TEST6_BIT_LEN+7)/8)
     char *_ik = "d3c5d592 327fb11c 4035c668 0af8c6d1";
     char *_message = "484583d5 afe082ae";
     char *_mact = "b93787e6";
     c_uint8_t ik[16];
-    c_uint8_t message[64/8];
+    c_uint8_t message[SECURITY_TEST6_LEN];
     c_uint8_t mact[16];
     c_uint8_t tmp[4];
     c_uint8_t *m = NULL;
     c_uint32_t count = htonl(0x398a59b4);
-    int msg_len = 64/8;
+    int msg_len = SECURITY_TEST6_LEN;
     int m_len = 8+msg_len;
 
     m = core_calloc(m_len, sizeof(c_uint8_t));
@@ -236,8 +210,15 @@ static void security_test7(abts_case *tc, void *data)
         core_ascii_to_hex(_mact, strlen(_mact), tmp, 4), 4) == 0);
 }
 
+static void security_test7(abts_case *tc, void *data)
+{
+}
+
+
 static void security_test8(abts_case *tc, void *data)
 {
+#define SECURITY_TEST8_BIT_LEN 577
+#define SECURITY_TEST8_LEN ((SECURITY_TEST8_BIT_LEN+7)/8)
     char *_ik = "c9 e6 ce c4 60 7c 72 db 00 0a ef a8 83 85 ab 0a";
     char *_message = 
     "983b41d4 7d780c9e 1ad11d7e b70391b1 de0b35da 2dc62f83 e7b78d63 06ca0ea0"
@@ -245,7 +226,7 @@ static void security_test8(abts_case *tc, void *data)
     "ebde3f40 93c53881 00000000";
     char *_mact = "fae8ff0b";
     c_uint8_t ik[16];
-    c_uint8_t message[577/8+1];
+    c_uint8_t message[SECURITY_TEST8_LEN];
     c_uint8_t mact[4];
     c_uint32_t mac;
 
@@ -254,13 +235,39 @@ static void security_test8(abts_case *tc, void *data)
         0xa94059da,
         0xa,
         1,
-        577,
+        SECURITY_TEST8_BIT_LEN,
         core_ascii_to_hex(_message, strlen(_message), message, sizeof(message)),
         &mac);
     mac = ntohl(mac);
 
     ABTS_TRUE(tc, memcmp(&mac, 
         core_ascii_to_hex(_mact, strlen(_mact), mact, 4), 4) == 0);
+}
+
+static void security_test9(abts_case *tc, void *data)
+{
+#define SECURITY_TEST9_BIT_LEN 193
+#define SECURITY_TEST9_LEN ((SECURITY_TEST9_BIT_LEN+7)/8)
+    char *_ck = "17 3d 14 ba 50 03 73 1d 7a 60 04 94 70 f0 0a 29";
+    char *_plain = 
+        "6cf65340 735552ab 0c9752fa 6f9025fe 0bd675d9 005875b2 00000000";
+    char *_cipher = 
+        "a6c85fc6 6afb8533 aafc2518 dfe78494 0ee1e4b0 30238cc8 00000000";
+    c_uint8_t ck[16];
+    c_uint8_t plain[SECURITY_TEST9_LEN];
+    c_uint8_t cipher[SECURITY_TEST9_LEN];
+    c_uint8_t tmp[SECURITY_TEST9_LEN];
+
+    zuc_eea3(
+        core_ascii_to_hex(_ck, strlen(_ck), ck, sizeof(ck)),
+        0x66035492, 0xf, 0,
+        SECURITY_TEST9_BIT_LEN, 
+        core_ascii_to_hex(_plain, strlen(_plain), plain, sizeof(plain)),
+        cipher);
+
+    ABTS_TRUE(tc, memcmp(cipher, 
+        core_ascii_to_hex(_cipher, strlen(_cipher), tmp, SECURITY_TEST9_LEN), 
+        SECURITY_TEST9_LEN) == 0);
 }
 
 abts_suite *test_security(abts_suite *suite)
@@ -275,6 +282,7 @@ abts_suite *test_security(abts_suite *suite)
     abts_run_test(suite, security_test6, NULL);
     abts_run_test(suite, security_test7, NULL);
     abts_run_test(suite, security_test8, NULL);
+    abts_run_test(suite, security_test9, NULL);
 
     return suite;
 }

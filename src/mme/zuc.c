@@ -279,14 +279,16 @@ void ZUC(u8* k, u8* iv, u32* ks, u32 len)
  * EEA3.c
 */
 void zuc_eea3(u8* CK, u32 COUNT, u32 BEARER, u32 DIRECTION, 
-				   u32 LENGTH, u32* M, u32* C)
+				   u32 LENGTH, u8* M, u8* C)
 {
-	u32 *z, L, i;
+	u32 *z, L, L8, i;
 	u8 	IV[16];
-	u32 lastbits = (32-(LENGTH%32))%32;
+	u32 lastbits = (8-(LENGTH%8))%8;
     
 	L 	= (LENGTH+31)/32;
 	z 	= (u32 *) core_malloc(L*sizeof(u32));
+    
+	L8 	= (LENGTH+7)/8;
 	
 	IV[0]	= (COUNT>>24) & 0xFF;
 	IV[1]	= (COUNT>>16) & 0xFF;
@@ -310,14 +312,16 @@ void zuc_eea3(u8* CK, u32 COUNT, u32 BEARER, u32 DIRECTION,
 	
 	ZUC(CK, IV, z, L);
 	
-	for (i=0; i<L; i++)
-		C[i] = M[i] ^ z[i];
+	for (i=0; i<L8; i++)
+    {
+		C[i] = M[i] ^ ((z[i/4] >> (3-i%4)*8) & 0xff);
+    }
 
 	/* zero last bits of data in case its length is not  word-aligned (32 bits)
 	   this is an addition to the C reference code, which did not handle it */
 	if (lastbits)
         i--;
-		C[i] &= 0x100000000 - (1<<lastbits);
+		C[i] &= 0x100 - (1<<lastbits);
 	
 	core_free(z);
 }

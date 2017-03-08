@@ -37,7 +37,7 @@ CORE_DECLARE(void) zuc_generate_key_stream(u32* pKeystream, u32 KeystreamLen);
  * C: processed message (output)
 */
 CORE_DECLARE(void) zuc_eea3(u8* CK, u32 COUNT, u32 BEARER, u32 DIRECTION, 
-		           u32 LENGTH, u32* M, u32* C);
+		           u32 LENGTH, u8* M, u8* C);
 
 /*
  * IK: integrity key
