@@ -258,6 +258,16 @@ static void security_test9(abts_case *tc, void *data)
     c_uint8_t cipher[SECURITY_TEST9_LEN];
     c_uint8_t tmp[SECURITY_TEST9_LEN];
 
+    core_ascii_to_hex(_plain, strlen(_plain), plain, sizeof(plain));
+    zuc_eea3(
+        core_ascii_to_hex(_ck, strlen(_ck), ck, sizeof(ck)),
+        0x66035492, 0xf, 0,
+        SECURITY_TEST9_BIT_LEN, plain, plain);
+
+    ABTS_TRUE(tc, memcmp(plain, 
+        core_ascii_to_hex(_cipher, strlen(_cipher), tmp, SECURITY_TEST9_LEN), 
+        SECURITY_TEST9_LEN) == 0);
+
     zuc_eea3(
         core_ascii_to_hex(_ck, strlen(_ck), ck, sizeof(ck)),
         0x66035492, 0xf, 0,
