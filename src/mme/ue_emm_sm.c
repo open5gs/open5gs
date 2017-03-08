@@ -20,7 +20,7 @@ static void ue_emm_handle_attach_request(
 static void ue_emm_handle_authentication_response(
         ue_ctx_t *ue, nas_authentication_response_t *authentication_response);
 
-static void ue_emm_send_to_ue(ue_ctx_t *ue, pkbuf_t *pkbuf);
+static void ue_emm_send_to_enb(ue_ctx_t *ue, pkbuf_t *pkbuf);
 
 void ue_emm_state_initial(ue_emm_sm_t *s, event_t *e)
 {
@@ -83,7 +83,7 @@ void ue_emm_state_operational(ue_emm_sm_t *s, event_t *e)
                 case NAS_AUTHENTICATION_REQUEST:
                 {
                     pkbuf_t *pkbuf = pkbuf_copy(recvbuf);
-                    ue_emm_send_to_ue(ue, pkbuf);
+                    ue_emm_send_to_enb(ue, pkbuf);
 
                     d_assert(ue->imsi, return,);
                     d_info("[NAS] Authentication request : UE[%s] <-- EMM",
@@ -258,13 +258,13 @@ static void ue_emm_handle_authentication_response(
             ue->kasme, ue->knas_enc);
 
     d_assert(nas_encode_pdu(&sendbuf, &message) == CORE_OK && sendbuf,,);
-    ue_emm_send_to_ue(ue, sendbuf);
+    ue_emm_send_to_enb(ue, sendbuf);
 
     d_assert(ue->imsi, return,);
     d_info("[NAS] Security mode command : UE[%s] <-- EMM", ue->imsi);
 }
 
-static void ue_emm_send_to_ue(ue_ctx_t *ue, pkbuf_t *pkbuf)
+static void ue_emm_send_to_enb(ue_ctx_t *ue, pkbuf_t *pkbuf)
 {
     char buf[INET_ADDRSTRLEN];
 

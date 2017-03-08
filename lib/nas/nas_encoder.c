@@ -341,6 +341,8 @@ status_t nas_encode_pdu(pkbuf_t **pkbuf, nas_message_t *message)
 
     d_assert(message, return CORE_ERROR, "Null param");
 
+    /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 
+     * When calculating AES_CMAC, we need to use the headroom of the packet. */
     *pkbuf = pkbuf_alloc(NAS_HEADROOM, MESSAGE_SDU_SIZE);
     d_assert(*pkbuf, return -1, "Null Param");
 

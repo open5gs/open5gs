@@ -2,13 +2,14 @@
 
 #include "core_debug.h"
 
-#include "s1ap_build.h"
-#include "s1ap_conv.h"
-#include "s1ap_path.h"
-
 #include "sm.h"
 #include "context.h"
 #include "event.h"
+
+#include "s1ap_build.h"
+#include "s1ap_conv.h"
+#include "s1ap_path.h"
+#include "nas_message.h"
 
 static void enb_s1ap_handle_s1_setup_request(
         enb_ctx_t *enb, s1ap_message_t *message);
@@ -16,6 +17,8 @@ static void enb_s1ap_handle_initial_ue_message(
         enb_ctx_t *enb, s1ap_message_t *message);
 static void enb_s1ap_handle_uplink_nas_transport(
         enb_ctx_t *enb, s1ap_message_t *message);
+
+static void enb_s1ap_send_to_ue(ue_ctx_t *ue, S1ap_NAS_PDU_t *nasPdu);
 
 void enb_s1ap_state_initial(enb_s1ap_sm_t *s, event_t *e)
 {
@@ -213,9 +216,6 @@ static void enb_s1ap_handle_initial_ue_message(
 
     ue_ctx_t *ue = NULL;
     S1ap_InitialUEMessage_IEs_t *ies = NULL;
-    S1ap_NAS_PDU_t *nasPdu = NULL;
-    event_t e;
-    pkbuf_t *sendbuf = NULL;
 
     d_assert(enb, return, "Null param");
 
@@ -243,24 +243,13 @@ static void enb_s1ap_handle_initial_ue_message(
         INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
         enb->enb_id);
 
-    nasPdu = &ies->nas_pdu;
-    d_assert(nasPdu, mme_ctx_ue_remove(ue); return, "Null param");
-
-    sendbuf = pkbuf_alloc(0, nasPdu->size);
-    d_assert(sendbuf, mme_ctx_ue_remove(ue); return, "Null param");
-    memcpy(sendbuf->payload, nasPdu->buf, nasPdu->size);
-
     fsm_create((fsm_t*)&ue->emm_sm, 
             ue_emm_state_initial, ue_emm_state_final);
     ue->emm_sm.ctx = ue;
 
     fsm_init((fsm_t*)&ue->emm_sm, 0);
 
-    event_set(&e, EVT_MSG_UE_EMM);
-    event_set_param1(&e, (c_uintptr_t)ue);
-    event_set_param2(&e, (c_uintptr_t)sendbuf);
-
-    event_send(mme_self()->queue_id, &e);
+    enb_s1ap_send_to_ue(ue, &ies->nas_pdu);
 }
 
 static void enb_s1ap_handle_uplink_nas_transport(
@@ -270,9 +259,6 @@ static void enb_s1ap_handle_uplink_nas_transport(
 
     ue_ctx_t *ue = NULL;
     S1ap_UplinkNASTransport_IEs_t *ies = NULL;
-    S1ap_NAS_PDU_t *nasPdu = NULL;
-    event_t e;
-    pkbuf_t *sendbuf = NULL;
 
     ies = &message->s1ap_UplinkNASTransport_IEs;
     d_assert(ies, return, "Null param");
@@ -285,11 +271,20 @@ static void enb_s1ap_handle_uplink_nas_transport(
         INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
         enb->enb_id);
 
-    nasPdu = &ies->nas_pdu;
-    d_assert(nasPdu, mme_ctx_ue_remove(ue); return, "Null param");
+    enb_s1ap_send_to_ue(ue, &ies->nas_pdu);
+}
 
-    sendbuf = pkbuf_alloc(0, nasPdu->size);
-    d_assert(sendbuf, mme_ctx_ue_remove(ue); return, "Null param");
+static void enb_s1ap_send_to_ue(ue_ctx_t *ue, S1ap_NAS_PDU_t *nasPdu)
+{
+    pkbuf_t *sendbuf = NULL;
+    event_t e;
+
+    d_assert(nasPdu, return, "Null param");
+
+    /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 
+     * When calculating AES_CMAC, we need to use the headroom of the packet. */
+    sendbuf = pkbuf_alloc(NAS_HEADROOM, nasPdu->size);
+    d_assert(sendbuf, return, "Null param");
     memcpy(sendbuf->payload, nasPdu->buf, nasPdu->size);
 
     event_set(&e, EVT_MSG_UE_EMM);

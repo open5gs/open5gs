@@ -8,6 +8,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
+/* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 
+ * When calculating AES_CMAC, we need to use the headroom of the packet. */
 #define NAS_HEADROOM 16
 
 #define NAS_SECURITY_HEADER_PLAIN_NAS_MESSAGE 0
