@@ -251,6 +251,16 @@ static void security_test7(abts_case *tc, void *data)
     ABTS_TRUE(tc, memcmp(cipher, 
         core_ascii_to_hex(_cipher, strlen(_cipher), tmp, SECURITY_TEST7_LEN), 
         SECURITY_TEST7_LEN) == 0);
+
+    memset(ivec, 0, sizeof(ivec));
+    memcpy(ivec+0, &count, sizeof(count));
+    ivec[4] = (0x0c << 3) | (1 << 2);
+
+    aes_ctr128_encrypt(
+        core_ascii_to_hex(_ck, strlen(_ck), ck, sizeof(ck)),
+        ivec, cipher, SECURITY_TEST7_LEN, cipher);
+
+    ABTS_TRUE(tc, memcmp(cipher, plain, SECURITY_TEST7_LEN) == 0);
 }
 
 static void security_test8(abts_case *tc, void *data)
