@@ -341,7 +341,7 @@ status_t nas_encode_pdu(pkbuf_t **pkbuf, nas_message_t *message)
 
     d_assert(message, return CORE_ERROR, "Null param");
 
-    *pkbuf = pkbuf_alloc(0, MESSAGE_SDU_SIZE);
+    *pkbuf = pkbuf_alloc(NAS_HEADROOM, MESSAGE_SDU_SIZE);
     d_assert(*pkbuf, return -1, "Null Param");
 
     size = sizeof(nas_header_t);

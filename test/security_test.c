@@ -1,13 +1,13 @@
 #include "core_lib.h"
 #include "core_debug.h"
 #include "core_sha2_hmac.h"
-#include "core_aes_cmac.h"
 #include "core_pkbuf.h"
+
+#include "nas_message.h"
 
 #include "milenage.h"
 #include "hss/kdf.h"
-#include "snow_3g.h"
-#include "zuc.h"
+#include "nas_security.h"
 
 #include "testutil.h"
 
@@ -134,6 +134,8 @@ static void security_test4(abts_case *tc, void *data)
     c_uint8_t message[SECURITY_TEST4_LEN];
     c_uint8_t mact[4];
     c_uint8_t tmp[4];
+    c_uint8_t mac[4];
+    pkbuf_t *pkbuf = NULL;
 
     snow_3g_f9(core_ascii_to_hex(_ik, strlen(_ik), ik, sizeof(ik)),
         0x38a6f056, (0x1f << 27), 0, 
@@ -141,11 +143,19 @@ static void security_test4(abts_case *tc, void *data)
         SECURITY_TEST4_BIT_LEN, mact);
     ABTS_TRUE(tc, memcmp(mact, 
         core_ascii_to_hex(_mact, strlen(_mact), tmp, 4), 4) == 0);
+
+    pkbuf = pkbuf_alloc(NAS_HEADROOM, SECURITY_TEST4_LEN);
+    ABTS_PTR_NOTNULL(tc, pkbuf);
+    memcpy(pkbuf->payload, message, pkbuf->len);
+
+    nas_mac_calculate(NAS_SECURITY_ALGORITHMS_128_EIA1, 
+            ik, 0x38a6f056, 0x1f, 0, pkbuf, mac);
+    ABTS_TRUE(tc, memcmp(mac, tmp, 4) == 0);
 }
 
 static void security_test5(abts_case *tc, void *data)
 {
-#define SECURITY_TEST5_BIT_LEN 798
+#define SECURITY_TEST5_BIT_LEN 800
 #define SECURITY_TEST5_LEN ((SECURITY_TEST5_BIT_LEN+7)/8)
     char *_ck = "2bd6459f 82c5b300 952c4910 4881ff48";
     char *_plain = 
@@ -163,10 +173,11 @@ static void security_test5(abts_case *tc, void *data)
         "0becce48 b52932a5 3c9d5f93 1a3a7c53"
         "2259af43 25e2a65e 3084ad5f 6a513b7b"
         "ddc1b65f 0aa0d97a 053db55a 88c4c4f9"
-        "605e4140";
+        "605e4143";
     c_uint8_t ck[16];
     c_uint8_t plain[SECURITY_TEST5_LEN];
     c_uint8_t tmp[SECURITY_TEST5_LEN];
+    pkbuf_t *pkbuf = NULL;
 
     snow_3g_f8(
         core_ascii_to_hex(_ck, strlen(_ck), ck, sizeof(ck)),
@@ -175,6 +186,16 @@ static void security_test5(abts_case *tc, void *data)
         SECURITY_TEST5_BIT_LEN);
     ABTS_TRUE(tc, memcmp(plain, 
         core_ascii_to_hex(_cipher, strlen(_cipher), tmp, SECURITY_TEST5_LEN), 
+        SECURITY_TEST5_LEN) == 0);
+
+    pkbuf = pkbuf_alloc(NAS_HEADROOM, SECURITY_TEST5_LEN);
+    ABTS_PTR_NOTNULL(tc, pkbuf);
+    memcpy(pkbuf->payload, plain, pkbuf->len);
+
+    nas_encrypt(NAS_SECURITY_ALGORITHMS_128_EEA1,
+        ck, 0x72a4f20f, 0x0c, 1, pkbuf);
+    ABTS_TRUE(tc, memcmp(pkbuf->payload, 
+        core_ascii_to_hex(_plain, strlen(_plain), tmp, SECURITY_TEST5_LEN), 
         SECURITY_TEST5_LEN) == 0);
 }
 
@@ -193,6 +214,8 @@ static void security_test6(abts_case *tc, void *data)
     c_uint32_t count = htonl(0x398a59b4);
     int msg_len = SECURITY_TEST6_LEN;
     int m_len = 8+msg_len;
+    c_uint8_t mac[4];
+    pkbuf_t *pkbuf = NULL;
 
     m = core_calloc(m_len, sizeof(c_uint8_t));
     memcpy(m, &count, sizeof(c_uint32_t));
@@ -208,6 +231,14 @@ static void security_test6(abts_case *tc, void *data)
 
     ABTS_TRUE(tc, memcmp(mact, 
         core_ascii_to_hex(_mact, strlen(_mact), tmp, 4), 4) == 0);
+
+    pkbuf = pkbuf_alloc(NAS_HEADROOM, SECURITY_TEST6_LEN);
+    ABTS_PTR_NOTNULL(tc, pkbuf);
+    memcpy(pkbuf->payload, message, pkbuf->len);
+
+    nas_mac_calculate(NAS_SECURITY_ALGORITHMS_128_EIA2, 
+            ik, 0x398a59b4, 0x1a, 1, pkbuf, mac);
+    ABTS_TRUE(tc, memcmp(mac, tmp, 4) == 0);
 }
 
 static void security_test7(abts_case *tc, void *data)
@@ -226,20 +257,16 @@ static void security_test7(abts_case *tc, void *data)
         "0943f2cb 5ae8f052 c7b7d392 239587b8 956086bc ab188360 42e2e6ce 42432a17"
         "105c53d3";
     c_uint8_t ck[16];
-    c_uint8_t plain[SECURITY_TEST7_LEN];
-    c_uint8_t cipher[SECURITY_TEST7_LEN];
-    c_uint8_t tmp[SECURITY_TEST7_LEN];
-
-    c_uint8_t ecount_buf[16];
-    c_uint32_t num = 0;
+    c_uint8_t plain[SECURITY_TEST7_LEN+100];
+    c_uint8_t cipher[SECURITY_TEST7_LEN+100];
+    c_uint8_t tmp[SECURITY_TEST7_LEN+100];
+    pkbuf_t *pkbuf = NULL;
 
     c_uint8_t ivec[16];
     c_uint32_t count = htonl(0xc675a64b);
     memset(ivec, 0, sizeof(ivec));
     memcpy(ivec+0, &count, sizeof(count));
     ivec[4] = (0x0c << 3) | (1 << 2);
-
-    memset(ecount_buf, 0, 16);
 
     aes_ctr128_encrypt(
         core_ascii_to_hex(_ck, strlen(_ck), ck, sizeof(ck)),
@@ -261,22 +288,34 @@ static void security_test7(abts_case *tc, void *data)
         ivec, cipher, SECURITY_TEST7_LEN, cipher);
 
     ABTS_TRUE(tc, memcmp(cipher, plain, SECURITY_TEST7_LEN) == 0);
+
+    pkbuf = pkbuf_alloc(NAS_HEADROOM, SECURITY_TEST7_LEN);
+    ABTS_PTR_NOTNULL(tc, pkbuf);
+    memcpy(pkbuf->payload, plain, pkbuf->len);
+
+    nas_encrypt(NAS_SECURITY_ALGORITHMS_128_EEA2,
+        ck, 0xc675a64b, 0x0c, 1, pkbuf);
+    ABTS_TRUE(tc, memcmp(pkbuf->payload, 
+        core_ascii_to_hex(_cipher, strlen(_cipher), tmp, SECURITY_TEST7_LEN), 
+        SECURITY_TEST7_LEN) == 0);
 }
 
 static void security_test8(abts_case *tc, void *data)
 {
-#define SECURITY_TEST8_BIT_LEN 577
+#define SECURITY_TEST8_BIT_LEN 584
 #define SECURITY_TEST8_LEN ((SECURITY_TEST8_BIT_LEN+7)/8)
     char *_ik = "c9 e6 ce c4 60 7c 72 db 00 0a ef a8 83 85 ab 0a";
     char *_message = 
     "983b41d4 7d780c9e 1ad11d7e b70391b1 de0b35da 2dc62f83 e7b78d63 06ca0ea0"
     "7e941b7b e91348f9 fcb170e2 217fecd9 7f9f68ad b16e5d7d 21e569d2 80ed775c"
     "ebde3f40 93c53881 00000000";
-    char *_mact = "fae8ff0b";
+    char *_mact = "24a842b3";
     c_uint8_t ik[16];
     c_uint8_t message[SECURITY_TEST8_LEN];
     c_uint8_t mact[4];
-    c_uint32_t mac;
+    c_uint32_t mac32;
+    pkbuf_t *pkbuf = NULL;
+    c_uint8_t mac[4];
 
     zuc_eia3(
         core_ascii_to_hex(_ik, strlen(_ik), ik, sizeof(ik)),
@@ -285,26 +324,35 @@ static void security_test8(abts_case *tc, void *data)
         1,
         SECURITY_TEST8_BIT_LEN,
         core_ascii_to_hex(_message, strlen(_message), message, sizeof(message)),
-        &mac);
-    mac = ntohl(mac);
+        &mac32);
+    mac32 = ntohl(mac32);
 
-    ABTS_TRUE(tc, memcmp(&mac, 
+    ABTS_TRUE(tc, memcmp(&mac32, 
         core_ascii_to_hex(_mact, strlen(_mact), mact, 4), 4) == 0);
+
+    pkbuf = pkbuf_alloc(NAS_HEADROOM, SECURITY_TEST8_LEN);
+    ABTS_PTR_NOTNULL(tc, pkbuf);
+    memcpy(pkbuf->payload, message, pkbuf->len);
+
+    nas_mac_calculate(NAS_SECURITY_ALGORITHMS_128_EIA3, 
+            ik, 0xa94059da, 0xa, 1, pkbuf, mac);
+    ABTS_TRUE(tc, memcmp(mac, mact, 4) == 0);
 }
 
 static void security_test9(abts_case *tc, void *data)
 {
-#define SECURITY_TEST9_BIT_LEN 193
+#define SECURITY_TEST9_BIT_LEN 200
 #define SECURITY_TEST9_LEN ((SECURITY_TEST9_BIT_LEN+7)/8)
     char *_ck = "17 3d 14 ba 50 03 73 1d 7a 60 04 94 70 f0 0a 29";
     char *_plain = 
         "6cf65340 735552ab 0c9752fa 6f9025fe 0bd675d9 005875b2 00000000";
     char *_cipher = 
-        "a6c85fc6 6afb8533 aafc2518 dfe78494 0ee1e4b0 30238cc8 00000000";
+        "a6c85fc6 6afb8533 aafc2518 dfe78494 0ee1e4b0 30238cc8 10000000";
     c_uint8_t ck[16];
     c_uint8_t plain[SECURITY_TEST9_LEN];
     c_uint8_t cipher[SECURITY_TEST9_LEN];
     c_uint8_t tmp[SECURITY_TEST9_LEN];
+    pkbuf_t *pkbuf = NULL;
 
     core_ascii_to_hex(_plain, strlen(_plain), plain, sizeof(plain));
     zuc_eea3(
@@ -324,6 +372,16 @@ static void security_test9(abts_case *tc, void *data)
         cipher);
 
     ABTS_TRUE(tc, memcmp(cipher, 
+        core_ascii_to_hex(_cipher, strlen(_cipher), tmp, SECURITY_TEST9_LEN), 
+        SECURITY_TEST9_LEN) == 0);
+
+    pkbuf = pkbuf_alloc(NAS_HEADROOM, SECURITY_TEST9_LEN);
+    ABTS_PTR_NOTNULL(tc, pkbuf);
+    memcpy(pkbuf->payload, plain, pkbuf->len);
+
+    nas_encrypt(NAS_SECURITY_ALGORITHMS_128_EEA3,
+        ck, 0x66035492, 0xf, 0, pkbuf);
+    ABTS_TRUE(tc, memcmp(pkbuf->payload, 
         core_ascii_to_hex(_cipher, strlen(_cipher), tmp, SECURITY_TEST9_LEN), 
         SECURITY_TEST9_LEN) == 0);
 }

@@ -1,4 +1,4 @@
-#define TRACE_MODULE _s1contents
+#define TRACE_MODULE _s1ap_build
 
 #include "core_debug.h"
 #include "context.h"
