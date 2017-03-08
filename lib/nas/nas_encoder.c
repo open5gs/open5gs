@@ -333,7 +333,7 @@ c_int32_t nas_encode_security_mode_command(
     return encoded;
 }
 
-status_t nas_encode_pdu(pkbuf_t **pkbuf, nas_message_t *message)
+status_t nas_plain_encode(pkbuf_t **pkbuf, nas_message_t *message)
 {
     status_t rv = CORE_ERROR;
     c_int32_t size = 0;

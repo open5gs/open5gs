@@ -6,8 +6,8 @@
 #include "nas_message.h"
 #include "nas_security.h"
 
-status_t nas_security_encode(pkbuf_t **pkbuf, 
-        ue_ctx_t *ue, nas_message_t *message)
+status_t nas_security_encode(
+        pkbuf_t **pkbuf, ue_ctx_t *ue, nas_message_t *message)
 {
     d_assert(ue, return CORE_ERROR, "Null param");
     d_assert(message, return CORE_ERROR, "Null param");
@@ -16,7 +16,7 @@ status_t nas_security_encode(pkbuf_t **pkbuf,
     {
         case NAS_SECURITY_HEADER_PLAIN_NAS_MESSAGE:
         {
-            return nas_encode_pdu(pkbuf, message);
+            return nas_plain_encode(pkbuf, message);
         }
         case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT:
         {
@@ -26,33 +26,38 @@ status_t nas_security_encode(pkbuf_t **pkbuf,
         case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED:
         {
             nas_security_header_t h;
-            c_uint8_t mac[4];
+            c_uint8_t mac[NAS_SECURITY_MAC_SIZE];
             pkbuf_t *new = NULL;
 
-            memset(&h, 0, sizeof(nas_security_header_t));
+            memset(&h, 0, sizeof(h));
             h.security_header_type = message->h.security_header_type;
             h.protocol_discriminator = message->h.protocol_discriminator;
             h.sequence_number = (ue->dl_count & 0xff);
 
-            d_assert(nas_encode_pdu(&new, message) == CORE_OK, 
-                    return CORE_ERROR,
-                    "NAS encoding error");
+            d_assert(nas_plain_encode(&new, message) == CORE_OK, 
+                    return CORE_ERROR, "NAS encoding error");
 
-            d_assert(CORE_OK == pkbuf_header(new, sizeof(h.sequence_number)),
+            /* encode sequence number */
+            d_assert(CORE_OK == pkbuf_header(new, 1),
                 pkbuf_free(new);return CORE_ERROR, 
                 "pkbuf_header error");
             *(c_uint8_t *)(new->payload) = h.sequence_number;
 
+            /* calculate NAS MAC */
             nas_mac_calculate(mme_self()->selected_int_algorithm,
                 ue->knas_int, ue->dl_count, NAS_SECURITY_BEARER, 
                 NAS_SECURITY_DOWNLINK_DIRECTION, new, mac);
+            memcpy(&h.message_authentication_code, mac, sizeof(mac));
+            /* h.message_authentication_code = 
+                        ntohl(h.message_authentication_code); */
 
-            d_assert(CORE_OK == pkbuf_header(new, 
-                    sizeof(nas_security_header_t) - sizeof(h.sequence_number)),
+            /* encode all security header */
+            d_assert(CORE_OK == pkbuf_header(new, 5),
                 pkbuf_free(new);return CORE_ERROR,
                 "pkbuf_header error");
+            /* h.message_authentication_code = 
+                        htonl(h.message_authentication_code); */
             memcpy(new->payload, &h, sizeof(nas_security_header_t));
-            memcpy(new->payload+1, mac, sizeof(mac));
 
             ue->dl_count = (ue->dl_count + 1) & 0xffffff; /* Use 24bit */
 
@@ -68,6 +73,12 @@ status_t nas_security_encode(pkbuf_t **pkbuf,
     }
 
     return CORE_OK;
+}
+
+status_t nas_security_decode(
+        nas_message_t *message, ue_ctx_t *ue, pkbuf_t *pkbuf)
+{
+    return nas_plain_decode(message, pkbuf);
 }
 
 void nas_mac_calculate(c_uint8_t algorithm_identity,

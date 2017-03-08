@@ -66,7 +66,7 @@ void ue_emm_state_operational(ue_emm_sm_t *s, event_t *e)
             pkbuf_t *recvbuf = (pkbuf_t *)event_get_param2(e);
             d_assert(recvbuf, break, "Null param");
 
-            rv = nas_decode_pdu(&message, recvbuf);
+            rv = nas_security_decode(&message, ue, recvbuf);
             if (rv != CORE_OK) 
             {
                 d_error("Can't parse NAS_PDU");

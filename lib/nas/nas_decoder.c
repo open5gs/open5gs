@@ -328,7 +328,7 @@ c_int32_t nas_decode_security_mode_reject(nas_message_t *message,
     return decoded;
 }
 
-status_t nas_decode_pdu(nas_message_t *message, pkbuf_t *pkbuf)
+status_t nas_plain_decode(nas_message_t *message, pkbuf_t *pkbuf)
 {
     status_t rv = CORE_ERROR;
     nas_security_header_t *security_header = NULL;

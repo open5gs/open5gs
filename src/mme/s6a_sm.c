@@ -208,7 +208,7 @@ static void s6a_aia_cb(void *data, struct msg **msg)
     memcpy(authentication_request->authentication_parameter_autn.autn,
             hdr->avp_value->os.data, hdr->avp_value->os.len);
 
-    d_assert(nas_encode_pdu(&sendbuf, &message) == CORE_OK && sendbuf, 
+    d_assert(nas_plain_encode(&sendbuf, &message) == CORE_OK && sendbuf, 
             error++; goto out,);
 
     event_set(&e, EVT_MSG_UE_EMM);

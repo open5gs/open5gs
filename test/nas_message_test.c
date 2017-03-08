@@ -24,7 +24,7 @@ static void nas_message_test1(abts_case *tc, void *data)
     pkbuf->len = 59;
     core_ascii_to_hex(payload, strlen(payload), pkbuf->payload, pkbuf->len);
 
-    rv = nas_decode_pdu(&message, pkbuf);
+    rv = nas_plain_decode(&message, pkbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     pkbuf_free(pkbuf);
@@ -112,7 +112,7 @@ static void nas_message_test2(abts_case *tc, void *data)
     attach_accept->eps_network_feature_support.emc_bs = 1;
     attach_accept->eps_network_feature_support.ims_vops = 1;
 
-    rv = nas_encode_pdu(&pkbuf, &message);
+    rv = nas_plain_encode(&pkbuf, &message);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     ABTS_INT_EQUAL(tc, sizeof(buffer), pkbuf->len);
     ABTS_TRUE(tc, memcmp(
@@ -135,7 +135,7 @@ static void nas_message_test3(abts_case *tc, void *data)
     pkbuf->len = 7;
     core_ascii_to_hex(payload, strlen(payload), pkbuf->payload, pkbuf->len);
 
-    rv = nas_decode_pdu(&message, pkbuf);
+    rv = nas_plain_decode(&message, pkbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     pkbuf_free(pkbuf);
@@ -158,7 +158,7 @@ static void nas_message_test4(abts_case *tc, void *data)
     message.h.message_type = NAS_ATTACH_REJECT;
     attach_reject->emm_cause = NAS_EMM_CAUSE_NETWORK_FAILURE; 
 
-    rv = nas_encode_pdu(&pkbuf, &message);
+    rv = nas_plain_encode(&pkbuf, &message);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     ABTS_INT_EQUAL(tc, sizeof(buffer), pkbuf->len);
     ABTS_TRUE(tc, memcmp(
