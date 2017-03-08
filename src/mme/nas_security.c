@@ -2,8 +2,74 @@
 
 #include "core_debug.h"
 
-#include "nas_ies.h"
+#include "context.h"
+#include "nas_message.h"
 #include "nas_security.h"
+
+status_t nas_security_encode(pkbuf_t **pkbuf, 
+        ue_ctx_t *ue, nas_message_t *message)
+{
+    d_assert(ue, return CORE_ERROR, "Null param");
+    d_assert(message, return CORE_ERROR, "Null param");
+
+    switch(message->h.security_header_type)
+    {
+        case NAS_SECURITY_HEADER_PLAIN_NAS_MESSAGE:
+        {
+            return nas_encode_pdu(pkbuf, message);
+        }
+        case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT:
+        {
+            ue->dl_count = 0;
+            ue->ul_count = 0;
+        }
+        case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED:
+        {
+            nas_security_header_t h;
+            c_uint8_t mac[4];
+            pkbuf_t *new = NULL;
+
+            memset(&h, 0, sizeof(nas_security_header_t));
+            h.security_header_type = message->h.security_header_type;
+            h.protocol_discriminator = message->h.protocol_discriminator;
+            h.sequence_number = (ue->dl_count & 0xff);
+
+            d_assert(nas_encode_pdu(&new, message) == CORE_OK, 
+                    return CORE_ERROR,
+                    "NAS encoding error");
+
+            d_assert(CORE_OK == pkbuf_header(new, sizeof(h.sequence_number)),
+                pkbuf_free(new);return CORE_ERROR, 
+                "pkbuf_header error");
+            *(c_uint8_t *)(new->payload) = h.sequence_number;
+
+            nas_mac_calculate(mme_self()->selected_int_algorithm,
+                ue->knas_int, ue->dl_count, NAS_SECURITY_BEARER, 
+                NAS_SECURITY_DOWNLINK_DIRECTION, new, mac);
+            d_print_hex(mac, 4);
+
+            d_assert(CORE_OK == pkbuf_header(new, 
+                    sizeof(nas_security_header_t) - sizeof(h.sequence_number)),
+                pkbuf_free(new);return CORE_ERROR,
+                "pkbuf_header error");
+            memcpy(new->payload, &h, sizeof(nas_security_header_t));
+            memcpy(new->payload+1, mac, sizeof(mac));
+
+            ue->dl_count = (ue->dl_count + 1) & 0xffffff; /* Use 24bit */
+
+            *pkbuf = new;
+            break;
+        }
+        default:
+        {
+            d_warn("Not implemented(securiry header type:0x%x)", 
+                    message->h.security_header_type);
+            return CORE_ERROR;
+        }
+    }
+
+    return CORE_OK;
+}
 
 void nas_mac_calculate(c_uint8_t algorithm_identity,
         c_uint8_t *knas_int, c_uint32_t count, c_uint8_t bearer, 

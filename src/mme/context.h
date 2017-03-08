@@ -104,6 +104,8 @@ typedef struct _ue_ctx_t {
     c_uint8_t       kasme[SHA256_DIGEST_SIZE];
     c_uint8_t       knas_int[SHA256_DIGEST_SIZE/2]; 
     c_uint8_t       knas_enc[SHA256_DIGEST_SIZE/2];
+    c_uint32_t      dl_count;
+    c_uint32_t      ul_count;
 
     /* Related Context for UE */
     rab_list_t      rab_list;

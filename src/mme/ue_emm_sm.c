@@ -10,6 +10,7 @@
 #include "event.h"
 
 #include "kdf.h"
+#include "nas_security.h"
 #include "s1ap_path.h"
 #include "s1ap_conv.h"
 #include "nas_conv.h"
@@ -257,7 +258,10 @@ static void ue_emm_handle_authentication_response(
     mme_kdf_nas(MME_KDF_NAS_ENC_ALG, mme_self()->selected_enc_algorithm,
             ue->kasme, ue->knas_enc);
 
-    d_assert(nas_encode_pdu(&sendbuf, &message) == CORE_OK && sendbuf,,);
+    message.h.security_header_type = 
+       NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT;
+    d_assert(nas_security_encode(&sendbuf, ue, &message) == CORE_OK && 
+            sendbuf,,);
     ue_emm_send_to_enb(ue, sendbuf);
 
     d_assert(ue->imsi, return,);

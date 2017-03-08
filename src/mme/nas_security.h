@@ -5,12 +5,20 @@
 #include "core_aes.h"
 #include "core_aes_cmac.h"
 
+#include "context.h"
 #include "snow_3g.h"
 #include "zuc.h"
+
+#define NAS_SECURITY_BEARER 0
+#define NAS_SECURITY_DOWNLINK_DIRECTION 1
+#define NAS_SECURITY_UPLINK_DIRECTION 0
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
+
+CORE_DECLARE(status_t) nas_security_encode(pkbuf_t **pkbuf, 
+        ue_ctx_t *ue, nas_message_t *message);
 
 CORE_DECLARE(void) nas_mac_calculate(c_uint8_t algorithm_identity,
         c_uint8_t *knas_int, c_uint32_t count, c_uint8_t bearer, 

@@ -349,6 +349,8 @@ status_t nas_encode_pdu(pkbuf_t **pkbuf, nas_message_t *message)
     size = sizeof(nas_header_t);
     rv = pkbuf_header(*pkbuf, -size);
     d_assert(rv == CORE_OK, return CORE_ERROR, "pkbuf_header error");
+
+    message->h.security_header_type = 0;
     memcpy((*pkbuf)->payload - size, &message->h, size);
     encoded += size;
 

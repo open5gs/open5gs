@@ -1,6 +1,8 @@
 #include "core_debug.h"
 #include "core_pkbuf.h"
+#include "core_lib.h"
 
+#include "mme/context.h"
 #include "s1ap_message.h"
 
 #include "testutil.h"
@@ -15,6 +17,14 @@ static void nas_sm_test1(abts_case *tc, void *data)
     s1ap_message_t message;
     int rc;
     int i;
+
+    c_uint8_t tmp[MESSAGE_SDU_SIZE];
+    char *_authentication_request = 
+        "000b403b00000300 000005c00100009d 000800020001001a 0025240752002008"
+        "0c3818183b522614 162c07601d0d10f1 1b89a2a8de8000ad 0ccf7f55e8b20d";
+    char *_security_mode_command = 
+        "000b402700000300 000005c00100009d 000800020001001a 00111037f933b5d5"
+        "00075d010005e060 c04070";
 
     /* eNB connects to MME */
     sock = tests1ap_enb_connect();
@@ -37,6 +47,7 @@ static void nas_sm_test1(abts_case *tc, void *data)
     pkbuf_free(recvbuf);
 
     /* Send Initial-UE Message */
+    mme_self()->mme_ue_s1ap_id = 16777373;
     rv = tests1ap_build_initial_ue_msg(&sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
@@ -47,6 +58,12 @@ static void nas_sm_test1(abts_case *tc, void *data)
     recvbuf = pkbuf_alloc(0, MESSAGE_SDU_SIZE);
     rc = tests1ap_enb_read(sock, recvbuf);
     ABTS_INT_NEQUAL(tc, 0, rc);
+    recvbuf->len = 63;
+
+    ABTS_TRUE(tc, memcmp(recvbuf->payload, 
+        core_ascii_to_hex(_authentication_request, 
+            strlen(_authentication_request), tmp, sizeof(tmp)),
+        recvbuf->len) == 0);
     pkbuf_free(recvbuf);
 
     /* Send Authentication-Response */
@@ -59,6 +76,13 @@ static void nas_sm_test1(abts_case *tc, void *data)
     /* Receive Security-mode-Command */
     recvbuf = pkbuf_alloc(0, MESSAGE_SDU_SIZE);
     rc = tests1ap_enb_read(sock, recvbuf);
+    recvbuf->len = 43;
+
+    core_ascii_to_hex(_security_mode_command, 
+        strlen(_security_mode_command), tmp, sizeof(tmp));
+    d_print_hex(tmp, recvbuf->len);
+    d_print_hex(recvbuf->payload, recvbuf->len);
+
     ABTS_INT_NEQUAL(tc, 0, rc);
     pkbuf_free(recvbuf);
 
