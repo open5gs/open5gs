@@ -9,67 +9,94 @@
 status_t nas_security_encode(
         pkbuf_t **pkbuf, ue_ctx_t *ue, nas_message_t *message)
 {
+    int integrity_protected = 0;
+    int new_security_context = 0;
+    int ciphered = 0;
+
     d_assert(ue, return CORE_ERROR, "Null param");
     d_assert(message, return CORE_ERROR, "Null param");
 
     switch(message->h.security_header_type)
     {
         case NAS_SECURITY_HEADER_PLAIN_NAS_MESSAGE:
-        {
             return nas_plain_encode(pkbuf, message);
-        }
-        case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT:
-        {
-            ue->dl_count = 0;
-            ue->ul_count = 0;
-        }
         case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED:
+            integrity_protected = 1;
+            break;
+        case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED:
+            integrity_protected = 1;
+            ciphered = 1;
+            break;
+        case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT:
+            integrity_protected = 1;
+            new_security_context = 1;
+            break;
+        case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHTERD_WITH_NEW_INTEGRITY_CONTEXT:
+            integrity_protected = 1;
+            new_security_context = 1;
+            ciphered = 1;
+            break;
+        default:
+            d_warn("Not implemented(securiry header type:0x%x)", 
+                    message->h.security_header_type);
+            return CORE_ERROR;
+    }
+
+    if (new_security_context)
+    {
+        ue->dl_count = 0;
+        ue->ul_count = 0;
+    }
+
+    if (ciphered || integrity_protected)
+    {
+        nas_security_header_t h;
+        c_uint8_t mac[NAS_SECURITY_MAC_SIZE];
+        pkbuf_t *new = NULL;
+
+        memset(&h, 0, sizeof(h));
+        h.security_header_type = message->h.security_header_type;
+        h.protocol_discriminator = message->h.protocol_discriminator;
+        h.sequence_number = (ue->dl_count & 0xff);
+
+        d_assert(nas_plain_encode(&new, message) == CORE_OK, 
+                return CORE_ERROR, "NAS encoding error");
+
+        /* encode sequence number */
+        d_assert(CORE_OK == pkbuf_header(new, 1),
+            pkbuf_free(new);return CORE_ERROR, 
+            "pkbuf_header error");
+        *(c_uint8_t *)(new->payload) = h.sequence_number;
+
+        if (ciphered)
         {
-            nas_security_header_t h;
-            c_uint8_t mac[NAS_SECURITY_MAC_SIZE];
-            pkbuf_t *new = NULL;
+            /* encrypt NAS message */
+            nas_encrypt(mme_self()->selected_enc_algorithm,
+                ue->knas_enc, ue->dl_count, NAS_SECURITY_BEARER,
+                NAS_SECURITY_DOWNLINK_DIRECTION, new);
+        }
 
-            memset(&h, 0, sizeof(h));
-            h.security_header_type = message->h.security_header_type;
-            h.protocol_discriminator = message->h.protocol_discriminator;
-            h.sequence_number = (ue->dl_count & 0xff);
-
-            d_assert(nas_plain_encode(&new, message) == CORE_OK, 
-                    return CORE_ERROR, "NAS encoding error");
-
-            /* encode sequence number */
-            d_assert(CORE_OK == pkbuf_header(new, 1),
-                pkbuf_free(new);return CORE_ERROR, 
-                "pkbuf_header error");
-            *(c_uint8_t *)(new->payload) = h.sequence_number;
-
-            /* calculate NAS MAC */
+        if (integrity_protected)
+        {
+            /* calculate NAS MAC(message authentication code) */
             nas_mac_calculate(mme_self()->selected_int_algorithm,
                 ue->knas_int, ue->dl_count, NAS_SECURITY_BEARER, 
                 NAS_SECURITY_DOWNLINK_DIRECTION, new, mac);
             memcpy(&h.message_authentication_code, mac, sizeof(mac));
             /* h.message_authentication_code = 
                         ntohl(h.message_authentication_code); */
-
-            /* encode all security header */
-            d_assert(CORE_OK == pkbuf_header(new, 5),
-                pkbuf_free(new);return CORE_ERROR,
-                "pkbuf_header error");
-            /* h.message_authentication_code = 
-                        htonl(h.message_authentication_code); */
-            memcpy(new->payload, &h, sizeof(nas_security_header_t));
-
-            ue->dl_count = (ue->dl_count + 1) & 0xffffff; /* Use 24bit */
-
-            *pkbuf = new;
-            break;
         }
-        default:
-        {
-            d_warn("Not implemented(securiry header type:0x%x)", 
-                    message->h.security_header_type);
-            return CORE_ERROR;
-        }
+
+        /* encode all security header */
+        d_assert(CORE_OK == pkbuf_header(new, 5),
+            pkbuf_free(new);return CORE_ERROR,
+            "pkbuf_header error");
+        /* h.message_authentication_code = 
+                    htonl(h.message_authentication_code); */
+        memcpy(new->payload, &h, sizeof(nas_security_header_t));
+        ue->dl_count = (ue->dl_count + 1) & 0xffffff; /* Use 24bit */
+
+        *pkbuf = new;
     }
 
     return CORE_OK;
