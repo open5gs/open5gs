@@ -97,6 +97,7 @@ typedef struct _ue_ctx_t {
     c_uint8_t       imsi_len;
 
     /* Security Context */
+    int             security_context_available;
     nas_ue_network_capability_t ue_network_capability;
     nas_ms_network_capability_t ms_network_capability;
     c_uint8_t       xres[MAX_RES_LEN];
