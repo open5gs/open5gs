@@ -35,7 +35,7 @@ CORE_DECLARE(status_t) aes_cbc_decrypt(const c_uint8_t *key,
         c_uint8_t *out, c_uint32_t *outlen);
 
 CORE_DECLARE(status_t) aes_ctr128_encrypt(const c_uint8_t *key,
-        c_uint8_t *ivec, const c_uint8_t *in, const c_uint32_t len,
+        c_uint8_t *ivec, const c_uint8_t *in, const c_uint32_t inlen,
         c_uint8_t *out);
 
 #ifdef __cplusplus

@@ -1355,15 +1355,43 @@ static void ctr128_inc(c_uint8_t *counter)
     } while (n);
 }
 
+static void ctr128_inc_aligned(c_uint8_t *counter)
+{
+    size_t *data, c, d, n;
+    const union {
+        long one;
+        char little;
+    } is_endian = {
+        1
+    };
+
+    if (is_endian.little || ((size_t)counter % sizeof(size_t)) != 0) {
+        ctr128_inc(counter);
+        return;
+    }
+
+    data = (size_t *)counter;
+    c = 1;
+    n = 16 / sizeof(size_t);
+    do {
+        --n;
+        d = data[n] += c;
+        /* did addition carry? */
+        c = ((d - c) & ~d) >> (sizeof(size_t) * 8 - 1);
+    } while (n);
+}
+
 status_t aes_ctr128_encrypt(const c_uint8_t *key,
-        c_uint8_t *ivec, const c_uint8_t *in, const c_uint32_t len,
+        c_uint8_t *ivec, const c_uint8_t *in, const c_uint32_t inlen,
         c_uint8_t *out)
 {
     c_uint8_t ecount_buf[16];
+    c_uint32_t len = inlen;
+
     c_uint32_t rk[RKLENGTH(MAX_KEY_BITS)];
     int nrounds;
 
-    unsigned int n = 0;
+    c_uint32_t n = 0;
     size_t l = 0;
 
     d_assert(key, return CORE_ERROR, "Null param");
@@ -1375,6 +1403,38 @@ status_t aes_ctr128_encrypt(const c_uint8_t *key,
     memset(ecount_buf, 0, 16);
     nrounds = aes_setup_enc(rk, key, 128);
 
+    while (n && len) 
+    {
+        *(out++) = *(in++) ^ ecount_buf[n];
+        --len;
+        n = (n + 1) % 16;
+    }
+
+    while (len >= 16) 
+    {
+        aes_encrypt(rk, nrounds, ivec, ecount_buf);
+        ctr128_inc_aligned(ivec);
+        for (n = 0; n < 16; n += sizeof(size_t))
+            *(size_t *)(out + n) =
+                *(size_t *)(in + n) ^ *(size_t *)(ecount_buf + n);
+        len -= 16;
+        out += 16;
+        in += 16;
+        n = 0;
+    }
+    if (len) 
+    {
+        aes_encrypt(rk, nrounds, ivec, ecount_buf);
+        ctr128_inc_aligned(ivec);
+        while (len--) 
+        {
+            out[n] = in[n] ^ ecount_buf[n];
+            ++n;
+        }
+    }
+    return CORE_OK;
+
+    /* low-performance for understanding the aes-ctr128 */
     while (l < len) 
     {
         if (n == 0) 
