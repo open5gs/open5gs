@@ -1342,3 +1342,50 @@ status_t aes_cbc_decrypt(const c_uint8_t *key, const c_uint32_t keybits,
 
     return CORE_OK;
 }
+
+static void ctr128_inc(c_uint8_t *counter)
+{
+    c_uint32_t n = 16, c = 1;
+
+    do {
+        --n;
+        c += counter[n];
+        counter[n] = (c_uint8_t)c;
+        c >>= 8;
+    } while (n);
+}
+
+status_t aes_ctr128_encrypt(const c_uint8_t *key,
+        c_uint8_t *ivec, const c_uint8_t *in, const c_uint32_t len,
+        c_uint8_t *out)
+{
+    c_uint8_t ecount_buf[16];
+    c_uint32_t rk[RKLENGTH(MAX_KEY_BITS)];
+    int nrounds;
+
+    unsigned int n = 0;
+    size_t l = 0;
+
+    d_assert(key, return CORE_ERROR, "Null param");
+    d_assert(ivec, return CORE_ERROR, "Null param");
+    d_assert(in, return CORE_ERROR, "Null param");
+    d_assert(len, return CORE_ERROR, "param 'inlen' is zero");
+    d_assert(out, return CORE_ERROR, "Null param");
+
+    memset(ecount_buf, 0, 16);
+    nrounds = aes_setup_enc(rk, key, 128);
+
+    while (l < len) 
+    {
+        if (n == 0) 
+        {
+            aes_encrypt(rk, nrounds, ivec, ecount_buf);
+            ctr128_inc(ivec);
+        }
+        out[l] = in[l] ^ ecount_buf[n];
+        ++l;
+        n = (n + 1) % 16;
+    }
+
+    return CORE_OK;
+}

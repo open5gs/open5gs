@@ -165,8 +165,8 @@ static void security_test5(abts_case *tc, void *data)
         "ddc1b65f 0aa0d97a 053db55a 88c4c4f9"
         "605e4140";
     c_uint8_t ck[16];
-    c_uint8_t plain[SECURITY_TEST5_BIT_LEN];
-    c_uint8_t tmp[SECURITY_TEST5_BIT_LEN];
+    c_uint8_t plain[SECURITY_TEST5_LEN];
+    c_uint8_t tmp[SECURITY_TEST5_LEN];
 
     snow_3g_f8(
         core_ascii_to_hex(_ck, strlen(_ck), ck, sizeof(ck)),
@@ -212,8 +212,46 @@ static void security_test6(abts_case *tc, void *data)
 
 static void security_test7(abts_case *tc, void *data)
 {
-}
+#define SECURITY_TEST7_BIT_LEN 800
+#define SECURITY_TEST7_LEN ((SECURITY_TEST7_BIT_LEN+7)/8)
+    char *_ck = "2bd6459f 82c440e0 952c4910 4805ff48";
+    char *_plain = 
+        "7ec61272 743bf161 4726446a 6c38ced1 66f6ca76 eb543004 4286346c ef130f92"
+        "922b0345 0d3a9975 e5bd2ea0 eb55ad8e 1b199e3e c4316020 e9a1b285 e7627953" 
+        "59b7bdfd 39bef4b2 484583d5 afe082ae e638bf5f d5a60619 3901a08f 4ab41aab" 
+        "9b134880";
+    char *_cipher = 
+        "59616053 53c64bdc a15b195e 288553a9 10632506 d6200aa7 90c4c806 c99904cf"
+        "2445cc50 bb1cf168 a4967373 4e081b57 e324ce52 59c0e78d 4cd97b87 0976503c"
+        "0943f2cb 5ae8f052 c7b7d392 239587b8 956086bc ab188360 42e2e6ce 42432a17"
+        "105c53d3";
+    c_uint8_t ck[16];
+    c_uint8_t plain[SECURITY_TEST7_LEN];
+    c_uint8_t cipher[SECURITY_TEST7_LEN];
+    c_uint8_t tmp[SECURITY_TEST7_LEN];
 
+    c_uint8_t ecount_buf[16];
+    c_uint32_t num = 0;
+
+    c_uint8_t ivec[16];
+    c_uint32_t count = htonl(0xc675a64b);
+    memset(ivec, 0, sizeof(ivec));
+    memcpy(ivec+0, &count, sizeof(count));
+    ivec[4] = (0x0c << 3) | (1 << 2);
+
+    memset(ecount_buf, 0, 16);
+
+    aes_ctr128_encrypt(
+        core_ascii_to_hex(_ck, strlen(_ck), ck, sizeof(ck)),
+        ivec,
+        core_ascii_to_hex(_plain, strlen(_plain), plain, sizeof(plain)),
+        SECURITY_TEST7_LEN,
+        cipher);
+
+    ABTS_TRUE(tc, memcmp(cipher, 
+        core_ascii_to_hex(_cipher, strlen(_cipher), tmp, SECURITY_TEST7_LEN), 
+        SECURITY_TEST7_LEN) == 0);
+}
 
 static void security_test8(abts_case *tc, void *data)
 {
