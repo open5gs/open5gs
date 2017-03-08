@@ -169,6 +169,20 @@ static void nas_message_test4(abts_case *tc, void *data)
     pkbuf_free(pkbuf);
 }
 
+static void nas_message_test5(abts_case *tc, void *data)
+{
+    ue_ctx_t ue;
+
+    ue.ul_count.i32 = 0x123456;
+    ABTS_INT_EQUAL(tc, 0x1234, ue.ul_count.overflow);
+    ABTS_INT_EQUAL(tc, 0x56, ue.ul_count.sqn);
+    ABTS_INT_EQUAL(tc, 0, ue.ul_count.spare);
+
+    ue.ul_count.overflow = 0xabcd;
+    ue.ul_count.sqn = 0xef;
+    ABTS_INT_EQUAL(tc, 0xabcdef, ue.ul_count.i32);
+}
+
 abts_suite *test_nas_message(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -177,6 +191,7 @@ abts_suite *test_nas_message(abts_suite *suite)
     abts_run_test(suite, nas_message_test2, NULL);
     abts_run_test(suite, nas_message_test3, NULL);
     abts_run_test(suite, nas_message_test4, NULL);
+    abts_run_test(suite, nas_message_test5, NULL);
 
     return suite;
 }
