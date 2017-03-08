@@ -97,12 +97,13 @@ static void security_test2(abts_case *tc, void *data)
 
 static void security_test3(abts_case *tc, void *data)
 {
-    char *_ck = "B40BA9A3C58B2A05BBF0D987B21BF8CB";
-    char *_ik = "F769BCD751044604127672711C6D3441";
+    char *_ck = "b40ba9a3c58b2a05 bbf0d987b21bf8cb";
+    char *_ik = "f769bcd751044604 127672711c6d3441";
     char *_plmn_id = "024830";
-    char *_sqn = "FD8EEF40DF7D";
-    char *_ak = "AA689C648370";
-    char *_kasme = "238E457E0F758BADBCA8D34BB2612C10428D426757CB5553B2B184FA64BFC549";
+    char *_sqn = "fd8eef40df7d";
+    char *_ak = "aa689c648370";
+    char *_kasme =
+        "238e457e0f758bad bca8d34bb2612c10 428d426757cb5553 b2b184fa64bfc549";
     c_uint8_t ck[16];
     c_uint8_t ik[16];
     c_uint8_t plmn_id[3];

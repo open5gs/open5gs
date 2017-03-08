@@ -59,7 +59,6 @@ static void nas_sm_test1(abts_case *tc, void *data)
     rc = tests1ap_enb_read(sock, recvbuf);
     ABTS_INT_NEQUAL(tc, 0, rc);
     recvbuf->len = 63;
-
     ABTS_TRUE(tc, memcmp(recvbuf->payload, 
         core_ascii_to_hex(_authentication_request, 
             strlen(_authentication_request), tmp, sizeof(tmp)),
@@ -77,12 +76,10 @@ static void nas_sm_test1(abts_case *tc, void *data)
     recvbuf = pkbuf_alloc(0, MESSAGE_SDU_SIZE);
     rc = tests1ap_enb_read(sock, recvbuf);
     recvbuf->len = 43;
-
-    core_ascii_to_hex(_security_mode_command, 
-        strlen(_security_mode_command), tmp, sizeof(tmp));
-    d_print_hex(tmp, recvbuf->len);
-    d_print_hex(recvbuf->payload, recvbuf->len);
-
+    ABTS_TRUE(tc, memcmp(recvbuf->payload, 
+        core_ascii_to_hex(_security_mode_command, 
+            strlen(_security_mode_command), tmp, sizeof(tmp)),
+        recvbuf->len) == 0);
     ABTS_INT_NEQUAL(tc, 0, rc);
     pkbuf_free(recvbuf);
 

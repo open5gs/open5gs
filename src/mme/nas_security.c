@@ -46,7 +46,6 @@ status_t nas_security_encode(pkbuf_t **pkbuf,
             nas_mac_calculate(mme_self()->selected_int_algorithm,
                 ue->knas_int, ue->dl_count, NAS_SECURITY_BEARER, 
                 NAS_SECURITY_DOWNLINK_DIRECTION, new, mac);
-            d_print_hex(mac, 4);
 
             d_assert(CORE_OK == pkbuf_header(new, 
                     sizeof(nas_security_header_t) - sizeof(h.sequence_number)),
