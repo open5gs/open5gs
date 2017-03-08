@@ -105,6 +105,23 @@ status_t nas_security_encode(
 status_t nas_security_decode(
         nas_message_t *message, ue_ctx_t *ue, pkbuf_t *pkbuf)
 {
+    nas_security_header_t *security_header = NULL;
+    c_uint16_t size = 0;
+    c_uint16_t decoded = 0;
+
+    d_assert(pkbuf, return CORE_ERROR, "Null param");
+    d_assert(pkbuf->payload, return CORE_ERROR, "Null param");
+
+    security_header = pkbuf->payload;
+    if (security_header->security_header_type != 
+            NAS_SECURITY_HEADER_PLAIN_NAS_MESSAGE)
+    {
+        size = sizeof(nas_security_header_t);
+        d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
+                return CORE_ERROR, "pkbuf_header error");
+        decoded += size;
+    }
+
     return nas_plain_decode(message, pkbuf);
 }
 

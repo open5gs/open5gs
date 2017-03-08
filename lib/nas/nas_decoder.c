@@ -331,22 +331,11 @@ c_int32_t nas_decode_security_mode_reject(nas_message_t *message,
 status_t nas_plain_decode(nas_message_t *message, pkbuf_t *pkbuf)
 {
     status_t rv = CORE_ERROR;
-    nas_security_header_t *security_header = NULL;
     c_uint16_t size = 0;
     c_uint16_t decoded = 0;
 
     d_assert(pkbuf, return CORE_ERROR, "Null param");
     d_assert(pkbuf->payload, return CORE_ERROR, "Null param");
-
-    security_header = pkbuf->payload;
-    if (security_header->security_header_type != 
-            NAS_SECURITY_HEADER_PLAIN_NAS_MESSAGE)
-    {
-        size = sizeof(nas_security_header_t);
-        d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
-                return CORE_ERROR, "pkbuf_header error");
-        decoded += size;
-    }
 
     memset(message, 0, sizeof(nas_message_t));
 

@@ -5,15 +5,16 @@
 #include "testutil.h"
 
 #include "nas_message.h"
+#include "nas_security.h"
 
 static void nas_message_test1(abts_case *tc, void *data)
 {
     /* Attach Request */
     char *payload = 
-        "17df675aa8050741020bf600f1100002"
-        "01030003e605f07000001000050215d0"
-        "11d15200f11030395c0a003103e5e034"
-        "9011035758a65d0100e0c1";
+        "0741020bf600f110000201030003e605"
+        "f07000001000050215d011d15200f110"
+        "30395c0a003103e5e0349011035758a6"
+        "5d0100e0c1";
 
     nas_message_t message;
     pkbuf_t *pkbuf;
@@ -21,7 +22,7 @@ static void nas_message_test1(abts_case *tc, void *data)
 
     pkbuf = pkbuf_alloc(0, MESSAGE_SDU_SIZE);
     ABTS_PTR_NOTNULL(tc, pkbuf);
-    pkbuf->len = 59;
+    pkbuf->len = 53;
     core_ascii_to_hex(payload, strlen(payload), pkbuf->payload, pkbuf->len);
 
     rv = nas_plain_decode(&message, pkbuf);
