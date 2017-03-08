@@ -106,7 +106,14 @@ typedef struct _ue_ctx_t {
     c_uint8_t       knas_int[SHA256_DIGEST_SIZE/2]; 
     c_uint8_t       knas_enc[SHA256_DIGEST_SIZE/2];
     c_uint32_t      dl_count;
-    c_uint32_t      ul_count;
+    union {
+        struct {
+        ED3(c_uint8_t spare;,
+            c_uint16_t overflow;,
+            c_uint8_t sqn;)
+        } __attribute__ ((packed));
+        c_uint32_t i32;
+    } ul_count;
 
     /* Related Context for UE */
     rab_list_t      rab_list;

@@ -45,7 +45,7 @@ status_t nas_security_encode(
     if (new_security_context)
     {
         ue->dl_count = 0;
-        ue->ul_count = 0;
+        ue->ul_count.i32 = 0;
     }
 
     if (mme_self()->selected_enc_algorithm == 0)
@@ -92,13 +92,15 @@ status_t nas_security_encode(
                         ntohl(h.message_authentication_code); */
         }
 
+        /* increase dl_count */
+        ue->dl_count = (ue->dl_count + 1) & 0xffffff; /* Use 24bit */
+
         /* encode all security header */
         d_assert(CORE_OK == pkbuf_header(new, 5),
             pkbuf_free(new);return CORE_ERROR, "pkbuf_header error");
         /* h.message_authentication_code = 
                     htonl(h.message_authentication_code); */
         memcpy(new->payload, &h, sizeof(nas_security_header_t));
-        ue->dl_count = (ue->dl_count + 1) & 0xffffff; /* Use 24bit */
 
         *pkbuf = new;
 
@@ -164,7 +166,7 @@ status_t nas_security_decode(
 
     if (new_security_context)
     {
-        ue->ul_count = 0;
+        ue->ul_count.i32 = 0;
     }
 
     if (mme_self()->selected_enc_algorithm == 0)
@@ -181,7 +183,7 @@ status_t nas_security_decode(
         {
             /* decrypt NAS message */
             nas_encrypt(mme_self()->selected_enc_algorithm,
-                ue->knas_enc, ue->ul_count, NAS_SECURITY_BEARER,
+                ue->knas_enc, ue->ul_count.i32, NAS_SECURITY_BEARER,
                 NAS_SECURITY_UPLINK_DIRECTION, pkbuf);
         }
         if(integrity_protected)
@@ -191,7 +193,7 @@ status_t nas_security_decode(
 
             /* calculate NAS MAC(message authentication code) */
             nas_mac_calculate(mme_self()->selected_int_algorithm,
-                ue->knas_int, ue->ul_count, NAS_SECURITY_BEARER, 
+                ue->knas_int, ue->ul_count.i32, NAS_SECURITY_BEARER, 
                 NAS_SECURITY_UPLINK_DIRECTION, pkbuf, mac);
 
             memcpy(&mac32, mac, NAS_SECURITY_MAC_SIZE);
@@ -203,6 +205,11 @@ status_t nas_security_decode(
                 return CORE_ERROR;
             }
         }
+
+        /* calculate ul_count */
+        if (ue->ul_count.sqn > h->sequence_number)
+            ue->ul_count.overflow++;
+        ue->ul_count.sqn = h->sequence_number;
 
         d_assert(CORE_OK == pkbuf_header(pkbuf, -1),
             return CORE_ERROR, "pkbuf_header error");
