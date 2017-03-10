@@ -409,6 +409,7 @@ static void netlib2(abts_case *tc, void *data)
     start_tcp_server();
 
     /* Connect to invalid port */
+    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_FATAL);
     for (i =0 ; i<TEST_MAX_NUM; i++)
     {
         net_sock[i] = NULL;
@@ -417,6 +418,7 @@ static void netlib2(abts_case *tc, void *data)
         ABTS_INT_EQUAL(tc, -1, rc);
         ABTS_PTR_NULL(tc, net_sock[i]);
     }
+    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_FULL);
 
     /* Connect to valid port */
     for (i =0 ; i<TEST_MAX_NUM; i++)
@@ -537,6 +539,7 @@ static void netlib4(abts_case *tc, void *data)
     start_stream_sctp_server();
 
     /* Connect to invalid port */
+    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_FATAL);
     for (i =0 ; i<TEST_MAX_NUM; i++)
     {
         net_sock[i] = NULL;
@@ -545,6 +548,7 @@ static void netlib4(abts_case *tc, void *data)
         ABTS_INT_EQUAL(tc, -1, rc);
         ABTS_PTR_NULL(tc, net_sock[i]);
     }
+    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_FULL);
 
     for (i =0 ; i<TEST_MAX_NUM; i++)
     {

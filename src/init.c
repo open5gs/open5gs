@@ -11,7 +11,8 @@
 
 #include "cellwire.h"
 
-static pid_t child_pid;
+static pid_t hss_pid;
+static pid_t logger_pid;
 static thread_id net_thread;
 
 static int check_signal(int signum);
@@ -20,7 +21,6 @@ void *THREAD_FUNC net_main(void *data);
 status_t cellwire_initialize(char *config_path, char *log_path)
 {
     status_t rv;
-    int ret;
     semaphore_id semaphore;
 
     core_initialize();
@@ -31,15 +31,18 @@ status_t cellwire_initialize(char *config_path, char *log_path)
     }
 
     if (log_path)
-        logger_start(log_path);
+    {
+        logger_pid = logger_start(log_path);
+        d_assert(logger_pid > 0, return -1, "logger_start() failed");
+    }
 
     rv = semaphore_create(&semaphore, 0);
     d_assert(rv == CORE_OK, return -1, "semaphore_create() failed");
 
-    child_pid = fork();
-    d_assert(child_pid >= 0, _exit(EXIT_FAILURE), "fork() failed");
+    hss_pid = fork();
+    d_assert(hss_pid >= 0, _exit(EXIT_FAILURE), "fork() failed");
 
-    if (child_pid == 0)
+    if (hss_pid == 0)
     {
         /* Child */
         rv = semaphore_wait(semaphore);
@@ -47,8 +50,8 @@ status_t cellwire_initialize(char *config_path, char *log_path)
         rv = semaphore_delete(semaphore);
         d_assert(rv == CORE_OK, _exit(EXIT_FAILURE), "semaphore_delete() failed");
 
-        ret = hss_initialize();
-        if (ret != 0) _exit(EXIT_FAILURE);
+        rv = hss_initialize();
+        if (rv != CORE_OK) _exit(EXIT_FAILURE);
 
         signal_thread(check_signal);
         hss_terminate();
@@ -73,7 +76,8 @@ void cellwire_terminate(void)
     thread_delete(net_thread);
     mme_terminate();
 
-    core_kill(child_pid, SIGTERM);
+    core_kill(hss_pid, SIGTERM);
+    core_kill(logger_pid, SIGTERM);
 
     core_terminate();
 }

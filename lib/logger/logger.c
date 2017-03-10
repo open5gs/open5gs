@@ -239,16 +239,16 @@ int logger_start_internal(const char *path)
     return 0;
 }
 
-void logger_start(const char *path)
+int logger_start(const char *path)
 {
     pid_t pid;
+    int ret;
     pid = fork();
 
     d_assert(pid >= 0, _exit(EXIT_FAILURE), "fork() failed");
 
     if (pid == 0)
     {
-        int ret;
 
         /* Child */
         umask(027);
@@ -263,7 +263,9 @@ void logger_start(const char *path)
 
         _exit(EXIT_SUCCESS);
     }
+
     /* Parent */
+    return pid;
 }
 
 void logger_stop()

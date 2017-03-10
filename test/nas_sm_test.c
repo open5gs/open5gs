@@ -30,6 +30,7 @@ static void nas_sm_test1(abts_case *tc, void *data)
     sock = tests1ap_enb_connect();
     ABTS_PTR_NOTNULL(tc, sock);
 
+    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_WARN);
     /* Send S1-Setup Reqeust */
     rv = tests1ap_build_setup_req(&sendbuf, 0x54f64);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -90,11 +91,13 @@ static void nas_sm_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(sendbuf);
 
+    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
     /* eNB disonncect from MME */
     rv = tests1ap_enb_close(sock);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     core_sleep(time_from_msec(300));
+    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_FULL);
 }
 
 abts_suite *test_nas_sm(abts_suite *suite)

@@ -1534,39 +1534,36 @@ int net_fds_read_run(long timeout)
         tv.tv_usec = time_usec(usec);
     }
 
-    while (1)
+    net_set_fds(&g_net_fd_tbl.rfds);
+
+    rc = select(g_net_fd_tbl.max_fd+1, &g_net_fd_tbl.rfds, NULL, NULL,
+            timeout > 0 ? &tv : NULL);
+
+    if (rc < 0)
     {
-        net_set_fds(&g_net_fd_tbl.rfds);
-
-        rc = select(g_net_fd_tbl.max_fd+1, &g_net_fd_tbl.rfds, NULL, NULL,
-                timeout > 0 ? &tv : NULL);
-
-        if (rc < 0)
+        if (errno != EINTR && errno != 0)
         {
-            if (errno != EINTR && errno != 0)
+            if (errno == EBADF)
             {
-                if (errno == EBADF)
-                {
-                    d_error("[FIXME] socket should be closed here(%d:%s)", 
-                            errno, strerror(errno));
-                }
-                else
-                {
-                    d_error("Select error(%d:%s)", errno, strerror(errno));
-                }
+                d_error("[FIXME] socket should be closed here(%d:%s)", 
+                        errno, strerror(errno));
             }
-            break;
+            else
+            {
+                d_error("Select error(%d:%s)", errno, strerror(errno));
+            }
         }
-
-        /* Timeout */
-        if (rc == 0)
-        {
-            break;
-        }
-
-        /* Dispatch handler */
-        net_fd_dispatch(&g_net_fd_tbl.rfds);
+        return rc;
     }
 
-    return 1;
+    /* Timeout */
+    if (rc == 0)
+    {
+        return 0;
+    }
+
+    /* Dispatch handler */
+    net_fd_dispatch(&g_net_fd_tbl.rfds);
+
+    return 0;
 }

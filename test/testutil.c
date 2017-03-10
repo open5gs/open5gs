@@ -38,14 +38,12 @@ void core_assert_ok(abts_case* tc, const char* context, status_t rv,
 
 void test_terminate(void)
 {
-    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_FULL);
     cellwire_terminate();
 }
 
 void test_initialize(void)
 {
     cellwire_initialize(NULL, NULL);
-    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
 
     inet_pton(AF_INET, "127.0.0.1", &mme_self()->enb_local_addr);
 

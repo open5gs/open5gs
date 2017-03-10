@@ -164,7 +164,7 @@ status_t hss_initialize(void)
 	d_assert(fd_disp_register(hss_air_cb, DISP_HOW_CC, &data, NULL, 
                 &hdl_air) == 0, return CORE_ERROR,);
 
-	return 0;
+	return CORE_OK;
 }
 
 void hss_terminate(void)
