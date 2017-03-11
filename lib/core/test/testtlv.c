@@ -1,7 +1,6 @@
 #include "core_tlv.h"
 #include "core_net.h"
 #include "testutil.h"
-#include "core_debug.h"
 
 #define TLV_0_LEN 10
 #define TLV_1_LEN 20
@@ -17,7 +16,8 @@
 #define TLV_5_INSTANCE 5
 #define TLV_VALUE_ARRAY_SIZE    3000
 
-#define EMBED_TLV_TYPE  20
+#define EMBED_TLV_TYPE      20
+#define EMBED_TLV_INSTANCE  7
 
 typedef struct _test_tlv_element
 {
@@ -179,7 +179,7 @@ void tlv_test_check_embed_tlv_test(abts_case *tc, tlv_t *root_tlv, int mode)
             ABTS_INT_EQUAL(tc, *(pos++), EMBED_TLV_TYPE & 0xFF);
             ABTS_INT_EQUAL(tc, *(pos++), (308 >> 8));
             ABTS_INT_EQUAL(tc, *(pos++), 308 & 0xFF);
-            ABTS_INT_EQUAL(tc, *(pos++), 0);
+            ABTS_INT_EQUAL(tc, *(pos++), EMBED_TLV_INSTANCE);
 
             /* embedded tlv_t */
             ABTS_INT_EQUAL(tc, *(pos++), tlv_element[2].type & 0xFF);    
@@ -383,7 +383,6 @@ static void tlv_test_1(abts_case *tc, void *data)
         for(m = 0; m < tlv_element[idx].length; m++)
             ABTS_INT_EQUAL(tc, tlv_element[idx].val_char, *(pos++));
     }
-    
 
     parsed_tlv = tlv_parse_block(parent_block_len,parent_block, mode);
     ABTS_PTR_NOTNULL(tc, parsed_tlv);
@@ -461,7 +460,8 @@ static void tlv_test_2(abts_case *tc, void *data)
     root_tlv = tlv_add(NULL,tlv_element[0].type,
         tlv_element[0].length, tlv_element[0].instance, tlv_element[0].value);
 
-    tlv_add(root_tlv, EMBED_TLV_TYPE, embed_block_len, 0, embed_block);
+    tlv_add(root_tlv, EMBED_TLV_TYPE, embed_block_len, 
+            EMBED_TLV_INSTANCE, embed_block);
     tlv_add(root_tlv,tlv_element[4].type,
         tlv_element[4].length, tlv_element[4].instance, tlv_element[4].value);
 
@@ -484,7 +484,7 @@ static void tlv_test_3(abts_case *tc, void *data)
     /* Tlv Encoding for embeded tlv_t */
     root_tlv = tlv_add(NULL,tlv_element[0].type,
         tlv_element[0].length, tlv_element[0].instance, tlv_element[0].value);
-    parent_tlv= tlv_add(root_tlv, EMBED_TLV_TYPE, 0, 0, NULL);
+    parent_tlv= tlv_add(root_tlv, EMBED_TLV_TYPE, 0, EMBED_TLV_INSTANCE, NULL);
     tlv_add(root_tlv,tlv_element[4].type,
         tlv_element[4].length, tlv_element[4].instance, tlv_element[4].value);
 
@@ -515,8 +515,8 @@ static void tlv_test_4(abts_case *tc, void *data)
     root_tlv = tlv_copy(tlv_buff, sizeof(tlv_buff),
         tlv_element[0].type, tlv_element[0].length, 
         tlv_element[0].instance, tlv_element[0].value);
-    parent_tlv = tlv_add(root_tlv, 20, 0, 0, NULL);
-    tlv_add(root_tlv,tlv_element[4].type, tlv_element[4].length, 
+    parent_tlv = tlv_add(root_tlv, EMBED_TLV_TYPE, 0, EMBED_TLV_INSTANCE, NULL);
+    tlv_add(root_tlv, tlv_element[4].type, tlv_element[4].length, 
         tlv_element[4].instance, tlv_element[4].value);
 
     tlv_embed(parent_tlv,tlv_element[2].type,
@@ -634,7 +634,6 @@ static void tlv_test_5(abts_case *tc, void *data)
 
     return;
 }
-
 
 abts_suite *testtlv(abts_suite *suite)
 {
