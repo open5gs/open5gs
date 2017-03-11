@@ -57,7 +57,7 @@ CORE_DECLARE(status_t) tlv_final(void);
 /* tlv_t encoding functions */
 CORE_DECLARE(tlv_t*) tlv_add(
         tlv_t *headTlv, c_uint32_t type, c_uint32_t length, c_uint8_t *value);
-CORE_DECLARE(tlv_t*) tlv_create_buff_enabled_tlv(
+CORE_DECLARE(tlv_t*) tlv_copy(
         c_uint8_t *buff, c_uint32_t buff_len,
         c_uint32_t type, c_uint32_t length, c_uint8_t *value);
 CORE_DECLARE(tlv_t*) tlv_embed(
@@ -66,9 +66,9 @@ CORE_DECLARE(c_uint32_t) tlv_render(
         tlv_t *rootTlv, c_uint8_t *blk, c_uint32_t length, c_uint8_t mode);
 
 /* tlv_t parsing functions */
-CORE_DECLARE(tlv_t*) tlv_parse_tlv_block(c_uint32_t length,
-        c_uint8_t *blk, c_uint8_t mode);
-CORE_DECLARE(tlv_t*) tlv_parse_embedded_tlv_block(tlv_t* pTlv, c_uint8_t mode);
+CORE_DECLARE(tlv_t*) tlv_parse_block(
+        c_uint32_t length, c_uint8_t *blk, c_uint8_t mode);
+CORE_DECLARE(tlv_t*) tlv_parse_embedded_block(tlv_t* pTlv, c_uint8_t mode);
 
 /* tlv operation-related function */
 CORE_DECLARE(tlv_t*) tlv_find(tlv_t* pTlv, c_uint32_t type);

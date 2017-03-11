@@ -332,7 +332,7 @@ tlv_t *tlv_add(
     return new_tlv;
 }
 
-tlv_t *tlv_create_buff_enabled_tlv(
+tlv_t *tlv_copy(
         c_uint8_t *buff, c_uint32_t buff_len,
         c_uint32_t type, c_uint32_t length, c_uint8_t *value)
 {
@@ -439,7 +439,7 @@ c_uint32_t tlv_render(
 }
 
 /* tlv_t parsing functions */
-tlv_t *tlv_parse_tlv_block(c_uint32_t length, c_uint8_t *blk, c_uint8_t mode)
+tlv_t *tlv_parse_block(c_uint32_t length, c_uint8_t *blk, c_uint8_t mode)
 {
     c_uint8_t* pos = blk;
 
@@ -478,9 +478,9 @@ tlv_t *tlv_parse_tlv_block(c_uint32_t length, c_uint8_t *blk, c_uint8_t mode)
     return root_tlv;
 }
 
-tlv_t *tlv_parse_embedded_tlv_block(tlv_t* p_tlv, c_uint8_t mode)
+tlv_t *tlv_parse_embedded_block(tlv_t* p_tlv, c_uint8_t mode)
 {
-    p_tlv->embedded = tlv_parse_tlv_block(p_tlv->length, p_tlv->value, mode);
+    p_tlv->embedded = tlv_parse_block(p_tlv->length, p_tlv->value, mode);
 
     return p_tlv->embedded;
 }

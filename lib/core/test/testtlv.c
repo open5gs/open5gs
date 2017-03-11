@@ -165,7 +165,7 @@ void tlv_test_check_embed_tlv_test(abts_case *tc, tlv_t *root_tlv, int mode)
         }
     }
 
-    parsed_tlv = tlv_parse_tlv_block(parent_block_len,
+    parsed_tlv = tlv_parse_block(parent_block_len,
         parent_block, mode);
     ABTS_PTR_NOTNULL(tc, parsed_tlv);
 
@@ -204,7 +204,7 @@ void tlv_test_check_embed_tlv_test(abts_case *tc, tlv_t *root_tlv, int mode)
     parent_tlv = tlv_find(parsed_tlv,20);
     ABTS_PTR_NOTNULL(tc, parent_tlv);
 
-    tlv_parse_embedded_tlv_block(parent_tlv, mode);
+    tlv_parse_embedded_block(parent_tlv, mode);
     embed_tlv = parent_tlv->embedded;
     ABTS_PTR_NOTNULL(tc, embed_tlv);
 
@@ -317,7 +317,7 @@ static void tlv_test_1(abts_case *tc, void *data)
     }
     
 
-    parsed_tlv = tlv_parse_tlv_block(parent_block_len,parent_block, mode);
+    parsed_tlv = tlv_parse_block(parent_block_len,parent_block, mode);
     ABTS_PTR_NOTNULL(tc, parsed_tlv);
 
     pTlv = parsed_tlv;
@@ -440,7 +440,7 @@ static void tlv_test_4(abts_case *tc, void *data)
 
     tlv_test_set_tlv_value();
 
-    root_tlv = tlv_create_buff_enabled_tlv(tlv_buff, sizeof(tlv_buff),
+    root_tlv = tlv_copy(tlv_buff, sizeof(tlv_buff),
         tlv_eliment[0].type,tlv_eliment[0].length, tlv_eliment[0].value);
     parent_tlv = tlv_add(root_tlv, 20, 0, NULL);
     tlv_add(root_tlv,tlv_eliment[4].type,
@@ -534,7 +534,7 @@ static void tlv_test_5(abts_case *tc, void *data)
             break;
     }
 
-    p_tlv = parsed_tlv = tlv_parse_tlv_block(parent_block_len,parent_block,
+    p_tlv = parsed_tlv = tlv_parse_block(parent_block_len,parent_block,
         mode);
     ABTS_INT_EQUAL(tc, tlv_value_16(p_tlv), 0x1122);
     p_tlv = parsed_tlv->next;
