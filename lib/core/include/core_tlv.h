@@ -55,13 +55,23 @@ CORE_DECLARE(status_t) tlv_init(void);
 CORE_DECLARE(status_t) tlv_final(void);
 
 /* tlv_t encoding functions */
-CORE_DECLARE(tlv_t*) tlv_add(
-        tlv_t *headTlv, c_uint32_t type, c_uint32_t length, c_uint8_t *value);
-CORE_DECLARE(tlv_t*) tlv_copy(
-        c_uint8_t *buff, c_uint32_t buff_len,
+CORE_DECLARE(tlv_t*) tlv_add(tlv_t *headTlv, 
         c_uint32_t type, c_uint32_t length, c_uint8_t *value);
-CORE_DECLARE(tlv_t*) tlv_embed(
-        tlv_t *parent_tlv, c_uint32_t type, c_uint32_t length, c_uint8_t *value);
+CORE_DECLARE(tlv_t*) tlv_add_with_instance(tlv_t *headTlv, 
+        c_uint32_t type, c_uint32_t length, 
+        c_uint32_t instance, c_uint8_t *value);
+CORE_DECLARE(tlv_t*) tlv_copy(c_uint8_t *buff, c_uint32_t buff_len,
+        c_uint32_t type, c_uint32_t length, c_uint8_t *value);
+CORE_DECLARE(tlv_t*) tlv_copy_with_instance(
+        c_uint8_t *buff, c_uint32_t buff_len,
+        c_uint32_t type, c_uint32_t length, 
+        c_uint32_t instance, c_uint8_t *value);
+CORE_DECLARE(tlv_t*) tlv_embed(tlv_t *parent_tlv, 
+        c_uint32_t type, c_uint32_t length, c_uint8_t *value);
+CORE_DECLARE(tlv_t*) tlv_embed_with_instance(tlv_t *parent_tlv, 
+        c_uint32_t type, c_uint32_t length, 
+        c_uint32_t instance, c_uint8_t *value);
+
 CORE_DECLARE(c_uint32_t) tlv_render(
         tlv_t *rootTlv, c_uint8_t *blk, c_uint32_t length, c_uint8_t mode);
 
