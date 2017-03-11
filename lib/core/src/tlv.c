@@ -100,15 +100,19 @@ c_uint32_t tlv_calc_length(tlv_t *p_tlv, c_uint8_t mode)
     while(tmp_tlv)
     {
         /* this is length for type field */
-        if(mode == TLV_MODE_WMX_R4_R6)
+        switch(mode)
         {
-            length += 2;
+            case TLV_MODE_T8_L8:
+            case TLV_MODE_T8_L16:
+                length += 1;
+                break;
+            case TLV_MODE_T16_L16:
+                length += 2;
+                break;
+            default:
+                d_assert(0, return 0, "Invalid mode(%d)", mode);
+                break;
         }
-        else
-        {
-            length += 1;
-        }
-
 
         /* this is length for type field */
         if(tmp_tlv->embedded != NULL)
@@ -116,28 +120,19 @@ c_uint32_t tlv_calc_length(tlv_t *p_tlv, c_uint8_t mode)
             tmp_tlv->length = tlv_calc_length(tmp_tlv->embedded, mode);
         }
 
-        if(mode == TLV_MODE_WMX_R4_R6)
+        switch(mode)
         {
-            length += 2;
-        }
-        else if(mode == TLV_MODE_UTIS)
-        {
-            if(tmp_tlv->length < UPDU_IE_TYPE_1_MAX_SIZE)
+            case TLV_MODE_T8_L8:
                 length += 1;
-            else if(tmp_tlv->length < UPDU_IE_TYPE_2_MAX_SIZE)
+                break;
+            case TLV_MODE_T8_L16:
+            case TLV_MODE_T16_L16:
                 length += 2;
-            else if(tmp_tlv->length < UPDU_IE_TYPE_3_MAX_SIZE)
-                length += 4;
-            else
-            {
-                /* Error : Invalid  IE length field */
-            }
+                break;
+            default:
+                d_assert(0, return 0, "Invalid mode(%d)", mode);
+                break;
         }
-        else
-        {
-            length += 1;
-        }
-
 
         /* this is length for value field */
         length += tmp_tlv->length;
@@ -167,98 +162,7 @@ c_uint32_t tlv_calc_count(tlv_t *p_tlv)
     return count;
 }
 
-
-c_uint32_t _tlv_get_length_utis(c_uint8_t **pos)
-{
-    c_uint8_t *blk = *pos;
-    c_uint32_t length = 0;
-
-    switch(*blk >> 6)
-    {
-        case UPDU_IE_TYPE_1_CODE:
-            length = *blk & 0x3F;
-            *pos += 1;
-            break;
-
-        case UPDU_IE_TYPE_2_CODE:
-            length = ((*blk & 0x3F) << 8) + *(blk + 1);
-            *pos += 2;
-            break;
-
-        case UPDU_IE_TYPE_3_CODE:
-            length = ((*blk & 0x3F) << 24) +
-                (*(blk + 1) << 16) + (*(blk + 2) << 8) + *(blk + 3);
-            *pos += 4;
-            break;
-        default:
-            /* Error : Invalid  IE length field */
-            return CORE_ERROR;
-            break;
-    }
-
-    return length;
-}
-
-c_uint8_t* _tlv_put_length_utis(c_uint32_t length, c_uint8_t *pos)
-{
-    if(length < UPDU_IE_TYPE_1_MAX_SIZE)
-    {
-        *(pos++) = (UPDU_IE_TYPE_1_CODE << 6) | length;
-    }
-    else if(length < UPDU_IE_TYPE_2_MAX_SIZE)
-    {
-        *(pos++) = (UPDU_IE_TYPE_2_CODE << 6) | (length >> 8);
-        *(pos++) = length & 0xFF;
-    }
-    else if(length < UPDU_IE_TYPE_3_MAX_SIZE)
-    {
-        *(pos++) = (length >> 24) & 0xFF;
-        *(pos++) = (length >> 16) & 0xFF;
-        *(pos++) = (length >> 8) & 0xFF;
-        *(pos++) = length & 0xFF;
-    }
-    else
-    {
-        d_assert(FALSE, return NULL, "invalid tlv length\n");
-    }
-
-    return pos;
-}
-
-
-c_uint32_t _tlv_get_length_wifi(c_uint8_t **pos)
-{
-    c_uint8_t *blk = *pos;
-    c_uint32_t length = 0;
-
-    if(*blk & 0x80)
-    {
-        d_error("TLV for wifi is not implemented in case of (length > 127)");
-    }
-    else
-    {
-        length = *blk;
-        *pos += 1;
-    }
-
-    return length;
-}
-
-c_uint8_t* _tlv_put_length_wifi(c_uint32_t length, c_uint8_t *pos)
-{
-    if(length < 128)
-    {
-        *(pos++) = length;
-    }
-    else
-    {
-        d_error("TLV for wifi is not implemented in case of (length > 127)");
-    }
-    return pos;
-}
-
-
-c_uint32_t _tlv_get_length_wmx_r4_r6(c_uint8_t **pos)
+c_uint32_t _tlv_get_length16(c_uint8_t **pos)
 {
     c_uint8_t *blk = *pos;
     c_uint32_t length = 0;
@@ -269,7 +173,7 @@ c_uint32_t _tlv_get_length_wmx_r4_r6(c_uint8_t **pos)
     return length;
 }
 
-c_uint8_t* _tlv_put_length_wmx_r4_r6(c_uint32_t length, c_uint8_t *pos)
+c_uint8_t* _tlv_put_length16(c_uint32_t length, c_uint8_t *pos)
 {
     *(pos++) = (length >> 8) & 0xFF;
     *(pos++) = length & 0xFF;
@@ -277,188 +181,91 @@ c_uint8_t* _tlv_put_length_wmx_r4_r6(c_uint32_t length, c_uint8_t *pos)
     return pos;
 }
 
-/* Not Implemented for WMX_R1*/
-c_uint32_t _tlv_get_length_wmx_r1(c_uint8_t **pos)
+c_uint32_t _tlv_get_length8(c_uint8_t **pos)
 {
     c_uint8_t *blk = *pos;
     c_uint32_t length = 0;
 
-    if(*blk & 0x80)
-    {
-        d_error("TLV is not implemented in case of (length > 127)");
-    }
-    else
-    {
-        length = *blk;
-        *pos += 1;
-    }
+    length = *blk;
+    *pos += 1;
 
     return length;
 }
 
-c_uint8_t* _tlv_put_length_wmx_r1(c_uint32_t length, c_uint8_t *pos)
+c_uint8_t* _tlv_put_length8(c_uint32_t length, c_uint8_t *pos)
 {
-    if(length < 128)
-    {
-        *(pos++) = length;
-    }
-    else
-    {
-        d_error("TLV is not implemented in case of (length > 127)");
-    }
+    *(pos++) = length;
     return pos;
 }
-
-c_uint32_t _tlv_get_length_common(c_uint8_t **pos)
-{
-    c_uint8_t *blk = *pos;
-    c_uint32_t length = 0;
-
-    if(*blk & 0x80)
-    {
-        d_error("TLV is not implemented in case of (length > 127)");
-    }
-    else
-    {
-        length = *blk;
-        *pos += 1;
-    }
-
-    return length;
-}
-
-c_uint8_t* _tlv_put_length_common(c_uint32_t length, c_uint8_t *pos)
-{
-    if(length < 128)
-    {
-        *(pos++) = length;
-    }
-    else
-    {
-        d_error("TLV is not implemented in case of (length > 127)");
-    }
-    return pos;
-}
-
 
 c_uint8_t* _tlv_put_length(c_uint32_t length, c_uint8_t *pos, c_uint8_t mode)
 {
-    if(mode == TLV_MODE_UTIS)
+    switch(mode)
     {
-        pos = _tlv_put_length_utis(length, pos);
-
-    }
-    else if(mode == TLV_MODE_WIFI)
-    {
-        pos = _tlv_put_length_wifi(length, pos);
-    }
-    else if(mode == TLV_MODE_WMX_R4_R6)
-    {
-        pos = _tlv_put_length_wmx_r4_r6(length, pos);
-    }
-    else if(mode == TLV_MODE_WMX_R1)
-    {
-        pos = _tlv_put_length_wmx_r1(length, pos);
-    }    
-    else
-    {
-        pos = _tlv_put_length_common(length, pos);
+        case TLV_MODE_T8_L8:
+            pos = _tlv_put_length8(length, pos);
+            break;
+        case TLV_MODE_T8_L16:
+        case TLV_MODE_T16_L16:
+            pos = _tlv_put_length16(length, pos);
+            break;
+        default:
+            d_assert(0, return 0, "Invalid mode(%d)", mode);
+            break;
     }
 
     return pos;
 }
-
 
 c_uint8_t* _tlv_get_element(tlv_t *p_tlv, c_uint8_t *tlvBlock, c_uint8_t mode)
 {
     c_uint8_t *pos = tlvBlock;
 
-    if(mode == TLV_MODE_WMX_R4_R6)
+    switch(mode)
     {
-        p_tlv->type = *(pos++) << 8;
-        p_tlv->type += *(pos++);
+        case TLV_MODE_T8_L8:
+            p_tlv->type = *(pos++);
+            p_tlv->length = _tlv_get_length8(&pos);
+            break;
+        case TLV_MODE_T8_L16:
+            p_tlv->type = *(pos++);
+            p_tlv->length = _tlv_get_length16(&pos);
+            break;
+        case TLV_MODE_T16_L16:
+            p_tlv->type = *(pos++) << 8;
+            p_tlv->type += *(pos++);
+            p_tlv->length = _tlv_get_length16(&pos);
+            break;
+        default:
+            d_assert(0, return 0, "Invalid mode(%d)", mode);
+            break;
     }
-    else
-    {
-        p_tlv->type = *(pos++);
-    }
-    
-    
-    if(mode == TLV_MODE_UTIS)
-    {
-        p_tlv->length = _tlv_get_length_utis(&pos);
-    }
-    else if(mode == TLV_MODE_WIFI)
-    {
-        p_tlv->length = _tlv_get_length_wifi(&pos);
-    }
-    else if(mode == TLV_MODE_WMX_R4_R6)
-    {
-        p_tlv->length = _tlv_get_length_wmx_r4_r6(&pos);
-    }
-    else if(mode == TLV_MODE_WMX_R1)
-    {
-        p_tlv->length = _tlv_get_length_wmx_r1(&pos);
-    }    
-    else
-    {
-        p_tlv->length = _tlv_get_length_common(&pos);
-    }
+
     p_tlv->value = pos;
 
     return (pos + tlv_length(p_tlv));
 }
 
-
 c_uint8_t* _tlv_put_type(c_uint32_t type, c_uint8_t *pos, c_uint8_t mode)
 {    
-    if(mode == TLV_MODE_WMX_R4_R6)
+    switch(mode)
     {
-        *(pos++) = (type >> 8) & 0xFF;
-        *(pos++) = type & 0xFF;
-    }    
-    else
-    {
-        *(pos++) = type & 0xFF;
+        case TLV_MODE_T8_L8:
+        case TLV_MODE_T8_L16:
+            *(pos++) = type & 0xFF;
+            break;
+        case TLV_MODE_T16_L16:
+            *(pos++) = (type >> 8) & 0xFF;
+            *(pos++) = type & 0xFF;
+            break;
+        default:
+            d_assert(0, return 0, "Invalid mode(%d)", mode);
+            break;
     }
     return pos;
 }
 
-
-c_uint8_t* _tlv_get_type(tlv_t *p_tlv, c_uint8_t *tlvBlock, c_uint8_t mode)
-{
-    c_uint8_t *pos = tlvBlock;
-
-    p_tlv->type = *(pos++);
-    if(mode == TLV_MODE_UTIS)
-    {
-        p_tlv->length = _tlv_get_length_utis(&pos);
-    }
-    else if(mode == TLV_MODE_WIFI)
-    {
-        p_tlv->length = _tlv_get_length_wifi(&pos);
-    }
-    else if(mode == TLV_MODE_WMX_R4_R6)
-    {
-        p_tlv->length = _tlv_get_length_wmx_r4_r6(&pos);
-    }
-    else if(mode == TLV_MODE_WMX_R1)
-    {
-        p_tlv->length = _tlv_get_length_wmx_r1(&pos);
-    }    
-    else
-    {
-        p_tlv->length = _tlv_get_length_common(&pos);
-    }
-    p_tlv->value = pos;
-
-    return (pos + tlv_length(p_tlv));
-}
-
-
-
 /* tlv_t encoding functions */
-
 c_uint8_t *tlv_write_to_buff(
         c_uint8_t *blk, c_uint32_t type, c_uint32_t length,
         c_uint8_t *value, c_uint8_t mode)
@@ -496,7 +303,6 @@ tlv_t * tlv_find_root(tlv_t* p_tlv)
 
     return head_tlv;
 }
-
 
 tlv_t * tlv_add(
         tlv_t *head_tlv, c_uint32_t type, c_uint32_t length, c_uint8_t *value)
@@ -564,8 +370,6 @@ tlv_t * tlv_create_buff_enabled_tlv(
     return new_tlv;
 }
 
-
-
 tlv_t * tlv_embed(
         tlv_t *parent_tlv, c_uint32_t type, c_uint32_t length, c_uint8_t *value)
 {
@@ -606,7 +410,6 @@ tlv_t * tlv_embed(
 
     return new_tlv;
 }
-
 
 c_uint32_t tlv_render(
         tlv_t *root_tlv, c_uint8_t *blk, c_uint32_t length, c_uint8_t mode)
@@ -650,9 +453,7 @@ c_uint32_t tlv_render(
     return (pos - blk);
 }
 
-
 /* tlv_t parsing functions */
-
 tlv_t * tlv_parse_tlv_block(c_uint32_t length, c_uint8_t *blk, c_uint8_t mode)
 {
     c_uint8_t* pos = blk;
@@ -699,10 +500,7 @@ tlv_t * tlv_parse_embedded_tlv_block(tlv_t* p_tlv, c_uint8_t mode)
     return p_tlv->embedded;
 }
 
-
-
 /* tlv operation-related function */
-
 tlv_t * tlv_find(tlv_t* p_tlv, c_uint32_t type)
 {
     tlv_t *tmp_tlv = p_tlv, *embed_tlv = NULL;

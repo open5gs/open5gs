@@ -9,21 +9,9 @@ extern "C" {
 #endif /* __cplusplus */
 
 
-/* UTIS project specific parameters */
-#define UPDU_IE_TYPE_1_CODE         0x01
-#define UPDU_IE_TYPE_2_CODE         0x02
-#define UPDU_IE_TYPE_3_CODE         0x00
-
-#define UPDU_IE_TYPE_1_MAX_SIZE     0x40
-#define UPDU_IE_TYPE_2_MAX_SIZE     0x4000
-#define UPDU_IE_TYPE_3_MAX_SIZE     0x40000000
-
-
-#define TLV_MODE_UTIS               2
-#define TLV_MODE_WIFI               3
-#define TLV_MODE_WMX_R4_R6          4
-#define TLV_MODE_WMX_R1             5
-
+#define TLV_MODE_T8_L8              1
+#define TLV_MODE_T8_L16             2
+#define TLV_MODE_T16_L16            3
 
 #define NUM_OF_TLV_NODE             100
 
@@ -56,12 +44,6 @@ typedef struct _tlv_t
 #define tlv_length(pTlv) pTlv->length
 #define tlv_value(pTlv) pTlv->value
 
-#define tlv_wmx_r4_r6_type(pTlv) (pTlv->type & 0x7FFF)
-#define tlv_wmx_r4_r6_tc(pTlv) (pTlv->type & 0x8000)
-#define tlv_wmx_r4_r6_set_tc(pTlv) (pTlv->type | 0x8000)
-#define tlv_wmx_r4_r6_clr_tc(pTlv) (pTlv->type & 0x7FFF)
-
-
 /* tlv_t pool related functions */
 CORE_DECLARE(tlv_t*) tlv_get(void);
 CORE_DECLARE(void) tlv_free(tlv_t *pTlv);
@@ -84,12 +66,10 @@ CORE_DECLARE(tlv_t*) tlv_embed(
 CORE_DECLARE(c_uint32_t) tlv_render(
         tlv_t *rootTlv, c_uint8_t *blk, c_uint32_t length, c_uint8_t mode);
 
-
 /* tlv_t parsing functions */
 CORE_DECLARE(tlv_t*) tlv_parse_tlv_block(c_uint32_t length,
         c_uint8_t *blk, c_uint8_t mode);
 CORE_DECLARE(tlv_t*) tlv_parse_embedded_tlv_block(tlv_t* pTlv, c_uint8_t mode);
-
 
 /* tlv operation-related function */
 CORE_DECLARE(tlv_t*) tlv_find(tlv_t* pTlv, c_uint32_t type);
