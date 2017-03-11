@@ -259,11 +259,12 @@ tlv_t *tlv_find_root(tlv_t* p_tlv)
 tlv_t *tlv_add(tlv_t *head_tlv, 
     c_uint32_t type, c_uint32_t length, c_uint8_t *value)
 {
-    return tlv_add_with_instance(head_tlv, type, length, 0, value);
+    return tlv_add_with_instance(head_tlv, 
+            type, length, TLV_NO_INSTANCE, value);
 }
 
 tlv_t *tlv_add_with_instance(tlv_t *head_tlv, 
-    c_uint32_t type, c_uint32_t length, c_uint32_t instance, c_uint8_t *value)
+    c_uint32_t type, c_uint32_t length, c_uint8_t instance, c_uint8_t *value)
 {
     tlv_t* curr_tlv = head_tlv;
     tlv_t* new_tlv = NULL;
@@ -309,11 +310,12 @@ tlv_t *tlv_add_with_instance(tlv_t *head_tlv,
 tlv_t *tlv_copy(c_uint8_t *buff, c_uint32_t buff_len,
     c_uint32_t type, c_uint32_t length, c_uint8_t *value)
 {
-    return tlv_copy_with_instance(buff, buff_len, type, length, 0, value);
+    return tlv_copy_with_instance(buff, buff_len, 
+            type, length, TLV_NO_INSTANCE, value);
 }
 
 tlv_t *tlv_copy_with_instance(c_uint8_t *buff, c_uint32_t buff_len,
-    c_uint32_t type, c_uint32_t length, c_uint32_t instance, c_uint8_t *value)
+    c_uint32_t type, c_uint32_t length, c_uint8_t instance, c_uint8_t *value)
 {
     tlv_t* new_tlv = NULL;
 
@@ -338,11 +340,12 @@ tlv_t *tlv_copy_with_instance(c_uint8_t *buff, c_uint32_t buff_len,
 tlv_t *tlv_embed(tlv_t *parent_tlv, 
     c_uint32_t type, c_uint32_t length, c_uint8_t *value)
 {
-    return tlv_embed_with_instance(parent_tlv, type, length, 0, value);
+    return tlv_embed_with_instance(parent_tlv, 
+            type, length, TLV_NO_INSTANCE, value);
 }
 
 tlv_t *tlv_embed_with_instance(tlv_t *parent_tlv, 
-    c_uint32_t type, c_uint32_t length, c_uint32_t instance, c_uint8_t *value)
+    c_uint32_t type, c_uint32_t length, c_uint8_t instance, c_uint8_t *value)
 {
     tlv_t* new_tlv = NULL, *root_tlv = NULL;
 
