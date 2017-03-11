@@ -21,9 +21,14 @@ user@host ~/Documents/git/cellwire/lib/s1ap/asn1c$ \
     ../../../../asn1c/asn1c/asn1c \
     -fcompound-names -fincludes-quoted -gen-PER ../support/S1AP-PDU.asn
 
-* Update Makefile.am using Makefile.am.sample
+* Remove unnecessary files
 user@host ~/Documents/git/cellwire/lib/s1ap/s1ap/asn1c$ \
-    vi Makefile.am 
+git rm E-RAB-IE-ContainerPairList.c ProtocolError-IE-ContainerList.c \
+ProtocolIE-ContainerPair.c ProtocolIE-FieldPair.c ProtocolIE-ContainerPairList.c
+
+user@host ~/Documents/git/cellwire/lib/s1ap/s1ap/asn1c$ \
+    vi Makefile.am
+
 
 * Delete Makefile.am.sample and converter-sample.c
 user@host ~/Documents/git/cellwire/lib/s1ap/asn1c$ \

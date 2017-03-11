@@ -4,8 +4,6 @@ ASN_MODULE_SOURCES=	\
 	S1ap-SuccessfulOutcome.c	\
 	S1ap-UnsuccessfulOutcome.c	\
 	E-RAB-IE-ContainerList.c	\
-	E-RAB-IE-ContainerPairList.c	\
-	ProtocolError-IE-ContainerList.c	\
 	S1ap-HandoverRequired.c	\
 	S1ap-HandoverCommand.c	\
 	S1ap-E-RABDataForwardingList.c	\
@@ -360,10 +358,7 @@ ASN_MODULE_SOURCES=	\
 	ProtocolIE-Container.c	\
 	ProtocolIE-SingleContainer.c	\
 	ProtocolIE-Field.c	\
-	ProtocolIE-ContainerPair.c	\
-	ProtocolIE-FieldPair.c	\
 	ProtocolIE-ContainerList.c	\
-	ProtocolIE-ContainerPairList.c	\
 	ProtocolExtensionContainer.c	\
 	ProtocolExtensionField.c	\
 	PrivateIE-Container.c	\
