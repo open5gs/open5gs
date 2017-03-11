@@ -1,6 +1,7 @@
 #include "core_tlv.h"
 #include "core_net.h"
 #include "testutil.h"
+#include "core_debug.h"
 
 #define TLV_0_LEN 10
 #define TLV_1_LEN 20
@@ -9,11 +10,11 @@
 #define TLV_4_LEN 2
 #define TLV_5_LEN 2000
 #define TLV_0_INSTANCE 0
-#define TLV_1_INSTANCE 0
-#define TLV_2_INSTANCE 0
-#define TLV_3_INSTANCE 0
-#define TLV_4_INSTANCE 2
-#define TLV_5_INSTANCE 0
+#define TLV_1_INSTANCE 1
+#define TLV_2_INSTANCE 2
+#define TLV_3_INSTANCE 3
+#define TLV_4_INSTANCE 4
+#define TLV_5_INSTANCE 5
 #define TLV_VALUE_ARRAY_SIZE    3000
 
 #define EMBED_TLV_TYPE  20
@@ -165,6 +166,47 @@ void tlv_test_check_embed_tlv_test(abts_case *tc, tlv_t *root_tlv, int mode)
                 ABTS_INT_EQUAL(tc, *(pos++), 0x0e);
             break;
         }
+        case TLV_MODE_T1_L2_I1:
+        {
+            ABTS_INT_EQUAL(tc, 332, parent_block_len);
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[0].type & 0xFF);
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[0].length >> 8);
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[0].length & 0xFF);
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[0].instance & 0xFF);
+            for(m = 0; m < tlv_element[0].length; m++)
+                ABTS_INT_EQUAL(tc, *(pos++), tlv_element[0].val_char);
+
+            ABTS_INT_EQUAL(tc, *(pos++), EMBED_TLV_TYPE & 0xFF);
+            ABTS_INT_EQUAL(tc, *(pos++), (308 >> 8));
+            ABTS_INT_EQUAL(tc, *(pos++), 308 & 0xFF);
+            ABTS_INT_EQUAL(tc, *(pos++), 0);
+
+            /* embedded tlv_t */
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[2].type & 0xFF);    
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[2].length >> 8);
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[2].length & 0xFF);
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[2].instance & 0xFF);    
+            for(m = 0; m < tlv_element[2].length; m++)
+                ABTS_INT_EQUAL(tc, *(pos++), tlv_element[2].val_char);
+
+
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[3].type & 0xFF);    
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[3].length >> 8);
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[3].length & 0xFF);
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[3].instance & 0xFF);    
+            for(m = 0; m < tlv_element[3].length; m++)
+                ABTS_INT_EQUAL(tc, *(pos++), tlv_element[3].val_char);
+
+
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[4].type & 0xFF);
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[4].length >> 8);
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[4].length & 0xFF);
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[4].instance & 0xFF);
+
+            for(m = 0; m < tlv_element[4].length; m++)
+                ABTS_INT_EQUAL(tc, *(pos++), 0x0e);
+            break;
+        }
         default:
         {
             ABTS_TRUE(tc, 0);
@@ -179,8 +221,8 @@ void tlv_test_check_embed_tlv_test(abts_case *tc, tlv_t *root_tlv, int mode)
     pTlv = parsed_tlv;
 
     ABTS_INT_EQUAL(tc, pTlv->type, tlv_element[0].type);
-	
     ABTS_INT_EQUAL(tc, pTlv->length, tlv_element[0].length);
+    ABTS_INT_EQUAL(tc, pTlv->instance, tlv_element[0].instance);
     result = memcmp(pTlv->value, tlv_element[0].value, tlv_element[0].length);
     ABTS_INT_EQUAL(tc, result, 0);
     pTlv = pTlv->next;
@@ -189,6 +231,7 @@ void tlv_test_check_embed_tlv_test(abts_case *tc, tlv_t *root_tlv, int mode)
     switch(mode)
     {
         case TLV_MODE_T2_L2:
+        case TLV_MODE_T1_L2_I1:
             ABTS_INT_EQUAL(tc, pTlv->length, 308);
             break;
         case TLV_MODE_T1_L2:
@@ -202,6 +245,10 @@ void tlv_test_check_embed_tlv_test(abts_case *tc, tlv_t *root_tlv, int mode)
 
     ABTS_INT_EQUAL(tc, pTlv->type, tlv_element[4].type);
     ABTS_INT_EQUAL(tc, pTlv->length, tlv_element[4].length);
+    if (mode == TLV_MODE_T1_L2_I1)
+        ABTS_INT_EQUAL(tc, pTlv->instance, tlv_element[4].instance);
+    else
+        ABTS_INT_EQUAL(tc, pTlv->instance, 0);
     result = memcmp(pTlv->value, tlv_element[4].value, tlv_element[4].length);
     ABTS_INT_EQUAL(tc, result, 0);
     pTlv = pTlv->next;
@@ -217,6 +264,10 @@ void tlv_test_check_embed_tlv_test(abts_case *tc, tlv_t *root_tlv, int mode)
 
     ABTS_INT_EQUAL(tc, embed_tlv->type, tlv_element[2].type);
     ABTS_INT_EQUAL(tc, embed_tlv->length, tlv_element[2].length);
+    if (mode == TLV_MODE_T1_L2_I1)
+        ABTS_INT_EQUAL(tc, embed_tlv->instance, tlv_element[2].instance);
+    else
+        ABTS_INT_EQUAL(tc, embed_tlv->instance, 0);
     for(m = 0; m < tlv_element[2].length; m++)
     {
         ABTS_INT_EQUAL(tc, *((c_uint8_t*)(embed_tlv->value+m)),
@@ -226,6 +277,10 @@ void tlv_test_check_embed_tlv_test(abts_case *tc, tlv_t *root_tlv, int mode)
 
     ABTS_INT_EQUAL(tc, embed_tlv->type, tlv_element[3].type);
     ABTS_INT_EQUAL(tc, embed_tlv->length, tlv_element[3].length);
+    if (mode == TLV_MODE_T1_L2_I1)
+        ABTS_INT_EQUAL(tc, embed_tlv->instance, tlv_element[3].instance);
+    else
+        ABTS_INT_EQUAL(tc, embed_tlv->instance, 0);
     for(m = 0; m < tlv_element[3].length; m++)
     {
         ABTS_INT_EQUAL(tc, *((c_uint8_t*)(embed_tlv->value+m)),
@@ -246,8 +301,6 @@ void tlv_test_check_embed_tlv_test(abts_case *tc, tlv_t *root_tlv, int mode)
 	
 	return;
 }
-
-
 
 /* basic encoding/decoding/finding Test */
 static void tlv_test_1(abts_case *tc, void *data)
@@ -278,6 +331,7 @@ static void tlv_test_1(abts_case *tc, void *data)
     switch(mode)
     {
         case TLV_MODE_T2_L2:
+        case TLV_MODE_T1_L2_I1:
             ABTS_INT_EQUAL(tc, 346, parent_block_len);
             break;
         case TLV_MODE_T1_L2:
@@ -315,6 +369,12 @@ static void tlv_test_1(abts_case *tc, void *data)
                 ABTS_INT_EQUAL(tc, tlv_element[idx].type & 0xFF, *(pos++));
                 ABTS_INT_EQUAL(tc, tlv_element[idx].length & 0xFF, *(pos++));
                 break;
+            case TLV_MODE_T1_L2_I1:
+                ABTS_INT_EQUAL(tc, tlv_element[idx].type & 0xFF, *(pos++));
+                ABTS_INT_EQUAL(tc, (tlv_element[idx].length >> 8), *(pos++));
+                ABTS_INT_EQUAL(tc, tlv_element[idx].length & 0xFF, *(pos++));
+                ABTS_INT_EQUAL(tc, tlv_element[idx].instance & 0xFF, *(pos++));
+                break;
             default:
                 ABTS_TRUE(tc, 0);
                 break;
@@ -336,7 +396,10 @@ static void tlv_test_1(abts_case *tc, void *data)
         int result;
         ABTS_INT_EQUAL(tc, pTlv->type, tlv_element[idx].type);
         ABTS_INT_EQUAL(tc, pTlv->length, tlv_element[idx].length);
-
+        if (mode == TLV_MODE_T1_L2_I1)
+            ABTS_INT_EQUAL(tc, pTlv->instance, tlv_element[idx].instance);
+        else
+            ABTS_INT_EQUAL(tc, pTlv->instance, 0);
         result = memcmp(pTlv->value, tlv_element[idx].value, tlv_element[idx].length);
         ABTS_INT_EQUAL(tc, result, 0);
 
@@ -381,6 +444,7 @@ static void tlv_test_2(abts_case *tc, void *data)
     switch(mode)
     {
         case TLV_MODE_T2_L2:
+        case TLV_MODE_T1_L2_I1:
             ABTS_INT_EQUAL(tc, embed_block_len, 308);
             break;
         case TLV_MODE_T1_L2:
@@ -526,6 +590,22 @@ static void tlv_test_5(abts_case *tc, void *data)
             ABTS_INT_EQUAL(tc, *(pos++), 0x33);
             ABTS_INT_EQUAL(tc, *(pos++), 0x44);
             break;
+        case TLV_MODE_T1_L2_I1:
+            ABTS_INT_EQUAL(tc, *(pos++), 10);
+            ABTS_INT_EQUAL(tc, *(pos++), 0);
+            ABTS_INT_EQUAL(tc, *(pos++), 2);
+            ABTS_INT_EQUAL(tc, *(pos++), 0);
+            ABTS_INT_EQUAL(tc, *(pos++), 0x11);
+            ABTS_INT_EQUAL(tc, *(pos++), 0x22);
+            ABTS_INT_EQUAL(tc, *(pos++), 20);
+            ABTS_INT_EQUAL(tc, *(pos++), 0);
+            ABTS_INT_EQUAL(tc, *(pos++), 4);
+            ABTS_INT_EQUAL(tc, *(pos++), 0);
+            ABTS_INT_EQUAL(tc, *(pos++), 0x11);
+            ABTS_INT_EQUAL(tc, *(pos++), 0x22);
+            ABTS_INT_EQUAL(tc, *(pos++), 0x33);
+            ABTS_INT_EQUAL(tc, *(pos++), 0x44);
+            break;
         case TLV_MODE_T1_L1:
             ABTS_INT_EQUAL(tc, *(pos++), 10);
             ABTS_INT_EQUAL(tc, *(pos++), 2);
@@ -572,6 +652,11 @@ abts_suite *testtlv(abts_suite *suite)
 	abts_run_test(suite, tlv_test_3, (void*)TLV_MODE_T1_L2);
 	abts_run_test(suite, tlv_test_4, (void*)TLV_MODE_T1_L2);
 	abts_run_test(suite, tlv_test_5, (void*)TLV_MODE_T1_L2);
+    abts_run_test(suite, tlv_test_1, (void*)TLV_MODE_T1_L2_I1);
+    abts_run_test(suite, tlv_test_2, (void*)TLV_MODE_T1_L2_I1);
+	abts_run_test(suite, tlv_test_3, (void*)TLV_MODE_T1_L2_I1);
+	abts_run_test(suite, tlv_test_4, (void*)TLV_MODE_T1_L2_I1);
+	abts_run_test(suite, tlv_test_5, (void*)TLV_MODE_T1_L2_I1);
 
     return suite;
 }

@@ -409,7 +409,7 @@ c_uint32_t tlv_render(tlv_t *root_tlv,
         {
             embedded_len = tlv_calc_length(curr_tlv->embedded, mode);
             pos = _tlv_put_length(embedded_len, pos, mode);
-            pos = _tlv_put_instance(embedded_len, pos, mode);
+            pos = _tlv_put_instance(curr_tlv->instance, pos, mode);
             tlv_render(curr_tlv->embedded,
                 pos, length - (c_uint32_t)(pos-blk), mode);
             pos += embedded_len;
