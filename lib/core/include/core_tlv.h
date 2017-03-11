@@ -11,7 +11,8 @@ extern "C" {
 
 #define TLV_MODE_T1_L1              1
 #define TLV_MODE_T1_L2              2
-#define TLV_MODE_T2_L2              3
+#define TLV_MODE_T1_L2_I1           3
+#define TLV_MODE_T2_L2              4
 
 #define NUM_OF_TLV_NODE             100
 

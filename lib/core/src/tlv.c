@@ -162,90 +162,6 @@ c_uint32_t tlv_calc_count(tlv_t *p_tlv)
     return count;
 }
 
-c_uint32_t _tlv_get_length16(c_uint8_t **pos)
-{
-    c_uint8_t *blk = *pos;
-    c_uint32_t length = 0;
-
-    length = ((*blk) << 8) + *(blk+1);
-    *pos += 2;
-
-    return length;
-}
-
-c_uint8_t *_tlv_put_length16(c_uint32_t length, c_uint8_t *pos)
-{
-    *(pos++) = (length >> 8) & 0xFF;
-    *(pos++) = length & 0xFF;
-
-    return pos;
-}
-
-c_uint32_t _tlv_get_length8(c_uint8_t **pos)
-{
-    c_uint8_t *blk = *pos;
-    c_uint32_t length = 0;
-
-    length = *blk;
-    *pos += 1;
-
-    return length;
-}
-
-c_uint8_t *_tlv_put_length8(c_uint32_t length, c_uint8_t *pos)
-{
-    *(pos++) = length;
-    return pos;
-}
-
-c_uint8_t *_tlv_put_length(c_uint32_t length, c_uint8_t *pos, c_uint8_t mode)
-{
-    switch(mode)
-    {
-        case TLV_MODE_T1_L1:
-            pos = _tlv_put_length8(length, pos);
-            break;
-        case TLV_MODE_T1_L2:
-        case TLV_MODE_T2_L2:
-            pos = _tlv_put_length16(length, pos);
-            break;
-        default:
-            d_assert(0, return 0, "Invalid mode(%d)", mode);
-            break;
-    }
-
-    return pos;
-}
-
-c_uint8_t *_tlv_get_element(tlv_t *p_tlv, c_uint8_t *tlvBlock, c_uint8_t mode)
-{
-    c_uint8_t *pos = tlvBlock;
-
-    switch(mode)
-    {
-        case TLV_MODE_T1_L1:
-            p_tlv->type = *(pos++);
-            p_tlv->length = _tlv_get_length8(&pos);
-            break;
-        case TLV_MODE_T1_L2:
-            p_tlv->type = *(pos++);
-            p_tlv->length = _tlv_get_length16(&pos);
-            break;
-        case TLV_MODE_T2_L2:
-            p_tlv->type = *(pos++) << 8;
-            p_tlv->type += *(pos++);
-            p_tlv->length = _tlv_get_length16(&pos);
-            break;
-        default:
-            d_assert(0, return 0, "Invalid mode(%d)", mode);
-            break;
-    }
-
-    p_tlv->value = pos;
-
-    return (pos + tlv_length(p_tlv));
-}
-
 c_uint8_t *_tlv_put_type(c_uint32_t type, c_uint8_t *pos, c_uint8_t mode)
 {    
     switch(mode)
@@ -263,6 +179,57 @@ c_uint8_t *_tlv_put_type(c_uint32_t type, c_uint8_t *pos, c_uint8_t mode)
             break;
     }
     return pos;
+}
+
+c_uint8_t *_tlv_put_length(c_uint32_t length, c_uint8_t *pos, c_uint8_t mode)
+{
+    switch(mode)
+    {
+        case TLV_MODE_T1_L1:
+            *(pos++) = length & 0xFF;
+            break;
+        case TLV_MODE_T1_L2:
+        case TLV_MODE_T2_L2:
+            *(pos++) = (length >> 8) & 0xFF;
+            *(pos++) = length & 0xFF;
+            break;
+        default:
+            d_assert(0, return 0, "Invalid mode(%d)", mode);
+            break;
+    }
+
+    return pos;
+}
+
+c_uint8_t *_tlv_get_element(tlv_t *p_tlv, c_uint8_t *tlvBlock, c_uint8_t mode)
+{
+    c_uint8_t *pos = tlvBlock;
+
+    switch(mode)
+    {
+        case TLV_MODE_T1_L1:
+            p_tlv->type = *(pos++);
+            p_tlv->length = *(pos++);
+            break;
+        case TLV_MODE_T1_L2:
+            p_tlv->type = *(pos++);
+            p_tlv->length = *(pos++) << 8;
+            p_tlv->length += *(pos++);
+            break;
+        case TLV_MODE_T2_L2:
+            p_tlv->type = *(pos++) << 8;
+            p_tlv->type += *(pos++);
+            p_tlv->length = *(pos++) << 8;
+            p_tlv->length += *(pos++);
+            break;
+        default:
+            d_assert(0, return 0, "Invalid mode(%d)", mode);
+            break;
+    }
+
+    p_tlv->value = pos;
+
+    return (pos + tlv_length(p_tlv));
 }
 
 void _tlv_alloc_buff_to_tlv(
