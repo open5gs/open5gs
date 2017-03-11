@@ -103,11 +103,14 @@ c_uint32_t tlv_calc_length(tlv_t *p_tlv, c_uint8_t mode)
         switch(mode)
         {
             case TLV_MODE_T1_L1:
-            case TLV_MODE_T1_L2:
-                length += 1;
-                break;
-            case TLV_MODE_T2_L2:
                 length += 2;
+                break;
+            case TLV_MODE_T1_L2:
+                length += 3;
+                break;
+            case TLV_MODE_T1_L2_I1:
+            case TLV_MODE_T2_L2:
+                length += 4;
                 break;
             default:
                 d_assert(0, return 0, "Invalid mode(%d)", mode);
@@ -118,20 +121,6 @@ c_uint32_t tlv_calc_length(tlv_t *p_tlv, c_uint8_t mode)
         if(tmp_tlv->embedded != NULL)
         {
             tmp_tlv->length = tlv_calc_length(tmp_tlv->embedded, mode);
-        }
-
-        switch(mode)
-        {
-            case TLV_MODE_T1_L1:
-                length += 1;
-                break;
-            case TLV_MODE_T1_L2:
-            case TLV_MODE_T2_L2:
-                length += 2;
-                break;
-            default:
-                d_assert(0, return 0, "Invalid mode(%d)", mode);
-                break;
         }
 
         /* this is length for value field */
@@ -168,6 +157,7 @@ c_uint8_t *_tlv_put_type(c_uint32_t type, c_uint8_t *pos, c_uint8_t mode)
     {
         case TLV_MODE_T1_L1:
         case TLV_MODE_T1_L2:
+        case TLV_MODE_T1_L2_I1:
             *(pos++) = type & 0xFF;
             break;
         case TLV_MODE_T2_L2:
@@ -189,12 +179,27 @@ c_uint8_t *_tlv_put_length(c_uint32_t length, c_uint8_t *pos, c_uint8_t mode)
             *(pos++) = length & 0xFF;
             break;
         case TLV_MODE_T1_L2:
+        case TLV_MODE_T1_L2_I1:
         case TLV_MODE_T2_L2:
             *(pos++) = (length >> 8) & 0xFF;
             *(pos++) = length & 0xFF;
             break;
         default:
             d_assert(0, return 0, "Invalid mode(%d)", mode);
+            break;
+    }
+
+    return pos;
+}
+
+c_uint8_t *_tlv_put_instance(c_uint8_t instance, c_uint8_t *pos, c_uint8_t mode)
+{
+    switch(mode)
+    {
+        case TLV_MODE_T1_L2_I1:
+            *(pos++) = instance & 0xFF;
+            break;
+        default:
             break;
     }
 
@@ -215,6 +220,12 @@ c_uint8_t *_tlv_get_element(tlv_t *p_tlv, c_uint8_t *tlvBlock, c_uint8_t mode)
             p_tlv->type = *(pos++);
             p_tlv->length = *(pos++) << 8;
             p_tlv->length += *(pos++);
+            break;
+        case TLV_MODE_T1_L2_I1:
+            p_tlv->type = *(pos++);
+            p_tlv->length = *(pos++) << 8;
+            p_tlv->length += *(pos++);
+            p_tlv->instance = *(pos++);
             break;
         case TLV_MODE_T2_L2:
             p_tlv->type = *(pos++) << 8;
@@ -257,13 +268,6 @@ tlv_t *tlv_find_root(tlv_t* p_tlv)
 }
 
 tlv_t *tlv_add(tlv_t *head_tlv, 
-    c_uint32_t type, c_uint32_t length, c_uint8_t *value)
-{
-    return tlv_add_with_instance(head_tlv, 
-            type, length, TLV_NO_INSTANCE, value);
-}
-
-tlv_t *tlv_add_with_instance(tlv_t *head_tlv, 
     c_uint32_t type, c_uint32_t length, c_uint8_t instance, c_uint8_t *value)
 {
     tlv_t* curr_tlv = head_tlv;
@@ -308,13 +312,6 @@ tlv_t *tlv_add_with_instance(tlv_t *head_tlv,
 }
 
 tlv_t *tlv_copy(c_uint8_t *buff, c_uint32_t buff_len,
-    c_uint32_t type, c_uint32_t length, c_uint8_t *value)
-{
-    return tlv_copy_with_instance(buff, buff_len, 
-            type, length, TLV_NO_INSTANCE, value);
-}
-
-tlv_t *tlv_copy_with_instance(c_uint8_t *buff, c_uint32_t buff_len,
     c_uint32_t type, c_uint32_t length, c_uint8_t instance, c_uint8_t *value)
 {
     tlv_t* new_tlv = NULL;
@@ -338,13 +335,6 @@ tlv_t *tlv_copy_with_instance(c_uint8_t *buff, c_uint32_t buff_len,
 }
 
 tlv_t *tlv_embed(tlv_t *parent_tlv, 
-    c_uint32_t type, c_uint32_t length, c_uint8_t *value)
-{
-    return tlv_embed_with_instance(parent_tlv, 
-            type, length, TLV_NO_INSTANCE, value);
-}
-
-tlv_t *tlv_embed_with_instance(tlv_t *parent_tlv, 
     c_uint32_t type, c_uint32_t length, c_uint8_t instance, c_uint8_t *value)
 {
     tlv_t* new_tlv = NULL, *root_tlv = NULL;
@@ -400,6 +390,7 @@ c_uint32_t tlv_render(tlv_t *root_tlv,
         if(curr_tlv->embedded == NULL)
         {
             pos = _tlv_put_length(curr_tlv->length, pos, mode);
+            pos = _tlv_put_instance(curr_tlv->instance, pos, mode);
 
             if((pos - blk) + tlv_length(curr_tlv) > length)
             {
@@ -418,6 +409,7 @@ c_uint32_t tlv_render(tlv_t *root_tlv,
         {
             embedded_len = tlv_calc_length(curr_tlv->embedded, mode);
             pos = _tlv_put_length(embedded_len, pos, mode);
+            pos = _tlv_put_instance(embedded_len, pos, mode);
             tlv_render(curr_tlv->embedded,
                 pos, length - (c_uint32_t)(pos-blk), mode);
             pos += embedded_len;

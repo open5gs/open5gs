@@ -8,27 +8,34 @@
 #define TLV_3_LEN 200
 #define TLV_4_LEN 2
 #define TLV_5_LEN 2000
+#define TLV_0_INSTANCE 0
+#define TLV_1_INSTANCE 0
+#define TLV_2_INSTANCE 0
+#define TLV_3_INSTANCE 0
+#define TLV_4_INSTANCE 2
+#define TLV_5_INSTANCE 0
 #define TLV_VALUE_ARRAY_SIZE    3000
 
 #define EMBED_TLV_TYPE  20
 
-typedef struct _test_tlv_eliment
+typedef struct _test_tlv_element
 {
     c_uint8_t type;
     c_uint32_t length;
+    c_uint8_t instance;
     c_uint8_t *value;
     c_uint8_t val_char;
-} test_tlv_eliment;
+} test_tlv_element;
 
 c_uint8_t test_tlv_value[TLV_VALUE_ARRAY_SIZE];
 
-test_tlv_eliment tlv_eliment[] ={
-    {1, TLV_0_LEN, 0, 0x0a},
-    {50, TLV_1_LEN, 0, 0x0b},
-    {255, TLV_2_LEN, 0, 0x0c},
-    {254, TLV_3_LEN, 0, 0x0d},
-    {5, TLV_4_LEN, 0, 0x0e},
-    {30, TLV_5_LEN, 0, 0x0f}
+test_tlv_element tlv_element[] ={
+    {1, TLV_0_LEN, TLV_0_INSTANCE, 0, 0x0a},
+    {50, TLV_1_LEN, TLV_1_INSTANCE, 0, 0x0b},
+    {255, TLV_2_LEN, TLV_2_INSTANCE, 0, 0x0c},
+    {254, TLV_3_LEN, TLV_3_INSTANCE, 0, 0x0d},
+    {5, TLV_4_LEN, TLV_4_INSTANCE, 0, 0x0e},
+    {30, TLV_5_LEN, TLV_5_INSTANCE, 0, 0x0f}
 };
 
 void tlv_test_set_tlv_value(void)
@@ -36,25 +43,25 @@ void tlv_test_set_tlv_value(void)
     c_uint32_t inc = 0;
 
     /* set test tlv value */
-    tlv_eliment[0].value = test_tlv_value;
-    memset(tlv_eliment[0].value, tlv_eliment[0].val_char, tlv_eliment[0].length);
-    inc += tlv_eliment[0].length;
+    tlv_element[0].value = test_tlv_value;
+    memset(tlv_element[0].value, tlv_element[0].val_char, tlv_element[0].length);
+    inc += tlv_element[0].length;
 
-    tlv_eliment[1].value = test_tlv_value + inc;
-    memset(tlv_eliment[1].value,  tlv_eliment[1].val_char, tlv_eliment[1].length);
-    inc += tlv_eliment[1].length;
+    tlv_element[1].value = test_tlv_value + inc;
+    memset(tlv_element[1].value,  tlv_element[1].val_char, tlv_element[1].length);
+    inc += tlv_element[1].length;
 
-    tlv_eliment[2].value = test_tlv_value + inc;
-    memset(tlv_eliment[2].value,  tlv_eliment[2].val_char, tlv_eliment[2].length);
-    inc += tlv_eliment[2].length;
+    tlv_element[2].value = test_tlv_value + inc;
+    memset(tlv_element[2].value,  tlv_element[2].val_char, tlv_element[2].length);
+    inc += tlv_element[2].length;
 
-    tlv_eliment[3].value = test_tlv_value + inc;
-    memset(tlv_eliment[3].value,  tlv_eliment[3].val_char, tlv_eliment[3].length);
-    inc += tlv_eliment[3].length;
+    tlv_element[3].value = test_tlv_value + inc;
+    memset(tlv_element[3].value,  tlv_element[3].val_char, tlv_element[3].length);
+    inc += tlv_element[3].length;
 
-    tlv_eliment[4].value = test_tlv_value + inc;
-    memset(tlv_eliment[4].value,  tlv_eliment[4].val_char, tlv_eliment[4].length);
-    inc += tlv_eliment[4].length;
+    tlv_element[4].value = test_tlv_value + inc;
+    memset(tlv_element[4].value,  tlv_element[4].val_char, tlv_element[4].length);
+    inc += tlv_element[4].length;
 
     return;
 }
@@ -84,12 +91,12 @@ void tlv_test_check_embed_tlv_test(abts_case *tc, tlv_t *root_tlv, int mode)
         case TLV_MODE_T2_L2:
         {
             ABTS_INT_EQUAL(tc, 332, parent_block_len);
-            ABTS_INT_EQUAL(tc, *(pos++), tlv_eliment[0].type >> 8);
-            ABTS_INT_EQUAL(tc, *(pos++), tlv_eliment[0].type & 0xFF);
-            ABTS_INT_EQUAL(tc, *(pos++), tlv_eliment[0].length >> 8);
-            ABTS_INT_EQUAL(tc, *(pos++), tlv_eliment[0].length & 0xFF);
-            for(m = 0; m < tlv_eliment[0].length; m++)
-                ABTS_INT_EQUAL(tc, *(pos++), tlv_eliment[0].val_char);
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[0].type >> 8);
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[0].type & 0xFF);
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[0].length >> 8);
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[0].length & 0xFF);
+            for(m = 0; m < tlv_element[0].length; m++)
+                ABTS_INT_EQUAL(tc, *(pos++), tlv_element[0].val_char);
 
             ABTS_INT_EQUAL(tc, *(pos++), EMBED_TLV_TYPE >> 8);
             ABTS_INT_EQUAL(tc, *(pos++), EMBED_TLV_TYPE & 0xFF);
@@ -97,64 +104,64 @@ void tlv_test_check_embed_tlv_test(abts_case *tc, tlv_t *root_tlv, int mode)
             ABTS_INT_EQUAL(tc, *(pos++), 308 & 0xFF);
 
             /* embedded tlv_t */
-            ABTS_INT_EQUAL(tc, *(pos++), tlv_eliment[2].type >> 8);
-            ABTS_INT_EQUAL(tc, *(pos++), tlv_eliment[2].type & 0xFF);    
-            ABTS_INT_EQUAL(tc, *(pos++), tlv_eliment[2].length >> 8);
-            ABTS_INT_EQUAL(tc, *(pos++), tlv_eliment[2].length & 0xFF);
-            for(m = 0; m < tlv_eliment[2].length; m++)
-                ABTS_INT_EQUAL(tc, *(pos++), tlv_eliment[2].val_char);
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[2].type >> 8);
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[2].type & 0xFF);    
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[2].length >> 8);
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[2].length & 0xFF);
+            for(m = 0; m < tlv_element[2].length; m++)
+                ABTS_INT_EQUAL(tc, *(pos++), tlv_element[2].val_char);
 
 
-            ABTS_INT_EQUAL(tc, *(pos++), tlv_eliment[3].type >> 8);
-            ABTS_INT_EQUAL(tc, *(pos++), tlv_eliment[3].type & 0xFF);    
-            ABTS_INT_EQUAL(tc, *(pos++), tlv_eliment[3].length >> 8);
-            ABTS_INT_EQUAL(tc, *(pos++), tlv_eliment[3].length & 0xFF);
-            for(m = 0; m < tlv_eliment[3].length; m++)
-                ABTS_INT_EQUAL(tc, *(pos++), tlv_eliment[3].val_char);
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[3].type >> 8);
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[3].type & 0xFF);    
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[3].length >> 8);
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[3].length & 0xFF);
+            for(m = 0; m < tlv_element[3].length; m++)
+                ABTS_INT_EQUAL(tc, *(pos++), tlv_element[3].val_char);
 
 
-            ABTS_INT_EQUAL(tc, *(pos++), tlv_eliment[4].type >> 8);
-            ABTS_INT_EQUAL(tc, *(pos++), tlv_eliment[4].type & 0xFF);
-            ABTS_INT_EQUAL(tc, *(pos++), tlv_eliment[4].length >> 8);
-            ABTS_INT_EQUAL(tc, *(pos++), tlv_eliment[4].length & 0xFF);
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[4].type >> 8);
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[4].type & 0xFF);
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[4].length >> 8);
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[4].length & 0xFF);
 
-            for(m = 0; m < tlv_eliment[4].length; m++)
+            for(m = 0; m < tlv_element[4].length; m++)
                 ABTS_INT_EQUAL(tc, *(pos++), 0x0e);
             break;
         }
         case TLV_MODE_T1_L2:
         {
             ABTS_INT_EQUAL(tc, 327, parent_block_len);
-            ABTS_INT_EQUAL(tc, *(pos++), tlv_eliment[0].type & 0xFF);
-            ABTS_INT_EQUAL(tc, *(pos++), tlv_eliment[0].length >> 8);
-            ABTS_INT_EQUAL(tc, *(pos++), tlv_eliment[0].length & 0xFF);
-            for(m = 0; m < tlv_eliment[0].length; m++)
-                ABTS_INT_EQUAL(tc, *(pos++), tlv_eliment[0].val_char);
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[0].type & 0xFF);
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[0].length >> 8);
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[0].length & 0xFF);
+            for(m = 0; m < tlv_element[0].length; m++)
+                ABTS_INT_EQUAL(tc, *(pos++), tlv_element[0].val_char);
 
             ABTS_INT_EQUAL(tc, *(pos++), EMBED_TLV_TYPE & 0xFF);
             ABTS_INT_EQUAL(tc, *(pos++), (306 >> 8));
             ABTS_INT_EQUAL(tc, *(pos++), 306 & 0xFF);
 
             /* embedded tlv_t */
-            ABTS_INT_EQUAL(tc, *(pos++), tlv_eliment[2].type & 0xFF);    
-            ABTS_INT_EQUAL(tc, *(pos++), tlv_eliment[2].length >> 8);
-            ABTS_INT_EQUAL(tc, *(pos++), tlv_eliment[2].length & 0xFF);
-            for(m = 0; m < tlv_eliment[2].length; m++)
-                ABTS_INT_EQUAL(tc, *(pos++), tlv_eliment[2].val_char);
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[2].type & 0xFF);    
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[2].length >> 8);
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[2].length & 0xFF);
+            for(m = 0; m < tlv_element[2].length; m++)
+                ABTS_INT_EQUAL(tc, *(pos++), tlv_element[2].val_char);
 
 
-            ABTS_INT_EQUAL(tc, *(pos++), tlv_eliment[3].type & 0xFF);    
-            ABTS_INT_EQUAL(tc, *(pos++), tlv_eliment[3].length >> 8);
-            ABTS_INT_EQUAL(tc, *(pos++), tlv_eliment[3].length & 0xFF);
-            for(m = 0; m < tlv_eliment[3].length; m++)
-                ABTS_INT_EQUAL(tc, *(pos++), tlv_eliment[3].val_char);
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[3].type & 0xFF);    
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[3].length >> 8);
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[3].length & 0xFF);
+            for(m = 0; m < tlv_element[3].length; m++)
+                ABTS_INT_EQUAL(tc, *(pos++), tlv_element[3].val_char);
 
 
-            ABTS_INT_EQUAL(tc, *(pos++), tlv_eliment[4].type & 0xFF);
-            ABTS_INT_EQUAL(tc, *(pos++), tlv_eliment[4].length >> 8);
-            ABTS_INT_EQUAL(tc, *(pos++), tlv_eliment[4].length & 0xFF);
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[4].type & 0xFF);
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[4].length >> 8);
+            ABTS_INT_EQUAL(tc, *(pos++), tlv_element[4].length & 0xFF);
 
-            for(m = 0; m < tlv_eliment[4].length; m++)
+            for(m = 0; m < tlv_element[4].length; m++)
                 ABTS_INT_EQUAL(tc, *(pos++), 0x0e);
             break;
         }
@@ -171,10 +178,10 @@ void tlv_test_check_embed_tlv_test(abts_case *tc, tlv_t *root_tlv, int mode)
 
     pTlv = parsed_tlv;
 
-    ABTS_INT_EQUAL(tc, pTlv->type, tlv_eliment[0].type);
+    ABTS_INT_EQUAL(tc, pTlv->type, tlv_element[0].type);
 	
-    ABTS_INT_EQUAL(tc, pTlv->length, tlv_eliment[0].length);
-    result = memcmp(pTlv->value, tlv_eliment[0].value, tlv_eliment[0].length);
+    ABTS_INT_EQUAL(tc, pTlv->length, tlv_element[0].length);
+    result = memcmp(pTlv->value, tlv_element[0].value, tlv_element[0].length);
     ABTS_INT_EQUAL(tc, result, 0);
     pTlv = pTlv->next;
 
@@ -193,9 +200,9 @@ void tlv_test_check_embed_tlv_test(abts_case *tc, tlv_t *root_tlv, int mode)
     }
     pTlv = pTlv->next;
 
-    ABTS_INT_EQUAL(tc, pTlv->type, tlv_eliment[4].type);
-    ABTS_INT_EQUAL(tc, pTlv->length, tlv_eliment[4].length);
-    result = memcmp(pTlv->value, tlv_eliment[4].value, tlv_eliment[4].length);
+    ABTS_INT_EQUAL(tc, pTlv->type, tlv_element[4].type);
+    ABTS_INT_EQUAL(tc, pTlv->length, tlv_element[4].length);
+    result = memcmp(pTlv->value, tlv_element[4].value, tlv_element[4].length);
     ABTS_INT_EQUAL(tc, result, 0);
     pTlv = pTlv->next;
 
@@ -208,21 +215,21 @@ void tlv_test_check_embed_tlv_test(abts_case *tc, tlv_t *root_tlv, int mode)
     embed_tlv = parent_tlv->embedded;
     ABTS_PTR_NOTNULL(tc, embed_tlv);
 
-    ABTS_INT_EQUAL(tc, embed_tlv->type, tlv_eliment[2].type);
-    ABTS_INT_EQUAL(tc, embed_tlv->length, tlv_eliment[2].length);
-    for(m = 0; m < tlv_eliment[2].length; m++)
+    ABTS_INT_EQUAL(tc, embed_tlv->type, tlv_element[2].type);
+    ABTS_INT_EQUAL(tc, embed_tlv->length, tlv_element[2].length);
+    for(m = 0; m < tlv_element[2].length; m++)
     {
         ABTS_INT_EQUAL(tc, *((c_uint8_t*)(embed_tlv->value+m)),
-            tlv_eliment[2].val_char);
+            tlv_element[2].val_char);
     }
     embed_tlv = embed_tlv->next;
 
-    ABTS_INT_EQUAL(tc, embed_tlv->type, tlv_eliment[3].type);
-    ABTS_INT_EQUAL(tc, embed_tlv->length, tlv_eliment[3].length);
-    for(m = 0; m < tlv_eliment[3].length; m++)
+    ABTS_INT_EQUAL(tc, embed_tlv->type, tlv_element[3].type);
+    ABTS_INT_EQUAL(tc, embed_tlv->length, tlv_element[3].length);
+    for(m = 0; m < tlv_element[3].length; m++)
     {
         ABTS_INT_EQUAL(tc, *((c_uint8_t*)(embed_tlv->value+m)),
-            tlv_eliment[3].val_char);
+            tlv_element[3].val_char);
     }
     embed_tlv = embed_tlv->next;
 
@@ -254,13 +261,14 @@ static void tlv_test_1(abts_case *tc, void *data)
     tlv_test_set_tlv_value();
 
     /* tlv encoding for test */
-    root_tlv = tlv_add(NULL,tlv_eliment[0].type,
-        tlv_eliment[0].length, tlv_eliment[0].value);
+    root_tlv = tlv_add(NULL,tlv_element[0].type,
+        tlv_element[0].length, tlv_element[0].instance, tlv_element[0].value);
 
     for(idx = 1; idx < 4; idx++)
     {
-        tlv_add(root_tlv,tlv_eliment[idx].type,
-            tlv_eliment[idx].length, tlv_eliment[idx].value);
+        tlv_add(root_tlv, tlv_element[idx].type,
+            tlv_element[idx].length, tlv_element[idx].instance,
+            tlv_element[idx].value);
     }
 
     memset(parent_block, 0x00, sizeof(parent_block));
@@ -293,27 +301,27 @@ static void tlv_test_1(abts_case *tc, void *data)
         switch(mode)
         {
             case TLV_MODE_T2_L2:
-                ABTS_INT_EQUAL(tc, (tlv_eliment[idx].type >> 8), *(pos++));
-                ABTS_INT_EQUAL(tc, tlv_eliment[idx].type & 0xFF, *(pos++));
-                ABTS_INT_EQUAL(tc, (tlv_eliment[idx].length >> 8), *(pos++));
-                ABTS_INT_EQUAL(tc, tlv_eliment[idx].length & 0xFF, *(pos++));
+                ABTS_INT_EQUAL(tc, (tlv_element[idx].type >> 8), *(pos++));
+                ABTS_INT_EQUAL(tc, tlv_element[idx].type & 0xFF, *(pos++));
+                ABTS_INT_EQUAL(tc, (tlv_element[idx].length >> 8), *(pos++));
+                ABTS_INT_EQUAL(tc, tlv_element[idx].length & 0xFF, *(pos++));
                 break;
             case TLV_MODE_T1_L2:
-                ABTS_INT_EQUAL(tc, tlv_eliment[idx].type & 0xFF, *(pos++));
-                ABTS_INT_EQUAL(tc, (tlv_eliment[idx].length >> 8), *(pos++));
-                ABTS_INT_EQUAL(tc, tlv_eliment[idx].length & 0xFF, *(pos++));
+                ABTS_INT_EQUAL(tc, tlv_element[idx].type & 0xFF, *(pos++));
+                ABTS_INT_EQUAL(tc, (tlv_element[idx].length >> 8), *(pos++));
+                ABTS_INT_EQUAL(tc, tlv_element[idx].length & 0xFF, *(pos++));
                 break;
             case TLV_MODE_T1_L1:
-                ABTS_INT_EQUAL(tc, tlv_eliment[idx].type & 0xFF, *(pos++));
-                ABTS_INT_EQUAL(tc, tlv_eliment[idx].length & 0xFF, *(pos++));
+                ABTS_INT_EQUAL(tc, tlv_element[idx].type & 0xFF, *(pos++));
+                ABTS_INT_EQUAL(tc, tlv_element[idx].length & 0xFF, *(pos++));
                 break;
             default:
                 ABTS_TRUE(tc, 0);
                 break;
         }
 
-        for(m = 0; m < tlv_eliment[idx].length; m++)
-            ABTS_INT_EQUAL(tc, tlv_eliment[idx].val_char, *(pos++));
+        for(m = 0; m < tlv_element[idx].length; m++)
+            ABTS_INT_EQUAL(tc, tlv_element[idx].val_char, *(pos++));
     }
     
 
@@ -326,10 +334,10 @@ static void tlv_test_1(abts_case *tc, void *data)
     while(pTlv)
     {
         int result;
-        ABTS_INT_EQUAL(tc, pTlv->type, tlv_eliment[idx].type);
-        ABTS_INT_EQUAL(tc, pTlv->length, tlv_eliment[idx].length);
+        ABTS_INT_EQUAL(tc, pTlv->type, tlv_element[idx].type);
+        ABTS_INT_EQUAL(tc, pTlv->length, tlv_element[idx].length);
 
-        result = memcmp(pTlv->value, tlv_eliment[idx].value, tlv_eliment[idx].length);
+        result = memcmp(pTlv->value, tlv_element[idx].value, tlv_element[idx].length);
         ABTS_INT_EQUAL(tc, result, 0);
 
         pTlv = pTlv->next;
@@ -363,10 +371,10 @@ static void tlv_test_2(abts_case *tc, void *data)
     tlv_test_set_tlv_value();
 
     /* Tlv Encoding for embeded tlv_t */
-    embed_tlv = tlv_add(NULL, tlv_eliment[2].type,
-        tlv_eliment[2].length, tlv_eliment[2].value);
-    tlv_add(embed_tlv,tlv_eliment[3].type,
-        tlv_eliment[3].length, tlv_eliment[3].value);
+    embed_tlv = tlv_add(NULL, tlv_element[2].type,
+        tlv_element[2].length, tlv_element[2].instance, tlv_element[2].value);
+    tlv_add(embed_tlv,tlv_element[3].type,
+        tlv_element[3].length, tlv_element[3].instance, tlv_element[3].value);
 
     embed_block_len = tlv_render(embed_tlv, embed_block,
         sizeof(embed_block), mode);
@@ -386,12 +394,12 @@ static void tlv_test_2(abts_case *tc, void *data)
     tlv_free_all(embed_tlv);
     ABTS_INT_EQUAL(tc, tlv_pool_avail(), NUM_OF_TLV_NODE);
 
-    root_tlv = tlv_add(NULL,tlv_eliment[0].type,
-        tlv_eliment[0].length, tlv_eliment[0].value);
+    root_tlv = tlv_add(NULL,tlv_element[0].type,
+        tlv_element[0].length, tlv_element[0].instance, tlv_element[0].value);
 
-    tlv_add(root_tlv, EMBED_TLV_TYPE, embed_block_len, embed_block);
-    tlv_add(root_tlv,tlv_eliment[4].type,
-        tlv_eliment[4].length, tlv_eliment[4].value);
+    tlv_add(root_tlv, EMBED_TLV_TYPE, embed_block_len, 0, embed_block);
+    tlv_add(root_tlv,tlv_element[4].type,
+        tlv_element[4].length, tlv_element[4].instance, tlv_element[4].value);
 
     tlv_test_check_embed_tlv_test(tc, root_tlv, mode);
 
@@ -410,16 +418,16 @@ static void tlv_test_3(abts_case *tc, void *data)
     tlv_test_set_tlv_value();
 
     /* Tlv Encoding for embeded tlv_t */
-    root_tlv = tlv_add(NULL,tlv_eliment[0].type,
-        tlv_eliment[0].length, tlv_eliment[0].value);
-    parent_tlv= tlv_add(root_tlv, EMBED_TLV_TYPE, 0, NULL);
-    tlv_add(root_tlv,tlv_eliment[4].type,
-        tlv_eliment[4].length, tlv_eliment[4].value);
+    root_tlv = tlv_add(NULL,tlv_element[0].type,
+        tlv_element[0].length, tlv_element[0].instance, tlv_element[0].value);
+    parent_tlv= tlv_add(root_tlv, EMBED_TLV_TYPE, 0, 0, NULL);
+    tlv_add(root_tlv,tlv_element[4].type,
+        tlv_element[4].length, tlv_element[4].instance, tlv_element[4].value);
 
-    tlv_embed(parent_tlv,tlv_eliment[2].type,
-        tlv_eliment[2].length, tlv_eliment[2].value);
-    tlv_embed(parent_tlv,tlv_eliment[3].type,
-        tlv_eliment[3].length, tlv_eliment[3].value);
+    tlv_embed(parent_tlv,tlv_element[2].type,
+        tlv_element[2].length, tlv_element[2].instance, tlv_element[2].value);
+    tlv_embed(parent_tlv,tlv_element[3].type,
+        tlv_element[3].length, tlv_element[3].instance, tlv_element[3].value);
 
     tlv_test_check_embed_tlv_test(tc, root_tlv, mode);
 
@@ -441,18 +449,19 @@ static void tlv_test_4(abts_case *tc, void *data)
     tlv_test_set_tlv_value();
 
     root_tlv = tlv_copy(tlv_buff, sizeof(tlv_buff),
-        tlv_eliment[0].type,tlv_eliment[0].length, tlv_eliment[0].value);
-    parent_tlv = tlv_add(root_tlv, 20, 0, NULL);
-    tlv_add(root_tlv,tlv_eliment[4].type,
-        tlv_eliment[4].length, tlv_eliment[4].value);
+        tlv_element[0].type, tlv_element[0].length, 
+        tlv_element[0].instance, tlv_element[0].value);
+    parent_tlv = tlv_add(root_tlv, 20, 0, 0, NULL);
+    tlv_add(root_tlv,tlv_element[4].type, tlv_element[4].length, 
+        tlv_element[4].instance, tlv_element[4].value);
 
-    tlv_embed(parent_tlv,tlv_eliment[2].type,
-        tlv_eliment[2].length, tlv_eliment[2].value);
-    tlv_embed(parent_tlv,tlv_eliment[3].type,
-        tlv_eliment[3].length, tlv_eliment[3].value);
+    tlv_embed(parent_tlv,tlv_element[2].type,
+        tlv_element[2].length, tlv_element[2].instance, tlv_element[2].value);
+    tlv_embed(parent_tlv,tlv_element[3].type,
+        tlv_element[3].length, tlv_element[3].instance, tlv_element[3].value);
 
-    memset(tlv_eliment[2].value, 0x00, tlv_eliment[2].length);
-    memset(tlv_eliment[3].value, 0xf0, tlv_eliment[3].length);
+    memset(tlv_element[2].value, 0x00, tlv_element[2].length);
+    memset(tlv_element[3].value, 0xf0, tlv_element[3].length);
 
     tlv_test_check_embed_tlv_test(tc, root_tlv, mode);
 
@@ -472,9 +481,9 @@ static void tlv_test_5(abts_case *tc, void *data)
 
     /* tlv encoding for test */
     c_16 = htons(c_16);
-    root_tlv = tlv_add(NULL,10, 2, (c_uint8_t*)&c_16);
+    root_tlv = tlv_add(NULL, 10, 2, 0, (c_uint8_t*)&c_16);
     c_32 = htonl(c_32);
-    tlv_add(root_tlv, 20, 4, (c_uint8_t*)&c_32);
+    tlv_add(root_tlv, 20, 4, 0, (c_uint8_t*)&c_32);
 
     memset(parent_block, 0x00, sizeof(parent_block));
     parent_block_len = tlv_render(root_tlv, parent_block,
