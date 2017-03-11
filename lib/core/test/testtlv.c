@@ -81,7 +81,7 @@ void tlv_test_check_embed_tlv_test(abts_case *tc, tlv_t *root_tlv, int mode)
 
     switch(mode)
     {
-        case TLV_MODE_T16_L16:
+        case TLV_MODE_T2_L2:
         {
             ABTS_INT_EQUAL(tc, 332, parent_block_len);
             ABTS_INT_EQUAL(tc, *(pos++), tlv_eliment[0].type >> 8);
@@ -122,7 +122,7 @@ void tlv_test_check_embed_tlv_test(abts_case *tc, tlv_t *root_tlv, int mode)
                 ABTS_INT_EQUAL(tc, *(pos++), 0x0e);
             break;
         }
-        case TLV_MODE_T8_L16:
+        case TLV_MODE_T1_L2:
         {
             ABTS_INT_EQUAL(tc, 327, parent_block_len);
             ABTS_INT_EQUAL(tc, *(pos++), tlv_eliment[0].type & 0xFF);
@@ -181,10 +181,10 @@ void tlv_test_check_embed_tlv_test(abts_case *tc, tlv_t *root_tlv, int mode)
     ABTS_INT_EQUAL(tc, pTlv->type, 20);
     switch(mode)
     {
-        case TLV_MODE_T16_L16:
+        case TLV_MODE_T2_L2:
             ABTS_INT_EQUAL(tc, pTlv->length, 308);
             break;
-        case TLV_MODE_T8_L16:
+        case TLV_MODE_T1_L2:
             ABTS_INT_EQUAL(tc, pTlv->length, 306);
             break;
         default:
@@ -269,13 +269,13 @@ static void tlv_test_1(abts_case *tc, void *data)
 
     switch(mode)
     {
-        case TLV_MODE_T16_L16:
+        case TLV_MODE_T2_L2:
             ABTS_INT_EQUAL(tc, 346, parent_block_len);
             break;
-        case TLV_MODE_T8_L16:
+        case TLV_MODE_T1_L2:
             ABTS_INT_EQUAL(tc, 342, parent_block_len);
             break;
-        case TLV_MODE_T8_L8:
+        case TLV_MODE_T1_L1:
             ABTS_INT_EQUAL(tc, 338, parent_block_len);
             break;
         default:
@@ -292,18 +292,18 @@ static void tlv_test_1(abts_case *tc, void *data)
     {
         switch(mode)
         {
-            case TLV_MODE_T16_L16:
+            case TLV_MODE_T2_L2:
                 ABTS_INT_EQUAL(tc, (tlv_eliment[idx].type >> 8), *(pos++));
                 ABTS_INT_EQUAL(tc, tlv_eliment[idx].type & 0xFF, *(pos++));
                 ABTS_INT_EQUAL(tc, (tlv_eliment[idx].length >> 8), *(pos++));
                 ABTS_INT_EQUAL(tc, tlv_eliment[idx].length & 0xFF, *(pos++));
                 break;
-            case TLV_MODE_T8_L16:
+            case TLV_MODE_T1_L2:
                 ABTS_INT_EQUAL(tc, tlv_eliment[idx].type & 0xFF, *(pos++));
                 ABTS_INT_EQUAL(tc, (tlv_eliment[idx].length >> 8), *(pos++));
                 ABTS_INT_EQUAL(tc, tlv_eliment[idx].length & 0xFF, *(pos++));
                 break;
-            case TLV_MODE_T8_L8:
+            case TLV_MODE_T1_L1:
                 ABTS_INT_EQUAL(tc, tlv_eliment[idx].type & 0xFF, *(pos++));
                 ABTS_INT_EQUAL(tc, tlv_eliment[idx].length & 0xFF, *(pos++));
                 break;
@@ -372,10 +372,10 @@ static void tlv_test_2(abts_case *tc, void *data)
         sizeof(embed_block), mode);
     switch(mode)
     {
-        case TLV_MODE_T16_L16:
+        case TLV_MODE_T2_L2:
             ABTS_INT_EQUAL(tc, embed_block_len, 308);
             break;
-        case TLV_MODE_T8_L16:
+        case TLV_MODE_T1_L2:
             ABTS_INT_EQUAL(tc, embed_block_len, 306);
             break;
         default:
@@ -487,7 +487,7 @@ static void tlv_test_5(abts_case *tc, void *data)
 
     switch(mode)
     {
-        case TLV_MODE_T16_L16:
+        case TLV_MODE_T2_L2:
             ABTS_INT_EQUAL(tc, *(pos++), 0);
             ABTS_INT_EQUAL(tc, *(pos++), 10);
             ABTS_INT_EQUAL(tc, *(pos++), 0);
@@ -503,7 +503,7 @@ static void tlv_test_5(abts_case *tc, void *data)
             ABTS_INT_EQUAL(tc, *(pos++), 0x33);
             ABTS_INT_EQUAL(tc, *(pos++), 0x44);
             break;
-        case TLV_MODE_T8_L16:
+        case TLV_MODE_T1_L2:
             ABTS_INT_EQUAL(tc, *(pos++), 10);
             ABTS_INT_EQUAL(tc, *(pos++), 0);
             ABTS_INT_EQUAL(tc, *(pos++), 2);
@@ -517,7 +517,7 @@ static void tlv_test_5(abts_case *tc, void *data)
             ABTS_INT_EQUAL(tc, *(pos++), 0x33);
             ABTS_INT_EQUAL(tc, *(pos++), 0x44);
             break;
-        case TLV_MODE_T8_L8:
+        case TLV_MODE_T1_L1:
             ABTS_INT_EQUAL(tc, *(pos++), 10);
             ABTS_INT_EQUAL(tc, *(pos++), 2);
             ABTS_INT_EQUAL(tc, *(pos++), 0x11);
@@ -551,18 +551,18 @@ abts_suite *testtlv(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
-    abts_run_test(suite, tlv_test_1, (void*)TLV_MODE_T16_L16);
-    abts_run_test(suite, tlv_test_2, (void*)TLV_MODE_T16_L16);
-	abts_run_test(suite, tlv_test_3, (void*)TLV_MODE_T16_L16);
-	abts_run_test(suite, tlv_test_4, (void*)TLV_MODE_T16_L16);
-	abts_run_test(suite, tlv_test_5, (void*)TLV_MODE_T16_L16);
-    abts_run_test(suite, tlv_test_1, (void*)TLV_MODE_T8_L8);
-    abts_run_test(suite, tlv_test_5, (void*)TLV_MODE_T8_L8);
-    abts_run_test(suite, tlv_test_1, (void*)TLV_MODE_T8_L16);
-    abts_run_test(suite, tlv_test_2, (void*)TLV_MODE_T8_L16);
-	abts_run_test(suite, tlv_test_3, (void*)TLV_MODE_T8_L16);
-	abts_run_test(suite, tlv_test_4, (void*)TLV_MODE_T8_L16);
-	abts_run_test(suite, tlv_test_5, (void*)TLV_MODE_T8_L16);
+    abts_run_test(suite, tlv_test_1, (void*)TLV_MODE_T2_L2);
+    abts_run_test(suite, tlv_test_2, (void*)TLV_MODE_T2_L2);
+	abts_run_test(suite, tlv_test_3, (void*)TLV_MODE_T2_L2);
+	abts_run_test(suite, tlv_test_4, (void*)TLV_MODE_T2_L2);
+	abts_run_test(suite, tlv_test_5, (void*)TLV_MODE_T2_L2);
+    abts_run_test(suite, tlv_test_1, (void*)TLV_MODE_T1_L1);
+    abts_run_test(suite, tlv_test_5, (void*)TLV_MODE_T1_L1);
+    abts_run_test(suite, tlv_test_1, (void*)TLV_MODE_T1_L2);
+    abts_run_test(suite, tlv_test_2, (void*)TLV_MODE_T1_L2);
+	abts_run_test(suite, tlv_test_3, (void*)TLV_MODE_T1_L2);
+	abts_run_test(suite, tlv_test_4, (void*)TLV_MODE_T1_L2);
+	abts_run_test(suite, tlv_test_5, (void*)TLV_MODE_T1_L2);
 
     return suite;
 }

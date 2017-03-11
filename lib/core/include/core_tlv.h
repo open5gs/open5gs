@@ -9,9 +9,9 @@ extern "C" {
 #endif /* __cplusplus */
 
 
-#define TLV_MODE_T8_L8              1
-#define TLV_MODE_T8_L16             2
-#define TLV_MODE_T16_L16            3
+#define TLV_MODE_T1_L1              1
+#define TLV_MODE_T1_L2              2
+#define TLV_MODE_T2_L2              3
 
 #define NUM_OF_TLV_NODE             100
 
@@ -29,9 +29,10 @@ typedef struct _tlv_t
 
 
     /* tlv basic element */
-    c_uint32_t   type;
+    c_uint32_t  type;
     c_uint32_t  length;
-    void*   value;
+    c_uint32_t  instance;
+    void*       value;
 
     /* can be needed in encoding tlv_t*/
     c_uint8_t   buff_allocated;
@@ -42,6 +43,7 @@ typedef struct _tlv_t
 
 #define tlv_type(pTlv) pTlv->type
 #define tlv_length(pTlv) pTlv->length
+#define tlv_instance(pTlv) pTlv->instance
 #define tlv_value(pTlv) pTlv->value
 
 /* tlv_t pool related functions */
@@ -53,9 +55,6 @@ CORE_DECLARE(status_t) tlv_init(void);
 CORE_DECLARE(status_t) tlv_final(void);
 
 /* tlv_t encoding functions */
-CORE_DECLARE(c_uint8_t*) tlv_write_to_buff(
-        c_uint8_t *blk, c_uint32_t type, c_uint32_t length,
-        c_uint8_t *value, c_uint8_t mode);
 CORE_DECLARE(tlv_t*) tlv_add(
         tlv_t *headTlv, c_uint32_t type, c_uint32_t length, c_uint8_t *value);
 CORE_DECLARE(tlv_t*) tlv_create_buff_enabled_tlv(

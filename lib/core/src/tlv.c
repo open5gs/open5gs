@@ -102,11 +102,11 @@ c_uint32_t tlv_calc_length(tlv_t *p_tlv, c_uint8_t mode)
         /* this is length for type field */
         switch(mode)
         {
-            case TLV_MODE_T8_L8:
-            case TLV_MODE_T8_L16:
+            case TLV_MODE_T1_L1:
+            case TLV_MODE_T1_L2:
                 length += 1;
                 break;
-            case TLV_MODE_T16_L16:
+            case TLV_MODE_T2_L2:
                 length += 2;
                 break;
             default:
@@ -122,11 +122,11 @@ c_uint32_t tlv_calc_length(tlv_t *p_tlv, c_uint8_t mode)
 
         switch(mode)
         {
-            case TLV_MODE_T8_L8:
+            case TLV_MODE_T1_L1:
                 length += 1;
                 break;
-            case TLV_MODE_T8_L16:
-            case TLV_MODE_T16_L16:
+            case TLV_MODE_T1_L2:
+            case TLV_MODE_T2_L2:
                 length += 2;
                 break;
             default:
@@ -173,7 +173,7 @@ c_uint32_t _tlv_get_length16(c_uint8_t **pos)
     return length;
 }
 
-c_uint8_t* _tlv_put_length16(c_uint32_t length, c_uint8_t *pos)
+c_uint8_t *_tlv_put_length16(c_uint32_t length, c_uint8_t *pos)
 {
     *(pos++) = (length >> 8) & 0xFF;
     *(pos++) = length & 0xFF;
@@ -192,21 +192,21 @@ c_uint32_t _tlv_get_length8(c_uint8_t **pos)
     return length;
 }
 
-c_uint8_t* _tlv_put_length8(c_uint32_t length, c_uint8_t *pos)
+c_uint8_t *_tlv_put_length8(c_uint32_t length, c_uint8_t *pos)
 {
     *(pos++) = length;
     return pos;
 }
 
-c_uint8_t* _tlv_put_length(c_uint32_t length, c_uint8_t *pos, c_uint8_t mode)
+c_uint8_t *_tlv_put_length(c_uint32_t length, c_uint8_t *pos, c_uint8_t mode)
 {
     switch(mode)
     {
-        case TLV_MODE_T8_L8:
+        case TLV_MODE_T1_L1:
             pos = _tlv_put_length8(length, pos);
             break;
-        case TLV_MODE_T8_L16:
-        case TLV_MODE_T16_L16:
+        case TLV_MODE_T1_L2:
+        case TLV_MODE_T2_L2:
             pos = _tlv_put_length16(length, pos);
             break;
         default:
@@ -217,21 +217,21 @@ c_uint8_t* _tlv_put_length(c_uint32_t length, c_uint8_t *pos, c_uint8_t mode)
     return pos;
 }
 
-c_uint8_t* _tlv_get_element(tlv_t *p_tlv, c_uint8_t *tlvBlock, c_uint8_t mode)
+c_uint8_t *_tlv_get_element(tlv_t *p_tlv, c_uint8_t *tlvBlock, c_uint8_t mode)
 {
     c_uint8_t *pos = tlvBlock;
 
     switch(mode)
     {
-        case TLV_MODE_T8_L8:
+        case TLV_MODE_T1_L1:
             p_tlv->type = *(pos++);
             p_tlv->length = _tlv_get_length8(&pos);
             break;
-        case TLV_MODE_T8_L16:
+        case TLV_MODE_T1_L2:
             p_tlv->type = *(pos++);
             p_tlv->length = _tlv_get_length16(&pos);
             break;
-        case TLV_MODE_T16_L16:
+        case TLV_MODE_T2_L2:
             p_tlv->type = *(pos++) << 8;
             p_tlv->type += *(pos++);
             p_tlv->length = _tlv_get_length16(&pos);
@@ -246,15 +246,15 @@ c_uint8_t* _tlv_get_element(tlv_t *p_tlv, c_uint8_t *tlvBlock, c_uint8_t mode)
     return (pos + tlv_length(p_tlv));
 }
 
-c_uint8_t* _tlv_put_type(c_uint32_t type, c_uint8_t *pos, c_uint8_t mode)
+c_uint8_t *_tlv_put_type(c_uint32_t type, c_uint8_t *pos, c_uint8_t mode)
 {    
     switch(mode)
     {
-        case TLV_MODE_T8_L8:
-        case TLV_MODE_T8_L16:
+        case TLV_MODE_T1_L1:
+        case TLV_MODE_T1_L2:
             *(pos++) = type & 0xFF;
             break;
-        case TLV_MODE_T16_L16:
+        case TLV_MODE_T2_L2:
             *(pos++) = (type >> 8) & 0xFF;
             *(pos++) = type & 0xFF;
             break;
@@ -262,21 +262,6 @@ c_uint8_t* _tlv_put_type(c_uint32_t type, c_uint8_t *pos, c_uint8_t mode)
             d_assert(0, return 0, "Invalid mode(%d)", mode);
             break;
     }
-    return pos;
-}
-
-/* tlv_t encoding functions */
-c_uint8_t *tlv_write_to_buff(
-        c_uint8_t *blk, c_uint32_t type, c_uint32_t length,
-        c_uint8_t *value, c_uint8_t mode)
-{
-    c_uint8_t *pos = blk;
-    *(pos++) = type;
-    pos = _tlv_put_length(length, pos, mode);
-
-    memcpy((c_uint8_t*)pos, (c_uint8_t*)value, length);
-
-    pos += length;
     return pos;
 }
 
@@ -289,7 +274,7 @@ void _tlv_alloc_buff_to_tlv(
     head_tlv->buff = buff;
 }
 
-tlv_t * tlv_find_root(tlv_t* p_tlv)
+tlv_t *tlv_find_root(tlv_t* p_tlv)
 {
     tlv_t *head_tlv = p_tlv->head;
     tlv_t *parentTlv;
@@ -304,7 +289,7 @@ tlv_t * tlv_find_root(tlv_t* p_tlv)
     return head_tlv;
 }
 
-tlv_t * tlv_add(
+tlv_t *tlv_add(
         tlv_t *head_tlv, c_uint32_t type, c_uint32_t length, c_uint8_t *value)
 {
     tlv_t* curr_tlv = head_tlv;
@@ -347,7 +332,7 @@ tlv_t * tlv_add(
     return new_tlv;
 }
 
-tlv_t * tlv_create_buff_enabled_tlv(
+tlv_t *tlv_create_buff_enabled_tlv(
         c_uint8_t *buff, c_uint32_t buff_len,
         c_uint32_t type, c_uint32_t length, c_uint8_t *value)
 {
@@ -361,7 +346,7 @@ tlv_t * tlv_create_buff_enabled_tlv(
     new_tlv->value = value;
     new_tlv->head = new_tlv->tail = new_tlv;
 
-    _tlv_alloc_buff_to_tlv(new_tlv,buff, buff_len);
+    _tlv_alloc_buff_to_tlv(new_tlv, buff, buff_len);
 
     memcpy(new_tlv->buff_ptr, value, length);
     new_tlv->value = new_tlv->buff_ptr;
@@ -370,7 +355,7 @@ tlv_t * tlv_create_buff_enabled_tlv(
     return new_tlv;
 }
 
-tlv_t * tlv_embed(
+tlv_t *tlv_embed(
         tlv_t *parent_tlv, c_uint32_t type, c_uint32_t length, c_uint8_t *value)
 {
     tlv_t* new_tlv = NULL, *root_tlv = NULL;
@@ -454,7 +439,7 @@ c_uint32_t tlv_render(
 }
 
 /* tlv_t parsing functions */
-tlv_t * tlv_parse_tlv_block(c_uint32_t length, c_uint8_t *blk, c_uint8_t mode)
+tlv_t *tlv_parse_tlv_block(c_uint32_t length, c_uint8_t *blk, c_uint8_t mode)
 {
     c_uint8_t* pos = blk;
 
@@ -493,7 +478,7 @@ tlv_t * tlv_parse_tlv_block(c_uint32_t length, c_uint8_t *blk, c_uint8_t mode)
     return root_tlv;
 }
 
-tlv_t * tlv_parse_embedded_tlv_block(tlv_t* p_tlv, c_uint8_t mode)
+tlv_t *tlv_parse_embedded_tlv_block(tlv_t* p_tlv, c_uint8_t mode)
 {
     p_tlv->embedded = tlv_parse_tlv_block(p_tlv->length, p_tlv->value, mode);
 
@@ -501,7 +486,7 @@ tlv_t * tlv_parse_embedded_tlv_block(tlv_t* p_tlv, c_uint8_t mode)
 }
 
 /* tlv operation-related function */
-tlv_t * tlv_find(tlv_t* p_tlv, c_uint32_t type)
+tlv_t *tlv_find(tlv_t* p_tlv, c_uint32_t type)
 {
     tlv_t *tmp_tlv = p_tlv, *embed_tlv = NULL;
     while(tmp_tlv)
