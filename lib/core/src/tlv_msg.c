@@ -238,22 +238,21 @@ static c_uint32_t _tlv_add_compound(tlv_t **root, tlv_t *parent_tlv,
     return count;
 }
 
-status_t tlv_build_msg(
-        pkbuf_t **pkbuf, tlv_desc_t *tlv_desc, void *msg, int mode)
+status_t tlv_build_msg(pkbuf_t **pkbuf, tlv_desc_t *desc, void *msg, int mode)
 {
     tlv_t *root = NULL;
     c_uint32_t r, length, rendlen;
 
     d_assert(pkbuf, return CORE_ERROR, "Null param");
-    d_assert(tlv_desc, return CORE_ERROR, "Null param");
+    d_assert(desc, return CORE_ERROR, "Null param");
     d_assert(msg, return CORE_ERROR, "Null param");
 
-    d_assert(tlv_desc->ctype == TLV_MESSAGE, return CORE_ERROR,
+    d_assert(desc->ctype == TLV_MESSAGE, return CORE_ERROR,
             "Not TLV message descriptor");
-    d_assert(tlv_desc->child_descs[0], return CORE_ERROR,
+    d_assert(desc->child_descs[0], return CORE_ERROR,
             "TLV message descriptor has no members");
 
-    r = _tlv_add_compound(&root, NULL, tlv_desc, msg, 0);
+    r = _tlv_add_compound(&root, NULL, desc, msg, 0);
     d_assert(r > 0 && root, tlv_free_all(root); return CORE_ERROR,
             "Can't build TLV message");
 
@@ -272,7 +271,7 @@ status_t tlv_build_msg(
     return CORE_OK;
 }
 
-static tlv_desc_t* _tlv_find_desc(c_uint8_t *tlv_desc_index,
+static tlv_desc_t* _tlv_find_desc(c_uint8_t *desc_index,
         c_uint32_t *tlv_offset, tlv_desc_t *parent_desc, tlv_t *tlv)
 {
     tlv_desc_t *prev_desc = NULL, *desc = NULL;
@@ -290,7 +289,7 @@ static tlv_desc_t* _tlv_find_desc(c_uint8_t *tlv_desc_index,
 
         if (desc->type == tlv->type)
         {
-            *tlv_desc_index = i;
+            *desc_index = i;
             *tlv_offset = offset;
             break;
         }
@@ -314,8 +313,7 @@ static tlv_desc_t* _tlv_find_desc(c_uint8_t *tlv_desc_index,
     return desc;
 }
 
-static status_t _tlv_parse_leaf(
-        void *msg, tlv_desc_t *desc, tlv_t *tlv)
+static status_t _tlv_parse_leaf(void *msg, tlv_desc_t *desc, tlv_t *tlv)
 {
     d_assert(msg, return CORE_ERROR, "Null param");
     d_assert(desc, return CORE_ERROR, "Null param");
@@ -531,19 +529,18 @@ static status_t _tlv_parse_compound(void *msg, tlv_desc_t *parent_desc,
     return CORE_OK;
 }
 
-status_t tlv_parse_msg(
-        void *msg, tlv_desc_t *tlv_desc, pkbuf_t *pkbuf, int mode)
+status_t tlv_parse_msg(void *msg, tlv_desc_t *desc, pkbuf_t *pkbuf, int mode)
 {
     status_t rv;
     tlv_t *root;
 
     d_assert(msg, return CORE_ERROR, "Null param");
-    d_assert(tlv_desc, return CORE_ERROR, "Null param");
+    d_assert(desc, return CORE_ERROR, "Null param");
     d_assert(pkbuf, return CORE_ERROR, "Null param");
 
-    d_assert(tlv_desc->ctype == TLV_MESSAGE, return CORE_ERROR,
+    d_assert(desc->ctype == TLV_MESSAGE, return CORE_ERROR,
             "Not TLV message descriptor");
-    d_assert(tlv_desc->child_descs[0], return CORE_ERROR,
+    d_assert(desc->child_descs[0], return CORE_ERROR,
             "TLV message descriptor has no members");
 
     root = tlv_parse_block(pkbuf->len, pkbuf->payload, mode);
@@ -553,7 +550,7 @@ status_t tlv_parse_msg(
         return CORE_ERROR;
     }
 
-    rv = _tlv_parse_compound(msg, tlv_desc, root, 0, mode);
+    rv = _tlv_parse_compound(msg, desc, root, 0, mode);
 
     tlv_free_all(root);
 
