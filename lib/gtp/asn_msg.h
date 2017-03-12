@@ -1,10 +1,10 @@
-#ifndef __ASN_MSG_H__
-#define __ASN_MSG_H__
+#ifndef __TLV_MSG_H__
+#define __TLV_MSG_H__
 
 #include "core_pkbuf.h"
 
-#define ASN_HEADER_LEN 12
-#define ASN_VARIABLE 0
+#define TLV_HEADER_LEN 12
+#define TLV_VARIABLE 0
 
 #ifdef __cplusplus
 extern "C" {
@@ -45,20 +45,20 @@ typedef struct _asn_header_t {
     (__t_asn).l = (__s_asn).l
 
 typedef enum {
-    ASN_UINT8,
-    ASN_UINT16,
-    ASN_UINT24,
-    ASN_UINT32,
-    ASN_INT8,
-    ASN_INT16,
-    ASN_INT24,
-    ASN_INT32,
-    ASN_FIXED_STR,
-    ASN_VAR_STR,
-    ASN_NULL,
-    ASN_MORE,
-    ASN_COMPOUND,
-    ASN_MESSAGE,
+    TLV_UINT8,
+    TLV_UINT16,
+    TLV_UINT24,
+    TLV_UINT32,
+    TLV_INT8,
+    TLV_INT16,
+    TLV_INT24,
+    TLV_INT32,
+    TLV_FIXED_STR,
+    TLV_VAR_STR,
+    TLV_NULL,
+    TLV_MORE,
+    TLV_COMPOUND,
+    TLV_MESSAGE,
 } asnc_type_e;
 
 typedef struct _asn_desc_t {
@@ -69,30 +69,26 @@ typedef struct _asn_desc_t {
     void *child_descs[];
 } asn_desc_t;
 
-typedef asn_desc_t asn_desc_t;
-
 /* 8-bit Unsigned integer */
 typedef struct _asn_uint8_t {
     asn_header_t h;
     c_uint8_t v;
-    c_uint8_t dummy[3]; /* for 4 bytes align */
 } asn_uint8_t;
 
 /* 16-bit Unsigned integer */
-typedef struct _asn_uint16t {
+typedef struct _asn_uint16_t {
     asn_header_t h;
     c_uint16_t v;
-    c_uint8_t dummy[2]; /* for 4 bytes align */
 } asn_uint16_t;
 
 /* 24-bit Unsigned integer */
-typedef struct _asn_uint24t {
+typedef struct _asn_uint24_t {
     asn_header_t h;
     c_uint32_t v; /* Only 3 bytes valid */
 } asn_uint24_t;
 
 /* 32-bit Unsigned integer */
-typedef struct _asn_uint32t {
+typedef struct _asn_uint32_t {
     asn_header_t h;
     c_uint32_t v;
 } asn_uint32_t;
@@ -101,24 +97,22 @@ typedef struct _asn_uint32t {
 typedef struct _asn_int8_t {
     asn_header_t h;
     c_int8_t v;
-    c_uint8_t dummy[3]; /* for 4 bytes align */
 } asn_int8_t;
 
 /* 16-bit Signed integer */
 typedef struct _asn_int16t {
     asn_header_t h;
     c_int16_t v;
-    c_uint8_t dummy[2]; /* for 4 bytes align */
 } asn_int16_t;
 
 /* 24-bit Signed integer */
-typedef struct _asn_int24t {
+typedef struct _asn_int24_t {
     asn_header_t h;
     c_int32_t v; /* Only 3 bytes valid */
 } asn_int24_t;
 
 /* 32-bit Signed integer */
-typedef struct _asn_int32t {
+typedef struct _asn_int32_t {
     asn_header_t h;
     c_int32_t v;
 } asn_int32_t;
@@ -135,10 +129,10 @@ typedef struct _asn_null {
     asn_header_t h;
 } asn_null_t;
 
-#define ASN_MORE 8
-#define ASN_1_OR_MORE(__v) __v[ASN_MORE]
+#define TLV_MORE 8
+#define TLV_1_OR_MORE(__v) __v[TLV_MORE]
 
-extern asn_desc_t asnt_more;
+extern asn_desc_t asn_desc_more;
 
 CORE_DECLARE(status_t) asn_build_msg(
         pkbuf_t **msg, asn_desc_t *msg_desc, void *asn);
@@ -150,4 +144,4 @@ CORE_DECLARE(status_t) asn_parse_msg(
 }
 #endif /* __cplusplus */
 
-#endif /* __ASN_MSG_H__ */
+#endif /* __TLV_MSG_H__ */
