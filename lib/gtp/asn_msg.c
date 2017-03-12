@@ -4,20 +4,20 @@
 
 #include "asn_msg.h"
 
-asnt_desc_t asnt_more = 
+asn_desc_t asnt_more = 
 {
-    ASNC_MORE, 0, ASNL_MORE, 0, { NULL }
+    ASN_MORE, 0, ASN_MORE, 0, { NULL }
 };
 
-static tlv_t* _asn_add_leaf(tlv_t *parent_tlv, tlv_t *tlv, asnt_desc_t *desc,
-        void *asnv)
+static tlv_t* _asn_add_leaf(tlv_t *parent_tlv, tlv_t *tlv, asn_desc_t *desc,
+        void *asn)
 {
     switch (desc->ctype)
     {
-        case ASNC_UINT8:
-        case ASNC_INT8:
+        case ASN_UINT8:
+        case ASN_INT8:
         {
-            asnv_uint8_t *v = (asnv_uint8_t *)asnv;
+            asn_uint8_t *v = (asn_uint8_t *)asn;
 
             d_trace(1, "V_1B:%02x", v->v);
 
@@ -28,9 +28,9 @@ static tlv_t* _asn_add_leaf(tlv_t *parent_tlv, tlv_t *tlv, asnt_desc_t *desc,
             d_assert(tlv, return NULL, "Can't add TLV");
             break;
         }
-        case ASNC_UINT16:
+        case ASN_UINT16:
         {
-            asnv_uint16_t *v = (asnv_uint16_t *)asnv;
+            asn_uint16_t *v = (asn_uint16_t *)asn;
 
             d_trace(1, "V_2B:%04x", v->v);
 
@@ -43,10 +43,10 @@ static tlv_t* _asn_add_leaf(tlv_t *parent_tlv, tlv_t *tlv, asnt_desc_t *desc,
             d_assert(tlv, return NULL, "Can't add TLV");
             break;
         }
-        case ASNC_UINT24:
-        case ASNC_INT24:
+        case ASN_UINT24:
+        case ASN_INT24:
         {
-            asnv_uint24_t *v = (asnv_uint24_t *)asnv;
+            asn_uint24_t *v = (asn_uint24_t *)asn;
 
             d_trace(1, "V_3B:%06x", v->v);
 
@@ -60,10 +60,10 @@ static tlv_t* _asn_add_leaf(tlv_t *parent_tlv, tlv_t *tlv, asnt_desc_t *desc,
             d_assert(tlv, return NULL, "Can't add TLV");
             break;
         }
-        case ASNC_UINT32:
-        case ASNC_INT32:
+        case ASN_UINT32:
+        case ASN_INT32:
         {
-            asnv_uint32_t *v = (asnv_uint32_t *)asnv;
+            asn_uint32_t *v = (asn_uint32_t *)asn;
 
             d_trace(1, "V_4B:%08x", v->v);
 
@@ -76,9 +76,9 @@ static tlv_t* _asn_add_leaf(tlv_t *parent_tlv, tlv_t *tlv, asnt_desc_t *desc,
             d_assert(tlv, return NULL, "Can't add TLV");
             break;
         }
-        case ASNC_FIXED_STR:
+        case ASN_FIXED_STR:
         {
-            asnv_octets_t *v = (asnv_octets_t *)asnv;
+            asn_octets_t *v = (asn_octets_t *)asn;
 
             d_trace(1, "V_FSTR: ", v->v);
             d_trace_hex(1, v->v, v->l);
@@ -90,9 +90,9 @@ static tlv_t* _asn_add_leaf(tlv_t *parent_tlv, tlv_t *tlv, asnt_desc_t *desc,
             d_assert(tlv, return NULL, "Can't add TLV");
             break;
         }
-        case ASNC_VAR_STR:
+        case ASN_VAR_STR:
         {
-            asnv_octets_t *v = (asnv_octets_t *)asnv;
+            asn_octets_t *v = (asn_octets_t *)asn;
 
             d_assert(v->l > 0, return NULL, "Length is zero");
 
@@ -106,7 +106,7 @@ static tlv_t* _asn_add_leaf(tlv_t *parent_tlv, tlv_t *tlv, asnt_desc_t *desc,
             d_assert(tlv, return NULL, "Can't add TLV");
             break;
         }
-        case ASNC_NULL:
+        case ASN_NULL:
         {
             d_trace(1, "V_NULL" );
 
@@ -128,19 +128,19 @@ static tlv_t* _asn_add_leaf(tlv_t *parent_tlv, tlv_t *tlv, asnt_desc_t *desc,
 }
 
 static c_uint32_t _asn_add_compound(tlv_t **root, tlv_t *parent_tlv,
-        asnt_desc_t *parent_desc, void *asnv, int depth)
+        asn_desc_t *parent_desc, void *asn, int depth)
 {
-    asnv_header_t *h;
-    asnt_desc_t *desc = NULL, *next_desc = NULL;
+    asn_header_t *h;
+    asn_desc_t *desc = NULL, *next_desc = NULL;
     tlv_t *tlv = NULL, *emb_tlv = NULL;
-    c_uint8_t *p = asnv;
+    c_uint8_t *p = asn;
     c_uint32_t offset = 0, count = 0;
     int i, j, r;
     char indent[17] = "                "; /* 16 spaces */
 
     d_assert(root, return 0, "Null param");
     d_assert(parent_desc, return 0, "Null param");
-    d_assert(asnv, return 0, "Null param");
+    d_assert(asn, return 0, "Null param");
 
     d_assert(depth <= 8, return 0, "Too deep recursion");
     indent[depth*2] = 0;
@@ -151,17 +151,17 @@ static c_uint32_t _asn_add_compound(tlv_t **root, tlv_t *parent_tlv,
             i++, desc = parent_desc->child_descs[i])
     {
         next_desc = parent_desc->child_descs[i+1];
-        if (next_desc != NULL && next_desc->ctype == ASNC_MORE)
+        if (next_desc != NULL && next_desc->ctype == ASN_MORE)
         {
             int offset2 = offset;
             for (j = 0; j < next_desc->length; j++)
             {
-                h = (asnv_header_t *)(p + offset2);
+                h = (asn_header_t *)(p + offset2);
 
                 if (h->set_ind == 0)
                     break;
 
-                if (desc->ctype == ASNC_COMPOUND)
+                if (desc->ctype == ASN_COMPOUND)
                 {
                     d_trace(1, "\nBUILD %sC#%d T:%d (vsz=%d) off:%p ",
                             indent, i, desc->type, desc->vsize, p + offset);
@@ -172,7 +172,7 @@ static c_uint32_t _asn_add_compound(tlv_t **root, tlv_t *parent_tlv,
                         tlv = tlv_add(tlv, desc->type, 0, 0, NULL);
 
                     r = _asn_add_compound(&emb_tlv, tlv, desc,
-                            p + offset + sizeof(asnv_header_t), depth + 1);
+                            p + offset + sizeof(asn_header_t), depth + 1);
                     d_assert(r > 0 && emb_tlv, return 0,
                             "Can't build compound TLV");
                     count += 1 + r;
@@ -198,11 +198,11 @@ static c_uint32_t _asn_add_compound(tlv_t **root, tlv_t *parent_tlv,
         }
         else
         {
-            h = (asnv_header_t *)(p + offset);
+            h = (asn_header_t *)(p + offset);
 
             if (h->set_ind)
             {
-                if (desc->ctype == ASNC_COMPOUND)
+                if (desc->ctype == ASN_COMPOUND)
                 {
                     d_trace(1, "\nBUILD %sC#%d T:%d (vsz=%d) off:%p ",
                             indent, i, desc->type, desc->vsize, p + offset);
@@ -213,7 +213,7 @@ static c_uint32_t _asn_add_compound(tlv_t **root, tlv_t *parent_tlv,
                         tlv = tlv_add(tlv, desc->type, 0, 0, NULL);
 
                     r = _asn_add_compound(&emb_tlv, tlv, desc,
-                            p + offset + sizeof(asnv_header_t), depth + 1);
+                            p + offset + sizeof(asn_header_t), depth + 1);
                     d_assert(r > 0 && emb_tlv, return 0,
                             "Can't build compound TLV");
                     count += 1 + r;
@@ -239,21 +239,21 @@ static c_uint32_t _asn_add_compound(tlv_t **root, tlv_t *parent_tlv,
     return count;
 }
 
-status_t asn_build_msg(pkbuf_t **msg, asn_msg_desc_t *msg_desc, void *asnv)
+status_t asn_build_msg(pkbuf_t **msg, asn_desc_t *msg_desc, void *asn)
 {
     tlv_t *root = NULL;
     c_uint32_t r, length, rendlen;
 
     d_assert(msg, return CORE_ERROR, "Null param");
     d_assert(msg_desc, return CORE_ERROR, "Null param");
-    d_assert(asnv, return CORE_ERROR, "Null param");
+    d_assert(asn, return CORE_ERROR, "Null param");
 
-    d_assert(msg_desc->ctype == ASNC_MESSAGE, return CORE_ERROR,
+    d_assert(msg_desc->ctype == ASN_MESSAGE, return CORE_ERROR,
             "Not ASN message descriptor");
     d_assert(msg_desc->child_descs[0], return CORE_ERROR,
             "ASN message descriptor has no members");
 
-    r = _asn_add_compound(&root, NULL, msg_desc, asnv, 0);
+    r = _asn_add_compound(&root, NULL, msg_desc, asn, 0);
     d_assert(r > 0 && root, tlv_free_all(root); return CORE_ERROR,
             "Can't build ASN message");
 
@@ -272,10 +272,10 @@ status_t asn_build_msg(pkbuf_t **msg, asn_msg_desc_t *msg_desc, void *asnv)
     return CORE_OK;
 }
 
-static asnt_desc_t* _asn_find_desc(c_uint8_t *asnt_index,
-        c_uint32_t *asnv_offset, asnt_desc_t *parent_desc, tlv_t *tlv)
+static asn_desc_t* _asn_find_desc(c_uint8_t *asnt_index,
+        c_uint32_t *asn_offset, asn_desc_t *parent_desc, tlv_t *tlv)
 {
-    asnt_desc_t *prev_desc = NULL, *desc = NULL;
+    asn_desc_t *prev_desc = NULL, *desc = NULL;
     int i, offset = 0;
 
     d_assert(parent_desc, return NULL, "Null param");
@@ -291,14 +291,14 @@ static asnt_desc_t* _asn_find_desc(c_uint8_t *asnt_index,
         if (desc->type == tlv->type)
         {
             *asnt_index = i;
-            *asnv_offset = offset;
+            *asn_offset = offset;
             break;
         }
 
-        if (desc->ctype == ASNC_MORE)
+        if (desc->ctype == ASN_MORE)
         {
-            d_assert(prev_desc && prev_desc->ctype != ASNC_MORE,
-                    return NULL, "Invalid previous asnt_desc_t");
+            d_assert(prev_desc && prev_desc->ctype != ASN_MORE,
+                    return NULL, "Invalid previous asn_desc_t");
             offset += prev_desc->vsize * (desc->length - 1);
         }
         else
@@ -315,18 +315,18 @@ static asnt_desc_t* _asn_find_desc(c_uint8_t *asnt_index,
 }
 
 static status_t _asn_parse_leaf(
-        void *asnv, asnt_desc_t *desc, tlv_t *tlv)
+        void *asn, asn_desc_t *desc, tlv_t *tlv)
 {
-    d_assert(asnv, return CORE_ERROR, "Null param");
+    d_assert(asn, return CORE_ERROR, "Null param");
     d_assert(desc, return CORE_ERROR, "Null param");
     d_assert(tlv, return CORE_ERROR, "Null param");
 
     switch (desc->ctype)
     {
-        case ASNC_UINT8:
-        case ASNC_INT8:
+        case ASN_UINT8:
+        case ASN_INT8:
         {
-            asnv_uint8_t *v = (asnv_uint8_t *)asnv;
+            asn_uint8_t *v = (asn_uint8_t *)asn;
 
             if (tlv->length != 1)
             {
@@ -337,10 +337,10 @@ static status_t _asn_parse_leaf(
             d_trace(1, "V_1B:%02x", v->v);
             break;
         }
-        case ASNC_UINT16:
-        case ASNC_INT16:
+        case ASN_UINT16:
+        case ASN_INT16:
         {
-            asnv_uint16_t *v = (asnv_uint16_t *)asnv;
+            asn_uint16_t *v = (asn_uint16_t *)asn;
 
             if (tlv->length != 2)
             {
@@ -352,10 +352,10 @@ static status_t _asn_parse_leaf(
             d_trace(1, "V_2B:%02x", v->v);
             break;
         }
-        case ASNC_UINT24:
-        case ASNC_INT24:
+        case ASN_UINT24:
+        case ASN_INT24:
         {
-            asnv_uint24_t *v = (asnv_uint24_t *)asnv;
+            asn_uint24_t *v = (asn_uint24_t *)asn;
 
             if (tlv->length != 3)
             {
@@ -368,10 +368,10 @@ static status_t _asn_parse_leaf(
             d_trace(1, "V_3B:%06x", v->v);
             break;
         }
-        case ASNC_UINT32:
-        case ASNC_INT32:
+        case ASN_UINT32:
+        case ASN_INT32:
         {
-            asnv_uint32_t *v = (asnv_uint32_t *)asnv;
+            asn_uint32_t *v = (asn_uint32_t *)asn;
 
             if (tlv->length != 4)
             {
@@ -385,9 +385,9 @@ static status_t _asn_parse_leaf(
             d_trace(1, "V_4B:%08x", v->v);
             break;
         }
-        case ASNC_FIXED_STR:
+        case ASN_FIXED_STR:
         {
-            asnv_octets_t *v = (asnv_octets_t *)asnv;
+            asn_octets_t *v = (asn_octets_t *)asn;
 
             if (tlv->length != desc->length)
             {
@@ -403,9 +403,9 @@ static status_t _asn_parse_leaf(
             d_trace_hex(1, v->v, v->l);
             break;
         }
-        case ASNC_VAR_STR:
+        case ASN_VAR_STR:
         {
-            asnv_octets_t *v = (asnv_octets_t *)asnv;
+            asn_octets_t *v = (asn_octets_t *)asn;
 
             v->v = tlv->value;
             v->l = tlv->length;
@@ -414,7 +414,7 @@ static status_t _asn_parse_leaf(
             d_trace_hex(1, v->v, v->l);
             break;
         }
-        case ASNC_NULL:
+        case ASN_NULL:
         {
             if (tlv->length != 0)
             {
@@ -432,19 +432,19 @@ static status_t _asn_parse_leaf(
 }
 
 static status_t _asn_parse_compound(
-        void *asnv, asnt_desc_t *parent_desc, tlv_t *parent_tlv, int depth)
+        void *asn, asn_desc_t *parent_desc, tlv_t *parent_tlv, int depth)
 {
     status_t rv;
-    asnv_header_t *h = (asnv_header_t *)asnv;
-    asnt_desc_t *desc = NULL, *next_desc = NULL;
+    asn_header_t *h = (asn_header_t *)asn;
+    asn_desc_t *desc = NULL, *next_desc = NULL;
     tlv_t *tlv = NULL, *emb_tlv = NULL;
-    c_uint8_t *p = asnv;
+    c_uint8_t *p = asn;
     c_uint32_t offset = 0;
     c_uint8_t index = 0;
     int i = 0, j;
     char indent[17] = "                "; /* 16 spaces */
 
-    d_assert(asnv, return CORE_ERROR, "Null param");
+    d_assert(asn, return CORE_ERROR, "Null param");
     d_assert(parent_desc, return CORE_ERROR, "Null param");
     d_assert(parent_tlv, return CORE_ERROR, "Null param");
 
@@ -461,15 +461,15 @@ static status_t _asn_parse_compound(
             return CORE_ERROR;
         }
 
-        h = (asnv_header_t *)(p + offset);
+        h = (asn_header_t *)(p + offset);
 
         /* Multiple of the same type TLV may be included */
         next_desc = parent_desc->child_descs[index+1];
-        if (next_desc != NULL && next_desc->ctype == ASNC_MORE)
+        if (next_desc != NULL && next_desc->ctype == ASN_MORE)
         {
             for (j = 0; j < next_desc->length; j++)
             {
-                h = (asnv_header_t *)(p + offset + desc->vsize * j);
+                h = (asn_header_t *)(p + offset + desc->vsize * j);
                 if (h->set_ind == 0)
                 {
                     offset += desc->vsize * j;
@@ -484,7 +484,7 @@ static status_t _asn_parse_compound(
             }
         }
 
-        if (desc->ctype == ASNC_COMPOUND)
+        if (desc->ctype == ASN_COMPOUND)
         {
             emb_tlv = tlv_parse_embedded_block(tlv, TLV_MODE_T1_L2_I1);
             if (emb_tlv == NULL)
@@ -496,7 +496,7 @@ static status_t _asn_parse_compound(
             d_trace(1, "\nPARSE %sC#%d T:%d (vsz=%d) off:%p ",
                     indent, i++, desc->type, desc->vsize, p + offset);
 
-            offset += sizeof(asnv_header_t);
+            offset += sizeof(asn_header_t);
 
             rv = _asn_parse_compound(p + offset, desc, emb_tlv, depth + 1);
             if (rv != CORE_OK)
@@ -530,16 +530,16 @@ static status_t _asn_parse_compound(
     return CORE_OK;
 }
 
-status_t asn_parse_msg(void *asnv, asn_msg_desc_t *msg_desc, pkbuf_t *msg)
+status_t asn_parse_msg(void *asn, asn_desc_t *msg_desc, pkbuf_t *msg)
 {
     status_t rv;
     tlv_t *root;
 
-    d_assert(asnv, return CORE_ERROR, "Null param");
+    d_assert(asn, return CORE_ERROR, "Null param");
     d_assert(msg_desc, return CORE_ERROR, "Null param");
     d_assert(msg, return CORE_ERROR, "Null param");
 
-    d_assert(msg_desc->ctype == ASNC_MESSAGE, return CORE_ERROR,
+    d_assert(msg_desc->ctype == ASN_MESSAGE, return CORE_ERROR,
             "Not ASN message descriptor");
     d_assert(msg_desc->child_descs[0], return CORE_ERROR,
             "ASN message descriptor has no members");
@@ -551,7 +551,7 @@ status_t asn_parse_msg(void *asnv, asn_msg_desc_t *msg_desc, pkbuf_t *msg)
         return CORE_ERROR;
     }
 
-    rv = _asn_parse_compound(asnv, msg_desc, root, 0);
+    rv = _asn_parse_compound(asn, msg_desc, root, 0);
 
     tlv_free_all(root);
 

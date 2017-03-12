@@ -8,8 +8,8 @@
 
 static void gtp_message_test1(abts_case *tc, void *data)
 {
-    asnv_msg_ms_preattachment_req reqv;
-    asnv_msg_ms_preattachment_req reqv2;
+    asn_msg_ms_preattachment_req reqv;
+    asn_msg_ms_preattachment_req reqv2;
 
     pkbuf_t *req = NULL;
 #if 0
@@ -22,7 +22,7 @@ static void gtp_message_test1(abts_case *tc, void *data)
         _asn_msg = 0;
     }
     /* Initialize message value structure */
-    memset(&reqv, 0, sizeof(asnv_msg_ms_preattachment_req));
+    memset(&reqv, 0, sizeof(asn_msg_ms_preattachment_req));
 
     /* Set nessary members of message */
     COMPD_SET(reqv.ms_info);
@@ -40,7 +40,7 @@ static void gtp_message_test1(abts_case *tc, void *data)
 #endif
 
     /* Initialize message value structure */
-    memset(&reqv2, 0, sizeof(asnv_msg_ms_preattachment_req));
+    memset(&reqv2, 0, sizeof(asn_msg_ms_preattachment_req));
 
     /* Parse message */
     asn_parse_msg(&reqv2, &asnt_msg_ms_preattachment_req, req);
