@@ -152,6 +152,7 @@ static void security_test4(abts_case *tc, void *data)
     nas_mac_calculate(NAS_SECURITY_ALGORITHMS_128_EIA1, 
             ik, 0x38a6f056, 0x1f, 0, pkbuf, mac);
     ABTS_TRUE(tc, memcmp(mac, tmp, 4) == 0);
+    pkbuf_free(pkbuf);
 }
 
 static void security_test5(abts_case *tc, void *data)
@@ -198,6 +199,7 @@ static void security_test5(abts_case *tc, void *data)
     ABTS_TRUE(tc, memcmp(pkbuf->payload, 
         core_ascii_to_hex(_plain, strlen(_plain), tmp, SECURITY_TEST5_LEN), 
         SECURITY_TEST5_LEN) == 0);
+    pkbuf_free(pkbuf);
 }
 
 static void security_test6(abts_case *tc, void *data)
@@ -240,6 +242,7 @@ static void security_test6(abts_case *tc, void *data)
     nas_mac_calculate(NAS_SECURITY_ALGORITHMS_128_EIA2, 
             ik, 0x398a59b4, 0x1a, 1, pkbuf, mac);
     ABTS_TRUE(tc, memcmp(mac, tmp, 4) == 0);
+    pkbuf_free(pkbuf);
 }
 
 static void security_test7(abts_case *tc, void *data)
@@ -299,6 +302,7 @@ static void security_test7(abts_case *tc, void *data)
     ABTS_TRUE(tc, memcmp(pkbuf->payload, 
         core_ascii_to_hex(_cipher, strlen(_cipher), tmp, SECURITY_TEST7_LEN), 
         SECURITY_TEST7_LEN) == 0);
+    pkbuf_free(pkbuf);
 }
 
 static void security_test8(abts_case *tc, void *data)
@@ -338,6 +342,7 @@ static void security_test8(abts_case *tc, void *data)
     nas_mac_calculate(NAS_SECURITY_ALGORITHMS_128_EIA3, 
             ik, 0xa94059da, 0xa, 1, pkbuf, mac);
     ABTS_TRUE(tc, memcmp(mac, mact, 4) == 0);
+    pkbuf_free(pkbuf);
 }
 
 static void security_test9(abts_case *tc, void *data)
@@ -385,6 +390,7 @@ static void security_test9(abts_case *tc, void *data)
     ABTS_TRUE(tc, memcmp(pkbuf->payload, 
         core_ascii_to_hex(_cipher, strlen(_cipher), tmp, SECURITY_TEST9_LEN), 
         SECURITY_TEST9_LEN) == 0);
+    pkbuf_free(pkbuf);
 }
 
 abts_suite *test_security(abts_suite *suite)

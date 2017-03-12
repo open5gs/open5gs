@@ -59,6 +59,8 @@ static void gtp_message_test1(abts_case *tc, void *data)
             d_print_hex(buf, buflen);
 #endif
         }
+    
+    pkbuf_free(req);
 }
 
 abts_suite *test_gtp_message(abts_suite *suite)
