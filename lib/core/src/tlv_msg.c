@@ -8,15 +8,15 @@ tlv_desc_t tlv_desc_more =
     TLV_MORE, 0, TLV_MORE, 0, { NULL }
 };
 
-static tlv_t* _tlv_add_leaf(tlv_t *parent_tlv, tlv_t *tlv, tlv_desc_t *desc,
-        void *asn)
+static tlv_t* _tlv_add_leaf(
+        tlv_t *parent_tlv, tlv_t *tlv, tlv_desc_t *desc, void *msg)
 {
     switch (desc->ctype)
     {
         case TLV_UINT8:
         case TLV_INT8:
         {
-            tlv_uint8_t *v = (tlv_uint8_t *)asn;
+            tlv_uint8_t *v = (tlv_uint8_t *)msg;
 
             d_trace(1, "V_1B:%02x", v->v);
 
@@ -29,7 +29,7 @@ static tlv_t* _tlv_add_leaf(tlv_t *parent_tlv, tlv_t *tlv, tlv_desc_t *desc,
         }
         case TLV_UINT16:
         {
-            tlv_uint16_t *v = (tlv_uint16_t *)asn;
+            tlv_uint16_t *v = (tlv_uint16_t *)msg;
 
             d_trace(1, "V_2B:%04x", v->v);
 
@@ -45,7 +45,7 @@ static tlv_t* _tlv_add_leaf(tlv_t *parent_tlv, tlv_t *tlv, tlv_desc_t *desc,
         case TLV_UINT24:
         case TLV_INT24:
         {
-            tlv_uint24_t *v = (tlv_uint24_t *)asn;
+            tlv_uint24_t *v = (tlv_uint24_t *)msg;
 
             d_trace(1, "V_3B:%06x", v->v);
 
@@ -62,7 +62,7 @@ static tlv_t* _tlv_add_leaf(tlv_t *parent_tlv, tlv_t *tlv, tlv_desc_t *desc,
         case TLV_UINT32:
         case TLV_INT32:
         {
-            tlv_uint32_t *v = (tlv_uint32_t *)asn;
+            tlv_uint32_t *v = (tlv_uint32_t *)msg;
 
             d_trace(1, "V_4B:%08x", v->v);
 
@@ -77,7 +77,7 @@ static tlv_t* _tlv_add_leaf(tlv_t *parent_tlv, tlv_t *tlv, tlv_desc_t *desc,
         }
         case TLV_FIXED_STR:
         {
-            tlv_octets_t *v = (tlv_octets_t *)asn;
+            tlv_octets_t *v = (tlv_octets_t *)msg;
 
             d_trace(1, "V_FSTR: ", v->v);
             d_trace_hex(1, v->v, v->l);
@@ -91,7 +91,7 @@ static tlv_t* _tlv_add_leaf(tlv_t *parent_tlv, tlv_t *tlv, tlv_desc_t *desc,
         }
         case TLV_VAR_STR:
         {
-            tlv_octets_t *v = (tlv_octets_t *)asn;
+            tlv_octets_t *v = (tlv_octets_t *)msg;
 
             d_assert(v->l > 0, return NULL, "Length is zero");
 
@@ -127,19 +127,19 @@ static tlv_t* _tlv_add_leaf(tlv_t *parent_tlv, tlv_t *tlv, tlv_desc_t *desc,
 }
 
 static c_uint32_t _tlv_add_compound(tlv_t **root, tlv_t *parent_tlv,
-        tlv_desc_t *parent_desc, void *asn, int depth)
+        tlv_desc_t *parent_desc, void *msg, int depth)
 {
     tlv_header_t *h;
     tlv_desc_t *desc = NULL, *next_desc = NULL;
     tlv_t *tlv = NULL, *emb_tlv = NULL;
-    c_uint8_t *p = asn;
+    c_uint8_t *p = msg;
     c_uint32_t offset = 0, count = 0;
     int i, j, r;
     char indent[17] = "                "; /* 16 spaces */
 
     d_assert(root, return 0, "Null param");
     d_assert(parent_desc, return 0, "Null param");
-    d_assert(asn, return 0, "Null param");
+    d_assert(msg, return 0, "Null param");
 
     d_assert(depth <= 8, return 0, "Too deep recursion");
     indent[depth*2] = 0;
@@ -238,31 +238,32 @@ static c_uint32_t _tlv_add_compound(tlv_t **root, tlv_t *parent_tlv,
     return count;
 }
 
-status_t tlv_build_msg(pkbuf_t **msg, tlv_desc_t *msg_desc, void *asn, int mode)
+status_t tlv_build_msg(
+        pkbuf_t **pkbuf, tlv_desc_t *tlv_desc, void *msg, int mode)
 {
     tlv_t *root = NULL;
     c_uint32_t r, length, rendlen;
 
+    d_assert(pkbuf, return CORE_ERROR, "Null param");
+    d_assert(tlv_desc, return CORE_ERROR, "Null param");
     d_assert(msg, return CORE_ERROR, "Null param");
-    d_assert(msg_desc, return CORE_ERROR, "Null param");
-    d_assert(asn, return CORE_ERROR, "Null param");
 
-    d_assert(msg_desc->ctype == TLV_MESSAGE, return CORE_ERROR,
+    d_assert(tlv_desc->ctype == TLV_MESSAGE, return CORE_ERROR,
             "Not TLV message descriptor");
-    d_assert(msg_desc->child_descs[0], return CORE_ERROR,
+    d_assert(tlv_desc->child_descs[0], return CORE_ERROR,
             "TLV message descriptor has no members");
 
-    r = _tlv_add_compound(&root, NULL, msg_desc, asn, 0);
+    r = _tlv_add_compound(&root, NULL, tlv_desc, msg, 0);
     d_assert(r > 0 && root, tlv_free_all(root); return CORE_ERROR,
             "Can't build TLV message");
 
     length = tlv_calc_length(root, mode);
-    *msg = pkbuf_alloc(TLV_MAX_HEADROOM, length);
-    d_assert(*msg, tlv_free_all(root); return CORE_ENOMEM,
+    *pkbuf = pkbuf_alloc(TLV_MAX_HEADROOM, length);
+    d_assert(*pkbuf, tlv_free_all(root); return CORE_ENOMEM,
             "pkbuf_alloc() failed");
-    (*msg)->len = length;
+    (*pkbuf)->len = length;
 
-    rendlen = tlv_render(root, (*msg)->payload, length, mode);
+    rendlen = tlv_render(root, (*pkbuf)->payload, length, mode);
     d_assert(rendlen == length, tlv_free_all(root); return CORE_ERROR,
             "Error while render TLV (%d != %d)", length, rendlen);
 
@@ -314,9 +315,9 @@ static tlv_desc_t* _tlv_find_desc(c_uint8_t *tlv_desc_index,
 }
 
 static status_t _tlv_parse_leaf(
-        void *asn, tlv_desc_t *desc, tlv_t *tlv)
+        void *msg, tlv_desc_t *desc, tlv_t *tlv)
 {
-    d_assert(asn, return CORE_ERROR, "Null param");
+    d_assert(msg, return CORE_ERROR, "Null param");
     d_assert(desc, return CORE_ERROR, "Null param");
     d_assert(tlv, return CORE_ERROR, "Null param");
 
@@ -325,7 +326,7 @@ static status_t _tlv_parse_leaf(
         case TLV_UINT8:
         case TLV_INT8:
         {
-            tlv_uint8_t *v = (tlv_uint8_t *)asn;
+            tlv_uint8_t *v = (tlv_uint8_t *)msg;
 
             if (tlv->length != 1)
             {
@@ -339,7 +340,7 @@ static status_t _tlv_parse_leaf(
         case TLV_UINT16:
         case TLV_INT16:
         {
-            tlv_uint16_t *v = (tlv_uint16_t *)asn;
+            tlv_uint16_t *v = (tlv_uint16_t *)msg;
 
             if (tlv->length != 2)
             {
@@ -354,7 +355,7 @@ static status_t _tlv_parse_leaf(
         case TLV_UINT24:
         case TLV_INT24:
         {
-            tlv_uint24_t *v = (tlv_uint24_t *)asn;
+            tlv_uint24_t *v = (tlv_uint24_t *)msg;
 
             if (tlv->length != 3)
             {
@@ -370,7 +371,7 @@ static status_t _tlv_parse_leaf(
         case TLV_UINT32:
         case TLV_INT32:
         {
-            tlv_uint32_t *v = (tlv_uint32_t *)asn;
+            tlv_uint32_t *v = (tlv_uint32_t *)msg;
 
             if (tlv->length != 4)
             {
@@ -386,7 +387,7 @@ static status_t _tlv_parse_leaf(
         }
         case TLV_FIXED_STR:
         {
-            tlv_octets_t *v = (tlv_octets_t *)asn;
+            tlv_octets_t *v = (tlv_octets_t *)msg;
 
             if (tlv->length != desc->length)
             {
@@ -404,7 +405,7 @@ static status_t _tlv_parse_leaf(
         }
         case TLV_VAR_STR:
         {
-            tlv_octets_t *v = (tlv_octets_t *)asn;
+            tlv_octets_t *v = (tlv_octets_t *)msg;
 
             v->v = tlv->value;
             v->l = tlv->length;
@@ -430,20 +431,20 @@ static status_t _tlv_parse_leaf(
     return CORE_OK;
 }
 
-static status_t _tlv_parse_compound(void *asn, tlv_desc_t *parent_desc, 
+static status_t _tlv_parse_compound(void *msg, tlv_desc_t *parent_desc, 
         tlv_t *parent_tlv, int depth, int mode)
 {
     status_t rv;
-    tlv_header_t *h = (tlv_header_t *)asn;
+    tlv_header_t *h = (tlv_header_t *)msg;
     tlv_desc_t *desc = NULL, *next_desc = NULL;
     tlv_t *tlv = NULL, *emb_tlv = NULL;
-    c_uint8_t *p = asn;
+    c_uint8_t *p = msg;
     c_uint32_t offset = 0;
     c_uint8_t index = 0;
     int i = 0, j;
     char indent[17] = "                "; /* 16 spaces */
 
-    d_assert(asn, return CORE_ERROR, "Null param");
+    d_assert(msg, return CORE_ERROR, "Null param");
     d_assert(parent_desc, return CORE_ERROR, "Null param");
     d_assert(parent_tlv, return CORE_ERROR, "Null param");
 
@@ -530,28 +531,29 @@ static status_t _tlv_parse_compound(void *asn, tlv_desc_t *parent_desc,
     return CORE_OK;
 }
 
-status_t tlv_parse_msg(void *asn, tlv_desc_t *msg_desc, pkbuf_t *msg, int mode)
+status_t tlv_parse_msg(
+        void *msg, tlv_desc_t *tlv_desc, pkbuf_t *pkbuf, int mode)
 {
     status_t rv;
     tlv_t *root;
 
-    d_assert(asn, return CORE_ERROR, "Null param");
-    d_assert(msg_desc, return CORE_ERROR, "Null param");
     d_assert(msg, return CORE_ERROR, "Null param");
+    d_assert(tlv_desc, return CORE_ERROR, "Null param");
+    d_assert(pkbuf, return CORE_ERROR, "Null param");
 
-    d_assert(msg_desc->ctype == TLV_MESSAGE, return CORE_ERROR,
+    d_assert(tlv_desc->ctype == TLV_MESSAGE, return CORE_ERROR,
             "Not TLV message descriptor");
-    d_assert(msg_desc->child_descs[0], return CORE_ERROR,
+    d_assert(tlv_desc->child_descs[0], return CORE_ERROR,
             "TLV message descriptor has no members");
 
-    root = tlv_parse_block(msg->len, msg->payload, mode);
+    root = tlv_parse_block(pkbuf->len, pkbuf->payload, mode);
     if (root == NULL)
     {
         d_error("Can't parse TLV message");
         return CORE_ERROR;
     }
 
-    rv = _tlv_parse_compound(asn, msg_desc, root, 0, mode);
+    rv = _tlv_parse_compound(msg, tlv_desc, root, 0, mode);
 
     tlv_free_all(root);
 
