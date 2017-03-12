@@ -9,7 +9,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 typedef struct _asnv_header_t {
-    c_uint32_t set_ind;
+    c_uint64_t set_ind;
 } asnv_header_t;
 
 #define VALUE_SET(__m, __value) \

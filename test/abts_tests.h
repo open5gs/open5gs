@@ -28,6 +28,7 @@ const struct testlist {
     {test_nas_message},
     {test_nas_sm},
     {test_security},
+    {test_gtp_message},
 };
 
 #endif /* APR_TEST_INCLUDES */
