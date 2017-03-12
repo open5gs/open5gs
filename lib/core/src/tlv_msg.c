@@ -238,7 +238,7 @@ static c_uint32_t _tlv_add_compound(tlv_t **root, tlv_t *parent_tlv,
     return count;
 }
 
-status_t tlv_build_msg(pkbuf_t **msg, tlv_desc_t *msg_desc, void *asn)
+status_t tlv_build_msg(pkbuf_t **msg, tlv_desc_t *msg_desc, void *asn, int mode)
 {
     tlv_t *root = NULL;
     c_uint32_t r, length, rendlen;
@@ -256,13 +256,13 @@ status_t tlv_build_msg(pkbuf_t **msg, tlv_desc_t *msg_desc, void *asn)
     d_assert(r > 0 && root, tlv_free_all(root); return CORE_ERROR,
             "Can't build TLV message");
 
-    length = tlv_calc_length(root, TLV_MODE_T1_L2_I1);
+    length = tlv_calc_length(root, mode);
     *msg = pkbuf_alloc(TLV_MAX_HEADROOM, length);
     d_assert(*msg, tlv_free_all(root); return CORE_ENOMEM,
             "pkbuf_alloc() failed");
     (*msg)->len = length;
 
-    rendlen = tlv_render(root, (*msg)->payload, length, TLV_MODE_T1_L2_I1);
+    rendlen = tlv_render(root, (*msg)->payload, length, mode);
     d_assert(rendlen == length, tlv_free_all(root); return CORE_ERROR,
             "Error while render TLV (%d != %d)", length, rendlen);
 
@@ -430,8 +430,8 @@ static status_t _tlv_parse_leaf(
     return CORE_OK;
 }
 
-static status_t _tlv_parse_compound(
-        void *asn, tlv_desc_t *parent_desc, tlv_t *parent_tlv, int depth)
+static status_t _tlv_parse_compound(void *asn, tlv_desc_t *parent_desc, 
+        tlv_t *parent_tlv, int depth, int mode)
 {
     status_t rv;
     tlv_header_t *h = (tlv_header_t *)asn;
@@ -485,7 +485,7 @@ static status_t _tlv_parse_compound(
 
         if (desc->ctype == TLV_COMPOUND)
         {
-            emb_tlv = tlv_parse_embedded_block(tlv, TLV_MODE_T1_L2_I1);
+            emb_tlv = tlv_parse_embedded_block(tlv, mode);
             if (emb_tlv == NULL)
             {
                 d_error("Error while parse TLV");
@@ -497,7 +497,8 @@ static status_t _tlv_parse_compound(
 
             offset += sizeof(tlv_header_t);
 
-            rv = _tlv_parse_compound(p + offset, desc, emb_tlv, depth + 1);
+            rv = _tlv_parse_compound(
+                    p + offset, desc, emb_tlv, depth + 1, mode);
             if (rv != CORE_OK)
             {
                 d_error("Can't parse compound TLV");
@@ -529,7 +530,7 @@ static status_t _tlv_parse_compound(
     return CORE_OK;
 }
 
-status_t tlv_parse_msg(void *asn, tlv_desc_t *msg_desc, pkbuf_t *msg)
+status_t tlv_parse_msg(void *asn, tlv_desc_t *msg_desc, pkbuf_t *msg, int mode)
 {
     status_t rv;
     tlv_t *root;
@@ -543,14 +544,14 @@ status_t tlv_parse_msg(void *asn, tlv_desc_t *msg_desc, pkbuf_t *msg)
     d_assert(msg_desc->child_descs[0], return CORE_ERROR,
             "TLV message descriptor has no members");
 
-    root = tlv_parse_block(msg->len, msg->payload, TLV_MODE_T1_L2_I1);
+    root = tlv_parse_block(msg->len, msg->payload, mode);
     if (root == NULL)
     {
         d_error("Can't parse TLV message");
         return CORE_ERROR;
     }
 
-    rv = _tlv_parse_compound(asn, msg_desc, root, 0);
+    rv = _tlv_parse_compound(asn, msg_desc, root, 0, mode);
 
     tlv_free_all(root);
 

@@ -32,7 +32,8 @@ static void gtp_message_test1(abts_case *tc, void *data)
     OCTET_SET(reqv.bs_info.bs_id, (c_uint8_t*)"\x11\x22\x33\x44\x55\x66", 6);
 
     /* Build message */
-    tlv_build_msg(&req, &tlv_desc_msg_ms_preattachment_req, &reqv);
+    tlv_build_msg(&req, &tlv_desc_msg_ms_preattachment_req, &reqv,
+            TLV_MODE_T1_L2_I1);
 
 #if 0
     d_print_hex(req->payload, req->len);
@@ -42,7 +43,8 @@ static void gtp_message_test1(abts_case *tc, void *data)
     memset(&reqv2, 0, sizeof(tlv_msg_ms_preattachment_req));
 
     /* Parse message */
-    tlv_parse_msg(&reqv2, &tlv_desc_msg_ms_preattachment_req, req);
+    tlv_parse_msg(&reqv2, &tlv_desc_msg_ms_preattachment_req, req,
+            TLV_MODE_T1_L2_I1);
 
     if (COMPD_ISSET(reqv2.ms_info))
         if (COMPD_ISSET(reqv2.ms_info.ms_security_history))

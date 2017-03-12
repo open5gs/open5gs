@@ -137,10 +137,10 @@ typedef struct _tlv_null {
 } tlv_null_t;
 
 CORE_DECLARE(status_t) tlv_build_msg(
-        pkbuf_t **msg, tlv_desc_t *msg_desc, void *asn);
+        pkbuf_t **msg, tlv_desc_t *msg_desc, void *asn, int mode);
 
 CORE_DECLARE(status_t) tlv_parse_msg(
-        void *asn, tlv_desc_t *msg_desc, pkbuf_t *msg);
+        void *asn, tlv_desc_t *msg_desc, pkbuf_t *msg, int mode);
 
 #ifdef __cplusplus
 }
