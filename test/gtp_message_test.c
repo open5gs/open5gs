@@ -11,8 +11,10 @@ static void gtp_message_test1(abts_case *tc, void *data)
     asnv_msg_ms_preattachment_req reqv2;
 
     pkbuf_t *req = NULL;
+#if 0
     c_uint8_t *buf;
     c_uint32_t buflen;
+#endif
 
     {
         extern int _asn_msg;
@@ -51,15 +53,14 @@ static void gtp_message_test1(abts_case *tc, void *data)
     ;
 #endif
 
+#if 0
     if (COMPD_ISSET(reqv2.bs_info))
         if (OCTET_ISSET(reqv2.bs_info.bs_id))
         {
             OCTET_GET(buf, buflen, reqv2.bs_info.bs_id);
-#if 0
             d_print_hex(buf, buflen);
-#endif
         }
-    
+#endif
     pkbuf_free(req);
 }
 

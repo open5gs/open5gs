@@ -71,8 +71,6 @@ AM_PROG_LIBTOOL
 
 dnl Checks for compile flag
 AX_CHECK_COMPILE_FLAG([-Wno-unused-result], [CFLAGS="$CFLAGS -Wno-unused-result"])
-AX_CHECK_COMPILE_FLAG([-Wno-nused-but-set-variable], [TEST_CFLAGS="$TEST_CFLAGS -Wno-unused-but-set-variable"])
-AC_SUBST(TEST_CFLAGS)
 
 dnl Checks for pointer size
 AC_CHECK_SIZEOF(void*, 4)
