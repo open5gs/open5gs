@@ -60,10 +60,10 @@ typedef enum {
     TLV_MORE,
     TLV_COMPOUND,
     TLV_MESSAGE,
-} tlvc_type_e;
+} tlv_type_e;
 
 typedef struct _tlv_desc_t {
-    tlvc_type_e ctype;
+    tlv_type_e ctype;
     c_uint16_t type;
     c_uint16_t length;
     c_uint16_t vsize;
