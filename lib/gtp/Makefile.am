@@ -3,10 +3,10 @@
 noinst_LTLIBRARIES = libgtp.la
 
 libgtp_la_SOURCES = \
-	asn_msg.h asn_tlv_user.h asn_tlv_desc.h asn_msg_desc.h
+	asn_msg.h asn_tlv_desc.h
 
 nodist_libgtp_la_SOURCES = \
-	asn_msg.c 
+	asn_msg.c asn_tlv_desc.c
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \

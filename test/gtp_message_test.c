@@ -4,6 +4,7 @@
 
 #include "testutil.h"
 #include "asn_msg.h"
+#include "asn_tlv_desc.h"
 
 static void gtp_message_test1(abts_case *tc, void *data)
 {

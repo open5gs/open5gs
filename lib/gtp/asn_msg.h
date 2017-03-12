@@ -1,8 +1,10 @@
 #ifndef __ASN_MSG_H__
 #define __ASN_MSG_H__
 
-#include "core.h"
 #include "core_pkbuf.h"
+
+#define ASN_HEADER_LEN 12
+#define ASNL_VARIABLE 0
 
 #ifdef __cplusplus
 extern "C" {
@@ -144,11 +146,8 @@ CORE_DECLARE(status_t) asn_build_msg(
 CORE_DECLARE(status_t) asn_parse_msg(
         void *asnv, asn_msg_desc_t *msg_desc, pkbuf_t *msg);
 
-#include "asn_tlv_desc.h"
-#include "asn_msg_desc.h"
-
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* !__ASN_MSG_H__ */
+#endif /* __ASN_MSG_H__ */

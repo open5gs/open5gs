@@ -2,13 +2,7 @@
 #include "core_debug.h"
 #include "core_tlv.h"
 
-#include "asn_hdr.h"
 #include "asn_msg.h"
-
-#include "netinet/in.h"
-
-#include "asn_tlv_desc.c"
-#include "asn_msg_desc.c"
 
 asnt_desc_t asnt_more = 
 {
