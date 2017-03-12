@@ -1,8 +1,7 @@
 #define TRACE_MODULE _tlv_msg
-#include "core_debug.h"
-#include "core_tlv.h"
 
-#include "asn_msg.h"
+#include "core_debug.h"
+#include "core_tlv_msg.h"
 
 tlv_desc_t tlv_desc_more = 
 {
@@ -258,7 +257,7 @@ status_t tlv_build_msg(pkbuf_t **msg, tlv_desc_t *msg_desc, void *asn)
             "Can't build TLV message");
 
     length = tlv_calc_length(root, TLV_MODE_T1_L2_I1);
-    *msg = pkbuf_alloc(TLV_HEADER_LEN, length);
+    *msg = pkbuf_alloc(TLV_MAX_HEADROOM, length);
     d_assert(*msg, tlv_free_all(root); return CORE_ENOMEM,
             "pkbuf_alloc() failed");
     (*msg)->len = length;

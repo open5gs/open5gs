@@ -1,4 +1,4 @@
-#include "asn_tlv_desc.h"
+#include "gtpv2c_tlv.h"
 
 tlv_desc_t tlv_desc_authorization_policy_support = 
 {

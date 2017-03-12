@@ -16,10 +16,11 @@ libcore_la_SOURCES = \
 	../include/core_rwlock.h ../include/core_semaphore.h ../include/core_sha1.h \
 	../include/core_sha1_hmac.h ../include/core_sha2.h ../include/core_sha2_hmac.h \
 	../include/core_signal.h ../include/core_thread.h ../include/core_time.h \
-	../include/core_timer.h ../include/core_tlv.h ../include/core_version.h
+	../include/core_timer.h ../include/core_tlv.h ../include/core_tlv_msg.h \
+	../include/core_version.h
 
 nodist_libcore_la_SOURCES = \
-    debug.c fsm.c msgq.c ringbuf.c timer.c tlv.c \
+    debug.c fsm.c msgq.c ringbuf.c timer.c tlv.c tlv_msg.c \
 	aes.c aes_cmac.c sha1.c sha1_hmac.c sha2.c sha2_hmac.c misc.c
 
 libcore_la_DEPENDENCIES = \

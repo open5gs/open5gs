@@ -1,18 +1,19 @@
 #ifndef __TLV_MSG_H__
 #define __TLV_MSG_H__
 
+#include "core_tlv.h"
 #include "core_pkbuf.h"
-
-#define TLV_HEADER_LEN 12
-#define TLV_VARIABLE 0
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
-typedef struct _tlv_header_t {
-    c_uint64_t set_ind;
-} tlv_header_t;
+#define TLV_MAX_HEADROOM 16
+
+#define TLV_VARIABLE_LEN 0
+
+#define TLV_MAX_MORE 8
+#define TLV_1_OR_MORE(__v) __v[TLV_MAX_MORE]
 
 #define VALUE_SET(__m, __value) \
     __m.v = __value; __m.h.set_ind = 1
@@ -68,6 +69,12 @@ typedef struct _tlv_desc_t {
     c_uint16_t vsize;
     void *child_descs[];
 } tlv_desc_t;
+
+extern tlv_desc_t tlv_desc_more;
+
+typedef struct _tlv_header_t {
+    c_uint64_t set_ind;
+} tlv_header_t;
 
 /* 8-bit Unsigned integer */
 typedef struct _tlv_uint8_t {
@@ -128,11 +135,6 @@ typedef struct _tlv_octets_t {
 typedef struct _tlv_null {
     tlv_header_t h;
 } tlv_null_t;
-
-#define TLV_MORE 8
-#define TLV_1_OR_MORE(__v) __v[TLV_MORE]
-
-extern tlv_desc_t tlv_desc_more;
 
 CORE_DECLARE(status_t) tlv_build_msg(
         pkbuf_t **msg, tlv_desc_t *msg_desc, void *asn);
