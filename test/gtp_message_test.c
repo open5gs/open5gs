@@ -8,8 +8,8 @@
 
 static void gtp_message_test1(abts_case *tc, void *data)
 {
-    asn_msg_ms_preattachment_req reqv;
-    asn_msg_ms_preattachment_req reqv2;
+    tlv_msg_ms_preattachment_req reqv;
+    tlv_msg_ms_preattachment_req reqv2;
 
     pkbuf_t *req = NULL;
 #if 0
@@ -18,11 +18,11 @@ static void gtp_message_test1(abts_case *tc, void *data)
 #endif
 
     {
-        extern int _asn_msg;
-        _asn_msg = 0;
+        extern int _tlv_msg;
+        _tlv_msg = 0;
     }
     /* Initialize message value structure */
-    memset(&reqv, 0, sizeof(asn_msg_ms_preattachment_req));
+    memset(&reqv, 0, sizeof(tlv_msg_ms_preattachment_req));
 
     /* Set nessary members of message */
     COMPD_SET(reqv.ms_info);
@@ -33,17 +33,17 @@ static void gtp_message_test1(abts_case *tc, void *data)
     OCTET_SET(reqv.bs_info.bs_id, (c_uint8_t*)"\x11\x22\x33\x44\x55\x66", 6);
 
     /* Build message */
-    asn_build_msg(&req, &asn_desc_msg_ms_preattachment_req, &reqv);
+    tlv_build_msg(&req, &tlv_desc_msg_ms_preattachment_req, &reqv);
 
 #if 0
     d_print_hex(req->payload, req->len);
 #endif
 
     /* Initialize message value structure */
-    memset(&reqv2, 0, sizeof(asn_msg_ms_preattachment_req));
+    memset(&reqv2, 0, sizeof(tlv_msg_ms_preattachment_req));
 
     /* Parse message */
-    asn_parse_msg(&reqv2, &asn_desc_msg_ms_preattachment_req, req);
+    tlv_parse_msg(&reqv2, &tlv_desc_msg_ms_preattachment_req, req);
 
     if (COMPD_ISSET(reqv2.ms_info))
         if (COMPD_ISSET(reqv2.ms_info.ms_security_history))

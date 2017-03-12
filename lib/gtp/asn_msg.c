@@ -1,15 +1,15 @@
-#define TRACE_MODULE _asn_msg
+#define TRACE_MODULE _tlv_msg
 #include "core_debug.h"
 #include "core_tlv.h"
 
 #include "asn_msg.h"
 
-asn_desc_t asn_desc_more = 
+tlv_desc_t tlv_desc_more = 
 {
     TLV_MORE, 0, TLV_MORE, 0, { NULL }
 };
 
-static tlv_t* _asn_add_leaf(tlv_t *parent_tlv, tlv_t *tlv, asn_desc_t *desc,
+static tlv_t* _tlv_add_leaf(tlv_t *parent_tlv, tlv_t *tlv, tlv_desc_t *desc,
         void *asn)
 {
     switch (desc->ctype)
@@ -17,7 +17,7 @@ static tlv_t* _asn_add_leaf(tlv_t *parent_tlv, tlv_t *tlv, asn_desc_t *desc,
         case TLV_UINT8:
         case TLV_INT8:
         {
-            asn_uint8_t *v = (asn_uint8_t *)asn;
+            tlv_uint8_t *v = (tlv_uint8_t *)asn;
 
             d_trace(1, "V_1B:%02x", v->v);
 
@@ -30,7 +30,7 @@ static tlv_t* _asn_add_leaf(tlv_t *parent_tlv, tlv_t *tlv, asn_desc_t *desc,
         }
         case TLV_UINT16:
         {
-            asn_uint16_t *v = (asn_uint16_t *)asn;
+            tlv_uint16_t *v = (tlv_uint16_t *)asn;
 
             d_trace(1, "V_2B:%04x", v->v);
 
@@ -46,7 +46,7 @@ static tlv_t* _asn_add_leaf(tlv_t *parent_tlv, tlv_t *tlv, asn_desc_t *desc,
         case TLV_UINT24:
         case TLV_INT24:
         {
-            asn_uint24_t *v = (asn_uint24_t *)asn;
+            tlv_uint24_t *v = (tlv_uint24_t *)asn;
 
             d_trace(1, "V_3B:%06x", v->v);
 
@@ -63,7 +63,7 @@ static tlv_t* _asn_add_leaf(tlv_t *parent_tlv, tlv_t *tlv, asn_desc_t *desc,
         case TLV_UINT32:
         case TLV_INT32:
         {
-            asn_uint32_t *v = (asn_uint32_t *)asn;
+            tlv_uint32_t *v = (tlv_uint32_t *)asn;
 
             d_trace(1, "V_4B:%08x", v->v);
 
@@ -78,7 +78,7 @@ static tlv_t* _asn_add_leaf(tlv_t *parent_tlv, tlv_t *tlv, asn_desc_t *desc,
         }
         case TLV_FIXED_STR:
         {
-            asn_octets_t *v = (asn_octets_t *)asn;
+            tlv_octets_t *v = (tlv_octets_t *)asn;
 
             d_trace(1, "V_FSTR: ", v->v);
             d_trace_hex(1, v->v, v->l);
@@ -92,7 +92,7 @@ static tlv_t* _asn_add_leaf(tlv_t *parent_tlv, tlv_t *tlv, asn_desc_t *desc,
         }
         case TLV_VAR_STR:
         {
-            asn_octets_t *v = (asn_octets_t *)asn;
+            tlv_octets_t *v = (tlv_octets_t *)asn;
 
             d_assert(v->l > 0, return NULL, "Length is zero");
 
@@ -127,11 +127,11 @@ static tlv_t* _asn_add_leaf(tlv_t *parent_tlv, tlv_t *tlv, asn_desc_t *desc,
     return tlv;
 }
 
-static c_uint32_t _asn_add_compound(tlv_t **root, tlv_t *parent_tlv,
-        asn_desc_t *parent_desc, void *asn, int depth)
+static c_uint32_t _tlv_add_compound(tlv_t **root, tlv_t *parent_tlv,
+        tlv_desc_t *parent_desc, void *asn, int depth)
 {
-    asn_header_t *h;
-    asn_desc_t *desc = NULL, *next_desc = NULL;
+    tlv_header_t *h;
+    tlv_desc_t *desc = NULL, *next_desc = NULL;
     tlv_t *tlv = NULL, *emb_tlv = NULL;
     c_uint8_t *p = asn;
     c_uint32_t offset = 0, count = 0;
@@ -156,7 +156,7 @@ static c_uint32_t _asn_add_compound(tlv_t **root, tlv_t *parent_tlv,
             int offset2 = offset;
             for (j = 0; j < next_desc->length; j++)
             {
-                h = (asn_header_t *)(p + offset2);
+                h = (tlv_header_t *)(p + offset2);
 
                 if (h->set_ind == 0)
                     break;
@@ -171,8 +171,8 @@ static c_uint32_t _asn_add_compound(tlv_t **root, tlv_t *parent_tlv,
                     else
                         tlv = tlv_add(tlv, desc->type, 0, 0, NULL);
 
-                    r = _asn_add_compound(&emb_tlv, tlv, desc,
-                            p + offset + sizeof(asn_header_t), depth + 1);
+                    r = _tlv_add_compound(&emb_tlv, tlv, desc,
+                            p + offset + sizeof(tlv_header_t), depth + 1);
                     d_assert(r > 0 && emb_tlv, return 0,
                             "Can't build compound TLV");
                     count += 1 + r;
@@ -183,7 +183,7 @@ static c_uint32_t _asn_add_compound(tlv_t **root, tlv_t *parent_tlv,
                             indent, i, desc->type, desc->length,
                             desc->ctype, desc->vsize, p + offset);
 
-                    tlv = _asn_add_leaf(parent_tlv, tlv, desc, p + offset);
+                    tlv = _tlv_add_leaf(parent_tlv, tlv, desc, p + offset);
                     d_assert(tlv, return 0, "Can't build leaf TLV");
                     count++;
                 }
@@ -198,7 +198,7 @@ static c_uint32_t _asn_add_compound(tlv_t **root, tlv_t *parent_tlv,
         }
         else
         {
-            h = (asn_header_t *)(p + offset);
+            h = (tlv_header_t *)(p + offset);
 
             if (h->set_ind)
             {
@@ -212,8 +212,8 @@ static c_uint32_t _asn_add_compound(tlv_t **root, tlv_t *parent_tlv,
                     else
                         tlv = tlv_add(tlv, desc->type, 0, 0, NULL);
 
-                    r = _asn_add_compound(&emb_tlv, tlv, desc,
-                            p + offset + sizeof(asn_header_t), depth + 1);
+                    r = _tlv_add_compound(&emb_tlv, tlv, desc,
+                            p + offset + sizeof(tlv_header_t), depth + 1);
                     d_assert(r > 0 && emb_tlv, return 0,
                             "Can't build compound TLV");
                     count += 1 + r;
@@ -224,7 +224,7 @@ static c_uint32_t _asn_add_compound(tlv_t **root, tlv_t *parent_tlv,
                             indent, i, desc->type, desc->length,
                             desc->ctype, desc->vsize, p + offset);
 
-                    tlv = _asn_add_leaf(parent_tlv, tlv, desc, p + offset);
+                    tlv = _tlv_add_leaf(parent_tlv, tlv, desc, p + offset);
                     d_assert(tlv, return 0, "Can't build leaf TLV");
                     count++;
                 }
@@ -239,7 +239,7 @@ static c_uint32_t _asn_add_compound(tlv_t **root, tlv_t *parent_tlv,
     return count;
 }
 
-status_t asn_build_msg(pkbuf_t **msg, asn_desc_t *msg_desc, void *asn)
+status_t tlv_build_msg(pkbuf_t **msg, tlv_desc_t *msg_desc, void *asn)
 {
     tlv_t *root = NULL;
     c_uint32_t r, length, rendlen;
@@ -253,7 +253,7 @@ status_t asn_build_msg(pkbuf_t **msg, asn_desc_t *msg_desc, void *asn)
     d_assert(msg_desc->child_descs[0], return CORE_ERROR,
             "TLV message descriptor has no members");
 
-    r = _asn_add_compound(&root, NULL, msg_desc, asn, 0);
+    r = _tlv_add_compound(&root, NULL, msg_desc, asn, 0);
     d_assert(r > 0 && root, tlv_free_all(root); return CORE_ERROR,
             "Can't build TLV message");
 
@@ -272,16 +272,16 @@ status_t asn_build_msg(pkbuf_t **msg, asn_desc_t *msg_desc, void *asn)
     return CORE_OK;
 }
 
-static asn_desc_t* _asn_find_desc(c_uint8_t *asn_desc_index,
-        c_uint32_t *asn_offset, asn_desc_t *parent_desc, tlv_t *tlv)
+static tlv_desc_t* _tlv_find_desc(c_uint8_t *tlv_desc_index,
+        c_uint32_t *tlv_offset, tlv_desc_t *parent_desc, tlv_t *tlv)
 {
-    asn_desc_t *prev_desc = NULL, *desc = NULL;
+    tlv_desc_t *prev_desc = NULL, *desc = NULL;
     int i, offset = 0;
 
     d_assert(parent_desc, return NULL, "Null param");
     d_assert(tlv, return NULL, "Null param");
 
-    d_trace(5, "_asn_find_desc:%d - ", tlv->type);
+    d_trace(5, "_tlv_find_desc:%d - ", tlv->type);
 
     for (i = 0, desc = parent_desc->child_descs[i]; desc != NULL;
             i++, desc = parent_desc->child_descs[i])
@@ -290,15 +290,15 @@ static asn_desc_t* _asn_find_desc(c_uint8_t *asn_desc_index,
 
         if (desc->type == tlv->type)
         {
-            *asn_desc_index = i;
-            *asn_offset = offset;
+            *tlv_desc_index = i;
+            *tlv_offset = offset;
             break;
         }
 
         if (desc->ctype == TLV_MORE)
         {
             d_assert(prev_desc && prev_desc->ctype != TLV_MORE,
-                    return NULL, "Invalid previous asn_desc_t");
+                    return NULL, "Invalid previous tlv_desc_t");
             offset += prev_desc->vsize * (desc->length - 1);
         }
         else
@@ -314,8 +314,8 @@ static asn_desc_t* _asn_find_desc(c_uint8_t *asn_desc_index,
     return desc;
 }
 
-static status_t _asn_parse_leaf(
-        void *asn, asn_desc_t *desc, tlv_t *tlv)
+static status_t _tlv_parse_leaf(
+        void *asn, tlv_desc_t *desc, tlv_t *tlv)
 {
     d_assert(asn, return CORE_ERROR, "Null param");
     d_assert(desc, return CORE_ERROR, "Null param");
@@ -326,7 +326,7 @@ static status_t _asn_parse_leaf(
         case TLV_UINT8:
         case TLV_INT8:
         {
-            asn_uint8_t *v = (asn_uint8_t *)asn;
+            tlv_uint8_t *v = (tlv_uint8_t *)asn;
 
             if (tlv->length != 1)
             {
@@ -340,7 +340,7 @@ static status_t _asn_parse_leaf(
         case TLV_UINT16:
         case TLV_INT16:
         {
-            asn_uint16_t *v = (asn_uint16_t *)asn;
+            tlv_uint16_t *v = (tlv_uint16_t *)asn;
 
             if (tlv->length != 2)
             {
@@ -355,7 +355,7 @@ static status_t _asn_parse_leaf(
         case TLV_UINT24:
         case TLV_INT24:
         {
-            asn_uint24_t *v = (asn_uint24_t *)asn;
+            tlv_uint24_t *v = (tlv_uint24_t *)asn;
 
             if (tlv->length != 3)
             {
@@ -371,7 +371,7 @@ static status_t _asn_parse_leaf(
         case TLV_UINT32:
         case TLV_INT32:
         {
-            asn_uint32_t *v = (asn_uint32_t *)asn;
+            tlv_uint32_t *v = (tlv_uint32_t *)asn;
 
             if (tlv->length != 4)
             {
@@ -387,7 +387,7 @@ static status_t _asn_parse_leaf(
         }
         case TLV_FIXED_STR:
         {
-            asn_octets_t *v = (asn_octets_t *)asn;
+            tlv_octets_t *v = (tlv_octets_t *)asn;
 
             if (tlv->length != desc->length)
             {
@@ -405,7 +405,7 @@ static status_t _asn_parse_leaf(
         }
         case TLV_VAR_STR:
         {
-            asn_octets_t *v = (asn_octets_t *)asn;
+            tlv_octets_t *v = (tlv_octets_t *)asn;
 
             v->v = tlv->value;
             v->l = tlv->length;
@@ -431,12 +431,12 @@ static status_t _asn_parse_leaf(
     return CORE_OK;
 }
 
-static status_t _asn_parse_compound(
-        void *asn, asn_desc_t *parent_desc, tlv_t *parent_tlv, int depth)
+static status_t _tlv_parse_compound(
+        void *asn, tlv_desc_t *parent_desc, tlv_t *parent_tlv, int depth)
 {
     status_t rv;
-    asn_header_t *h = (asn_header_t *)asn;
-    asn_desc_t *desc = NULL, *next_desc = NULL;
+    tlv_header_t *h = (tlv_header_t *)asn;
+    tlv_desc_t *desc = NULL, *next_desc = NULL;
     tlv_t *tlv = NULL, *emb_tlv = NULL;
     c_uint8_t *p = asn;
     c_uint32_t offset = 0;
@@ -454,14 +454,14 @@ static status_t _asn_parse_compound(
     tlv = parent_tlv;
     while(tlv)
     {
-        desc = _asn_find_desc(&index, &offset, parent_desc, tlv);
+        desc = _tlv_find_desc(&index, &offset, parent_desc, tlv);
         if (desc == NULL)
         {
             d_error("Unexpected TLV type:%d", tlv->type);
             return CORE_ERROR;
         }
 
-        h = (asn_header_t *)(p + offset);
+        h = (tlv_header_t *)(p + offset);
 
         /* Multiple of the same type TLV may be included */
         next_desc = parent_desc->child_descs[index+1];
@@ -469,7 +469,7 @@ static status_t _asn_parse_compound(
         {
             for (j = 0; j < next_desc->length; j++)
             {
-                h = (asn_header_t *)(p + offset + desc->vsize * j);
+                h = (tlv_header_t *)(p + offset + desc->vsize * j);
                 if (h->set_ind == 0)
                 {
                     offset += desc->vsize * j;
@@ -496,9 +496,9 @@ static status_t _asn_parse_compound(
             d_trace(1, "\nPARSE %sC#%d T:%d (vsz=%d) off:%p ",
                     indent, i++, desc->type, desc->vsize, p + offset);
 
-            offset += sizeof(asn_header_t);
+            offset += sizeof(tlv_header_t);
 
-            rv = _asn_parse_compound(p + offset, desc, emb_tlv, depth + 1);
+            rv = _tlv_parse_compound(p + offset, desc, emb_tlv, depth + 1);
             if (rv != CORE_OK)
             {
                 d_error("Can't parse compound TLV");
@@ -513,7 +513,7 @@ static status_t _asn_parse_compound(
                     indent, i++, desc->type, desc->length,
                     desc->ctype, desc->vsize, p + offset);
 
-            rv = _asn_parse_leaf(p + offset, desc, tlv);
+            rv = _tlv_parse_leaf(p + offset, desc, tlv);
             if (rv != CORE_OK)
             {
                 d_error("Can't parse leaf TLV");
@@ -530,7 +530,7 @@ static status_t _asn_parse_compound(
     return CORE_OK;
 }
 
-status_t asn_parse_msg(void *asn, asn_desc_t *msg_desc, pkbuf_t *msg)
+status_t tlv_parse_msg(void *asn, tlv_desc_t *msg_desc, pkbuf_t *msg)
 {
     status_t rv;
     tlv_t *root;
@@ -551,7 +551,7 @@ status_t asn_parse_msg(void *asn, asn_desc_t *msg_desc, pkbuf_t *msg)
         return CORE_ERROR;
     }
 
-    rv = _asn_parse_compound(asn, msg_desc, root, 0);
+    rv = _tlv_parse_compound(asn, msg_desc, root, 0);
 
     tlv_free_all(root);
 
