@@ -84,22 +84,30 @@ else:
 
 document = Document(filename)
 
-ie_table = ""
 msg_table = ""
+ie_table = ""
 
+msg_table_index = 0
+ie_table_index = 0
+
+i = 0
 for table in document.tables:
     cell = table.rows[0].cells[0]
-    if cell.text.find('IE Type value') != -1:
-        ie_table = table
-        printInfo("[Information Element Table]")
-        printInfo("...done");
     if cell.text.find('Message Type value') != -1:
         msg_table = table
+        msg_table_index = i
         printInfo("[Message Table]")
         printInfo("...done");
+    if cell.text.find('IE Type value') != -1:
+        ie_table = table
+        ie_table_index = i
+        printInfo("[Information Element Table]")
+        printInfo("...done");
+    i += 1
 
 printInfo("[Message Type]")
 msg_list = {}
+i = 0
 for row in msg_table.rows[2:-4]:
     if len(row.cells[0].text) == 0:
         continue
@@ -107,23 +115,54 @@ for row in msg_table.rows[2:-4]:
         continue
     if row.cells[1].text.find('Reserved') != -1:
         continue
-    name = row.cells[1].text
-    name = re.sub('\n', '', name)
-    name = re.sub('\([^\)]*\)*', '', name)
-    name = re.sub('\s$', '', name)
-    msg_list[name] = { "type": row.cells[0].text }
-    printDebug(name + " " + "type:" + row.cells[0].text)
+    key = re.sub('\s*\n*\s*\([^\)]*\)*', '', row.cells[1].text)
+    msg_list[i] = { "key": key, "type": row.cells[0].text }
+    printDebug(msg_list[i])
+    i += 1
 printInfo("...done")
 
-#printInfo("[Information Element Type]")
-#ie_list = {}
-#for row in ie_table.rows[1:-5]:
-#    if row.cells[1].text.find('Reserved') != -1:
-#        continue
-#    ie_list[row.cells[1].text] = { "type": row.cells[0].text }
-#    printDebug(row.cells[1].text + " " + "type:" + row.cells[0].text)
-#printInfo("...done")
-            
+printInfo("[Information Element Type]")
+ie_list = {}
+for row in ie_table.rows[1:-5]:
+    if row.cells[1].text.find('Reserved') != -1:
+        continue
+    key = row.cells[1].text
+    if key.find('MM Context') != -1:
+        continue
+    elif key.find('Recovery') != -1:
+        key = 'Recovery'
+    elif key.find('Trusted WLAN Mode Indication') != -1:
+        key = 'TWMI'
+    elif key.find('Local Distiguished Name (LDN)') != -1:
+        key = 'Local Distinguished Name (LDN)'
+    elif key.find('Additional Protocol Configuration Options (APCO)') != -1:
+        key = row.cells[1].text
+    else:
+        key = re.sub('.*\(', '', row.cells[1].text)
+        key = re.sub('\)', '', key)
+    type = row.cells[0].text
+    ie_list[key] = { "type": type }
+    printDebug(key + " " + "type:" + type)
+ie_list['MM Context'] = { "type": "107" }
+ie_list['Bearer Context'] = { "type": "93" }
+printInfo("...done")
+
+i = 0
+for table in document.tables[msg_table_index+1:msg_table_index+4]:
+    j = 0
+    for row in table.rows[1:]:
+        if row.cells[4].text.isdigit() is not True:
+            continue
+        type = re.sub('\s*\n*\s*\(NOTE.*\)*', '', row.cells[3].text)
+        if type not in ie_list.keys():
+            assert False, "Unknown IE type : [" \
+                    + row.cells[3].text + "]" + "(" + type + ")"
+        msg_list[i][j] = { "ie" : row.cells[0].text, 
+                "presence" : row.cells[1].text, "comment" : row.cells[2].text, 
+                "type" : type, "instance" : row.cells[4].text }
+        printDebug(msg_list[i][j])
+        j += 1
+    i+=1
 
 # Data will be a list of rows represented as dictionaries
 # containing each row's data.
