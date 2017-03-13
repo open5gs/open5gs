@@ -100,19 +100,29 @@ for table in document.tables:
 
 printInfo("[Message Type]")
 msg_list = {}
-for row in msg_table.rows[1:]:
-    msg_list[row.cells[1].text] = { "type": row.cells[0].text }
-    printDebug(row.cells[1].text + " " + "type:" + row.cells[0].text)
-printInfo("...done")
-
-printInfo("[Information Element Type]")
-ie_list = {}
-for row in ie_table.rows[1:-5]:
+for row in msg_table.rows[2:-4]:
+    if len(row.cells[0].text) == 0:
+        continue
+    if row.cells[0].text.find('to') != -1:
+        continue
     if row.cells[1].text.find('Reserved') != -1:
         continue
-    ie_list[row.cells[1].text] = { "type": row.cells[0].text }
-    printDebug(row.cells[1].text + " " + "type:" + row.cells[0].text)
+    name = row.cells[1].text
+    name = re.sub('\n', '', name)
+    name = re.sub('\([^\)]*\)*', '', name)
+    name = re.sub('\s$', '', name)
+    msg_list[name] = { "type": row.cells[0].text }
+    printDebug(name + " " + "type:" + row.cells[0].text)
 printInfo("...done")
+
+#printInfo("[Information Element Type]")
+#ie_list = {}
+#for row in ie_table.rows[1:-5]:
+#    if row.cells[1].text.find('Reserved') != -1:
+#        continue
+#    ie_list[row.cells[1].text] = { "type": row.cells[0].text }
+#    printDebug(row.cells[1].text + " " + "type:" + row.cells[0].text)
+#printInfo("...done")
             
 
 # Data will be a list of rows represented as dictionaries
