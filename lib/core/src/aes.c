@@ -1355,7 +1355,6 @@ static void ctr128_inc(c_uint8_t *counter)
     } while (n);
 }
 
-#if 0
 static void ctr128_inc_aligned(c_uint8_t *counter)
 {
     size_t *data, c, d, n;
@@ -1381,7 +1380,6 @@ static void ctr128_inc_aligned(c_uint8_t *counter)
         c = ((d - c) & ~d) >> (sizeof(size_t) * 8 - 1);
     } while (n);
 }
-#endif
 
 status_t aes_ctr128_encrypt(const c_uint8_t *key,
         c_uint8_t *ivec, const c_uint8_t *in, const c_uint32_t inlen,
@@ -1405,7 +1403,6 @@ status_t aes_ctr128_encrypt(const c_uint8_t *key,
     memset(ecount_buf, 0, 16);
     nrounds = aes_setup_enc(rk, key, 128);
 
-#if 0
     while (n && len) 
     {
         *(out++) = *(in++) ^ ecount_buf[n];
@@ -1436,7 +1433,6 @@ status_t aes_ctr128_encrypt(const c_uint8_t *key,
         }
     }
     return CORE_OK;
-#endif
 
     /* low-performance for understanding the aes-ctr128 */
     while (l < len) 

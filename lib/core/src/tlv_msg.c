@@ -180,7 +180,7 @@ static c_uint32_t _tlv_add_compound(tlv_t **root, tlv_t *parent_tlv,
                 {
                     d_trace(1, "\nBUILD %sC#%d T:%d I:%d (vsz=%d) off:%p ",
                             indent, i, desc->type, desc->instance, desc->vsize,
-                            p + offset);
+                            p + offset2);
 
                     if (parent_tlv)
                         tlv = tlv_embed(parent_tlv, 
@@ -189,7 +189,7 @@ static c_uint32_t _tlv_add_compound(tlv_t **root, tlv_t *parent_tlv,
                         tlv = tlv_add(tlv, desc->type, 0, desc->instance, NULL);
 
                     r = _tlv_add_compound(&emb_tlv, tlv, desc,
-                            p + offset + sizeof(tlv_header_t), depth + 1);
+                            p + offset2 + sizeof(tlv_header_t), depth + 1);
                     d_assert(r > 0 && emb_tlv, return 0,
                             "Can't build compound TLV");
                     count += 1 + r;
