@@ -1,5 +1,9 @@
 #include "core_tlv.h"
-#include "core_net.h"
+#include "core_tlv_msg.h"
+#include "core_lib.h"
+
+#include "core_debug.h"
+
 #include "testutil.h"
 
 #define TLV_0_LEN 10
@@ -635,6 +639,200 @@ static void tlv_test_5(abts_case *tc, void *data)
     return;
 }
 
+/* Sample header for tlv_msg */
+#define TLV_AUTHORIZATION_POLICY_SUPPORT_TYPE 21
+#define TLV_AUTHORIZATION_POLICY_SUPPORT_LEN 1
+typedef tlv_uint8_t tlv_authorization_policy_support_t;
+extern tlv_desc_t tlv_desc_authorization_policy_support;
+
+#define TLV_CLIENT_SECURITY_HISTORY_TYPE 108
+#define TLV_CLIENT_SECURITY_HISTORY_LEN TLV_VARIABLE_LEN
+typedef struct _tlv_client_security_history_t {
+    tlv_header_t h;
+    tlv_authorization_policy_support_t authorization_policy_support0;
+    tlv_authorization_policy_support_t authorization_policy_support2;
+} tlv_client_security_history_t;
+extern tlv_desc_t tlv_desc_client_security_history;
+
+#define TLV_CLIENT_INFO_TYPE 103
+#define TLV_CLIENT_INFO_LEN TLV_VARIABLE_LEN
+typedef struct _tlv_client_info_t {
+    tlv_header_t h;
+    tlv_client_security_history_t client_security_history;
+} tlv_client_info_t;
+extern tlv_desc_t tlv_desc_client_info;
+
+#define TLV_SERVER_NAME_TYPE 25
+#define TLV_SERVER_NAME_LEN TLV_VARIABLE_LEN
+typedef tlv_octets_t tlv_server_name_t;
+extern tlv_desc_t tlv_desc_server_name;
+
+#define TLV_SERVER_INFO_TYPE 26
+#define TLV_SERVER_INFO_LEN TLV_VARIABLE_LEN
+typedef struct _tlv_server_info_t {
+    tlv_header_t h;
+    tlv_server_name_t TLV_1_OR_MORE(server_name);
+} tlv_server_info_t;
+extern tlv_desc_t tlv_desc_server_info;
+
+typedef struct _tlv_attach_req {
+    tlv_client_info_t client_info;
+    tlv_server_info_t server_info;
+} tlv_attach_req;
+
+extern tlv_desc_t tlv_desc_attach_req;
+
+/* Sample source for tlv_msg */
+tlv_desc_t tlv_desc_authorization_policy_support0 = 
+{
+    TLV_UINT8,
+    TLV_AUTHORIZATION_POLICY_SUPPORT_TYPE,
+    TLV_AUTHORIZATION_POLICY_SUPPORT_LEN,
+    0,
+    sizeof(tlv_authorization_policy_support_t),
+    { NULL }
+};
+tlv_desc_t tlv_desc_authorization_policy_support2 = 
+{
+    TLV_UINT8,
+    TLV_AUTHORIZATION_POLICY_SUPPORT_TYPE,
+    TLV_AUTHORIZATION_POLICY_SUPPORT_LEN,
+    2,
+    sizeof(tlv_authorization_policy_support_t),
+    { NULL }
+};
+
+tlv_desc_t tlv_desc_client_security_history = 
+{
+    TLV_COMPOUND,
+    TLV_CLIENT_SECURITY_HISTORY_TYPE,
+    TLV_CLIENT_SECURITY_HISTORY_LEN,
+    0, 
+    sizeof(tlv_client_security_history_t),
+    {
+        &tlv_desc_authorization_policy_support0,
+        &tlv_desc_authorization_policy_support2,
+        NULL,
+    }
+};
+
+tlv_desc_t tlv_desc_client_info = 
+{
+    TLV_COMPOUND,
+    TLV_CLIENT_INFO_TYPE,
+    TLV_CLIENT_INFO_LEN,
+    0, 
+    sizeof(tlv_client_info_t),
+    {
+        &tlv_desc_client_security_history,
+        NULL,
+    }
+};
+
+tlv_desc_t tlv_desc_server_name = 
+{
+    TLV_VAR_STR,
+    TLV_SERVER_NAME_TYPE,
+    TLV_SERVER_NAME_LEN,
+    0, 
+    sizeof(tlv_server_name_t),
+    { NULL }
+};
+
+tlv_desc_t tlv_desc_server_info = 
+{
+    TLV_COMPOUND,
+    TLV_SERVER_INFO_TYPE,
+    TLV_SERVER_INFO_LEN,
+    0, 
+    sizeof(tlv_server_info_t),
+    {
+        &tlv_desc_server_name, &tlv_desc_more2,
+        NULL,
+    }
+};
+
+tlv_desc_t tlv_desc_attach_req = {
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    &tlv_desc_client_info,
+    &tlv_desc_server_info,
+    NULL,
+}};
+
+static void tlv_test_6(abts_case *tc, void *data)
+{
+    tlv_attach_req reqv;
+    tlv_attach_req reqv2;
+
+    pkbuf_t *req = NULL;
+    char testbuf[1024];
+    c_uint8_t *buf;
+    c_uint32_t buflen;
+
+    /* Initialize message value structure */
+    memset(&reqv, 0, sizeof(tlv_attach_req));
+
+    /* Set nessary members of message */
+    COMPD_SET(reqv.client_info);
+    COMPD_SET(reqv.client_info.client_security_history);
+    VALUE_SET(reqv.client_info.client_security_history.
+            authorization_policy_support0, 0x3);
+    VALUE_SET(reqv.client_info.client_security_history.
+            authorization_policy_support2, 0x9);
+   
+    COMPD_SET(reqv.server_info);
+    OCTET_SET(reqv.server_info.server_name[0], (c_uint8_t*)"\x11\x22\x33\x44\x55\x66", 6);
+    COMPD_SET(reqv.server_info);
+    OCTET_SET(reqv.server_info.server_name[1], (c_uint8_t*)"\xaa\xbb\xcc\xdd\xee\xff", 6);
+
+    /* Build message */
+    tlv_build_msg(&req, &tlv_desc_attach_req, &reqv, TLV_MODE_T1_L2_I1);
+#define TEST_TLV_BUILD_MSG \
+    "67000e00 6c000a00 15000100 03150001" \
+    "02091a00 14001900 06001122 33445566" \
+    "19000600 aabbccdd eeff"
+
+    ABTS_INT_EQUAL(tc, 42, req->len);
+    ABTS_TRUE(tc, memcmp(req->payload, 
+        core_ascii_to_hex(TEST_TLV_BUILD_MSG, strlen(TEST_TLV_BUILD_MSG), 
+            testbuf, sizeof(testbuf)), req->len) == 0);
+
+    /* Initialize message value structure */
+    memset(&reqv2, 0, sizeof(tlv_attach_req));
+
+    /* Parse message */
+    tlv_parse_msg(&reqv2, &tlv_desc_attach_req, req,
+            TLV_MODE_T1_L2_I1);
+
+    ABTS_INT_EQUAL(tc, 1, COMPD_ISSET(reqv2.client_info));
+    ABTS_INT_EQUAL(tc, 1, 
+            COMPD_ISSET(reqv2.client_info.client_security_history));
+    ABTS_INT_EQUAL(tc, 1, 
+            VALUE_ISSET(reqv2.client_info.client_security_history.
+                        authorization_policy_support0));
+    ABTS_INT_EQUAL(tc, 0x3, 
+            VALUE_GET(reqv2.client_info.client_security_history.
+                        authorization_policy_support0));
+    ABTS_INT_EQUAL(tc, 1, 
+            VALUE_ISSET(reqv2.client_info.client_security_history.
+                        authorization_policy_support2));
+    ABTS_INT_EQUAL(tc, 0x9, 
+            VALUE_GET(reqv2.client_info.client_security_history.
+                        authorization_policy_support2));
+
+    ABTS_INT_EQUAL(tc, 1, COMPD_ISSET(reqv2.server_info));
+    ABTS_INT_EQUAL(tc, 1, OCTET_ISSET(reqv2.server_info.server_name[0]));
+    ABTS_INT_EQUAL(tc, 1, OCTET_ISSET(reqv2.server_info.server_name[1]));
+    OCTET_GET(buf, buflen, reqv2.server_info.server_name[0]);
+    ABTS_INT_EQUAL(tc, 6, buflen);
+    ABTS_TRUE(tc, memcmp(buf, (c_uint8_t*)"\x11\x22\x33\x44\x55\x66", 6) == 0);
+    OCTET_GET(buf, buflen, reqv2.server_info.server_name[1]);
+    ABTS_INT_EQUAL(tc, 6, buflen);
+    ABTS_TRUE(tc, memcmp(buf, (c_uint8_t*)"\xaa\xbb\xcc\xdd\xee\xff", 6) == 0);
+
+    pkbuf_free(req);
+}
+
 abts_suite *testtlv(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -656,6 +854,8 @@ abts_suite *testtlv(abts_suite *suite)
 	abts_run_test(suite, tlv_test_3, (void*)TLV_MODE_T1_L2_I1);
 	abts_run_test(suite, tlv_test_4, (void*)TLV_MODE_T1_L2_I1);
 	abts_run_test(suite, tlv_test_5, (void*)TLV_MODE_T1_L2_I1);
+
+	abts_run_test(suite, tlv_test_6, NULL);
 
     return suite;
 }

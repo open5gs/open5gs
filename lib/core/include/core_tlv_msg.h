@@ -71,7 +71,14 @@ typedef struct _tlv_desc_t {
     void *child_descs[];
 } tlv_desc_t;
 
-extern tlv_desc_t tlv_desc_more;
+extern tlv_desc_t tlv_desc_more1;
+extern tlv_desc_t tlv_desc_more2;
+extern tlv_desc_t tlv_desc_more3;
+extern tlv_desc_t tlv_desc_more4;
+extern tlv_desc_t tlv_desc_more5;
+extern tlv_desc_t tlv_desc_more6;
+extern tlv_desc_t tlv_desc_more7;
+extern tlv_desc_t tlv_desc_more8;
 
 typedef struct _tlv_header_t {
     c_uint64_t set_ind;

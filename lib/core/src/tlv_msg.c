@@ -3,10 +3,14 @@
 #include "core_debug.h"
 #include "core_tlv_msg.h"
 
-tlv_desc_t tlv_desc_more = 
-{
-    TLV_MORE, 0, TLV_MAX_MORE, 0, 0, { NULL }
-};
+tlv_desc_t tlv_desc_more1 = { TLV_MORE, 0, 1, 0, 0, { NULL } };
+tlv_desc_t tlv_desc_more2 = { TLV_MORE, 0, 2, 0, 0, { NULL } };
+tlv_desc_t tlv_desc_more3 = { TLV_MORE, 0, 3, 0, 0, { NULL } };
+tlv_desc_t tlv_desc_more4 = { TLV_MORE, 0, 4, 0, 0, { NULL } };
+tlv_desc_t tlv_desc_more5 = { TLV_MORE, 0, 5, 0, 0, { NULL } };
+tlv_desc_t tlv_desc_more6 = { TLV_MORE, 0, 6, 0, 0, { NULL } };
+tlv_desc_t tlv_desc_more7 = { TLV_MORE, 0, 7, 0, 0, { NULL } };
+tlv_desc_t tlv_desc_more8 = { TLV_MORE, 0, 8, 0, 0, { NULL } };
 
 static tlv_t* _tlv_add_leaf(
         tlv_t *parent_tlv, tlv_t *tlv, tlv_desc_t *desc, void *msg)
@@ -195,9 +199,9 @@ static c_uint32_t _tlv_add_compound(tlv_t **root, tlv_t *parent_tlv,
                     d_trace(1, "\nBUILD %sL#%d T:%d L:%d I:%d "
                             "(cls:%d vsz:%d) off:%p ",
                             indent, i, desc->type, desc->length, desc->instance,
-                            desc->ctype, desc->vsize, p + offset);
+                            desc->ctype, desc->vsize, p + offset2);
 
-                    tlv = _tlv_add_leaf(parent_tlv, tlv, desc, p + offset);
+                    tlv = _tlv_add_leaf(parent_tlv, tlv, desc, p + offset2);
                     d_assert(tlv, return 0, "Can't build leaf TLV");
                     count++;
                 }
