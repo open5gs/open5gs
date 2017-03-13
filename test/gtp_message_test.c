@@ -11,14 +11,14 @@ static void gtp_message_test1(abts_case *tc, void *data)
     tlv_msg_ms_preattachment_req reqv2;
 
     pkbuf_t *req = NULL;
-#if 0
+#if 1
     c_uint8_t *buf;
     c_uint32_t buflen;
 #endif
 
     {
         extern int _tlv_msg;
-        _tlv_msg = 0;
+        _tlv_msg = 1;
     }
     /* Initialize message value structure */
     memset(&reqv, 0, sizeof(tlv_msg_ms_preattachment_req));
@@ -35,7 +35,7 @@ static void gtp_message_test1(abts_case *tc, void *data)
     tlv_build_msg(&req, &tlv_desc_msg_ms_preattachment_req, &reqv,
             TLV_MODE_T1_L2_I1);
 
-#if 0
+#if 1
     d_print_hex(req->payload, req->len);
 #endif
 
@@ -49,13 +49,13 @@ static void gtp_message_test1(abts_case *tc, void *data)
     if (COMPD_ISSET(reqv2.ms_info))
         if (COMPD_ISSET(reqv2.ms_info.ms_security_history))
             if (VALUE_ISSET(reqv2.ms_info.ms_security_history.authorization_policy_support))
-#if 0
+#if 1
                 d_print("%02x", VALUE_GET(reqv2.ms_info.ms_security_history.authorization_policy_support));
 #else
     ;
 #endif
 
-#if 0
+#if 1
     if (COMPD_ISSET(reqv2.bs_info))
         if (OCTET_ISSET(reqv2.bs_info.bs_id))
         {

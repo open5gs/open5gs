@@ -5,6 +5,7 @@ tlv_desc_t tlv_desc_authorization_policy_support =
     TLV_UINT8,
     TLV_AUTHORIZATION_POLICY_SUPPORT_TYPE,
     TLV_AUTHORIZATION_POLICY_SUPPORT_LEN,
+    0,
     sizeof(tlv_authorization_policy_support_t),
     { NULL }
 };
@@ -14,6 +15,7 @@ tlv_desc_t tlv_desc_ms_security_history =
     TLV_COMPOUND,
     TLV_MS_SECURITY_HISTORY_TYPE,
     TLV_MS_SECURITY_HISTORY_LEN,
+    0, 
     sizeof(tlv_ms_security_history_t),
     {
         &tlv_desc_authorization_policy_support,
@@ -26,6 +28,7 @@ tlv_desc_t tlv_desc_ms_info =
     TLV_COMPOUND,
     TLV_MS_INFO_TYPE,
     TLV_MS_INFO_LEN,
+    0, 
     sizeof(tlv_ms_info_t),
     {
         &tlv_desc_ms_security_history,
@@ -38,6 +41,7 @@ tlv_desc_t tlv_desc_bs_id =
     TLV_VAR_STR,
     TLV_BS_ID_TYPE,
     TLV_BS_ID_LEN,
+    0, 
     sizeof(tlv_bs_id_t),
     { NULL }
 };
@@ -47,6 +51,7 @@ tlv_desc_t tlv_desc_bs_info =
     TLV_COMPOUND,
     TLV_BS_INFO_TYPE,
     TLV_BS_INFO_LEN,
+    0, 
     sizeof(tlv_bs_info_t),
     {
         &tlv_desc_bs_id,
@@ -55,7 +60,7 @@ tlv_desc_t tlv_desc_bs_info =
 };
 
 tlv_desc_t tlv_desc_msg_ms_preattachment_req = {
-    TLV_MESSAGE, 0, 0, 0, {
+    TLV_MESSAGE, 0, 0, 0, 0, {
     &tlv_desc_ms_info,
     &tlv_desc_bs_info,
     NULL,

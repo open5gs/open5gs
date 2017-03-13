@@ -66,6 +66,7 @@ typedef struct _tlv_desc_t {
     tlv_type_e ctype;
     c_uint16_t type;
     c_uint16_t length;
+    c_uint8_t  instance;
     c_uint16_t vsize;
     void *child_descs[];
 } tlv_desc_t;
