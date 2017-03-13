@@ -9,41 +9,9 @@ extern "C" {
 #endif /* __cplusplus */
 
 #define TLV_MAX_HEADROOM 16
-
 #define TLV_VARIABLE_LEN 0
-
 #define TLV_MAX_MORE 8
 #define TLV_1_OR_MORE(__v) __v[TLV_MAX_MORE]
-
-#define VALUE_SET(__m, __value) \
-    __m.v = __value; __m.h.set_ind = 1
-
-#define OCTET_SET(__m, __value, __length) \
-    __m.v = __value; __m.l = __length; __m.h.set_ind = 1
-
-#define COMPD_SET(__m) __m.h.set_ind = 1
-
-#define VALUE_UNSET(__m) \
-    __m.h.set_ind = 0
-
-#define VALUE_ISSET(__m) \
-    __m.h.set_ind
-
-#define OCTET_ISSET(__tlv) VALUE_ISSET(__tlv)
-
-#define COMPD_ISSET(__tlv) VALUE_ISSET(__tlv)
-
-#define VALUE_GET(__tlv) (__tlv).v
-
-#define VALUE_COPY(__t_tlv, __s_tlv) \
-    (__t_tlv).h = (__s_tlv).h; (__t_tlv).v = (__s_tlv).v
-
-#define OCTET_GET(__value, __length, __tlv) \
-    __value = (__tlv).v; __length = (__tlv).l
-
-#define OCTET_COPY(__t_tlv, __s_tlv) \
-    (__t_tlv).h = (__s_tlv).h; (__t_tlv).v = (__s_tlv).v; \
-    (__t_tlv).l = (__s_tlv).l
 
 typedef enum {
     TLV_UINT8,
@@ -81,7 +49,7 @@ extern tlv_desc_t tlv_desc_more7;
 extern tlv_desc_t tlv_desc_more8;
 
 typedef struct _tlv_header_t {
-    c_uint64_t set_ind;
+    c_uint64_t present;
 } tlv_header_t;
 
 /* 8-bit Unsigned integer */
@@ -133,16 +101,38 @@ typedef struct _tlv_int32_t {
 } tlv_int32_t;
 
 /* Octets */
-typedef struct _tlv_octets_t {
+typedef struct _tlv_octet_t {
     tlv_header_t h;
     c_uint8_t *v;
     c_uint32_t l;
-} tlv_octets_t;
+} tlv_octet_t;
 
 /* No value */
 typedef struct _tlv_null {
     tlv_header_t h;
 } tlv_null_t;
+
+#define tlv_get_value(__tlv) (__tlv).v
+
+#define tlv_set_value(__m, __value) \
+    __m.v = __value; __m.h.present = 1
+
+#define tlv_copy_value(__t_tlv, __s_tlv) \
+    (__t_tlv).h = (__s_tlv).h; (__t_tlv).v = (__s_tlv).v
+
+#define tlv_get_octet(__value, __length, __tlv) \
+    __value = (__tlv).v; __length = (__tlv).l
+
+#define tlv_set_octet(__m, __value, __length) \
+    __m.v = __value; __m.l = __length; __m.h.present = 1
+
+#define tlv_copy_octet(__t_tlv, __s_tlv) \
+    (__t_tlv).h = (__s_tlv).h; (__t_tlv).v = (__s_tlv).v; \
+    (__t_tlv).l = (__s_tlv).l
+
+#define tlv_set_present(__m) __m.h.present = 1
+#define tlv_unset_present(__m) __m.h.present = 0
+#define tlv_is_present(__m) __m.h.present
 
 CORE_DECLARE(status_t) tlv_build_msg(
         pkbuf_t **pkbuf, tlv_desc_t *desc, void *msg, int mode);

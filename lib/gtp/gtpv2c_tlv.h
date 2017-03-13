@@ -30,7 +30,7 @@ extern tlv_desc_t tlv_desc_ms_info;
 
 #define TLV_BS_ID_TYPE 25
 #define TLV_BS_ID_LEN TLV_VARIABLE_LEN
-typedef tlv_octets_t tlv_bs_id_t;
+typedef tlv_octet_t tlv_bs_id_t;
 extern tlv_desc_t tlv_desc_bs_id;
 
 #define TLV_BS_INFO_TYPE 26

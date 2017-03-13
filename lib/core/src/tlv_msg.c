@@ -87,7 +87,7 @@ static tlv_t* _tlv_add_leaf(
         }
         case TLV_FIXED_STR:
         {
-            tlv_octets_t *v = (tlv_octets_t *)msg;
+            tlv_octet_t *v = (tlv_octet_t *)msg;
 
             d_trace(1, "V_FSTR: ", v->v);
             d_trace_hex(1, v->v, v->l);
@@ -103,7 +103,7 @@ static tlv_t* _tlv_add_leaf(
         }
         case TLV_VAR_STR:
         {
-            tlv_octets_t *v = (tlv_octets_t *)msg;
+            tlv_octet_t *v = (tlv_octet_t *)msg;
 
             d_assert(v->l > 0, return NULL, "Length is zero");
 
@@ -173,7 +173,7 @@ static c_uint32_t _tlv_add_compound(tlv_t **root, tlv_t *parent_tlv,
             {
                 h = (tlv_header_t *)(p + offset2);
 
-                if (h->set_ind == 0)
+                if (h->present == 0)
                     break;
 
                 if (desc->ctype == TLV_COMPOUND)
@@ -218,7 +218,7 @@ static c_uint32_t _tlv_add_compound(tlv_t **root, tlv_t *parent_tlv,
         {
             h = (tlv_header_t *)(p + offset);
 
-            if (h->set_ind)
+            if (h->present)
             {
                 if (desc->ctype == TLV_COMPOUND)
                 {
@@ -407,7 +407,7 @@ static status_t _tlv_parse_leaf(void *msg, tlv_desc_t *desc, tlv_t *tlv)
         }
         case TLV_FIXED_STR:
         {
-            tlv_octets_t *v = (tlv_octets_t *)msg;
+            tlv_octet_t *v = (tlv_octet_t *)msg;
 
             if (tlv->length != desc->length)
             {
@@ -425,7 +425,7 @@ static status_t _tlv_parse_leaf(void *msg, tlv_desc_t *desc, tlv_t *tlv)
         }
         case TLV_VAR_STR:
         {
-            tlv_octets_t *v = (tlv_octets_t *)msg;
+            tlv_octet_t *v = (tlv_octet_t *)msg;
 
             v->v = tlv->value;
             v->l = tlv->length;
@@ -490,7 +490,7 @@ static status_t _tlv_parse_compound(void *msg, tlv_desc_t *parent_desc,
             for (j = 0; j < next_desc->length; j++)
             {
                 h = (tlv_header_t *)(p + offset + desc->vsize * j);
-                if (h->set_ind == 0)
+                if (h->present == 0)
                 {
                     offset += desc->vsize * j;
                     break;
@@ -527,7 +527,7 @@ static status_t _tlv_parse_compound(void *msg, tlv_desc_t *parent_desc,
                 return CORE_ERROR;
             }
 
-            h->set_ind = 1;
+            h->present = 1;
         }
         else
         {
@@ -543,7 +543,7 @@ static status_t _tlv_parse_compound(void *msg, tlv_desc_t *parent_desc,
                 return CORE_ERROR;
             }
 
-            h->set_ind = 1;
+            h->present = 1;
         }
 
         tlv = tlv->next;

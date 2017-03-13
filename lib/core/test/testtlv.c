@@ -664,7 +664,7 @@ extern tlv_desc_t tlv_desc_client_info;
 
 #define TLV_SERVER_NAME_TYPE 25
 #define TLV_SERVER_NAME_LEN TLV_VARIABLE_LEN
-typedef tlv_octets_t tlv_server_name_t;
+typedef tlv_octet_t tlv_server_name_t;
 extern tlv_desc_t tlv_desc_server_name;
 
 #define TLV_SERVER_INFO_TYPE 26
@@ -773,17 +773,19 @@ static void tlv_test_6(abts_case *tc, void *data)
     memset(&reqv, 0, sizeof(tlv_attach_req));
 
     /* Set nessary members of message */
-    COMPD_SET(reqv.client_info);
-    COMPD_SET(reqv.client_info.client_security_history);
-    VALUE_SET(reqv.client_info.client_security_history.
+    tlv_set_present(reqv.client_info);
+    tlv_set_present(reqv.client_info.client_security_history);
+    tlv_set_value(reqv.client_info.client_security_history.
             authorization_policy_support0, 0x3);
-    VALUE_SET(reqv.client_info.client_security_history.
+    tlv_set_value(reqv.client_info.client_security_history.
             authorization_policy_support2, 0x9);
    
-    COMPD_SET(reqv.server_info);
-    OCTET_SET(reqv.server_info.server_name[0], (c_uint8_t*)"\x11\x22\x33\x44\x55\x66", 6);
-    COMPD_SET(reqv.server_info);
-    OCTET_SET(reqv.server_info.server_name[1], (c_uint8_t*)"\xaa\xbb\xcc\xdd\xee\xff", 6);
+    tlv_set_present(reqv.server_info);
+    tlv_set_octet(reqv.server_info.server_name[0], 
+            (c_uint8_t*)"\x11\x22\x33\x44\x55\x66", 6);
+    tlv_set_present(reqv.server_info);
+    tlv_set_octet(reqv.server_info.server_name[1], 
+            (c_uint8_t*)"\xaa\xbb\xcc\xdd\xee\xff", 6);
 
     /* Build message */
     tlv_build_msg(&req, &tlv_desc_attach_req, &reqv, TLV_MODE_T1_L2_I1);
@@ -804,29 +806,29 @@ static void tlv_test_6(abts_case *tc, void *data)
     tlv_parse_msg(&reqv2, &tlv_desc_attach_req, req,
             TLV_MODE_T1_L2_I1);
 
-    ABTS_INT_EQUAL(tc, 1, COMPD_ISSET(reqv2.client_info));
+    ABTS_INT_EQUAL(tc, 1, tlv_is_present(reqv2.client_info));
     ABTS_INT_EQUAL(tc, 1, 
-            COMPD_ISSET(reqv2.client_info.client_security_history));
+            tlv_is_present(reqv2.client_info.client_security_history));
     ABTS_INT_EQUAL(tc, 1, 
-            VALUE_ISSET(reqv2.client_info.client_security_history.
+            tlv_is_present(reqv2.client_info.client_security_history.
                         authorization_policy_support0));
     ABTS_INT_EQUAL(tc, 0x3, 
-            VALUE_GET(reqv2.client_info.client_security_history.
+            tlv_get_value(reqv2.client_info.client_security_history.
                         authorization_policy_support0));
     ABTS_INT_EQUAL(tc, 1, 
-            VALUE_ISSET(reqv2.client_info.client_security_history.
+            tlv_is_present(reqv2.client_info.client_security_history.
                         authorization_policy_support2));
     ABTS_INT_EQUAL(tc, 0x9, 
-            VALUE_GET(reqv2.client_info.client_security_history.
+            tlv_get_value(reqv2.client_info.client_security_history.
                         authorization_policy_support2));
 
-    ABTS_INT_EQUAL(tc, 1, COMPD_ISSET(reqv2.server_info));
-    ABTS_INT_EQUAL(tc, 1, OCTET_ISSET(reqv2.server_info.server_name[0]));
-    ABTS_INT_EQUAL(tc, 1, OCTET_ISSET(reqv2.server_info.server_name[1]));
-    OCTET_GET(buf, buflen, reqv2.server_info.server_name[0]);
+    ABTS_INT_EQUAL(tc, 1, tlv_is_present(reqv2.server_info));
+    ABTS_INT_EQUAL(tc, 1, tlv_is_present(reqv2.server_info.server_name[0]));
+    ABTS_INT_EQUAL(tc, 1, tlv_is_present(reqv2.server_info.server_name[1]));
+    tlv_get_octet(buf, buflen, reqv2.server_info.server_name[0]);
     ABTS_INT_EQUAL(tc, 6, buflen);
     ABTS_TRUE(tc, memcmp(buf, (c_uint8_t*)"\x11\x22\x33\x44\x55\x66", 6) == 0);
-    OCTET_GET(buf, buflen, reqv2.server_info.server_name[1]);
+    tlv_get_octet(buf, buflen, reqv2.server_info.server_name[1]);
     ABTS_INT_EQUAL(tc, 6, buflen);
     ABTS_TRUE(tc, memcmp(buf, (c_uint8_t*)"\xaa\xbb\xcc\xdd\xee\xff", 6) == 0);
 
