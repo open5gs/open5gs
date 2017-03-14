@@ -1,5 +1,9 @@
 
-* Install Python-docs 
+* Install python-pip
+user@host ~/Documents/git/cellwire/lib/gtp/support$ \
+    sudo apt-get install python-pip
+
+* Install python-docx
 user@host ~/Documents/git/cellwire/lib/gtp/support$ \
     pip install python-docx
 
