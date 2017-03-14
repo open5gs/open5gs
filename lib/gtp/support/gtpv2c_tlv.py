@@ -113,6 +113,8 @@ def get_cells(cells):
         ie_type = 'LDN'
     elif ie_type.find('APCO') != -1:
         ie_type = 'APCO'
+    elif ie_type.find('Charging Id') != -1:
+        ie_type = 'Charging ID'
     if ie_type not in type_list.keys():
         assert False, "Unknown IE type : [" \
                 + cells[3].text + "]" + "(" + ie_type + ")"
@@ -169,10 +171,11 @@ else:
     f = open(cachefile, 'w') 
 
     msg_table = ""
-    for table in document.tables:
+    for i, table in enumerate(document.tables):
         cell = table.rows[0].cells[0]
         if cell.text.find('Message Type value') != -1:
             msg_table = table
+            d_print("Table Index = %d" % i)
 
     for row in msg_table.rows[2:-4]:
         key = row.cells[1].text.encode('ascii', 'ignore')
@@ -201,10 +204,11 @@ else:
     f = open(cachefile, 'w') 
 
     ie_table = ""
-    for table in document.tables:
+    for i, table in enumerate(document.tables):
         cell = table.rows[0].cells[0]
         if cell.text.find('IE Type value') != -1:
             ie_table = table
+            d_print("Table Index = %d" % i)
 
     for row in ie_table.rows[1:-5]:
         key = row.cells[1].text.encode('ascii', 'ignore')
@@ -232,10 +236,70 @@ else:
     f.close()
 type_list['MM Context'] = { "type": "107" }
 
+d_info("[Group IE List]")
+group_list = {}
+cachefile = cachedir + 'gtpv2c_group_list.py'
+if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
+    execfile(cachefile)
+    print "Read from " + cachefile
+else:
+    document = Document(filename)
+    f = open(cachefile, 'w') 
+
+    for i, table in enumerate(document.tables):
+        if table.rows[0].cells[0].text.find('Octet') != -1 and \
+            table.rows[0].cells[2].text.find('IE Type') != -1:
+            d_print("Table Index = %d" % i)
+
+            row = table.rows[0];
+
+            if len(re.findall('\d+', row.cells[2].text)) == 0:
+                continue;
+            ie_type = re.findall('\d+', row.cells[2].text)[0].encode('ascii', 'ignore')
+            ie_name = re.sub('\s*IE Type.*', '', row.cells[2].text.encode('ascii', 'ignore'))
+
+            if ie_name not in group_list.keys():
+                type_list[ie_name] = { "type": ie_type }
+                write_file(f, "type_list[\"" + ie_name + "\"] = { \"type\" : \"" + ie_type + "\" }")
+
+                group = []
+                write_file(f, "group = []")
+                for row in table.rows[4:]:
+                    cells = get_cells(row.cells)
+                    if cells is None:
+                        continue
+                    group.append(cells)
+                    write_cells_to_file("group", cells)
+
+                group_list[ie_name] = { "group" : group }
+                write_file(f, "group_list[\"" + ie_name + "\"] = { \"group\" : group }")
+            else:
+                group_list_add = False
+                for row in table.rows[4:]:
+                    cells = get_cells(row.cells)
+                    if cells is None:
+                        continue
+                    group_append = True
+                    for ie in group_list[ie_name]["group"]:
+                        if (cells["ie_type"], cells["instance"]) == (ie["ie_type"], ie["instance"]):
+                            group_append = False
+                    for ie in group:
+                        if (cells["ie_type"], cells["instance"]) == (ie["ie_type"], ie["instance"]):
+                            group_append = False
+                    if group_append is True:
+                        group.append(cells)
+                        write_cells_to_file("group", cells)
+                        group_list_add = True
+                if group_list_add is True:
+                    group_list[ie_name] = { "group" : group }
+                    write_file(f, "group_list[\"" + ie_name + "\"] = { \"group\" : group }")
+    f.close()
+
 msg_list["Echo Request"]["table"] = 6
 msg_list["Echo Response"]["table"] = 7
 msg_list["Create Session Request"]["table"] = 8
 
+ies = []
 for key in msg_list.keys():
     if "table" in msg_list[key].keys():
         d_info("[" + key + "]")
@@ -247,56 +311,19 @@ for key in msg_list.keys():
             document = Document(filename)
             f = open(cachefile, 'w') 
 
-            ies = []
-            write_file(f, "ies = []")
-
-            group_list = {}
-            write_file(f, "group_list = {}")
-
-            next_index = msg_list[key]["table"] + 1
-            table = document.tables[next_index]
-            row = table.rows[0];
-
-            if row.cells[0].text.find('Octet') != -1:
-                while True:
-                    table = document.tables[next_index]
-                    row = table.rows[0];
-                    if row.cells[0].text.find('Octet') != -1:
-                        ie_type = re.findall('\d+', row.cells[2].text)[0].encode('ascii', 'ignore')
-                        ie_name = re.sub('\s*IE Type.*', '', row.cells[2].text.encode('ascii', 'ignore'))
-
-                        if ie_name not in group_list.keys():
-                            type_list[ie_name] = { "type": ie_type }
-                            write_file(f, "type_list[\"" + ie_name + "\"] = { \"type\" : \"" + ie_type + "\" }")
-
-                            group = []
-                            write_file(f, "group = []")
-                            for row in table.rows[4:]:
-                                cells = get_cells(row.cells)
-                                if cells is None:
-                                    continue
-                                group.append(cells)
-                                write_cells_to_file("group", cells)
-
-                            group_list[ie_name] = { "group" : group }
-                            write_file(f, "group_list[\"" + ie_name + "\"] = { \"group\" : group }")
-                        else:
-                            for row in table.rows[4:]:
-                                cells = get_cells(row.cells)
-                                if cells is None:
-                                    continue
-                                print cells
-                        next_index += 1
-                    else:
-                        break
-
             table = document.tables[msg_list[key]["table"]]
             for row in table.rows[1:]:
                 cells = get_cells(row.cells)
                 if cells is None:
                     continue
-                ies.append(cells)
-                write_cells_to_file("ies", cells)
+
+                ies_append = True
+                for ie in ies:
+                    if (cells["ie_type"], cells["instance"]) == (ie["ie_type"], ie["instance"]):
+                        ies_append = False
+                if ies_append is True:
+                    ies.append(cells)
+                    write_cells_to_file("ies", cells)
             msg_list[key]["ies"] = ies
             write_file(f, "msg_list[key][\"ies\"] = ies")
             f.close()
