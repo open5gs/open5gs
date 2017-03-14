@@ -189,9 +189,9 @@ static net_sock_t *net_sock_create(int type, int protocol)
                 rtoinfo.srto_min);
 
         /* FIXME : Need to configure this param */
-        rtoinfo.srto_initial = 1000;
-        rtoinfo.srto_min = 100;
-        rtoinfo.srto_max = 1000;
+        /* rtoinfo.srto_initial = 3000; */
+        rtoinfo.srto_min = 1000;
+        rtoinfo.srto_max = 5000;
 
         if (setsockopt(sock, IPPROTO_SCTP, SCTP_RTOINFO,
                                 &rtoinfo, sizeof(rtoinfo)) != 0 ) 
