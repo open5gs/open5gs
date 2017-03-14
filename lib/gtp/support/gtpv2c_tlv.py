@@ -39,23 +39,23 @@ FAIL = '\033[91m'
 INFO = '\033[93m'
 ENDC = '\033[0m'
 
-def writeFile(f, string):
+def write_file(f, string):
     f.write(string + "\n")
     if verbosity > 0:
         print string
 
-def printDebug(string):
+def d_print(string):
     if verbosity > 0:
         print string
 
-def printInfo(string):
+def d_info(string):
     sys.stderr.write(INFO + string + ENDC + "\n")
 
-def printFail(string):
+def d_error(string):
     sys.stderr.write(FAIL + string + ENDC + "\n")
     sys.exit(0)
 
-def outputHeaderToFile(f):
+def output_header_to_file(f):
     now = datetime.datetime.now()
     f.write("""/*
  * Copyright (c) 2017, CellWire Group
@@ -100,8 +100,34 @@ def usage():
 
 def v_upper(v):
     return re.sub('/', '_', re.sub('-', '_', re.sub(' ', '_', v))).upper()
+
 def v_lower(v):
     return re.sub('/', '_', re.sub('-', '_', re.sub(' ', '_', v))).lower()
+
+def get_cells(cells):
+    instance = cells[4].text.encode('ascii', 'ignore')
+    if instance.isdigit() is not True:
+        return None
+    ie_type = re.sub('\s*\n*\s*\(NOTE.*\)*', '', cells[3].text.encode('ascii', 'ignore'))
+    if ie_type.find('LDN') != -1:
+        ie_type = 'LDN'
+    elif ie_type.find('APCO') != -1:
+        ie_type = 'APCO'
+    if ie_type not in type_list.keys():
+        assert False, "Unknown IE type : [" \
+                + cells[3].text + "]" + "(" + ie_type + ")"
+    presence = cells[1].text.encode('ascii', 'ignore')
+    ie_value = cells[0].text.encode('ascii', 'ignore')
+    comment = cells[2].text.encode('ascii', 'ignore')
+    comment = re.sub('\n|\"|\'|\\\\', '', comment);
+    return { "ie_type" : ie_type, "ie_value" : ie_value, "presence" : presence, "instance" : instance, "comment" : comment }
+
+def write_cells_to_file(name, cells):
+    write_file(f, name + ".append({ \"ie_type\" : \"" + cells["ie_type"] + \
+        "\", \"ie_value\" : \"" + cells["ie_value"] + \
+        "\", \"presence\" : \"" + cells["presence"] + \
+        "\", \"instance\" : \"" + cells["instance"] + \
+        "\", \"comment\" : \"" + cells["comment"] + "\"})")
 
 try:
     opts, args = getopt.getopt(sys.argv[1:], "df:ho:c:", ["debug", "file", "help", "output", "cache"])
@@ -130,9 +156,9 @@ for o, a in opts:
 if os.path.isfile(filename) and os.access(filename, os.R_OK):
     file = open(filename, 'r') 
 else:
-    printFail("Cannot find file : " + filename)
+    d_error("Cannot find file : " + filename)
 
-printInfo("[Message List]")
+d_info("[Message List]")
 msg_list = {}
 cachefile = cachedir + 'gtpv2c_msg_list.py'
 if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
@@ -161,10 +187,10 @@ else:
             continue
         key = re.sub('\s*\n*\s*\([^\)]*\)*', '', key)
         msg_list[key] = { "type": type }
-        writeFile(f, "msg_list[\"" + key + "\"] = { \"type\" : \"" + type + "\" }")
+        write_file(f, "msg_list[\"" + key + "\"] = { \"type\" : \"" + type + "\" }")
     f.close()
 
-printInfo("[IE Type List]")
+d_info("[IE Type List]")
 type_list = {}
 cachefile = cachedir + 'gtpv2c_type_list.py'
 if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
@@ -202,7 +228,7 @@ else:
             key = re.sub('\s*$', '', key)
         type = row.cells[0].text.encode('ascii', 'ignore')
         type_list[key] = { "type": type }
-        writeFile(f, "type_list[\"" + key + "\"] = { \"type\" : \"" + type + "\" }")
+        write_file(f, "type_list[\"" + key + "\"] = { \"type\" : \"" + type + "\" }")
     f.close()
 type_list['MM Context'] = { "type": "107" }
 
@@ -212,7 +238,7 @@ msg_list["Create Session Request"]["table"] = 8
 
 for key in msg_list.keys():
     if "table" in msg_list[key].keys():
-        printInfo("[" + key + "]")
+        d_info("[" + key + "]")
         cachefile = cachedir + "gtpv2c_ies-" + msg_list[key]["type"] + ".py"
         if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
             execfile(cachefile)
@@ -222,11 +248,10 @@ for key in msg_list.keys():
             f = open(cachefile, 'w') 
 
             ies = []
-            writeFile(f, "ies = []")
-            group_names = []
-            writeFile(f, "group_names = []")
-            group_ies = []
-            writeFile(f, "group_ies = []")
+            write_file(f, "ies = []")
+
+            group_list = {}
+            write_file(f, "group_list = {}")
 
             next_index = msg_list[key]["table"] + 1
             table = document.tables[next_index]
@@ -239,78 +264,47 @@ for key in msg_list.keys():
                     if row.cells[0].text.find('Octet') != -1:
                         ie_type = re.findall('\d+', row.cells[2].text)[0].encode('ascii', 'ignore')
                         ie_name = re.sub('\s*IE Type.*', '', row.cells[2].text.encode('ascii', 'ignore'))
-                        type_list[ie_name] = { "type": ie_type }
-                        writeFile(f, "type_list[\"" + ie_name + "\"] = { \"type\" : \"" + ie_type + "\" }")
 
-                        group = []
-                        writeFile(f, "group = []")
-                        for row in table.rows[4:]:
-                            instance = row.cells[4].text.encode('ascii', 'ignore')
-                            if instance.isdigit() is not True:
-                                continue
-                            ie_type = re.sub('\s*\n*\s*\(NOTE.*\)*', '', row.cells[3].text.encode('ascii', 'ignore'))
-                            if ie_type not in type_list.keys():
-                                assert False, "Unknown IE type : [" \
-                                        + row.cells[3].text + "]" + "(" + ie_type + ")"
-                            presence = row.cells[1].text.encode('ascii', 'ignore')
-                            ie_value = row.cells[0].text.encode('ascii', 'ignore')
-                            comment = row.cells[2].text.encode('ascii', 'ignore').decode('ascii')
-                            comment = re.sub('\n|\"|\'|\\\\', '', comment);
-                            group.append({ "ie_type" : ie_type, 
-                                "ie_value" : ie_value, "presence" : presence, 
-                                "instance" : instance, "comment" : comment })
-                            writeFile(f, "group.append({ \"ie_type\" : \"" + ie_type + \
-                                "\", \"ie_value\" : \"" + ie_value + \
-                                "\", \"presence\" : \"" + presence + \
-                                "\", \"instance\" : \"" + instance + \
-                                "\", \"comment\" : \"" + comment + "\"})")
+                        if ie_name not in group_list.keys():
+                            type_list[ie_name] = { "type": ie_type }
+                            write_file(f, "type_list[\"" + ie_name + "\"] = { \"type\" : \"" + ie_type + "\" }")
+
+                            group = []
+                            write_file(f, "group = []")
+                            for row in table.rows[4:]:
+                                cells = get_cells(row.cells)
+                                if cells is None:
+                                    continue
+                                group.append(cells)
+                                write_cells_to_file("group", cells)
+
+                            group_list[ie_name] = { "group" : group }
+                            write_file(f, "group_list[\"" + ie_name + "\"] = { \"group\" : group }")
+                        else:
+                            for row in table.rows[4:]:
+                                cells = get_cells(row.cells)
+                                if cells is None:
+                                    continue
+                                print cells
                         next_index += 1
-                        group_names.append(ie_name)
-                        writeFile(f, "group_names.append(\"" + ie_name + "\")")
-                        group_ies.append(group)
-                        writeFile(f, "group_ies.append(group)")
                     else:
                         break
 
-                msg_list[key]["group_names"] = group_names
-                writeFile(f, "msg_list[key][\"group_names\"] = group_names")
-                msg_list[key]["group_ies"] = group_ies
-                writeFile(f, "msg_list[key][\"group_ies\"] = group_ies")
-
             table = document.tables[msg_list[key]["table"]]
             for row in table.rows[1:]:
-                instance = row.cells[4].text.encode('ascii', 'ignore')
-                if instance.isdigit() is not True:
+                cells = get_cells(row.cells)
+                if cells is None:
                     continue
-                ie_type = re.sub('\s*\n*\s*\(NOTE.*\)*', '', row.cells[3].text.encode('ascii', 'ignore'))
-                if ie_type.find('LDN') != -1:
-                    ie_type = 'LDN'
-                elif ie_type.find('APCO') != -1:
-                    ie_type = 'APCO'
-                if ie_type not in type_list.keys():
-                    assert False, "Unknown IE type : [" \
-                            + row.cells[3].text + "]" + "(" + ie_type + ")"
-                presence = row.cells[1].text.encode('ascii', 'ignore')
-                ie_value = row.cells[0].text.encode('ascii', 'ignore')
-                comment = row.cells[2].text.encode('ascii', 'ignore').decode('ascii')
-                comment = re.sub('\n|\"|\'|\\\\', '', comment);
-
-                ies.append({ "ie_type" : ie_type, "ie_value" : ie_value, 
-                    "presence" : presence, "instance" : instance, 
-                    "comment" : comment })
-                writeFile(f, "ies.append({ \"ie_type\" : \"" + ie_type + \
-                    "\", \"ie_value\" : \"" + ie_value + \
-                    "\", \"presence\" : \"" + presence + \
-                    "\", \"instance\" : \"" + instance + \
-                    "\", \"comment\" : \"" + comment + "\" })")
+                ies.append(cells)
+                write_cells_to_file("ies", cells)
             msg_list[key]["ies"] = ies
-            writeFile(f, "msg_list[key][\"ies\"] = ies")
+            write_file(f, "msg_list[key][\"ies\"] = ies")
             f.close()
 # Errata Standard Specification Document 
 type_list["Overload Control Information"] = { "type" : "180" }
 
 f = open(outdir + 'gtpv2c_tlv.h', 'w')
-outputHeaderToFile(f)
+output_header_to_file(f)
 f.write("""#ifndef __GTPV2C_TLV_H__
 #define __GTPV2C_TLV_H__
 
@@ -325,18 +319,18 @@ extern "C" {
 tmp = [(k, v["type"]) for k, v in msg_list.items()]
 sorted_msg_list = sorted(tmp, key=lambda tup: int(tup[1]))
 for (k, v) in sorted_msg_list:
-    writeFile(f, "#define GTPV2C_MSG_" + v_upper(k) + "_TYPE " + v)
-writeFile(f, "")
+    write_file(f, "#define GTPV2C_MSG_" + v_upper(k) + "_TYPE " + v)
+write_file(f, "")
 
 tmp = [(k, v["type"]) for k, v in type_list.items()]
 sorted_type_list = sorted(tmp, key=lambda tup: int(tup[1]))
 for (k, v) in sorted_type_list:
-    writeFile(f, "#define GTPV2C_IE_" + v_upper(k) + "_TYPE " + v)
-writeFile(f, "")
+    write_file(f, "#define GTPV2C_IE_" + v_upper(k) + "_TYPE " + v)
+write_file(f, "")
 
 for (k, v) in sorted_type_list:
-    writeFile(f, "typedef tlv_octet_t tlv_" + v_lower(k) + "_t;")
-writeFile(f, "")
+    write_file(f, "typedef tlv_octet_t tlv_" + v_lower(k) + "_t;")
+write_file(f, "")
 
 #for (k, v) in sorted_msg_list:
 #    if "groups" in msg_list[k]:
@@ -347,8 +341,8 @@ writeFile(f, "")
 #            print "\n\n"
 
 for (k, v) in sorted_type_list:
-    writeFile(f, "extern tlv_desc_t tlv_desc_" + v_lower(k) + ";")
-writeFile(f, "")
+    write_file(f, "extern tlv_desc_t tlv_desc_" + v_lower(k) + ";")
+write_file(f, "")
 
 f.write("""#ifdef __cplusplus
 }
@@ -359,22 +353,22 @@ f.write("""#ifdef __cplusplus
 f.close()
 
 f = open(outdir + 'gtpv2c_tlv.c', 'w')
-outputHeaderToFile(f)
+output_header_to_file(f)
 f.write("""#include "gtpv2c_tlv.h"
 
 """)
 
 for (k, v) in sorted_type_list:
-    writeFile(f, "tlv_desc_t tlv_desc_%s =" % v_lower(k))
-    writeFile(f, "{")
-    writeFile(f, "    TLV_VAR_STR,")
-    writeFile(f, "    GTPV2C_IE_%s_TYPE," % v_upper(k))
-    writeFile(f, "    0,")
-    writeFile(f, "    0,")
-    writeFile(f, "    sizeof(tlv_%s_t)," % v_lower(k))
-    writeFile(f, "    { NULL }")
-    writeFile(f, "};\n")
+    write_file(f, "tlv_desc_t tlv_desc_%s =" % v_lower(k))
+    write_file(f, "{")
+    write_file(f, "    TLV_VAR_STR,")
+    write_file(f, "    GTPV2C_IE_%s_TYPE," % v_upper(k))
+    write_file(f, "    0,")
+    write_file(f, "    0,")
+    write_file(f, "    sizeof(tlv_%s_t)," % v_lower(k))
+    write_file(f, "    { NULL }")
+    write_file(f, "};\n")
 
-writeFile(f, "")
+write_file(f, "")
 
 f.close()
