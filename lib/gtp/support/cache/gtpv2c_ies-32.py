@@ -1,4 +1,5 @@
-groups = []
+group_names = []
+group_ies = []
 type_list["Bearer Context"] = { "type" : "93" }
 group = []
 group.append({ "ie_type" : "EBI", "ie_value" : "EPS Bearer ID", "presence" : "M", "instance" : "0", "comment" : ""})
@@ -13,24 +14,29 @@ group.append({ "ie_type" : "F-TEID", "ie_value" : "S2b-U ePDG F-TEID", "presence
 group.append({ "ie_type" : "F-TEID", "ie_value" : "S2a-U TWAN F-TEID", "presence" : "C", "instance" : "6", "comment" : "This IE shall be included on the S2a interface for an Initial Attach in WLAN on GTP S2a, a UE initiated Connectivity to Additional PDN with GTP on S2a and a Handover to TWAN with GTP on S2a."})
 group.append({ "ie_type" : "Bearer QoS", "ie_value" : "Bearer Level QoS", "presence" : "M", "instance" : "0", "comment" : ""})
 group.append({ "ie_type" : "F-TEID", "ie_value" : "S11-U MME F-TEID", "presence" : "CO", "instance" : "7", "comment" : "This IE shall be sent on the S11 interface, if S11-U is being used, during the E-UTRAN Initial Attach and UE requested PDN connectivity procedures. This IE may also be sent on the S11 interface, if S11-U is being used, during a Tracking Area Update procedure with Serving GW change, if the MME needs to establish the S11-U tunnel. See NOTE 2."})
-groups.append(group)
+group_names.append("Bearer Context")
+group_ies.append(group)
 type_list["Bearer Context"] = { "type" : "93" }
 group = []
 group.append({ "ie_type" : "EBI", "ie_value" : "EPS Bearer ID", "presence" : "M", "instance" : "0", "comment" : ""})
 group.append({ "ie_type" : "F-TEID", "ie_value" : "S4-U SGSN F-TEID", "presence" : "C", "instance" : "0", "comment" : "This IE shall be sent on the S4 interface if the S4-U interface is used. See NOTE 1."})
-groups.append(group)
+group_names.append("Bearer Context")
+group_ies.append(group)
 type_list["Overload Control Information"] = { "type" : "180" }
 group = []
 group.append({ "ie_type" : "Sequence Number", "ie_value" : "Overload Control Sequence Number", "presence" : "M", "instance" : "0", "comment" : "See clause 12.3.5.1.2.1 for the description and use of this parameter."})
 group.append({ "ie_type" : "Metric", "ie_value" : "Overload Reduction Metric", "presence" : "M", "instance" : "0", "comment" : "See clause 12.3.5.1.2.3 for the description and use of this parameter."})
 group.append({ "ie_type" : "EPC Timer", "ie_value" : "Period of Validity", "presence" : "M", "instance" : "0", "comment" : "See clause 12.3.5.1.2.2 for the description and use of this parameter.This IE should be set to 0 if the Overload Reduction Metric is null. This IE shall be ignored by the receiver if the Overload Reduction Metric is null."})
-groups.append(group)
+group_names.append("Overload Control Information")
+group_ies.append(group)
 type_list["Remote UE Context"] = { "type" : "191" }
 group = []
 group.append({ "ie_type" : "Remote User ID", "ie_value" : "Remote User ID", "presence" : "M", "instance" : "0", "comment" : "See subclause 8.123 for the description and use of this parameter"})
 group.append({ "ie_type" : "Remote UE IP Information", "ie_value" : "Remote UE IP Information", "presence" : "M", "instance" : "0", "comment" : "See subclause 8.124 for the description and use of this parameter"})
-groups.append(group)
-msg_list[key]["groups"] = groups
+group_names.append("Remote UE Context")
+group_ies.append(group)
+msg_list[key]["group_names"] = group_names
+msg_list[key]["group_ies"] = group_ies
 ies.append({ "ie_type" : "IMSI", "ie_value" : "IMSI", "presence" : "C", "instance" : "0", "comment" : "The IMSI shall be included in the message on the S4/S11 interface, and on S5/S8 interface if provided by the MME/SGSN, except for the case:-	If the UE is emergency attached and the UE is UICCless.The IMSI shall be included in the message on the S4/S11 interface, and on S5/S8 interface if provided by the MME/SGSN, but not used as an identifierif UE is emergency attached but IMSI is not authenticated.The IMSI shall be included in the message on the S2a/S2b interface." })
 ies.append({ "ie_type" : "MSISDN", "ie_value" : "MSISDN", "presence" : "C", "instance" : "0", "comment" : "For an E-UTRAN Initial Attach and a Handover from Trusted or Untrusted Non-3GPP IP Access to E-UTRAN the IE shall be included when used on the S11 interface, if provided in the subscription data from the HSS.For a PDP Context Activation procedure and a Handover from Trusted or Untrusted Non-3GPP IP Access to UTRAN/GERAN the IE shall be included when used on the S4 interface, if provided in the subscription data from the HSS. The IE shall be included for the case of a UE Requested PDN Connectivity, if the MME has it stored for that UE. It shall be included when used on the S5/S8 interfaces if provided by the MME/SGSN. The ePDG shall include this IE on the S2b interface during an Attach with GTP on S2b , UE initiated Connectivity to Additional PDN with GTP on S2b and a Handover to Untrusted Non-3GPP IP Access with GTP on S2b, Initial Attach for emergency session (GTP on S2b), if provided by the HSS/AAA. The TWAN shall include this IE on the S2a interface during an Initial Attach in WLAN on GTP S2a, UE initiated Connectivity to Additional PDN with GTP on S2a and a Handover to TWAN with GTP on S2a, if provided by the HSS/AAA." })
 ies.append({ "ie_type" : "MEI", "ie_value" : "ME Identity (MEI)", "presence" : "C", "instance" : "0", "comment" : "The MME/SGSN shall include the ME Identity (MEI) IE on the S11/S4 interface:-	If the UE is emergency attached and the UE is UICCless-	If the UE is emergency attached and the IMSI is not authenticatedFor all other cases the MME/SGSN shall include the ME Identity (MEI) IE on the S11/S4 interface if it is available." })

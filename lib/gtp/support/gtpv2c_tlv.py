@@ -228,8 +228,10 @@ for key in msg_list.keys():
             row = table.rows[0];
 
             if row.cells[0].text.find('Octet') != -1:
-                groups = []
-                writeFile(f, "groups = []")
+                group_names = []
+                writeFile(f, "group_names = []")
+                group_ies = []
+                writeFile(f, "group_ies = []")
                 while True:
                     table = document.tables[next_index]
                     row = table.rows[0];
@@ -262,13 +264,17 @@ for key in msg_list.keys():
                                 "\", \"instance\" : \"" + instance + \
                                 "\", \"comment\" : \"" + comment + "\"})")
                         next_index += 1
-                        groups.append(group)
-                        writeFile(f, "groups.append(group)")
+                        group_names.append(ie_name)
+                        writeFile(f, "group_names.append(\"" + ie_name + "\")")
+                        group_ies.append(group)
+                        writeFile(f, "group_ies.append(group)")
                     else:
                         break
 
-                msg_list[key]["groups"] = groups
-                writeFile(f, "msg_list[key][\"groups\"] = groups")
+                msg_list[key]["group_names"] = group_names
+                writeFile(f, "msg_list[key][\"group_names\"] = group_names")
+                msg_list[key]["group_ies"] = group_ies
+                writeFile(f, "msg_list[key][\"group_ies\"] = group_ies")
 
             table = document.tables[msg_list[key]["table"]]
             for row in table.rows[1:]:
@@ -299,6 +305,8 @@ for key in msg_list.keys():
             msg_list[key]["ies"] = ies
             writeFile(f, "msg_list[key][\"ies\"] = ies")
             f.close()
+# Errata Standard Specification Document 
+type_list["Overload Control Information"] = { "type" : "180" }
 
 f = open(outdir + 'gtpv2c_tlv.h', 'w')
 outputHeaderToFile(f)
@@ -328,6 +336,14 @@ writeFile(f, "")
 for (k, v) in sorted_type_list:
     writeFile(f, "typedef tlv_octet_t tlv_" + v_lower(k) + "_t;")
 writeFile(f, "")
+
+#for (k, v) in sorted_msg_list:
+#    if "groups" in msg_list[k]:
+#        groups = msg_list[k]["groups"]
+#        type = msg_list[k]["type"]
+#        for group in groups:
+#            print group
+#            print "\n\n"
 
 for (k, v) in sorted_type_list:
     writeFile(f, "extern tlv_desc_t tlv_desc_" + v_lower(k) + ";")
