@@ -149,8 +149,8 @@ else:
             msg_table = table
 
     for row in msg_table.rows[2:-4]:
-        key = row.cells[1].text
-        type = row.cells[0].text
+        key = row.cells[1].text.encode('ascii', 'ignore')
+        type = row.cells[0].text.encode('ascii', 'ignore')
         if type.isdigit() is False:
             continue
         if int(type) in range(128, 160):
@@ -234,23 +234,23 @@ for key in msg_list.keys():
                     table = document.tables[next_index]
                     row = table.rows[0];
                     if row.cells[0].text.find('Octet') != -1:
-                        ie_type = re.findall('\d+', row.cells[2].text)[0]
-                        ie_name = re.sub('\s*IE Type.*', '', row.cells[2].text)
+                        ie_type = re.findall('\d+', row.cells[2].text)[0].encode('ascii', 'ignore')
+                        ie_name = re.sub('\s*IE Type.*', '', row.cells[2].text.encode('ascii', 'ignore'))
                         type_list[ie_name] = { "type": ie_type }
                         writeFile(f, "type_list[\"" + ie_name + "\"] = { \"type\" : \"" + ie_type + "\" }")
 
                         group = []
                         writeFile(f, "group = []")
                         for row in table.rows[4:]:
-                            instance = row.cells[4].text
+                            instance = row.cells[4].text.encode('ascii', 'ignore')
                             if instance.isdigit() is not True:
                                 continue
-                            ie_type = re.sub('\s*\n*\s*\(NOTE.*\)*', '', row.cells[3].text)
+                            ie_type = re.sub('\s*\n*\s*\(NOTE.*\)*', '', row.cells[3].text.encode('ascii', 'ignore'))
                             if ie_type not in type_list.keys():
                                 assert False, "Unknown IE type : [" \
                                         + row.cells[3].text + "]" + "(" + ie_type + ")"
-                            presence = row.cells[1].text
-                            ie_value = row.cells[0].text
+                            presence = row.cells[1].text.encode('ascii', 'ignore')
+                            ie_value = row.cells[0].text.encode('ascii', 'ignore')
                             comment = row.cells[2].text.encode('ascii', 'ignore').decode('ascii')
                             comment = re.sub('\n|\"|\'|\\\\', '', comment);
                             group.append({ "ie_type" : ie_type, 
@@ -272,10 +272,10 @@ for key in msg_list.keys():
 
             table = document.tables[msg_list[key]["table"]]
             for row in table.rows[1:]:
-                instance = row.cells[4].text
+                instance = row.cells[4].text.encode('ascii', 'ignore')
                 if instance.isdigit() is not True:
                     continue
-                ie_type = re.sub('\s*\n*\s*\(NOTE.*\)*', '', row.cells[3].text)
+                ie_type = re.sub('\s*\n*\s*\(NOTE.*\)*', '', row.cells[3].text.encode('ascii', 'ignore'))
                 if ie_type.find('LDN') != -1:
                     ie_type = 'LDN'
                 elif ie_type.find('APCO') != -1:
@@ -283,8 +283,8 @@ for key in msg_list.keys():
                 if ie_type not in type_list.keys():
                     assert False, "Unknown IE type : [" \
                             + row.cells[3].text + "]" + "(" + ie_type + ")"
-                presence = row.cells[1].text
-                ie_value = row.cells[0].text
+                presence = row.cells[1].text.encode('ascii', 'ignore')
+                ie_value = row.cells[0].text.encode('ascii', 'ignore')
                 comment = row.cells[2].text.encode('ascii', 'ignore').decode('ascii')
                 comment = re.sub('\n|\"|\'|\\\\', '', comment);
 
