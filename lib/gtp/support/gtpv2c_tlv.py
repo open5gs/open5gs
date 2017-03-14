@@ -24,7 +24,9 @@
 #
 from docx import Document
 import re, os, sys, string
+import datetime
 import getopt
+import getpass
 
 version = "0.1.0"
 
@@ -37,7 +39,7 @@ FAIL = '\033[91m'
 INFO = '\033[93m'
 ENDC = '\033[0m'
 
-def writeCacheFile(f, string):
+def writeFile(f, string):
     f.write(string + "\n")
     if verbosity > 0:
         print string
@@ -53,6 +55,39 @@ def printFail(string):
     sys.stderr.write(FAIL + string + ENDC + "\n")
     sys.exit(0)
 
+def outputHeaderToFile(f):
+    now = datetime.datetime.now()
+    f.write("""/*
+ * Copyright (c) 2017, CellWire Group
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ * 1. Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+""")
+    f.write("/*******************************************************************************\n")
+    f.write(" * This file had been created by gtpv2c_tlv.py script v%s\n" % (version))
+    f.write(" * Please do not modify this file but regenerate it via script.\n")
+    f.write(" * Created on: %s by %s\n * from %s\n" % (str(now), getpass.getuser(), filename))
+    f.write(" ******************************************************************************/\n\n")
 
 def usage():
     print "Python adding prefix for asn1 v%s" % (version)
@@ -62,6 +97,11 @@ def usage():
     print "-f [file] Input file to parse"
     print "-o [dir]  Output files to given directory"
     print "-h        Print this help and return"
+
+def v_upper(v):
+    return re.sub('/', '_', re.sub('-', '_', re.sub(' ', '_', v))).upper()
+def v_lower(v):
+    return re.sub('/', '_', re.sub('-', '_', re.sub(' ', '_', v))).lower()
 
 try:
     opts, args = getopt.getopt(sys.argv[1:], "df:ho:c:", ["debug", "file", "help", "output", "cache"])
@@ -121,7 +161,7 @@ else:
             continue
         key = re.sub('\s*\n*\s*\([^\)]*\)*', '', key)
         msg_list[key] = { "type": type }
-        writeCacheFile(f, "msg_list[\"" + key + "\"] = { \"type\" : \"" + type + "\" }")
+        writeFile(f, "msg_list[\"" + key + "\"] = { \"type\" : \"" + type + "\" }")
     f.close()
 
 printInfo("[IE Type List]")
@@ -141,7 +181,7 @@ else:
             ie_table = table
 
     for row in ie_table.rows[1:-5]:
-        key = row.cells[1].text
+        key = row.cells[1].text.encode('ascii', 'ignore')
         if key.find('Reserved') != -1:
             continue
         if key.find('MM Context') != -1:
@@ -157,11 +197,12 @@ else:
         elif key.find('Remote UE IP information') != -1:
             key = 'Remote UE IP Information'
         else:
-            key = re.sub('.*\(', '', row.cells[1].text)
+            key = re.sub('.*\(', '', row.cells[1].text.encode('ascii', 'ignore'))
             key = re.sub('\)', '', key)
-        type = row.cells[0].text
+            key = re.sub('\s*$', '', key)
+        type = row.cells[0].text.encode('ascii', 'ignore')
         type_list[key] = { "type": type }
-        writeCacheFile(f, "type_list[\"" + key + "\"] = { \"type\" : \"" + type + "\" }")
+        writeFile(f, "type_list[\"" + key + "\"] = { \"type\" : \"" + type + "\" }")
     f.close()
 type_list['MM Context'] = { "type": "107" }
 
@@ -188,7 +229,7 @@ for key in msg_list.keys():
 
             if row.cells[0].text.find('Octet') != -1:
                 groups = []
-                writeCacheFile(f, "groups = []")
+                writeFile(f, "groups = []")
                 while True:
                     table = document.tables[next_index]
                     row = table.rows[0];
@@ -196,10 +237,10 @@ for key in msg_list.keys():
                         ie_type = re.findall('\d+', row.cells[2].text)[0]
                         ie_name = re.sub('\s*IE Type.*', '', row.cells[2].text)
                         type_list[ie_name] = { "type": ie_type }
-                        writeCacheFile(f, "type_list[\"" + ie_name + "\"] = { \"type\" : \"" + ie_type + "\" }")
+                        writeFile(f, "type_list[\"" + ie_name + "\"] = { \"type\" : \"" + ie_type + "\" }")
 
                         group = []
-                        writeCacheFile(f, "group = []")
+                        writeFile(f, "group = []")
                         for row in table.rows[4:]:
                             instance = row.cells[4].text
                             if instance.isdigit() is not True:
@@ -215,19 +256,19 @@ for key in msg_list.keys():
                             group.append({ "ie_type" : ie_type, 
                                 "ie_value" : ie_value, "presence" : presence, 
                                 "instance" : instance, "comment" : comment })
-                            writeCacheFile(f, "group.append({ \"ie_type\" : \"" + ie_type + \
+                            writeFile(f, "group.append({ \"ie_type\" : \"" + ie_type + \
                                 "\", \"ie_value\" : \"" + ie_value + \
                                 "\", \"presence\" : \"" + presence + \
                                 "\", \"instance\" : \"" + instance + \
                                 "\", \"comment\" : \"" + comment + "\"})")
                         next_index += 1
                         groups.append(group)
-                        writeCacheFile(f, "groups.append(group)")
+                        writeFile(f, "groups.append(group)")
                     else:
                         break
 
                 msg_list[key]["groups"] = groups
-                writeCacheFile(f, "msg_list[key][\"groups\"] = groups")
+                writeFile(f, "msg_list[key][\"groups\"] = groups")
 
             table = document.tables[msg_list[key]["table"]]
             for row in table.rows[1:]:
@@ -250,11 +291,73 @@ for key in msg_list.keys():
                 ies.append({ "ie_type" : ie_type, "ie_value" : ie_value, 
                     "presence" : presence, "instance" : instance, 
                     "comment" : comment })
-                writeCacheFile(f, "ies.append({ \"ie_type\" : \"" + ie_type + \
+                writeFile(f, "ies.append({ \"ie_type\" : \"" + ie_type + \
                     "\", \"ie_value\" : \"" + ie_value + \
                     "\", \"presence\" : \"" + presence + \
                     "\", \"instance\" : \"" + instance + \
                     "\", \"comment\" : \"" + comment + "\" })")
             msg_list[key]["ies"] = ies
-            writeCacheFile(f, "msg_list[key][\"ies\"] = ies")
+            writeFile(f, "msg_list[key][\"ies\"] = ies")
             f.close()
+
+f = open(outdir + 'gtpv2c_tlv.h', 'w')
+outputHeaderToFile(f)
+f.write("""#ifndef __GTPV2C_TLV_H__
+#define __GTPV2C_TLV_H__
+
+#include "core_tlv_msg.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
+""")
+
+tmp = [(k, v["type"]) for k, v in msg_list.items()]
+sorted_msg_list = sorted(tmp, key=lambda tup: int(tup[1]))
+for (k, v) in sorted_msg_list:
+    writeFile(f, "#define GTPV2C_MSG_" + v_upper(k) + "_TYPE " + v)
+writeFile(f, "")
+
+tmp = [(k, v["type"]) for k, v in type_list.items()]
+sorted_type_list = sorted(tmp, key=lambda tup: int(tup[1]))
+for (k, v) in sorted_type_list:
+    writeFile(f, "#define GTPV2C_IE_" + v_upper(k) + "_TYPE " + v)
+writeFile(f, "")
+
+for (k, v) in sorted_type_list:
+    writeFile(f, "typedef tlv_octet_t tlv_" + v_lower(k) + "_t;")
+writeFile(f, "")
+
+for (k, v) in sorted_type_list:
+    writeFile(f, "extern tlv_desc_t tlv_desc_" + v_lower(k) + ";")
+writeFile(f, "")
+
+f.write("""#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
+#endif /* __GTPV2C_TLV_H__ */
+""")
+f.close()
+
+f = open(outdir + 'gtpv2c_tlv.c', 'w')
+outputHeaderToFile(f)
+f.write("""#include "gtpv2c_tlv.h"
+
+""")
+
+for (k, v) in sorted_type_list:
+    writeFile(f, "tlv_desc_t tlv_desc_%s =" % v_lower(k))
+    writeFile(f, "{")
+    writeFile(f, "    TLV_VAR_STR,")
+    writeFile(f, "    GTPV2C_IE_%s_TYPE," % v_upper(k))
+    writeFile(f, "    0,")
+    writeFile(f, "    0,")
+    writeFile(f, "    sizeof(tlv_%s_t)," % v_lower(k))
+    writeFile(f, "    { NULL }")
+    writeFile(f, "};\n")
+
+writeFile(f, "")
+
+f.close()
