@@ -164,7 +164,6 @@ else:
         writeCacheFile(f, "type_list[\"" + key + "\"] = { \"type\" : \"" + type + "\" }")
     f.close()
 type_list['MM Context'] = { "type": "107" }
-type_list['Bearer Context'] = { "type": "93" }
 
 msg_list["Echo Request"]["table"] = 6
 msg_list["Echo Response"]["table"] = 7
@@ -184,46 +183,51 @@ for key in msg_list.keys():
             f = open(cachefile, 'w') 
 
             next_index = msg_list[key]["table"] + 1
-            groups = []
-            writeCacheFile(f, "groups = []")
-            while True:
-                table = document.tables[next_index]
-                row = table.rows[0];
-                if row.cells[0].text.find('Octet') != -1:
-                    ie_type = re.findall('\d+', row.cells[2].text)[0]
-                    ie_name = re.sub('\s*IE Type.*', '', row.cells[2].text)
-                    type_list[ie_name] = { "type": ie_type }
+            table = document.tables[next_index]
+            row = table.rows[0];
 
-                    group = []
-                    writeCacheFile(f, "group = []")
-                    for row in table.rows[4:]:
-                        instance = row.cells[4].text
-                        if instance.isdigit() is not True:
-                            continue
-                        ie_type = re.sub('\s*\n*\s*\(NOTE.*\)*', '', row.cells[3].text)
-                        if ie_type not in type_list.keys():
-                            assert False, "Unknown IE type : [" \
-                                    + row.cells[3].text + "]" + "(" + ie_type + ")"
-                        presence = row.cells[1].text
-                        ie_value = row.cells[0].text
-                        comment = row.cells[2].text.encode('ascii', 'ignore').decode('ascii')
-                        comment = re.sub('\n|\"|\'|\\\\', '', comment);
-                        group.append({ "ie_type" : ie_type, 
-                            "ie_value" : ie_value, "presence" : presence, 
-                            "instance" : instance, "comment" : comment })
-                        writeCacheFile(f, "group.append({ \"ie_type\" : \"" + ie_type + \
-                            "\", \"ie_value\" : \"" + ie_value + \
-                            "\", \"presence\" : \"" + presence + \
-                            "\", \"instance\" : \"" + instance + \
-                            "\", \"comment\" : \"" + comment + "\"})")
-                    next_index += 1
-                    groups.append(group)
-                    writeCacheFile(f, "groups.append(group)")
-                else:
-                    break
+            if row.cells[0].text.find('Octet') != -1:
+                groups = []
+                writeCacheFile(f, "groups = []")
+                while True:
+                    table = document.tables[next_index]
+                    row = table.rows[0];
+                    if row.cells[0].text.find('Octet') != -1:
+                        ie_type = re.findall('\d+', row.cells[2].text)[0]
+                        ie_name = re.sub('\s*IE Type.*', '', row.cells[2].text)
+                        type_list[ie_name] = { "type": ie_type }
+                        writeCacheFile(f, "type_list[\"" + ie_name + "\"] = { \"type\" : \"" + ie_type + "\" }")
 
-            msg_list[key]["groups"] = groups
-            writeCacheFile(f, "msg_list[key][\"groups\"] = groups")
+                        group = []
+                        writeCacheFile(f, "group = []")
+                        for row in table.rows[4:]:
+                            instance = row.cells[4].text
+                            if instance.isdigit() is not True:
+                                continue
+                            ie_type = re.sub('\s*\n*\s*\(NOTE.*\)*', '', row.cells[3].text)
+                            if ie_type not in type_list.keys():
+                                assert False, "Unknown IE type : [" \
+                                        + row.cells[3].text + "]" + "(" + ie_type + ")"
+                            presence = row.cells[1].text
+                            ie_value = row.cells[0].text
+                            comment = row.cells[2].text.encode('ascii', 'ignore').decode('ascii')
+                            comment = re.sub('\n|\"|\'|\\\\', '', comment);
+                            group.append({ "ie_type" : ie_type, 
+                                "ie_value" : ie_value, "presence" : presence, 
+                                "instance" : instance, "comment" : comment })
+                            writeCacheFile(f, "group.append({ \"ie_type\" : \"" + ie_type + \
+                                "\", \"ie_value\" : \"" + ie_value + \
+                                "\", \"presence\" : \"" + presence + \
+                                "\", \"instance\" : \"" + instance + \
+                                "\", \"comment\" : \"" + comment + "\"})")
+                        next_index += 1
+                        groups.append(group)
+                        writeCacheFile(f, "groups.append(group)")
+                    else:
+                        break
+
+                msg_list[key]["groups"] = groups
+                writeCacheFile(f, "msg_list[key][\"groups\"] = groups")
 
             table = document.tables[msg_list[key]["table"]]
             for row in table.rows[1:]:
