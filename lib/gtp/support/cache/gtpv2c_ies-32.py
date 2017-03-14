@@ -1,3 +1,4 @@
+ies = []
 group_names = []
 group_ies = []
 type_list["Bearer Context"] = { "type" : "93" }

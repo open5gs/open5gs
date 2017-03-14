@@ -212,8 +212,6 @@ msg_list["Create Session Request"]["table"] = 8
 
 for key in msg_list.keys():
     if "table" in msg_list[key].keys():
-        ies = []
-
         printInfo("[" + key + "]")
         cachefile = cachedir + "gtpv2c_ies-" + msg_list[key]["type"] + ".py"
         if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
@@ -223,15 +221,18 @@ for key in msg_list.keys():
             document = Document(filename)
             f = open(cachefile, 'w') 
 
+            ies = []
+            writeFile(f, "ies = []")
+            group_names = []
+            writeFile(f, "group_names = []")
+            group_ies = []
+            writeFile(f, "group_ies = []")
+
             next_index = msg_list[key]["table"] + 1
             table = document.tables[next_index]
             row = table.rows[0];
 
             if row.cells[0].text.find('Octet') != -1:
-                group_names = []
-                writeFile(f, "group_names = []")
-                group_ies = []
-                writeFile(f, "group_ies = []")
                 while True:
                     table = document.tables[next_index]
                     row = table.rows[0];
