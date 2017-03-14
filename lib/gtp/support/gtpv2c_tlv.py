@@ -92,15 +92,14 @@ if os.path.isfile(filename) and os.access(filename, os.R_OK):
 else:
     printFail("Cannot find file : " + filename)
 
-document = Document(filename)
-
-printInfo("[Message Type]")
+printInfo("[Message List]")
 msg_list = {}
 cachefile = cachedir + 'gtpv2c_msg_list.py'
 if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
     execfile(cachefile)
     print "Read from " + cachefile
 else:
+    document = Document(filename)
     f = open(cachefile, 'w') 
 
     msg_table = ""
@@ -125,13 +124,14 @@ else:
         writeCacheFile(f, "msg_list[\"" + key + "\"] = { \"type\" : \"" + type + "\" }")
     f.close()
 
-printInfo("[Information Element Type]")
-ie_list = {}
-cachefile = cachedir + 'gtpv2c_ie_list.py'
+printInfo("[IE Type List]")
+type_list = {}
+cachefile = cachedir + 'gtpv2c_type_list.py'
 if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
     execfile(cachefile)
     print "Read from " + cachefile
 else:
+    document = Document(filename)
     f = open(cachefile, 'w') 
 
     ie_table = ""
@@ -154,33 +154,78 @@ else:
             key = 'LDN'
         elif key.find('APCO') != -1:
             key = 'APCO'
+        elif key.find('Remote UE IP information') != -1:
+            key = 'Remote UE IP Information'
         else:
             key = re.sub('.*\(', '', row.cells[1].text)
             key = re.sub('\)', '', key)
         type = row.cells[0].text
-        ie_list[key] = { "type": type }
-        writeCacheFile(f, "ie_list[\"" + key + "\"] = { \"type\" : \"" + type + "\" }")
+        type_list[key] = { "type": type }
+        writeCacheFile(f, "type_list[\"" + key + "\"] = { \"type\" : \"" + type + "\" }")
     f.close()
-ie_list['MM Context'] = { "type": "107" }
-ie_list['Bearer Context'] = { "type": "93" }
+type_list['MM Context'] = { "type": "107" }
+type_list['Bearer Context'] = { "type": "93" }
 
-msg_list["Echo Request"]["table"] = document.tables[6]
-msg_list["Echo Response"]["table"] =  document.tables[7]
-msg_list["Create Session Request"]["table"] = document.tables[8]
+msg_list["Echo Request"]["table"] = 6
+msg_list["Echo Response"]["table"] = 7
+msg_list["Create Session Request"]["table"] = 8
 
 for key in msg_list.keys():
     if "table" in msg_list[key].keys():
-        rows = []
+        ies = []
 
         printInfo("[" + key + "]")
-        cachefile = cachedir + "gtpv2c_msg_ies-" + msg_list[key]["type"] + ".py"
+        cachefile = cachedir + "gtpv2c_ies-" + msg_list[key]["type"] + ".py"
         if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
             execfile(cachefile)
             print "Read from " + cachefile
         else:
+            document = Document(filename)
             f = open(cachefile, 'w') 
 
-            table = msg_list[key]["table"]
+            next_index = msg_list[key]["table"] + 1
+            groups = []
+            writeCacheFile(f, "groups = []")
+            while True:
+                table = document.tables[next_index]
+                row = table.rows[0];
+                if row.cells[0].text.find('Octet') != -1:
+                    ie_type = re.findall('\d+', row.cells[2].text)[0]
+                    ie_name = re.sub('\s*IE Type.*', '', row.cells[2].text)
+                    type_list[ie_name] = { "type": ie_type }
+
+                    group = []
+                    writeCacheFile(f, "group = []")
+                    for row in table.rows[4:]:
+                        instance = row.cells[4].text
+                        if instance.isdigit() is not True:
+                            continue
+                        ie_type = re.sub('\s*\n*\s*\(NOTE.*\)*', '', row.cells[3].text)
+                        if ie_type not in type_list.keys():
+                            assert False, "Unknown IE type : [" \
+                                    + row.cells[3].text + "]" + "(" + ie_type + ")"
+                        presence = row.cells[1].text
+                        ie_value = row.cells[0].text
+                        comment = row.cells[2].text.encode('ascii', 'ignore').decode('ascii')
+                        comment = re.sub('\n|\"|\'|\\\\', '', comment);
+                        group.append({ "ie_type" : ie_type, 
+                            "ie_value" : ie_value, "presence" : presence, 
+                            "instance" : instance, "comment" : comment })
+                        writeCacheFile(f, "group.append({ \"ie_type\" : \"" + ie_type + \
+                            "\", \"ie_value\" : \"" + ie_value + \
+                            "\", \"presence\" : \"" + presence + \
+                            "\", \"instance\" : \"" + instance + \
+                            "\", \"comment\" : \"" + comment + "\"})")
+                    next_index += 1
+                    groups.append(group)
+                    writeCacheFile(f, "groups.append(group)")
+                else:
+                    break
+
+            msg_list[key]["groups"] = groups
+            writeCacheFile(f, "msg_list[key][\"groups\"] = groups")
+
+            table = document.tables[msg_list[key]["table"]]
             for row in table.rows[1:]:
                 instance = row.cells[4].text
                 if instance.isdigit() is not True:
@@ -190,7 +235,7 @@ for key in msg_list.keys():
                     ie_type = 'LDN'
                 elif ie_type.find('APCO') != -1:
                     ie_type = 'APCO'
-                if ie_type not in ie_list.keys():
+                if ie_type not in type_list.keys():
                     assert False, "Unknown IE type : [" \
                             + row.cells[3].text + "]" + "(" + ie_type + ")"
                 presence = row.cells[1].text
@@ -198,35 +243,14 @@ for key in msg_list.keys():
                 comment = row.cells[2].text.encode('ascii', 'ignore').decode('ascii')
                 comment = re.sub('\n|\"|\'|\\\\', '', comment);
 
-                rows.append({ "ie_type" : ie_type, "ie_value" : ie_value, 
+                ies.append({ "ie_type" : ie_type, "ie_value" : ie_value, 
                     "presence" : presence, "instance" : instance, 
                     "comment" : comment })
-                writeCacheFile(f, "rows.append({ \"ie_type\" : \"" + ie_type + \
+                writeCacheFile(f, "ies.append({ \"ie_type\" : \"" + ie_type + \
                     "\", \"ie_value\" : \"" + ie_value + \
                     "\", \"presence\" : \"" + presence + \
                     "\", \"instance\" : \"" + instance + \
                     "\", \"comment\" : \"" + comment + "\" })")
-            msg_list[key]["ies"] = rows
-            writeCacheFile(f, "msg_list[key][\"ies\"] = rows")
+            msg_list[key]["ies"] = ies
+            writeCacheFile(f, "msg_list[key][\"ies\"] = ies")
             f.close()
-
-# Data will be a list of rows represented as dictionaries
-# containing each row's data.
-#data = []
-
-#keys = None
-#for i, row in enumerate(tlv_table.rows):
-#    text = (cell.text for cell in row.cells)
-#
-#    # Establish the mapping based on the first row
-#    # headers; these will become the keys of our dictionary
-#    if i == 0:
-#        keys = tuple(text)
-#        continue
-#
-#    # Construct a dictionary for this row, mapping
-#    # keys to values for this row
-#    row_data = dict(zip(keys, text))
-#    data.append(row_data)
-#
-#print data
