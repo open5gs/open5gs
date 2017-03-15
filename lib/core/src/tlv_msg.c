@@ -173,7 +173,7 @@ static c_uint32_t _tlv_add_compound(tlv_t **root, tlv_t *parent_tlv,
             {
                 h = (tlv_header_t *)(p + offset2);
 
-                if (h->present == 0)
+                if (h->presence == 0)
                     break;
 
                 if (desc->ctype == TLV_COMPOUND)
@@ -218,7 +218,7 @@ static c_uint32_t _tlv_add_compound(tlv_t **root, tlv_t *parent_tlv,
         {
             h = (tlv_header_t *)(p + offset);
 
-            if (h->present)
+            if (h->presence)
             {
                 if (desc->ctype == TLV_COMPOUND)
                 {
@@ -490,7 +490,7 @@ static status_t _tlv_parse_compound(void *msg, tlv_desc_t *parent_desc,
             for (j = 0; j < next_desc->length; j++)
             {
                 h = (tlv_header_t *)(p + offset + desc->vsize * j);
-                if (h->present == 0)
+                if (h->presence == 0)
                 {
                     offset += desc->vsize * j;
                     break;
@@ -527,7 +527,7 @@ static status_t _tlv_parse_compound(void *msg, tlv_desc_t *parent_desc,
                 return CORE_ERROR;
             }
 
-            h->present = 1;
+            h->presence = 1;
         }
         else
         {
@@ -543,7 +543,7 @@ static status_t _tlv_parse_compound(void *msg, tlv_desc_t *parent_desc,
                 return CORE_ERROR;
             }
 
-            h->present = 1;
+            h->presence = 1;
         }
 
         tlv = tlv->next;

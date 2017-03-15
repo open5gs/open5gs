@@ -49,7 +49,7 @@ extern tlv_desc_t tlv_desc_more7;
 extern tlv_desc_t tlv_desc_more8;
 
 typedef struct _tlv_header_t {
-    c_uint64_t present;
+    c_uint64_t presence;
 } tlv_header_t;
 
 /* 8-bit Unsigned integer */
@@ -115,7 +115,7 @@ typedef struct _tlv_null {
 #define tlv_get_value(__tlv) (__tlv).v
 
 #define tlv_set_value(__m, __value) \
-    __m.v = __value; __m.h.present = 1
+    __m.v = __value; __m.h.presence = 1
 
 #define tlv_copy_value(__t_tlv, __s_tlv) \
     (__t_tlv).h = (__s_tlv).h; (__t_tlv).v = (__s_tlv).v
@@ -124,15 +124,15 @@ typedef struct _tlv_null {
     __value = (__tlv).v; __length = (__tlv).l
 
 #define tlv_set_octet(__m, __value, __length) \
-    __m.v = __value; __m.l = __length; __m.h.present = 1
+    __m.v = __value; __m.l = __length; __m.h.presence = 1
 
 #define tlv_copy_octet(__t_tlv, __s_tlv) \
     (__t_tlv).h = (__s_tlv).h; (__t_tlv).v = (__s_tlv).v; \
     (__t_tlv).l = (__s_tlv).l
 
-#define tlv_set_present(__m) __m.h.present = 1
-#define tlv_unset_present(__m) __m.h.present = 0
-#define tlv_is_present(__m) __m.h.present
+#define tlv_set_present(__m) __m.h.presence = 1
+#define tlv_unset_present(__m) __m.h.presence = 0
+#define tlv_is_present(__m) __m.h.presence
 
 CORE_DECLARE(status_t) tlv_build_msg(
         pkbuf_t **pkbuf, tlv_desc_t *desc, void *msg, int mode);
