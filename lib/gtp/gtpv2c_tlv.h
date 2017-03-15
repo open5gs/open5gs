@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-03-15 16:25:39.781353 by acetcom
+ * Created on: 2017-03-15 19:17:55.291152 by acetcom
  * from 29274-d80.docx
  ******************************************************************************/
 
@@ -605,23 +605,19 @@ typedef struct _gtpv2c_scef_pdn_connection_t {
 
 /* Structure for Message */
 typedef struct _gtpv2c_echo_request_t {
-    tlv_header_t h;
     gtpv2c_recovery_t recovery;
     gtpv2c_node_features_t sending_node_features;
 } gtpv2c_echo_request_t;
 
 typedef struct _gtpv2c_echo_response_t {
-    tlv_header_t h;
     gtpv2c_recovery_t recovery;
     gtpv2c_node_features_t sending_node_features;
 } gtpv2c_echo_response_t;
 
 typedef struct _gtpv2c_version_not_supported_indication_t {
-    tlv_header_t h;
 } gtpv2c_version_not_supported_indication_t;
 
 typedef struct _gtpv2c_create_session_request_t {
-    tlv_header_t h;
     gtpv2c_imsi_t imsi;
     gtpv2c_msisdn_t msisdn;
     gtpv2c_mei_t me_identity;
@@ -683,199 +679,150 @@ typedef struct _gtpv2c_create_session_request_t {
 } gtpv2c_create_session_request_t;
 
 typedef struct _gtpv2c_create_session_response_t {
-    tlv_header_t h;
 } gtpv2c_create_session_response_t;
 
 typedef struct _gtpv2c_modify_bearer_request_t {
-    tlv_header_t h;
 } gtpv2c_modify_bearer_request_t;
 
 typedef struct _gtpv2c_modify_bearer_response_t {
-    tlv_header_t h;
 } gtpv2c_modify_bearer_response_t;
 
 typedef struct _gtpv2c_delete_session_request_t {
-    tlv_header_t h;
 } gtpv2c_delete_session_request_t;
 
 typedef struct _gtpv2c_delete_session_response_t {
-    tlv_header_t h;
 } gtpv2c_delete_session_response_t;
 
 typedef struct _gtpv2c_change_notification_request_t {
-    tlv_header_t h;
 } gtpv2c_change_notification_request_t;
 
 typedef struct _gtpv2c_change_notification_response_t {
-    tlv_header_t h;
 } gtpv2c_change_notification_response_t;
 
 typedef struct _gtpv2c_remote_ue_report_notification_t {
-    tlv_header_t h;
 } gtpv2c_remote_ue_report_notification_t;
 
 typedef struct _gtpv2c_remote_ue_report_acknowledge_t {
-    tlv_header_t h;
 } gtpv2c_remote_ue_report_acknowledge_t;
 
 typedef struct _gtpv2c_modify_bearer_command_t {
-    tlv_header_t h;
 } gtpv2c_modify_bearer_command_t;
 
 typedef struct _gtpv2c_modify_bearer_failure_indication_t {
-    tlv_header_t h;
 } gtpv2c_modify_bearer_failure_indication_t;
 
 typedef struct _gtpv2c_delete_bearer_command_t {
-    tlv_header_t h;
 } gtpv2c_delete_bearer_command_t;
 
 typedef struct _gtpv2c_delete_bearer_failure_indication_t {
-    tlv_header_t h;
 } gtpv2c_delete_bearer_failure_indication_t;
 
 typedef struct _gtpv2c_bearer_resource_command_t {
-    tlv_header_t h;
 } gtpv2c_bearer_resource_command_t;
 
 typedef struct _gtpv2c_bearer_resource_failure_indication_t {
-    tlv_header_t h;
 } gtpv2c_bearer_resource_failure_indication_t;
 
 typedef struct _gtpv2c_downlink_data_notification_failure_indication_t {
-    tlv_header_t h;
 } gtpv2c_downlink_data_notification_failure_indication_t;
 
 typedef struct _gtpv2c_trace_session_activation_t {
-    tlv_header_t h;
 } gtpv2c_trace_session_activation_t;
 
 typedef struct _gtpv2c_trace_session_deactivation_t {
-    tlv_header_t h;
 } gtpv2c_trace_session_deactivation_t;
 
 typedef struct _gtpv2c_stop_paging_indication_t {
-    tlv_header_t h;
 } gtpv2c_stop_paging_indication_t;
 
 typedef struct _gtpv2c_create_bearer_request_t {
-    tlv_header_t h;
 } gtpv2c_create_bearer_request_t;
 
 typedef struct _gtpv2c_create_bearer_response_t {
-    tlv_header_t h;
 } gtpv2c_create_bearer_response_t;
 
 typedef struct _gtpv2c_update_bearer_request_t {
-    tlv_header_t h;
 } gtpv2c_update_bearer_request_t;
 
 typedef struct _gtpv2c_update_bearer_response_t {
-    tlv_header_t h;
 } gtpv2c_update_bearer_response_t;
 
 typedef struct _gtpv2c_delete_bearer_request_t {
-    tlv_header_t h;
 } gtpv2c_delete_bearer_request_t;
 
 typedef struct _gtpv2c_delete_bearer_response_t {
-    tlv_header_t h;
 } gtpv2c_delete_bearer_response_t;
 
 typedef struct _gtpv2c_delete_pdn_connection_set_request_t {
-    tlv_header_t h;
 } gtpv2c_delete_pdn_connection_set_request_t;
 
 typedef struct _gtpv2c_delete_pdn_connection_set_response_t {
-    tlv_header_t h;
 } gtpv2c_delete_pdn_connection_set_response_t;
 
 typedef struct _gtpv2c_pgw_downlink_triggering_notification_t {
-    tlv_header_t h;
 } gtpv2c_pgw_downlink_triggering_notification_t;
 
 typedef struct _gtpv2c_pgw_downlink_triggering_acknowledge_t {
-    tlv_header_t h;
 } gtpv2c_pgw_downlink_triggering_acknowledge_t;
 
 typedef struct _gtpv2c_create_forwarding_tunnel_request_t {
-    tlv_header_t h;
 } gtpv2c_create_forwarding_tunnel_request_t;
 
 typedef struct _gtpv2c_create_forwarding_tunnel_response_t {
-    tlv_header_t h;
 } gtpv2c_create_forwarding_tunnel_response_t;
 
 typedef struct _gtpv2c_suspend_notification_t {
-    tlv_header_t h;
 } gtpv2c_suspend_notification_t;
 
 typedef struct _gtpv2c_suspend_acknowledge_t {
-    tlv_header_t h;
 } gtpv2c_suspend_acknowledge_t;
 
 typedef struct _gtpv2c_resume_notification_t {
-    tlv_header_t h;
 } gtpv2c_resume_notification_t;
 
 typedef struct _gtpv2c_resume_acknowledge_t {
-    tlv_header_t h;
 } gtpv2c_resume_acknowledge_t;
 
 typedef struct _gtpv2c_create_indirect_data_forwarding_tunnel_request_t {
-    tlv_header_t h;
 } gtpv2c_create_indirect_data_forwarding_tunnel_request_t;
 
 typedef struct _gtpv2c_create_indirect_data_forwarding_tunnel_response_t {
-    tlv_header_t h;
 } gtpv2c_create_indirect_data_forwarding_tunnel_response_t;
 
 typedef struct _gtpv2c_delete_indirect_data_forwarding_tunnel_request_t {
-    tlv_header_t h;
 } gtpv2c_delete_indirect_data_forwarding_tunnel_request_t;
 
 typedef struct _gtpv2c_delete_indirect_data_forwarding_tunnel_response_t {
-    tlv_header_t h;
 } gtpv2c_delete_indirect_data_forwarding_tunnel_response_t;
 
 typedef struct _gtpv2c_release_access_bearers_request_t {
-    tlv_header_t h;
 } gtpv2c_release_access_bearers_request_t;
 
 typedef struct _gtpv2c_release_access_bearers_response_t {
-    tlv_header_t h;
 } gtpv2c_release_access_bearers_response_t;
 
 typedef struct _gtpv2c_downlink_data_notification_t {
-    tlv_header_t h;
 } gtpv2c_downlink_data_notification_t;
 
 typedef struct _gtpv2c_downlink_data_notification_acknowledge_t {
-    tlv_header_t h;
 } gtpv2c_downlink_data_notification_acknowledge_t;
 
 typedef struct _gtpv2c_pgw_restart_notification_t {
-    tlv_header_t h;
 } gtpv2c_pgw_restart_notification_t;
 
 typedef struct _gtpv2c_pgw_restart_notification_acknowledge_t {
-    tlv_header_t h;
 } gtpv2c_pgw_restart_notification_acknowledge_t;
 
 typedef struct _gtpv2c_update_pdn_connection_set_request_t {
-    tlv_header_t h;
 } gtpv2c_update_pdn_connection_set_request_t;
 
 typedef struct _gtpv2c_update_pdn_connection_set_response_t {
-    tlv_header_t h;
 } gtpv2c_update_pdn_connection_set_response_t;
 
 typedef struct _gtpv2c_modify_access_bearers_request_t {
-    tlv_header_t h;
 } gtpv2c_modify_access_bearers_request_t;
 
 typedef struct _gtpv2c_modify_access_bearers_response_t {
-    tlv_header_t h;
 } gtpv2c_modify_access_bearers_response_t;
 
 #ifdef __cplusplus

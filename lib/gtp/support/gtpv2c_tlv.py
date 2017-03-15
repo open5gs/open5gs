@@ -418,7 +418,6 @@ for (k, v) in sorted_group_list:
 write_file(f, "/* Structure for Message */\n")
 for (k, v) in sorted_msg_list:
     write_file(f, "typedef struct _gtpv2c_" + v_lower(k) + "_t {\n")
-    write_file(f, "    tlv_header_t h;\n")
     if "ies" in msg_list[k]:
         for ies in msg_list[k]["ies"]:
             write_file(f, "    gtpv2c_" + v_lower(ies["ie_type"]) + "_t " + \
