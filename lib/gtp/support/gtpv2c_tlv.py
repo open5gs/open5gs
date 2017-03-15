@@ -398,7 +398,7 @@ write_file(f, "\n")
 write_file(f, "/* Structure for Group Infomration Element */\n")
 for (k, v) in sorted_group_list:
     write_file(f, "typedef struct _gtpv2c_" + v_lower(k) + "_t {\n")
-    write_file(f, "    tlv_header_t h;\n")
+    write_file(f, "    tlv_presence_t presence;\n")
     for ies in group_list[k]["ies"]:
         write_file(f, "    gtpv2c_" + v_lower(ies["ie_type"]) + "_t " + \
                 v_lower(ies["ie_value"]))

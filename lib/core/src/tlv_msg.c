@@ -22,14 +22,14 @@ static tlv_t* _tlv_add_leaf(
         {
             tlv_uint8_t *v = (tlv_uint8_t *)msg;
 
-            d_trace(1, "V_1B:%02x", v->v);
+            d_trace(1, "V_1B:%02x", v->u8);
 
             if (parent_tlv)
                 tlv = tlv_embed(parent_tlv, 
-                        desc->type, 1, desc->instance, (c_uint8_t*)&v->v);
+                        desc->type, 1, desc->instance, (c_uint8_t*)&v->u8);
             else
                 tlv = tlv_add(tlv, 
-                        desc->type, 1, desc->instance, (c_uint8_t*)&v->v);
+                        desc->type, 1, desc->instance, (c_uint8_t*)&v->u8);
             d_assert(tlv, return NULL, "Can't add TLV");
             break;
         }
@@ -37,16 +37,16 @@ static tlv_t* _tlv_add_leaf(
         {
             tlv_uint16_t *v = (tlv_uint16_t *)msg;
 
-            d_trace(1, "V_2B:%04x", v->v);
+            d_trace(1, "V_2B:%04x", v->u16);
 
-            v->v = htons(v->v);
+            v->u16 = htons(v->u16);
 
             if (parent_tlv)
                 tlv = tlv_embed(parent_tlv, 
-                        desc->type, 2, desc->instance, (c_uint8_t*)&v->v);
+                        desc->type, 2, desc->instance, (c_uint8_t*)&v->u16);
             else
                 tlv = tlv_add(tlv, 
-                        desc->type, 2, desc->instance, (c_uint8_t*)&v->v);
+                        desc->type, 2, desc->instance, (c_uint8_t*)&v->u16);
             d_assert(tlv, return NULL, "Can't add TLV");
             break;
         }
@@ -55,17 +55,17 @@ static tlv_t* _tlv_add_leaf(
         {
             tlv_uint24_t *v = (tlv_uint24_t *)msg;
 
-            d_trace(1, "V_3B:%06x", v->v);
+            d_trace(1, "V_3B:%06x", v->u24);
 
-            v->v = v->v << 8;
-            v->v = htonl(v->v);
+            v->u24 = v->u24 << 8;
+            v->u24 = htonl(v->u24);
 
             if (parent_tlv)
                 tlv = tlv_embed(parent_tlv, 
-                        desc->type, 3, desc->instance, (c_uint8_t*)&v->v);
+                        desc->type, 3, desc->instance, (c_uint8_t*)&v->u24);
             else
                 tlv = tlv_add(tlv, 
-                        desc->type, 3, desc->instance, (c_uint8_t*)&v->v);
+                        desc->type, 3, desc->instance, (c_uint8_t*)&v->u24);
             d_assert(tlv, return NULL, "Can't add TLV");
             break;
         }
@@ -74,14 +74,15 @@ static tlv_t* _tlv_add_leaf(
         {
             tlv_uint32_t *v = (tlv_uint32_t *)msg;
 
-            d_trace(1, "V_4B:%08x", v->v);
+            d_trace(1, "V_4B:%08x", v->u32);
 
-            v->v = htonl(v->v);
+            v->u32 = htonl(v->u32);
 
             if (parent_tlv)
-                tlv = tlv_embed(parent_tlv, desc->type, 4, 0, (c_uint8_t*)&v->v);
+                tlv = tlv_embed(parent_tlv, desc->type, 4, 0, 
+                        (c_uint8_t*)&v->u32);
             else
-                tlv = tlv_add(tlv, desc->type, 4, 0, (c_uint8_t*)&v->v);
+                tlv = tlv_add(tlv, desc->type, 4, 0, (c_uint8_t*)&v->u32);
             d_assert(tlv, return NULL, "Can't add TLV");
             break;
         }
@@ -89,15 +90,15 @@ static tlv_t* _tlv_add_leaf(
         {
             tlv_octet_t *v = (tlv_octet_t *)msg;
 
-            d_trace(1, "V_FSTR: ", v->v);
-            d_trace_hex(1, v->v, v->l);
+            d_trace(1, "V_FSTR: ", v->data);
+            d_trace_hex(1, v->data, v->len);
 
             if (parent_tlv)
                 tlv = tlv_embed(parent_tlv, 
-                        desc->type, desc->length, desc->instance, v->v);
+                        desc->type, desc->length, desc->instance, v->data);
             else
                 tlv = tlv_add(tlv, 
-                        desc->type, desc->length, desc->instance, v->v);
+                        desc->type, desc->length, desc->instance, v->data);
             d_assert(tlv, return NULL, "Can't add TLV");
             break;
         }
@@ -105,17 +106,17 @@ static tlv_t* _tlv_add_leaf(
         {
             tlv_octet_t *v = (tlv_octet_t *)msg;
 
-            d_assert(v->l > 0, return NULL, "Length is zero");
+            d_assert(v->len > 0, return NULL, "Length is zero");
 
-            d_trace(1, "V_VSTR: ", v->v);
-            d_trace_hex(1, v->v, v->l);
+            d_trace(1, "V_VSTR: ", v->data);
+            d_trace_hex(1, v->data, v->len);
 
             if (parent_tlv)
                 tlv = tlv_embed(parent_tlv, 
-                        desc->type, v->l, desc->instance, v->v);
+                        desc->type, v->len, desc->instance, v->data);
             else
                 tlv = tlv_add(tlv, 
-                        desc->type, v->l, desc->instance, v->v);
+                        desc->type, v->len, desc->instance, v->data);
             d_assert(tlv, return NULL, "Can't add TLV");
             break;
         }
@@ -145,7 +146,7 @@ static tlv_t* _tlv_add_leaf(
 static c_uint32_t _tlv_add_compound(tlv_t **root, tlv_t *parent_tlv,
         tlv_desc_t *parent_desc, void *msg, int depth)
 {
-    tlv_header_t *h;
+    tlv_presence_t *presence_p;
     tlv_desc_t *desc = NULL, *next_desc = NULL;
     tlv_t *tlv = NULL, *emb_tlv = NULL;
     c_uint8_t *p = msg;
@@ -171,9 +172,9 @@ static c_uint32_t _tlv_add_compound(tlv_t **root, tlv_t *parent_tlv,
             int offset2 = offset;
             for (j = 0; j < next_desc->length; j++)
             {
-                h = (tlv_header_t *)(p + offset2);
+                presence_p = (tlv_presence_t *)(p + offset2);
 
-                if (h->presence == 0)
+                if (*presence_p == 0)
                     break;
 
                 if (desc->ctype == TLV_COMPOUND)
@@ -189,7 +190,7 @@ static c_uint32_t _tlv_add_compound(tlv_t **root, tlv_t *parent_tlv,
                         tlv = tlv_add(tlv, desc->type, 0, desc->instance, NULL);
 
                     r = _tlv_add_compound(&emb_tlv, tlv, desc,
-                            p + offset2 + sizeof(tlv_header_t), depth + 1);
+                            p + offset2 + sizeof(tlv_presence_t), depth + 1);
                     d_assert(r > 0 && emb_tlv, return 0,
                             "Can't build compound TLV");
                     count += 1 + r;
@@ -216,9 +217,9 @@ static c_uint32_t _tlv_add_compound(tlv_t **root, tlv_t *parent_tlv,
         }
         else
         {
-            h = (tlv_header_t *)(p + offset);
+            presence_p = (tlv_presence_t *)(p + offset);
 
-            if (h->presence)
+            if (*presence_p)
             {
                 if (desc->ctype == TLV_COMPOUND)
                 {
@@ -233,7 +234,7 @@ static c_uint32_t _tlv_add_compound(tlv_t **root, tlv_t *parent_tlv,
                         tlv = tlv_add(tlv, desc->type, 0, desc->instance, NULL);
 
                     r = _tlv_add_compound(&emb_tlv, tlv, desc,
-                            p + offset + sizeof(tlv_header_t), depth + 1);
+                            p + offset + sizeof(tlv_presence_t), depth + 1);
                     d_assert(r > 0 && emb_tlv, return 0,
                             "Can't build compound TLV");
                     count += 1 + r;
@@ -353,8 +354,8 @@ static status_t _tlv_parse_leaf(void *msg, tlv_desc_t *desc, tlv_t *tlv)
                 d_error("Invalid TLV length %d. It should be 1", tlv->length);
                 return CORE_ERROR;
             }
-            v->v = *(c_uint8_t*)(tlv->value);
-            d_trace(1, "V_1B:%02x", v->v);
+            v->u8 = *(c_uint8_t*)(tlv->value);
+            d_trace(1, "V_1B:%02x", v->u8);
             break;
         }
         case TLV_UINT16:
@@ -367,9 +368,9 @@ static status_t _tlv_parse_leaf(void *msg, tlv_desc_t *desc, tlv_t *tlv)
                 d_error("Invalid TLV length %d. It should be 2", tlv->length);
                 return CORE_ERROR;
             }
-            v->v = ((((c_uint8_t*)tlv->value)[0]<< 8)&0xff00) |
+            v->u16 = ((((c_uint8_t*)tlv->value)[0]<< 8)&0xff00) |
                    ((((c_uint8_t*)tlv->value)[1]    )&0x00ff);
-            d_trace(1, "V_2B:%02x", v->v);
+            d_trace(1, "V_2B:%02x", v->u16);
             break;
         }
         case TLV_UINT24:
@@ -382,10 +383,10 @@ static status_t _tlv_parse_leaf(void *msg, tlv_desc_t *desc, tlv_t *tlv)
                 d_error("Invalid TLV length %d. It should be 3", tlv->length);
                 return CORE_ERROR;
             }
-            v->v = ((((c_uint8_t*)tlv->value)[0]<<16)&0x00ff0000) |
+            v->u24 = ((((c_uint8_t*)tlv->value)[0]<<16)&0x00ff0000) |
                    ((((c_uint8_t*)tlv->value)[1]<< 8)&0x0000ff00) |
                    ((((c_uint8_t*)tlv->value)[2]    )&0x000000ff);
-            d_trace(1, "V_3B:%06x", v->v);
+            d_trace(1, "V_3B:%06x", v->u24);
             break;
         }
         case TLV_UINT32:
@@ -398,11 +399,11 @@ static status_t _tlv_parse_leaf(void *msg, tlv_desc_t *desc, tlv_t *tlv)
                 d_error("Invalid TLV length %d. It should be 4", tlv->length);
                 return CORE_ERROR;
             }
-            v->v = ((((c_uint8_t*)tlv->value)[0]<<24)&0xff000000) |
+            v->u32 = ((((c_uint8_t*)tlv->value)[0]<<24)&0xff000000) |
                    ((((c_uint8_t*)tlv->value)[1]<<16)&0x00ff0000) |
                    ((((c_uint8_t*)tlv->value)[2]<< 8)&0x0000ff00) |
                    ((((c_uint8_t*)tlv->value)[3]    )&0x000000ff);
-            d_trace(1, "V_4B:%08x", v->v);
+            d_trace(1, "V_4B:%08x", v->u32);
             break;
         }
         case TLV_FIXED_STR:
@@ -416,22 +417,22 @@ static status_t _tlv_parse_leaf(void *msg, tlv_desc_t *desc, tlv_t *tlv)
                 return CORE_ERROR;
             }
 
-            v->v = tlv->value;
-            v->l = tlv->length;
+            v->data = tlv->value;
+            v->len = tlv->length;
 
-            d_trace(1, "V_FSTR: ", v->v);
-            d_trace_hex(1, v->v, v->l);
+            d_trace(1, "V_FSTR: ", v->data);
+            d_trace_hex(1, v->data, v->len);
             break;
         }
         case TLV_VAR_STR:
         {
             tlv_octet_t *v = (tlv_octet_t *)msg;
 
-            v->v = tlv->value;
-            v->l = tlv->length;
+            v->data = tlv->value;
+            v->len = tlv->length;
 
-            d_trace(1, "V_VSTR: ", v->v);
-            d_trace_hex(1, v->v, v->l);
+            d_trace(1, "V_VSTR: ", v->data);
+            d_trace_hex(1, v->data, v->len);
             break;
         }
         case TLV_NULL:
@@ -455,7 +456,7 @@ static status_t _tlv_parse_compound(void *msg, tlv_desc_t *parent_desc,
         tlv_t *parent_tlv, int depth, int mode)
 {
     status_t rv;
-    tlv_header_t *h = (tlv_header_t *)msg;
+    tlv_presence_t *presence_p = (tlv_presence_t *)msg;
     tlv_desc_t *desc = NULL, *next_desc = NULL;
     tlv_t *tlv = NULL, *emb_tlv = NULL;
     c_uint8_t *p = msg;
@@ -481,7 +482,7 @@ static status_t _tlv_parse_compound(void *msg, tlv_desc_t *parent_desc,
             return CORE_ERROR;
         }
 
-        h = (tlv_header_t *)(p + offset);
+        presence_p = (tlv_presence_t *)(p + offset);
 
         /* Multiple of the same type TLV may be included */
         next_desc = parent_desc->child_descs[index+1];
@@ -489,8 +490,8 @@ static status_t _tlv_parse_compound(void *msg, tlv_desc_t *parent_desc,
         {
             for (j = 0; j < next_desc->length; j++)
             {
-                h = (tlv_header_t *)(p + offset + desc->vsize * j);
-                if (h->presence == 0)
+                presence_p = (tlv_presence_t *)(p + offset + desc->vsize * j);
+                if (*presence_p == 0)
                 {
                     offset += desc->vsize * j;
                     break;
@@ -517,7 +518,7 @@ static status_t _tlv_parse_compound(void *msg, tlv_desc_t *parent_desc,
                     indent, i++, desc->type, desc->instance, 
                     desc->vsize, p + offset);
 
-            offset += sizeof(tlv_header_t);
+            offset += sizeof(tlv_presence_t);
 
             rv = _tlv_parse_compound(
                     p + offset, desc, emb_tlv, depth + 1, mode);
@@ -527,7 +528,7 @@ static status_t _tlv_parse_compound(void *msg, tlv_desc_t *parent_desc,
                 return CORE_ERROR;
             }
 
-            h->presence = 1;
+            *presence_p = 1;
         }
         else
         {
@@ -543,7 +544,7 @@ static status_t _tlv_parse_compound(void *msg, tlv_desc_t *parent_desc,
                 return CORE_ERROR;
             }
 
-            h->presence = 1;
+            *presence_p = 1;
         }
 
         tlv = tlv->next;

@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-03-15 19:17:55.291152 by acetcom
+ * Created on: 2017-03-15 21:13:48.778913 by acetcom
  * from 29274-d80.docx
  ******************************************************************************/
 
@@ -543,7 +543,7 @@ typedef tlv_octet_t gtpv2c_counter_t;
 
 /* Structure for Group Infomration Element */
 typedef struct _gtpv2c_bearer_context_t {
-    tlv_header_t h;
+    tlv_presence_t presence;
     gtpv2c_ebi_t eps_bearer_id;
     gtpv2c_bearer_tft_t tft;
     gtpv2c_f_teid_t s1_u_enodeb_f_teid; /* Instance : 0 */
@@ -572,11 +572,11 @@ typedef struct _gtpv2c_bearer_context_t {
 } gtpv2c_bearer_context_t;
 
 typedef struct _gtpv2c_pdn_connection_t {
-    tlv_header_t h;
+    tlv_presence_t presence;
 } gtpv2c_pdn_connection_t;
 
 typedef struct _gtpv2c_overload_control_information_t {
-    tlv_header_t h;
+    tlv_presence_t presence;
     gtpv2c_sequence_number_t overload_control_sequence_number;
     gtpv2c_metric_t overload_reduction_metric;
     gtpv2c_epc_timer_t period_of_validity;
@@ -584,20 +584,20 @@ typedef struct _gtpv2c_overload_control_information_t {
 } gtpv2c_overload_control_information_t;
 
 typedef struct _gtpv2c_load_control_information_t {
-    tlv_header_t h;
+    tlv_presence_t presence;
     gtpv2c_sequence_number_t load_control_sequence_number;
     gtpv2c_metric_t load_metric;
     gtpv2c_apn_and_relative_capacity_t list_of_apn_and_relative_capacity;
 } gtpv2c_load_control_information_t;
 
 typedef struct _gtpv2c_remote_ue_context_t {
-    tlv_header_t h;
+    tlv_presence_t presence;
     gtpv2c_remote_user_id_t remote_user_id;
     gtpv2c_remote_ue_ip_information_t remote_ue_ip_information;
 } gtpv2c_remote_ue_context_t;
 
 typedef struct _gtpv2c_scef_pdn_connection_t {
-    tlv_header_t h;
+    tlv_presence_t presence;
     gtpv2c_apn_t apn;
     gtpv2c_ebi_t default_eps_bearer_id;
     gtpv2c_node_identifier_t scef_id;
