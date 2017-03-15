@@ -73,14 +73,8 @@ static void gtp_message_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, 1, req.bearer_contexts_to_be_created.presence);
     ABTS_INT_EQUAL(tc, 1, req.
                 bearer_contexts_to_be_created.eps_bearer_id.presence);
-    ABTS_INT_EQUAL(tc, 1, 
-            req.bearer_contexts_to_be_created.eps_bearer_id.len);
-    _value = "05";
-    ABTS_TRUE(tc, memcmp(core_ascii_to_hex(_value, strlen(_value), tmp, 
-            req.bearer_contexts_to_be_created.eps_bearer_id.len),
-        req.bearer_contexts_to_be_created.eps_bearer_id.data,
-        req.bearer_contexts_to_be_created.eps_bearer_id.len)
-            == 0);
+    ABTS_INT_EQUAL(tc, 0x05, 
+            req.bearer_contexts_to_be_created.eps_bearer_id.u8);
     ABTS_INT_EQUAL(tc, 0, req.
                 bearer_contexts_to_be_created.tft.presence);
     ABTS_INT_EQUAL(tc, 0, req.

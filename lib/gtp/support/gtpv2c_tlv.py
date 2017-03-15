@@ -341,6 +341,14 @@ for key in msg_list.keys():
             write_file(f, "msg_list[key][\"ies\"] = ies\n")
             f.close()
 
+type_list["Recovery"]["size"] = 1                       # Type : 3
+type_list["EBI"]["size"] = 1                            # Type : 73
+type_list["RAT Type"]["size"] = 1                       # Type : 82
+type_list["PDN Type"]["size"] = 1                       # Type : 99
+type_list["Port Number"]["size"] = 2                    # Type : 126
+type_list["APN Restriction"]["size"] = 1                # Type : 127
+type_list["Selection Mode"]["size"] = 1                 # Type : 128
+
 f = open(outdir + 'gtpv2c_tlv.h', 'w')
 output_header_to_file(f)
 f.write("""#ifndef __GTPV2C_TLV_H__
@@ -392,7 +400,19 @@ write_file(f, "\n")
 write_file(f, "/* Structure for Infomration Element */\n")
 for (k, v) in sorted_type_list:
     if k not in group_list.keys():
-        write_file(f, "typedef tlv_octet_t gtpv2c_" + v_lower(k) + "_t;\n")
+        if "size" in type_list[k]:
+            if type_list[k]["size"] == 1:
+                write_file(f, "typedef tlv_uint8_t gtpv2c_" + v_lower(k) + "_t;\n")
+            elif type_list[k]["size"] == 2:
+                write_file(f, "typedef tlv_uint16_t gtpv2c_" + v_lower(k) + "_t;\n")
+            elif type_list[k]["size"] == 3:
+                write_file(f, "typedef tlv_uint24_t gtpv2c_" + v_lower(k) + "_t;\n")
+            elif type_list[k]["size"] == 4:
+                write_file(f, "typedef tlv_uint32_t gtpv2c_" + v_lower(k) + "_t;\n")
+            else:
+                assert False, "Unknown size = %d for key = %s" % (type_list[k]["size"], k)
+        else:
+            write_file(f, "typedef tlv_octet_t gtpv2c_" + v_lower(k) + "_t;\n")
 write_file(f, "\n")
 
 write_file(f, "/* Structure for Group Infomration Element */\n")
@@ -444,9 +464,24 @@ for (k, v) in sorted_type_list:
         for instance in range(0, int(type_list[k]["max_instance"])+1):
             write_file(f, "tlv_desc_t gtpv2c_desc_%s_%d =\n" % (v_lower(k), instance))
             write_file(f, "{\n")
-            write_file(f, "    TLV_VAR_STR,\n")
+            if "size" in type_list[k]:
+                if type_list[k]["size"] == 1:
+                    write_file(f, "    TLV_UINT8,\n")
+                elif type_list[k]["size"] == 2:
+                    write_file(f, "    TLV_UINT16,\n")
+                elif type_list[k]["size"] == 3:
+                    write_file(f, "    TLV_UINT24,\n")
+                elif type_list[k]["size"] == 4:
+                    write_file(f, "    TLV_UINT32,\n")
+                else:
+                    assert False, "Unknown size = %d for key = %s" % (type_list[k]["size"], k)
+            else:
+                write_file(f, "    TLV_VAR_STR,\n")
             write_file(f, "    GTPV2C_IE_%s_TYPE,\n" % v_upper(k))
-            write_file(f, "    0,\n")
+            if "size" in type_list[k]:
+                write_file(f, "    %d,\n" % type_list[k]["size"])
+            else:
+                write_file(f, "    0,\n")
             write_file(f, "    %d,\n" % instance)
             write_file(f, "    sizeof(gtpv2c_%s_t),\n" % v_lower(k))
             write_file(f, "    { NULL }\n")

@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-03-15 21:13:48.778913 by acetcom
+ * Created on: 2017-03-15 22:27:16.422801 by acetcom
  * from 29274-d80.docx
  ******************************************************************************/
 
@@ -426,11 +426,11 @@ extern tlv_desc_t gtpv2c_desc_modify_access_bearers_response;
 /* Structure for Infomration Element */
 typedef tlv_octet_t gtpv2c_imsi_t;
 typedef tlv_octet_t gtpv2c_cause_t;
-typedef tlv_octet_t gtpv2c_recovery_t;
+typedef tlv_uint8_t gtpv2c_recovery_t;
 typedef tlv_octet_t gtpv2c_stn_sr_t;
 typedef tlv_octet_t gtpv2c_apn_t;
 typedef tlv_octet_t gtpv2c_ambr_t;
-typedef tlv_octet_t gtpv2c_ebi_t;
+typedef tlv_uint8_t gtpv2c_ebi_t;
 typedef tlv_octet_t gtpv2c_ip_address_t;
 typedef tlv_octet_t gtpv2c_mei_t;
 typedef tlv_octet_t gtpv2c_msisdn_t;
@@ -439,7 +439,7 @@ typedef tlv_octet_t gtpv2c_pco_t;
 typedef tlv_octet_t gtpv2c_paa_t;
 typedef tlv_octet_t gtpv2c_bearer_qos_t;
 typedef tlv_octet_t gtpv2c_flow_qos_t;
-typedef tlv_octet_t gtpv2c_rat_type_t;
+typedef tlv_uint8_t gtpv2c_rat_type_t;
 typedef tlv_octet_t gtpv2c_serving_network_t;
 typedef tlv_octet_t gtpv2c_bearer_tft_t;
 typedef tlv_octet_t gtpv2c_tad_t;
@@ -454,7 +454,7 @@ typedef tlv_octet_t gtpv2c_charging_id_t;
 typedef tlv_octet_t gtpv2c_charging_characteristics_t;
 typedef tlv_octet_t gtpv2c_trace_information_t;
 typedef tlv_octet_t gtpv2c_bearer_flags_t;
-typedef tlv_octet_t gtpv2c_pdn_type_t;
+typedef tlv_uint8_t gtpv2c_pdn_type_t;
 typedef tlv_octet_t gtpv2c_procedure_transaction_id_t;
 typedef tlv_octet_t gtpv2c_mm_context_t;
 typedef tlv_octet_t gtpv2c_pdu_numbers_t;
@@ -472,9 +472,9 @@ typedef tlv_octet_t gtpv2c_target_identification_t;
 typedef tlv_octet_t gtpv2c_packet_flow_id_t;
 typedef tlv_octet_t gtpv2c_rab_context_t;
 typedef tlv_octet_t gtpv2c_source_rnc_pdcp_context_info_t;
-typedef tlv_octet_t gtpv2c_port_number_t;
-typedef tlv_octet_t gtpv2c_apn_restriction_t;
-typedef tlv_octet_t gtpv2c_selection_mode_t;
+typedef tlv_uint16_t gtpv2c_port_number_t;
+typedef tlv_uint8_t gtpv2c_apn_restriction_t;
+typedef tlv_uint8_t gtpv2c_selection_mode_t;
 typedef tlv_octet_t gtpv2c_source_identification_t;
 typedef tlv_octet_t gtpv2c_change_reporting_action_t;
 typedef tlv_octet_t gtpv2c_fq_csid_t;

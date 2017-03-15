@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-03-15 21:13:48.788521 by acetcom
+ * Created on: 2017-03-15 22:27:16.444403 by acetcom
  * from 29274-d80.docx
  ******************************************************************************/
 
@@ -54,9 +54,9 @@ tlv_desc_t gtpv2c_desc_cause_0 =
 
 tlv_desc_t gtpv2c_desc_recovery_0 =
 {
-    TLV_VAR_STR,
+    TLV_UINT8,
     GTPV2C_IE_RECOVERY_TYPE,
-    0,
+    1,
     0,
     sizeof(gtpv2c_recovery_t),
     { NULL }
@@ -94,9 +94,9 @@ tlv_desc_t gtpv2c_desc_ambr_0 =
 
 tlv_desc_t gtpv2c_desc_ebi_0 =
 {
-    TLV_VAR_STR,
+    TLV_UINT8,
     GTPV2C_IE_EBI_TYPE,
-    0,
+    1,
     0,
     sizeof(gtpv2c_ebi_t),
     { NULL }
@@ -214,9 +214,9 @@ tlv_desc_t gtpv2c_desc_flow_qos_0 =
 
 tlv_desc_t gtpv2c_desc_rat_type_0 =
 {
-    TLV_VAR_STR,
+    TLV_UINT8,
     GTPV2C_IE_RAT_TYPE_TYPE,
-    0,
+    1,
     0,
     sizeof(gtpv2c_rat_type_t),
     { NULL }
@@ -474,9 +474,9 @@ tlv_desc_t gtpv2c_desc_bearer_flags_0 =
 
 tlv_desc_t gtpv2c_desc_pdn_type_0 =
 {
-    TLV_VAR_STR,
+    TLV_UINT8,
     GTPV2C_IE_PDN_TYPE_TYPE,
-    0,
+    1,
     0,
     sizeof(gtpv2c_pdn_type_t),
     { NULL }
@@ -654,9 +654,9 @@ tlv_desc_t gtpv2c_desc_source_rnc_pdcp_context_info_0 =
 
 tlv_desc_t gtpv2c_desc_port_number_0 =
 {
-    TLV_VAR_STR,
+    TLV_UINT16,
     GTPV2C_IE_PORT_NUMBER_TYPE,
-    0,
+    2,
     0,
     sizeof(gtpv2c_port_number_t),
     { NULL }
@@ -664,9 +664,9 @@ tlv_desc_t gtpv2c_desc_port_number_0 =
 
 tlv_desc_t gtpv2c_desc_port_number_1 =
 {
-    TLV_VAR_STR,
+    TLV_UINT16,
     GTPV2C_IE_PORT_NUMBER_TYPE,
-    0,
+    2,
     1,
     sizeof(gtpv2c_port_number_t),
     { NULL }
@@ -674,9 +674,9 @@ tlv_desc_t gtpv2c_desc_port_number_1 =
 
 tlv_desc_t gtpv2c_desc_port_number_2 =
 {
-    TLV_VAR_STR,
+    TLV_UINT16,
     GTPV2C_IE_PORT_NUMBER_TYPE,
-    0,
+    2,
     2,
     sizeof(gtpv2c_port_number_t),
     { NULL }
@@ -684,9 +684,9 @@ tlv_desc_t gtpv2c_desc_port_number_2 =
 
 tlv_desc_t gtpv2c_desc_apn_restriction_0 =
 {
-    TLV_VAR_STR,
+    TLV_UINT8,
     GTPV2C_IE_APN_RESTRICTION_TYPE,
-    0,
+    1,
     0,
     sizeof(gtpv2c_apn_restriction_t),
     { NULL }
@@ -694,9 +694,9 @@ tlv_desc_t gtpv2c_desc_apn_restriction_0 =
 
 tlv_desc_t gtpv2c_desc_selection_mode_0 =
 {
-    TLV_VAR_STR,
+    TLV_UINT8,
     GTPV2C_IE_SELECTION_MODE_TYPE,
-    0,
+    1,
     0,
     sizeof(gtpv2c_selection_mode_t),
     { NULL }
