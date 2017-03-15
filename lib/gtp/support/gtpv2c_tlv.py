@@ -368,14 +368,19 @@ write_file(f, "\n")
 write_file(f, "/* Infomration Element TLV Descriptor */\n")
 for (k, v) in sorted_type_list:
     if k not in group_list.keys():
-        write_file(f, "extern tlv_desc_t gtpv2c_desc_" + v_lower(k) + ";\n")
+        for instance in range(0, int(type_list[k]["max_instance"])+1):
+            write_file(f, "extern tlv_desc_t gtpv2c_desc_" + v_lower(k))
+            write_file(f, "_" + str(instance) + ";\n")
 write_file(f, "\n")
 
 tmp = [(k, v["type"]) for k, v in group_list.items()]
 sorted_group_list = sorted(tmp, key=lambda tup: int(tup[1]))
+
 write_file(f, "/* Group Infomration Element TLV Descriptor */\n")
 for (k, v) in sorted_group_list:
-    write_file(f, "extern tlv_desc_t gtpv2c_desc_" + v_lower(k) + ";\n")
+    for instance in range(0, int(type_list[k]["max_instance"])+1):
+        write_file(f, "extern tlv_desc_t gtpv2c_desc_" + v_lower(k))
+        write_file(f, "_" + str(instance) + ";\n")
 write_file(f, "\n")
 
 write_file(f, "/* Structure for Infomration Element */\n")
@@ -420,26 +425,28 @@ f.write("""#include "gtpv2c_tlv.h"
 
 for (k, v) in sorted_type_list:
     if k not in group_list.keys():
-        write_file(f, "tlv_desc_t gtpv2c_desc_%s =" % v_lower(k) + "\n")
-        write_file(f, "{\n")
-        write_file(f, "    TLV_VAR_STR,\n")
-        write_file(f, "    GTPV2C_IE_%s_TYPE," % v_upper(k) + "\n")
-        write_file(f, "    0,\n")
-        write_file(f, "    0,\n")
-        write_file(f, "    sizeof(gtpv2c_%s_t)," % v_lower(k) + "\n")
-        write_file(f, "    { NULL }\n")
-        write_file(f, "};\n\n")
+        for instance in range(0, int(type_list[k]["max_instance"])+1):
+            write_file(f, "tlv_desc_t gtpv2c_desc_%s_%d =" % (v_lower(k), instance) + "\n")
+            write_file(f, "{\n")
+            write_file(f, "    TLV_VAR_STR,\n")
+            write_file(f, "    GTPV2C_IE_%s_TYPE," % v_upper(k) + "\n")
+            write_file(f, "    0,\n")
+            write_file(f, "    %d,\n" % instance)
+            write_file(f, "    sizeof(gtpv2c_%s_t)," % v_lower(k) + "\n")
+            write_file(f, "    { NULL }\n")
+            write_file(f, "};\n\n")
 
 for (k, v) in sorted_group_list:
-    write_file(f, "tlv_desc_t gtpv2c_desc_%s =" % v_lower(k) + "\n")
-    write_file(f, "{\n")
-    write_file(f, "    TLV_COMPOUND,\n")
-    write_file(f, "    GTPV2C_IE_%s_TYPE,\n" % v_upper(k) + "\n")
-    write_file(f, "    0,\n")
-    write_file(f, "    0,\n")
-    write_file(f, "    sizeof(gtpv2c_%s_t),\n" % v_lower(k) + "\n")
-    write_file(f, "    { NULL }\n")
-    write_file(f, "};\n\n")
+    for instance in range(0, int(type_list[k]["max_instance"])+1):
+        write_file(f, "tlv_desc_t gtpv2c_desc_%s_%d =" % (v_lower(k), instance) + "\n")
+        write_file(f, "{\n")
+        write_file(f, "    TLV_COMPOUND,\n")
+        write_file(f, "    GTPV2C_IE_%s_TYPE,\n" % v_upper(k) + "\n")
+        write_file(f, "    0,\n")
+        write_file(f, "    %d,\n" % instance)
+        write_file(f, "    sizeof(gtpv2c_%s_t),\n" % v_lower(k) + "\n")
+        write_file(f, "    { NULL }\n")
+        write_file(f, "};\n\n")
 
 
 write_file(f, "\n")

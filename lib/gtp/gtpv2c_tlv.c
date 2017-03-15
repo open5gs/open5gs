@@ -26,13 +26,13 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-03-15 13:39:46.685583 by acetcom
+ * Created on: 2017-03-15 14:10:29.341466 by acetcom
  * from 29274-d80.docx
  ******************************************************************************/
 
 #include "gtpv2c_tlv.h"
 
-tlv_desc_t gtpv2c_desc_imsi =
+tlv_desc_t gtpv2c_desc_imsi_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_IMSI_TYPE,
@@ -42,7 +42,7 @@ tlv_desc_t gtpv2c_desc_imsi =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_cause =
+tlv_desc_t gtpv2c_desc_cause_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_CAUSE_TYPE,
@@ -52,7 +52,7 @@ tlv_desc_t gtpv2c_desc_cause =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_recovery =
+tlv_desc_t gtpv2c_desc_recovery_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_RECOVERY_TYPE,
@@ -62,7 +62,7 @@ tlv_desc_t gtpv2c_desc_recovery =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_stn_sr =
+tlv_desc_t gtpv2c_desc_stn_sr_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_STN_SR_TYPE,
@@ -72,7 +72,7 @@ tlv_desc_t gtpv2c_desc_stn_sr =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_apn =
+tlv_desc_t gtpv2c_desc_apn_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_APN_TYPE,
@@ -82,7 +82,7 @@ tlv_desc_t gtpv2c_desc_apn =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_ambr =
+tlv_desc_t gtpv2c_desc_ambr_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_AMBR_TYPE,
@@ -92,7 +92,7 @@ tlv_desc_t gtpv2c_desc_ambr =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_ebi =
+tlv_desc_t gtpv2c_desc_ebi_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_EBI_TYPE,
@@ -102,7 +102,7 @@ tlv_desc_t gtpv2c_desc_ebi =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_ip_address =
+tlv_desc_t gtpv2c_desc_ip_address_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_IP_ADDRESS_TYPE,
@@ -112,7 +112,37 @@ tlv_desc_t gtpv2c_desc_ip_address =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_mei =
+tlv_desc_t gtpv2c_desc_ip_address_1 =
+{
+    TLV_VAR_STR,
+    GTPV2C_IE_IP_ADDRESS_TYPE,
+    0,
+    1,
+    sizeof(gtpv2c_ip_address_t),
+    { NULL }
+};
+
+tlv_desc_t gtpv2c_desc_ip_address_2 =
+{
+    TLV_VAR_STR,
+    GTPV2C_IE_IP_ADDRESS_TYPE,
+    0,
+    2,
+    sizeof(gtpv2c_ip_address_t),
+    { NULL }
+};
+
+tlv_desc_t gtpv2c_desc_ip_address_3 =
+{
+    TLV_VAR_STR,
+    GTPV2C_IE_IP_ADDRESS_TYPE,
+    0,
+    3,
+    sizeof(gtpv2c_ip_address_t),
+    { NULL }
+};
+
+tlv_desc_t gtpv2c_desc_mei_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_MEI_TYPE,
@@ -122,7 +152,7 @@ tlv_desc_t gtpv2c_desc_mei =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_msisdn =
+tlv_desc_t gtpv2c_desc_msisdn_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_MSISDN_TYPE,
@@ -132,7 +162,7 @@ tlv_desc_t gtpv2c_desc_msisdn =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_indication =
+tlv_desc_t gtpv2c_desc_indication_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_INDICATION_TYPE,
@@ -142,7 +172,7 @@ tlv_desc_t gtpv2c_desc_indication =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_pco =
+tlv_desc_t gtpv2c_desc_pco_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_PCO_TYPE,
@@ -152,7 +182,7 @@ tlv_desc_t gtpv2c_desc_pco =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_paa =
+tlv_desc_t gtpv2c_desc_paa_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_PAA_TYPE,
@@ -162,7 +192,7 @@ tlv_desc_t gtpv2c_desc_paa =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_bearer_qos =
+tlv_desc_t gtpv2c_desc_bearer_qos_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_BEARER_QOS_TYPE,
@@ -172,7 +202,7 @@ tlv_desc_t gtpv2c_desc_bearer_qos =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_flow_qos =
+tlv_desc_t gtpv2c_desc_flow_qos_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_FLOW_QOS_TYPE,
@@ -182,7 +212,7 @@ tlv_desc_t gtpv2c_desc_flow_qos =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_rat_type =
+tlv_desc_t gtpv2c_desc_rat_type_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_RAT_TYPE_TYPE,
@@ -192,7 +222,7 @@ tlv_desc_t gtpv2c_desc_rat_type =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_serving_network =
+tlv_desc_t gtpv2c_desc_serving_network_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_SERVING_NETWORK_TYPE,
@@ -202,7 +232,7 @@ tlv_desc_t gtpv2c_desc_serving_network =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_bearer_tft =
+tlv_desc_t gtpv2c_desc_bearer_tft_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_BEARER_TFT_TYPE,
@@ -212,7 +242,7 @@ tlv_desc_t gtpv2c_desc_bearer_tft =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_tad =
+tlv_desc_t gtpv2c_desc_tad_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_TAD_TYPE,
@@ -222,7 +252,7 @@ tlv_desc_t gtpv2c_desc_tad =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_uli =
+tlv_desc_t gtpv2c_desc_uli_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_ULI_TYPE,
@@ -232,7 +262,7 @@ tlv_desc_t gtpv2c_desc_uli =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_f_teid =
+tlv_desc_t gtpv2c_desc_f_teid_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_F_TEID_TYPE,
@@ -242,7 +272,97 @@ tlv_desc_t gtpv2c_desc_f_teid =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_tmsi =
+tlv_desc_t gtpv2c_desc_f_teid_1 =
+{
+    TLV_VAR_STR,
+    GTPV2C_IE_F_TEID_TYPE,
+    0,
+    1,
+    sizeof(gtpv2c_f_teid_t),
+    { NULL }
+};
+
+tlv_desc_t gtpv2c_desc_f_teid_2 =
+{
+    TLV_VAR_STR,
+    GTPV2C_IE_F_TEID_TYPE,
+    0,
+    2,
+    sizeof(gtpv2c_f_teid_t),
+    { NULL }
+};
+
+tlv_desc_t gtpv2c_desc_f_teid_3 =
+{
+    TLV_VAR_STR,
+    GTPV2C_IE_F_TEID_TYPE,
+    0,
+    3,
+    sizeof(gtpv2c_f_teid_t),
+    { NULL }
+};
+
+tlv_desc_t gtpv2c_desc_f_teid_4 =
+{
+    TLV_VAR_STR,
+    GTPV2C_IE_F_TEID_TYPE,
+    0,
+    4,
+    sizeof(gtpv2c_f_teid_t),
+    { NULL }
+};
+
+tlv_desc_t gtpv2c_desc_f_teid_5 =
+{
+    TLV_VAR_STR,
+    GTPV2C_IE_F_TEID_TYPE,
+    0,
+    5,
+    sizeof(gtpv2c_f_teid_t),
+    { NULL }
+};
+
+tlv_desc_t gtpv2c_desc_f_teid_6 =
+{
+    TLV_VAR_STR,
+    GTPV2C_IE_F_TEID_TYPE,
+    0,
+    6,
+    sizeof(gtpv2c_f_teid_t),
+    { NULL }
+};
+
+tlv_desc_t gtpv2c_desc_f_teid_7 =
+{
+    TLV_VAR_STR,
+    GTPV2C_IE_F_TEID_TYPE,
+    0,
+    7,
+    sizeof(gtpv2c_f_teid_t),
+    { NULL }
+};
+
+tlv_desc_t gtpv2c_desc_f_teid_8 =
+{
+    TLV_VAR_STR,
+    GTPV2C_IE_F_TEID_TYPE,
+    0,
+    8,
+    sizeof(gtpv2c_f_teid_t),
+    { NULL }
+};
+
+tlv_desc_t gtpv2c_desc_f_teid_9 =
+{
+    TLV_VAR_STR,
+    GTPV2C_IE_F_TEID_TYPE,
+    0,
+    9,
+    sizeof(gtpv2c_f_teid_t),
+    { NULL }
+};
+
+tlv_desc_t gtpv2c_desc_tmsi_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_TMSI_TYPE,
@@ -252,7 +372,7 @@ tlv_desc_t gtpv2c_desc_tmsi =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_global_cn_id =
+tlv_desc_t gtpv2c_desc_global_cn_id_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_GLOBAL_CN_ID_TYPE,
@@ -262,7 +382,7 @@ tlv_desc_t gtpv2c_desc_global_cn_id =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_s103pdf =
+tlv_desc_t gtpv2c_desc_s103pdf_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_S103PDF_TYPE,
@@ -272,7 +392,7 @@ tlv_desc_t gtpv2c_desc_s103pdf =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_s1udf =
+tlv_desc_t gtpv2c_desc_s1udf_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_S1UDF_TYPE,
@@ -282,7 +402,7 @@ tlv_desc_t gtpv2c_desc_s1udf =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_delay_value =
+tlv_desc_t gtpv2c_desc_delay_value_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_DELAY_VALUE_TYPE,
@@ -292,7 +412,7 @@ tlv_desc_t gtpv2c_desc_delay_value =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_charging_id =
+tlv_desc_t gtpv2c_desc_charging_id_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_CHARGING_ID_TYPE,
@@ -302,7 +422,7 @@ tlv_desc_t gtpv2c_desc_charging_id =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_charging_characteristics =
+tlv_desc_t gtpv2c_desc_charging_characteristics_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_CHARGING_CHARACTERISTICS_TYPE,
@@ -312,7 +432,7 @@ tlv_desc_t gtpv2c_desc_charging_characteristics =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_trace_information =
+tlv_desc_t gtpv2c_desc_trace_information_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_TRACE_INFORMATION_TYPE,
@@ -322,7 +442,7 @@ tlv_desc_t gtpv2c_desc_trace_information =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_bearer_flags =
+tlv_desc_t gtpv2c_desc_bearer_flags_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_BEARER_FLAGS_TYPE,
@@ -332,7 +452,7 @@ tlv_desc_t gtpv2c_desc_bearer_flags =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_pdn_type =
+tlv_desc_t gtpv2c_desc_pdn_type_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_PDN_TYPE_TYPE,
@@ -342,7 +462,7 @@ tlv_desc_t gtpv2c_desc_pdn_type =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_procedure_transaction_id =
+tlv_desc_t gtpv2c_desc_procedure_transaction_id_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_PROCEDURE_TRANSACTION_ID_TYPE,
@@ -352,7 +472,7 @@ tlv_desc_t gtpv2c_desc_procedure_transaction_id =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_mm_context =
+tlv_desc_t gtpv2c_desc_mm_context_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_MM_CONTEXT_TYPE,
@@ -362,7 +482,7 @@ tlv_desc_t gtpv2c_desc_mm_context =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_pdu_numbers =
+tlv_desc_t gtpv2c_desc_pdu_numbers_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_PDU_NUMBERS_TYPE,
@@ -372,7 +492,7 @@ tlv_desc_t gtpv2c_desc_pdu_numbers =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_p_tmsi =
+tlv_desc_t gtpv2c_desc_p_tmsi_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_P_TMSI_TYPE,
@@ -382,7 +502,7 @@ tlv_desc_t gtpv2c_desc_p_tmsi =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_p_tmsi_signature =
+tlv_desc_t gtpv2c_desc_p_tmsi_signature_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_P_TMSI_SIGNATURE_TYPE,
@@ -392,7 +512,7 @@ tlv_desc_t gtpv2c_desc_p_tmsi_signature =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_hop_counter =
+tlv_desc_t gtpv2c_desc_hop_counter_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_HOP_COUNTER_TYPE,
@@ -402,7 +522,7 @@ tlv_desc_t gtpv2c_desc_hop_counter =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_ue_time_zone =
+tlv_desc_t gtpv2c_desc_ue_time_zone_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_UE_TIME_ZONE_TYPE,
@@ -412,7 +532,7 @@ tlv_desc_t gtpv2c_desc_ue_time_zone =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_trace_reference =
+tlv_desc_t gtpv2c_desc_trace_reference_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_TRACE_REFERENCE_TYPE,
@@ -422,7 +542,7 @@ tlv_desc_t gtpv2c_desc_trace_reference =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_complete_request_message =
+tlv_desc_t gtpv2c_desc_complete_request_message_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_COMPLETE_REQUEST_MESSAGE_TYPE,
@@ -432,7 +552,7 @@ tlv_desc_t gtpv2c_desc_complete_request_message =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_guti =
+tlv_desc_t gtpv2c_desc_guti_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_GUTI_TYPE,
@@ -442,7 +562,7 @@ tlv_desc_t gtpv2c_desc_guti =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_f_container =
+tlv_desc_t gtpv2c_desc_f_container_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_F_CONTAINER_TYPE,
@@ -452,7 +572,7 @@ tlv_desc_t gtpv2c_desc_f_container =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_f_cause =
+tlv_desc_t gtpv2c_desc_f_cause_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_F_CAUSE_TYPE,
@@ -462,7 +582,7 @@ tlv_desc_t gtpv2c_desc_f_cause =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_plmn_id =
+tlv_desc_t gtpv2c_desc_plmn_id_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_PLMN_ID_TYPE,
@@ -472,7 +592,7 @@ tlv_desc_t gtpv2c_desc_plmn_id =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_target_identification =
+tlv_desc_t gtpv2c_desc_target_identification_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_TARGET_IDENTIFICATION_TYPE,
@@ -482,7 +602,7 @@ tlv_desc_t gtpv2c_desc_target_identification =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_packet_flow_id =
+tlv_desc_t gtpv2c_desc_packet_flow_id_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_PACKET_FLOW_ID_TYPE,
@@ -492,7 +612,7 @@ tlv_desc_t gtpv2c_desc_packet_flow_id =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_rab_context =
+tlv_desc_t gtpv2c_desc_rab_context_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_RAB_CONTEXT_TYPE,
@@ -502,7 +622,7 @@ tlv_desc_t gtpv2c_desc_rab_context =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_source_rnc_pdcp_context_info =
+tlv_desc_t gtpv2c_desc_source_rnc_pdcp_context_info_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_SOURCE_RNC_PDCP_CONTEXT_INFO_TYPE,
@@ -512,7 +632,7 @@ tlv_desc_t gtpv2c_desc_source_rnc_pdcp_context_info =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_port_number =
+tlv_desc_t gtpv2c_desc_port_number_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_PORT_NUMBER_TYPE,
@@ -522,7 +642,27 @@ tlv_desc_t gtpv2c_desc_port_number =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_apn_restriction =
+tlv_desc_t gtpv2c_desc_port_number_1 =
+{
+    TLV_VAR_STR,
+    GTPV2C_IE_PORT_NUMBER_TYPE,
+    0,
+    1,
+    sizeof(gtpv2c_port_number_t),
+    { NULL }
+};
+
+tlv_desc_t gtpv2c_desc_port_number_2 =
+{
+    TLV_VAR_STR,
+    GTPV2C_IE_PORT_NUMBER_TYPE,
+    0,
+    2,
+    sizeof(gtpv2c_port_number_t),
+    { NULL }
+};
+
+tlv_desc_t gtpv2c_desc_apn_restriction_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_APN_RESTRICTION_TYPE,
@@ -532,7 +672,7 @@ tlv_desc_t gtpv2c_desc_apn_restriction =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_selection_mode =
+tlv_desc_t gtpv2c_desc_selection_mode_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_SELECTION_MODE_TYPE,
@@ -542,7 +682,7 @@ tlv_desc_t gtpv2c_desc_selection_mode =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_source_identification =
+tlv_desc_t gtpv2c_desc_source_identification_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_SOURCE_IDENTIFICATION_TYPE,
@@ -552,7 +692,7 @@ tlv_desc_t gtpv2c_desc_source_identification =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_change_reporting_action =
+tlv_desc_t gtpv2c_desc_change_reporting_action_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_CHANGE_REPORTING_ACTION_TYPE,
@@ -562,7 +702,7 @@ tlv_desc_t gtpv2c_desc_change_reporting_action =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_fq_csid =
+tlv_desc_t gtpv2c_desc_fq_csid_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_FQ_CSID_TYPE,
@@ -572,7 +712,37 @@ tlv_desc_t gtpv2c_desc_fq_csid =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_channel_needed =
+tlv_desc_t gtpv2c_desc_fq_csid_1 =
+{
+    TLV_VAR_STR,
+    GTPV2C_IE_FQ_CSID_TYPE,
+    0,
+    1,
+    sizeof(gtpv2c_fq_csid_t),
+    { NULL }
+};
+
+tlv_desc_t gtpv2c_desc_fq_csid_2 =
+{
+    TLV_VAR_STR,
+    GTPV2C_IE_FQ_CSID_TYPE,
+    0,
+    2,
+    sizeof(gtpv2c_fq_csid_t),
+    { NULL }
+};
+
+tlv_desc_t gtpv2c_desc_fq_csid_3 =
+{
+    TLV_VAR_STR,
+    GTPV2C_IE_FQ_CSID_TYPE,
+    0,
+    3,
+    sizeof(gtpv2c_fq_csid_t),
+    { NULL }
+};
+
+tlv_desc_t gtpv2c_desc_channel_needed_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_CHANNEL_NEEDED_TYPE,
@@ -582,7 +752,7 @@ tlv_desc_t gtpv2c_desc_channel_needed =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_emlpp_priority =
+tlv_desc_t gtpv2c_desc_emlpp_priority_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_EMLPP_PRIORITY_TYPE,
@@ -592,7 +762,7 @@ tlv_desc_t gtpv2c_desc_emlpp_priority =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_node_type =
+tlv_desc_t gtpv2c_desc_node_type_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_NODE_TYPE_TYPE,
@@ -602,7 +772,7 @@ tlv_desc_t gtpv2c_desc_node_type =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_fqdn =
+tlv_desc_t gtpv2c_desc_fqdn_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_FQDN_TYPE,
@@ -612,7 +782,7 @@ tlv_desc_t gtpv2c_desc_fqdn =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_ti =
+tlv_desc_t gtpv2c_desc_ti_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_TI_TYPE,
@@ -622,7 +792,7 @@ tlv_desc_t gtpv2c_desc_ti =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_mbms_session_duration =
+tlv_desc_t gtpv2c_desc_mbms_session_duration_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_MBMS_SESSION_DURATION_TYPE,
@@ -632,7 +802,7 @@ tlv_desc_t gtpv2c_desc_mbms_session_duration =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_mbms_service_area =
+tlv_desc_t gtpv2c_desc_mbms_service_area_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_MBMS_SERVICE_AREA_TYPE,
@@ -642,7 +812,7 @@ tlv_desc_t gtpv2c_desc_mbms_service_area =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_mbms_session_identifier =
+tlv_desc_t gtpv2c_desc_mbms_session_identifier_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_MBMS_SESSION_IDENTIFIER_TYPE,
@@ -652,7 +822,7 @@ tlv_desc_t gtpv2c_desc_mbms_session_identifier =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_mbms_flow_identifier =
+tlv_desc_t gtpv2c_desc_mbms_flow_identifier_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_MBMS_FLOW_IDENTIFIER_TYPE,
@@ -662,7 +832,7 @@ tlv_desc_t gtpv2c_desc_mbms_flow_identifier =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_mbms_ip_multicast_distribution =
+tlv_desc_t gtpv2c_desc_mbms_ip_multicast_distribution_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_MBMS_IP_MULTICAST_DISTRIBUTION_TYPE,
@@ -672,7 +842,7 @@ tlv_desc_t gtpv2c_desc_mbms_ip_multicast_distribution =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_mbms_distribution_acknowledge =
+tlv_desc_t gtpv2c_desc_mbms_distribution_acknowledge_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_MBMS_DISTRIBUTION_ACKNOWLEDGE_TYPE,
@@ -682,7 +852,7 @@ tlv_desc_t gtpv2c_desc_mbms_distribution_acknowledge =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_rfsp_index =
+tlv_desc_t gtpv2c_desc_rfsp_index_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_RFSP_INDEX_TYPE,
@@ -692,7 +862,7 @@ tlv_desc_t gtpv2c_desc_rfsp_index =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_uci =
+tlv_desc_t gtpv2c_desc_uci_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_UCI_TYPE,
@@ -702,7 +872,7 @@ tlv_desc_t gtpv2c_desc_uci =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_csg_information_reporting_action =
+tlv_desc_t gtpv2c_desc_csg_information_reporting_action_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_CSG_INFORMATION_REPORTING_ACTION_TYPE,
@@ -712,7 +882,7 @@ tlv_desc_t gtpv2c_desc_csg_information_reporting_action =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_csg_id =
+tlv_desc_t gtpv2c_desc_csg_id_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_CSG_ID_TYPE,
@@ -722,7 +892,7 @@ tlv_desc_t gtpv2c_desc_csg_id =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_cmi =
+tlv_desc_t gtpv2c_desc_cmi_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_CMI_TYPE,
@@ -732,7 +902,7 @@ tlv_desc_t gtpv2c_desc_cmi =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_service_indicator =
+tlv_desc_t gtpv2c_desc_service_indicator_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_SERVICE_INDICATOR_TYPE,
@@ -742,7 +912,7 @@ tlv_desc_t gtpv2c_desc_service_indicator =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_detach_type =
+tlv_desc_t gtpv2c_desc_detach_type_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_DETACH_TYPE_TYPE,
@@ -752,7 +922,7 @@ tlv_desc_t gtpv2c_desc_detach_type =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_ldn =
+tlv_desc_t gtpv2c_desc_ldn_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_LDN_TYPE,
@@ -762,7 +932,37 @@ tlv_desc_t gtpv2c_desc_ldn =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_node_features =
+tlv_desc_t gtpv2c_desc_ldn_1 =
+{
+    TLV_VAR_STR,
+    GTPV2C_IE_LDN_TYPE,
+    0,
+    1,
+    sizeof(gtpv2c_ldn_t),
+    { NULL }
+};
+
+tlv_desc_t gtpv2c_desc_ldn_2 =
+{
+    TLV_VAR_STR,
+    GTPV2C_IE_LDN_TYPE,
+    0,
+    2,
+    sizeof(gtpv2c_ldn_t),
+    { NULL }
+};
+
+tlv_desc_t gtpv2c_desc_ldn_3 =
+{
+    TLV_VAR_STR,
+    GTPV2C_IE_LDN_TYPE,
+    0,
+    3,
+    sizeof(gtpv2c_ldn_t),
+    { NULL }
+};
+
+tlv_desc_t gtpv2c_desc_node_features_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_NODE_FEATURES_TYPE,
@@ -772,7 +972,7 @@ tlv_desc_t gtpv2c_desc_node_features =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_mbms_time_to_data_transfer =
+tlv_desc_t gtpv2c_desc_mbms_time_to_data_transfer_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_MBMS_TIME_TO_DATA_TRANSFER_TYPE,
@@ -782,7 +982,7 @@ tlv_desc_t gtpv2c_desc_mbms_time_to_data_transfer =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_throttling =
+tlv_desc_t gtpv2c_desc_throttling_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_THROTTLING_TYPE,
@@ -792,7 +992,7 @@ tlv_desc_t gtpv2c_desc_throttling =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_arp =
+tlv_desc_t gtpv2c_desc_arp_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_ARP_TYPE,
@@ -802,7 +1002,7 @@ tlv_desc_t gtpv2c_desc_arp =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_epc_timer =
+tlv_desc_t gtpv2c_desc_epc_timer_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_EPC_TIMER_TYPE,
@@ -812,7 +1012,7 @@ tlv_desc_t gtpv2c_desc_epc_timer =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_signalling_priority_indication =
+tlv_desc_t gtpv2c_desc_signalling_priority_indication_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_SIGNALLING_PRIORITY_INDICATION_TYPE,
@@ -822,7 +1022,7 @@ tlv_desc_t gtpv2c_desc_signalling_priority_indication =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_tmgi =
+tlv_desc_t gtpv2c_desc_tmgi_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_TMGI_TYPE,
@@ -832,7 +1032,7 @@ tlv_desc_t gtpv2c_desc_tmgi =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_additional_mm_context_for_srvcc =
+tlv_desc_t gtpv2c_desc_additional_mm_context_for_srvcc_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_ADDITIONAL_MM_CONTEXT_FOR_SRVCC_TYPE,
@@ -842,7 +1042,7 @@ tlv_desc_t gtpv2c_desc_additional_mm_context_for_srvcc =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_additional_flags_for_srvcc =
+tlv_desc_t gtpv2c_desc_additional_flags_for_srvcc_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_ADDITIONAL_FLAGS_FOR_SRVCC_TYPE,
@@ -852,7 +1052,7 @@ tlv_desc_t gtpv2c_desc_additional_flags_for_srvcc =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_mdt_configuration =
+tlv_desc_t gtpv2c_desc_mdt_configuration_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_MDT_CONFIGURATION_TYPE,
@@ -862,7 +1062,7 @@ tlv_desc_t gtpv2c_desc_mdt_configuration =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_apco =
+tlv_desc_t gtpv2c_desc_apco_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_APCO_TYPE,
@@ -872,7 +1072,7 @@ tlv_desc_t gtpv2c_desc_apco =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_absolute_time_of_mbms_data_transfer =
+tlv_desc_t gtpv2c_desc_absolute_time_of_mbms_data_transfer_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_ABSOLUTE_TIME_OF_MBMS_DATA_TRANSFER_TYPE,
@@ -882,7 +1082,7 @@ tlv_desc_t gtpv2c_desc_absolute_time_of_mbms_data_transfer =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_enb_information_reporting =
+tlv_desc_t gtpv2c_desc_enb_information_reporting_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_ENB_INFORMATION_REPORTING_TYPE,
@@ -892,7 +1092,7 @@ tlv_desc_t gtpv2c_desc_enb_information_reporting =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_ip4cp =
+tlv_desc_t gtpv2c_desc_ip4cp_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_IP4CP_TYPE,
@@ -902,7 +1102,7 @@ tlv_desc_t gtpv2c_desc_ip4cp =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_change_to_report_flags =
+tlv_desc_t gtpv2c_desc_change_to_report_flags_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_CHANGE_TO_REPORT_FLAGS_TYPE,
@@ -912,7 +1112,7 @@ tlv_desc_t gtpv2c_desc_change_to_report_flags =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_action_indication =
+tlv_desc_t gtpv2c_desc_action_indication_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_ACTION_INDICATION_TYPE,
@@ -922,7 +1122,7 @@ tlv_desc_t gtpv2c_desc_action_indication =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_twan_identifier =
+tlv_desc_t gtpv2c_desc_twan_identifier_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_TWAN_IDENTIFIER_TYPE,
@@ -932,7 +1132,17 @@ tlv_desc_t gtpv2c_desc_twan_identifier =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_uli_timestamp =
+tlv_desc_t gtpv2c_desc_twan_identifier_1 =
+{
+    TLV_VAR_STR,
+    GTPV2C_IE_TWAN_IDENTIFIER_TYPE,
+    0,
+    1,
+    sizeof(gtpv2c_twan_identifier_t),
+    { NULL }
+};
+
+tlv_desc_t gtpv2c_desc_uli_timestamp_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_ULI_TIMESTAMP_TYPE,
@@ -942,7 +1152,7 @@ tlv_desc_t gtpv2c_desc_uli_timestamp =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_mbms_flags =
+tlv_desc_t gtpv2c_desc_mbms_flags_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_MBMS_FLAGS_TYPE,
@@ -952,7 +1162,7 @@ tlv_desc_t gtpv2c_desc_mbms_flags =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_ran_nas_cause =
+tlv_desc_t gtpv2c_desc_ran_nas_cause_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_RAN_NAS_CAUSE_TYPE,
@@ -962,7 +1172,7 @@ tlv_desc_t gtpv2c_desc_ran_nas_cause =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_cn_operator_selection_entity =
+tlv_desc_t gtpv2c_desc_cn_operator_selection_entity_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_CN_OPERATOR_SELECTION_ENTITY_TYPE,
@@ -972,7 +1182,7 @@ tlv_desc_t gtpv2c_desc_cn_operator_selection_entity =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_twmi =
+tlv_desc_t gtpv2c_desc_twmi_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_TWMI_TYPE,
@@ -982,7 +1192,7 @@ tlv_desc_t gtpv2c_desc_twmi =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_node_number =
+tlv_desc_t gtpv2c_desc_node_number_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_NODE_NUMBER_TYPE,
@@ -992,7 +1202,7 @@ tlv_desc_t gtpv2c_desc_node_number =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_node_identifier =
+tlv_desc_t gtpv2c_desc_node_identifier_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_NODE_IDENTIFIER_TYPE,
@@ -1002,7 +1212,7 @@ tlv_desc_t gtpv2c_desc_node_identifier =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_presence_reporting_area_action =
+tlv_desc_t gtpv2c_desc_presence_reporting_area_action_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_PRESENCE_REPORTING_AREA_ACTION_TYPE,
@@ -1012,7 +1222,7 @@ tlv_desc_t gtpv2c_desc_presence_reporting_area_action =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_presence_reporting_area_information =
+tlv_desc_t gtpv2c_desc_presence_reporting_area_information_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_PRESENCE_REPORTING_AREA_INFORMATION_TYPE,
@@ -1022,7 +1232,7 @@ tlv_desc_t gtpv2c_desc_presence_reporting_area_information =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_twan_identifier_timestamp =
+tlv_desc_t gtpv2c_desc_twan_identifier_timestamp_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_TWAN_IDENTIFIER_TIMESTAMP_TYPE,
@@ -1032,7 +1242,7 @@ tlv_desc_t gtpv2c_desc_twan_identifier_timestamp =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_metric =
+tlv_desc_t gtpv2c_desc_metric_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_METRIC_TYPE,
@@ -1042,7 +1252,7 @@ tlv_desc_t gtpv2c_desc_metric =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_sequence_number =
+tlv_desc_t gtpv2c_desc_sequence_number_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_SEQUENCE_NUMBER_TYPE,
@@ -1052,7 +1262,7 @@ tlv_desc_t gtpv2c_desc_sequence_number =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_apn_and_relative_capacity =
+tlv_desc_t gtpv2c_desc_apn_and_relative_capacity_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_APN_AND_RELATIVE_CAPACITY_TYPE,
@@ -1062,7 +1272,7 @@ tlv_desc_t gtpv2c_desc_apn_and_relative_capacity =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_wlan_offloadability_indication =
+tlv_desc_t gtpv2c_desc_wlan_offloadability_indication_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_WLAN_OFFLOADABILITY_INDICATION_TYPE,
@@ -1072,7 +1282,7 @@ tlv_desc_t gtpv2c_desc_wlan_offloadability_indication =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_paging_and_service_information =
+tlv_desc_t gtpv2c_desc_paging_and_service_information_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_PAGING_AND_SERVICE_INFORMATION_TYPE,
@@ -1082,7 +1292,7 @@ tlv_desc_t gtpv2c_desc_paging_and_service_information =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_integer_number =
+tlv_desc_t gtpv2c_desc_integer_number_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_INTEGER_NUMBER_TYPE,
@@ -1092,7 +1302,7 @@ tlv_desc_t gtpv2c_desc_integer_number =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_millisecond_time_stamp =
+tlv_desc_t gtpv2c_desc_millisecond_time_stamp_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_MILLISECOND_TIME_STAMP_TYPE,
@@ -1102,7 +1312,7 @@ tlv_desc_t gtpv2c_desc_millisecond_time_stamp =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_monitoring_event_information =
+tlv_desc_t gtpv2c_desc_monitoring_event_information_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_MONITORING_EVENT_INFORMATION_TYPE,
@@ -1112,7 +1322,7 @@ tlv_desc_t gtpv2c_desc_monitoring_event_information =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_ecgi_list =
+tlv_desc_t gtpv2c_desc_ecgi_list_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_ECGI_LIST_TYPE,
@@ -1122,7 +1332,7 @@ tlv_desc_t gtpv2c_desc_ecgi_list =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_remote_user_id =
+tlv_desc_t gtpv2c_desc_remote_user_id_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_REMOTE_USER_ID_TYPE,
@@ -1132,7 +1342,7 @@ tlv_desc_t gtpv2c_desc_remote_user_id =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_remote_ue_ip_information =
+tlv_desc_t gtpv2c_desc_remote_ue_ip_information_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_REMOTE_UE_IP_INFORMATION_TYPE,
@@ -1142,7 +1352,7 @@ tlv_desc_t gtpv2c_desc_remote_ue_ip_information =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_ciot_optimizations_support_indication =
+tlv_desc_t gtpv2c_desc_ciot_optimizations_support_indication_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_CIOT_OPTIMIZATIONS_SUPPORT_INDICATION_TYPE,
@@ -1152,7 +1362,7 @@ tlv_desc_t gtpv2c_desc_ciot_optimizations_support_indication =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_header_compression_configuration =
+tlv_desc_t gtpv2c_desc_header_compression_configuration_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_HEADER_COMPRESSION_CONFIGURATION_TYPE,
@@ -1162,7 +1372,7 @@ tlv_desc_t gtpv2c_desc_header_compression_configuration =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_epco =
+tlv_desc_t gtpv2c_desc_epco_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_EPCO_TYPE,
@@ -1172,7 +1382,7 @@ tlv_desc_t gtpv2c_desc_epco =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_serving_plmn_rate_control =
+tlv_desc_t gtpv2c_desc_serving_plmn_rate_control_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_SERVING_PLMN_RATE_CONTROL_TYPE,
@@ -1182,7 +1392,7 @@ tlv_desc_t gtpv2c_desc_serving_plmn_rate_control =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_counter =
+tlv_desc_t gtpv2c_desc_counter_0 =
 {
     TLV_VAR_STR,
     GTPV2C_IE_COUNTER_TYPE,
@@ -1192,7 +1402,7 @@ tlv_desc_t gtpv2c_desc_counter =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_bearer_context =
+tlv_desc_t gtpv2c_desc_bearer_context_0 =
 {
     TLV_COMPOUND,
     GTPV2C_IE_BEARER_CONTEXT_TYPE,
@@ -1204,7 +1414,19 @@ tlv_desc_t gtpv2c_desc_bearer_context =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_pdn_connection =
+tlv_desc_t gtpv2c_desc_bearer_context_1 =
+{
+    TLV_COMPOUND,
+    GTPV2C_IE_BEARER_CONTEXT_TYPE,
+
+    0,
+    1,
+    sizeof(gtpv2c_bearer_context_t),
+
+    { NULL }
+};
+
+tlv_desc_t gtpv2c_desc_pdn_connection_0 =
 {
     TLV_COMPOUND,
     GTPV2C_IE_PDN_CONNECTION_TYPE,
@@ -1216,7 +1438,7 @@ tlv_desc_t gtpv2c_desc_pdn_connection =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_overload_control_information =
+tlv_desc_t gtpv2c_desc_overload_control_information_0 =
 {
     TLV_COMPOUND,
     GTPV2C_IE_OVERLOAD_CONTROL_INFORMATION_TYPE,
@@ -1228,7 +1450,31 @@ tlv_desc_t gtpv2c_desc_overload_control_information =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_load_control_information =
+tlv_desc_t gtpv2c_desc_overload_control_information_1 =
+{
+    TLV_COMPOUND,
+    GTPV2C_IE_OVERLOAD_CONTROL_INFORMATION_TYPE,
+
+    0,
+    1,
+    sizeof(gtpv2c_overload_control_information_t),
+
+    { NULL }
+};
+
+tlv_desc_t gtpv2c_desc_overload_control_information_2 =
+{
+    TLV_COMPOUND,
+    GTPV2C_IE_OVERLOAD_CONTROL_INFORMATION_TYPE,
+
+    0,
+    2,
+    sizeof(gtpv2c_overload_control_information_t),
+
+    { NULL }
+};
+
+tlv_desc_t gtpv2c_desc_load_control_information_0 =
 {
     TLV_COMPOUND,
     GTPV2C_IE_LOAD_CONTROL_INFORMATION_TYPE,
@@ -1240,7 +1486,7 @@ tlv_desc_t gtpv2c_desc_load_control_information =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_remote_ue_context =
+tlv_desc_t gtpv2c_desc_remote_ue_context_0 =
 {
     TLV_COMPOUND,
     GTPV2C_IE_REMOTE_UE_CONTEXT_TYPE,
@@ -1252,7 +1498,7 @@ tlv_desc_t gtpv2c_desc_remote_ue_context =
     { NULL }
 };
 
-tlv_desc_t gtpv2c_desc_scef_pdn_connection =
+tlv_desc_t gtpv2c_desc_scef_pdn_connection_0 =
 {
     TLV_COMPOUND,
     GTPV2C_IE_SCEF_PDN_CONNECTION_TYPE,
