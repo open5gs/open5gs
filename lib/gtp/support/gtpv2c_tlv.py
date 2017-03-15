@@ -102,10 +102,10 @@ def usage():
     print "-h        Print this help and return"
 
 def v_upper(v):
-    return re.sub('/', '_', re.sub('-', '_', re.sub(' ', '_', v))).upper()
+    return re.sub('3GPP', '', re.sub('\'', '_', re.sub('/', '_', re.sub('-', '_', re.sub(' ', '_', v)))).upper())
 
 def v_lower(v):
-    return re.sub('/', '_', re.sub('-', '_', re.sub(' ', '_', v))).lower()
+    return re.sub('3gpp', '', re.sub('\'', '_', re.sub('/', '_', re.sub('-', '_', re.sub(' ', '_', v)))).lower())
 
 def get_cells(cells):
     instance = cells[4].text.encode('ascii', 'ignore')
@@ -311,11 +311,10 @@ msg_list["Echo Request"]["table"] = 6
 msg_list["Echo Response"]["table"] = 7
 msg_list["Create Session Request"]["table"] = 8
 
-ies = []
 for key in msg_list.keys():
     if "table" in msg_list[key].keys():
         d_info("[" + key + "]")
-        cachefile = cachedir + "gtpv2c_ies-" + msg_list[key]["type"] + ".py"
+        cachefile = cachedir + "gtpv2c_msg_" + msg_list[key]["type"] + ".py"
         if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
             execfile(cachefile)
             print "Read from " + cachefile
@@ -323,6 +322,8 @@ for key in msg_list.keys():
             document = Document(filename)
             f = open(cachefile, 'w') 
 
+            ies = []
+            write_file(f, "ies = []\n")
             table = document.tables[msg_list[key]["table"]]
             for row in table.rows[1:]:
                 cells = get_cells(row.cells)
@@ -383,6 +384,11 @@ for (k, v) in sorted_group_list:
         write_file(f, "_" + str(instance) + ";\n")
 write_file(f, "\n")
 
+write_file(f, "/* Message Descriptor */\n")
+for (k, v) in sorted_msg_list:
+    write_file(f, "extern tlv_desc_t gtpv2c_desc_" + v_lower(k) + ";\n")
+write_file(f, "\n")
+
 write_file(f, "/* Structure for Infomration Element */\n")
 for (k, v) in sorted_type_list:
     if k not in group_list.keys():
@@ -406,6 +412,17 @@ for (k, v) in sorted_group_list:
             write_file(f, " /* Instance : " + group["instance"] + " */\n")
         else:
             write_file(f, ";\n")
+    write_file(f, "} gtpv2c_" + v_lower(k) + "_t;\n")
+    write_file(f, "\n")
+
+write_file(f, "/* Structure for Message */\n")
+for (k, v) in sorted_msg_list:
+    write_file(f, "typedef struct _gtpv2c_" + v_lower(k) + "_t {\n")
+    write_file(f, "    tlv_header_t h;\n")
+    if "ies" in msg_list[k]:
+        for ies in msg_list[k]["ies"]:
+            write_file(f, "    gtpv2c_" + v_lower(ies["ie_type"]) + "_t " + \
+                    v_lower(ies["ie_value"]) + ";\n")
     write_file(f, "} gtpv2c_" + v_lower(k) + "_t;\n")
     write_file(f, "\n")
 
