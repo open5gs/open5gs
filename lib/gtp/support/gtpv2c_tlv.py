@@ -265,46 +265,46 @@ else:
             ie_name = re.sub('\s*IE Type.*', '', row.cells[2].text.encode('ascii', 'ignore'))
 
             if ie_name not in group_list.keys():
-                group = []
-                write_file(f, "group = []\n")
+                ies = []
+                write_file(f, "ies = []\n")
                 for row in table.rows[4:]:
                     cells = get_cells(row.cells)
                     if cells is None:
                         continue
 
-                    group_is_added = True
-                    for ie in group:
+                    ies_is_added = True
+                    for ie in ies:
                         if (cells["ie_type"], cells["instance"]) == (ie["ie_type"], ie["instance"]):
-                            group_is_added = False
-                    if group_is_added is True:
-                        group.append(cells)
-                        write_cells_to_file("group", cells)
+                            ies_is_added = False
+                    if ies_is_added is True:
+                        ies.append(cells)
+                        write_cells_to_file("ies", cells)
 
-                group_list[ie_name] = { "type" : ie_type, "group" : group }
-                write_file(f, "group_list[\"" + ie_name + "\"] = { \"type\" : \"" + ie_type + "\", \"group\" : group }\n")
+                group_list[ie_name] = { "type" : ie_type, "ies" : ies }
+                write_file(f, "group_list[\"" + ie_name + "\"] = { \"type\" : \"" + ie_type + "\", \"ies\" : ies }\n")
             else:
                 group_list_is_added = False
-                added_group = group_list[ie_name]["group"]
-                write_file(f, "added_group = group_list[\"" + ie_name + "\"][\"group\"]\n")
+                added_ies = group_list[ie_name]["ies"]
+                write_file(f, "added_ies = group_list[\"" + ie_name + "\"][\"ies\"]\n")
                 for row in table.rows[4:]:
                     cells = get_cells(row.cells)
                     if cells is None:
                         continue
 
-                    group_is_added = True
-                    for ie in group_list[ie_name]["group"]:
+                    ies_is_added = True
+                    for ie in group_list[ie_name]["ies"]:
                         if (cells["ie_type"], cells["instance"]) == (ie["ie_type"], ie["instance"]):
-                            group_is_added = False
-                    for ie in group:
+                            ies_is_added = False
+                    for ie in ies:
                         if (cells["ie_type"], cells["instance"]) == (ie["ie_type"], ie["instance"]):
-                            group_is_added = False
-                    if group_is_added is True:
-                        added_group.append(cells)
-                        write_cells_to_file("added_group", cells)
+                            ies_is_added = False
+                    if ies_is_added is True:
+                        added_ies.append(cells)
+                        write_cells_to_file("added_ies", cells)
                         group_list_is_added = True
                 if group_list_is_added is True:
-                    group_list[ie_name] = { "type" : ie_type, "group" : added_group }
-                    write_file(f, "group_list[\"" + ie_name + "\"] = { \"type\" : \"" + ie_type + "\", \"group\" : added_group }\n")
+                    group_list[ie_name] = { "type" : ie_type, "ies" : added_ies }
+                    write_file(f, "group_list[\"" + ie_name + "\"] = { \"type\" : \"" + ie_type + "\", \"ies\" : added_ies }\n")
     f.close()
 
 msg_list["Echo Request"]["table"] = 6
@@ -399,17 +399,17 @@ write_file(f, "/* Structure for Group Infomration Element */\n")
 for (k, v) in sorted_group_list:
     write_file(f, "typedef struct _gtpv2c_" + v_lower(k) + "_t {\n")
     write_file(f, "    tlv_header_t h;\n")
-    for group in group_list[k]["group"]:
-        write_file(f, "    gtpv2c_" + v_lower(group["ie_type"]) + "_t " + \
-                v_lower(group["ie_value"]))
-        if group["ie_type"] == "F-TEID":
-            if group["ie_value"] == "S2b-U ePDG F-TEID":
-                write_file(f, "_" + group["instance"] + ";")
-            elif group["ie_value"] == "S2a-U TWAN F-TEID":
-                write_file(f, "_" + group["instance"] + ";")
+    for ies in group_list[k]["ies"]:
+        write_file(f, "    gtpv2c_" + v_lower(ies["ie_type"]) + "_t " + \
+                v_lower(ies["ie_value"]))
+        if ies["ie_type"] == "F-TEID":
+            if ies["ie_value"] == "S2b-U ePDG F-TEID":
+                write_file(f, "_" + ies["instance"] + ";")
+            elif ies["ie_value"] == "S2a-U TWAN F-TEID":
+                write_file(f, "_" + ies["instance"] + ";")
             else:
                 write_file(f, ";")
-            write_file(f, " /* Instance : " + group["instance"] + " */\n")
+            write_file(f, " /* Instance : " + ies["instance"] + " */\n")
         else:
             write_file(f, ";\n")
     write_file(f, "} gtpv2c_" + v_lower(k) + "_t;\n")
@@ -463,8 +463,8 @@ for (k, v) in sorted_group_list:
         write_file(f, "    %d,\n" % instance)
         write_file(f, "    sizeof(gtpv2c_%s_t),\n" % v_lower(k))
         write_file(f, "    {\n")
-        for group in group_list[k]["group"]:
-                write_file(f, "        &gtpv2c_desc_%s_%s,\n" % (v_lower(group["ie_type"]), v_lower(group["instance"])))
+        for ies in group_list[k]["ies"]:
+                write_file(f, "        &gtpv2c_desc_%s_%s,\n" % (v_lower(ies["ie_type"]), v_lower(ies["instance"])))
         write_file(f, "        NULL,\n")
         write_file(f, "    }\n")
         write_file(f, "};\n\n")
