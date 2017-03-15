@@ -39,21 +39,20 @@ FAIL = '\033[91m'
 INFO = '\033[93m'
 ENDC = '\033[0m'
 
-def write_file(f, string):
-    f.write(string + "\n")
-    if verbosity > 0:
-        print string
-
 def d_print(string):
     if verbosity > 0:
-        print string
+        sys.stdout.write(string)
 
 def d_info(string):
-    sys.stderr.write(INFO + string + ENDC + "\n")
+    sys.stdout.write(INFO + string + ENDC + "\n")
 
 def d_error(string):
     sys.stderr.write(FAIL + string + ENDC + "\n")
     sys.exit(0)
+
+def write_file(f, string):
+    f.write(string)
+    d_print(string)
 
 def output_header_to_file(f):
     now = datetime.datetime.now()
@@ -129,7 +128,7 @@ def write_cells_to_file(name, cells):
         "\", \"ie_value\" : \"" + cells["ie_value"] + \
         "\", \"presence\" : \"" + cells["presence"] + \
         "\", \"instance\" : \"" + cells["instance"] + \
-        "\", \"comment\" : \"" + cells["comment"] + "\"})")
+        "\", \"comment\" : \"" + cells["comment"] + "\"})\n")
 
 try:
     opts, args = getopt.getopt(sys.argv[1:], "df:ho:c:", ["debug", "file", "help", "output", "cache"])
@@ -175,7 +174,7 @@ else:
         cell = table.rows[0].cells[0]
         if cell.text.find('Message Type value') != -1:
             msg_table = table
-            d_print("Table Index = %d" % i)
+            d_print("Table Index = %d\n" % i)
 
     for row in msg_table.rows[2:-4]:
         key = row.cells[1].text.encode('ascii', 'ignore')
@@ -190,7 +189,7 @@ else:
             continue
         key = re.sub('\s*\n*\s*\([^\)]*\)*', '', key)
         msg_list[key] = { "type": type }
-        write_file(f, "msg_list[\"" + key + "\"] = { \"type\" : \"" + type + "\" }")
+        write_file(f, "msg_list[\"" + key + "\"] = { \"type\" : \"" + type + "\" }\n")
     f.close()
 
 d_info("[IE Type List]")
@@ -208,7 +207,7 @@ else:
         cell = table.rows[0].cells[0]
         if cell.text.find('IE Type value') != -1:
             ie_table = table
-            d_print("Table Index = %d" % i)
+            d_print("Table Index = %d\n" % i)
 
     for row in ie_table.rows[1:-5]:
         key = row.cells[1].text.encode('ascii', 'ignore')
@@ -232,7 +231,7 @@ else:
             key = re.sub('\s*$', '', key)
         type = row.cells[0].text.encode('ascii', 'ignore')
         type_list[key] = { "type": type }
-        write_file(f, "type_list[\"" + key + "\"] = { \"type\" : \"" + type + "\" }")
+        write_file(f, "type_list[\"" + key + "\"] = { \"type\" : \"" + type + "\" }\n")
     f.close()
 type_list['MM Context'] = { "type": "107" }
 
@@ -249,7 +248,7 @@ else:
     for i, table in enumerate(document.tables):
         if table.rows[0].cells[0].text.find('Octet') != -1 and \
             table.rows[0].cells[2].text.find('IE Type') != -1:
-            d_print("Table Index = %d" % i)
+            d_print("Table Index = %d\n" % i)
 
             row = table.rows[0];
 
@@ -260,10 +259,10 @@ else:
 
             if ie_name not in group_list.keys():
                 type_list[ie_name] = { "type": ie_type }
-                write_file(f, "type_list[\"" + ie_name + "\"] = { \"type\" : \"" + ie_type + "\" }")
+                write_file(f, "type_list[\"" + ie_name + "\"] = { \"type\" : \"" + ie_type + "\" }\n")
 
                 group = []
-                write_file(f, "group = []")
+                write_file(f, "group = []\n")
                 for row in table.rows[4:]:
                     cells = get_cells(row.cells)
                     if cells is None:
@@ -278,11 +277,11 @@ else:
                         write_cells_to_file("group", cells)
 
                 group_list[ie_name] = { "type" : ie_type, "group" : group }
-                write_file(f, "group_list[\"" + ie_name + "\"] = { \"type\" : \"" + ie_type + "\", \"group\" : group }")
+                write_file(f, "group_list[\"" + ie_name + "\"] = { \"type\" : \"" + ie_type + "\", \"group\" : group }\n")
             else:
                 group_list_is_added = False
                 added_group = group_list[ie_name]["group"]
-                write_file(f, "added_group = group_list[\"" + ie_name + "\"][\"group\"]")
+                write_file(f, "added_group = group_list[\"" + ie_name + "\"][\"group\"]\n")
                 for row in table.rows[4:]:
                     cells = get_cells(row.cells)
                     if cells is None:
@@ -301,7 +300,7 @@ else:
                         group_list_is_added = True
                 if group_list_is_added is True:
                     group_list[ie_name] = { "type" : ie_type, "group" : added_group }
-                    write_file(f, "group_list[\"" + ie_name + "\"] = { \"type\" : \"" + ie_type + "\", \"group\" : added_group }")
+                    write_file(f, "group_list[\"" + ie_name + "\"] = { \"type\" : \"" + ie_type + "\", \"group\" : added_group }\n")
     f.close()
 
 msg_list["Echo Request"]["table"] = 6
@@ -334,7 +333,7 @@ for key in msg_list.keys():
                     ies.append(cells)
                     write_cells_to_file("ies", cells)
             msg_list[key]["ies"] = ies
-            write_file(f, "msg_list[key][\"ies\"] = ies")
+            write_file(f, "msg_list[key][\"ies\"] = ies\n")
             f.close()
 # Errata Standard Specification Document 
 type_list["Overload Control Information"] = { "type" : "180" }
@@ -355,49 +354,49 @@ extern "C" {
 tmp = [(k, v["type"]) for k, v in msg_list.items()]
 sorted_msg_list = sorted(tmp, key=lambda tup: int(tup[1]))
 for (k, v) in sorted_msg_list:
-    write_file(f, "#define GTPV2C_MSG_" + v_upper(k) + "_TYPE " + v)
-write_file(f, "")
+    write_file(f, "#define GTPV2C_MSG_" + v_upper(k) + "_TYPE " + v + "\n")
+write_file(f, "\n")
 
 tmp = [(k, v["type"]) for k, v in type_list.items()]
 sorted_type_list = sorted(tmp, key=lambda tup: int(tup[1]))
 for (k, v) in sorted_type_list:
-    write_file(f, "#define GTPV2C_IE_" + v_upper(k) + "_TYPE " + v)
-write_file(f, "")
+    write_file(f, "#define GTPV2C_IE_" + v_upper(k) + "_TYPE " + v + "\n")
+write_file(f, "\n")
 
-write_file(f, "/* Infomration Element TLV Descriptor */")
+write_file(f, "/* Infomration Element TLV Descriptor */\n")
 for (k, v) in sorted_type_list:
     if k not in group_list.keys():
-        write_file(f, "extern tlv_desc_t gtpv2c_desc_" + v_lower(k) + ";")
-write_file(f, "")
+        write_file(f, "extern tlv_desc_t gtpv2c_desc_" + v_lower(k) + ";\n")
+write_file(f, "\n")
 
 tmp = [(k, v["type"]) for k, v in group_list.items()]
 sorted_group_list = sorted(tmp, key=lambda tup: int(tup[1]))
-write_file(f, "/* Group Infomration Element TLV Descriptor */")
+write_file(f, "/* Group Infomration Element TLV Descriptor */\n")
 for (k, v) in sorted_group_list:
-    write_file(f, "extern tlv_desc_t gtpv2c_desc_" + v_lower(k) + ";")
-write_file(f, "")
+    write_file(f, "extern tlv_desc_t gtpv2c_desc_" + v_lower(k) + ";\n")
+write_file(f, "\n")
 
-write_file(f, "/* Structure for Infomration Element */")
+write_file(f, "/* Structure for Infomration Element */\n")
 for (k, v) in sorted_type_list:
     if k not in group_list.keys():
-        write_file(f, "typedef tlv_octet_t gtpv2c_" + v_lower(k) + "_t;")
-write_file(f, "")
+        write_file(f, "typedef tlv_octet_t gtpv2c_" + v_lower(k) + "_t;\n")
+write_file(f, "\n")
 
-write_file(f, "/* Structure for Group Infomration Element */")
+write_file(f, "/* Structure for Group Infomration Element */\n")
 for (k, v) in sorted_group_list:
-    write_file(f, "typedef struct _gtpv2c_" + v_lower(k) + "_t {")
-    write_file(f, "    tlv_header_t h;")
+    write_file(f, "typedef struct _gtpv2c_" + v_lower(k) + "_t {\n")
+    write_file(f, "    tlv_header_t h;\n")
     for group in group_list[k]["group"]:
         if group["ie_type"] == "F-TEID":
             write_file(f, "    gtpv2c_" + v_lower(group["ie_type"]) + "_t " + \
                     v_lower(group["ie_value"]) + "_" + group["instance"] + \
-                    "; /* Instance : " + group["instance"] + " */")
+                    "; /* Instance : " + group["instance"] + " */\n")
         else:
             write_file(f, "    gtpv2c_" + v_lower(group["ie_type"]) + "_t " + \
                     v_lower(group["ie_value"]) + "; /* Instance : " + \
-                    group["instance"] + " */")
-    write_file(f, "} gtpv2c_" + v_lower(k) + "_t;")
-    write_file(f, "")
+                    group["instance"] + " */\n")
+    write_file(f, "} gtpv2c_" + v_lower(k) + "_t;\n")
+    write_file(f, "\n")
 
 f.write("""#ifdef __cplusplus
 }
@@ -415,28 +414,28 @@ f.write("""#include "gtpv2c_tlv.h"
 
 for (k, v) in sorted_type_list:
     if k not in group_list.keys():
-        write_file(f, "tlv_desc_t gtpv2c_desc_%s =" % v_lower(k))
-        write_file(f, "{")
-        write_file(f, "    TLV_VAR_STR,")
-        write_file(f, "    GTPV2C_IE_%s_TYPE," % v_upper(k))
-        write_file(f, "    0,")
-        write_file(f, "    0,")
-        write_file(f, "    sizeof(gtpv2c_%s_t)," % v_lower(k))
-        write_file(f, "    { NULL }")
-        write_file(f, "};\n")
+        write_file(f, "tlv_desc_t gtpv2c_desc_%s =" % v_lower(k) + "\n")
+        write_file(f, "{\n")
+        write_file(f, "    TLV_VAR_STR,\n")
+        write_file(f, "    GTPV2C_IE_%s_TYPE," % v_upper(k) + "\n")
+        write_file(f, "    0,\n")
+        write_file(f, "    0,\n")
+        write_file(f, "    sizeof(gtpv2c_%s_t)," % v_lower(k) + "\n")
+        write_file(f, "    { NULL }\n")
+        write_file(f, "};\n\n")
 
 for (k, v) in sorted_group_list:
-    write_file(f, "tlv_desc_t gtpv2c_desc_%s =" % v_lower(k))
-    write_file(f, "{")
-    write_file(f, "    TLV_COMPOUND,")
-    write_file(f, "    GTPV2C_IE_%s_TYPE," % v_upper(k))
-    write_file(f, "    0,")
-    write_file(f, "    0,")
-    write_file(f, "    sizeof(gtpv2c_%s_t)," % v_lower(k))
-    write_file(f, "    { NULL }")
-    write_file(f, "};\n")
+    write_file(f, "tlv_desc_t gtpv2c_desc_%s =" % v_lower(k) + "\n")
+    write_file(f, "{\n")
+    write_file(f, "    TLV_COMPOUND,\n")
+    write_file(f, "    GTPV2C_IE_%s_TYPE,\n" % v_upper(k) + "\n")
+    write_file(f, "    0,\n")
+    write_file(f, "    0,\n")
+    write_file(f, "    sizeof(gtpv2c_%s_t),\n" % v_lower(k) + "\n")
+    write_file(f, "    { NULL }\n")
+    write_file(f, "};\n\n")
 
 
-write_file(f, "")
+write_file(f, "\n")
 
 f.close()

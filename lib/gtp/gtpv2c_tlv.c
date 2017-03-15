@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-03-15 10:53:03.126874 by acetcom
+ * Created on: 2017-03-15 11:53:49.897754 by acetcom
  * from 29274-d80.docx
  ******************************************************************************/
 
@@ -1196,9 +1196,11 @@ tlv_desc_t gtpv2c_desc_bearer_context =
 {
     TLV_COMPOUND,
     GTPV2C_IE_BEARER_CONTEXT_TYPE,
+
     0,
     0,
     sizeof(gtpv2c_bearer_context_t),
+
     { NULL }
 };
 
@@ -1206,9 +1208,11 @@ tlv_desc_t gtpv2c_desc_pdn_connection =
 {
     TLV_COMPOUND,
     GTPV2C_IE_PDN_CONNECTION_TYPE,
+
     0,
     0,
     sizeof(gtpv2c_pdn_connection_t),
+
     { NULL }
 };
 
@@ -1216,9 +1220,11 @@ tlv_desc_t gtpv2c_desc_overload_control_information =
 {
     TLV_COMPOUND,
     GTPV2C_IE_OVERLOAD_CONTROL_INFORMATION_TYPE,
+
     0,
     0,
     sizeof(gtpv2c_overload_control_information_t),
+
     { NULL }
 };
 
@@ -1226,9 +1232,11 @@ tlv_desc_t gtpv2c_desc_load_control_information =
 {
     TLV_COMPOUND,
     GTPV2C_IE_LOAD_CONTROL_INFORMATION_TYPE,
+
     0,
     0,
     sizeof(gtpv2c_load_control_information_t),
+
     { NULL }
 };
 
@@ -1236,9 +1244,11 @@ tlv_desc_t gtpv2c_desc_remote_ue_context =
 {
     TLV_COMPOUND,
     GTPV2C_IE_REMOTE_UE_CONTEXT_TYPE,
+
     0,
     0,
     sizeof(gtpv2c_remote_ue_context_t),
+
     { NULL }
 };
 
@@ -1246,9 +1256,11 @@ tlv_desc_t gtpv2c_desc_scef_pdn_connection =
 {
     TLV_COMPOUND,
     GTPV2C_IE_SCEF_PDN_CONNECTION_TYPE,
+
     0,
     0,
     sizeof(gtpv2c_scef_pdn_connection_t),
+
     { NULL }
 };
 
