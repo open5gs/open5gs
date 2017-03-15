@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-03-15 16:07:47.447096 by acetcom
+ * Created on: 2017-03-15 16:19:55.124908 by acetcom
  * from 29274-d80.docx
  ******************************************************************************/
 
@@ -1599,5 +1599,385 @@ tlv_desc_t gtpv2c_desc_scef_pdn_connection_0 =
         NULL,
     }
 };
+
+tlv_desc_t gtpv2c_desc_echo_request =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+        &gtpv2c_desc_recovery_0,
+        &gtpv2c_desc_node_features_0,
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_echo_response =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+        &gtpv2c_desc_recovery_0,
+        &gtpv2c_desc_node_features_0,
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_version_not_supported_indication =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_create_session_request =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+        &gtpv2c_desc_imsi_0,
+        &gtpv2c_desc_msisdn_0,
+        &gtpv2c_desc_mei_0,
+        &gtpv2c_desc_uli_0,
+        &gtpv2c_desc_serving_network_0,
+        &gtpv2c_desc_rat_type_0,
+        &gtpv2c_desc_indication_0,
+        &gtpv2c_desc_f_teid_0,
+        &gtpv2c_desc_f_teid_1,
+        &gtpv2c_desc_apn_0,
+        &gtpv2c_desc_selection_mode_0,
+        &gtpv2c_desc_pdn_type_0,
+        &gtpv2c_desc_paa_0,
+        &gtpv2c_desc_apn_restriction_0,
+        &gtpv2c_desc_ambr_0,
+        &gtpv2c_desc_ebi_0,
+        &gtpv2c_desc_twmi_0,
+        &gtpv2c_desc_pco_0,
+        &gtpv2c_desc_bearer_context_0,
+        &gtpv2c_desc_bearer_context_1,
+        &gtpv2c_desc_trace_information_0,
+        &gtpv2c_desc_recovery_0,
+        &gtpv2c_desc_fq_csid_0,
+        &gtpv2c_desc_fq_csid_1,
+        &gtpv2c_desc_fq_csid_2,
+        &gtpv2c_desc_fq_csid_3,
+        &gtpv2c_desc_ue_time_zone_0,
+        &gtpv2c_desc_uci_0,
+        &gtpv2c_desc_charging_characteristics_0,
+        &gtpv2c_desc_ldn_0,
+        &gtpv2c_desc_ldn_1,
+        &gtpv2c_desc_ldn_2,
+        &gtpv2c_desc_ldn_3,
+        &gtpv2c_desc_signalling_priority_indication_0,
+        &gtpv2c_desc_ip_address_0,
+        &gtpv2c_desc_port_number_0,
+        &gtpv2c_desc_apco_0,
+        &gtpv2c_desc_ip_address_1,
+        &gtpv2c_desc_port_number_1,
+        &gtpv2c_desc_ip_address_2,
+        &gtpv2c_desc_twan_identifier_0,
+        &gtpv2c_desc_ip_address_3,
+        &gtpv2c_desc_cn_operator_selection_entity_0,
+        &gtpv2c_desc_presence_reporting_area_information_0,
+        &gtpv2c_desc_overload_control_information_0,
+        &gtpv2c_desc_overload_control_information_1,
+        &gtpv2c_desc_overload_control_information_2,
+        &gtpv2c_desc_millisecond_time_stamp_0,
+        &gtpv2c_desc_integer_number_0,
+        &gtpv2c_desc_twan_identifier_1,
+        &gtpv2c_desc_twan_identifier_timestamp_0,
+        &gtpv2c_desc_f_container_0,
+        &gtpv2c_desc_remote_ue_context_0,
+        &gtpv2c_desc_node_identifier_0,
+        &gtpv2c_desc_epco_0,
+        &gtpv2c_desc_serving_plmn_rate_control_0,
+        &gtpv2c_desc_counter_0,
+        &gtpv2c_desc_port_number_2,
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_create_session_response =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_modify_bearer_request =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_modify_bearer_response =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_delete_session_request =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_delete_session_response =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_change_notification_request =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_change_notification_response =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_remote_ue_report_notification =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_remote_ue_report_acknowledge =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_modify_bearer_command =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_modify_bearer_failure_indication =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_delete_bearer_command =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_delete_bearer_failure_indication =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_bearer_resource_command =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_bearer_resource_failure_indication =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_downlink_data_notification_failure_indication =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_trace_session_activation =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_trace_session_deactivation =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_stop_paging_indication =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_create_bearer_request =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_create_bearer_response =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_update_bearer_request =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_update_bearer_response =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_delete_bearer_request =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_delete_bearer_response =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_delete_pdn_connection_set_request =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_delete_pdn_connection_set_response =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_pgw_downlink_triggering_notification =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_pgw_downlink_triggering_acknowledge =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_create_forwarding_tunnel_request =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_create_forwarding_tunnel_response =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_suspend_notification =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_suspend_acknowledge =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_resume_notification =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_resume_acknowledge =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_create_indirect_data_forwarding_tunnel_request =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_create_indirect_data_forwarding_tunnel_response =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_delete_indirect_data_forwarding_tunnel_request =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_delete_indirect_data_forwarding_tunnel_response =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_release_access_bearers_request =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_release_access_bearers_response =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_downlink_data_notification =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_downlink_data_notification_acknowledge =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_pgw_restart_notification =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_pgw_restart_notification_acknowledge =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_update_pdn_connection_set_request =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_update_pdn_connection_set_response =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_modify_access_bearers_request =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
+
+tlv_desc_t gtpv2c_desc_modify_access_bearers_response =
+{
+    TLV_MESSAGE, 0, 0, 0, 0, {
+    NULL,
+}};
 
 

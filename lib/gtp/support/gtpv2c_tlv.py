@@ -443,7 +443,7 @@ f.write("""#include "gtpv2c_tlv.h"
 for (k, v) in sorted_type_list:
     if k not in group_list.keys():
         for instance in range(0, int(type_list[k]["max_instance"])+1):
-            write_file(f, "tlv_desc_t gtpv2c_desc_%s_%d =" % (v_lower(k), instance) + "\n")
+            write_file(f, "tlv_desc_t gtpv2c_desc_%s_%d =\n" % (v_lower(k), instance))
             write_file(f, "{\n")
             write_file(f, "    TLV_VAR_STR,\n")
             write_file(f, "    GTPV2C_IE_%s_TYPE,\n" % v_upper(k))
@@ -455,7 +455,7 @@ for (k, v) in sorted_type_list:
 
 for (k, v) in sorted_group_list:
     for instance in range(0, int(type_list[k]["max_instance"])+1):
-        write_file(f, "tlv_desc_t gtpv2c_desc_%s_%d =" % (v_lower(k), instance) + "\n")
+        write_file(f, "tlv_desc_t gtpv2c_desc_%s_%d =\n" % (v_lower(k), instance))
         write_file(f, "{\n")
         write_file(f, "    TLV_COMPOUND,\n")
         write_file(f, "    GTPV2C_IE_%s_TYPE,\n" % v_upper(k))
@@ -468,6 +468,16 @@ for (k, v) in sorted_group_list:
         write_file(f, "        NULL,\n")
         write_file(f, "    }\n")
         write_file(f, "};\n\n")
+
+for (k, v) in sorted_msg_list:
+    write_file(f, "tlv_desc_t gtpv2c_desc_%s =\n" % v_lower(k))
+    write_file(f, "{\n")
+    write_file(f, "    TLV_MESSAGE, 0, 0, 0, 0, {\n")
+    if "ies" in msg_list[k]:
+        for ies in msg_list[k]["ies"]:
+                write_file(f, "        &gtpv2c_desc_%s_%s,\n" % (v_lower(ies["ie_type"]), v_lower(ies["instance"])))
+    write_file(f, "    NULL,\n")
+    write_file(f, "}};\n\n")
 
 write_file(f, "\n")
 
