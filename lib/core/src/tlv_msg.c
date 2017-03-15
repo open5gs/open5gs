@@ -3,14 +3,14 @@
 #include "core_debug.h"
 #include "core_tlv_msg.h"
 
-tlv_desc_t tlv_desc_more1 = { TLV_MORE, 0, 1, 0, 0, { NULL } };
-tlv_desc_t tlv_desc_more2 = { TLV_MORE, 0, 2, 0, 0, { NULL } };
-tlv_desc_t tlv_desc_more3 = { TLV_MORE, 0, 3, 0, 0, { NULL } };
-tlv_desc_t tlv_desc_more4 = { TLV_MORE, 0, 4, 0, 0, { NULL } };
-tlv_desc_t tlv_desc_more5 = { TLV_MORE, 0, 5, 0, 0, { NULL } };
-tlv_desc_t tlv_desc_more6 = { TLV_MORE, 0, 6, 0, 0, { NULL } };
-tlv_desc_t tlv_desc_more7 = { TLV_MORE, 0, 7, 0, 0, { NULL } };
-tlv_desc_t tlv_desc_more8 = { TLV_MORE, 0, 8, 0, 0, { NULL } };
+tlv_desc_t tlv_desc_more1 = { TLV_MORE, "More", 0, 1, 0, 0, { NULL } };
+tlv_desc_t tlv_desc_more2 = { TLV_MORE, "More", 0, 2, 0, 0, { NULL } };
+tlv_desc_t tlv_desc_more3 = { TLV_MORE, "More", 0, 3, 0, 0, { NULL } };
+tlv_desc_t tlv_desc_more4 = { TLV_MORE, "More", 0, 4, 0, 0, { NULL } };
+tlv_desc_t tlv_desc_more5 = { TLV_MORE, "More", 0, 5, 0, 0, { NULL } };
+tlv_desc_t tlv_desc_more6 = { TLV_MORE, "More", 0, 6, 0, 0, { NULL } };
+tlv_desc_t tlv_desc_more7 = { TLV_MORE, "More", 0, 7, 0, 0, { NULL } };
+tlv_desc_t tlv_desc_more8 = { TLV_MORE, "More", 0, 8, 0, 0, { NULL } };
 
 static tlv_t* _tlv_add_leaf(
         tlv_t *parent_tlv, tlv_t *tlv, tlv_desc_t *desc, void *msg)
@@ -179,9 +179,9 @@ static c_uint32_t _tlv_add_compound(tlv_t **root, tlv_t *parent_tlv,
 
                 if (desc->ctype == TLV_COMPOUND)
                 {
-                    d_trace(1, "\nBUILD %sC#%d T:%d I:%d (vsz=%d) off:%p ",
-                            indent, i, desc->type, desc->instance, desc->vsize,
-                            p + offset2);
+                    d_trace(1, "\nBUILD %sC#%d [%s] T:%d I:%d (vsz=%d) off:%p ",
+                            indent, i, desc->name, desc->type, desc->instance, 
+                            desc->vsize, p + offset2);
 
                     if (parent_tlv)
                         tlv = tlv_embed(parent_tlv, 
@@ -197,10 +197,11 @@ static c_uint32_t _tlv_add_compound(tlv_t **root, tlv_t *parent_tlv,
                 }
                 else
                 {
-                    d_trace(1, "\nBUILD %sL#%d T:%d L:%d I:%d "
+                    d_trace(1, "\nBUILD %sL#%d [%s] T:%d L:%d I:%d "
                             "(cls:%d vsz:%d) off:%p ",
-                            indent, i, desc->type, desc->length, desc->instance,
-                            desc->ctype, desc->vsize, p + offset2);
+                            indent, i, desc->name, desc->type, desc->length, 
+                            desc->instance, desc->ctype, desc->vsize, 
+                            p + offset2);
 
                     tlv = _tlv_add_leaf(parent_tlv, tlv, desc, p + offset2);
                     d_assert(tlv, return 0, "Can't build leaf TLV");
@@ -223,8 +224,8 @@ static c_uint32_t _tlv_add_compound(tlv_t **root, tlv_t *parent_tlv,
             {
                 if (desc->ctype == TLV_COMPOUND)
                 {
-                    d_trace(1, "\nBUILD %sC#%d T:%d I:%d (vsz=%d) off:%p ",
-                            indent, i, desc->type, desc->instance, 
+                    d_trace(1, "\nBUILD %sC#%d [%s] T:%d I:%d (vsz=%d) off:%p ",
+                            indent, i, desc->name, desc->type, desc->instance, 
                             desc->vsize, p + offset);
 
                     if (parent_tlv)
@@ -241,10 +242,11 @@ static c_uint32_t _tlv_add_compound(tlv_t **root, tlv_t *parent_tlv,
                 }
                 else
                 {
-                    d_trace(1, "\nBUILD %sL#%d T:%d L:%d I:%d "
+                    d_trace(1, "\nBUILD %sL#%d [%s] T:%d L:%d I:%d "
                             "(cls:%d vsz:%d) off:%p ",
-                            indent, i, desc->type, desc->length, desc->instance,
-                            desc->ctype, desc->vsize, p + offset);
+                            indent, i, desc->name, desc->type, desc->length, 
+                            desc->instance, desc->ctype, desc->vsize, 
+                            p + offset);
 
                     tlv = _tlv_add_leaf(parent_tlv, tlv, desc, p + offset);
                     d_assert(tlv, return 0, "Can't build leaf TLV");
@@ -274,6 +276,8 @@ status_t tlv_build_msg(pkbuf_t **pkbuf, tlv_desc_t *desc, void *msg, int mode)
             "Not TLV message descriptor");
     d_assert(desc->child_descs[0], return CORE_ERROR,
             "TLV message descriptor has no members");
+    
+    d_trace(1, "\n[%s] BUILD MESSAGE\n", desc->name);
 
     r = _tlv_add_compound(&root, NULL, desc, msg, 0);
     d_assert(r > 0 && root, tlv_free_all(root); return CORE_ERROR,
@@ -514,8 +518,8 @@ static status_t _tlv_parse_compound(void *msg, tlv_desc_t *parent_desc,
                 return CORE_ERROR;
             }
 
-            d_trace(1, "\nPARSE %sC#%d T:%d I:%d (vsz=%d) off:%p ",
-                    indent, i++, desc->type, desc->instance, 
+            d_trace(1, "\nPARSE %sC#%d [%s] T:%d I:%d (vsz=%d) off:%p ",
+                    indent, i++, desc->name, desc->type, desc->instance, 
                     desc->vsize, p + offset);
 
             offset += sizeof(tlv_presence_t);
@@ -532,10 +536,10 @@ static status_t _tlv_parse_compound(void *msg, tlv_desc_t *parent_desc,
         }
         else
         {
-            d_trace(1, "\nPARSE %sL#%d T:%d L:%d I:%d "
+            d_trace(1, "\nPARSE %sL#%d [%s] T:%d L:%d I:%d "
                     "(cls:%d vsz:%d) off:%p ",
-                    indent, i++, desc->type, desc->length, desc->instance,
-                    desc->ctype, desc->vsize, p + offset);
+                    indent, i++, desc->name, desc->type, desc->length, 
+                    desc->instance, desc->ctype, desc->vsize, p + offset);
 
             rv = _tlv_parse_leaf(p + offset, desc, tlv);
             if (rv != CORE_OK)
@@ -567,6 +571,8 @@ status_t tlv_parse_msg(void *msg, tlv_desc_t *desc, pkbuf_t *pkbuf, int mode)
             "Not TLV message descriptor");
     d_assert(desc->child_descs[0], return CORE_ERROR,
             "TLV message descriptor has no members");
+
+    d_trace(1, "\n[%s] PARSE MESSAGE\n", desc->name);
 
     root = tlv_parse_block(pkbuf->len, pkbuf->payload, mode);
     if (root == NULL)

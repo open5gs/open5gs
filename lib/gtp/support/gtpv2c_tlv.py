@@ -477,6 +477,7 @@ for (k, v) in sorted_type_list:
                     assert False, "Unknown size = %d for key = %s" % (type_list[k]["size"], k)
             else:
                 write_file(f, "    TLV_VAR_STR,\n")
+            write_file(f, "    \"%s\",\n" % k)
             write_file(f, "    GTPV2C_IE_%s_TYPE,\n" % v_upper(k))
             if "size" in type_list[k]:
                 write_file(f, "    %d,\n" % type_list[k]["size"])
@@ -492,6 +493,7 @@ for (k, v) in sorted_group_list:
         write_file(f, "tlv_desc_t gtpv2c_desc_%s_%d =\n" % (v_lower(k), instance))
         write_file(f, "{\n")
         write_file(f, "    TLV_COMPOUND,\n")
+        write_file(f, "    \"%s\",\n" % k)
         write_file(f, "    GTPV2C_IE_%s_TYPE,\n" % v_upper(k))
         write_file(f, "    0,\n")
         write_file(f, "    %d,\n" % instance)
@@ -506,7 +508,9 @@ for (k, v) in sorted_group_list:
 for (k, v) in sorted_msg_list:
     write_file(f, "tlv_desc_t gtpv2c_desc_%s =\n" % v_lower(k))
     write_file(f, "{\n")
-    write_file(f, "    TLV_MESSAGE, 0, 0, 0, 0, {\n")
+    write_file(f, "    TLV_MESSAGE,\n")
+    write_file(f, "    \"%s\",\n" % k)
+    write_file(f, "    0, 0, 0, 0, {\n")
     if "ies" in msg_list[k]:
         for ies in msg_list[k]["ies"]:
                 write_file(f, "        &gtpv2c_desc_%s_%s,\n" % (v_lower(ies["ie_type"]), v_lower(ies["instance"])))

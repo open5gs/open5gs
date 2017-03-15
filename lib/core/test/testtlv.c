@@ -686,6 +686,7 @@ extern tlv_desc_t tlv_desc_attach_req;
 tlv_desc_t tlv_desc_authorization_policy_support0 = 
 {
     TLV_UINT8,
+    "Auth Policy0",
     TLV_AUTHORIZATION_POLICY_SUPPORT_TYPE,
     TLV_AUTHORIZATION_POLICY_SUPPORT_LEN,
     0,
@@ -695,6 +696,7 @@ tlv_desc_t tlv_desc_authorization_policy_support0 =
 tlv_desc_t tlv_desc_authorization_policy_support2 = 
 {
     TLV_UINT8,
+    "Auth Policy2",
     TLV_AUTHORIZATION_POLICY_SUPPORT_TYPE,
     TLV_AUTHORIZATION_POLICY_SUPPORT_LEN,
     2,
@@ -705,6 +707,7 @@ tlv_desc_t tlv_desc_authorization_policy_support2 =
 tlv_desc_t tlv_desc_client_security_history = 
 {
     TLV_COMPOUND,
+    "Sec History",
     TLV_CLIENT_SECURITY_HISTORY_TYPE,
     TLV_CLIENT_SECURITY_HISTORY_LEN,
     0, 
@@ -719,6 +722,7 @@ tlv_desc_t tlv_desc_client_security_history =
 tlv_desc_t tlv_desc_client_info = 
 {
     TLV_COMPOUND,
+    "Client Info",
     TLV_CLIENT_INFO_TYPE,
     TLV_CLIENT_INFO_LEN,
     0, 
@@ -732,6 +736,7 @@ tlv_desc_t tlv_desc_client_info =
 tlv_desc_t tlv_desc_server_name = 
 {
     TLV_VAR_STR,
+    "Server Name",
     TLV_SERVER_NAME_TYPE,
     TLV_SERVER_NAME_LEN,
     0, 
@@ -742,6 +747,7 @@ tlv_desc_t tlv_desc_server_name =
 tlv_desc_t tlv_desc_server_info = 
 {
     TLV_COMPOUND,
+    "Server Info",
     TLV_SERVER_INFO_TYPE,
     TLV_SERVER_INFO_LEN,
     0, 
@@ -753,7 +759,7 @@ tlv_desc_t tlv_desc_server_info =
 };
 
 tlv_desc_t tlv_desc_attach_req = {
-    TLV_MESSAGE, 0, 0, 0, 0, {
+    TLV_MESSAGE, "Attach Req", 0, 0, 0, 0, {
     &tlv_desc_client_info,
     &tlv_desc_server_info,
     NULL,

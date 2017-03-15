@@ -129,6 +129,8 @@ int main(int argc, char *argv[])
         d_trace_level(&_s1ap_recv, 100);
         extern int _s6a;
         d_trace_level(&_s1ap_send, 100);
+        extern int _tlv_msg;
+        d_trace_level(&_tlv_msg, 1);
 #endif
     }
 
