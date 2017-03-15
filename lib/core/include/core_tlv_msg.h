@@ -113,25 +113,19 @@ typedef struct _tlv_null {
 } tlv_null_t;
 
 #define tlv_get_value(__tlv) (__tlv).v
-
+#define tlv_get_length(__tlv) (__tlv).l
 #define tlv_set_value(__m, __value) \
     __m.v = __value; __m.h.presence = 1
-
 #define tlv_copy_value(__t_tlv, __s_tlv) \
     (__t_tlv).h = (__s_tlv).h; (__t_tlv).v = (__s_tlv).v
 
-#define tlv_get_octet(__value, __length, __tlv) \
-    __value = (__tlv).v; __length = (__tlv).l
-
 #define tlv_set_octet(__m, __value, __length) \
     __m.v = __value; __m.l = __length; __m.h.presence = 1
-
 #define tlv_copy_octet(__t_tlv, __s_tlv) \
     (__t_tlv).h = (__s_tlv).h; (__t_tlv).v = (__s_tlv).v; \
     (__t_tlv).l = (__s_tlv).l
 
-#define tlv_set_present(__m) __m.h.presence = 1
-#define tlv_unset_present(__m) __m.h.presence = 0
+#define tlv_set_presence(__m) __m.h.presence = 1
 #define tlv_is_present(__m) __m.h.presence
 
 CORE_DECLARE(status_t) tlv_build_msg(

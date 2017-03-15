@@ -766,24 +766,22 @@ static void tlv_test_6(abts_case *tc, void *data)
 
     pkbuf_t *req = NULL;
     char testbuf[1024];
-    c_uint8_t *buf;
-    c_uint32_t buflen;
 
     /* Initialize message value structure */
     memset(&reqv, 0, sizeof(tlv_attach_req));
 
     /* Set nessary members of message */
-    tlv_set_present(reqv.client_info);
-    tlv_set_present(reqv.client_info.client_security_history);
+    tlv_set_presence(reqv.client_info);
+    tlv_set_presence(reqv.client_info.client_security_history);
     tlv_set_value(reqv.client_info.client_security_history.
             authorization_policy_support0, 0x3);
     tlv_set_value(reqv.client_info.client_security_history.
             authorization_policy_support2, 0x9);
    
-    tlv_set_present(reqv.server_info);
+    tlv_set_presence(reqv.server_info);
     tlv_set_octet(reqv.server_info.server_name[0], 
             (c_uint8_t*)"\x11\x22\x33\x44\x55\x66", 6);
-    tlv_set_present(reqv.server_info);
+    tlv_set_presence(reqv.server_info);
     tlv_set_octet(reqv.server_info.server_name[1], 
             (c_uint8_t*)"\xaa\xbb\xcc\xdd\xee\xff", 6);
 
@@ -825,12 +823,12 @@ static void tlv_test_6(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, 1, tlv_is_present(reqv2.server_info));
     ABTS_INT_EQUAL(tc, 1, tlv_is_present(reqv2.server_info.server_name[0]));
     ABTS_INT_EQUAL(tc, 1, tlv_is_present(reqv2.server_info.server_name[1]));
-    tlv_get_octet(buf, buflen, reqv2.server_info.server_name[0]);
-    ABTS_INT_EQUAL(tc, 6, buflen);
-    ABTS_TRUE(tc, memcmp(buf, (c_uint8_t*)"\x11\x22\x33\x44\x55\x66", 6) == 0);
-    tlv_get_octet(buf, buflen, reqv2.server_info.server_name[1]);
-    ABTS_INT_EQUAL(tc, 6, buflen);
-    ABTS_TRUE(tc, memcmp(buf, (c_uint8_t*)"\xaa\xbb\xcc\xdd\xee\xff", 6) == 0);
+    ABTS_INT_EQUAL(tc, 6, tlv_get_length(reqv2.server_info.server_name[0]));
+    ABTS_TRUE(tc, memcmp(tlv_get_value(reqv2.server_info.server_name[0]), 
+                (c_uint8_t*)"\x11\x22\x33\x44\x55\x66", 6) == 0);
+    ABTS_INT_EQUAL(tc, 6, tlv_get_length(reqv2.server_info.server_name[1]));
+    ABTS_TRUE(tc, memcmp(tlv_get_value(reqv2.server_info.server_name[1]), 
+                (c_uint8_t*)"\xaa\xbb\xcc\xdd\xee\xff", 6) == 0);
 
     pkbuf_free(req);
 }

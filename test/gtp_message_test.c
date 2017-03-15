@@ -22,8 +22,6 @@ static void gtp_message_test1(abts_case *tc, void *data)
     gtpv2c_create_session_request_t req;
     c_uint8_t tmp[256];
     pkbuf_t *pkbuf = NULL;
-    c_uint8_t *buf = NULL;
-    c_uint32_t buflen = 0;
 
     pkbuf = pkbuf_alloc(0, 240);
     ABTS_PTR_NOTNULL(tc, pkbuf);
@@ -36,28 +34,25 @@ static void gtp_message_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     ABTS_INT_EQUAL(tc, 1, tlv_is_present(req.imsi));
-    tlv_get_octet(buf, buflen, req.imsi);
-    ABTS_INT_EQUAL(tc, 8, buflen);
+    ABTS_INT_EQUAL(tc, 8, tlv_get_length(req.imsi));
     _value = "55153011 340010f4";
-    ABTS_TRUE(tc, memcmp(
-            core_ascii_to_hex(_value, strlen(_value), tmp, buflen),
-            buf, buflen) == 0);
+    ABTS_TRUE(tc, memcmp(core_ascii_to_hex(_value, strlen(_value), 
+            tmp, tlv_get_length(req.imsi)),
+        tlv_get_value(req.imsi), tlv_get_length(req.imsi)) == 0);
 
     ABTS_INT_EQUAL(tc, 1, tlv_is_present(req.msisdn));
-    tlv_get_octet(buf, buflen, req.msisdn);
-    ABTS_INT_EQUAL(tc, 6, buflen);
+    ABTS_INT_EQUAL(tc, 6, tlv_get_length(req.msisdn));
     _value = "94715276 0041";
-    ABTS_TRUE(tc, memcmp(
-            core_ascii_to_hex(_value, strlen(_value), tmp, buflen),
-            buf, buflen) == 0);
+    ABTS_TRUE(tc, memcmp(core_ascii_to_hex(_value, strlen(_value), 
+            tmp, tlv_get_length(req.msisdn)),
+        tlv_get_value(req.msisdn), tlv_get_length(req.msisdn)) == 0);
 
     ABTS_INT_EQUAL(tc, 1, tlv_is_present(req.me_identity));
-    tlv_get_octet(buf, buflen, req.me_identity);
-    ABTS_INT_EQUAL(tc, 8, buflen);
+    ABTS_INT_EQUAL(tc, 8, tlv_get_length(req.me_identity));
     _value = "53612000 91788400";
-    ABTS_TRUE(tc, memcmp(
-            core_ascii_to_hex(_value, strlen(_value), tmp, buflen),
-            buf, buflen) == 0);
+    ABTS_TRUE(tc, memcmp(core_ascii_to_hex(_value, strlen(_value),
+            tmp, tlv_get_length(req.me_identity)),
+        tlv_get_value(req.me_identity), tlv_get_length(req.me_identity)) == 0);
 
     pkbuf_free(pkbuf);
 
@@ -79,13 +74,14 @@ static void gtp_message_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, 1, tlv_is_present(req.bearer_contexts_to_be_created));
     ABTS_INT_EQUAL(tc, 1, tlv_is_present(req.
                 bearer_contexts_to_be_created.eps_bearer_id));
-    tlv_get_octet(buf, buflen, req.
-                bearer_contexts_to_be_created.eps_bearer_id);
-    ABTS_INT_EQUAL(tc, 1, buflen);
+    ABTS_INT_EQUAL(tc, 1, 
+            tlv_get_length(req.bearer_contexts_to_be_created.eps_bearer_id));
     _value = "05";
-    ABTS_TRUE(tc, memcmp(
-            core_ascii_to_hex(_value, strlen(_value), tmp, buflen),
-            buf, buflen) == 0);
+    ABTS_TRUE(tc, memcmp(core_ascii_to_hex(_value, strlen(_value), tmp, 
+            tlv_get_length(req.bearer_contexts_to_be_created.eps_bearer_id)),
+        tlv_get_value(req.bearer_contexts_to_be_created.eps_bearer_id),
+        tlv_get_length(req.bearer_contexts_to_be_created.eps_bearer_id))
+            == 0);
     ABTS_INT_EQUAL(tc, 0, tlv_is_present(req.
                 bearer_contexts_to_be_created.tft));
     ABTS_INT_EQUAL(tc, 0, tlv_is_present(req.
@@ -96,13 +92,15 @@ static void gtp_message_test1(abts_case *tc, void *data)
                 bearer_contexts_to_be_created.s2a_u_twan_f_teid_6));
     ABTS_INT_EQUAL(tc, 1, tlv_is_present(req.
                 bearer_contexts_to_be_created.bearer_level_qos));
-    tlv_get_octet(buf, buflen, req.
-                bearer_contexts_to_be_created.bearer_level_qos);
-    ABTS_INT_EQUAL(tc, 22, buflen);
+    ABTS_INT_EQUAL(tc, 22,
+            tlv_get_length(req.bearer_contexts_to_be_created.bearer_level_qos));
     _value = "45050000 00000000 00000000 00000000 00000000 0000";
     ABTS_TRUE(tc, memcmp(
-            core_ascii_to_hex(_value, strlen(_value), tmp, buflen),
-            buf, buflen) == 0);
+        core_ascii_to_hex(_value, strlen(_value), tmp,
+            tlv_get_length(req.bearer_contexts_to_be_created.bearer_level_qos)),
+        tlv_get_value(req.bearer_contexts_to_be_created.bearer_level_qos),
+        tlv_get_length(req.bearer_contexts_to_be_created.bearer_level_qos)) 
+            == 0);
     ABTS_INT_EQUAL(tc, 0, tlv_is_present(req.
                 bearer_contexts_to_be_created.s11_u_mme_f_teid));
     ABTS_INT_EQUAL(tc, 0, tlv_is_present(req.
