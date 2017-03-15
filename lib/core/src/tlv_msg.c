@@ -302,7 +302,7 @@ static tlv_desc_t* _tlv_find_desc(c_uint8_t *desc_index,
     d_assert(parent_desc, return NULL, "Null param");
     d_assert(tlv, return NULL, "Null param");
 
-    d_trace(5, "_tlv_find_desc:%d - ", tlv->type);
+    d_trace(5, "_tlv_find_desc:T(%d), I(%d) - ", tlv->type, tlv->instance);
 
     for (i = 0, desc = parent_desc->child_descs[i]; desc != NULL;
             i++, desc = parent_desc->child_descs[i])
