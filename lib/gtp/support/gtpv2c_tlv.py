@@ -387,14 +387,18 @@ for (k, v) in sorted_group_list:
     write_file(f, "typedef struct _gtpv2c_" + v_lower(k) + "_t {\n")
     write_file(f, "    tlv_header_t h;\n")
     for group in group_list[k]["group"]:
+        write_file(f, "    gtpv2c_" + v_lower(group["ie_type"]) + "_t " + \
+                v_lower(group["ie_value"]))
         if group["ie_type"] == "F-TEID":
-            write_file(f, "    gtpv2c_" + v_lower(group["ie_type"]) + "_t " + \
-                    v_lower(group["ie_value"]) + "_" + group["instance"] + \
-                    "; /* Instance : " + group["instance"] + " */\n")
+            if group["ie_value"] == "S2b-U ePDG F-TEID":
+                write_file(f, "_" + group["instance"] + ";")
+            elif group["ie_value"] == "S2a-U TWAN F-TEID":
+                write_file(f, "_" + group["instance"] + ";")
+            else:
+                write_file(f, ";")
+            write_file(f, " /* Instance : " + group["instance"] + " */\n")
         else:
-            write_file(f, "    gtpv2c_" + v_lower(group["ie_type"]) + "_t " + \
-                    v_lower(group["ie_value"]) + "; /* Instance : " + \
-                    group["instance"] + " */\n")
+            write_file(f, ";\n")
     write_file(f, "} gtpv2c_" + v_lower(k) + "_t;\n")
     write_file(f, "\n")
 

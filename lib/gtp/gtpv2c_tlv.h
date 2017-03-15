@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-03-15 11:53:49.888920 by acetcom
+ * Created on: 2017-03-15 12:04:54.117763 by acetcom
  * from 29274-d80.docx
  ******************************************************************************/
 
@@ -463,31 +463,31 @@ typedef tlv_octet_t gtpv2c_counter_t;
 /* Structure for Group Infomration Element */
 typedef struct _gtpv2c_bearer_context_t {
     tlv_header_t h;
-    gtpv2c_ebi_t eps_bearer_id; /* Instance : 0 */
-    gtpv2c_bearer_tft_t tft; /* Instance : 0 */
-    gtpv2c_f_teid_t s1_u_enodeb_f_teid_0; /* Instance : 0 */
-    gtpv2c_f_teid_t s4_u_sgsn_f_teid_1; /* Instance : 1 */
-    gtpv2c_f_teid_t s5_s8_u_sgw_f_teid_2; /* Instance : 2 */
-    gtpv2c_f_teid_t s5_s8_u_pgw_f_teid_3; /* Instance : 3 */
-    gtpv2c_f_teid_t s12_rnc_f_teid_4; /* Instance : 4 */
+    gtpv2c_ebi_t eps_bearer_id;
+    gtpv2c_bearer_tft_t tft;
+    gtpv2c_f_teid_t s1_u_enodeb_f_teid; /* Instance : 0 */
+    gtpv2c_f_teid_t s4_u_sgsn_f_teid; /* Instance : 1 */
+    gtpv2c_f_teid_t s5_s8_u_sgw_f_teid; /* Instance : 2 */
+    gtpv2c_f_teid_t s5_s8_u_pgw_f_teid; /* Instance : 3 */
+    gtpv2c_f_teid_t s12_rnc_f_teid; /* Instance : 4 */
     gtpv2c_f_teid_t s2b_u_epdg_f_teid_5; /* Instance : 5 */
     gtpv2c_f_teid_t s2a_u_twan_f_teid_6; /* Instance : 6 */
-    gtpv2c_bearer_qos_t bearer_level_qos; /* Instance : 0 */
-    gtpv2c_f_teid_t s11_u_mme_f_teid_7; /* Instance : 7 */
-    gtpv2c_cause_t cause; /* Instance : 0 */
-    gtpv2c_charging_id_t charging_id; /* Instance : 0 */
-    gtpv2c_bearer_flags_t bearer_flags; /* Instance : 0 */
-    gtpv2c_pco_t protocol_configuration_options; /* Instance : 0 */
-    gtpv2c_epco_t extended_protocol_configuration_options; /* Instance : 0 */
+    gtpv2c_bearer_qos_t bearer_level_qos;
+    gtpv2c_f_teid_t s11_u_mme_f_teid; /* Instance : 7 */
+    gtpv2c_cause_t cause;
+    gtpv2c_charging_id_t charging_id;
+    gtpv2c_bearer_flags_t bearer_flags;
+    gtpv2c_pco_t protocol_configuration_options;
+    gtpv2c_epco_t extended_protocol_configuration_options;
     gtpv2c_f_teid_t s2b_u_epdg_f_teid_8; /* Instance : 8 */
-    gtpv2c_f_teid_t s2b_u_pgw_f_teid_9; /* Instance : 9 */
+    gtpv2c_f_teid_t s2b_u_pgw_f_teid; /* Instance : 9 */
     gtpv2c_f_teid_t s2a_u_twan_f_teid_10; /* Instance : 10 */
-    gtpv2c_f_teid_t s2a_u_pgw_f_teid_11; /* Instance : 11 */
-    gtpv2c_ran_nas_cause_t ran_nas_cause; /* Instance : 0 */
-    gtpv2c_apco_t additional_protocol_configuration_options; /* Instance : 0 */
-    gtpv2c_f_container_t bss_container; /* Instance : 0 */
-    gtpv2c_ti_t transaction_identifier; /* Instance : 0 */
-    gtpv2c_packet_flow_id_t packet_flow_id; /* Instance : 0 */
+    gtpv2c_f_teid_t s2a_u_pgw_f_teid; /* Instance : 11 */
+    gtpv2c_ran_nas_cause_t ran_nas_cause;
+    gtpv2c_apco_t additional_protocol_configuration_options;
+    gtpv2c_f_container_t bss_container;
+    gtpv2c_ti_t transaction_identifier;
+    gtpv2c_packet_flow_id_t packet_flow_id;
 } gtpv2c_bearer_context_t;
 
 typedef struct _gtpv2c_pdn_connection_t {
@@ -496,30 +496,30 @@ typedef struct _gtpv2c_pdn_connection_t {
 
 typedef struct _gtpv2c_overload_control_information_t {
     tlv_header_t h;
-    gtpv2c_sequence_number_t overload_control_sequence_number; /* Instance : 0 */
-    gtpv2c_metric_t overload_reduction_metric; /* Instance : 0 */
-    gtpv2c_epc_timer_t period_of_validity; /* Instance : 0 */
-    gtpv2c_apn_t list_of_access_point_name; /* Instance : 0 */
+    gtpv2c_sequence_number_t overload_control_sequence_number;
+    gtpv2c_metric_t overload_reduction_metric;
+    gtpv2c_epc_timer_t period_of_validity;
+    gtpv2c_apn_t list_of_access_point_name;
 } gtpv2c_overload_control_information_t;
 
 typedef struct _gtpv2c_load_control_information_t {
     tlv_header_t h;
-    gtpv2c_sequence_number_t load_control_sequence_number; /* Instance : 0 */
-    gtpv2c_metric_t load_metric; /* Instance : 0 */
-    gtpv2c_apn_and_relative_capacity_t list_of_apn_and_relative_capacity; /* Instance : 0 */
+    gtpv2c_sequence_number_t load_control_sequence_number;
+    gtpv2c_metric_t load_metric;
+    gtpv2c_apn_and_relative_capacity_t list_of_apn_and_relative_capacity;
 } gtpv2c_load_control_information_t;
 
 typedef struct _gtpv2c_remote_ue_context_t {
     tlv_header_t h;
-    gtpv2c_remote_user_id_t remote_user_id; /* Instance : 0 */
-    gtpv2c_remote_ue_ip_information_t remote_ue_ip_information; /* Instance : 0 */
+    gtpv2c_remote_user_id_t remote_user_id;
+    gtpv2c_remote_ue_ip_information_t remote_ue_ip_information;
 } gtpv2c_remote_ue_context_t;
 
 typedef struct _gtpv2c_scef_pdn_connection_t {
     tlv_header_t h;
-    gtpv2c_apn_t apn; /* Instance : 0 */
-    gtpv2c_ebi_t default_eps_bearer_id; /* Instance : 0 */
-    gtpv2c_node_identifier_t scef_id; /* Instance : 0 */
+    gtpv2c_apn_t apn;
+    gtpv2c_ebi_t default_eps_bearer_id;
+    gtpv2c_node_identifier_t scef_id;
 } gtpv2c_scef_pdn_connection_t;
 
 #ifdef __cplusplus
