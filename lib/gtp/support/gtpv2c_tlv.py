@@ -119,7 +119,7 @@ def get_cells(cells):
         assert False, "Unknown IE type : [" \
                 + cells[3].text + "]" + "(" + ie_type + ")"
     presence = cells[1].text.encode('ascii', 'ignore')
-    ie_value = cells[0].text.encode('ascii', 'ignore')
+    ie_value = re.sub('\s*\n*\s*\([^\)]*\)*', '', cells[0].text).encode('ascii', 'ignore')
     comment = cells[2].text.encode('ascii', 'ignore')
     comment = re.sub('\n|\"|\'|\\\\', '', comment);
     return { "ie_type" : ie_type, "ie_value" : ie_value, "presence" : presence, "instance" : instance, "comment" : comment }
@@ -268,31 +268,40 @@ else:
                     cells = get_cells(row.cells)
                     if cells is None:
                         continue
-                    group.append(cells)
-                    write_cells_to_file("group", cells)
 
-                group_list[ie_name] = { "group" : group }
-                write_file(f, "group_list[\"" + ie_name + "\"] = { \"group\" : group }")
+                    group_is_added = True
+                    for ie in group:
+                        if (cells["ie_type"], cells["instance"]) == (ie["ie_type"], ie["instance"]):
+                            group_is_added = False
+                    if group_is_added is True:
+                        group.append(cells)
+                        write_cells_to_file("group", cells)
+
+                group_list[ie_name] = { "type" : ie_type, "group" : group }
+                write_file(f, "group_list[\"" + ie_name + "\"] = { \"type\" : \"" + ie_type + "\", \"group\" : group }")
             else:
-                group_list_add = False
+                group_list_is_added = False
+                added_group = group_list[ie_name]["group"]
+                write_file(f, "added_group = group_list[\"" + ie_name + "\"][\"group\"]")
                 for row in table.rows[4:]:
                     cells = get_cells(row.cells)
                     if cells is None:
                         continue
-                    group_append = True
+
+                    group_is_added = True
                     for ie in group_list[ie_name]["group"]:
                         if (cells["ie_type"], cells["instance"]) == (ie["ie_type"], ie["instance"]):
-                            group_append = False
+                            group_is_added = False
                     for ie in group:
                         if (cells["ie_type"], cells["instance"]) == (ie["ie_type"], ie["instance"]):
-                            group_append = False
-                    if group_append is True:
-                        group.append(cells)
-                        write_cells_to_file("group", cells)
-                        group_list_add = True
-                if group_list_add is True:
-                    group_list[ie_name] = { "group" : group }
-                    write_file(f, "group_list[\"" + ie_name + "\"] = { \"group\" : group }")
+                            group_is_added = False
+                    if group_is_added is True:
+                        added_group.append(cells)
+                        write_cells_to_file("added_group", cells)
+                        group_list_is_added = True
+                if group_list_is_added is True:
+                    group_list[ie_name] = { "type" : ie_type, "group" : added_group }
+                    write_file(f, "group_list[\"" + ie_name + "\"] = { \"type\" : \"" + ie_type + "\", \"group\" : added_group }")
     f.close()
 
 msg_list["Echo Request"]["table"] = 6
@@ -317,11 +326,11 @@ for key in msg_list.keys():
                 if cells is None:
                     continue
 
-                ies_append = True
+                ies_is_added = True
                 for ie in ies:
                     if (cells["ie_type"], cells["instance"]) == (ie["ie_type"], ie["instance"]):
-                        ies_append = False
-                if ies_append is True:
+                        ies_is_added = False
+                if ies_is_added is True:
                     ies.append(cells)
                     write_cells_to_file("ies", cells)
             msg_list[key]["ies"] = ies
@@ -355,21 +364,40 @@ for (k, v) in sorted_type_list:
     write_file(f, "#define GTPV2C_IE_" + v_upper(k) + "_TYPE " + v)
 write_file(f, "")
 
+write_file(f, "/* Infomration Element TLV Descriptor */")
 for (k, v) in sorted_type_list:
-    write_file(f, "typedef tlv_octet_t tlv_" + v_lower(k) + "_t;")
+    if k not in group_list.keys():
+        write_file(f, "extern tlv_desc_t gtpv2c_desc_" + v_lower(k) + ";")
 write_file(f, "")
 
-#for (k, v) in sorted_msg_list:
-#    if "groups" in msg_list[k]:
-#        groups = msg_list[k]["groups"]
-#        type = msg_list[k]["type"]
-#        for group in groups:
-#            print group
-#            print "\n\n"
-
-for (k, v) in sorted_type_list:
-    write_file(f, "extern tlv_desc_t tlv_desc_" + v_lower(k) + ";")
+tmp = [(k, v["type"]) for k, v in group_list.items()]
+sorted_group_list = sorted(tmp, key=lambda tup: int(tup[1]))
+write_file(f, "/* Group Infomration Element TLV Descriptor */")
+for (k, v) in sorted_group_list:
+    write_file(f, "extern tlv_desc_t gtpv2c_desc_" + v_lower(k) + ";")
 write_file(f, "")
+
+write_file(f, "/* Structure for Infomration Element */")
+for (k, v) in sorted_type_list:
+    if k not in group_list.keys():
+        write_file(f, "typedef tlv_octet_t gtpv2c_" + v_lower(k) + "_t;")
+write_file(f, "")
+
+write_file(f, "/* Structure for Group Infomration Element */")
+for (k, v) in sorted_group_list:
+    write_file(f, "typedef struct _gtpv2c_" + v_lower(k) + "_t {")
+    write_file(f, "    tlv_header_t h;")
+    for group in group_list[k]["group"]:
+        if group["ie_type"] == "F-TEID":
+            write_file(f, "    gtpv2c_" + v_lower(group["ie_type"]) + "_t " + \
+                    v_lower(group["ie_value"]) + "_" + group["instance"] + \
+                    "; /* Instance : " + group["instance"] + " */")
+        else:
+            write_file(f, "    gtpv2c_" + v_lower(group["ie_type"]) + "_t " + \
+                    v_lower(group["ie_value"]) + "; /* Instance : " + \
+                    group["instance"] + " */")
+    write_file(f, "} gtpv2c_" + v_lower(k) + "_t;")
+    write_file(f, "")
 
 f.write("""#ifdef __cplusplus
 }
@@ -386,15 +414,28 @@ f.write("""#include "gtpv2c_tlv.h"
 """)
 
 for (k, v) in sorted_type_list:
-    write_file(f, "tlv_desc_t tlv_desc_%s =" % v_lower(k))
+    if k not in group_list.keys():
+        write_file(f, "tlv_desc_t gtpv2c_desc_%s =" % v_lower(k))
+        write_file(f, "{")
+        write_file(f, "    TLV_VAR_STR,")
+        write_file(f, "    GTPV2C_IE_%s_TYPE," % v_upper(k))
+        write_file(f, "    0,")
+        write_file(f, "    0,")
+        write_file(f, "    sizeof(gtpv2c_%s_t)," % v_lower(k))
+        write_file(f, "    { NULL }")
+        write_file(f, "};\n")
+
+for (k, v) in sorted_group_list:
+    write_file(f, "tlv_desc_t gtpv2c_desc_%s =" % v_lower(k))
     write_file(f, "{")
-    write_file(f, "    TLV_VAR_STR,")
+    write_file(f, "    TLV_COMPOUND,")
     write_file(f, "    GTPV2C_IE_%s_TYPE," % v_upper(k))
     write_file(f, "    0,")
     write_file(f, "    0,")
-    write_file(f, "    sizeof(tlv_%s_t)," % v_lower(k))
+    write_file(f, "    sizeof(gtpv2c_%s_t)," % v_lower(k))
     write_file(f, "    { NULL }")
     write_file(f, "};\n")
+
 
 write_file(f, "")
 
