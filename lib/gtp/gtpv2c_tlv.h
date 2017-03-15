@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-03-15 14:10:29.336791 by acetcom
+ * Created on: 2017-03-15 15:49:36.572393 by acetcom
  * from 29274-d80.docx
  ******************************************************************************/
 
@@ -250,6 +250,8 @@ extern tlv_desc_t gtpv2c_desc_f_teid_6;
 extern tlv_desc_t gtpv2c_desc_f_teid_7;
 extern tlv_desc_t gtpv2c_desc_f_teid_8;
 extern tlv_desc_t gtpv2c_desc_f_teid_9;
+extern tlv_desc_t gtpv2c_desc_f_teid_10;
+extern tlv_desc_t gtpv2c_desc_f_teid_11;
 extern tlv_desc_t gtpv2c_desc_tmsi_0;
 extern tlv_desc_t gtpv2c_desc_global_cn_id_0;
 extern tlv_desc_t gtpv2c_desc_s103pdf_0;

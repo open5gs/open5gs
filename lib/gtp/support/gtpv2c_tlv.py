@@ -126,7 +126,7 @@ def get_cells(cells):
     comment = cells[2].text.encode('ascii', 'ignore')
     comment = re.sub('\n|\"|\'|\\\\', '', comment);
 
-    if instance > type_list[ie_type]["max_instance"]:
+    if int(instance) > int(type_list[ie_type]["max_instance"]):
         type_list[ie_type]["max_instance"] = instance
         write_file(f, "type_list[\"" + ie_type + "\"][\"max_instance\"] = \"" + instance + "\"\n")
 
@@ -429,10 +429,10 @@ for (k, v) in sorted_type_list:
             write_file(f, "tlv_desc_t gtpv2c_desc_%s_%d =" % (v_lower(k), instance) + "\n")
             write_file(f, "{\n")
             write_file(f, "    TLV_VAR_STR,\n")
-            write_file(f, "    GTPV2C_IE_%s_TYPE," % v_upper(k) + "\n")
+            write_file(f, "    GTPV2C_IE_%s_TYPE,\n" % v_upper(k))
             write_file(f, "    0,\n")
             write_file(f, "    %d,\n" % instance)
-            write_file(f, "    sizeof(gtpv2c_%s_t)," % v_lower(k) + "\n")
+            write_file(f, "    sizeof(gtpv2c_%s_t),\n" % v_lower(k))
             write_file(f, "    { NULL }\n")
             write_file(f, "};\n\n")
 
@@ -441,13 +441,16 @@ for (k, v) in sorted_group_list:
         write_file(f, "tlv_desc_t gtpv2c_desc_%s_%d =" % (v_lower(k), instance) + "\n")
         write_file(f, "{\n")
         write_file(f, "    TLV_COMPOUND,\n")
-        write_file(f, "    GTPV2C_IE_%s_TYPE,\n" % v_upper(k) + "\n")
+        write_file(f, "    GTPV2C_IE_%s_TYPE,\n" % v_upper(k))
         write_file(f, "    0,\n")
         write_file(f, "    %d,\n" % instance)
-        write_file(f, "    sizeof(gtpv2c_%s_t),\n" % v_lower(k) + "\n")
-        write_file(f, "    { NULL }\n")
+        write_file(f, "    sizeof(gtpv2c_%s_t),\n" % v_lower(k))
+        write_file(f, "    {\n")
+        for group in group_list[k]["group"]:
+                write_file(f, "        &gtpv2c_desc_%s_%s,\n" % (v_lower(group["ie_type"]), v_lower(group["instance"])))
+        write_file(f, "        NULL,\n")
+        write_file(f, "    }\n")
         write_file(f, "};\n\n")
-
 
 write_file(f, "\n")
 
