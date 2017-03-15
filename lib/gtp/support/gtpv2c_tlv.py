@@ -30,6 +30,10 @@ import getpass
 
 version = "0.1.0"
 
+msg_list = {}
+type_list = {}
+group_list = {}
+
 verbosity = 0
 filename = ""
 outdir = './'
@@ -121,6 +125,11 @@ def get_cells(cells):
     ie_value = re.sub('\s*\n*\s*\([^\)]*\)*', '', cells[0].text).encode('ascii', 'ignore')
     comment = cells[2].text.encode('ascii', 'ignore')
     comment = re.sub('\n|\"|\'|\\\\', '', comment);
+
+    if instance > type_list[ie_type]["max_instance"]:
+        type_list[ie_type]["max_instance"] = instance
+        write_file(f, "type_list[\"" + ie_type + "\"][\"max_instance\"] = \"" + instance + "\"\n")
+
     return { "ie_type" : ie_type, "ie_value" : ie_value, "presence" : presence, "instance" : instance, "comment" : comment }
 
 def write_cells_to_file(name, cells):
@@ -160,7 +169,6 @@ else:
     d_error("Cannot find file : " + filename)
 
 d_info("[Message List]")
-msg_list = {}
 cachefile = cachedir + 'gtpv2c_msg_list.py'
 if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
     execfile(cachefile)
@@ -193,7 +201,6 @@ else:
     f.close()
 
 d_info("[IE Type List]")
-type_list = {}
 cachefile = cachedir + 'gtpv2c_type_list.py'
 if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
     execfile(cachefile)
@@ -230,13 +237,13 @@ else:
             key = re.sub('\)', '', key)
             key = re.sub('\s*$', '', key)
         type = row.cells[0].text.encode('ascii', 'ignore')
-        type_list[key] = { "type": type }
-        write_file(f, "type_list[\"" + key + "\"] = { \"type\" : \"" + type + "\" }\n")
+        type_list[key] = { "type": type , "max_instance" : "0" }
+        write_file(f, "type_list[\"" + key + "\"] = { \"type\" : \"" + type)
+        write_file(f, "\", \"max_instance\" : \"0\" }\n")
     f.close()
-type_list['MM Context'] = { "type": "107" }
+type_list['MM Context'] = { "type": "107", "max_instance" : "0" }
 
 d_info("[Group IE List]")
-group_list = {}
 cachefile = cachedir + 'gtpv2c_group_list.py'
 if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
     execfile(cachefile)
@@ -258,9 +265,6 @@ else:
             ie_name = re.sub('\s*IE Type.*', '', row.cells[2].text.encode('ascii', 'ignore'))
 
             if ie_name not in group_list.keys():
-                type_list[ie_name] = { "type": ie_type }
-                write_file(f, "type_list[\"" + ie_name + "\"] = { \"type\" : \"" + ie_type + "\" }\n")
-
                 group = []
                 write_file(f, "group = []\n")
                 for row in table.rows[4:]:
@@ -335,8 +339,6 @@ for key in msg_list.keys():
             msg_list[key]["ies"] = ies
             write_file(f, "msg_list[key][\"ies\"] = ies\n")
             f.close()
-# Errata Standard Specification Document 
-type_list["Overload Control Information"] = { "type" : "180" }
 
 f = open(outdir + 'gtpv2c_tlv.h', 'w')
 output_header_to_file(f)
