@@ -228,7 +228,7 @@ typedef struct _nas_attach_reject {
 
 typedef struct _nas_attach_request_t {
     /* Mandatory fields */
-    nas_attach_type_t attach_type;
+    nas_eps_attach_type_t eps_attach_type;
     nas_eps_mobile_identity_t eps_mobile_identity;
     nas_ue_network_capability_t ue_network_capability;
     nas_esm_message_container_t esm_message_container;
@@ -356,7 +356,7 @@ typedef struct _nas_message_t {
         nas_security_mode_command_t security_mode_command;
         nas_security_mode_complete_t security_mode_complete;
         nas_security_mode_reject_t security_mode_reject;
-    } emm;
+    };
 } nas_message_t;
 
 CORE_DECLARE(int) nas_plain_decode(nas_message_t *message, pkbuf_t *pkbuf);

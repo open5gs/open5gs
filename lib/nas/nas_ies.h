@@ -362,15 +362,15 @@ CORE_DECLARE(c_int32_t) nas_encode_attach_result(
 #define NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTAACH 2
 #define NAS_ATTACH_TYPE_EPS_ERMERGENCY_ATTCH 3
 #define NAS_ATTACH_TYPE_RESERVED 4
-typedef struct _nas_attach_type_t {
+typedef struct _nas_eps_attach_type_t {
 ED4(c_uint8_t tsc:1;,
     c_uint8_t nas_key_set_identifier:3;,
     c_uint8_t spare:1;,
     c_uint8_t attach_type:3;)
-} __attribute__ ((packed)) nas_attach_type_t;
+} __attribute__ ((packed)) nas_eps_attach_type_t;
 
-CORE_DECLARE(c_int32_t) nas_decode_attach_type(
-    nas_attach_type_t *attach_type, pkbuf_t *pkbuf);
+CORE_DECLARE(c_int32_t) nas_decode_eps_attach_type(
+    nas_eps_attach_type_t *eps_attach_type, pkbuf_t *pkbuf);
 
 /* 9.9.3.12 EPS mobile identity
  * M LV  5-12 */

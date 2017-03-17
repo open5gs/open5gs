@@ -363,15 +363,15 @@ c_int32_t nas_encode_attach_result(
  * M V 1/2
  * 9.9.3.21 NAS key set identifier 
  * M V 1/2 */
-c_int32_t nas_decode_attach_type(
-    nas_attach_type_t *attach_type, pkbuf_t *pkbuf)
+c_int32_t nas_decode_eps_attach_type(
+    nas_eps_attach_type_t *eps_attach_type, pkbuf_t *pkbuf)
 {
     c_uint16_t size = 0;
 
-    size = sizeof(nas_attach_type_t);
+    size = sizeof(nas_eps_attach_type_t);
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
             return -1, "pkbuf_header error");
-    memcpy(attach_type, pkbuf->payload - size, size);
+    memcpy(eps_attach_type, pkbuf->payload - size, size);
 
     return size;
 }

@@ -78,7 +78,7 @@ void ue_emm_state_operational(ue_emm_sm_t *s, event_t *e)
                 case NAS_ATTACH_REQUEST:
                 {
                     ue_emm_handle_attach_request(
-                            ue, &message.emm.attach_request);
+                            ue, &message.attach_request);
                     break;
                 }
                 case NAS_AUTHENTICATION_REQUEST:
@@ -94,7 +94,7 @@ void ue_emm_state_operational(ue_emm_sm_t *s, event_t *e)
                 case NAS_AUTHENTICATION_RESPONSE:
                 {
                     ue_emm_handle_authentication_response(
-                            ue, &message.emm.authentication_response);
+                            ue, &message.authentication_response);
                     break;
                 }
                 case NAS_SECURITY_MODE_COMPLETE:
@@ -206,7 +206,7 @@ static void ue_emm_handle_authentication_response(
     nas_message_t message;
     pkbuf_t *sendbuf = NULL;
     nas_security_mode_command_t *security_mode_command = 
-        &message.emm.security_mode_command;
+        &message.security_mode_command;
     nas_security_algorithms_t *selected_nas_security_algorithms =
         &security_mode_command->selected_nas_security_algorithms;
     nas_key_set_identifier_t *nas_key_set_identifier =

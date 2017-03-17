@@ -143,7 +143,7 @@ static void s6a_aia_cb(void *data, struct msg **msg)
     pkbuf_t *sendbuf = NULL;
     event_t e;
     nas_authentication_request_t *authentication_request = 
-        &message.emm.authentication_request;
+        &message.authentication_request;
     
     CHECK_SYS_DO(clock_gettime(CLOCK_REALTIME, &ts), return);
 

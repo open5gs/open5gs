@@ -5,11 +5,11 @@
 
 c_int32_t nas_decode_attach_request(nas_message_t *message, pkbuf_t *pkbuf)
 {
-    nas_attach_request_t *attach_request = &message->emm.attach_request;
+    nas_attach_request_t *attach_request = &message->attach_request;
     c_uint16_t decoded = 0;
     c_int32_t size = 0;
 
-    size = nas_decode_attach_type(&attach_request->attach_type, pkbuf);
+    size = nas_decode_eps_attach_type(&attach_request->eps_attach_type, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
     decoded += size;
 
@@ -204,7 +204,7 @@ c_int32_t nas_decode_attach_request(nas_message_t *message, pkbuf_t *pkbuf)
 
 c_int32_t nas_decode_attach_complete(nas_message_t *message, pkbuf_t *pkbuf)
 {
-    nas_attach_complete_t *attach_complete = &message->emm.attach_complete;
+    nas_attach_complete_t *attach_complete = &message->attach_complete;
     c_uint16_t decoded = 0;
     c_int32_t size = 0;
 
@@ -220,7 +220,7 @@ c_int32_t nas_decode_authentication_failure(nas_message_t *message,
         pkbuf_t *pkbuf)
 {
     nas_authentication_failure_t *authentication_failure = 
-        &message->emm.authentication_failure;
+        &message->authentication_failure;
     c_uint16_t decoded = 0;
     c_int32_t size = 0;
 
@@ -263,7 +263,7 @@ c_int32_t nas_decode_authentication_response(nas_message_t *message,
         pkbuf_t *pkbuf)
 {
     nas_authentication_response_t *authentication_response = 
-        &message->emm.authentication_response;
+        &message->authentication_response;
     c_uint16_t decoded = 0;
     c_int32_t size = 0;
 
@@ -279,7 +279,7 @@ c_int32_t nas_decode_security_mode_complete(nas_message_t *message,
         pkbuf_t *pkbuf)
 {
     nas_security_mode_complete_t *security_mode_complete = 
-        &message->emm.security_mode_complete;
+        &message->security_mode_complete;
     c_uint16_t decoded = 0;
     c_int32_t size = 0;
 
@@ -317,7 +317,7 @@ c_int32_t nas_decode_security_mode_reject(nas_message_t *message,
         pkbuf_t *pkbuf)
 {
     nas_security_mode_reject_t *security_mode_reject = 
-        &message->emm.security_mode_reject;
+        &message->security_mode_reject;
     c_uint16_t decoded = 0;
     c_int32_t size = 0;
 

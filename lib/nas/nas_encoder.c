@@ -5,7 +5,7 @@
 
 c_int32_t nas_encode_attach_accept(pkbuf_t *pkbuf, nas_message_t *message)
 {
-    nas_attach_accept_t *attach_accept = &message->emm.attach_accept;
+    nas_attach_accept_t *attach_accept = &message->attach_accept;
     c_int32_t size = 0;
     c_int32_t encoded = 0;
 
@@ -182,7 +182,7 @@ c_int32_t nas_encode_attach_accept(pkbuf_t *pkbuf, nas_message_t *message)
 
 c_int32_t nas_encode_attach_reject(pkbuf_t *pkbuf, nas_message_t *message)
 {
-    nas_attach_reject_t *attach_reject = &message->emm.attach_reject;
+    nas_attach_reject_t *attach_reject = &message->attach_reject;
     c_int32_t size = 0;
     c_int32_t encoded = 0;
 
@@ -247,7 +247,7 @@ c_int32_t nas_encode_authentication_request(
         pkbuf_t *pkbuf, nas_message_t *message)
 {
     nas_authentication_request_t *authentication_request = 
-        &message->emm.authentication_request;
+        &message->authentication_request;
     c_int32_t size = 0;
     c_int32_t encoded = 0;
 
@@ -273,7 +273,7 @@ c_int32_t nas_encode_security_mode_command(
         pkbuf_t *pkbuf, nas_message_t *message)
 {
     nas_security_mode_command_t *security_mode_command = 
-        &message->emm.security_mode_command;
+        &message->security_mode_command;
     c_int32_t size = 0;
     c_int32_t encoded = 0;
 

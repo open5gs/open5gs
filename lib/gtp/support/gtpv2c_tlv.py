@@ -377,10 +377,11 @@ f.write("\n")
 
 f.write("/* Infomration Element TLV Descriptor */\n")
 for (k, v) in sorted_type_list:
-    if k not in group_list.keys():
-        for instance in range(0, int(type_list[k]["max_instance"])+1):
-            f.write("extern tlv_desc_t gtpv2c_desc_" + v_lower(k))
-            f.write("_" + str(instance) + ";\n")
+    if k in group_list.keys():
+        continue
+    for instance in range(0, int(type_list[k]["max_instance"])+1):
+        f.write("extern tlv_desc_t gtpv2c_desc_" + v_lower(k))
+        f.write("_" + str(instance) + ";\n")
 f.write("\n")
 
 tmp = [(k, v["type"]) for k, v in group_list.items()]
@@ -400,20 +401,21 @@ f.write("\n")
 
 f.write("/* Structure for Infomration Element */\n")
 for (k, v) in sorted_type_list:
-    if k not in group_list.keys():
-        if "size" in type_list[k]:
-            if type_list[k]["size"] == 1:
-                f.write("typedef tlv_uint8_t gtpv2c_" + v_lower(k) + "_t;\n")
-            elif type_list[k]["size"] == 2:
-                f.write("typedef tlv_uint16_t gtpv2c_" + v_lower(k) + "_t;\n")
-            elif type_list[k]["size"] == 3:
-                f.write("typedef tlv_uint24_t gtpv2c_" + v_lower(k) + "_t;\n")
-            elif type_list[k]["size"] == 4:
-                f.write("typedef tlv_uint32_t gtpv2c_" + v_lower(k) + "_t;\n")
-            else:
-                assert False, "Unknown size = %d for key = %s" % (type_list[k]["size"], k)
+    if k in group_list.keys():
+        continue
+    if "size" in type_list[k]:
+        if type_list[k]["size"] == 1:
+            f.write("typedef tlv_uint8_t gtpv2c_" + v_lower(k) + "_t;\n")
+        elif type_list[k]["size"] == 2:
+            f.write("typedef tlv_uint16_t gtpv2c_" + v_lower(k) + "_t;\n")
+        elif type_list[k]["size"] == 3:
+            f.write("typedef tlv_uint24_t gtpv2c_" + v_lower(k) + "_t;\n")
+        elif type_list[k]["size"] == 4:
+            f.write("typedef tlv_uint32_t gtpv2c_" + v_lower(k) + "_t;\n")
         else:
-            f.write("typedef tlv_octet_t gtpv2c_" + v_lower(k) + "_t;\n")
+            assert False, "Unknown size = %d for key = %s" % (type_list[k]["size"], k)
+    else:
+        f.write("typedef tlv_octet_t gtpv2c_" + v_lower(k) + "_t;\n")
 f.write("\n")
 
 f.write("/* Structure for Group Infomration Element */\n")
@@ -461,33 +463,34 @@ f.write("""#include "gtpv2c_tlv.h"
 """)
 
 for (k, v) in sorted_type_list:
-    if k not in group_list.keys():
-        for instance in range(0, int(type_list[k]["max_instance"])+1):
-            f.write("tlv_desc_t gtpv2c_desc_%s_%d =\n" % (v_lower(k), instance))
-            f.write("{\n")
-            if "size" in type_list[k]:
-                if type_list[k]["size"] == 1:
-                    f.write("    TLV_UINT8,\n")
-                elif type_list[k]["size"] == 2:
-                    f.write("    TLV_UINT16,\n")
-                elif type_list[k]["size"] == 3:
-                    f.write("    TLV_UINT24,\n")
-                elif type_list[k]["size"] == 4:
-                    f.write("    TLV_UINT32,\n")
-                else:
-                    assert False, "Unknown size = %d for key = %s" % (type_list[k]["size"], k)
+    if k in group_list.keys():
+        continue
+    for instance in range(0, int(type_list[k]["max_instance"])+1):
+        f.write("tlv_desc_t gtpv2c_desc_%s_%d =\n" % (v_lower(k), instance))
+        f.write("{\n")
+        if "size" in type_list[k]:
+            if type_list[k]["size"] == 1:
+                f.write("    TLV_UINT8,\n")
+            elif type_list[k]["size"] == 2:
+                f.write("    TLV_UINT16,\n")
+            elif type_list[k]["size"] == 3:
+                f.write("    TLV_UINT24,\n")
+            elif type_list[k]["size"] == 4:
+                f.write("    TLV_UINT32,\n")
             else:
-                f.write("    TLV_VAR_STR,\n")
-            f.write("    \"%s\",\n" % k)
-            f.write("    GTPV2C_IE_%s_TYPE,\n" % v_upper(k))
-            if "size" in type_list[k]:
-                f.write("    %d,\n" % type_list[k]["size"])
-            else:
-                f.write("    0,\n")
-            f.write("    %d,\n" % instance)
-            f.write("    sizeof(gtpv2c_%s_t),\n" % v_lower(k))
-            f.write("    { NULL }\n")
-            f.write("};\n\n")
+                assert False, "Unknown size = %d for key = %s" % (type_list[k]["size"], k)
+        else:
+            f.write("    TLV_VAR_STR,\n")
+        f.write("    \"%s\",\n" % k)
+        f.write("    GTPV2C_IE_%s_TYPE,\n" % v_upper(k))
+        if "size" in type_list[k]:
+            f.write("    %d,\n" % type_list[k]["size"])
+        else:
+            f.write("    0,\n")
+        f.write("    %d,\n" % instance)
+        f.write("    sizeof(gtpv2c_%s_t),\n" % v_lower(k))
+        f.write("    { NULL }\n")
+        f.write("};\n\n")
 
 for (k, v) in sorted_group_list:
     for instance in range(0, int(type_list[k]["max_instance"])+1):

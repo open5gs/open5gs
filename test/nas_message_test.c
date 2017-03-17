@@ -50,7 +50,7 @@ static void nas_message_test2(abts_case *tc, void *data)
     char esm_buffer[50];
 
     nas_message_t message;
-    nas_attach_accept_t *attach_accept = &message.emm.attach_accept;
+    nas_attach_accept_t *attach_accept = &message.attach_accept;
 
     pkbuf_t *pkbuf = NULL;
     status_t rv;
@@ -148,7 +148,7 @@ static void nas_message_test4(abts_case *tc, void *data)
     char buffer[3];
 
     nas_message_t message;
-    nas_attach_reject_t *attach_reject = &message.emm.attach_reject;
+    nas_attach_reject_t *attach_reject = &message.attach_reject;
 
     pkbuf_t *pkbuf = NULL;
     status_t rv;
