@@ -93,12 +93,13 @@ def output_header_to_file(f):
     f.write(" ******************************************************************************/\n\n")
 
 def usage():
-    print "Python adding prefix for asn1 v%s" % (version)
-    print "Usage: python asn1prefix.py [options]"
+    print "Python generating TLV build/parser for GTPv2-C v%s" % (version)
+    print "Usage: python gtpv2c_tlv.py [options]"
     print "Available options:"
     print "-d        Enable script debug"
     print "-f [file] Input file to parse"
     print "-o [dir]  Output files to given directory"
+    print "-c [dir]  Cache files to given directory"
     print "-h        Print this help and return"
 
 def v_upper(v):
@@ -365,85 +366,85 @@ extern "C" {
 tmp = [(k, v["type"]) for k, v in msg_list.items()]
 sorted_msg_list = sorted(tmp, key=lambda tup: int(tup[1]))
 for (k, v) in sorted_msg_list:
-    write_file(f, "#define GTPV2C_MSG_" + v_upper(k) + "_TYPE " + v + "\n")
-write_file(f, "\n")
+    f.write("#define GTPV2C_MSG_" + v_upper(k) + "_TYPE " + v + "\n")
+f.write("\n")
 
 tmp = [(k, v["type"]) for k, v in type_list.items()]
 sorted_type_list = sorted(tmp, key=lambda tup: int(tup[1]))
 for (k, v) in sorted_type_list:
-    write_file(f, "#define GTPV2C_IE_" + v_upper(k) + "_TYPE " + v + "\n")
-write_file(f, "\n")
+    f.write("#define GTPV2C_IE_" + v_upper(k) + "_TYPE " + v + "\n")
+f.write("\n")
 
-write_file(f, "/* Infomration Element TLV Descriptor */\n")
+f.write("/* Infomration Element TLV Descriptor */\n")
 for (k, v) in sorted_type_list:
     if k not in group_list.keys():
         for instance in range(0, int(type_list[k]["max_instance"])+1):
-            write_file(f, "extern tlv_desc_t gtpv2c_desc_" + v_lower(k))
-            write_file(f, "_" + str(instance) + ";\n")
-write_file(f, "\n")
+            f.write("extern tlv_desc_t gtpv2c_desc_" + v_lower(k))
+            f.write("_" + str(instance) + ";\n")
+f.write("\n")
 
 tmp = [(k, v["type"]) for k, v in group_list.items()]
 sorted_group_list = sorted(tmp, key=lambda tup: int(tup[1]))
 
-write_file(f, "/* Group Infomration Element TLV Descriptor */\n")
+f.write("/* Group Infomration Element TLV Descriptor */\n")
 for (k, v) in sorted_group_list:
     for instance in range(0, int(type_list[k]["max_instance"])+1):
-        write_file(f, "extern tlv_desc_t gtpv2c_desc_" + v_lower(k))
-        write_file(f, "_" + str(instance) + ";\n")
-write_file(f, "\n")
+        f.write("extern tlv_desc_t gtpv2c_desc_" + v_lower(k))
+        f.write("_" + str(instance) + ";\n")
+f.write("\n")
 
-write_file(f, "/* Message Descriptor */\n")
+f.write("/* Message Descriptor */\n")
 for (k, v) in sorted_msg_list:
-    write_file(f, "extern tlv_desc_t gtpv2c_desc_" + v_lower(k) + ";\n")
-write_file(f, "\n")
+    f.write("extern tlv_desc_t gtpv2c_desc_" + v_lower(k) + ";\n")
+f.write("\n")
 
-write_file(f, "/* Structure for Infomration Element */\n")
+f.write("/* Structure for Infomration Element */\n")
 for (k, v) in sorted_type_list:
     if k not in group_list.keys():
         if "size" in type_list[k]:
             if type_list[k]["size"] == 1:
-                write_file(f, "typedef tlv_uint8_t gtpv2c_" + v_lower(k) + "_t;\n")
+                f.write("typedef tlv_uint8_t gtpv2c_" + v_lower(k) + "_t;\n")
             elif type_list[k]["size"] == 2:
-                write_file(f, "typedef tlv_uint16_t gtpv2c_" + v_lower(k) + "_t;\n")
+                f.write("typedef tlv_uint16_t gtpv2c_" + v_lower(k) + "_t;\n")
             elif type_list[k]["size"] == 3:
-                write_file(f, "typedef tlv_uint24_t gtpv2c_" + v_lower(k) + "_t;\n")
+                f.write("typedef tlv_uint24_t gtpv2c_" + v_lower(k) + "_t;\n")
             elif type_list[k]["size"] == 4:
-                write_file(f, "typedef tlv_uint32_t gtpv2c_" + v_lower(k) + "_t;\n")
+                f.write("typedef tlv_uint32_t gtpv2c_" + v_lower(k) + "_t;\n")
             else:
                 assert False, "Unknown size = %d for key = %s" % (type_list[k]["size"], k)
         else:
-            write_file(f, "typedef tlv_octet_t gtpv2c_" + v_lower(k) + "_t;\n")
-write_file(f, "\n")
+            f.write("typedef tlv_octet_t gtpv2c_" + v_lower(k) + "_t;\n")
+f.write("\n")
 
-write_file(f, "/* Structure for Group Infomration Element */\n")
+f.write("/* Structure for Group Infomration Element */\n")
 for (k, v) in sorted_group_list:
-    write_file(f, "typedef struct _gtpv2c_" + v_lower(k) + "_t {\n")
-    write_file(f, "    tlv_presence_t presence;\n")
+    f.write("typedef struct _gtpv2c_" + v_lower(k) + "_t {\n")
+    f.write("    tlv_presence_t presence;\n")
     for ies in group_list[k]["ies"]:
-        write_file(f, "    gtpv2c_" + v_lower(ies["ie_type"]) + "_t " + \
+        f.write("    gtpv2c_" + v_lower(ies["ie_type"]) + "_t " + \
                 v_lower(ies["ie_value"]))
         if ies["ie_type"] == "F-TEID":
             if ies["ie_value"] == "S2b-U ePDG F-TEID":
-                write_file(f, "_" + ies["instance"] + ";")
+                f.write("_" + ies["instance"] + ";")
             elif ies["ie_value"] == "S2a-U TWAN F-TEID":
-                write_file(f, "_" + ies["instance"] + ";")
+                f.write("_" + ies["instance"] + ";")
             else:
-                write_file(f, ";")
-            write_file(f, " /* Instance : " + ies["instance"] + " */\n")
+                f.write(";")
+            f.write(" /* Instance : " + ies["instance"] + " */\n")
         else:
-            write_file(f, ";\n")
-    write_file(f, "} gtpv2c_" + v_lower(k) + "_t;\n")
-    write_file(f, "\n")
+            f.write(";\n")
+    f.write("} gtpv2c_" + v_lower(k) + "_t;\n")
+    f.write("\n")
 
-write_file(f, "/* Structure for Message */\n")
+f.write("/* Structure for Message */\n")
 for (k, v) in sorted_msg_list:
-    write_file(f, "typedef struct _gtpv2c_" + v_lower(k) + "_t {\n")
+    f.write("typedef struct _gtpv2c_" + v_lower(k) + "_t {\n")
     if "ies" in msg_list[k]:
         for ies in msg_list[k]["ies"]:
-            write_file(f, "    gtpv2c_" + v_lower(ies["ie_type"]) + "_t " + \
+            f.write("    gtpv2c_" + v_lower(ies["ie_type"]) + "_t " + \
                     v_lower(ies["ie_value"]) + ";\n")
-    write_file(f, "} gtpv2c_" + v_lower(k) + "_t;\n")
-    write_file(f, "\n")
+    f.write("} gtpv2c_" + v_lower(k) + "_t;\n")
+    f.write("\n")
 
 f.write("""#ifdef __cplusplus
 }
@@ -462,61 +463,61 @@ f.write("""#include "gtpv2c_tlv.h"
 for (k, v) in sorted_type_list:
     if k not in group_list.keys():
         for instance in range(0, int(type_list[k]["max_instance"])+1):
-            write_file(f, "tlv_desc_t gtpv2c_desc_%s_%d =\n" % (v_lower(k), instance))
-            write_file(f, "{\n")
+            f.write("tlv_desc_t gtpv2c_desc_%s_%d =\n" % (v_lower(k), instance))
+            f.write("{\n")
             if "size" in type_list[k]:
                 if type_list[k]["size"] == 1:
-                    write_file(f, "    TLV_UINT8,\n")
+                    f.write("    TLV_UINT8,\n")
                 elif type_list[k]["size"] == 2:
-                    write_file(f, "    TLV_UINT16,\n")
+                    f.write("    TLV_UINT16,\n")
                 elif type_list[k]["size"] == 3:
-                    write_file(f, "    TLV_UINT24,\n")
+                    f.write("    TLV_UINT24,\n")
                 elif type_list[k]["size"] == 4:
-                    write_file(f, "    TLV_UINT32,\n")
+                    f.write("    TLV_UINT32,\n")
                 else:
                     assert False, "Unknown size = %d for key = %s" % (type_list[k]["size"], k)
             else:
-                write_file(f, "    TLV_VAR_STR,\n")
-            write_file(f, "    \"%s\",\n" % k)
-            write_file(f, "    GTPV2C_IE_%s_TYPE,\n" % v_upper(k))
+                f.write("    TLV_VAR_STR,\n")
+            f.write("    \"%s\",\n" % k)
+            f.write("    GTPV2C_IE_%s_TYPE,\n" % v_upper(k))
             if "size" in type_list[k]:
-                write_file(f, "    %d,\n" % type_list[k]["size"])
+                f.write("    %d,\n" % type_list[k]["size"])
             else:
-                write_file(f, "    0,\n")
-            write_file(f, "    %d,\n" % instance)
-            write_file(f, "    sizeof(gtpv2c_%s_t),\n" % v_lower(k))
-            write_file(f, "    { NULL }\n")
-            write_file(f, "};\n\n")
+                f.write("    0,\n")
+            f.write("    %d,\n" % instance)
+            f.write("    sizeof(gtpv2c_%s_t),\n" % v_lower(k))
+            f.write("    { NULL }\n")
+            f.write("};\n\n")
 
 for (k, v) in sorted_group_list:
     for instance in range(0, int(type_list[k]["max_instance"])+1):
-        write_file(f, "tlv_desc_t gtpv2c_desc_%s_%d =\n" % (v_lower(k), instance))
-        write_file(f, "{\n")
-        write_file(f, "    TLV_COMPOUND,\n")
-        write_file(f, "    \"%s\",\n" % k)
-        write_file(f, "    GTPV2C_IE_%s_TYPE,\n" % v_upper(k))
-        write_file(f, "    0,\n")
-        write_file(f, "    %d,\n" % instance)
-        write_file(f, "    sizeof(gtpv2c_%s_t),\n" % v_lower(k))
-        write_file(f, "    {\n")
+        f.write("tlv_desc_t gtpv2c_desc_%s_%d =\n" % (v_lower(k), instance))
+        f.write("{\n")
+        f.write("    TLV_COMPOUND,\n")
+        f.write("    \"%s\",\n" % k)
+        f.write("    GTPV2C_IE_%s_TYPE,\n" % v_upper(k))
+        f.write("    0,\n")
+        f.write("    %d,\n" % instance)
+        f.write("    sizeof(gtpv2c_%s_t),\n" % v_lower(k))
+        f.write("    {\n")
         for ies in group_list[k]["ies"]:
-                write_file(f, "        &gtpv2c_desc_%s_%s,\n" % (v_lower(ies["ie_type"]), v_lower(ies["instance"])))
-        write_file(f, "        NULL,\n")
-        write_file(f, "    }\n")
-        write_file(f, "};\n\n")
+                f.write("        &gtpv2c_desc_%s_%s,\n" % (v_lower(ies["ie_type"]), v_lower(ies["instance"])))
+        f.write("        NULL,\n")
+        f.write("    }\n")
+        f.write("};\n\n")
 
 for (k, v) in sorted_msg_list:
-    write_file(f, "tlv_desc_t gtpv2c_desc_%s =\n" % v_lower(k))
-    write_file(f, "{\n")
-    write_file(f, "    TLV_MESSAGE,\n")
-    write_file(f, "    \"%s\",\n" % k)
-    write_file(f, "    0, 0, 0, 0, {\n")
+    f.write("tlv_desc_t gtpv2c_desc_%s =\n" % v_lower(k))
+    f.write("{\n")
+    f.write("    TLV_MESSAGE,\n")
+    f.write("    \"%s\",\n" % k)
+    f.write("    0, 0, 0, 0, {\n")
     if "ies" in msg_list[k]:
         for ies in msg_list[k]["ies"]:
-                write_file(f, "        &gtpv2c_desc_%s_%s,\n" % (v_lower(ies["ie_type"]), v_lower(ies["instance"])))
-    write_file(f, "    NULL,\n")
-    write_file(f, "}};\n\n")
+                f.write("        &gtpv2c_desc_%s_%s,\n" % (v_lower(ies["ie_type"]), v_lower(ies["instance"])))
+    f.write("    NULL,\n")
+    f.write("}};\n\n")
 
-write_file(f, "\n")
+f.write("\n")
 
 f.close()
