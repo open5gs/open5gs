@@ -1,24 +1,6 @@
 #include "core_msgq.h"
 #include "testutil.h"
 
-#if 0
-static thread_id *s1;
-static thread_id *r1;
-
-static void *THREAD_FUNC thread_send(void *data);
-static void *THREAD_FUNC thread_recv(void *data);
-
-static void *THREAD_FUNC thread_send(void *data)
-{
-
-}
-
-static void *THREAD_FUNC thread_recv(void *data)
-{
-
-}
-#endif
-
 char msg[16][24] = {
     {0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18},
     {0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28},

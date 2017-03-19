@@ -5,12 +5,14 @@
 static mutex_id lock;
 static int x = 0;
 
+static status_t exit_ret_val = 123;
+
 static thread_id t1;
 static thread_id t2;
 static thread_id t3;
 static thread_id t4;
 
-static void *THREAD_FUNC thread_func1(void *data)
+static void *THREAD_FUNC thread_func1(thread_id id, void *data)
 {
     int i;
 
@@ -20,6 +22,7 @@ static void *THREAD_FUNC thread_func1(void *data)
         x++;
         mutex_unlock(lock);
     }
+    thread_exit(id, exit_ret_val);
     return NULL;
 }
 
@@ -45,18 +48,18 @@ static void create_threads(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 }
 
-static void delete_threads(abts_case *tc, void *data)
+static void join_threads(abts_case *tc, void *data)
 {
     status_t s;
 
-    s = thread_delete(t1);
-    ABTS_INT_EQUAL(tc, CORE_OK, s);
-    s = thread_delete(t2);
-    ABTS_INT_EQUAL(tc, CORE_OK, s);
-    s = thread_delete(t3);
-    ABTS_INT_EQUAL(tc, CORE_OK, s);
-    s = thread_delete(t4);
-    ABTS_INT_EQUAL(tc, CORE_OK, s);
+    thread_join(&s, t1);
+    ABTS_INT_EQUAL(tc, exit_ret_val, s);
+    thread_join(&s, t2);
+    ABTS_INT_EQUAL(tc, exit_ret_val, s);
+    thread_join(&s, t3);
+    ABTS_INT_EQUAL(tc, exit_ret_val, s);
+    thread_join(&s, t4);
+    ABTS_INT_EQUAL(tc, exit_ret_val, s);
 }
 
 static void check_locks(abts_case *tc, void *data)
@@ -70,7 +73,7 @@ abts_suite *testthread(abts_suite *suite)
 
     abts_run_test(suite, init_thread, NULL);
     abts_run_test(suite, create_threads, NULL);
-    abts_run_test(suite, delete_threads, NULL);
+    abts_run_test(suite, join_threads, NULL);
     abts_run_test(suite, check_locks, NULL);
 
     return suite;

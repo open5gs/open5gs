@@ -12,6 +12,7 @@ typedef struct _thread_t {
     pthread_t thread;
     void *data;
     thread_start_t func;
+    status_t exitval;
 
     semaphore_id semaphore;
 } thread_t;
@@ -111,7 +112,7 @@ static void *dummy_worker(void *opaque)
     d_trace(3, "[%d] dummy_worker post semaphore\n", thread->thread);
 
     if (!thread_should_stop())
-        func = thread->func(thread->data);
+        func = thread->func((thread_id)thread, thread->data);
 
     d_trace(3, "[%d] thread stopped = %d\n",
             thread->thread, thread_should_stop());
@@ -175,4 +176,57 @@ status_t thread_delete(thread_id id)
     d_trace(3, "delete thread-related memory\n");
 
     return CORE_OK;
+}
+
+status_t thread_join(status_t *retval, thread_id id)
+{
+    thread_t *thread = (thread_t *)id;
+
+    status_t stat;
+    status_t *thread_stat;
+
+    if ((stat = pthread_join(thread->thread, (void *)&thread_stat)) == 0) 
+    {
+        *retval = thread->exitval;
+        return CORE_OK;
+    }
+    else 
+    {
+        return stat;
+    }
+}
+
+status_t thread_exit(thread_id id, status_t retval)
+{
+    thread_t *thread = (thread_t *)id;
+
+    thread->exitval = retval;
+    pthread_exit(NULL);
+    return CORE_OK;
+}
+
+status_t thread_detach(thread_id id)
+{
+    thread_t *thread = (thread_t *)id;
+    status_t stat;
+
+    if ((stat = pthread_detach(thread->thread)) == 0) 
+    {
+        return CORE_OK;
+    }
+    else 
+    {
+        return stat;
+    }
+}
+
+void thread_yield(void)
+{
+#ifdef HAVE_PTHREAD_YIELD
+    pthread_yield(NULL);
+#else
+#ifdef HAVE_SCHED_YIELD
+    sched_yield();
+#endif
+#endif
 }

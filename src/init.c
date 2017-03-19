@@ -16,7 +16,7 @@ static pid_t logger_pid;
 static thread_id net_thread;
 
 static int check_signal(int signum);
-void *THREAD_FUNC net_main(void *data);
+void *THREAD_FUNC net_main(thread_id id, void *data);
 
 status_t cellwire_initialize(char *config_path, char *log_path)
 {
@@ -104,7 +104,7 @@ static int check_signal(int signum)
     return 0;
 }
 
-void *THREAD_FUNC net_main(void *data)
+void *THREAD_FUNC net_main(thread_id id, void *data)
 {
     while (!thread_should_stop())
     {

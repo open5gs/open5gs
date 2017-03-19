@@ -11,7 +11,7 @@
 #define EVENT_WAIT_TIMEOUT 10000 /* 10 msec */
 
 static thread_id mme_sm_thread;
-void *THREAD_FUNC mme_sm_main(void *data);
+void *THREAD_FUNC mme_sm_main(thread_id id, void *data);
 
 status_t mme_initialize()
 {
@@ -39,7 +39,7 @@ void mme_terminate(void)
     mme_ctx_final();
 }
 
-void *THREAD_FUNC mme_sm_main(void *data)
+void *THREAD_FUNC mme_sm_main(thread_id id, void *data)
 {
     event_t event;
     mme_sm_t mme_sm;
@@ -93,7 +93,7 @@ void *THREAD_FUNC mme_sm_main(void *data)
     return NULL;
 }
 
-void *THREAD_FUNC mme_net_main(void *data)
+void *THREAD_FUNC mme_net_main(thread_id id, void *data)
 {
     while (!thread_should_stop())
     {

@@ -253,7 +253,7 @@ typedef  c_int32_t             	c_intptr_t;
  * so that they follow the platform's calling convention.
  * <PRE>
  *
- * void* THREAD_FUNC my_thread_entry_fn(core_thread_t *thd, void *data);
+ * void* THREAD_FUNC my_thread_entry_fn(thread_id id, void *data);
  *
  * </PRE>
  */

@@ -10,10 +10,10 @@
 #define MAX_COUNTER 10000
 #define MAX_RETRY 3
 
-static void *THREAD_FUNC thread_rwlock_func(void *data);
-static void *THREAD_FUNC thread_mutex_function(void *data);
-static void *THREAD_FUNC thread_cond_producer(void *data);
-static void *THREAD_FUNC thread_cond_consumer(void *data);
+static void *THREAD_FUNC thread_rwlock_func(thread_id id, void *data);
+static void *THREAD_FUNC thread_mutex_function(thread_id id, void *data);
+static void *THREAD_FUNC thread_cond_producer(thread_id id, void *data);
+static void *THREAD_FUNC thread_cond_consumer(thread_id id, void *data);
 
 static mutex_id mutex;
 static rwlock_id rwlock;
@@ -37,7 +37,7 @@ struct {
 static mutex_id timeout_mutex;
 static cond_id timeout_cond;
 
-static void *THREAD_FUNC thread_rwlock_func(void *data)
+static void *THREAD_FUNC thread_rwlock_func(thread_id id, void *data)
 {
     int exitLoop = 1;
 
@@ -62,7 +62,7 @@ static void *THREAD_FUNC thread_rwlock_func(void *data)
     return NULL;
 }
 
-static void *THREAD_FUNC thread_mutex_function(void *data)
+static void *THREAD_FUNC thread_mutex_function(thread_id id, void *data)
 {
     int exitLoop = 1;
 
@@ -87,7 +87,7 @@ static void *THREAD_FUNC thread_mutex_function(void *data)
     return NULL;
 }
 
-static void *THREAD_FUNC thread_cond_producer(void *data)
+static void *THREAD_FUNC thread_cond_producer(thread_id id, void *data)
 {
     for (;;)
     {
@@ -114,7 +114,7 @@ static void *THREAD_FUNC thread_cond_producer(void *data)
     return NULL;
 }
 
-static void *THREAD_FUNC thread_cond_consumer(void *data)
+static void *THREAD_FUNC thread_cond_consumer(thread_id id, void *data)
 {
     int i;
 
@@ -133,7 +133,7 @@ static void *THREAD_FUNC thread_cond_consumer(void *data)
     return NULL;
 }
 
-static void *THREAD_FUNC thread_semaphore_function(void *data)
+static void *THREAD_FUNC thread_semaphore_function(thread_id id, void *data)
 {
     int exitLoop = 1;
 

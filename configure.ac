@@ -235,6 +235,8 @@ AC_CHECK_FUNCS(\
     utime \
     utimes \
     sem_timedwait \
+    pthread_yield \
+    sched_yield \
 )
 
 AC_CHECK_LIB([pthread], [pthread_mutex_init], [LIBS="${LIBS} -lpthread"])

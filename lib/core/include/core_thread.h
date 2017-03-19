@@ -14,7 +14,7 @@ typedef c_uintptr_t thread_id;
 /** Opaque Thread attributes structure. */
 typedef struct threadattr_t       threadattr_t;
 
-typedef void *(THREAD_FUNC *thread_start_t)(void*);
+typedef void *(THREAD_FUNC *thread_start_t)(thread_id id, void*);
 
 /**
  * Check if Thread Should Stop
@@ -68,9 +68,30 @@ CORE_DECLARE(status_t) thread_create(thread_id *id,
 CORE_DECLARE(status_t) thread_delete(thread_id id);
 
 /**
+ * detach a thread
+ * @param thd The thread to detach 
+ */
+CORE_DECLARE(status_t) thread_detach(thread_id id);
+
+/**
+ * stop the current thread
+ * @param thd The thread to stop
+ * @param retval The return value to pass back to any thread that cares
+ */
+CORE_DECLARE(status_t) thread_exit(thread_id id, status_t retval);
+
+/**
+ * block until the desired thread stops executing.
+ * @param retval The return value from the dead thread.
+ * @param thd The thread to join
+ */
+CORE_DECLARE(status_t) thread_join(status_t *retval, thread_id id);
+
+/**
  * force the current thread to yield the processor
  */
 CORE_DECLARE(void) thread_yield(void);
+
 
 #ifdef __cplusplus
 }
