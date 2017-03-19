@@ -1,7 +1,8 @@
 #include "core_msgq.h"
+#include "core_thread.h"
 #include "testutil.h"
 
-char msg[16][24] = {
+static char msg[16][24] = {
     {0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18},
     {0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28},
     {0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38},
@@ -20,11 +21,11 @@ char msg[16][24] = {
     {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08}
 };
 
-char rmsg[16][24];
+static char rmsg[16][24];
 
-int msglen[16] = {3, 4, 5, 6, 7, 8, 1, 2, 11, 12, 13, 14, 15, 16, 17, 18};
+static int msglen[16] = {3, 4, 5, 6, 7, 8, 1, 2, 11, 12, 13, 14, 15, 16, 17, 18};
 
-msgq_id md;
+static msgq_id md;
 
 static void msgq_test1(abts_case *tc, void *data)
 {
@@ -158,6 +159,95 @@ static void msgq_test3(abts_case *tc, void *data)
     msgq_delete(md);
 }
 
+#define TEST_QUEUE_SIZE 512
+#define TEST_EVT_SIZE (sizeof(test_event_t))
+
+typedef struct {
+    int a;
+    int b;
+    char c[30];
+} test_event_t;
+
+static thread_id thr_producer;
+static thread_id thr_consumer;
+static int max = 100000;
+static int exit_ret_val = 123;
+
+static void *THREAD_FUNC producer_main(thread_id id, void *data)
+{
+    int r;
+    int i = 0;
+
+    while (i < max)
+    {
+        test_event_t t;
+
+        t.a = i;
+        t.b = i+2;
+        t.c[28] = 'X';
+        t.c[29] = 'Y';
+        //printf("P: a = %d b = %d\n",t.a,t.b);
+        r = msgq_send(md, (char*)&t, TEST_EVT_SIZE);
+        if (r != TEST_EVT_SIZE)
+        {
+        //    printf("Producer Error\n");
+        }
+        i++;
+    }
+    thread_exit(id, exit_ret_val);
+
+    return NULL;
+}
+
+static void *THREAD_FUNC consumer_main(thread_id id, void *data)
+{
+    abts_case *tc = data;
+    int r;
+    int prev = 0;
+    int i = 0;
+
+    while (!thread_should_stop())
+    {
+        test_event_t t;
+        r = msgq_recv(md, (char*)&t, TEST_EVT_SIZE);
+        if (r == CORE_EAGAIN)
+        {
+            continue;
+        }
+        ABTS_ASSERT(tc, "consumer error", r == TEST_EVT_SIZE)
+        ABTS_ASSERT(tc, "consumer error", t.c[28] == 'X' && t.c[29] == 'Y')
+        ABTS_ASSERT(tc, "consumer error", (prev+1) == t.a)
+        prev = t.a;
+        //printf("C: a = %d b = %d\n",t.a,t.b);
+        i++;
+    }
+
+    return NULL;
+}
+
+static void msgq_test4(abts_case *tc, void *data)
+{
+    status_t rv;
+    int opt = (int)data;
+
+    md = msgq_create(TEST_QUEUE_SIZE, TEST_EVT_SIZE, opt);
+    ABTS_INT_NEQUAL(tc, 0, md);
+
+    rv = thread_create(&thr_producer, NULL, producer_main, NULL);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    rv = thread_create(&thr_consumer, NULL, consumer_main, tc);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    thread_join(&rv, thr_producer);
+    ABTS_INT_EQUAL(tc, exit_ret_val, rv);
+
+    rv = thread_delete(thr_consumer);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    msgq_delete(md);
+}
+
 abts_suite *testmsgq(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -165,6 +255,11 @@ abts_suite *testmsgq(abts_suite *suite)
     abts_run_test(suite, msgq_test1, NULL);
     abts_run_test(suite, msgq_test2, NULL);
     abts_run_test(suite, msgq_test3, NULL);
+
+#if 0
+    abts_run_test(suite, msgq_test4, (void *)MSGQ_O_NONBLOCK);
+    abts_run_test(suite, msgq_test4, (void *)MSGQ_O_BLOCK);
+#endif
 
     return suite;
 }
