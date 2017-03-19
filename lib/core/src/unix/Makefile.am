@@ -10,7 +10,7 @@ libcoreunix_la_SOURCES = \
 
 nodist_libcoreunix_la_SOURCES = \
     cond.c file.c net_lib.c thread.c errorcodes.c mutex.c rwlock.c \
-    start.c time.c semaphore.c signal.c pkbuf.c rand.c
+    start.c time.c semaphore.c signal.c pkbuf.c rand.c atomic.c
 
 AM_CPPFLAGS = \
     -I$(top_srcdir) \

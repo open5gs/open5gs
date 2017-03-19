@@ -17,6 +17,7 @@ libcore_la_SOURCES = \
 	../include/core_sha1_hmac.h ../include/core_sha2.h ../include/core_sha2_hmac.h \
 	../include/core_signal.h ../include/core_thread.h ../include/core_time.h \
 	../include/core_timer.h ../include/core_tlv.h ../include/core_tlv_msg.h \
+	../include/core_atomic.h \
 	../include/core_version.h
 
 nodist_libcore_la_SOURCES = \

@@ -25,6 +25,17 @@
  * And please, make an effort to stub core.hw and core.hnw in the process.
  */
 
+#if !defined(__GNUC__) || __GNUC__ < 2 || \
+    (__GNUC__ == 2 && __GNUC_MINOR__ < 7) ||\
+    defined(NEXT)
+#ifndef __attribute__
+#define __attribute__(__x)
+#endif
+#define CORE_INLINE
+#else
+#define CORE_INLINE __inline__
+#endif
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

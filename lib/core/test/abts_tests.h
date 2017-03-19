@@ -33,6 +33,7 @@ const struct testlist {
     {testtimer},
     {testthread},
     {testlock},
+    {testatomic},
     {testfile},
     {testfilecopy},
     {testdir},

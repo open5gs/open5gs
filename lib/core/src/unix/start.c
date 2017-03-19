@@ -5,6 +5,7 @@
 #include "core_msgq.h"
 #include "core_tlv.h"
 #include "core_timer.h"
+#include "core_atomic.h"
 #include "core_mutex.h"
 #include "core_cond.h"
 #include "core_rwlock.h"
@@ -42,6 +43,7 @@ status_t core_initialize(void)
     semaphore_init();
     cond_init();
     rwlock_init();
+    atomic_init();
     thread_init();
     net_init();
     file_init();
@@ -72,6 +74,7 @@ void core_terminate(void)
     file_final();
     net_final();
     thread_final();
+    atomic_final();
     rwlock_final();
     cond_final();
     semaphore_final();

@@ -67,6 +67,7 @@ abts_suite *testtime(abts_suite *suite);
 abts_suite *testtimer(abts_suite *suite);
 abts_suite *testthread(abts_suite *suite);
 abts_suite *testlock(abts_suite *suite);
+abts_suite *testatomic(abts_suite *suite);
 abts_suite *testfile(abts_suite *suite);
 abts_suite *testfilecopy(abts_suite *suite);
 abts_suite *testdir(abts_suite *suite);

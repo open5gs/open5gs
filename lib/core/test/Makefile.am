@@ -4,10 +4,10 @@ bin_PROGRAMS = testcore
 
 testcore_SOURCES = \
     abts.c testds.c testfsm.c testnetlib.c testthread.c testtlv.c \
-    testaes.c testfile.c testlock.c testsha.c testtime.c testutil.c \
-    testdir.c testfilecopy.c testmsgq.c testsleep.c testtimer.c \
+    testaes.c testfile.c testlock.c testatomic.c testsha.c testtime.c \
+	testdir.c testfilecopy.c testmsgq.c testsleep.c testtimer.c \
 	testpkbuf.c testmisc.c \
-    abts.h  abts_tests.h  testutil.h
+    abts.h  abts_tests.h testutil.c testutil.h
 
 testcore_LDADD = \
     $(top_srcdir)/lib/core/src/libcore.la
