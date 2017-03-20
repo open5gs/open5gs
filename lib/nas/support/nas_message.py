@@ -109,7 +109,7 @@ def v_lower(v):
 
 def get_cells(cells):
     iei = cells[0].text.encode('ascii', 'ignore')
-    value = cells[1].text.encode('ascii', 'ignore')
+    value = re.sub("'s", "", cells[1].text).encode('ascii', 'ignore')
     type = re.sub("'s", "", re.sub('\s*\n\s*[a-zA-Z0-9.]*', '', cells[2].text)).encode('ascii', 'ignore')
     reference = re.sub('[a-zA-Z\s]*\n\s*', '', cells[2].text).encode('ascii', 'ignore')
     presence = cells[3].text.encode('ascii', 'ignore')
@@ -207,6 +207,7 @@ msg_list["ESM INFORMATION RESPONSE"] = { "type" : "218" }
 msg_list["ESM STATUS"] = { "type" : "232" }
 
 # Table number for Message List
+msg_list["ATTACH ACCEPT"]["table"] = 8
 msg_list["ATTACH REQUEST"]["table"] = 11
 
 for key in msg_list.keys():
@@ -477,15 +478,18 @@ for (k, v) in sorted_msg_list:
     for ie in [ies for ies in msg_list[k]["ies"] if ies["presence"] == "O"]:
         f.write("    if (%s->presencemask & NAS_%s_%s_PRESENT)\n" % (v_lower(k), v_upper(k), v_upper(ie["value"])))
         f.write("    {\n")
-        f.write("        size = nas_encode_optional_type(pkbuf, NAS_%s_%s_TYPE);\n" % (v_upper(k), v_upper(ie["value"])))
-        f.write("        d_assert(size >= 0, return encoded, \"decode failed\");\n")
-        f.write("        encoded += size;\n\n")
+        if ie["length"] == "1" and ie["format"] == "TV":
+            f.write("        %s->%s.type = (NAS_%s_%s_TYPE >> 4);\n\n" % (v_lower(k), v_lower(ie["value"]), v_upper(k), v_upper(ie["value"])))
+        else:
+            f.write("        size = nas_encode_optional_type(pkbuf, NAS_%s_%s_TYPE);\n" % (v_upper(k), v_upper(ie["value"])))
+            f.write("        d_assert(size >= 0, return encoded, \"decode failed\");\n")
+            f.write("        encoded += size;\n\n")
         f.write("        size = nas_encode_%s(pkbuf, &%s->%s);\n" % (v_lower(ie["type"]), v_lower(k), v_lower(ie["value"])))
         f.write("        d_assert(size >= 0, return encoded, \"decode failed\");\n")
         f.write("        encoded += size;\n")
         f.write("    }\n\n")
 
-    f.write("""    return decoded;
+    f.write("""    return encoded;
 }
 """)
 

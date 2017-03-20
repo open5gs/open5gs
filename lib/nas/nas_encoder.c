@@ -9,7 +9,7 @@ c_int32_t nas_encode_attach_accept(pkbuf_t *pkbuf, nas_message_t *message)
     c_int32_t size = 0;
     c_int32_t encoded = 0;
 
-    size = nas_encode_attach_result(pkbuf, &attach_accept->attach_result);
+    size = nas_encode_eps_attach_result(pkbuf, &attach_accept->eps_attach_result);
     d_assert(size >= 0, return encoded, "decode failed");
     encoded += size;
 

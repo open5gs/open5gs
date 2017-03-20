@@ -344,17 +344,17 @@ c_int32_t nas_decode_emm_cause(nas_emm_cause_t *emm_cause, pkbuf_t *pkbuf)
 
 /* 9.9.3.10 * EPS attach result
  * M V 1/2 */
-c_int32_t nas_encode_attach_result(
-    pkbuf_t *pkbuf, nas_attach_result_t *attach_result)
+c_int32_t nas_encode_eps_attach_result(
+    pkbuf_t *pkbuf, nas_eps_attach_result_t *eps_attach_result)
 {
     c_uint16_t size = 0;
 
-    d_assert(attach_result, return -1, "Null param");
+    d_assert(eps_attach_result, return -1, "Null param");
 
-    size = sizeof(nas_attach_result_t);
+    size = sizeof(nas_eps_attach_result_t);
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
             return -1, "pkbuf_header error");
-    memcpy(pkbuf->payload - size, attach_result, size);
+    memcpy(pkbuf->payload - size, eps_attach_result, size);
 
     return size;
 }
@@ -849,6 +849,27 @@ c_int32_t nas_encode_ue_security_capability(
             return -1, "pkbuf_header error");
 
     memcpy(pkbuf->payload - size, ue_security_capability, size);
+
+    return size;
+}
+
+/* TODO : 9.9.3.37 Emergency number list
+ * See subclause 10.5.3.13 in 3GPP TS 24.008 [13].
+ * O TLV 5-50 */
+c_int32_t nas_encode_emergency_number_list(
+    pkbuf_t *pkbuf, nas_emergency_number_list_t *emergency_number_list)
+{
+    c_uint16_t size = 0;
+    nas_emergency_number_list_t target;
+
+    d_assert(emergency_number_list, return -1, "Null param");
+    memcpy(&target, emergency_number_list, sizeof(nas_emergency_number_list_t));
+
+    size = emergency_number_list->length + sizeof(emergency_number_list->length);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
+            return -1, "pkbuf_header error");
+
+    memcpy(pkbuf->payload - size, &target, size);
 
     return size;
 }

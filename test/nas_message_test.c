@@ -58,7 +58,7 @@ static void nas_message_test2(abts_case *tc, void *data)
     memset(&message, 0, sizeof(message));
     message.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
     message.h.message_type = NAS_ATTACH_ACCEPT;
-    attach_accept->attach_result.result = 
+    attach_accept->eps_attach_result.result = 
         NAS_ATTACH_RESULT_COMBINED_EPS_IMSI_ATTACH;
     attach_accept->t3412_value.unit = 
         NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_1_MM;

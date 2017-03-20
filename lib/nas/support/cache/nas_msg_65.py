@@ -14,7 +14,7 @@ ies.append({ "iei" : "11", "value" : "Mobile station classmark 2", "type" : "Mob
 ies.append({ "iei" : "20", "value" : "Mobile station classmark 3", "type" : "Mobile station classmark 3", "reference" : "Mobile station classmark 39.9.2.5", "presence" : "O", "format" : "TLV", "length" : "2-34"})
 ies.append({ "iei" : "40", "value" : "Supported Codecs", "type" : "Supported Codec List", "reference" : "9.9.2.10", "presence" : "O", "format" : "TLV", "length" : "5-n"})
 ies.append({ "iei" : "F-", "value" : "Additional update type", "type" : "Additional update type", "reference" : "9.9.3.0B", "presence" : "O", "format" : "TV", "length" : "1"})
-ies.append({ "iei" : "5D", "value" : "Voice domain preference and UE's usage setting", "type" : "Voice domain preference and UE usage setting", "reference" : "Voice domain preference and UE'9.9.3.44", "presence" : "O", "format" : "TLV", "length" : "3"})
+ies.append({ "iei" : "5D", "value" : "Voice domain preference and UE usage setting", "type" : "Voice domain preference and UE usage setting", "reference" : "Voice domain preference and UE'9.9.3.44", "presence" : "O", "format" : "TLV", "length" : "3"})
 ies.append({ "iei" : "D-", "value" : "Device properties", "type" : "Device properties", "reference" : "9.9.2.0A", "presence" : "O", "format" : "TV", "length" : "1"})
 ies.append({ "iei" : "E-", "value" : "Old GUTI type", "type" : "GUTI type", "reference" : "9.9.3.45", "presence" : "O", "format" : "TV", "length" : "1"})
 ies.append({ "iei" : "C- ", "value" : "MS network feature support", "type" : "MS network feature support", "reference" : "9.9.3.20A", "presence" : "O", "format" : "TV", "length" : "1"})

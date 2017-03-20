@@ -123,7 +123,7 @@ ED2(c_uint8_t security_header_type:4;,
 
 typedef struct _nas_attach_accept_t {
     /* Mandatory fields */
-    nas_attach_result_t attach_result;
+    nas_eps_attach_result_t eps_attach_result;
     nas_gprs_timer_t t3412_value;
     nas_tracking_area_identity_list_t tai_list;
     nas_esm_message_container_t esm_message_container;
@@ -138,10 +138,7 @@ typedef struct _nas_attach_accept_t {
     nas_gprs_timer_t t3423_value;
     nas_plmn_list_t equivalent_plmns;
 
-    /* 9.9.3.37 Emergency number list
-     * See subclause 10.5.3.13 in 3GPP TS 24.008 [13].
-     * O TLV 5-50 
-       nas_emergency_number_list_t emergency_number_list; */
+   nas_emergency_number_list_t emergency_number_list;
     nas_eps_network_feature_support_t eps_network_feature_support;
     nas_additional_update_result_t additional_update_result;
     nas_gprs_timer_3_t t3412_extended_value;

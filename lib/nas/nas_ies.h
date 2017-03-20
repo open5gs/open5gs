@@ -342,13 +342,13 @@ CORE_DECLARE(c_int32_t) nas_decode_emm_cause(
  * M V 1/2 */
 #define NAS_ATTACH_RESULT_EPS_ONLY 1
 #define NAS_ATTACH_RESULT_COMBINED_EPS_IMSI_ATTACH 2
-typedef struct _nas_attach_result_t {
+typedef struct _nas_eps_attach_result_t {
 ED2(c_uint8_t spare:5;,
     c_uint8_t result:3;)
-} __attribute__ ((packed)) nas_attach_result_t;
+} __attribute__ ((packed)) nas_eps_attach_result_t;
 
-CORE_DECLARE(c_int32_t) nas_encode_attach_result(
-    pkbuf_t *pkbuf, nas_attach_result_t *attach_result);
+CORE_DECLARE(c_int32_t) nas_encode_eps_attach_result(
+    pkbuf_t *pkbuf, nas_eps_attach_result_t *eps_attach_result);
 
 /* 9.9.3.11 EPS attach type
  * M V 1/2
@@ -838,6 +838,17 @@ typedef struct _nas_ue_security_capability_t {
 
 CORE_DECLARE(c_int32_t) nas_encode_ue_security_capability(
     pkbuf_t *pkbuf, nas_ue_security_capability_t *ue_security_capability);
+
+/* TODO : 9.9.3.37 Emergency number list
+ * See subclause 10.5.3.13 in 3GPP TS 24.008 [13].
+ * O TLV 5-50 */
+typedef struct _nas_emergency_number_list_t {
+    c_uint16_t length;
+    c_uint8_t todo[48];
+} __attribute__ ((packed)) nas_emergency_number_list_t;
+
+CORE_DECLARE(c_int32_t) nas_encode_emergency_number_list(
+    pkbuf_t *pkbuf, nas_emergency_number_list_t *emergency_number_list);
 
 /* 9.9.3.44 Voice domain preference and UE's usage setting
  * See subclause 10.5.5.28 in 3GPP TS 24.008 [13].
