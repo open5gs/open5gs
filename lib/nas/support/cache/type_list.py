@@ -1,5 +1,5 @@
 type_list["P-TMSI signature"]["decode"] = \
-"    target = htonl(*p_tmsi_signature);\n\n"
+"    *p_tmsi_signature = htonl(*p_tmsi_signature);\n\n"
 type_list["P-TMSI signature"]["encode"] = \
 "    *p_tmsi_signature = ntohl(*p_tmsi_signature);\n\n"
 
@@ -17,7 +17,7 @@ type_list["Mobile identity"]["decode"] = \
 "    if (mobile_identity->tmsi.type_of_identity == NAS_MOBILE_IDENTITY_TMSI)\n" \
 "    {\n" \
 "        if (mobile_identity->tmsi.spare != 0xf)\n" \
-"            d_warn(\"Spec warning : mobile_identity->tmsi.spare = 0x%x\", eps_mobile_identity->guti.spare);\n" \
+"            d_warn(\"Spec warning : mobile_identity->tmsi.spare = 0x%x\", mobile_identity->tmsi.spare);\n" \
 "        mobile_identity->tmsi.tmsi = ntohl(mobile_identity->tmsi.tmsi);\n" \
 "    }\n\n"
 type_list["Mobile identity"]["encode"] = \

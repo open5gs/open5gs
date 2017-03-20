@@ -13,7 +13,7 @@ ies.append({ "iei" : "4A", "value" : "Equivalent PLMNs", "type" : "PLMN list", "
 ies.append({ "iei" : "34", "value" : "Emergency number list", "type" : "Emergency number list", "reference" : "9.9.3.37", "presence" : "O", "format" : "TLV", "length" : "5-50"})
 ies.append({ "iei" : "64", "value" : "EPS network feature support", "type" : "EPS network feature support", "reference" : "9.9.3.12A", "presence" : "O", "format" : "TLV", "length" : "3"})
 ies.append({ "iei" : "F-", "value" : "Additional update result", "type" : "Additional update result", "reference" : "9.9.3.0A", "presence" : "O", "format" : "TV", "length" : "1"})
-ies.append({ "iei" : "5E", "value" : "T3412 extended value", "type" : "GPRS timer 3", "reference" : "GPRS timer 39.9.3.16B", "presence" : "O", "format" : "TLV", "length" : "3"})
-ies.append({ "iei" : "6A", "value" : "T3324 value", "type" : "GPRS timer 2", "reference" : "GPRS timer 29.9.3.16A", "presence" : "O", "format" : "TLV", "length" : "3"})
+ies.append({ "iei" : "5E", "value" : "T3412 extended value", "type" : "GPRS timer 3", "reference" : "9.9.3.16B", "presence" : "O", "format" : "TLV", "length" : "3"})
+ies.append({ "iei" : "6A", "value" : "T3324 value", "type" : "GPRS timer 2", "reference" : "9.9.3.16A", "presence" : "O", "format" : "TLV", "length" : "3"})
 ies.append({ "iei" : "6E", "value" : "Extended DRX parameters", "type" : "Extended DRX parameters", "reference" : "9.9.3.46", "presence" : "O", "format" : "TLV", "length" : "3"})
 msg_list[key]["ies"] = ies

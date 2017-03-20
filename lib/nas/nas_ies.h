@@ -18,7 +18,7 @@ ED2(c_uint8_t mnc_digit2:4;,
     c_uint8_t mnc_digit1:4;)
 } __attribute__ ((packed)) nas_plmn_t;
 
-CORE_DECLARE(c_int32_t) nas_encode_optional_type(
+CORE_DECLARE(c_int16_t) nas_encode_optional_type(
         pkbuf_t *pkbuf, c_uint8_t type);
 
 /* 9.9.2.0A Device properties
@@ -30,7 +30,7 @@ ED3(c_uint8_t type:4;,
     c_uint8_t low_priority:1;)
 } __attribute__ ((packed)) nas_device_properties_t;
 
-CORE_DECLARE(c_int32_t) nas_decode_device_properties(
+CORE_DECLARE(c_int16_t) nas_decode_device_properties(
     nas_device_properties_t *device_properties, pkbuf_t *pkbuf);
 
 /* 9.9.2.2 Location area identification
@@ -41,11 +41,11 @@ typedef struct _nas_location_area_identification_t {
     c_uint16_t lac;
 } __attribute__ ((packed)) nas_location_area_identification_t;
 
-CORE_DECLARE(c_int32_t) nas_decode_location_area_identification(
+CORE_DECLARE(c_int16_t) nas_decode_location_area_identification(
     nas_location_area_identification_t *location_area_identification, 
     pkbuf_t *pkbuf);
 
-CORE_DECLARE(c_int32_t) nas_encode_location_area_identification(
+CORE_DECLARE(c_int16_t) nas_encode_location_area_identification(
     pkbuf_t *pkbuf,
     nas_location_area_identification_t *location_area_identification);
 
@@ -106,9 +106,9 @@ typedef struct _nas_mobile_identity_t {
     };
 } nas_mobile_identity_t;
 
-CORE_DECLARE(c_int32_t) nas_encode_mobile_identity(
+CORE_DECLARE(c_int16_t) nas_encode_mobile_identity(
     pkbuf_t *pkbuf, nas_mobile_identity_t *mobile_identity);
-CORE_DECLARE(c_int32_t) nas_decode_mobile_identity(
+CORE_DECLARE(c_int16_t) nas_decode_mobile_identity(
     nas_mobile_identity_t *mobile_identity, pkbuf_t *pkbuf);
 
 /* 9.9.2.4 Mobile station classmark 2
@@ -149,7 +149,7 @@ ED8(c_uint8_t cm3:1;,
     c_uint8_t a5_2:1;)
 } __attribute__ ((packed)) nas_mobile_station_classmark_2_t;
 
-CORE_DECLARE(c_int32_t) nas_decode_mobile_station_classmark_2(
+CORE_DECLARE(c_int16_t) nas_decode_mobile_station_classmark_2(
     nas_mobile_station_classmark_2_t *mobile_station_classmark_2, 
     pkbuf_t *pkbuf);
 
@@ -158,10 +158,10 @@ CORE_DECLARE(c_int32_t) nas_decode_mobile_station_classmark_2(
  * O TLV 2-34 */
 typedef struct _nas_mobile_station_classmark_3_t {
     c_uint8_t length;
-    /* TODO */
+    c_uint8_t todo[34];
 } __attribute__ ((packed)) nas_mobile_station_classmark_3_t;
 
-CORE_DECLARE(c_int32_t) nas_decode_mobile_station_classmark_3(
+CORE_DECLARE(c_int16_t) nas_decode_mobile_station_classmark_3(
     nas_mobile_station_classmark_3_t *mobile_station_classmark_3, 
     pkbuf_t *pkbuf);
 
@@ -174,7 +174,7 @@ typedef struct _nas_plmn_list_t {
     nas_plmn_t plmn[NAS_MAX_PLMN];
 } __attribute__ ((packed)) nas_plmn_list_t;
 
-CORE_DECLARE(status_t) nas_encode_plmn_list(
+CORE_DECLARE(c_int16_t) nas_encode_plmn_list(
     pkbuf_t *pkbuf, nas_plmn_list_t *plmn_list);
 
 /* 9.9.2.10 Supported codec list
@@ -192,7 +192,7 @@ typedef struct _nas_supported_codec_list_t {
     nas_supported_codec_item_t item[NAS_MAX_SUPPORTED_CODECS];
 } __attribute__ ((packed)) nas_supported_codec_list_t;
 
-CORE_DECLARE(c_int32_t) nas_decode_supported_codec_list(
+CORE_DECLARE(c_int16_t) nas_decode_supported_codec_list(
     nas_supported_codec_list_t *supported_codec_list, pkbuf_t *pkbuf);
 
 /* 9.9.3.0A Additional update result
@@ -203,7 +203,7 @@ ED3(c_uint8_t type:4;,
     c_uint8_t additional_update_result_value:2;)
 } __attribute__ ((packed)) nas_additional_update_result_t;
 
-CORE_DECLARE(c_int32_t) nas_encode_additional_update_result(
+CORE_DECLARE(c_int16_t) nas_encode_additional_update_result(
     pkbuf_t *pkbuf, 
     nas_additional_update_result_t *additional_update_result);
 
@@ -220,7 +220,7 @@ ED4(c_uint8_t type:4;,
     c_uint8_t autv:1;)
 } __attribute__ ((packed)) nas_additional_update_type_t;
 
-CORE_DECLARE(c_int32_t) nas_decode_additional_update_type(
+CORE_DECLARE(c_int16_t) nas_decode_additional_update_type(
     nas_additional_update_type_t *additional_update_type, pkbuf_t *pkbuf);
 
 /* 9.9.3.1 Authentication failure parameter
@@ -231,7 +231,7 @@ typedef struct _nas_authentication_failure_parameter_t {
     c_uint8_t parameter[14];
 } __attribute__ ((packed)) nas_authentication_failure_parameter_t;
 
-CORE_DECLARE(c_int32_t) nas_decode_authentication_failure_parameter(
+CORE_DECLARE(c_int16_t) nas_decode_authentication_failure_parameter(
     nas_authentication_failure_parameter_t *authentication_failure_parameter,
     pkbuf_t *pkbuf);
 
@@ -243,7 +243,7 @@ typedef struct _nas_authentication_parameter_autn_t {
     c_uint8_t autn[MAX_AUTN_LEN];
 } nas_authentication_parameter_autn_t;
 
-CORE_DECLARE(c_int32_t) nas_encode_authentication_parameter_autn(pkbuf_t *pkbuf, 
+CORE_DECLARE(c_int16_t) nas_encode_authentication_parameter_autn(pkbuf_t *pkbuf, 
     nas_authentication_parameter_autn_t *authentication_parameter_autn);
 
 /* 9.9.3.3 Authentication parameter RAND
@@ -253,7 +253,7 @@ typedef struct _nas_authentication_parameter_rand_t {
     c_uint8_t rand[MAX_RAND_LEN];
 } nas_authentication_parameter_rand_t;
 
-CORE_DECLARE(c_int32_t) nas_encode_authentication_parameter_rand(pkbuf_t *pkbuf, 
+CORE_DECLARE(c_int16_t) nas_encode_authentication_parameter_rand(pkbuf_t *pkbuf, 
     nas_authentication_parameter_rand_t *authentication_parameter_rand);
 
 /* 9.9.3.4 Authentication response parameter
@@ -263,7 +263,7 @@ typedef struct _nas_authentication_response_parameter_t {
     c_uint8_t res[MAX_RES_LEN];
 } nas_authentication_response_parameter_t;
 
-CORE_DECLARE(c_int32_t) nas_decode_authentication_response_parameter(
+CORE_DECLARE(c_int16_t) nas_decode_authentication_response_parameter(
     nas_authentication_response_parameter_t *authentication_response_parameter,
     pkbuf_t *pkbuf);
 
@@ -290,7 +290,7 @@ ED3(c_uint8_t cn_specific_drx_cycle_length_coefficient_and_drx_value_for_s1_mode
     c_uint8_t non_DRX_timer:3;)
 } __attribute__ ((packed)) nas_drx_parameter_t;
 
-CORE_DECLARE(c_int32_t) nas_decode_drx_parameter(
+CORE_DECLARE(c_int16_t) nas_decode_drx_parameter(
     nas_drx_parameter_t *drx_parameter, pkbuf_t *pkbuf);
 
 /* 9.9.3.9 EMM cause
@@ -333,9 +333,9 @@ CORE_DECLARE(c_int32_t) nas_decode_drx_parameter(
 #define NAS_EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED 0b01101111
 typedef c_uint8_t nas_emm_cause_t;
 
-CORE_DECLARE(c_int32_t) nas_encode_emm_cause(
+CORE_DECLARE(c_int16_t) nas_encode_emm_cause(
     pkbuf_t *pkbuf, nas_emm_cause_t *emm_cause);
-CORE_DECLARE(c_int32_t) nas_decode_emm_cause(
+CORE_DECLARE(c_int16_t) nas_decode_emm_cause(
     nas_emm_cause_t *emm_cause, pkbuf_t *pkbuf);
 
 /* 9.9.3.10 * EPS attach result
@@ -347,7 +347,7 @@ ED2(c_uint8_t spare:5;,
     c_uint8_t result:3;)
 } __attribute__ ((packed)) nas_eps_attach_result_t;
 
-CORE_DECLARE(c_int32_t) nas_encode_eps_attach_result(
+CORE_DECLARE(c_int16_t) nas_encode_eps_attach_result(
     pkbuf_t *pkbuf, nas_eps_attach_result_t *eps_attach_result);
 
 /* 9.9.3.11 EPS attach type
@@ -369,7 +369,7 @@ ED4(c_uint8_t tsc:1;,
     c_uint8_t attach_type:3;)
 } __attribute__ ((packed)) nas_eps_attach_type_t;
 
-CORE_DECLARE(c_int32_t) nas_decode_eps_attach_type(
+CORE_DECLARE(c_int16_t) nas_decode_eps_attach_type(
     nas_eps_attach_type_t *eps_attach_type, pkbuf_t *pkbuf);
 
 /* 9.9.3.12 EPS mobile identity
@@ -402,9 +402,9 @@ typedef struct _nas_eps_mobile_identity_t {
     };
 } __attribute__ ((packed)) nas_eps_mobile_identity_t;
 
-CORE_DECLARE(c_int32_t) nas_decode_eps_mobile_identity(
+CORE_DECLARE(c_int16_t) nas_decode_eps_mobile_identity(
     nas_eps_mobile_identity_t *eps_mobile_identity, pkbuf_t *pkbuf);
-CORE_DECLARE(c_int32_t) nas_encode_eps_mobile_identity(
+CORE_DECLARE(c_int16_t) nas_encode_eps_mobile_identity(
     pkbuf_t *pkbuf, nas_eps_mobile_identity_t *eps_mobile_identity);
 
 /* 9.9.3.12A EPS network feature support 
@@ -425,7 +425,7 @@ ED5(c_uint8_t spare:4;,
     c_uint8_t up_ciot :1;)
 } __attribute__ ((packed)) nas_eps_network_feature_support_t;
 
-CORE_DECLARE(c_int32_t) nas_encode_eps_network_feature_support(
+CORE_DECLARE(c_int16_t) nas_encode_eps_network_feature_support(
     pkbuf_t *pkbuf, 
     nas_eps_network_feature_support_t *eps_network_feature_support);
 
@@ -436,9 +436,9 @@ typedef struct _nas_esm_message_container_t {
     c_uint8_t *buffer;
 } nas_esm_message_container_t;
 
-CORE_DECLARE(c_int32_t) nas_decode_esm_message_container(
+CORE_DECLARE(c_int16_t) nas_decode_esm_message_container(
     nas_esm_message_container_t *esm_message_container, pkbuf_t *pkbuf);
-CORE_DECLARE(c_int32_t) nas_encode_esm_message_container(
+CORE_DECLARE(c_int16_t) nas_encode_esm_message_container(
     pkbuf_t *pkbuf, nas_esm_message_container_t *esm_message_container);
 
 /* 9.9.3.16 GPRS timer
@@ -453,7 +453,7 @@ ED2(c_uint8_t unit:3;,
     c_uint8_t timer_value:5;)
 } __attribute__ ((packed)) nas_gprs_timer_t;
 
-CORE_DECLARE(c_int32_t) nas_encode_gprs_timer(
+CORE_DECLARE(c_int16_t) nas_encode_gprs_timer(
     pkbuf_t *pkbuf, nas_gprs_timer_t *gprs_timer);
 
 /* 9.9.3.16A GPRS timer 2
@@ -464,9 +464,9 @@ typedef struct _nas_gprs_timer_2_t {
     c_uint8_t gprs_timer_2_value;
 } __attribute__ ((packed)) nas_gprs_timer_2_t;
 
-CORE_DECLARE(c_int32_t) nas_decode_gprs_timer_2(
+CORE_DECLARE(c_int16_t) nas_decode_gprs_timer_2(
     nas_gprs_timer_2_t *gprs_timer_2, pkbuf_t *pkbuf);
-CORE_DECLARE(c_int32_t) nas_encode_gprs_timer_2(
+CORE_DECLARE(c_int16_t) nas_encode_gprs_timer_2(
     pkbuf_t *pkbuf, nas_gprs_timer_2_t *gprs_timer_2);
 
 /* 9.9.3.16B GPRS timer 3
@@ -487,9 +487,9 @@ ED2(c_uint8_t unit:3;,
     c_uint8_t timer_value:5;)
 } __attribute__ ((packed)) nas_gprs_timer_3_t;
 
-CORE_DECLARE(c_int32_t) nas_decode_gprs_timer_3(
+CORE_DECLARE(c_int16_t) nas_decode_gprs_timer_3(
     nas_gprs_timer_3_t *gprs_timer_3, pkbuf_t *pkbuf);
-CORE_DECLARE(c_int32_t) nas_encode_gprs_timer_3(
+CORE_DECLARE(c_int16_t) nas_encode_gprs_timer_3(
     pkbuf_t *pkbuf, nas_gprs_timer_3_t *gprs_timer_3);
 
 /* 9.9.3.18 IMEISV request
@@ -501,7 +501,7 @@ ED3(c_uint8_t type:4;,
     c_uint8_t imeisv_request_value:3;)
 } __attribute__ ((packed)) nas_imeisv_request_t;
 
-CORE_DECLARE(c_int32_t) nas_encode_imeisv_request(
+CORE_DECLARE(c_int16_t) nas_encode_imeisv_request(
     pkbuf_t *pkbuf, nas_imeisv_request_t *imeisv_request);
 
 /* 9.9.3.20 MS network capability
@@ -541,7 +541,7 @@ ED6(c_uint8_t user_plane_integrity_protection_support:1;,
     c_uint8_t spare:3;)
 } __attribute__ ((packed)) nas_ms_network_capability_t;
 
-CORE_DECLARE(c_int32_t) nas_decode_ms_network_capability(
+CORE_DECLARE(c_int16_t) nas_decode_ms_network_capability(
     nas_ms_network_capability_t *ms_network_capability, pkbuf_t *pkbuf);
 
 /* 9.9.3.20A MS network feature support 
@@ -553,7 +553,7 @@ ED3(c_uint8_t type:4;,
     c_uint8_t extended_periodic_timers:1;)
 } __attribute__ ((packed)) nas_ms_network_feature_support_t;
 
-CORE_DECLARE(c_int32_t) nas_decode_ms_network_feature_support(
+CORE_DECLARE(c_int16_t) nas_decode_ms_network_feature_support(
     nas_ms_network_feature_support_t *ms_network_feature_support, 
     pkbuf_t *pkbuf);
 
@@ -567,7 +567,7 @@ ED3(c_uint8_t spare:4;,
     c_uint8_t nas_key_set_identifier:3;)
 } __attribute__ ((packed)) nas_key_set_identifier_t;
 
-CORE_DECLARE(c_int32_t) nas_encode_nas_key_set_identifier(
+CORE_DECLARE(c_int16_t) nas_encode_nas_key_set_identifier(
     pkbuf_t *pkbuf, nas_key_set_identifier_t *nas_key_set_identifier);
 
 /* 9.9.3.23 NAS security algorithms
@@ -587,7 +587,7 @@ ED4(c_uint8_t spare1:1;,
     c_uint8_t type_of_integrity_protection_algorithm:3;)
 } __attribute__ ((packed)) nas_security_algorithms_t;
 
-CORE_DECLARE(c_int32_t) nas_encode_nas_security_algorithms(
+CORE_DECLARE(c_int16_t) nas_encode_nas_security_algorithms(
     pkbuf_t *pkbuf, nas_security_algorithms_t *nas_security_algorithms);
 
 /* 9.9.3.24A Network resource identifier container
@@ -600,7 +600,7 @@ ED2(c_uint8_t nri_container_value2:2;,
     c_uint8_t spare:6;)
 } __attribute__ ((packed)) nas_network_resource_identifier_container_t;
 
-CORE_DECLARE(c_int32_t) nas_decode_network_resource_identifier_container(
+CORE_DECLARE(c_int16_t) nas_decode_network_resource_identifier_container(
     nas_network_resource_identifier_container_t *
         network_resource_identifier_container, 
     pkbuf_t *pkbuf);
@@ -609,14 +609,14 @@ CORE_DECLARE(c_int32_t) nas_decode_network_resource_identifier_container(
  * O TV 5 */
 typedef c_uint32_t nas_nonce_t;
 
-CORE_DECLARE(c_int32_t) nas_encode_nonce(pkbuf_t *pkbuf, nas_nonce_t *nonce);
+CORE_DECLARE(c_int16_t) nas_encode_nonce(pkbuf_t *pkbuf, nas_nonce_t *nonce);
 
 /* 9.9.3.26 P-TMSI signature 
  * See subclause 10.5.5.8 in 3GPP TS 24.008
  * O TV 4 */
 typedef c_uint32_t nas_p_tmsi_signature_t; /* TV : 4bytes */
 
-CORE_DECLARE(c_int32_t) nas_decode_p_tmsi_signature(
+CORE_DECLARE(c_int16_t) nas_decode_p_tmsi_signature(
     nas_p_tmsi_signature_t *p_tmsi_signature, pkbuf_t *pkbuf);
 
 /* 9.9.3.26A Extended EMM cause 
@@ -628,7 +628,7 @@ ED4(c_uint8_t type:4;,
     c_uint8_t e_utran_allowed:1;)
 } nas_extended_emm_cause_t;
 
-CORE_DECLARE(c_int32_t) nas_encode_extended_emm_cause(
+CORE_DECLARE(c_int16_t) nas_encode_extended_emm_cause(
     pkbuf_t *pkbuf, nas_extended_emm_cause_t *extended_emm_cause);
 
 /* 9.9.3.31 TMSI status
@@ -640,7 +640,7 @@ ED3(c_uint8_t type:4;,
     c_uint8_t tmsi_flag:1;)
 } __attribute__ ((packed)) nas_tmsi_status_t;
 
-CORE_DECLARE(c_int32_t) nas_decode_tmsi_status(
+CORE_DECLARE(c_int16_t) nas_decode_tmsi_status(
     nas_tmsi_status_t *tmsi_status, pkbuf_t *pkbuf);
 
 /* 9.9.3.32 Tracking area identity
@@ -650,7 +650,7 @@ typedef struct _nas_tracking_area_identity_t {
     c_uint16_t tac;
 } __attribute__ ((packed)) nas_tracking_area_identity_t;
 
-CORE_DECLARE(c_int32_t) nas_decode_tracking_area_identity(
+CORE_DECLARE(c_int16_t) nas_decode_tracking_area_identity(
     nas_tracking_area_identity_t *tracking_area_identity, pkbuf_t *pkbuf);
 
 /* 9.9.3.33 Tracking area identity list
@@ -682,7 +682,7 @@ ED3(c_uint8_t spare:1;,
     };
 } __attribute__ ((packed)) nas_tracking_area_identity_list_t;
 
-CORE_DECLARE(c_int32_t) nas_encode_tracking_area_identity_list(
+CORE_DECLARE(c_int16_t) nas_encode_tracking_area_identity_list(
     pkbuf_t *pkbuf,
     nas_tracking_area_identity_list_t *tracking_area_identity_list);
 
@@ -762,7 +762,7 @@ ED2(c_uint8_t spare:7;,
     c_uint8_t multiple_drb:1;)
 } __attribute__ ((packed)) nas_ue_network_capability_t;
 
-CORE_DECLARE(c_int32_t) nas_decode_ue_network_capability(
+CORE_DECLARE(c_int16_t) nas_decode_ue_network_capability(
     nas_ue_network_capability_t *ue_network_capability, pkbuf_t *pkbuf);
 
 /* 9.9.3.36 UE security capability
@@ -836,7 +836,7 @@ typedef struct _nas_ue_security_capability_t {
     };
 } __attribute__ ((packed)) nas_ue_security_capability_t;
 
-CORE_DECLARE(c_int32_t) nas_encode_ue_security_capability(
+CORE_DECLARE(c_int16_t) nas_encode_ue_security_capability(
     pkbuf_t *pkbuf, nas_ue_security_capability_t *ue_security_capability);
 
 /* TODO : 9.9.3.37 Emergency number list
@@ -844,10 +844,10 @@ CORE_DECLARE(c_int32_t) nas_encode_ue_security_capability(
  * O TLV 5-50 */
 typedef struct _nas_emergency_number_list_t {
     c_uint16_t length;
-    c_uint8_t todo[48];
+    c_uint8_t todo[50];
 } __attribute__ ((packed)) nas_emergency_number_list_t;
 
-CORE_DECLARE(c_int32_t) nas_encode_emergency_number_list(
+CORE_DECLARE(c_int16_t) nas_encode_emergency_number_list(
     pkbuf_t *pkbuf, nas_emergency_number_list_t *emergency_number_list);
 
 /* 9.9.3.44 Voice domain preference and UE's usage setting
@@ -860,7 +860,7 @@ ED3(c_uint8_t spare:5;,
     c_uint8_t voice_domain_preference_for_e_utran:2;)
 } __attribute__ ((packed)) nas_voice_domain_preference_and_ue_usage_setting_t;
 
-CORE_DECLARE(c_int32_t) nas_decode_voice_domain_preference_and_ue_usage_setting(
+CORE_DECLARE(c_int16_t) nas_decode_voice_domain_preference_and_ue_usage_setting(
     nas_voice_domain_preference_and_ue_usage_setting_t *
         voice_domain_preference_and_ue_usage_setting, 
     pkbuf_t *pkbuf);
@@ -873,7 +873,7 @@ ED3(c_uint8_t type:4;,
     c_uint8_t guti_type:1;)
 } __attribute__ ((packed)) nas_guti_type_t;
 
-CORE_DECLARE(c_int32_t) nas_decode_guti_type(
+CORE_DECLARE(c_int16_t) nas_decode_guti_type(
     nas_guti_type_t *guti_type, pkbuf_t *pkbuf);
 
 /* 9.9.3.46 Extended DRX parameters
@@ -885,9 +885,9 @@ ED2(c_uint8_t paging_time_window:4;,
     c_uint8_t e_drx_value:4;)
 } __attribute__ ((packed)) nas_extended_drx_parameters_t;
 
-CORE_DECLARE(c_int32_t) nas_decode_extended_drx_parameters(
+CORE_DECLARE(c_int16_t) nas_decode_extended_drx_parameters(
     nas_extended_drx_parameters_t *extended_drx_parameters, pkbuf_t *pkbuf);
-CORE_DECLARE(c_int32_t) nas_encode_extended_drx_parameters(
+CORE_DECLARE(c_int16_t) nas_encode_extended_drx_parameters(
     pkbuf_t *pkbuf, nas_extended_drx_parameters_t *extended_drx_parameters);
 
 #ifdef __cplusplus

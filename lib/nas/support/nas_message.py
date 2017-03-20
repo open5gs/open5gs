@@ -111,7 +111,7 @@ def get_cells(cells):
     iei = cells[0].text.encode('ascii', 'ignore')
     value = re.sub("'s", "", cells[1].text).encode('ascii', 'ignore')
     type = re.sub("'s", "", re.sub('\s*\n\s*[a-zA-Z0-9.]*', '', cells[2].text)).encode('ascii', 'ignore')
-    reference = re.sub('[a-zA-Z\s]*\n\s*', '', cells[2].text).encode('ascii', 'ignore')
+    reference = re.sub('[a-zA-Z0-9\'\-\s]*\n\s*', '', cells[2].text).encode('ascii', 'ignore')
     presence = cells[3].text.encode('ascii', 'ignore')
     format = cells[4].text.encode('ascii', 'ignore')
     length = cells[5].text.encode('ascii', 'ignore')
@@ -248,6 +248,141 @@ for key in msg_list.keys():
 
         f.close()
 
+
+tmp = [(k, v["type"]) for k, v in msg_list.items()]
+sorted_msg_list = sorted(tmp, key=lambda tup: int(tup[1]))
+
+for (k, v) in sorted_msg_list:
+    if "ies" not in msg_list[k]:
+        continue;
+
+    for ie in msg_list[k]["ies"]:
+        type_list[ie["type"]] = { "reference" : ie["reference"], "presence" : ie["presence"], "format" : ie["format"], "length" : ie["length"] }
+
+d_info("[Type List]")
+cachefile = cachedir + "type_list.py"
+if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
+    execfile(cachefile)
+    print "Read from " + cachefile
+
+tmp = [(k, v["reference"]) for k, v in type_list.items()]
+sorted_type_list = sorted(tmp, key=lambda tup: tup[1])
+
+f = open(outdir + 'nas_ies2.c', 'w')
+output_header_to_file(f)
+f.write("""#define TRACE_MODULE _nasies
+
+#include "core_debug.h"
+#include "core_lib.h"
+#include "nas_ies.h"
+
+c_int16_t nas_encode_optional_type(pkbuf_t *pkbuf, c_uint8_t type)
+{
+    c_uint16_t size = sizeof(c_uint8_t);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &type, size);
+
+    return size;
+}
+""")
+
+for (k, v) in sorted_type_list:
+#    d_print("%s = %s\n" % (k, type_list[k]))
+    f.write("/* %s %s\n" % (type_list[k]["reference"], k))
+    f.write(" * %s %s %s */\n" % (type_list[k]["presence"], type_list[k]["format"], type_list[k]["length"]))
+    if type_list[k]["length"] == "1/2" or type_list[k]["length"] == "1":
+        f.write("c_int16_t nas_decode_%s(nas_%s_t *%s, pkbuf_t *pkbuf)\n" % (v_lower(k), v_lower(k), v_lower(k)))
+        f.write("{\n")
+        f.write("    memcpy(%s, pkbuf->payload - 1, 1);\n\n" % v_lower(k))
+        f.write("    return 0;\n")
+        f.write("}\n\n")
+        f.write("c_int16_t nas_encode_%s(pkbuf_t *pkbuf, nas_%s_t *%s)\n" % (v_lower(k), v_lower(k), v_lower(k)))
+        f.write("{\n")
+        f.write("    c_uint16_t size = sizeof(nas_%s_t);\n\n" % v_lower(k))
+        f.write("    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, \"pkbuf_header error\");\n")
+        f.write("    memcpy(pkbuf->payload - size, %s, size);\n\n" % v_lower(k))
+        f.write("    return size;\n")
+        f.write("}\n\n")
+    elif type_list[k]["format"] == "TV" or type_list[k]["format"] == "V":
+        f.write("c_int16_t nas_decode_%s(nas_%s_t *%s, pkbuf_t *pkbuf)\n" % (v_lower(k), v_lower(k), v_lower(k)))
+        f.write("{\n")
+        if type_list[k]["length"] == "4":
+            f.write("    c_uint16_t size = 3;\n\n")
+        else:
+            f.write("    c_uint16_t size = sizeof(nas_%s_t);\n\n" % v_lower(k))
+        f.write("    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, \"pkbuf_header error\");\n")
+        f.write("    memcpy(%s, pkbuf->payload - size, size);\n\n" % v_lower(k))
+        if "decode" in type_list[k]:
+            f.write("%s" % type_list[k]["decode"])
+        f.write("    return size;\n")
+        f.write("}\n\n")
+        f.write("c_int16_t nas_encode_%s(pkbuf_t *pkbuf, nas_%s_t *%s)\n" % (v_lower(k), v_lower(k), v_lower(k)))
+        f.write("{\n")
+        if type_list[k]["length"] == "4":
+            f.write("    c_uint16_t size = 3;\n")
+        else:
+            f.write("    c_uint16_t size = sizeof(nas_%s_t);\n" % v_lower(k))
+        f.write("    nas_%s_t target;\n\n" % v_lower(k))
+        f.write("    memcpy(&target, %s, size);\n" % v_lower(k))
+        if "encode" in type_list[k]:
+            f.write("%s" % type_list[k]["encode"])
+        f.write("    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, \"pkbuf_header error\");\n")
+        f.write("    memcpy(pkbuf->payload - size, &target, size);\n\n")
+        f.write("    return size;\n")
+        f.write("}\n\n")
+    elif type_list[k]["format"] == "LV-E":
+        f.write("c_int16_t nas_decode_%s(nas_%s_t *%s, pkbuf_t *pkbuf)\n" % (v_lower(k), v_lower(k), v_lower(k)))
+        f.write("{\n")
+        f.write("    c_uint16_t size = 0;\n")
+        f.write("    nas_%s_t *source = pkbuf->payload;\n\n" % v_lower(k))
+        f.write("    %s->length = ntohs(source->length);\n" % v_lower(k))
+        f.write("    size = %s->length + sizeof(%s->length);\n\n" % (v_lower(k), v_lower(k)))
+        f.write("    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, \"pkbuf_header error\");\n")
+        f.write("    %s->buffer = pkbuf->payload - size + sizeof(%s->length);\n\n" % (v_lower(k), v_lower(k)))
+        f.write("    return size;\n")
+        f.write("}\n\n")
+        f.write("c_int16_t nas_encode_%s(pkbuf_t *pkbuf, nas_%s_t *%s)\n" % (v_lower(k), v_lower(k), v_lower(k)))
+        f.write("{\n")
+        f.write("    c_uint16_t size = 0;\n")
+        f.write("    c_uint16_t target;\n\n")
+        f.write("    d_assert(%s, return -1, \"Null param\");\n" % v_lower(k))
+        f.write("    d_assert(%s->buffer, return -1, \"Null param\");\n\n" % v_lower(k))
+        f.write("    size = sizeof(%s->length);\n" % v_lower(k))
+        f.write("    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, \"pkbuf_header error\");\n")
+        f.write("    target = htons(%s->length);\n" % v_lower(k))
+        f.write("    memcpy(pkbuf->payload - size, &target, size);\n\n")
+        f.write("    size = %s->length;\n" % v_lower(k))
+        f.write("    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, \"pkbuf_header error\");\n")
+        f.write("    memcpy(pkbuf->payload - size, %s->buffer, size);\n\n" % v_lower(k))
+        f.write("    return %s->length + sizeof(%s->length);\n" % (v_lower(k), v_lower(k)))
+        f.write("}\n\n");
+    else:
+        f.write("c_int16_t nas_decode_%s(nas_%s_t *%s, pkbuf_t *pkbuf)\n" % (v_lower(k), v_lower(k), v_lower(k)))
+        f.write("{\n")
+        f.write("    c_uint16_t size = 0;\n")
+        f.write("    nas_%s_t *source = pkbuf->payload;\n\n" % v_lower(k))
+        f.write("    %s->length = source->length;\n" % v_lower(k))
+        f.write("    size = %s->length + sizeof(%s->length);\n\n" % (v_lower(k), v_lower(k)))
+        f.write("    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, \"pkbuf_header error\");\n")
+        f.write("    memcpy(%s, pkbuf->payload - size, size);\n\n" % v_lower(k))
+        if "decode" in type_list[k]:
+            f.write("%s" % type_list[k]["decode"])
+        f.write("    return size;\n")
+        f.write("}\n\n")
+        f.write("c_int16_t nas_encode_%s(pkbuf_t *pkbuf, nas_%s_t *%s)\n" % (v_lower(k), v_lower(k), v_lower(k)))
+        f.write("{\n")
+        f.write("    c_uint16_t size = %s->length + sizeof(%s->length);\n" % (v_lower(k), v_lower(k)))
+        f.write("    nas_%s_t target;\n\n" % v_lower(k))
+        f.write("    memcpy(&target, %s, sizeof(nas_%s_t));\n" % (v_lower(k), v_lower(k)))
+        if "encode" in type_list[k]:
+            f.write("%s" % type_list[k]["encode"])
+        f.write("    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, \"pkbuf_header error\");\n")
+        f.write("    memcpy(pkbuf->payload - size, &target, size);\n\n")
+        f.write("    return size;\n")
+        f.write("}\n\n");
+f.close()
+
 f = open(outdir + 'nas_message2.h', 'w')
 output_header_to_file(f)
 f.write("""#ifndef __NAS_MESSAGE_H__
@@ -290,8 +425,6 @@ ED2(c_uint8_t security_header_type:4;,
 
 """)
 
-tmp = [(k, v["type"]) for k, v in msg_list.items()]
-sorted_msg_list = sorted(tmp, key=lambda tup: int(tup[1]))
 for (k, v) in sorted_msg_list:
     f.write("#define NAS_" + v_upper(k) + " " + v + "\n")
 f.write("\n")
@@ -544,3 +677,4 @@ f.write("""        default:
     return CORE_OK;
 """)
 f.close()
+

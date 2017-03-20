@@ -4,7 +4,7 @@
 #include "core_lib.h"
 #include "nas_ies.h"
 
-c_int32_t nas_encode_optional_type(pkbuf_t *pkbuf, c_uint8_t type)
+c_int16_t nas_encode_optional_type(pkbuf_t *pkbuf, c_uint8_t type)
 {
     c_uint16_t size = 0;
 
@@ -19,7 +19,7 @@ c_int32_t nas_encode_optional_type(pkbuf_t *pkbuf, c_uint8_t type)
 /* 9.9.2.0A Device properties
  * See subclause 10.5.7.8 in 3GPP TS 24.008 [13].
  * O TV 1 */
-c_int32_t nas_decode_device_properties(
+c_int16_t nas_decode_device_properties(
     nas_device_properties_t *device_properties, pkbuf_t *pkbuf)
 {
     memcpy(device_properties, pkbuf->payload - 1, 1);
@@ -29,7 +29,7 @@ c_int32_t nas_decode_device_properties(
 /* 9.9.2.2 Location area identification
  * See subclause 10.5.1.3 in 3GPP TS 24.008 [13]
  * O TV 6 */
-c_int32_t nas_decode_location_area_identification(
+c_int16_t nas_decode_location_area_identification(
     nas_location_area_identification_t *location_area_identification, 
     pkbuf_t *pkbuf)
 {
@@ -46,7 +46,7 @@ c_int32_t nas_decode_location_area_identification(
     return size;
 }
 
-c_int32_t nas_encode_location_area_identification(
+c_int16_t nas_encode_location_area_identification(
     pkbuf_t *pkbuf,
     nas_location_area_identification_t *location_area_identification)
 {
@@ -70,7 +70,7 @@ c_int32_t nas_encode_location_area_identification(
 /* 9.9.2.3 Mobile identity
  * See subclause 10.5.1.4 in 3GPP TS 24.008 [13].
  * O TLV 7-10 */
-c_int32_t nas_encode_mobile_identity(
+c_int16_t nas_encode_mobile_identity(
     pkbuf_t *pkbuf, nas_mobile_identity_t *mobile_identity)
 {
     c_uint16_t size = 0;
@@ -93,7 +93,7 @@ c_int32_t nas_encode_mobile_identity(
     return size;
 }
 
-c_int32_t nas_decode_mobile_identity(
+c_int16_t nas_decode_mobile_identity(
     nas_mobile_identity_t *mobile_identity, pkbuf_t *pkbuf)
 {
     c_uint16_t size = 0;
@@ -112,7 +112,7 @@ c_int32_t nas_decode_mobile_identity(
 /* 9.9.2.4 Mobile station classmark 2
  * See subclause 10.5.1.6 in 3GPP TS 24.008
  * O TLV 5 */
-c_int32_t nas_decode_mobile_station_classmark_2(
+c_int16_t nas_decode_mobile_station_classmark_2(
     nas_mobile_station_classmark_2_t *mobile_station_classmark_2, 
     pkbuf_t *pkbuf)
 {
@@ -133,7 +133,7 @@ c_int32_t nas_decode_mobile_station_classmark_2(
 /*9.9.2.5 Mobile station classmark 3
  * See subclause 10.5.1.7 in 3GPP TS 24.008 [13].
  * O TLV 2-34 */
-c_int32_t nas_decode_mobile_station_classmark_3(
+c_int16_t nas_decode_mobile_station_classmark_3(
     nas_mobile_station_classmark_3_t *mobile_station_classmark_3, 
     pkbuf_t *pkbuf)
 {
@@ -156,7 +156,7 @@ c_int32_t nas_decode_mobile_station_classmark_3(
 /* 9.9.2.8 PLMN list
  * See subclause 10.5.1.13 in 3GPP TS 24.008 [13].
  * O TLV 5-47 */
-status_t nas_encode_plmn_list(
+c_int16_t nas_encode_plmn_list(
     pkbuf_t *pkbuf, nas_plmn_list_t *plmn_list)
 {
     c_uint16_t size = 0;
@@ -175,7 +175,7 @@ status_t nas_encode_plmn_list(
 /* 9.9.2.10 Supported codec list
  * See subclause 10.5.4.32 in 3GPP TS 24.008 [13].
  * O TLV 5-n */
-c_int32_t nas_decode_supported_codec_list(
+c_int16_t nas_decode_supported_codec_list(
     nas_supported_codec_list_t *supported_codec_list, pkbuf_t *pkbuf)
 {
     c_uint16_t size = 0;
@@ -194,7 +194,7 @@ c_int32_t nas_decode_supported_codec_list(
     return size;
 }
 
-c_int32_t nas_decode_additional_update_type(
+c_int16_t nas_decode_additional_update_type(
     nas_additional_update_type_t *additional_update_type, pkbuf_t *pkbuf)
 {
     memcpy(additional_update_type, pkbuf->payload - 1, 1);
@@ -203,7 +203,7 @@ c_int32_t nas_decode_additional_update_type(
 
 /* 9.9.3.0A Additional update result
  * O TV 1  */
-c_int32_t nas_encode_additional_update_result(
+c_int16_t nas_encode_additional_update_result(
     pkbuf_t *pkbuf, 
     nas_additional_update_result_t *additional_update_result)
 {
@@ -222,7 +222,7 @@ c_int32_t nas_encode_additional_update_result(
 /* 9.9.3.1 Authentication failure parameter
  * See subclause 10.5.3.2.2 in 3GPP TS 24.008 [13].
  * O TLV 16 */
-c_int32_t nas_decode_authentication_failure_parameter(
+c_int16_t nas_decode_authentication_failure_parameter(
     nas_authentication_failure_parameter_t *authentication_failure_parameter,
     pkbuf_t *pkbuf)
 {
@@ -243,7 +243,7 @@ c_int32_t nas_decode_authentication_failure_parameter(
 /* 9.9.3.2 Authentication parameter AUTN
  * See subclause 10.5.3.1.1 in 3GPP TS 24.008 [13].
  * M LV 17 */
-c_int32_t nas_encode_authentication_parameter_autn(pkbuf_t *pkbuf, 
+c_int16_t nas_encode_authentication_parameter_autn(pkbuf_t *pkbuf, 
     nas_authentication_parameter_autn_t *authentication_parameter_autn)
 {
     c_uint16_t size = 0;
@@ -263,7 +263,7 @@ c_int32_t nas_encode_authentication_parameter_autn(pkbuf_t *pkbuf,
 /* 9.9.3.3 Authentication parameter RAND
  * See subclause 10.5.3.1 in 3GPP TS 24.008 [13].
  * M V 16 */
-c_int32_t nas_encode_authentication_parameter_rand(pkbuf_t *pkbuf, 
+c_int16_t nas_encode_authentication_parameter_rand(pkbuf_t *pkbuf, 
     nas_authentication_parameter_rand_t *authentication_parameter_rand)
 {
     c_uint16_t size = 0;
@@ -280,7 +280,7 @@ c_int32_t nas_encode_authentication_parameter_rand(pkbuf_t *pkbuf,
 
 /* 9.9.3.4 Authentication response parameter
  * M LV 5-17 */
-c_int32_t nas_decode_authentication_response_parameter(
+c_int16_t nas_decode_authentication_response_parameter(
     nas_authentication_response_parameter_t *authentication_response_parameter,
     pkbuf_t *pkbuf)
 {
@@ -301,7 +301,7 @@ c_int32_t nas_decode_authentication_response_parameter(
 /* 9.9.3.8 DRX parameter
  * See subclause 10.5.5.6 in 3GPP TS 24.008
  * O TV 3 */
-c_int32_t nas_decode_drx_parameter(
+c_int16_t nas_decode_drx_parameter(
     nas_drx_parameter_t *drx_parameter, pkbuf_t *pkbuf)
 {
     c_uint16_t size = 0;
@@ -316,7 +316,7 @@ c_int32_t nas_decode_drx_parameter(
 
 /* 9.9.3.9 EMM cause
  * O TV 2 */
-c_int32_t nas_encode_emm_cause(pkbuf_t *pkbuf, nas_emm_cause_t *emm_cause)
+c_int16_t nas_encode_emm_cause(pkbuf_t *pkbuf, nas_emm_cause_t *emm_cause)
 {
     c_uint16_t size = 0;
 
@@ -330,7 +330,7 @@ c_int32_t nas_encode_emm_cause(pkbuf_t *pkbuf, nas_emm_cause_t *emm_cause)
     return size;
 }
 
-c_int32_t nas_decode_emm_cause(nas_emm_cause_t *emm_cause, pkbuf_t *pkbuf)
+c_int16_t nas_decode_emm_cause(nas_emm_cause_t *emm_cause, pkbuf_t *pkbuf)
 {
     c_uint16_t size = 0;
 
@@ -344,7 +344,7 @@ c_int32_t nas_decode_emm_cause(nas_emm_cause_t *emm_cause, pkbuf_t *pkbuf)
 
 /* 9.9.3.10 * EPS attach result
  * M V 1/2 */
-c_int32_t nas_encode_eps_attach_result(
+c_int16_t nas_encode_eps_attach_result(
     pkbuf_t *pkbuf, nas_eps_attach_result_t *eps_attach_result)
 {
     c_uint16_t size = 0;
@@ -363,7 +363,7 @@ c_int32_t nas_encode_eps_attach_result(
  * M V 1/2
  * 9.9.3.21 NAS key set identifier 
  * M V 1/2 */
-c_int32_t nas_decode_eps_attach_type(
+c_int16_t nas_decode_eps_attach_type(
     nas_eps_attach_type_t *eps_attach_type, pkbuf_t *pkbuf)
 {
     c_uint16_t size = 0;
@@ -378,7 +378,7 @@ c_int32_t nas_decode_eps_attach_type(
 
 /* 9.9.3.12 EPS mobile identity
  * M LV 5-12 */
-c_int32_t nas_decode_eps_mobile_identity(
+c_int16_t nas_decode_eps_mobile_identity(
     nas_eps_mobile_identity_t *eps_mobile_identity, pkbuf_t *pkbuf)
 {
     c_uint16_t size = 0;
@@ -407,7 +407,7 @@ c_int32_t nas_decode_eps_mobile_identity(
     return size;
 }
 
-status_t nas_encode_eps_mobile_identity(
+c_int16_t nas_encode_eps_mobile_identity(
     pkbuf_t *pkbuf, nas_eps_mobile_identity_t *eps_mobile_identity)
 {
     c_uint16_t size = 0;
@@ -435,7 +435,7 @@ status_t nas_encode_eps_mobile_identity(
 
 /* 9.9.3.12A EPS network feature support 
  * O TLV 3 */
-c_int32_t nas_encode_eps_network_feature_support(
+c_int16_t nas_encode_eps_network_feature_support(
     pkbuf_t *pkbuf, 
     nas_eps_network_feature_support_t *eps_network_feature_support)
 {
@@ -455,7 +455,7 @@ c_int32_t nas_encode_eps_network_feature_support(
 
 /* 9.9.3.15 ESM message container
  * M LV-E 5-n */
-c_int32_t nas_decode_esm_message_container(
+c_int16_t nas_decode_esm_message_container(
     nas_esm_message_container_t *esm_message_container, pkbuf_t *pkbuf)
 {
     c_uint16_t size = 0;
@@ -473,7 +473,7 @@ c_int32_t nas_decode_esm_message_container(
     return size;
 }
 
-c_int32_t nas_encode_esm_message_container(
+c_int16_t nas_encode_esm_message_container(
     pkbuf_t *pkbuf, nas_esm_message_container_t *esm_message_container)
 {
     c_uint16_t size = 0;
@@ -503,7 +503,7 @@ c_int32_t nas_encode_esm_message_container(
  *
  * Note : Other values shall be interpreted as multiples of 1 minute 
  * in this version of the protocol.  */
-c_int32_t nas_encode_gprs_timer(pkbuf_t *pkbuf, nas_gprs_timer_t *gprs_timer)
+c_int16_t nas_encode_gprs_timer(pkbuf_t *pkbuf, nas_gprs_timer_t *gprs_timer)
 {
     c_uint16_t size = 0;
 
@@ -520,7 +520,7 @@ c_int32_t nas_encode_gprs_timer(pkbuf_t *pkbuf, nas_gprs_timer_t *gprs_timer)
 /* 9.9.3.16A GPRS timer 2
  * See subclause 10.5.7.4 in 3GPP TS 24.008 [13].
  * O TLV 3 */
-c_int32_t nas_decode_gprs_timer_2(
+c_int16_t nas_decode_gprs_timer_2(
     nas_gprs_timer_2_t *gprs_timer_2, pkbuf_t *pkbuf)
 {
     c_uint16_t size = 0;
@@ -535,7 +535,7 @@ c_int32_t nas_decode_gprs_timer_2(
 
     return size;
 }
-CORE_DECLARE(c_int32_t) nas_encode_gprs_timer_2(
+c_int16_t nas_encode_gprs_timer_2(
     pkbuf_t *pkbuf, nas_gprs_timer_2_t *gprs_timer_2)
 {
     c_uint16_t size = 0;
@@ -554,7 +554,7 @@ CORE_DECLARE(c_int32_t) nas_encode_gprs_timer_2(
 /* 9.9.3.16B GPRS timer 3
  * See subclause 10.5.7.4a in 3GPP TS 24.008 [13].
  * O TLV 3 */
-c_int32_t nas_decode_gprs_timer_3(
+c_int16_t nas_decode_gprs_timer_3(
     nas_gprs_timer_3_t *gprs_timer_3, pkbuf_t *pkbuf)
 {
     c_uint16_t size = 0;
@@ -569,7 +569,7 @@ c_int32_t nas_decode_gprs_timer_3(
 
     return size;
 }
-CORE_DECLARE(c_int32_t) nas_encode_gprs_timer_3(
+c_int16_t nas_encode_gprs_timer_3(
     pkbuf_t *pkbuf, nas_gprs_timer_3_t *gprs_timer_3)
 {
     c_uint16_t size = 0;
@@ -588,7 +588,7 @@ CORE_DECLARE(c_int32_t) nas_encode_gprs_timer_3(
 /* 9.9.3.18 IMEISV request
  * See subclause 10.5.5.10 in 3GPP TS 24.008 [13].
  * O TV 1 */
-c_int32_t nas_encode_imeisv_request(
+c_int16_t nas_encode_imeisv_request(
     pkbuf_t *pkbuf, nas_imeisv_request_t *imeisv_request)
 {
     memcpy(imeisv_request, pkbuf->payload - 1, 1);
@@ -598,7 +598,7 @@ c_int32_t nas_encode_imeisv_request(
 /* 9.9.3.20 MS network capability
  * See subclause 10.5.5.12 in 3GPP TS 24.008
  * O TLV 4-10 */
-c_int32_t nas_decode_ms_network_capability(
+c_int16_t nas_decode_ms_network_capability(
     nas_ms_network_capability_t *ms_network_capability, pkbuf_t *pkbuf)
 {
     c_uint16_t size = 0;
@@ -617,7 +617,7 @@ c_int32_t nas_decode_ms_network_capability(
 /* 9.9.3.20A MS network feature support 
  * See subclause 10.5.1.15 in 3GPP TS 24.008 [13].
  * O TV 1 */
-c_int32_t nas_decode_ms_network_feature_support(
+c_int16_t nas_decode_ms_network_feature_support(
     nas_ms_network_feature_support_t *ms_network_feature_support, 
     pkbuf_t *pkbuf)
 {
@@ -629,7 +629,7 @@ c_int32_t nas_decode_ms_network_feature_support(
  * M V 1/2
  * 9.9.2.9 Spare half octet
  * M V 1/2 */
-c_int32_t nas_encode_nas_key_set_identifier(
+c_int16_t nas_encode_nas_key_set_identifier(
     pkbuf_t *pkbuf, nas_key_set_identifier_t *nas_key_set_identifier)
 {
     c_uint16_t size = 0;
@@ -646,7 +646,7 @@ c_int32_t nas_encode_nas_key_set_identifier(
 
 /* 9.9.3.23 NAS security algorithms
  * M V 1 */
-c_int32_t nas_encode_nas_security_algorithms(
+c_int16_t nas_encode_nas_security_algorithms(
     pkbuf_t *pkbuf, nas_security_algorithms_t *nas_security_algorithms)
 {
     c_uint16_t size = 0;
@@ -664,7 +664,7 @@ c_int32_t nas_encode_nas_security_algorithms(
 /* 9.9.3.24A Network resource identifier container
  * See subclause 10.5.5.31 in 3GPP TS 24.008 [13].
  * O TLV 4 */
-c_int32_t nas_decode_network_resource_identifier_container(
+c_int16_t nas_decode_network_resource_identifier_container(
     nas_network_resource_identifier_container_t *network_resource_identifier_container, 
     pkbuf_t *pkbuf)
 {
@@ -684,7 +684,7 @@ c_int32_t nas_decode_network_resource_identifier_container(
 
 /* 9.9.3.25 Nonce
  * O TV 5 */
-c_int32_t nas_encode_nonce(pkbuf_t *pkbuf, nas_nonce_t *nonce)
+c_int16_t nas_encode_nonce(pkbuf_t *pkbuf, nas_nonce_t *nonce)
 {
     c_uint16_t size = 0;
     c_uint32_t target;
@@ -704,7 +704,7 @@ c_int32_t nas_encode_nonce(pkbuf_t *pkbuf, nas_nonce_t *nonce)
 /* 9.9.3.26 P-TMSI signature 
  * See subclause 10.5.5.8 in 3GPP TS 24.008
  * O TV 4 */
-c_int32_t nas_decode_p_tmsi_signature(
+c_int16_t nas_decode_p_tmsi_signature(
     nas_p_tmsi_signature_t *p_tmsi_signature, pkbuf_t *pkbuf)
 {
     c_uint16_t size = 0;
@@ -721,7 +721,7 @@ c_int32_t nas_decode_p_tmsi_signature(
 
 /* 9.9.3.26A Extended EMM cause 
  * O TV 1 */
-c_int32_t nas_encode_extended_emm_cause(
+c_int16_t nas_encode_extended_emm_cause(
     pkbuf_t *pkbuf, nas_extended_emm_cause_t *extended_emm_cause)
 {
     c_uint16_t size = 0;
@@ -739,7 +739,7 @@ c_int32_t nas_encode_extended_emm_cause(
 /* 9.9.3.31 TMSI status
  * See subclause 10.5.5.4 in 3GPP TS 24.008 [13]
  * O TV 1 */
-c_int32_t nas_decode_tmsi_status(
+c_int16_t nas_decode_tmsi_status(
     nas_tmsi_status_t *tmsi_status, pkbuf_t *pkbuf)
 {
     memcpy(tmsi_status, pkbuf->payload - 1, 1);
@@ -749,7 +749,7 @@ c_int32_t nas_decode_tmsi_status(
 
 /* 9.9.3.32 Tracking area identity
  * O TV 6 */
-c_int32_t nas_decode_tracking_area_identity(
+c_int16_t nas_decode_tracking_area_identity(
     nas_tracking_area_identity_t *tracking_area_identity, pkbuf_t *pkbuf)
 {
     c_uint16_t size = 0;
@@ -766,7 +766,7 @@ c_int32_t nas_decode_tracking_area_identity(
 
 /* 9.9.3.33 Tracking area identity list
  * M LV 7-97 */
-c_int32_t nas_encode_tracking_area_identity_list(
+c_int16_t nas_encode_tracking_area_identity_list(
     pkbuf_t *pkbuf,
     nas_tracking_area_identity_list_t *tracking_area_identity_list)
 {
@@ -817,7 +817,7 @@ c_int32_t nas_encode_tracking_area_identity_list(
 
 /* 9.9.3.34 UE network capability
  * M LV 3-14 */
-c_int32_t nas_decode_ue_network_capability(
+c_int16_t nas_decode_ue_network_capability(
     nas_ue_network_capability_t *ue_network_capability, pkbuf_t *pkbuf)
 {
     c_uint16_t size = 0;
@@ -836,7 +836,7 @@ c_int32_t nas_decode_ue_network_capability(
 
 /* 9.9.3.36 UE security capability
  * M LV 3-6 */
-c_int32_t nas_encode_ue_security_capability(
+c_int16_t nas_encode_ue_security_capability(
     pkbuf_t *pkbuf, nas_ue_security_capability_t *ue_security_capability)
 {
     c_uint16_t size = 0;
@@ -856,7 +856,7 @@ c_int32_t nas_encode_ue_security_capability(
 /* TODO : 9.9.3.37 Emergency number list
  * See subclause 10.5.3.13 in 3GPP TS 24.008 [13].
  * O TLV 5-50 */
-c_int32_t nas_encode_emergency_number_list(
+c_int16_t nas_encode_emergency_number_list(
     pkbuf_t *pkbuf, nas_emergency_number_list_t *emergency_number_list)
 {
     c_uint16_t size = 0;
@@ -877,7 +877,7 @@ c_int32_t nas_encode_emergency_number_list(
 /* 9.9.3.44 Voice domain preference and UE's usage setting
  * See subclause 10.5.5.28 in 3GPP TS 24.008 [13].
  * O TLV 3 */
-c_int32_t nas_decode_voice_domain_preference_and_ue_usage_setting(
+c_int16_t nas_decode_voice_domain_preference_and_ue_usage_setting(
     nas_voice_domain_preference_and_ue_usage_setting_t *
         voice_domain_preference_and_ue_usage_setting, 
     pkbuf_t *pkbuf)
@@ -899,7 +899,7 @@ c_int32_t nas_decode_voice_domain_preference_and_ue_usage_setting(
 
 /* 9.9.3.45 GUTI type 
  * O TV 1 */
-c_int32_t nas_decode_guti_type(nas_guti_type_t *guti_type, pkbuf_t *pkbuf)
+c_int16_t nas_decode_guti_type(nas_guti_type_t *guti_type, pkbuf_t *pkbuf)
 {
     memcpy(guti_type, pkbuf->payload - 1, 1);
     return 0;
@@ -908,7 +908,7 @@ c_int32_t nas_decode_guti_type(nas_guti_type_t *guti_type, pkbuf_t *pkbuf)
 /* 9.9.3.46 Extended DRX parameters
  * See subclause 10.5.5.32 in 3GPP TS 24.008 [13].
  * O TLV 3 */
-c_int32_t nas_decode_extended_drx_parameters(
+c_int16_t nas_decode_extended_drx_parameters(
     nas_extended_drx_parameters_t *extended_drx_parameters, pkbuf_t *pkbuf)
 {
     c_uint16_t size = 0;
@@ -924,7 +924,7 @@ c_int32_t nas_decode_extended_drx_parameters(
     
     return size;
 }
-c_int32_t nas_encode_extended_drx_parameters(
+c_int16_t nas_encode_extended_drx_parameters(
     pkbuf_t *pkbuf, nas_extended_drx_parameters_t *extended_drx_parameters)
 {
     c_uint16_t size = 0;
