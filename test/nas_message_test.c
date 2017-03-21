@@ -203,7 +203,7 @@ static void nas_message_test6(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, NAS_PROTOCOL_DISCRIMINATOR_EMM, 
             message.h.protocol_discriminator);
     ABTS_INT_EQUAL(tc, NAS_IDENTITY_REQUEST, message.h.message_type);
-    ABTS_INT_EQUAL(tc, NAS_IDENTITY_IMSI_TYPE, 
+    ABTS_INT_EQUAL(tc, NAS_IDENTITY_TYPE_2_IMSI, 
             identity_request->identity_type.type_of_identity);
 
     pkbuf_free(pkbuf);
@@ -227,7 +227,8 @@ static void nas_message_test7(abts_case *tc, void *data)
 
     identity_response->mobile_identity.length = 8;
     identity_response->mobile_identity.imsi.digit1 = 0;
-    identity_response->mobile_identity.imsi.type_of_identity = NAS_MOBILE_IDENTITY_IMSI;
+    identity_response->mobile_identity.imsi.type_of_identity = 
+        NAS_IDENTITY_TYPE_2_IMSI;
     identity_response->mobile_identity.imsi.odd_even = 1;
     identity_response->mobile_identity.imsi.digit2 = 0;
     identity_response->mobile_identity.imsi.digit3 = 1;
