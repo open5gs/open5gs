@@ -257,7 +257,13 @@ for (k, v) in sorted_msg_list:
         continue;
 
     for ie in msg_list[k]["ies"]:
-        type_list[ie["type"]] = { "reference" : ie["reference"], "presence" : ie["presence"], "format" : ie["format"], "length" : ie["length"] }
+        key = ie["type"]
+        if key in type_list.keys() and (type_list[key]["presence"] != ie["presence"] or type_list[key]["format"] != ie["format"] or type_list[key]["length"] != ie["length"]):
+            d_print("KEY type different : %s\n" % key)
+            d_print("%s.%s %s %s %s\n" % (v_lower(type_list[key]["message"]), type_list[key]["value"], type_list[key]["presence"], type_list[key]["format"], type_list[key]["length"]))
+            d_print("%s.%s %s %s %s\n\n" % (v_lower(k), ie["value"], ie["presence"], ie["format"], ie["length"]))
+            continue
+        type_list[key] = { "reference" : ie["reference"], "presence" : ie["presence"], "format" : ie["format"], "length" : ie["length"], "message" : k, "value" : ie["value"] }
 
 d_info("[Type List]")
 cachefile = cachedir + "type_list.py"
@@ -291,7 +297,7 @@ for (k, v) in sorted_type_list:
 #    d_print("%s = %s\n" % (k, type_list[k]))
     f.write("/* %s %s\n" % (type_list[k]["reference"], k))
     f.write(" * %s %s %s */\n" % (type_list[k]["presence"], type_list[k]["format"], type_list[k]["length"]))
-    if type_list[k]["length"] == "1/2" or type_list[k]["length"] == "1":
+    if type_list[k]["length"] == "1/2" or (type_list[k]["format"] == "TV" and type_list[k]["length"] == "1"):
         f.write("c_int16_t nas_decode_%s(nas_%s_t *%s, pkbuf_t *pkbuf)\n" % (v_lower(k), v_lower(k), v_lower(k)))
         f.write("{\n")
         f.write("    memcpy(%s, pkbuf->payload - 1, 1);\n\n" % v_lower(k))
@@ -424,6 +430,14 @@ ED2(c_uint8_t security_header_type:4;,
 } __attribute__ ((packed)) nas_security_header_t;
 
 """)
+
+for (k, v) in sorted_type_list:
+    f.write("CORE_DECLARE(c_int16_t) nas_decode_%s(nas_%s_t *%s, pkbuf_t *pkbuf);\n" % (v_lower(k), v_lower(k), v_lower(k)))
+f.write("\n")
+
+for (k, v) in sorted_type_list:
+    f.write("CORE_DECLARE(c_int16_t) nas_encode_%s(pkbuf_t *pkbuf, nas_%s_t *%s);\n" % (v_lower(k), v_lower(k), v_lower(k)))
+f.write("\n")
 
 for (k, v) in sorted_msg_list:
     f.write("#define NAS_" + v_upper(k) + " " + v + "\n")
