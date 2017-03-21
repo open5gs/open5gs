@@ -736,5 +736,5 @@ ED2(c_uint8_t paging_time_window:4;,
 }
 #endif /* __cplusplus */
 
-#endif
+#endif /* __NAS_TYPES_H__ */
 

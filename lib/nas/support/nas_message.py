@@ -436,7 +436,6 @@ output_header_to_file(f)
 f.write("""#ifndef __NAS_MESSAGE_H__
 #define __NAS_MESSAGE_H__
 
-#include "3gpp_message.h"
 #include "nas_ies.h"
 
 #ifdef __cplusplus

@@ -26,14 +26,13 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-03-21 13:49:52.081225 by acetcom
+ * Created on: 2017-03-21 13:51:55.255910 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
 #ifndef __NAS_MESSAGE_H__
 #define __NAS_MESSAGE_H__
 
-#include "3gpp_message.h"
 #include "nas_ies.h"
 
 #ifdef __cplusplus
