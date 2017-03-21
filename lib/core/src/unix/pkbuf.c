@@ -34,7 +34,7 @@ typedef c_uint8_t cluster_256_t[SIZEOF_CLUSTER_256];
 typedef c_uint8_t cluster_512_t[SIZEOF_CLUSTER_512];
 typedef c_uint8_t cluster_1024_t[SIZEOF_CLUSTER_1024];
 typedef c_uint8_t cluster_2048_t[SIZEOF_CLUSTER_2048];
-typedef c_uint8_t cluster_8192_t[SIZEOF_CLUSTER_2048];
+typedef c_uint8_t cluster_8192_t[SIZEOF_CLUSTER_8192];
 
 pool_declare(cluster_128_pool, cluster_128_t, MAX_NUM_OF_CLUSTER_128);
 pool_declare(cluster_256_pool, cluster_256_t, MAX_NUM_OF_CLUSTER_256);
@@ -144,10 +144,14 @@ static clbuf_t* clbuf_alloc(c_uint16_t length)
         pool_alloc_node(&cluster_2048_pool, &cluster);
         clbuf->size = SIZEOF_CLUSTER_2048;
     }
-    else
+    else if (length <= 8192)
     {
         pool_alloc_node(&cluster_8192_pool, &cluster);
         clbuf->size = SIZEOF_CLUSTER_8192;
+    }
+    else
+    {
+        d_assert(0, return NULL, "No cluster. length:%d requested", length)
     }
 
     d_assert(cluster, pool_free_node(&clbuf_pool, clbuf); return NULL,
@@ -514,6 +518,8 @@ void *core_malloc(size_t size)
     headroom = sizeof(pkbuf_t *);
     p = pkbuf_alloc(headroom, size);
     d_assert(p, return NULL, "pkbuf_alloc failed");
+    d_assert(p->next == NULL, pkbuf_free(p);return NULL, 
+            "core_malloc should not be fragmented");
 
     memcpy(p->payload - headroom, &p, headroom);
 

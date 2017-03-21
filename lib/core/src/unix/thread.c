@@ -188,12 +188,12 @@ status_t thread_join(status_t *retval, thread_id id)
     if ((stat = pthread_join(thread->thread, (void *)&thread_stat)) == 0) 
     {
         *retval = thread->exitval;
-        return CORE_OK;
     }
-    else 
-    {
-        return stat;
-    }
+
+    semaphore_delete(thread->semaphore);
+    pool_free_node(&thread_pool, thread);
+
+    return stat;
 }
 
 status_t thread_exit(thread_id id, status_t retval)
@@ -208,16 +208,8 @@ status_t thread_exit(thread_id id, status_t retval)
 status_t thread_detach(thread_id id)
 {
     thread_t *thread = (thread_t *)id;
-    status_t stat;
 
-    if ((stat = pthread_detach(thread->thread)) == 0) 
-    {
-        return CORE_OK;
-    }
-    else 
-    {
-        return stat;
-    }
+    return pthread_detach(thread->thread);
 }
 
 void thread_yield(void)
@@ -229,4 +221,11 @@ void thread_yield(void)
     sched_yield();
 #endif
 #endif
+}
+
+status_t thread_cancel(thread_id id)
+{
+    thread_t *thread = (thread_t *)id;
+
+    return pthread_cancel(thread->thread);
 }

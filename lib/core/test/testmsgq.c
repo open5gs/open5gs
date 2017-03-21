@@ -159,7 +159,7 @@ static void msgq_test3(abts_case *tc, void *data)
     msgq_delete(md);
 }
 
-#define TEST_QUEUE_SIZE 512
+#define TEST_QUEUE_SIZE 128
 #define TEST_EVT_SIZE (sizeof(test_event_t))
 
 typedef struct {
@@ -170,15 +170,17 @@ typedef struct {
 
 static thread_id thr_producer;
 static thread_id thr_consumer;
-static int max = 100000;
+static int max = 10000;
 static int exit_ret_val = 123;
 
 static void *THREAD_FUNC producer_main(thread_id id, void *data)
 {
     int r;
     int i = 0;
+    //time_t i_time = time(NULL);
+    unsigned int full = 0;
 
-    while (i < max)
+    while (i++ < max)
     {
         test_event_t t;
 
@@ -186,14 +188,25 @@ static void *THREAD_FUNC producer_main(thread_id id, void *data)
         t.b = i+2;
         t.c[28] = 'X';
         t.c[29] = 'Y';
-        //printf("P: a = %d b = %d\n",t.a,t.b);
+        ///printf("P: a = %d b = %d\n",t.a,t.b);
         r = msgq_send(md, (char*)&t, TEST_EVT_SIZE);
-        if (r != TEST_EVT_SIZE)
+        if (r == CORE_EAGAIN)
         {
-        //    printf("Producer Error\n");
+            full++;
+            thread_yield();
+            continue;
         }
-        i++;
+        else if (r != TEST_EVT_SIZE)
+        {
+            printf("Producer Error\n");
+        }
     }
+#if 0
+    printf("Total Send:%u Drop = %u , elapsed time: %u\n",
+            i,
+            full,
+            (unsigned int)time(NULL)-(unsigned int)i_time);
+#endif
     thread_exit(id, exit_ret_val);
 
     return NULL;
@@ -203,22 +216,52 @@ static void *THREAD_FUNC consumer_main(thread_id id, void *data)
 {
     abts_case *tc = data;
     int r;
-    int prev = 0;
+    ///int prev = -1;
+    int i = 0;
+    ///char str[256];
+
+    while (!thread_should_stop())
+    {
+        test_event_t t;
+
+        r = msgq_recv(md, (char*)&t, TEST_EVT_SIZE);
+        if (r == CORE_EAGAIN)
+        {
+            thread_yield();
+            continue;
+        }
+        ABTS_ASSERT(tc, "consumer error", r == TEST_EVT_SIZE);
+        ABTS_ASSERT(tc, "consumer error", t.c[28] == 'X' && t.c[29] == 'Y');
+        ///sprintf(str, "consumer error - prev:%d, t.a:%d", prev, t.a);
+        ///ABTS_ASSERT(tc, str, (prev+1) == t.a);
+        ///prev = t.a;
+        ///printf("C: a = %d b = %d\n",t.a,t.b);
+        i++;
+    }
+
+    return NULL;
+}
+
+static void *THREAD_FUNC timedconsumer_main(thread_id id, void *data)
+{
+    abts_case *tc = data;
+    int r;
+    ///int prev = -1;
     int i = 0;
 
     while (!thread_should_stop())
     {
         test_event_t t;
-        r = msgq_recv(md, (char*)&t, TEST_EVT_SIZE);
-        if (r == CORE_EAGAIN)
+
+        r = msgq_timedrecv(md, (char*)&t, TEST_EVT_SIZE, 10000);
+        if (r == CORE_EAGAIN || r == CORE_TIMEUP)
         {
+            thread_yield();
             continue;
         }
-        ABTS_ASSERT(tc, "consumer error", r == TEST_EVT_SIZE)
-        ABTS_ASSERT(tc, "consumer error", t.c[28] == 'X' && t.c[29] == 'Y')
-        ABTS_ASSERT(tc, "consumer error", (prev+1) == t.a)
-        prev = t.a;
-        //printf("C: a = %d b = %d\n",t.a,t.b);
+        ABTS_ASSERT(tc, "consumer error", r == TEST_EVT_SIZE);
+        ABTS_ASSERT(tc, "consumer error", t.c[28] == 'X' && t.c[29] == 'Y');
+        ///prev = t.a;
         i++;
     }
 
@@ -242,11 +285,34 @@ static void msgq_test4(abts_case *tc, void *data)
     thread_join(&rv, thr_producer);
     ABTS_INT_EQUAL(tc, exit_ret_val, rv);
 
-    rv = thread_delete(thr_consumer);
-    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    thread_delete(thr_consumer);
 
     msgq_delete(md);
 }
+
+static void msgq_test5(abts_case *tc, void *data)
+{
+    status_t rv;
+    int opt = (int)data;
+
+    md = msgq_create(TEST_QUEUE_SIZE, TEST_EVT_SIZE, opt);
+    ABTS_INT_NEQUAL(tc, 0, md);
+
+    rv = thread_create(&thr_producer, NULL, producer_main, NULL);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    rv = thread_create(&thr_consumer, NULL, timedconsumer_main, tc);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    thread_join(&rv, thr_producer);
+    ABTS_INT_EQUAL(tc, exit_ret_val, rv);
+
+    thread_delete(thr_consumer);
+
+    msgq_delete(md);
+}
+
+#define STRESS_TEST 0
 
 abts_suite *testmsgq(abts_suite *suite)
 {
@@ -256,9 +322,18 @@ abts_suite *testmsgq(abts_suite *suite)
     abts_run_test(suite, msgq_test2, NULL);
     abts_run_test(suite, msgq_test3, NULL);
 
-#if 0
-    abts_run_test(suite, msgq_test4, (void *)MSGQ_O_NONBLOCK);
-    abts_run_test(suite, msgq_test4, (void *)MSGQ_O_BLOCK);
+#if STRESS_TEST == 1
+    while(1)
+    {
+#endif
+        abts_run_test(suite, msgq_test4, (void *)MSGQ_O_NONBLOCK);
+        abts_run_test(suite, msgq_test4, (void *)MSGQ_O_BLOCK);
+        abts_run_test(suite, msgq_test5, (void *)MSGQ_O_NONBLOCK);
+        abts_run_test(suite, msgq_test5, (void *)MSGQ_O_BLOCK);
+#if STRESS_TEST == 1
+        printf("Test again = %u\n", (unsigned int)time(NULL));
+        sleep(5);
+    }
 #endif
 
     return suite;

@@ -4,8 +4,11 @@
 #include "core_ringbuf.h"
 #include "core_cond.h"
 #include "core_mutex.h"
-#include "core_pkbuf.h"
 #include "core_msgq.h"
+#include "core_pkbuf.h"
+#include "core_list.h"
+
+#define ONE_LOCK 1
 
 typedef struct _msq_desc_t {
     mutex_id mut_c, mut_r, mut_w;
@@ -47,7 +50,9 @@ msgq_id msgq_create(int qdepth, int msgsize, int opt)
     rv = mutex_create(&md->mut_c, MUTEX_DEFAULT);
     d_assert(rv == CORE_OK,
             goto error_final, "mutex creation failed");
-
+#if ONE_LOCK
+    md->mut_w = md->mut_r = md->mut_c;
+#else
     rv = mutex_create(&md->mut_r, MUTEX_DEFAULT);
     d_assert(rv == CORE_OK,
             goto error_final, "mutex creation failed");
@@ -55,6 +60,7 @@ msgq_id msgq_create(int qdepth, int msgsize, int opt)
     rv = mutex_create(&md->mut_w, MUTEX_DEFAULT);
     d_assert(rv == CORE_OK,
             goto error_final, "mutex creation failed");
+#endif
 
     rv = cond_create(&md->cond);
     d_assert(rv == CORE_OK,
@@ -77,8 +83,10 @@ msgq_id msgq_create(int qdepth, int msgsize, int opt)
 error_final:
     if (md->pool) core_free(md->pool);
     if (md->mut_c) mutex_delete(md->mut_c);
+#if ONE_LOCK == 0
     if (md->mut_r) mutex_delete(md->mut_r);
     if (md->mut_w) mutex_delete(md->mut_w);
+#endif
     if (md->cond) cond_delete(md->cond);
 
     pool_free_node(&msgqpool, md);
@@ -94,6 +102,10 @@ status_t msgq_delete(msgq_id id)
 
     if (md->pool) core_free(md->pool);
     if (md->mut_c) mutex_delete(md->mut_c);
+#if ONE_LOCK == 0
+    if (md->mut_r) mutex_delete(md->mut_r);
+    if (md->mut_w) mutex_delete(md->mut_w);
+#endif
     if (md->cond) cond_delete(md->cond);
 
     pool_free_node(&msgqpool, md);
@@ -155,11 +167,16 @@ int msgq_send(msgq_id id, const char *msg, int msglen)
 
     d_trace(1, "msg (%d bytes) pushed.\n", msglen);
 
+#if ONE_LOCK == 0
     mutex_unlock(md->mut_w);
-
     mutex_lock(md->mut_c);
+#endif
     cond_signal(md->cond);
+#if ONE_LOCK == 0
     mutex_unlock(md->mut_c);
+#else
+    mutex_unlock(md->mut_w);
+#endif
 
     return msglen;
 }
@@ -183,9 +200,14 @@ int msgq_recv(msgq_id id, char *msg, int msglen)
 
     if (!(md->opt & MSGQ_O_NONBLOCK) && (n < md->msgsize + 2))
     {
+#if ONE_LOCK == 0
         mutex_lock(md->mut_c);
-        cond_wait(md->cond, md->mut_c);
+#endif
+        while(rbuf_is_empty(&md->rbuf) && 
+                cond_wait(md->cond, md->mut_c) == CORE_OK);
+#if ONE_LOCK == 0
         mutex_unlock(md->mut_c);
+#endif
 
         n = rbuf_bytes(&md->rbuf);
 
@@ -254,9 +276,14 @@ int msgq_timedrecv(msgq_id id, char *msg, int msglen, c_time_t timeout)
 
     if (!(md->opt & MSGQ_O_NONBLOCK) && (n < md->msgsize + 2))
     {
+#if ONE_LOCK == 0
         mutex_lock(md->mut_c);
-        rv = cond_timedwait(md->cond, md->mut_c, timeout);
+#endif
+        while(rbuf_is_empty(&md->rbuf) && 
+                (rv = cond_timedwait(md->cond, md->mut_c, timeout)) == CORE_OK);
+#if ONE_LOCK == 0
         mutex_unlock(md->mut_c);
+#endif
 
         if (rv == CORE_TIMEUP)
         {
@@ -309,23 +336,3 @@ int msgq_timedrecv(msgq_id id, char *msg, int msglen, c_time_t timeout)
 
     return len;
 }
-
-int msgq_is_empty(msgq_id id)
-{
-    msg_desc_t *md = (msg_desc_t*)id;
-    int n;
-
-    mutex_lock(md->mut_r);
-    n = rbuf_bytes(&md->rbuf);
-    if (n < md->msgsize + 2)
-    {
-        mutex_unlock(md->mut_r);
-        return 1;
-    }
-    else
-    {
-        mutex_unlock(md->mut_r);
-        return 0;
-    }
-}
-
