@@ -144,14 +144,10 @@ static clbuf_t* clbuf_alloc(c_uint16_t length)
         pool_alloc_node(&cluster_2048_pool, &cluster);
         clbuf->size = SIZEOF_CLUSTER_2048;
     }
-    else if (length <= 8192)
+    else 
     {
         pool_alloc_node(&cluster_8192_pool, &cluster);
         clbuf->size = SIZEOF_CLUSTER_8192;
-    }
-    else
-    {
-        d_assert(0, return NULL, "No cluster. length:%d requested", length)
     }
 
     d_assert(cluster, pool_free_node(&clbuf_pool, clbuf); return NULL,
