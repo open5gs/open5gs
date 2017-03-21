@@ -3,7 +3,7 @@
 noinst_LTLIBRARIES = libnas.la
 
 libnas_la_SOURCES = \
-	nas_message.h nas_ies.h
+	nas_message.h nas_ies.h nas_types.h
 
 nodist_libnas_la_SOURCES = \
 	nas_decoder.c nas_encoder.c nas_ies.c

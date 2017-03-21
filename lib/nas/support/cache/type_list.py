@@ -13,6 +13,35 @@ type_list["Tracking area identity"]["decode"] = \
 type_list["Tracking area identity"]["encode"] = \
 "    target.tac = htons(tracking_area_identity->tac);\n\n"
 
+type_list["Tracking area identity list"]["decode"] = \
+"    int i = 0;\n" \
+"    {\n" \
+"        if (tracking_area_identity_list->type_of_list == NAS_TRACKING_AREA_IDENTITY_LIST_ONE_PLMN_NON_CONSECUTIVE_TACS)\n" \
+"            for (i = 0; i < tracking_area_identity_list->number_of_elements + 1 && i < NAS_MAX_TRACKING_AREA_IDENTITY; i++)\n" \
+"                tracking_area_identity_list->type0.tac[i] = ntohs(tracking_area_identity_list->type0.tac[i]);\n" \
+"        else if (tracking_area_identity_list->type_of_list == NAS_TRACKING_AREA_IDENTITY_LIST_ONE_PLMN_CONSECUTIVE_TACS)\n" \
+"            tracking_area_identity_list->type1.tac = ntohs(tracking_area_identity_list->type1.tac);\n" \
+"        else if (tracking_area_identity_list->type_of_list == NAS_TRACKING_AREA_IDENTITY_LIST_MANY_PLMNS)\n" \
+"            for (i = 0; i < tracking_area_identity_list->number_of_elements + 1 && i < NAS_MAX_TRACKING_AREA_IDENTITY; i++)\n" \
+"                tracking_area_identity_list->type2.tai[i].tac = ntohs(tracking_area_identity_list->type2.tai[i].tac);\n" \
+"        else\n" \
+"            return -1;\n" \
+"    }\n\n"
+type_list["Tracking area identity list"]["encode"] = \
+"    int i = 0;\n" \
+"    {\n" \
+"        if (tracking_area_identity_list->type_of_list == NAS_TRACKING_AREA_IDENTITY_LIST_ONE_PLMN_NON_CONSECUTIVE_TACS)\n" \
+"            for (i = 0; i < tracking_area_identity_list->number_of_elements + 1 && i < NAS_MAX_TRACKING_AREA_IDENTITY; i++)\n" \
+"                target.type0.tac[i] = htons(tracking_area_identity_list->type0.tac[i]);\n" \
+"        else if (tracking_area_identity_list->type_of_list == NAS_TRACKING_AREA_IDENTITY_LIST_ONE_PLMN_CONSECUTIVE_TACS)\n" \
+"            target.type1.tac = htons(tracking_area_identity_list->type1.tac);\n" \
+"        else if (tracking_area_identity_list->type_of_list == NAS_TRACKING_AREA_IDENTITY_LIST_MANY_PLMNS)\n" \
+"            for (i = 0; i < tracking_area_identity_list->number_of_elements + 1 && i < NAS_MAX_TRACKING_AREA_IDENTITY; i++)\n" \
+"                target.type2.tai[i].tac = htons(tracking_area_identity_list->type2.tai[i].tac);\n" \
+"        else\n" \
+"            return -1;\n" \
+"    }\n\n"
+
 type_list["Mobile identity"]["decode"] = \
 "    if (mobile_identity->tmsi.type_of_identity == NAS_MOBILE_IDENTITY_TMSI)\n" \
 "    {\n" \

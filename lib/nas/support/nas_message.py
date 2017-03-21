@@ -282,6 +282,40 @@ if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
 tmp = [(k, v["reference"]) for k, v in type_list.items()]
 sorted_type_list = sorted(tmp, key=lambda tup: tup[1])
 
+f = open(outdir + 'nas_ies.h', 'w')
+output_header_to_file(f)
+f.write("""#ifndef __NAS_IES_H__
+#define __NAS_IES_H__
+
+#include "core_pkbuf.h"
+#include "nas_types.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
+CORE_DECLARE(c_int16_t) nas_encode_optional_type(pkbuf_t *pkbuf, c_uint8_t type);
+
+""")
+
+for (k, v) in sorted_type_list:
+    f.write("CORE_DECLARE(c_int16_t) nas_decode_%s(nas_%s_t *%s, pkbuf_t *pkbuf);\n" % (v_lower(k), v_lower(k), v_lower(k)))
+f.write("\n")
+
+for (k, v) in sorted_type_list:
+    f.write("CORE_DECLARE(c_int16_t) nas_encode_%s(pkbuf_t *pkbuf, nas_%s_t *%s);\n" % (v_lower(k), v_lower(k), v_lower(k)))
+f.write("\n")
+
+
+f.write("""#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
+#endif /* __NAS_IES_H__ */
+
+""")
+f.close()
+
 f = open(outdir + 'nas_ies.c', 'w')
 output_header_to_file(f)
 f.write("""#define TRACE_MODULE _nasies
@@ -305,7 +339,7 @@ for (k, v) in sorted_type_list:
 #    d_print("%s = %s\n" % (k, type_list[k]))
     f.write("/* %s %s\n" % (type_list[k]["reference"], k))
     f.write(" * %s %s %s */\n" % (type_list[k]["presence"], type_list[k]["format"], type_list[k]["length"]))
-    if type_list[k]["length"] == "1/2" or (type_list[k]["format"] == "TV" and type_list[k]["length"] == "1"):
+    if type_list[k]["format"] == "TV" and type_list[k]["length"] == "1":
         f.write("c_int16_t nas_decode_%s(nas_%s_t *%s, pkbuf_t *pkbuf)\n" % (v_lower(k), v_lower(k), v_lower(k)))
         f.write("{\n")
         f.write("    memcpy(%s, pkbuf->payload - 1, 1);\n\n" % v_lower(k))
@@ -439,14 +473,6 @@ ED2(c_uint8_t security_header_type:4;,
 
 """)
 
-for (k, v) in sorted_type_list:
-    f.write("CORE_DECLARE(c_int16_t) nas_decode_%s(nas_%s_t *%s, pkbuf_t *pkbuf);\n" % (v_lower(k), v_lower(k), v_lower(k)))
-f.write("\n")
-
-for (k, v) in sorted_type_list:
-    f.write("CORE_DECLARE(c_int16_t) nas_encode_%s(pkbuf_t *pkbuf, nas_%s_t *%s);\n" % (v_lower(k), v_lower(k), v_lower(k)))
-f.write("\n")
-
 for (k, v) in sorted_msg_list:
     f.write("#define NAS_" + v_upper(k) + " " + v + "\n")
 f.write("\n")
@@ -511,9 +537,12 @@ CORE_DECLARE(int) nas_plain_encode(pkbuf_t **pkbuf, nas_message_t *message);
 }
 #endif /* __cplusplus */
 
-#endif /* __GTPV2C_MESSAGE_H__ */
+#endif /* __NAS_MESSAGE_H__ */
 """)
+
 f.close()
+
+
 
 f = open(outdir + 'nas_decoder.c', 'w')
 output_header_to_file(f)
