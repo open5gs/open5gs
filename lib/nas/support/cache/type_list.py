@@ -43,3 +43,7 @@ type_list["EPS mobile identity"]["encode"] = \
 "        target.guti.m_tmsi = htonl(eps_mobile_identity->guti.m_tmsi);\n" \
 "    }\n\n"
 
+type_list["Nonce"]["decode"] = \
+"    *nonce = ntohl(*nonce);\n\n"
+type_list["Nonce"]["encode"] = \
+"    target = htonl(*nonce);\n\n"

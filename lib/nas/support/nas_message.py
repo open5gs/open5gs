@@ -208,7 +208,15 @@ msg_list["ESM STATUS"] = { "type" : "232" }
 
 # Table number for Message List
 msg_list["ATTACH ACCEPT"]["table"] = 8
+msg_list["ATTACH COMPLETE"]["table"] = 9
+msg_list["ATTACH REJECT"]["table"] = 10
 msg_list["ATTACH REQUEST"]["table"] = 11
+msg_list["AUTHENTICATION FAILURE"]["table"] = 12
+msg_list["AUTHENTICATION REQUEST"]["table"] = 14
+msg_list["AUTHENTICATION RESPONSE"]["table"] = 15
+msg_list["SECURITY MODE COMMAND"]["table"] = 29
+msg_list["SECURITY MODE COMPLETE"]["table"] = 30
+msg_list["SECURITY MODE REJECT"]["table"] = 31
 
 for key in msg_list.keys():
     if "table" not in msg_list[key].keys():
@@ -446,23 +454,28 @@ f.write("\n")
 for (k, v) in sorted_msg_list:
     if "ies" not in msg_list[k]:
         continue;
+    if len(msg_list[k]["ies"]) == 0:
+        continue;
 
-    f.write("/*******************************************************\n")
+    f.write("\n/*******************************************************\n")
     f.write(" * %s\n" % k)
-    f.write(" ******************************************************/\n")
+    f.write(" ******************************************************/")
 
     for i, ie in enumerate([ies for ies in msg_list[k]["ies"] if ies["presence"] == "O"]):
-        f.write("#define NAS_%s_%s_PRESENT (1<<%d)\n" % (v_upper(k), v_upper(ie["value"]), i))
-    f.write("\n")
+        f.write("\n#define NAS_%s_%s_PRESENT (1<<%d)" % (v_upper(k), v_upper(ie["value"]), i))
 
     for i, ie in enumerate([ies for ies in msg_list[k]["ies"] if ies["presence"] == "O"]):
-        f.write("#define NAS_%s_%s_TYPE 0x%s\n" % (v_upper(k), v_upper(ie["value"]), re.sub('-', '0', ie["iei"])))
-    f.write("\n")
+        f.write("\n#define NAS_%s_%s_TYPE 0x%s" % (v_upper(k), v_upper(ie["value"]), re.sub('-', '0', ie["iei"])))
 
-    f.write("typedef struct _nas_%s_t {\n" % v_lower(k))
-    f.write("    /* Mandatory fields */\n")
+    f.write("\n\ntypedef struct _nas_%s_t {\n" % v_lower(k))
+
+    mandatory_fields = False;
     optional_fields = False;
     for ie in msg_list[k]["ies"]:
+        if ie["presence"] == "M" and mandatory_fields is False:
+            f.write("    /* Mandatory fields */\n")
+            mandatory_fields = True;
+
         if ie["presence"] == "O" and optional_fields is False:
             f.write("\n    /* Optional fields */\n")
             f.write("    c_uint32_t presencemask;\n");
@@ -471,7 +484,7 @@ for (k, v) in sorted_msg_list:
         f.write("    nas_" + v_lower(ie["type"]) + "_t " + \
                 v_lower(ie["value"]) + ";\n")
 
-    f.write("} nas_%s_t;\n" % v_lower(k))
+    f.write("} nas_%s_t;\n\n" % v_lower(k))
 
 f.write("\n")
 
@@ -483,6 +496,9 @@ f.write("""typedef struct _nas_message_t {
 for (k, v) in sorted_msg_list:
     if "ies" not in msg_list[k]:
         continue;
+    if len(msg_list[k]["ies"]) == 0:
+        continue;
+
     f.write("        nas_%s_t %s;\n" % (v_lower(k), v_lower(k)))
 
 f.write("""    };
@@ -510,7 +526,10 @@ f.write("""#define TRACE_MODULE _nasdec
 
 for (k, v) in sorted_msg_list:
     if "ies" not in msg_list[k]:
-        continue;
+        continue
+    if len(msg_list[k]["ies"]) == 0:
+        continue
+
     f.write("c_int32_t nas_decode_%s(nas_message_t *message, pkbuf_t *pkbuf)\n{\n" % v_lower(k))
     f.write("    nas_%s_t *%s = &message->%s;\n" % (v_lower(k), v_lower(k), v_lower(k)))
     f.write("    c_int32_t decoded = 0;\n")
@@ -546,14 +565,17 @@ for (k, v) in sorted_msg_list:
         f.write("                 decoded += size;\n")
         f.write("                 break;\n")
 
-    f.write("""             default:
+    if [ies for ies in msg_list[k]["ies"] if ies["presence"] == "O"]:
+        f.write("""             default:
                 d_error("Unknown type(0x%x) or not implemented\\n", type);
                 return -1;
         }
     }
 
-    return decoded;
+""")
+    f.write("""    return decoded;
 }
+
 """)
 
 f.write("""status_t nas_plain_decode(nas_message_t *message, pkbuf_t *pkbuf)
@@ -579,6 +601,9 @@ f.write("""status_t nas_plain_decode(nas_message_t *message, pkbuf_t *pkbuf)
 for (k, v) in sorted_msg_list:
     if "ies" not in msg_list[k]:
         continue;
+    if len(msg_list[k]["ies"]) == 0:
+        continue
+
     f.write("        case NAS_%s:\n" % v_upper(k))
     f.write("            size = nas_decode_%s(message, pkbuf);\n" % v_lower(k))
     f.write("            d_assert(size >= CORE_OK, return CORE_ERROR, \"decode error\");\n")
@@ -612,6 +637,9 @@ f.write("""#define TRACE_MODULE _nasenc
 for (k, v) in sorted_msg_list:
     if "ies" not in msg_list[k]:
         continue;
+    if len(msg_list[k]["ies"]) == 0:
+        continue
+
     f.write("c_int32_t nas_encode_%s(pkbuf_t *pkbuf, nas_message_t *message)\n{\n" % v_lower(k))
     f.write("    nas_%s_t *%s = &message->%s;\n" % (v_lower(k), v_lower(k), v_lower(k)))
     f.write("    c_int32_t encoded = 0;\n")
@@ -638,6 +666,7 @@ for (k, v) in sorted_msg_list:
 
     f.write("""    return encoded;
 }
+
 """)
 
 
@@ -669,6 +698,9 @@ f.write("""status_t nas_plain_encode(pkbuf_t **pkbuf, nas_message_t *message)
 for (k, v) in sorted_msg_list:
     if "ies" not in msg_list[k]:
         continue;
+    if len(msg_list[k]["ies"]) == 0:
+        continue
+
     f.write("        case NAS_%s:\n" % v_upper(k))
     f.write("            size = nas_encode_%s(*pkbuf, message);\n" % v_lower(k))
     f.write("            d_assert(size >= 0, return CORE_ERROR, \"decode error\");\n")
