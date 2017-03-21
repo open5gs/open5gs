@@ -182,6 +182,78 @@ static void nas_message_test5(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, 0xabcdef, ue.ul_count.i32);
 }
 
+static void nas_message_test6(abts_case *tc, void *data)
+{
+    /* Identity Request */
+    char *payload = "075501";
+
+    nas_message_t message;
+    nas_identity_request_t *identity_request = &message.identity_request;
+    pkbuf_t *pkbuf;
+    status_t rv;
+
+    pkbuf = pkbuf_alloc(0, MESSAGE_SDU_SIZE);
+    ABTS_PTR_NOTNULL(tc, pkbuf);
+    pkbuf->len = 3;
+    core_ascii_to_hex(payload, strlen(payload), pkbuf->payload, pkbuf->len);
+
+    rv = nas_plain_decode(&message, pkbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    ABTS_INT_EQUAL(tc, NAS_PROTOCOL_DISCRIMINATOR_EMM, 
+            message.h.protocol_discriminator);
+    ABTS_INT_EQUAL(tc, NAS_IDENTITY_REQUEST, message.h.message_type);
+    ABTS_INT_EQUAL(tc, NAS_IDENTITY_IMSI_TYPE, 
+            identity_request->identity_type.type_of_identity);
+
+    pkbuf_free(pkbuf);
+}
+
+static void nas_message_test7(abts_case *tc, void *data)
+{
+    /* Identity Response */
+    char *payload = "0756080910101032548651";
+    char buffer[11];
+
+    nas_message_t message;
+    nas_identity_response_t *identity_response = &message.identity_response;
+
+    pkbuf_t *pkbuf = NULL;
+    status_t rv;
+
+    memset(&message, 0, sizeof(message));
+    message.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    message.h.message_type = NAS_IDENTITY_RESPONSE;
+
+    identity_response->mobile_identity.length = 8;
+    identity_response->mobile_identity.imsi.digit1 = 0;
+    identity_response->mobile_identity.imsi.type_of_identity = NAS_MOBILE_IDENTITY_IMSI;
+    identity_response->mobile_identity.imsi.odd_even = 1;
+    identity_response->mobile_identity.imsi.digit2 = 0;
+    identity_response->mobile_identity.imsi.digit3 = 1;
+    identity_response->mobile_identity.imsi.digit4 = 0;
+    identity_response->mobile_identity.imsi.digit5 = 1;
+    identity_response->mobile_identity.imsi.digit6 = 0;
+    identity_response->mobile_identity.imsi.digit7 = 1;
+    identity_response->mobile_identity.imsi.digit8 = 2;
+    identity_response->mobile_identity.imsi.digit9 = 3;
+    identity_response->mobile_identity.imsi.digit10 = 4;
+    identity_response->mobile_identity.imsi.digit11 = 5;
+    identity_response->mobile_identity.imsi.digit12 = 6;
+    identity_response->mobile_identity.imsi.digit13 = 8;
+    identity_response->mobile_identity.imsi.digit14 = 1;
+    identity_response->mobile_identity.imsi.digit15 = 5;
+
+    rv = nas_plain_encode(&pkbuf, &message);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    ABTS_INT_EQUAL(tc, sizeof(buffer), pkbuf->len);
+    ABTS_TRUE(tc, memcmp(
+            core_ascii_to_hex(payload, strlen(payload), buffer, sizeof(buffer)),
+            pkbuf->payload, pkbuf->len) == 0);
+
+    pkbuf_free(pkbuf);
+}
+
 abts_suite *test_nas_message(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -191,6 +263,8 @@ abts_suite *test_nas_message(abts_suite *suite)
     abts_run_test(suite, nas_message_test3, NULL);
     abts_run_test(suite, nas_message_test4, NULL);
     abts_run_test(suite, nas_message_test5, NULL);
+    abts_run_test(suite, nas_message_test6, NULL);
+    abts_run_test(suite, nas_message_test7, NULL);
 
     return suite;
 }

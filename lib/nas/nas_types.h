@@ -395,6 +395,18 @@ ED2(c_uint8_t unit:3;,
     c_uint8_t timer_value:5;)
 } __attribute__ ((packed)) nas_gprs_timer_3_t;
 
+/* 9.9.3.17 Identity type 2
+ * See subclause 10.5.5.9 in 3GPP TS 24.008 [13].
+ * M V 1/2 */
+#define NAS_IDENTITY_IMSI_TYPE          1
+#define NAS_IDENTITY_IMEI_TYPE          2
+#define NAS_IDENTITY_IMEISV_TYPE        3
+#define NAS_IDENTITY_TMSI_TYPE          4
+typedef struct _nas_identity_type_2_t {
+ED2(c_uint8_t spare:5;,
+    c_uint8_t type_of_identity:3;)
+} __attribute__ ((packed)) nas_identity_type_2_t;
+
 /* 9.9.3.18 IMEISV request
  * See subclause 10.5.5.10 in 3GPP TS 24.008 [13].
  * O TV 1 */

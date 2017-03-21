@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-03-21 13:53:30.257303 by acetcom
+ * Created on: 2017-03-21 13:59:52.520739 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -60,6 +60,7 @@ CORE_DECLARE(c_int16_t) nas_decode_esm_message_container(nas_esm_message_contain
 CORE_DECLARE(c_int16_t) nas_decode_gprs_timer(nas_gprs_timer_t *gprs_timer, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_gprs_timer_2(nas_gprs_timer_2_t *gprs_timer_2, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_gprs_timer_3(nas_gprs_timer_3_t *gprs_timer_3, pkbuf_t *pkbuf);
+CORE_DECLARE(c_int16_t) nas_decode_identity_type_2(nas_identity_type_2_t *identity_type_2, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_imeisv_request(nas_imeisv_request_t *imeisv_request, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_authentication_parameter_autn(nas_authentication_parameter_autn_t *authentication_parameter_autn, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_ms_network_capability(nas_ms_network_capability_t *ms_network_capability, pkbuf_t *pkbuf);
@@ -102,6 +103,7 @@ CORE_DECLARE(c_int16_t) nas_encode_esm_message_container(pkbuf_t *pkbuf, nas_esm
 CORE_DECLARE(c_int16_t) nas_encode_gprs_timer(pkbuf_t *pkbuf, nas_gprs_timer_t *gprs_timer);
 CORE_DECLARE(c_int16_t) nas_encode_gprs_timer_2(pkbuf_t *pkbuf, nas_gprs_timer_2_t *gprs_timer_2);
 CORE_DECLARE(c_int16_t) nas_encode_gprs_timer_3(pkbuf_t *pkbuf, nas_gprs_timer_3_t *gprs_timer_3);
+CORE_DECLARE(c_int16_t) nas_encode_identity_type_2(pkbuf_t *pkbuf, nas_identity_type_2_t *identity_type_2);
 CORE_DECLARE(c_int16_t) nas_encode_imeisv_request(pkbuf_t *pkbuf, nas_imeisv_request_t *imeisv_request);
 CORE_DECLARE(c_int16_t) nas_encode_authentication_parameter_autn(pkbuf_t *pkbuf, nas_authentication_parameter_autn_t *authentication_parameter_autn);
 CORE_DECLARE(c_int16_t) nas_encode_ms_network_capability(pkbuf_t *pkbuf, nas_ms_network_capability_t *ms_network_capability);

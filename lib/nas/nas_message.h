@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-03-21 13:53:30.267686 by acetcom
+ * Created on: 2017-03-21 13:59:52.530233 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -307,6 +307,26 @@ typedef struct _nas_authentication_response_t {
 
 
 /*******************************************************
+ * IDENTITY REQUEST
+ ******************************************************/
+
+typedef struct _nas_identity_request_t {
+    /* Mandatory fields */
+    nas_identity_type_2_t identity_type;
+} nas_identity_request_t;
+
+
+/*******************************************************
+ * IDENTITY RESPONSE
+ ******************************************************/
+
+typedef struct _nas_identity_response_t {
+    /* Mandatory fields */
+    nas_mobile_identity_t mobile_identity;
+} nas_identity_response_t;
+
+
+/*******************************************************
  * AUTHENTICATION FAILURE
  ******************************************************/
 #define NAS_AUTHENTICATION_FAILURE_AUTHENTICATION_FAILURE_PARAMETER_PRESENT (1<<0)
@@ -379,6 +399,8 @@ typedef struct _nas_message_t {
         nas_attach_reject_t attach_reject;
         nas_authentication_request_t authentication_request;
         nas_authentication_response_t authentication_response;
+        nas_identity_request_t identity_request;
+        nas_identity_response_t identity_response;
         nas_authentication_failure_t authentication_failure;
         nas_security_mode_command_t security_mode_command;
         nas_security_mode_complete_t security_mode_complete;

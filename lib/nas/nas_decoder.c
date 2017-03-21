@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-03-21 13:53:30.272010 by acetcom
+ * Created on: 2017-03-21 13:59:52.534215 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -415,6 +415,32 @@ c_int32_t nas_decode_authentication_response(nas_message_t *message, pkbuf_t *pk
     return decoded;
 }
 
+c_int32_t nas_decode_identity_request(nas_message_t *message, pkbuf_t *pkbuf)
+{
+    nas_identity_request_t *identity_request = &message->identity_request;
+    c_int32_t decoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_decode_identity_type_2(&identity_request->identity_type, pkbuf);
+    d_assert(size >= 0, return -1, "decode failed");
+    decoded += size;
+
+    return decoded;
+}
+
+c_int32_t nas_decode_identity_response(nas_message_t *message, pkbuf_t *pkbuf)
+{
+    nas_identity_response_t *identity_response = &message->identity_response;
+    c_int32_t decoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_decode_mobile_identity(&identity_response->mobile_identity, pkbuf);
+    d_assert(size >= 0, return -1, "decode failed");
+    decoded += size;
+
+    return decoded;
+}
+
 c_int32_t nas_decode_authentication_failure(nas_message_t *message, pkbuf_t *pkbuf)
 {
     nas_authentication_failure_t *authentication_failure = &message->authentication_failure;
@@ -601,6 +627,16 @@ status_t nas_plain_decode(nas_message_t *message, pkbuf_t *pkbuf)
             break;
         case NAS_AUTHENTICATION_RESPONSE:
             size = nas_decode_authentication_response(message, pkbuf);
+            d_assert(size >= CORE_OK, return CORE_ERROR, "decode error");
+            decoded += size;
+            break;
+        case NAS_IDENTITY_REQUEST:
+            size = nas_decode_identity_request(message, pkbuf);
+            d_assert(size >= CORE_OK, return CORE_ERROR, "decode error");
+            decoded += size;
+            break;
+        case NAS_IDENTITY_RESPONSE:
+            size = nas_decode_identity_response(message, pkbuf);
             d_assert(size >= CORE_OK, return CORE_ERROR, "decode error");
             decoded += size;
             break;

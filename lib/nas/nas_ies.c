@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-03-21 13:53:30.260104 by acetcom
+ * Created on: 2017-03-21 13:59:52.523461 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -540,6 +540,30 @@ c_int16_t nas_encode_gprs_timer_3(pkbuf_t *pkbuf, nas_gprs_timer_3_t *gprs_timer
     nas_gprs_timer_3_t target;
 
     memcpy(&target, gprs_timer_3, sizeof(nas_gprs_timer_3_t));
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
+/* 9.9.3.17 Identity type 2
+ * M V 1/2 */
+c_int16_t nas_decode_identity_type_2(nas_identity_type_2_t *identity_type_2, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = sizeof(nas_identity_type_2_t);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(identity_type_2, pkbuf->payload - size, size);
+
+    return size;
+}
+
+c_int16_t nas_encode_identity_type_2(pkbuf_t *pkbuf, nas_identity_type_2_t *identity_type_2)
+{
+    c_uint16_t size = sizeof(nas_identity_type_2_t);
+    nas_identity_type_2_t target;
+
+    memcpy(&target, identity_type_2, size);
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
     memcpy(pkbuf->payload - size, &target, size);
 
