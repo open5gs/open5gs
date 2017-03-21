@@ -109,8 +109,8 @@ def v_lower(v):
 
 def get_cells(cells):
     iei = cells[0].text.encode('ascii', 'ignore')
-    value = re.sub("'s", "", cells[1].text).encode('ascii', 'ignore')
-    type = re.sub("'s", "", re.sub('\s*\n\s*[a-zA-Z0-9.]*', '', cells[2].text)).encode('ascii', 'ignore')
+    value = re.sub("\s*$", "", re.sub("\s*\n*\s*\([^\)]*\)*", "", re.sub("'s", "", cells[1].text))).encode('ascii', 'ignore')
+    type = re.sub("^NAS ", "", re.sub("'s", "", re.sub('\s*\n\s*[a-zA-Z0-9.]*', '', cells[2].text))).encode('ascii', 'ignore')
     reference = re.sub('[a-zA-Z0-9\'\-\s]*\n\s*', '', cells[2].text).encode('ascii', 'ignore')
     presence = cells[3].text.encode('ascii', 'ignore')
     format = cells[4].text.encode('ascii', 'ignore')
@@ -282,7 +282,7 @@ if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
 tmp = [(k, v["reference"]) for k, v in type_list.items()]
 sorted_type_list = sorted(tmp, key=lambda tup: tup[1])
 
-f = open(outdir + 'nas_ies2.c', 'w')
+f = open(outdir + 'nas_ies.c', 'w')
 output_header_to_file(f)
 f.write("""#define TRACE_MODULE _nasies
 
@@ -397,7 +397,7 @@ for (k, v) in sorted_type_list:
         f.write("}\n\n");
 f.close()
 
-f = open(outdir + 'nas_message2.h', 'w')
+f = open(outdir + 'nas_message.h', 'w')
 output_header_to_file(f)
 f.write("""#ifndef __NAS_MESSAGE_H__
 #define __NAS_MESSAGE_H__
@@ -515,12 +515,12 @@ CORE_DECLARE(int) nas_plain_encode(pkbuf_t **pkbuf, nas_message_t *message);
 """)
 f.close()
 
-f = open(outdir + 'nas_decoder2.c', 'w')
+f = open(outdir + 'nas_decoder.c', 'w')
 output_header_to_file(f)
 f.write("""#define TRACE_MODULE _nasdec
 
 #include "core_debug.h"
-#include "nas_message2.h"
+#include "nas_message.h"
 
 """)
 
@@ -625,12 +625,12 @@ f.write("""        default:
 
 f.close()
 
-f = open(outdir + 'nas_encoder2.c', 'w')
+f = open(outdir + 'nas_encoder.c', 'w')
 output_header_to_file(f)
 f.write("""#define TRACE_MODULE _nasenc
 
 #include "core_debug.h"
-#include "nas_message2.h"
+#include "nas_message.h"
 
 """)
 
@@ -721,6 +721,8 @@ f.write("""        default:
     (*pkbuf)->len = encoded;
 
     return CORE_OK;
+}
+
 """)
 f.close()
 
