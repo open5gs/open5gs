@@ -7,8 +7,6 @@
 #include "core_debug.h"
 #include "core_signal.h"
 
-#include "symtbl.h"
-
 /* Server */
 #include "cellwire.h"
 
