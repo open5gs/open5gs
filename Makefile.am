@@ -6,8 +6,7 @@ SUBDIRS = lib src test
 
 bin_PROGRAMS = cellwired
 
-dist_cellwired_SOURCES = main.c symtbl.h
-nodist_cellwired_SOURCES = symtbl.c
+dist_cellwired_SOURCES = main.c 
 
 cellwired_LDADD = \
     $(top_srcdir)/src/libcellwire.la
@@ -28,16 +27,3 @@ MAINTAINERCLEANFILES = \
 	.cscope.out .cscope.out.in .cscope.files .cscope.out.po \
     Makefile.in
 MOSTLYCLEANFILES = core *.stackdump
-
-EXTRA_DIST = symtbl.sh
-
-NM_TMP_FILE = nm.tmp
-.INTERMEDIATE: symtbl.c
-symtbl.c: $(bsd_DEPENDENCIES)
-	@for las in $<; do \
-		lib=`echo $$las | sed -e "s|\(.*\)/lib\([^/].*\)\.la|\1/.libs/lib\2.a|g"`;  \
-		echo $$lib; \
-		nm $$lib >> $(NM_TMP_FILE); \
-	done; \
-	$(top_srcdir)/symtbl.sh $(NM_TMP_FILE) $@; \
-	rm -f $(NM_TMP_FILE)

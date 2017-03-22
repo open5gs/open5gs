@@ -12,12 +12,11 @@
 /* Server */
 #include "cellwire.h"
 
-extern char g_compile_time[];
+static char *compile_time = __DATE__ " " __TIME__;
 
 static void show_version()
 {
-    printf("CellWire daemon v%s - %s\n", 
-            PACKAGE_VERSION, g_compile_time);
+    printf("CellWire daemon v%s - %s\n", PACKAGE_VERSION, compile_time);
 }
 
 static void show_help()
