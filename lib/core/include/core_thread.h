@@ -92,7 +92,6 @@ CORE_DECLARE(status_t) thread_join(status_t *retval, thread_id id);
  */
 CORE_DECLARE(void) thread_yield(void);
 
-
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

@@ -1,5 +1,6 @@
 #include "core_msgq.h"
 #include "core_thread.h"
+#include "core_portable.h"
 #include "testutil.h"
 
 static char msg[16][24] = {
@@ -170,7 +171,7 @@ typedef struct {
 
 static thread_id thr_producer;
 static thread_id thr_consumer;
-static int max = 10000;
+static int max = 1000000;
 static int exit_ret_val = 123;
 
 static void *THREAD_FUNC producer_main(thread_id id, void *data)
@@ -224,6 +225,9 @@ static void *THREAD_FUNC consumer_main(thread_id id, void *data)
     {
         test_event_t t;
 
+#if HAVE_PTHREAD_H == 1
+        pthread_testcancel();
+#endif
         r = msgq_recv(md, (char*)&t, TEST_EVT_SIZE);
         if (r == CORE_EAGAIN)
         {
@@ -253,6 +257,9 @@ static void *THREAD_FUNC timedconsumer_main(thread_id id, void *data)
     {
         test_event_t t;
 
+#if HAVE_PTHREAD_H == 1
+        pthread_testcancel();
+#endif
         r = msgq_timedrecv(md, (char*)&t, TEST_EVT_SIZE, 10000);
         if (r == CORE_EAGAIN || r == CORE_TIMEUP)
         {
@@ -272,6 +279,9 @@ static void msgq_test4(abts_case *tc, void *data)
 {
     status_t rv;
     int opt = (int)data;
+#if HAVE_PTHREAD_H == 1
+    os_thread_t *thread;
+#endif
 
     md = msgq_create(TEST_QUEUE_SIZE, TEST_EVT_SIZE, opt);
     ABTS_INT_NEQUAL(tc, 0, md);
@@ -285,7 +295,13 @@ static void msgq_test4(abts_case *tc, void *data)
     thread_join(&rv, thr_producer);
     ABTS_INT_EQUAL(tc, exit_ret_val, rv);
 
+#if HAVE_PTHREAD_H == 1
+    os_thread_get(&thread, thr_consumer);
+    pthread_cancel(*thread);
+    thread_join(&rv, thr_consumer);
+#else
     thread_delete(thr_consumer);
+#endif
 
     msgq_delete(md);
 }
@@ -294,6 +310,9 @@ static void msgq_test5(abts_case *tc, void *data)
 {
     status_t rv;
     int opt = (int)data;
+#if HAVE_PTHREAD_H == 1
+    os_thread_t *thread;
+#endif
 
     md = msgq_create(TEST_QUEUE_SIZE, TEST_EVT_SIZE, opt);
     ABTS_INT_NEQUAL(tc, 0, md);
@@ -307,19 +326,27 @@ static void msgq_test5(abts_case *tc, void *data)
     thread_join(&rv, thr_producer);
     ABTS_INT_EQUAL(tc, exit_ret_val, rv);
 
+#if HAVE_PTHREAD_H == 1
+    os_thread_get(&thread, thr_consumer);
+    pthread_cancel(*thread);
+    thread_join(&rv, thr_consumer);
+#else
     thread_delete(thr_consumer);
+#endif
 
     msgq_delete(md);
 }
 
-#define STRESS_TEST 0
+#define STRESS_TEST 1
 
 abts_suite *testmsgq(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
+#if 0 /* Deprecated */
     abts_run_test(suite, msgq_test1, NULL);
     abts_run_test(suite, msgq_test2, NULL);
+#endif
     abts_run_test(suite, msgq_test3, NULL);
 
 #if STRESS_TEST == 1

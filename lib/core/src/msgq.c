@@ -8,8 +8,6 @@
 #include "core_pkbuf.h"
 #include "core_list.h"
 
-#define ONE_LOCK 1
-
 typedef struct _msq_desc_t {
     mutex_id mut_c, mut_r, mut_w;
     cond_id cond;
@@ -50,9 +48,6 @@ msgq_id msgq_create(int qdepth, int msgsize, int opt)
     rv = mutex_create(&md->mut_c, MUTEX_DEFAULT);
     d_assert(rv == CORE_OK,
             goto error_final, "mutex creation failed");
-#if ONE_LOCK
-    md->mut_w = md->mut_r = md->mut_c;
-#else
     rv = mutex_create(&md->mut_r, MUTEX_DEFAULT);
     d_assert(rv == CORE_OK,
             goto error_final, "mutex creation failed");
@@ -60,13 +55,12 @@ msgq_id msgq_create(int qdepth, int msgsize, int opt)
     rv = mutex_create(&md->mut_w, MUTEX_DEFAULT);
     d_assert(rv == CORE_OK,
             goto error_final, "mutex creation failed");
-#endif
 
     rv = cond_create(&md->cond);
     d_assert(rv == CORE_OK,
             goto error_final, "mutex creation failed");
 
-    s = qdepth * (msgsize + 2);
+    s = qdepth * msgsize;
     md->pool = core_malloc(s);
     d_assert(md->pool != NULL,
             goto error_final, "can't allocate msg q buffer %d bytes", s);
@@ -83,10 +77,8 @@ msgq_id msgq_create(int qdepth, int msgsize, int opt)
 error_final:
     if (md->pool) core_free(md->pool);
     if (md->mut_c) mutex_delete(md->mut_c);
-#if ONE_LOCK == 0
     if (md->mut_r) mutex_delete(md->mut_r);
     if (md->mut_w) mutex_delete(md->mut_w);
-#endif
     if (md->cond) cond_delete(md->cond);
 
     pool_free_node(&msgqpool, md);
@@ -102,10 +94,8 @@ status_t msgq_delete(msgq_id id)
 
     if (md->pool) core_free(md->pool);
     if (md->mut_c) mutex_delete(md->mut_c);
-#if ONE_LOCK == 0
     if (md->mut_r) mutex_delete(md->mut_r);
     if (md->mut_w) mutex_delete(md->mut_w);
-#endif
     if (md->cond) cond_delete(md->cond);
 
     pool_free_node(&msgqpool, md);
@@ -117,7 +107,6 @@ int msgq_send(msgq_id id, const char *msg, int msglen)
 {
     msg_desc_t *md = (msg_desc_t*)id;
     int n;
-    unsigned short len = msglen;
 
     d_assert(md != NULL, return CORE_ERROR, "param 'id' is null");
     d_assert(msg != NULL, return CORE_ERROR, "param 'msg' is null");
@@ -135,48 +124,19 @@ int msgq_send(msgq_id id, const char *msg, int msglen)
         return CORE_EAGAIN;
     }
 
-    d_assert(n >= md->msgsize + 2,
-            mutex_unlock(md->mut_w); return CORE_ERROR,
-            "msgq integrity broken");
-
-    n = rbuf_write(&md->rbuf, (const char*)&len, 2);
-    d_trace(2, "ring write. head:%d tail:%d size:%d len:%d\n",
-            md->rbuf.h.head, md->rbuf.h.tail, md->rbuf.h.size, 2);
-    d_assert(n == 2,
-            mutex_unlock(md->mut_w); return CORE_ERROR,
-            "msgq integrity broken n:%d", n);
-
-    n += rbuf_write(&md->rbuf, msg, msglen);
+    n = rbuf_write(&md->rbuf, msg, msglen);
     d_trace(2, "ring write. head:%d tail:%d size:%d len:%d\n",
             md->rbuf.h.head, md->rbuf.h.tail, md->rbuf.h.size, msglen);
-    d_assert(n == 2 + msglen,
+    d_assert(n == msglen,
             mutex_unlock(md->mut_w); return CORE_ERROR,
-            "msgq integrity broken n:%d len:%d", n, 2 + msglen);
-
-    if (md->msgsize > msglen)
-    {
-        n += rbuf_skip_write_pos(&md->rbuf, md->msgsize - msglen);
-        d_trace(2, "ring write skip. head:%d tail:%d size:%d len:%d\n",
-                md->rbuf.h.head, md->rbuf.h.tail, md->rbuf.h.size,
-                md->msgsize - msglen);
-    }
-
-    d_assert(n == 2 + md->msgsize,
-            mutex_unlock(md->mut_w); return CORE_ERROR,
-            "msgq integrity broken n:%d", n);
+            "msgq integrity broken n:%d len:%d", n, msglen);
 
     d_trace(1, "msg (%d bytes) pushed.\n", msglen);
 
-#if ONE_LOCK == 0
     mutex_unlock(md->mut_w);
     mutex_lock(md->mut_c);
-#endif
     cond_signal(md->cond);
-#if ONE_LOCK == 0
     mutex_unlock(md->mut_c);
-#else
-    mutex_unlock(md->mut_w);
-#endif
 
     return msglen;
 }
@@ -184,7 +144,6 @@ int msgq_send(msgq_id id, const char *msg, int msglen)
 int msgq_recv(msgq_id id, char *msg, int msglen)
 {
     msg_desc_t *md = (msg_desc_t*)id;
-    unsigned short len;
     int n;
 
     d_assert(md != NULL, return CORE_ERROR, "param 'id' is null");
@@ -198,68 +157,43 @@ int msgq_recv(msgq_id id, char *msg, int msglen)
 
     n = rbuf_bytes(&md->rbuf);
 
-    if (!(md->opt & MSGQ_O_NONBLOCK) && (n < md->msgsize + 2))
+    if (!(md->opt & MSGQ_O_NONBLOCK) && (n < md->msgsize))
     {
-#if ONE_LOCK == 0
         mutex_lock(md->mut_c);
-#endif
         while(rbuf_is_empty(&md->rbuf) && 
                 cond_wait(md->cond, md->mut_c) == CORE_OK);
-#if ONE_LOCK == 0
         mutex_unlock(md->mut_c);
-#endif
 
         n = rbuf_bytes(&md->rbuf);
 
-        d_assert(n >= md->msgsize + 2,
+        d_assert(n >= md->msgsize,
                 mutex_unlock(md->mut_r); return CORE_ERROR,
                 "msgq integrity broken");
     }
-    else if (n < md->msgsize + 2)
+    else if (n < md->msgsize)
     {
         mutex_unlock(md->mut_r);
         return CORE_EAGAIN;
     }
 
-    n = rbuf_read(&md->rbuf, (char*)&len, 2);
+    n = rbuf_read(&md->rbuf, msg, msglen);
     d_trace(2, "ring read. head:%d tail:%d size:%d len:%d\n",
-            md->rbuf.h.head, md->rbuf.h.tail, md->rbuf.h.size, 2);
-    d_assert(n == 2,
+            md->rbuf.h.head, md->rbuf.h.tail, md->rbuf.h.size, msglen);
+
+    d_assert(n == msglen,
             mutex_unlock(md->mut_r); return CORE_ERROR,
-            "msgq integrity broken n:%d", len);
+            "msgq integrity broken n:%d len:%d", n, msglen);
 
-    n += rbuf_read(&md->rbuf, msg, len);
-    d_trace(2, "ring read. head:%d tail:%d size:%d len:%d\n",
-            md->rbuf.h.head, md->rbuf.h.tail, md->rbuf.h.size, len);
-
-    d_assert(n == 2 + len,
-            mutex_unlock(md->mut_r); return CORE_ERROR,
-            "msgq integrity broken n:%d len:%d", n, 2 + len);
-
-    if (md->msgsize > len)
-    {
-        n += rbuf_skip_read_pos(&md->rbuf, md->msgsize - len);
-        d_trace(2, "ring read skip. head:%d tail:%d size:%d len:%d\n",
-                md->rbuf.h.head, md->rbuf.h.tail, md->rbuf.h.size,
-                md->msgsize - len);
-    }
-
-    d_assert(n == 2 + md->msgsize,
-            mutex_unlock(md->mut_r); return CORE_ERROR,
-            "msgq integrity broken n:%d s:%d r:%d",
-            n, md->msgsize, len);
-
-    d_trace(1, "msg (%d bytes) pop.\n", len);
+    d_trace(1, "msg (%d bytes) pop.\n", msglen);
 
     mutex_unlock(md->mut_r);
 
-    return len;
+    return msglen;
 }
 
 int msgq_timedrecv(msgq_id id, char *msg, int msglen, c_time_t timeout)
 {
     msg_desc_t *md = (msg_desc_t*)id;
-    unsigned short len;
     int n;
     status_t rv;
 
@@ -274,16 +208,12 @@ int msgq_timedrecv(msgq_id id, char *msg, int msglen, c_time_t timeout)
 
     n = rbuf_bytes(&md->rbuf);
 
-    if (!(md->opt & MSGQ_O_NONBLOCK) && (n < md->msgsize + 2))
+    if (!(md->opt & MSGQ_O_NONBLOCK) && (n < md->msgsize))
     {
-#if ONE_LOCK == 0
         mutex_lock(md->mut_c);
-#endif
         while(rbuf_is_empty(&md->rbuf) && 
                 (rv = cond_timedwait(md->cond, md->mut_c, timeout)) == CORE_OK);
-#if ONE_LOCK == 0
         mutex_unlock(md->mut_c);
-#endif
 
         if (rv == CORE_TIMEUP)
         {
@@ -292,47 +222,27 @@ int msgq_timedrecv(msgq_id id, char *msg, int msglen, c_time_t timeout)
         }
 
         n = rbuf_bytes(&md->rbuf);
-        d_assert(n >= md->msgsize + 2,
+        d_assert(n >= md->msgsize,
                 mutex_unlock(md->mut_r); return CORE_ERROR,
                 "msgq integrity broken");
     }
-    else if (n < md->msgsize + 2)
+    else if (n < md->msgsize)
     {
         mutex_unlock(md->mut_r);
         return CORE_EAGAIN;
     }
 
-    n = rbuf_read(&md->rbuf, (char*)&len, 2);
+    n = rbuf_read(&md->rbuf, msg, msglen);
     d_trace(2, "ring read. head:%d tail:%d size:%d len:%d\n",
-            md->rbuf.h.head, md->rbuf.h.tail, md->rbuf.h.size, 2);
-    d_assert(n == 2,
+            md->rbuf.h.head, md->rbuf.h.tail, md->rbuf.h.size, msglen);
+
+    d_assert(n == msglen,
             mutex_unlock(md->mut_r); return CORE_ERROR,
-            "msgq integrity broken n:%d", len);
+            "msgq integrity broken n:%d len:%d", n, msglen);
 
-    n += rbuf_read(&md->rbuf, msg, len);
-    d_trace(2, "ring read. head:%d tail:%d size:%d len:%d\n",
-            md->rbuf.h.head, md->rbuf.h.tail, md->rbuf.h.size, len);
-
-    d_assert(n == 2 + len,
-            mutex_unlock(md->mut_r); return CORE_ERROR,
-            "msgq integrity broken n:%d len:%d", n, 2 + len);
-
-    if (md->msgsize > len)
-    {
-        n += rbuf_skip_read_pos(&md->rbuf, md->msgsize - len);
-        d_trace(2, "ring read skip. head:%d tail:%d size:%d len:%d\n",
-                md->rbuf.h.head, md->rbuf.h.tail, md->rbuf.h.size,
-                md->msgsize - len);
-    }
-
-    d_assert(n == 2 + md->msgsize,
-            mutex_unlock(md->mut_r); return CORE_ERROR,
-            "msgq integrity broken n:%d s:%d r:%d",
-            n, md->msgsize, len);
-
-    d_trace(1, "msg (%d bytes) pop.\n", len);
+    d_trace(1, "msg (%d bytes) pop.\n", msglen);
 
     mutex_unlock(md->mut_r);
 
-    return len;
+    return msglen;
 }

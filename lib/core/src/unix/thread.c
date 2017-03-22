@@ -1,5 +1,6 @@
 #include "core.h"
-#include "core_thread.h"
+#include "core_arch_thread.h"
+#include "core_portable.h"
 #include "core_errno.h"
 #include "core_param.h"
 #include "core_general.h"
@@ -8,22 +9,9 @@
 #include "core_pool.h"
 #include "core_semaphore.h"
 
-typedef struct _thread_t {
-    pthread_t thread;
-    void *data;
-    thread_start_t func;
-    status_t exitval;
-
-    semaphore_id semaphore;
-} thread_t;
-
 struct thread_stop_info {
     pthread_t thread;
     semaphore_id semaphore;
-};
-
-struct threadattr_t {
-    pthread_attr_t attr;
 };
 
 pool_declare(thread_pool, thread_t, MAX_NUM_OF_THREAD);
@@ -223,9 +211,16 @@ void thread_yield(void)
 #endif
 }
 
-status_t thread_cancel(thread_id id)
+status_t os_thread_get(os_thread_t **thethd, thread_id id)
 {
     thread_t *thread = (thread_t *)id;
 
-    return pthread_cancel(thread->thread);
+    *thethd = &thread->thread;
+
+    return CORE_OK;
+}
+
+os_thread_t os_thread_current(void)
+{
+    return pthread_self();
 }

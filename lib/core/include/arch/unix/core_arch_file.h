@@ -1,15 +1,13 @@
 #ifndef __CORE_ARCH_FILE_H__
 #define __CORE_ARCH_FILE_H__
 
-#include "core.h"
+#include "core_portable.h"
 #include "core_time.h"
 #include "core_file.h"
 
 #define FILE_DEFAULT_BUFSIZE 4096
 /* For backwards-compat */
 #define FILE_BUFSIZE  FILE_DEFAULT_BUFSIZE
-
-typedef int                   os_file_t;        /**< native file */
 
 struct file_t {
     os_file_t filedes;
