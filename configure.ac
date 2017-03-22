@@ -14,7 +14,7 @@ CORE_CONFIG_NICE(config.nice)
 
 dnl Must come before AM_INIT_AUTOMAKE.
 AC_CONFIG_AUX_DIR([build-aux])
-AM_INIT_AUTOMAKE([1.10 -Wall -Werror])
+AM_INIT_AUTOMAKE([1.10 -Wall -Werror foreign])
 
 # Minimum Autoconf version required.
 AC_PREREQ(2.63)
@@ -67,7 +67,9 @@ AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_AWK
 AM_PROG_AR
-AM_PROG_LIBTOOL
+
+dnl libtool
+LT_INIT
 
 dnl Checks for compile flag
 AX_CHECK_COMPILE_FLAG([-Wno-unused-result], [CFLAGS="$CFLAGS -Wno-unused-result"])
