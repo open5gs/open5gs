@@ -1,6 +1,6 @@
-CellWire is an implementation of 3gpp EPC(MME, SGW, PGW, HSS)
+CellWire is an implementation of 3GPP EPC(MME, SGW, PGW, HSS)
 
-The implemntation consists in several components:
+The implementation consists in several components:
   - lib/core : the library contains the core of the framework.
       memory pool, thread, lock, timer, ...
 
@@ -19,6 +19,4 @@ The implemntation consists in several components:
   - src/hss : the heart of HSS protocol stack
 
 
-See LICENSE file for legal information on this software.
-
-See INSTALL for information on building and using this software.
+See INSTALL.md for information on building and using this software.

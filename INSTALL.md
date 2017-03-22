@@ -19,7 +19,7 @@ Build from Git
 
 
 Install SCTP for Mac OS X 10.11(El Captian)
-*******************************************
+===========================================
  - Reference : https://github.com/sctplab/SCTP_NKE_ElCapitan
  - Start up in OS X Recovery by holding down Command-R while the Mac is starting up
    Choose Terminal from the Utilities menu.
