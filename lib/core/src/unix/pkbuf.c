@@ -144,7 +144,7 @@ static clbuf_t* clbuf_alloc(c_uint16_t length)
         pool_alloc_node(&cluster_2048_pool, &cluster);
         clbuf->size = SIZEOF_CLUSTER_2048;
     }
-    else 
+    else if (length <= 8192)
     {
         pool_alloc_node(&cluster_8192_pool, &cluster);
         clbuf->size = SIZEOF_CLUSTER_8192;
