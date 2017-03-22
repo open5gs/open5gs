@@ -32,8 +32,6 @@ static void msgq_test1(abts_case *tc, void *data)
 {
     int i, n;
 
-    msgq_init();
-
     /* Basic test */
     md = msgq_create(5, 8, 0);
     ABTS_INT_NEQUAL(tc, 0, md);
@@ -96,8 +94,6 @@ static void msgq_test2(abts_case *tc, void *data)
 {
     int i, n;
 
-    msgq_init();
-
     md = msgq_create(5, 8, MSGQ_O_NONBLOCK);
     ABTS_INT_NEQUAL(tc, 0, md);
 
@@ -135,8 +131,6 @@ static void msgq_test3(abts_case *tc, void *data)
 {
     int i, j, n;
 
-    msgq_init();
-
     md = msgq_create(16, 24, MSGQ_O_BLOCK);
     ABTS_INT_NEQUAL(tc, 0, md);
 
@@ -169,45 +163,43 @@ typedef struct {
     char c[30];
 } test_event_t;
 
+typedef struct {
+    abts_case *tc;
+    int opt;
+    int cancelled;
+    int timed;
+} test_param_t;
+
 static thread_id thr_producer;
 static thread_id thr_consumer;
-static int max = 1000000;
+static int max = 100000;
 static int exit_ret_val = 123;
 
 static void *THREAD_FUNC producer_main(thread_id id, void *data)
 {
+    test_param_t *param = (test_param_t *)data;
+    abts_case *tc = param->tc;
     int r;
     int i = 0;
-    //time_t i_time = time(NULL);
     unsigned int full = 0;
 
     while (i++ < max)
     {
-        test_event_t t;
+        test_event_t te;
 
-        t.a = i;
-        t.b = i+2;
-        t.c[28] = 'X';
-        t.c[29] = 'Y';
-        ///printf("P: a = %d b = %d\n",t.a,t.b);
-        r = msgq_send(md, (char*)&t, TEST_EVT_SIZE);
+        te.a = i;
+        te.b = i+2;
+        te.c[28] = 'X';
+        te.c[29] = 'Y';
+        r = msgq_send(md, (char*)&te, TEST_EVT_SIZE);
         if (r == CORE_EAGAIN)
         {
             full++;
             thread_yield();
             continue;
         }
-        else if (r != TEST_EVT_SIZE)
-        {
-            printf("Producer Error\n");
-        }
+        ABTS_ASSERT(tc, "producer error", r == TEST_EVT_SIZE);
     }
-#if 0
-    printf("Total Send:%u Drop = %u , elapsed time: %u\n",
-            i,
-            full,
-            (unsigned int)time(NULL)-(unsigned int)i_time);
-#endif
     thread_exit(id, exit_ret_val);
 
     return NULL;
@@ -215,60 +207,29 @@ static void *THREAD_FUNC producer_main(thread_id id, void *data)
 
 static void *THREAD_FUNC consumer_main(thread_id id, void *data)
 {
-    abts_case *tc = data;
+    test_param_t *param = (test_param_t *)data;
+    abts_case *tc = param->tc;
     int r;
-    ///int prev = -1;
-    int i = 0;
-    ///char str[256];
-
-    while (!thread_should_stop())
-    {
-        test_event_t t;
-
-#if HAVE_PTHREAD_H == 1
-        pthread_testcancel();
-#endif
-        r = msgq_recv(md, (char*)&t, TEST_EVT_SIZE);
-        if (r == CORE_EAGAIN)
-        {
-            thread_yield();
-            continue;
-        }
-        ABTS_ASSERT(tc, "consumer error", r == TEST_EVT_SIZE);
-        ABTS_ASSERT(tc, "consumer error", t.c[28] == 'X' && t.c[29] == 'Y');
-        ///sprintf(str, "consumer error - prev:%d, t.a:%d", prev, t.a);
-        ///ABTS_ASSERT(tc, str, (prev+1) == t.a);
-        ///prev = t.a;
-        ///printf("C: a = %d b = %d\n",t.a,t.b);
-        i++;
-    }
-
-    return NULL;
-}
-
-static void *THREAD_FUNC timedconsumer_main(thread_id id, void *data)
-{
-    abts_case *tc = data;
-    int r;
-    ///int prev = -1;
     int i = 0;
 
     while (!thread_should_stop())
     {
-        test_event_t t;
+        test_event_t te;
 
-#if HAVE_PTHREAD_H == 1
-        pthread_testcancel();
-#endif
-        r = msgq_timedrecv(md, (char*)&t, TEST_EVT_SIZE, 10000);
+        if (param->cancelled)
+            pthread_testcancel();
+
+        if (param->timed)
+            r = msgq_timedrecv(md, (char*)&te, TEST_EVT_SIZE, 10000);
+        else
+            r = msgq_recv(md, (char*)&te, TEST_EVT_SIZE);
         if (r == CORE_EAGAIN || r == CORE_TIMEUP)
         {
             thread_yield();
             continue;
         }
         ABTS_ASSERT(tc, "consumer error", r == TEST_EVT_SIZE);
-        ABTS_ASSERT(tc, "consumer error", t.c[28] == 'X' && t.c[29] == 'Y');
-        ///prev = t.a;
+        ABTS_ASSERT(tc, "consumer error", te.c[28] == 'X' && te.c[29] == 'Y');
         i++;
     }
 
@@ -278,66 +239,38 @@ static void *THREAD_FUNC timedconsumer_main(thread_id id, void *data)
 static void msgq_test4(abts_case *tc, void *data)
 {
     status_t rv;
-    int opt = (int)data;
-#if HAVE_PTHREAD_H == 1
-    os_thread_t *thread;
-#endif
+    test_param_t *param = (test_param_t *)data;
+    param->tc = tc;
 
-    md = msgq_create(TEST_QUEUE_SIZE, TEST_EVT_SIZE, opt);
+    md = msgq_create(TEST_QUEUE_SIZE, TEST_EVT_SIZE, param->opt);
     ABTS_INT_NEQUAL(tc, 0, md);
 
-    rv = thread_create(&thr_producer, NULL, producer_main, NULL);
+    rv = thread_create(&thr_producer, NULL, producer_main, param);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    rv = thread_create(&thr_consumer, NULL, consumer_main, tc);
+    rv = thread_create(&thr_consumer, NULL, consumer_main, param);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     thread_join(&rv, thr_producer);
     ABTS_INT_EQUAL(tc, exit_ret_val, rv);
 
-#if HAVE_PTHREAD_H == 1
-    os_thread_get(&thread, thr_consumer);
-    pthread_cancel(*thread);
-    thread_join(&rv, thr_consumer);
-#else
-    thread_delete(thr_consumer);
-#endif
+    if (param->cancelled)
+    {
+        os_thread_t *thread;
+
+        os_thread_get(&thread, thr_consumer);
+        pthread_cancel(*thread);
+        thread_join(&rv, thr_consumer);
+    }
+    else
+    {
+        thread_delete(thr_consumer);
+    }
 
     msgq_delete(md);
 }
 
-static void msgq_test5(abts_case *tc, void *data)
-{
-    status_t rv;
-    int opt = (int)data;
-#if HAVE_PTHREAD_H == 1
-    os_thread_t *thread;
-#endif
-
-    md = msgq_create(TEST_QUEUE_SIZE, TEST_EVT_SIZE, opt);
-    ABTS_INT_NEQUAL(tc, 0, md);
-
-    rv = thread_create(&thr_producer, NULL, producer_main, NULL);
-    ABTS_INT_EQUAL(tc, CORE_OK, rv);
-
-    rv = thread_create(&thr_consumer, NULL, timedconsumer_main, tc);
-    ABTS_INT_EQUAL(tc, CORE_OK, rv);
-
-    thread_join(&rv, thr_producer);
-    ABTS_INT_EQUAL(tc, exit_ret_val, rv);
-
-#if HAVE_PTHREAD_H == 1
-    os_thread_get(&thread, thr_consumer);
-    pthread_cancel(*thread);
-    thread_join(&rv, thr_consumer);
-#else
-    thread_delete(thr_consumer);
-#endif
-
-    msgq_delete(md);
-}
-
-#define STRESS_TEST 1
+#define STRESS_TEST 0
 
 abts_suite *testmsgq(abts_suite *suite)
 {
@@ -353,13 +286,25 @@ abts_suite *testmsgq(abts_suite *suite)
     while(1)
     {
 #endif
-        abts_run_test(suite, msgq_test4, (void *)MSGQ_O_NONBLOCK);
-        abts_run_test(suite, msgq_test4, (void *)MSGQ_O_BLOCK);
-        abts_run_test(suite, msgq_test5, (void *)MSGQ_O_NONBLOCK);
-        abts_run_test(suite, msgq_test5, (void *)MSGQ_O_BLOCK);
+        test_param_t param;
+        memset(&param, 0, sizeof(test_param_t));
+
+        param.opt = MSGQ_O_NONBLOCK;
+        abts_run_test(suite, msgq_test4, (void *)&param);
+#if HAVE_PTHREAD_H == 1
+        param.opt = MSGQ_O_BLOCK;
+        param.cancelled = 1;
+        abts_run_test(suite, msgq_test4, (void *)&param);
+#endif
+        param.opt = MSGQ_O_NONBLOCK;
+        param.timed = 1;
+        abts_run_test(suite, msgq_test4, (void *)&param);
+        param.opt = MSGQ_O_BLOCK;
+        param.timed = 1;
+        abts_run_test(suite, msgq_test4, (void *)&param);
 #if STRESS_TEST == 1
-        printf("Test again = %u\n", (unsigned int)time(NULL));
-        sleep(5);
+        printf("Test again = %"C_UINT64_T_FMT "\n", time_now());
+        sleep(3);
     }
 #endif
 
