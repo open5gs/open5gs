@@ -7,6 +7,9 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#define S11_UDP_PORT                2123
+#define S5_UDP_PORT                 2152
+
 CORE_DECLARE(status_t) gtp_open(net_sock_t **sock, net_sock_handler handler, 
         void *data, const c_uint32_t addr, const c_uint16_t port);
 CORE_DECLARE(status_t) gtp_close(net_sock_t *sock);

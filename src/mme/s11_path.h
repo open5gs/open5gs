@@ -1,5 +1,5 @@
-#ifndef __MME_GTP_PATH_H__
-#define __MME_GTP_PATH_H__
+#ifndef __MME_S11_PATH_H__
+#define __MME_S11_PATH_H__
 
 #include "core.h"
 
@@ -7,8 +7,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
-CORE_DECLARE(status_t) mme_gtp_open();
-CORE_DECLARE(status_t) mme_gtp_close();
+CORE_DECLARE(status_t) mme_s11_open();
+CORE_DECLARE(status_t) mme_s11_close();
 
 CORE_DECLARE(status_t) mme_s11_send_to_sgw(pkbuf_t *pkbuf);
 
@@ -16,4 +16,4 @@ CORE_DECLARE(status_t) mme_s11_send_to_sgw(pkbuf_t *pkbuf);
 }
 #endif /* __cplusplus */
 
-#endif /* __MME_GTP_PATH_H__ */
+#endif /* __MME_S11_PATH_H__ */

@@ -4,14 +4,14 @@
 #include "core_net.h"
 
 #include "3gpp_message.h"
-#include "gtp_path.h"
+#include "s11_path.h"
 
-status_t mme_gtp_open()
+status_t mme_s11_open()
 {
     return CORE_OK;
 }
 
-status_t mme_gtp_close()
+status_t mme_s11_close()
 {
     return CORE_OK;
 }

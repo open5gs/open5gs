@@ -8,6 +8,7 @@
 #include "context.h"
 #include "nas_ies.h"
 #include "s1ap_message.h"
+#include "gtp_path.h"
 
 #define CELL_PER_ENB                8
 #define UE_PER_ENB                  128
@@ -18,8 +19,6 @@
 #define SIZE_OF_RAB_POOL            (SIZE_OF_UE_POOL * RAB_PER_UE)
 
 #define S1AP_SCTP_PORT              36412
-#define S11_UDP_PORT                2123
-#define S5_UDP_PORT                 2152
 
 static mme_ctx_t self;
 
@@ -50,7 +49,7 @@ status_t mme_ctx_init()
 
     self.sgw_remote_addr = inet_addr("127.0.0.1");
     self.s11_local_port = S11_UDP_PORT;
-    self.s11_remote_port = S11_UDP_PORT + 1;
+    self.s11_remote_port = S11_UDP_PORT + 1; /* for loopback testing */
 
     self.plmn_id.mnc_len = 2;
     self.plmn_id.mcc = 1; /* 001 */
