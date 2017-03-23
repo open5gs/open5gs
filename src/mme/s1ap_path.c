@@ -17,30 +17,30 @@ status_t s1ap_open(void)
     char buf[INET_ADDRSTRLEN];
     int rc;
 
-    rc = net_listen_with_addr(&mme_self()->enb_s1ap_sock, 
-            SOCK_STREAM, IPPROTO_SCTP, mme_self()->enb_s1ap_port,
-            mme_self()->enb_local_addr);
+    rc = net_listen_with_addr(&mme_self()->s1ap_sock, 
+            SOCK_STREAM, IPPROTO_SCTP, mme_self()->s1ap_port,
+            mme_self()->mme_local_addr);
     if (rc != 0)
     {
         d_error("Can't establish S1-ENB(port:%d) path(%d:%s)",
-            mme_self()->enb_s1ap_port, errno, strerror(errno));
-        mme_self()->enb_s1ap_sock = NULL;
+            mme_self()->s1ap_port, errno, strerror(errno));
+        mme_self()->s1ap_sock = NULL;
         return CORE_ERROR;
     }
 
     rc = net_register_sock(
-            mme_self()->enb_s1ap_sock, _s1ap_accept_cb, NULL);
+            mme_self()->s1ap_sock, _s1ap_accept_cb, NULL);
     if (rc != 0)
     {
         d_error("Can't establish S1-ENB path(%d:%s)",
             errno, strerror(errno));
-        net_close(mme_self()->enb_s1ap_sock);
-        mme_self()->enb_s1ap_sock = NULL;
+        net_close(mme_self()->s1ap_sock);
+        mme_self()->s1ap_sock = NULL;
         return CORE_ERROR;
     }
 
     d_trace(1, "s1_enb_listen() %s:%d\n", 
-        INET_NTOP(&mme_self()->enb_local_addr, buf), mme_self()->enb_s1ap_port);
+        INET_NTOP(&mme_self()->mme_local_addr, buf), mme_self()->s1ap_port);
 
     return CORE_OK;
 }
@@ -48,11 +48,11 @@ status_t s1ap_open(void)
 status_t s1ap_close()
 {
     d_assert(mme_self(), return CORE_ERROR, "Null param");
-    d_assert(mme_self()->enb_s1ap_sock != NULL, return CORE_ERROR,
+    d_assert(mme_self()->s1ap_sock != NULL, return CORE_ERROR,
             "S1-ENB path already opened");
-    net_unregister_sock(mme_self()->enb_s1ap_sock);
-    net_close(mme_self()->enb_s1ap_sock);
-    mme_self()->enb_s1ap_sock = NULL;
+    net_unregister_sock(mme_self()->s1ap_sock);
+    net_close(mme_self()->s1ap_sock);
+    mme_self()->s1ap_sock = NULL;
 
     return CORE_OK;
 }

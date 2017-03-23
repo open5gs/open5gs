@@ -17,9 +17,9 @@
 #define SIZE_OF_UE_POOL             (SIZE_OF_ENB_POOL * UE_PER_ENB)
 #define SIZE_OF_RAB_POOL            (SIZE_OF_UE_POOL * RAB_PER_UE)
 
-#define S1_SCTP_PORT                36412
-#define GTP_C_UDP_PORT              2123
-#define GTP_U_UDP_PORT              2152
+#define S1AP_SCTP_PORT              36412
+#define S11_UDP_PORT                2123
+#define S5_UDP_PORT                 2152
 
 static mme_ctx_t self;
 
@@ -45,8 +45,12 @@ status_t mme_ctx_init()
     /* Initialize MME context */
     memset(&self, 0, sizeof(mme_ctx_t));
 
-    self.enb_local_addr = inet_addr("127.0.0.1");
-    self.enb_s1ap_port = S1_SCTP_PORT;
+    self.mme_local_addr = inet_addr("127.0.0.1");
+    self.s1ap_port = S1AP_SCTP_PORT;
+
+    self.sgw_remote_addr = inet_addr("127.0.0.1");
+    self.s11_local_port = S11_UDP_PORT;
+    self.s11_remote_port = S11_UDP_PORT + 1;
 
     self.plmn_id.mnc_len = 2;
     self.plmn_id.mcc = 1; /* 001 */

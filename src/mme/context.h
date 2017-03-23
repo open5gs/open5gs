@@ -40,9 +40,15 @@ typedef struct _served_gummei {
 } srvd_gummei_t;
 
 typedef struct _mme_ctx_t {
-    net_sock_t      *enb_s1ap_sock;
-    c_uint16_t      enb_s1ap_port;
-    c_uint32_t      enb_local_addr; /** Network byte order */
+    c_uint32_t      mme_local_addr;
+    c_uint32_t      sgw_remote_addr;
+
+    net_sock_t      *s1ap_sock;
+    c_uint16_t      s1ap_port;
+
+    net_sock_t      *s11_sock;
+    c_uint16_t      s11_local_port;
+    c_uint16_t      s11_remote_port;
 
     msgq_id         queue_id;
     tm_service_t    tm_service;

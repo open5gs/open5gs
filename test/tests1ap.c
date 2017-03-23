@@ -17,8 +17,8 @@ net_sock_t *tests1ap_enb_connect(void)
 
     if (!mme) return NULL;
 
-    rv = net_open_with_addr(&sock, mme->enb_local_addr, "127.0.0.1", 0, 
-            mme->enb_s1ap_port, SOCK_SEQPACKET, IPPROTO_SCTP, 0);
+    rv = net_open_with_addr(&sock, mme->mme_local_addr, "127.0.0.1", 0, 
+            mme->s1ap_port, SOCK_SEQPACKET, IPPROTO_SCTP, 0);
     if (rv != CORE_OK) return NULL;
 
     return sock;

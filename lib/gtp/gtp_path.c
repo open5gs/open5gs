@@ -76,19 +76,19 @@ pkbuf_t *gtp_read(net_sock_t *net_sock)
 }
 
 status_t gtp_send(net_sock_t *s, 
-        pkbuf_t *pkb, c_uint32_t ip_addr, c_uint16_t port)
+        pkbuf_t *pkbuf, c_uint32_t ip_addr, c_uint16_t port)
 {
     char buf[INET_ADDRSTRLEN];
     ssize_t sent;
 
     d_assert(s, return CORE_ERROR, "Null param");
-    d_assert(pkb, return CORE_ERROR, "Null param");
+    d_assert(pkbuf, return CORE_ERROR, "Null param");
 
-    sent = net_sendto(s, pkb->payload, pkb->len, ip_addr, port);
+    sent = net_sendto(s, pkbuf->payload, pkbuf->len, ip_addr, port);
     d_trace(1,"Sent %d->%d bytes to [%s:%d]\n", 
-            pkb->len, sent, INET_NTOP(&ip_addr, buf), port);
-    d_trace_hex(1, pkb->payload, pkb->len);
-    if (sent < 0 || sent != pkb->len)
+            pkbuf->len, sent, INET_NTOP(&ip_addr, buf), port);
+    d_trace_hex(1, pkbuf->payload, pkbuf->len);
+    if (sent < 0 || sent != pkbuf->len)
     {
         d_error("net_send error (%d:%s)", 
                 s->sndrcv_errno, strerror(s->sndrcv_errno));
