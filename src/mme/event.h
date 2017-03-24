@@ -20,6 +20,7 @@ typedef enum {
 
     EVT_MSG_ENB_S1AP,
     EVT_MSG_UE_EMM,
+    EVT_MSG_MME_S11,
     
     EVT_TOP,
 

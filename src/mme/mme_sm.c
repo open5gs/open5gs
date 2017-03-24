@@ -5,6 +5,7 @@
 #include "context.h"
 #include "event.h"
 #include "s1ap_path.h"
+#include "s11_path.h"
 
 void mme_state_initial(mme_sm_t *s, event_t *e)
 {
@@ -41,6 +42,12 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
                 d_error("Can't establish S1AP path");
                 break;
             }
+            rv = mme_s11_open();
+            if (rv != CORE_OK)
+            {
+                d_error("Can't establish S11 path");
+                break;
+            }
             break;
         }
         case FSM_EXIT_SIG:
@@ -49,6 +56,12 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
             if (rv != CORE_OK)
             {
                 d_error("Can't close S1AP path");
+                break;
+            }
+            rv = mme_s11_close();
+            if (rv != CORE_OK)
+            {
+                d_error("Can't close S11 path");
                 break;
             }
             break;
@@ -115,6 +128,14 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
             d_assert(FSM_STATE(&ue->emm_sm), break, "Null param");
             fsm_dispatch((fsm_t*)&ue->emm_sm, (fsm_event_t*)e);
 
+            break;
+        }
+        case EVT_MSG_MME_S11:
+        {
+            net_sock_t *sock = (net_sock_t *)event_get_param1(e);
+            d_assert(sock, break, "Null param");
+
+            d_info("EVT_MSG_MME_S11 received");
             break;
         }
         case EVT_LO_ENB_S1AP_CONNREFUSED:
