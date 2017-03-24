@@ -2,7 +2,9 @@
 #include "core_lib.h"
 #include "core_debug.h"
 
-#include "gtpv2c_tlv.h"
+#include "3gpp_conv.h"
+#include "gtp_types.h"
+#include "gtp_tlv.h"
 
 #include "testutil.h"
 
@@ -19,7 +21,7 @@ static void gtp_message_test1(abts_case *tc, void *data)
         "005d001f00490001 0005500016004505 0000000000000000 0000000000000000"
         "0000000072000200 40005f0002005400";
     char *_value = NULL;
-    gtpv2c_create_session_request_t req;
+    gtp_create_session_request_t req;
     c_uint8_t tmp[256];
     pkbuf_t *pkbuf = NULL;
 
@@ -29,7 +31,7 @@ static void gtp_message_test1(abts_case *tc, void *data)
             pkbuf->len);
 
     memset(&req, 0, sizeof(req));
-    rv = tlv_parse_msg(&req, &gtpv2c_desc_create_session_request, pkbuf,
+    rv = tlv_parse_msg(&req, &tlv_desc_create_session_request, pkbuf,
             TLV_MODE_T1_L2_I1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
@@ -120,24 +122,57 @@ static void gtp_message_test1(abts_case *tc, void *data)
 
 static void gtp_message_test2(abts_case *tc, void *data)
 {
-    gtpv2c_create_session_request_t req;
+    status_t rv;
+    pkbuf_t *pkbuf = NULL;
+    gtp_create_session_request_t req;
+    gtp_uli_t uli;
+    c_uint8_t buffer[20];
+    c_uint16_t size = 0;
 
-    memset(&req, 0, sizeof(gtpv2c_create_session_request_t));
+    memset(&req, 0, sizeof(gtp_create_session_request_t));
 
     req.imsi.presence = 1;
     req.imsi.len = 8;
-    memcpy(req.imsi.data, "\x55\x15\x30\x11\x34\x00\x10\xf4", req.imsi.len);
+    req.imsi.data = (c_uint8_t *)"\x55\x15\x30\x11\x34\x00\x10\xf4";
 
     req.msisdn.presence = 1;
     req.msisdn.len = 6;
-    memcpy(req.msisdn.data, "\x94\x71\x52\x76\x00\x41", req.msisdn.len);
+    req.msisdn.data = (c_uint8_t *)"\x94\x71\x52\x76\x00\x41";
 
     req.me_identity.presence = 1;
     req.me_identity.len = 8;
-    memcpy(req.me_identity.data, 
-            "\x53\x61\x20\x00\x91\x78\x84\x00", req.me_identity.len);
+    req.me_identity.data = (c_uint8_t *)"\x53\x61\x20\x00\x91\x78\x84\x00";
 
     req.user_location_information.presence = 1;
+    memset(&uli, 0, sizeof(gtp_uli_t));
+    uli.flags.ecgi = 1;
+    uli.flags.tai = 1;
+    plmn_id_build(&uli.tai.plmn_id, 555, 10, 2);
+    uli.tai.tac = 4130;
+    plmn_id_build(&uli.ecgi.plmn_id, 555, 10, 2);
+    uli.ecgi.eci = 105729;
+    req.user_location_information.data = buffer;
+    size = gtp_encode_uli(&req.user_location_information, &uli);
+    ABTS_INT_EQUAL(tc, 13, req.user_location_information.len);
+    memset(&uli, 0, sizeof(gtp_uli_t));
+    size = gtp_decode_uli(&uli, &req.user_location_information);
+    ABTS_INT_EQUAL(tc, 13, size);
+    ABTS_INT_EQUAL(tc, 0, uli.flags.lai);
+    ABTS_INT_EQUAL(tc, 1, uli.flags.ecgi);
+    ABTS_INT_EQUAL(tc, 105729, uli.ecgi.eci);
+    ABTS_INT_EQUAL(tc, 1, uli.flags.tai);
+    ABTS_INT_EQUAL(tc, 4130, uli.tai.tac);
+    ABTS_INT_EQUAL(tc, 0, uli.flags.rai);
+    ABTS_INT_EQUAL(tc, 0, uli.flags.sai);
+    ABTS_INT_EQUAL(tc, 0, uli.flags.cgi);
+
+    rv = tlv_build_msg(&pkbuf, &tlv_desc_create_session_request, &req,
+            TLV_MODE_T1_L2_I1);
+
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    d_print_hex(pkbuf->payload, pkbuf->len);
+
+    pkbuf_free(pkbuf);
 #if 0
     req.serving_network.presence = 1;
     req.rat_type.presence = 1;
@@ -163,9 +198,7 @@ abts_suite *test_gtp_message(abts_suite *suite)
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, gtp_message_test1, NULL);
-#if 0
     abts_run_test(suite, gtp_message_test2, NULL);
-#endif
 
     return suite;
 }

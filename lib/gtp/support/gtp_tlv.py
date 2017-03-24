@@ -87,14 +87,14 @@ def output_header_to_file(f):
 
 """)
     f.write("/*******************************************************************************\n")
-    f.write(" * This file had been created by gtpv2c_tlv.py script v%s\n" % (version))
+    f.write(" * This file had been created by gtp_tlv.py script v%s\n" % (version))
     f.write(" * Please do not modify this file but regenerate it via script.\n")
     f.write(" * Created on: %s by %s\n * from %s\n" % (str(now), getpass.getuser(), filename))
     f.write(" ******************************************************************************/\n\n")
 
 def usage():
     print "Python generating TLV build/parser for GTPv2-C v%s" % (version)
-    print "Usage: python gtpv2c_tlv.py [options]"
+    print "Usage: python gtp_tlv.py [options]"
     print "Available options:"
     print "-d        Enable script debug"
     print "-f [file] Input file to parse"
@@ -170,7 +170,7 @@ else:
     d_error("Cannot find file : " + filename)
 
 d_info("[Message List]")
-cachefile = cachedir + 'gtpv2c_msg_list.py'
+cachefile = cachedir + 'tlv_msg_list.py'
 if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
     execfile(cachefile)
     print "Read from " + cachefile
@@ -202,7 +202,7 @@ else:
     f.close()
 
 d_info("[IE Type List]")
-cachefile = cachedir + 'gtpv2c_type_list.py'
+cachefile = cachedir + 'tlv_type_list.py'
 if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
     execfile(cachefile)
     print "Read from " + cachefile
@@ -245,7 +245,7 @@ else:
 type_list['MM Context'] = { "type": "107", "max_instance" : "0" }
 
 d_info("[Group IE List]")
-cachefile = cachedir + 'gtpv2c_group_list.py'
+cachefile = cachedir + 'tlv_group_list.py'
 if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
     execfile(cachefile)
     print "Read from " + cachefile
@@ -315,7 +315,7 @@ msg_list["Create Session Request"]["table"] = 8
 for key in msg_list.keys():
     if "table" in msg_list[key].keys():
         d_info("[" + key + "]")
-        cachefile = cachedir + "gtpv2c_msg_" + msg_list[key]["type"] + ".py"
+        cachefile = cachedir + "tlv_msg_" + msg_list[key]["type"] + ".py"
         if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
             execfile(cachefile)
             print "Read from " + cachefile
@@ -350,10 +350,10 @@ type_list["Port Number"]["size"] = 2                    # Type : 126
 type_list["APN Restriction"]["size"] = 1                # Type : 127
 type_list["Selection Mode"]["size"] = 1                 # Type : 128
 
-f = open(outdir + 'gtpv2c_tlv.h', 'w')
+f = open(outdir + 'gtp_tlv.h', 'w')
 output_header_to_file(f)
-f.write("""#ifndef __GTPV2C_TLV_H__
-#define __GTPV2C_TLV_H__
+f.write("""#ifndef __GTP_TLV_H__
+#define __GTP_TLV_H__
 
 #include "core_tlv_msg.h"
 
@@ -366,13 +366,13 @@ extern "C" {
 tmp = [(k, v["type"]) for k, v in msg_list.items()]
 sorted_msg_list = sorted(tmp, key=lambda tup: int(tup[1]))
 for (k, v) in sorted_msg_list:
-    f.write("#define GTPV2C_MSG_" + v_upper(k) + "_TYPE " + v + "\n")
+    f.write("#define GTP_" + v_upper(k) + "_TYPE " + v + "\n")
 f.write("\n")
 
 tmp = [(k, v["type"]) for k, v in type_list.items()]
 sorted_type_list = sorted(tmp, key=lambda tup: int(tup[1]))
 for (k, v) in sorted_type_list:
-    f.write("#define GTPV2C_IE_" + v_upper(k) + "_TYPE " + v + "\n")
+    f.write("#define TLV_" + v_upper(k) + "_TYPE " + v + "\n")
 f.write("\n")
 
 f.write("/* Infomration Element TLV Descriptor */\n")
@@ -380,7 +380,7 @@ for (k, v) in sorted_type_list:
     if k in group_list.keys():
         continue
     for instance in range(0, int(type_list[k]["max_instance"])+1):
-        f.write("extern tlv_desc_t gtpv2c_desc_" + v_lower(k))
+        f.write("extern tlv_desc_t tlv_desc_" + v_lower(k))
         f.write("_" + str(instance) + ";\n")
 f.write("\n")
 
@@ -390,13 +390,13 @@ sorted_group_list = sorted(tmp, key=lambda tup: int(tup[1]))
 f.write("/* Group Infomration Element TLV Descriptor */\n")
 for (k, v) in sorted_group_list:
     for instance in range(0, int(type_list[k]["max_instance"])+1):
-        f.write("extern tlv_desc_t gtpv2c_desc_" + v_lower(k))
+        f.write("extern tlv_desc_t tlv_desc_" + v_lower(k))
         f.write("_" + str(instance) + ";\n")
 f.write("\n")
 
 f.write("/* Message Descriptor */\n")
 for (k, v) in sorted_msg_list:
-    f.write("extern tlv_desc_t gtpv2c_desc_" + v_lower(k) + ";\n")
+    f.write("extern tlv_desc_t tlv_desc_" + v_lower(k) + ";\n")
 f.write("\n")
 
 f.write("/* Structure for Infomration Element */\n")
@@ -405,25 +405,25 @@ for (k, v) in sorted_type_list:
         continue
     if "size" in type_list[k]:
         if type_list[k]["size"] == 1:
-            f.write("typedef tlv_uint8_t gtpv2c_" + v_lower(k) + "_t;\n")
+            f.write("typedef tlv_uint8_t tlv_" + v_lower(k) + "_t;\n")
         elif type_list[k]["size"] == 2:
-            f.write("typedef tlv_uint16_t gtpv2c_" + v_lower(k) + "_t;\n")
+            f.write("typedef tlv_uint16_t tlv_" + v_lower(k) + "_t;\n")
         elif type_list[k]["size"] == 3:
-            f.write("typedef tlv_uint24_t gtpv2c_" + v_lower(k) + "_t;\n")
+            f.write("typedef tlv_uint24_t tlv_" + v_lower(k) + "_t;\n")
         elif type_list[k]["size"] == 4:
-            f.write("typedef tlv_uint32_t gtpv2c_" + v_lower(k) + "_t;\n")
+            f.write("typedef tlv_uint32_t tlv_" + v_lower(k) + "_t;\n")
         else:
             assert False, "Unknown size = %d for key = %s" % (type_list[k]["size"], k)
     else:
-        f.write("typedef tlv_octet_t gtpv2c_" + v_lower(k) + "_t;\n")
+        f.write("typedef tlv_octet_t tlv_" + v_lower(k) + "_t;\n")
 f.write("\n")
 
 f.write("/* Structure for Group Infomration Element */\n")
 for (k, v) in sorted_group_list:
-    f.write("typedef struct _gtpv2c_" + v_lower(k) + "_t {\n")
+    f.write("typedef struct _tlv_" + v_lower(k) + "_t {\n")
     f.write("    tlv_presence_t presence;\n")
     for ies in group_list[k]["ies"]:
-        f.write("    gtpv2c_" + v_lower(ies["ie_type"]) + "_t " + \
+        f.write("    tlv_" + v_lower(ies["ie_type"]) + "_t " + \
                 v_lower(ies["ie_value"]))
         if ies["ie_type"] == "F-TEID":
             if ies["ie_value"] == "S2b-U ePDG F-TEID":
@@ -435,30 +435,30 @@ for (k, v) in sorted_group_list:
             f.write(" /* Instance : " + ies["instance"] + " */\n")
         else:
             f.write(";\n")
-    f.write("} gtpv2c_" + v_lower(k) + "_t;\n")
+    f.write("} tlv_" + v_lower(k) + "_t;\n")
     f.write("\n")
 
 f.write("/* Structure for Message */\n")
 for (k, v) in sorted_msg_list:
-    f.write("typedef struct _gtpv2c_" + v_lower(k) + "_t {\n")
+    f.write("typedef struct _gtp_" + v_lower(k) + "_t {\n")
     if "ies" in msg_list[k]:
         for ies in msg_list[k]["ies"]:
-            f.write("    gtpv2c_" + v_lower(ies["ie_type"]) + "_t " + \
+            f.write("    tlv_" + v_lower(ies["ie_type"]) + "_t " + \
                     v_lower(ies["ie_value"]) + ";\n")
-    f.write("} gtpv2c_" + v_lower(k) + "_t;\n")
+    f.write("} gtp_" + v_lower(k) + "_t;\n")
     f.write("\n")
 
 f.write("""#ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* __GTPV2C_TLV_H__ */
+#endif /* __GTP_TLV_H__ */
 """)
 f.close()
 
-f = open(outdir + 'gtpv2c_tlv.c', 'w')
+f = open(outdir + 'gtp_tlv.c', 'w')
 output_header_to_file(f)
-f.write("""#include "gtpv2c_tlv.h"
+f.write("""#include "gtp_tlv.h"
 
 """)
 
@@ -466,7 +466,7 @@ for (k, v) in sorted_type_list:
     if k in group_list.keys():
         continue
     for instance in range(0, int(type_list[k]["max_instance"])+1):
-        f.write("tlv_desc_t gtpv2c_desc_%s_%d =\n" % (v_lower(k), instance))
+        f.write("tlv_desc_t tlv_desc_%s_%d =\n" % (v_lower(k), instance))
         f.write("{\n")
         if "size" in type_list[k]:
             if type_list[k]["size"] == 1:
@@ -482,42 +482,42 @@ for (k, v) in sorted_type_list:
         else:
             f.write("    TLV_VAR_STR,\n")
         f.write("    \"%s\",\n" % k)
-        f.write("    GTPV2C_IE_%s_TYPE,\n" % v_upper(k))
+        f.write("    TLV_%s_TYPE,\n" % v_upper(k))
         if "size" in type_list[k]:
             f.write("    %d,\n" % type_list[k]["size"])
         else:
             f.write("    0,\n")
         f.write("    %d,\n" % instance)
-        f.write("    sizeof(gtpv2c_%s_t),\n" % v_lower(k))
+        f.write("    sizeof(tlv_%s_t),\n" % v_lower(k))
         f.write("    { NULL }\n")
         f.write("};\n\n")
 
 for (k, v) in sorted_group_list:
     for instance in range(0, int(type_list[k]["max_instance"])+1):
-        f.write("tlv_desc_t gtpv2c_desc_%s_%d =\n" % (v_lower(k), instance))
+        f.write("tlv_desc_t tlv_desc_%s_%d =\n" % (v_lower(k), instance))
         f.write("{\n")
         f.write("    TLV_COMPOUND,\n")
         f.write("    \"%s\",\n" % k)
-        f.write("    GTPV2C_IE_%s_TYPE,\n" % v_upper(k))
+        f.write("    TLV_%s_TYPE,\n" % v_upper(k))
         f.write("    0,\n")
         f.write("    %d,\n" % instance)
-        f.write("    sizeof(gtpv2c_%s_t),\n" % v_lower(k))
+        f.write("    sizeof(tlv_%s_t),\n" % v_lower(k))
         f.write("    {\n")
         for ies in group_list[k]["ies"]:
-                f.write("        &gtpv2c_desc_%s_%s,\n" % (v_lower(ies["ie_type"]), v_lower(ies["instance"])))
+                f.write("        &tlv_desc_%s_%s,\n" % (v_lower(ies["ie_type"]), v_lower(ies["instance"])))
         f.write("        NULL,\n")
         f.write("    }\n")
         f.write("};\n\n")
 
 for (k, v) in sorted_msg_list:
-    f.write("tlv_desc_t gtpv2c_desc_%s =\n" % v_lower(k))
+    f.write("tlv_desc_t tlv_desc_%s =\n" % v_lower(k))
     f.write("{\n")
     f.write("    TLV_MESSAGE,\n")
     f.write("    \"%s\",\n" % k)
     f.write("    0, 0, 0, 0, {\n")
     if "ies" in msg_list[k]:
         for ies in msg_list[k]["ies"]:
-                f.write("        &gtpv2c_desc_%s_%s,\n" % (v_lower(ies["ie_type"]), v_lower(ies["instance"])))
+                f.write("        &tlv_desc_%s_%s,\n" % (v_lower(ies["ie_type"]), v_lower(ies["instance"])))
     f.write("    NULL,\n")
     f.write("}};\n\n")
 
