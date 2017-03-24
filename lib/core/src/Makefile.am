@@ -18,11 +18,11 @@ libcore_la_SOURCES = \
 	../include/core_signal.h ../include/core_thread.h ../include/core_time.h \
 	../include/core_timer.h ../include/core_tlv.h ../include/core_tlv_msg.h \
 	../include/core_atomic.h ../include/core_portable.h \
-	../include/core_version.h
+	../include/core_version.h ../include/core_event.h
 
 nodist_libcore_la_SOURCES = \
     debug.c fsm.c msgq.c ringbuf.c timer.c tlv.c tlv_msg.c \
-	aes.c aes_cmac.c sha1.c sha1_hmac.c sha2.c sha2_hmac.c misc.c
+	aes.c aes_cmac.c sha1.c sha1_hmac.c sha2.c sha2_hmac.c misc.c event.c
 
 libcore_la_DEPENDENCIES = \
     $(top_srcdir)/lib/core/src/@OSDIR@/libcore@OSDIR@.la
