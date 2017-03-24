@@ -58,7 +58,7 @@ void tm_service_init(tm_service_t *tm_service)
     return;
 }
 
-status_t tm_execute_tm_service(tm_service_t *p_tm_s)
+status_t tm_execute_tm_service(tm_service_t *p_tm_s, c_uintptr_t data)
 {
     c_uint32_t cur_time;
     tm_block_t *tm;
@@ -71,7 +71,7 @@ status_t tm_execute_tm_service(tm_service_t *p_tm_s)
         if(tm->expire_time < cur_time)
         {
             /* execute expiry function */
-            tm->expire_func(tm->arg1, tm->arg2, tm->arg3);
+            tm->expire_func(data, tm->arg1, tm->arg2, tm->arg3);
 
             /* remove this tm_block from the active list */
             _tm_remove(&(p_tm_s->active_list), tm);

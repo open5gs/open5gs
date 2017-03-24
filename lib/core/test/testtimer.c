@@ -25,14 +25,16 @@ test_timer_eliment timer_eliment[] ={
 };
 
 
-void test_expire_func_1(c_uintptr_t arg1, c_uintptr_t arg2, c_uintptr_t arg3)
+void test_expire_func_1(c_uintptr_t data,
+        c_uintptr_t arg1, c_uintptr_t arg2, c_uintptr_t arg3)
 {
     c_uint32_t index = arg2;
 
     expire_check[index] = TRUE;
 }
 
-void test_expire_func_2(c_uintptr_t arg1, c_uintptr_t arg2, c_uintptr_t arg3)
+void test_expire_func_2(c_uintptr_t data,
+        c_uintptr_t arg1, c_uintptr_t arg2, c_uintptr_t arg3)
 {
     c_uint32_t index = arg2;
 
@@ -104,7 +106,7 @@ static void timer_test_1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, id, 0);
 
     core_sleep(70000);
-    tm_execute_tm_service(&tm_service);
+    tm_execute_tm_service(&tm_service, 0);
 
     id = (tm_block_id)list_first(&tm_service.idle_list);
     ABTS_INT_EQUAL(tc, id, id_array[1]); if(tc->failed) return;
@@ -131,7 +133,7 @@ static void timer_test_1(abts_case *tc, void *data)
 
 
     core_sleep(40000);
-    tm_execute_tm_service(&tm_service);
+    tm_execute_tm_service(&tm_service, 0);
 
     id = (tm_block_id)list_first(&tm_service.idle_list);
     ABTS_INT_EQUAL(tc, id, id_array[1]); if(tc->failed) return;
@@ -158,7 +160,7 @@ static void timer_test_1(abts_case *tc, void *data)
 
 
     core_sleep(140000);
-    tm_execute_tm_service(&tm_service);
+    tm_execute_tm_service(&tm_service, 0);
 
     id = (tm_block_id)list_first(&tm_service.idle_list);
     ABTS_INT_EQUAL(tc, id, id_array[1]); if(tc->failed) return;
@@ -185,7 +187,7 @@ static void timer_test_1(abts_case *tc, void *data)
 
 
     core_sleep(300000);
-    tm_execute_tm_service(&tm_service);
+    tm_execute_tm_service(&tm_service, 0);
 
     id = (tm_block_id)list_first(&tm_service.idle_list);
     ABTS_INT_EQUAL(tc, id, id_array[1]); if(tc->failed) return;
@@ -212,7 +214,7 @@ static void timer_test_1(abts_case *tc, void *data)
 
 
     core_sleep(300000);
-    tm_execute_tm_service(&tm_service);
+    tm_execute_tm_service(&tm_service, 0);
 
     id = (tm_block_id)list_first(&tm_service.idle_list);
     ABTS_INT_EQUAL(tc, id, id_array[1]); if(tc->failed) return;
@@ -286,7 +288,7 @@ static void timer_test_2(abts_case *tc, void *data)
     for(n = 0; n < TEST_DURATION/TEST_TIMER_PRECISION; n++)
     {
         core_sleep(TEST_TIMER_PRECISION * 1000);
-        tm_execute_tm_service(&tm_service);
+        tm_execute_tm_service(&tm_service, 0);
         ABTS_INT_EQUAL(tc, tm_num[n], expire_check[n]);
     }
 
@@ -350,7 +352,7 @@ static void timer_test_3(abts_case *tc, void *data)
     for(n = 0; n < TEST_DURATION/TEST_TIMER_PRECISION; n++)
     {
         core_sleep(TEST_TIMER_PRECISION * 1000);
-        tm_execute_tm_service(&tm_service);
+        tm_execute_tm_service(&tm_service, 0);
         ABTS_INT_EQUAL(tc, tm_num[n], expire_check[n]);
     }
 

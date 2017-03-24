@@ -103,23 +103,14 @@ CORE_DECLARE(int) event_timedrecv(
 /**
  * Create a timer
  */
-CORE_DECLARE(tm_block_id) event_timer_create(tm_service_t *tm_service);
-
-/**
- * Set a timer
- */
-status_t event_timer_set(tm_block_id id, event_e te, tm_type_e type, 
-        c_uint32_t duration, c_uintptr_t queue_id, c_uintptr_t param);
+CORE_DECLARE(tm_block_id) event_timer_create(
+        tm_service_t *tm_service, tm_type_e type, c_uint32_t duration, 
+        c_uintptr_t event, c_uintptr_t param);
 
 /**
  * Delete a timer
  */
 CORE_DECLARE(status_t) event_timer_delete(tm_block_id id);
-
-/*
- * Execute timer engine
- */
-CORE_DECLARE(status_t) event_timer_execute(tm_service_t *tm_service);
 
 char* event_get_name(event_t *e);
 

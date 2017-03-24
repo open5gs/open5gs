@@ -83,24 +83,19 @@ void* event_timer_expire_func(
     return NULL;
 }
 
-tm_block_id event_timer_create(tm_service_t *tm_service)
+tm_block_id event_timer_create(tm_service_t *tm_service, tm_type_e type, 
+        c_uint32_t duration, c_uintptr_t event, c_uintptr_t param)
 {
     tm_block_id id;
+
+    d_assert(type == TIMER_TYPE_ONE_SHOT || type == TIMER_TYPE_PERIODIC,
+            return 0, "param 'type' is invalid");
 
     id = tm_create(tm_service);
     d_assert(id, return 0, "tm_create() failed");
 
-    return id;
-}
-
-status_t event_timer_set(tm_block_id id, event_e event, tm_type_e type, 
-        c_uint32_t duration, c_uintptr_t queue_id, c_uintptr_t param)
-{
-    d_assert(type == TIMER_TYPE_ONE_SHOT || type == TIMER_TYPE_PERIODIC,
-            return 0, "param 'type' is invalid");
-
     tm_set(id, type, duration, (expire_func_t)event_timer_expire_func, 
-            queue_id, event, param);
+            event, param, 0);
 
     return id;
 }
@@ -112,11 +107,6 @@ status_t event_timer_delete(tm_block_id id)
     tm_delete(id);
 
     return CORE_OK;
-}
-
-status_t event_timer_execute(tm_service_t *tm_service)
-{
-    return tm_execute_tm_service(tm_service);
 }
 
 static char FSM_NAME_INIT_SIG[] = "INIT";

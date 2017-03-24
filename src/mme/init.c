@@ -72,7 +72,8 @@ void *THREAD_FUNC mme_sm_main(thread_id id, void *data)
         /* if the gap is over 10 ms, execute preriodic jobs */
         if (now_tm - prev_tm > EVENT_WAIT_TIMEOUT)
         {
-            event_timer_execute(&mme_self()->tm_service);
+            tm_execute_tm_service(
+                    &mme_self()->tm_service, mme_self()->queue_id);
 
             prev_tm = now_tm;
         }

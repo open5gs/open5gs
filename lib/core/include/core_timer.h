@@ -22,7 +22,7 @@ typedef struct _tm_service_t {
 
 typedef c_uintptr_t tm_block_id;
 
-typedef void (*expire_func_t)(
+typedef void (*expire_func_t)(c_uintptr_t data,
         c_uintptr_t arg1, c_uintptr_t arg2, c_uintptr_t arg3);
 
 typedef struct _tm_desc_t {
@@ -40,7 +40,8 @@ CORE_DECLARE(status_t) tm_final(void);
 CORE_DECLARE(c_uint32_t) tm_pool_avail(void);
 
 CORE_DECLARE(void) tm_service_init(tm_service_t *tm_service);
-CORE_DECLARE(status_t) tm_execute_tm_service(tm_service_t *p_tm_s);
+CORE_DECLARE(status_t) tm_execute_tm_service(
+        tm_service_t *p_tm_s, c_uintptr_t data);
 
 CORE_DECLARE(tm_block_id) tm_create(tm_service_t *tm_service);
 CORE_DECLARE(void) tm_delete(tm_block_id id);
