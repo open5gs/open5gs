@@ -9,6 +9,14 @@ extern "C" {
 
 CORE_DECLARE(void *) s1ap_plmn_id_to_buffer(
         plmn_id_t *plmn_id, c_uint8_t *buf);
+
+CORE_DECLARE(c_uint16_t) plmn_id_mcc(plmn_t *plmn_id);
+CORE_DECLARE(c_uint16_t) plmn_id_mnc(plmn_t *plmn_id);
+CORE_DECLARE(c_uint16_t) plmn_id_mnc_len(plmn_t *plmn_id);
+
+CORE_DECLARE(void) plmn_id_build(plmn_t *plmn_id, 
+        c_uint16_t mcc, c_uint16_t mnc, c_uint16_t mnc_len);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

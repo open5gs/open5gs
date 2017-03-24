@@ -22,6 +22,15 @@ ED2(c_uint8_t mnc_digit2:4;,
     c_uint8_t mnc_digit1:4;)
 } __attribute__ ((packed)) nas_plmn_t;
 
+typedef struct _plmn_t {
+ED2(c_uint8_t mcc2:4;,
+    c_uint8_t mcc1:4;)
+ED2(c_uint8_t mnc1:4;,
+    c_uint8_t mcc3:4;)
+ED2(c_uint8_t mnc3:4;,
+    c_uint8_t mnc2:4;)
+} __attribute__ ((packed)) plmn_t;
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
