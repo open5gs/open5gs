@@ -5,6 +5,7 @@
 #include "core_rwlock.h"
 #include "core_index.h"
 
+#include "3gpp_conv.h"
 #include "context.h"
 #include "nas_ies.h"
 #include "s1ap_message.h"
@@ -51,17 +52,15 @@ status_t mme_ctx_init()
     self.s11_local_port = S11_UDP_PORT;
     self.s11_remote_port = S11_UDP_PORT + 1;
 
-    self.plmn_id.mnc_len = 2;
-    self.plmn_id.mcc = 1; /* 001 */
-    self.plmn_id.mnc = 1; /* 01 */
+    /* MCC : 001, MNC : 01 */
+    plmn_id_build(&self.plmn_id, 1, 1, 2); 
     self.tracking_area_code = 12345;
     self.default_paging_drx = S1ap_PagingDRX_v64;
     self.relative_capacity = 0xff;
 
     self.srvd_gummei.num_of_plmn_id = 1;
-    self.srvd_gummei.plmn_id[0].mnc_len = 2;
-    self.srvd_gummei.plmn_id[0].mcc = 1; /* 001 */
-    self.srvd_gummei.plmn_id[0].mnc = 1; /* 01 */
+    /* MCC : 001, MNC : 01 */
+    plmn_id_build(&self.srvd_gummei.plmn_id[0], 1, 1, 2); 
 
     self.srvd_gummei.num_of_mme_gid = 1;
     self.srvd_gummei.mme_gid[0] = 2;

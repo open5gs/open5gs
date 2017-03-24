@@ -7,12 +7,6 @@
 extern "C" {
 #endif /* __cplusplus */
 
-typedef struct _plmn_id_t {
-    c_uint16_t      mcc;
-    c_uint16_t      mnc;
-    c_uint16_t      mnc_len;
-} plmn_id_t;
-
 typedef struct _nas_plmn_t {
 ED2(c_uint8_t mcc_digit2:4;,
     c_uint8_t mcc_digit1:4;)

@@ -521,7 +521,7 @@ ED3(c_uint8_t type:4;,
 /* 9.9.3.32 Tracking area identity
  * O TV 6 */
 typedef struct _nas_tracking_area_identity_t {
-    nas_plmn_t plmn;
+    plmn_t plmn_id;
     c_uint16_t tac;
 } __attribute__ ((packed)) nas_tracking_area_identity_t;
 

@@ -7,9 +7,6 @@
 extern "C" {
 #endif /* __cplusplus */
 
-CORE_DECLARE(void *) s1ap_plmn_id_to_buffer(
-        plmn_id_t *plmn_id, c_uint8_t *buf);
-
 CORE_DECLARE(c_uint16_t) plmn_id_mcc(plmn_t *plmn_id);
 CORE_DECLARE(c_uint16_t) plmn_id_mnc(plmn_t *plmn_id);
 CORE_DECLARE(c_uint16_t) plmn_id_mnc_len(plmn_t *plmn_id);

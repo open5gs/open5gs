@@ -33,14 +33,13 @@ void s1ap_uint32_to_OCTET_STRING(c_uint32_t uint32, OCTET_STRING_t *octet_string
     octet_string->buf[0] = uint32;
 }
 
-void s1ap_plmn_id_to_TBCD_STRING(
-        plmn_id_t *plmn_id, S1ap_TBCD_STRING_t *tbcd_string)
-
+void s1ap_buffer_to_OCTET_STRING(
+        void *buf, int size, S1ap_TBCD_STRING_t *tbcd_string)
 {
-    tbcd_string->size = 3;
+    tbcd_string->size = size;
     tbcd_string->buf = core_calloc(tbcd_string->size, sizeof(c_uint8_t));
 
-    s1ap_plmn_id_to_buffer(plmn_id, tbcd_string->buf);
+    memcpy(tbcd_string->buf, buf, size);
 }
 
 void s1ap_uint32_to_ENB_ID(

@@ -22,7 +22,7 @@ pool_declare(sess_state_pool, struct sess_state, SIZE_OF_SESS_STATE_POOL);
 static void s6a_aia_cb(void *data, struct msg **msg);
 
 /* Cb called when an answer is received */
-int s6a_send_auth_info_req(ue_ctx_t *ue, c_uint8_t *plmn_id)
+int s6a_send_auth_info_req(ue_ctx_t *ue, plmn_t *plmn_id)
 {
     struct msg *req = NULL;
     struct avp *avp;
@@ -91,7 +91,7 @@ int s6a_send_auth_info_req(ue_ctx_t *ue, c_uint8_t *plmn_id)
 
     /* Set the Visited-PLMN-Id AVP if needed*/
     d_assert(fd_msg_avp_new(s6a_visited_plmn_id, 0, &avp) == 0, goto out,);
-    val.os.data = plmn_id;
+    val.os.data = (c_uint8_t *)plmn_id;
     val.os.len  = PLMN_ID_LEN;
     d_assert(fd_msg_avp_setvalue(avp, &val) == 0, goto out,);
     d_assert(fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp) == 0, goto out,);

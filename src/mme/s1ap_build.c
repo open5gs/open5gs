@@ -32,18 +32,16 @@ status_t s1ap_build_setup_rsp(pkbuf_t **pkbuf)
         for (j = 0; j < srvd_gummei->num_of_plmn_id; j++)
         {
             plmnIdentity = (S1ap_PLMNidentity_t *)
-                core_calloc(srvd_gummei->num_of_plmn_id, 
-                    sizeof(S1ap_PLMNidentity_t));
-            s1ap_plmn_id_to_TBCD_STRING(
-                &srvd_gummei->plmn_id[j], plmnIdentity);
+                core_calloc(1, sizeof(S1ap_PLMNidentity_t));
+            s1ap_buffer_to_OCTET_STRING(
+                    &srvd_gummei->plmn_id[j], PLMN_ID_LEN, plmnIdentity);
             ASN_SEQUENCE_ADD(&servedGUMMEI->servedPLMNs, plmnIdentity);
         }
 
         for (j = 0; j < srvd_gummei->num_of_mme_gid; j++)
         {
             mmeGroupId = (S1ap_MME_Group_ID_t *)
-                core_calloc(srvd_gummei->num_of_mme_gid, 
-                        sizeof(S1ap_MME_Group_ID_t));
+                core_calloc(1, sizeof(S1ap_MME_Group_ID_t));
             s1ap_uint16_to_OCTET_STRING(
                 srvd_gummei->mme_gid[j], mmeGroupId);
             ASN_SEQUENCE_ADD(&servedGUMMEI->servedGroupIDs, mmeGroupId);
@@ -52,8 +50,7 @@ status_t s1ap_build_setup_rsp(pkbuf_t **pkbuf)
         for (j = 0; j < srvd_gummei->num_of_mme_code; j++)
         {
             mmeCode = (S1ap_MME_Code_t *)
-                core_calloc(srvd_gummei->num_of_mme_code, 
-                        sizeof(S1ap_MME_Code_t));
+                core_calloc(1, sizeof(S1ap_MME_Code_t));
             s1ap_uint8_to_OCTET_STRING(
                 srvd_gummei->mme_code[j], mmeCode);
             ASN_SEQUENCE_ADD(&servedGUMMEI->servedMMECs, mmeCode);

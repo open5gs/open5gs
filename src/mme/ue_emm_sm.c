@@ -159,17 +159,15 @@ static void ue_emm_handle_attach_request(
     {
         case NAS_EPS_MOBILE_IDENTITY_IMSI:
         {
-            c_uint8_t plmn_id[PLMN_ID_LEN];
+            plmn_t *plmn_id = &mme_self()->plmn_id;
 
-            s1ap_plmn_id_to_buffer(&mme_self()->plmn_id, plmn_id);
             if (attach_request->presencemask &
                 NAS_ATTACH_REQUEST_LAST_VISITED_REGISTERED_TAI_PRESENT)
             {
                 nas_tracking_area_identity_t *last_visited_registered_tai = 
                     &attach_request->last_visited_registered_tai;
 
-                memcpy(plmn_id, 
-                        &last_visited_registered_tai->plmn, PLMN_ID_LEN);
+                plmn_id = &last_visited_registered_tai->plmn_id;
             }
             nas_imsi_bcd_to_buffer(
                 &eps_mobile_identity->imsi, eps_mobile_identity->length, 
