@@ -1,7 +1,7 @@
 #ifndef __MME_S11_PATH_H__
 #define __MME_S11_PATH_H__
 
-#include "core.h"
+#include "gtp_path.h"
 
 #ifdef __cplusplus
 extern "C" {

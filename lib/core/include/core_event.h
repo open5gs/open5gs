@@ -9,6 +9,26 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#define EVENT_SIZE sizeof(event_t)
+#define EVENT_WAIT_TIMEOUT 10000 /* 10 msec */
+
+#define event_set(__ptr_e, __evnt) ((__ptr_e)->event = (__evnt))
+#define event_get(__ptr_e) ((__ptr_e)->event)
+
+#define event_set_param1(__ptr_e, __param) \
+    ((__ptr_e)->param1 = (c_uintptr_t)(__param))
+#define event_set_param2(__ptr_e, __param) \
+    ((__ptr_e)->param2 = (c_uintptr_t)(__param))
+#define event_set_param3(__ptr_e, __param) \
+    ((__ptr_e)->param3 = (c_uintptr_t)(__param))
+#define event_set_param4(__ptr_e, __param) \
+    ((__ptr_e)->param4 = (c_uintptr_t)(__param))
+
+#define event_get_param1(__ptr_e) ((__ptr_e)->param1)
+#define event_get_param2(__ptr_e) ((__ptr_e)->param2)
+#define event_get_param3(__ptr_e) ((__ptr_e)->param3)
+#define event_get_param4(__ptr_e) ((__ptr_e)->param4)
+
 typedef struct {
     fsm_event_t event;
     c_uintptr_t param1;
@@ -17,38 +37,11 @@ typedef struct {
     c_uintptr_t param4;
 } event_t;
 
-#define EVENT_SIZE sizeof(event_t)
+extern char *FSM_NAME_INIT_SIG;
+extern char *FSM_NAME_ENTRY_SIG;
+extern char *FSM_NAME_EXIT_SIG;
 
-#define event_set(__ptr_e, __evnt) \
-    ((__ptr_e)->event = (__evnt))
-
-#define event_get(__ptr_e) \
-    ((__ptr_e)->event)
-
-
-#define event_set_param1(__ptr_e, __param) \
-    ((__ptr_e)->param1 = (c_uintptr_t)(__param))
-
-#define event_set_param2(__ptr_e, __param) \
-    ((__ptr_e)->param2 = (c_uintptr_t)(__param))
-
-#define event_set_param3(__ptr_e, __param) \
-    ((__ptr_e)->param3 = (c_uintptr_t)(__param))
-
-#define event_set_param4(__ptr_e, __param) \
-    ((__ptr_e)->param4 = (c_uintptr_t)(__param))
-
-#define event_get_param1(__ptr_e) \
-    ((__ptr_e)->param1)
-
-#define event_get_param2(__ptr_e) \
-    ((__ptr_e)->param2)
-
-#define event_get_param3(__ptr_e) \
-    ((__ptr_e)->param3)
-
-#define event_get_param4(__ptr_e) \
-    ((__ptr_e)->param4)
+extern char *EVT_NAME_UNKNOWN;
 
 /**
  * Create event message queue

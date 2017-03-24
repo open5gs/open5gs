@@ -1,5 +1,5 @@
-#ifndef __SM_H__
-#define __SM_H__
+#ifndef __MME_SM_H__
+#define __MME_SM_H__
 
 #include "core_param.h"
 #include "core_fsm.h"
@@ -40,14 +40,14 @@ void ue_emm_state_final(ue_emm_sm_t *s, event_t *e);
 void ue_emm_state_operational(ue_emm_sm_t *s, event_t *e);
 void ue_emm_state_exception(ue_emm_sm_t *s, event_t *e);
 
-#define sm_print(__pe) \
-    d_print("%s(): %s\n", __func__, event_get_name(__pe))
+#define mme_sm_print(__pe) \
+    d_print("%s(): %s\n", __func__, mme_event_get_name(__pe))
 
-#define sm_trace(__l, __pe) \
-    d_trace(__l, "%s(): %s\n", __func__, event_get_name(__pe))
+#define mme_sm_trace(__l, __pe) \
+    d_trace(__l, "%s(): %s\n", __func__, mme_event_get_name(__pe))
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* !__SM_H__ */
+#endif /* !__MME_SM_H__ */

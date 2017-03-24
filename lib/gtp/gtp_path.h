@@ -1,7 +1,7 @@
 #ifndef __GTP_PATH_H__
 #define __GTP_PATH_H__
 
-#include "core.h"
+#include "core_pkbuf.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -26,30 +26,30 @@ pool_declare(enb_pool, enb_ctx_t, SIZE_OF_ENB_POOL);
 pool_declare(ue_pool, ue_ctx_t, SIZE_OF_UE_POOL);
 pool_declare(rab_pool, rab_ctx_t, SIZE_OF_RAB_POOL);
 
-static int g_mme_ctx_initialized = 0;
+static int ctx_initialized = 0;
 
-static list_t g_enb_list;
+static list_t enb_list;
 
 status_t mme_ctx_init()
 {
-    d_assert(g_mme_ctx_initialized == 0, return CORE_ERROR,
-            "MME context already has been initialized");
+    d_assert(ctx_initialized == 0, return CORE_ERROR,
+            "MME context already has been ctx_initialized");
 
     pool_init(&enb_pool, SIZE_OF_ENB_POOL);
     pool_init(&ue_pool, SIZE_OF_UE_POOL);
     pool_init(&rab_pool, SIZE_OF_RAB_POOL);
 
-    list_init(&g_enb_list);
+    list_init(&enb_list);
 
     /* Initialize MME context */
     memset(&self, 0, sizeof(mme_ctx_t));
 
     self.mme_local_addr = inet_addr("127.0.0.1");
-    self.s1ap_port = S1AP_SCTP_PORT;
-
     self.sgw_remote_addr = inet_addr("127.0.0.1");
+
+    self.s1ap_port = S1AP_SCTP_PORT;
     self.s11_local_port = S11_UDP_PORT;
-    self.s11_remote_port = S11_UDP_PORT + 1; /* for loopback testing */
+    self.s11_remote_port = S11_UDP_PORT + 1;
 
     self.plmn_id.mnc_len = 2;
     self.plmn_id.mcc = 1; /* 001 */
@@ -71,14 +71,14 @@ status_t mme_ctx_init()
     self.selected_enc_algorithm = NAS_SECURITY_ALGORITHMS_EEA0;
     self.selected_int_algorithm = NAS_SECURITY_ALGORITHMS_128_EIA1;
 
-    g_mme_ctx_initialized = 1;
+    ctx_initialized = 1;
 
     return CORE_OK;
 }
 
 status_t mme_ctx_final()
 {
-    d_assert(g_mme_ctx_initialized == 1, return CORE_ERROR,
+    d_assert(ctx_initialized == 1, return CORE_ERROR,
             "HyperCell context already has been finalized");
 
     mme_ctx_enb_remove_all();
@@ -87,7 +87,7 @@ status_t mme_ctx_final()
     pool_final(&ue_pool);
     pool_final(&rab_pool);
 
-    g_mme_ctx_initialized = 0;
+    ctx_initialized = 0;
 
     return CORE_OK;
 }
@@ -108,7 +108,7 @@ enb_ctx_t* mme_ctx_enb_add()
 
     list_init(&enb->ue_list);
 
-    list_append(&g_enb_list, enb);
+    list_append(&enb_list, enb);
     
     return enb;
 }
@@ -119,7 +119,7 @@ status_t mme_ctx_enb_remove(enb_ctx_t *enb)
 
     mme_ctx_ue_remove_all(enb);
 
-    list_remove(&g_enb_list, enb);
+    list_remove(&enb_list, enb);
     pool_free_node(&enb_pool, enb);
 
     return CORE_OK;
@@ -162,7 +162,7 @@ enb_ctx_t* mme_ctx_enb_find_by_enb_id(c_uint32_t enb_id)
 {
     enb_ctx_t *enb = NULL;
     
-    enb = list_first(&g_enb_list);
+    enb = list_first(&enb_list);
     while (enb)
     {
         if (enb_id == enb->enb_id)
@@ -176,7 +176,7 @@ enb_ctx_t* mme_ctx_enb_find_by_enb_id(c_uint32_t enb_id)
 
 enb_ctx_t* mme_ctx_enb_first()
 {
-    return list_first(&g_enb_list);
+    return list_first(&enb_list);
 }
 
 enb_ctx_t* mme_ctx_enb_next(enb_ctx_t *enb)

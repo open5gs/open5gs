@@ -9,7 +9,7 @@
 
 void mme_state_initial(mme_sm_t *s, event_t *e)
 {
-    sm_trace(1, e);
+    mme_sm_trace(1, e);
 
     d_assert(s, return, "Null param");
 
@@ -18,7 +18,7 @@ void mme_state_initial(mme_sm_t *s, event_t *e)
 
 void mme_state_final(mme_sm_t *s, event_t *e)
 {
-    sm_trace(1, e);
+    mme_sm_trace(1, e);
 
     d_assert(s, return, "Null param");
 }
@@ -28,7 +28,7 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
     status_t rv;
     char buf[INET_ADDRSTRLEN];
 
-    sm_trace(1, e);
+    mme_sm_trace(1, e);
 
     d_assert(s, return, "Null param");
 
@@ -171,34 +171,7 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
         }
         default:
         {
-            d_error("No handler for event %s", event_get_name(e));
-            break;
-        }
-    }
-
-    /* If event was packet type, its buffer allocated by data-plane should
-     * be freed here */
-}
-
-void mme_state_exception(mme_sm_t *s, event_t *e)
-{
-    sm_trace(1, e);
-
-    d_assert(s, return, "Null param");
-
-    switch (event_get(e))
-    {
-        case FSM_ENTRY_SIG:
-        {
-            break;
-        }
-        case FSM_EXIT_SIG:
-        {
-            break;
-        }
-        default:
-        {
-            d_error("No handler for event %s", event_get_name(e));
+            d_error("No handler for event %s", mme_event_get_name(e));
             break;
         }
     }

@@ -8,8 +8,6 @@
 
 #include "s6a_sm.h"
 
-#define EVENT_WAIT_TIMEOUT 10000 /* 10 msec */
-
 static thread_id mme_sm_thread;
 void *THREAD_FUNC mme_sm_main(thread_id id, void *data);
 

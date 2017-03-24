@@ -27,7 +27,7 @@ void ue_emm_state_initial(ue_emm_sm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
 
-    sm_trace(1, e);
+    mme_sm_trace(1, e);
 
     FSM_TRAN(s, &ue_emm_state_operational);
 }
@@ -36,7 +36,7 @@ void ue_emm_state_final(ue_emm_sm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
 
-    sm_trace(1, e);
+    mme_sm_trace(1, e);
 }
 
 void ue_emm_state_operational(ue_emm_sm_t *s, event_t *e)
@@ -47,7 +47,7 @@ void ue_emm_state_operational(ue_emm_sm_t *s, event_t *e)
     ue_ctx_t *ue = s->ctx;
     d_assert(ue, return, "Null param");
 
-    sm_trace(1, e);
+    mme_sm_trace(1, e);
 
     switch (event_get(e))
     {
@@ -117,7 +117,7 @@ void ue_emm_state_operational(ue_emm_sm_t *s, event_t *e)
 
         default:
         {
-            d_error("Unknown event %s", event_get_name(e));
+            d_error("Unknown event %s", mme_event_get_name(e));
             break;
         }
     }
@@ -128,7 +128,7 @@ void ue_emm_state_exception(ue_emm_sm_t *s, event_t *e)
     d_assert(s, return, "Null param");
     d_assert(e, return, "Null param");
 
-    sm_trace(1, e);
+    mme_sm_trace(1, e);
 
     switch (event_get(e))
     {
@@ -142,7 +142,7 @@ void ue_emm_state_exception(ue_emm_sm_t *s, event_t *e)
         }
         default:
         {
-            d_error("Unknown event %s", event_get_name(e));
+            d_error("Unknown event %s", mme_event_get_name(e));
             break;
         }
     }

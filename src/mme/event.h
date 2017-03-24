@@ -8,7 +8,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 typedef enum {
-    EVT_BASE = FSM_USER_SIG,
+    MME_EVT_BASE = FSM_USER_SIG,
 
     EVT_LO_ENB_S1AP_ACCEPT,
     EVT_LO_ENB_S1AP_CONNREFUSED,
@@ -17,9 +17,11 @@ typedef enum {
     EVT_MSG_UE_EMM,
     EVT_MSG_MME_S11,
     
-    EVT_TOP,
+    MME_EVT_TOP,
 
 } event_e;
+
+CORE_DECLARE(char*) mme_event_get_name(event_t *e);
 
 #ifdef __cplusplus
 }

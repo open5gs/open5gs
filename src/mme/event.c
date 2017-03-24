@@ -2,10 +2,6 @@
 
 #include "event.h"
 
-static char FSM_NAME_INIT_SIG[] = "INIT";
-static char FSM_NAME_ENTRY_SIG[] = "ENTRY";
-static char FSM_NAME_EXIT_SIG[] = "EXIT";
-
 static char EVT_NAME_LO_ENB_S1AP_ACCEPT[] = "LO_ENB_S1AP_ACCEPT";
 static char EVT_NAME_LO_ENB_S1AP_CONNREFUSED[] = "LO_ENB_S1AP_CONNREFUSED";
 
@@ -13,9 +9,7 @@ static char EVT_NAME_MSG_ENB_S1AP[] = "MSG_ENB_S1AP";
 static char EVT_NAME_MSG_UE_EMM[] = "MSG_UE_EMM";
 static char EVT_NAME_MSG_MME_S11[] = "MSG_MME_S11";
 
-static char EVT_NAME_UNKNOWN[] = "UNKNOWN";
-
-char* event_get_name(event_t *e)
+char* mme_event_get_name(event_t *e)
 {
     if (e == NULL)
         return FSM_NAME_INIT_SIG;

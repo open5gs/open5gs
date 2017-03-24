@@ -10,6 +10,12 @@
 
 #define EVT_Q_DEPTH 16
 
+char *FSM_NAME_INIT_SIG = "INIT";
+char *FSM_NAME_ENTRY_SIG = "ENTRY";
+char *FSM_NAME_EXIT_SIG = "EXIT";
+
+char *EVT_NAME_UNKNOWN = "UNKNOWN";
+
 msgq_id event_create(void)
 {
     msgq_id queue_id = 0;
