@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-03-21 13:59:52.538701 by acetcom
+ * Created on: 2017-03-24 21:13:36.106370 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -672,7 +672,7 @@ status_t nas_plain_encode(pkbuf_t **pkbuf, nas_message_t *message)
 
     /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 
      * When calculating AES_CMAC, we need to use the headroom of the packet. */
-    *pkbuf = pkbuf_alloc(NAS_HEADROOM, MESSAGE_SDU_SIZE);
+    *pkbuf = pkbuf_alloc(NAS_HEADROOM, MAX_SDU_LEN);
     d_assert(*pkbuf, return -1, "Null Param");
 
     size = sizeof(nas_header_t);

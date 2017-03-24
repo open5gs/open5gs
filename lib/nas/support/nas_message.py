@@ -710,7 +710,7 @@ f.write("""status_t nas_plain_encode(pkbuf_t **pkbuf, nas_message_t *message)
 
     /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 
      * When calculating AES_CMAC, we need to use the headroom of the packet. */
-    *pkbuf = pkbuf_alloc(NAS_HEADROOM, MESSAGE_SDU_SIZE);
+    *pkbuf = pkbuf_alloc(NAS_HEADROOM, MAX_SDU_LEN);
     d_assert(*pkbuf, return -1, "Null Param");
 
     size = sizeof(nas_header_t);

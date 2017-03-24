@@ -10,8 +10,8 @@
 #include "context.h"
 #include "s6a_lib.h"
 
-#define MAX_SQN_LEN 6
-#define MAX_AK_LEN 6
+#define HSS_SQN_LEN 6
+#define HSS_AK_LEN 6
 
 static struct disp_hdl *hdl_fb = NULL; /* handler for fallback cb */
 static struct disp_hdl *hdl_air = NULL; /* handler for Auth-Info-Request cb */
@@ -36,11 +36,11 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
     union avp_value val;
 
     ue_ctx_t *ue = NULL;
-    c_uint8_t sqn[MAX_SQN_LEN];
-    c_uint8_t autn[MAX_KEY_LEN];
-    c_uint8_t ik[MAX_KEY_LEN];
-    c_uint8_t ck[MAX_KEY_LEN];
-    c_uint8_t ak[MAX_AK_LEN];
+    c_uint8_t sqn[HSS_SQN_LEN];
+    c_uint8_t autn[AUTN_LEN];
+    c_uint8_t ik[HSS_KEY_LEN];
+    c_uint8_t ck[HSS_KEY_LEN];
+    c_uint8_t ak[HSS_AK_LEN];
     c_uint8_t xres[MAX_RES_LEN];
     c_uint8_t kasme[SHA256_DIGEST_SIZE];
     size_t xres_len = 8;
@@ -72,7 +72,7 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
 
     milenage_opc(ue->k, ue->op, ue->opc);
     milenage_generate(ue->opc, ue->amf, ue->k, 
-        core_uint64_to_buffer(ue->sqn, MAX_SQN_LEN, sqn), ue->rand, 
+        core_uint64_to_buffer(ue->sqn, HSS_SQN_LEN, sqn), ue->rand, 
         autn, ik, ck, ak, xres, &xres_len);
     hss_kdf_kasme(ck, ik, hdr->avp_value->os.data, sqn, ak, kasme);
 
@@ -94,7 +94,7 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
 
     d_assert(fd_msg_avp_new(s6a_rand, 0, &avpch2) == 0, goto out,);
     val.os.data = ue->rand;
-    val.os.len = MAX_KEY_LEN;
+    val.os.len = HSS_KEY_LEN;
     d_assert(fd_msg_avp_setvalue(avpch2, &val) == 0, goto out,);
     d_assert(fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2) == 0, 
             goto out,);
@@ -108,7 +108,7 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
 
     d_assert(fd_msg_avp_new(s6a_autn, 0, &avpch2) == 0, goto out,);
     val.os.data = autn;
-    val.os.len = MAX_KEY_LEN;
+    val.os.len = AUTN_LEN;
     d_assert(fd_msg_avp_setvalue(avpch2, &val) == 0, goto out,);
     d_assert(fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2) == 0,
             goto out,);

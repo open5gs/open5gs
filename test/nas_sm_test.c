@@ -18,7 +18,7 @@ static void nas_sm_test1(abts_case *tc, void *data)
     int rc;
     int i;
 
-    c_uint8_t tmp[MESSAGE_SDU_SIZE];
+    c_uint8_t tmp[MAX_SDU_LEN];
     char *_authentication_request = 
         "000b403b00000300 000005c00100009d 000800020001001a 0025240752002008"
         "0c3818183b522614 162c07601d0d10f1 1b89a2a8de8000ad 0ccf7f55e8b20d";
@@ -39,7 +39,7 @@ static void nas_sm_test1(abts_case *tc, void *data)
     pkbuf_free(sendbuf);
 
     /* Receive S1-Setup Response */
-    recvbuf = pkbuf_alloc(0, MESSAGE_SDU_SIZE);
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rc = tests1ap_enb_read(sock, recvbuf);
     ABTS_INT_NEQUAL(tc, 0, rc);
     rv = s1ap_decode_pdu(&message, recvbuf);
@@ -56,7 +56,7 @@ static void nas_sm_test1(abts_case *tc, void *data)
     pkbuf_free(sendbuf);
 
     /* Receive Authentication-Request */
-    recvbuf = pkbuf_alloc(0, MESSAGE_SDU_SIZE);
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rc = tests1ap_enb_read(sock, recvbuf);
     ABTS_INT_NEQUAL(tc, 0, rc);
     recvbuf->len = 63;
@@ -74,7 +74,7 @@ static void nas_sm_test1(abts_case *tc, void *data)
     pkbuf_free(sendbuf);
 
     /* Receive Security-mode-Command */
-    recvbuf = pkbuf_alloc(0, MESSAGE_SDU_SIZE);
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rc = tests1ap_enb_read(sock, recvbuf);
     recvbuf->len = 43;
     ABTS_TRUE(tc, memcmp(recvbuf->payload, 

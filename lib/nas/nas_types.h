@@ -186,14 +186,14 @@ typedef struct _nas_authentication_failure_parameter_t {
  * M LV 17 */
 typedef struct _nas_authentication_parameter_autn_t {
     c_uint8_t length;
-    c_uint8_t autn[MAX_AUTN_LEN];
+    c_uint8_t autn[AUTN_LEN];
 } nas_authentication_parameter_autn_t;
 
 /* 9.9.3.3 Authentication parameter RAND
  * See subclause 10.5.3.1 in 3GPP TS 24.008 [13].
  * M V 16 */
 typedef struct _nas_authentication_parameter_rand_t {
-    c_uint8_t rand[MAX_RAND_LEN];
+    c_uint8_t rand[RAND_LEN];
 } nas_authentication_parameter_rand_t;
 
 /* 9.9.3.4 Authentication response parameter

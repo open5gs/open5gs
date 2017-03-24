@@ -109,7 +109,7 @@ int _s1ap_recv_cb(net_sock_t *net_sock, void *data)
 
     d_assert(net_sock, return -1, "Null param");
 
-    pkbuf = pkbuf_alloc(0, MESSAGE_SDU_SIZE);
+    pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     d_assert(pkbuf, return -1, "Can't allocate pkbufuf");
 
     r = net_read(net_sock, pkbuf->payload, pkbuf->len, 0);

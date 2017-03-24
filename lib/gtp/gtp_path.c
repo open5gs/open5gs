@@ -51,7 +51,7 @@ pkbuf_t *gtp_read(net_sock_t *net_sock)
 
     d_assert(net_sock, return NULL, "Null param");
 
-    pkb = pkbuf_alloc(0, MESSAGE_SDU_SIZE);
+    pkb = pkbuf_alloc(0, MAX_SDU_LEN);
     d_assert(pkb, return NULL, "Can't allocate pkbuf");
 
     r = net_read(net_sock, pkb->payload, pkb->len, 0);

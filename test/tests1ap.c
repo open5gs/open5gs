@@ -121,7 +121,7 @@ status_t tests1ap_build_initial_ue_msg(pkbuf_t **pkbuf)
         "00004300060000f1 105ba00064400800"
         "00f1101079baf000 86400130";
     
-    *pkbuf = pkbuf_alloc(0, MESSAGE_SDU_SIZE);
+    *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     if (!(*pkbuf)) return CORE_ERROR;
 
     (*pkbuf)->len = 92;
@@ -140,7 +140,7 @@ status_t tests1ap_build_authentication_response(pkbuf_t **pkbuf)
         "0000f1101079baf0 004340060000f110"
         "5ba0";
     
-    *pkbuf = pkbuf_alloc(0, MESSAGE_SDU_SIZE);
+    *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     if (!(*pkbuf)) return CORE_ERROR;
 
     (*pkbuf)->len = 66;
@@ -158,7 +158,7 @@ status_t tests1ap_build_security_mode_complete(pkbuf_t **pkbuf)
         "00075e0064400800 00f1101079baf000"
         "4340060000f1105b a0";
     
-    *pkbuf = pkbuf_alloc(0, MESSAGE_SDU_SIZE);
+    *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     if (!(*pkbuf)) return CORE_ERROR;
 
     (*pkbuf)->len = 57;

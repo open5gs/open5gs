@@ -19,7 +19,7 @@ static void nas_message_test1(abts_case *tc, void *data)
     pkbuf_t *pkbuf;
     status_t rv;
 
-    pkbuf = pkbuf_alloc(0, MESSAGE_SDU_SIZE);
+    pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     ABTS_PTR_NOTNULL(tc, pkbuf);
     pkbuf->len = 53;
     core_ascii_to_hex(payload, strlen(payload), pkbuf->payload, pkbuf->len);
@@ -130,7 +130,7 @@ static void nas_message_test3(abts_case *tc, void *data)
     pkbuf_t *pkbuf;
     status_t rv;
 
-    pkbuf = pkbuf_alloc(0, MESSAGE_SDU_SIZE);
+    pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     ABTS_PTR_NOTNULL(tc, pkbuf);
     pkbuf->len = 7;
     core_ascii_to_hex(payload, strlen(payload), pkbuf->payload, pkbuf->len);
@@ -192,7 +192,7 @@ static void nas_message_test6(abts_case *tc, void *data)
     pkbuf_t *pkbuf;
     status_t rv;
 
-    pkbuf = pkbuf_alloc(0, MESSAGE_SDU_SIZE);
+    pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     ABTS_PTR_NOTNULL(tc, pkbuf);
     pkbuf->len = 3;
     core_ascii_to_hex(payload, strlen(payload), pkbuf->payload, pkbuf->len);

@@ -5,12 +5,12 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define MESSAGE_SDU_SIZE    2048
+#define MAX_SDU_LEN         2048
 
 #define MAX_IMSI_LEN        15
 
-#define MAX_RAND_LEN        16
-#define MAX_AUTN_LEN        16
+#define RAND_LEN            16
+#define AUTN_LEN            16
 #define MAX_RES_LEN         16
 
 #define PLMN_ID_LEN         3
