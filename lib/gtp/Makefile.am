@@ -8,6 +8,12 @@ libgtp_la_SOURCES = \
 nodist_libgtp_la_SOURCES = \
 	gtpv2c_tlv.c gtp_path.c
 
+libgtp_la_DEPENDENCIES = \
+    $(top_srcdir)/lib/3gpp/lib3gpp.la
+
+libgtp_la_LIBADD = \
+    $(top_srcdir)/lib/3gpp/lib3gpp.la
+
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \
     -I$(top_srcdir)/lib/3gpp

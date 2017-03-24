@@ -5,7 +5,6 @@
 #include "core_errno.h"
 #include "core_net.h"
 
-#include "3gpp_message.h"
 #include "sm.h"
 
 #ifdef __cplusplus

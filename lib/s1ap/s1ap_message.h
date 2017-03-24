@@ -2,7 +2,6 @@
 #define _S1AP_MESSAGE_H__
 
 #include "core_pkbuf.h"
-#include "3gpp_message.h"
 #include "s1ap_ies_defs.h"
 
 #ifdef __cplusplus

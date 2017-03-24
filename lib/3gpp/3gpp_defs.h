@@ -1,7 +1,5 @@
-#ifndef __3GPP_COMMON_H__
-#define __3GPP_COMMON_H__
-
-#include "core.h"
+#ifndef __3GPP_DEFS_H__
+#define __3GPP_DEFS_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -15,8 +13,10 @@ extern "C" {
 #define MAX_AUTN_LEN        16
 #define MAX_RES_LEN         16
 
+#define PLMN_ID_LEN         3
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* !__3GPP_COMMON_H__ */
+#endif /* __3GPP_DEFS_H__ */

@@ -2,6 +2,7 @@
 
 #include "core_debug.h"
 
+#include "3gpp_conv.h"
 #include "s1ap_conv.h"
 
 void s1ap_uint8_to_OCTET_STRING(c_uint8_t uint8, OCTET_STRING_t *octet_string)
@@ -30,25 +31,6 @@ void s1ap_uint32_to_OCTET_STRING(c_uint32_t uint32, OCTET_STRING_t *octet_string
     octet_string->buf[0] = uint32 >> 16;
     octet_string->buf[0] = uint32 >> 8;
     octet_string->buf[0] = uint32;
-}
-
-#define PLMN_ID_DIGIT1(x) (((x) / 100) % 10)
-#define PLMN_ID_DIGIT2(x) (((x) / 10) % 10)
-#define PLMN_ID_DIGIT3(x) ((x) % 10)
-
-void *s1ap_plmn_id_to_buffer(plmn_id_t *plmn_id, c_uint8_t *buf)
-{
-    buf[0] = (PLMN_ID_DIGIT2(plmn_id->mcc) << 4) | PLMN_ID_DIGIT1(plmn_id->mcc);
-
-    if (plmn_id->mnc_len == 2)
-        buf[1] = (0xf << 4);
-    else
-        buf[1] = (PLMN_ID_DIGIT1(plmn_id->mnc) << 4);
-    buf[1] |= PLMN_ID_DIGIT3(plmn_id->mcc);
-
-    buf[2] = (PLMN_ID_DIGIT3(plmn_id->mnc) << 4) | PLMN_ID_DIGIT2(plmn_id->mnc);
-
-    return buf;
 }
 
 void s1ap_plmn_id_to_TBCD_STRING(

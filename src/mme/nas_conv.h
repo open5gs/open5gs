@@ -10,7 +10,6 @@ extern "C" {
 CORE_DECLARE(void) nas_imsi_bcd_to_buffer(
     nas_mobile_identity_imsi_t *bcd, c_uint8_t bcd_len, 
     c_uint8_t *buf, c_uint8_t *buf_len);
-CORE_DECLARE(void) nas_plmn_bcd_to_buffer(nas_plmn_t *bcd, c_uint8_t *buf);
 
 #ifdef __cplusplus
 }

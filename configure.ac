@@ -303,6 +303,7 @@ esac
 AC_CONFIG_FILES([lib/core/test/Makefile])
 AC_CONFIG_FILES([lib/core/Makefile])
 AC_CONFIG_FILES([lib/logger/Makefile])
+AC_CONFIG_FILES([lib/3gpp/Makefile])
 AC_CONFIG_FILES([lib/s1ap/asn1c/Makefile])
 AC_CONFIG_FILES([lib/s1ap/Makefile])
 AC_CONFIG_FILES([lib/nas/Makefile])

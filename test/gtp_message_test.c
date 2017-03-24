@@ -33,6 +33,8 @@ static void gtp_message_test1(abts_case *tc, void *data)
             TLV_MODE_T1_L2_I1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
+    pkbuf_free(pkbuf);
+
     ABTS_INT_EQUAL(tc, 1, req.imsi.presence);
     ABTS_INT_EQUAL(tc, 8, req.imsi.len);
     _value = "55153011 340010f4";
@@ -51,8 +53,6 @@ static void gtp_message_test1(abts_case *tc, void *data)
     ABTS_TRUE(tc, memcmp(core_ascii_to_hex(_value, strlen(_value),
             tmp, req.me_identity.len),
         req.me_identity.data, req.me_identity.len) == 0);
-
-    pkbuf_free(pkbuf);
 
     ABTS_INT_EQUAL(tc, 1, req.user_location_information.presence);
     ABTS_INT_EQUAL(tc, 1, req.serving_network.presence);
@@ -118,11 +118,54 @@ static void gtp_message_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, 0, req.ue_tcp_port.presence);
 }
 
+static void gtp_message_test2(abts_case *tc, void *data)
+{
+    gtpv2c_create_session_request_t req;
+
+    memset(&req, 0, sizeof(gtpv2c_create_session_request_t));
+
+    req.imsi.presence = 1;
+    req.imsi.len = 8;
+    memcpy(req.imsi.data, "\x55\x15\x30\x11\x34\x00\x10\xf4", req.imsi.len);
+
+    req.msisdn.presence = 1;
+    req.msisdn.len = 6;
+    memcpy(req.msisdn.data, "\x94\x71\x52\x76\x00\x41", req.msisdn.len);
+
+    req.me_identity.presence = 1;
+    req.me_identity.len = 8;
+    memcpy(req.me_identity.data, 
+            "\x53\x61\x20\x00\x91\x78\x84\x00", req.me_identity.len);
+
+    req.user_location_information.presence = 1;
+#if 0
+    req.serving_network.presence = 1;
+    req.rat_type.presence = 1;
+    req.sender_f_teid_for_control_plane.presence = 1;
+    req.pgw_s5_s8_address_for_control_plane_or_pmip = 1;
+    
+    req.access_point_name.presence = 1;
+    req.selection_mode.presence = 1;
+    req.pdn_type.presence = 1;
+    req.pdn_address_allocation.presence = 1;
+    req.maximum_apn_restriction.presence = 1;
+    req.aggregate_maximum_bit_rate.presence 1;
+    req.protocol_configuration_options.presence = 1;
+    req.bearer_contexts_to_be_created.presence = 1;
+    req.contexts_to_be_created.eps_bearer_id.presence = 1;
+    req.contexts_to_be_created.bearer_level_qos.presence = 1;
+    req.bearer_contexts_to_be_created.bearer_level_qos.len = 22;
+#endif
+}
+
 abts_suite *test_gtp_message(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, gtp_message_test1, NULL);
+#if 0
+    abts_run_test(suite, gtp_message_test2, NULL);
+#endif
 
     return suite;
 }

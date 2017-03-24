@@ -3,7 +3,7 @@
 
 #include "core_list.h"
 #include "core_errno.h"
-#include "3gpp_message.h"
+#include "3gpp_defs.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -2,6 +2,7 @@
 
 #include "core_debug.h"
 
+#include "3gpp_conv.h"
 #include "s1ap_message.h"
 #include "nas_message.h"
 
@@ -167,8 +168,8 @@ static void ue_emm_handle_attach_request(
                 nas_tracking_area_identity_t *last_visited_registered_tai = 
                     &attach_request->last_visited_registered_tai;
 
-                nas_plmn_bcd_to_buffer(
-                    &last_visited_registered_tai->plmn, plmn_id);
+                memcpy(plmn_id, 
+                        &last_visited_registered_tai->plmn, PLMN_ID_LEN);
             }
             nas_imsi_bcd_to_buffer(
                 &eps_mobile_identity->imsi, eps_mobile_identity->length, 

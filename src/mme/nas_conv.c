@@ -34,10 +34,3 @@ void nas_imsi_bcd_to_buffer(
 
     buf[*buf_len] = 0;
 }
-
-void nas_plmn_bcd_to_buffer(nas_plmn_t *bcd, c_uint8_t *buf)
-{
-    buf[0] = (bcd->mcc_digit2 << 4) | bcd->mcc_digit1;
-    buf[1] = (bcd->mnc_digit1 << 4) | bcd->mcc_digit3;
-    buf[2] = (bcd->mnc_digit3 << 4) | bcd->mnc_digit2;
-}
