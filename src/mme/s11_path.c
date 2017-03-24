@@ -1,4 +1,4 @@
-#define TRACE_MODULE _gtp_path
+#define TRACE_MODULE _s11_path
 #include "core_debug.h"
 #include "core_pkbuf.h"
 #include "core_net.h"
