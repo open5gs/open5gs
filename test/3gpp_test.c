@@ -10,7 +10,7 @@
 static void _3gpp_test1(abts_case *tc, void *data)
 {
     status_t rv;
-    plmn_t plmn_id;
+    plmn_id_t plmn_id;
     c_uint8_t *buffer = (c_uint8_t *)&plmn_id;
 
     plmn_id_build(&plmn_id, 1, 1, 2);

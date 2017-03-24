@@ -22,7 +22,7 @@ pool_declare(sess_state_pool, struct sess_state, SIZE_OF_SESS_STATE_POOL);
 static void s6a_aia_cb(void *data, struct msg **msg);
 
 /* Cb called when an answer is received */
-int s6a_send_auth_info_req(ue_ctx_t *ue, plmn_t *plmn_id)
+int s6a_send_auth_info_req(ue_ctx_t *ue, plmn_id_t *plmn_id)
 {
     struct msg *req = NULL;
     struct avp *avp;

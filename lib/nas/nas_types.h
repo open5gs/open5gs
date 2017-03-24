@@ -21,7 +21,7 @@ ED3(c_uint8_t type:4;,
  * See subclause 10.5.1.3 in 3GPP TS 24.008 [13]
  * O TV 6 */
 typedef struct _nas_location_area_identification_t {
-    nas_plmn_t plmn;
+    plmn_id_t plmn_id;
     c_uint16_t lac;
 } __attribute__ ((packed)) nas_location_area_identification_t;
 
@@ -69,7 +69,7 @@ ED5(c_uint8_t spare:2;,
     c_uint8_t odd_even:1;,
     c_uint8_t type_of_identity:3;)
     c_uint8_t mbms_servicec_id[3];
-    nas_plmn_t plmn;
+    plmn_id_t plmn_id;
     c_uint8_t mbms_session_identity;
 } __attribute__ ((packed)) nas_mobile_identity_tmgi_t;
 
@@ -134,7 +134,7 @@ typedef struct _nas_mobile_station_classmark_3_t {
 #define NAS_MAX_PLMN 15
 typedef struct _nas_plmn_list_t {
     c_uint8_t length;
-    nas_plmn_t plmn[NAS_MAX_PLMN];
+    plmn_id_t plmn_id[NAS_MAX_PLMN];
 } __attribute__ ((packed)) nas_plmn_list_t;
 
 /* 9.9.2.10 Supported codec list
@@ -306,7 +306,7 @@ typedef struct _nas_eps_mobile_identity_guti_t {
 ED3(c_uint8_t spare:4;,
     c_uint8_t odd_even:1;,
     c_uint8_t type_of_identity:3;)
-    nas_plmn_t plmn;
+    plmn_id_t plmn_id;
     c_uint16_t mme_group_id;
     c_uint8_t mme_code;
     c_uint32_t m_tmsi;
@@ -521,7 +521,7 @@ ED3(c_uint8_t type:4;,
 /* 9.9.3.32 Tracking area identity
  * O TV 6 */
 typedef struct _nas_tracking_area_identity_t {
-    plmn_t plmn_id;
+    plmn_id_t plmn_id;
     c_uint16_t tac;
 } __attribute__ ((packed)) nas_tracking_area_identity_t;
 
@@ -532,7 +532,7 @@ typedef struct _nas_tracking_area_identity_t {
 #define NAS_TRACKING_AREA_IDENTITY_LIST_ONE_PLMN_CONSECUTIVE_TACS     1
 #define NAS_TRACKING_AREA_IDENTITY_LIST_MANY_PLMNS                    2
 typedef struct _nas_tracking_area_identity_type0 {
-    nas_plmn_t plmn;
+    plmn_id_t plmn_id;
     c_uint16_t tac[NAS_MAX_TRACKING_AREA_IDENTITY];
 } __attribute__ ((packed)) nas_tracking_area_identity_type0;
 

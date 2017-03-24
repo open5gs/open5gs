@@ -22,7 +22,7 @@ typedef list_t rab_list_t;
 
 typedef struct _served_gummei {
     c_uint32_t      num_of_plmn_id;
-    plmn_t          plmn_id[MAX_PLMN_ID];
+    plmn_id_t       plmn_id[MAX_PLMN_ID];
 
     c_uint32_t      num_of_mme_gid;
     c_uint16_t      mme_gid[GRP_PER_MME];
@@ -45,7 +45,7 @@ typedef struct _mme_ctx_t {
     tm_service_t    tm_service;
 
     c_uint32_t      mme_ue_s1ap_id; /** mme_ue_s1ap_id generator */
-    plmn_t          plmn_id;
+    plmn_id_t       plmn_id;
 
     /* defined in 'nas_ies.h'
      * #define NAS_SECURITY_ALGORITHMS_EIA0        0

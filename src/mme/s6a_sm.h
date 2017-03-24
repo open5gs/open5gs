@@ -12,7 +12,7 @@ extern "C" {
 CORE_DECLARE(status_t) s6a_sm_init(void);
 CORE_DECLARE(void) s6a_sm_final(void);
 
-CORE_DECLARE(int) s6a_send_auth_info_req(ue_ctx_t *ue, plmn_t *plmn_id);
+CORE_DECLARE(int) s6a_send_auth_info_req(ue_ctx_t *ue, plmn_id_t *plmn_id);
 
 #ifdef __cplusplus
 }
