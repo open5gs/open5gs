@@ -60,8 +60,9 @@ typedef struct _gtp_uli_t {
     gtp_uli_lai_t lai;
 } gtp_uli_t;
 
-c_uint16_t gtp_decode_uli(gtp_uli_t *uli, tlv_octet_t *octet);
-c_uint16_t gtp_encode_uli(tlv_octet_t *octet, gtp_uli_t *uli);
+CORE_DECLARE(c_int16_t) gtp_decode_uli(gtp_uli_t *uli, tlv_octet_t *octet);
+CORE_DECLARE(c_int16_t) gtp_encode_uli(
+        tlv_octet_t *octet, gtp_uli_t *uli, void *data, int data_len);
 
 #ifdef __cplusplus
 }

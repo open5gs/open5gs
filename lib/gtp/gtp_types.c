@@ -28,13 +28,15 @@
 #include "core_debug.h"
 #include "gtp_types.h"
 
-c_uint16_t gtp_decode_uli(gtp_uli_t *uli, tlv_octet_t *octet)
+c_int16_t gtp_decode_uli(gtp_uli_t *uli, tlv_octet_t *octet)
 {
     gtp_uli_t *source = (gtp_uli_t *)octet->data;
-    int size = 0;
+    c_int16_t size = 0;
 
     d_assert(uli, return -1, "Null param");
     d_assert(octet, return -1, "Null param");
+
+    memset(uli, 0, sizeof(gtp_uli_t));
 
     uli->flags = source->flags;
     size++;
@@ -95,21 +97,29 @@ c_uint16_t gtp_decode_uli(gtp_uli_t *uli, tlv_octet_t *octet)
     
     return size;
 }
-c_uint16_t gtp_encode_uli(tlv_octet_t *octet, gtp_uli_t *uli)
+c_int16_t gtp_encode_uli(
+        tlv_octet_t *octet, gtp_uli_t *uli, void *data, int data_len)
 {
     gtp_uli_t target;
-    int size = 0;
+    c_int16_t size = 0;
 
     d_assert(uli, return -1, "Null param");
     d_assert(octet, return -1, "Null param");
+    d_assert(data, return -1, "Null param");
+    d_assert(data_len, return -1, "Null param");
 
+    octet->data = data;
     memcpy(&target, uli, sizeof(gtp_uli_t));
 
+    d_assert(size + sizeof(target.flags) <= data_len, 
+            return -1, "encode error");
     memcpy(&octet->data[size], &target.flags, sizeof(target.flags));
     size += sizeof(target.flags);
 
     if (target.flags.cgi)
     {
+        d_assert(size + sizeof(target.cgi) <= data_len, 
+                return -1, "encode error");
         target.cgi.lac = htons(target.cgi.lac);
         target.cgi.ci = htons(target.cgi.ci);
         memcpy(&octet->data[size], &target.cgi, sizeof(target.cgi));
@@ -117,6 +127,8 @@ c_uint16_t gtp_encode_uli(tlv_octet_t *octet, gtp_uli_t *uli)
     }
     if (target.flags.sai)
     {
+        d_assert(size + sizeof(target.sai) <= data_len, 
+                return -1, "encode error");
         target.sai.lac = htons(target.sai.lac);
         target.sai.sac = htons(target.sai.sac);
         memcpy(&octet->data[size], &target.sai, sizeof(target.sai));
@@ -124,6 +136,8 @@ c_uint16_t gtp_encode_uli(tlv_octet_t *octet, gtp_uli_t *uli)
     }
     if (target.flags.rai)
     {
+        d_assert(size + sizeof(target.rai) <= data_len, 
+                return -1, "encode error");
         target.rai.lac = htons(target.rai.lac);
         target.rai.rac = htons(target.rai.rac);
         memcpy(&octet->data[size], &target.rai, sizeof(target.rai));
@@ -131,18 +145,24 @@ c_uint16_t gtp_encode_uli(tlv_octet_t *octet, gtp_uli_t *uli)
     }
     if (target.flags.tai)
     {
+        d_assert(size + sizeof(target.tai) <= data_len, 
+                return -1, "encode error");
         target.tai.tac = htons(target.tai.tac);
         memcpy(&octet->data[size], &target.tai, sizeof(target.tai));
         size += sizeof(target.tai);
     }
     if (target.flags.ecgi)
     {
+        d_assert(size + sizeof(target.ecgi) <= data_len, 
+                return -1, "encode error");
         target.ecgi.eci = htonl(target.ecgi.eci);
         memcpy(&octet->data[size], &target.ecgi, sizeof(target.ecgi));
         size += sizeof(target.ecgi);
     }
     if (target.flags.lai)
     {
+        d_assert(size + sizeof(target.lai) <= data_len, 
+                return -1, "encode error");
         target.lai.lac = htons(target.lai.lac);
         memcpy(&octet->data[size], &target.lai, sizeof(target.lai));
         size += sizeof(target.lai);

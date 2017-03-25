@@ -22,10 +22,13 @@ static void gtp_message_test1(abts_case *tc, void *data)
         "005d001f00490001 0005500016004505 0000000000000000 0000000000000000"
         "0000000072000200 40005f0002005400";
     char *_value = NULL;
-    gtp_create_session_request_t req;
-    c_uint8_t tmp[256];
-    pkbuf_t *pkbuf = NULL;
     char hexbuf[MAX_SDU_LEN];
+
+    gtp_create_session_request_t req;
+    gtp_uli_t uli;
+    c_int16_t size = 0;
+
+    pkbuf_t *pkbuf = NULL;
 
     pkbuf = pkbuf_alloc(0, 240);
     ABTS_PTR_NOTNULL(tc, pkbuf);
@@ -42,22 +45,33 @@ static void gtp_message_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, 1, req.imsi.presence);
     ABTS_INT_EQUAL(tc, 8, req.imsi.len);
     _value = "55153011 340010f4";
-    ABTS_TRUE(tc, memcmp(CORE_HEX(_value, strlen(_value), tmp), 
+    ABTS_TRUE(tc, memcmp(CORE_HEX(_value, strlen(_value), hexbuf), 
                 req.imsi.data, req.imsi.len) == 0);
 
     ABTS_INT_EQUAL(tc, 1, req.msisdn.presence);
     ABTS_INT_EQUAL(tc, 6, req.msisdn.len);
     _value = "94715276 0041";
-    ABTS_TRUE(tc, memcmp(CORE_HEX(_value, strlen(_value), tmp), 
+    ABTS_TRUE(tc, memcmp(CORE_HEX(_value, strlen(_value), hexbuf), 
                 req.msisdn.data, req.msisdn.len) == 0);
 
     ABTS_INT_EQUAL(tc, 1, req.me_identity.presence);
     ABTS_INT_EQUAL(tc, 8, req.me_identity.len);
     _value = "53612000 91788400";
-    ABTS_TRUE(tc, memcmp(CORE_HEX(_value, strlen(_value), tmp),
+    ABTS_TRUE(tc, memcmp(CORE_HEX(_value, strlen(_value), hexbuf),
         req.me_identity.data, req.me_identity.len) == 0);
 
     ABTS_INT_EQUAL(tc, 1, req.user_location_information.presence);
+    size = gtp_decode_uli(&uli, &req.user_location_information);
+    ABTS_INT_EQUAL(tc, 13, size);
+    ABTS_INT_EQUAL(tc, 0, uli.flags.lai);
+    ABTS_INT_EQUAL(tc, 1, uli.flags.ecgi);
+    ABTS_INT_EQUAL(tc, 105729, uli.ecgi.eci);
+    ABTS_INT_EQUAL(tc, 1, uli.flags.tai);
+    ABTS_INT_EQUAL(tc, 4130, uli.tai.tac);
+    ABTS_INT_EQUAL(tc, 0, uli.flags.rai);
+    ABTS_INT_EQUAL(tc, 0, uli.flags.sai);
+    ABTS_INT_EQUAL(tc, 0, uli.flags.cgi);
+
     ABTS_INT_EQUAL(tc, 1, req.serving_network.presence);
     ABTS_INT_EQUAL(tc, 1, req.rat_type.presence);
     ABTS_INT_EQUAL(tc, 0, req.indication_flags.presence);
@@ -91,7 +105,7 @@ static void gtp_message_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, 22,
             req.bearer_contexts_to_be_created.bearer_level_qos.len);
     _value = "45050000 00000000 00000000 00000000 00000000 0000";
-    ABTS_TRUE(tc, memcmp(CORE_HEX(_value, strlen(_value), tmp),
+    ABTS_TRUE(tc, memcmp(CORE_HEX(_value, strlen(_value), hexbuf),
         req.bearer_contexts_to_be_created.bearer_level_qos.data,
         req.bearer_contexts_to_be_created.bearer_level_qos.len) 
             == 0);
@@ -125,8 +139,8 @@ static void gtp_message_test2(abts_case *tc, void *data)
     pkbuf_t *pkbuf = NULL;
     gtp_create_session_request_t req;
     gtp_uli_t uli;
-    c_uint8_t buffer[20];
-    c_uint16_t size = 0;
+    char ulibuf[sizeof(uli)];
+    c_int16_t size = 0;
 
     memset(&req, 0, sizeof(gtp_create_session_request_t));
 
@@ -150,20 +164,9 @@ static void gtp_message_test2(abts_case *tc, void *data)
     uli.tai.tac = 4130;
     plmn_id_build(&uli.ecgi.plmn_id, 555, 10, 2);
     uli.ecgi.eci = 105729;
-    req.user_location_information.data = buffer;
-    size = gtp_encode_uli(&req.user_location_information, &uli);
+    size = gtp_encode_uli(&req.user_location_information, &uli, 
+            ulibuf, sizeof(ulibuf));
     ABTS_INT_EQUAL(tc, 13, req.user_location_information.len);
-    memset(&uli, 0, sizeof(gtp_uli_t));
-    size = gtp_decode_uli(&uli, &req.user_location_information);
-    ABTS_INT_EQUAL(tc, 13, size);
-    ABTS_INT_EQUAL(tc, 0, uli.flags.lai);
-    ABTS_INT_EQUAL(tc, 1, uli.flags.ecgi);
-    ABTS_INT_EQUAL(tc, 105729, uli.ecgi.eci);
-    ABTS_INT_EQUAL(tc, 1, uli.flags.tai);
-    ABTS_INT_EQUAL(tc, 4130, uli.tai.tac);
-    ABTS_INT_EQUAL(tc, 0, uli.flags.rai);
-    ABTS_INT_EQUAL(tc, 0, uli.flags.sai);
-    ABTS_INT_EQUAL(tc, 0, uli.flags.cgi);
 
     rv = tlv_build_msg(&pkbuf, &tlv_desc_create_session_request, &req,
             TLV_MODE_T1_L2_I1);
