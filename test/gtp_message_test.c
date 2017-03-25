@@ -46,15 +46,15 @@ static void gtp_message_test1(abts_case *tc, void *data)
     memset(&req, 0, sizeof(gtp_create_session_request_t));
 
     req.imsi.presence = 1;
-    req.imsi.data = "\x55\x15\x30\x11\x34\x00\x10\xf4";
+    req.imsi.data = (c_uint8_t *)"\x55\x15\x30\x11\x34\x00\x10\xf4";
     req.imsi.len = 8;
 
     req.msisdn.presence = 1;
-    req.msisdn.data = "\x94\x71\x52\x76\x00\x41";
+    req.msisdn.data = (c_uint8_t *)"\x94\x71\x52\x76\x00\x41";
     req.msisdn.len = 6;
 
     req.me_identity.presence = 1;
-    req.me_identity.data = "\x53\x61\x20\x00\x91\x78\x84\x00";
+    req.me_identity.data = (c_uint8_t *)"\x53\x61\x20\x00\x91\x78\x84\x00";
     req.me_identity.len = 8;
 
     memset(&uli, 0, sizeof(gtp_uli_t));
@@ -126,7 +126,7 @@ static void gtp_message_test1(abts_case *tc, void *data)
         GTP_PCO_PPP_FOR_USE_WITH_IP_PDP_TYPE_OR_IP_PDN_TYPE;
     pco.num_of_id = 3;
     pco.ids[0].id = GTP_PROTOCOL_OR_CONTAINER_ID_INTERNET_PROTOCOL_CONTROL_PROTOCOL;
-    pco.ids[0].contents = "\x01\x00\x00\x10\x81\x06\x00\x00\x00\x00\x83\x06\x00\x00\x00\x00";
+    pco.ids[0].contents = (c_uint8_t *)"\x01\x00\x00\x10\x81\x06\x00\x00\x00\x00\x83\x06\x00\x00\x00\x00";
     pco.ids[0].length = 16;
     pco.ids[1].id = GTP_PROTOCOL_OR_CONTAINER_ID_DNS_SERVER_IPV4_ADDRESS_REQUEST;
     pco.ids[1].length = 0;
@@ -159,8 +159,7 @@ static void gtp_message_test1(abts_case *tc, void *data)
     req.ue_time_zone.len = sizeof(ue_timezone);
 
     req.charging_characteristics.presence = 1;
-    req.charging_characteristics.data = 
-        "\x54\x00";
+    req.charging_characteristics.data = (c_uint8_t *)"\x54\x00";
     req.charging_characteristics.len = 2;
 
     rv = tlv_build_msg(&pkbuf, &tlv_desc_create_session_request, &req,
