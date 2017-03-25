@@ -29,11 +29,26 @@ void *core_ascii_to_hex(char *in, int in_len, void *out, int out_len)
     return out;
 }
 
-void *core_uint64_to_buffer(c_uint64_t num, int size, c_uint8_t *buffer)
+void *core_uint64_to_buffer(c_uint64_t num, int size, void *buffer)
 {
     int i;
+    c_uint8_t *buffer_p = buffer;
     for (i = 0; i < size; i++) 
-        buffer[i] = (num >> ((size-1-i) * 8)) & 0xff; 
+        buffer_p[i] = (num >> ((size-1-i) * 8)) & 0xff; 
 
     return buffer;
+}
+
+c_uint64_t core_buffer_to_uint64(void *buffer, int size)
+{
+    c_uint64_t num = 0;
+    c_uint8_t *buffer_p = buffer;
+    int i;
+
+    for (i = 0; i < size; i++)
+    {
+        num |= (((c_uint64_t)buffer_p[i]) << ((size-1-i) * 8));
+    }
+
+    return num;
 }

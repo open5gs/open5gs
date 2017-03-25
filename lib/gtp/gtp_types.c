@@ -26,8 +26,162 @@
 #define TRACE_MODULE _gtptypes
 
 #include "core_debug.h"
+#include "core_lib.h"
 #include "gtp_types.h"
 
+/* 8.13 Protocol Configuration Options (PCO) 
+ * 10.5.6.3 Protocol configuration options in 3GPP TS 24.008 */
+c_int16_t gtp_parse_pco(gtp_pco_t *pco, tlv_octet_t *octet)
+{
+    gtp_pco_t *source = (gtp_pco_t *)octet->data;
+    c_int16_t size = 0;
+    int i = 0;
+
+    d_assert(pco, return -1, "Null param");
+    d_assert(octet, return -1, "Null param");
+
+    memset(pco, 0, sizeof(gtp_pco_t));
+
+    pco->ext = source->ext;
+    pco->configuration_protocol = source->configuration_protocol;
+    size++;
+
+    while(size < octet->len && i < GTP_MAX_PROTOCOL_OR_CONTAINER_ID)
+    {
+        gtp_protocol_or_container_id_t *id = &pco->ids[i];
+        d_assert(size + sizeof(id->id) <= octet->len, 
+                return -1, "decode error");
+        memcpy(&id->id, &octet->data[size], sizeof(id->id));
+        id->id = ntohs(id->id);
+        size += sizeof(id->id);
+
+        d_assert(size + sizeof(id->length) <= octet->len, 
+                return -1, "decode error");
+        memcpy(&id->length, &octet->data[size], sizeof(id->length));
+        size += sizeof(id->length);
+
+        id->contents = octet->data + size;
+        size += id->length;
+
+        i++;
+    }
+    pco->num_of_id = i;
+    d_assert(size == octet->len, return -1, "decode error");
+    
+    return size;
+}
+c_int16_t gtp_build_pco(
+        tlv_octet_t *octet, gtp_pco_t *pco, void *data, int data_len)
+{
+    gtp_pco_t target;
+    c_int16_t size = 0;
+    int i = 0;
+
+    d_assert(pco, return -1, "Null param");
+    d_assert(octet, return -1, "Null param");
+    d_assert(data, return -1, "Null param");
+    d_assert(data_len, return -1, "Null param");
+
+    octet->data = data;
+    memcpy(&target, pco, sizeof(gtp_pco_t));
+
+    d_assert(size + 1 <= data_len, return -1, "encode error");
+    memcpy(&octet->data[size], &target, 1);
+    size += 1;
+
+    d_assert(target.num_of_id <= GTP_MAX_PROTOCOL_OR_CONTAINER_ID, 
+            return -1, "encode error");
+    for (i = 0; i < target.num_of_id; i++)
+    {
+        gtp_protocol_or_container_id_t *id = &target.ids[i];
+
+        d_assert(size + sizeof(id->id) <= data_len, 
+                return -1, "encode error");
+        id->id = htons(id->id);
+        memcpy(&octet->data[size], &id->id, sizeof(id->id));
+        size += sizeof(id->id);
+
+        d_assert(size + sizeof(id->length) <= data_len, 
+                return -1, "encode error");
+        memcpy(&octet->data[size], &id->length, sizeof(id->length));
+        size += sizeof(id->length);
+
+        d_assert(size + id->length <= data_len, return -1, "encode error");
+        memcpy(&octet->data[size], id->contents, id->length);
+        size += id->length;
+    }
+
+    octet->len = size;
+
+    return octet->len;
+}
+
+/* 8.15 Bearer Quality of Service (Bearer QoS) */
+c_int16_t gtp_parse_bearer_qos(
+    gtp_bearer_qos_t *bearer_qos, tlv_octet_t *octet)
+{
+    gtp_bearer_qos_t *source = (gtp_bearer_qos_t *)octet->data;
+    c_int16_t size = 0;
+
+    d_assert(bearer_qos, return -1, "Null param");
+    d_assert(octet, return -1, "Null param");
+    d_assert(octet->len == GTP_BEARER_QOS_LEN, return -1, "Null param");
+
+    memset(bearer_qos, 0, sizeof(gtp_bearer_qos_t));
+
+    bearer_qos->pci = source->pci;
+    bearer_qos->pl = source->pl;
+    bearer_qos->pvi = source->pvi;
+    size++;
+
+    bearer_qos->qci = source->qci;
+    size++;
+
+    bearer_qos->ul_mbr = core_buffer_to_uint64(&octet->data[size], 5);
+    size += 5;
+    bearer_qos->dl_mbr = core_buffer_to_uint64(&octet->data[size], 5);
+    size += 5;
+    bearer_qos->ul_gbr = core_buffer_to_uint64(&octet->data[size], 5);
+    size += 5;
+    bearer_qos->dl_gbr = core_buffer_to_uint64(&octet->data[size], 5);
+    size += 5;
+
+    d_assert(size == octet->len, return -1, "decode error");
+    
+    return size;
+}
+c_int16_t gtp_build_bearer_qos(
+    tlv_octet_t *octet, gtp_bearer_qos_t *bearer_qos, void *data, int data_len)
+{
+    gtp_bearer_qos_t target;
+    c_int16_t size = 0;
+
+    d_assert(bearer_qos, return -1, "Null param");
+    d_assert(octet, return -1, "Null param");
+    d_assert(data, return -1, "Null param");
+    d_assert(data_len >= GTP_BEARER_QOS_LEN, return -1, "Null param");
+
+    octet->data = data;
+    memcpy(&target, bearer_qos, sizeof(gtp_bearer_qos_t));
+
+    memcpy(&octet->data[size], &target, 2);
+    size += 2;
+
+    core_uint64_to_buffer(target.ul_mbr, 5, &octet->data[size]);
+    size += 5;
+    core_uint64_to_buffer(target.dl_mbr, 5, &octet->data[size]);
+    size += 5;
+    core_uint64_to_buffer(target.ul_gbr, 5, &octet->data[size]);
+    size += 5;
+    core_uint64_to_buffer(target.dl_gbr, 5, &octet->data[size]);
+    size += 5;
+
+    octet->len = size;
+
+    return octet->len;
+}
+
+/* 8.21 User Location Information (ULI) */
 c_int16_t gtp_parse_uli(gtp_uli_t *uli, tlv_octet_t *octet)
 {
     gtp_uli_t *source = (gtp_uli_t *)octet->data;

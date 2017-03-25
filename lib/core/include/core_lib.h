@@ -92,7 +92,9 @@ CORE_DECLARE(void *) core_ascii_to_hex(char *in, int in_len,
         void *out, int out_len);
 
 CORE_DECLARE(void *) core_uint64_to_buffer(c_uint64_t num, int size, 
-        c_uint8_t *buffer);
+        void *buffer);
+
+CORE_DECLARE(c_uint64_t) core_buffer_to_uint64(void *buffer, int size);
 
 /** @} */
 

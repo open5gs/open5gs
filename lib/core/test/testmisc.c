@@ -61,6 +61,26 @@ static void misc_test3(abts_case *tc, void *data)
     ABTS_TRUE(tc, memcmp(tmp, core_uint64_to_buffer(num, 1, buf), 1) == 0);
 }
 
+static void misc_test4(abts_case *tc, void *data)
+{
+    ABTS_TRUE(tc, 0x0123456789abcdef ==
+            core_buffer_to_uint64("\x01\x23\x45\x67\x89\xab\xcd\xef", 8));
+    ABTS_TRUE(tc, 0x0123456789abcd ==
+            core_buffer_to_uint64("\x01\x23\x45\x67\x89\xab\xcd", 7));
+    ABTS_TRUE(tc, 0x0123456789ab ==
+            core_buffer_to_uint64("\x01\x23\x45\x67\x89\xab", 6));
+    ABTS_TRUE(tc, 0x0123456789 ==
+            core_buffer_to_uint64("\x01\x23\x45\x67\x89", 5));
+    ABTS_TRUE(tc, 0x01234567 ==
+            core_buffer_to_uint64("\x01\x23\x45\x67", 4));
+    ABTS_TRUE(tc, 0x012345 ==
+            core_buffer_to_uint64("\x01\x23\x45", 3));
+    ABTS_TRUE(tc, 0x0123 ==
+            core_buffer_to_uint64("\x01\x23", 2));
+    ABTS_TRUE(tc, 0x01 ==
+            core_buffer_to_uint64("\x01", 1));
+}
+
 abts_suite *testmisc(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -68,6 +88,7 @@ abts_suite *testmisc(abts_suite *suite)
     abts_run_test(suite, misc_test1, NULL);
     abts_run_test(suite, misc_test2, NULL);
     abts_run_test(suite, misc_test3, NULL);
+    abts_run_test(suite, misc_test4, NULL);
 
     return suite;
 }
