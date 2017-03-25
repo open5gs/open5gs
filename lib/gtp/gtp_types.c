@@ -28,7 +28,7 @@
 #include "core_debug.h"
 #include "gtp_types.h"
 
-c_int16_t gtp_decode_uli(gtp_uli_t *uli, tlv_octet_t *octet)
+c_int16_t gtp_parse_uli(gtp_uli_t *uli, tlv_octet_t *octet)
 {
     gtp_uli_t *source = (gtp_uli_t *)octet->data;
     c_int16_t size = 0;
@@ -97,7 +97,7 @@ c_int16_t gtp_decode_uli(gtp_uli_t *uli, tlv_octet_t *octet)
     
     return size;
 }
-c_int16_t gtp_encode_uli(
+c_int16_t gtp_build_uli(
         tlv_octet_t *octet, gtp_uli_t *uli, void *data, int data_len)
 {
     gtp_uli_t target;

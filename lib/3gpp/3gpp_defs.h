@@ -5,6 +5,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#define IPV6_LEN            16
+
 #define MAX_SDU_LEN         2048
 
 #define PLMN_ID_LEN         3

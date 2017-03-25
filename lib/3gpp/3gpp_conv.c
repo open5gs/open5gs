@@ -22,7 +22,7 @@ c_uint16_t plmn_id_mnc_len(plmn_id_t *plmn_id)
     return plmn_id->mnc1 == 0xf ? 2 : 3;
 }
 
-void plmn_id_build(plmn_id_t *plmn_id, 
+void *plmn_id_build(plmn_id_t *plmn_id, 
         c_uint16_t mcc, c_uint16_t mnc, c_uint16_t mnc_len)
 {
     plmn_id->mcc1 = PLMN_ID_DIGIT1(mcc);
@@ -36,4 +36,6 @@ void plmn_id_build(plmn_id_t *plmn_id,
 
     plmn_id->mnc2 = PLMN_ID_DIGIT2(mnc);
     plmn_id->mnc3 = PLMN_ID_DIGIT3(mnc);
+
+    return plmn_id;
 }

@@ -102,7 +102,7 @@ typedef struct _tlv_int32_t {
 /* Octets */
 typedef struct _tlv_octet_t {
     tlv_presence_t presence;
-    c_uint8_t *data;
+    void *data;
     c_uint32_t len;
 } tlv_octet_t;
 

@@ -1,6 +1,7 @@
 #include "core_pkbuf.h"
 #include "core_lib.h"
 #include "core_debug.h"
+#include "core_net.h"
 
 #include "3gpp_defs.h"
 #include "3gpp_conv.h"
@@ -61,7 +62,7 @@ static void gtp_message_test1(abts_case *tc, void *data)
         req.me_identity.data, req.me_identity.len) == 0);
 
     ABTS_INT_EQUAL(tc, 1, req.user_location_information.presence);
-    size = gtp_decode_uli(&uli, &req.user_location_information);
+    size = gtp_parse_uli(&uli, &req.user_location_information);
     ABTS_INT_EQUAL(tc, 13, size);
     ABTS_INT_EQUAL(tc, 0, uli.flags.lai);
     ABTS_INT_EQUAL(tc, 1, uli.flags.ecgi);
@@ -137,9 +138,13 @@ static void gtp_message_test2(abts_case *tc, void *data)
 {
     status_t rv;
     pkbuf_t *pkbuf = NULL;
+
     gtp_create_session_request_t req;
     gtp_uli_t uli;
     char ulibuf[sizeof(uli)];
+    plmn_id_t serving_network;
+    gtp_f_teid_t s11, s5;
+
     c_int16_t size = 0;
 
     memset(&req, 0, sizeof(gtp_create_session_request_t));
@@ -164,9 +169,33 @@ static void gtp_message_test2(abts_case *tc, void *data)
     uli.tai.tac = 4130;
     plmn_id_build(&uli.ecgi.plmn_id, 555, 10, 2);
     uli.ecgi.eci = 105729;
-    size = gtp_encode_uli(&req.user_location_information, &uli, 
+    size = gtp_build_uli(&req.user_location_information, &uli, 
             ulibuf, sizeof(ulibuf));
     ABTS_INT_EQUAL(tc, 13, req.user_location_information.len);
+
+    req.serving_network.presence = 1;
+    req.serving_network.data = plmn_id_build(&serving_network, 555, 10, 2);
+    req.serving_network.len = sizeof(serving_network);
+
+    req.rat_type.presence = 1;
+    req.rat_type.u8 = GTP_RAT_TYPE_EUTRAN;
+
+    memset(&s11, 0, sizeof(gtp_f_teid_t));
+    s11.ipv4 = 1;
+    s11.interface_type = GTP_F_TEID_S11_MME_GTP_C;
+    s11.teid = 0x80000084;
+    s11.ipv4_addr = inet_addr("10.50.54.10");
+    req.sender_f_teid_for_control_plane.presence = 1;
+    req.sender_f_teid_for_control_plane.data = &s11;
+    req.sender_f_teid_for_control_plane.len = GTP_F_TEID_IPV4_LEN;
+
+    memset(&s5, 0, sizeof(gtp_f_teid_t));
+    s5.ipv4 = 1;
+    s5.interface_type = GTP_F_TEID_S5_S8_PGW_GTP_C;
+    s5.ipv4_addr = inet_addr("10.50.54.37");
+    req.pgw_s5_s8_address_for_control_plane_or_pmip.presence = 1;
+    req.pgw_s5_s8_address_for_control_plane_or_pmip.data = &s5;
+    req.pgw_s5_s8_address_for_control_plane_or_pmip.len = GTP_F_TEID_IPV4_LEN;
 
     rv = tlv_build_msg(&pkbuf, &tlv_desc_create_session_request, &req,
             TLV_MODE_T1_L2_I1);
