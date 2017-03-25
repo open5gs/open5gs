@@ -19,11 +19,13 @@ static void nas_message_test1(abts_case *tc, void *data)
     nas_message_t message;
     pkbuf_t *pkbuf;
     status_t rv;
+    char hexbuf[MAX_SDU_LEN];
 
     pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     ABTS_PTR_NOTNULL(tc, pkbuf);
     pkbuf->len = 53;
-    core_ascii_to_hex(payload, strlen(payload), pkbuf->payload, pkbuf->len);
+    memcpy(pkbuf->payload, 
+            CORE_HEX(payload, strlen(payload), hexbuf), pkbuf->len);
 
     rv = nas_plain_decode(&message, pkbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -69,8 +71,7 @@ static void nas_message_test2(abts_case *tc, void *data)
     attach_accept->tai_list.type0.tac[0] = 12345;
     attach_accept->esm_message_container.length = sizeof(esm_buffer);
     attach_accept->esm_message_container.buffer = 
-        core_ascii_to_hex(esm_payload, strlen(esm_payload), 
-                esm_buffer, sizeof(esm_buffer));
+        CORE_HEX(esm_payload, strlen(esm_payload), esm_buffer);
 
     attach_accept->presencemask |= NAS_ATTACH_ACCEPT_GUTI_PRESENT;
     attach_accept->guti.length = 11;
@@ -102,8 +103,7 @@ static void nas_message_test2(abts_case *tc, void *data)
     rv = nas_plain_encode(&pkbuf, &message);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     ABTS_INT_EQUAL(tc, sizeof(buffer), pkbuf->len);
-    ABTS_TRUE(tc, memcmp(
-            core_ascii_to_hex(payload, strlen(payload), buffer, sizeof(buffer)),
+    ABTS_TRUE(tc, memcmp(CORE_HEX(payload, strlen(payload), buffer),
             pkbuf->payload, pkbuf->len) == 0);
 
     pkbuf_free(pkbuf);
@@ -116,11 +116,13 @@ static void nas_message_test3(abts_case *tc, void *data)
     nas_message_t message;
     pkbuf_t *pkbuf;
     status_t rv;
+    char hexbuf[MAX_SDU_LEN];
 
     pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     ABTS_PTR_NOTNULL(tc, pkbuf);
     pkbuf->len = 7;
-    core_ascii_to_hex(payload, strlen(payload), pkbuf->payload, pkbuf->len);
+    memcpy(pkbuf->payload, 
+            CORE_HEX(payload, strlen(payload), hexbuf), pkbuf->len);
 
     rv = nas_plain_decode(&message, pkbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -148,8 +150,7 @@ static void nas_message_test4(abts_case *tc, void *data)
     rv = nas_plain_encode(&pkbuf, &message);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     ABTS_INT_EQUAL(tc, sizeof(buffer), pkbuf->len);
-    ABTS_TRUE(tc, memcmp(
-            core_ascii_to_hex(payload, strlen(payload), buffer, sizeof(buffer)),
+    ABTS_TRUE(tc, memcmp(CORE_HEX(payload, strlen(payload), buffer),
             pkbuf->payload, pkbuf->len) == 0);
 
     pkbuf_free(pkbuf);
@@ -173,6 +174,7 @@ static void nas_message_test6(abts_case *tc, void *data)
 {
     /* Identity Request */
     char *payload = "075501";
+    char hexbuf[MAX_SDU_LEN];
 
     nas_message_t message;
     nas_identity_request_t *identity_request = &message.identity_request;
@@ -182,7 +184,8 @@ static void nas_message_test6(abts_case *tc, void *data)
     pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     ABTS_PTR_NOTNULL(tc, pkbuf);
     pkbuf->len = 3;
-    core_ascii_to_hex(payload, strlen(payload), pkbuf->payload, pkbuf->len);
+    memcpy(pkbuf->payload, 
+            CORE_HEX(payload, strlen(payload), hexbuf), pkbuf->len);
 
     rv = nas_plain_decode(&message, pkbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -235,8 +238,7 @@ static void nas_message_test7(abts_case *tc, void *data)
     rv = nas_plain_encode(&pkbuf, &message);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     ABTS_INT_EQUAL(tc, sizeof(buffer), pkbuf->len);
-    ABTS_TRUE(tc, memcmp(
-            core_ascii_to_hex(payload, strlen(payload), buffer, sizeof(buffer)),
+    ABTS_TRUE(tc, memcmp(CORE_HEX(payload, strlen(payload), buffer),
             pkbuf->payload, pkbuf->len) == 0);
 
     pkbuf_free(pkbuf);

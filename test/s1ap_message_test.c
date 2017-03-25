@@ -20,11 +20,13 @@ static void s1ap_message_test1(abts_case *tc, void *data)
     s1ap_message_t message;
     pkbuf_t *pkbuf;
     int result;
+    char hexbuf[MAX_SDU_LEN];
 
     pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     ABTS_PTR_NOTNULL(tc, pkbuf);
     pkbuf->len = 49;
-    core_ascii_to_hex(payload, strlen(payload), pkbuf->payload, pkbuf->len);
+    memcpy(pkbuf->payload, 
+            CORE_HEX(payload, strlen(payload), hexbuf), pkbuf->len);
 
     result = s1ap_decode_pdu(&message, pkbuf);
     ABTS_INT_EQUAL(tc, 0, result);
@@ -49,11 +51,13 @@ static void s1ap_message_test2(abts_case *tc, void *data)
     s1ap_message_t message;
     pkbuf_t *pkbuf;
     int result;
+    char hexbuf[MAX_SDU_LEN];
 
     pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     ABTS_PTR_NOTNULL(tc, pkbuf);
     pkbuf->len = 115;
-    core_ascii_to_hex(payload, strlen(payload), pkbuf->payload, pkbuf->len);
+    memcpy(pkbuf->payload, 
+            CORE_HEX(payload, strlen(payload), hexbuf), pkbuf->len);
 
     result = s1ap_decode_pdu(&message, pkbuf);
     ABTS_INT_EQUAL(tc, 0, result);
@@ -73,11 +77,13 @@ static void s1ap_message_test3(abts_case *tc, void *data)
     s1ap_message_t message;
     pkbuf_t *pkbuf;
     int result;
+    char hexbuf[MAX_SDU_LEN];
 
     pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     ABTS_PTR_NOTNULL(tc, pkbuf);
     pkbuf->len = 41;
-    core_ascii_to_hex(payload, strlen(payload), pkbuf->payload, pkbuf->len);
+    memcpy(pkbuf->payload, 
+            CORE_HEX(payload, strlen(payload), hexbuf), pkbuf->len);
 
     result = s1ap_decode_pdu(&message, pkbuf);
     ABTS_INT_EQUAL(tc, 0, result);

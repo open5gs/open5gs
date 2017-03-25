@@ -2,6 +2,7 @@
 #include "core_lib.h"
 #include "core_debug.h"
 
+#include "3gpp_defs.h"
 #include "3gpp_conv.h"
 #include "gtp_types.h"
 #include "gtp_tlv.h"
@@ -24,11 +25,12 @@ static void gtp_message_test1(abts_case *tc, void *data)
     gtp_create_session_request_t req;
     c_uint8_t tmp[256];
     pkbuf_t *pkbuf = NULL;
+    char hexbuf[MAX_SDU_LEN];
 
     pkbuf = pkbuf_alloc(0, 240);
     ABTS_PTR_NOTNULL(tc, pkbuf);
-    core_ascii_to_hex(_payload, strlen(_payload), pkbuf->payload, 
-            pkbuf->len);
+    memcpy(pkbuf->payload, 
+        CORE_HEX(_payload, strlen(_payload), hexbuf), pkbuf->len);
 
     memset(&req, 0, sizeof(req));
     rv = tlv_parse_msg(&req, &tlv_desc_create_session_request, pkbuf,
@@ -40,20 +42,19 @@ static void gtp_message_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, 1, req.imsi.presence);
     ABTS_INT_EQUAL(tc, 8, req.imsi.len);
     _value = "55153011 340010f4";
-    ABTS_TRUE(tc, memcmp(core_ascii_to_hex(_value, strlen(_value), 
-            tmp, req.imsi.len), req.imsi.data, req.imsi.len) == 0);
+    ABTS_TRUE(tc, memcmp(CORE_HEX(_value, strlen(_value), tmp), 
+                req.imsi.data, req.imsi.len) == 0);
 
     ABTS_INT_EQUAL(tc, 1, req.msisdn.presence);
     ABTS_INT_EQUAL(tc, 6, req.msisdn.len);
     _value = "94715276 0041";
-    ABTS_TRUE(tc, memcmp(core_ascii_to_hex(_value, strlen(_value), 
-            tmp, req.msisdn.len), req.msisdn.data, req.msisdn.len) == 0);
+    ABTS_TRUE(tc, memcmp(CORE_HEX(_value, strlen(_value), tmp), 
+                req.msisdn.data, req.msisdn.len) == 0);
 
     ABTS_INT_EQUAL(tc, 1, req.me_identity.presence);
     ABTS_INT_EQUAL(tc, 8, req.me_identity.len);
     _value = "53612000 91788400";
-    ABTS_TRUE(tc, memcmp(core_ascii_to_hex(_value, strlen(_value),
-            tmp, req.me_identity.len),
+    ABTS_TRUE(tc, memcmp(CORE_HEX(_value, strlen(_value), tmp),
         req.me_identity.data, req.me_identity.len) == 0);
 
     ABTS_INT_EQUAL(tc, 1, req.user_location_information.presence);
@@ -90,9 +91,7 @@ static void gtp_message_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, 22,
             req.bearer_contexts_to_be_created.bearer_level_qos.len);
     _value = "45050000 00000000 00000000 00000000 00000000 0000";
-    ABTS_TRUE(tc, memcmp(
-        core_ascii_to_hex(_value, strlen(_value), tmp,
-            req.bearer_contexts_to_be_created.bearer_level_qos.len),
+    ABTS_TRUE(tc, memcmp(CORE_HEX(_value, strlen(_value), tmp),
         req.bearer_contexts_to_be_created.bearer_level_qos.data,
         req.bearer_contexts_to_be_created.bearer_level_qos.len) 
             == 0);
@@ -170,7 +169,6 @@ static void gtp_message_test2(abts_case *tc, void *data)
             TLV_MODE_T1_L2_I1);
 
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
-    d_print_hex(pkbuf->payload, pkbuf->len);
 
     pkbuf_free(pkbuf);
 #if 0

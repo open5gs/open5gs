@@ -809,8 +809,8 @@ static void tlv_test_6(abts_case *tc, void *data)
 
     ABTS_INT_EQUAL(tc, 42, req->len);
     ABTS_TRUE(tc, memcmp(req->payload, 
-        core_ascii_to_hex(TEST_TLV_BUILD_MSG, strlen(TEST_TLV_BUILD_MSG), 
-            testbuf, sizeof(testbuf)), req->len) == 0);
+        CORE_HEX(TEST_TLV_BUILD_MSG, strlen(TEST_TLV_BUILD_MSG), testbuf), 
+        req->len) == 0);
 
     /* Initialize message value structure */
     memset(&reqv2, 0, sizeof(tlv_attach_req));

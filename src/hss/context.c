@@ -30,10 +30,8 @@ status_t hss_ctx_init(void)
 
     memset(&self, 0, sizeof(hss_ctx_t));
 
-    memcpy(self.op, core_ascii_to_hex(
-                OP, strlen(OP), buf, HSS_KEY_LEN), HSS_KEY_LEN);
-    memcpy(self.amf, core_ascii_to_hex(
-                AMF, strlen(AMF), buf, HSS_AMF_LEN), HSS_AMF_LEN);
+    memcpy(self.op, CORE_HEX(OP, strlen(OP), buf), HSS_KEY_LEN);
+    memcpy(self.amf, CORE_HEX(AMF, strlen(AMF), buf), HSS_AMF_LEN);
 
     #define K "465B5CE8B199B49FAA5F0A2EE238A6BC"
     #define UE1_IMSI "001010123456800"
@@ -47,8 +45,7 @@ status_t hss_ctx_init(void)
 
     strcpy((char*)ue->imsi, UE1_IMSI);
     ue->imsi_len = strlen(UE1_IMSI);
-    memcpy(ue->k, core_ascii_to_hex(
-                K, strlen(K), buf, HSS_KEY_LEN), HSS_KEY_LEN);
+    memcpy(ue->k, CORE_HEX(K, strlen(K), buf), HSS_KEY_LEN);
     core_generate_random_bytes(ue->rand, RAND_LEN);
     ue->sqn = 64;
 
@@ -57,8 +54,7 @@ status_t hss_ctx_init(void)
 
     strcpy((char*)ue->imsi, UE2_IMSI);
     ue->imsi_len = strlen(UE2_IMSI);
-    memcpy(ue->k, core_ascii_to_hex(
-                K, strlen(K), buf, HSS_KEY_LEN), HSS_KEY_LEN);
+    memcpy(ue->k, CORE_HEX(K, strlen(K), buf), HSS_KEY_LEN);
     core_generate_random_bytes(ue->rand, RAND_LEN);
     ue->sqn = 64;
 
@@ -67,10 +63,9 @@ status_t hss_ctx_init(void)
 
     strcpy((char*)ue->imsi, UE3_IMSI);
     ue->imsi_len = strlen(UE3_IMSI);
-    memcpy(ue->k, core_ascii_to_hex(
-                K, strlen(K), buf, HSS_KEY_LEN), HSS_KEY_LEN);
-    memcpy(ue->rand, core_ascii_to_hex(
-                UE3_RAND, strlen(UE3_RAND), buf, RAND_LEN), RAND_LEN);
+    memcpy(ue->k, CORE_HEX(K, strlen(K), buf), HSS_KEY_LEN);
+    memcpy(ue->rand, CORE_HEX(UE3_RAND, strlen(UE3_RAND), buf), 
+            RAND_LEN);
     ue->sqn = 64;
 
 	return CORE_OK;

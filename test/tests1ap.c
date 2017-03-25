@@ -120,13 +120,14 @@ status_t tests1ap_build_initial_ue_msg(pkbuf_t **pkbuf)
         "5c0a003103e5e034 9011035758a65d01"
         "00004300060000f1 105ba00064400800"
         "00f1101079baf000 86400130";
+    char hexbuf[MAX_SDU_LEN];
     
     *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     if (!(*pkbuf)) return CORE_ERROR;
 
     (*pkbuf)->len = 92;
-    core_ascii_to_hex(payload, strlen(payload), 
-            (*pkbuf)->payload, (*pkbuf)->len);
+    memcpy((*pkbuf)->payload, CORE_HEX(payload, strlen(payload), hexbuf),
+            (*pkbuf)->len);
 
     return CORE_OK;
 }
@@ -139,13 +140,14 @@ status_t tests1ap_build_authentication_response(pkbuf_t **pkbuf)
         "030753086a91970e 838fd07900644008"
         "0000f1101079baf0 004340060000f110"
         "5ba0";
+    char hexbuf[MAX_SDU_LEN];
     
     *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     if (!(*pkbuf)) return CORE_ERROR;
 
     (*pkbuf)->len = 66;
-    core_ascii_to_hex(payload, strlen(payload), 
-            (*pkbuf)->payload, (*pkbuf)->len);
+    memcpy((*pkbuf)->payload, CORE_HEX(payload, strlen(payload), hexbuf),
+            (*pkbuf)->len);
 
     return CORE_OK;
 }
@@ -157,13 +159,14 @@ status_t tests1ap_build_security_mode_complete(pkbuf_t **pkbuf)
         "000800020001001a 000908476b8f5f64"
         "00075e0064400800 00f1101079baf000"
         "4340060000f1105b a0";
+    char hexbuf[MAX_SDU_LEN];
     
     *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     if (!(*pkbuf)) return CORE_ERROR;
 
     (*pkbuf)->len = 57;
-    core_ascii_to_hex(payload, strlen(payload), 
-            (*pkbuf)->payload, (*pkbuf)->len);
+    memcpy((*pkbuf)->payload, CORE_HEX(payload, strlen(payload), hexbuf),
+            (*pkbuf)->len);
 
     return CORE_OK;
 }
