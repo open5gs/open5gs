@@ -9,8 +9,8 @@
 static int _mme_s11_recv_cb(net_sock_t *net_sock, void *data)
 {
     char buf[INET_ADDRSTRLEN];
+    status_t rv;
     event_t e;
-    int rc;
     pkbuf_t *pkbuf = NULL;
     gtp_node_t *gnode = data;
 
@@ -34,13 +34,13 @@ static int _mme_s11_recv_cb(net_sock_t *net_sock, void *data)
     event_set_param1(&e, (c_uintptr_t)gnode);
     event_set_param2(&e, (c_uintptr_t)pkbuf);
 
-    rc = event_send(mme_self()->queue_id, &e);
-    if (rc <= 0)
+    rv = mme_event_send(&e);
+    if (rv != CORE_OK)
     {
+        d_error("mme_event_send error");
         pkbuf_free(pkbuf);
-        return rc;
+        return -1;
     }
-
     return 0;
 }
 
@@ -80,5 +80,5 @@ status_t mme_s11_close(void *sgw)
 
 status_t mme_s11_send_to_sgw(void *sgw, pkbuf_t *pkbuf)
 {
-    return  gtp_send(sgw, pkbuf);
+    return gtp_send(sgw, pkbuf);
 }

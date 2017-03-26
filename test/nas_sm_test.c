@@ -36,7 +36,6 @@ static void nas_sm_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
-    pkbuf_free(sendbuf);
 
     /* Receive S1-Setup Response */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
@@ -53,7 +52,6 @@ static void nas_sm_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
-    pkbuf_free(sendbuf);
 
     /* Receive Authentication-Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
@@ -70,7 +68,6 @@ static void nas_sm_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
-    pkbuf_free(sendbuf);
 
     /* Receive Security-mode-Command */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
@@ -87,7 +84,6 @@ static void nas_sm_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
-    pkbuf_free(sendbuf);
 
     d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
     /* eNB disonncect from MME */

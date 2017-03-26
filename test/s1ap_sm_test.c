@@ -34,8 +34,6 @@ static void s1ap_sm_test1(abts_case *tc, void *data)
         rv = tests1ap_enb_send(sock[i], sendbuf);
         ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-        pkbuf_free(sendbuf);
-
         rc = tests1ap_enb_read(sock[i], recvbuf);
         ABTS_INT_NEQUAL(tc, 0, rc);
 
@@ -86,8 +84,6 @@ static void s1ap_sm_test2(abts_case *tc, void *data)
 
         rv = tests1ap_enb_send(sock[i], sendbuf);
         ABTS_INT_EQUAL(tc, CORE_OK, rv);
-
-        pkbuf_free(sendbuf);
 
         rc = tests1ap_enb_read(sock[i], recvbuf);
         ABTS_INT_NEQUAL(tc, 0, rc);

@@ -49,6 +49,24 @@ char* mme_event_get_name(event_t *e)
     return EVT_NAME_UNKNOWN;
 }
 
+status_t mme_event_send(event_t *e)
+{
+#if 0 /* FIXME */
+    int rc = event_send(mme_self()->queue_id, e);
+    if (rc < 0)
+    {
+        d_error("mme_event_send error:%d\n", rc);
+        return CORE_ERROR;
+    }
+
+    return CORE_OK;
+#else
+    event_send(mme_self()->queue_id, e);
+
+    return CORE_OK;
+#endif
+}
+
 void mme_event_s1ap_to_nas(ue_ctx_t *ue, S1ap_NAS_PDU_t *nasPdu)
 {
     pkbuf_t *sendbuf = NULL;
@@ -65,8 +83,7 @@ void mme_event_s1ap_to_nas(ue_ctx_t *ue, S1ap_NAS_PDU_t *nasPdu)
     event_set(&e, EVT_MSG_UE_EMM);
     event_set_param1(&e, (c_uintptr_t)ue);
     event_set_param2(&e, (c_uintptr_t)sendbuf);
-
-    event_send(mme_self()->queue_id, &e);
+    mme_event_send(&e);
 }
 
 void mme_event_nas_to_s1ap(ue_ctx_t *ue, pkbuf_t *pkbuf)

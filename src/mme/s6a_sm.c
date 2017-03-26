@@ -216,7 +216,7 @@ static void s6a_aia_cb(void *data, struct msg **msg)
     event_set_param1(&e, (c_uintptr_t)ue);
     event_set_param2(&e, (c_uintptr_t)sendbuf);
 
-    event_send(mme_self()->queue_id, &e);
+    mme_event_send(&e);
 out:
     /* Free the message */
     d_assert(pthread_mutex_lock(&s6a_config->stats_lock) == 0,,);

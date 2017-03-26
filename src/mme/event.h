@@ -30,6 +30,7 @@ typedef enum {
 
 CORE_DECLARE(char*) mme_event_get_name(event_t *e);
 
+CORE_DECLARE(status_t) mme_event_send(event_t *e);
 CORE_DECLARE(void) mme_event_s1ap_to_nas(ue_ctx_t *ue, S1ap_NAS_PDU_t *nasPdu);
 CORE_DECLARE(void) mme_event_nas_to_s1ap(ue_ctx_t *ue, pkbuf_t *pkbuf);
 

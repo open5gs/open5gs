@@ -102,5 +102,7 @@ status_t gtp_send(gtp_node_t *gnode, pkbuf_t *pkbuf)
         return CORE_ERROR;
     }
 
+    pkbuf_free(pkbuf);
+
     return CORE_OK;
 }

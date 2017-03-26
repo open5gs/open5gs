@@ -70,7 +70,7 @@ static int _s1ap_accept_cb(net_sock_t *net_sock, void *data)
         event_t e;
         event_set(&e, EVT_LO_ENB_S1AP_ACCEPT);
         event_set_param1(&e, (c_uintptr_t)remote_sock);
-        event_send(mme_self()->queue_id, &e);
+        mme_event_send(&e);
     }
     else
     {
@@ -93,8 +93,7 @@ static status_t s1ap_recv(net_sock_t *net_sock, pkbuf_t *pkbuf)
     event_set(&e, EVT_MSG_ENB_S1AP);
     event_set_param1(&e, (c_uintptr_t)net_sock);
     event_set_param2(&e, (c_uintptr_t)pkbuf);
-
-    return event_send(mme_self()->queue_id, &e);
+    return mme_event_send(&e);
 }
 
 int _s1ap_recv_cb(net_sock_t *net_sock, void *data)
@@ -138,7 +137,7 @@ int _s1ap_recv_cb(net_sock_t *net_sock, void *data)
 
         event_set(&e, EVT_LO_ENB_S1AP_CONNREFUSED);
         event_set_param1(&e, (c_uintptr_t)net_sock);
-        event_send(mme_self()->queue_id, &e);
+        mme_event_send(&e);
 
         return -1;
     }
@@ -178,6 +177,7 @@ status_t s1ap_send(net_sock_t *s, pkbuf_t *pkbuf)
                 s->sndrcv_errno, strerror(s->sndrcv_errno));
         return CORE_ERROR;
     }
+    pkbuf_free(pkbuf);
 
     return CORE_OK;
 }
@@ -190,7 +190,11 @@ status_t s1ap_send_to_enb(enb_ctx_t *enb, pkbuf_t *pkbuf)
     d_assert(enb->s1ap_sock,,);
 
     rv = s1ap_send(enb->s1ap_sock, pkbuf);
-    pkbuf_free(pkbuf);
+    if (rv != CORE_OK)
+    {
+        d_error("s1_send error");
+        pkbuf_free(pkbuf);
+    }
 
     return rv;
 }

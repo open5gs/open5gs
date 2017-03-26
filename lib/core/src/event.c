@@ -36,7 +36,7 @@ status_t event_delete(msgq_id queue_id)
 
 int event_send(msgq_id queue_id, event_t *e)
 {
-    int r;
+    int r = 0;
 
     d_assert(e, return -1, "Null param");
     d_assert(queue_id, return -1, "event queue isn't initialized");

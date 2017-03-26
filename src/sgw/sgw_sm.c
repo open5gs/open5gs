@@ -55,17 +55,23 @@ void sgw_state_operational(sgw_sm_t *s, event_t *e)
         case EVT_MSG_SGW_S11:
         {
             gtp_node_t *gnode = (gtp_node_t *)event_get_param1(e);
+            pkbuf_t *pkbuf = (pkbuf_t *)event_get_param2(e);
             d_assert(gnode, break, "Null param");
+            d_assert(pkbuf, break, "Null param");
 
             d_info("EVT_MSG_MME_S11 received");
+            pkbuf_free(pkbuf);
             break;
         }
         case EVT_MSG_SGW_S5C:
         {
             gtp_node_t *gnode = (gtp_node_t *)event_get_param1(e);
+            pkbuf_t *pkbuf = (pkbuf_t *)event_get_param2(e);
             d_assert(gnode, break, "Null param");
+            d_assert(pkbuf, break, "Null param");
 
             d_info("EVT_MSG_MME_S5C received");
+            pkbuf_free(pkbuf);
             break;
         }
         default:

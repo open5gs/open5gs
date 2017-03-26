@@ -36,6 +36,7 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
         case FSM_ENTRY_SIG:
         {
             /* FIXME: for test */
+#if 0
             {
                 event_t e;
                 sgw_ctx_t *sgw = mme_ctx_sgw_add();
@@ -49,8 +50,9 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
 
                 event_set(&e, EVT_LO_MME_ENGAGE_SGW);
                 event_set_param1(&e, sgw);
-                event_send(mme_self()->queue_id, &e);
+                mme_event_send(&e);
             }
+#endif
 
             rv = s1ap_open();
             if (rv != CORE_OK)
