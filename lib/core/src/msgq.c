@@ -17,7 +17,7 @@ typedef struct _msq_desc_t {
     unsigned char *pool;
 } msg_desc_t;
 
-pool_declare(msgqpool, msg_desc_t, 3);
+pool_declare(msgqpool, msg_desc_t, 16);
 
 status_t msgq_init(void)
 {
