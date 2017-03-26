@@ -7,7 +7,7 @@ libmme_la_SOURCES = \
     event.h context.h \
 	s1ap_build.h s1ap_handler.h s1ap_conv.h s1ap_path.h \
 	nas_conv.h nas_security.h emm_handler.h \
-	s11_path.h \
+	s11_path.h s11_build.h \
 	sm.h s6a_sm.h
 
 nodist_libmme_la_SOURCES = \
@@ -15,7 +15,7 @@ nodist_libmme_la_SOURCES = \
     init.c event.c context.c \
 	s1ap_build.c s1ap_handler.c s1ap_conv.c s1ap_path.c \
 	nas_conv.c nas_security.c emm_handler.c \
-	s11_path.c \
+	s11_path.c s11_build.c \
 	mme_sm.c enb_s1ap_sm.c ue_emm_sm.c s6a_sm.c 
 
 libmme_la_DEPENDENCIES = \

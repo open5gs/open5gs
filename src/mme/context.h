@@ -6,8 +6,9 @@
 #include "core_net.h"
 #include "core_sha2.h"
 
-#include "nas_ies.h"
-
+#include "3gpp_defs.h"
+#include "3gpp_types.h"
+#include "nas_types.h"
 #include "sm.h"
 
 #ifdef __cplusplus
