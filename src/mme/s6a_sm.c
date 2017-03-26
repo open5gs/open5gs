@@ -1,4 +1,4 @@
-#define TRACE_MODULE _s6a_auth
+#define TRACE_MODULE _s6a_sm
 
 #include "core_debug.h"
 #include "core_pool.h"

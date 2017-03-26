@@ -4,6 +4,27 @@
 #include "context.h"
 #include "s1ap_build.h"
 #include "s1ap_conv.h"
+#include "nas_message.h"
+
+void s1ap_send_nas_to_emm(ue_ctx_t *ue, S1ap_NAS_PDU_t *nasPdu)
+{
+    pkbuf_t *sendbuf = NULL;
+    event_t e;
+
+    d_assert(nasPdu, return, "Null param");
+
+    /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 
+     * When calculating AES_CMAC, we need to use the headroom of the packet. */
+    sendbuf = pkbuf_alloc(NAS_HEADROOM, nasPdu->size);
+    d_assert(sendbuf, return, "Null param");
+    memcpy(sendbuf->payload, nasPdu->buf, nasPdu->size);
+
+    event_set(&e, EVT_MSG_UE_EMM);
+    event_set_param1(&e, (c_uintptr_t)ue);
+    event_set_param2(&e, (c_uintptr_t)sendbuf);
+
+    event_send(mme_self()->queue_id, &e);
+}
 
 status_t s1ap_build_setup_rsp(pkbuf_t **pkbuf)
 {
