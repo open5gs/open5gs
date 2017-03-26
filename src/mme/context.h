@@ -9,6 +9,8 @@
 #include "3gpp_defs.h"
 #include "3gpp_types.h"
 #include "nas_types.h"
+#include "gtp_path.h"
+
 #include "sm.h"
 
 #ifdef __cplusplus
@@ -33,15 +35,9 @@ typedef struct _served_gummei {
 } srvd_gummei_t;
 
 typedef struct _mme_ctx_t {
-    c_uint32_t      mme_local_addr;
-    c_uint32_t      sgw_remote_addr;
-
-    net_sock_t      *s1ap_sock;
+    c_uint32_t      s1ap_addr;
     c_uint16_t      s1ap_port;
-
-    net_sock_t      *s11_sock;
-    c_uint16_t      s11_local_port;
-    c_uint16_t      s11_remote_port;
+    net_sock_t      *s1ap_sock;
 
     msgq_id         queue_id;
     tm_service_t    tm_service;
@@ -70,6 +66,11 @@ typedef struct _mme_ctx_t {
     srvd_gummei_t   srvd_gummei;
     c_uint8_t       relative_capacity;
 } mme_ctx_t;
+
+typedef struct _sgw_ctx_t {
+    gtp_node_t      gnode;
+
+} sgw_ctx_t;
 
 typedef struct _enb_ctx_t {
     lnode_t         node; /**< A node of list_t */
@@ -133,6 +134,13 @@ CORE_DECLARE(status_t)      mme_ctx_init(void);
 CORE_DECLARE(status_t)      mme_ctx_final(void);
 
 CORE_DECLARE(mme_ctx_t*)    mme_self(void);
+
+CORE_DECLARE(sgw_ctx_t*)    mme_ctx_sgw_add(void);
+CORE_DECLARE(status_t)      mme_ctx_sgw_remove(sgw_ctx_t *sgw);
+CORE_DECLARE(status_t)      mme_ctx_sgw_remove_all(void);
+CORE_DECLARE(sgw_ctx_t*)    mme_ctx_sgw_find_by_node(gtp_node_t *gnode);
+CORE_DECLARE(sgw_ctx_t*)    mme_ctx_sgw_first(void);
+CORE_DECLARE(sgw_ctx_t*)    mme_ctx_sgw_next(sgw_ctx_t *sgw);
 
 CORE_DECLARE(enb_ctx_t*)    mme_ctx_enb_add(void);
 CORE_DECLARE(status_t)      mme_ctx_enb_remove(enb_ctx_t *enb);

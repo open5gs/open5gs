@@ -6,63 +6,69 @@
 #include "3gpp_defs.h"
 #include "gtp_path.h"
 
-status_t gtp_open(net_sock_t **sock, net_sock_handler handler, void *data,
-        const c_uint32_t addr, const c_uint16_t port)
+status_t gtp_open(gtp_node_t *gnode, net_sock_handler handler)
 {
     char buf[INET_ADDRSTRLEN];
     int rc;
     
-    rc = net_listen_with_addr(sock, SOCK_DGRAM, IPPROTO_UDP, port, addr);
+    d_assert(gnode, return CORE_ERROR, "Null param");
+
+    rc = net_listen_with_addr(&gnode->s, SOCK_DGRAM, IPPROTO_UDP, 
+            gnode->local_port, gnode->local_addr);
     if (rc != 0)
     {
         d_error("Can't establish GTP[%s:%d] path(%d:%s)",
-            INET_NTOP(&addr, buf), port, errno, strerror(errno));
+            INET_NTOP(&gnode->local_addr, buf), gnode->local_port, 
+            errno, strerror(errno));
         return CORE_ERROR;
     }
 
-    rc = net_register_sock(*sock, handler, data);
+    rc = net_register_sock(gnode->s, handler, gnode);
     if (rc != 0)
     {
         d_error("Can't establish GTP path(%d:%s)",
             errno, strerror(errno));
-        net_close(*sock);
+        net_close(gnode->s);
         return CORE_ERROR;
     }
 
-    d_trace(1, "gtp_listen() %s:%d\n", INET_NTOP(&addr, buf), port);
+    d_trace(1, "gtp_listen() %s:%d\n", 
+            INET_NTOP(&gnode->local_addr, buf), gnode->local_port);
 
     return CORE_OK;
 }
 
-status_t gtp_close(net_sock_t *sock)
+status_t gtp_close(gtp_node_t *gnode)
 {
-    d_assert(sock, return CORE_ERROR, "Null param");
+    d_assert(gnode, return CORE_ERROR, "Null param");
+    d_assert(gnode->s, return CORE_ERROR, "Null param");
 
-    net_unregister_sock(sock);
-    net_close(sock);
+    net_unregister_sock(gnode->s);
+    net_close(gnode->s);
 
     return CORE_OK;
 }
 
-pkbuf_t *gtp_read(net_sock_t *net_sock)
+pkbuf_t *gtp_read(gtp_node_t *gnode)
 {
     pkbuf_t *pkb;
     int r;
 
-    d_assert(net_sock, return NULL, "Null param");
+    d_assert(gnode, return NULL, "Null param");
+    d_assert(gnode->s, return NULL, "Null param");
 
     pkb = pkbuf_alloc(0, MAX_SDU_LEN);
     d_assert(pkb, return NULL, "Can't allocate pkbuf");
 
-    r = net_read(net_sock, pkb->payload, pkb->len, 0);
+    r = net_read(gnode->s, pkb->payload, pkb->len, 0);
     if (r <= 0)
     {
         pkbuf_free(pkb);
 
-        if (net_sock->sndrcv_errno != EAGAIN)
+        if (gnode->s->sndrcv_errno != EAGAIN)
         {
             d_warn("net_read failed(%d:%s)", 
-                    net_sock->sndrcv_errno, strerror(net_sock->sndrcv_errno));
+                    gnode->s->sndrcv_errno, strerror(gnode->s->sndrcv_errno));
         }
 
         return NULL;
@@ -75,23 +81,24 @@ pkbuf_t *gtp_read(net_sock_t *net_sock)
     }
 }
 
-status_t gtp_send(net_sock_t *s, 
-        pkbuf_t *pkbuf, c_uint32_t ip_addr, c_uint16_t port)
+status_t gtp_send(gtp_node_t *gnode, pkbuf_t *pkbuf)
 {
     char buf[INET_ADDRSTRLEN];
     ssize_t sent;
 
-    d_assert(s, return CORE_ERROR, "Null param");
+    d_assert(gnode, return CORE_ERROR, "Null param");
+    d_assert(gnode->s, return CORE_ERROR, "Null param");
     d_assert(pkbuf, return CORE_ERROR, "Null param");
 
-    sent = net_sendto(s, pkbuf->payload, pkbuf->len, ip_addr, port);
-    d_trace(1,"Sent %d->%d bytes to [%s:%d]\n", 
-            pkbuf->len, sent, INET_NTOP(&ip_addr, buf), port);
+    sent = net_sendto(gnode->s, pkbuf->payload, pkbuf->len, 
+            gnode->remote_addr, gnode->remote_port);
+    d_trace(1,"Sent %d->%d bytes to [%s:%d]\n", pkbuf->len, sent, 
+            INET_NTOP(&gnode->remote_addr, buf), gnode->remote_port);
     d_trace_hex(1, pkbuf->payload, pkbuf->len);
     if (sent < 0 || sent != pkbuf->len)
     {
         d_error("net_send error (%d:%s)", 
-                s->sndrcv_errno, strerror(s->sndrcv_errno));
+                gnode->s->sndrcv_errno, strerror(gnode->s->sndrcv_errno));
         return CORE_ERROR;
     }
 

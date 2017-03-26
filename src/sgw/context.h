@@ -7,18 +7,16 @@
 
 #include "sm.h"
 
+#include "gtp_path.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
 typedef struct _sgw_ctx_t {
-    c_uint32_t      sgw_local_addr;
-    c_uint32_t      mme_remote_addr;
-    c_uint32_t      pgw_remote_addr;
-
-    net_sock_t      *s11_sock;
-    c_uint16_t      s11_local_port;
-    c_uint16_t      s11_remote_port;
+    gtp_node_t      s11_node;
+    gtp_node_t      s5c_node;
+    gtp_node_t      s5u_node;
 
     msgq_id         queue_id;
     tm_service_t    tm_service;

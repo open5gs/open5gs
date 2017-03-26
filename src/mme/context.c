@@ -13,6 +13,7 @@
 #define UE_PER_ENB                  128
 #define RAB_PER_UE                  16
 
+#define SIZE_OF_SGW_POOL            8
 #define SIZE_OF_ENB_POOL            128
 #define SIZE_OF_UE_POOL             (SIZE_OF_ENB_POOL * UE_PER_ENB)
 #define SIZE_OF_RAB_POOL            (SIZE_OF_UE_POOL * RAB_PER_UE)
@@ -21,12 +22,14 @@
 
 static mme_ctx_t self;
 
+pool_declare(sgw_pool, sgw_ctx_t, SIZE_OF_SGW_POOL);
 pool_declare(enb_pool, enb_ctx_t, SIZE_OF_ENB_POOL);
 pool_declare(ue_pool, ue_ctx_t, SIZE_OF_UE_POOL);
 pool_declare(rab_pool, rab_ctx_t, SIZE_OF_RAB_POOL);
 
 static int ctx_initialized = 0;
 
+static list_t sgw_list;
 static list_t enb_list;
 
 status_t mme_ctx_init()
@@ -34,21 +37,19 @@ status_t mme_ctx_init()
     d_assert(ctx_initialized == 0, return CORE_ERROR,
             "MME context already has been ctx_initialized");
 
+    pool_init(&sgw_pool, SIZE_OF_SGW_POOL);
     pool_init(&enb_pool, SIZE_OF_ENB_POOL);
     pool_init(&ue_pool, SIZE_OF_UE_POOL);
     pool_init(&rab_pool, SIZE_OF_RAB_POOL);
 
+    list_init(&sgw_list);
     list_init(&enb_list);
 
     /* Initialize MME context */
     memset(&self, 0, sizeof(mme_ctx_t));
 
-    self.mme_local_addr = inet_addr("127.0.0.1");
-    self.sgw_remote_addr = inet_addr("127.0.0.1");
-
+    self.s1ap_addr = inet_addr("127.0.0.1");
     self.s1ap_port = S1AP_SCTP_PORT;
-    self.s11_local_port = S11_UDP_PORT;
-    self.s11_remote_port = S11_UDP_PORT + 1;
 
     /* MCC : 001, MNC : 01 */
     plmn_id_build(&self.plmn_id, 1, 1, 2); 
@@ -80,6 +81,7 @@ status_t mme_ctx_final()
 
     mme_ctx_enb_remove_all();
 
+    pool_final(&sgw_pool);
     pool_final(&enb_pool);
     pool_final(&ue_pool);
     pool_final(&rab_pool);
@@ -92,6 +94,73 @@ status_t mme_ctx_final()
 mme_ctx_t* mme_self()
 {
     return &self;
+}
+
+sgw_ctx_t* mme_ctx_sgw_add()
+{
+    sgw_ctx_t *sgw = NULL;
+
+    pool_alloc_node(&sgw_pool, &sgw);
+    d_assert(sgw, return NULL, "Null param");
+
+    memset(sgw, 0, sizeof(sgw_ctx_t));
+
+    list_append(&sgw_list, sgw);
+    
+    return sgw;
+}
+
+status_t mme_ctx_sgw_remove(sgw_ctx_t *sgw)
+{
+    d_assert(sgw, return CORE_ERROR, "Null param");
+
+    list_remove(&sgw_list, sgw);
+    pool_free_node(&sgw_pool, sgw);
+
+    return CORE_OK;
+}
+
+status_t mme_ctx_sgw_remove_all()
+{
+    sgw_ctx_t *sgw = NULL, *next_sgw = NULL;
+    
+    sgw = mme_ctx_sgw_first();
+    while (sgw)
+    {
+        next_sgw = mme_ctx_sgw_next(sgw);
+
+        mme_ctx_sgw_remove(sgw);
+
+        sgw = next_sgw;
+    }
+
+    return CORE_OK;
+}
+
+sgw_ctx_t* mme_ctx_sgw_find_by_node(gtp_node_t *gnode)
+{
+    sgw_ctx_t *sgw = NULL;
+    
+    sgw = mme_ctx_sgw_first();
+    while (sgw)
+    {
+        if (GTP_COMPARE_REMOTE_NODE(&sgw->gnode, gnode))
+            break;
+
+        sgw = mme_ctx_sgw_next(sgw);
+    }
+
+    return sgw;
+}
+
+sgw_ctx_t* mme_ctx_sgw_first()
+{
+    return list_first(&sgw_list);
+}
+
+sgw_ctx_t* mme_ctx_sgw_next(sgw_ctx_t *sgw)
+{
+    return list_next(sgw);
 }
 
 enb_ctx_t* mme_ctx_enb_add()

@@ -4,7 +4,7 @@
 #include "sm.h"
 #include "context.h"
 #include "event.h"
-#include "s11_path.h"
+#include "sgw_path.h"
 
 void sgw_state_initial(sgw_sm_t *s, event_t *e)
 {
@@ -34,7 +34,7 @@ void sgw_state_operational(sgw_sm_t *s, event_t *e)
     {
         case FSM_ENTRY_SIG:
         {
-            rv = sgw_s11_open();
+            rv = sgw_path_open();
             if (rv != CORE_OK)
             {
                 d_error("Can't establish S11 path");
@@ -44,7 +44,7 @@ void sgw_state_operational(sgw_sm_t *s, event_t *e)
         }
         case FSM_EXIT_SIG:
         {
-            rv = sgw_s11_close();
+            rv = sgw_path_close();
             if (rv != CORE_OK)
             {
                 d_error("Can't close S11 path");
@@ -54,10 +54,18 @@ void sgw_state_operational(sgw_sm_t *s, event_t *e)
         }
         case EVT_MSG_SGW_S11:
         {
-            net_sock_t *sock = (net_sock_t *)event_get_param1(e);
-            d_assert(sock, break, "Null param");
+            gtp_node_t *gnode = (gtp_node_t *)event_get_param1(e);
+            d_assert(gnode, break, "Null param");
 
             d_info("EVT_MSG_MME_S11 received");
+            break;
+        }
+        case EVT_MSG_SGW_S5C:
+        {
+            gtp_node_t *gnode = (gtp_node_t *)event_get_param1(e);
+            d_assert(gnode, break, "Null param");
+
+            d_info("EVT_MSG_MME_S5C received");
             break;
         }
         default:

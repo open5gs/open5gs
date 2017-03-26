@@ -53,11 +53,12 @@ static int check_signal(int signum)
         {
             pkbuf_t *pkbuf = NULL;
             CORE_DECLARE(status_t) s11_build_create_session_req(pkbuf_t **pkbuf, void *ue);
-            CORE_DECLARE(status_t) mme_s11_send_to_sgw(pkbuf_t *pkbuf);
+            CORE_DECLARE(status_t) mme_s11_send_to_sgw(void *sgw, pkbuf_t *pkbuf);
+            CORE_DECLARE(void*) mme_ctx_sgw_first(void);
 
             s11_build_create_session_req(&pkbuf, NULL);
             d_print_hex(pkbuf->payload, pkbuf->len);
-            mme_s11_send_to_sgw(pkbuf);
+            mme_s11_send_to_sgw(mme_ctx_sgw_first(), pkbuf);
             break;
         }
         default:

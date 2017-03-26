@@ -15,7 +15,7 @@ status_t s1ap_open(void)
 
     rc = net_listen_with_addr(&mme_self()->s1ap_sock, 
             SOCK_STREAM, IPPROTO_SCTP, mme_self()->s1ap_port,
-            mme_self()->mme_local_addr);
+            mme_self()->s1ap_addr);
     if (rc != 0)
     {
         d_error("Can't establish S1-ENB(port:%d) path(%d:%s)",
@@ -36,7 +36,7 @@ status_t s1ap_open(void)
     }
 
     d_trace(1, "s1_enb_listen() %s:%d\n", 
-        INET_NTOP(&mme_self()->mme_local_addr, buf), mme_self()->s1ap_port);
+        INET_NTOP(&mme_self()->s1ap_addr, buf), mme_self()->s1ap_port);
 
     return CORE_OK;
 }

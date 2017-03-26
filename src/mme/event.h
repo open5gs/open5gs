@@ -15,6 +15,8 @@ extern "C" {
 typedef enum {
     MME_EVT_BASE = FSM_USER_SIG,
 
+    EVT_LO_MME_ENGAGE_SGW,
+
     EVT_LO_ENB_S1AP_ACCEPT,
     EVT_LO_ENB_S1AP_CONNREFUSED,
 

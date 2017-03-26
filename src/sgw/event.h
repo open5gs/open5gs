@@ -11,6 +11,7 @@ typedef enum {
     SGW_EVT_BASE = FSM_USER_SIG,
 
     EVT_MSG_SGW_S11,
+    EVT_MSG_SGW_S5C,
     
     SGW_EVT_TOP,
 

@@ -3,10 +3,10 @@
 noinst_LTLIBRARIES = libgtp.la
 
 libgtp_la_SOURCES = \
-	gtp_tlv.h gtp_types.h gtp_path.h
+	gtp_tlv.h gtp_types.h gtp_path.h gtp_xact.h
 
 nodist_libgtp_la_SOURCES = \
-	gtp_tlv.c gtp_types.c gtp_path.c
+	gtp_tlv.c gtp_types.c gtp_path.c gtp_xact.c
 
 libgtp_la_DEPENDENCIES = \
     $(top_srcdir)/lib/3gpp/lib3gpp.la
