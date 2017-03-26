@@ -1,13 +1,9 @@
 #define TRACE_MODULE _s1ap_path
 
-#include "core.h"
 #include "core_debug.h"
-#include "core_net.h"
-
-#include "s1ap_message.h"
 
 #include "event.h"
-#include "context.h"
+
 #include "s1ap_path.h"
 
 static int _s1ap_accept_cb(net_sock_t *net_sock, void *data);

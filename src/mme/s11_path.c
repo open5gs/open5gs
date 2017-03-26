@@ -3,9 +3,7 @@
 #include "core_pkbuf.h"
 #include "core_net.h"
 
-#include "gtp_path.h"
-
-#include "context.h"
+#include "event.h"
 #include "s11_path.h"
 
 static int _mme_s11_recv_cb(net_sock_t *net_sock, void *data)

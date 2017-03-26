@@ -2,13 +2,10 @@
 
 #include "core_debug.h"
 
-#include "sm.h"
-#include "context.h"
-#include "event.h"
-
 #include "nas_message.h"
+
+#include "event.h"
 #include "nas_security.h"
-#include "nas_build.h"
 #include "emm_handler.h"
 
 void ue_emm_state_initial(ue_emm_sm_t *s, event_t *e)
@@ -72,7 +69,7 @@ void ue_emm_state_operational(ue_emm_sm_t *s, event_t *e)
                 case NAS_AUTHENTICATION_REQUEST:
                 {
                     pkbuf_t *pkbuf = pkbuf_copy(recvbuf);
-                    nas_send_s1ap_to_enb(ue, pkbuf);
+                    mme_event_nas_to_s1ap(ue, pkbuf);
 
                     d_assert(ue->imsi, return,);
                     d_info("[NAS] Authentication request : UE[%s] <-- EMM",

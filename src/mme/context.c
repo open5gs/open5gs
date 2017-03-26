@@ -2,14 +2,12 @@
 
 #include "core_debug.h"
 #include "core_pool.h"
-#include "core_rwlock.h"
-#include "core_index.h"
 
 #include "3gpp_conv.h"
-#include "context.h"
-#include "nas_ies.h"
-#include "s1ap_message.h"
 #include "gtp_path.h"
+#include "s1ap_message.h"
+
+#include "context.h"
 
 #define CELL_PER_ENB                8
 #define UE_PER_ENB                  128

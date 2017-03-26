@@ -1,9 +1,8 @@
 #ifndef __S1AP_PATH_H__
 #define __S1AP_PATH_H__
 
-#include "core.h"
 #include "core_pkbuf.h"
-#include "core_msgq.h"
+#include "core_net.h"
 
 #include "context.h"
 

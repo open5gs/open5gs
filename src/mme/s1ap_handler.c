@@ -1,7 +1,9 @@
 #define TRACE_MODULE _s1ap_handler
 
 #include "core_debug.h"
-#include "context.h"
+
+#include "event.h"
+
 #include "s1ap_conv.h"
 #include "s1ap_build.h"
 #include "s1ap_handler.h"
@@ -93,7 +95,7 @@ void s1ap_handle_initial_ue_message(enb_ctx_t *enb, s1ap_message_t *message)
 
     fsm_init((fsm_t*)&ue->emm_sm, 0);
 
-    s1ap_send_nas_to_emm(ue, &ies->nas_pdu);
+    mme_event_s1ap_to_nas(ue, &ies->nas_pdu);
 }
 
 void s1ap_handle_uplink_nas_transport(
@@ -115,6 +117,6 @@ void s1ap_handle_uplink_nas_transport(
         INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
         enb->enb_id);
 
-    s1ap_send_nas_to_emm(ue, &ies->nas_pdu);
+    mme_event_s1ap_to_nas(ue, &ies->nas_pdu);
 }
 

@@ -3,7 +3,8 @@
 #include "core_debug.h"
 #include "core_pool.h"
 
-#include "context.h"
+#include "event.h"
+
 #include "nas_message.h"
 #include "s6a_lib.h"
 #include "s6a_sm.h"

@@ -2,18 +2,12 @@
 
 #include "core_debug.h"
 
-#include "3gpp_conv.h"
-#include "s1ap_message.h"
 #include "nas_message.h"
 
-#include "sm.h"
-#include "context.h"
 #include "event.h"
 
 #include "kdf.h"
 #include "nas_security.h"
-#include "s1ap_path.h"
-#include "s1ap_conv.h"
 #include "nas_conv.h"
 #include "s6a_sm.h"
 
@@ -129,7 +123,7 @@ void emm_handle_authentication_response(
        NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT;
     d_assert(nas_security_encode(&sendbuf, ue, &message) == CORE_OK && 
             sendbuf,,);
-    nas_send_s1ap_to_enb(ue, sendbuf);
+    mme_event_nas_to_s1ap(ue, sendbuf);
 
     d_assert(ue->imsi, return,);
     d_info("[NAS] Security mode command : UE[%s] <-- EMM", ue->imsi);

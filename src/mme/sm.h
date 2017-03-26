@@ -3,8 +3,7 @@
 
 #include "core_param.h"
 #include "core_fsm.h"
-
-#include "event.h"
+#include "core_event.h"
 
 #ifdef __cplusplus
 extern "C" {

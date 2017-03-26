@@ -2,6 +2,11 @@
 #define __MME_EVENT_H__
 
 #include "core_event.h"
+#include "core_pkbuf.h"
+
+#include "s1ap_message.h"
+
+#include "context.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,6 +27,9 @@ typedef enum {
 } event_e;
 
 CORE_DECLARE(char*) mme_event_get_name(event_t *e);
+
+CORE_DECLARE(void) mme_event_s1ap_to_nas(ue_ctx_t *ue, S1ap_NAS_PDU_t *nasPdu);
+CORE_DECLARE(void) mme_event_nas_to_s1ap(ue_ctx_t *ue, pkbuf_t *pkbuf);
 
 #ifdef __cplusplus
 }

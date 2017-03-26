@@ -1,8 +1,9 @@
 #ifndef __EMM_HANDLER_H__
 #define __EMM_HANDLER_H__
 
-#include "context.h"
 #include "nas_message.h"
+
+#include "context.h"
 
 #ifdef __cplusplus
 extern "C" {

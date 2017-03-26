@@ -2,8 +2,6 @@
 
 #include "core_debug.h"
 
-#include "sm.h"
-#include "context.h"
 #include "event.h"
 
 #include "s1ap_build.h"
