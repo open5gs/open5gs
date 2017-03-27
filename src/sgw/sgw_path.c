@@ -45,7 +45,6 @@ static int _gtpv2_c_recv_cb(net_sock_t *net_sock, void *data)
 
     event_set_param1(&e, (c_uintptr_t)gnode);
     event_set_param2(&e, (c_uintptr_t)pkbuf);
-
     rv = sgw_event_send(&e);
     if (rv != CORE_OK)
     {

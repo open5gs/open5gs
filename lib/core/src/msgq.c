@@ -17,11 +17,11 @@ typedef struct _msq_desc_t {
     unsigned char *pool;
 } msg_desc_t;
 
-pool_declare(msgqpool, msg_desc_t, 16);
+pool_declare(msgqpool, msg_desc_t, 4);
 
 status_t msgq_init(void)
 {
-    pool_init(&msgqpool, 3);
+    pool_init(&msgqpool, 4);
     return CORE_OK;
 }
 
@@ -103,7 +103,7 @@ status_t msgq_delete(msgq_id id)
     return CORE_OK;
 }
 
-int msgq_send(msgq_id id, const char *msg, int msglen)
+status_t msgq_send(msgq_id id, const char *msg, int msglen)
 {
     msg_desc_t *md = (msg_desc_t*)id;
     int n;
@@ -138,10 +138,10 @@ int msgq_send(msgq_id id, const char *msg, int msglen)
     cond_signal(md->cond);
     mutex_unlock(md->mut_c);
 
-    return msglen;
+    return CORE_OK;
 }
 
-int msgq_recv(msgq_id id, char *msg, int msglen)
+status_t msgq_recv(msgq_id id, char *msg, int msglen)
 {
     msg_desc_t *md = (msg_desc_t*)id;
     int n;
@@ -188,10 +188,10 @@ int msgq_recv(msgq_id id, char *msg, int msglen)
 
     mutex_unlock(md->mut_r);
 
-    return msglen;
+    return CORE_OK;
 }
 
-int msgq_timedrecv(msgq_id id, char *msg, int msglen, c_time_t timeout)
+status_t msgq_timedrecv(msgq_id id, char *msg, int msglen, c_time_t timeout)
 {
     msg_desc_t *md = (msg_desc_t*)id;
     int n;
@@ -244,5 +244,5 @@ int msgq_timedrecv(msgq_id id, char *msg, int msglen, c_time_t timeout)
 
     mutex_unlock(md->mut_r);
 
-    return msglen;
+    return CORE_OK;
 }

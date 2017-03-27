@@ -41,7 +41,7 @@ void *THREAD_FUNC mme_sm_main(thread_id id, void *data)
     event_t event;
     mme_sm_t mme_sm;
     c_time_t prev_tm, now_tm;
-    int r;
+    status_t rv;
 
     memset(&event, 0, sizeof(event_t));
 
@@ -59,9 +59,9 @@ void *THREAD_FUNC mme_sm_main(thread_id id, void *data)
 
     while ((!thread_should_stop()))
     {
-        r = event_timedrecv(mme_self()->queue_id, &event, EVENT_WAIT_TIMEOUT);
+        rv = event_timedrecv(mme_self()->queue_id, &event, EVENT_WAIT_TIMEOUT);
 
-        d_assert(r != CORE_ERROR, continue,
+        d_assert(rv != CORE_ERROR, continue,
                 "While receiving a event message, error occurs");
 
         now_tm = time_now();
@@ -75,7 +75,7 @@ void *THREAD_FUNC mme_sm_main(thread_id id, void *data)
             prev_tm = now_tm;
         }
 
-        if (r == CORE_TIMEUP)
+        if (rv == CORE_TIMEUP)
         {
             continue;
         }

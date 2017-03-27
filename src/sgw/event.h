@@ -17,9 +17,9 @@ typedef enum {
 
 } event_e;
 
-CORE_DECLARE(char*) sgw_event_get_name(event_t *e);
+#define sgw_event_send(__ptr_e) event_send(sgw_self()->queue_id, (__ptr_e))
 
-CORE_DECLARE(status_t) sgw_event_send(event_t *e);
+CORE_DECLARE(char*) sgw_event_get_name(event_t *e);
 
 #ifdef __cplusplus
 }

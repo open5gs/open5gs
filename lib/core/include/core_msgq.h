@@ -55,7 +55,7 @@ CORE_DECLARE(status_t) msgq_delete(msgq_id id);
  * @return the number of bytes to be sent. If there is insufficient room in
  * ring buffer, return CORE_EAGAIN. If any error, CORE_ERROR.
  */
-CORE_DECLARE(int) msgq_send(msgq_id id, const char *msg, int msglen);
+CORE_DECLARE(status_t) msgq_send(msgq_id id, const char *msg, int msglen);
 
 /**
  * @param id
@@ -65,7 +65,7 @@ CORE_DECLARE(int) msgq_send(msgq_id id, const char *msg, int msglen);
  * @return the number of bytes to be read. If any error, CORE_ERROR.
  * If ring buffer is empty and MSGQ_O_NONBLOCK set, CORE_EAGAIN.
  */
-CORE_DECLARE(int) msgq_recv(msgq_id id, char *msg, int msglen);
+CORE_DECLARE(status_t) msgq_recv(msgq_id id, char *msg, int msglen);
 
 /**
  * @param id
@@ -76,17 +76,8 @@ CORE_DECLARE(int) msgq_recv(msgq_id id, char *msg, int msglen);
  * If ring buffer is empty and MSGQ_O_NONBLOCK set, CORE_EAGAIN.
  * If time out with empty buffer, CORE_TIMEUP.
  */
-CORE_DECLARE(int) msgq_timedrecv(msgq_id id, char *msg, int msglen,
+CORE_DECLARE(status_t) msgq_timedrecv(msgq_id id, char *msg, int msglen,
         c_time_t timeout);
-
-/**
- * @param id
- *
- * @return 1(true) or 0(false)
- * If ring buffer is empty, return 1(true)
- * If ring buffer is not empty, return 0(false)
- */
-CORE_DECLARE(int) msgq_is_empty(msgq_id id);
 
 #ifdef __cplusplus
 }

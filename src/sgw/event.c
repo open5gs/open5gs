@@ -27,20 +27,3 @@ char* sgw_event_get_name(event_t *e)
 
     return EVT_NAME_UNKNOWN;
 }
-
-status_t sgw_event_send(event_t *e)
-{
-#if 0
-    int rc = event_send(sgw_self()->queue_id, e);
-    if (rc < 0)
-    {
-        d_error("event_send error:%d\n", rc);
-        return CORE_ERROR;
-    }
-
-    return CORE_OK;
-#else
-    event_send(sgw_self()->queue_id, e);
-    return CORE_OK;
-#endif
-}

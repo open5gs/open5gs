@@ -6,11 +6,14 @@
 #include "context.h"
 #include "event.h"
 
+#if 0
 static thread_id sgw_sm_thread;
+#endif
 void *THREAD_FUNC sgw_sm_main(thread_id id, void *data);
 
 status_t sgw_initialize()
 {
+#if 0
     status_t rv;
 
     rv = sgw_ctx_init();
@@ -18,15 +21,18 @@ status_t sgw_initialize()
 
     rv = thread_create(&sgw_sm_thread, NULL, sgw_sm_main, NULL);
     if (rv != CORE_OK) return rv;
+#endif
 
     return CORE_OK;
 }
 
 void sgw_terminate(void)
 {
+#if 0
     thread_delete(sgw_sm_thread);
 
     sgw_ctx_final();
+#endif
 }
 
 void *THREAD_FUNC sgw_sm_main(thread_id id, void *data)

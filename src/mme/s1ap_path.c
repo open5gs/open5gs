@@ -70,6 +70,7 @@ static int _s1ap_accept_cb(net_sock_t *net_sock, void *data)
         event_t e;
         event_set(&e, EVT_LO_ENB_S1AP_ACCEPT);
         event_set_param1(&e, (c_uintptr_t)remote_sock);
+        /* FIXME : how to close remote_sock */
         mme_event_send(&e);
     }
     else
@@ -146,7 +147,7 @@ int _s1ap_recv_cb(net_sock_t *net_sock, void *data)
         pkbuf->len = r;
 
         rv = s1ap_recv(net_sock, pkbuf);
-        if (rv == CORE_ERROR)
+        if (rv != CORE_OK)
         {
             pkbuf_free(pkbuf);
             d_error("s1_recv() failed");

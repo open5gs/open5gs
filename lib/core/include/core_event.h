@@ -64,7 +64,7 @@ CORE_DECLARE(status_t) event_delete(msgq_id queue_id);
  * @return If success, return the size to be sent.
  *         If else, return -1
  */
-CORE_DECLARE(int) event_send(msgq_id queue_id, event_t *e);
+CORE_DECLARE(status_t) event_send(msgq_id queue_id, event_t *e);
 
 /**
  * Receive a event from event queue with timeout
@@ -73,7 +73,7 @@ CORE_DECLARE(int) event_send(msgq_id queue_id, event_t *e);
  *         If timout occurs, return CORE_TIMEUP.
  *         If else, return -1.
  */
-CORE_DECLARE(int) event_timedrecv(
+CORE_DECLARE(status_t) event_timedrecv(
         msgq_id queue_id, event_t *e, c_time_t timeout);
 
 /**

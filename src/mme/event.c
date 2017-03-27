@@ -49,24 +49,6 @@ char* mme_event_get_name(event_t *e)
     return EVT_NAME_UNKNOWN;
 }
 
-status_t mme_event_send(event_t *e)
-{
-#if 0 /* FIXME */
-    int rc = event_send(mme_self()->queue_id, e);
-    if (rc < 0)
-    {
-        d_error("mme_event_send error:%d\n", rc);
-        return CORE_ERROR;
-    }
-
-    return CORE_OK;
-#else
-    event_send(mme_self()->queue_id, e);
-
-    return CORE_OK;
-#endif
-}
-
 void mme_event_s1ap_to_nas(ue_ctx_t *ue, S1ap_NAS_PDU_t *nasPdu)
 {
     pkbuf_t *sendbuf = NULL;

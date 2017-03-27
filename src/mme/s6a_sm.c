@@ -215,8 +215,12 @@ static void s6a_aia_cb(void *data, struct msg **msg)
     event_set(&e, EVT_MSG_UE_EMM);
     event_set_param1(&e, (c_uintptr_t)ue);
     event_set_param2(&e, (c_uintptr_t)sendbuf);
-
-    mme_event_send(&e);
+    if (mme_event_send(&e) != CORE_OK)
+    {
+        d_error("mme_event_send failed");
+        pkbuf_free(sendbuf);
+        error++;
+    }
 out:
     /* Free the message */
     d_assert(pthread_mutex_lock(&s6a_config->stats_lock) == 0,,);

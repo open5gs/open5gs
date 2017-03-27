@@ -34,55 +34,57 @@ status_t event_delete(msgq_id queue_id)
     return CORE_OK;
 }
 
-int event_send(msgq_id queue_id, event_t *e)
+status_t event_send(msgq_id queue_id, event_t *e)
 {
-    int r = 0;
+    status_t rv;
 
     d_assert(e, return -1, "Null param");
     d_assert(queue_id, return -1, "event queue isn't initialized");
 
-    r = msgq_send(queue_id, (const char*)e, EVENT_SIZE);
-    if (r != EVENT_SIZE)
+    rv = msgq_send(queue_id, (const char*)e, EVENT_SIZE);
+    if (rv == CORE_EAGAIN)
     {
-        d_warn("msgq_send() failed");
-        return -1;
+        d_warn("msgq_send full");
+    } 
+    else if (rv == CORE_ERROR)
+    {
+        d_error("msgq_send failed");
     }
 
-    return r;
+    return rv;
 }
 
-int event_timedrecv(msgq_id queue_id, event_t *e, c_time_t timeout)
+status_t event_timedrecv(msgq_id queue_id, event_t *e, c_time_t timeout)
 {
-    int r;
+    status_t rv;
 
     d_assert(e, return -1, "Null param");
     d_assert(queue_id, return -1, "event queue isn't initialized");
 
-    r = msgq_timedrecv(queue_id, (char*)e, EVENT_SIZE, timeout);
-    if (r != CORE_TIMEUP && r != EVENT_SIZE)
+    rv = msgq_timedrecv(queue_id, (char*)e, EVENT_SIZE, timeout);
+    if (rv == CORE_ERROR)
     {
-        d_warn("msgq_timedrecv() failed");
-        return -1;
+        d_error("msgq_timedrecv failed", rv);
     }
 
-    return r;
+    return rv;
 }
 
 void* event_timer_expire_func(
         c_uintptr_t queue_id, c_uintptr_t event, c_uintptr_t param)
 {
     event_t e;
-    int r;
+    status_t rv;
 
     d_assert(queue_id, return NULL, "Null param");
     event_set(&e, event);
     event_set_param1(&e, param);
 
-    r = msgq_send(queue_id, (const char*)&e, EVENT_SIZE);
-    if (r <= 0)
+    rv = event_send(queue_id, &e);
+    if (rv != CORE_OK)
     {
-        d_warn("msgq_send() failed");
-    }
+        d_error("event_send error:%d", rv);
+    } 
 
     return NULL;
 }

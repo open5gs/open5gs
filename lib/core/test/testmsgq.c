@@ -141,10 +141,10 @@ static void msgq_test3(abts_case *tc, void *data)
         for (i = 0; i < 16; i++)
         {
             n = msgq_send(md, msg[i], 24);
-            ABTS_INT_EQUAL(tc, 24, n);
+            ABTS_INT_EQUAL(tc, CORE_OK, n);
 
             n = msgq_recv(md, rmsg[i], 24);
-            ABTS_INT_EQUAL(tc, 24, n);
+            ABTS_INT_EQUAL(tc, CORE_OK, n);
 
             n = memcmp(msg[i], rmsg[i], 24);
             ABTS_INT_EQUAL(tc, 0, n);
@@ -179,7 +179,7 @@ static void *THREAD_FUNC producer_main(thread_id id, void *data)
 {
     test_param_t *param = (test_param_t *)data;
     abts_case *tc = param->tc;
-    int r;
+    status_t rv;
     int i = 0;
     unsigned int full = 0;
 
@@ -191,14 +191,14 @@ static void *THREAD_FUNC producer_main(thread_id id, void *data)
         te.b = i+2;
         te.c[28] = 'X';
         te.c[29] = 'Y';
-        r = msgq_send(md, (char*)&te, TEST_EVT_SIZE);
-        if (r == CORE_EAGAIN)
+        rv = msgq_send(md, (char*)&te, TEST_EVT_SIZE);
+        if (rv == CORE_EAGAIN)
         {
             full++;
             thread_yield();
             continue;
         }
-        ABTS_ASSERT(tc, "producer error", r == TEST_EVT_SIZE);
+        ABTS_ASSERT(tc, "producer error", rv == CORE_OK);
     }
     thread_exit(id, exit_ret_val);
 
@@ -209,7 +209,7 @@ static void *THREAD_FUNC consumer_main(thread_id id, void *data)
 {
     test_param_t *param = (test_param_t *)data;
     abts_case *tc = param->tc;
-    int r;
+    status_t rv;
     int i = 0;
 
     while (!thread_should_stop())
@@ -220,15 +220,15 @@ static void *THREAD_FUNC consumer_main(thread_id id, void *data)
             pthread_testcancel();
 
         if (param->timed)
-            r = msgq_timedrecv(md, (char*)&te, TEST_EVT_SIZE, 10000);
+            rv = msgq_timedrecv(md, (char*)&te, TEST_EVT_SIZE, 10000);
         else
-            r = msgq_recv(md, (char*)&te, TEST_EVT_SIZE);
-        if (r == CORE_EAGAIN || r == CORE_TIMEUP)
+            rv = msgq_recv(md, (char*)&te, TEST_EVT_SIZE);
+        if (rv == CORE_EAGAIN || rv == CORE_TIMEUP)
         {
             thread_yield();
             continue;
         }
-        ABTS_ASSERT(tc, "consumer error", r == TEST_EVT_SIZE);
+        ABTS_ASSERT(tc, "consumer error", rv == CORE_OK);
         ABTS_ASSERT(tc, "consumer error", te.c[28] == 'X' && te.c[29] == 'Y');
         i++;
     }
