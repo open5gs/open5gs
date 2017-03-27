@@ -10,9 +10,9 @@ extern "C" {
 CORE_DECLARE(status_t) sgw_path_open();
 CORE_DECLARE(status_t) sgw_path_close();
 
-CORE_DECLARE(status_t) sgw_path_send_to_s11(pkbuf_t *pkbuf);
-CORE_DECLARE(status_t) sgw_path_send_to_s5c(pkbuf_t *pkbuf);
-CORE_DECLARE(status_t) sgw_path_send_to_s5u(pkbuf_t *pkbuf);
+CORE_DECLARE(status_t) sgw_s11_send_to_mme(pkbuf_t *pkbuf);
+CORE_DECLARE(status_t) sgw_s5c_send_to_pgw(pkbuf_t *pkbuf);
+CORE_DECLARE(status_t) sgw_s5u_send_to_pgw(pkbuf_t *pkbuf);
 
 #ifdef __cplusplus
 }

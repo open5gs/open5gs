@@ -12,9 +12,8 @@ extern "C" {
 #define GTPV2_C_UDP_PORT                2123
 #define GTPV1_U_UDP_PORT                2152
 
-#define GTP_COMPARE_REMOTE_NODE(__id1, __id2) \
-    (((__id1)->remote_addr) == ((__id2)->remote_addr) && \
-     ((__id1)->remote_port) == ((__id2)->remote_port))
+#define GTP_COMPARE_NODE(__id1, __id2) \
+    (((__id1)->addr) == ((__id2)->addr) && ((__id1)->port) == ((__id2)->port))
 
 /**
  * This structure keeps active transactions and their histrory */
@@ -29,23 +28,23 @@ typedef struct _gtp_xact_info_t {
 typedef struct _gtp_node_t {
     lnode_t         node;           /**< A node of list_t */
 
-    c_uint32_t      local_addr;     /**< Network byte order IP Address */
-    c_uint16_t      local_port;     /**< Host byte order Port number */
-    c_uint32_t      remote_addr;    /**< Network byte order IP Address */
-    c_uint16_t      remote_port;    /**< Host byte order Port number */
+    c_uint32_t      addr;           /**< Network byte order IP Address */
+    c_uint16_t      port;           /**< Host byte order Port number */
+    net_sock_t      *sock;          /**< Network Socket */
 
     gtp_xact_info_t xi;             /**< Transaction information */
 
     net_sock_t      *s;             /**< Network socket */
 } gtp_node_t;
 
-CORE_DECLARE(status_t) gtp_open(
-        gtp_node_t *gnode, net_sock_handler handler);
-CORE_DECLARE(status_t) gtp_close(gtp_node_t *gnode);
+CORE_DECLARE(status_t) gtp_listen(net_sock_t **sock, 
+    net_sock_handler handler, c_uint32_t addr, c_uint16_t port, void *data);
+CORE_DECLARE(status_t) gtp_close(net_sock_t *sock);
 
-CORE_DECLARE(pkbuf_t *) gtp_read(gtp_node_t *gnode);
+CORE_DECLARE(pkbuf_t *) gtp_read(net_sock_t *sock);
 
-CORE_DECLARE(status_t) gtp_send(gtp_node_t *gnode, pkbuf_t *pkbuf);
+CORE_DECLARE(status_t) gtp_send(net_sock_t *sock, 
+    gtp_node_t *gnode, pkbuf_t *pkbuf);
 
 #ifdef __cplusplus
 }

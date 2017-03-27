@@ -35,9 +35,13 @@ typedef struct _served_gummei {
 } srvd_gummei_t;
 
 typedef struct _mme_ctx_t {
-    c_uint32_t      s1ap_addr;
-    c_uint16_t      s1ap_port;
-    net_sock_t      *s1ap_sock;
+    c_uint32_t      s1ap_addr;  /* MME S1AP local address */
+    c_uint16_t      s1ap_port;  /* MME S1AP local port */
+    net_sock_t      *s1ap_sock; /* MME S1AP local listen socket */
+
+    c_uint32_t      s11_addr;   /* MME S11 local address */
+    c_uint16_t      s11_port;   /* MME S11 local port */
+    net_sock_t      *s11_sock;  /* MME S11 local listen socket */
 
     msgq_id         queue_id;
     tm_service_t    tm_service;
@@ -68,7 +72,7 @@ typedef struct _mme_ctx_t {
 } mme_ctx_t;
 
 typedef struct _sgw_ctx_t {
-    gtp_node_t      gnode;
+    gtp_node_t      gnode; /* SGW S11 remote GTPv2-C node */
 
 } sgw_ctx_t;
 

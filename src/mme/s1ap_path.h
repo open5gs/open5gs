@@ -10,7 +10,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-CORE_DECLARE(status_t) s1ap_open();
+CORE_DECLARE(status_t) s1ap_listen();
 CORE_DECLARE(status_t) s1ap_close();
 
 CORE_DECLARE(status_t) s1ap_send(net_sock_t *s, pkbuf_t *pkb);

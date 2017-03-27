@@ -51,6 +51,12 @@ status_t mme_ctx_init()
     self.s1ap_addr = inet_addr("127.0.0.1");
     self.s1ap_port = S1AP_SCTP_PORT;
 
+    sgw_ctx_t *sgw = mme_ctx_sgw_add();
+    d_assert(sgw, return CORE_ERROR, "Can't add SGW context");
+
+    sgw->gnode.addr = inet_addr("127.0.0.1");
+    sgw->gnode.port = GTPV2_C_UDP_PORT+1;
+
     /* MCC : 001, MNC : 01 */
     plmn_id_build(&self.plmn_id, 1, 1, 2); 
     self.tracking_area_code = 12345;
@@ -79,6 +85,7 @@ status_t mme_ctx_final()
     d_assert(ctx_initialized == 1, return CORE_ERROR,
             "HyperCell context already has been finalized");
 
+    mme_ctx_sgw_remove_all();
     mme_ctx_enb_remove_all();
 
     pool_final(&sgw_pool);
@@ -144,7 +151,7 @@ sgw_ctx_t* mme_ctx_sgw_find_by_node(gtp_node_t *gnode)
     sgw = mme_ctx_sgw_first();
     while (sgw)
     {
-        if (GTP_COMPARE_REMOTE_NODE(&sgw->gnode, gnode))
+        if (GTP_COMPARE_NODE(&sgw->gnode, gnode))
             break;
 
         sgw = mme_ctx_sgw_next(sgw);

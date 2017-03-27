@@ -14,9 +14,20 @@ extern "C" {
 #endif /* __cplusplus */
 
 typedef struct _sgw_ctx_t {
-    gtp_node_t      s11_node;
-    gtp_node_t      s5c_node;
-    gtp_node_t      s5u_node;
+    c_uint32_t      s11_addr;  /* SGW S11 local address */
+    c_uint32_t      s11_port;  /* SGW S11 local port */
+    net_sock_t*     s11_sock;  /* SGW S11 local listen socket */
+    gtp_node_t      s11_node;  /* MME S11 remote GTPv2-C node */
+
+    c_uint32_t      s5c_addr;  /* SGW S5-C local address */
+    c_uint32_t      s5c_port;  /* SGW S5-C local port */
+    net_sock_t*     s5c_sock;  /* SGW S5-C local listen socket */
+    gtp_node_t      s5c_node;  /* PGW S5-C remote GTPv2-C node */
+
+    c_uint32_t      s5u_addr;  /* SGW S5-U local address */
+    c_uint32_t      s5u_port;  /* SGW S5-U local port */
+    net_sock_t*     s5u_sock;  /* SGW S5-U local listen socket */
+    gtp_node_t      s5u_node;  /* PGW S5-U remote GTPv1-U node */
 
     msgq_id         queue_id;
     tm_service_t    tm_service;

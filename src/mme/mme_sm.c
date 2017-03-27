@@ -35,24 +35,14 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
     {
         case FSM_ENTRY_SIG:
         {
-            /* FIXME: for test */
+            rv = mme_s11_listen();
+            if (rv != CORE_OK)
             {
-                event_t e;
-                sgw_ctx_t *sgw = mme_ctx_sgw_add();
-
-                d_assert(sgw, break, "Can't add SGW context");
-
-                sgw->gnode.local_addr = inet_addr("127.0.0.1");
-                sgw->gnode.local_port = GTPV2_C_UDP_PORT;
-                sgw->gnode.remote_addr = inet_addr("127.0.0.1");
-                sgw->gnode.remote_port = GTPV2_C_UDP_PORT+1;
-
-                event_set(&e, EVT_LO_MME_ENGAGE_SGW);
-                event_set_param1(&e, sgw);
-                mme_event_send(&e);
+                d_error("Can't establish S11 path");
+                break;
             }
 
-            rv = s1ap_open();
+            rv = s1ap_listen();
             if (rv != CORE_OK)
             {
                 d_error("Can't establish S1AP path");
@@ -62,11 +52,11 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
         }
         case FSM_EXIT_SIG:
         {
-            sgw_ctx_t *sgw = mme_ctx_sgw_first();
-            while(sgw)
+            rv = mme_s11_close();
+            if (rv != CORE_OK)
             {
-                mme_s11_close(sgw);
-                sgw = mme_ctx_sgw_next(sgw);
+                d_error("Can't close S11 path");
+                break;
             }
 
             rv = s1ap_close();
@@ -76,14 +66,6 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
                 break;
             }
 
-            break;
-        }
-        case EVT_LO_MME_ENGAGE_SGW:
-        {
-            sgw_ctx_t *sgw = (sgw_ctx_t *)event_get_param1(e);
-            d_assert(sgw, break, "LO_MME_ENGAGE_SGW has no BS context");
-
-            mme_s11_open(sgw);
             break;
         }
         case EVT_LO_ENB_S1AP_ACCEPT:
