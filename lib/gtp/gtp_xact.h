@@ -12,7 +12,17 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define GTP_MAX_MESSAGE_TYPE 256
+/**
+ * Transaction Configuration
+ */
+typedef struct _gtp_xact_config_t {
+    c_uint32_t g_xact_id;
+
+    tm_service_t *tm_service;
+    c_uintptr_t event;
+    c_uint32_t duration;
+    int retry_count;
+} gtp_xact_config_t;
 
 /**
  * Transaction context
@@ -26,8 +36,10 @@ typedef struct _gtp_xact_ctx_t {
 #define GTP_REMOTE_ORIGINATOR 1
     c_uint8_t       org;            /**< Transaction' originator. 
                                          local or remote */
-    gtp_node_t      *gnode;         /**< RElevant GTP node context */
-    void            *xctx;          /**< Relevant context */
+    c_uint8_t       type;           /**< GTPv2-C Message Type */
+    net_sock_t      *sock;          /**< GTP Socket */
+    gtp_node_t      *gnode;         /**< Relevant GTP node context */
+    pkbuf_t         *pkbuf;         /**< Relevant GTP node context */
     tm_block_id     tm_wait;        /**< Timer waiting for next message */
     int             retry_count;    /**< Retry count waiting for next message */
 
@@ -46,13 +58,15 @@ CORE_DECLARE(status_t) gtp_xact_final(void);
 /**
  * Create a new transaction which was initiated by local ASN node.
  */
-CORE_DECLARE(status_t) gtp_xact_new_local(gtp_xact_ctx_t **xact, c_uint8_t type,
-    pkbuf_t *pkb, gtp_node_t *gnode);
+CORE_DECLARE(status_t) gtp_xact_new_local(gtp_xact_config_t *config, 
+    gtp_xact_ctx_t **xact, c_uint8_t type, net_sock_t *sock, 
+    gtp_node_t *gnode, pkbuf_t *pkbuf);
 
 /**
  * Create a new transaction which was initiated by remote node
  */
-CORE_DECLARE(status_t) gtp_xact_new_remote(gtp_xact_ctx_t **xact);
+CORE_DECLARE(status_t) gtp_xact_new_remote(gtp_xact_config_t *config, 
+    gtp_xact_ctx_t **xact, net_sock_t *sock, gtp_node_t *gnode, pkbuf_t *pkbuf);
 
 /**
  * Delete a transaction
@@ -77,7 +91,7 @@ CORE_DECLARE(status_t) gtp_xact_commit(gtp_xact_ctx_t *xact);
 /**
  * Find the transaction with the given ASN header
  */
-CORE_DECLARE(gtp_xact_ctx_t *) gtp_xact_find();
+CORE_DECLARE(gtp_xact_ctx_t *) gtp_xact_find(gtp_node_t *gnode, pkbuf_t *pkbuf);
 
 #ifdef __cplusplus
 }

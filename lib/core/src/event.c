@@ -94,9 +94,6 @@ tm_block_id event_timer_create(tm_service_t *tm_service, tm_type_e type,
 {
     tm_block_id id;
 
-    d_assert(type == TIMER_TYPE_ONE_SHOT || type == TIMER_TYPE_PERIODIC,
-            return 0, "param 'type' is invalid");
-
     id = tm_create(tm_service);
     d_assert(id, return 0, "tm_create() failed");
 
@@ -104,13 +101,4 @@ tm_block_id event_timer_create(tm_service_t *tm_service, tm_type_e type,
             event, param, 0);
 
     return id;
-}
-
-status_t event_timer_delete(tm_block_id id)
-{
-    d_assert(id, return CORE_ERROR, "param 'id' is zero");
-
-    tm_delete(id);
-
-    return CORE_OK;
 }

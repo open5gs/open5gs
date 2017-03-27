@@ -29,6 +29,14 @@ extern "C" {
 #define event_get_param3(__ptr_e) ((__ptr_e)->param3)
 #define event_get_param4(__ptr_e) ((__ptr_e)->param4)
 
+#define event_timer(__tm_service, __ptr_e, __duration, __param) \
+    event_timer_create((__tm_service), TIMER_TYPE_ONE_SHOT, \
+            (__duration), (__ptr_e), (__param))
+
+#define event_timer_periodic(__tm_service, __ptr_e, __duration, __param) \
+    event_timer_create((__tm_service), TIMER_TYPE_PERIODIC, \
+            (__duration), (__ptr_e), (__param))
+
 typedef struct {
     fsm_event_t event;
     c_uintptr_t param1;
@@ -84,13 +92,6 @@ CORE_DECLARE(status_t) event_timedrecv(
 CORE_DECLARE(tm_block_id) event_timer_create(
         tm_service_t *tm_service, tm_type_e type, c_uint32_t duration, 
         c_uintptr_t event, c_uintptr_t param);
-
-/**
- * Delete a timer
- */
-CORE_DECLARE(status_t) event_timer_delete(tm_block_id id);
-
-char* event_get_name(event_t *e);
 
 #ifdef __cplusplus
 }

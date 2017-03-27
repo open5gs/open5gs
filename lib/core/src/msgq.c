@@ -17,11 +17,13 @@ typedef struct _msq_desc_t {
     unsigned char *pool;
 } msg_desc_t;
 
-pool_declare(msgqpool, msg_desc_t, 4);
+#define SIZE_OF_MSGQ_POOL 5 /* MME 1, SGW 2, PGW 2 */
+
+pool_declare(msgqpool, msg_desc_t, SIZE_OF_MSGQ_POOL);
 
 status_t msgq_init(void)
 {
-    pool_init(&msgqpool, 4);
+    pool_init(&msgqpool, SIZE_OF_MSGQ_POOL);
     return CORE_OK;
 }
 

@@ -16,13 +16,6 @@ extern "C" {
     (((__id1)->addr) == ((__id2)->addr) && ((__id1)->port) == ((__id2)->port))
 
 /**
- * This structure keeps active transactions and their histrory */
-typedef struct _gtp_xact_info_t {
-    list_t      local_xlist; /**< List of local initiated transactions */
-    list_t      remote_xlist; /**< List of Remote initiated transactions */
-} gtp_xact_info_t;
-
-/**
  * This structure represents the commonalities of GTP node such as MME, SGW,
  * PGW gateway. Some of members may not be used by the specific type of node */
 typedef struct _gtp_node_t {
@@ -30,11 +23,11 @@ typedef struct _gtp_node_t {
 
     c_uint32_t      addr;           /**< Network byte order IP Address */
     c_uint16_t      port;           /**< Host byte order Port number */
-    net_sock_t      *sock;          /**< Network Socket */
 
-    gtp_xact_info_t xi;             /**< Transaction information */
-
-    net_sock_t      *s;             /**< Network socket */
+    /**< List of local initiated transactions */
+    list_t          local_xlist;    
+    /**< List of Remote initiated transactions */
+    list_t          remote_xlist;   
 } gtp_node_t;
 
 CORE_DECLARE(status_t) gtp_listen(net_sock_t **sock, 
