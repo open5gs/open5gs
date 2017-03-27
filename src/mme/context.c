@@ -288,6 +288,17 @@ status_t mme_ctx_ue_remove(ue_ctx_t *ue)
 
     mme_ctx_rab_remove_all(ue);
 
+    if (FSM_STATE(&ue->emm_sm))
+    {
+        fsm_final((fsm_t*)&ue->emm_sm, 0);
+        fsm_clear((fsm_t*)&ue->emm_sm);
+    }
+    if (FSM_STATE(&ue->esm_sm))
+    {
+        fsm_final((fsm_t*)&ue->esm_sm, 0);
+        fsm_clear((fsm_t*)&ue->esm_sm);
+    }
+
     list_remove(&ue->enb->ue_list, ue);
     pool_free_node(&ue_pool, ue);
 

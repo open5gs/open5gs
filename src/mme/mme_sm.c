@@ -89,7 +89,7 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
                 enb->s1ap_sock = sock;
 
                 fsm_create((fsm_t*)&enb->s1ap_sm, 
-                        enb_s1ap_state_initial, enb_s1ap_state_final);
+                        s1ap_state_initial, s1ap_state_final);
                 enb->s1ap_sm.ctx = enb;
                 fsm_init((fsm_t*)&enb->s1ap_sm, 0);
             }
@@ -129,6 +129,16 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
 
             d_assert(FSM_STATE(&ue->emm_sm), break, "Null param");
             fsm_dispatch((fsm_t*)&ue->emm_sm, (fsm_event_t*)e);
+
+            break;
+        }
+        case EVT_MSG_UE_ESM:
+        {
+            ue_ctx_t *ue = (ue_ctx_t *)event_get_param1(e);
+            d_assert(ue, break, "Null param");
+
+            d_assert(FSM_STATE(&ue->esm_sm), break, "Null param");
+            fsm_dispatch((fsm_t*)&ue->esm_sm, (fsm_event_t*)e);
 
             break;
         }

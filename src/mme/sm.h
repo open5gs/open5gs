@@ -19,25 +19,45 @@ void mme_state_final(mme_sm_t *s, event_t *e);
 void mme_state_operational(mme_sm_t *s, event_t *e);
 void mme_state_exception(mme_sm_t *s, event_t *e);
 
-typedef struct _enb_s1ap_sm_t {
+typedef struct _s1ap_sm_t {
     fsm_t fsm;
     void *ctx;
-} enb_s1ap_sm_t;
+} s1ap_sm_t;
 
-void enb_s1ap_state_initial(enb_s1ap_sm_t *s, event_t *e);
-void enb_s1ap_state_final(enb_s1ap_sm_t *s, event_t *e);
-void enb_s1ap_state_operational(enb_s1ap_sm_t *s, event_t *e);
-void enb_s1ap_state_exception(enb_s1ap_sm_t *s, event_t *e);
+void s1ap_state_initial(s1ap_sm_t *s, event_t *e);
+void s1ap_state_final(s1ap_sm_t *s, event_t *e);
+void s1ap_state_operational(s1ap_sm_t *s, event_t *e);
+void s1ap_state_exception(s1ap_sm_t *s, event_t *e);
 
-typedef struct _ue_emm_sm_t {
+typedef struct _emm_sm_t {
     fsm_t fsm;
     void *ctx;
-} ue_emm_sm_t;
+} emm_sm_t;
 
-void ue_emm_state_initial(ue_emm_sm_t *s, event_t *e);
-void ue_emm_state_final(ue_emm_sm_t *s, event_t *e);
-void ue_emm_state_operational(ue_emm_sm_t *s, event_t *e);
-void ue_emm_state_exception(ue_emm_sm_t *s, event_t *e);
+void emm_state_initial(emm_sm_t *s, event_t *e);
+void emm_state_final(emm_sm_t *s, event_t *e);
+void emm_state_operational(emm_sm_t *s, event_t *e);
+void emm_state_exception(emm_sm_t *s, event_t *e);
+
+typedef struct _esm_sm_t {
+    fsm_t fsm;
+    void *ctx;
+} esm_sm_t;
+
+void esm_state_initial(esm_sm_t *s, event_t *e);
+void esm_state_final(esm_sm_t *s, event_t *e);
+void esm_state_operational(esm_sm_t *s, event_t *e);
+void esm_state_exception(esm_sm_t *s, event_t *e);
+
+typedef struct _s11_sm_t {
+    fsm_t fsm;
+    void *ctx;
+} s11_sm_t;
+
+void s11_state_initial(s11_sm_t *s, event_t *e);
+void s11_state_final(s11_sm_t *s, event_t *e);
+void s11_state_operational(s11_sm_t *s, event_t *e);
+void s11_state_exception(s11_sm_t *s, event_t *e);
 
 #define mme_sm_print(__pe) \
     d_print("%s(): %s\n", __func__, mme_event_get_name(__pe))

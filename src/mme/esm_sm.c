@@ -1,4 +1,4 @@
-#define TRACE_MODULE _ue_emm_sm
+#define TRACE_MODULE _esm_sm
 
 #include "core_debug.h"
 
@@ -8,23 +8,23 @@
 #include "nas_security.h"
 #include "emm_handler.h"
 
-void ue_emm_state_initial(ue_emm_sm_t *s, event_t *e)
+void esm_state_initial(esm_sm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
 
     mme_sm_trace(1, e);
 
-    FSM_TRAN(s, &ue_emm_state_operational);
+    FSM_TRAN(s, &esm_state_operational);
 }
 
-void ue_emm_state_final(ue_emm_sm_t *s, event_t *e)
+void esm_state_final(esm_sm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
 
     mme_sm_trace(1, e);
 }
 
-void ue_emm_state_operational(ue_emm_sm_t *s, event_t *e)
+void esm_state_operational(esm_sm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
     d_assert(e, return, "Null param");
@@ -60,33 +60,8 @@ void ue_emm_state_operational(ue_emm_sm_t *s, event_t *e)
 
             switch(message.h.message_type)
             {
-                case NAS_ATTACH_REQUEST:
+                case NAS_PDN_CONNECTIVITY_REQUEST:
                 {
-                    emm_handle_attach_request(
-                            ue, &message.attach_request);
-                    break;
-                }
-                case NAS_AUTHENTICATION_REQUEST:
-                {
-                    pkbuf_t *pkbuf = pkbuf_copy(recvbuf);
-                    mme_event_nas_to_s1ap(ue, pkbuf);
-
-                    d_assert(ue->imsi, return,);
-                    d_info("[NAS] Authentication request : UE[%s] <-- EMM",
-                            ue->imsi);
-                    break;
-                }
-                case NAS_AUTHENTICATION_RESPONSE:
-                {
-                    emm_handle_authentication_response(
-                            ue, &message.authentication_response);
-                    break;
-                }
-                case NAS_SECURITY_MODE_COMPLETE:
-                {
-                    d_assert(ue->imsi, return,);
-                    d_info("[NAS] Security mode complete : UE[%s] --> EMM",
-                            ue->imsi);
                     break;
                 }
                 default:
@@ -108,7 +83,7 @@ void ue_emm_state_operational(ue_emm_sm_t *s, event_t *e)
     }
 }
 
-void ue_emm_state_exception(ue_emm_sm_t *s, event_t *e)
+void esm_state_exception(esm_sm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
     d_assert(e, return, "Null param");

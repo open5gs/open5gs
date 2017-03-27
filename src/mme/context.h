@@ -81,7 +81,7 @@ typedef struct _enb_ctx_t {
 
     c_uint32_t      enb_id; /** eNB_ID received from eNB */
 
-    enb_s1ap_sm_t   s1ap_sm;
+    s1ap_sm_t       s1ap_sm;
     net_sock_t      *s1ap_sock;
 
     ue_list_t       ue_list;
@@ -92,7 +92,8 @@ typedef struct _ue_ctx_t {
     lnode_t         node; /**< A node of list_t */
 
     /* State Machine */
-    ue_emm_sm_t     emm_sm;
+    emm_sm_t        emm_sm;
+    esm_sm_t        esm_sm;
 
     /* UE identity */
     c_uint32_t      enb_ue_s1ap_id; /** eNB-UE-S1AP-ID received from eNB */

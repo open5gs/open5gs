@@ -1,4 +1,4 @@
-#define TRACE_MODULE _enb_s1_sm
+#define TRACE_MODULE _s1ap_sm
 
 #include "core_debug.h"
 
@@ -7,23 +7,23 @@
 #include "s1ap_build.h"
 #include "s1ap_handler.h"
 
-void enb_s1ap_state_initial(enb_s1ap_sm_t *s, event_t *e)
+void s1ap_state_initial(s1ap_sm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
 
     mme_sm_trace(1, e);
 
-    FSM_TRAN(s, &enb_s1ap_state_operational);
+    FSM_TRAN(s, &s1ap_state_operational);
 }
 
-void enb_s1ap_state_final(enb_s1ap_sm_t *s, event_t *e)
+void s1ap_state_final(s1ap_sm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
 
     mme_sm_trace(1, e);
 }
 
-void enb_s1ap_state_operational(enb_s1ap_sm_t *s, event_t *e)
+void s1ap_state_operational(s1ap_sm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
     d_assert(e, return, "Null param");
@@ -123,7 +123,7 @@ void enb_s1ap_state_operational(enb_s1ap_sm_t *s, event_t *e)
     }
 }
 
-void enb_s1ap_state_exception(enb_s1ap_sm_t *s, event_t *e)
+void s1ap_state_exception(s1ap_sm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
     d_assert(e, return, "Null param");

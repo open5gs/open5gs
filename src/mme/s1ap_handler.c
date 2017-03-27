@@ -90,10 +90,14 @@ void s1ap_handle_initial_ue_message(enb_ctx_t *enb, s1ap_message_t *message)
         enb->enb_id);
 
     fsm_create((fsm_t*)&ue->emm_sm, 
-            ue_emm_state_initial, ue_emm_state_final);
+            emm_state_initial, emm_state_final);
     ue->emm_sm.ctx = ue;
-
     fsm_init((fsm_t*)&ue->emm_sm, 0);
+
+    fsm_create((fsm_t*)&ue->esm_sm, 
+            esm_state_initial, esm_state_final);
+    ue->esm_sm.ctx = ue;
+    fsm_init((fsm_t*)&ue->esm_sm, 0);
 
     mme_event_s1ap_to_nas(ue, &ies->nas_pdu);
 }
