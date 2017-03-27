@@ -99,6 +99,15 @@ void s1ap_handle_initial_ue_message(enb_ctx_t *enb, s1ap_message_t *message)
     ue->esm_sm.ctx = ue;
     fsm_init((fsm_t*)&ue->esm_sm, 0);
 
+    /* FIXME */
+    {
+        erab_ctx_t *erab = mme_ctx_erab_add(ue);
+        d_assert(erab, return, "Null param");
+        fsm_create((fsm_t*)&erab->s11_sm, 
+                esm_state_initial, esm_state_final);
+        erab->s11_sm.ctx = erab;
+        fsm_init((fsm_t*)&erab->s11_sm, 0);
+    }
     mme_event_s1ap_to_nas(ue, &ies->nas_pdu);
 }
 

@@ -11,12 +11,12 @@
 
 #define CELL_PER_ENB                8
 #define UE_PER_ENB                  128
-#define RAB_PER_UE                  16
+#define ERAB_PER_UE                 16
 
 #define SIZE_OF_SGW_POOL            8
 #define SIZE_OF_ENB_POOL            128
 #define SIZE_OF_UE_POOL             (SIZE_OF_ENB_POOL * UE_PER_ENB)
-#define SIZE_OF_RAB_POOL            (SIZE_OF_UE_POOL * RAB_PER_UE)
+#define SIZE_OF_ERAB_POOL           (SIZE_OF_UE_POOL * ERAB_PER_UE)
 
 #define S1AP_SCTP_PORT              36412
 
@@ -25,7 +25,7 @@ static mme_ctx_t self;
 pool_declare(sgw_pool, sgw_ctx_t, SIZE_OF_SGW_POOL);
 pool_declare(enb_pool, enb_ctx_t, SIZE_OF_ENB_POOL);
 pool_declare(ue_pool, ue_ctx_t, SIZE_OF_UE_POOL);
-pool_declare(rab_pool, rab_ctx_t, SIZE_OF_RAB_POOL);
+pool_declare(erab_pool, erab_ctx_t, SIZE_OF_ERAB_POOL);
 
 static int ctx_initialized = 0;
 
@@ -40,7 +40,7 @@ status_t mme_ctx_init()
     pool_init(&sgw_pool, SIZE_OF_SGW_POOL);
     pool_init(&enb_pool, SIZE_OF_ENB_POOL);
     pool_init(&ue_pool, SIZE_OF_UE_POOL);
-    pool_init(&rab_pool, SIZE_OF_RAB_POOL);
+    pool_init(&erab_pool, SIZE_OF_ERAB_POOL);
 
     list_init(&sgw_list);
     list_init(&enb_list);
@@ -91,7 +91,7 @@ status_t mme_ctx_final()
     pool_final(&sgw_pool);
     pool_final(&enb_pool);
     pool_final(&ue_pool);
-    pool_final(&rab_pool);
+    pool_final(&erab_pool);
 
     ctx_initialized = 0;
 
@@ -269,7 +269,7 @@ ue_ctx_t* mme_ctx_ue_add(enb_ctx_t *enb)
     memset(ue, 0, sizeof(ue_ctx_t));
 
     ue->enb = enb;
-    list_init(&ue->rab_list);
+    list_init(&ue->erab_list);
 
     if (self.mme_ue_s1ap_id == 0) self.mme_ue_s1ap_id = 1;
     ue->mme_ue_s1ap_id = self.mme_ue_s1ap_id;
@@ -286,7 +286,7 @@ status_t mme_ctx_ue_remove(ue_ctx_t *ue)
     d_assert(ue, return CORE_ERROR, "Null param");
     d_assert(ue->enb, return CORE_ERROR, "Null param");
 
-    mme_ctx_rab_remove_all(ue);
+    mme_ctx_erab_remove_all(ue);
 
     if (FSM_STATE(&ue->emm_sm))
     {
@@ -349,75 +349,96 @@ ue_ctx_t* mme_ctx_ue_next(ue_ctx_t *ue)
     return list_next(ue);
 }
 
-rab_ctx_t* mme_ctx_rab_add(ue_ctx_t *ue)
+erab_ctx_t* mme_ctx_erab_add(ue_ctx_t *ue)
 {
-    rab_ctx_t *rab = NULL;
+    erab_ctx_t *erab = NULL;
 
     d_assert(ue, return NULL, "Null param");
 
-    pool_alloc_node(&rab_pool, &rab);
-    d_assert(rab, return NULL, "Null param");
+    pool_alloc_node(&erab_pool, &erab);
+    d_assert(erab, return NULL, "Null param");
 
-    memset(rab, 0, sizeof(rab_ctx_t));
+    memset(erab, 0, sizeof(erab_ctx_t));
 
-    rab->ue = ue;
+    erab->ue = ue;
 
-    list_append(&ue->rab_list, rab);
+    list_append(&ue->erab_list, erab);
     
-    return rab;
+    return erab;
 }
 
-status_t mme_ctx_rab_remove(rab_ctx_t *rab)
+status_t mme_ctx_erab_remove(erab_ctx_t *erab)
 {
-    d_assert(rab, return CORE_ERROR, "Null param");
-    d_assert(rab->ue, return CORE_ERROR, "Null param");
+    d_assert(erab, return CORE_ERROR, "Null param");
+    d_assert(erab->ue, return CORE_ERROR, "Null param");
 
-    list_remove(&rab->ue->rab_list, rab);
-    pool_free_node(&rab_pool, rab);
+    if (FSM_STATE(&erab->s11_sm))
+    {
+        fsm_final((fsm_t*)&erab->s11_sm, 0);
+        fsm_clear((fsm_t*)&erab->s11_sm);
+    }
+
+    list_remove(&erab->ue->erab_list, erab);
+    pool_free_node(&erab_pool, erab);
 
     return CORE_OK;
 }
 
-status_t mme_ctx_rab_remove_all(ue_ctx_t *ue)
+status_t mme_ctx_erab_remove_all(ue_ctx_t *ue)
 {
-    rab_ctx_t *rab = NULL, *next_rab = NULL;
+    erab_ctx_t *erab = NULL, *next_erab = NULL;
     
-    rab = mme_ctx_rab_first(ue);
-    while (rab)
+    erab = mme_ctx_erab_first(ue);
+    while (erab)
     {
-        next_rab = mme_ctx_rab_next(rab);
+        next_erab = mme_ctx_erab_next(erab);
 
-        mme_ctx_rab_remove(rab);
+        mme_ctx_erab_remove(erab);
 
-        rab = next_rab;
+        erab = next_erab;
     }
 
     return CORE_OK;
 }
 
-rab_ctx_t* mme_ctx_rab_find_by_e_rab_id(
-        ue_ctx_t *ue, c_uint32_t e_rab_id)
+erab_ctx_t* mme_ctx_erab_find_by_erab_id(ue_ctx_t *ue, c_uint32_t erab_id)
 {
-    rab_ctx_t *rab = NULL;
+    erab_ctx_t *erab = NULL;
     
-    rab = mme_ctx_rab_first(ue);
-    while (rab)
+    erab = mme_ctx_erab_first(ue);
+    while (erab)
     {
-        if (e_rab_id == rab->e_rab_id)
+        if (erab_id == erab->erab_id)
             break;
 
-        rab = mme_ctx_rab_next(rab);
+        erab = mme_ctx_erab_next(erab);
     }
 
-    return rab;
+    return erab;
 }
 
-rab_ctx_t* mme_ctx_rab_first(ue_ctx_t *ue)
+erab_ctx_t* mme_ctx_erab_find_by_teid(ue_ctx_t *ue, c_uint32_t teid)
 {
-    return list_first(&ue->rab_list);
+    erab_ctx_t *erab = NULL;
+    
+    erab = mme_ctx_erab_first(ue);
+    while (erab)
+    {
+        if (teid == erab->teid)
+            break;
+
+        erab = mme_ctx_erab_next(erab);
+    }
+
+    return erab;
 }
 
-rab_ctx_t* mme_ctx_rab_next(rab_ctx_t *rab)
+erab_ctx_t* mme_ctx_erab_first(ue_ctx_t *ue)
 {
-    return list_next(rab);
+    return list_first(&ue->erab_list);
+}
+
+erab_ctx_t* mme_ctx_erab_next(erab_ctx_t *erab)
+{
+    return list_next(erab);
 }

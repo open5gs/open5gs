@@ -25,7 +25,7 @@ void s11_state_operational(s11_sm_t *s, event_t *e)
     d_assert(s, return, "Null param");
     d_assert(e, return, "Null param");
 
-    ue_ctx_t *ue = s->ctx;
+    erab_ctx_t *ue = s->ctx;
     d_assert(ue, return, "Null param");
 
     mme_sm_trace(1, e);

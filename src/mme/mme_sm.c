@@ -144,10 +144,11 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
         }
         case EVT_MSG_MME_S11:
         {
-            net_sock_t *sock = (net_sock_t *)event_get_param1(e);
-            d_assert(sock, break, "Null param");
+            erab_ctx_t *erab = (erab_ctx_t *)event_get_param1(e);
+            d_assert(erab, break, "Null param");
 
-            d_info("EVT_MSG_MME_S11 received");
+            d_assert(FSM_STATE(&erab->s11_sm), break, "Null param");
+            fsm_dispatch((fsm_t*)&erab->s11_sm, (fsm_event_t*)e);
             break;
         }
         case EVT_LO_ENB_S1AP_CONNREFUSED:
