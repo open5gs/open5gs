@@ -31,11 +31,6 @@ status_t mutex_create(mutex_id *id, unsigned int flags)
 
     if (flags & MUTEX_NESTED)
     {
-        return CORE_ENOTIMPL;
-    }
-
-    if (flags & MUTEX_NESTED)
-    {
         pthread_mutexattr_t mattr;
 
         rv = pthread_mutexattr_init(&mattr);
