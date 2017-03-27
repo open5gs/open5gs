@@ -144,11 +144,11 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
         }
         case EVT_MSG_MME_S11:
         {
-            erab_ctx_t *erab = (erab_ctx_t *)event_get_param1(e);
-            d_assert(erab, break, "Null param");
+            s11_ctx_t *s11 = (s11_ctx_t *)event_get_param1(e);
+            d_assert(s11, break, "Null param");
 
-            d_assert(FSM_STATE(&erab->s11_sm), break, "Null param");
-            fsm_dispatch((fsm_t*)&erab->s11_sm, (fsm_event_t*)e);
+            d_assert(FSM_STATE(&s11->s11_sm), break, "Null param");
+            fsm_dispatch((fsm_t*)&s11->s11_sm, (fsm_event_t*)e);
             break;
         }
         case EVT_LO_ENB_S1AP_CONNREFUSED:

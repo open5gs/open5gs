@@ -34,10 +34,42 @@ typedef struct _sgw_ctx_t {
 
 } sgw_ctx_t;
 
+typedef struct _s11_ctx_t {
+    lnode_t         node; /**< A node of list_t */
+
+    /* State Machine */
+    s11_sm_t        s11_sm;
+
+    c_uint32_t      teid;
+} s11_ctx_t;
+
+typedef struct _s5c_ctx_t {
+    lnode_t         node; /**< A node of list_t */
+
+    /* State Machine */
+    s5c_sm_t        s5c_sm;
+
+    c_uint32_t      teid;
+} s5c_ctx_t;
+
 CORE_DECLARE(status_t)      sgw_ctx_init(void);
 CORE_DECLARE(status_t)      sgw_ctx_final(void);
 
 CORE_DECLARE(sgw_ctx_t*)    sgw_self(void);
+
+CORE_DECLARE(s11_ctx_t*)    sgw_ctx_s11_add();
+CORE_DECLARE(status_t)      sgw_ctx_s11_remove(s11_ctx_t *s11);
+CORE_DECLARE(status_t)      sgw_ctx_s11_remove_all();
+CORE_DECLARE(s11_ctx_t*)    sgw_ctx_s11_find_by_teid(c_uint32_t teid);
+CORE_DECLARE(s11_ctx_t*)    sgw_ctx_s11_first();
+CORE_DECLARE(s11_ctx_t*)    sgw_ctx_s11_next(s11_ctx_t *s11);
+
+CORE_DECLARE(s5c_ctx_t*)    sgw_ctx_s5c_add();
+CORE_DECLARE(status_t)      sgw_ctx_s5c_remove(s5c_ctx_t *s5c);
+CORE_DECLARE(status_t)      sgw_ctx_s5c_remove_all();
+CORE_DECLARE(s5c_ctx_t*)    sgw_ctx_s5c_find_by_teid(c_uint32_t teid);
+CORE_DECLARE(s5c_ctx_t*)    sgw_ctx_s5c_first();
+CORE_DECLARE(s5c_ctx_t*)    sgw_ctx_s5c_next(s5c_ctx_t *s5c);
 
 #ifdef __cplusplus
 }

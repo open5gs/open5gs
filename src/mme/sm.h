@@ -54,10 +54,10 @@ typedef struct _s11_sm_t {
     void *ctx;
 } s11_sm_t;
 
-void s11_state_initial(s11_sm_t *s, event_t *e);
-void s11_state_final(s11_sm_t *s, event_t *e);
-void s11_state_operational(s11_sm_t *s, event_t *e);
-void s11_state_exception(s11_sm_t *s, event_t *e);
+void mme_s11_state_initial(s11_sm_t *s, event_t *e);
+void mme_s11_state_final(s11_sm_t *s, event_t *e);
+void mme_s11_state_operational(s11_sm_t *s, event_t *e);
+void mme_s11_state_exception(s11_sm_t *s, event_t *e);
 
 #define mme_sm_print(__pe) \
     d_print("%s(): %s\n", __func__, mme_event_get_name(__pe))
