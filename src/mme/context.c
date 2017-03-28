@@ -58,6 +58,9 @@ status_t mme_ctx_init()
     sgw_ctx_t *sgw = mme_ctx_sgw_add();
     d_assert(sgw, return CORE_ERROR, "Can't add SGW context");
 
+    self.s11_addr = inet_addr("127.0.0.1");
+    self.s11_port = GTPV2_C_UDP_PORT;
+
     sgw->gnode.addr = inet_addr("127.0.0.1");
     sgw->gnode.port = GTPV2_C_UDP_PORT+1;
 

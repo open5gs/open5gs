@@ -63,6 +63,11 @@ void sgw_state_operational(sgw_sm_t *s, event_t *e)
             pkbuf_free(pkbuf);
             break;
         }
+        case EVT_TM_SGW_S11_T3:
+        {
+            d_info("Timer expiration");
+            break;
+        }
         case EVT_MSG_SGW_S5C:
         {
             gtp_node_t *gnode = (gtp_node_t *)event_get_param1(e);

@@ -41,11 +41,12 @@ void *THREAD_FUNC sgw_sm_main(thread_id id, void *data)
     sgw_self()->queue_id = event_create();
     d_assert(sgw_self()->queue_id, return NULL, 
             "SGW event queue creation failed");
+    tm_service_init(&sgw_self()->tm_service);
+    gtp_xact_init(&sgw_self()->gtp_xact_ctx, &sgw_self()->tm_service,
+            5, 3000, 3);
 
     fsm_create(&sgw_sm.fsm, sgw_state_initial, sgw_state_final);
     d_assert(&sgw_sm.fsm, return NULL, "SGW state machine creation failed");
-    tm_service_init(&sgw_self()->tm_service);
-
     fsm_init((fsm_t*)&sgw_sm, 0);
 
     prev_tm = time_now();
@@ -79,6 +80,7 @@ void *THREAD_FUNC sgw_sm_main(thread_id id, void *data)
     fsm_final((fsm_t*)&sgw_sm, 0);
     fsm_clear((fsm_t*)&sgw_sm);
 
+    gtp_xact_final();
     event_delete(sgw_self()->queue_id);
 
     return NULL;

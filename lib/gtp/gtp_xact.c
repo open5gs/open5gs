@@ -37,20 +37,29 @@ ED4(c_uint8_t version:3;,
     };
 } __attribute__ ((packed)) gtpv2c_header_t;
 
-static int g_gtp_xact_initialized = 0;
-pool_declare(gtp_xact_pool, gtp_xact_ctx_t, SIZE_OF_GTP_XACT_POOL);
+static int gtp_xact_pool_initialized = 0;
+pool_declare(gtp_xact_pool, gtp_xact_info_t, SIZE_OF_GTP_XACT_POOL);
 
 /**
  * Initialize the transaction framework
  */
-status_t gtp_xact_init()
+status_t gtp_xact_init(gtp_xact_ctx_t *context, tm_service_t *tm_service, 
+        c_uintptr_t event, c_uint32_t duration, int retry_count)
 {
-    d_assert(g_gtp_xact_initialized == 0, return CORE_ERROR,
-            "XACTION already has been initialized");
+    if (gtp_xact_pool_initialized == 0)
+    {
+        pool_init(&gtp_xact_pool, SIZE_OF_GTP_XACT_POOL);
+    }
+    gtp_xact_pool_initialized = 1;
 
-    pool_init(&gtp_xact_pool, SIZE_OF_GTP_XACT_POOL);
+    memset(context, 0, sizeof(gtp_xact_ctx_t));
 
-    g_gtp_xact_initialized = 1;
+    context->g_xact_id = 1;
+
+    context->tm_service = tm_service;
+    context->event = event;;
+    context->duration = duration;;
+    context->retry_count = retry_count;;
 
     return CORE_OK;
 }
@@ -60,76 +69,57 @@ status_t gtp_xact_init()
  */
 status_t gtp_xact_final(void)
 {
-    d_assert(g_gtp_xact_initialized == 1, return CORE_ERROR,
-            "XACTION ASNGW context already has been finalized");
-
-    pool_final(&gtp_xact_pool);
-
-    g_gtp_xact_initialized = 0;
+    if (gtp_xact_pool_initialized == 1)
+    {
+        pool_final(&gtp_xact_pool);
+    }
+    gtp_xact_pool_initialized = 0;
 
     return CORE_OK;
-}
-
-/**
- * Config Transaction 
- */
-void gtp_xact_config(gtp_xact_config_t *config, tm_service_t *tm_service, 
-        c_uintptr_t event, c_uint32_t duration, int retry_count)
-{
-    memset(config, 0, sizeof(gtp_xact_config_t));
-
-    config->g_xact_id = 1;
-
-    config->tm_service = tm_service;
-    config->event = event;;
-    config->duration = duration;;
-    config->retry_count = retry_count;;
 }
 
 /**
  * Create a new transaction which was initiated by local ASN node.
  */
-status_t gtp_xact_new_local(gtp_xact_config_t *config, 
-    gtp_xact_ctx_t **xact, c_uint8_t type, net_sock_t *sock, 
-    gtp_node_t *gnode, pkbuf_t *pkbuf)
+gtp_xact_info_t *gtp_xact_new_local(gtp_xact_ctx_t *context, 
+    c_uint8_t type, net_sock_t *sock, gtp_node_t *gnode, pkbuf_t *pkbuf)
 {
-    gtp_xact_ctx_t *new = NULL;
+    gtp_xact_info_t *xact = NULL;
 
-    d_assert(xact, return CORE_ERROR, "Null param");
-    d_assert(sock, return CORE_ERROR, "Null param");
-    d_assert(gnode, return CORE_ERROR, "Null param");
-    d_assert(pkbuf, return CORE_ERROR, "Null param");
+    d_assert(context, return NULL, "Null param");
+    d_assert(sock, return NULL, "Null param");
+    d_assert(gnode, return NULL, "Null param");
+    d_assert(pkbuf, return NULL, "Null param");
 
-    pool_alloc_node(&gtp_xact_pool, &new);
-    d_assert(new, return CORE_ERROR, "Transaction allocation failed");
-    memset(new, 0, sizeof(gtp_xact_ctx_t));
+    pool_alloc_node(&gtp_xact_pool, &xact);
+    d_assert(xact, return NULL, "Transaction allocation failed");
+    memset(xact, 0, sizeof(gtp_xact_info_t));
 
-    new->xid = GTP_XACT_NEXT_ID(config->g_xact_id);
-    new->org = GTP_LOCAL_ORIGINATOR;
-    new->type = type;
-    new->sock = sock;
-    new->gnode = gnode;
-    new->pkbuf = pkbuf;
+    xact->xid = GTP_XACT_NEXT_ID(context->g_xact_id);
+    xact->org = GTP_LOCAL_ORIGINATOR;
+    xact->type = type;
+    xact->sock = sock;
+    xact->gnode = gnode;
+    xact->pkbuf = pkbuf;
 
-    new->tm_wait = event_timer(config->tm_service, config->event, 
-            config->duration, (c_uintptr_t)new);
-    d_assert(new->tm_wait, return CORE_ERROR, "Timer allocation failed");
-    new->retry_count = config->retry_count;
+    xact->tm_wait = event_timer(context->tm_service, context->event, 
+            context->duration, (c_uintptr_t)xact);
+    d_assert(xact->tm_wait, return NULL, "Timer allocation failed");
+    xact->retry_count = context->retry_count;
 
-    list_append(&gnode->local_xlist, new);
-    *xact = new;
+    list_append(&gnode->local_xlist, xact);
 
-    return CORE_OK;
+    return xact;
 }
 
 /**
  * Create a new transaction which was initiated by remote node
  */
-status_t gtp_xact_new_remote(gtp_xact_config_t *config, 
-    gtp_xact_ctx_t **xact, net_sock_t *sock, gtp_node_t *gnode, pkbuf_t *pkbuf)
+status_t gtp_xact_new_remote(gtp_xact_ctx_t *context, 
+    gtp_xact_info_t **xact, net_sock_t *sock, gtp_node_t *gnode, pkbuf_t *pkbuf)
 {
     gtpv2c_header_t *h = NULL;
-    gtp_xact_ctx_t *new = NULL;
+    gtp_xact_info_t *new = NULL;
 
     d_assert(xact, return CORE_ERROR, "Null param");
     d_assert(sock, return CORE_ERROR, "Null param");
@@ -139,7 +129,7 @@ status_t gtp_xact_new_remote(gtp_xact_config_t *config,
 
     pool_alloc_node(&gtp_xact_pool, &new);
     d_assert(new, return CORE_ERROR, "Transaction allocation failed");
-    memset(new, 0, sizeof(gtp_xact_ctx_t));
+    memset(new, 0, sizeof(gtp_xact_info_t));
 
     h = pkbuf->payload;
 
@@ -150,8 +140,8 @@ status_t gtp_xact_new_remote(gtp_xact_config_t *config,
     new->gnode = gnode;
     new->pkbuf = pkbuf;
 
-    new->tm_wait = event_timer(config->tm_service, config->event, 
-            config->duration * config->retry_count, (c_uintptr_t)new);
+    new->tm_wait = event_timer(context->tm_service, context->event, 
+            context->duration * context->retry_count, (c_uintptr_t)new);
     d_assert(new->tm_wait, return CORE_ERROR, "Timer allocation failed");
     new->retry_count = 1;
 
@@ -163,7 +153,7 @@ status_t gtp_xact_new_remote(gtp_xact_config_t *config,
 /**
  * Delete a transaction
  */
-status_t gtp_xact_delete(gtp_xact_ctx_t *xact)
+status_t gtp_xact_delete(gtp_xact_info_t *xact)
 {
     d_assert(xact, return CORE_ERROR, "Null param");
     d_assert(xact->tm_wait, return CORE_ERROR, "Null param");
@@ -181,7 +171,7 @@ status_t gtp_xact_delete(gtp_xact_ctx_t *xact)
 /**
  * Update the transaction with the new packet to be sent for the next step
  */
-status_t gtp_xact_update_tx(gtp_xact_ctx_t *xact, pkbuf_t *pkb)
+status_t gtp_xact_update_tx(gtp_xact_info_t *xact, pkbuf_t *pkb)
 {
     return CORE_OK;
 }
@@ -189,7 +179,7 @@ status_t gtp_xact_update_tx(gtp_xact_ctx_t *xact, pkbuf_t *pkb)
 /**
  * Update the transaction with the new received packet for the next step
  */
-status_t gtp_xact_update_rx(gtp_xact_ctx_t *xact)
+status_t gtp_xact_update_rx(gtp_xact_info_t *xact)
 {
     return CORE_OK;
 }
@@ -197,7 +187,7 @@ status_t gtp_xact_update_rx(gtp_xact_ctx_t *xact)
 /**
  * Apply and commit the updated of the transcation
  */
-status_t gtp_xact_commit(gtp_xact_ctx_t *xact)
+status_t gtp_xact_commit(gtp_xact_info_t *xact)
 {
     return CORE_OK;
 }
@@ -205,11 +195,11 @@ status_t gtp_xact_commit(gtp_xact_ctx_t *xact)
 /**
  * Find the transaction with the given ASN header
  */
-gtp_xact_ctx_t *gtp_xact_find(gtp_node_t *gnode, pkbuf_t *pkbuf)
+gtp_xact_info_t *gtp_xact_find(gtp_node_t *gnode, pkbuf_t *pkbuf)
 {
     gtpv2c_header_t *h = NULL;
     c_uint32_t xid;
-    gtp_xact_ctx_t *xact = NULL;
+    gtp_xact_info_t *xact = NULL;
 
     d_assert(gnode, return NULL, "Null param");
     d_assert(pkbuf, return NULL, "Null param");

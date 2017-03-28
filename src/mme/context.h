@@ -9,7 +9,7 @@
 #include "3gpp_defs.h"
 #include "3gpp_types.h"
 #include "nas_types.h"
-#include "gtp_path.h"
+#include "gtp_xact.h"
 
 #include "sm.h"
 
@@ -44,8 +44,9 @@ typedef struct _mme_ctx_t {
     c_uint16_t      s11_port;   /* MME S11 local port */
     net_sock_t      *s11_sock;  /* MME S11 local listen socket */
 
-    msgq_id         queue_id;
-    tm_service_t    tm_service;
+    msgq_id         queue_id;       /* Queue for processing MME control plane */
+    tm_service_t    tm_service;     /* Timer Service */
+    gtp_xact_ctx_t  gtp_xact_ctx;   /* GTP Transaction Context for MME */
 
     c_uint32_t      mme_ue_s1ap_id; /** mme_ue_s1ap_id generator */
     plmn_id_t       plmn_id;

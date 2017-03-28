@@ -7,7 +7,7 @@
 
 #include "sm.h"
 
-#include "gtp_path.h"
+#include "gtp_xact.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,8 +29,9 @@ typedef struct _sgw_ctx_t {
     net_sock_t*     s5u_sock;  /* SGW S5-U local listen socket */
     gtp_node_t      s5u_node;  /* PGW S5-U remote GTPv1-U node */
 
-    msgq_id         queue_id;
-    tm_service_t    tm_service;
+    msgq_id         queue_id;       /* Queue for processing MME control plane */
+    tm_service_t    tm_service;     /* Timer Service */
+    gtp_xact_ctx_t  gtp_xact_ctx;   /* GTP Transaction Context for MME */
 
 } sgw_ctx_t;
 

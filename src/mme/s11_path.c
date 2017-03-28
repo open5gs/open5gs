@@ -4,6 +4,7 @@
 #include "core_net.h"
 
 #include "event.h"
+#include "context.h"
 #include "s11_path.h"
 
 static int _gtpv2_c_recv_cb(net_sock_t *net_sock, void *data)

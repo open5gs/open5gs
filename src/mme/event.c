@@ -6,10 +6,10 @@
 #include "s1ap_path.h"
 #include "nas_message.h"
 
-static char EVT_NAME_LO_MME_ENGAGE_SGW[] = "LO_MME_ENGAGE_SGW";
-
 static char EVT_NAME_LO_ENB_S1AP_ACCEPT[] = "LO_ENB_S1AP_ACCEPT";
 static char EVT_NAME_LO_ENB_S1AP_CONNREFUSED[] = "LO_ENB_S1AP_CONNREFUSED";
+
+static char EVT_NAME_TM_MME_S11_T3[] = "TM_MME_S11_T3";
 
 static char EVT_NAME_MSG_ENB_S1AP[] = "MSG_ENB_S1AP";
 static char EVT_NAME_MSG_UE_EMM[] = "MSG_UE_EMM";
@@ -28,13 +28,13 @@ char* mme_event_get_name(event_t *e)
         case FSM_EXIT_SIG: 
             return FSM_NAME_EXIT_SIG;
 
-        case EVT_LO_MME_ENGAGE_SGW: 
-           return EVT_NAME_LO_MME_ENGAGE_SGW;
-
         case EVT_LO_ENB_S1AP_ACCEPT: 
            return EVT_NAME_LO_ENB_S1AP_ACCEPT;
         case EVT_LO_ENB_S1AP_CONNREFUSED: 
            return EVT_NAME_LO_ENB_S1AP_CONNREFUSED;
+
+        case EVT_TM_MME_S11_T3: 
+           return EVT_NAME_TM_MME_S11_T3;
 
         case EVT_MSG_ENB_S1AP: 
            return EVT_NAME_MSG_ENB_S1AP;

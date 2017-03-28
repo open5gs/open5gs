@@ -15,19 +15,20 @@ extern "C" {
 /**
  * Transaction Configuration
  */
-typedef struct _gtp_xact_config_t {
+typedef struct _gtp_xact_ctx_t {
     c_uint32_t g_xact_id;
+    void *pool;
 
     tm_service_t *tm_service;
     c_uintptr_t event;
     c_uint32_t duration;
     int retry_count;
-} gtp_xact_config_t;
+} gtp_xact_ctx_t;
 
 /**
  * Transaction context
  */
-typedef struct _gtp_xact_ctx_t {
+typedef struct _gtp_xact_info_t {
     lnode_t         node;           /**< A node of list */
 
     c_uint32_t      xid;            /**< Transaction ID */
@@ -43,12 +44,14 @@ typedef struct _gtp_xact_ctx_t {
     tm_block_id     tm_wait;        /**< Timer waiting for next message */
     int             retry_count;    /**< Retry count waiting for next message */
 
-} gtp_xact_ctx_t;
+} gtp_xact_info_t;
 
 /**
  * Initialize the transaction framework
  */
-CORE_DECLARE(status_t) gtp_xact_init(void);
+CORE_DECLARE(status_t) gtp_xact_init(gtp_xact_ctx_t *context, 
+    tm_service_t *tm_service, c_uintptr_t event, c_uint32_t duration, 
+    int retry_count);
 
 /**
  * Finalize the transaction framework
@@ -58,40 +61,40 @@ CORE_DECLARE(status_t) gtp_xact_final(void);
 /**
  * Create a new transaction which was initiated by local ASN node.
  */
-CORE_DECLARE(status_t) gtp_xact_new_local(gtp_xact_config_t *config, 
-    gtp_xact_ctx_t **xact, c_uint8_t type, net_sock_t *sock, 
-    gtp_node_t *gnode, pkbuf_t *pkbuf);
+CORE_DECLARE(gtp_xact_info_t *) gtp_xact_new_local(gtp_xact_ctx_t *context, 
+    c_uint8_t type, net_sock_t *sock, gtp_node_t *gnode, pkbuf_t *pkbuf);
 
 /**
  * Create a new transaction which was initiated by remote node
  */
-CORE_DECLARE(status_t) gtp_xact_new_remote(gtp_xact_config_t *config, 
-    gtp_xact_ctx_t **xact, net_sock_t *sock, gtp_node_t *gnode, pkbuf_t *pkbuf);
+CORE_DECLARE(status_t) gtp_xact_new_remote(gtp_xact_ctx_t *context, 
+    gtp_xact_info_t **xact, net_sock_t *sock, gtp_node_t *gnode, pkbuf_t *pkbuf);
 
 /**
  * Delete a transaction
  */
-CORE_DECLARE(status_t) gtp_xact_delete(gtp_xact_ctx_t *xact);
+CORE_DECLARE(status_t) gtp_xact_delete(gtp_xact_info_t *xact);
 
 /**
  * Update the transaction with the new packet to be sent for the next step
  */
-CORE_DECLARE(status_t) gtp_xact_update_tx(gtp_xact_ctx_t *xact, pkbuf_t *pkb);
+CORE_DECLARE(status_t) gtp_xact_update_tx(gtp_xact_info_t *xact, pkbuf_t *pkb);
 
 /**
  * Update the transaction with the new received packet for the next step
  */
-CORE_DECLARE(status_t) gtp_xact_update_rx(gtp_xact_ctx_t *xact);
+CORE_DECLARE(status_t) gtp_xact_update_rx(gtp_xact_info_t *xact);
 
 /**
  * Apply and commit the updated of the transcation
  */
-CORE_DECLARE(status_t) gtp_xact_commit(gtp_xact_ctx_t *xact);
+CORE_DECLARE(status_t) gtp_xact_commit(gtp_xact_info_t *xact);
 
 /**
  * Find the transaction with the given ASN header
  */
-CORE_DECLARE(gtp_xact_ctx_t *) gtp_xact_find(gtp_node_t *gnode, pkbuf_t *pkbuf);
+CORE_DECLARE(gtp_xact_info_t *) gtp_xact_find(
+        gtp_node_t *gnode, pkbuf_t *pkbuf);
 
 #ifdef __cplusplus
 }
