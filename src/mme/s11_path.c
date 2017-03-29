@@ -80,10 +80,16 @@ status_t mme_s11_close()
     return CORE_OK;
 }
 
+#include "gtp_tlv.h"
 status_t mme_s11_send_to_sgw(void *sgw, pkbuf_t *pkbuf)
 {
+    gtp_xact_t *xact = NULL;
+
     d_assert(sgw, return CORE_ERROR, "Null param");
     d_assert(pkbuf, return CORE_ERROR, "Null param");
 
-    return gtp_send(mme_self()->s11_sock, sgw, pkbuf);
+    xact = gtp_xact_new_local(&mme_self()->gtp_xact_ctx,
+            GTP_CREATE_SESSION_REQUEST_TYPE,
+            mme_self()->s11_sock, sgw, pkbuf);
+    return gtp_xact_commit(xact);
 }

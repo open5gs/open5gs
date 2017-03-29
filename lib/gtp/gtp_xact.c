@@ -150,26 +150,45 @@ status_t gtp_xact_delete(gtp_xact_t *xact)
 }
 
 /**
- * Update the transaction with the new packet to be sent for the next step
- */
-status_t gtp_xact_update_tx(gtp_xact_t *xact, pkbuf_t *pkb)
-{
-    return CORE_OK;
-}
-
-/**
- * Update the transaction with the new received packet for the next step
- */
-status_t gtp_xact_update_rx(gtp_xact_t *xact)
-{
-    return CORE_OK;
-}
-
-/**
  * Apply and commit the updated of the transcation
  */
 status_t gtp_xact_commit(gtp_xact_t *xact)
 {
+    status_t rv;
+    net_sock_t *sock = NULL;
+    gtp_node_t *gnode = NULL;
+    pkbuf_t *pkbuf = NULL;
+    gtpv2c_header_t *h = NULL;
+
+    d_assert(xact, return CORE_ERROR, "Null param");
+    d_assert(xact->tm_wait, return CORE_ERROR, "Null param");
+
+    sock = xact->sock;
+    d_assert(sock, return CORE_ERROR, "Null param");
+    gnode = xact->gnode;
+    d_assert(gnode, return CORE_ERROR, "Null param");
+    pkbuf = xact->pkbuf;
+    d_assert(pkbuf, return CORE_ERROR, "Null param");
+
+    pkbuf_header(pkbuf, GTPV2C_HEADER_LEN);
+    h = pkbuf->payload;
+    d_assert(h, return CORE_ERROR, "Null param");
+
+    h->version = 2;
+    h->teid_presence = 1;
+    h->type = xact->type;
+    h->length = htons(pkbuf->len - 4);
+    h->sqn = GTP_XID_TO_SQN(xact->xid);
+
+    rv = gtp_send(sock, gnode, pkbuf);
+    if (rv != CORE_OK)
+    {
+        d_error("failed to send GTP message");
+        return CORE_ERROR;
+    }
+
+    tm_start(xact->tm_wait);
+
     return CORE_OK;
 }
 

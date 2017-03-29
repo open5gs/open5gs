@@ -80,40 +80,9 @@ status_t gtp_send(net_sock_t *sock, gtp_node_t *gnode, pkbuf_t *pkbuf)
     char buf[INET_ADDRSTRLEN];
     ssize_t sent;
 
-typedef struct _gtpv2c_header_t {
-ED4(c_uint8_t version:3;,
-    c_uint8_t piggybacked:1;,
-    c_uint8_t teid_presence:1;,
-    c_uint8_t spare1:3;)
-    c_uint8_t type;
-    c_uint16_t length;
-    union {
-        struct {
-            c_uint32_t teid;
-            /* sqn : 31bit ~ 8bit, spare : 7bit ~ 0bit */
-#define GTP_XID_TO_SQN(__xid) ((__xid) << 8)
-#define GTP_SQN_TO_XID(__sqn) ((__sqn) >> 8)
-            c_uint32_t sqn; 
-        };
-        /* sqn : 31bit ~ 8bit, spare : 7bit ~ 0bit */
-        c_uint32_t spare2;
-    };
-} __attribute__ ((packed)) gtpv2c_header_t;
-    gtpv2c_header_t *h;
-
     d_assert(sock, return CORE_ERROR, "Null param");
     d_assert(gnode, return CORE_ERROR, "Null param");
     d_assert(pkbuf, return CORE_ERROR, "Null param");
-
-    pkbuf_header(pkbuf, 12);
-
-    h = pkbuf->payload;
-    memset(h, 0, 12);
-    h->version = 2;
-    h->teid_presence = 1;
-    h->type = 32;
-    h->length = htons(pkbuf->len - 4);
-    h->sqn = 1;
 
     sent = net_sendto(sock, pkbuf->payload, pkbuf->len, 
             gnode->addr, gnode->port);
