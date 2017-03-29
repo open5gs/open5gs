@@ -143,6 +143,9 @@ status_t gtp_xact_delete(gtp_xact_t *xact)
 {
     d_assert(xact, return CORE_ERROR, "Null param");
 
+    d_assert(xact->pkbuf, return CORE_ERROR, "Null param");
+    pkbuf_free(xact->pkbuf);
+
     d_assert(xact->tm_wait, return CORE_ERROR, "Null param");
     tm_delete(xact->tm_wait);
 
