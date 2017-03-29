@@ -15,9 +15,6 @@
     ((__id2) > (__id1) ? ((__id2) - (__id1) < 0x7fffff ? -1 : 1) : \
      (__id1) > (__id2) ? ((__id1) - (__id2) < 0x7fffff ? 1 : -1) : 0)
 
-#define GTPV2C_HEADER_LEN   12
-#define GTPV2C_TEID_LEN     4
-
 #define GTP_XID_TO_SQN(__xid) ((__xid) << 8)
 #define GTP_SQN_TO_XID(__sqn) ((__sqn) >> 8)
 

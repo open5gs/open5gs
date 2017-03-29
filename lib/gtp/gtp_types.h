@@ -10,6 +10,9 @@ extern "C" {
 #endif /* __cplusplus */
 
 /* 5.1 General format */
+#define GTPV2C_HEADER_LEN   12
+#define GTPV2C_TEID_LEN     4
+
 typedef struct _gtpv2c_header_t {
 ED4(c_uint8_t version:3;,
     c_uint8_t piggybacked:1;,

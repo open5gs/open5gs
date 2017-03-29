@@ -440,15 +440,26 @@ for (k, v) in sorted_group_list:
 
 f.write("/* Structure for Message */\n")
 for (k, v) in sorted_msg_list:
-    f.write("typedef struct _gtp_" + v_lower(k) + "_t {\n")
     if "ies" in msg_list[k]:
+        f.write("typedef struct _gtp_" + v_lower(k) + "_t {\n")
         for ies in msg_list[k]["ies"]:
             f.write("    tlv_" + v_lower(ies["ie_type"]) + "_t " + \
                     v_lower(ies["ie_value"]) + ";\n")
-    f.write("} gtp_" + v_lower(k) + "_t;\n")
-    f.write("\n")
+        f.write("} gtp_" + v_lower(k) + "_t;\n")
+        f.write("\n")
 
-f.write("""#ifdef __cplusplus
+f.write("typedef struct _gtp_message_t {\n")
+f.write("   union {\n")
+for (k, v) in sorted_msg_list:
+    if "ies" in msg_list[k]:
+        f.write("        gtp_" + v_lower(k) + "_t " + v_lower(k) + ";\n");
+f.write("   };\n");
+f.write("} gtp_message_t;\n\n")
+
+f.write("""CORE_DECLARE(status_t) gtp_parse_msg(
+        c_uint8_t type, gtp_message_t *gtp_message, pkbuf_t *pkbuf);
+
+#ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
@@ -458,7 +469,8 @@ f.close()
 
 f = open(outdir + 'gtp_tlv.c', 'w')
 output_header_to_file(f)
-f.write("""#include "gtp_tlv.h"
+f.write("""#include "core_debug.h"
+#include "gtp_tlv.h"
 
 """)
 
@@ -510,16 +522,41 @@ for (k, v) in sorted_group_list:
         f.write("};\n\n")
 
 for (k, v) in sorted_msg_list:
-    f.write("tlv_desc_t tlv_desc_%s =\n" % v_lower(k))
-    f.write("{\n")
-    f.write("    TLV_MESSAGE,\n")
-    f.write("    \"%s\",\n" % k)
-    f.write("    0, 0, 0, 0, {\n")
     if "ies" in msg_list[k]:
+        f.write("tlv_desc_t tlv_desc_%s =\n" % v_lower(k))
+        f.write("{\n")
+        f.write("    TLV_MESSAGE,\n")
+        f.write("    \"%s\",\n" % k)
+        f.write("    0, 0, 0, 0, {\n")
         for ies in msg_list[k]["ies"]:
                 f.write("        &tlv_desc_%s_%s,\n" % (v_lower(ies["ie_type"]), v_lower(ies["instance"])))
-    f.write("    NULL,\n")
-    f.write("}};\n\n")
+        f.write("    NULL,\n")
+        f.write("}};\n\n")
+f.write("\n")
+
+f.write("""status_t gtp_parse_msg(
+        c_uint8_t type, gtp_message_t *gtp_message, pkbuf_t *pkbuf)
+{
+    status_t rv = CORE_ERROR;
+    
+    memset(gtp_message, 0, sizeof(gtp_message_t));
+    switch(type)
+    {
+""")
+for (k, v) in sorted_msg_list:
+    if "ies" in msg_list[k]:
+        f.write("        case GTP_%s_TYPE:\n" % v_upper(k))
+        f.write("            rv = tlv_parse_msg(&gtp_message->%s,\n" % v_lower(k))
+        f.write("                    &tlv_desc_%s, pkbuf, TLV_MODE_T1_L2_I1);\n" % v_lower(k))
+        f.write("            break;\n")
+f.write("""        default:
+            d_warn("Not implmeneted(type:%d)", type);
+            break;
+    }
+
+    return rv;
+}
+""")
 
 f.write("\n")
 

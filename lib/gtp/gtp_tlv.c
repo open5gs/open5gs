@@ -26,10 +26,11 @@
 /*******************************************************************************
  * This file had been created by gtp_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-03-24 23:41:03.992079 by acetcom
+ * Created on: 2017-03-29 19:27:19.284563 by acetcom
  * from 29274-d80.docx
  ******************************************************************************/
 
+#include "core_debug.h"
 #include "gtp_tlv.h"
 
 tlv_desc_t tlv_desc_imsi_0 =
@@ -1768,14 +1769,6 @@ tlv_desc_t tlv_desc_echo_response =
     NULL,
 }};
 
-tlv_desc_t tlv_desc_version_not_supported_indication =
-{
-    TLV_MESSAGE,
-    "Version Not Supported Indication",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
 tlv_desc_t tlv_desc_create_session_request =
 {
     TLV_MESSAGE,
@@ -1842,396 +1835,32 @@ tlv_desc_t tlv_desc_create_session_request =
     NULL,
 }};
 
-tlv_desc_t tlv_desc_create_session_response =
-{
-    TLV_MESSAGE,
-    "Create Session Response",
-    0, 0, 0, 0, {
-    NULL,
-}};
 
-tlv_desc_t tlv_desc_modify_bearer_request =
+status_t gtp_parse_msg(
+        c_uint8_t type, gtp_message_t *gtp_message, pkbuf_t *pkbuf)
 {
-    TLV_MESSAGE,
-    "Modify Bearer Request",
-    0, 0, 0, 0, {
-    NULL,
-}};
+    status_t rv = CORE_ERROR;
+    
+    memset(gtp_message, 0, sizeof(gtp_message_t));
+    switch(type)
+    {
+        case GTP_ECHO_REQUEST_TYPE:
+            rv = tlv_parse_msg(&gtp_message->echo_request,
+                    &tlv_desc_echo_request, pkbuf, TLV_MODE_T1_L2_I1);
+            break;
+        case GTP_ECHO_RESPONSE_TYPE:
+            rv = tlv_parse_msg(&gtp_message->echo_response,
+                    &tlv_desc_echo_response, pkbuf, TLV_MODE_T1_L2_I1);
+            break;
+        case GTP_CREATE_SESSION_REQUEST_TYPE:
+            rv = tlv_parse_msg(&gtp_message->create_session_request,
+                    &tlv_desc_create_session_request, pkbuf, TLV_MODE_T1_L2_I1);
+            break;
+        default:
+            d_warn("Not implmeneted(type:%d)", type);
+            break;
+    }
 
-tlv_desc_t tlv_desc_modify_bearer_response =
-{
-    TLV_MESSAGE,
-    "Modify Bearer Response",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_delete_session_request =
-{
-    TLV_MESSAGE,
-    "Delete Session Request",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_delete_session_response =
-{
-    TLV_MESSAGE,
-    "Delete Session Response",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_change_notification_request =
-{
-    TLV_MESSAGE,
-    "Change Notification Request",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_change_notification_response =
-{
-    TLV_MESSAGE,
-    "Change Notification Response",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_remote_ue_report_notification =
-{
-    TLV_MESSAGE,
-    "Remote UE Report Notification",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_remote_ue_report_acknowledge =
-{
-    TLV_MESSAGE,
-    "Remote UE Report Acknowledge",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_modify_bearer_command =
-{
-    TLV_MESSAGE,
-    "Modify Bearer Command",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_modify_bearer_failure_indication =
-{
-    TLV_MESSAGE,
-    "Modify Bearer Failure Indication",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_delete_bearer_command =
-{
-    TLV_MESSAGE,
-    "Delete Bearer Command",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_delete_bearer_failure_indication =
-{
-    TLV_MESSAGE,
-    "Delete Bearer Failure Indication",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_bearer_resource_command =
-{
-    TLV_MESSAGE,
-    "Bearer Resource Command",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_bearer_resource_failure_indication =
-{
-    TLV_MESSAGE,
-    "Bearer Resource Failure Indication",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_downlink_data_notification_failure_indication =
-{
-    TLV_MESSAGE,
-    "Downlink Data Notification Failure Indication",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_trace_session_activation =
-{
-    TLV_MESSAGE,
-    "Trace Session Activation",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_trace_session_deactivation =
-{
-    TLV_MESSAGE,
-    "Trace Session Deactivation",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_stop_paging_indication =
-{
-    TLV_MESSAGE,
-    "Stop Paging Indication",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_create_bearer_request =
-{
-    TLV_MESSAGE,
-    "Create Bearer Request",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_create_bearer_response =
-{
-    TLV_MESSAGE,
-    "Create Bearer Response",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_update_bearer_request =
-{
-    TLV_MESSAGE,
-    "Update Bearer Request",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_update_bearer_response =
-{
-    TLV_MESSAGE,
-    "Update Bearer Response",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_delete_bearer_request =
-{
-    TLV_MESSAGE,
-    "Delete Bearer Request",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_delete_bearer_response =
-{
-    TLV_MESSAGE,
-    "Delete Bearer Response",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_delete_pdn_connection_set_request =
-{
-    TLV_MESSAGE,
-    "Delete PDN Connection Set Request",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_delete_pdn_connection_set_response =
-{
-    TLV_MESSAGE,
-    "Delete PDN Connection Set Response",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_pgw_downlink_triggering_notification =
-{
-    TLV_MESSAGE,
-    "PGW Downlink Triggering Notification",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_pgw_downlink_triggering_acknowledge =
-{
-    TLV_MESSAGE,
-    "PGW Downlink Triggering Acknowledge",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_create_forwarding_tunnel_request =
-{
-    TLV_MESSAGE,
-    "Create Forwarding Tunnel Request",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_create_forwarding_tunnel_response =
-{
-    TLV_MESSAGE,
-    "Create Forwarding Tunnel Response",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_suspend_notification =
-{
-    TLV_MESSAGE,
-    "Suspend Notification",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_suspend_acknowledge =
-{
-    TLV_MESSAGE,
-    "Suspend Acknowledge",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_resume_notification =
-{
-    TLV_MESSAGE,
-    "Resume Notification",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_resume_acknowledge =
-{
-    TLV_MESSAGE,
-    "Resume Acknowledge",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_create_indirect_data_forwarding_tunnel_request =
-{
-    TLV_MESSAGE,
-    "Create Indirect Data Forwarding Tunnel Request",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_create_indirect_data_forwarding_tunnel_response =
-{
-    TLV_MESSAGE,
-    "Create Indirect Data Forwarding Tunnel Response",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_delete_indirect_data_forwarding_tunnel_request =
-{
-    TLV_MESSAGE,
-    "Delete Indirect Data Forwarding Tunnel Request",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_delete_indirect_data_forwarding_tunnel_response =
-{
-    TLV_MESSAGE,
-    "Delete Indirect Data Forwarding Tunnel Response",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_release_access_bearers_request =
-{
-    TLV_MESSAGE,
-    "Release Access Bearers Request",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_release_access_bearers_response =
-{
-    TLV_MESSAGE,
-    "Release Access Bearers Response",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_downlink_data_notification =
-{
-    TLV_MESSAGE,
-    "Downlink Data Notification",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_downlink_data_notification_acknowledge =
-{
-    TLV_MESSAGE,
-    "Downlink Data Notification Acknowledge",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_pgw_restart_notification =
-{
-    TLV_MESSAGE,
-    "PGW Restart Notification",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_pgw_restart_notification_acknowledge =
-{
-    TLV_MESSAGE,
-    "PGW Restart Notification Acknowledge",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_update_pdn_connection_set_request =
-{
-    TLV_MESSAGE,
-    "Update PDN Connection Set Request",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_update_pdn_connection_set_response =
-{
-    TLV_MESSAGE,
-    "Update PDN Connection Set Response",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_modify_access_bearers_request =
-{
-    TLV_MESSAGE,
-    "Modify Access Bearers Request",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
-tlv_desc_t tlv_desc_modify_access_bearers_response =
-{
-    TLV_MESSAGE,
-    "Modify Access Bearers Response",
-    0, 0, 0, 0, {
-    NULL,
-}};
-
+    return rv;
+}
 

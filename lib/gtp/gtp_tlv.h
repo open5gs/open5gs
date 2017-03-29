@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtp_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-03-24 23:41:03.983123 by acetcom
+ * Created on: 2017-03-29 19:27:19.270396 by acetcom
  * from 29274-d80.docx
  ******************************************************************************/
 
@@ -614,9 +614,6 @@ typedef struct _gtp_echo_response_t {
     tlv_node_features_t sending_node_features;
 } gtp_echo_response_t;
 
-typedef struct _gtp_version_not_supported_indication_t {
-} gtp_version_not_supported_indication_t;
-
 typedef struct _gtp_create_session_request_t {
     tlv_imsi_t imsi;
     tlv_msisdn_t msisdn;
@@ -678,152 +675,16 @@ typedef struct _gtp_create_session_request_t {
     tlv_port_number_t ue_tcp_port;
 } gtp_create_session_request_t;
 
-typedef struct _gtp_create_session_response_t {
-} gtp_create_session_response_t;
+typedef struct _gtp_message_t {
+   union {
+        gtp_echo_request_t echo_request;
+        gtp_echo_response_t echo_response;
+        gtp_create_session_request_t create_session_request;
+   };
+} gtp_message_t;
 
-typedef struct _gtp_modify_bearer_request_t {
-} gtp_modify_bearer_request_t;
-
-typedef struct _gtp_modify_bearer_response_t {
-} gtp_modify_bearer_response_t;
-
-typedef struct _gtp_delete_session_request_t {
-} gtp_delete_session_request_t;
-
-typedef struct _gtp_delete_session_response_t {
-} gtp_delete_session_response_t;
-
-typedef struct _gtp_change_notification_request_t {
-} gtp_change_notification_request_t;
-
-typedef struct _gtp_change_notification_response_t {
-} gtp_change_notification_response_t;
-
-typedef struct _gtp_remote_ue_report_notification_t {
-} gtp_remote_ue_report_notification_t;
-
-typedef struct _gtp_remote_ue_report_acknowledge_t {
-} gtp_remote_ue_report_acknowledge_t;
-
-typedef struct _gtp_modify_bearer_command_t {
-} gtp_modify_bearer_command_t;
-
-typedef struct _gtp_modify_bearer_failure_indication_t {
-} gtp_modify_bearer_failure_indication_t;
-
-typedef struct _gtp_delete_bearer_command_t {
-} gtp_delete_bearer_command_t;
-
-typedef struct _gtp_delete_bearer_failure_indication_t {
-} gtp_delete_bearer_failure_indication_t;
-
-typedef struct _gtp_bearer_resource_command_t {
-} gtp_bearer_resource_command_t;
-
-typedef struct _gtp_bearer_resource_failure_indication_t {
-} gtp_bearer_resource_failure_indication_t;
-
-typedef struct _gtp_downlink_data_notification_failure_indication_t {
-} gtp_downlink_data_notification_failure_indication_t;
-
-typedef struct _gtp_trace_session_activation_t {
-} gtp_trace_session_activation_t;
-
-typedef struct _gtp_trace_session_deactivation_t {
-} gtp_trace_session_deactivation_t;
-
-typedef struct _gtp_stop_paging_indication_t {
-} gtp_stop_paging_indication_t;
-
-typedef struct _gtp_create_bearer_request_t {
-} gtp_create_bearer_request_t;
-
-typedef struct _gtp_create_bearer_response_t {
-} gtp_create_bearer_response_t;
-
-typedef struct _gtp_update_bearer_request_t {
-} gtp_update_bearer_request_t;
-
-typedef struct _gtp_update_bearer_response_t {
-} gtp_update_bearer_response_t;
-
-typedef struct _gtp_delete_bearer_request_t {
-} gtp_delete_bearer_request_t;
-
-typedef struct _gtp_delete_bearer_response_t {
-} gtp_delete_bearer_response_t;
-
-typedef struct _gtp_delete_pdn_connection_set_request_t {
-} gtp_delete_pdn_connection_set_request_t;
-
-typedef struct _gtp_delete_pdn_connection_set_response_t {
-} gtp_delete_pdn_connection_set_response_t;
-
-typedef struct _gtp_pgw_downlink_triggering_notification_t {
-} gtp_pgw_downlink_triggering_notification_t;
-
-typedef struct _gtp_pgw_downlink_triggering_acknowledge_t {
-} gtp_pgw_downlink_triggering_acknowledge_t;
-
-typedef struct _gtp_create_forwarding_tunnel_request_t {
-} gtp_create_forwarding_tunnel_request_t;
-
-typedef struct _gtp_create_forwarding_tunnel_response_t {
-} gtp_create_forwarding_tunnel_response_t;
-
-typedef struct _gtp_suspend_notification_t {
-} gtp_suspend_notification_t;
-
-typedef struct _gtp_suspend_acknowledge_t {
-} gtp_suspend_acknowledge_t;
-
-typedef struct _gtp_resume_notification_t {
-} gtp_resume_notification_t;
-
-typedef struct _gtp_resume_acknowledge_t {
-} gtp_resume_acknowledge_t;
-
-typedef struct _gtp_create_indirect_data_forwarding_tunnel_request_t {
-} gtp_create_indirect_data_forwarding_tunnel_request_t;
-
-typedef struct _gtp_create_indirect_data_forwarding_tunnel_response_t {
-} gtp_create_indirect_data_forwarding_tunnel_response_t;
-
-typedef struct _gtp_delete_indirect_data_forwarding_tunnel_request_t {
-} gtp_delete_indirect_data_forwarding_tunnel_request_t;
-
-typedef struct _gtp_delete_indirect_data_forwarding_tunnel_response_t {
-} gtp_delete_indirect_data_forwarding_tunnel_response_t;
-
-typedef struct _gtp_release_access_bearers_request_t {
-} gtp_release_access_bearers_request_t;
-
-typedef struct _gtp_release_access_bearers_response_t {
-} gtp_release_access_bearers_response_t;
-
-typedef struct _gtp_downlink_data_notification_t {
-} gtp_downlink_data_notification_t;
-
-typedef struct _gtp_downlink_data_notification_acknowledge_t {
-} gtp_downlink_data_notification_acknowledge_t;
-
-typedef struct _gtp_pgw_restart_notification_t {
-} gtp_pgw_restart_notification_t;
-
-typedef struct _gtp_pgw_restart_notification_acknowledge_t {
-} gtp_pgw_restart_notification_acknowledge_t;
-
-typedef struct _gtp_update_pdn_connection_set_request_t {
-} gtp_update_pdn_connection_set_request_t;
-
-typedef struct _gtp_update_pdn_connection_set_response_t {
-} gtp_update_pdn_connection_set_response_t;
-
-typedef struct _gtp_modify_access_bearers_request_t {
-} gtp_modify_access_bearers_request_t;
-
-typedef struct _gtp_modify_access_bearers_response_t {
-} gtp_modify_access_bearers_response_t;
+CORE_DECLARE(status_t) gtp_parse_msg(
+        c_uint8_t type, gtp_message_t *gtp_message, pkbuf_t *pkbuf);
 
 #ifdef __cplusplus
 }

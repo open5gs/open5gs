@@ -4,13 +4,11 @@ noinst_LTLIBRARIES = libsgw.la
 
 libsgw_la_SOURCES = \
     event.h context.h \
-	sgw_path.h \
-	sm.h
+	sgw_path.h sm.h s11_handler.h
 
 nodist_libsgw_la_SOURCES = \
     init.c event.c context.c \
-	sgw_path.c \
-	sgw_sm.c
+	sgw_path.c sgw_sm.c s11_handler.c
 
 libsgw_la_DEPENDENCIES = \
     $(top_srcdir)/lib/core/src/libcore.la \
