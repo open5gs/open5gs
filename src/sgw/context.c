@@ -99,12 +99,6 @@ status_t sgw_ctx_s11_remove(s11_ctx_t *s11)
 {
     d_assert(s11, return CORE_ERROR, "Null param");
 
-    if (FSM_STATE(&s11->s11_sm))
-    {
-        fsm_final((fsm_t*)&s11->s11_sm, 0);
-        fsm_clear((fsm_t*)&s11->s11_sm);
-    }
-
     list_remove(&s11_list, s11);
     pool_free_node(&s11_pool, s11);
 
@@ -171,12 +165,6 @@ s5c_ctx_t* sgw_ctx_s5c_add()
 status_t sgw_ctx_s5c_remove(s5c_ctx_t *s5c)
 {
     d_assert(s5c, return CORE_ERROR, "Null param");
-
-    if (FSM_STATE(&s5c->s5c_sm))
-    {
-        fsm_final((fsm_t*)&s5c->s5c_sm, 0);
-        fsm_clear((fsm_t*)&s5c->s5c_sm);
-    }
 
     list_remove(&s5c_list, s5c);
     pool_free_node(&s5c_pool, s5c);

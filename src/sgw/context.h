@@ -29,26 +29,19 @@ typedef struct _sgw_ctx_t {
     net_sock_t*     s5u_sock;  /* SGW S5-U local listen socket */
     gtp_node_t      s5u_node;  /* PGW S5-U remote GTPv1-U node */
 
-    msgq_id         queue_id;       /* Queue for processing MME control plane */
+    msgq_id         queue_id;       /* Queue for processing SGW control plane */
     tm_service_t    tm_service;     /* Timer Service */
-    gtp_xact_ctx_t  gtp_xact_ctx;   /* GTP Transaction Context for MME */
-
+    gtp_xact_ctx_t  gtp_xact_ctx;   /* GTP Transaction Context */
 } sgw_ctx_t;
 
 typedef struct _s11_ctx_t {
     lnode_t         node; /**< A node of list_t */
-
-    /* State Machine */
-    s11_sm_t        s11_sm;
 
     c_uint32_t      teid;
 } s11_ctx_t;
 
 typedef struct _s5c_ctx_t {
     lnode_t         node; /**< A node of list_t */
-
-    /* State Machine */
-    s5c_sm_t        s5c_sm;
 
     c_uint32_t      teid;
 } s5c_ctx_t;

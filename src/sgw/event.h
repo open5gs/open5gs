@@ -10,7 +10,7 @@ extern "C" {
 typedef enum {
     SGW_EVT_BASE = FSM_USER_SIG,
 
-    EVT_TM_SGW_S11_T3,
+    EVT_TM_SGW_T3,
 
     EVT_MSG_SGW_S11,
     EVT_MSG_SGW_S5C,

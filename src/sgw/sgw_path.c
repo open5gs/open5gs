@@ -43,8 +43,9 @@ static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
 
     d_trace_hex(1, pkbuf->payload, pkbuf->len);
 
-    event_set_param1(&e, (c_uintptr_t)gnode);
-    event_set_param2(&e, (c_uintptr_t)pkbuf);
+    event_set_param1(&e, (c_uintptr_t)sock);
+    event_set_param2(&e, (c_uintptr_t)gnode);
+    event_set_param3(&e, (c_uintptr_t)pkbuf);
     rv = sgw_event_send(&e);
     if (rv != CORE_OK)
     {

@@ -10,7 +10,7 @@ libsgw_la_SOURCES = \
 nodist_libsgw_la_SOURCES = \
     init.c event.c context.c \
 	sgw_path.c \
-	sgw_sm.c s11_sm.c s5c_sm.c
+	sgw_sm.c
 
 libsgw_la_DEPENDENCIES = \
     $(top_srcdir)/lib/core/src/libcore.la \
