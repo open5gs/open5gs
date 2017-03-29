@@ -1,8 +1,6 @@
 #define TRACE_MODULE _sgw_sm
 #include "core_debug.h"
 
-#include "gtp_types.h"
-
 #include "sm.h"
 #include "context.h"
 #include "event.h"
@@ -65,37 +63,19 @@ void sgw_state_operational(sgw_sm_t *s, event_t *e)
             gtp_node_t *gnode = (gtp_node_t *)event_get_param2(e);
             pkbuf_t *pkbuf = (pkbuf_t *)event_get_param3(e);
             gtp_xact_t *xact = NULL;
-            gtpv2c_header_t *h = NULL;
             gtp_message_t gtp_message;
 
             d_assert(sock, break, "Null param");
             d_assert(gnode, break, "Null param");
             d_assert(pkbuf, break, "Null param");
 
-            h = pkbuf->payload;
-            d_assert(h, break, "Null param");
-            
-            xact = gtp_xact_find(gnode, pkbuf);
-            if (!xact)
-            {
-                xact = gtp_xact_new_remote(&sgw_self()->gtp_xact_ctx,
-                        sock, gnode, pkbuf);
-            }
+            xact = gtp_xact_recv(&sgw_self()->gtp_xact_ctx, sock, gnode, pkbuf);
+            d_assert(xact, break, "Null param");
 
-            if (h->teid_presence)
-                pkbuf_header(pkbuf, -GTPV2C_HEADER_LEN);
-            else
-                pkbuf_header(pkbuf, -(GTPV2C_HEADER_LEN-GTPV2C_TEID_LEN));
+            rv = gtp_parse_msg(xact->type, &gtp_message, pkbuf);
+            d_assert(rv == CORE_OK, break, "parse error");
 
-            rv = gtp_parse_msg(h->type, &gtp_message, pkbuf);
-            if (rv != CORE_OK)
-            {
-                d_error("failed to parse GTPv2-C TLV message(type:%d)",
-                        h->type);
-                pkbuf_free(pkbuf);
-            }
-
-            switch(h->type)
+            switch(xact->type)
             {
                 case GTP_CREATE_SESSION_REQUEST_TYPE:
                 {

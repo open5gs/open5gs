@@ -46,54 +46,24 @@ typedef struct _gtp_xact_t {
 
 } gtp_xact_t;
 
-/**
- * Initialize the transaction framework
- */
 CORE_DECLARE(status_t) gtp_xact_init(gtp_xact_ctx_t *context, 
     tm_service_t *tm_service, c_uintptr_t event, c_uint32_t duration, 
     int retry_count);
-
-/**
- * Finalize the transaction framework
- */
 CORE_DECLARE(status_t) gtp_xact_final(void);
 
-/**
- * Create a new transaction which was initiated by local ASN node.
- */
 CORE_DECLARE(gtp_xact_t *) gtp_xact_new_local(gtp_xact_ctx_t *context, 
-    c_uint8_t type, net_sock_t *sock, gtp_node_t *gnode, pkbuf_t *pkbuf);
-
-/**
- * Create a new transaction which was initiated by remote node
- */
+    net_sock_t *sock, gtp_node_t *gnode, c_uint8_t type, pkbuf_t *pkbuf);
 CORE_DECLARE(gtp_xact_t *) gtp_xact_new_remote(gtp_xact_ctx_t *context, 
     net_sock_t *sock, gtp_node_t *gnode, pkbuf_t *pkbuf);
-
-/**
- * Delete a transaction
- */
 CORE_DECLARE(status_t) gtp_xact_delete(gtp_xact_t *xact);
 
-/**
- * Update the transaction with the new packet to be sent for the next step
- */
-CORE_DECLARE(status_t) gtp_xact_update_tx(gtp_xact_t *xact, pkbuf_t *pkb);
-
-/**
- * Update the transaction with the new received packet for the next step
- */
-CORE_DECLARE(status_t) gtp_xact_update_rx(gtp_xact_t *xact);
-
-/**
- * Apply and commit the updated of the transcation
- */
+CORE_DECLARE(gtp_xact_t *) gtp_xact_find(gtp_node_t *gnode, pkbuf_t *pkbuf);
 CORE_DECLARE(status_t) gtp_xact_commit(gtp_xact_t *xact);
 
-/**
- * Find the transaction with the given ASN header
- */
-CORE_DECLARE(gtp_xact_t *) gtp_xact_find(gtp_node_t *gnode, pkbuf_t *pkbuf);
+CORE_DECLARE(gtp_xact_t *) gtp_xact_recv(gtp_xact_ctx_t *context,
+        net_sock_t *sock, gtp_node_t *gnode, pkbuf_t *pkbuf);
+CORE_DECLARE(status_t) gtp_xact_send(gtp_xact_ctx_t *context,
+        net_sock_t *sock, gtp_node_t *gnode, c_uint8_t type, pkbuf_t *pkbuf);
 
 #ifdef __cplusplus
 }
