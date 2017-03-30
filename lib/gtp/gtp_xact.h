@@ -30,16 +30,16 @@ typedef struct _gtp_xact_ctx_t {
  */
 typedef struct _gtp_xact_t {
     lnode_t         node;           /**< A node of list */
-
-    c_uint32_t      xid;            /**< Transaction ID */
-    
 #define GTP_LOCAL_ORIGINATOR  0
 #define GTP_REMOTE_ORIGINATOR 1
     c_uint8_t       org;            /**< Transaction' originator. 
                                          local or remote */
-    c_uint8_t       type;           /**< GTPv2-C Message Type */
+
+    c_uint32_t      xid;            /**< Transaction ID */
+    
     net_sock_t      *sock;          /**< GTP Socket */
     gtp_node_t      *gnode;         /**< Relevant GTP node context */
+    c_uint8_t       type;           /**< GTPv2-C Message Type */
     pkbuf_t         *pkbuf;         /**< Relevant GTP node context */
     tm_block_id     tm_wait;        /**< Timer waiting for next message */
     int             retry_count;    /**< Retry count waiting for next message */
@@ -62,7 +62,7 @@ CORE_DECLARE(status_t) gtp_xact_commit(gtp_xact_t *xact);
 
 CORE_DECLARE(gtp_xact_t *) gtp_xact_recv(gtp_xact_ctx_t *context,
         net_sock_t *sock, gtp_node_t *gnode, pkbuf_t *pkbuf);
-CORE_DECLARE(status_t) gtp_xact_send(gtp_xact_ctx_t *context,
+CORE_DECLARE(gtp_xact_t *) gtp_xact_send(gtp_xact_ctx_t *context,
         net_sock_t *sock, gtp_node_t *gnode, c_uint8_t type, pkbuf_t *pkbuf);
 
 #ifdef __cplusplus
