@@ -116,6 +116,10 @@ gtp_xact_t *gtp_xact_create(gtp_xact_ctx_t *context,
     list_append(xact->org == GTP_LOCAL_ORIGINATOR ?  
             xact->gnode->local_list : xact->gnode->remote_list, xact);
 
+    d_trace(1, "%s Create  : xid = 0x%x, type = %d\n",
+            xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
+            xact->xid, xact->type);
+
     return xact;
 
 out2:
@@ -129,6 +133,11 @@ out1:
 status_t gtp_xact_delete(gtp_xact_t *xact)
 {
     d_assert(xact, , "Null param");
+
+    d_trace(1, "%s Delete  : xid = 0x%x, type = %d\n",
+            xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
+            xact->xid, xact->type);
+
     d_assert(xact->gnode, , "Null param");
 
     d_assert(xact->pkbuf, , "Null param");
@@ -184,6 +193,11 @@ status_t gtp_xact_commit(gtp_xact_t *xact)
     pkbuf_t *pkbuf = NULL;
 
     d_assert(xact, goto out, "Null param");
+
+    d_trace(1, "%s Commit  : xid = 0x%x, type = %d, "
+            "retry_count = %d\n",
+            xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
+            xact->xid, xact->type, xact->retry_count);
 
     if (xact->retry_count > 0)
     {
@@ -275,6 +289,13 @@ gtp_xact_t *gtp_xact_find(gtp_node_t *gnode, pkbuf_t *pkbuf)
         xact = list_next(xact);
     }
 
+    if (xact)
+    {
+        d_trace(1, "%s Find    : xid = 0x%x, type = %d\n",
+                xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
+                xact->xid, xact->type);
+    }
+
     return xact;
 }
 
@@ -292,13 +313,17 @@ gtp_xact_t *gtp_xact_recv(gtp_xact_ctx_t *context,
 
     h = pkbuf->payload;
     d_assert(h, goto out, "Null param");
-    
+
     xact = gtp_xact_find(gnode, pkbuf);
     if (!xact)
     {
         xact = gtp_xact_create(context, sock, gnode, GTP_REMOTE_ORIGINATOR, 
                 GTP_SQN_TO_XID(h->sqn), h->type, pkbuf);
     }
+
+    d_trace(1, "%s Receive : xid = 0x%x, type = %d\n",
+            xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
+            xact->xid, xact->type);
 
     if (h->teid_presence)
         pkbuf_header(pkbuf, -GTPV2C_HEADER_LEN);
@@ -315,7 +340,7 @@ out:
     return NULL;
 }
 
-gtp_xact_t *gtp_xact_assoicated_send(gtp_xact_ctx_t *context,
+gtp_xact_t *gtp_xact_associated_send(gtp_xact_ctx_t *context,
         net_sock_t *sock, gtp_node_t *gnode, c_uint8_t type, pkbuf_t *pkbuf,
         gtp_xact_t *associated_xact)
 {
@@ -348,6 +373,10 @@ gtp_xact_t *gtp_xact_assoicated_send(gtp_xact_ctx_t *context,
     rv = gtp_xact_commit(xact);
     d_assert(rv == CORE_OK, return NULL, "Null param");
 
+    d_trace(1, "%s Send    : xid = 0x%x, type = %d\n",
+            xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
+            xact->xid, xact->type);
+
     return xact;
 
 out:
@@ -358,5 +387,5 @@ out:
 gtp_xact_t *gtp_xact_send(gtp_xact_ctx_t *context,
         net_sock_t *sock, gtp_node_t *gnode, c_uint8_t type, pkbuf_t *pkbuf)
 {
-    return gtp_xact_assoicated_send(context, sock, gnode, type, pkbuf, NULL);
+    return gtp_xact_associated_send(context, sock, gnode, type, pkbuf, NULL);
 }

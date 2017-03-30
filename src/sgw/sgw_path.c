@@ -142,16 +142,32 @@ status_t sgw_path_close()
     return CORE_OK;
 }
 
-status_t sgw_s11_send_to_mme(pkbuf_t *pkbuf)
+gtp_xact_t *sgw_s11_send_to_mme(c_uint8_t type, pkbuf_t *pkbuf)
 {
-    d_assert(pkbuf, return CORE_ERROR, "Null param");
-    return gtp_send(sgw_self()->s11_sock, &sgw_self()->s11_node, pkbuf);
+    gtp_xact_t *xact;
+    d_assert(pkbuf, return NULL, "Null param");
+
+    xact = gtp_xact_send(&sgw_self()->gtp_xact_ctx, sgw_self()->s11_sock, 
+            &sgw_self()->s11_node, type, pkbuf);
+    d_assert(xact, return NULL, "Null param");
+
+    return xact;
 }
 
-status_t sgw_s5c_send_to_pgw(pkbuf_t *pkbuf)
+gtp_xact_t *sgw_s5c_send_to_pgw(
+        c_uint8_t type, pkbuf_t *pkbuf, gtp_xact_t *associated_xact)
 {
-    d_assert(pkbuf, return CORE_ERROR, "Null param");
-    return gtp_send(sgw_self()->s5c_sock, &sgw_self()->s5c_node, pkbuf);
+    gtp_xact_t *xact;
+
+    d_assert(pkbuf, return NULL, "Null param");
+    d_assert(associated_xact, return NULL, "Null param");
+
+    xact = gtp_xact_associated_send(
+            &sgw_self()->gtp_xact_ctx, sgw_self()->s5c_sock, 
+            &sgw_self()->s5c_node, type, pkbuf, associated_xact);
+    d_assert(xact, return NULL, "Null param");
+
+    return xact;
 }
 
 status_t sgw_s5u_send_to_pgw(pkbuf_t *pkbuf)

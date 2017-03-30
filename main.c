@@ -127,6 +127,8 @@ int main(int argc, char *argv[])
     }
 
     {
+        extern int _gtp_xact;
+        d_trace_level(&_gtp_xact, 100);
 #if 0
         extern int _mme_sm;
         d_trace_level(&_mme_sm, 100);
