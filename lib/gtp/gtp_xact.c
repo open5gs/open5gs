@@ -74,7 +74,7 @@ status_t gtp_xact_final(void)
     return CORE_OK;
 }
 
-static gtp_xact_t *gtp_xact_new_internal(gtp_xact_ctx_t *context, 
+gtp_xact_t *gtp_xact_create(gtp_xact_ctx_t *context, 
     net_sock_t *sock, gtp_node_t *gnode, c_uint8_t org, c_uint32_t xid, 
     c_uint8_t type, pkbuf_t *pkbuf)
 {
@@ -111,32 +111,6 @@ out2:
     pool_free_node(&gtp_xact_pool, xact);
 
 out1:
-    pkbuf_free(pkbuf);
-    return NULL;
-}
-
-gtp_xact_t *gtp_xact_new_local(gtp_xact_ctx_t *context, 
-    net_sock_t *sock, gtp_node_t *gnode, c_uint8_t type, pkbuf_t *pkbuf)
-{
-    return gtp_xact_new_internal(context, sock, gnode,
-            GTP_LOCAL_ORIGINATOR, GTP_XACT_NEXT_ID(context->g_xact_id), 
-            type, pkbuf); 
-}
-
-gtp_xact_t *gtp_xact_new_remote(gtp_xact_ctx_t *context, 
-    net_sock_t *sock, gtp_node_t *gnode, pkbuf_t *pkbuf)
-{
-    gtpv2c_header_t *h = NULL;
-
-    d_assert(pkbuf, goto out, "Null param");
-    h = pkbuf->payload;
-    d_assert(h, goto out, "Null param");
-
-    return gtp_xact_new_internal(context, sock, gnode, 
-            GTP_REMOTE_ORIGINATOR, GTP_SQN_TO_XID(h->sqn), 
-            h->type, pkbuf);
-
-out:
     pkbuf_free(pkbuf);
     return NULL;
 }
@@ -315,7 +289,8 @@ gtp_xact_t *gtp_xact_recv(gtp_xact_ctx_t *context,
     xact = gtp_xact_find(gnode, pkbuf);
     if (!xact)
     {
-        xact = gtp_xact_new_remote(context, sock, gnode, pkbuf);
+        xact = gtp_xact_create(context, sock, gnode, GTP_REMOTE_ORIGINATOR, 
+                GTP_SQN_TO_XID(h->sqn), h->type, pkbuf);
     }
 
     if (h->teid_presence)
@@ -341,7 +316,8 @@ gtp_xact_t *gtp_xact_send(gtp_xact_ctx_t *context,
     d_assert(gnode, goto out, "Null param");
     d_assert(pkbuf, goto out, "Null param");
 
-    xact = gtp_xact_new_local(context, sock, gnode, type, pkbuf);
+    xact = gtp_xact_create(context, sock, gnode, GTP_LOCAL_ORIGINATOR, 
+            GTP_XACT_NEXT_ID(context->g_xact_id), type, pkbuf); 
     d_assert(xact, return NULL, "Null param");
 
     rv = gtp_xact_commit(xact);

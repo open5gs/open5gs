@@ -54,10 +54,9 @@ CORE_DECLARE(status_t) gtp_xact_init(gtp_xact_ctx_t *context,
     int retry_count);
 CORE_DECLARE(status_t) gtp_xact_final(void);
 
-CORE_DECLARE(gtp_xact_t *) gtp_xact_new_local(gtp_xact_ctx_t *context, 
-    net_sock_t *sock, gtp_node_t *gnode, c_uint8_t type, pkbuf_t *pkbuf);
-CORE_DECLARE(gtp_xact_t *) gtp_xact_new_remote(gtp_xact_ctx_t *context, 
-    net_sock_t *sock, gtp_node_t *gnode, pkbuf_t *pkbuf);
+CORE_DECLARE(gtp_xact_t *) gtp_xact_create(gtp_xact_ctx_t *context, 
+    net_sock_t *sock, gtp_node_t *gnode, c_uint8_t org, c_uint32_t xid, 
+    c_uint8_t type, pkbuf_t *pkbuf);
 CORE_DECLARE(status_t) gtp_xact_delete(gtp_xact_t *xact);
 
 CORE_DECLARE(status_t) gtp_xact_associate(
