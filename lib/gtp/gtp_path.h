@@ -24,10 +24,10 @@ typedef struct _gtp_node_t {
     c_uint32_t      addr;           /**< Network byte order IP Address */
     c_uint16_t      port;           /**< Host byte order Port number */
 
-    /**< List of local initiated transactions */
-    list_t          local_xlist;    
-    /**< List of Remote initiated transactions */
-    list_t          remote_xlist;   
+    list_t          initial_list;    
+    list_t          triggered_list;   
+    list_t          *local_list;
+    list_t          *remote_list;
 } gtp_node_t;
 
 CORE_DECLARE(status_t) gtp_listen(net_sock_t **sock, 
@@ -35,7 +35,6 @@ CORE_DECLARE(status_t) gtp_listen(net_sock_t **sock,
 CORE_DECLARE(status_t) gtp_close(net_sock_t *sock);
 
 CORE_DECLARE(pkbuf_t *) gtp_read(net_sock_t *sock);
-
 CORE_DECLARE(status_t) gtp_send(net_sock_t *sock, 
     gtp_node_t *gnode, pkbuf_t *pkbuf);
 

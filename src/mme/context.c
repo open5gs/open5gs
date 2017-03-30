@@ -120,6 +120,11 @@ sgw_ctx_t* mme_ctx_sgw_add()
 
     memset(sgw, 0, sizeof(sgw_ctx_t));
 
+    list_init(&sgw->gnode.initial_list);
+    list_init(&sgw->gnode.triggered_list);
+    sgw->gnode.local_list = &sgw->gnode.initial_list;
+    sgw->gnode.remote_list = &sgw->gnode.triggered_list;
+
     list_append(&sgw_list, sgw);
     
     return sgw;

@@ -103,7 +103,7 @@ static gtp_xact_t *gtp_xact_new_internal(gtp_xact_ctx_t *context,
     xact->retry_count = context->retry_count;
 
     list_append(xact->org == GTP_LOCAL_ORIGINATOR ?  
-            &xact->gnode->local_xlist : &xact->gnode->remote_xlist, xact);
+            xact->gnode->local_list : xact->gnode->remote_list, xact);
 
     return xact;
 
@@ -152,8 +152,8 @@ status_t gtp_xact_delete(gtp_xact_t *xact)
     d_assert(xact->tm_wait, , "Null param");
     tm_delete(xact->tm_wait);
 
-    list_remove(xact->org == GTP_LOCAL_ORIGINATOR ?  &xact->gnode->local_xlist :
-            &xact->gnode->remote_xlist, xact);
+    list_remove(xact->org == GTP_LOCAL_ORIGINATOR ?  xact->gnode->local_list :
+            xact->gnode->remote_list, xact);
     pool_free_node(&gtp_xact_pool, xact);
 
     return CORE_OK;
@@ -267,7 +267,7 @@ gtp_xact_t *gtp_xact_find(gtp_node_t *gnode, pkbuf_t *pkbuf)
         case GTP_RELEASE_ACCESS_BEARERS_REQUEST_TYPE:
         case GTP_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
         case GTP_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
-            xact = list_first(&gnode->local_xlist);
+            xact = list_first(&gnode->initial_list);
             break;
 
         case GTP_CREATE_SESSION_RESPONSE_TYPE:
@@ -279,7 +279,7 @@ gtp_xact_t *gtp_xact_find(gtp_node_t *gnode, pkbuf_t *pkbuf)
         case GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE:
         case GTP_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
         case GTP_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
-            xact = list_first(&gnode->remote_xlist);
+            xact = list_first(&gnode->triggered_list);
             break;
 
         default:
