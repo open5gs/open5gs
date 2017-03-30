@@ -20,6 +20,9 @@ CORE_DECLARE_NONSTD(void) hss_terminate(void);
 CORE_DECLARE(status_t) sgw_initialize();
 CORE_DECLARE_NONSTD(void) sgw_terminate(void);
 
+CORE_DECLARE(status_t) pgw_initialize();
+CORE_DECLARE_NONSTD(void) pgw_terminate(void);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

@@ -37,7 +37,6 @@ status_t sgw_ctx_init()
     list_init(&s11_list);
     list_init(&s5c_list);
 
-    /* Initialize MME context */
     memset(&self, 0, sizeof(sgw_ctx_t));
 
     self.s11_addr = inet_addr("127.0.0.1");

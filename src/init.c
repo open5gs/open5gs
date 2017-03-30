@@ -60,6 +60,8 @@ status_t cellwire_initialize(char *config_path, char *log_path)
     }
 
     /* Parent */
+    rv = pgw_initialize();
+    if (rv != CORE_OK) return rv;
     rv = sgw_initialize();
     if (rv != CORE_OK) return rv;
     rv = mme_initialize();
@@ -78,6 +80,7 @@ void cellwire_terminate(void)
     thread_delete(net_thread);
     mme_terminate();
     sgw_terminate();
+    pgw_terminate();
 
     core_kill(hss_pid, SIGTERM);
     core_kill(logger_pid, SIGTERM);

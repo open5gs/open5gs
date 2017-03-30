@@ -6,7 +6,7 @@
 #include "sgw_path.h"
 #include "s11_handler.h"
 
-void sgw_handle_create_session_request(
+void sgw_s11_handle_create_session_request(
         gtp_xact_t *xact, gtp_create_session_request_t *req)
 {
     status_t rv;

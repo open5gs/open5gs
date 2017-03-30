@@ -1,33 +1,33 @@
-#define TRACE_MODULE _sgw_sm
+#define TRACE_MODULE _pgw_sm
 #include "core_debug.h"
 
 #include "sm.h"
 #include "context.h"
 #include "event.h"
-#include "sgw_path.h"
-#include "s11_handler.h"
+#include "pgw_path.h"
+#include "s5c_handler.h"
 
-void sgw_state_initial(sgw_sm_t *s, event_t *e)
+void pgw_state_initial(pgw_sm_t *s, event_t *e)
 {
-    sgw_sm_trace(1, e);
+    pgw_sm_trace(1, e);
 
     d_assert(s, return, "Null param");
 
-    FSM_TRAN(s, &sgw_state_operational);
+    FSM_TRAN(s, &pgw_state_operational);
 }
 
-void sgw_state_final(sgw_sm_t *s, event_t *e)
+void pgw_state_final(pgw_sm_t *s, event_t *e)
 {
-    sgw_sm_trace(1, e);
+    pgw_sm_trace(1, e);
 
     d_assert(s, return, "Null param");
 }
 
-void sgw_state_operational(sgw_sm_t *s, event_t *e)
+void pgw_state_operational(pgw_sm_t *s, event_t *e)
 {
     status_t rv;
 
-    sgw_sm_trace(1, e);
+    pgw_sm_trace(1, e);
 
     d_assert(s, return, "Null param");
 
@@ -35,7 +35,7 @@ void sgw_state_operational(sgw_sm_t *s, event_t *e)
     {
         case FSM_ENTRY_SIG:
         {
-            rv = sgw_path_open();
+            rv = pgw_path_open();
             if (rv != CORE_OK)
             {
                 d_error("Can't establish S11 path");
@@ -45,7 +45,7 @@ void sgw_state_operational(sgw_sm_t *s, event_t *e)
         }
         case FSM_EXIT_SIG:
         {
-            rv = sgw_path_close();
+            rv = pgw_path_close();
             if (rv != CORE_OK)
             {
                 d_error("Can't close S11 path");
@@ -53,8 +53,7 @@ void sgw_state_operational(sgw_sm_t *s, event_t *e)
             }
             break;
         }
-        case EVT_MSG_SGW_S11:
-        case EVT_MSG_SGW_S5C:
+        case EVT_MSG_PGW_S5C:
         {
             net_sock_t *sock = (net_sock_t *)event_get_param1(e);
             gtp_node_t *gnode = (gtp_node_t *)event_get_param2(e);
@@ -66,7 +65,7 @@ void sgw_state_operational(sgw_sm_t *s, event_t *e)
             d_assert(gnode, break, "Null param");
             d_assert(pkbuf, break, "Null param");
 
-            xact = gtp_xact_recv(&sgw_self()->gtp_xact_ctx, sock, gnode, pkbuf);
+            xact = gtp_xact_recv(&pgw_self()->gtp_xact_ctx, sock, gnode, pkbuf);
             d_assert(xact, break, "Null param");
 
             rv = gtp_parse_msg(xact->type, &gtp_message, pkbuf);
@@ -76,7 +75,7 @@ void sgw_state_operational(sgw_sm_t *s, event_t *e)
             {
                 case GTP_CREATE_SESSION_REQUEST_TYPE:
                 {
-                    sgw_s11_handle_create_session_request(
+                    pgw_s5c_handle_create_session_request(
                         xact, &gtp_message.create_session_request);
                     break;
                 }
@@ -84,7 +83,7 @@ void sgw_state_operational(sgw_sm_t *s, event_t *e)
 
             break;
         }
-        case EVT_TM_SGW_T3:
+        case EVT_TM_PGW_T3:
         {
             gtp_xact_t *xact = (gtp_xact_t *)event_get_param1(e);
             d_assert(xact, break, "Nill param");
@@ -94,7 +93,7 @@ void sgw_state_operational(sgw_sm_t *s, event_t *e)
         }
         default:
         {
-            d_error("No handler for event %s", sgw_event_get_name(e));
+            d_error("No handler for event %s", pgw_event_get_name(e));
             break;
         }
     }

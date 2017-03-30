@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in.
 
-SUBDIRS = mme hss sgw
+SUBDIRS = mme hss sgw pgw
 
 noinst_LTLIBRARIES = libcellwire.la
 
@@ -14,13 +14,15 @@ libcellwire_la_DEPENDENCIES = \
     $(top_srcdir)/lib/logger/liblogger.la \
     $(top_srcdir)/src/mme/libmme.la \
     $(top_srcdir)/src/hss/libhss.la \
-    $(top_srcdir)/src/sgw/libsgw.la
+    $(top_srcdir)/src/sgw/libsgw.la \
+    $(top_srcdir)/src/pgw/libpgw.la
 
 libcellwire_la_LIBADD = \
     $(top_srcdir)/lib/logger/liblogger.la \
     $(top_srcdir)/src/mme/libmme.la \
     $(top_srcdir)/src/hss/libhss.la \
-    $(top_srcdir)/src/sgw/libsgw.la
+    $(top_srcdir)/src/sgw/libsgw.la \
+    $(top_srcdir)/src/pgw/libpgw.la
 
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/lib/core/include \
