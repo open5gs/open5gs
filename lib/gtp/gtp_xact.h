@@ -39,11 +39,14 @@ typedef struct _gtp_xact_t {
     
     net_sock_t      *sock;          /**< GTP Socket */
     gtp_node_t      *gnode;         /**< Relevant GTP node context */
+
     c_uint8_t       type;           /**< GTPv2-C Message Type */
     pkbuf_t         *pkbuf;         /**< Relevant GTP node context */
+
     tm_block_id     tm_wait;        /**< Timer waiting for next message */
     int             retry_count;    /**< Retry count waiting for next message */
 
+    struct _gtp_xact_t *assoc_xact; /**< Associated transaction */
 } gtp_xact_t;
 
 CORE_DECLARE(status_t) gtp_xact_init(gtp_xact_ctx_t *context, 
@@ -56,6 +59,11 @@ CORE_DECLARE(gtp_xact_t *) gtp_xact_new_local(gtp_xact_ctx_t *context,
 CORE_DECLARE(gtp_xact_t *) gtp_xact_new_remote(gtp_xact_ctx_t *context, 
     net_sock_t *sock, gtp_node_t *gnode, pkbuf_t *pkbuf);
 CORE_DECLARE(status_t) gtp_xact_delete(gtp_xact_t *xact);
+
+CORE_DECLARE(status_t) gtp_xact_associate(
+        gtp_xact_t *xact1, gtp_xact_t *xact2);
+CORE_DECLARE(status_t) gtp_xact_deassociate(
+        gtp_xact_t *xact1, gtp_xact_t *xact2);
 
 CORE_DECLARE(gtp_xact_t *) gtp_xact_find(gtp_node_t *gnode, pkbuf_t *pkbuf);
 CORE_DECLARE(status_t) gtp_xact_commit(gtp_xact_t *xact);

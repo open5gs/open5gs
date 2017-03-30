@@ -74,8 +74,9 @@ status_t gtp_xact_final(void)
     return CORE_OK;
 }
 
-gtp_xact_t *gtp_xact_new_local(gtp_xact_ctx_t *context, 
-    net_sock_t *sock, gtp_node_t *gnode, c_uint8_t type, pkbuf_t *pkbuf)
+static gtp_xact_t *gtp_xact_new_internal(gtp_xact_ctx_t *context, 
+    net_sock_t *sock, gtp_node_t *gnode, c_uint8_t org, c_uint32_t xid, 
+    c_uint8_t type, pkbuf_t *pkbuf)
 {
     gtp_xact_t *xact = NULL;
 
@@ -89,7 +90,8 @@ gtp_xact_t *gtp_xact_new_local(gtp_xact_ctx_t *context,
 
     memset(xact, 0, sizeof(gtp_xact_t));
 
-    xact->xid = GTP_XACT_NEXT_ID(context->g_xact_id);
+    xact->org = org;
+    xact->xid = xid;
     xact->sock = sock;
     xact->gnode = gnode;
     xact->type = type;
@@ -100,8 +102,8 @@ gtp_xact_t *gtp_xact_new_local(gtp_xact_ctx_t *context,
     d_assert(xact->tm_wait, goto out2, "Timer allocation failed");
     xact->retry_count = context->retry_count;
 
-    xact->org = GTP_LOCAL_ORIGINATOR;
-    list_append(&gnode->local_xlist, xact);
+    list_append(xact->org == GTP_LOCAL_ORIGINATOR ?  
+            &xact->gnode->local_xlist : &xact->gnode->remote_xlist, xact);
 
     return xact;
 
@@ -110,49 +112,32 @@ out2:
 
 out1:
     pkbuf_free(pkbuf);
-
     return NULL;
+}
+
+gtp_xact_t *gtp_xact_new_local(gtp_xact_ctx_t *context, 
+    net_sock_t *sock, gtp_node_t *gnode, c_uint8_t type, pkbuf_t *pkbuf)
+{
+    return gtp_xact_new_internal(context, sock, gnode,
+            GTP_LOCAL_ORIGINATOR, GTP_XACT_NEXT_ID(context->g_xact_id), 
+            type, pkbuf); 
 }
 
 gtp_xact_t *gtp_xact_new_remote(gtp_xact_ctx_t *context, 
     net_sock_t *sock, gtp_node_t *gnode, pkbuf_t *pkbuf)
 {
     gtpv2c_header_t *h = NULL;
-    gtp_xact_t *xact = NULL;
 
-    d_assert(sock, goto out1, "Null param");
-    d_assert(gnode, goto out1, "Null param");
-    d_assert(pkbuf, goto out1, "Null param");
-
+    d_assert(pkbuf, goto out, "Null param");
     h = pkbuf->payload;
-    d_assert(h, goto out1, "Null param");
+    d_assert(h, goto out, "Null param");
 
-    pool_alloc_node(&gtp_xact_pool, &xact);
-    d_assert(xact, goto out1, "Transaction allocation failed");
-    memset(xact, 0, sizeof(gtp_xact_t));
+    return gtp_xact_new_internal(context, sock, gnode, 
+            GTP_REMOTE_ORIGINATOR, GTP_SQN_TO_XID(h->sqn), 
+            h->type, pkbuf);
 
-    xact->xid = GTP_SQN_TO_XID(h->sqn);
-    xact->sock = sock;
-    xact->gnode = gnode;
-    xact->type = h->type;
-    xact->pkbuf = pkbuf;
-
-    xact->tm_wait = event_timer(context->tm_service, context->event, 
-            context->duration * context->retry_count, (c_uintptr_t)xact);
-    d_assert(xact->tm_wait, goto out2, "Timer allocation failed");
-    xact->retry_count = 1;
-
-    xact->org = GTP_REMOTE_ORIGINATOR;
-    list_append(&gnode->remote_xlist, xact);
-
-    return xact;
-
-out2:
-    pool_free_node(&gtp_xact_pool, xact);
-
-out1:
+out:
     pkbuf_free(pkbuf);
-
     return NULL;
 }
 
@@ -170,6 +155,38 @@ status_t gtp_xact_delete(gtp_xact_t *xact)
     list_remove(xact->org == GTP_LOCAL_ORIGINATOR ?  &xact->gnode->local_xlist :
             &xact->gnode->remote_xlist, xact);
     pool_free_node(&gtp_xact_pool, xact);
+
+    return CORE_OK;
+}
+
+status_t gtp_xact_associate(gtp_xact_t *xact1, gtp_xact_t *xact2)
+{
+    d_assert(xact1, return CORE_ERROR, "Null param");
+    d_assert(xact2, return CORE_ERROR, "Null param");
+
+    d_assert(xact1->assoc_xact == NULL, 
+            return CORE_ERROR, "Already assocaited");
+    d_assert(xact2->assoc_xact == NULL, 
+            return CORE_ERROR, "Already assocaited");
+
+    xact1->assoc_xact = xact2;
+    xact2->assoc_xact = xact1;
+
+    return CORE_OK;
+}
+
+status_t gtp_xact_deassociate(gtp_xact_t *xact1, gtp_xact_t *xact2)
+{
+    d_assert(xact1, return CORE_ERROR, "Null param");
+    d_assert(xact2, return CORE_ERROR, "Null param");
+
+    d_assert(xact1->assoc_xact != NULL, 
+            return CORE_ERROR, "Already deassocaited");
+    d_assert(xact2->assoc_xact != NULL, 
+            return CORE_ERROR, "Already deassocaited");
+
+    xact1->assoc_xact = NULL;
+    xact2->assoc_xact = NULL;
 
     return CORE_OK;
 }
