@@ -83,11 +83,13 @@ status_t mme_s11_close()
 #include "gtp_tlv.h"
 status_t mme_s11_send_to_sgw(void *sgw, pkbuf_t *pkbuf)
 {
+    gtp_xact_t *xact;
     d_assert(sgw, return CORE_ERROR, "Null param");
     d_assert(pkbuf, return CORE_ERROR, "Null param");
 
-    gtp_xact_send(&mme_self()->gtp_xact_ctx, mme_self()->s11_sock, sgw, 
+    xact = gtp_xact_send(&mme_self()->gtp_xact_ctx, mme_self()->s11_sock, sgw, 
             GTP_CREATE_SESSION_REQUEST_TYPE, pkbuf);
+    gtp_xact_delete(xact);
     
     return CORE_OK;
 }

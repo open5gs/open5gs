@@ -67,6 +67,9 @@ status_t gtp_xact_final(void)
 {
     if (gtp_xact_pool_initialized == 1)
     {
+        d_print("%d not freed in gtp_xact_pool[%d] of S11/S5-SM\n",
+                pool_size(&gtp_xact_pool) - pool_avail(&gtp_xact_pool),
+                pool_size(&gtp_xact_pool));
         pool_final(&gtp_xact_pool);
     }
     gtp_xact_pool_initialized = 0;
@@ -79,6 +82,8 @@ gtp_xact_t *gtp_xact_create(gtp_xact_ctx_t *context,
     c_uint8_t type, pkbuf_t *pkbuf)
 {
     gtp_xact_t *xact = NULL;
+    c_uint32_t duration = context->duration;
+    int retry_count = context->retry_count;
 
     d_assert(context, goto out1, "Null param");
     d_assert(sock, goto out1, "Null param");
@@ -97,10 +102,16 @@ gtp_xact_t *gtp_xact_create(gtp_xact_ctx_t *context,
     xact->type = type;
     xact->pkbuf = pkbuf;
 
+    if (xact->org == GTP_REMOTE_ORIGINATOR)
+    {
+        duration = context->duration * context->retry_count;
+        retry_count = 1;
+    }
+
     xact->tm_wait = event_timer(context->tm_service, context->event, 
-            context->duration, (c_uintptr_t)xact);
+            duration, (c_uintptr_t)xact);
     d_assert(xact->tm_wait, goto out2, "Timer allocation failed");
-    xact->retry_count = context->retry_count;
+    xact->retry_count = retry_count;
 
     list_append(xact->org == GTP_LOCAL_ORIGINATOR ?  
             xact->gnode->local_list : xact->gnode->remote_list, xact);
@@ -171,34 +182,26 @@ status_t gtp_xact_commit(gtp_xact_t *xact)
     net_sock_t *sock = NULL;
     gtp_node_t *gnode = NULL;
     pkbuf_t *pkbuf = NULL;
-    gtpv2c_header_t *h = NULL;
 
     d_assert(xact, goto out, "Null param");
 
     if (xact->retry_count > 0)
     {
-        sock = xact->sock;
-        d_assert(sock, goto out, "Null param");
-        gnode = xact->gnode;
-        d_assert(gnode, goto out, "Null param");
-        pkbuf = xact->pkbuf;
-        d_assert(pkbuf, goto out, "Null param");
-
-        pkbuf_header(pkbuf, GTPV2C_HEADER_LEN);
-        h = pkbuf->payload;
-        d_assert(h, goto out, "Null param");
-
-        h->version = 2;
-        h->teid_presence = 1;
-        h->type = xact->type;
-        h->length = htons(pkbuf->len - 4);
-        h->sqn = GTP_XID_TO_SQN(xact->xid);
-
-        rv = gtp_send(sock, gnode, pkbuf);
-        if (rv != CORE_OK)
+        if (xact->org == GTP_LOCAL_ORIGINATOR)
         {
-            d_error("failed to send GTP message");
-            goto out;
+            sock = xact->sock;
+            d_assert(sock, goto out, "Null param");
+            gnode = xact->gnode;
+            d_assert(gnode, goto out, "Null param");
+            pkbuf = xact->pkbuf;
+            d_assert(pkbuf, goto out, "Null param");
+
+            rv = gtp_send(sock, gnode, pkbuf);
+            if (rv != CORE_OK)
+            {
+                d_error("failed to send GTP message");
+                goto out;
+            }
         }
 
         xact->retry_count--;
@@ -208,7 +211,10 @@ status_t gtp_xact_commit(gtp_xact_t *xact)
     }
     else
     {
-        d_warn("No Response. Give up");
+        if (xact->org == GTP_LOCAL_ORIGINATOR)
+        {
+            d_warn("No Response. Give up");
+        }
         gtp_xact_delete(xact);
     }
 
@@ -275,6 +281,7 @@ gtp_xact_t *gtp_xact_find(gtp_node_t *gnode, pkbuf_t *pkbuf)
 gtp_xact_t *gtp_xact_recv(gtp_xact_ctx_t *context,
         net_sock_t *sock, gtp_node_t *gnode, pkbuf_t *pkbuf)
 {
+    status_t rv;
     gtp_xact_t *xact = NULL;
     gtpv2c_header_t *h = NULL;
 
@@ -298,6 +305,9 @@ gtp_xact_t *gtp_xact_recv(gtp_xact_ctx_t *context,
     else
         pkbuf_header(pkbuf, -(GTPV2C_HEADER_LEN-GTPV2C_TEID_LEN));
 
+    rv = gtp_xact_commit(xact);
+    d_assert(rv == CORE_OK, return NULL, "Null param");
+
     return xact;
 
 out:
@@ -305,11 +315,13 @@ out:
     return NULL;
 }
 
-gtp_xact_t *gtp_xact_send(gtp_xact_ctx_t *context,
-        net_sock_t *sock, gtp_node_t *gnode, c_uint8_t type, pkbuf_t *pkbuf)
+gtp_xact_t *gtp_xact_assoicated_send(gtp_xact_ctx_t *context,
+        net_sock_t *sock, gtp_node_t *gnode, c_uint8_t type, pkbuf_t *pkbuf,
+        gtp_xact_t *associated_xact)
 {
     status_t rv;
     gtp_xact_t *xact = NULL;
+    gtpv2c_header_t *h = NULL;
 
     d_assert(context, goto out, "Null param");
     d_assert(sock, goto out, "Null param");
@@ -320,6 +332,19 @@ gtp_xact_t *gtp_xact_send(gtp_xact_ctx_t *context,
             GTP_XACT_NEXT_ID(context->g_xact_id), type, pkbuf); 
     d_assert(xact, return NULL, "Null param");
 
+    pkbuf_header(pkbuf, GTPV2C_HEADER_LEN);
+    h = pkbuf->payload;
+    d_assert(h, goto out, "Null param");
+
+    h->version = 2;
+    h->teid_presence = 1;
+    h->type = xact->type;
+    h->length = htons(pkbuf->len - 4);
+    h->sqn = GTP_XID_TO_SQN(xact->xid);
+
+    if (associated_xact)
+        gtp_xact_associate(xact, associated_xact);
+
     rv = gtp_xact_commit(xact);
     d_assert(rv == CORE_OK, return NULL, "Null param");
 
@@ -328,4 +353,10 @@ gtp_xact_t *gtp_xact_send(gtp_xact_ctx_t *context,
 out:
     pkbuf_free(pkbuf);
     return NULL;
+}
+
+gtp_xact_t *gtp_xact_send(gtp_xact_ctx_t *context,
+        net_sock_t *sock, gtp_node_t *gnode, c_uint8_t type, pkbuf_t *pkbuf)
+{
+    return gtp_xact_assoicated_send(context, sock, gnode, type, pkbuf, NULL);
 }

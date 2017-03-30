@@ -85,7 +85,6 @@ void sgw_state_operational(sgw_sm_t *s, event_t *e)
                 }
             }
 
-            gtp_xact_delete(xact);
             break;
         }
         case EVT_TM_SGW_T3:
