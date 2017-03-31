@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtp_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-03-29 19:27:19.284563 by acetcom
+ * Created on: 2017-03-31 09:04:32.632717 by acetcom
  * from 29274-d80.docx
  ******************************************************************************/
 
@@ -1718,6 +1718,38 @@ tlv_desc_t tlv_desc_load_control_information_0 =
     }
 };
 
+tlv_desc_t tlv_desc_load_control_information_1 =
+{
+    TLV_COMPOUND,
+    "Load Control Information",
+    TLV_LOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    1,
+    sizeof(tlv_load_control_information_t),
+    {
+        &tlv_desc_sequence_number_0,
+        &tlv_desc_metric_0,
+        &tlv_desc_apn_and_relative_capacity_0,
+        NULL,
+    }
+};
+
+tlv_desc_t tlv_desc_load_control_information_2 =
+{
+    TLV_COMPOUND,
+    "Load Control Information",
+    TLV_LOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    2,
+    sizeof(tlv_load_control_information_t),
+    {
+        &tlv_desc_sequence_number_0,
+        &tlv_desc_metric_0,
+        &tlv_desc_apn_and_relative_capacity_0,
+        NULL,
+    }
+};
+
 tlv_desc_t tlv_desc_remote_ue_context_0 =
 {
     TLV_COMPOUND,
@@ -1835,6 +1867,47 @@ tlv_desc_t tlv_desc_create_session_request =
     NULL,
 }};
 
+tlv_desc_t tlv_desc_create_session_response =
+{
+    TLV_MESSAGE,
+    "Create Session Response",
+    0, 0, 0, 0, {
+        &tlv_desc_cause_0,
+        &tlv_desc_change_reporting_action_0,
+        &tlv_desc_csg_information_reporting_action_0,
+        &tlv_desc_enb_information_reporting_0,
+        &tlv_desc_f_teid_0,
+        &tlv_desc_f_teid_1,
+        &tlv_desc_paa_0,
+        &tlv_desc_apn_restriction_0,
+        &tlv_desc_ambr_0,
+        &tlv_desc_ebi_0,
+        &tlv_desc_pco_0,
+        &tlv_desc_bearer_context_0,
+        &tlv_desc_bearer_context_1,
+        &tlv_desc_recovery_0,
+        &tlv_desc_fqdn_0,
+        &tlv_desc_ip_address_0,
+        &tlv_desc_fq_csid_0,
+        &tlv_desc_fq_csid_1,
+        &tlv_desc_ldn_0,
+        &tlv_desc_ldn_1,
+        &tlv_desc_epc_timer_0,
+        &tlv_desc_apco_0,
+        &tlv_desc_ip4cp_0,
+        &tlv_desc_indication_0,
+        &tlv_desc_presence_reporting_area_action_0,
+        &tlv_desc_load_control_information_0,
+        &tlv_desc_load_control_information_1,
+        &tlv_desc_load_control_information_2,
+        &tlv_desc_overload_control_information_0,
+        &tlv_desc_overload_control_information_1,
+        &tlv_desc_f_container_0,
+        &tlv_desc_charging_id_0,
+        &tlv_desc_epco_0,
+    NULL,
+}};
+
 
 status_t gtp_parse_msg(
         c_uint8_t type, gtp_message_t *gtp_message, pkbuf_t *pkbuf)
@@ -1855,6 +1928,10 @@ status_t gtp_parse_msg(
         case GTP_CREATE_SESSION_REQUEST_TYPE:
             rv = tlv_parse_msg(&gtp_message->create_session_request,
                     &tlv_desc_create_session_request, pkbuf, TLV_MODE_T1_L2_I1);
+            break;
+        case GTP_CREATE_SESSION_RESPONSE_TYPE:
+            rv = tlv_parse_msg(&gtp_message->create_session_response,
+                    &tlv_desc_create_session_response, pkbuf, TLV_MODE_T1_L2_I1);
             break;
         default:
             d_warn("Not implmeneted(type:%d)", type);

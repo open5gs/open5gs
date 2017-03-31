@@ -37,6 +37,7 @@ verbosity = 0
 filename = ""
 outdir = './'
 cachedir = './cache/'
+currentdir = './'
 
 FAIL = '\033[91m'
 INFO = '\033[93m'
@@ -276,10 +277,10 @@ for (k, v) in sorted_msg_list:
         type_list[key] = { "reference" : ie["reference"], "presence" : ie["presence"], "format" : ie["format"], "length" : ie["length"], "message" : k, "value" : ie["value"] }
 
 d_info("[Type List]")
-cachefile = cachedir + "type_list.py"
-if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
-    execfile(cachefile)
-    print "Read from " + cachefile
+typefile = currentdir + "type_list.py"
+if os.path.isfile(typefile) and os.access(typefile, os.R_OK):
+    execfile(typefile)
+    print "Read from " + typefile
 
 tmp = [(k, v["reference"]) for k, v in type_list.items()]
 sorted_type_list = sorted(tmp, key=lambda tup: tup[1])

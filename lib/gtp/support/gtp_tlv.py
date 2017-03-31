@@ -119,6 +119,10 @@ def get_cells(cells):
         ie_type = 'APCO'
     elif ie_type.find('Charging Id') != -1:
         ie_type = 'Charging ID'
+    elif ie_type.find('H(e)NB Information Reporting') != -1:
+        ie_type = 'eNB Information Reporting'
+    elif ie_type.find('IPv4 Configuration Parameters (IP4CP)') != -1:
+        ie_type = 'IP4CP'
     if ie_type not in type_list.keys():
         assert False, "Unknown IE type : [" \
                 + cells[3].text + "]" + "(" + ie_type + ")"
@@ -311,6 +315,7 @@ else:
 msg_list["Echo Request"]["table"] = 6
 msg_list["Echo Response"]["table"] = 7
 msg_list["Create Session Request"]["table"] = 8
+msg_list["Create Session Response"]["table"] = 13
 
 for key in msg_list.keys():
     if "table" in msg_list[key].keys():

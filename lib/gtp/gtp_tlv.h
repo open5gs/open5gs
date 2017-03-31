@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtp_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-03-29 19:27:19.270396 by acetcom
+ * Created on: 2017-03-31 09:04:32.623628 by acetcom
  * from 29274-d80.docx
  ******************************************************************************/
 
@@ -365,6 +365,8 @@ extern tlv_desc_t tlv_desc_overload_control_information_0;
 extern tlv_desc_t tlv_desc_overload_control_information_1;
 extern tlv_desc_t tlv_desc_overload_control_information_2;
 extern tlv_desc_t tlv_desc_load_control_information_0;
+extern tlv_desc_t tlv_desc_load_control_information_1;
+extern tlv_desc_t tlv_desc_load_control_information_2;
 extern tlv_desc_t tlv_desc_remote_ue_context_0;
 extern tlv_desc_t tlv_desc_scef_pdn_connection_0;
 
@@ -675,11 +677,48 @@ typedef struct _gtp_create_session_request_t {
     tlv_port_number_t ue_tcp_port;
 } gtp_create_session_request_t;
 
+typedef struct _gtp_create_session_response_t {
+    tlv_cause_t cause;
+    tlv_change_reporting_action_t change_reporting_action_;
+    tlv_csg_information_reporting_action_t csg_information_reporting_action;
+    tlv_enb_information_reporting_t hnb_information_reporting;
+    tlv_f_teid_t sender_f_teid_for_control_plane;
+    tlv_f_teid_t pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface;
+    tlv_paa_t pdn_address_allocation;
+    tlv_apn_restriction_t apn_restriction;
+    tlv_ambr_t aggregate_maximum_bit_rate;
+    tlv_ebi_t linked_eps_bearer_id;
+    tlv_pco_t protocol_configuration_options;
+    tlv_bearer_context_t bearer_contexts_created;
+    tlv_bearer_context_t bearer_contexts_marked_for_removal;
+    tlv_recovery_t recovery;
+    tlv_fqdn_t charging_gateway_name;
+    tlv_ip_address_t charging_gateway_address;
+    tlv_fq_csid_t pgw_fq_csid;
+    tlv_fq_csid_t sgw_fq_csid;
+    tlv_ldn_t sgw_ldn;
+    tlv_ldn_t pgw_ldn;
+    tlv_epc_timer_t pgw_back_off_time;
+    tlv_apco_t additional_protocol_configuration_options;
+    tlv_ip4cp_t trusted_wlan_ipv4_parameters_;
+    tlv_indication_t indication_flags;
+    tlv_presence_reporting_area_action_t presence_reporting_area_action;
+    tlv_load_control_information_t pgw_s_node_level_load_control_information;
+    tlv_load_control_information_t pgw_s_apn_level_load_control_information;
+    tlv_load_control_information_t sgw_s_node_level_load_control_information;
+    tlv_overload_control_information_t pgw_s_overload_control_information;
+    tlv_overload_control_information_t sgw_s_overload_control_information;
+    tlv_f_container_t nbifom_container;
+    tlv_charging_id_t pdn_connection_charging_id;
+    tlv_epco_t extended_protocol_configuration_options;
+} gtp_create_session_response_t;
+
 typedef struct _gtp_message_t {
    union {
         gtp_echo_request_t echo_request;
         gtp_echo_response_t echo_response;
         gtp_create_session_request_t create_session_request;
+        gtp_create_session_response_t create_session_response;
    };
 } gtp_message_t;
 
