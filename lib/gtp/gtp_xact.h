@@ -21,8 +21,6 @@ typedef struct _gtp_xact_ctx_t {
 
     tm_service_t *tm_service;
     c_uintptr_t event;
-    c_uint32_t duration;
-    int retry_count;
 } gtp_xact_ctx_t;
 
 /**
@@ -44,19 +42,18 @@ typedef struct _gtp_xact_t {
     pkbuf_t         *pkbuf;         /**< Relevant GTP node context */
 
     tm_block_id     tm_wait;        /**< Timer waiting for next message */
-    int             retry_count;    /**< Retry count waiting for next message */
+    c_uint8_t       retry_count;    /**< Retry count waiting for next message */
 
     struct _gtp_xact_t *assoc_xact; /**< Associated transaction */
 } gtp_xact_t;
 
 CORE_DECLARE(status_t) gtp_xact_init(gtp_xact_ctx_t *context, 
-    tm_service_t *tm_service, c_uintptr_t event, c_uint32_t duration, 
-    int retry_count);
+    tm_service_t *tm_service, c_uintptr_t event);
 CORE_DECLARE(status_t) gtp_xact_final(void);
 
 CORE_DECLARE(gtp_xact_t *) gtp_xact_create(gtp_xact_ctx_t *context, 
     net_sock_t *sock, gtp_node_t *gnode, c_uint8_t org, c_uint32_t xid, 
-    c_uint8_t type);
+    c_uint8_t type, c_uint32_t duration, c_uint8_t retry_count);
 CORE_DECLARE(status_t) gtp_xact_delete(gtp_xact_t *xact);
 
 CORE_DECLARE(status_t) gtp_xact_associate(

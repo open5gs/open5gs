@@ -14,6 +14,12 @@
     ((__id2) > (__id1) ? ((__id2) - (__id1) < 0x7fffff ? -1 : 1) : \
      (__id1) > (__id2) ? ((__id1) - (__id2) < 0x7fffff ? 1 : -1) : 0)
 
+#define GTP_XACT_LOCAL_DURATION 3000 /* 3 seconds */
+#define GTP_XACT_LOCAL_RETRY_COUNT 3 
+#define GTP_XACT_REMOTE_DURATION \
+    (GTP_XACT_LOCAL_DURATION * GTP_XACT_LOCAL_RETRY_COUNT) /* 9 seconds */
+#define GTP_XACT_REMOTE_RETRY_COUNT 1 
+
 /* 5.1 General format */
 #define GTPV2C_HEADER_LEN   12
 #define GTPV2C_TEID_LEN     4
@@ -42,8 +48,8 @@ ED4(c_uint8_t version:3;,
 static int gtp_xact_pool_initialized = 0;
 pool_declare(gtp_xact_pool, gtp_xact_t, SIZE_OF_GTP_XACT_POOL);
 
-status_t gtp_xact_init(gtp_xact_ctx_t *context, tm_service_t *tm_service, 
-        c_uintptr_t event, c_uint32_t duration, int retry_count)
+status_t gtp_xact_init(gtp_xact_ctx_t *context, 
+        tm_service_t *tm_service, c_uintptr_t event)
 {
     if (gtp_xact_pool_initialized == 0)
     {
@@ -57,8 +63,6 @@ status_t gtp_xact_init(gtp_xact_ctx_t *context, tm_service_t *tm_service,
 
     context->tm_service = tm_service;
     context->event = event;;
-    context->duration = duration;;
-    context->retry_count = retry_count;;
 
     return CORE_OK;
 }
@@ -79,11 +83,9 @@ status_t gtp_xact_final(void)
 
 gtp_xact_t *gtp_xact_create(gtp_xact_ctx_t *context, 
     net_sock_t *sock, gtp_node_t *gnode, c_uint8_t org, c_uint32_t xid, 
-    c_uint8_t type)
+    c_uint8_t type, c_uint32_t duration, c_uint8_t retry_count)
 {
     gtp_xact_t *xact = NULL;
-    c_uint32_t duration = context->duration;
-    int retry_count = context->retry_count;
 
     d_assert(context, return NULL, "Null param");
     d_assert(sock, return NULL, "Null param");
@@ -99,12 +101,6 @@ gtp_xact_t *gtp_xact_create(gtp_xact_ctx_t *context,
     xact->sock = sock;
     xact->gnode = gnode;
     xact->type = type;
-
-    if (xact->org == GTP_REMOTE_ORIGINATOR)
-    {
-        duration = context->duration * context->retry_count;
-        retry_count = 1;
-    }
 
     xact->tm_wait = event_timer(context->tm_service, context->event, 
             duration, (c_uintptr_t)xact);
@@ -215,20 +211,27 @@ status_t gtp_xact_timeout(gtp_xact_t *xact)
             xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
             xact->xid, xact->type);
 
-    if (--xact->retry_count > 0)
+    if (xact->org == GTP_REMOTE_ORIGINATOR)
     {
-        tm_start(xact->tm_wait);
-
-        d_assert(xact->pkbuf, goto out, "Null param");
-        d_assert(gtp_send(xact->sock, xact->gnode, xact->pkbuf) == CORE_OK,
-                goto out, "gtp_send error");
+        gtp_xact_delete(xact);
     }
     else
     {
-        d_warn("[%d]%s No Reponse. Give up",
-                xact->gnode->port,
-                xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE");
-        gtp_xact_delete(xact);
+        if (--xact->retry_count > 0)
+        {
+            tm_start(xact->tm_wait);
+
+            d_assert(xact->pkbuf, goto out, "Null param");
+            d_assert(gtp_send(xact->sock, xact->gnode, xact->pkbuf) == CORE_OK,
+                    goto out, "gtp_send error");
+        }
+        else
+        {
+            d_warn("[%d]%s No Reponse. Give up",
+                    xact->gnode->port,
+                    xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE");
+            gtp_xact_delete(xact);
+        }
     }
 
     return CORE_OK;
@@ -317,7 +320,8 @@ gtp_xact_t *gtp_xact_recv(gtp_xact_ctx_t *context,
     if (!xact)
     {
         xact = gtp_xact_create(context, sock, gnode, GTP_REMOTE_ORIGINATOR, 
-                GTP_SQN_TO_XID(h->sqn), h->type);
+                GTP_SQN_TO_XID(h->sqn), h->type,
+                GTP_XACT_REMOTE_DURATION, GTP_XACT_REMOTE_RETRY_COUNT);
     }
 
     if (h->teid_presence)
@@ -351,7 +355,8 @@ gtp_xact_t *gtp_xact_associated_send(gtp_xact_ctx_t *context,
     d_assert(pkbuf, goto out, "Null param");
 
     xact = gtp_xact_create(context, sock, gnode, GTP_LOCAL_ORIGINATOR, 
-            GTP_XACT_NEXT_ID(context->g_xact_id), type);
+            GTP_XACT_NEXT_ID(context->g_xact_id), type,
+            GTP_XACT_LOCAL_DURATION, GTP_XACT_LOCAL_RETRY_COUNT);
     d_assert(xact, goto out, "Null param");
 
     pkbuf_header(pkbuf, GTPV2C_HEADER_LEN);
