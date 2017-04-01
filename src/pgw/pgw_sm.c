@@ -81,14 +81,15 @@ void pgw_state_operational(pgw_sm_t *s, event_t *e)
                 }
             }
 
+            pkbuf_free(pkbuf);
             break;
         }
         case EVT_TM_PGW_T3:
         {
             gtp_xact_t *xact = (gtp_xact_t *)event_get_param1(e);
-            d_assert(xact, break, "Nill param");
+            d_assert(xact, break, "Null param");
             
-            gtp_xact_commit(xact);
+            gtp_xact_timeout(xact);
             break;
         }
         default:

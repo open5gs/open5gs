@@ -89,6 +89,7 @@ status_t mme_s11_send_to_sgw(void *sgw, pkbuf_t *pkbuf)
 
     xact = gtp_xact_send(&mme_self()->gtp_xact_ctx, mme_self()->s11_sock, sgw, 
             GTP_CREATE_SESSION_REQUEST_TYPE, pkbuf);
+    xact->pkbuf = pkbuf;
     gtp_xact_delete(xact);
     
     return CORE_OK;

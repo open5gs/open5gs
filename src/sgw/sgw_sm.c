@@ -82,14 +82,15 @@ void sgw_state_operational(sgw_sm_t *s, event_t *e)
                 }
             }
 
+            pkbuf_free(pkbuf);
             break;
         }
         case EVT_TM_SGW_T3:
         {
             gtp_xact_t *xact = (gtp_xact_t *)event_get_param1(e);
-            d_assert(xact, break, "Nill param");
-            
-            gtp_xact_commit(xact);
+            d_assert(xact, break, "Null param");
+
+            gtp_xact_timeout(xact);
             break;
         }
         default:
