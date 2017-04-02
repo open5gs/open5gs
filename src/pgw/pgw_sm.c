@@ -65,13 +65,11 @@ void pgw_state_operational(pgw_sm_t *s, event_t *e)
             d_assert(gnode, break, "Null param");
             d_assert(pkbuf, break, "Null param");
 
-            xact = gtp_xact_recv(&pgw_self()->gtp_xact_ctx, sock, gnode, pkbuf);
+            xact = gtp_xact_recv(&pgw_self()->gtp_xact_ctx, sock, gnode, 
+                    &gtp_message, pkbuf);
             d_assert(xact, break, "Null param");
 
-            rv = gtp_parse_msg(xact->type, &gtp_message, pkbuf);
-            d_assert(rv == CORE_OK, break, "parse error");
-
-            switch(xact->type)
+            switch(gtp_message.type)
             {
                 case GTP_CREATE_SESSION_REQUEST_TYPE:
                 {

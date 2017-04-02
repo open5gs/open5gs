@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtp_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-03-31 09:04:32.632717 by acetcom
+ * Created on: 2017-04-02 20:45:50.222446 by acetcom
  * from 29274-d80.docx
  ******************************************************************************/
 
@@ -1910,12 +1910,14 @@ tlv_desc_t tlv_desc_create_session_response =
 
 
 status_t gtp_parse_msg(
-        c_uint8_t type, gtp_message_t *gtp_message, pkbuf_t *pkbuf)
+        gtp_message_t *gtp_message, c_uint8_t type, pkbuf_t *pkbuf)
 {
     status_t rv = CORE_ERROR;
     
     memset(gtp_message, 0, sizeof(gtp_message_t));
-    switch(type)
+
+    gtp_message->type = type;
+    switch(gtp_message->type)
     {
         case GTP_ECHO_REQUEST_TYPE:
             rv = tlv_parse_msg(&gtp_message->echo_request,

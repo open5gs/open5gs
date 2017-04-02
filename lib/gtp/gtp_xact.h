@@ -7,6 +7,7 @@
 #include "core_timer.h"
 
 #include "gtp_path.h"
+#include "gtp_tlv.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -69,8 +70,9 @@ CORE_DECLARE(gtp_xact_t *) gtp_xact_find(gtp_node_t *gnode, pkbuf_t *pkbuf);
 CORE_DECLARE(status_t) gtp_xact_commit(gtp_xact_t *xact, pkbuf_t *pkbuf);
 CORE_DECLARE(status_t) gtp_xact_timeout(gtp_xact_t *xact);
 
-CORE_DECLARE(gtp_xact_t *) gtp_xact_recv(gtp_xact_ctx_t *context,
-        net_sock_t *sock, gtp_node_t *gnode, pkbuf_t *pkbuf);
+CORE_DECLARE(gtp_xact_t *) gtp_xact_recv(
+        gtp_xact_ctx_t *context, net_sock_t *sock, gtp_node_t *gnode, 
+        gtp_message_t *gtp_message, pkbuf_t *pkbuf);
 CORE_DECLARE(gtp_xact_t *) gtp_xact_associated_send(gtp_xact_ctx_t *context,
         net_sock_t *sock, gtp_node_t *gnode, c_uint8_t type, pkbuf_t *pkbuf,
         gtp_xact_t *associated_xact);

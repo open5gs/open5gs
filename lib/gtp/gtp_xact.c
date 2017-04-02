@@ -4,7 +4,6 @@
 #include "core_event.h"
 
 #include "gtp_xact.h"
-#include "gtp_tlv.h"
 
 #define SIZE_OF_GTP_XACT_POOL  32
 
@@ -318,8 +317,9 @@ gtp_xact_t *gtp_xact_find(gtp_node_t *gnode, pkbuf_t *pkbuf)
     return xact;
 }
 
-gtp_xact_t *gtp_xact_recv(gtp_xact_ctx_t *context,
-        net_sock_t *sock, gtp_node_t *gnode, pkbuf_t *pkbuf)
+gtp_xact_t *gtp_xact_recv(
+        gtp_xact_ctx_t *context, net_sock_t *sock, gtp_node_t *gnode, 
+        gtp_message_t *gtp_message, pkbuf_t *pkbuf)
 {
     gtp_xact_t *xact = NULL;
     gtpv2c_header_t *h = NULL;
@@ -343,6 +343,9 @@ gtp_xact_t *gtp_xact_recv(gtp_xact_ctx_t *context,
         pkbuf_header(pkbuf, -GTPV2C_HEADER_LEN);
     else
         pkbuf_header(pkbuf, -(GTPV2C_HEADER_LEN-GTPV2C_TEID_LEN));
+
+    d_assert(gtp_parse_msg(gtp_message, h->type, pkbuf) == CORE_OK,
+            goto out, "parse error");
 
     d_trace(1, "[%d]%s Receive : xid = 0x%x\n",
             gnode->port,

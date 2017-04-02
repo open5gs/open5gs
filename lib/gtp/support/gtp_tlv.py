@@ -454,6 +454,7 @@ for (k, v) in sorted_msg_list:
         f.write("\n")
 
 f.write("typedef struct _gtp_message_t {\n")
+f.write("   c_uint8_t type;\n")
 f.write("   union {\n")
 for (k, v) in sorted_msg_list:
     if "ies" in msg_list[k]:
@@ -462,7 +463,7 @@ f.write("   };\n");
 f.write("} gtp_message_t;\n\n")
 
 f.write("""CORE_DECLARE(status_t) gtp_parse_msg(
-        c_uint8_t type, gtp_message_t *gtp_message, pkbuf_t *pkbuf);
+        gtp_message_t *gtp_message, c_uint8_t type, pkbuf_t *pkbuf);
 
 #ifdef __cplusplus
 }
@@ -540,12 +541,14 @@ for (k, v) in sorted_msg_list:
 f.write("\n")
 
 f.write("""status_t gtp_parse_msg(
-        c_uint8_t type, gtp_message_t *gtp_message, pkbuf_t *pkbuf)
+        gtp_message_t *gtp_message, c_uint8_t type, pkbuf_t *pkbuf)
 {
     status_t rv = CORE_ERROR;
     
     memset(gtp_message, 0, sizeof(gtp_message_t));
-    switch(type)
+
+    gtp_message->type = type;
+    switch(gtp_message->type)
     {
 """)
 for (k, v) in sorted_msg_list:
