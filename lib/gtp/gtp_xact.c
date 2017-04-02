@@ -82,7 +82,7 @@ status_t gtp_xact_final(void)
 
 gtp_xact_t *gtp_xact_create(gtp_xact_ctx_t *context, 
     net_sock_t *sock, gtp_node_t *gnode, c_uint8_t org, c_uint32_t xid, 
-    c_uint8_t type, c_uint32_t duration, c_uint8_t retry_count)
+    c_uint32_t duration, c_uint8_t retry_count)
 {
     gtp_xact_t *xact = NULL;
 
@@ -99,7 +99,6 @@ gtp_xact_t *gtp_xact_create(gtp_xact_ctx_t *context,
     xact->xid = xid;
     xact->sock = sock;
     xact->gnode = gnode;
-    xact->type = type;
 
     xact->tm_wait = event_timer(context->tm_service, context->event, 
             duration, (c_uintptr_t)xact);
@@ -121,18 +120,18 @@ gtp_xact_t *gtp_xact_create(gtp_xact_ctx_t *context,
 }
 
 gtp_xact_t *gtp_xact_local_create(gtp_xact_ctx_t *context, 
-    net_sock_t *sock, gtp_node_t *gnode, c_uint8_t type)
+    net_sock_t *sock, gtp_node_t *gnode)
 {
     return gtp_xact_create(context, sock, gnode, GTP_LOCAL_ORIGINATOR, 
-            GTP_XACT_NEXT_ID(context->g_xact_id), type, 
+            GTP_XACT_NEXT_ID(context->g_xact_id),
             GTP_XACT_LOCAL_DURATION, GTP_XACT_LOCAL_RETRY_COUNT);
 }
 
 gtp_xact_t *gtp_xact_remote_create(gtp_xact_ctx_t *context, 
-    net_sock_t *sock, gtp_node_t *gnode, c_uint32_t xid, c_uint8_t type)
+    net_sock_t *sock, gtp_node_t *gnode, c_uint32_t xid)
 {
     return gtp_xact_create(context, sock, gnode, 
-            GTP_REMOTE_ORIGINATOR, xid, type, 
+            GTP_REMOTE_ORIGINATOR, xid,
             GTP_XACT_REMOTE_DURATION, GTP_XACT_REMOTE_RETRY_COUNT);
 }
 
@@ -336,7 +335,7 @@ gtp_xact_t *gtp_xact_recv(
     if (!xact)
     {
         xact = gtp_xact_remote_create(context, sock, gnode, 
-                GTP_SQN_TO_XID(h->sqn), h->type);
+                GTP_SQN_TO_XID(h->sqn));
     }
 
     if (h->teid_presence)
@@ -372,7 +371,7 @@ gtp_xact_t *gtp_xact_associated_send(gtp_xact_ctx_t *context,
     d_assert(gnode, goto out, "Null param");
     d_assert(pkbuf, goto out, "Null param");
 
-    xact = gtp_xact_local_create(context, sock, gnode, type);
+    xact = gtp_xact_local_create(context, sock, gnode);
     d_assert(xact, goto out, "Null param");
 
     pkbuf_header(pkbuf, GTPV2C_HEADER_LEN);
@@ -381,7 +380,7 @@ gtp_xact_t *gtp_xact_associated_send(gtp_xact_ctx_t *context,
 
     h->version = 2;
     h->teid_presence = 1;
-    h->type = xact->type;
+    h->type = type;
     h->length = htons(pkbuf->len - 4);
     h->sqn = GTP_XID_TO_SQN(xact->xid);
 

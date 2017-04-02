@@ -39,7 +39,6 @@ typedef struct _gtp_xact_t {
     net_sock_t      *sock;          /**< GTP Socket */
     gtp_node_t      *gnode;         /**< Relevant GTP node context */
 
-    c_uint8_t       type;           /**< GTPv2-C Message Type */
     pkbuf_t         *pkbuf;         /**< Relevant GTP node context */
 
     tm_block_id     tm_wait;        /**< Timer waiting for next message */
@@ -54,11 +53,11 @@ CORE_DECLARE(status_t) gtp_xact_final(void);
 
 CORE_DECLARE(gtp_xact_t *) gtp_xact_create(gtp_xact_ctx_t *context, 
     net_sock_t *sock, gtp_node_t *gnode, c_uint8_t org, c_uint32_t xid, 
-    c_uint8_t type, c_uint32_t duration, c_uint8_t retry_count);
+    c_uint32_t duration, c_uint8_t retry_count);
 CORE_DECLARE(gtp_xact_t *) gtp_xact_local_create(gtp_xact_ctx_t *context, 
-    net_sock_t *sock, gtp_node_t *gnode, c_uint8_t type);
+    net_sock_t *sock, gtp_node_t *gnode);
 CORE_DECLARE(gtp_xact_t *) gtp_xact_remote_create(gtp_xact_ctx_t *context, 
-    net_sock_t *sock, gtp_node_t *gnode, c_uint32_t xid, c_uint8_t type);
+    net_sock_t *sock, gtp_node_t *gnode, c_uint32_t xid);
 CORE_DECLARE(status_t) gtp_xact_delete(gtp_xact_t *xact);
 
 CORE_DECLARE(status_t) gtp_xact_associate(
