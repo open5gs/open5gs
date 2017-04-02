@@ -463,7 +463,9 @@ f.write("   };\n");
 f.write("} gtp_message_t;\n\n")
 
 f.write("""CORE_DECLARE(status_t) gtp_parse_msg(
-        gtp_message_t *gtp_message, c_uint8_t type, pkbuf_t *pkbuf);
+        gtp_message_t *gtp_message, pkbuf_t *pkbuf);
+CORE_DECLARE(status_t) gtp_build_msg(
+        pkbuf_t **pkbuf, gtp_message_t *gtp_message);
 
 #ifdef __cplusplus
 }
@@ -540,14 +542,10 @@ for (k, v) in sorted_msg_list:
         f.write("}};\n\n")
 f.write("\n")
 
-f.write("""status_t gtp_parse_msg(
-        gtp_message_t *gtp_message, c_uint8_t type, pkbuf_t *pkbuf)
+f.write("""status_t gtp_parse_msg(gtp_message_t *gtp_message, pkbuf_t *pkbuf)
 {
     status_t rv = CORE_ERROR;
     
-    memset(gtp_message, 0, sizeof(gtp_message_t));
-
-    gtp_message->type = type;
     switch(gtp_message->type)
     {
 """)
@@ -558,7 +556,30 @@ for (k, v) in sorted_msg_list:
         f.write("                    &tlv_desc_%s, pkbuf, TLV_MODE_T1_L2_I1);\n" % v_lower(k))
         f.write("            break;\n")
 f.write("""        default:
-            d_warn("Not implmeneted(type:%d)", type);
+            d_warn("Not implmeneted(type:%d)", gtp_message->type);
+            break;
+    }
+
+    return rv;
+}
+
+""")
+
+f.write("""status_t gtp_build_msg(pkbuf_t **pkbuf, gtp_message_t *gtp_message)
+{
+    status_t rv = CORE_ERROR;
+
+    switch(gtp_message->type)
+    {
+""")
+for (k, v) in sorted_msg_list:
+    if "ies" in msg_list[k]:
+        f.write("        case GTP_%s_TYPE:\n" % v_upper(k))
+        f.write("            rv = tlv_build_msg(pkbuf, &tlv_desc_%s,\n" % v_lower(k))
+        f.write("                    &gtp_message->%s, TLV_MODE_T1_L2_I1);\n" % v_lower(k))
+        f.write("            break;\n")
+f.write("""        default:
+            d_warn("Not implmeneted(type:%d)", gtp_message->type);
             break;
     }
 

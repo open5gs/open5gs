@@ -9,7 +9,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 CORE_DECLARE(void) sgw_s11_handle_create_session_request(
-        gtp_xact_t *xact, gtp_create_session_request_t *req);
+        gtp_xact_t *xact, gtp_message_t *gtp_message);
 
 #ifdef __cplusplus
 }

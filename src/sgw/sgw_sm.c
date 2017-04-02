@@ -74,8 +74,7 @@ void sgw_state_operational(sgw_sm_t *s, event_t *e)
             {
                 case GTP_CREATE_SESSION_REQUEST_TYPE:
                 {
-                    sgw_s11_handle_create_session_request(
-                        xact, &gtp_message.create_session_request);
+                    sgw_s11_handle_create_session_request(xact, &gtp_message);
                     break;
                 }
             }

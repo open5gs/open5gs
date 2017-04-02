@@ -7,15 +7,8 @@
 #include "s11_handler.h"
 
 void sgw_s11_handle_create_session_request(
-        gtp_xact_t *xact, gtp_create_session_request_t *req)
+        gtp_xact_t *xact, gtp_message_t *gtp_message)
 {
-    status_t rv;
-    pkbuf_t *pkbuf;
-
-    rv = tlv_build_msg(&pkbuf, &tlv_desc_create_session_request, req,
-            TLV_MODE_T1_L2_I1);
-    d_assert(rv == CORE_OK, return, "failed to build GTP TLV");
-
-    d_assert(sgw_s5c_send_to_pgw(GTP_CREATE_SESSION_REQUEST_TYPE, pkbuf, xact),
-            return, "failed to send message");
+    d_assert(sgw_s5c_send_to_pgw(xact, gtp_message), return, 
+            "failed to send message");
 }

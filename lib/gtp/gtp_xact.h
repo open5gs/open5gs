@@ -73,10 +73,10 @@ CORE_DECLARE(gtp_xact_t *) gtp_xact_recv(
         gtp_xact_ctx_t *context, net_sock_t *sock, gtp_node_t *gnode, 
         gtp_message_t *gtp_message, pkbuf_t *pkbuf);
 CORE_DECLARE(gtp_xact_t *) gtp_xact_associated_send(gtp_xact_ctx_t *context,
-        net_sock_t *sock, gtp_node_t *gnode, c_uint8_t type, pkbuf_t *pkbuf,
+        net_sock_t *sock, gtp_node_t *gnode, gtp_message_t *gtp_message,
         gtp_xact_t *associated_xact);
 CORE_DECLARE(gtp_xact_t *) gtp_xact_send(gtp_xact_ctx_t *context,
-        net_sock_t *sock, gtp_node_t *gnode, c_uint8_t type, pkbuf_t *pkbuf);
+        net_sock_t *sock, gtp_node_t *gnode, gtp_message_t *gtp_message);
 
 #ifdef __cplusplus
 }

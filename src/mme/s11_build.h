@@ -1,14 +1,14 @@
 #ifndef __S11_BUILD_H__
 #define __S11_BUILD_H__
 
-#include "s1ap_message.h"
+#include "gtp_tlv.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
 CORE_DECLARE(status_t) s11_build_create_session_req(
-                        pkbuf_t **pkbuf, ue_ctx_t *ue);
+                        gtp_message_t *gtp_message, ue_ctx_t *ue);
 
 #ifdef __cplusplus
 }
