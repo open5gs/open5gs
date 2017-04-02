@@ -54,8 +54,8 @@ CORE_DECLARE(status_t) gtp_xact_final(void);
 CORE_DECLARE(gtp_xact_t *) gtp_xact_create(gtp_xact_ctx_t *context, 
     net_sock_t *sock, gtp_node_t *gnode, c_uint8_t org, c_uint32_t xid, 
     c_uint32_t duration, c_uint8_t retry_count);
-CORE_DECLARE(gtp_xact_t *) gtp_xact_local_create(gtp_xact_ctx_t *context, 
-    net_sock_t *sock, gtp_node_t *gnode);
+CORE_DECLARE(gtp_xact_t *)gtp_xact_local_create(gtp_xact_ctx_t *context,
+        net_sock_t *sock, gtp_node_t *gnode, gtp_message_t *gtp_message);
 CORE_DECLARE(gtp_xact_t *) gtp_xact_remote_create(gtp_xact_ctx_t *context, 
     net_sock_t *sock, gtp_node_t *gnode, c_uint32_t xid);
 CORE_DECLARE(status_t) gtp_xact_delete(gtp_xact_t *xact);
@@ -72,11 +72,6 @@ CORE_DECLARE(status_t) gtp_xact_timeout(gtp_xact_t *xact);
 CORE_DECLARE(gtp_xact_t *) gtp_xact_recv(
         gtp_xact_ctx_t *context, net_sock_t *sock, gtp_node_t *gnode, 
         gtp_message_t *gtp_message, pkbuf_t *pkbuf);
-CORE_DECLARE(gtp_xact_t *) gtp_xact_associated_send(gtp_xact_ctx_t *context,
-        net_sock_t *sock, gtp_node_t *gnode, gtp_message_t *gtp_message,
-        gtp_xact_t *associated_xact);
-CORE_DECLARE(gtp_xact_t *) gtp_xact_send(gtp_xact_ctx_t *context,
-        net_sock_t *sock, gtp_node_t *gnode, gtp_message_t *gtp_message);
 
 #ifdef __cplusplus
 }

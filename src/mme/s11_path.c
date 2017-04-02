@@ -86,9 +86,16 @@ status_t mme_s11_send_to_sgw(void *sgw, gtp_message_t *gtp_message)
     d_assert(sgw, return CORE_ERROR, "Null param");
     d_assert(gtp_message, return CORE_ERROR, "Null param");
 
-    xact = gtp_xact_send(&mme_self()->gtp_xact_ctx, mme_self()->s11_sock, 
-            sgw, gtp_message);
+    xact = gtp_xact_local_create(&mme_self()->gtp_xact_ctx, 
+            mme_self()->s11_sock, sgw, gtp_message);
+    d_assert(xact, return CORE_ERROR, "gtp_xact_local_create failed");
+
+    d_assert(gtp_send(xact->sock, xact->gnode, xact->pkbuf) == CORE_OK,
+            gtp_xact_delete(xact); return CORE_ERROR, "gtp_send error");
+
+#if 1 /* FIXME */
     gtp_xact_delete(xact);
+#endif
     
     return CORE_OK;
 }

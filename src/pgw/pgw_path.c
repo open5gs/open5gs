@@ -116,17 +116,20 @@ status_t pgw_path_close()
     return CORE_OK;
 }
 
-gtp_xact_t *pgw_s5c_send_to_sgw(gtp_message_t *gtp_message)
+status_t pgw_s5c_send_to_sgw(gtp_message_t *gtp_message)
 {
     gtp_xact_t *xact;
 
-    d_assert(gtp_message, return NULL, "Null param");
+    d_assert(gtp_message, return CORE_ERROR, "Null param");
 
-    xact = gtp_xact_send(&pgw_self()->gtp_xact_ctx, pgw_self()->s5c_sock, 
+    xact = gtp_xact_local_create(&pgw_self()->gtp_xact_ctx, pgw_self()->s5c_sock, 
             &pgw_self()->s5c_node, gtp_message);
-    d_assert(xact, return NULL, "Null param");
+    d_assert(xact, return CORE_ERROR, "Null param");
 
-    return xact;
+    d_assert(gtp_send(xact->sock, xact->gnode, xact->pkbuf) == CORE_OK,
+            gtp_xact_delete(xact); return CORE_ERROR, "gtp_send error");
+
+    return CORE_OK;
 }
 
 status_t pgw_s5u_send_to_sgw(pkbuf_t *pkbuf)

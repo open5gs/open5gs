@@ -119,12 +119,41 @@ gtp_xact_t *gtp_xact_create(gtp_xact_ctx_t *context,
     return xact;
 }
 
-gtp_xact_t *gtp_xact_local_create(gtp_xact_ctx_t *context, 
-    net_sock_t *sock, gtp_node_t *gnode)
+gtp_xact_t *gtp_xact_local_create(gtp_xact_ctx_t *context,
+        net_sock_t *sock, gtp_node_t *gnode, gtp_message_t *gtp_message)
 {
-    return gtp_xact_create(context, sock, gnode, GTP_LOCAL_ORIGINATOR, 
+    status_t rv;
+    gtp_xact_t *xact = NULL;
+    gtpv2c_header_t *h = NULL;
+    pkbuf_t *pkbuf = NULL;
+
+    d_assert(context, return NULL, "Null param");
+    d_assert(sock, return NULL, "Null param");
+    d_assert(gnode, return NULL, "Null param");
+    d_assert(gtp_message, return NULL, "Null param");
+
+    xact = gtp_xact_create(context, sock, gnode, GTP_LOCAL_ORIGINATOR, 
             GTP_XACT_NEXT_ID(context->g_xact_id),
             GTP_XACT_LOCAL_DURATION, GTP_XACT_LOCAL_RETRY_COUNT);
+    d_assert(xact, return NULL, "xact_create failed");
+
+    rv = gtp_build_msg(&pkbuf, gtp_message);
+    d_assert(rv == CORE_OK, 
+            gtp_xact_delete(xact); return NULL, "gtp build failed");
+
+    pkbuf_header(pkbuf, GTPV2C_HEADER_LEN);
+    h = pkbuf->payload;
+    d_assert(h, gtp_xact_delete(xact); return NULL, "Null param");
+
+    h->version = 2;
+    h->teid_presence = 1;
+    h->type = gtp_message->type;
+    h->length = htons(pkbuf->len - 4);
+    h->sqn = GTP_XID_TO_SQN(xact->xid);
+
+    xact->pkbuf = pkbuf;
+
+    return xact;
 }
 
 gtp_xact_t *gtp_xact_remote_create(gtp_xact_ctx_t *context, 
@@ -354,54 +383,4 @@ gtp_xact_t *gtp_xact_recv(
 out:
     pkbuf_free(pkbuf);
     return NULL;
-}
-
-gtp_xact_t *gtp_xact_associated_send(gtp_xact_ctx_t *context,
-        net_sock_t *sock, gtp_node_t *gnode, gtp_message_t *gtp_message,
-        gtp_xact_t *associated_xact)
-{
-    status_t rv;
-    gtp_xact_t *xact = NULL;
-    gtpv2c_header_t *h = NULL;
-    pkbuf_t *pkbuf = NULL;
-
-    d_assert(context, return NULL, "Null param");
-    d_assert(sock, return NULL, "Null param");
-    d_assert(gnode, return NULL, "Null param");
-    d_assert(gtp_message, return NULL, "Null param");
-
-    xact = gtp_xact_local_create(context, sock, gnode);
-    d_assert(xact, return NULL, "Null param");
-
-    rv = gtp_build_msg(&pkbuf, gtp_message);
-    d_assert(rv == CORE_OK, gtp_xact_delete(xact); return NULL, "Null param");
-
-    pkbuf_header(pkbuf, GTPV2C_HEADER_LEN);
-    h = pkbuf->payload;
-    d_assert(h, gtp_xact_delete(xact); return NULL, "Null param");
-
-    h->version = 2;
-    h->teid_presence = 1;
-    h->type = gtp_message->type;
-    h->length = htons(pkbuf->len - 4);
-    h->sqn = GTP_XID_TO_SQN(xact->xid);
-
-    if (associated_xact)
-        gtp_xact_associate(xact, associated_xact);
-
-    rv = gtp_xact_commit(xact, pkbuf);
-    d_assert(rv == CORE_OK, gtp_xact_delete(xact); return NULL, "Null param");
-
-    d_trace(1, "[%d]%s Send    : xid = 0x%x\n",
-            gnode->port,
-            xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-            xact->xid);
-
-    return xact;
-}
-
-gtp_xact_t *gtp_xact_send(gtp_xact_ctx_t *context,
-        net_sock_t *sock, gtp_node_t *gnode, gtp_message_t *gtp_message)
-{
-    return gtp_xact_associated_send(context, sock, gnode, gtp_message, NULL);
 }
