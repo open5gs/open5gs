@@ -320,16 +320,10 @@ gtp_xact_t *gtp_xact_recv(
 
     if (xact->org == GTP_LOCAL_ORIGINATOR)
     {
-        if (xact->assoc_xact)
-        {
-            gtp_xact_t *assoc_xact = xact->assoc_xact;
-            gtp_xact_delete(xact);
-            xact = assoc_xact;
-        }
-        else
-        {
-            gtp_xact_delete(xact);
-        }
+        gtp_xact_t *assoc_xact = xact->assoc_xact;
+
+        gtp_xact_delete(xact);
+        xact = assoc_xact;
     }
     else
     {
