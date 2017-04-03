@@ -158,7 +158,6 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
 
             xact = gtp_xact_preprocess(&mme_self()->gtp_xact_ctx, 
                     sock, gnode, &type, pkbuf);
-
             rv = gtp_xact_receive(xact, &gtp_message, type, pkbuf);
             if (rv != CORE_OK) 
                 break;

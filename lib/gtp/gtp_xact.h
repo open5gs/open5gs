@@ -18,7 +18,6 @@ extern "C" {
  */
 typedef struct _gtp_xact_ctx_t {
     c_uint32_t g_xact_id;
-    void *pool;
 
     tm_service_t *tm_service;
     c_uintptr_t event;
@@ -51,10 +50,10 @@ CORE_DECLARE(status_t) gtp_xact_init(gtp_xact_ctx_t *context,
     tm_service_t *tm_service, c_uintptr_t event);
 CORE_DECLARE(status_t) gtp_xact_final(void);
 
-CORE_DECLARE(gtp_xact_t *)gtp_xact_local_create(
-        gtp_xact_ctx_t *context, net_sock_t *sock, gtp_node_t *gnode);
+CORE_DECLARE(gtp_xact_t *)gtp_xact_local_create(gtp_xact_ctx_t *context, 
+        net_sock_t *sock, gtp_node_t *gnode);
 CORE_DECLARE(gtp_xact_t *) gtp_xact_remote_create(gtp_xact_ctx_t *context, 
-    net_sock_t *sock, gtp_node_t *gnode, c_uint32_t sqn);
+        net_sock_t *sock, gtp_node_t *gnode, c_uint32_t sqn);
 
 CORE_DECLARE(status_t) gtp_xact_commit(
         gtp_xact_t *xact, c_uint8_t type, gtp_message_t *gtp_message);
