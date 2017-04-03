@@ -141,6 +141,29 @@ static status_t gtp_xact_delete(gtp_xact_t *xact)
     return CORE_OK;
 }
 
+static void gtp_xact_associate(gtp_xact_t *xact1, gtp_xact_t *xact2)
+{
+    d_assert(xact1, return, "Null param");
+    d_assert(xact2, return, "Null param");
+
+    d_assert(xact1->assoc_xact == NULL, return, "Already assocaited");
+    d_assert(xact2->assoc_xact == NULL, return, "Already assocaited");
+
+    xact1->assoc_xact = xact2;
+    xact2->assoc_xact = xact1;
+}
+
+static void gtp_xact_deassociate(gtp_xact_t *xact1, gtp_xact_t *xact2)
+{
+    d_assert(xact1, return, "Null param");
+    d_assert(xact2, return, "Null param");
+
+    d_assert(xact1->assoc_xact != NULL, return, "Already deassocaited");
+    d_assert(xact2->assoc_xact != NULL, return, "Already deassocaited");
+
+    xact1->assoc_xact = NULL;
+    xact2->assoc_xact = NULL;
+}
 
 gtp_xact_t *gtp_xact_local_create(
         gtp_xact_ctx_t *context, net_sock_t *sock, gtp_node_t *gnode)
@@ -201,7 +224,7 @@ status_t gtp_xact_associated_commit(
             goto out, "gtp_send error");
 
     if (assoc_xact)
-        xact->assoc_xact = assoc_xact;
+        gtp_xact_associate(xact, assoc_xact);
 
     return CORE_OK;
 
@@ -339,6 +362,9 @@ gtp_xact_t *gtp_xact_preprocess(gtp_xact_ctx_t *context,
     if (xact->org == GTP_LOCAL_ORIGINATOR)
     {
         gtp_xact_t *assoc_xact = xact->assoc_xact;
+
+        if (assoc_xact)
+            gtp_xact_deassociate(xact, assoc_xact);
 
         gtp_xact_delete(xact);
         xact = assoc_xact;
