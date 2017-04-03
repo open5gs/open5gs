@@ -101,10 +101,8 @@ void sgw_state_operational(sgw_sm_t *s, event_t *e)
                         }
                     }
                 }
-                else
-                {
-                    gtp_xact_delete(xact);
-                }
+
+                gtp_xact_delete(xact);
             }
             else
             {
