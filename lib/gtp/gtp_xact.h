@@ -64,7 +64,8 @@ CORE_DECLARE(status_t) gtp_xact_commit(
         gtp_xact_t *xact, gtp_message_t *gtp_message);
 CORE_DECLARE(status_t) gtp_xact_timeout(gtp_xact_t *xact);
 
-CORE_DECLARE(gtp_xact_t *) gtp_xact_find(gtp_node_t *gnode, pkbuf_t *pkbuf);
+CORE_DECLARE(gtp_xact_t *) gtp_xact_find(
+        gtp_node_t *gnode, c_uint8_t type, c_uint32_t sqn);
 CORE_DECLARE(gtp_xact_t *) gtp_xact_recv(
         gtp_xact_ctx_t *context, net_sock_t *sock, gtp_node_t *gnode, 
         gtp_message_t *gtp_message, pkbuf_t *pkbuf);

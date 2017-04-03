@@ -239,18 +239,13 @@ out:
     return CORE_ERROR;
 }
 
-gtp_xact_t *gtp_xact_find(gtp_node_t *gnode, pkbuf_t *pkbuf)
+gtp_xact_t *gtp_xact_find(gtp_node_t *gnode, c_uint8_t type, c_uint32_t sqn)
 {
-    gtpv2c_header_t *h = NULL;
     c_uint32_t xid;
     gtp_xact_t *xact = NULL;
 
     d_assert(gnode, return NULL, "Null param");
-    d_assert(pkbuf, return NULL, "Null param");
-    d_assert(pkbuf->payload, return NULL, "Null param");
-
-    h = pkbuf->payload;
-    switch(h->type)
+    switch(type)
     {
         case GTP_CREATE_SESSION_REQUEST_TYPE:
         case GTP_MODIFY_BEARER_REQUEST_TYPE:
@@ -277,11 +272,11 @@ gtp_xact_t *gtp_xact_find(gtp_node_t *gnode, pkbuf_t *pkbuf)
             break;
 
         default:
-            d_error("Not implemented GTPv2 Message Type(%d)", h->type);
+            d_error("Not implemented GTPv2 Message Type(%d)", type);
             return NULL;
     }
 
-    xid = GTP_SQN_TO_XID(h->sqn);
+    xid = GTP_SQN_TO_XID(sqn);
     while(xact)
     {
         if (xact->xid == xid)
@@ -316,7 +311,7 @@ gtp_xact_t *gtp_xact_recv(
     h = pkbuf->payload;
     d_assert(h, return NULL, "Null param");
 
-    xact = gtp_xact_find(gnode, pkbuf);
+    xact = gtp_xact_find(gnode, h->type, h->sqn);
     if (!xact)
     {
         xact = gtp_xact_remote_create(context, sock, gnode, h->sqn);
