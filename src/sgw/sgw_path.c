@@ -172,9 +172,7 @@ status_t sgw_s5c_send_to_pgw(
     }
     d_assert(xact, return CORE_ERROR, "Null param");
 
-    d_assert(gtp_xact_associate(xact, s11_xact) == CORE_OK,
-            gtp_xact_delete(xact); return CORE_ERROR, "association failed");
-
+    xact->assoc_xact = s11_xact;
     d_assert(gtp_xact_commit(xact, gtp_message) == CORE_OK,
             return CORE_ERROR, "gtp_send error");
 

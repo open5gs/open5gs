@@ -19,6 +19,30 @@
     (GTP_XACT_LOCAL_DURATION * GTP_XACT_LOCAL_RETRY_COUNT) /* 9 seconds */
 #define GTP_XACT_REMOTE_RETRY_COUNT 1 
 
+/* 5.1 General format */
+#define GTPV2C_HEADER_LEN   12
+#define GTPV2C_TEID_LEN     4
+
+typedef struct _gtpv2c_header_t {
+ED4(c_uint8_t version:3;,
+    c_uint8_t piggybacked:1;,
+    c_uint8_t teid_presence:1;,
+    c_uint8_t spare1:3;)
+    c_uint8_t type;
+    c_uint16_t length;
+    union {
+        struct {
+            c_uint32_t teid;
+            /* sqn : 31bit ~ 8bit, spare : 7bit ~ 0bit */
+#define GTP_XID_TO_SQN(__xid) ((__xid) << 8)
+#define GTP_SQN_TO_XID(__sqn) ((__sqn) >> 8)
+            c_uint32_t sqn; 
+        };
+        /* sqn : 31bit ~ 8bit, spare : 7bit ~ 0bit */
+        c_uint32_t spare2;
+    };
+} __attribute__ ((packed)) gtpv2c_header_t;
+
 static int gtp_xact_pool_initialized = 0;
 pool_declare(gtp_xact_pool, gtp_xact_t, SIZE_OF_GTP_XACT_POOL);
 
@@ -97,18 +121,9 @@ gtp_xact_t *gtp_xact_create(gtp_xact_ctx_t *context,
 gtp_xact_t *gtp_xact_local_create(
         gtp_xact_ctx_t *context, net_sock_t *sock, gtp_node_t *gnode)
 {
-    gtp_xact_t *xact = NULL;
-
-    d_assert(context, return NULL, "Null param");
-    d_assert(sock, return NULL, "Null param");
-    d_assert(gnode, return NULL, "Null param");
-
-    xact = gtp_xact_create(context, sock, gnode, GTP_LOCAL_ORIGINATOR, 
+    return gtp_xact_create(context, sock, gnode, GTP_LOCAL_ORIGINATOR, 
             GTP_XACT_NEXT_ID(context->g_xact_id),
             GTP_XACT_LOCAL_DURATION, GTP_XACT_LOCAL_RETRY_COUNT);
-    d_assert(xact, return NULL, "xact_create failed");
-
-    return xact;
 }
 
 gtp_xact_t *gtp_xact_remote_create(gtp_xact_ctx_t *context, 
@@ -138,38 +153,6 @@ status_t gtp_xact_delete(gtp_xact_t *xact)
     list_remove(xact->org == GTP_LOCAL_ORIGINATOR ? &xact->gnode->local_list :
             &xact->gnode->remote_list, xact);
     pool_free_node(&gtp_xact_pool, xact);
-
-    return CORE_OK;
-}
-
-status_t gtp_xact_associate(gtp_xact_t *xact1, gtp_xact_t *xact2)
-{
-    d_assert(xact1, return CORE_ERROR, "Null param");
-    d_assert(xact2, return CORE_ERROR, "Null param");
-
-    d_assert(xact1->assoc_xact == NULL, 
-            return CORE_ERROR, "Already assocaited");
-    d_assert(xact2->assoc_xact == NULL, 
-            return CORE_ERROR, "Already assocaited");
-
-    xact1->assoc_xact = xact2;
-    xact2->assoc_xact = xact1;
-
-    return CORE_OK;
-}
-
-status_t gtp_xact_deassociate(gtp_xact_t *xact1, gtp_xact_t *xact2)
-{
-    d_assert(xact1, return CORE_ERROR, "Null param");
-    d_assert(xact2, return CORE_ERROR, "Null param");
-
-    d_assert(xact1->assoc_xact != NULL, 
-            return CORE_ERROR, "Already deassocaited");
-    d_assert(xact2->assoc_xact != NULL, 
-            return CORE_ERROR, "Already deassocaited");
-
-    xact1->assoc_xact = NULL;
-    xact2->assoc_xact = NULL;
 
     return CORE_OK;
 }
@@ -351,20 +334,20 @@ gtp_xact_t *gtp_xact_recv(
         else
         {
             gtp_xact_delete(xact);
-            return NULL;
         }
     }
     else
     {
         if (xact->pkbuf)
         {
+            pkbuf_free(pkbuf);
+
             d_warn("[%d]%s Request Duplicated. Retransmit!",
                     xact->gnode->port,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE");
             d_assert(gtp_send(xact->sock, xact->gnode, xact->pkbuf) 
-                    == CORE_OK, return NULL, "gtp_send error");
-
-            return NULL;
+                        == CORE_OK, return NULL, "gtp_send error");
+            return xact;
         }
     }
 

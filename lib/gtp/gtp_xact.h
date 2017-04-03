@@ -13,30 +13,6 @@
 extern "C" {
 #endif /* __cplusplus */
 
-/* 5.1 General format */
-#define GTPV2C_HEADER_LEN   12
-#define GTPV2C_TEID_LEN     4
-
-typedef struct _gtpv2c_header_t {
-ED4(c_uint8_t version:3;,
-    c_uint8_t piggybacked:1;,
-    c_uint8_t teid_presence:1;,
-    c_uint8_t spare1:3;)
-    c_uint8_t type;
-    c_uint16_t length;
-    union {
-        struct {
-            c_uint32_t teid;
-            /* sqn : 31bit ~ 8bit, spare : 7bit ~ 0bit */
-#define GTP_XID_TO_SQN(__xid) ((__xid) << 8)
-#define GTP_SQN_TO_XID(__sqn) ((__sqn) >> 8)
-            c_uint32_t sqn; 
-        };
-        /* sqn : 31bit ~ 8bit, spare : 7bit ~ 0bit */
-        c_uint32_t spare2;
-    };
-} __attribute__ ((packed)) gtpv2c_header_t;
-
 /**
  * Transaction Configuration
  */
@@ -83,11 +59,6 @@ CORE_DECLARE(gtp_xact_t *)gtp_xact_local_create(
 CORE_DECLARE(gtp_xact_t *) gtp_xact_remote_create(gtp_xact_ctx_t *context, 
     net_sock_t *sock, gtp_node_t *gnode, c_uint32_t sqn);
 CORE_DECLARE(status_t) gtp_xact_delete(gtp_xact_t *xact);
-
-CORE_DECLARE(status_t) gtp_xact_associate(
-        gtp_xact_t *xact1, gtp_xact_t *xact2);
-CORE_DECLARE(status_t) gtp_xact_deassociate(
-        gtp_xact_t *xact1, gtp_xact_t *xact2);
 
 CORE_DECLARE(status_t) gtp_xact_commit(
         gtp_xact_t *xact, gtp_message_t *gtp_message);

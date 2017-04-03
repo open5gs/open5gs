@@ -63,28 +63,30 @@ void sgw_state_operational(sgw_sm_t *s, event_t *e)
             gtp_message_t gtp_message;
 
             d_assert(pkbuf, break, "Null param");
-            d_assert(sock, goto msg_sgw_out;, "Null param");
-            d_assert(gnode, goto msg_sgw_out;, "Null param");
+            d_assert(sock, pkbuf_free(pkbuf); break, "Null param");
+            d_assert(gnode, pkbuf_free(pkbuf); break, "Null param");
 
             xact = gtp_xact_recv(&sgw_self()->gtp_xact_ctx, 
                     sock, gnode, &gtp_message, pkbuf);
-            if (!xact) 
+            if (pkbuf->clbuf->ref) 
             {
-                goto msg_sgw_out;
+                switch(gtp_message.type)
+                {
+                    case GTP_CREATE_SESSION_REQUEST_TYPE:
+                        sgw_s11_handle_create_session_request(
+                                xact, &gtp_message);
+                        break;
+                    case GTP_CREATE_SESSION_RESPONSE_TYPE:
+                        sgw_s11_handle_create_session_response(
+                                xact, &gtp_message);
+                        break;
+                    default:
+                        d_warn("Not implmeneted(type:%d)", gtp_message.type);
+                        break;
+                }
+                pkbuf_free(pkbuf);
             }
 
-            switch(gtp_message.type)
-            {
-                case GTP_CREATE_SESSION_REQUEST_TYPE:
-                    sgw_s11_handle_create_session_request(xact, &gtp_message);
-                    break;
-                case GTP_CREATE_SESSION_RESPONSE_TYPE:
-                    sgw_s11_handle_create_session_response(xact, &gtp_message);
-                    break;
-            }
-
-msg_sgw_out:
-            pkbuf_free(pkbuf);
             break;
         }
         case EVT_TM_SGW_T3:
