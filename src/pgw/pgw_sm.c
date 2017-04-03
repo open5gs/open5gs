@@ -55,6 +55,7 @@ void pgw_state_operational(pgw_sm_t *s, event_t *e)
         }
         case EVT_MSG_PGW_S5C:
         {
+            status_t rv;
             net_sock_t *sock = (net_sock_t *)event_get_param1(e);
             gtp_node_t *gnode = (gtp_node_t *)event_get_param2(e);
             pkbuf_t *pkbuf = (pkbuf_t *)event_get_param3(e);
@@ -66,24 +67,23 @@ void pgw_state_operational(pgw_sm_t *s, event_t *e)
             d_assert(sock, pkbuf_free(pkbuf); break, "Null param");
             d_assert(gnode, pkbuf_free(pkbuf); break, "Null param");
 
-            type = gtp_msg_type(pkbuf);
-            xact = gtp_xact_recv(&pgw_self()->gtp_xact_ctx, 
-                    sock, gnode, &gtp_message, pkbuf);
-            if (pkbuf->clbuf->ref) 
-            {
-                switch(type)
-                {
-                    case GTP_CREATE_SESSION_REQUEST_TYPE:
-                        pgw_s5c_handle_create_session_request(
-                            xact, &gtp_message.create_session_request);
-                        break;
-                    default:
-                        d_warn("Not implmeneted(type:%d)", type);
-                        break;
-                }
-                pkbuf_free(pkbuf);
-            }
+            xact = gtp_xact_preprocess(&pgw_self()->gtp_xact_ctx, 
+                    sock, gnode, &type, pkbuf);
+            rv = gtp_xact_receive(xact, &gtp_message, type, pkbuf);
+            if (rv != CORE_OK) 
+                break;
 
+            switch(type)
+            {
+                case GTP_CREATE_SESSION_REQUEST_TYPE:
+                    pgw_s5c_handle_create_session_request(
+                        xact, &gtp_message.create_session_request);
+                    break;
+                default:
+                    d_warn("Not implmeneted(type:%d)", type);
+                    break;
+            }
+            pkbuf_free(pkbuf);
             break;
         }
         case EVT_TM_PGW_T3:

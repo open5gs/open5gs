@@ -79,7 +79,7 @@ status_t gtp_xact_final(void)
     return CORE_OK;
 }
 
-gtp_xact_t *gtp_xact_create(gtp_xact_ctx_t *context, 
+static gtp_xact_t *gtp_xact_create(gtp_xact_ctx_t *context, 
     net_sock_t *sock, gtp_node_t *gnode, c_uint8_t org, c_uint32_t xid, 
     c_uint32_t duration, c_uint8_t retry_count)
 {
@@ -118,23 +118,7 @@ gtp_xact_t *gtp_xact_create(gtp_xact_ctx_t *context,
     return xact;
 }
 
-gtp_xact_t *gtp_xact_local_create(
-        gtp_xact_ctx_t *context, net_sock_t *sock, gtp_node_t *gnode)
-{
-    return gtp_xact_create(context, sock, gnode, GTP_LOCAL_ORIGINATOR, 
-            GTP_XACT_NEXT_ID(context->g_xact_id),
-            GTP_XACT_LOCAL_DURATION, GTP_XACT_LOCAL_RETRY_COUNT);
-}
-
-gtp_xact_t *gtp_xact_remote_create(gtp_xact_ctx_t *context, 
-    net_sock_t *sock, gtp_node_t *gnode, c_uint32_t sqn)
-{
-    return gtp_xact_create(context, sock, gnode, 
-            GTP_REMOTE_ORIGINATOR, GTP_SQN_TO_XID(sqn),
-            GTP_XACT_REMOTE_DURATION, GTP_XACT_REMOTE_RETRY_COUNT);
-}
-
-status_t gtp_xact_delete(gtp_xact_t *xact)
+static status_t gtp_xact_delete(gtp_xact_t *xact)
 {
     d_assert(xact, , "Null param");
     d_assert(xact->gnode, , "Null param");
@@ -155,6 +139,23 @@ status_t gtp_xact_delete(gtp_xact_t *xact)
     pool_free_node(&gtp_xact_pool, xact);
 
     return CORE_OK;
+}
+
+
+gtp_xact_t *gtp_xact_local_create(
+        gtp_xact_ctx_t *context, net_sock_t *sock, gtp_node_t *gnode)
+{
+    return gtp_xact_create(context, sock, gnode, GTP_LOCAL_ORIGINATOR, 
+            GTP_XACT_NEXT_ID(context->g_xact_id),
+            GTP_XACT_LOCAL_DURATION, GTP_XACT_LOCAL_RETRY_COUNT);
+}
+
+gtp_xact_t *gtp_xact_remote_create(gtp_xact_ctx_t *context, 
+    net_sock_t *sock, gtp_node_t *gnode, c_uint32_t sqn)
+{
+    return gtp_xact_create(context, sock, gnode, 
+            GTP_REMOTE_ORIGINATOR, GTP_SQN_TO_XID(sqn),
+            GTP_XACT_REMOTE_DURATION, GTP_XACT_REMOTE_RETRY_COUNT);
 }
 
 status_t gtp_xact_commit(
@@ -240,7 +241,8 @@ out:
     return CORE_ERROR;
 }
 
-gtp_xact_t *gtp_xact_find(gtp_node_t *gnode, c_uint8_t type, c_uint32_t sqn)
+static gtp_xact_t *gtp_xact_find(
+        gtp_node_t *gnode, c_uint8_t type, c_uint32_t sqn)
 {
     c_uint32_t xid;
     gtp_xact_t *xact = NULL;
@@ -296,17 +298,17 @@ gtp_xact_t *gtp_xact_find(gtp_node_t *gnode, c_uint8_t type, c_uint32_t sqn)
     return xact;
 }
 
-gtp_xact_t *gtp_xact_recv(
-        gtp_xact_ctx_t *context, net_sock_t *sock, gtp_node_t *gnode, 
-        gtp_message_t *gtp_message, pkbuf_t *pkbuf)
+gtp_xact_t *gtp_xact_preprocess(gtp_xact_ctx_t *context, 
+        net_sock_t *sock, gtp_node_t *gnode, c_uint8_t *type, pkbuf_t *pkbuf)
 {
+    status_t rv;
     gtpv2c_header_t *h = NULL;
     gtp_xact_t *xact = NULL;
 
     d_assert(context, return NULL, "Null param");
     d_assert(sock, return NULL, "Null param");
     d_assert(gnode, return NULL, "Null param");
-    d_assert(gtp_message, return NULL, "Null param");
+    d_assert(type, return NULL, "Null param");
     d_assert(pkbuf, return NULL, "Null param");
 
     h = pkbuf->payload;
@@ -319,6 +321,11 @@ gtp_xact_t *gtp_xact_recv(
     }
     d_assert(xact, return NULL, "Null param");
 
+    d_trace(1, "[%d]%s Process : xid = 0x%x\n",
+            gnode->port,
+            xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
+            xact->xid);
+
     if (xact->org == GTP_LOCAL_ORIGINATOR)
     {
         gtp_xact_t *assoc_xact = xact->assoc_xact;
@@ -330,14 +337,11 @@ gtp_xact_t *gtp_xact_recv(
     {
         if (xact->pkbuf)
         {
-            pkbuf_free(pkbuf);
-
             d_warn("[%d]%s Request Duplicated. Retransmit!",
                     xact->gnode->port,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE");
-            d_assert(gtp_send(xact->sock, xact->gnode, xact->pkbuf) 
-                        == CORE_OK, return NULL, "gtp_send error");
-            return xact;
+            rv = gtp_send(xact->sock, xact->gnode, xact->pkbuf);
+            d_assert(rv == CORE_OK, return NULL, "gtp_send error");
         }
     }
 
@@ -346,8 +350,26 @@ gtp_xact_t *gtp_xact_recv(
     else
         pkbuf_header(pkbuf, -(GTPV2C_HEADER_LEN-GTPV2C_TEID_LEN));
 
-    d_assert(gtp_parse_msg(gtp_message, h->type, pkbuf) == CORE_OK,
-            return NULL, "parse error");
+    *type = h->type;
 
     return xact;
+}
+
+status_t gtp_xact_receive(gtp_xact_t *xact, 
+        gtp_message_t *gtp_message, c_uint8_t type, pkbuf_t *pkbuf)
+{
+    status_t rv;
+
+    if (xact && xact->org == GTP_REMOTE_ORIGINATOR && xact->pkbuf)
+    {
+        /* Retransmitted */
+        pkbuf_free(pkbuf);
+
+        return CORE_ERROR;
+    }
+
+    rv = gtp_parse_msg(gtp_message, type, pkbuf);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "parse error");
+
+    return rv;
 }
