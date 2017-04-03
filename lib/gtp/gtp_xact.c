@@ -201,10 +201,7 @@ status_t gtp_xact_associated_commit(
             goto out, "gtp_send error");
 
     if (assoc_xact)
-    {
         xact->assoc_xact = assoc_xact;
-        assoc_xact->assoc_xact = xact;
-    }
 
     return CORE_OK;
 

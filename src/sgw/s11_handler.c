@@ -7,9 +7,9 @@
 #include "s11_handler.h"
 
 void sgw_s11_handle_create_session_request(
-        gtp_xact_t *xact, c_uint8_t type, gtp_message_t *gtp_message)
+        gtp_xact_t *assoc_xact, c_uint8_t type, gtp_message_t *gtp_message)
 {
-    d_assert(sgw_s5c_send_to_pgw(xact, type, gtp_message) == CORE_OK, 
+    d_assert(sgw_s5c_send_to_pgw(assoc_xact, type, gtp_message) == CORE_OK, 
             return, "failed to send message");
 }
 
