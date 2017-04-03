@@ -57,7 +57,7 @@ CORE_DECLARE(gtp_xact_t *) gtp_xact_create(gtp_xact_ctx_t *context,
 CORE_DECLARE(gtp_xact_t *)gtp_xact_local_create(gtp_xact_ctx_t *context,
         net_sock_t *sock, gtp_node_t *gnode, gtp_message_t *gtp_message);
 CORE_DECLARE(gtp_xact_t *) gtp_xact_remote_create(gtp_xact_ctx_t *context, 
-    net_sock_t *sock, gtp_node_t *gnode, c_uint32_t xid);
+    net_sock_t *sock, gtp_node_t *gnode, c_uint32_t sqn);
 CORE_DECLARE(status_t) gtp_xact_delete(gtp_xact_t *xact);
 
 CORE_DECLARE(status_t) gtp_xact_associate(

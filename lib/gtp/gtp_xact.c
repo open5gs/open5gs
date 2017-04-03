@@ -157,10 +157,10 @@ gtp_xact_t *gtp_xact_local_create(gtp_xact_ctx_t *context,
 }
 
 gtp_xact_t *gtp_xact_remote_create(gtp_xact_ctx_t *context, 
-    net_sock_t *sock, gtp_node_t *gnode, c_uint32_t xid)
+    net_sock_t *sock, gtp_node_t *gnode, c_uint32_t sqn)
 {
     return gtp_xact_create(context, sock, gnode, 
-            GTP_REMOTE_ORIGINATOR, xid,
+            GTP_REMOTE_ORIGINATOR, GTP_SQN_TO_XID(sqn),
             GTP_XACT_REMOTE_DURATION, GTP_XACT_REMOTE_RETRY_COUNT);
 }
 
@@ -250,11 +250,7 @@ status_t gtp_xact_timeout(gtp_xact_t *xact)
             xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
             xact->xid);
 
-    if (xact->org == GTP_REMOTE_ORIGINATOR)
-    {
-        gtp_xact_delete(xact);
-    }
-    else
+    if (xact->org == GTP_LOCAL_ORIGINATOR)
     {
         if (--xact->retry_count > 0)
         {
@@ -271,6 +267,10 @@ status_t gtp_xact_timeout(gtp_xact_t *xact)
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE");
             gtp_xact_delete(xact);
         }
+    }
+    else
+    {
+        gtp_xact_delete(xact);
     }
 
     return CORE_OK;
@@ -359,8 +359,7 @@ gtp_xact_t *gtp_xact_recv(
     xact = gtp_xact_find(gnode, pkbuf);
     if (!xact)
     {
-        xact = gtp_xact_remote_create(context, sock, gnode, 
-                GTP_SQN_TO_XID(h->sqn));
+        xact = gtp_xact_remote_create(context, sock, gnode, h->sqn);
     }
 
     if (h->teid_presence)
