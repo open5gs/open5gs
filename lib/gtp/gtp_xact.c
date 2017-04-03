@@ -379,6 +379,12 @@ gtp_xact_t *gtp_xact_preprocess(gtp_xact_ctx_t *context,
             rv = gtp_send(xact->sock, xact->gnode, xact->pkbuf);
             d_assert(rv == CORE_OK, return NULL, "gtp_send error");
         }
+        else if (xact->assoc_xact)
+        {
+            d_warn("[%d]%s Request Duplicated. Discard Associated transaction!",
+                    xact->gnode->port,
+                    xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE");
+        }
     }
 
     if (h->teid_presence)
@@ -396,9 +402,10 @@ status_t gtp_xact_receive(gtp_xact_t *xact,
 {
     status_t rv;
 
-    if (xact && xact->org == GTP_REMOTE_ORIGINATOR && xact->pkbuf)
+    if (xact && xact->org == GTP_REMOTE_ORIGINATOR && 
+        (xact->pkbuf || xact->assoc_xact))
     {
-        /* Retransmitted */
+        /* Retrasnmit or Discard */
         pkbuf_free(pkbuf);
         return CORE_ERROR;
     }
