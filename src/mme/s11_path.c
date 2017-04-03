@@ -7,7 +7,7 @@
 #include "context.h"
 #include "s11_path.h"
 
-static int _gtpv2_c_recv_cb(net_sock_t *net_sock, void *data)
+static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
 {
     char buf[INET_ADDRSTRLEN];
     status_t rv;
@@ -16,31 +16,32 @@ static int _gtpv2_c_recv_cb(net_sock_t *net_sock, void *data)
     gtp_node_t gnode;
     sgw_ctx_t *sgw = NULL;
 
-    d_assert(net_sock, return -1, "Null param");
+    d_assert(sock, return -1, "Null param");
 
-    gnode.addr = net_sock->remote.sin_addr.s_addr;
-    gnode.port = net_sock->remote.sin_port;
-
-    sgw = mme_ctx_sgw_find_by_node(&gnode);
-    d_assert(sgw, return -1, "Can't find SGW from [%s:%d]",
-            INET_NTOP(&gnode.addr, buf), gnode.port);
-
-    pkbuf = gtp_read(net_sock);
+    pkbuf = gtp_read(sock);
     if (pkbuf == NULL)
     {
-        if (net_sock->sndrcv_errno == EAGAIN)
+        if (sock->sndrcv_errno == EAGAIN)
             return 0;
 
         return -1;
     }
+
+    gnode.addr = sock->remote.sin_addr.s_addr;
+    gnode.port = ntohs(sock->remote.sin_port);
+
+    sgw = mme_ctx_sgw_find_by_node(&gnode);
+    d_assert(sgw, return -1, "Can't find SGW from [%s:%d]",
+            INET_NTOP(&gnode.addr, buf), gnode.port);
 
     d_trace(1, "S11_PDU is received from SGW[%s:%d]\n",
             INET_NTOP(&gnode.addr, buf), gnode.port);
     d_trace_hex(1, pkbuf->payload, pkbuf->len);
 
     event_set(&e, EVT_MSG_MME_S11);
-    event_set_param1(&e, (c_uintptr_t)sgw);
-    event_set_param2(&e, (c_uintptr_t)pkbuf);
+    event_set_param1(&e, (c_uintptr_t)sock);
+    event_set_param2(&e, (c_uintptr_t)sgw);
+    event_set_param3(&e, (c_uintptr_t)pkbuf);
     rv = mme_event_send(&e);
     if (rv != CORE_OK)
     {
@@ -96,10 +97,6 @@ status_t mme_s11_send_to_sgw(
     d_assert(gtp_xact_commit(xact, gtp_message) == CORE_OK,
             return CORE_ERROR, "xact commit error");
 
-#if 1 /* FIXME */
-    gtp_xact_delete(xact);
-#endif
-    
     return CORE_OK;
 }
 

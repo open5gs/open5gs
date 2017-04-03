@@ -144,11 +144,92 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
         }
         case EVT_MSG_MME_S11:
         {
-            s11_ctx_t *s11 = (s11_ctx_t *)event_get_param1(e);
-            d_assert(s11, break, "Null param");
+            net_sock_t *sock = (net_sock_t *)event_get_param1(e);
+            gtp_node_t *gnode = (gtp_node_t *)event_get_param2(e);
+            pkbuf_t *pkbuf = (pkbuf_t *)event_get_param3(e);
+            gtp_xact_t *xact = NULL;
+            gtpv2c_header_t *h = NULL;
+            gtp_message_t gtp_message;
 
-            d_assert(FSM_STATE(&s11->s11_sm), break, "Null param");
-            fsm_dispatch((fsm_t*)&s11->s11_sm, (fsm_event_t*)e);
+            d_assert(sock, break, "Null param");
+            d_assert(gnode, break, "Null param");
+            d_assert(pkbuf, break, "Null param");
+
+            h = pkbuf->payload;
+            d_assert(h, break, "Null param");
+
+            xact = gtp_xact_find(gnode, pkbuf);
+            if (!xact)
+            {
+                xact = gtp_xact_remote_create(&mme_self()->gtp_xact_ctx, 
+                        sock, gnode, h->sqn);
+            }
+
+            if (xact->org == GTP_LOCAL_ORIGINATOR)
+            {
+                if (xact->assoc_xact)
+                {
+                    if (h->teid_presence)
+                        pkbuf_header(pkbuf, -GTPV2C_HEADER_LEN);
+                    else
+                        pkbuf_header(pkbuf, -(GTPV2C_HEADER_LEN-GTPV2C_TEID_LEN));
+
+                    memset(&gtp_message, 0, sizeof(gtp_message_t));
+                    gtp_message.type = h->type;
+                    d_assert(gtp_parse_msg(&gtp_message, pkbuf) == CORE_OK,
+                            break, "parse error");
+
+                    switch(gtp_message.type)
+                    {
+                        case GTP_CREATE_SESSION_RESPONSE_TYPE:
+                        {
+                            d_info("received response");
+                            break;
+                        }
+                    }
+                }
+
+                gtp_xact_delete(xact);
+            }
+            else
+            {
+                if (xact->pkbuf)
+                {
+                    d_assert(gtp_send(xact->sock, xact->gnode, xact->pkbuf) 
+                            == CORE_OK, break, "gtp_send error");
+                }
+                else
+                {
+                    if (h->teid_presence)
+                        pkbuf_header(pkbuf, -GTPV2C_HEADER_LEN);
+                    else
+                        pkbuf_header(pkbuf, -(GTPV2C_HEADER_LEN-GTPV2C_TEID_LEN));
+
+                    memset(&gtp_message, 0, sizeof(gtp_message_t));
+                    gtp_message.type = h->type;
+                    d_assert(gtp_parse_msg(&gtp_message, pkbuf) == CORE_OK,
+                            break, "parse error");
+
+                    switch(gtp_message.type)
+                    {
+                        case GTP_CREATE_SESSION_RESPONSE_TYPE:
+                        {
+                            d_info("received response");
+                            break;
+                        }
+                    }
+                }
+            }
+
+            pkbuf_free(pkbuf);
+            break;
+        }
+        case EVT_TM_MME_S11_T3:
+        {
+            gtp_xact_t *xact = (gtp_xact_t *)event_get_param1(e);
+            d_assert(xact, break, "Null param");
+
+            gtp_xact_timeout(xact);
             break;
         }
         case EVT_LO_ENB_S1AP_CONNREFUSED:

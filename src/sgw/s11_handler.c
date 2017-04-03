@@ -17,8 +17,6 @@ void sgw_s11_handle_create_session_response(
         gtp_xact_t *xact, gtp_message_t *gtp_message)
 {
     d_info("handle create_session response");
-#if 0
     d_assert(sgw_s11_send_to_mme(xact, gtp_message) == CORE_OK, return, 
             "failed to send message");
-#endif
 }

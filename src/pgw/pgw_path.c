@@ -122,8 +122,8 @@ status_t pgw_s5c_send_to_sgw(gtp_xact_t *xact, gtp_message_t *gtp_message)
 
     if (!xact)
     {
-        xact = gtp_xact_local_create(&pgw_self()->gtp_xact_ctx, pgw_self()->s5c_sock, 
-                &pgw_self()->s5c_node);
+        xact = gtp_xact_local_create(&pgw_self()->gtp_xact_ctx, 
+                pgw_self()->s5c_sock, &pgw_self()->s5c_node);
     }
     d_assert(xact, return CORE_ERROR, "Null param");
 
