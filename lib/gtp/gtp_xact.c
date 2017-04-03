@@ -321,21 +321,51 @@ gtp_xact_t *gtp_xact_recv(
         gtp_xact_ctx_t *context, net_sock_t *sock, gtp_node_t *gnode, 
         gtp_message_t *gtp_message, pkbuf_t *pkbuf)
 {
-    gtp_xact_t *xact = NULL;
     gtpv2c_header_t *h = NULL;
+    gtp_xact_t *xact = NULL;
 
-    d_assert(context, goto out, "Null param");
-    d_assert(sock, goto out, "Null param");
-    d_assert(gnode, goto out, "Null param");
-    d_assert(pkbuf, goto out, "Null param");
+    d_assert(context, return NULL, "Null param");
+    d_assert(sock, return NULL, "Null param");
+    d_assert(gnode, return NULL, "Null param");
+    d_assert(gtp_message, return NULL, "Null param");
+    d_assert(pkbuf, return NULL, "Null param");
 
     h = pkbuf->payload;
-    d_assert(h, goto out, "Null param");
+    d_assert(h, return NULL, "Null param");
 
     xact = gtp_xact_find(gnode, pkbuf);
     if (!xact)
     {
         xact = gtp_xact_remote_create(context, sock, gnode, h->sqn);
+    }
+    d_assert(xact, return NULL, "Null param");
+
+    if (xact->org == GTP_LOCAL_ORIGINATOR)
+    {
+        if (xact->assoc_xact)
+        {
+            gtp_xact_t *assoc_xact = xact->assoc_xact;
+            gtp_xact_delete(xact);
+            xact = assoc_xact;
+        }
+        else
+        {
+            gtp_xact_delete(xact);
+            return NULL;
+        }
+    }
+    else
+    {
+        if (xact->pkbuf)
+        {
+            d_warn("[%d]%s Request Duplicated. Retransmit!",
+                    xact->gnode->port,
+                    xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE");
+            d_assert(gtp_send(xact->sock, xact->gnode, xact->pkbuf) 
+                    == CORE_OK, return NULL, "gtp_send error");
+
+            return NULL;
+        }
     }
 
     if (h->teid_presence)
@@ -346,16 +376,7 @@ gtp_xact_t *gtp_xact_recv(
     memset(gtp_message, 0, sizeof(gtp_message_t));
     gtp_message->type = h->type;
     d_assert(gtp_parse_msg(gtp_message, pkbuf) == CORE_OK,
-            goto out, "parse error");
-
-    d_trace(1, "[%d]%s Receive : xid = 0x%x\n",
-            gnode->port,
-            xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-            xact->xid);
+            return NULL, "parse error");
 
     return xact;
-
-out:
-    pkbuf_free(pkbuf);
-    return NULL;
 }
