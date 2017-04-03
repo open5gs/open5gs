@@ -9,10 +9,10 @@ extern "C" {
 #endif /* __cplusplus */
 
 CORE_DECLARE(void) sgw_s11_handle_create_session_request(
-        gtp_xact_t *xact, gtp_message_t *gtp_message);
+        gtp_xact_t *xact, c_uint8_t type, gtp_message_t *gtp_message);
 
 CORE_DECLARE(void) sgw_s11_handle_create_session_response(
-        gtp_xact_t *xact, gtp_message_t *gtp_message);
+        gtp_xact_t *xact, c_uint8_t type, gtp_message_t *gtp_message);
 
 #ifdef __cplusplus
 }

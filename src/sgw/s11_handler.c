@@ -7,18 +7,16 @@
 #include "s11_handler.h"
 
 void sgw_s11_handle_create_session_request(
-        gtp_xact_t *xact, gtp_message_t *gtp_message)
+        gtp_xact_t *xact, c_uint8_t type, gtp_message_t *gtp_message)
 {
-    d_assert(sgw_s5c_send_to_pgw(
-            xact, GTP_CREATE_SESSION_REQUEST_TYPE, gtp_message) == CORE_OK, 
+    d_assert(sgw_s5c_send_to_pgw(xact, type, gtp_message) == CORE_OK, 
             return, "failed to send message");
 }
 
 void sgw_s11_handle_create_session_response(
-        gtp_xact_t *xact, gtp_message_t *gtp_message)
+        gtp_xact_t *xact, c_uint8_t type, gtp_message_t *gtp_message)
 {
     d_info("handle create_session response");
-    d_assert(sgw_s11_send_to_mme(
-            xact, GTP_CREATE_SESSION_RESPONSE_TYPE, gtp_message) == CORE_OK, 
+    d_assert(sgw_s11_send_to_mme(xact, type, gtp_message) == CORE_OK, 
             return, "failed to send message");
 }
