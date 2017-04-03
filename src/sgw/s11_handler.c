@@ -9,6 +9,6 @@
 void sgw_s11_handle_create_session_request(
         gtp_xact_t *xact, gtp_message_t *gtp_message)
 {
-    d_assert(sgw_s5c_send_to_pgw(xact, gtp_message) == CORE_OK, return, 
+    d_assert(sgw_s5c_send_to_pgw(NULL, xact, gtp_message) == CORE_OK, return, 
             "failed to send message");
 }

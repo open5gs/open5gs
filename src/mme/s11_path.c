@@ -80,18 +80,21 @@ status_t mme_s11_close()
     return CORE_OK;
 }
 
-status_t mme_s11_send_to_sgw(void *sgw, gtp_message_t *gtp_message)
+status_t mme_s11_send_to_sgw(
+        void *sgw, gtp_xact_t *xact, gtp_message_t *gtp_message)
 {
-    gtp_xact_t *xact;
     d_assert(sgw, return CORE_ERROR, "Null param");
     d_assert(gtp_message, return CORE_ERROR, "Null param");
 
-    xact = gtp_xact_local_create(&mme_self()->gtp_xact_ctx, 
-            mme_self()->s11_sock, sgw, gtp_message);
-    d_assert(xact, return CORE_ERROR, "gtp_xact_local_create failed");
+    if (!xact)
+    {
+        xact = gtp_xact_local_create(&mme_self()->gtp_xact_ctx, 
+                mme_self()->s11_sock, sgw);
+    }
+    d_assert(xact, return CORE_ERROR, "Null param");
 
-    d_assert(gtp_send(xact->sock, xact->gnode, xact->pkbuf) == CORE_OK,
-            gtp_xact_delete(xact); return CORE_ERROR, "gtp_send error");
+    d_assert(gtp_xact_commit(xact, gtp_message) == CORE_OK,
+            return CORE_ERROR, "xact commit error");
 
 #if 1 /* FIXME */
     gtp_xact_delete(xact);
@@ -106,5 +109,5 @@ void test_send()
     gtp_message_t gtp_message;
 
     s11_build_create_session_req(&gtp_message, NULL);
-    mme_s11_send_to_sgw(mme_ctx_sgw_first(), &gtp_message);
+    mme_s11_send_to_sgw(mme_ctx_sgw_first(), NULL, &gtp_message);
 }

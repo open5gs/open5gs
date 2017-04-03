@@ -142,38 +142,41 @@ status_t sgw_path_close()
     return CORE_OK;
 }
 
-status_t sgw_s11_send_to_mme(gtp_message_t *gtp_message)
+status_t sgw_s11_send_to_mme(gtp_xact_t *xact, gtp_message_t *gtp_message)
 {
-    gtp_xact_t *xact = NULL;
     d_assert(gtp_message, return CORE_ERROR, "Null param");
 
-    xact = gtp_xact_local_create(&sgw_self()->gtp_xact_ctx, 
-            sgw_self()->s11_sock, &sgw_self()->s11_node, gtp_message);
-    d_assert(xact, return CORE_ERROR, "gtp_xact_local_create failed");
+    if (!xact)
+    {
+        xact = gtp_xact_local_create(&sgw_self()->gtp_xact_ctx, 
+                sgw_self()->s11_sock, &sgw_self()->s11_node);
+    }
+    d_assert(xact, return CORE_ERROR, "Null param");
 
-    d_assert(gtp_send(xact->sock, xact->gnode, xact->pkbuf) == CORE_OK,
-            gtp_xact_delete(xact); return CORE_ERROR, "gtp_send error");
+    d_assert(gtp_xact_commit(xact, gtp_message) == CORE_OK,
+            return CORE_ERROR, "xact commit error");
 
     return CORE_OK;
 }
 
 status_t sgw_s5c_send_to_pgw(
-        gtp_xact_t *s11_xact, gtp_message_t *gtp_message)
+        gtp_xact_t *xact, gtp_xact_t *s11_xact, gtp_message_t *gtp_message)
 {
-    gtp_xact_t *xact;
-
     d_assert(s11_xact, return CORE_ERROR, "Null param");
     d_assert(gtp_message, return CORE_ERROR, "Null param");
 
-    xact = gtp_xact_local_create(&sgw_self()->gtp_xact_ctx, 
-            sgw_self()->s5c_sock, &sgw_self()->s5c_node, gtp_message);
-    d_assert(xact, return CORE_ERROR, "gtp_xact_local_create failed");
+    if (!xact)
+    {
+        xact = gtp_xact_local_create(&sgw_self()->gtp_xact_ctx, 
+                sgw_self()->s5c_sock, &sgw_self()->s5c_node);
+    }
+    d_assert(xact, return CORE_ERROR, "Null param");
 
     d_assert(gtp_xact_associate(xact, s11_xact) == CORE_OK,
             gtp_xact_delete(xact); return CORE_ERROR, "association failed");
 
-    d_assert(gtp_send(xact->sock, xact->gnode, xact->pkbuf) == CORE_OK,
-            gtp_xact_delete(xact); return CORE_ERROR, "gtp_send error");
+    d_assert(gtp_xact_commit(xact, gtp_message) == CORE_OK,
+            return CORE_ERROR, "gtp_send error");
 
     return CORE_OK;
 }
