@@ -461,9 +461,7 @@ for (k, v) in sorted_msg_list:
 f.write("   };\n");
 f.write("} gtp_message_t;\n\n")
 
-f.write("""#define gtp_msg_type(__pk) (((c_uint8_t *)((__pk)->payload))[1])
-
-CORE_DECLARE(status_t) gtp_parse_msg(
+f.write("""CORE_DECLARE(status_t) gtp_parse_msg(
         gtp_message_t *gtp_message, c_uint8_t type, pkbuf_t *pkbuf);
 CORE_DECLARE(status_t) gtp_build_msg(
         pkbuf_t **pkbuf, c_uint8_t type, gtp_message_t *gtp_message);

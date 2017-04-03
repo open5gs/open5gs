@@ -364,12 +364,12 @@ status_t gtp_xact_receive(gtp_xact_t *xact,
     {
         /* Retransmitted */
         pkbuf_free(pkbuf);
-
         return CORE_ERROR;
     }
 
     rv = gtp_parse_msg(gtp_message, type, pkbuf);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "parse error");
+    d_assert(rv == CORE_OK, 
+            pkbuf_free(pkbuf); return CORE_ERROR, "parse error");
 
     return rv;
 }
