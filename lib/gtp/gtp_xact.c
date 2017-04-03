@@ -161,6 +161,13 @@ gtp_xact_t *gtp_xact_remote_create(gtp_xact_ctx_t *context,
 status_t gtp_xact_commit(
         gtp_xact_t *xact, c_uint8_t type, gtp_message_t *gtp_message)
 {
+    return gtp_xact_associated_commit(xact, NULL, type, gtp_message);
+}
+
+status_t gtp_xact_associated_commit(
+        gtp_xact_t *xact, gtp_xact_t *assoc_xact,
+        c_uint8_t type, gtp_message_t *gtp_message)
+{
     status_t rv;
     pkbuf_t *pkbuf = NULL;
     gtpv2c_header_t *h = NULL;
@@ -192,6 +199,12 @@ status_t gtp_xact_commit(
 
     d_assert(gtp_send(xact->sock, xact->gnode, xact->pkbuf) == CORE_OK,
             goto out, "gtp_send error");
+
+    if (assoc_xact)
+    {
+        xact->assoc_xact = assoc_xact;
+        assoc_xact->assoc_xact = xact;
+    }
 
     return CORE_OK;
 

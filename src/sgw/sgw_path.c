@@ -165,8 +165,8 @@ status_t sgw_s5c_send_to_pgw(
             sgw_self()->s5c_sock, &sgw_self()->s5c_node);
     d_assert(xact, return CORE_ERROR, "Null param");
 
-    xact->assoc_xact = assoc_xact;
-    d_assert(gtp_xact_commit(xact, type, gtp_message) == CORE_OK,
+    d_assert(gtp_xact_associated_commit(
+                xact, assoc_xact, type, gtp_message) == CORE_OK,
             return CORE_ERROR, "gtp_send error");
 
     return CORE_OK;
