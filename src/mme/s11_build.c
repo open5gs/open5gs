@@ -25,8 +25,6 @@ status_t s11_build_create_session_req(gtp_message_t *gtp_message, ue_ctx_t *ue)
 
     memset(gtp_message, 0, sizeof(gtp_message_t));
 
-    gtp_message->type = GTP_CREATE_SESSION_REQUEST_TYPE;
-
     req->imsi.presence = 1;
     req->imsi.data = (c_uint8_t *)"\x55\x15\x30\x11\x34\x00\x10\xf4";
     req->imsi.len = 8;

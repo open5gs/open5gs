@@ -61,7 +61,7 @@ CORE_DECLARE(gtp_xact_t *) gtp_xact_remote_create(gtp_xact_ctx_t *context,
 CORE_DECLARE(status_t) gtp_xact_delete(gtp_xact_t *xact);
 
 CORE_DECLARE(status_t) gtp_xact_commit(
-        gtp_xact_t *xact, gtp_message_t *gtp_message);
+        gtp_xact_t *xact, c_uint8_t type, gtp_message_t *gtp_message);
 CORE_DECLARE(status_t) gtp_xact_timeout(gtp_xact_t *xact);
 
 CORE_DECLARE(gtp_xact_t *) gtp_xact_find(

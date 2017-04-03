@@ -11,7 +11,7 @@ CORE_DECLARE(status_t) mme_s11_listen();
 CORE_DECLARE(status_t) mme_s11_close();
 
 CORE_DECLARE(status_t) mme_s11_send_to_sgw(
-        void *sgw, gtp_message_t *gtp_message);
+        void *sgw, c_uint8_t type, gtp_message_t *gtp_message);
 
 #ifdef __cplusplus
 }

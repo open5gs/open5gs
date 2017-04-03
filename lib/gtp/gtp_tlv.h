@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtp_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-02 22:30:13.359338 by acetcom
+ * Created on: 2017-04-03 22:08:53.871041 by acetcom
  * from 29274-d80.docx
  ******************************************************************************/
 
@@ -714,7 +714,6 @@ typedef struct _gtp_create_session_response_t {
 } gtp_create_session_response_t;
 
 typedef struct _gtp_message_t {
-   c_uint8_t type;
    union {
         gtp_echo_request_t echo_request;
         gtp_echo_response_t echo_response;
@@ -723,10 +722,12 @@ typedef struct _gtp_message_t {
    };
 } gtp_message_t;
 
+#define gtp_msg_type(__pk) (((c_uint8_t *)((__pk)->payload))[1])
+
 CORE_DECLARE(status_t) gtp_parse_msg(
-        gtp_message_t *gtp_message, pkbuf_t *pkbuf);
+        gtp_message_t *gtp_message, c_uint8_t type, pkbuf_t *pkbuf);
 CORE_DECLARE(status_t) gtp_build_msg(
-        pkbuf_t **pkbuf, gtp_message_t *gtp_message);
+        pkbuf_t **pkbuf, c_uint8_t type, gtp_message_t *gtp_message);
 
 #ifdef __cplusplus
 }

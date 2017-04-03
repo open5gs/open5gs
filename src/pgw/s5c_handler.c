@@ -14,11 +14,9 @@ void pgw_s5c_handle_create_session_request(
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));
 
-    gtp_message.type = GTP_CREATE_SESSION_RESPONSE_TYPE;
-
     rsp->cause.presence = 1;
     rsp->cause.data = (c_uint8_t *)"\x55\x15";
     rsp->cause.len = 2;
 
-    pgw_s5c_send_to_sgw(xact, &gtp_message);
+    pgw_s5c_send_to_sgw(xact, GTP_CREATE_SESSION_RESPONSE_TYPE, &gtp_message);
 }

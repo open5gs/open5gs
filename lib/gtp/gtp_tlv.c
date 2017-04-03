@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtp_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-02 22:30:13.370223 by acetcom
+ * Created on: 2017-04-03 22:08:53.881395 by acetcom
  * from 29274-d80.docx
  ******************************************************************************/
 
@@ -1909,11 +1909,12 @@ tlv_desc_t tlv_desc_create_session_response =
 }};
 
 
-status_t gtp_parse_msg(gtp_message_t *gtp_message, pkbuf_t *pkbuf)
+status_t gtp_parse_msg(gtp_message_t *gtp_message, c_uint8_t type, pkbuf_t *pkbuf)
 {
     status_t rv = CORE_ERROR;
     
-    switch(gtp_message->type)
+    memset(gtp_message, 0, sizeof(gtp_message_t));
+    switch(type)
     {
         case GTP_ECHO_REQUEST_TYPE:
             rv = tlv_parse_msg(&gtp_message->echo_request,
@@ -1932,18 +1933,18 @@ status_t gtp_parse_msg(gtp_message_t *gtp_message, pkbuf_t *pkbuf)
                     &tlv_desc_create_session_response, pkbuf, TLV_MODE_T1_L2_I1);
             break;
         default:
-            d_warn("Not implmeneted(type:%d)", gtp_message->type);
+            d_warn("Not implmeneted(type:%d)", type);
             break;
     }
 
     return rv;
 }
 
-status_t gtp_build_msg(pkbuf_t **pkbuf, gtp_message_t *gtp_message)
+status_t gtp_build_msg(pkbuf_t **pkbuf, c_uint8_t type, gtp_message_t *gtp_message)
 {
     status_t rv = CORE_ERROR;
 
-    switch(gtp_message->type)
+    switch(type)
     {
         case GTP_ECHO_REQUEST_TYPE:
             rv = tlv_build_msg(pkbuf, &tlv_desc_echo_request,
@@ -1962,7 +1963,7 @@ status_t gtp_build_msg(pkbuf_t **pkbuf, gtp_message_t *gtp_message)
                     &gtp_message->create_session_response, TLV_MODE_T1_L2_I1);
             break;
         default:
-            d_warn("Not implmeneted(type:%d)", gtp_message->type);
+            d_warn("Not implmeneted(type:%d)", type);
             break;
     }
 

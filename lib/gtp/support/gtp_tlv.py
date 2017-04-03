@@ -454,7 +454,6 @@ for (k, v) in sorted_msg_list:
         f.write("\n")
 
 f.write("typedef struct _gtp_message_t {\n")
-f.write("   c_uint8_t type;\n")
 f.write("   union {\n")
 for (k, v) in sorted_msg_list:
     if "ies" in msg_list[k]:
@@ -462,10 +461,12 @@ for (k, v) in sorted_msg_list:
 f.write("   };\n");
 f.write("} gtp_message_t;\n\n")
 
-f.write("""CORE_DECLARE(status_t) gtp_parse_msg(
-        gtp_message_t *gtp_message, pkbuf_t *pkbuf);
+f.write("""#define gtp_msg_type(__pk) (((c_uint8_t *)((__pk)->payload))[1])
+
+CORE_DECLARE(status_t) gtp_parse_msg(
+        gtp_message_t *gtp_message, c_uint8_t type, pkbuf_t *pkbuf);
 CORE_DECLARE(status_t) gtp_build_msg(
-        pkbuf_t **pkbuf, gtp_message_t *gtp_message);
+        pkbuf_t **pkbuf, c_uint8_t type, gtp_message_t *gtp_message);
 
 #ifdef __cplusplus
 }
@@ -542,11 +543,12 @@ for (k, v) in sorted_msg_list:
         f.write("}};\n\n")
 f.write("\n")
 
-f.write("""status_t gtp_parse_msg(gtp_message_t *gtp_message, pkbuf_t *pkbuf)
+f.write("""status_t gtp_parse_msg(gtp_message_t *gtp_message, c_uint8_t type, pkbuf_t *pkbuf)
 {
     status_t rv = CORE_ERROR;
     
-    switch(gtp_message->type)
+    memset(gtp_message, 0, sizeof(gtp_message_t));
+    switch(type)
     {
 """)
 for (k, v) in sorted_msg_list:
@@ -556,7 +558,7 @@ for (k, v) in sorted_msg_list:
         f.write("                    &tlv_desc_%s, pkbuf, TLV_MODE_T1_L2_I1);\n" % v_lower(k))
         f.write("            break;\n")
 f.write("""        default:
-            d_warn("Not implmeneted(type:%d)", gtp_message->type);
+            d_warn("Not implmeneted(type:%d)", type);
             break;
     }
 
@@ -565,11 +567,11 @@ f.write("""        default:
 
 """)
 
-f.write("""status_t gtp_build_msg(pkbuf_t **pkbuf, gtp_message_t *gtp_message)
+f.write("""status_t gtp_build_msg(pkbuf_t **pkbuf, c_uint8_t type, gtp_message_t *gtp_message)
 {
     status_t rv = CORE_ERROR;
 
-    switch(gtp_message->type)
+    switch(type)
     {
 """)
 for (k, v) in sorted_msg_list:
@@ -579,7 +581,7 @@ for (k, v) in sorted_msg_list:
         f.write("                    &gtp_message->%s, TLV_MODE_T1_L2_I1);\n" % v_lower(k))
         f.write("            break;\n")
 f.write("""        default:
-            d_warn("Not implmeneted(type:%d)", gtp_message->type);
+            d_warn("Not implmeneted(type:%d)", type);
             break;
     }
 
