@@ -43,19 +43,15 @@ status_t sgw_ctx_init()
     self.s11_port = GTPV2_C_UDP_PORT + 1;
     self.s11_node.addr = inet_addr("127.0.0.1");
     self.s11_node.port = GTPV2_C_UDP_PORT;
-    list_init(&self.s11_node.initial_list);
-    list_init(&self.s11_node.triggered_list);
-    self.s11_node.local_list = &self.s11_node.triggered_list;
-    self.s11_node.remote_list = &self.s11_node.initial_list;
+    list_init(&self.s11_node.local_list);
+    list_init(&self.s11_node.remote_list);
 
     self.s5c_addr = inet_addr("127.0.0.1");
     self.s5c_port = GTPV2_C_UDP_PORT + 2;
     self.s5c_node.addr = inet_addr("127.0.0.1");
     self.s5c_node.port = GTPV2_C_UDP_PORT + 3;
-    list_init(&self.s5c_node.initial_list);
-    list_init(&self.s5c_node.triggered_list);
-    self.s5c_node.local_list = &self.s5c_node.triggered_list;
-    self.s5c_node.remote_list = &self.s5c_node.initial_list;
+    list_init(&self.s5c_node.local_list);
+    list_init(&self.s5c_node.remote_list);
 
     self.s5u_addr = inet_addr("127.0.0.1");
     self.s5u_port = GTPV1_U_UDP_PORT;

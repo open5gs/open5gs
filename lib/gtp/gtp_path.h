@@ -24,10 +24,8 @@ typedef struct _gtp_node_t {
     c_uint32_t      addr;           /**< Network byte order IP Address */
     c_uint16_t      port;           /**< Host byte order Port number */
 
-    list_t          initial_list;    
-    list_t          triggered_list;   
-    list_t          *local_list;
-    list_t          *remote_list;
+    list_t          local_list;    
+    list_t          remote_list;   
 } gtp_node_t;
 
 CORE_DECLARE(status_t) gtp_listen(net_sock_t **sock, 
