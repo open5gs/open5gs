@@ -145,12 +145,6 @@ status_t sgw_path_close()
 status_t sgw_s11_send_to_mme(gtp_xact_t *xact, gtp_message_t *gtp_message)
 {
     d_assert(gtp_message, return CORE_ERROR, "Null param");
-
-    if (!xact)
-    {
-        xact = gtp_xact_local_create(&sgw_self()->gtp_xact_ctx, 
-                sgw_self()->s11_sock, &sgw_self()->s11_node);
-    }
     d_assert(xact, return CORE_ERROR, "Null param");
 
     d_assert(gtp_xact_commit(xact, gtp_message) == CORE_OK,
@@ -159,20 +153,17 @@ status_t sgw_s11_send_to_mme(gtp_xact_t *xact, gtp_message_t *gtp_message)
     return CORE_OK;
 }
 
-status_t sgw_s5c_send_to_pgw(
-        gtp_xact_t *xact, gtp_xact_t *s11_xact, gtp_message_t *gtp_message)
+status_t sgw_s5c_send_to_pgw(gtp_xact_t *assoc_xact, gtp_message_t *gtp_message)
 {
-    d_assert(s11_xact, return CORE_ERROR, "Null param");
+    gtp_xact_t *xact = NULL;
+    d_assert(assoc_xact, return CORE_ERROR, "Null param");
     d_assert(gtp_message, return CORE_ERROR, "Null param");
 
-    if (!xact)
-    {
-        xact = gtp_xact_local_create(&sgw_self()->gtp_xact_ctx, 
-                sgw_self()->s5c_sock, &sgw_self()->s5c_node);
-    }
+    xact = gtp_xact_local_create(&sgw_self()->gtp_xact_ctx, 
+            sgw_self()->s5c_sock, &sgw_self()->s5c_node);
     d_assert(xact, return CORE_ERROR, "Null param");
 
-    xact->assoc_xact = s11_xact;
+    xact->assoc_xact = assoc_xact;
     d_assert(gtp_xact_commit(xact, gtp_message) == CORE_OK,
             return CORE_ERROR, "gtp_send error");
 

@@ -119,12 +119,6 @@ status_t pgw_path_close()
 status_t pgw_s5c_send_to_sgw(gtp_xact_t *xact, gtp_message_t *gtp_message)
 {
     d_assert(gtp_message, return CORE_ERROR, "Null param");
-
-    if (!xact)
-    {
-        xact = gtp_xact_local_create(&pgw_self()->gtp_xact_ctx, 
-                pgw_self()->s5c_sock, &pgw_self()->s5c_node);
-    }
     d_assert(xact, return CORE_ERROR, "Null param");
 
     d_assert(gtp_xact_commit(xact, gtp_message) == CORE_OK,

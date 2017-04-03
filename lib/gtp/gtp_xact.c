@@ -175,6 +175,8 @@ status_t gtp_xact_commit(gtp_xact_t *xact, gtp_message_t *gtp_message)
 
     rv = gtp_build_msg(&pkbuf, gtp_message);
     d_assert(rv == CORE_OK, goto out, "gtp build failed");
+    d_assert(pkbuf, goto out, "Null param");
+    xact->pkbuf = pkbuf;
 
     pkbuf_header(pkbuf, GTPV2C_HEADER_LEN);
     h = pkbuf->payload;
@@ -185,8 +187,6 @@ status_t gtp_xact_commit(gtp_xact_t *xact, gtp_message_t *gtp_message)
     h->type = gtp_message->type;
     h->length = htons(pkbuf->len - 4);
     h->sqn = GTP_XID_TO_SQN(xact->xid);
-
-    xact->pkbuf = pkbuf;
 
     d_assert(gtp_send(xact->sock, xact->gnode, xact->pkbuf) == CORE_OK,
             goto out, "gtp_send error");
