@@ -3,7 +3,7 @@
 noinst_LTLIBRARIES = libmme.la
 
 libmme_la_SOURCES = \
-	kdf.h kasumi.h snow_3g.h zuc.h \
+	mme_kdf.h kasumi.h snow_3g.h zuc.h \
     mme_event.h mme_ctx.h \
 	s1ap_build.h s1ap_handler.h s1ap_conv.h s1ap_path.h \
 	mme_s6a_handler.h \
@@ -12,7 +12,7 @@ libmme_la_SOURCES = \
 	mme_sm.h 
 
 nodist_libmme_la_SOURCES = \
-	kdf.c kasumi.c snow_3g.c zuc.c \
+	mme_kdf.c kasumi.c snow_3g.c zuc.c \
     mme_init.c mme_event.c mme_ctx.c \
 	s1ap_sm.c s1ap_build.c s1ap_handler.c s1ap_conv.c s1ap_path.c \
 	mme_s6a_handler.c \

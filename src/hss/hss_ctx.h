@@ -1,5 +1,5 @@
-#ifndef __CONTEXT_H__
-#define __CONTEXT_H__
+#ifndef __HSS_CTX_H__
+#define __HSS_CTX_H__
 
 #include "core_list.h"
 #include "core_errno.h"
@@ -51,4 +51,4 @@ CORE_DECLARE(ue_ctx_t*)     hss_ctx_ue_next(ue_ctx_t *ue);
 }
 #endif /* __cplusplus */
 
-#endif /* !__CONTEXT_H__ */
+#endif /* __HSS_CTX_H__ */

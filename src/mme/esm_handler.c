@@ -6,7 +6,7 @@
 
 #include "mme_event.h"
 
-#include "kdf.h"
+#include "mme_kdf.h"
 #include "nas_security.h"
 #include "nas_conv.h"
 #include "mme_s6a_handler.h"

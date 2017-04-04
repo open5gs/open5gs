@@ -4,11 +4,11 @@
 #include "core_lib.h"
 #include "core_sha2.h"
 
-#include "kdf.h"
-#include "milenage.h"
-
-#include "context.h"
 #include "s6a_lib.h"
+
+#include "hss_ctx.h"
+#include "hss_kdf.h"
+#include "milenage.h"
 
 #define HSS_SQN_LEN 6
 #define HSS_AK_LEN 6

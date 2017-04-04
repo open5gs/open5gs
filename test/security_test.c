@@ -6,7 +6,7 @@
 #include "nas_message.h"
 
 #include "milenage.h"
-#include "hss/kdf.h"
+#include "hss_kdf.h"
 #include "nas_security.h"
 
 #include "testutil.h"
