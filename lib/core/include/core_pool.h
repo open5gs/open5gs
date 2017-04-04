@@ -11,7 +11,7 @@
         __type *free[__size], pool[__size]; \
         mutex_id mut; \
     } pool_##__name##_t; \
-    static pool_##__name##_t __name
+    pool_##__name##_t __name
 
 #define pool_init(__pname, __size) do { \
     int __i; \

@@ -12,9 +12,9 @@
 
 static hss_ctx_t self;
 
-pool_declare(ue_pool, ue_ctx_t, SIZE_OF_UE_POOL);
+pool_declare(user_pool, user_ctx_t, MAX_NUM_OF_UE);
 
-static list_t g_ue_list;
+static list_t g_user_list;
 
 hss_ctx_t* hss_self()
 {
@@ -24,9 +24,9 @@ hss_ctx_t* hss_self()
 status_t hss_ctx_init(void)
 {
     char buf[HSS_KEY_LEN];
-    ue_ctx_t *ue;
+    user_ctx_t *user;
 
-    pool_init(&ue_pool, SIZE_OF_UE_POOL);
+    pool_init(&user_pool, MAX_NUM_OF_UE);
 
     memset(&self, 0, sizeof(hss_ctx_t));
 
@@ -40,115 +40,115 @@ status_t hss_ctx_init(void)
     #define UE3_IMSI "001010123456819"
     #define UE3_RAND "20080c3818183b52 2614162c07601d0d"
 
-    ue = hss_ctx_ue_add();
-    d_assert(ue, return -1, "UE context add failed");
+    user = hss_ctx_user_add();
+    d_assert(user, return -1, "UE context add failed");
 
-    strcpy((char*)ue->imsi, UE1_IMSI);
-    ue->imsi_len = strlen(UE1_IMSI);
-    memcpy(ue->k, CORE_HEX(K, strlen(K), buf), HSS_KEY_LEN);
-    core_generate_random_bytes(ue->rand, RAND_LEN);
-    ue->sqn = 64;
+    strcpy((char*)user->imsi, UE1_IMSI);
+    user->imsi_len = strlen(UE1_IMSI);
+    memcpy(user->k, CORE_HEX(K, strlen(K), buf), HSS_KEY_LEN);
+    core_generate_random_bytes(user->rand, RAND_LEN);
+    user->sqn = 64;
 
-    ue = hss_ctx_ue_add();
-    d_assert(ue, return -1, "UE context add failed");
+    user = hss_ctx_user_add();
+    d_assert(user, return -1, "UE context add failed");
 
-    strcpy((char*)ue->imsi, UE2_IMSI);
-    ue->imsi_len = strlen(UE2_IMSI);
-    memcpy(ue->k, CORE_HEX(K, strlen(K), buf), HSS_KEY_LEN);
-    core_generate_random_bytes(ue->rand, RAND_LEN);
-    ue->sqn = 64;
+    strcpy((char*)user->imsi, UE2_IMSI);
+    user->imsi_len = strlen(UE2_IMSI);
+    memcpy(user->k, CORE_HEX(K, strlen(K), buf), HSS_KEY_LEN);
+    core_generate_random_bytes(user->rand, RAND_LEN);
+    user->sqn = 64;
 
-    ue = hss_ctx_ue_add();
-    d_assert(ue, return -1, "UE context add failed");
+    user = hss_ctx_user_add();
+    d_assert(user, return -1, "UE context add failed");
 
-    strcpy((char*)ue->imsi, UE3_IMSI);
-    ue->imsi_len = strlen(UE3_IMSI);
-    memcpy(ue->k, CORE_HEX(K, strlen(K), buf), HSS_KEY_LEN);
-    memcpy(ue->rand, CORE_HEX(UE3_RAND, strlen(UE3_RAND), buf), 
+    strcpy((char*)user->imsi, UE3_IMSI);
+    user->imsi_len = strlen(UE3_IMSI);
+    memcpy(user->k, CORE_HEX(K, strlen(K), buf), HSS_KEY_LEN);
+    memcpy(user->rand, CORE_HEX(UE3_RAND, strlen(UE3_RAND), buf), 
             RAND_LEN);
-    ue->sqn = 64;
+    user->sqn = 64;
 
 	return CORE_OK;
 }
 
 void hss_ctx_final(void)
 {
-    hss_ctx_ue_remove_all();
+    hss_ctx_user_remove_all();
 
-    pool_final(&ue_pool);
+    pool_final(&user_pool);
 	
 	return;
 }
 
-ue_ctx_t* hss_ctx_ue_add()
+user_ctx_t* hss_ctx_user_add()
 {
-    ue_ctx_t *ue = NULL;
+    user_ctx_t *user = NULL;
 
     /* Allocate new eNB context */
-    pool_alloc_node(&ue_pool, &ue);
-    d_assert(ue, return NULL, "HSS-UE context allocation failed");
+    pool_alloc_node(&user_pool, &user);
+    d_assert(user, return NULL, "HSS-UE context allocation failed");
 
     /* Initialize eNB context */
-    memset(ue, 0, sizeof(ue_ctx_t));
+    memset(user, 0, sizeof(user_ctx_t));
 
     /* Add new eNB context to list */
-    list_append(&g_ue_list, ue);
+    list_append(&g_user_list, user);
 
-    memcpy(ue->op, self.op, HSS_KEY_LEN);
-    memcpy(ue->amf, self.amf, HSS_AMF_LEN);
+    memcpy(user->op, self.op, HSS_KEY_LEN);
+    memcpy(user->amf, self.amf, HSS_AMF_LEN);
     
-    return ue;
+    return user;
 }
 
-status_t hss_ctx_ue_remove(ue_ctx_t *ue)
+status_t hss_ctx_user_remove(user_ctx_t *user)
 {
-    d_assert(ue, return CORE_ERROR, "Null param");
+    d_assert(user, return CORE_ERROR, "Null param");
 
-    list_remove(&g_ue_list, ue);
-    pool_free_node(&ue_pool, ue);
+    list_remove(&g_user_list, user);
+    pool_free_node(&user_pool, user);
 
     return CORE_OK;
 }
 
-status_t hss_ctx_ue_remove_all()
+status_t hss_ctx_user_remove_all()
 {
-    ue_ctx_t *ue = NULL, *next_ue = NULL;
+    user_ctx_t *user = NULL, *next_user = NULL;
     
-    ue = list_first(&g_ue_list);
-    while (ue)
+    user = list_first(&g_user_list);
+    while (user)
     {
-        next_ue = list_next(ue);
+        next_user = list_next(user);
 
-        hss_ctx_ue_remove(ue);
+        hss_ctx_user_remove(user);
 
-        ue = next_ue;
+        user = next_user;
     }
 
     return CORE_OK;
 }
 
-ue_ctx_t* hss_ctx_ue_find_by_imsi(c_uint8_t *imsi, c_uint8_t imsi_len)
+user_ctx_t* hss_ctx_user_find_by_imsi(c_uint8_t *imsi, c_uint8_t imsi_len)
 {
-    ue_ctx_t *ue = NULL;
+    user_ctx_t *user = NULL;
     
-    ue = list_first(&g_ue_list);
-    while (ue)
+    user = list_first(&g_user_list);
+    while (user)
     {
-        if (memcmp(ue->imsi, imsi, imsi_len) == 0)
+        if (memcmp(user->imsi, imsi, imsi_len) == 0)
             break;
 
-        ue = list_next(ue);
+        user = list_next(user);
     }
 
-    return ue;
+    return user;
 }
 
-ue_ctx_t* hss_ctx_ue_first()
+user_ctx_t* hss_ctx_user_first()
 {
-    return list_first(&g_ue_list);
+    return list_first(&g_user_list);
 }
 
-ue_ctx_t* hss_ctx_ue_next(ue_ctx_t *ue)
+user_ctx_t* hss_ctx_user_next(user_ctx_t *user)
 {
-    return list_next(ue);
+    return list_next(user);
 }

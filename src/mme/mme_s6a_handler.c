@@ -10,7 +10,7 @@
 
 #include "mme_s6a_handler.h"
 
-#define SIZE_OF_SESS_STATE_POOL 32
+#define MAX_NUM_SESSION_STATE 32
 
 static struct session_handler *mme_s6a_reg = NULL;
 
@@ -19,7 +19,7 @@ struct sess_state {
     struct timespec ts; /* Time of sending the message */
 };
 
-pool_declare(sess_state_pool, struct sess_state, SIZE_OF_SESS_STATE_POOL);
+pool_declare(sess_state_pool, struct sess_state, MAX_NUM_SESSION_STATE);
 
 static void mme_s6a_aia_cb(void *data, struct msg **msg);
 
@@ -272,7 +272,7 @@ status_t mme_s6a_init(void)
     rv = s6a_init(MODE_MME);
     if (rv != CORE_OK) return rv;
 
-    pool_init(&sess_state_pool, SIZE_OF_SESS_STATE_POOL);
+    pool_init(&sess_state_pool, MAX_NUM_SESSION_STATE);
 
 	d_assert(fd_sess_handler_create(&mme_s6a_reg, 
             (void *)free, NULL, NULL) == 0, return -1,);

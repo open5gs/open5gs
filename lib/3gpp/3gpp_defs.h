@@ -5,6 +5,10 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#define MAX_UE_PER_ENB      128
+#define MAX_NUM_OF_ENB      128
+#define MAX_NUM_OF_UE       (MAX_NUM_OF_ENB * MAX_UE_PER_ENB)
+
 #define IPV6_LEN            16
 
 #define MAX_SDU_LEN         2048

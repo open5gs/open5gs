@@ -35,7 +35,7 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
     struct avp_hdr *hdr;
     union avp_value val;
 
-    ue_ctx_t *ue = NULL;
+    user_ctx_t *user = NULL;
     c_uint8_t sqn[HSS_SQN_LEN];
     c_uint8_t autn[AUTN_LEN];
     c_uint8_t ik[HSS_KEY_LEN];
@@ -56,9 +56,9 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
             goto out,);
     d_assert(fd_msg_avp_hdr(avp, &hdr) == 0 && hdr,,);
 
-    ue = hss_ctx_ue_find_by_imsi(
+    user = hss_ctx_user_find_by_imsi(
             hdr->avp_value->os.data, hdr->avp_value->os.len);
-    if (!ue)
+    if (!user)
     {
         char imsi[MAX_IMSI_LEN];
         strncpy(imsi, (char*)hdr->avp_value->os.data, hdr->avp_value->os.len);
@@ -70,13 +70,13 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
             avp, goto out,);
     d_assert(fd_msg_avp_hdr(avp, &hdr) == 0 && hdr,,);
 
-    milenage_opc(ue->k, ue->op, ue->opc);
-    milenage_generate(ue->opc, ue->amf, ue->k, 
-        core_uint64_to_buffer(ue->sqn, HSS_SQN_LEN, sqn), ue->rand, 
+    milenage_opc(user->k, user->op, user->opc);
+    milenage_generate(user->opc, user->amf, user->k, 
+        core_uint64_to_buffer(user->sqn, HSS_SQN_LEN, sqn), user->rand, 
         autn, ik, ck, ak, xres, &xres_len);
     hss_kdf_kasme(ck, ik, hdr->avp_value->os.data, sqn, ak, kasme);
 
-    ue->sqn = (ue->sqn + 32) & 0x7ffffffffff;
+    user->sqn = (user->sqn + 32) & 0x7ffffffffff;
 	
 	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
 	d_assert(fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1) == 0,
@@ -93,7 +93,7 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
     d_assert(fd_msg_avp_new(s6a_e_utran_vector, 0, &avpch1) == 0, goto out,);
 
     d_assert(fd_msg_avp_new(s6a_rand, 0, &avpch2) == 0, goto out,);
-    val.os.data = ue->rand;
+    val.os.data = user->rand;
     val.os.len = HSS_KEY_LEN;
     d_assert(fd_msg_avp_setvalue(avpch2, &val) == 0, goto out,);
     d_assert(fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2) == 0, 
