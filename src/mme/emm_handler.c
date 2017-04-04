@@ -9,7 +9,7 @@
 #include "kdf.h"
 #include "nas_security.h"
 #include "nas_conv.h"
-#include "s6a_sm.h"
+#include "mme_s6a_handler.h"
 
 void emm_handle_attach_request(
         ue_ctx_t *ue, nas_attach_request_t *attach_request)
@@ -45,7 +45,7 @@ void emm_handle_attach_request(
             d_assert(ue->imsi, return,);
             d_info("[NAS] Attach request : UE[%s] --> EMM", ue->imsi);
 
-            s6a_send_auth_info_req(ue, plmn_id);
+            mme_s6a_send_auth_info_req(ue, plmn_id);
             break;
         }
         default:

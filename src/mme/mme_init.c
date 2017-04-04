@@ -5,7 +5,7 @@
 
 #include "mme_event.h"
 
-#include "s6a_sm.h"
+#include "mme_s6a_handler.h"
 
 static thread_id mme_sm_thread;
 void *THREAD_FUNC mme_sm_main(thread_id id, void *data);
@@ -18,7 +18,7 @@ status_t mme_initialize()
     rv = mme_ctx_init();
     if (rv != CORE_OK) return rv;
 
-    ret = s6a_sm_init();
+    ret = mme_s6a_init();
     if (ret != 0) return -1;
 
     rv = thread_create(&mme_sm_thread, NULL, mme_sm_main, NULL);
@@ -31,7 +31,7 @@ void mme_terminate(void)
 {
     thread_delete(mme_sm_thread);
 
-    s6a_sm_final();
+    mme_s6a_final();
 
     mme_ctx_final();
 }

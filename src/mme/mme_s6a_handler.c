@@ -1,17 +1,18 @@
-#define TRACE_MODULE _s6a_sm
+#define TRACE_MODULE _mme_s6a_handler
 
 #include "core_debug.h"
 #include "core_pool.h"
 
-#include "mme_event.h"
-
 #include "nas_message.h"
 #include "s6a_lib.h"
-#include "s6a_sm.h"
+
+#include "mme_event.h"
+
+#include "mme_s6a_handler.h"
 
 #define SIZE_OF_SESS_STATE_POOL 32
 
-static struct session_handler *s6a_mme_reg = NULL;
+static struct session_handler *mme_s6a_reg = NULL;
 
 struct sess_state {
     ue_ctx_t *ue;
@@ -20,10 +21,10 @@ struct sess_state {
 
 pool_declare(sess_state_pool, struct sess_state, SIZE_OF_SESS_STATE_POOL);
 
-static void s6a_aia_cb(void *data, struct msg **msg);
+static void mme_s6a_aia_cb(void *data, struct msg **msg);
 
 /* Cb called when an answer is received */
-int s6a_send_auth_info_req(ue_ctx_t *ue, plmn_id_t *plmn_id)
+int mme_s6a_send_auth_info_req(ue_ctx_t *ue, plmn_id_t *plmn_id)
 {
     struct msg *req = NULL;
     struct avp *avp;
@@ -104,10 +105,10 @@ int s6a_send_auth_info_req(ue_ctx_t *ue, plmn_id_t *plmn_id)
     svg = mi;
     
     /* Store this value in the session */
-    d_assert(fd_sess_state_store(s6a_mme_reg, sess, &mi) == 0, goto out,); 
+    d_assert(fd_sess_state_store(mme_s6a_reg, sess, &mi) == 0, goto out,); 
     
     /* Send the request */
-    d_assert(fd_msg_send(&req, s6a_aia_cb, svg) == 0, goto out,);
+    d_assert(fd_msg_send(&req, mme_s6a_aia_cb, svg) == 0, goto out,);
 
     /* Increment the counter */
     d_assert(pthread_mutex_lock(&s6a_config->stats_lock) == 0,,);
@@ -127,7 +128,7 @@ out:
     return -1;
 }
 
-static void s6a_aia_cb(void *data, struct msg **msg)
+static void mme_s6a_aia_cb(void *data, struct msg **msg)
 {
     struct sess_state *mi = NULL;
     struct timespec ts;
@@ -152,7 +153,7 @@ static void s6a_aia_cb(void *data, struct msg **msg)
     d_assert(fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &sess, &new) == 0 && 
             new == 0, return,);
     
-    d_assert(fd_sess_state_retrieve(s6a_mme_reg, sess, &mi) == 0 &&
+    d_assert(fd_sess_state_retrieve(mme_s6a_reg, sess, &mi) == 0 &&
             mi && (void *)mi == data, fd_msg_free(*msg); *msg = NULL; return,);
 
     ue = mi->ue;
@@ -264,7 +265,7 @@ out:
     pool_free_node(&sess_state_pool, mi);
 }
 
-status_t s6a_sm_init(void)
+status_t mme_s6a_init(void)
 {
     status_t rv;
 
@@ -273,15 +274,15 @@ status_t s6a_sm_init(void)
 
     pool_init(&sess_state_pool, SIZE_OF_SESS_STATE_POOL);
 
-	d_assert(fd_sess_handler_create(&s6a_mme_reg, 
+	d_assert(fd_sess_handler_create(&mme_s6a_reg, 
             (void *)free, NULL, NULL) == 0, return -1,);
 	
 	return CORE_OK;
 }
 
-void s6a_sm_final(void)
+void mme_s6a_final(void)
 {
-	d_assert(fd_sess_handler_destroy(&s6a_mme_reg, NULL) == 0,,);
+	d_assert(fd_sess_handler_destroy(&mme_s6a_reg, NULL) == 0,,);
 
     d_print("%d not freed in sess_state_pool[%d] of S6A-SM\n",
             pool_size(&sess_state_pool) - pool_avail(&sess_state_pool),

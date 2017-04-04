@@ -9,4 +9,4 @@
 #include "kdf.h"
 #include "nas_security.h"
 #include "nas_conv.h"
-#include "s6a_sm.h"
+#include "mme_s6a_handler.h"
