@@ -6,7 +6,8 @@
 #include "3gpp_defs.h"
 #include "gtp_path.h"
 
-#include "context.h"
+#include "sgw_ctx.h"
+#include "sgw_event.h"
 #include "sgw_path.h"
 
 static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)

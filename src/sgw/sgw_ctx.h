@@ -4,10 +4,11 @@
 #include "core_list.h"
 #include "core_errno.h"
 #include "core_net.h"
-
-#include "sm.h"
+#include "core_event.h"
 
 #include "gtp_xact.h"
+
+#include "sgw_sm.h"
 
 #ifdef __cplusplus
 extern "C" {

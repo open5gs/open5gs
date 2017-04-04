@@ -1,11 +1,10 @@
 #define TRACE_MODULE _sgw_sm
 #include "core_debug.h"
 
-#include "sm.h"
-#include "context.h"
-#include "event.h"
+#include "sgw_ctx.h"
+#include "sgw_event.h"
 #include "sgw_path.h"
-#include "s11_handler.h"
+#include "sgw_handler.h"
 
 void sgw_state_initial(sgw_sm_t *s, event_t *e)
 {
@@ -77,11 +76,11 @@ void sgw_state_operational(sgw_sm_t *s, event_t *e)
             switch(type)
             {
                 case GTP_CREATE_SESSION_REQUEST_TYPE:
-                    sgw_s11_handle_create_session_request(
+                    sgw_handle_create_session_request(
                             xact, type, &gtp_message);
                     break;
                 case GTP_CREATE_SESSION_RESPONSE_TYPE:
-                    sgw_s11_handle_create_session_response(
+                    sgw_handle_create_session_response(
                             xact, type, &gtp_message);
                     break;
                 default:

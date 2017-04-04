@@ -3,8 +3,8 @@
 #include "core_debug.h"
 #include "core_thread.h"
 
-#include "context.h"
-#include "event.h"
+#include "sgw_ctx.h"
+#include "sgw_event.h"
 
 static thread_id sgw_sm_thread;
 void *THREAD_FUNC sgw_sm_main(thread_id id, void *data);

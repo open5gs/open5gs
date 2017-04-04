@@ -1,4 +1,4 @@
-#define TRACE_MODULE _mme_evt
+#define TRACE_MODULE _mme_event
 
 #include "core_debug.h"
 

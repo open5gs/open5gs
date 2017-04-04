@@ -4,8 +4,9 @@
 #include "core_pool.h"
 #include "core_index.h"
 
-#include "context.h"
 #include "gtp_path.h"
+
+#include "sgw_ctx.h"
 
 #define UE_PER_ENB                  128
 #define S11_PER_UE                  8
