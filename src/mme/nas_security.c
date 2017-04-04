@@ -2,7 +2,6 @@
 
 #include "core_debug.h"
 
-#include "context.h"
 #include "nas_message.h"
 #include "nas_security.h"
 

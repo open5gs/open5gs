@@ -3,7 +3,7 @@
 #include "core_debug.h"
 #include "core_thread.h"
 
-#include "event.h"
+#include "mme_event.h"
 
 #include "s6a_sm.h"
 

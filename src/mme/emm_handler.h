@@ -3,7 +3,7 @@
 
 #include "nas_message.h"
 
-#include "context.h"
+#include "mme_ctx.h"
 
 #ifdef __cplusplus
 extern "C" {

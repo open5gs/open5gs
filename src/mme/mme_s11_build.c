@@ -1,14 +1,15 @@
-#define TRACE_MODULE _s11_build
+#define TRACE_MODULE _mme_s11_build
 
 #include "core_debug.h"
-
-#include "context.h"
 
 #include "3gpp_conv.h"
 #include "gtp_types.h"
 #include "gtp_tlv.h"
 
-status_t s11_build_create_session_req(gtp_message_t *gtp_message, ue_ctx_t *ue)
+#include "mme_ctx.h"
+
+status_t mme_s11_build_create_session_req(
+        gtp_message_t *gtp_message, ue_ctx_t *ue)
 {
     gtp_create_session_request_t *req = &gtp_message->create_session_request;
     gtp_uli_t uli;

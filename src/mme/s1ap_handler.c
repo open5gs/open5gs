@@ -2,7 +2,7 @@
 
 #include "core_debug.h"
 
-#include "event.h"
+#include "mme_event.h"
 
 #include "s1ap_conv.h"
 #include "s1ap_build.h"
@@ -99,15 +99,6 @@ void s1ap_handle_initial_ue_message(enb_ctx_t *enb, s1ap_message_t *message)
     ue->esm_sm.ctx = ue;
     fsm_init((fsm_t*)&ue->esm_sm, 0);
 
-    /* FIXME */
-    {
-        s11_ctx_t *s11 = mme_ctx_s11_add(ue);
-        d_assert(s11, return, "Null param");
-        fsm_create((fsm_t*)&s11->s11_sm, 
-                mme_s11_state_initial, mme_s11_state_final);
-        s11->s11_sm.ctx = s11;
-        fsm_init((fsm_t*)&s11->s11_sm, 0);
-    }
     mme_event_s1ap_to_nas(ue, &ies->nas_pdu);
 }
 

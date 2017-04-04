@@ -3,9 +3,9 @@
 #include "core_pkbuf.h"
 #include "core_net.h"
 
-#include "event.h"
-#include "context.h"
-#include "s11_path.h"
+#include "mme_event.h"
+#include "mme_ctx.h"
+#include "mme_s11_path.h"
 
 static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
 {
@@ -98,12 +98,12 @@ status_t mme_s11_send_to_sgw(
     return CORE_OK;
 }
 
-#include "s11_build.h"
+#include "mme_s11_build.h"
 void test_send()
 {
     gtp_message_t gtp_message;
 
-    s11_build_create_session_req(&gtp_message, NULL);
+    mme_s11_build_create_session_req(&gtp_message, NULL);
 
     mme_s11_send_to_sgw(mme_ctx_sgw_first(), 
             GTP_CREATE_SESSION_REQUEST_TYPE, &gtp_message);

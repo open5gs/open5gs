@@ -4,13 +4,13 @@
 #include "core_event.h"
 #include "core_pkbuf.h"
 
-#include "s1ap_message.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
+/* forward declaration */
 typedef struct _ue_ctx_t ue_ctx_t;
+typedef struct OCTET_STRING S1ap_NAS_PDU_t;
 
 typedef enum {
     MME_EVT_BASE = FSM_USER_SIG,

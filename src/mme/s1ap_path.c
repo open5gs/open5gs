@@ -2,7 +2,7 @@
 
 #include "core_debug.h"
 
-#include "event.h"
+#include "mme_event.h"
 
 #include "s1ap_path.h"
 

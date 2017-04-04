@@ -4,7 +4,7 @@
 
 #include "nas_message.h"
 
-#include "event.h"
+#include "mme_event.h"
 #include "nas_security.h"
 #include "emm_handler.h"
 

@@ -7,7 +7,7 @@
 #include "gtp_path.h"
 #include "s1ap_message.h"
 
-#include "context.h"
+#include "mme_ctx.h"
 
 #define CELL_PER_ENB                8
 #define UE_PER_ENB                  128

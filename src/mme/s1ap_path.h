@@ -4,7 +4,7 @@
 #include "core_pkbuf.h"
 #include "core_net.h"
 
-#include "context.h"
+#include "mme_ctx.h"
 
 #ifdef __cplusplus
 extern "C" {

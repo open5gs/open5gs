@@ -17,7 +17,7 @@
 #include "core_debug.h"
 
 #include "cellwire.h"
-#include "context.h"
+#include "mme_ctx.h"
 #include "abts.h"
 #include "testutil.h"
 

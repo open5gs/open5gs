@@ -2,7 +2,7 @@
 #include "core_pkbuf.h"
 #include "core_lib.h"
 
-#include "mme/context.h"
+#include "mme_ctx.h"
 #include "s1ap_message.h"
 
 #include "testutil.h"

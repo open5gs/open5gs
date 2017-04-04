@@ -3,7 +3,7 @@
 #include "core_debug.h"
 #include "core_pool.h"
 
-#include "event.h"
+#include "mme_event.h"
 
 #include "nas_message.h"
 #include "s6a_lib.h"

@@ -2,8 +2,9 @@
 
 #include "core_debug.h"
 
-#include "event.h"
+#include "mme_event.h"
 #include "s1ap_path.h"
+#include "s1ap_message.h"
 #include "nas_message.h"
 
 static char EVT_NAME_LO_ENB_S1AP_ACCEPT[] = "LO_ENB_S1AP_ACCEPT";

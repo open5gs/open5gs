@@ -1,5 +1,5 @@
-#ifndef __S11_BUILD_H__
-#define __S11_BUILD_H__
+#ifndef __MME_S11_BUILD_H__
+#define __MME_S11_BUILD_H__
 
 #include "gtp_tlv.h"
 
@@ -7,11 +7,11 @@
 extern "C" {
 #endif /* __cplusplus */
 
-CORE_DECLARE(status_t) s11_build_create_session_req(
+CORE_DECLARE(status_t) mme_s11_build_create_session_req(
                         gtp_message_t *gtp_message, ue_ctx_t *ue);
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* __S11_BUILD_H__ */
+#endif /* __MME_S11_BUILD_H__ */

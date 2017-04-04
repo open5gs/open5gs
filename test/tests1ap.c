@@ -4,7 +4,7 @@
 #include "core_pkbuf.h"
 #include "core_lib.h"
 
-#include "context.h"
+#include "mme_ctx.h"
 #include "s1ap_build.h"
 #include "s1ap_conv.h"
 #include "s1ap_path.h"

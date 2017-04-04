@@ -1,10 +1,10 @@
 #define TRACE_MODULE _mme_sm
 #include "core_debug.h"
 
-#include "event.h"
+#include "mme_event.h"
 
 #include "s1ap_path.h"
-#include "s11_path.h"
+#include "mme_s11_path.h"
 
 void mme_state_initial(mme_sm_t *s, event_t *e)
 {

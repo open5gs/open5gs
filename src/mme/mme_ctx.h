@@ -11,7 +11,7 @@
 #include "nas_types.h"
 #include "gtp_xact.h"
 
-#include "sm.h"
+#include "mme_sm.h"
 
 #ifdef __cplusplus
 extern "C" {

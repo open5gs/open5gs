@@ -3,7 +3,7 @@
 
 #include "core_errno.h"
 
-#include "context.h"
+#include "mme_ctx.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -5,7 +5,7 @@
 #include "core_aes.h"
 #include "core_aes_cmac.h"
 
-#include "context.h"
+#include "mme_ctx.h"
 #include "snow_3g.h"
 #include "zuc.h"
 
