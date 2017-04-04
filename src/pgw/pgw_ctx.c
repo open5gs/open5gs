@@ -4,8 +4,9 @@
 #include "core_pool.h"
 #include "core_index.h"
 
-#include "context.h"
 #include "gtp_path.h"
+
+#include "pgw_ctx.h"
 
 static pgw_ctx_t self;
 

@@ -1,8 +1,7 @@
-#define TRACE_MODULE _pgw_evt
+#define TRACE_MODULE _pgw_event
 
-#include "core_debug.h"
-#include "event.h"
-#include "context.h"
+#include "pgw_event.h"
+#include "pgw_ctx.h"
 
 static char EVT_NAME_TM_PGW_T3[] = "TM_PGW_PGW_T3";
 

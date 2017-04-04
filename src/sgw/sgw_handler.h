@@ -3,8 +3,6 @@
 
 #include "gtp_tlv.h"
 
-#include "sgw_ctx.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */

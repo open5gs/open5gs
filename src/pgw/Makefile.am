@@ -3,12 +3,12 @@
 noinst_LTLIBRARIES = libpgw.la
 
 libpgw_la_SOURCES = \
-    event.h context.h \
-	pgw_path.h sm.h s11_handler.h
+    pgw_event.h pgw_ctx.h \
+	pgw_path.h pgw_sm.h pgw_handler.h
 
 nodist_libpgw_la_SOURCES = \
-    init.c event.c context.c \
-	pgw_path.c pgw_sm.c s5c_handler.c
+    pgw_init.c pgw_event.c pgw_ctx.c \
+	pgw_path.c pgw_sm.c pgw_handler.c
 
 libpgw_la_DEPENDENCIES = \
     $(top_srcdir)/lib/core/src/libcore.la \

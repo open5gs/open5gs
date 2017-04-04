@@ -1,11 +1,11 @@
 #define TRACE_MODULE _pgw_sm
 #include "core_debug.h"
 
-#include "sm.h"
-#include "context.h"
-#include "event.h"
+#include "pgw_sm.h"
+#include "pgw_ctx.h"
+#include "pgw_event.h"
 #include "pgw_path.h"
-#include "s5c_handler.h"
+#include "pgw_handler.h"
 
 void pgw_state_initial(pgw_sm_t *s, event_t *e)
 {
@@ -76,7 +76,7 @@ void pgw_state_operational(pgw_sm_t *s, event_t *e)
             switch(type)
             {
                 case GTP_CREATE_SESSION_REQUEST_TYPE:
-                    pgw_s5c_handle_create_session_request(
+                    pgw_handle_create_session_request(
                         xact, &gtp_message.create_session_request);
                     break;
                 default:

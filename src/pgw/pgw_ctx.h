@@ -5,9 +5,9 @@
 #include "core_errno.h"
 #include "core_net.h"
 
-#include "sm.h"
-
 #include "gtp_xact.h"
+
+#include "pgw_sm.h"
 
 #ifdef __cplusplus
 extern "C" {
