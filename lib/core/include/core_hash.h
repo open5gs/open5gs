@@ -56,14 +56,12 @@ CORE_DECLARE_NONSTD(unsigned int)
 
 /**
  * Create a hash table.
- * @param pool The pool to allocate the hash table out of
  * @return The hash table just created
   */
 CORE_DECLARE(hash_t *) hash_make();
 
 /**
  * Create a hash table with a custom hash function
- * @param pool The pool to allocate the hash table out of
  * @param hash_func A custom hash function.
  * @return The hash table just created
   */
@@ -109,8 +107,6 @@ CORE_DECLARE(void *) hash_get_or_set(hash_t *ht,
 
 /**
  * Start iterating over the entries in a hash table.
- * @param p The pool to allocate the hash_index_t iterator. If this
- *          pool is NULL, then an internal, non-thread-safe iterator is used.
  * @param ht The hash table
  * @return The iteration state
  * @remark  There is no restriction on adding or deleting hash entries during
