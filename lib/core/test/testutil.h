@@ -75,5 +75,6 @@ abts_suite *testmsgq(abts_suite *suite);
 abts_suite *testsleep(abts_suite *suite);
 abts_suite *testpkbuf(abts_suite *suite);
 abts_suite *testmisc(abts_suite *suite);
+abts_suite *testhash(abts_suite *suite);
 
 #endif /* CORE_TEST_INCLUDES */

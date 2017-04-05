@@ -6,8 +6,8 @@
 #include "core_debug.h"
 #include "core_pool.h"
 
-#define MAX_NUM_OF_CLBUF 64
-#define MAX_NUM_OF_PKBUF 64
+#define MAX_NUM_OF_CLBUF 256
+#define MAX_NUM_OF_PKBUF 256
 
 pool_declare(clbuf_pool, clbuf_t, MAX_NUM_OF_CLBUF);
 pool_declare(pkbuf_pool, pkbuf_t, MAX_NUM_OF_PKBUF);
@@ -22,7 +22,7 @@ pool_declare(pkbuf_pool, pkbuf_t, MAX_NUM_OF_PKBUF);
 #define SIZEOF_CLUSTER_2048     CORE_ALIGN(2048+MAX_SIZEOF_HEADROOM, BOUNDARY)
 #define SIZEOF_CLUSTER_8192     CORE_ALIGN(8192+MAX_SIZEOF_HEADROOM, BOUNDARY)
 
-#define MAX_NUM_OF_CLUSTER_128  64
+#define MAX_NUM_OF_CLUSTER_128  256
 #define MAX_NUM_OF_CLUSTER_256  32 
 #define MAX_NUM_OF_CLUSTER_512  32
 #define MAX_NUM_OF_CLUSTER_1024 32
@@ -205,7 +205,7 @@ pkbuf_t* pkbuf_alloc(c_uint16_t headroom, c_uint16_t length)
             MAX_SIZEOF_HEADROOM, headroom);
 
     clbuf = clbuf_alloc(length);
-    d_assert(clbuf, return NULL, "Can't allocate clbuf");
+    d_assert(clbuf, return NULL, "Can't allocate clbuf(length:%d)", length);
 
     pool_alloc_node(&pkbuf_pool, &np);
     d_assert(np, clbuf_free(clbuf); return NULL, "No more free pkbuf");
@@ -513,7 +513,8 @@ void *core_malloc(size_t size)
     d_assert(size, return NULL, "if size == 0, then returns NULL");
     headroom = sizeof(pkbuf_t *);
     p = pkbuf_alloc(headroom, size);
-    d_assert(p, return NULL, "pkbuf_alloc failed");
+    d_assert(p, return NULL, "pkbuf_alloc failed(headroom:%d, size:%d)", 
+            headroom, size);
     d_assert(p->next == NULL, pkbuf_free(p);return NULL, 
             "core_malloc should not be fragmented");
 

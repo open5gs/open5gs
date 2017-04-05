@@ -6,7 +6,7 @@ testcore_SOURCES = \
     abts.c testds.c testfsm.c testnetlib.c testthread.c testtlv.c \
     testaes.c testfile.c testlock.c testatomic.c testsha.c testtime.c \
 	testdir.c testfilecopy.c testmsgq.c testsleep.c testtimer.c \
-	testpkbuf.c testmisc.c \
+	testpkbuf.c testmisc.c testhash.c \
     abts.h  abts_tests.h testutil.c testutil.h
 
 testcore_LDADD = \
