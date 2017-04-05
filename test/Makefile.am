@@ -23,6 +23,7 @@ AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/gtp \
     -I$(top_srcdir)/src/mme \
     -I$(top_srcdir)/src/hss \
+    -I$(top_srcdir)/src/sgw \
     -I$(top_srcdir)/src
 
 AM_CFLAGS = \

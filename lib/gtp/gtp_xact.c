@@ -8,7 +8,7 @@
 #define SIZE_OF_GTP_XACT_POOL  32
 
 #define GTP_XACT_NEXT_ID(__id) \
-    ((__id) == 0x800000 ? 1 : ((__id) + 1))
+    ((__id) = ((__id) == 0x800000 ? 1 : ((__id) + 1)))
 #define GTP_XACT_COMPARE_ID(__id1, __id2) \
     ((__id2) > (__id1) ? ((__id2) - (__id1) < 0x7fffff ? -1 : 1) : \
      (__id1) > (__id2) ? ((__id1) - (__id2) < 0x7fffff ? 1 : -1) : 0)

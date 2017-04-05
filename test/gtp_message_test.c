@@ -8,6 +8,8 @@
 #include "gtp_types.h"
 #include "gtp_tlv.h"
 
+#include "sgw_ctx.h"
+
 #include "testutil.h"
 
 static void gtp_message_test1(abts_case *tc, void *data)
@@ -289,11 +291,57 @@ static void gtp_message_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, 0, req.ue_tcp_port.presence);
 }
 
+static void gtp_message_test2(abts_case *tc, void *data)
+{
+    sgw_gtpc_t *gtpc = NULL;
+    hash_index_t *hi = NULL;
+    int i = 0;
+
+    gtpc = sgw_ctx_gtpc_add();
+    ABTS_INT_EQUAL(tc, 1, sgw_ctx_gtpc_count());
+    sgw_ctx_gtpc_remove(gtpc);
+    ABTS_INT_EQUAL(tc, 0, sgw_ctx_gtpc_count());
+
+    sgw_ctx_gtpc_add();
+    sgw_ctx_gtpc_add();
+    sgw_ctx_gtpc_add();
+    sgw_ctx_gtpc_add();
+    sgw_ctx_gtpc_add();
+    ABTS_INT_EQUAL(tc, 5, sgw_ctx_gtpc_count());
+
+    sgw_ctx_gtpc_remove_all();
+    ABTS_INT_EQUAL(tc, 0, sgw_ctx_gtpc_count());
+
+    for (int i = 0; i < 100; i++)
+    {
+        gtpc = sgw_ctx_gtpc_add();
+        gtpc->mme_teid = i;
+        gtpc->pgw_teid = 100-i;
+    }
+    ABTS_INT_EQUAL(tc, 100, sgw_ctx_gtpc_count());
+
+    gtpc = sgw_ctx_gtpc_find(10);
+    ABTS_INT_EQUAL(tc, 3, gtpc->mme_teid);
+    ABTS_INT_EQUAL(tc, 97, gtpc->pgw_teid);
+    sgw_ctx_gtpc_remove(gtpc);
+    ABTS_INT_EQUAL(tc, 99, sgw_ctx_gtpc_count());
+
+    gtpc = sgw_ctx_gtpc_find(50);
+    ABTS_INT_EQUAL(tc, 43, gtpc->mme_teid);
+    ABTS_INT_EQUAL(tc, 57, gtpc->pgw_teid);
+    sgw_ctx_gtpc_remove(gtpc);
+    ABTS_INT_EQUAL(tc, 98, sgw_ctx_gtpc_count());
+
+    sgw_ctx_gtpc_remove_all();
+    ABTS_INT_EQUAL(tc, 0, sgw_ctx_gtpc_count());
+}
+
 abts_suite *test_gtp_message(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, gtp_message_test1, NULL);
+    abts_run_test(suite, gtp_message_test2, NULL);
 
     return suite;
 }
