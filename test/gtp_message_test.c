@@ -312,7 +312,7 @@ static void gtp_message_test2(abts_case *tc, void *data)
     sgw_ctx_gtpc_remove_all();
     ABTS_INT_EQUAL(tc, 0, sgw_ctx_gtpc_count());
 
-    for (int i = 0; i < 100; i++)
+    for (i = 0; i < 100; i++)
     {
         gtpc = sgw_ctx_gtpc_add();
         gtpc->mme.teid = i;
