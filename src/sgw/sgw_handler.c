@@ -10,7 +10,6 @@
 void sgw_handle_create_session_request(
         gtp_xact_t *xact, c_uint8_t type, gtp_message_t *gtp_message)
 {
-#if 0
     gtp_create_session_request_t *req = NULL;
     sgw_gtpc_t *gtpc = NULL;
 
@@ -30,17 +29,6 @@ void sgw_handle_create_session_request(
 
     memcpy(&gtpc->mme, req->sender_f_teid_for_control_plane.data,
                 req->sender_f_teid_for_control_plane.len);
-
-    d_print_hex(req->sender_f_teid_for_control_plane.data,
-                req->sender_f_teid_for_control_plane.len);
-
-    printf("gtpc->mme %d, %d, %d, %x, %x\n", 
-            gtpc->mme.ipv4, 
-            gtpc->mme.ipv6, 
-            gtpc->mme.interface_type, 
-            gtpc->mme.teid, 
-            gtpc->mme.ipv4_addr);
-#endif
 
     d_assert(sgw_s5c_send_to_pgw(xact, type, gtp_message) == CORE_OK, 
             return, "failed to send message");
