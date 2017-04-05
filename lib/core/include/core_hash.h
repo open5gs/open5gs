@@ -73,15 +73,6 @@ CORE_DECLARE(hash_t *) hash_make_custom(hashfunc_t hash_func);
 CORE_DECLARE(void) hash_destroy(hash_t *ht);
 
 /**
- * Make a copy of a hash table
- * @param pool The pool from which to allocate the new hash table
- * @param h The hash table to clone
- * @return The hash table just created
- * @remark Makes a shallow copy
- */
-CORE_DECLARE(hash_t *) hash_copy(const hash_t *h);
-
-/**
  * Associate a value with a key in a hash table.
  * @param ht The hash table
  * @param key Pointer to the key
@@ -198,37 +189,6 @@ CORE_DECLARE(unsigned int) hash_count(hash_t *ht);
  * @param ht The hash table
  */
 CORE_DECLARE(void) hash_clear(hash_t *ht);
-
-/**
- * Merge two hash tables into one new hash table. The values of the overlay
- * hash override the values of the base if both have the same key.  Both
- * hash tables must use the same hash function.
- * @param p The pool to use for the new hash table
- * @param overlay The table to add to the initial table
- * @param base The table that represents the initial values of the new table
- * @return A new hash table containing all of the data from the two passed in
- */
-CORE_DECLARE(hash_t *) hash_overlay(
-           const hash_t *overlay, const hash_t *base);
-
-/**
- * Merge two hash tables into one new hash table. If the same key
- * is present in both tables, call the supplied merge function to
- * produce a merged value for the key in the new table.  Both
- * hash tables must use the same hash function.
- * @param p The pool to use for the new hash table
- * @param h1 The first of the tables to merge
- * @param h2 The second of the tables to merge
- * @param merger A callback function to merge values, or NULL to
- *  make values from h1 override values from h2 (same semantics as
- *  hash_overlay())
- * @param data Client data to pass to the merger function
- * @return A new hash table containing all of the data from the two passed in
- */
-CORE_DECLARE(hash_t *) hash_merge(const hash_t *h1, const hash_t *h2,
-     void * (*merger)( const void *key, int klen, const void *h1_val,
-                 const void *h2_val, const void *data),
-     const void *data);
 
 /**
  * Declaration prototype for the iterator callback function of hash_do().
