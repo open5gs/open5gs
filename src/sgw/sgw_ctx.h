@@ -7,6 +7,7 @@
 #include "core_event.h"
 #include "core_hash.h"
 
+#include "gtp_types.h"
 #include "gtp_xact.h"
 
 #include "sgw_sm.h"
@@ -37,9 +38,9 @@ typedef struct _sgw_ctx_t {
 } sgw_ctx_t;
 
 typedef struct _sgw_gtpc_t {
-    c_uint32_t      teid;       /* SGW-S11-TEID, SGW-S5C-TEID */
-    c_uint32_t      mme_teid;   /* MME-S11-TEID */
-    c_uint32_t      pgw_teid;   /* PGW-S11-TEID */
+    c_uint32_t      teid;       /* SGW-S11-F-TEID, SGW-S5C-F-TEID */
+    gtp_f_teid_t    mme;        /* MME-S11-F-TEID */
+    gtp_f_teid_t    pgw;        /* MME-S11-F-TEID */
 } sgw_gtpc_t;
 
 CORE_DECLARE(status_t)      sgw_ctx_init(void);
