@@ -1,4 +1,4 @@
-#define TRACE_MODULE _pgw_ctx
+#define TRACE_MODULE _pgw_context
 
 #include "core_debug.h"
 #include "core_pool.h"
@@ -8,16 +8,16 @@
 
 #include "pgw_context.h"
 
-static pgw_ctx_t self;
+static pgw_context_t self;
 
 static int ctx_initialized = 0;
 
-status_t pgw_ctx_init()
+status_t pgw_context_init()
 {
     d_assert(ctx_initialized == 0, return CORE_ERROR,
             "MME context already has been initialized");
 
-    memset(&self, 0, sizeof(pgw_ctx_t));
+    memset(&self, 0, sizeof(pgw_context_t));
 
     self.s5c_addr = inet_addr("127.0.0.1");
     self.s5c_port = GTPV2_C_UDP_PORT + 3;
@@ -36,7 +36,7 @@ status_t pgw_ctx_init()
     return CORE_OK;
 }
 
-status_t pgw_ctx_final()
+status_t pgw_context_final()
 {
     d_assert(ctx_initialized == 1, return CORE_ERROR,
             "HyperCell context already has been finalized");
@@ -46,7 +46,7 @@ status_t pgw_ctx_final()
     return CORE_OK;
 }
 
-pgw_ctx_t* pgw_self()
+pgw_context_t* pgw_self()
 {
     return &self;
 }

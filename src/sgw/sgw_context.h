@@ -1,5 +1,5 @@
-#ifndef __SGW_CTX_H__
-#define __SGW_CTX_H__
+#ifndef __SGW_CONTEXT_H__
+#define __SGW_CONTEXT_H__
 
 #include "core_list.h"
 #include "core_errno.h"
@@ -16,7 +16,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-typedef struct _sgw_ctx_t {
+typedef struct _sgw_context_t {
     c_uint32_t      s11_addr;  /* SGW S11 local address */
     c_uint32_t      s11_port;  /* SGW S11 local port */
     net_sock_t*     s11_sock;  /* SGW S11 local listen socket */
@@ -35,7 +35,7 @@ typedef struct _sgw_ctx_t {
     msgq_id         queue_id;       /* Queue for processing SGW control plane */
     tm_service_t    tm_service;     /* Timer Service */
     gtp_xact_ctx_t  gtp_xact_ctx;   /* GTP Transaction Context */
-} sgw_ctx_t;
+} sgw_context_t;
 
 typedef struct _sgw_gtpc_t {
     c_uint32_t      teid;       /* SGW-S11-F-TEID, SGW-S5C-F-TEID */
@@ -43,22 +43,22 @@ typedef struct _sgw_gtpc_t {
     gtp_f_teid_t    pgw;        /* MME-S11-F-TEID */
 } sgw_gtpc_t;
 
-CORE_DECLARE(status_t)      sgw_ctx_init(void);
-CORE_DECLARE(status_t)      sgw_ctx_final(void);
+CORE_DECLARE(status_t)      sgw_context_init(void);
+CORE_DECLARE(status_t)      sgw_context_final(void);
 
-CORE_DECLARE(sgw_ctx_t*)    sgw_self(void);
+CORE_DECLARE(sgw_context_t*) sgw_self(void);
 
-CORE_DECLARE(sgw_gtpc_t*)   sgw_ctx_gtpc_add();
-CORE_DECLARE(status_t )     sgw_ctx_gtpc_remove(sgw_gtpc_t *gtpc);
-CORE_DECLARE(status_t )     sgw_ctx_gtpc_remove_all();
-CORE_DECLARE(sgw_gtpc_t*)   sgw_ctx_gtpc_find(c_uint32_t teid);
-CORE_DECLARE(hash_index_t*) sgw_ctx_gtpc_first();
-CORE_DECLARE(hash_index_t*) sgw_ctx_gtpc_next(hash_index_t *hi);
-CORE_DECLARE(sgw_gtpc_t*)   sgw_ctx_gtpc_this(hash_index_t *hi);
-CORE_DECLARE(unsigned int)  sgw_ctx_gtpc_count();
+CORE_DECLARE(sgw_gtpc_t*)   sgw_gtpc_add();
+CORE_DECLARE(status_t )     sgw_gtpc_remove(sgw_gtpc_t *gtpc);
+CORE_DECLARE(status_t )     sgw_gtpc_remove_all();
+CORE_DECLARE(sgw_gtpc_t*)   sgw_gtpc_find(c_uint32_t teid);
+CORE_DECLARE(hash_index_t*) sgw_gtpc_first();
+CORE_DECLARE(hash_index_t*) sgw_gtpc_next(hash_index_t *hi);
+CORE_DECLARE(sgw_gtpc_t*)   sgw_gtpc_this(hash_index_t *hi);
+CORE_DECLARE(unsigned int)  sgw_gtpc_count();
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* __SGW_CTX_H__ */
+#endif /* __SGW_CONTEXT_H__ */

@@ -13,7 +13,7 @@ status_t sgw_initialize()
 {
     status_t rv;
 
-    rv = sgw_ctx_init();
+    rv = sgw_context_init();
     if (rv != CORE_OK) return rv;
 
     rv = thread_create(&sgw_sm_thread, NULL, sgw_sm_main, NULL);
@@ -26,7 +26,7 @@ void sgw_terminate(void)
 {
     thread_delete(sgw_sm_thread);
 
-    sgw_ctx_final();
+    sgw_context_final();
 }
 
 void *THREAD_FUNC sgw_sm_main(thread_id id, void *data)

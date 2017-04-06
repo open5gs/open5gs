@@ -26,8 +26,13 @@ status_t mutex_create(mutex_id *id, unsigned int flags)
     status_t rv;
 
     pool_alloc_node(&mutex_pool, &new_mutex);
-    d_assert(new_mutex, return CORE_ENOMEM, "mutex_pool(%d) is not enough\n",
-            MAX_NUM_OF_MUTEX);
+    d_assert(new_mutex, return CORE_ENOMEM, 
+            "mutex_pool(%d) is not enough"
+            "(new_mutex=%p, mut:%p, avail:%d,size:%d,head:%d,tail:%d \n",
+            MAX_NUM_OF_MUTEX,
+            new_mutex, mutex_pool.mut, 
+            mutex_pool.avail, mutex_pool.size,
+            mutex_pool.head, mutex_pool.tail);
 
     if (flags & MUTEX_NESTED)
     {

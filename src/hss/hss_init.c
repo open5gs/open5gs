@@ -35,7 +35,7 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
     struct avp_hdr *hdr;
     union avp_value val;
 
-    user_ctx_t *user = NULL;
+    hss_ue_t *ue = NULL;
     c_uint8_t sqn[HSS_SQN_LEN];
     c_uint8_t autn[AUTN_LEN];
     c_uint8_t ik[HSS_KEY_LEN];
@@ -56,9 +56,9 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
             goto out,);
     d_assert(fd_msg_avp_hdr(avp, &hdr) == 0 && hdr,,);
 
-    user = hss_ctx_user_find_by_imsi(
+    ue = hss_ue_find_by_imsi(
             hdr->avp_value->os.data, hdr->avp_value->os.len);
-    if (!user)
+    if (!ue)
     {
         char imsi[MAX_IMSI_LEN];
         strncpy(imsi, (char*)hdr->avp_value->os.data, hdr->avp_value->os.len);
@@ -70,13 +70,13 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
             avp, goto out,);
     d_assert(fd_msg_avp_hdr(avp, &hdr) == 0 && hdr,,);
 
-    milenage_opc(user->k, user->op, user->opc);
-    milenage_generate(user->opc, user->amf, user->k, 
-        core_uint64_to_buffer(user->sqn, HSS_SQN_LEN, sqn), user->rand, 
+    milenage_opc(ue->k, ue->op, ue->opc);
+    milenage_generate(ue->opc, ue->amf, ue->k, 
+        core_uint64_to_buffer(ue->sqn, HSS_SQN_LEN, sqn), ue->rand, 
         autn, ik, ck, ak, xres, &xres_len);
     hss_kdf_kasme(ck, ik, hdr->avp_value->os.data, sqn, ak, kasme);
 
-    user->sqn = (user->sqn + 32) & 0x7ffffffffff;
+    ue->sqn = (ue->sqn + 32) & 0x7ffffffffff;
 	
 	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
 	d_assert(fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1) == 0,
@@ -93,7 +93,7 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
     d_assert(fd_msg_avp_new(s6a_e_utran_vector, 0, &avpch1) == 0, goto out,);
 
     d_assert(fd_msg_avp_new(s6a_rand, 0, &avpch2) == 0, goto out,);
-    val.os.data = user->rand;
+    val.os.data = ue->rand;
     val.os.len = HSS_KEY_LEN;
     d_assert(fd_msg_avp_setvalue(avpch2, &val) == 0, goto out,);
     d_assert(fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2) == 0, 
@@ -149,7 +149,7 @@ status_t hss_initialize(void)
     ret = s6a_init(MODE_HSS);
     if (ret != 0) return CORE_ERROR;
 
-    rv = hss_ctx_init();
+    rv = hss_context_init();
     if (rv != CORE_OK) return rv;
 
 	memset(&data, 0, sizeof(data));
@@ -176,7 +176,7 @@ void hss_terminate(void)
 		(void) fd_disp_unregister(&hdl_air, NULL);
 	}
 
-    hss_ctx_final();
+    hss_context_final();
     s6a_final();
 	
 	return;

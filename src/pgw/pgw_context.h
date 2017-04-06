@@ -1,5 +1,5 @@
-#ifndef __PGW_CTX_H__
-#define __PGW_CTX_H__
+#ifndef __PGW_CONTEXT_H__
+#define __PGW_CONTEXT_H__
 
 #include "core_list.h"
 #include "core_errno.h"
@@ -13,7 +13,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-typedef struct _pgw_ctx_t {
+typedef struct _pgw_context_t {
     c_uint32_t      s5c_addr;  /* PGW S5-C local address */
     c_uint32_t      s5c_port;  /* PGW S5-C local port */
     net_sock_t*     s5c_sock;  /* PGW S5-C local listen socket */
@@ -27,15 +27,15 @@ typedef struct _pgw_ctx_t {
     msgq_id         queue_id;       /* Queue for processing PGW control plane */
     tm_service_t    tm_service;     /* Timer Service */
     gtp_xact_ctx_t  gtp_xact_ctx;   /* GTP Transaction Context */
-} pgw_ctx_t;
+} pgw_context_t;
 
-CORE_DECLARE(status_t)      pgw_ctx_init(void);
-CORE_DECLARE(status_t)      pgw_ctx_final(void);
+CORE_DECLARE(status_t)      pgw_context_init(void);
+CORE_DECLARE(status_t)      pgw_context_final(void);
 
-CORE_DECLARE(pgw_ctx_t*)    pgw_self(void);
+CORE_DECLARE(pgw_context_t*) pgw_self(void);
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* __PGW_CTX_H__ */
+#endif /* __PGW_CONTEXT_H__ */

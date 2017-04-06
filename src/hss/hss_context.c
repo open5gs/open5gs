@@ -1,4 +1,4 @@
-#define TRACE_MODULE _hss_ctx
+#define TRACE_MODULE _hss_context
 
 #include "core_debug.h"
 #include "core_pool.h"
@@ -10,25 +10,25 @@
 #define OPc "E8ED289DEBA952E4283B54E88E6183CA"
 #define AMF "8000"
 
-static hss_ctx_t self;
+static hss_context_t self;
 
-pool_declare(user_pool, user_ctx_t, MAX_NUM_OF_UE);
+pool_declare(hss_ue_pool, hss_ue_t, MAX_NUM_OF_UE);
 
 static list_t g_user_list;
 
-hss_ctx_t* hss_self()
+hss_context_t* hss_self()
 {
     return &self;
 }
 
-status_t hss_ctx_init(void)
+status_t hss_context_init(void)
 {
     char buf[HSS_KEY_LEN];
-    user_ctx_t *user;
+    hss_ue_t *user;
 
-    pool_init(&user_pool, MAX_NUM_OF_UE);
+    pool_init(&hss_ue_pool, MAX_NUM_OF_UE);
 
-    memset(&self, 0, sizeof(hss_ctx_t));
+    memset(&self, 0, sizeof(hss_context_t));
 
     memcpy(self.op, CORE_HEX(OP, strlen(OP), buf), HSS_KEY_LEN);
     memcpy(self.amf, CORE_HEX(AMF, strlen(AMF), buf), HSS_AMF_LEN);
@@ -40,7 +40,7 @@ status_t hss_ctx_init(void)
     #define UE3_IMSI "001010123456819"
     #define UE3_RAND "20080c3818183b52 2614162c07601d0d"
 
-    user = hss_ctx_user_add();
+    user = hss_ue_add();
     d_assert(user, return -1, "UE context add failed");
 
     strcpy((char*)user->imsi, UE1_IMSI);
@@ -49,7 +49,7 @@ status_t hss_ctx_init(void)
     core_generate_random_bytes(user->rand, RAND_LEN);
     user->sqn = 64;
 
-    user = hss_ctx_user_add();
+    user = hss_ue_add();
     d_assert(user, return -1, "UE context add failed");
 
     strcpy((char*)user->imsi, UE2_IMSI);
@@ -58,7 +58,7 @@ status_t hss_ctx_init(void)
     core_generate_random_bytes(user->rand, RAND_LEN);
     user->sqn = 64;
 
-    user = hss_ctx_user_add();
+    user = hss_ue_add();
     d_assert(user, return -1, "UE context add failed");
 
     strcpy((char*)user->imsi, UE3_IMSI);
@@ -71,25 +71,25 @@ status_t hss_ctx_init(void)
 	return CORE_OK;
 }
 
-void hss_ctx_final(void)
+void hss_context_final(void)
 {
-    hss_ctx_user_remove_all();
+    hss_ue_remove_all();
 
-    pool_final(&user_pool);
+    pool_final(&hss_ue_pool);
 	
 	return;
 }
 
-user_ctx_t* hss_ctx_user_add()
+hss_ue_t* hss_ue_add()
 {
-    user_ctx_t *user = NULL;
+    hss_ue_t *user = NULL;
 
     /* Allocate new eNB context */
-    pool_alloc_node(&user_pool, &user);
+    pool_alloc_node(&hss_ue_pool, &user);
     d_assert(user, return NULL, "HSS-UE context allocation failed");
 
     /* Initialize eNB context */
-    memset(user, 0, sizeof(user_ctx_t));
+    memset(user, 0, sizeof(hss_ue_t));
 
     /* Add new eNB context to list */
     list_append(&g_user_list, user);
@@ -100,26 +100,26 @@ user_ctx_t* hss_ctx_user_add()
     return user;
 }
 
-status_t hss_ctx_user_remove(user_ctx_t *user)
+status_t hss_ue_remove(hss_ue_t *user)
 {
     d_assert(user, return CORE_ERROR, "Null param");
 
     list_remove(&g_user_list, user);
-    pool_free_node(&user_pool, user);
+    pool_free_node(&hss_ue_pool, user);
 
     return CORE_OK;
 }
 
-status_t hss_ctx_user_remove_all()
+status_t hss_ue_remove_all()
 {
-    user_ctx_t *user = NULL, *next_user = NULL;
+    hss_ue_t *user = NULL, *next_user = NULL;
     
     user = list_first(&g_user_list);
     while (user)
     {
         next_user = list_next(user);
 
-        hss_ctx_user_remove(user);
+        hss_ue_remove(user);
 
         user = next_user;
     }
@@ -127,9 +127,9 @@ status_t hss_ctx_user_remove_all()
     return CORE_OK;
 }
 
-user_ctx_t* hss_ctx_user_find_by_imsi(c_uint8_t *imsi, c_uint8_t imsi_len)
+hss_ue_t* hss_ue_find_by_imsi(c_uint8_t *imsi, c_uint8_t imsi_len)
 {
-    user_ctx_t *user = NULL;
+    hss_ue_t *user = NULL;
     
     user = list_first(&g_user_list);
     while (user)
@@ -143,12 +143,12 @@ user_ctx_t* hss_ctx_user_find_by_imsi(c_uint8_t *imsi, c_uint8_t imsi_len)
     return user;
 }
 
-user_ctx_t* hss_ctx_user_first()
+hss_ue_t* hss_ue_first()
 {
     return list_first(&g_user_list);
 }
 
-user_ctx_t* hss_ctx_user_next(user_ctx_t *user)
+hss_ue_t* hss_ue_next(hss_ue_t *user)
 {
     return list_next(user);
 }

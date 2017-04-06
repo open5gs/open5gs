@@ -26,7 +26,7 @@ void sgw_handle_create_session_request(
         return;
     }
 
-    gtpc = sgw_ctx_gtpc_add();
+    gtpc = sgw_gtpc_add();
     d_assert(gtpc, return, "gtpc_add failed");
 
     memcpy(&gtpc->mme, req->sender_f_teid_for_control_plane.data,

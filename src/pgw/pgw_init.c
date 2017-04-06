@@ -13,7 +13,7 @@ status_t pgw_initialize()
 {
     status_t rv;
 
-    rv = pgw_ctx_init();
+    rv = pgw_context_init();
     if (rv != CORE_OK) return rv;
 
     rv = thread_create(&pgw_sm_thread, NULL, pgw_sm_main, NULL);
@@ -26,7 +26,7 @@ void pgw_terminate(void)
 {
     thread_delete(pgw_sm_thread);
 
-    pgw_ctx_final();
+    pgw_context_final();
 }
 
 void *THREAD_FUNC pgw_sm_main(thread_id id, void *data)

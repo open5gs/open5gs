@@ -296,43 +296,43 @@ static void gtp_message_test2(abts_case *tc, void *data)
     hash_index_t *hi = NULL;
     int i = 0;
 
-    gtpc = sgw_ctx_gtpc_add();
-    ABTS_INT_EQUAL(tc, 1, sgw_ctx_gtpc_count());
-    sgw_ctx_gtpc_remove(gtpc);
-    ABTS_INT_EQUAL(tc, 0, sgw_ctx_gtpc_count());
+    gtpc = sgw_gtpc_add();
+    ABTS_INT_EQUAL(tc, 1, sgw_gtpc_count());
+    sgw_gtpc_remove(gtpc);
+    ABTS_INT_EQUAL(tc, 0, sgw_gtpc_count());
 
-    sgw_ctx_gtpc_add();
-    sgw_ctx_gtpc_add();
-    sgw_ctx_gtpc_add();
-    sgw_ctx_gtpc_add();
-    sgw_ctx_gtpc_add();
-    ABTS_INT_EQUAL(tc, 5, sgw_ctx_gtpc_count());
+    sgw_gtpc_add();
+    sgw_gtpc_add();
+    sgw_gtpc_add();
+    sgw_gtpc_add();
+    sgw_gtpc_add();
+    ABTS_INT_EQUAL(tc, 5, sgw_gtpc_count());
 
-    sgw_ctx_gtpc_remove_all();
-    ABTS_INT_EQUAL(tc, 0, sgw_ctx_gtpc_count());
+    sgw_gtpc_remove_all();
+    ABTS_INT_EQUAL(tc, 0, sgw_gtpc_count());
 
     for (i = 0; i < 100; i++)
     {
-        gtpc = sgw_ctx_gtpc_add();
+        gtpc = sgw_gtpc_add();
         gtpc->mme.teid = i;
         gtpc->pgw.teid = 100-i;
     }
-    ABTS_INT_EQUAL(tc, 100, sgw_ctx_gtpc_count());
+    ABTS_INT_EQUAL(tc, 100, sgw_gtpc_count());
 
-    gtpc = sgw_ctx_gtpc_find(10);
+    gtpc = sgw_gtpc_find(10);
     ABTS_INT_EQUAL(tc, 3, gtpc->mme.teid);
     ABTS_INT_EQUAL(tc, 97, gtpc->pgw.teid);
-    sgw_ctx_gtpc_remove(gtpc);
-    ABTS_INT_EQUAL(tc, 99, sgw_ctx_gtpc_count());
+    sgw_gtpc_remove(gtpc);
+    ABTS_INT_EQUAL(tc, 99, sgw_gtpc_count());
 
-    gtpc = sgw_ctx_gtpc_find(50);
+    gtpc = sgw_gtpc_find(50);
     ABTS_INT_EQUAL(tc, 43, gtpc->mme.teid);
     ABTS_INT_EQUAL(tc, 57, gtpc->pgw.teid);
-    sgw_ctx_gtpc_remove(gtpc);
-    ABTS_INT_EQUAL(tc, 98, sgw_ctx_gtpc_count());
+    sgw_gtpc_remove(gtpc);
+    ABTS_INT_EQUAL(tc, 98, sgw_gtpc_count());
 
-    sgw_ctx_gtpc_remove_all();
-    ABTS_INT_EQUAL(tc, 0, sgw_ctx_gtpc_count());
+    sgw_gtpc_remove_all();
+    ABTS_INT_EQUAL(tc, 0, sgw_gtpc_count());
 }
 
 abts_suite *test_gtp_message(abts_suite *suite)
