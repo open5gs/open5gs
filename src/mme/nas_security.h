@@ -20,9 +20,9 @@ extern "C" {
 #endif /* __cplusplus */
 
 CORE_DECLARE(status_t) nas_security_encode(
-        pkbuf_t **pkbuf, ue_ctx_t *ue, nas_message_t *message);
+        pkbuf_t **pkbuf, mme_ue_t *ue, nas_message_t *message);
 CORE_DECLARE(status_t) nas_security_decode(
-        nas_message_t *message, ue_ctx_t *ue, pkbuf_t *pkbuf);
+        nas_message_t *message, mme_ue_t *ue, pkbuf_t *pkbuf);
 
 CORE_DECLARE(void) nas_mac_calculate(c_uint8_t algorithm_identity,
         c_uint8_t *knas_int, c_uint32_t count, c_uint8_t bearer, 

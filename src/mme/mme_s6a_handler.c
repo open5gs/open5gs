@@ -15,7 +15,7 @@
 static struct session_handler *mme_s6a_reg = NULL;
 
 struct sess_state {
-    ue_ctx_t *ue;
+    mme_ue_t *ue;
     struct timespec ts; /* Time of sending the message */
 };
 
@@ -24,7 +24,7 @@ pool_declare(sess_state_pool, struct sess_state, MAX_NUM_SESSION_STATE);
 static void mme_s6a_aia_cb(void *data, struct msg **msg);
 
 /* Cb called when an answer is received */
-int mme_s6a_send_auth_info_req(ue_ctx_t *ue, plmn_id_t *plmn_id)
+int mme_s6a_send_auth_info_req(mme_ue_t *ue, plmn_id_t *plmn_id)
 {
     struct msg *req = NULL;
     struct avp *avp;
@@ -140,7 +140,7 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     int error = 0;
     int new;
 
-    ue_ctx_t *ue = NULL;
+    mme_ue_t *ue = NULL;
     nas_message_t message;
     pkbuf_t *sendbuf = NULL;
     event_t e;

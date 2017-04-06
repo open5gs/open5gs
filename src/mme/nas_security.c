@@ -6,7 +6,7 @@
 #include "nas_security.h"
 
 status_t nas_security_encode(
-        pkbuf_t **pkbuf, ue_ctx_t *ue, nas_message_t *message)
+        pkbuf_t **pkbuf, mme_ue_t *ue, nas_message_t *message)
 {
     int integrity_protected = 0;
     int new_security_context = 0;
@@ -110,7 +110,7 @@ status_t nas_security_encode(
 }
 
 status_t nas_security_decode(
-        nas_message_t *message, ue_ctx_t *ue, pkbuf_t *pkbuf)
+        nas_message_t *message, mme_ue_t *ue, pkbuf_t *pkbuf)
 {
     status_t rv;
     c_int32_t hsize = 0;

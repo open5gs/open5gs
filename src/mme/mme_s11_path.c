@@ -14,7 +14,7 @@ static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
     event_t e;
     pkbuf_t *pkbuf = NULL;
     gtp_node_t gnode;
-    sgw_ctx_t *sgw = NULL;
+    mme_sgw_t *sgw = NULL;
 
     d_assert(sock, return -1, "Null param");
 
@@ -30,7 +30,7 @@ static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
     gnode.addr = sock->remote.sin_addr.s_addr;
     gnode.port = ntohs(sock->remote.sin_port);
 
-    sgw = mme_ctx_sgw_find_by_node(&gnode);
+    sgw = mme_sgw_find_by_node(&gnode);
     d_assert(sgw, return -1, "Can't find SGW from [%s:%d]",
             INET_NTOP(&gnode.addr, buf), gnode.port);
 
@@ -107,5 +107,5 @@ void test_send()
 
     mme_s11_build_create_session_req(&type, &pkbuf, NULL);
 
-    mme_s11_send_to_sgw(mme_ctx_sgw_first(), type, teid, pkbuf);
+    mme_s11_send_to_sgw(mme_sgw_first(), type, teid, pkbuf);
 }

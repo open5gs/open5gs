@@ -78,13 +78,13 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
             d_trace(1, "eNB-S1 accepted[%s] in master_sm module\n", 
                 INET_NTOP(&sock->remote.sin_addr.s_addr, buf));
                     
-            enb_ctx_t *enb = mme_ctx_enb_find_by_sock(sock);
+            mme_enb_t *enb = mme_enb_find_by_sock(sock);
             if (!enb)
             {
                 rc = net_register_sock(sock, _s1ap_recv_cb, NULL);
                 d_assert(rc == 0, break, "register _s1ap_recv_cb failed");
 
-                enb_ctx_t *enb = mme_ctx_enb_add();
+                mme_enb_t *enb = mme_enb_add();
                 d_assert(enb, break, "Null param");
                 enb->s1ap_sock = sock;
 
@@ -108,7 +108,7 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
             net_sock_t *sock = (net_sock_t *)event_get_param1(e);
             d_assert(sock, break, "Null param");
 
-            enb_ctx_t *enb = mme_ctx_enb_find_by_sock(sock);
+            mme_enb_t *enb = mme_enb_find_by_sock(sock);
             if (enb)
             {
                 d_assert(FSM_STATE(&enb->s1ap_sm), break, "Null param");
@@ -124,7 +124,7 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
         }
         case EVT_MSG_UE_EMM:
         {
-            ue_ctx_t *ue = (ue_ctx_t *)event_get_param1(e);
+            mme_ue_t *ue = (mme_ue_t *)event_get_param1(e);
             d_assert(ue, break, "Null param");
 
             d_assert(FSM_STATE(&ue->emm_sm), break, "Null param");
@@ -134,7 +134,7 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
         }
         case EVT_MSG_UE_ESM:
         {
-            ue_ctx_t *ue = (ue_ctx_t *)event_get_param1(e);
+            mme_ue_t *ue = (mme_ue_t *)event_get_param1(e);
             d_assert(ue, break, "Null param");
 
             d_assert(FSM_STATE(&ue->esm_sm), break, "Null param");
@@ -191,7 +191,7 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
             d_info("Socket[%s] connection refused", 
                     INET_NTOP(&sock->remote.sin_addr.s_addr, buf));
 
-            enb_ctx_t *enb = mme_ctx_enb_find_by_sock(sock);
+            mme_enb_t *enb = mme_enb_find_by_sock(sock);
             if (enb) 
             {
                 /* Remove eNB S1 state machine if exist */
@@ -203,7 +203,7 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
                 net_unregister_sock(sock);
                 net_close(sock);
 
-                mme_ctx_enb_remove(enb);
+                mme_enb_remove(enb);
                 d_info("eNB-S1[%x] connection refused!!!", enb->enb_id);
             }
             else

@@ -13,7 +13,7 @@ CORE_DECLARE(status_t) mme_s6a_init(void);
 CORE_DECLARE(void) mme_s6a_final(void);
 
 CORE_DECLARE(int) mme_s6a_send_auth_info_req(
-                    ue_ctx_t *ue, plmn_id_t *plmn_id);
+                    mme_ue_t *ue, plmn_id_t *plmn_id);
 
 #ifdef __cplusplus
 }

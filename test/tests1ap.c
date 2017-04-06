@@ -12,7 +12,7 @@
 net_sock_t *tests1ap_enb_connect(void)
 {
     status_t rv;
-    mme_ctx_t *mme = mme_self();
+    mme_context_t *mme = mme_self();
     net_sock_t *sock = NULL;
 
     if (!mme) return NULL;

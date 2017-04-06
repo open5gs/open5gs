@@ -14,7 +14,7 @@ CORE_DECLARE(status_t) s1ap_listen();
 CORE_DECLARE(status_t) s1ap_close();
 
 CORE_DECLARE(status_t) s1ap_send(net_sock_t *s, pkbuf_t *pkb);
-CORE_DECLARE(status_t) s1ap_send_to_enb(enb_ctx_t *enb, pkbuf_t *pkb);
+CORE_DECLARE(status_t) s1ap_send_to_enb(mme_enb_t *enb, pkbuf_t *pkb);
 
 int _s1ap_recv_cb(net_sock_t *net_sock, void *data);
 

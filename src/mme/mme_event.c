@@ -53,7 +53,7 @@ char* mme_event_get_name(event_t *e)
     return EVT_NAME_UNKNOWN;
 }
 
-void mme_event_s1ap_to_nas(ue_ctx_t *ue, S1ap_NAS_PDU_t *nasPdu)
+void mme_event_s1ap_to_nas(mme_ue_t *ue, S1ap_NAS_PDU_t *nasPdu)
 {
     pkbuf_t *sendbuf = NULL;
     event_t e;
@@ -72,7 +72,7 @@ void mme_event_s1ap_to_nas(ue_ctx_t *ue, S1ap_NAS_PDU_t *nasPdu)
     mme_event_send(&e);
 }
 
-void mme_event_nas_to_s1ap(ue_ctx_t *ue, pkbuf_t *pkbuf)
+void mme_event_nas_to_s1ap(mme_ue_t *ue, pkbuf_t *pkbuf)
 {
     char buf[INET_ADDRSTRLEN];
 

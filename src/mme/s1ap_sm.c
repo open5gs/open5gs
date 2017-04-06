@@ -28,7 +28,7 @@ void s1ap_state_operational(s1ap_sm_t *s, event_t *e)
     d_assert(s, return, "Null param");
     d_assert(e, return, "Null param");
 
-    enb_ctx_t *enb = s->ctx;
+    mme_enb_t *enb = s->ctx;
     d_assert(enb, return, "Null param");
 
     mme_sm_trace(1, e);

@@ -9,7 +9,7 @@
 #include "mme_context.h"
 
 status_t mme_s11_build_create_session_req(
-        c_uint8_t *type, pkbuf_t **pkbuf, ue_ctx_t *ue)
+        c_uint8_t *type, pkbuf_t **pkbuf, mme_ue_t *ue)
 {
     status_t rv;
     gtp_message_t gtp_message;

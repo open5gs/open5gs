@@ -183,7 +183,7 @@ status_t s1ap_send(net_sock_t *s, pkbuf_t *pkbuf)
     return CORE_OK;
 }
 
-status_t s1ap_send_to_enb(enb_ctx_t *enb, pkbuf_t *pkbuf)
+status_t s1ap_send_to_enb(mme_enb_t *enb, pkbuf_t *pkbuf)
 {
     status_t rv = CORE_ERROR;
     d_assert(enb,,);

@@ -29,7 +29,7 @@ void esm_state_operational(esm_sm_t *s, event_t *e)
     d_assert(s, return, "Null param");
     d_assert(e, return, "Null param");
 
-    ue_ctx_t *ue = s->ctx;
+    mme_ue_t *ue = s->ctx;
     d_assert(ue, return, "Null param");
 
     mme_sm_trace(1, e);

@@ -15,7 +15,7 @@ status_t mme_initialize()
     status_t rv;
     int ret;
 
-    rv = mme_ctx_init();
+    rv = mme_context_init();
     if (rv != CORE_OK) return rv;
 
     ret = mme_s6a_init();
@@ -33,7 +33,7 @@ void mme_terminate(void)
 
     mme_s6a_final();
 
-    mme_ctx_final();
+    mme_context_final();
 }
 
 void *THREAD_FUNC mme_sm_main(thread_id id, void *data)

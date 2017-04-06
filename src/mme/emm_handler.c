@@ -12,7 +12,7 @@
 #include "mme_s6a_handler.h"
 
 void emm_handle_attach_request(
-        ue_ctx_t *ue, nas_attach_request_t *attach_request)
+        mme_ue_t *ue, nas_attach_request_t *attach_request)
 {
     nas_eps_mobile_identity_t *eps_mobile_identity =
         &attach_request->eps_mobile_identity;
@@ -59,7 +59,7 @@ void emm_handle_attach_request(
 }
 
 void emm_handle_authentication_response(
-        ue_ctx_t *ue, nas_authentication_response_t *authentication_response)
+        mme_ue_t *ue, nas_authentication_response_t *authentication_response)
 {
     nas_authentication_response_parameter_t *authentication_response_parameter =
         &authentication_response->authentication_response_parameter;

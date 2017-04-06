@@ -9,7 +9,7 @@
 #include "s1ap_handler.h"
 #include "s1ap_path.h"
 
-void s1ap_handle_s1_setup_request(enb_ctx_t *enb, s1ap_message_t *message)
+void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
 {
     char buf[INET_ADDRSTRLEN];
 
@@ -56,11 +56,11 @@ void s1ap_handle_s1_setup_request(enb_ctx_t *enb, s1ap_message_t *message)
         enb_id);
 }
 
-void s1ap_handle_initial_ue_message(enb_ctx_t *enb, s1ap_message_t *message)
+void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
 {
     char buf[INET_ADDRSTRLEN];
 
-    ue_ctx_t *ue = NULL;
+    mme_ue_t *ue = NULL;
     S1ap_InitialUEMessage_IEs_t *ies = NULL;
 
     d_assert(enb, return, "Null param");
@@ -68,10 +68,10 @@ void s1ap_handle_initial_ue_message(enb_ctx_t *enb, s1ap_message_t *message)
     ies = &message->s1ap_InitialUEMessage_IEs;
     d_assert(ies, return, "Null param");
 
-    ue = mme_ctx_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
+    ue = mme_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
     if (!ue)
     {
-        ue = mme_ctx_ue_add(enb);
+        ue = mme_ue_add(enb);
         d_assert(ue, return, "Null param");
 
         ue->enb_ue_s1ap_id = ies->eNB_UE_S1AP_ID;
@@ -83,7 +83,7 @@ void s1ap_handle_initial_ue_message(enb_ctx_t *enb, s1ap_message_t *message)
             enb->enb_id, ue->enb_ue_s1ap_id);
     }
 
-    d_assert(enb->s1ap_sock, mme_ctx_ue_remove(ue);return,);
+    d_assert(enb->s1ap_sock, mme_ue_remove(ue);return,);
     d_info("[S1AP] InitialUEMessage : UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]",
         ue->enb_ue_s1ap_id,
         INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
@@ -103,17 +103,17 @@ void s1ap_handle_initial_ue_message(enb_ctx_t *enb, s1ap_message_t *message)
 }
 
 void s1ap_handle_uplink_nas_transport(
-        enb_ctx_t *enb, s1ap_message_t *message)
+        mme_enb_t *enb, s1ap_message_t *message)
 {
     char buf[INET_ADDRSTRLEN];
 
-    ue_ctx_t *ue = NULL;
+    mme_ue_t *ue = NULL;
     S1ap_UplinkNASTransport_IEs_t *ies = NULL;
 
     ies = &message->s1ap_UplinkNASTransport_IEs;
     d_assert(ies, return, "Null param");
 
-    ue = mme_ctx_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
+    ue = mme_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
     d_assert(ue, return, "Null param");
 
     d_info("[S1AP] uplinkNASTransport : UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]",

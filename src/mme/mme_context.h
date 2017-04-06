@@ -1,5 +1,5 @@
-#ifndef __MME_CTX_H__
-#define __MME_CTX_H__
+#ifndef __MME_CONTEXT__
+#define __MME_CONTEXT__
 
 #include "core_list.h"
 #include "core_errno.h"
@@ -30,7 +30,7 @@ typedef struct _served_gummei {
     c_uint8_t       mme_code[CODE_PER_MME];
 } srvd_gummei_t;
 
-typedef struct _mme_ctx_t {
+typedef struct _mme_context_t {
     c_uint32_t      s1ap_addr;  /* MME S1AP local address */
     c_uint16_t      s1ap_port;  /* MME S1AP local port */
     net_sock_t      *s1ap_sock; /* MME S1AP local listen socket */
@@ -66,14 +66,14 @@ typedef struct _mme_ctx_t {
     /* S1SetupResponse */
     srvd_gummei_t   srvd_gummei;
     c_uint8_t       relative_capacity;
-} mme_ctx_t;
+} mme_context_t;
 
-typedef struct _sgw_ctx_t {
+typedef struct _mme_sgw_t {
     gtp_node_t      gnode; /* SGW S11 remote GTPv2-C node */
 
-} sgw_ctx_t;
+} mme_sgw_t;
 
-typedef struct _enb_ctx_t {
+typedef struct _mme_enb_t {
     lnode_t         node; /**< A node of list_t */
 
     c_uint32_t      enb_id; /** eNB_ID received from eNB */
@@ -83,9 +83,9 @@ typedef struct _enb_ctx_t {
 
     list_t          ue_list;
 
-} enb_ctx_t;
+} mme_enb_t;
 
-typedef struct _ue_ctx_t {
+typedef struct _mme_ue_t {
     lnode_t         node; /**< A node of list_t */
 
     /* State Machine */
@@ -117,39 +117,38 @@ typedef struct _ue_ctx_t {
         c_uint32_t i32;
     } ul_count;
 
-    enb_ctx_t       *enb;
-} ue_ctx_t;
+    mme_enb_t       *enb;
+} mme_ue_t;
 
-CORE_DECLARE(status_t)      mme_ctx_init(void);
-CORE_DECLARE(status_t)      mme_ctx_final(void);
+CORE_DECLARE(status_t)      mme_context_init(void);
+CORE_DECLARE(status_t)      mme_context_final(void);
+CORE_DECLARE(mme_context_t*) mme_self(void);
 
-CORE_DECLARE(mme_ctx_t*)    mme_self(void);
+CORE_DECLARE(mme_sgw_t*)    mme_sgw_add(void);
+CORE_DECLARE(status_t)      mme_sgw_remove(mme_sgw_t *sgw);
+CORE_DECLARE(status_t)      mme_sgw_remove_all(void);
+CORE_DECLARE(mme_sgw_t*)    mme_sgw_find_by_node(gtp_node_t *gnode);
+CORE_DECLARE(mme_sgw_t*)    mme_sgw_first(void);
+CORE_DECLARE(mme_sgw_t*)    mme_sgw_next(mme_sgw_t *sgw);
 
-CORE_DECLARE(sgw_ctx_t*)    mme_ctx_sgw_add(void);
-CORE_DECLARE(status_t)      mme_ctx_sgw_remove(sgw_ctx_t *sgw);
-CORE_DECLARE(status_t)      mme_ctx_sgw_remove_all(void);
-CORE_DECLARE(sgw_ctx_t*)    mme_ctx_sgw_find_by_node(gtp_node_t *gnode);
-CORE_DECLARE(sgw_ctx_t*)    mme_ctx_sgw_first(void);
-CORE_DECLARE(sgw_ctx_t*)    mme_ctx_sgw_next(sgw_ctx_t *sgw);
+CORE_DECLARE(mme_enb_t*)    mme_enb_add(void);
+CORE_DECLARE(status_t)      mme_enb_remove(mme_enb_t *enb);
+CORE_DECLARE(status_t)      mme_enb_remove_all(void);
+CORE_DECLARE(mme_enb_t*)    mme_enb_find_by_sock(net_sock_t *sock);
+CORE_DECLARE(mme_enb_t*)    mme_enb_find_by_enb_id(c_uint32_t enb_id);
+CORE_DECLARE(mme_enb_t*)    mme_enb_first(void);
+CORE_DECLARE(mme_enb_t*)    mme_enb_next(mme_enb_t *enb);
 
-CORE_DECLARE(enb_ctx_t*)    mme_ctx_enb_add(void);
-CORE_DECLARE(status_t)      mme_ctx_enb_remove(enb_ctx_t *enb);
-CORE_DECLARE(status_t)      mme_ctx_enb_remove_all(void);
-CORE_DECLARE(enb_ctx_t*)    mme_ctx_enb_find_by_sock(net_sock_t *sock);
-CORE_DECLARE(enb_ctx_t*)    mme_ctx_enb_find_by_enb_id(c_uint32_t enb_id);
-CORE_DECLARE(enb_ctx_t*)    mme_ctx_enb_first(void);
-CORE_DECLARE(enb_ctx_t*)    mme_ctx_enb_next(enb_ctx_t *enb);
-
-CORE_DECLARE(ue_ctx_t*)     mme_ctx_ue_add(enb_ctx_t *enb);
-CORE_DECLARE(status_t)      mme_ctx_ue_remove(ue_ctx_t *ue);
-CORE_DECLARE(status_t)      mme_ctx_ue_remove_all(enb_ctx_t *enb);
-CORE_DECLARE(ue_ctx_t*)     mme_ctx_ue_find_by_enb_ue_s1ap_id(
-                                enb_ctx_t *enb, c_uint32_t enb_ue_s1ap_id);
-CORE_DECLARE(ue_ctx_t*)     mme_ctx_ue_first(enb_ctx_t *enb);
-CORE_DECLARE(ue_ctx_t*)     mme_ctx_ue_next(ue_ctx_t *ue);
+CORE_DECLARE(mme_ue_t*)     mme_ue_add(mme_enb_t *enb);
+CORE_DECLARE(status_t)      mme_ue_remove(mme_ue_t *ue);
+CORE_DECLARE(status_t)      mme_ue_remove_all(mme_enb_t *enb);
+CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_enb_ue_s1ap_id(
+                                mme_enb_t *enb, c_uint32_t enb_ue_s1ap_id);
+CORE_DECLARE(mme_ue_t*)     mme_ue_first(mme_enb_t *enb);
+CORE_DECLARE(mme_ue_t*)     mme_ue_next(mme_ue_t *ue);
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* __MME_CTX_H__ */
+#endif /* __MME_CONTEXT__ */
