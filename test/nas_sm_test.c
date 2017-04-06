@@ -47,7 +47,7 @@ static void nas_sm_test1(abts_case *tc, void *data)
     pkbuf_free(recvbuf);
 
     /* Send Initial-UE Message */
-    mme_self()->mme_ue_s1ap_id = 16777373;
+    mme_self()->mme_ue_s1ap_id = 16777372;
     rv = tests1ap_build_initial_ue_msg(&sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);

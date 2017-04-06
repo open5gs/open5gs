@@ -274,10 +274,7 @@ ue_ctx_t* mme_ctx_ue_add(enb_ctx_t *enb)
     list_init(&ue->erab_list);
     list_init(&ue->s11_list);
 
-    if (self.mme_ue_s1ap_id == 0) self.mme_ue_s1ap_id = 1;
-    ue->mme_ue_s1ap_id = self.mme_ue_s1ap_id;
-
-    self.mme_ue_s1ap_id = self.mme_ue_s1ap_id + 1;
+    ue->mme_ue_s1ap_id = NEXT_ID(self.mme_ue_s1ap_id, 0xffffffff);
 
     list_append(&enb->ue_list, ue);
     
