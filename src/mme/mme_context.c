@@ -21,7 +21,6 @@ static mme_ctx_t self;
 pool_declare(sgw_pool, sgw_ctx_t, MAX_NUM_OF_SGW);
 pool_declare(enb_pool, enb_ctx_t, MAX_NUM_OF_ENB);
 pool_declare(ue_pool, ue_ctx_t, MAX_NUM_OF_UE);
-pool_declare(erab_pool, erab_ctx_t, MAX_NUM_OF_ERAB);
 
 static int ctx_initialized = 0;
 
@@ -36,7 +35,6 @@ status_t mme_ctx_init()
     pool_init(&sgw_pool, MAX_NUM_OF_SGW);
     pool_init(&enb_pool, MAX_NUM_OF_ENB);
     pool_init(&ue_pool, MAX_NUM_OF_UE);
-    pool_init(&erab_pool, MAX_NUM_OF_ERAB);
 
     list_init(&sgw_list);
     list_init(&enb_list);
@@ -90,7 +88,6 @@ status_t mme_ctx_final()
     pool_final(&sgw_pool);
     pool_final(&enb_pool);
     pool_final(&ue_pool);
-    pool_final(&erab_pool);
 
     ctx_initialized = 0;
 
@@ -271,8 +268,6 @@ ue_ctx_t* mme_ctx_ue_add(enb_ctx_t *enb)
     memset(ue, 0, sizeof(ue_ctx_t));
 
     ue->enb = enb;
-    list_init(&ue->erab_list);
-    list_init(&ue->s11_list);
 
     ue->mme_ue_s1ap_id = NEXT_ID(self.mme_ue_s1ap_id, 0xffffffff);
 
@@ -285,8 +280,6 @@ status_t mme_ctx_ue_remove(ue_ctx_t *ue)
 {
     d_assert(ue, return CORE_ERROR, "Null param");
     d_assert(ue->enb, return CORE_ERROR, "Null param");
-
-    mme_ctx_erab_remove_all(ue);
 
     if (FSM_STATE(&ue->emm_sm))
     {
@@ -349,90 +342,3 @@ ue_ctx_t* mme_ctx_ue_next(ue_ctx_t *ue)
     return list_next(ue);
 }
 
-erab_ctx_t* mme_ctx_erab_add(ue_ctx_t *ue)
-{
-    erab_ctx_t *erab = NULL;
-
-    d_assert(ue, return NULL, "Null param");
-
-    pool_alloc_node(&erab_pool, &erab);
-    d_assert(erab, return NULL, "Null param");
-
-    memset(erab, 0, sizeof(erab_ctx_t));
-
-    erab->ue = ue;
-
-    list_append(&ue->erab_list, erab);
-    
-    return erab;
-}
-
-status_t mme_ctx_erab_remove(erab_ctx_t *erab)
-{
-    d_assert(erab, return CORE_ERROR, "Null param");
-    d_assert(erab->ue, return CORE_ERROR, "Null param");
-
-    list_remove(&erab->ue->erab_list, erab);
-    pool_free_node(&erab_pool, erab);
-
-    return CORE_OK;
-}
-
-status_t mme_ctx_erab_remove_all(ue_ctx_t *ue)
-{
-    erab_ctx_t *erab = NULL, *next_erab = NULL;
-    
-    erab = mme_ctx_erab_first(ue);
-    while (erab)
-    {
-        next_erab = mme_ctx_erab_next(erab);
-
-        mme_ctx_erab_remove(erab);
-
-        erab = next_erab;
-    }
-
-    return CORE_OK;
-}
-
-erab_ctx_t* mme_ctx_erab_find_by_erab_id(ue_ctx_t *ue, c_uint32_t erab_id)
-{
-    erab_ctx_t *erab = NULL;
-    
-    erab = mme_ctx_erab_first(ue);
-    while (erab)
-    {
-        if (erab_id == erab->erab_id)
-            break;
-
-        erab = mme_ctx_erab_next(erab);
-    }
-
-    return erab;
-}
-
-erab_ctx_t* mme_ctx_erab_find_by_teid(ue_ctx_t *ue, c_uint32_t teid)
-{
-    erab_ctx_t *erab = NULL;
-    
-    erab = mme_ctx_erab_first(ue);
-    while (erab)
-    {
-        if (teid == erab->teid)
-            break;
-
-        erab = mme_ctx_erab_next(erab);
-    }
-
-    return erab;
-}
-
-erab_ctx_t* mme_ctx_erab_first(ue_ctx_t *ue)
-{
-    return list_first(&ue->erab_list);
-}
-
-erab_ctx_t* mme_ctx_erab_next(erab_ctx_t *erab)
-{
-    return list_next(erab);
-}

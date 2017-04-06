@@ -20,10 +20,6 @@ extern "C" {
 #define GRP_PER_MME                 256    /* According to spec it is 65535 */
 #define CODE_PER_MME                256    /* According to spec it is 256 */
 
-typedef list_t ue_list_t;
-typedef list_t erab_list_t;
-typedef list_t s11_list_t;
-
 typedef struct _served_gummei {
     c_uint32_t      num_of_plmn_id;
     plmn_id_t       plmn_id[MAX_PLMN_ID];
@@ -85,7 +81,7 @@ typedef struct _enb_ctx_t {
     s1ap_sm_t       s1ap_sm;
     net_sock_t      *s1ap_sock;
 
-    ue_list_t       ue_list;
+    list_t          ue_list;
 
 } enb_ctx_t;
 
@@ -121,36 +117,8 @@ typedef struct _ue_ctx_t {
         c_uint32_t i32;
     } ul_count;
 
-    /* Related Context for UE */
-    erab_list_t     erab_list;
-    s11_list_t      s11_list;
-
     enb_ctx_t       *enb;
 } ue_ctx_t;
-
-/**
- * This structure represents E-RAB */
-typedef struct _erab_ctx_t {
-    lnode_t         node; /**< A node of list_t */
-
-    c_uint32_t      erab_id;
-    c_uint32_t      teid;
-
-    ue_ctx_t        *ue;
-} erab_ctx_t;
-
-/**
- * This structure represents S11 */
-typedef struct _s11_ctx_t {
-    lnode_t         node; /**< A node of list_t */
-
-    /* State Machine */
-    s11_sm_t        s11_sm;
-
-    c_uint32_t      teid;
-
-    ue_ctx_t        *ue;
-} s11_ctx_t;
 
 CORE_DECLARE(status_t)      mme_ctx_init(void);
 CORE_DECLARE(status_t)      mme_ctx_final(void);
@@ -179,24 +147,6 @@ CORE_DECLARE(ue_ctx_t*)     mme_ctx_ue_find_by_enb_ue_s1ap_id(
                                 enb_ctx_t *enb, c_uint32_t enb_ue_s1ap_id);
 CORE_DECLARE(ue_ctx_t*)     mme_ctx_ue_first(enb_ctx_t *enb);
 CORE_DECLARE(ue_ctx_t*)     mme_ctx_ue_next(ue_ctx_t *ue);
-
-CORE_DECLARE(erab_ctx_t*)   mme_ctx_erab_add(ue_ctx_t *ue);
-CORE_DECLARE(status_t)      mme_ctx_erab_remove(erab_ctx_t *erab);
-CORE_DECLARE(status_t)      mme_ctx_erab_remove_all(ue_ctx_t *ue);
-CORE_DECLARE(erab_ctx_t*)   mme_ctx_erab_find_by_erab_id(
-                                ue_ctx_t *ue, c_uint32_t erab_id);
-CORE_DECLARE(erab_ctx_t*)   mme_ctx_erab_find_by_teid(
-                                ue_ctx_t *ue, c_uint32_t teid);
-CORE_DECLARE(erab_ctx_t*)   mme_ctx_erab_first(ue_ctx_t *ue);
-CORE_DECLARE(erab_ctx_t*)   mme_ctx_erab_next(erab_ctx_t *erab);
-
-CORE_DECLARE(s11_ctx_t*)    mme_ctx_s11_add(ue_ctx_t *ue);
-CORE_DECLARE(status_t)      mme_ctx_s11_remove(s11_ctx_t *s11);
-CORE_DECLARE(status_t)      mme_ctx_s11_remove_all(ue_ctx_t *ue);
-CORE_DECLARE(s11_ctx_t*)    mme_ctx_s11_find_by_teid(
-                                ue_ctx_t *ue, c_uint32_t teid);
-CORE_DECLARE(s11_ctx_t*)    mme_ctx_s11_first(ue_ctx_t *ue);
-CORE_DECLARE(s11_ctx_t*)    mme_ctx_s11_next(s11_ctx_t *s11);
 
 #ifdef __cplusplus
 }
