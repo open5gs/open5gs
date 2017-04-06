@@ -9,9 +9,13 @@
 #include "mme_ctx.h"
 
 status_t mme_s11_build_create_session_req(
-        gtp_message_t *gtp_message, ue_ctx_t *ue)
+        c_uint8_t *type, pkbuf_t **pkbuf, ue_ctx_t *ue)
 {
-    gtp_create_session_request_t *req = &gtp_message->create_session_request;
+    status_t rv;
+    gtp_message_t gtp_message;
+    gtp_create_session_request_t *req = &gtp_message.create_session_request;
+    *type = GTP_CREATE_SESSION_REQUEST_TYPE;
+
     gtp_uli_t uli;
     char uli_buf[GTP_MAX_ULI_LEN];
     plmn_id_t serving_network;
@@ -24,7 +28,7 @@ status_t mme_s11_build_create_session_req(
     char bearer_qos_buf[GTP_BEARER_QOS_LEN];
     gtp_ue_timezone_t ue_timezone;
 
-    memset(gtp_message, 0, sizeof(gtp_message_t));
+    memset(&gtp_message, 0, sizeof(gtp_message_t));
 
     req->imsi.presence = 1;
     req->imsi.data = (c_uint8_t *)"\x55\x15\x30\x11\x34\x00\x10\xf4";
@@ -139,6 +143,9 @@ status_t mme_s11_build_create_session_req(
     req->charging_characteristics.presence = 1;
     req->charging_characteristics.data = (c_uint8_t *)"\x54\x00";
     req->charging_characteristics.len = 2;
+
+    rv = gtp_build_msg(pkbuf, *type, &gtp_message);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");
 
     return CORE_OK;
 }

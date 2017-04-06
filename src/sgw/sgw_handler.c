@@ -10,8 +10,10 @@
 void sgw_handle_create_session_request(
         gtp_xact_t *xact, c_uint8_t type, gtp_message_t *gtp_message)
 {
+    status_t rv;
     gtp_create_session_request_t *req = NULL;
     sgw_gtpc_t *gtpc = NULL;
+    pkbuf_t *pkbuf = NULL;
 
     d_assert(xact, return, "gtpc_add failed");
     d_assert(gtp_message, return, "gtpc_add failed");
@@ -30,14 +32,23 @@ void sgw_handle_create_session_request(
     memcpy(&gtpc->mme, req->sender_f_teid_for_control_plane.data,
                 req->sender_f_teid_for_control_plane.len);
 
-    d_assert(sgw_s5c_send_to_pgw(xact, type, gtp_message) == CORE_OK, 
+    rv = gtp_build_msg(&pkbuf, type, gtp_message);
+    d_assert(rv == CORE_OK, return, "gtp build failed");
+
+    d_assert(sgw_s5c_send_to_pgw(xact, type, pkbuf) == CORE_OK, 
             return, "failed to send message");
 }
 
 void sgw_handle_create_session_response(
         gtp_xact_t *xact, c_uint8_t type, gtp_message_t *gtp_message)
 {
+    status_t rv;
+    pkbuf_t *pkbuf = NULL;
+
     d_info("handle create_session response");
-    d_assert(sgw_s11_send_to_mme(xact, type, gtp_message) == CORE_OK, 
+    rv = gtp_build_msg(&pkbuf, type, gtp_message);
+    d_assert(rv == CORE_OK, return, "gtp build failed");
+
+    d_assert(sgw_s11_send_to_mme(xact, type, pkbuf) == CORE_OK, 
             return, "failed to send message");
 }

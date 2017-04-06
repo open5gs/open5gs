@@ -1,7 +1,7 @@
 #ifndef __MME_S11_PATH_H__
 #define __MME_S11_PATH_H__
 
-#include "gtp_tlv.h"
+#include "core_pkbuf.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -11,7 +11,7 @@ CORE_DECLARE(status_t) mme_s11_listen();
 CORE_DECLARE(status_t) mme_s11_close();
 
 CORE_DECLARE(status_t) mme_s11_send_to_sgw(
-        void *sgw, c_uint8_t type, gtp_message_t *gtp_message);
+        void *sgw, c_uint8_t type, pkbuf_t *pkbuf);
 
 #ifdef __cplusplus
 }

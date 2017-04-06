@@ -11,7 +11,7 @@ CORE_DECLARE(status_t) pgw_path_open();
 CORE_DECLARE(status_t) pgw_path_close();
 
 CORE_DECLARE(status_t) pgw_s5c_send_to_sgw(
-        gtp_xact_t *xact, c_uint8_t type, gtp_message_t *gtp_messgae);
+        gtp_xact_t *xact, c_uint8_t type, pkbuf_t *pkbuf);
 CORE_DECLARE(status_t) pgw_s5u_send_to_sgw(pkbuf_t *pkbuf);
 
 #ifdef __cplusplus

@@ -56,10 +56,9 @@ CORE_DECLARE(gtp_xact_t *) gtp_xact_remote_create(gtp_xact_ctx_t *context,
         net_sock_t *sock, gtp_node_t *gnode, c_uint32_t sqn);
 
 CORE_DECLARE(status_t) gtp_xact_commit(
-        gtp_xact_t *xact, c_uint8_t type, gtp_message_t *gtp_message);
-CORE_DECLARE(status_t) gtp_xact_associated_commit(
-        gtp_xact_t *xact, gtp_xact_t *assoc_xact, 
-        c_uint8_t type, gtp_message_t *gtp_message);
+        gtp_xact_t *xact, c_uint8_t type, pkbuf_t *pkbuf);
+CORE_DECLARE(status_t) gtp_xact_associated_commit(gtp_xact_t *xact, 
+        gtp_xact_t *assoc_xact, c_uint8_t type, pkbuf_t *pkbuf);
 CORE_DECLARE(status_t) gtp_xact_timeout(gtp_xact_t *xact);
 
 CORE_DECLARE(gtp_xact_t *) gtp_xact_preprocess(gtp_xact_ctx_t *context, 

@@ -8,7 +8,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 CORE_DECLARE(status_t) mme_s11_build_create_session_req(
-                        gtp_message_t *gtp_message, ue_ctx_t *ue);
+                        c_uint8_t *type, pkbuf_t **pkbuf, ue_ctx_t *ue);
 
 #ifdef __cplusplus
 }

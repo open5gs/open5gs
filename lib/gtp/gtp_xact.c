@@ -181,33 +181,26 @@ gtp_xact_t *gtp_xact_remote_create(gtp_xact_ctx_t *context,
             GTP_XACT_REMOTE_DURATION, GTP_XACT_REMOTE_RETRY_COUNT);
 }
 
-status_t gtp_xact_commit(
-        gtp_xact_t *xact, c_uint8_t type, gtp_message_t *gtp_message)
+status_t gtp_xact_commit(gtp_xact_t *xact, c_uint8_t type, pkbuf_t *pkbuf)
 {
-    return gtp_xact_associated_commit(xact, NULL, type, gtp_message);
+    return gtp_xact_associated_commit(xact, NULL, type, pkbuf);
 }
 
-status_t gtp_xact_associated_commit(
-        gtp_xact_t *xact, gtp_xact_t *assoc_xact,
-        c_uint8_t type, gtp_message_t *gtp_message)
+status_t gtp_xact_associated_commit(gtp_xact_t *xact, 
+        gtp_xact_t *assoc_xact, c_uint8_t type, pkbuf_t *pkbuf)
 {
-    status_t rv;
-    pkbuf_t *pkbuf = NULL;
     gtpv2c_header_t *h = NULL;
     
     d_assert(xact, goto out, "Null param");
     d_assert(xact->sock, goto out, "Null param");
     d_assert(xact->gnode, goto out, "Null param");
-    d_assert(gtp_message, goto out, "Null param");
+    d_assert(pkbuf, goto out, "Null param");
 
     d_trace(1, "[%d]%s Commit  : xid = 0x%x\n",
             xact->gnode->port,
             xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
             xact->xid);
 
-    rv = gtp_build_msg(&pkbuf, type, gtp_message);
-    d_assert(rv == CORE_OK, goto out, "gtp build failed");
-    d_assert(pkbuf, goto out, "Null param");
     xact->pkbuf = pkbuf;
 
     pkbuf_header(pkbuf, GTPV2C_HEADER_LEN);

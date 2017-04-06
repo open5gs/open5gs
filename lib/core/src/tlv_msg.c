@@ -290,7 +290,8 @@ status_t tlv_build_msg(pkbuf_t **pkbuf, tlv_desc_t *desc, void *msg, int mode)
     (*pkbuf)->len = length;
 
     rendlen = tlv_render(root, (*pkbuf)->payload, length, mode);
-    d_assert(rendlen == length, tlv_free_all(root); return CORE_ERROR,
+    d_assert(rendlen == length, 
+            pkbuf_free(*pkbuf); tlv_free_all(root); return CORE_ERROR,
             "Error while render TLV (%d != %d)", length, rendlen);
 
     tlv_free_all(root);
