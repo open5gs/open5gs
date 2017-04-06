@@ -61,16 +61,17 @@ void pgw_state_operational(pgw_sm_t *s, event_t *e)
             pkbuf_t *pkbuf = (pkbuf_t *)event_get_param3(e);
             gtp_xact_t *xact = NULL;
             c_uint8_t type;
+            c_uint32_t teid;
             gtp_message_t gtp_message;
 
             d_assert(pkbuf, break, "Null param");
             d_assert(sock, pkbuf_free(pkbuf); break, "Null param");
             d_assert(gnode, pkbuf_free(pkbuf); break, "Null param");
 
-            xact = gtp_xact_preprocess(&pgw_self()->gtp_xact_ctx, 
-                    sock, gnode, &type, pkbuf);
-            rv = gtp_xact_receive(xact, &gtp_message, type, pkbuf);
-            if (rv != CORE_OK) 
+            rv = gtp_xact_receive(
+                    &pgw_self()->gtp_xact_ctx, sock, gnode,
+                    &xact, &type, &teid, &gtp_message, pkbuf);
+            if (rv != CORE_OK)
                 break;
 
             switch(type)
