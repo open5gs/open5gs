@@ -35,7 +35,7 @@ void sgw_handle_create_session_request(
     rv = gtp_build_msg(&pkbuf, type, gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
-    d_assert(sgw_s5c_send_to_pgw(xact, type, pkbuf) == CORE_OK, 
+    d_assert(sgw_s5c_send_to_pgw(xact, type, 0, pkbuf) == CORE_OK, 
             return, "failed to send message");
 }
 
@@ -49,6 +49,6 @@ void sgw_handle_create_session_response(
     rv = gtp_build_msg(&pkbuf, type, gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
-    d_assert(sgw_s11_send_to_mme(xact, type, pkbuf) == CORE_OK, 
+    d_assert(sgw_s11_send_to_mme(xact, type, 2, pkbuf) == CORE_OK, 
             return, "failed to send message");
 }

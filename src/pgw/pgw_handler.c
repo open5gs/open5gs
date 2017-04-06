@@ -24,5 +24,5 @@ void pgw_handle_create_session_request(
     rv = gtp_build_msg(&pkbuf, type, &gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
-    pgw_s5c_send_to_sgw(xact, type, pkbuf);
+    pgw_s5c_send_to_sgw(xact, type, 5, pkbuf);
 }

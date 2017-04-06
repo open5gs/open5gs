@@ -144,19 +144,19 @@ status_t sgw_path_close()
 }
 
 status_t sgw_s11_send_to_mme(
-        gtp_xact_t *xact, c_uint8_t type, pkbuf_t *pkbuf)
+    gtp_xact_t *xact, c_uint8_t type, c_uint32_t teid, pkbuf_t *pkbuf)
 {
     d_assert(pkbuf, return CORE_ERROR, "Null param");
     d_assert(xact, return CORE_ERROR, "Null param");
 
-    d_assert(gtp_xact_commit(xact, type, pkbuf) == CORE_OK,
+    d_assert(gtp_xact_commit(xact, type, teid, pkbuf) == CORE_OK,
             return CORE_ERROR, "xact commit error");
 
     return CORE_OK;
 }
 
 status_t sgw_s5c_send_to_pgw(
-        gtp_xact_t *assoc_xact, c_uint8_t type, pkbuf_t *pkbuf)
+    gtp_xact_t *assoc_xact, c_uint8_t type, c_uint32_t teid, pkbuf_t *pkbuf)
 {
     gtp_xact_t *xact = NULL;
     d_assert(assoc_xact, return CORE_ERROR, "Null param");
@@ -167,7 +167,7 @@ status_t sgw_s5c_send_to_pgw(
     d_assert(xact, return CORE_ERROR, "Null param");
 
     d_assert(gtp_xact_associated_commit(
-                xact, assoc_xact, type, pkbuf) == CORE_OK,
+                xact, assoc_xact, type, teid, pkbuf) == CORE_OK,
             return CORE_ERROR, "gtp_send error");
 
     return CORE_OK;

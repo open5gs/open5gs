@@ -81,7 +81,8 @@ status_t mme_s11_close()
     return CORE_OK;
 }
 
-status_t mme_s11_send_to_sgw(void *sgw, c_uint8_t type, pkbuf_t *pkbuf)
+status_t mme_s11_send_to_sgw(void *sgw, 
+        c_uint8_t type, c_uint32_t teid, pkbuf_t *pkbuf)
 {
     gtp_xact_t *xact = NULL;
     d_assert(sgw, return CORE_ERROR, "Null param");
@@ -91,7 +92,7 @@ status_t mme_s11_send_to_sgw(void *sgw, c_uint8_t type, pkbuf_t *pkbuf)
             mme_self()->s11_sock, sgw);
     d_assert(xact, return CORE_ERROR, "Null param");
 
-    d_assert(gtp_xact_commit(xact, type, pkbuf) == CORE_OK,
+    d_assert(gtp_xact_commit(xact, type, teid, pkbuf) == CORE_OK,
             return CORE_ERROR, "xact commit error");
 
     return CORE_OK;
@@ -107,8 +108,9 @@ void test_send()
 {
     pkbuf_t *pkbuf;
     c_uint8_t type;
+    c_uint32_t teid = 0;
 
     mme_s11_build_create_session_req(&type, &pkbuf, NULL);
 
-    mme_s11_send_to_sgw(mme_ctx_sgw_first(), type, pkbuf);
+    mme_s11_send_to_sgw(mme_ctx_sgw_first(), type, teid, pkbuf);
 }

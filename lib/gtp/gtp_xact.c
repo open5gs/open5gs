@@ -181,13 +181,14 @@ gtp_xact_t *gtp_xact_remote_create(gtp_xact_ctx_t *context,
             GTP_XACT_REMOTE_DURATION, GTP_XACT_REMOTE_RETRY_COUNT);
 }
 
-status_t gtp_xact_commit(gtp_xact_t *xact, c_uint8_t type, pkbuf_t *pkbuf)
+status_t gtp_xact_commit(gtp_xact_t *xact, 
+    c_uint8_t type, c_uint32_t teid, pkbuf_t *pkbuf)
 {
-    return gtp_xact_associated_commit(xact, NULL, type, pkbuf);
+    return gtp_xact_associated_commit(xact, NULL, type, teid, pkbuf);
 }
 
 status_t gtp_xact_associated_commit(gtp_xact_t *xact, 
-        gtp_xact_t *assoc_xact, c_uint8_t type, pkbuf_t *pkbuf)
+    gtp_xact_t *assoc_xact, c_uint8_t type, c_uint32_t teid, pkbuf_t *pkbuf)
 {
     gtpv2c_header_t *h = NULL;
     
@@ -211,6 +212,7 @@ status_t gtp_xact_associated_commit(gtp_xact_t *xact,
     h->teid_presence = 1;
     h->type = type;
     h->length = htons(pkbuf->len - 4);
+    h->teid = htonl(teid);
     h->sqn = GTP_XID_TO_SQN(xact->xid);
 
     d_assert(gtp_send(xact->sock, xact->gnode, xact->pkbuf) == CORE_OK,
