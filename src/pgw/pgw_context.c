@@ -10,11 +10,11 @@
 
 static pgw_context_t self;
 
-static int ctx_initialized = 0;
+static int context_initiaized = 0;
 
 status_t pgw_context_init()
 {
-    d_assert(ctx_initialized == 0, return CORE_ERROR,
+    d_assert(context_initiaized == 0, return CORE_ERROR,
             "MME context already has been initialized");
 
     memset(&self, 0, sizeof(pgw_context_t));
@@ -31,17 +31,17 @@ status_t pgw_context_init()
     self.s5u_node.addr = inet_addr("127.0.0.1");
     self.s5u_node.port = GTPV1_U_UDP_PORT;
 
-    ctx_initialized = 1;
+    context_initiaized = 1;
 
     return CORE_OK;
 }
 
 status_t pgw_context_final()
 {
-    d_assert(ctx_initialized == 1, return CORE_ERROR,
+    d_assert(context_initiaized == 1, return CORE_ERROR,
             "HyperCell context already has been finalized");
 
-    ctx_initialized = 0;
+    context_initiaized = 0;
     
     return CORE_OK;
 }

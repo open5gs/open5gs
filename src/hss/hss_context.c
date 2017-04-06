@@ -24,9 +24,9 @@ status_t hss_context_init(void)
     char buf[HSS_KEY_LEN];
     hss_ue_t *ue;
 
-    pool_init(&hss_ue_pool, MAX_NUM_OF_UE);
-
     memset(&self, 0, sizeof(hss_context_t));
+
+    pool_init(&hss_ue_pool, MAX_NUM_OF_UE);
 
     memcpy(self.op, CORE_HEX(OP, strlen(OP), buf), HSS_KEY_LEN);
     memcpy(self.amf, CORE_HEX(AMF, strlen(AMF), buf), HSS_AMF_LEN);

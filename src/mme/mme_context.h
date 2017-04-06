@@ -5,6 +5,7 @@
 #include "core_errno.h"
 #include "core_net.h"
 #include "core_sha2.h"
+#include "core_hash.h"
 
 #include "3gpp_common.h"
 #include "nas_types.h"
@@ -69,6 +70,8 @@ typedef struct _mme_context_t {
 
     list_t          sgw_list;
     list_t          enb_list;
+
+    hash_t          *mme_ue_s1ap_id_hash; /* hash table for MME-UE-S1AP-ID */
 } mme_context_t;
 
 typedef struct _mme_sgw_t {
@@ -144,11 +147,18 @@ CORE_DECLARE(mme_enb_t*)    mme_enb_next(mme_enb_t *enb);
 
 CORE_DECLARE(mme_ue_t*)     mme_ue_add(mme_enb_t *enb);
 CORE_DECLARE(status_t)      mme_ue_remove(mme_ue_t *ue);
-CORE_DECLARE(status_t)      mme_ue_remove_all(mme_enb_t *enb);
+CORE_DECLARE(status_t)      mme_ue_remove_all();
+CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_mme_ue_s1ap_id(
+                                c_uint32_t mme_ue_s1ap_id);
+CORE_DECLARE(hash_index_t *) mme_ue_first();
+CORE_DECLARE(hash_index_t *) mme_ue_next(hash_index_t *hi);
+CORE_DECLARE(mme_ue_t *)    mme_ue_this(hash_index_t *hi);
+CORE_DECLARE(unsigned int)  mme_ue_count();
+CORE_DECLARE(status_t)      mme_ue_remove_in_enb(mme_enb_t *enb);
 CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_enb_ue_s1ap_id(
                                 mme_enb_t *enb, c_uint32_t enb_ue_s1ap_id);
-CORE_DECLARE(mme_ue_t*)     mme_ue_first(mme_enb_t *enb);
-CORE_DECLARE(mme_ue_t*)     mme_ue_next(mme_ue_t *ue);
+CORE_DECLARE(mme_ue_t*)     mme_ue_first_in_enb(mme_enb_t *enb);
+CORE_DECLARE(mme_ue_t*)     mme_ue_next_in_enb(mme_ue_t *ue);
 
 #ifdef __cplusplus
 }

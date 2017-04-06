@@ -29,6 +29,9 @@ status_t mme_context_init()
     d_assert(context_initialized == 0, return CORE_ERROR,
             "MME context already has been context_initialized");
 
+    /* Initialize MME context */
+    memset(&self, 0, sizeof(mme_context_t));
+
     pool_init(&mme_sgw_pool, MAX_NUM_OF_SGW);
     pool_init(&mme_enb_pool, MAX_NUM_OF_ENB);
     pool_init(&mme_ue_pool, MAX_NUM_OF_UE);
@@ -36,8 +39,7 @@ status_t mme_context_init()
     list_init(&self.sgw_list);
     list_init(&self.enb_list);
 
-    /* Initialize MME context */
-    memset(&self, 0, sizeof(mme_context_t));
+    self.mme_ue_s1ap_id_hash = hash_make();
 
     self.s1ap_addr = inet_addr("127.0.0.1");
     self.s1ap_port = S1AP_SCTP_PORT;
@@ -81,6 +83,9 @@ status_t mme_context_final()
 
     mme_sgw_remove_all();
     mme_enb_remove_all();
+
+    d_assert(self.mme_ue_s1ap_id_hash, , "Null param");
+    hash_destroy(self.mme_ue_s1ap_id_hash);
 
     pool_final(&mme_sgw_pool);
     pool_final(&mme_enb_pool);
@@ -186,7 +191,7 @@ status_t mme_enb_remove(mme_enb_t *enb)
 {
     d_assert(enb, return CORE_ERROR, "Null param");
 
-    mme_ue_remove_all(enb);
+    mme_ue_remove_in_enb(enb);
 
     list_remove(&self.enb_list, enb);
     pool_free_node(&mme_enb_pool, enb);
@@ -257,6 +262,7 @@ mme_ue_t* mme_ue_add(mme_enb_t *enb)
 {
     mme_ue_t *ue = NULL;
 
+    d_assert(self.mme_ue_s1ap_id_hash, return NULL, "Null param");
     d_assert(enb, return NULL, "Null param");
 
     pool_alloc_node(&mme_ue_pool, &ue);
@@ -267,6 +273,8 @@ mme_ue_t* mme_ue_add(mme_enb_t *enb)
     ue->enb = enb;
 
     ue->mme_ue_s1ap_id = NEXT_ID(self.mme_ue_s1ap_id, 0xffffffff);
+    hash_set(self.mme_ue_s1ap_id_hash, &ue->mme_ue_s1ap_id, 
+            sizeof(ue->mme_ue_s1ap_id), ue);
 
     list_append(&enb->ue_list, ue);
     
@@ -275,6 +283,7 @@ mme_ue_t* mme_ue_add(mme_enb_t *enb)
 
 status_t mme_ue_remove(mme_ue_t *ue)
 {
+    d_assert(self.mme_ue_s1ap_id_hash, return CORE_ERROR, "Null param");
     d_assert(ue, return CORE_ERROR, "Null param");
     d_assert(ue->enb, return CORE_ERROR, "Null param");
 
@@ -290,19 +299,66 @@ status_t mme_ue_remove(mme_ue_t *ue)
     }
 
     list_remove(&ue->enb->ue_list, ue);
+    hash_set(self.mme_ue_s1ap_id_hash, &ue->mme_ue_s1ap_id, 
+            sizeof(ue->mme_ue_s1ap_id), NULL);
+
     pool_free_node(&mme_ue_pool, ue);
 
     return CORE_OK;
 }
 
-status_t mme_ue_remove_all(mme_enb_t *enb)
+status_t mme_ue_remove_all()
+{
+    hash_index_t *hi = NULL;
+    mme_ue_t *ue = NULL;
+
+    for (hi = mme_ue_first(); hi; hi = mme_ue_next(hi))
+    {
+        ue = mme_ue_this(hi);
+        mme_ue_remove(ue);
+    }
+
+    return CORE_OK;
+}
+
+mme_ue_t* mme_ue_find_by_mme_ue_s1ap_id(c_uint32_t mme_ue_s1ap_id)
+{
+    d_assert(self.mme_ue_s1ap_id_hash, return NULL, "Null param");
+    return hash_get(self.mme_ue_s1ap_id_hash, 
+            &mme_ue_s1ap_id, sizeof(mme_ue_s1ap_id));
+}
+
+hash_index_t *mme_ue_first()
+{
+    d_assert(self.mme_ue_s1ap_id_hash, return NULL, "Null param");
+    return hash_first(self.mme_ue_s1ap_id_hash);
+}
+
+hash_index_t *mme_ue_next(hash_index_t *hi)
+{
+    return hash_next(hi);
+}
+
+mme_ue_t *mme_ue_this(hash_index_t *hi)
+{
+    d_assert(hi, return NULL, "Null param");
+    return hash_this_val(hi);
+}
+
+unsigned int mme_ue_count()
+{
+    d_assert(self.mme_ue_s1ap_id_hash, return 0, "Null param");
+    return hash_count(self.mme_ue_s1ap_id_hash);
+}
+
+status_t mme_ue_remove_in_enb(mme_enb_t *enb)
 {
     mme_ue_t *ue = NULL, *next_ue = NULL;
     
-    ue = mme_ue_first(enb);
+    ue = mme_ue_first_in_enb(enb);
     while (ue)
     {
-        next_ue = mme_ue_next(ue);
+        next_ue = mme_ue_next_in_enb(ue);
 
         mme_ue_remove(ue);
 
@@ -317,24 +373,24 @@ mme_ue_t* mme_ue_find_by_enb_ue_s1ap_id(
 {
     mme_ue_t *ue = NULL;
     
-    ue = mme_ue_first(enb);
+    ue = mme_ue_first_in_enb(enb);
     while (ue)
     {
         if (enb_ue_s1ap_id == ue->enb_ue_s1ap_id)
             break;
 
-        ue = mme_ue_next(ue);
+        ue = mme_ue_next_in_enb(ue);
     }
 
     return ue;
 }
 
-mme_ue_t* mme_ue_first(mme_enb_t *enb)
+mme_ue_t* mme_ue_first_in_enb(mme_enb_t *enb)
 {
     return list_first(&enb->ue_list);
 }
 
-mme_ue_t* mme_ue_next(mme_ue_t *ue)
+mme_ue_t* mme_ue_next_in_enb(mme_ue_t *ue)
 {
     return list_next(ue);
 }

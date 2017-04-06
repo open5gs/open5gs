@@ -22,6 +22,10 @@ status_t sgw_context_init()
 
     memset(&self, 0, sizeof(sgw_context_t));
 
+    pool_init(&sgw_gtpc_pool, MAX_NUM_OF_UE);
+
+    self.gtpc_hash = hash_make();
+
     self.s11_addr = inet_addr("127.0.0.1");
     self.s11_port = GTPV2_C_UDP_PORT + 1;
     self.s11_node.addr = inet_addr("127.0.0.1");
@@ -41,10 +45,6 @@ status_t sgw_context_init()
     self.s5u_node.addr = inet_addr("127.0.0.1");
     self.s5u_node.port = GTPV1_U_UDP_PORT + 1;
     
-    pool_init(&sgw_gtpc_pool, MAX_NUM_OF_UE);
-
-    self.gtpc_hash = hash_make();
-
     context_initialized = 1;
 
     return CORE_OK;
