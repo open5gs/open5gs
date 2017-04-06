@@ -66,6 +66,8 @@ status_t net_final(void)
     pool_final(&ftp_pool);
     /* Finalize network connection pool */
     pool_final(&link_pool);
+    /* Finalize network fd pool */
+    pool_final(&net_fd_pool);
 
     mutex_delete(g_net_fd_tbl.mut);
 
@@ -469,7 +471,7 @@ int net_read(net_sock_t *net_sock, char *buffer, size_t size, int timeout)
                     {
                         case SCTP_ASSOC_CHANGE :
                             d_trace(3, "SCTP_ASSOC_CHANGE"
-                                    "(type:%x, flags:%x, state:%x)\n", 
+                                    "(type:0x%x, flags:0x%x, state:0x%x)\n", 
                                     not->sn_assoc_change.sac_type,
                                     not->sn_assoc_change.sac_flags,
                                     not->sn_assoc_change.sac_state);
@@ -484,7 +486,11 @@ int net_read(net_sock_t *net_sock, char *buffer, size_t size, int timeout)
                                 net_sock->sndrcv_errno = ECONNREFUSED;
                             break;
                         case SCTP_SEND_FAILED :
-                            d_error("SCTP_SEND_FAILED");
+                            d_error("SCTP_SEND_FAILED"
+                                    "(type:0x%x, flags:0x%x, error:0x%x)\n", 
+                                    not->sn_send_failed.ssf_type,
+                                    not->sn_send_failed.ssf_flags,
+                                    not->sn_send_failed.ssf_error);
                             break;
                         case SCTP_SHUTDOWN_EVENT :
                             d_trace(3, "SCTP_SHUTDOWN_EVENT\n");

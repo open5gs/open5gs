@@ -70,7 +70,6 @@ void core_terminate(void)
     tm_final();
     tlv_final();
     pkbuf_final();
-    tlv_init();
     file_final();
     net_final();
     thread_final();
