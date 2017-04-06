@@ -24,9 +24,6 @@ pool_declare(mme_ue_pool, mme_ue_t, MAX_NUM_OF_UE);
 
 static int context_initialized = 0;
 
-static list_t mme_sgw_list;
-static list_t mme_enb_list;
-
 status_t mme_context_init()
 {
     d_assert(context_initialized == 0, return CORE_ERROR,
@@ -36,8 +33,8 @@ status_t mme_context_init()
     pool_init(&mme_enb_pool, MAX_NUM_OF_ENB);
     pool_init(&mme_ue_pool, MAX_NUM_OF_UE);
 
-    list_init(&mme_sgw_list);
-    list_init(&mme_enb_list);
+    list_init(&self.sgw_list);
+    list_init(&self.enb_list);
 
     /* Initialize MME context */
     memset(&self, 0, sizeof(mme_context_t));
@@ -111,7 +108,7 @@ mme_sgw_t* mme_sgw_add()
     list_init(&sgw->gnode.local_list);
     list_init(&sgw->gnode.remote_list);
 
-    list_append(&mme_sgw_list, sgw);
+    list_append(&self.sgw_list, sgw);
     
     return sgw;
 }
@@ -120,7 +117,7 @@ status_t mme_sgw_remove(mme_sgw_t *sgw)
 {
     d_assert(sgw, return CORE_ERROR, "Null param");
 
-    list_remove(&mme_sgw_list, sgw);
+    list_remove(&self.sgw_list, sgw);
     pool_free_node(&mme_sgw_pool, sgw);
 
     return CORE_OK;
@@ -161,7 +158,7 @@ mme_sgw_t* mme_sgw_find_by_node(gtp_node_t *gnode)
 
 mme_sgw_t* mme_sgw_first()
 {
-    return list_first(&mme_sgw_list);
+    return list_first(&self.sgw_list);
 }
 
 mme_sgw_t* mme_sgw_next(mme_sgw_t *sgw)
@@ -180,7 +177,7 @@ mme_enb_t* mme_enb_add()
 
     list_init(&enb->ue_list);
 
-    list_append(&mme_enb_list, enb);
+    list_append(&self.enb_list, enb);
     
     return enb;
 }
@@ -191,7 +188,7 @@ status_t mme_enb_remove(mme_enb_t *enb)
 
     mme_ue_remove_all(enb);
 
-    list_remove(&mme_enb_list, enb);
+    list_remove(&self.enb_list, enb);
     pool_free_node(&mme_enb_pool, enb);
 
     return CORE_OK;
@@ -234,7 +231,7 @@ mme_enb_t* mme_enb_find_by_enb_id(c_uint32_t enb_id)
 {
     mme_enb_t *enb = NULL;
     
-    enb = list_first(&mme_enb_list);
+    enb = list_first(&self.enb_list);
     while (enb)
     {
         if (enb_id == enb->enb_id)
@@ -248,7 +245,7 @@ mme_enb_t* mme_enb_find_by_enb_id(c_uint32_t enb_id)
 
 mme_enb_t* mme_enb_first()
 {
-    return list_first(&mme_enb_list);
+    return list_first(&self.enb_list);
 }
 
 mme_enb_t* mme_enb_next(mme_enb_t *enb)

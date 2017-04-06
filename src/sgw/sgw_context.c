@@ -12,10 +12,6 @@
 static sgw_context_t self;
 
 pool_declare(sgw_gtpc_pool, sgw_gtpc_t, MAX_NUM_OF_UE);
-static hash_t *gtpc_hash;
-#define SGW_NEXT_TUNNEL_ID(__id) \
-    ((__id) = ((__id) == 0xffffffff ? 1 : ((__id) + 1)))
-static c_uint32_t g_gtpc_tunnel_id = 0;
 
 static int context_initialized = 0;
 
@@ -47,7 +43,7 @@ status_t sgw_context_init()
     
     pool_init(&sgw_gtpc_pool, MAX_NUM_OF_UE);
 
-    gtpc_hash = hash_make();
+    self.gtpc_hash = hash_make();
 
     context_initialized = 1;
 
@@ -59,7 +55,8 @@ status_t sgw_context_final()
     d_assert(context_initialized == 1, return CORE_ERROR,
             "HyperCell context already has been finalized");
 
-    hash_destroy(gtpc_hash);
+    d_assert(self.gtpc_hash, , "Null param");
+    hash_destroy(self.gtpc_hash);
 
     d_print("%d not freed in sgw_gtpc_pool[%d] of SGW-Context\n",
             pool_size(&sgw_gtpc_pool) - pool_avail(&sgw_gtpc_pool),
@@ -80,21 +77,24 @@ sgw_gtpc_t *sgw_gtpc_add()
 {
     sgw_gtpc_t *gtpc = NULL;
 
+    d_assert(self.gtpc_hash, return NULL, "Null param");
+
     pool_alloc_node(&sgw_gtpc_pool, &gtpc);
     d_assert(gtpc, return NULL, "Null param");
 
     memset(gtpc, 0, sizeof(sgw_gtpc_t));
 
-    gtpc->teid = SGW_NEXT_TUNNEL_ID(g_gtpc_tunnel_id);
-    hash_set(gtpc_hash, &gtpc->teid, sizeof(gtpc->teid), gtpc);
+    gtpc->teid = NEXT_ID(self.gtpc_tunnel_id, 0xffffffff);
+    hash_set(self.gtpc_hash, &gtpc->teid, sizeof(gtpc->teid), gtpc);
 
     return gtpc;
 }
 
 status_t sgw_gtpc_remove(sgw_gtpc_t *gtpc)
 {
+    d_assert(self.gtpc_hash, return CORE_ERROR, "Null param");
     d_assert(gtpc, return CORE_ERROR, "Null param");
-    hash_set(gtpc_hash, &gtpc->teid, sizeof(gtpc->teid), NULL);
+    hash_set(self.gtpc_hash, &gtpc->teid, sizeof(gtpc->teid), NULL);
 
     pool_free_node(&sgw_gtpc_pool, gtpc);
 
@@ -117,12 +117,14 @@ status_t sgw_gtpc_remove_all()
 
 sgw_gtpc_t *sgw_gtpc_find(c_uint32_t teid)
 {
-    return hash_get(gtpc_hash, &teid, sizeof(teid));
+    d_assert(self.gtpc_hash, return NULL, "Null param");
+    return hash_get(self.gtpc_hash, &teid, sizeof(teid));
 }
 
 hash_index_t *sgw_gtpc_first()
 {
-    return hash_first(gtpc_hash);
+    d_assert(self.gtpc_hash, return NULL, "Null param");
+    return hash_first(self.gtpc_hash);
 }
 
 hash_index_t *sgw_gtpc_next(hash_index_t *hi)
@@ -138,5 +140,6 @@ sgw_gtpc_t *sgw_gtpc_this(hash_index_t *hi)
 
 unsigned int sgw_gtpc_count()
 {
-    return hash_count(gtpc_hash);
+    d_assert(self.gtpc_hash, return 0, "Null param");
+    return hash_count(self.gtpc_hash);
 }

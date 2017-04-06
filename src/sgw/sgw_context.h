@@ -35,6 +35,10 @@ typedef struct _sgw_context_t {
     msgq_id         queue_id;       /* Queue for processing SGW control plane */
     tm_service_t    tm_service;     /* Timer Service */
     gtp_xact_ctx_t  gtp_xact_ctx;   /* GTP Transaction Context */
+
+    c_uint32_t      gtpc_tunnel_id; /* GTPv2-C F-TEID generator */
+
+    hash_t          *gtpc_hash; /* hash table for sgw_gtpc_t structure */
 } sgw_context_t;
 
 typedef struct _sgw_gtpc_t {

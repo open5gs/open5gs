@@ -66,6 +66,9 @@ typedef struct _mme_context_t {
     /* S1SetupResponse */
     srvd_gummei_t   srvd_gummei;
     c_uint8_t       relative_capacity;
+
+    list_t          sgw_list;
+    list_t          enb_list;
 } mme_context_t;
 
 typedef struct _mme_sgw_t {

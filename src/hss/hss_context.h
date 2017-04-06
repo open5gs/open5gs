@@ -29,6 +29,8 @@ typedef struct _hss_ue_t {
 typedef struct _hss_context_t {
     c_uint8_t       op[HSS_KEY_LEN];
     c_uint8_t       amf[HSS_AMF_LEN];
+
+    list_t          ue_list;
 } hss_context_t;
 
 CORE_DECLARE(status_t)      hss_context_init(void);
@@ -36,12 +38,12 @@ CORE_DECLARE(void)          hss_context_final(void);
 CORE_DECLARE(hss_context_t*) hss_self(void);
 
 CORE_DECLARE(hss_ue_t*)     hss_ue_add(void);
-CORE_DECLARE(status_t)      hss_ue_remove(hss_ue_t *user);
+CORE_DECLARE(status_t)      hss_ue_remove(hss_ue_t *ue);
 CORE_DECLARE(status_t)      hss_ue_remove_all(void);
 CORE_DECLARE(hss_ue_t*)     hss_ue_find_by_imsi(
                                 c_uint8_t *imsi, c_uint8_t imsi_len);
 CORE_DECLARE(hss_ue_t*)     hss_ue_first(void);
-CORE_DECLARE(hss_ue_t*)     hss_ue_next(hss_ue_t *user);
+CORE_DECLARE(hss_ue_t*)     hss_ue_next(hss_ue_t *ue);
 
 #ifdef __cplusplus
 }
