@@ -23,7 +23,6 @@ status_t sgw_context_init()
     memset(&self, 0, sizeof(sgw_context_t));
 
     pool_init(&sgw_gtpc_pool, MAX_NUM_OF_UE);
-
     self.gtpc_hash = hash_make();
 
     self.s11_addr = inet_addr("127.0.0.1");
@@ -58,7 +57,7 @@ status_t sgw_context_final()
     d_assert(self.gtpc_hash, , "Null param");
     hash_destroy(self.gtpc_hash);
 
-    d_print("%d not freed in sgw_gtpc_pool[%d] of SGW-Context\n",
+    d_print("%d not freed in sgw_gtpc_pool[%d] in SGW-Context\n",
             pool_size(&sgw_gtpc_pool) - pool_avail(&sgw_gtpc_pool),
             pool_size(&sgw_gtpc_pool));
     pool_final(&sgw_gtpc_pool);

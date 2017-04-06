@@ -63,6 +63,7 @@ void sgw_state_operational(sgw_sm_t *s, event_t *e)
             c_uint8_t type;
             c_uint32_t teid;
             gtp_message_t gtp_message;
+            sgw_gtpc_t *gtpc = NULL;
 
             d_assert(pkbuf, break, "Null param");
             d_assert(sock, pkbuf_free(pkbuf); break, "Null param");
@@ -74,6 +75,7 @@ void sgw_state_operational(sgw_sm_t *s, event_t *e)
             if (rv != CORE_OK)
                 break;
 
+            gtpc = sgw_gtpc_find(teid);
             switch(type)
             {
                 case GTP_CREATE_SESSION_REQUEST_TYPE:
@@ -82,7 +84,7 @@ void sgw_state_operational(sgw_sm_t *s, event_t *e)
                     break;
                 case GTP_CREATE_SESSION_RESPONSE_TYPE:
                     sgw_handle_create_session_response(
-                            xact, type, &gtp_message);
+                            xact, gtpc, type, &gtp_message);
                     break;
                 default:
                     d_warn("Not implmeneted(type:%d)", type);

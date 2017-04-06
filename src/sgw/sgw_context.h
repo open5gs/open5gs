@@ -7,7 +7,6 @@
 #include "core_event.h"
 #include "core_hash.h"
 
-#include "gtp_types.h"
 #include "gtp_xact.h"
 
 #include "sgw_sm.h"
@@ -37,14 +36,15 @@ typedef struct _sgw_context_t {
     gtp_xact_ctx_t  gtp_xact_ctx;   /* GTP Transaction Context */
 
     c_uint32_t      gtpc_tunnel_id; /* GTPv2-C F-TEID generator */
-
-    hash_t          *gtpc_hash; /* hash table for sgw_gtpc_t structure */
+    hash_t          *gtpc_hash;     /* hash table for sgw_gtpc_t structure */
 } sgw_context_t;
 
 typedef struct _sgw_gtpc_t {
     c_uint32_t      teid;       /* SGW-S11-F-TEID, SGW-S5C-F-TEID */
-    gtp_f_teid_t    mme;        /* MME-S11-F-TEID */
-    gtp_f_teid_t    pgw;        /* MME-S11-F-TEID */
+    c_uint32_t      mme_ipv4;   /* MME-S11-F-TEID IPv4 Address */
+    c_uint32_t      mme_teid;   /* MME-S11-F-TEID */
+    c_uint32_t      pgw_ipv4;   /* PGW-S11-F-TEID IPv4 Address */
+    c_uint32_t      pgw_teid;   /* PGW-S11-F-TEID */
 } sgw_gtpc_t;
 
 CORE_DECLARE(status_t)      sgw_context_init(void);

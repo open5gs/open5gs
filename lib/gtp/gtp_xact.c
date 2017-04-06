@@ -391,12 +391,12 @@ status_t gtp_xact_receive(
     if (h->teid_presence)
     {
         pkbuf_header(pkbuf, -GTPV2C_HEADER_LEN);
-        *teid = h->teid;
+        *teid = ntohl(h->teid);
     }
     else
     {
         pkbuf_header(pkbuf, -(GTPV2C_HEADER_LEN-GTPV2C_TEID_LEN));
-        *teid = 9;
+        *teid = 0;
     }
 
     *type = h->type;
