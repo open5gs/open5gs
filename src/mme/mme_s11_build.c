@@ -2,10 +2,10 @@
 
 #include "core_debug.h"
 
-#include "3gpp_conv.h"
 #include "gtp_types.h"
 #include "gtp_tlv.h"
 
+#include "3gpp_common.h"
 #include "mme_ctx.h"
 
 status_t mme_s11_build_create_session_req(

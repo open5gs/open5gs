@@ -3,7 +3,6 @@
 #include "core_debug.h"
 #include "core_pool.h"
 
-#include "3gpp_conv.h"
 #include "gtp_path.h"
 #include "s1ap_message.h"
 

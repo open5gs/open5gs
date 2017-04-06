@@ -2,8 +2,7 @@
 #define __GTP_TYPES_H__
 
 #include "core_tlv_msg.h"
-#include "3gpp_defs.h"
-#include "3gpp_types.h"
+#include "3gpp_common.h"
 
 #ifdef __cplusplus
 extern "C" {

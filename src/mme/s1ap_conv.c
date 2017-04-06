@@ -2,7 +2,7 @@
 
 #include "core_debug.h"
 
-#include "3gpp_conv.h"
+#include "3gpp_common.h"
 #include "s1ap_conv.h"
 
 void s1ap_uint8_to_OCTET_STRING(c_uint8_t uint8, OCTET_STRING_t *octet_string)

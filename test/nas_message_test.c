@@ -3,7 +3,7 @@
 
 #include "testutil.h"
 
-#include "3gpp_conv.h"
+#include "3gpp_common.h"
 #include "nas_message.h"
 #include "nas_security.h"
 

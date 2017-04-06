@@ -6,8 +6,7 @@
 #include "core_net.h"
 #include "core_sha2.h"
 
-#include "3gpp_defs.h"
-#include "3gpp_types.h"
+#include "3gpp_common.h"
 #include "nas_types.h"
 #include "gtp_xact.h"
 

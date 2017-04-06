@@ -3,7 +3,7 @@
 #include "core_pkbuf.h"
 #include "core_net.h"
 
-#include "3gpp_defs.h"
+#include "3gpp_common.h"
 #include "gtp_path.h"
 
 #include "sgw_ctx.h"

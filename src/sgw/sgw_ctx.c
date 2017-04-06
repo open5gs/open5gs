@@ -4,7 +4,7 @@
 #include "core_pool.h"
 #include "core_index.h"
 
-#include "3gpp_defs.h"
+#include "3gpp_common.h"
 #include "gtp_path.h"
 
 #include "sgw_ctx.h"

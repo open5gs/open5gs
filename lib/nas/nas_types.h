@@ -1,8 +1,7 @@
 #ifndef _NAS_TYPES_H__
 #define _NAS_TYPES_H__
 
-#include "3gpp_defs.h"
-#include "3gpp_types.h"
+#include "3gpp_common.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -99,11 +99,6 @@ status_t mme_s11_send_to_sgw(void *sgw,
 }
 
 #include "mme_s11_build.h"
-#include "3gpp_types.h"
-#include "3gpp_conv.h"
-#include "gtp_types.h"
-#include "gtp_tlv.h"
-#include "core_lib.h"
 void test_send()
 {
     pkbuf_t *pkbuf;
