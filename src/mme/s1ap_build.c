@@ -2,7 +2,7 @@
 
 #include "core_debug.h"
 
-#include "mme_ctx.h"
+#include "mme_context.h"
 
 #include "s1ap_build.h"
 #include "s1ap_conv.h"

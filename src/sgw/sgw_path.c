@@ -6,7 +6,7 @@
 #include "3gpp_common.h"
 #include "gtp_path.h"
 
-#include "sgw_ctx.h"
+#include "sgw_context.h"
 #include "sgw_event.h"
 #include "sgw_path.h"
 

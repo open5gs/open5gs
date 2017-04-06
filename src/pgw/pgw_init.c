@@ -3,7 +3,7 @@
 #include "core_debug.h"
 #include "core_thread.h"
 
-#include "pgw_ctx.h"
+#include "pgw_context.h"
 #include "pgw_event.h"
 
 static thread_id pgw_sm_thread;

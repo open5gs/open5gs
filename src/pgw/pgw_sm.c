@@ -2,7 +2,7 @@
 #include "core_debug.h"
 
 #include "pgw_sm.h"
-#include "pgw_ctx.h"
+#include "pgw_context.h"
 #include "pgw_event.h"
 #include "pgw_path.h"
 #include "pgw_handler.h"

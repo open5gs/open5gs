@@ -5,6 +5,8 @@
 #include "s1ap_build.h"
 #include "s1ap_conv.h"
 
+#include "3gpp_common.h"
+
 #include "testutil.h"
 #include "tests1ap.h"
 

@@ -3,8 +3,6 @@
 
 #include "s1ap_message.h"
 
-#include "mme_ctx.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */

@@ -6,7 +6,7 @@
 
 #include "gtp_path.h"
 
-#include "pgw_ctx.h"
+#include "pgw_context.h"
 
 static pgw_ctx_t self;
 

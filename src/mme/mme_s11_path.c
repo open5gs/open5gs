@@ -4,7 +4,7 @@
 #include "core_net.h"
 
 #include "mme_event.h"
-#include "mme_ctx.h"
+#include "mme_context.h"
 #include "mme_s11_path.h"
 
 static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)

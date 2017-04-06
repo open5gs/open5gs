@@ -7,7 +7,7 @@
 #include "gtp_types.h"
 #include "gtp_tlv.h"
 
-#include "sgw_ctx.h"
+#include "sgw_context.h"
 
 #include "testutil.h"
 

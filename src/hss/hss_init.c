@@ -6,7 +6,7 @@
 
 #include "s6a_lib.h"
 
-#include "hss_ctx.h"
+#include "hss_context.h"
 #include "hss_kdf.h"
 #include "milenage.h"
 

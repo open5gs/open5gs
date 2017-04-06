@@ -6,7 +6,7 @@
 #include "gtp_tlv.h"
 
 #include "3gpp_common.h"
-#include "mme_ctx.h"
+#include "mme_context.h"
 
 status_t mme_s11_build_create_session_req(
         c_uint8_t *type, pkbuf_t **pkbuf, ue_ctx_t *ue)

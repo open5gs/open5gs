@@ -1,7 +1,7 @@
 #define TRACE_MODULE _sgw_event
 
 #include "sgw_event.h"
-#include "sgw_ctx.h"
+#include "sgw_context.h"
 
 static char EVT_NAME_TM_SGW_T3[] = "TM_SGW_SGW_T3";
 

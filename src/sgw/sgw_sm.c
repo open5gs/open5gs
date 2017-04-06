@@ -1,7 +1,7 @@
 #define TRACE_MODULE _sgw_sm
 #include "core_debug.h"
 
-#include "sgw_ctx.h"
+#include "sgw_context.h"
 #include "sgw_event.h"
 #include "sgw_path.h"
 #include "sgw_handler.h"

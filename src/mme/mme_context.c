@@ -6,7 +6,7 @@
 #include "gtp_path.h"
 #include "s1ap_message.h"
 
-#include "mme_ctx.h"
+#include "mme_context.h"
 
 #define MAX_CELL_PER_ENB            8
 #define MAX_ERAB_PER_UE             16
