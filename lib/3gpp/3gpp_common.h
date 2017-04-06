@@ -22,6 +22,12 @@ extern "C" {
 #define AUTN_LEN            16
 #define MAX_RES_LEN         16
 
+#define NEXT_ID(__id, __max) \
+    ((__id) = ((__id) == (__max) ? 1 : ((__id) + 1)))
+#define COMPARE_ID(__id1, __id2, __max) \
+    ((__id2) > (__id1) ? ((__id2) - (__id1) < ((__max)-1) ? -1 : 1) : \
+     (__id1) > (__id2) ? ((__id1) - (__id2) < ((__max)-1) ? 1 : -1) : 0)
+
 typedef struct _plmn_id_t {
 ED2(c_uint8_t mcc2:4;,
     c_uint8_t mcc1:4;)

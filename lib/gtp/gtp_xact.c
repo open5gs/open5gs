@@ -3,18 +3,14 @@
 #include "core_pool.h"
 #include "core_event.h"
 
+#include "3gpp_common.h"
 #include "gtp_xact.h"
 
-#define SIZE_OF_GTP_XACT_POOL  32
+#define SIZE_OF_GTP_XACT_POOL       32
+#define GTP_MAX_XACT_ID             0x800000
 
-#define GTP_XACT_NEXT_ID(__id) \
-    ((__id) = ((__id) == 0x800000 ? 1 : ((__id) + 1)))
-#define GTP_XACT_COMPARE_ID(__id1, __id2) \
-    ((__id2) > (__id1) ? ((__id2) - (__id1) < 0x7fffff ? -1 : 1) : \
-     (__id1) > (__id2) ? ((__id1) - (__id2) < 0x7fffff ? 1 : -1) : 0)
-
-#define GTP_XACT_LOCAL_DURATION 3000 /* 3 seconds */
-#define GTP_XACT_LOCAL_RETRY_COUNT 3 
+#define GTP_XACT_LOCAL_DURATION     3000 /* 3 seconds */
+#define GTP_XACT_LOCAL_RETRY_COUNT  3 
 #define GTP_XACT_REMOTE_DURATION \
     (GTP_XACT_LOCAL_DURATION * GTP_XACT_LOCAL_RETRY_COUNT) /* 9 seconds */
 #define GTP_XACT_REMOTE_RETRY_COUNT 1 
@@ -169,7 +165,7 @@ gtp_xact_t *gtp_xact_local_create(
         gtp_xact_ctx_t *context, net_sock_t *sock, gtp_node_t *gnode)
 {
     return gtp_xact_create(context, sock, gnode, GTP_LOCAL_ORIGINATOR, 
-            GTP_XACT_NEXT_ID(context->g_xact_id),
+            NEXT_ID(context->g_xact_id, GTP_MAX_XACT_ID),
             GTP_XACT_LOCAL_DURATION, GTP_XACT_LOCAL_RETRY_COUNT);
 }
 
