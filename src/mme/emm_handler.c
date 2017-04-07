@@ -147,7 +147,6 @@ void emm_handle_security_mode_complete(mme_ue_t *ue)
 
     d_assert(nas_security_encode(&sendbuf, ue, &message) == CORE_OK && 
             sendbuf,,);
-    d_print_hex(sendbuf->payload, sendbuf->len);
 
     pkbuf_free(sendbuf);
     d_assert(ue, return, "Null param");

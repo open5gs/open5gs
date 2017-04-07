@@ -221,7 +221,9 @@ msg_list["IDENTITY RESPONSE"]["table"] = 28
 msg_list["SECURITY MODE COMMAND"]["table"] = 29
 msg_list["SECURITY MODE COMPLETE"]["table"] = 30
 msg_list["SECURITY MODE REJECT"]["table"] = 31
+
 msg_list["ESM INFORMATION REQUEST"]["table"] = 57
+msg_list["PDN CONNECTIVITY REQUEST"]["table"] = 65
 
 for key in msg_list.keys():
     if "table" not in msg_list[key].keys():
@@ -392,7 +394,7 @@ for (k, v) in sorted_type_list:
         f.write("    memcpy(pkbuf->payload - size, &target, size);\n\n")
         f.write("    return size;\n")
         f.write("}\n\n")
-    elif type_list[k]["format"] == "LV-E":
+    elif type_list[k]["format"] == "LV-E" or type_list[k]["format"] == "TLV-E":
         f.write("c_int16_t nas_decode_%s(nas_%s_t *%s, pkbuf_t *pkbuf)\n" % (v_lower(k), v_lower(k), v_lower(k)))
         f.write("{\n")
         f.write("    c_uint16_t size = 0;\n")

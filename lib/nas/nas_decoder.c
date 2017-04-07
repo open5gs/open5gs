@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-07 22:21:56.132857 by acetcom
+ * Created on: 2017-04-07 23:34:23.764413 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -581,6 +581,79 @@ c_int32_t nas_decode_security_mode_reject(nas_message_t *message, pkbuf_t *pkbuf
     return decoded;
 }
 
+c_int32_t nas_decode_pdn_connectivity_request(nas_message_t *message, pkbuf_t *pkbuf)
+{
+    nas_pdn_connectivity_request_t *pdn_connectivity_request = &message->esm.pdn_connectivity_request;
+    c_int32_t decoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_decode_request_type(&pdn_connectivity_request->request_type, pkbuf);
+    d_assert(size >= 0, return -1, "decode failed");
+    decoded += size;
+
+    while(pkbuf->len > 0) 
+    {
+        c_uint8_t *buffer = pkbuf->payload;
+        c_uint8_t type = (*buffer) >= 0x80 ? ((*buffer) & 0xf0) : (*buffer);
+
+        size = sizeof(c_uint8_t);
+        d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, 
+                "pkbuf_header error");
+        decoded += size;
+
+        switch(type)
+        {
+             case NAS_PDN_CONNECTIVITY_REQUEST_ESM_INFORMATION_TRANSFER_FLAG_TYPE:
+                 size = nas_decode_esm_information_transfer_flag(&pdn_connectivity_request->esm_information_transfer_flag, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 pdn_connectivity_request->presencemask |= NAS_PDN_CONNECTIVITY_REQUEST_ESM_INFORMATION_TRANSFER_FLAG_PRESENT;
+                 decoded += size;
+                 break;
+             case NAS_PDN_CONNECTIVITY_REQUEST_ACCESS_POINT_NAME_TYPE:
+                 size = nas_decode_access_point_name(&pdn_connectivity_request->access_point_name, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 pdn_connectivity_request->presencemask |= NAS_PDN_CONNECTIVITY_REQUEST_ACCESS_POINT_NAME_PRESENT;
+                 decoded += size;
+                 break;
+             case NAS_PDN_CONNECTIVITY_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_TYPE:
+                 size = nas_decode_protocol_configuration_options(&pdn_connectivity_request->protocol_configuration_options, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 pdn_connectivity_request->presencemask |= NAS_PDN_CONNECTIVITY_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
+                 decoded += size;
+                 break;
+             case NAS_PDN_CONNECTIVITY_REQUEST_DEVICE_PROPERTIES_TYPE:
+                 size = nas_decode_device_properties(&pdn_connectivity_request->device_properties, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 pdn_connectivity_request->presencemask |= NAS_PDN_CONNECTIVITY_REQUEST_DEVICE_PROPERTIES_PRESENT;
+                 decoded += size;
+                 break;
+             case NAS_PDN_CONNECTIVITY_REQUEST_NBIFOM_CONTAINER_TYPE:
+                 size = nas_decode_nbifom_container(&pdn_connectivity_request->nbifom_container, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 pdn_connectivity_request->presencemask |= NAS_PDN_CONNECTIVITY_REQUEST_NBIFOM_CONTAINER_PRESENT;
+                 decoded += size;
+                 break;
+             case NAS_PDN_CONNECTIVITY_REQUEST_HEADER_COMPRESSION_CONFIGURATION_TYPE:
+                 size = nas_decode_header_compression_configuration(&pdn_connectivity_request->header_compression_configuration, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 pdn_connectivity_request->presencemask |= NAS_PDN_CONNECTIVITY_REQUEST_HEADER_COMPRESSION_CONFIGURATION_PRESENT;
+                 decoded += size;
+                 break;
+             case NAS_PDN_CONNECTIVITY_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE:
+                 size = nas_decode_extended_protocol_configuration_options(&pdn_connectivity_request->extended_protocol_configuration_options, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 pdn_connectivity_request->presencemask |= NAS_PDN_CONNECTIVITY_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
+                 decoded += size;
+                 break;
+             default:
+                d_error("Unknown type(0x%x) or not implemented\n", type);
+                return -1;
+        }
+    }
+
+    return decoded;
+}
+
 status_t nas_emm_decode(nas_message_t *message, pkbuf_t *pkbuf)
 {
     status_t rv = CORE_ERROR;
@@ -692,6 +765,11 @@ status_t nas_esm_decode(nas_message_t *message, pkbuf_t *pkbuf)
 
     switch(message->esm.h.message_type)
     {
+        case NAS_PDN_CONNECTIVITY_REQUEST:
+            size = nas_decode_pdn_connectivity_request(message, pkbuf);
+            d_assert(size >= CORE_OK, return CORE_ERROR, "decode error");
+            decoded += size;
+            break;
         case NAS_ESM_INFORMATION_REQUEST:
             break;
         default:

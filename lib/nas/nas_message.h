@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-07 22:21:56.128710 by acetcom
+ * Created on: 2017-04-07 23:34:23.758891 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -397,6 +397,40 @@ typedef struct _nas_security_mode_reject_t {
 } nas_security_mode_reject_t;
 
 
+/*******************************************************
+ * PDN CONNECTIVITY REQUEST
+ ******************************************************/
+#define NAS_PDN_CONNECTIVITY_REQUEST_ESM_INFORMATION_TRANSFER_FLAG_PRESENT (1<<0)
+#define NAS_PDN_CONNECTIVITY_REQUEST_ACCESS_POINT_NAME_PRESENT (1<<1)
+#define NAS_PDN_CONNECTIVITY_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<2)
+#define NAS_PDN_CONNECTIVITY_REQUEST_DEVICE_PROPERTIES_PRESENT (1<<3)
+#define NAS_PDN_CONNECTIVITY_REQUEST_NBIFOM_CONTAINER_PRESENT (1<<4)
+#define NAS_PDN_CONNECTIVITY_REQUEST_HEADER_COMPRESSION_CONFIGURATION_PRESENT (1<<5)
+#define NAS_PDN_CONNECTIVITY_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<6)
+#define NAS_PDN_CONNECTIVITY_REQUEST_ESM_INFORMATION_TRANSFER_FLAG_TYPE 0xD0
+#define NAS_PDN_CONNECTIVITY_REQUEST_ACCESS_POINT_NAME_TYPE 0x28
+#define NAS_PDN_CONNECTIVITY_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x27
+#define NAS_PDN_CONNECTIVITY_REQUEST_DEVICE_PROPERTIES_TYPE 0xC0
+#define NAS_PDN_CONNECTIVITY_REQUEST_NBIFOM_CONTAINER_TYPE 0x33
+#define NAS_PDN_CONNECTIVITY_REQUEST_HEADER_COMPRESSION_CONFIGURATION_TYPE 0x66
+#define NAS_PDN_CONNECTIVITY_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
+
+typedef struct _nas_pdn_connectivity_request_t {
+    /* Mandatory fields */
+    nas_request_type_t request_type;
+
+    /* Optional fields */
+    c_uint32_t presencemask;
+    nas_esm_information_transfer_flag_t esm_information_transfer_flag;
+    nas_access_point_name_t access_point_name;
+    nas_protocol_configuration_options_t protocol_configuration_options;
+    nas_device_properties_t device_properties;
+    nas_nbifom_container_t nbifom_container;
+    nas_header_compression_configuration_t header_compression_configuration;
+    nas_extended_protocol_configuration_options_t extended_protocol_configuration_options;
+} nas_pdn_connectivity_request_t;
+
+
 typedef struct _nas_emm_message_t {
     nas_emm_header_t h;
     union {
@@ -418,6 +452,7 @@ typedef struct _nas_emm_message_t {
 typedef struct _nas_esm_message_t {
     nas_esm_header_t h;
     union {
+        nas_pdn_connectivity_request_t pdn_connectivity_request;
     };
 } nas_esm_message_t;
 

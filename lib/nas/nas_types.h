@@ -735,6 +735,76 @@ ED2(c_uint8_t paging_time_window:4;,
     c_uint8_t e_drx_value:4;)
 } __attribute__ ((packed)) nas_extended_drx_parameters_t;
 
+/* 9.9.4.1 Access point name
+ * See subclause 10.5.6.1 in 3GPP TS 24.008 [13].
+ * O TLV 3-102 */
+#define NAS_MAX_ACCESS_POINT_NAME_LEN 100
+typedef struct _nas_access_point_name_t {
+    c_uint8_t length;
+    c_uint8_t access_point_name_value[NAS_MAX_ACCESS_POINT_NAME_LEN];
+} __attribute__ ((packed)) nas_access_point_name_t;
+
+/* 9.9.4.5 ESM information transfer flag
+ * O TV 1 */
+typedef struct _nas_esm_information_transfer_flag_t {
+ED3(c_uint8_t type:4;,
+    c_uint8_t spare:3;,
+    c_uint8_t security_protected_required:1;)
+} __attribute__ ((packed)) nas_esm_information_transfer_flag_t;
+
+/* 9.9.4.11 Protocol configuration options
+ * See subclause 10.5.6.3 in 3GPP TS 24.008 [13].
+ * O TLV 3-253 */ 
+#define NAS_MAX_PCO_LEN 250
+typedef struct _nas_protocol_configuration_options_t {
+    c_uint8_t length;
+    c_uint8_t todo[NAS_MAX_PCO_LEN];
+} __attribute__ ((packed)) nas_protocol_configuration_options_t;
+
+/* 9.9.4.14 Request type
+ * M V 1/2
+ * See subclause 10.5.6.17 in 3GPP TS 24.008 [13].
+ * 9.9.4.10 PDN type "PDN type
+ * M V 1/2
+ */
+#define NAS_PDN_CONNECTIVITY_REQUEST_TYPE_INITIAL   1
+#define NAS_PDN_CONNECTIVITY_REQUEST_TYPE_HANDOVER  2
+#define NAS_PDN_CONNECTIVITY_REQUEST_TYPE_EMERGENCY 4
+
+#define NAS_PDN_CONNECTIVITY_PDN_TYPE_IPV4          1
+#define NAS_PDN_CONNECTIVITY_PDN_TYPE_IPV6          2
+#define NAS_PDN_CONNECTIVITY_PDN_TYPE_IPV4V6        3
+#define NAS_PDN_CONNECTIVITY_PDN_TYPE_NON_IP        5
+
+typedef struct _nas_request_type_t {
+ED4(c_uint8_t spare1:1;,
+    c_uint8_t request_type:3;,
+    c_uint8_t spare2:1;,
+    c_uint8_t pdn_type:3;)
+} __attribute__ ((packed)) nas_request_type_t;
+
+
+/* 9.9.4.19 NBIFOM container
+ * O TLV 3-257 */
+typedef struct _nas_nbifom_container_t {
+    c_uint8_t length;
+    c_uint8_t todo[257];
+} __attribute__ ((packed)) nas_nbifom_container_t;
+
+/* 9.9.4.22 Header compression configuration
+ * O TLV 5-257 */
+typedef struct _nas_header_compression_configuration_t {
+    c_uint8_t length;
+    c_uint8_t todo[257];
+} __attribute__ ((packed)) nas_header_compression_configuration_t;
+
+/* 9.9.4.26 * Extended protocol configuration options
+ * O TLV-E 4-65538 */
+typedef struct _nas_extended_protocol_configuration_options_t {
+    c_uint16_t length;
+    c_uint8_t *buffer;
+} __attribute__ ((packed)) nas_extended_protocol_configuration_options_t;
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

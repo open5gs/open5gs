@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-07 22:21:56.122732 by acetcom
+ * Created on: 2017-04-07 23:34:23.747038 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -1173,6 +1173,197 @@ c_int16_t nas_encode_emm_cause(pkbuf_t *pkbuf, nas_emm_cause_t *emm_cause)
     memcpy(&target, emm_cause, size);
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
     memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
+/* 9.9.4.1 Access point name
+ * O TLV 3-102 */
+c_int16_t nas_decode_access_point_name(nas_access_point_name_t *access_point_name, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = 0;
+    nas_access_point_name_t *source = pkbuf->payload;
+
+    access_point_name->length = source->length;
+    size = access_point_name->length + sizeof(access_point_name->length);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(access_point_name, pkbuf->payload - size, size);
+
+    return size;
+}
+
+c_int16_t nas_encode_access_point_name(pkbuf_t *pkbuf, nas_access_point_name_t *access_point_name)
+{
+    c_uint16_t size = access_point_name->length + sizeof(access_point_name->length);
+    nas_access_point_name_t target;
+
+    memcpy(&target, access_point_name, sizeof(nas_access_point_name_t));
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
+/* 9.9.4.11 Protocol configuration options
+ * O TLV 3-253 */
+c_int16_t nas_decode_protocol_configuration_options(nas_protocol_configuration_options_t *protocol_configuration_options, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = 0;
+    nas_protocol_configuration_options_t *source = pkbuf->payload;
+
+    protocol_configuration_options->length = source->length;
+    size = protocol_configuration_options->length + sizeof(protocol_configuration_options->length);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(protocol_configuration_options, pkbuf->payload - size, size);
+
+    return size;
+}
+
+c_int16_t nas_encode_protocol_configuration_options(pkbuf_t *pkbuf, nas_protocol_configuration_options_t *protocol_configuration_options)
+{
+    c_uint16_t size = protocol_configuration_options->length + sizeof(protocol_configuration_options->length);
+    nas_protocol_configuration_options_t target;
+
+    memcpy(&target, protocol_configuration_options, sizeof(nas_protocol_configuration_options_t));
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
+/* 9.9.4.14 Request type
+ * M V 1/2 */
+c_int16_t nas_decode_request_type(nas_request_type_t *request_type, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = sizeof(nas_request_type_t);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(request_type, pkbuf->payload - size, size);
+
+    return size;
+}
+
+c_int16_t nas_encode_request_type(pkbuf_t *pkbuf, nas_request_type_t *request_type)
+{
+    c_uint16_t size = sizeof(nas_request_type_t);
+    nas_request_type_t target;
+
+    memcpy(&target, request_type, size);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
+/* 9.9.4.19 NBIFOM container
+ * O TLV 3-257 */
+c_int16_t nas_decode_nbifom_container(nas_nbifom_container_t *nbifom_container, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = 0;
+    nas_nbifom_container_t *source = pkbuf->payload;
+
+    nbifom_container->length = source->length;
+    size = nbifom_container->length + sizeof(nbifom_container->length);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(nbifom_container, pkbuf->payload - size, size);
+
+    return size;
+}
+
+c_int16_t nas_encode_nbifom_container(pkbuf_t *pkbuf, nas_nbifom_container_t *nbifom_container)
+{
+    c_uint16_t size = nbifom_container->length + sizeof(nbifom_container->length);
+    nas_nbifom_container_t target;
+
+    memcpy(&target, nbifom_container, sizeof(nas_nbifom_container_t));
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
+/* 9.9.4.22 Header compression configuration
+ * O TLV 5-257 */
+c_int16_t nas_decode_header_compression_configuration(nas_header_compression_configuration_t *header_compression_configuration, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = 0;
+    nas_header_compression_configuration_t *source = pkbuf->payload;
+
+    header_compression_configuration->length = source->length;
+    size = header_compression_configuration->length + sizeof(header_compression_configuration->length);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(header_compression_configuration, pkbuf->payload - size, size);
+
+    return size;
+}
+
+c_int16_t nas_encode_header_compression_configuration(pkbuf_t *pkbuf, nas_header_compression_configuration_t *header_compression_configuration)
+{
+    c_uint16_t size = header_compression_configuration->length + sizeof(header_compression_configuration->length);
+    nas_header_compression_configuration_t target;
+
+    memcpy(&target, header_compression_configuration, sizeof(nas_header_compression_configuration_t));
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
+/* 9.9.4.26 Extended protocol configuration options
+ * O TLV-E 4-65538 */
+c_int16_t nas_decode_extended_protocol_configuration_options(nas_extended_protocol_configuration_options_t *extended_protocol_configuration_options, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = 0;
+    nas_extended_protocol_configuration_options_t *source = pkbuf->payload;
+
+    extended_protocol_configuration_options->length = ntohs(source->length);
+    size = extended_protocol_configuration_options->length + sizeof(extended_protocol_configuration_options->length);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    extended_protocol_configuration_options->buffer = pkbuf->payload - size + sizeof(extended_protocol_configuration_options->length);
+
+    return size;
+}
+
+c_int16_t nas_encode_extended_protocol_configuration_options(pkbuf_t *pkbuf, nas_extended_protocol_configuration_options_t *extended_protocol_configuration_options)
+{
+    c_uint16_t size = 0;
+    c_uint16_t target;
+
+    d_assert(extended_protocol_configuration_options, return -1, "Null param");
+    d_assert(extended_protocol_configuration_options->buffer, return -1, "Null param");
+
+    size = sizeof(extended_protocol_configuration_options->length);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    target = htons(extended_protocol_configuration_options->length);
+    memcpy(pkbuf->payload - size, &target, size);
+
+    size = extended_protocol_configuration_options->length;
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, extended_protocol_configuration_options->buffer, size);
+
+    return extended_protocol_configuration_options->length + sizeof(extended_protocol_configuration_options->length);
+}
+
+/* 9.9.4.5 ESM information transfer flag
+ * O TV 1 */
+c_int16_t nas_decode_esm_information_transfer_flag(nas_esm_information_transfer_flag_t *esm_information_transfer_flag, pkbuf_t *pkbuf)
+{
+    memcpy(esm_information_transfer_flag, pkbuf->payload - 1, 1);
+
+    return 0;
+}
+
+c_int16_t nas_encode_esm_information_transfer_flag(pkbuf_t *pkbuf, nas_esm_information_transfer_flag_t *esm_information_transfer_flag)
+{
+    c_uint16_t size = sizeof(nas_esm_information_transfer_flag_t);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, esm_information_transfer_flag, size);
 
     return size;
 }

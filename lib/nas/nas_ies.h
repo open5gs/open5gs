@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-07 22:21:56.120273 by acetcom
+ * Created on: 2017-04-07 23:34:23.743668 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -84,6 +84,13 @@ CORE_DECLARE(c_int16_t) nas_decode_guti_type(nas_guti_type_t *guti_type, pkbuf_t
 CORE_DECLARE(c_int16_t) nas_decode_extended_drx_parameters(nas_extended_drx_parameters_t *extended_drx_parameters, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_drx_parameter(nas_drx_parameter_t *drx_parameter, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_emm_cause(nas_emm_cause_t *emm_cause, pkbuf_t *pkbuf);
+CORE_DECLARE(c_int16_t) nas_decode_access_point_name(nas_access_point_name_t *access_point_name, pkbuf_t *pkbuf);
+CORE_DECLARE(c_int16_t) nas_decode_protocol_configuration_options(nas_protocol_configuration_options_t *protocol_configuration_options, pkbuf_t *pkbuf);
+CORE_DECLARE(c_int16_t) nas_decode_request_type(nas_request_type_t *request_type, pkbuf_t *pkbuf);
+CORE_DECLARE(c_int16_t) nas_decode_nbifom_container(nas_nbifom_container_t *nbifom_container, pkbuf_t *pkbuf);
+CORE_DECLARE(c_int16_t) nas_decode_header_compression_configuration(nas_header_compression_configuration_t *header_compression_configuration, pkbuf_t *pkbuf);
+CORE_DECLARE(c_int16_t) nas_decode_extended_protocol_configuration_options(nas_extended_protocol_configuration_options_t *extended_protocol_configuration_options, pkbuf_t *pkbuf);
+CORE_DECLARE(c_int16_t) nas_decode_esm_information_transfer_flag(nas_esm_information_transfer_flag_t *esm_information_transfer_flag, pkbuf_t *pkbuf);
 
 CORE_DECLARE(c_int16_t) nas_encode_device_properties(pkbuf_t *pkbuf, nas_device_properties_t *device_properties);
 CORE_DECLARE(c_int16_t) nas_encode_supported_codec_list(pkbuf_t *pkbuf, nas_supported_codec_list_t *supported_codec_list);
@@ -127,6 +134,13 @@ CORE_DECLARE(c_int16_t) nas_encode_guti_type(pkbuf_t *pkbuf, nas_guti_type_t *gu
 CORE_DECLARE(c_int16_t) nas_encode_extended_drx_parameters(pkbuf_t *pkbuf, nas_extended_drx_parameters_t *extended_drx_parameters);
 CORE_DECLARE(c_int16_t) nas_encode_drx_parameter(pkbuf_t *pkbuf, nas_drx_parameter_t *drx_parameter);
 CORE_DECLARE(c_int16_t) nas_encode_emm_cause(pkbuf_t *pkbuf, nas_emm_cause_t *emm_cause);
+CORE_DECLARE(c_int16_t) nas_encode_access_point_name(pkbuf_t *pkbuf, nas_access_point_name_t *access_point_name);
+CORE_DECLARE(c_int16_t) nas_encode_protocol_configuration_options(pkbuf_t *pkbuf, nas_protocol_configuration_options_t *protocol_configuration_options);
+CORE_DECLARE(c_int16_t) nas_encode_request_type(pkbuf_t *pkbuf, nas_request_type_t *request_type);
+CORE_DECLARE(c_int16_t) nas_encode_nbifom_container(pkbuf_t *pkbuf, nas_nbifom_container_t *nbifom_container);
+CORE_DECLARE(c_int16_t) nas_encode_header_compression_configuration(pkbuf_t *pkbuf, nas_header_compression_configuration_t *header_compression_configuration);
+CORE_DECLARE(c_int16_t) nas_encode_extended_protocol_configuration_options(pkbuf_t *pkbuf, nas_extended_protocol_configuration_options_t *extended_protocol_configuration_options);
+CORE_DECLARE(c_int16_t) nas_encode_esm_information_transfer_flag(pkbuf_t *pkbuf, nas_esm_information_transfer_flag_t *esm_information_transfer_flag);
 
 #ifdef __cplusplus
 }
