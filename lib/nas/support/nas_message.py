@@ -213,6 +213,7 @@ msg_list["ATTACH COMPLETE"]["table"] = 9
 msg_list["ATTACH REJECT"]["table"] = 10
 msg_list["ATTACH REQUEST"]["table"] = 11
 msg_list["AUTHENTICATION FAILURE"]["table"] = 12
+msg_list["AUTHENTICATION REJECT"]["table"] = 13
 msg_list["AUTHENTICATION REQUEST"]["table"] = 14
 msg_list["AUTHENTICATION RESPONSE"]["table"] = 15
 msg_list["IDENTITY REQUEST"]["table"] = 27
@@ -632,13 +633,11 @@ f.write("""status_t nas_plain_decode(nas_message_t *message, pkbuf_t *pkbuf)
 for (k, v) in sorted_msg_list:
     if "ies" not in msg_list[k]:
         continue;
-    if len(msg_list[k]["ies"]) == 0:
-        continue
-
     f.write("        case NAS_%s:\n" % v_upper(k))
-    f.write("            size = nas_decode_%s(message, pkbuf);\n" % v_lower(k))
-    f.write("            d_assert(size >= CORE_OK, return CORE_ERROR, \"decode error\");\n")
-    f.write("            decoded += size;\n")
+    if len(msg_list[k]["ies"]) != 0:
+        f.write("            size = nas_decode_%s(message, pkbuf);\n" % v_lower(k))
+        f.write("            d_assert(size >= CORE_OK, return CORE_ERROR, \"decode error\");\n")
+        f.write("            decoded += size;\n")
     f.write("            break;\n")
 
 f.write("""        default:
@@ -729,13 +728,11 @@ f.write("""status_t nas_plain_encode(pkbuf_t **pkbuf, nas_message_t *message)
 for (k, v) in sorted_msg_list:
     if "ies" not in msg_list[k]:
         continue;
-    if len(msg_list[k]["ies"]) == 0:
-        continue
-
     f.write("        case NAS_%s:\n" % v_upper(k))
-    f.write("            size = nas_encode_%s(*pkbuf, message);\n" % v_lower(k))
-    f.write("            d_assert(size >= 0, return CORE_ERROR, \"decode error\");\n")
-    f.write("            encoded += size;\n")
+    if len(msg_list[k]["ies"]) != 0:
+        f.write("            size = nas_encode_%s(*pkbuf, message);\n" % v_lower(k))
+        f.write("            d_assert(size >= 0, return CORE_ERROR, \"decode error\");\n")
+        f.write("            encoded += size;\n")
     f.write("            break;\n")
 
 

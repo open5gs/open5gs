@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-03-31 08:55:14.436967 by acetcom
+ * Created on: 2017-04-07 19:18:35.663184 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -629,6 +629,8 @@ status_t nas_plain_decode(nas_message_t *message, pkbuf_t *pkbuf)
             size = nas_decode_authentication_response(message, pkbuf);
             d_assert(size >= CORE_OK, return CORE_ERROR, "decode error");
             decoded += size;
+            break;
+        case NAS_AUTHENTICATION_REJECT:
             break;
         case NAS_IDENTITY_REQUEST:
             size = nas_decode_identity_request(message, pkbuf);

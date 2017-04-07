@@ -87,6 +87,7 @@ void emm_state_operational(emm_sm_t *s, event_t *e)
                     d_assert(ue->imsi, return,);
                     d_info("[NAS] Security mode complete : UE[%s] --> EMM",
                             ue->imsi);
+                    emm_handle_security_mode_complete(ue);
                     break;
                 }
                 default:
