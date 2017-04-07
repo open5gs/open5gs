@@ -53,14 +53,14 @@ static void nas_message_test2(abts_case *tc, void *data)
     char esm_buffer[50];
 
     nas_message_t message;
-    nas_attach_accept_t *attach_accept = &message.attach_accept;
+    nas_attach_accept_t *attach_accept = &message.emm.attach_accept;
 
     pkbuf_t *pkbuf = NULL;
     status_t rv;
 
     memset(&message, 0, sizeof(message));
-    message.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
-    message.h.message_type = NAS_ATTACH_ACCEPT;
+    message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    message.emm.h.message_type = NAS_ATTACH_ACCEPT;
     attach_accept->eps_attach_result.result = 
         NAS_ATTACH_RESULT_COMBINED_EPS_IMSI_ATTACH;
     attach_accept->t3412_value.unit = 
@@ -137,14 +137,14 @@ static void nas_message_test4(abts_case *tc, void *data)
     char buffer[3];
 
     nas_message_t message;
-    nas_attach_reject_t *attach_reject = &message.attach_reject;
+    nas_attach_reject_t *attach_reject = &message.emm.attach_reject;
 
     pkbuf_t *pkbuf = NULL;
     status_t rv;
 
     memset(&message, 0, sizeof(message));
-    message.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
-    message.h.message_type = NAS_ATTACH_REJECT;
+    message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    message.emm.h.message_type = NAS_ATTACH_REJECT;
     attach_reject->emm_cause = NAS_EMM_CAUSE_NETWORK_FAILURE; 
 
     rv = nas_plain_encode(&pkbuf, &message);
@@ -177,7 +177,7 @@ static void nas_message_test6(abts_case *tc, void *data)
     char hexbuf[MAX_SDU_LEN];
 
     nas_message_t message;
-    nas_identity_request_t *identity_request = &message.identity_request;
+    nas_identity_request_t *identity_request = &message.emm.identity_request;
     pkbuf_t *pkbuf;
     status_t rv;
 
@@ -191,8 +191,8 @@ static void nas_message_test6(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     ABTS_INT_EQUAL(tc, NAS_PROTOCOL_DISCRIMINATOR_EMM, 
-            message.h.protocol_discriminator);
-    ABTS_INT_EQUAL(tc, NAS_IDENTITY_REQUEST, message.h.message_type);
+            message.emm.h.protocol_discriminator);
+    ABTS_INT_EQUAL(tc, NAS_IDENTITY_REQUEST, message.emm.h.message_type);
     ABTS_INT_EQUAL(tc, NAS_IDENTITY_TYPE_2_IMSI, 
             identity_request->identity_type.type_of_identity);
 
@@ -206,14 +206,14 @@ static void nas_message_test7(abts_case *tc, void *data)
     char buffer[11];
 
     nas_message_t message;
-    nas_identity_response_t *identity_response = &message.identity_response;
+    nas_identity_response_t *identity_response = &message.emm.identity_response;
 
     pkbuf_t *pkbuf = NULL;
     status_t rv;
 
     memset(&message, 0, sizeof(message));
-    message.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
-    message.h.message_type = NAS_IDENTITY_RESPONSE;
+    message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    message.emm.h.message_type = NAS_IDENTITY_RESPONSE;
 
     identity_response->mobile_identity.length = 8;
     identity_response->mobile_identity.imsi.digit1 = 0;

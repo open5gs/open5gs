@@ -67,7 +67,7 @@ void emm_handle_authentication_response(
     nas_message_t message;
     pkbuf_t *sendbuf = NULL;
     nas_security_mode_command_t *security_mode_command = 
-        &message.security_mode_command;
+        &message.emm.security_mode_command;
     nas_security_algorithms_t *selected_nas_security_algorithms =
         &security_mode_command->selected_nas_security_algorithms;
     nas_key_set_identifier_t *nas_key_set_identifier =
@@ -89,8 +89,12 @@ void emm_handle_authentication_response(
     d_info("[NAS] Authentication response : UE[%s] --> EMM", ue->imsi);
 
     memset(&message, 0, sizeof(message));
+    message.h.security_header_type = 
+       NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT;
     message.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
-    message.h.message_type = NAS_SECURITY_MODE_COMMAND;
+
+    message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    message.emm.h.message_type = NAS_SECURITY_MODE_COMMAND;
 
     selected_nas_security_algorithms->type_of_ciphering_algorithm =
         mme_self()->selected_enc_algorithm;
@@ -119,8 +123,6 @@ void emm_handle_authentication_response(
     mme_kdf_nas(MME_KDF_NAS_ENC_ALG, mme_self()->selected_enc_algorithm,
             ue->kasme, ue->knas_enc);
 
-    message.h.security_header_type = 
-       NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT;
     d_assert(nas_security_encode(&sendbuf, ue, &message) == CORE_OK && 
             sendbuf,,);
     mme_event_nas_to_s1ap(ue, sendbuf);
@@ -135,11 +137,14 @@ void emm_handle_security_mode_complete(mme_ue_t *ue)
     pkbuf_t *sendbuf = NULL;
 
     memset(&message, 0, sizeof(message));
-    message.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_ESM;
-    message.h.message_type = NAS_ESM_INFORMATION_REQUEST;
-
     message.h.security_header_type = 
        NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
+    message.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
+
+    message.esm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_ESM;
+    message.esm.h.procedure_transaction_identity = 33;
+    message.esm.h.message_type = NAS_ESM_INFORMATION_REQUEST;
+
     d_assert(nas_security_encode(&sendbuf, ue, &message) == CORE_OK && 
             sendbuf,,);
     d_print_hex(sendbuf->payload, sendbuf->len);

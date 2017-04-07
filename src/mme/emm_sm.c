@@ -58,12 +58,12 @@ void emm_state_operational(emm_sm_t *s, event_t *e)
                 break;
             }
 
-            switch(message.h.message_type)
+            switch(message.emm.h.message_type)
             {
                 case NAS_ATTACH_REQUEST:
                 {
                     emm_handle_attach_request(
-                            ue, &message.attach_request);
+                            ue, &message.emm.attach_request);
                     break;
                 }
                 case NAS_AUTHENTICATION_REQUEST:
@@ -79,7 +79,7 @@ void emm_state_operational(emm_sm_t *s, event_t *e)
                 case NAS_AUTHENTICATION_RESPONSE:
                 {
                     emm_handle_authentication_response(
-                            ue, &message.authentication_response);
+                            ue, &message.emm.authentication_response);
                     break;
                 }
                 case NAS_SECURITY_MODE_COMPLETE:
@@ -92,7 +92,7 @@ void emm_state_operational(emm_sm_t *s, event_t *e)
                 }
                 default:
                 {
-                    d_warn("Not implemented(type:%d)", message.h.message_type);
+                    d_warn("Not implemented(type:%d)", message.emm.h.message_type);
                     break;
                 }
             }

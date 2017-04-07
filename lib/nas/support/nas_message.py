@@ -470,11 +470,18 @@ extern "C" {
 #define NAS_PROTOCOL_DISCRIMINATOR_ESM 0x2
 #define NAS_PROTOCOL_DISCRIMINATOR_EMM 0x7
 
-typedef struct _nas_header_t {
+typedef struct _nas_emm_header_t {
 ED2(c_uint8_t security_header_type:4;,
     c_uint8_t protocol_discriminator:4;)
     c_uint8_t message_type;
-} __attribute__ ((packed)) nas_header_t;
+} __attribute__ ((packed)) nas_emm_header_t;
+
+typedef struct _nas_esm_header_t {
+ED2(c_uint8_t eps_bearer_identity:4;,
+    c_uint8_t protocol_discriminator:4;)
+    c_uint8_t procedure_transaction_identity;
+    c_uint8_t message_type;
+} __attribute__ ((packed)) nas_esm_header_t;
 
 typedef struct _nas_security_header_t {
 ED2(c_uint8_t security_header_type:4;,
@@ -526,20 +533,41 @@ for (k, v) in sorted_msg_list:
 
 f.write("\n")
 
-f.write("""typedef struct _nas_message_t {
-    nas_header_t h;
+f.write("""typedef struct _nas_emm_message_t {
+    nas_emm_header_t h;
     union {
 """)
-
 for (k, v) in sorted_msg_list:
     if "ies" not in msg_list[k]:
         continue;
     if len(msg_list[k]["ies"]) == 0:
         continue;
+    if int(msg_list[k]["type"]) < 192:
+        f.write("        nas_%s_t %s;\n" % (v_lower(k), v_lower(k)))
+f.write("""    };
+} nas_emm_message_t;
 
-    f.write("        nas_%s_t %s;\n" % (v_lower(k), v_lower(k)))
+typedef struct _nas_esm_message_t {
+    nas_esm_header_t h;
+    union {
+""")
+for (k, v) in sorted_msg_list:
+    if "ies" not in msg_list[k]:
+        continue;
+    if len(msg_list[k]["ies"]) == 0:
+        continue;
+    if int(msg_list[k]["type"]) >= 192:
+        f.write("        nas_%s_t %s;\n" % (v_lower(k), v_lower(k)))
 
 f.write("""    };
+} nas_esm_message_t;
+
+typedef struct _nas_message_t {
+    nas_security_header_t h;
+    union {
+        nas_emm_message_t emm;
+        nas_esm_message_t esm;
+    };
 } nas_message_t;
 
 CORE_DECLARE(int) nas_plain_decode(nas_message_t *message, pkbuf_t *pkbuf);
@@ -572,7 +600,10 @@ for (k, v) in sorted_msg_list:
         continue
 
     f.write("c_int32_t nas_decode_%s(nas_message_t *message, pkbuf_t *pkbuf)\n{\n" % v_lower(k))
-    f.write("    nas_%s_t *%s = &message->%s;\n" % (v_lower(k), v_lower(k), v_lower(k)))
+    if int(msg_list[k]["type"]) < 192:
+        f.write("    nas_%s_t *%s = &message->emm.%s;\n" % (v_lower(k), v_lower(k), v_lower(k)))
+    else:
+        f.write("    nas_%s_t *%s = &message->esm.%s;\n" % (v_lower(k), v_lower(k), v_lower(k)))
     f.write("    c_int32_t decoded = 0;\n")
     f.write("    c_int32_t size = 0;\n\n")
 
@@ -619,7 +650,7 @@ for (k, v) in sorted_msg_list:
 
 """)
 
-f.write("""status_t nas_plain_decode(nas_message_t *message, pkbuf_t *pkbuf)
+f.write("""status_t nas_emm_decode(nas_message_t *message, pkbuf_t *pkbuf)
 {
     status_t rv = CORE_ERROR;
     c_uint16_t size = 0;
@@ -630,28 +661,29 @@ f.write("""status_t nas_plain_decode(nas_message_t *message, pkbuf_t *pkbuf)
 
     memset(message, 0, sizeof(nas_message_t));
 
-    size = sizeof(nas_header_t);
+    size = sizeof(nas_emm_header_t);
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
             return CORE_ERROR, "pkbuf_header error");
-    memcpy(&message->h, pkbuf->payload - size, size);
+    memcpy(&message->emm.h, pkbuf->payload - size, size);
     decoded += size;
 
-    switch(message->h.message_type)
+    switch(message->emm.h.message_type)
     {
 """)
 for (k, v) in sorted_msg_list:
     if "ies" not in msg_list[k]:
         continue;
-    f.write("        case NAS_%s:\n" % v_upper(k))
-    if len(msg_list[k]["ies"]) != 0:
-        f.write("            size = nas_decode_%s(message, pkbuf);\n" % v_lower(k))
-        f.write("            d_assert(size >= CORE_OK, return CORE_ERROR, \"decode error\");\n")
-        f.write("            decoded += size;\n")
-    f.write("            break;\n")
+    if int(msg_list[k]["type"]) < 192:
+        f.write("        case NAS_%s:\n" % v_upper(k))
+        if len(msg_list[k]["ies"]) != 0:
+            f.write("            size = nas_decode_%s(message, pkbuf);\n" % v_lower(k))
+            f.write("            d_assert(size >= CORE_OK, return CORE_ERROR, \"decode error\");\n")
+            f.write("            decoded += size;\n")
+        f.write("            break;\n")
 
 f.write("""        default:
             d_error("Unknown message type (0x%x) or not implemented", 
-                    message->h.message_type);
+                    message->emm.h.message_type);
             break;
     }
 
@@ -659,6 +691,67 @@ f.write("""        default:
     d_assert(rv == CORE_OK, return CORE_ERROR, "pkbuf_header error");
 
     return CORE_OK;
+}
+""")
+
+f.write("""status_t nas_esm_decode(nas_message_t *message, pkbuf_t *pkbuf)
+{
+    status_t rv = CORE_ERROR;
+    c_uint16_t size = 0;
+    c_uint16_t decoded = 0;
+
+    d_assert(pkbuf, return CORE_ERROR, "Null param");
+    d_assert(pkbuf->payload, return CORE_ERROR, "Null param");
+
+    memset(message, 0, sizeof(nas_message_t));
+
+    size = sizeof(nas_esm_header_t);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
+            return CORE_ERROR, "pkbuf_header error");
+    memcpy(&message->esm.h, pkbuf->payload - size, size);
+    decoded += size;
+
+    switch(message->esm.h.message_type)
+    {
+""")
+for (k, v) in sorted_msg_list:
+    if "ies" not in msg_list[k]:
+        continue;
+    if int(msg_list[k]["type"]) >= 192:
+        f.write("        case NAS_%s:\n" % v_upper(k))
+        if len(msg_list[k]["ies"]) != 0:
+            f.write("            size = nas_decode_%s(message, pkbuf);\n" % v_lower(k))
+            f.write("            d_assert(size >= CORE_OK, return CORE_ERROR, \"decode error\");\n")
+            f.write("            decoded += size;\n")
+        f.write("            break;\n")
+
+f.write("""        default:
+            d_error("Unknown message type (0x%x) or not implemented", 
+                    message->esm.h.message_type);
+            break;
+    }
+
+    rv = pkbuf_header(pkbuf, decoded);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "pkbuf_header error");
+
+    return CORE_OK;
+}
+
+status_t nas_plain_decode(nas_message_t *message, pkbuf_t *pkbuf)
+{
+    nas_security_header_t *h = NULL;
+
+    d_assert(pkbuf, return CORE_ERROR, "Null param");
+    h = pkbuf->payload;
+    d_assert(h, return CORE_ERROR, "Null param");
+
+    if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_EMM)
+        return nas_emm_decode(message, pkbuf);
+    else if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_ESM)
+        return nas_esm_decode(message, pkbuf);
+
+    d_assert(0, return CORE_ERROR, 
+            "Invalid Protocol : %d", h->protocol_discriminator);
 }
 """)
 
@@ -680,7 +773,10 @@ for (k, v) in sorted_msg_list:
         continue
 
     f.write("c_int32_t nas_encode_%s(pkbuf_t *pkbuf, nas_message_t *message)\n{\n" % v_lower(k))
-    f.write("    nas_%s_t *%s = &message->%s;\n" % (v_lower(k), v_lower(k), v_lower(k)))
+    if int(msg_list[k]["type"]) < 192:
+        f.write("    nas_%s_t *%s = &message->emm.%s;\n" % (v_lower(k), v_lower(k), v_lower(k)))
+    else:
+        f.write("    nas_%s_t *%s = &message->esm.%s;\n" % (v_lower(k), v_lower(k), v_lower(k)))
     f.write("    c_int32_t encoded = 0;\n")
     f.write("    c_int32_t size = 0;\n\n")
 
@@ -709,7 +805,7 @@ for (k, v) in sorted_msg_list:
 """)
 
 
-f.write("""status_t nas_plain_encode(pkbuf_t **pkbuf, nas_message_t *message)
+f.write("""status_t nas_emm_encode(pkbuf_t **pkbuf, nas_message_t *message)
 {
     status_t rv = CORE_ERROR;
     c_int32_t size = 0;
@@ -722,32 +818,31 @@ f.write("""status_t nas_plain_encode(pkbuf_t **pkbuf, nas_message_t *message)
     *pkbuf = pkbuf_alloc(NAS_HEADROOM, MAX_SDU_LEN);
     d_assert(*pkbuf, return -1, "Null Param");
 
-    size = sizeof(nas_header_t);
+    size = sizeof(nas_emm_header_t);
     rv = pkbuf_header(*pkbuf, -size);
     d_assert(rv == CORE_OK, return CORE_ERROR, "pkbuf_header error");
 
-    message->h.security_header_type = 0;
-    memcpy((*pkbuf)->payload - size, &message->h, size);
+    memcpy((*pkbuf)->payload - size, &message->emm.h, size);
     encoded += size;
 
-    switch(message->h.message_type)
+    switch(message->emm.h.message_type)
     {
 """)
 
 for (k, v) in sorted_msg_list:
     if "ies" not in msg_list[k]:
         continue;
-    f.write("        case NAS_%s:\n" % v_upper(k))
-    if len(msg_list[k]["ies"]) != 0:
-        f.write("            size = nas_encode_%s(*pkbuf, message);\n" % v_lower(k))
-        f.write("            d_assert(size >= 0, return CORE_ERROR, \"decode error\");\n")
-        f.write("            encoded += size;\n")
-    f.write("            break;\n")
-
+    if int(msg_list[k]["type"]) < 192:
+        f.write("        case NAS_%s:\n" % v_upper(k))
+        if len(msg_list[k]["ies"]) != 0:
+            f.write("            size = nas_encode_%s(*pkbuf, message);\n" % v_lower(k))
+            f.write("            d_assert(size >= 0, return CORE_ERROR, \"decode error\");\n")
+            f.write("            encoded += size;\n")
+        f.write("            break;\n")
 
 f.write("""        default:
             d_error("Unknown message type (0x%x) or not implemented", 
-                    message->h.message_type);
+                    message->emm.h.message_type);
             pkbuf_free((*pkbuf));
             return CORE_ERROR;
     }
@@ -761,5 +856,77 @@ f.write("""        default:
 }
 
 """)
+
+f.write("""status_t nas_esm_encode(pkbuf_t **pkbuf, nas_message_t *message)
+{
+    status_t rv = CORE_ERROR;
+    c_int32_t size = 0;
+    c_int32_t encoded = 0;
+
+    d_assert(message, return CORE_ERROR, "Null param");
+
+    /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 
+     * When calculating AES_CMAC, we need to use the headroom of the packet. */
+    *pkbuf = pkbuf_alloc(NAS_HEADROOM, MAX_SDU_LEN);
+    d_assert(*pkbuf, return -1, "Null Param");
+
+    size = sizeof(nas_esm_header_t);
+    rv = pkbuf_header(*pkbuf, -size);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "pkbuf_header error");
+
+    memcpy((*pkbuf)->payload - size, &message->esm.h, size);
+    encoded += size;
+
+    switch(message->esm.h.message_type)
+    {
+""")
+
+for (k, v) in sorted_msg_list:
+    if "ies" not in msg_list[k]:
+        continue;
+    if int(msg_list[k]["type"]) >= 192:
+        f.write("        case NAS_%s:\n" % v_upper(k))
+        if len(msg_list[k]["ies"]) != 0:
+            f.write("            size = nas_encode_%s(*pkbuf, message);\n" % v_lower(k))
+            f.write("            d_assert(size >= 0, return CORE_ERROR, \"decode error\");\n")
+            f.write("            encoded += size;\n")
+        f.write("            break;\n")
+
+f.write("""        default:
+            d_error("Unknown message type (0x%x) or not implemented", 
+                    message->esm.h.message_type);
+            pkbuf_free((*pkbuf));
+            return CORE_ERROR;
+    }
+
+    rv = pkbuf_header(*pkbuf, encoded);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "pkbuf_header error");
+
+    (*pkbuf)->len = encoded;
+
+    return CORE_OK;
+}
+
+status_t nas_plain_encode(pkbuf_t **pkbuf, nas_message_t *message)
+{
+    d_assert(message, return CORE_ERROR, "Null param");
+
+    d_assert(message->emm.h.protocol_discriminator ==
+            message->esm.h.protocol_discriminator, 
+            return CORE_ERROR, "check UNION for protocol");
+
+
+    if (message->emm.h.protocol_discriminator == 
+            NAS_PROTOCOL_DISCRIMINATOR_EMM)
+        return nas_emm_encode(pkbuf, message);
+    else if (message->emm.h.protocol_discriminator == 
+            NAS_PROTOCOL_DISCRIMINATOR_ESM)
+        return nas_esm_encode(pkbuf, message);
+
+    d_assert(0, return CORE_ERROR, 
+            "Invalid Protocol : %d", message->emm.h.protocol_discriminator);
+}
+""")
+
 f.close()
 

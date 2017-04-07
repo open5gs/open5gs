@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-07 19:33:56.581601 by acetcom
+ * Created on: 2017-04-07 22:21:56.128710 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -54,11 +54,18 @@ extern "C" {
 #define NAS_PROTOCOL_DISCRIMINATOR_ESM 0x2
 #define NAS_PROTOCOL_DISCRIMINATOR_EMM 0x7
 
-typedef struct _nas_header_t {
+typedef struct _nas_emm_header_t {
 ED2(c_uint8_t security_header_type:4;,
     c_uint8_t protocol_discriminator:4;)
     c_uint8_t message_type;
-} __attribute__ ((packed)) nas_header_t;
+} __attribute__ ((packed)) nas_emm_header_t;
+
+typedef struct _nas_esm_header_t {
+ED2(c_uint8_t eps_bearer_identity:4;,
+    c_uint8_t protocol_discriminator:4;)
+    c_uint8_t procedure_transaction_identity;
+    c_uint8_t message_type;
+} __attribute__ ((packed)) nas_esm_header_t;
 
 typedef struct _nas_security_header_t {
 ED2(c_uint8_t security_header_type:4;,
@@ -390,8 +397,8 @@ typedef struct _nas_security_mode_reject_t {
 } nas_security_mode_reject_t;
 
 
-typedef struct _nas_message_t {
-    nas_header_t h;
+typedef struct _nas_emm_message_t {
+    nas_emm_header_t h;
     union {
         nas_attach_request_t attach_request;
         nas_attach_accept_t attach_accept;
@@ -405,6 +412,20 @@ typedef struct _nas_message_t {
         nas_security_mode_command_t security_mode_command;
         nas_security_mode_complete_t security_mode_complete;
         nas_security_mode_reject_t security_mode_reject;
+    };
+} nas_emm_message_t;
+
+typedef struct _nas_esm_message_t {
+    nas_esm_header_t h;
+    union {
+    };
+} nas_esm_message_t;
+
+typedef struct _nas_message_t {
+    nas_security_header_t h;
+    union {
+        nas_emm_message_t emm;
+        nas_esm_message_t esm;
     };
 } nas_message_t;
 

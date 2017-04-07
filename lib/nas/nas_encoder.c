@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-07 19:33:56.590092 by acetcom
+ * Created on: 2017-04-07 22:21:56.137354 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -37,7 +37,7 @@
 
 c_int32_t nas_encode_attach_request(pkbuf_t *pkbuf, nas_message_t *message)
 {
-    nas_attach_request_t *attach_request = &message->attach_request;
+    nas_attach_request_t *attach_request = &message->emm.attach_request;
     c_int32_t encoded = 0;
     c_int32_t size = 0;
 
@@ -261,7 +261,7 @@ c_int32_t nas_encode_attach_request(pkbuf_t *pkbuf, nas_message_t *message)
 
 c_int32_t nas_encode_attach_accept(pkbuf_t *pkbuf, nas_message_t *message)
 {
-    nas_attach_accept_t *attach_accept = &message->attach_accept;
+    nas_attach_accept_t *attach_accept = &message->emm.attach_accept;
     c_int32_t encoded = 0;
     c_int32_t size = 0;
 
@@ -427,7 +427,7 @@ c_int32_t nas_encode_attach_accept(pkbuf_t *pkbuf, nas_message_t *message)
 
 c_int32_t nas_encode_attach_complete(pkbuf_t *pkbuf, nas_message_t *message)
 {
-    nas_attach_complete_t *attach_complete = &message->attach_complete;
+    nas_attach_complete_t *attach_complete = &message->emm.attach_complete;
     c_int32_t encoded = 0;
     c_int32_t size = 0;
 
@@ -440,7 +440,7 @@ c_int32_t nas_encode_attach_complete(pkbuf_t *pkbuf, nas_message_t *message)
 
 c_int32_t nas_encode_attach_reject(pkbuf_t *pkbuf, nas_message_t *message)
 {
-    nas_attach_reject_t *attach_reject = &message->attach_reject;
+    nas_attach_reject_t *attach_reject = &message->emm.attach_reject;
     c_int32_t encoded = 0;
     c_int32_t size = 0;
 
@@ -495,7 +495,7 @@ c_int32_t nas_encode_attach_reject(pkbuf_t *pkbuf, nas_message_t *message)
 
 c_int32_t nas_encode_authentication_request(pkbuf_t *pkbuf, nas_message_t *message)
 {
-    nas_authentication_request_t *authentication_request = &message->authentication_request;
+    nas_authentication_request_t *authentication_request = &message->emm.authentication_request;
     c_int32_t encoded = 0;
     c_int32_t size = 0;
 
@@ -516,7 +516,7 @@ c_int32_t nas_encode_authentication_request(pkbuf_t *pkbuf, nas_message_t *messa
 
 c_int32_t nas_encode_authentication_response(pkbuf_t *pkbuf, nas_message_t *message)
 {
-    nas_authentication_response_t *authentication_response = &message->authentication_response;
+    nas_authentication_response_t *authentication_response = &message->emm.authentication_response;
     c_int32_t encoded = 0;
     c_int32_t size = 0;
 
@@ -529,7 +529,7 @@ c_int32_t nas_encode_authentication_response(pkbuf_t *pkbuf, nas_message_t *mess
 
 c_int32_t nas_encode_identity_request(pkbuf_t *pkbuf, nas_message_t *message)
 {
-    nas_identity_request_t *identity_request = &message->identity_request;
+    nas_identity_request_t *identity_request = &message->emm.identity_request;
     c_int32_t encoded = 0;
     c_int32_t size = 0;
 
@@ -542,7 +542,7 @@ c_int32_t nas_encode_identity_request(pkbuf_t *pkbuf, nas_message_t *message)
 
 c_int32_t nas_encode_identity_response(pkbuf_t *pkbuf, nas_message_t *message)
 {
-    nas_identity_response_t *identity_response = &message->identity_response;
+    nas_identity_response_t *identity_response = &message->emm.identity_response;
     c_int32_t encoded = 0;
     c_int32_t size = 0;
 
@@ -555,7 +555,7 @@ c_int32_t nas_encode_identity_response(pkbuf_t *pkbuf, nas_message_t *message)
 
 c_int32_t nas_encode_authentication_failure(pkbuf_t *pkbuf, nas_message_t *message)
 {
-    nas_authentication_failure_t *authentication_failure = &message->authentication_failure;
+    nas_authentication_failure_t *authentication_failure = &message->emm.authentication_failure;
     c_int32_t encoded = 0;
     c_int32_t size = 0;
 
@@ -579,7 +579,7 @@ c_int32_t nas_encode_authentication_failure(pkbuf_t *pkbuf, nas_message_t *messa
 
 c_int32_t nas_encode_security_mode_command(pkbuf_t *pkbuf, nas_message_t *message)
 {
-    nas_security_mode_command_t *security_mode_command = &message->security_mode_command;
+    nas_security_mode_command_t *security_mode_command = &message->emm.security_mode_command;
     c_int32_t encoded = 0;
     c_int32_t size = 0;
 
@@ -631,7 +631,7 @@ c_int32_t nas_encode_security_mode_command(pkbuf_t *pkbuf, nas_message_t *messag
 
 c_int32_t nas_encode_security_mode_complete(pkbuf_t *pkbuf, nas_message_t *message)
 {
-    nas_security_mode_complete_t *security_mode_complete = &message->security_mode_complete;
+    nas_security_mode_complete_t *security_mode_complete = &message->emm.security_mode_complete;
     c_int32_t encoded = 0;
     c_int32_t size = 0;
 
@@ -651,7 +651,7 @@ c_int32_t nas_encode_security_mode_complete(pkbuf_t *pkbuf, nas_message_t *messa
 
 c_int32_t nas_encode_security_mode_reject(pkbuf_t *pkbuf, nas_message_t *message)
 {
-    nas_security_mode_reject_t *security_mode_reject = &message->security_mode_reject;
+    nas_security_mode_reject_t *security_mode_reject = &message->emm.security_mode_reject;
     c_int32_t encoded = 0;
     c_int32_t size = 0;
 
@@ -662,7 +662,7 @@ c_int32_t nas_encode_security_mode_reject(pkbuf_t *pkbuf, nas_message_t *message
     return encoded;
 }
 
-status_t nas_plain_encode(pkbuf_t **pkbuf, nas_message_t *message)
+status_t nas_emm_encode(pkbuf_t **pkbuf, nas_message_t *message)
 {
     status_t rv = CORE_ERROR;
     c_int32_t size = 0;
@@ -675,15 +675,14 @@ status_t nas_plain_encode(pkbuf_t **pkbuf, nas_message_t *message)
     *pkbuf = pkbuf_alloc(NAS_HEADROOM, MAX_SDU_LEN);
     d_assert(*pkbuf, return -1, "Null Param");
 
-    size = sizeof(nas_header_t);
+    size = sizeof(nas_emm_header_t);
     rv = pkbuf_header(*pkbuf, -size);
     d_assert(rv == CORE_OK, return CORE_ERROR, "pkbuf_header error");
 
-    message->h.security_header_type = 0;
-    memcpy((*pkbuf)->payload - size, &message->h, size);
+    memcpy((*pkbuf)->payload - size, &message->emm.h, size);
     encoded += size;
 
-    switch(message->h.message_type)
+    switch(message->emm.h.message_type)
     {
         case NAS_ATTACH_REQUEST:
             size = nas_encode_attach_request(*pkbuf, message);
@@ -747,11 +746,9 @@ status_t nas_plain_encode(pkbuf_t **pkbuf, nas_message_t *message)
             d_assert(size >= 0, return CORE_ERROR, "decode error");
             encoded += size;
             break;
-        case NAS_ESM_INFORMATION_REQUEST:
-            break;
         default:
             d_error("Unknown message type (0x%x) or not implemented", 
-                    message->h.message_type);
+                    message->emm.h.message_type);
             pkbuf_free((*pkbuf));
             return CORE_ERROR;
     }
@@ -764,3 +761,61 @@ status_t nas_plain_encode(pkbuf_t **pkbuf, nas_message_t *message)
     return CORE_OK;
 }
 
+status_t nas_esm_encode(pkbuf_t **pkbuf, nas_message_t *message)
+{
+    status_t rv = CORE_ERROR;
+    c_int32_t size = 0;
+    c_int32_t encoded = 0;
+
+    d_assert(message, return CORE_ERROR, "Null param");
+
+    /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 
+     * When calculating AES_CMAC, we need to use the headroom of the packet. */
+    *pkbuf = pkbuf_alloc(NAS_HEADROOM, MAX_SDU_LEN);
+    d_assert(*pkbuf, return -1, "Null Param");
+
+    size = sizeof(nas_esm_header_t);
+    rv = pkbuf_header(*pkbuf, -size);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "pkbuf_header error");
+
+    memcpy((*pkbuf)->payload - size, &message->esm.h, size);
+    encoded += size;
+
+    switch(message->esm.h.message_type)
+    {
+        case NAS_ESM_INFORMATION_REQUEST:
+            break;
+        default:
+            d_error("Unknown message type (0x%x) or not implemented", 
+                    message->esm.h.message_type);
+            pkbuf_free((*pkbuf));
+            return CORE_ERROR;
+    }
+
+    rv = pkbuf_header(*pkbuf, encoded);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "pkbuf_header error");
+
+    (*pkbuf)->len = encoded;
+
+    return CORE_OK;
+}
+
+status_t nas_plain_encode(pkbuf_t **pkbuf, nas_message_t *message)
+{
+    d_assert(message, return CORE_ERROR, "Null param");
+
+    d_assert(message->emm.h.protocol_discriminator ==
+            message->esm.h.protocol_discriminator, 
+            return CORE_ERROR, "check UNION for protocol");
+
+
+    if (message->emm.h.protocol_discriminator == 
+            NAS_PROTOCOL_DISCRIMINATOR_EMM)
+        return nas_emm_encode(pkbuf, message);
+    else if (message->emm.h.protocol_discriminator == 
+            NAS_PROTOCOL_DISCRIMINATOR_ESM)
+        return nas_esm_encode(pkbuf, message);
+
+    d_assert(0, return CORE_ERROR, 
+            "Invalid Protocol : %d", message->emm.h.protocol_discriminator);
+}

@@ -145,7 +145,7 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     pkbuf_t *sendbuf = NULL;
     event_t e;
     nas_authentication_request_t *authentication_request = 
-        &message.authentication_request;
+        &message.emm.authentication_request;
     
     CHECK_SYS_DO(clock_gettime(CLOCK_REALTIME, &ts), return);
 
@@ -175,8 +175,8 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     }
     
     memset(&message, 0, sizeof(message));
-    message.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
-    message.h.message_type = NAS_AUTHENTICATION_REQUEST;
+    message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    message.emm.h.message_type = NAS_AUTHENTICATION_REQUEST;
 
     d_assert(fd_msg_search_avp(*msg, s6a_authentication_info, &avp) == 0 && avp, 
             error++; goto out,);

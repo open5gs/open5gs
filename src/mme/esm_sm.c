@@ -58,7 +58,7 @@ void esm_state_operational(esm_sm_t *s, event_t *e)
                 break;
             }
 
-            switch(message.h.message_type)
+            switch(message.emm.h.message_type)
             {
                 case NAS_PDN_CONNECTIVITY_REQUEST:
                 {
@@ -66,7 +66,7 @@ void esm_state_operational(esm_sm_t *s, event_t *e)
                 }
                 default:
                 {
-                    d_warn("Not implemented(type:%d)", message.h.message_type);
+                    d_warn("Not implemented(type:%d)", message.emm.h.message_type);
                     break;
                 }
             }
