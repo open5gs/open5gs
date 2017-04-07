@@ -59,7 +59,7 @@ status_t nas_security_encode(
 
         memset(&h, 0, sizeof(h));
         h.security_header_type = message->h.security_header_type;
-        h.protocol_discriminator = message->h.protocol_discriminator;
+        h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
         h.sequence_number = (ue->dl_count & 0xff);
 
         d_assert(nas_plain_encode(&new, message) == CORE_OK, 

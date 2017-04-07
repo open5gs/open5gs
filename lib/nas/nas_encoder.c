@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-07 19:18:35.669382 by acetcom
+ * Created on: 2017-04-07 19:33:56.590092 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -746,6 +746,8 @@ status_t nas_plain_encode(pkbuf_t **pkbuf, nas_message_t *message)
             size = nas_encode_security_mode_reject(*pkbuf, message);
             d_assert(size >= 0, return CORE_ERROR, "decode error");
             encoded += size;
+            break;
+        case NAS_ESM_INFORMATION_REQUEST:
             break;
         default:
             d_error("Unknown message type (0x%x) or not implemented", 

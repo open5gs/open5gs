@@ -221,6 +221,7 @@ msg_list["IDENTITY RESPONSE"]["table"] = 28
 msg_list["SECURITY MODE COMMAND"]["table"] = 29
 msg_list["SECURITY MODE COMPLETE"]["table"] = 30
 msg_list["SECURITY MODE REJECT"]["table"] = 31
+msg_list["ESM INFORMATION REQUEST"]["table"] = 57
 
 for key in msg_list.keys():
     if "table" not in msg_list[key].keys():
@@ -239,8 +240,16 @@ for key in msg_list.keys():
         write_file(f, "ies = []\n")
         table = document.tables[msg_list[key]["table"]]
 
+        start_row = 0
+        for start_row, row in enumerate(table.rows):
+            cells = get_cells(row.cells);
+            if cells["type"].find('Message type') != -1:
+                break
+
+        assert start_row <= 4, "Can't find message type"
+
         half_length = True;
-        for row in table.rows[4:]:
+        for row in table.rows[start_row+1:]:
             cells = get_cells(row.cells)
             if cells is None:
                 continue

@@ -132,20 +132,18 @@ void emm_handle_authentication_response(
 void emm_handle_security_mode_complete(mme_ue_t *ue)
 {
     nas_message_t message;
-#if 0
     pkbuf_t *sendbuf = NULL;
-#endif
 
     memset(&message, 0, sizeof(message));
-    message.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    message.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_ESM;
     message.h.message_type = NAS_ESM_INFORMATION_REQUEST;
 
     message.h.security_header_type = 
        NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
-#if 0
     d_assert(nas_security_encode(&sendbuf, ue, &message) == CORE_OK && 
             sendbuf,,);
-#endif
+    d_print_hex(sendbuf->payload, sendbuf->len);
 
+    pkbuf_free(sendbuf);
     d_assert(ue, return, "Null param");
 }
