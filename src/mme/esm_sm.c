@@ -29,7 +29,11 @@ void esm_state_operational(esm_sm_t *s, event_t *e)
     d_assert(s, return, "Null param");
     d_assert(e, return, "Null param");
 
-    mme_ue_t *ue = s->ctx;
+    mme_esm_t *esm = s->ctx;
+    mme_ue_t *ue = NULL;
+    d_assert(esm, return, "Null param");
+
+    ue = esm->ue;
     d_assert(ue, return, "Null param");
 
     mme_sm_trace(1, e);
@@ -44,7 +48,7 @@ void esm_state_operational(esm_sm_t *s, event_t *e)
         {
             break;
         }
-        case EVT_MSG_UE_EMM:
+        case EVT_MSG_MME_ESM:
         {
             nas_message_t message;
             status_t rv;

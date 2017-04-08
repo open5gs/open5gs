@@ -68,7 +68,7 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
 
             break;
         }
-        case EVT_LO_ENB_S1AP_ACCEPT:
+        case EVT_LO_MME_S1AP_ACCEPT:
         {
             int rc;
 
@@ -103,7 +103,7 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
             
             break;
         }
-        case EVT_MSG_ENB_S1AP:
+        case EVT_MSG_MME_S1AP:
         {
             net_sock_t *sock = (net_sock_t *)event_get_param1(e);
             d_assert(sock, break, "Null param");
@@ -122,7 +122,7 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
 
             break;
         }
-        case EVT_MSG_UE_EMM:
+        case EVT_MSG_MME_EMM:
         {
             mme_ue_t *ue = (mme_ue_t *)event_get_param1(e);
             d_assert(ue, break, "Null param");
@@ -132,7 +132,7 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
 
             break;
         }
-        case EVT_MSG_UE_ESM:
+        case EVT_MSG_MME_ESM:
         {
             mme_esm_t *esm = (mme_esm_t *)event_get_param1(e);
             d_assert(esm, break, "Null param");
@@ -183,7 +183,7 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
             gtp_xact_timeout(xact);
             break;
         }
-        case EVT_LO_ENB_S1AP_CONNREFUSED:
+        case EVT_LO_MME_S1AP_CONNREFUSED:
         {
             net_sock_t *sock = (net_sock_t *)event_get_param1(e);
             d_assert(sock, break, "Null param");

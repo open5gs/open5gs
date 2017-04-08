@@ -213,7 +213,7 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     d_assert(nas_plain_encode(&sendbuf, &message) == CORE_OK && sendbuf, 
             error++; goto out,);
 
-    event_set(&e, EVT_MSG_UE_EMM);
+    event_set(&e, EVT_MSG_MME_EMM);
     event_set_param1(&e, (c_uintptr_t)ue);
     event_set_param2(&e, (c_uintptr_t)sendbuf);
     if (mme_event_send(&e) != CORE_OK)

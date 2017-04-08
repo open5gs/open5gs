@@ -7,14 +7,14 @@
 #include "s1ap_message.h"
 #include "nas_message.h"
 
-static char EVT_NAME_LO_ENB_S1AP_ACCEPT[] = "LO_ENB_S1AP_ACCEPT";
-static char EVT_NAME_LO_ENB_S1AP_CONNREFUSED[] = "LO_ENB_S1AP_CONNREFUSED";
+static char EVT_NAME_LO_MME_S1AP_ACCEPT[] = "LO_MME_S1AP_ACCEPT";
+static char EVT_NAME_LO_MME_S1AP_CONNREFUSED[] = "LO_MME_S1AP_CONNREFUSED";
 
 static char EVT_NAME_TM_MME_S11_T3[] = "TM_MME_S11_T3";
 
-static char EVT_NAME_MSG_ENB_S1AP[] = "MSG_ENB_S1AP";
-static char EVT_NAME_MSG_UE_EMM[] = "MSG_UE_EMM";
-static char EVT_NAME_MSG_UE_ESM[] = "MSG_UE_ESM";
+static char EVT_NAME_MSG_MME_S1AP[] = "MSG_MME_S1AP";
+static char EVT_NAME_MSG_MME_EMM[] = "MSG_MME_EMM";
+static char EVT_NAME_MSG_MME_ESM[] = "MSG_MME_ESM";
 static char EVT_NAME_MSG_MME_S11[] = "MSG_MME_S11";
 
 char* mme_event_get_name(event_t *e)
@@ -29,20 +29,20 @@ char* mme_event_get_name(event_t *e)
         case FSM_EXIT_SIG: 
             return FSM_NAME_EXIT_SIG;
 
-        case EVT_LO_ENB_S1AP_ACCEPT: 
-           return EVT_NAME_LO_ENB_S1AP_ACCEPT;
-        case EVT_LO_ENB_S1AP_CONNREFUSED: 
-           return EVT_NAME_LO_ENB_S1AP_CONNREFUSED;
+        case EVT_LO_MME_S1AP_ACCEPT: 
+           return EVT_NAME_LO_MME_S1AP_ACCEPT;
+        case EVT_LO_MME_S1AP_CONNREFUSED: 
+           return EVT_NAME_LO_MME_S1AP_CONNREFUSED;
 
         case EVT_TM_MME_S11_T3: 
            return EVT_NAME_TM_MME_S11_T3;
 
-        case EVT_MSG_ENB_S1AP: 
-           return EVT_NAME_MSG_ENB_S1AP;
-        case EVT_MSG_UE_EMM: 
-           return EVT_NAME_MSG_UE_EMM;
-        case EVT_MSG_UE_ESM: 
-           return EVT_NAME_MSG_UE_ESM;
+        case EVT_MSG_MME_S1AP: 
+           return EVT_NAME_MSG_MME_S1AP;
+        case EVT_MSG_MME_EMM: 
+           return EVT_NAME_MSG_MME_EMM;
+        case EVT_MSG_MME_ESM: 
+           return EVT_NAME_MSG_MME_ESM;
         case EVT_MSG_MME_S11: 
            return EVT_NAME_MSG_MME_S11;
 
@@ -66,7 +66,7 @@ void mme_event_s1ap_to_nas(mme_ue_t *ue, S1ap_NAS_PDU_t *nasPdu)
     d_assert(sendbuf, return, "Null param");
     memcpy(sendbuf->payload, nasPdu->buf, nasPdu->size);
 
-    event_set(&e, EVT_MSG_UE_EMM);
+    event_set(&e, EVT_MSG_MME_EMM);
     event_set_param1(&e, (c_uintptr_t)ue);
     event_set_param2(&e, (c_uintptr_t)sendbuf);
     mme_event_send(&e);

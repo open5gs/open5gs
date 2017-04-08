@@ -44,7 +44,7 @@ void emm_state_operational(emm_sm_t *s, event_t *e)
         {
             break;
         }
-        case EVT_MSG_UE_EMM:
+        case EVT_MSG_MME_EMM:
         {
             nas_message_t message;
             status_t rv;
