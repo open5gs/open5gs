@@ -6,7 +6,7 @@
 
 #include "mme_event.h"
 #include "nas_security.h"
-#include "emm_handler.h"
+#include "esm_handler.h"
 
 void esm_state_initial(esm_sm_t *s, event_t *e)
 {
@@ -62,10 +62,12 @@ void esm_state_operational(esm_sm_t *s, event_t *e)
                 break;
             }
 
-            switch(message.emm.h.message_type)
+            switch(message.esm.h.message_type)
             {
                 case NAS_PDN_CONNECTIVITY_REQUEST:
                 {
+                    esm_handle_pdn_connectivity_request(
+                            esm, &message.esm.pdn_connectivity_request);
                     break;
                 }
                 default:

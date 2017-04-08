@@ -11,11 +11,52 @@
 #include "nas_conv.h"
 #include "mme_s6a_handler.h"
 
+void emm_handle_esm_message_container(
+        mme_ue_t *ue, nas_esm_message_container_t *esm_message_container)
+{
+
+    nas_esm_header_t *h = NULL;
+    c_uint8_t pti = 0;
+    mme_esm_t *esm = NULL;
+
+    d_assert(ue, return, "Null param");
+    d_assert(esm_message_container, return, "Null param");
+    d_assert(esm_message_container->length, return, "Null param");
+
+    h = (nas_esm_header_t *)esm_message_container->buffer;
+    d_assert(h, return, "Null param");
+
+    pti = h->procedure_transaction_identity;
+    if (pti == NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED)
+    {
+        d_error("Procedure Trasaction is NOT triggered by UE");
+        return;
+    }
+
+    esm = mme_esm_find_by_pti(ue, pti);
+    if (!esm)
+    {
+        esm = mme_esm_add(ue, pti);
+        d_assert(esm, return, "Null param");
+    }
+    else
+    {
+        d_warn("Duplicated: MME-UE-S1AP-ID[%d] sends "
+            "PDN Connectivity Message[PTI(%d)]",
+            ue->mme_ue_s1ap_id, esm->pti);
+    }
+
+    mme_event_emm_to_esm(esm, esm_message_container);
+}
+
 void emm_handle_attach_request(
         mme_ue_t *ue, nas_attach_request_t *attach_request)
 {
     nas_eps_mobile_identity_t *eps_mobile_identity =
-        &attach_request->eps_mobile_identity;
+                    &attach_request->eps_mobile_identity;
+
+    emm_handle_esm_message_container(
+            ue, &attach_request->esm_message_container);
 
     switch(eps_mobile_identity->imsi.type_of_identity)
     {

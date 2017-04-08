@@ -89,7 +89,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
         INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
         enb->enb_id);
 
-    mme_event_s1ap_to_nas(ue, &ies->nas_pdu);
+    mme_event_s1ap_to_emm(ue, &ies->nas_pdu);
 }
 
 void s1ap_handle_uplink_nas_transport(
@@ -111,6 +111,6 @@ void s1ap_handle_uplink_nas_transport(
         INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
         enb->enb_id);
 
-    mme_event_s1ap_to_nas(ue, &ies->nas_pdu);
+    mme_event_s1ap_to_emm(ue, &ies->nas_pdu);
 }
 

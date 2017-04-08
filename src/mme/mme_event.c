@@ -53,11 +53,12 @@ char* mme_event_get_name(event_t *e)
     return EVT_NAME_UNKNOWN;
 }
 
-void mme_event_s1ap_to_nas(mme_ue_t *ue, S1ap_NAS_PDU_t *nasPdu)
+void mme_event_s1ap_to_emm(mme_ue_t *ue, S1ap_NAS_PDU_t *nasPdu)
 {
     pkbuf_t *sendbuf = NULL;
     event_t e;
 
+    d_assert(ue, return, "Null param");
     d_assert(nasPdu, return, "Null param");
 
     /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 
@@ -68,6 +69,28 @@ void mme_event_s1ap_to_nas(mme_ue_t *ue, S1ap_NAS_PDU_t *nasPdu)
 
     event_set(&e, EVT_MSG_MME_EMM);
     event_set_param1(&e, (c_uintptr_t)ue);
+    event_set_param2(&e, (c_uintptr_t)sendbuf);
+    mme_event_send(&e);
+}
+
+void mme_event_emm_to_esm(mme_esm_t *esm, 
+                nas_esm_message_container_t *esm_message_container)
+{
+    pkbuf_t *sendbuf = NULL;
+    event_t e;
+
+    d_assert(esm, return, "Null param");
+    d_assert(esm_message_container, return, "Null param");
+
+    /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 
+     * When calculating AES_CMAC, we need to use the headroom of the packet. */
+    sendbuf = pkbuf_alloc(NAS_HEADROOM, esm_message_container->length);
+    d_assert(sendbuf, return, "Null param");
+    memcpy(sendbuf->payload, 
+            esm_message_container->buffer, esm_message_container->length);
+
+    event_set(&e, EVT_MSG_MME_ESM);
+    event_set_param1(&e, (c_uintptr_t)esm);
     event_set_param2(&e, (c_uintptr_t)sendbuf);
     mme_event_send(&e);
 }
