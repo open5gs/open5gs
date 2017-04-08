@@ -30,29 +30,29 @@ typedef struct _pgw_context_t {
     tm_service_t    tm_service;     /* Timer Service */
     gtp_xact_ctx_t  gtp_xact_ctx;   /* GTP Transaction Context */
 
-    c_uint32_t      gtpc_tunnel_id; /* GTPv2-C F-TEID generator */
-    hash_t          *gtpc_hash;     /* hash table for pgw_gtpc_t structure */
+    c_uint32_t      sess_tunnel_id; /* GTPv2-C F-TEID generator */
+    hash_t          *sess_hash;     /* hash table for pgw_sess_t structure */
 } pgw_context_t;
 
-typedef struct _pgw_gtpc_t {
+typedef struct _pgw_sess_t {
     c_uint32_t      teid;       /* PGW-S5C-F-TEID */
     c_uint32_t      sgw_ipv4;   /* SGW-S11-F-TEID IPv4 Address */
     c_uint32_t      sgw_teid;   /* SGW-S11-F-TEID */
-} pgw_gtpc_t;
+} pgw_sess_t;
 
 CORE_DECLARE(status_t)      pgw_context_init(void);
 CORE_DECLARE(status_t)      pgw_context_final(void);
 
 CORE_DECLARE(pgw_context_t*) pgw_self(void);
 
-CORE_DECLARE(pgw_gtpc_t*)   pgw_gtpc_add();
-CORE_DECLARE(status_t )     pgw_gtpc_remove(pgw_gtpc_t *gtpc);
-CORE_DECLARE(status_t )     pgw_gtpc_remove_all();
-CORE_DECLARE(pgw_gtpc_t*)   pgw_gtpc_find(c_uint32_t teid);
-CORE_DECLARE(hash_index_t*) pgw_gtpc_first();
-CORE_DECLARE(hash_index_t*) pgw_gtpc_next(hash_index_t *hi);
-CORE_DECLARE(pgw_gtpc_t*)   pgw_gtpc_this(hash_index_t *hi);
-CORE_DECLARE(unsigned int)  pgw_gtpc_count();
+CORE_DECLARE(pgw_sess_t*)   pgw_sess_add();
+CORE_DECLARE(status_t )     pgw_sess_remove(pgw_sess_t *sess);
+CORE_DECLARE(status_t )     pgw_sess_remove_all();
+CORE_DECLARE(pgw_sess_t*)   pgw_sess_find(c_uint32_t teid);
+CORE_DECLARE(hash_index_t*) pgw_sess_first();
+CORE_DECLARE(hash_index_t*) pgw_sess_next(hash_index_t *hi);
+CORE_DECLARE(pgw_sess_t*)   pgw_sess_this(hash_index_t *hi);
+CORE_DECLARE(unsigned int)  pgw_sess_count();
 
 #ifdef __cplusplus
 }

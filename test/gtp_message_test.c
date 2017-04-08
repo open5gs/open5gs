@@ -292,47 +292,47 @@ static void gtp_message_test1(abts_case *tc, void *data)
 
 static void gtp_message_test2(abts_case *tc, void *data)
 {
-    sgw_gtpc_t *gtpc = NULL;
+    sgw_sess_t *sess = NULL;
     hash_index_t *hi = NULL;
     int i = 0;
 
-    gtpc = sgw_gtpc_add();
-    ABTS_INT_EQUAL(tc, 1, sgw_gtpc_count());
-    sgw_gtpc_remove(gtpc);
-    ABTS_INT_EQUAL(tc, 0, sgw_gtpc_count());
+    sess = sgw_sess_add();
+    ABTS_INT_EQUAL(tc, 1, sgw_sess_count());
+    sgw_sess_remove(sess);
+    ABTS_INT_EQUAL(tc, 0, sgw_sess_count());
 
-    sgw_gtpc_add();
-    sgw_gtpc_add();
-    sgw_gtpc_add();
-    sgw_gtpc_add();
-    sgw_gtpc_add();
-    ABTS_INT_EQUAL(tc, 5, sgw_gtpc_count());
+    sgw_sess_add();
+    sgw_sess_add();
+    sgw_sess_add();
+    sgw_sess_add();
+    sgw_sess_add();
+    ABTS_INT_EQUAL(tc, 5, sgw_sess_count());
 
-    sgw_gtpc_remove_all();
-    ABTS_INT_EQUAL(tc, 0, sgw_gtpc_count());
+    sgw_sess_remove_all();
+    ABTS_INT_EQUAL(tc, 0, sgw_sess_count());
 
     for (i = 0; i < 100; i++)
     {
-        gtpc = sgw_gtpc_add();
-        gtpc->mme_teid = i;
-        gtpc->pgw_teid = 100-i;
+        sess = sgw_sess_add();
+        sess->mme_teid = i;
+        sess->pgw_teid = 100-i;
     }
-    ABTS_INT_EQUAL(tc, 100, sgw_gtpc_count());
+    ABTS_INT_EQUAL(tc, 100, sgw_sess_count());
 
-    gtpc = sgw_gtpc_find(10);
-    ABTS_INT_EQUAL(tc, 3, gtpc->mme_teid);
-    ABTS_INT_EQUAL(tc, 97, gtpc->pgw_teid);
-    sgw_gtpc_remove(gtpc);
-    ABTS_INT_EQUAL(tc, 99, sgw_gtpc_count());
+    sess = sgw_sess_find(10);
+    ABTS_INT_EQUAL(tc, 3, sess->mme_teid);
+    ABTS_INT_EQUAL(tc, 97, sess->pgw_teid);
+    sgw_sess_remove(sess);
+    ABTS_INT_EQUAL(tc, 99, sgw_sess_count());
 
-    gtpc = sgw_gtpc_find(50);
-    ABTS_INT_EQUAL(tc, 43, gtpc->mme_teid);
-    ABTS_INT_EQUAL(tc, 57, gtpc->pgw_teid);
-    sgw_gtpc_remove(gtpc);
-    ABTS_INT_EQUAL(tc, 98, sgw_gtpc_count());
+    sess = sgw_sess_find(50);
+    ABTS_INT_EQUAL(tc, 43, sess->mme_teid);
+    ABTS_INT_EQUAL(tc, 57, sess->pgw_teid);
+    sgw_sess_remove(sess);
+    ABTS_INT_EQUAL(tc, 98, sgw_sess_count());
 
-    sgw_gtpc_remove_all();
-    ABTS_INT_EQUAL(tc, 0, sgw_gtpc_count());
+    sgw_sess_remove_all();
+    ABTS_INT_EQUAL(tc, 0, sgw_sess_count());
 }
 
 abts_suite *test_gtp_message(abts_suite *suite)

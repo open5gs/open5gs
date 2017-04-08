@@ -14,7 +14,7 @@ void sgw_handle_create_session_request(
 {
     status_t rv;
     gtp_create_session_request_t *req = NULL;
-    sgw_gtpc_t *gtpc = NULL;
+    sgw_sess_t *sess = NULL;
     pkbuf_t *pkbuf = NULL;
     gtp_f_teid_t *f_teid = NULL;
 
@@ -39,13 +39,13 @@ void sgw_handle_create_session_request(
         return;
     }
 
-    gtpc = sgw_gtpc_add();
-    d_assert(gtpc, return, "gtpc_add failed");
+    sess = sgw_sess_add();
+    d_assert(sess, return, "sess_add failed");
 
-    gtpc->mme_teid = ntohl(f_teid->teid);
-    gtpc->mme_ipv4 = f_teid->ipv4_addr;
+    sess->mme_teid = ntohl(f_teid->teid);
+    sess->mme_ipv4 = f_teid->ipv4_addr;
 
-    f_teid->teid = htonl(gtpc->teid);
+    f_teid->teid = htonl(sess->teid);
     f_teid->ipv4_addr = sgw_self()->s5c_addr;
     f_teid->interface_type = GTP_F_TEID_S5_S8_SGW_GTP_C;
 
@@ -57,7 +57,7 @@ void sgw_handle_create_session_request(
 }
 
 void sgw_handle_create_session_response(gtp_xact_t *xact, 
-    sgw_gtpc_t *gtpc, c_uint8_t type, gtp_message_t *gtp_message)
+    sgw_sess_t *sess, c_uint8_t type, gtp_message_t *gtp_message)
 {
     status_t rv;
     gtp_create_session_response_t *rsp = NULL;
@@ -65,7 +65,7 @@ void sgw_handle_create_session_response(gtp_xact_t *xact,
     gtp_f_teid_t *pgw_f_teid = NULL;
     gtp_f_teid_t sgw_f_teid;
 
-    d_assert(gtpc, return, "Null param");
+    d_assert(sess, return, "Null param");
     d_assert(xact, return, "Null param");
     d_assert(gtp_message, return, "Null param");
 
@@ -89,14 +89,14 @@ void sgw_handle_create_session_response(gtp_xact_t *xact,
         return;
     }
 
-    gtpc->pgw_teid = ntohl(pgw_f_teid->teid);
-    gtpc->pgw_ipv4 = pgw_f_teid->ipv4_addr;
+    sess->pgw_teid = ntohl(pgw_f_teid->teid);
+    sess->pgw_ipv4 = pgw_f_teid->ipv4_addr;
 
     memset(&sgw_f_teid, 0, sizeof(gtp_f_teid_t));
     sgw_f_teid.ipv4 = 1;
     sgw_f_teid.interface_type = GTP_F_TEID_S11_S4_SGW_GTP_C;
     sgw_f_teid.ipv4_addr = sgw_self()->s11_addr;
-    sgw_f_teid.teid = htonl(gtpc->teid);
+    sgw_f_teid.teid = htonl(sess->teid);
 
     rsp->sender_f_teid_for_control_plane.presence = 1;
     rsp->sender_f_teid_for_control_plane.data = &sgw_f_teid;
@@ -105,6 +105,6 @@ void sgw_handle_create_session_response(gtp_xact_t *xact,
     rv = gtp_build_msg(&pkbuf, type, gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
-    d_assert(sgw_s11_send_to_mme(xact, type, gtpc->mme_teid, pkbuf) == CORE_OK, 
+    d_assert(sgw_s11_send_to_mme(xact, type, sess->mme_teid, pkbuf) == CORE_OK, 
             return, "failed to send message");
 }

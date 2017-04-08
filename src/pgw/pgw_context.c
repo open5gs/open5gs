@@ -10,7 +10,7 @@
 
 static pgw_context_t self;
 
-pool_declare(pgw_gtpc_pool, pgw_gtpc_t, MAX_NUM_OF_UE);
+pool_declare(pgw_sess_pool, pgw_sess_t, MAX_NUM_OF_UE);
 
 static int context_initiaized = 0;
 
@@ -21,8 +21,8 @@ status_t pgw_context_init()
 
     memset(&self, 0, sizeof(pgw_context_t));
 
-    pool_init(&pgw_gtpc_pool, MAX_NUM_OF_UE);
-    self.gtpc_hash = hash_make();
+    pool_init(&pgw_sess_pool, MAX_NUM_OF_UE);
+    self.sess_hash = hash_make();
 
     self.s5c_addr = inet_addr("127.0.0.1");
     self.s5c_port = GTPV2_C_UDP_PORT + 3;
@@ -46,13 +46,13 @@ status_t pgw_context_final()
     d_assert(context_initiaized == 1, return CORE_ERROR,
             "HyperCell context already has been finalized");
 
-    d_assert(self.gtpc_hash, , "Null param");
-    hash_destroy(self.gtpc_hash);
+    d_assert(self.sess_hash, , "Null param");
+    hash_destroy(self.sess_hash);
 
-    d_print("%d not freed in pgw_gtpc_pool[%d] in PGW-Context\n",
-            pool_size(&pgw_gtpc_pool) - pool_avail(&pgw_gtpc_pool),
-            pool_size(&pgw_gtpc_pool));
-    pool_final(&pgw_gtpc_pool);
+    d_print("%d not freed in pgw_sess_pool[%d] in PGW-Context\n",
+            pool_size(&pgw_sess_pool) - pool_avail(&pgw_sess_pool),
+            pool_size(&pgw_sess_pool));
+    pool_final(&pgw_sess_pool);
 
     context_initiaized = 0;
     
@@ -64,73 +64,73 @@ pgw_context_t* pgw_self()
     return &self;
 }
 
-pgw_gtpc_t *pgw_gtpc_add()
+pgw_sess_t *pgw_sess_add()
 {
-    pgw_gtpc_t *gtpc = NULL;
+    pgw_sess_t *sess = NULL;
 
-    d_assert(self.gtpc_hash, return NULL, "Null param");
+    d_assert(self.sess_hash, return NULL, "Null param");
 
-    pool_alloc_node(&pgw_gtpc_pool, &gtpc);
-    d_assert(gtpc, return NULL, "Null param");
+    pool_alloc_node(&pgw_sess_pool, &sess);
+    d_assert(sess, return NULL, "Null param");
 
-    memset(gtpc, 0, sizeof(pgw_gtpc_t));
+    memset(sess, 0, sizeof(pgw_sess_t));
 
-    gtpc->teid = NEXT_ID(self.gtpc_tunnel_id, 0xffffffff);
-    hash_set(self.gtpc_hash, &gtpc->teid, sizeof(gtpc->teid), gtpc);
+    sess->teid = NEXT_ID(self.sess_tunnel_id, 0xffffffff);
+    hash_set(self.sess_hash, &sess->teid, sizeof(sess->teid), sess);
 
-    return gtpc;
+    return sess;
 }
 
-status_t pgw_gtpc_remove(pgw_gtpc_t *gtpc)
+status_t pgw_sess_remove(pgw_sess_t *sess)
 {
-    d_assert(self.gtpc_hash, return CORE_ERROR, "Null param");
-    d_assert(gtpc, return CORE_ERROR, "Null param");
-    hash_set(self.gtpc_hash, &gtpc->teid, sizeof(gtpc->teid), NULL);
+    d_assert(self.sess_hash, return CORE_ERROR, "Null param");
+    d_assert(sess, return CORE_ERROR, "Null param");
+    hash_set(self.sess_hash, &sess->teid, sizeof(sess->teid), NULL);
 
-    pool_free_node(&pgw_gtpc_pool, gtpc);
+    pool_free_node(&pgw_sess_pool, sess);
 
     return CORE_OK;
 }
 
-status_t pgw_gtpc_remove_all()
+status_t pgw_sess_remove_all()
 {
     hash_index_t *hi = NULL;
-    pgw_gtpc_t *gtpc = NULL;
+    pgw_sess_t *sess = NULL;
 
-    for (hi = pgw_gtpc_first(); hi; hi = pgw_gtpc_next(hi))
+    for (hi = pgw_sess_first(); hi; hi = pgw_sess_next(hi))
     {
-        gtpc = pgw_gtpc_this(hi);
-        pgw_gtpc_remove(gtpc);
+        sess = pgw_sess_this(hi);
+        pgw_sess_remove(sess);
     }
 
     return CORE_OK;
 }
 
-pgw_gtpc_t *pgw_gtpc_find(c_uint32_t teid)
+pgw_sess_t *pgw_sess_find(c_uint32_t teid)
 {
-    d_assert(self.gtpc_hash, return NULL, "Null param");
-    return hash_get(self.gtpc_hash, &teid, sizeof(teid));
+    d_assert(self.sess_hash, return NULL, "Null param");
+    return hash_get(self.sess_hash, &teid, sizeof(teid));
 }
 
-hash_index_t *pgw_gtpc_first()
+hash_index_t *pgw_sess_first()
 {
-    d_assert(self.gtpc_hash, return NULL, "Null param");
-    return hash_first(self.gtpc_hash);
+    d_assert(self.sess_hash, return NULL, "Null param");
+    return hash_first(self.sess_hash);
 }
 
-hash_index_t *pgw_gtpc_next(hash_index_t *hi)
+hash_index_t *pgw_sess_next(hash_index_t *hi)
 {
     return hash_next(hi);
 }
 
-pgw_gtpc_t *pgw_gtpc_this(hash_index_t *hi)
+pgw_sess_t *pgw_sess_this(hash_index_t *hi)
 {
     d_assert(hi, return NULL, "Null param");
     return hash_this_val(hi);
 }
 
-unsigned int pgw_gtpc_count()
+unsigned int pgw_sess_count()
 {
-    d_assert(self.gtpc_hash, return 0, "Null param");
-    return hash_count(self.gtpc_hash);
+    d_assert(self.sess_hash, return 0, "Null param");
+    return hash_count(self.sess_hash);
 }

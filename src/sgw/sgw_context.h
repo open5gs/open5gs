@@ -35,31 +35,31 @@ typedef struct _sgw_context_t {
     tm_service_t    tm_service;     /* Timer Service */
     gtp_xact_ctx_t  gtp_xact_ctx;   /* GTP Transaction Context */
 
-    c_uint32_t      gtpc_tunnel_id; /* GTPv2-C F-TEID generator */
-    hash_t          *gtpc_hash;     /* hash table for sgw_gtpc_t structure */
+    c_uint32_t      sess_tunnel_id; /* GTPv2-C F-TEID generator */
+    hash_t          *sess_hash;     /* hash table for sgw_sess_t structure */
 } sgw_context_t;
 
-typedef struct _sgw_gtpc_t {
+typedef struct _sgw_sess_t {
     c_uint32_t      teid;       /* SGW-S11-F-TEID, SGW-S5C-F-TEID */
     c_uint32_t      mme_ipv4;   /* MME-S11-F-TEID IPv4 Address */
     c_uint32_t      mme_teid;   /* MME-S11-F-TEID */
     c_uint32_t      pgw_ipv4;   /* PGW-S11-F-TEID IPv4 Address */
     c_uint32_t      pgw_teid;   /* PGW-S11-F-TEID */
-} sgw_gtpc_t;
+} sgw_sess_t;
 
 CORE_DECLARE(status_t)      sgw_context_init(void);
 CORE_DECLARE(status_t)      sgw_context_final(void);
 
 CORE_DECLARE(sgw_context_t*) sgw_self(void);
 
-CORE_DECLARE(sgw_gtpc_t*)   sgw_gtpc_add();
-CORE_DECLARE(status_t )     sgw_gtpc_remove(sgw_gtpc_t *gtpc);
-CORE_DECLARE(status_t )     sgw_gtpc_remove_all();
-CORE_DECLARE(sgw_gtpc_t*)   sgw_gtpc_find(c_uint32_t teid);
-CORE_DECLARE(hash_index_t*) sgw_gtpc_first();
-CORE_DECLARE(hash_index_t*) sgw_gtpc_next(hash_index_t *hi);
-CORE_DECLARE(sgw_gtpc_t*)   sgw_gtpc_this(hash_index_t *hi);
-CORE_DECLARE(unsigned int)  sgw_gtpc_count();
+CORE_DECLARE(sgw_sess_t*)   sgw_sess_add();
+CORE_DECLARE(status_t )     sgw_sess_remove(sgw_sess_t *sess);
+CORE_DECLARE(status_t )     sgw_sess_remove_all();
+CORE_DECLARE(sgw_sess_t*)   sgw_sess_find(c_uint32_t teid);
+CORE_DECLARE(hash_index_t*) sgw_sess_first();
+CORE_DECLARE(hash_index_t*) sgw_sess_next(hash_index_t *hi);
+CORE_DECLARE(sgw_sess_t*)   sgw_sess_this(hash_index_t *hi);
+CORE_DECLARE(unsigned int)  sgw_sess_count();
 
 #ifdef __cplusplus
 }

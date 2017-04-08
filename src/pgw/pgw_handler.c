@@ -22,7 +22,7 @@ void pgw_handle_create_session_request(
     gtp_f_teid_t *sgw_f_teid;
     gtp_f_teid_t pgw_f_teid;
 
-    pgw_gtpc_t *gtpc = NULL;
+    pgw_sess_t *sess = NULL;
 
     d_assert(xact, return, "Null param");
     d_assert(req, return, "Null param");
@@ -43,11 +43,11 @@ void pgw_handle_create_session_request(
         return;
     }
 
-    gtpc = pgw_gtpc_add();
-    d_assert(gtpc, return, "gtpc_add failed");
+    sess = pgw_sess_add();
+    d_assert(sess, return, "sess_add failed");
 
-    gtpc->sgw_teid = ntohl(sgw_f_teid->teid);
-    gtpc->sgw_ipv4 = sgw_f_teid->ipv4_addr;
+    sess->sgw_teid = ntohl(sgw_f_teid->teid);
+    sess->sgw_ipv4 = sgw_f_teid->ipv4_addr;
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));
 
@@ -61,7 +61,7 @@ void pgw_handle_create_session_request(
     pgw_f_teid.ipv4 = 1;
     pgw_f_teid.interface_type = GTP_F_TEID_S5_S8_PGW_GTP_C;
     pgw_f_teid.ipv4_addr = pgw_self()->s5c_addr;
-    pgw_f_teid.teid = htonl(gtpc->teid);
+    pgw_f_teid.teid = htonl(sess->teid);
     rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
         presence = 1;
     rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
@@ -72,5 +72,5 @@ void pgw_handle_create_session_request(
     rv = gtp_build_msg(&pkbuf, type, &gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
-    pgw_s5c_send_to_sgw(xact, type, gtpc->sgw_teid, pkbuf);
+    pgw_s5c_send_to_sgw(xact, type, sess->sgw_teid, pkbuf);
 }
