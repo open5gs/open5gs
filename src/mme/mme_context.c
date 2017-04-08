@@ -9,10 +9,10 @@
 #include "mme_context.h"
 
 #define MAX_CELL_PER_ENB            8
-#define MAX_ERAB_PER_UE             16
+#define MAX_ESM_PER_UE              4
 
 #define MAX_NUM_OF_SGW              8
-#define MAX_NUM_OF_ERAB             (MAX_NUM_OF_UE * MAX_ERAB_PER_UE)
+#define MAX_NUM_OF_ESM              (MAX_NUM_OF_UE * MAX_ESM_PER_UE)
 
 #define S1AP_SCTP_PORT              36412
 
@@ -21,6 +21,7 @@ static mme_context_t self;
 pool_declare(mme_sgw_pool, mme_sgw_t, MAX_NUM_OF_SGW);
 pool_declare(mme_enb_pool, mme_enb_t, MAX_NUM_OF_ENB);
 pool_declare(mme_ue_pool, mme_ue_t, MAX_NUM_OF_UE);
+pool_declare(mme_esm_pool, mme_esm_t, MAX_NUM_OF_ESM);
 
 static int context_initialized = 0;
 
@@ -35,6 +36,7 @@ status_t mme_context_init()
     pool_init(&mme_sgw_pool, MAX_NUM_OF_SGW);
     pool_init(&mme_enb_pool, MAX_NUM_OF_ENB);
     pool_init(&mme_ue_pool, MAX_NUM_OF_UE);
+    pool_init(&mme_esm_pool, MAX_NUM_OF_ESM);
 
     list_init(&self.sgw_list);
     list_init(&self.enb_list);
@@ -193,6 +195,17 @@ status_t mme_enb_remove(mme_enb_t *enb)
 
     mme_ue_remove_in_enb(enb);
 
+    if (FSM_STATE(&enb->s1ap_sm))
+    {
+        fsm_final((fsm_t*)&enb->s1ap_sm, 0);
+        fsm_clear((fsm_t*)&enb->s1ap_sm);
+    }
+    else
+        d_assert(0,, "Null param");
+
+    net_unregister_sock(enb->s1ap_sock);
+    net_close(enb->s1ap_sock);
+
     list_remove(&self.enb_list, enb);
     pool_free_node(&mme_enb_pool, enb);
 
@@ -276,6 +289,8 @@ mme_ue_t* mme_ue_add(mme_enb_t *enb)
     hash_set(self.mme_ue_s1ap_id_hash, &ue->mme_ue_s1ap_id, 
             sizeof(ue->mme_ue_s1ap_id), ue);
 
+    list_init(&ue->esm_list);
+
     list_append(&enb->ue_list, ue);
     
     return ue;
@@ -292,15 +307,12 @@ status_t mme_ue_remove(mme_ue_t *ue)
         fsm_final((fsm_t*)&ue->emm_sm, 0);
         fsm_clear((fsm_t*)&ue->emm_sm);
     }
-    if (FSM_STATE(&ue->esm_sm))
-    {
-        fsm_final((fsm_t*)&ue->esm_sm, 0);
-        fsm_clear((fsm_t*)&ue->esm_sm);
-    }
 
     list_remove(&ue->enb->ue_list, ue);
     hash_set(self.mme_ue_s1ap_id_hash, &ue->mme_ue_s1ap_id, 
             sizeof(ue->mme_ue_s1ap_id), NULL);
+
+    mme_esm_remove_all(ue);
 
     pool_free_node(&mme_ue_pool, ue);
 
@@ -395,3 +407,88 @@ mme_ue_t* mme_ue_next_in_enb(mme_ue_t *ue)
     return list_next(ue);
 }
 
+mme_esm_t* mme_esm_add(mme_ue_t *ue)
+{
+    mme_esm_t *esm = NULL;
+
+    d_assert(ue, return NULL, "Null param");
+
+    pool_alloc_node(&mme_esm_pool, &esm);
+    d_assert(esm, return NULL, "Null param");
+
+    memset(esm, 0, sizeof(mme_esm_t));
+
+    esm->ue = ue;
+
+    list_append(&ue->esm_list, esm);
+    
+    return esm;
+}
+
+status_t mme_esm_remove(mme_esm_t *esm)
+{
+    d_assert(esm, return CORE_ERROR, "Null param");
+    d_assert(esm->ue, return CORE_ERROR, "Null param");
+    
+    if (FSM_STATE(&esm->sm))
+    {
+        fsm_final((fsm_t*)&esm->sm, 0);
+        fsm_clear((fsm_t*)&esm->sm);
+    }
+    else
+        d_assert(0, , "Null param");
+
+    list_remove(&esm->ue->esm_list, esm);
+    pool_free_node(&mme_esm_pool, esm);
+
+    return CORE_OK;
+}
+
+status_t mme_esm_remove_all(mme_ue_t *ue)
+{
+    mme_esm_t *esm = NULL, *next_esm = NULL;
+
+    d_assert(ue, return CORE_ERROR, "Null param");
+    
+    esm = mme_esm_first(ue);
+    while (esm)
+    {
+        next_esm = mme_esm_next(esm);
+
+        mme_esm_remove(esm);
+
+        esm = next_esm;
+    }
+
+    return CORE_OK;
+}
+
+mme_esm_t* mme_esm_find_by_pti(mme_ue_t *ue, c_uint8_t pti)
+{
+    mme_esm_t *esm = NULL;
+
+    d_assert(ue, return NULL, "Null param");
+    
+    esm = mme_esm_first(ue);
+    while (esm)
+    {
+        if (pti == esm->pti)
+            break;
+
+        esm = mme_esm_next(esm);
+    }
+
+    return esm;
+}
+
+mme_esm_t* mme_esm_first(mme_ue_t *ue)
+{
+    d_assert(ue, return NULL, "Null param");
+
+    return list_first(&ue->esm_list);
+}
+
+mme_esm_t* mme_esm_next(mme_esm_t *esm)
+{
+    return list_next(esm);
+}

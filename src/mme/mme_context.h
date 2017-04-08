@@ -96,7 +96,6 @@ typedef struct _mme_ue_t {
 
     /* State Machine */
     emm_sm_t        emm_sm;
-    esm_sm_t        esm_sm;
 
     /* UE identity */
     c_uint32_t      enb_ue_s1ap_id; /** eNB-UE-S1AP-ID received from eNB */
@@ -123,8 +122,20 @@ typedef struct _mme_ue_t {
         c_uint32_t i32;
     } ul_count;
 
+    list_t          esm_list;
+
     mme_enb_t       *enb;
 } mme_ue_t;
+
+typedef struct _mme_esm_t {
+    lnode_t         node; /**< A node of list_t */
+
+    c_uint8_t       pti;  /** Procedure Trasaction Identity */
+
+    esm_sm_t        sm;
+
+    mme_ue_t        *ue;
+} mme_esm_t;
 
 CORE_DECLARE(status_t)      mme_context_init(void);
 CORE_DECLARE(status_t)      mme_context_final(void);
@@ -159,6 +170,13 @@ CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_enb_ue_s1ap_id(
                                 mme_enb_t *enb, c_uint32_t enb_ue_s1ap_id);
 CORE_DECLARE(mme_ue_t*)     mme_ue_first_in_enb(mme_enb_t *enb);
 CORE_DECLARE(mme_ue_t*)     mme_ue_next_in_enb(mme_ue_t *ue);
+
+CORE_DECLARE(mme_esm_t*)    mme_esm_add(mme_ue_t *ue);
+CORE_DECLARE(status_t)      mme_esm_remove(mme_esm_t *esm);
+CORE_DECLARE(status_t)      mme_esm_remove_all(mme_ue_t *ue);
+CORE_DECLARE(mme_esm_t*)    mme_esm_find_by_pti(mme_ue_t *ue, c_uint8_t pti);
+CORE_DECLARE(mme_esm_t*)    mme_esm_first(mme_ue_t *ue);
+CORE_DECLARE(mme_esm_t*)    mme_esm_next(mme_esm_t *esm);
 
 #ifdef __cplusplus
 }

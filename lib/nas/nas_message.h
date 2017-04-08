@@ -60,6 +60,8 @@ ED2(c_uint8_t security_header_type:4;,
     c_uint8_t message_type;
 } __attribute__ ((packed)) nas_emm_header_t;
 
+#define NAS_EPS_BEARER_IDENTITY_UNASSIGNED 0
+#define NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED 0;
 typedef struct _nas_esm_header_t {
 ED2(c_uint8_t eps_bearer_identity:4;,
     c_uint8_t protocol_discriminator:4;)

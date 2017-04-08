@@ -134,11 +134,11 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
         }
         case EVT_MSG_UE_ESM:
         {
-            mme_ue_t *ue = (mme_ue_t *)event_get_param1(e);
-            d_assert(ue, break, "Null param");
+            mme_esm_t *esm = (mme_esm_t *)event_get_param1(e);
+            d_assert(esm, break, "Null param");
 
-            d_assert(FSM_STATE(&ue->esm_sm), break, "Null param");
-            fsm_dispatch((fsm_t*)&ue->esm_sm, (fsm_event_t*)e);
+            d_assert(FSM_STATE(&esm->sm), break, "Null param");
+            fsm_dispatch((fsm_t*)&esm->sm, (fsm_event_t*)e);
 
             break;
         }
@@ -194,15 +194,6 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
             mme_enb_t *enb = mme_enb_find_by_sock(sock);
             if (enb) 
             {
-                /* Remove eNB S1 state machine if exist */
-                d_assert(FSM_STATE(&enb->s1ap_sm), break, "Null param");
-
-                fsm_final((fsm_t*)&enb->s1ap_sm, 0);
-                fsm_clear((fsm_t*)&enb->s1ap_sm);
-
-                net_unregister_sock(sock);
-                net_close(sock);
-
                 mme_enb_remove(enb);
                 d_info("eNB-S1[%x] connection refused!!!", enb->enb_id);
             }

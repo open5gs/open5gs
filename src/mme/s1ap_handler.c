@@ -75,6 +75,12 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
         d_assert(ue, return, "Null param");
 
         ue->enb_ue_s1ap_id = ies->eNB_UE_S1AP_ID;
+
+        fsm_create((fsm_t*)&ue->emm_sm, 
+                emm_state_initial, emm_state_final);
+        ue->emm_sm.ctx = ue;
+        fsm_init((fsm_t*)&ue->emm_sm, 0);
+
     }
     else
     {
@@ -83,21 +89,11 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
             enb->enb_id, ue->enb_ue_s1ap_id);
     }
 
-    d_assert(enb->s1ap_sock, mme_ue_remove(ue);return,);
+    d_assert(enb->s1ap_sock, mme_ue_remove(ue); return,);
     d_info("[S1AP] InitialUEMessage : UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]",
         ue->enb_ue_s1ap_id,
         INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
         enb->enb_id);
-
-    fsm_create((fsm_t*)&ue->emm_sm, 
-            emm_state_initial, emm_state_final);
-    ue->emm_sm.ctx = ue;
-    fsm_init((fsm_t*)&ue->emm_sm, 0);
-
-    fsm_create((fsm_t*)&ue->esm_sm, 
-            esm_state_initial, esm_state_final);
-    ue->esm_sm.ctx = ue;
-    fsm_init((fsm_t*)&ue->esm_sm, 0);
 
     mme_event_s1ap_to_nas(ue, &ies->nas_pdu);
 }
