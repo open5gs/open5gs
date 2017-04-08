@@ -84,14 +84,8 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
                 rc = net_register_sock(sock, _s1ap_recv_cb, NULL);
                 d_assert(rc == 0, break, "register _s1ap_recv_cb failed");
 
-                mme_enb_t *enb = mme_enb_add();
+                mme_enb_t *enb = mme_enb_add(sock);
                 d_assert(enb, break, "Null param");
-                enb->s1ap_sock = sock;
-
-                fsm_create((fsm_t*)&enb->s1ap_sm, 
-                        s1ap_state_initial, s1ap_state_final);
-                enb->s1ap_sm.ctx = enb;
-                fsm_init((fsm_t*)&enb->s1ap_sm, 0);
             }
             else
             {

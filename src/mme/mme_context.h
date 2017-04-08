@@ -148,7 +148,7 @@ CORE_DECLARE(mme_sgw_t*)    mme_sgw_find_by_node(gtp_node_t *gnode);
 CORE_DECLARE(mme_sgw_t*)    mme_sgw_first(void);
 CORE_DECLARE(mme_sgw_t*)    mme_sgw_next(mme_sgw_t *sgw);
 
-CORE_DECLARE(mme_enb_t*)    mme_enb_add(void);
+CORE_DECLARE(mme_enb_t*)    mme_enb_add(net_sock_t *s1ap_sock);
 CORE_DECLARE(status_t)      mme_enb_remove(mme_enb_t *enb);
 CORE_DECLARE(status_t)      mme_enb_remove_all(void);
 CORE_DECLARE(mme_enb_t*)    mme_enb_find_by_sock(net_sock_t *sock);
@@ -171,7 +171,7 @@ CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_enb_ue_s1ap_id(
 CORE_DECLARE(mme_ue_t*)     mme_ue_first_in_enb(mme_enb_t *enb);
 CORE_DECLARE(mme_ue_t*)     mme_ue_next_in_enb(mme_ue_t *ue);
 
-CORE_DECLARE(mme_esm_t*)    mme_esm_add(mme_ue_t *ue);
+CORE_DECLARE(mme_esm_t*)    mme_esm_add(mme_ue_t *ue, c_uint8_t pti);
 CORE_DECLARE(status_t)      mme_esm_remove(mme_esm_t *esm);
 CORE_DECLARE(status_t)      mme_esm_remove_all(mme_ue_t *ue);
 CORE_DECLARE(mme_esm_t*)    mme_esm_find_by_pti(mme_ue_t *ue, c_uint8_t pti);

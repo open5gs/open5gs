@@ -173,7 +173,7 @@ mme_sgw_t* mme_sgw_next(mme_sgw_t *sgw)
     return list_next(sgw);
 }
 
-mme_enb_t* mme_enb_add()
+mme_enb_t* mme_enb_add(net_sock_t *s1ap_sock)
 {
     mme_enb_t *enb = NULL;
 
@@ -181,6 +181,13 @@ mme_enb_t* mme_enb_add()
     d_assert(enb, return NULL, "Null param");
 
     memset(enb, 0, sizeof(mme_enb_t));
+
+    enb->s1ap_sock = s1ap_sock;
+
+    fsm_create((fsm_t*)&enb->s1ap_sm, 
+            s1ap_state_initial, s1ap_state_final);
+    enb->s1ap_sm.ctx = enb;
+    fsm_init((fsm_t*)&enb->s1ap_sm, 0);
 
     list_init(&enb->ue_list);
 
@@ -283,11 +290,16 @@ mme_ue_t* mme_ue_add(mme_enb_t *enb)
 
     memset(ue, 0, sizeof(mme_ue_t));
 
-    ue->enb = enb;
+    fsm_create((fsm_t*)&ue->emm_sm, 
+            emm_state_initial, emm_state_final);
+    ue->emm_sm.ctx = ue;
+    fsm_init((fsm_t*)&ue->emm_sm, 0);
 
     ue->mme_ue_s1ap_id = NEXT_ID(self.mme_ue_s1ap_id, 0xffffffff);
     hash_set(self.mme_ue_s1ap_id_hash, &ue->mme_ue_s1ap_id, 
             sizeof(ue->mme_ue_s1ap_id), ue);
+
+    ue->enb = enb;
 
     list_init(&ue->esm_list);
 
@@ -407,7 +419,7 @@ mme_ue_t* mme_ue_next_in_enb(mme_ue_t *ue)
     return list_next(ue);
 }
 
-mme_esm_t* mme_esm_add(mme_ue_t *ue)
+mme_esm_t* mme_esm_add(mme_ue_t *ue, c_uint8_t pti)
 {
     mme_esm_t *esm = NULL;
 
@@ -417,6 +429,8 @@ mme_esm_t* mme_esm_add(mme_ue_t *ue)
     d_assert(esm, return NULL, "Null param");
 
     memset(esm, 0, sizeof(mme_esm_t));
+
+    esm->pti = pti;
 
     esm->ue = ue;
 

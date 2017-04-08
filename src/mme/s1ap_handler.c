@@ -75,12 +75,6 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
         d_assert(ue, return, "Null param");
 
         ue->enb_ue_s1ap_id = ies->eNB_UE_S1AP_ID;
-
-        fsm_create((fsm_t*)&ue->emm_sm, 
-                emm_state_initial, emm_state_final);
-        ue->emm_sm.ctx = ue;
-        fsm_init((fsm_t*)&ue->emm_sm, 0);
-
     }
     else
     {
