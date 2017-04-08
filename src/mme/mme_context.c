@@ -203,13 +203,8 @@ status_t mme_enb_remove(mme_enb_t *enb)
 
     mme_ue_remove_in_enb(enb);
 
-    if (FSM_STATE(&enb->s1ap_sm))
-    {
-        fsm_final((fsm_t*)&enb->s1ap_sm, 0);
-        fsm_clear((fsm_t*)&enb->s1ap_sm);
-    }
-    else
-        d_assert(0,, "Null param");
+    fsm_final((fsm_t*)&enb->s1ap_sm, 0);
+    fsm_clear((fsm_t*)&enb->s1ap_sm);
 
     net_unregister_sock(enb->s1ap_sock);
     net_close(enb->s1ap_sock);
@@ -315,17 +310,14 @@ status_t mme_ue_remove(mme_ue_t *ue)
     d_assert(ue, return CORE_ERROR, "Null param");
     d_assert(ue->enb, return CORE_ERROR, "Null param");
 
-    if (FSM_STATE(&ue->emm_sm))
-    {
-        fsm_final((fsm_t*)&ue->emm_sm, 0);
-        fsm_clear((fsm_t*)&ue->emm_sm);
-    }
+    mme_esm_remove_all(ue);
+
+    fsm_final((fsm_t*)&ue->emm_sm, 0);
+    fsm_clear((fsm_t*)&ue->emm_sm);
 
     list_remove(&ue->enb->ue_list, ue);
     hash_set(self.mme_ue_s1ap_id_hash, &ue->mme_ue_s1ap_id, 
             sizeof(ue->mme_ue_s1ap_id), NULL);
-
-    mme_esm_remove_all(ue);
 
     pool_free_node(&mme_ue_pool, ue);
 
@@ -445,13 +437,8 @@ status_t mme_esm_remove(mme_esm_t *esm)
     d_assert(esm, return CORE_ERROR, "Null param");
     d_assert(esm->ue, return CORE_ERROR, "Null param");
     
-    if (FSM_STATE(&esm->sm))
-    {
-        fsm_final((fsm_t*)&esm->sm, 0);
-        fsm_clear((fsm_t*)&esm->sm);
-    }
-    else
-        d_assert(0, , "Null param");
+    fsm_final((fsm_t*)&esm->sm, 0);
+    fsm_clear((fsm_t*)&esm->sm);
 
     list_remove(&esm->ue->esm_list, esm);
     pool_free_node(&mme_esm_pool, esm);
