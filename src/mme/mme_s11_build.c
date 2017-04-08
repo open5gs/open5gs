@@ -22,8 +22,8 @@ status_t mme_s11_build_create_session_req(
     gtp_f_teid_t s11, s5;
     gtp_paa_t paa;
     gtp_ambr_t ambr;
-    gtp_pco_t pco;
-    char pcobuf[GTP_MAX_PCO_LEN];
+    pco_t pco;
+    char pcobuf[MAX_PCO_LEN];
     gtp_bearer_qos_t bearer_qos;
     char bearer_qos_buf[GTP_BEARER_QOS_LEN];
     gtp_ue_timezone_t ue_timezone;
@@ -103,21 +103,23 @@ status_t mme_s11_build_create_session_req(
     req->aggregate_maximum_bit_rate.data = &ambr;
     req->aggregate_maximum_bit_rate.len = sizeof(ambr);
 
-    memset(&pco, 0, sizeof(gtp_pco_t));
+    memset(&pco, 0, sizeof(pco_t));
     pco.ext = 1;
     pco.configuration_protocol = 
-        GTP_PCO_PPP_FOR_USE_WITH_IP_PDP_TYPE_OR_IP_PDN_TYPE;
+        PCO_PPP_FOR_USE_WITH_IP_PDP_TYPE_OR_IP_PDN_TYPE;
     pco.num_of_id = 3;
-    pco.ids[0].id = GTP_PROTOCOL_OR_CONTAINER_ID_INTERNET_PROTOCOL_CONTROL_PROTOCOL;
+    pco.ids[0].id = PROTOCOL_OR_CONTAINER_ID_INTERNET_PROTOCOL_CONTROL_PROTOCOL;
     pco.ids[0].contents = (c_uint8_t *)"\x01\x00\x00\x10\x81\x06\x00\x00\x00\x00\x83\x06\x00\x00\x00\x00";
     pco.ids[0].length = 16;
-    pco.ids[1].id = GTP_PROTOCOL_OR_CONTAINER_ID_DNS_SERVER_IPV4_ADDRESS_REQUEST;
+    pco.ids[1].id = PROTOCOL_OR_CONTAINER_ID_DNS_SERVER_IPV4_ADDRESS_REQUEST;
     pco.ids[1].length = 0;
-    pco.ids[2].id = GTP_PROTOCOL_OR_CONTAINER_ID_IP_ADDRESS_ALLOCATION_VIA_NAS_SIGNALLING;
+    pco.ids[2].id = PROTOCOL_OR_CONTAINER_ID_IP_ADDRESS_ALLOCATION_VIA_NAS_SIGNALLING;
     pco.ids[2].length = 0;
+
     req->protocol_configuration_options.presence = 1;
-    gtp_build_pco(&req->protocol_configuration_options, &pco, 
-            pcobuf, GTP_MAX_PCO_LEN);
+    req->protocol_configuration_options.data = &pcobuf;
+    req->protocol_configuration_options.len = 
+        pco_build(pcobuf, MAX_PCO_LEN, &pco);
 
     req->bearer_contexts_to_be_created.presence = 1;
     req->bearer_contexts_to_be_created.eps_bearer_id.presence = 1;

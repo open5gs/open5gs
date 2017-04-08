@@ -105,30 +105,6 @@ typedef struct _gtp_ambr_t {
  * 10.5.6.3 Protocol configuration options in 3GPP TS 24.008 
  * RFC 3232 [103]
  * RFC 1661 [102] */
-#define GTP_PCO_PPP_FOR_USE_WITH_IP_PDP_TYPE_OR_IP_PDN_TYPE 0
-
-#define GTP_PROTOCOL_OR_CONTAINER_ID_INTERNET_PROTOCOL_CONTROL_PROTOCOL 0x8021
-#define GTP_PROTOCOL_OR_CONTAINER_ID_DNS_SERVER_IPV4_ADDRESS_REQUEST 0x000d
-#define GTP_PROTOCOL_OR_CONTAINER_ID_IP_ADDRESS_ALLOCATION_VIA_NAS_SIGNALLING 0x000a
-typedef struct _gtp_protocol_or_container_id_t {
-    c_uint16_t id;
-    c_uint8_t length;
-    void *contents;
-} gtp_protocol_or_container_id_t;
-
-#define GTP_MAX_PROTOCOL_OR_CONTAINER_ID    4
-#define GTP_MAX_PCO_LEN 253
-typedef struct _gtp_pco_t {
-ED3(c_uint8_t ext:1;,
-    c_uint8_t spare:4;,
-    c_uint8_t configuration_protocol:3;)
-    c_uint8_t num_of_id;
-    gtp_protocol_or_container_id_t ids[GTP_MAX_PROTOCOL_OR_CONTAINER_ID];
-} gtp_pco_t;
-
-CORE_DECLARE(c_int16_t) gtp_parse_pco(gtp_pco_t *pco, tlv_octet_t *octet);
-CORE_DECLARE(c_int16_t) gtp_build_pco(
-        tlv_octet_t *octet, gtp_pco_t *pco, void *data, int data_len);
 
 /* 8.15 Bearer Quality of Service (Bearer QoS) */
 #define GTP_BEARER_QOS_LEN 22

@@ -124,7 +124,7 @@ ED8(c_uint8_t cm3:1;,
  * O TLV 2-34 */
 typedef struct _nas_mobile_station_classmark_3_t {
     c_uint8_t length;
-    c_uint8_t todo[34];
+    c_uint8_t TODO[34];
 } __attribute__ ((packed)) nas_mobile_station_classmark_3_t;
 
 /* 9.9.2.8 PLMN list
@@ -705,7 +705,7 @@ typedef struct _nas_ue_security_capability_t {
  * O TLV 5-50 */
 typedef struct _nas_emergency_number_list_t {
     c_uint16_t length;
-    c_uint8_t todo[50];
+    c_uint8_t TODO[50];
 } __attribute__ ((packed)) nas_emergency_number_list_t;
 
 /* 9.9.3.44 Voice domain preference and UE's usage setting
@@ -758,7 +758,7 @@ ED3(c_uint8_t type:4;,
 #define NAS_MAX_PCO_LEN 250
 typedef struct _nas_protocol_configuration_options_t {
     c_uint8_t length;
-    c_uint8_t todo[NAS_MAX_PCO_LEN];
+    c_uint8_t TODO[NAS_MAX_PCO_LEN];
 } __attribute__ ((packed)) nas_protocol_configuration_options_t;
 
 /* 9.9.4.14 Request type
@@ -788,14 +788,14 @@ ED4(c_uint8_t spare1:1;,
  * O TLV 3-257 */
 typedef struct _nas_nbifom_container_t {
     c_uint8_t length;
-    c_uint8_t todo[257];
+    c_uint8_t TODO[257];
 } __attribute__ ((packed)) nas_nbifom_container_t;
 
 /* 9.9.4.22 Header compression configuration
  * O TLV 5-257 */
 typedef struct _nas_header_compression_configuration_t {
     c_uint8_t length;
-    c_uint8_t todo[257];
+    c_uint8_t TODO[257];
 } __attribute__ ((packed)) nas_header_compression_configuration_t;
 
 /* 9.9.4.26 * Extended protocol configuration options
