@@ -92,6 +92,7 @@ status_t mme_context_final()
     pool_final(&mme_sgw_pool);
     pool_final(&mme_enb_pool);
     pool_final(&mme_ue_pool);
+    pool_final(&mme_esm_pool);
 
     context_initialized = 0;
 
