@@ -223,7 +223,12 @@ msg_list["SECURITY MODE COMPLETE"]["table"] = 30
 msg_list["SECURITY MODE REJECT"]["table"] = 31
 
 msg_list["ESM INFORMATION REQUEST"]["table"] = 57
+msg_list["ESM INFORMATION RESPONSE"]["table"] = 58
+
+msg_list["PDN CONNECTIVITY REJECT"]["table"] = 64
 msg_list["PDN CONNECTIVITY REQUEST"]["table"] = 65
+msg_list["PDN DISCONNECT REJECT"]["table"] = 66
+msg_list["PDN DISCONNECT REQUEST"]["table"] = 67
 
 for key in msg_list.keys():
     if "table" not in msg_list[key].keys():

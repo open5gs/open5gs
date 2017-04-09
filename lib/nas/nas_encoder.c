@@ -26,8 +26,8 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-09 14:25:22.141012 by acetcom
- * from 24301-d80.docx
+ * Created on: 2017-04-09 15:56:04.996022 by acetcom
+ * from ../../../../../24301-d80.docx
  ******************************************************************************/
 
 #define TRACE_MODULE _nasenc
@@ -748,6 +748,186 @@ c_int32_t nas_encode_pdn_connectivity_request(pkbuf_t *pkbuf, nas_message_t *mes
     return encoded;
 }
 
+c_int32_t nas_encode_pdn_connectivity_reject(pkbuf_t *pkbuf, nas_message_t *message)
+{
+    nas_pdn_connectivity_reject_t *pdn_connectivity_reject = &message->esm.pdn_connectivity_reject;
+    c_int32_t encoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_encode_esm_cause(pkbuf, &pdn_connectivity_reject->esm_cause);
+    d_assert(size >= 0, return -1, "encode failed");
+    encoded += size;
+
+    if (pdn_connectivity_reject->presencemask & NAS_PDN_CONNECTIVITY_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_PDN_CONNECTIVITY_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_protocol_configuration_options(pkbuf, &pdn_connectivity_reject->protocol_configuration_options);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (pdn_connectivity_reject->presencemask & NAS_PDN_CONNECTIVITY_REJECT_BACK_OFF_TIMER_VALUE_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_PDN_CONNECTIVITY_REJECT_BACK_OFF_TIMER_VALUE_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_gprs_timer_3(pkbuf, &pdn_connectivity_reject->back_off_timer_value);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (pdn_connectivity_reject->presencemask & NAS_PDN_CONNECTIVITY_REJECT_RE_ATTEMPT_INDICATOR_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_PDN_CONNECTIVITY_REJECT_RE_ATTEMPT_INDICATOR_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_re_attempt_indicator(pkbuf, &pdn_connectivity_reject->re_attempt_indicator);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (pdn_connectivity_reject->presencemask & NAS_PDN_CONNECTIVITY_REJECT_NBIFOM_CONTAINER_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_PDN_CONNECTIVITY_REJECT_NBIFOM_CONTAINER_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_nbifom_container(pkbuf, &pdn_connectivity_reject->nbifom_container);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (pdn_connectivity_reject->presencemask & NAS_PDN_CONNECTIVITY_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_PDN_CONNECTIVITY_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_extended_protocol_configuration_options(pkbuf, &pdn_connectivity_reject->extended_protocol_configuration_options);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    return encoded;
+}
+
+c_int32_t nas_encode_pdn_disconnect_request(pkbuf_t *pkbuf, nas_message_t *message)
+{
+    nas_pdn_disconnect_request_t *pdn_disconnect_request = &message->esm.pdn_disconnect_request;
+    c_int32_t encoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_encode_linked_eps_bearer_identity(pkbuf, &pdn_disconnect_request->linked_eps_bearer_identity);
+    d_assert(size >= 0, return -1, "encode failed");
+    encoded += size;
+
+    if (pdn_disconnect_request->presencemask & NAS_PDN_DISCONNECT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_PDN_DISCONNECT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_protocol_configuration_options(pkbuf, &pdn_disconnect_request->protocol_configuration_options);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (pdn_disconnect_request->presencemask & NAS_PDN_DISCONNECT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_PDN_DISCONNECT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_extended_protocol_configuration_options(pkbuf, &pdn_disconnect_request->extended_protocol_configuration_options);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    return encoded;
+}
+
+c_int32_t nas_encode_pdn_disconnect_reject(pkbuf_t *pkbuf, nas_message_t *message)
+{
+    nas_pdn_disconnect_reject_t *pdn_disconnect_reject = &message->esm.pdn_disconnect_reject;
+    c_int32_t encoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_encode_esm_cause(pkbuf, &pdn_disconnect_reject->esm_cause);
+    d_assert(size >= 0, return -1, "encode failed");
+    encoded += size;
+
+    if (pdn_disconnect_reject->presencemask & NAS_PDN_DISCONNECT_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_PDN_DISCONNECT_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_protocol_configuration_options(pkbuf, &pdn_disconnect_reject->protocol_configuration_options);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (pdn_disconnect_reject->presencemask & NAS_PDN_DISCONNECT_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_PDN_DISCONNECT_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_extended_protocol_configuration_options(pkbuf, &pdn_disconnect_reject->extended_protocol_configuration_options);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    return encoded;
+}
+
+c_int32_t nas_encode_esm_information_response(pkbuf_t *pkbuf, nas_message_t *message)
+{
+    nas_esm_information_response_t *esm_information_response = &message->esm.esm_information_response;
+    c_int32_t encoded = 0;
+    c_int32_t size = 0;
+
+    if (esm_information_response->presencemask & NAS_ESM_INFORMATION_RESPONSE_ACCESS_POINT_NAME_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_ESM_INFORMATION_RESPONSE_ACCESS_POINT_NAME_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_access_point_name(pkbuf, &esm_information_response->access_point_name);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (esm_information_response->presencemask & NAS_ESM_INFORMATION_RESPONSE_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_ESM_INFORMATION_RESPONSE_PROTOCOL_CONFIGURATION_OPTIONS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_protocol_configuration_options(pkbuf, &esm_information_response->protocol_configuration_options);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (esm_information_response->presencemask & NAS_ESM_INFORMATION_RESPONSE_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_ESM_INFORMATION_RESPONSE_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_extended_protocol_configuration_options(pkbuf, &esm_information_response->extended_protocol_configuration_options);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    return encoded;
+}
+
 status_t nas_emm_encode(pkbuf_t **pkbuf, nas_message_t *message)
 {
     status_t rv = CORE_ERROR;
@@ -874,7 +1054,27 @@ status_t nas_esm_encode(pkbuf_t **pkbuf, nas_message_t *message)
             d_assert(size >= 0, return CORE_ERROR, "decode error");
             encoded += size;
             break;
+        case NAS_PDN_CONNECTIVITY_REJECT:
+            size = nas_encode_pdn_connectivity_reject(*pkbuf, message);
+            d_assert(size >= 0, return CORE_ERROR, "decode error");
+            encoded += size;
+            break;
+        case NAS_PDN_DISCONNECT_REQUEST:
+            size = nas_encode_pdn_disconnect_request(*pkbuf, message);
+            d_assert(size >= 0, return CORE_ERROR, "decode error");
+            encoded += size;
+            break;
+        case NAS_PDN_DISCONNECT_REJECT:
+            size = nas_encode_pdn_disconnect_reject(*pkbuf, message);
+            d_assert(size >= 0, return CORE_ERROR, "decode error");
+            encoded += size;
+            break;
         case NAS_ESM_INFORMATION_REQUEST:
+            break;
+        case NAS_ESM_INFORMATION_RESPONSE:
+            size = nas_encode_esm_information_response(*pkbuf, message);
+            d_assert(size >= 0, return CORE_ERROR, "decode error");
+            encoded += size;
             break;
         default:
             d_error("Unknown message type (0x%x) or not implemented", 

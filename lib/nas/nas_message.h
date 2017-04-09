@@ -26,8 +26,8 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-09 14:25:22.126323 by acetcom
- * from 24301-d80.docx
+ * Created on: 2017-04-09 15:56:04.983439 by acetcom
+ * from ../../../../../24301-d80.docx
  ******************************************************************************/
 
 #ifndef __NAS_MESSAGE_H__
@@ -434,6 +434,92 @@ typedef struct _nas_pdn_connectivity_request_t {
 } nas_pdn_connectivity_request_t;
 
 
+/*******************************************************
+ * PDN CONNECTIVITY REJECT
+ ******************************************************/
+#define NAS_PDN_CONNECTIVITY_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<0)
+#define NAS_PDN_CONNECTIVITY_REJECT_BACK_OFF_TIMER_VALUE_PRESENT (1<<1)
+#define NAS_PDN_CONNECTIVITY_REJECT_RE_ATTEMPT_INDICATOR_PRESENT (1<<2)
+#define NAS_PDN_CONNECTIVITY_REJECT_NBIFOM_CONTAINER_PRESENT (1<<3)
+#define NAS_PDN_CONNECTIVITY_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<4)
+#define NAS_PDN_CONNECTIVITY_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x27
+#define NAS_PDN_CONNECTIVITY_REJECT_BACK_OFF_TIMER_VALUE_TYPE 0x37
+#define NAS_PDN_CONNECTIVITY_REJECT_RE_ATTEMPT_INDICATOR_TYPE 0x6B
+#define NAS_PDN_CONNECTIVITY_REJECT_NBIFOM_CONTAINER_TYPE 0x33
+#define NAS_PDN_CONNECTIVITY_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
+
+typedef struct _nas_pdn_connectivity_reject_t {
+    /* Mandatory fields */
+    nas_esm_cause_t esm_cause;
+
+    /* Optional fields */
+    c_uint32_t presencemask;
+    nas_protocol_configuration_options_t protocol_configuration_options;
+    nas_gprs_timer_3_t back_off_timer_value;
+    nas_re_attempt_indicator_t re_attempt_indicator;
+    nas_nbifom_container_t nbifom_container;
+    nas_extended_protocol_configuration_options_t extended_protocol_configuration_options;
+} nas_pdn_connectivity_reject_t;
+
+
+/*******************************************************
+ * PDN DISCONNECT REQUEST
+ ******************************************************/
+#define NAS_PDN_DISCONNECT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<0)
+#define NAS_PDN_DISCONNECT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<1)
+#define NAS_PDN_DISCONNECT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x27
+#define NAS_PDN_DISCONNECT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
+
+typedef struct _nas_pdn_disconnect_request_t {
+    /* Mandatory fields */
+    nas_linked_eps_bearer_identity_t linked_eps_bearer_identity;
+
+    /* Optional fields */
+    c_uint32_t presencemask;
+    nas_protocol_configuration_options_t protocol_configuration_options;
+    nas_extended_protocol_configuration_options_t extended_protocol_configuration_options;
+} nas_pdn_disconnect_request_t;
+
+
+/*******************************************************
+ * PDN DISCONNECT REJECT
+ ******************************************************/
+#define NAS_PDN_DISCONNECT_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<0)
+#define NAS_PDN_DISCONNECT_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<1)
+#define NAS_PDN_DISCONNECT_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x27
+#define NAS_PDN_DISCONNECT_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
+
+typedef struct _nas_pdn_disconnect_reject_t {
+    /* Mandatory fields */
+    nas_esm_cause_t esm_cause;
+
+    /* Optional fields */
+    c_uint32_t presencemask;
+    nas_protocol_configuration_options_t protocol_configuration_options;
+    nas_extended_protocol_configuration_options_t extended_protocol_configuration_options;
+} nas_pdn_disconnect_reject_t;
+
+
+/*******************************************************
+ * ESM INFORMATION RESPONSE
+ ******************************************************/
+#define NAS_ESM_INFORMATION_RESPONSE_ACCESS_POINT_NAME_PRESENT (1<<0)
+#define NAS_ESM_INFORMATION_RESPONSE_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<1)
+#define NAS_ESM_INFORMATION_RESPONSE_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<2)
+#define NAS_ESM_INFORMATION_RESPONSE_ACCESS_POINT_NAME_TYPE 0x28
+#define NAS_ESM_INFORMATION_RESPONSE_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x27
+#define NAS_ESM_INFORMATION_RESPONSE_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
+
+typedef struct _nas_esm_information_response_t {
+
+    /* Optional fields */
+    c_uint32_t presencemask;
+    nas_access_point_name_t access_point_name;
+    nas_protocol_configuration_options_t protocol_configuration_options;
+    nas_extended_protocol_configuration_options_t extended_protocol_configuration_options;
+} nas_esm_information_response_t;
+
+
 typedef struct _nas_emm_message_t {
     nas_emm_header_t h;
     union {
@@ -456,6 +542,10 @@ typedef struct _nas_esm_message_t {
     nas_esm_header_t h;
     union {
         nas_pdn_connectivity_request_t pdn_connectivity_request;
+        nas_pdn_connectivity_reject_t pdn_connectivity_reject;
+        nas_pdn_disconnect_request_t pdn_disconnect_request;
+        nas_pdn_disconnect_reject_t pdn_disconnect_reject;
+        nas_esm_information_response_t esm_information_response;
     };
 } nas_esm_message_t;
 

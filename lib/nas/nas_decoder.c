@@ -26,8 +26,8 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-09 14:25:22.134645 by acetcom
- * from 24301-d80.docx
+ * Created on: 2017-04-09 15:56:04.989465 by acetcom
+ * from ../../../../../24301-d80.docx
  ******************************************************************************/
 
 #define TRACE_MODULE _nasdec
@@ -654,6 +654,198 @@ c_int32_t nas_decode_pdn_connectivity_request(nas_message_t *message, pkbuf_t *p
     return decoded;
 }
 
+c_int32_t nas_decode_pdn_connectivity_reject(nas_message_t *message, pkbuf_t *pkbuf)
+{
+    nas_pdn_connectivity_reject_t *pdn_connectivity_reject = &message->esm.pdn_connectivity_reject;
+    c_int32_t decoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_decode_esm_cause(&pdn_connectivity_reject->esm_cause, pkbuf);
+    d_assert(size >= 0, return -1, "decode failed");
+    decoded += size;
+
+    while(pkbuf->len > 0) 
+    {
+        c_uint8_t *buffer = pkbuf->payload;
+        c_uint8_t type = (*buffer) >= 0x80 ? ((*buffer) & 0xf0) : (*buffer);
+
+        size = sizeof(c_uint8_t);
+        d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, 
+                "pkbuf_header error");
+        decoded += size;
+
+        switch(type)
+        {
+             case NAS_PDN_CONNECTIVITY_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_TYPE:
+                 size = nas_decode_protocol_configuration_options(&pdn_connectivity_reject->protocol_configuration_options, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 pdn_connectivity_reject->presencemask |= NAS_PDN_CONNECTIVITY_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
+                 decoded += size;
+                 break;
+             case NAS_PDN_CONNECTIVITY_REJECT_BACK_OFF_TIMER_VALUE_TYPE:
+                 size = nas_decode_gprs_timer_3(&pdn_connectivity_reject->back_off_timer_value, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 pdn_connectivity_reject->presencemask |= NAS_PDN_CONNECTIVITY_REJECT_BACK_OFF_TIMER_VALUE_PRESENT;
+                 decoded += size;
+                 break;
+             case NAS_PDN_CONNECTIVITY_REJECT_RE_ATTEMPT_INDICATOR_TYPE:
+                 size = nas_decode_re_attempt_indicator(&pdn_connectivity_reject->re_attempt_indicator, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 pdn_connectivity_reject->presencemask |= NAS_PDN_CONNECTIVITY_REJECT_RE_ATTEMPT_INDICATOR_PRESENT;
+                 decoded += size;
+                 break;
+             case NAS_PDN_CONNECTIVITY_REJECT_NBIFOM_CONTAINER_TYPE:
+                 size = nas_decode_nbifom_container(&pdn_connectivity_reject->nbifom_container, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 pdn_connectivity_reject->presencemask |= NAS_PDN_CONNECTIVITY_REJECT_NBIFOM_CONTAINER_PRESENT;
+                 decoded += size;
+                 break;
+             case NAS_PDN_CONNECTIVITY_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE:
+                 size = nas_decode_extended_protocol_configuration_options(&pdn_connectivity_reject->extended_protocol_configuration_options, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 pdn_connectivity_reject->presencemask |= NAS_PDN_CONNECTIVITY_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
+                 decoded += size;
+                 break;
+             default:
+                d_error("Unknown type(0x%x) or not implemented\n", type);
+                return -1;
+        }
+    }
+
+    return decoded;
+}
+
+c_int32_t nas_decode_pdn_disconnect_request(nas_message_t *message, pkbuf_t *pkbuf)
+{
+    nas_pdn_disconnect_request_t *pdn_disconnect_request = &message->esm.pdn_disconnect_request;
+    c_int32_t decoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_decode_linked_eps_bearer_identity(&pdn_disconnect_request->linked_eps_bearer_identity, pkbuf);
+    d_assert(size >= 0, return -1, "decode failed");
+    decoded += size;
+
+    while(pkbuf->len > 0) 
+    {
+        c_uint8_t *buffer = pkbuf->payload;
+        c_uint8_t type = (*buffer) >= 0x80 ? ((*buffer) & 0xf0) : (*buffer);
+
+        size = sizeof(c_uint8_t);
+        d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, 
+                "pkbuf_header error");
+        decoded += size;
+
+        switch(type)
+        {
+             case NAS_PDN_DISCONNECT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_TYPE:
+                 size = nas_decode_protocol_configuration_options(&pdn_disconnect_request->protocol_configuration_options, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 pdn_disconnect_request->presencemask |= NAS_PDN_DISCONNECT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
+                 decoded += size;
+                 break;
+             case NAS_PDN_DISCONNECT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE:
+                 size = nas_decode_extended_protocol_configuration_options(&pdn_disconnect_request->extended_protocol_configuration_options, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 pdn_disconnect_request->presencemask |= NAS_PDN_DISCONNECT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
+                 decoded += size;
+                 break;
+             default:
+                d_error("Unknown type(0x%x) or not implemented\n", type);
+                return -1;
+        }
+    }
+
+    return decoded;
+}
+
+c_int32_t nas_decode_pdn_disconnect_reject(nas_message_t *message, pkbuf_t *pkbuf)
+{
+    nas_pdn_disconnect_reject_t *pdn_disconnect_reject = &message->esm.pdn_disconnect_reject;
+    c_int32_t decoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_decode_esm_cause(&pdn_disconnect_reject->esm_cause, pkbuf);
+    d_assert(size >= 0, return -1, "decode failed");
+    decoded += size;
+
+    while(pkbuf->len > 0) 
+    {
+        c_uint8_t *buffer = pkbuf->payload;
+        c_uint8_t type = (*buffer) >= 0x80 ? ((*buffer) & 0xf0) : (*buffer);
+
+        size = sizeof(c_uint8_t);
+        d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, 
+                "pkbuf_header error");
+        decoded += size;
+
+        switch(type)
+        {
+             case NAS_PDN_DISCONNECT_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_TYPE:
+                 size = nas_decode_protocol_configuration_options(&pdn_disconnect_reject->protocol_configuration_options, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 pdn_disconnect_reject->presencemask |= NAS_PDN_DISCONNECT_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
+                 decoded += size;
+                 break;
+             case NAS_PDN_DISCONNECT_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE:
+                 size = nas_decode_extended_protocol_configuration_options(&pdn_disconnect_reject->extended_protocol_configuration_options, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 pdn_disconnect_reject->presencemask |= NAS_PDN_DISCONNECT_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
+                 decoded += size;
+                 break;
+             default:
+                d_error("Unknown type(0x%x) or not implemented\n", type);
+                return -1;
+        }
+    }
+
+    return decoded;
+}
+
+c_int32_t nas_decode_esm_information_response(nas_message_t *message, pkbuf_t *pkbuf)
+{
+    nas_esm_information_response_t *esm_information_response = &message->esm.esm_information_response;
+    c_int32_t decoded = 0;
+    c_int32_t size = 0;
+
+    while(pkbuf->len > 0) 
+    {
+        c_uint8_t *buffer = pkbuf->payload;
+        c_uint8_t type = (*buffer) >= 0x80 ? ((*buffer) & 0xf0) : (*buffer);
+
+        size = sizeof(c_uint8_t);
+        d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, 
+                "pkbuf_header error");
+        decoded += size;
+
+        switch(type)
+        {
+             case NAS_ESM_INFORMATION_RESPONSE_ACCESS_POINT_NAME_TYPE:
+                 size = nas_decode_access_point_name(&esm_information_response->access_point_name, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 esm_information_response->presencemask |= NAS_ESM_INFORMATION_RESPONSE_ACCESS_POINT_NAME_PRESENT;
+                 decoded += size;
+                 break;
+             case NAS_ESM_INFORMATION_RESPONSE_PROTOCOL_CONFIGURATION_OPTIONS_TYPE:
+                 size = nas_decode_protocol_configuration_options(&esm_information_response->protocol_configuration_options, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 esm_information_response->presencemask |= NAS_ESM_INFORMATION_RESPONSE_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
+                 decoded += size;
+                 break;
+             case NAS_ESM_INFORMATION_RESPONSE_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE:
+                 size = nas_decode_extended_protocol_configuration_options(&esm_information_response->extended_protocol_configuration_options, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 esm_information_response->presencemask |= NAS_ESM_INFORMATION_RESPONSE_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
+                 decoded += size;
+                 break;
+             default:
+                d_error("Unknown type(0x%x) or not implemented\n", type);
+                return -1;
+        }
+    }
+
+    return decoded;
+}
+
 status_t nas_emm_decode(nas_message_t *message, pkbuf_t *pkbuf)
 {
     status_t rv = CORE_ERROR;
@@ -770,7 +962,27 @@ status_t nas_esm_decode(nas_message_t *message, pkbuf_t *pkbuf)
             d_assert(size >= CORE_OK, return CORE_ERROR, "decode error");
             decoded += size;
             break;
+        case NAS_PDN_CONNECTIVITY_REJECT:
+            size = nas_decode_pdn_connectivity_reject(message, pkbuf);
+            d_assert(size >= CORE_OK, return CORE_ERROR, "decode error");
+            decoded += size;
+            break;
+        case NAS_PDN_DISCONNECT_REQUEST:
+            size = nas_decode_pdn_disconnect_request(message, pkbuf);
+            d_assert(size >= CORE_OK, return CORE_ERROR, "decode error");
+            decoded += size;
+            break;
+        case NAS_PDN_DISCONNECT_REJECT:
+            size = nas_decode_pdn_disconnect_reject(message, pkbuf);
+            d_assert(size >= CORE_OK, return CORE_ERROR, "decode error");
+            decoded += size;
+            break;
         case NAS_ESM_INFORMATION_REQUEST:
+            break;
+        case NAS_ESM_INFORMATION_RESPONSE:
+            size = nas_decode_esm_information_response(message, pkbuf);
+            d_assert(size >= CORE_OK, return CORE_ERROR, "decode error");
+            decoded += size;
             break;
         default:
             d_error("Unknown message type (0x%x) or not implemented", 

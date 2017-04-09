@@ -145,7 +145,7 @@ static void nas_message_test4(abts_case *tc, void *data)
     memset(&message, 0, sizeof(message));
     message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
     message.emm.h.message_type = NAS_ATTACH_REJECT;
-    attach_reject->emm_cause = NAS_EMM_CAUSE_NETWORK_FAILURE; 
+    attach_reject->emm_cause = EMM_CAUSE_NETWORK_FAILURE; 
 
     rv = nas_plain_encode(&pkbuf, &message);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);

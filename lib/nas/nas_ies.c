@@ -26,8 +26,8 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-09 14:25:22.115930 by acetcom
- * from 24301-d80.docx
+ * Created on: 2017-04-09 15:56:04.973586 by acetcom
+ * from ../../../../../24301-d80.docx
  ******************************************************************************/
 
 #define TRACE_MODULE _nasies
@@ -1233,6 +1233,34 @@ c_int16_t nas_encode_protocol_configuration_options(pkbuf_t *pkbuf, nas_protocol
     return size;
 }
 
+/* 9.9.4.13A Re-attempt indicator
+ * O TLV 3 */
+c_int16_t nas_decode_re_attempt_indicator(nas_re_attempt_indicator_t *re_attempt_indicator, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = 0;
+    nas_re_attempt_indicator_t *source = pkbuf->payload;
+
+    re_attempt_indicator->length = source->length;
+    size = re_attempt_indicator->length + sizeof(re_attempt_indicator->length);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(re_attempt_indicator, pkbuf->payload - size, size);
+
+    return size;
+}
+
+c_int16_t nas_encode_re_attempt_indicator(pkbuf_t *pkbuf, nas_re_attempt_indicator_t *re_attempt_indicator)
+{
+    c_uint16_t size = re_attempt_indicator->length + sizeof(re_attempt_indicator->length);
+    nas_re_attempt_indicator_t target;
+
+    memcpy(&target, re_attempt_indicator, sizeof(nas_re_attempt_indicator_t));
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
 /* 9.9.4.14 Request type
  * M V 1/2 */
 c_int16_t nas_decode_request_type(nas_request_type_t *request_type, pkbuf_t *pkbuf)
@@ -1349,6 +1377,30 @@ c_int16_t nas_encode_extended_protocol_configuration_options(pkbuf_t *pkbuf, nas
     return extended_protocol_configuration_options->len + sizeof(extended_protocol_configuration_options->len);
 }
 
+/* 9.9.4.4 ESM cause
+ * M V 1 */
+c_int16_t nas_decode_esm_cause(nas_esm_cause_t *esm_cause, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = sizeof(nas_esm_cause_t);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(esm_cause, pkbuf->payload - size, size);
+
+    return size;
+}
+
+c_int16_t nas_encode_esm_cause(pkbuf_t *pkbuf, nas_esm_cause_t *esm_cause)
+{
+    c_uint16_t size = sizeof(nas_esm_cause_t);
+    nas_esm_cause_t target;
+
+    memcpy(&target, esm_cause, size);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
 /* 9.9.4.5 ESM information transfer flag
  * O TV 1 */
 c_int16_t nas_decode_esm_information_transfer_flag(nas_esm_information_transfer_flag_t *esm_information_transfer_flag, pkbuf_t *pkbuf)
@@ -1364,6 +1416,30 @@ c_int16_t nas_encode_esm_information_transfer_flag(pkbuf_t *pkbuf, nas_esm_infor
 
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
     memcpy(pkbuf->payload - size, esm_information_transfer_flag, size);
+
+    return size;
+}
+
+/* 9.9.4.6 Linked EPS bearer identity
+ * M V 1/2 */
+c_int16_t nas_decode_linked_eps_bearer_identity(nas_linked_eps_bearer_identity_t *linked_eps_bearer_identity, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = sizeof(nas_linked_eps_bearer_identity_t);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(linked_eps_bearer_identity, pkbuf->payload - size, size);
+
+    return size;
+}
+
+c_int16_t nas_encode_linked_eps_bearer_identity(pkbuf_t *pkbuf, nas_linked_eps_bearer_identity_t *linked_eps_bearer_identity)
+{
+    c_uint16_t size = sizeof(nas_linked_eps_bearer_identity_t);
+    nas_linked_eps_bearer_identity_t target;
+
+    memcpy(&target, linked_eps_bearer_identity, size);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &target, size);
 
     return size;
 }
