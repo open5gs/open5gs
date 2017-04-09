@@ -76,3 +76,8 @@ type_list["Nonce"]["decode"] = \
 "    *nonce = ntohl(*nonce);\n\n"
 type_list["Nonce"]["encode"] = \
 "    target = htonl(*nonce);\n\n"
+
+type_list["Header compression configuration"]["decode"] = \
+"    header_compression_configuration->max_cid = ntohs(header_compression_configuration->max_cid);\n\n"
+type_list["Header compression configuration"]["encode"] = \
+"    target.max_cid = htons(header_compression_configuration->max_cid);\n\n"

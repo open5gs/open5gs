@@ -26,8 +26,8 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-09 15:56:04.973586 by acetcom
- * from ../../../../../24301-d80.docx
+ * Created on: 2017-04-09 17:14:05.514413 by acetcom
+ * from 24301-d80.docx
  ******************************************************************************/
 
 #define TRACE_MODULE _nasies
@@ -1326,6 +1326,8 @@ c_int16_t nas_decode_header_compression_configuration(nas_header_compression_con
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
     memcpy(header_compression_configuration, pkbuf->payload - size, size);
 
+    header_compression_configuration->max_cid = ntohs(header_compression_configuration->max_cid);
+
     return size;
 }
 
@@ -1335,6 +1337,8 @@ c_int16_t nas_encode_header_compression_configuration(pkbuf_t *pkbuf, nas_header
     nas_header_compression_configuration_t target;
 
     memcpy(&target, header_compression_configuration, sizeof(nas_header_compression_configuration_t));
+    target.max_cid = htons(header_compression_configuration->max_cid);
+
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
     memcpy(pkbuf->payload - size, &target, size);
 
