@@ -18,6 +18,8 @@ typedef struct _hss_ue_t {
     c_uint8_t       imsi[MAX_IMSI_LEN+1];
     c_uint8_t       imsi_len;
 
+    plmn_id_t       visited_plmn_id;
+
     c_uint8_t       k[HSS_KEY_LEN];
     c_uint64_t      sqn;
     c_uint8_t       rand[RAND_LEN];

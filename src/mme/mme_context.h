@@ -103,6 +103,9 @@ typedef struct _mme_ue_t {
     c_uint8_t       imsi[MAX_IMSI_LEN+1];
     c_uint8_t       imsi_len;
 
+    /* UE Info */
+    plmn_id_t       visited_plmn_id;
+
     /* Security Context */
     int             security_context_available;
     nas_ue_network_capability_t ue_network_capability;

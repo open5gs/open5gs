@@ -70,6 +70,12 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
             avp, goto out,);
     d_assert(fd_msg_avp_hdr(avp, &hdr) == 0 && hdr,,);
 
+    if (hdr && hdr->avp_value && hdr->avp_value->os.data)
+    {
+        memcpy(&ue->visited_plmn_id, 
+                hdr->avp_value->os.data, hdr->avp_value->os.len);
+    }
+
     milenage_opc(ue->k, ue->op, ue->opc);
     milenage_generate(ue->opc, ue->amf, ue->k, 
         core_uint64_to_buffer(ue->sqn, HSS_SQN_LEN, sqn), ue->rand, 

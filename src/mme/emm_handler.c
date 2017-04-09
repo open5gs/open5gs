@@ -62,7 +62,7 @@ void emm_handle_attach_request(
     {
         case NAS_EPS_MOBILE_IDENTITY_IMSI:
         {
-            plmn_id_t *plmn_id = &mme_self()->plmn_id;
+            memcpy(&ue->visited_plmn_id, &mme_self()->plmn_id, PLMN_ID_LEN);
 
             if (attach_request->presencemask &
                 NAS_ATTACH_REQUEST_LAST_VISITED_REGISTERED_TAI_PRESENT)
@@ -70,7 +70,9 @@ void emm_handle_attach_request(
                 nas_tracking_area_identity_t *last_visited_registered_tai = 
                     &attach_request->last_visited_registered_tai;
 
-                plmn_id = &last_visited_registered_tai->plmn_id;
+                memcpy(&ue->visited_plmn_id, 
+                        &last_visited_registered_tai->plmn_id,
+                        PLMN_ID_LEN);
             }
             nas_imsi_bcd_to_buffer(
                 &eps_mobile_identity->imsi, eps_mobile_identity->length, 
@@ -86,7 +88,7 @@ void emm_handle_attach_request(
             d_assert(ue->imsi, return,);
             d_info("[NAS] Attach request : UE[%s] --> EMM", ue->imsi);
 
-            mme_s6a_send_auth_info_req(ue, plmn_id);
+            mme_s6a_send_air(ue);
             break;
         }
         default:
