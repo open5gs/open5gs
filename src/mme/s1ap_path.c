@@ -13,9 +13,9 @@ status_t s1ap_listen(void)
     char buf[INET_ADDRSTRLEN];
     int rc;
 
-    rc = net_listen_with_addr(&mme_self()->s1ap_sock, 
-            SOCK_STREAM, IPPROTO_SCTP, mme_self()->s1ap_port,
-            mme_self()->s1ap_addr);
+    rc = net_listen_ext(&mme_self()->s1ap_sock, 
+            SOCK_STREAM, IPPROTO_SCTP, SCTP_S1AP_PPID,
+            mme_self()->s1ap_addr, mme_self()->s1ap_port);
     if (rc != 0)
     {
         d_error("Can't establish S1-ENB(port:%d) path(%d:%s)",

@@ -39,12 +39,17 @@ typedef int (*net_handler)(void *net_sl, void *data);
 typedef struct {
     int type;
     int proto;
+#define SCTP_S1AP_PPID 18
+#define SCTP_X2AP_PPID 27
+    c_uint32_t ppid;
+
     int sock_id;
 #if 0 /* deprecated */
     struct sockaddr_in local;
 #endif
     struct sockaddr_in remote;
     int opt;
+
     int sndrcv_errno;
 } net_sock_t;
 
@@ -72,7 +77,7 @@ CORE_DECLARE(status_t) net_final(void);
 CORE_DECLARE(int) net_open(net_sock_t **net_sock,const char *host, 
               const int lport,
               const int rport,
-              int type, int proto, const int flag);
+              int type, int proto);
 
 /**
  * Create network session.
@@ -85,12 +90,12 @@ CORE_DECLARE(int) net_open(net_sock_t **net_sock,const char *host,
  * @param type Protocol type
  * @param flag Option flags to be set for this connection
  */
-CORE_DECLARE(int) net_open_with_addr(net_sock_t **net_sock,
+CORE_DECLARE(int) net_open_ext(net_sock_t **net_sock,
               const c_uint32_t local_addr,
               const char *remote_host, 
               const int lport,
               const int rport,
-              int type, int proto, const int flag);
+              int type, int proto, c_uint32_t ppid, const int flag);
 /**
  * Read the data from the socket
  * @param net_sock Socket which created before
@@ -132,12 +137,13 @@ CORE_DECLARE(int) net_accept(net_sock_t **new_accept_sock,
  * @param net_sock Returned socket
  * @param type Protocol type
  * @param proto Protocol proto
- * @param port Port number
+ * @param ppid SCTP PPID
  * @param addr Specific address
+ * @param port Port number
  */
-CORE_DECLARE(int) net_listen_with_addr(
-        net_sock_t **net_sock, const int type, const int proto, 
-        const int port, const c_uint32_t addr);
+CORE_DECLARE(int) net_listen_ext(net_sock_t **net_sock, 
+        const int type, const int proto, const c_uint32_t ppid, 
+        const c_uint32_t addr, const int port);
 /** Create socket and listen to the specified port
  * @param net_sock Returned socket
  * @param type Protocol type

@@ -360,7 +360,7 @@ static void netlib1(abts_case *tc, void *data)
     start_tcp_server();
 
     rc = net_open(&net_sock, "127.0.0.1", 0,
-            TEST_SERVER_PORT, SOCK_STREAM, IPPROTO_TCP, 0);
+            TEST_SERVER_PORT, SOCK_STREAM, IPPROTO_TCP);
     ABTS_INT_EQUAL(tc, 0, rc);
     for (i=0; i< TEST_MAX_NUM; i++)
     {
@@ -414,7 +414,7 @@ static void netlib2(abts_case *tc, void *data)
     {
         net_sock[i] = NULL;
         rc = net_open(&net_sock[i], "127.0.0.1", 0,TEST_SERVER_PORT + 1,
-                SOCK_STREAM, IPPROTO_TCP, 0);
+                SOCK_STREAM, IPPROTO_TCP);
         ABTS_INT_EQUAL(tc, -1, rc);
         ABTS_PTR_NULL(tc, net_sock[i]);
     }
@@ -425,7 +425,7 @@ static void netlib2(abts_case *tc, void *data)
     {
         net_sock[i] = NULL;
         rc = net_open(&net_sock[i], "127.0.0.1", 0,TEST_SERVER_PORT,
-                SOCK_STREAM, IPPROTO_TCP, 0);
+                SOCK_STREAM, IPPROTO_TCP);
         ABTS_INT_EQUAL(tc, 0, rc);
         ABTS_PTR_NOTNULL(tc, net_sock[i]);
     }
@@ -475,7 +475,7 @@ static void netlib3(abts_case *tc, void *data)
     {
         net_sock[i] = NULL;
         rc = net_open(&net_sock[i], "127.0.0.1", 0,TEST_SERVER_PORT + 1,
-                SOCK_DGRAM, IPPROTO_UDP, 0);
+                SOCK_DGRAM, IPPROTO_UDP);
         ABTS_INT_EQUAL(tc, 0, rc);
         ABTS_PTR_NOTNULL(tc, net_sock[i]);
     }
@@ -493,7 +493,7 @@ static void netlib3(abts_case *tc, void *data)
     {
         net_sock[i] = NULL;
         rc = net_open(&net_sock[i], "127.0.0.1", 0,TEST_SERVER_PORT,
-                SOCK_DGRAM, IPPROTO_UDP, 0);
+                SOCK_DGRAM, IPPROTO_UDP);
         ABTS_INT_EQUAL(tc, 0, rc);
         ABTS_PTR_NOTNULL(tc, net_sock[i]);
     }
@@ -502,7 +502,8 @@ static void netlib3(abts_case *tc, void *data)
     {
         sprintf(inputbuf[i],"asdf%d",i);
         memset(outputbuf[i], 0, sizeof(outputbuf[i]));
-        rc = net_send(net_sock[i], inputbuf[i], strlen(inputbuf[i])+1);
+        rc = net_sendto(net_sock[i], inputbuf[i], strlen(inputbuf[i])+1,
+                inet_addr("127.0.0.1"), TEST_SERVER_PORT);
         ABTS_INT_EQUAL(tc, strlen(inputbuf[i])+1, rc);
         rc = 0;
         while (1)
@@ -544,7 +545,7 @@ static void netlib4(abts_case *tc, void *data)
     {
         net_sock[i] = NULL;
         rc = net_open(&net_sock[i], "127.0.0.1", 0,TEST_SERVER_PORT + 1,
-                SOCK_STREAM, IPPROTO_SCTP, 0);
+                SOCK_STREAM, IPPROTO_SCTP);
         ABTS_INT_EQUAL(tc, -1, rc);
         ABTS_PTR_NULL(tc, net_sock[i]);
     }
@@ -554,7 +555,7 @@ static void netlib4(abts_case *tc, void *data)
     {
         net_sock[i] = NULL;
         rc = net_open(&net_sock[i], "127.0.0.1", 0, TEST_SERVER_PORT,
-                SOCK_STREAM, IPPROTO_SCTP, 0);
+                SOCK_STREAM, IPPROTO_SCTP);
         ABTS_INT_EQUAL(tc, 0, rc);
         ABTS_PTR_NOTNULL(tc, net_sock[i]);
     }
@@ -605,7 +606,7 @@ static void netlib5(abts_case *tc, void *data)
     {
         net_sock[i] = NULL;
         rc = net_open(&net_sock[i], "127.0.0.1", 0, TEST_SERVER_PORT + 1,
-                SOCK_SEQPACKET, IPPROTO_SCTP, 0);
+                SOCK_SEQPACKET, IPPROTO_SCTP);
         ABTS_INT_EQUAL(tc, 0, rc);
         ABTS_PTR_NOTNULL(tc, net_sock[i]);
     }
@@ -623,7 +624,7 @@ static void netlib5(abts_case *tc, void *data)
     {
         net_sock[i] = NULL;
         rc = net_open(&net_sock[i], "127.0.0.1", 0, TEST_SERVER_PORT,
-                SOCK_SEQPACKET, IPPROTO_SCTP, 0);
+                SOCK_SEQPACKET, IPPROTO_SCTP);
         ABTS_INT_EQUAL(tc, 0, rc);
         ABTS_PTR_NOTNULL(tc, net_sock[i]);
     }
@@ -632,7 +633,8 @@ static void netlib5(abts_case *tc, void *data)
     {
         sprintf(inputbuf[i],"asdf%d",i);
         memset(outputbuf[i], 0, sizeof(outputbuf[i]));
-        rc = net_send(net_sock[i], inputbuf[i], strlen(inputbuf[i])+1);
+        rc = net_sendto(net_sock[i], inputbuf[i], strlen(inputbuf[i])+1, 
+                inet_addr("127.0.0.1"), TEST_SERVER_PORT);
         ABTS_INT_EQUAL(tc, strlen(inputbuf[i])+1, rc);
         rc = 0;
         while (1)

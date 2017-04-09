@@ -12,7 +12,7 @@ status_t gtp_listen(net_sock_t **sock,
     char buf[INET_ADDRSTRLEN];
     int rc;
     
-    rc = net_listen_with_addr(sock, SOCK_DGRAM, IPPROTO_UDP, port, addr);
+    rc = net_listen_ext(sock, SOCK_DGRAM, IPPROTO_UDP, 0, addr, port);
     if (rc != 0)
     {
         d_error("Can't establish GTP[%s:%d] path(%d:%s)",

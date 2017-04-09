@@ -191,7 +191,7 @@ static net_sock_t *net_sock_create(int type, int protocol)
                 rtoinfo.srto_min);
 
         /* FIXME : Need to configure this param */
-        /* rtoinfo.srto_initial = 3000; */
+        rtoinfo.srto_initial = 3000;
         rtoinfo.srto_min = 1000;
         rtoinfo.srto_max = 5000;
 
@@ -269,12 +269,12 @@ int net_resolve_host(const char *host, struct in_addr *addr)
     return rc;
 }
 
-static int _net_open_addr(net_sock_t **net_sock, 
+int net_open_ext(net_sock_t **net_sock, 
                  const c_uint32_t local_addr,
                  const char *remote_host,
                  const int lport,
                  const int rport,
-                 int type, int proto, const int flag)
+                 int type, int proto, c_uint32_t ppid, const int flag)
 {
     struct sockaddr_in sock_addr;
     int rc;
@@ -290,7 +290,7 @@ static int _net_open_addr(net_sock_t **net_sock,
     }
 
     /* FIXME : Set socket option */
-
+    memset(&sock_addr, 0, sizeof(sock_addr));
     sock_addr.sin_family = AF_INET;
     sock_addr.sin_port = htons(rport);
 
@@ -302,6 +302,7 @@ static int _net_open_addr(net_sock_t **net_sock,
 
     result_sock->type = type;
     result_sock->proto = proto;
+    result_sock->ppid = ppid;
 
     /* Connect to host */
     if (proto == IPPROTO_UDP || 
@@ -371,28 +372,14 @@ cleanup:
 int net_open(net_sock_t **net_sock, const char *host, 
                  const int lport,
                  const int rport,
-                 int type, int proto, const int flag)
+                 int type, int proto)
 {
-    return _net_open_addr(net_sock, 
+    return net_open_ext(net_sock, 
                  0,
                  host, 
                  lport,
                  rport,
-                 type, proto, flag);
-}
-
-int net_open_with_addr(net_sock_t **net_sock, const c_uint32_t local_addr,
-                 const char *remote_host, 
-                 const int lport,
-                 const int rport,
-                 int type, int proto, const int flag)
-{
-    return _net_open_addr(net_sock, 
-                 local_addr,
-                 remote_host,
-                 lport,
-                 rport,
-                 type, proto, flag);
+                 type, proto, 0, 0);
 }
 
 /** Read data from socket */
@@ -547,11 +534,23 @@ int net_write(net_sock_t *net_sock, char *buffer, size_t size,
 
         return rc;
     }
-    else if (net_sock->proto == IPPROTO_UDP ||
-            net_sock->proto == IPPROTO_SCTP)
+    else if (net_sock->proto == IPPROTO_UDP)
     {
         rc =  sendto(net_sock->sock_id, buffer, size, 0,
                 (struct sockaddr *)dest_addr, addrsize);
+        if (rc < 0) net_sock->sndrcv_errno = errno;
+
+        return rc;
+    }
+    else if (net_sock->proto == IPPROTO_SCTP)
+    {
+        rc = sctp_sendmsg(net_sock->sock_id, buffer, size,
+                (struct sockaddr *)dest_addr, addrsize,
+                htonl(net_sock->ppid), 
+                0,  /* flags, FIXME : SCTP_ADDR_OVER is needed? */
+                0,  /* stream_no */
+                0,  /* timetolive */
+                0); /* context */
         if (rc < 0) net_sock->sndrcv_errno = errno;
 
         return rc;
@@ -577,6 +576,7 @@ int net_sendto(net_sock_t *net_sock, char *buffer, size_t size,
     struct sockaddr_in sock_addr;
     d_assert(net_sock && buffer, return -1, "Invalid params\n");
 
+    memset(&sock_addr, 0, sizeof(sock_addr));
     sock_addr.sin_family = AF_INET;
     sock_addr.sin_port = htons(port);
     sock_addr.sin_addr.s_addr = ip_addr;
@@ -637,7 +637,6 @@ int  net_accept(net_sock_t **new_accept_sock, net_sock_t *net_sock, int timeout)
         {
             net_sock_t *node = NULL;
             pool_alloc_node(&net_pool, &node);
-            d_assert(node, return -1, "Pool Allocation Failed");
             new_sock = accept(sock, NULL, NULL);
 
             node->sock_id = new_sock;
@@ -672,9 +671,9 @@ cleanup:
 }
 
 /** Listen connection */
-int net_listen_with_addr(
-        net_sock_t **net_sock, const int type, const int proto,
-        const int port, const c_uint32_t addr)
+int net_listen_ext(net_sock_t **net_sock, 
+        const int type, const int proto, c_uint32_t ppid,
+        const c_uint32_t addr, const int port)
 {
     struct sockaddr_in sock_addr;
     net_sock_t *result_sock = NULL;
@@ -686,6 +685,7 @@ int net_listen_with_addr(
         return -1;
     }
 
+    memset(&sock_addr, 0, sizeof(sock_addr));
     sock_addr.sin_family = AF_INET;
     sock_addr.sin_port = htons(port);
     sock_addr.sin_addr.s_addr = addr;
@@ -706,6 +706,7 @@ int net_listen_with_addr(
 
     result_sock->type = type;
     result_sock->proto = proto;
+    result_sock->ppid = ppid;
 
     *net_sock = result_sock;
 
@@ -720,7 +721,7 @@ int net_listen(
         net_sock_t **net_sock, const int type, const int proto,
         const int port)
 {
-    return net_listen_with_addr(net_sock, type, proto, port, INADDR_ANY);
+    return net_listen_ext(net_sock, type, proto, 0, INADDR_ANY, port);
 }
 
 
@@ -855,7 +856,7 @@ int net_ftp_open(const char *host,
 
     /* Open control channel */
     rc = net_open(&session->ctrl_sock, host, 0, port, 
-            SOCK_DGRAM, IPPROTO_TCP, 0);
+            SOCK_DGRAM, IPPROTO_TCP);
     if (rc != 0)
     {
         d_error("net_open error(errno = %d) : host = %s, port = %d\n",
@@ -941,7 +942,7 @@ static int net_ftp_opendata(net_ftp_t *ftp_session)
             INET_NTOP(&ftp_session->ctrl_sock->remote.sin_addr, ip_addr),
             0,
             port,
-            SOCK_STREAM, IPPROTO_TCP, 0);
+            SOCK_STREAM, IPPROTO_TCP);
     if (rc != 0)
     {
         d_error("net_open error in net_ftp_opendata(host = %s,port = %d)\n",
@@ -1565,7 +1566,7 @@ int net_fds_read_run(long timeout)
     /* Timeout */
     if (rc == 0)
     {
-        return 0;
+        return rc;
     }
 
     /* Dispatch handler */
