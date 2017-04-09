@@ -12,7 +12,10 @@ extern "C" {
 CORE_DECLARE(status_t) mme_s6a_init(void);
 CORE_DECLARE(void) mme_s6a_final(void);
 
+/* MME Sends Authentication Information Request to HSS */
 CORE_DECLARE(int) mme_s6a_send_air(mme_ue_t *ue);
+/* MME Sends Update Location Request to HSS */
+CORE_DECLARE(int) mme_s6a_send_ulr(mme_ue_t *ue);
 
 #ifdef __cplusplus
 }

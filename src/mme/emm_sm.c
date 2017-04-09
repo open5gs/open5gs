@@ -6,6 +6,7 @@
 
 #include "mme_event.h"
 #include "emm_handler.h"
+#include "mme_s6a_handler.h"
 
 void emm_state_initial(emm_sm_t *s, event_t *e)
 {
@@ -79,7 +80,7 @@ void emm_state_operational(emm_sm_t *s, event_t *e)
                     d_assert(ue->imsi, return,);
                     d_info("[NAS] Security mode complete : UE[%s] --> EMM",
                             ue->imsi);
-                    emm_handle_security_mode_complete(ue);
+                    mme_s6a_send_ulr(ue);
                     break;
                 }
                 default:

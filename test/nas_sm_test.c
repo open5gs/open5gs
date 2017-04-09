@@ -98,7 +98,7 @@ abts_suite *test_nas_sm(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
-#if 0
+#if 1
     d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_FULL);
 #endif
 

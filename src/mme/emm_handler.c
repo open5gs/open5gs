@@ -193,4 +193,5 @@ void emm_handle_security_mode_complete(mme_ue_t *ue)
 
     pkbuf_free(sendbuf);
     d_assert(ue, return, "Null param");
+    mme_s6a_send_air(ue);
 }

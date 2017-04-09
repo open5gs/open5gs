@@ -13,8 +13,12 @@
 #define HSS_SQN_LEN 6
 #define HSS_AK_LEN 6
 
-static struct disp_hdl *hdl_fb = NULL; /* handler for fallback cb */
-static struct disp_hdl *hdl_air = NULL; /* handler for Auth-Info-Request cb */
+/* handler for fallback cb */
+static struct disp_hdl *hdl_fb = NULL; 
+/* handler for Authentication-Information-Request cb */
+static struct disp_hdl *hdl_air = NULL; 
+/* handler for Update-Location-Request cb */
+static struct disp_hdl *hdl_ulr = NULL; 
 
 /* Default callback for the application. */
 static int hss_fb_cb(struct msg **msg, struct avp *avp, 
@@ -26,7 +30,7 @@ static int hss_fb_cb(struct msg **msg, struct avp *avp,
 	return ENOTSUP;
 }
 
-/* Callback for incoming Test-Request messages */
+/* Callback for incoming Authentication-Information-Request messages */
 static int hss_air_cb( struct msg **msg, struct avp *avp, 
         struct session *sess, void *opaque, enum disp_action *act)
 {
@@ -71,10 +75,8 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
     d_assert(fd_msg_avp_hdr(avp, &hdr) == 0 && hdr,,);
 
     if (hdr && hdr->avp_value && hdr->avp_value->os.data)
-    {
         memcpy(&ue->visited_plmn_id, 
                 hdr->avp_value->os.data, hdr->avp_value->os.len);
-    }
 
     milenage_opc(ue->k, ue->op, ue->opc);
     milenage_generate(ue->opc, ue->amf, ue->k, 
@@ -146,6 +148,75 @@ out:
     return 0;
 }
 
+/* Callback for incoming Update-Location-Request messages */
+static int hss_ulr_cb( struct msg **msg, struct avp *avp, 
+        struct session *sess, void *opaque, enum disp_action *act)
+{
+	struct msg *ans, *qry;
+#if 0
+    struct avp *avpch1, *avpch2;
+#endif
+    struct avp_hdr *hdr;
+    union avp_value val;
+
+    hss_ue_t *ue = NULL;
+	
+    d_assert(msg, return EINVAL,);
+	
+	/* Create answer header */
+	qry = *msg;
+	fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
+    ans = *msg;
+
+    d_assert(fd_msg_search_avp(qry, s6a_user_name, &avp) == 0 && avp, 
+            goto out,);
+    d_assert(fd_msg_avp_hdr(avp, &hdr) == 0 && hdr,,);
+
+    ue = hss_ue_find_by_imsi(
+            hdr->avp_value->os.data, hdr->avp_value->os.len);
+    if (!ue)
+    {
+        char imsi[MAX_IMSI_LEN];
+        strncpy(imsi, (char*)hdr->avp_value->os.data, hdr->avp_value->os.len);
+        d_warn("Cannot find IMSI:%s\n", imsi);
+        goto out;
+    }
+
+    d_assert(fd_msg_search_avp(qry, s6a_visited_plmn_id, &avp) == 0 && 
+            avp, goto out,);
+    d_assert(fd_msg_avp_hdr(avp, &hdr) == 0 && hdr,,);
+
+    if (hdr && hdr->avp_value && hdr->avp_value->os.data)
+        memcpy(&ue->visited_plmn_id, 
+                hdr->avp_value->os.data, hdr->avp_value->os.len);
+
+	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
+	d_assert(fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1) == 0,
+            goto out,);
+
+    /* Set the Auth-Session-Statee AVP */
+    d_assert(fd_msg_avp_new(s6a_auth_session_state, 0, &avp) == 0, goto out,);
+    val.i32 = 1;
+    d_assert(fd_msg_avp_setvalue(avp, &val) == 0, goto out,);
+    d_assert(fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) == 0, goto out,);
+
+	/* Send the answer */
+	fd_msg_send(msg, NULL, NULL);
+	
+	/* Add this value to the stats */
+	pthread_mutex_lock(&s6a_config->stats_lock);
+	s6a_config->stats.nb_echoed++;
+	pthread_mutex_unlock(&s6a_config->stats_lock);
+
+	return 0;
+
+out:
+	fd_msg_rescode_set(ans, "DIAMETER_AUTHENTICATION_REJECTED", NULL, NULL, 1);
+	fd_msg_send(msg, NULL, NULL);
+
+    return 0;
+}
+
 status_t hss_initialize(void)
 {
     status_t rv;
@@ -160,15 +231,20 @@ status_t hss_initialize(void)
 
 	memset(&data, 0, sizeof(data));
 	data.app = s6a_appli;
-	data.command = s6a_cmd_air;
 	
 	/* fallback CB if command != unexpected message received */
 	d_assert(fd_disp_register(hss_fb_cb, DISP_HOW_APPID, &data, NULL, 
                 &hdl_fb) == 0, return CORE_ERROR,);
 	
-	/* Now specific handler for Authentication-Information-Request */
+	/* specific handler for Authentication-Information-Request */
+	data.command = s6a_cmd_air;
 	d_assert(fd_disp_register(hss_air_cb, DISP_HOW_CC, &data, NULL, 
                 &hdl_air) == 0, return CORE_ERROR,);
+
+	/* specific handler for Location-Update-Request */
+	data.command = s6a_cmd_ulr;
+	d_assert(fd_disp_register(hss_ulr_cb, DISP_HOW_CC, &data, NULL, 
+                &hdl_ulr) == 0, return CORE_ERROR,);
 
 	return CORE_OK;
 }
@@ -180,6 +256,9 @@ void hss_terminate(void)
 	}
 	if (hdl_air) {
 		(void) fd_disp_unregister(&hdl_air, NULL);
+	}
+	if (hdl_ulr) {
+		(void) fd_disp_unregister(&hdl_ulr, NULL);
 	}
 
     hss_context_final();
