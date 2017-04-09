@@ -22,6 +22,8 @@ extern "C" {
 #define AUTN_LEN            16
 #define MAX_RES_LEN         16
 
+#define MAX_APN_LEN         100
+
 #define NEXT_ID(__id, __max) \
     ((__id) = ((__id) == (__max) ? 1 : ((__id) + 1)))
 #define COMPARE_ID(__id1, __id2, __max) \
@@ -60,7 +62,7 @@ typedef struct _protocol_or_container_id_t {
 } protocol_or_container_id_t;
 
 #define MAX_NUM_OF_PROTOCOL_OR_CONTAINER_ID    4
-#define MAX_PCO_LEN 250
+#define MAX_PCO_LEN 251
 typedef struct _pco_t {
 ED3(c_uint8_t ext:1;,
     c_uint8_t spare:4;,

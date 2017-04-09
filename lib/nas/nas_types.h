@@ -747,10 +747,9 @@ ED2(c_uint8_t paging_time_window:4;,
 /* 9.9.4.1 Access point name
  * See subclause 10.5.6.1 in 3GPP TS 24.008 [13].
  * O TLV 3-102 */
-#define NAS_MAX_ACCESS_POINT_NAME_LEN 100
 typedef struct _nas_access_point_name_t {
     c_uint8_t length;
-    c_uint8_t access_point_name_value[NAS_MAX_ACCESS_POINT_NAME_LEN];
+    c_uint8_t access_point_name_value[MAX_APN_LEN];
 } __attribute__ ((packed)) nas_access_point_name_t;
 
 /* 9.9.4.4 ESM cause
@@ -842,17 +841,14 @@ ED3(c_uint8_t spare:3;,  /* allowed in A/Gb mode or Iu mode */
  * M V 1/2
  * See subclause 10.5.6.17 in 3GPP TS 24.008 [13].
  * 9.9.4.10 PDN type "PDN type
- * M V 1/2
- */
+ * M V 1/2 */
 #define NAS_PDN_CONNECTIVITY_REQUEST_TYPE_INITIAL   1
 #define NAS_PDN_CONNECTIVITY_REQUEST_TYPE_HANDOVER  2
 #define NAS_PDN_CONNECTIVITY_REQUEST_TYPE_EMERGENCY 4
-
 #define NAS_PDN_CONNECTIVITY_PDN_TYPE_IPV4          1
 #define NAS_PDN_CONNECTIVITY_PDN_TYPE_IPV6          2
 #define NAS_PDN_CONNECTIVITY_PDN_TYPE_IPV4V6        3
 #define NAS_PDN_CONNECTIVITY_PDN_TYPE_NON_IP        5
-
 typedef struct _nas_request_type_t {
 ED4(c_uint8_t spare1:1;,
     c_uint8_t request_type:3;,
@@ -860,10 +856,10 @@ ED4(c_uint8_t spare1:1;,
     c_uint8_t pdn_type:3;)
 } __attribute__ ((packed)) nas_request_type_t;
 
-
 /* 9.9.4.19 NBIFOM container
+ * See subclause 10.5.6.21 in 3GPP TS 24.008 [4].
  * O TLV 3-257 */
-#define MAX_NAS_NBIFOM_CONTAINER_LEN 254
+#define MAX_NAS_NBIFOM_CONTAINER_LEN 255
 typedef struct _nas_nbifom_container_t {
     c_uint8_t length;
     c_uint8_t buffer[MAX_NAS_NBIFOM_CONTAINER_LEN];
@@ -871,13 +867,31 @@ typedef struct _nas_nbifom_container_t {
 
 /* 9.9.4.22 Header compression configuration
  * O TLV 5-257 */
-#define MAX_NAS_HEADER_COMPRESSION_CONFIGURATION_LEN 254
+#define MAX_NAS_HEADER_COMPRESSION_CONTAINER_LEN 251
 typedef struct _nas_header_compression_configuration_t {
     c_uint8_t length;
-    c_uint8_t buffer[MAX_NAS_HEADER_COMPRESSION_CONFIGURATION_LEN];
+ED8(c_uint8_t spare:1;,
+    c_uint8_t profile0x0104:1;,
+    c_uint8_t profile0x0103:1;,
+    c_uint8_t profile0x0102:1;,
+    c_uint8_t profile0x0006:1;,
+    c_uint8_t profile0x0004:1;,
+    c_uint8_t profile0x0003:1;,
+    c_uint8_t profile0x0002:1;)
+    c_uint16_t max_cid;
+#define NAS_HEADER_COMPRESSION_NO_COMPRESSION           0
+#define NAS_HEADER_COMPRESSION_PROFILE_0x0002_UDP_IP    1
+#define NAS_HEADER_COMPRESSION_PROFILE_0x0003_ESP_IP    2
+#define NAS_HEADER_COMPRESSION_PROFILE_0x0004           3
+#define NAS_HEADER_COMPRESSION_PROFILE_0x0006           4
+#define NAS_HEADER_COMPRESSION_PROFILE_0x0102_UDP_IP    5
+#define NAS_HEADER_COMPRESSION_PROFILE_0x0103_ESP_IP    6
+#define NAS_HEADER_COMPRESSION_PROFILE_0x0104_IP        7
+    c_uint8_t type;
+    c_uint8_t container[MAX_NAS_NBIFOM_CONTAINER_LEN];
 } __attribute__ ((packed)) nas_header_compression_configuration_t;
 
-/* 9.9.4.26 * Extended protocol configuration options
+/* 9.9.4.26 Extended protocol configuration options
  * O TLV-E 4-65538 */
 typedef struct _nas_extended_protocol_configuration_options_t {
     c_uint16_t len;
