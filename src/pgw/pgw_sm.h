@@ -11,7 +11,6 @@ extern "C" {
 
 typedef struct _pgw_sm_t {
     fsm_t fsm;
-    void *ctx;
 } pgw_sm_t;
 
 void pgw_state_initial(pgw_sm_t *s, event_t *e);
