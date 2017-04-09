@@ -5,7 +5,6 @@
 #include "nas_message.h"
 
 #include "mme_event.h"
-#include "nas_security.h"
 #include "esm_handler.h"
 
 void esm_state_initial(esm_sm_t *s, event_t *e)
@@ -50,34 +49,24 @@ void esm_state_operational(esm_sm_t *s, event_t *e)
         }
         case EVT_MSG_MME_ESM:
         {
-            nas_message_t message;
-            status_t rv;
-            pkbuf_t *recvbuf = (pkbuf_t *)event_get_param2(e);
-            d_assert(recvbuf, break, "Null param");
+            nas_message_t *message = s->msg;
+            d_assert(message, break, "Null param");
 
-            rv = nas_security_decode(&message, ue, recvbuf);
-            if (rv != CORE_OK) 
-            {
-                d_error("Can't parse NAS_PDU");
-                break;
-            }
-
-            switch(message.esm.h.message_type)
+            switch(message->esm.h.message_type)
             {
                 case NAS_PDN_CONNECTIVITY_REQUEST:
                 {
                     esm_handle_pdn_connectivity_request(
-                            esm, &message.esm.pdn_connectivity_request);
+                            esm, &message->esm.pdn_connectivity_request);
                     break;
                 }
                 default:
                 {
-                    d_warn("Not implemented(type:%d)", message.emm.h.message_type);
+                    d_warn("Not implemented(type:%d)", 
+                            message->esm.h.message_type);
                     break;
                 }
             }
-
-            pkbuf_free(recvbuf);
             break;
         }
 

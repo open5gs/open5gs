@@ -45,43 +45,34 @@ void s1ap_state_operational(s1ap_sm_t *s, event_t *e)
         }
         case EVT_MSG_MME_S1AP:
         {
-            s1ap_message_t message;
-            status_t rv;
-            pkbuf_t *recvbuf = (pkbuf_t *)event_get_param2(e);
-            d_assert(recvbuf, break, "Null param");
+            s1ap_message_t *message = s->msg;
+            d_assert(message, break, "Null param");
 
-            rv = s1ap_decode_pdu(&message, recvbuf);
-            if (rv != CORE_OK) 
-            {
-                d_error("Can't parse S1AP_PDU");
-                break;
-            }
-
-            switch(message.direction)
+            switch(message->direction)
             {
                 case S1AP_PDU_PR_initiatingMessage :
                 {
-                    switch(message.procedureCode)
+                    switch(message->procedureCode)
                     {
                         case S1ap_ProcedureCode_id_S1Setup :
                         {
-                            s1ap_handle_s1_setup_request(enb, &message);
+                            s1ap_handle_s1_setup_request(enb, message);
                             break;
                         }
                         case S1ap_ProcedureCode_id_initialUEMessage :
                         {
-                            s1ap_handle_initial_ue_message(enb, &message);
+                            s1ap_handle_initial_ue_message(enb, message);
                             break;
                         }
                         case S1ap_ProcedureCode_id_uplinkNASTransport :
                         {
-                            s1ap_handle_uplink_nas_transport(enb, &message);
+                            s1ap_handle_uplink_nas_transport(enb, message);
                             break;
                         }
                         default:
                         {
                             d_warn("Not implemented(choice:%d, proc:%d",
-                                    message.direction, message.procedureCode);
+                                    message->direction, message->procedureCode);
                             break;
                         }
                     }
@@ -90,12 +81,12 @@ void s1ap_state_operational(s1ap_sm_t *s, event_t *e)
                 }
                 case S1AP_PDU_PR_successfulOutcome :
                 {
-                    switch(message.procedureCode)
+                    switch(message->procedureCode)
                     {
                         default:
                         {
                             d_warn("Not implemented(choice:%d, proc:%d",
-                                    message.direction, message.procedureCode);
+                                    message->direction, message->procedureCode);
                             break;
                         }
                     }
@@ -105,13 +96,11 @@ void s1ap_state_operational(s1ap_sm_t *s, event_t *e)
                 default:
                 {
                     d_warn("Not implemented(choice:%d, proc:%d",
-                        message.direction, message.procedureCode);
+                        message->direction, message->procedureCode);
                     break;
                 }
             }
 
-            s1ap_free_pdu(&message);
-            pkbuf_free(recvbuf);
             break;
         }
 

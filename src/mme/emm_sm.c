@@ -5,7 +5,6 @@
 #include "nas_message.h"
 
 #include "mme_event.h"
-#include "nas_security.h"
 #include "emm_handler.h"
 
 void emm_state_initial(emm_sm_t *s, event_t *e)
@@ -46,30 +45,23 @@ void emm_state_operational(emm_sm_t *s, event_t *e)
         }
         case EVT_MSG_MME_EMM:
         {
-            nas_message_t message;
-            status_t rv;
-            pkbuf_t *recvbuf = (pkbuf_t *)event_get_param2(e);
-            d_assert(recvbuf, break, "Null param");
+            nas_message_t *message = s->msg;
+            d_assert(message, break, "Null param");
 
-            rv = nas_security_decode(&message, ue, recvbuf);
-            if (rv != CORE_OK) 
-            {
-                d_error("Can't parse NAS_PDU");
-                break;
-            }
-
-            switch(message.emm.h.message_type)
+            switch(message->emm.h.message_type)
             {
                 case NAS_ATTACH_REQUEST:
                 {
                     emm_handle_attach_request(
-                            ue, &message.emm.attach_request);
+                            ue, &message->emm.attach_request);
                     break;
                 }
                 case NAS_AUTHENTICATION_REQUEST:
                 {
-                    pkbuf_t *pkbuf = pkbuf_copy(recvbuf);
-                    mme_event_nas_to_s1ap(ue, pkbuf);
+                    pkbuf_t *recvbuf = (pkbuf_t *)event_get_param2(e);
+                    d_assert(recvbuf, break, "Null param");
+
+                    mme_event_nas_to_s1ap(ue, pkbuf_copy(recvbuf));
 
                     d_assert(ue->imsi, return,);
                     d_info("[NAS] Authentication request : UE[%s] <-- EMM",
@@ -79,7 +71,7 @@ void emm_state_operational(emm_sm_t *s, event_t *e)
                 case NAS_AUTHENTICATION_RESPONSE:
                 {
                     emm_handle_authentication_response(
-                            ue, &message.emm.authentication_response);
+                            ue, &message->emm.authentication_response);
                     break;
                 }
                 case NAS_SECURITY_MODE_COMPLETE:
@@ -92,12 +84,11 @@ void emm_state_operational(emm_sm_t *s, event_t *e)
                 }
                 default:
                 {
-                    d_warn("Not implemented(type:%d)", message.emm.h.message_type);
+                    d_warn("Not implemented(type:%d)", 
+                            message->emm.h.message_type);
                     break;
                 }
             }
-
-            pkbuf_free(recvbuf);
             break;
         }
 
