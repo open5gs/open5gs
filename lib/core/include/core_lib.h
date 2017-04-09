@@ -88,13 +88,16 @@ CORE_DECLARE(status_t) core_generate_random_bytes(
         c_uint8_t *buf, int length);
 
 #define CORE_HEX(I, I_LEN, O) core_ascii_to_hex(I, I_LEN, O, sizeof(O))
-CORE_DECLARE(void *) core_ascii_to_hex(char *in, int in_len, 
-        void *out, int out_len);
+CORE_DECLARE(void *) core_ascii_to_hex(
+        char *in, int in_len, void *out, int out_len);
 
-CORE_DECLARE(void *) core_uint64_to_buffer(c_uint64_t num, int size, 
-        void *buffer);
+CORE_DECLARE(void *) core_uint64_to_buffer(
+        c_uint64_t num, int size, void *buffer);
 
 CORE_DECLARE(c_uint64_t) core_buffer_to_uint64(void *buffer, int size);
+
+CORE_DECLARE(void *) core_bcd_to_buffer(
+        char *in, int in_len, void *out, int *out_len);
 
 /** @} */
 

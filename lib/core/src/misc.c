@@ -52,3 +52,21 @@ c_uint64_t core_buffer_to_uint64(void *buffer, int size)
 
     return num;
 }
+
+void *core_bcd_to_buffer(char *in, int in_len, void *out, int *out_len)
+{
+    int i = 0;
+    c_uint8_t *out_p = out;
+
+    for (i = 0; i < in_len; i++) 
+    {
+        if (i & 0x01)
+            out_p[i>>1] = out_p[i>>1] | (((in[i] - 0x30) << 4) & 0xF0);
+        else
+            out_p[i>>1] = (in[i] - 0x30) & 0x0F;
+    }
+
+    *out_len = (in_len + 1) / 2;
+
+    return out;
+}
