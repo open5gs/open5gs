@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-07 23:34:23.758891 by acetcom
+ * Created on: 2017-04-09 14:25:22.126323 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -54,14 +54,15 @@ extern "C" {
 #define NAS_PROTOCOL_DISCRIMINATOR_ESM 0x2
 #define NAS_PROTOCOL_DISCRIMINATOR_EMM 0x7
 
+#define NAS_EPS_BEARER_IDENTITY_UNASSIGNED 0
+#define NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED 0
+
 typedef struct _nas_emm_header_t {
 ED2(c_uint8_t security_header_type:4;,
     c_uint8_t protocol_discriminator:4;)
     c_uint8_t message_type;
 } __attribute__ ((packed)) nas_emm_header_t;
 
-#define NAS_EPS_BEARER_IDENTITY_UNASSIGNED 0
-#define NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED 0
 typedef struct _nas_esm_header_t {
 ED2(c_uint8_t eps_bearer_identity:4;,
     c_uint8_t protocol_discriminator:4;)

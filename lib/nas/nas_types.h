@@ -122,9 +122,10 @@ ED8(c_uint8_t cm3:1;,
 /*9.9.2.5 Mobile station classmark 3
  * See subclause 10.5.1.7 in 3GPP TS 24.008 [13].
  * O TLV 2-34 */
+#define NAS_MAX_MOBILE_STATION_CLASSMARK_3_LEN 34
 typedef struct _nas_mobile_station_classmark_3_t {
     c_uint8_t length;
-    c_uint8_t TODO[34];
+    c_uint8_t buffer[NAS_MAX_MOBILE_STATION_CLASSMARK_3_LEN];
 } __attribute__ ((packed)) nas_mobile_station_classmark_3_t;
 
 /* 9.9.2.8 PLMN list
@@ -344,8 +345,8 @@ ED5(c_uint8_t spare:4;,
 /* 9.9.3.15 ESM message container
  * M LV-E 5-n */
 typedef struct _nas_esm_message_container_t {
-    c_uint16_t length;
-    c_uint8_t *buffer;
+    c_uint16_t len;
+    c_uint8_t *data;
 } nas_esm_message_container_t;
 
 /* 9.9.3.16 GPRS timer
@@ -700,12 +701,13 @@ typedef struct _nas_ue_security_capability_t {
     };
 } __attribute__ ((packed)) nas_ue_security_capability_t;
 
-/* TODO : 9.9.3.37 Emergency number list
+/* buffer : 9.9.3.37 Emergency number list
  * See subclause 10.5.3.13 in 3GPP TS 24.008 [13].
  * O TLV 5-50 */
+#define MAX_NAS_EMERGENCY_NUMBER_LIST_LEN 50
 typedef struct _nas_emergency_number_list_t {
     c_uint16_t length;
-    c_uint8_t TODO[50];
+    c_uint8_t buffer[MAX_NAS_EMERGENCY_NUMBER_LIST_LEN];
 } __attribute__ ((packed)) nas_emergency_number_list_t;
 
 /* 9.9.3.44 Voice domain preference and UE's usage setting
@@ -755,10 +757,9 @@ ED3(c_uint8_t type:4;,
 /* 9.9.4.11 Protocol configuration options
  * See subclause 10.5.6.3 in 3GPP TS 24.008 [13].
  * O TLV 3-253 */ 
-#define NAS_MAX_PCO_LEN 250
 typedef struct _nas_protocol_configuration_options_t {
     c_uint8_t length;
-    c_uint8_t TODO[NAS_MAX_PCO_LEN];
+    c_uint8_t buffer[MAX_PCO_LEN];
 } __attribute__ ((packed)) nas_protocol_configuration_options_t;
 
 /* 9.9.4.14 Request type
@@ -786,23 +787,25 @@ ED4(c_uint8_t spare1:1;,
 
 /* 9.9.4.19 NBIFOM container
  * O TLV 3-257 */
+#define MAX_NAS_NBIFOM_CONTAINER_LEN 254
 typedef struct _nas_nbifom_container_t {
     c_uint8_t length;
-    c_uint8_t TODO[257];
+    c_uint8_t buffer[MAX_NAS_NBIFOM_CONTAINER_LEN];
 } __attribute__ ((packed)) nas_nbifom_container_t;
 
 /* 9.9.4.22 Header compression configuration
  * O TLV 5-257 */
+#define MAX_NAS_HEADER_COMPRESSION_CONFIGURATION_LEN 254
 typedef struct _nas_header_compression_configuration_t {
     c_uint8_t length;
-    c_uint8_t TODO[257];
+    c_uint8_t buffer[MAX_NAS_HEADER_COMPRESSION_CONFIGURATION_LEN];
 } __attribute__ ((packed)) nas_header_compression_configuration_t;
 
 /* 9.9.4.26 * Extended protocol configuration options
  * O TLV-E 4-65538 */
 typedef struct _nas_extended_protocol_configuration_options_t {
-    c_uint16_t length;
-    c_uint8_t *buffer;
+    c_uint16_t len;
+    c_uint8_t *data;
 } __attribute__ ((packed)) nas_extended_protocol_configuration_options_t;
 
 #ifdef __cplusplus

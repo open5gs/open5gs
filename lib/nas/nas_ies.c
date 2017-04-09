@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-07 23:34:23.747038 by acetcom
+ * Created on: 2017-04-09 14:25:22.115930 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -437,11 +437,11 @@ c_int16_t nas_decode_esm_message_container(nas_esm_message_container_t *esm_mess
     c_uint16_t size = 0;
     nas_esm_message_container_t *source = pkbuf->payload;
 
-    esm_message_container->length = ntohs(source->length);
-    size = esm_message_container->length + sizeof(esm_message_container->length);
+    esm_message_container->len = ntohs(source->len);
+    size = esm_message_container->len + sizeof(esm_message_container->len);
 
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
-    esm_message_container->buffer = pkbuf->payload - size + sizeof(esm_message_container->length);
+    esm_message_container->data = pkbuf->payload - size + sizeof(esm_message_container->len);
 
     return size;
 }
@@ -452,18 +452,18 @@ c_int16_t nas_encode_esm_message_container(pkbuf_t *pkbuf, nas_esm_message_conta
     c_uint16_t target;
 
     d_assert(esm_message_container, return -1, "Null param");
-    d_assert(esm_message_container->buffer, return -1, "Null param");
+    d_assert(esm_message_container->data, return -1, "Null param");
 
-    size = sizeof(esm_message_container->length);
+    size = sizeof(esm_message_container->len);
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
-    target = htons(esm_message_container->length);
+    target = htons(esm_message_container->len);
     memcpy(pkbuf->payload - size, &target, size);
 
-    size = esm_message_container->length;
+    size = esm_message_container->len;
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
-    memcpy(pkbuf->payload - size, esm_message_container->buffer, size);
+    memcpy(pkbuf->payload - size, esm_message_container->data, size);
 
-    return esm_message_container->length + sizeof(esm_message_container->length);
+    return esm_message_container->len + sizeof(esm_message_container->len);
 }
 
 /* 9.9.3.16 GPRS timer
@@ -1320,11 +1320,11 @@ c_int16_t nas_decode_extended_protocol_configuration_options(nas_extended_protoc
     c_uint16_t size = 0;
     nas_extended_protocol_configuration_options_t *source = pkbuf->payload;
 
-    extended_protocol_configuration_options->length = ntohs(source->length);
-    size = extended_protocol_configuration_options->length + sizeof(extended_protocol_configuration_options->length);
+    extended_protocol_configuration_options->len = ntohs(source->len);
+    size = extended_protocol_configuration_options->len + sizeof(extended_protocol_configuration_options->len);
 
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
-    extended_protocol_configuration_options->buffer = pkbuf->payload - size + sizeof(extended_protocol_configuration_options->length);
+    extended_protocol_configuration_options->data = pkbuf->payload - size + sizeof(extended_protocol_configuration_options->len);
 
     return size;
 }
@@ -1335,18 +1335,18 @@ c_int16_t nas_encode_extended_protocol_configuration_options(pkbuf_t *pkbuf, nas
     c_uint16_t target;
 
     d_assert(extended_protocol_configuration_options, return -1, "Null param");
-    d_assert(extended_protocol_configuration_options->buffer, return -1, "Null param");
+    d_assert(extended_protocol_configuration_options->data, return -1, "Null param");
 
-    size = sizeof(extended_protocol_configuration_options->length);
+    size = sizeof(extended_protocol_configuration_options->len);
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
-    target = htons(extended_protocol_configuration_options->length);
+    target = htons(extended_protocol_configuration_options->len);
     memcpy(pkbuf->payload - size, &target, size);
 
-    size = extended_protocol_configuration_options->length;
+    size = extended_protocol_configuration_options->len;
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
-    memcpy(pkbuf->payload - size, extended_protocol_configuration_options->buffer, size);
+    memcpy(pkbuf->payload - size, extended_protocol_configuration_options->data, size);
 
-    return extended_protocol_configuration_options->length + sizeof(extended_protocol_configuration_options->length);
+    return extended_protocol_configuration_options->len + sizeof(extended_protocol_configuration_options->len);
 }
 
 /* 9.9.4.5 ESM information transfer flag

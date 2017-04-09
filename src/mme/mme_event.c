@@ -84,10 +84,10 @@ void mme_event_emm_to_esm(mme_esm_t *esm,
 
     /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 
      * When calculating AES_CMAC, we need to use the headroom of the packet. */
-    sendbuf = pkbuf_alloc(NAS_HEADROOM, esm_message_container->length);
+    sendbuf = pkbuf_alloc(NAS_HEADROOM, esm_message_container->len);
     d_assert(sendbuf, return, "Null param");
     memcpy(sendbuf->payload, 
-            esm_message_container->buffer, esm_message_container->length);
+            esm_message_container->data, esm_message_container->len);
 
     event_set(&e, EVT_MSG_MME_ESM);
     event_set_param1(&e, (c_uintptr_t)esm);

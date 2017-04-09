@@ -21,9 +21,9 @@ void emm_handle_esm_message_container(
 
     d_assert(ue, return, "Null param");
     d_assert(esm_message_container, return, "Null param");
-    d_assert(esm_message_container->length, return, "Null param");
+    d_assert(esm_message_container->len, return, "Null param");
 
-    h = (nas_esm_header_t *)esm_message_container->buffer;
+    h = (nas_esm_header_t *)esm_message_container->data;
     d_assert(h, return, "Null param");
 
     pti = h->procedure_transaction_identity;

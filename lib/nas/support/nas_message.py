@@ -399,10 +399,10 @@ for (k, v) in sorted_type_list:
         f.write("{\n")
         f.write("    c_uint16_t size = 0;\n")
         f.write("    nas_%s_t *source = pkbuf->payload;\n\n" % v_lower(k))
-        f.write("    %s->length = ntohs(source->length);\n" % v_lower(k))
-        f.write("    size = %s->length + sizeof(%s->length);\n\n" % (v_lower(k), v_lower(k)))
+        f.write("    %s->len = ntohs(source->len);\n" % v_lower(k))
+        f.write("    size = %s->len + sizeof(%s->len);\n\n" % (v_lower(k), v_lower(k)))
         f.write("    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, \"pkbuf_header error\");\n")
-        f.write("    %s->buffer = pkbuf->payload - size + sizeof(%s->length);\n\n" % (v_lower(k), v_lower(k)))
+        f.write("    %s->data = pkbuf->payload - size + sizeof(%s->len);\n\n" % (v_lower(k), v_lower(k)))
         f.write("    return size;\n")
         f.write("}\n\n")
         f.write("c_int16_t nas_encode_%s(pkbuf_t *pkbuf, nas_%s_t *%s)\n" % (v_lower(k), v_lower(k), v_lower(k)))
@@ -410,15 +410,15 @@ for (k, v) in sorted_type_list:
         f.write("    c_uint16_t size = 0;\n")
         f.write("    c_uint16_t target;\n\n")
         f.write("    d_assert(%s, return -1, \"Null param\");\n" % v_lower(k))
-        f.write("    d_assert(%s->buffer, return -1, \"Null param\");\n\n" % v_lower(k))
-        f.write("    size = sizeof(%s->length);\n" % v_lower(k))
+        f.write("    d_assert(%s->data, return -1, \"Null param\");\n\n" % v_lower(k))
+        f.write("    size = sizeof(%s->len);\n" % v_lower(k))
         f.write("    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, \"pkbuf_header error\");\n")
-        f.write("    target = htons(%s->length);\n" % v_lower(k))
+        f.write("    target = htons(%s->len);\n" % v_lower(k))
         f.write("    memcpy(pkbuf->payload - size, &target, size);\n\n")
-        f.write("    size = %s->length;\n" % v_lower(k))
+        f.write("    size = %s->len;\n" % v_lower(k))
         f.write("    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, \"pkbuf_header error\");\n")
-        f.write("    memcpy(pkbuf->payload - size, %s->buffer, size);\n\n" % v_lower(k))
-        f.write("    return %s->length + sizeof(%s->length);\n" % (v_lower(k), v_lower(k)))
+        f.write("    memcpy(pkbuf->payload - size, %s->data, size);\n\n" % v_lower(k))
+        f.write("    return %s->len + sizeof(%s->len);\n" % (v_lower(k), v_lower(k)))
         f.write("}\n\n");
     else:
         f.write("c_int16_t nas_decode_%s(nas_%s_t *%s, pkbuf_t *pkbuf)\n" % (v_lower(k), v_lower(k), v_lower(k)))
@@ -471,6 +471,9 @@ extern "C" {
 
 #define NAS_PROTOCOL_DISCRIMINATOR_ESM 0x2
 #define NAS_PROTOCOL_DISCRIMINATOR_EMM 0x7
+
+#define NAS_EPS_BEARER_IDENTITY_UNASSIGNED 0
+#define NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED 0
 
 typedef struct _nas_emm_header_t {
 ED2(c_uint8_t security_header_type:4;,
