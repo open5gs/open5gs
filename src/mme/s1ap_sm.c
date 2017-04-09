@@ -45,7 +45,7 @@ void s1ap_state_operational(s1ap_sm_t *s, event_t *e)
         }
         case EVT_MSG_MME_S1AP:
         {
-            s1ap_message_t *message = s->msg;
+            s1ap_message_t *message = (s1ap_message_t *)event_get_param3(e);
             d_assert(message, break, "Null param");
 
             switch(message->direction)

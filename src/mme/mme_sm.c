@@ -140,7 +140,7 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
             d_assert(s1ap_decode_pdu(&message, pkbuf) == CORE_OK,
                     pkbuf_free(pkbuf); break, "Can't decode S1AP_PDU");
 
-            enb->s1ap_sm.msg = &message;
+            event_set_param3(e, (c_uintptr_t)&message);
             fsm_dispatch((fsm_t*)&enb->s1ap_sm, (fsm_event_t*)e);
 
             s1ap_free_pdu(&message);
@@ -161,7 +161,7 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
             d_assert(nas_security_decode(&message, ue, pkbuf) == CORE_OK,
                     pkbuf_free(pkbuf); break, "Can't decode NAS_EMM");
 
-            ue->emm_sm.msg = &message;
+            event_set_param3(e, (c_uintptr_t)&message);
             fsm_dispatch((fsm_t*)&ue->emm_sm, (fsm_event_t*)e);
 
             pkbuf_free(pkbuf);
@@ -183,7 +183,7 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
             d_assert(nas_security_decode(&message, ue, pkbuf) == CORE_OK,
                     pkbuf_free(pkbuf); break, "Can't decode NAS_ESM");
 
-            esm->sm.msg = &message;
+            event_set_param3(e, (c_uintptr_t)&message);
             fsm_dispatch((fsm_t*)&esm->sm, (fsm_event_t*)e);
 
             pkbuf_free(pkbuf);

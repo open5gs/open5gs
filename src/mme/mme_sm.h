@@ -11,7 +11,6 @@ extern "C" {
 
 typedef struct _mme_sm_t {
     fsm_t fsm;
-    void *ctx;
 } mme_sm_t;
 
 void mme_state_initial(mme_sm_t *s, event_t *e);
@@ -22,7 +21,6 @@ void mme_state_exception(mme_sm_t *s, event_t *e);
 typedef struct _s1ap_sm_t {
     fsm_t fsm;
     void *ctx;
-    void *msg;
 } s1ap_sm_t;
 
 void s1ap_state_initial(s1ap_sm_t *s, event_t *e);
@@ -33,7 +31,6 @@ void s1ap_state_exception(s1ap_sm_t *s, event_t *e);
 typedef struct _emm_sm_t {
     fsm_t fsm;
     void *ctx;
-    void *msg;
 } emm_sm_t;
 
 void emm_state_initial(emm_sm_t *s, event_t *e);
@@ -44,7 +41,6 @@ void emm_state_exception(emm_sm_t *s, event_t *e);
 typedef struct _esm_sm_t {
     fsm_t fsm;
     void *ctx;
-    void *msg;
 } esm_sm_t;
 
 void esm_state_initial(esm_sm_t *s, event_t *e);

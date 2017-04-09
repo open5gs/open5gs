@@ -49,7 +49,7 @@ void esm_state_operational(esm_sm_t *s, event_t *e)
         }
         case EVT_MSG_MME_ESM:
         {
-            nas_message_t *message = s->msg;
+            nas_message_t *message = (nas_message_t *)event_get_param3(e);
             d_assert(message, break, "Null param");
 
             switch(message->esm.h.message_type)
