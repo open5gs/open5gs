@@ -81,34 +81,34 @@ static int _s1ap_accept_cb(net_sock_t *net_sock, void *data)
     return r;
 }
 
-static status_t s1ap_recv(net_sock_t *net_sock, pkbuf_t *pkbuf)
+static status_t s1ap_recv(net_sock_t *sock, pkbuf_t *pkbuf)
 {
     event_t e;
 
-    d_assert(net_sock, return CORE_ERROR, "Null param");
+    d_assert(sock, return CORE_ERROR, "Null param");
     d_assert(pkbuf, return CORE_ERROR, "Null param");
 
     d_trace(1, "S1AP_PDU is received from eNB-Inf\n");
     d_trace_hex(1, pkbuf->payload, pkbuf->len);
 
     event_set(&e, EVT_MSG_MME_S1AP);
-    event_set_param1(&e, (c_uintptr_t)net_sock);
+    event_set_param1(&e, (c_uintptr_t)sock);
     event_set_param2(&e, (c_uintptr_t)pkbuf);
     return mme_event_send(&e);
 }
 
-int _s1ap_recv_cb(net_sock_t *net_sock, void *data)
+int _s1ap_recv_cb(net_sock_t *sock, void *data)
 {
     status_t rv;
     pkbuf_t *pkbuf;
     ssize_t r;
 
-    d_assert(net_sock, return -1, "Null param");
+    d_assert(sock, return -1, "Null param");
 
     pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     d_assert(pkbuf, return -1, "Can't allocate pkbufuf");
 
-    r = net_read(net_sock, pkbuf->payload, pkbuf->len, 0);
+    r = net_read(sock, pkbuf->payload, pkbuf->len, 0);
     if (r == -2)
     {
         pkbuf_free(pkbuf);
@@ -117,27 +117,27 @@ int _s1ap_recv_cb(net_sock_t *net_sock, void *data)
     {
         pkbuf_free(pkbuf);
 
-        if (net_sock->sndrcv_errno == EAGAIN)
+        if (sock->sndrcv_errno == EAGAIN)
         {
             d_warn("net_read failed(%d:%s)",
-                    net_sock->sndrcv_errno, strerror(net_sock->sndrcv_errno));
+                    sock->sndrcv_errno, strerror(sock->sndrcv_errno));
             return 0;
         } 
-        else if (net_sock->sndrcv_errno == ECONNREFUSED)
+        else if (sock->sndrcv_errno == ECONNREFUSED)
         {
             d_warn("net_read failed(%d:%s)",
-                    net_sock->sndrcv_errno, strerror(net_sock->sndrcv_errno));
+                    sock->sndrcv_errno, strerror(sock->sndrcv_errno));
         }
         else
         {
             d_error("net_read failed(%d:%s)",
-                    net_sock->sndrcv_errno, strerror(net_sock->sndrcv_errno));
+                    sock->sndrcv_errno, strerror(sock->sndrcv_errno));
         }
 
         event_t e;
 
         event_set(&e, EVT_LO_MME_S1AP_CONNREFUSED);
-        event_set_param1(&e, (c_uintptr_t)net_sock);
+        event_set_param1(&e, (c_uintptr_t)sock);
         mme_event_send(&e);
 
         return -1;
@@ -146,7 +146,7 @@ int _s1ap_recv_cb(net_sock_t *net_sock, void *data)
     {
         pkbuf->len = r;
 
-        rv = s1ap_recv(net_sock, pkbuf);
+        rv = s1ap_recv(sock, pkbuf);
         if (rv != CORE_OK)
         {
             pkbuf_free(pkbuf);
