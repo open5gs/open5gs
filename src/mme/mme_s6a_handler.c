@@ -53,9 +53,8 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     ue = mi->ue;
     d_assert(ue, error++; goto out,);
 
-    d_assert(ue->imsi, error++; goto out,);
     d_info("[S6A] Authentication-Information-Response : UE[%s] <-- HSS", 
-            ue->imsi);
+            ue->imsi_bcd);
     
     /* Value of Result Code */
     d_assert(fd_msg_search_avp(*msg, s6a_result_code, &avp) == 0 && avp, 
@@ -206,8 +205,8 @@ int mme_s6a_send_air(mme_ue_t *ue)
     
     /* Set the User-Name AVP */
     d_assert(fd_msg_avp_new(s6a_user_name, 0, &avp) == 0, goto out,);
-    val.os.data = ue->imsi;
-    val.os.len  = ue->imsi_len;
+    val.os.data = ue->imsi_bcd;
+    val.os.len  = ue->imsi_bcd_len;
     d_assert(fd_msg_avp_setvalue(avp, &val) == 0, goto out, );
     d_assert(fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp) == 0, goto out,);
 
@@ -251,9 +250,8 @@ int mme_s6a_send_air(mme_ue_t *ue)
     s6a_config->stats.nb_sent++;
     d_assert(pthread_mutex_unlock(&s6a_config->stats_lock) == 0,, );
 
-    d_assert(ue->imsi, return 0,);
     d_info("[S6A] Authentication-Information-Request : UE[%s] --> HSS", 
-            ue->imsi);
+            ue->imsi_bcd);
 
     return 0;
 
@@ -300,9 +298,8 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     ue = mi->ue;
     d_assert(ue, error++; goto out,);
 
-    d_assert(ue->imsi, error++; goto out,);
     d_info("[S6A] Authentication-Information-Response : UE[%s] <-- HSS", 
-            ue->imsi);
+            ue->imsi_bcd);
     
     /* Value of Result Code */
     d_assert(fd_msg_search_avp(*msg, s6a_result_code, &avp) == 0 && avp, 
@@ -454,8 +451,8 @@ int mme_s6a_send_ulr(mme_ue_t *ue)
     
     /* Set the User-Name AVP */
     d_assert(fd_msg_avp_new(s6a_user_name, 0, &avp) == 0, goto out,);
-    val.os.data = ue->imsi;
-    val.os.len  = ue->imsi_len;
+    val.os.data = ue->imsi_bcd;
+    val.os.len  = ue->imsi_bcd_len;
     d_assert(fd_msg_avp_setvalue(avp, &val) == 0, goto out, );
     d_assert(fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp) == 0, goto out,);
 
@@ -473,20 +470,12 @@ int mme_s6a_send_ulr(mme_ue_t *ue)
 #define S6A_RAT_TYPE_HRPD               2001
 #define S6A_RAT_TYPE_UMB                2002
 #define S6A_RAT_TYPE_EHRPD              2003
-
     val.u32 = S6A_RAT_TYPE_EUTRAN;
     d_assert(fd_msg_avp_setvalue(avp, &val) == 0, goto out,);
     d_assert(fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp) == 0, goto out,);
 
     /* Set the ULR-Flags */
     d_assert(fd_msg_avp_new(s6a_ulr_flags, 0, &avp) == 0, goto out,);
-#define S6A_ULR_SINGLE_REGISTRATION_IND     (1)
-#define S6A_ULR_S6A_S6D_INDICATOR           (1 << 1)
-#define S6A_ULR_SKIP_SUBSCRIBER_DATA        (1 << 2)
-#define S6A_ULR_GPRS_SUBSCRIPTION_DATA_IND  (1 << 3)
-#define S6A_ULR_NODE_TYPE_IND               (1 << 4)
-#define S6A_ULR_INITIAL_ATTACH_IND          (1 << 5)
-#define S6A_ULR_PS_LCS_SUPPORTED_BY_UE      (1 << 6)
     val.u32 = S6A_ULR_S6A_S6D_INDICATOR;
     d_assert(fd_msg_avp_setvalue(avp, &val) == 0, goto out,);
     d_assert(fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp) == 0, goto out,);
@@ -500,14 +489,9 @@ int mme_s6a_send_ulr(mme_ue_t *ue)
 
     /* Set the UE-SRVCC Capability */
     d_assert(fd_msg_avp_new(s6a_ue_srvcc_cap, 0, &avp) == 0, goto out,);
-#define S6A_UE_SRVCC_NOT_SUPPORTED          (0)
-#define S6A_UE_SRVCC_SUPPORTED              (1)
     val.u32 = S6A_UE_SRVCC_NOT_SUPPORTED;
     d_assert(fd_msg_avp_setvalue(avp, &val) == 0, goto out,);
     d_assert(fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp) == 0, goto out,);
-
-    /* FIXME : Supported-Features */
-
 
     d_assert(clock_gettime(CLOCK_REALTIME, &mi->ts) == 0, goto out,);
     
@@ -526,9 +510,8 @@ int mme_s6a_send_ulr(mme_ue_t *ue)
     s6a_config->stats.nb_sent++;
     d_assert(pthread_mutex_unlock(&s6a_config->stats_lock) == 0,, );
 
-    d_assert(ue->imsi, return 0,);
     d_info("[S6A] Update-Location-Request : UE[%s] --> HSS", 
-            ue->imsi);
+            ue->imsi_bcd);
 
     return 0;
 

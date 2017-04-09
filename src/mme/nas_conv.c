@@ -4,33 +4,62 @@
 
 #include "nas_conv.h"
 
-void nas_imsi_bcd_to_buffer(
-    nas_mobile_identity_imsi_t *bcd, c_uint8_t bcd_len, 
-    c_uint8_t *buf, c_uint8_t *buf_len)
+void nas_imsi_to_bcd(
+    nas_mobile_identity_imsi_t *imsi, c_uint8_t imsi_len, 
+    c_uint8_t *bcd, c_uint8_t *bcd_len)
 {
-    buf[0] = '0' + bcd->digit1;
-    buf[1] = '0' + bcd->digit2;
-    buf[2] = '0' + bcd->digit3;
-    buf[3] = '0' + bcd->digit4;
-    buf[4] = '0' + bcd->digit5;
-    buf[5] = '0' + bcd->digit6;
-    buf[6] = '0' + bcd->digit7;
-    buf[7] = '0' + bcd->digit8;
-    buf[8] = '0' + bcd->digit9;
-    buf[9] = '0' + bcd->digit10;
-    buf[10] = '0' + bcd->digit11;
-    buf[11] = '0' + bcd->digit12;
-    buf[12] = '0' + bcd->digit13;
-    buf[13] = '0' + bcd->digit14;
-    buf[14] = '0' + bcd->digit15;
+    bcd[0] = '0' + imsi->digit1;
+    bcd[1] = '0' + imsi->digit2;
+    bcd[2] = '0' + imsi->digit3;
+    bcd[3] = '0' + imsi->digit4;
+    bcd[4] = '0' + imsi->digit5;
+    bcd[5] = '0' + imsi->digit6;
+    bcd[6] = '0' + imsi->digit7;
+    bcd[7] = '0' + imsi->digit8;
+    bcd[8] = '0' + imsi->digit9;
+    bcd[9] = '0' + imsi->digit10;
+    bcd[10] = '0' + imsi->digit11;
+    bcd[11] = '0' + imsi->digit12;
+    bcd[12] = '0' + imsi->digit13;
+    bcd[13] = '0' + imsi->digit14;
+    bcd[14] = '0' + imsi->digit15;
 
-    *buf_len = bcd_len * 2 - 1;
-    if (!bcd->odd_even) /* if bcd length is even */
+    *bcd_len = imsi_len * 2 - 1;
+    if (!imsi->odd_even) /* if bcd length is even */
     {
-        if (buf[*buf_len] != 0xf)
-            d_warn("Spec warning : buf[%d] = 0x%x", *buf_len, buf[*buf_len]);
-        (*buf_len)--; 
+        if (bcd[*bcd_len] != 0xf)
+            d_warn("Spec warning : bcd[%d] = 0x%x", *bcd_len, bcd[*bcd_len]);
+        (*bcd_len)--; 
     }
 
-    buf[*buf_len] = 0;
+    bcd[*bcd_len] = 0;
+}
+
+void nas_imsi_to_buffer(
+    nas_mobile_identity_imsi_t *imsi, c_uint8_t imsi_len, 
+    c_uint8_t *buf, c_uint8_t *buf_len)
+{
+    buf[0] = ((('0' + imsi->digit2) << 4) & 0xf0) | 
+                (('0' + imsi->digit1) & 0x0f);
+    buf[1] = ((('0' + imsi->digit4) << 4) & 0xf0) | 
+                (('0' + imsi->digit3) & 0x0f);
+    buf[2] = ((('0' + imsi->digit6) << 4) & 0xf0) | 
+                (('0' + imsi->digit5) & 0x0f);
+    buf[3] = ((('0' + imsi->digit8) << 4) & 0xf0) | 
+                (('0' + imsi->digit7) & 0x0f);
+    buf[4] = ((('0' + imsi->digit10) << 4) & 0xf0) |
+                (('0' + imsi->digit9) & 0x0f);
+    buf[5] = ((('0' + imsi->digit12) << 4) & 0xf0) | 
+                (('0' + imsi->digit11) & 0x0f);
+    buf[6] = ((('0' + imsi->digit14) << 4) & 0xf0) | 
+                (('0' + imsi->digit13) & 0x0f);
+    buf[7] = ((('0' + imsi->digit15)) & 0x0f);
+
+    *buf_len = imsi_len;
+    if (!imsi->odd_even) /* if imsi length is even */
+    {
+        (*buf_len)--; 
+        if ((buf[*buf_len] & 0xf) != 0xf)
+            d_warn("Spec warning : buf[%d] = 0x%x", *buf_len, buf[*buf_len]);
+    }
 }

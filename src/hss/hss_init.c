@@ -60,13 +60,14 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
             goto out,);
     d_assert(fd_msg_avp_hdr(avp, &hdr) == 0 && hdr,,);
 
-    ue = hss_ue_find_by_imsi(
+    ue = hss_ue_find_by_imsi_bcd(
             hdr->avp_value->os.data, hdr->avp_value->os.len);
     if (!ue)
     {
-        char imsi[MAX_IMSI_LEN];
-        strncpy(imsi, (char*)hdr->avp_value->os.data, hdr->avp_value->os.len);
-        d_warn("Cannot find IMSI:%s\n", imsi);
+        char imsi_bcd[MAX_IMSI_BCD_LEN+1];
+        strncpy(imsi_bcd, 
+                (char*)hdr->avp_value->os.data, hdr->avp_value->os.len);
+        d_warn("Cannot find IMSI:%s\n", imsi_bcd);
         goto out;
     }
 
@@ -90,7 +91,7 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
 	d_assert(fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1) == 0,
             goto out,);
 
-    /* Set the Auth-Session-Statee AVP */
+    /* Set the Auth-Session-State AVP */
     d_assert(fd_msg_avp_new(s6a_auth_session_state, 0, &avp) == 0, goto out,);
     val.i32 = 1;
     d_assert(fd_msg_avp_setvalue(avp, &val) == 0, goto out,);
@@ -155,6 +156,7 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
 	struct msg *ans, *qry;
 #if 0
     struct avp *avpch1, *avpch2;
+    struct avp *avpch1;
 #endif
     struct avp_hdr *hdr;
     union avp_value val;
@@ -172,13 +174,14 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
             goto out,);
     d_assert(fd_msg_avp_hdr(avp, &hdr) == 0 && hdr,,);
 
-    ue = hss_ue_find_by_imsi(
+    ue = hss_ue_find_by_imsi_bcd(
             hdr->avp_value->os.data, hdr->avp_value->os.len);
     if (!ue)
     {
-        char imsi[MAX_IMSI_LEN];
-        strncpy(imsi, (char*)hdr->avp_value->os.data, hdr->avp_value->os.len);
-        d_warn("Cannot find IMSI:%s\n", imsi);
+        char imsi_bcd[MAX_IMSI_BCD_LEN+1];
+        strncpy(imsi_bcd, 
+                (char*)hdr->avp_value->os.data, hdr->avp_value->os.len);
+        d_warn("Cannot find IMSI:%s\n", imsi_bcd);
         goto out;
     }
 
@@ -199,6 +202,31 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
     val.i32 = 1;
     d_assert(fd_msg_avp_setvalue(avp, &val) == 0, goto out,);
     d_assert(fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) == 0, goto out,);
+
+    /* Set the ULA Flags */
+    d_assert(fd_msg_avp_new(s6a_ula_flags, 0, &avp) == 0, goto out,);
+    val.i32 = S6A_ULA_MME_REGISTERED_FOR_SMS;
+    d_assert(fd_msg_avp_setvalue(avp, &val) == 0, goto out,);
+    d_assert(fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) == 0, goto out,);
+
+    d_assert(fd_msg_search_avp(qry, s6a_ulr_flags, &avp) == 0 && 
+            avp, goto out,);
+    d_assert(fd_msg_avp_hdr(avp, &hdr) == 0 && hdr,,);
+    if (hdr && hdr->avp_value && 
+        !(hdr->avp_value->u32 & S6A_ULR_SKIP_SUBSCRIBER_DATA))
+    {
+        /* Set the Subscription Data */
+#if 0
+        d_assert(fd_msg_avp_new(s6a_subscription_data, 0, &avp) == 0, 
+                goto out,);
+        d_assert(fd_msg_avp_new(s6a_msisdn, 0, &avpch1) == 0, goto out,);
+
+        d_assert(fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch1) == 0, 
+                goto out,);
+        d_assert(fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) == 0, 
+                goto out,);
+#endif
+    }
 
 	/* Send the answer */
 	fd_msg_send(msg, NULL, NULL);

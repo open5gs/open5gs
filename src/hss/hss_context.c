@@ -22,6 +22,7 @@ hss_context_t* hss_self()
 status_t hss_context_init(void)
 {
     char buf[HSS_KEY_LEN];
+
     hss_ue_t *ue;
 
     memset(&self, 0, sizeof(hss_context_t));
@@ -38,11 +39,18 @@ status_t hss_context_init(void)
     #define UE3_IMSI "001010123456819"
     #define UE3_RAND "20080c3818183b52 2614162c07601d0d"
 
+    #define MSISDN "491725670014"
+    #define MEI "3516020019874800"
+
     ue = hss_ue_add();
     d_assert(ue, return -1, "UE context add failed");
 
-    strcpy((char*)ue->imsi, UE1_IMSI);
-    ue->imsi_len = strlen(UE1_IMSI);
+    strcpy((char*)ue->imsi_bcd, UE1_IMSI);
+    ue->imsi_bcd_len = strlen(UE1_IMSI);
+    strcpy((char*)ue->msisdn_bcd, MSISDN);
+    ue->msisdn_bcd_len = strlen(MSISDN);
+    strcpy((char*)ue->mei_bcd, MEI);
+    ue->mei_bcd_len = strlen(MEI);
     memcpy(ue->k, CORE_HEX(K, strlen(K), buf), HSS_KEY_LEN);
     core_generate_random_bytes(ue->rand, RAND_LEN);
     ue->sqn = 64;
@@ -50,8 +58,12 @@ status_t hss_context_init(void)
     ue = hss_ue_add();
     d_assert(ue, return -1, "UE context add failed");
 
-    strcpy((char*)ue->imsi, UE2_IMSI);
-    ue->imsi_len = strlen(UE2_IMSI);
+    strcpy((char*)ue->imsi_bcd, UE2_IMSI);
+    ue->imsi_bcd_len = strlen(UE2_IMSI);
+    strcpy((char*)ue->msisdn_bcd, MSISDN);
+    ue->msisdn_bcd_len = strlen(MSISDN);
+    strcpy((char*)ue->mei_bcd, MEI);
+    ue->mei_bcd_len = strlen(MEI);
     memcpy(ue->k, CORE_HEX(K, strlen(K), buf), HSS_KEY_LEN);
     core_generate_random_bytes(ue->rand, RAND_LEN);
     ue->sqn = 64;
@@ -59,8 +71,12 @@ status_t hss_context_init(void)
     ue = hss_ue_add();
     d_assert(ue, return -1, "UE context add failed");
 
-    strcpy((char*)ue->imsi, UE3_IMSI);
-    ue->imsi_len = strlen(UE3_IMSI);
+    strcpy((char*)ue->imsi_bcd, UE3_IMSI);
+    ue->imsi_bcd_len = strlen(UE3_IMSI);
+    strcpy((char*)ue->msisdn_bcd, MSISDN);
+    ue->msisdn_bcd_len = strlen(MSISDN);
+    strcpy((char*)ue->mei_bcd, MEI);
+    ue->mei_bcd_len = strlen(MEI);
     memcpy(ue->k, CORE_HEX(K, strlen(K), buf), HSS_KEY_LEN);
     memcpy(ue->rand, CORE_HEX(UE3_RAND, strlen(UE3_RAND), buf), 
             RAND_LEN);
@@ -125,14 +141,14 @@ status_t hss_ue_remove_all()
     return CORE_OK;
 }
 
-hss_ue_t* hss_ue_find_by_imsi(c_uint8_t *imsi, c_uint8_t imsi_len)
+hss_ue_t* hss_ue_find_by_imsi_bcd(c_uint8_t *imsi_bcd, c_uint8_t imsi_bcd_len)
 {
     hss_ue_t *ue = NULL;
     
     ue = list_first(&self.ue_list);
     while (ue)
     {
-        if (memcmp(ue->imsi, imsi, imsi_len) == 0)
+        if (memcmp(ue->imsi_bcd, imsi_bcd, imsi_bcd_len) == 0)
             break;
 
         ue = list_next(ue);

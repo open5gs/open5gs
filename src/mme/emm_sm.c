@@ -64,9 +64,8 @@ void emm_state_operational(emm_sm_t *s, event_t *e)
 
                     mme_event_nas_to_s1ap(ue, pkbuf_copy(recvbuf));
 
-                    d_assert(ue->imsi, return,);
                     d_info("[NAS] Authentication request : UE[%s] <-- EMM",
-                            ue->imsi);
+                            ue->imsi_bcd);
                     break;
                 }
                 case NAS_AUTHENTICATION_RESPONSE:
@@ -77,9 +76,8 @@ void emm_state_operational(emm_sm_t *s, event_t *e)
                 }
                 case NAS_SECURITY_MODE_COMPLETE:
                 {
-                    d_assert(ue->imsi, return,);
                     d_info("[NAS] Security mode complete : UE[%s] --> EMM",
-                            ue->imsi);
+                            ue->imsi_bcd);
                     mme_s6a_send_ulr(ue);
                     break;
                 }

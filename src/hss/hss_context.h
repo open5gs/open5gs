@@ -15,8 +15,14 @@ extern "C" {
 typedef struct _hss_ue_t {
     lnode_t         node; /**< A node of list_t */
 
-    c_uint8_t       imsi[MAX_IMSI_LEN+1];
-    c_uint8_t       imsi_len;
+    c_uint8_t       imsi_bcd[MAX_IMSI_BCD_LEN+1];
+    int             imsi_bcd_len;
+
+    c_uint8_t       msisdn_bcd[MAX_MSISDN_BCD_LEN+1];
+    int             msisdn_bcd_len;
+
+    c_uint8_t       mei_bcd[MAX_MEI_BCD_LEN+1];
+    int             mei_bcd_len;
 
     plmn_id_t       visited_plmn_id;
 
@@ -42,8 +48,8 @@ CORE_DECLARE(hss_context_t*) hss_self(void);
 CORE_DECLARE(hss_ue_t*)     hss_ue_add(void);
 CORE_DECLARE(status_t)      hss_ue_remove(hss_ue_t *ue);
 CORE_DECLARE(status_t)      hss_ue_remove_all(void);
-CORE_DECLARE(hss_ue_t*)     hss_ue_find_by_imsi(
-                                c_uint8_t *imsi, c_uint8_t imsi_len);
+CORE_DECLARE(hss_ue_t*)     hss_ue_find_by_imsi_bcd(
+                                c_uint8_t *imsi_bcd, c_uint8_t imsi_bcd_len);
 CORE_DECLARE(hss_ue_t*)     hss_ue_first(void);
 CORE_DECLARE(hss_ue_t*)     hss_ue_next(hss_ue_t *ue);
 

@@ -62,8 +62,11 @@ void emm_handle_attach_request(
     {
         case NAS_EPS_MOBILE_IDENTITY_IMSI:
         {
-            memcpy(&ue->visited_plmn_id, &mme_self()->plmn_id, PLMN_ID_LEN);
+            nas_imsi_to_bcd(
+                &eps_mobile_identity->imsi, eps_mobile_identity->length,
+                ue->imsi_bcd, &ue->imsi_bcd_len);
 
+            memcpy(&ue->visited_plmn_id, &mme_self()->plmn_id, PLMN_ID_LEN);
             if (attach_request->presencemask &
                 NAS_ATTACH_REQUEST_LAST_VISITED_REGISTERED_TAI_PRESENT)
             {
@@ -74,9 +77,6 @@ void emm_handle_attach_request(
                         &last_visited_registered_tai->plmn_id,
                         PLMN_ID_LEN);
             }
-            nas_imsi_bcd_to_buffer(
-                &eps_mobile_identity->imsi, eps_mobile_identity->length, 
-                ue->imsi, &ue->imsi_len);
 
             memcpy(&ue->ue_network_capability, 
                     &attach_request->ue_network_capability,
@@ -85,8 +85,7 @@ void emm_handle_attach_request(
                     &attach_request->ms_network_capability,
                     sizeof(attach_request->ms_network_capability));
 
-            d_assert(ue->imsi, return,);
-            d_info("[NAS] Attach request : UE[%s] --> EMM", ue->imsi);
+            d_info("[NAS] Attach request : UE[%s] --> EMM", ue->imsi_bcd);
 
             mme_s6a_send_air(ue);
             break;
@@ -128,8 +127,8 @@ void emm_handle_authentication_response(
         return;
     }
 
-    d_assert(ue->imsi, return, );
-    d_info("[NAS] Authentication response : UE[%s] --> EMM", ue->imsi);
+    d_info("[NAS] Authentication response : UE[%s] --> EMM", 
+            ue->imsi_bcd);
 
     memset(&message, 0, sizeof(message));
     message.h.security_header_type = 
@@ -170,8 +169,7 @@ void emm_handle_authentication_response(
             sendbuf,,);
     mme_event_nas_to_s1ap(ue, sendbuf);
 
-    d_assert(ue->imsi, return,);
-    d_info("[NAS] Security mode command : UE[%s] <-- EMM", ue->imsi);
+    d_info("[NAS] Security mode command : UE[%s] <-- EMM", ue->imsi_bcd);
 }
 
 void emm_handle_security_mode_complete(mme_ue_t *ue)

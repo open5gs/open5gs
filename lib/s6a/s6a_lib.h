@@ -15,6 +15,20 @@ extern "C" {
 #define	MODE_MME 0x1
 #define MODE_HSS 0x2
 
+#define S6A_ULR_SINGLE_REGISTRATION_IND     (1)
+#define S6A_ULR_S6A_S6D_INDICATOR           (1 << 1)
+#define S6A_ULR_SKIP_SUBSCRIBER_DATA        (1 << 2)
+#define S6A_ULR_GPRS_SUBSCRIPTION_DATA_IND  (1 << 3)
+#define S6A_ULR_NODE_TYPE_IND               (1 << 4)
+#define S6A_ULR_INITIAL_ATTACH_IND          (1 << 5)
+#define S6A_ULR_PS_LCS_SUPPORTED_BY_UE      (1 << 6)
+
+#define S6A_ULA_SEPARATION_INDICATION       (0)
+#define S6A_ULA_MME_REGISTERED_FOR_SMS      (1)
+
+#define S6A_UE_SRVCC_NOT_SUPPORTED          (0)
+#define S6A_UE_SRVCC_SUPPORTED              (1)
+
 struct s6a_config_t {
     /* Diameter Identity of the local peer (FQDN -- ASCII) */
     char *cnf_diamid; 

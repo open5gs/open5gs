@@ -16,7 +16,14 @@ extern "C" {
 #define MAX_SDU_LEN         2048
 
 #define PLMN_ID_LEN         3
-#define MAX_IMSI_LEN        15
+
+#define BCD_TO_BUFFER_LEN(x)    (((x)+1)/2)
+#define MAX_IMSI_BCD_LEN    15
+#define MAX_IMSI_LEN        BCD_TO_BUFFER_LEN(MAX_IMSI_BCD_LEN)
+#define MAX_MSISDN_BCD_LEN  15
+#define MAX_MSISDN_LEN      BCD_TO_BUFFER_LEN(MAX_MSISDN_BCD_LEN)
+#define MAX_MEI_BCD_LEN     16
+#define MAX_MEI_LEN         BCD_TO_BUFFER_LEN(MAX_MEI_BCD_LEN)
 
 #define RAND_LEN            16
 #define AUTN_LEN            16
