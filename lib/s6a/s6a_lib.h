@@ -15,6 +15,19 @@ extern "C" {
 #define	MODE_MME 0x1
 #define MODE_HSS 0x2
 
+#define S6A_RAT_TYPE_WLAN                   0
+#define S6A_RAT_TYPE_VIRTUAL                1
+#define S6A_RAT_TYPE_UTRAN                  1000
+#define S6A_RAT_TYPE_GERAN                  1001
+#define S6A_RAT_TYPE_GAN                    1002
+#define S6A_RAT_TYPE_HSPA_EVOLUTION         1003
+#define S6A_RAT_TYPE_EUTRAN                 1004
+#define S6A_RAT_TYPE_EUTRAN_NB_IOT          1005
+#define S6A_RAT_TYPE_CDMA2000_1X            2000
+#define S6A_RAT_TYPE_HRPD                   2001
+#define S6A_RAT_TYPE_UMB                    2002
+#define S6A_RAT_TYPE_EHRPD                  2003
+
 #define S6A_ULR_SINGLE_REGISTRATION_IND     (1)
 #define S6A_ULR_S6A_S6D_INDICATOR           (1 << 1)
 #define S6A_ULR_SKIP_SUBSCRIBER_DATA        (1 << 2)
@@ -28,6 +41,10 @@ extern "C" {
 
 #define S6A_UE_SRVCC_NOT_SUPPORTED          (0)
 #define S6A_UE_SRVCC_SUPPORTED              (1)
+
+#define AVP_CODE_CONTEXT_IDENTIFIER         (1423)
+#define AVP_CODE_ALL_APN_CONFIG_INC_IND     (1428)
+#define AVP_CODE_APN_CONFIGURATION          (1430)
 
 struct s6a_config_t {
     /* Diameter Identity of the local peer (FQDN -- ASCII) */

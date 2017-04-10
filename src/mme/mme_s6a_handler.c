@@ -271,15 +271,16 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     struct timespec ts;
     struct session *sess;
     struct avp *avp;
-#if 0
-    struct avp *avpch1, *avpch2;
-#endif
+    struct avp *avpch1, *avpch2, *avpch3, *avpch4, *avpch5;
     struct avp_hdr *hdr;
     unsigned long dur;
     int error = 0;
     int new;
 
     mme_ue_t *ue = NULL;
+    pdn_t *pdn = NULL;
+    c_uint8_t pdn_added = 0;
+
     nas_message_t message;
 #if 0
     pkbuf_t *sendbuf = NULL;
@@ -313,57 +314,152 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
         error++;
         goto out;
     }
-    
-    memset(&message, 0, sizeof(message));
-    message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
-    message.emm.h.message_type = NAS_AUTHENTICATION_REQUEST;
 
-#if 0
-    d_assert(fd_msg_search_avp(*msg, s6a_authentication_info, &avp) == 0 && avp, 
-            error++; goto out,);
+    d_assert(fd_msg_search_avp(*msg, s6a_ula_flags, &avp) == 0 
+            && avp, error++; goto out,);
     d_assert(fd_msg_avp_hdr(avp, &hdr) == 0 && hdr, error++; goto out,);
-    d_assert(fd_avp_search_avp(avp, s6a_e_utran_vector, &avpch1) == 0 && avp, 
+    ue->ula_flags = hdr->avp_value->i32;
+
+    d_assert(fd_msg_search_avp(*msg, s6a_subscription_data, &avp) == 0 && avp, 
+            error++; goto out,);
+
+    d_assert(fd_avp_search_avp(avp, s6a_msisdn, &avpch1) == 0 && avpch1, 
             error++; goto out,);
     d_assert(fd_msg_avp_hdr(avpch1, &hdr) == 0 && hdr, error++; goto out,);
+    ue->msisdn_len = hdr->avp_value->os.len;
+    memcpy(ue->msisdn, hdr->avp_value->os.data, ue->msisdn_len);
 
-    d_assert(fd_avp_search_avp(avpch1, s6a_xres, &avpch2) == 0 && avp, 
+    d_assert(fd_avp_search_avp(avp, s6a_ambr, &avpch1) == 0 && avpch1, 
             error++; goto out,);
+    d_assert(fd_avp_search_avp(avpch1, s6a_max_bandwidth_ul, &avpch2) == 0 && 
+            avpch2, error++; goto out,);
     d_assert(fd_msg_avp_hdr(avpch2, &hdr) == 0 && hdr, error++; goto out,);
-    memcpy(ue->xres, hdr->avp_value->os.data, hdr->avp_value->os.len);
-    ue->xres_len = hdr->avp_value->os.len;
-
-    d_assert(fd_avp_search_avp(avpch1, s6a_kasme, &avpch2) == 0 && avp, 
-            error++; goto out,);
+    ue->max_bandwidth_ul = hdr->avp_value->i32;
+    d_assert(fd_avp_search_avp(avpch1, s6a_max_bandwidth_dl, &avpch2) == 0 && 
+            avpch2, error++; goto out,);
     d_assert(fd_msg_avp_hdr(avpch2, &hdr) == 0 && hdr, error++; goto out,);
-    memcpy(ue->kasme, hdr->avp_value->os.data, hdr->avp_value->os.len);
+    ue->max_bandwidth_dl = hdr->avp_value->i32;
 
-    d_assert(fd_avp_search_avp(avpch1, s6a_rand, &avpch2) == 0 && avp, 
-            error++; goto out,);
-    d_assert(fd_msg_avp_hdr(avpch2, &hdr) == 0 && hdr, error++; goto out,);
-    memcpy(authentication_request->authentication_parameter_rand.rand,
-            hdr->avp_value->os.data, hdr->avp_value->os.len);
+    d_assert(fd_avp_search_avp(avp, s6a_apn_configuration_profile, &avpch1) 
+            == 0 && avpch1, error++; goto out,);
 
-    d_assert(fd_avp_search_avp(avpch1, s6a_autn, &avpch2) == 0 && avp, 
-            error++; goto out,);
-    d_assert(fd_msg_avp_hdr(avpch2, &hdr) == 0 && hdr, error++; goto out,);
-    authentication_request->authentication_parameter_autn.length = 
-        hdr->avp_value->os.len;
-    memcpy(authentication_request->authentication_parameter_autn.autn,
-            hdr->avp_value->os.data, hdr->avp_value->os.len);
-
-    d_assert(nas_plain_encode(&sendbuf, &message) == CORE_OK && sendbuf, 
-            error++; goto out,);
-
-    event_set(&e, EVT_MSG_MME_EMM);
-    event_set_param1(&e, (c_uintptr_t)ue);
-    event_set_param2(&e, (c_uintptr_t)sendbuf);
-    if (mme_event_send(&e) != CORE_OK)
+    d_assert(fd_msg_browse(avpch1, MSG_BRW_FIRST_CHILD, &avpch2, NULL) == 0 &&
+            avpch2, error++;; goto out,);
+    while(avpch2) 
     {
-        d_error("mme_event_send failed");
-        pkbuf_free(sendbuf);
-        error++;
+        d_assert(fd_msg_avp_hdr(avpch2, &hdr) == 0 && hdr, error++; goto out,);
+        switch(hdr->avp_code)
+        {
+            case AVP_CODE_CONTEXT_IDENTIFIER:
+                break;
+            case AVP_CODE_ALL_APN_CONFIG_INC_IND:
+                break;
+            case AVP_CODE_APN_CONFIGURATION:
+                d_assert(fd_avp_search_avp(avpch2, s6a_context_identifier, 
+                        &avpch3) == 0 && avpch3, error++; goto out,);
+                d_assert(fd_msg_avp_hdr(avpch3, &hdr) == 0 && hdr, 
+                        error++; goto out,);
+                pdn = mme_pdn_find_by_id(hdr->avp_value->i32);
+                if (!pdn)
+                {
+                    pdn = mme_pdn_add(hdr->avp_value->i32);
+                    pdn_added = 1;
+                }
+                d_assert(pdn, error++; goto out,);
+
+                d_assert(fd_avp_search_avp(avpch2, s6a_pdn_type, 
+                        &avpch3) == 0 && avpch3, error++; goto out,);
+                d_assert(fd_msg_avp_hdr(avpch3, &hdr) == 0 && hdr,
+                        error++; goto out,);
+                pdn->type = hdr->avp_value->i32;
+
+                d_assert(fd_avp_search_avp(avpch2, s6a_service_selection, 
+                        &avpch3) == 0 && avpch3, error++; goto out,);
+                d_assert(fd_msg_avp_hdr(avpch3, &hdr) == 0 && hdr,
+                        error++; goto out,);
+
+                memcpy(pdn->apn, 
+                        hdr->avp_value->os.data, hdr->avp_value->os.len);
+                pdn->apn[hdr->avp_value->os.len] = 0;
+
+                if (pdn_added)
+                    d_info("PDN(id:%d, type:%s, APN:%s) Added", 
+                        pdn->id, 
+                        pdn->type == PDN_TYPE_IPV4 ? "IPv4" :
+                        pdn->type == PDN_TYPE_IPV6 ? "IPv6" :
+                        pdn->type == PDN_TYPE_IPV4_AND_IPV6 ? "IPv4_AND_IPv6" :
+                        pdn->type == PDN_TYPE_IPV4_OR_IPV6 ? "IPv4_OR_IPv6" :
+                            "Unknown Type", 
+                        pdn->apn);
+
+                d_assert(fd_avp_search_avp(avpch2, 
+                        s6a_eps_subscribed_qos_profile, &avpch3) == 0 && 
+                        avpch3, error++; goto out,);
+
+                d_assert(fd_avp_search_avp(avpch3, s6a_qos_class_identifier, 
+                        &avpch4) == 0 && avpch4, error++; goto out,);
+                d_assert(fd_msg_avp_hdr(avpch4, &hdr) == 0 && hdr,
+                        error++; goto out,);
+                pdn->qci = hdr->avp_value->i32;
+
+                d_assert(fd_avp_search_avp(avpch3, 
+                        s6a_allocation_retention_priority, &avpch4) == 0 && 
+                        avpch4, error++; goto out,);
+
+                d_assert(fd_avp_search_avp(avpch4, s6a_priority_level, 
+                        &avpch5) == 0 && avpch5, error++; goto out,);
+                d_assert(fd_msg_avp_hdr(avpch5, &hdr) == 0 && hdr,
+                        error++; goto out,);
+                pdn->priority_level = hdr->avp_value->i32;
+
+                d_assert(fd_avp_search_avp(avpch4, s6a_pre_emption_capability, 
+                        &avpch5) == 0 && avpch5, error++; goto out,);
+                d_assert(fd_msg_avp_hdr(avpch5, &hdr) == 0 && hdr,
+                        error++; goto out,);
+                pdn->pre_emption_capability = hdr->avp_value->i32;
+
+                d_assert(fd_avp_search_avp(avpch4,
+                        s6a_pre_emption_vulnerability, &avpch5) == 0 && 
+                        avpch5, error++; goto out,);
+                d_assert(fd_msg_avp_hdr(avpch5, &hdr) == 0 && hdr,
+                        error++; goto out,);
+                pdn->pre_emption_vulnerability = hdr->avp_value->i32;
+
+                d_assert(fd_avp_search_avp(avpch2, s6a_ambr, 
+                        &avpch3) == 0 && avpch3, error++; goto out,);
+                d_assert(fd_avp_search_avp(avpch3, s6a_max_bandwidth_ul,
+                        &avpch4) == 0 && avpch4, error++; goto out,);
+                d_assert(fd_msg_avp_hdr(avpch4, &hdr) == 0 && hdr,
+                        error++; goto out,);
+                pdn->max_bandwidth_ul = hdr->avp_value->i32;
+                d_assert(fd_avp_search_avp(avpch3,
+                        s6a_max_bandwidth_dl, &avpch4) == 0 && avpch4,
+                        error++; goto out,);
+                d_assert(fd_msg_avp_hdr(avpch4, &hdr) == 0 && hdr,
+                        error++; goto out,);
+                pdn->max_bandwidth_dl = hdr->avp_value->i32;
+                break;
+        }
+
+        fd_msg_browse(avpch2, MSG_BRW_NEXT, &avpch2, NULL);
     }
+
+    d_assert(fd_msg_search_avp(*msg, s6a_subscribed_rau_tau_timer, &avp) == 0 
+            && avp, error++; goto out,);
+    d_assert(fd_msg_avp_hdr(avp, &hdr) == 0 && hdr, error++; goto out,);
+    ue->subscribed_rau_tau_timer = hdr->avp_value->i32;
+    
+    memset(&message, 0, sizeof(message));
+    message.h.security_header_type = 
+       NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
+    message.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
+
+#if 0
+    message.esm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_ESM;
+    message.esm.h.procedure_transaction_identity = 33;
+    message.esm.h.message_type = NAS_ESM_INFORMATION_REQUEST;
 #endif
+
 out:
     /* Free the message */
     d_assert(pthread_mutex_lock(&s6a_config->stats_lock) == 0,,);
@@ -460,18 +556,6 @@ int mme_s6a_send_ulr(mme_ue_t *ue)
 
     /* Set the RAT-Type */
     d_assert(fd_msg_avp_new(s6a_rat_type, 0, &avp) == 0, goto out,);
-#define S6A_RAT_TYPE_WLAN               0
-#define S6A_RAT_TYPE_VIRTUAL            1
-#define S6A_RAT_TYPE_UTRAN              1000
-#define S6A_RAT_TYPE_GERAN              1001
-#define S6A_RAT_TYPE_GAN                1002
-#define S6A_RAT_TYPE_HSPA_EVOLUTION     1003
-#define S6A_RAT_TYPE_EUTRAN             1004
-#define S6A_RAT_TYPE_EUTRAN_NB_IOT      1005
-#define S6A_RAT_TYPE_CDMA2000_1X        2000
-#define S6A_RAT_TYPE_HRPD               2001
-#define S6A_RAT_TYPE_UMB                2002
-#define S6A_RAT_TYPE_EHRPD              2003
     val.u32 = S6A_RAT_TYPE_EUTRAN;
     d_assert(fd_msg_avp_setvalue(avp, &val) == 0, goto out,);
     d_assert(fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp) == 0, goto out,);

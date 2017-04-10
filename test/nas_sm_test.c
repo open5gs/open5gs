@@ -85,7 +85,9 @@ static void nas_sm_test1(abts_case *tc, void *data)
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
+#if 0
     d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
+#endif
     /* eNB disonncect from MME */
     rv = tests1ap_enb_close(sock);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);

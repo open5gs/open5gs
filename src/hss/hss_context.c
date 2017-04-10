@@ -74,6 +74,9 @@ status_t hss_context_init(void)
     pdn->pre_emption_capability = PDN_PRE_EMPTION_CAPABILITY_DISABLED;
     pdn->pre_emption_vulnerability = PDN_PRE_EMPTION_VULNERABILITY_DISABLED;
 
+    pdn->max_bandwidth_ul = 102400; /* Kbps */
+    pdn->max_bandwidth_dl = 102400; /* Kbps */
+
     /***********************************************
      * UE DB */
     #define UE1_IMSI "001010123456800"

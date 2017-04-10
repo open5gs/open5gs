@@ -131,12 +131,20 @@ typedef struct _mme_ue_t {
         c_uint32_t i32;
     } ul_count;
 
-    list_t          esm_list;
+    /* HSS Info */
+    c_uint32_t      ula_flags;
 
-    mme_enb_t       *enb;
+    c_uint32_t      max_bandwidth_ul; /* bits per seconds */
+    c_uint32_t      max_bandwidth_dl; /* bits per seconds */
 
     pdn_t           *pdn[MAX_NUM_OF_PDN];
     int             num_of_pdn;
+
+    c_uint32_t      subscribed_rau_tau_timer; /* seconds */
+
+    list_t          esm_list;
+
+    mme_enb_t       *enb;
 } mme_ue_t;
 
 typedef struct _mme_esm_t {
