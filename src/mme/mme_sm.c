@@ -224,10 +224,10 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
         }
         case EVT_TM_MME_S11_T3:
         {
-            gtp_xact_t *xact = (gtp_xact_t *)event_get_param1(e);
-            d_assert(xact, break, "Null param");
+            index_t index = (index_t)event_get_param1(e);
+            d_assert(index, break, "Null param");
 
-            gtp_xact_timeout(xact);
+            gtp_xact_timeout(index);
             break;
         }
         default:

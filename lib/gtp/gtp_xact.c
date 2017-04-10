@@ -40,14 +40,14 @@ ED4(c_uint8_t version:3;,
 } __attribute__ ((packed)) gtpv2c_header_t;
 
 static int gtp_xact_pool_initialized = 0;
-pool_declare(gtp_xact_pool, gtp_xact_t, SIZE_OF_GTP_XACT_POOL);
+index_declare(gtp_xact_pool, gtp_xact_t, SIZE_OF_GTP_XACT_POOL);
 
 status_t gtp_xact_init(gtp_xact_ctx_t *context, 
         tm_service_t *tm_service, c_uintptr_t event)
 {
     if (gtp_xact_pool_initialized == 0)
     {
-        pool_init(&gtp_xact_pool, SIZE_OF_GTP_XACT_POOL);
+        index_init(&gtp_xact_pool, SIZE_OF_GTP_XACT_POOL);
     }
     gtp_xact_pool_initialized = 1;
 
@@ -68,7 +68,7 @@ status_t gtp_xact_final(void)
         d_print("%d not freed in gtp_xact_pool[%d] of S11/S5-SM\n",
                 pool_size(&gtp_xact_pool) - pool_avail(&gtp_xact_pool),
                 pool_size(&gtp_xact_pool));
-        pool_final(&gtp_xact_pool);
+        index_final(&gtp_xact_pool);
     }
     gtp_xact_pool_initialized = 0;
 
@@ -85,10 +85,8 @@ static gtp_xact_t *gtp_xact_create(gtp_xact_ctx_t *context,
     d_assert(sock, return NULL, "Null param");
     d_assert(gnode, return NULL, "Null param");
 
-    pool_alloc_node(&gtp_xact_pool, &xact);
+    index_alloc(&gtp_xact_pool, &xact);
     d_assert(xact, return NULL, "Transaction allocation failed");
-
-    memset(xact, 0, sizeof(gtp_xact_t));
 
     xact->org = org;
     xact->xid = xid;
@@ -96,9 +94,9 @@ static gtp_xact_t *gtp_xact_create(gtp_xact_ctx_t *context,
     xact->gnode = gnode;
 
     xact->tm_wait = event_timer(context->tm_service, context->event, 
-            duration, (c_uintptr_t)xact);
+            duration, xact->index);
     d_assert(xact->tm_wait, 
-            pool_free_node(&gtp_xact_pool, xact); return NULL,
+            index_free(&gtp_xact_pool, xact); return NULL,
             "Timer allocation failed");
     xact->retry_count = retry_count;
     tm_start(xact->tm_wait);
@@ -132,7 +130,7 @@ static status_t gtp_xact_delete(gtp_xact_t *xact)
 
     list_remove(xact->org == GTP_LOCAL_ORIGINATOR ? &xact->gnode->local_list :
             &xact->gnode->remote_list, xact);
-    pool_free_node(&gtp_xact_pool, xact);
+    index_free(&gtp_xact_pool, xact);
 
     return CORE_OK;
 }
@@ -224,8 +222,10 @@ out:
     return CORE_ERROR;
 }
 
-status_t gtp_xact_timeout(gtp_xact_t *xact)
+status_t gtp_xact_timeout(index_t index)
 {
+    gtp_xact_t *xact = index_find(&gtp_xact_pool, index);
+
     d_assert(xact, goto out, "Null param");
     d_assert(xact->sock, goto out, "Null param");
     d_assert(xact->gnode, goto out, "Null param");

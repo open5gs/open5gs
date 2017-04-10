@@ -3,6 +3,7 @@
 
 #include "core_pkbuf.h"
 #include "core_list.h"
+#include "core_index.h"
 #include "core_net.h"
 #include "core_timer.h"
 
@@ -28,6 +29,8 @@ typedef struct _gtp_xact_ctx_t {
  */
 typedef struct _gtp_xact_t {
     lnode_t         node;           /**< A node of list */
+    index_t         index;
+    
 #define GTP_LOCAL_ORIGINATOR  0
 #define GTP_REMOTE_ORIGINATOR 1
     c_uint8_t       org;            /**< Transaction' originator. 
@@ -59,7 +62,7 @@ CORE_DECLARE(status_t) gtp_xact_commit(
     gtp_xact_t *xact, c_uint8_t type, c_uint32_t teid, pkbuf_t *pkbuf);
 CORE_DECLARE(status_t) gtp_xact_associated_commit(gtp_xact_t *xact, 
     gtp_xact_t *assoc_xact, c_uint8_t type, c_uint32_t teid, pkbuf_t *pkbuf);
-CORE_DECLARE(status_t) gtp_xact_timeout(gtp_xact_t *xact);
+CORE_DECLARE(status_t) gtp_xact_timeout(index_t index);
 
 CORE_DECLARE(status_t) gtp_xact_receive(
         gtp_xact_ctx_t *context, net_sock_t *sock, gtp_node_t *gnode, 
