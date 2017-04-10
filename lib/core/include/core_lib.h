@@ -96,8 +96,7 @@ CORE_DECLARE(void *) core_uint64_to_buffer(
 
 CORE_DECLARE(c_uint64_t) core_buffer_to_uint64(void *buffer, int size);
 
-CORE_DECLARE(void *) core_bcd_to_buffer(
-        char *in, int in_len, void *out, int *out_len);
+CORE_DECLARE(void *) core_bcd_to_buffer(c_int8_t *in, void *out, int *out_len);
 
 /** @} */
 

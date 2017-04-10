@@ -5,9 +5,10 @@
 #include "nas_conv.h"
 
 void nas_imsi_to_bcd(
-    nas_mobile_identity_imsi_t *imsi, c_uint8_t imsi_len, 
-    c_uint8_t *bcd, c_uint8_t *bcd_len)
+    nas_mobile_identity_imsi_t *imsi, c_uint8_t imsi_len, c_int8_t *bcd)
 {
+    int bcd_len;
+
     bcd[0] = '0' + imsi->digit1;
     bcd[1] = '0' + imsi->digit2;
     bcd[2] = '0' + imsi->digit3;
@@ -24,15 +25,15 @@ void nas_imsi_to_bcd(
     bcd[13] = '0' + imsi->digit14;
     bcd[14] = '0' + imsi->digit15;
 
-    *bcd_len = imsi_len * 2 - 1;
+    bcd_len = imsi_len * 2 - 1;
     if (!imsi->odd_even) /* if bcd length is even */
     {
-        if (bcd[*bcd_len] != 0xf)
-            d_warn("Spec warning : bcd[%d] = 0x%x", *bcd_len, bcd[*bcd_len]);
-        (*bcd_len)--; 
+        if (bcd[bcd_len] != 0xf)
+            d_warn("Spec warning : bcd[%d] = 0x%x", bcd_len, bcd[bcd_len]);
+        (bcd_len)--; 
     }
 
-    bcd[*bcd_len] = 0;
+    bcd[bcd_len] = 0;
 }
 
 void nas_imsi_to_buffer(

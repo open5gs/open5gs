@@ -9,23 +9,39 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#define HSS_MAX_PROFILE_NAME_LEN    255
+
 #define HSS_KEY_LEN                 16
 #define HSS_AMF_LEN                 2
+
+typedef int hss_profile_id_t;
+
+typedef struct _hss_profile_t {
+    lnode_t         node; /**< A node of list_t */
+
+    hss_profile_id_t id;
+    c_int8_t        name[HSS_MAX_PROFILE_NAME_LEN];
+
+    c_int8_t        apn[MAX_APN_LEN];
+
+    /* Security Context */
+    c_uint8_t       k[HSS_KEY_LEN];
+    c_uint8_t       op[HSS_KEY_LEN];
+    c_uint8_t       amf[HSS_AMF_LEN];
+    c_uint64_t      sqn;
+} hss_profile_t;
 
 typedef struct _hss_ue_t {
     lnode_t         node; /**< A node of list_t */
 
-    c_uint8_t       imsi_bcd[MAX_IMSI_BCD_LEN+1];
-    int             imsi_bcd_len;
-
-    c_uint8_t       msisdn_bcd[MAX_MSISDN_BCD_LEN+1];
-    int             msisdn_bcd_len;
-
-    c_uint8_t       mei_bcd[MAX_MEI_BCD_LEN+1];
-    int             mei_bcd_len;
+    /* UE Identitiy */
+    c_int8_t        imsi_bcd[MAX_IMSI_BCD_LEN+1];
+    c_int8_t        msisdn_bcd[MAX_MSISDN_BCD_LEN+1];
+    c_int8_t        mei_bcd[MAX_MEI_BCD_LEN+1];
 
     plmn_id_t       visited_plmn_id;
 
+    /* Security Context */
     c_uint8_t       k[HSS_KEY_LEN];
     c_uint64_t      sqn;
     c_uint8_t       rand[RAND_LEN];
@@ -35,9 +51,7 @@ typedef struct _hss_ue_t {
 } hss_ue_t;
 
 typedef struct _hss_context_t {
-    c_uint8_t       op[HSS_KEY_LEN];
-    c_uint8_t       amf[HSS_AMF_LEN];
-
+    list_t          profile_list;
     list_t          ue_list;
 } hss_context_t;
 
@@ -45,11 +59,19 @@ CORE_DECLARE(status_t)      hss_context_init(void);
 CORE_DECLARE(void)          hss_context_final(void);
 CORE_DECLARE(hss_context_t*) hss_self(void);
 
-CORE_DECLARE(hss_ue_t*)     hss_ue_add(void);
+CORE_DECLARE(hss_profile_t*) hss_profile_add(hss_profile_id_t id);
+CORE_DECLARE(status_t)      hss_profile_remove(hss_profile_t *profile);
+CORE_DECLARE(status_t)      hss_profile_remove_all(void);
+CORE_DECLARE(hss_profile_t*) hss_profile_find_by_id(hss_profile_id_t id);
+CORE_DECLARE(hss_profile_t*) hss_profile_find_by_name(c_int8_t *name);
+CORE_DECLARE(hss_profile_t*) hss_profile_first(void);
+CORE_DECLARE(hss_profile_t*) hss_profile_next(hss_profile_t *profile);
+
+CORE_DECLARE(hss_ue_t*)     hss_ue_add(
+                                hss_profile_id_t id, c_int8_t *imsi_bcd);
 CORE_DECLARE(status_t)      hss_ue_remove(hss_ue_t *ue);
 CORE_DECLARE(status_t)      hss_ue_remove_all(void);
-CORE_DECLARE(hss_ue_t*)     hss_ue_find_by_imsi_bcd(
-                                c_uint8_t *imsi_bcd, c_uint8_t imsi_bcd_len);
+CORE_DECLARE(hss_ue_t*)     hss_ue_find_by_imsi_bcd(c_int8_t *imsi_bcd);
 CORE_DECLARE(hss_ue_t*)     hss_ue_first(void);
 CORE_DECLARE(hss_ue_t*)     hss_ue_next(hss_ue_t *ue);
 

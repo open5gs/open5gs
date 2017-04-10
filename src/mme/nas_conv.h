@@ -12,8 +12,7 @@ CORE_DECLARE(void) nas_imsi_to_buffer(
     c_uint8_t *buf, c_uint8_t *buf_len);
 
 CORE_DECLARE(void) nas_imsi_to_bcd(
-    nas_mobile_identity_imsi_t *imsi, c_uint8_t imsi_len, 
-    c_uint8_t *bcd, c_uint8_t *bcd_len);
+    nas_mobile_identity_imsi_t *imsi, c_uint8_t imsi_len, c_int8_t *bcd);
 
 #ifdef __cplusplus
 }

@@ -86,10 +86,10 @@ static void misc_test5(abts_case *tc, void *data)
     char out[16];
     int out_len;
 #define MSISDN "491725670014"
-    core_bcd_to_buffer(MSISDN, strlen(MSISDN), out, &out_len);
+    core_bcd_to_buffer(MSISDN, out, &out_len);
     ABTS_TRUE(tc, memcmp("\x94\x71\x52\x76\x00\x41", out, out_len) == 0);
 #define MEI "3516020019874800"
-    core_bcd_to_buffer(MEI, strlen(MEI), out, &out_len);
+    core_bcd_to_buffer(MEI, out, &out_len);
     ABTS_TRUE(tc, 
             memcmp("\x53\x61\x20\x00\x91\x78\x84\x00", out, out_len) == 0);
 }

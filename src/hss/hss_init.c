@@ -40,6 +40,7 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
     union avp_value val;
 
     hss_ue_t *ue = NULL;
+    c_int8_t imsi_bcd[MAX_IMSI_BCD_LEN+1];
     c_uint8_t sqn[HSS_SQN_LEN];
     c_uint8_t autn[AUTN_LEN];
     c_uint8_t ik[HSS_KEY_LEN];
@@ -60,14 +61,11 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
             goto out,);
     d_assert(fd_msg_avp_hdr(avp, &hdr) == 0 && hdr,,);
 
-    ue = hss_ue_find_by_imsi_bcd(
-            hdr->avp_value->os.data, hdr->avp_value->os.len);
+    strncpy(imsi_bcd, (char*)hdr->avp_value->os.data, hdr->avp_value->os.len);
+    ue = hss_ue_find_by_imsi_bcd(imsi_bcd);
     if (!ue)
     {
-        char imsi_bcd[MAX_IMSI_BCD_LEN+1];
-        strncpy(imsi_bcd, 
-                (char*)hdr->avp_value->os.data, hdr->avp_value->os.len);
-        d_warn("Cannot find IMSI:%s\n", imsi_bcd);
+        d_warn("Cannot find IMSI:%s", imsi_bcd);
         goto out;
     }
 
@@ -162,6 +160,7 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
     union avp_value val;
 
     hss_ue_t *ue = NULL;
+    c_int8_t imsi_bcd[MAX_IMSI_BCD_LEN+1];
 	
     d_assert(msg, return EINVAL,);
 	
@@ -174,14 +173,11 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
             goto out,);
     d_assert(fd_msg_avp_hdr(avp, &hdr) == 0 && hdr,,);
 
-    ue = hss_ue_find_by_imsi_bcd(
-            hdr->avp_value->os.data, hdr->avp_value->os.len);
+    strncpy(imsi_bcd, (char*)hdr->avp_value->os.data, hdr->avp_value->os.len);
+    ue = hss_ue_find_by_imsi_bcd(imsi_bcd);
     if (!ue)
     {
-        char imsi_bcd[MAX_IMSI_BCD_LEN+1];
-        strncpy(imsi_bcd, 
-                (char*)hdr->avp_value->os.data, hdr->avp_value->os.len);
-        d_warn("Cannot find IMSI:%s\n", imsi_bcd);
+        d_warn("Cannot find IMSI:%s", imsi_bcd);
         goto out;
     }
 

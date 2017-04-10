@@ -100,13 +100,13 @@ typedef struct _mme_ue_t {
     /* UE identity */
     c_uint32_t      enb_ue_s1ap_id; /** eNB-UE-S1AP-ID received from eNB */
     c_uint32_t      mme_ue_s1ap_id; /** MME-UE-S1AP-ID received from MME */
-#if 0
     c_uint8_t       imsi[MAX_IMSI_LEN];
-    c_uint8_t       imsi_len;
-#else
-    c_uint8_t       imsi_bcd[MAX_IMSI_BCD_LEN+1];
-    c_uint8_t       imsi_bcd_len;
-#endif
+    int             imsi_len;
+    c_int8_t        imsi_bcd[MAX_IMSI_BCD_LEN+1];
+    c_uint8_t       msisdn[MAX_MSISDN_LEN];
+    int             msisdn_len;
+    c_uint8_t       mei[MAX_MSISDN_LEN];
+    int             mei_len;
 
     /* UE Info */
     plmn_id_t       visited_plmn_id;

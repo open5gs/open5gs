@@ -205,8 +205,8 @@ int mme_s6a_send_air(mme_ue_t *ue)
     
     /* Set the User-Name AVP */
     d_assert(fd_msg_avp_new(s6a_user_name, 0, &avp) == 0, goto out,);
-    val.os.data = ue->imsi_bcd;
-    val.os.len  = ue->imsi_bcd_len;
+    val.os.data = (c_uint8_t *)ue->imsi_bcd;
+    val.os.len  = strlen(ue->imsi_bcd);
     d_assert(fd_msg_avp_setvalue(avp, &val) == 0, goto out, );
     d_assert(fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp) == 0, goto out,);
 
@@ -451,8 +451,8 @@ int mme_s6a_send_ulr(mme_ue_t *ue)
     
     /* Set the User-Name AVP */
     d_assert(fd_msg_avp_new(s6a_user_name, 0, &avp) == 0, goto out,);
-    val.os.data = ue->imsi_bcd;
-    val.os.len  = ue->imsi_bcd_len;
+    val.os.data = (c_uint8_t *)ue->imsi_bcd;
+    val.os.len  = strlen(ue->imsi_bcd);
     d_assert(fd_msg_avp_setvalue(avp, &val) == 0, goto out, );
     d_assert(fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp) == 0, goto out,);
 

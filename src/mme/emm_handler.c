@@ -1,6 +1,7 @@
 #define TRACE_MODULE _emm_handler
 
 #include "core_debug.h"
+#include "core_lib.h"
 
 #include "nas_message.h"
 
@@ -64,7 +65,14 @@ void emm_handle_attach_request(
         {
             nas_imsi_to_bcd(
                 &eps_mobile_identity->imsi, eps_mobile_identity->length,
-                ue->imsi_bcd, &ue->imsi_bcd_len);
+                ue->imsi_bcd);
+            core_bcd_to_buffer(ue->imsi_bcd, ue->imsi, &ue->imsi_len);
+            d_assert(ue->imsi_len, return,
+                    "Can't get IMSI(len:%d\n", ue->imsi_len);
+            ue->msisdn_len = ue->imsi_len;
+            memcpy(ue->msisdn, ue->imsi, ue->msisdn_len);
+            ue->mei_len = ue->imsi_len;
+            memcpy(ue->mei, ue->imsi, ue->mei_len);
 
             memcpy(&ue->visited_plmn_id, &mme_self()->plmn_id, PLMN_ID_LEN);
             if (attach_request->presencemask &
