@@ -224,8 +224,10 @@ out:
 
 status_t gtp_xact_timeout(index_t index)
 {
-    gtp_xact_t *xact = index_find(&gtp_xact_pool, index);
-
+    gtp_xact_t *xact = NULL;
+    
+    d_assert(index, goto out, "Invalid Index");
+    xact = index_find(&gtp_xact_pool, index);
     d_assert(xact, goto out, "Null param");
     d_assert(xact->sock, goto out, "Null param");
     d_assert(xact->gnode, goto out, "Null param");

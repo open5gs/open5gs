@@ -123,10 +123,12 @@ int main(int argc, char *argv[])
 #if 0
         extern int _mme_sm;
         d_trace_level(&_mme_sm, 100);
-        extern int _enb_s1_sm;
-        d_trace_level(&_enb_s1_sm, 100);
-        extern int _ue_emm_sm;
-        d_trace_level(&_ue_emm_sm, 100);
+        extern int _s1ap_sm;
+        d_trace_level(&_s1ap_sm, 100);
+        extern int _emm_sm;
+        d_trace_level(&_emm_sm, 100);
+        extern int _esm_sm;
+        d_trace_level(&_esm_sm, 100);
 
         extern int _s1ap_recv;
         d_trace_level(&_s1ap_recv, 100);

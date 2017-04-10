@@ -19,10 +19,11 @@
 static mme_context_t self;
 
 pool_declare(mme_sgw_pool, mme_sgw_t, MAX_NUM_OF_SGW);
-pool_declare(mme_enb_pool, mme_enb_t, MAX_NUM_OF_ENB);
 pool_declare(mme_pdn_pool, pdn_t, MAX_NUM_OF_PDN);
-pool_declare(mme_ue_pool, mme_ue_t, MAX_NUM_OF_UE);
-pool_declare(mme_esm_pool, mme_esm_t, MAX_NUM_OF_ESM);
+pool_declare(mme_enb_pool, mme_enb_t, MAX_NUM_OF_ENB);
+
+index_declare(mme_ue_pool, mme_ue_t, MAX_NUM_OF_UE);
+index_declare(mme_esm_pool, mme_esm_t, MAX_NUM_OF_ESM);
 
 static int context_initialized = 0;
 
@@ -35,10 +36,11 @@ status_t mme_context_init()
     memset(&self, 0, sizeof(mme_context_t));
 
     pool_init(&mme_sgw_pool, MAX_NUM_OF_SGW);
-    pool_init(&mme_enb_pool, MAX_NUM_OF_ENB);
     pool_init(&mme_pdn_pool, MAX_NUM_OF_PDN);
-    pool_init(&mme_ue_pool, MAX_NUM_OF_UE);
-    pool_init(&mme_esm_pool, MAX_NUM_OF_ESM);
+    pool_init(&mme_enb_pool, MAX_NUM_OF_ENB);
+
+    index_init(&mme_ue_pool, MAX_NUM_OF_UE);
+    index_init(&mme_esm_pool, MAX_NUM_OF_ESM);
 
     list_init(&self.sgw_list);
     list_init(&self.enb_list);
@@ -93,11 +95,12 @@ status_t mme_context_final()
     d_assert(self.mme_ue_s1ap_id_hash, , "Null param");
     hash_destroy(self.mme_ue_s1ap_id_hash);
 
-    pool_final(&mme_sgw_pool);
+    index_final(&mme_ue_pool);
+    index_final(&mme_esm_pool);
+
     pool_final(&mme_enb_pool);
+    pool_final(&mme_sgw_pool);
     pool_final(&mme_pdn_pool);
-    pool_final(&mme_ue_pool);
-    pool_final(&mme_esm_pool);
 
     context_initialized = 0;
 
@@ -185,7 +188,6 @@ mme_enb_t* mme_enb_add(net_sock_t *s1ap_sock)
 
     pool_alloc_node(&mme_enb_pool, &enb);
     d_assert(enb, return NULL, "Null param");
-
     memset(enb, 0, sizeof(mme_enb_t));
 
     enb->s1ap_sock = s1ap_sock;
@@ -353,10 +355,8 @@ mme_ue_t* mme_ue_add(mme_enb_t *enb)
     d_assert(self.mme_ue_s1ap_id_hash, return NULL, "Null param");
     d_assert(enb, return NULL, "Null param");
 
-    pool_alloc_node(&mme_ue_pool, &ue);
+    index_alloc(&mme_ue_pool, &ue);
     d_assert(ue, return NULL, "Null param");
-
-    memset(ue, 0, sizeof(mme_ue_t));
 
     ue->mme_ue_s1ap_id = NEXT_ID(self.mme_ue_s1ap_id, 0xffffffff);
     hash_set(self.mme_ue_s1ap_id_hash, &ue->mme_ue_s1ap_id, 
@@ -389,7 +389,7 @@ status_t mme_ue_remove(mme_ue_t *ue)
     hash_set(self.mme_ue_s1ap_id_hash, &ue->mme_ue_s1ap_id, 
             sizeof(ue->mme_ue_s1ap_id), NULL);
 
-    pool_free_node(&mme_ue_pool, ue);
+    index_free(&mme_ue_pool, ue);
 
     return CORE_OK;
 }
@@ -406,6 +406,12 @@ status_t mme_ue_remove_all()
     }
 
     return CORE_OK;
+}
+
+mme_ue_t* mme_ue_find(index_t index)
+{
+    d_assert(index, return NULL, "Invalid Index");
+    return index_find(&mme_ue_pool, index);
 }
 
 mme_ue_t* mme_ue_find_by_mme_ue_s1ap_id(c_uint32_t mme_ue_s1ap_id)
@@ -488,10 +494,8 @@ mme_esm_t* mme_esm_add(mme_ue_t *ue, c_uint8_t pti)
 
     d_assert(ue, return NULL, "Null param");
 
-    pool_alloc_node(&mme_esm_pool, &esm);
+    index_alloc(&mme_esm_pool, &esm);
     d_assert(esm, return NULL, "Null param");
-
-    memset(esm, 0, sizeof(mme_esm_t));
 
     esm->pti = pti;
     esm->ue = ue;
@@ -500,7 +504,6 @@ mme_esm_t* mme_esm_add(mme_ue_t *ue, c_uint8_t pti)
     
     fsm_create((fsm_t*)&esm->sm, 
             esm_state_initial, esm_state_final);
-    esm->sm.ctx = esm;
     fsm_init((fsm_t*)&esm->sm, 0);
 
     return esm;
@@ -515,7 +518,7 @@ status_t mme_esm_remove(mme_esm_t *esm)
     fsm_clear((fsm_t*)&esm->sm);
 
     list_remove(&esm->ue->esm_list, esm);
-    pool_free_node(&mme_esm_pool, esm);
+    index_free(&mme_esm_pool, esm);
 
     return CORE_OK;
 }
@@ -537,6 +540,12 @@ status_t mme_esm_remove_all(mme_ue_t *ue)
     }
 
     return CORE_OK;
+}
+
+mme_esm_t* mme_esm_find(index_t index)
+{
+    d_assert(index, return NULL, "Invalid Index");
+    return index_find(&mme_esm_pool, index);
 }
 
 mme_esm_t* mme_esm_find_by_pti(mme_ue_t *ue, c_uint8_t pti)

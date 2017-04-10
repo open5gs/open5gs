@@ -150,10 +150,12 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
         case EVT_MSG_MME_EMM:
         {
             nas_message_t message;
-            mme_ue_t *ue = (mme_ue_t *)event_get_param1(e);
+            index_t index = event_get_param1(e);
+            mme_ue_t *ue = NULL;
             pkbuf_t *pkbuf = (pkbuf_t *)event_get_param2(e);
 
             d_assert(pkbuf, break, "Null param");
+            ue = mme_ue_find(index);
             d_assert(ue, pkbuf_free(pkbuf); break, "No UE context");
             d_assert(FSM_STATE(&ue->emm_sm), 
                     pkbuf_free(pkbuf); break, "No EMM State Machine");
@@ -170,11 +172,14 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
         case EVT_MSG_MME_ESM:
         {
             nas_message_t message;
-            mme_esm_t *esm = (mme_esm_t *)event_get_param1(e);
+            index_t index = event_get_param1(e);
+            mme_esm_t *esm = NULL;
             mme_ue_t *ue = NULL;
             pkbuf_t *pkbuf = (pkbuf_t *)event_get_param2(e);
 
             d_assert(pkbuf, break, "Null param");
+            d_assert(index, break, "Null param");
+            esm = mme_esm_find(index);
             d_assert(esm, pkbuf_free(pkbuf); break, "No ESM context");
             d_assert(ue = esm->ue, pkbuf_free(pkbuf); break, "No UE context");
             d_assert(FSM_STATE(&esm->sm), 
@@ -224,10 +229,7 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
         }
         case EVT_TM_MME_S11_T3:
         {
-            index_t index = (index_t)event_get_param1(e);
-            d_assert(index, break, "Null param");
-
-            gtp_xact_timeout(index);
+            gtp_xact_timeout(event_get_param1(e));
             break;
         }
         default:

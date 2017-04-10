@@ -68,7 +68,7 @@ void mme_event_s1ap_to_emm(mme_ue_t *ue, S1ap_NAS_PDU_t *nasPdu)
     memcpy(sendbuf->payload, nasPdu->buf, nasPdu->size);
 
     event_set(&e, EVT_MSG_MME_EMM);
-    event_set_param1(&e, (c_uintptr_t)ue);
+    event_set_param1(&e, (c_uintptr_t)ue->index);
     event_set_param2(&e, (c_uintptr_t)sendbuf);
     mme_event_send(&e);
 }
@@ -90,7 +90,7 @@ void mme_event_emm_to_esm(mme_esm_t *esm,
             esm_message_container->data, esm_message_container->len);
 
     event_set(&e, EVT_MSG_MME_ESM);
-    event_set_param1(&e, (c_uintptr_t)esm);
+    event_set_param1(&e, (c_uintptr_t)esm->index);
     event_set_param2(&e, (c_uintptr_t)sendbuf);
     mme_event_send(&e);
 }

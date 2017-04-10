@@ -29,9 +29,6 @@ void emm_state_operational(emm_sm_t *s, event_t *e)
     d_assert(s, return, "Null param");
     d_assert(e, return, "Null param");
 
-    mme_ue_t *ue = s->ctx;
-    d_assert(ue, return, "Null param");
-
     mme_sm_trace(1, e);
 
     switch (event_get(e))
@@ -46,7 +43,13 @@ void emm_state_operational(emm_sm_t *s, event_t *e)
         }
         case EVT_MSG_MME_EMM:
         {
-            nas_message_t *message = (nas_message_t *)event_get_param3(e);
+            mme_ue_t *ue = NULL;
+            nas_message_t *message = NULL;
+
+            ue = mme_ue_find(event_get_param1(e));
+            d_assert(ue, return, "Null param");
+
+            message = (nas_message_t *)event_get_param3(e);
             d_assert(message, break, "Null param");
 
             switch(message->emm.h.message_type)

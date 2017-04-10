@@ -95,10 +95,7 @@ void sgw_state_operational(sgw_sm_t *s, event_t *e)
         }
         case EVT_TM_SGW_T3:
         {
-            index_t index = (index_t)event_get_param1(e);
-            d_assert(index, break, "Null param");
-
-            gtp_xact_timeout(index);
+            gtp_xact_timeout(event_get_param1(e));
             break;
         }
         default:

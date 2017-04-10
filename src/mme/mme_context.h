@@ -2,6 +2,7 @@
 #define __MME_CONTEXT__
 
 #include "core_list.h"
+#include "core_index.h"
 #include "core_errno.h"
 #include "core_net.h"
 #include "core_sha2.h"
@@ -82,6 +83,7 @@ typedef struct _mme_sgw_t {
 
 typedef struct _mme_enb_t {
     lnode_t         node; /**< A node of list_t */
+    index_t         index;
 
     c_uint32_t      enb_id; /** eNB_ID received from eNB */
 
@@ -94,6 +96,7 @@ typedef struct _mme_enb_t {
 
 typedef struct _mme_ue_t {
     lnode_t         node; /**< A node of list_t */
+    index_t         index;
 
     /* State Machine */
     emm_sm_t        emm_sm;
@@ -149,6 +152,7 @@ typedef struct _mme_ue_t {
 
 typedef struct _mme_esm_t {
     lnode_t         node; /**< A node of list_t */
+    index_t         index;
 
     c_uint8_t       pti;  /** Procedure Trasaction Identity */
 
@@ -186,6 +190,7 @@ CORE_DECLARE(pdn_t*)        mme_pdn_next(pdn_t *pdn);
 CORE_DECLARE(mme_ue_t*)     mme_ue_add(mme_enb_t *enb);
 CORE_DECLARE(status_t)      mme_ue_remove(mme_ue_t *ue);
 CORE_DECLARE(status_t)      mme_ue_remove_all();
+CORE_DECLARE(mme_ue_t*)     mme_ue_find(index_t index);
 CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_mme_ue_s1ap_id(
                                 c_uint32_t mme_ue_s1ap_id);
 CORE_DECLARE(hash_index_t *) mme_ue_first();
@@ -201,6 +206,7 @@ CORE_DECLARE(mme_ue_t*)     mme_ue_next_in_enb(mme_ue_t *ue);
 CORE_DECLARE(mme_esm_t*)    mme_esm_add(mme_ue_t *ue, c_uint8_t pti);
 CORE_DECLARE(status_t)      mme_esm_remove(mme_esm_t *esm);
 CORE_DECLARE(status_t)      mme_esm_remove_all(mme_ue_t *ue);
+CORE_DECLARE(mme_esm_t*)    mme_esm_find(index_t index);
 CORE_DECLARE(mme_esm_t*)    mme_esm_find_by_pti(mme_ue_t *ue, c_uint8_t pti);
 CORE_DECLARE(mme_esm_t*)    mme_esm_first(mme_ue_t *ue);
 CORE_DECLARE(mme_esm_t*)    mme_esm_next(mme_esm_t *esm);

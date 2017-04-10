@@ -40,7 +40,6 @@ void emm_state_exception(emm_sm_t *s, event_t *e);
 
 typedef struct _esm_sm_t {
     fsm_t fsm;
-    void *ctx;
 } esm_sm_t;
 
 void esm_state_initial(esm_sm_t *s, event_t *e);
