@@ -298,7 +298,7 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
                 struct avp *allocation_retention_priority, *priority_level;
                 struct avp *pre_emption_capability, *pre_emption_vulnerability;
 
-                hss_pdn_t *pdn = ue->pdn[i];
+                pdn_t *pdn = ue->pdn[i];
                 d_assert(pdn, goto out,);
 
                 d_assert(fd_msg_avp_new(s6a_apn_configuration, 0, 

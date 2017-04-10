@@ -11,7 +11,7 @@
 static hss_context_t self;
 
 pool_declare(hss_profile_pool, hss_profile_t, HSS_MAX_NUM_OF_PROFILE);
-pool_declare(hss_pdn_pool, hss_pdn_t, MAX_NUM_OF_PDN);
+pool_declare(hss_pdn_pool, pdn_t, MAX_NUM_OF_PDN);
 pool_declare(hss_ue_pool, hss_ue_t, MAX_NUM_OF_UE);
 
 hss_context_t* hss_self()
@@ -25,7 +25,7 @@ status_t hss_context_init(void)
 
     hss_profile_id_t profile_id = 1;
     hss_profile_t *profile;
-    hss_pdn_t *pdn;
+    pdn_t *pdn;
     hss_ue_t *ue;
 
     memset(&self, 0, sizeof(hss_context_t));
@@ -66,13 +66,13 @@ status_t hss_context_init(void)
 
     strcpy(pdn->apn, "Internet");
 
-    pdn->type = HSS_PDN_TYPE_IPV4;
+    pdn->type = PDN_TYPE_IPV4;
 
-    pdn->qci = HSS_PDN_QCI_1;
+    pdn->qci = PDN_QCI_1;
     pdn->priority_level = 1;
 
-    pdn->pre_emption_capability = HSS_PRE_EMPTION_CAPABILITY_DISABLED;
-    pdn->pre_emption_vulnerability = HSS_PRE_EMPTION_VULNERABILITY_DISABLED;
+    pdn->pre_emption_capability = PDN_PRE_EMPTION_CAPABILITY_DISABLED;
+    pdn->pre_emption_vulnerability = PDN_PRE_EMPTION_VULNERABILITY_DISABLED;
 
     /***********************************************
      * UE DB */
@@ -116,14 +116,14 @@ void hss_context_final(void)
 	return;
 }
 
-hss_pdn_t* hss_pdn_add()
+pdn_t* hss_pdn_add()
 {
-    hss_pdn_t *pdn = NULL;
+    pdn_t *pdn = NULL;
 
     pool_alloc_node(&hss_pdn_pool, &pdn);
     d_assert(pdn, return NULL, "HSS-UE context allocation failed");
 
-    memset(pdn, 0, sizeof(hss_pdn_t));
+    memset(pdn, 0, sizeof(pdn_t));
 
     pdn->id = NEXT_ID(self.pdn_id, 0xffffffff);
     
@@ -132,7 +132,7 @@ hss_pdn_t* hss_pdn_add()
     return pdn;
 }
 
-status_t hss_pdn_remove(hss_pdn_t *pdn)
+status_t hss_pdn_remove(pdn_t *pdn)
 {
     d_assert(pdn, return CORE_ERROR, "Null param");
 
@@ -144,7 +144,7 @@ status_t hss_pdn_remove(hss_pdn_t *pdn)
 
 status_t hss_pdn_remove_all()
 {
-    hss_pdn_t *pdn = NULL, *next_pdn = NULL;
+    pdn_t *pdn = NULL, *next_pdn = NULL;
     
     pdn = list_first(&self.pdn_list);
     while (pdn)
@@ -159,9 +159,9 @@ status_t hss_pdn_remove_all()
     return CORE_OK;
 }
 
-hss_pdn_t* hss_pdn_find_by_id(hss_pdn_id_t id)
+pdn_t* hss_pdn_find_by_id(pdn_id_t id)
 {
-    hss_pdn_t *pdn = NULL;
+    pdn_t *pdn = NULL;
     
     pdn = list_first(&self.pdn_list);
     while (pdn)
@@ -175,12 +175,12 @@ hss_pdn_t* hss_pdn_find_by_id(hss_pdn_id_t id)
     return pdn;
 }
 
-hss_pdn_t* hss_pdn_first()
+pdn_t* hss_pdn_first()
 {
     return list_first(&self.pdn_list);
 }
 
-hss_pdn_t* hss_pdn_next(hss_pdn_t *pdn)
+pdn_t* hss_pdn_next(pdn_t *pdn)
 {
     return list_next(pdn);
 }
