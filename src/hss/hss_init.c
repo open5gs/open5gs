@@ -245,6 +245,7 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
         d_assert(fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, 
                 avp_network_access_mode) == 0, goto out,);
 
+            /* Set the AMBR */
         d_assert(fd_msg_avp_new(s6a_ambr, 0, &avp_ambr) == 0, goto out,);
         d_assert(fd_msg_avp_new(s6a_max_bandwidth_ul, 0, 
                     &avp_max_bandwidth_ul) == 0, goto out,);
@@ -265,6 +266,7 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
 
         if (ue->num_of_pdn && ue->pdn[0])
         {
+            /* Set the APN Configuration Profile */
             struct avp *apn_configuration_profile;
             struct avp *context_identifier, *all_apn_conf_inc_ind;
 
@@ -289,11 +291,12 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
 
             for (i = 0; i < ue->num_of_pdn; i++)
             {
+                /* Set the APN Configuration */
                 struct avp *apn_configuration, *context_identifier;
                 struct avp *pdn_type, *service_selection;
-#if 0
                 struct avp *eps_subscribed_qos_profile, *qos_class_identifier;
-#endif
+                struct avp *allocation_retention_priority, *priority_level;
+                struct avp *pre_emption_capability, *pre_emption_vulnerability;
 
                 hss_pdn_t *pdn = ue->pdn[i];
                 d_assert(pdn, goto out,);
@@ -325,6 +328,76 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
                         goto out,);
                 d_assert(fd_msg_avp_add(apn_configuration, 
                         MSG_BRW_LAST_CHILD, service_selection) == 0, goto out,);
+
+                    /* Set the EPS Subscribed QoS Profile */
+                d_assert(fd_msg_avp_new(s6a_eps_subscribed_qos_profile, 0, 
+                        &eps_subscribed_qos_profile) == 0, goto out,);
+
+                d_assert(fd_msg_avp_new(s6a_qos_class_identifier, 0, 
+                        &qos_class_identifier) == 0, goto out,);
+                val.i32 = pdn->qci;
+                d_assert(fd_msg_avp_setvalue(qos_class_identifier, &val) == 0, 
+                        goto out,);
+                d_assert(fd_msg_avp_add(eps_subscribed_qos_profile, 
+                    MSG_BRW_LAST_CHILD, qos_class_identifier) == 0, goto out,);
+
+                        /* Set Allocation retention priority */
+                d_assert(fd_msg_avp_new(s6a_allocation_retention_priority, 0, 
+                        &allocation_retention_priority) == 0, goto out,);
+
+                d_assert(fd_msg_avp_new(s6a_priority_level, 0, 
+                        &priority_level) == 0, goto out,);
+                val.u32 = pdn->priority_level;
+                d_assert(fd_msg_avp_setvalue(priority_level, &val) == 0, 
+                        goto out,);
+                d_assert(fd_msg_avp_add(allocation_retention_priority, 
+                    MSG_BRW_LAST_CHILD, priority_level) == 0, goto out,);
+
+                d_assert(fd_msg_avp_new(s6a_pre_emption_capability, 0, 
+                        &pre_emption_capability) == 0, goto out,);
+                val.u32 = pdn->pre_emption_capability;
+                d_assert(fd_msg_avp_setvalue(pre_emption_capability, &val) == 0, 
+                        goto out,);
+                d_assert(fd_msg_avp_add(allocation_retention_priority, 
+                    MSG_BRW_LAST_CHILD, pre_emption_capability) == 0, 
+                        goto out,);
+
+                d_assert(fd_msg_avp_new(s6a_pre_emption_vulnerability, 0, 
+                        &pre_emption_vulnerability) == 0, goto out,);
+                val.u32 = pdn->pre_emption_vulnerability;
+                d_assert(fd_msg_avp_setvalue(pre_emption_vulnerability, &val)
+                        == 0, goto out,);
+                d_assert(fd_msg_avp_add(allocation_retention_priority, 
+                    MSG_BRW_LAST_CHILD, pre_emption_vulnerability) == 0, 
+                        goto out,);
+
+                d_assert(fd_msg_avp_add(eps_subscribed_qos_profile, 
+                    MSG_BRW_LAST_CHILD, allocation_retention_priority) == 0, 
+                        goto out,);
+
+                d_assert(fd_msg_avp_add(apn_configuration, 
+                    MSG_BRW_LAST_CHILD, eps_subscribed_qos_profile) == 0, 
+                        goto out,);
+
+                /* Set AMBR */
+                d_assert(fd_msg_avp_new(s6a_ambr, 0, &avp_ambr) == 0, goto out,);
+                d_assert(fd_msg_avp_new(s6a_max_bandwidth_ul, 0, 
+                            &avp_max_bandwidth_ul) == 0, goto out,);
+                val.i32 = pdn->max_bandwidth_ul * 1024; /* bits per second */
+                d_assert(fd_msg_avp_setvalue(avp_max_bandwidth_ul, &val) == 0, 
+                        goto out,);
+                d_assert(fd_msg_avp_add(avp_ambr, MSG_BRW_LAST_CHILD, 
+                            avp_max_bandwidth_ul) == 0, goto out,);
+                d_assert(fd_msg_avp_new(s6a_max_bandwidth_dl, 0, 
+                            &avp_max_bandwidth_dl) == 0, goto out,);
+                val.i32 = pdn->max_bandwidth_dl * 1024; /* bitsper second */
+                d_assert(fd_msg_avp_setvalue(avp_max_bandwidth_dl, &val) == 0, 
+                        goto out,);
+                d_assert(fd_msg_avp_add(avp_ambr, MSG_BRW_LAST_CHILD, 
+                            avp_max_bandwidth_dl) == 0, goto out,);
+
+                d_assert(fd_msg_avp_add(apn_configuration, 
+                        MSG_BRW_LAST_CHILD, avp_ambr) == 0, goto out,);
 
                 d_assert(fd_msg_avp_add(apn_configuration_profile, 
                         MSG_BRW_LAST_CHILD, apn_configuration) == 0, 
