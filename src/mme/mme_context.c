@@ -20,6 +20,7 @@ static mme_context_t self;
 
 pool_declare(mme_sgw_pool, mme_sgw_t, MAX_NUM_OF_SGW);
 pool_declare(mme_enb_pool, mme_enb_t, MAX_NUM_OF_ENB);
+pool_declare(mme_pdn_pool, pdn_t, MAX_NUM_OF_PDN);
 pool_declare(mme_ue_pool, mme_ue_t, MAX_NUM_OF_UE);
 pool_declare(mme_esm_pool, mme_esm_t, MAX_NUM_OF_ESM);
 
@@ -35,11 +36,13 @@ status_t mme_context_init()
 
     pool_init(&mme_sgw_pool, MAX_NUM_OF_SGW);
     pool_init(&mme_enb_pool, MAX_NUM_OF_ENB);
+    pool_init(&mme_pdn_pool, MAX_NUM_OF_PDN);
     pool_init(&mme_ue_pool, MAX_NUM_OF_UE);
     pool_init(&mme_esm_pool, MAX_NUM_OF_ESM);
 
     list_init(&self.sgw_list);
     list_init(&self.enb_list);
+    list_init(&self.pdn_list);
 
     self.mme_ue_s1ap_id_hash = hash_make();
 
@@ -85,12 +88,14 @@ status_t mme_context_final()
 
     mme_sgw_remove_all();
     mme_enb_remove_all();
+    mme_pdn_remove_all();
 
     d_assert(self.mme_ue_s1ap_id_hash, , "Null param");
     hash_destroy(self.mme_ue_s1ap_id_hash);
 
     pool_final(&mme_sgw_pool);
     pool_final(&mme_enb_pool);
+    pool_final(&mme_pdn_pool);
     pool_final(&mme_ue_pool);
     pool_final(&mme_esm_pool);
 
@@ -270,6 +275,75 @@ mme_enb_t* mme_enb_first()
 mme_enb_t* mme_enb_next(mme_enb_t *enb)
 {
     return list_next(enb);
+}
+
+pdn_t* mme_pdn_add(pdn_id_t id)
+{
+    pdn_t *pdn = NULL;
+
+    pool_alloc_node(&mme_pdn_pool, &pdn);
+    d_assert(pdn, return NULL, "HSS-UE context allocation failed");
+
+    memset(pdn, 0, sizeof(pdn_t));
+
+    pdn->id = id;
+    
+    list_append(&self.pdn_list, pdn);
+
+    return pdn;
+}
+
+status_t mme_pdn_remove(pdn_t *pdn)
+{
+    d_assert(pdn, return CORE_ERROR, "Null param");
+
+    list_remove(&self.pdn_list, pdn);
+    pool_free_node(&mme_pdn_pool, pdn);
+
+    return CORE_OK;
+}
+
+status_t mme_pdn_remove_all()
+{
+    pdn_t *pdn = NULL, *next_pdn = NULL;
+    
+    pdn = list_first(&self.pdn_list);
+    while (pdn)
+    {
+        next_pdn = list_next(pdn);
+
+        mme_pdn_remove(pdn);
+
+        pdn = next_pdn;
+    }
+
+    return CORE_OK;
+}
+
+pdn_t* mme_pdn_find_by_id(pdn_id_t id)
+{
+    pdn_t *pdn = NULL;
+    
+    pdn = list_first(&self.pdn_list);
+    while (pdn)
+    {
+        if (pdn->id == id)
+            break;
+
+        pdn = list_next(pdn);
+    }
+
+    return pdn;
+}
+
+pdn_t* mme_pdn_first()
+{
+    return list_first(&self.pdn_list);
+}
+
+pdn_t* mme_pdn_next(pdn_t *pdn)
+{
+    return list_next(pdn);
 }
 
 mme_ue_t* mme_ue_add(mme_enb_t *enb)

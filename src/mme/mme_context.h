@@ -70,6 +70,7 @@ typedef struct _mme_context_t {
 
     list_t          sgw_list;
     list_t          enb_list;
+    list_t          pdn_list;;
 
     hash_t          *mme_ue_s1ap_id_hash; /* hash table for MME-UE-S1AP-ID */
 } mme_context_t;
@@ -133,6 +134,9 @@ typedef struct _mme_ue_t {
     list_t          esm_list;
 
     mme_enb_t       *enb;
+
+    pdn_t           *pdn[MAX_NUM_OF_PDN];
+    int             num_of_pdn;
 } mme_ue_t;
 
 typedef struct _mme_esm_t {
@@ -163,6 +167,13 @@ CORE_DECLARE(mme_enb_t*)    mme_enb_find_by_sock(net_sock_t *sock);
 CORE_DECLARE(mme_enb_t*)    mme_enb_find_by_enb_id(c_uint32_t enb_id);
 CORE_DECLARE(mme_enb_t*)    mme_enb_first(void);
 CORE_DECLARE(mme_enb_t*)    mme_enb_next(mme_enb_t *enb);
+
+CORE_DECLARE(pdn_t*)        mme_pdn_add(pdn_id_t id);
+CORE_DECLARE(status_t)      mme_pdn_remove(pdn_t *pdn);
+CORE_DECLARE(status_t)      mme_pdn_remove_all(void);
+CORE_DECLARE(pdn_t*)        mme_pdn_find_by_id(pdn_id_t id);
+CORE_DECLARE(pdn_t*)        mme_pdn_first(void);
+CORE_DECLARE(pdn_t*)        mme_pdn_next(pdn_t *pdn);
 
 CORE_DECLARE(mme_ue_t*)     mme_ue_add(mme_enb_t *enb);
 CORE_DECLARE(status_t)      mme_ue_remove(mme_ue_t *ue);
