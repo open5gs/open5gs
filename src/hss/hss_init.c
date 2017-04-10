@@ -152,10 +152,7 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
         struct session *sess, void *opaque, enum disp_action *act)
 {
 	struct msg *ans, *qry;
-#if 0
     struct avp *avpch1, *avpch2;
-    struct avp *avpch1;
-#endif
     struct avp_hdr *hdr;
     union avp_value val;
 
@@ -212,16 +209,46 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
         !(hdr->avp_value->u32 & S6A_ULR_SKIP_SUBSCRIBER_DATA))
     {
         /* Set the Subscription Data */
-#if 0
         d_assert(fd_msg_avp_new(s6a_subscription_data, 0, &avp) == 0, 
                 goto out,);
-        d_assert(fd_msg_avp_new(s6a_msisdn, 0, &avpch1) == 0, goto out,);
 
+        d_assert(fd_msg_avp_new(s6a_msisdn, 0, &avpch1) == 0, goto out,);
+        val.os.data = (c_uint8_t *)ue->msisdn;
+        val.os.len  = ue->msisdn_len;
+        d_assert(fd_msg_avp_setvalue(avpch1, &val) == 0, goto out,);
         d_assert(fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch1) == 0, 
                 goto out,);
+
+        d_assert(fd_msg_avp_new(s6a_subscriber_status, 0, &avpch1) == 0, goto out,);
+        val.i32 = ue->subscriber_status;
+        d_assert(fd_msg_avp_setvalue(avpch1, &val) == 0, goto out,);
+        d_assert(fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch1) == 0, 
+                goto out,);
+
+        d_assert(fd_msg_avp_new(s6a_network_access_mode, 0, &avpch1) == 0, goto out,);
+        val.i32 = ue->network_access_mode;
+        d_assert(fd_msg_avp_setvalue(avpch1, &val) == 0, goto out,);
+        d_assert(fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch1) == 0, 
+                goto out,);
+
+        d_assert(fd_msg_avp_new(s6a_ambr, 0, &avpch1) == 0, goto out,);
+        d_assert(fd_msg_avp_new(s6a_max_bandwidth_ul, 0, &avpch2) == 0, 
+                goto out,);
+        val.i32 = ue->max_bandwidth_ul;
+        d_assert(fd_msg_avp_setvalue(avpch2, &val) == 0, goto out,);
+        d_assert(fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2) == 0, 
+                goto out,);
+        d_assert(fd_msg_avp_new(s6a_max_bandwidth_dl, 0, &avpch2) == 0, 
+                goto out,);
+        val.i32 = ue->max_bandwidth_dl;
+        d_assert(fd_msg_avp_setvalue(avpch2, &val) == 0, goto out,);
+        d_assert(fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2) == 0, 
+                goto out,);
+        d_assert(fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch1) == 0, 
+                goto out,);
+
         d_assert(fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) == 0, 
                 goto out,);
-#endif
     }
 
 	/* Send the answer */

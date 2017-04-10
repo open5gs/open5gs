@@ -22,13 +22,17 @@ typedef struct _hss_profile_t {
     hss_profile_id_t id;
     c_int8_t        name[HSS_MAX_PROFILE_NAME_LEN];
 
-    c_int8_t        apn[MAX_APN_LEN];
-
     /* Security Context */
     c_uint8_t       k[HSS_KEY_LEN];
     c_uint8_t       op[HSS_KEY_LEN];
     c_uint8_t       amf[HSS_AMF_LEN];
     c_uint64_t      sqn;
+
+    c_int8_t        apn[MAX_APN_LEN];
+    c_uint32_t      subscriber_status;
+    c_uint32_t      network_access_mode;
+    c_uint32_t      max_bandwidth_ul;
+    c_uint32_t      max_bandwidth_dl;
 } hss_profile_t;
 
 typedef struct _hss_ue_t {
@@ -36,8 +40,8 @@ typedef struct _hss_ue_t {
 
     /* UE Identitiy */
     c_int8_t        imsi_bcd[MAX_IMSI_BCD_LEN+1];
-    c_int8_t        msisdn_bcd[MAX_MSISDN_BCD_LEN+1];
-    c_int8_t        mei_bcd[MAX_MEI_BCD_LEN+1];
+    c_uint8_t       msisdn[MAX_MSISDN_LEN];
+    int             msisdn_len;
 
     plmn_id_t       visited_plmn_id;
 
@@ -48,6 +52,12 @@ typedef struct _hss_ue_t {
     c_uint8_t       opc[HSS_KEY_LEN];
     c_uint8_t       op[HSS_KEY_LEN];
     c_uint8_t       amf[HSS_AMF_LEN];
+
+    c_int8_t        apn[MAX_APN_LEN];
+    c_uint32_t      subscriber_status;
+    c_uint32_t      network_access_mode;
+    c_uint32_t      max_bandwidth_ul;
+    c_uint32_t      max_bandwidth_dl;
 } hss_ue_t;
 
 typedef struct _hss_context_t {

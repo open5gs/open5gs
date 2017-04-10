@@ -46,6 +46,17 @@ status_t hss_context_init(void)
     memcpy(profile->k, CORE_HEX(K, strlen(K), buf), HSS_KEY_LEN);
     profile->sqn = 64;
 
+#define HSS_SUBSCRIBER_STATUS_SERVICE_GRANTED               0
+#define HSS_SUBSCRIBER_STATUS_OPERATOR_DETERMINED_BARRING   1 
+    profile->subscriber_status = HSS_SUBSCRIBER_STATUS_SERVICE_GRANTED;
+
+#define HSS_NETWORK_ACCESS_MODE_PACKET_AND_CIRCUIT          0
+#define HSS_NETWORK_ACCESS_MODE_RESERVED                    1
+#define HSS_NETWORK_ACCESS_MODE_ONLY_PACKET                 2
+    profile->network_access_mode = HSS_NETWORK_ACCESS_MODE_ONLY_PACKET;
+    profile->max_bandwidth_ul = 10240;
+    profile->max_bandwidth_dl = 10240;
+
     #define UE1_IMSI "001010123456800"
     #define UE2_IMSI "001010123456796"
 
@@ -179,12 +190,17 @@ hss_ue_t* hss_ue_add(hss_profile_id_t id, c_int8_t *imsi_bcd)
     memcpy(ue->op, profile->op, HSS_KEY_LEN);
     memcpy(ue->amf, profile->amf, HSS_AMF_LEN);
 
-    strcpy((char*)ue->imsi_bcd, imsi_bcd);
-    strcpy((char*)ue->msisdn_bcd, ue->imsi_bcd);
-    strcpy((char*)ue->mei_bcd, ue->imsi_bcd);
+    strcpy(ue->imsi_bcd, imsi_bcd);
+    core_bcd_to_buffer(ue->imsi_bcd, ue->msisdn, &ue->msisdn_len);
 
     core_generate_random_bytes(ue->rand, RAND_LEN);
     ue->sqn = profile->sqn;
+
+    strcpy(ue->apn, profile->apn);
+    ue->subscriber_status = profile->subscriber_status;
+    ue->network_access_mode = profile->network_access_mode;
+    ue->max_bandwidth_ul = profile->max_bandwidth_ul;
+    ue->max_bandwidth_dl = profile->max_bandwidth_dl;
     
     list_append(&self.ue_list, ue);
 

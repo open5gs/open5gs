@@ -105,8 +105,8 @@ typedef struct _mme_ue_t {
     c_int8_t        imsi_bcd[MAX_IMSI_BCD_LEN+1];
     c_uint8_t       msisdn[MAX_MSISDN_LEN];
     int             msisdn_len;
-    c_uint8_t       mei[MAX_MSISDN_LEN];
-    int             mei_len;
+    c_uint8_t       imei[MAX_IMEI_LEN];
+    int             imei_len;
 
     /* UE Info */
     plmn_id_t       visited_plmn_id;
