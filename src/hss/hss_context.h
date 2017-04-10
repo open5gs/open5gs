@@ -72,12 +72,7 @@ typedef struct _hss_profile_t {
     c_uint8_t       amf[HSS_AMF_LEN];
     c_uint64_t      sqn;
 
-#define HSS_SUBSCRIBER_STATUS_SERVICE_GRANTED               0
-#define HSS_SUBSCRIBER_STATUS_OPERATOR_DETERMINED_BARRING   1 
     c_uint32_t      subscriber_status;
-#define HSS_NETWORK_ACCESS_MODE_PACKET_AND_CIRCUIT          0
-#define HSS_NETWORK_ACCESS_MODE_RESERVED                    1
-#define HSS_NETWORK_ACCESS_MODE_ONLY_PACKET                 2
     c_uint32_t      network_access_mode;
 
     c_uint32_t      max_bandwidth_ul; /* Kbps */
@@ -96,10 +91,15 @@ typedef struct _hss_ue_t {
 
     plmn_id_t       visited_plmn_id;
 
+#define HSS_SUBSCRIBER_STATUS_SERVICE_GRANTED               0
+#define HSS_SUBSCRIBER_STATUS_OPERATOR_DETERMINED_BARRING   1 
     c_uint32_t      subscriber_status;
+#define HSS_NETWORK_ACCESS_MODE_PACKET_AND_CIRCUIT          0
+#define HSS_NETWORK_ACCESS_MODE_RESERVED                    1
+#define HSS_NETWORK_ACCESS_MODE_ONLY_PACKET                 2
     c_uint32_t      network_access_mode;
-    c_uint32_t      max_bandwidth_ul;
-    c_uint32_t      max_bandwidth_dl;
+    c_uint32_t      max_bandwidth_ul; /* Kbps */
+    c_uint32_t      max_bandwidth_dl; /* Kbps */
 
     c_uint32_t      subscribed_rau_tau_timer; /* minutes */
 
