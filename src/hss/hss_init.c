@@ -216,13 +216,7 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
         struct avp *avp_msisdn;
         struct avp *avp_subscriber_status, *avp_network_access_mode;
         struct avp *avp_ambr, *avp_max_bandwidth_ul, *avp_max_bandwidth_dl;
-#if 0
-        struct avp *apn_configuration_profile, *context_identifier;
-        struct avp *all_apn_conf_inc_ind, *pdn_type;
-        struct avp *service_selection;
-        struct avp *eps_subscribed_qos_profile, *qos_class_identifier;
-        struct avp *subscribed_rau_tau_timer;
-#endif
+        int i;
 
         /* Set the Subscription Data */
         d_assert(fd_msg_avp_new(s6a_subscription_data, 0, &avp) == 0, 
@@ -269,9 +263,85 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
         d_assert(fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avp_ambr) == 0, 
                 goto out,);
 
+        if (ue->num_of_pdn && ue->pdn[0])
+        {
+            struct avp *apn_configuration_profile;
+            struct avp *context_identifier, *all_apn_conf_inc_ind;
+
+            d_assert(fd_msg_avp_new(s6a_apn_configuration_profile, 0, 
+                    &apn_configuration_profile) == 0, goto out,);
+
+            d_assert(fd_msg_avp_new(s6a_context_identifier, 0, 
+                    &context_identifier) == 0, goto out,);
+            val.i32 = ue->pdn[0]->id;
+            d_assert(fd_msg_avp_setvalue(context_identifier, &val) == 0, 
+                    goto out,);
+            d_assert(fd_msg_avp_add(apn_configuration_profile, 
+                    MSG_BRW_LAST_CHILD, context_identifier) == 0, goto out,);
+
+            d_assert(fd_msg_avp_new(s6a_all_apn_conf_inc_ind, 0, 
+                    &all_apn_conf_inc_ind) == 0, goto out,);
+            val.i32 = 0;
+            d_assert(fd_msg_avp_setvalue(all_apn_conf_inc_ind, &val) == 0, 
+                    goto out,);
+            d_assert(fd_msg_avp_add(apn_configuration_profile, 
+                    MSG_BRW_LAST_CHILD, all_apn_conf_inc_ind) == 0, goto out,);
+
+            for (i = 0; i < ue->num_of_pdn; i++)
+            {
+                struct avp *apn_configuration, *context_identifier;
+                struct avp *pdn_type, *service_selection;
+#if 0
+                struct avp *eps_subscribed_qos_profile, *qos_class_identifier;
+#endif
+
+                hss_pdn_t *pdn = ue->pdn[i];
+                d_assert(pdn, goto out,);
+
+                d_assert(fd_msg_avp_new(s6a_apn_configuration, 0, 
+                    &apn_configuration) == 0, goto out,);
+
+                d_assert(fd_msg_avp_new(s6a_context_identifier, 0, 
+                        &context_identifier) == 0, goto out,);
+                val.i32 = pdn->id;
+                d_assert(fd_msg_avp_setvalue(context_identifier, &val) == 0, 
+                        goto out,);
+                d_assert(fd_msg_avp_add(apn_configuration, 
+                        MSG_BRW_LAST_CHILD, context_identifier) == 0, goto out,);
+
+                d_assert(fd_msg_avp_new(s6a_pdn_type, 0, 
+                        &pdn_type) == 0, goto out,);
+                val.i32 = pdn->type;
+                d_assert(fd_msg_avp_setvalue(pdn_type, &val) == 0, 
+                        goto out,);
+                d_assert(fd_msg_avp_add(apn_configuration, 
+                        MSG_BRW_LAST_CHILD, pdn_type) == 0, goto out,);
+
+                d_assert(fd_msg_avp_new(s6a_service_selection, 0, 
+                        &service_selection) == 0, goto out,);
+                val.os.data = (c_uint8_t *)pdn->apn;
+                val.os.len = strlen(pdn->apn);
+                d_assert(fd_msg_avp_setvalue(service_selection, &val) == 0, 
+                        goto out,);
+                d_assert(fd_msg_avp_add(apn_configuration, 
+                        MSG_BRW_LAST_CHILD, service_selection) == 0, goto out,);
+
+                d_assert(fd_msg_avp_add(apn_configuration_profile, 
+                        MSG_BRW_LAST_CHILD, apn_configuration) == 0, 
+                        goto out,);
+            }
+            d_assert(fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, 
+                    apn_configuration_profile) == 0, goto out,);
+        }
+
         d_assert(fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) == 0, 
                 goto out,);
     }
+
+    d_assert(fd_msg_avp_new(s6a_subscribed_rau_tau_timer, 0, &avp) == 0, goto out,);
+    val.i32 = ue->subscribed_rau_tau_timer * 60; /* seconds */
+    d_assert(fd_msg_avp_setvalue(avp, &val) == 0, goto out,);
+    d_assert(fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) == 0, goto out,);
 
 	/* Send the answer */
 	fd_msg_send(msg, NULL, NULL);

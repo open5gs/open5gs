@@ -7,6 +7,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#define MAX_NUM_OF_PDN      4
+
 #define MAX_UE_PER_ENB      128
 #define MAX_NUM_OF_ENB      128
 #define MAX_NUM_OF_UE       (MAX_NUM_OF_ENB * MAX_UE_PER_ENB)

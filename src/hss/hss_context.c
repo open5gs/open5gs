@@ -6,11 +6,12 @@
 
 #include "hss_context.h"
 
-#define MAX_NUM_OF_PROFILE 8
+#define HSS_MAX_NUM_OF_PROFILE  8
 
 static hss_context_t self;
 
-pool_declare(hss_profile_pool, hss_profile_t, MAX_NUM_OF_PROFILE);
+pool_declare(hss_profile_pool, hss_profile_t, HSS_MAX_NUM_OF_PROFILE);
+pool_declare(hss_pdn_pool, hss_pdn_t, MAX_NUM_OF_PDN);
 pool_declare(hss_ue_pool, hss_ue_t, MAX_NUM_OF_UE);
 
 hss_context_t* hss_self()
@@ -24,18 +25,23 @@ status_t hss_context_init(void)
 
     hss_profile_id_t profile_id = 1;
     hss_profile_t *profile;
+    hss_pdn_t *pdn;
     hss_ue_t *ue;
 
     memset(&self, 0, sizeof(hss_context_t));
 
-    pool_init(&hss_profile_pool, MAX_NUM_OF_PROFILE);
+    pool_init(&hss_profile_pool, HSS_MAX_NUM_OF_PROFILE);
+    pool_init(&hss_pdn_pool, MAX_NUM_OF_PDN);
     pool_init(&hss_ue_pool, MAX_NUM_OF_UE);
 
     list_init(&self.profile_list);
+    list_init(&self.pdn_list);
     list_init(&self.ue_list);
 
+    /***********************************************
+     * Profile DB */
     profile = hss_profile_add(profile_id);
-    d_assert(profile, return -1, "UE context add failed");
+    d_assert(profile, return -1, "Profile context add failed");
 
 #define OP "5F1D289C5D354D0A140C2548F5F3E3BA"
 #define AMF "8000"
@@ -46,17 +52,30 @@ status_t hss_context_init(void)
     memcpy(profile->k, CORE_HEX(K, strlen(K), buf), HSS_KEY_LEN);
     profile->sqn = 64;
 
-#define HSS_SUBSCRIBER_STATUS_SERVICE_GRANTED               0
-#define HSS_SUBSCRIBER_STATUS_OPERATOR_DETERMINED_BARRING   1 
     profile->subscriber_status = HSS_SUBSCRIBER_STATUS_SERVICE_GRANTED;
-
-#define HSS_NETWORK_ACCESS_MODE_PACKET_AND_CIRCUIT          0
-#define HSS_NETWORK_ACCESS_MODE_RESERVED                    1
-#define HSS_NETWORK_ACCESS_MODE_ONLY_PACKET                 2
     profile->network_access_mode = HSS_NETWORK_ACCESS_MODE_ONLY_PACKET;
     profile->max_bandwidth_ul = 102400; /* Kbps */
     profile->max_bandwidth_dl = 102400; /* Kbps */
 
+    profile->subscribed_rau_tau_timer = 12; /* minutes */
+
+    /***********************************************
+     * PDN DB */
+    pdn = hss_pdn_add();
+    d_assert(pdn, return -1, "Profile context add failed");
+
+    strcpy(pdn->apn, "Internet");
+
+    pdn->type = HSS_PDN_TYPE_IPV4;
+
+    pdn->qci = HSS_PDN_QCI_1;
+    pdn->priority_level = 1;
+
+    pdn->pre_emption_capability = HSS_PRE_EMPTION_CAPABILITY_DISABLED;
+    pdn->pre_emption_vulnerability = HSS_PRE_EMPTION_VULNERABILITY_DISABLED;
+
+    /***********************************************
+     * UE DB */
     #define UE1_IMSI "001010123456800"
     #define UE2_IMSI "001010123456796"
 
@@ -65,12 +84,19 @@ status_t hss_context_init(void)
 
     ue = hss_ue_add(profile_id, UE1_IMSI);
     d_assert(ue, return -1, "UE context add failed");
+    ue->pdn[0] = pdn;
+    ue->num_of_pdn = 1;
 
     ue = hss_ue_add(profile_id, UE2_IMSI);
     d_assert(ue, return -1, "UE context add failed");
+    ue->pdn[0] = pdn;
+    ue->num_of_pdn = 1;
 
     ue = hss_ue_add(profile_id, UE3_IMSI);
     d_assert(ue, return -1, "UE context add failed");
+    ue->pdn[0] = pdn;
+    ue->num_of_pdn = 1;
+
     memcpy(ue->rand, CORE_HEX(UE3_RAND, strlen(UE3_RAND), buf), 
             RAND_LEN);
 
@@ -80,12 +106,83 @@ status_t hss_context_init(void)
 void hss_context_final(void)
 {
     hss_ue_remove_all();
+    hss_pdn_remove_all();
     hss_profile_remove_all();
 
     pool_final(&hss_ue_pool);
+    pool_final(&hss_pdn_pool);
     pool_final(&hss_profile_pool);
 	
 	return;
+}
+
+hss_pdn_t* hss_pdn_add()
+{
+    hss_pdn_t *pdn = NULL;
+
+    pool_alloc_node(&hss_pdn_pool, &pdn);
+    d_assert(pdn, return NULL, "HSS-UE context allocation failed");
+
+    memset(pdn, 0, sizeof(hss_pdn_t));
+
+    pdn->id = NEXT_ID(self.pdn_id, 0xffffffff);
+    
+    list_append(&self.pdn_list, pdn);
+
+    return pdn;
+}
+
+status_t hss_pdn_remove(hss_pdn_t *pdn)
+{
+    d_assert(pdn, return CORE_ERROR, "Null param");
+
+    list_remove(&self.pdn_list, pdn);
+    pool_free_node(&hss_pdn_pool, pdn);
+
+    return CORE_OK;
+}
+
+status_t hss_pdn_remove_all()
+{
+    hss_pdn_t *pdn = NULL, *next_pdn = NULL;
+    
+    pdn = list_first(&self.pdn_list);
+    while (pdn)
+    {
+        next_pdn = list_next(pdn);
+
+        hss_pdn_remove(pdn);
+
+        pdn = next_pdn;
+    }
+
+    return CORE_OK;
+}
+
+hss_pdn_t* hss_pdn_find_by_id(hss_pdn_id_t id)
+{
+    hss_pdn_t *pdn = NULL;
+    
+    pdn = list_first(&self.pdn_list);
+    while (pdn)
+    {
+        if (pdn->id == id)
+            break;
+
+        pdn = list_next(pdn);
+    }
+
+    return pdn;
+}
+
+hss_pdn_t* hss_pdn_first()
+{
+    return list_first(&self.pdn_list);
+}
+
+hss_pdn_t* hss_pdn_next(hss_pdn_t *pdn)
+{
+    return list_next(pdn);
 }
 
 hss_profile_t* hss_profile_add(hss_profile_id_t id)
@@ -196,11 +293,12 @@ hss_ue_t* hss_ue_add(hss_profile_id_t id, c_int8_t *imsi_bcd)
     core_generate_random_bytes(ue->rand, RAND_LEN);
     ue->sqn = profile->sqn;
 
-    strcpy(ue->apn, profile->apn);
     ue->subscriber_status = profile->subscriber_status;
     ue->network_access_mode = profile->network_access_mode;
     ue->max_bandwidth_ul = profile->max_bandwidth_ul;
     ue->max_bandwidth_dl = profile->max_bandwidth_dl;
+
+    ue->subscribed_rau_tau_timer = profile->subscribed_rau_tau_timer;
     
     list_append(&self.ue_list, ue);
 
