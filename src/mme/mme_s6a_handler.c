@@ -28,7 +28,7 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     struct timespec ts;
     struct session *sess;
     struct avp *avp;
-    struct avp *avpch1, *avpch2;
+    struct avp *avp_e_utran_vector, *avp_xres, *avp_kasme, *avp_rand, *avp_autn;
     struct avp_hdr *hdr;
     unsigned long dur;
     int error = 0;
@@ -71,33 +71,35 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
     message.emm.h.message_type = NAS_AUTHENTICATION_REQUEST;
 
-    d_assert(fd_msg_search_avp(*msg, s6a_authentication_info, &avp) == 0 && avp, 
-            error++; goto out,);
+    d_assert(fd_msg_search_avp(*msg, s6a_authentication_info, &avp) == 0 && 
+            avp, error++; goto out,);
     d_assert(fd_msg_avp_hdr(avp, &hdr) == 0 && hdr, error++; goto out,);
-    d_assert(fd_avp_search_avp(avp, s6a_e_utran_vector, &avpch1) == 0 && avp, 
-            error++; goto out,);
-    d_assert(fd_msg_avp_hdr(avpch1, &hdr) == 0 && hdr, error++; goto out,);
+    d_assert(fd_avp_search_avp(avp, s6a_e_utran_vector, &avp_e_utran_vector) 
+            == 0 && avp_e_utran_vector, error++; goto out,);
+    d_assert(fd_msg_avp_hdr(avp_e_utran_vector, &hdr) == 0 && hdr, error++; 
+            goto out,);
 
-    d_assert(fd_avp_search_avp(avpch1, s6a_xres, &avpch2) == 0 && avp, 
-            error++; goto out,);
-    d_assert(fd_msg_avp_hdr(avpch2, &hdr) == 0 && hdr, error++; goto out,);
+    d_assert(fd_avp_search_avp(avp_e_utran_vector, s6a_xres, &avp_xres) == 0 && 
+            avp_xres, error++; goto out,);
+    d_assert(fd_msg_avp_hdr(avp_xres, &hdr) == 0 && hdr, error++; goto out,);
     memcpy(ue->xres, hdr->avp_value->os.data, hdr->avp_value->os.len);
     ue->xres_len = hdr->avp_value->os.len;
 
-    d_assert(fd_avp_search_avp(avpch1, s6a_kasme, &avpch2) == 0 && avp, 
-            error++; goto out,);
-    d_assert(fd_msg_avp_hdr(avpch2, &hdr) == 0 && hdr, error++; goto out,);
+    d_assert(
+        fd_avp_search_avp(avp_e_utran_vector, s6a_kasme, &avp_kasme) == 0 && 
+        avp_kasme, error++; goto out,);
+    d_assert(fd_msg_avp_hdr(avp_kasme, &hdr) == 0 && hdr, error++; goto out,);
     memcpy(ue->kasme, hdr->avp_value->os.data, hdr->avp_value->os.len);
 
-    d_assert(fd_avp_search_avp(avpch1, s6a_rand, &avpch2) == 0 && avp, 
-            error++; goto out,);
-    d_assert(fd_msg_avp_hdr(avpch2, &hdr) == 0 && hdr, error++; goto out,);
+    d_assert(fd_avp_search_avp(avp_e_utran_vector, s6a_rand, &avp_rand) == 0 && 
+            avp_rand, error++; goto out,);
+    d_assert(fd_msg_avp_hdr(avp_rand, &hdr) == 0 && hdr, error++; goto out,);
     memcpy(authentication_request->authentication_parameter_rand.rand,
             hdr->avp_value->os.data, hdr->avp_value->os.len);
 
-    d_assert(fd_avp_search_avp(avpch1, s6a_autn, &avpch2) == 0 && avp, 
-            error++; goto out,);
-    d_assert(fd_msg_avp_hdr(avpch2, &hdr) == 0 && hdr, error++; goto out,);
+    d_assert(fd_avp_search_avp(avp_e_utran_vector, s6a_autn, &avp_autn) == 0 && 
+            avp_autn, error++; goto out,);
+    d_assert(fd_msg_avp_hdr(avp_autn, &hdr) == 0 && hdr, error++; goto out,);
     authentication_request->authentication_parameter_autn.length = 
         hdr->avp_value->os.len;
     memcpy(authentication_request->authentication_parameter_autn.autn,

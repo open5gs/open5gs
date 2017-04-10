@@ -54,8 +54,8 @@ status_t hss_context_init(void)
 #define HSS_NETWORK_ACCESS_MODE_RESERVED                    1
 #define HSS_NETWORK_ACCESS_MODE_ONLY_PACKET                 2
     profile->network_access_mode = HSS_NETWORK_ACCESS_MODE_ONLY_PACKET;
-    profile->max_bandwidth_ul = 10240;
-    profile->max_bandwidth_dl = 10240;
+    profile->max_bandwidth_ul = 102400; /* Kbps */
+    profile->max_bandwidth_dl = 102400; /* Kbps */
 
     #define UE1_IMSI "001010123456800"
     #define UE2_IMSI "001010123456796"

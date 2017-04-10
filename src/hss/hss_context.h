@@ -31,8 +31,8 @@ typedef struct _hss_profile_t {
     c_int8_t        apn[MAX_APN_LEN];
     c_uint32_t      subscriber_status;
     c_uint32_t      network_access_mode;
-    c_uint32_t      max_bandwidth_ul;
-    c_uint32_t      max_bandwidth_dl;
+    c_uint32_t      max_bandwidth_ul; /* Kbps */
+    c_uint32_t      max_bandwidth_dl; /* Kbps */
 } hss_profile_t;
 
 typedef struct _hss_ue_t {
