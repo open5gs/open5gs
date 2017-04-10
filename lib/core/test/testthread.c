@@ -67,6 +67,14 @@ static void check_locks(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, 40000, x);
 }
 
+static void final_thread(abts_case *tc, void *data)
+{
+    status_t rv;
+
+    rv = mutex_delete(lock);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+}
+
 abts_suite *testthread(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -75,6 +83,7 @@ abts_suite *testthread(abts_suite *suite)
     abts_run_test(suite, create_threads, NULL);
     abts_run_test(suite, join_threads, NULL);
     abts_run_test(suite, check_locks, NULL);
+    abts_run_test(suite, final_thread, NULL);
 
     return suite;
 }
