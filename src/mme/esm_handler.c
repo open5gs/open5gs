@@ -21,3 +21,8 @@ void esm_handle_pdn_connectivity_request(mme_esm_t *esm,
             pdn_connectivity_request->esm_information_transfer_flag.security_protected_required);
 #endif
 }
+
+void esm_handle_information_response(mme_esm_t *esm, 
+        nas_esm_information_response_t *esm_information_response)
+{
+}

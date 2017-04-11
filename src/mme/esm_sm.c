@@ -97,6 +97,14 @@ void esm_state_operational(fsm_t *s, event_t *e)
                             "UE[%s] --> ESM[%d]", ue->imsi_bcd, esm->pti);
                     break;
                 }
+                case NAS_ESM_INFORMATION_RESPONSE:
+                {
+                    esm_handle_information_response(
+                            esm, &message->esm.esm_information_response);
+                    d_info("[NAS] ESM information response : "
+                            "UE[%s] --> ESM[%d]", ue->imsi_bcd, esm->pti);
+                    break;
+                }
                 default:
                 {
                     d_warn("Not implemented(type:%d)", 

@@ -64,7 +64,7 @@ void emm_state_operational(fsm_t *s, event_t *e)
                 {
                     mme_esm_t *esm = mme_esm_first(ue);
 
-                    d_info("[NAS] Location Update : EMM[%s] <-- HSS",
+                    d_info("[NAS] Location update : EMM[%s] <-- HSS",
                             ue->imsi_bcd);
                     while(esm)
                     {
