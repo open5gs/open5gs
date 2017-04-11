@@ -53,7 +53,7 @@ typedef c_uint32_t index_t;
     if ((__pname)->avail > 0) { \
         (__pname)->avail--; \
         *(__pptr_node) = (void*)(__pname)->free_pool[(__pname)->head]; \
-        memset(*(__pptr_node), 0, sizeof(gtp_xact_t)); \
+        memset(*(__pptr_node), 0, sizeof(**(__pptr_node))); \
         (__pname)->free_pool[(__pname)->head] = NULL; \
         ((*(__pptr_node))->index) = (__pname)->free_index[(__pname)->head]; \
         (__pname)->index_pool[((*(__pptr_node))->index)] = *(__pptr_node); \
