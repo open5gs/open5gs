@@ -57,6 +57,16 @@ CORE_DECLARE(c_uint16_t) plmn_id_mnc_len(plmn_id_t *plmn_id);
 CORE_DECLARE(void *) plmn_id_build(plmn_id_t *plmn_id, 
         c_uint16_t mcc, c_uint16_t mnc, c_uint16_t mnc_len);
 
+typedef struct _tai_t {
+    plmn_id_t plmn_id;
+    c_uint16_t tac;
+} __attribute__ ((packed)) tai_t;
+
+typedef struct _e_cgi_t {
+    plmn_id_t plmn_id;
+    c_uint32_t cell_id; /* 28 bit */
+} __attribute__ ((packed)) e_cgi_t;
+
 /**********************************
  * PDN Structure                 */
 typedef c_uint32_t pdn_id_t;

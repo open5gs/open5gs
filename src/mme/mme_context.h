@@ -112,6 +112,8 @@ typedef struct _mme_ue_t {
     int             imei_len;
 
     /* UE Info */
+    tai_t           tai;
+    e_cgi_t         e_cgi;
     plmn_id_t       visited_plmn_id;
 
     /* Security Context */

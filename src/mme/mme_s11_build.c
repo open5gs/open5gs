@@ -11,12 +11,13 @@
 status_t mme_s11_build_create_session_req(pkbuf_t **pkbuf, mme_esm_t *esm)
 {
     status_t rv;
+    mme_ue_t *ue = NULL;
+    mme_sgw_t *sgw = NULL;
     gtp_message_t gtp_message;
     gtp_create_session_request_t *req = &gtp_message.create_session_request;
 
     gtp_uli_t uli;
     char uli_buf[GTP_MAX_ULI_LEN];
-    plmn_id_t serving_network;
     gtp_f_teid_t s11, s5;
     gtp_paa_t paa;
     gtp_ambr_t ambr;
@@ -26,34 +27,43 @@ status_t mme_s11_build_create_session_req(pkbuf_t **pkbuf, mme_esm_t *esm)
     char bearer_qos_buf[GTP_BEARER_QOS_LEN];
     gtp_ue_timezone_t ue_timezone;
 
+    d_assert(esm, return CORE_ERROR, "Null param");
+    ue = esm->ue;
+    d_assert(ue, return CORE_ERROR, "Null param");
+    sgw = esm->sgw;
+    d_assert(sgw, return CORE_ERROR, "Null param");
+
     memset(&gtp_message, 0, sizeof(gtp_message_t));
 
+    d_assert(ue->imsi_len, return CORE_ERROR, "Null param");
     req->imsi.presence = 1;
-    req->imsi.data = (c_uint8_t *)"\x55\x15\x30\x11\x34\x00\x10\xf4";
-    req->imsi.len = 8;
+    req->imsi.data = ue->imsi;
+    req->imsi.len = ue->imsi_len;
 
+    /* Not used */
     req->msisdn.presence = 1;
-    req->msisdn.data = (c_uint8_t *)"\x94\x71\x52\x76\x00\x41";
-    req->msisdn.len = 6;
+    req->msisdn.data = ue->imsi;
+    req->msisdn.len = ue->imsi_len;
 
+    /* Not used */
     req->me_identity.presence = 1;
-    req->me_identity.data = (c_uint8_t *)"\x53\x61\x20\x00\x91\x78\x84\x00";
-    req->me_identity.len = 8;
+    req->me_identity.data = ue->imsi;
+    req->me_identity.len = ue->imsi_len;
 
     memset(&uli, 0, sizeof(gtp_uli_t));
-    uli.flags.ecgi = 1;
+    uli.flags.e_cgi = 1;
     uli.flags.tai = 1;
-    plmn_id_build(&uli.tai.plmn_id, 555, 10, 2);
-    uli.tai.tac = 4130;
-    plmn_id_build(&uli.ecgi.plmn_id, 555, 10, 2);
-    uli.ecgi.eci = 105729;
+    memcpy(&uli.tai.plmn_id, &ue->tai.plmn_id, sizeof(uli.tai.plmn_id));
+    uli.tai.tac = ue->tai.tac;
+    memcpy(&uli.e_cgi.plmn_id, &ue->e_cgi.plmn_id, sizeof(uli.tai.plmn_id));
+    uli.e_cgi.cell_id = ue->e_cgi.cell_id;
     req->user_location_information.presence = 1;
     gtp_build_uli(&req->user_location_information, &uli, 
             uli_buf, GTP_MAX_ULI_LEN);
 
     req->serving_network.presence = 1;
-    req->serving_network.data = plmn_id_build(&serving_network, 555, 10, 2);
-    req->serving_network.len = sizeof(serving_network);
+    req->serving_network.data = &ue->visited_plmn_id;
+    req->serving_network.len = sizeof(ue->visited_plmn_id);
 
     req->rat_type.presence = 1;
     req->rat_type.u8 = GTP_RAT_TYPE_EUTRAN;
@@ -61,12 +71,8 @@ status_t mme_s11_build_create_session_req(pkbuf_t **pkbuf, mme_esm_t *esm)
     memset(&s11, 0, sizeof(gtp_f_teid_t));
     s11.ipv4 = 1;
     s11.interface_type = GTP_F_TEID_S11_MME_GTP_C;
-#if 0
-    s11.teid = htonl(0x80000084);
-#else
-    s11.teid = htonl(1);
-#endif
-    s11.ipv4_addr = inet_addr("10.50.54.10");
+    s11.teid = htonl(esm->teid);
+    s11.ipv4_addr = mme_self()->s11_addr;
     req->sender_f_teid_for_control_plane.presence = 1;
     req->sender_f_teid_for_control_plane.data = &s11;
     req->sender_f_teid_for_control_plane.len = GTP_F_TEID_IPV4_LEN;
@@ -74,7 +80,6 @@ status_t mme_s11_build_create_session_req(pkbuf_t **pkbuf, mme_esm_t *esm)
     memset(&s5, 0, sizeof(gtp_f_teid_t));
     s5.ipv4 = 1;
     s5.interface_type = GTP_F_TEID_S5_S8_PGW_GTP_C;
-    s5.ipv4_addr = inet_addr("10.50.54.37");
     req->pgw_s5_s8_address_for_control_plane_or_pmip.presence = 1;
     req->pgw_s5_s8_address_for_control_plane_or_pmip.data = &s5;
     req->pgw_s5_s8_address_for_control_plane_or_pmip.len = GTP_F_TEID_IPV4_LEN;

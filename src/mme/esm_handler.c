@@ -25,8 +25,13 @@ void esm_handle_pdn_connectivity_request(mme_esm_t *esm,
 void esm_handle_information_response(mme_esm_t *esm, 
         nas_esm_information_response_t *esm_information_response)
 {
-    pkbuf_t *pkbuf;
+    pkbuf_t *pkbuf = NULL;
+    status_t rv;
 
-    mme_s11_build_create_session_req(&pkbuf, esm);
-    mme_s11_send_to_sgw(esm->sgw, GTP_CREATE_SESSION_REQUEST_TYPE, 0, pkbuf);
+    rv = mme_s11_build_create_session_req(&pkbuf, esm);
+    d_assert(rv == CORE_OK, return, "S11 build error");
+
+    rv = mme_s11_send_to_sgw(esm->sgw, 
+            GTP_CREATE_SESSION_REQUEST_TYPE, 0, pkbuf);
+    d_assert(rv == CORE_OK, return, "S11 send error");
 }

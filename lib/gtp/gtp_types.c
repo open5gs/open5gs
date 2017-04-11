@@ -146,13 +146,13 @@ c_int16_t gtp_parse_uli(gtp_uli_t *uli, tlv_octet_t *octet)
         uli->tai.tac = ntohs(uli->tai.tac);
         size += sizeof(uli->tai);
     }
-    if (uli->flags.ecgi)
+    if (uli->flags.e_cgi)
     {
-        d_assert(size + sizeof(uli->ecgi) <= octet->len, 
+        d_assert(size + sizeof(uli->e_cgi) <= octet->len, 
                 return -1, "decode error");
-        memcpy(&uli->ecgi, octet->data + size, sizeof(uli->ecgi));
-        uli->ecgi.eci = ntohl(uli->ecgi.eci);
-        size += sizeof(uli->ecgi);
+        memcpy(&uli->e_cgi, octet->data + size, sizeof(uli->e_cgi));
+        uli->e_cgi.cell_id = ntohl(uli->e_cgi.cell_id);
+        size += sizeof(uli->e_cgi);
     }
     if (uli->flags.lai)
     {
@@ -221,13 +221,13 @@ c_int16_t gtp_build_uli(
         memcpy(octet->data + size, &target.tai, sizeof(target.tai));
         size += sizeof(target.tai);
     }
-    if (target.flags.ecgi)
+    if (target.flags.e_cgi)
     {
-        d_assert(size + sizeof(target.ecgi) <= data_len, 
+        d_assert(size + sizeof(target.e_cgi) <= data_len, 
                 return -1, "encode error");
-        target.ecgi.eci = htonl(target.ecgi.eci);
-        memcpy(octet->data + size, &target.ecgi, sizeof(target.ecgi));
-        size += sizeof(target.ecgi);
+        target.e_cgi.cell_id = htonl(target.e_cgi.cell_id);
+        memcpy(octet->data + size, &target.e_cgi, sizeof(target.e_cgi));
+        size += sizeof(target.e_cgi);
     }
     if (target.flags.lai)
     {

@@ -57,12 +57,12 @@ static void gtp_message_test1(abts_case *tc, void *data)
     req.me_identity.len = 8;
 
     memset(&uli, 0, sizeof(gtp_uli_t));
-    uli.flags.ecgi = 1;
+    uli.flags.e_cgi = 1;
     uli.flags.tai = 1;
     plmn_id_build(&uli.tai.plmn_id, 555, 10, 2);
     uli.tai.tac = 4130;
-    plmn_id_build(&uli.ecgi.plmn_id, 555, 10, 2);
-    uli.ecgi.eci = 105729;
+    plmn_id_build(&uli.e_cgi.plmn_id, 555, 10, 2);
+    uli.e_cgi.cell_id = 105729;
     req.user_location_information.presence = 1;
     size = gtp_build_uli(&req.user_location_information, &uli, 
             ulibuf, GTP_MAX_ULI_LEN);
@@ -199,8 +199,8 @@ static void gtp_message_test1(abts_case *tc, void *data)
     size = gtp_parse_uli(&uli, &req.user_location_information);
     ABTS_INT_EQUAL(tc, 13, size);
     ABTS_INT_EQUAL(tc, 0, uli.flags.lai);
-    ABTS_INT_EQUAL(tc, 1, uli.flags.ecgi);
-    ABTS_INT_EQUAL(tc, 105729, uli.ecgi.eci);
+    ABTS_INT_EQUAL(tc, 1, uli.flags.e_cgi);
+    ABTS_INT_EQUAL(tc, 105729, uli.e_cgi.cell_id);
     ABTS_INT_EQUAL(tc, 1, uli.flags.tai);
     ABTS_INT_EQUAL(tc, 4130, uli.tai.tac);
     ABTS_INT_EQUAL(tc, 0, uli.flags.rai);

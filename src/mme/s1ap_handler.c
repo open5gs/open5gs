@@ -62,11 +62,30 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
 
     mme_ue_t *ue = NULL;
     S1ap_InitialUEMessage_IEs_t *ies = NULL;
+    S1ap_TAI_t *tai = NULL;
+	S1ap_PLMNidentity_t *pLMNidentity = NULL;
+	S1ap_TAC_t *tAC = NULL;
+    S1ap_EUTRAN_CGI_t *eutran_cgi = NULL;
+	S1ap_CellIdentity_t	*cell_ID = NULL;
 
     d_assert(enb, return, "Null param");
 
     ies = &message->s1ap_InitialUEMessage_IEs;
     d_assert(ies, return, "Null param");
+
+    tai = &ies->tai;
+    d_assert(tai, return,);
+    pLMNidentity = &tai->pLMNidentity;
+    d_assert(pLMNidentity && pLMNidentity->size == sizeof(plmn_id_t), return,);
+    tAC = &tai->tAC;
+    d_assert(tAC && tAC->size == sizeof(c_uint16_t), return,);
+
+    eutran_cgi = &ies->eutran_cgi;
+    d_assert(eutran_cgi, return,);
+    pLMNidentity = &eutran_cgi->pLMNidentity;
+    d_assert(pLMNidentity && pLMNidentity->size == sizeof(plmn_id_t), return,);
+    cell_ID = &eutran_cgi->cell_ID;
+    d_assert(cell_ID, return,);
 
     ue = mme_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
     if (!ue)
@@ -82,6 +101,13 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
             "Initial-UE Message[eNB-UE-S1AP-ID(%d)]",
             enb->enb_id, ue->enb_ue_s1ap_id);
     }
+
+    memcpy(&ue->tai.plmn_id, pLMNidentity->buf, sizeof(ue->tai.plmn_id));
+    memcpy(&ue->tai.tac, tAC->buf, sizeof(ue->tai.tac));
+    ue->tai.tac = ntohs(ue->tai.tac);
+    memcpy(&ue->e_cgi.plmn_id, pLMNidentity->buf, sizeof(ue->e_cgi.plmn_id));
+    memcpy(&ue->e_cgi.cell_id, cell_ID->buf, sizeof(ue->e_cgi.cell_id));
+    ue->e_cgi.cell_id = (ntohl(ue->e_cgi.cell_id) >> 4);
 
     d_assert(enb->s1ap_sock, mme_ue_remove(ue); return,);
     d_info("[S1AP] InitialUEMessage : UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]",
