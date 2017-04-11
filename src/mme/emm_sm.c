@@ -8,7 +8,7 @@
 #include "emm_handler.h"
 #include "mme_s6a_handler.h"
 
-void emm_state_initial(emm_sm_t *s, event_t *e)
+void emm_state_initial(fsm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
 
@@ -17,14 +17,14 @@ void emm_state_initial(emm_sm_t *s, event_t *e)
     FSM_TRAN(s, &emm_state_operational);
 }
 
-void emm_state_final(emm_sm_t *s, event_t *e)
+void emm_state_final(fsm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
 
     mme_sm_trace(1, e);
 }
 
-void emm_state_operational(emm_sm_t *s, event_t *e)
+void emm_state_operational(fsm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
     d_assert(e, return, "Null param");
@@ -104,7 +104,7 @@ void emm_state_operational(emm_sm_t *s, event_t *e)
     }
 }
 
-void emm_state_exception(emm_sm_t *s, event_t *e)
+void emm_state_exception(fsm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
     d_assert(e, return, "Null param");

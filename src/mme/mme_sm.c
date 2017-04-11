@@ -10,7 +10,7 @@
 #include "nas_security.h"
 #include "mme_s11_path.h"
 
-void mme_state_initial(mme_sm_t *s, event_t *e)
+void mme_state_initial(fsm_t *s, event_t *e)
 {
     mme_sm_trace(1, e);
 
@@ -19,14 +19,14 @@ void mme_state_initial(mme_sm_t *s, event_t *e)
     FSM_TRAN(s, &mme_state_operational);
 }
 
-void mme_state_final(mme_sm_t *s, event_t *e)
+void mme_state_final(fsm_t *s, event_t *e)
 {
     mme_sm_trace(1, e);
 
     d_assert(s, return, "Null param");
 }
 
-void mme_state_operational(mme_sm_t *s, event_t *e)
+void mme_state_operational(fsm_t *s, event_t *e)
 {
     status_t rv;
     char buf[INET_ADDRSTRLEN];
@@ -131,14 +131,14 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
             d_assert(index, pkbuf_free(pkbuf); break, "Null param");
             d_assert(enb = mme_enb_find(index),
                     pkbuf_free(pkbuf); break, "No eNB context");
-            d_assert(FSM_STATE(&enb->s1ap_sm), 
+            d_assert(FSM_STATE(&enb->sm), 
                     pkbuf_free(pkbuf); break, "No S1AP State Machine");
 
             d_assert(s1ap_decode_pdu(&message, pkbuf) == CORE_OK,
                     pkbuf_free(pkbuf); break, "Can't decode S1AP_PDU");
 
             event_set_param3(e, (c_uintptr_t)&message);
-            fsm_dispatch((fsm_t*)&enb->s1ap_sm, (fsm_event_t*)e);
+            fsm_dispatch(&enb->sm, (fsm_event_t*)e);
 
             s1ap_free_pdu(&message);
             pkbuf_free(pkbuf);
@@ -155,14 +155,14 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
             d_assert(index, pkbuf_free(pkbuf); break, "Null param");
             ue = mme_ue_find(index);
             d_assert(ue, pkbuf_free(pkbuf); break, "No UE context");
-            d_assert(FSM_STATE(&ue->emm_sm), 
+            d_assert(FSM_STATE(&ue->sm), 
                     pkbuf_free(pkbuf); break, "No EMM State Machine");
 
             d_assert(nas_security_decode(&message, ue, pkbuf) == CORE_OK,
                     pkbuf_free(pkbuf); break, "Can't decode NAS_EMM");
 
             event_set_param3(e, (c_uintptr_t)&message);
-            fsm_dispatch((fsm_t*)&ue->emm_sm, (fsm_event_t*)e);
+            fsm_dispatch(&ue->sm, (fsm_event_t*)e);
 
             pkbuf_free(pkbuf);
             break;
@@ -187,7 +187,7 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
                     pkbuf_free(pkbuf); break, "Can't decode NAS_ESM");
 
             event_set_param3(e, (c_uintptr_t)&message);
-            fsm_dispatch((fsm_t*)&esm->sm, (fsm_event_t*)e);
+            fsm_dispatch(&esm->sm, (fsm_event_t*)e);
 
             pkbuf_free(pkbuf);
             break;

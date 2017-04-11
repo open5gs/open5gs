@@ -197,9 +197,8 @@ mme_enb_t* mme_enb_add(net_sock_t *s1ap_sock)
     list_init(&enb->ue_list);
     list_append(&self.enb_list, enb);
 
-    fsm_create((fsm_t*)&enb->s1ap_sm, 
-            s1ap_state_initial, s1ap_state_final);
-    fsm_init((fsm_t*)&enb->s1ap_sm, 0);
+    fsm_create(&enb->sm, s1ap_state_initial, s1ap_state_final);
+    fsm_init(&enb->sm, 0);
     
     return enb;
 }
@@ -208,8 +207,8 @@ status_t mme_enb_remove(mme_enb_t *enb)
 {
     d_assert(enb, return CORE_ERROR, "Null param");
 
-    fsm_final((fsm_t*)&enb->s1ap_sm, 0);
-    fsm_clear((fsm_t*)&enb->s1ap_sm);
+    fsm_final(&enb->sm, 0);
+    fsm_clear(&enb->sm);
 
     mme_ue_remove_in_enb(enb);
 
@@ -374,9 +373,8 @@ mme_ue_t* mme_ue_add(mme_enb_t *enb)
     list_init(&ue->esm_list);
     list_append(&enb->ue_list, ue);
 
-    fsm_create((fsm_t*)&ue->emm_sm, 
-            emm_state_initial, emm_state_final);
-    fsm_init((fsm_t*)&ue->emm_sm, 0);
+    fsm_create(&ue->sm, emm_state_initial, emm_state_final);
+    fsm_init(&ue->sm, 0);
     
     return ue;
 }
@@ -387,8 +385,8 @@ status_t mme_ue_remove(mme_ue_t *ue)
     d_assert(ue, return CORE_ERROR, "Null param");
     d_assert(ue->enb, return CORE_ERROR, "Null param");
 
-    fsm_final((fsm_t*)&ue->emm_sm, 0);
-    fsm_clear((fsm_t*)&ue->emm_sm);
+    fsm_final(&ue->sm, 0);
+    fsm_clear(&ue->sm);
 
     mme_esm_remove_all(ue);
 
@@ -509,9 +507,8 @@ mme_esm_t* mme_esm_add(mme_ue_t *ue, c_uint8_t pti)
 
     list_append(&ue->esm_list, esm);
     
-    fsm_create((fsm_t*)&esm->sm, 
-            esm_state_initial, esm_state_final);
-    fsm_init((fsm_t*)&esm->sm, 0);
+    fsm_create(&esm->sm, esm_state_initial, esm_state_final);
+    fsm_init(&esm->sm, 0);
 
     return esm;
 }
@@ -521,8 +518,8 @@ status_t mme_esm_remove(mme_esm_t *esm)
     d_assert(esm, return CORE_ERROR, "Null param");
     d_assert(esm->ue, return CORE_ERROR, "Null param");
     
-    fsm_final((fsm_t*)&esm->sm, 0);
-    fsm_clear((fsm_t*)&esm->sm);
+    fsm_final(&esm->sm, 0);
+    fsm_clear(&esm->sm);
 
     list_remove(&esm->ue->esm_list, esm);
     index_free(&mme_esm_pool, esm);

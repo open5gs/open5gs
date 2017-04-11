@@ -7,7 +7,7 @@
 #include "s1ap_build.h"
 #include "s1ap_handler.h"
 
-void s1ap_state_initial(s1ap_sm_t *s, event_t *e)
+void s1ap_state_initial(fsm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
 
@@ -16,14 +16,14 @@ void s1ap_state_initial(s1ap_sm_t *s, event_t *e)
     FSM_TRAN(s, &s1ap_state_operational);
 }
 
-void s1ap_state_final(s1ap_sm_t *s, event_t *e)
+void s1ap_state_final(fsm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
 
     mme_sm_trace(1, e);
 }
 
-void s1ap_state_operational(s1ap_sm_t *s, event_t *e)
+void s1ap_state_operational(fsm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
     d_assert(e, return, "Null param");
@@ -117,7 +117,7 @@ void s1ap_state_operational(s1ap_sm_t *s, event_t *e)
     }
 }
 
-void s1ap_state_exception(s1ap_sm_t *s, event_t *e)
+void s1ap_state_exception(fsm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
     d_assert(e, return, "Null param");

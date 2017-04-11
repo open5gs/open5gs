@@ -39,7 +39,7 @@ void mme_terminate(void)
 void *THREAD_FUNC mme_sm_main(thread_id id, void *data)
 {
     event_t event;
-    mme_sm_t mme_sm;
+    fsm_t mme_sm;
     c_time_t prev_tm, now_tm;
     status_t rv;
 
@@ -52,9 +52,8 @@ void *THREAD_FUNC mme_sm_main(thread_id id, void *data)
     gtp_xact_init(&mme_self()->gtp_xact_ctx, 
             &mme_self()->tm_service, EVT_TM_MME_S11_T3);
 
-    fsm_create(&mme_sm.fsm, mme_state_initial, mme_state_final);
-    d_assert(&mme_sm.fsm, return NULL, "MME state machine creation failed");
-    fsm_init((fsm_t*)&mme_sm, 0);
+    fsm_create(&mme_sm, mme_state_initial, mme_state_final);
+    fsm_init(&mme_sm, 0);
 
     prev_tm = time_now();
 
@@ -81,11 +80,11 @@ void *THREAD_FUNC mme_sm_main(thread_id id, void *data)
             continue;
         }
 
-        fsm_dispatch((fsm_t*)&mme_sm, (fsm_event_t*)&event);
+        fsm_dispatch(&mme_sm, (fsm_event_t*)&event);
     }
 
-    fsm_final((fsm_t*)&mme_sm, 0);
-    fsm_clear((fsm_t*)&mme_sm);
+    fsm_final(&mme_sm, 0);
+    fsm_clear(&mme_sm);
 
     gtp_xact_final();
     event_delete(mme_self()->queue_id);

@@ -7,7 +7,7 @@
 #include "mme_event.h"
 #include "esm_handler.h"
 
-void esm_state_initial(esm_sm_t *s, event_t *e)
+void esm_state_initial(fsm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
 
@@ -16,14 +16,14 @@ void esm_state_initial(esm_sm_t *s, event_t *e)
     FSM_TRAN(s, &esm_state_operational);
 }
 
-void esm_state_final(esm_sm_t *s, event_t *e)
+void esm_state_final(fsm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
 
     mme_sm_trace(1, e);
 }
 
-void esm_state_operational(esm_sm_t *s, event_t *e)
+void esm_state_operational(fsm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
     d_assert(e, return, "Null param");
@@ -81,7 +81,7 @@ void esm_state_operational(esm_sm_t *s, event_t *e)
     }
 }
 
-void esm_state_exception(esm_sm_t *s, event_t *e)
+void esm_state_exception(fsm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
     d_assert(e, return, "Null param");

@@ -84,10 +84,9 @@ typedef struct _mme_sgw_t {
 typedef struct _mme_enb_t {
     lnode_t         node;   /**< A node of list_t */
     index_t         index;  /**< Index key */
+    fsm_t           sm;
 
     c_uint32_t      enb_id; /** eNB_ID received from eNB */
-
-    s1ap_sm_t       s1ap_sm;
     net_sock_t      *s1ap_sock;
 
     list_t          ue_list;
@@ -97,9 +96,9 @@ typedef struct _mme_enb_t {
 typedef struct _mme_ue_t {
     lnode_t         node;   /**< A node of list_t */
     index_t         index;  /**< Index key */
+    fsm_t           sm;
 
     /* State Machine */
-    emm_sm_t        emm_sm;
 
     /* UE identity */
     c_uint32_t      enb_ue_s1ap_id; /** eNB-UE-S1AP-ID received from eNB */
@@ -153,10 +152,9 @@ typedef struct _mme_ue_t {
 typedef struct _mme_esm_t {
     lnode_t         node;   /**< A node of list_t */
     index_t         index;  /**< Index key */
+    fsm_t           sm;
 
     c_uint8_t       pti;    /** Procedure Trasaction Identity */
-
-    esm_sm_t        sm;
 
     mme_ue_t        *ue;
 } mme_esm_t;
