@@ -6,6 +6,7 @@
 
 #include "mme_event.h"
 #include "esm_handler.h"
+#include "esm_build.h"
 
 void esm_state_initial(fsm_t *s, event_t *e)
 {
@@ -56,6 +57,13 @@ void esm_state_operational(fsm_t *s, event_t *e)
             {
                 case EVT_LO_MME_ESM_INFO_REQ:
                 {
+                    pkbuf_t *pkbuf = NULL;
+                    status_t rv;
+
+                    rv = esm_build_information_request(&pkbuf, esm);
+                    d_assert(rv == CORE_OK, break, "esm_build failed");
+
+                    mme_event_nas_to_s1ap(ue, pkbuf);
                     d_info("[NAS] ESM information request : "
                             "UE[%s] <--- ESM[%d]", ue->imsi_bcd, esm->pti);
                     break;
