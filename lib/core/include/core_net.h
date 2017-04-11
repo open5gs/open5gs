@@ -3,6 +3,7 @@
 
 #include "core.h"
 #include "core_errno.h"
+#include "core_index.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -50,6 +51,7 @@ typedef struct {
     struct sockaddr_in remote;
     int opt;
 
+    index_t app_index;
     int sndrcv_errno;
 } net_sock_t;
 

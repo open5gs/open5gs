@@ -92,7 +92,7 @@ static status_t s1ap_recv(net_sock_t *sock, pkbuf_t *pkbuf)
     d_trace_hex(1, pkbuf->payload, pkbuf->len);
 
     event_set(&e, EVT_MSG_MME_S1AP);
-    event_set_param1(&e, (c_uintptr_t)sock);
+    event_set_param1(&e, (c_uintptr_t)sock->app_index);
     event_set_param2(&e, (c_uintptr_t)pkbuf);
     return mme_event_send(&e);
 }
@@ -137,7 +137,7 @@ int _s1ap_recv_cb(net_sock_t *sock, void *data)
         event_t e;
 
         event_set(&e, EVT_LO_MME_S1AP_CONNREFUSED);
-        event_set_param1(&e, (c_uintptr_t)sock);
+        event_set_param1(&e, (c_uintptr_t)sock->app_index);
         mme_event_send(&e);
 
         return -1;

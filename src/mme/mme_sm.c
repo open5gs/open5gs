@@ -103,22 +103,19 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
         }
         case EVT_LO_MME_S1AP_CONNREFUSED:
         {
-            net_sock_t *sock = (net_sock_t *)event_get_param1(e);
-            d_assert(sock, break, "Null param");
+            index_t index = event_get_param1(e);
+            mme_enb_t *enb = NULL;
 
-            d_info("Socket[%s] connection refused", 
-                    INET_NTOP(&sock->remote.sin_addr.s_addr, buf));
-
-            mme_enb_t *enb = mme_enb_find_by_sock(sock);
-            if (enb) 
+            d_assert(index, break, "Null param");
+            enb = mme_enb_find(index);
+            if (enb)
             {
-                mme_enb_remove(enb);
                 d_info("eNB-S1[%x] connection refused!!!", enb->enb_id);
+                mme_enb_remove(enb);
             }
             else
             {
-                d_warn("Can't find eNB-S1 for [%s]!!!", 
-                        INET_NTOP(&sock->remote.sin_addr.s_addr, buf));
+                d_warn("Socket connection refused, Already Removed!");
             }
 
             break;
@@ -126,13 +123,13 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
         case EVT_MSG_MME_S1AP:
         {
             s1ap_message_t message;
-            net_sock_t *sock = (net_sock_t *)event_get_param1(e);
+            index_t index = event_get_param1(e);
             mme_enb_t *enb = NULL;
             pkbuf_t *pkbuf = (pkbuf_t *)event_get_param2(e);
 
             d_assert(pkbuf, break, "Null param");
-            d_assert(sock, pkbuf_free(pkbuf); break, "Null param");
-            d_assert(enb = mme_enb_find_by_sock(sock), 
+            d_assert(index, pkbuf_free(pkbuf); break, "Null param");
+            d_assert(enb = mme_enb_find(index),
                     pkbuf_free(pkbuf); break, "No eNB context");
             d_assert(FSM_STATE(&enb->s1ap_sm), 
                     pkbuf_free(pkbuf); break, "No S1AP State Machine");
@@ -155,6 +152,7 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
             pkbuf_t *pkbuf = (pkbuf_t *)event_get_param2(e);
 
             d_assert(pkbuf, break, "Null param");
+            d_assert(index, pkbuf_free(pkbuf); break, "Null param");
             ue = mme_ue_find(index);
             d_assert(ue, pkbuf_free(pkbuf); break, "No UE context");
             d_assert(FSM_STATE(&ue->emm_sm), 
@@ -178,7 +176,7 @@ void mme_state_operational(mme_sm_t *s, event_t *e)
             pkbuf_t *pkbuf = (pkbuf_t *)event_get_param2(e);
 
             d_assert(pkbuf, break, "Null param");
-            d_assert(index, break, "Null param");
+            d_assert(index, pkbuf_free(pkbuf); break, "Null param");
             esm = mme_esm_find(index);
             d_assert(esm, pkbuf_free(pkbuf); break, "No ESM context");
             d_assert(ue = esm->ue, pkbuf_free(pkbuf); break, "No UE context");

@@ -43,10 +43,12 @@ void emm_state_operational(emm_sm_t *s, event_t *e)
         }
         case EVT_MSG_MME_EMM:
         {
+            index_t index = event_get_param1(e);
             mme_ue_t *ue = NULL;
             nas_message_t *message = NULL;
 
-            ue = mme_ue_find(event_get_param1(e));
+            d_assert(index, return, "Null param");
+            ue = mme_ue_find(index);
             d_assert(ue, return, "Null param");
 
             message = (nas_message_t *)event_get_param3(e);

@@ -82,8 +82,8 @@ typedef struct _mme_sgw_t {
 } mme_sgw_t;
 
 typedef struct _mme_enb_t {
-    lnode_t         node; /**< A node of list_t */
-    index_t         index;
+    lnode_t         node;   /**< A node of list_t */
+    index_t         index;  /**< Index key */
 
     c_uint32_t      enb_id; /** eNB_ID received from eNB */
 
@@ -95,8 +95,8 @@ typedef struct _mme_enb_t {
 } mme_enb_t;
 
 typedef struct _mme_ue_t {
-    lnode_t         node; /**< A node of list_t */
-    index_t         index;
+    lnode_t         node;   /**< A node of list_t */
+    index_t         index;  /**< Index key */
 
     /* State Machine */
     emm_sm_t        emm_sm;
@@ -151,10 +151,10 @@ typedef struct _mme_ue_t {
 } mme_ue_t;
 
 typedef struct _mme_esm_t {
-    lnode_t         node; /**< A node of list_t */
-    index_t         index;
+    lnode_t         node;   /**< A node of list_t */
+    index_t         index;  /**< Index key */
 
-    c_uint8_t       pti;  /** Procedure Trasaction Identity */
+    c_uint8_t       pti;    /** Procedure Trasaction Identity */
 
     esm_sm_t        sm;
 
@@ -175,6 +175,7 @@ CORE_DECLARE(mme_sgw_t*)    mme_sgw_next(mme_sgw_t *sgw);
 CORE_DECLARE(mme_enb_t*)    mme_enb_add(net_sock_t *s1ap_sock);
 CORE_DECLARE(status_t)      mme_enb_remove(mme_enb_t *enb);
 CORE_DECLARE(status_t)      mme_enb_remove_all(void);
+CORE_DECLARE(mme_enb_t*)    mme_enb_find(index_t index);
 CORE_DECLARE(mme_enb_t*)    mme_enb_find_by_sock(net_sock_t *sock);
 CORE_DECLARE(mme_enb_t*)    mme_enb_find_by_enb_id(c_uint32_t enb_id);
 CORE_DECLARE(mme_enb_t*)    mme_enb_first(void);

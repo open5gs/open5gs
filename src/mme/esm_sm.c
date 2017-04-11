@@ -42,11 +42,13 @@ void esm_state_operational(esm_sm_t *s, event_t *e)
         }
         case EVT_MSG_MME_ESM:
         {
+            index_t index = event_get_param1(e);
             mme_esm_t *esm = NULL;
             mme_ue_t *ue = NULL;
             nas_message_t *message = NULL;
 
-            esm = mme_esm_find(event_get_param1(e));
+            d_assert(index, return, "Null param");
+            esm = mme_esm_find(index);
             d_assert(esm, return, "Null param");
             ue = esm->ue;
             d_assert(ue, return, "Null param");

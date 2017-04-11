@@ -20,7 +20,6 @@ void mme_state_exception(mme_sm_t *s, event_t *e);
 
 typedef struct _s1ap_sm_t {
     fsm_t fsm;
-    void *ctx;
 } s1ap_sm_t;
 
 void s1ap_state_initial(s1ap_sm_t *s, event_t *e);
@@ -30,7 +29,6 @@ void s1ap_state_exception(s1ap_sm_t *s, event_t *e);
 
 typedef struct _emm_sm_t {
     fsm_t fsm;
-    void *ctx;
 } emm_sm_t;
 
 void emm_state_initial(emm_sm_t *s, event_t *e);

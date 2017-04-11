@@ -20,8 +20,8 @@ static mme_context_t self;
 
 pool_declare(mme_sgw_pool, mme_sgw_t, MAX_NUM_OF_SGW);
 pool_declare(mme_pdn_pool, pdn_t, MAX_NUM_OF_PDN);
-pool_declare(mme_enb_pool, mme_enb_t, MAX_NUM_OF_ENB);
 
+index_declare(mme_enb_pool, mme_enb_t, MAX_NUM_OF_ENB);
 index_declare(mme_ue_pool, mme_ue_t, MAX_NUM_OF_UE);
 index_declare(mme_esm_pool, mme_esm_t, MAX_NUM_OF_ESM);
 
@@ -37,8 +37,8 @@ status_t mme_context_init()
 
     pool_init(&mme_sgw_pool, MAX_NUM_OF_SGW);
     pool_init(&mme_pdn_pool, MAX_NUM_OF_PDN);
-    pool_init(&mme_enb_pool, MAX_NUM_OF_ENB);
 
+    index_init(&mme_enb_pool, MAX_NUM_OF_ENB);
     index_init(&mme_ue_pool, MAX_NUM_OF_UE);
     index_init(&mme_esm_pool, MAX_NUM_OF_ESM);
 
@@ -95,10 +95,10 @@ status_t mme_context_final()
     d_assert(self.mme_ue_s1ap_id_hash, , "Null param");
     hash_destroy(self.mme_ue_s1ap_id_hash);
 
-    index_final(&mme_ue_pool);
     index_final(&mme_esm_pool);
+    index_final(&mme_ue_pool);
+    index_final(&mme_enb_pool);
 
-    pool_final(&mme_enb_pool);
     pool_final(&mme_sgw_pool);
     pool_final(&mme_pdn_pool);
 
@@ -186,9 +186,12 @@ mme_enb_t* mme_enb_add(net_sock_t *s1ap_sock)
 {
     mme_enb_t *enb = NULL;
 
-    pool_alloc_node(&mme_enb_pool, &enb);
+    index_alloc(&mme_enb_pool, &enb);
     d_assert(enb, return NULL, "Null param");
-    memset(enb, 0, sizeof(mme_enb_t));
+
+    /* IMPORTANT! 
+     * eNB Index is saved in net_sock_t structure */
+    s1ap_sock->app_index = enb->index;
 
     enb->s1ap_sock = s1ap_sock;
     list_init(&enb->ue_list);
@@ -196,7 +199,6 @@ mme_enb_t* mme_enb_add(net_sock_t *s1ap_sock)
 
     fsm_create((fsm_t*)&enb->s1ap_sm, 
             s1ap_state_initial, s1ap_state_final);
-    enb->s1ap_sm.ctx = enb;
     fsm_init((fsm_t*)&enb->s1ap_sm, 0);
     
     return enb;
@@ -215,7 +217,7 @@ status_t mme_enb_remove(mme_enb_t *enb)
     net_close(enb->s1ap_sock);
 
     list_remove(&self.enb_list, enb);
-    pool_free_node(&mme_enb_pool, enb);
+    index_free(&mme_enb_pool, enb);
 
     return CORE_OK;
 }
@@ -235,6 +237,12 @@ status_t mme_enb_remove_all()
     }
 
     return CORE_OK;
+}
+
+mme_enb_t* mme_enb_find(index_t index)
+{
+    d_assert(index, return NULL, "Invalid Index");
+    return index_find(&mme_enb_pool, index);
 }
 
 mme_enb_t* mme_enb_find_by_sock(net_sock_t *sock)
@@ -368,7 +376,6 @@ mme_ue_t* mme_ue_add(mme_enb_t *enb)
 
     fsm_create((fsm_t*)&ue->emm_sm, 
             emm_state_initial, emm_state_final);
-    ue->emm_sm.ctx = ue;
     fsm_init((fsm_t*)&ue->emm_sm, 0);
     
     return ue;
