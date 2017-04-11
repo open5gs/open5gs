@@ -97,15 +97,3 @@ status_t mme_s11_send_to_sgw(void *sgw,
 
     return CORE_OK;
 }
-
-#include "mme_s11_build.h"
-void test_send()
-{
-    pkbuf_t *pkbuf;
-    c_uint8_t type;
-    c_uint32_t teid = 0;
-
-    mme_s11_build_create_session_req(&type, &pkbuf, NULL);
-
-    mme_s11_send_to_sgw(mme_sgw_first(), type, teid, pkbuf);
-}

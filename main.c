@@ -48,8 +48,6 @@ static int check_signal(int signum)
         }
         case SIGUSR1:
         {
-            extern void test_send();
-            test_send();
             break;
         }
         default:
@@ -118,9 +116,9 @@ int main(int argc, char *argv[])
     }
 
     {
+#if 0
         extern int _gtp_xact;
         d_trace_level(&_gtp_xact, 100);
-#if 0
         extern int _mme_sm;
         d_trace_level(&_mme_sm, 100);
         extern int _s1ap_sm;
