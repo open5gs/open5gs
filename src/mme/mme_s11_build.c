@@ -8,13 +8,11 @@
 #include "3gpp_common.h"
 #include "mme_context.h"
 
-status_t mme_s11_build_create_session_req(
-        c_uint8_t *type, pkbuf_t **pkbuf, mme_ue_t *ue)
+status_t mme_s11_build_create_session_req(pkbuf_t **pkbuf, mme_esm_t *esm)
 {
     status_t rv;
     gtp_message_t gtp_message;
     gtp_create_session_request_t *req = &gtp_message.create_session_request;
-    *type = GTP_CREATE_SESSION_REQUEST_TYPE;
 
     gtp_uli_t uli;
     char uli_buf[GTP_MAX_ULI_LEN];
@@ -150,7 +148,7 @@ status_t mme_s11_build_create_session_req(
     req->charging_characteristics.data = (c_uint8_t *)"\x54\x00";
     req->charging_characteristics.len = 2;
 
-    rv = gtp_build_msg(pkbuf, *type, &gtp_message);
+    rv = gtp_build_msg(pkbuf, GTP_CREATE_SESSION_REQUEST_TYPE, &gtp_message);
     d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");
 
     return CORE_OK;

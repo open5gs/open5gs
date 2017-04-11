@@ -99,6 +99,9 @@ void esm_state_operational(fsm_t *s, event_t *e)
                 }
                 case NAS_ESM_INFORMATION_RESPONSE:
                 {
+                    /* FIXME : SGW Selection */
+                    esm->sgw = mme_sgw_first();
+
                     esm_handle_information_response(
                             esm, &message->esm.esm_information_response);
                     d_info("[NAS] ESM information response : "

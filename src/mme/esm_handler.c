@@ -26,9 +26,7 @@ void esm_handle_information_response(mme_esm_t *esm,
         nas_esm_information_response_t *esm_information_response)
 {
     pkbuf_t *pkbuf;
-    c_uint8_t type;
-    c_uint32_t teid = 0;
 
-    mme_s11_build_create_session_req(&type, &pkbuf, NULL);
-    mme_s11_send_to_sgw(mme_sgw_first(), type, teid, pkbuf);
+    mme_s11_build_create_session_req(&pkbuf, esm);
+    mme_s11_send_to_sgw(esm->sgw, GTP_CREATE_SESSION_REQUEST_TYPE, 0, pkbuf);
 }
