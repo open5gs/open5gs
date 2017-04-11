@@ -111,14 +111,14 @@ typedef struct _gtp_ambr_t {
 typedef struct _gtp_bearer_qos_t {
 ED5(c_uint8_t spare1:1;,
     /* See 3GPP TS 29.212[29], clause 5.3.46 Pre-emption-Capability AVP. */
-    c_uint8_t pci:1;, 
+    c_uint8_t pre_emption_capability:1;, 
     /* See 3GPP TS 29.212[29], clause 5.3.45 Priority-Level AVP. 
      * PL encodes each priority level defined for the Priority-Level AVP 
      * as the binary value of the priority level.  */
-    c_uint8_t pl:4;,
+    c_uint8_t priority_level:4;,
     c_uint8_t spare2:1;,
     /* See 3GPP TS 29.212[29], clause 5.3.47 Pre-emption-Vulnerability AVP. */
-    c_uint8_t pvi:1;)
+    c_uint8_t pre_emption_vulnerability:1;)
     c_uint8_t qci; /* specified in 3GPP TS 23.203 [48]. */
 
     /* specified in 3GPP TS 36.413 [10]. */

@@ -142,9 +142,9 @@ static void gtp_message_test1(abts_case *tc, void *data)
     req.bearer_contexts_to_be_created.eps_bearer_id.u8 = 5;
 
     memset(&bearer_qos, 0, sizeof(bearer_qos));
-    bearer_qos.pvi = 1;
-    bearer_qos.pl = 1;
-    bearer_qos.pci = 1;
+    bearer_qos.pre_emption_vulnerability = 1;
+    bearer_qos.priority_level = 1;
+    bearer_qos.pre_emption_capability = 1;
     bearer_qos.qci = 5;
     req.bearer_contexts_to_be_created.bearer_level_qos.presence = 1;
     size = gtp_build_bearer_qos(
@@ -263,9 +263,9 @@ static void gtp_message_test1(abts_case *tc, void *data)
     size = gtp_parse_bearer_qos(&bearer_qos, 
             &req.bearer_contexts_to_be_created.bearer_level_qos);
     ABTS_INT_EQUAL(tc, 22, size);
-    ABTS_INT_EQUAL(tc, 1, bearer_qos.pvi);
-    ABTS_INT_EQUAL(tc, 1, bearer_qos.pl);
-    ABTS_INT_EQUAL(tc, 1, bearer_qos.pci);
+    ABTS_INT_EQUAL(tc, 1, bearer_qos.pre_emption_vulnerability);
+    ABTS_INT_EQUAL(tc, 1, bearer_qos.priority_level);
+    ABTS_INT_EQUAL(tc, 1, bearer_qos.pre_emption_capability);
     ABTS_INT_EQUAL(tc, 5, bearer_qos.qci);
     ABTS_INT_EQUAL(tc, 0, req.
                 bearer_contexts_to_be_created.s11_u_mme_f_teid.presence);

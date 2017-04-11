@@ -164,7 +164,10 @@ typedef struct _mme_esm_t {
     c_uint32_t      sgw_addr;   /* SGW-S11-F-TEID IPv4 Address */
     c_uint32_t      sgw_teid;   /* SGW-S11-F-TEID */
 
-    c_uint8_t       pti;    /** Procedure Trasaction Identity */
+    c_uint8_t       pti;        /** Procedure Trasaction Identity */
+
+    c_uint8_t       pco[MAX_PCO_LEN]; 
+    int             pco_len;
 
     mme_sgw_t       *sgw;
     pdn_t           *pdn;

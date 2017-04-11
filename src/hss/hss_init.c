@@ -213,7 +213,7 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
     if (hdr && hdr->avp_value && 
         !(hdr->avp_value->u32 & S6A_ULR_SKIP_SUBSCRIBER_DATA))
     {
-        struct avp *avp_msisdn;
+        struct avp *avp_msisdn, *avp_access_restriction_data;
         struct avp *avp_subscriber_status, *avp_network_access_mode;
         struct avp *avp_ambr, *avp_max_bandwidth_ul, *avp_max_bandwidth_dl;
         int i;
@@ -228,6 +228,17 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
         d_assert(fd_msg_avp_setvalue(avp_msisdn, &val) == 0, goto out,);
         d_assert(fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avp_msisdn) == 0, 
                 goto out,);
+
+        if (ue->access_restriction_data)
+        {
+            d_assert(fd_msg_avp_new(s6a_access_restriction_data, 0, 
+                    &avp_access_restriction_data) == 0, goto out,);
+            val.i32 = ue->access_restriction_data;
+            d_assert(fd_msg_avp_setvalue(
+                    avp_access_restriction_data, &val) == 0, goto out,);
+            d_assert(fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, 
+                    avp_access_restriction_data) == 0, goto out,);
+        }
 
         d_assert(fd_msg_avp_new(s6a_subscriber_status, 0, 
                     &avp_subscriber_status) == 0, goto out,);

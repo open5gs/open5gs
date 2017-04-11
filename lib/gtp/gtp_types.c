@@ -45,9 +45,9 @@ c_int16_t gtp_parse_bearer_qos(
 
     memset(bearer_qos, 0, sizeof(gtp_bearer_qos_t));
 
-    bearer_qos->pci = source->pci;
-    bearer_qos->pl = source->pl;
-    bearer_qos->pvi = source->pvi;
+    bearer_qos->pre_emption_capability = source->pre_emption_capability;
+    bearer_qos->priority_level = source->priority_level;
+    bearer_qos->pre_emption_vulnerability = source->pre_emption_vulnerability;
     size++;
 
     bearer_qos->qci = source->qci;

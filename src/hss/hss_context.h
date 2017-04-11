@@ -27,6 +27,7 @@ typedef struct _hss_profile_t {
     c_uint8_t       amf[HSS_AMF_LEN];
     c_uint64_t      sqn;
 
+    c_uint32_t      access_restriction_data;
     c_uint32_t      subscriber_status;
     c_uint32_t      network_access_mode;
 
@@ -46,13 +47,24 @@ typedef struct _hss_ue_t {
 
     plmn_id_t       visited_plmn_id;
 
+#define HSS_ACCESS_RESTRICTION_UTRAN_NOT_ALLOWED                    (1)
+#define HSS_ACCESS_RESTRICTION_GERAN_NOT_ALLOWED                    (1<<1)
+#define HSS_ACCESS_RESTRICTION_GAN_NOT_ALLOWED                      (1<<2)
+#define HSS_ACCESS_RESTRICTION_I_HSPA_EVOLUTION_NOT_ALLOWED         (1<<3)
+#define HSS_ACCESS_RESTRICTION_WB_E_UTRAN_NOT_ALLOWED               (1<<4)
+#define HSS_ACCESS_RESTRICTION_HO_TO_NON_3GPP_ACCESS_NOT_ALLOWED    (1<<5)
+#define HSS_ACCESS_RESTRICTION_NB_IOT_NOT_ALLOWED                   (1<<6)
+    c_uint32_t      access_restriction_data;
+
 #define HSS_SUBSCRIBER_STATUS_SERVICE_GRANTED               0
 #define HSS_SUBSCRIBER_STATUS_OPERATOR_DETERMINED_BARRING   1 
     c_uint32_t      subscriber_status;
+
 #define HSS_NETWORK_ACCESS_MODE_PACKET_AND_CIRCUIT          0
 #define HSS_NETWORK_ACCESS_MODE_RESERVED                    1
 #define HSS_NETWORK_ACCESS_MODE_ONLY_PACKET                 2
     c_uint32_t      network_access_mode;
+
     c_uint32_t      max_bandwidth_ul; /* Kbps */
     c_uint32_t      max_bandwidth_dl; /* Kbps */
 

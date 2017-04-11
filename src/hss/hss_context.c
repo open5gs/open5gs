@@ -52,6 +52,7 @@ status_t hss_context_init(void)
     memcpy(profile->k, CORE_HEX(K, strlen(K), buf), HSS_KEY_LEN);
     profile->sqn = 64;
 
+    profile->access_restriction_data = 5;
     profile->subscriber_status = HSS_SUBSCRIBER_STATUS_SERVICE_GRANTED;
     profile->network_access_mode = HSS_NETWORK_ACCESS_MODE_ONLY_PACKET;
     profile->max_bandwidth_ul = 102400; /* Kbps */
@@ -69,8 +70,8 @@ status_t hss_context_init(void)
 
     pdn->type = PDN_TYPE_IPV4;
 
-    pdn->qci = PDN_QCI_1;
-    pdn->priority_level = 1;
+    pdn->qci = PDN_QCI_9;
+    pdn->priority_level = 8;
 
     pdn->pre_emption_capability = PDN_PRE_EMPTION_CAPABILITY_DISABLED;
     pdn->pre_emption_vulnerability = PDN_PRE_EMPTION_VULNERABILITY_DISABLED;
@@ -297,6 +298,7 @@ hss_ue_t* hss_ue_add(hss_profile_id_t id, c_int8_t *imsi_bcd)
     core_generate_random_bytes(ue->rand, RAND_LEN);
     ue->sqn = profile->sqn;
 
+    ue->access_restriction_data = profile->access_restriction_data;
     ue->subscriber_status = profile->subscriber_status;
     ue->network_access_mode = profile->network_access_mode;
     ue->max_bandwidth_ul = profile->max_bandwidth_ul;

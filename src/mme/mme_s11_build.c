@@ -22,8 +22,6 @@ status_t mme_s11_build_create_session_req(pkbuf_t **pkbuf, mme_esm_t *esm)
     gtp_f_teid_t s11, s5;
     gtp_paa_t paa;
     gtp_ambr_t ambr;
-    pco_t pco;
-    char pcobuf[MAX_PCO_LEN];
     gtp_bearer_qos_t bearer_qos;
     char bearer_qos_buf[GTP_BEARER_QOS_LEN];
     gtp_ue_timezone_t ue_timezone;
@@ -35,6 +33,8 @@ status_t mme_s11_build_create_session_req(pkbuf_t **pkbuf, mme_esm_t *esm)
     d_assert(sgw, return CORE_ERROR, "Null param");
     ue = esm->ue;
     d_assert(ue, return CORE_ERROR, "Null param");
+
+    d_assert(esm->pco_len, return CORE_ERROR, "Null param");
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));
 
@@ -108,39 +108,25 @@ status_t mme_s11_build_create_session_req(pkbuf_t **pkbuf, mme_esm_t *esm)
     req->maximum_apn_restriction.u8 = GTP_APN_NO_RESTRICTION;
 
     memset(&ambr, 0, sizeof(gtp_ambr_t));
-    ambr.uplink = htonl(1000);
-    ambr.downlink = htonl(2000);
+    ambr.uplink = htonl(pdn->max_bandwidth_ul);
+    ambr.downlink = htonl(pdn->max_bandwidth_dl);
     req->aggregate_maximum_bit_rate.presence = 1;
     req->aggregate_maximum_bit_rate.data = &ambr;
     req->aggregate_maximum_bit_rate.len = sizeof(ambr);
 
-    memset(&pco, 0, sizeof(pco_t));
-    pco.ext = 1;
-    pco.configuration_protocol = 
-        PCO_PPP_FOR_USE_WITH_IP_PDP_TYPE_OR_IP_PDN_TYPE;
-    pco.num_of_id = 3;
-    pco.ids[0].id = PROTOCOL_OR_CONTAINER_ID_INTERNET_PROTOCOL_CONTROL_PROTOCOL;
-    pco.ids[0].contents = (c_uint8_t *)"\x01\x00\x00\x10\x81\x06\x00\x00\x00\x00\x83\x06\x00\x00\x00\x00";
-    pco.ids[0].length = 16;
-    pco.ids[1].id = PROTOCOL_OR_CONTAINER_ID_DNS_SERVER_IPV4_ADDRESS_REQUEST;
-    pco.ids[1].length = 0;
-    pco.ids[2].id = PROTOCOL_OR_CONTAINER_ID_IP_ADDRESS_ALLOCATION_VIA_NAS_SIGNALLING;
-    pco.ids[2].length = 0;
-
     req->protocol_configuration_options.presence = 1;
-    req->protocol_configuration_options.data = &pcobuf;
-    req->protocol_configuration_options.len = 
-        pco_build(pcobuf, MAX_PCO_LEN, &pco);
+    req->protocol_configuration_options.data = esm->pco;
+    req->protocol_configuration_options.len = esm->pco_len;
 
     req->bearer_contexts_to_be_created.presence = 1;
     req->bearer_contexts_to_be_created.eps_bearer_id.presence = 1;
     req->bearer_contexts_to_be_created.eps_bearer_id.u8 = 5;
 
     memset(&bearer_qos, 0, sizeof(bearer_qos));
-    bearer_qos.pvi = 1;
-    bearer_qos.pl = 1;
-    bearer_qos.pci = 1;
-    bearer_qos.qci = 5;
+    bearer_qos.pre_emption_vulnerability = pdn->pre_emption_vulnerability;
+    bearer_qos.pre_emption_capability = pdn->pre_emption_capability;
+    bearer_qos.qci = pdn->qci;
+    bearer_qos.priority_level = pdn->priority_level;
     req->bearer_contexts_to_be_created.bearer_level_qos.presence = 1;
     gtp_build_bearer_qos(&req->bearer_contexts_to_be_created.bearer_level_qos,
             &bearer_qos, bearer_qos_buf, GTP_BEARER_QOS_LEN);
