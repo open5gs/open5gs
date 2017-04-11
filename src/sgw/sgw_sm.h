@@ -9,14 +9,10 @@
 extern "C" {
 #endif /* __cplusplus */
 
-typedef struct _sgw_sm_t {
-    fsm_t fsm;
-} sgw_sm_t;
-
-void sgw_state_initial(sgw_sm_t *s, event_t *e);
-void sgw_state_final(sgw_sm_t *s, event_t *e);
-void sgw_state_operational(sgw_sm_t *s, event_t *e);
-void sgw_state_exception(sgw_sm_t *s, event_t *e);
+void sgw_state_initial(fsm_t *s, event_t *e);
+void sgw_state_final(fsm_t *s, event_t *e);
+void sgw_state_operational(fsm_t *s, event_t *e);
+void sgw_state_exception(fsm_t *s, event_t *e);
 
 #define sgw_sm_print(__pe) \
     d_print("%s(): %s\n", __func__, sgw_event_get_name(__pe))

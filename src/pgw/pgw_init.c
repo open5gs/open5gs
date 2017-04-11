@@ -32,7 +32,7 @@ void pgw_terminate(void)
 void *THREAD_FUNC pgw_sm_main(thread_id id, void *data)
 {
     event_t event;
-    pgw_sm_t pgw_sm;
+    fsm_t pgw_sm;
     c_time_t prev_tm, now_tm;
     int r;
 
@@ -45,9 +45,8 @@ void *THREAD_FUNC pgw_sm_main(thread_id id, void *data)
     gtp_xact_init(&pgw_self()->gtp_xact_ctx, 
             &pgw_self()->tm_service, EVT_TM_PGW_T3);
 
-    fsm_create(&pgw_sm.fsm, pgw_state_initial, pgw_state_final);
-    d_assert(&pgw_sm.fsm, return NULL, "PGW state machine creation failed");
-    fsm_init((fsm_t*)&pgw_sm, 0);
+    fsm_create(&pgw_sm, pgw_state_initial, pgw_state_final);
+    fsm_init(&pgw_sm, 0);
 
     prev_tm = time_now();
 
@@ -74,11 +73,11 @@ void *THREAD_FUNC pgw_sm_main(thread_id id, void *data)
             continue;
         }
 
-        fsm_dispatch((fsm_t*)&pgw_sm, (fsm_event_t*)&event);
+        fsm_dispatch(&pgw_sm, (fsm_event_t*)&event);
     }
 
-    fsm_final((fsm_t*)&pgw_sm, 0);
-    fsm_clear((fsm_t*)&pgw_sm);
+    fsm_final(&pgw_sm, 0);
+    fsm_clear(&pgw_sm);
 
     gtp_xact_final();
     event_delete(pgw_self()->queue_id);

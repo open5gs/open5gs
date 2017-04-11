@@ -7,7 +7,7 @@
 #include "pgw_path.h"
 #include "pgw_handler.h"
 
-void pgw_state_initial(pgw_sm_t *s, event_t *e)
+void pgw_state_initial(fsm_t *s, event_t *e)
 {
     pgw_sm_trace(1, e);
 
@@ -16,14 +16,14 @@ void pgw_state_initial(pgw_sm_t *s, event_t *e)
     FSM_TRAN(s, &pgw_state_operational);
 }
 
-void pgw_state_final(pgw_sm_t *s, event_t *e)
+void pgw_state_final(fsm_t *s, event_t *e)
 {
     pgw_sm_trace(1, e);
 
     d_assert(s, return, "Null param");
 }
 
-void pgw_state_operational(pgw_sm_t *s, event_t *e)
+void pgw_state_operational(fsm_t *s, event_t *e)
 {
     status_t rv;
 

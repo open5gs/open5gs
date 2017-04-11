@@ -6,7 +6,7 @@
 #include "sgw_path.h"
 #include "sgw_handler.h"
 
-void sgw_state_initial(sgw_sm_t *s, event_t *e)
+void sgw_state_initial(fsm_t *s, event_t *e)
 {
     sgw_sm_trace(1, e);
 
@@ -15,14 +15,14 @@ void sgw_state_initial(sgw_sm_t *s, event_t *e)
     FSM_TRAN(s, &sgw_state_operational);
 }
 
-void sgw_state_final(sgw_sm_t *s, event_t *e)
+void sgw_state_final(fsm_t *s, event_t *e)
 {
     sgw_sm_trace(1, e);
 
     d_assert(s, return, "Null param");
 }
 
-void sgw_state_operational(sgw_sm_t *s, event_t *e)
+void sgw_state_operational(fsm_t *s, event_t *e)
 {
     status_t rv;
 
