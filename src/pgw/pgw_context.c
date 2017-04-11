@@ -46,6 +46,9 @@ status_t pgw_context_final()
     d_assert(context_initiaized == 1, return CORE_ERROR,
             "HyperCell context already has been finalized");
 
+    gtp_xact_delete_all(&self.s5c_node);
+    pgw_sess_remove_all();
+
     d_print("%d not freed in pgw_sess_pool[%d] in PGW-Context\n",
             index_size(&pgw_sess_pool) - pool_avail(&pgw_sess_pool),
             index_size(&pgw_sess_pool));

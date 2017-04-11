@@ -133,6 +133,8 @@ status_t mme_sgw_remove(mme_sgw_t *sgw)
 {
     d_assert(sgw, return CORE_ERROR, "Null param");
 
+    gtp_xact_delete_all(&sgw->gnode);
+
     list_remove(&self.sgw_list, sgw);
     pool_free_node(&mme_sgw_pool, sgw);
 

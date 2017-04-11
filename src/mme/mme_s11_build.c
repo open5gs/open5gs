@@ -88,11 +88,12 @@ status_t mme_s11_build_create_session_req(pkbuf_t **pkbuf, mme_esm_t *esm)
     req->pgw_s5_s8_address_for_control_plane_or_pmip.len = GTP_F_TEID_IPV4_LEN;
 
     req->access_point_name.presence = 1;
-    req->access_point_name.data = "cellwire.com";
-    req->access_point_name.len = strlen(req->access_point_name.data);
+    req->access_point_name.data = pdn->apn;
+    req->access_point_name.len = strlen(pdn->apn);
 
     req->selection_mode.presence = 1;
-    req->selection_mode.u8 = GTP_SELECTION_MODE_MS_OR_NETWORK_PROVIDED_APN | 0xfc;
+    req->selection_mode.u8 = 
+        GTP_SELECTION_MODE_MS_OR_NETWORK_PROVIDED_APN | 0xfc;
 
     req->pdn_type.presence = 1;
     req->pdn_type.u8 = GTP_PDN_TYPE_IPV4;

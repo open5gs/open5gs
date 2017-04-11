@@ -63,14 +63,16 @@ status_t gtp_xact_init(gtp_xact_ctx_t *context,
 
 status_t gtp_xact_final(void)
 {
-    if (gtp_xact_pool_initialized == 1)
+    if (gtp_xact_pool_initialized == 1 && 
+        pool_size(&gtp_xact_pool) == pool_avail(&gtp_xact_pool))
     {
-        d_print("%d not freed in gtp_xact_pool[%d] of S11/S5-SM\n",
+        d_print("%d not freed in gtp_xact_pool[%d] of GTP Transaction\n",
                 pool_size(&gtp_xact_pool) - pool_avail(&gtp_xact_pool),
                 pool_size(&gtp_xact_pool));
         index_final(&gtp_xact_pool);
+
+        gtp_xact_pool_initialized = 0;
     }
-    gtp_xact_pool_initialized = 0;
 
     return CORE_OK;
 }
@@ -173,6 +175,24 @@ gtp_xact_t *gtp_xact_remote_create(gtp_xact_ctx_t *context,
     return gtp_xact_create(context, sock, gnode, 
             GTP_REMOTE_ORIGINATOR, GTP_SQN_TO_XID(sqn),
             GTP_XACT_REMOTE_DURATION, GTP_XACT_REMOTE_RETRY_COUNT);
+}
+
+void gtp_xact_delete_all(gtp_node_t *gnode)
+{
+    gtp_xact_t *xact = NULL;
+    
+    xact = list_first(&gnode->local_list);
+    while(xact)
+    {
+        gtp_xact_delete(xact);
+        xact = list_next(xact);
+    }
+    xact = list_first(&gnode->remote_list);
+    while(xact)
+    {
+        gtp_xact_delete(xact);
+        xact = list_next(xact);
+    }
 }
 
 status_t gtp_xact_commit(gtp_xact_t *xact, 

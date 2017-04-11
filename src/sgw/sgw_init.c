@@ -27,6 +27,8 @@ void sgw_terminate(void)
     thread_delete(sgw_sm_thread);
 
     sgw_context_final();
+
+    gtp_xact_final();
 }
 
 void *THREAD_FUNC sgw_sm_main(thread_id id, void *data)
@@ -79,7 +81,6 @@ void *THREAD_FUNC sgw_sm_main(thread_id id, void *data)
     fsm_final(&sgw_sm, 0);
     fsm_clear(&sgw_sm);
 
-    gtp_xact_final();
     event_delete(sgw_self()->queue_id);
 
     return NULL;

@@ -34,6 +34,8 @@ void mme_terminate(void)
     mme_s6a_final();
 
     mme_context_final();
+
+    gtp_xact_final();
 }
 
 void *THREAD_FUNC mme_sm_main(thread_id id, void *data)
@@ -86,7 +88,6 @@ void *THREAD_FUNC mme_sm_main(thread_id id, void *data)
     fsm_final(&mme_sm, 0);
     fsm_clear(&mme_sm);
 
-    gtp_xact_final();
     event_delete(mme_self()->queue_id);
 
     return NULL;
