@@ -7,8 +7,6 @@
 #include "gtp_types.h"
 #include "gtp_tlv.h"
 
-#include "sgw_context.h"
-
 #include "testutil.h"
 
 static void gtp_message_test1(abts_case *tc, void *data)
@@ -293,57 +291,11 @@ static void gtp_message_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, 0, req.ue_tcp_port.presence);
 }
 
-static void gtp_message_test2(abts_case *tc, void *data)
-{
-    sgw_sess_t *sess = NULL;
-    hash_index_t *hi = NULL;
-    int i = 0;
-
-    sess = sgw_sess_add();
-    ABTS_INT_EQUAL(tc, 1, sgw_sess_count());
-    sgw_sess_remove(sess);
-    ABTS_INT_EQUAL(tc, 0, sgw_sess_count());
-
-    sgw_sess_add();
-    sgw_sess_add();
-    sgw_sess_add();
-    sgw_sess_add();
-    sgw_sess_add();
-    ABTS_INT_EQUAL(tc, 5, sgw_sess_count());
-
-    sgw_sess_remove_all();
-    ABTS_INT_EQUAL(tc, 0, sgw_sess_count());
-
-    for (i = 0; i < 100; i++)
-    {
-        sess = sgw_sess_add();
-        sess->mme_teid = i;
-        sess->pgw_teid = 100-i;
-    }
-    ABTS_INT_EQUAL(tc, 100, sgw_sess_count());
-
-    sess = sgw_sess_find(10);
-    ABTS_INT_EQUAL(tc, 3, sess->mme_teid);
-    ABTS_INT_EQUAL(tc, 97, sess->pgw_teid);
-    sgw_sess_remove(sess);
-    ABTS_INT_EQUAL(tc, 99, sgw_sess_count());
-
-    sess = sgw_sess_find(50);
-    ABTS_INT_EQUAL(tc, 43, sess->mme_teid);
-    ABTS_INT_EQUAL(tc, 57, sess->pgw_teid);
-    sgw_sess_remove(sess);
-    ABTS_INT_EQUAL(tc, 98, sgw_sess_count());
-
-    sgw_sess_remove_all();
-    ABTS_INT_EQUAL(tc, 0, sgw_sess_count());
-}
-
 abts_suite *test_gtp_message(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, gtp_message_test1, NULL);
-    abts_run_test(suite, gtp_message_test2, NULL);
 
     return suite;
 }

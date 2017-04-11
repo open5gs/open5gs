@@ -83,7 +83,7 @@ typedef struct _mme_sgw_t {
 
 typedef struct _mme_enb_t {
     lnode_t         node;   /**< A node of list_t */
-    index_t         index;  /**< Index key */
+    index_t         index;  /**< An index of this node */
     fsm_t           sm;
 
     c_uint32_t      enb_id; /** eNB_ID received from eNB */
@@ -95,7 +95,7 @@ typedef struct _mme_enb_t {
 
 typedef struct _mme_ue_t {
     lnode_t         node;   /**< A node of list_t */
-    index_t         index;  /**< Index key */
+    index_t         index;  /**< An index of this node */
     fsm_t           sm;
 
     /* State Machine */
@@ -153,12 +153,14 @@ typedef struct _mme_ue_t {
 
 typedef struct _mme_esm_t {
     lnode_t         node;   /**< A node of list_t */
-    index_t         index;  /**< Index key */
+    index_t         index;  /**< An index of this node */
     fsm_t           sm;
 
     c_uint8_t       pti;    /** Procedure Trasaction Identity */
+    c_uint32_t      teid;   /* MME-S11-F-TEID */
 
     mme_ue_t        *ue;
+    mme_sgw_t       *sgw;
 } mme_esm_t;
 
 CORE_DECLARE(status_t)      mme_context_init(void);

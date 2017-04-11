@@ -75,7 +75,8 @@ void sgw_state_operational(fsm_t *s, event_t *e)
             if (rv != CORE_OK)
                 break;
 
-            sess = sgw_sess_find(teid);
+            if (teid)
+                sess = sgw_sess_find_by_teid(teid);
             switch(type)
             {
                 case GTP_CREATE_SESSION_REQUEST_TYPE:

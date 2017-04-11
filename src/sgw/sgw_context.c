@@ -11,7 +11,7 @@
 
 static sgw_context_t self;
 
-pool_declare(sgw_sess_pool, sgw_sess_t, MAX_NUM_OF_UE);
+index_declare(sgw_sess_pool, sgw_sess_t, MAX_NUM_OF_UE);
 
 static int context_initialized = 0;
 
@@ -22,8 +22,8 @@ status_t sgw_context_init()
 
     memset(&self, 0, sizeof(sgw_context_t));
 
-    pool_init(&sgw_sess_pool, MAX_NUM_OF_UE);
-    self.sess_hash = hash_make();
+    index_init(&sgw_sess_pool, MAX_NUM_OF_UE);
+    list_init(&self.sess_list);
 
     self.s11_addr = inet_addr("127.0.0.1");
     self.s11_port = GTPV2_C_UDP_PORT + 1;
@@ -54,13 +54,10 @@ status_t sgw_context_final()
     d_assert(context_initialized == 1, return CORE_ERROR,
             "HyperCell context already has been finalized");
 
-    d_assert(self.sess_hash, , "Null param");
-    hash_destroy(self.sess_hash);
-
     d_print("%d not freed in sgw_sess_pool[%d] in SGW-Context\n",
-            pool_size(&sgw_sess_pool) - pool_avail(&sgw_sess_pool),
-            pool_size(&sgw_sess_pool));
-    pool_final(&sgw_sess_pool);
+            index_size(&sgw_sess_pool) - pool_avail(&sgw_sess_pool),
+            index_size(&sgw_sess_pool));
+    index_final(&sgw_sess_pool);
 
     context_initialized = 0;
     
@@ -76,69 +73,60 @@ sgw_sess_t *sgw_sess_add()
 {
     sgw_sess_t *sess = NULL;
 
-    d_assert(self.sess_hash, return NULL, "Null param");
-
-    pool_alloc_node(&sgw_sess_pool, &sess);
+    index_alloc(&sgw_sess_pool, &sess);
     d_assert(sess, return NULL, "Null param");
 
-    memset(sess, 0, sizeof(sgw_sess_t));
+    sess->teid = sess->index;  /* derived from an index */
 
-    sess->teid = NEXT_ID(self.sess_tunnel_id, 0xffffffff);
-    hash_set(self.sess_hash, &sess->teid, sizeof(sess->teid), sess);
+    list_append(&self.sess_list, sess);
 
     return sess;
 }
 
 status_t sgw_sess_remove(sgw_sess_t *sess)
 {
-    d_assert(self.sess_hash, return CORE_ERROR, "Null param");
     d_assert(sess, return CORE_ERROR, "Null param");
-    hash_set(self.sess_hash, &sess->teid, sizeof(sess->teid), NULL);
 
-    pool_free_node(&sgw_sess_pool, sess);
+    list_remove(&self.sess_list, sess);
+    index_free(&sgw_sess_pool, sess);
 
     return CORE_OK;
 }
 
 status_t sgw_sess_remove_all()
 {
-    hash_index_t *hi = NULL;
-    sgw_sess_t *sess = NULL;
-
-    for (hi = sgw_sess_first(); hi; hi = sgw_sess_next(hi))
+    sgw_sess_t *enb = NULL, *next_enb = NULL;
+    
+    enb = sgw_sess_first();
+    while (enb)
     {
-        sess = sgw_sess_this(hi);
-        sgw_sess_remove(sess);
+        next_enb = sgw_sess_next(enb);
+
+        sgw_sess_remove(enb);
+
+        enb = next_enb;
     }
 
     return CORE_OK;
 }
 
-sgw_sess_t *sgw_sess_find(c_uint32_t teid)
+sgw_sess_t* sgw_sess_find(index_t index)
 {
-    d_assert(self.sess_hash, return NULL, "Null param");
-    return hash_get(self.sess_hash, &teid, sizeof(teid));
+    d_assert(index, return NULL, "Invalid Index");
+    return index_find(&sgw_sess_pool, index);
 }
 
-hash_index_t *sgw_sess_first()
+sgw_sess_t* sgw_sess_find_by_teid(c_uint32_t teid)
 {
-    d_assert(self.sess_hash, return NULL, "Null param");
-    return hash_first(self.sess_hash);
+    return sgw_sess_find(teid);
 }
 
-hash_index_t *sgw_sess_next(hash_index_t *hi)
+sgw_sess_t* sgw_sess_first()
 {
-    return hash_next(hi);
+    return list_first(&self.sess_list);
 }
 
-sgw_sess_t *sgw_sess_this(hash_index_t *hi)
+sgw_sess_t* sgw_sess_next(sgw_sess_t *enb)
 {
-    d_assert(hi, return NULL, "Null param");
-    return hash_this_val(hi);
-}
-
-unsigned int sgw_sess_count()
-{
-    d_assert(self.sess_hash, return 0, "Null param");
-    return hash_count(self.sess_hash);
+    return list_next(enb);
 }

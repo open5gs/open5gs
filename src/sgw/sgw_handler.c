@@ -43,7 +43,7 @@ void sgw_handle_create_session_request(
     d_assert(sess, return, "sess_add failed");
 
     sess->mme_teid = ntohl(f_teid->teid);
-    sess->mme_ipv4 = f_teid->ipv4_addr;
+    sess->mme_addr = f_teid->ipv4_addr;
 
     f_teid->teid = htonl(sess->teid);
     f_teid->ipv4_addr = sgw_self()->s5c_addr;
@@ -90,7 +90,7 @@ void sgw_handle_create_session_response(gtp_xact_t *xact,
     }
 
     sess->pgw_teid = ntohl(pgw_f_teid->teid);
-    sess->pgw_ipv4 = pgw_f_teid->ipv4_addr;
+    sess->pgw_addr = pgw_f_teid->ipv4_addr;
 
     memset(&sgw_f_teid, 0, sizeof(gtp_f_teid_t));
     sgw_f_teid.ipv4 = 1;
