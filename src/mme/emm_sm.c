@@ -42,6 +42,7 @@ void emm_state_operational(fsm_t *s, event_t *e)
             break;
         }
         case EVT_LO_MME_EMM_AUTH_REQ:
+        case EVT_LO_MME_EMM_LOCATION_UPDATE:
         {
             index_t index = event_get_param1(e);
             mme_ue_t *ue = NULL;
@@ -50,13 +51,35 @@ void emm_state_operational(fsm_t *s, event_t *e)
             ue = mme_ue_find(index);
             d_assert(ue, return, "Null param");
 
-            emm_handle_authentication_request(ue);
+            switch(event_get(e))
+            {
+                case EVT_LO_MME_EMM_AUTH_REQ:
+                {
+                    emm_handle_authentication_request(ue);
+                    d_info("[NAS] Authentication request : UE[%s] <-- EMM",
+                            ue->imsi_bcd);
+                    break;
+                }
+                case EVT_LO_MME_EMM_LOCATION_UPDATE:
+                {
+                    mme_esm_t *esm = mme_esm_first(ue);
 
-            d_info("[NAS] Authentication request : UE[%s] <-- EMM",
-                    ue->imsi_bcd);
+                    d_info("[NAS] Location Update : EMM[%s] <-- HSS",
+                            ue->imsi_bcd);
+                    while(esm)
+                    {
+                        event_t e;
+                        event_set(&e, EVT_LO_MME_ESM_INFO_REQ);
+                        event_set_param1(&e, (c_uintptr_t)esm->index);
+                        mme_event_send(&e);
+
+                        esm = mme_esm_next(esm);
+                    }
+                    break;
+                }
+            }
             break;
         }
-
         case EVT_MSG_MME_EMM:
         {
             index_t index = event_get_param1(e);

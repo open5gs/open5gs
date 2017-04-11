@@ -40,6 +40,30 @@ void esm_state_operational(fsm_t *s, event_t *e)
         {
             break;
         }
+        case EVT_LO_MME_ESM_INFO_REQ:
+        {
+            index_t index = event_get_param1(e);
+            mme_esm_t *esm = NULL;
+            mme_ue_t *ue = NULL;
+
+            d_assert(index, return, "Null param");
+            esm = mme_esm_find(index);
+            d_assert(esm, return, "Null param");
+            ue = esm->ue;
+            d_assert(ue, return, "Null param");
+
+            switch(event_get(e))
+            {
+                case EVT_LO_MME_ESM_INFO_REQ:
+                {
+                    d_info("[NAS] ESM information request : "
+                            "UE[%s] <--- ESM[%d]", ue->imsi_bcd, esm->pti);
+                    break;
+                }
+            }
+
+            break;
+        }
         case EVT_MSG_MME_ESM:
         {
             index_t index = event_get_param1(e);
@@ -61,6 +85,8 @@ void esm_state_operational(fsm_t *s, event_t *e)
                 {
                     esm_handle_pdn_connectivity_request(
                             esm, &message->esm.pdn_connectivity_request);
+                    d_info("[NAS] PDN connectivity request : "
+                            "UE[%s] --> ESM[%d]", ue->imsi_bcd, esm->pti);
                     break;
                 }
                 default:

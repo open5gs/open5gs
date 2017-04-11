@@ -145,6 +145,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
             break;
         }
         case EVT_LO_MME_EMM_AUTH_REQ:
+        case EVT_LO_MME_EMM_LOCATION_UPDATE:
         {
             index_t index = event_get_param1(e);
             mme_ue_t *ue = NULL;
@@ -178,6 +179,19 @@ void mme_state_operational(fsm_t *s, event_t *e)
             fsm_dispatch(&ue->sm, (fsm_event_t*)e);
 
             pkbuf_free(pkbuf);
+            break;
+        }
+        case EVT_LO_MME_ESM_INFO_REQ:
+        {
+            index_t index = event_get_param1(e);
+            mme_esm_t *esm = NULL;
+
+            d_assert(index, break, "Null param");
+            esm = mme_esm_find(index);
+            d_assert(esm, break, "No ESM context");
+            d_assert(FSM_STATE(&esm->sm), break, "No ESM State Machine");
+
+            fsm_dispatch(&esm->sm, (fsm_event_t*)e);
             break;
         }
         case EVT_MSG_MME_ESM:

@@ -10,6 +10,8 @@
 static char EVT_NAME_LO_MME_S1AP_ACCEPT[] = "LO_MME_S1AP_ACCEPT";
 static char EVT_NAME_LO_MME_S1AP_CONNREFUSED[] = "LO_MME_S1AP_CONNREFUSED";
 static char EVT_NAME_LO_MME_EMM_AUTH_REQ[] = "LO_MME_EMM_AUTH_REQ";
+static char EVT_NAME_LO_MME_EMM_LOCATION_UPDATE[] = "LO_MME_EMM_LOCATION_UPDATE";
+static char EVT_NAME_LO_MME_ESM_INFO_REQ[] = "LO_MME_ESM_INFO_REQ";
 
 static char EVT_NAME_TM_MME_S11_T3[] = "TM_MME_S11_T3";
 
@@ -36,6 +38,10 @@ char* mme_event_get_name(event_t *e)
            return EVT_NAME_LO_MME_S1AP_CONNREFUSED;
         case EVT_LO_MME_EMM_AUTH_REQ: 
            return EVT_NAME_LO_MME_EMM_AUTH_REQ;
+        case EVT_LO_MME_EMM_LOCATION_UPDATE: 
+           return EVT_NAME_LO_MME_EMM_LOCATION_UPDATE;
+        case EVT_LO_MME_ESM_INFO_REQ: 
+           return EVT_NAME_LO_MME_ESM_INFO_REQ;
 
         case EVT_TM_MME_S11_T3: 
            return EVT_NAME_TM_MME_S11_T3;

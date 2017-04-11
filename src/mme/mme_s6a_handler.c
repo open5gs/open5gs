@@ -3,11 +3,9 @@
 #include "core_debug.h"
 #include "core_pool.h"
 
-#include "nas_message.h"
 #include "s6a_lib.h"
 
 #include "mme_event.h"
-
 #include "mme_s6a_handler.h"
 
 #define MAX_NUM_SESSION_STATE 32
@@ -34,8 +32,8 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     int error = 0;
     int new;
 
-    mme_ue_t *ue = NULL;
     event_t e;
+    mme_ue_t *ue = NULL;
     
     CHECK_SYS_DO(clock_gettime(CLOCK_REALTIME, &ts), return);
 
@@ -257,18 +255,11 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     int error = 0;
     int new;
 
+    event_t e;
     mme_ue_t *ue = NULL;
     pdn_t *pdn = NULL;
     c_uint8_t pdn_added = 0;
 
-    nas_message_t message;
-#if 0
-    pkbuf_t *sendbuf = NULL;
-    event_t e;
-    nas_authentication_request_t *authentication_request = 
-        &message.emm.authentication_request;
-#endif
-    
     CHECK_SYS_DO(clock_gettime(CLOCK_REALTIME, &ts), return);
 
     /* Search the session, retrieve its data */
@@ -281,7 +272,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     ue = mi->ue;
     d_assert(ue, error++; goto out,);
 
-    d_info("[S6A] Authentication-Information-Response : UE[%s] <-- HSS", 
+    d_info("[S6A] Update-Location-Response : UE[%s] <-- HSS", 
             ue->imsi_bcd);
     
     /* Value of Result Code */
@@ -429,17 +420,9 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     d_assert(fd_msg_avp_hdr(avp, &hdr) == 0 && hdr, error++; goto out,);
     ue->subscribed_rau_tau_timer = hdr->avp_value->i32;
     
-    memset(&message, 0, sizeof(message));
-    message.h.security_header_type = 
-       NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
-    message.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
-
-#if 0
-    message.esm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_ESM;
-    message.esm.h.procedure_transaction_identity = 33;
-    message.esm.h.message_type = NAS_ESM_INFORMATION_REQUEST;
-#endif
-
+    event_set(&e, EVT_LO_MME_EMM_LOCATION_UPDATE);
+    event_set_param1(&e, (c_uintptr_t)ue->index);
+    mme_event_send(&e);
 out:
     /* Free the message */
     d_assert(pthread_mutex_lock(&s6a_config->stats_lock) == 0,,);
