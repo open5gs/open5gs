@@ -166,8 +166,10 @@ typedef struct _mme_esm_t {
 
     c_uint8_t       pti;    /** Procedure Trasaction Identity */
 
-    mme_ue_t        *ue;
     mme_sgw_t       *sgw;
+    pdn_t           *pdn;
+
+    mme_ue_t        *ue;
 } mme_esm_t;
 
 CORE_DECLARE(status_t)      mme_context_init(void);
@@ -194,6 +196,7 @@ CORE_DECLARE(pdn_t*)        mme_pdn_add(pdn_id_t id);
 CORE_DECLARE(status_t)      mme_pdn_remove(pdn_t *pdn);
 CORE_DECLARE(status_t)      mme_pdn_remove_all(void);
 CORE_DECLARE(pdn_t*)        mme_pdn_find_by_id(pdn_id_t id);
+CORE_DECLARE(pdn_t*)        mme_pdn_find_by_apn(c_int8_t *apn);
 CORE_DECLARE(pdn_t*)        mme_pdn_first(void);
 CORE_DECLARE(pdn_t*)        mme_pdn_next(pdn_t *pdn);
 

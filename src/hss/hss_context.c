@@ -64,7 +64,8 @@ status_t hss_context_init(void)
     pdn = hss_pdn_add();
     d_assert(pdn, return -1, "Profile context add failed");
 
-    strcpy(pdn->apn, "Internet");
+    pdn->apn[0] = 0x08;
+    strcpy(pdn->apn+1, "internet");
 
     pdn->type = PDN_TYPE_IPV4;
 

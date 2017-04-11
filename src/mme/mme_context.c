@@ -345,6 +345,22 @@ pdn_t* mme_pdn_find_by_id(pdn_id_t id)
     return pdn;
 }
 
+pdn_t* mme_pdn_find_by_apn(c_int8_t *apn)
+{
+    pdn_t *pdn = NULL;
+    
+    pdn = list_first(&self.pdn_list);
+    while (pdn)
+    {
+        if (strcmp(pdn->apn, apn) == 0)
+            break;
+
+        pdn = list_next(pdn);
+    }
+
+    return pdn;
+}
+
 pdn_t* mme_pdn_first()
 {
     return list_first(&self.pdn_list);

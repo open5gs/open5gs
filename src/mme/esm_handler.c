@@ -28,6 +28,15 @@ void esm_handle_information_response(mme_esm_t *esm,
     pkbuf_t *pkbuf = NULL;
     status_t rv;
 
+    if (esm_information_response->presencemask &
+            NAS_ESM_INFORMATION_RESPONSE_ACCESS_POINT_NAME_PRESENT)
+    {
+        esm->pdn = mme_pdn_find_by_apn(
+                esm_information_response->access_point_name.apn);
+        d_assert(esm->pdn, return, "No PDN Context[APN:%s])", 
+            esm_information_response->access_point_name.apn);
+    }
+
     rv = mme_s11_build_create_session_req(&pkbuf, esm);
     d_assert(rv == CORE_OK, return, "S11 build error");
 

@@ -749,7 +749,7 @@ ED2(c_uint8_t paging_time_window:4;,
  * O TLV 3-102 */
 typedef struct _nas_access_point_name_t {
     c_uint8_t length;
-    c_uint8_t access_point_name_value[MAX_APN_LEN];
+    c_int8_t apn[MAX_APN_LEN];
 } __attribute__ ((packed)) nas_access_point_name_t;
 
 /* 9.9.4.4 ESM cause

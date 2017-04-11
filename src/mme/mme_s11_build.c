@@ -11,8 +11,9 @@
 status_t mme_s11_build_create_session_req(pkbuf_t **pkbuf, mme_esm_t *esm)
 {
     status_t rv;
-    mme_ue_t *ue = NULL;
+    pdn_t *pdn = NULL;
     mme_sgw_t *sgw = NULL;
+    mme_ue_t *ue = NULL;
     gtp_message_t gtp_message;
     gtp_create_session_request_t *req = &gtp_message.create_session_request;
 
@@ -28,10 +29,12 @@ status_t mme_s11_build_create_session_req(pkbuf_t **pkbuf, mme_esm_t *esm)
     gtp_ue_timezone_t ue_timezone;
 
     d_assert(esm, return CORE_ERROR, "Null param");
-    ue = esm->ue;
-    d_assert(ue, return CORE_ERROR, "Null param");
+    pdn = esm->pdn;
+    d_assert(pdn, return CORE_ERROR, "Null param");
     sgw = esm->sgw;
     d_assert(sgw, return CORE_ERROR, "Null param");
+    ue = esm->ue;
+    d_assert(ue, return CORE_ERROR, "Null param");
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));
 
