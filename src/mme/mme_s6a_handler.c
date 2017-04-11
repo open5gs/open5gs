@@ -35,11 +35,7 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     int new;
 
     mme_ue_t *ue = NULL;
-    nas_message_t message;
-    pkbuf_t *sendbuf = NULL;
     event_t e;
-    nas_authentication_request_t *authentication_request = 
-        &message.emm.authentication_request;
     
     CHECK_SYS_DO(clock_gettime(CLOCK_REALTIME, &ts), return);
 
@@ -67,10 +63,6 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
         goto out;
     }
     
-    memset(&message, 0, sizeof(message));
-    message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
-    message.emm.h.message_type = NAS_AUTHENTICATION_REQUEST;
-
     d_assert(fd_msg_search_avp(*msg, s6a_authentication_info, &avp) == 0 && 
             avp, error++; goto out,);
     d_assert(fd_msg_avp_hdr(avp, &hdr) == 0 && hdr, error++; goto out,);
@@ -94,29 +86,17 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     d_assert(fd_avp_search_avp(avp_e_utran_vector, s6a_rand, &avp_rand) == 0 && 
             avp_rand, error++; goto out,);
     d_assert(fd_msg_avp_hdr(avp_rand, &hdr) == 0 && hdr, error++; goto out,);
-    memcpy(authentication_request->authentication_parameter_rand.rand,
-            hdr->avp_value->os.data, hdr->avp_value->os.len);
+    memcpy(ue->rand, hdr->avp_value->os.data, hdr->avp_value->os.len);
 
     d_assert(fd_avp_search_avp(avp_e_utran_vector, s6a_autn, &avp_autn) == 0 && 
             avp_autn, error++; goto out,);
     d_assert(fd_msg_avp_hdr(avp_autn, &hdr) == 0 && hdr, error++; goto out,);
-    authentication_request->authentication_parameter_autn.length = 
-        hdr->avp_value->os.len;
-    memcpy(authentication_request->authentication_parameter_autn.autn,
-            hdr->avp_value->os.data, hdr->avp_value->os.len);
+    memcpy(ue->autn, hdr->avp_value->os.data, hdr->avp_value->os.len);
 
-    d_assert(nas_plain_encode(&sendbuf, &message) == CORE_OK && sendbuf, 
-            error++; goto out,);
-
-    event_set(&e, EVT_MSG_MME_EMM);
+    event_set(&e, EVT_LO_MME_EMM_AUTH_REQ);
     event_set_param1(&e, (c_uintptr_t)ue->index);
-    event_set_param2(&e, (c_uintptr_t)sendbuf);
-    if (mme_event_send(&e) != CORE_OK)
-    {
-        d_error("mme_event_send failed");
-        pkbuf_free(sendbuf);
-        error++;
-    }
+    mme_event_send(&e);
+
 out:
     /* Free the message */
     d_assert(pthread_mutex_lock(&s6a_config->stats_lock) == 0,,);

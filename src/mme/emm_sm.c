@@ -41,6 +41,22 @@ void emm_state_operational(fsm_t *s, event_t *e)
         {
             break;
         }
+        case EVT_LO_MME_EMM_AUTH_REQ:
+        {
+            index_t index = event_get_param1(e);
+            mme_ue_t *ue = NULL;
+
+            d_assert(index, return, "Null param");
+            ue = mme_ue_find(index);
+            d_assert(ue, return, "Null param");
+
+            emm_handle_authentication_request(ue);
+
+            d_info("[NAS] Authentication request : UE[%s] <-- EMM",
+                    ue->imsi_bcd);
+            break;
+        }
+
         case EVT_MSG_MME_EMM:
         {
             index_t index = event_get_param1(e);
@@ -60,23 +76,19 @@ void emm_state_operational(fsm_t *s, event_t *e)
                 {
                     emm_handle_attach_request(
                             ue, &message->emm.attach_request);
-                    break;
-                }
-                case NAS_AUTHENTICATION_REQUEST:
-                {
-                    pkbuf_t *recvbuf = (pkbuf_t *)event_get_param2(e);
-                    d_assert(recvbuf, break, "Null param");
 
-                    mme_event_nas_to_s1ap(ue, pkbuf_copy(recvbuf));
-
-                    d_info("[NAS] Authentication request : UE[%s] <-- EMM",
+                    d_info("[NAS] Attach request : UE[%s] --> EMM", 
                             ue->imsi_bcd);
+
                     break;
                 }
                 case NAS_AUTHENTICATION_RESPONSE:
                 {
                     emm_handle_authentication_response(
                             ue, &message->emm.authentication_response);
+
+                    d_info("[NAS] Security mode command : UE[%s] <-- EMM", 
+                            ue->imsi_bcd);
                     break;
                 }
                 case NAS_SECURITY_MODE_COMPLETE:

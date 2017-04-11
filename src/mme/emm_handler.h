@@ -11,6 +11,7 @@ extern "C" {
 
 CORE_DECLARE(void) emm_handle_attach_request(
  mme_ue_t *ue, nas_attach_request_t *attach_request);
+CORE_DECLARE(void) emm_handle_authentication_request(mme_ue_t *ue);
 CORE_DECLARE(void) emm_handle_authentication_response(
  mme_ue_t *ue, nas_authentication_response_t *authentication_response);
 CORE_DECLARE(void) emm_handle_security_mode_complete(mme_ue_t *ue);

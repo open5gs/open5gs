@@ -144,6 +144,19 @@ void mme_state_operational(fsm_t *s, event_t *e)
             pkbuf_free(pkbuf);
             break;
         }
+        case EVT_LO_MME_EMM_AUTH_REQ:
+        {
+            index_t index = event_get_param1(e);
+            mme_ue_t *ue = NULL;
+
+            d_assert(index, break, "Null param");
+            ue = mme_ue_find(index);
+            d_assert(ue, break, "No UE context");
+            d_assert(FSM_STATE(&ue->sm), break, "No EMM State Machine");
+
+            fsm_dispatch(&ue->sm, (fsm_event_t*)e);
+            break;
+        }
         case EVT_MSG_MME_EMM:
         {
             nas_message_t message;

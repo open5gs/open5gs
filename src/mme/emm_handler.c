@@ -89,8 +89,6 @@ void emm_handle_attach_request(
                     &attach_request->ms_network_capability,
                     sizeof(attach_request->ms_network_capability));
 
-            d_info("[NAS] Attach request : UE[%s] --> EMM", ue->imsi_bcd);
-
             mme_s6a_send_air(ue);
             break;
         }
@@ -102,6 +100,31 @@ void emm_handle_attach_request(
             return;
         }
     }
+}
+
+void emm_handle_authentication_request(mme_ue_t *ue)
+{
+    nas_message_t message;
+    pkbuf_t *sendbuf = NULL;
+    nas_authentication_request_t *authentication_request = 
+        &message.emm.authentication_request;
+
+    d_assert(ue, return, "Null param");
+
+    memset(&message, 0, sizeof(message));
+    message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    message.emm.h.message_type = NAS_AUTHENTICATION_REQUEST;
+
+    memcpy(authentication_request->authentication_parameter_rand.rand,
+            ue->rand, RAND_LEN);
+    memcpy(authentication_request->authentication_parameter_autn.autn,
+            ue->autn, AUTN_LEN);
+    authentication_request->authentication_parameter_autn.length = 
+            AUTN_LEN;
+
+    d_assert(nas_plain_encode(&sendbuf, &message) == CORE_OK && sendbuf,,);
+
+    mme_event_nas_to_s1ap(ue, sendbuf);
 }
 
 void emm_handle_authentication_response(
@@ -172,8 +195,6 @@ void emm_handle_authentication_response(
     d_assert(nas_security_encode(&sendbuf, ue, &message) == CORE_OK && 
             sendbuf,,);
     mme_event_nas_to_s1ap(ue, sendbuf);
-
-    d_info("[NAS] Security mode command : UE[%s] <-- EMM", ue->imsi_bcd);
 }
 
 void emm_handle_security_mode_complete(mme_ue_t *ue)

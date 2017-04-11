@@ -19,6 +19,7 @@ typedef enum {
 
     EVT_LO_MME_S1AP_ACCEPT,
     EVT_LO_MME_S1AP_CONNREFUSED,
+    EVT_LO_MME_EMM_AUTH_REQ,
 
     EVT_TM_MME_S11_T3,
 
