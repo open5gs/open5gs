@@ -257,6 +257,7 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
                 avp_network_access_mode) == 0, goto out,);
 
             /* Set the AMBR */
+#if HSS_DISABLE_MAX_BANDWIDTH_PER_UE == 0
         d_assert(fd_msg_avp_new(s6a_ambr, 0, &avp_ambr) == 0, goto out,);
         d_assert(fd_msg_avp_new(s6a_max_bandwidth_ul, 0, 
                     &avp_max_bandwidth_ul) == 0, goto out,);
@@ -274,6 +275,7 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
                     avp_max_bandwidth_dl) == 0, goto out,);
         d_assert(fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avp_ambr) == 0, 
                 goto out,);
+#endif
 
         if (ue->num_of_pdn && ue->pdn[0])
         {

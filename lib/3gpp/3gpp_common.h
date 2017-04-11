@@ -33,8 +33,8 @@ extern "C" {
 
 #define MAX_APN_LEN         100
 
-#define NEXT_ID(__id, __max) \
-    ((__id) = ((__id) == (__max) ? 1 : ((__id) + 1)))
+#define NEXT_ID(__id, __min, __max) \
+    ((__id) = ((__id) == (__max) ? (__min) : ((__id) + 1)))
 #define COMPARE_ID(__id1, __id2, __max) \
     ((__id2) > (__id1) ? ((__id2) - (__id1) < ((__max)-1) ? -1 : 1) : \
      (__id1) > (__id2) ? ((__id1) - (__id2) < ((__max)-1) ? 1 : -1) : 0)

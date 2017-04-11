@@ -14,6 +14,9 @@ extern "C" {
 #define HSS_KEY_LEN                 16
 #define HSS_AMF_LEN                 2
 
+/* FIXME : Does it needed? */
+#define HSS_DISABLE_MAX_BANDWIDTH_PER_UE 1
+
 typedef c_uint32_t hss_profile_id_t;
 typedef struct _hss_profile_t {
     lnode_t         node; /**< A node of list_t */
@@ -31,8 +34,10 @@ typedef struct _hss_profile_t {
     c_uint32_t      subscriber_status;
     c_uint32_t      network_access_mode;
 
+#if HSS_DISABLE_MAX_BANDWIDTH_PER_UE == 0
     c_uint32_t      max_bandwidth_ul; /* Kbps */
     c_uint32_t      max_bandwidth_dl; /* Kbps */
+#endif
 
     c_uint32_t      subscribed_rau_tau_timer; /* minutes */
 } hss_profile_t;
@@ -65,8 +70,10 @@ typedef struct _hss_ue_t {
 #define HSS_NETWORK_ACCESS_MODE_ONLY_PACKET                 2
     c_uint32_t      network_access_mode;
 
+#if HSS_DISABLE_MAX_BANDWIDTH_PER_UE == 0
     c_uint32_t      max_bandwidth_ul; /* Kbps */
     c_uint32_t      max_bandwidth_dl; /* Kbps */
+#endif
 
     c_uint32_t      subscribed_rau_tau_timer; /* minutes */
 

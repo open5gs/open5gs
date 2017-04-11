@@ -120,7 +120,7 @@ status_t mme_s11_build_create_session_req(pkbuf_t **pkbuf, mme_esm_t *esm)
 
     req->bearer_contexts_to_be_created.presence = 1;
     req->bearer_contexts_to_be_created.eps_bearer_id.presence = 1;
-    req->bearer_contexts_to_be_created.eps_bearer_id.u8 = 5;
+    req->bearer_contexts_to_be_created.eps_bearer_id.u8 = esm->ebi;
 
     memset(&bearer_qos, 0, sizeof(bearer_qos));
     bearer_qos.pre_emption_vulnerability = pdn->pre_emption_vulnerability;

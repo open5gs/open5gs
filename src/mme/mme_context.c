@@ -16,6 +16,9 @@
 
 #define S1AP_SCTP_PORT              36412
 
+#define MIN_EPS_BEARER_ID           5
+#define MAX_EPS_BEARER_ID           15
+
 static mme_context_t self;
 
 pool_declare(mme_sgw_pool, mme_sgw_t, MAX_NUM_OF_SGW);
@@ -383,9 +386,11 @@ mme_ue_t* mme_ue_add(mme_enb_t *enb)
     index_alloc(&mme_ue_pool, &ue);
     d_assert(ue, return NULL, "Null param");
 
-    ue->mme_ue_s1ap_id = NEXT_ID(self.mme_ue_s1ap_id, 0xffffffff);
+    ue->mme_ue_s1ap_id = NEXT_ID(self.mme_ue_s1ap_id, 1, 0xffffffff);
     hash_set(self.mme_ue_s1ap_id_hash, &ue->mme_ue_s1ap_id, 
             sizeof(ue->mme_ue_s1ap_id), ue);
+
+    ue->ebi = MIN_EPS_BEARER_ID - 1;
 
     ue->enb = enb;
     list_init(&ue->esm_list);
@@ -520,10 +525,12 @@ mme_esm_t* mme_esm_add(mme_ue_t *ue, c_uint8_t pti)
     index_alloc(&mme_esm_pool, &esm);
     d_assert(esm, return NULL, "Null param");
 
-    esm->teid = esm->index;
     esm->pti = pti;
-    esm->ue = ue;
+    esm->ebi = NEXT_ID(ue->ebi, MIN_EPS_BEARER_ID, MAX_EPS_BEARER_ID);
 
+    esm->teid = esm->index;
+
+    esm->ue = ue;
     list_append(&ue->esm_list, esm);
     
     fsm_create(&esm->sm, esm_state_initial, esm_state_final);

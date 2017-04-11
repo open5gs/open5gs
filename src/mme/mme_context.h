@@ -18,6 +18,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#define MME_DISABLE_MAX_BANDWIDTH_PER_UE 1
+
 #define MAX_PLMN_ID                 6
 #define GRP_PER_MME                 256    /* According to spec it is 65535 */
 #define CODE_PER_MME                256    /* According to spec it is 256 */
@@ -140,14 +142,17 @@ typedef struct _mme_ue_t {
     /* HSS Info */
     c_uint32_t      ula_flags;
 
+#if MME_DISABLE_MAX_BANDWIDTH_PER_UE == 0
     c_uint32_t      max_bandwidth_ul; /* bits per seconds */
     c_uint32_t      max_bandwidth_dl; /* bits per seconds */
+#endif
 
     pdn_t           *pdn[MAX_NUM_OF_PDN];
     int             num_of_pdn;
 
     c_uint32_t      subscribed_rau_tau_timer; /* seconds */
 
+    c_uint8_t       ebi;        /* EPS Bearer ID generator */
     list_t          esm_list;
 
     mme_enb_t       *enb;
@@ -158,13 +163,14 @@ typedef struct _mme_esm_t {
     index_t         index;  /**< An index of this node */
     fsm_t           sm;
 
+    c_uint8_t       pti;    /** Procedure Trasaction Identity */
+    c_uint8_t       ebi;    /** EPS Bearer ID */    
+
     /* IMPORTANT! 
      * MME-S11-F-TEID is same with an index */
     c_uint32_t      teid;       
     c_uint32_t      sgw_addr;   /* SGW-S11-F-TEID IPv4 Address */
     c_uint32_t      sgw_teid;   /* SGW-S11-F-TEID */
-
-    c_uint8_t       pti;        /** Procedure Trasaction Identity */
 
     c_uint8_t       pco[MAX_PCO_LEN]; 
     int             pco_len;

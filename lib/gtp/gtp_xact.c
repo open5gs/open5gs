@@ -7,6 +7,7 @@
 #include "gtp_xact.h"
 
 #define SIZE_OF_GTP_XACT_POOL       32
+#define GTP_MIN_XACT_ID             1
 #define GTP_MAX_XACT_ID             0x800000
 
 #define GTP_XACT_LOCAL_DURATION     3000 /* 3 seconds */
@@ -165,7 +166,7 @@ gtp_xact_t *gtp_xact_local_create(
         gtp_xact_ctx_t *context, net_sock_t *sock, gtp_node_t *gnode)
 {
     return gtp_xact_create(context, sock, gnode, GTP_LOCAL_ORIGINATOR, 
-            NEXT_ID(context->g_xact_id, GTP_MAX_XACT_ID),
+            NEXT_ID(context->g_xact_id, GTP_MIN_XACT_ID, GTP_MAX_XACT_ID),
             GTP_XACT_LOCAL_DURATION, GTP_XACT_LOCAL_RETRY_COUNT);
 }
 

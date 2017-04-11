@@ -300,6 +300,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     ue->msisdn_len = hdr->avp_value->os.len;
     memcpy(ue->msisdn, hdr->avp_value->os.data, ue->msisdn_len);
 
+#if MME_DISABLE_MAX_BANDWIDTH_PER_UE == 0
     d_assert(fd_avp_search_avp(avp, s6a_ambr, &avpch1) == 0 && avpch1, 
             error++; goto out,);
     d_assert(fd_avp_search_avp(avpch1, s6a_max_bandwidth_ul, &avpch2) == 0 && 
@@ -310,6 +311,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
             avpch2, error++; goto out,);
     d_assert(fd_msg_avp_hdr(avpch2, &hdr) == 0 && hdr, error++; goto out,);
     ue->max_bandwidth_dl = hdr->avp_value->i32;
+#endif
 
     d_assert(fd_avp_search_avp(avp, s6a_apn_configuration_profile, &avpch1) 
             == 0 && avpch1, error++; goto out,);
