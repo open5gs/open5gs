@@ -47,7 +47,7 @@ void pgw_handle_create_session_request(
     d_assert(sess, return, "sess_add failed");
 
     sess->sgw_teid = ntohl(sgw_f_teid->teid);
-    sess->sgw_ipv4 = sgw_f_teid->ipv4_addr;
+    sess->sgw_addr = sgw_f_teid->ipv4_addr;
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));
 

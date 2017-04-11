@@ -63,7 +63,11 @@ status_t mme_s11_build_create_session_req(
     memset(&s11, 0, sizeof(gtp_f_teid_t));
     s11.ipv4 = 1;
     s11.interface_type = GTP_F_TEID_S11_MME_GTP_C;
+#if 0
     s11.teid = htonl(0x80000084);
+#else
+    s11.teid = htonl(1);
+#endif
     s11.ipv4_addr = inet_addr("10.50.54.10");
     req->sender_f_teid_for_control_plane.presence = 1;
     req->sender_f_teid_for_control_plane.data = &s11;

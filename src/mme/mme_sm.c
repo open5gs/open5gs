@@ -229,6 +229,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
             c_uint8_t type;
             c_uint32_t teid;
             gtp_message_t gtp_message;
+            mme_esm_t *esm = NULL;
 
             d_assert(pkbuf, break, "Null param");
             d_assert(sock, pkbuf_free(pkbuf); break, "Null param");
@@ -240,10 +241,13 @@ void mme_state_operational(fsm_t *s, event_t *e)
             if (rv != CORE_OK)
                 break;
 
+            esm = mme_esm_find_by_teid(teid);
+            d_assert(esm, pkbuf_free(pkbuf); break, 
+                    "No Session Context(TEID:%d)", teid);
             switch(type)
             {
                 case GTP_CREATE_SESSION_RESPONSE_TYPE:
-                    d_info("receive reponse");
+                    d_info("receive reponse : %d, %d", teid, esm->pti);
                     break;
                 default:
                     d_warn("Not implmeneted(type:%d)", type);

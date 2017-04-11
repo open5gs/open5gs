@@ -156,8 +156,13 @@ typedef struct _mme_esm_t {
     index_t         index;  /**< An index of this node */
     fsm_t           sm;
 
+    /* IMPORTANT! 
+     * MME-S11-F-TEID is same with an index */
+    c_uint32_t      teid;       
+    c_uint32_t      sgw_addr;   /* SGW-S11-F-TEID IPv4 Address */
+    c_uint32_t      sgw_teid;   /* SGW-S11-F-TEID */
+
     c_uint8_t       pti;    /** Procedure Trasaction Identity */
-    c_uint32_t      teid;   /* MME-S11-F-TEID */
 
     mme_ue_t        *ue;
     mme_sgw_t       *sgw;
@@ -211,6 +216,7 @@ CORE_DECLARE(status_t)      mme_esm_remove(mme_esm_t *esm);
 CORE_DECLARE(status_t)      mme_esm_remove_all(mme_ue_t *ue);
 CORE_DECLARE(mme_esm_t*)    mme_esm_find(index_t index);
 CORE_DECLARE(mme_esm_t*)    mme_esm_find_by_pti(mme_ue_t *ue, c_uint8_t pti);
+CORE_DECLARE(mme_esm_t*)    mme_esm_find_by_teid(c_uint32_t teid);
 CORE_DECLARE(mme_esm_t*)    mme_esm_first(mme_ue_t *ue);
 CORE_DECLARE(mme_esm_t*)    mme_esm_next(mme_esm_t *esm);
 

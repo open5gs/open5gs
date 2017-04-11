@@ -502,6 +502,7 @@ mme_esm_t* mme_esm_add(mme_ue_t *ue, c_uint8_t pti)
     index_alloc(&mme_esm_pool, &esm);
     d_assert(esm, return NULL, "Null param");
 
+    esm->teid = esm->index;
     esm->pti = pti;
     esm->ue = ue;
 
@@ -550,6 +551,11 @@ mme_esm_t* mme_esm_find(index_t index)
 {
     d_assert(index, return NULL, "Invalid Index");
     return index_find(&mme_esm_pool, index);
+}
+
+mme_esm_t* mme_esm_find_by_teid(c_uint32_t teid)
+{
+    return mme_esm_find(teid);
 }
 
 mme_esm_t* mme_esm_find_by_pti(mme_ue_t *ue, c_uint8_t pti)

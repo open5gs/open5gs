@@ -41,8 +41,8 @@ typedef struct _pgw_sess_t {
      * PGW-S5C-F-TEID is same with an index */
     c_uint32_t      teid;       
 
-    c_uint32_t      sgw_ipv4;   /* SGW-S11-F-TEID IPv4 Address */
-    c_uint32_t      sgw_teid;   /* SGW-S11-F-TEID */
+    c_uint32_t      sgw_addr;   /* SGW-S5C-F-TEID IPv4 Address */
+    c_uint32_t      sgw_teid;   /* SGW-S5C-F-TEID */
 } pgw_sess_t;
 
 CORE_DECLARE(status_t)      pgw_context_init(void);

@@ -75,14 +75,18 @@ void sgw_state_operational(fsm_t *s, event_t *e)
             if (rv != CORE_OK)
                 break;
 
-            if (teid)
-                sess = sgw_sess_find_by_teid(teid);
+            if (type == GTP_CREATE_SESSION_REQUEST_TYPE)
+            {
+                sgw_handle_create_session_request(xact, type, &gtp_message);
+                pkbuf_free(pkbuf);
+                break;
+            }
+
+            sess = sgw_sess_find_by_teid(teid);
+            d_assert(sess, pkbuf_free(pkbuf); break, 
+                    "No Session Context(TEID:%d)", teid);
             switch(type)
             {
-                case GTP_CREATE_SESSION_REQUEST_TYPE:
-                    sgw_handle_create_session_request(
-                            xact, type, &gtp_message);
-                    break;
                 case GTP_CREATE_SESSION_RESPONSE_TYPE:
                     sgw_handle_create_session_response(
                             xact, sess, type, &gtp_message);
