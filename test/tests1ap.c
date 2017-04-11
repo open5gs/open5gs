@@ -170,3 +170,23 @@ status_t tests1ap_build_security_mode_complete(pkbuf_t **pkbuf)
 
     return CORE_OK;
 }
+
+status_t tests1ap_build_esm_information_response(pkbuf_t **pkbuf)
+{
+    char *payload = 
+        "000d40808d000005 00000005c0010000 9d00080002000100 1a006160275c0667"
+        "58010221da280908 696e7465726e6574 274a80c223150100 001510c09a2626c0"
+        "9a2626c09a2626c0 9a2626c223150200 0015103d3dda5c72 4cc497354ae64653"
+        "45a8088021100100 0010810600000000 830600000000000d 00000a0000644008"
+        "0000f1101079baf0 004340060000f110 5ba0";
+    char hexbuf[MAX_SDU_LEN];
+    
+    *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    if (!(*pkbuf)) return CORE_ERROR;
+
+    (*pkbuf)->len = 146;
+    memcpy((*pkbuf)->payload, CORE_HEX(payload, strlen(payload), hexbuf),
+            (*pkbuf)->len);
+
+    return CORE_OK;
+}

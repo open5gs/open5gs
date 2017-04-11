@@ -25,6 +25,9 @@ static void nas_sm_test1(abts_case *tc, void *data)
     char *_security_mode_command = 
         "000b402700000300 000005c00100009d 000800020001001a 00111037f933b5d5"
         "00075d010005e060 c04070";
+    char *_esm_information_request =
+        "000b402000000300 000005c00100009d 000800020001001a 000a092779012320"
+        "010221d9";
 
     /* eNB connects to MME */
     sock = tests1ap_enb_connect();
@@ -85,9 +88,24 @@ static void nas_sm_test1(abts_case *tc, void *data)
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-#if 0
+    /* Receive ESM Information Request */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rc = tests1ap_enb_read(sock, recvbuf);
+    recvbuf->len = 36;
+    ABTS_TRUE(tc, memcmp(recvbuf->payload, 
+        CORE_HEX(_esm_information_request, strlen(_security_mode_command), tmp),
+        recvbuf->len) == 0);
+    pkbuf_free(recvbuf);
+
+    /* Send ESM Information Response */
+    rv = tests1ap_build_esm_information_response(&sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    core_sleep(time_from_msec(300));
+
     d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
-#endif
     /* eNB disonncect from MME */
     rv = tests1ap_enb_close(sock);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);

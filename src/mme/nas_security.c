@@ -178,6 +178,11 @@ status_t nas_security_decode(
         d_assert(CORE_OK == pkbuf_header(pkbuf, 1),
             return CORE_ERROR, "pkbuf_header error");
 
+        /* calculate ul_count */
+        if (ue->ul_count.sqn > h->sequence_number)
+            ue->ul_count.overflow++;
+        ue->ul_count.sqn = h->sequence_number;
+
         if (ciphered)
         {
             /* decrypt NAS message */
@@ -204,11 +209,6 @@ status_t nas_security_decode(
                 return CORE_ERROR;
             }
         }
-
-        /* calculate ul_count */
-        if (ue->ul_count.sqn > h->sequence_number)
-            ue->ul_count.overflow++;
-        ue->ul_count.sqn = h->sequence_number;
 
         d_assert(CORE_OK == pkbuf_header(pkbuf, -1),
             return CORE_ERROR, "pkbuf_header error");
