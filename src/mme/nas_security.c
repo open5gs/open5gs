@@ -109,10 +109,8 @@ status_t nas_security_encode(
     return CORE_OK;
 }
 
-status_t nas_security_decode(
-        nas_message_t *message, mme_ue_t *ue, pkbuf_t *pkbuf)
+status_t nas_security_decode(mme_ue_t *ue, pkbuf_t *pkbuf)
 {
-    status_t rv;
     c_int32_t hsize = 0;
 
     int integrity_protected = 0;
@@ -129,7 +127,7 @@ status_t nas_security_decode(
     switch(h->security_header_type)
     {
         case NAS_SECURITY_HEADER_PLAIN_NAS_MESSAGE:
-            return nas_plain_decode(message, pkbuf);
+            return CORE_OK;
         case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED:
             integrity_protected = 1;
             break;
@@ -148,7 +146,7 @@ status_t nas_security_decode(
             break;
         default:
             d_warn("Not implemented(securiry header type:0x%x)", 
-                    message->h.security_header_type);
+                    h->security_header_type);
             return CORE_ERROR;
     }
 
@@ -214,12 +212,7 @@ status_t nas_security_decode(
             return CORE_ERROR, "pkbuf_header error");
     }
 
-    rv = nas_plain_decode(message, pkbuf);
-
-    d_assert(pkbuf_header(pkbuf, hsize) == CORE_OK, 
-            return CORE_ERROR, "pkbuf_header error");
-
-    return rv;
+    return CORE_OK;
 }
 
 void nas_mac_calculate(c_uint8_t algorithm_identity,

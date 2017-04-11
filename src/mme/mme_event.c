@@ -6,6 +6,7 @@
 #include "s1ap_path.h"
 #include "s1ap_message.h"
 #include "nas_message.h"
+#include "nas_security.h"
 
 static char EVT_NAME_LO_MME_S1AP_ACCEPT[] = "LO_MME_S1AP_ACCEPT";
 static char EVT_NAME_LO_MME_S1AP_CONNREFUSED[] = "LO_MME_S1AP_CONNREFUSED";
@@ -62,8 +63,9 @@ char* mme_event_get_name(event_t *e)
     return EVT_NAME_UNKNOWN;
 }
 
-void mme_event_s1ap_to_emm(mme_ue_t *ue, S1ap_NAS_PDU_t *nasPdu)
+void mme_event_s1ap_to_nas(mme_ue_t *ue, S1ap_NAS_PDU_t *nasPdu)
 {
+    nas_esm_header_t *h = NULL;
     pkbuf_t *sendbuf = NULL;
     event_t e;
 
@@ -76,10 +78,36 @@ void mme_event_s1ap_to_emm(mme_ue_t *ue, S1ap_NAS_PDU_t *nasPdu)
     d_assert(sendbuf, return, "Null param");
     memcpy(sendbuf->payload, nasPdu->buf, nasPdu->size);
 
-    event_set(&e, EVT_MSG_MME_EMM);
-    event_set_param1(&e, (c_uintptr_t)ue->index);
-    event_set_param2(&e, (c_uintptr_t)sendbuf);
-    mme_event_send(&e);
+    d_assert(nas_security_decode(ue, sendbuf) == CORE_OK,
+            pkbuf_free(sendbuf); return, "Can't decode NAS_PDU");
+
+    h = sendbuf->payload;
+    d_assert(h, pkbuf_free(sendbuf); return, "Null param");
+    if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_EMM)
+    {
+        event_set(&e, EVT_MSG_MME_EMM);
+        event_set_param1(&e, (c_uintptr_t)ue->index);
+        event_set_param2(&e, (c_uintptr_t)sendbuf);
+        mme_event_send(&e);
+    }
+    else if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_ESM)
+    {
+        mme_esm_t *esm = mme_esm_find_by_pti(ue, 
+                h->procedure_transaction_identity);
+        if (esm)
+        {
+            event_set(&e, EVT_MSG_MME_ESM);
+            event_set_param1(&e, (c_uintptr_t)esm->index);
+            event_set_param2(&e, (c_uintptr_t)sendbuf);
+            mme_event_send(&e);
+        }
+        else
+            d_error("Can't find ESM context(UE:%s, PTI:%d)",
+                    ue->imsi_bcd, h->procedure_transaction_identity);
+    }
+    else
+        d_assert(0, pkbuf_free(sendbuf); return, "Unknown protocol:%d", 
+                h->protocol_discriminator);
 }
 
 void mme_event_emm_to_esm(mme_esm_t *esm, 

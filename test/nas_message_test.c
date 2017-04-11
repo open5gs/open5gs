@@ -27,7 +27,7 @@ static void nas_message_test1(abts_case *tc, void *data)
     memcpy(pkbuf->payload, 
             CORE_HEX(payload, strlen(payload), hexbuf), pkbuf->len);
 
-    rv = nas_plain_decode(&message, pkbuf);
+    rv = nas_emm_decode(&message, pkbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     pkbuf_free(pkbuf);
@@ -124,7 +124,7 @@ static void nas_message_test3(abts_case *tc, void *data)
     memcpy(pkbuf->payload, 
             CORE_HEX(payload, strlen(payload), hexbuf), pkbuf->len);
 
-    rv = nas_plain_decode(&message, pkbuf);
+    rv = nas_emm_decode(&message, pkbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     pkbuf_free(pkbuf);
@@ -187,7 +187,7 @@ static void nas_message_test6(abts_case *tc, void *data)
     memcpy(pkbuf->payload, 
             CORE_HEX(payload, strlen(payload), hexbuf), pkbuf->len);
 
-    rv = nas_plain_decode(&message, pkbuf);
+    rv = nas_emm_decode(&message, pkbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     ABTS_INT_EQUAL(tc, NAS_PROTOCOL_DISCRIMINATOR_EMM, 

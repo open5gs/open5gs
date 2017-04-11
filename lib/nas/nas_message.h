@@ -557,8 +557,10 @@ typedef struct _nas_message_t {
     };
 } nas_message_t;
 
-CORE_DECLARE(int) nas_plain_decode(nas_message_t *message, pkbuf_t *pkbuf);
-CORE_DECLARE(int) nas_plain_encode(pkbuf_t **pkbuf, nas_message_t *message);
+CORE_DECLARE(status_t) nas_emm_decode(nas_message_t *message, pkbuf_t *pkbuf);
+CORE_DECLARE(status_t) nas_esm_decode(nas_message_t *message, pkbuf_t *pkbuf);
+CORE_DECLARE(status_t) nas_plain_encode(
+        pkbuf_t **pkbuf, nas_message_t *message);
 
 #ifdef __cplusplus
 }

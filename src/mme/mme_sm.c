@@ -172,7 +172,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
             d_assert(FSM_STATE(&ue->sm), 
                     pkbuf_free(pkbuf); break, "No EMM State Machine");
 
-            d_assert(nas_security_decode(&message, ue, pkbuf) == CORE_OK,
+            d_assert(nas_emm_decode(&message, pkbuf) == CORE_OK,
                     pkbuf_free(pkbuf); break, "Can't decode NAS_EMM");
 
             event_set_param3(e, (c_uintptr_t)&message);
@@ -210,7 +210,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
             d_assert(FSM_STATE(&esm->sm), 
                     pkbuf_free(pkbuf); break, "No ESM State Machine");
 
-            d_assert(nas_security_decode(&message, ue, pkbuf) == CORE_OK,
+            d_assert(nas_esm_decode(&message, pkbuf) == CORE_OK,
                     pkbuf_free(pkbuf); break, "Can't decode NAS_ESM");
 
             event_set_param3(e, (c_uintptr_t)&message);

@@ -1099,7 +1099,6 @@ status_t nas_plain_encode(pkbuf_t **pkbuf, nas_message_t *message)
             message->esm.h.protocol_discriminator, 
             return CORE_ERROR, "check UNION for protocol");
 
-
     if (message->emm.h.protocol_discriminator == 
             NAS_PROTOCOL_DISCRIMINATOR_EMM)
         return nas_emm_encode(pkbuf, message);
