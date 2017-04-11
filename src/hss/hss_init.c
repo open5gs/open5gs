@@ -61,7 +61,8 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
             goto out,);
     d_assert(fd_msg_avp_hdr(avp, &hdr) == 0 && hdr,,);
 
-    strncpy(imsi_bcd, (char*)hdr->avp_value->os.data, hdr->avp_value->os.len);
+    memcpy(imsi_bcd, (char*)hdr->avp_value->os.data, hdr->avp_value->os.len);
+    imsi_bcd[hdr->avp_value->os.len] = 0;
     ue = hss_ue_find_by_imsi_bcd(imsi_bcd);
     if (!ue)
     {
@@ -175,7 +176,8 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
             goto out,);
     d_assert(fd_msg_avp_hdr(avp, &hdr) == 0 && hdr,,);
 
-    strncpy(imsi_bcd, (char*)hdr->avp_value->os.data, hdr->avp_value->os.len);
+    memcpy(imsi_bcd, (char*)hdr->avp_value->os.data, hdr->avp_value->os.len);
+    imsi_bcd[hdr->avp_value->os.len] = 0;
     ue = hss_ue_find_by_imsi_bcd(imsi_bcd);
     if (!ue)
     {
