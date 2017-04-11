@@ -55,10 +55,8 @@ status_t hss_context_init(void)
     profile->access_restriction_data = 0;
     profile->subscriber_status = HSS_SUBSCRIBER_STATUS_SERVICE_GRANTED;
     profile->network_access_mode = HSS_NETWORK_ACCESS_MODE_ONLY_PACKET;
-#if HSS_DISABLE_MAX_BANDWIDTH_PER_UE == 0
     profile->max_bandwidth_ul = 102400; /* Kbps */
     profile->max_bandwidth_dl = 102400; /* Kbps */
-#endif
 
     profile->subscribed_rau_tau_timer = 12; /* minutes */
 
@@ -303,10 +301,8 @@ hss_ue_t* hss_ue_add(hss_profile_id_t id, c_int8_t *imsi_bcd)
     ue->access_restriction_data = profile->access_restriction_data;
     ue->subscriber_status = profile->subscriber_status;
     ue->network_access_mode = profile->network_access_mode;
-#if HSS_DISABLE_MAX_BANDWIDTH_PER_UE == 0
     ue->max_bandwidth_ul = profile->max_bandwidth_ul;
     ue->max_bandwidth_dl = profile->max_bandwidth_dl;
-#endif
 
     ue->subscribed_rau_tau_timer = profile->subscribed_rau_tau_timer;
     
