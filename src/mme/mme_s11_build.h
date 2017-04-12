@@ -7,7 +7,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-CORE_DECLARE(status_t) mme_s11_build_create_session_req(
+CORE_DECLARE(status_t) mme_s11_build_create_session_request(
                         pkbuf_t **pkbuf, mme_esm_t *esm);
 
 #ifdef __cplusplus

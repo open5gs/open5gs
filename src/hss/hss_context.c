@@ -68,7 +68,7 @@ status_t hss_context_init(void)
     pdn->apn[0] = 0x08;
     strcpy(pdn->apn+1, "internet");
 
-    pdn->type = PDN_TYPE_IPV4;
+    pdn->s6a_type = S6A_PDN_TYPE_IPV4;
 
     pdn->qci = PDN_QCI_9;
     pdn->priority_level = 8;

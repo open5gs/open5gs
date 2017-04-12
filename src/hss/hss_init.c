@@ -327,7 +327,7 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
 
                 d_assert(fd_msg_avp_new(s6a_pdn_type, 0, 
                         &pdn_type) == 0, goto out,);
-                val.i32 = pdn->type;
+                val.i32 = pdn->s6a_type;
                 d_assert(fd_msg_avp_setvalue(pdn_type, &val) == 0, 
                         goto out,);
                 d_assert(fd_msg_avp_add(apn_configuration, 

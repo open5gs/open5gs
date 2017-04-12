@@ -42,13 +42,14 @@ void esm_handle_information_response(mme_esm_t *esm,
     {
         nas_protocol_configuration_options_t *protocol_configuration_options = 
             &esm_information_response->protocol_configuration_options;
-        esm->pco_len = protocol_configuration_options->length;
-        d_assert(esm->pco_len <= MAX_PCO_LEN, return, 
-                "length(%d) exceeds MAX:%d", esm->pco_len, MAX_PCO_LEN);
-        memcpy(esm->pco, protocol_configuration_options->buffer, esm->pco_len);
+        esm->ue_pco_len = protocol_configuration_options->length;
+        d_assert(esm->ue_pco_len <= MAX_PCO_LEN, return, 
+                "length(%d) exceeds MAX:%d", esm->ue_pco_len, MAX_PCO_LEN);
+        memcpy(esm->ue_pco, protocol_configuration_options->buffer, 
+                esm->ue_pco_len);
     }
 
-    rv = mme_s11_build_create_session_req(&pkbuf, esm);
+    rv = mme_s11_build_create_session_request(&pkbuf, esm);
     d_assert(rv == CORE_OK, return, "S11 build error");
 
     rv = mme_s11_send_to_sgw(esm->sgw, 

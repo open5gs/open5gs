@@ -8,7 +8,7 @@
 #include "3gpp_common.h"
 #include "mme_context.h"
 
-status_t mme_s11_build_create_session_req(pkbuf_t **pkbuf, mme_esm_t *esm)
+status_t mme_s11_build_create_session_request(pkbuf_t **pkbuf, mme_esm_t *esm)
 {
     status_t rv;
     pdn_t *pdn = NULL;
@@ -20,7 +20,6 @@ status_t mme_s11_build_create_session_req(pkbuf_t **pkbuf, mme_esm_t *esm)
     gtp_uli_t uli;
     char uli_buf[GTP_MAX_ULI_LEN];
     gtp_f_teid_t s11, s5;
-    gtp_paa_t paa;
     gtp_ambr_t ambr;
     gtp_bearer_qos_t bearer_qos;
     char bearer_qos_buf[GTP_BEARER_QOS_LEN];
@@ -34,7 +33,7 @@ status_t mme_s11_build_create_session_req(pkbuf_t **pkbuf, mme_esm_t *esm)
     ue = esm->ue;
     d_assert(ue, return CORE_ERROR, "Null param");
 
-    d_assert(esm->pco_len, return CORE_ERROR, "Null param");
+    d_assert(esm->ue_pco_len, return CORE_ERROR, "Null param");
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));
 
@@ -98,11 +97,11 @@ status_t mme_s11_build_create_session_req(pkbuf_t **pkbuf, mme_esm_t *esm)
     req->pdn_type.presence = 1;
     req->pdn_type.u8 = GTP_PDN_TYPE_IPV4;
 
-    memset(&paa, 0, sizeof(gtp_paa_t));
-    paa.pdn_type = GTP_PDN_TYPE_IPV4;
+    memset(&pdn->paa, 0, sizeof(paa_t));
+    pdn->paa.gtp_type = GTP_PDN_TYPE_IPV4;
     req->pdn_address_allocation.presence = 1;
-    req->pdn_address_allocation.data = &paa;
-    req->pdn_address_allocation.len = GTP_PAA_IPV4_LEN;
+    req->pdn_address_allocation.data = &pdn->paa;
+    req->pdn_address_allocation.len = PAA_IPV4_LEN;
 
     req->maximum_apn_restriction.presence = 1;
     req->maximum_apn_restriction.u8 = GTP_APN_NO_RESTRICTION;
@@ -115,8 +114,8 @@ status_t mme_s11_build_create_session_req(pkbuf_t **pkbuf, mme_esm_t *esm)
     req->aggregate_maximum_bit_rate.len = sizeof(ambr);
 
     req->protocol_configuration_options.presence = 1;
-    req->protocol_configuration_options.data = esm->pco;
-    req->protocol_configuration_options.len = esm->pco_len;
+    req->protocol_configuration_options.data = esm->ue_pco;
+    req->protocol_configuration_options.len = esm->ue_pco_len;
 
     req->bearer_contexts_to_be_created.presence = 1;
     req->bearer_contexts_to_be_created.eps_bearer_id.presence = 1;

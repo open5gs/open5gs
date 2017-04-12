@@ -39,15 +39,16 @@ status_t mme_context_init()
     memset(&self, 0, sizeof(mme_context_t));
 
     pool_init(&mme_sgw_pool, MAX_NUM_OF_SGW);
+    list_init(&self.sgw_list);
+
     pool_init(&mme_pdn_pool, MAX_NUM_OF_PDN);
+    list_init(&self.pdn_list);
 
     index_init(&mme_enb_pool, MAX_NUM_OF_ENB);
+    list_init(&self.enb_list);
+
     index_init(&mme_ue_pool, MAX_NUM_OF_UE);
     index_init(&mme_esm_pool, MAX_NUM_OF_ESM);
-
-    list_init(&self.sgw_list);
-    list_init(&self.enb_list);
-    list_init(&self.pdn_list);
 
     self.mme_ue_s1ap_id_hash = hash_make();
 

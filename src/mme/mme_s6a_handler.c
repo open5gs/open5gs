@@ -342,7 +342,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                         &avpch3) == 0 && avpch3, error++; goto out,);
                 d_assert(fd_msg_avp_hdr(avpch3, &hdr) == 0 && hdr,
                         error++; goto out,);
-                pdn->type = hdr->avp_value->i32;
+                pdn->s6a_type = hdr->avp_value->i32;
 
                 d_assert(fd_avp_search_avp(avpch2, s6a_service_selection, 
                         &avpch3) == 0 && avpch3, error++; goto out,);
@@ -356,11 +356,13 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                 if (pdn_added)
                     d_info("PDN(id:%d, type:%s, APN:%s) Added", 
                         pdn->id, 
-                        pdn->type == PDN_TYPE_IPV4 ? "IPv4" :
-                        pdn->type == PDN_TYPE_IPV6 ? "IPv6" :
-                        pdn->type == PDN_TYPE_IPV4_AND_IPV6 ? "IPv4_AND_IPv6" :
-                        pdn->type == PDN_TYPE_IPV4_OR_IPV6 ? "IPv4_OR_IPv6" :
-                            "Unknown Type", 
+                        pdn->s6a_type == S6A_PDN_TYPE_IPV4 ? "IPv4" :
+                        pdn->s6a_type == S6A_PDN_TYPE_IPV6 ? "IPv6" :
+                        pdn->s6a_type == S6A_PDN_TYPE_IPV4_AND_IPV6 ? 
+                            "IPv4_AND_IPv6" :
+                        pdn->s6a_type == S6A_PDN_TYPE_IPV4_OR_IPV6 ? 
+                            "IPv4_OR_IPv6" :
+                                "Unknown Type", 
                         pdn->apn);
 
                 d_assert(fd_avp_search_avp(avpch2, 

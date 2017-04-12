@@ -31,7 +31,7 @@ static void gtp_message_test1(abts_case *tc, void *data)
     plmn_id_t serving_network;
     char apnbuf[34];
     gtp_f_teid_t s11, s5;
-    gtp_paa_t paa;
+    paa_t paa;
     gtp_ambr_t ambr;
     pco_t pco;
     char pcobuf[MAX_PCO_LEN];
@@ -103,11 +103,11 @@ static void gtp_message_test1(abts_case *tc, void *data)
     req.pdn_type.presence = 1;
     req.pdn_type.u8 = GTP_PDN_TYPE_IPV4;
 
-    memset(&paa, 0, sizeof(gtp_paa_t));
-    paa.pdn_type = GTP_PDN_TYPE_IPV4;
+    memset(&paa, 0, sizeof(paa_t));
+    paa.gtp_type = GTP_PDN_TYPE_IPV4;
     req.pdn_address_allocation.presence = 1;
     req.pdn_address_allocation.data = &paa;
-    req.pdn_address_allocation.len = GTP_PAA_IPV4_LEN;
+    req.pdn_address_allocation.len = PAA_IPV4_LEN;
 
     req.maximum_apn_restriction.presence = 1;
     req.maximum_apn_restriction.u8 = GTP_APN_NO_RESTRICTION;

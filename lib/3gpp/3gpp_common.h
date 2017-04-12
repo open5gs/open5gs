@@ -67,6 +67,29 @@ typedef struct _e_cgi_t {
     c_uint32_t cell_id; /* 28 bit */
 } __attribute__ ((packed)) e_cgi_t;
 
+/**************************************************
+ * 8.14 PDN Address Allocation (PAA) */
+#define PAA_IPV4_LEN                                    5
+#define PAA_IPV6_LEN                                    18
+#define PAA_IPV4V6_LEN                                  22
+typedef struct _paa_t {
+/* 8.34 PDN Type  */
+#define GTP_PDN_TYPE_IPV4                               1
+#define GTP_PDN_TYPE_IPV6                               2
+#define GTP_PDN_TYPE_BOTH                               3
+#define GTP_PDN_TYPE_NON_IP                             4
+ED2(c_uint8_t spare:6;,
+    c_uint8_t gtp_type:2;)
+    union {
+        c_uint32_t ipv4_addr;;
+        struct {
+            c_uint8_t ipv6_len;
+            c_uint8_t ipv6_addr[IPV6_LEN];
+        };
+    };
+    c_uint32_t ipv4v6_addr;
+} __attribute__ ((packed)) paa_t;
+
 /**********************************
  * PDN Structure                 */
 typedef c_uint32_t pdn_id_t;
@@ -75,11 +98,12 @@ typedef struct _pdn_t {
 
     pdn_id_t        id;
     c_int8_t        apn[MAX_APN_LEN];
-#define PDN_TYPE_IPV4                                   0
-#define PDN_TYPE_IPV6                                   1
-#define PDN_TYPE_IPV4_AND_IPV6                          2
-#define PDN_TYPE_IPV4_OR_IPV6                           3
-    c_int8_t        type;
+#define S6A_PDN_TYPE_IPV4                               0
+#define S6A_PDN_TYPE_IPV6                               1
+#define S6A_PDN_TYPE_IPV4_AND_IPV6                      2
+#define S6A_PDN_TYPE_IPV4_OR_IPV6                       3
+    c_int8_t        s6a_type;
+    paa_t           paa;
 
     c_uint32_t      max_bandwidth_ul; /* Kbps */
     c_uint32_t      max_bandwidth_dl; /* Kbps */

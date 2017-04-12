@@ -71,7 +71,7 @@ typedef struct _mme_context_t {
 
     list_t          sgw_list;
     list_t          enb_list;
-    list_t          pdn_list;;
+    list_t          pdn_list;
 
     hash_t          *mme_ue_s1ap_id_hash; /* hash table for MME-UE-S1AP-ID */
 } mme_context_t;
@@ -168,8 +168,11 @@ typedef struct _mme_esm_t {
     c_uint32_t      sgw_addr;   /* SGW-S11-F-TEID IPv4 Address */
     c_uint32_t      sgw_teid;   /* SGW-S11-F-TEID */
 
-    c_uint8_t       pco[MAX_PCO_LEN]; 
-    int             pco_len;
+    /* Protocol Configuration Options */
+    c_uint8_t       ue_pco[MAX_PCO_LEN];  
+    int             ue_pco_len;
+    c_uint8_t       pgw_pco[MAX_PCO_LEN];  
+    int             pgw_pco_len;
 
     mme_sgw_t       *sgw;
     pdn_t           *pdn;

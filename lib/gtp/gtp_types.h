@@ -193,21 +193,6 @@ CORE_DECLARE(c_int16_t) gtp_parse_uli(gtp_uli_t *uli, tlv_octet_t *octet);
 CORE_DECLARE(c_int16_t) gtp_build_uli(
         tlv_octet_t *octet, gtp_uli_t *uli, void *data, int data_len);
 
-/* 8.14 PDN Address Allocation (PAA) */
-#define GTP_PAA_IPV4_LEN                                    5
-#define GTP_PAA_IPV6_LEN                                    18
-typedef struct _gtp_paa_t {
-ED2(c_uint8_t spare:6;,
-    c_uint8_t pdn_type:2;)
-    union {
-        c_uint32_t ipv4_prefix;;
-        struct {
-            c_uint8_t ipv6_prefix_lengh;
-            c_uint8_t ipv6_prefix[16];
-        };
-    };
-} gtp_paa_t;
-
 /* 8.22 Fully Qualified TEID (F-TEID) */
 #define GTP_F_TEID_S1_U_ENODEB_GTP_U                        0
 #define GTP_F_TEID_S1_U_SGW_GTP_U                           1
@@ -262,12 +247,6 @@ ED3(c_uint8_t ipv4:1;,
         c_uint8_t ipv6_addr[IPV6_LEN];
     };
 } __attribute__ ((packed)) gtp_f_teid_t;
-
-/* 8.34 PDN Type  */
-#define GTP_PDN_TYPE_IPV4                                   1
-#define GTP_PDN_TYPE_IPV6                                   2
-#define GTP_PDN_TYPE_BOTH                                   3
-#define GTP_PDN_TYPE_NON_IP                                 4
 
 /* 8.44 UE Time Zone */
 #define GTP_UE_TIME_ZONE_NO_ADJUSTMENT_FOR_DAYLIGHT_SAVING_TIME 0

@@ -13,6 +13,8 @@ void pgw_handle_create_session_request(
         gtp_xact_t *xact, gtp_create_session_request_t *req)
 {
     status_t rv;
+    c_int8_t apn[MAX_APN_LEN];
+    pdn_t *pdn = NULL;
     pkbuf_t *pkbuf;
     gtp_message_t gtp_message;
     c_uint8_t type = GTP_CREATE_SESSION_RESPONSE_TYPE;
@@ -27,9 +29,24 @@ void pgw_handle_create_session_request(
     d_assert(xact, return, "Null param");
     d_assert(req, return, "Null param");
 
+    if (req->access_point_name.presence == 0)
+    {
+        d_error("No APN");
+        return;
+    }
+
     if (req->sender_f_teid_for_control_plane.presence == 0)
     {
         d_error("No Sender F-TEID for control plance");
+        return;
+    }
+
+    memcpy(apn, req->access_point_name.data, req->access_point_name.len);
+    apn[req->access_point_name.len] = 0;
+    pdn = pgw_pdn_find_by_apn(apn);
+    if (!pdn)
+    {
+        d_error("No PDN Context-APN[%s]", apn);
         return;
     }
 
@@ -68,6 +85,13 @@ void pgw_handle_create_session_request(
         data = &pgw_f_teid;
     rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
         len = GTP_F_TEID_IPV4_LEN;
+
+    rsp->pdn_address_allocation.presence = 1;
+    rsp->pdn_address_allocation.data = &pdn->paa;
+    rsp->pdn_address_allocation.len = PAA_IPV4_LEN;
+
+    rsp->apn_restriction.presence = 1;
+    rsp->apn_restriction.u8 = GTP_APN_NO_RESTRICTION;
 
     rv = gtp_build_msg(&pkbuf, type, &gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
