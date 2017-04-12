@@ -31,18 +31,19 @@ status_t pgw_context_init()
     pool_init(&pgw_pdn_pool, MAX_NUM_OF_UE_PDN);
 
     self.pgw_addr = inet_addr("127.0.0.1");
-    self.sgw_addr = inet_addr("127.0.0.1");
 
     self.s5c_addr = self.pgw_addr;
     self.s5c_port = GTPV2_C_UDP_PORT + 3;
-    self.s5c_node.addr = self.sgw_addr;
+    /* FIXME : It shoud be removed */
+    self.s5c_node.addr = inet_addr("127.0.0.1");
     self.s5c_node.port = GTPV2_C_UDP_PORT + 2;
     list_init(&self.s5c_node.local_list);
     list_init(&self.s5c_node.remote_list);
 
     self.s5u_addr = self.pgw_addr;
     self.s5u_port = GTPV1_U_UDP_PORT + 1;
-    self.s5u_node.addr = self.sgw_addr;
+    /* FIXME : It shoud be removed */
+    self.s5u_node.addr = inet_addr("127.0.0.1");
     self.s5u_node.port = GTPV1_U_UDP_PORT;
 
     self.primary_dns_addr = inet_addr("8.8.8.8");

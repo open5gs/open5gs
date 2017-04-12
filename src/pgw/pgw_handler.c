@@ -106,15 +106,15 @@ void pgw_handle_create_session_request(
     gtp_create_session_response_t *rsp = &gtp_message.create_session_response;
 
     gtp_cause_t cause;
-    gtp_f_teid_t *sgw_s5c_teid;
+    gtp_f_teid_t *sgw_s5c_teid, *sgw_s5u_teid;
     gtp_f_teid_t pgw_s5c_teid, pgw_s5u_teid;
     c_int8_t apn[MAX_APN_LEN];
     pdn_t *pdn = NULL;
     c_uint8_t pco_buf[MAX_PCO_LEN];
     c_int16_t pco_len;
-    pgw_bearer_t *bearer = NULL;
 
     pgw_sess_t *sess = NULL;
+    pgw_bearer_t *bearer = NULL;
 
     d_assert(xact, return, "Null param");
     d_assert(req, return, "Null param");
@@ -136,28 +136,16 @@ void pgw_handle_create_session_request(
         return;
     }
 
-    if (req->bearer_contexts_to_be_created.presence == 0 &&
+    if (req->bearer_contexts_to_be_created.presence == 0 ||
         req->bearer_contexts_to_be_created.eps_bearer_id.presence == 0)
     {
         d_error("No Bearer");
         return;
     }
 
-    sgw_s5c_teid = req->sender_f_teid_for_control_plane.data;
-    if (!(sgw_s5c_teid->ipv4 == 1 && sgw_s5c_teid->ipv6 == 0 &&
-            sgw_s5c_teid->interface_type == GTP_F_TEID_S5_S8_SGW_GTP_C))
-    {
-        d_error("Invalid Parameter(ipv4:%d,ipv6:%d,type:%d",
-            sgw_s5c_teid->ipv4, sgw_s5c_teid->ipv6,
-            sgw_s5c_teid->interface_type);
-        return;
-    }
-
+    /* Generate Control Plane(UL) : PGW-S5C */
     sess = pgw_sess_add();
     d_assert(sess, return, "No Session Context");
-
-    sess->sgw_s5c_teid = ntohl(sgw_s5c_teid->teid);
-    sess->sgw_s5c_addr = sgw_s5c_teid->ipv4_addr;
 
     memcpy(apn, req->access_point_name.data, req->access_point_name.len);
     apn[req->access_point_name.len] = 0;
@@ -172,6 +160,7 @@ void pgw_handle_create_session_request(
                 req->bearer_contexts_to_be_created.eps_bearer_id.u8);
     if (!bearer)
     {
+        /* Generate Data Plane(UL) : PGW-S5U */
         bearer = pgw_bearer_add(sess,
                 req->bearer_contexts_to_be_created.eps_bearer_id.u8);
     }
@@ -185,6 +174,17 @@ void pgw_handle_create_session_request(
     rsp->cause.len = sizeof(cause);
     rsp->cause.data = &cause;
 
+    /* Receive Control Plane(DL) : SGW-S5C */
+    sgw_s5c_teid = req->sender_f_teid_for_control_plane.data;
+    sess->sgw_s5c_teid = ntohl(sgw_s5c_teid->teid);
+    sess->sgw_s5c_addr = sgw_s5c_teid->ipv4_addr;
+
+    /* Receive Control Plane(DL) : SGW-S5U */
+    sgw_s5u_teid = req->bearer_contexts_to_be_created.s5_s8_u_sgw_f_teid.data;
+    bearer->sgw_s5u_teid = ntohl(sgw_s5u_teid->teid);
+    bearer->sgw_s5u_addr = sgw_s5u_teid->ipv4_addr;
+
+    /* Send Control Plane(UL) : PGW-S5C */
     memset(&pgw_s5c_teid, 0, sizeof(gtp_f_teid_t));
     pgw_s5c_teid.ipv4 = 1;
     pgw_s5c_teid.interface_type = GTP_F_TEID_S5_S8_PGW_GTP_C;
@@ -217,6 +217,7 @@ void pgw_handle_create_session_request(
     rsp->bearer_contexts_created.eps_bearer_id.presence = 1;
     rsp->bearer_contexts_created.eps_bearer_id.u8 = bearer->id;
 
+    /* Send Data Plane(UL) : PGW-S5U */
     memset(&pgw_s5u_teid, 0, sizeof(gtp_f_teid_t));
     pgw_s5u_teid.ipv4 = 1;
     pgw_s5u_teid.interface_type = GTP_F_TEID_S5_S8_PGW_GTP_U;

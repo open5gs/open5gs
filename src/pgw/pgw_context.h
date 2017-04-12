@@ -17,7 +17,6 @@ extern "C" {
 
 typedef struct _pgw_context_t {
     c_uint32_t      pgw_addr;  /* PGW local address */
-    c_uint32_t      sgw_addr;  /* SGW remote address */
 
     c_uint32_t      s5c_addr;  /* PGW S5-C local address */
     c_uint32_t      s5c_port;  /* PGW S5-C local port */
