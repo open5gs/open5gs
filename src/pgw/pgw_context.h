@@ -16,6 +16,9 @@ extern "C" {
 #endif /* __cplusplus */
 
 typedef struct _pgw_context_t {
+    c_uint32_t      pgw_addr;  /* PGW local address */
+    c_uint32_t      sgw_addr;  /* SGW remote address */
+
     c_uint32_t      s5c_addr;  /* PGW S5-C local address */
     c_uint32_t      s5c_port;  /* PGW S5-C local port */
     net_sock_t*     s5c_sock;  /* PGW S5-C local listen socket */
@@ -42,14 +45,32 @@ typedef struct _pgw_sess_t {
 
     /* IMPORTANT! 
      * PGW-S5C-F-TEID is same with an index */
-    c_uint32_t      teid;       
+    c_uint32_t      pgw_s5c_teid;       
+    c_uint32_t      pgw_s5c_addr;       
 
-    c_uint32_t      sgw_s5c_addr;   /* SGW-S5C-F-TEID IPv4 Address */
-    c_uint32_t      sgw_s5c_teid;   /* SGW-S5C-F-TEID */
+    c_uint32_t      sgw_s5c_teid;
+    c_uint32_t      sgw_s5c_addr;
 
     list_t          pdn_list;
     list_t          bearer_list;
 } pgw_sess_t;
+
+typedef struct _pgw_bearer_t {
+    lnode_t         node; /**< A node of list_t */
+    index_t         index;
+
+    c_uint8_t       id;
+
+    /* IMPORTANT! 
+     * PGW-S5U-F-TEID is same with an index */
+    c_uint32_t      pgw_s5u_teid;
+    c_uint32_t      pgw_s5u_addr;
+
+    c_uint32_t      sgw_s5u_teid;  
+    c_uint32_t      sgw_s5u_addr;
+
+    pgw_sess_t      *sess;
+} pgw_bearer_t;
 
 CORE_DECLARE(status_t)      pgw_context_init(void);
 CORE_DECLARE(status_t)      pgw_context_final(void);
@@ -71,13 +92,13 @@ CORE_DECLARE(pdn_t*)        pgw_pdn_find_by_apn(pgw_sess_t *sess, c_int8_t *apn)
 CORE_DECLARE(pdn_t*)        pgw_pdn_first(pgw_sess_t *sess);
 CORE_DECLARE(pdn_t*)        pgw_pdn_next(pdn_t *pdn);
 
-CORE_DECLARE(bearer_t*)     pgw_bearer_add(pgw_sess_t *sess, c_uint8_t id);
-CORE_DECLARE(status_t)      pgw_bearer_remove(bearer_t *bearer);
+CORE_DECLARE(pgw_bearer_t*) pgw_bearer_add(pgw_sess_t *sess, c_uint8_t id);
+CORE_DECLARE(status_t)      pgw_bearer_remove(pgw_bearer_t *bearer);
 CORE_DECLARE(status_t)      pgw_bearer_remove_all(pgw_sess_t *sess);
-CORE_DECLARE(bearer_t*)     pgw_bearer_find_by_id(
+CORE_DECLARE(pgw_bearer_t*) pgw_bearer_find_by_id(
                                 pgw_sess_t *sess, c_uint8_t id);
-CORE_DECLARE(bearer_t*)     pgw_bearer_first(pgw_sess_t *sess);
-CORE_DECLARE(bearer_t*)     pgw_bearer_next(bearer_t *bearer);
+CORE_DECLARE(pgw_bearer_t*) pgw_bearer_first(pgw_sess_t *sess);
+CORE_DECLARE(pgw_bearer_t*) pgw_bearer_next(pgw_bearer_t *bearer);
 
 #ifdef __cplusplus
 }

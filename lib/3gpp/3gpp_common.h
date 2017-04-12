@@ -137,20 +137,6 @@ typedef struct _pdn_t {
     void *context;
 } pdn_t;
 
-/*********************************
- * EPS Bearer Structure         */
-typedef struct _bearer_t {
-    lnode_t         node; /**< A node of list_t */
-
-    c_uint8_t       id;
-    c_uint32_t      dl_teid;
-    c_uint32_t      dl_addr;
-    c_uint32_t      ul_teid;
-    c_uint32_t      ul_addr;
-
-    void *context;
-} bearer_t;
-
 /**************************************************
  * Protocol Configuration Options Structure
  * 8.13 Protocol Configuration Options (PCO) 

@@ -11,8 +11,9 @@
 static pgw_context_t self;
 
 index_declare(pgw_sess_pool, pgw_sess_t, MAX_NUM_OF_UE);
+index_declare(pgw_bearer_pool, pgw_bearer_t, MAX_NUM_OF_UE_BEARER);
+
 pool_declare(pgw_pdn_pool, pdn_t, MAX_NUM_OF_UE_PDN);
-pool_declare(pgw_bearer_pool, bearer_t, MAX_NUM_OF_UE_BEARER);
 
 static int context_initiaized = 0;
 
@@ -25,20 +26,23 @@ status_t pgw_context_init()
 
     index_init(&pgw_sess_pool, MAX_NUM_OF_UE);
     list_init(&self.sess_list);
+    index_init(&pgw_bearer_pool, MAX_NUM_OF_UE_BEARER);
 
     pool_init(&pgw_pdn_pool, MAX_NUM_OF_UE_PDN);
-    pool_init(&pgw_bearer_pool, MAX_NUM_OF_UE_BEARER);
 
-    self.s5c_addr = inet_addr("127.0.0.1");
+    self.pgw_addr = inet_addr("127.0.0.1");
+    self.sgw_addr = inet_addr("127.0.0.1");
+
+    self.s5c_addr = self.pgw_addr;
     self.s5c_port = GTPV2_C_UDP_PORT + 3;
-    self.s5c_node.addr = inet_addr("127.0.0.1");
+    self.s5c_node.addr = self.sgw_addr;
     self.s5c_node.port = GTPV2_C_UDP_PORT + 2;
     list_init(&self.s5c_node.local_list);
     list_init(&self.s5c_node.remote_list);
 
-    self.s5u_addr = inet_addr("127.0.0.1");
+    self.s5u_addr = self.pgw_addr;
     self.s5u_port = GTPV1_U_UDP_PORT + 1;
-    self.s5u_node.addr = inet_addr("127.0.0.1");
+    self.s5u_node.addr = self.sgw_addr;
     self.s5u_node.port = GTPV1_U_UDP_PORT;
 
     self.primary_dns_addr = inet_addr("8.8.8.8");
@@ -61,9 +65,10 @@ status_t pgw_context_final()
             index_size(&pgw_sess_pool) - pool_avail(&pgw_sess_pool),
             index_size(&pgw_sess_pool));
 
-    index_final(&pgw_sess_pool);
     pool_final(&pgw_pdn_pool);
-    pool_final(&pgw_bearer_pool);
+
+    index_final(&pgw_bearer_pool);
+    index_final(&pgw_sess_pool);
 
     context_initiaized = 0;
     
@@ -82,7 +87,8 @@ pgw_sess_t *pgw_sess_add()
     index_alloc(&pgw_sess_pool, &sess);
     d_assert(sess, return NULL, "Null param");
 
-    sess->teid = sess->index;  /* derived from an index */
+    sess->pgw_s5c_teid = sess->index;  /* derived from an index */
+    sess->pgw_s5c_addr = pgw_self()->s5c_addr;
 
     list_init(&sess->pdn_list);
     list_init(&sess->bearer_list);
@@ -223,41 +229,39 @@ pdn_t* pgw_pdn_next(pdn_t *pdn)
     return list_next(pdn);
 }
 
-bearer_t* pgw_bearer_add(pgw_sess_t *sess, c_uint8_t id)
+pgw_bearer_t* pgw_bearer_add(pgw_sess_t *sess, c_uint8_t id)
 {
-    bearer_t *bearer = NULL;
+    pgw_bearer_t *bearer = NULL;
 
     d_assert(sess, return NULL, "Null param");
 
-    pool_alloc_node(&pgw_bearer_pool, &bearer);
-    d_assert(bearer, return NULL, "PDN context allocation failed");
+    index_alloc(&pgw_bearer_pool, &bearer);
+    d_assert(bearer, return NULL, "Bearer context allocation failed");
 
-    memset(bearer, 0, sizeof(bearer_t));
     bearer->id = id;
+    bearer->pgw_s5u_teid = bearer->index;
+    bearer->pgw_s5u_addr = pgw_self()->s5u_addr;
     
-    bearer->context = sess;
+    bearer->sess = sess;
     list_append(&sess->bearer_list, bearer);
 
     return bearer;
 }
 
-status_t pgw_bearer_remove(bearer_t *bearer)
+status_t pgw_bearer_remove(pgw_bearer_t *bearer)
 {
-    pgw_sess_t *sess = NULL;
-
     d_assert(bearer, return CORE_ERROR, "Null param");
-    sess = bearer->context;
-    d_assert(sess, return CORE_ERROR, "Null param");
+    d_assert(bearer->sess, return CORE_ERROR, "Null param");
 
-    list_remove(&sess->bearer_list, bearer);
-    pool_free_node(&pgw_bearer_pool, bearer);
+    list_remove(&bearer->sess->bearer_list, bearer);
+    index_free(&pgw_bearer_pool, bearer);
 
     return CORE_OK;
 }
 
 status_t pgw_bearer_remove_all(pgw_sess_t *sess)
 {
-    bearer_t *bearer = NULL, *next_bearer = NULL;
+    pgw_bearer_t *bearer = NULL, *next_bearer = NULL;
 
     d_assert(sess, return CORE_ERROR, "Null param");
     
@@ -274,9 +278,20 @@ status_t pgw_bearer_remove_all(pgw_sess_t *sess)
     return CORE_OK;
 }
 
-bearer_t* pgw_bearer_find_by_id(pgw_sess_t *sess, c_uint8_t id)
+pgw_bearer_t* pgw_bearer_find(index_t index)
 {
-    bearer_t *bearer = NULL;
+    d_assert(index, return NULL, "Invalid Index");
+    return index_find(&pgw_bearer_pool, index);
+}
+
+pgw_bearer_t* pgw_bearer_find_by_pgw_s5u_teid(c_uint32_t pgw_s5u_teid)
+{
+    return pgw_bearer_find(pgw_s5u_teid);
+}
+
+pgw_bearer_t* pgw_bearer_find_by_id(pgw_sess_t *sess, c_uint8_t id)
+{
+    pgw_bearer_t *bearer = NULL;
     
     d_assert(sess, return NULL, "Null param");
 
@@ -292,13 +307,13 @@ bearer_t* pgw_bearer_find_by_id(pgw_sess_t *sess, c_uint8_t id)
     return bearer;
 }
 
-bearer_t* pgw_bearer_first(pgw_sess_t *sess)
+pgw_bearer_t* pgw_bearer_first(pgw_sess_t *sess)
 {
     d_assert(sess, return NULL, "Null param");
     return list_first(&sess->bearer_list);
 }
 
-bearer_t* pgw_bearer_next(bearer_t *bearer)
+pgw_bearer_t* pgw_bearer_next(pgw_bearer_t *bearer)
 {
     return list_next(bearer);
 }
