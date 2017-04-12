@@ -61,7 +61,7 @@ typedef struct _pgw_bearer_t {
     c_uint8_t       id;
 
     /* IMPORTANT! 
-     * PGW-S5U-F-TEID is same with an index */
+     * PGW-S5U-TEID is same with an index */
     c_uint32_t      pgw_s5u_teid;
     c_uint32_t      pgw_s5u_addr;
 

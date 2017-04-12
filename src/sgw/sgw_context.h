@@ -73,14 +73,14 @@ typedef struct _sgw_bearer_t {
     c_uint8_t       id;
 
     /* IMPORTANT! 
-     * SGW-S1U-F-TEID is same with an index */
+     * SGW-S1U-TEID is same with an index */
     c_uint32_t      sgw_s1u_teid;
     c_uint32_t      sgw_s1u_addr;
     c_uint32_t      enb_s1u_teid;
     c_uint32_t      enb_s1u_addr;
 
     /* IMPORTANT! 
-     * SGW-S5U-F-TEID is same with an index */
+     * SGW-S5U-TEID is same with an index */
     c_uint32_t      sgw_s5u_teid;  
     c_uint32_t      sgw_s5u_addr;
     c_uint32_t      pgw_s5u_teid;  

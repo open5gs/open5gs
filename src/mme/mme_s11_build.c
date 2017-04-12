@@ -73,8 +73,8 @@ status_t mme_s11_build_create_session_request(pkbuf_t **pkbuf, mme_esm_t *esm)
     memset(&s11, 0, sizeof(gtp_f_teid_t));
     s11.ipv4 = 1;
     s11.interface_type = GTP_F_TEID_S11_MME_GTP_C;
-    s11.teid = htonl(esm->teid);
-    s11.ipv4_addr = mme_self()->s11_addr;
+    s11.teid = htonl(ue->mme_s11_teid);
+    s11.ipv4_addr = ue->mme_s11_addr;
     req->sender_f_teid_for_control_plane.presence = 1;
     req->sender_f_teid_for_control_plane.data = &s11;
     req->sender_f_teid_for_control_plane.len = GTP_F_TEID_IPV4_LEN;

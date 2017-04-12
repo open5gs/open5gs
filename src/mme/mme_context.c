@@ -50,17 +50,20 @@ status_t mme_context_init()
     index_init(&mme_esm_pool, MAX_NUM_OF_ESM);
     pool_init(&mme_pdn_pool, MAX_NUM_OF_UE_PDN);
 
+    self.mme_addr = inet_addr("127.0.0.1");
+
     self.mme_ue_s1ap_id_hash = hash_make();
 
-    self.s1ap_addr = inet_addr("127.0.0.1");
+    self.s1ap_addr = self.mme_addr;
     self.s1ap_port = S1AP_SCTP_PORT;
 
     mme_sgw_t *sgw = mme_sgw_add();
     d_assert(sgw, return CORE_ERROR, "Can't add SGW context");
 
-    self.s11_addr = inet_addr("127.0.0.1");
+    self.s11_addr = self.mme_addr;
     self.s11_port = GTPV2_C_UDP_PORT;
 
+    /* FIXME : It should be removed */
     sgw->gnode.addr = inet_addr("127.0.0.1");
     sgw->gnode.port = GTPV2_C_UDP_PORT+1;
 
@@ -304,10 +307,12 @@ mme_ue_t* mme_ue_add(mme_enb_t *enb)
     ue->mme_ue_s1ap_id = NEXT_ID(self.mme_ue_s1ap_id, 1, 0xffffffff);
     hash_set(self.mme_ue_s1ap_id_hash, &ue->mme_ue_s1ap_id, 
             sizeof(ue->mme_ue_s1ap_id), ue);
+    ue->mme_s11_teid = ue->index;
+    ue->mme_s11_addr = mme_self()->s11_addr;
+
+    ue->ebi = MIN_EPS_BEARER_ID - 1; /* Setup EBI Generator */
 
     list_init(&ue->pdn_list);
-    ue->ebi = MIN_EPS_BEARER_ID - 1;
-
     list_init(&ue->esm_list);
     list_append(&enb->ue_list, ue);
 
@@ -365,6 +370,11 @@ mme_ue_t* mme_ue_find_by_mme_ue_s1ap_id(c_uint32_t mme_ue_s1ap_id)
     d_assert(self.mme_ue_s1ap_id_hash, return NULL, "Null param");
     return hash_get(self.mme_ue_s1ap_id_hash, 
             &mme_ue_s1ap_id, sizeof(mme_ue_s1ap_id));
+}
+
+mme_ue_t* mme_ue_find_by_teid(c_uint32_t teid)
+{
+    return mme_ue_find(teid);
 }
 
 hash_index_t *mme_ue_first()
@@ -446,8 +456,6 @@ mme_esm_t* mme_esm_add(mme_ue_t *ue, c_uint8_t pti)
     esm->pti = pti;
     esm->ebi = NEXT_ID(ue->ebi, MIN_EPS_BEARER_ID, MAX_EPS_BEARER_ID);
 
-    esm->teid = esm->index;
-
     esm->ue = ue;
     list_append(&ue->esm_list, esm);
     
@@ -494,11 +502,6 @@ mme_esm_t* mme_esm_find(index_t index)
 {
     d_assert(index, return NULL, "Invalid Index");
     return index_find(&mme_esm_pool, index);
-}
-
-mme_esm_t* mme_esm_find_by_teid(c_uint32_t teid)
-{
-    return mme_esm_find(teid);
 }
 
 mme_esm_t* mme_esm_find_by_pti(mme_ue_t *ue, c_uint8_t pti)

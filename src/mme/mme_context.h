@@ -33,6 +33,8 @@ typedef struct _served_gummei {
 } srvd_gummei_t;
 
 typedef struct _mme_context_t {
+    c_uint32_t      mme_addr;   /* MME local address */
+
     c_uint32_t      s1ap_addr;  /* MME S1AP local address */
     c_uint16_t      s1ap_port;  /* MME S1AP local port */
     net_sock_t      *s1ap_sock; /* MME S1AP local listen socket */
@@ -139,6 +141,13 @@ typedef struct _mme_ue_t {
     list_t          pdn_list;
     c_uint32_t      subscribed_rau_tau_timer; /* seconds */
 
+    /* IMPORTANT! 
+     * MME-S11-TEID is same with an index */
+    c_uint32_t      mme_s11_teid;       
+    c_uint32_t      mme_s11_addr;       
+    c_uint32_t      sgw_s11_teid;
+    c_uint32_t      sgw_s11_addr;
+
     /* ESM Info */
     c_uint8_t       ebi;        /* EPS Bearer ID generator */
     list_t          esm_list;
@@ -154,14 +163,10 @@ typedef struct _mme_esm_t {
     c_uint8_t       pti;    /** Procedure Trasaction Identity */
     c_uint8_t       ebi;    /** EPS Bearer ID */    
 
-    /* IMPORTANT! 
-     * MME-S11-F-TEID is same with an index */
-    c_uint32_t      teid;       
-    c_uint32_t      sgw_s11_addr;   /* SGW-S11-F-TEID IPv4 Address */
-    c_uint32_t      sgw_s11_teid;   /* SGW-S11-F-TEID */
-
-    c_uint32_t      sgw_s1u_addr;   /* SGW-S1U-F-TEID IPv4 Address */
-    c_uint32_t      sgw_s1u_teid;   /* SGW-S1U-F-TEID */
+    c_uint32_t      enb_s1u_teid;
+    c_uint32_t      enb_s1u_addr;
+    c_uint32_t      sgw_s1u_teid;
+    c_uint32_t      sgw_s1u_addr;
 
     /* Protocol Configuration Options */
     c_uint8_t       ue_pco[MAX_PCO_LEN];  
@@ -201,6 +206,7 @@ CORE_DECLARE(status_t)      mme_ue_remove_all();
 CORE_DECLARE(mme_ue_t*)     mme_ue_find(index_t index);
 CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_mme_ue_s1ap_id(
                                 c_uint32_t mme_ue_s1ap_id);
+CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_teid(c_uint32_t teid);
 CORE_DECLARE(hash_index_t *) mme_ue_first();
 CORE_DECLARE(hash_index_t *) mme_ue_next(hash_index_t *hi);
 CORE_DECLARE(mme_ue_t *)    mme_ue_this(hash_index_t *hi);
@@ -216,7 +222,6 @@ CORE_DECLARE(status_t)      mme_esm_remove(mme_esm_t *esm);
 CORE_DECLARE(status_t)      mme_esm_remove_all(mme_ue_t *ue);
 CORE_DECLARE(mme_esm_t*)    mme_esm_find(index_t index);
 CORE_DECLARE(mme_esm_t*)    mme_esm_find_by_pti(mme_ue_t *ue, c_uint8_t pti);
-CORE_DECLARE(mme_esm_t*)    mme_esm_find_by_teid(c_uint32_t teid);
 CORE_DECLARE(mme_esm_t*)    mme_esm_first(mme_ue_t *ue);
 CORE_DECLARE(mme_esm_t*)    mme_esm_next(mme_esm_t *esm);
 
