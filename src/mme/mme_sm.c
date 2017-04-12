@@ -9,6 +9,7 @@
 #include "s1ap_path.h"
 #include "nas_security.h"
 #include "mme_s11_path.h"
+#include "mme_s11_handler.h"
 
 void mme_state_initial(fsm_t *s, event_t *e)
 {
@@ -247,7 +248,8 @@ void mme_state_operational(fsm_t *s, event_t *e)
             switch(type)
             {
                 case GTP_CREATE_SESSION_RESPONSE_TYPE:
-                    d_info("receive reponse : %d", teid);
+                    mme_s11_handle_create_session_response(
+                            ue, &gtp_message.create_session_response);
                     break;
                 default:
                     d_warn("Not implmeneted(type:%d)", type);

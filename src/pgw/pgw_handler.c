@@ -119,27 +119,34 @@ void pgw_handle_create_session_request(
     d_assert(xact, return, "Null param");
     d_assert(req, return, "Null param");
 
-    if (req->sender_f_teid_for_control_plane.presence == 0)
-    {
-        d_error("No Sender F-TEID for control plance");
-        return;
-    }
     if (req->access_point_name.presence == 0)
     {
         d_error("No APN");
         return;
     }
-
     if (req->protocol_configuration_options.presence == 0)
     {
         d_error("No Protocol Configuration Options");
         return;
     }
-
-    if (req->bearer_contexts_to_be_created.presence == 0 ||
-        req->bearer_contexts_to_be_created.eps_bearer_id.presence == 0)
+    if (req->sender_f_teid_for_control_plane.presence == 0)
+    {
+        d_error("No TEID");
+        return;
+    }
+    if (req->bearer_contexts_to_be_created.presence == 0)
     {
         d_error("No Bearer");
+        return;
+    }
+    if (req->bearer_contexts_to_be_created.eps_bearer_id.presence == 0)
+    {
+        d_error("No EPS Bearer ID");
+        return;
+    }
+    if (req->bearer_contexts_to_be_created.s5_s8_u_sgw_f_teid.presence == 0)
+    {
+        d_error("No TEID");
         return;
     }
 

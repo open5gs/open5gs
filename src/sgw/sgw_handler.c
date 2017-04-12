@@ -28,14 +28,17 @@ void sgw_handle_create_session_request(
 
     if (req->sender_f_teid_for_control_plane.presence == 0)
     {
-        d_error("No Sender F-TEID for control plance");
+        d_error("No GTP TEID");
         return;
     }
-
-    if (req->bearer_contexts_to_be_created.presence == 0 ||
-        req->bearer_contexts_to_be_created.eps_bearer_id.presence == 0)
+    if (req->bearer_contexts_to_be_created.presence == 0)
     {
         d_error("No Bearer");
+        return;
+    }
+    if (req->bearer_contexts_to_be_created.eps_bearer_id.presence == 0)
+    {
+        d_error("No EPS Bearer ID");
         return;
     }
 
@@ -111,15 +114,22 @@ void sgw_handle_create_session_response(gtp_xact_t *xact,
     if (rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
             presence == 0)
     {
-        d_error("No PGW F-TEID for GTP-based control plance");
+        d_error("No GTP TEID");
         return;
     }
-
-    if (rsp->bearer_contexts_created.presence == 0 ||
-        rsp->bearer_contexts_created.eps_bearer_id.presence == 0 ||
-        rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.presence == 0)
+    if (rsp->bearer_contexts_created.presence == 0)
     {
         d_error("No Bearer");
+        return;
+    }
+    if (rsp->bearer_contexts_created.eps_bearer_id.presence == 0)
+    {
+        d_error("No EPS Bearer ID");
+        return;
+    }
+    if (rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.presence == 0)
+    {
+        d_error("No GTP TEID");
         return;
     }
 

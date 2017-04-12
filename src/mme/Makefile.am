@@ -10,7 +10,7 @@ libmme_la_SOURCES = \
 	nas_conv.h nas_security.h \
 	emm_handler.h \
 	esm_handler.h esm_build.h \
-	mme_s11_path.h mme_s11_build.h \
+	mme_s11_path.h mme_s11_build.h mme_s11_handler.h \
 	mme_sm.h 
 
 nodist_libmme_la_SOURCES = \
@@ -20,7 +20,7 @@ nodist_libmme_la_SOURCES = \
 	mme_s6a_handler.c \
 	nas_conv.c nas_security.c emm_sm.c emm_handler.c \
 	esm_sm.c esm_handler.c esm_build.c \
-	mme_s11_path.c mme_s11_build.c \
+	mme_s11_path.c mme_s11_build.c mme_s11_handler.c \
 	mme_sm.c 
 
 libmme_la_DEPENDENCIES = \

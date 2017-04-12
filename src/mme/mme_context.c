@@ -522,6 +522,24 @@ mme_esm_t* mme_esm_find_by_pti(mme_ue_t *ue, c_uint8_t pti)
     return esm;
 }
 
+mme_esm_t* mme_esm_find_by_ebi(mme_ue_t *ue, c_uint8_t ebi)
+{
+    mme_esm_t *esm = NULL;
+
+    d_assert(ue, return NULL, "Null param");
+    
+    esm = mme_esm_first(ue);
+    while (esm)
+    {
+        if (ebi == esm->ebi)
+            break;
+
+        esm = mme_esm_next(esm);
+    }
+
+    return esm;
+}
+
 mme_esm_t* mme_esm_first(mme_ue_t *ue)
 {
     d_assert(ue, return NULL, "Null param");

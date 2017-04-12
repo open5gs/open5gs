@@ -222,6 +222,7 @@ CORE_DECLARE(status_t)      mme_esm_remove(mme_esm_t *esm);
 CORE_DECLARE(status_t)      mme_esm_remove_all(mme_ue_t *ue);
 CORE_DECLARE(mme_esm_t*)    mme_esm_find(index_t index);
 CORE_DECLARE(mme_esm_t*)    mme_esm_find_by_pti(mme_ue_t *ue, c_uint8_t pti);
+CORE_DECLARE(mme_esm_t*)    mme_esm_find_by_ebi(mme_ue_t *ue, c_uint8_t ebi);
 CORE_DECLARE(mme_esm_t*)    mme_esm_first(mme_ue_t *ue);
 CORE_DECLARE(mme_esm_t*)    mme_esm_next(mme_esm_t *esm);
 
