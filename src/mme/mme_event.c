@@ -12,8 +12,6 @@ static char EVT_NAME_LO_MME_S1AP_ACCEPT[] = "LO_MME_S1AP_ACCEPT";
 static char EVT_NAME_LO_MME_S1AP_CONNREFUSED[] = "LO_MME_S1AP_CONNREFUSED";
 static char EVT_NAME_LO_MME_EMM_AUTH_REQ[] = "LO_MME_EMM_AUTH_REQ";
 static char EVT_NAME_LO_MME_EMM_LOCATION_UPDATE[] = "LO_MME_EMM_LOCATION_UPDATE";
-static char EVT_NAME_LO_MME_ESM_CREATE_SESSION[] = "LO_MME_ESM_CREATE_SESSION";
-static char EVT_NAME_LO_MME_ESM_INFO_REQ[] = "LO_MME_ESM_INFO_REQ";
 
 static char EVT_NAME_TM_MME_S11_T3[] = "TM_MME_S11_T3";
 
@@ -34,6 +32,34 @@ char* mme_event_get_name(event_t *e)
         case FSM_EXIT_SIG: 
             return FSM_NAME_EXIT_SIG;
 
+        case MME_EVT_S1AP_MSG:
+            return "S1AP_MSG";
+        case MME_EVT_S1AP_FROM_EMM:
+            return "S1AP_FROM_EMM";
+        case MME_EVT_S1AP_LO_ACCEPT:
+            return "S1AP_LO_ACCEPT";
+        case MME_EVT_S1AP_LO_CONNREFUSED:
+            return "S1AP_LO_CONNREFUSED";
+
+        case MME_EVT_EMM_MSG:
+            return "EMM_MSG";
+        case MME_EVT_EMM_FROM_ESM:
+            return "EMM_FROM_ESM";
+        case MME_EVT_EMM_LO_AUTH_REQ:
+            return "EMM_LO_AUTH_REQ";
+        case MME_EVT_EMM_LO_LOCATION_UPDATE:
+            return "EMM_LO_LOCATION_UPDATE";
+
+        case MME_EVT_ESM_MSG:
+            return "ESM_MSG";
+        case MME_EVT_ESM_LO_CREATE_SESSION:
+            return "ESM_LO_CREATE_SESSION";
+        case MME_EVT_ESM_LO_INFO_REQ:
+            return "ESM_LO_INFO_REQ";
+
+        case MME_EVT_S11_T3:
+            return "ESM_EVT_S11_T3";
+
         case EVT_LO_MME_S1AP_ACCEPT: 
            return EVT_NAME_LO_MME_S1AP_ACCEPT;
         case EVT_LO_MME_S1AP_CONNREFUSED: 
@@ -42,10 +68,6 @@ char* mme_event_get_name(event_t *e)
            return EVT_NAME_LO_MME_EMM_AUTH_REQ;
         case EVT_LO_MME_EMM_LOCATION_UPDATE: 
            return EVT_NAME_LO_MME_EMM_LOCATION_UPDATE;
-        case EVT_LO_MME_ESM_CREATE_SESSION: 
-           return EVT_NAME_LO_MME_ESM_CREATE_SESSION;
-        case EVT_LO_MME_ESM_INFO_REQ: 
-           return EVT_NAME_LO_MME_ESM_INFO_REQ;
 
         case EVT_TM_MME_S11_T3: 
            return EVT_NAME_TM_MME_S11_T3;

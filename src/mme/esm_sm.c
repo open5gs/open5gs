@@ -41,8 +41,8 @@ void esm_state_operational(fsm_t *s, event_t *e)
         {
             break;
         }
-        case EVT_LO_MME_ESM_INFO_REQ:
-        case EVT_LO_MME_ESM_CREATE_SESSION:
+        case MME_EVT_ESM_LO_INFO_REQ:
+        case MME_EVT_ESM_LO_CREATE_SESSION:
         {
             index_t index = event_get_param1(e);
             mme_esm_t *esm = NULL;
@@ -56,7 +56,7 @@ void esm_state_operational(fsm_t *s, event_t *e)
 
             switch(event_get(e))
             {
-                case EVT_LO_MME_ESM_INFO_REQ:
+                case MME_EVT_ESM_LO_INFO_REQ:
                 {
                     pkbuf_t *pkbuf = NULL;
                     status_t rv;
@@ -69,7 +69,7 @@ void esm_state_operational(fsm_t *s, event_t *e)
                             "UE[%s] <--- ESM[%d]", ue->imsi_bcd, esm->pti);
                     break;
                 }
-                case EVT_LO_MME_ESM_CREATE_SESSION:
+                case MME_EVT_ESM_LO_CREATE_SESSION:
                 {
 #if 0
                     pkbuf_t *pkbuf = NULL;

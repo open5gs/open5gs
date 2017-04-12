@@ -70,7 +70,7 @@ void emm_state_operational(fsm_t *s, event_t *e)
                     while(esm)
                     {
                         event_t e;
-                        event_set(&e, EVT_LO_MME_ESM_INFO_REQ);
+                        event_set(&e, MME_EVT_ESM_LO_INFO_REQ);
                         event_set_param1(&e, (c_uintptr_t)esm->index);
                         mme_event_send(&e);
 
