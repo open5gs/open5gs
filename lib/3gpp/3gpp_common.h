@@ -7,32 +7,30 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define MAX_UE_PER_ENB      128
-#define MAX_NUM_OF_ENB      128
-#define MAX_NUM_OF_UE       (MAX_NUM_OF_ENB * MAX_UE_PER_ENB)
+#define MAX_UE_PER_ENB          128
+#define MAX_NUM_OF_ENB          128
+#define MAX_NUM_OF_UE           (MAX_NUM_OF_ENB * MAX_UE_PER_ENB)
 
-#define MAX_NUM_OF_PDN      4
-#define MAX_NUM_OF_UE_PDN   (MAX_NUM_OF_UE * MAX_NUM_OF_PDN)
+#define MAX_NUM_OF_PDN          4
+#define MAX_NUM_OF_BEARER       8
+#define MAX_NUM_OF_UE_PDN       (MAX_NUM_OF_UE * MAX_NUM_OF_PDN)
+#define MAX_NUM_OF_UE_BEARER    (MAX_NUM_OF_UE * MAX_NUM_OF_BEARER)
 
-#define IPV6_LEN            16
+#define IPV6_LEN                16
 
-#define MAX_SDU_LEN         2048
+#define MAX_SDU_LEN             2048
 
-#define PLMN_ID_LEN         3
+#define PLMN_ID_LEN             3
 
 #define BCD_TO_BUFFER_LEN(x)    (((x)+1)/2)
-#define MAX_IMSI_BCD_LEN    15
-#define MAX_IMSI_LEN        BCD_TO_BUFFER_LEN(MAX_IMSI_BCD_LEN)
-#define MAX_MSISDN_BCD_LEN  15
-#define MAX_MSISDN_LEN      BCD_TO_BUFFER_LEN(MAX_MSISDN_BCD_LEN)
-#define MAX_IMEI_BCD_LEN    15
-#define MAX_IMEI_LEN        BCD_TO_BUFFER_LEN(MAX_IMEI_BCD_LEN)
+#define MAX_IMSI_BCD_LEN        15
+#define MAX_IMSI_LEN            BCD_TO_BUFFER_LEN(MAX_IMSI_BCD_LEN)
 
-#define RAND_LEN            16
-#define AUTN_LEN            16
-#define MAX_RES_LEN         16
+#define RAND_LEN                16
+#define AUTN_LEN                16
+#define MAX_RES_LEN             16
 
-#define MAX_APN_LEN         100
+#define MAX_APN_LEN             100
 
 #define NEXT_ID(__id, __min, __max) \
     ((__id) = ((__id) == (__max) ? (__min) : ((__id) + 1)))
@@ -138,6 +136,20 @@ typedef struct _pdn_t {
 
     void *context;
 } pdn_t;
+
+/*********************************
+ * EPS Bearer Structure         */
+typedef struct _bearer_t {
+    lnode_t         node; /**< A node of list_t */
+
+    c_uint8_t       id;
+    c_uint32_t      dl_teid;
+    c_uint32_t      dl_addr;
+    c_uint32_t      ul_teid;
+    c_uint32_t      ul_addr;
+
+    void *context;
+} bearer_t;
 
 /**************************************************
  * Protocol Configuration Options Structure

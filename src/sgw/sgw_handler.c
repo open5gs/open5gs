@@ -42,8 +42,8 @@ void sgw_handle_create_session_request(
     sess = sgw_sess_add();
     d_assert(sess, return, "sess_add failed");
 
-    sess->mme_teid = ntohl(f_teid->teid);
-    sess->mme_addr = f_teid->ipv4_addr;
+    sess->mme_s11_teid = ntohl(f_teid->teid);
+    sess->mme_s11_addr = f_teid->ipv4_addr;
 
     f_teid->teid = htonl(sess->teid);
     f_teid->ipv4_addr = sgw_self()->s5c_addr;
@@ -89,8 +89,8 @@ void sgw_handle_create_session_response(gtp_xact_t *xact,
         return;
     }
 
-    sess->pgw_teid = ntohl(pgw_f_teid->teid);
-    sess->pgw_addr = pgw_f_teid->ipv4_addr;
+    sess->pgw_s5c_teid = ntohl(pgw_f_teid->teid);
+    sess->pgw_s5c_addr = pgw_f_teid->ipv4_addr;
 
     memset(&sgw_f_teid, 0, sizeof(gtp_f_teid_t));
     sgw_f_teid.ipv4 = 1;
@@ -105,6 +105,7 @@ void sgw_handle_create_session_response(gtp_xact_t *xact,
     rv = gtp_build_msg(&pkbuf, type, gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
-    d_assert(sgw_s11_send_to_mme(xact, type, sess->mme_teid, pkbuf) == CORE_OK, 
-            return, "failed to send message");
+    d_assert(sgw_s11_send_to_mme(
+            xact, type, sess->mme_s11_teid, pkbuf) == CORE_OK, return, 
+            "failed to send message");
 }

@@ -105,10 +105,6 @@ typedef struct _mme_ue_t {
     c_uint8_t       imsi[MAX_IMSI_LEN];
     int             imsi_len;
     c_int8_t        imsi_bcd[MAX_IMSI_BCD_LEN+1];
-    c_uint8_t       msisdn[MAX_MSISDN_LEN];
-    int             msisdn_len;
-    c_uint8_t       imei[MAX_IMEI_LEN];
-    int             imei_len;
 
     /* UE Info */
     tai_t           tai;
@@ -161,8 +157,11 @@ typedef struct _mme_esm_t {
     /* IMPORTANT! 
      * MME-S11-F-TEID is same with an index */
     c_uint32_t      teid;       
-    c_uint32_t      sgw_addr;   /* SGW-S11-F-TEID IPv4 Address */
-    c_uint32_t      sgw_teid;   /* SGW-S11-F-TEID */
+    c_uint32_t      sgw_s11_addr;   /* SGW-S11-F-TEID IPv4 Address */
+    c_uint32_t      sgw_s11_teid;   /* SGW-S11-F-TEID */
+
+    c_uint32_t      sgw_s1u_addr;   /* SGW-S1U-F-TEID IPv4 Address */
+    c_uint32_t      sgw_s1u_teid;   /* SGW-S1U-F-TEID */
 
     /* Protocol Configuration Options */
     c_uint8_t       ue_pco[MAX_PCO_LEN];  

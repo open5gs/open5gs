@@ -219,14 +219,17 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
         struct avp *avp_subscriber_status, *avp_network_access_mode;
         struct avp *avp_ambr, *avp_max_bandwidth_ul, *avp_max_bandwidth_dl;
         int i;
+        c_uint8_t msisdn[MAX_IMSI_LEN];
+        int msisdn_len;
 
         /* Set the Subscription Data */
         d_assert(fd_msg_avp_new(s6a_subscription_data, 0, &avp) == 0, 
                 goto out,);
 
         d_assert(fd_msg_avp_new(s6a_msisdn, 0, &avp_msisdn) == 0, goto out,);
-        val.os.data = (c_uint8_t *)ue->msisdn;
-        val.os.len  = ue->msisdn_len;
+        core_bcd_to_buffer(ue->imsi_bcd, msisdn, &msisdn_len);
+        val.os.data = msisdn;
+        val.os.len = msisdn_len;
         d_assert(fd_msg_avp_setvalue(avp_msisdn, &val) == 0, goto out,);
         d_assert(fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avp_msisdn) == 0, 
                 goto out,);

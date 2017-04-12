@@ -293,12 +293,6 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     d_assert(fd_msg_search_avp(*msg, s6a_subscription_data, &avp) == 0 && avp, 
             error++; goto out,);
 
-    d_assert(fd_avp_search_avp(avp, s6a_msisdn, &avpch1) == 0 && avpch1, 
-            error++; goto out,);
-    d_assert(fd_msg_avp_hdr(avpch1, &hdr) == 0 && hdr, error++; goto out,);
-    ue->msisdn_len = hdr->avp_value->os.len;
-    memcpy(ue->msisdn, hdr->avp_value->os.data, ue->msisdn_len);
-
     d_assert(fd_avp_search_avp(avp, s6a_ambr, &avpch1) == 0 && avpch1, 
             error++; goto out,);
     d_assert(fd_avp_search_avp(avpch1, s6a_max_bandwidth_ul, &avpch2) == 0 && 

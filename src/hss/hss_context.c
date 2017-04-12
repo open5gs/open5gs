@@ -295,7 +295,6 @@ hss_ue_t* hss_ue_add(hss_profile_id_t id, c_int8_t *imsi_bcd)
     memcpy(ue->amf, profile->amf, HSS_AMF_LEN);
 
     strcpy(ue->imsi_bcd, imsi_bcd);
-    core_bcd_to_buffer(ue->imsi_bcd, ue->msisdn, &ue->msisdn_len);
 
     core_generate_random_bytes(ue->rand, RAND_LEN);
     ue->sqn = profile->sqn;

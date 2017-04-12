@@ -44,10 +44,11 @@ typedef struct _pgw_sess_t {
      * PGW-S5C-F-TEID is same with an index */
     c_uint32_t      teid;       
 
-    c_uint32_t      sgw_addr;   /* SGW-S5C-F-TEID IPv4 Address */
-    c_uint32_t      sgw_teid;   /* SGW-S5C-F-TEID */
+    c_uint32_t      sgw_s5c_addr;   /* SGW-S5C-F-TEID IPv4 Address */
+    c_uint32_t      sgw_s5c_teid;   /* SGW-S5C-F-TEID */
 
     list_t          pdn_list;
+    list_t          bearer_list;
 } pgw_sess_t;
 
 CORE_DECLARE(status_t)      pgw_context_init(void);
@@ -69,6 +70,14 @@ CORE_DECLARE(status_t)      pgw_pdn_remove_all(pgw_sess_t *sess);
 CORE_DECLARE(pdn_t*)        pgw_pdn_find_by_apn(pgw_sess_t *sess, c_int8_t *apn);
 CORE_DECLARE(pdn_t*)        pgw_pdn_first(pgw_sess_t *sess);
 CORE_DECLARE(pdn_t*)        pgw_pdn_next(pdn_t *pdn);
+
+CORE_DECLARE(bearer_t*)     pgw_bearer_add(pgw_sess_t *sess, c_uint8_t id);
+CORE_DECLARE(status_t)      pgw_bearer_remove(bearer_t *bearer);
+CORE_DECLARE(status_t)      pgw_bearer_remove_all(pgw_sess_t *sess);
+CORE_DECLARE(bearer_t*)     pgw_bearer_find_by_id(
+                                pgw_sess_t *sess, c_uint8_t id);
+CORE_DECLARE(bearer_t*)     pgw_bearer_first(pgw_sess_t *sess);
+CORE_DECLARE(bearer_t*)     pgw_bearer_next(bearer_t *bearer);
 
 #ifdef __cplusplus
 }
