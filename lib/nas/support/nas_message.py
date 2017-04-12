@@ -208,27 +208,27 @@ msg_list["ESM INFORMATION RESPONSE"] = { "type" : "218" }
 msg_list["ESM STATUS"] = { "type" : "232" }
 
 # Table number for Message List
-msg_list["ATTACH ACCEPT"]["table"] = 8
-msg_list["ATTACH COMPLETE"]["table"] = 9
-msg_list["ATTACH REJECT"]["table"] = 10
-msg_list["ATTACH REQUEST"]["table"] = 11
-msg_list["AUTHENTICATION FAILURE"]["table"] = 12
-msg_list["AUTHENTICATION REJECT"]["table"] = 13
-msg_list["AUTHENTICATION REQUEST"]["table"] = 14
-msg_list["AUTHENTICATION RESPONSE"]["table"] = 15
-msg_list["IDENTITY REQUEST"]["table"] = 27
-msg_list["IDENTITY RESPONSE"]["table"] = 28
-msg_list["SECURITY MODE COMMAND"]["table"] = 29
-msg_list["SECURITY MODE COMPLETE"]["table"] = 30
-msg_list["SECURITY MODE REJECT"]["table"] = 31
+msg_list["ATTACH ACCEPT"]["table"] = 0
+msg_list["ATTACH COMPLETE"]["table"] = 1
+msg_list["ATTACH REJECT"]["table"] = 2
+msg_list["ATTACH REQUEST"]["table"] = 3
+msg_list["AUTHENTICATION FAILURE"]["table"] = 4
+msg_list["AUTHENTICATION REJECT"]["table"] = 5
+msg_list["AUTHENTICATION REQUEST"]["table"] = 6
+msg_list["AUTHENTICATION RESPONSE"]["table"] = 7
+msg_list["IDENTITY REQUEST"]["table"] = 19
+msg_list["IDENTITY RESPONSE"]["table"] = 20
+msg_list["SECURITY MODE COMMAND"]["table"] = 21
+msg_list["SECURITY MODE COMPLETE"]["table"] = 22
+msg_list["SECURITY MODE REJECT"]["table"] = 23
 
-msg_list["ESM INFORMATION REQUEST"]["table"] = 57
-msg_list["ESM INFORMATION RESPONSE"]["table"] = 58
+msg_list["ESM INFORMATION REQUEST"]["table"] = 49
+msg_list["ESM INFORMATION RESPONSE"]["table"] = 50
 
-msg_list["PDN CONNECTIVITY REJECT"]["table"] = 64
-msg_list["PDN CONNECTIVITY REQUEST"]["table"] = 65
-msg_list["PDN DISCONNECT REJECT"]["table"] = 66
-msg_list["PDN DISCONNECT REQUEST"]["table"] = 67
+msg_list["PDN CONNECTIVITY REJECT"]["table"] = 56
+msg_list["PDN CONNECTIVITY REQUEST"]["table"] = 57
+msg_list["PDN DISCONNECT REJECT"]["table"] = 58
+msg_list["PDN DISCONNECT REQUEST"]["table"] = 59
 
 for key in msg_list.keys():
     if "table" not in msg_list[key].keys():
@@ -580,8 +580,10 @@ typedef struct _nas_message_t {
     };
 } nas_message_t;
 
-CORE_DECLARE(int) nas_plain_decode(nas_message_t *message, pkbuf_t *pkbuf);
-CORE_DECLARE(int) nas_plain_encode(pkbuf_t **pkbuf, nas_message_t *message);
+CORE_DECLARE(status_t) nas_emm_decode(nas_message_t *message, pkbuf_t *pkbuf);
+CORE_DECLARE(status_t) nas_esm_decode(nas_message_t *message, pkbuf_t *pkbuf);
+CORE_DECLARE(status_t) nas_plain_encode(
+        pkbuf_t **pkbuf, nas_message_t *message);
 
 #ifdef __cplusplus
 }
@@ -924,7 +926,6 @@ status_t nas_plain_encode(pkbuf_t **pkbuf, nas_message_t *message)
     d_assert(message->emm.h.protocol_discriminator ==
             message->esm.h.protocol_discriminator, 
             return CORE_ERROR, "check UNION for protocol");
-
 
     if (message->emm.h.protocol_discriminator == 
             NAS_PROTOCOL_DISCRIMINATOR_EMM)
