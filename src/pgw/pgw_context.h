@@ -26,12 +26,9 @@ typedef struct _pgw_context_t {
     net_sock_t*     s5u_sock;  /* PGW S5-U local listen socket */
     gtp_node_t      s5u_node;  /* PGW S5-U remote GTPv1-U node */
 
-    msgq_id         queue_id;       /* Queue for processing PGW control plane */
+    msgq_id         queue_id;       /* Qsesssess for processing PGW control plane */
     tm_service_t    tm_service;     /* Timer Service */
     gtp_xact_ctx_t  gtp_xact_ctx;   /* GTP Transaction Context */
-
-    c_uint32_t      pdn_id;     /* PDN ID Generator */
-    list_t          pdn_list;
 
     list_t          sess_list;
 } pgw_context_t;
@@ -46,6 +43,8 @@ typedef struct _pgw_sess_t {
 
     c_uint32_t      sgw_addr;   /* SGW-S5C-F-TEID IPv4 Address */
     c_uint32_t      sgw_teid;   /* SGW-S5C-F-TEID */
+
+    list_t          pdn_list;
 } pgw_sess_t;
 
 CORE_DECLARE(status_t)      pgw_context_init(void);
@@ -61,12 +60,11 @@ CORE_DECLARE(pgw_sess_t*)   pgw_sess_find_by_teid(c_uint32_t teid);
 CORE_DECLARE(pgw_sess_t *)  pgw_sess_first();
 CORE_DECLARE(pgw_sess_t *)  pgw_sess_next(pgw_sess_t *sess);
 
-CORE_DECLARE(pdn_t*)        pgw_pdn_add();
+CORE_DECLARE(pdn_t*)        pgw_pdn_add(pgw_sess_t *sess, c_int8_t *apn);
 CORE_DECLARE(status_t)      pgw_pdn_remove(pdn_t *pdn);
-CORE_DECLARE(status_t)      pgw_pdn_remove_all(void);
-CORE_DECLARE(pdn_t*)        pgw_pdn_find_by_id(pdn_id_t id);
-CORE_DECLARE(pdn_t*)        pgw_pdn_find_by_apn(c_int8_t *apn);
-CORE_DECLARE(pdn_t*)        pgw_pdn_first(void);
+CORE_DECLARE(status_t)      pgw_pdn_remove_all(pgw_sess_t *sess);
+CORE_DECLARE(pdn_t*)        pgw_pdn_find_by_apn(pgw_sess_t *sess, c_int8_t *apn);
+CORE_DECLARE(pdn_t*)        pgw_pdn_first(pgw_sess_t *sess);
 CORE_DECLARE(pdn_t*)        pgw_pdn_next(pdn_t *pdn);
 
 #ifdef __cplusplus

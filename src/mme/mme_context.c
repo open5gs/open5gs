@@ -14,6 +14,8 @@
 #define MAX_NUM_OF_SGW              8
 #define MAX_NUM_OF_ESM              (MAX_NUM_OF_UE * MAX_ESM_PER_UE)
 
+#define MME_NUM_OF_PDN              (MAX_NUM_OF_UE * MAX_PDN_PER_UE)
+
 #define S1AP_SCTP_PORT              36412
 
 #define MIN_EPS_BEARER_ID           5
@@ -22,11 +24,11 @@
 static mme_context_t self;
 
 pool_declare(mme_sgw_pool, mme_sgw_t, MAX_NUM_OF_SGW);
-pool_declare(mme_pdn_pool, pdn_t, MAX_NUM_OF_PDN);
 
 index_declare(mme_enb_pool, mme_enb_t, MAX_NUM_OF_ENB);
 index_declare(mme_ue_pool, mme_ue_t, MAX_NUM_OF_UE);
 index_declare(mme_esm_pool, mme_esm_t, MAX_NUM_OF_ESM);
+pool_declare(mme_pdn_pool, pdn_t, MAX_NUM_OF_UE_PDN);
 
 static int context_initialized = 0;
 
@@ -41,14 +43,12 @@ status_t mme_context_init()
     pool_init(&mme_sgw_pool, MAX_NUM_OF_SGW);
     list_init(&self.sgw_list);
 
-    pool_init(&mme_pdn_pool, MAX_NUM_OF_PDN);
-    list_init(&self.pdn_list);
-
     index_init(&mme_enb_pool, MAX_NUM_OF_ENB);
     list_init(&self.enb_list);
 
     index_init(&mme_ue_pool, MAX_NUM_OF_UE);
     index_init(&mme_esm_pool, MAX_NUM_OF_ESM);
+    pool_init(&mme_pdn_pool, MAX_NUM_OF_UE_PDN);
 
     self.mme_ue_s1ap_id_hash = hash_make();
 
@@ -94,17 +94,16 @@ status_t mme_context_final()
 
     mme_sgw_remove_all();
     mme_enb_remove_all();
-    mme_pdn_remove_all();
 
     d_assert(self.mme_ue_s1ap_id_hash, , "Null param");
     hash_destroy(self.mme_ue_s1ap_id_hash);
 
+    pool_final(&mme_pdn_pool);
     index_final(&mme_esm_pool);
     index_final(&mme_ue_pool);
-    index_final(&mme_enb_pool);
 
+    index_final(&mme_enb_pool);
     pool_final(&mme_sgw_pool);
-    pool_final(&mme_pdn_pool);
 
     context_initialized = 0;
 
@@ -292,91 +291,6 @@ mme_enb_t* mme_enb_next(mme_enb_t *enb)
     return list_next(enb);
 }
 
-pdn_t* mme_pdn_add(pdn_id_t id)
-{
-    pdn_t *pdn = NULL;
-
-    pool_alloc_node(&mme_pdn_pool, &pdn);
-    d_assert(pdn, return NULL, "HSS-UE context allocation failed");
-
-    memset(pdn, 0, sizeof(pdn_t));
-
-    pdn->id = id;
-    
-    list_append(&self.pdn_list, pdn);
-
-    return pdn;
-}
-
-status_t mme_pdn_remove(pdn_t *pdn)
-{
-    d_assert(pdn, return CORE_ERROR, "Null param");
-
-    list_remove(&self.pdn_list, pdn);
-    pool_free_node(&mme_pdn_pool, pdn);
-
-    return CORE_OK;
-}
-
-status_t mme_pdn_remove_all()
-{
-    pdn_t *pdn = NULL, *next_pdn = NULL;
-    
-    pdn = list_first(&self.pdn_list);
-    while (pdn)
-    {
-        next_pdn = list_next(pdn);
-
-        mme_pdn_remove(pdn);
-
-        pdn = next_pdn;
-    }
-
-    return CORE_OK;
-}
-
-pdn_t* mme_pdn_find_by_id(pdn_id_t id)
-{
-    pdn_t *pdn = NULL;
-    
-    pdn = list_first(&self.pdn_list);
-    while (pdn)
-    {
-        if (pdn->id == id)
-            break;
-
-        pdn = list_next(pdn);
-    }
-
-    return pdn;
-}
-
-pdn_t* mme_pdn_find_by_apn(c_int8_t *apn)
-{
-    pdn_t *pdn = NULL;
-    
-    pdn = list_first(&self.pdn_list);
-    while (pdn)
-    {
-        if (strcmp(pdn->apn, apn) == 0)
-            break;
-
-        pdn = list_next(pdn);
-    }
-
-    return pdn;
-}
-
-pdn_t* mme_pdn_first()
-{
-    return list_first(&self.pdn_list);
-}
-
-pdn_t* mme_pdn_next(pdn_t *pdn)
-{
-    return list_next(pdn);
-}
-
 mme_ue_t* mme_ue_add(mme_enb_t *enb)
 {
     mme_ue_t *ue = NULL;
@@ -391,11 +305,13 @@ mme_ue_t* mme_ue_add(mme_enb_t *enb)
     hash_set(self.mme_ue_s1ap_id_hash, &ue->mme_ue_s1ap_id, 
             sizeof(ue->mme_ue_s1ap_id), ue);
 
+    list_init(&ue->pdn_list);
     ue->ebi = MIN_EPS_BEARER_ID - 1;
 
-    ue->enb = enb;
     list_init(&ue->esm_list);
     list_append(&enb->ue_list, ue);
+
+    ue->enb = enb;
 
     fsm_create(&ue->sm, emm_state_initial, emm_state_final);
     fsm_init(&ue->sm, 0);
@@ -413,6 +329,7 @@ status_t mme_ue_remove(mme_ue_t *ue)
     fsm_clear(&ue->sm);
 
     mme_esm_remove_all(ue);
+    mme_pdn_remove_all(ue);
 
     list_remove(&ue->enb->ue_list, ue);
     hash_set(self.mme_ue_s1ap_id_hash, &ue->mme_ue_s1ap_id, 
@@ -613,3 +530,85 @@ mme_esm_t* mme_esm_next(mme_esm_t *esm)
 {
     return list_next(esm);
 }
+
+pdn_t* mme_pdn_add(mme_ue_t *ue, c_int8_t *apn)
+{
+    pdn_t *pdn = NULL;
+
+    d_assert(ue, return NULL, "Null param");
+    d_assert(apn, return NULL, "Null param");
+
+    pool_alloc_node(&mme_pdn_pool, &pdn);
+    d_assert(pdn, return NULL, "PDN context allocation failed");
+
+    memset(pdn, 0, sizeof(pdn_t));
+    strcpy(pdn->apn, apn);
+    
+    pdn->context = ue;
+    list_append(&ue->pdn_list, pdn);
+
+    return pdn;
+}
+
+status_t mme_pdn_remove(pdn_t *pdn)
+{
+    mme_ue_t *ue = NULL;
+
+    d_assert(pdn, return CORE_ERROR, "Null param");
+    ue = pdn->context;
+    d_assert(ue, return CORE_ERROR, "Null param");
+
+    list_remove(&ue->pdn_list, pdn);
+    pool_free_node(&mme_pdn_pool, pdn);
+
+    return CORE_OK;
+}
+
+status_t mme_pdn_remove_all(mme_ue_t *ue)
+{
+    pdn_t *pdn = NULL, *next_pdn = NULL;
+
+    d_assert(ue, return CORE_ERROR, "Null param");
+    
+    pdn = list_first(&ue->pdn_list);
+    while (pdn)
+    {
+        next_pdn = list_next(pdn);
+
+        mme_pdn_remove(pdn);
+
+        pdn = next_pdn;
+    }
+
+    return CORE_OK;
+}
+
+pdn_t* mme_pdn_find_by_apn(mme_ue_t *ue, c_int8_t *apn)
+{
+    pdn_t *pdn = NULL;
+    
+    d_assert(ue, return NULL, "Null param");
+
+    pdn = list_first(&ue->pdn_list);
+    while (pdn)
+    {
+        if (strcmp(pdn->apn, apn) == 0)
+            break;
+
+        pdn = list_next(pdn);
+    }
+
+    return pdn;
+}
+
+pdn_t* mme_pdn_first(mme_ue_t *ue)
+{
+    d_assert(ue, return NULL, "Null param");
+    return list_first(&ue->pdn_list);
+}
+
+pdn_t* mme_pdn_next(pdn_t *pdn)
+{
+    return list_next(pdn);
+}
+

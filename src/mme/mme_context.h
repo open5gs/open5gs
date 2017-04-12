@@ -71,7 +71,6 @@ typedef struct _mme_context_t {
 
     list_t          sgw_list;
     list_t          enb_list;
-    list_t          pdn_list;
 
     hash_t          *mme_ue_s1ap_id_hash; /* hash table for MME-UE-S1AP-ID */
 } mme_context_t;
@@ -139,15 +138,12 @@ typedef struct _mme_ue_t {
 
     /* HSS Info */
     c_uint32_t      ula_flags;
-
     c_uint32_t      max_bandwidth_ul; /* bits per seconds */
     c_uint32_t      max_bandwidth_dl; /* bits per seconds */
-
-    pdn_t           *pdn[MAX_NUM_OF_PDN];
-    int             num_of_pdn;
-
+    list_t          pdn_list;
     c_uint32_t      subscribed_rau_tau_timer; /* seconds */
 
+    /* ESM Info */
     c_uint8_t       ebi;        /* EPS Bearer ID generator */
     list_t          esm_list;
 
@@ -200,14 +196,6 @@ CORE_DECLARE(mme_enb_t*)    mme_enb_find_by_enb_id(c_uint32_t enb_id);
 CORE_DECLARE(mme_enb_t*)    mme_enb_first(void);
 CORE_DECLARE(mme_enb_t*)    mme_enb_next(mme_enb_t *enb);
 
-CORE_DECLARE(pdn_t*)        mme_pdn_add(pdn_id_t id);
-CORE_DECLARE(status_t)      mme_pdn_remove(pdn_t *pdn);
-CORE_DECLARE(status_t)      mme_pdn_remove_all(void);
-CORE_DECLARE(pdn_t*)        mme_pdn_find_by_id(pdn_id_t id);
-CORE_DECLARE(pdn_t*)        mme_pdn_find_by_apn(c_int8_t *apn);
-CORE_DECLARE(pdn_t*)        mme_pdn_first(void);
-CORE_DECLARE(pdn_t*)        mme_pdn_next(pdn_t *pdn);
-
 CORE_DECLARE(mme_ue_t*)     mme_ue_add(mme_enb_t *enb);
 CORE_DECLARE(status_t)      mme_ue_remove(mme_ue_t *ue);
 CORE_DECLARE(status_t)      mme_ue_remove_all();
@@ -232,6 +220,13 @@ CORE_DECLARE(mme_esm_t*)    mme_esm_find_by_pti(mme_ue_t *ue, c_uint8_t pti);
 CORE_DECLARE(mme_esm_t*)    mme_esm_find_by_teid(c_uint32_t teid);
 CORE_DECLARE(mme_esm_t*)    mme_esm_first(mme_ue_t *ue);
 CORE_DECLARE(mme_esm_t*)    mme_esm_next(mme_esm_t *esm);
+
+CORE_DECLARE(pdn_t*)        mme_pdn_add(mme_ue_t *ue, c_int8_t *apn);
+CORE_DECLARE(status_t)      mme_pdn_remove(pdn_t *pdn);
+CORE_DECLARE(status_t)      mme_pdn_remove_all(mme_ue_t *ue);
+CORE_DECLARE(pdn_t*)        mme_pdn_find_by_apn(mme_ue_t *ue, c_int8_t *apn);
+CORE_DECLARE(pdn_t*)        mme_pdn_first(mme_ue_t *ue);
+CORE_DECLARE(pdn_t*)        mme_pdn_next(pdn_t *pdn);
 
 #ifdef __cplusplus
 }

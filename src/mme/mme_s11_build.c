@@ -97,7 +97,6 @@ status_t mme_s11_build_create_session_request(pkbuf_t **pkbuf, mme_esm_t *esm)
     req->pdn_type.presence = 1;
     req->pdn_type.u8 = GTP_PDN_TYPE_IPV4;
 
-    memset(&pdn->paa, 0, sizeof(paa_t));
     pdn->paa.gtp_type = GTP_PDN_TYPE_IPV4;
     req->pdn_address_allocation.presence = 1;
     req->pdn_address_allocation.data = &pdn->paa;

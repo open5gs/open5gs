@@ -27,6 +27,7 @@ status_t hss_context_init(void)
     hss_profile_t *profile;
     pdn_t *pdn;
     hss_ue_t *ue;
+    c_int8_t apn[MAX_APN_LEN];
 
     memset(&self, 0, sizeof(hss_context_t));
 
@@ -62,11 +63,11 @@ status_t hss_context_init(void)
 
     /***********************************************
      * PDN DB */
-    pdn = hss_pdn_add();
-    d_assert(pdn, return -1, "Profile context add failed");
+    apn[0] = 0x08;
+    strcpy(apn+1, "internet");
 
-    pdn->apn[0] = 0x08;
-    strcpy(pdn->apn+1, "internet");
+    pdn = hss_pdn_add(apn);
+    d_assert(pdn, return -1, "PDN context add failed");
 
     pdn->s6a_type = S6A_PDN_TYPE_IPV4;
 
@@ -121,7 +122,7 @@ void hss_context_final(void)
 	return;
 }
 
-pdn_t* hss_pdn_add()
+pdn_t* hss_pdn_add(c_int8_t *apn)
 {
     pdn_t *pdn = NULL;
 
@@ -130,6 +131,7 @@ pdn_t* hss_pdn_add()
 
     memset(pdn, 0, sizeof(pdn_t));
 
+    strcpy(pdn->apn, apn);
     pdn->id = NEXT_ID(self.pdn_id, 1, 0xffffffff);
     
     list_append(&self.pdn_list, pdn);
@@ -164,14 +166,14 @@ status_t hss_pdn_remove_all()
     return CORE_OK;
 }
 
-pdn_t* hss_pdn_find_by_id(pdn_id_t id)
+pdn_t* hss_pdn_find_by_apn(c_int8_t *apn)
 {
     pdn_t *pdn = NULL;
     
     pdn = list_first(&self.pdn_list);
     while (pdn)
     {
-        if (pdn->id == id)
+        if (strcmp(pdn->apn, apn) == 0)
             break;
 
         pdn = list_next(pdn);

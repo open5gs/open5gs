@@ -7,11 +7,12 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define MAX_NUM_OF_PDN      4
-
 #define MAX_UE_PER_ENB      128
 #define MAX_NUM_OF_ENB      128
 #define MAX_NUM_OF_UE       (MAX_NUM_OF_ENB * MAX_UE_PER_ENB)
+
+#define MAX_NUM_OF_PDN      4
+#define MAX_NUM_OF_UE_PDN   (MAX_NUM_OF_UE * MAX_NUM_OF_PDN)
 
 #define IPV6_LEN            16
 
@@ -92,11 +93,10 @@ ED2(c_uint8_t spare:6;,
 
 /**********************************
  * PDN Structure                 */
-typedef c_uint32_t pdn_id_t;
 typedef struct _pdn_t {
     lnode_t         node; /**< A node of list_t */
 
-    pdn_id_t        id;
+    c_uint32_t      id;
     c_int8_t        apn[MAX_APN_LEN];
 #define S6A_PDN_TYPE_IPV4                               0
 #define S6A_PDN_TYPE_IPV6                               1
@@ -135,6 +135,8 @@ typedef struct _pdn_t {
 #define PDN_PRE_EMPTION_VULNERABILITY_ENABLED           0
 #define PDN_PRE_EMPTION_VULNERABILITY_DISABLED          1
     c_uint8_t       pre_emption_vulnerability;
+
+    void *context;
 } pdn_t;
 
 /**************************************************

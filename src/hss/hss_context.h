@@ -95,10 +95,10 @@ CORE_DECLARE(status_t)      hss_context_init(void);
 CORE_DECLARE(void)          hss_context_final(void);
 CORE_DECLARE(hss_context_t*) hss_self(void);
 
-CORE_DECLARE(pdn_t*)        hss_pdn_add();
+CORE_DECLARE(pdn_t*)        hss_pdn_add(c_int8_t *apn);
 CORE_DECLARE(status_t)      hss_pdn_remove(pdn_t *pdn);
 CORE_DECLARE(status_t)      hss_pdn_remove_all(void);
-CORE_DECLARE(pdn_t*)        hss_pdn_find_by_id(pdn_id_t id);
+CORE_DECLARE(pdn_t*)        hss_pdn_find_by_apn(c_int8_t *apn);
 CORE_DECLARE(pdn_t*)        hss_pdn_first(void);
 CORE_DECLARE(pdn_t*)        hss_pdn_next(pdn_t *pdn);
 

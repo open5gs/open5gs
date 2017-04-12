@@ -258,7 +258,6 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     event_t e;
     mme_ue_t *ue = NULL;
     pdn_t *pdn = NULL;
-    c_uint8_t pdn_added = 0;
 
     CHECK_SYS_DO(clock_gettime(CLOCK_REALTIME, &ts), return);
 
@@ -326,44 +325,33 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
             case AVP_CODE_ALL_APN_CONFIG_INC_IND:
                 break;
             case AVP_CODE_APN_CONFIGURATION:
+            {
+                c_int8_t apn[MAX_APN_LEN];
+                d_assert(fd_avp_search_avp(avpch2, s6a_service_selection, 
+                        &avpch3) == 0 && avpch3, error++; goto out,);
+                d_assert(fd_msg_avp_hdr(avpch3, &hdr) == 0 && hdr,
+                        error++; goto out,);
+                memcpy(apn, hdr->avp_value->os.data, hdr->avp_value->os.len);
+                apn[hdr->avp_value->os.len] = 0;
+
+                pdn = mme_pdn_find_by_apn(ue, apn);
+                if (!pdn)
+                    pdn = mme_pdn_add(ue, apn);
+                else
+                    d_warn("Duplicate APN:[%s]", apn);
+                d_assert(pdn, error++; goto out,);
+
                 d_assert(fd_avp_search_avp(avpch2, s6a_context_identifier, 
                         &avpch3) == 0 && avpch3, error++; goto out,);
                 d_assert(fd_msg_avp_hdr(avpch3, &hdr) == 0 && hdr, 
                         error++; goto out,);
-                pdn = mme_pdn_find_by_id(hdr->avp_value->i32);
-                if (!pdn)
-                {
-                    pdn = mme_pdn_add(hdr->avp_value->i32);
-                    pdn_added = 1;
-                }
-                d_assert(pdn, error++; goto out,);
+                pdn->id = hdr->avp_value->i32;
 
                 d_assert(fd_avp_search_avp(avpch2, s6a_pdn_type, 
                         &avpch3) == 0 && avpch3, error++; goto out,);
                 d_assert(fd_msg_avp_hdr(avpch3, &hdr) == 0 && hdr,
                         error++; goto out,);
                 pdn->s6a_type = hdr->avp_value->i32;
-
-                d_assert(fd_avp_search_avp(avpch2, s6a_service_selection, 
-                        &avpch3) == 0 && avpch3, error++; goto out,);
-                d_assert(fd_msg_avp_hdr(avpch3, &hdr) == 0 && hdr,
-                        error++; goto out,);
-
-                memcpy(pdn->apn, 
-                        hdr->avp_value->os.data, hdr->avp_value->os.len);
-                pdn->apn[hdr->avp_value->os.len] = 0;
-
-                if (pdn_added)
-                    d_info("PDN(id:%d, type:%s, APN:%s) Added", 
-                        pdn->id, 
-                        pdn->s6a_type == S6A_PDN_TYPE_IPV4 ? "IPv4" :
-                        pdn->s6a_type == S6A_PDN_TYPE_IPV6 ? "IPv6" :
-                        pdn->s6a_type == S6A_PDN_TYPE_IPV4_AND_IPV6 ? 
-                            "IPv4_AND_IPv6" :
-                        pdn->s6a_type == S6A_PDN_TYPE_IPV4_OR_IPV6 ? 
-                            "IPv4_OR_IPv6" :
-                                "Unknown Type", 
-                        pdn->apn);
 
                 d_assert(fd_avp_search_avp(avpch2, 
                         s6a_eps_subscribed_qos_profile, &avpch3) == 0 && 
@@ -412,6 +400,12 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                         error++; goto out,);
                 pdn->max_bandwidth_dl = hdr->avp_value->i32;
                 break;
+            }
+            default:
+            {
+                d_warn("Unknown AVP-code:%d", hdr->avp_code);
+                break;
+            }
         }
 
         fd_msg_browse(avpch2, MSG_BRW_NEXT, &avpch2, NULL);

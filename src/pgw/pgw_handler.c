@@ -41,15 +41,6 @@ void pgw_handle_create_session_request(
         return;
     }
 
-    memcpy(apn, req->access_point_name.data, req->access_point_name.len);
-    apn[req->access_point_name.len] = 0;
-    pdn = pgw_pdn_find_by_apn(apn);
-    if (!pdn)
-    {
-        d_error("No PDN Context-APN[%s]", apn);
-        return;
-    }
-
     sgw_f_teid = req->sender_f_teid_for_control_plane.data;
     if (!(sgw_f_teid->ipv4 == 1 && sgw_f_teid->ipv6 == 0 &&
             sgw_f_teid->interface_type == GTP_F_TEID_S5_S8_SGW_GTP_C))
@@ -61,10 +52,19 @@ void pgw_handle_create_session_request(
     }
 
     sess = pgw_sess_add();
-    d_assert(sess, return, "sess_add failed");
+    d_assert(sess, return, "No Session Context");
 
     sess->sgw_teid = ntohl(sgw_f_teid->teid);
     sess->sgw_addr = sgw_f_teid->ipv4_addr;
+
+    memcpy(apn, req->access_point_name.data, req->access_point_name.len);
+    apn[req->access_point_name.len] = 0;
+    pdn = pgw_pdn_find_by_apn(sess, apn);
+    if (!pdn)
+    {
+        pdn = pgw_pdn_add(sess, apn);
+    }
+    d_assert(pdn, pgw_sess_remove(sess); return, "No PDN Context");
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));
 
@@ -85,6 +85,9 @@ void pgw_handle_create_session_request(
         data = &pgw_f_teid;
     rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
         len = GTP_F_TEID_IPV4_LEN;
+
+    pdn->paa.gtp_type = GTP_PDN_TYPE_IPV4;
+    pdn->paa.ipv4_addr = inet_addr("45.45.45.113"); /* FIXME */
 
     rsp->pdn_address_allocation.presence = 1;
     rsp->pdn_address_allocation.data = &pdn->paa;

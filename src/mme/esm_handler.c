@@ -25,13 +25,18 @@ void esm_handle_pdn_connectivity_request(mme_esm_t *esm,
 void esm_handle_information_response(mme_esm_t *esm, 
         nas_esm_information_response_t *esm_information_response)
 {
+    mme_ue_t *ue = NULL;
     pkbuf_t *pkbuf = NULL;
     status_t rv;
+
+    d_assert(esm, return, "Null param");
+    ue = esm->ue;
+    d_assert(ue, return, "Null param");
 
     if (esm_information_response->presencemask &
             NAS_ESM_INFORMATION_RESPONSE_ACCESS_POINT_NAME_PRESENT)
     {
-        esm->pdn = mme_pdn_find_by_apn(
+        esm->pdn = mme_pdn_find_by_apn(ue, 
                 esm_information_response->access_point_name.apn);
         d_assert(esm->pdn, return, "No PDN Context[APN:%s])", 
             esm_information_response->access_point_name.apn);
