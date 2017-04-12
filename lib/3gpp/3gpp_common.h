@@ -147,23 +147,38 @@ typedef struct _pdn_t {
  * RFC 1661 [102] */
 #define PCO_PPP_FOR_USE_WITH_IP_PDP_TYPE_OR_IP_PDN_TYPE 0
 
-#define PROTOCOL_OR_CONTAINER_ID_INTERNET_PROTOCOL_CONTROL_PROTOCOL 0x8021
-#define PROTOCOL_OR_CONTAINER_ID_DNS_SERVER_IPV4_ADDRESS_REQUEST 0x000d
-#define PROTOCOL_OR_CONTAINER_ID_IP_ADDRESS_ALLOCATION_VIA_NAS_SIGNALLING 0x000a
-typedef struct _protocol_or_container_id_t {
-    c_uint16_t id;
-    c_uint8_t length;
-    void *contents;
-} protocol_or_container_id_t;
+#define PCO_ID_INTERNET_PROTOCOL_CONTROL_PROTOCOL 0x8021
+#define PCO_ID_CHALLENGE_HANDSHAKE_AUTHENTICATION_PROTOCOL 0xc223
+#define PCO_ID_DNS_SERVER_IPV4_ADDRESS_REQUEST 0x000d
+#define PCO_ID_IP_ADDRESS_ALLOCATION_VIA_NAS_SIGNALLING 0x000a
+typedef struct _pco_ipcp_options_t {
+    c_uint8_t type;
+    c_uint8_t len;
+    c_uint32_t addr;
+} __attribute__ ((packed)) pco_ipcp_options_t;
 
-#define MAX_NUM_OF_PROTOCOL_OR_CONTAINER_ID    4
+#define PCO_MAX_NUM_OF_IPCO_OPTIONS 4
+typedef struct _pco_ipcp_t {
+    c_uint8_t code;
+    c_uint8_t identifier;
+    c_uint16_t len;
+    pco_ipcp_options_t options[PCO_MAX_NUM_OF_IPCO_OPTIONS];
+} __attribute__ ((packed)) pco_ipcp_t;
+
+typedef struct _pco_id_t {
+    c_uint16_t id;
+    c_uint8_t len;
+    void *data;
+} pco_id_t;
+
+#define MAX_NUM_OF_PROTOCOL_OR_CONTAINER_ID    8
 #define MAX_PCO_LEN 251
 typedef struct _pco_t {
 ED3(c_uint8_t ext:1;,
     c_uint8_t spare:4;,
     c_uint8_t configuration_protocol:3;)
     c_uint8_t num_of_id;
-    protocol_or_container_id_t ids[MAX_NUM_OF_PROTOCOL_OR_CONTAINER_ID];
+    pco_id_t ids[MAX_NUM_OF_PROTOCOL_OR_CONTAINER_ID];
 } pco_t;
 
 CORE_DECLARE(c_int16_t) pco_parse(pco_t *pco, void *data, int data_len);

@@ -39,6 +39,9 @@ status_t pgw_context_init()
     self.s5u_node.addr = inet_addr("127.0.0.1");
     self.s5u_node.port = GTPV1_U_UDP_PORT;
 
+    self.primary_dns_addr = inet_addr("8.8.8.8");
+    self.secondary_dns_addr = inet_addr("4.4.4.4");
+
     context_initiaized = 1;
 
     return CORE_OK;

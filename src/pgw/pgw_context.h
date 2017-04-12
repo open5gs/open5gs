@@ -30,6 +30,9 @@ typedef struct _pgw_context_t {
     tm_service_t    tm_service;     /* Timer Service */
     gtp_xact_ctx_t  gtp_xact_ctx;   /* GTP Transaction Context */
 
+    c_uint32_t      primary_dns_addr;
+    c_uint32_t      secondary_dns_addr;
+
     list_t          sess_list;
 } pgw_context_t;
 

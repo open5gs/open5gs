@@ -124,13 +124,13 @@ static void gtp_message_test1(abts_case *tc, void *data)
     pco.configuration_protocol = 
         PCO_PPP_FOR_USE_WITH_IP_PDP_TYPE_OR_IP_PDN_TYPE;
     pco.num_of_id = 3;
-    pco.ids[0].id = PROTOCOL_OR_CONTAINER_ID_INTERNET_PROTOCOL_CONTROL_PROTOCOL;
-    pco.ids[0].contents = (c_uint8_t *)"\x01\x00\x00\x10\x81\x06\x00\x00\x00\x00\x83\x06\x00\x00\x00\x00";
-    pco.ids[0].length = 16;
-    pco.ids[1].id = PROTOCOL_OR_CONTAINER_ID_DNS_SERVER_IPV4_ADDRESS_REQUEST;
-    pco.ids[1].length = 0;
-    pco.ids[2].id = PROTOCOL_OR_CONTAINER_ID_IP_ADDRESS_ALLOCATION_VIA_NAS_SIGNALLING;
-    pco.ids[2].length = 0;
+    pco.ids[0].id = PCO_ID_INTERNET_PROTOCOL_CONTROL_PROTOCOL;
+    pco.ids[0].data = (c_uint8_t *)"\x01\x00\x00\x10\x81\x06\x00\x00\x00\x00\x83\x06\x00\x00\x00\x00";
+    pco.ids[0].len = 16;
+    pco.ids[1].id = PCO_ID_DNS_SERVER_IPV4_ADDRESS_REQUEST;
+    pco.ids[1].len = 0;
+    pco.ids[2].id = PCO_ID_IP_ADDRESS_ALLOCATION_VIA_NAS_SIGNALLING;
+    pco.ids[2].len = 0;
 
     req.protocol_configuration_options.presence = 1;
     req.protocol_configuration_options.data = &pcobuf;
@@ -229,20 +229,20 @@ static void gtp_message_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, 0, pco.configuration_protocol);
     ABTS_INT_EQUAL(tc, 3, pco.num_of_id);
     ABTS_INT_EQUAL(tc, 
-        PROTOCOL_OR_CONTAINER_ID_INTERNET_PROTOCOL_CONTROL_PROTOCOL, 
+        PCO_ID_INTERNET_PROTOCOL_CONTROL_PROTOCOL, 
         pco.ids[0].id);
-    ABTS_INT_EQUAL(tc, 16, pco.ids[0].length); 
+    ABTS_INT_EQUAL(tc, 16, pco.ids[0].len); 
     ABTS_TRUE(tc, memcmp(
         "\x01\x00\x00\x10\x81\x06\x00\x00\x00\x00\x83\x06\x00\x00\x00\x00",
-        pco.ids[0].contents, pco.ids[0].length) == 0);
+        pco.ids[0].data, pco.ids[0].len) == 0);
     ABTS_INT_EQUAL(tc, 
-        PROTOCOL_OR_CONTAINER_ID_DNS_SERVER_IPV4_ADDRESS_REQUEST, 
+        PCO_ID_DNS_SERVER_IPV4_ADDRESS_REQUEST, 
         pco.ids[1].id);
-    ABTS_INT_EQUAL(tc, 0, pco.ids[1].length); 
+    ABTS_INT_EQUAL(tc, 0, pco.ids[1].len); 
     ABTS_INT_EQUAL(tc, 
-        PROTOCOL_OR_CONTAINER_ID_IP_ADDRESS_ALLOCATION_VIA_NAS_SIGNALLING, 
+        PCO_ID_IP_ADDRESS_ALLOCATION_VIA_NAS_SIGNALLING, 
         pco.ids[2].id);
-    ABTS_INT_EQUAL(tc, 0, pco.ids[2].length); 
+    ABTS_INT_EQUAL(tc, 0, pco.ids[2].len); 
     ABTS_INT_EQUAL(tc, 1, req.bearer_contexts_to_be_created.presence);
     ABTS_INT_EQUAL(tc, 1, req.
                 bearer_contexts_to_be_created.eps_bearer_id.presence);

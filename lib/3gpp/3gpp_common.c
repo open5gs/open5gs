@@ -59,25 +59,26 @@ c_int16_t pco_parse(pco_t *pco, void *data, int data_len)
 
     while(size < data_len && i < MAX_NUM_OF_PROTOCOL_OR_CONTAINER_ID)
     {
-        protocol_or_container_id_t *id = &pco->ids[i];
+        pco_id_t *id = &pco->ids[i];
         d_assert(size + sizeof(id->id) <= data_len, 
                 return -1, "decode error");
         memcpy(&id->id, data + size, sizeof(id->id));
         id->id = ntohs(id->id);
         size += sizeof(id->id);
 
-        d_assert(size + sizeof(id->length) <= data_len, 
+        d_assert(size + sizeof(id->len) <= data_len, 
                 return -1, "decode error");
-        memcpy(&id->length, data + size, sizeof(id->length));
-        size += sizeof(id->length);
+        memcpy(&id->len, data + size, sizeof(id->len));
+        size += sizeof(id->len);
 
-        id->contents = data + size;
-        size += id->length;
+        id->data = data + size;
+        size += id->len;
 
         i++;
     }
     pco->num_of_id = i;
-    d_assert(size == data_len, return -1, "decode error");
+    d_assert(size == data_len, return -1, 
+            "decode error(%d != %d)", size, data_len);
     
     return size;
 }
@@ -101,7 +102,7 @@ c_int16_t pco_build(void *data, int data_len, pco_t *pco)
             return -1, "encode error");
     for (i = 0; i < target.num_of_id; i++)
     {
-        protocol_or_container_id_t *id = &target.ids[i];
+        pco_id_t *id = &target.ids[i];
 
         d_assert(size + sizeof(id->id) <= data_len, 
                 return -1, "encode error");
@@ -109,14 +110,14 @@ c_int16_t pco_build(void *data, int data_len, pco_t *pco)
         memcpy(data + size, &id->id, sizeof(id->id));
         size += sizeof(id->id);
 
-        d_assert(size + sizeof(id->length) <= data_len, 
+        d_assert(size + sizeof(id->len) <= data_len, 
                 return -1, "encode error");
-        memcpy(data + size, &id->length, sizeof(id->length));
-        size += sizeof(id->length);
+        memcpy(data + size, &id->len, sizeof(id->len));
+        size += sizeof(id->len);
 
-        d_assert(size + id->length <= data_len, return -1, "encode error");
-        memcpy(data + size, id->contents, id->length);
-        size += id->length;
+        d_assert(size + id->len <= data_len, return -1, "encode error");
+        memcpy(data + size, id->data, id->len);
+        size += id->len;
     }
 
     return size;
