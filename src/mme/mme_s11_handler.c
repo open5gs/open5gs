@@ -11,6 +11,8 @@
 void mme_s11_handle_create_session_response(
         mme_ue_t *ue, gtp_create_session_response_t *rsp)
 {
+    event_t e;
+
     gtp_f_teid_t *sgw_s11_teid = NULL;
     gtp_f_teid_t *sgw_s1u_teid = NULL;
 
@@ -53,4 +55,8 @@ void mme_s11_handle_create_session_response(
     sgw_s1u_teid = rsp->bearer_contexts_created.s1_u_enodeb_f_teid.data;
     esm->sgw_s1u_teid = ntohl(sgw_s1u_teid->teid);
     esm->sgw_s1u_addr = sgw_s1u_teid->ipv4_addr;
+
+    event_set(&e, EVT_LO_MME_ESM_CREATE_SESSION);
+    event_set_param1(&e, (c_uintptr_t)esm->index);
+    mme_event_send(&e);
 }

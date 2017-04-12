@@ -6,6 +6,7 @@
 
 #include "mme_event.h"
 #include "emm_handler.h"
+#include "emm_build.h"
 #include "mme_s6a_handler.h"
 
 void emm_state_initial(fsm_t *s, event_t *e)

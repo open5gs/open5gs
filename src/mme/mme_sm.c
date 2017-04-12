@@ -183,6 +183,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
             break;
         }
         case EVT_LO_MME_ESM_INFO_REQ:
+        case EVT_LO_MME_ESM_CREATE_SESSION:
         {
             index_t index = event_get_param1(e);
             mme_esm_t *esm = NULL;
