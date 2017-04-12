@@ -78,15 +78,16 @@ typedef struct _paa_t {
 #define GTP_PDN_TYPE_BOTH                               3
 #define GTP_PDN_TYPE_NON_IP                             4
 ED2(c_uint8_t spare:6;,
-    c_uint8_t gtp_type:2;)
+    c_uint8_t pdn_type:3;)
     union {
         c_uint32_t ipv4_addr;;
         struct {
             c_uint8_t ipv6_len;
             c_uint8_t ipv6_addr[IPV6_LEN];
         };
+        c_uint8_t ipv6_addr2[IPV6_LEN];
     };
-    c_uint32_t ipv4v6_addr;
+    c_uint32_t ipv4_addr2;
 } __attribute__ ((packed)) paa_t;
 
 /**********************************

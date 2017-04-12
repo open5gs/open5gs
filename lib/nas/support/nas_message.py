@@ -222,6 +222,9 @@ msg_list["SECURITY MODE COMMAND"]["table"] = 21
 msg_list["SECURITY MODE COMPLETE"]["table"] = 22
 msg_list["SECURITY MODE REJECT"]["table"] = 23
 
+msg_list["ACTIVATE DEDICATED EPS BEARER CONTEXT ACCEPT"]["table"] = 39
+msg_list["ACTIVATE DEDICATED EPS BEARER CONTEXT REJECT"]["table"] = 40
+msg_list["ACTIVATE DEDICATED EPS BEARER CONTEXT REQUEST"]["table"] = 41
 msg_list["ESM INFORMATION REQUEST"]["table"] = 49
 msg_list["ESM INFORMATION RESPONSE"]["table"] = 50
 

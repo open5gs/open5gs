@@ -104,7 +104,7 @@ static void gtp_message_test1(abts_case *tc, void *data)
     req.pdn_type.u8 = GTP_PDN_TYPE_IPV4;
 
     memset(&paa, 0, sizeof(paa_t));
-    paa.gtp_type = GTP_PDN_TYPE_IPV4;
+    paa.pdn_type = GTP_PDN_TYPE_IPV4;
     req.pdn_address_allocation.presence = 1;
     req.pdn_address_allocation.data = &paa;
     req.pdn_address_allocation.len = PAA_IPV4_LEN;

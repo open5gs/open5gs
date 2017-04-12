@@ -204,7 +204,7 @@ void pgw_handle_create_session_request(
     rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
         len = GTP_F_TEID_IPV4_LEN;
 
-    pdn->paa.gtp_type = GTP_PDN_TYPE_IPV4;
+    pdn->paa.pdn_type = GTP_PDN_TYPE_IPV4;
     pdn->paa.ipv4_addr = inet_addr("45.45.45.113"); /* FIXME */
 
     rsp->pdn_address_allocation.presence = 1;

@@ -752,6 +752,112 @@ typedef struct _nas_access_point_name_t {
     c_int8_t apn[MAX_APN_LEN];
 } __attribute__ ((packed)) nas_access_point_name_t;
 
+/* 9.9.4.2 APN aggregate maximum bit rate
+ * O TLV 4-8 
+APN-AMBR for downlink, octet 3
+
+Bits
+8 7 6 5 4 3 2 1
+0 0 0 0 0 0 0 0 Reserved
+
+0 0 0 0 0 0 0 1 The APN-AMBR is binary coded in 8 bits, using a granularity of 1 kbps
+        to          giving a range of values from 1 kbps to 63 kbps in 1 kbps increments.
+0 0 1 1 1 1 1 1 
+
+0 1 0 0 0 0 0 0 The APN-AMBR is 64 kbps + ((the binary coded value in 8 bits –01000000) * 8 kbps)
+        to          giving a range of values from 64 kbps to 568 kbps in 8 kbps increments.
+0 1 1 1 1 1 1 1 
+
+1 0 0 0 0 0 0 0 The APN-AMBR is 576 kbps + ((the binary coded value in 8 bits –10000000) * 64 kbps)
+        to          giving a range of values from 576 kbps to 8640 kbps in 64 kbps increments.
+1 1 1 1 1 1 1 0 
+
+1 1 1 1 1 1 1 1 0kbps
+
+If the network wants to indicate an APN-AMBR for downlink higher than 8640 kbps, it shall set octet 3 to "11111110", i.e. 8640 kbps, and shall encode the value for the APN-AMBR in octet 5.
+
+
+APN-AMBR for uplink, octet 4
+
+Coding is identical to that of APN-AMBR for downlink.
+
+
+APN-AMBR for downlink (extended), octet 5
+
+Bits
+8 7 6 5 4 3 2 1
+0 0 0 0 0 0 0 0 Use the value indicated by the APN-AMBR for downlink in octet 3.
+
+                    For all other values: Ignore the value indicated by the APN-AMBR for downlink in octet 3
+                    and use the following value:
+0 0 0 0 0 0 0 1 The APN-AMBR is 8600 kbps + ((the binary coded value in 8 bits) * 100 kbps),
+        to          giving a range of values from 8700 kbps to 16000 kbps in 100 kbps increments.
+0 1 0 0 1 0 1 0 
+
+0 1 0 0 1 0 1 1 The APN-AMBR is 16 Mbps + ((the binary coded value in 8 bits - 01001010) * 1 Mbps),
+        to          giving a range of values from 17 Mbps to 128 Mbps in 1 Mbps increments.
+1 0 1 1 1 0 1 0 
+
+1 0 1 1 1 0 1 1 The APN-AMBR is 128 Mbps + ((the binary coded value in 8 bits - 10111010) * 2 Mbps),
+        to          giving a range of values from 130 Mbps to 256 Mbps in 2 Mbps increments.
+1 1 1 1 1 0 1 0 
+
+All other values shall be interpreted as '1 1 1 1 1 0 1 0'.
+
+
+APN-AMBR for uplink (extended), octet 6
+
+This field is an extension of the APN-AMBR for uplink in octet 4. The coding is identical to that of the APN-AMBR for downlink (extended).
+
+
+APN-AMBR for downlink (extended-2), octet 7
+
+Bits
+8 7 6 5 4 3 2 1
+0 0 0 0 0 0 0 0 Use the value indicated by the APN-AMBR for downlink and APN-AMBR for downlink (extended) in
+                    octets 3 and 5.
+
+0 0 0 0 0 0 0 1 The APN-AMBR is (the binary coded value in 8 bits) * 256 Mbps + (the value indicated by 
+        to          the APN-AMBR for downlink and APN-AMBR for downlink (extended) in octets 3 and 5), 
+1 1 1 1 1 1 1 0 giving a range of 256 Mbps to 65280 Mbps.
+*/
+typedef struct _nas_apn_aggregate_maximum_bit_rate_t {
+    c_uint8_t length;
+    c_uint8_t dl_apn_ambr;
+    c_uint8_t ul_apn_ambr;
+    c_uint8_t dl_apn_ambr_extended;
+    c_uint8_t ul_apn_ambr_extended;
+    c_uint8_t dl_apn_ambr_extended2;
+    c_uint8_t ul_apn_ambr_extended2;
+} __attribute__ ((packed)) nas_apn_aggregate_maximum_bit_rate_t;
+
+/* 9.9.4.2A Connectivity type
+ * See subclause 10.5.6.19 in 3GPP TS 24.008 [13].
+ * O TV 1 */
+typedef struct _nas_connectivity_type_t {
+ED3(c_uint8_t type:4;,
+    c_uint8_t spare:3;,
+    c_uint8_t considered_lipa_pdn_connection:1;)
+} __attribute__ ((packed)) nas_connectivity_type_t;
+
+/* 9.9.4.3 EPS quality of service
+ * M LV 2-14 */
+typedef struct _nas_eps_quality_of_service_t {
+    c_uint8_t length;
+    c_uint8_t ul_mbr;
+    c_uint8_t dl_mbr;
+    c_uint8_t ul_gbr;
+    c_uint8_t dl_gbr;
+    c_uint8_t ul_mbr_extended;
+    c_uint8_t dl_mbr_extended;
+    c_uint8_t ul_gbr_extended;
+    c_uint8_t dl_gbr_extended;
+    c_uint8_t ul_mbr_extended2;
+    c_uint8_t dl_mbr_extended2;
+    c_uint8_t ul_gbr_extended2;
+    c_uint8_t dl_gbr_extended2;
+} nas_eps_quality_of_service_t;
+
 /* 9.9.4.4 ESM cause
  * M V 1 
  * Annex B (informative): Cause values for EPS session management 
@@ -820,6 +926,42 @@ ED2(c_uint8_t eps_bearer_identity:4;,
     c_uint8_t spare:4;)
 } __attribute__ ((packed)) nas_linked_eps_bearer_identity_t;
 
+/* 9.9.4.7 LLC service access point identifier
+ * See subclause 10.5.6.9 in 3GPP TS 24.008 [13].
+ * O TV 2 */
+typedef c_uint8_t nas_llc_service_access_point_identifier_t;
+
+/* 9.9.4.8 Packet flow Identifier
+ * See subclause 10.5.6.11 in 3GPP TS 24.008 [13].
+ * O TLV 3 */
+#define NAS_PACKET_FLOW_IDENTIFIER_BEST_EFFORT          0
+#define NAS_PACKET_FLOW_IDENTIFIER_SIGNALLING           1
+#define NAS_PACKET_FLOW_IDENTIFIER_SMS                  2
+#define NAS_PACKET_FLOW_IDENTIFIER_TOM8                 3
+#define NAS_PACKET_FLOW_IDENTIFIER_DYNAMIC_ASSIGN_MIN   8
+#define NAS_PACKET_FLOW_IDENTIFIER_DYNAMIC_ASSIGN_MAX   0xef
+typedef struct _nas_packet_flow_identifier_t {
+    c_uint8_t length;
+ED2(c_uint8_t spare:1;,
+    c_uint8_t value:7;)
+} __attribute__ ((packed)) nas_packet_flow_identifier_t;
+
+/* 9.9.4.13 Radio priority
+ * See subclause 10.5.7.2 in 3GPP TS 24.008 [13].
+ * O TV 1 */
+typedef struct _nas_radio_priority_t {
+ED3(c_uint8_t type:4;,
+    c_uint8_t spare:1;,
+    c_uint8_t value:3;)
+} __attribute__ ((packed)) nas_radio_priority_t;
+
+/* 9.9.4.9 PDN address
+ * M LV 6-14 */
+typedef struct _nas_pdn_address_t {
+    c_uint8_t length;
+    paa_t paa;
+} nas_pdn_address_t;
+
 /* 9.9.4.11 Protocol configuration options
  * See subclause 10.5.6.3 in 3GPP TS 24.008 [13].
  * O TLV 3-253 */ 
@@ -827,6 +969,15 @@ typedef struct _nas_protocol_configuration_options_t {
     c_uint8_t length;
     c_uint8_t buffer[MAX_PCO_LEN];
 } __attribute__ ((packed)) nas_protocol_configuration_options_t;
+
+/* 9.9.4.12 Quality of service
+ * See subclause 10.5.6.5 in 3GPP TS 24.008 [13].
+ * O TLV 14-22 */
+#define NAS_QOS_LEN 20
+typedef struct _nas_quality_of_service_t {
+    c_uint8_t length;
+    c_uint8_t buffer[NAS_QOS_LEN];
+} __attribute__ ((packed)) nas_quality_of_service_t;
 
 /* 9.9.4.13A Re-attempt indicator
  * O TLV 3 */
@@ -855,6 +1006,24 @@ ED4(c_uint8_t spare1:1;,
     c_uint8_t spare2:1;,
     c_uint8_t pdn_type:3;)
 } __attribute__ ((packed)) nas_request_type_t;
+
+/* 9.9.4.17 Transaction identifier
+ * 3GPP TS 24.008 [13], subclause 10.5.6.7.
+ * O TLV 3-4 */
+typedef struct _nas_transaction_identifier_t {
+    c_uint8_t length;
+    c_uint16_t linked_ti;
+} __attribute__ ((packed)) nas_transaction_identifier_t;
+
+/* 9.9.4.18 WLAN offload acceptability
+ * 3GPP TS 24.008 [13], subclause 10.5.6.20
+ * O TV 1 */
+typedef struct _nas_wlan_offload_acceptability_t {
+ED4(c_uint8_t type:4;,
+    c_uint8_t spare:2;,
+    c_uint8_t utran_via_wlan_acceptable:1;,
+    c_uint8_t e_utran_via_wlan_acceptable:1;)
+} __attribute__ ((packed)) nas_wlan_offload_acceptability_t;
 
 /* 9.9.4.19 NBIFOM container
  * See subclause 10.5.6.21 in 3GPP TS 24.008 [4].
@@ -891,12 +1060,27 @@ ED8(c_uint8_t spare:1;,
     c_uint8_t container[MAX_NAS_NBIFOM_CONTAINER_LEN];
 } __attribute__ ((packed)) nas_header_compression_configuration_t;
 
+/* 9.9.4.23 Control plane only indication
+ * O TV 1 */
+typedef struct _nas_control_plane_only_indication_t {
+ED3(c_uint8_t type:4;,
+    c_uint8_t spare:3;,
+    c_uint8_t ciot_eps_optimization:1;)
+} __attribute__ ((packed)) nas_control_plane_only_indication_t;
+
 /* 9.9.4.26 Extended protocol configuration options
  * O TLV-E 4-65538 */
 typedef struct _nas_extended_protocol_configuration_options_t {
     c_uint16_t len;
     c_uint8_t *data;
 } __attribute__ ((packed)) nas_extended_protocol_configuration_options_t;
+
+/* 9.9.4.28 Serving PLMN rate control
+ * O TLV 4 */
+typedef struct _nas_serving_plmn_rate_control_t {
+    c_uint8_t length;
+    c_uint16_t value;
+} __attribute__ ((packed)) nas_serving_plmn_rate_control_t;
 
 #ifdef __cplusplus
 }

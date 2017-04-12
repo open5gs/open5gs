@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-12 23:01:20.695578 by acetcom
+ * Created on: 2017-04-12 23:24:41.492192 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -1178,7 +1178,7 @@ c_int16_t nas_encode_emm_cause(pkbuf_t *pkbuf, nas_emm_cause_t *emm_cause)
 }
 
 /* 9.9.4.1 Access point name
- * O TLV 3-102 */
+ * M LV 2-101 */
 c_int16_t nas_decode_access_point_name(nas_access_point_name_t *access_point_name, pkbuf_t *pkbuf)
 {
     c_uint16_t size = 0;
@@ -1229,6 +1229,53 @@ c_int16_t nas_encode_protocol_configuration_options(pkbuf_t *pkbuf, nas_protocol
     memcpy(&target, protocol_configuration_options, sizeof(nas_protocol_configuration_options_t));
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
     memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
+/* 9.9.4.12 Quality of service
+ * O TLV 14-22 */
+c_int16_t nas_decode_quality_of_service(nas_quality_of_service_t *quality_of_service, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = 0;
+    nas_quality_of_service_t *source = pkbuf->payload;
+
+    quality_of_service->length = source->length;
+    size = quality_of_service->length + sizeof(quality_of_service->length);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(quality_of_service, pkbuf->payload - size, size);
+
+    return size;
+}
+
+c_int16_t nas_encode_quality_of_service(pkbuf_t *pkbuf, nas_quality_of_service_t *quality_of_service)
+{
+    c_uint16_t size = quality_of_service->length + sizeof(quality_of_service->length);
+    nas_quality_of_service_t target;
+
+    memcpy(&target, quality_of_service, sizeof(nas_quality_of_service_t));
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
+/* 9.9.4.13 Radio priority
+ * O TV 1 */
+c_int16_t nas_decode_radio_priority(nas_radio_priority_t *radio_priority, pkbuf_t *pkbuf)
+{
+    memcpy(radio_priority, pkbuf->payload - 1, 1);
+
+    return 0;
+}
+
+c_int16_t nas_encode_radio_priority(pkbuf_t *pkbuf, nas_radio_priority_t *radio_priority)
+{
+    c_uint16_t size = sizeof(nas_radio_priority_t);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, radio_priority, size);
 
     return size;
 }
@@ -1285,6 +1332,53 @@ c_int16_t nas_encode_request_type(pkbuf_t *pkbuf, nas_request_type_t *request_ty
     return size;
 }
 
+/* 9.9.4.17 Transaction identifier
+ * O TLV 3-4 */
+c_int16_t nas_decode_transaction_identifier(nas_transaction_identifier_t *transaction_identifier, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = 0;
+    nas_transaction_identifier_t *source = pkbuf->payload;
+
+    transaction_identifier->length = source->length;
+    size = transaction_identifier->length + sizeof(transaction_identifier->length);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(transaction_identifier, pkbuf->payload - size, size);
+
+    return size;
+}
+
+c_int16_t nas_encode_transaction_identifier(pkbuf_t *pkbuf, nas_transaction_identifier_t *transaction_identifier)
+{
+    c_uint16_t size = transaction_identifier->length + sizeof(transaction_identifier->length);
+    nas_transaction_identifier_t target;
+
+    memcpy(&target, transaction_identifier, sizeof(nas_transaction_identifier_t));
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
+/* 9.9.4.18 WLAN offload acceptability
+ * O TV 1 */
+c_int16_t nas_decode_wlan_offload_acceptability(nas_wlan_offload_acceptability_t *wlan_offload_acceptability, pkbuf_t *pkbuf)
+{
+    memcpy(wlan_offload_acceptability, pkbuf->payload - 1, 1);
+
+    return 0;
+}
+
+c_int16_t nas_encode_wlan_offload_acceptability(pkbuf_t *pkbuf, nas_wlan_offload_acceptability_t *wlan_offload_acceptability)
+{
+    c_uint16_t size = sizeof(nas_wlan_offload_acceptability_t);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, wlan_offload_acceptability, size);
+
+    return size;
+}
+
 /* 9.9.4.19 NBIFOM container
  * O TLV 3-257 */
 c_int16_t nas_decode_nbifom_container(nas_nbifom_container_t *nbifom_container, pkbuf_t *pkbuf)
@@ -1307,6 +1401,34 @@ c_int16_t nas_encode_nbifom_container(pkbuf_t *pkbuf, nas_nbifom_container_t *nb
     nas_nbifom_container_t target;
 
     memcpy(&target, nbifom_container, sizeof(nas_nbifom_container_t));
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
+/* 9.9.4.2 APN aggregate maximum bit rate
+ * O TLV 4-8 */
+c_int16_t nas_decode_apn_aggregate_maximum_bit_rate(nas_apn_aggregate_maximum_bit_rate_t *apn_aggregate_maximum_bit_rate, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = 0;
+    nas_apn_aggregate_maximum_bit_rate_t *source = pkbuf->payload;
+
+    apn_aggregate_maximum_bit_rate->length = source->length;
+    size = apn_aggregate_maximum_bit_rate->length + sizeof(apn_aggregate_maximum_bit_rate->length);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(apn_aggregate_maximum_bit_rate, pkbuf->payload - size, size);
+
+    return size;
+}
+
+c_int16_t nas_encode_apn_aggregate_maximum_bit_rate(pkbuf_t *pkbuf, nas_apn_aggregate_maximum_bit_rate_t *apn_aggregate_maximum_bit_rate)
+{
+    c_uint16_t size = apn_aggregate_maximum_bit_rate->length + sizeof(apn_aggregate_maximum_bit_rate->length);
+    nas_apn_aggregate_maximum_bit_rate_t target;
+
+    memcpy(&target, apn_aggregate_maximum_bit_rate, sizeof(nas_apn_aggregate_maximum_bit_rate_t));
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
     memcpy(pkbuf->payload - size, &target, size);
 
@@ -1341,6 +1463,25 @@ c_int16_t nas_encode_header_compression_configuration(pkbuf_t *pkbuf, nas_header
 
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
     memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
+/* 9.9.4.23 Control plane only indication
+ * O TV 1 */
+c_int16_t nas_decode_control_plane_only_indication(nas_control_plane_only_indication_t *control_plane_only_indication, pkbuf_t *pkbuf)
+{
+    memcpy(control_plane_only_indication, pkbuf->payload - 1, 1);
+
+    return 0;
+}
+
+c_int16_t nas_encode_control_plane_only_indication(pkbuf_t *pkbuf, nas_control_plane_only_indication_t *control_plane_only_indication)
+{
+    c_uint16_t size = sizeof(nas_control_plane_only_indication_t);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, control_plane_only_indication, size);
 
     return size;
 }
@@ -1381,8 +1522,83 @@ c_int16_t nas_encode_extended_protocol_configuration_options(pkbuf_t *pkbuf, nas
     return extended_protocol_configuration_options->len + sizeof(extended_protocol_configuration_options->len);
 }
 
+/* 9.9.4.28 Serving PLMN rate control
+ * O TLV 4 */
+c_int16_t nas_decode_serving_plmn_rate_control(nas_serving_plmn_rate_control_t *serving_plmn_rate_control, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = 0;
+    nas_serving_plmn_rate_control_t *source = pkbuf->payload;
+
+    serving_plmn_rate_control->length = source->length;
+    size = serving_plmn_rate_control->length + sizeof(serving_plmn_rate_control->length);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(serving_plmn_rate_control, pkbuf->payload - size, size);
+
+    return size;
+}
+
+c_int16_t nas_encode_serving_plmn_rate_control(pkbuf_t *pkbuf, nas_serving_plmn_rate_control_t *serving_plmn_rate_control)
+{
+    c_uint16_t size = serving_plmn_rate_control->length + sizeof(serving_plmn_rate_control->length);
+    nas_serving_plmn_rate_control_t target;
+
+    memcpy(&target, serving_plmn_rate_control, sizeof(nas_serving_plmn_rate_control_t));
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
+/* 9.9.4.2A Connectivity type
+ * O TV 1 */
+c_int16_t nas_decode_connectivity_type(nas_connectivity_type_t *connectivity_type, pkbuf_t *pkbuf)
+{
+    memcpy(connectivity_type, pkbuf->payload - 1, 1);
+
+    return 0;
+}
+
+c_int16_t nas_encode_connectivity_type(pkbuf_t *pkbuf, nas_connectivity_type_t *connectivity_type)
+{
+    c_uint16_t size = sizeof(nas_connectivity_type_t);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, connectivity_type, size);
+
+    return size;
+}
+
+/* 9.9.4.3 EPS quality of service
+ * M LV 2-14 */
+c_int16_t nas_decode_eps_quality_of_service(nas_eps_quality_of_service_t *eps_quality_of_service, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = 0;
+    nas_eps_quality_of_service_t *source = pkbuf->payload;
+
+    eps_quality_of_service->length = source->length;
+    size = eps_quality_of_service->length + sizeof(eps_quality_of_service->length);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(eps_quality_of_service, pkbuf->payload - size, size);
+
+    return size;
+}
+
+c_int16_t nas_encode_eps_quality_of_service(pkbuf_t *pkbuf, nas_eps_quality_of_service_t *eps_quality_of_service)
+{
+    c_uint16_t size = eps_quality_of_service->length + sizeof(eps_quality_of_service->length);
+    nas_eps_quality_of_service_t target;
+
+    memcpy(&target, eps_quality_of_service, sizeof(nas_eps_quality_of_service_t));
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
 /* 9.9.4.4 ESM cause
- * M V 1 */
+ * O TV 2 */
 c_int16_t nas_decode_esm_cause(nas_esm_cause_t *esm_cause, pkbuf_t *pkbuf)
 {
     c_uint16_t size = sizeof(nas_esm_cause_t);
@@ -1442,6 +1658,86 @@ c_int16_t nas_encode_linked_eps_bearer_identity(pkbuf_t *pkbuf, nas_linked_eps_b
     nas_linked_eps_bearer_identity_t target;
 
     memcpy(&target, linked_eps_bearer_identity, size);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
+/* 9.9.4.7 LLC service access point identifier
+ * O TV 2 */
+c_int16_t nas_decode_llc_service_access_point_identifier(nas_llc_service_access_point_identifier_t *llc_service_access_point_identifier, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = sizeof(nas_llc_service_access_point_identifier_t);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(llc_service_access_point_identifier, pkbuf->payload - size, size);
+
+    return size;
+}
+
+c_int16_t nas_encode_llc_service_access_point_identifier(pkbuf_t *pkbuf, nas_llc_service_access_point_identifier_t *llc_service_access_point_identifier)
+{
+    c_uint16_t size = sizeof(nas_llc_service_access_point_identifier_t);
+    nas_llc_service_access_point_identifier_t target;
+
+    memcpy(&target, llc_service_access_point_identifier, size);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
+/* 9.9.4.8 Packet flow Identifier
+ * O TLV 3 */
+c_int16_t nas_decode_packet_flow_identifier(nas_packet_flow_identifier_t *packet_flow_identifier, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = 0;
+    nas_packet_flow_identifier_t *source = pkbuf->payload;
+
+    packet_flow_identifier->length = source->length;
+    size = packet_flow_identifier->length + sizeof(packet_flow_identifier->length);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(packet_flow_identifier, pkbuf->payload - size, size);
+
+    return size;
+}
+
+c_int16_t nas_encode_packet_flow_identifier(pkbuf_t *pkbuf, nas_packet_flow_identifier_t *packet_flow_identifier)
+{
+    c_uint16_t size = packet_flow_identifier->length + sizeof(packet_flow_identifier->length);
+    nas_packet_flow_identifier_t target;
+
+    memcpy(&target, packet_flow_identifier, sizeof(nas_packet_flow_identifier_t));
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
+/* 9.9.4.9 PDN address
+ * M LV 6-14 */
+c_int16_t nas_decode_pdn_address(nas_pdn_address_t *pdn_address, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = 0;
+    nas_pdn_address_t *source = pkbuf->payload;
+
+    pdn_address->length = source->length;
+    size = pdn_address->length + sizeof(pdn_address->length);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pdn_address, pkbuf->payload - size, size);
+
+    return size;
+}
+
+c_int16_t nas_encode_pdn_address(pkbuf_t *pkbuf, nas_pdn_address_t *pdn_address)
+{
+    c_uint16_t size = pdn_address->length + sizeof(pdn_address->length);
+    nas_pdn_address_t target;
+
+    memcpy(&target, pdn_address, sizeof(nas_pdn_address_t));
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
     memcpy(pkbuf->payload - size, &target, size);
 

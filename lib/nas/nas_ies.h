@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-12 23:01:20.691080 by acetcom
+ * Created on: 2017-04-12 23:24:41.487832 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -86,14 +86,26 @@ CORE_DECLARE(c_int16_t) nas_decode_drx_parameter(nas_drx_parameter_t *drx_parame
 CORE_DECLARE(c_int16_t) nas_decode_emm_cause(nas_emm_cause_t *emm_cause, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_access_point_name(nas_access_point_name_t *access_point_name, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_protocol_configuration_options(nas_protocol_configuration_options_t *protocol_configuration_options, pkbuf_t *pkbuf);
+CORE_DECLARE(c_int16_t) nas_decode_quality_of_service(nas_quality_of_service_t *quality_of_service, pkbuf_t *pkbuf);
+CORE_DECLARE(c_int16_t) nas_decode_radio_priority(nas_radio_priority_t *radio_priority, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_re_attempt_indicator(nas_re_attempt_indicator_t *re_attempt_indicator, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_request_type(nas_request_type_t *request_type, pkbuf_t *pkbuf);
+CORE_DECLARE(c_int16_t) nas_decode_transaction_identifier(nas_transaction_identifier_t *transaction_identifier, pkbuf_t *pkbuf);
+CORE_DECLARE(c_int16_t) nas_decode_wlan_offload_acceptability(nas_wlan_offload_acceptability_t *wlan_offload_acceptability, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_nbifom_container(nas_nbifom_container_t *nbifom_container, pkbuf_t *pkbuf);
+CORE_DECLARE(c_int16_t) nas_decode_apn_aggregate_maximum_bit_rate(nas_apn_aggregate_maximum_bit_rate_t *apn_aggregate_maximum_bit_rate, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_header_compression_configuration(nas_header_compression_configuration_t *header_compression_configuration, pkbuf_t *pkbuf);
+CORE_DECLARE(c_int16_t) nas_decode_control_plane_only_indication(nas_control_plane_only_indication_t *control_plane_only_indication, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_extended_protocol_configuration_options(nas_extended_protocol_configuration_options_t *extended_protocol_configuration_options, pkbuf_t *pkbuf);
+CORE_DECLARE(c_int16_t) nas_decode_serving_plmn_rate_control(nas_serving_plmn_rate_control_t *serving_plmn_rate_control, pkbuf_t *pkbuf);
+CORE_DECLARE(c_int16_t) nas_decode_connectivity_type(nas_connectivity_type_t *connectivity_type, pkbuf_t *pkbuf);
+CORE_DECLARE(c_int16_t) nas_decode_eps_quality_of_service(nas_eps_quality_of_service_t *eps_quality_of_service, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_esm_cause(nas_esm_cause_t *esm_cause, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_esm_information_transfer_flag(nas_esm_information_transfer_flag_t *esm_information_transfer_flag, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_linked_eps_bearer_identity(nas_linked_eps_bearer_identity_t *linked_eps_bearer_identity, pkbuf_t *pkbuf);
+CORE_DECLARE(c_int16_t) nas_decode_llc_service_access_point_identifier(nas_llc_service_access_point_identifier_t *llc_service_access_point_identifier, pkbuf_t *pkbuf);
+CORE_DECLARE(c_int16_t) nas_decode_packet_flow_identifier(nas_packet_flow_identifier_t *packet_flow_identifier, pkbuf_t *pkbuf);
+CORE_DECLARE(c_int16_t) nas_decode_pdn_address(nas_pdn_address_t *pdn_address, pkbuf_t *pkbuf);
 
 CORE_DECLARE(c_int16_t) nas_encode_device_properties(pkbuf_t *pkbuf, nas_device_properties_t *device_properties);
 CORE_DECLARE(c_int16_t) nas_encode_supported_codec_list(pkbuf_t *pkbuf, nas_supported_codec_list_t *supported_codec_list);
@@ -139,14 +151,26 @@ CORE_DECLARE(c_int16_t) nas_encode_drx_parameter(pkbuf_t *pkbuf, nas_drx_paramet
 CORE_DECLARE(c_int16_t) nas_encode_emm_cause(pkbuf_t *pkbuf, nas_emm_cause_t *emm_cause);
 CORE_DECLARE(c_int16_t) nas_encode_access_point_name(pkbuf_t *pkbuf, nas_access_point_name_t *access_point_name);
 CORE_DECLARE(c_int16_t) nas_encode_protocol_configuration_options(pkbuf_t *pkbuf, nas_protocol_configuration_options_t *protocol_configuration_options);
+CORE_DECLARE(c_int16_t) nas_encode_quality_of_service(pkbuf_t *pkbuf, nas_quality_of_service_t *quality_of_service);
+CORE_DECLARE(c_int16_t) nas_encode_radio_priority(pkbuf_t *pkbuf, nas_radio_priority_t *radio_priority);
 CORE_DECLARE(c_int16_t) nas_encode_re_attempt_indicator(pkbuf_t *pkbuf, nas_re_attempt_indicator_t *re_attempt_indicator);
 CORE_DECLARE(c_int16_t) nas_encode_request_type(pkbuf_t *pkbuf, nas_request_type_t *request_type);
+CORE_DECLARE(c_int16_t) nas_encode_transaction_identifier(pkbuf_t *pkbuf, nas_transaction_identifier_t *transaction_identifier);
+CORE_DECLARE(c_int16_t) nas_encode_wlan_offload_acceptability(pkbuf_t *pkbuf, nas_wlan_offload_acceptability_t *wlan_offload_acceptability);
 CORE_DECLARE(c_int16_t) nas_encode_nbifom_container(pkbuf_t *pkbuf, nas_nbifom_container_t *nbifom_container);
+CORE_DECLARE(c_int16_t) nas_encode_apn_aggregate_maximum_bit_rate(pkbuf_t *pkbuf, nas_apn_aggregate_maximum_bit_rate_t *apn_aggregate_maximum_bit_rate);
 CORE_DECLARE(c_int16_t) nas_encode_header_compression_configuration(pkbuf_t *pkbuf, nas_header_compression_configuration_t *header_compression_configuration);
+CORE_DECLARE(c_int16_t) nas_encode_control_plane_only_indication(pkbuf_t *pkbuf, nas_control_plane_only_indication_t *control_plane_only_indication);
 CORE_DECLARE(c_int16_t) nas_encode_extended_protocol_configuration_options(pkbuf_t *pkbuf, nas_extended_protocol_configuration_options_t *extended_protocol_configuration_options);
+CORE_DECLARE(c_int16_t) nas_encode_serving_plmn_rate_control(pkbuf_t *pkbuf, nas_serving_plmn_rate_control_t *serving_plmn_rate_control);
+CORE_DECLARE(c_int16_t) nas_encode_connectivity_type(pkbuf_t *pkbuf, nas_connectivity_type_t *connectivity_type);
+CORE_DECLARE(c_int16_t) nas_encode_eps_quality_of_service(pkbuf_t *pkbuf, nas_eps_quality_of_service_t *eps_quality_of_service);
 CORE_DECLARE(c_int16_t) nas_encode_esm_cause(pkbuf_t *pkbuf, nas_esm_cause_t *esm_cause);
 CORE_DECLARE(c_int16_t) nas_encode_esm_information_transfer_flag(pkbuf_t *pkbuf, nas_esm_information_transfer_flag_t *esm_information_transfer_flag);
 CORE_DECLARE(c_int16_t) nas_encode_linked_eps_bearer_identity(pkbuf_t *pkbuf, nas_linked_eps_bearer_identity_t *linked_eps_bearer_identity);
+CORE_DECLARE(c_int16_t) nas_encode_llc_service_access_point_identifier(pkbuf_t *pkbuf, nas_llc_service_access_point_identifier_t *llc_service_access_point_identifier);
+CORE_DECLARE(c_int16_t) nas_encode_packet_flow_identifier(pkbuf_t *pkbuf, nas_packet_flow_identifier_t *packet_flow_identifier);
+CORE_DECLARE(c_int16_t) nas_encode_pdn_address(pkbuf_t *pkbuf, nas_pdn_address_t *pdn_address);
 
 #ifdef __cplusplus
 }
