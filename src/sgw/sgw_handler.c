@@ -45,8 +45,8 @@ void sgw_handle_create_session_request(
     sess->mme_s11_teid = ntohl(f_teid->teid);
     sess->mme_s11_addr = f_teid->ipv4_addr;
 
-    f_teid->teid = htonl(sess->teid);
-    f_teid->ipv4_addr = sgw_self()->s5c_addr;
+    f_teid->teid = htonl(sess->sgw_s5c_teid);
+    f_teid->ipv4_addr = sess->sgw_s5c_addr;
     f_teid->interface_type = GTP_F_TEID_S5_S8_SGW_GTP_C;
 
     rv = gtp_build_msg(&pkbuf, type, gtp_message);
@@ -95,8 +95,8 @@ void sgw_handle_create_session_response(gtp_xact_t *xact,
     memset(&sgw_f_teid, 0, sizeof(gtp_f_teid_t));
     sgw_f_teid.ipv4 = 1;
     sgw_f_teid.interface_type = GTP_F_TEID_S11_S4_SGW_GTP_C;
-    sgw_f_teid.ipv4_addr = sgw_self()->s11_addr;
-    sgw_f_teid.teid = htonl(sess->teid);
+    sgw_f_teid.ipv4_addr = sess->sgw_s11_addr;
+    sgw_f_teid.teid = htonl(sess->sgw_s11_teid);
 
     rsp->sender_f_teid_for_control_plane.presence = 1;
     rsp->sender_f_teid_for_control_plane.data = &sgw_f_teid;

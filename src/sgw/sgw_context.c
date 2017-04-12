@@ -81,7 +81,11 @@ sgw_sess_t *sgw_sess_add()
     index_alloc(&sgw_sess_pool, &sess);
     d_assert(sess, return NULL, "Null param");
 
-    sess->teid = sess->index;  /* derived from an index */
+    sess->sgw_s11_teid = sess->index;  /* derived from an index */
+    sess->sgw_s11_addr = sgw_self()->s11_addr;
+
+    sess->sgw_s5c_teid = sess->index;  /* derived from an index */
+    sess->sgw_s5c_addr = sgw_self()->s5c_addr;
 
     list_append(&self.sess_list, sess);
 
