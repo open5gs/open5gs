@@ -105,19 +105,16 @@ status_t s1ap_build_setup_failure(pkbuf_t **pkbuf, S1ap_Cause_t cause)
     return CORE_OK;
 }
 
-status_t s1ap_build_initial_context_setup_request(
-            pkbuf_t **s1apbuf, mme_esm_t *esm, pkbuf_t *emmbuf)
+status_t s1ap_build_downlink_nas_transport(
+            pkbuf_t **s1apbuf, mme_ue_t *ue, pkbuf_t *emmbuf)
 {
     int encoded;
     s1ap_message_t message;
     S1ap_DownlinkNASTransport_IEs_t *ies = 
         &message.s1ap_DownlinkNASTransport_IEs;
     S1ap_NAS_PDU_t *nasPdu = &ies->nas_pdu;
-    mme_ue_t *ue = NULL;
 
     d_assert(emmbuf, return CORE_ERROR, "Null param");
-    d_assert(esm, return CORE_ERROR, "Null param");
-    ue = esm->ue;
     d_assert(ue, return CORE_ERROR, "Null param");
 
     memset(&message, 0, sizeof(s1ap_message_t));
@@ -136,6 +133,83 @@ status_t s1ap_build_initial_context_setup_request(
     s1ap_free_pdu(&message);
 
     d_assert(s1apbuf && encoded >= 0,return CORE_ERROR,);
+    pkbuf_free(emmbuf);
+
+    return CORE_OK;
+}
+
+status_t s1ap_build_initial_context_setup_request(
+            pkbuf_t **s1apbuf, mme_esm_t *esm, pkbuf_t *emmbuf)
+{
+    int encoded;
+    s1ap_message_t message;
+    S1ap_InitialContextSetupRequestIEs_t *ies =
+            &message.s1ap_InitialContextSetupRequestIEs;
+    S1ap_E_RABToBeSetupItemCtxtSUReq_t *e_rab = NULL;
+    S1ap_NAS_PDU_t *nasPdu = NULL;
+    mme_ue_t *ue = NULL;
+    pdn_t *pdn = NULL;
+
+    d_assert(emmbuf, return CORE_ERROR, "Null param");
+    d_assert(esm, return CORE_ERROR, "Null param");
+    ue = esm->ue;
+    d_assert(ue, return CORE_ERROR, "Null param");
+    pdn = esm->pdn;
+    d_assert(pdn, return CORE_ERROR, "Null param");
+
+    memset(&message, 0, sizeof(s1ap_message_t));
+
+    ies->mme_ue_s1ap_id = ue->mme_ue_s1ap_id;
+    ies->eNB_UE_S1AP_ID = ue->enb_ue_s1ap_id;
+
+    asn_uint642INTEGER(
+            &ies->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateUL, 
+            ue->max_bandwidth_ul);
+    asn_uint642INTEGER(
+            &ies->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateDL, 
+            ue->max_bandwidth_dl);
+
+    e_rab = (S1ap_E_RABToBeSetupItemCtxtSUReq_t *)
+        core_calloc(1, sizeof(S1ap_E_RABToBeSetupItemCtxtSUReq_t));
+    e_rab->e_RAB_ID = esm->ebi;
+    e_rab->e_RABlevelQoSParameters.qCI = pdn->qci;
+
+    e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
+        priorityLevel = pdn->priority_level;
+    e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
+        pre_emptionCapability = 
+        S1ap_Pre_emptionCapability_shall_not_trigger_pre_emption;
+    e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
+        pre_emptionVulnerability = 
+            S1ap_Pre_emptionVulnerability_not_pre_emptable;
+    e_rab->transportLayerAddress.size = 4;
+    e_rab->transportLayerAddress.buf = 
+        core_calloc(e_rab->transportLayerAddress.size, sizeof(c_uint8_t));
+    memcpy(e_rab->transportLayerAddress.buf, &esm->sgw_s1u_addr,
+            e_rab->transportLayerAddress.size);
+
+    s1ap_uint32_to_OCTET_STRING(esm->sgw_s1u_teid, &e_rab->gTP_TEID);
+
+    nasPdu = (S1ap_NAS_PDU_t *)core_calloc(1, sizeof(S1ap_NAS_PDU_t));
+    nasPdu->size = emmbuf->len;
+    nasPdu->buf = core_calloc(nasPdu->size, sizeof(c_uint8_t));
+    memcpy(nasPdu->buf, emmbuf->payload, nasPdu->size);
+    e_rab->nAS_PDU = nasPdu;
+
+    ASN_SEQUENCE_ADD(&ies->e_RABToBeSetupListCtxtSUReq, e_rab);
+
+    ies->securityKey.size = 32;
+    ies->securityKey.buf = 
+        core_calloc(ies->securityKey.size, sizeof(c_uint8_t));
+
+    message.procedureCode = S1ap_ProcedureCode_id_InitialContextSetup;
+    message.direction = S1AP_PDU_PR_initiatingMessage;
+
+    encoded = s1ap_encode_pdu(s1apbuf, &message);
+    s1ap_free_pdu(&message);
+
+    d_assert(s1apbuf && encoded >= 0,return CORE_ERROR,);
+    pkbuf_free(emmbuf);
 
     return CORE_OK;
 }

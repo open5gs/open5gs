@@ -69,6 +69,7 @@ status_t emm_build_attach_accept(
     eps_network_feature_support->ims_vops = 1;
 
     d_assert(nas_security_encode(emmbuf, ue, &message) == CORE_OK && *emmbuf,,);
+    pkbuf_free(esmbuf);
 
     return CORE_OK;
 }

@@ -28,9 +28,9 @@ void s1ap_uint32_to_OCTET_STRING(c_uint32_t uint32, OCTET_STRING_t *octet_string
     octet_string->buf = core_calloc(octet_string->size, sizeof(c_uint8_t));
 
     octet_string->buf[0] = uint32 >> 24;
-    octet_string->buf[0] = uint32 >> 16;
-    octet_string->buf[0] = uint32 >> 8;
-    octet_string->buf[0] = uint32;
+    octet_string->buf[1] = uint32 >> 16;
+    octet_string->buf[2] = uint32 >> 8;
+    octet_string->buf[3] = uint32;
 }
 
 void s1ap_buffer_to_OCTET_STRING(
