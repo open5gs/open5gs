@@ -138,10 +138,10 @@ int dict_s6a_init(char * conffile)
 		{
 			struct dict_avp_data data = {
 				493, 					/* Code */
-				VENDOR_3GPP_Id, 					/* Vendor , EURECOM: with FD 1.2.0 does not work if vendor ID is 0 for this AVP*/
+				0, 					/* Vendor , EURECOM: with FD 1.2.0 does not work if vendor ID is 0 for this AVP*/
 				"Service-Selection",			/* Name */
-				AVP_FLAG_VENDOR | AVP_FLAG_MANDATORY, 	/* Fixed flags */
-				AVP_FLAG_VENDOR | AVP_FLAG_MANDATORY,		 	/* Fixed flag values */
+				AVP_FLAG_MANDATORY, 	/* Fixed flags */
+				AVP_FLAG_MANDATORY,	/* Fixed flag values */
 				AVP_TYPE_OCTETSTRING 			/* base type of data */
 			};
 
