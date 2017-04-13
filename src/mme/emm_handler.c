@@ -267,8 +267,50 @@ void emm_handle_lo_create_session(mme_bearer_t *bearer)
 void emm_handle_attach_complete(
     mme_ue_t *ue, nas_attach_complete_t *attach_complete)
 {
+    status_t rv;
+    mme_enb_t *enb = NULL;
+    pkbuf_t *emmbuf = NULL, *s1apbuf = NULL;
+
+    nas_message_t message;
+    nas_emm_information_t *emm_information = &message.emm.emm_information;
+    nas_time_zone_and_time_t *universal_time_and_local_time_zone =
+        &emm_information->universal_time_and_local_time_zone;
+    nas_daylight_saving_time_t *network_daylight_saving_time = 
+        &emm_information->network_daylight_saving_time;
+
     d_assert(ue, return, "Null param");
+    enb = ue->enb;
+    d_assert(enb, return, "Null param");
 
     emm_handle_esm_message_container(
             ue, &attach_complete->esm_message_container);
+
+    memset(&message, 0, sizeof(message));
+    message.h.security_header_type = 
+       NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
+    message.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
+
+    message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    message.emm.h.message_type = NAS_EMM_INFORMATION;
+
+    emm_information->presencemask |=
+        NAS_EMM_INFORMATION_UNIVERSAL_TIME_AND_LOCAL_TIME_ZONE_PRESENT;
+    universal_time_and_local_time_zone->year = 0;
+    emm_information->presencemask |=
+        NAS_EMM_INFORMATION_NETWORK_DAYLIGHT_SAVING_TIME_PRESENT;
+    network_daylight_saving_time->length = 1;
+
+    d_info("[NAS] EMM information : UE[%s] <-- EMM", 
+            ue->imsi_bcd);
+
+    rv = nas_security_encode(&emmbuf, ue, &message);
+    d_assert(rv == CORE_OK && emmbuf, return, "emm build error");
+    d_print_hex(emmbuf->payload, emmbuf->len);
+
+    rv = s1ap_build_downlink_nas_transport(&s1apbuf, ue, emmbuf);
+    d_assert(rv == CORE_OK && s1apbuf, 
+            pkbuf_free(emmbuf); return, "s1ap build error");
+    d_print_hex(s1apbuf->payload, s1apbuf->len);
+
+    d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
 }

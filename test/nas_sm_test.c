@@ -144,7 +144,7 @@ static void nas_sm_test1(abts_case *tc, void *data)
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    core_sleep(time_from_msec(300));
+    core_sleep(time_from_msec(1300));
 
     d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
     /* eNB disonncect from MME */

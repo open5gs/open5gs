@@ -216,6 +216,7 @@ msg_list["AUTHENTICATION FAILURE"]["table"] = 4
 msg_list["AUTHENTICATION REJECT"]["table"] = 5
 msg_list["AUTHENTICATION REQUEST"]["table"] = 6
 msg_list["AUTHENTICATION RESPONSE"]["table"] = 7
+msg_list["EMM INFORMATION"]["table"] = 14
 msg_list["IDENTITY REQUEST"]["table"] = 19
 msg_list["IDENTITY RESPONSE"]["table"] = 20
 msg_list["SECURITY MODE COMMAND"]["table"] = 21

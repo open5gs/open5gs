@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-13 13:13:49.594439 by acetcom
+ * Created on: 2017-04-13 23:45:26.436258 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -67,11 +67,14 @@ CORE_DECLARE(c_int16_t) nas_decode_ms_network_capability(nas_ms_network_capabili
 CORE_DECLARE(c_int16_t) nas_decode_ms_network_feature_support(nas_ms_network_feature_support_t *ms_network_feature_support, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_key_set_identifier(nas_key_set_identifier_t *key_set_identifier, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_security_algorithms(nas_security_algorithms_t *security_algorithms, pkbuf_t *pkbuf);
+CORE_DECLARE(c_int16_t) nas_decode_network_name(nas_network_name_t *network_name, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_network_resource_identifier_container(nas_network_resource_identifier_container_t *network_resource_identifier_container, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_nonce(nas_nonce_t *nonce, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_p_tmsi_signature(nas_p_tmsi_signature_t *p_tmsi_signature, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_extended_emm_cause(nas_extended_emm_cause_t *extended_emm_cause, pkbuf_t *pkbuf);
+CORE_DECLARE(c_int16_t) nas_decode_time_zone(nas_time_zone_t *time_zone, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_authentication_parameter_rand(nas_authentication_parameter_rand_t *authentication_parameter_rand, pkbuf_t *pkbuf);
+CORE_DECLARE(c_int16_t) nas_decode_time_zone_and_time(nas_time_zone_and_time_t *time_zone_and_time, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_tmsi_status(nas_tmsi_status_t *tmsi_status, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_tracking_area_identity(nas_tracking_area_identity_t *tracking_area_identity, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_tracking_area_identity_list(nas_tracking_area_identity_list_t *tracking_area_identity_list, pkbuf_t *pkbuf);
@@ -82,6 +85,7 @@ CORE_DECLARE(c_int16_t) nas_decode_authentication_response_parameter(nas_authent
 CORE_DECLARE(c_int16_t) nas_decode_voice_domain_preference_and_ue_usage_setting(nas_voice_domain_preference_and_ue_usage_setting_t *voice_domain_preference_and_ue_usage_setting, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_guti_type(nas_guti_type_t *guti_type, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_extended_drx_parameters(nas_extended_drx_parameters_t *extended_drx_parameters, pkbuf_t *pkbuf);
+CORE_DECLARE(c_int16_t) nas_decode_daylight_saving_time(nas_daylight_saving_time_t *daylight_saving_time, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_drx_parameter(nas_drx_parameter_t *drx_parameter, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_emm_cause(nas_emm_cause_t *emm_cause, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_access_point_name(nas_access_point_name_t *access_point_name, pkbuf_t *pkbuf);
@@ -132,11 +136,14 @@ CORE_DECLARE(c_int16_t) nas_encode_ms_network_capability(pkbuf_t *pkbuf, nas_ms_
 CORE_DECLARE(c_int16_t) nas_encode_ms_network_feature_support(pkbuf_t *pkbuf, nas_ms_network_feature_support_t *ms_network_feature_support);
 CORE_DECLARE(c_int16_t) nas_encode_key_set_identifier(pkbuf_t *pkbuf, nas_key_set_identifier_t *key_set_identifier);
 CORE_DECLARE(c_int16_t) nas_encode_security_algorithms(pkbuf_t *pkbuf, nas_security_algorithms_t *security_algorithms);
+CORE_DECLARE(c_int16_t) nas_encode_network_name(pkbuf_t *pkbuf, nas_network_name_t *network_name);
 CORE_DECLARE(c_int16_t) nas_encode_network_resource_identifier_container(pkbuf_t *pkbuf, nas_network_resource_identifier_container_t *network_resource_identifier_container);
 CORE_DECLARE(c_int16_t) nas_encode_nonce(pkbuf_t *pkbuf, nas_nonce_t *nonce);
 CORE_DECLARE(c_int16_t) nas_encode_p_tmsi_signature(pkbuf_t *pkbuf, nas_p_tmsi_signature_t *p_tmsi_signature);
 CORE_DECLARE(c_int16_t) nas_encode_extended_emm_cause(pkbuf_t *pkbuf, nas_extended_emm_cause_t *extended_emm_cause);
+CORE_DECLARE(c_int16_t) nas_encode_time_zone(pkbuf_t *pkbuf, nas_time_zone_t *time_zone);
 CORE_DECLARE(c_int16_t) nas_encode_authentication_parameter_rand(pkbuf_t *pkbuf, nas_authentication_parameter_rand_t *authentication_parameter_rand);
+CORE_DECLARE(c_int16_t) nas_encode_time_zone_and_time(pkbuf_t *pkbuf, nas_time_zone_and_time_t *time_zone_and_time);
 CORE_DECLARE(c_int16_t) nas_encode_tmsi_status(pkbuf_t *pkbuf, nas_tmsi_status_t *tmsi_status);
 CORE_DECLARE(c_int16_t) nas_encode_tracking_area_identity(pkbuf_t *pkbuf, nas_tracking_area_identity_t *tracking_area_identity);
 CORE_DECLARE(c_int16_t) nas_encode_tracking_area_identity_list(pkbuf_t *pkbuf, nas_tracking_area_identity_list_t *tracking_area_identity_list);
@@ -147,6 +154,7 @@ CORE_DECLARE(c_int16_t) nas_encode_authentication_response_parameter(pkbuf_t *pk
 CORE_DECLARE(c_int16_t) nas_encode_voice_domain_preference_and_ue_usage_setting(pkbuf_t *pkbuf, nas_voice_domain_preference_and_ue_usage_setting_t *voice_domain_preference_and_ue_usage_setting);
 CORE_DECLARE(c_int16_t) nas_encode_guti_type(pkbuf_t *pkbuf, nas_guti_type_t *guti_type);
 CORE_DECLARE(c_int16_t) nas_encode_extended_drx_parameters(pkbuf_t *pkbuf, nas_extended_drx_parameters_t *extended_drx_parameters);
+CORE_DECLARE(c_int16_t) nas_encode_daylight_saving_time(pkbuf_t *pkbuf, nas_daylight_saving_time_t *daylight_saving_time);
 CORE_DECLARE(c_int16_t) nas_encode_drx_parameter(pkbuf_t *pkbuf, nas_drx_parameter_t *drx_parameter);
 CORE_DECLARE(c_int16_t) nas_encode_emm_cause(pkbuf_t *pkbuf, nas_emm_cause_t *emm_cause);
 CORE_DECLARE(c_int16_t) nas_encode_access_point_name(pkbuf_t *pkbuf, nas_access_point_name_t *access_point_name);

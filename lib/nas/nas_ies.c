@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-13 13:13:49.598913 by acetcom
+ * Created on: 2017-04-13 23:45:26.441509 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -712,6 +712,34 @@ c_int16_t nas_encode_security_algorithms(pkbuf_t *pkbuf, nas_security_algorithms
     return size;
 }
 
+/* 9.9.3.24 Network name
+ * O TLV 3-n */
+c_int16_t nas_decode_network_name(nas_network_name_t *network_name, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = 0;
+    nas_network_name_t *source = pkbuf->payload;
+
+    network_name->length = source->length;
+    size = network_name->length + sizeof(network_name->length);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(network_name, pkbuf->payload - size, size);
+
+    return size;
+}
+
+c_int16_t nas_encode_network_name(pkbuf_t *pkbuf, nas_network_name_t *network_name)
+{
+    c_uint16_t size = network_name->length + sizeof(network_name->length);
+    nas_network_name_t target;
+
+    memcpy(&target, network_name, sizeof(nas_network_name_t));
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
 /* 9.9.3.24A Network resource identifier container
  * O TLV 4 */
 c_int16_t nas_decode_network_resource_identifier_container(nas_network_resource_identifier_container_t *network_resource_identifier_container, pkbuf_t *pkbuf)
@@ -815,6 +843,30 @@ c_int16_t nas_encode_extended_emm_cause(pkbuf_t *pkbuf, nas_extended_emm_cause_t
     return size;
 }
 
+/* 9.9.3.29 Time zone
+ * O TV 2 */
+c_int16_t nas_decode_time_zone(nas_time_zone_t *time_zone, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = sizeof(nas_time_zone_t);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(time_zone, pkbuf->payload - size, size);
+
+    return size;
+}
+
+c_int16_t nas_encode_time_zone(pkbuf_t *pkbuf, nas_time_zone_t *time_zone)
+{
+    c_uint16_t size = sizeof(nas_time_zone_t);
+    nas_time_zone_t target;
+
+    memcpy(&target, time_zone, size);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
 /* 9.9.3.3 Authentication parameter RAND
  * M V 16 */
 c_int16_t nas_decode_authentication_parameter_rand(nas_authentication_parameter_rand_t *authentication_parameter_rand, pkbuf_t *pkbuf)
@@ -833,6 +885,30 @@ c_int16_t nas_encode_authentication_parameter_rand(pkbuf_t *pkbuf, nas_authentic
     nas_authentication_parameter_rand_t target;
 
     memcpy(&target, authentication_parameter_rand, size);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
+/* 9.9.3.30 Time zone and time
+ * O TV 8 */
+c_int16_t nas_decode_time_zone_and_time(nas_time_zone_and_time_t *time_zone_and_time, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = sizeof(nas_time_zone_and_time_t);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(time_zone_and_time, pkbuf->payload - size, size);
+
+    return size;
+}
+
+c_int16_t nas_encode_time_zone_and_time(pkbuf_t *pkbuf, nas_time_zone_and_time_t *time_zone_and_time)
+{
+    c_uint16_t size = sizeof(nas_time_zone_and_time_t);
+    nas_time_zone_and_time_t target;
+
+    memcpy(&target, time_zone_and_time, size);
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
     memcpy(pkbuf->payload - size, &target, size);
 
@@ -1123,6 +1199,34 @@ c_int16_t nas_encode_extended_drx_parameters(pkbuf_t *pkbuf, nas_extended_drx_pa
     nas_extended_drx_parameters_t target;
 
     memcpy(&target, extended_drx_parameters, sizeof(nas_extended_drx_parameters_t));
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
+/* 9.9.3.6 Daylight saving time
+ * O TLV 3 */
+c_int16_t nas_decode_daylight_saving_time(nas_daylight_saving_time_t *daylight_saving_time, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = 0;
+    nas_daylight_saving_time_t *source = pkbuf->payload;
+
+    daylight_saving_time->length = source->length;
+    size = daylight_saving_time->length + sizeof(daylight_saving_time->length);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(daylight_saving_time, pkbuf->payload - size, size);
+
+    return size;
+}
+
+c_int16_t nas_encode_daylight_saving_time(pkbuf_t *pkbuf, nas_daylight_saving_time_t *daylight_saving_time)
+{
+    c_uint16_t size = daylight_saving_time->length + sizeof(daylight_saving_time->length);
+    nas_daylight_saving_time_t target;
+
+    memcpy(&target, daylight_saving_time, sizeof(nas_daylight_saving_time_t));
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
     memcpy(pkbuf->payload - size, &target, size);
 

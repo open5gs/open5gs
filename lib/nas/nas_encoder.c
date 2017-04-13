@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-13 13:13:49.632842 by acetcom
+ * Created on: 2017-04-13 23:45:26.477904 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -662,6 +662,70 @@ c_int32_t nas_encode_security_mode_reject(pkbuf_t *pkbuf, nas_message_t *message
     return encoded;
 }
 
+c_int32_t nas_encode_emm_information(pkbuf_t *pkbuf, nas_message_t *message)
+{
+    nas_emm_information_t *emm_information = &message->emm.emm_information;
+    c_int32_t encoded = 0;
+    c_int32_t size = 0;
+
+    if (emm_information->presencemask & NAS_EMM_INFORMATION_FULL_NAME_FOR_NETWORK_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_EMM_INFORMATION_FULL_NAME_FOR_NETWORK_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_network_name(pkbuf, &emm_information->full_name_for_network);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (emm_information->presencemask & NAS_EMM_INFORMATION_SHORT_NAME_FOR_NETWORK_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_EMM_INFORMATION_SHORT_NAME_FOR_NETWORK_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_network_name(pkbuf, &emm_information->short_name_for_network);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (emm_information->presencemask & NAS_EMM_INFORMATION_LOCAL_TIME_ZONE_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_EMM_INFORMATION_LOCAL_TIME_ZONE_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_time_zone(pkbuf, &emm_information->local_time_zone);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (emm_information->presencemask & NAS_EMM_INFORMATION_UNIVERSAL_TIME_AND_LOCAL_TIME_ZONE_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_EMM_INFORMATION_UNIVERSAL_TIME_AND_LOCAL_TIME_ZONE_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_time_zone_and_time(pkbuf, &emm_information->universal_time_and_local_time_zone);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (emm_information->presencemask & NAS_EMM_INFORMATION_NETWORK_DAYLIGHT_SAVING_TIME_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_EMM_INFORMATION_NETWORK_DAYLIGHT_SAVING_TIME_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_daylight_saving_time(pkbuf, &emm_information->network_daylight_saving_time);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    return encoded;
+}
+
 c_int32_t nas_encode_activate_default_eps_bearer_context_request(pkbuf_t *pkbuf, nas_message_t *message)
 {
     nas_activate_default_eps_bearer_context_request_t *activate_default_eps_bearer_context_request = &message->esm.activate_default_eps_bearer_context_request;
@@ -1253,6 +1317,11 @@ status_t nas_emm_encode(pkbuf_t **pkbuf, nas_message_t *message)
             break;
         case NAS_SECURITY_MODE_REJECT:
             size = nas_encode_security_mode_reject(*pkbuf, message);
+            d_assert(size >= 0, return CORE_ERROR, "decode error");
+            encoded += size;
+            break;
+        case NAS_EMM_INFORMATION:
+            size = nas_encode_emm_information(*pkbuf, message);
             d_assert(size >= 0, return CORE_ERROR, "decode error");
             encoded += size;
             break;

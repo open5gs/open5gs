@@ -226,6 +226,18 @@ ED3(c_uint8_t cn_specific_drx_cycle_length_coefficient_and_drx_value_for_s1_mode
     c_uint8_t non_DRX_timer:3;)
 } __attribute__ ((packed)) nas_drx_parameter_t;
 
+/* 9.9.3.6 Daylight saving time
+ * See subclause 10.5.3.12 in 3GPP TS 24.008 [13].
+ * O TLV 3 */
+#define NAS_NO_ADJUSTMENT_FOR_DAYLIGHT_SAVING_TIME              0
+#define NAS_PLUS_1_HOUR_ADJUSTMENT_FOR_DAYLIGHT_SAVING_TIME     1
+#define NAS_PLUS_2_HOURS_ADJUSTMENT_FOR_DAYLIGHT_SAVING_TIME    2
+typedef struct _nas_daylight_saving_time_t {
+    c_uint8_t length;
+ED2(c_uint8_t spare:6;,
+    c_uint8_t value:2;)
+} __attribute__ ((packed)) nas_daylight_saving_time_t;
+
 /* 9.9.3.9 EMM cause
  * O TV 2 
  * Annex A (informative): Cause values for EPS mobility management 
@@ -488,6 +500,19 @@ ED4(c_uint8_t spare1:1;,
     c_uint8_t type_of_integrity_protection_algorithm:3;)
 } __attribute__ ((packed)) nas_security_algorithms_t;
 
+/* 9.9.3.24 Network name
+ * See subclause 10.5.3.5a in 3GPP TS 24.008 [13].
+ * O TLV 3-n */
+#define NAS_MAX_NETWORK_NAME_LEN 255
+typedef struct _nas_network_name_t {
+    c_uint8_t length;
+ED4(c_uint8_t ext:1;,
+    c_uint8_t coding_scheme:3;,
+    c_uint8_t add_ci:1;,
+    c_uint8_t number_of_spare_bits_in_last_octet:3;)
+    c_uint8_t name[NAS_MAX_NETWORK_NAME_LEN];
+} __attribute__ ((packed)) nas_network_name_t;
+
 /* 9.9.3.24A Network resource identifier container
  * See subclause 10.5.5.31 in 3GPP TS 24.008 [13].
  * O TLV 4 */
@@ -515,6 +540,24 @@ ED4(c_uint8_t type:4;,
     c_uint8_t eps_optimization_info:1;,
     c_uint8_t e_utran_allowed:1;)
 } nas_extended_emm_cause_t;
+
+/* 9.9.3.29 Time zone
+ * See subclause 10.5.3.8 in 3GPP TS 24.008 [13].
+ * O TV 2 */
+typedef c_uint8_t nas_time_zone_t;
+
+/* 9.9.3.30 Time zone and time
+ * See subclause 10.5.3.9 in 3GPP TS 24.008 [13].
+ * O TV 8 */
+typedef struct _nas_time_zone_and_time_t {
+    c_uint8_t year;
+    c_uint8_t month;
+    c_uint8_t day;
+    c_uint8_t hour;
+    c_uint8_t minute;
+    c_uint8_t second;
+    c_uint8_t time_zone;
+} nas_time_zone_and_time_t;
 
 /* 9.9.3.31 TMSI status
  * See subclause 10.5.5.4 in 3GPP TS 24.008 [13]

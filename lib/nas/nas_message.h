@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-13 13:13:49.611974 by acetcom
+ * Created on: 2017-04-13 23:45:26.454842 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -401,6 +401,32 @@ typedef struct _nas_security_mode_reject_t {
 
 
 /*******************************************************
+ * EMM INFORMATION
+ ******************************************************/
+#define NAS_EMM_INFORMATION_FULL_NAME_FOR_NETWORK_PRESENT (1<<0)
+#define NAS_EMM_INFORMATION_SHORT_NAME_FOR_NETWORK_PRESENT (1<<1)
+#define NAS_EMM_INFORMATION_LOCAL_TIME_ZONE_PRESENT (1<<2)
+#define NAS_EMM_INFORMATION_UNIVERSAL_TIME_AND_LOCAL_TIME_ZONE_PRESENT (1<<3)
+#define NAS_EMM_INFORMATION_NETWORK_DAYLIGHT_SAVING_TIME_PRESENT (1<<4)
+#define NAS_EMM_INFORMATION_FULL_NAME_FOR_NETWORK_TYPE 0x43
+#define NAS_EMM_INFORMATION_SHORT_NAME_FOR_NETWORK_TYPE 0x45
+#define NAS_EMM_INFORMATION_LOCAL_TIME_ZONE_TYPE 0x46
+#define NAS_EMM_INFORMATION_UNIVERSAL_TIME_AND_LOCAL_TIME_ZONE_TYPE 0x47
+#define NAS_EMM_INFORMATION_NETWORK_DAYLIGHT_SAVING_TIME_TYPE 0x49
+
+typedef struct _nas_emm_information_t {
+
+    /* Optional fields */
+    c_uint32_t presencemask;
+    nas_network_name_t full_name_for_network;
+    nas_network_name_t short_name_for_network;
+    nas_time_zone_t local_time_zone;
+    nas_time_zone_and_time_t universal_time_and_local_time_zone;
+    nas_daylight_saving_time_t network_daylight_saving_time;
+} nas_emm_information_t;
+
+
+/*******************************************************
  * ACTIVATE DEFAULT EPS BEARER CONTEXT REQUEST
  ******************************************************/
 #define NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_TRANSACTION_IDENTIFIER_PRESENT (1<<0)
@@ -631,6 +657,7 @@ typedef struct _nas_emm_message_t {
         nas_security_mode_command_t security_mode_command;
         nas_security_mode_complete_t security_mode_complete;
         nas_security_mode_reject_t security_mode_reject;
+        nas_emm_information_t emm_information;
     };
 } nas_emm_message_t;
 
