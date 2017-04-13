@@ -125,18 +125,20 @@ static void nas_sm_test1(abts_case *tc, void *data)
     pkbuf_free(recvbuf);
 
     /* Send UE Capability Info Indication */
-#if 0
     rv = tests1ap_build_ue_capability_info_indication(&sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
-#endif
+
+    core_sleep(time_from_msec(300));
 
     /* Send Initial Context Setup Response */
     rv = tests1ap_build_initial_context_setup_response(&sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    core_sleep(time_from_msec(300));
 
     /* Send Attach Complete + Activate default EPS bearer cotext accept */
     rv = tests1ap_build_attach_complete(&sendbuf);
