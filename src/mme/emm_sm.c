@@ -129,6 +129,8 @@ void emm_state_operational(fsm_t *s, event_t *e)
                 {
                     d_info("[NAS] Attach complete : UE[%s] --> EMM",
                             ue->imsi_bcd);
+                    emm_handle_attach_complete(
+                            ue, &message->emm.attach_complete);
                     break;
                 }
                 default:

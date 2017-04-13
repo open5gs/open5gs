@@ -14,8 +14,9 @@ CORE_DECLARE(void) emm_handle_attach_request(
 CORE_DECLARE(void) emm_handle_authentication_request(mme_ue_t *ue);
 CORE_DECLARE(void) emm_handle_authentication_response(
     mme_ue_t *ue, nas_authentication_response_t *authentication_response);
-
 CORE_DECLARE(void) emm_handle_lo_create_session(mme_bearer_t *bearer);
+CORE_DECLARE(void) emm_handle_attach_complete(
+    mme_ue_t *ue, nas_attach_complete_t *attach_complete);
 
 #ifdef __cplusplus
 }

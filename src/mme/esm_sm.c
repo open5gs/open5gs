@@ -102,6 +102,12 @@ void esm_state_operational(fsm_t *s, event_t *e)
                             bearer, &message->esm.esm_information_response);
                     break;
                 }
+                case NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_ACCEPT:
+                {
+                    d_info("[NAS] Activate default eps bearer context accept : "
+                            "UE[%s] --> ESM[%d]", ue->imsi_bcd, bearer->pti);
+                    break;
+                }
                 default:
                 {
                     d_warn("Not implemented(type:%d)", 

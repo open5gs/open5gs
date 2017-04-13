@@ -15,7 +15,7 @@
 static void event_s1ap_to_nas(mme_ue_t *ue, S1ap_NAS_PDU_t *nasPdu)
 {
     nas_esm_header_t *h = NULL;
-    pkbuf_t *sendbuf = NULL;
+    pkbuf_t *nasbuf = NULL;
     event_t e;
 
     d_assert(ue, return, "Null param");
@@ -23,20 +23,20 @@ static void event_s1ap_to_nas(mme_ue_t *ue, S1ap_NAS_PDU_t *nasPdu)
 
     /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 
      * When calculating AES_CMAC, we need to use the headroom of the packet. */
-    sendbuf = pkbuf_alloc(NAS_HEADROOM, nasPdu->size);
-    d_assert(sendbuf, return, "Null param");
-    memcpy(sendbuf->payload, nasPdu->buf, nasPdu->size);
+    nasbuf = pkbuf_alloc(NAS_HEADROOM, nasPdu->size);
+    d_assert(nasbuf, return, "Null param");
+    memcpy(nasbuf->payload, nasPdu->buf, nasPdu->size);
 
-    d_assert(nas_security_decode(ue, sendbuf) == CORE_OK,
-            pkbuf_free(sendbuf); return, "Can't decode NAS_PDU");
+    d_assert(nas_security_decode(ue, nasbuf) == CORE_OK,
+            pkbuf_free(nasbuf); return, "Can't decode NAS_PDU");
 
-    h = sendbuf->payload;
-    d_assert(h, pkbuf_free(sendbuf); return, "Null param");
+    h = nasbuf->payload;
+    d_assert(h, pkbuf_free(nasbuf); return, "Null param");
     if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_EMM)
     {
         event_set(&e, MME_EVT_EMM_UE_MSG);
         event_set_param1(&e, (c_uintptr_t)ue->index);
-        event_set_param2(&e, (c_uintptr_t)sendbuf);
+        event_set_param2(&e, (c_uintptr_t)nasbuf);
         mme_event_send(&e);
     }
     else if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_ESM)
@@ -47,7 +47,7 @@ static void event_s1ap_to_nas(mme_ue_t *ue, S1ap_NAS_PDU_t *nasPdu)
         {
             event_set(&e, MME_EVT_ESM_BEARER_MSG);
             event_set_param1(&e, (c_uintptr_t)bearer->index);
-            event_set_param2(&e, (c_uintptr_t)sendbuf);
+            event_set_param2(&e, (c_uintptr_t)nasbuf);
             mme_event_send(&e);
         }
         else
@@ -55,7 +55,7 @@ static void event_s1ap_to_nas(mme_ue_t *ue, S1ap_NAS_PDU_t *nasPdu)
                     ue->imsi_bcd, h->procedure_transaction_identity);
     }
     else
-        d_assert(0, pkbuf_free(sendbuf); return, "Unknown protocol:%d", 
+        d_assert(0, pkbuf_free(nasbuf); return, "Unknown protocol:%d", 
                 h->protocol_discriminator);
 }
 
@@ -65,7 +65,7 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
     char buf[INET_ADDRSTRLEN];
 
     S1ap_S1SetupRequestIEs_t *ies = NULL;
-    pkbuf_t *sendbuf = NULL;
+    pkbuf_t *s1apbuf = NULL;
     c_uint32_t enb_id;
 
     d_assert(enb, return, "Null param");
@@ -87,7 +87,7 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
         cause.present = S1ap_Cause_PR_protocol;
         cause.choice.protocol = 
             S1ap_CauseProtocol_message_not_compatible_with_receiver_state;
-        rv = s1ap_build_setup_failure(&sendbuf, cause);
+        rv = s1ap_build_setup_failure(&s1apbuf, cause);
     }
 #endif
     d_assert(enb->s1ap_sock, return,);
@@ -97,9 +97,9 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
 
     enb->enb_id = enb_id;
 
-    d_assert(s1ap_build_setup_rsp(&sendbuf) == CORE_OK, 
+    d_assert(s1ap_build_setup_rsp(&s1apbuf) == CORE_OK, 
             return, "build error");
-    d_assert(s1ap_send_to_enb(enb, sendbuf) == CORE_OK, , "send error");
+    d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK, , "send error");
 
     d_assert(enb->s1ap_sock, return,);
     d_info("[S1AP] S1SetupResponse: eNB[%s:%d] <-- MME",

@@ -16,34 +16,15 @@
 #include "s1ap_build.h"
 #include "s1ap_path.h"
 
-static void event_emm_to_esm(mme_bearer_t *bearer, 
-                nas_esm_message_container_t *bearer_message_container)
-{
-    pkbuf_t *sendbuf = NULL;
-    event_t e;
-
-    d_assert(bearer, return, "Null param");
-    d_assert(bearer_message_container, return, "Null param");
-
-    /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 
-     * When calculating AES_CMAC, we need to use the headroom of the packet. */
-    sendbuf = pkbuf_alloc(NAS_HEADROOM, bearer_message_container->len);
-    d_assert(sendbuf, return, "Null param");
-    memcpy(sendbuf->payload, 
-            bearer_message_container->data, bearer_message_container->len);
-
-    event_set(&e, MME_EVT_ESM_BEARER_MSG);
-    event_set_param1(&e, (c_uintptr_t)bearer->index);
-    event_set_param2(&e, (c_uintptr_t)sendbuf);
-    mme_event_send(&e);
-}
-
 void emm_handle_esm_message_container(
         mme_ue_t *ue, nas_esm_message_container_t *esm_message_container)
 {
+    pkbuf_t *esmbuf = NULL;
+    event_t e;
 
     nas_esm_header_t *h = NULL;
-    c_uint8_t pti = 0;
+    c_uint8_t pti = NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
+    c_uint8_t ebi = NAS_EPS_BEARER_IDENTITY_UNASSIGNED;
     mme_bearer_t *bearer = NULL;
 
     d_assert(ue, return, "Null param");
@@ -54,26 +35,27 @@ void emm_handle_esm_message_container(
     d_assert(h, return, "Null param");
 
     pti = h->procedure_transaction_identity;
-    if (pti == NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED)
-    {
-        d_error("Procedure Trasaction is NOT triggered by UE");
-        return;
-    }
+    ebi = h->eps_bearer_identity;
+    if (pti == NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED && ebi)
+        bearer = mme_bearer_find_by_ebi(ue, ebi);
+    else if (ebi == NAS_EPS_BEARER_IDENTITY_UNASSIGNED && pti)
+        bearer = mme_bearer_find_by_pti(ue, pti);
 
-    bearer = mme_bearer_find_by_pti(ue, pti);
     if (!bearer)
-    {
         bearer = mme_bearer_add(ue, pti);
-        d_assert(bearer, return, "Null param");
-    }
-    else
-    {
-        d_warn("Duplicated: MME-UE-S1AP-ID[%d] sends "
-            "PDN Connectivity Message[PTI(%d)]",
-            ue->mme_ue_s1ap_id, bearer->pti);
-    }
+    d_assert(bearer, return, "Null param");
 
-    event_emm_to_esm(bearer, esm_message_container);
+    /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 
+     * When calculating AES_CMAC, we need to use the headroom of the packet. */
+    esmbuf = pkbuf_alloc(NAS_HEADROOM, esm_message_container->len);
+    d_assert(esmbuf, return, "Null param");
+    memcpy(esmbuf->payload, 
+            esm_message_container->data, esm_message_container->len);
+
+    event_set(&e, MME_EVT_ESM_BEARER_MSG);
+    event_set_param1(&e, (c_uintptr_t)bearer->index);
+    event_set_param2(&e, (c_uintptr_t)esmbuf);
+    mme_event_send(&e);
 }
 
 void emm_handle_attach_request(
@@ -282,3 +264,11 @@ void emm_handle_lo_create_session(mme_bearer_t *bearer)
     d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
 }
 
+void emm_handle_attach_complete(
+    mme_ue_t *ue, nas_attach_complete_t *attach_complete)
+{
+    d_assert(ue, return, "Null param");
+
+    emm_handle_esm_message_container(
+            ue, &attach_complete->esm_message_container);
+}
