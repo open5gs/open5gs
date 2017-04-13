@@ -136,6 +136,43 @@ static void s1ap_message_test5(abts_case *tc, void *data)
     pkbuf_free(pkbuf);
 }
 
+static void s1ap_message_test6(abts_case *tc, void *data)
+{
+    pkbuf_t *s1apbuf = NULL;
+    int encoded;
+    s1ap_message_t message;
+    S1ap_DownlinkNASTransport_IEs_t *ies = 
+        &message.s1ap_DownlinkNASTransport_IEs;
+    S1ap_NAS_PDU_t *nasPdu = &ies->nas_pdu;
+    char buffer[1024];
+    char *_result = 
+    "000b4080 8c000003 00000002 00010008 00020001 001a0079 78efefef efefefef"
+    "efefefef efefefef efefefef efefefef efefefef efefefef efefefef efefefef"
+    "efefefef efefefef efefefef efefefef efefefef efefefef efefefef efefefef"
+    "efefefef efefefef efefefef efefefef efefefef efefefef efefefef efefefef"
+    "efefefef efefefef efefefef efefefef ef";
+
+    memset(&message, 0, sizeof(s1ap_message_t));
+
+    ies->mme_ue_s1ap_id = 1;
+    ies->eNB_UE_S1AP_ID = 1;
+
+    nasPdu->size = 120;
+    nasPdu->buf = core_calloc(nasPdu->size, sizeof(c_uint8_t));
+    for (int i = 0; i < nasPdu->size; i++)
+        nasPdu->buf[i] = 0xef;
+
+    message.procedureCode = S1ap_ProcedureCode_id_downlinkNASTransport;
+    message.direction = S1AP_PDU_PR_initiatingMessage;
+
+    encoded = s1ap_encode_pdu(&s1apbuf, &message);
+    s1ap_free_pdu(&message);
+    ABTS_TRUE(tc, memcmp(CORE_HEX(_result, strlen(_result), buffer),
+            s1apbuf->payload, s1apbuf->len) == 0);
+
+    pkbuf_free(s1apbuf);
+}
+
 abts_suite *test_s1ap_message(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -145,6 +182,7 @@ abts_suite *test_s1ap_message(abts_suite *suite)
     abts_run_test(suite, s1ap_message_test3, NULL);
     abts_run_test(suite, s1ap_message_test4, NULL);
     abts_run_test(suite, s1ap_message_test5, NULL);
+    abts_run_test(suite, s1ap_message_test6, NULL);
 
     return suite;
 }

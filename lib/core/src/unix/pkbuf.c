@@ -568,7 +568,9 @@ void *core_realloc(void *ptr, size_t size)
     }
 
     d_assert(p->clbuf, return NULL, "Null param");
-    if (size > (p->clbuf->size - headroom))
+#if 0
+    if (size >= (p->clbuf->size - headroom))
+#endif
     {
         void *new = NULL;
 
@@ -580,9 +582,11 @@ void *core_realloc(void *ptr, size_t size)
 
         return new;
     }
+#if 0
     else
     {
         return ptr;
     }
+#endif
 }
 
