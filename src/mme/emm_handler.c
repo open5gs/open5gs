@@ -305,7 +305,6 @@ void emm_handle_attach_complete(
 
     rv = nas_security_encode(&emmbuf, ue, &message);
     d_assert(rv == CORE_OK && emmbuf, return, "emm build error");
-    d_print_hex(emmbuf->payload, emmbuf->len);
 
     rv = s1ap_build_downlink_nas_transport(&s1apbuf, ue, emmbuf);
     d_assert(rv == CORE_OK && s1apbuf, 
