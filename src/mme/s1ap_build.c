@@ -209,9 +209,26 @@ status_t s1ap_build_initial_context_setup_request(
 
     ASN_SEQUENCE_ADD(&ies->e_RABToBeSetupListCtxtSUReq, e_rab);
 
+    ies->ueSecurityCapabilities.encryptionAlgorithms.size = 2;
+    ies->ueSecurityCapabilities.encryptionAlgorithms.buf = 
+        core_calloc(ies->ueSecurityCapabilities.encryptionAlgorithms.size, 
+                    sizeof(c_uint8_t));
+    ies->ueSecurityCapabilities.encryptionAlgorithms.bits_unused = 0;
+    ies->ueSecurityCapabilities.encryptionAlgorithms.buf[0] = 
+        ue->ue_network_capability.eea;
+
+    ies->ueSecurityCapabilities.integrityProtectionAlgorithms.size = 2;
+    ies->ueSecurityCapabilities.integrityProtectionAlgorithms.buf =
+        core_calloc(ies->ueSecurityCapabilities.
+                        integrityProtectionAlgorithms.size, sizeof(c_uint8_t));
+    ies->ueSecurityCapabilities.integrityProtectionAlgorithms.bits_unused = 0;
+    ies->ueSecurityCapabilities.integrityProtectionAlgorithms.buf[0] =
+        (ue->ue_network_capability.eia << 1);
+
     ies->securityKey.size = SHA256_DIGEST_SIZE;
     ies->securityKey.buf = 
         core_calloc(ies->securityKey.size, sizeof(c_uint8_t));
+    ies->securityKey.bits_unused = 0;
     memcpy(ies->securityKey.buf, ue->kenb, ies->securityKey.size);
 
     message.procedureCode = S1ap_ProcedureCode_id_InitialContextSetup;
