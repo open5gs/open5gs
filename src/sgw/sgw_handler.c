@@ -90,6 +90,8 @@ void sgw_handle_create_session_request(
 
     d_assert(sgw_s5c_send_to_pgw(xact, type, 0, pkbuf) == CORE_OK, 
             return, "failed to send message");
+    d_info("[GTP] Create Session Reqeust : "
+            "MME[%d] --> SGW", sess->mme_s11_teid);
 }
 
 void sgw_handle_create_session_response(gtp_xact_t *xact, 
@@ -177,4 +179,6 @@ void sgw_handle_create_session_response(gtp_xact_t *xact,
     d_assert(sgw_s11_send_to_mme(
             xact, type, sess->mme_s11_teid, pkbuf) == CORE_OK, return, 
             "failed to send message");
+    d_info("[GTP] Create Session Response : "
+            "SGW[%d] <-- PGW[%d]", sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 }

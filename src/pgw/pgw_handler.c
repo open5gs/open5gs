@@ -191,6 +191,9 @@ void pgw_handle_create_session_request(
     bearer->sgw_s5u_teid = ntohl(sgw_s5u_teid->teid);
     bearer->sgw_s5u_addr = sgw_s5u_teid->ipv4_addr;
 
+    d_info("[GTP] Create Session Reqeust : "
+            "SGW[%d] --> PGW", sess->sgw_s5c_teid);
+
     /* Send Control Plane(UL) : PGW-S5C */
     memset(&pgw_s5c_teid, 0, sizeof(gtp_f_teid_t));
     pgw_s5c_teid.ipv4 = 1;

@@ -68,17 +68,15 @@ void emm_state_operational(fsm_t *s, event_t *e)
             {
                 case MME_EVT_EMM_UE_LO_AUTH_REQ:
                 {
+                     d_info("[NAS] Authentication request : UE[%s] <-- EMM",
+                             ue->imsi_bcd);
                     emm_handle_authentication_request(ue);
-                    d_info("[NAS] Authentication request : UE[%s] <-- EMM",
-                            ue->imsi_bcd);
                     break;
                 }
                 case MME_EVT_EMM_UE_LO_LOCATION_UPDATE:
                 {
                     mme_bearer_t *bearer = mme_bearer_first(ue);
 
-                    d_info("[NAS] Location update : EMM[%s] <-- HSS",
-                            ue->imsi_bcd);
                     while(bearer)
                     {
                         event_t e;
@@ -112,19 +110,12 @@ void emm_state_operational(fsm_t *s, event_t *e)
                 {
                     emm_handle_attach_request(
                             ue, &message->emm.attach_request);
-
-                    d_info("[NAS] Attach request : UE[%s] --> EMM", 
-                            ue->imsi_bcd);
-
                     break;
                 }
                 case NAS_AUTHENTICATION_RESPONSE:
                 {
                     emm_handle_authentication_response(
                             ue, &message->emm.authentication_response);
-
-                    d_info("[NAS] Security mode command : UE[%s] <-- EMM", 
-                            ue->imsi_bcd);
                     break;
                 }
                 case NAS_SECURITY_MODE_COMPLETE:

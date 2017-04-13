@@ -57,9 +57,9 @@ void esm_state_operational(fsm_t *s, event_t *e)
             {
                 case MME_EVT_ESM_BEARER_LO_INFO_REQ:
                 {
-                    esm_handle_lo_information_request(bearer);
                     d_info("[NAS] ESM information request : "
                             "UE[%s] <--- ESM[%d]", ue->imsi_bcd, bearer->pti);
+                    esm_handle_lo_information_request(bearer);
                     break;
                 }
             }
@@ -96,10 +96,10 @@ void esm_state_operational(fsm_t *s, event_t *e)
                     /* FIXME : SGW Selection */
                     bearer->sgw = mme_sgw_first();
 
-                    esm_handle_information_response(
-                            bearer, &message->esm.esm_information_response);
                     d_info("[NAS] ESM information response : "
                             "UE[%s] --> ESM[%d]", ue->imsi_bcd, bearer->pti);
+                    esm_handle_information_response(
+                            bearer, &message->esm.esm_information_response);
                     break;
                 }
                 default:

@@ -79,6 +79,7 @@ void sgw_state_operational(fsm_t *s, event_t *e)
             {
                 sgw_handle_create_session_request(xact, type, &gtp_message);
                 pkbuf_free(pkbuf);
+
                 break;
             }
 

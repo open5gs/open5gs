@@ -115,6 +115,9 @@ void emm_handle_attach_request(
                     &attach_request->ms_network_capability,
                     sizeof(attach_request->ms_network_capability));
 
+            d_info("[NAS] Attach request : UE[%s] --> EMM", 
+                    ue->imsi_bcd);
+
             mme_s6a_send_air(ue);
             break;
         }
@@ -233,6 +236,9 @@ void emm_handle_authentication_response(
             ue->kasme, ue->knas_enc);
     mme_kdf_enb(ue->kasme, ue->ul_count.i32, ue->kenb);
 
+    d_info("[NAS] Security mode command : UE[%s] <-- EMM", 
+            ue->imsi_bcd);
+
     rv = nas_security_encode(&emmbuf, ue, &message);
     d_assert(rv == CORE_OK && emmbuf, return, "emm build error");
 
@@ -260,9 +266,14 @@ void emm_handle_lo_create_session(mme_bearer_t *bearer)
     d_assert(rv == CORE_OK && esmbuf, 
             return, "bearer build error");
 
+    d_info("[NAS] Activate default bearer context request : EMM <-- ESM[%d]",
+            bearer->ebi);
+
     rv = emm_build_attach_accept(&emmbuf, ue, esmbuf);
     d_assert(rv == CORE_OK && emmbuf, 
             pkbuf_free(esmbuf); return, "emm build error");
+
+    d_info("[NAS] Attach accept : UE[%s] <-- EMM", ue->imsi_bcd);
 
     rv = s1ap_build_initial_context_setup_request(&s1apbuf, bearer, emmbuf);
     d_assert(rv == CORE_OK && s1apbuf, 
