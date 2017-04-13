@@ -7,7 +7,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
-CORE_DECLARE(status_t) emm_build_attach_accept(pkbuf_t **pkbuf, mme_ue_t *ue);
+CORE_DECLARE(status_t) emm_build_attach_accept(
+        pkbuf_t **emmbuf, mme_ue_t *ue, pkbuf_t *esmbuf);
 
 #ifdef __cplusplus
 }

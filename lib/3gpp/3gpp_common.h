@@ -77,7 +77,7 @@ typedef struct _paa_t {
 #define GTP_PDN_TYPE_IPV6                               2
 #define GTP_PDN_TYPE_BOTH                               3
 #define GTP_PDN_TYPE_NON_IP                             4
-ED2(c_uint8_t spare:6;,
+ED2(c_uint8_t spare:5;,
     c_uint8_t pdn_type:3;)
     union {
         c_uint32_t ipv4_addr;;

@@ -11,6 +11,10 @@
 #include "nas_security.h"
 #include "nas_conv.h"
 #include "mme_s6a_handler.h"
+#include "esm_build.h"
+#include "emm_build.h"
+#include "s1ap_build.h"
+#include "s1ap_path.h"
 
 void emm_handle_esm_message_container(
         mme_ue_t *ue, nas_esm_message_container_t *esm_message_container)
@@ -199,5 +203,28 @@ void emm_handle_authentication_response(
 
 void emm_handle_lo_create_session(mme_esm_t *esm)
 {
+    pkbuf_t *esmbuf = NULL, *emmbuf = NULL, *s1apbuf = NULL;
+    mme_ue_t *ue = NULL;
+    mme_enb_t *enb = NULL;
+    status_t rv;
+
+    d_assert(esm, return, "Null param");
+    ue = esm->ue;
+    d_assert(ue, return, "Null param");
+    enb = ue->enb;
+    d_assert(ue->enb, return, "Null param");
+
+    rv = esm_build_activate_default_bearer_context(&esmbuf, esm);
+    d_assert(rv == CORE_OK, return, "esm build error");
+
+    rv = emm_build_attach_accept(&emmbuf, ue, esmbuf);
+    d_assert(rv == CORE_OK, return, "emm build error");
+    pkbuf_free(esmbuf);
+
+    rv = s1ap_build_initial_context_setup_request(&s1apbuf, esm, emmbuf);
+    d_assert(rv == CORE_OK, return, "emm build error");
+    pkbuf_free(emmbuf);
+
+    d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,,);
 }
 

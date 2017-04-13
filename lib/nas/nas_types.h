@@ -844,6 +844,7 @@ ED3(c_uint8_t type:4;,
  * M LV 2-14 */
 typedef struct _nas_eps_quality_of_service_t {
     c_uint8_t length;
+    c_uint8_t qci;
     c_uint8_t ul_mbr;
     c_uint8_t dl_mbr;
     c_uint8_t ul_gbr;

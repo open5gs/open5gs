@@ -105,7 +105,37 @@ status_t s1ap_build_setup_failure(pkbuf_t **pkbuf, S1ap_Cause_t cause)
     return CORE_OK;
 }
 
-status_t s1ap_build_initial_context_setup_request(pkbuf_t **pkbuf)
+status_t s1ap_build_initial_context_setup_request(
+            pkbuf_t **s1apbuf, mme_esm_t *esm, pkbuf_t *emmbuf)
 {
+    int encoded;
+    s1ap_message_t message;
+    S1ap_DownlinkNASTransport_IEs_t *ies = 
+        &message.s1ap_DownlinkNASTransport_IEs;
+    S1ap_NAS_PDU_t *nasPdu = &ies->nas_pdu;
+    mme_ue_t *ue = NULL;
+
+    d_assert(emmbuf, return CORE_ERROR, "Null param");
+    d_assert(esm, return CORE_ERROR, "Null param");
+    ue = esm->ue;
+    d_assert(ue, return CORE_ERROR, "Null param");
+
+    memset(&message, 0, sizeof(s1ap_message_t));
+
+    ies->mme_ue_s1ap_id = ue->mme_ue_s1ap_id;
+    ies->eNB_UE_S1AP_ID = ue->enb_ue_s1ap_id;
+
+    nasPdu->size = emmbuf->len;
+    nasPdu->buf = core_calloc(nasPdu->size, sizeof(c_uint8_t));
+    memcpy(nasPdu->buf, emmbuf->payload, nasPdu->size);
+
+    message.procedureCode = S1ap_ProcedureCode_id_downlinkNASTransport;
+    message.direction = S1AP_PDU_PR_initiatingMessage;
+
+    encoded = s1ap_encode_pdu(s1apbuf, &message);
+    s1ap_free_pdu(&message);
+
+    d_assert(s1apbuf && encoded >= 0,return CORE_ERROR,);
+
     return CORE_OK;
 }
