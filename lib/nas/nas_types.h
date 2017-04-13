@@ -37,7 +37,7 @@ typedef struct _nas_location_area_identification_t {
 typedef struct _nas_mobile_identity_imsi {
 ED3(c_uint8_t digit1:4;,
     c_uint8_t odd_even:1;,
-    c_uint8_t type_of_identity:3;)
+    c_uint8_t type:3;)
 ED2(c_uint8_t digit3:4;,
     c_uint8_t digit2:4;)
 ED2(c_uint8_t digit5:4;,
@@ -57,7 +57,7 @@ ED2(c_uint8_t digit15:4;,
 typedef struct _nas_mobile_identity_tmsi {
 ED3(c_uint8_t spare:4;,
     c_uint8_t odd_even:1;,
-    c_uint8_t type_of_identity:3;)
+    c_uint8_t type:3;)
     c_uint32_t tmsi;
 } __attribute__ ((packed)) nas_mobile_identity_tmsi_t;
 
@@ -66,7 +66,7 @@ ED5(c_uint8_t spare:2;,
     c_uint8_t mbms_session_id:1;,
     c_uint8_t mcc_mnc:1;,
     c_uint8_t odd_even:1;,
-    c_uint8_t type_of_identity:3;)
+    c_uint8_t type:3;)
     c_uint8_t mbms_servicec_id[3];
     plmn_id_t plmn_id;
     c_uint8_t mbms_session_identity;
@@ -312,9 +312,9 @@ ED4(c_uint8_t tsc:1;,
 typedef struct _nas_eps_mobile_identity_guti_t {
 ED3(c_uint8_t spare:4;,
     c_uint8_t odd_even:1;,
-    c_uint8_t type_of_identity:3;)
+    c_uint8_t type:3;)
     plmn_id_t plmn_id;
-    c_uint16_t mme_group_id;
+    c_uint16_t mme_gid;
     c_uint8_t mme_code;
     c_uint32_t m_tmsi;
 } __attribute__ ((packed)) nas_eps_mobile_identity_guti_t;
@@ -365,7 +365,7 @@ typedef struct _nas_esm_message_container_t {
 #define NAS_GRPS_TIMER_UNIT_DEACTIVATED             7
 typedef struct _nas_gprs_timer_t {
 ED2(c_uint8_t unit:3;,
-    c_uint8_t timer_value:5;)
+    c_uint8_t value:5;)
 } __attribute__ ((packed)) nas_gprs_timer_t;
 
 /* 9.9.3.16A GPRS timer 2
@@ -403,7 +403,7 @@ ED2(c_uint8_t unit:3;,
 #define NAS_IDENTITY_TYPE_2_TMSI            4
 typedef struct _nas_identity_type_2_t {
 ED2(c_uint8_t spare:5;,
-    c_uint8_t type_of_identity:3;)
+    c_uint8_t type:3;)
 } __attribute__ ((packed)) nas_identity_type_2_t;
 
 /* 9.9.3.18 IMEISV request
@@ -527,10 +527,7 @@ ED3(c_uint8_t type:4;,
 
 /* 9.9.3.32 Tracking area identity
  * O TV 6 */
-typedef struct _nas_tracking_area_identity_t {
-    plmn_id_t plmn_id;
-    c_uint16_t tac;
-} __attribute__ ((packed)) nas_tracking_area_identity_t;
+typedef tai_t nas_tracking_area_identity_t;
 
 /* 9.9.3.33 Tracking area identity list
  * M LV 7-97 */
@@ -552,8 +549,8 @@ typedef struct _nas_tracking_area_identity_type2 {
 typedef struct nas_tracking_area_identity_list_t {
     c_uint8_t length;
 ED3(c_uint8_t spare:1;,
-    c_uint8_t type_of_list:2;,
-    c_uint8_t number_of_elements:5;)
+    c_uint8_t type:2;,
+    c_uint8_t num:5;)
     union {
         nas_tracking_area_identity_type0 type0;
         nas_tracking_area_identity_type1 type1;

@@ -29,6 +29,11 @@ static void nas_sm_test1(abts_case *tc, void *data)
         "000b402000000300 000005c00100009d 000800020001001a 000a092779012320"
         "010221d9";
 
+            extern int _s1ap_recv;
+            d_trace_level(&_s1ap_recv, 100);
+            extern int _s1ap_send;
+            d_trace_level(&_s1ap_send, 100);
+
     /* eNB connects to MME */
     sock = tests1ap_enb_connect();
     ABTS_PTR_NOTNULL(tc, sock);

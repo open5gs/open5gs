@@ -65,7 +65,7 @@ static void nas_message_test2(abts_case *tc, void *data)
         NAS_ATTACH_RESULT_COMBINED_EPS_IMSI_ATTACH;
     attach_accept->t3412_value.unit = 
         NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_1_MM;
-    attach_accept->t3412_value.timer_value = 3;
+    attach_accept->t3412_value.value = 3;
     attach_accept->tai_list.length = 6;
     plmn_id_build(&attach_accept->tai_list.type0.plmn_id, 417, 99, 2);
     attach_accept->tai_list.type0.tac[0] = 12345;
@@ -75,9 +75,9 @@ static void nas_message_test2(abts_case *tc, void *data)
 
     attach_accept->presencemask |= NAS_ATTACH_ACCEPT_GUTI_PRESENT;
     attach_accept->guti.length = 11;
-    attach_accept->guti.guti.type_of_identity = NAS_EPS_MOBILE_IDENTITY_GUTI;
+    attach_accept->guti.guti.type = NAS_EPS_MOBILE_IDENTITY_GUTI;
     plmn_id_build(&attach_accept->guti.guti.plmn_id, 417, 99, 2);
-    attach_accept->guti.guti.mme_group_id = 9029;
+    attach_accept->guti.guti.mme_gid = 9029;
     attach_accept->guti.guti.mme_code = 225;
     attach_accept->guti.guti.m_tmsi = 0x00000456;
 
@@ -89,7 +89,7 @@ static void nas_message_test2(abts_case *tc, void *data)
 
     attach_accept->presencemask |= NAS_ATTACH_ACCEPT_MS_IDENTITY_PRESENT;
     attach_accept->ms_identity.length = 5;
-    attach_accept->ms_identity.tmsi.type_of_identity = 
+    attach_accept->ms_identity.tmsi.type = 
         NAS_MOBILE_IDENTITY_TMSI;
     attach_accept->ms_identity.tmsi.tmsi = 0x00e102d4;
 
@@ -194,7 +194,7 @@ static void nas_message_test6(abts_case *tc, void *data)
             message.emm.h.protocol_discriminator);
     ABTS_INT_EQUAL(tc, NAS_IDENTITY_REQUEST, message.emm.h.message_type);
     ABTS_INT_EQUAL(tc, NAS_IDENTITY_TYPE_2_IMSI, 
-            identity_request->identity_type.type_of_identity);
+            identity_request->identity_type.type);
 
     pkbuf_free(pkbuf);
 }
@@ -217,7 +217,7 @@ static void nas_message_test7(abts_case *tc, void *data)
 
     identity_response->mobile_identity.length = 8;
     identity_response->mobile_identity.imsi.digit1 = 0;
-    identity_response->mobile_identity.imsi.type_of_identity = 
+    identity_response->mobile_identity.imsi.type = 
         NAS_IDENTITY_TYPE_2_IMSI;
     identity_response->mobile_identity.imsi.odd_even = 1;
     identity_response->mobile_identity.imsi.digit2 = 0;

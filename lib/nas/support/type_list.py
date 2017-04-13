@@ -16,13 +16,13 @@ type_list["Tracking area identity"]["encode"] = \
 type_list["Tracking area identity list"]["decode"] = \
 "    int i = 0;\n" \
 "    {\n" \
-"        if (tracking_area_identity_list->type_of_list == NAS_TRACKING_AREA_IDENTITY_LIST_ONE_PLMN_NON_CONSECUTIVE_TACS)\n" \
-"            for (i = 0; i < tracking_area_identity_list->number_of_elements + 1 && i < NAS_MAX_TRACKING_AREA_IDENTITY; i++)\n" \
+"        if (tracking_area_identity_list->type == NAS_TRACKING_AREA_IDENTITY_LIST_ONE_PLMN_NON_CONSECUTIVE_TACS)\n" \
+"            for (i = 0; i < tracking_area_identity_list->num + 1 && i < NAS_MAX_TRACKING_AREA_IDENTITY; i++)\n" \
 "                tracking_area_identity_list->type0.tac[i] = ntohs(tracking_area_identity_list->type0.tac[i]);\n" \
-"        else if (tracking_area_identity_list->type_of_list == NAS_TRACKING_AREA_IDENTITY_LIST_ONE_PLMN_CONSECUTIVE_TACS)\n" \
+"        else if (tracking_area_identity_list->type == NAS_TRACKING_AREA_IDENTITY_LIST_ONE_PLMN_CONSECUTIVE_TACS)\n" \
 "            tracking_area_identity_list->type1.tac = ntohs(tracking_area_identity_list->type1.tac);\n" \
-"        else if (tracking_area_identity_list->type_of_list == NAS_TRACKING_AREA_IDENTITY_LIST_MANY_PLMNS)\n" \
-"            for (i = 0; i < tracking_area_identity_list->number_of_elements + 1 && i < NAS_MAX_TRACKING_AREA_IDENTITY; i++)\n" \
+"        else if (tracking_area_identity_list->type == NAS_TRACKING_AREA_IDENTITY_LIST_MANY_PLMNS)\n" \
+"            for (i = 0; i < tracking_area_identity_list->num + 1 && i < NAS_MAX_TRACKING_AREA_IDENTITY; i++)\n" \
 "                tracking_area_identity_list->type2.tai[i].tac = ntohs(tracking_area_identity_list->type2.tai[i].tac);\n" \
 "        else\n" \
 "            return -1;\n" \
@@ -30,45 +30,45 @@ type_list["Tracking area identity list"]["decode"] = \
 type_list["Tracking area identity list"]["encode"] = \
 "    int i = 0;\n" \
 "    {\n" \
-"        if (tracking_area_identity_list->type_of_list == NAS_TRACKING_AREA_IDENTITY_LIST_ONE_PLMN_NON_CONSECUTIVE_TACS)\n" \
-"            for (i = 0; i < tracking_area_identity_list->number_of_elements + 1 && i < NAS_MAX_TRACKING_AREA_IDENTITY; i++)\n" \
+"        if (tracking_area_identity_list->type == NAS_TRACKING_AREA_IDENTITY_LIST_ONE_PLMN_NON_CONSECUTIVE_TACS)\n" \
+"            for (i = 0; i < tracking_area_identity_list->num + 1 && i < NAS_MAX_TRACKING_AREA_IDENTITY; i++)\n" \
 "                target.type0.tac[i] = htons(tracking_area_identity_list->type0.tac[i]);\n" \
-"        else if (tracking_area_identity_list->type_of_list == NAS_TRACKING_AREA_IDENTITY_LIST_ONE_PLMN_CONSECUTIVE_TACS)\n" \
+"        else if (tracking_area_identity_list->type == NAS_TRACKING_AREA_IDENTITY_LIST_ONE_PLMN_CONSECUTIVE_TACS)\n" \
 "            target.type1.tac = htons(tracking_area_identity_list->type1.tac);\n" \
-"        else if (tracking_area_identity_list->type_of_list == NAS_TRACKING_AREA_IDENTITY_LIST_MANY_PLMNS)\n" \
-"            for (i = 0; i < tracking_area_identity_list->number_of_elements + 1 && i < NAS_MAX_TRACKING_AREA_IDENTITY; i++)\n" \
+"        else if (tracking_area_identity_list->type == NAS_TRACKING_AREA_IDENTITY_LIST_MANY_PLMNS)\n" \
+"            for (i = 0; i < tracking_area_identity_list->num + 1 && i < NAS_MAX_TRACKING_AREA_IDENTITY; i++)\n" \
 "                target.type2.tai[i].tac = htons(tracking_area_identity_list->type2.tai[i].tac);\n" \
 "        else\n" \
 "            return -1;\n" \
 "    }\n\n"
 
 type_list["Mobile identity"]["decode"] = \
-"    if (mobile_identity->tmsi.type_of_identity == NAS_MOBILE_IDENTITY_TMSI)\n" \
+"    if (mobile_identity->tmsi.type == NAS_MOBILE_IDENTITY_TMSI)\n" \
 "    {\n" \
 "        if (mobile_identity->tmsi.spare != 0xf)\n" \
 "            d_warn(\"Spec warning : mobile_identity->tmsi.spare = 0x%x\", mobile_identity->tmsi.spare);\n" \
 "        mobile_identity->tmsi.tmsi = ntohl(mobile_identity->tmsi.tmsi);\n" \
 "    }\n\n"
 type_list["Mobile identity"]["encode"] = \
-"    if (mobile_identity->tmsi.type_of_identity == NAS_MOBILE_IDENTITY_TMSI)\n" \
+"    if (mobile_identity->tmsi.type == NAS_MOBILE_IDENTITY_TMSI)\n" \
 "    {\n" \
 "        target.tmsi.tmsi = htonl(mobile_identity->tmsi.tmsi);\n" \
 "        target.tmsi.spare = 0xf;\n" \
 "    }\n\n" 
 
 type_list["EPS mobile identity"]["decode"] = \
-"    if (eps_mobile_identity->guti.type_of_identity == NAS_EPS_MOBILE_IDENTITY_GUTI)\n" \
+"    if (eps_mobile_identity->guti.type == NAS_EPS_MOBILE_IDENTITY_GUTI)\n" \
 "    {\n" \
 "        if (eps_mobile_identity->guti.spare != 0xf)\n" \
 "            d_warn(\"Spec warning : eps_mobile_identy->spare = 0x%x\", eps_mobile_identity->guti.spare);\n" \
-"        eps_mobile_identity->guti.mme_group_id = ntohs(eps_mobile_identity->guti.mme_group_id);\n" \
+"        eps_mobile_identity->guti.mme_gid = ntohs(eps_mobile_identity->guti.mme_gid);\n" \
 "        eps_mobile_identity->guti.m_tmsi = ntohl(eps_mobile_identity->guti.m_tmsi);\n" \
 "    }\n\n"
 type_list["EPS mobile identity"]["encode"] = \
-"    if (target.guti.type_of_identity == NAS_EPS_MOBILE_IDENTITY_GUTI)\n" \
+"    if (target.guti.type == NAS_EPS_MOBILE_IDENTITY_GUTI)\n" \
 "    {\n" \
 "        target.guti.spare = 0xf;\n" \
-"        target.guti.mme_group_id = htons(eps_mobile_identity->guti.mme_group_id);\n" \
+"        target.guti.mme_gid = htons(eps_mobile_identity->guti.mme_gid);\n" \
 "        target.guti.m_tmsi = htonl(eps_mobile_identity->guti.m_tmsi);\n" \
 "    }\n\n"
 
