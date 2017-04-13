@@ -113,12 +113,12 @@ void mme_event_s1ap_to_nas(mme_ue_t *ue, S1ap_NAS_PDU_t *nasPdu)
     }
     else if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_ESM)
     {
-        mme_esm_t *esm = mme_esm_find_by_pti(ue, 
+        mme_bearer_t *bearer = mme_bearer_find_by_pti(ue, 
                 h->procedure_transaction_identity);
-        if (esm)
+        if (bearer)
         {
             event_set(&e, EVT_MSG_MME_ESM);
-            event_set_param1(&e, (c_uintptr_t)esm->index);
+            event_set_param1(&e, (c_uintptr_t)bearer->index);
             event_set_param2(&e, (c_uintptr_t)sendbuf);
             mme_event_send(&e);
         }
@@ -131,24 +131,24 @@ void mme_event_s1ap_to_nas(mme_ue_t *ue, S1ap_NAS_PDU_t *nasPdu)
                 h->protocol_discriminator);
 }
 
-void mme_event_emm_to_esm(mme_esm_t *esm, 
-                nas_esm_message_container_t *esm_message_container)
+void mme_event_emm_to_esm(mme_bearer_t *bearer, 
+                nas_esm_message_container_t *bearer_message_container)
 {
     pkbuf_t *sendbuf = NULL;
     event_t e;
 
-    d_assert(esm, return, "Null param");
-    d_assert(esm_message_container, return, "Null param");
+    d_assert(bearer, return, "Null param");
+    d_assert(bearer_message_container, return, "Null param");
 
     /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 
      * When calculating AES_CMAC, we need to use the headroom of the packet. */
-    sendbuf = pkbuf_alloc(NAS_HEADROOM, esm_message_container->len);
+    sendbuf = pkbuf_alloc(NAS_HEADROOM, bearer_message_container->len);
     d_assert(sendbuf, return, "Null param");
     memcpy(sendbuf->payload, 
-            esm_message_container->data, esm_message_container->len);
+            bearer_message_container->data, bearer_message_container->len);
 
     event_set(&e, EVT_MSG_MME_ESM);
-    event_set_param1(&e, (c_uintptr_t)esm->index);
+    event_set_param1(&e, (c_uintptr_t)bearer->index);
     event_set_param2(&e, (c_uintptr_t)sendbuf);
     mme_event_send(&e);
 }

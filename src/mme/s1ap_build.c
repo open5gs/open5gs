@@ -139,7 +139,7 @@ status_t s1ap_build_downlink_nas_transport(
 }
 
 status_t s1ap_build_initial_context_setup_request(
-            pkbuf_t **s1apbuf, mme_esm_t *esm, pkbuf_t *emmbuf)
+            pkbuf_t **s1apbuf, mme_bearer_t *bearer, pkbuf_t *emmbuf)
 {
     int encoded;
     s1ap_message_t message;
@@ -151,10 +151,10 @@ status_t s1ap_build_initial_context_setup_request(
     pdn_t *pdn = NULL;
 
     d_assert(emmbuf, return CORE_ERROR, "Null param");
-    d_assert(esm, return CORE_ERROR, "Null param");
-    ue = esm->ue;
+    d_assert(bearer, return CORE_ERROR, "Null param");
+    ue = bearer->ue;
     d_assert(ue, return CORE_ERROR, "Null param");
-    pdn = esm->pdn;
+    pdn = bearer->pdn;
     d_assert(pdn, return CORE_ERROR, "Null param");
 
     memset(&message, 0, sizeof(s1ap_message_t));
@@ -171,7 +171,7 @@ status_t s1ap_build_initial_context_setup_request(
 
     e_rab = (S1ap_E_RABToBeSetupItemCtxtSUReq_t *)
         core_calloc(1, sizeof(S1ap_E_RABToBeSetupItemCtxtSUReq_t));
-    e_rab->e_RAB_ID = esm->ebi;
+    e_rab->e_RAB_ID = bearer->ebi;
     e_rab->e_RABlevelQoSParameters.qCI = pdn->qci;
 
     e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
@@ -185,10 +185,10 @@ status_t s1ap_build_initial_context_setup_request(
     e_rab->transportLayerAddress.size = 4;
     e_rab->transportLayerAddress.buf = 
         core_calloc(e_rab->transportLayerAddress.size, sizeof(c_uint8_t));
-    memcpy(e_rab->transportLayerAddress.buf, &esm->sgw_s1u_addr,
+    memcpy(e_rab->transportLayerAddress.buf, &bearer->sgw_s1u_addr,
             e_rab->transportLayerAddress.size);
 
-    s1ap_uint32_to_OCTET_STRING(esm->sgw_s1u_teid, &e_rab->gTP_TEID);
+    s1ap_uint32_to_OCTET_STRING(bearer->sgw_s1u_teid, &e_rab->gTP_TEID);
 
     nasPdu = (S1ap_NAS_PDU_t *)core_calloc(1, sizeof(S1ap_NAS_PDU_t));
     nasPdu->size = emmbuf->len;

@@ -152,15 +152,15 @@ void mme_state_operational(fsm_t *s, event_t *e)
             nas_message_t message;
             index_t index = event_get_param1(e);
             mme_ue_t *ue = NULL;
-            mme_esm_t *esm = NULL;
+            mme_bearer_t *bearer = NULL;
             pkbuf_t *pkbuf = NULL;
 
             if (event_get(e) == MME_EVT_EMM_BEARER_LO_CREATE_SESSION)
             {
                 d_assert(index, break, "Null param");
-                esm = mme_esm_find(index);
-                d_assert(esm, break, "No ESM context");
-                ue = esm->ue;
+                bearer = mme_bearer_find(index);
+                d_assert(bearer, break, "No ESM context");
+                ue = bearer->ue;
             }
             else
             {
@@ -192,15 +192,15 @@ void mme_state_operational(fsm_t *s, event_t *e)
         {
             nas_message_t message;
             index_t index = event_get_param1(e);
-            mme_esm_t *esm = NULL;
+            mme_bearer_t *bearer = NULL;
             mme_ue_t *ue = NULL;
             pkbuf_t *pkbuf = NULL;
 
             d_assert(index, break, "Null param");
-            esm = mme_esm_find(index);
-            d_assert(esm, break, "No ESM context");
-            d_assert(ue = esm->ue, break, "No UE context");
-            d_assert(FSM_STATE(&esm->sm), break, "No ESM State Machine");
+            bearer = mme_bearer_find(index);
+            d_assert(bearer, break, "No ESM context");
+            d_assert(ue = bearer->ue, break, "No UE context");
+            d_assert(FSM_STATE(&bearer->sm), break, "No ESM State Machine");
 
             if (event_get(e) == EVT_MSG_MME_ESM)
             {
@@ -212,7 +212,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 event_set_param3(e, (c_uintptr_t)&message);
             }
 
-            fsm_dispatch(&esm->sm, (fsm_event_t*)e);
+            fsm_dispatch(&bearer->sm, (fsm_event_t*)e);
 
             if (event_get(e) == EVT_MSG_MME_ESM)
             {

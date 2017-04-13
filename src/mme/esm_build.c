@@ -7,13 +7,13 @@
 #include "nas_security.h"
 #include "esm_build.h"
 
-status_t esm_build_information_request(pkbuf_t **pkbuf, mme_esm_t *esm)
+status_t esm_build_information_request(pkbuf_t **pkbuf, mme_bearer_t *bearer)
 {
     nas_message_t message;
     mme_ue_t *ue = NULL;
 
-    d_assert(esm, return CORE_ERROR, "Null param");
-    ue = esm->ue;
+    d_assert(bearer, return CORE_ERROR, "Null param");
+    ue = bearer->ue;
     d_assert(ue, return CORE_ERROR, "Null param");
 
     memset(&message, 0, sizeof(message));
@@ -22,7 +22,7 @@ status_t esm_build_information_request(pkbuf_t **pkbuf, mme_esm_t *esm)
     message.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
 
     message.esm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_ESM;
-    message.esm.h.procedure_transaction_identity = esm->pti;
+    message.esm.h.procedure_transaction_identity = bearer->pti;
     message.esm.h.message_type = NAS_ESM_INFORMATION_REQUEST;
 
     d_assert(nas_security_encode(pkbuf, ue, &message) == CORE_OK && *pkbuf,,);
@@ -31,7 +31,7 @@ status_t esm_build_information_request(pkbuf_t **pkbuf, mme_esm_t *esm)
 }
 
 status_t esm_build_activate_default_bearer_context(
-        pkbuf_t **pkbuf, mme_esm_t *esm)
+        pkbuf_t **pkbuf, mme_bearer_t *bearer)
 {
     nas_message_t message;
     nas_activate_default_eps_bearer_context_request_t 
@@ -52,16 +52,16 @@ status_t esm_build_activate_default_bearer_context(
     mme_ue_t *ue = NULL;
     pdn_t *pdn = NULL;
 
-    d_assert(esm, return CORE_ERROR, "Null param");
-    ue = esm->ue;
+    d_assert(bearer, return CORE_ERROR, "Null param");
+    ue = bearer->ue;
     d_assert(ue, return CORE_ERROR, "Null param");
-    pdn = esm->pdn;
+    pdn = bearer->pdn;
     d_assert(pdn, return CORE_ERROR, "Null param");
 
     memset(&message, 0, sizeof(message));
-    message.esm.h.eps_bearer_identity = esm->ebi;
+    message.esm.h.eps_bearer_identity = bearer->ebi;
     message.esm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_ESM;
-    message.esm.h.procedure_transaction_identity = esm->pti;
+    message.esm.h.procedure_transaction_identity = bearer->pti;
     message.esm.h.message_type = 
         NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST;
 
@@ -84,13 +84,13 @@ status_t esm_build_activate_default_bearer_context(
     apn_ambr->dl_apn_ambr_extended2 = 4;
     apn_ambr->ul_apn_ambr_extended2 = 4;
 
-    if (esm->pgw_pco_len)
+    if (bearer->pgw_pco_len)
     {
         activate_default_eps_bearer_context_request->presencemask |=
             NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
-        protocol_configuration_options->length = esm->pgw_pco_len;
+        protocol_configuration_options->length = bearer->pgw_pco_len;
         memcpy(protocol_configuration_options->buffer, 
-                esm->pgw_pco, protocol_configuration_options->length);
+                bearer->pgw_pco, protocol_configuration_options->length);
     }
 
     d_assert(nas_plain_encode(pkbuf, &message) == CORE_OK && *pkbuf,,);

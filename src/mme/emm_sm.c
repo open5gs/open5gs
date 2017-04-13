@@ -63,18 +63,18 @@ void emm_state_operational(fsm_t *s, event_t *e)
                 }
                 case EVT_LO_MME_EMM_LOCATION_UPDATE:
                 {
-                    mme_esm_t *esm = mme_esm_first(ue);
+                    mme_bearer_t *bearer = mme_bearer_first(ue);
 
                     d_info("[NAS] Location update : EMM[%s] <-- HSS",
                             ue->imsi_bcd);
-                    while(esm)
+                    while(bearer)
                     {
                         event_t e;
                         event_set(&e, MME_EVT_ESM_BEARER_LO_INFO_REQ);
-                        event_set_param1(&e, (c_uintptr_t)esm->index);
+                        event_set_param1(&e, (c_uintptr_t)bearer->index);
                         mme_event_send(&e);
 
-                        esm = mme_esm_next(esm);
+                        bearer = mme_bearer_next(bearer);
                     }
                     break;
                 }
@@ -84,13 +84,13 @@ void emm_state_operational(fsm_t *s, event_t *e)
         case MME_EVT_EMM_BEARER_LO_CREATE_SESSION:
         {
             index_t index = event_get_param1(e);
-            mme_esm_t *esm = NULL;
+            mme_bearer_t *bearer = NULL;
 
             d_assert(index, break, "Null param");
-            esm = mme_esm_find(index);
-            d_assert(esm, break, "No ESM context");
+            bearer = mme_bearer_find(index);
+            d_assert(bearer, break, "No Bearer context");
 
-            emm_handle_lo_create_session(esm);
+            emm_handle_lo_create_session(bearer);
             break;
         }
         case EVT_MSG_MME_EMM:

@@ -16,7 +16,7 @@ void mme_s11_handle_create_session_response(
     gtp_f_teid_t *sgw_s11_teid = NULL;
     gtp_f_teid_t *sgw_s1u_teid = NULL;
 
-    mme_esm_t *esm = NULL;
+    mme_bearer_t *bearer = NULL;
     pdn_t *pdn = NULL;
     
     d_assert(ue, return, "Null param");
@@ -48,10 +48,10 @@ void mme_s11_handle_create_session_response(
         return;
     }
 
-    esm = mme_esm_find_by_ebi(
+    bearer = mme_bearer_find_by_ebi(
             ue, rsp->bearer_contexts_created.eps_bearer_id.u8);
-    d_assert(esm, return, "No ESM Context");
-    pdn = esm->pdn;
+    d_assert(bearer, return, "No ESM Context");
+    pdn = bearer->pdn;
     d_assert(pdn, return, "No PDN Context");
 
     /* Receive Control Plane(UL) : SGW-S11 */
@@ -64,17 +64,17 @@ void mme_s11_handle_create_session_response(
 
     if (rsp->protocol_configuration_options.presence)
     {
-        esm->pgw_pco_len = rsp->protocol_configuration_options.len;
-        memcpy(esm->pgw_pco, rsp->protocol_configuration_options.data,
-                esm->pgw_pco_len);
+        bearer->pgw_pco_len = rsp->protocol_configuration_options.len;
+        memcpy(bearer->pgw_pco, rsp->protocol_configuration_options.data,
+                bearer->pgw_pco_len);
     }
 
     /* Receive Data Plane(UL) : SGW-S1U */
     sgw_s1u_teid = rsp->bearer_contexts_created.s1_u_enodeb_f_teid.data;
-    esm->sgw_s1u_teid = ntohl(sgw_s1u_teid->teid);
-    esm->sgw_s1u_addr = sgw_s1u_teid->ipv4_addr;
+    bearer->sgw_s1u_teid = ntohl(sgw_s1u_teid->teid);
+    bearer->sgw_s1u_addr = sgw_s1u_teid->ipv4_addr;
 
     event_set(&e, MME_EVT_EMM_BEARER_LO_CREATE_SESSION);
-    event_set_param1(&e, (c_uintptr_t)esm->index);
+    event_set_param1(&e, (c_uintptr_t)bearer->index);
     mme_event_send(&e);
 }

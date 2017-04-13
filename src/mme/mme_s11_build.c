@@ -8,7 +8,7 @@
 #include "3gpp_common.h"
 #include "mme_context.h"
 
-status_t mme_s11_build_create_session_request(pkbuf_t **pkbuf, mme_esm_t *esm)
+status_t mme_s11_build_create_session_request(pkbuf_t **pkbuf, mme_bearer_t *bearer)
 {
     status_t rv;
     pdn_t *pdn = NULL;
@@ -25,15 +25,15 @@ status_t mme_s11_build_create_session_request(pkbuf_t **pkbuf, mme_esm_t *esm)
     char bearer_qos_buf[GTP_BEARER_QOS_LEN];
     gtp_ue_timezone_t ue_timezone;
 
-    d_assert(esm, return CORE_ERROR, "Null param");
-    pdn = esm->pdn;
+    d_assert(bearer, return CORE_ERROR, "Null param");
+    pdn = bearer->pdn;
     d_assert(pdn, return CORE_ERROR, "Null param");
-    sgw = esm->sgw;
+    sgw = bearer->sgw;
     d_assert(sgw, return CORE_ERROR, "Null param");
-    ue = esm->ue;
+    ue = bearer->ue;
     d_assert(ue, return CORE_ERROR, "Null param");
 
-    d_assert(esm->ue_pco_len, return CORE_ERROR, "Null param");
+    d_assert(bearer->ue_pco_len, return CORE_ERROR, "Null param");
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));
 
@@ -113,12 +113,12 @@ status_t mme_s11_build_create_session_request(pkbuf_t **pkbuf, mme_esm_t *esm)
     req->aggregate_maximum_bit_rate.len = sizeof(ambr);
 
     req->protocol_configuration_options.presence = 1;
-    req->protocol_configuration_options.data = esm->ue_pco;
-    req->protocol_configuration_options.len = esm->ue_pco_len;
+    req->protocol_configuration_options.data = bearer->ue_pco;
+    req->protocol_configuration_options.len = bearer->ue_pco_len;
 
     req->bearer_contexts_to_be_created.presence = 1;
     req->bearer_contexts_to_be_created.eps_bearer_id.presence = 1;
-    req->bearer_contexts_to_be_created.eps_bearer_id.u8 = esm->ebi;
+    req->bearer_contexts_to_be_created.eps_bearer_id.u8 = bearer->ebi;
 
     memset(&bearer_qos, 0, sizeof(bearer_qos));
     bearer_qos.pre_emption_vulnerability = pdn->pre_emption_vulnerability;

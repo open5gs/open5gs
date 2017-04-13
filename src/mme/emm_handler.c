@@ -22,7 +22,7 @@ void emm_handle_esm_message_container(
 
     nas_esm_header_t *h = NULL;
     c_uint8_t pti = 0;
-    mme_esm_t *esm = NULL;
+    mme_bearer_t *bearer = NULL;
 
     d_assert(ue, return, "Null param");
     d_assert(esm_message_container, return, "Null param");
@@ -38,20 +38,20 @@ void emm_handle_esm_message_container(
         return;
     }
 
-    esm = mme_esm_find_by_pti(ue, pti);
-    if (!esm)
+    bearer = mme_bearer_find_by_pti(ue, pti);
+    if (!bearer)
     {
-        esm = mme_esm_add(ue, pti);
-        d_assert(esm, return, "Null param");
+        bearer = mme_bearer_add(ue, pti);
+        d_assert(bearer, return, "Null param");
     }
     else
     {
         d_warn("Duplicated: MME-UE-S1AP-ID[%d] sends "
             "PDN Connectivity Message[PTI(%d)]",
-            ue->mme_ue_s1ap_id, esm->pti);
+            ue->mme_ue_s1ap_id, bearer->pti);
     }
 
-    mme_event_emm_to_esm(esm, esm_message_container);
+    mme_event_emm_to_esm(bearer, esm_message_container);
 }
 
 void emm_handle_attach_request(
@@ -201,26 +201,26 @@ void emm_handle_authentication_response(
     mme_event_nas_to_s1ap(ue, sendbuf);
 }
 
-void emm_handle_lo_create_session(mme_esm_t *esm)
+void emm_handle_lo_create_session(mme_bearer_t *bearer)
 {
-    pkbuf_t *esmbuf = NULL, *emmbuf = NULL, *s1apbuf = NULL;
+    pkbuf_t *bearerbuf = NULL, *emmbuf = NULL, *s1apbuf = NULL;
     mme_ue_t *ue = NULL;
     mme_enb_t *enb = NULL;
     status_t rv;
 
-    d_assert(esm, return, "Null param");
-    ue = esm->ue;
+    d_assert(bearer, return, "Null param");
+    ue = bearer->ue;
     d_assert(ue, return, "Null param");
     enb = ue->enb;
     d_assert(ue->enb, return, "Null param");
 
-    rv = esm_build_activate_default_bearer_context(&esmbuf, esm);
-    d_assert(rv == CORE_OK, return, "esm build error");
+    rv = esm_build_activate_default_bearer_context(&bearerbuf, bearer);
+    d_assert(rv == CORE_OK, return, "bearer build error");
 
-    rv = emm_build_attach_accept(&emmbuf, ue, esmbuf);
-    d_assert(rv == CORE_OK, pkbuf_free(esmbuf); return, "emm build error");
+    rv = emm_build_attach_accept(&emmbuf, ue, bearerbuf);
+    d_assert(rv == CORE_OK, pkbuf_free(bearerbuf); return, "emm build error");
 
-    rv = s1ap_build_initial_context_setup_request(&s1apbuf, esm, emmbuf);
+    rv = s1ap_build_initial_context_setup_request(&s1apbuf, bearer, emmbuf);
     d_assert(rv == CORE_OK, pkbuf_free(emmbuf); return, "emm build error");
 
     d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,,);

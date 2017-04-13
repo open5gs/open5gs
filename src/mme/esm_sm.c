@@ -1,4 +1,4 @@
-#define TRACE_MODULE _esm_sm
+#define TRACE_MODULE _bearer_sm
 
 #include "core_debug.h"
 
@@ -44,13 +44,13 @@ void esm_state_operational(fsm_t *s, event_t *e)
         case MME_EVT_ESM_BEARER_LO_INFO_REQ:
         {
             index_t index = event_get_param1(e);
-            mme_esm_t *esm = NULL;
+            mme_bearer_t *bearer = NULL;
             mme_ue_t *ue = NULL;
 
             d_assert(index, return, "Null param");
-            esm = mme_esm_find(index);
-            d_assert(esm, return, "Null param");
-            ue = esm->ue;
+            bearer = mme_bearer_find(index);
+            d_assert(bearer, return, "Null param");
+            ue = bearer->ue;
             d_assert(ue, return, "Null param");
 
             switch(event_get(e))
@@ -60,12 +60,12 @@ void esm_state_operational(fsm_t *s, event_t *e)
                     pkbuf_t *pkbuf = NULL;
                     status_t rv;
 
-                    rv = esm_build_information_request(&pkbuf, esm);
+                    rv = esm_build_information_request(&pkbuf, bearer);
                     d_assert(rv == CORE_OK, break, "esm_build failed");
 
                     mme_event_nas_to_s1ap(ue, pkbuf);
                     d_info("[NAS] ESM information request : "
-                            "UE[%s] <--- ESM[%d]", ue->imsi_bcd, esm->pti);
+                            "UE[%s] <--- ESM[%d]", ue->imsi_bcd, bearer->pti);
                     break;
                 }
             }
@@ -75,14 +75,14 @@ void esm_state_operational(fsm_t *s, event_t *e)
         case EVT_MSG_MME_ESM:
         {
             index_t index = event_get_param1(e);
-            mme_esm_t *esm = NULL;
+            mme_bearer_t *bearer = NULL;
             mme_ue_t *ue = NULL;
             nas_message_t *message = NULL;
 
             d_assert(index, return, "Null param");
-            esm = mme_esm_find(index);
-            d_assert(esm, return, "Null param");
-            ue = esm->ue;
+            bearer = mme_bearer_find(index);
+            d_assert(bearer, return, "Null param");
+            ue = bearer->ue;
             d_assert(ue, return, "Null param");
             message = (nas_message_t *)event_get_param3(e);
             d_assert(message, break, "Null param");
@@ -92,20 +92,20 @@ void esm_state_operational(fsm_t *s, event_t *e)
                 case NAS_PDN_CONNECTIVITY_REQUEST:
                 {
                     esm_handle_pdn_connectivity_request(
-                            esm, &message->esm.pdn_connectivity_request);
+                            bearer, &message->esm.pdn_connectivity_request);
                     d_info("[NAS] PDN connectivity request : "
-                            "UE[%s] --> ESM[%d]", ue->imsi_bcd, esm->pti);
+                            "UE[%s] --> ESM[%d]", ue->imsi_bcd, bearer->pti);
                     break;
                 }
                 case NAS_ESM_INFORMATION_RESPONSE:
                 {
                     /* FIXME : SGW Selection */
-                    esm->sgw = mme_sgw_first();
+                    bearer->sgw = mme_sgw_first();
 
                     esm_handle_information_response(
-                            esm, &message->esm.esm_information_response);
+                            bearer, &message->esm.esm_information_response);
                     d_info("[NAS] ESM information response : "
-                            "UE[%s] --> ESM[%d]", ue->imsi_bcd, esm->pti);
+                            "UE[%s] --> ESM[%d]", ue->imsi_bcd, bearer->pti);
                     break;
                 }
                 default:

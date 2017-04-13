@@ -14,7 +14,7 @@ CORE_DECLARE(status_t) s1ap_build_setup_failure(
 CORE_DECLARE(status_t) s1ap_build_downlink_nas_transport(
             pkbuf_t **s1apbuf, mme_ue_t *ue, pkbuf_t *emmbuf);
 CORE_DECLARE(status_t) s1ap_build_initial_context_setup_request(
-            pkbuf_t **s1apbuf, mme_esm_t *esm, pkbuf_t *emmbuf);
+            pkbuf_t **s1apbuf, mme_bearer_t *bearer, pkbuf_t *emmbuf);
 
 #ifdef __cplusplus
 }
