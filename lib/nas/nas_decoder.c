@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-12 23:24:41.513620 by acetcom
+ * Created on: 2017-04-13 10:06:41.790125 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -581,21 +581,21 @@ c_int32_t nas_decode_security_mode_reject(nas_message_t *message, pkbuf_t *pkbuf
     return decoded;
 }
 
-c_int32_t nas_decode_activate_dedicated_eps_bearer_context_request(nas_message_t *message, pkbuf_t *pkbuf)
+c_int32_t nas_decode_activate_default_eps_bearer_context_request(nas_message_t *message, pkbuf_t *pkbuf)
 {
-    nas_activate_dedicated_eps_bearer_context_request_t *activate_dedicated_eps_bearer_context_request = &message->esm.activate_dedicated_eps_bearer_context_request;
+    nas_activate_default_eps_bearer_context_request_t *activate_default_eps_bearer_context_request = &message->esm.activate_default_eps_bearer_context_request;
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    size = nas_decode_eps_quality_of_service(&activate_dedicated_eps_bearer_context_request->eps_qos, pkbuf);
+    size = nas_decode_eps_quality_of_service(&activate_default_eps_bearer_context_request->eps_qos, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
     decoded += size;
 
-    size = nas_decode_access_point_name(&activate_dedicated_eps_bearer_context_request->access_point_name, pkbuf);
+    size = nas_decode_access_point_name(&activate_default_eps_bearer_context_request->access_point_name, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
     decoded += size;
 
-    size = nas_decode_pdn_address(&activate_dedicated_eps_bearer_context_request->pdn_address, pkbuf);
+    size = nas_decode_pdn_address(&activate_default_eps_bearer_context_request->pdn_address, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
     decoded += size;
 
@@ -611,94 +611,94 @@ c_int32_t nas_decode_activate_dedicated_eps_bearer_context_request(nas_message_t
 
         switch(type)
         {
-             case NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_TRANSACTION_IDENTIFIER_TYPE:
-                 size = nas_decode_transaction_identifier(&activate_dedicated_eps_bearer_context_request->transaction_identifier, pkbuf);
+             case NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_TRANSACTION_IDENTIFIER_TYPE:
+                 size = nas_decode_transaction_identifier(&activate_default_eps_bearer_context_request->transaction_identifier, pkbuf);
                  d_assert(size >= 0, return -1, "decode failed");
-                 activate_dedicated_eps_bearer_context_request->presencemask |= NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_TRANSACTION_IDENTIFIER_PRESENT;
+                 activate_default_eps_bearer_context_request->presencemask |= NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_TRANSACTION_IDENTIFIER_PRESENT;
                  decoded += size;
                  break;
-             case NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_QOS_TYPE:
-                 size = nas_decode_quality_of_service(&activate_dedicated_eps_bearer_context_request->negotiated_qos, pkbuf);
+             case NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_QOS_TYPE:
+                 size = nas_decode_quality_of_service(&activate_default_eps_bearer_context_request->negotiated_qos, pkbuf);
                  d_assert(size >= 0, return -1, "decode failed");
-                 activate_dedicated_eps_bearer_context_request->presencemask |= NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_QOS_PRESENT;
+                 activate_default_eps_bearer_context_request->presencemask |= NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_QOS_PRESENT;
                  decoded += size;
                  break;
-             case NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_LLC_SAPI_TYPE:
-                 size = nas_decode_llc_service_access_point_identifier(&activate_dedicated_eps_bearer_context_request->negotiated_llc_sapi, pkbuf);
+             case NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_LLC_SAPI_TYPE:
+                 size = nas_decode_llc_service_access_point_identifier(&activate_default_eps_bearer_context_request->negotiated_llc_sapi, pkbuf);
                  d_assert(size >= 0, return -1, "decode failed");
-                 activate_dedicated_eps_bearer_context_request->presencemask |= NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_LLC_SAPI_PRESENT;
+                 activate_default_eps_bearer_context_request->presencemask |= NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_LLC_SAPI_PRESENT;
                  decoded += size;
                  break;
-             case NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_RADIO_PRIORITY_TYPE:
-                 size = nas_decode_radio_priority(&activate_dedicated_eps_bearer_context_request->radio_priority, pkbuf);
+             case NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_RADIO_PRIORITY_TYPE:
+                 size = nas_decode_radio_priority(&activate_default_eps_bearer_context_request->radio_priority, pkbuf);
                  d_assert(size >= 0, return -1, "decode failed");
-                 activate_dedicated_eps_bearer_context_request->presencemask |= NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_RADIO_PRIORITY_PRESENT;
+                 activate_default_eps_bearer_context_request->presencemask |= NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_RADIO_PRIORITY_PRESENT;
                  decoded += size;
                  break;
-             case NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_PACKET_FLOW_IDENTIFIER_TYPE:
-                 size = nas_decode_packet_flow_identifier(&activate_dedicated_eps_bearer_context_request->packet_flow_identifier, pkbuf);
+             case NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_PACKET_FLOW_IDENTIFIER_TYPE:
+                 size = nas_decode_packet_flow_identifier(&activate_default_eps_bearer_context_request->packet_flow_identifier, pkbuf);
                  d_assert(size >= 0, return -1, "decode failed");
-                 activate_dedicated_eps_bearer_context_request->presencemask |= NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_PACKET_FLOW_IDENTIFIER_PRESENT;
+                 activate_default_eps_bearer_context_request->presencemask |= NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_PACKET_FLOW_IDENTIFIER_PRESENT;
                  decoded += size;
                  break;
-             case NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_APN_AMBR_TYPE:
-                 size = nas_decode_apn_aggregate_maximum_bit_rate(&activate_dedicated_eps_bearer_context_request->apn_ambr, pkbuf);
+             case NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_APN_AMBR_TYPE:
+                 size = nas_decode_apn_aggregate_maximum_bit_rate(&activate_default_eps_bearer_context_request->apn_ambr, pkbuf);
                  d_assert(size >= 0, return -1, "decode failed");
-                 activate_dedicated_eps_bearer_context_request->presencemask |= NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_APN_AMBR_PRESENT;
+                 activate_default_eps_bearer_context_request->presencemask |= NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_APN_AMBR_PRESENT;
                  decoded += size;
                  break;
-             case NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_ESM_CAUSE_TYPE:
-                 size = nas_decode_esm_cause(&activate_dedicated_eps_bearer_context_request->esm_cause, pkbuf);
+             case NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_ESM_CAUSE_TYPE:
+                 size = nas_decode_esm_cause(&activate_default_eps_bearer_context_request->esm_cause, pkbuf);
                  d_assert(size >= 0, return -1, "decode failed");
-                 activate_dedicated_eps_bearer_context_request->presencemask |= NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_ESM_CAUSE_PRESENT;
+                 activate_default_eps_bearer_context_request->presencemask |= NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_ESM_CAUSE_PRESENT;
                  decoded += size;
                  break;
-             case NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_TYPE:
-                 size = nas_decode_protocol_configuration_options(&activate_dedicated_eps_bearer_context_request->protocol_configuration_options, pkbuf);
+             case NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_TYPE:
+                 size = nas_decode_protocol_configuration_options(&activate_default_eps_bearer_context_request->protocol_configuration_options, pkbuf);
                  d_assert(size >= 0, return -1, "decode failed");
-                 activate_dedicated_eps_bearer_context_request->presencemask |= NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
+                 activate_default_eps_bearer_context_request->presencemask |= NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
                  decoded += size;
                  break;
-             case NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_CONNECTIVITY_TYPE_TYPE:
-                 size = nas_decode_connectivity_type(&activate_dedicated_eps_bearer_context_request->connectivity_type, pkbuf);
+             case NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_CONNECTIVITY_TYPE_TYPE:
+                 size = nas_decode_connectivity_type(&activate_default_eps_bearer_context_request->connectivity_type, pkbuf);
                  d_assert(size >= 0, return -1, "decode failed");
-                 activate_dedicated_eps_bearer_context_request->presencemask |= NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_CONNECTIVITY_TYPE_PRESENT;
+                 activate_default_eps_bearer_context_request->presencemask |= NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_CONNECTIVITY_TYPE_PRESENT;
                  decoded += size;
                  break;
-             case NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_WLAN_OFFLOAD_INDICATION_TYPE:
-                 size = nas_decode_wlan_offload_acceptability(&activate_dedicated_eps_bearer_context_request->wlan_offload_indication, pkbuf);
+             case NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_WLAN_OFFLOAD_INDICATION_TYPE:
+                 size = nas_decode_wlan_offload_acceptability(&activate_default_eps_bearer_context_request->wlan_offload_indication, pkbuf);
                  d_assert(size >= 0, return -1, "decode failed");
-                 activate_dedicated_eps_bearer_context_request->presencemask |= NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_WLAN_OFFLOAD_INDICATION_PRESENT;
+                 activate_default_eps_bearer_context_request->presencemask |= NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_WLAN_OFFLOAD_INDICATION_PRESENT;
                  decoded += size;
                  break;
-             case NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_NBIFOM_CONTAINER_TYPE:
-                 size = nas_decode_nbifom_container(&activate_dedicated_eps_bearer_context_request->nbifom_container, pkbuf);
+             case NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_NBIFOM_CONTAINER_TYPE:
+                 size = nas_decode_nbifom_container(&activate_default_eps_bearer_context_request->nbifom_container, pkbuf);
                  d_assert(size >= 0, return -1, "decode failed");
-                 activate_dedicated_eps_bearer_context_request->presencemask |= NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_NBIFOM_CONTAINER_PRESENT;
+                 activate_default_eps_bearer_context_request->presencemask |= NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_NBIFOM_CONTAINER_PRESENT;
                  decoded += size;
                  break;
-             case NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_HEADER_COMPRESSION_CONFIGURATION_TYPE:
-                 size = nas_decode_header_compression_configuration(&activate_dedicated_eps_bearer_context_request->header_compression_configuration, pkbuf);
+             case NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_HEADER_COMPRESSION_CONFIGURATION_TYPE:
+                 size = nas_decode_header_compression_configuration(&activate_default_eps_bearer_context_request->header_compression_configuration, pkbuf);
                  d_assert(size >= 0, return -1, "decode failed");
-                 activate_dedicated_eps_bearer_context_request->presencemask |= NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_HEADER_COMPRESSION_CONFIGURATION_PRESENT;
+                 activate_default_eps_bearer_context_request->presencemask |= NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_HEADER_COMPRESSION_CONFIGURATION_PRESENT;
                  decoded += size;
                  break;
-             case NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_CONTROL_PLANE_ONLY_INDICATION_TYPE:
-                 size = nas_decode_control_plane_only_indication(&activate_dedicated_eps_bearer_context_request->control_plane_only_indication, pkbuf);
+             case NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_CONTROL_PLANE_ONLY_INDICATION_TYPE:
+                 size = nas_decode_control_plane_only_indication(&activate_default_eps_bearer_context_request->control_plane_only_indication, pkbuf);
                  d_assert(size >= 0, return -1, "decode failed");
-                 activate_dedicated_eps_bearer_context_request->presencemask |= NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_CONTROL_PLANE_ONLY_INDICATION_PRESENT;
+                 activate_default_eps_bearer_context_request->presencemask |= NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_CONTROL_PLANE_ONLY_INDICATION_PRESENT;
                  decoded += size;
                  break;
-             case NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE:
-                 size = nas_decode_extended_protocol_configuration_options(&activate_dedicated_eps_bearer_context_request->extended_protocol_configuration_options, pkbuf);
+             case NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE:
+                 size = nas_decode_extended_protocol_configuration_options(&activate_default_eps_bearer_context_request->extended_protocol_configuration_options, pkbuf);
                  d_assert(size >= 0, return -1, "decode failed");
-                 activate_dedicated_eps_bearer_context_request->presencemask |= NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
+                 activate_default_eps_bearer_context_request->presencemask |= NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
                  decoded += size;
                  break;
-             case NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_SERVING_PLMN_RATE_CONTROL_TYPE:
-                 size = nas_decode_serving_plmn_rate_control(&activate_dedicated_eps_bearer_context_request->serving_plmn_rate_control, pkbuf);
+             case NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_SERVING_PLMN_RATE_CONTROL_TYPE:
+                 size = nas_decode_serving_plmn_rate_control(&activate_default_eps_bearer_context_request->serving_plmn_rate_control, pkbuf);
                  d_assert(size >= 0, return -1, "decode failed");
-                 activate_dedicated_eps_bearer_context_request->presencemask |= NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_SERVING_PLMN_RATE_CONTROL_PRESENT;
+                 activate_default_eps_bearer_context_request->presencemask |= NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_SERVING_PLMN_RATE_CONTROL_PRESENT;
                  decoded += size;
                  break;
              default:
@@ -710,9 +710,9 @@ c_int32_t nas_decode_activate_dedicated_eps_bearer_context_request(nas_message_t
     return decoded;
 }
 
-c_int32_t nas_decode_activate_dedicated_eps_bearer_context_accept(nas_message_t *message, pkbuf_t *pkbuf)
+c_int32_t nas_decode_activate_default_eps_bearer_context_accept(nas_message_t *message, pkbuf_t *pkbuf)
 {
-    nas_activate_dedicated_eps_bearer_context_accept_t *activate_dedicated_eps_bearer_context_accept = &message->esm.activate_dedicated_eps_bearer_context_accept;
+    nas_activate_default_eps_bearer_context_accept_t *activate_default_eps_bearer_context_accept = &message->esm.activate_default_eps_bearer_context_accept;
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
@@ -728,16 +728,16 @@ c_int32_t nas_decode_activate_dedicated_eps_bearer_context_accept(nas_message_t 
 
         switch(type)
         {
-             case NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_ACCEPT_PROTOCOL_CONFIGURATION_OPTIONS_TYPE:
-                 size = nas_decode_protocol_configuration_options(&activate_dedicated_eps_bearer_context_accept->protocol_configuration_options, pkbuf);
+             case NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_ACCEPT_PROTOCOL_CONFIGURATION_OPTIONS_TYPE:
+                 size = nas_decode_protocol_configuration_options(&activate_default_eps_bearer_context_accept->protocol_configuration_options, pkbuf);
                  d_assert(size >= 0, return -1, "decode failed");
-                 activate_dedicated_eps_bearer_context_accept->presencemask |= NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_ACCEPT_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
+                 activate_default_eps_bearer_context_accept->presencemask |= NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_ACCEPT_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
                  decoded += size;
                  break;
-             case NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_ACCEPT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE:
-                 size = nas_decode_extended_protocol_configuration_options(&activate_dedicated_eps_bearer_context_accept->extended_protocol_configuration_options, pkbuf);
+             case NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_ACCEPT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE:
+                 size = nas_decode_extended_protocol_configuration_options(&activate_default_eps_bearer_context_accept->extended_protocol_configuration_options, pkbuf);
                  d_assert(size >= 0, return -1, "decode failed");
-                 activate_dedicated_eps_bearer_context_accept->presencemask |= NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_ACCEPT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
+                 activate_default_eps_bearer_context_accept->presencemask |= NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_ACCEPT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
                  decoded += size;
                  break;
              default:
@@ -749,13 +749,13 @@ c_int32_t nas_decode_activate_dedicated_eps_bearer_context_accept(nas_message_t 
     return decoded;
 }
 
-c_int32_t nas_decode_activate_dedicated_eps_bearer_context_reject(nas_message_t *message, pkbuf_t *pkbuf)
+c_int32_t nas_decode_activate_default_eps_bearer_context_reject(nas_message_t *message, pkbuf_t *pkbuf)
 {
-    nas_activate_dedicated_eps_bearer_context_reject_t *activate_dedicated_eps_bearer_context_reject = &message->esm.activate_dedicated_eps_bearer_context_reject;
+    nas_activate_default_eps_bearer_context_reject_t *activate_default_eps_bearer_context_reject = &message->esm.activate_default_eps_bearer_context_reject;
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    size = nas_decode_esm_cause(&activate_dedicated_eps_bearer_context_reject->esm_cause, pkbuf);
+    size = nas_decode_esm_cause(&activate_default_eps_bearer_context_reject->esm_cause, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
     decoded += size;
 
@@ -771,16 +771,16 @@ c_int32_t nas_decode_activate_dedicated_eps_bearer_context_reject(nas_message_t 
 
         switch(type)
         {
-             case NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_TYPE:
-                 size = nas_decode_protocol_configuration_options(&activate_dedicated_eps_bearer_context_reject->protocol_configuration_options, pkbuf);
+             case NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_TYPE:
+                 size = nas_decode_protocol_configuration_options(&activate_default_eps_bearer_context_reject->protocol_configuration_options, pkbuf);
                  d_assert(size >= 0, return -1, "decode failed");
-                 activate_dedicated_eps_bearer_context_reject->presencemask |= NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
+                 activate_default_eps_bearer_context_reject->presencemask |= NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
                  decoded += size;
                  break;
-             case NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE:
-                 size = nas_decode_extended_protocol_configuration_options(&activate_dedicated_eps_bearer_context_reject->extended_protocol_configuration_options, pkbuf);
+             case NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE:
+                 size = nas_decode_extended_protocol_configuration_options(&activate_default_eps_bearer_context_reject->extended_protocol_configuration_options, pkbuf);
                  d_assert(size >= 0, return -1, "decode failed");
-                 activate_dedicated_eps_bearer_context_reject->presencemask |= NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
+                 activate_default_eps_bearer_context_reject->presencemask |= NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
                  decoded += size;
                  break;
              default:
@@ -1168,18 +1168,18 @@ status_t nas_esm_decode(nas_message_t *message, pkbuf_t *pkbuf)
 
     switch(message->esm.h.message_type)
     {
-        case NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST:
-            size = nas_decode_activate_dedicated_eps_bearer_context_request(message, pkbuf);
+        case NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST:
+            size = nas_decode_activate_default_eps_bearer_context_request(message, pkbuf);
             d_assert(size >= CORE_OK, return CORE_ERROR, "decode error");
             decoded += size;
             break;
-        case NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_ACCEPT:
-            size = nas_decode_activate_dedicated_eps_bearer_context_accept(message, pkbuf);
+        case NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_ACCEPT:
+            size = nas_decode_activate_default_eps_bearer_context_accept(message, pkbuf);
             d_assert(size >= CORE_OK, return CORE_ERROR, "decode error");
             decoded += size;
             break;
-        case NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REJECT:
-            size = nas_decode_activate_dedicated_eps_bearer_context_reject(message, pkbuf);
+        case NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REJECT:
+            size = nas_decode_activate_default_eps_bearer_context_reject(message, pkbuf);
             d_assert(size >= CORE_OK, return CORE_ERROR, "decode error");
             decoded += size;
             break;
