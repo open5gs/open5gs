@@ -126,15 +126,14 @@ void mme_state_operational(fsm_t *s, event_t *e)
             s1ap_message_t message;
             index_t index = event_get_param1(e);
             mme_enb_t *enb = NULL;
-            pkbuf_t *pkbuf = (pkbuf_t *)event_get_param2(e);
+            pkbuf_t *pkbuf = NULL;
+            
+            d_assert(index, break, "Null param");
+            d_assert(enb = mme_enb_find(index), break, "No eNB context");
+            d_assert(FSM_STATE(&enb->sm), break, "No S1AP State Machine");
 
+            pkbuf = (pkbuf_t *)event_get_param2(e);
             d_assert(pkbuf, break, "Null param");
-            d_assert(index, pkbuf_free(pkbuf); break, "Null param");
-            d_assert(enb = mme_enb_find(index),
-                    pkbuf_free(pkbuf); break, "No eNB context");
-            d_assert(FSM_STATE(&enb->sm), 
-                    pkbuf_free(pkbuf); break, "No S1AP State Machine");
-
             d_assert(s1ap_decode_pdu(&message, pkbuf) == CORE_OK,
                     pkbuf_free(pkbuf); break, "Can't decode S1AP_PDU");
 
@@ -147,78 +146,79 @@ void mme_state_operational(fsm_t *s, event_t *e)
         }
         case EVT_LO_MME_EMM_AUTH_REQ:
         case EVT_LO_MME_EMM_LOCATION_UPDATE:
-        {
-            index_t index = event_get_param1(e);
-            mme_ue_t *ue = NULL;
-
-            d_assert(index, break, "Null param");
-            ue = mme_ue_find(index);
-            d_assert(ue, break, "No UE context");
-            d_assert(FSM_STATE(&ue->sm), break, "No EMM State Machine");
-
-            fsm_dispatch(&ue->sm, (fsm_event_t*)e);
-            break;
-        }
+        case MME_EVT_EMM_BEARER_LO_CREATE_SESSION:
         case EVT_MSG_MME_EMM:
         {
             nas_message_t message;
             index_t index = event_get_param1(e);
             mme_ue_t *ue = NULL;
-            pkbuf_t *pkbuf = (pkbuf_t *)event_get_param2(e);
+            mme_esm_t *esm = NULL;
+            pkbuf_t *pkbuf = NULL;
 
-            d_assert(pkbuf, break, "Null param");
-            d_assert(index, pkbuf_free(pkbuf); break, "Null param");
-            ue = mme_ue_find(index);
-            d_assert(ue, pkbuf_free(pkbuf); break, "No UE context");
-            d_assert(FSM_STATE(&ue->sm), 
-                    pkbuf_free(pkbuf); break, "No EMM State Machine");
+            if (event_get(e) == MME_EVT_EMM_BEARER_LO_CREATE_SESSION)
+            {
+                d_assert(index, break, "Null param");
+                esm = mme_esm_find(index);
+                d_assert(esm, break, "No ESM context");
+                ue = esm->ue;
+            }
+            else
+            {
+                d_assert(index, break, "Null param");
+                ue = mme_ue_find(index);
+            }
+            d_assert(ue, break, "No UE context");
+            d_assert(FSM_STATE(&ue->sm), break, "No EMM State Machine");
 
-            d_assert(nas_emm_decode(&message, pkbuf) == CORE_OK,
-                    pkbuf_free(pkbuf); break, "Can't decode NAS_EMM");
+            if (event_get(e) == EVT_MSG_MME_EMM)
+            {
+                pkbuf = (pkbuf_t *)event_get_param2(e);
+                d_assert(pkbuf, break, "Null param");
+                d_assert(nas_emm_decode(&message, pkbuf) == CORE_OK,
+                        pkbuf_free(pkbuf); break, "Can't decode NAS_EMM");
+                event_set_param3(e, (c_uintptr_t)&message);
+            }
 
-            event_set_param3(e, (c_uintptr_t)&message);
             fsm_dispatch(&ue->sm, (fsm_event_t*)e);
 
-            pkbuf_free(pkbuf);
+            if (event_get(e) == EVT_MSG_MME_EMM)
+            {
+                pkbuf_free(pkbuf);
+            }
             break;
         }
-        case MME_EVT_ESM_LO_INFO_REQ:
-        case MME_EVT_ESM_LO_CREATE_SESSION:
-        {
-            index_t index = event_get_param1(e);
-            mme_esm_t *esm = NULL;
-
-            d_assert(index, break, "Null param");
-            esm = mme_esm_find(index);
-            d_assert(esm, break, "No ESM context");
-            d_assert(FSM_STATE(&esm->sm), break, "No ESM State Machine");
-
-            fsm_dispatch(&esm->sm, (fsm_event_t*)e);
-            break;
-        }
+        case MME_EVT_ESM_BEARER_LO_INFO_REQ:
         case EVT_MSG_MME_ESM:
         {
             nas_message_t message;
             index_t index = event_get_param1(e);
             mme_esm_t *esm = NULL;
             mme_ue_t *ue = NULL;
-            pkbuf_t *pkbuf = (pkbuf_t *)event_get_param2(e);
+            pkbuf_t *pkbuf = NULL;
 
-            d_assert(pkbuf, break, "Null param");
-            d_assert(index, pkbuf_free(pkbuf); break, "Null param");
+            d_assert(index, break, "Null param");
             esm = mme_esm_find(index);
-            d_assert(esm, pkbuf_free(pkbuf); break, "No ESM context");
-            d_assert(ue = esm->ue, pkbuf_free(pkbuf); break, "No UE context");
-            d_assert(FSM_STATE(&esm->sm), 
-                    pkbuf_free(pkbuf); break, "No ESM State Machine");
+            d_assert(esm, break, "No ESM context");
+            d_assert(ue = esm->ue, break, "No UE context");
+            d_assert(FSM_STATE(&esm->sm), break, "No ESM State Machine");
 
-            d_assert(nas_esm_decode(&message, pkbuf) == CORE_OK,
-                    pkbuf_free(pkbuf); break, "Can't decode NAS_ESM");
+            if (event_get(e) == EVT_MSG_MME_ESM)
+            {
+                pkbuf = (pkbuf_t *)event_get_param2(e);
+                d_assert(pkbuf, break, "Null param");
+                d_assert(nas_esm_decode(&message, pkbuf) == CORE_OK,
+                        pkbuf_free(pkbuf); break, "Can't decode NAS_ESM");
 
-            event_set_param3(e, (c_uintptr_t)&message);
+                event_set_param3(e, (c_uintptr_t)&message);
+            }
+
             fsm_dispatch(&esm->sm, (fsm_event_t*)e);
 
-            pkbuf_free(pkbuf);
+            if (event_get(e) == EVT_MSG_MME_ESM)
+            {
+                pkbuf_free(pkbuf);
+            }
+
             break;
         }
         case EVT_MSG_MME_S11:

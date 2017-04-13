@@ -104,3 +104,8 @@ status_t s1ap_build_setup_failure(pkbuf_t **pkbuf, S1ap_Cause_t cause)
 
     return CORE_OK;
 }
+
+status_t s1ap_build_initial_context_setup_request(pkbuf_t **pkbuf)
+{
+    return CORE_OK;
+}

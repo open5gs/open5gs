@@ -56,7 +56,7 @@ void mme_s11_handle_create_session_response(
     esm->sgw_s1u_teid = ntohl(sgw_s1u_teid->teid);
     esm->sgw_s1u_addr = sgw_s1u_teid->ipv4_addr;
 
-    event_set(&e, MME_EVT_ESM_LO_CREATE_SESSION);
+    event_set(&e, MME_EVT_EMM_BEARER_LO_CREATE_SESSION);
     event_set_param1(&e, (c_uintptr_t)esm->index);
     mme_event_send(&e);
 }

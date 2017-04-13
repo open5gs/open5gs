@@ -70,7 +70,7 @@ void emm_state_operational(fsm_t *s, event_t *e)
                     while(esm)
                     {
                         event_t e;
-                        event_set(&e, MME_EVT_ESM_LO_INFO_REQ);
+                        event_set(&e, MME_EVT_ESM_BEARER_LO_INFO_REQ);
                         event_set_param1(&e, (c_uintptr_t)esm->index);
                         mme_event_send(&e);
 
@@ -79,6 +79,18 @@ void emm_state_operational(fsm_t *s, event_t *e)
                     break;
                 }
             }
+            break;
+        }
+        case MME_EVT_EMM_BEARER_LO_CREATE_SESSION:
+        {
+            index_t index = event_get_param1(e);
+            mme_esm_t *esm = NULL;
+
+            d_assert(index, break, "Null param");
+            esm = mme_esm_find(index);
+            d_assert(esm, break, "No ESM context");
+
+            emm_handle_lo_create_session(esm);
             break;
         }
         case EVT_MSG_MME_EMM:

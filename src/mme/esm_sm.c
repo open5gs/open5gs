@@ -41,8 +41,7 @@ void esm_state_operational(fsm_t *s, event_t *e)
         {
             break;
         }
-        case MME_EVT_ESM_LO_INFO_REQ:
-        case MME_EVT_ESM_LO_CREATE_SESSION:
+        case MME_EVT_ESM_BEARER_LO_INFO_REQ:
         {
             index_t index = event_get_param1(e);
             mme_esm_t *esm = NULL;
@@ -56,7 +55,7 @@ void esm_state_operational(fsm_t *s, event_t *e)
 
             switch(event_get(e))
             {
-                case MME_EVT_ESM_LO_INFO_REQ:
+                case MME_EVT_ESM_BEARER_LO_INFO_REQ:
                 {
                     pkbuf_t *pkbuf = NULL;
                     status_t rv;
@@ -67,21 +66,6 @@ void esm_state_operational(fsm_t *s, event_t *e)
                     mme_event_nas_to_s1ap(ue, pkbuf);
                     d_info("[NAS] ESM information request : "
                             "UE[%s] <--- ESM[%d]", ue->imsi_bcd, esm->pti);
-                    break;
-                }
-                case MME_EVT_ESM_LO_CREATE_SESSION:
-                {
-#if 0
-                    pkbuf_t *pkbuf = NULL;
-                    status_t rv;
-
-                    rv = esm_build_information_request(&pkbuf, esm);
-                    d_assert(rv == CORE_OK, break, "esm_build failed");
-
-                    mme_event_nas_to_s1ap(ue, pkbuf);
-                    d_info("[NAS] ESM information request : "
-                            "UE[%s] <--- ESM[%d]", ue->imsi_bcd, esm->pti);
-#endif
                     break;
                 }
             }

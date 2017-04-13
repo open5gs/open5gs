@@ -32,33 +32,29 @@ char* mme_event_get_name(event_t *e)
         case FSM_EXIT_SIG: 
             return FSM_NAME_EXIT_SIG;
 
-        case MME_EVT_S1AP_MSG:
-            return "S1AP_MSG";
-        case MME_EVT_S1AP_FROM_EMM:
-            return "S1AP_FROM_EMM";
-        case MME_EVT_S1AP_LO_ACCEPT:
-            return "S1AP_LO_ACCEPT";
-        case MME_EVT_S1AP_LO_CONNREFUSED:
-            return "S1AP_LO_CONNREFUSED";
+        case MME_EVT_S1AP_ENB_MSG:
+            return "MME_EVT_S1AP_ENB_MSG";
+        case MME_EVT_S1AP_ENB_LO_ACCEPT:
+            return "MME_EVT_S1AP_ENB_LO_ACCEPT";
+        case MME_EVT_S1AP_ENB_LO_CONNREFUSED:
+            return"MME_EVT_S1AP_ENB_LO_CONNREFUSED";
 
-        case MME_EVT_EMM_MSG:
-            return "EMM_MSG";
-        case MME_EVT_EMM_FROM_ESM:
-            return "EMM_FROM_ESM";
-        case MME_EVT_EMM_LO_AUTH_REQ:
-            return "EMM_LO_AUTH_REQ";
-        case MME_EVT_EMM_LO_LOCATION_UPDATE:
-            return "EMM_LO_LOCATION_UPDATE";
+        case MME_EVT_EMM_UE_MSG:
+            return "MME_EVT_EMM_UE_MSG";
+        case MME_EVT_EMM_UE_LO_AUTH_REQ:
+            return "MME_EVT_EMM_UE_LO_AUTH_REQ";
+        case MME_EVT_EMM_UE_LO_LOCATION_UPDATE:
+            return "MME_EVT_EMM_UE_LO_LOCATION_UPDATE";
+        case MME_EVT_EMM_BEARER_LO_CREATE_SESSION:
+            return "MME_EVT_EMM_BEARER_LO_CREATE_SESSION";
 
-        case MME_EVT_ESM_MSG:
-            return "ESM_MSG";
-        case MME_EVT_ESM_LO_CREATE_SESSION:
-            return "ESM_LO_CREATE_SESSION";
-        case MME_EVT_ESM_LO_INFO_REQ:
-            return "ESM_LO_INFO_REQ";
+        case MME_EVT_ESM_BEARER_MSG:
+            return "MME_EVT_ESM_BEARER_MSG";
+        case MME_EVT_ESM_BEARER_LO_INFO_REQ:
+            return "MME_EVT_ESM_BEARER_LO_INFO_REQ";
 
-        case MME_EVT_S11_T3:
-            return "ESM_EVT_S11_T3";
+        case MME_EVT_S11_TRANSACTION_T3:
+            return "MME_EVT_S11_TRANSACTION_T3";
 
         case EVT_LO_MME_S1AP_ACCEPT: 
            return EVT_NAME_LO_MME_S1AP_ACCEPT;

@@ -196,3 +196,8 @@ void emm_handle_authentication_response(
             sendbuf,,);
     mme_event_nas_to_s1ap(ue, sendbuf);
 }
+
+void emm_handle_lo_create_session(mme_esm_t *esm)
+{
+}
+

@@ -10,6 +10,9 @@ extern "C" {
 CORE_DECLARE(status_t) esm_build_information_request(
                             pkbuf_t **pkbuf, mme_esm_t *esm);
 
+CORE_DECLARE(status_t) esm_build_activate_default_bearer_context(
+                            pkbuf_t **pkbuf, mme_esm_t *esm);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
