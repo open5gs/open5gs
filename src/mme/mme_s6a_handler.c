@@ -91,7 +91,7 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     d_assert(fd_msg_avp_hdr(avp_autn, &hdr) == 0 && hdr, error++; goto out,);
     memcpy(ue->autn, hdr->avp_value->os.data, hdr->avp_value->os.len);
 
-    event_set(&e, EVT_LO_MME_EMM_AUTH_REQ);
+    event_set(&e, MME_EVT_EMM_UE_LO_AUTH_REQ);
     event_set_param1(&e, (c_uintptr_t)ue->index);
     mme_event_send(&e);
 
@@ -410,7 +410,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     d_assert(fd_msg_avp_hdr(avp, &hdr) == 0 && hdr, error++; goto out,);
     ue->subscribed_rau_tau_timer = hdr->avp_value->i32;
     
-    event_set(&e, EVT_LO_MME_EMM_LOCATION_UPDATE);
+    event_set(&e, MME_EVT_EMM_UE_LO_LOCATION_UPDATE);
     event_set_param1(&e, (c_uintptr_t)ue->index);
     mme_event_send(&e);
 out:

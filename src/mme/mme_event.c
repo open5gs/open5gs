@@ -8,18 +8,6 @@
 #include "nas_message.h"
 #include "nas_security.h"
 
-static char EVT_NAME_LO_MME_S1AP_ACCEPT[] = "LO_MME_S1AP_ACCEPT";
-static char EVT_NAME_LO_MME_S1AP_CONNREFUSED[] = "LO_MME_S1AP_CONNREFUSED";
-static char EVT_NAME_LO_MME_EMM_AUTH_REQ[] = "LO_MME_EMM_AUTH_REQ";
-static char EVT_NAME_LO_MME_EMM_LOCATION_UPDATE[] = "LO_MME_EMM_LOCATION_UPDATE";
-
-static char EVT_NAME_TM_MME_S11_T3[] = "TM_MME_S11_T3";
-
-static char EVT_NAME_MSG_MME_S1AP[] = "MSG_MME_S1AP";
-static char EVT_NAME_MSG_MME_EMM[] = "MSG_MME_EMM";
-static char EVT_NAME_MSG_MME_ESM[] = "MSG_MME_ESM";
-static char EVT_NAME_MSG_MME_S11[] = "MSG_MME_S11";
-
 char* mme_event_get_name(event_t *e)
 {
     if (e == NULL)
@@ -53,29 +41,10 @@ char* mme_event_get_name(event_t *e)
         case MME_EVT_ESM_BEARER_LO_INFO_REQ:
             return "MME_EVT_ESM_BEARER_LO_INFO_REQ";
 
+        case MME_EVT_S11_UE_MSG:
+            return "MME_EVT_S11_UE_MSG";
         case MME_EVT_S11_TRANSACTION_T3:
             return "MME_EVT_S11_TRANSACTION_T3";
-
-        case EVT_LO_MME_S1AP_ACCEPT: 
-           return EVT_NAME_LO_MME_S1AP_ACCEPT;
-        case EVT_LO_MME_S1AP_CONNREFUSED: 
-           return EVT_NAME_LO_MME_S1AP_CONNREFUSED;
-        case EVT_LO_MME_EMM_AUTH_REQ: 
-           return EVT_NAME_LO_MME_EMM_AUTH_REQ;
-        case EVT_LO_MME_EMM_LOCATION_UPDATE: 
-           return EVT_NAME_LO_MME_EMM_LOCATION_UPDATE;
-
-        case EVT_TM_MME_S11_T3: 
-           return EVT_NAME_TM_MME_S11_T3;
-
-        case EVT_MSG_MME_S1AP: 
-           return EVT_NAME_MSG_MME_S1AP;
-        case EVT_MSG_MME_EMM: 
-           return EVT_NAME_MSG_MME_EMM;
-        case EVT_MSG_MME_ESM: 
-           return EVT_NAME_MSG_MME_ESM;
-        case EVT_MSG_MME_S11: 
-           return EVT_NAME_MSG_MME_S11;
 
         default: 
            break;
@@ -106,7 +75,7 @@ void mme_event_s1ap_to_nas(mme_ue_t *ue, S1ap_NAS_PDU_t *nasPdu)
     d_assert(h, pkbuf_free(sendbuf); return, "Null param");
     if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_EMM)
     {
-        event_set(&e, EVT_MSG_MME_EMM);
+        event_set(&e, MME_EVT_EMM_UE_MSG);
         event_set_param1(&e, (c_uintptr_t)ue->index);
         event_set_param2(&e, (c_uintptr_t)sendbuf);
         mme_event_send(&e);
@@ -117,7 +86,7 @@ void mme_event_s1ap_to_nas(mme_ue_t *ue, S1ap_NAS_PDU_t *nasPdu)
                 h->procedure_transaction_identity);
         if (bearer)
         {
-            event_set(&e, EVT_MSG_MME_ESM);
+            event_set(&e, MME_EVT_ESM_BEARER_MSG);
             event_set_param1(&e, (c_uintptr_t)bearer->index);
             event_set_param2(&e, (c_uintptr_t)sendbuf);
             mme_event_send(&e);
@@ -147,7 +116,7 @@ void mme_event_emm_to_esm(mme_bearer_t *bearer,
     memcpy(sendbuf->payload, 
             bearer_message_container->data, bearer_message_container->len);
 
-    event_set(&e, EVT_MSG_MME_ESM);
+    event_set(&e, MME_EVT_ESM_BEARER_MSG);
     event_set_param1(&e, (c_uintptr_t)bearer->index);
     event_set_param2(&e, (c_uintptr_t)sendbuf);
     mme_event_send(&e);

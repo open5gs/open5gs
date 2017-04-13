@@ -73,7 +73,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
 
             break;
         }
-        case EVT_LO_MME_S1AP_ACCEPT:
+        case MME_EVT_S1AP_ENB_LO_ACCEPT:
         {
             int rc;
 
@@ -102,7 +102,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
             
             break;
         }
-        case EVT_LO_MME_S1AP_CONNREFUSED:
+        case MME_EVT_S1AP_ENB_LO_CONNREFUSED:
         {
             index_t index = event_get_param1(e);
             mme_enb_t *enb = NULL;
@@ -121,7 +121,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
 
             break;
         }
-        case EVT_MSG_MME_S1AP:
+        case MME_EVT_S1AP_ENB_MSG:
         {
             s1ap_message_t message;
             index_t index = event_get_param1(e);
@@ -144,10 +144,10 @@ void mme_state_operational(fsm_t *s, event_t *e)
             pkbuf_free(pkbuf);
             break;
         }
-        case EVT_LO_MME_EMM_AUTH_REQ:
-        case EVT_LO_MME_EMM_LOCATION_UPDATE:
+        case MME_EVT_EMM_UE_LO_AUTH_REQ:
+        case MME_EVT_EMM_UE_LO_LOCATION_UPDATE:
+        case MME_EVT_EMM_UE_MSG:
         case MME_EVT_EMM_BEARER_LO_CREATE_SESSION:
-        case EVT_MSG_MME_EMM:
         {
             nas_message_t message;
             index_t index = event_get_param1(e);
@@ -170,7 +170,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
             d_assert(ue, break, "No UE context");
             d_assert(FSM_STATE(&ue->sm), break, "No EMM State Machine");
 
-            if (event_get(e) == EVT_MSG_MME_EMM)
+            if (event_get(e) == MME_EVT_EMM_UE_MSG)
             {
                 pkbuf = (pkbuf_t *)event_get_param2(e);
                 d_assert(pkbuf, break, "Null param");
@@ -181,14 +181,14 @@ void mme_state_operational(fsm_t *s, event_t *e)
 
             fsm_dispatch(&ue->sm, (fsm_event_t*)e);
 
-            if (event_get(e) == EVT_MSG_MME_EMM)
+            if (event_get(e) == MME_EVT_EMM_UE_MSG)
             {
                 pkbuf_free(pkbuf);
             }
             break;
         }
         case MME_EVT_ESM_BEARER_LO_INFO_REQ:
-        case EVT_MSG_MME_ESM:
+        case MME_EVT_ESM_BEARER_MSG:
         {
             nas_message_t message;
             index_t index = event_get_param1(e);
@@ -202,7 +202,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
             d_assert(ue = bearer->ue, break, "No UE context");
             d_assert(FSM_STATE(&bearer->sm), break, "No ESM State Machine");
 
-            if (event_get(e) == EVT_MSG_MME_ESM)
+            if (event_get(e) == MME_EVT_ESM_BEARER_MSG)
             {
                 pkbuf = (pkbuf_t *)event_get_param2(e);
                 d_assert(pkbuf, break, "Null param");
@@ -214,14 +214,14 @@ void mme_state_operational(fsm_t *s, event_t *e)
 
             fsm_dispatch(&bearer->sm, (fsm_event_t*)e);
 
-            if (event_get(e) == EVT_MSG_MME_ESM)
+            if (event_get(e) == MME_EVT_ESM_BEARER_MSG)
             {
                 pkbuf_free(pkbuf);
             }
 
             break;
         }
-        case EVT_MSG_MME_S11:
+        case MME_EVT_S11_UE_MSG:
         {
             status_t rv;
             net_sock_t *sock = (net_sock_t *)event_get_param1(e);
@@ -259,7 +259,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
             pkbuf_free(pkbuf);
             break;
         }
-        case EVT_TM_MME_S11_T3:
+        case MME_EVT_S11_TRANSACTION_T3:
         {
             gtp_xact_timeout(event_get_param1(e));
             break;

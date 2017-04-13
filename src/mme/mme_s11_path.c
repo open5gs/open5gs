@@ -38,7 +38,7 @@ static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
             INET_NTOP(&gnode.addr, buf), gnode.port);
     d_trace_hex(1, pkbuf->payload, pkbuf->len);
 
-    event_set(&e, EVT_MSG_MME_S11);
+    event_set(&e, MME_EVT_S11_UE_MSG);
     event_set_param1(&e, (c_uintptr_t)sock);
     event_set_param2(&e, (c_uintptr_t)sgw);
     event_set_param3(&e, (c_uintptr_t)pkbuf);

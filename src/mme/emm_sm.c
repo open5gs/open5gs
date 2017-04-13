@@ -42,8 +42,20 @@ void emm_state_operational(fsm_t *s, event_t *e)
         {
             break;
         }
-        case EVT_LO_MME_EMM_AUTH_REQ:
-        case EVT_LO_MME_EMM_LOCATION_UPDATE:
+        case MME_EVT_EMM_BEARER_LO_CREATE_SESSION:
+        {
+            index_t index = event_get_param1(e);
+            mme_bearer_t *bearer = NULL;
+
+            d_assert(index, break, "Null param");
+            bearer = mme_bearer_find(index);
+            d_assert(bearer, break, "No Bearer context");
+
+            emm_handle_lo_create_session(bearer);
+            break;
+        }
+        case MME_EVT_EMM_UE_LO_AUTH_REQ:
+        case MME_EVT_EMM_UE_LO_LOCATION_UPDATE:
         {
             index_t index = event_get_param1(e);
             mme_ue_t *ue = NULL;
@@ -54,14 +66,14 @@ void emm_state_operational(fsm_t *s, event_t *e)
 
             switch(event_get(e))
             {
-                case EVT_LO_MME_EMM_AUTH_REQ:
+                case MME_EVT_EMM_UE_LO_AUTH_REQ:
                 {
                     emm_handle_authentication_request(ue);
                     d_info("[NAS] Authentication request : UE[%s] <-- EMM",
                             ue->imsi_bcd);
                     break;
                 }
-                case EVT_LO_MME_EMM_LOCATION_UPDATE:
+                case MME_EVT_EMM_UE_LO_LOCATION_UPDATE:
                 {
                     mme_bearer_t *bearer = mme_bearer_first(ue);
 
@@ -81,19 +93,7 @@ void emm_state_operational(fsm_t *s, event_t *e)
             }
             break;
         }
-        case MME_EVT_EMM_BEARER_LO_CREATE_SESSION:
-        {
-            index_t index = event_get_param1(e);
-            mme_bearer_t *bearer = NULL;
-
-            d_assert(index, break, "Null param");
-            bearer = mme_bearer_find(index);
-            d_assert(bearer, break, "No Bearer context");
-
-            emm_handle_lo_create_session(bearer);
-            break;
-        }
-        case EVT_MSG_MME_EMM:
+        case MME_EVT_EMM_UE_MSG:
         {
             index_t index = event_get_param1(e);
             mme_ue_t *ue = NULL;
