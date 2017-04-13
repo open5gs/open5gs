@@ -216,6 +216,7 @@ void s1ap_handle_initial_context_setup_response(
         mme_enb_t *enb, s1ap_message_t *message)
 {
     char buf[INET_ADDRSTRLEN];
+    int i = 0;
 
     mme_ue_t *ue = NULL;
     S1ap_InitialContextSetupResponseIEs_t *ies = NULL;
@@ -231,5 +232,30 @@ void s1ap_handle_initial_context_setup_response(
         ue->enb_ue_s1ap_id,
         INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
         enb->enb_id);
+
+    for (i = 0; 
+        i < ies->e_RABSetupListCtxtSURes.s1ap_E_RABSetupItemCtxtSURes.count; 
+        i++)
+    {
+        event_t e;
+        mme_bearer_t *bearer = NULL;
+        S1ap_E_RABSetupItemCtxtSURes_t *e_rab = NULL;
+
+        e_rab = (S1ap_E_RABSetupItemCtxtSURes_t *)
+            ies->e_RABSetupListCtxtSURes.s1ap_E_RABSetupItemCtxtSURes.array[i];
+        d_assert(e_rab, return, "Null param");
+
+        bearer = mme_bearer_find_by_ebi(ue, e_rab->e_RAB_ID);
+        d_assert(bearer, return, "Null param");
+        memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf, 
+                sizeof(bearer->enb_s1u_teid));
+        bearer->enb_s1u_teid = ntohl(bearer->enb_s1u_teid);
+        memcpy(&bearer->enb_s1u_addr, e_rab->transportLayerAddress.buf,
+                sizeof(bearer->enb_s1u_addr));
+
+        event_set(&e, MME_EVT_ESM_BEARER_LO_MODIFY_BEARER);
+        event_set_param1(&e, (c_uintptr_t)bearer->index);
+        mme_event_send(&e);
+    }
 }
 

@@ -15,6 +15,9 @@ CORE_DECLARE(void) sgw_handle_create_session_request(
 CORE_DECLARE(void) sgw_handle_create_session_response(gtp_xact_t *xact, 
         sgw_sess_t *sess, c_uint8_t type, gtp_message_t *gtp_message);
 
+CORE_DECLARE(void) sgw_handle_modify_bearer_request(gtp_xact_t *xact, 
+        sgw_sess_t *sess, gtp_modify_bearer_request_t *req);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

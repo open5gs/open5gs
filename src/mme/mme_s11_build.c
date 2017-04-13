@@ -47,11 +47,6 @@ status_t mme_s11_build_create_session_request(pkbuf_t **pkbuf, mme_bearer_t *bea
     req->msisdn.data = ue->imsi;
     req->msisdn.len = ue->imsi_len;
 
-    /* Not used */
-    req->me_identity.presence = 1;
-    req->me_identity.data = ue->imsi;
-    req->me_identity.len = ue->imsi_len;
-
     memset(&uli, 0, sizeof(gtp_uli_t));
     uli.flags.e_cgi = 1;
     uli.flags.tai = 1;
@@ -147,3 +142,26 @@ status_t mme_s11_build_create_session_request(pkbuf_t **pkbuf, mme_bearer_t *bea
     return CORE_OK;
 }
 
+status_t mme_s11_build_modify_bearer_request(
+            pkbuf_t **pkbuf, mme_bearer_t *bearer)
+{
+    status_t rv;
+#if 0
+    pdn_t *pdn = NULL;
+    mme_sgw_t *sgw = NULL;
+    mme_ue_t *ue = NULL;
+#endif
+    gtp_message_t gtp_message;
+    gtp_modify_bearer_request_t *req = &gtp_message.modify_bearer_request;
+
+    memset(&gtp_message, 0, sizeof(gtp_message_t));
+
+    req->indication_flags.presence = 1;
+    req->indication_flags.data = "\x00\x00";
+    req->indication_flags.len = 2;
+
+    rv = gtp_build_msg(pkbuf, GTP_MODIFY_BEARER_REQUEST_TYPE, &gtp_message);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");
+
+    return CORE_OK;
+}

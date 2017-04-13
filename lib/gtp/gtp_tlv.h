@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtp_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-03 22:47:53.789060 by acetcom
+ * Created on: 2017-04-14 00:35:06.485537 by acetcom
  * from 29274-d80.docx
  ******************************************************************************/
 
@@ -713,12 +713,73 @@ typedef struct _gtp_create_session_response_t {
     tlv_epco_t extended_protocol_configuration_options;
 } gtp_create_session_response_t;
 
+typedef struct _gtp_modify_bearer_request_t {
+    tlv_mei_t me_identity;
+    tlv_uli_t user_location_information;
+    tlv_serving_network_t serving_network;
+    tlv_rat_type_t rat_type;
+    tlv_indication_t indication_flags;
+    tlv_f_teid_t sender_f_teid_for_control_plane;
+    tlv_ambr_t aggregate_maximum_bit_rate;
+    tlv_delay_value_t delay_downlink_packet_notification_request;
+    tlv_bearer_context_t bearer_contexts_to_be_modified;
+    tlv_bearer_context_t bearer_contexts_to_be_removed;
+    tlv_recovery_t recovery;
+    tlv_ue_time_zone_t ue_time_zone;
+    tlv_fq_csid_t mme_fq_csid;
+    tlv_uci_t user_csg_information;
+    tlv_ip_address_t ue_local_ip_address;
+    tlv_port_number_t ue_udp_port;
+    tlv_ldn_t mme_s4_sgsn_ldn;
+    tlv_ldn_t sgw_ldn;
+    tlv_ip_address_t hnb_local_ip_address;
+    tlv_port_number_t hnb_udp_port;
+    tlv_ip_address_t mme_s4_sgsn_identifier;
+    tlv_cn_operator_selection_entity_t cn_operator_selection_entity;
+    tlv_presence_reporting_area_information_t presence_reporting_area_information;
+    tlv_overload_control_information_t mme_s4_sgsn_s_overload_control_information;
+    tlv_overload_control_information_t sgw_s_overload_control_information;
+    tlv_overload_control_information_t epdg_s_overload_control_information;
+    tlv_serving_plmn_rate_control_t serving_plmn_rate_control;
+    tlv_counter_t mo_exception_data_counter;
+} gtp_modify_bearer_request_t;
+
+typedef struct _gtp_modify_bearer_response_t {
+    tlv_cause_t cause;
+    tlv_msisdn_t msisdn;
+    tlv_ebi_t linked_eps_bearer_id;
+    tlv_apn_restriction_t apn_restriction;
+    tlv_pco_t protocol_configuration_options;
+    tlv_bearer_context_t bearer_contexts_modified;
+    tlv_bearer_context_t bearer_contexts_marked_for_removal;
+    tlv_change_reporting_action_t change_reporting_action;
+    tlv_csg_information_reporting_action_t csg_information_reporting_action;
+    tlv_enb_information_reporting_t hnb_information_reporting_;
+    tlv_fqdn_t charging_gateway_name;
+    tlv_ip_address_t charging_gateway_address;
+    tlv_fq_csid_t pgw_fq_csid;
+    tlv_fq_csid_t sgw_fq_csid;
+    tlv_recovery_t recovery;
+    tlv_ldn_t sgw_ldn;
+    tlv_ldn_t pgw_ldn;
+    tlv_indication_t indication_flags;
+    tlv_presence_reporting_area_action_t presence_reporting_area_action;
+    tlv_load_control_information_t pgw_s_node_level_load_control_information;
+    tlv_load_control_information_t pgw_s_apn_level_load_control_information;
+    tlv_load_control_information_t sgw_s_node_level_load_control_information;
+    tlv_overload_control_information_t pgw_s_overload_control_information;
+    tlv_overload_control_information_t sgw_s_overload_control_information;
+    tlv_charging_id_t pdn_connection_charging_id;
+} gtp_modify_bearer_response_t;
+
 typedef struct _gtp_message_t {
    union {
         gtp_echo_request_t echo_request;
         gtp_echo_response_t echo_response;
         gtp_create_session_request_t create_session_request;
         gtp_create_session_response_t create_session_response;
+        gtp_modify_bearer_request_t modify_bearer_request;
+        gtp_modify_bearer_response_t modify_bearer_response;
    };
 } gtp_message_t;
 

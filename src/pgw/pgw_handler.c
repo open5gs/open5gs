@@ -176,7 +176,7 @@ void pgw_handle_create_session_request(
     memset(&gtp_message, 0, sizeof(gtp_message_t));
 
     memset(&cause, 0, sizeof(cause));
-    cause.cause_value = GTP_CAUSE_REQUEST_ACCEPTED;
+    cause.value = GTP_CAUSE_REQUEST_ACCEPTED;
     rsp->cause.presence = 1;
     rsp->cause.len = sizeof(cause);
     rsp->cause.data = &cause;

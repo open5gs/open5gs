@@ -125,7 +125,7 @@ static void nas_sm_test1(abts_case *tc, void *data)
     pkbuf_free(recvbuf);
 
     /* Send UE Capability Info Indication */
-#if 1
+#if 0
     rv = tests1ap_build_ue_capability_info_indication(&sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);

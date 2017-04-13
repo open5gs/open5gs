@@ -81,3 +81,15 @@ void mme_s11_handle_create_session_response(
     event_set_param1(&e, (c_uintptr_t)bearer->index);
     mme_event_send(&e);
 }
+
+void mme_s11_handle_modify_bearer_response(
+        mme_ue_t *ue, gtp_modify_bearer_response_t *rsp)
+{
+#if 0
+    event_t e;
+
+    event_set(&e, MME_EVT_EMM_BEARER_LO_MODIFY_BEARER);
+    event_set_param1(&e, (c_uintptr_t)bearer->index);
+    mme_event_send(&e);
+#endif
+}

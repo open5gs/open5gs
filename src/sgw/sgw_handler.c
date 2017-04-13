@@ -182,3 +182,34 @@ void sgw_handle_create_session_response(gtp_xact_t *xact,
     d_info("[GTP] Create Session Response : "
             "SGW[%d] <-- PGW[%d]", sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 }
+
+CORE_DECLARE(void) sgw_handle_modify_bearer_request(gtp_xact_t *xact,
+    sgw_sess_t *sess, gtp_modify_bearer_request_t *req)
+{
+    status_t rv;
+    gtp_message_t gtp_message;
+    gtp_modify_bearer_response_t *rsp = NULL;
+    pkbuf_t *pkbuf = NULL;
+    
+    gtp_cause_t cause;
+
+    d_assert(sess, return, "Null param");
+    d_assert(xact, return, "Null param");
+
+    rsp = &gtp_message.modify_bearer_response;
+    memset(&gtp_message, 0, sizeof(gtp_message_t));
+
+    memset(&cause, 0, sizeof(cause));
+    cause.value = GTP_CAUSE_REQUEST_ACCEPTED;
+
+    rsp->cause.presence = 1;
+    rsp->cause.data = &cause;
+    rsp->cause.len = sizeof(cause);
+
+    rv = gtp_build_msg(&pkbuf, GTP_MODIFY_BEARER_RESPONSE_TYPE, &gtp_message);
+    d_assert(rv == CORE_OK, return, "gtp build failed");
+
+    d_assert(sgw_s11_send_to_mme(xact, GTP_MODIFY_BEARER_RESPONSE_TYPE, 
+            sess->mme_s11_teid, pkbuf) == CORE_OK, return, 
+            "failed to send message");
+}

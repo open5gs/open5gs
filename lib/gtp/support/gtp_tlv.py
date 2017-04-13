@@ -316,6 +316,8 @@ msg_list["Echo Request"]["table"] = 6
 msg_list["Echo Response"]["table"] = 7
 msg_list["Create Session Request"]["table"] = 8
 msg_list["Create Session Response"]["table"] = 13
+msg_list["Modify Bearer Request"]["table"] = 29
+msg_list["Modify Bearer Response"]["table"] = 33
 
 for key in msg_list.keys():
     if "table" in msg_list[key].keys():

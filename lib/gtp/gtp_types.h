@@ -88,7 +88,7 @@ extern "C" {
 #define GTP_CAUSE_REQUEST_REJECTED_DUE_TO_UE_CAPABILITY 127
 
 typedef struct _gtp_cause_t {
-    c_uint8_t cause_value;
+    c_uint8_t value;
 ED4(c_uint8_t spare:5;,
     c_uint8_t pce:1;,
     c_uint8_t bce:1;,

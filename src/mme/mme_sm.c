@@ -188,6 +188,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
             break;
         }
         case MME_EVT_ESM_BEARER_LO_INFO_REQ:
+        case MME_EVT_ESM_BEARER_LO_MODIFY_BEARER:
         case MME_EVT_ESM_BEARER_MSG:
         {
             nas_message_t message;
@@ -251,6 +252,10 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 case GTP_CREATE_SESSION_RESPONSE_TYPE:
                     mme_s11_handle_create_session_response(
                             ue, &gtp_message.create_session_response);
+                    break;
+                case GTP_MODIFY_BEARER_RESPONSE_TYPE:
+                    mme_s11_handle_modify_bearer_response(
+                            ue, &gtp_message.modify_bearer_response);
                     break;
                 default:
                     d_warn("Not implmeneted(type:%d)", type);

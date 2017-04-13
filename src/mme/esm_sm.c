@@ -42,6 +42,7 @@ void esm_state_operational(fsm_t *s, event_t *e)
             break;
         }
         case MME_EVT_ESM_BEARER_LO_INFO_REQ:
+        case MME_EVT_ESM_BEARER_LO_MODIFY_BEARER:
         {
             index_t index = event_get_param1(e);
             mme_bearer_t *bearer = NULL;
@@ -60,6 +61,11 @@ void esm_state_operational(fsm_t *s, event_t *e)
                     d_info("[NAS] ESM information request : "
                             "UE[%s] <--- ESM[%d]", ue->imsi_bcd, bearer->pti);
                     esm_handle_lo_information_request(bearer);
+                    break;
+                }
+                case MME_EVT_ESM_BEARER_LO_MODIFY_BEARER:
+                {
+                    esm_handle_lo_modify_bearer(bearer);
                     break;
                 }
             }

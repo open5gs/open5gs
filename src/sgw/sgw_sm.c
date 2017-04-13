@@ -92,6 +92,10 @@ void sgw_state_operational(fsm_t *s, event_t *e)
                     sgw_handle_create_session_response(
                             xact, sess, type, &gtp_message);
                     break;
+                case GTP_MODIFY_BEARER_REQUEST_TYPE:
+                    sgw_handle_modify_bearer_request(
+                            xact, sess, &gtp_message.modify_bearer_request);
+                    break;
                 default:
                     d_warn("Not implmeneted(type:%d)", type);
                     break;
