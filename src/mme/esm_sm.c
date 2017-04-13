@@ -57,13 +57,7 @@ void esm_state_operational(fsm_t *s, event_t *e)
             {
                 case MME_EVT_ESM_BEARER_LO_INFO_REQ:
                 {
-                    pkbuf_t *pkbuf = NULL;
-                    status_t rv;
-
-                    rv = esm_build_information_request(&pkbuf, bearer);
-                    d_assert(rv == CORE_OK, break, "esm_build failed");
-
-                    mme_event_nas_to_s1ap(ue, pkbuf);
+                    esm_handle_lo_information_request(bearer);
                     d_info("[NAS] ESM information request : "
                             "UE[%s] <--- ESM[%d]", ue->imsi_bcd, bearer->pti);
                     break;

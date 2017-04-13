@@ -16,6 +16,28 @@
 #include "s1ap_build.h"
 #include "s1ap_path.h"
 
+static void event_emm_to_esm(mme_bearer_t *bearer, 
+                nas_esm_message_container_t *bearer_message_container)
+{
+    pkbuf_t *sendbuf = NULL;
+    event_t e;
+
+    d_assert(bearer, return, "Null param");
+    d_assert(bearer_message_container, return, "Null param");
+
+    /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 
+     * When calculating AES_CMAC, we need to use the headroom of the packet. */
+    sendbuf = pkbuf_alloc(NAS_HEADROOM, bearer_message_container->len);
+    d_assert(sendbuf, return, "Null param");
+    memcpy(sendbuf->payload, 
+            bearer_message_container->data, bearer_message_container->len);
+
+    event_set(&e, MME_EVT_ESM_BEARER_MSG);
+    event_set_param1(&e, (c_uintptr_t)bearer->index);
+    event_set_param2(&e, (c_uintptr_t)sendbuf);
+    mme_event_send(&e);
+}
+
 void emm_handle_esm_message_container(
         mme_ue_t *ue, nas_esm_message_container_t *esm_message_container)
 {
@@ -51,7 +73,7 @@ void emm_handle_esm_message_container(
             ue->mme_ue_s1ap_id, bearer->pti);
     }
 
-    mme_event_emm_to_esm(bearer, esm_message_container);
+    event_emm_to_esm(bearer, esm_message_container);
 }
 
 void emm_handle_attach_request(
@@ -108,12 +130,17 @@ void emm_handle_attach_request(
 
 void emm_handle_authentication_request(mme_ue_t *ue)
 {
+    status_t rv;
+    mme_enb_t *enb = NULL;
+    pkbuf_t *emmbuf = NULL, *s1apbuf = NULL;
+
     nas_message_t message;
-    pkbuf_t *sendbuf = NULL;
     nas_authentication_request_t *authentication_request = 
         &message.emm.authentication_request;
 
     d_assert(ue, return, "Null param");
+    enb = ue->enb;
+    d_assert(ue->enb, return, "Null param");
 
     memset(&message, 0, sizeof(message));
     message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
@@ -126,19 +153,26 @@ void emm_handle_authentication_request(mme_ue_t *ue)
     authentication_request->authentication_parameter_autn.length = 
             AUTN_LEN;
 
-    d_assert(nas_plain_encode(&sendbuf, &message) == CORE_OK && sendbuf,,);
+    d_assert(nas_plain_encode(&emmbuf, &message) == CORE_OK && emmbuf,,);
 
-    mme_event_nas_to_s1ap(ue, sendbuf);
+    rv = s1ap_build_downlink_nas_transport(&s1apbuf, ue, emmbuf);
+    d_assert(rv == CORE_OK && s1apbuf, 
+            pkbuf_free(emmbuf); return, "s1ap build error");
+
+    d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
 }
 
 void emm_handle_authentication_response(
         mme_ue_t *ue, nas_authentication_response_t *authentication_response)
 {
+    status_t rv;
+    mme_enb_t *enb = NULL;
+    pkbuf_t *emmbuf = NULL, *s1apbuf = NULL;
+
     nas_authentication_response_parameter_t *authentication_response_parameter =
         &authentication_response->authentication_response_parameter;
 
     nas_message_t message;
-    pkbuf_t *sendbuf = NULL;
     nas_security_mode_command_t *security_mode_command = 
         &message.emm.security_mode_command;
     nas_security_algorithms_t *selected_nas_security_algorithms =
@@ -149,6 +183,8 @@ void emm_handle_authentication_response(
         &security_mode_command->replayed_ue_security_capabilities;
 
     d_assert(ue, return, "Null param");
+    enb = ue->enb;
+    d_assert(ue->enb, return, "Null param");
 
     if (authentication_response_parameter->length != ue->xres_len ||
         memcmp(authentication_response_parameter->res,
@@ -196,17 +232,22 @@ void emm_handle_authentication_response(
     mme_kdf_nas(MME_KDF_NAS_ENC_ALG, mme_self()->selected_enc_algorithm,
             ue->kasme, ue->knas_enc);
 
-    d_assert(nas_security_encode(&sendbuf, ue, &message) == CORE_OK && 
-            sendbuf,,);
-    mme_event_nas_to_s1ap(ue, sendbuf);
+    rv = nas_security_encode(&emmbuf, ue, &message);
+    d_assert(rv == CORE_OK && emmbuf, return, "emm build error");
+
+    rv = s1ap_build_downlink_nas_transport(&s1apbuf, ue, emmbuf);
+    d_assert(rv == CORE_OK && s1apbuf, 
+            pkbuf_free(emmbuf); return, "s1ap build error");
+
+    d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
 }
 
 void emm_handle_lo_create_session(mme_bearer_t *bearer)
 {
-    pkbuf_t *bearerbuf = NULL, *emmbuf = NULL, *s1apbuf = NULL;
+    status_t rv;
     mme_ue_t *ue = NULL;
     mme_enb_t *enb = NULL;
-    status_t rv;
+    pkbuf_t *esmbuf = NULL, *emmbuf = NULL, *s1apbuf = NULL;
 
     d_assert(bearer, return, "Null param");
     ue = bearer->ue;
@@ -214,15 +255,18 @@ void emm_handle_lo_create_session(mme_bearer_t *bearer)
     enb = ue->enb;
     d_assert(ue->enb, return, "Null param");
 
-    rv = esm_build_activate_default_bearer_context(&bearerbuf, bearer);
-    d_assert(rv == CORE_OK, return, "bearer build error");
+    rv = esm_build_activate_default_bearer_context(&esmbuf, bearer);
+    d_assert(rv == CORE_OK && esmbuf, 
+            return, "bearer build error");
 
-    rv = emm_build_attach_accept(&emmbuf, ue, bearerbuf);
-    d_assert(rv == CORE_OK, pkbuf_free(bearerbuf); return, "emm build error");
+    rv = emm_build_attach_accept(&emmbuf, ue, esmbuf);
+    d_assert(rv == CORE_OK && emmbuf, 
+            pkbuf_free(esmbuf); return, "emm build error");
 
     rv = s1ap_build_initial_context_setup_request(&s1apbuf, bearer, emmbuf);
-    d_assert(rv == CORE_OK, pkbuf_free(emmbuf); return, "emm build error");
+    d_assert(rv == CORE_OK && s1apbuf, 
+            pkbuf_free(emmbuf); return, "s1ap build error");
 
-    d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,,);
+    d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
 }
 

@@ -108,6 +108,8 @@ status_t s1ap_build_setup_failure(pkbuf_t **pkbuf, S1ap_Cause_t cause)
 status_t s1ap_build_downlink_nas_transport(
             pkbuf_t **s1apbuf, mme_ue_t *ue, pkbuf_t *emmbuf)
 {
+    char buf[INET_ADDRSTRLEN];
+    
     int encoded;
     s1ap_message_t message;
     S1ap_DownlinkNASTransport_IEs_t *ies = 
@@ -135,12 +137,20 @@ status_t s1ap_build_downlink_nas_transport(
     d_assert(s1apbuf && encoded >= 0,return CORE_ERROR,);
     pkbuf_free(emmbuf);
 
+    d_info("[S1AP] downlinkNASTransport : "
+            "UE[eNB-UE-S1AP-ID(%d)] <-- eNB[%s:%d]",
+            ue->enb_ue_s1ap_id,
+            INET_NTOP(&ue->enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+            ue->enb->enb_id);
+
     return CORE_OK;
 }
 
 status_t s1ap_build_initial_context_setup_request(
             pkbuf_t **s1apbuf, mme_bearer_t *bearer, pkbuf_t *emmbuf)
 {
+    char buf[INET_ADDRSTRLEN];
+
     int encoded;
     s1ap_message_t message;
     S1ap_InitialContextSetupRequestIEs_t *ies =
@@ -210,6 +220,12 @@ status_t s1ap_build_initial_context_setup_request(
 
     d_assert(s1apbuf && encoded >= 0,return CORE_ERROR,);
     pkbuf_free(emmbuf);
+
+    d_info("[S1AP] Initial Context Setup Request : "
+            "UE[eNB-UE-S1AP-ID(%d)] <-- eNB[%s:%d]",
+            ue->enb_ue_s1ap_id,
+            INET_NTOP(&ue->enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+            ue->enb->enb_id);
 
     return CORE_OK;
 }

@@ -6,6 +6,9 @@
 
 #include "mme_context.h"
 #include "mme_event.h"
+#include "esm_build.h"
+#include "s1ap_build.h"
+#include "s1ap_path.h"
 #include "mme_s11_build.h"
 #include "mme_s11_path.h"
 
@@ -20,6 +23,29 @@ void esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
     printf("flag = 0x%x\n", 
             pdn_connectivity_request->esm_information_transfer_flag.security_protected_required);
 #endif
+}
+
+void esm_handle_lo_information_request(mme_bearer_t *bearer)
+{
+    status_t rv;
+    mme_ue_t *ue = NULL;
+    mme_enb_t *enb = NULL;
+    pkbuf_t *esmbuf = NULL, *s1apbuf = NULL;
+
+    d_assert(bearer, return, "Null param");
+    ue = bearer->ue;
+    d_assert(ue, return, "Null param");
+    enb = ue->enb;
+    d_assert(ue->enb, return, "Null param");
+
+    rv = esm_build_information_request(&esmbuf, bearer);
+    d_assert(rv == CORE_OK && esmbuf, return, "esm_build failed");
+
+    rv = s1ap_build_downlink_nas_transport(&s1apbuf, ue, esmbuf);
+    d_assert(rv == CORE_OK && s1apbuf, 
+            pkbuf_free(esmbuf); return, "s1ap build error");
+
+    d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
 }
 
 void esm_handle_information_response(mme_bearer_t *bearer, 

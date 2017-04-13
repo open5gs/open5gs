@@ -6,8 +6,59 @@
 
 #include "s1ap_conv.h"
 #include "s1ap_build.h"
-#include "s1ap_handler.h"
 #include "s1ap_path.h"
+#include "nas_message.h"
+#include "nas_security.h"
+
+#include "s1ap_handler.h"
+
+static void event_s1ap_to_nas(mme_ue_t *ue, S1ap_NAS_PDU_t *nasPdu)
+{
+    nas_esm_header_t *h = NULL;
+    pkbuf_t *sendbuf = NULL;
+    event_t e;
+
+    d_assert(ue, return, "Null param");
+    d_assert(nasPdu, return, "Null param");
+
+    /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 
+     * When calculating AES_CMAC, we need to use the headroom of the packet. */
+    sendbuf = pkbuf_alloc(NAS_HEADROOM, nasPdu->size);
+    d_assert(sendbuf, return, "Null param");
+    memcpy(sendbuf->payload, nasPdu->buf, nasPdu->size);
+
+    d_assert(nas_security_decode(ue, sendbuf) == CORE_OK,
+            pkbuf_free(sendbuf); return, "Can't decode NAS_PDU");
+
+    h = sendbuf->payload;
+    d_assert(h, pkbuf_free(sendbuf); return, "Null param");
+    if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_EMM)
+    {
+        event_set(&e, MME_EVT_EMM_UE_MSG);
+        event_set_param1(&e, (c_uintptr_t)ue->index);
+        event_set_param2(&e, (c_uintptr_t)sendbuf);
+        mme_event_send(&e);
+    }
+    else if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_ESM)
+    {
+        mme_bearer_t *bearer = mme_bearer_find_by_pti(ue, 
+                h->procedure_transaction_identity);
+        if (bearer)
+        {
+            event_set(&e, MME_EVT_ESM_BEARER_MSG);
+            event_set_param1(&e, (c_uintptr_t)bearer->index);
+            event_set_param2(&e, (c_uintptr_t)sendbuf);
+            mme_event_send(&e);
+        }
+        else
+            d_error("Can't find ESM context(UE:%s, PTI:%d)",
+                    ue->imsi_bcd, h->procedure_transaction_identity);
+    }
+    else
+        d_assert(0, pkbuf_free(sendbuf); return, "Unknown protocol:%d", 
+                h->protocol_discriminator);
+}
+
 
 void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
 {
@@ -115,7 +166,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
         INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
         enb->enb_id);
 
-    mme_event_s1ap_to_nas(ue, &ies->nas_pdu);
+    event_s1ap_to_nas(ue, &ies->nas_pdu);
 }
 
 void s1ap_handle_uplink_nas_transport(
@@ -137,6 +188,6 @@ void s1ap_handle_uplink_nas_transport(
         INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
         enb->enb_id);
 
-    mme_event_s1ap_to_nas(ue, &ies->nas_pdu);
+    event_s1ap_to_nas(ue, &ies->nas_pdu);
 }
 
