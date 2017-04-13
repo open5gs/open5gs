@@ -568,9 +568,7 @@ void *core_realloc(void *ptr, size_t size)
     }
 
     d_assert(p->clbuf, return NULL, "Null param");
-#if 0
     if (size >= (p->clbuf->size - headroom))
-#endif
     {
         void *new = NULL;
 
@@ -582,11 +580,11 @@ void *core_realloc(void *ptr, size_t size)
 
         return new;
     }
-#if 0
     else
     {
+        p->tot_len = size;
+        p->len = c_min(size, p->clbuf->size - (p->payload - p->clbuf->cluster));
         return ptr;
     }
-#endif
 }
 
