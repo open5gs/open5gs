@@ -28,17 +28,15 @@ static void nas_sm_test1(abts_case *tc, void *data)
     char *_esm_information_request =
         "000b402000000300 000005c00100009d 000800020001001a 000a092779012320"
         "010221d9";
-#if 0
-    char *_initial_context_setup_request = "0009"
-        "0080e40000060000 0005c00100009d00 0800020001004200 0a183e800000603e"
-        "8000000018008092 00003400808c4540 0920000000000000 00000f800a012d2e"
-        "00001c957527b1eb ed32020742024906 4000f1105ba0004c 5221c10509ffffff"
-        "ff0908696e746572 6e657405012d2d2d 715e060000000004 0427298080211002"
-        "0000108106080808 08830604040404c2 230403000004000d 0408080808000d04"
-        "04040404500bf600 f110000201040001 fb5312172c594964 0125006b00051800"
-        "0c00000049002033 11c603c6a6d67f69 5e5ac02bb75b381b 693c3893a6d932fd"
-        "91823544e3e79b";
-#endif
+    char *_initial_context_setup_request = "00090080"
+        "e400000600000005 c00100009d000800 0200010042000a18 0640000060064000"
+        "0000180080920000 3400808c45400920 0000000000000000 0f807f0000010000"
+        "00017527daddd870 0207420249064000 f1105ba0004c5221 c10509ffffffff09"
+        "08696e7465726e65 7405012d2d2d715e 0600000000040427 2980c22304030000"
+        "0480211002000010 8106080808088306 04040404000d0408 080808000d040404"
+        "0404500bf600f110 000201040001fb53 12172c5949640125 006b00051c000c00"
+        "00004900203311c6 03c6a6d67f695e5a c02bb75b381b693c 3893a6d932fd9182"
+        "3544e3e79b";
 
     /* eNB connects to MME */
     sock = tests1ap_enb_connect();
@@ -67,7 +65,7 @@ static void nas_sm_test1(abts_case *tc, void *data)
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    /* Receive Authentication-Request */
+    /* Receive Authentication Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rc = tests1ap_enb_read(sock, recvbuf);
     ABTS_INT_NEQUAL(tc, 0, rc);
@@ -77,13 +75,13 @@ static void nas_sm_test1(abts_case *tc, void *data)
         recvbuf->len) == 0);
     pkbuf_free(recvbuf);
 
-    /* Send Authentication-Response */
+    /* Send Authentication Response */
     rv = tests1ap_build_authentication_response(&sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    /* Receive Security-mode-Command */
+    /* Receive Security mode Command */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rc = tests1ap_enb_read(sock, recvbuf);
     recvbuf->len = 43;
@@ -93,7 +91,7 @@ static void nas_sm_test1(abts_case *tc, void *data)
     ABTS_INT_NEQUAL(tc, 0, rc);
     pkbuf_free(recvbuf);
 
-    /* Send Security-mode-Complete */
+    /* Send Security mode Complete */
     rv = tests1ap_build_security_mode_complete(&sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
@@ -114,7 +112,37 @@ static void nas_sm_test1(abts_case *tc, void *data)
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    core_sleep(time_from_msec(300));
+    /* Receive Initial Context Setup Request + 
+     * Attach Accept + 
+     * Activate Default Bearer Context Request */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rc = tests1ap_enb_read(sock, recvbuf);
+    recvbuf->len = 233;
+    ABTS_TRUE(tc, memcmp(recvbuf->payload, 
+        CORE_HEX(_initial_context_setup_request, 
+            strlen(_initial_context_setup_request), tmp),
+        recvbuf->len) == 0);
+    pkbuf_free(recvbuf);
+
+    /* Send UE Capability Info Indication */
+    rv = tests1ap_build_ue_capability_info_indication(&sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* Send Initial Context Setup Response */
+    rv = tests1ap_build_initial_context_setup_response(&sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* Send Attach Complete */
+    rv = tests1ap_build_attach_complete(&sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    core_sleep(time_from_msec(1000));
 
     d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
     /* eNB disonncect from MME */

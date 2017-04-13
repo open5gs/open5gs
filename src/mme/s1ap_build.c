@@ -157,6 +157,7 @@ status_t s1ap_build_initial_context_setup_request(
     S1ap_InitialContextSetupRequestIEs_t *ies =
             &message.s1ap_InitialContextSetupRequestIEs;
     S1ap_E_RABToBeSetupItemCtxtSUReq_t *e_rab = NULL;
+	struct S1ap_GBR_QosInformation *gbrQosInformation = NULL; /* OPTIONAL */
     S1ap_NAS_PDU_t *nasPdu = NULL;
     mme_ue_t *ue = NULL;
     pdn_t *pdn = NULL;
@@ -193,6 +194,14 @@ status_t s1ap_build_initial_context_setup_request(
     e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
         pre_emptionVulnerability = 
             S1ap_Pre_emptionVulnerability_not_pre_emptable;
+
+    gbrQosInformation = core_calloc(1, sizeof(struct S1ap_GBR_QosInformation));
+    asn_uint642INTEGER(&gbrQosInformation->e_RAB_MaximumBitrateDL, 0);
+    asn_uint642INTEGER(&gbrQosInformation->e_RAB_MaximumBitrateUL, 0);
+    asn_uint642INTEGER(&gbrQosInformation->e_RAB_GuaranteedBitrateDL, 0);
+    asn_uint642INTEGER(&gbrQosInformation->e_RAB_GuaranteedBitrateUL, 0);
+    e_rab->e_RABlevelQoSParameters.gbrQosInformation = gbrQosInformation;
+
     e_rab->transportLayerAddress.size = 4;
     e_rab->transportLayerAddress.buf = 
         core_calloc(e_rab->transportLayerAddress.size, sizeof(c_uint8_t));

@@ -18,6 +18,11 @@ CORE_DECLARE(status_t) tests1ap_build_initial_ue_msg(pkbuf_t **pkbuf);
 CORE_DECLARE(status_t) tests1ap_build_authentication_response(pkbuf_t **pkbuf);
 CORE_DECLARE(status_t) tests1ap_build_security_mode_complete(pkbuf_t **pkbuf);
 CORE_DECLARE(status_t) tests1ap_build_esm_information_response(pkbuf_t **pkbuf);
+CORE_DECLARE(status_t) tests1ap_build_ue_capability_info_indication(
+        pkbuf_t **pkbuf);
+CORE_DECLARE(status_t) tests1ap_build_initial_context_setup_response(
+        pkbuf_t **pkbuf);
+CORE_DECLARE(status_t) tests1ap_build_attach_complete(pkbuf_t **pkbuf);
 
 #ifdef __cplusplus
 }

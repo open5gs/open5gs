@@ -191,3 +191,45 @@ void s1ap_handle_uplink_nas_transport(
     event_s1ap_to_nas(ue, &ies->nas_pdu);
 }
 
+void s1ap_handle_ue_capability_info_indication(
+        mme_enb_t *enb, s1ap_message_t *message)
+{
+    char buf[INET_ADDRSTRLEN];
+
+    mme_ue_t *ue = NULL;
+    S1ap_UECapabilityInfoIndicationIEs_t *ies = NULL;
+
+    ies = &message->s1ap_UECapabilityInfoIndicationIEs;
+    d_assert(ies, return, "Null param");
+
+    ue = mme_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
+    d_assert(ue, return, "No UE Context[%d]", ies->eNB_UE_S1AP_ID);
+
+    d_info("[S1AP] UE Capability Info Indication : "
+            "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]",
+        ue->enb_ue_s1ap_id,
+        INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+        enb->enb_id);
+}
+
+void s1ap_handle_initial_context_setup_response(
+        mme_enb_t *enb, s1ap_message_t *message)
+{
+    char buf[INET_ADDRSTRLEN];
+
+    mme_ue_t *ue = NULL;
+    S1ap_InitialContextSetupResponseIEs_t *ies = NULL;
+
+    ies = &message->s1ap_InitialContextSetupResponseIEs;
+    d_assert(ies, return, "Null param");
+
+    ue = mme_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
+    d_assert(ue, return, "No UE Context[%d]", ies->eNB_UE_S1AP_ID);
+
+    d_info("[S1AP] Initial Context Setup Response : "
+            "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]",
+        ue->enb_ue_s1ap_id,
+        INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+        enb->enb_id);
+}
+

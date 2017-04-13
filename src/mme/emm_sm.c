@@ -125,6 +125,12 @@ void emm_state_operational(fsm_t *s, event_t *e)
                     mme_s6a_send_ulr(ue);
                     break;
                 }
+                case NAS_ATTACH_COMPLETE:
+                {
+                    d_info("[NAS] Attach complete : UE[%s] --> EMM",
+                            ue->imsi_bcd);
+                    break;
+                }
                 default:
                 {
                     d_warn("Not implemented(type:%d)", 

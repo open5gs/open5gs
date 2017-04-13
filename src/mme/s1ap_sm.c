@@ -74,9 +74,15 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
                             s1ap_handle_uplink_nas_transport(enb, message);
                             break;
                         }
+                        case S1ap_ProcedureCode_id_UECapabilityInfoIndication :
+                        {
+                            s1ap_handle_ue_capability_info_indication(
+                                    enb, message);
+                            break;
+                        }
                         default:
                         {
-                            d_warn("Not implemented(choice:%d, proc:%d",
+                            d_warn("Not implemented(choice:%d, proc:%d)",
                                     message->direction, message->procedureCode);
                             break;
                         }
@@ -88,9 +94,15 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
                 {
                     switch(message->procedureCode)
                     {
+                        case S1ap_ProcedureCode_id_InitialContextSetup :
+                        {
+                            s1ap_handle_initial_context_setup_response(
+                                    enb, message);
+                            break;
+                        }
                         default:
                         {
-                            d_warn("Not implemented(choice:%d, proc:%d",
+                            d_warn("Not implemented(choice:%d, proc:%d)",
                                     message->direction, message->procedureCode);
                             break;
                         }
@@ -100,7 +112,7 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
                 case S1AP_PDU_PR_unsuccessfulOutcome :
                 default:
                 {
-                    d_warn("Not implemented(choice:%d, proc:%d",
+                    d_warn("Not implemented(choice:%d, proc:%d)",
                         message->direction, message->procedureCode);
                     break;
                 }
