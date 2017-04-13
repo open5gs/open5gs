@@ -128,7 +128,6 @@ status_t s1ap_build_initial_context_setup_request(
     nasPdu->size = emmbuf->len;
     nasPdu->buf = core_calloc(nasPdu->size, sizeof(c_uint8_t));
     memcpy(nasPdu->buf, emmbuf->payload, nasPdu->size);
-    d_print_hex(nasPdu->buf, nasPdu->size);
 
     message.procedureCode = S1ap_ProcedureCode_id_downlinkNASTransport;
     message.direction = S1AP_PDU_PR_initiatingMessage;

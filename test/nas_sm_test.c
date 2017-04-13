@@ -28,11 +28,17 @@ static void nas_sm_test1(abts_case *tc, void *data)
     char *_esm_information_request =
         "000b402000000300 000005c00100009d 000800020001001a 000a092779012320"
         "010221d9";
-
-            extern int _s1ap_recv;
-            d_trace_level(&_s1ap_recv, 100);
-            extern int _s1ap_send;
-            d_trace_level(&_s1ap_send, 100);
+#if 0
+    char *_initial_context_setup_request = "0009"
+        "0080e40000060000 0005c00100009d00 0800020001004200 0a183e800000603e"
+        "8000000018008092 00003400808c4540 0920000000000000 00000f800a012d2e"
+        "00001c957527b1eb ed32020742024906 4000f1105ba0004c 5221c10509ffffff"
+        "ff0908696e746572 6e657405012d2d2d 715e060000000004 0427298080211002"
+        "0000108106080808 08830604040404c2 230403000004000d 0408080808000d04"
+        "04040404500bf600 f110000201040001 fb5312172c594964 0125006b00051800"
+        "0c00000049002033 11c603c6a6d67f69 5e5ac02bb75b381b 693c3893a6d932fd"
+        "91823544e3e79b";
+#endif
 
     /* eNB connects to MME */
     sock = tests1ap_enb_connect();

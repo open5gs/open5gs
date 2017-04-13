@@ -219,12 +219,10 @@ void emm_handle_lo_create_session(mme_esm_t *esm)
 
     rv = emm_build_attach_accept(&emmbuf, ue, esmbuf);
     d_assert(rv == CORE_OK, return, "emm build error");
-    d_print_hex(emmbuf->payload, emmbuf->len);
     pkbuf_free(esmbuf);
 
     rv = s1ap_build_initial_context_setup_request(&s1apbuf, esm, emmbuf);
     d_assert(rv == CORE_OK, return, "emm build error");
-    d_print_hex(s1apbuf->payload, s1apbuf->len);
     pkbuf_free(emmbuf);
 
     d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,,);

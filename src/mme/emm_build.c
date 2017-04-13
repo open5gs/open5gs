@@ -16,15 +16,11 @@ status_t emm_build_attach_accept(
         &attach_accept->eps_attach_result;
     nas_gprs_timer_t *t3412_value = &attach_accept->t3412_value;
     nas_tracking_area_identity_list_t *tai_list = &attach_accept->tai_list;
-#if 0
     nas_eps_mobile_identity_t *guti = &attach_accept->guti;
-#endif
     nas_gprs_timer_t *t3402_value = &attach_accept->t3402_value;
-#if 0
     nas_gprs_timer_t *t3423_value = &attach_accept->t3423_value;
     nas_eps_network_feature_support_t *eps_network_feature_support =
         &attach_accept->eps_network_feature_support;
-#endif
 
     d_assert(ue, return CORE_ERROR, "Null param");
 
@@ -48,7 +44,6 @@ status_t emm_build_attach_accept(
     attach_accept->esm_message_container.data = esmbuf->payload;
     attach_accept->esm_message_container.len = esmbuf->len;
 
-#if 0
     attach_accept->presencemask |= NAS_ATTACH_ACCEPT_GUTI_PRESENT;
     guti->length = 11;
     guti->guti.odd_even = NAS_EPS_MOBILE_IDENTITY_EVEN;
@@ -57,14 +52,12 @@ status_t emm_build_attach_accept(
     guti->guti.mme_gid = 2;
     guti->guti.mme_code = 1;
     guti->guti.m_tmsi = 0x040001fb;
-#endif
 
     attach_accept->presencemask |= NAS_ATTACH_ACCEPT_EMM_CAUSE_PRESENT;
     attach_accept->emm_cause = EMM_CAUSE_CS_DOMAIN_NOT_AVAILABLE;
     attach_accept->presencemask |= NAS_ATTACH_ACCEPT_T3402_VALUE_PRESENT;
     t3402_value->unit = NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_1_MM;
     t3402_value->value = 12;
-#if 0
     attach_accept->presencemask |= NAS_ATTACH_ACCEPT_T3423_VALUE_PRESENT;
     t3423_value->unit = NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_DECI_HH;
     t3423_value->value = 9;
@@ -74,7 +67,6 @@ status_t emm_build_attach_accept(
     eps_network_feature_support->esr_ps = 1;
     eps_network_feature_support->epc_lcs = 1;
     eps_network_feature_support->ims_vops = 1;
-#endif
 
     d_assert(nas_security_encode(emmbuf, ue, &message) == CORE_OK && *emmbuf,,);
 
