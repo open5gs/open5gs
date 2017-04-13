@@ -139,7 +139,7 @@ static void s1ap_message_test5(abts_case *tc, void *data)
 static void s1ap_message_test6(abts_case *tc, void *data)
 {
     pkbuf_t *s1apbuf = NULL;
-    int encoded;
+    int i;
     s1ap_message_t message;
     S1ap_DownlinkNASTransport_IEs_t *ies = 
         &message.s1ap_DownlinkNASTransport_IEs;
@@ -159,13 +159,13 @@ static void s1ap_message_test6(abts_case *tc, void *data)
 
     nasPdu->size = 120;
     nasPdu->buf = core_calloc(nasPdu->size, sizeof(c_uint8_t));
-    for (int i = 0; i < nasPdu->size; i++)
+    for (i = 0; i < nasPdu->size; i++)
         nasPdu->buf[i] = 0xef;
 
     message.procedureCode = S1ap_ProcedureCode_id_downlinkNASTransport;
     message.direction = S1AP_PDU_PR_initiatingMessage;
 
-    encoded = s1ap_encode_pdu(&s1apbuf, &message);
+    s1ap_encode_pdu(&s1apbuf, &message);
     s1ap_free_pdu(&message);
     ABTS_TRUE(tc, memcmp(CORE_HEX(_result, strlen(_result), buffer),
             s1apbuf->payload, s1apbuf->len) == 0);
