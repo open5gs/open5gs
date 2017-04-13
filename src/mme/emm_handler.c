@@ -231,6 +231,7 @@ void emm_handle_authentication_response(
             ue->kasme, ue->knas_int);
     mme_kdf_nas(MME_KDF_NAS_ENC_ALG, mme_self()->selected_enc_algorithm,
             ue->kasme, ue->knas_enc);
+    mme_kdf_enb(ue->kasme, ue->ul_count.i32, ue->kenb);
 
     rv = nas_security_encode(&emmbuf, ue, &message);
     d_assert(rv == CORE_OK && emmbuf, return, "emm build error");

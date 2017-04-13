@@ -124,6 +124,7 @@ typedef struct _mme_ue_t {
     c_uint8_t       autn[AUTN_LEN];
     c_uint8_t       knas_int[SHA256_DIGEST_SIZE/2]; 
     c_uint8_t       knas_enc[SHA256_DIGEST_SIZE/2];
+    c_uint8_t       kenb[SHA256_DIGEST_SIZE];
     c_uint32_t      dl_count;
     union {
         struct {

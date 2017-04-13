@@ -4,6 +4,7 @@
 
 #include "mme_context.h"
 
+#include "mme_kdf.h"
 #include "s1ap_build.h"
 #include "s1ap_conv.h"
 
@@ -208,9 +209,10 @@ status_t s1ap_build_initial_context_setup_request(
 
     ASN_SEQUENCE_ADD(&ies->e_RABToBeSetupListCtxtSUReq, e_rab);
 
-    ies->securityKey.size = 32;
+    ies->securityKey.size = SHA256_DIGEST_SIZE;
     ies->securityKey.buf = 
         core_calloc(ies->securityKey.size, sizeof(c_uint8_t));
+    memcpy(ies->securityKey.buf, ue->kenb, ies->securityKey.size);
 
     message.procedureCode = S1ap_ProcedureCode_id_InitialContextSetup;
     message.direction = S1AP_PDU_PR_initiatingMessage;
