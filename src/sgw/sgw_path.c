@@ -32,12 +32,12 @@ static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
     if (GTP_COMPARE_NODE(gnode, &sgw_self()->s11_node))
     {
         d_trace(1, "S11 PDU received from MME\n");
-        event_set(&e, EVT_MSG_SGW_S11);
+        event_set(&e, SGW_EVT_S11_SESSION_MSG);
     }
     else if (GTP_COMPARE_NODE(gnode, &sgw_self()->s5c_node))
     {
         d_trace(1, "S5-C PDU received from PGW\n");
-        event_set(&e, EVT_MSG_SGW_S5C);
+        event_set(&e, SGW_EVT_S5C_SESSION_MSG);
     }
     else
         d_assert(0, pkbuf_free(pkbuf); return -1, "Unknown GTP-Node");

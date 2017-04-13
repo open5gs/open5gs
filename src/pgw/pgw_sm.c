@@ -53,7 +53,7 @@ void pgw_state_operational(fsm_t *s, event_t *e)
             }
             break;
         }
-        case EVT_MSG_PGW_S5C:
+        case PGW_EVT_S5C_SESSION_MSG:
         {
             status_t rv;
             net_sock_t *sock = (net_sock_t *)event_get_param1(e);
@@ -87,7 +87,7 @@ void pgw_state_operational(fsm_t *s, event_t *e)
             pkbuf_free(pkbuf);
             break;
         }
-        case EVT_TM_PGW_T3:
+        case PGW_EVT_TRANSACTION_T3:
         {
             gtp_xact_timeout(event_get_param1(e));
             break;

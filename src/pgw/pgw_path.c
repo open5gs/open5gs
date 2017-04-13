@@ -32,7 +32,7 @@ static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
     d_trace(1, "S5-C PDU received from PGW\n");
     d_trace_hex(1, pkbuf->payload, pkbuf->len);
 
-    event_set(&e, EVT_MSG_PGW_S5C);
+    event_set(&e, PGW_EVT_S5C_SESSION_MSG);
     event_set_param1(&e, (c_uintptr_t)sock);
     event_set_param2(&e, (c_uintptr_t)gnode);
     event_set_param3(&e, (c_uintptr_t)pkbuf);

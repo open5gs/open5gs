@@ -10,10 +10,9 @@ extern "C" {
 typedef enum {
     PGW_EVT_BASE = FSM_USER_SIG,
 
-    EVT_TM_PGW_T3,
+    PGW_EVT_S5C_SESSION_MSG,
+    PGW_EVT_TRANSACTION_T3,
 
-    EVT_MSG_PGW_S5C,
-    
     PGW_EVT_TOP,
 
 } event_e;
