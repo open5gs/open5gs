@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-13 23:45:26.477904 by acetcom
+ * Created on: 2017-04-14 18:08:22.139682 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -656,6 +656,19 @@ c_int32_t nas_encode_security_mode_reject(pkbuf_t *pkbuf, nas_message_t *message
     c_int32_t size = 0;
 
     size = nas_encode_emm_cause(pkbuf, &security_mode_reject->emm_cause);
+    d_assert(size >= 0, return -1, "encode failed");
+    encoded += size;
+
+    return encoded;
+}
+
+c_int32_t nas_encode_emm_status(pkbuf_t *pkbuf, nas_message_t *message)
+{
+    nas_emm_status_t *emm_status = &message->emm.emm_status;
+    c_int32_t encoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_encode_emm_cause(pkbuf, &emm_status->emm_cause);
     d_assert(size >= 0, return -1, "encode failed");
     encoded += size;
 
@@ -1317,6 +1330,11 @@ status_t nas_emm_encode(pkbuf_t **pkbuf, nas_message_t *message)
             break;
         case NAS_SECURITY_MODE_REJECT:
             size = nas_encode_security_mode_reject(*pkbuf, message);
+            d_assert(size >= 0, return CORE_ERROR, "decode error");
+            encoded += size;
+            break;
+        case NAS_EMM_STATUS:
+            size = nas_encode_emm_status(*pkbuf, message);
             d_assert(size >= 0, return CORE_ERROR, "decode error");
             encoded += size;
             break;

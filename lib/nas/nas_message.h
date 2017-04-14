@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-13 23:45:26.454842 by acetcom
+ * Created on: 2017-04-14 18:08:22.114973 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -401,6 +401,16 @@ typedef struct _nas_security_mode_reject_t {
 
 
 /*******************************************************
+ * EMM STATUS
+ ******************************************************/
+
+typedef struct _nas_emm_status_t {
+    /* Mandatory fields */
+    nas_emm_cause_t emm_cause;
+} nas_emm_status_t;
+
+
+/*******************************************************
  * EMM INFORMATION
  ******************************************************/
 #define NAS_EMM_INFORMATION_FULL_NAME_FOR_NETWORK_PRESENT (1<<0)
@@ -657,6 +667,7 @@ typedef struct _nas_emm_message_t {
         nas_security_mode_command_t security_mode_command;
         nas_security_mode_complete_t security_mode_complete;
         nas_security_mode_reject_t security_mode_reject;
+        nas_emm_status_t emm_status;
         nas_emm_information_t emm_information;
     };
 } nas_emm_message_t;
