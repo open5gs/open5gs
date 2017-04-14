@@ -125,8 +125,8 @@ int main(int argc, char *argv[])
         d_trace_level(&_s1ap_sm, 100);
         extern int _emm_sm;
         d_trace_level(&_emm_sm, 100);
-        extern int _esm_sm;
-        d_trace_level(&_esm_sm, 100);
+        extern int _bearer_sm;
+        d_trace_level(&_bearer_sm, 100);
 
         extern int _s1ap_recv;
         d_trace_level(&_s1ap_recv, 100);
