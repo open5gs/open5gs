@@ -25,10 +25,6 @@ char* mme_event_get_name(event_t *e)
 
         case MME_EVT_EMM_UE_MSG:
             return "MME_EVT_EMM_UE_MSG";
-        case MME_EVT_EMM_UE_LO_AUTH_REQ:
-            return "MME_EVT_EMM_UE_LO_AUTH_REQ";
-        case MME_EVT_EMM_UE_LO_LOCATION_UPDATE:
-            return "MME_EVT_EMM_UE_LO_LOCATION_UPDATE";
         case MME_EVT_EMM_BEARER_LO_CREATE_SESSION:
             return "MME_EVT_EMM_BEARER_LO_CREATE_SESSION";
         case MME_EVT_EMM_BEARER_LO_MODIFY_BEARER:

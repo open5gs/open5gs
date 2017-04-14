@@ -54,8 +54,7 @@ void emm_state_operational(fsm_t *s, event_t *e)
             emm_handle_lo_create_session(bearer);
             break;
         }
-        case MME_EVT_EMM_UE_LO_AUTH_REQ:
-        case MME_EVT_EMM_UE_LO_LOCATION_UPDATE:
+        case MME_EVT_EMM_UE_FROM_S6A:
         {
             index_t index = event_get_param1(e);
             mme_ue_t *ue = NULL;
@@ -64,16 +63,16 @@ void emm_state_operational(fsm_t *s, event_t *e)
             ue = mme_ue_find(index);
             d_assert(ue, return, "Null param");
 
-            switch(event_get(e))
+            switch(event_get_param2(e))
             {
-                case MME_EVT_EMM_UE_LO_AUTH_REQ:
+                case S6A_CMD_AUTHENTICATION_INFORMATION:
                 {
                      d_info("[NAS] Authentication request : UE[%s] <-- EMM",
                              ue->imsi_bcd);
                     emm_handle_authentication_request(ue);
                     break;
                 }
-                case MME_EVT_EMM_UE_LO_LOCATION_UPDATE:
+                case S6A_CMD_UPDATE_LOCATION:
                 {
                     mme_bearer_t *bearer = mme_bearer_first(ue);
 

@@ -144,8 +144,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
             pkbuf_free(pkbuf);
             break;
         }
-        case MME_EVT_EMM_UE_LO_AUTH_REQ:
-        case MME_EVT_EMM_UE_LO_LOCATION_UPDATE:
+        case MME_EVT_EMM_UE_FROM_S6A:
         case MME_EVT_EMM_UE_MSG:
         case MME_EVT_EMM_BEARER_LO_CREATE_SESSION:
         {
