@@ -33,8 +33,6 @@ status_t mme_s11_build_create_session_request(pkbuf_t **pkbuf, mme_bearer_t *bea
     ue = bearer->ue;
     d_assert(ue, return CORE_ERROR, "Null param");
 
-    d_assert(bearer->ue_pco_len, return CORE_ERROR, "Null param");
-
     memset(&gtp_message, 0, sizeof(gtp_message_t));
 
     d_assert(ue->imsi_len, return CORE_ERROR, "Null param");
@@ -107,9 +105,12 @@ status_t mme_s11_build_create_session_request(pkbuf_t **pkbuf, mme_bearer_t *bea
     req->aggregate_maximum_bit_rate.data = &ambr;
     req->aggregate_maximum_bit_rate.len = sizeof(ambr);
 
-    req->protocol_configuration_options.presence = 1;
-    req->protocol_configuration_options.data = bearer->ue_pco;
-    req->protocol_configuration_options.len = bearer->ue_pco_len;
+    if (bearer->ue_pco_len)
+    {
+        req->protocol_configuration_options.presence = 1;
+        req->protocol_configuration_options.data = bearer->ue_pco;
+        req->protocol_configuration_options.len = bearer->ue_pco_len;
+    }
 
     req->bearer_contexts_to_be_created.presence = 1;
     req->bearer_contexts_to_be_created.eps_bearer_id.presence = 1;

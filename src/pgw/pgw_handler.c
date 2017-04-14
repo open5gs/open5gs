@@ -217,11 +217,14 @@ void pgw_handle_create_session_request(
     rsp->apn_restriction.presence = 1;
     rsp->apn_restriction.u8 = GTP_APN_NO_RESTRICTION;
 
-    pco_len = pgw_pco_build(pco_buf, &req->protocol_configuration_options);
-    d_assert(pco_len > 0, pgw_sess_remove(sess); return, "pco build failed");
-    rsp->protocol_configuration_options.presence = 1;
-    rsp->protocol_configuration_options.data = pco_buf;
-    rsp->protocol_configuration_options.len = pco_len;
+    if (req->protocol_configuration_options.presence == 1)
+    {
+        pco_len = pgw_pco_build(pco_buf, &req->protocol_configuration_options);
+        d_assert(pco_len > 0, pgw_sess_remove(sess); return, "pco build failed");
+        rsp->protocol_configuration_options.presence = 1;
+        rsp->protocol_configuration_options.data = pco_buf;
+        rsp->protocol_configuration_options.len = pco_len;
+    }
 
     rsp->bearer_contexts_created.presence = 1;
     rsp->bearer_contexts_created.eps_bearer_id.presence = 1;
