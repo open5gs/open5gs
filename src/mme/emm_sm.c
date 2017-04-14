@@ -61,6 +61,7 @@ void emm_state_operational(fsm_t *s, event_t *e)
             break;
         }
         case MME_EVT_EMM_UE_FROM_S6A:
+        case MME_EVT_EMM_UE_FROM_S11:
         {
             index_t index = event_get_param1(e);
             mme_ue_t *ue = NULL;
@@ -73,7 +74,7 @@ void emm_state_operational(fsm_t *s, event_t *e)
             {
                 case S6A_CMD_AUTHENTICATION_INFORMATION:
                 {
-                     d_info("[NAS] Authentication request : UE[%s] <-- EMM",
+                    d_info("[NAS] Authentication request : UE[%s] <-- EMM",
                              ue->imsi_bcd);
                     emm_handle_authentication_request(ue);
                     break;
@@ -91,6 +92,13 @@ void emm_state_operational(fsm_t *s, event_t *e)
 
                         bearer = mme_bearer_next(bearer);
                     }
+                    break;
+                }
+                case GTP_MODIFY_BEARER_RESPONSE_TYPE:
+                {
+                    d_info("[GTP] Modify Bearer Response : "
+                            "MME[%d] <-- SGW[%d]", 
+                            ue->mme_s11_teid, ue->sgw_s11_teid);
                     break;
                 }
             }

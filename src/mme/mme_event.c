@@ -25,8 +25,6 @@ char* mme_event_get_name(event_t *e)
 
         case MME_EVT_EMM_UE_MSG:
             return "MME_EVT_EMM_UE_MSG";
-        case MME_EVT_EMM_BEARER_LO_MODIFY_BEARER:
-            return "MME_EVT_EMM_BEARER_LO_MODIFY_BEARER";
 
         case MME_EVT_ESM_BEARER_MSG:
             return "MME_EVT_ESM_BEARER_MSG";

@@ -90,6 +90,7 @@ void sgw_handle_create_session_request(
 
     d_assert(sgw_s5c_send_to_pgw(xact, type, 0, pkbuf) == CORE_OK, 
             return, "failed to send message");
+
     d_info("[GTP] Create Session Reqeust : "
             "MME[%d] --> SGW", sess->mme_s11_teid);
 }
@@ -239,4 +240,7 @@ CORE_DECLARE(void) sgw_handle_modify_bearer_request(gtp_xact_t *xact,
     d_assert(sgw_s11_send_to_mme(xact, GTP_MODIFY_BEARER_RESPONSE_TYPE, 
             sess->mme_s11_teid, pkbuf) == CORE_OK, return, 
             "failed to send message");
+
+    d_info("[GTP] Modify Bearer Reqeust : "
+            "MME[%d] --> SGW[%d]", sess->mme_s11_teid, sess->sgw_s11_teid);
 }
