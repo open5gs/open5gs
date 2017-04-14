@@ -548,15 +548,19 @@ typedef c_uint8_t nas_time_zone_t;
 
 /* 9.9.3.30 Time zone and time
  * See subclause 10.5.3.9 in 3GPP TS 24.008 [13].
+ * 9.2.3.11 TPServiceCentreTimeStamp (TPSCTS) in 3GPP TS 23.040 [90]
  * O TV 8 */
+#define NAS_TIME_TO_BCD(x) \
+    (((((x) % 10) << 4) & 0xf0) | (((x) / 10) & 0x0f))
 typedef struct _nas_time_zone_and_time_t {
     c_uint8_t year;
-    c_uint8_t month;
-    c_uint8_t day;
+    c_uint8_t mon;
+    c_uint8_t mday;
     c_uint8_t hour;
-    c_uint8_t minute;
-    c_uint8_t second;
-    c_uint8_t time_zone;
+    c_uint8_t min;
+    c_uint8_t sec;
+ED2(c_uint8_t sign:1;,
+    c_uint8_t gmtoff:7;) /* quarters of an hour */
 } nas_time_zone_and_time_t;
 
 /* 9.9.3.31 TMSI status

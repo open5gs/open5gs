@@ -278,6 +278,9 @@ void emm_handle_attach_complete(
     nas_daylight_saving_time_t *network_daylight_saving_time = 
         &emm_information->network_daylight_saving_time;
 
+    time_exp_t time_exp;
+    time_exp_lt(&time_exp, time_now());
+
     d_assert(ue, return, "Null param");
     enb = ue->enb;
     d_assert(enb, return, "Null param");
@@ -295,7 +298,23 @@ void emm_handle_attach_complete(
 
     emm_information->presencemask |=
         NAS_EMM_INFORMATION_UNIVERSAL_TIME_AND_LOCAL_TIME_ZONE_PRESENT;
-    universal_time_and_local_time_zone->year = 0;
+    universal_time_and_local_time_zone->year = 
+                NAS_TIME_TO_BCD(time_exp.tm_year % 100);
+    universal_time_and_local_time_zone->mon = NAS_TIME_TO_BCD(time_exp.tm_mon);
+    universal_time_and_local_time_zone->mday = 
+                NAS_TIME_TO_BCD(time_exp.tm_mday);
+    universal_time_and_local_time_zone->hour = 
+                NAS_TIME_TO_BCD(time_exp.tm_hour);
+    universal_time_and_local_time_zone->min = NAS_TIME_TO_BCD(time_exp.tm_min);
+    universal_time_and_local_time_zone->sec = NAS_TIME_TO_BCD(time_exp.tm_sec);
+    if (time_exp.tm_gmtoff > 0)
+        universal_time_and_local_time_zone->sign = 0;
+    else
+        universal_time_and_local_time_zone->sign = 1;
+    /* quarters of an hour */
+    universal_time_and_local_time_zone->gmtoff = 
+                NAS_TIME_TO_BCD(time_exp.tm_gmtoff / 900);
+
     emm_information->presencemask |=
         NAS_EMM_INFORMATION_NETWORK_DAYLIGHT_SAVING_TIME_PRESENT;
     network_daylight_saving_time->length = 1;
