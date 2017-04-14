@@ -25,7 +25,7 @@ void esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
 #endif
 }
 
-void esm_handle_lo_information_request(mme_bearer_t *bearer)
+void esm_handle_s6a_update_location(mme_bearer_t *bearer)
 {
     status_t rv;
     mme_ue_t *ue = NULL;
@@ -48,7 +48,7 @@ void esm_handle_lo_information_request(mme_bearer_t *bearer)
     d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
 }
 
-void esm_handle_lo_modify_bearer(mme_bearer_t *bearer)
+void esm_handle_modify_bearer_request(mme_bearer_t *bearer)
 {
     status_t rv;
     mme_ue_t *ue = NULL;

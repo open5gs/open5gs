@@ -156,8 +156,6 @@ static void nas_sm_test1(abts_case *tc, void *data)
 #endif
     pkbuf_free(recvbuf);
 
-    core_sleep(time_from_msec(300));
-
     d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
     /* eNB disonncect from MME */
     rv = tests1ap_enb_close(sock);

@@ -187,8 +187,8 @@ void mme_state_operational(fsm_t *s, event_t *e)
             }
             break;
         }
-        case MME_EVT_ESM_BEARER_LO_INFO_REQ:
-        case MME_EVT_ESM_BEARER_LO_MODIFY_BEARER:
+        case MME_EVT_ESM_BEARER_FROM_S6A:
+        case MME_EVT_ESM_BEARER_TO_S11:
         case MME_EVT_ESM_BEARER_MSG:
         {
             nas_message_t message;

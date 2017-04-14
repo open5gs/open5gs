@@ -253,8 +253,9 @@ void s1ap_handle_initial_context_setup_response(
         memcpy(&bearer->enb_s1u_addr, e_rab->transportLayerAddress.buf,
                 sizeof(bearer->enb_s1u_addr));
 
-        event_set(&e, MME_EVT_ESM_BEARER_LO_MODIFY_BEARER);
+        event_set(&e, MME_EVT_ESM_BEARER_TO_S11);
         event_set_param1(&e, (c_uintptr_t)bearer->index);
+        event_set_param2(&e, (c_uintptr_t)GTP_MODIFY_BEARER_REQUEST_TYPE);
         mme_event_send(&e);
     }
 }
