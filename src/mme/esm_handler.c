@@ -16,7 +16,7 @@ void esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
         nas_pdn_connectivity_request_t *pdn_connectivity_request)
 {
     if (pdn_connectivity_request->presencemask &
-            NAS_PDN_CONNECTIVITY_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
+            NAS_PDN_CONNECTIVITY_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
     {
         nas_protocol_configuration_options_t *protocol_configuration_options = 
             &pdn_connectivity_request->protocol_configuration_options;
