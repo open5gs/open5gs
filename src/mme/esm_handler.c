@@ -15,14 +15,17 @@
 void esm_handle_pdn_connectivity_request(mme_bearer_t *bearer, 
         nas_pdn_connectivity_request_t *pdn_connectivity_request)
 {
-#if 0 /* TODO */
-    printf("request type = 0x%x, %d\n", 
-            pdn_connectivity_request->request_type.request_type,
-            pdn_connectivity_request->request_type.pdn_type);
-    printf("precesce = 0x%x\n", pdn_connectivity_request->presencemask);
-    printf("flag = 0x%x\n", 
-            pdn_connectivity_request->esm_information_transfer_flag.security_protected_required);
-#endif
+    if (pdn_connectivity_request->presencemask &
+            NAS_PDN_CONNECTIVITY_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
+    {
+        nas_protocol_configuration_options_t *protocol_configuration_options = 
+            &pdn_connectivity_request->protocol_configuration_options;
+        bearer->ue_pco_len = protocol_configuration_options->length;
+        d_assert(bearer->ue_pco_len <= MAX_PCO_LEN, return, 
+                "length(%d) exceeds MAX:%d", bearer->ue_pco_len, MAX_PCO_LEN);
+        memcpy(bearer->ue_pco, protocol_configuration_options->buffer, 
+                bearer->ue_pco_len);
+    }
 }
 
 void esm_handle_s6a_update_location(mme_bearer_t *bearer)
