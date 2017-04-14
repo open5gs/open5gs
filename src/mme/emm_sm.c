@@ -148,6 +148,11 @@ void emm_state_operational(fsm_t *s, event_t *e)
                             ue, &message->emm.attach_complete);
                     break;
                 }
+                case NAS_EMM_STATUS:
+                {
+                    emm_handle_emm_status(ue, &message->emm.emm_status);
+                    break;
+                }
                 default:
                 {
                     d_warn("Not implemented(type:%d)", 

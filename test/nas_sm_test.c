@@ -8,6 +8,10 @@
 #include "testutil.h"
 #include "tests1ap.h"
 
+/**************************************************************
+ * eNB : MACRO
+ * UE : IMSI 
+ * Protocol Configuration Options in ESM information response */
 static void nas_sm_test1(abts_case *tc, void *data)
 {
     status_t rv;
@@ -17,6 +21,7 @@ static void nas_sm_test1(abts_case *tc, void *data)
     s1ap_message_t message;
     int rc;
     int i;
+    int msgindex = 0;
 
     c_uint8_t tmp[MAX_SDU_LEN];
     char *_authentication_request = 
@@ -38,11 +43,12 @@ static void nas_sm_test1(abts_case *tc, void *data)
         "00004900203311c6 03c6a6d67f695e5a c02bb75b381b693c 3893a6d932fd9182"
         "3544e3e79b";
 
+    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
+
     /* eNB connects to MME */
     sock = tests1ap_enb_connect();
     ABTS_PTR_NOTNULL(tc, sock);
 
-    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_FULL);
     /* Send S1-Setup Reqeust */
     rv = tests1ap_build_setup_req(&sendbuf, 0x54f64);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -60,7 +66,7 @@ static void nas_sm_test1(abts_case *tc, void *data)
 
     /* Send Initial-UE Message */
     mme_self()->mme_ue_s1ap_id = 16777372;
-    rv = tests1ap_build_initial_ue_msg(&sendbuf);
+    rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -76,7 +82,7 @@ static void nas_sm_test1(abts_case *tc, void *data)
     pkbuf_free(recvbuf);
 
     /* Send Authentication Response */
-    rv = tests1ap_build_authentication_response(&sendbuf);
+    rv = tests1ap_build_authentication_response(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -92,7 +98,7 @@ static void nas_sm_test1(abts_case *tc, void *data)
     pkbuf_free(recvbuf);
 
     /* Send Security mode Complete */
-    rv = tests1ap_build_security_mode_complete(&sendbuf);
+    rv = tests1ap_build_security_mode_complete(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -107,7 +113,7 @@ static void nas_sm_test1(abts_case *tc, void *data)
     pkbuf_free(recvbuf);
 
     /* Send ESM Information Response */
-    rv = tests1ap_build_esm_information_response(&sendbuf);
+    rv = tests1ap_build_esm_information_response(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -127,7 +133,7 @@ static void nas_sm_test1(abts_case *tc, void *data)
     pkbuf_free(recvbuf);
 
     /* Send UE Capability Info Indication */
-    rv = tests1ap_build_ue_capability_info_indication(&sendbuf);
+    rv = tests1ap_build_ue_capability_info_indication(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -135,13 +141,13 @@ static void nas_sm_test1(abts_case *tc, void *data)
     core_sleep(time_from_msec(300));
 
     /* Send Initial Context Setup Response */
-    rv = tests1ap_build_initial_context_setup_response(&sendbuf);
+    rv = tests1ap_build_initial_context_setup_response(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     /* Send Attach Complete + Activate default EPS bearer cotext accept */
-    rv = tests1ap_build_attach_complete(&sendbuf);
+    rv = tests1ap_build_attach_complete(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -158,7 +164,125 @@ static void nas_sm_test1(abts_case *tc, void *data)
 #endif
     pkbuf_free(recvbuf);
 
+    /* eNB disonncect from MME */
+    rv = tests1ap_enb_close(sock);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    core_sleep(time_from_msec(300));
+    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_FULL);
+}
+
+/**************************************************************
+ * eNB : HOME
+ * UE : IMSI 
+ * Protocol Configuration Options in PDN Connectivity Request */
+static void nas_sm_test2(abts_case *tc, void *data)
+{
+    status_t rv;
+    net_sock_t *sock;
+    pkbuf_t *sendbuf;
+    pkbuf_t *recvbuf;
+    s1ap_message_t message;
+    int rc;
+    int i;
+    int msgindex = 1;
+
     d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
+
+    c_uint8_t tmp[MAX_SDU_LEN];
+    /* eNB connects to MME */
+    sock = tests1ap_enb_connect();
+    ABTS_PTR_NOTNULL(tc, sock);
+
+    /* Send S1-Setup Reqeust */
+    rv = tests1ap_build_setup_req(&sendbuf, 0x002343d);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* Receive S1-Setup Response */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rc = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = s1ap_decode_pdu(&message, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    s1ap_free_pdu(&message);
+    pkbuf_free(recvbuf);
+
+    /* Send Initial-UE Message */
+    rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* Receive Authentication Request */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rc = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_NEQUAL(tc, 0, rc);
+    recvbuf->len = 60;
+    pkbuf_free(recvbuf);
+
+    /* Send Authentication Response */
+    rv = tests1ap_build_authentication_response(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* Receive Security mode Command */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rc = tests1ap_enb_read(sock, recvbuf);
+    recvbuf->len = 40;
+    ABTS_INT_NEQUAL(tc, 0, rc);
+    pkbuf_free(recvbuf);
+    
+    /* Send Security mode Complete */
+    rv = tests1ap_build_security_mode_complete(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* Receive ESM Information Request */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rc = tests1ap_enb_read(sock, recvbuf);
+    recvbuf->len = 33;
+    pkbuf_free(recvbuf);
+
+    /* Send ESM Information Response */
+    rv = tests1ap_build_esm_information_response(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* Receive Initial Context Setup Request + 
+     * Attach Accept + 
+     * Activate Default Bearer Context Request */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rc = tests1ap_enb_read(sock, recvbuf);
+    recvbuf->len = 208;
+    pkbuf_free(recvbuf);
+
+    /* Send UE Capability Info Indication */
+    rv = tests1ap_build_ue_capability_info_indication(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    core_sleep(time_from_msec(300));
+
+    /* Send Initial Context Setup Response */
+    rv = tests1ap_build_initial_context_setup_response(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* Send EMM Status */
+    rv = tests1ap_build_emm_status(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    core_sleep(time_from_msec(300));
+
     /* eNB disonncect from MME */
     rv = tests1ap_enb_close(sock);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -172,6 +296,7 @@ abts_suite *test_nas_sm(abts_suite *suite)
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, nas_sm_test1, NULL);
+    abts_run_test(suite, nas_sm_test2, NULL);
 
     return suite;
 }

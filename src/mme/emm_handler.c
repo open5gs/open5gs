@@ -309,7 +309,14 @@ void emm_handle_attach_complete(
     rv = s1ap_build_downlink_nas_transport(&s1apbuf, ue, emmbuf);
     d_assert(rv == CORE_OK && s1apbuf, 
             pkbuf_free(emmbuf); return, "s1ap build error");
-    d_print_hex(s1apbuf->payload, s1apbuf->len);
 
     d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
+}
+
+void emm_handle_emm_status(mme_ue_t *ue, nas_emm_status_t *emm_status)
+{
+    d_assert(ue, return, "Null param");
+
+    d_warn("[NAS] EMM status(%d) : UE[%s] --> EMM", 
+            emm_status->emm_cause, ue->imsi_bcd);
 }
