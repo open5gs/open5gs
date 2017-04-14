@@ -41,12 +41,12 @@ static void pkbuf_test4(abts_case *tc, void *data)
 
     q = core_realloc(p, 
             CORE_ALIGN(128+MAX_SIZEOF_HEADROOM, SIZEOF_VOIDP) - 
-            SIZEOF_VOIDP);
+            SIZEOF_VOIDP-1);
     ABTS_TRUE(tc, p == q);
 
     p = core_realloc(q, 
             CORE_ALIGN(128+MAX_SIZEOF_HEADROOM, SIZEOF_VOIDP) - 
-            SIZEOF_VOIDP + 1);
+            SIZEOF_VOIDP);
     ABTS_TRUE(tc, p != q);
     ABTS_TRUE(tc, memcmp(p, q, 10) == 0);
     core_free(p);
