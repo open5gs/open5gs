@@ -231,7 +231,7 @@ void emm_handle_authentication_response(
     d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
 }
 
-void emm_handle_lo_create_session(mme_bearer_t *bearer)
+void emm_handle_create_session_response(mme_bearer_t *bearer)
 {
     status_t rv;
     mme_ue_t *ue = NULL;

@@ -42,7 +42,7 @@ void emm_state_operational(fsm_t *s, event_t *e)
         {
             break;
         }
-        case MME_EVT_EMM_BEARER_LO_CREATE_SESSION:
+        case MME_EVT_EMM_BEARER_FROM_S11:
         {
             index_t index = event_get_param1(e);
             mme_bearer_t *bearer = NULL;
@@ -51,7 +51,13 @@ void emm_state_operational(fsm_t *s, event_t *e)
             bearer = mme_bearer_find(index);
             d_assert(bearer, break, "No Bearer context");
 
-            emm_handle_lo_create_session(bearer);
+            switch(event_get_param2(e))
+            {
+                case GTP_CREATE_SESSION_RESPONSE_TYPE:
+                    emm_handle_create_session_response(bearer);
+                    break;
+            }
+
             break;
         }
         case MME_EVT_EMM_UE_FROM_S6A:

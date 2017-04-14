@@ -77,8 +77,9 @@ void mme_s11_handle_create_session_response(
     d_info("[GTP] Create Session Response : "
             "MME[%d] <-- SGW[%d]", ue->mme_s11_teid, ue->sgw_s11_teid);
 
-    event_set(&e, MME_EVT_EMM_BEARER_LO_CREATE_SESSION);
+    event_set(&e, MME_EVT_EMM_BEARER_FROM_S11);
     event_set_param1(&e, (c_uintptr_t)bearer->index);
+    event_set_param2(&e, (c_uintptr_t)GTP_CREATE_SESSION_RESPONSE_TYPE);
     mme_event_send(&e);
 }
 

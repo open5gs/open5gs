@@ -144,9 +144,9 @@ void mme_state_operational(fsm_t *s, event_t *e)
             pkbuf_free(pkbuf);
             break;
         }
-        case MME_EVT_EMM_UE_FROM_S6A:
         case MME_EVT_EMM_UE_MSG:
-        case MME_EVT_EMM_BEARER_LO_CREATE_SESSION:
+        case MME_EVT_EMM_UE_FROM_S6A:
+        case MME_EVT_EMM_BEARER_FROM_S11:
         {
             nas_message_t message;
             index_t index = event_get_param1(e);
@@ -154,7 +154,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
             mme_bearer_t *bearer = NULL;
             pkbuf_t *pkbuf = NULL;
 
-            if (event_get(e) == MME_EVT_EMM_BEARER_LO_CREATE_SESSION)
+            if (event_get(e) == MME_EVT_EMM_BEARER_FROM_S11)
             {
                 d_assert(index, break, "Null param");
                 bearer = mme_bearer_find(index);
