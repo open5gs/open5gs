@@ -124,11 +124,6 @@ void pgw_handle_create_session_request(
         d_error("No APN");
         return;
     }
-    if (req->protocol_configuration_options.presence == 0)
-    {
-        d_error("No Protocol Configuration Options");
-        return;
-    }
     if (req->sender_f_teid_for_control_plane.presence == 0)
     {
         d_error("No TEID");
