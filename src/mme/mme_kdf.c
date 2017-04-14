@@ -28,7 +28,7 @@ void mme_kdf_enb(c_uint8_t *kasme, c_uint32_t ul_count, c_uint8_t *kenb)
 
     s[0] = 0x11; /* FC Value */
 
-    ul_count = ntohl(ul_count);
+    ul_count = htonl(ul_count);
     memcpy(s+1, &ul_count, 4);
 
     s[5] = 0x00;
