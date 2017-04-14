@@ -19,7 +19,7 @@ status_t mme_s11_build_create_session_request(pkbuf_t **pkbuf, mme_bearer_t *bea
 
     gtp_uli_t uli;
     char uli_buf[GTP_MAX_ULI_LEN];
-    gtp_f_teid_t s11, s5;
+    gtp_f_teid_t mme_s11_teid, pgw_s5c_teid;
     gtp_ambr_t ambr;
     gtp_bearer_qos_t bearer_qos;
     char bearer_qos_buf[GTP_BEARER_QOS_LEN];
@@ -65,20 +65,20 @@ status_t mme_s11_build_create_session_request(pkbuf_t **pkbuf, mme_bearer_t *bea
     req->rat_type.presence = 1;
     req->rat_type.u8 = GTP_RAT_TYPE_EUTRAN;
 
-    memset(&s11, 0, sizeof(gtp_f_teid_t));
-    s11.ipv4 = 1;
-    s11.interface_type = GTP_F_TEID_S11_MME_GTP_C;
-    s11.teid = htonl(ue->mme_s11_teid);
-    s11.ipv4_addr = ue->mme_s11_addr;
+    memset(&mme_s11_teid, 0, sizeof(gtp_f_teid_t));
+    mme_s11_teid.ipv4 = 1;
+    mme_s11_teid.interface_type = GTP_F_TEID_S11_MME_GTP_C;
+    mme_s11_teid.teid = htonl(ue->mme_s11_teid);
+    mme_s11_teid.ipv4_addr = ue->mme_s11_addr;
     req->sender_f_teid_for_control_plane.presence = 1;
-    req->sender_f_teid_for_control_plane.data = &s11;
+    req->sender_f_teid_for_control_plane.data = &mme_s11_teid;
     req->sender_f_teid_for_control_plane.len = GTP_F_TEID_IPV4_LEN;
 
-    memset(&s5, 0, sizeof(gtp_f_teid_t));
-    s5.ipv4 = 1;
-    s5.interface_type = GTP_F_TEID_S5_S8_PGW_GTP_C;
+    memset(&pgw_s5c_teid, 0, sizeof(gtp_f_teid_t));
+    pgw_s5c_teid.ipv4 = 1;
+    pgw_s5c_teid.interface_type = GTP_F_TEID_S5_S8_PGW_GTP_C;
     req->pgw_s5_s8_address_for_control_plane_or_pmip.presence = 1;
-    req->pgw_s5_s8_address_for_control_plane_or_pmip.data = &s5;
+    req->pgw_s5_s8_address_for_control_plane_or_pmip.data = &pgw_s5c_teid;
     req->pgw_s5_s8_address_for_control_plane_or_pmip.len = GTP_F_TEID_IPV4_LEN;
 
     req->access_point_name.presence = 1;
@@ -146,19 +146,27 @@ status_t mme_s11_build_modify_bearer_request(
             pkbuf_t **pkbuf, mme_bearer_t *bearer)
 {
     status_t rv;
-#if 0
-    pdn_t *pdn = NULL;
-    mme_sgw_t *sgw = NULL;
-    mme_ue_t *ue = NULL;
-#endif
     gtp_message_t gtp_message;
     gtp_modify_bearer_request_t *req = &gtp_message.modify_bearer_request;
 
+    gtp_f_teid_t enb_s1u_teid;
+
     memset(&gtp_message, 0, sizeof(gtp_message_t));
 
-    req->indication_flags.presence = 1;
-    req->indication_flags.data = "\x00\x00";
-    req->indication_flags.len = 2;
+    req->bearer_contexts_to_be_modified.presence = 1;
+    req->bearer_contexts_to_be_modified.eps_bearer_id.presence = 1;
+    req->bearer_contexts_to_be_modified.eps_bearer_id.u8 = bearer->ebi;
+
+    /* Send Data Plane(DL) : ENB-S1U */
+    memset(&enb_s1u_teid, 0, sizeof(gtp_f_teid_t));
+    enb_s1u_teid.ipv4 = 1;
+    enb_s1u_teid.interface_type = GTP_F_TEID_S1_U_ENODEB_GTP_U;
+    enb_s1u_teid.ipv4_addr = bearer->enb_s1u_addr;
+    enb_s1u_teid.teid = htonl(bearer->enb_s1u_teid);
+    req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.presence = 1;
+    req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.data = &enb_s1u_teid;
+    req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.len = 
+        GTP_F_TEID_IPV4_LEN;
 
     rv = gtp_build_msg(pkbuf, GTP_MODIFY_BEARER_REQUEST_TYPE, &gtp_message);
     d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");

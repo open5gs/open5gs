@@ -98,14 +98,14 @@ void sgw_handle_create_session_response(gtp_xact_t *xact,
     sgw_sess_t *sess, c_uint8_t type, gtp_message_t *gtp_message)
 {
     status_t rv;
+    sgw_bearer_t *bearer = NULL;
     gtp_create_session_response_t *rsp = NULL;
     pkbuf_t *pkbuf = NULL;
+
     gtp_f_teid_t *pgw_s5c_teid = NULL;
     gtp_f_teid_t sgw_s11_teid;
     gtp_f_teid_t *pgw_s5u_teid = NULL;
     gtp_f_teid_t sgw_s1u_teid;
-
-    sgw_bearer_t *bearer = NULL;
 
     d_assert(sess, return, "Null param");
     d_assert(xact, return, "Null param");
@@ -187,14 +187,41 @@ CORE_DECLARE(void) sgw_handle_modify_bearer_request(gtp_xact_t *xact,
     sgw_sess_t *sess, gtp_modify_bearer_request_t *req)
 {
     status_t rv;
-    gtp_message_t gtp_message;
+    sgw_bearer_t *bearer = NULL;
     gtp_modify_bearer_response_t *rsp = NULL;
     pkbuf_t *pkbuf = NULL;
+    gtp_message_t gtp_message;
     
     gtp_cause_t cause;
+    gtp_f_teid_t *enb_s1u_teid = NULL;
 
     d_assert(sess, return, "Null param");
     d_assert(xact, return, "Null param");
+
+    if (req->bearer_contexts_to_be_modified.presence == 0)
+    {
+        d_error("No Bearer");
+        return;
+    }
+    if (req->bearer_contexts_to_be_modified.eps_bearer_id.presence == 0)
+    {
+        d_error("No EPS Bearer ID");
+        return;
+    }
+    if (req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.presence == 0)
+    {
+        d_error("No GTP TEID");
+        return;
+    }
+
+    bearer = sgw_bearer_find_by_id(sess, 
+                req->bearer_contexts_to_be_modified.eps_bearer_id.u8);
+    d_assert(bearer, sgw_sess_remove(sess); return, "No Bearer Context");
+
+    /* Receive Data Plane(DL) : eNB-S1U */
+    enb_s1u_teid = req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.data;
+    bearer->enb_s1u_teid = ntohl(enb_s1u_teid->teid);
+    bearer->enb_s1u_addr = enb_s1u_teid->ipv4_addr;
 
     rsp = &gtp_message.modify_bearer_response;
     memset(&gtp_message, 0, sizeof(gtp_message_t));
