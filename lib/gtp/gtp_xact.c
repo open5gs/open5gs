@@ -223,6 +223,7 @@ status_t gtp_xact_associated_commit(gtp_xact_t *xact,
     h = pkbuf->payload;
     d_assert(h, goto out, "Null param");
 
+    memset(h, 0, sizeof(gtpv2c_header_t));
     h->version = 2;
     h->teid_presence = 1;
     h->type = type;
