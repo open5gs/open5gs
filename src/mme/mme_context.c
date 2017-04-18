@@ -17,6 +17,8 @@
 #define MIN_EPS_BEARER_ID           5
 #define MAX_EPS_BEARER_ID           15
 
+#define DEFAULT_IP_ADDR    "127.0.0.1"
+
 static mme_context_t self;
 
 pool_declare(mme_sgw_pool, mme_sgw_t, MAX_NUM_OF_SGW);
@@ -46,7 +48,7 @@ status_t mme_context_init()
     index_init(&mme_bearer_pool, MAX_NUM_OF_UE_BEARER);
     pool_init(&mme_pdn_pool, MAX_NUM_OF_UE_PDN);
 
-    self.mme_addr = inet_addr("127.0.0.1");
+    self.mme_addr = inet_addr(DEFAULT_IP_ADDR);
 
     self.mme_ue_s1ap_id_hash = hash_make();
 
@@ -60,7 +62,7 @@ status_t mme_context_init()
     self.s11_port = GTPV2_C_UDP_PORT;
 
     /* FIXME : It should be removed */
-    sgw->gnode.addr = inet_addr("127.0.0.1");
+    sgw->gnode.addr = inet_addr(DEFAULT_IP_ADDR);
     sgw->gnode.port = GTPV2_C_UDP_PORT+1;
 
     /* MCC : 001, MNC : 01 */

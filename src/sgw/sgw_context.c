@@ -9,6 +9,8 @@
 
 #include "sgw_context.h"
 
+#define DEFAULT_IP_ADDR    "127.0.0.1"
+
 static sgw_context_t self;
 
 index_declare(sgw_sess_pool, sgw_sess_t, MAX_NUM_OF_UE);
@@ -27,12 +29,12 @@ status_t sgw_context_init()
     index_init(&sgw_bearer_pool, MAX_NUM_OF_UE_BEARER);
     list_init(&self.sess_list);
 
-    self.sgw_addr = inet_addr("127.0.0.1");
+    self.sgw_addr = inet_addr(DEFAULT_IP_ADDR);
 
     self.s11_addr = self.sgw_addr;
     self.s11_port = GTPV2_C_UDP_PORT + 1;
     /* FIXME : It shoud be removed */
-    self.s11_node.addr = inet_addr("127.0.0.1"); 
+    self.s11_node.addr = inet_addr(DEFAULT_IP_ADDR); 
     self.s11_node.port = GTPV2_C_UDP_PORT;
     list_init(&self.s11_node.local_list);
     list_init(&self.s11_node.remote_list);
@@ -40,7 +42,7 @@ status_t sgw_context_init()
     self.s5c_addr = self.sgw_addr;
     self.s5c_port = GTPV2_C_UDP_PORT + 2;
     /* FIXME : It shoud be removed */
-    self.s5c_node.addr = inet_addr("127.0.0.1");
+    self.s5c_node.addr = inet_addr(DEFAULT_IP_ADDR);
     self.s5c_node.port = GTPV2_C_UDP_PORT + 3;
     list_init(&self.s5c_node.local_list);
     list_init(&self.s5c_node.remote_list);
@@ -48,13 +50,13 @@ status_t sgw_context_init()
     self.s1u_addr = self.sgw_addr;
     self.s1u_port = GTPV1_U_UDP_PORT;
     /* FIXME : It shoud be removed */
-    self.s1u_node.addr = inet_addr("127.0.0.1");
+    self.s1u_node.addr = inet_addr(DEFAULT_IP_ADDR);
     self.s1u_node.port = GTPV1_U_UDP_PORT;
 
     self.s5u_addr = self.sgw_addr;
     self.s5u_port = GTPV1_U_UDP_PORT;
     /* FIXME : It shoud be removed */
-    self.s5u_node.addr = inet_addr("127.0.0.1");
+    self.s5u_node.addr = inet_addr(DEFAULT_IP_ADDR);
     self.s5u_node.port = GTPV1_U_UDP_PORT + 1;
     
     context_initialized = 1;

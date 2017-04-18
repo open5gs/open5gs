@@ -24,7 +24,7 @@ AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/gtp
 
 AM_CFLAGS = \
-	-Wall -Werror
+	-Wall -Werror @OSCPPFLAGS@
 
 MAINTAINERCLEANFILES = Makefile.in
 MOSTLYCLEANFILES = core *.stackdump

@@ -266,6 +266,11 @@ CORE_DECLARE(int) net_unregister_link(net_link_t *net_link);
  */
 CORE_DECLARE(int) net_fds_read_run(long timeout);
 
+/** TunTap interface */
+CORE_DECLARE(int) net_tuntap_open(net_link_t **net_link, char *tuntap_dev_name, 
+        int is_tap);
+
+CORE_DECLARE(int) net_tuntap_close(net_link_t *net_link);
 
 #ifdef __cplusplus
 }

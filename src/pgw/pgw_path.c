@@ -10,6 +10,68 @@
 #include "pgw_event.h"
 #include "pgw_path.h"
 
+#if LINUX == 1 
+static int _gtpv1_tun_recv_cb(net_link_t *net_link, void *data)
+{
+    pkbuf_t *recvbuf = NULL;
+    int n;
+    status_t rv;
+    pgw_bearer_t *bearer = NULL;
+
+    recvbuf = pkbuf_alloc(sizeof(gtp_header_t), MAX_SDU_LEN);
+    d_assert(recvbuf, return -1, "pkbuf_alloc error");
+
+    n = net_link_read(net_link, recvbuf->payload, recvbuf->len, 0);
+    if (n <= 0)
+    {
+        pkbuf_free(recvbuf);
+        return -1;
+    }
+
+    /* Find the bearer by packet filter */
+    bearer = pgw_bearer_find_by_packet(recvbuf);
+    if (bearer)
+    {
+        gtp_header_t *gtp_h = NULL;
+        gtp_node_t gnode;
+
+        /* Add GTP-U header */
+        rv = pkbuf_header(recvbuf, sizeof(gtp_header_t));
+        if (rv != CORE_OK)
+        {
+            d_error("pkbuf_header error");
+            pkbuf_free(recvbuf);
+            return -1;
+        }
+        
+        /* Bits    8  7  6  5  4  3  2  1
+         *        +--+--+--+--+--+--+--+--+
+         *        |version |PT| 1| E| S|PN|
+         *        +--+--+--+--+--+--+--+--+
+         *         0  0  1   1  0  0  0  0
+         */
+        gtp_h->flags = 0x30;
+        gtp_h->type = GTPU_MSGTYPE_GPDU;
+        gtp_h->length = n;
+        gtp_h->teid = bearer->sgw_s5u_teid;
+
+        /* Send to SGW */
+        gnode.addr = bearer->sgw_s5u_addr;
+        gnode.port = GTPV1_U_UDP_PORT;
+
+        rv =  gtp_send(pgw_self()->s5u_sock, &gnode, recvbuf);
+    }
+    else
+    {
+        d_error("Can not find bearer");
+    }
+
+    pkbuf_free(recvbuf);
+    return 0;
+
+}
+#endif
+
 static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
 {
     event_t e;
@@ -93,6 +155,44 @@ status_t pgw_path_open()
         return rv;
     }
 
+#if LINUX == 1
+    {
+        int rc;
+
+        /* FIXME : dev_name should be configured */
+        char *tun_dev_name = "pgwtun";
+
+        /* NOTE : tun device can be created via following command.
+         *
+         * $ sudo ip tuntap add name pgwtun mode tun
+         *
+         * Also, before running pgw, assign the one IP from IP pool of UE 
+         * to pgwtun. The IP should not be assigned to UE
+         *
+         * $ sudo ifconfig pgwtun 45.45.0.1/16 up
+         *
+         */
+
+        /* Open Tun interface */
+        rc = net_tuntap_open(&pgw_self()->tun_link, tun_dev_name, 0);
+        if (rc != 0)
+        {
+            d_error("Can not open tun(dev : %s)",tun_dev_name);
+            return CORE_ERROR;
+        }
+
+        rc = net_register_link(pgw_self()->tun_link, _gtpv1_tun_recv_cb, NULL);
+        if (rc != 0)
+        {
+            d_error("Can not register tun(dev : %s)",tun_dev_name);
+            net_tuntap_close(pgw_self()->tun_link);
+            return CORE_ERROR;
+        }
+
+    }
+#endif
+
+
     return CORE_OK;
 }
 
@@ -113,6 +213,11 @@ status_t pgw_path_close()
         d_error("Can't close S5-U Path for MME");
         return rv;
     }
+
+#if LINUX == 1
+    net_unregister_link(pgw_self()->tun_link);
+    net_link_close(pgw_self()->tun_link);
+#endif
 
     return CORE_OK;
 }

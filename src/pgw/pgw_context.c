@@ -8,6 +8,10 @@
 
 #include "pgw_context.h"
 
+#include <netinet/ip.h>
+
+#define DEFAULT_IP_ADDR    "127.0.0.1"
+
 static pgw_context_t self;
 
 index_declare(pgw_sess_pool, pgw_sess_t, MAX_NUM_OF_UE);
@@ -30,12 +34,12 @@ status_t pgw_context_init()
 
     pool_init(&pgw_pdn_pool, MAX_NUM_OF_UE_PDN);
 
-    self.pgw_addr = inet_addr("127.0.0.1");
+    self.pgw_addr = inet_addr(DEFAULT_IP_ADDR);
 
     self.s5c_addr = self.pgw_addr;
     self.s5c_port = GTPV2_C_UDP_PORT + 3;
     /* FIXME : It shoud be removed */
-    self.s5c_node.addr = inet_addr("127.0.0.1");
+    self.s5c_node.addr = inet_addr(DEFAULT_IP_ADDR);
     self.s5c_node.port = GTPV2_C_UDP_PORT + 2;
     list_init(&self.s5c_node.local_list);
     list_init(&self.s5c_node.remote_list);
@@ -43,7 +47,7 @@ status_t pgw_context_init()
     self.s5u_addr = self.pgw_addr;
     self.s5u_port = GTPV1_U_UDP_PORT + 1;
     /* FIXME : It shoud be removed */
-    self.s5u_node.addr = inet_addr("127.0.0.1");
+    self.s5u_node.addr = inet_addr(DEFAULT_IP_ADDR);
     self.s5u_node.port = GTPV1_U_UDP_PORT;
 
     self.primary_dns_addr = inet_addr("8.8.8.8");
@@ -319,3 +323,57 @@ pgw_bearer_t* pgw_bearer_next(pgw_bearer_t *bearer)
     return list_next(bearer);
 }
 
+pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
+{
+    pgw_bearer_t *bearer = NULL;
+    pgw_sess_t *iter_session = NULL;
+    pgw_bearer_t *iter_bearer = NULL;
+    pdn_t *iter_pdn = NULL;
+    struct iphdr *iph =  NULL;
+
+    d_assert(pkt, return NULL, "pkt is NULL");
+
+    iph = (struct iphdr *)pkt->payload;
+
+    /* FIXME : Only support IPV4 */
+    if (iph->version != 4) /* IPv4 */
+    {
+        return NULL;
+    }
+
+    /* FIXME: Need API to find the bearer with packet filter */
+    /* Iterate session */
+    for (iter_session = pgw_sess_first(); iter_session ; 
+            iter_session = pgw_sess_next(iter_session))
+    {
+        /* Iterate bearer in session */
+        for (iter_bearer = pgw_bearer_first(iter_session);
+                iter_bearer;
+                iter_bearer = pgw_bearer_next(iter_bearer))
+        {
+            /* Iterate pdn in session */
+            for (iter_pdn = pgw_pdn_first(iter_bearer->sess);
+                    iter_pdn;
+                    iter_pdn = pgw_pdn_next(iter_pdn))
+            {
+                char buf1[INET_ADDRSTRLEN];
+                char buf2[INET_ADDRSTRLEN];
+
+                d_trace(3,"Src_IP(%s) in Pkt : PAA(%s) in PDN\n",
+                        INET_NTOP(iph->saddr,buf1),
+                        INET_NTOP(iter_pdn->paa.ipv4_addr, buf2));
+
+                if (iph->saddr == iter_pdn->paa.ipv4_addr)
+                {
+                    /* Found */
+                    bearer = iter_bearer;
+                    break;
+                }
+
+            }
+
+        }
+    }
+
+    return bearer;
+}

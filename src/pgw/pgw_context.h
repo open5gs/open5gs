@@ -35,6 +35,8 @@ typedef struct _pgw_context_t {
     c_uint32_t      primary_dns_addr;
     c_uint32_t      secondary_dns_addr;
 
+    net_link_t*     tun_link;  /* PGW Tun Interace for U-plane */
+
     list_t          sess_list;
 } pgw_context_t;
 
@@ -98,6 +100,8 @@ CORE_DECLARE(pgw_bearer_t*) pgw_bearer_find_by_id(
                                 pgw_sess_t *sess, c_uint8_t id);
 CORE_DECLARE(pgw_bearer_t*) pgw_bearer_first(pgw_sess_t *sess);
 CORE_DECLARE(pgw_bearer_t*) pgw_bearer_next(pgw_bearer_t *bearer);
+
+CORE_DECLARE(pgw_bearer_t*) pgw_bearer_find_by_packet(pkbuf_t *pkt);
 
 #ifdef __cplusplus
 }

@@ -13,6 +13,7 @@
 
 #if LINUX == 1
 #include <netpacket/packet.h>
+#include <linux/if_tun.h>
 #endif
 
 #define NET_FD_TYPE_SOCK    0
@@ -1170,6 +1171,53 @@ int net_raw_open(net_link_t **net_link, int proto)
     return 0;
 }
 
+/** Create tuntap socket */
+int net_tuntap_open(net_link_t **net_link, char *tuntap_dev_name, 
+        int is_tap)
+{
+    int rc,sock;
+    net_link_t *new_link = NULL;
+    char *dev = "/dev/net/tun";
+    struct ifreq ifr;
+    int flags = IFF_NO_PI;
+
+    sock = open(dev, O_RDWR);
+    if (sock < 0)
+    {
+        d_error("Can not open %s",dev);
+        return -1;
+    }
+
+    pool_alloc_node(&link_pool, &new_link);
+    d_assert(new_link != NULL, return -1,"No link pool is availabe\n");
+
+    memset(&ifr, 0, sizeof(ifr));
+
+    ifr.ifr_flags = (is_tap ? (flags | IFF_TAP) :  (flags | IFF_TUN));
+    strncpy(ifr.ifr_name, tuntap_dev_name, IFNAMSIZ);
+
+    rc = ioctl(sock, TUNSETIFF, (void *)&ifr);
+    if (rc < 0)
+    {
+        d_error("iotcl error(dev:%s flags = %d)", tuntap_dev_name, flags);
+        goto cleanup;
+    }
+
+    /* Save socket descriptor */
+    new_link->fd = sock;
+    /* Save the interface name */
+    strncpy(new_link->ifname, tuntap_dev_name, IFNAMSIZ);
+
+    *net_link = new_link;
+    return 0;
+
+cleanup:
+    pool_free_node(&link_pool, new_link);
+    close(sock);
+    return -1;
+}
+
+
 int net_link_open(net_link_t **net_link, char *device, int proto)
 {
     int sock,ioctl_sock;
@@ -1313,6 +1361,14 @@ int net_raw_close(net_link_t *net_link)
     return 0;
 }
 
+int net_tuntap_close(net_link_t *net_link)
+{
+    d_assert(net_link,return -1, "net_link is NULL\n");
+    close(net_link->fd);
+    pool_free_node(&link_pool, net_link);
+    return 0;
+}
+
 int net_link_write(net_link_t *net_link, char *buf, int len)
 {
     d_assert(net_link && buf, return -1, "Invalid params\n");
@@ -1360,7 +1416,7 @@ int net_link_read(net_link_t *net_link, char *buffer, int size, int timeout)
 
         rc = recvfrom(net_link->fd, buffer, size, 0, &remote_addr, &addr_len);
 #else
-        rc = recvfrom(net_link->fd, buffer, size, 0, NULL, NULL);
+        rc = read(net_link->fd, buffer, size);
 #endif
     }
     else /* Timeout */
