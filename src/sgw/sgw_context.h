@@ -110,6 +110,9 @@ CORE_DECLARE(sgw_bearer_t*) sgw_bearer_find_by_id(
 CORE_DECLARE(sgw_bearer_t*) sgw_bearer_first(sgw_sess_t *sess);
 CORE_DECLARE(sgw_bearer_t*) sgw_bearer_next(sgw_bearer_t *bearer);
 
+CORE_DECLARE(sgw_bearer_t*) sgw_bearer_find_by_sgw_s5u_teid(c_uint32_t sgw_s5u_teid);
+CORE_DECLARE(sgw_bearer_t*) sgw_bearer_find_by_sgw_s1u_teid(c_uint32_t sgw_s1u_teid);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

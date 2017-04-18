@@ -58,13 +58,15 @@ static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
     return 0;
 }
 
-static int _gtpv1_u_recv_cb(net_sock_t *sock, void *data)
+static int _gtpv1_s5u_recv_cb(net_sock_t *sock, void *data)
 {
     pkbuf_t *pkbuf = NULL;
-    gtp_node_t *gnode = data;
+    gtp_node_t gnode;
+    gtp_header_t *gtp_h = NULL;
+    sgw_bearer_t *bearer = NULL;
+    c_uint32_t teid;
 
     d_assert(sock, return -1, "Null param");
-    d_assert(gnode, return -1, "Null param");
 
     pkbuf = gtp_read(sock);
     if (pkbuf == NULL)
@@ -78,7 +80,61 @@ static int _gtpv1_u_recv_cb(net_sock_t *sock, void *data)
     d_trace(1, "S5-U PDU received from GTP\n");
     d_trace_hex(1, pkbuf->payload, pkbuf->len);
 
-    /* TODO */
+    gtp_h = (gtp_header_t *)pkbuf->payload;
+    teid = ntohl(gtp_h->teid);
+
+    bearer = sgw_bearer_find_by_sgw_s5u_teid(ntohl(teid));
+    if (bearer)
+    {
+        /* Convert Teid and send to enodeB  via s1u */
+        gtp_h->teid =  htonl(bearer->enb_s1u_teid);
+        
+        gnode.addr = bearer->enb_s1u_addr;
+        gnode.port = GTPV1_U_UDP_PORT;
+
+        gtp_send(sgw_self()->s1u_sock, &gnode, pkbuf);
+    }
+
+    pkbuf_free(pkbuf);
+    return 0;
+}
+
+static int _gtpv1_s1u_recv_cb(net_sock_t *sock, void *data)
+{
+    pkbuf_t *pkbuf = NULL;
+    gtp_node_t gnode;
+    gtp_header_t *gtp_h = NULL;
+    sgw_bearer_t *bearer = NULL;
+    c_uint32_t teid;
+
+    d_assert(sock, return -1, "Null param");
+
+    pkbuf = gtp_read(sock);
+    if (pkbuf == NULL)
+    {
+        if (sock->sndrcv_errno == EAGAIN)
+            return 0;
+
+        return -1;
+    }
+
+    d_trace(1, "S1-U PDU received from GTP\n");
+    d_trace_hex(1, pkbuf->payload, pkbuf->len);
+
+    gtp_h = (gtp_header_t *)pkbuf->payload;
+    teid = ntohl(gtp_h->teid);
+
+    bearer = sgw_bearer_find_by_sgw_s1u_teid(ntohl(teid));
+    if (bearer)
+    {
+        /* Convert Teid and send to PGW  via s5u */
+        gtp_h->teid =  htonl(bearer->pgw_s5u_teid);
+        
+        gnode.addr = bearer->pgw_s5u_addr;
+        gnode.port = GTPV1_U_UDP_PORT;
+
+        gtp_send(sgw_self()->s5u_sock, &gnode, pkbuf);
+    }
 
     pkbuf_free(pkbuf);
     return 0;
@@ -92,7 +148,7 @@ status_t sgw_path_open()
             sgw_self()->s11_addr, sgw_self()->s11_port, &sgw_self()->s11_node);
     if (rv != CORE_OK)
     {
-        d_error("Can't establish S11 Path for MME");
+        d_error("Can't establish S11 Path for SGW");
         return rv;
     }
 
@@ -100,15 +156,23 @@ status_t sgw_path_open()
             sgw_self()->s5c_addr, sgw_self()->s5c_port, &sgw_self()->s5c_node);
     if (rv != CORE_OK)
     {
-        d_error("Can't establish S5-C Path for PGW");
+        d_error("Can't establish S5-C Path for SGW");
         return rv;
     }
 
-    rv = gtp_listen(&sgw_self()->s5u_sock, _gtpv1_u_recv_cb, 
+    rv = gtp_listen(&sgw_self()->s5u_sock, _gtpv1_s5u_recv_cb, 
             sgw_self()->s5u_addr, sgw_self()->s5u_port, &sgw_self()->s5u_node);
     if (rv != CORE_OK)
     {
-        d_error("Can't establish S5-U Path for PGW");
+        d_error("Can't establish S5-U Path for SGW");
+        return rv;
+    }
+
+    rv = gtp_listen(&sgw_self()->s1u_sock, _gtpv1_s1u_recv_cb, 
+            sgw_self()->s1u_addr, sgw_self()->s1u_port, &sgw_self()->s1u_node);
+    if (rv != CORE_OK)
+    {
+        d_error("Can't establish S1-U Path for SGW");
         return rv;
     }
 
@@ -178,4 +242,3 @@ status_t sgw_s5u_send_to_pgw(pkbuf_t *pkbuf)
     d_assert(pkbuf, return CORE_ERROR, "Null param");
     return gtp_send(sgw_self()->s5u_sock, &sgw_self()->s5u_node, pkbuf);
 }
-

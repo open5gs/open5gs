@@ -221,6 +221,11 @@ sgw_bearer_t* sgw_bearer_find_by_sgw_s5u_teid(c_uint32_t sgw_s5u_teid)
     return sgw_bearer_find(sgw_s5u_teid);
 }
 
+sgw_bearer_t* sgw_bearer_find_by_sgw_s1u_teid(c_uint32_t sgw_s1u_teid)
+{
+    return sgw_bearer_find(sgw_s1u_teid);
+}
+
 sgw_bearer_t* sgw_bearer_find_by_id(sgw_sess_t *sess, c_uint8_t id)
 {
     sgw_bearer_t *bearer = NULL;

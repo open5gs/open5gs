@@ -112,10 +112,9 @@ static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
 static int _gtpv1_u_recv_cb(net_sock_t *sock, void *data)
 {
     pkbuf_t *pkbuf = NULL;
-    gtp_node_t *gnode = data;
+    c_uint32_t size = sizeof(gtp_header_t);
 
     d_assert(sock, return -1, "Null param");
-    d_assert(gnode, return -1, "Null param");
 
     pkbuf = gtp_read(sock);
     if (pkbuf == NULL)
@@ -129,9 +128,22 @@ static int _gtpv1_u_recv_cb(net_sock_t *sock, void *data)
     d_trace(1, "S5-U PDU received from GTP\n");
     d_trace_hex(1, pkbuf->payload, pkbuf->len);
 
-    /* TODO */
+    /* Remove GTP header and send packets to TUN interface */
+    if (pkbuf_header(pkbuf, -size) != CORE_OK)
+    {
+        d_error("pkbuf_header error");
+
+        pkbuf_free(pkbuf);
+        return -1;
+    }
+
+    if (net_link_write(pgw_self()->tun_link, pkbuf->payload, pkbuf->len) <= 0)
+    {
+        d_error("Can not send packets to tuntap");
+    }
 
     pkbuf_free(pkbuf);
+
     return 0;
 }
 
