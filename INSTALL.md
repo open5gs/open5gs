@@ -33,3 +33,11 @@ Install SCTP for Mac OS X 10.11(El Captian)
    sudo cp /Volumes/SCTP_NKE_ElCapitan_01/sctp_uio.h /usr/include/netinet/
    sudo cp /Volumes/SCTP_NKE_ElCapitan_01/libsctp.dylib /usr/lib/
    sudo kextload /Library/Extensions/SCTP.kext
+
+Install Tuntap for Mac OS X
+===========================================
+ - brew tap caskroom/cask
+ - brew cask install tuntap
+ - Install tuntap_20150118.pkg in /usr/local/Caskroom/tuntap/20150118
+ - sudo kextload /Library/Extensions/tun.kext
+
