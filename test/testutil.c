@@ -45,7 +45,9 @@ void test_initialize(void)
 {
     cellwire_initialize(NULL, NULL);
 
-    inet_pton(AF_INET, "127.0.0.1", &mme_self()->s1ap_addr);
+#if 0
+    inet_pton(AF_INET, "10.1.35.215", &mme_self()->s1ap_addr);
+#endif
 
     atexit(test_terminate);
 }

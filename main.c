@@ -116,6 +116,8 @@ int main(int argc, char *argv[])
 
     {
 #if 0
+        extern int _s1ap_path;
+        d_trace_level(&_s1ap_path, 100);
         extern int _sgw_path;
         d_trace_level(&_sgw_path, 100);
         extern int _pgw_path;

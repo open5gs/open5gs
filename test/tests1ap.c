@@ -11,13 +11,15 @@
 
 net_sock_t *tests1ap_enb_connect(void)
 {
+    char buf[INET_ADDRSTRLEN];
     status_t rv;
     mme_context_t *mme = mme_self();
     net_sock_t *sock = NULL;
 
     if (!mme) return NULL;
 
-    rv = net_open_ext(&sock, mme->s1ap_addr, "127.0.0.1", 0, mme->s1ap_port, 
+    rv = net_open_ext(&sock, mme->s1ap_addr, 
+            INET_NTOP(&mme->s1ap_addr, buf), 0, mme->s1ap_port, 
             SOCK_SEQPACKET, IPPROTO_SCTP, SCTP_S1AP_PPID, 0);
     if (rv != CORE_OK) return NULL;
 

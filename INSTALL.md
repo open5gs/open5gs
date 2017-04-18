@@ -15,7 +15,10 @@ Build from Git
     make -j `nproc`
     make check
     make install
+    sudo ip tuntap add name pgwtun mode tun
+    sudo ./scripts/netconfig.sh
     ./cellwired
+
 
 
 Install SCTP for Mac OS X 10.11(El Captian)
