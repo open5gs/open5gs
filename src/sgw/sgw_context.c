@@ -19,26 +19,6 @@ static int context_initialized = 0;
 /* FIXME : Global IP information and port.
  * This should be read from configuration file or arguments
  */
-#if 0
-static char g_mme_ip_addr[20] = "127.0.0.1";
-static unsigned int g_mme_gtp_c_port = GTPV2_C_UDP_PORT;
-
-static char g_sgw_s11_ip_addr[20] = "127.0.0.1";
-static unsigned int g_sgw_s11_port = GTPV2_C_UDP_PORT + 1;
-
-static char g_sgw_s5c_ip_addr[20] = "127.0.0.1";
-static unsigned int g_sgw_s5c_port = GTPV2_C_UDP_PORT + 2;
-
-static char g_pgw_ip_addr[20] = "127.0.0.1";
-static unsigned int g_pgw_s5c_port = GTPV2_C_UDP_PORT + 3;
-
-static char g_sgw_s1u_ip_addr[20] = "127.0.0.1";
-static unsigned int g_sgw_s1u_port = GTPV1_U_UDP_PORT;
-
-static char g_sgw_s5u_ip_addr[20] = "127.0.0.1";
-static unsigned int g_sgw_s5u_port = GTPV1_U_UDP_PORT + 1;
-
-#else
 static char g_mme_ip_addr[20] = "10.1.35.215";
 static unsigned int g_mme_gtp_c_port = GTPV2_C_UDP_PORT;
 
@@ -56,7 +36,7 @@ static unsigned int g_sgw_s1u_port = GTPV1_U_UDP_PORT;
 
 static char g_sgw_s5u_ip_addr[20] = "10.1.35.217"; /* same as g_sgw_s5c_ip_addr */
 static unsigned int g_sgw_s5u_port = GTPV1_U_UDP_PORT;
-#endif
+
 status_t sgw_context_init()
 {
     d_assert(context_initialized == 0, return CORE_ERROR,

@@ -31,19 +31,11 @@ static int context_initialized = 0;
 /* FIXME : Global IP information and port.
  * This should be read from configuration file or arguments
  */
-#if 0
-static char g_mme_ip_addr[20] = "127.0.0.1";
-static unsigned int g_mme_gtp_c_port = GTPV2_C_UDP_PORT;
-
-static char g_sgw_s11_ip_addr[20] = "127.0.0.1";
-static unsigned int g_sgw_s11_port = GTPV2_C_UDP_PORT + 1;
-#else
 static char g_mme_ip_addr[20] = "10.1.35.215";
 static unsigned int g_mme_gtp_c_port = GTPV2_C_UDP_PORT;
 
 static char g_sgw_s11_ip_addr[20] = "10.1.35.216";
 static unsigned int g_sgw_s11_port = GTPV2_C_UDP_PORT;
-#endif
 
 status_t mme_context_init()
 {

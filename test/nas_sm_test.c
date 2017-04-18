@@ -34,14 +34,14 @@ static void nas_sm_test1(abts_case *tc, void *data)
         "000b402000000300 000005c00100009d 000800020001001a 000a092779012320"
         "010221d9";
     char *_initial_context_setup_request = 
-        "00090080d6000006 00000005c0010000 9d00080002000100 42000a1806400000"
-        "6006400000001800 8084000034007f45 4009200000000000 0000000f807f0000"
-        "0100000001682733 2c24090207420249 064000f1105ba000 4c5221c10509ffff"
-        "ffff0908696e7465 726e657405012d2d 2d715e0600000000 0404272980c22304"
-        "0300000480211002 0000108106080808 0883060404040400 0d0408080808000d"
-        "0404040404531217 2c5949640125006b 00051c000c000000 4900203311c603c6"
-        "a6d67f695e5ac02b b75b381b693c3893 a6d932fd91823544 e3e79b0000000000"
-        "0000000000000000 00";
+        "00090080e4000006 00000005c0010000 9d00080002000100 42000a1806400000"
+        "6006400000001800 809200003400808c 4540092000000000 000000000f800a01"
+        "23d8000000017527 daddd87002074202 49064000f1105ba0 004c5221c10509ff"
+        "ffffff0908696e74 65726e657405012d 2d2d715e06000000 000404272980c223"
+        "0403000004802110 0200001081060808 0808830604040404 000d040808080800"
+        "0d0404040404500b f600f11000020104 0001fb5312172c59 49640125006b0005"
+        "1c000c0000004900 203311c603c6a6d6 7f695e5ac02bb75b 381b693c3893a6d9"
+        "32fd91823544e3e7 9b";
     char *_emm_information = 
         "000b402a00000300 000005c00100009d 000800020001001a 001413279fcc7266"
         "0307614771304112 527563490100";
@@ -127,13 +127,10 @@ static void nas_sm_test1(abts_case *tc, void *data)
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rc = tests1ap_enb_read(sock, recvbuf);
     recvbuf->len = 233;
-#if 0
-    d_print_hex(recvbuf->payload, recvbuf->len);
     ABTS_TRUE(tc, memcmp(recvbuf->payload, 
         CORE_HEX(_initial_context_setup_request, 
             strlen(_initial_context_setup_request), tmp),
         recvbuf->len) == 0);
-#endif
     pkbuf_free(recvbuf);
 
     /* Send UE Capability Info Indication */
@@ -297,9 +294,7 @@ abts_suite *test_nas_sm(abts_suite *suite)
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, nas_sm_test1, NULL);
-#if 0
     abts_run_test(suite, nas_sm_test2, NULL);
-#endif
 
     return suite;
 }

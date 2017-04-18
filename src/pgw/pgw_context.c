@@ -23,16 +23,6 @@ static int context_initiaized = 0;
  */
 
 /* loop back */
-#if 0
-static char g_sgw_s5c_ip_addr[20] = "127.0.0.1";
-static unsigned int g_sgw_s5c_port = GTPV2_C_UDP_PORT + 2;
-
-static char g_pgw_s5c_ip_addr[20] = "127.0.0.1";
-static unsigned int g_pgw_s5c_port = GTPV2_C_UDP_PORT + 3;
-
-static char g_pgw_ip_addr[20] = "127.0.0.1";
-static unsigned int g_pgw_s5u_port = GTPV1_U_UDP_PORT + 2;
-#else
 static char g_sgw_s5c_ip_addr[20] = "10.1.35.217";
 static unsigned int g_sgw_s5c_port = GTPV2_C_UDP_PORT;
 
@@ -40,7 +30,7 @@ static char g_pgw_ip_addr[20] = "10.1.35.219";
 static unsigned int g_pgw_s5c_port = GTPV2_C_UDP_PORT;
 
 static unsigned int g_pgw_s5u_port = GTPV1_U_UDP_PORT;
-#endif
+
 status_t pgw_context_init()
 {
     d_assert(context_initiaized == 0, return CORE_ERROR,
