@@ -109,6 +109,7 @@ static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
     return 0;
 }
 
+#if LINUX == 1
 static int _gtpv1_u_recv_cb(net_sock_t *sock, void *data)
 {
     pkbuf_t *pkbuf = NULL;
@@ -146,6 +147,7 @@ static int _gtpv1_u_recv_cb(net_sock_t *sock, void *data)
 
     return 0;
 }
+#endif
 
 status_t pgw_path_open()
 {
@@ -159,6 +161,7 @@ status_t pgw_path_open()
         return rv;
     }
 
+#if LINUX == 1
     rv = gtp_listen(&pgw_self()->s5u_sock, _gtpv1_u_recv_cb, 
             pgw_self()->s5u_addr, pgw_self()->s5u_port, &pgw_self()->s5u_node);
     if (rv != CORE_OK)
@@ -167,7 +170,6 @@ status_t pgw_path_open()
         return rv;
     }
 
-#if LINUX == 1
     {
         int rc;
 
@@ -219,6 +221,7 @@ status_t pgw_path_close()
         return rv;
     }
 
+#if LINUX == 1
     rv = gtp_close(pgw_self()->s5u_sock);
     if (rv != CORE_OK)
     {
@@ -226,7 +229,6 @@ status_t pgw_path_close()
         return rv;
     }
 
-#if LINUX == 1
     net_unregister_link(pgw_self()->tun_link);
     net_link_close(pgw_self()->tun_link);
 #endif

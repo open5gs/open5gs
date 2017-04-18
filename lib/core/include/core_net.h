@@ -30,7 +30,7 @@ extern "C" {
 /* Max length of interface name, ex: eth0, ath0 .. */
 #define MAX_IFNAME_LEN      16
 
-#define INET_NTOP(src, dst)   inet_ntop(AF_INET,(void *)(src),(dst),INET_ADDRSTRLEN)
+#define INET_NTOP(src, dst)   inet_ntop(AF_INET,(void *)(c_uintptr_t)(src),(dst),INET_ADDRSTRLEN)
 #define INET6_NTOP(src, dst)   inet_ntop(AF_INET6,(void *)(src),(dst),INET6_ADDRSTRLEN)
 
 /** Network handler */
