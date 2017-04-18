@@ -16,7 +16,7 @@ Build from Git
     make check
     make install
     sudo ip tuntap add name pgwtun mode tun
-    sudo ./scripts/netconfig.sh
+    sudo ./scripts/linux_netconfig.sh
     ./cellwired
 
 

@@ -37,7 +37,7 @@ void sgw_state_operational(fsm_t *s, event_t *e)
             rv = sgw_path_open();
             if (rv != CORE_OK)
             {
-                d_error("Can't establish S11 path");
+                d_error("Can't establish SGW path");
                 break;
             }
             break;
@@ -47,7 +47,7 @@ void sgw_state_operational(fsm_t *s, event_t *e)
             rv = sgw_path_close();
             if (rv != CORE_OK)
             {
-                d_error("Can't close S11 path");
+                d_error("Can't close SGW path");
                 break;
             }
             break;

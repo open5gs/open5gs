@@ -38,7 +38,7 @@ void pgw_state_operational(fsm_t *s, event_t *e)
             rv = pgw_path_open();
             if (rv != CORE_OK)
             {
-                d_error("Can't establish S11 path");
+                d_error("Can't establish PGW path");
                 break;
             }
             break;
@@ -48,7 +48,7 @@ void pgw_state_operational(fsm_t *s, event_t *e)
             rv = pgw_path_close();
             if (rv != CORE_OK)
             {
-                d_error("Can't close S11 path");
+                d_error("Can't close PGW path");
                 break;
             }
             break;
