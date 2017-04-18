@@ -366,8 +366,7 @@ pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
                 if (iph->saddr == iter_pdn->paa.ipv4_addr)
                 {
                     /* Found */
-                    bearer = iter_bearer;
-                    break;
+                    return iter_bearer;
                 }
 
             }
