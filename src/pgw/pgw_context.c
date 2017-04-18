@@ -8,7 +8,6 @@
 
 #include "pgw_context.h"
 
-#include <netinet/ip.h>
 
 static pgw_context_t self;
 
@@ -348,24 +347,24 @@ pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
     pgw_sess_t *iter_session = NULL;
     pgw_bearer_t *iter_bearer = NULL;
     pdn_t *iter_pdn = NULL;
-    struct iphdr *iph =  NULL;
+    struct ip *iph =  NULL;
     char buf1[INET_ADDRSTRLEN];
     char buf2[INET_ADDRSTRLEN];
 
     d_assert(pkt, return NULL, "pkt is NULL");
 
-    iph = (struct iphdr *)pkt->payload;
+    iph = (struct ip *)pkt->payload;
 
     /* FIXME : Only support IPV4 */
-    if (iph->version != 4) /* IPv4 */
+    if (iph->ip_v != 4) /* IPv4 */
     {
         return NULL;
     }
 
     d_trace(50,"Src(%s)-> Dst(%s), Protocol: %d\n",
-            INET_NTOP(&iph->saddr,buf1),
-            INET_NTOP(&iph->daddr,buf2),
-            iph->protocol);
+            INET_NTOP(&iph->ip_src.s_addr,buf1),
+            INET_NTOP(&iph->ip_dst.s_addr,buf2),
+            iph->ip_p);
 
     /* FIXME: Need API to find the bearer with packet filter */
     /* Iterate session */
@@ -384,10 +383,11 @@ pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
             {
 
                 d_trace(3,"Dst(%s) in Pkt : PAA(%s) in PDN\n",
-                        INET_NTOP(&iph->daddr,buf1),
+                        INET_NTOP(&iph->ip_dst.s_addr,buf1),
                         INET_NTOP(&iter_pdn->paa.ipv4_addr, buf2));
 
-                if (iph->daddr == iter_pdn->paa.ipv4_addr)
+
+                if (iph->ip_dst.s_addr == iter_pdn->paa.ipv4_addr)
                 {
                     /* Found */
                     d_trace(3,"Found bearer(id = %d)\n",iter_bearer->id);

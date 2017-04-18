@@ -10,7 +10,6 @@
 #include "pgw_event.h"
 #include "pgw_path.h"
 
-#if LINUX == 1 
 static int _gtpv1_tun_recv_cb(net_link_t *net_link, void *data)
 {
     pkbuf_t *recvbuf = NULL;
@@ -80,7 +79,6 @@ static int _gtpv1_tun_recv_cb(net_link_t *net_link, void *data)
     return 0;
 
 }
-#endif
 
 static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
 {
@@ -177,7 +175,6 @@ status_t pgw_path_open()
         return rv;
     }
 
-#if LINUX == 1
     {
         int rc;
 
@@ -212,8 +209,6 @@ status_t pgw_path_open()
         }
 
     }
-#endif
-
 
     return CORE_OK;
 }
@@ -236,10 +231,8 @@ status_t pgw_path_close()
         return rv;
     }
 
-#if LINUX == 1
     net_unregister_link(pgw_self()->tun_link);
     net_tuntap_close(pgw_self()->tun_link);
-#endif
 
     return CORE_OK;
 }

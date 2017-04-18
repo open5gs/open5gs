@@ -7,10 +7,6 @@
 #include "core_errno.h"
 #include "core_time.h"
 
-#include <net/if.h>
-#include <net/if_arp.h>
-#include <netinet/sctp.h>
-
 #if LINUX == 1
 #include <netpacket/packet.h>
 #include <linux/if_tun.h>
@@ -1138,7 +1134,6 @@ int net_ftp_quit(net_ftp_t *ftp_session)
 }
 
 
-#if LINUX == 1
 /******************************************************************************
  * Network link (raw socket)
 ******************************************************************************/
@@ -1175,11 +1170,16 @@ int net_raw_open(net_link_t **net_link, int proto)
 int net_tuntap_open(net_link_t **net_link, char *tuntap_dev_name, 
         int is_tap)
 {
-    int rc,sock;
+    int sock;
     net_link_t *new_link = NULL;
+#if LINUX == 1
     char *dev = "/dev/net/tun";
+    int rc;
     struct ifreq ifr;
     int flags = IFF_NO_PI;
+#else
+    char *dev = "/dev/tun0";
+#endif
 
     sock = open(dev, O_RDWR);
     if (sock < 0)
@@ -1191,6 +1191,7 @@ int net_tuntap_open(net_link_t **net_link, char *tuntap_dev_name,
     pool_alloc_node(&link_pool, &new_link);
     d_assert(new_link != NULL, return -1,"No link pool is availabe\n");
 
+#if LINUX == 1
     memset(&ifr, 0, sizeof(ifr));
 
     ifr.ifr_flags = (is_tap ? (flags | IFF_TAP) :  (flags | IFF_TUN));
@@ -1202,6 +1203,7 @@ int net_tuntap_open(net_link_t **net_link, char *tuntap_dev_name,
         d_error("iotcl error(dev:%s flags = %d)", tuntap_dev_name, flags);
         goto cleanup;
     }
+#endif
 
     /* Save socket descriptor */
     new_link->fd = sock;
@@ -1211,13 +1213,16 @@ int net_tuntap_open(net_link_t **net_link, char *tuntap_dev_name,
     *net_link = new_link;
     return 0;
 
+#if LINUX == 1
 cleanup:
     pool_free_node(&link_pool, new_link);
     close(sock);
     return -1;
+#endif
 }
 
 
+#if LINUX == 1
 int net_link_open(net_link_t **net_link, char *device, int proto)
 {
     int sock,ioctl_sock;
@@ -1296,6 +1301,7 @@ cleanup:
     close(ioctl_sock);
     return -1;
 }
+#endif /* #if LINUX == 1 */
 
 int net_link_promisc(net_link_t *net_link, int enable)
 {
@@ -1426,8 +1432,6 @@ int net_link_read(net_link_t *net_link, char *buffer, int size, int timeout)
 
     return rc;
 }
-
-#endif /* #if LINUX == 1 */
 
 static int net_register_fd(void *net_sl, int type, void *handler, void *data)
 {
