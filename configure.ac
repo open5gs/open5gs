@@ -184,8 +184,10 @@ AC_CHECK_HEADERS( \
     time.h \
     unistd.h \
     net/if_dl.h \
+    net/if.h \
     netinet/ether.h \
     netinet/in.h \
+    netinet/ip.h \
     netinet/sctp.h \
     sys/ioctl.h \
     sys/param.h \

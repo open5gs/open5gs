@@ -7,10 +7,6 @@
 #include "core_errno.h"
 #include "core_time.h"
 
-#include <net/if.h>
-#include <net/if_arp.h>
-#include <netinet/sctp.h>
-
 #if LINUX == 1
 #include <netpacket/packet.h>
 #include <linux/if_tun.h>
