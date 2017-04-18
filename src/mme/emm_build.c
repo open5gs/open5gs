@@ -16,7 +16,7 @@ status_t emm_build_attach_accept(
         &attach_accept->eps_attach_result;
     nas_gprs_timer_t *t3412_value = &attach_accept->t3412_value;
     nas_tracking_area_identity_list_t *tai_list = &attach_accept->tai_list;
-#if 0 /* TODO */
+#if 1 /* TODO */
     nas_eps_mobile_identity_t *guti = &attach_accept->guti;
 #endif
     nas_gprs_timer_t *t3402_value = &attach_accept->t3402_value;
@@ -46,7 +46,7 @@ status_t emm_build_attach_accept(
     attach_accept->esm_message_container.data = esmbuf->payload;
     attach_accept->esm_message_container.len = esmbuf->len;
 
-#if 0 /* TODO */
+#if 1 /* TODO */
     attach_accept->presencemask |= NAS_ATTACH_ACCEPT_GUTI_PRESENT;
     guti->length = 11;
     guti->guti.odd_even = NAS_EPS_MOBILE_IDENTITY_EVEN;
