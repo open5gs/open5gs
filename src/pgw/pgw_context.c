@@ -10,8 +10,6 @@
 
 #include <netinet/ip.h>
 
-#define DEFAULT_IP_ADDR    "127.0.0.1"
-
 static pgw_context_t self;
 
 index_declare(pgw_sess_pool, pgw_sess_t, MAX_NUM_OF_UE);
@@ -21,6 +19,29 @@ pool_declare(pgw_pdn_pool, pdn_t, MAX_NUM_OF_UE_PDN);
 
 static int context_initiaized = 0;
 
+/* FIXME : Global IP information and port.
+ * This should be read from configuration file or arguments
+ */
+
+/* loop back */
+#if 0
+static char g_sgw_s5c_ip_addr[20] = "127.0.0.1";
+static unsigned int g_sgw_s5c_port = GTPV2_C_UDP_PORT + 2;
+
+static char g_pgw_s5c_ip_addr[20] = "127.0.0.1";
+static unsigned int g_pgw_s5c_port = GTPV2_C_UDP_PORT + 3;
+
+static char g_pgw_ip_addr[20] = "127.0.0.1";
+static unsigned int g_pgw_s5u_port = GTPV1_U_UDP_PORT + 2;
+#else
+static char g_sgw_s5c_ip_addr[20] = "10.1.35.217";
+static unsigned int g_sgw_s5c_port = GTPV2_C_UDP_PORT;
+
+static char g_pgw_ip_addr[20] = "10.1.35.219";
+static unsigned int g_pgw_s5c_port = GTPV2_C_UDP_PORT;
+
+static unsigned int g_pgw_s5u_port = GTPV1_U_UDP_PORT;
+#endif
 status_t pgw_context_init()
 {
     d_assert(context_initiaized == 0, return CORE_ERROR,
@@ -34,21 +55,19 @@ status_t pgw_context_init()
 
     pool_init(&pgw_pdn_pool, MAX_NUM_OF_UE_PDN);
 
-    self.pgw_addr = inet_addr(DEFAULT_IP_ADDR);
+    self.pgw_addr = inet_addr(g_pgw_ip_addr);
 
     self.s5c_addr = self.pgw_addr;
-    self.s5c_port = GTPV2_C_UDP_PORT + 3;
-    /* FIXME : It shoud be removed */
-    self.s5c_node.addr = inet_addr(DEFAULT_IP_ADDR);
-    self.s5c_node.port = GTPV2_C_UDP_PORT + 2;
+    self.s5c_port = g_pgw_s5c_port;
+
+    /* FIXME : It shoud be removed : Peer SGW ?*/
+    self.s5c_node.addr = inet_addr(g_sgw_s5c_ip_addr);
+    self.s5c_node.port = g_sgw_s5c_port;
     list_init(&self.s5c_node.local_list);
     list_init(&self.s5c_node.remote_list);
 
     self.s5u_addr = self.pgw_addr;
-    self.s5u_port = GTPV1_U_UDP_PORT + 1;
-    /* FIXME : It shoud be removed */
-    self.s5u_node.addr = inet_addr(DEFAULT_IP_ADDR);
-    self.s5u_node.port = GTPV1_U_UDP_PORT;
+    self.s5u_port = g_pgw_s5u_port;
 
     self.primary_dns_addr = inet_addr("8.8.8.8");
     self.secondary_dns_addr = inet_addr("4.4.4.4");
@@ -330,6 +349,8 @@ pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
     pgw_bearer_t *iter_bearer = NULL;
     pdn_t *iter_pdn = NULL;
     struct iphdr *iph =  NULL;
+    char buf1[INET_ADDRSTRLEN];
+    char buf2[INET_ADDRSTRLEN];
 
     d_assert(pkt, return NULL, "pkt is NULL");
 
@@ -340,6 +361,11 @@ pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
     {
         return NULL;
     }
+
+    d_trace(50,"Src(%s)-> Dst(%s), Protocol: %d\n",
+            INET_NTOP(&iph->saddr,buf1),
+            INET_NTOP(&iph->daddr,buf2),
+            iph->protocol);
 
     /* FIXME: Need API to find the bearer with packet filter */
     /* Iterate session */
@@ -356,16 +382,15 @@ pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
                     iter_pdn;
                     iter_pdn = pgw_pdn_next(iter_pdn))
             {
-                char buf1[INET_ADDRSTRLEN];
-                char buf2[INET_ADDRSTRLEN];
 
-                d_trace(3,"Src_IP(%s) in Pkt : PAA(%s) in PDN\n",
-                        INET_NTOP(iph->saddr,buf1),
-                        INET_NTOP(iter_pdn->paa.ipv4_addr, buf2));
+                d_trace(3,"Dst(%s) in Pkt : PAA(%s) in PDN\n",
+                        INET_NTOP(&iph->daddr,buf1),
+                        INET_NTOP(&iter_pdn->paa.ipv4_addr, buf2));
 
-                if (iph->saddr == iter_pdn->paa.ipv4_addr)
+                if (iph->daddr == iter_pdn->paa.ipv4_addr)
                 {
                     /* Found */
+                    d_trace(3,"Found bearer(id = %d)\n",iter_bearer->id);
                     return iter_bearer;
                 }
 

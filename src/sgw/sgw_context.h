@@ -31,12 +31,12 @@ typedef struct _sgw_context_t {
     c_uint32_t      s1u_addr;  /* SGW S1-U local address */
     c_uint32_t      s1u_port;  /* SGW S1-U local port */
     net_sock_t*     s1u_sock;  /* SGW S1-U local listen socket */
-    gtp_node_t      s1u_node;  /* PGW S1-U remote GTPv1-U node */
+    //gtp_node_t      s1u_node;  /* PGW S1-U remote GTPv1-U node */
 
     c_uint32_t      s5u_addr;  /* SGW S5-U local address */
     c_uint32_t      s5u_port;  /* SGW S5-U local port */
     net_sock_t*     s5u_sock;  /* SGW S5-U local listen socket */
-    gtp_node_t      s5u_node;  /* PGW S5-U remote GTPv1-U node */
+    //gtp_node_t      s5u_node;  /* PGW S5-U remote GTPv1-U node */
 
     msgq_id         queue_id;       /* Queue for processing SGW control plane */
     tm_service_t    tm_service;     /* Timer Service */

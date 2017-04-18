@@ -9,8 +9,6 @@
 
 #include "sgw_context.h"
 
-#define DEFAULT_IP_ADDR    "127.0.0.1"
-
 static sgw_context_t self;
 
 index_declare(sgw_sess_pool, sgw_sess_t, MAX_NUM_OF_UE);
@@ -18,6 +16,47 @@ index_declare(sgw_bearer_pool, sgw_bearer_t, MAX_NUM_OF_UE_BEARER);
 
 static int context_initialized = 0;
 
+/* FIXME : Global IP information and port.
+ * This should be read from configuration file or arguments
+ */
+#if 0
+static char g_mme_ip_addr[20] = "127.0.0.1";
+static unsigned int g_mme_gtp_c_port = GTPV2_C_UDP_PORT;
+
+static char g_sgw_s11_ip_addr[20] = "127.0.0.1";
+static unsigned int g_sgw_s11_port = GTPV2_C_UDP_PORT + 1;
+
+static char g_sgw_s5c_ip_addr[20] = "127.0.0.1";
+static unsigned int g_sgw_s5c_port = GTPV2_C_UDP_PORT + 2;
+
+static char g_pgw_ip_addr[20] = "127.0.0.1";
+static unsigned int g_pgw_s5c_port = GTPV2_C_UDP_PORT + 3;
+
+static char g_sgw_s1u_ip_addr[20] = "127.0.0.1";
+static unsigned int g_sgw_s1u_port = GTPV1_U_UDP_PORT;
+
+static char g_sgw_s5u_ip_addr[20] = "127.0.0.1";
+static unsigned int g_sgw_s5u_port = GTPV1_U_UDP_PORT + 1;
+
+#else
+static char g_mme_ip_addr[20] = "10.1.35.215";
+static unsigned int g_mme_gtp_c_port = GTPV2_C_UDP_PORT;
+
+static char g_sgw_s11_ip_addr[20] = "10.1.35.216";
+static unsigned int g_sgw_s11_port = GTPV2_C_UDP_PORT;
+
+static char g_sgw_s5c_ip_addr[20] = "10.1.35.217";
+static unsigned int g_sgw_s5c_port = GTPV2_C_UDP_PORT;
+
+static char g_pgw_ip_addr[20] = "10.1.35.219";
+static unsigned int g_pgw_s5c_port = GTPV2_C_UDP_PORT;
+
+static char g_sgw_s1u_ip_addr[20] = "10.1.35.216";/* same as g_sgw_s11_ip_addr */
+static unsigned int g_sgw_s1u_port = GTPV1_U_UDP_PORT;
+
+static char g_sgw_s5u_ip_addr[20] = "10.1.35.217"; /* same as g_sgw_s5c_ip_addr */
+static unsigned int g_sgw_s5u_port = GTPV1_U_UDP_PORT;
+#endif
 status_t sgw_context_init()
 {
     d_assert(context_initialized == 0, return CORE_ERROR,
@@ -29,36 +68,35 @@ status_t sgw_context_init()
     index_init(&sgw_bearer_pool, MAX_NUM_OF_UE_BEARER);
     list_init(&self.sess_list);
 
-    self.sgw_addr = inet_addr(DEFAULT_IP_ADDR);
+    self.sgw_addr = inet_addr(g_sgw_s11_ip_addr);
 
-    self.s11_addr = self.sgw_addr;
-    self.s11_port = GTPV2_C_UDP_PORT + 1;
-    /* FIXME : It shoud be removed */
-    self.s11_node.addr = inet_addr(DEFAULT_IP_ADDR); 
-    self.s11_node.port = GTPV2_C_UDP_PORT;
+    /* S11 address and port of SGW */
+    self.s11_addr = inet_addr(g_sgw_s11_ip_addr);
+    self.s11_port = g_sgw_s11_port;
+
+    /* FIXME : It shoud be removed : Peer MME ? */
+    self.s11_node.addr = inet_addr(g_mme_ip_addr); 
+    self.s11_node.port = g_mme_gtp_c_port;
     list_init(&self.s11_node.local_list);
     list_init(&self.s11_node.remote_list);
 
-    self.s5c_addr = self.sgw_addr;
-    self.s5c_port = GTPV2_C_UDP_PORT + 2;
-    /* FIXME : It shoud be removed */
-    self.s5c_node.addr = inet_addr(DEFAULT_IP_ADDR);
-    self.s5c_node.port = GTPV2_C_UDP_PORT + 3;
+    /* S5C address and port of SGW */
+    self.s5c_addr = inet_addr(g_sgw_s5c_ip_addr);
+    self.s5c_port = g_sgw_s5c_port;
+
+    /* FIXME : It shoud be removed : Peer PGW ? */
+    self.s5c_node.addr = inet_addr(g_pgw_ip_addr);
+    self.s5c_node.port = g_pgw_s5c_port;
     list_init(&self.s5c_node.local_list);
     list_init(&self.s5c_node.remote_list);
 
-    self.s1u_addr = self.sgw_addr;
-    self.s1u_port = GTPV1_U_UDP_PORT;
-    /* FIXME : It shoud be removed */
-    self.s1u_node.addr = inet_addr(DEFAULT_IP_ADDR);
-    self.s1u_node.port = GTPV1_U_UDP_PORT;
+    /* S1U address and port of SGW */
+    self.s1u_addr = inet_addr(g_sgw_s1u_ip_addr);
+    self.s1u_port = g_sgw_s1u_port;
 
-    self.s5u_addr = self.sgw_addr;
-    self.s5u_port = GTPV1_U_UDP_PORT;
-    /* FIXME : It shoud be removed */
-    self.s5u_node.addr = inet_addr(DEFAULT_IP_ADDR);
-    self.s5u_node.port = GTPV1_U_UDP_PORT + 1;
-    
+    self.s5u_addr = inet_addr(g_sgw_s5u_ip_addr);
+    self.s5u_port = g_sgw_s5u_port;
+
     context_initialized = 1;
 
     return CORE_OK;
@@ -212,7 +250,9 @@ status_t sgw_bearer_remove_all(sgw_sess_t *sess)
 
 sgw_bearer_t* sgw_bearer_find(index_t index)
 {
-    d_assert(index, return NULL, "Invalid Index");
+    d_assert(index && index < MAX_NUM_OF_UE_BEARER, return NULL, 
+            "Invalid Index(%d)",index);
+
     return index_find(&sgw_bearer_pool, index);
 }
 

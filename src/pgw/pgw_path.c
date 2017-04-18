@@ -28,12 +28,18 @@ static int _gtpv1_tun_recv_cb(net_link_t *net_link, void *data)
         return -1;
     }
 
+    recvbuf->len = n;
+
+    d_trace(1, "PDU received from TunTap\n");
+    d_trace_hex(1, recvbuf->payload, recvbuf->len);
+
     /* Find the bearer by packet filter */
     bearer = pgw_bearer_find_by_packet(recvbuf);
     if (bearer)
     {
         gtp_header_t *gtp_h = NULL;
         gtp_node_t gnode;
+        char buf[INET_ADDRSTRLEN];
 
         /* Add GTP-U header */
         rv = pkbuf_header(recvbuf, sizeof(gtp_header_t));
@@ -44,6 +50,7 @@ static int _gtpv1_tun_recv_cb(net_link_t *net_link, void *data)
             return -1;
         }
         
+        gtp_h = (gtp_header_t *)recvbuf->payload;
         /* Bits    8  7  6  5  4  3  2  1
          *        +--+--+--+--+--+--+--+--+
          *        |version |PT| 1| E| S|PN|
@@ -52,12 +59,15 @@ static int _gtpv1_tun_recv_cb(net_link_t *net_link, void *data)
          */
         gtp_h->flags = 0x30;
         gtp_h->type = GTPU_MSGTYPE_GPDU;
-        gtp_h->length = n;
-        gtp_h->teid = bearer->sgw_s5u_teid;
+        gtp_h->length = htons(n);
+        gtp_h->teid = htonl(bearer->sgw_s5u_teid);
 
         /* Send to SGW */
         gnode.addr = bearer->sgw_s5u_addr;
         gnode.port = GTPV1_U_UDP_PORT;
+        d_trace(1, "Send S5U PDU (teid = 0x%x)to SGW(%s)\n",
+                bearer->sgw_s5u_teid,
+                INET_NTOP(&gnode.addr, buf));
 
         rv =  gtp_send(pgw_self()->s5u_sock, &gnode, recvbuf);
     }
@@ -125,7 +135,7 @@ static int _gtpv1_u_recv_cb(net_sock_t *sock, void *data)
         return -1;
     }
 
-    d_trace(1, "S5-U PDU received from GTP\n");
+    d_trace(1, "S5-U PDU received from SGW\n");
     d_trace_hex(1, pkbuf->payload, pkbuf->len);
 
     /* Remove GTP header and send packets to TUN interface */
@@ -160,7 +170,7 @@ status_t pgw_path_open()
     }
 
     rv = gtp_listen(&pgw_self()->s5u_sock, _gtpv1_u_recv_cb, 
-            pgw_self()->s5u_addr, pgw_self()->s5u_port, &pgw_self()->s5u_node);
+            pgw_self()->s5u_addr, pgw_self()->s5u_port, NULL);
     if (rv != CORE_OK)
     {
         d_error("Can't establish S5-U Path for PGW");
@@ -228,7 +238,7 @@ status_t pgw_path_close()
 
 #if LINUX == 1
     net_unregister_link(pgw_self()->tun_link);
-    net_link_close(pgw_self()->tun_link);
+    net_tuntap_close(pgw_self()->tun_link);
 #endif
 
     return CORE_OK;
@@ -246,8 +256,3 @@ status_t pgw_s5c_send_to_sgw(
     return CORE_OK;
 }
 
-status_t pgw_s5u_send_to_sgw(pkbuf_t *pkbuf)
-{
-    d_assert(pkbuf, return CORE_ERROR, "Null param");
-    return gtp_send(pgw_self()->s5u_sock, &pgw_self()->s5u_node, pkbuf);
-}

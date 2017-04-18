@@ -17,8 +17,6 @@
 #define MIN_EPS_BEARER_ID           5
 #define MAX_EPS_BEARER_ID           15
 
-#define DEFAULT_IP_ADDR    "127.0.0.1"
-
 static mme_context_t self;
 
 pool_declare(mme_sgw_pool, mme_sgw_t, MAX_NUM_OF_SGW);
@@ -30,8 +28,26 @@ pool_declare(mme_pdn_pool, pdn_t, MAX_NUM_OF_UE_PDN);
 
 static int context_initialized = 0;
 
+/* FIXME : Global IP information and port.
+ * This should be read from configuration file or arguments
+ */
+#if 0
+static char g_mme_ip_addr[20] = "127.0.0.1";
+static unsigned int g_mme_gtp_c_port = GTPV2_C_UDP_PORT;
+
+static char g_sgw_s11_ip_addr[20] = "127.0.0.1";
+static unsigned int g_sgw_s11_port = GTPV2_C_UDP_PORT + 1;
+#else
+static char g_mme_ip_addr[20] = "10.1.35.215";
+static unsigned int g_mme_gtp_c_port = GTPV2_C_UDP_PORT;
+
+static char g_sgw_s11_ip_addr[20] = "10.1.35.216";
+static unsigned int g_sgw_s11_port = GTPV2_C_UDP_PORT;
+#endif
+
 status_t mme_context_init()
 {
+
     d_assert(context_initialized == 0, return CORE_ERROR,
             "MME context already has been context_initialized");
 
@@ -48,7 +64,7 @@ status_t mme_context_init()
     index_init(&mme_bearer_pool, MAX_NUM_OF_UE_BEARER);
     pool_init(&mme_pdn_pool, MAX_NUM_OF_UE_PDN);
 
-    self.mme_addr = inet_addr(DEFAULT_IP_ADDR);
+    self.mme_addr = inet_addr(g_mme_ip_addr);
 
     self.mme_ue_s1ap_id_hash = hash_make();
 
@@ -59,11 +75,11 @@ status_t mme_context_init()
     d_assert(sgw, return CORE_ERROR, "Can't add SGW context");
 
     self.s11_addr = self.mme_addr;
-    self.s11_port = GTPV2_C_UDP_PORT;
+    self.s11_port = g_mme_gtp_c_port;
 
-    /* FIXME : It should be removed */
-    sgw->gnode.addr = inet_addr(DEFAULT_IP_ADDR);
-    sgw->gnode.port = GTPV2_C_UDP_PORT+1;
+    /* FIXME : It should be removed : Peer SGW ?*/
+    sgw->gnode.addr = inet_addr(g_sgw_s11_ip_addr);
+    sgw->gnode.port = g_sgw_s11_port;
 
     /* MCC : 001, MNC : 01 */
     plmn_id_build(&self.plmn_id, 1, 1, 2); 

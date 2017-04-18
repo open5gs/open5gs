@@ -14,7 +14,6 @@ CORE_DECLARE(status_t) sgw_s11_send_to_mme(
     gtp_xact_t *xact, c_uint8_t type, c_uint32_t teid, pkbuf_t *pkbuf);
 CORE_DECLARE(status_t) sgw_s5c_send_to_pgw(
     gtp_xact_t *assoc_xact, c_uint8_t type, c_uint32_t teid, pkbuf_t *pkbuf);
-CORE_DECLARE(status_t) sgw_s5u_send_to_pgw(pkbuf_t *pkbuf);
 
 #ifdef __cplusplus
 }

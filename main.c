@@ -60,7 +60,6 @@ static int check_signal(int signum)
     return 0;
 }
 
-
 int main(int argc, char *argv[])
 {
     /**************************************************************************
@@ -117,6 +116,12 @@ int main(int argc, char *argv[])
 
     {
 #if 0
+        extern int _sgw_path;
+        d_trace_level(&_sgw_path, 100);
+        extern int _pgw_path;
+        d_trace_level(&_pgw_path, 100);
+        extern int _pgw_context;
+        d_trace_level(&_pgw_context, 100);
         extern int _gtp_xact;
         d_trace_level(&_gtp_xact, 100);
         extern int _mme_sm;

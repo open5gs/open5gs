@@ -55,6 +55,7 @@ CORE_DECLARE(pkbuf_t *) gtp_read(net_sock_t *sock);
 CORE_DECLARE(status_t) gtp_send(net_sock_t *sock, 
     gtp_node_t *gnode, pkbuf_t *pkbuf);
 
+CORE_DECLARE(pkbuf_t*) gtp_handle_echo_req(pkbuf_t *pkt);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

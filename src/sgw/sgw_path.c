@@ -77,22 +77,45 @@ static int _gtpv1_s5u_recv_cb(net_sock_t *sock, void *data)
         return -1;
     }
 
-    d_trace(1, "S5-U PDU received from GTP\n");
+    d_trace(1, "S5-U PDU received from PGW\n");
     d_trace_hex(1, pkbuf->payload, pkbuf->len);
 
     gtp_h = (gtp_header_t *)pkbuf->payload;
-    teid = ntohl(gtp_h->teid);
-
-    bearer = sgw_bearer_find_by_sgw_s5u_teid(ntohl(teid));
-    if (bearer)
+    if (gtp_h->type == GTPU_MSGTYPE_ECHO_REQ)
     {
-        /* Convert Teid and send to enodeB  via s1u */
-        gtp_h->teid =  htonl(bearer->enb_s1u_teid);
-        
-        gnode.addr = bearer->enb_s1u_addr;
-        gnode.port = GTPV1_U_UDP_PORT;
+        pkbuf_t *echo_rsp;
 
-        gtp_send(sgw_self()->s1u_sock, &gnode, pkbuf);
+        d_trace(1,"Received echo-req");
+        echo_rsp = gtp_handle_echo_req(pkbuf);
+        if (echo_rsp)
+        {
+            /* Echo reply */
+            d_trace(1,"Send echo-rsp to peer(PGW) ");
+
+            gnode.addr = sock->remote.sin_addr.s_addr;
+            gnode.port = GTPV1_U_UDP_PORT;
+
+            gtp_send(sgw_self()->s5u_sock, &gnode, echo_rsp);
+            pkbuf_free(echo_rsp);
+        }
+    }
+    else if (gtp_h->type == GTPU_MSGTYPE_GPDU)
+    {
+        teid = ntohl(gtp_h->teid);
+
+        d_trace(1,"Recv GPDU (teid = 0x%x)",teid);
+
+        bearer = sgw_bearer_find_by_sgw_s5u_teid(teid);
+        if (bearer)
+        {
+            /* Convert Teid and send to enodeB  via s1u */
+            gtp_h->teid =  htonl(bearer->enb_s1u_teid);
+            
+            gnode.addr = bearer->enb_s1u_addr;
+            gnode.port = GTPV1_U_UDP_PORT;
+
+            gtp_send(sgw_self()->s1u_sock, &gnode, pkbuf);
+        }
     }
 
     pkbuf_free(pkbuf);
@@ -118,22 +141,44 @@ static int _gtpv1_s1u_recv_cb(net_sock_t *sock, void *data)
         return -1;
     }
 
-    d_trace(1, "S1-U PDU received from GTP\n");
+    d_trace(1, "S1-U PDU received from ENB\n");
     d_trace_hex(1, pkbuf->payload, pkbuf->len);
 
     gtp_h = (gtp_header_t *)pkbuf->payload;
-    teid = ntohl(gtp_h->teid);
-
-    bearer = sgw_bearer_find_by_sgw_s1u_teid(ntohl(teid));
-    if (bearer)
+    if (gtp_h->type == GTPU_MSGTYPE_ECHO_REQ)
     {
-        /* Convert Teid and send to PGW  via s5u */
-        gtp_h->teid =  htonl(bearer->pgw_s5u_teid);
-        
-        gnode.addr = bearer->pgw_s5u_addr;
-        gnode.port = GTPV1_U_UDP_PORT;
+        pkbuf_t *echo_rsp;
 
-        gtp_send(sgw_self()->s5u_sock, &gnode, pkbuf);
+        d_trace(1,"Received echo-req\n");
+        echo_rsp = gtp_handle_echo_req(pkbuf);
+        if (echo_rsp)
+        {
+            /* Echo reply */
+            d_trace(1,"Send echo-rsp to peer(ENB)\n");
+
+            gnode.addr = sock->remote.sin_addr.s_addr;
+            gnode.port = GTPV1_U_UDP_PORT;
+
+            gtp_send(sgw_self()->s1u_sock, &gnode, echo_rsp);
+            pkbuf_free(echo_rsp);
+        }
+    }
+    else if (gtp_h->type == GTPU_MSGTYPE_GPDU)
+    {
+        teid = ntohl(gtp_h->teid);
+        d_trace(1,"Recv GPDU (teid = 0x%x) from ENB\n",teid);
+
+        bearer = sgw_bearer_find_by_sgw_s1u_teid(teid);
+        if (bearer)
+        {
+            /* Convert Teid and send to PGW  via s5u */
+            gtp_h->teid =  htonl(bearer->pgw_s5u_teid);
+            
+            gnode.addr = bearer->pgw_s5u_addr;
+            gnode.port = GTPV1_U_UDP_PORT;
+
+            gtp_send(sgw_self()->s5u_sock, &gnode, pkbuf);
+        }
     }
 
     pkbuf_free(pkbuf);
@@ -161,7 +206,7 @@ status_t sgw_path_open()
     }
 
     rv = gtp_listen(&sgw_self()->s5u_sock, _gtpv1_s5u_recv_cb, 
-            sgw_self()->s5u_addr, sgw_self()->s5u_port, &sgw_self()->s5u_node);
+            sgw_self()->s5u_addr, sgw_self()->s5u_port, NULL);
     if (rv != CORE_OK)
     {
         d_error("Can't establish S5-U Path for SGW");
@@ -169,7 +214,7 @@ status_t sgw_path_open()
     }
 
     rv = gtp_listen(&sgw_self()->s1u_sock, _gtpv1_s1u_recv_cb, 
-            sgw_self()->s1u_addr, sgw_self()->s1u_port, &sgw_self()->s1u_node);
+            sgw_self()->s1u_addr, sgw_self()->s1u_port, NULL);
     if (rv != CORE_OK)
     {
         d_error("Can't establish S1-U Path for SGW");
@@ -235,10 +280,4 @@ status_t sgw_s5c_send_to_pgw(
             return CORE_ERROR, "gtp_send error");
 
     return CORE_OK;
-}
-
-status_t sgw_s5u_send_to_pgw(pkbuf_t *pkbuf)
-{
-    d_assert(pkbuf, return CORE_ERROR, "Null param");
-    return gtp_send(sgw_self()->s5u_sock, &sgw_self()->s5u_node, pkbuf);
 }
