@@ -127,6 +127,12 @@ void emm_state_operational(fsm_t *s, event_t *e)
                             ue, &message->emm.attach_request);
                     break;
                 }
+                case NAS_IDENTITY_RESPONSE:
+                {
+                    emm_handle_identity_response(ue,
+                            &message->emm.identity_response);
+                    break;
+                }
                 case NAS_AUTHENTICATION_RESPONSE:
                 {
                     emm_handle_authentication_response(

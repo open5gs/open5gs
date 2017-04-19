@@ -16,6 +16,8 @@
 #include "s1ap_build.h"
 #include "s1ap_path.h"
 
+void emm_handle_identity_request(mme_ue_t *ue);
+
 void emm_handle_esm_message_container(
         mme_ue_t *ue, nas_esm_message_container_t *esm_message_container)
 {
@@ -67,6 +69,26 @@ void emm_handle_attach_request(
     emm_handle_esm_message_container(
             ue, &attach_request->esm_message_container);
 
+    /* Store UE specific information */
+    memcpy(&ue->visited_plmn_id, &mme_self()->plmn_id, PLMN_ID_LEN);
+    if (attach_request->presencemask &
+        NAS_ATTACH_REQUEST_LAST_VISITED_REGISTERED_TAI_PRESENT)
+    {
+        nas_tracking_area_identity_t *last_visited_registered_tai = 
+            &attach_request->last_visited_registered_tai;
+
+        memcpy(&ue->visited_plmn_id, 
+                &last_visited_registered_tai->plmn_id,
+                PLMN_ID_LEN);
+    }
+
+    memcpy(&ue->ue_network_capability, 
+            &attach_request->ue_network_capability,
+            sizeof(attach_request->ue_network_capability));
+    memcpy(&ue->ms_network_capability, 
+            &attach_request->ms_network_capability,
+            sizeof(attach_request->ms_network_capability));
+
     switch(eps_mobile_identity->imsi.type)
     {
         case NAS_EPS_MOBILE_IDENTITY_IMSI:
@@ -78,29 +100,35 @@ void emm_handle_attach_request(
             d_assert(ue->imsi_len, return,
                     "Can't get IMSI(len:%d\n", ue->imsi_len);
 
-            memcpy(&ue->visited_plmn_id, &mme_self()->plmn_id, PLMN_ID_LEN);
-            if (attach_request->presencemask &
-                NAS_ATTACH_REQUEST_LAST_VISITED_REGISTERED_TAI_PRESENT)
-            {
-                nas_tracking_area_identity_t *last_visited_registered_tai = 
-                    &attach_request->last_visited_registered_tai;
-
-                memcpy(&ue->visited_plmn_id, 
-                        &last_visited_registered_tai->plmn_id,
-                        PLMN_ID_LEN);
-            }
-
-            memcpy(&ue->ue_network_capability, 
-                    &attach_request->ue_network_capability,
-                    sizeof(attach_request->ue_network_capability));
-            memcpy(&ue->ms_network_capability, 
-                    &attach_request->ms_network_capability,
-                    sizeof(attach_request->ms_network_capability));
-
-            d_info("[NAS] Attach request : UE[%s] --> EMM", 
+            d_info("[NAS] Attach request : UE_IMSI[%s] --> EMM", 
                     ue->imsi_bcd);
 
             mme_s6a_send_air(ue);
+            break;
+        }
+        case NAS_EPS_MOBILE_IDENTITY_GUTI:
+        {
+            nas_eps_mobile_identity_guti_t *guti = NULL;
+            guti = &eps_mobile_identity->guti;
+
+            d_info("[NAS] Attach request : UE_GUTI[G:%d,C:%d,M_TMSI:0x%x] --> EMM", 
+                    guti->mme_gid,
+                    guti->mme_code,
+                    guti->m_tmsi);
+
+            /* FIXME :Check if GUTI was assigend from us */
+            
+            /* FIXME :If not, forward the message to other MME */
+
+            /* FIXME : Find UE based on GUTI.
+             *         The record with GUTI,IMSI should be 
+             *         stored in permanent DB
+             */
+
+
+            /* If not found,
+               Initiate NAS Identity procedure to get UE IMSI */
+            emm_handle_identity_request(ue);
             break;
         }
         default:
@@ -111,6 +139,67 @@ void emm_handle_attach_request(
             return;
         }
     }
+}
+
+void emm_handle_identity_request(mme_ue_t *ue)
+{
+    status_t rv;
+    mme_enb_t *enb = NULL;
+    pkbuf_t *emmbuf = NULL, *s1apbuf = NULL;
+
+    nas_message_t message;
+    nas_identity_request_t *identity_request = 
+        &message.emm.identity_request;
+
+    d_assert(ue, return, "Null param");
+    enb = ue->enb;
+    d_assert(ue->enb, return, "Null param");
+
+    memset(&message, 0, sizeof(message));
+    message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    message.emm.h.message_type = NAS_IDENTITY_REQUEST;
+
+    /* Request IMSI */
+    identity_request->identity_type.type = NAS_IDENTITY_TYPE_2_IMSI;
+
+    d_assert(nas_plain_encode(&emmbuf, &message) == CORE_OK && emmbuf,,);
+
+    rv = s1ap_build_downlink_nas_transport(&s1apbuf, ue, emmbuf);
+    d_assert(rv == CORE_OK && s1apbuf, 
+            pkbuf_free(emmbuf); return, "s1ap build error");
+
+    d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
+}
+
+void emm_handle_identity_response(
+        mme_ue_t *ue, nas_identity_response_t *identity_response)
+{
+    nas_mobile_identity_t *mobile_identity = NULL;
+
+    d_assert(ue, return, "Null param");
+    d_assert(identity_response, return, "Null param");
+
+    mobile_identity = &identity_response->mobile_identity;
+
+    if (mobile_identity->imsi.type == NAS_IDENTITY_TYPE_2_IMSI)
+    {
+        nas_imsi_to_bcd(
+            &mobile_identity->imsi, mobile_identity->length,
+            ue->imsi_bcd);
+        core_bcd_to_buffer(ue->imsi_bcd, ue->imsi, &ue->imsi_len);
+
+        d_assert(ue->imsi_len, return,
+                "Can't get IMSI(len:%d\n", ue->imsi_len);
+    }
+    else
+    {
+        d_warn("Not supported Identity type(%d)",mobile_identity->imsi.type);
+        return;
+    }
+
+    /* Send Authentication Information Request to HSS */
+    mme_s6a_send_air(ue);
+
 }
 
 void emm_handle_authentication_request(mme_ue_t *ue)
