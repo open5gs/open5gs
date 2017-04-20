@@ -13,10 +13,9 @@ Build from Git
     test -f configure || autoreconf -iv
     CFLAGS='-g3' ./configure --prefix=$HOME/Documents/git/cellwire/install
     make -j `nproc`
-    make check
-    make install
     sudo ip tuntap add name pgwtun mode tun
     sudo ./scripts/linux_netconfig.sh
+    sudo ./test/testcellwire
     ./cellwired
 
 
