@@ -16,6 +16,28 @@ ED3(c_uint8_t type:4;,
     c_uint8_t low_priority:1;)
 } __attribute__ ((packed)) nas_device_properties_t;
 
+/* 9.9.2.1 EPS bearer context status
+ * O TLV 4 */
+typedef struct _nas_eps_bearer_context_status_t {
+    c_uint8_t length;
+ED8(c_uint8_t ebi7:1;,
+    c_uint8_t ebi6:1;,
+    c_uint8_t ebi5:1;,
+    c_uint8_t ebi4:1;,
+    c_uint8_t ebi3:1;,
+    c_uint8_t ebi2:1;,
+    c_uint8_t ebi1:1;,
+    c_uint8_t ebi0:1;)
+ED8(c_uint8_t ebi15:1;,
+    c_uint8_t ebi14:1;,
+    c_uint8_t ebi13:1;,
+    c_uint8_t ebi12:1;,
+    c_uint8_t ebi11:1;,
+    c_uint8_t ebi10:1;,
+    c_uint8_t ebi9:1;,
+    c_uint8_t ebi8:1;)
+} __attribute__ ((packed)) nas_eps_bearer_context_status_t;
+
 /* 9.9.2.2 Location area identification
  * See subclause 10.5.1.3 in 3GPP TS 24.008 [13]
  * O TV 6 */
@@ -203,6 +225,55 @@ typedef struct _nas_authentication_response_parameter_t {
     c_uint8_t res[MAX_RES_LEN];
 } nas_authentication_response_parameter_t;
 
+/* 9.9.3.4a Ciphering key sequence number
+ * See subclause 10.5.1.2 in 3GPP TS 24.008 [13].
+ * O TV 1 */
+#define NAS_CIPHERING_KEY_SEQUENCE_NUMBER_NO_KEY_FROM_MS 7
+typedef struct _nas_ciphering_key_sequence_number_t {
+ED3(c_uint8_t type:4;,
+    c_uint8_t spare:1;,
+    c_uint8_t key_sequence:3;)
+} __attribute__ ((packed)) nas_ciphering_key_sequence_number_t;
+
+/* 9.9.3.5 CSFB response
+ * O TV 1 */
+#define NAS_CS_FALLBACK_RESPONSE_REJECTED_BY_THE_UE     0
+#define NAS_CS_FALLBACK_RESPONSE_ACCEPTED_BY_THE_UE     1
+typedef struct _nas_csfb_response_t {
+ED3(c_uint8_t type:4;,
+    c_uint8_t spare:1;,
+    c_uint8_t response:3;)
+} __attribute__ ((packed)) nas_csfb_response_t;
+
+/* 9.9.3.6 Daylight saving time
+ * See subclause 10.5.3.12 in 3GPP TS 24.008 [13].
+ * O TLV 3 */
+#define NAS_NO_ADJUSTMENT_FOR_DAYLIGHT_SAVING_TIME              0
+#define NAS_PLUS_1_HOUR_ADJUSTMENT_FOR_DAYLIGHT_SAVING_TIME     1
+#define NAS_PLUS_2_HOURS_ADJUSTMENT_FOR_DAYLIGHT_SAVING_TIME    2
+typedef struct _nas_daylight_saving_time_t {
+    c_uint8_t length;
+ED2(c_uint8_t spare:6;,
+    c_uint8_t value:2;)
+} __attribute__ ((packed)) nas_daylight_saving_time_t;
+
+/* 9.9.3.7 Detach type
+ * M V 1/2 
+ * 9.9.3.21 NAS key set identifier 
+ * M V 1/2 */
+#define NAS_DETACH_TYPE_FROM_UE_EPS_DETACH                  1
+#define NAS_DETACH_TYPE_FROM_UE_IMSI_DETACH                 2
+#define NAS_DETACH_TYPE_FROM_UE_COMBINED_EPS_IMSI_DETACH    3
+#define NAS_DETACH_TYPE_TO_UE_RE_ATTACH_REQUIRED            1
+#define NAS_DETACH_TYPE_TO_UE_RE_ATTACH_NOT_REQUIRED        2
+#define NAS_DETACH_TYPE_TO_UE_IMSI_DETACH                   3
+typedef struct _nas_detach_type_t {
+ED4(c_uint8_t tsc:1;,
+    c_uint8_t nas_key_set_identifier:3;,
+    c_uint8_t switch_off:1;,
+    c_uint8_t detach_type:3;)
+} __attribute__ ((packed)) nas_detach_type_t;
+
 /* 9.9.3.8 DRX parameter
  * See subclause 10.5.5.6 in 3GPP TS 24.008
  * O TV 3 */
@@ -225,18 +296,6 @@ ED3(c_uint8_t cn_specific_drx_cycle_length_coefficient_and_drx_value_for_s1_mode
     c_uint8_t split_on_ccch:1;,
     c_uint8_t non_DRX_timer:3;)
 } __attribute__ ((packed)) nas_drx_parameter_t;
-
-/* 9.9.3.6 Daylight saving time
- * See subclause 10.5.3.12 in 3GPP TS 24.008 [13].
- * O TLV 3 */
-#define NAS_NO_ADJUSTMENT_FOR_DAYLIGHT_SAVING_TIME              0
-#define NAS_PLUS_1_HOUR_ADJUSTMENT_FOR_DAYLIGHT_SAVING_TIME     1
-#define NAS_PLUS_2_HOURS_ADJUSTMENT_FOR_DAYLIGHT_SAVING_TIME    2
-typedef struct _nas_daylight_saving_time_t {
-    c_uint8_t length;
-ED2(c_uint8_t spare:6;,
-    c_uint8_t value:2;)
-} __attribute__ ((packed)) nas_daylight_saving_time_t;
 
 /* 9.9.3.9 EMM cause
  * O TV 2 
@@ -361,6 +420,32 @@ ED5(c_uint8_t spare:4;,
     c_uint8_t up_ciot :1;)
 } __attribute__ ((packed)) nas_eps_network_feature_support_t;
 
+/* 9.9.3.13 EPS update result
+ * M V 1/2 */
+#define NAS_EPS_UPDATE_RESULT_TA_UPDATED                                0
+#define NAS_EPS_UPDATE_RESULT_COMBINED_TA_LA_UPDATED                    1
+#define NAS_EPS_UPDATE_RESULT_TA_UPDATED_AND_ISR_ACTIVATED              4
+#define NAS_EPS_UPDATE_RESULT_COMBINED_TA_LA_UPDATED_AND_ISR_ACTIVATED  5
+typedef struct _nas_eps_update_result_t {
+ED2(c_uint8_t spare:5;,
+    c_uint8_t result:3;)
+} __attribute__ ((packed)) nas_eps_update_result_t;
+
+/* 9.9.3.14 EPS update type
+ * M V 1/2 
+ * 9.9.3.21 NAS key set identifier 
+ * M V 1/2 */
+#define NAS_EPS_UPDATE_TYPE_TA_UPDATING                                 0
+#define NAS_EPS_UPDATE_TYPE_COMBINED_TA_LA_UPDATING                     1
+#define NAS_EPS_UPDATE_TYPE_COMBINED_TA_LA_UPDATING_WITH_IMSI_ATTACH    2
+#define NAS_EPS_UPDATE_TYPE_PERIODIC_UPDATING                           3
+typedef struct _nas_eps_update_type_t {
+ED4(c_uint8_t tsc:1;,
+    c_uint8_t nas_key_set_identifier:3;,
+    c_uint8_t active_flag:1;,
+    c_uint8_t update_type:3;)
+} __attribute__ ((packed)) nas_eps_update_type_t;
+
 /* 9.9.3.15 ESM message container
  * M LV-E 5-n */
 typedef struct _nas_esm_message_container_t {
@@ -478,7 +563,7 @@ ED3(c_uint8_t type:4;,
  * 9.9.2.9 Spare half octet
  * M V 1/2 */
 typedef struct _nas_key_set_identifier_t {
-ED3(c_uint8_t spare:4;,
+ED3(c_uint8_t type:4;,
     c_uint8_t tsc:1;,
     c_uint8_t nas_key_set_identifier:3;)
 } __attribute__ ((packed)) nas_key_set_identifier_t;
@@ -540,6 +625,19 @@ ED4(c_uint8_t type:4;,
     c_uint8_t eps_optimization_info:1;,
     c_uint8_t e_utran_allowed:1;)
 } nas_extended_emm_cause_t;
+
+/* 9.9.3.27 Service type
+ * M V 1/2 
+ * 9.9.3.21 NAS key set identifier 
+ * M V 1/2 */
+#define NAS_SERVICE_TYPE_CS_FALLBACK_OR_1XCS_FALLBACK_FROM_UE 0
+#define NAS_SERVICE_TYPE_CS_FALLBACK_OR_1XCS_FALLBACK_TO_UE 1
+#define NAS_SERVICE_TYPE_CS_FALLBACK_EMERGENCY_CALL_OR_1XCS_FALLBACK_EMERGENCY_CALL_FROM_UE 2
+typedef struct _nas_service_type_t {
+ED3(c_uint8_t tsc:1;,
+    c_uint8_t nas_key_set_identifier:3;,
+    c_uint8_t service_type:4;)
+} __attribute__ ((packed)) nas_service_type_t;
 
 /* 9.9.3.29 Time zone
  * See subclause 10.5.3.8 in 3GPP TS 24.008 [13].
@@ -680,6 +778,14 @@ ED8(c_uint8_t epco:1;,
 ED2(c_uint8_t spare:7;,
     c_uint8_t multiple_drb:1;)
 } __attribute__ ((packed)) nas_ue_network_capability_t;
+
+/* 9.9.3.35 UE radio capability information update needed
+ * O TV 1 */
+typedef struct _nas_ue_radio_capability_information_update_needed_t {
+ED3(c_uint8_t type:4;,
+    c_uint8_t spare:3;,
+    c_uint8_t update_needed:1;)
+} __attribute__ ((packed)) nas_ue_radio_capability_information_update_needed_t;
 
 /* 9.9.3.36 UE security capability
  * M LV 3-6 */
@@ -1120,11 +1226,33 @@ typedef struct _nas_extended_protocol_configuration_options_t {
     c_uint8_t *data;
 } __attribute__ ((packed)) nas_extended_protocol_configuration_options_t;
 
+/* 9.9.4.27 Header compression configuration status
+ * O TLV 4 */
+typedef struct _nas_header_compression_configuration_status_t {
+    c_uint8_t length;
+    c_uint16_t value;
+} __attribute__ ((packed)) nas_header_compression_configuration_status_t;
+
 /* 9.9.4.28 Serving PLMN rate control
  * O TLV 4 */
 typedef struct _nas_serving_plmn_rate_control_t {
     c_uint8_t length;
-    c_uint16_t value;
+ED8(c_uint8_t ebi7:1;,
+    c_uint8_t ebi6:1;,
+    c_uint8_t ebi5:1;,
+    c_uint8_t ebi4:1;,
+    c_uint8_t ebi3:1;,
+    c_uint8_t ebi2:1;,
+    c_uint8_t ebi1:1;,
+    c_uint8_t ebi0:1;)
+ED8(c_uint8_t ebi15:1;,
+    c_uint8_t ebi14:1;,
+    c_uint8_t ebi13:1;,
+    c_uint8_t ebi12:1;,
+    c_uint8_t ebi11:1;,
+    c_uint8_t ebi10:1;,
+    c_uint8_t ebi9:1;,
+    c_uint8_t ebi8:1;)
 } __attribute__ ((packed)) nas_serving_plmn_rate_control_t;
 
 #ifdef __cplusplus
