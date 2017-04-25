@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-14 18:08:22.139682 by acetcom
+ * Created on: 2017-04-25 20:02:55.628053 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -486,6 +486,624 @@ c_int32_t nas_encode_attach_reject(pkbuf_t *pkbuf, nas_message_t *message)
         attach_reject->extended_emm_cause.type = (NAS_ATTACH_REJECT_EXTENDED_EMM_CAUSE_TYPE >> 4);
 
         size = nas_encode_extended_emm_cause(pkbuf, &attach_reject->extended_emm_cause);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    return encoded;
+}
+
+c_int32_t nas_encode_detach_request_from_ue(pkbuf_t *pkbuf, nas_message_t *message)
+{
+    nas_detach_request_from_ue_t *detach_request_from_ue = &message->emm.detach_request_from_ue;
+    c_int32_t encoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_encode_detach_type(pkbuf, &detach_request_from_ue->detach_type);
+    d_assert(size >= 0, return -1, "encode failed");
+    encoded += size;
+
+    size = nas_encode_eps_mobile_identity(pkbuf, &detach_request_from_ue->eps_mobile_identity);
+    d_assert(size >= 0, return -1, "encode failed");
+    encoded += size;
+
+    return encoded;
+}
+
+c_int32_t nas_encode_detach_request_to_ue(pkbuf_t *pkbuf, nas_message_t *message)
+{
+    nas_detach_request_to_ue_t *detach_request_to_ue = &message->emm.detach_request_to_ue;
+    c_int32_t encoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_encode_detach_type(pkbuf, &detach_request_to_ue->detach_type);
+    d_assert(size >= 0, return -1, "encode failed");
+    encoded += size;
+
+    if (detach_request_to_ue->presencemask & NAS_DETACH_REQUEST_TO_UE_EMM_CAUSE_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_DETACH_REQUEST_TO_UE_EMM_CAUSE_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_emm_cause(pkbuf, &detach_request_to_ue->emm_cause);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    return encoded;
+}
+
+c_int32_t nas_encode_tracking_area_update_request(pkbuf_t *pkbuf, nas_message_t *message)
+{
+    nas_tracking_area_update_request_t *tracking_area_update_request = &message->emm.tracking_area_update_request;
+    c_int32_t encoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_encode_eps_update_type(pkbuf, &tracking_area_update_request->eps_update_type);
+    d_assert(size >= 0, return -1, "encode failed");
+    encoded += size;
+
+    size = nas_encode_eps_mobile_identity(pkbuf, &tracking_area_update_request->old_guti);
+    d_assert(size >= 0, return -1, "encode failed");
+    encoded += size;
+
+    if (tracking_area_update_request->presencemask & NAS_TRACKING_AREA_UPDATE_REQUEST_NON_CURRENT_NATIVE_NAS_KEY_SET_IDENTIFIER_PRESENT)
+    {
+        tracking_area_update_request->non_current_native_nas_key_set_identifier.type = (NAS_TRACKING_AREA_UPDATE_REQUEST_NON_CURRENT_NATIVE_NAS_KEY_SET_IDENTIFIER_TYPE >> 4);
+
+        size = nas_encode_key_set_identifier(pkbuf, &tracking_area_update_request->non_current_native_nas_key_set_identifier);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_request->presencemask & NAS_TRACKING_AREA_UPDATE_REQUEST_GPRS_CIPHERING_KEY_SEQUENCE_NUMBER_PRESENT)
+    {
+        tracking_area_update_request->gprs_ciphering_key_sequence_number.type = (NAS_TRACKING_AREA_UPDATE_REQUEST_GPRS_CIPHERING_KEY_SEQUENCE_NUMBER_TYPE >> 4);
+
+        size = nas_encode_ciphering_key_sequence_number(pkbuf, &tracking_area_update_request->gprs_ciphering_key_sequence_number);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_request->presencemask & NAS_TRACKING_AREA_UPDATE_REQUEST_OLD_P_TMSI_SIGNATURE_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_TRACKING_AREA_UPDATE_REQUEST_OLD_P_TMSI_SIGNATURE_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_p_tmsi_signature(pkbuf, &tracking_area_update_request->old_p_tmsi_signature);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_request->presencemask & NAS_TRACKING_AREA_UPDATE_REQUEST_ADDITIONAL_GUTI_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_TRACKING_AREA_UPDATE_REQUEST_ADDITIONAL_GUTI_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_eps_mobile_identity(pkbuf, &tracking_area_update_request->additional_guti);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_request->presencemask & NAS_TRACKING_AREA_UPDATE_REQUEST_NONCEUE_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_TRACKING_AREA_UPDATE_REQUEST_NONCEUE_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_nonce(pkbuf, &tracking_area_update_request->nonceue);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_request->presencemask & NAS_TRACKING_AREA_UPDATE_REQUEST_UE_NETWORK_CAPABILITY_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_TRACKING_AREA_UPDATE_REQUEST_UE_NETWORK_CAPABILITY_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_ue_network_capability(pkbuf, &tracking_area_update_request->ue_network_capability);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_request->presencemask & NAS_TRACKING_AREA_UPDATE_REQUEST_LAST_VISITED_REGISTERED_TAI_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_TRACKING_AREA_UPDATE_REQUEST_LAST_VISITED_REGISTERED_TAI_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_tracking_area_identity(pkbuf, &tracking_area_update_request->last_visited_registered_tai);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_request->presencemask & NAS_TRACKING_AREA_UPDATE_REQUEST_DRX_PARAMETER_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_TRACKING_AREA_UPDATE_REQUEST_DRX_PARAMETER_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_drx_parameter(pkbuf, &tracking_area_update_request->drx_parameter);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_request->presencemask & NAS_TRACKING_AREA_UPDATE_REQUEST_UE_RADIO_CAPABILITY_INFORMATION_UPDATE_NEEDED_PRESENT)
+    {
+        tracking_area_update_request->ue_radio_capability_information_update_needed.type = (NAS_TRACKING_AREA_UPDATE_REQUEST_UE_RADIO_CAPABILITY_INFORMATION_UPDATE_NEEDED_TYPE >> 4);
+
+        size = nas_encode_ue_radio_capability_information_update_needed(pkbuf, &tracking_area_update_request->ue_radio_capability_information_update_needed);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_request->presencemask & NAS_TRACKING_AREA_UPDATE_REQUEST_EPS_BEARER_CONTEXT_STATUS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_TRACKING_AREA_UPDATE_REQUEST_EPS_BEARER_CONTEXT_STATUS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_eps_bearer_context_status(pkbuf, &tracking_area_update_request->eps_bearer_context_status);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_request->presencemask & NAS_TRACKING_AREA_UPDATE_REQUEST_MS_NETWORK_CAPABILITY_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_TRACKING_AREA_UPDATE_REQUEST_MS_NETWORK_CAPABILITY_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_ms_network_capability(pkbuf, &tracking_area_update_request->ms_network_capability);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_request->presencemask & NAS_TRACKING_AREA_UPDATE_REQUEST_OLD_LOCATION_AREA_IDENTIFICATION_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_TRACKING_AREA_UPDATE_REQUEST_OLD_LOCATION_AREA_IDENTIFICATION_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_location_area_identification(pkbuf, &tracking_area_update_request->old_location_area_identification);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_request->presencemask & NAS_TRACKING_AREA_UPDATE_REQUEST_TMSI_STATUS_PRESENT)
+    {
+        tracking_area_update_request->tmsi_status.type = (NAS_TRACKING_AREA_UPDATE_REQUEST_TMSI_STATUS_TYPE >> 4);
+
+        size = nas_encode_tmsi_status(pkbuf, &tracking_area_update_request->tmsi_status);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_request->presencemask & NAS_TRACKING_AREA_UPDATE_REQUEST_MOBILE_STATION_CLASSMARK_2_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_TRACKING_AREA_UPDATE_REQUEST_MOBILE_STATION_CLASSMARK_2_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_mobile_station_classmark_2(pkbuf, &tracking_area_update_request->mobile_station_classmark_2);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_request->presencemask & NAS_TRACKING_AREA_UPDATE_REQUEST_MOBILE_STATION_CLASSMARK_3_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_TRACKING_AREA_UPDATE_REQUEST_MOBILE_STATION_CLASSMARK_3_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_mobile_station_classmark_3(pkbuf, &tracking_area_update_request->mobile_station_classmark_3);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_request->presencemask & NAS_TRACKING_AREA_UPDATE_REQUEST_SUPPORTED_CODECS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_TRACKING_AREA_UPDATE_REQUEST_SUPPORTED_CODECS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_supported_codec_list(pkbuf, &tracking_area_update_request->supported_codecs);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_request->presencemask & NAS_TRACKING_AREA_UPDATE_REQUEST_ADDITIONAL_UPDATE_TYPE_PRESENT)
+    {
+        tracking_area_update_request->additional_update_type.type = (NAS_TRACKING_AREA_UPDATE_REQUEST_ADDITIONAL_UPDATE_TYPE_TYPE >> 4);
+
+        size = nas_encode_additional_update_type(pkbuf, &tracking_area_update_request->additional_update_type);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_request->presencemask & NAS_TRACKING_AREA_UPDATE_REQUEST_VOICE_DOMAIN_PREFERENCE_AND_UE_USAGE_SETTING_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_TRACKING_AREA_UPDATE_REQUEST_VOICE_DOMAIN_PREFERENCE_AND_UE_USAGE_SETTING_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_voice_domain_preference_and_ue_usage_setting(pkbuf, &tracking_area_update_request->voice_domain_preference_and_ue_usage_setting);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_request->presencemask & NAS_TRACKING_AREA_UPDATE_REQUEST_OLD_GUTI_TYPE_PRESENT)
+    {
+        tracking_area_update_request->old_guti_type.type = (NAS_TRACKING_AREA_UPDATE_REQUEST_OLD_GUTI_TYPE_TYPE >> 4);
+
+        size = nas_encode_guti_type(pkbuf, &tracking_area_update_request->old_guti_type);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_request->presencemask & NAS_TRACKING_AREA_UPDATE_REQUEST_DEVICE_PROPERTIES_PRESENT)
+    {
+        tracking_area_update_request->device_properties.type = (NAS_TRACKING_AREA_UPDATE_REQUEST_DEVICE_PROPERTIES_TYPE >> 4);
+
+        size = nas_encode_device_properties(pkbuf, &tracking_area_update_request->device_properties);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_request->presencemask & NAS_TRACKING_AREA_UPDATE_REQUEST_MS_NETWORK_FEATURE_SUPPORT_PRESENT)
+    {
+        tracking_area_update_request->ms_network_feature_support.type = (NAS_TRACKING_AREA_UPDATE_REQUEST_MS_NETWORK_FEATURE_SUPPORT_TYPE >> 4);
+
+        size = nas_encode_ms_network_feature_support(pkbuf, &tracking_area_update_request->ms_network_feature_support);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_request->presencemask & NAS_TRACKING_AREA_UPDATE_REQUEST_TMSI_BASED_NRI_CONTAINER_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_TRACKING_AREA_UPDATE_REQUEST_TMSI_BASED_NRI_CONTAINER_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_network_resource_identifier_container(pkbuf, &tracking_area_update_request->tmsi_based_nri_container);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_request->presencemask & NAS_TRACKING_AREA_UPDATE_REQUEST_T3324_VALUE_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_TRACKING_AREA_UPDATE_REQUEST_T3324_VALUE_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_gprs_timer_2(pkbuf, &tracking_area_update_request->t3324_value);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_request->presencemask & NAS_TRACKING_AREA_UPDATE_REQUEST_T3412_EXTENDED_VALUE_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_TRACKING_AREA_UPDATE_REQUEST_T3412_EXTENDED_VALUE_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_gprs_timer_3(pkbuf, &tracking_area_update_request->t3412_extended_value);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_request->presencemask & NAS_TRACKING_AREA_UPDATE_REQUEST_EXTENDED_DRX_PARAMETERS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_TRACKING_AREA_UPDATE_REQUEST_EXTENDED_DRX_PARAMETERS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_extended_drx_parameters(pkbuf, &tracking_area_update_request->extended_drx_parameters);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    return encoded;
+}
+
+c_int32_t nas_encode_tracking_area_update_accept(pkbuf_t *pkbuf, nas_message_t *message)
+{
+    nas_tracking_area_update_accept_t *tracking_area_update_accept = &message->emm.tracking_area_update_accept;
+    c_int32_t encoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_encode_eps_update_result(pkbuf, &tracking_area_update_accept->eps_update_result);
+    d_assert(size >= 0, return -1, "encode failed");
+    encoded += size;
+
+    if (tracking_area_update_accept->presencemask & NAS_TRACKING_AREA_UPDATE_ACCEPT_T3412_VALUE_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_TRACKING_AREA_UPDATE_ACCEPT_T3412_VALUE_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_gprs_timer(pkbuf, &tracking_area_update_accept->t3412_value);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_accept->presencemask & NAS_TRACKING_AREA_UPDATE_ACCEPT_GUTI_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_TRACKING_AREA_UPDATE_ACCEPT_GUTI_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_eps_mobile_identity(pkbuf, &tracking_area_update_accept->guti);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_accept->presencemask & NAS_TRACKING_AREA_UPDATE_ACCEPT_TAI_LIST_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_TRACKING_AREA_UPDATE_ACCEPT_TAI_LIST_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_tracking_area_identity_list(pkbuf, &tracking_area_update_accept->tai_list);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_accept->presencemask & NAS_TRACKING_AREA_UPDATE_ACCEPT_EPS_BEARER_CONTEXT_STATUS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_TRACKING_AREA_UPDATE_ACCEPT_EPS_BEARER_CONTEXT_STATUS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_eps_bearer_context_status(pkbuf, &tracking_area_update_accept->eps_bearer_context_status);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_accept->presencemask & NAS_TRACKING_AREA_UPDATE_ACCEPT_LOCATION_AREA_IDENTIFICATION_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_TRACKING_AREA_UPDATE_ACCEPT_LOCATION_AREA_IDENTIFICATION_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_location_area_identification(pkbuf, &tracking_area_update_accept->location_area_identification);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_accept->presencemask & NAS_TRACKING_AREA_UPDATE_ACCEPT_MS_IDENTITY_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_TRACKING_AREA_UPDATE_ACCEPT_MS_IDENTITY_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_mobile_identity(pkbuf, &tracking_area_update_accept->ms_identity);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_accept->presencemask & NAS_TRACKING_AREA_UPDATE_ACCEPT_EMM_CAUSE_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_TRACKING_AREA_UPDATE_ACCEPT_EMM_CAUSE_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_emm_cause(pkbuf, &tracking_area_update_accept->emm_cause);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_accept->presencemask & NAS_TRACKING_AREA_UPDATE_ACCEPT_T3402_VALUE_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_TRACKING_AREA_UPDATE_ACCEPT_T3402_VALUE_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_gprs_timer(pkbuf, &tracking_area_update_accept->t3402_value);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_accept->presencemask & NAS_TRACKING_AREA_UPDATE_ACCEPT_T3423_VALUE_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_TRACKING_AREA_UPDATE_ACCEPT_T3423_VALUE_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_gprs_timer(pkbuf, &tracking_area_update_accept->t3423_value);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_accept->presencemask & NAS_TRACKING_AREA_UPDATE_ACCEPT_EQUIVALENT_PLMNS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_TRACKING_AREA_UPDATE_ACCEPT_EQUIVALENT_PLMNS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_plmn_list(pkbuf, &tracking_area_update_accept->equivalent_plmns);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_accept->presencemask & NAS_TRACKING_AREA_UPDATE_ACCEPT_EMERGENCY_NUMBER_LIST_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_TRACKING_AREA_UPDATE_ACCEPT_EMERGENCY_NUMBER_LIST_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_emergency_number_list(pkbuf, &tracking_area_update_accept->emergency_number_list);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_accept->presencemask & NAS_TRACKING_AREA_UPDATE_ACCEPT_EPS_NETWORK_FEATURE_SUPPORT_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_TRACKING_AREA_UPDATE_ACCEPT_EPS_NETWORK_FEATURE_SUPPORT_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_eps_network_feature_support(pkbuf, &tracking_area_update_accept->eps_network_feature_support);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_accept->presencemask & NAS_TRACKING_AREA_UPDATE_ACCEPT_ADDITIONAL_UPDATE_RESULT_PRESENT)
+    {
+        tracking_area_update_accept->additional_update_result.type = (NAS_TRACKING_AREA_UPDATE_ACCEPT_ADDITIONAL_UPDATE_RESULT_TYPE >> 4);
+
+        size = nas_encode_additional_update_result(pkbuf, &tracking_area_update_accept->additional_update_result);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_accept->presencemask & NAS_TRACKING_AREA_UPDATE_ACCEPT_T3412_EXTENDED_VALUE_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_TRACKING_AREA_UPDATE_ACCEPT_T3412_EXTENDED_VALUE_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_gprs_timer_3(pkbuf, &tracking_area_update_accept->t3412_extended_value);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_accept->presencemask & NAS_TRACKING_AREA_UPDATE_ACCEPT_T3324_VALUE_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_TRACKING_AREA_UPDATE_ACCEPT_T3324_VALUE_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_gprs_timer_2(pkbuf, &tracking_area_update_accept->t3324_value);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_accept->presencemask & NAS_TRACKING_AREA_UPDATE_ACCEPT_EXTENDED_DRX_PARAMETERS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_TRACKING_AREA_UPDATE_ACCEPT_EXTENDED_DRX_PARAMETERS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_extended_drx_parameters(pkbuf, &tracking_area_update_accept->extended_drx_parameters);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_accept->presencemask & NAS_TRACKING_AREA_UPDATE_ACCEPT_HEADER_COMPRESSION_CONFIGURATION_STATUS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_TRACKING_AREA_UPDATE_ACCEPT_HEADER_COMPRESSION_CONFIGURATION_STATUS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_header_compression_configuration_status(pkbuf, &tracking_area_update_accept->header_compression_configuration_status);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    return encoded;
+}
+
+c_int32_t nas_encode_tracking_area_update_reject(pkbuf_t *pkbuf, nas_message_t *message)
+{
+    nas_tracking_area_update_reject_t *tracking_area_update_reject = &message->emm.tracking_area_update_reject;
+    c_int32_t encoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_encode_emm_cause(pkbuf, &tracking_area_update_reject->emm_cause);
+    d_assert(size >= 0, return -1, "encode failed");
+    encoded += size;
+
+    if (tracking_area_update_reject->presencemask & NAS_TRACKING_AREA_UPDATE_REJECT_T3346_VALUE_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_TRACKING_AREA_UPDATE_REJECT_T3346_VALUE_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_gprs_timer_2(pkbuf, &tracking_area_update_reject->t3346_value);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (tracking_area_update_reject->presencemask & NAS_TRACKING_AREA_UPDATE_REJECT_EXTENDED_EMM_CAUSE_PRESENT)
+    {
+        tracking_area_update_reject->extended_emm_cause.type = (NAS_TRACKING_AREA_UPDATE_REJECT_EXTENDED_EMM_CAUSE_TYPE >> 4);
+
+        size = nas_encode_extended_emm_cause(pkbuf, &tracking_area_update_reject->extended_emm_cause);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    return encoded;
+}
+
+c_int32_t nas_encode_extended_service_request(pkbuf_t *pkbuf, nas_message_t *message)
+{
+    nas_extended_service_request_t *extended_service_request = &message->emm.extended_service_request;
+    c_int32_t encoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_encode_service_type(pkbuf, &extended_service_request->service_type);
+    d_assert(size >= 0, return -1, "encode failed");
+    encoded += size;
+
+    size = nas_encode_mobile_identity(pkbuf, &extended_service_request->m_tmsi);
+    d_assert(size >= 0, return -1, "encode failed");
+    encoded += size;
+
+    if (extended_service_request->presencemask & NAS_EXTENDED_SERVICE_REQUEST_CSFB_RESPONSE_PRESENT)
+    {
+        extended_service_request->csfb_response.type = (NAS_EXTENDED_SERVICE_REQUEST_CSFB_RESPONSE_TYPE >> 4);
+
+        size = nas_encode_csfb_response(pkbuf, &extended_service_request->csfb_response);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (extended_service_request->presencemask & NAS_EXTENDED_SERVICE_REQUEST_EPS_BEARER_CONTEXT_STATUS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_EXTENDED_SERVICE_REQUEST_EPS_BEARER_CONTEXT_STATUS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_eps_bearer_context_status(pkbuf, &extended_service_request->eps_bearer_context_status);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (extended_service_request->presencemask & NAS_EXTENDED_SERVICE_REQUEST_DEVICE_PROPERTIES_PRESENT)
+    {
+        extended_service_request->device_properties.type = (NAS_EXTENDED_SERVICE_REQUEST_DEVICE_PROPERTIES_TYPE >> 4);
+
+        size = nas_encode_device_properties(pkbuf, &extended_service_request->device_properties);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    return encoded;
+}
+
+c_int32_t nas_encode_service_reject(pkbuf_t *pkbuf, nas_message_t *message)
+{
+    nas_service_reject_t *service_reject = &message->emm.service_reject;
+    c_int32_t encoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_encode_emm_cause(pkbuf, &service_reject->emm_cause);
+    d_assert(size >= 0, return -1, "encode failed");
+    encoded += size;
+
+    if (service_reject->presencemask & NAS_SERVICE_REJECT_T3346_VALUE_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_SERVICE_REJECT_T3346_VALUE_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_gprs_timer_2(pkbuf, &service_reject->t3346_value);
         d_assert(size >= 0, return encoded, "decode failed");
         encoded += size;
     }
@@ -1288,6 +1906,42 @@ status_t nas_emm_encode(pkbuf_t **pkbuf, nas_message_t *message)
             break;
         case NAS_ATTACH_REJECT:
             size = nas_encode_attach_reject(*pkbuf, message);
+            d_assert(size >= 0, return CORE_ERROR, "decode error");
+            encoded += size;
+            break;
+        case NAS_DETACH_REQUEST_TO_UE:
+            size = nas_encode_detach_request_to_ue(*pkbuf, message);
+            d_assert(size >= 0, return CORE_ERROR, "decode error");
+            encoded += size;
+            break;
+        case NAS_DETACH_ACCEPT:
+            break;
+        case NAS_TRACKING_AREA_UPDATE_REQUEST:
+            size = nas_encode_tracking_area_update_request(*pkbuf, message);
+            d_assert(size >= 0, return CORE_ERROR, "decode error");
+            encoded += size;
+            break;
+        case NAS_TRACKING_AREA_UPDATE_ACCEPT:
+            size = nas_encode_tracking_area_update_accept(*pkbuf, message);
+            d_assert(size >= 0, return CORE_ERROR, "decode error");
+            encoded += size;
+            break;
+        case NAS_TRACKING_AREA_UPDATE_COMPLETE:
+            break;
+        case NAS_TRACKING_AREA_UPDATE_REJECT:
+            size = nas_encode_tracking_area_update_reject(*pkbuf, message);
+            d_assert(size >= 0, return CORE_ERROR, "decode error");
+            encoded += size;
+            break;
+        case NAS_EXTENDED_SERVICE_REQUEST:
+            size = nas_encode_extended_service_request(*pkbuf, message);
+            d_assert(size >= 0, return CORE_ERROR, "decode error");
+            encoded += size;
+            break;
+        case NAS_SERVICE_REQUEST:
+            break;
+        case NAS_SERVICE_REJECT:
+            size = nas_encode_service_reject(*pkbuf, message);
             d_assert(size >= 0, return CORE_ERROR, "decode error");
             encoded += size;
             break;

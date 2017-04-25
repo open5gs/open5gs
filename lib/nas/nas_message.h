@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-14 18:08:22.114973 by acetcom
+ * Created on: 2017-04-25 20:02:55.600467 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -81,13 +81,15 @@ ED2(c_uint8_t security_header_type:4;,
 #define NAS_ATTACH_ACCEPT 66
 #define NAS_ATTACH_COMPLETE 67
 #define NAS_ATTACH_REJECT 68
-#define NAS_DETACH_REQUEST 69
+#define NAS_DETACH_REQUEST_FROM_UE 69
+#define NAS_DETACH_REQUEST_TO_UE 69
 #define NAS_DETACH_ACCEPT 70
 #define NAS_TRACKING_AREA_UPDATE_REQUEST 72
 #define NAS_TRACKING_AREA_UPDATE_ACCEPT 73
 #define NAS_TRACKING_AREA_UPDATE_COMPLETE 74
 #define NAS_TRACKING_AREA_UPDATE_REJECT 75
 #define NAS_EXTENDED_SERVICE_REQUEST 76
+#define NAS_SERVICE_REQUEST 77
 #define NAS_SERVICE_REJECT 78
 #define NAS_GUTI_REALLOCATION_COMMAND 80
 #define NAS_GUTI_REALLOCATION_COMPLETE 81
@@ -292,6 +294,245 @@ typedef struct _nas_attach_reject_t {
     nas_gprs_timer_2_t t3402_value;
     nas_extended_emm_cause_t extended_emm_cause;
 } nas_attach_reject_t;
+
+
+/*******************************************************
+ * DETACH REQUEST FROM UE
+ ******************************************************/
+
+typedef struct _nas_detach_request_from_ue_t {
+    /* Mandatory fields */
+    nas_detach_type_t detach_type;
+    nas_eps_mobile_identity_t eps_mobile_identity;
+} nas_detach_request_from_ue_t;
+
+
+/*******************************************************
+ * DETACH REQUEST TO UE
+ ******************************************************/
+#define NAS_DETACH_REQUEST_TO_UE_EMM_CAUSE_PRESENT (1<<0)
+#define NAS_DETACH_REQUEST_TO_UE_EMM_CAUSE_TYPE 0x53
+
+typedef struct _nas_detach_request_to_ue_t {
+    /* Mandatory fields */
+    nas_detach_type_t detach_type;
+
+    /* Optional fields */
+    c_uint32_t presencemask;
+    nas_emm_cause_t emm_cause;
+} nas_detach_request_to_ue_t;
+
+
+/*******************************************************
+ * TRACKING AREA UPDATE REQUEST
+ ******************************************************/
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_NON_CURRENT_NATIVE_NAS_KEY_SET_IDENTIFIER_PRESENT (1<<0)
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_GPRS_CIPHERING_KEY_SEQUENCE_NUMBER_PRESENT (1<<1)
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_OLD_P_TMSI_SIGNATURE_PRESENT (1<<2)
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_ADDITIONAL_GUTI_PRESENT (1<<3)
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_NONCEUE_PRESENT (1<<4)
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_UE_NETWORK_CAPABILITY_PRESENT (1<<5)
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_LAST_VISITED_REGISTERED_TAI_PRESENT (1<<6)
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_DRX_PARAMETER_PRESENT (1<<7)
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_UE_RADIO_CAPABILITY_INFORMATION_UPDATE_NEEDED_PRESENT (1<<8)
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_EPS_BEARER_CONTEXT_STATUS_PRESENT (1<<9)
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_MS_NETWORK_CAPABILITY_PRESENT (1<<10)
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_OLD_LOCATION_AREA_IDENTIFICATION_PRESENT (1<<11)
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_TMSI_STATUS_PRESENT (1<<12)
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_MOBILE_STATION_CLASSMARK_2_PRESENT (1<<13)
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_MOBILE_STATION_CLASSMARK_3_PRESENT (1<<14)
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_SUPPORTED_CODECS_PRESENT (1<<15)
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_ADDITIONAL_UPDATE_TYPE_PRESENT (1<<16)
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_VOICE_DOMAIN_PREFERENCE_AND_UE_USAGE_SETTING_PRESENT (1<<17)
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_OLD_GUTI_TYPE_PRESENT (1<<18)
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_DEVICE_PROPERTIES_PRESENT (1<<19)
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_MS_NETWORK_FEATURE_SUPPORT_PRESENT (1<<20)
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_TMSI_BASED_NRI_CONTAINER_PRESENT (1<<21)
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_T3324_VALUE_PRESENT (1<<22)
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_T3412_EXTENDED_VALUE_PRESENT (1<<23)
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_EXTENDED_DRX_PARAMETERS_PRESENT (1<<24)
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_NON_CURRENT_NATIVE_NAS_KEY_SET_IDENTIFIER_TYPE 0xB0
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_GPRS_CIPHERING_KEY_SEQUENCE_NUMBER_TYPE 0x80
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_OLD_P_TMSI_SIGNATURE_TYPE 0x19
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_ADDITIONAL_GUTI_TYPE 0x50
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_NONCEUE_TYPE 0x55
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_UE_NETWORK_CAPABILITY_TYPE 0x58
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_LAST_VISITED_REGISTERED_TAI_TYPE 0x52
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_DRX_PARAMETER_TYPE 0x5C
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_UE_RADIO_CAPABILITY_INFORMATION_UPDATE_NEEDED_TYPE 0xA0
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_EPS_BEARER_CONTEXT_STATUS_TYPE 0x57
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_MS_NETWORK_CAPABILITY_TYPE 0x31
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_OLD_LOCATION_AREA_IDENTIFICATION_TYPE 0x13
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_TMSI_STATUS_TYPE 0x90
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_MOBILE_STATION_CLASSMARK_2_TYPE 0x11
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_MOBILE_STATION_CLASSMARK_3_TYPE 0x20
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_SUPPORTED_CODECS_TYPE 0x40
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_ADDITIONAL_UPDATE_TYPE_TYPE 0xF0
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_VOICE_DOMAIN_PREFERENCE_AND_UE_USAGE_SETTING_TYPE 0x5D
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_OLD_GUTI_TYPE_TYPE 0xE0
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_DEVICE_PROPERTIES_TYPE 0xD0
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_MS_NETWORK_FEATURE_SUPPORT_TYPE 0xC0
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_TMSI_BASED_NRI_CONTAINER_TYPE 0x10
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_T3324_VALUE_TYPE 0x6A
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_T3412_EXTENDED_VALUE_TYPE 0x5E
+#define NAS_TRACKING_AREA_UPDATE_REQUEST_EXTENDED_DRX_PARAMETERS_TYPE 0x6E
+
+typedef struct _nas_tracking_area_update_request_t {
+    /* Mandatory fields */
+    nas_eps_update_type_t eps_update_type;
+    nas_eps_mobile_identity_t old_guti;
+
+    /* Optional fields */
+    c_uint32_t presencemask;
+    nas_key_set_identifier_t non_current_native_nas_key_set_identifier;
+    nas_ciphering_key_sequence_number_t gprs_ciphering_key_sequence_number;
+    nas_p_tmsi_signature_t old_p_tmsi_signature;
+    nas_eps_mobile_identity_t additional_guti;
+    nas_nonce_t nonceue;
+    nas_ue_network_capability_t ue_network_capability;
+    nas_tracking_area_identity_t last_visited_registered_tai;
+    nas_drx_parameter_t drx_parameter;
+    nas_ue_radio_capability_information_update_needed_t ue_radio_capability_information_update_needed;
+    nas_eps_bearer_context_status_t eps_bearer_context_status;
+    nas_ms_network_capability_t ms_network_capability;
+    nas_location_area_identification_t old_location_area_identification;
+    nas_tmsi_status_t tmsi_status;
+    nas_mobile_station_classmark_2_t mobile_station_classmark_2;
+    nas_mobile_station_classmark_3_t mobile_station_classmark_3;
+    nas_supported_codec_list_t supported_codecs;
+    nas_additional_update_type_t additional_update_type;
+    nas_voice_domain_preference_and_ue_usage_setting_t voice_domain_preference_and_ue_usage_setting;
+    nas_guti_type_t old_guti_type;
+    nas_device_properties_t device_properties;
+    nas_ms_network_feature_support_t ms_network_feature_support;
+    nas_network_resource_identifier_container_t tmsi_based_nri_container;
+    nas_gprs_timer_2_t t3324_value;
+    nas_gprs_timer_3_t t3412_extended_value;
+    nas_extended_drx_parameters_t extended_drx_parameters;
+} nas_tracking_area_update_request_t;
+
+
+/*******************************************************
+ * TRACKING AREA UPDATE ACCEPT
+ ******************************************************/
+#define NAS_TRACKING_AREA_UPDATE_ACCEPT_T3412_VALUE_PRESENT (1<<0)
+#define NAS_TRACKING_AREA_UPDATE_ACCEPT_GUTI_PRESENT (1<<1)
+#define NAS_TRACKING_AREA_UPDATE_ACCEPT_TAI_LIST_PRESENT (1<<2)
+#define NAS_TRACKING_AREA_UPDATE_ACCEPT_EPS_BEARER_CONTEXT_STATUS_PRESENT (1<<3)
+#define NAS_TRACKING_AREA_UPDATE_ACCEPT_LOCATION_AREA_IDENTIFICATION_PRESENT (1<<4)
+#define NAS_TRACKING_AREA_UPDATE_ACCEPT_MS_IDENTITY_PRESENT (1<<5)
+#define NAS_TRACKING_AREA_UPDATE_ACCEPT_EMM_CAUSE_PRESENT (1<<6)
+#define NAS_TRACKING_AREA_UPDATE_ACCEPT_T3402_VALUE_PRESENT (1<<7)
+#define NAS_TRACKING_AREA_UPDATE_ACCEPT_T3423_VALUE_PRESENT (1<<8)
+#define NAS_TRACKING_AREA_UPDATE_ACCEPT_EQUIVALENT_PLMNS_PRESENT (1<<9)
+#define NAS_TRACKING_AREA_UPDATE_ACCEPT_EMERGENCY_NUMBER_LIST_PRESENT (1<<10)
+#define NAS_TRACKING_AREA_UPDATE_ACCEPT_EPS_NETWORK_FEATURE_SUPPORT_PRESENT (1<<11)
+#define NAS_TRACKING_AREA_UPDATE_ACCEPT_ADDITIONAL_UPDATE_RESULT_PRESENT (1<<12)
+#define NAS_TRACKING_AREA_UPDATE_ACCEPT_T3412_EXTENDED_VALUE_PRESENT (1<<13)
+#define NAS_TRACKING_AREA_UPDATE_ACCEPT_T3324_VALUE_PRESENT (1<<14)
+#define NAS_TRACKING_AREA_UPDATE_ACCEPT_EXTENDED_DRX_PARAMETERS_PRESENT (1<<15)
+#define NAS_TRACKING_AREA_UPDATE_ACCEPT_HEADER_COMPRESSION_CONFIGURATION_STATUS_PRESENT (1<<16)
+#define NAS_TRACKING_AREA_UPDATE_ACCEPT_T3412_VALUE_TYPE 0x5A
+#define NAS_TRACKING_AREA_UPDATE_ACCEPT_GUTI_TYPE 0x50
+#define NAS_TRACKING_AREA_UPDATE_ACCEPT_TAI_LIST_TYPE 0x54
+#define NAS_TRACKING_AREA_UPDATE_ACCEPT_EPS_BEARER_CONTEXT_STATUS_TYPE 0x57
+#define NAS_TRACKING_AREA_UPDATE_ACCEPT_LOCATION_AREA_IDENTIFICATION_TYPE 0x13
+#define NAS_TRACKING_AREA_UPDATE_ACCEPT_MS_IDENTITY_TYPE 0x23
+#define NAS_TRACKING_AREA_UPDATE_ACCEPT_EMM_CAUSE_TYPE 0x53
+#define NAS_TRACKING_AREA_UPDATE_ACCEPT_T3402_VALUE_TYPE 0x17
+#define NAS_TRACKING_AREA_UPDATE_ACCEPT_T3423_VALUE_TYPE 0x59
+#define NAS_TRACKING_AREA_UPDATE_ACCEPT_EQUIVALENT_PLMNS_TYPE 0x4A
+#define NAS_TRACKING_AREA_UPDATE_ACCEPT_EMERGENCY_NUMBER_LIST_TYPE 0x34
+#define NAS_TRACKING_AREA_UPDATE_ACCEPT_EPS_NETWORK_FEATURE_SUPPORT_TYPE 0x64
+#define NAS_TRACKING_AREA_UPDATE_ACCEPT_ADDITIONAL_UPDATE_RESULT_TYPE 0xF0
+#define NAS_TRACKING_AREA_UPDATE_ACCEPT_T3412_EXTENDED_VALUE_TYPE 0x5E
+#define NAS_TRACKING_AREA_UPDATE_ACCEPT_T3324_VALUE_TYPE 0x6A
+#define NAS_TRACKING_AREA_UPDATE_ACCEPT_EXTENDED_DRX_PARAMETERS_TYPE 0x6E
+#define NAS_TRACKING_AREA_UPDATE_ACCEPT_HEADER_COMPRESSION_CONFIGURATION_STATUS_TYPE 0x68
+
+typedef struct _nas_tracking_area_update_accept_t {
+    /* Mandatory fields */
+    nas_eps_update_result_t eps_update_result;
+
+    /* Optional fields */
+    c_uint32_t presencemask;
+    nas_gprs_timer_t t3412_value;
+    nas_eps_mobile_identity_t guti;
+    nas_tracking_area_identity_list_t tai_list;
+    nas_eps_bearer_context_status_t eps_bearer_context_status;
+    nas_location_area_identification_t location_area_identification;
+    nas_mobile_identity_t ms_identity;
+    nas_emm_cause_t emm_cause;
+    nas_gprs_timer_t t3402_value;
+    nas_gprs_timer_t t3423_value;
+    nas_plmn_list_t equivalent_plmns;
+    nas_emergency_number_list_t emergency_number_list;
+    nas_eps_network_feature_support_t eps_network_feature_support;
+    nas_additional_update_result_t additional_update_result;
+    nas_gprs_timer_3_t t3412_extended_value;
+    nas_gprs_timer_2_t t3324_value;
+    nas_extended_drx_parameters_t extended_drx_parameters;
+    nas_header_compression_configuration_status_t header_compression_configuration_status;
+} nas_tracking_area_update_accept_t;
+
+
+/*******************************************************
+ * TRACKING AREA UPDATE REJECT
+ ******************************************************/
+#define NAS_TRACKING_AREA_UPDATE_REJECT_T3346_VALUE_PRESENT (1<<0)
+#define NAS_TRACKING_AREA_UPDATE_REJECT_EXTENDED_EMM_CAUSE_PRESENT (1<<1)
+#define NAS_TRACKING_AREA_UPDATE_REJECT_T3346_VALUE_TYPE 0x5F
+#define NAS_TRACKING_AREA_UPDATE_REJECT_EXTENDED_EMM_CAUSE_TYPE 0xA0
+
+typedef struct _nas_tracking_area_update_reject_t {
+    /* Mandatory fields */
+    nas_emm_cause_t emm_cause;
+
+    /* Optional fields */
+    c_uint32_t presencemask;
+    nas_gprs_timer_2_t t3346_value;
+    nas_extended_emm_cause_t extended_emm_cause;
+} nas_tracking_area_update_reject_t;
+
+
+/*******************************************************
+ * EXTENDED SERVICE REQUEST
+ ******************************************************/
+#define NAS_EXTENDED_SERVICE_REQUEST_CSFB_RESPONSE_PRESENT (1<<0)
+#define NAS_EXTENDED_SERVICE_REQUEST_EPS_BEARER_CONTEXT_STATUS_PRESENT (1<<1)
+#define NAS_EXTENDED_SERVICE_REQUEST_DEVICE_PROPERTIES_PRESENT (1<<2)
+#define NAS_EXTENDED_SERVICE_REQUEST_CSFB_RESPONSE_TYPE 0xB0
+#define NAS_EXTENDED_SERVICE_REQUEST_EPS_BEARER_CONTEXT_STATUS_TYPE 0x57
+#define NAS_EXTENDED_SERVICE_REQUEST_DEVICE_PROPERTIES_TYPE 0xD0
+
+typedef struct _nas_extended_service_request_t {
+    /* Mandatory fields */
+    nas_service_type_t service_type;
+    nas_mobile_identity_t m_tmsi;
+
+    /* Optional fields */
+    c_uint32_t presencemask;
+    nas_csfb_response_t csfb_response;
+    nas_eps_bearer_context_status_t eps_bearer_context_status;
+    nas_device_properties_t device_properties;
+} nas_extended_service_request_t;
+
+
+/*******************************************************
+ * SERVICE REJECT
+ ******************************************************/
+#define NAS_SERVICE_REJECT_T3346_VALUE_PRESENT (1<<0)
+#define NAS_SERVICE_REJECT_T3346_VALUE_TYPE 0x5F
+
+typedef struct _nas_service_reject_t {
+    /* Mandatory fields */
+    nas_emm_cause_t emm_cause;
+    nas_gprs_timer_t t3442_value;
+
+    /* Optional fields */
+    c_uint32_t presencemask;
+    nas_gprs_timer_2_t t3346_value;
+} nas_service_reject_t;
 
 
 /*******************************************************
@@ -659,6 +900,13 @@ typedef struct _nas_emm_message_t {
         nas_attach_accept_t attach_accept;
         nas_attach_complete_t attach_complete;
         nas_attach_reject_t attach_reject;
+        nas_detach_request_from_ue_t detach_request_from_ue;
+        nas_detach_request_to_ue_t detach_request_to_ue;
+        nas_tracking_area_update_request_t tracking_area_update_request;
+        nas_tracking_area_update_accept_t tracking_area_update_accept;
+        nas_tracking_area_update_reject_t tracking_area_update_reject;
+        nas_extended_service_request_t extended_service_request;
+        nas_service_reject_t service_reject;
         nas_authentication_request_t authentication_request;
         nas_authentication_response_t authentication_response;
         nas_identity_request_t identity_request;

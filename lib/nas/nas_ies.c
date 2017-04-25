@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-14 18:08:22.099481 by acetcom
+ * Created on: 2017-04-25 20:02:55.587587 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -60,6 +60,34 @@ c_int16_t nas_encode_device_properties(pkbuf_t *pkbuf, nas_device_properties_t *
 
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
     memcpy(pkbuf->payload - size, device_properties, size);
+
+    return size;
+}
+
+/* 9.9.2.1 EPS bearer context status
+ * O TLV 4 */
+c_int16_t nas_decode_eps_bearer_context_status(nas_eps_bearer_context_status_t *eps_bearer_context_status, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = 0;
+    nas_eps_bearer_context_status_t *source = pkbuf->payload;
+
+    eps_bearer_context_status->length = source->length;
+    size = eps_bearer_context_status->length + sizeof(eps_bearer_context_status->length);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(eps_bearer_context_status, pkbuf->payload - size, size);
+
+    return size;
+}
+
+c_int16_t nas_encode_eps_bearer_context_status(pkbuf_t *pkbuf, nas_eps_bearer_context_status_t *eps_bearer_context_status)
+{
+    c_uint16_t size = eps_bearer_context_status->length + sizeof(eps_bearer_context_status->length);
+    nas_eps_bearer_context_status_t target;
+
+    memcpy(&target, eps_bearer_context_status, sizeof(nas_eps_bearer_context_status_t));
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &target, size);
 
     return size;
 }
@@ -430,6 +458,54 @@ c_int16_t nas_encode_eps_network_feature_support(pkbuf_t *pkbuf, nas_eps_network
     return size;
 }
 
+/* 9.9.3.13 EPS update result
+ * M V 1/2 */
+c_int16_t nas_decode_eps_update_result(nas_eps_update_result_t *eps_update_result, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = sizeof(nas_eps_update_result_t);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(eps_update_result, pkbuf->payload - size, size);
+
+    return size;
+}
+
+c_int16_t nas_encode_eps_update_result(pkbuf_t *pkbuf, nas_eps_update_result_t *eps_update_result)
+{
+    c_uint16_t size = sizeof(nas_eps_update_result_t);
+    nas_eps_update_result_t target;
+
+    memcpy(&target, eps_update_result, size);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
+/* 9.9.3.14 EPS update type
+ * M V 1/2 */
+c_int16_t nas_decode_eps_update_type(nas_eps_update_type_t *eps_update_type, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = sizeof(nas_eps_update_type_t);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(eps_update_type, pkbuf->payload - size, size);
+
+    return size;
+}
+
+c_int16_t nas_encode_eps_update_type(pkbuf_t *pkbuf, nas_eps_update_type_t *eps_update_type)
+{
+    c_uint16_t size = sizeof(nas_eps_update_type_t);
+    nas_eps_update_type_t target;
+
+    memcpy(&target, eps_update_type, size);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
 /* 9.9.3.15 ESM message container
  * M LV-E 5-n */
 c_int16_t nas_decode_esm_message_container(nas_esm_message_container_t *esm_message_container, pkbuf_t *pkbuf)
@@ -665,25 +741,20 @@ c_int16_t nas_encode_ms_network_feature_support(pkbuf_t *pkbuf, nas_ms_network_f
 }
 
 /* 9.9.3.21 key set identifier
- * M V 1/2 */
+ * O TV 1 */
 c_int16_t nas_decode_key_set_identifier(nas_key_set_identifier_t *key_set_identifier, pkbuf_t *pkbuf)
 {
-    c_uint16_t size = sizeof(nas_key_set_identifier_t);
+    memcpy(key_set_identifier, pkbuf->payload - 1, 1);
 
-    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
-    memcpy(key_set_identifier, pkbuf->payload - size, size);
-
-    return size;
+    return 0;
 }
 
 c_int16_t nas_encode_key_set_identifier(pkbuf_t *pkbuf, nas_key_set_identifier_t *key_set_identifier)
 {
     c_uint16_t size = sizeof(nas_key_set_identifier_t);
-    nas_key_set_identifier_t target;
 
-    memcpy(&target, key_set_identifier, size);
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
-    memcpy(pkbuf->payload - size, &target, size);
+    memcpy(pkbuf->payload - size, key_set_identifier, size);
 
     return size;
 }
@@ -839,6 +910,30 @@ c_int16_t nas_encode_extended_emm_cause(pkbuf_t *pkbuf, nas_extended_emm_cause_t
 
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
     memcpy(pkbuf->payload - size, extended_emm_cause, size);
+
+    return size;
+}
+
+/* 9.9.3.27 Service type
+ * M V 1/2 */
+c_int16_t nas_decode_service_type(nas_service_type_t *service_type, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = sizeof(nas_service_type_t);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(service_type, pkbuf->payload - size, size);
+
+    return size;
+}
+
+c_int16_t nas_encode_service_type(pkbuf_t *pkbuf, nas_service_type_t *service_type)
+{
+    c_uint16_t size = sizeof(nas_service_type_t);
+    nas_service_type_t target;
+
+    memcpy(&target, service_type, size);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &target, size);
 
     return size;
 }
@@ -1046,6 +1141,25 @@ c_int16_t nas_encode_ue_network_capability(pkbuf_t *pkbuf, nas_ue_network_capabi
     return size;
 }
 
+/* 9.9.3.35 UE radio capability information update needed
+ * O TV 1 */
+c_int16_t nas_decode_ue_radio_capability_information_update_needed(nas_ue_radio_capability_information_update_needed_t *ue_radio_capability_information_update_needed, pkbuf_t *pkbuf)
+{
+    memcpy(ue_radio_capability_information_update_needed, pkbuf->payload - 1, 1);
+
+    return 0;
+}
+
+c_int16_t nas_encode_ue_radio_capability_information_update_needed(pkbuf_t *pkbuf, nas_ue_radio_capability_information_update_needed_t *ue_radio_capability_information_update_needed)
+{
+    c_uint16_t size = sizeof(nas_ue_radio_capability_information_update_needed_t);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, ue_radio_capability_information_update_needed, size);
+
+    return size;
+}
+
 /* 9.9.3.36 UE security capability
  * M LV 3-6 */
 c_int16_t nas_decode_ue_security_capability(nas_ue_security_capability_t *ue_security_capability, pkbuf_t *pkbuf)
@@ -1205,6 +1319,44 @@ c_int16_t nas_encode_extended_drx_parameters(pkbuf_t *pkbuf, nas_extended_drx_pa
     return size;
 }
 
+/* 9.9.3.4a Ciphering key sequence number
+ * O TV 1 */
+c_int16_t nas_decode_ciphering_key_sequence_number(nas_ciphering_key_sequence_number_t *ciphering_key_sequence_number, pkbuf_t *pkbuf)
+{
+    memcpy(ciphering_key_sequence_number, pkbuf->payload - 1, 1);
+
+    return 0;
+}
+
+c_int16_t nas_encode_ciphering_key_sequence_number(pkbuf_t *pkbuf, nas_ciphering_key_sequence_number_t *ciphering_key_sequence_number)
+{
+    c_uint16_t size = sizeof(nas_ciphering_key_sequence_number_t);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, ciphering_key_sequence_number, size);
+
+    return size;
+}
+
+/* 9.9.3.5 CSFB response
+ * O TV 1 */
+c_int16_t nas_decode_csfb_response(nas_csfb_response_t *csfb_response, pkbuf_t *pkbuf)
+{
+    memcpy(csfb_response, pkbuf->payload - 1, 1);
+
+    return 0;
+}
+
+c_int16_t nas_encode_csfb_response(pkbuf_t *pkbuf, nas_csfb_response_t *csfb_response)
+{
+    c_uint16_t size = sizeof(nas_csfb_response_t);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, csfb_response, size);
+
+    return size;
+}
+
 /* 9.9.3.6 Daylight saving time
  * O TLV 3 */
 c_int16_t nas_decode_daylight_saving_time(nas_daylight_saving_time_t *daylight_saving_time, pkbuf_t *pkbuf)
@@ -1227,6 +1379,30 @@ c_int16_t nas_encode_daylight_saving_time(pkbuf_t *pkbuf, nas_daylight_saving_ti
     nas_daylight_saving_time_t target;
 
     memcpy(&target, daylight_saving_time, sizeof(nas_daylight_saving_time_t));
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
+/* 9.9.3.7 Detach type
+ * M V 1/2 */
+c_int16_t nas_decode_detach_type(nas_detach_type_t *detach_type, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = sizeof(nas_detach_type_t);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(detach_type, pkbuf->payload - size, size);
+
+    return size;
+}
+
+c_int16_t nas_encode_detach_type(pkbuf_t *pkbuf, nas_detach_type_t *detach_type)
+{
+    c_uint16_t size = sizeof(nas_detach_type_t);
+    nas_detach_type_t target;
+
+    memcpy(&target, detach_type, size);
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
     memcpy(pkbuf->payload - size, &target, size);
 
@@ -1624,6 +1800,34 @@ c_int16_t nas_encode_extended_protocol_configuration_options(pkbuf_t *pkbuf, nas
     memcpy(pkbuf->payload - size, extended_protocol_configuration_options->data, size);
 
     return extended_protocol_configuration_options->len + sizeof(extended_protocol_configuration_options->len);
+}
+
+/* 9.9.4.27 Header compression configuration status
+ * O TLV 4 */
+c_int16_t nas_decode_header_compression_configuration_status(nas_header_compression_configuration_status_t *header_compression_configuration_status, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = 0;
+    nas_header_compression_configuration_status_t *source = pkbuf->payload;
+
+    header_compression_configuration_status->length = source->length;
+    size = header_compression_configuration_status->length + sizeof(header_compression_configuration_status->length);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(header_compression_configuration_status, pkbuf->payload - size, size);
+
+    return size;
+}
+
+c_int16_t nas_encode_header_compression_configuration_status(pkbuf_t *pkbuf, nas_header_compression_configuration_status_t *header_compression_configuration_status)
+{
+    c_uint16_t size = header_compression_configuration_status->length + sizeof(header_compression_configuration_status->length);
+    nas_header_compression_configuration_status_t target;
+
+    memcpy(&target, header_compression_configuration_status, sizeof(nas_header_compression_configuration_status_t));
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
 }
 
 /* 9.9.4.28 Serving PLMN rate control
