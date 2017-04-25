@@ -520,7 +520,7 @@ ED2(c_uint8_t security_header_type:4;,
 """)
 
 for (k, v) in sorted_msg_list:
-    f.write("#define NAS_" + v_upper(k) + " " + v + "\n")
+    f.write("#define NAS_" + v_upper(k) + " " + v.split('.')[0] + "\n")
 f.write("\n")
 
 for (k, v) in sorted_msg_list:
@@ -702,7 +702,7 @@ f.write("""status_t nas_emm_decode(nas_message_t *message, pkbuf_t *pkbuf)
 for (k, v) in sorted_msg_list:
     if "ies" not in msg_list[k]:
         continue;
-    if float(msg_list[k]["type"]) < 192:
+    if float(msg_list[k]["type"]) < 192 and k.find("TO UE") == -1:
         f.write("        case NAS_%s:\n" % v_upper(k))
         if len(msg_list[k]["ies"]) != 0:
             f.write("            size = nas_decode_%s(message, pkbuf);\n" % v_lower(k))
@@ -861,7 +861,7 @@ f.write("""status_t nas_emm_encode(pkbuf_t **pkbuf, nas_message_t *message)
 for (k, v) in sorted_msg_list:
     if "ies" not in msg_list[k]:
         continue;
-    if float(msg_list[k]["type"]) < 192:
+    if float(msg_list[k]["type"]) < 192 and k.find("FROM UE") == -1:
         f.write("        case NAS_%s:\n" % v_upper(k))
         if len(msg_list[k]["ies"]) != 0:
             f.write("            size = nas_encode_%s(*pkbuf, message);\n" % v_lower(k))
