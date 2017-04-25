@@ -157,7 +157,8 @@ msg_list["ATTACH REQUEST"] = { "type" : "65" }
 msg_list["ATTACH ACCEPT"]= { "type" : "66" }
 msg_list["ATTACH COMPLETE"] = { "type" : "67" }
 msg_list["ATTACH REJECT"] = { "type" : "68" }
-msg_list["DETACH REQUEST"] = { "type" : "69" }
+msg_list["DETACH REQUEST FROM UE"] = { "type" : "69.1" }
+msg_list["DETACH REQUEST TO UE"] = { "type" : "69.2" }
 msg_list["DETACH ACCEPT"] = { "type" : "70" }
 msg_list["TRACKING AREA UPDATE REQUEST"] = { "type" : "72" }
 msg_list["TRACKING AREA UPDATE ACCEPT"] = { "type" : "73" }
@@ -218,7 +219,8 @@ msg_list["AUTHENTICATION REJECT"]["table"] = 5
 msg_list["AUTHENTICATION REQUEST"]["table"] = 6
 msg_list["AUTHENTICATION RESPONSE"]["table"] = 7
 msg_list["DETACH ACCEPT"]["table"] = 9
-msg_list["DETACH REQUEST"]["table"] = 11
+msg_list["DETACH REQUEST FROM UE"]["table"] = 11
+msg_list["DETACH REQUEST TO UE"]["table"] = 12
 msg_list["EMM INFORMATION"]["table"] = 14
 msg_list["EMM STATUS"]["table"] = 15
 msg_list["EXTENDED SERVICE REQUEST"]["table"] = 16
@@ -293,7 +295,7 @@ for key in msg_list.keys():
 
 
 tmp = [(k, v["type"]) for k, v in msg_list.items()]
-sorted_msg_list = sorted(tmp, key=lambda tup: int(tup[1]))
+sorted_msg_list = sorted(tmp, key=lambda tup: float(tup[1]))
 
 for (k, v) in sorted_msg_list:
     if "ies" not in msg_list[k]:
@@ -567,7 +569,7 @@ for (k, v) in sorted_msg_list:
         continue;
     if len(msg_list[k]["ies"]) == 0:
         continue;
-    if int(msg_list[k]["type"]) < 192:
+    if float(msg_list[k]["type"]) < 192:
         f.write("        nas_%s_t %s;\n" % (v_lower(k), v_lower(k)))
 f.write("""    };
 } nas_emm_message_t;
@@ -581,7 +583,7 @@ for (k, v) in sorted_msg_list:
         continue;
     if len(msg_list[k]["ies"]) == 0:
         continue;
-    if int(msg_list[k]["type"]) >= 192:
+    if float(msg_list[k]["type"]) >= 192:
         f.write("        nas_%s_t %s;\n" % (v_lower(k), v_lower(k)))
 
 f.write("""    };
@@ -627,7 +629,7 @@ for (k, v) in sorted_msg_list:
         continue
 
     f.write("c_int32_t nas_decode_%s(nas_message_t *message, pkbuf_t *pkbuf)\n{\n" % v_lower(k))
-    if int(msg_list[k]["type"]) < 192:
+    if float(msg_list[k]["type"]) < 192:
         f.write("    nas_%s_t *%s = &message->emm.%s;\n" % (v_lower(k), v_lower(k), v_lower(k)))
     else:
         f.write("    nas_%s_t *%s = &message->esm.%s;\n" % (v_lower(k), v_lower(k), v_lower(k)))
@@ -700,7 +702,7 @@ f.write("""status_t nas_emm_decode(nas_message_t *message, pkbuf_t *pkbuf)
 for (k, v) in sorted_msg_list:
     if "ies" not in msg_list[k]:
         continue;
-    if int(msg_list[k]["type"]) < 192:
+    if float(msg_list[k]["type"]) < 192:
         f.write("        case NAS_%s:\n" % v_upper(k))
         if len(msg_list[k]["ies"]) != 0:
             f.write("            size = nas_decode_%s(message, pkbuf);\n" % v_lower(k))
@@ -744,7 +746,7 @@ f.write("""status_t nas_esm_decode(nas_message_t *message, pkbuf_t *pkbuf)
 for (k, v) in sorted_msg_list:
     if "ies" not in msg_list[k]:
         continue;
-    if int(msg_list[k]["type"]) >= 192:
+    if float(msg_list[k]["type"]) >= 192:
         f.write("        case NAS_%s:\n" % v_upper(k))
         if len(msg_list[k]["ies"]) != 0:
             f.write("            size = nas_decode_%s(message, pkbuf);\n" % v_lower(k))
@@ -800,7 +802,7 @@ for (k, v) in sorted_msg_list:
         continue
 
     f.write("c_int32_t nas_encode_%s(pkbuf_t *pkbuf, nas_message_t *message)\n{\n" % v_lower(k))
-    if int(msg_list[k]["type"]) < 192:
+    if float(msg_list[k]["type"]) < 192:
         f.write("    nas_%s_t *%s = &message->emm.%s;\n" % (v_lower(k), v_lower(k), v_lower(k)))
     else:
         f.write("    nas_%s_t *%s = &message->esm.%s;\n" % (v_lower(k), v_lower(k), v_lower(k)))
@@ -859,7 +861,7 @@ f.write("""status_t nas_emm_encode(pkbuf_t **pkbuf, nas_message_t *message)
 for (k, v) in sorted_msg_list:
     if "ies" not in msg_list[k]:
         continue;
-    if int(msg_list[k]["type"]) < 192:
+    if float(msg_list[k]["type"]) < 192:
         f.write("        case NAS_%s:\n" % v_upper(k))
         if len(msg_list[k]["ies"]) != 0:
             f.write("            size = nas_encode_%s(*pkbuf, message);\n" % v_lower(k))
@@ -911,7 +913,7 @@ f.write("""status_t nas_esm_encode(pkbuf_t **pkbuf, nas_message_t *message)
 for (k, v) in sorted_msg_list:
     if "ies" not in msg_list[k]:
         continue;
-    if int(msg_list[k]["type"]) >= 192:
+    if float(msg_list[k]["type"]) >= 192:
         f.write("        case NAS_%s:\n" % v_upper(k))
         if len(msg_list[k]["ies"]) != 0:
             f.write("            size = nas_encode_%s(*pkbuf, message);\n" % v_lower(k))
