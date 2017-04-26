@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-26 14:51:04.133462 by acetcom
+ * Created on: 2017-04-26 15:35:11.760847 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -878,6 +878,90 @@ typedef struct _nas_activate_default_eps_bearer_context_reject_t {
 
 
 /*******************************************************
+ * ACTIVATE DEDICATED EPS BEARER CONTEXT REQUEST
+ ******************************************************/
+#define NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_TRANSACTION_IDENTIFIER_PRESENT (1<<0)
+#define NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_QOS_PRESENT (1<<1)
+#define NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_LLC_SAPI_PRESENT (1<<2)
+#define NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_RADIO_PRIORITY_PRESENT (1<<3)
+#define NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_PACKET_FLOW_IDENTIFIER_PRESENT (1<<4)
+#define NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<5)
+#define NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_WLAN_OFFLOAD_INDICATION_PRESENT (1<<6)
+#define NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_NBIFOM_CONTAINER_PRESENT (1<<7)
+#define NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<8)
+#define NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_TRANSACTION_IDENTIFIER_TYPE 0x5D
+#define NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_QOS_TYPE 0x30
+#define NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_LLC_SAPI_TYPE 0x32
+#define NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_RADIO_PRIORITY_TYPE 0x80
+#define NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_PACKET_FLOW_IDENTIFIER_TYPE 0x34
+#define NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x27
+#define NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_WLAN_OFFLOAD_INDICATION_TYPE 0xC0
+#define NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_NBIFOM_CONTAINER_TYPE 0x33
+#define NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
+
+typedef struct _nas_activate_dedicated_eps_bearer_context_request_t {
+    /* Mandatory fields */
+    nas_linked_eps_bearer_identity_t linked_eps_bearer_identity;
+    nas_eps_quality_of_service_t eps_qos;
+    nas_traffic_flow_template_t tft;
+
+    /* Optional fields */
+    c_uint32_t presencemask;
+    nas_transaction_identifier_t transaction_identifier;
+    nas_quality_of_service_t negotiated_qos;
+    nas_llc_service_access_point_identifier_t negotiated_llc_sapi;
+    nas_radio_priority_t radio_priority;
+    nas_packet_flow_identifier_t packet_flow_identifier;
+    nas_protocol_configuration_options_t protocol_configuration_options;
+    nas_wlan_offload_acceptability_t wlan_offload_indication;
+    nas_nbifom_container_t nbifom_container;
+    nas_extended_protocol_configuration_options_t extended_protocol_configuration_options;
+} nas_activate_dedicated_eps_bearer_context_request_t;
+
+
+/*******************************************************
+ * ACTIVATE DEDICATED EPS BEARER CONTEXT ACCEPT
+ ******************************************************/
+#define NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_ACCEPT_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<0)
+#define NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_ACCEPT_NBIFOM_CONTAINER_PRESENT (1<<1)
+#define NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_ACCEPT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<2)
+#define NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_ACCEPT_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x27
+#define NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_ACCEPT_NBIFOM_CONTAINER_TYPE 0x33
+#define NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_ACCEPT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
+
+typedef struct _nas_activate_dedicated_eps_bearer_context_accept_t {
+
+    /* Optional fields */
+    c_uint32_t presencemask;
+    nas_protocol_configuration_options_t protocol_configuration_options;
+    nas_nbifom_container_t nbifom_container;
+    nas_extended_protocol_configuration_options_t extended_protocol_configuration_options;
+} nas_activate_dedicated_eps_bearer_context_accept_t;
+
+
+/*******************************************************
+ * ACTIVATE DEDICATED EPS BEARER CONTEXT REJECT
+ ******************************************************/
+#define NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<0)
+#define NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REJECT_NBIFOM_CONTAINER_PRESENT (1<<1)
+#define NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<2)
+#define NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x27
+#define NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REJECT_NBIFOM_CONTAINER_TYPE 0x33
+#define NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
+
+typedef struct _nas_activate_dedicated_eps_bearer_context_reject_t {
+    /* Mandatory fields */
+    nas_esm_cause_t esm_cause;
+
+    /* Optional fields */
+    c_uint32_t presencemask;
+    nas_protocol_configuration_options_t protocol_configuration_options;
+    nas_nbifom_container_t nbifom_container;
+    nas_extended_protocol_configuration_options_t extended_protocol_configuration_options;
+} nas_activate_dedicated_eps_bearer_context_reject_t;
+
+
+/*******************************************************
  * PDN CONNECTIVITY REQUEST
  ******************************************************/
 #define NAS_PDN_CONNECTIVITY_REQUEST_ESM_INFORMATION_TRANSFER_FLAG_PRESENT (1<<0)
@@ -1037,6 +1121,9 @@ typedef struct _nas_esm_message_t {
         nas_activate_default_eps_bearer_context_request_t activate_default_eps_bearer_context_request;
         nas_activate_default_eps_bearer_context_accept_t activate_default_eps_bearer_context_accept;
         nas_activate_default_eps_bearer_context_reject_t activate_default_eps_bearer_context_reject;
+        nas_activate_dedicated_eps_bearer_context_request_t activate_dedicated_eps_bearer_context_request;
+        nas_activate_dedicated_eps_bearer_context_accept_t activate_dedicated_eps_bearer_context_accept;
+        nas_activate_dedicated_eps_bearer_context_reject_t activate_dedicated_eps_bearer_context_reject;
         nas_pdn_connectivity_request_t pdn_connectivity_request;
         nas_pdn_connectivity_reject_t pdn_connectivity_reject;
         nas_pdn_disconnect_request_t pdn_disconnect_request;
