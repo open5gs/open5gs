@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-26 09:18:26.233286 by acetcom
+ * Created on: 2017-04-26 09:32:08.173277 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -518,6 +518,17 @@ typedef struct _nas_extended_service_request_t {
 
 
 /*******************************************************
+ * SERVICE REQUEST
+ ******************************************************/
+
+typedef struct _nas_service_request_t {
+    /* Mandatory fields */
+    nas_ksi_and_sequence_number_t ksi_and_sequence_number;
+    nas_short_mac_t message_authentication_code;
+} nas_service_request_t;
+
+
+/*******************************************************
  * SERVICE REJECT
  ******************************************************/
 #define NAS_SERVICE_REJECT_T3346_VALUE_PRESENT (1<<0)
@@ -905,6 +916,7 @@ typedef struct _nas_emm_message_t {
         nas_tracking_area_update_accept_t tracking_area_update_accept;
         nas_tracking_area_update_reject_t tracking_area_update_reject;
         nas_extended_service_request_t extended_service_request;
+        nas_service_request_t service_request;
         nas_service_reject_t service_reject;
         nas_authentication_request_t authentication_request;
         nas_authentication_response_t authentication_response;

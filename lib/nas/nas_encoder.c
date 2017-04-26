@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-26 09:18:26.270191 by acetcom
+ * Created on: 2017-04-26 09:32:08.207370 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -1087,6 +1087,23 @@ c_int32_t nas_encode_extended_service_request(pkbuf_t *pkbuf, nas_message_t *mes
     return encoded;
 }
 
+c_int32_t nas_encode_service_request(pkbuf_t *pkbuf, nas_message_t *message)
+{
+    nas_service_request_t *service_request = &message->emm.service_request;
+    c_int32_t encoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_encode_ksi_and_sequence_number(pkbuf, &service_request->ksi_and_sequence_number);
+    d_assert(size >= 0, return -1, "encode failed");
+    encoded += size;
+
+    size = nas_encode_short_mac(pkbuf, &service_request->message_authentication_code);
+    d_assert(size >= 0, return -1, "encode failed");
+    encoded += size;
+
+    return encoded;
+}
+
 c_int32_t nas_encode_service_reject(pkbuf_t *pkbuf, nas_message_t *message)
 {
     nas_service_reject_t *service_reject = &message->emm.service_reject;
@@ -1939,6 +1956,9 @@ status_t nas_emm_encode(pkbuf_t **pkbuf, nas_message_t *message)
             encoded += size;
             break;
         case NAS_SERVICE_REQUEST:
+            size = nas_encode_service_request(*pkbuf, message);
+            d_assert(size >= 0, return CORE_ERROR, "decode error");
+            encoded += size;
             break;
         case NAS_SERVICE_REJECT:
             size = nas_encode_service_reject(*pkbuf, message);

@@ -81,3 +81,8 @@ type_list["Header compression configuration"]["decode"] = \
 "    header_compression_configuration->max_cid = ntohs(header_compression_configuration->max_cid);\n\n"
 type_list["Header compression configuration"]["encode"] = \
 "    target.max_cid = htons(header_compression_configuration->max_cid);\n\n"
+
+type_list["Short MAC"]["decode"] = \
+"    *short_mac = ntohs(*short_mac);\n\n"
+type_list["Short MAC"]["encode"] = \
+"    target = htons(*short_mac);\n\n"

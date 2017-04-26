@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-26 09:18:26.217661 by acetcom
+ * Created on: 2017-04-26 09:32:08.162694 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -665,6 +665,30 @@ c_int16_t nas_encode_imeisv_request(pkbuf_t *pkbuf, nas_imeisv_request_t *imeisv
     return size;
 }
 
+/* 9.9.3.19 KSI and sequence number
+ * M V 1 */
+c_int16_t nas_decode_ksi_and_sequence_number(nas_ksi_and_sequence_number_t *ksi_and_sequence_number, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = sizeof(nas_ksi_and_sequence_number_t);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(ksi_and_sequence_number, pkbuf->payload - size, size);
+
+    return size;
+}
+
+c_int16_t nas_encode_ksi_and_sequence_number(pkbuf_t *pkbuf, nas_ksi_and_sequence_number_t *ksi_and_sequence_number)
+{
+    c_uint16_t size = sizeof(nas_ksi_and_sequence_number_t);
+    nas_ksi_and_sequence_number_t target;
+
+    memcpy(&target, ksi_and_sequence_number, size);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
 /* 9.9.3.2 Authentication parameter AUTN
  * M LV 17 */
 c_int16_t nas_decode_authentication_parameter_autn(nas_authentication_parameter_autn_t *authentication_parameter_autn, pkbuf_t *pkbuf)
@@ -932,6 +956,34 @@ c_int16_t nas_encode_service_type(pkbuf_t *pkbuf, nas_service_type_t *service_ty
     nas_service_type_t target;
 
     memcpy(&target, service_type, size);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
+/* 9.9.3.28 Short MAC
+ * M V 2 */
+c_int16_t nas_decode_short_mac(nas_short_mac_t *short_mac, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = sizeof(nas_short_mac_t);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(short_mac, pkbuf->payload - size, size);
+
+    *short_mac = ntohs(*short_mac);
+
+    return size;
+}
+
+c_int16_t nas_encode_short_mac(pkbuf_t *pkbuf, nas_short_mac_t *short_mac)
+{
+    c_uint16_t size = sizeof(nas_short_mac_t);
+    nas_short_mac_t target;
+
+    memcpy(&target, short_mac, size);
+    target = htons(*short_mac);
+
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
     memcpy(pkbuf->payload - size, &target, size);
 

@@ -512,6 +512,13 @@ ED3(c_uint8_t type:4;,
     c_uint8_t imeisv_request_value:3;)
 } __attribute__ ((packed)) nas_imeisv_request_t;
 
+/* 9.9.3.19 KSI and sequence number
+ * M V 1 */
+typedef struct _nas_ksi_and_sequence_number_t {
+ED2(c_uint8_t ksi:3;,
+    c_uint8_t sequence_number:5;)
+} __attribute__ ((packed)) nas_ksi_and_sequence_number_t;
+
 /* 9.9.3.20 MS network capability
  * See subclause 10.5.5.12 in 3GPP TS 24.008
  * O TLV 4-10 */
@@ -638,6 +645,10 @@ ED3(c_uint8_t tsc:1;,
     c_uint8_t nas_key_set_identifier:3;,
     c_uint8_t service_type:4;)
 } __attribute__ ((packed)) nas_service_type_t;
+
+/* 9.9.3.28 Short MAC
+ * M V 2 */
+typedef c_uint16_t nas_short_mac_t;
 
 /* 9.9.3.29 Time zone
  * See subclause 10.5.3.8 in 3GPP TS 24.008 [13].

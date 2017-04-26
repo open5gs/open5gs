@@ -269,6 +269,9 @@ for key in msg_list.keys():
             cells = get_cells(row.cells);
             if cells["type"].find('Message type') != -1:
                 break
+            if cells["type"].find('KSI and sequence number') != -1:
+                start_row -= 1
+                break
 
         assert start_row <= 4, "Can't find message type"
 

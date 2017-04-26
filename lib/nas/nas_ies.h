@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-26 09:18:26.211334 by acetcom
+ * Created on: 2017-04-26 09:32:08.158008 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -65,6 +65,7 @@ CORE_DECLARE(c_int16_t) nas_decode_gprs_timer_2(nas_gprs_timer_2_t *gprs_timer_2
 CORE_DECLARE(c_int16_t) nas_decode_gprs_timer_3(nas_gprs_timer_3_t *gprs_timer_3, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_identity_type_2(nas_identity_type_2_t *identity_type_2, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_imeisv_request(nas_imeisv_request_t *imeisv_request, pkbuf_t *pkbuf);
+CORE_DECLARE(c_int16_t) nas_decode_ksi_and_sequence_number(nas_ksi_and_sequence_number_t *ksi_and_sequence_number, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_authentication_parameter_autn(nas_authentication_parameter_autn_t *authentication_parameter_autn, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_ms_network_capability(nas_ms_network_capability_t *ms_network_capability, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_ms_network_feature_support(nas_ms_network_feature_support_t *ms_network_feature_support, pkbuf_t *pkbuf);
@@ -76,6 +77,7 @@ CORE_DECLARE(c_int16_t) nas_decode_nonce(nas_nonce_t *nonce, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_p_tmsi_signature(nas_p_tmsi_signature_t *p_tmsi_signature, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_extended_emm_cause(nas_extended_emm_cause_t *extended_emm_cause, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_service_type(nas_service_type_t *service_type, pkbuf_t *pkbuf);
+CORE_DECLARE(c_int16_t) nas_decode_short_mac(nas_short_mac_t *short_mac, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_time_zone(nas_time_zone_t *time_zone, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_authentication_parameter_rand(nas_authentication_parameter_rand_t *authentication_parameter_rand, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_time_zone_and_time(nas_time_zone_and_time_t *time_zone_and_time, pkbuf_t *pkbuf);
@@ -143,6 +145,7 @@ CORE_DECLARE(c_int16_t) nas_encode_gprs_timer_2(pkbuf_t *pkbuf, nas_gprs_timer_2
 CORE_DECLARE(c_int16_t) nas_encode_gprs_timer_3(pkbuf_t *pkbuf, nas_gprs_timer_3_t *gprs_timer_3);
 CORE_DECLARE(c_int16_t) nas_encode_identity_type_2(pkbuf_t *pkbuf, nas_identity_type_2_t *identity_type_2);
 CORE_DECLARE(c_int16_t) nas_encode_imeisv_request(pkbuf_t *pkbuf, nas_imeisv_request_t *imeisv_request);
+CORE_DECLARE(c_int16_t) nas_encode_ksi_and_sequence_number(pkbuf_t *pkbuf, nas_ksi_and_sequence_number_t *ksi_and_sequence_number);
 CORE_DECLARE(c_int16_t) nas_encode_authentication_parameter_autn(pkbuf_t *pkbuf, nas_authentication_parameter_autn_t *authentication_parameter_autn);
 CORE_DECLARE(c_int16_t) nas_encode_ms_network_capability(pkbuf_t *pkbuf, nas_ms_network_capability_t *ms_network_capability);
 CORE_DECLARE(c_int16_t) nas_encode_ms_network_feature_support(pkbuf_t *pkbuf, nas_ms_network_feature_support_t *ms_network_feature_support);
@@ -154,6 +157,7 @@ CORE_DECLARE(c_int16_t) nas_encode_nonce(pkbuf_t *pkbuf, nas_nonce_t *nonce);
 CORE_DECLARE(c_int16_t) nas_encode_p_tmsi_signature(pkbuf_t *pkbuf, nas_p_tmsi_signature_t *p_tmsi_signature);
 CORE_DECLARE(c_int16_t) nas_encode_extended_emm_cause(pkbuf_t *pkbuf, nas_extended_emm_cause_t *extended_emm_cause);
 CORE_DECLARE(c_int16_t) nas_encode_service_type(pkbuf_t *pkbuf, nas_service_type_t *service_type);
+CORE_DECLARE(c_int16_t) nas_encode_short_mac(pkbuf_t *pkbuf, nas_short_mac_t *short_mac);
 CORE_DECLARE(c_int16_t) nas_encode_time_zone(pkbuf_t *pkbuf, nas_time_zone_t *time_zone);
 CORE_DECLARE(c_int16_t) nas_encode_authentication_parameter_rand(pkbuf_t *pkbuf, nas_authentication_parameter_rand_t *authentication_parameter_rand);
 CORE_DECLARE(c_int16_t) nas_encode_time_zone_and_time(pkbuf_t *pkbuf, nas_time_zone_and_time_t *time_zone_and_time);
