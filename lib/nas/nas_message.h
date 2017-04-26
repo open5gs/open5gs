@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-26 09:32:08.173277 by acetcom
+ * Created on: 2017-04-26 09:49:09.287767 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -88,7 +88,6 @@ ED2(c_uint8_t security_header_type:4;,
 #define NAS_TRACKING_AREA_UPDATE_COMPLETE 74
 #define NAS_TRACKING_AREA_UPDATE_REJECT 75
 #define NAS_EXTENDED_SERVICE_REQUEST 76
-#define NAS_SERVICE_REQUEST 77
 #define NAS_SERVICE_REJECT 78
 #define NAS_GUTI_REALLOCATION_COMMAND 80
 #define NAS_GUTI_REALLOCATION_COMPLETE 81

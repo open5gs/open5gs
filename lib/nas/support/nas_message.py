@@ -165,7 +165,7 @@ msg_list["TRACKING AREA UPDATE ACCEPT"] = { "type" : "73" }
 msg_list["TRACKING AREA UPDATE COMPLETE"] = { "type" : "74" }
 msg_list["TRACKING AREA UPDATE REJECT"] = { "type" : "75" }
 msg_list["EXTENDED SERVICE REQUEST"] = { "type" : "76" }
-msg_list["SERVICE REQUEST"] = { "type" : "77" }
+msg_list["SERVICE REQUEST"] = { "type" : "77.1" }
 msg_list["SERVICE REJECT"] = { "type" : "78" }
 msg_list["GUTI REALLOCATION COMMAND"] = { "type" : "80" }
 msg_list["GUTI REALLOCATION COMPLETE"] = { "type" : "81" }
@@ -523,7 +523,7 @@ ED2(c_uint8_t security_header_type:4;,
 """)
 
 for (k, v) in sorted_msg_list:
-    if k.find("TO UE") == -1:
+    if k.find("TO UE") == -1 and k != "SERVICE REQUEST":
         f.write("#define NAS_" + v_upper(k) + " " + v.split('.')[0] + "\n")
 f.write("\n")
 
@@ -700,13 +700,23 @@ f.write("""status_t nas_emm_decode(nas_message_t *message, pkbuf_t *pkbuf)
     memcpy(&message->emm.h, pkbuf->payload - size, size);
     decoded += size;
 
+    if (message->emm.h.security_header_type ==
+            NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE)
+    {
+        size = nas_decode_service_request(message, pkbuf);
+        d_assert(size >= CORE_OK, return CORE_ERROR, "decode error");
+        decoded += size;
+
+        goto out;
+    }
+
     switch(message->emm.h.message_type)
     {
 """)
 for (k, v) in sorted_msg_list:
     if "ies" not in msg_list[k]:
         continue;
-    if float(msg_list[k]["type"]) < 192 and k.find("TO UE") == -1:
+    if float(msg_list[k]["type"]) < 192 and k.find("TO UE") == -1 and k != "SERVICE REQUEST":
         f.write("        case NAS_%s:\n" % v_upper(k))
         if len(msg_list[k]["ies"]) != 0:
             f.write("            size = nas_decode_%s(message, pkbuf);\n" % v_lower(k))
@@ -720,6 +730,7 @@ f.write("""        default:
             break;
     }
 
+out:
     rv = pkbuf_header(pkbuf, decoded);
     d_assert(rv == CORE_OK, return CORE_ERROR, "pkbuf_header error");
 
@@ -858,6 +869,16 @@ f.write("""status_t nas_emm_encode(pkbuf_t **pkbuf, nas_message_t *message)
     memcpy((*pkbuf)->payload - size, &message->emm.h, size);
     encoded += size;
 
+    if (message->emm.h.security_header_type ==
+            NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE)
+    {
+        size = nas_encode_service_request(*pkbuf, message);
+        d_assert(size >= 0, return CORE_ERROR, "decode error");
+        encoded += size;
+
+        goto out;
+    }
+
     switch(message->emm.h.message_type)
     {
 """)
@@ -865,7 +886,7 @@ f.write("""status_t nas_emm_encode(pkbuf_t **pkbuf, nas_message_t *message)
 for (k, v) in sorted_msg_list:
     if "ies" not in msg_list[k]:
         continue;
-    if float(msg_list[k]["type"]) < 192 and k.find("FROM UE") == -1:
+    if float(msg_list[k]["type"]) < 192 and k.find("FROM UE") == -1 and k != "SERVICE REQUEST":
         f.write("        case NAS_%s:\n" % v_upper(k))
         if len(msg_list[k]["ies"]) != 0:
             f.write("            size = nas_encode_%s(*pkbuf, message);\n" % v_lower(k))
@@ -880,6 +901,7 @@ f.write("""        default:
             return CORE_ERROR;
     }
 
+out:
     rv = pkbuf_header(*pkbuf, encoded);
     d_assert(rv == CORE_OK, return CORE_ERROR, "pkbuf_header error");
 

@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-26 09:32:08.187786 by acetcom
+ * Created on: 2017-04-26 09:49:09.303927 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -1666,6 +1666,16 @@ status_t nas_emm_decode(nas_message_t *message, pkbuf_t *pkbuf)
     memcpy(&message->emm.h, pkbuf->payload - size, size);
     decoded += size;
 
+    if (message->emm.h.security_header_type ==
+            NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE)
+    {
+        size = nas_decode_service_request(message, pkbuf);
+        d_assert(size >= CORE_OK, return CORE_ERROR, "decode error");
+        decoded += size;
+
+        goto out;
+    }
+
     switch(message->emm.h.message_type)
     {
         case NAS_ATTACH_REQUEST:
@@ -1714,11 +1724,6 @@ status_t nas_emm_decode(nas_message_t *message, pkbuf_t *pkbuf)
             break;
         case NAS_EXTENDED_SERVICE_REQUEST:
             size = nas_decode_extended_service_request(message, pkbuf);
-            d_assert(size >= CORE_OK, return CORE_ERROR, "decode error");
-            decoded += size;
-            break;
-        case NAS_SERVICE_REQUEST:
-            size = nas_decode_service_request(message, pkbuf);
             d_assert(size >= CORE_OK, return CORE_ERROR, "decode error");
             decoded += size;
             break;
@@ -1785,6 +1790,7 @@ status_t nas_emm_decode(nas_message_t *message, pkbuf_t *pkbuf)
             break;
     }
 
+out:
     rv = pkbuf_header(pkbuf, decoded);
     d_assert(rv == CORE_OK, return CORE_ERROR, "pkbuf_header error");
 
