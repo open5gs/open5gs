@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-26 12:23:52.097586 by acetcom
+ * Created on: 2017-04-26 14:51:04.133462 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -545,6 +545,22 @@ typedef struct _nas_service_reject_t {
 
 
 /*******************************************************
+ * GUTI REALLOCATION COMMAND
+ ******************************************************/
+#define NAS_GUTI_REALLOCATION_COMMAND_TAI_LIST_PRESENT (1<<0)
+#define NAS_GUTI_REALLOCATION_COMMAND_TAI_LIST_TYPE 0x54
+
+typedef struct _nas_guti_reallocation_command_t {
+    /* Mandatory fields */
+    nas_eps_mobile_identity_t guti;
+
+    /* Optional fields */
+    c_uint32_t presencemask;
+    nas_tracking_area_identity_list_t tai_list;
+} nas_guti_reallocation_command_t;
+
+
+/*******************************************************
  * AUTHENTICATION REQUEST
  ******************************************************/
 
@@ -684,6 +700,85 @@ typedef struct _nas_emm_information_t {
     nas_time_zone_and_time_t universal_time_and_local_time_zone;
     nas_daylight_saving_time_t network_daylight_saving_time;
 } nas_emm_information_t;
+
+
+/*******************************************************
+ * DOWNLINK NAS TRANSPORT
+ ******************************************************/
+
+typedef struct _nas_downlink_nas_transport_t {
+    /* Mandatory fields */
+    nas_message_container_t nas_message_container;
+} nas_downlink_nas_transport_t;
+
+
+/*******************************************************
+ * UPLINK NAS TRANSPORT
+ ******************************************************/
+
+typedef struct _nas_uplink_nas_transport_t {
+    /* Mandatory fields */
+    nas_message_container_t nas_message_container;
+} nas_uplink_nas_transport_t;
+
+
+/*******************************************************
+ * CS SERVICE NOTIFICATION
+ ******************************************************/
+#define NAS_CS_SERVICE_NOTIFICATION_CLI_PRESENT (1<<0)
+#define NAS_CS_SERVICE_NOTIFICATION_SS_CODE_PRESENT (1<<1)
+#define NAS_CS_SERVICE_NOTIFICATION_LCS_INDICATOR_PRESENT (1<<2)
+#define NAS_CS_SERVICE_NOTIFICATION_LCS_CLIENT_IDENTITY_PRESENT (1<<3)
+#define NAS_CS_SERVICE_NOTIFICATION_CLI_TYPE 0x60
+#define NAS_CS_SERVICE_NOTIFICATION_SS_CODE_TYPE 0x61
+#define NAS_CS_SERVICE_NOTIFICATION_LCS_INDICATOR_TYPE 0x62
+#define NAS_CS_SERVICE_NOTIFICATION_LCS_CLIENT_IDENTITY_TYPE 0x63
+
+typedef struct _nas_cs_service_notification_t {
+    /* Mandatory fields */
+    nas_paging_identity_t paging_identity;
+
+    /* Optional fields */
+    c_uint32_t presencemask;
+    nas_cli_t cli;
+    nas_ss_code_t ss_code;
+    nas_lcs_indicator_t lcs_indicator;
+    nas_lcs_client_identity_t lcs_client_identity;
+} nas_cs_service_notification_t;
+
+
+/*******************************************************
+ * UPLINK GENERIC NAS TRANSPORT
+ ******************************************************/
+#define NAS_UPLINK_GENERIC_NAS_TRANSPORT_ADDITIONAL_INFORMATION_PRESENT (1<<0)
+#define NAS_UPLINK_GENERIC_NAS_TRANSPORT_ADDITIONAL_INFORMATION_TYPE 0x65
+
+typedef struct _nas_uplink_generic_nas_transport_t {
+    /* Mandatory fields */
+    nas_generic_message_container_type_t generic_message_container_type;
+    nas_generic_message_container_t generic_message_container;
+
+    /* Optional fields */
+    c_uint32_t presencemask;
+    nas_additional_information_t additional_information;
+} nas_uplink_generic_nas_transport_t;
+
+
+/*******************************************************
+ * DOWNLINK GENERIC NAS TRANSPORT
+ ******************************************************/
+#define NAS_DOWNLINK_GENERIC_NAS_TRANSPORT_ADDITIONAL_INFORMATION_PRESENT (1<<0)
+#define NAS_DOWNLINK_GENERIC_NAS_TRANSPORT_ADDITIONAL_INFORMATION_TYPE 0x65
+
+typedef struct _nas_downlink_generic_nas_transport_t {
+    /* Mandatory fields */
+    nas_generic_message_container_type_t generic_message_container_type;
+    nas_generic_message_container_t generic_message_container;
+
+    /* Optional fields */
+    c_uint32_t presencemask;
+    nas_additional_information_t additional_information;
+} nas_downlink_generic_nas_transport_t;
 
 
 /*******************************************************
@@ -917,6 +1012,7 @@ typedef struct _nas_emm_message_t {
         nas_extended_service_request_t extended_service_request;
         nas_service_request_t service_request;
         nas_service_reject_t service_reject;
+        nas_guti_reallocation_command_t guti_reallocation_command;
         nas_authentication_request_t authentication_request;
         nas_authentication_response_t authentication_response;
         nas_identity_request_t identity_request;
@@ -927,6 +1023,11 @@ typedef struct _nas_emm_message_t {
         nas_security_mode_reject_t security_mode_reject;
         nas_emm_status_t emm_status;
         nas_emm_information_t emm_information;
+        nas_downlink_nas_transport_t downlink_nas_transport;
+        nas_uplink_nas_transport_t uplink_nas_transport;
+        nas_cs_service_notification_t cs_service_notification;
+        nas_uplink_generic_nas_transport_t uplink_generic_nas_transport;
+        nas_downlink_generic_nas_transport_t downlink_generic_nas_transport;
     };
 } nas_emm_message_t;
 

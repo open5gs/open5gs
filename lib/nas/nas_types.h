@@ -7,6 +7,14 @@
 extern "C" {
 #endif /* __cplusplus */
 
+/* 9.9.2.0 Additional information
+ * O TLV 3-n */
+#define NAX_MAX_ADDITIONAL_INFORMATION_LEN 255
+typedef struct _nas_additional_information_t {
+    c_uint8_t length;
+    c_uint32_t buffer[NAX_MAX_ADDITIONAL_INFORMATION_LEN];
+} __attribute__ ((packed)) nas_additional_information_t;
+
 /* 9.9.2.0A Device properties
  * See subclause 10.5.7.8 in 3GPP TS 24.008 [13].
  * O TV 1 */
@@ -144,7 +152,7 @@ ED8(c_uint8_t cm3:1;,
 /*9.9.2.5 Mobile station classmark 3
  * See subclause 10.5.1.7 in 3GPP TS 24.008 [13].
  * O TLV 2-34 */
-#define NAS_MAX_MOBILE_STATION_CLASSMARK_3_LEN 34
+#define NAS_MAX_MOBILE_STATION_CLASSMARK_3_LEN 32
 typedef struct _nas_mobile_station_classmark_3_t {
     c_uint8_t length;
     c_uint8_t buffer[NAS_MAX_MOBILE_STATION_CLASSMARK_3_LEN];
@@ -575,6 +583,14 @@ ED3(c_uint8_t type:4;,
     c_uint8_t nas_key_set_identifier:3;)
 } __attribute__ ((packed)) nas_key_set_identifier_t;
 
+/* 9.9.3.22 message container
+ * M LV 3-252 */
+#define NAS_MAX_MESSAGE_CONTAINER_LEN 250
+typedef struct _nas_message_container_t {
+    c_uint8_t length;
+    c_uint16_t buffer[NAS_MAX_MESSAGE_CONTAINER_LEN];
+} __attribute__ ((packed)) nas_message_container_t;
+
 /* 9.9.3.23 NAS security algorithms
  * M V 1 */
 #define NAS_SECURITY_ALGORITHMS_EIA0        0
@@ -618,6 +634,15 @@ ED2(c_uint8_t nri_container_value2:2;,
 /* 9.9.3.25 Nonce
  * O TV 5 */
 typedef c_uint32_t nas_nonce_t;
+
+/* 9.9.3.25A Paging identity
+ * M V 1 */
+#define NAS_PAGING_IDENTITY_IMSI        0
+#define NAS_PAGING_IDENTITY_TMSI        1
+typedef struct _nas_paging_identity_t {
+ED2(c_uint8_t spare:7;,
+    c_uint8_t identity:1;)
+} nas_paging_identity_t;
 
 /* 9.9.3.26 P-TMSI signature 
  * See subclause 10.5.5.8 in 3GPP TS 24.008
@@ -872,11 +897,54 @@ typedef struct _nas_ue_security_capability_t {
 /* buffer : 9.9.3.37 Emergency number list
  * See subclause 10.5.3.13 in 3GPP TS 24.008 [13].
  * O TLV 5-50 */
-#define MAX_NAS_EMERGENCY_NUMBER_LIST_LEN 50
+#define NAS_MAX_EMERGENCY_NUMBER_LIST_LEN 48
 typedef struct _nas_emergency_number_list_t {
     c_uint16_t length;
-    c_uint8_t buffer[MAX_NAS_EMERGENCY_NUMBER_LIST_LEN];
+    c_uint8_t buffer[NAS_MAX_EMERGENCY_NUMBER_LIST_LEN];
 } __attribute__ ((packed)) nas_emergency_number_list_t;
+
+/* 9.9.3.38 CLI
+ * O TLV 3-14 
+ * The coding of the CLI value part is the same as for 
+ * octets 3 to 14 of the Calling party BCD number information element 
+ * defined in subclause 10.5.4.9 of 3GPP TS 24.008 [13]. */
+#define NAX_MAX_CLI_LEN 12
+typedef struct _nas_cli_t {
+    c_uint8_t length;
+    c_uint8_t buffer[NAX_MAX_CLI_LEN];
+} __attribute__ ((packed)) nas_cli_t;
+
+/* 9.9.3.39 SS Code
+ * O TV 2 
+ * The coding of the SS Code value is given in subclause 17.7.5 of 
+ * 3GPP TS 29.002 [15C] */
+typedef c_uint8_t nas_ss_code_t;
+
+/* 9.9.3.40 LCS indicator
+ * O TV 2 */
+#define NAS_LCS_INDICATOR_MT_LR     1
+typedef c_uint8_t nas_lcs_indicator_t;
+
+/* 9.9.3.41 LCS client identity
+ * O TLV 3-257 */
+#define NAS_MAX_LCS_CLIENT_IDENTITY_LEN 255
+typedef struct _nas_lcs_client_identity_t {
+    c_uint8_t length;
+    c_uint8_t buffer[NAS_MAX_LCS_CLIENT_IDENTITY_LEN];
+} __attribute__ ((packed)) nas_lcs_client_identity_t;
+
+/* 9.9.3.42 Generic message container type
+ * M V 1 */
+#define NAS_GENERIC_MESSAGE_CONTAINER_TYPE_LTE_POSITIONING_PROTOCOL         1
+#define NAS_GENERIC_MESSAGE_CONTAINER_TYPE_LTE_LOCATION_SERVICES_MESSAGE    2
+typedef c_uint8_t nas_generic_message_container_type_t;
+
+/* 9.9.3.43 Generic message container
+ * M LV-E 3-n */
+typedef struct _nas_generic_message_container_t {
+    c_uint16_t len;
+    c_uint8_t *data;
+} nas_generic_message_container_t;
 
 /* 9.9.3.44 Voice domain preference and UE's usage setting
  * See subclause 10.5.5.28 in 3GPP TS 24.008 [13].

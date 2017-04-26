@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-26 12:23:52.079646 by acetcom
+ * Created on: 2017-04-26 14:51:04.114843 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -42,6 +42,7 @@ extern "C" {
 
 CORE_DECLARE(c_int16_t) nas_encode_optional_type(pkbuf_t *pkbuf, c_uint8_t type);
 
+CORE_DECLARE(c_int16_t) nas_decode_additional_information(nas_additional_information_t *additional_information, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_device_properties(nas_device_properties_t *device_properties, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_eps_bearer_context_status(nas_eps_bearer_context_status_t *eps_bearer_context_status, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_supported_codec_list(nas_supported_codec_list_t *supported_codec_list, pkbuf_t *pkbuf);
@@ -70,10 +71,12 @@ CORE_DECLARE(c_int16_t) nas_decode_authentication_parameter_autn(nas_authenticat
 CORE_DECLARE(c_int16_t) nas_decode_ms_network_capability(nas_ms_network_capability_t *ms_network_capability, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_ms_network_feature_support(nas_ms_network_feature_support_t *ms_network_feature_support, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_key_set_identifier(nas_key_set_identifier_t *key_set_identifier, pkbuf_t *pkbuf);
+CORE_DECLARE(c_int16_t) nas_decode_message_container(nas_message_container_t *message_container, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_security_algorithms(nas_security_algorithms_t *security_algorithms, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_network_name(nas_network_name_t *network_name, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_network_resource_identifier_container(nas_network_resource_identifier_container_t *network_resource_identifier_container, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_nonce(nas_nonce_t *nonce, pkbuf_t *pkbuf);
+CORE_DECLARE(c_int16_t) nas_decode_paging_identity(nas_paging_identity_t *paging_identity, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_p_tmsi_signature(nas_p_tmsi_signature_t *p_tmsi_signature, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_extended_emm_cause(nas_extended_emm_cause_t *extended_emm_cause, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_service_type(nas_service_type_t *service_type, pkbuf_t *pkbuf);
@@ -88,7 +91,13 @@ CORE_DECLARE(c_int16_t) nas_decode_ue_network_capability(nas_ue_network_capabili
 CORE_DECLARE(c_int16_t) nas_decode_ue_radio_capability_information_update_needed(nas_ue_radio_capability_information_update_needed_t *ue_radio_capability_information_update_needed, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_ue_security_capability(nas_ue_security_capability_t *ue_security_capability, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_emergency_number_list(nas_emergency_number_list_t *emergency_number_list, pkbuf_t *pkbuf);
+CORE_DECLARE(c_int16_t) nas_decode_cli(nas_cli_t *cli, pkbuf_t *pkbuf);
+CORE_DECLARE(c_int16_t) nas_decode_ss_code(nas_ss_code_t *ss_code, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_authentication_response_parameter(nas_authentication_response_parameter_t *authentication_response_parameter, pkbuf_t *pkbuf);
+CORE_DECLARE(c_int16_t) nas_decode_lcs_indicator(nas_lcs_indicator_t *lcs_indicator, pkbuf_t *pkbuf);
+CORE_DECLARE(c_int16_t) nas_decode_lcs_client_identity(nas_lcs_client_identity_t *lcs_client_identity, pkbuf_t *pkbuf);
+CORE_DECLARE(c_int16_t) nas_decode_generic_message_container_type(nas_generic_message_container_type_t *generic_message_container_type, pkbuf_t *pkbuf);
+CORE_DECLARE(c_int16_t) nas_decode_generic_message_container(nas_generic_message_container_t *generic_message_container, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_voice_domain_preference_and_ue_usage_setting(nas_voice_domain_preference_and_ue_usage_setting_t *voice_domain_preference_and_ue_usage_setting, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_guti_type(nas_guti_type_t *guti_type, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_extended_drx_parameters(nas_extended_drx_parameters_t *extended_drx_parameters, pkbuf_t *pkbuf);
@@ -122,6 +131,7 @@ CORE_DECLARE(c_int16_t) nas_decode_llc_service_access_point_identifier(nas_llc_s
 CORE_DECLARE(c_int16_t) nas_decode_packet_flow_identifier(nas_packet_flow_identifier_t *packet_flow_identifier, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_pdn_address(nas_pdn_address_t *pdn_address, pkbuf_t *pkbuf);
 
+CORE_DECLARE(c_int16_t) nas_encode_additional_information(pkbuf_t *pkbuf, nas_additional_information_t *additional_information);
 CORE_DECLARE(c_int16_t) nas_encode_device_properties(pkbuf_t *pkbuf, nas_device_properties_t *device_properties);
 CORE_DECLARE(c_int16_t) nas_encode_eps_bearer_context_status(pkbuf_t *pkbuf, nas_eps_bearer_context_status_t *eps_bearer_context_status);
 CORE_DECLARE(c_int16_t) nas_encode_supported_codec_list(pkbuf_t *pkbuf, nas_supported_codec_list_t *supported_codec_list);
@@ -150,10 +160,12 @@ CORE_DECLARE(c_int16_t) nas_encode_authentication_parameter_autn(pkbuf_t *pkbuf,
 CORE_DECLARE(c_int16_t) nas_encode_ms_network_capability(pkbuf_t *pkbuf, nas_ms_network_capability_t *ms_network_capability);
 CORE_DECLARE(c_int16_t) nas_encode_ms_network_feature_support(pkbuf_t *pkbuf, nas_ms_network_feature_support_t *ms_network_feature_support);
 CORE_DECLARE(c_int16_t) nas_encode_key_set_identifier(pkbuf_t *pkbuf, nas_key_set_identifier_t *key_set_identifier);
+CORE_DECLARE(c_int16_t) nas_encode_message_container(pkbuf_t *pkbuf, nas_message_container_t *message_container);
 CORE_DECLARE(c_int16_t) nas_encode_security_algorithms(pkbuf_t *pkbuf, nas_security_algorithms_t *security_algorithms);
 CORE_DECLARE(c_int16_t) nas_encode_network_name(pkbuf_t *pkbuf, nas_network_name_t *network_name);
 CORE_DECLARE(c_int16_t) nas_encode_network_resource_identifier_container(pkbuf_t *pkbuf, nas_network_resource_identifier_container_t *network_resource_identifier_container);
 CORE_DECLARE(c_int16_t) nas_encode_nonce(pkbuf_t *pkbuf, nas_nonce_t *nonce);
+CORE_DECLARE(c_int16_t) nas_encode_paging_identity(pkbuf_t *pkbuf, nas_paging_identity_t *paging_identity);
 CORE_DECLARE(c_int16_t) nas_encode_p_tmsi_signature(pkbuf_t *pkbuf, nas_p_tmsi_signature_t *p_tmsi_signature);
 CORE_DECLARE(c_int16_t) nas_encode_extended_emm_cause(pkbuf_t *pkbuf, nas_extended_emm_cause_t *extended_emm_cause);
 CORE_DECLARE(c_int16_t) nas_encode_service_type(pkbuf_t *pkbuf, nas_service_type_t *service_type);
@@ -168,7 +180,13 @@ CORE_DECLARE(c_int16_t) nas_encode_ue_network_capability(pkbuf_t *pkbuf, nas_ue_
 CORE_DECLARE(c_int16_t) nas_encode_ue_radio_capability_information_update_needed(pkbuf_t *pkbuf, nas_ue_radio_capability_information_update_needed_t *ue_radio_capability_information_update_needed);
 CORE_DECLARE(c_int16_t) nas_encode_ue_security_capability(pkbuf_t *pkbuf, nas_ue_security_capability_t *ue_security_capability);
 CORE_DECLARE(c_int16_t) nas_encode_emergency_number_list(pkbuf_t *pkbuf, nas_emergency_number_list_t *emergency_number_list);
+CORE_DECLARE(c_int16_t) nas_encode_cli(pkbuf_t *pkbuf, nas_cli_t *cli);
+CORE_DECLARE(c_int16_t) nas_encode_ss_code(pkbuf_t *pkbuf, nas_ss_code_t *ss_code);
 CORE_DECLARE(c_int16_t) nas_encode_authentication_response_parameter(pkbuf_t *pkbuf, nas_authentication_response_parameter_t *authentication_response_parameter);
+CORE_DECLARE(c_int16_t) nas_encode_lcs_indicator(pkbuf_t *pkbuf, nas_lcs_indicator_t *lcs_indicator);
+CORE_DECLARE(c_int16_t) nas_encode_lcs_client_identity(pkbuf_t *pkbuf, nas_lcs_client_identity_t *lcs_client_identity);
+CORE_DECLARE(c_int16_t) nas_encode_generic_message_container_type(pkbuf_t *pkbuf, nas_generic_message_container_type_t *generic_message_container_type);
+CORE_DECLARE(c_int16_t) nas_encode_generic_message_container(pkbuf_t *pkbuf, nas_generic_message_container_t *generic_message_container);
 CORE_DECLARE(c_int16_t) nas_encode_voice_domain_preference_and_ue_usage_setting(pkbuf_t *pkbuf, nas_voice_domain_preference_and_ue_usage_setting_t *voice_domain_preference_and_ue_usage_setting);
 CORE_DECLARE(c_int16_t) nas_encode_guti_type(pkbuf_t *pkbuf, nas_guti_type_t *guti_type);
 CORE_DECLARE(c_int16_t) nas_encode_extended_drx_parameters(pkbuf_t *pkbuf, nas_extended_drx_parameters_t *extended_drx_parameters);

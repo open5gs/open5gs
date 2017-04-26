@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-26 12:23:52.084610 by acetcom
+ * Created on: 2017-04-26 14:51:04.120969 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -45,6 +45,34 @@ c_int16_t nas_encode_optional_type(pkbuf_t *pkbuf, c_uint8_t type)
 
     return size;
 }
+/* 9.9.2.0 Additional information
+ * O TLV 3-n */
+c_int16_t nas_decode_additional_information(nas_additional_information_t *additional_information, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = 0;
+    nas_additional_information_t *source = pkbuf->payload;
+
+    additional_information->length = source->length;
+    size = additional_information->length + sizeof(additional_information->length);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(additional_information, pkbuf->payload - size, size);
+
+    return size;
+}
+
+c_int16_t nas_encode_additional_information(pkbuf_t *pkbuf, nas_additional_information_t *additional_information)
+{
+    c_uint16_t size = additional_information->length + sizeof(additional_information->length);
+    nas_additional_information_t target;
+
+    memcpy(&target, additional_information, sizeof(nas_additional_information_t));
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
 /* 9.9.2.0A Device properties
  * O TV 1 */
 c_int16_t nas_decode_device_properties(nas_device_properties_t *device_properties, pkbuf_t *pkbuf)
@@ -783,6 +811,34 @@ c_int16_t nas_encode_key_set_identifier(pkbuf_t *pkbuf, nas_key_set_identifier_t
     return size;
 }
 
+/* 9.9.3.22 message container
+ * M LV 3-252 */
+c_int16_t nas_decode_message_container(nas_message_container_t *message_container, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = 0;
+    nas_message_container_t *source = pkbuf->payload;
+
+    message_container->length = source->length;
+    size = message_container->length + sizeof(message_container->length);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(message_container, pkbuf->payload - size, size);
+
+    return size;
+}
+
+c_int16_t nas_encode_message_container(pkbuf_t *pkbuf, nas_message_container_t *message_container)
+{
+    c_uint16_t size = message_container->length + sizeof(message_container->length);
+    nas_message_container_t target;
+
+    memcpy(&target, message_container, sizeof(nas_message_container_t));
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
 /* 9.9.3.23 security algorithms
  * M V 1 */
 c_int16_t nas_decode_security_algorithms(nas_security_algorithms_t *security_algorithms, pkbuf_t *pkbuf)
@@ -885,6 +941,30 @@ c_int16_t nas_encode_nonce(pkbuf_t *pkbuf, nas_nonce_t *nonce)
     memcpy(&target, nonce, size);
     target = htonl(*nonce);
 
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
+/* 9.9.3.25A Paging identity
+ * M V 1 */
+c_int16_t nas_decode_paging_identity(nas_paging_identity_t *paging_identity, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = sizeof(nas_paging_identity_t);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(paging_identity, pkbuf->payload - size, size);
+
+    return size;
+}
+
+c_int16_t nas_encode_paging_identity(pkbuf_t *pkbuf, nas_paging_identity_t *paging_identity)
+{
+    c_uint16_t size = sizeof(nas_paging_identity_t);
+    nas_paging_identity_t target;
+
+    memcpy(&target, paging_identity, size);
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
     memcpy(pkbuf->payload - size, &target, size);
 
@@ -1268,6 +1348,58 @@ c_int16_t nas_encode_emergency_number_list(pkbuf_t *pkbuf, nas_emergency_number_
     return size;
 }
 
+/* 9.9.3.38 CLI
+ * O TLV 3-14 */
+c_int16_t nas_decode_cli(nas_cli_t *cli, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = 0;
+    nas_cli_t *source = pkbuf->payload;
+
+    cli->length = source->length;
+    size = cli->length + sizeof(cli->length);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(cli, pkbuf->payload - size, size);
+
+    return size;
+}
+
+c_int16_t nas_encode_cli(pkbuf_t *pkbuf, nas_cli_t *cli)
+{
+    c_uint16_t size = cli->length + sizeof(cli->length);
+    nas_cli_t target;
+
+    memcpy(&target, cli, sizeof(nas_cli_t));
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
+/* 9.9.3.39 SS Code
+ * O TV 2 */
+c_int16_t nas_decode_ss_code(nas_ss_code_t *ss_code, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = sizeof(nas_ss_code_t);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(ss_code, pkbuf->payload - size, size);
+
+    return size;
+}
+
+c_int16_t nas_encode_ss_code(pkbuf_t *pkbuf, nas_ss_code_t *ss_code)
+{
+    c_uint16_t size = sizeof(nas_ss_code_t);
+    nas_ss_code_t target;
+
+    memcpy(&target, ss_code, size);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
 /* 9.9.3.4 Authentication response parameter
  * M LV 5-17 */
 c_int16_t nas_decode_authentication_response_parameter(nas_authentication_response_parameter_t *authentication_response_parameter, pkbuf_t *pkbuf)
@@ -1294,6 +1426,118 @@ c_int16_t nas_encode_authentication_response_parameter(pkbuf_t *pkbuf, nas_authe
     memcpy(pkbuf->payload - size, &target, size);
 
     return size;
+}
+
+/* 9.9.3.40 LCS indicator
+ * O TV 2 */
+c_int16_t nas_decode_lcs_indicator(nas_lcs_indicator_t *lcs_indicator, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = sizeof(nas_lcs_indicator_t);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(lcs_indicator, pkbuf->payload - size, size);
+
+    return size;
+}
+
+c_int16_t nas_encode_lcs_indicator(pkbuf_t *pkbuf, nas_lcs_indicator_t *lcs_indicator)
+{
+    c_uint16_t size = sizeof(nas_lcs_indicator_t);
+    nas_lcs_indicator_t target;
+
+    memcpy(&target, lcs_indicator, size);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
+/* 9.9.3.41 LCS client identity
+ * O TLV 3-257 */
+c_int16_t nas_decode_lcs_client_identity(nas_lcs_client_identity_t *lcs_client_identity, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = 0;
+    nas_lcs_client_identity_t *source = pkbuf->payload;
+
+    lcs_client_identity->length = source->length;
+    size = lcs_client_identity->length + sizeof(lcs_client_identity->length);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(lcs_client_identity, pkbuf->payload - size, size);
+
+    return size;
+}
+
+c_int16_t nas_encode_lcs_client_identity(pkbuf_t *pkbuf, nas_lcs_client_identity_t *lcs_client_identity)
+{
+    c_uint16_t size = lcs_client_identity->length + sizeof(lcs_client_identity->length);
+    nas_lcs_client_identity_t target;
+
+    memcpy(&target, lcs_client_identity, sizeof(nas_lcs_client_identity_t));
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
+/* 9.9.3.42 Generic message container type
+ * M V 1 */
+c_int16_t nas_decode_generic_message_container_type(nas_generic_message_container_type_t *generic_message_container_type, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = sizeof(nas_generic_message_container_type_t);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(generic_message_container_type, pkbuf->payload - size, size);
+
+    return size;
+}
+
+c_int16_t nas_encode_generic_message_container_type(pkbuf_t *pkbuf, nas_generic_message_container_type_t *generic_message_container_type)
+{
+    c_uint16_t size = sizeof(nas_generic_message_container_type_t);
+    nas_generic_message_container_type_t target;
+
+    memcpy(&target, generic_message_container_type, size);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
+/* 9.9.3.43 Generic message container
+ * M LV-E 3-n */
+c_int16_t nas_decode_generic_message_container(nas_generic_message_container_t *generic_message_container, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = 0;
+    nas_generic_message_container_t *source = pkbuf->payload;
+
+    generic_message_container->len = ntohs(source->len);
+    size = generic_message_container->len + sizeof(generic_message_container->len);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    generic_message_container->data = pkbuf->payload - size + sizeof(generic_message_container->len);
+
+    return size;
+}
+
+c_int16_t nas_encode_generic_message_container(pkbuf_t *pkbuf, nas_generic_message_container_t *generic_message_container)
+{
+    c_uint16_t size = 0;
+    c_uint16_t target;
+
+    d_assert(generic_message_container, return -1, "Null param");
+    d_assert(generic_message_container->data, return -1, "Null param");
+
+    size = sizeof(generic_message_container->len);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    target = htons(generic_message_container->len);
+    memcpy(pkbuf->payload - size, &target, size);
+
+    size = generic_message_container->len;
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, generic_message_container->data, size);
+
+    return generic_message_container->len + sizeof(generic_message_container->len);
 }
 
 /* 9.9.3.44 Voice domain preference and UE usage setting

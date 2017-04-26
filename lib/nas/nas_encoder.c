@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-26 12:23:52.139199 by acetcom
+ * Created on: 2017-04-26 14:51:04.184245 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -1128,6 +1128,30 @@ c_int32_t nas_encode_service_reject(pkbuf_t *pkbuf, nas_message_t *message)
     return encoded;
 }
 
+c_int32_t nas_encode_guti_reallocation_command(pkbuf_t *pkbuf, nas_message_t *message)
+{
+    nas_guti_reallocation_command_t *guti_reallocation_command = &message->emm.guti_reallocation_command;
+    c_int32_t encoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_encode_eps_mobile_identity(pkbuf, &guti_reallocation_command->guti);
+    d_assert(size >= 0, return -1, "encode failed");
+    encoded += size;
+
+    if (guti_reallocation_command->presencemask & NAS_GUTI_REALLOCATION_COMMAND_TAI_LIST_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_GUTI_REALLOCATION_COMMAND_TAI_LIST_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_tracking_area_identity_list(pkbuf, &guti_reallocation_command->tai_list);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    return encoded;
+}
+
 c_int32_t nas_encode_authentication_request(pkbuf_t *pkbuf, nas_message_t *message)
 {
     nas_authentication_request_t *authentication_request = &message->emm.authentication_request;
@@ -1367,6 +1391,145 @@ c_int32_t nas_encode_emm_information(pkbuf_t *pkbuf, nas_message_t *message)
         encoded += size;
 
         size = nas_encode_daylight_saving_time(pkbuf, &emm_information->network_daylight_saving_time);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    return encoded;
+}
+
+c_int32_t nas_encode_downlink_nas_transport(pkbuf_t *pkbuf, nas_message_t *message)
+{
+    nas_downlink_nas_transport_t *downlink_nas_transport = &message->emm.downlink_nas_transport;
+    c_int32_t encoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_encode_message_container(pkbuf, &downlink_nas_transport->nas_message_container);
+    d_assert(size >= 0, return -1, "encode failed");
+    encoded += size;
+
+    return encoded;
+}
+
+c_int32_t nas_encode_uplink_nas_transport(pkbuf_t *pkbuf, nas_message_t *message)
+{
+    nas_uplink_nas_transport_t *uplink_nas_transport = &message->emm.uplink_nas_transport;
+    c_int32_t encoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_encode_message_container(pkbuf, &uplink_nas_transport->nas_message_container);
+    d_assert(size >= 0, return -1, "encode failed");
+    encoded += size;
+
+    return encoded;
+}
+
+c_int32_t nas_encode_cs_service_notification(pkbuf_t *pkbuf, nas_message_t *message)
+{
+    nas_cs_service_notification_t *cs_service_notification = &message->emm.cs_service_notification;
+    c_int32_t encoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_encode_paging_identity(pkbuf, &cs_service_notification->paging_identity);
+    d_assert(size >= 0, return -1, "encode failed");
+    encoded += size;
+
+    if (cs_service_notification->presencemask & NAS_CS_SERVICE_NOTIFICATION_CLI_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_CS_SERVICE_NOTIFICATION_CLI_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_cli(pkbuf, &cs_service_notification->cli);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (cs_service_notification->presencemask & NAS_CS_SERVICE_NOTIFICATION_SS_CODE_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_CS_SERVICE_NOTIFICATION_SS_CODE_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_ss_code(pkbuf, &cs_service_notification->ss_code);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (cs_service_notification->presencemask & NAS_CS_SERVICE_NOTIFICATION_LCS_INDICATOR_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_CS_SERVICE_NOTIFICATION_LCS_INDICATOR_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_lcs_indicator(pkbuf, &cs_service_notification->lcs_indicator);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (cs_service_notification->presencemask & NAS_CS_SERVICE_NOTIFICATION_LCS_CLIENT_IDENTITY_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_CS_SERVICE_NOTIFICATION_LCS_CLIENT_IDENTITY_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_lcs_client_identity(pkbuf, &cs_service_notification->lcs_client_identity);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    return encoded;
+}
+
+c_int32_t nas_encode_uplink_generic_nas_transport(pkbuf_t *pkbuf, nas_message_t *message)
+{
+    nas_uplink_generic_nas_transport_t *uplink_generic_nas_transport = &message->emm.uplink_generic_nas_transport;
+    c_int32_t encoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_encode_generic_message_container_type(pkbuf, &uplink_generic_nas_transport->generic_message_container_type);
+    d_assert(size >= 0, return -1, "encode failed");
+    encoded += size;
+
+    size = nas_encode_generic_message_container(pkbuf, &uplink_generic_nas_transport->generic_message_container);
+    d_assert(size >= 0, return -1, "encode failed");
+    encoded += size;
+
+    if (uplink_generic_nas_transport->presencemask & NAS_UPLINK_GENERIC_NAS_TRANSPORT_ADDITIONAL_INFORMATION_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_UPLINK_GENERIC_NAS_TRANSPORT_ADDITIONAL_INFORMATION_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_additional_information(pkbuf, &uplink_generic_nas_transport->additional_information);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    return encoded;
+}
+
+c_int32_t nas_encode_downlink_generic_nas_transport(pkbuf_t *pkbuf, nas_message_t *message)
+{
+    nas_downlink_generic_nas_transport_t *downlink_generic_nas_transport = &message->emm.downlink_generic_nas_transport;
+    c_int32_t encoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_encode_generic_message_container_type(pkbuf, &downlink_generic_nas_transport->generic_message_container_type);
+    d_assert(size >= 0, return -1, "encode failed");
+    encoded += size;
+
+    size = nas_encode_generic_message_container(pkbuf, &downlink_generic_nas_transport->generic_message_container);
+    d_assert(size >= 0, return -1, "encode failed");
+    encoded += size;
+
+    if (downlink_generic_nas_transport->presencemask & NAS_DOWNLINK_GENERIC_NAS_TRANSPORT_ADDITIONAL_INFORMATION_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_DOWNLINK_GENERIC_NAS_TRANSPORT_ADDITIONAL_INFORMATION_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_additional_information(pkbuf, &downlink_generic_nas_transport->additional_information);
         d_assert(size >= 0, return encoded, "decode failed");
         encoded += size;
     }
@@ -1973,6 +2136,13 @@ status_t nas_emm_encode(pkbuf_t **pkbuf, nas_message_t *message)
             d_assert(size >= 0, return CORE_ERROR, "decode error");
             encoded += size;
             break;
+        case NAS_GUTI_REALLOCATION_COMMAND:
+            size = nas_encode_guti_reallocation_command(*pkbuf, message);
+            d_assert(size >= 0, return CORE_ERROR, "decode error");
+            encoded += size;
+            break;
+        case NAS_GUTI_REALLOCATION_COMPLETE:
+            break;
         case NAS_AUTHENTICATION_REQUEST:
             size = nas_encode_authentication_request(*pkbuf, message);
             d_assert(size >= 0, return CORE_ERROR, "decode error");
@@ -2022,6 +2192,31 @@ status_t nas_emm_encode(pkbuf_t **pkbuf, nas_message_t *message)
             break;
         case NAS_EMM_INFORMATION:
             size = nas_encode_emm_information(*pkbuf, message);
+            d_assert(size >= 0, return CORE_ERROR, "decode error");
+            encoded += size;
+            break;
+        case NAS_DOWNLINK_NAS_TRANSPORT:
+            size = nas_encode_downlink_nas_transport(*pkbuf, message);
+            d_assert(size >= 0, return CORE_ERROR, "decode error");
+            encoded += size;
+            break;
+        case NAS_UPLINK_NAS_TRANSPORT:
+            size = nas_encode_uplink_nas_transport(*pkbuf, message);
+            d_assert(size >= 0, return CORE_ERROR, "decode error");
+            encoded += size;
+            break;
+        case NAS_CS_SERVICE_NOTIFICATION:
+            size = nas_encode_cs_service_notification(*pkbuf, message);
+            d_assert(size >= 0, return CORE_ERROR, "decode error");
+            encoded += size;
+            break;
+        case NAS_UPLINK_GENERIC_NAS_TRANSPORT:
+            size = nas_encode_uplink_generic_nas_transport(*pkbuf, message);
+            d_assert(size >= 0, return CORE_ERROR, "decode error");
+            encoded += size;
+            break;
+        case NAS_DOWNLINK_GENERIC_NAS_TRANSPORT:
+            size = nas_encode_downlink_generic_nas_transport(*pkbuf, message);
             d_assert(size >= 0, return CORE_ERROR, "decode error");
             encoded += size;
             break;
