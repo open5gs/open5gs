@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-26 11:58:32.382927 by acetcom
+ * Created on: 2017-04-26 12:23:52.139199 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -1907,6 +1907,9 @@ status_t nas_emm_encode(pkbuf_t **pkbuf, nas_message_t *message)
     if (message->emm.h.security_header_type >=
             NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE)
     {
+        d_assert(pkbuf_header(*pkbuf, 1) == CORE_OK, 
+                return CORE_ERROR, "pkbuf_header error");
+        encoded -= 1;
         size = nas_encode_service_request(*pkbuf, message);
         d_assert(size >= 0, return CORE_ERROR, "decode error");
         encoded += size;

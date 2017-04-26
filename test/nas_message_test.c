@@ -244,6 +244,54 @@ static void nas_message_test7(abts_case *tc, void *data)
     pkbuf_free(pkbuf);
 }
 
+static void nas_message_test8(abts_case *tc, void *data)
+{
+    /* Security Request */
+    char *payload = "c7a8640c";
+    char buffer[4];
+
+    nas_message_t message;
+    pkbuf_t *pkbuf;
+    status_t rv;
+    char hexbuf[MAX_SDU_LEN];
+    nas_service_request_t *service_request = &message.emm.service_request;
+    nas_ksi_and_sequence_number_t *ksi_and_sequence_number = 
+        &service_request->ksi_and_sequence_number;
+
+    pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    ABTS_PTR_NOTNULL(tc, pkbuf);
+    pkbuf->len = 4;
+    memcpy(pkbuf->payload, 
+            CORE_HEX(payload, strlen(payload), hexbuf), pkbuf->len);
+
+    /* Decode service request */
+    rv = nas_emm_decode(&message, pkbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    ABTS_INT_EQUAL(tc, 5, ksi_and_sequence_number->ksi);
+    ABTS_INT_EQUAL(tc, 8, ksi_and_sequence_number->sequence_number);
+    ABTS_INT_EQUAL(tc, 0x640c, service_request->message_authentication_code);
+
+    pkbuf_free(pkbuf);
+
+    /* Encode service request */
+    memset(&message, 0, sizeof(message));
+    message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    message.emm.h.security_header_type = 
+        NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE;
+
+    ksi_and_sequence_number->ksi = 5;
+    ksi_and_sequence_number->sequence_number = 8;
+    service_request->message_authentication_code = 0x640c;
+
+    rv = nas_plain_encode(&pkbuf, &message);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    ABTS_INT_EQUAL(tc, sizeof(buffer), pkbuf->len);
+    ABTS_TRUE(tc, memcmp(CORE_HEX(payload, strlen(payload), buffer),
+            pkbuf->payload, pkbuf->len) == 0);
+
+    pkbuf_free(pkbuf);
+}
+
 abts_suite *test_nas_message(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -255,6 +303,7 @@ abts_suite *test_nas_message(abts_suite *suite)
     abts_run_test(suite, nas_message_test5, NULL);
     abts_run_test(suite, nas_message_test6, NULL);
     abts_run_test(suite, nas_message_test7, NULL);
+    abts_run_test(suite, nas_message_test8, NULL);
 
     return suite;
 }

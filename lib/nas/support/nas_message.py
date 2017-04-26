@@ -703,6 +703,9 @@ f.write("""status_t nas_emm_decode(nas_message_t *message, pkbuf_t *pkbuf)
     if (message->emm.h.security_header_type >=
             NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE)
     {
+        d_assert(pkbuf_header(pkbuf, 1) == CORE_OK, 
+                return CORE_ERROR, "pkbuf_header error");
+        decoded -= 1;
         size = nas_decode_service_request(message, pkbuf);
         d_assert(size >= CORE_OK, return CORE_ERROR, "decode error");
         decoded += size;
@@ -781,6 +784,7 @@ f.write("""        default:
     return CORE_OK;
 }
 
+#if 0 /* deprecated */
 status_t nas_plain_decode(nas_message_t *message, pkbuf_t *pkbuf)
 {
     nas_security_header_t *h = NULL;
@@ -797,6 +801,7 @@ status_t nas_plain_decode(nas_message_t *message, pkbuf_t *pkbuf)
     d_assert(0, return CORE_ERROR, 
             "Invalid Protocol : %d", h->protocol_discriminator);
 }
+#endif
 """)
 
 f.close()
@@ -872,6 +877,9 @@ f.write("""status_t nas_emm_encode(pkbuf_t **pkbuf, nas_message_t *message)
     if (message->emm.h.security_header_type >=
             NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE)
     {
+        d_assert(pkbuf_header(*pkbuf, 1) == CORE_OK, 
+                return CORE_ERROR, "pkbuf_header error");
+        encoded -= 1;
         size = nas_encode_service_request(*pkbuf, message);
         d_assert(size >= 0, return CORE_ERROR, "decode error");
         encoded += size;

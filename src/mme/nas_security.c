@@ -18,6 +18,7 @@ status_t nas_security_encode(
     switch(message->h.security_header_type)
     {
         case NAS_SECURITY_HEADER_PLAIN_NAS_MESSAGE:
+        case NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE:
             return nas_plain_encode(pkbuf, message);
         case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED:
             integrity_protected = 1;
@@ -127,6 +128,7 @@ status_t nas_security_decode(mme_ue_t *ue, pkbuf_t *pkbuf)
     switch(h->security_header_type)
     {
         case NAS_SECURITY_HEADER_PLAIN_NAS_MESSAGE:
+        case NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE:
             return CORE_OK;
         case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED:
             integrity_protected = 1;
