@@ -428,3 +428,65 @@ void emm_handle_emm_status(mme_ue_t *ue, nas_emm_status_t *emm_status)
     d_warn("[NAS] EMM status(%d) : UE[%s] --> EMM", 
             emm_status->emm_cause, ue->imsi_bcd);
 }
+
+void emm_handle_detach_request(
+        mme_ue_t *ue, nas_detach_request_from_ue_t *detach_request)
+{
+    status_t rv;
+    mme_enb_t *enb = NULL;
+    pkbuf_t *emmbuf = NULL, *s1apbuf = NULL;
+
+    nas_message_t message;
+    nas_detach_type_t *detach_type = &detach_request->detach_type;
+
+    /* FIXME: nas_key_set_identifier is ignored
+     * detach_type->tsc
+     * detach_type->nas_key_set_identifier 
+     */
+
+    d_assert(ue, return, "Null param");
+    enb = ue->enb;
+    d_assert(enb, return, "Null param");
+
+    switch (detach_type->detach_type)
+    {
+        case 1: /* 0 0 1 : EPS detach */
+            break;
+        case 2: /* 0 1 0 : IMSI detach */
+            break;
+        case 6: /* 1 1 0 : reserved */
+        case 7: /* 1 1 1 : reserved */
+            break;
+        case 3: /* 0 1 1 : combined EPS/IMSI detach */
+        default: /* all other values */
+            break;
+    }
+    
+    /* TODO: ESM session delete */
+
+    if ((detach_type->switch_off & 0x1) == 0)
+    {
+        /* reply with detach accept */
+        memset(&message, 0, sizeof(message));
+        message.h.security_header_type = 
+            NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
+        message.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
+
+        message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
+        message.emm.h.message_type = NAS_DETACH_ACCEPT;
+
+        d_info("[NAS] Detach accept : UE[%s] <-- EMM", 
+            ue->imsi_bcd);
+
+        rv = nas_security_encode(&emmbuf, ue, &message);
+        d_assert(rv == CORE_OK && emmbuf, return, "emm build error");
+
+        rv = s1ap_build_downlink_nas_transport(&s1apbuf, ue, emmbuf);
+        d_assert(rv == CORE_OK && s1apbuf, 
+            pkbuf_free(emmbuf); return, "s1ap build error");
+
+        d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
+    }
+
+    /* initiate s1 ue context release */
+}

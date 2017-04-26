@@ -159,6 +159,12 @@ void emm_state_operational(fsm_t *s, event_t *e)
                     emm_handle_emm_status(ue, &message->emm.emm_status);
                     break;
                 }
+                case NAS_DETACH_REQUEST:
+                {
+                    emm_handle_detach_request(
+                            ue, &message->emm.detach_request_from_ue);
+                    break;
+                }
                 default:
                 {
                     d_warn("Not implemented(type:%d)", 
