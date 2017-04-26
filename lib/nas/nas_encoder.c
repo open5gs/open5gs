@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-25 20:02:55.628053 by acetcom
+ * Created on: 2017-04-26 09:18:26.270191 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -520,9 +520,9 @@ c_int32_t nas_encode_detach_request_to_ue(pkbuf_t *pkbuf, nas_message_t *message
     d_assert(size >= 0, return -1, "encode failed");
     encoded += size;
 
-    if (detach_request_to_ue->presencemask & NAS_DETACH_REQUEST_TO_UE_EMM_CAUSE_PRESENT)
+    if (detach_request_to_ue->presencemask & NAS_DETACH_REQUEST_EMM_CAUSE_PRESENT)
     {
-        size = nas_encode_optional_type(pkbuf, NAS_DETACH_REQUEST_TO_UE_EMM_CAUSE_TYPE);
+        size = nas_encode_optional_type(pkbuf, NAS_DETACH_REQUEST_EMM_CAUSE_TYPE);
         d_assert(size >= 0, return encoded, "decode failed");
         encoded += size;
 
@@ -1909,7 +1909,7 @@ status_t nas_emm_encode(pkbuf_t **pkbuf, nas_message_t *message)
             d_assert(size >= 0, return CORE_ERROR, "decode error");
             encoded += size;
             break;
-        case NAS_DETACH_REQUEST_TO_UE:
+        case NAS_DETACH_REQUEST:
             size = nas_encode_detach_request_to_ue(*pkbuf, message);
             d_assert(size >= 0, return CORE_ERROR, "decode error");
             encoded += size;

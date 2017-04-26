@@ -103,7 +103,7 @@ def usage():
     print "-h        Print this help and return"
 
 def v_upper(v):
-    return re.sub('3GPP', '', re.sub('\'', '_', re.sub('/', '_', re.sub('-', '_', re.sub(' ', '_', v)))).upper())
+    return re.sub('_TO_UE', '', re.sub('_FROM_UE', '', re.sub('3GPP', '', re.sub('\'', '_', re.sub('/', '_', re.sub('-', '_', re.sub(' ', '_', v)))).upper())))
 
 def v_lower(v):
     return re.sub('3gpp', '', re.sub('\'', '_', re.sub('/', '_', re.sub('-', '_', re.sub(' ', '_', v)))).lower())
@@ -520,7 +520,8 @@ ED2(c_uint8_t security_header_type:4;,
 """)
 
 for (k, v) in sorted_msg_list:
-    f.write("#define NAS_" + v_upper(k) + " " + v.split('.')[0] + "\n")
+    if k.find("TO UE") == -1:
+        f.write("#define NAS_" + v_upper(k) + " " + v.split('.')[0] + "\n")
 f.write("\n")
 
 for (k, v) in sorted_msg_list:

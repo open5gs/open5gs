@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-25 20:02:55.600467 by acetcom
+ * Created on: 2017-04-26 09:18:26.233286 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -81,8 +81,7 @@ ED2(c_uint8_t security_header_type:4;,
 #define NAS_ATTACH_ACCEPT 66
 #define NAS_ATTACH_COMPLETE 67
 #define NAS_ATTACH_REJECT 68
-#define NAS_DETACH_REQUEST_FROM_UE 69
-#define NAS_DETACH_REQUEST_TO_UE 69
+#define NAS_DETACH_REQUEST 69
 #define NAS_DETACH_ACCEPT 70
 #define NAS_TRACKING_AREA_UPDATE_REQUEST 72
 #define NAS_TRACKING_AREA_UPDATE_ACCEPT 73
@@ -310,8 +309,8 @@ typedef struct _nas_detach_request_from_ue_t {
 /*******************************************************
  * DETACH REQUEST TO UE
  ******************************************************/
-#define NAS_DETACH_REQUEST_TO_UE_EMM_CAUSE_PRESENT (1<<0)
-#define NAS_DETACH_REQUEST_TO_UE_EMM_CAUSE_TYPE 0x53
+#define NAS_DETACH_REQUEST_EMM_CAUSE_PRESENT (1<<0)
+#define NAS_DETACH_REQUEST_EMM_CAUSE_TYPE 0x53
 
 typedef struct _nas_detach_request_to_ue_t {
     /* Mandatory fields */
