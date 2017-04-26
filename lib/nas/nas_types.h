@@ -1237,6 +1237,15 @@ ED4(c_uint8_t spare1:1;,
     c_uint8_t pdn_type:3;)
 } __attribute__ ((packed)) nas_request_type_t;
 
+/* 9.9.4.15 Traffic flow aggregate description
+ * see subclause 10.5.6.12 in 3GPP TS 24.008 [13]
+ * M LV 2-256 */
+#define NAS_MAX_TRAFFIC_FLOW_AGGREGATE_DESCRIPTION 255
+typedef struct _nas_traffic_flow_aggregate_description_t {
+    c_uint8_t length;
+    c_uint8_t buffer[NAS_MAX_TRAFFIC_FLOW_AGGREGATE_DESCRIPTION];
+} __attribute__ ((packed)) nas_traffic_flow_aggregate_description_t;
+
 /* 9.9.4.16 Traffic flow template
  * See subclause 10.5.6.12 in 3GPP TS 24.008 [13].
  * M LV 2-256 */

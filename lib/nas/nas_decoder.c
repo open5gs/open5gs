@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-26 15:35:11.778551 by acetcom
+ * Created on: 2017-04-26 15:42:51.890956 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -1991,6 +1991,268 @@ c_int32_t nas_decode_pdn_disconnect_reject(nas_message_t *message, pkbuf_t *pkbu
     return decoded;
 }
 
+c_int32_t nas_decode_bearer_resource_allocation_request(nas_message_t *message, pkbuf_t *pkbuf)
+{
+    nas_bearer_resource_allocation_request_t *bearer_resource_allocation_request = &message->esm.bearer_resource_allocation_request;
+    c_int32_t decoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_decode_linked_eps_bearer_identity(&bearer_resource_allocation_request->linked_eps_bearer_identity, pkbuf);
+    d_assert(size >= 0, return -1, "decode failed");
+    decoded += size;
+
+    size = nas_decode_traffic_flow_aggregate_description(&bearer_resource_allocation_request->traffic_flow_aggregate, pkbuf);
+    d_assert(size >= 0, return -1, "decode failed");
+    decoded += size;
+
+    size = nas_decode_eps_quality_of_service(&bearer_resource_allocation_request->required_traffic_flow_qos, pkbuf);
+    d_assert(size >= 0, return -1, "decode failed");
+    decoded += size;
+
+    while(pkbuf->len > 0) 
+    {
+        c_uint8_t *buffer = pkbuf->payload;
+        c_uint8_t type = (*buffer) >= 0x80 ? ((*buffer) & 0xf0) : (*buffer);
+
+        size = sizeof(c_uint8_t);
+        d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, 
+                "pkbuf_header error");
+        decoded += size;
+
+        switch(type)
+        {
+             case NAS_BEARER_RESOURCE_ALLOCATION_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_TYPE:
+                 size = nas_decode_protocol_configuration_options(&bearer_resource_allocation_request->protocol_configuration_options, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 bearer_resource_allocation_request->presencemask |= NAS_BEARER_RESOURCE_ALLOCATION_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
+                 decoded += size;
+                 break;
+             case NAS_BEARER_RESOURCE_ALLOCATION_REQUEST_DEVICE_PROPERTIES_TYPE:
+                 size = nas_decode_device_properties(&bearer_resource_allocation_request->device_properties, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 bearer_resource_allocation_request->presencemask |= NAS_BEARER_RESOURCE_ALLOCATION_REQUEST_DEVICE_PROPERTIES_PRESENT;
+                 decoded += size;
+                 break;
+             case NAS_BEARER_RESOURCE_ALLOCATION_REQUEST_NBIFOM_CONTAINER_TYPE:
+                 size = nas_decode_nbifom_container(&bearer_resource_allocation_request->nbifom_container, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 bearer_resource_allocation_request->presencemask |= NAS_BEARER_RESOURCE_ALLOCATION_REQUEST_NBIFOM_CONTAINER_PRESENT;
+                 decoded += size;
+                 break;
+             case NAS_BEARER_RESOURCE_ALLOCATION_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE:
+                 size = nas_decode_extended_protocol_configuration_options(&bearer_resource_allocation_request->extended_protocol_configuration_options, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 bearer_resource_allocation_request->presencemask |= NAS_BEARER_RESOURCE_ALLOCATION_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
+                 decoded += size;
+                 break;
+             default:
+                d_error("Unknown type(0x%x) or not implemented\n", type);
+                return -1;
+        }
+    }
+
+    return decoded;
+}
+
+c_int32_t nas_decode_bearer_resource_allocation_reject(nas_message_t *message, pkbuf_t *pkbuf)
+{
+    nas_bearer_resource_allocation_reject_t *bearer_resource_allocation_reject = &message->esm.bearer_resource_allocation_reject;
+    c_int32_t decoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_decode_esm_cause(&bearer_resource_allocation_reject->esm_cause, pkbuf);
+    d_assert(size >= 0, return -1, "decode failed");
+    decoded += size;
+
+    while(pkbuf->len > 0) 
+    {
+        c_uint8_t *buffer = pkbuf->payload;
+        c_uint8_t type = (*buffer) >= 0x80 ? ((*buffer) & 0xf0) : (*buffer);
+
+        size = sizeof(c_uint8_t);
+        d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, 
+                "pkbuf_header error");
+        decoded += size;
+
+        switch(type)
+        {
+             case NAS_BEARER_RESOURCE_ALLOCATION_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_TYPE:
+                 size = nas_decode_protocol_configuration_options(&bearer_resource_allocation_reject->protocol_configuration_options, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 bearer_resource_allocation_reject->presencemask |= NAS_BEARER_RESOURCE_ALLOCATION_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
+                 decoded += size;
+                 break;
+             case NAS_BEARER_RESOURCE_ALLOCATION_REJECT_BACK_OFF_TIMER_VALUE_TYPE:
+                 size = nas_decode_gprs_timer_3(&bearer_resource_allocation_reject->back_off_timer_value, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 bearer_resource_allocation_reject->presencemask |= NAS_BEARER_RESOURCE_ALLOCATION_REJECT_BACK_OFF_TIMER_VALUE_PRESENT;
+                 decoded += size;
+                 break;
+             case NAS_BEARER_RESOURCE_ALLOCATION_REJECT_RE_ATTEMPT_INDICATOR_TYPE:
+                 size = nas_decode_re_attempt_indicator(&bearer_resource_allocation_reject->re_attempt_indicator, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 bearer_resource_allocation_reject->presencemask |= NAS_BEARER_RESOURCE_ALLOCATION_REJECT_RE_ATTEMPT_INDICATOR_PRESENT;
+                 decoded += size;
+                 break;
+             case NAS_BEARER_RESOURCE_ALLOCATION_REJECT_NBIFOM_CONTAINER_TYPE:
+                 size = nas_decode_nbifom_container(&bearer_resource_allocation_reject->nbifom_container, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 bearer_resource_allocation_reject->presencemask |= NAS_BEARER_RESOURCE_ALLOCATION_REJECT_NBIFOM_CONTAINER_PRESENT;
+                 decoded += size;
+                 break;
+             case NAS_BEARER_RESOURCE_ALLOCATION_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE:
+                 size = nas_decode_extended_protocol_configuration_options(&bearer_resource_allocation_reject->extended_protocol_configuration_options, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 bearer_resource_allocation_reject->presencemask |= NAS_BEARER_RESOURCE_ALLOCATION_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
+                 decoded += size;
+                 break;
+             default:
+                d_error("Unknown type(0x%x) or not implemented\n", type);
+                return -1;
+        }
+    }
+
+    return decoded;
+}
+
+c_int32_t nas_decode_bearer_resource_modification_request(nas_message_t *message, pkbuf_t *pkbuf)
+{
+    nas_bearer_resource_modification_request_t *bearer_resource_modification_request = &message->esm.bearer_resource_modification_request;
+    c_int32_t decoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_decode_linked_eps_bearer_identity(&bearer_resource_modification_request->eps_bearer_identity_for_packet_filter, pkbuf);
+    d_assert(size >= 0, return -1, "decode failed");
+    decoded += size;
+
+    size = nas_decode_traffic_flow_aggregate_description(&bearer_resource_modification_request->traffic_flow_aggregate, pkbuf);
+    d_assert(size >= 0, return -1, "decode failed");
+    decoded += size;
+
+    while(pkbuf->len > 0) 
+    {
+        c_uint8_t *buffer = pkbuf->payload;
+        c_uint8_t type = (*buffer) >= 0x80 ? ((*buffer) & 0xf0) : (*buffer);
+
+        size = sizeof(c_uint8_t);
+        d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, 
+                "pkbuf_header error");
+        decoded += size;
+
+        switch(type)
+        {
+             case NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_REQUIRED_TRAFFIC_FLOW_QOS_TYPE:
+                 size = nas_decode_eps_quality_of_service(&bearer_resource_modification_request->required_traffic_flow_qos, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 bearer_resource_modification_request->presencemask |= NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_REQUIRED_TRAFFIC_FLOW_QOS_PRESENT;
+                 decoded += size;
+                 break;
+             case NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_ESM_CAUSE_TYPE:
+                 size = nas_decode_esm_cause(&bearer_resource_modification_request->esm_cause, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 bearer_resource_modification_request->presencemask |= NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_ESM_CAUSE_PRESENT;
+                 decoded += size;
+                 break;
+             case NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_TYPE:
+                 size = nas_decode_protocol_configuration_options(&bearer_resource_modification_request->protocol_configuration_options, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 bearer_resource_modification_request->presencemask |= NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
+                 decoded += size;
+                 break;
+             case NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_DEVICE_PROPERTIES_TYPE:
+                 size = nas_decode_device_properties(&bearer_resource_modification_request->device_properties, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 bearer_resource_modification_request->presencemask |= NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_DEVICE_PROPERTIES_PRESENT;
+                 decoded += size;
+                 break;
+             case NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_NBIFOM_CONTAINER_TYPE:
+                 size = nas_decode_nbifom_container(&bearer_resource_modification_request->nbifom_container, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 bearer_resource_modification_request->presencemask |= NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_NBIFOM_CONTAINER_PRESENT;
+                 decoded += size;
+                 break;
+             case NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_HEADER_COMPRESSION_CONFIGURATION_TYPE:
+                 size = nas_decode_header_compression_configuration(&bearer_resource_modification_request->header_compression_configuration, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 bearer_resource_modification_request->presencemask |= NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_HEADER_COMPRESSION_CONFIGURATION_PRESENT;
+                 decoded += size;
+                 break;
+             case NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE:
+                 size = nas_decode_extended_protocol_configuration_options(&bearer_resource_modification_request->extended_protocol_configuration_options, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 bearer_resource_modification_request->presencemask |= NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
+                 decoded += size;
+                 break;
+             default:
+                d_error("Unknown type(0x%x) or not implemented\n", type);
+                return -1;
+        }
+    }
+
+    return decoded;
+}
+
+c_int32_t nas_decode_bearer_resource_modification_reject(nas_message_t *message, pkbuf_t *pkbuf)
+{
+    nas_bearer_resource_modification_reject_t *bearer_resource_modification_reject = &message->esm.bearer_resource_modification_reject;
+    c_int32_t decoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_decode_esm_cause(&bearer_resource_modification_reject->esm_cause, pkbuf);
+    d_assert(size >= 0, return -1, "decode failed");
+    decoded += size;
+
+    while(pkbuf->len > 0) 
+    {
+        c_uint8_t *buffer = pkbuf->payload;
+        c_uint8_t type = (*buffer) >= 0x80 ? ((*buffer) & 0xf0) : (*buffer);
+
+        size = sizeof(c_uint8_t);
+        d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, 
+                "pkbuf_header error");
+        decoded += size;
+
+        switch(type)
+        {
+             case NAS_BEARER_RESOURCE_MODIFICATION_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_TYPE:
+                 size = nas_decode_protocol_configuration_options(&bearer_resource_modification_reject->protocol_configuration_options, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 bearer_resource_modification_reject->presencemask |= NAS_BEARER_RESOURCE_MODIFICATION_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
+                 decoded += size;
+                 break;
+             case NAS_BEARER_RESOURCE_MODIFICATION_REJECT_BACK_OFF_TIMER_VALUE_TYPE:
+                 size = nas_decode_gprs_timer_3(&bearer_resource_modification_reject->back_off_timer_value, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 bearer_resource_modification_reject->presencemask |= NAS_BEARER_RESOURCE_MODIFICATION_REJECT_BACK_OFF_TIMER_VALUE_PRESENT;
+                 decoded += size;
+                 break;
+             case NAS_BEARER_RESOURCE_MODIFICATION_REJECT_RE_ATTEMPT_INDICATOR_TYPE:
+                 size = nas_decode_re_attempt_indicator(&bearer_resource_modification_reject->re_attempt_indicator, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 bearer_resource_modification_reject->presencemask |= NAS_BEARER_RESOURCE_MODIFICATION_REJECT_RE_ATTEMPT_INDICATOR_PRESENT;
+                 decoded += size;
+                 break;
+             case NAS_BEARER_RESOURCE_MODIFICATION_REJECT_NBIFOM_CONTAINER_TYPE:
+                 size = nas_decode_nbifom_container(&bearer_resource_modification_reject->nbifom_container, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 bearer_resource_modification_reject->presencemask |= NAS_BEARER_RESOURCE_MODIFICATION_REJECT_NBIFOM_CONTAINER_PRESENT;
+                 decoded += size;
+                 break;
+             case NAS_BEARER_RESOURCE_MODIFICATION_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE:
+                 size = nas_decode_extended_protocol_configuration_options(&bearer_resource_modification_reject->extended_protocol_configuration_options, pkbuf);
+                 d_assert(size >= 0, return -1, "decode failed");
+                 bearer_resource_modification_reject->presencemask |= NAS_BEARER_RESOURCE_MODIFICATION_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
+                 decoded += size;
+                 break;
+             default:
+                d_error("Unknown type(0x%x) or not implemented\n", type);
+                return -1;
+        }
+    }
+
+    return decoded;
+}
+
 c_int32_t nas_decode_esm_information_response(nas_message_t *message, pkbuf_t *pkbuf)
 {
     nas_esm_information_response_t *esm_information_response = &message->esm.esm_information_response;
@@ -2284,6 +2546,26 @@ status_t nas_esm_decode(nas_message_t *message, pkbuf_t *pkbuf)
             break;
         case NAS_PDN_DISCONNECT_REJECT:
             size = nas_decode_pdn_disconnect_reject(message, pkbuf);
+            d_assert(size >= CORE_OK, return CORE_ERROR, "decode error");
+            decoded += size;
+            break;
+        case NAS_BEARER_RESOURCE_ALLOCATION_REQUEST:
+            size = nas_decode_bearer_resource_allocation_request(message, pkbuf);
+            d_assert(size >= CORE_OK, return CORE_ERROR, "decode error");
+            decoded += size;
+            break;
+        case NAS_BEARER_RESOURCE_ALLOCATION_REJECT:
+            size = nas_decode_bearer_resource_allocation_reject(message, pkbuf);
+            d_assert(size >= CORE_OK, return CORE_ERROR, "decode error");
+            decoded += size;
+            break;
+        case NAS_BEARER_RESOURCE_MODIFICATION_REQUEST:
+            size = nas_decode_bearer_resource_modification_request(message, pkbuf);
+            d_assert(size >= CORE_OK, return CORE_ERROR, "decode error");
+            decoded += size;
+            break;
+        case NAS_BEARER_RESOURCE_MODIFICATION_REJECT:
+            size = nas_decode_bearer_resource_modification_reject(message, pkbuf);
             d_assert(size >= CORE_OK, return CORE_ERROR, "decode error");
             decoded += size;
             break;

@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-26 15:35:11.760847 by acetcom
+ * Created on: 2017-04-26 15:42:51.868179 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -1062,6 +1062,124 @@ typedef struct _nas_pdn_disconnect_reject_t {
 
 
 /*******************************************************
+ * BEARER RESOURCE ALLOCATION REQUEST
+ ******************************************************/
+#define NAS_BEARER_RESOURCE_ALLOCATION_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<0)
+#define NAS_BEARER_RESOURCE_ALLOCATION_REQUEST_DEVICE_PROPERTIES_PRESENT (1<<1)
+#define NAS_BEARER_RESOURCE_ALLOCATION_REQUEST_NBIFOM_CONTAINER_PRESENT (1<<2)
+#define NAS_BEARER_RESOURCE_ALLOCATION_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<3)
+#define NAS_BEARER_RESOURCE_ALLOCATION_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x27
+#define NAS_BEARER_RESOURCE_ALLOCATION_REQUEST_DEVICE_PROPERTIES_TYPE 0xC0
+#define NAS_BEARER_RESOURCE_ALLOCATION_REQUEST_NBIFOM_CONTAINER_TYPE 0x33
+#define NAS_BEARER_RESOURCE_ALLOCATION_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
+
+typedef struct _nas_bearer_resource_allocation_request_t {
+    /* Mandatory fields */
+    nas_linked_eps_bearer_identity_t linked_eps_bearer_identity;
+    nas_traffic_flow_aggregate_description_t traffic_flow_aggregate;
+    nas_eps_quality_of_service_t required_traffic_flow_qos;
+
+    /* Optional fields */
+    c_uint32_t presencemask;
+    nas_protocol_configuration_options_t protocol_configuration_options;
+    nas_device_properties_t device_properties;
+    nas_nbifom_container_t nbifom_container;
+    nas_extended_protocol_configuration_options_t extended_protocol_configuration_options;
+} nas_bearer_resource_allocation_request_t;
+
+
+/*******************************************************
+ * BEARER RESOURCE ALLOCATION REJECT
+ ******************************************************/
+#define NAS_BEARER_RESOURCE_ALLOCATION_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<0)
+#define NAS_BEARER_RESOURCE_ALLOCATION_REJECT_BACK_OFF_TIMER_VALUE_PRESENT (1<<1)
+#define NAS_BEARER_RESOURCE_ALLOCATION_REJECT_RE_ATTEMPT_INDICATOR_PRESENT (1<<2)
+#define NAS_BEARER_RESOURCE_ALLOCATION_REJECT_NBIFOM_CONTAINER_PRESENT (1<<3)
+#define NAS_BEARER_RESOURCE_ALLOCATION_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<4)
+#define NAS_BEARER_RESOURCE_ALLOCATION_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x27
+#define NAS_BEARER_RESOURCE_ALLOCATION_REJECT_BACK_OFF_TIMER_VALUE_TYPE 0x37
+#define NAS_BEARER_RESOURCE_ALLOCATION_REJECT_RE_ATTEMPT_INDICATOR_TYPE 0x6B
+#define NAS_BEARER_RESOURCE_ALLOCATION_REJECT_NBIFOM_CONTAINER_TYPE 0x33
+#define NAS_BEARER_RESOURCE_ALLOCATION_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
+
+typedef struct _nas_bearer_resource_allocation_reject_t {
+    /* Mandatory fields */
+    nas_esm_cause_t esm_cause;
+
+    /* Optional fields */
+    c_uint32_t presencemask;
+    nas_protocol_configuration_options_t protocol_configuration_options;
+    nas_gprs_timer_3_t back_off_timer_value;
+    nas_re_attempt_indicator_t re_attempt_indicator;
+    nas_nbifom_container_t nbifom_container;
+    nas_extended_protocol_configuration_options_t extended_protocol_configuration_options;
+} nas_bearer_resource_allocation_reject_t;
+
+
+/*******************************************************
+ * BEARER RESOURCE MODIFICATION REQUEST
+ ******************************************************/
+#define NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_REQUIRED_TRAFFIC_FLOW_QOS_PRESENT (1<<0)
+#define NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_ESM_CAUSE_PRESENT (1<<1)
+#define NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<2)
+#define NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_DEVICE_PROPERTIES_PRESENT (1<<3)
+#define NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_NBIFOM_CONTAINER_PRESENT (1<<4)
+#define NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_HEADER_COMPRESSION_CONFIGURATION_PRESENT (1<<5)
+#define NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<6)
+#define NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_REQUIRED_TRAFFIC_FLOW_QOS_TYPE 0x5B
+#define NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_ESM_CAUSE_TYPE 0x58
+#define NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x27
+#define NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_DEVICE_PROPERTIES_TYPE 0xC0
+#define NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_NBIFOM_CONTAINER_TYPE 0x33
+#define NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_HEADER_COMPRESSION_CONFIGURATION_TYPE 0x66
+#define NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
+
+typedef struct _nas_bearer_resource_modification_request_t {
+    /* Mandatory fields */
+    nas_linked_eps_bearer_identity_t eps_bearer_identity_for_packet_filter;
+    nas_traffic_flow_aggregate_description_t traffic_flow_aggregate;
+
+    /* Optional fields */
+    c_uint32_t presencemask;
+    nas_eps_quality_of_service_t required_traffic_flow_qos;
+    nas_esm_cause_t esm_cause;
+    nas_protocol_configuration_options_t protocol_configuration_options;
+    nas_device_properties_t device_properties;
+    nas_nbifom_container_t nbifom_container;
+    nas_header_compression_configuration_t header_compression_configuration;
+    nas_extended_protocol_configuration_options_t extended_protocol_configuration_options;
+} nas_bearer_resource_modification_request_t;
+
+
+/*******************************************************
+ * BEARER RESOURCE MODIFICATION REJECT
+ ******************************************************/
+#define NAS_BEARER_RESOURCE_MODIFICATION_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<0)
+#define NAS_BEARER_RESOURCE_MODIFICATION_REJECT_BACK_OFF_TIMER_VALUE_PRESENT (1<<1)
+#define NAS_BEARER_RESOURCE_MODIFICATION_REJECT_RE_ATTEMPT_INDICATOR_PRESENT (1<<2)
+#define NAS_BEARER_RESOURCE_MODIFICATION_REJECT_NBIFOM_CONTAINER_PRESENT (1<<3)
+#define NAS_BEARER_RESOURCE_MODIFICATION_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<4)
+#define NAS_BEARER_RESOURCE_MODIFICATION_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x27
+#define NAS_BEARER_RESOURCE_MODIFICATION_REJECT_BACK_OFF_TIMER_VALUE_TYPE 0x37
+#define NAS_BEARER_RESOURCE_MODIFICATION_REJECT_RE_ATTEMPT_INDICATOR_TYPE 0x6B
+#define NAS_BEARER_RESOURCE_MODIFICATION_REJECT_NBIFOM_CONTAINER_TYPE 0x33
+#define NAS_BEARER_RESOURCE_MODIFICATION_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
+
+typedef struct _nas_bearer_resource_modification_reject_t {
+    /* Mandatory fields */
+    nas_esm_cause_t esm_cause;
+
+    /* Optional fields */
+    c_uint32_t presencemask;
+    nas_protocol_configuration_options_t protocol_configuration_options;
+    nas_gprs_timer_3_t back_off_timer_value;
+    nas_re_attempt_indicator_t re_attempt_indicator;
+    nas_nbifom_container_t nbifom_container;
+    nas_extended_protocol_configuration_options_t extended_protocol_configuration_options;
+} nas_bearer_resource_modification_reject_t;
+
+
+/*******************************************************
  * ESM INFORMATION RESPONSE
  ******************************************************/
 #define NAS_ESM_INFORMATION_RESPONSE_ACCESS_POINT_NAME_PRESENT (1<<0)
@@ -1128,6 +1246,10 @@ typedef struct _nas_esm_message_t {
         nas_pdn_connectivity_reject_t pdn_connectivity_reject;
         nas_pdn_disconnect_request_t pdn_disconnect_request;
         nas_pdn_disconnect_reject_t pdn_disconnect_reject;
+        nas_bearer_resource_allocation_request_t bearer_resource_allocation_request;
+        nas_bearer_resource_allocation_reject_t bearer_resource_allocation_reject;
+        nas_bearer_resource_modification_request_t bearer_resource_modification_request;
+        nas_bearer_resource_modification_reject_t bearer_resource_modification_reject;
         nas_esm_information_response_t esm_information_response;
     };
 } nas_esm_message_t;

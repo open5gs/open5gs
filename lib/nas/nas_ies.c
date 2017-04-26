@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-26 15:35:11.747436 by acetcom
+ * Created on: 2017-04-26 15:42:51.856333 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -1902,6 +1902,34 @@ c_int16_t nas_encode_request_type(pkbuf_t *pkbuf, nas_request_type_t *request_ty
     nas_request_type_t target;
 
     memcpy(&target, request_type, size);
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(pkbuf->payload - size, &target, size);
+
+    return size;
+}
+
+/* 9.9.4.15 Traffic flow aggregate description
+ * M LV 2-256 */
+c_int16_t nas_decode_traffic_flow_aggregate_description(nas_traffic_flow_aggregate_description_t *traffic_flow_aggregate_description, pkbuf_t *pkbuf)
+{
+    c_uint16_t size = 0;
+    nas_traffic_flow_aggregate_description_t *source = pkbuf->payload;
+
+    traffic_flow_aggregate_description->length = source->length;
+    size = traffic_flow_aggregate_description->length + sizeof(traffic_flow_aggregate_description->length);
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
+    memcpy(traffic_flow_aggregate_description, pkbuf->payload - size, size);
+
+    return size;
+}
+
+c_int16_t nas_encode_traffic_flow_aggregate_description(pkbuf_t *pkbuf, nas_traffic_flow_aggregate_description_t *traffic_flow_aggregate_description)
+{
+    c_uint16_t size = traffic_flow_aggregate_description->length + sizeof(traffic_flow_aggregate_description->length);
+    nas_traffic_flow_aggregate_description_t target;
+
+    memcpy(&target, traffic_flow_aggregate_description, sizeof(nas_traffic_flow_aggregate_description_t));
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
     memcpy(pkbuf->payload - size, &target, size);
 
