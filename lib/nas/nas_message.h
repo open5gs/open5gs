@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-26 09:49:09.287767 by acetcom
+ * Created on: 2017-04-26 11:58:32.345942 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -49,7 +49,7 @@ extern "C" {
 #define NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT 3
 #define NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHTERD_WITH_NEW_INTEGRITY_CONTEXT 4
 #define NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_PARTICALLY_CIPHTERD 5
-#define NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE 6
+#define NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE 12
 
 #define NAS_PROTOCOL_DISCRIMINATOR_ESM 0x2
 #define NAS_PROTOCOL_DISCRIMINATOR_EMM 0x7

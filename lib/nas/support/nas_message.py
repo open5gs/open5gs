@@ -492,7 +492,7 @@ extern "C" {
 #define NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT 3
 #define NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHTERD_WITH_NEW_INTEGRITY_CONTEXT 4
 #define NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_PARTICALLY_CIPHTERD 5
-#define NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE 6
+#define NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE 12
 
 #define NAS_PROTOCOL_DISCRIMINATOR_ESM 0x2
 #define NAS_PROTOCOL_DISCRIMINATOR_EMM 0x7
@@ -700,7 +700,7 @@ f.write("""status_t nas_emm_decode(nas_message_t *message, pkbuf_t *pkbuf)
     memcpy(&message->emm.h, pkbuf->payload - size, size);
     decoded += size;
 
-    if (message->emm.h.security_header_type ==
+    if (message->emm.h.security_header_type >=
             NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE)
     {
         size = nas_decode_service_request(message, pkbuf);
@@ -869,7 +869,7 @@ f.write("""status_t nas_emm_encode(pkbuf_t **pkbuf, nas_message_t *message)
     memcpy((*pkbuf)->payload - size, &message->emm.h, size);
     encoded += size;
 
-    if (message->emm.h.security_header_type ==
+    if (message->emm.h.security_header_type >=
             NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE)
     {
         size = nas_encode_service_request(*pkbuf, message);
