@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-26 14:51:04.114843 by acetcom
+ * Created on: 2017-04-26 16:05:18.026166 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -113,6 +113,8 @@ CORE_DECLARE(c_int16_t) nas_decode_quality_of_service(nas_quality_of_service_t *
 CORE_DECLARE(c_int16_t) nas_decode_radio_priority(nas_radio_priority_t *radio_priority, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_re_attempt_indicator(nas_re_attempt_indicator_t *re_attempt_indicator, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_request_type(nas_request_type_t *request_type, pkbuf_t *pkbuf);
+CORE_DECLARE(c_int16_t) nas_decode_traffic_flow_aggregate_description(nas_traffic_flow_aggregate_description_t *traffic_flow_aggregate_description, pkbuf_t *pkbuf);
+CORE_DECLARE(c_int16_t) nas_decode_traffic_flow_template(nas_traffic_flow_template_t *traffic_flow_template, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_transaction_identifier(nas_transaction_identifier_t *transaction_identifier, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_wlan_offload_acceptability(nas_wlan_offload_acceptability_t *wlan_offload_acceptability, pkbuf_t *pkbuf);
 CORE_DECLARE(c_int16_t) nas_decode_nbifom_container(nas_nbifom_container_t *nbifom_container, pkbuf_t *pkbuf);
@@ -202,6 +204,8 @@ CORE_DECLARE(c_int16_t) nas_encode_quality_of_service(pkbuf_t *pkbuf, nas_qualit
 CORE_DECLARE(c_int16_t) nas_encode_radio_priority(pkbuf_t *pkbuf, nas_radio_priority_t *radio_priority);
 CORE_DECLARE(c_int16_t) nas_encode_re_attempt_indicator(pkbuf_t *pkbuf, nas_re_attempt_indicator_t *re_attempt_indicator);
 CORE_DECLARE(c_int16_t) nas_encode_request_type(pkbuf_t *pkbuf, nas_request_type_t *request_type);
+CORE_DECLARE(c_int16_t) nas_encode_traffic_flow_aggregate_description(pkbuf_t *pkbuf, nas_traffic_flow_aggregate_description_t *traffic_flow_aggregate_description);
+CORE_DECLARE(c_int16_t) nas_encode_traffic_flow_template(pkbuf_t *pkbuf, nas_traffic_flow_template_t *traffic_flow_template);
 CORE_DECLARE(c_int16_t) nas_encode_transaction_identifier(pkbuf_t *pkbuf, nas_transaction_identifier_t *transaction_identifier);
 CORE_DECLARE(c_int16_t) nas_encode_wlan_offload_acceptability(pkbuf_t *pkbuf, nas_wlan_offload_acceptability_t *wlan_offload_acceptability);
 CORE_DECLARE(c_int16_t) nas_encode_nbifom_container(pkbuf_t *pkbuf, nas_nbifom_container_t *nbifom_container);

@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-26 14:51:04.184245 by acetcom
+ * Created on: 2017-04-26 16:05:18.104109 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -1781,6 +1781,532 @@ c_int32_t nas_encode_activate_default_eps_bearer_context_reject(pkbuf_t *pkbuf, 
     return encoded;
 }
 
+c_int32_t nas_encode_activate_dedicated_eps_bearer_context_request(pkbuf_t *pkbuf, nas_message_t *message)
+{
+    nas_activate_dedicated_eps_bearer_context_request_t *activate_dedicated_eps_bearer_context_request = &message->esm.activate_dedicated_eps_bearer_context_request;
+    c_int32_t encoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_encode_linked_eps_bearer_identity(pkbuf, &activate_dedicated_eps_bearer_context_request->linked_eps_bearer_identity);
+    d_assert(size >= 0, return -1, "encode failed");
+    encoded += size;
+
+    size = nas_encode_eps_quality_of_service(pkbuf, &activate_dedicated_eps_bearer_context_request->eps_qos);
+    d_assert(size >= 0, return -1, "encode failed");
+    encoded += size;
+
+    size = nas_encode_traffic_flow_template(pkbuf, &activate_dedicated_eps_bearer_context_request->tft);
+    d_assert(size >= 0, return -1, "encode failed");
+    encoded += size;
+
+    if (activate_dedicated_eps_bearer_context_request->presencemask & NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_TRANSACTION_IDENTIFIER_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_TRANSACTION_IDENTIFIER_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_transaction_identifier(pkbuf, &activate_dedicated_eps_bearer_context_request->transaction_identifier);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (activate_dedicated_eps_bearer_context_request->presencemask & NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_QOS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_QOS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_quality_of_service(pkbuf, &activate_dedicated_eps_bearer_context_request->negotiated_qos);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (activate_dedicated_eps_bearer_context_request->presencemask & NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_LLC_SAPI_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_LLC_SAPI_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_llc_service_access_point_identifier(pkbuf, &activate_dedicated_eps_bearer_context_request->negotiated_llc_sapi);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (activate_dedicated_eps_bearer_context_request->presencemask & NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_RADIO_PRIORITY_PRESENT)
+    {
+        activate_dedicated_eps_bearer_context_request->radio_priority.type = (NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_RADIO_PRIORITY_TYPE >> 4);
+
+        size = nas_encode_radio_priority(pkbuf, &activate_dedicated_eps_bearer_context_request->radio_priority);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (activate_dedicated_eps_bearer_context_request->presencemask & NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_PACKET_FLOW_IDENTIFIER_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_PACKET_FLOW_IDENTIFIER_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_packet_flow_identifier(pkbuf, &activate_dedicated_eps_bearer_context_request->packet_flow_identifier);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (activate_dedicated_eps_bearer_context_request->presencemask & NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_protocol_configuration_options(pkbuf, &activate_dedicated_eps_bearer_context_request->protocol_configuration_options);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (activate_dedicated_eps_bearer_context_request->presencemask & NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_WLAN_OFFLOAD_INDICATION_PRESENT)
+    {
+        activate_dedicated_eps_bearer_context_request->wlan_offload_indication.type = (NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_WLAN_OFFLOAD_INDICATION_TYPE >> 4);
+
+        size = nas_encode_wlan_offload_acceptability(pkbuf, &activate_dedicated_eps_bearer_context_request->wlan_offload_indication);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (activate_dedicated_eps_bearer_context_request->presencemask & NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_NBIFOM_CONTAINER_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_NBIFOM_CONTAINER_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_nbifom_container(pkbuf, &activate_dedicated_eps_bearer_context_request->nbifom_container);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (activate_dedicated_eps_bearer_context_request->presencemask & NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_extended_protocol_configuration_options(pkbuf, &activate_dedicated_eps_bearer_context_request->extended_protocol_configuration_options);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    return encoded;
+}
+
+c_int32_t nas_encode_activate_dedicated_eps_bearer_context_accept(pkbuf_t *pkbuf, nas_message_t *message)
+{
+    nas_activate_dedicated_eps_bearer_context_accept_t *activate_dedicated_eps_bearer_context_accept = &message->esm.activate_dedicated_eps_bearer_context_accept;
+    c_int32_t encoded = 0;
+    c_int32_t size = 0;
+
+    if (activate_dedicated_eps_bearer_context_accept->presencemask & NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_ACCEPT_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_ACCEPT_PROTOCOL_CONFIGURATION_OPTIONS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_protocol_configuration_options(pkbuf, &activate_dedicated_eps_bearer_context_accept->protocol_configuration_options);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (activate_dedicated_eps_bearer_context_accept->presencemask & NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_ACCEPT_NBIFOM_CONTAINER_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_ACCEPT_NBIFOM_CONTAINER_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_nbifom_container(pkbuf, &activate_dedicated_eps_bearer_context_accept->nbifom_container);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (activate_dedicated_eps_bearer_context_accept->presencemask & NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_ACCEPT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_ACCEPT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_extended_protocol_configuration_options(pkbuf, &activate_dedicated_eps_bearer_context_accept->extended_protocol_configuration_options);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    return encoded;
+}
+
+c_int32_t nas_encode_activate_dedicated_eps_bearer_context_reject(pkbuf_t *pkbuf, nas_message_t *message)
+{
+    nas_activate_dedicated_eps_bearer_context_reject_t *activate_dedicated_eps_bearer_context_reject = &message->esm.activate_dedicated_eps_bearer_context_reject;
+    c_int32_t encoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_encode_esm_cause(pkbuf, &activate_dedicated_eps_bearer_context_reject->esm_cause);
+    d_assert(size >= 0, return -1, "encode failed");
+    encoded += size;
+
+    if (activate_dedicated_eps_bearer_context_reject->presencemask & NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_protocol_configuration_options(pkbuf, &activate_dedicated_eps_bearer_context_reject->protocol_configuration_options);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (activate_dedicated_eps_bearer_context_reject->presencemask & NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REJECT_NBIFOM_CONTAINER_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REJECT_NBIFOM_CONTAINER_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_nbifom_container(pkbuf, &activate_dedicated_eps_bearer_context_reject->nbifom_container);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (activate_dedicated_eps_bearer_context_reject->presencemask & NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_extended_protocol_configuration_options(pkbuf, &activate_dedicated_eps_bearer_context_reject->extended_protocol_configuration_options);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    return encoded;
+}
+
+c_int32_t nas_encode_modify_eps_bearer_context_request(pkbuf_t *pkbuf, nas_message_t *message)
+{
+    nas_modify_eps_bearer_context_request_t *modify_eps_bearer_context_request = &message->esm.modify_eps_bearer_context_request;
+    c_int32_t encoded = 0;
+    c_int32_t size = 0;
+
+    if (modify_eps_bearer_context_request->presencemask & NAS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_NEW_EPS_QOS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_NEW_EPS_QOS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_eps_quality_of_service(pkbuf, &modify_eps_bearer_context_request->new_eps_qos);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (modify_eps_bearer_context_request->presencemask & NAS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_TFT_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_TFT_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_traffic_flow_template(pkbuf, &modify_eps_bearer_context_request->tft);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (modify_eps_bearer_context_request->presencemask & NAS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_NEW_QOS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_NEW_QOS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_quality_of_service(pkbuf, &modify_eps_bearer_context_request->new_qos);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (modify_eps_bearer_context_request->presencemask & NAS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_LLC_SAPI_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_LLC_SAPI_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_llc_service_access_point_identifier(pkbuf, &modify_eps_bearer_context_request->negotiated_llc_sapi);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (modify_eps_bearer_context_request->presencemask & NAS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_RADIO_PRIORITY_PRESENT)
+    {
+        modify_eps_bearer_context_request->radio_priority.type = (NAS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_RADIO_PRIORITY_TYPE >> 4);
+
+        size = nas_encode_radio_priority(pkbuf, &modify_eps_bearer_context_request->radio_priority);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (modify_eps_bearer_context_request->presencemask & NAS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_PACKET_FLOW_IDENTIFIER_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_PACKET_FLOW_IDENTIFIER_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_packet_flow_identifier(pkbuf, &modify_eps_bearer_context_request->packet_flow_identifier);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (modify_eps_bearer_context_request->presencemask & NAS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_APN_AMBR_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_APN_AMBR_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_apn_aggregate_maximum_bit_rate(pkbuf, &modify_eps_bearer_context_request->apn_ambr);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (modify_eps_bearer_context_request->presencemask & NAS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_protocol_configuration_options(pkbuf, &modify_eps_bearer_context_request->protocol_configuration_options);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (modify_eps_bearer_context_request->presencemask & NAS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_WLAN_OFFLOAD_INDICATION_PRESENT)
+    {
+        modify_eps_bearer_context_request->wlan_offload_indication.type = (NAS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_WLAN_OFFLOAD_INDICATION_TYPE >> 4);
+
+        size = nas_encode_wlan_offload_acceptability(pkbuf, &modify_eps_bearer_context_request->wlan_offload_indication);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (modify_eps_bearer_context_request->presencemask & NAS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_NBIFOM_CONTAINER_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_NBIFOM_CONTAINER_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_nbifom_container(pkbuf, &modify_eps_bearer_context_request->nbifom_container);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (modify_eps_bearer_context_request->presencemask & NAS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_HEADER_COMPRESSION_CONFIGURATION_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_HEADER_COMPRESSION_CONFIGURATION_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_header_compression_configuration(pkbuf, &modify_eps_bearer_context_request->header_compression_configuration);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (modify_eps_bearer_context_request->presencemask & NAS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_extended_protocol_configuration_options(pkbuf, &modify_eps_bearer_context_request->extended_protocol_configuration_options);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    return encoded;
+}
+
+c_int32_t nas_encode_modify_eps_bearer_context_accept(pkbuf_t *pkbuf, nas_message_t *message)
+{
+    nas_modify_eps_bearer_context_accept_t *modify_eps_bearer_context_accept = &message->esm.modify_eps_bearer_context_accept;
+    c_int32_t encoded = 0;
+    c_int32_t size = 0;
+
+    if (modify_eps_bearer_context_accept->presencemask & NAS_MODIFY_EPS_BEARER_CONTEXT_ACCEPT_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_MODIFY_EPS_BEARER_CONTEXT_ACCEPT_PROTOCOL_CONFIGURATION_OPTIONS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_protocol_configuration_options(pkbuf, &modify_eps_bearer_context_accept->protocol_configuration_options);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (modify_eps_bearer_context_accept->presencemask & NAS_MODIFY_EPS_BEARER_CONTEXT_ACCEPT_NBIFOM_CONTAINER_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_MODIFY_EPS_BEARER_CONTEXT_ACCEPT_NBIFOM_CONTAINER_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_nbifom_container(pkbuf, &modify_eps_bearer_context_accept->nbifom_container);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (modify_eps_bearer_context_accept->presencemask & NAS_MODIFY_EPS_BEARER_CONTEXT_ACCEPT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_MODIFY_EPS_BEARER_CONTEXT_ACCEPT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_extended_protocol_configuration_options(pkbuf, &modify_eps_bearer_context_accept->extended_protocol_configuration_options);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    return encoded;
+}
+
+c_int32_t nas_encode_modify_eps_bearer_context_reject(pkbuf_t *pkbuf, nas_message_t *message)
+{
+    nas_modify_eps_bearer_context_reject_t *modify_eps_bearer_context_reject = &message->esm.modify_eps_bearer_context_reject;
+    c_int32_t encoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_encode_esm_cause(pkbuf, &modify_eps_bearer_context_reject->esm_cause);
+    d_assert(size >= 0, return -1, "encode failed");
+    encoded += size;
+
+    if (modify_eps_bearer_context_reject->presencemask & NAS_MODIFY_EPS_BEARER_CONTEXT_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_MODIFY_EPS_BEARER_CONTEXT_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_protocol_configuration_options(pkbuf, &modify_eps_bearer_context_reject->protocol_configuration_options);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (modify_eps_bearer_context_reject->presencemask & NAS_MODIFY_EPS_BEARER_CONTEXT_REJECT_NBIFOM_CONTAINER_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_MODIFY_EPS_BEARER_CONTEXT_REJECT_NBIFOM_CONTAINER_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_nbifom_container(pkbuf, &modify_eps_bearer_context_reject->nbifom_container);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (modify_eps_bearer_context_reject->presencemask & NAS_MODIFY_EPS_BEARER_CONTEXT_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_MODIFY_EPS_BEARER_CONTEXT_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_extended_protocol_configuration_options(pkbuf, &modify_eps_bearer_context_reject->extended_protocol_configuration_options);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    return encoded;
+}
+
+c_int32_t nas_encode_deactivate_eps_bearer_context_request(pkbuf_t *pkbuf, nas_message_t *message)
+{
+    nas_deactivate_eps_bearer_context_request_t *deactivate_eps_bearer_context_request = &message->esm.deactivate_eps_bearer_context_request;
+    c_int32_t encoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_encode_esm_cause(pkbuf, &deactivate_eps_bearer_context_request->esm_cause);
+    d_assert(size >= 0, return -1, "encode failed");
+    encoded += size;
+
+    if (deactivate_eps_bearer_context_request->presencemask & NAS_DEACTIVATE_EPS_BEARER_CONTEXT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_DEACTIVATE_EPS_BEARER_CONTEXT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_protocol_configuration_options(pkbuf, &deactivate_eps_bearer_context_request->protocol_configuration_options);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (deactivate_eps_bearer_context_request->presencemask & NAS_DEACTIVATE_EPS_BEARER_CONTEXT_REQUEST_T3396_VALUE_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_DEACTIVATE_EPS_BEARER_CONTEXT_REQUEST_T3396_VALUE_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_gprs_timer_3(pkbuf, &deactivate_eps_bearer_context_request->t3396_value);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (deactivate_eps_bearer_context_request->presencemask & NAS_DEACTIVATE_EPS_BEARER_CONTEXT_REQUEST_WLAN_OFFLOAD_INDICATION_PRESENT)
+    {
+        deactivate_eps_bearer_context_request->wlan_offload_indication.type = (NAS_DEACTIVATE_EPS_BEARER_CONTEXT_REQUEST_WLAN_OFFLOAD_INDICATION_TYPE >> 4);
+
+        size = nas_encode_wlan_offload_acceptability(pkbuf, &deactivate_eps_bearer_context_request->wlan_offload_indication);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (deactivate_eps_bearer_context_request->presencemask & NAS_DEACTIVATE_EPS_BEARER_CONTEXT_REQUEST_NBIFOM_CONTAINER_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_DEACTIVATE_EPS_BEARER_CONTEXT_REQUEST_NBIFOM_CONTAINER_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_nbifom_container(pkbuf, &deactivate_eps_bearer_context_request->nbifom_container);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (deactivate_eps_bearer_context_request->presencemask & NAS_DEACTIVATE_EPS_BEARER_CONTEXT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_DEACTIVATE_EPS_BEARER_CONTEXT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_extended_protocol_configuration_options(pkbuf, &deactivate_eps_bearer_context_request->extended_protocol_configuration_options);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    return encoded;
+}
+
+c_int32_t nas_encode_deactivate_eps_bearer_context_accept(pkbuf_t *pkbuf, nas_message_t *message)
+{
+    nas_deactivate_eps_bearer_context_accept_t *deactivate_eps_bearer_context_accept = &message->esm.deactivate_eps_bearer_context_accept;
+    c_int32_t encoded = 0;
+    c_int32_t size = 0;
+
+    if (deactivate_eps_bearer_context_accept->presencemask & NAS_DEACTIVATE_EPS_BEARER_CONTEXT_ACCEPT_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_DEACTIVATE_EPS_BEARER_CONTEXT_ACCEPT_PROTOCOL_CONFIGURATION_OPTIONS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_protocol_configuration_options(pkbuf, &deactivate_eps_bearer_context_accept->protocol_configuration_options);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (deactivate_eps_bearer_context_accept->presencemask & NAS_DEACTIVATE_EPS_BEARER_CONTEXT_ACCEPT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_DEACTIVATE_EPS_BEARER_CONTEXT_ACCEPT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_extended_protocol_configuration_options(pkbuf, &deactivate_eps_bearer_context_accept->extended_protocol_configuration_options);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    return encoded;
+}
+
 c_int32_t nas_encode_pdn_connectivity_request(pkbuf_t *pkbuf, nas_message_t *message)
 {
     nas_pdn_connectivity_request_t *pdn_connectivity_request = &message->esm.pdn_connectivity_request;
@@ -2005,6 +2531,297 @@ c_int32_t nas_encode_pdn_disconnect_reject(pkbuf_t *pkbuf, nas_message_t *messag
     return encoded;
 }
 
+c_int32_t nas_encode_bearer_resource_allocation_request(pkbuf_t *pkbuf, nas_message_t *message)
+{
+    nas_bearer_resource_allocation_request_t *bearer_resource_allocation_request = &message->esm.bearer_resource_allocation_request;
+    c_int32_t encoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_encode_linked_eps_bearer_identity(pkbuf, &bearer_resource_allocation_request->linked_eps_bearer_identity);
+    d_assert(size >= 0, return -1, "encode failed");
+    encoded += size;
+
+    size = nas_encode_traffic_flow_aggregate_description(pkbuf, &bearer_resource_allocation_request->traffic_flow_aggregate);
+    d_assert(size >= 0, return -1, "encode failed");
+    encoded += size;
+
+    size = nas_encode_eps_quality_of_service(pkbuf, &bearer_resource_allocation_request->required_traffic_flow_qos);
+    d_assert(size >= 0, return -1, "encode failed");
+    encoded += size;
+
+    if (bearer_resource_allocation_request->presencemask & NAS_BEARER_RESOURCE_ALLOCATION_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_BEARER_RESOURCE_ALLOCATION_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_protocol_configuration_options(pkbuf, &bearer_resource_allocation_request->protocol_configuration_options);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (bearer_resource_allocation_request->presencemask & NAS_BEARER_RESOURCE_ALLOCATION_REQUEST_DEVICE_PROPERTIES_PRESENT)
+    {
+        bearer_resource_allocation_request->device_properties.type = (NAS_BEARER_RESOURCE_ALLOCATION_REQUEST_DEVICE_PROPERTIES_TYPE >> 4);
+
+        size = nas_encode_device_properties(pkbuf, &bearer_resource_allocation_request->device_properties);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (bearer_resource_allocation_request->presencemask & NAS_BEARER_RESOURCE_ALLOCATION_REQUEST_NBIFOM_CONTAINER_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_BEARER_RESOURCE_ALLOCATION_REQUEST_NBIFOM_CONTAINER_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_nbifom_container(pkbuf, &bearer_resource_allocation_request->nbifom_container);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (bearer_resource_allocation_request->presencemask & NAS_BEARER_RESOURCE_ALLOCATION_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_BEARER_RESOURCE_ALLOCATION_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_extended_protocol_configuration_options(pkbuf, &bearer_resource_allocation_request->extended_protocol_configuration_options);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    return encoded;
+}
+
+c_int32_t nas_encode_bearer_resource_allocation_reject(pkbuf_t *pkbuf, nas_message_t *message)
+{
+    nas_bearer_resource_allocation_reject_t *bearer_resource_allocation_reject = &message->esm.bearer_resource_allocation_reject;
+    c_int32_t encoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_encode_esm_cause(pkbuf, &bearer_resource_allocation_reject->esm_cause);
+    d_assert(size >= 0, return -1, "encode failed");
+    encoded += size;
+
+    if (bearer_resource_allocation_reject->presencemask & NAS_BEARER_RESOURCE_ALLOCATION_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_BEARER_RESOURCE_ALLOCATION_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_protocol_configuration_options(pkbuf, &bearer_resource_allocation_reject->protocol_configuration_options);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (bearer_resource_allocation_reject->presencemask & NAS_BEARER_RESOURCE_ALLOCATION_REJECT_BACK_OFF_TIMER_VALUE_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_BEARER_RESOURCE_ALLOCATION_REJECT_BACK_OFF_TIMER_VALUE_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_gprs_timer_3(pkbuf, &bearer_resource_allocation_reject->back_off_timer_value);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (bearer_resource_allocation_reject->presencemask & NAS_BEARER_RESOURCE_ALLOCATION_REJECT_RE_ATTEMPT_INDICATOR_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_BEARER_RESOURCE_ALLOCATION_REJECT_RE_ATTEMPT_INDICATOR_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_re_attempt_indicator(pkbuf, &bearer_resource_allocation_reject->re_attempt_indicator);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (bearer_resource_allocation_reject->presencemask & NAS_BEARER_RESOURCE_ALLOCATION_REJECT_NBIFOM_CONTAINER_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_BEARER_RESOURCE_ALLOCATION_REJECT_NBIFOM_CONTAINER_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_nbifom_container(pkbuf, &bearer_resource_allocation_reject->nbifom_container);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (bearer_resource_allocation_reject->presencemask & NAS_BEARER_RESOURCE_ALLOCATION_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_BEARER_RESOURCE_ALLOCATION_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_extended_protocol_configuration_options(pkbuf, &bearer_resource_allocation_reject->extended_protocol_configuration_options);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    return encoded;
+}
+
+c_int32_t nas_encode_bearer_resource_modification_request(pkbuf_t *pkbuf, nas_message_t *message)
+{
+    nas_bearer_resource_modification_request_t *bearer_resource_modification_request = &message->esm.bearer_resource_modification_request;
+    c_int32_t encoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_encode_linked_eps_bearer_identity(pkbuf, &bearer_resource_modification_request->eps_bearer_identity_for_packet_filter);
+    d_assert(size >= 0, return -1, "encode failed");
+    encoded += size;
+
+    size = nas_encode_traffic_flow_aggregate_description(pkbuf, &bearer_resource_modification_request->traffic_flow_aggregate);
+    d_assert(size >= 0, return -1, "encode failed");
+    encoded += size;
+
+    if (bearer_resource_modification_request->presencemask & NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_REQUIRED_TRAFFIC_FLOW_QOS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_REQUIRED_TRAFFIC_FLOW_QOS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_eps_quality_of_service(pkbuf, &bearer_resource_modification_request->required_traffic_flow_qos);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (bearer_resource_modification_request->presencemask & NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_ESM_CAUSE_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_ESM_CAUSE_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_esm_cause(pkbuf, &bearer_resource_modification_request->esm_cause);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (bearer_resource_modification_request->presencemask & NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_protocol_configuration_options(pkbuf, &bearer_resource_modification_request->protocol_configuration_options);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (bearer_resource_modification_request->presencemask & NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_DEVICE_PROPERTIES_PRESENT)
+    {
+        bearer_resource_modification_request->device_properties.type = (NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_DEVICE_PROPERTIES_TYPE >> 4);
+
+        size = nas_encode_device_properties(pkbuf, &bearer_resource_modification_request->device_properties);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (bearer_resource_modification_request->presencemask & NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_NBIFOM_CONTAINER_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_NBIFOM_CONTAINER_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_nbifom_container(pkbuf, &bearer_resource_modification_request->nbifom_container);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (bearer_resource_modification_request->presencemask & NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_HEADER_COMPRESSION_CONFIGURATION_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_HEADER_COMPRESSION_CONFIGURATION_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_header_compression_configuration(pkbuf, &bearer_resource_modification_request->header_compression_configuration);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (bearer_resource_modification_request->presencemask & NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_extended_protocol_configuration_options(pkbuf, &bearer_resource_modification_request->extended_protocol_configuration_options);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    return encoded;
+}
+
+c_int32_t nas_encode_bearer_resource_modification_reject(pkbuf_t *pkbuf, nas_message_t *message)
+{
+    nas_bearer_resource_modification_reject_t *bearer_resource_modification_reject = &message->esm.bearer_resource_modification_reject;
+    c_int32_t encoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_encode_esm_cause(pkbuf, &bearer_resource_modification_reject->esm_cause);
+    d_assert(size >= 0, return -1, "encode failed");
+    encoded += size;
+
+    if (bearer_resource_modification_reject->presencemask & NAS_BEARER_RESOURCE_MODIFICATION_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_BEARER_RESOURCE_MODIFICATION_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_protocol_configuration_options(pkbuf, &bearer_resource_modification_reject->protocol_configuration_options);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (bearer_resource_modification_reject->presencemask & NAS_BEARER_RESOURCE_MODIFICATION_REJECT_BACK_OFF_TIMER_VALUE_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_BEARER_RESOURCE_MODIFICATION_REJECT_BACK_OFF_TIMER_VALUE_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_gprs_timer_3(pkbuf, &bearer_resource_modification_reject->back_off_timer_value);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (bearer_resource_modification_reject->presencemask & NAS_BEARER_RESOURCE_MODIFICATION_REJECT_RE_ATTEMPT_INDICATOR_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_BEARER_RESOURCE_MODIFICATION_REJECT_RE_ATTEMPT_INDICATOR_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_re_attempt_indicator(pkbuf, &bearer_resource_modification_reject->re_attempt_indicator);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (bearer_resource_modification_reject->presencemask & NAS_BEARER_RESOURCE_MODIFICATION_REJECT_NBIFOM_CONTAINER_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_BEARER_RESOURCE_MODIFICATION_REJECT_NBIFOM_CONTAINER_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_nbifom_container(pkbuf, &bearer_resource_modification_reject->nbifom_container);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    if (bearer_resource_modification_reject->presencemask & NAS_BEARER_RESOURCE_MODIFICATION_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
+    {
+        size = nas_encode_optional_type(pkbuf, NAS_BEARER_RESOURCE_MODIFICATION_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+
+        size = nas_encode_extended_protocol_configuration_options(pkbuf, &bearer_resource_modification_reject->extended_protocol_configuration_options);
+        d_assert(size >= 0, return encoded, "decode failed");
+        encoded += size;
+    }
+
+    return encoded;
+}
+
 c_int32_t nas_encode_esm_information_response(pkbuf_t *pkbuf, nas_message_t *message)
 {
     nas_esm_information_response_t *esm_information_response = &message->esm.esm_information_response;
@@ -2043,6 +2860,19 @@ c_int32_t nas_encode_esm_information_response(pkbuf_t *pkbuf, nas_message_t *mes
         d_assert(size >= 0, return encoded, "decode failed");
         encoded += size;
     }
+
+    return encoded;
+}
+
+c_int32_t nas_encode_esm_status(pkbuf_t *pkbuf, nas_message_t *message)
+{
+    nas_esm_status_t *esm_status = &message->esm.esm_status;
+    c_int32_t encoded = 0;
+    c_int32_t size = 0;
+
+    size = nas_encode_esm_cause(pkbuf, &esm_status->esm_cause);
+    d_assert(size >= 0, return -1, "encode failed");
+    encoded += size;
 
     return encoded;
 }
@@ -2273,6 +3103,46 @@ status_t nas_esm_encode(pkbuf_t **pkbuf, nas_message_t *message)
             d_assert(size >= 0, return CORE_ERROR, "decode error");
             encoded += size;
             break;
+        case NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST:
+            size = nas_encode_activate_dedicated_eps_bearer_context_request(*pkbuf, message);
+            d_assert(size >= 0, return CORE_ERROR, "decode error");
+            encoded += size;
+            break;
+        case NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_ACCEPT:
+            size = nas_encode_activate_dedicated_eps_bearer_context_accept(*pkbuf, message);
+            d_assert(size >= 0, return CORE_ERROR, "decode error");
+            encoded += size;
+            break;
+        case NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REJECT:
+            size = nas_encode_activate_dedicated_eps_bearer_context_reject(*pkbuf, message);
+            d_assert(size >= 0, return CORE_ERROR, "decode error");
+            encoded += size;
+            break;
+        case NAS_MODIFY_EPS_BEARER_CONTEXT_REQUEST:
+            size = nas_encode_modify_eps_bearer_context_request(*pkbuf, message);
+            d_assert(size >= 0, return CORE_ERROR, "decode error");
+            encoded += size;
+            break;
+        case NAS_MODIFY_EPS_BEARER_CONTEXT_ACCEPT:
+            size = nas_encode_modify_eps_bearer_context_accept(*pkbuf, message);
+            d_assert(size >= 0, return CORE_ERROR, "decode error");
+            encoded += size;
+            break;
+        case NAS_MODIFY_EPS_BEARER_CONTEXT_REJECT:
+            size = nas_encode_modify_eps_bearer_context_reject(*pkbuf, message);
+            d_assert(size >= 0, return CORE_ERROR, "decode error");
+            encoded += size;
+            break;
+        case NAS_DEACTIVATE_EPS_BEARER_CONTEXT_REQUEST:
+            size = nas_encode_deactivate_eps_bearer_context_request(*pkbuf, message);
+            d_assert(size >= 0, return CORE_ERROR, "decode error");
+            encoded += size;
+            break;
+        case NAS_DEACTIVATE_EPS_BEARER_CONTEXT_ACCEPT:
+            size = nas_encode_deactivate_eps_bearer_context_accept(*pkbuf, message);
+            d_assert(size >= 0, return CORE_ERROR, "decode error");
+            encoded += size;
+            break;
         case NAS_PDN_CONNECTIVITY_REQUEST:
             size = nas_encode_pdn_connectivity_request(*pkbuf, message);
             d_assert(size >= 0, return CORE_ERROR, "decode error");
@@ -2293,10 +3163,35 @@ status_t nas_esm_encode(pkbuf_t **pkbuf, nas_message_t *message)
             d_assert(size >= 0, return CORE_ERROR, "decode error");
             encoded += size;
             break;
+        case NAS_BEARER_RESOURCE_ALLOCATION_REQUEST:
+            size = nas_encode_bearer_resource_allocation_request(*pkbuf, message);
+            d_assert(size >= 0, return CORE_ERROR, "decode error");
+            encoded += size;
+            break;
+        case NAS_BEARER_RESOURCE_ALLOCATION_REJECT:
+            size = nas_encode_bearer_resource_allocation_reject(*pkbuf, message);
+            d_assert(size >= 0, return CORE_ERROR, "decode error");
+            encoded += size;
+            break;
+        case NAS_BEARER_RESOURCE_MODIFICATION_REQUEST:
+            size = nas_encode_bearer_resource_modification_request(*pkbuf, message);
+            d_assert(size >= 0, return CORE_ERROR, "decode error");
+            encoded += size;
+            break;
+        case NAS_BEARER_RESOURCE_MODIFICATION_REJECT:
+            size = nas_encode_bearer_resource_modification_reject(*pkbuf, message);
+            d_assert(size >= 0, return CORE_ERROR, "decode error");
+            encoded += size;
+            break;
         case NAS_ESM_INFORMATION_REQUEST:
             break;
         case NAS_ESM_INFORMATION_RESPONSE:
             size = nas_encode_esm_information_response(*pkbuf, message);
+            d_assert(size >= 0, return CORE_ERROR, "decode error");
+            encoded += size;
+            break;
+        case NAS_ESM_STATUS:
+            size = nas_encode_esm_status(*pkbuf, message);
             d_assert(size >= 0, return CORE_ERROR, "decode error");
             encoded += size;
             break;
