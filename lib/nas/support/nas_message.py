@@ -253,9 +253,14 @@ msg_list["BEARER RESOURCE ALLOCATION REJECT"]["table"] = 42
 msg_list["BEARER RESOURCE ALLOCATION REQUEST"]["table"] = 43
 msg_list["BEARER RESOURCE MODIFICATION REJECT"]["table"] = 44
 msg_list["BEARER RESOURCE MODIFICATION REQUEST"]["table"] = 45
+msg_list["DEACTIVATE EPS BEARER CONTEXT ACCEPT"]["table"] = 46
+msg_list["DEACTIVATE EPS BEARER CONTEXT REQUEST"]["table"] = 47
 msg_list["ESM INFORMATION REQUEST"]["table"] = 49
 msg_list["ESM INFORMATION RESPONSE"]["table"] = 50
-
+msg_list["ESM STATUS"]["table"] = 51
+msg_list["MODIFY EPS BEARER CONTEXT ACCEPT"]["table"] = 52
+msg_list["MODIFY EPS BEARER CONTEXT REJECT"]["table"] = 53
+msg_list["MODIFY EPS BEARER CONTEXT REQUEST"]["table"] = 54
 msg_list["PDN CONNECTIVITY REJECT"]["table"] = 56
 msg_list["PDN CONNECTIVITY REQUEST"]["table"] = 57
 msg_list["PDN DISCONNECT REJECT"]["table"] = 58
