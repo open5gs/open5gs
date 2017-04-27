@@ -27,6 +27,7 @@ void emm_handle_esm_message_container(
     nas_esm_header_t *h = NULL;
     c_uint8_t pti = NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
     c_uint8_t ebi = NAS_EPS_BEARER_IDENTITY_UNASSIGNED;
+    mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
 
     d_assert(ue, return, "Null param");
@@ -39,12 +40,16 @@ void emm_handle_esm_message_container(
     pti = h->procedure_transaction_identity;
     ebi = h->eps_bearer_identity;
     if (pti == NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED && ebi)
-        bearer = mme_bearer_find_by_ebi(ue, ebi);
+        bearer = mme_bearer_find_by_ue_ebi(ue, ebi);
     else if (ebi == NAS_EPS_BEARER_IDENTITY_UNASSIGNED && pti)
-        bearer = mme_bearer_find_by_pti(ue, pti);
+        bearer = mme_bearer_find_by_ue_pti(ue, pti);
 
     if (!bearer)
-        bearer = mme_bearer_add(ue, pti);
+    {
+        sess = mme_sess_add(ue);
+        d_assert(sess, return, "Null param");
+        bearer = mme_bearer_add(sess, pti);
+    }
     d_assert(bearer, return, "Null param");
 
     /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 

@@ -8,12 +8,14 @@
 #include "3gpp_common.h"
 #include "mme_context.h"
 
-status_t mme_s11_build_create_session_request(pkbuf_t **pkbuf, mme_bearer_t *bearer)
+status_t mme_s11_build_create_session_request(
+        pkbuf_t **pkbuf, mme_bearer_t *bearer)
 {
     status_t rv;
     pdn_t *pdn = NULL;
     mme_sgw_t *sgw = NULL;
     mme_ue_t *ue = NULL;
+    mme_sess_t *sess = NULL;
     gtp_message_t gtp_message;
     gtp_create_session_request_t *req = &gtp_message.create_session_request;
 
@@ -30,7 +32,9 @@ status_t mme_s11_build_create_session_request(pkbuf_t **pkbuf, mme_bearer_t *bea
     d_assert(pdn, return CORE_ERROR, "Null param");
     sgw = bearer->sgw;
     d_assert(sgw, return CORE_ERROR, "Null param");
-    ue = bearer->ue;
+    sess = bearer->sess;
+    d_assert(sess, return CORE_ERROR, "Null param");
+    ue = sess->ue;
     d_assert(ue, return CORE_ERROR, "Null param");
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));
@@ -66,8 +70,8 @@ status_t mme_s11_build_create_session_request(pkbuf_t **pkbuf, mme_bearer_t *bea
     memset(&mme_s11_teid, 0, sizeof(gtp_f_teid_t));
     mme_s11_teid.ipv4 = 1;
     mme_s11_teid.interface_type = GTP_F_TEID_S11_MME_GTP_C;
-    mme_s11_teid.teid = htonl(ue->mme_s11_teid);
-    mme_s11_teid.ipv4_addr = ue->mme_s11_addr;
+    mme_s11_teid.teid = htonl(sess->mme_s11_teid);
+    mme_s11_teid.ipv4_addr = sess->mme_s11_addr;
     req->sender_f_teid_for_control_plane.presence = 1;
     req->sender_f_teid_for_control_plane.data = &mme_s11_teid;
     req->sender_f_teid_for_control_plane.len = GTP_F_TEID_IPV4_LEN;
