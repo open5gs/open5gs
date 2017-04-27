@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtp_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-14 00:35:06.485537 by acetcom
+ * Created on: 2017-04-27 13:33:02.810283 by acetcom
  * from 29274-d80.docx
  ******************************************************************************/
 
@@ -340,6 +340,7 @@ extern tlv_desc_t tlv_desc_node_identifier_0;
 extern tlv_desc_t tlv_desc_presence_reporting_area_action_0;
 extern tlv_desc_t tlv_desc_presence_reporting_area_information_0;
 extern tlv_desc_t tlv_desc_twan_identifier_timestamp_0;
+extern tlv_desc_t tlv_desc_twan_identifier_timestamp_1;
 extern tlv_desc_t tlv_desc_metric_0;
 extern tlv_desc_t tlv_desc_sequence_number_0;
 extern tlv_desc_t tlv_desc_apn_and_relative_capacity_0;
@@ -772,6 +773,43 @@ typedef struct _gtp_modify_bearer_response_t {
     tlv_charging_id_t pdn_connection_charging_id;
 } gtp_modify_bearer_response_t;
 
+typedef struct _gtp_delete_session_request_t {
+    tlv_cause_t cause;
+    tlv_ebi_t linked_eps_bearer_id;
+    tlv_uli_t user_location_information;
+    tlv_indication_t indication_flags;
+    tlv_pco_t protocol_configuration_options;
+    tlv_node_type_t originating_node;
+    tlv_f_teid_t sender_f_teid_for_control_plane;
+    tlv_ue_time_zone_t ue_time_zone;
+    tlv_uli_timestamp_t uli_timestamp;
+    tlv_ran_nas_cause_t ran_nas_release_cause;
+    tlv_twan_identifier_t twan_identifier;
+    tlv_twan_identifier_timestamp_t twan_identifier_timestamp;
+    tlv_overload_control_information_t mme_s4_sgsn_s_overload_control_information;
+    tlv_overload_control_information_t sgw_s_overload_control_information;
+    tlv_overload_control_information_t twan_epdg_s_overload_control_information;
+    tlv_twan_identifier_t wlan_location_information;
+    tlv_twan_identifier_timestamp_t wlan_location_timestamp;
+    tlv_ip_address_t ue_local_ip_address;
+    tlv_port_number_t ue_udp_port;
+    tlv_epco_t extended_protocol_configuration_options;
+    tlv_port_number_t ue_tcp_port;
+} gtp_delete_session_request_t;
+
+typedef struct _gtp_delete_session_response_t {
+    tlv_cause_t cause;
+    tlv_recovery_t recovery;
+    tlv_pco_t protocol_configuration_options;
+    tlv_indication_t indication_flags;
+    tlv_load_control_information_t pgw_s_node_level_load_control_information;
+    tlv_load_control_information_t pgw_s_apn_level_load_control_information;
+    tlv_load_control_information_t sgw_s_node_level_load_control_information;
+    tlv_overload_control_information_t pgw_s_overload_control_information;
+    tlv_overload_control_information_t sgw_s_overload_control_information;
+    tlv_epco_t extended_protocol_configuration_options;
+} gtp_delete_session_response_t;
+
 typedef struct _gtp_message_t {
    union {
         gtp_echo_request_t echo_request;
@@ -780,6 +818,8 @@ typedef struct _gtp_message_t {
         gtp_create_session_response_t create_session_response;
         gtp_modify_bearer_request_t modify_bearer_request;
         gtp_modify_bearer_response_t modify_bearer_response;
+        gtp_delete_session_request_t delete_session_request;
+        gtp_delete_session_response_t delete_session_response;
    };
 } gtp_message_t;
 

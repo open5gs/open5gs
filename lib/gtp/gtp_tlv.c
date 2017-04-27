@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtp_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-04-14 00:35:06.495340 by acetcom
+ * Created on: 2017-04-27 13:33:02.826509 by acetcom
  * from 29274-d80.docx
  ******************************************************************************/
 
@@ -1386,6 +1386,17 @@ tlv_desc_t tlv_desc_twan_identifier_timestamp_0 =
     { NULL }
 };
 
+tlv_desc_t tlv_desc_twan_identifier_timestamp_1 =
+{
+    TLV_VAR_STR,
+    "TWAN Identifier Timestamp",
+    TLV_TWAN_IDENTIFIER_TIMESTAMP_TYPE,
+    0,
+    1,
+    sizeof(tlv_twan_identifier_timestamp_t),
+    { NULL }
+};
+
 tlv_desc_t tlv_desc_metric_0 =
 {
     TLV_VAR_STR,
@@ -1977,6 +1988,53 @@ tlv_desc_t tlv_desc_modify_bearer_response =
     NULL,
 }};
 
+tlv_desc_t tlv_desc_delete_session_request =
+{
+    TLV_MESSAGE,
+    "Delete Session Request",
+    0, 0, 0, 0, {
+        &tlv_desc_cause_0,
+        &tlv_desc_ebi_0,
+        &tlv_desc_uli_0,
+        &tlv_desc_indication_0,
+        &tlv_desc_pco_0,
+        &tlv_desc_node_type_0,
+        &tlv_desc_f_teid_0,
+        &tlv_desc_ue_time_zone_0,
+        &tlv_desc_uli_timestamp_0,
+        &tlv_desc_ran_nas_cause_0,
+        &tlv_desc_twan_identifier_0,
+        &tlv_desc_twan_identifier_timestamp_0,
+        &tlv_desc_overload_control_information_0,
+        &tlv_desc_overload_control_information_1,
+        &tlv_desc_overload_control_information_2,
+        &tlv_desc_twan_identifier_1,
+        &tlv_desc_twan_identifier_timestamp_1,
+        &tlv_desc_ip_address_0,
+        &tlv_desc_port_number_0,
+        &tlv_desc_epco_0,
+        &tlv_desc_port_number_1,
+    NULL,
+}};
+
+tlv_desc_t tlv_desc_delete_session_response =
+{
+    TLV_MESSAGE,
+    "Delete Session Response",
+    0, 0, 0, 0, {
+        &tlv_desc_cause_0,
+        &tlv_desc_recovery_0,
+        &tlv_desc_pco_0,
+        &tlv_desc_indication_0,
+        &tlv_desc_load_control_information_0,
+        &tlv_desc_load_control_information_1,
+        &tlv_desc_load_control_information_2,
+        &tlv_desc_overload_control_information_0,
+        &tlv_desc_overload_control_information_1,
+        &tlv_desc_epco_0,
+    NULL,
+}};
+
 
 status_t gtp_parse_msg(gtp_message_t *gtp_message, c_uint8_t type, pkbuf_t *pkbuf)
 {
@@ -2008,6 +2066,14 @@ status_t gtp_parse_msg(gtp_message_t *gtp_message, c_uint8_t type, pkbuf_t *pkbu
         case GTP_MODIFY_BEARER_RESPONSE_TYPE:
             rv = tlv_parse_msg(&gtp_message->modify_bearer_response,
                     &tlv_desc_modify_bearer_response, pkbuf, TLV_MODE_T1_L2_I1);
+            break;
+        case GTP_DELETE_SESSION_REQUEST_TYPE:
+            rv = tlv_parse_msg(&gtp_message->delete_session_request,
+                    &tlv_desc_delete_session_request, pkbuf, TLV_MODE_T1_L2_I1);
+            break;
+        case GTP_DELETE_SESSION_RESPONSE_TYPE:
+            rv = tlv_parse_msg(&gtp_message->delete_session_response,
+                    &tlv_desc_delete_session_response, pkbuf, TLV_MODE_T1_L2_I1);
             break;
         default:
             d_warn("Not implmeneted(type:%d)", type);
@@ -2046,6 +2112,14 @@ status_t gtp_build_msg(pkbuf_t **pkbuf, c_uint8_t type, gtp_message_t *gtp_messa
         case GTP_MODIFY_BEARER_RESPONSE_TYPE:
             rv = tlv_build_msg(pkbuf, &tlv_desc_modify_bearer_response,
                     &gtp_message->modify_bearer_response, TLV_MODE_T1_L2_I1);
+            break;
+        case GTP_DELETE_SESSION_REQUEST_TYPE:
+            rv = tlv_build_msg(pkbuf, &tlv_desc_delete_session_request,
+                    &gtp_message->delete_session_request, TLV_MODE_T1_L2_I1);
+            break;
+        case GTP_DELETE_SESSION_RESPONSE_TYPE:
+            rv = tlv_build_msg(pkbuf, &tlv_desc_delete_session_response,
+                    &gtp_message->delete_session_response, TLV_MODE_T1_L2_I1);
             break;
         default:
             d_warn("Not implmeneted(type:%d)", type);
