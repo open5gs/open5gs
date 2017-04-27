@@ -141,16 +141,16 @@ status_t sgw_sess_remove(sgw_sess_t *sess)
 
 status_t sgw_sess_remove_all()
 {
-    sgw_sess_t *enb = NULL, *next_enb = NULL;
+    sgw_sess_t *sess = NULL, *next_sess = NULL;
     
-    enb = sgw_sess_first();
-    while (enb)
+    sess = sgw_sess_first();
+    while (sess)
     {
-        next_enb = sgw_sess_next(enb);
+        next_sess = sgw_sess_next(sess);
 
-        sgw_sess_remove(enb);
+        sgw_sess_remove(sess);
 
-        enb = next_enb;
+        sess = next_sess;
     }
 
     return CORE_OK;
@@ -172,9 +172,9 @@ sgw_sess_t* sgw_sess_first()
     return list_first(&self.sess_list);
 }
 
-sgw_sess_t* sgw_sess_next(sgw_sess_t *enb)
+sgw_sess_t* sgw_sess_next(sgw_sess_t *sess)
 {
-    return list_next(enb);
+    return list_next(sess);
 }
 
 sgw_bearer_t* sgw_bearer_add(sgw_sess_t *sess, c_uint8_t id)

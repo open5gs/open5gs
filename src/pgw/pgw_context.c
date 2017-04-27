@@ -125,16 +125,16 @@ status_t pgw_sess_remove(pgw_sess_t *sess)
 
 status_t pgw_sess_remove_all()
 {
-    pgw_sess_t *enb = NULL, *next_enb = NULL;
+    pgw_sess_t *sess = NULL, *next_sess = NULL;
     
-    enb = pgw_sess_first();
-    while (enb)
+    sess = pgw_sess_first();
+    while (sess)
     {
-        next_enb = pgw_sess_next(enb);
+        next_sess = pgw_sess_next(sess);
 
-        pgw_sess_remove(enb);
+        pgw_sess_remove(sess);
 
-        enb = next_enb;
+        sess = next_sess;
     }
 
     return CORE_OK;
@@ -156,9 +156,9 @@ pgw_sess_t* pgw_sess_first()
     return list_first(&self.sess_list);
 }
 
-pgw_sess_t* pgw_sess_next(pgw_sess_t *enb)
+pgw_sess_t* pgw_sess_next(pgw_sess_t *sess)
 {
-    return list_next(enb);
+    return list_next(sess);
 }
 
 pdn_t* pgw_pdn_add(pgw_sess_t *sess, c_int8_t *apn)
