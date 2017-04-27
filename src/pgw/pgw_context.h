@@ -77,7 +77,7 @@ CORE_DECLARE(status_t)      pgw_context_final(void);
 
 CORE_DECLARE(pgw_context_t*) pgw_self(void);
 
-CORE_DECLARE(pgw_sess_t*)   pgw_sess_add();
+CORE_DECLARE(pgw_bearer_t*) pgw_sess_add(c_uint8_t id);
 CORE_DECLARE(status_t )     pgw_sess_remove(pgw_sess_t *sess);
 CORE_DECLARE(status_t )     pgw_sess_remove_all();
 CORE_DECLARE(pgw_sess_t*)   pgw_sess_find(index_t index);

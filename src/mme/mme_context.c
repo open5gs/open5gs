@@ -446,9 +446,10 @@ mme_ue_t* mme_ue_next_in_enb(mme_ue_t *ue)
     return list_next(ue);
 }
 
-mme_sess_t *mme_sess_add(mme_ue_t *ue)
+mme_bearer_t *mme_sess_add(mme_ue_t *ue, c_uint8_t pti)
 {
     mme_sess_t *sess = NULL;
+    mme_bearer_t *bearer = NULL;
 
     index_alloc(&mme_sess_pool, &sess);
     d_assert(sess, return NULL, "Null param");
@@ -461,7 +462,11 @@ mme_sess_t *mme_sess_add(mme_ue_t *ue)
 
     sess->ue = ue;
 
-    return sess;
+    bearer = mme_bearer_add(sess, pti);
+    d_assert(bearer, mme_sess_remove(sess); return NULL, 
+            "Can't add default bearer context");
+
+    return bearer;
 }
 
 status_t mme_sess_remove(mme_sess_t *sess)

@@ -229,7 +229,7 @@ CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_enb_ue_s1ap_id(
 CORE_DECLARE(mme_ue_t*)     mme_ue_first_in_enb(mme_enb_t *enb);
 CORE_DECLARE(mme_ue_t*)     mme_ue_next_in_enb(mme_ue_t *ue);
 
-CORE_DECLARE(mme_sess_t*)   mme_sess_add(mme_ue_t *ue);
+CORE_DECLARE(mme_bearer_t*) mme_sess_add(mme_ue_t *ue, c_uint8_t pti);
 CORE_DECLARE(status_t )     mme_sess_remove(mme_sess_t *sess);
 CORE_DECLARE(status_t )     mme_sess_remove_all(mme_ue_t *ue);
 CORE_DECLARE(mme_sess_t*)   mme_sess_find(index_t index);

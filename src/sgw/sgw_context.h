@@ -94,7 +94,7 @@ CORE_DECLARE(status_t)      sgw_context_final(void);
 
 CORE_DECLARE(sgw_context_t*) sgw_self(void);
 
-CORE_DECLARE(sgw_sess_t*)   sgw_sess_add();
+CORE_DECLARE(sgw_bearer_t*) sgw_sess_add(c_uint8_t id);
 CORE_DECLARE(status_t )     sgw_sess_remove(sgw_sess_t *sess);
 CORE_DECLARE(status_t )     sgw_sess_remove_all();
 CORE_DECLARE(sgw_sess_t*)   sgw_sess_find(index_t index);

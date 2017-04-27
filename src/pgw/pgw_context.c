@@ -93,9 +93,10 @@ pgw_context_t* pgw_self()
     return &self;
 }
 
-pgw_sess_t *pgw_sess_add()
+pgw_bearer_t *pgw_sess_add(c_uint8_t id)
 {
     pgw_sess_t *sess = NULL;
+    pgw_bearer_t *bearer = NULL;
 
     index_alloc(&pgw_sess_pool, &sess);
     d_assert(sess, return NULL, "Null param");
@@ -107,7 +108,11 @@ pgw_sess_t *pgw_sess_add()
     list_init(&sess->bearer_list);
     list_append(&self.sess_list, sess);
 
-    return sess;
+    bearer = pgw_bearer_add(sess, id);
+    d_assert(bearer, pgw_sess_remove(sess); return NULL, 
+            "Can't add default bearer context");
+
+    return bearer;
 }
 
 status_t pgw_sess_remove(pgw_sess_t *sess)
