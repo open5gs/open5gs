@@ -450,14 +450,17 @@ void emm_handle_detach_request(
 
     switch (detach_type->detach_type)
     {
-        case 1: /* 0 0 1 : EPS detach */
+        /* 0 0 1 : EPS detach */
+        case NAS_DETACH_TYPE_FROM_UE_EPS_DETACH: 
             break;
-        case 2: /* 0 1 0 : IMSI detach */
+        /* 0 1 0 : IMSI detach */
+        case NAS_DETACH_TYPE_FROM_UE_IMSI_DETACH: 
             break;
         case 6: /* 1 1 0 : reserved */
         case 7: /* 1 1 1 : reserved */
             break;
-        case 3: /* 0 1 1 : combined EPS/IMSI detach */
+        /* 0 1 1 : combined EPS/IMSI detach */
+        case NAS_DETACH_TYPE_FROM_UE_COMBINED_EPS_IMSI_DETACH: 
         default: /* all other values */
             break;
     }
