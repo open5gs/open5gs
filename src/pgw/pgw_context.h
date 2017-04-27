@@ -97,6 +97,7 @@ CORE_DECLARE(status_t)      pgw_bearer_remove(pgw_bearer_t *bearer);
 CORE_DECLARE(status_t)      pgw_bearer_remove_all(pgw_sess_t *sess);
 CORE_DECLARE(pgw_bearer_t*) pgw_bearer_find_by_id(
                                 pgw_sess_t *sess, c_uint8_t id);
+CORE_DECLARE(pgw_bearer_t*) pgw_default_bearer_in_sess(pgw_sess_t *sess);
 CORE_DECLARE(pgw_bearer_t*) pgw_bearer_first(pgw_sess_t *sess);
 CORE_DECLARE(pgw_bearer_t*) pgw_bearer_next(pgw_bearer_t *bearer);
 

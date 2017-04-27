@@ -269,6 +269,11 @@ sgw_bearer_t* sgw_bearer_find_by_id(sgw_sess_t *sess, c_uint8_t id)
     return bearer;
 }
 
+sgw_bearer_t* sgw_default_bearer_in_sess(sgw_sess_t *sess)
+{
+    return sgw_bearer_first(sess);
+}
+
 sgw_bearer_t* sgw_bearer_first(sgw_sess_t *sess)
 {
     d_assert(sess, return NULL, "Null param");

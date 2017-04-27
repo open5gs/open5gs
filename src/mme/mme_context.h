@@ -248,6 +248,7 @@ CORE_DECLARE(mme_bearer_t*) mme_bearer_find_by_ue_ebi(
                                 mme_ue_t *ue, c_uint8_t ebi);
 CORE_DECLARE(mme_bearer_t*) mme_bearer_find_by_sess_ebi(
                                 mme_sess_t *sess, c_uint8_t ebi);
+CORE_DECLARE(mme_bearer_t*) mme_default_bearer_in_sess(mme_sess_t *sess);
 CORE_DECLARE(mme_bearer_t*) mme_bearer_first(mme_sess_t *sess);
 CORE_DECLARE(mme_bearer_t*) mme_bearer_next(mme_bearer_t *bearer);
 

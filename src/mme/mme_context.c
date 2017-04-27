@@ -510,16 +510,6 @@ mme_sess_t* mme_sess_find_by_teid(c_uint32_t teid)
     return mme_sess_find(teid);
 }
 
-mme_sess_t* mme_sess_first(mme_ue_t *ue)
-{
-    return list_first(&ue->sess_list);
-}
-
-mme_sess_t* mme_sess_next(mme_sess_t *sess)
-{
-    return list_next(sess);
-}
-
 mme_sess_t* mme_sess_find_by_ebi(mme_ue_t *ue, c_uint8_t ebi)
 {
     mme_sess_t *sess = NULL;
@@ -541,6 +531,16 @@ mme_sess_t* mme_sess_find_by_ebi(mme_ue_t *ue, c_uint8_t ebi)
     }
 
     return NULL;
+}
+
+mme_sess_t* mme_sess_first(mme_ue_t *ue)
+{
+    return list_first(&ue->sess_list);
+}
+
+mme_sess_t* mme_sess_next(mme_sess_t *sess)
+{
+    return list_next(sess);
 }
 
 mme_bearer_t* mme_bearer_add(mme_sess_t *sess, c_uint8_t pti)
@@ -674,6 +674,11 @@ mme_bearer_t* mme_bearer_find_by_sess_ebi(mme_sess_t *sess, c_uint8_t ebi)
     }
 
     return NULL;
+}
+
+mme_bearer_t* mme_default_bearer_in_sess(mme_sess_t *sess)
+{
+    return mme_bearer_first(sess);
 }
 
 mme_bearer_t* mme_bearer_first(mme_sess_t *sess)
