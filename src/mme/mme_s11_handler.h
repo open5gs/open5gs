@@ -10,11 +10,9 @@ extern "C" {
 #endif /* __cplusplus */
 
 CORE_DECLARE(void) mme_s11_handle_create_session_response(
-        mme_ue_t *ue, gtp_create_session_response_t *rsp);
+        mme_sess_t *sess, gtp_create_session_response_t *rsp);
 CORE_DECLARE(void) mme_s11_handle_modify_bearer_response(
-        mme_ue_t *ue, gtp_modify_bearer_response_t *rsp);
-CORE_DECLARE(void) mme_s11_handle_delete_session_response(
-        mme_ue_t *ue, gtp_delete_session_response_t *rsp);
+        mme_sess_t *sess, gtp_modify_bearer_response_t *rsp);
 
 #ifdef __cplusplus
 }

@@ -44,19 +44,13 @@ void sgw_handle_create_session_request(
 
     /* Generate Control Plane(UL) : SGW-S11 */
     /* Generate Control Plane(DL) : SGW-S5C */
-    sess = sgw_sess_add();
-    d_assert(sess, return, "sess_add failed");
-
-    bearer = sgw_bearer_find_by_id(sess, 
-                req->bearer_contexts_to_be_created.eps_bearer_id.u8);
-    if (!bearer)
-    {
-        /* Generate Data Plane(UL) : SGW-S1U */
-        /* Generate Data Plane(DL) : SGW-S5U */
-        bearer = sgw_bearer_add(sess,
-                req->bearer_contexts_to_be_created.eps_bearer_id.u8);
-    }
-    d_assert(bearer, sgw_sess_remove(sess); return, "No Bearer Context");
+    /* Generate Data Plane(UL) : SGW-S1U */
+    /* Generate Data Plane(DL) : SGW-S5U */
+    bearer = sgw_sess_add(
+            req->bearer_contexts_to_be_created.eps_bearer_id.u8);
+    d_assert(bearer, return, "No Bearer Context");
+    sess = bearer->sess;
+    d_assert(sess, return, "Null param");
 
     /* Receive Control Plane(DL) : MME-S11 */
     mme_s11_teid = req->sender_f_teid_for_control_plane.data;

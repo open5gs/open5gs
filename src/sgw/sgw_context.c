@@ -108,9 +108,10 @@ sgw_context_t* sgw_self()
     return &self;
 }
 
-sgw_sess_t *sgw_sess_add()
+sgw_bearer_t *sgw_sess_add(c_uint8_t id)
 {
     sgw_sess_t *sess = NULL;
+    sgw_bearer_t *bearer = NULL;
 
     index_alloc(&sgw_sess_pool, &sess);
     d_assert(sess, return NULL, "Null param");
@@ -124,7 +125,11 @@ sgw_sess_t *sgw_sess_add()
     list_init(&sess->bearer_list);
     list_append(&self.sess_list, sess);
 
-    return sess;
+    bearer = sgw_bearer_add(sess, id);
+    d_assert(bearer, sgw_sess_remove(sess); return NULL, 
+            "Can't add default bearer context");
+
+    return bearer;
 }
 
 status_t sgw_sess_remove(sgw_sess_t *sess)
@@ -141,16 +146,16 @@ status_t sgw_sess_remove(sgw_sess_t *sess)
 
 status_t sgw_sess_remove_all()
 {
-    sgw_sess_t *enb = NULL, *next_enb = NULL;
+    sgw_sess_t *sess = NULL, *next_sess = NULL;
     
-    enb = sgw_sess_first();
-    while (enb)
+    sess = sgw_sess_first();
+    while (sess)
     {
-        next_enb = sgw_sess_next(enb);
+        next_sess = sgw_sess_next(sess);
 
-        sgw_sess_remove(enb);
+        sgw_sess_remove(sess);
 
-        enb = next_enb;
+        sess = next_sess;
     }
 
     return CORE_OK;
@@ -172,9 +177,9 @@ sgw_sess_t* sgw_sess_first()
     return list_first(&self.sess_list);
 }
 
-sgw_sess_t* sgw_sess_next(sgw_sess_t *enb)
+sgw_sess_t* sgw_sess_next(sgw_sess_t *sess)
 {
-    return list_next(enb);
+    return list_next(sess);
 }
 
 sgw_bearer_t* sgw_bearer_add(sgw_sess_t *sess, c_uint8_t id)
@@ -262,6 +267,11 @@ sgw_bearer_t* sgw_bearer_find_by_id(sgw_sess_t *sess, c_uint8_t id)
     }
 
     return bearer;
+}
+
+sgw_bearer_t* sgw_default_bearer_in_sess(sgw_sess_t *sess)
+{
+    return sgw_bearer_first(sess);
 }
 
 sgw_bearer_t* sgw_bearer_first(sgw_sess_t *sess)

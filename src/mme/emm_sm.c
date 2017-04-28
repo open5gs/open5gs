@@ -81,26 +81,30 @@ void emm_state_operational(fsm_t *s, event_t *e)
                 }
                 case S6A_CMD_UPDATE_LOCATION:
                 {
-                    mme_bearer_t *bearer = mme_bearer_first(ue);
-
-                    while(bearer)
+                    mme_sess_t *sess = mme_sess_first(ue);
+                    while(sess)
                     {
-                        event_t e;
-                        event_set(&e, MME_EVT_ESM_BEARER_FROM_S6A);
-                        event_set_param1(&e, (c_uintptr_t)bearer->index);
-                        event_set_param2(&e, 
-                                (c_uintptr_t)S6A_CMD_UPDATE_LOCATION);
-                        mme_event_send(&e);
+                        mme_bearer_t *bearer = mme_bearer_first(sess);
+                        while(bearer)
+                        {
+                            event_t e;
+                            event_set(&e, MME_EVT_ESM_BEARER_FROM_S6A);
+                            event_set_param1(&e, (c_uintptr_t)bearer->index);
+                            event_set_param2(&e, 
+                                    (c_uintptr_t)S6A_CMD_UPDATE_LOCATION);
+                            mme_event_send(&e);
 
-                        bearer = mme_bearer_next(bearer);
+                            bearer = mme_bearer_next(bearer);
+                        }
+
+                        sess = mme_sess_next(sess);
                     }
                     break;
                 }
                 case GTP_MODIFY_BEARER_RESPONSE_TYPE:
                 {
                     d_info("[GTP] Modify Bearer Response : "
-                            "MME[%d] <-- SGW[%d]", 
-                            ue->mme_s11_teid, ue->sgw_s11_teid);
+                            "MME <-- SGW");
                     break;
                 }
                 case GTP_DELETE_SESSION_RESPONSE_TYPE:

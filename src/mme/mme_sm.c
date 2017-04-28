@@ -232,7 +232,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
             c_uint8_t type;
             c_uint32_t teid;
             gtp_message_t gtp_message;
-            mme_ue_t *ue = NULL;
+            mme_sess_t *sess = NULL;
 
             d_assert(pkbuf, break, "Null param");
             d_assert(sock, pkbuf_free(pkbuf); break, "Null param");
@@ -244,18 +244,18 @@ void mme_state_operational(fsm_t *s, event_t *e)
             if (rv != CORE_OK)
                 break;
 
-            ue = mme_ue_find_by_teid(teid);
-            d_assert(ue, pkbuf_free(pkbuf); break, 
+            sess = mme_sess_find_by_teid(teid);
+            d_assert(sess, pkbuf_free(pkbuf); break, 
                     "No Session Context(TEID:%d)", teid);
             switch(type)
             {
                 case GTP_CREATE_SESSION_RESPONSE_TYPE:
                     mme_s11_handle_create_session_response(
-                            ue, &gtp_message.create_session_response);
+                            sess, &gtp_message.create_session_response);
                     break;
                 case GTP_MODIFY_BEARER_RESPONSE_TYPE:
                     mme_s11_handle_modify_bearer_response(
-                            ue, &gtp_message.modify_bearer_response);
+                            sess, &gtp_message.modify_bearer_response);
                     break;
                 case GTP_DELETE_SESSION_RESPONSE_TYPE:
                     mme_s11_handle_delete_session_response(

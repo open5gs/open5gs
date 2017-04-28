@@ -142,19 +142,30 @@ typedef struct _mme_ue_t {
     list_t          pdn_list;
     c_uint32_t      subscribed_rau_tau_timer; /* seconds */
 
+    /* ESM Info */
+    c_uint8_t       ebi;        /* EPS Bearer ID generator */
+    list_t          sess_list;
+
+    mme_enb_t       *enb;
+} mme_ue_t;
+
+typedef struct _mme_sess_t {
+    lnode_t         node;       /**< A node of list_t */
+    index_t         index;      /**< An index of this node */
+
     /* IMPORTANT! 
      * MME-S11-TEID is same with an index */
     c_uint32_t      mme_s11_teid;       
     c_uint32_t      mme_s11_addr;       
+
     c_uint32_t      sgw_s11_teid;
     c_uint32_t      sgw_s11_addr;
 
-    /* ESM Info */
-    c_uint8_t       ebi;        /* EPS Bearer ID generator */
+    /* mme_bearer_first(sess) : Default Bearer Context */
     list_t          bearer_list;
 
-    mme_enb_t       *enb;
-} mme_ue_t;
+    mme_ue_t        *ue;
+} mme_sess_t;
 
 typedef struct _mme_bearer_t {
     lnode_t         node;   /**< A node of list_t */
@@ -179,6 +190,7 @@ typedef struct _mme_bearer_t {
     pdn_t           *pdn;
 
     mme_ue_t        *ue;
+    mme_sess_t      *sess;
 } mme_bearer_t;
 
 CORE_DECLARE(status_t)      mme_context_init(void);
@@ -207,7 +219,6 @@ CORE_DECLARE(status_t)      mme_ue_remove_all();
 CORE_DECLARE(mme_ue_t*)     mme_ue_find(index_t index);
 CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_mme_ue_s1ap_id(
                                 c_uint32_t mme_ue_s1ap_id);
-CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_teid(c_uint32_t teid);
 CORE_DECLARE(hash_index_t *) mme_ue_first();
 CORE_DECLARE(hash_index_t *) mme_ue_next(hash_index_t *hi);
 CORE_DECLARE(mme_ue_t *)    mme_ue_this(hash_index_t *hi);
@@ -218,13 +229,27 @@ CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_enb_ue_s1ap_id(
 CORE_DECLARE(mme_ue_t*)     mme_ue_first_in_enb(mme_enb_t *enb);
 CORE_DECLARE(mme_ue_t*)     mme_ue_next_in_enb(mme_ue_t *ue);
 
-CORE_DECLARE(mme_bearer_t*) mme_bearer_add(mme_ue_t *ue, c_uint8_t pti);
+CORE_DECLARE(mme_bearer_t*) mme_sess_add(mme_ue_t *ue, c_uint8_t pti);
+CORE_DECLARE(status_t )     mme_sess_remove(mme_sess_t *sess);
+CORE_DECLARE(status_t )     mme_sess_remove_all(mme_ue_t *ue);
+CORE_DECLARE(mme_sess_t*)   mme_sess_find(index_t index);
+CORE_DECLARE(mme_sess_t*)   mme_sess_find_by_teid(c_uint32_t teid);
+CORE_DECLARE(mme_sess_t*)   mme_sess_find_by_ebi(mme_ue_t *ue, c_uint8_t ebi);
+CORE_DECLARE(mme_sess_t*)   mme_sess_first(mme_ue_t *ue);
+CORE_DECLARE(mme_sess_t*)   mme_sess_next(mme_sess_t *sess);
+
+CORE_DECLARE(mme_bearer_t*) mme_bearer_add(mme_sess_t *sess, c_uint8_t pti);
 CORE_DECLARE(status_t)      mme_bearer_remove(mme_bearer_t *bearer);
-CORE_DECLARE(status_t)      mme_bearer_remove_all(mme_ue_t *ue);
+CORE_DECLARE(status_t)      mme_bearer_remove_all(mme_sess_t *sess);
 CORE_DECLARE(mme_bearer_t*) mme_bearer_find(index_t index);
-CORE_DECLARE(mme_bearer_t*) mme_bearer_find_by_pti(mme_ue_t *ue, c_uint8_t pti);
-CORE_DECLARE(mme_bearer_t*) mme_bearer_find_by_ebi(mme_ue_t *ue, c_uint8_t ebi);
-CORE_DECLARE(mme_bearer_t*) mme_bearer_first(mme_ue_t *ue);
+CORE_DECLARE(mme_bearer_t*) mme_bearer_find_by_ue_pti(
+                                mme_ue_t *ue, c_uint8_t pti);
+CORE_DECLARE(mme_bearer_t*) mme_bearer_find_by_ue_ebi(
+                                mme_ue_t *ue, c_uint8_t ebi);
+CORE_DECLARE(mme_bearer_t*) mme_bearer_find_by_sess_ebi(
+                                mme_sess_t *sess, c_uint8_t ebi);
+CORE_DECLARE(mme_bearer_t*) mme_default_bearer_in_sess(mme_sess_t *sess);
+CORE_DECLARE(mme_bearer_t*) mme_bearer_first(mme_sess_t *sess);
 CORE_DECLARE(mme_bearer_t*) mme_bearer_next(mme_bearer_t *bearer);
 
 CORE_DECLARE(pdn_t*)        mme_pdn_add(mme_ue_t *ue, c_int8_t *apn);

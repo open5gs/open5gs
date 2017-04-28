@@ -41,8 +41,8 @@ static void event_s1ap_to_nas(mme_ue_t *ue, S1ap_NAS_PDU_t *nasPdu)
     }
     else if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_ESM)
     {
-        mme_bearer_t *bearer = mme_bearer_find_by_pti(ue, 
-                h->procedure_transaction_identity);
+        mme_bearer_t *bearer = mme_bearer_find_by_ue_pti(
+                ue, h->procedure_transaction_identity);
         if (bearer)
         {
             event_set(&e, MME_EVT_ESM_BEARER_MSG);
@@ -245,7 +245,7 @@ void s1ap_handle_initial_context_setup_response(
             ies->e_RABSetupListCtxtSURes.s1ap_E_RABSetupItemCtxtSURes.array[i];
         d_assert(e_rab, return, "Null param");
 
-        bearer = mme_bearer_find_by_ebi(ue, e_rab->e_RAB_ID);
+        bearer = mme_bearer_find_by_ue_ebi(ue, e_rab->e_RAB_ID);
         d_assert(bearer, return, "Null param");
         memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf, 
                 sizeof(bearer->enb_s1u_teid));
