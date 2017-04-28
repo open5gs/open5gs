@@ -355,6 +355,9 @@ status_t enb_ue_remove(enb_ue_t *ue)
 
     index_free(&enb_ue_pool, ue);
 
+    if (ue->mme_ue)
+        ue->mme_ue->enb_ue = NULL;
+
     return CORE_OK;
 }
 

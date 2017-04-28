@@ -14,6 +14,9 @@
 
 #include "mme_sm.h"
 
+/* S1AP */
+#include "S1ap-Cause.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -114,15 +117,16 @@ struct _enb_ue_t {
     tai_t           tai;
     e_cgi_t         e_cgi;
 
-    /* S_TMSI */
-    //s_tmsi_t        s_smti;
+    /* S1AP transactions */
+    struct {
+        S1ap_Cause_t cause;
+    } s1ap;
 
     /* mme_ue_context */
     mme_ue_t        *mme_ue;
 
     /* Connected enodeB */
     mme_enb_t       *enb;
-
 }; 
 
 struct _mme_ue_t {
@@ -181,6 +185,7 @@ struct _mme_ue_t {
     /* ESM Info */
     c_uint8_t       ebi;        /* EPS Bearer ID generator */
     list_t          sess_list;
+
 
     /* Timer Info */
     tm_block_id     tm_t3;      /**< T3 Timer */

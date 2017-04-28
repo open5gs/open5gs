@@ -56,6 +56,9 @@ void emm_state_operational(fsm_t *s, event_t *e)
                 case GTP_CREATE_SESSION_RESPONSE_TYPE:
                     emm_handle_create_session_response(bearer);
                     break;
+                case GTP_DELETE_SESSION_RESPONSE_TYPE:
+                    emm_handle_delete_session_response(bearer);
+                    break;
             }
 
             break;

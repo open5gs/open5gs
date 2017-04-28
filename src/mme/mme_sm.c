@@ -295,6 +295,10 @@ void mme_state_operational(fsm_t *s, event_t *e)
                     mme_s11_handle_modify_bearer_response(
                             sess, &gtp_message.modify_bearer_response);
                     break;
+                case GTP_DELETE_SESSION_RESPONSE_TYPE:
+                    mme_s11_handle_delete_session_response(
+                            sess, &gtp_message.delete_session_response);
+                    break;
                 default:
                     d_warn("Not implmeneted(type:%d)", type);
                     break;
