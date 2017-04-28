@@ -7,6 +7,7 @@
 #include "s1ap_message.h"
 
 #include "mme_context.h"
+#include "mme_event.h"
 
 #define MAX_CELL_PER_ENB            8
 
@@ -325,6 +326,14 @@ mme_ue_t* mme_ue_add(mme_enb_t *enb)
 
     ue->enb = enb;
 
+#define MME_UE_T3_DURATION     3000 /* 3 seconds */
+    ue->tm_t3 = event_timer(&self.tm_service, MME_EVT_EMM_UE_T3,
+            MME_UE_T3_DURATION, ue->index);
+#if 1 /* example code : please remove if you know the usage */
+    tm_start(ue->tm_t3);
+    tm_stop(ue->tm_t3);
+#endif
+
     fsm_create(&ue->sm, emm_state_initial, emm_state_final);
     fsm_init(&ue->sm, 0);
     
@@ -336,6 +345,8 @@ status_t mme_ue_remove(mme_ue_t *ue)
     d_assert(self.mme_ue_s1ap_id_hash, return CORE_ERROR, "Null param");
     d_assert(ue, return CORE_ERROR, "Null param");
     d_assert(ue->enb, return CORE_ERROR, "Null param");
+
+    tm_delete(ue->tm_t3);
 
     fsm_final(&ue->sm, 0);
     fsm_clear(&ue->sm);

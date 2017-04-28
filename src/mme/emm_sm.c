@@ -178,6 +178,16 @@ void emm_state_operational(fsm_t *s, event_t *e)
             }
             break;
         }
+        case MME_EVT_EMM_UE_T3:
+        {
+            index_t index = event_get_param1(e);
+            mme_ue_t *ue = NULL;
+
+            d_assert(index, return, "Null param");
+            ue = mme_ue_find(index);
+            d_assert(ue, return, "Null param");
+            break;
+        }
 
         default:
         {

@@ -146,6 +146,10 @@ typedef struct _mme_ue_t {
     c_uint8_t       ebi;        /* EPS Bearer ID generator */
     list_t          sess_list;
 
+    /* Timer Info */
+    tm_block_id     tm_t3;      /**< T3 Timer */
+
+    /* Related Context */
     mme_enb_t       *enb;
 } mme_ue_t;
 
@@ -164,6 +168,7 @@ typedef struct _mme_sess_t {
     /* mme_bearer_first(sess) : Default Bearer Context */
     list_t          bearer_list;
 
+    /* Related Context */
     mme_ue_t        *ue;
 } mme_sess_t;
 
@@ -186,6 +191,7 @@ typedef struct _mme_bearer_t {
     c_uint8_t       pgw_pco[MAX_PCO_LEN];  
     int             pgw_pco_len;
 
+    /* Related Context */
     mme_sgw_t       *sgw;
     pdn_t           *pdn;
 

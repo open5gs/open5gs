@@ -148,6 +148,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
         case MME_EVT_EMM_UE_FROM_S6A:
         case MME_EVT_EMM_UE_FROM_S11:
         case MME_EVT_EMM_BEARER_FROM_S11:
+        case MME_EVT_EMM_UE_T3:
         {
             nas_message_t message;
             index_t index = event_get_param1(e);
