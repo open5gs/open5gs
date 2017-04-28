@@ -12,14 +12,14 @@
 
 #include "s1ap_handler.h"
 
-static void event_s1ap_to_nas(enb_ue_t *ue, S1ap_NAS_PDU_t *nasPdu)
+static void event_s1ap_to_nas(enb_ue_t *enb_ue, S1ap_NAS_PDU_t *nasPdu)
 {
     nas_esm_header_t *h = NULL;
     pkbuf_t *nasbuf = NULL;
     event_t e;
     int mac_failed = 0;
 
-    d_assert(ue, return, "Null param");
+    d_assert(enb_ue, return, "Null param");
     d_assert(nasPdu, return, "Null param");
 
     /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 
@@ -28,9 +28,9 @@ static void event_s1ap_to_nas(enb_ue_t *ue, S1ap_NAS_PDU_t *nasPdu)
     d_assert(nasbuf, return, "Null param");
     memcpy(nasbuf->payload, nasPdu->buf, nasPdu->size);
 
-    if (ue->mme_ue)
+    if (enb_ue->mme_ue)
     {
-        d_assert(nas_security_decode(ue->mme_ue, nasbuf, 
+        d_assert(nas_security_decode(enb_ue->mme_ue, nasbuf, 
                     &mac_failed) == CORE_OK,
                  pkbuf_free(nasbuf);return,
                  "nas_security_decode failed");
@@ -55,21 +55,21 @@ static void event_s1ap_to_nas(enb_ue_t *ue, S1ap_NAS_PDU_t *nasPdu)
                 pkbuf_header(nasbuf, -hsize);
         }
     }
-    ue->mac_failed = mac_failed;
+    enb_ue->mac_failed = mac_failed;
 
     h = nasbuf->payload;
     d_assert(h, pkbuf_free(nasbuf); return, "Null param");
     if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_EMM)
     {
         event_set(&e, MME_EVT_EMM_UE_MSG);
-        event_set_param1(&e, (c_uintptr_t)ue->index);
+        event_set_param1(&e, (c_uintptr_t)enb_ue->index);
         event_set_param2(&e, (c_uintptr_t)nasbuf);
         mme_event_send(&e);
     }
     else if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_ESM)
     {
         mme_bearer_t *bearer = NULL;
-        mme_ue_t *mme_ue = ue->mme_ue;
+        mme_ue_t *mme_ue = enb_ue->mme_ue;
 
         if (!mme_ue)
         {
@@ -148,7 +148,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
 {
     char buf[INET_ADDRSTRLEN];
 
-    enb_ue_t *ue = NULL;
+    enb_ue_t *enb_ue = NULL;
     S1ap_InitialUEMessage_IEs_t *ies = NULL;
     S1ap_TAI_t *tai = NULL;
 	S1ap_PLMNidentity_t *pLMNidentity = NULL;
@@ -175,35 +175,37 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
     cell_ID = &eutran_cgi->cell_ID;
     d_assert(cell_ID, return,);
 
-    ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
-    if (!ue)
+    enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
+    if (!enb_ue)
     {
-        ue = enb_ue_add(enb);
-        d_assert(ue, return, "Null param");
+        enb_ue = enb_ue_add(enb);
+        d_assert(enb_ue, return, "Null param");
 
-        ue->enb_ue_s1ap_id = ies->eNB_UE_S1AP_ID;
+        enb_ue->enb_ue_s1ap_id = ies->eNB_UE_S1AP_ID;
     }
     else
     {
         d_warn("Duplicated: eNB[0x%x] sends "
             "Initial-UE Message[eNB-UE-S1AP-ID(%d)]",
-            enb->enb_id, ue->enb_ue_s1ap_id);
+            enb->enb_id, enb_ue->enb_ue_s1ap_id);
     }
 
-    memcpy(&ue->tai.plmn_id, pLMNidentity->buf, sizeof(ue->tai.plmn_id));
-    memcpy(&ue->tai.tac, tAC->buf, sizeof(ue->tai.tac));
-    ue->tai.tac = ntohs(ue->tai.tac);
-    memcpy(&ue->e_cgi.plmn_id, pLMNidentity->buf, sizeof(ue->e_cgi.plmn_id));
-    memcpy(&ue->e_cgi.cell_id, cell_ID->buf, sizeof(ue->e_cgi.cell_id));
-    ue->e_cgi.cell_id = (ntohl(ue->e_cgi.cell_id) >> 4);
+    memcpy(&enb_ue->tai.plmn_id, pLMNidentity->buf, 
+            sizeof(enb_ue->tai.plmn_id));
+    memcpy(&enb_ue->tai.tac, tAC->buf, sizeof(enb_ue->tai.tac));
+    enb_ue->tai.tac = ntohs(enb_ue->tai.tac);
+    memcpy(&enb_ue->e_cgi.plmn_id, pLMNidentity->buf, 
+            sizeof(enb_ue->e_cgi.plmn_id));
+    memcpy(&enb_ue->e_cgi.cell_id, cell_ID->buf, sizeof(enb_ue->e_cgi.cell_id));
+    enb_ue->e_cgi.cell_id = (ntohl(enb_ue->e_cgi.cell_id) >> 4);
 
-    d_assert(enb->s1ap_sock, enb_ue_remove(ue); return,);
+    d_assert(enb->s1ap_sock, enb_ue_remove(enb_ue); return,);
     d_info("[S1AP] InitialUEMessage : UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]",
-        ue->enb_ue_s1ap_id,
+        enb_ue->enb_ue_s1ap_id,
         INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
         enb->enb_id);
 
-    event_s1ap_to_nas(ue, &ies->nas_pdu);
+    event_s1ap_to_nas(enb_ue, &ies->nas_pdu);
 }
 
 void s1ap_handle_uplink_nas_transport(
@@ -211,21 +213,21 @@ void s1ap_handle_uplink_nas_transport(
 {
     char buf[INET_ADDRSTRLEN];
 
-    enb_ue_t *ue = NULL;
+    enb_ue_t *enb_ue = NULL;
     S1ap_UplinkNASTransport_IEs_t *ies = NULL;
 
     ies = &message->s1ap_UplinkNASTransport_IEs;
     d_assert(ies, return, "Null param");
 
-    ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
-    d_assert(ue, return, "Null param");
+    enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
+    d_assert(enb_ue, return, "Null param");
 
     d_info("[S1AP] uplinkNASTransport : UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]",
-        ue->enb_ue_s1ap_id,
+        enb_ue->enb_ue_s1ap_id,
         INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
         enb->enb_id);
 
-    event_s1ap_to_nas(ue, &ies->nas_pdu);
+    event_s1ap_to_nas(enb_ue, &ies->nas_pdu);
 }
 
 void s1ap_handle_ue_capability_info_indication(
@@ -233,18 +235,18 @@ void s1ap_handle_ue_capability_info_indication(
 {
     char buf[INET_ADDRSTRLEN];
 
-    enb_ue_t *ue = NULL;
+    enb_ue_t *enb_ue = NULL;
     S1ap_UECapabilityInfoIndicationIEs_t *ies = NULL;
 
     ies = &message->s1ap_UECapabilityInfoIndicationIEs;
     d_assert(ies, return, "Null param");
 
-    ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
-    d_assert(ue, return, "No UE Context[%d]", ies->eNB_UE_S1AP_ID);
+    enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
+    d_assert(enb_ue, return, "No UE Context[%d]", ies->eNB_UE_S1AP_ID);
 
     d_info("[S1AP] UE Capability Info Indication : "
             "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]",
-        ue->enb_ue_s1ap_id,
+            enb_ue->enb_ue_s1ap_id,
         INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
         enb->enb_id);
 }
@@ -255,18 +257,18 @@ void s1ap_handle_initial_context_setup_response(
     char buf[INET_ADDRSTRLEN];
     int i = 0;
 
-    enb_ue_t *ue = NULL;
+    enb_ue_t *enb_ue = NULL;
     S1ap_InitialContextSetupResponseIEs_t *ies = NULL;
 
     ies = &message->s1ap_InitialContextSetupResponseIEs;
     d_assert(ies, return, "Null param");
 
-    ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
-    d_assert(ue, return, "No UE Context[%d]", ies->eNB_UE_S1AP_ID);
+    enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
+    d_assert(enb_ue, return, "No UE Context[%d]", ies->eNB_UE_S1AP_ID);
 
     d_info("[S1AP] Initial Context Setup Response : "
             "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]",
-        ue->enb_ue_s1ap_id,
+            enb_ue->enb_ue_s1ap_id,
         INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
         enb->enb_id);
 
@@ -276,7 +278,7 @@ void s1ap_handle_initial_context_setup_response(
     {
         event_t e;
         mme_bearer_t *bearer = NULL;
-        mme_ue_t *mme_ue = ue->mme_ue;
+        mme_ue_t *mme_ue = enb_ue->mme_ue;
         S1ap_E_RABSetupItemCtxtSURes_t *e_rab = NULL;
 
         e_rab = (S1ap_E_RABSetupItemCtxtSURes_t *)
@@ -303,22 +305,22 @@ void s1ap_handle_ue_context_release_complete(
 {
     char buf[INET_ADDRSTRLEN];
 
-    enb_ue_t *ue = NULL;
+    enb_ue_t *enb_ue = NULL;
     S1ap_UEContextReleaseComplete_IEs_t *ies = NULL;
 
     ies = &message->s1ap_UEContextReleaseComplete_IEs;
     d_assert(ies, return, "Null param");
 
-    ue = enb_ue_find_by_mme_ue_s1ap_id(ies->mme_ue_s1ap_id);
-    d_assert(ue, return, "No UE Context[%d]", ies->mme_ue_s1ap_id);
+    enb_ue = enb_ue_find_by_mme_ue_s1ap_id(ies->mme_ue_s1ap_id);
+    d_assert(enb_ue, return, "No UE Context[%d]", ies->mme_ue_s1ap_id);
 
     d_info("[S1AP] UE Context Release Complete : "
             "UE[mME-UE-S1AP-ID(%d)] --> eNB[%s:%d]",
-        ue->mme_ue_s1ap_id,
+            enb_ue->mme_ue_s1ap_id,
         INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
         enb->enb_id);
 
     /* BRANDON -> ACETCOM: "pass event to MME SM" or "process here?" */
     /* process here */
-    enb_ue_remove(ue);
+    enb_ue_remove(enb_ue);
 }

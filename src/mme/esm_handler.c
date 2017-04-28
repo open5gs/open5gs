@@ -31,15 +31,15 @@ void esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
 void esm_handle_s6a_update_location(mme_bearer_t *bearer)
 {
     status_t rv;
-    mme_ue_t *ue = NULL;
+    mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
     mme_enb_t *enb = NULL;
     pkbuf_t *esmbuf = NULL, *s1apbuf = NULL;
 
     d_assert(bearer, return, "Null param");
-    ue = bearer->ue;
-    d_assert(ue, return, "Null param");
-    enb_ue = ue->enb_ue;
+    mme_ue = bearer->mme_ue;
+    d_assert(mme_ue, return, "Null param");
+    enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return, "Null param");
     enb = enb_ue->enb;
     d_assert(enb, return, "Null param");
@@ -75,18 +75,18 @@ void esm_handle_modify_bearer_request(mme_bearer_t *bearer)
 void esm_handle_information_response(mme_bearer_t *bearer, 
         nas_esm_information_response_t *esm_information_response)
 {
-    mme_ue_t *ue = NULL;
+    mme_ue_t *mme_ue = NULL;
     pkbuf_t *pkbuf = NULL;
     status_t rv;
 
     d_assert(bearer, return, "Null param");
-    ue = bearer->ue;
-    d_assert(ue, return, "Null param");
+    mme_ue = bearer->mme_ue;
+    d_assert(mme_ue, return, "Null param");
 
     if (esm_information_response->presencemask &
             NAS_ESM_INFORMATION_RESPONSE_ACCESS_POINT_NAME_PRESENT)
     {
-        bearer->pdn = mme_pdn_find_by_apn(ue, 
+        bearer->pdn = mme_pdn_find_by_apn(mme_ue, 
                 esm_information_response->access_point_name.apn);
         d_assert(bearer->pdn, return, "No PDN Context[APN:%s])", 
             esm_information_response->access_point_name.apn);

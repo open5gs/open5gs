@@ -223,7 +223,7 @@ mme_enb_t* mme_enb_add(net_sock_t *s1ap_sock)
     s1ap_sock->app_index = enb->index;
 
     enb->s1ap_sock = s1ap_sock;
-    list_init(&enb->ue_list);
+    list_init(&enb->enb_ue_list);
     list_append(&self.enb_list, enb);
 
     fsm_create(&enb->sm, s1ap_state_initial, s1ap_state_final);
@@ -318,22 +318,22 @@ mme_enb_t* mme_enb_next(mme_enb_t *enb)
 /** enb_ue_context handling function */
 enb_ue_t* enb_ue_add(mme_enb_t *enb)
 {
-    enb_ue_t *ue = NULL;
+    enb_ue_t *enb_ue = NULL;
 
     d_assert(self.mme_ue_s1ap_id_hash, return NULL, "Null param");
     d_assert(enb, return NULL, "Null param");
 
-    index_alloc(&enb_ue_pool, &ue);
-    d_assert(ue, return NULL, "Null param");
+    index_alloc(&enb_ue_pool, &enb_ue);
+    d_assert(enb_ue, return NULL, "Null param");
 
-    ue->mme_ue_s1ap_id = NEXT_ID(self.mme_ue_s1ap_id, 1, 0xffffffff);
-    hash_set(self.mme_ue_s1ap_id_hash, &ue->mme_ue_s1ap_id, 
-            sizeof(ue->mme_ue_s1ap_id), ue);
-    list_append(&enb->ue_list, ue);
+    enb_ue->mme_ue_s1ap_id = NEXT_ID(self.mme_ue_s1ap_id, 1, 0xffffffff);
+    hash_set(self.mme_ue_s1ap_id_hash, &enb_ue->mme_ue_s1ap_id, 
+            sizeof(enb_ue->mme_ue_s1ap_id), enb_ue);
+    list_append(&enb->enb_ue_list, enb_ue);
 
-    ue->enb = enb;
+    enb_ue->enb = enb;
 
-    return ue;
+    return enb_ue;
 
 }
 
@@ -343,36 +343,36 @@ unsigned int enb_ue_count()
     return hash_count(self.mme_ue_s1ap_id_hash);
 }
 
-status_t enb_ue_remove(enb_ue_t *ue)
+status_t enb_ue_remove(enb_ue_t *enb_ue)
 {
     d_assert(self.mme_ue_s1ap_id_hash, return CORE_ERROR, "Null param");
-    d_assert(ue, return CORE_ERROR, "Null param");
-    d_assert(ue->enb, return CORE_ERROR, "Null param");
+    d_assert(enb_ue, return CORE_ERROR, "Null param");
+    d_assert(enb_ue->enb, return CORE_ERROR, "Null param");
 
-    list_remove(&ue->enb->ue_list, ue);
-    hash_set(self.mme_ue_s1ap_id_hash, &ue->mme_ue_s1ap_id, 
-            sizeof(ue->mme_ue_s1ap_id), NULL);
+    list_remove(&enb_ue->enb->enb_ue_list, enb_ue);
+    hash_set(self.mme_ue_s1ap_id_hash, &enb_ue->mme_ue_s1ap_id, 
+            sizeof(enb_ue->mme_ue_s1ap_id), NULL);
 
-    index_free(&enb_ue_pool, ue);
+    index_free(&enb_ue_pool, enb_ue);
 
-    if (ue->mme_ue)
-        ue->mme_ue->enb_ue = NULL;
+    if (enb_ue->mme_ue)
+        enb_ue->mme_ue->enb_ue = NULL;
 
     return CORE_OK;
 }
 
 status_t enb_ue_remove_in_enb(mme_enb_t *enb)
 {
-    enb_ue_t *ue = NULL, *next_ue = NULL;
+    enb_ue_t *enb_ue = NULL, *next_enb_ue = NULL;
     
-    ue = enb_ue_first_in_enb(enb);
-    while (ue)
+    enb_ue = enb_ue_first_in_enb(enb);
+    while (enb_ue)
     {
-        next_ue = enb_ue_next_in_enb(ue);
+        next_enb_ue = enb_ue_next_in_enb(enb_ue);
 
-        enb_ue_remove(ue);
+        enb_ue_remove(enb_ue);
 
-        ue = next_ue;
+        enb_ue = next_enb_ue;
     }
 
     return CORE_OK;
@@ -387,18 +387,18 @@ enb_ue_t* enb_ue_find(index_t index)
 enb_ue_t* enb_ue_find_by_enb_ue_s1ap_id(
         mme_enb_t *enb, c_uint32_t enb_ue_s1ap_id)
 {
-    enb_ue_t *ue = NULL;
+    enb_ue_t *enb_ue = NULL;
     
-    ue = enb_ue_first_in_enb(enb);
-    while (ue)
+    enb_ue = enb_ue_first_in_enb(enb);
+    while (enb_ue)
     {
-        if (enb_ue_s1ap_id == ue->enb_ue_s1ap_id)
+        if (enb_ue_s1ap_id == enb_ue->enb_ue_s1ap_id)
             break;
 
-        ue = enb_ue_next_in_enb(ue);
+        enb_ue = enb_ue_next_in_enb(enb_ue);
     }
 
-    return ue;
+    return enb_ue;
 }
 
 enb_ue_t* enb_ue_find_by_mme_ue_s1ap_id(c_uint32_t mme_ue_s1ap_id)
@@ -410,57 +410,57 @@ enb_ue_t* enb_ue_find_by_mme_ue_s1ap_id(c_uint32_t mme_ue_s1ap_id)
 
 enb_ue_t* enb_ue_first_in_enb(mme_enb_t *enb)
 {
-    return list_first(&enb->ue_list);
+    return list_first(&enb->enb_ue_list);
 }
 
-enb_ue_t* enb_ue_next_in_enb(enb_ue_t *ue)
+enb_ue_t* enb_ue_next_in_enb(enb_ue_t *enb_ue)
 {
-    return list_next(ue);
+    return list_next(enb_ue);
 }
 
 mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
 {
-    mme_ue_t *ue = NULL;
+    mme_ue_t *mme_ue = NULL;
 
     d_assert(enb_ue, return NULL, "Null param");
 
-    index_alloc(&mme_ue_pool, &ue);
-    d_assert(ue, return NULL, "Null param");
+    index_alloc(&mme_ue_pool, &mme_ue);
+    d_assert(mme_ue, return NULL, "Null param");
 
-    ue->ebi = MIN_EPS_BEARER_ID - 1; /* Setup EBI Generator */
+    mme_ue->ebi = MIN_EPS_BEARER_ID - 1; /* Setup EBI Generator */
 
-    list_init(&ue->pdn_list);
-    list_init(&ue->sess_list);
+    list_init(&mme_ue->pdn_list);
+    list_init(&mme_ue->sess_list);
 
-    ue->enb_ue = enb_ue;
-    enb_ue->mme_ue = ue;
+    mme_ue->enb_ue = enb_ue;
+    enb_ue->mme_ue = mme_ue;
 #define MME_UE_T3_DURATION     3000 /* 3 seconds */
-    ue->tm_t3 = event_timer(&self.tm_service, MME_EVT_EMM_UE_T3,
-                MME_UE_T3_DURATION, ue->index);
+    mme_ue->tm_t3 = event_timer(&self.tm_service, MME_EVT_EMM_UE_T3,
+                MME_UE_T3_DURATION, mme_ue->index);
 #if 1 /* example code : please remove if you know the usage */
-    tm_start(ue->tm_t3);
-    tm_stop(ue->tm_t3);
+    tm_start(mme_ue->tm_t3);
+    tm_stop(mme_ue->tm_t3);
 #endif
 
-    fsm_create(&ue->sm, emm_state_initial, emm_state_final);
-    fsm_init(&ue->sm, 0);
+    fsm_create(&mme_ue->sm, emm_state_initial, emm_state_final);
+    fsm_init(&mme_ue->sm, 0);
     
-    return ue;
+    return mme_ue;
 }
 
-status_t mme_ue_remove(mme_ue_t *ue)
+status_t mme_ue_remove(mme_ue_t *mme_ue)
 {
-    d_assert(ue, return CORE_ERROR, "Null param");
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
 
-    tm_delete(ue->tm_t3);
+    tm_delete(mme_ue->tm_t3);
 
-    fsm_final(&ue->sm, 0);
-    fsm_clear(&ue->sm);
+    fsm_final(&mme_ue->sm, 0);
+    fsm_clear(&mme_ue->sm);
 
-    mme_sess_remove_all(ue);
-    mme_pdn_remove_all(ue);
+    mme_sess_remove_all(mme_ue);
+    mme_pdn_remove_all(mme_ue);
 
-    index_free(&mme_ue_pool, ue);
+    index_free(&mme_ue_pool, mme_ue);
 
     return CORE_OK;
 }
@@ -468,12 +468,12 @@ status_t mme_ue_remove(mme_ue_t *ue)
 status_t mme_ue_remove_all()
 {
     hash_index_t *hi = NULL;
-    mme_ue_t *ue = NULL;
+    mme_ue_t *mme_ue = NULL;
 
     for (hi = mme_ue_first(); hi; hi = mme_ue_next(hi))
     {
-        ue = mme_ue_this(hi);
-        mme_ue_remove(ue);
+        mme_ue = mme_ue_this(hi);
+        mme_ue_remove(mme_ue);
     }
 
     return CORE_OK;
@@ -554,16 +554,16 @@ unsigned int mme_ue_count()
 
 status_t mme_ue_remove_in_enb(mme_enb_t *enb)
 {
-    mme_ue_t *ue = NULL, *next_ue = NULL;
+    mme_ue_t *mme_ue = NULL, *next_mme_ue = NULL;
     
-    ue = mme_ue_first_in_enb(enb);
-    while (ue)
+    mme_ue = mme_ue_first_in_enb(enb);
+    while (mme_ue)
     {
-        next_ue = mme_ue_next_in_enb(ue);
+        next_mme_ue = mme_ue_next_in_enb(mme_ue);
 
-        mme_ue_remove(ue);
+        mme_ue_remove(mme_ue);
 
-        ue = next_ue;
+        mme_ue = next_mme_ue;
     }
 
     return CORE_OK;
@@ -572,32 +572,32 @@ status_t mme_ue_remove_in_enb(mme_enb_t *enb)
 mme_ue_t* mme_ue_find_by_enb_ue_s1ap_id(
         mme_enb_t *enb, c_uint32_t enb_ue_s1ap_id)
 {
-    mme_ue_t *ue = NULL;
+    mme_ue_t *mme_ue = NULL;
     
-    ue = mme_ue_first_in_enb(enb);
-    while (ue)
+    mme_ue = mme_ue_first_in_enb(enb);
+    while (mme_ue)
     {
-        if (enb_ue_s1ap_id == ue->enb_ue_s1ap_id)
+        if (enb_ue_s1ap_id == mme_ue->enb_ue_s1ap_id)
             break;
 
-        ue = mme_ue_next_in_enb(ue);
+        mme_ue = mme_ue_next_in_enb(mme_ue);
     }
 
-    return ue;
+    return mme_ue;
 }
 
 mme_ue_t* mme_ue_first_in_enb(mme_enb_t *enb)
 {
-    return list_first(&enb->ue_list);
+    return list_first(&enb->enb_ue_list);
 }
 
-mme_ue_t* mme_ue_next_in_enb(mme_ue_t *ue)
+mme_ue_t* mme_ue_next_in_enb(mme_ue_t *mme_ue)
 {
-    return list_next(ue);
+    return list_next(mme_ue);
 }
 #endif
 
-mme_bearer_t *mme_sess_add(mme_ue_t *ue, c_uint8_t pti)
+mme_bearer_t *mme_sess_add(mme_ue_t *mme_ue, c_uint8_t pti)
 {
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
@@ -609,9 +609,9 @@ mme_bearer_t *mme_sess_add(mme_ue_t *ue, c_uint8_t pti)
     sess->mme_s11_addr = mme_self()->s11_addr;
 
     list_init(&sess->bearer_list);
-    list_append(&ue->sess_list, sess);
+    list_append(&mme_ue->sess_list, sess);
 
-    sess->ue = ue;
+    sess->mme_ue = mme_ue;
 
     bearer = mme_bearer_add(sess, pti);
     d_assert(bearer, mme_sess_remove(sess); return NULL, 
@@ -623,21 +623,21 @@ mme_bearer_t *mme_sess_add(mme_ue_t *ue, c_uint8_t pti)
 status_t mme_sess_remove(mme_sess_t *sess)
 {
     d_assert(sess, return CORE_ERROR, "Null param");
-    d_assert(sess->ue, return CORE_ERROR, "Null param");
+    d_assert(sess->mme_ue, return CORE_ERROR, "Null param");
 
     mme_bearer_remove_all(sess);
 
-    list_remove(&sess->ue->sess_list, sess);
+    list_remove(&sess->mme_ue->sess_list, sess);
     index_free(&mme_sess_pool, sess);
 
     return CORE_OK;
 }
 
-status_t mme_sess_remove_all(mme_ue_t *ue)
+status_t mme_sess_remove_all(mme_ue_t *mme_ue)
 {
     mme_sess_t *sess = NULL, *next_sess = NULL;
     
-    sess = mme_sess_first(ue);
+    sess = mme_sess_first(mme_ue);
     while (sess)
     {
         next_sess = mme_sess_next(sess);
@@ -661,12 +661,12 @@ mme_sess_t* mme_sess_find_by_teid(c_uint32_t teid)
     return mme_sess_find(teid);
 }
 
-mme_sess_t* mme_sess_find_by_ebi(mme_ue_t *ue, c_uint8_t ebi)
+mme_sess_t* mme_sess_find_by_ebi(mme_ue_t *mme_ue, c_uint8_t ebi)
 {
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
     
-    sess = mme_sess_first(ue);
+    sess = mme_sess_first(mme_ue);
     while (sess)
     {
         bearer = mme_bearer_first(sess);
@@ -684,9 +684,9 @@ mme_sess_t* mme_sess_find_by_ebi(mme_ue_t *ue, c_uint8_t ebi)
     return NULL;
 }
 
-mme_sess_t* mme_sess_first(mme_ue_t *ue)
+mme_sess_t* mme_sess_first(mme_ue_t *mme_ue)
 {
-    return list_first(&ue->sess_list);
+    return list_first(&mme_ue->sess_list);
 }
 
 mme_sess_t* mme_sess_next(mme_sess_t *sess)
@@ -697,21 +697,21 @@ mme_sess_t* mme_sess_next(mme_sess_t *sess)
 mme_bearer_t* mme_bearer_add(mme_sess_t *sess, c_uint8_t pti)
 {
     mme_bearer_t *bearer = NULL;
-    mme_ue_t *ue = NULL;
+    mme_ue_t *mme_ue = NULL;
 
     d_assert(sess, return NULL, "Null param");
-    ue = sess->ue;
-    d_assert(ue, return NULL, "Null param");
+    mme_ue = sess->mme_ue;
+    d_assert(mme_ue, return NULL, "Null param");
 
     index_alloc(&mme_bearer_pool, &bearer);
     d_assert(bearer, return NULL, "Null param");
 
     bearer->pti = pti;
-    bearer->ebi = NEXT_ID(ue->ebi, MIN_EPS_BEARER_ID, MAX_EPS_BEARER_ID);
+    bearer->ebi = NEXT_ID(mme_ue->ebi, MIN_EPS_BEARER_ID, MAX_EPS_BEARER_ID);
 
     list_append(&sess->bearer_list, bearer);
     
-    bearer->ue = ue;
+    bearer->mme_ue = mme_ue;
     bearer->sess = sess;
 
     fsm_create(&bearer->sm, esm_state_initial, esm_state_final);
@@ -759,14 +759,14 @@ mme_bearer_t* mme_bearer_find(index_t index)
     return index_find(&mme_bearer_pool, index);
 }
 
-mme_bearer_t* mme_bearer_find_by_ue_pti(mme_ue_t *ue, c_uint8_t pti)
+mme_bearer_t* mme_bearer_find_by_ue_pti(mme_ue_t *mme_ue, c_uint8_t pti)
 {
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
 
-    d_assert(ue, return NULL, "Null param");
+    d_assert(mme_ue, return NULL, "Null param");
 
-    sess = mme_sess_first(ue);
+    sess = mme_sess_first(mme_ue);
     while (sess)
     {
         bearer = mme_bearer_first(sess);
@@ -784,14 +784,14 @@ mme_bearer_t* mme_bearer_find_by_ue_pti(mme_ue_t *ue, c_uint8_t pti)
     return NULL;
 }
 
-mme_bearer_t* mme_bearer_find_by_ue_ebi(mme_ue_t *ue, c_uint8_t ebi)
+mme_bearer_t* mme_bearer_find_by_ue_ebi(mme_ue_t *mme_ue, c_uint8_t ebi)
 {
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
 
-    d_assert(ue, return NULL, "Null param");
+    d_assert(mme_ue, return NULL, "Null param");
 
-    sess = mme_sess_first(ue);
+    sess = mme_sess_first(mme_ue);
     while (sess)
     {
         bearer = mme_bearer_first(sess);
@@ -844,11 +844,11 @@ mme_bearer_t* mme_bearer_next(mme_bearer_t *bearer)
     return list_next(bearer);
 }
 
-pdn_t* mme_pdn_add(mme_ue_t *ue, c_int8_t *apn)
+pdn_t* mme_pdn_add(mme_ue_t *mme_ue, c_int8_t *apn)
 {
     pdn_t *pdn = NULL;
 
-    d_assert(ue, return NULL, "Null param");
+    d_assert(mme_ue, return NULL, "Null param");
     d_assert(apn, return NULL, "Null param");
 
     pool_alloc_node(&mme_pdn_pool, &pdn);
@@ -857,33 +857,33 @@ pdn_t* mme_pdn_add(mme_ue_t *ue, c_int8_t *apn)
     memset(pdn, 0, sizeof(pdn_t));
     strcpy(pdn->apn, apn);
     
-    pdn->context = ue;
-    list_append(&ue->pdn_list, pdn);
+    pdn->context = mme_ue;
+    list_append(&mme_ue->pdn_list, pdn);
 
     return pdn;
 }
 
 status_t mme_pdn_remove(pdn_t *pdn)
 {
-    mme_ue_t *ue = NULL;
+    mme_ue_t *mme_ue = NULL;
 
     d_assert(pdn, return CORE_ERROR, "Null param");
-    ue = pdn->context;
-    d_assert(ue, return CORE_ERROR, "Null param");
+    mme_ue = pdn->context;
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
 
-    list_remove(&ue->pdn_list, pdn);
+    list_remove(&mme_ue->pdn_list, pdn);
     pool_free_node(&mme_pdn_pool, pdn);
 
     return CORE_OK;
 }
 
-status_t mme_pdn_remove_all(mme_ue_t *ue)
+status_t mme_pdn_remove_all(mme_ue_t *mme_ue)
 {
     pdn_t *pdn = NULL, *next_pdn = NULL;
 
-    d_assert(ue, return CORE_ERROR, "Null param");
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
     
-    pdn = list_first(&ue->pdn_list);
+    pdn = list_first(&mme_ue->pdn_list);
     while (pdn)
     {
         next_pdn = list_next(pdn);
@@ -896,13 +896,13 @@ status_t mme_pdn_remove_all(mme_ue_t *ue)
     return CORE_OK;
 }
 
-pdn_t* mme_pdn_find_by_apn(mme_ue_t *ue, c_int8_t *apn)
+pdn_t* mme_pdn_find_by_apn(mme_ue_t *mme_ue, c_int8_t *apn)
 {
     pdn_t *pdn = NULL;
     
-    d_assert(ue, return NULL, "Null param");
+    d_assert(mme_ue, return NULL, "Null param");
 
-    pdn = list_first(&ue->pdn_list);
+    pdn = list_first(&mme_ue->pdn_list);
     while (pdn)
     {
         if (strcmp(pdn->apn, apn) == 0)
@@ -914,10 +914,10 @@ pdn_t* mme_pdn_find_by_apn(mme_ue_t *ue, c_int8_t *apn)
     return pdn;
 }
 
-pdn_t* mme_pdn_first(mme_ue_t *ue)
+pdn_t* mme_pdn_first(mme_ue_t *mme_ue)
 {
-    d_assert(ue, return NULL, "Null param");
-    return list_first(&ue->pdn_list);
+    d_assert(mme_ue, return NULL, "Null param");
+    return list_first(&mme_ue->pdn_list);
 }
 
 pdn_t* mme_pdn_next(pdn_t *pdn)

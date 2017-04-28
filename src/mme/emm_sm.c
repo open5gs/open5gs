@@ -67,24 +67,24 @@ void emm_state_operational(fsm_t *s, event_t *e)
         case MME_EVT_EMM_UE_FROM_S11:
         {
             index_t index = event_get_param1(e);
-            mme_ue_t *ue = NULL;
+            mme_ue_t *mme_ue = NULL;
 
             d_assert(index, return, "Null param");
-            ue = mme_ue_find(index);
-            d_assert(ue, return, "Null param");
+            mme_ue = mme_ue_find(index);
+            d_assert(mme_ue, return, "Null param");
 
             switch(event_get_param2(e))
             {
                 case S6A_CMD_AUTHENTICATION_INFORMATION:
                 {
                     d_info("[NAS] Authentication request : UE[%s] <-- EMM",
-                             ue->imsi_bcd);
-                    emm_handle_authentication_request(ue);
+                             mme_ue->imsi_bcd);
+                    emm_handle_authentication_request(mme_ue);
                     break;
                 }
                 case S6A_CMD_UPDATE_LOCATION:
                 {
-                    mme_sess_t *sess = mme_sess_first(ue);
+                    mme_sess_t *sess = mme_sess_first(mme_ue);
                     while(sess)
                     {
                         mme_bearer_t *bearer = mme_bearer_first(sess);
@@ -116,12 +116,12 @@ void emm_state_operational(fsm_t *s, event_t *e)
         case MME_EVT_EMM_UE_MSG:
         {
             index_t index = event_get_param1(e);
-            mme_ue_t *ue = NULL;
+            mme_ue_t *mme_ue = NULL;
             nas_message_t *message = NULL;
 
             d_assert(index, return, "Null param");
-            ue = mme_ue_find(index);
-            d_assert(ue, return, "Null param");
+            mme_ue = mme_ue_find(index);
+            d_assert(mme_ue, return, "Null param");
 
             message = (nas_message_t *)event_get_param3(e);
             d_assert(message, break, "Null param");
@@ -131,45 +131,45 @@ void emm_state_operational(fsm_t *s, event_t *e)
                 case NAS_ATTACH_REQUEST:
                 {
                     emm_handle_attach_request(
-                            ue, &message->emm.attach_request);
+                            mme_ue, &message->emm.attach_request);
                     break;
                 }
                 case NAS_IDENTITY_RESPONSE:
                 {
-                    emm_handle_identity_response(ue,
+                    emm_handle_identity_response(mme_ue,
                             &message->emm.identity_response);
                     break;
                 }
                 case NAS_AUTHENTICATION_RESPONSE:
                 {
                     emm_handle_authentication_response(
-                            ue, &message->emm.authentication_response);
+                            mme_ue, &message->emm.authentication_response);
                     break;
                 }
                 case NAS_SECURITY_MODE_COMPLETE:
                 {
                     d_info("[NAS] Security mode complete : UE[%s] --> EMM",
-                            ue->imsi_bcd);
-                    mme_s6a_send_ulr(ue);
+                            mme_ue->imsi_bcd);
+                    mme_s6a_send_ulr(mme_ue);
                     break;
                 }
                 case NAS_ATTACH_COMPLETE:
                 {
                     d_info("[NAS] Attach complete : UE[%s] --> EMM",
-                            ue->imsi_bcd);
+                            mme_ue->imsi_bcd);
                     emm_handle_attach_complete(
-                            ue, &message->emm.attach_complete);
+                            mme_ue, &message->emm.attach_complete);
                     break;
                 }
                 case NAS_EMM_STATUS:
                 {
-                    emm_handle_emm_status(ue, &message->emm.emm_status);
+                    emm_handle_emm_status(mme_ue, &message->emm.emm_status);
                     break;
                 }
                 case NAS_DETACH_REQUEST:
                 {
                     emm_handle_detach_request(
-                            ue, &message->emm.detach_request_from_ue);
+                            mme_ue, &message->emm.detach_request_from_ue);
                     break;
                 }
                 default:
@@ -184,11 +184,11 @@ void emm_state_operational(fsm_t *s, event_t *e)
         case MME_EVT_EMM_UE_T3:
         {
             index_t index = event_get_param1(e);
-            mme_ue_t *ue = NULL;
+            mme_ue_t *mme_ue = NULL;
 
             d_assert(index, return, "Null param");
-            ue = mme_ue_find(index);
-            d_assert(ue, return, "Null param");
+            mme_ue = mme_ue_find(index);
+            d_assert(mme_ue, return, "Null param");
             break;
         }
 

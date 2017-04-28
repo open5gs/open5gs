@@ -8,7 +8,7 @@
 #include "emm_build.h"
 
 status_t emm_build_attach_accept(
-        pkbuf_t **emmbuf, mme_ue_t *ue, pkbuf_t *esmbuf)
+        pkbuf_t **emmbuf, mme_ue_t *mme_ue, pkbuf_t *esmbuf)
 {
     nas_message_t message;
     nas_attach_accept_t *attach_accept = &message.emm.attach_accept;
@@ -24,8 +24,8 @@ status_t emm_build_attach_accept(
     nas_eps_network_feature_support_t *eps_network_feature_support =
         &attach_accept->eps_network_feature_support;
 
-    d_assert(ue, return CORE_ERROR, "Null param");
-    d_assert(ue->enb_ue, return CORE_ERROR, "Null param");
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    d_assert(mme_ue->enb_ue, return CORE_ERROR, "Null param");
 
     memset(&message, 0, sizeof(message));
     message.h.security_header_type = 
@@ -42,7 +42,7 @@ status_t emm_build_attach_accept(
     tai_list->length = 6;
     tai_list->type = 2;
     tai_list->num = 0; /* +1 = 1 elements */
-    memcpy(&tai_list->type2.tai[0], &ue->enb_ue->tai, sizeof(tai_t));
+    memcpy(&tai_list->type2.tai[0], &mme_ue->enb_ue->tai, sizeof(tai_t));
 
     attach_accept->esm_message_container.data = esmbuf->payload;
     attach_accept->esm_message_container.len = esmbuf->len;
@@ -52,7 +52,7 @@ status_t emm_build_attach_accept(
     guti->length = 11;
     guti->guti.odd_even = NAS_EPS_MOBILE_IDENTITY_EVEN;
     guti->guti.type = NAS_EPS_MOBILE_IDENTITY_GUTI;
-    memcpy(&guti->guti.plmn_id, &ue->visited_plmn_id, PLMN_ID_LEN);
+    memcpy(&guti->guti.plmn_id, &mme_ue->visited_plmn_id, PLMN_ID_LEN);
     guti->guti.mme_gid = 2;
     guti->guti.mme_code = 1;
     guti->guti.m_tmsi = 0x040001fb;
@@ -73,7 +73,8 @@ status_t emm_build_attach_accept(
     eps_network_feature_support->epc_lcs = 1;
     eps_network_feature_support->ims_vops = 1;
 
-    d_assert(nas_security_encode(emmbuf, ue, &message) == CORE_OK && *emmbuf,,);
+    d_assert(nas_security_encode(emmbuf, mme_ue, &message) == CORE_OK && 
+            *emmbuf,,);
     pkbuf_free(esmbuf);
 
     return CORE_OK;

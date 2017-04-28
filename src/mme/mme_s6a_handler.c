@@ -13,7 +13,7 @@
 static struct session_handler *mme_s6a_reg = NULL;
 
 struct sess_state {
-    mme_ue_t *ue;
+    mme_ue_t *mme_ue;
     struct timespec ts; /* Time of sending the message */
 };
 
@@ -33,7 +33,7 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     int new;
 
     event_t e;
-    mme_ue_t *ue = NULL;
+    mme_ue_t *mme_ue = NULL;
     
     CHECK_SYS_DO(clock_gettime(CLOCK_REALTIME, &ts), return);
 
@@ -44,11 +44,11 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     d_assert(fd_sess_state_retrieve(mme_s6a_reg, sess, &mi) == 0 &&
             mi && (void *)mi == data, fd_msg_free(*msg); *msg = NULL; return,);
 
-    ue = mi->ue;
-    d_assert(ue, error++; goto out,);
+    mme_ue = mi->mme_ue;
+    d_assert(mme_ue, error++; goto out,);
 
     d_info("[S6A] Authentication-Information-Response : UE[%s] <-- HSS", 
-            ue->imsi_bcd);
+            mme_ue->imsi_bcd);
     
     /* Value of Result Code */
     d_assert(fd_msg_search_avp(*msg, s6a_result_code, &avp) == 0 && avp, 
@@ -72,27 +72,27 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     d_assert(fd_avp_search_avp(avp_e_utran_vector, s6a_xres, &avp_xres) == 0 && 
             avp_xres, error++; goto out,);
     d_assert(fd_msg_avp_hdr(avp_xres, &hdr) == 0 && hdr, error++; goto out,);
-    memcpy(ue->xres, hdr->avp_value->os.data, hdr->avp_value->os.len);
-    ue->xres_len = hdr->avp_value->os.len;
+    memcpy(mme_ue->xres, hdr->avp_value->os.data, hdr->avp_value->os.len);
+    mme_ue->xres_len = hdr->avp_value->os.len;
 
     d_assert(
         fd_avp_search_avp(avp_e_utran_vector, s6a_kasme, &avp_kasme) == 0 && 
         avp_kasme, error++; goto out,);
     d_assert(fd_msg_avp_hdr(avp_kasme, &hdr) == 0 && hdr, error++; goto out,);
-    memcpy(ue->kasme, hdr->avp_value->os.data, hdr->avp_value->os.len);
+    memcpy(mme_ue->kasme, hdr->avp_value->os.data, hdr->avp_value->os.len);
 
     d_assert(fd_avp_search_avp(avp_e_utran_vector, s6a_rand, &avp_rand) == 0 && 
             avp_rand, error++; goto out,);
     d_assert(fd_msg_avp_hdr(avp_rand, &hdr) == 0 && hdr, error++; goto out,);
-    memcpy(ue->rand, hdr->avp_value->os.data, hdr->avp_value->os.len);
+    memcpy(mme_ue->rand, hdr->avp_value->os.data, hdr->avp_value->os.len);
 
     d_assert(fd_avp_search_avp(avp_e_utran_vector, s6a_autn, &avp_autn) == 0 && 
             avp_autn, error++; goto out,);
     d_assert(fd_msg_avp_hdr(avp_autn, &hdr) == 0 && hdr, error++; goto out,);
-    memcpy(ue->autn, hdr->avp_value->os.data, hdr->avp_value->os.len);
+    memcpy(mme_ue->autn, hdr->avp_value->os.data, hdr->avp_value->os.len);
 
     event_set(&e, MME_EVT_EMM_UE_FROM_S6A);
-    event_set_param1(&e, (c_uintptr_t)ue->index);
+    event_set_param1(&e, (c_uintptr_t)mme_ue->index);
     event_set_param2(&e, (c_uintptr_t)S6A_CMD_AUTHENTICATION_INFORMATION);
     mme_event_send(&e);
 
@@ -140,7 +140,7 @@ out:
 }
 
 /* MME Sends Authentication Information Request to HSS */
-int mme_s6a_send_air(mme_ue_t *ue)
+int mme_s6a_send_air(mme_ue_t *mme_ue)
 {
     struct msg *req = NULL;
     struct avp *avp;
@@ -149,13 +149,13 @@ int mme_s6a_send_air(mme_ue_t *ue)
     struct sess_state *mi = NULL, *svg;
     struct session *sess = NULL;
 
-    d_assert(ue, return -1, "Null Param");
+    d_assert(mme_ue, return -1, "Null Param");
     
     /* Create the random value to store with the session */
     pool_alloc_node(&sess_state_pool, &mi);
     d_assert(mi, return -1, "malloc failed: %s", strerror(errno));
     
-    mi->ue = ue;
+    mi->mme_ue = mme_ue;
     
     /* Create the request */
     d_assert(fd_msg_new(s6a_cmd_air, MSGFL_ALLOC_ETEID, &req) == 0, 
@@ -186,8 +186,8 @@ int mme_s6a_send_air(mme_ue_t *ue)
     
     /* Set the User-Name AVP */
     d_assert(fd_msg_avp_new(s6a_user_name, 0, &avp) == 0, goto out,);
-    val.os.data = (c_uint8_t *)ue->imsi_bcd;
-    val.os.len  = strlen(ue->imsi_bcd);
+    val.os.data = (c_uint8_t *)mme_ue->imsi_bcd;
+    val.os.len  = strlen(mme_ue->imsi_bcd);
     d_assert(fd_msg_avp_setvalue(avp, &val) == 0, goto out, );
     d_assert(fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp) == 0, goto out,);
 
@@ -209,7 +209,7 @@ int mme_s6a_send_air(mme_ue_t *ue)
 
     /* Set the Visited-PLMN-Id AVP */
     d_assert(fd_msg_avp_new(s6a_visited_plmn_id, 0, &avp) == 0, goto out,);
-    val.os.data = (c_uint8_t *)&ue->visited_plmn_id;
+    val.os.data = (c_uint8_t *)&mme_ue->visited_plmn_id;
     val.os.len  = PLMN_ID_LEN;
     d_assert(fd_msg_avp_setvalue(avp, &val) == 0, goto out,);
     d_assert(fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp) == 0, goto out,);
@@ -232,7 +232,7 @@ int mme_s6a_send_air(mme_ue_t *ue)
     d_assert(pthread_mutex_unlock(&s6a_config->stats_lock) == 0,, );
 
     d_info("[S6A] Authentication-Information-Request : UE[%s] --> HSS", 
-            ue->imsi_bcd);
+            mme_ue->imsi_bcd);
 
     return 0;
 
@@ -257,7 +257,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     int new;
 
     event_t e;
-    mme_ue_t *ue = NULL;
+    mme_ue_t *mme_ue = NULL;
     pdn_t *pdn = NULL;
 
     CHECK_SYS_DO(clock_gettime(CLOCK_REALTIME, &ts), return);
@@ -269,11 +269,11 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     d_assert(fd_sess_state_retrieve(mme_s6a_reg, sess, &mi) == 0 &&
             mi && (void *)mi == data, fd_msg_free(*msg); *msg = NULL; return,);
 
-    ue = mi->ue;
-    d_assert(ue, error++; goto out,);
+    mme_ue = mi->mme_ue;
+    d_assert(mme_ue, error++; goto out,);
 
     d_info("[S6A] Update-Location-Response : UE[%s] <-- HSS", 
-            ue->imsi_bcd);
+            mme_ue->imsi_bcd);
     
     /* Value of Result Code */
     d_assert(fd_msg_search_avp(*msg, s6a_result_code, &avp) == 0 && avp, 
@@ -289,7 +289,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     d_assert(fd_msg_search_avp(*msg, s6a_ula_flags, &avp) == 0 
             && avp, error++; goto out,);
     d_assert(fd_msg_avp_hdr(avp, &hdr) == 0 && hdr, error++; goto out,);
-    ue->ula_flags = hdr->avp_value->i32;
+    mme_ue->ula_flags = hdr->avp_value->i32;
 
     d_assert(fd_msg_search_avp(*msg, s6a_subscription_data, &avp) == 0 && avp, 
             error++; goto out,);
@@ -299,11 +299,11 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     d_assert(fd_avp_search_avp(avpch1, s6a_max_bandwidth_ul, &avpch2) == 0 && 
             avpch2, error++; goto out,);
     d_assert(fd_msg_avp_hdr(avpch2, &hdr) == 0 && hdr, error++; goto out,);
-    ue->max_bandwidth_ul = hdr->avp_value->i32;
+    mme_ue->max_bandwidth_ul = hdr->avp_value->i32;
     d_assert(fd_avp_search_avp(avpch1, s6a_max_bandwidth_dl, &avpch2) == 0 && 
             avpch2, error++; goto out,);
     d_assert(fd_msg_avp_hdr(avpch2, &hdr) == 0 && hdr, error++; goto out,);
-    ue->max_bandwidth_dl = hdr->avp_value->i32;
+    mme_ue->max_bandwidth_dl = hdr->avp_value->i32;
 
     d_assert(fd_avp_search_avp(avp, s6a_apn_configuration_profile, &avpch1) 
             == 0 && avpch1, error++; goto out,);
@@ -329,9 +329,9 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                 memcpy(apn, hdr->avp_value->os.data, hdr->avp_value->os.len);
                 apn[hdr->avp_value->os.len] = 0;
 
-                pdn = mme_pdn_find_by_apn(ue, apn);
+                pdn = mme_pdn_find_by_apn(mme_ue, apn);
                 if (!pdn)
-                    pdn = mme_pdn_add(ue, apn);
+                    pdn = mme_pdn_add(mme_ue, apn);
                 else
                     d_warn("Duplicate APN:[%s]", apn);
                 d_assert(pdn, error++; goto out,);
@@ -409,10 +409,10 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     d_assert(fd_msg_search_avp(*msg, s6a_subscribed_rau_tau_timer, &avp) == 0 
             && avp, error++; goto out,);
     d_assert(fd_msg_avp_hdr(avp, &hdr) == 0 && hdr, error++; goto out,);
-    ue->subscribed_rau_tau_timer = hdr->avp_value->i32;
+    mme_ue->subscribed_rau_tau_timer = hdr->avp_value->i32;
     
     event_set(&e, MME_EVT_EMM_UE_FROM_S6A);
-    event_set_param1(&e, (c_uintptr_t)ue->index);
+    event_set_param1(&e, (c_uintptr_t)mme_ue->index);
     event_set_param2(&e, (c_uintptr_t)S6A_CMD_UPDATE_LOCATION);
     mme_event_send(&e);
 out:
@@ -459,7 +459,7 @@ out:
 }
 
 /* MME Sends Update Location Request to HSS */
-int mme_s6a_send_ulr(mme_ue_t *ue)
+int mme_s6a_send_ulr(mme_ue_t *mme_ue)
 {
     struct msg *req = NULL;
     struct avp *avp;
@@ -467,13 +467,13 @@ int mme_s6a_send_ulr(mme_ue_t *ue)
     struct sess_state *mi = NULL, *svg;
     struct session *sess = NULL;
 
-    d_assert(ue, return -1, "Null Param");
+    d_assert(mme_ue, return -1, "Null Param");
     
     /* Create the random value to store with the session */
     pool_alloc_node(&sess_state_pool, &mi);
     d_assert(mi, return -1, "malloc failed: %s", strerror(errno));
     
-    mi->ue = ue;
+    mi->mme_ue = mme_ue;
     
     /* Create the request */
     d_assert(fd_msg_new(s6a_cmd_ulr, MSGFL_ALLOC_ETEID, &req) == 0, 
@@ -504,8 +504,8 @@ int mme_s6a_send_ulr(mme_ue_t *ue)
     
     /* Set the User-Name AVP */
     d_assert(fd_msg_avp_new(s6a_user_name, 0, &avp) == 0, goto out,);
-    val.os.data = (c_uint8_t *)ue->imsi_bcd;
-    val.os.len  = strlen(ue->imsi_bcd);
+    val.os.data = (c_uint8_t *)mme_ue->imsi_bcd;
+    val.os.len  = strlen(mme_ue->imsi_bcd);
     d_assert(fd_msg_avp_setvalue(avp, &val) == 0, goto out, );
     d_assert(fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp) == 0, goto out,);
 
@@ -523,7 +523,7 @@ int mme_s6a_send_ulr(mme_ue_t *ue)
 
     /* Set the Visited-PLMN-Id */
     d_assert(fd_msg_avp_new(s6a_visited_plmn_id, 0, &avp) == 0, goto out,);
-    val.os.data = (c_uint8_t *)&ue->visited_plmn_id;
+    val.os.data = (c_uint8_t *)&mme_ue->visited_plmn_id;
     val.os.len  = PLMN_ID_LEN;
     d_assert(fd_msg_avp_setvalue(avp, &val) == 0, goto out,);
     d_assert(fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp) == 0, goto out,);
@@ -552,7 +552,7 @@ int mme_s6a_send_ulr(mme_ue_t *ue)
     d_assert(pthread_mutex_unlock(&s6a_config->stats_lock) == 0,, );
 
     d_info("[S6A] Update-Location-Request : UE[%s] --> HSS", 
-            ue->imsi_bcd);
+            mme_ue->imsi_bcd);
 
     return 0;
 

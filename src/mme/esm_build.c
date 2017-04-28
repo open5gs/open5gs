@@ -10,11 +10,11 @@
 status_t esm_build_information_request(pkbuf_t **pkbuf, mme_bearer_t *bearer)
 {
     nas_message_t message;
-    mme_ue_t *ue = NULL;
+    mme_ue_t *mme_ue = NULL;
 
     d_assert(bearer, return CORE_ERROR, "Null param");
-    ue = bearer->ue;
-    d_assert(ue, return CORE_ERROR, "Null param");
+    mme_ue = bearer->mme_ue;
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
 
     memset(&message, 0, sizeof(message));
     message.h.security_header_type = 
@@ -25,7 +25,8 @@ status_t esm_build_information_request(pkbuf_t **pkbuf, mme_bearer_t *bearer)
     message.esm.h.procedure_transaction_identity = bearer->pti;
     message.esm.h.message_type = NAS_ESM_INFORMATION_REQUEST;
 
-    d_assert(nas_security_encode(pkbuf, ue, &message) == CORE_OK && *pkbuf,,);
+    d_assert(nas_security_encode(pkbuf, mme_ue, &message) == CORE_OK && 
+            *pkbuf,,);
 
     return CORE_OK;
 }
@@ -49,12 +50,12 @@ status_t esm_build_activate_default_bearer_context(
         &activate_default_eps_bearer_context_request
             ->protocol_configuration_options;
     
-    mme_ue_t *ue = NULL;
+    mme_ue_t *mme_ue = NULL;
     pdn_t *pdn = NULL;
 
     d_assert(bearer, return CORE_ERROR, "Null param");
-    ue = bearer->ue;
-    d_assert(ue, return CORE_ERROR, "Null param");
+    mme_ue = bearer->mme_ue;
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
     pdn = bearer->pdn;
     d_assert(pdn, return CORE_ERROR, "Null param");
 

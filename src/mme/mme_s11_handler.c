@@ -86,14 +86,14 @@ void mme_s11_handle_create_session_response(
 void mme_s11_handle_modify_bearer_response(
         mme_sess_t *sess, gtp_modify_bearer_response_t *rsp)
 {
-    mme_ue_t *ue = NULL;
+    mme_ue_t *mme_ue = NULL;
     event_t e;
 
     d_assert(sess, return, "Null param");
-    ue = sess->ue;
+    mme_ue = sess->mme_ue;
 
     event_set(&e, MME_EVT_EMM_UE_FROM_S11);
-    event_set_param1(&e, (c_uintptr_t)ue->index);
+    event_set_param1(&e, (c_uintptr_t)mme_ue->index);
     event_set_param2(&e, (c_uintptr_t)GTP_MODIFY_BEARER_RESPONSE_TYPE);
     mme_event_send(&e);
 }

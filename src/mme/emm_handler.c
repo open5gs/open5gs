@@ -19,10 +19,10 @@
 #include "mme_s11_build.h"
 #include "mme_s11_path.h"
 
-void emm_handle_identity_request(mme_ue_t *ue);
+void emm_handle_identity_request(mme_ue_t *mme_ue);
 
 void emm_handle_esm_message_container(
-        mme_ue_t *ue, nas_esm_message_container_t *esm_message_container)
+        mme_ue_t *mme_ue, nas_esm_message_container_t *esm_message_container)
 {
     pkbuf_t *esmbuf = NULL;
     event_t e;
@@ -32,7 +32,7 @@ void emm_handle_esm_message_container(
     c_uint8_t ebi = NAS_EPS_BEARER_IDENTITY_UNASSIGNED;
     mme_bearer_t *bearer = NULL;
 
-    d_assert(ue, return, "Null param");
+    d_assert(mme_ue, return, "Null param");
     d_assert(esm_message_container, return, "Null param");
     d_assert(esm_message_container->len, return, "Null param");
 
@@ -42,12 +42,12 @@ void emm_handle_esm_message_container(
     pti = h->procedure_transaction_identity;
     ebi = h->eps_bearer_identity;
     if (pti == NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED && ebi)
-        bearer = mme_bearer_find_by_ue_ebi(ue, ebi);
+        bearer = mme_bearer_find_by_ue_ebi(mme_ue, ebi);
     else if (ebi == NAS_EPS_BEARER_IDENTITY_UNASSIGNED && pti)
-        bearer = mme_bearer_find_by_ue_pti(ue, pti);
+        bearer = mme_bearer_find_by_ue_pti(mme_ue, pti);
 
     if (!bearer)
-        bearer = mme_sess_add(ue, pti);
+        bearer = mme_sess_add(mme_ue, pti);
     d_assert(bearer, return, "No Bearer Context");
 
     /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 
@@ -64,31 +64,31 @@ void emm_handle_esm_message_container(
 }
 
 void emm_handle_attach_request(
-        mme_ue_t *ue, nas_attach_request_t *attach_request)
+        mme_ue_t *mme_ue, nas_attach_request_t *attach_request)
 {
     nas_eps_mobile_identity_t *eps_mobile_identity =
                     &attach_request->eps_mobile_identity;
 
     emm_handle_esm_message_container(
-            ue, &attach_request->esm_message_container);
+            mme_ue, &attach_request->esm_message_container);
 
     /* Store UE specific information */
-    memcpy(&ue->visited_plmn_id, &mme_self()->plmn_id, PLMN_ID_LEN);
+    memcpy(&mme_ue->visited_plmn_id, &mme_self()->plmn_id, PLMN_ID_LEN);
     if (attach_request->presencemask &
         NAS_ATTACH_REQUEST_LAST_VISITED_REGISTERED_TAI_PRESENT)
     {
         nas_tracking_area_identity_t *last_visited_registered_tai = 
             &attach_request->last_visited_registered_tai;
 
-        memcpy(&ue->visited_plmn_id, 
+        memcpy(&mme_ue->visited_plmn_id, 
                 &last_visited_registered_tai->plmn_id,
                 PLMN_ID_LEN);
     }
 
-    memcpy(&ue->ue_network_capability, 
+    memcpy(&mme_ue->ue_network_capability, 
             &attach_request->ue_network_capability,
             sizeof(attach_request->ue_network_capability));
-    memcpy(&ue->ms_network_capability, 
+    memcpy(&mme_ue->ms_network_capability, 
             &attach_request->ms_network_capability,
             sizeof(attach_request->ms_network_capability));
 
@@ -98,15 +98,16 @@ void emm_handle_attach_request(
         {
             nas_imsi_to_bcd(
                 &eps_mobile_identity->imsi, eps_mobile_identity->length,
-                ue->imsi_bcd);
-            core_bcd_to_buffer(ue->imsi_bcd, ue->imsi, &ue->imsi_len);
-            d_assert(ue->imsi_len, return,
-                    "Can't get IMSI(len:%d\n", ue->imsi_len);
+                mme_ue->imsi_bcd);
+            core_bcd_to_buffer(mme_ue->imsi_bcd, mme_ue->imsi, 
+                &mme_ue->imsi_len);
+            d_assert(mme_ue->imsi_len, return,
+                    "Can't get IMSI(len:%d\n", mme_ue->imsi_len);
 
             d_info("[NAS] Attach request : UE_IMSI[%s] --> EMM", 
-                    ue->imsi_bcd);
+                    mme_ue->imsi_bcd);
 
-            mme_s6a_send_air(ue);
+            mme_s6a_send_air(mme_ue);
             break;
         }
         case NAS_EPS_MOBILE_IDENTITY_GUTI:
@@ -131,7 +132,7 @@ void emm_handle_attach_request(
 
             /* If not found,
                Initiate NAS Identity procedure to get UE IMSI */
-            emm_handle_identity_request(ue);
+            emm_handle_identity_request(mme_ue);
             break;
         }
         default:
@@ -148,7 +149,7 @@ void emm_handle_identity_request(mme_ue_t *mme_ue)
 {
     status_t rv;
     mme_enb_t *enb = NULL;
-    enb_ue_t *ue = NULL;
+    enb_ue_t *enb_ue = NULL;
     pkbuf_t *emmbuf = NULL, *s1apbuf = NULL;
 
     nas_message_t message;
@@ -156,9 +157,9 @@ void emm_handle_identity_request(mme_ue_t *mme_ue)
         &message.emm.identity_request;
 
     d_assert(mme_ue, return, "Null param");
-    ue = mme_ue->enb_ue;
-    d_assert(ue, return, "Null param");
-    enb = ue->enb;
+    enb_ue = mme_ue->enb_ue;
+    d_assert(enb_ue, return, "Null param");
+    enb = enb_ue->enb;
     d_assert(enb, return, "Null param");
 
     memset(&message, 0, sizeof(message));
@@ -170,7 +171,7 @@ void emm_handle_identity_request(mme_ue_t *mme_ue)
 
     d_assert(nas_plain_encode(&emmbuf, &message) == CORE_OK && emmbuf,,);
 
-    rv = s1ap_build_downlink_nas_transport(&s1apbuf, ue, emmbuf);
+    rv = s1ap_build_downlink_nas_transport(&s1apbuf, enb_ue, emmbuf);
     d_assert(rv == CORE_OK && s1apbuf, 
             pkbuf_free(emmbuf); return, "s1ap build error");
 
@@ -178,11 +179,11 @@ void emm_handle_identity_request(mme_ue_t *mme_ue)
 }
 
 void emm_handle_identity_response(
-        mme_ue_t *ue, nas_identity_response_t *identity_response)
+        mme_ue_t *mme_ue, nas_identity_response_t *identity_response)
 {
     nas_mobile_identity_t *mobile_identity = NULL;
 
-    d_assert(ue, return, "Null param");
+    d_assert(mme_ue, return, "Null param");
     d_assert(identity_response, return, "Null param");
 
     mobile_identity = &identity_response->mobile_identity;
@@ -191,20 +192,20 @@ void emm_handle_identity_response(
     {
         nas_imsi_to_bcd(
             &mobile_identity->imsi, mobile_identity->length,
-            ue->imsi_bcd);
-        core_bcd_to_buffer(ue->imsi_bcd, ue->imsi, &ue->imsi_len);
+            mme_ue->imsi_bcd);
+        core_bcd_to_buffer(mme_ue->imsi_bcd, mme_ue->imsi, &mme_ue->imsi_len);
 
-        d_assert(ue->imsi_len, return,
-                "Can't get IMSI(len:%d\n", ue->imsi_len);
+        d_assert(mme_ue->imsi_len, return,
+                "Can't get IMSI(len:%d\n", mme_ue->imsi_len);
     }
     else
     {
-        d_warn("Not supported Identity type(%d)",mobile_identity->imsi.type);
+        d_warn("Not supported Identity type(%d)", mobile_identity->imsi.type);
         return;
     }
 
     /* Send Authentication Information Request to HSS */
-    mme_s6a_send_air(ue);
+    mme_s6a_send_air(mme_ue);
 
 }
 
@@ -212,7 +213,7 @@ void emm_handle_authentication_request(mme_ue_t *mme_ue)
 {
     status_t rv;
     mme_enb_t *enb = NULL;
-    enb_ue_t *ue = NULL;
+    enb_ue_t *enb_ue = NULL;
     pkbuf_t *emmbuf = NULL, *s1apbuf = NULL;
 
     nas_message_t message;
@@ -220,9 +221,9 @@ void emm_handle_authentication_request(mme_ue_t *mme_ue)
         &message.emm.authentication_request;
 
     d_assert(mme_ue, return, "Null param");
-    ue = mme_ue->enb_ue;
-    d_assert(ue, return, "Null param");
-    enb = ue->enb;
+    enb_ue = mme_ue->enb_ue;
+    d_assert(enb_ue, return, "Null param");
+    enb = enb_ue->enb;
     d_assert(enb, return, "Null param");
 
     memset(&message, 0, sizeof(message));
@@ -238,15 +239,15 @@ void emm_handle_authentication_request(mme_ue_t *mme_ue)
 
     d_assert(nas_plain_encode(&emmbuf, &message) == CORE_OK && emmbuf,,);
 
-    rv = s1ap_build_downlink_nas_transport(&s1apbuf, ue, emmbuf);
+    rv = s1ap_build_downlink_nas_transport(&s1apbuf, enb_ue, emmbuf);
     d_assert(rv == CORE_OK && s1apbuf, 
             pkbuf_free(emmbuf); return, "s1ap build error");
 
     d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
 }
 
-void emm_handle_authentication_response(
-        mme_ue_t *ue, nas_authentication_response_t *authentication_response)
+void emm_handle_authentication_response(mme_ue_t *mme_ue, 
+        nas_authentication_response_t *authentication_response)
 {
     status_t rv;
     mme_enb_t *enb = NULL;
@@ -266,22 +267,22 @@ void emm_handle_authentication_response(
     nas_ue_security_capability_t *replayed_ue_security_capabilities = 
         &security_mode_command->replayed_ue_security_capabilities;
 
-    d_assert(ue, return, "Null param");
-    enb_ue = ue->enb_ue;
+    d_assert(mme_ue, return, "Null param");
+    enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return, "Null param");
     enb = enb_ue->enb;
     d_assert(enb, return, "Null param");
 
-    if (authentication_response_parameter->length != ue->xres_len ||
+    if (authentication_response_parameter->length != mme_ue->xres_len ||
         memcmp(authentication_response_parameter->res,
-            ue->xres, ue->xres_len) != 0)
+            mme_ue->xres, mme_ue->xres_len) != 0)
     {
         d_error("authentication failed");
         return;
     }
 
     d_info("[NAS] Authentication response : UE[%s] --> EMM", 
-            ue->imsi_bcd);
+            mme_ue->imsi_bcd);
 
     memset(&message, 0, sizeof(message));
     message.h.security_header_type = 
@@ -305,24 +306,24 @@ void emm_handle_authentication_response(
         sizeof(replayed_ue_security_capabilities->uea) +
         sizeof(replayed_ue_security_capabilities->uia) +
         sizeof(replayed_ue_security_capabilities->gea);
-    replayed_ue_security_capabilities->eea = ue->ue_network_capability.eea;
-    replayed_ue_security_capabilities->eia = ue->ue_network_capability.eia;
-    replayed_ue_security_capabilities->uea = ue->ue_network_capability.uea;
-    replayed_ue_security_capabilities->uia = ue->ue_network_capability.uia;
+    replayed_ue_security_capabilities->eea = mme_ue->ue_network_capability.eea;
+    replayed_ue_security_capabilities->eia = mme_ue->ue_network_capability.eia;
+    replayed_ue_security_capabilities->uea = mme_ue->ue_network_capability.uea;
+    replayed_ue_security_capabilities->uia = mme_ue->ue_network_capability.uia;
     replayed_ue_security_capabilities->gea = 
-        (ue->ms_network_capability.gea1 << 6) | 
-        ue->ms_network_capability.extended_gea;
+        (mme_ue->ms_network_capability.gea1 << 6) | 
+        mme_ue->ms_network_capability.extended_gea;
 
     mme_kdf_nas(MME_KDF_NAS_INT_ALG, mme_self()->selected_int_algorithm,
-            ue->kasme, ue->knas_int);
+            mme_ue->kasme, mme_ue->knas_int);
     mme_kdf_nas(MME_KDF_NAS_ENC_ALG, mme_self()->selected_enc_algorithm,
-            ue->kasme, ue->knas_enc);
-    mme_kdf_enb(ue->kasme, ue->ul_count.i32, ue->kenb);
+            mme_ue->kasme, mme_ue->knas_enc);
+    mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, mme_ue->kenb);
 
     d_info("[NAS] Security mode command : UE[%s] <-- EMM", 
-            ue->imsi_bcd);
+            mme_ue->imsi_bcd);
 
-    rv = nas_security_encode(&emmbuf, ue, &message);
+    rv = nas_security_encode(&emmbuf, mme_ue, &message);
     d_assert(rv == CORE_OK && emmbuf, return, "emm build error");
 
     rv = s1ap_build_downlink_nas_transport(&s1apbuf, enb_ue, emmbuf);
@@ -335,15 +336,15 @@ void emm_handle_authentication_response(
 void emm_handle_create_session_response(mme_bearer_t *bearer)
 {
     status_t rv;
-    mme_ue_t *ue = NULL;
+    mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
     mme_enb_t *enb = NULL;
     pkbuf_t *esmbuf = NULL, *emmbuf = NULL, *s1apbuf = NULL;
 
     d_assert(bearer, return, "Null param");
-    ue = bearer->ue;
-    d_assert(ue, return, "Null param");
-    enb_ue = ue->enb_ue;
+    mme_ue = bearer->mme_ue;
+    d_assert(mme_ue, return, "Null param");
+    enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return, "Null param");
     enb = enb_ue->enb;
     d_assert(enb, return, "Null param");
@@ -355,11 +356,11 @@ void emm_handle_create_session_response(mme_bearer_t *bearer)
     d_info("[NAS] Activate default bearer context request : EMM <-- ESM[%d]",
             bearer->ebi);
 
-    rv = emm_build_attach_accept(&emmbuf, ue, esmbuf);
+    rv = emm_build_attach_accept(&emmbuf, mme_ue, esmbuf);
     d_assert(rv == CORE_OK && emmbuf, 
             pkbuf_free(esmbuf); return, "emm build error");
 
-    d_info("[NAS] Attach accept : UE[%s] <-- EMM", ue->imsi_bcd);
+    d_info("[NAS] Attach accept : UE[%s] <-- EMM", mme_ue->imsi_bcd);
 
     rv = s1ap_build_initial_context_setup_request(&s1apbuf, bearer, emmbuf);
     d_assert(rv == CORE_OK && s1apbuf, 
@@ -369,7 +370,7 @@ void emm_handle_create_session_response(mme_bearer_t *bearer)
 }
 
 void emm_handle_attach_complete(
-    mme_ue_t *ue, nas_attach_complete_t *attach_complete)
+    mme_ue_t *mme_ue, nas_attach_complete_t *attach_complete)
 {
     status_t rv;
     mme_enb_t *enb = NULL;
@@ -386,14 +387,14 @@ void emm_handle_attach_complete(
     time_exp_t time_exp;
     time_exp_lt(&time_exp, time_now());
 
-    d_assert(ue, return, "Null param");
-    enb_ue = ue->enb_ue;
+    d_assert(mme_ue, return, "Null param");
+    enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return, "Null param");
     enb = enb_ue->enb;
     d_assert(enb, return, "Null param");
 
     emm_handle_esm_message_container(
-            ue, &attach_complete->esm_message_container);
+            mme_ue, &attach_complete->esm_message_container);
 
     memset(&message, 0, sizeof(message));
     message.h.security_header_type = 
@@ -427,9 +428,9 @@ void emm_handle_attach_complete(
     network_daylight_saving_time->length = 1;
 
     d_info("[NAS] EMM information : UE[%s] <-- EMM", 
-            ue->imsi_bcd);
+            mme_ue->imsi_bcd);
 
-    rv = nas_security_encode(&emmbuf, ue, &message);
+    rv = nas_security_encode(&emmbuf, mme_ue, &message);
     d_assert(rv == CORE_OK && emmbuf, return, "emm build error");
 
     rv = s1ap_build_downlink_nas_transport(&s1apbuf, enb_ue, emmbuf);
@@ -439,16 +440,16 @@ void emm_handle_attach_complete(
     d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
 }
 
-void emm_handle_emm_status(mme_ue_t *ue, nas_emm_status_t *emm_status)
+void emm_handle_emm_status(mme_ue_t *mme_ue, nas_emm_status_t *emm_status)
 {
-    d_assert(ue, return, "Null param");
+    d_assert(mme_ue, return, "Null param");
 
     d_warn("[NAS] EMM status(%d) : UE[%s] --> EMM", 
-            emm_status->emm_cause, ue->imsi_bcd);
+            emm_status->emm_cause, mme_ue->imsi_bcd);
 }
 
 void emm_handle_detach_request(
-        mme_ue_t *ue, nas_detach_request_from_ue_t *detach_request)
+        mme_ue_t *mme_ue, nas_detach_request_from_ue_t *detach_request)
 {
     status_t rv;
     mme_enb_t *enb = NULL;
@@ -464,8 +465,8 @@ void emm_handle_detach_request(
      * detach_type->nas_key_set_identifier 
      */
 
-    d_assert(ue, return, "Null param");
-    enb_ue = ue->enb_ue;
+    d_assert(mme_ue, return, "Null param");
+    enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return, "Null param");
     enb = enb_ue->enb;
     d_assert(enb, return, "Null param");
@@ -479,27 +480,27 @@ void emm_handle_detach_request(
         /* 0 0 1 : EPS detach */
         case NAS_DETACH_TYPE_FROM_UE_EPS_DETACH: 
             d_info("[NAS] (EPS) Detach request : UE_IMSI[%s] --> EMM", 
-                    ue->imsi_bcd);
+                    mme_ue->imsi_bcd);
             break;
         /* 0 1 0 : IMSI detach */
         case NAS_DETACH_TYPE_FROM_UE_IMSI_DETACH: 
             d_info("[NAS] (IMSI) Detach request : UE_IMSI[%s] --> EMM", 
-                    ue->imsi_bcd);
+                    mme_ue->imsi_bcd);
             break;
         case 6: /* 1 1 0 : reserved */
         case 7: /* 1 1 1 : reserved */
             d_info("[NAS] (Unknown) Detach request : UE_IMSI[%s] --> EMM", 
-                    ue->imsi_bcd);
+                    mme_ue->imsi_bcd);
             break;
         /* 0 1 1 : combined EPS/IMSI detach */
         case NAS_DETACH_TYPE_FROM_UE_COMBINED_EPS_IMSI_DETACH: 
         default: /* all other values */
             d_info("[NAS] (EPS+IMSI) Detach request : UE_IMSI[%s] --> EMM", 
-                    ue->imsi_bcd);
+                    mme_ue->imsi_bcd);
             break;
     }
     
-    sess = mme_sess_first(ue);
+    sess = mme_sess_first(mme_ue);
     while (sess != NULL)
     {
         mme_bearer_t *bearer = mme_default_bearer_in_sess(sess);
@@ -534,9 +535,9 @@ void emm_handle_detach_request(
         message.emm.h.message_type = NAS_DETACH_ACCEPT;
 
         d_info("[NAS] Detach accept : UE[%s] <-- EMM", 
-            ue->imsi_bcd);
+            mme_ue->imsi_bcd);
 
-        rv = nas_security_encode(&emmbuf, ue, &message);
+        rv = nas_security_encode(&emmbuf, mme_ue, &message);
         d_assert(rv == CORE_OK && emmbuf, return, "emm build error");
 
         rv = s1ap_build_downlink_nas_transport(&s1apbuf, enb_ue, emmbuf);
@@ -552,7 +553,7 @@ void emm_handle_detach_request(
 void emm_handle_delete_session_response(mme_bearer_t *bearer)
 {
     status_t rv;
-    mme_ue_t *ue = NULL;
+    mme_ue_t *mme_ue = NULL;
     mme_enb_t *enb = NULL;
     pkbuf_t *s1apbuf = NULL;
     mme_sess_t *sess;
@@ -560,19 +561,19 @@ void emm_handle_delete_session_response(mme_bearer_t *bearer)
     enb_ue_t *enb_ue = NULL;
 
     d_assert(bearer, return, "Null param");
-    ue = bearer->ue;
-    d_assert(ue, return, "Null param");
-    enb_ue = ue->enb_ue;
+    mme_ue = bearer->mme_ue;
+    d_assert(mme_ue, return, "Null param");
+    enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return, "Null param");
     enb = enb_ue->enb;
     d_assert(enb, return, "Null param");
 
-    sess = mme_sess_find_by_ebi(ue, bearer->ebi);
+    sess = mme_sess_find_by_ebi(mme_ue, bearer->ebi);
     mme_sess_remove(sess);
 
     /* sess and bearer are not valid from here */
 
-    sess = mme_sess_first(ue);
+    sess = mme_sess_first(mme_ue);
     while (sess != NULL)
     {
         mme_bearer_t *temp_bearer = mme_default_bearer_in_sess(sess);
@@ -587,9 +588,10 @@ void emm_handle_delete_session_response(mme_bearer_t *bearer)
 
     if (!b_wait)
     {
-        d_info("[NAS] Detach done : UE[%s] <-- EMM", ue->imsi_bcd);
+        d_info("[NAS] Detach done : UE[%s] <-- EMM", mme_ue->imsi_bcd);
 
-        rv = s1ap_build_ue_context_release_commmand(&s1apbuf, enb_ue, enb_ue->s1ap.cause);
+        rv = s1ap_build_ue_context_release_commmand(&
+                s1apbuf, enb_ue, enb_ue->s1ap.cause);
         d_assert(rv == CORE_OK && s1apbuf, return, "s1ap build error");
 
         d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");

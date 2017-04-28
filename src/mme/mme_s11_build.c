@@ -14,7 +14,7 @@ status_t mme_s11_build_create_session_request(
     status_t rv;
     pdn_t *pdn = NULL;
     mme_sgw_t *sgw = NULL;
-    mme_ue_t *ue = NULL;
+    mme_ue_t *mme_ue = NULL;
     mme_sess_t *sess = NULL;
     gtp_message_t gtp_message;
     gtp_create_session_request_t *req = &gtp_message.create_session_request;
@@ -34,36 +34,38 @@ status_t mme_s11_build_create_session_request(
     d_assert(sgw, return CORE_ERROR, "Null param");
     sess = bearer->sess;
     d_assert(sess, return CORE_ERROR, "Null param");
-    ue = sess->ue;
-    d_assert(ue, return CORE_ERROR, "Null param");
-    d_assert(ue->enb_ue, return CORE_ERROR, "Null param");
+    mme_ue = sess->mme_ue;
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    d_assert(mme_ue->enb_ue, return CORE_ERROR, "Null param");
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));
 
-    d_assert(ue->imsi_len, return CORE_ERROR, "Null param");
+    d_assert(mme_ue->imsi_len, return CORE_ERROR, "Null param");
     req->imsi.presence = 1;
-    req->imsi.data = ue->imsi;
-    req->imsi.len = ue->imsi_len;
+    req->imsi.data = mme_ue->imsi;
+    req->imsi.len = mme_ue->imsi_len;
 
     /* Not used */
     req->msisdn.presence = 1;
-    req->msisdn.data = ue->imsi;
-    req->msisdn.len = ue->imsi_len;
+    req->msisdn.data = mme_ue->imsi;
+    req->msisdn.len = mme_ue->imsi_len;
 
     memset(&uli, 0, sizeof(gtp_uli_t));
     uli.flags.e_cgi = 1;
     uli.flags.tai = 1;
-    memcpy(&uli.tai.plmn_id, &ue->enb_ue->tai.plmn_id, sizeof(uli.tai.plmn_id));
-    uli.tai.tac = ue->enb_ue->tai.tac;
-    memcpy(&uli.e_cgi.plmn_id, &ue->enb_ue->e_cgi.plmn_id, sizeof(uli.tai.plmn_id));
-    uli.e_cgi.cell_id = ue->enb_ue->e_cgi.cell_id;
+    memcpy(&uli.tai.plmn_id, &mme_ue->enb_ue->tai.plmn_id, 
+            sizeof(uli.tai.plmn_id));
+    uli.tai.tac = mme_ue->enb_ue->tai.tac;
+    memcpy(&uli.e_cgi.plmn_id, &mme_ue->enb_ue->e_cgi.plmn_id, 
+            sizeof(uli.tai.plmn_id));
+    uli.e_cgi.cell_id = mme_ue->enb_ue->e_cgi.cell_id;
     req->user_location_information.presence = 1;
     gtp_build_uli(&req->user_location_information, &uli, 
             uli_buf, GTP_MAX_ULI_LEN);
 
     req->serving_network.presence = 1;
-    req->serving_network.data = &ue->visited_plmn_id;
-    req->serving_network.len = sizeof(ue->visited_plmn_id);
+    req->serving_network.data = &mme_ue->visited_plmn_id;
+    req->serving_network.len = sizeof(mme_ue->visited_plmn_id);
 
     req->rat_type.presence = 1;
     req->rat_type.u8 = GTP_RAT_TYPE_EUTRAN;
@@ -183,15 +185,15 @@ status_t mme_s11_build_modify_bearer_request(
 status_t mme_s11_build_delete_session_request(pkbuf_t **pkbuf, mme_sess_t *sess)
 {
     status_t rv;
-    mme_ue_t *ue = NULL;
+    mme_ue_t *mme_ue = NULL;
     gtp_message_t gtp_message;
     gtp_delete_session_request_t *req = &gtp_message.delete_session_request;
 
     gtp_f_teid_t mme_s11_teid;
 
     d_assert(sess, return CORE_ERROR, "Null param");
-    ue = sess->ue;
-    d_assert(ue, return CORE_ERROR, "Null param");
+    mme_ue = sess->mme_ue;
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));
 

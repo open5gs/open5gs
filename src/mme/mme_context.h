@@ -95,7 +95,7 @@ typedef struct _mme_enb_t {
     c_uint32_t      enb_id; /** eNB_ID received from eNB */
     net_sock_t      *s1ap_sock;
 
-    list_t          ue_list;
+    list_t          enb_ue_list;
 
 } mme_enb_t;
 
@@ -213,7 +213,7 @@ typedef struct _mme_sess_t {
     list_t          bearer_list;
 
     /* Related Context */
-    mme_ue_t        *ue;
+    mme_ue_t        *mme_ue;
 } mme_sess_t;
 
 typedef struct _mme_bearer_t {
@@ -239,7 +239,7 @@ typedef struct _mme_bearer_t {
     mme_sgw_t       *sgw;
     pdn_t           *pdn;
 
-    mme_ue_t        *ue;
+    mme_ue_t        *mme_ue;
     mme_sess_t      *sess;
 } mme_bearer_t;
 
@@ -264,7 +264,7 @@ CORE_DECLARE(mme_enb_t*)    mme_enb_first(void);
 CORE_DECLARE(mme_enb_t*)    mme_enb_next(mme_enb_t *enb);
 
 CORE_DECLARE(mme_ue_t*)     mme_ue_add(enb_ue_t *enb_ue);
-CORE_DECLARE(status_t)      mme_ue_remove(mme_ue_t *ue);
+CORE_DECLARE(status_t)      mme_ue_remove(mme_ue_t *mme_ue);
 CORE_DECLARE(status_t)      mme_ue_remove_all();
 CORE_DECLARE(mme_ue_t*)     mme_ue_find(index_t index);
 CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_mme_ue_s1ap_id(
@@ -277,17 +277,18 @@ CORE_DECLARE(status_t)      mme_ue_remove_in_enb(mme_enb_t *enb);
 CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_enb_ue_s1ap_id(
                                 mme_enb_t *enb, c_uint32_t enb_ue_s1ap_id);
 CORE_DECLARE(mme_ue_t*)     mme_ue_first_in_enb(mme_enb_t *enb);
-CORE_DECLARE(mme_ue_t*)     mme_ue_next_in_enb(mme_ue_t *ue);
+CORE_DECLARE(mme_ue_t*)     mme_ue_next_in_enb(mme_ue_t *mme_ue);
 CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_imsi(c_uint8_t *imsi, int imsi_len);
 CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_guti(guti_t *guti);
 
-CORE_DECLARE(mme_bearer_t*) mme_sess_add(mme_ue_t *ue, c_uint8_t pti);
+CORE_DECLARE(mme_bearer_t*) mme_sess_add(mme_ue_t *mme_ue, c_uint8_t pti);
 CORE_DECLARE(status_t )     mme_sess_remove(mme_sess_t *sess);
-CORE_DECLARE(status_t )     mme_sess_remove_all(mme_ue_t *ue);
+CORE_DECLARE(status_t )     mme_sess_remove_all(mme_ue_t *mme_ue);
 CORE_DECLARE(mme_sess_t*)   mme_sess_find(index_t index);
 CORE_DECLARE(mme_sess_t*)   mme_sess_find_by_teid(c_uint32_t teid);
-CORE_DECLARE(mme_sess_t*)   mme_sess_find_by_ebi(mme_ue_t *ue, c_uint8_t ebi);
-CORE_DECLARE(mme_sess_t*)   mme_sess_first(mme_ue_t *ue);
+CORE_DECLARE(mme_sess_t*)   mme_sess_find_by_ebi(
+                                mme_ue_t *mme_ue, c_uint8_t ebi);
+CORE_DECLARE(mme_sess_t*)   mme_sess_first(mme_ue_t *mme_ue);
 CORE_DECLARE(mme_sess_t*)   mme_sess_next(mme_sess_t *sess);
 
 CORE_DECLARE(mme_bearer_t*) mme_bearer_add(mme_sess_t *sess, c_uint8_t pti);
@@ -295,32 +296,33 @@ CORE_DECLARE(status_t)      mme_bearer_remove(mme_bearer_t *bearer);
 CORE_DECLARE(status_t)      mme_bearer_remove_all(mme_sess_t *sess);
 CORE_DECLARE(mme_bearer_t*) mme_bearer_find(index_t index);
 CORE_DECLARE(mme_bearer_t*) mme_bearer_find_by_ue_pti(
-                                mme_ue_t *ue, c_uint8_t pti);
+                                mme_ue_t *mme_ue, c_uint8_t pti);
 CORE_DECLARE(mme_bearer_t*) mme_bearer_find_by_ue_ebi(
-                                mme_ue_t *ue, c_uint8_t ebi);
+                                mme_ue_t *mme_ue, c_uint8_t ebi);
 CORE_DECLARE(mme_bearer_t*) mme_bearer_find_by_sess_ebi(
                                 mme_sess_t *sess, c_uint8_t ebi);
 CORE_DECLARE(mme_bearer_t*) mme_default_bearer_in_sess(mme_sess_t *sess);
 CORE_DECLARE(mme_bearer_t*) mme_bearer_first(mme_sess_t *sess);
 CORE_DECLARE(mme_bearer_t*) mme_bearer_next(mme_bearer_t *bearer);
 
-CORE_DECLARE(pdn_t*)        mme_pdn_add(mme_ue_t *ue, c_int8_t *apn);
+CORE_DECLARE(pdn_t*)        mme_pdn_add(mme_ue_t *mme_ue, c_int8_t *apn);
 CORE_DECLARE(status_t)      mme_pdn_remove(pdn_t *pdn);
-CORE_DECLARE(status_t)      mme_pdn_remove_all(mme_ue_t *ue);
-CORE_DECLARE(pdn_t*)        mme_pdn_find_by_apn(mme_ue_t *ue, c_int8_t *apn);
-CORE_DECLARE(pdn_t*)        mme_pdn_first(mme_ue_t *ue);
+CORE_DECLARE(status_t)      mme_pdn_remove_all(mme_ue_t *mme_ue);
+CORE_DECLARE(pdn_t*)        mme_pdn_find_by_apn(
+                                mme_ue_t *mme_ue, c_int8_t *apn);
+CORE_DECLARE(pdn_t*)        mme_pdn_first(mme_ue_t *mme_ue);
 CORE_DECLARE(pdn_t*)        mme_pdn_next(pdn_t *pdn);
 
 CORE_DECLARE(enb_ue_t*)     enb_ue_add(mme_enb_t *enb);
 CORE_DECLARE(unsigned int)  enb_ue_count();
-CORE_DECLARE(status_t)      enb_ue_remove(enb_ue_t *ue);
+CORE_DECLARE(status_t)      enb_ue_remove(enb_ue_t *enb_ue);
 CORE_DECLARE(status_t)      enb_ue_remove_in_enb(mme_enb_t *enb);
 CORE_DECLARE(enb_ue_t*)     enb_ue_find(index_t index);
 CORE_DECLARE(enb_ue_t*)     enb_ue_find_by_enb_ue_s1ap_id(mme_enb_t *enb, 
                                 c_uint32_t enb_ue_s1ap_id);
 CORE_DECLARE(enb_ue_t*)     enb_ue_find_by_mme_ue_s1ap_id(c_uint32_t mme_ue_s1ap_id);
 CORE_DECLARE(enb_ue_t*)     enb_ue_first_in_enb(mme_enb_t *enb);
-CORE_DECLARE(enb_ue_t*)     enb_ue_next_in_enb(enb_ue_t *ue);
+CORE_DECLARE(enb_ue_t*)     enb_ue_next_in_enb(enb_ue_t *enb_ue);
 
 #ifdef __cplusplus
 }

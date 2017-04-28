@@ -108,7 +108,7 @@ status_t s1ap_build_setup_failure(pkbuf_t **pkbuf, S1ap_Cause_t cause)
 }
 
 status_t s1ap_build_downlink_nas_transport(
-            pkbuf_t **s1apbuf, enb_ue_t *ue, pkbuf_t *emmbuf)
+            pkbuf_t **s1apbuf, enb_ue_t *enb_ue, pkbuf_t *emmbuf)
 {
     char buf[INET_ADDRSTRLEN];
     
@@ -119,12 +119,12 @@ status_t s1ap_build_downlink_nas_transport(
     S1ap_NAS_PDU_t *nasPdu = &ies->nas_pdu;
 
     d_assert(emmbuf, return CORE_ERROR, "Null param");
-    d_assert(ue, return CORE_ERROR, "Null param");
+    d_assert(enb_ue, return CORE_ERROR, "Null param");
 
     memset(&message, 0, sizeof(s1ap_message_t));
 
-    ies->mme_ue_s1ap_id = ue->mme_ue_s1ap_id;
-    ies->eNB_UE_S1AP_ID = ue->enb_ue_s1ap_id;
+    ies->mme_ue_s1ap_id = enb_ue->mme_ue_s1ap_id;
+    ies->eNB_UE_S1AP_ID = enb_ue->enb_ue_s1ap_id;
 
     nasPdu->size = emmbuf->len;
     nasPdu->buf = core_calloc(nasPdu->size, sizeof(c_uint8_t));
@@ -141,9 +141,9 @@ status_t s1ap_build_downlink_nas_transport(
 
     d_info("[S1AP] downlinkNASTransport : "
             "UE[eNB-UE-S1AP-ID(%d)] <-- eNB[%s:%d]",
-            ue->enb_ue_s1ap_id,
-            INET_NTOP(&ue->enb->s1ap_sock->remote.sin_addr.s_addr, buf),
-            ue->enb->enb_id);
+            enb_ue->enb_ue_s1ap_id,
+            INET_NTOP(&enb_ue->enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+            enb_ue->enb->enb_id);
 
     return CORE_OK;
 }
@@ -161,22 +161,22 @@ status_t s1ap_build_initial_context_setup_request(
 	struct S1ap_GBR_QosInformation *gbrQosInformation = NULL; /* OPTIONAL */
     S1ap_NAS_PDU_t *nasPdu = NULL;
     mme_ue_t *mme_ue = NULL;
-    enb_ue_t *ue = NULL;
+    enb_ue_t *enb_ue = NULL;
     pdn_t *pdn = NULL;
 
     d_assert(emmbuf, return CORE_ERROR, "Null param");
     d_assert(bearer, return CORE_ERROR, "Null param");
-    mme_ue = bearer->ue;
+    mme_ue = bearer->mme_ue;
     d_assert(mme_ue, return CORE_ERROR, "Null param");
-    ue = mme_ue->enb_ue;
-    d_assert(ue, return CORE_ERROR, "Null param");
+    enb_ue = mme_ue->enb_ue;
+    d_assert(enb_ue, return CORE_ERROR, "Null param");
     pdn = bearer->pdn;
     d_assert(pdn, return CORE_ERROR, "Null param");
 
     memset(&message, 0, sizeof(s1ap_message_t));
 
-    ies->mme_ue_s1ap_id = ue->mme_ue_s1ap_id;
-    ies->eNB_UE_S1AP_ID = ue->enb_ue_s1ap_id;
+    ies->mme_ue_s1ap_id = enb_ue->mme_ue_s1ap_id;
+    ies->eNB_UE_S1AP_ID = enb_ue->enb_ue_s1ap_id;
 
     asn_uint642INTEGER(
             &ies->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateUL, 
@@ -255,15 +255,15 @@ status_t s1ap_build_initial_context_setup_request(
 
     d_info("[S1AP] Initial Context Setup Request : "
             "UE[eNB-UE-S1AP-ID(%d)] <-- eNB[%s:%d]",
-            ue->enb_ue_s1ap_id,
-            INET_NTOP(&ue->enb->s1ap_sock->remote.sin_addr.s_addr, buf),
-            ue->enb->enb_id);
+            enb_ue->enb_ue_s1ap_id,
+            INET_NTOP(&enb_ue->enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+            enb_ue->enb->enb_id);
 
     return CORE_OK;
 }
 
 status_t s1ap_build_ue_context_release_commmand(
-            pkbuf_t **s1apbuf, enb_ue_t *ue, S1ap_Cause_t cause)
+            pkbuf_t **s1apbuf, enb_ue_t *enb_ue, S1ap_Cause_t cause)
 {
     char buf[INET_ADDRSTRLEN];
 
@@ -272,27 +272,29 @@ status_t s1ap_build_ue_context_release_commmand(
     S1ap_UEContextReleaseCommand_IEs_t *ies =
             &message.s1ap_UEContextReleaseCommand_IEs;
 
-    d_assert(ue, return CORE_ERROR, "Null param");
+    d_assert(enb_ue, return CORE_ERROR, "Null param");
 
     memset(&message, 0, sizeof(s1ap_message_t));
 
-    if (ue->mme_ue_s1ap_id == 0)
+    if (enb_ue->mme_ue_s1ap_id == 0)
     {
-        d_error("invalid mme ue s1ap id (idx: %d)", ue->index);
+        d_error("invalid mme ue s1ap id (idx: %d)", enb_ue->index);
         return CORE_ERROR;
     }
 
-    if (ue->enb_ue_s1ap_id)
+    if (enb_ue->enb_ue_s1ap_id)
     {
         ies->uE_S1AP_IDs.present = S1ap_UE_S1AP_IDs_PR_uE_S1AP_ID_pair;
-        ies->uE_S1AP_IDs.choice.uE_S1AP_ID_pair.mME_UE_S1AP_ID = ue->mme_ue_s1ap_id;
-        ies->uE_S1AP_IDs.choice.uE_S1AP_ID_pair.eNB_UE_S1AP_ID = ue->enb_ue_s1ap_id;
+        ies->uE_S1AP_IDs.choice.uE_S1AP_ID_pair.mME_UE_S1AP_ID = 
+            enb_ue->mme_ue_s1ap_id;
+        ies->uE_S1AP_IDs.choice.uE_S1AP_ID_pair.eNB_UE_S1AP_ID = 
+            enb_ue->enb_ue_s1ap_id;
         ies->uE_S1AP_IDs.choice.uE_S1AP_ID_pair.iE_Extensions = NULL;
     }
     else
     {
         ies->uE_S1AP_IDs.present = S1ap_UE_S1AP_IDs_PR_mME_UE_S1AP_ID;
-        ies->uE_S1AP_IDs.choice.mME_UE_S1AP_ID = ue->mme_ue_s1ap_id;
+        ies->uE_S1AP_IDs.choice.mME_UE_S1AP_ID = enb_ue->mme_ue_s1ap_id;
     }
 
     ies->cause = cause;
@@ -307,9 +309,9 @@ status_t s1ap_build_ue_context_release_commmand(
 
     d_info("[S1AP] UE Context Release Command : "
             "UE[mME-UE-S1AP-ID(%d)] <-- eNB[%s:%d]",
-            ue->mme_ue_s1ap_id,
-            INET_NTOP(&ue->enb->s1ap_sock->remote.sin_addr.s_addr, buf),
-            ue->enb->enb_id);
+            enb_ue->mme_ue_s1ap_id,
+            INET_NTOP(&enb_ue->enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+            enb_ue->enb->enb_id);
 
     return CORE_OK;
 }
