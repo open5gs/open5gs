@@ -653,10 +653,6 @@ mme_ue_t *emm_find_ue_by_message(enb_ue_t *enb_ue, nas_message_t *message)
                             guti.mme_gid,
                             guti.mme_code,
                             guti.m_tmsi);
-                    printf("Search mme_ue by GUTI[G:%d,C:%d,M_TMSI:0x%x]\n",
-                            guti.mme_gid,
-                            guti.mme_code,
-                            guti.m_tmsi);
 
                     mme_ue = mme_ue_find_by_guti(&guti);
                     if (!mme_ue)
