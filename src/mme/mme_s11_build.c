@@ -32,6 +32,7 @@ status_t mme_s11_build_create_session_request(pkbuf_t **pkbuf, mme_bearer_t *bea
     d_assert(sgw, return CORE_ERROR, "Null param");
     ue = bearer->ue;
     d_assert(ue, return CORE_ERROR, "Null param");
+    d_assert(ue->enb_ue, return CORE_ERROR, "Null param");
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));
 
@@ -48,10 +49,10 @@ status_t mme_s11_build_create_session_request(pkbuf_t **pkbuf, mme_bearer_t *bea
     memset(&uli, 0, sizeof(gtp_uli_t));
     uli.flags.e_cgi = 1;
     uli.flags.tai = 1;
-    memcpy(&uli.tai.plmn_id, &ue->tai.plmn_id, sizeof(uli.tai.plmn_id));
-    uli.tai.tac = ue->tai.tac;
-    memcpy(&uli.e_cgi.plmn_id, &ue->e_cgi.plmn_id, sizeof(uli.tai.plmn_id));
-    uli.e_cgi.cell_id = ue->e_cgi.cell_id;
+    memcpy(&uli.tai.plmn_id, &ue->enb_ue->tai.plmn_id, sizeof(uli.tai.plmn_id));
+    uli.tai.tac = ue->enb_ue->tai.tac;
+    memcpy(&uli.e_cgi.plmn_id, &ue->enb_ue->e_cgi.plmn_id, sizeof(uli.tai.plmn_id));
+    uli.e_cgi.cell_id = ue->enb_ue->e_cgi.cell_id;
     req->user_location_information.presence = 1;
     gtp_build_uli(&req->user_location_information, &uli, 
             uli_buf, GTP_MAX_ULI_LEN);

@@ -10,6 +10,7 @@
 #include "nas_security.h"
 #include "mme_s11_path.h"
 #include "mme_s11_handler.h"
+#include "emm_handler.h"
 
 void mme_state_initial(fsm_t *s, event_t *e)
 {
@@ -145,6 +146,42 @@ void mme_state_operational(fsm_t *s, event_t *e)
             break;
         }
         case MME_EVT_EMM_UE_MSG:
+        {
+            nas_message_t message;
+            index_t index = event_get_param1(e);
+            pkbuf_t *pkbuf = (pkbuf_t *)event_get_param2(e);
+            //int mac_failed = event_get_param3(e);
+            enb_ue_t *ue = NULL;
+            mme_ue_t *mme_ue = NULL;
+
+            ue = enb_ue_find(index);
+            d_assert(ue, break, "No ENB UE context");
+
+            d_assert(pkbuf, break, "Null param");
+            d_assert(nas_emm_decode(&message, pkbuf) == CORE_OK,
+                    pkbuf_free(pkbuf); break, "Can't decode NAS_EMM");
+
+            mme_ue = ue->mme_ue;
+            if (mme_ue == NULL)
+            {
+                /* Find MME UE by NAS message or create if needed */
+                mme_ue = emm_find_ue_by_message(ue, &message);
+            }
+
+            d_assert(mme_ue, pkbuf_free(pkbuf);break, "No MME UE context");
+            d_assert(FSM_STATE(&mme_ue->sm), pkbuf_free(pkbuf);break, 
+                    "No EMM State Machine");
+
+            /* Set event */
+            event_set_param1(e, (c_uintptr_t)mme_ue->index);/* mme_ue index */
+            event_set_param3(e, (c_uintptr_t)&message);
+
+            fsm_dispatch(&mme_ue->sm, (fsm_event_t*)e);
+
+            pkbuf_free(pkbuf);
+
+            break;
+        }
         case MME_EVT_EMM_UE_FROM_S6A:
         case MME_EVT_EMM_UE_FROM_S11:
         case MME_EVT_EMM_BEARER_FROM_S11:

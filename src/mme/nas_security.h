@@ -22,7 +22,7 @@ extern "C" {
 CORE_DECLARE(status_t) nas_security_encode(
         pkbuf_t **pkbuf, mme_ue_t *ue, nas_message_t *message);
 CORE_DECLARE(status_t) nas_security_decode(
-        mme_ue_t *ue, pkbuf_t *pkbuf);
+        mme_ue_t *ue, pkbuf_t *pkbuf, int *mac_failed);
 
 CORE_DECLARE(void) nas_mac_calculate(c_uint8_t algorithm_identity,
         c_uint8_t *knas_int, c_uint32_t count, c_uint8_t bearer, 

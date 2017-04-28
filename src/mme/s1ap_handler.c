@@ -12,11 +12,12 @@
 
 #include "s1ap_handler.h"
 
-static void event_s1ap_to_nas(mme_ue_t *ue, S1ap_NAS_PDU_t *nasPdu)
+static void event_s1ap_to_nas(enb_ue_t *ue, S1ap_NAS_PDU_t *nasPdu)
 {
     nas_esm_header_t *h = NULL;
     pkbuf_t *nasbuf = NULL;
     event_t e;
+    int mac_failed = 0;
 
     d_assert(ue, return, "Null param");
     d_assert(nasPdu, return, "Null param");
@@ -27,8 +28,34 @@ static void event_s1ap_to_nas(mme_ue_t *ue, S1ap_NAS_PDU_t *nasPdu)
     d_assert(nasbuf, return, "Null param");
     memcpy(nasbuf->payload, nasPdu->buf, nasPdu->size);
 
-    d_assert(nas_security_decode(ue, nasbuf) == CORE_OK,
-            pkbuf_free(nasbuf); return, "Can't decode NAS_PDU");
+    if (ue->mme_ue)
+    {
+        d_assert(nas_security_decode(ue->mme_ue, nasbuf, 
+                    &mac_failed) == CORE_OK,
+                 pkbuf_free(nasbuf);return,
+                 "nas_security_decode failed");
+    }
+    else
+    {
+        /* FIXME */
+        c_uint32_t hsize = sizeof(nas_security_header_t);
+        nas_security_header_t *sh = NULL;
+
+        sh = nasbuf->payload;
+        switch(sh->security_header_type)
+        {
+            case NAS_SECURITY_HEADER_PLAIN_NAS_MESSAGE:
+            case NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE:
+            {
+                break;
+            }
+            default:
+                mac_failed = 1;
+                d_warn("Security Protected (securiry header type:0x%x)", 
+                        sh->security_header_type);
+                pkbuf_header(nasbuf, -hsize);
+        }
+    }
 
     h = nasbuf->payload;
     d_assert(h, pkbuf_free(nasbuf); return, "Null param");
@@ -37,22 +64,34 @@ static void event_s1ap_to_nas(mme_ue_t *ue, S1ap_NAS_PDU_t *nasPdu)
         event_set(&e, MME_EVT_EMM_UE_MSG);
         event_set_param1(&e, (c_uintptr_t)ue->index);
         event_set_param2(&e, (c_uintptr_t)nasbuf);
+        event_set_param3(&e, (c_uintptr_t)mac_failed);
         mme_event_send(&e);
     }
     else if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_ESM)
     {
-        mme_bearer_t *bearer = mme_bearer_find_by_pti(ue, 
+        mme_bearer_t *bearer = NULL;
+        mme_ue_t *mme_ue = ue->mme_ue;
+
+        if (!mme_ue)
+        {
+            d_error("No mme_ue exists");
+            pkbuf_free(nasbuf);
+            return;
+        }
+
+        bearer = mme_bearer_find_by_pti(mme_ue, 
                 h->procedure_transaction_identity);
         if (bearer)
         {
             event_set(&e, MME_EVT_ESM_BEARER_MSG);
             event_set_param1(&e, (c_uintptr_t)bearer->index);
             event_set_param2(&e, (c_uintptr_t)nasbuf);
+            event_set_param3(&e, (c_uintptr_t)mac_failed);
             mme_event_send(&e);
         }
         else
             d_error("Can't find ESM context(UE:%s, PTI:%d)",
-                    ue->imsi_bcd, h->procedure_transaction_identity);
+                    mme_ue->imsi_bcd, h->procedure_transaction_identity);
     }
     else
         d_assert(0, pkbuf_free(nasbuf); return, "Unknown protocol:%d", 
@@ -111,7 +150,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
 {
     char buf[INET_ADDRSTRLEN];
 
-    mme_ue_t *ue = NULL;
+    enb_ue_t *ue = NULL;
     S1ap_InitialUEMessage_IEs_t *ies = NULL;
     S1ap_TAI_t *tai = NULL;
 	S1ap_PLMNidentity_t *pLMNidentity = NULL;
@@ -138,10 +177,10 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
     cell_ID = &eutran_cgi->cell_ID;
     d_assert(cell_ID, return,);
 
-    ue = mme_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
+    ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
     if (!ue)
     {
-        ue = mme_ue_add(enb);
+        ue = enb_ue_add(enb);
         d_assert(ue, return, "Null param");
 
         ue->enb_ue_s1ap_id = ies->eNB_UE_S1AP_ID;
@@ -160,7 +199,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
     memcpy(&ue->e_cgi.cell_id, cell_ID->buf, sizeof(ue->e_cgi.cell_id));
     ue->e_cgi.cell_id = (ntohl(ue->e_cgi.cell_id) >> 4);
 
-    d_assert(enb->s1ap_sock, mme_ue_remove(ue); return,);
+    d_assert(enb->s1ap_sock, enb_ue_remove(ue); return,);
     d_info("[S1AP] InitialUEMessage : UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]",
         ue->enb_ue_s1ap_id,
         INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
@@ -174,13 +213,13 @@ void s1ap_handle_uplink_nas_transport(
 {
     char buf[INET_ADDRSTRLEN];
 
-    mme_ue_t *ue = NULL;
+    enb_ue_t *ue = NULL;
     S1ap_UplinkNASTransport_IEs_t *ies = NULL;
 
     ies = &message->s1ap_UplinkNASTransport_IEs;
     d_assert(ies, return, "Null param");
 
-    ue = mme_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
+    ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
     d_assert(ue, return, "Null param");
 
     d_info("[S1AP] uplinkNASTransport : UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]",
@@ -196,13 +235,13 @@ void s1ap_handle_ue_capability_info_indication(
 {
     char buf[INET_ADDRSTRLEN];
 
-    mme_ue_t *ue = NULL;
+    enb_ue_t *ue = NULL;
     S1ap_UECapabilityInfoIndicationIEs_t *ies = NULL;
 
     ies = &message->s1ap_UECapabilityInfoIndicationIEs;
     d_assert(ies, return, "Null param");
 
-    ue = mme_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
+    ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
     d_assert(ue, return, "No UE Context[%d]", ies->eNB_UE_S1AP_ID);
 
     d_info("[S1AP] UE Capability Info Indication : "
@@ -218,13 +257,13 @@ void s1ap_handle_initial_context_setup_response(
     char buf[INET_ADDRSTRLEN];
     int i = 0;
 
-    mme_ue_t *ue = NULL;
+    enb_ue_t *ue = NULL;
     S1ap_InitialContextSetupResponseIEs_t *ies = NULL;
 
     ies = &message->s1ap_InitialContextSetupResponseIEs;
     d_assert(ies, return, "Null param");
 
-    ue = mme_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
+    ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
     d_assert(ue, return, "No UE Context[%d]", ies->eNB_UE_S1AP_ID);
 
     d_info("[S1AP] Initial Context Setup Response : "
@@ -239,13 +278,14 @@ void s1ap_handle_initial_context_setup_response(
     {
         event_t e;
         mme_bearer_t *bearer = NULL;
+        mme_ue_t *mme_ue = ue->mme_ue;
         S1ap_E_RABSetupItemCtxtSURes_t *e_rab = NULL;
 
         e_rab = (S1ap_E_RABSetupItemCtxtSURes_t *)
             ies->e_RABSetupListCtxtSURes.s1ap_E_RABSetupItemCtxtSURes.array[i];
         d_assert(e_rab, return, "Null param");
 
-        bearer = mme_bearer_find_by_ebi(ue, e_rab->e_RAB_ID);
+        bearer = mme_bearer_find_by_ebi(mme_ue, e_rab->e_RAB_ID);
         d_assert(bearer, return, "Null param");
         memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf, 
                 sizeof(bearer->enb_s1u_teid));

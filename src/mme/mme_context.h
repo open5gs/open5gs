@@ -75,6 +75,8 @@ typedef struct _mme_context_t {
     list_t          enb_list;
 
     hash_t          *mme_ue_s1ap_id_hash; /* hash table for MME-UE-S1AP-ID */
+    hash_t          *imsi_hash; /* hash table (IMSI : MME_UE) */
+    hash_t          *guti_hash; /* hash table (GUTI : MME_UE) */
 } mme_context_t;
 
 typedef struct _mme_sgw_t {
@@ -94,7 +96,10 @@ typedef struct _mme_enb_t {
 
 } mme_enb_t;
 
-typedef struct _mme_ue_t {
+typedef struct _enb_ue_t enb_ue_t;
+typedef struct _mme_ue_t mme_ue_t;
+
+struct _enb_ue_t {
     lnode_t         node;   /**< A node of list_t */
     index_t         index;  /**< An index of this node */
     fsm_t           sm;
@@ -104,13 +109,44 @@ typedef struct _mme_ue_t {
     /* UE identity */
     c_uint32_t      enb_ue_s1ap_id; /** eNB-UE-S1AP-ID received from eNB */
     c_uint32_t      mme_ue_s1ap_id; /** MME-UE-S1AP-ID received from MME */
-    c_uint8_t       imsi[MAX_IMSI_LEN];
-    int             imsi_len;
-    c_int8_t        imsi_bcd[MAX_IMSI_BCD_LEN+1];
 
     /* UE Info */
     tai_t           tai;
     e_cgi_t         e_cgi;
+
+    /* S_TMSI */
+    //s_tmsi_t        s_smti;
+
+    /* mme_ue_context */
+    mme_ue_t        *mme_ue;
+
+    /* Connected enodeB */
+    mme_enb_t       *enb;
+
+}; 
+
+struct _mme_ue_t {
+    lnode_t         node;   /**< A node of list_t */
+    index_t         index;  /**< An index of this node */
+    fsm_t           sm;
+
+    /* State Machine */
+
+    /* UE identity */
+#if 0
+    c_uint32_t      enb_ue_s1ap_id; /** eNB-UE-S1AP-ID received from eNB */
+    c_uint32_t      mme_ue_s1ap_id; /** MME-UE-S1AP-ID received from MME */
+#endif
+    c_uint8_t       imsi[MAX_IMSI_LEN];
+    int             imsi_len;
+    c_int8_t        imsi_bcd[MAX_IMSI_BCD_LEN+1];
+    guti_t          guti;
+
+    /* UE Info */
+#if 0
+    tai_t           tai;
+    e_cgi_t         e_cgi;
+#endif
     plmn_id_t       visited_plmn_id;
 
     /* Security Context */
@@ -153,8 +189,9 @@ typedef struct _mme_ue_t {
     c_uint8_t       ebi;        /* EPS Bearer ID generator */
     list_t          bearer_list;
 
-    mme_enb_t       *enb;
-} mme_ue_t;
+    /* enb ue context */
+    enb_ue_t        *enb_ue;
+};
 
 typedef struct _mme_bearer_t {
     lnode_t         node;   /**< A node of list_t */
@@ -201,7 +238,7 @@ CORE_DECLARE(mme_enb_t*)    mme_enb_find_by_enb_id(c_uint32_t enb_id);
 CORE_DECLARE(mme_enb_t*)    mme_enb_first(void);
 CORE_DECLARE(mme_enb_t*)    mme_enb_next(mme_enb_t *enb);
 
-CORE_DECLARE(mme_ue_t*)     mme_ue_add(mme_enb_t *enb);
+CORE_DECLARE(mme_ue_t*)     mme_ue_add(enb_ue_t *enb_ue);
 CORE_DECLARE(status_t)      mme_ue_remove(mme_ue_t *ue);
 CORE_DECLARE(status_t)      mme_ue_remove_all();
 CORE_DECLARE(mme_ue_t*)     mme_ue_find(index_t index);
@@ -217,6 +254,8 @@ CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_enb_ue_s1ap_id(
                                 mme_enb_t *enb, c_uint32_t enb_ue_s1ap_id);
 CORE_DECLARE(mme_ue_t*)     mme_ue_first_in_enb(mme_enb_t *enb);
 CORE_DECLARE(mme_ue_t*)     mme_ue_next_in_enb(mme_ue_t *ue);
+CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_imsi(c_uint8_t *imsi, int imsi_len);
+CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_guti(guti_t *guti);
 
 CORE_DECLARE(mme_bearer_t*) mme_bearer_add(mme_ue_t *ue, c_uint8_t pti);
 CORE_DECLARE(status_t)      mme_bearer_remove(mme_bearer_t *bearer);
@@ -233,6 +272,17 @@ CORE_DECLARE(status_t)      mme_pdn_remove_all(mme_ue_t *ue);
 CORE_DECLARE(pdn_t*)        mme_pdn_find_by_apn(mme_ue_t *ue, c_int8_t *apn);
 CORE_DECLARE(pdn_t*)        mme_pdn_first(mme_ue_t *ue);
 CORE_DECLARE(pdn_t*)        mme_pdn_next(pdn_t *pdn);
+
+CORE_DECLARE(enb_ue_t*)     enb_ue_add(mme_enb_t *enb);
+CORE_DECLARE(unsigned int)  enb_ue_count();
+CORE_DECLARE(status_t)      enb_ue_remove(enb_ue_t *ue);
+CORE_DECLARE(status_t)      enb_ue_remove_in_enb(mme_enb_t *enb);
+CORE_DECLARE(enb_ue_t*)     enb_ue_find(index_t index);
+CORE_DECLARE(enb_ue_t*)     enb_ue_find_by_enb_ue_s1ap_id(mme_enb_t *enb, 
+                                c_uint32_t enb_ue_s1ap_id);
+CORE_DECLARE(enb_ue_t*)     enb_ue_find_by_mme_ue_s1ap_id(c_uint32_t mme_ue_s1ap_id);
+CORE_DECLARE(enb_ue_t*)     enb_ue_first_in_enb(mme_enb_t *enb);
+CORE_DECLARE(enb_ue_t*)     enb_ue_next_in_enb(enb_ue_t *ue);
 
 #ifdef __cplusplus
 }

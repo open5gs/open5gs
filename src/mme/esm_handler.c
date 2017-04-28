@@ -32,19 +32,22 @@ void esm_handle_s6a_update_location(mme_bearer_t *bearer)
 {
     status_t rv;
     mme_ue_t *ue = NULL;
+    enb_ue_t *enb_ue = NULL;
     mme_enb_t *enb = NULL;
     pkbuf_t *esmbuf = NULL, *s1apbuf = NULL;
 
     d_assert(bearer, return, "Null param");
     ue = bearer->ue;
     d_assert(ue, return, "Null param");
-    enb = ue->enb;
-    d_assert(ue->enb, return, "Null param");
+    enb_ue = ue->enb_ue;
+    d_assert(enb_ue, return, "Null param");
+    enb = enb_ue->enb;
+    d_assert(enb, return, "Null param");
 
     rv = esm_build_information_request(&esmbuf, bearer);
     d_assert(rv == CORE_OK && esmbuf, return, "esm_build failed");
 
-    rv = s1ap_build_downlink_nas_transport(&s1apbuf, ue, esmbuf);
+    rv = s1ap_build_downlink_nas_transport(&s1apbuf, enb_ue, esmbuf);
     d_assert(rv == CORE_OK && s1apbuf, 
             pkbuf_free(esmbuf); return, "s1ap build error");
 

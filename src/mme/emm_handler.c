@@ -141,16 +141,19 @@ void emm_handle_attach_request(
     }
 }
 
-void emm_handle_identity_request(mme_ue_t *ue)
+void emm_handle_identity_request(mme_ue_t *mme_ue)
 {
     status_t rv;
     mme_enb_t *enb = NULL;
+    enb_ue_t *ue = NULL;
     pkbuf_t *emmbuf = NULL, *s1apbuf = NULL;
 
     nas_message_t message;
     nas_identity_request_t *identity_request = 
         &message.emm.identity_request;
 
+    d_assert(mme_ue, return, "Null param");
+    ue = mme_ue->enb_ue;
     d_assert(ue, return, "Null param");
     enb = ue->enb;
     d_assert(ue->enb, return, "Null param");
@@ -202,16 +205,19 @@ void emm_handle_identity_response(
 
 }
 
-void emm_handle_authentication_request(mme_ue_t *ue)
+void emm_handle_authentication_request(mme_ue_t *mme_ue)
 {
     status_t rv;
     mme_enb_t *enb = NULL;
+    enb_ue_t *ue = NULL;
     pkbuf_t *emmbuf = NULL, *s1apbuf = NULL;
 
     nas_message_t message;
     nas_authentication_request_t *authentication_request = 
         &message.emm.authentication_request;
 
+    d_assert(mme_ue, return, "Null param");
+    ue = mme_ue->enb_ue;
     d_assert(ue, return, "Null param");
     enb = ue->enb;
     d_assert(ue->enb, return, "Null param");
@@ -221,9 +227,9 @@ void emm_handle_authentication_request(mme_ue_t *ue)
     message.emm.h.message_type = NAS_AUTHENTICATION_REQUEST;
 
     memcpy(authentication_request->authentication_parameter_rand.rand,
-            ue->rand, RAND_LEN);
+            mme_ue->rand, RAND_LEN);
     memcpy(authentication_request->authentication_parameter_autn.autn,
-            ue->autn, AUTN_LEN);
+            mme_ue->autn, AUTN_LEN);
     authentication_request->authentication_parameter_autn.length = 
             AUTN_LEN;
 
@@ -241,6 +247,7 @@ void emm_handle_authentication_response(
 {
     status_t rv;
     mme_enb_t *enb = NULL;
+    enb_ue_t *enb_ue = NULL;
     pkbuf_t *emmbuf = NULL, *s1apbuf = NULL;
 
     nas_authentication_response_parameter_t *authentication_response_parameter =
@@ -257,8 +264,10 @@ void emm_handle_authentication_response(
         &security_mode_command->replayed_ue_security_capabilities;
 
     d_assert(ue, return, "Null param");
-    enb = ue->enb;
-    d_assert(ue->enb, return, "Null param");
+    enb_ue = ue->enb_ue;
+    d_assert(enb_ue, return, "Null param");
+    enb = enb_ue->enb;
+    d_assert(enb, return, "Null param");
 
     if (authentication_response_parameter->length != ue->xres_len ||
         memcmp(authentication_response_parameter->res,
@@ -313,7 +322,7 @@ void emm_handle_authentication_response(
     rv = nas_security_encode(&emmbuf, ue, &message);
     d_assert(rv == CORE_OK && emmbuf, return, "emm build error");
 
-    rv = s1ap_build_downlink_nas_transport(&s1apbuf, ue, emmbuf);
+    rv = s1ap_build_downlink_nas_transport(&s1apbuf, enb_ue, emmbuf);
     d_assert(rv == CORE_OK && s1apbuf, 
             pkbuf_free(emmbuf); return, "s1ap build error");
 
@@ -324,14 +333,17 @@ void emm_handle_create_session_response(mme_bearer_t *bearer)
 {
     status_t rv;
     mme_ue_t *ue = NULL;
+    enb_ue_t *enb_ue = NULL;
     mme_enb_t *enb = NULL;
     pkbuf_t *esmbuf = NULL, *emmbuf = NULL, *s1apbuf = NULL;
 
     d_assert(bearer, return, "Null param");
     ue = bearer->ue;
     d_assert(ue, return, "Null param");
-    enb = ue->enb;
-    d_assert(ue->enb, return, "Null param");
+    enb_ue = ue->enb_ue;
+    d_assert(enb_ue, return, "Null param");
+    enb = enb_ue->enb;
+    d_assert(enb, return, "Null param");
 
     rv = esm_build_activate_default_bearer_context(&esmbuf, bearer);
     d_assert(rv == CORE_OK && esmbuf, 
@@ -358,6 +370,7 @@ void emm_handle_attach_complete(
 {
     status_t rv;
     mme_enb_t *enb = NULL;
+    enb_ue_t *enb_ue = NULL;
     pkbuf_t *emmbuf = NULL, *s1apbuf = NULL;
 
     nas_message_t message;
@@ -371,7 +384,9 @@ void emm_handle_attach_complete(
     time_exp_lt(&time_exp, time_now());
 
     d_assert(ue, return, "Null param");
-    enb = ue->enb;
+    enb_ue = ue->enb_ue;
+    d_assert(enb_ue, return, "Null param");
+    enb = enb_ue->enb;
     d_assert(enb, return, "Null param");
 
     emm_handle_esm_message_container(
@@ -414,7 +429,7 @@ void emm_handle_attach_complete(
     rv = nas_security_encode(&emmbuf, ue, &message);
     d_assert(rv == CORE_OK && emmbuf, return, "emm build error");
 
-    rv = s1ap_build_downlink_nas_transport(&s1apbuf, ue, emmbuf);
+    rv = s1ap_build_downlink_nas_transport(&s1apbuf, enb_ue, emmbuf);
     d_assert(rv == CORE_OK && s1apbuf, 
             pkbuf_free(emmbuf); return, "s1ap build error");
 
@@ -434,6 +449,7 @@ void emm_handle_detach_request(
 {
     status_t rv;
     mme_enb_t *enb = NULL;
+    enb_ue_t *enb_ue = NULL;
     pkbuf_t *emmbuf = NULL, *s1apbuf = NULL;
 
     nas_message_t message;
@@ -445,7 +461,9 @@ void emm_handle_detach_request(
      */
 
     d_assert(ue, return, "Null param");
-    enb = ue->enb;
+    enb_ue = ue->enb_ue;
+    d_assert(enb_ue, return, "Null param");
+    enb = enb_ue->enb;
     d_assert(enb, return, "Null param");
 
     switch (detach_type->detach_type)
@@ -484,7 +502,7 @@ void emm_handle_detach_request(
         rv = nas_security_encode(&emmbuf, ue, &message);
         d_assert(rv == CORE_OK && emmbuf, return, "emm build error");
 
-        rv = s1ap_build_downlink_nas_transport(&s1apbuf, ue, emmbuf);
+        rv = s1ap_build_downlink_nas_transport(&s1apbuf, enb_ue, emmbuf);
         d_assert(rv == CORE_OK && s1apbuf, 
             pkbuf_free(emmbuf); return, "s1ap build error");
 
@@ -492,4 +510,99 @@ void emm_handle_detach_request(
     }
 
     /* initiate s1 ue context release */
+}
+
+mme_ue_t *emm_find_ue_by_message(enb_ue_t *enb_ue, nas_message_t *message)
+{
+    mme_ue_t *mme_ue = NULL;
+
+    switch(message->emm.h.message_type)
+    {
+        case NAS_ATTACH_REQUEST:
+        {
+            nas_attach_request_t *attach_request = 
+                &message->emm.attach_request;
+
+            nas_eps_mobile_identity_t *eps_mobile_identity =
+                            &attach_request->eps_mobile_identity;
+
+            switch(eps_mobile_identity->imsi.type)
+            {
+                case NAS_EPS_MOBILE_IDENTITY_IMSI:
+                {
+                    c_uint8_t       imsi[MAX_IMSI_LEN];
+                    int             imsi_len = 0;
+                    c_int8_t        imsi_bcd[MAX_IMSI_BCD_LEN+1];
+
+                    nas_imsi_to_bcd(
+                        &eps_mobile_identity->imsi, eps_mobile_identity->length,
+                        imsi_bcd);
+                    core_bcd_to_buffer(imsi_bcd, imsi, &imsi_len);
+
+                    d_trace(3,"Search mme_ue by UE_IMSI[%s]\n", imsi_bcd);
+
+                    /* Find mme_ue_context by IMSI */
+                    mme_ue = mme_ue_find_by_imsi(imsi, imsi_len);
+
+                    /* If not found , create one */
+                    if (!mme_ue)
+                    {
+                        mme_ue = mme_ue_add(enb_ue);
+                    }
+
+                    break;
+                }
+                case NAS_EPS_MOBILE_IDENTITY_GUTI:
+                {
+                    nas_eps_mobile_identity_guti_t *nas_guti = NULL;
+                    nas_guti = &eps_mobile_identity->guti;
+                    guti_t guti;
+
+                    guti.plmn_id = nas_guti->plmn_id;
+                    guti.mme_gid = nas_guti->mme_gid;
+                    guti.mme_code = nas_guti->mme_code;
+                    guti.m_tmsi = nas_guti->m_tmsi;
+
+                    d_trace(3,"Search mme_ue by GUTI[G:%d,C:%d,M_TMSI:0x%x]\n",
+                            guti.mme_gid,
+                            guti.mme_code,
+                            guti.m_tmsi);
+                    printf("Search mme_ue by GUTI[G:%d,C:%d,M_TMSI:0x%x]\n",
+                            guti.mme_gid,
+                            guti.mme_code,
+                            guti.m_tmsi);
+
+                    mme_ue = mme_ue_find_by_guti(&guti);
+                    if (!mme_ue)
+                    {
+                        mme_ue = mme_ue_add(enb_ue);
+                    }
+                    break;
+                }
+                default:
+                {
+                    printf("Uknown message imsi type =%d\n",
+                        eps_mobile_identity->imsi.type);
+                    break;
+                }
+            }
+            break;
+        }
+        case NAS_DETACH_REQUEST:
+        {
+            /* TODO */
+            break;
+        }
+        case NAS_TRACKING_AREA_UPDATE_REQUEST:
+        {
+            /* TODO */
+            break;
+        }
+        default:
+        {
+            break;
+        }
+    }
+
+    return mme_ue;
 }

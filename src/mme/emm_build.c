@@ -25,6 +25,7 @@ status_t emm_build_attach_accept(
         &attach_accept->eps_network_feature_support;
 
     d_assert(ue, return CORE_ERROR, "Null param");
+    d_assert(ue->enb_ue, return CORE_ERROR, "Null param");
 
     memset(&message, 0, sizeof(message));
     message.h.security_header_type = 
@@ -41,7 +42,7 @@ status_t emm_build_attach_accept(
     tai_list->length = 6;
     tai_list->type = 2;
     tai_list->num = 0; /* +1 = 1 elements */
-    memcpy(&tai_list->type2.tai[0], &ue->tai, sizeof(tai_t));
+    memcpy(&tai_list->type2.tai[0], &ue->enb_ue->tai, sizeof(tai_t));
 
     attach_accept->esm_message_container.data = esmbuf->payload;
     attach_accept->esm_message_container.len = esmbuf->len;

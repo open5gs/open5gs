@@ -110,7 +110,7 @@ status_t nas_security_encode(
     return CORE_OK;
 }
 
-status_t nas_security_decode(mme_ue_t *ue, pkbuf_t *pkbuf)
+status_t nas_security_decode(mme_ue_t *ue, pkbuf_t *pkbuf, int *mac_failed)
 {
     c_int32_t hsize = 0;
 
@@ -123,6 +123,7 @@ status_t nas_security_decode(mme_ue_t *ue, pkbuf_t *pkbuf)
     d_assert(ue, return CORE_ERROR, "Null param");
     d_assert(pkbuf, return CORE_ERROR, "Null param");
     d_assert(pkbuf->payload, return CORE_ERROR, "Null param");
+    d_assert(mac_failed, return CORE_ERROR, "Null param");
 
     h = pkbuf->payload;
     switch(h->security_header_type)
@@ -203,10 +204,15 @@ status_t nas_security_decode(mme_ue_t *ue, pkbuf_t *pkbuf)
             memcpy(&mac32, mac, NAS_SECURITY_MAC_SIZE);
             if (h->message_authentication_code != mac32)
             {
+#if 0
                 d_error("NAS MAC verification failed");
                 d_assert(pkbuf_header(pkbuf, hsize-1) == CORE_OK, 
                         return CORE_ERROR, "pkbuf_header error");
                 return CORE_ERROR;
+#else
+                d_warn("NAS MAC verification failed");
+                *mac_failed = 1;
+#endif
             }
         }
 
