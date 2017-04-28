@@ -64,8 +64,8 @@ status_t mme_context_init()
     self.mme_addr = inet_addr(g_mme_ip_addr);
 
     self.mme_ue_s1ap_id_hash = hash_make();
-    self.imsi_hash = hash_make();
-    self.guti_hash = hash_make();
+    self.imsi_ue_hash = hash_make();
+    self.guti_ue_hash = hash_make();
 
     self.s1ap_addr = self.mme_addr;
     self.s1ap_port = S1AP_SCTP_PORT;
@@ -114,11 +114,11 @@ status_t mme_context_final()
     d_assert(self.mme_ue_s1ap_id_hash, , "Null param");
     hash_destroy(self.mme_ue_s1ap_id_hash);
 
-    d_assert(self.imsi_hash, , "Null param");
-    hash_destroy(self.imsi_hash);
+    d_assert(self.imsi_ue_hash, , "Null param");
+    hash_destroy(self.imsi_ue_hash);
 
-    d_assert(self.guti_hash, , "Null param");
-    hash_destroy(self.guti_hash);
+    d_assert(self.guti_ue_hash, , "Null param");
+    hash_destroy(self.guti_ue_hash);
 
     pool_final(&mme_pdn_pool);
     index_final(&mme_bearer_pool);
@@ -485,53 +485,24 @@ mme_ue_t* mme_ue_find(index_t index)
     return index_find(&mme_ue_pool, index);
 }
 
-#if 0
-mme_ue_t* mme_ue_find_by_mme_ue_s1ap_id(c_uint32_t mme_ue_s1ap_id)
-{
-    d_assert(self.mme_ue_s1ap_id_hash, return NULL, "Null param");
-    return hash_get(self.mme_ue_s1ap_id_hash, 
-            &mme_ue_s1ap_id, sizeof(mme_ue_s1ap_id));
-}
-#endif
-
 mme_ue_t* mme_ue_find_by_imsi(c_uint8_t *imsi, int imsi_len)
 {
-    mme_ue_t *iter = NULL;
+    d_assert(imsi && imsi_len, return NULL,"Invalid Param");
 
-#if 0
-    d_assert(imsi && imsi_len, return NULL, "Invalid Param");
-    
-    for (iter = list_first(&self.mme_ue_list); iter; iter = list_next(iter))
-    {
-        if (!memcmp(iter->imsi,imsi, imsi_len))
-            break;
-    }
-#endif
-
-    return iter;
+    return (mme_ue_t *)hash_get(self.imsi_ue_hash, imsi, imsi_len);
 }
 
 mme_ue_t* mme_ue_find_by_guti(guti_t *guti)
 {
-    mme_ue_t *iter = NULL;
+    d_assert(guti, return NULL,"Invalid Param");
 
-#if 0
-    d_assert(imsi && imsi_len, return NULL, "Invalid Param");
-    
-    for (iter = list_first(&self.mme_ue_list); iter; iter = list_next(iter))
-    {
-        if (!memcmp(iter->imsi,imsi, imsi_len))
-            break;
-    }
-#endif
-
-    return iter;
+    return (mme_ue_t *)hash_get(self.guti_ue_hash, guti, sizeof(guti_t));
 }
 
 hash_index_t *mme_ue_first()
 {
-    d_assert(self.mme_ue_s1ap_id_hash, return NULL, "Null param");
-    return hash_first(self.mme_ue_s1ap_id_hash);
+    d_assert(self.imsi_ue_hash, return NULL, "Null param");
+    return hash_first(self.imsi_ue_hash);
 }
 
 hash_index_t *mme_ue_next(hash_index_t *hi)

@@ -78,8 +78,8 @@ typedef struct _mme_context_t {
     list_t          enb_list;
 
     hash_t          *mme_ue_s1ap_id_hash; /* hash table for MME-UE-S1AP-ID */
-    hash_t          *imsi_hash; /* hash table (IMSI : MME_UE) */
-    hash_t          *guti_hash; /* hash table (GUTI : MME_UE) */
+    hash_t          *imsi_ue_hash; /* hash table (IMSI : MME_UE) */
+    hash_t          *guti_ue_hash; /* hash table (GUTI : MME_UE) */
 } mme_context_t;
 
 typedef struct _mme_sgw_t {

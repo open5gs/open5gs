@@ -101,6 +101,45 @@ typedef struct _gtp_ambr_t {
     c_uint32_t downlink;
 } __attribute__ ((packed)) gtp_ambr_t;
 
+/* 8.12 Indication */
+typedef struct _gtp_indication_t {
+ED8(c_uint8_t daf:1;,
+    c_uint8_t dtf:1;,
+    c_uint8_t hi:1;,
+    c_uint8_t dfi:1;,
+    c_uint8_t oi:1;,
+    c_uint8_t isrsi:1;,
+    c_uint8_t israi:1;,
+    c_uint8_t sgwci:1;)
+
+ED8(c_uint8_t sqci:1;,
+    c_uint8_t uimsi:1;,
+    c_uint8_t cfsi:1;,
+    c_uint8_t crsi:1;,
+    c_uint8_t p:1;,
+    c_uint8_t pt:1;,
+    c_uint8_t si:1;,
+    c_uint8_t msv:1;)
+
+ED8(c_uint8_t retloc:1;,
+    c_uint8_t pbic:1;,
+    c_uint8_t srni:1;,
+    c_uint8_t s6af:1;,
+    c_uint8_t s4af:1;,
+    c_uint8_t mbmdt:1;,
+    c_uint8_t israu:1;,
+    c_uint8_t ccrsi:1;)
+
+ED8(c_uint8_t spare1:1;,
+    c_uint8_t spare2:1;,
+    c_uint8_t spare3:1;,
+    c_uint8_t spare4:1;,
+    c_uint8_t spare5:1;,
+    c_uint8_t csfbi:1;,
+    c_uint8_t clii:1;,
+    c_uint8_t cpsr:1;)
+} __attribute__ ((packed)) gtp_indication_t;
+
 /* 8.13 Protocol Configuration Options (PCO) 
  * 10.5.6.3 Protocol configuration options in 3GPP TS 24.008 
  * RFC 3232 [103]
