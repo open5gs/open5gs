@@ -174,3 +174,39 @@ status_t mme_s11_build_modify_bearer_request(
 
     return CORE_OK;
 }
+
+status_t mme_s11_build_delete_session_request(pkbuf_t **pkbuf, mme_bearer_t *bearer)
+{
+    status_t rv;
+    pdn_t *pdn = NULL;
+    mme_sgw_t *sgw = NULL;
+    mme_ue_t *ue = NULL;
+    gtp_message_t gtp_message;
+    gtp_delete_session_request_t *req = &gtp_message.delete_session_request;
+
+    gtp_f_teid_t sender_cp_teid;
+
+    d_assert(bearer, return CORE_ERROR, "Null param");
+    pdn = bearer->pdn;
+    d_assert(pdn, return CORE_ERROR, "Null param");
+    sgw = bearer->sgw;
+    d_assert(sgw, return CORE_ERROR, "Null param");
+    ue = bearer->ue;
+    d_assert(ue, return CORE_ERROR, "Null param");
+
+    memset(&gtp_message, 0, sizeof(gtp_message_t));
+
+    memset(&mme_s11_teid, 0, sizeof(gtp_f_teid_t));
+    mme_s11_teid.ipv4 = 1;
+    mme_s11_teid.interface_type = GTP_F_TEID_S11_MME_GTP_C;
+    mme_s11_teid.teid = htonl(ue->mme_s11_teid);
+    mme_s11_teid.ipv4_addr = ue->mme_s11_addr;
+    req->sender_f_teid_for_control_plane.presence = 1;
+    req->sender_f_teid_for_control_plane.data = &mme_s11_teid;
+    req->sender_f_teid_for_control_plane.len = GTP_F_TEID_IPV4_LEN;
+
+    rv = gtp_build_msg(pkbuf, GTP_DELETE_SESSION_REQUEST_TYPE, &gtp_message);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");
+
+    return CORE_OK;
+}

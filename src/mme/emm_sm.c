@@ -103,6 +103,23 @@ void emm_state_operational(fsm_t *s, event_t *e)
                             ue->mme_s11_teid, ue->sgw_s11_teid);
                     break;
                 }
+                case GTP_DELETE_SESSION_RESPONSE_TYPE:
+                {
+                    mme_bearer_t *bearer = mme_bearer_first(ue);
+
+                    while(bearer)
+                    {
+                        event_t e;
+                        event_set(&e, MME_EVT_ESM_BEARER_FROM_S6A);
+                        event_set_param1(&e, (c_uintptr_t)bearer->index);
+                        event_set_param2(&e, 
+                                (c_uintptr_t)S6A_CMD_UPDATE_LOCATION);
+                        mme_event_send(&e);
+
+                        bearer = mme_bearer_next(bearer);
+                    }
+                    break;
+                }
             }
             break;
         }

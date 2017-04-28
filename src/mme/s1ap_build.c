@@ -8,6 +8,7 @@
 #include "s1ap_build.h"
 #include "s1ap_conv.h"
 
+
 status_t s1ap_build_setup_rsp(pkbuf_t **pkbuf)
 {
     int erval;
@@ -252,6 +253,58 @@ status_t s1ap_build_initial_context_setup_request(
     d_info("[S1AP] Initial Context Setup Request : "
             "UE[eNB-UE-S1AP-ID(%d)] <-- eNB[%s:%d]",
             ue->enb_ue_s1ap_id,
+            INET_NTOP(&ue->enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+            ue->enb->enb_id);
+
+    return CORE_OK;
+}
+
+status_t s1ap_build_ue_context_release_commnad(
+            pkbuf_t **s1apbuf, mme_ue_t *ue, S1ap_Cause_t cause)
+{
+    char buf[INET_ADDRSTRLEN];
+
+    int encoded;
+    s1ap_message_t message;
+    S1ap_UEContextReleaseCommand_IEs_t *ies =
+            &message.s1ap_UEContextReleaseCommand_IEs;
+
+    d_assert(ue, return CORE_ERROR, "Null param");
+
+    memset(&message, 0, sizeof(s1ap_message_t));
+
+    if (ue->mme_ue_s1ap_id == 0)
+    {
+        d_error("invalid mme ue s1ap id (idx: %d)", ue->index);
+        return CORE_ERROR;
+    }
+
+    if (ue->enb_ue_s1ap_id)
+    {
+        ies->uE_S1AP_IDs.present = S1ap_UE_S1AP_IDs_PR_uE_S1AP_ID_pair;
+        ies->uE_S1AP_IDs.choice.uE_S1AP_ID_pair.mME_UE_S1AP_ID = ue->mme_ue_s1ap_id;
+        ies->uE_S1AP_IDs.choice.uE_S1AP_ID_pair.eNB_UE_S1AP_ID = ue->enb_ue_s1ap_id;
+        ies->uE_S1AP_IDs.choice.uE_S1AP_ID_pair.iE_Extensions = NULL;
+    }
+    else
+    {
+        ies->uE_S1AP_IDs.present = S1ap_UE_S1AP_IDs_PR_mME_UE_S1AP_ID;
+        ies->uE_S1AP_IDs.choice.mME_UE_S1AP_ID = ue->mme_ue_s1ap_id;
+    }
+
+    ies->cause = cause;
+
+    message.procedureCode = S1ap_ProcedureCode_id_UEContextRelease;
+    message.direction = S1AP_PDU_PR_initiatingMessage;
+
+    encoded = s1ap_encode_pdu(s1apbuf, &message);
+    s1ap_free_pdu(&message);
+
+    d_assert(s1apbuf && encoded >= 0,return CORE_ERROR,);
+
+    d_info("[S1AP] UE Context Release Command : "
+            "UE[mME-UE-S1AP-ID(%d)] <-- eNB[%s:%d]",
+            ue->mme_ue_s1ap_id,
             INET_NTOP(&ue->enb->s1ap_sock->remote.sin_addr.s_addr, buf),
             ue->enb->enb_id);
 

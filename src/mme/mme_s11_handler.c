@@ -93,3 +93,32 @@ void mme_s11_handle_modify_bearer_response(
     event_set_param2(&e, (c_uintptr_t)GTP_MODIFY_BEARER_RESPONSE_TYPE);
     mme_event_send(&e);
 }
+
+void mme_s11_handle_delete_session_response(
+        mme_ue_t *ue, gtp_delete_session_response_t *rsp)
+{
+    event_t e;
+
+    gtp_f_teid_t *sgw_s11_teid = NULL;
+    gtp_f_teid_t *sgw_s1u_teid = NULL;
+
+    mme_bearer_t *bearer = NULL;
+    pdn_t *pdn = NULL;
+    
+    d_assert(ue, return, "Null param");
+    d_assert(rsp, return, "Null param");
+
+    if (rsp->cause == 0)
+    {
+        d_error("No Cause");
+        return;
+    }
+
+    d_info("[GTP] Delete Session Response : "
+            "MME[%d] <-- SGW[%d]", ue->mme_s11_teid, ue->sgw_s11_teid);
+
+    event_set(&e, MME_EVT_EMM_UE_FROM_S11);
+    event_set_param1(&e, (c_uintptr_t)ue->index);
+    event_set_param2(&e, (c_uintptr_t)GTP_DELETE_SESSION_RESPONSE_TYPE);
+    mme_event_send(&e);
+}
