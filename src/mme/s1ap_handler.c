@@ -37,7 +37,6 @@ static void event_s1ap_to_nas(enb_ue_t *ue, S1ap_NAS_PDU_t *nasPdu)
     }
     else
     {
-        /* FIXME */
         c_uint32_t hsize = sizeof(nas_security_header_t);
         nas_security_header_t *sh = NULL;
 
@@ -56,6 +55,7 @@ static void event_s1ap_to_nas(enb_ue_t *ue, S1ap_NAS_PDU_t *nasPdu)
                 pkbuf_header(nasbuf, -hsize);
         }
     }
+    ue->mac_failed = mac_failed;
 
     h = nasbuf->payload;
     d_assert(h, pkbuf_free(nasbuf); return, "Null param");
@@ -64,7 +64,6 @@ static void event_s1ap_to_nas(enb_ue_t *ue, S1ap_NAS_PDU_t *nasPdu)
         event_set(&e, MME_EVT_EMM_UE_MSG);
         event_set_param1(&e, (c_uintptr_t)ue->index);
         event_set_param2(&e, (c_uintptr_t)nasbuf);
-        event_set_param3(&e, (c_uintptr_t)mac_failed);
         mme_event_send(&e);
     }
     else if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_ESM)
@@ -86,7 +85,6 @@ static void event_s1ap_to_nas(enb_ue_t *ue, S1ap_NAS_PDU_t *nasPdu)
             event_set(&e, MME_EVT_ESM_BEARER_MSG);
             event_set_param1(&e, (c_uintptr_t)bearer->index);
             event_set_param2(&e, (c_uintptr_t)nasbuf);
-            event_set_param3(&e, (c_uintptr_t)mac_failed);
             mme_event_send(&e);
         }
         else

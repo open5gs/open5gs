@@ -127,6 +127,9 @@ struct _enb_ue_t {
 
     /* Connected enodeB */
     mme_enb_t       *enb;
+
+    /* Last NAS Authentication state */
+    int             mac_failed;
 }; 
 
 struct _mme_ue_t {

@@ -150,7 +150,6 @@ void mme_state_operational(fsm_t *s, event_t *e)
             nas_message_t message;
             index_t index = event_get_param1(e);
             pkbuf_t *pkbuf = (pkbuf_t *)event_get_param2(e);
-            //int mac_failed = event_get_param3(e);
             enb_ue_t *ue = NULL;
             mme_ue_t *mme_ue = NULL;
 
