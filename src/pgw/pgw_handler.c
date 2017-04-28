@@ -146,8 +146,10 @@ void pgw_handle_create_session_request(
     }
 
     /* Generate Control Plane(UL) : PGW-S5C */
-    sess = pgw_sess_add();
-    d_assert(sess, return, "No Session Context");
+    bearer = pgw_sess_add(req->bearer_contexts_to_be_created.eps_bearer_id.u8);
+    d_assert(bearer, return, "No Bearer Context");
+    sess = bearer->sess;
+    d_assert(sess, return, "Null param");
 
     memcpy(apn, req->access_point_name.data, req->access_point_name.len);
     apn[req->access_point_name.len] = 0;
@@ -157,16 +159,6 @@ void pgw_handle_create_session_request(
         pdn = pgw_pdn_add(sess, apn);
     }
     d_assert(pdn, pgw_sess_remove(sess); return, "No PDN Context");
-
-    bearer = pgw_bearer_find_by_id(sess, 
-                req->bearer_contexts_to_be_created.eps_bearer_id.u8);
-    if (!bearer)
-    {
-        /* Generate Data Plane(UL) : PGW-S5U */
-        bearer = pgw_bearer_add(sess,
-                req->bearer_contexts_to_be_created.eps_bearer_id.u8);
-    }
-    d_assert(bearer, pgw_sess_remove(sess); return, "No Bearer Context");
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));
 

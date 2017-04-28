@@ -94,7 +94,7 @@ CORE_DECLARE(status_t)      sgw_context_final(void);
 
 CORE_DECLARE(sgw_context_t*) sgw_self(void);
 
-CORE_DECLARE(sgw_sess_t*)   sgw_sess_add();
+CORE_DECLARE(sgw_bearer_t*) sgw_sess_add(c_uint8_t id);
 CORE_DECLARE(status_t )     sgw_sess_remove(sgw_sess_t *sess);
 CORE_DECLARE(status_t )     sgw_sess_remove_all();
 CORE_DECLARE(sgw_sess_t*)   sgw_sess_find(index_t index);
@@ -105,13 +105,16 @@ CORE_DECLARE(sgw_sess_t *)  sgw_sess_next(sgw_sess_t *sess);
 CORE_DECLARE(sgw_bearer_t*) sgw_bearer_add(sgw_sess_t *sess, c_uint8_t id);
 CORE_DECLARE(status_t)      sgw_bearer_remove(sgw_bearer_t *bearer);
 CORE_DECLARE(status_t)      sgw_bearer_remove_all(sgw_sess_t *sess);
+CORE_DECLARE(sgw_bearer_t*) sgw_bearer_find_by_sgw_s5u_teid(
+                                c_uint32_t sgw_s5u_teid);
+CORE_DECLARE(sgw_bearer_t*) sgw_bearer_find_by_sgw_s1u_teid(
+                                c_uint32_t sgw_s1u_teid);
 CORE_DECLARE(sgw_bearer_t*) sgw_bearer_find_by_id(
                                 sgw_sess_t *sess, c_uint8_t id);
+CORE_DECLARE(sgw_bearer_t*) sgw_default_bearer_in_sess(sgw_sess_t *sess);
 CORE_DECLARE(sgw_bearer_t*) sgw_bearer_first(sgw_sess_t *sess);
 CORE_DECLARE(sgw_bearer_t*) sgw_bearer_next(sgw_bearer_t *bearer);
 
-CORE_DECLARE(sgw_bearer_t*) sgw_bearer_find_by_sgw_s5u_teid(c_uint32_t sgw_s5u_teid);
-CORE_DECLARE(sgw_bearer_t*) sgw_bearer_find_by_sgw_s1u_teid(c_uint32_t sgw_s1u_teid);
 
 #ifdef __cplusplus
 }

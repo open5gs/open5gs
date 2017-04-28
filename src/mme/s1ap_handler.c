@@ -79,7 +79,7 @@ static void event_s1ap_to_nas(enb_ue_t *ue, S1ap_NAS_PDU_t *nasPdu)
             return;
         }
 
-        bearer = mme_bearer_find_by_pti(mme_ue, 
+        bearer = mme_bearer_find_by_ue_pti(mme_ue, 
                 h->procedure_transaction_identity);
         if (bearer)
         {
@@ -285,7 +285,7 @@ void s1ap_handle_initial_context_setup_response(
             ies->e_RABSetupListCtxtSURes.s1ap_E_RABSetupItemCtxtSURes.array[i];
         d_assert(e_rab, return, "Null param");
 
-        bearer = mme_bearer_find_by_ebi(mme_ue, e_rab->e_RAB_ID);
+        bearer = mme_bearer_find_by_ue_ebi(mme_ue, e_rab->e_RAB_ID);
         d_assert(bearer, return, "Null param");
         memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf, 
                 sizeof(bearer->enb_s1u_teid));

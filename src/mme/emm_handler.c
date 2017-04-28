@@ -39,13 +39,13 @@ void emm_handle_esm_message_container(
     pti = h->procedure_transaction_identity;
     ebi = h->eps_bearer_identity;
     if (pti == NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED && ebi)
-        bearer = mme_bearer_find_by_ebi(ue, ebi);
+        bearer = mme_bearer_find_by_ue_ebi(ue, ebi);
     else if (ebi == NAS_EPS_BEARER_IDENTITY_UNASSIGNED && pti)
-        bearer = mme_bearer_find_by_pti(ue, pti);
+        bearer = mme_bearer_find_by_ue_pti(ue, pti);
 
     if (!bearer)
-        bearer = mme_bearer_add(ue, pti);
-    d_assert(bearer, return, "Null param");
+        bearer = mme_sess_add(ue, pti);
+    d_assert(bearer, return, "No Bearer Context");
 
     /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 
      * When calculating AES_CMAC, we need to use the headroom of the packet. */

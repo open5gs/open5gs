@@ -57,18 +57,18 @@ void esm_handle_s6a_update_location(mme_bearer_t *bearer)
 void esm_handle_modify_bearer_request(mme_bearer_t *bearer)
 {
     status_t rv;
-    mme_ue_t *ue = NULL;
+    mme_sess_t *sess = NULL;
     pkbuf_t *pkbuf = NULL;
 
     d_assert(bearer, return, "Null param");
-    ue = bearer->ue;
-    d_assert(ue, return, "Null param");
+    sess = bearer->sess;
+    d_assert(sess, return, "Null param");
 
     rv = mme_s11_build_modify_bearer_request(&pkbuf, bearer);
     d_assert(rv == CORE_OK, return, "S11 build error");
 
     rv = mme_s11_send_to_sgw(bearer->sgw, 
-            GTP_MODIFY_BEARER_REQUEST_TYPE, ue->sgw_s11_teid, pkbuf);
+            GTP_MODIFY_BEARER_REQUEST_TYPE, sess->sgw_s11_teid, pkbuf);
     d_assert(rv == CORE_OK, return, "S11 send error");
 }
 
