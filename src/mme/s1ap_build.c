@@ -108,7 +108,7 @@ status_t s1ap_build_setup_failure(pkbuf_t **pkbuf, S1ap_Cause_t cause)
 }
 
 status_t s1ap_build_downlink_nas_transport(
-            pkbuf_t **s1apbuf, mme_ue_t *ue, pkbuf_t *emmbuf)
+            pkbuf_t **s1apbuf, enb_ue_t *ue, pkbuf_t *emmbuf)
 {
     char buf[INET_ADDRSTRLEN];
     
@@ -160,12 +160,15 @@ status_t s1ap_build_initial_context_setup_request(
     S1ap_E_RABToBeSetupItemCtxtSUReq_t *e_rab = NULL;
 	struct S1ap_GBR_QosInformation *gbrQosInformation = NULL; /* OPTIONAL */
     S1ap_NAS_PDU_t *nasPdu = NULL;
-    mme_ue_t *ue = NULL;
+    mme_ue_t *mme_ue = NULL;
+    enb_ue_t *ue = NULL;
     pdn_t *pdn = NULL;
 
     d_assert(emmbuf, return CORE_ERROR, "Null param");
     d_assert(bearer, return CORE_ERROR, "Null param");
-    ue = bearer->ue;
+    mme_ue = bearer->ue;
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    ue = mme_ue->enb_ue;
     d_assert(ue, return CORE_ERROR, "Null param");
     pdn = bearer->pdn;
     d_assert(pdn, return CORE_ERROR, "Null param");
@@ -177,10 +180,10 @@ status_t s1ap_build_initial_context_setup_request(
 
     asn_uint642INTEGER(
             &ies->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateUL, 
-            ue->max_bandwidth_ul);
+            mme_ue->max_bandwidth_ul);
     asn_uint642INTEGER(
             &ies->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateDL, 
-            ue->max_bandwidth_dl);
+            mme_ue->max_bandwidth_dl);
 
     e_rab = (S1ap_E_RABToBeSetupItemCtxtSUReq_t *)
         core_calloc(1, sizeof(S1ap_E_RABToBeSetupItemCtxtSUReq_t));
@@ -225,7 +228,7 @@ status_t s1ap_build_initial_context_setup_request(
                     sizeof(c_uint8_t));
     ies->ueSecurityCapabilities.encryptionAlgorithms.bits_unused = 0;
     ies->ueSecurityCapabilities.encryptionAlgorithms.buf[0] = 
-        ue->ue_network_capability.eea;
+        mme_ue->ue_network_capability.eea;
 
     ies->ueSecurityCapabilities.integrityProtectionAlgorithms.size = 2;
     ies->ueSecurityCapabilities.integrityProtectionAlgorithms.buf =
@@ -233,13 +236,13 @@ status_t s1ap_build_initial_context_setup_request(
                         integrityProtectionAlgorithms.size, sizeof(c_uint8_t));
     ies->ueSecurityCapabilities.integrityProtectionAlgorithms.bits_unused = 0;
     ies->ueSecurityCapabilities.integrityProtectionAlgorithms.buf[0] =
-        (ue->ue_network_capability.eia << 1);
+        (mme_ue->ue_network_capability.eia << 1);
 
     ies->securityKey.size = SHA256_DIGEST_SIZE;
     ies->securityKey.buf = 
         core_calloc(ies->securityKey.size, sizeof(c_uint8_t));
     ies->securityKey.bits_unused = 0;
-    memcpy(ies->securityKey.buf, ue->kenb, ies->securityKey.size);
+    memcpy(ies->securityKey.buf, mme_ue->kenb, ies->securityKey.size);
 
     message.procedureCode = S1ap_ProcedureCode_id_InitialContextSetup;
     message.direction = S1AP_PDU_PR_initiatingMessage;
@@ -260,7 +263,7 @@ status_t s1ap_build_initial_context_setup_request(
 }
 
 status_t s1ap_build_ue_context_release_commmand(
-            pkbuf_t **s1apbuf, mme_ue_t *ue, S1ap_Cause_t cause)
+            pkbuf_t **s1apbuf, enb_ue_t *ue, S1ap_Cause_t cause)
 {
     char buf[INET_ADDRSTRLEN];
 
