@@ -16,6 +16,9 @@
 #include "s1ap_build.h"
 #include "s1ap_path.h"
 
+#include "mme_s11_build.h"
+#include "mme_s11_path.h"
+
 void emm_handle_identity_request(mme_ue_t *ue);
 
 void emm_handle_esm_message_container(
@@ -153,7 +156,7 @@ void emm_handle_identity_request(mme_ue_t *ue)
 
     d_assert(ue, return, "Null param");
     enb = ue->enb;
-    d_assert(ue->enb, return, "Null param");
+    d_assert(enb, return, "Null param");
 
     memset(&message, 0, sizeof(message));
     message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
@@ -214,7 +217,7 @@ void emm_handle_authentication_request(mme_ue_t *ue)
 
     d_assert(ue, return, "Null param");
     enb = ue->enb;
-    d_assert(ue->enb, return, "Null param");
+    d_assert(enb, return, "Null param");
 
     memset(&message, 0, sizeof(message));
     message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
@@ -258,7 +261,7 @@ void emm_handle_authentication_response(
 
     d_assert(ue, return, "Null param");
     enb = ue->enb;
-    d_assert(ue->enb, return, "Null param");
+    d_assert(enb, return, "Null param");
 
     if (authentication_response_parameter->length != ue->xres_len ||
         memcmp(authentication_response_parameter->res,
@@ -331,7 +334,7 @@ void emm_handle_create_session_response(mme_bearer_t *bearer)
     ue = bearer->ue;
     d_assert(ue, return, "Null param");
     enb = ue->enb;
-    d_assert(ue->enb, return, "Null param");
+    d_assert(enb, return, "Null param");
 
     rv = esm_build_activate_default_bearer_context(&esmbuf, bearer);
     d_assert(rv == CORE_OK && esmbuf, 
@@ -434,7 +437,8 @@ void emm_handle_detach_request(
 {
     status_t rv;
     mme_enb_t *enb = NULL;
-    pkbuf_t *emmbuf = NULL, *s1apbuf = NULL;
+    pkbuf_t *emmbuf = NULL, *s11buf = NULL, *s1apbuf = NULL;
+    mme_sess_t *sess;
 
     nas_message_t message;
     nas_detach_type_t *detach_type = &detach_request->detach_type;
@@ -448,24 +452,56 @@ void emm_handle_detach_request(
     enb = ue->enb;
     d_assert(enb, return, "Null param");
 
+    /* Encode ue->s1ap.cause for later use */
+    ue->s1ap.cause.present = S1ap_Cause_PR_nas;
+    ue->s1ap.cause.choice.nas = S1ap_CauseNas_detach;
+
     switch (detach_type->detach_type)
     {
         /* 0 0 1 : EPS detach */
         case NAS_DETACH_TYPE_FROM_UE_EPS_DETACH: 
+            d_info("[NAS] (EPS) Detach request : UE_IMSI[%s] --> EMM", 
+                    ue->imsi_bcd);
             break;
         /* 0 1 0 : IMSI detach */
         case NAS_DETACH_TYPE_FROM_UE_IMSI_DETACH: 
+            d_info("[NAS] (IMSI) Detach request : UE_IMSI[%s] --> EMM", 
+                    ue->imsi_bcd);
             break;
         case 6: /* 1 1 0 : reserved */
         case 7: /* 1 1 1 : reserved */
+            d_info("[NAS] (Unknown) Detach request : UE_IMSI[%s] --> EMM", 
+                    ue->imsi_bcd);
             break;
         /* 0 1 1 : combined EPS/IMSI detach */
         case NAS_DETACH_TYPE_FROM_UE_COMBINED_EPS_IMSI_DETACH: 
         default: /* all other values */
+            d_info("[NAS] (EPS+IMSI) Detach request : UE_IMSI[%s] --> EMM", 
+                    ue->imsi_bcd);
             break;
     }
     
-    /* TODO: ESM session delete */
+    sess = mme_sess_first(ue);
+    while (sess != NULL)
+    {
+        mme_bearer_t *bearer = mme_bearer_first(sess);
+
+        if (bearer != NULL)
+        {
+            rv = mme_s11_build_delete_session_request(&s11buf, sess);
+            d_assert(rv == CORE_OK, return, "S11 build error");
+
+            rv = mme_s11_send_to_sgw(bearer->sgw, 
+                    GTP_DELETE_SESSION_REQUEST_TYPE, sess->sgw_s11_teid, s11buf);
+            if (rv != CORE_OK)
+            {
+                d_error("S11 send error rv %d", rv);
+                pkbuf_free(s11buf);
+                /* continue to send */
+            }
+        }
+        sess = mme_sess_next(sess);
+    }
 
     if ((detach_type->switch_off & 0x1) == 0)
     {
@@ -491,5 +527,51 @@ void emm_handle_detach_request(
         d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
     }
 
-    /* initiate s1 ue context release */
+    /* TODO: initiate s1 ue context release with a timeout value */
+}
+
+void emm_handle_delete_session_response(mme_bearer_t *bearer)
+{
+    status_t rv;
+    mme_ue_t *ue = NULL;
+    mme_enb_t *enb = NULL;
+    pkbuf_t *s1apbuf = NULL;
+    mme_sess_t *sess;
+    int b_wait = 0;
+
+    d_assert(bearer, return, "Null param");
+    ue = bearer->ue;
+    d_assert(ue, return, "Null param");
+    enb = ue->enb;
+    d_assert(enb, return, "Null param");
+
+    sess = mme_sess_find_by_ebi(ue, bearer->ebi);
+    mme_sess_remove(sess);
+
+    /* sess and bearer are not valid from here */
+
+    sess = mme_sess_first(ue);
+    while (sess != NULL)
+    {
+        mme_bearer_t *temp_bearer = mme_bearer_first(sess);
+
+        if (temp_bearer != NULL)
+        {
+            b_wait = 1;
+            break;
+        }
+        sess = mme_sess_next(sess);
+    }
+
+    if (!b_wait)
+    {
+        d_info("[NAS] Detach done : UE[%s] <-- EMM", ue->imsi_bcd);
+
+        rv = s1ap_build_ue_context_release_commmand(&s1apbuf, ue, ue->s1ap.cause);
+        d_assert(rv == CORE_OK && s1apbuf, return, "s1ap build error");
+
+        d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
+
+        /* TODO: launch a timer */
+    }
 }

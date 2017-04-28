@@ -259,7 +259,7 @@ status_t s1ap_build_initial_context_setup_request(
     return CORE_OK;
 }
 
-status_t s1ap_build_ue_context_release_commnad(
+status_t s1ap_build_ue_context_release_commmand(
             pkbuf_t **s1apbuf, mme_ue_t *ue, S1ap_Cause_t cause)
 {
     char buf[INET_ADDRSTRLEN];

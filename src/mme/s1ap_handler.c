@@ -260,3 +260,27 @@ void s1ap_handle_initial_context_setup_response(
     }
 }
 
+void s1ap_handle_ue_context_release_complete(
+        mme_enb_t *enb, s1ap_message_t *message)
+{
+    char buf[INET_ADDRSTRLEN];
+
+    mme_ue_t *ue = NULL;
+    S1ap_UEContextReleaseComplete_IEs_t *ies = NULL;
+
+    ies = &message->s1ap_UEContextReleaseComplete_IEs;
+    d_assert(ies, return, "Null param");
+
+    ue = mme_ue_find_by_mme_ue_s1ap_id(ies->mme_ue_s1ap_id);
+    d_assert(ue, return, "No UE Context[%d]", ies->mme_ue_s1ap_id);
+
+    d_info("[S1AP] UE Context Release Complete : "
+            "UE[mME-UE-S1AP-ID(%d)] --> eNB[%s:%d]",
+        ue->mme_ue_s1ap_id,
+        INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+        enb->enb_id);
+
+    /* BRANDON -> ACETCOM: "pass event to MME SM" or "process here?" */
+    /* process here */
+    mme_ue_remove(ue);
+}

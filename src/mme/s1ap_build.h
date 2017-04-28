@@ -15,7 +15,7 @@ CORE_DECLARE(status_t) s1ap_build_downlink_nas_transport(
             pkbuf_t **s1apbuf, mme_ue_t *ue, pkbuf_t *emmbuf);
 CORE_DECLARE(status_t) s1ap_build_initial_context_setup_request(
             pkbuf_t **s1apbuf, mme_bearer_t *bearer, pkbuf_t *emmbuf);
-CORE_DECLARE(status_t) s1ap_build_ue_context_release_commnad(
+CORE_DECLARE(status_t) s1ap_build_ue_context_release_commmand(
             pkbuf_t **s1apbuf, mme_ue_t *ue, S1ap_Cause_t cause);
 
 #ifdef __cplusplus

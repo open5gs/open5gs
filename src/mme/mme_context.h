@@ -14,6 +14,9 @@
 
 #include "mme_sm.h"
 
+/* S1AP */
+#include "S1ap-Cause.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -145,6 +148,11 @@ typedef struct _mme_ue_t {
     /* ESM Info */
     c_uint8_t       ebi;        /* EPS Bearer ID generator */
     list_t          sess_list;
+
+    /* S1AP transactions */
+    struct {
+        S1ap_Cause_t cause;
+    } s1ap;
 
     mme_enb_t       *enb;
 } mme_ue_t;

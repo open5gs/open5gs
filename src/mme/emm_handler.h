@@ -22,6 +22,7 @@ CORE_DECLARE(void) emm_handle_identity_response(
         mme_ue_t *ue, nas_identity_response_t *identity_response);
 CORE_DECLARE(void) emm_handle_detach_request(
     mme_ue_t *ue, nas_detach_request_from_ue_t *detach_request);
+CORE_DECLARE(void) emm_handle_delete_session_response(mme_bearer_t *bearer);
 
 #ifdef __cplusplus
 }
