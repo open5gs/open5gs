@@ -107,7 +107,7 @@ void mme_s11_handle_delete_session_response(
     
     d_assert(sess, return, "Null param");
     d_assert(rsp, return, "Null param");
-    bearer = mme_bearer_first(sess);
+    bearer = mme_default_bearer_in_sess(sess);
     d_assert(bearer, return, "Null param");
 
     if (rsp->cause.presence == 0)

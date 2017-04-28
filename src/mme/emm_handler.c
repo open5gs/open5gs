@@ -484,7 +484,7 @@ void emm_handle_detach_request(
     sess = mme_sess_first(ue);
     while (sess != NULL)
     {
-        mme_bearer_t *bearer = mme_bearer_first(sess);
+        mme_bearer_t *bearer = mme_default_bearer_in_sess(sess);
 
         if (bearer != NULL)
         {
@@ -492,7 +492,8 @@ void emm_handle_detach_request(
             d_assert(rv == CORE_OK, return, "S11 build error");
 
             rv = mme_s11_send_to_sgw(bearer->sgw, 
-                    GTP_DELETE_SESSION_REQUEST_TYPE, sess->sgw_s11_teid, s11buf);
+                    GTP_DELETE_SESSION_REQUEST_TYPE, sess->sgw_s11_teid, 
+                    s11buf);
             if (rv != CORE_OK)
             {
                 d_error("S11 send error rv %d", rv);
@@ -553,7 +554,7 @@ void emm_handle_delete_session_response(mme_bearer_t *bearer)
     sess = mme_sess_first(ue);
     while (sess != NULL)
     {
-        mme_bearer_t *temp_bearer = mme_bearer_first(sess);
+        mme_bearer_t *temp_bearer = mme_default_bearer_in_sess(sess);
 
         if (temp_bearer != NULL)
         {
