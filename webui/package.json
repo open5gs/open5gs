@@ -1,0 +1,19 @@
+{
+  "name": "nextepc-webui",
+  "version": "0.1.0",
+  "description": "Web User Interface for NextEPC",
+  "main": "index.js",
+  "repository": "https://github.com/acetcom/cellwire",
+  "author": "NextEPC Group",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "next": "^2.3.1",
+    "react": "^15.5.4",
+    "react-dom": "^15.5.4"
+  },
+  "scripts": {
+    "dev": "next",
+    "build": "next build",
+    "start": "next start"
+  }
+}
