@@ -4,8 +4,8 @@ const fs = require('fs');
 const path = require('path');
 const Sequelize = require('sequelize');
 const sequelize = new Sequelize(null, null, null, {
-        "dialect": "sqlite",
-        "storage": process.env.DB_STORAGE
+  "dialect": "sqlite",
+  "storage": process.env.DB_STORAGE
 });
 
 var db = {};
@@ -13,7 +13,7 @@ var db = {};
 fs.readdir(__dirname, (err, files) => {
   files
     .filter(file => {
-        return file.indexOf('.') !== 0 && file !== 'index.js';
+      return file.indexOf('.') !== 0 && file !== 'index.js';
     })
     .forEach(file => {
       const model = sequelize.import(path.join(__dirname, file));
@@ -22,7 +22,7 @@ fs.readdir(__dirname, (err, files) => {
 });
 
 Object.keys(db).forEach(modelName => {
-    if ('associate' in db[modelName]) db[modelName].associate(db);
+  if ('associate' in db[modelName]) db[modelName].associate(db);
 });
 
 db.sequelize = sequelize;
