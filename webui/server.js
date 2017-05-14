@@ -9,18 +9,18 @@ const models = require('./models');
 
 app.prepare()
 .then(() => {
-    const server = express();
+  const server = express();
 
-    models.sequelize.sync()
-    .then(() => {
-        server.get('*', (req, res) => {
-            return handle(req, res);
-        });
+  models.sequelize.sync()
+  .then(() => {
+    server.get('*', (req, res) => {
+      return handle(req, res);
+    });
 
-        server.listen(3000, err => {
-            if (err) throw err;
-            console.log('> Ready on http://localhost:3000');
-        });
-    })
+    server.listen(3000, err => {
+      if (err) throw err;
+        console.log('> Ready on http://localhost:3000');
+    });
+  })
 })
 .catch(err => console.log(err));
