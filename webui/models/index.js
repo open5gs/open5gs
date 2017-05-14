@@ -1,13 +1,31 @@
-process.env.DB_CONNECTION_STRING = process.env.DB_CONNECTION_STRING || 'sqlite:///tmp/nextepc.db';
+process.env.DB_STORAGE = process.env.DB_STORAGE || '/tmp/nextepc.db';
 
+const fs = require('fs');
+const path = require('path');
 const Sequelize = require('sequelize');
-const sequelize = new Sequelize('db', null, null, {
+const sequelize = new Sequelize(null, null, null, {
         "dialect": "sqlite",
-        "storage": "./db.development.sqlite"
+        "storage": process.env.DB_STORAGE
 });
 
-function sync(...args) {
-    return sequelize.sync(...args);
-}
+var db = {};
 
-module.exports = { sync };
+fs.readdir(__dirname, (err, files) => {
+  files
+    .filter(file => {
+        return file.indexOf('.') !== 0 && file !== 'index.js';
+    })
+    .forEach(file => {
+      const model = sequelize.import(path.join(__dirname, file));
+      db[model.name] = model;
+    });
+});
+
+Object.keys(db).forEach(modelName => {
+    if ('associate' in db[modelName]) db[modelName].associate(db);
+});
+
+db.sequelize = sequelize;
+db.Sequelize = Sequelize;
+
+module.exports = db;
