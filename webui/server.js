@@ -25,22 +25,6 @@ app.prepare()
     });
 
     server.listen(3000, err => {
-      /*
-      models.UserRole.count().then(c => {
-        if (c == 0) {
-          models.UserRole.create({
-            role: 'admin',
-            Users: [{
-              username: 'admin',
-              password: '1423'
-            }]
-          }, {
-            include: [models.UserRole.User]
-          });
-        }
-      });
-      */
-
       if (err) throw err;
       console.log('> Ready on http://localhost:3000');
     });
