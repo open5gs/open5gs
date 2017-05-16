@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     classMethods: {
       associate: models => {
-        User.belongsTo(models.UserRole, {
+        User.UserRole = User.belongsTo(models.UserRole, {
           onDelete: 'CASCADE',
           foreignKey: {
             allowNull: false

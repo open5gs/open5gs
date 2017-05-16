@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     classMethods: {
       associate: models => {
-        UserRole.hasMany(models.User);
+        UserRole.User = UserRole.hasMany(models.User);
       }
     },
     freezeTableName: true

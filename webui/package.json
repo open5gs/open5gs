@@ -7,11 +7,17 @@
   "author": "NextEPC Group",
   "license": "GPL-3.0",
   "dependencies": {
+    "body-parser": "^1.17.1",
     "express": "^4.15.2",
+    "express-session": "^1.15.2",
+    "lusca": "^1.4.1",
     "next": "^2.3.1",
+    "passport": "^0.3.2",
+    "passport-local": "^1.0.0",
     "react": "^15.5.4",
     "react-dom": "^15.5.4",
     "sequelize": "^3.30.4",
+    "session-file-store": "^1.0.0",
     "sqlite3": "^3.1.8"
   },
   "scripts": {
