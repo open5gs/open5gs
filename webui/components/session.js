@@ -1,11 +1,10 @@
 export default class Session {
   constructor({ req } = {}) {
     this._session = {};
-    this._user = {};
 
     try {
       if (req) {
-        this.session = {
+        this._session = {
           csrfToken: req.connection._httpMessage.locals._csrf
         }
         if (req.user) this._session.user = req.user;
@@ -17,6 +16,7 @@ export default class Session {
     } catch(err) {
       // Handle if error reading from localStorage or server state is safe to ignore
       // (will just cause session data to be fetched by ajax)
+      return;
     }
   }
 
@@ -47,16 +47,22 @@ export default class Session {
 
   async getSession(forceUpdate) {
     if (typeof windows === 'undefined') {
-      return new Promise(resolve => { resolve(this._session); });
+      return new Promise(resolve => { 
+        resolve(this._session); 
+      });
     }
 
-    if (forceUpdate === true) this._removeLocalStore('session');
+    if (forceUpdate === true) {
+      this._session = {};
+      this._removeLocalStore('session');
+    }
     
     this._session = this._getLocalStore('session');
-    if (this._session && Object.keys(this._session).length > 0) {
-      if (this._session.expires && this._session.expires > Date.now()) {
-        return new Promise(resolve => { resolve(this._session); });
-      }
+
+    if (this._session && Object.keys(this._session).length > 0 && this._session.expires && this._session.expires > Date.now()) {
+        return new Promise(resolve => { 
+          resolve(this._session); 
+        });
     }
 
     return new Promise((resolve, reject) => {
@@ -94,10 +100,11 @@ export default class Session {
       let xhr = new window.XMLHTTPRequest();
       xhr.open('POST', '/login', true);
       xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-      xhr.onreadystatechange = () => {
+      xhr.onreadystatechange = async () => {
         if (xhr.readyState === 4) {
-          if (xhr.status != 200)
+          if (xhr.status != 200) {
             reject(Error('XMLHttpRequest error: Error while attempting to login'));
+          }
 
           return resolve(true);
         }

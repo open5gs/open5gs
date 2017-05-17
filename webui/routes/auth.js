@@ -47,9 +47,11 @@ exports.configure = ({
     }
   }));
 
+/*
   server.use((req, res, next) => {
     csrf(req, res, next);
   });
+  */
 
   passport.use(new Strategy((username, password, cb) => {
     models.User.findOne({ where: {username: username} }).then(user => {
