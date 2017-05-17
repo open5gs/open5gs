@@ -22,8 +22,9 @@ export default class Session {
 
   static async getCsrfToken() {
     return new Promise((resolve, reject) => {
-      if (typeof windows === 'undefined')
+      if (typeof windows === 'undefined') {
         return reject(Error('This method should only be called on the client'));
+      }
 
       let xhr = new window.XMLHTTPRequest();
       xhr.open('GET', '/csrf', true);
@@ -45,15 +46,18 @@ export default class Session {
   }
 
   async getSession(forceUpdate) {
-    if (typeof windows === 'undefined')
+    if (typeof windows === 'undefined') {
       return new Promise(resolve => { resolve(this._session); });
+    }
 
     if (forceUpdate === true) this._removeLocalStore('session');
     
     this._session = this._getLocalStore('session');
-    if (this._session && Object.keys(this._session).length > 0 && 
-        this._session.expires && this._session.expires > Date.now())
-      return new Promise(resolve => { resolve(this._session); });
+    if (this._session && Object.keys(this._session).length > 0) {
+      if (this._session.expires && this._session.expires > Date.now()) {
+        return new Promise(resolve => { resolve(this._session); });
+      }
+    }
 
     return new Promise((resolve, reject) => {
       let xhr = new window.XMLHTTPRequest();
@@ -80,8 +84,9 @@ export default class Session {
 
   login(username, password) {
     return new Promise(async (resolve, reject) => {
-      if (typeof windows === 'undefined')
+      if (typeof windows === 'undefined') {
         return reject(Error('This method should only be called on the client'));
+      }
 
       this._session = await this.getSession();
       this._session.csrfToken = await Session.getCsrfToken();
@@ -108,8 +113,9 @@ export default class Session {
 
   logout() {
     return new Promise(async (resolve, reject) => {
-      if (typeof windows === 'undefined')
+      if (typeof windows === 'undefined') {
         return reject(Error('This method should only be called on the client'));
+      }
 
       let xhr = new window.XMLHTTPRequest();
       xhr.open('GET', '/logout', true);
