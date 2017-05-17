@@ -10,13 +10,13 @@ exports.configure = ({
   server = null,
   models = null,
   secret = 'change-me',
-  store = new FileStore({path: '/tmp/sessions', secret: secret}),
+  store = new FileStore({ path: '/tmp/sessions', secret: secret }),
   maxAge = 60000 * 60 * 24 * 7 * 4, // 4 weeks 
   clientMaxAge = 60 * 1000 // 60 seconds
 } = {}) =>  {
-  if (app === null) throw new Error('Null param')
-  if (server === null) throw new Error('Null param')
-  if (models === null) throw new Error('Null param')
+  if (!app) throw new Error('Null param')
+  if (!server) throw new Error('Null param')
+  if (!models) throw new Error('Null param')
 
   models.UserRole.count().then(c => {
     if (c == 0) {
@@ -27,13 +27,13 @@ exports.configure = ({
           password: '1423'
         }]
       }, {
-        include: [models.UserRole.User]
+        include: [ models.UserRole.User ]
       });
     }
   });
 
   server.use(bodyParser.json());
-  server.use(bodyParser.urlencoded({extended: true}));
+  server.use(bodyParser.urlencoded({ extended: true }));
 
   server.use(session({
     secret: secret,
@@ -48,9 +48,53 @@ exports.configure = ({
   }));
 
   server.use((req, res, next) => {
-    csrf()
+    csrf(req, res, next);
+  });
+
+  passport.use(new Strategy((username, password, cb) => {
+    models.User.findOne({ where: {username: username} }).then(user => {
+      if (!user) return cb(null, false);
+      if (user.password != password) return cb(null, false);
+      return cb(null, user);
+    });
+  }));
+
+  passport.serializeUser((user, cb) => {
+    cb(null, user.id);
   })
 
+  passport.deserializeUser((id, cb) => {
+    models.User.findById(id).then(user => {
+      cb(null, user);
+    })
+  });
   server.use(passport.initialize());
   server.use(passport.session());
+
+  server.get('/csrf', (req, res) => {
+    return res.json({ csrfToken: res.locals._csrf });
+  });
+
+  server.get('/session', (req, res) => {
+    let session = {
+      clientMaxAge: clientMaxAge,
+      csrfToken: res.locals._csrf
+    }
+
+    if (req.user) session.user = req.user;
+
+    return res.json(session);
+  });
+
+  server.post('/login', 
+    passport.authenticate('local', { failureRedirect: '/login' }),
+    (req, res) => {
+      res.redirect('/')
+    }
+  );
+
+  server.get('/logout', (req, res) => {
+    req.logout();
+    res.redirect('/');
+  });
 }
