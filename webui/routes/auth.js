@@ -3,7 +3,7 @@ const session = require('express-session');
 const csrf = require('lusca').csrf();
 const FileStore = require('session-file-store')(session);
 const passport = require('passport');
-const Strategy = require('passport-local').Strategy;
+const LocalStrategy = require('passport-local').Strategy;
 
 exports.configure = ({
   app = null,
@@ -53,26 +53,31 @@ exports.configure = ({
   });
   */
 
-  passport.use(new Strategy((username, password, cb) => {
+  passport.use(new LocalStrategy((username, password, done) => {
     models.User.findOne({ where: {username: username} }).then(user => {
-      if (!user) return cb(null, false);
-      if (user.password != password) return cb(null, false);
-      return cb(null, user);
+      if (!user) { 
+        return done(null, false, { message: 'Incorrect username' }); 
+      }
+      if (user.password != password) {
+        return done(null, false, { message: 'Incorrect password' });
+      }
+      return done(null, user);
     });
   }));
 
-  passport.serializeUser((user, cb) => {
-    cb(null, user.id);
+  passport.serializeUser((user, done) => {
+    done(null, user.id);
   })
 
-  passport.deserializeUser((id, cb) => {
+  passport.deserializeUser((id, done) => {
     models.User.findById(id).then(user => {
-      cb(null, user);
+      done(null, user);
     })
   });
   server.use(passport.initialize());
   server.use(passport.session());
 
+/*
   server.get('/csrf', (req, res) => {
     return res.json({ csrfToken: res.locals._csrf });
   });
@@ -88,8 +93,12 @@ exports.configure = ({
     return res.json(session);
   });
 
+*/
   server.post('/login', 
-    passport.authenticate('local', { failureRedirect: '/login' }),
+    passport.authenticate('local', { 
+      successRedirect: '/', 
+      failureRedirect: '/login', 
+      failureFlash:true }),
     (req, res) => {
       res.redirect('/')
     }
