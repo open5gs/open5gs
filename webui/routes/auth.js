@@ -61,10 +61,14 @@ exports.configure = ({
   })
 
   passport.deserializeUser((id, done) => {
-    models.User.findById(id).then(user => {
+    models.User.findOne({
+      where: { id: id },
+      include: [{ model: models.UserRole }]
+    }).then(user => {
       done(null, user);
     })
   });
+
   server.use(passport.initialize());
   server.use(passport.session());
 

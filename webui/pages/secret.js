@@ -2,9 +2,9 @@ import React, { PropTypes } from 'react'
 
 import securePage from '../hocs/securePage'
 
-const Secret = ({ Username }) => (
+const Secret = ({ Username, Role }) => (
   <div>
-      Hi <strong>{Username}</strong>. 
+      Hi <strong>{Username}:{Role}</strong>. 
       This is a super secure page! 
       Try loading this page again using the incognito/private mode of your browser.
   </div>
