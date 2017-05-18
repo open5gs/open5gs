@@ -16,7 +16,6 @@ app.prepare()
     auth.configure({
       app: app,
       server: server,
-      models: models,
       secret: process.env.SESSION_SECRET
     });
 

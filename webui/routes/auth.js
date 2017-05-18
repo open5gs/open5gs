@@ -1,22 +1,21 @@
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const csrf = require('lusca').csrf();
-const FileStore = require('session-file-store')(session);
+const SequelizeStore = require('connect-session-sequelize')(session.Store);
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
+const models = require('../models');
 
 exports.configure = ({
   app = null,
   server = null,
-  models = null,
   secret = 'change-me',
-  store = new FileStore({ path: '/tmp/sessions', secret: secret }),
+  store = new SequelizeStore({ db: models.sequelize, table: 'Session' }),
   maxAge = 60000 * 60 * 24 * 7 * 4, // 4 weeks 
   clientMaxAge = 60 * 1000 // 60 seconds
 } = {}) =>  {
   if (!app) throw new Error('Null param')
   if (!server) throw new Error('Null param')
-  if (!models) throw new Error('Null param')
 
   models.UserRole.count().then(c => {
     if (c == 0) {
