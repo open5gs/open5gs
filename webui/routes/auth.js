@@ -1,6 +1,5 @@
 const bodyParser = require('body-parser');
 const session = require('express-session');
-const csrf = require('lusca').csrf();
 const SequelizeStore = require('connect-session-sequelize')(session.Store);
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
@@ -11,8 +10,7 @@ exports.configure = ({
   server = null,
   secret = 'change-me',
   store = new SequelizeStore({ db: models.sequelize, table: 'Session' }),
-  maxAge = 60000 * 60 * 24 * 7 * 4, // 4 weeks 
-  clientMaxAge = 60 * 1000 // 60 seconds
+  maxAge = 60000 * 60 * 24 * 7 * 4 // 4 weeks 
 } = {}) =>  {
   if (!app) throw new Error('Null param')
   if (!server) throw new Error('Null param')
@@ -46,12 +44,6 @@ exports.configure = ({
     }
   }));
 
-/*
-  server.use((req, res, next) => {
-    csrf(req, res, next);
-  });
-  */
-
   passport.use(new LocalStrategy((username, password, done) => {
     models.User.findOne({ where: {username: username} }).then(user => {
       if (!user) { 
@@ -76,28 +68,10 @@ exports.configure = ({
   server.use(passport.initialize());
   server.use(passport.session());
 
-/*
-  server.get('/csrf', (req, res) => {
-    return res.json({ csrfToken: res.locals._csrf });
-  });
-
-  server.get('/session', (req, res) => {
-    let session = {
-      clientMaxAge: clientMaxAge,
-      csrfToken: res.locals._csrf
-    }
-
-    if (req.user) session.user = req.user;
-
-    return res.json(session);
-  });
-
-*/
   server.post('/login', 
     passport.authenticate('local', { 
-      successRedirect: '/', 
       failureRedirect: '/login', 
-      failureFlash:true }),
+    }),
     (req, res) => {
       res.redirect('/')
     }

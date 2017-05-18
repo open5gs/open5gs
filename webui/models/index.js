@@ -4,8 +4,9 @@ const fs = require('fs');
 const path = require('path');
 const Sequelize = require('sequelize');
 const sequelize = new Sequelize(null, null, null, {
-  "dialect": "sqlite",
-  "storage": process.env.DB_STORAGE
+  'dialect': 'sqlite',
+  'storage': process.env.DB_STORAGE,
+  'logging': false
 });
 
 var db = {};

@@ -2,7 +2,7 @@ import React from 'react';
 import defaultPage from './defaultPage';
 
 const securePageHoc = Page => class SecurePage extends React.Component {
-  static getInitialProps (ctx) {
+  static async getInitialProps (ctx) {
     return Page.getInitialProps && Page.getInitialProps(ctx);
   }
 
