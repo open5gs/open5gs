@@ -2,16 +2,16 @@ import React from 'react';
 
 export default Page => class DefaultPage extends React.Component {
   static async getInitialProps (ctx) {
-    let loggedUser = null;
+    let username = null;
     if (ctx.req && ctx.req.user) {
-        loggedUser = ctx.req.user.username;
+        username = ctx.req.user.username;
     } 
 
     const pageProps = Page.getInitialProps && Page.getInitialProps(ctx);
     return { 
       ...pageProps,
-      loggedUser,
-      isAuthenticated: !!loggedUser
+      Username: username,
+      isAuthenticated: !!username
      };
   }
 
