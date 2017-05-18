@@ -1,6 +1,7 @@
-import React, { PropTypes } from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import Link from 'next/link';
-import defaultPage from '../hocs/defaultPage';
+import DefaultPage from '../hocs/defaultPage';
 
 const Index = ({ isAuthenticated }) => {
   return (
@@ -19,4 +20,4 @@ Index.propTypes = {
   isAuthenticated: PropTypes.bool.isRequired
 }
 
-export default defaultPage(Index);
+export default DefaultPage(Index);

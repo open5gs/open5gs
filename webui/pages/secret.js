@@ -1,6 +1,6 @@
 import React, { PropTypes } from 'react'
 
-import securePage from '../hocs/securePage'
+import SecurePage from '../hocs/securePage'
 
 const Secret = ({ Username, Role }) => (
   <div>
@@ -14,4 +14,4 @@ Secret.propTypes = {
   Username: PropTypes.string.isRequired
 }
 
-export default securePage(Secret)
+export default SecurePage(Secret)
