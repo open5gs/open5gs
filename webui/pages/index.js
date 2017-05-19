@@ -7,7 +7,13 @@ import Start from '../components/start'
 import Layout from '../components/layout'
 import Session from '../components/session'
 
-export default class extends Start {
+export default class extends React.Component {
+
+  static async getInitialProps({req}) {
+    const session = new Session({req})
+    return {session: await session.getSession(true)}
+  }
+
   render() {
     return (
       <Layout session={this.props.session}>
@@ -21,5 +27,4 @@ export default class extends Start {
       </Layout>
     )
   }
-
 }
