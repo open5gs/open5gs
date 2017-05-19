@@ -1,17 +1,13 @@
-import React, { PropTypes } from 'react'
+import Link from 'next/prefetch'
+import restricted from '../components/restricted'
 
-import SecurePage from '../hocs/securePage'
-
-const Secret = ({ Username, Role }) => (
+const Secret = () => (
   <div>
-      Hi <strong>{Username}:{Role}</strong>. 
-      This is a super secure page! 
-      Try loading this page again using the incognito/private mode of your browser.
+    <h1>Restricted page</h1>
+    <p>This page is restricted to the public. Since you&#39;re logged in you see this message.</p>
+    <Link href='/'><a>Back to homepage</a></Link>
   </div>
 )
 
-Secret.propTypes = {
-  Username: PropTypes.string.isRequired
-}
-
-export default SecurePage(Secret)
+// restricted can only be used on top level components (routes inside the pages directory)
+export default restricted(Secret)
