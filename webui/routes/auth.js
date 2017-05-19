@@ -71,7 +71,10 @@ exports.configure = ({
       where: { id: id },
       include: [{ model: models.UserRole }]
     }).then(user => {
-      done(null, user);
+      done(null, {
+        username: user.username,
+        role: user.UserRole.role
+      });
     })
   });
 
