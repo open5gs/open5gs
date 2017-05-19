@@ -1,32 +1,26 @@
-import Link from 'next/link'
-import Head from 'next/head'
+import React from 'react'
+import Header from './header'
+import Footer from './footer'
 
-const Layout = ({ 
-  children, title = 'This is the default title', 
-  isAuthenticated, currentUrl }) => {
-  return (
-    <div>
-      <Head>
-        <title>{ title }</title>
-        <meta charSet='utf-8' />
-        <meta name='viewport' content='initial-scale=1.0, width=device-width' />
-      </Head>
-      <header>
-        <nav>
-          <Link prefetch key='/about' href='/about'><a>About</a></Link> |
-          <Link prefetch key='/contact' href='/contact'><a>Contact</a></Link>
-          {isAuthenticated && <p>isAuthenticated</p>}
-          {currentUrl && <p>{currentUrl}</p>}
-        </nav> 
-      </header>
+export default class extends React.Component {
 
-      { children }
+  static propTypes() {
+    return {
+      session: React.PropTypes.object.isRequired,
+      children: React.PropTypes.object.isRequired
+    }
+  }
 
-      <footer>
-        I'm here to say 
-      </footer>
-    </div>
-  );
+  render() {
+    return (
+      <div>
+        <Header session={this.props.session}/>
+        <div className="container">
+          { this.props.children }
+        </div>
+        <Footer/>
+      </div>
+    )
+  }
+
 }
-
-export default Layout;

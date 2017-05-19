@@ -23,6 +23,13 @@ app.prepare()
       return handle(req, res);
     });
 
+    // Set vary header (good practice)
+    // Note: This overrides any existing 'Vary' header but is okay in this app
+    server.use(function (req, res, next) {
+      res.setHeader('Vary', 'Accept-Encoding')
+      next()
+    });
+
     server.listen(3000, err => {
       if (err) throw err;
       console.log('> Ready on http://localhost:3000');

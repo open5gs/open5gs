@@ -1,23 +1,23 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import Link from 'next/link';
-import DefaultPage from '../hocs/defaultPage';
+/**
+ * The index page uses a layout page that pulls in header and footer components
+ */
+import Link from 'next/link'
+import React from 'react'
+import Page from '../components/page'
+import Layout from '../components/layout'
 
-const Index = ({ isAuthenticated }) => {
-  return (
-    <div>
-      <h1>Hello Worlds!</h1>
-      {isAuthenticated && <p>Authenticated!!</p>}
-      {!isAuthenticated && <p>Not Authriozed</p>}
-      <p><Link prefetch href='/login'><a>Login</a></Link></p>
-      <p><Link prefetch href='/logout'><a>Logout</a></Link></p>
-      <p><Link prefetch href='/secret'><a>Secure Page</a></Link></p>
-    </div>
-  );
+export default class extends Page {
+
+  render() {
+    return (
+      <Layout session={this.props.session}>
+        <h2>Under construction</h2>
+        <ul>
+          <li><Link prefetch href="/helloworld"><a>HelloWorld</a></Link> - The simplest possible example</li>
+          <li><Link prefetch href="/login"><a>Login</a></Link> - prefetch</li>
+        </ul>
+      </Layout>
+    )
+  }
+
 }
-
-Index.propTypes = {
-  isAuthenticated: PropTypes.bool.isRequired
-}
-
-export default DefaultPage(Index);
