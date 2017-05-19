@@ -59,8 +59,7 @@ export default class extends Page {
     const session = new Session()
     session.signin(this.state.username, this.state.password)
     .then(() => {
-      // @FIXME next/router not working reliably  so using window.location
-      window.location = '/'
+      this.props.url.push('/')
     })
     .catch(err => {
       // @FIXME Handle error

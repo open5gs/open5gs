@@ -3,11 +3,11 @@
  */
 import Link from 'next/link'
 import React from 'react'
-import Page from '../components/page'
+import Start from '../components/start'
 import Layout from '../components/layout'
+import Session from '../components/session'
 
-export default class extends Page {
-
+export default class extends Start {
   render() {
     return (
       <Layout session={this.props.session}>
