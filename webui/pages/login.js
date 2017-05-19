@@ -1,4 +1,5 @@
 import React from 'react'
+import Router from 'next/router'
 import Page from '../components/page'
 import Layout from '../components/layout'
 import Session from '../components/session'
@@ -59,7 +60,7 @@ export default class extends Page {
     const session = new Session()
     session.signin(this.state.username, this.state.password)
     .then(() => {
-      this.props.url.push('/')
+      Router.push('/')
     })
     .catch(err => {
       // @FIXME Handle error

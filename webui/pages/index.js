@@ -3,11 +3,11 @@
  */
 import Link from 'next/link'
 import React from 'react'
-import Start from '../components/start'
+import Page from '../components/page'
 import Layout from '../components/layout'
 import Session from '../components/session'
 
-export default class extends React.Component {
+export default class extends Page {
 
   static async getInitialProps({req}) {
     const session = new Session({req})
