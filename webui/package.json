@@ -1,7 +1,7 @@
 {
-  "name": "nextepc-webui",
+  "name": "nextepc",
   "version": "0.1.0",
-  "description": "Web User Interface for NextEPC",
+  "description": "NextEPC",
   "main": "index.js",
   "repository": "https://github.com/acetcom/cellwire",
   "author": "NextEPC Group",
