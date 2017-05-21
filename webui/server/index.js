@@ -24,16 +24,16 @@ app.prepare()
   const server = express();
 
   // FIXME : we need to implement landing page for adding admin account
-  models.UserRole.count().then(c => {
+  models.AccountRole.count().then(c => {
     if (c == 0) {
-      models.UserRole.create({
+      models.AccountRole.create({
         role: 'admin',
-        Users: [{
+        Accounts: [{
           username: 'admin',
           password: '1423'
         }]
       }, {
-        include: [ models.UserRole.User ]
+        include: [ models.AccountRole.Account ]
       });
     }
   });

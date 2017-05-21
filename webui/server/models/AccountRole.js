@@ -1,5 +1,5 @@
 module.exports = (sequelize, DataTypes) => {
-  const UserRole = sequelize.define('UserRole', {
+  const AccountRole = sequelize.define('AccountRole', {
     role: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -11,11 +11,11 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     classMethods: {
       associate: models => {
-        UserRole.User = UserRole.hasMany(models.User);
+        AccountRole.Account = AccountRole.hasMany(models.Account);
       }
     },
     freezeTableName: true
   });
 
-  return UserRole;
+  return AccountRole;
 };

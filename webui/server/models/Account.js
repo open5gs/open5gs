@@ -1,5 +1,5 @@
 module.exports = (sequelize, DataTypes) => {
-  const User = sequelize.define('User', {
+  const Account = sequelize.define('Account', {
     username: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     classMethods: {
       associate: models => {
-        User.UserRole = User.belongsTo(models.UserRole, {
+        Account.AccountRole = Account.belongsTo(models.AccountRole, {
           onDelete: 'CASCADE',
           foreignKey: {
             allowNull: false
@@ -26,5 +26,5 @@ module.exports = (sequelize, DataTypes) => {
     freezeTableName: true
   });
 
-  return User;
+  return Account;
 };

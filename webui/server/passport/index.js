@@ -4,29 +4,29 @@ const LocalStrategy = require('passport-local').Strategy;
 const models = require('../models');
 
 passport.use(new LocalStrategy((username, password, done) => {
-    models.User.findOne({ where: {username: username} }).then(user => {
-      if (!user) { 
+    models.Account.findOne({ where: {username: username} }).then(account => {
+      if (!account) { 
         return done(null, false, { message: 'Incorrect username' }); 
       }
-      if (user.password != password) {
+      if (account.password != password) {
         return done(null, false, { message: 'Incorrect password' });
       }
-      return done(null, user);
+      return done(null, account);
     });
   }));
 
-passport.serializeUser((user, done) => {
-  done(null, user.id);
+passport.serializeUser((account, done) => {
+  done(null, account.id);
 })
 
 passport.deserializeUser((id, done) => {
-  models.User.findOne({
+  models.Account.findOne({
     where: { id: id },
-    include: [{ model: models.UserRole }]
-  }).then(user => {
+    include: [{ model: models.AccountRole }]
+  }).then(account => {
     done(null, {
-      username: user.username,
-      role: user.UserRole.role
+      username: account.username,
+      role: account.AccountRole.role
     });
   })
 });
