@@ -9,8 +9,9 @@ const bodyParser = require('body-parser');
 const session = require('express-session');
 const SequelizeStore = require('connect-session-sequelize')(session.Store);
 const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy;
+require('./passport');
 const csrf = require('lusca').csrf();
+const secret = process.env.SECRET_KEY || 'change-me';
 
 const models = require('./models');
 const api = require('./routes');
@@ -22,6 +23,7 @@ app.prepare()
 .then(() => {
   const server = express();
 
+  // FIXME : we need to implement landing page for adding admin account
   models.UserRole.count().then(c => {
     if (c == 0) {
       models.UserRole.create({
@@ -40,48 +42,20 @@ app.prepare()
   server.use(bodyParser.urlencoded({ extended: true }));
 
   server.use(session({
-    secret: 'change-me',
+    secret: secret,
     store: new SequelizeStore({ db: models.sequelize, table: 'Session' }),
     resave: false,
     rolling: true,
     saveUninitialized: true,
     httpOnly: true,
     cookie: {
-      maxAge: 60000 * 60 * 24 * 7 * 4  // 4 weeks
+      maxAge: 1000 * 60 * 60 * 24 * 7 * 2  // 2 weeks
     }
   }));
 
   server.use((req, res, next) => {
     csrf(req, res, next);
   })
-
-  passport.use(new LocalStrategy((username, password, done) => {
-    models.User.findOne({ where: {username: username} }).then(user => {
-      if (!user) { 
-        return done(null, false, { message: 'Incorrect username' }); 
-      }
-      if (user.password != password) {
-        return done(null, false, { message: 'Incorrect password' });
-      }
-      return done(null, user);
-    });
-  }));
-
-  passport.serializeUser((user, done) => {
-    done(null, user.id);
-  })
-
-  passport.deserializeUser((id, done) => {
-    models.User.findOne({
-      where: { id: id },
-      include: [{ model: models.UserRole }]
-    }).then(user => {
-      done(null, {
-        username: user.username,
-        role: user.UserRole.role
-      });
-    })
-  });
 
   server.use(passport.initialize());
   server.use(passport.session());
@@ -90,13 +64,6 @@ app.prepare()
 
   server.get('*', (req, res) => {
     return handle(req, res);
-  });
-
-  // Set vary header (good practice)
-  // Note: This overrides any existing 'Vary' header but is okay in this app
-  server.use(function (req, res, next) {
-    res.setHeader('Vary', 'Accept-Encoding')
-    next()
   });
 
   server.listen(3000, err => {
