@@ -80,7 +80,7 @@ export default class extends Page {
     } else {
       signinForm = (
         <div>
-          <form id="signin" method="post" action="/login" onSubmit={this.handleSubmit}>
+          <form id="signin" method="post" action="/api/auth/login" onSubmit={this.handleSubmit}>
             <input name="_csrf" type="hidden" value={this.state.session.csrfToken}/>
             <h3>Sign in with email</h3>
             <p>

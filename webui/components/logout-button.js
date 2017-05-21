@@ -18,7 +18,7 @@ export default ({ session, children }) => {
   }
 
   return (
-    <form id='signout' method='post' action='/auth/signout' onSubmit={logout}>
+    <form id='signout' method='post' action='/api/auth/signout' onSubmit={logout}>
       <input name='_csrf' type='hidden' value={session.csrfToken} />
       <button type='submit'>{children}</button>
     </form>

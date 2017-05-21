@@ -28,7 +28,7 @@ export default class extends React.Component {
 
     if (session.user) {
       loginMessage = (
-        <form id="signout" method="post" action="/logout" onSubmit={this.handleSubmit}>
+        <form id="signout" method="post" action="/api/auth/logout" onSubmit={this.handleSubmit}>
           <input name="_csrf" type="hidden" value={session.csrfToken}/>
           <p>
             <Link prefetch href="/"><a className="home">Home</a></Link>Logged in as <strong><Link prefetch href="/login"><a>{session.user.username || session.user.role}</a></Link></strong>

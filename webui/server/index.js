@@ -1,21 +1,26 @@
+const express = require('express');
+const next = require('next');
+
+const dev = process.env.NODE_ENV != 'production';
+const app = next({ dev });
+const handle = app.getRequestHandler();
+
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const SequelizeStore = require('connect-session-sequelize')(session.Store);
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const csrf = require('lusca').csrf();
-const models = require('../models');
 
-exports.configure = ({
-  app = null,
-  server = null,
-  secret = 'change-me',
-  store = new SequelizeStore({ db: models.sequelize, table: 'Session' }),
-  maxAge = 60000 * 60 * 24 * 7 * 4, // 4 weeks 
-  clientMaxAge = 60000 // 60 seconds
-} = {}) =>  {
-  if (!app) throw new Error('Null param')
-  if (!server) throw new Error('Null param')
+const models = require('./models');
+const api = require('./routes');
+
+app.prepare()
+.then(() => {
+  return models.sequelize.sync();
+})
+.then(() => {
+  const server = express();
 
   models.UserRole.count().then(c => {
     if (c == 0) {
@@ -35,14 +40,14 @@ exports.configure = ({
   server.use(bodyParser.urlencoded({ extended: true }));
 
   server.use(session({
-    secret: secret,
-    store: store,
+    secret: 'change-me',
+    store: new SequelizeStore({ db: models.sequelize, table: 'Session' }),
     resave: false,
     rolling: true,
     saveUninitialized: true,
     httpOnly: true,
     cookie: {
-      maxAge: maxAge
+      maxAge: 60000 * 60 * 24 * 7 * 4  // 4 weeks
     }
   }));
 
@@ -81,33 +86,22 @@ exports.configure = ({
   server.use(passport.initialize());
   server.use(passport.session());
 
-  server.get('/csrf', (req, res) => {
-    return res.json({csrfToken: res.locals._csrf});
-  })
+  server.use('/api', api);
 
-  server.get('/session', (req, res) => {
-    let session = {
-      clientMaxAge: clientMaxAge,
-      csrfToken: res.locals._csrf
-    }
-    if (req.user) {
-      session.user = req.user
-    }
-
-    return res.json(session)
-  })
-
-  server.post('/login', 
-    passport.authenticate('local', { 
-      failureRedirect: '/error', 
-    }),
-    (req, res) => {
-      res.redirect('/');
-    }
-  );
-
-  server.post('/logout', (req, res) => {
-    req.logout();
-    res.redirect('/');
+  server.get('*', (req, res) => {
+    return handle(req, res);
   });
-}
+
+  // Set vary header (good practice)
+  // Note: This overrides any existing 'Vary' header but is okay in this app
+  server.use(function (req, res, next) {
+    res.setHeader('Vary', 'Accept-Encoding')
+    next()
+  });
+
+  server.listen(3000, err => {
+    if (err) throw err;
+    console.log('> Ready on http://localhost:3000');
+  });
+})
+.catch(err => console.log(err));

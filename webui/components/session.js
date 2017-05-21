@@ -41,7 +41,7 @@ export default class Session {
       }
 
       let xhr = new XMLHttpRequest()
-      xhr.open('GET', '/csrf', true)
+      xhr.open('GET', '/api/auth/csrf', true)
       xhr.onreadystatechange = () => {
         if (xhr.readyState === 4) {
           if (xhr.status === 200) {
@@ -91,7 +91,7 @@ export default class Session {
     // to true then revalidate it by fetching it again from the server.
     return new Promise((resolve, reject) => {
       let xhr = new XMLHttpRequest()
-      xhr.open('GET', '/session', true)
+      xhr.open('GET', '/api/auth/session', true)
       xhr.onreadystatechange = () => {
         if (xhr.readyState === 4) {
           if (xhr.status === 200) {
@@ -132,7 +132,7 @@ export default class Session {
       this._session.csrfToken = await Session.getCsrfToken()
 
       let xhr = new XMLHttpRequest()
-      xhr.open('POST', '/login', true)
+      xhr.open('POST', '/api/auth/login', true)
       xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded')
       xhr.onreadystatechange = async () => {
         if (xhr.readyState === 4) {
@@ -160,7 +160,7 @@ export default class Session {
       }
 
       let xhr = new XMLHttpRequest()
-      xhr.open('POST', '/logout', true)
+      xhr.open('POST', '/api/auth/logout', true)
       xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded')
       xhr.onreadystatechange = async () => {
         if (xhr.readyState === 4) {
