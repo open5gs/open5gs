@@ -140,6 +140,9 @@ export default class Session {
             return reject(Error('XMLHttpRequest error: Error while attempting to signin'))
           }
 
+          // Update local session data
+          this._session = await this.getSession(true)
+
           return resolve(true)
         }
       }

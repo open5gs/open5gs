@@ -60,7 +60,7 @@ export default class extends Page {
     const session = new Session()
     session.signin(this.state.username, this.state.password)
     .then(() => {
-      Router.push('/')
+      this.props.url.push('/');
     })
     .catch(err => {
       // @FIXME Handle error
