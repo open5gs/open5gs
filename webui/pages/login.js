@@ -1,10 +1,8 @@
 import React from 'react'
 import Router from 'next/router'
-import Page from '../components/page'
-import Layout from '../components/layout'
-import Session from '../components/session'
+import Session from '../lib/session'
 
-export default class extends Page {
+export default class extends React.Component {
 
   static async getInitialProps({req}) {
     // On the sign in page we always force get the latest session data from the
@@ -100,10 +98,10 @@ export default class extends Page {
     }
 
     return (
-      <Layout session={this.state.session}>
+      <div>
         <h2>Authentication</h2>
         {signinForm}
-      </Layout>
+      </div>
     )
   }
 

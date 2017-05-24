@@ -1,7 +1,6 @@
 import Link from 'next/link';
-import withSession from './with-session';
 
-const Unauthorized = () => (
+export default () => (
   <div>
     <h1>Unauthorized</h1>
     <p>You are not authorized to view this page.</p>
@@ -9,11 +8,3 @@ const Unauthorized = () => (
     <p><Link prefetch href='/'><a>Back to homepage</a></Link></p>
   </div>
 )
-
-export default (Component) => {
-  const checkAuth = (props) => {
-    return props.isLoggedIn ? <Component {...props} /> : <Unauthorized />
-  }
-
-  return withSession(checkAuth);
-}

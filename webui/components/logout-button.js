@@ -1,6 +1,6 @@
 /* global window */
 import React from 'react'
-import Session from './session'
+import Session from '../lib/session'
 
 async function logout (event) {
   event.preventDefault()

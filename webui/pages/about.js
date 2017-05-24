@@ -1,6 +1,6 @@
 import Link from 'next/prefetch'
 import React from 'react'
-import withSession from '../components/with-session'
+import withSession from '../lib/with-session'
 import LogoutButton from '../components/logout-button'
 
 const About = ({ session, isLoggedIn }) => {
