@@ -1,5 +1,5 @@
-export default ({ children }) => (
+export default ({children}) => (
   <main>
-    { children }
+    {children}
   </main>
 )

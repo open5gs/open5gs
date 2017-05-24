@@ -1,0 +1,15 @@
+body {
+  margin: 0;
+  padding: 0;
+  background: #f1f3f5;
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}
+
+html {
+  box-sizing: border-box;
+}

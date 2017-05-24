@@ -3,11 +3,11 @@ import Session from './session';
 
 export default (Component) => class extends React.Component {
   static async getInitialProps (ctx) {
-    const session = new Session({ req: ctx.req });
+    const session = new Session({req: ctx.req});
 
     let initialProps = {};
     if (Component.getInitialProps) {
-      initialProps = Component.getInitialProps({ ...ctx, session });
+      initialProps = Component.getInitialProps({...ctx, session});
     }
 
     const sessionData = await session.getSession();
@@ -16,10 +16,10 @@ export default (Component) => class extends React.Component {
       isLoggedIn = true;
     }
 
-    return { session: sessionData, isLoggedIn, ...initialProps };
+    return {session: sessionData, isLoggedIn, ...initialProps};
   }
 
   render () {
-    return <Component { ...this.props } />
+    return <Component {...this.props} />
   }
 }

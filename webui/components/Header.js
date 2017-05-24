@@ -1,12 +1,13 @@
 import Link from 'next/link';
 import Head from 'next/head';
 
-export default ({ title }) => (
+export default ({title}) => (
   <div>
     <Head>
-      <title>{ title}</title>
+      <title>{title}</title>
       <meta charSet='utf-8' />
       <meta name='viewport' content='initial-scale=1.0, width=device-witdth' />
+       <link rel='stylesheet' type='text/css' href='/static/index.css' />
     </Head>
   </div>
 )
