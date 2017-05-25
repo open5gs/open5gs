@@ -15,20 +15,12 @@ import Input from './Input';
 import Dimmed from './Dimmed';
 
 const Wrapper = styled.div`
-  // Layout
   position: fixed;
-
-  // Adjust screen
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-
-  // Layer
   z-index: 10;
-
-  // Width
   width: ${ props => props.width };
-
   ${media.mobile`
     width: calc(100% - 2rem);
   `}
@@ -39,53 +31,43 @@ Wrapper.propTypes = {
 }
 
 const ThumbnailWrapper = styled.div`
-  // Layout
   padding-top: 4rem;
   padding-bottom: 4rem;
   display: flex;
   justify-content: center;
 
-  // Color
   background: white;
 `;
 
 const Form = styled.div`
-  // Layout
   padding: 1rem;
 
-  // Color
   background: ${oc.gray[0]};
 `;
 
 const ButtonWrapper = styled.div`
-  // Layout
   display: flex;
 `;
 
 const Button = styled.div`
-  // Layout
   padding-top: 1rem;
   padding-bottom: 1rem;
   flex: 1;
   display: inline-block;
 
-  // Misc
   cursor: pointer;
   text-align: center;
   font-weight: 500;
   font-size: 1.2rem;
   transition: all .3s;
 
-  // Color
   color: white;
   background: ${props => oc[props.color][7]};
 
-  // Mouse Over
   &:hover {
     background: ${props => oc[props.color][6]};
   }
 
-  // Clicked
   &:active {
     background: ${props => oc[props.color][8]};
   }
