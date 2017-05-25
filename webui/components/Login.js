@@ -98,7 +98,6 @@ const Button = styled.input`
 
   width: 100%;
 
-  cursor: pointer;
   text-align: center;
   font-weight: 500;
   font-size: 1.2rem;
@@ -122,7 +121,6 @@ Button.propTypes = {
   name: PropTypes.string,
   value: PropTypes.string,
   color: PropTypes.string,
-  placeholder: PropTypes.string,
   onClick: PropTypes.func
 };
 

@@ -7,8 +7,8 @@ html, body {
   padding: 0;
   box-sizing: border-box;
 
-  font-family: sans-serif;
   -webkit-font-smoothing: subpixel-antialiased;
+  -webkit-appearance: none;
 
   background: #f1f3f5;
 }
