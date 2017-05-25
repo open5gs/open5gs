@@ -18,15 +18,19 @@ const Wrapper = styled.div`
   left: 50%;
   transform: translate(-50%, -50%);
 
+  border: 1px solid ${oc.gray[4]};
+  box-shadow: 3px 3px 6px rgba(0,0,0,0.10), 3px 3px 6px rgba(0,0,0,0.20);
+
   width: ${props => props.width};
   ${media.mobile`
-    height: 100%;
+    top: 0;
+    left: 0;
+    transform: translate(0, 0);
+
     width: 100%;
   `}
   z-index: 10;
 
-  border-bottom: 1px solid ${oc.gray[7]};
-  box-shadow: 3px 3px 6px rgba(0,0,0,0.10), 3px 3px 6px rgba(0,0,0,0.20);
 `;
 
 Wrapper.propTypes = {
@@ -36,8 +40,8 @@ Wrapper.propTypes = {
 const ThumbnailWrapper = styled.div`
   display: flex;
   justify-content: center;
-  padding-top: 4rem;
-  padding-bottom: 4rem;
+  padding-top: 3rem;
+  padding-bottom: 3rem;
 
   background: white;
 `;
@@ -48,14 +52,18 @@ const Form = styled.div`
   background: ${oc.gray[0]};
 `;
 
+const InputWrapper = styled.div`
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+`;
+
 const Title = styled.div`
-  margin-top: 1rem;
-  margin-bottom: 0.4rem;
-
+  margin-bottom: 0.3rem;
   text-align: left;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: bold;
 
-  color: ${oc.gray[7]};
+  color: ${oc.gray[8]};
 `;
 
 const Input = styled.input`
@@ -73,19 +81,22 @@ const Input = styled.input`
 `;
 
 Input.propTypes = {
+  type: PropTypes.string,
   name: PropTypes.string,
   value: PropTypes.string,
   placeholder: PropTypes.string,
   onChange: PropTypes.func
 };
 
-const Button = styled.div`
+const Button = styled.input`
   display: flex;
   justify-content: center;
 
-  margin-top: 1.5rem;
+  margin-top: 1rem;
   padding-top: 1rem;
   padding-bottom: 1rem;
+
+  width: 100%;
 
   cursor: pointer;
   text-align: center;
@@ -100,13 +111,19 @@ const Button = styled.div`
     background: ${props => oc[props.color][6]};
   }
 
-  &:active {
+  &:focus {
     background: ${props => oc[props.color][8]};
+    border: 1px solid ${oc.blue[7]};
   }
 `;
 
 Button.propTypes = {
-  color: PropTypes.string
+  type: PropTypes.string,
+  name: PropTypes.string,
+  value: PropTypes.string,
+  color: PropTypes.string,
+  placeholder: PropTypes.string,
+  onClick: PropTypes.func
 };
 
 class Login extends Component {
@@ -124,7 +141,7 @@ class Login extends Component {
   }
 
   static defaultProps = {
-    width: '400px'
+    width: '360px'
   }
 
   static async getInitialProps({req}) {
@@ -137,6 +154,8 @@ class Login extends Component {
     this.setState({ 
       session: await session.getSession(true)
     });
+
+    this.input.focus();
   }
 
   onAction = (e) => {
@@ -188,24 +207,32 @@ class Login extends Component {
             <Thumbnail size='8rem' color={oc['blue'][6]} />
           </ThumbnailWrapper>
           <Form>
-            <Title>Username</Title>
-            <Input 
-              name="username"
-              placeholder=""
-              value={username} 
-              onChange={handleChange}
-            />
-            <Title>Password</Title>
-            <Input 
-              name="password"
-              placeholder=""
-              value={password} 
-              onChange={handleChange}
-            />
-            <Button color='teal' 
-              onClick={onAction}>
-              Log in
-            </Button>
+            <InputWrapper>
+              <Title>Username</Title>
+              <Input 
+                name="username"
+                type="text"
+                placeholder=""
+                value={username} 
+                onChange={handleChange}
+                innerRef={(comp) => { this.input = comp }}
+              />
+            </InputWrapper>
+            <InputWrapper>
+              <Title>Password</Title>
+              <Input 
+                name="password"
+                type="password"
+                placeholder=""
+                value={password} 
+                onChange={handleChange}
+              />
+            </InputWrapper>
+            <Button 
+              type="button"
+              value="Log in"
+              color='teal' 
+              onClick={onAction} />
           </Form>
         </Wrapper>
       </div>
