@@ -11,19 +11,22 @@ import oc from 'open-color';
 import { media, transitions} from '../lib/style-utils';
 
 import Thumbnail from './Thumbnail';
-import Input from './Input';
-import Dimmed from './Dimmed';
 
 const Wrapper = styled.div`
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 10;
-  width: ${ props => props.width };
+
+  width: ${props => props.width};
   ${media.mobile`
-    width: calc(100% - 2rem);
+    height: 100%;
+    width: 100%;
   `}
+  z-index: 10;
+
+  border-bottom: 1px solid ${oc.gray[7]};
+  box-shadow: 3px 3px 6px rgba(0,0,0,0.10), 3px 3px 6px rgba(0,0,0,0.20);
 `;
 
 Wrapper.propTypes = {
@@ -31,10 +34,10 @@ Wrapper.propTypes = {
 }
 
 const ThumbnailWrapper = styled.div`
-  padding-top: 4rem;
-  padding-bottom: 4rem;
   display: flex;
   justify-content: center;
+  padding-top: 4rem;
+  padding-bottom: 4rem;
 
   background: white;
 `;
@@ -45,24 +48,53 @@ const Form = styled.div`
   background: ${oc.gray[0]};
 `;
 
-const ButtonWrapper = styled.div`
-  display: flex;
+const Title = styled.div`
+  margin-top: 1rem;
+  margin-bottom: 0.4rem;
+
+  text-align: left;
+  font-weight: 600;
+
+  color: ${oc.gray[7]};
 `;
 
+const Input = styled.input`
+  padding: 0.5rem;
+
+  width: 100%;
+  border: 1px solid ${oc.gray[2]};
+
+  font-size: 1rem;
+  line-height: 1.5rem;
+
+  &:focus {
+    border: 1px solid ${oc.blue[7]};
+  }
+`;
+
+Input.propTypes = {
+  name: PropTypes.string,
+  value: PropTypes.string,
+  placeholder: PropTypes.string,
+  onChange: PropTypes.func
+};
+
 const Button = styled.div`
+  display: flex;
+  justify-content: center;
+
+  margin-top: 1.5rem;
   padding-top: 1rem;
   padding-bottom: 1rem;
-  flex: 1;
-  display: inline-block;
 
   cursor: pointer;
   text-align: center;
   font-weight: 500;
   font-size: 1.2rem;
-  transition: all .3s;
 
   color: white;
   background: ${props => oc[props.color][7]};
+  border: 1px solid ${props => oc[props.color][10]};
 
   &:hover {
     background: ${props => oc[props.color][6]};
@@ -156,27 +188,26 @@ class Login extends Component {
             <Thumbnail size='8rem' color={oc['blue'][6]} />
           </ThumbnailWrapper>
           <Form>
+            <Title>Username</Title>
             <Input 
               name="username"
-              placeholder="Username"
+              placeholder=""
               value={username} 
               onChange={handleChange}
             />
+            <Title>Password</Title>
             <Input 
               name="password"
-              placeholder="Password"
+              placeholder=""
               value={password} 
               onChange={handleChange}
             />
-          </Form>
-          <ButtonWrapper>
             <Button color='teal' 
               onClick={onAction}>
-              Log In
+              Log in
             </Button>
-          </ButtonWrapper>
+          </Form>
         </Wrapper>
-        <Dimmed visible={true} />
       </div>
     );
   }
