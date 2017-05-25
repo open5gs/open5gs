@@ -1,6 +1,8 @@
 import Document, { Head, Main, NextScript } from 'next/document'
 import { ServerStyleSheet } from 'styled-components'
 
+const description = 'an implementation of 3GPP EPC(MME, SGW, PGW, HSS)'
+
 export default class MyDocument extends Document {
   render () {
     const sheet = new ServerStyleSheet()
@@ -9,7 +11,18 @@ export default class MyDocument extends Document {
     return (
       <html>
         <Head>
-          <title>My page</title>
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+          <title>NextEPC</title>
+
+          <meta charSet="utf-8" />
+          <meta httpEquiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+
+          <meta name="author" content="NextEPC" />
+          <meta name="description" content={description} />
+
+          <link rel="stylesheet" type="text/css" href="/static/index.css" />
           {styleTags}
         </Head>
         <body>

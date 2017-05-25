@@ -1,15 +1,20 @@
-body {
-  margin: 0;
-  padding: 0;
-  background: #f1f3f5;
-}
-
 *,
 *:before,
 *:after {
   box-sizing: inherit;
 }
 
-html {
+html, body {
+  padding: 0;
+  margin: 0;
   box-sizing: border-box;
+
+  -webkit-font-smoothing: subpixel-antialiased;
+
+  background: #f1f3f5;
+}
+
+.root {
+  position: relative;
+  overflow: auto;
 }

@@ -2,6 +2,7 @@ import Session from '../lib/session';
 
 import { Component } from 'react';
 import Link from 'next/link';
+import Head from 'next/head';
 import Router from 'next/router';
 import PropTypes from 'prop-types';
 
@@ -9,7 +10,6 @@ import styled from 'styled-components';
 import oc from 'open-color';
 import { media, transitions} from '../lib/style-utils';
 
-import Header from './Header';
 import Thumbnail from './Thumbnail';
 import Input from './Input';
 import Dimmed from './Dimmed';
@@ -40,8 +40,8 @@ Wrapper.propTypes = {
 
 const ThumbnailWrapper = styled.div`
   // Layout
-  padding-top: 3rem;
-  padding-bottom: 3rem;
+  padding-top: 4rem;
+  padding-bottom: 4rem;
   display: flex;
   justify-content: center;
 
@@ -166,8 +166,9 @@ class Login extends Component {
 
     return (
       <div>
-        <Header title='Login'>
-        </Header>
+        <Head>
+        <title>NextEPC - Login</title>
+        </Head>
         <Wrapper width={width}>
           <ThumbnailWrapper>
             <Thumbnail size='8rem' color={oc['blue'][6]} />
