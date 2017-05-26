@@ -19,7 +19,7 @@ const Wrapper = styled.div`
   transform: translate(-50%, -50%);
 
   border: 1px solid ${oc.gray[4]};
-  box-shadow: 3px 3px 6px rgba(0,0,0,0.10), 3px 3px 6px rgba(0,0,0,0.20);
+  box-shadow: 1px 1px 2px rgba(0,0,0,0.10), 1px 1px 2px rgba(0,0,0,0.20);
 
   width: ${props => props.width};
   ${media.mobile`
@@ -29,8 +29,6 @@ const Wrapper = styled.div`
 
     width: 100%;
   `}
-  z-index: 10;
-
 `;
 
 Wrapper.propTypes = {
@@ -88,10 +86,7 @@ Input.propTypes = {
   onChange: PropTypes.func
 };
 
-const Button = styled.input`
-  display: flex;
-  justify-content: center;
-
+const Button = styled.button`
   margin-top: 1rem;
   padding-top: 1rem;
   padding-bottom: 1rem;
@@ -117,9 +112,6 @@ const Button = styled.input`
 `;
 
 Button.propTypes = {
-  type: PropTypes.string,
-  name: PropTypes.string,
-  value: PropTypes.string,
   color: PropTypes.string,
   onClick: PropTypes.func
 };
@@ -226,11 +218,9 @@ class Login extends Component {
                 onChange={handleChange}
               />
             </InputWrapper>
-            <Button 
-              type="button"
-              value="Log in"
-              color='teal' 
-              onClick={onAction} />
+            <Button color='teal' onClick={onAction}>
+              Log in
+            </Button>
           </Form>
         </Wrapper>
       </div>

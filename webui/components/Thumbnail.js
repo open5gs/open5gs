@@ -5,20 +5,17 @@ import Person from 'react-icons/lib/md/person';
 import oc from 'open-color';
 
 const Wrapper = styled.div`
-  // Layout
   width: ${props => props.size};
   height: ${props => props.size};
   display: flex;
   align-items: center;
   justify-content: center;
 
-  // Misc
-  border-radius: calc(${props => props.size} * 0.5 ); // to be circle, this value is more than 1/2
+  border-radius: calc(${props => props.size} * 0.5 );
   font-size: calc(${props => props.size} * 0.75);
 
   background: ${props => props.color};
   color: white;
-
 `;
 
 Wrapper.propTypes = {
