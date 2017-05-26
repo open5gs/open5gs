@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 
 import withSession from '../lib/with-session';
 import Login from '../components/Login';
-import Layout from '../components/Layout';
+import App from '../components/App';
 
 const Restricted = (Component) => {
   const checkAuth = (props) => {
@@ -14,7 +14,7 @@ const Restricted = (Component) => {
 
 const Index = Restricted(({session}) => (
   <div>
-    <Layout session={session} />
+    <App session={session} />
   </div>
   )
 )

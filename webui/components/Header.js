@@ -2,14 +2,9 @@ import styled from 'styled-components';
 import oc from 'open-color';
 
 const Wrapper = styled.div`
-  display: flex;
-  position: fixed;
-  align-items: center;
-  justify-content: center;
-  height: 60px;
+  position: absolute;
+  margin: 0 auto;
   width: 100%;
-  top: 0px;
-  z-index: 5;
 
   background: ${oc.indigo[6]};
   color: white;
