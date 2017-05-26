@@ -11,9 +11,11 @@ import Session from '../lib/session';
 import LogoutButton from '../components/logout-button';
 
 const Header = styled.div`
+  position: relative;
   display: flex;
   padding-top: 1rem;
   padding-bottom: 1rem;
+  z-index: 2;
 
   background: ${oc.indigo[6]};
   color: white;
@@ -43,29 +45,54 @@ const HeaderThumbnail = styled.div`
   font-size: 1.5rem;
 `;
 
-const Container = styled.div`
+const BodyContainer = styled.div`
   display: flex;
-  margin: 10px;
-  background-color: yellow;
-  border: 1px solid green;
 `
 
 const Sidebar = styled.div`
-  width: 10rem;
-  height: 30rem;
+  position: relative;
+  width: 16rem;
+  z-index: 1;
 
-  margin: 10px;
-  background-color: blue;
-  border: 1px solid red;
+  background-color: ${oc.indigo[3]};
+  border-right: 1px solid ${oc.indigo[4]};
+  box-shadow: 3px 3px 6px rgba(0,0,0,0.10), 3px 3px 6px rgba(0,0,0,0.20);
+`;
+
+const ContentContainer = styled.div`
+  flex: 1;
 `;
 
 const Content = styled.div`
-  flex: 1;
-  height: 30rem;
+  padding: 2rem;
+`;
 
-  margin: 10px;
-  background-color: blue;
-  border: 1px solid red;
+const HelloWorld = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height : 35rem;
+
+  font-size: 4rem;
+  color: ${oc.gray[5]};
+
+  border-top: 1px solid ${oc.gray[4]};
+  box-shadow: 3px 3px 6px rgba(0,0,0,0.10), 3px 3px 6px rgba(0,0,0,0.20);
+
+  background-color: white;
+`;
+
+const Footer = styled.div`
+  padding: 1rem 1rem 1rem 0;
+
+  text-align: right;
+  font-size: 1rem;
+  color: ${oc.gray[7]};
+
+  border-top: 1px solid ${oc.gray[4]};
+  box-shadow: 3px 3px 6px rgba(0,0,0,0.10), 3px 3px 6px rgba(0,0,0,0.20);
+
+  background-color: white;
 `;
 
 const TempWrapper = styled.div`
@@ -91,10 +118,19 @@ const App = ({ session }) => {
           <Thumbnail size="2rem" color={oc['pink'][4]} />
         </HeaderThumbnail>
       </Header>
-      <Container>
+      <BodyContainer>
         <Sidebar/>
-        <Content/>
-      </Container>
+        <ContentContainer>
+          <Content>
+            <HelloWorld>
+              Hello, World
+            </HelloWorld>
+          </Content>
+          <Footer>
+            Copyright © 2017 NextEPC Group. All rights reserved.
+          </Footer>
+        </ContentContainer>
+      </BodyContainer>
 
       <TempWrapper>
       <p>Welcome back {session.user.username}</p>
