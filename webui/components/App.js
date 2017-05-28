@@ -11,10 +11,10 @@ import Session from '../lib/session';
 
 const BodyContainer = styled.div`
   display: flex;
+  height: calc(100vh - 4rem);
 `
 
 const Sidebar = styled.div`
-  position: relative;
   width: 16rem;
   z-index: 1;
 
@@ -25,33 +25,17 @@ const Sidebar = styled.div`
 
 const ContentContainer = styled.div`
   flex: 1;
-`;
-
-const Content = styled.div`
-  padding: 2rem;
+  padding: 1rem;
 `;
 
 const HelloWorld = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  height : 35rem;
 
   font-size: 4rem;
+  line-height: 8rem;
   color: ${oc.gray[5]};
-
-  border-top: 1px solid ${oc.gray[4]};
-  box-shadow: 3px 3px 6px rgba(0,0,0,0.10), 3px 3px 6px rgba(0,0,0,0.20);
-
-  background-color: white;
-`;
-
-const Footer = styled.div`
-  padding: 1rem 1rem 1rem 0;
-
-  text-align: right;
-  font-size: 1rem;
-  color: ${oc.gray[7]};
 
   border-top: 1px solid ${oc.gray[4]};
   box-shadow: 3px 3px 6px rgba(0,0,0,0.10), 3px 3px 6px rgba(0,0,0,0.20);
@@ -72,14 +56,9 @@ const App = ({ session }) => {
       <BodyContainer>
         <Sidebar/>
         <ContentContainer>
-          <Content>
-            <HelloWorld>
-              Hello, World
-            </HelloWorld>
-          </Content>
-          <Footer>
-            Copyright © 2017 NextEPC Group. All rights reserved.
-          </Footer>
+          <HelloWorld>
+            Hello, World
+          </HelloWorld>
         </ContentContainer>
       </BodyContainer>
     </div>
