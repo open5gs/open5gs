@@ -137,7 +137,7 @@ export default class Session {
       xhr.onreadystatechange = async () => {
         if (xhr.readyState === 4) {
           if (xhr.status !== 200) {
-            return reject(Error('XMLHttpRequest error: Error while attempting to signin'))
+            return reject(Error('Incorrect username or password.'))
           }
 
           // Update local session data

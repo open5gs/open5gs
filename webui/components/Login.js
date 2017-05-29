@@ -188,7 +188,7 @@ class Login extends Component {
         this.setState({
           error: { 
             status: true, 
-            message: "Invalid username or password." }
+            message: err.toString() }
         });
         // @FIXME Handle error
         console.log(err)
