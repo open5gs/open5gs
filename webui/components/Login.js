@@ -19,7 +19,7 @@ const Wrapper = styled.div`
   transform: translate(-50%, -50%);
 
   border: 1px solid ${oc.gray[4]};
-  box-shadow: 1px 1px 2px rgba(0,0,0,0.10), 1px 1px 2px rgba(0,0,0,0.20);
+  box-shadow: 1px 1px 2px ${oc.gray[4]};
 
   width: ${props => props.width};
   ${media.mobile`
@@ -34,6 +34,28 @@ const Wrapper = styled.div`
 Wrapper.propTypes = {
   width: PropTypes.string
 }
+
+const ErrorWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  padding-left: 1rem;
+  z-index: 1;
+
+  line-height: 2.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: ${oc.gray[7]};
+
+  background-color: ${oc.pink[2]};
+  border: 1px solid ${oc.pink[3]};
+  box-shadow: 1px 1px 2px ${oc.pink[3]};
+`;
+
+const ErrorMessage = ({ visible, message }) => visible ? (
+  <ErrorWrapper>
+    {message}
+  </ErrorWrapper>
+) : null;
 
 const ThumbnailWrapper = styled.div`
   display: flex;
@@ -118,7 +140,10 @@ Button.propTypes = {
 
 class Login extends Component {
   state = {
-    errors: {},
+    error: {
+      status: false,
+      message: ''
+    },
     account: {
       username: '',
       password: ''
@@ -156,13 +181,18 @@ class Login extends Component {
 
     const session = new Session()
     session.signin(username, password)
-    .then(() => {
-      Router.push('/');
-    })
-    .catch(err => {
-      // @FIXME Handle error
-      console.log(err)
-    })
+      .then(() => {
+        Router.push('/');
+      })
+      .catch(err => {
+        this.setState({
+          error: { 
+            status: true, 
+            message: "Invalid username or password." }
+        });
+        // @FIXME Handle error
+        console.log(err)
+      })
   }
 
   handleChange = (e) => {
@@ -185,6 +215,8 @@ class Login extends Component {
       password
     } = this.state.account;
 
+    const err = this.state.error;
+
     const {width} = this.props;
 
     return (
@@ -193,6 +225,7 @@ class Login extends Component {
         <title>NextEPC - Login</title>
         </Head>
         <Wrapper width={width}>
+          <ErrorMessage visible={err.status} message={err.message}/>
           <ThumbnailWrapper>
             <Thumbnail size='8rem' color={oc['blue'][6]} />
           </ThumbnailWrapper>
