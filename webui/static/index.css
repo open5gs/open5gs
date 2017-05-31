@@ -1,10 +1,13 @@
-html, body {
+@import url('https://fonts.googleapis.com/css?family=Roboto');
+
+body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 
   -webkit-appearance: none;
 
+  font-family: 'Roboto', sans-serif;
   background: #f1f3f5;
 }
 

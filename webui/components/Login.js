@@ -43,8 +43,7 @@ const ErrorWrapper = styled.div`
   align-items: center;
   z-index: 1;
 
-  font-size: 1.1rem;
-  font-weight: 500;
+  font-size: 1rem;
   line-height: 3rem;
   color: ${oc.gray[7]};
 
@@ -94,7 +93,7 @@ const InputWrapper = styled.div`
 `;
 
 const Title = styled.div`
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.5rem;
   text-align: left;
   font-size: 1rem;
   font-weight: bold;
