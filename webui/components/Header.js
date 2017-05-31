@@ -10,12 +10,12 @@ import ThumbnailIcon from './Thumbnail';
 import Session from '../lib/session';
 
 const Wrapper = styled.div`
-  height: 4rem;
   display: flex;
   align-items: center;
   z-index: 2;
 
   font-size: 1.5rem;
+  line-height: 4rem;
 
   background: ${oc.indigo[6]};
   color: white;
@@ -31,12 +31,16 @@ const Menu = styled.div`
 
 const Title = styled.div`
   padding-left: 1.5rem;
-  padding-top: 0.2rem;
 
   font-weight: 500;
 `;
 
 const Thumbnail = styled.div`
+  display: flext;
+  justify-content: center;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+
   position: absolute;
   right: 1rem;
 `;

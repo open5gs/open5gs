@@ -23,6 +23,7 @@ export default class MyDocument extends Document {
           <meta name="description" content={description} />
 
           <link rel="stylesheet" type="text/css" href="/static/index.css" />
+          <link rel="stylesheet" type="text/css" href="/static/nprogress.css" />
           {styleTags}
         </Head>
         <body>

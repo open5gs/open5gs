@@ -6,6 +6,8 @@ import Head from 'next/head';
 import Router from 'next/router';
 import PropTypes from 'prop-types';
 
+import NProgress from 'nprogress';
+
 import styled from 'styled-components';
 import oc from 'open-color';
 import { media, transitions} from '../lib/style-utils';
@@ -109,6 +111,7 @@ const Input = styled.input`
   font-size: 1rem;
   line-height: 1.5rem;
 
+  transition: all .25s;
   &:focus {
     border: 1px solid ${oc.blue[7]};
   }
@@ -137,11 +140,12 @@ const Button = styled.button`
   background: ${props => oc[props.color][7]};
   border: 1px solid ${props => oc[props.color][10]};
 
+  transition: all .3s;
   &:hover {
     background: ${props => oc[props.color][6]};
   }
 
-  &:focus {
+  &:active {
     background: ${props => oc[props.color][8]};
     border: 1px solid ${oc.blue[7]};
   }
@@ -193,20 +197,27 @@ class Login extends Component {
       password
     } = this.state.account;
 
+    NProgress.configure({ showSpinner: false });
+    NProgress.start();
+
     const session = new Session()
     session.signin(username, password)
       .then(() => {
+        NProgress.done();
+
         Router.push('/');
       })
       .catch(err => {
+        NProgress.done();
+
+        this.input.focus();
+
         this.setState({
           error: { 
             status: true, 
             message: err.message
           }
         });
-        // @FIXME Handle error
-        console.log(err)
       })
   }
 

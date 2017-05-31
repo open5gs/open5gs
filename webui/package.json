@@ -16,6 +16,7 @@
     "express-session": "^1.15.2",
     "lusca": "^1.4.1",
     "next": "^2.3.1",
+    "nprogress": "^0.2.0",
     "open-color": "^1.5.1",
     "passport": "^0.3.2",
     "passport-local": "^1.0.0",
