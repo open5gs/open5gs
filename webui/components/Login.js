@@ -11,6 +11,7 @@ import oc from 'open-color';
 import { media, transitions} from '../lib/style-utils';
 
 import Thumbnail from './Thumbnail';
+import CloseIcon from 'react-icons/lib/md/close';
 
 const Wrapper = styled.div`
   position: fixed;
@@ -38,22 +39,35 @@ Wrapper.propTypes = {
 const ErrorWrapper = styled.div`
   display: flex;
   align-items: center;
-  padding-left: 1rem;
   z-index: 1;
 
-  line-height: 2.5rem;
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 500;
+  line-height: 3rem;
   color: ${oc.gray[7]};
 
   background-color: ${oc.pink[2]};
-  border: 1px solid ${oc.pink[3]};
+  border-bottom: 1px solid ${oc.pink[3]};
   box-shadow: 1px 1px 2px ${oc.pink[3]};
 `;
 
-const ErrorMessage = ({ visible, message }) => visible ? (
+const ErrorMessage = styled.div`
+  padding-left: 1rem;
+`;
+
+const ErrorClose = styled.div`
+  position: absolute;
+  right: 1rem;
+`;
+
+const ErrorBar = ({ visible, message, onClick }) => visible ? (
   <ErrorWrapper>
-    {message}
+    <ErrorMessage>
+      {message}
+    </ErrorMessage>
+    <ErrorClose onClick={onClick}>
+      <CloseIcon/>
+    </ErrorClose>
   </ErrorWrapper>
 ) : null;
 
@@ -188,7 +202,8 @@ class Login extends Component {
         this.setState({
           error: { 
             status: true, 
-            message: err.toString() }
+            message: err.message
+          }
         });
         // @FIXME Handle error
         console.log(err)
@@ -204,10 +219,19 @@ class Login extends Component {
     });
   }
 
+  handleErrorClose = (e) => {
+    this.setState({
+      error: { 
+        status: false
+      }
+    });
+  }
+
   render() {
     const { 
       handleChange,
-      onAction
+      onAction,
+      handleErrorClose
     } = this;
 
     const { 
@@ -225,7 +249,10 @@ class Login extends Component {
         <title>NextEPC - Login</title>
         </Head>
         <Wrapper width={width}>
-          <ErrorMessage visible={err.status} message={err.message}/>
+          <ErrorBar 
+            visible={err.status}
+            message={err.message}
+            onClick={handleErrorClose} />
           <ThumbnailWrapper>
             <Thumbnail size='8rem' color={oc['blue'][6]} />
           </ThumbnailWrapper>

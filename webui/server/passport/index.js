@@ -6,10 +6,10 @@ const models = require('../models');
 passport.use(new LocalStrategy((username, password, done) => {
     models.Account.findOne({ where: {username: username} }).then(account => {
       if (!account) { 
-        return done(null, false, { message: 'Incorrect username' }); 
+        return done(null);
       }
       if (account.password != password) {
-        return done(null, false, { message: 'Incorrect password' });
+        return done(null);
       }
       return done(null, account);
     });
