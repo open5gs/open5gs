@@ -36,7 +36,7 @@ const Title = styled.div`
 `;
 
 const Thumbnail = styled.div`
-  display: flext;
+  display: flex;
   justify-content: center;
   padding-top: 1rem;
   padding-bottom: 1rem;
@@ -55,13 +55,9 @@ async function logout (e) {
 
 class Header extends Component {
   render() {
-    const {
-      handleTest
-    } = this;
-
     return (
       <Wrapper>
-        <Menu onClick={this.props.onToggleMenuIcon}>
+        <Menu onClick={this.props.onMenuClick}>
           <MenuIcon/>
         </Menu>
         <Title>

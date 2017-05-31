@@ -13,10 +13,20 @@ import Session from '../lib/session';
 
 const BodyContainer = styled.div`
   display: flex;
+  ${media.mobile`
+    display: block;
+  `}
   height: calc(100vh - 4rem);
 `
 const ContentContainer = styled.div`
   flex: 1;
+  ${media.mobile`
+    position: absolute;
+    top: 4rem;
+    left: 0;
+    width: 100%;
+    z-index: -1;
+  `}
   padding: 1rem;
 `;
 
@@ -37,7 +47,9 @@ const HelloWorld = styled.div`
 
 class App extends Component {
   state = {
-    sidebar: true,
+    sidebar: {
+      toggled: false
+    },
     error: {
       status: false,
       message: ''
@@ -46,7 +58,10 @@ class App extends Component {
 
   onToogleSidebar = (e) => {
     this.setState({
-      sidebar: !this.state.sidebar
+      sidebar: {
+        ...this.state.sidebar,
+        toggled: !this.state.sidebar.toggled
+      }
     })
   }
 
@@ -54,19 +69,15 @@ class App extends Component {
     const title = 'Next, EPC ' + Package.version;
     const session = this.props.session;
 
-    const { 
-      onToogleSidebar,
-    } = this;
-
     return (
       <div>
         <Head>
           <title>{title}</title>
         </Head>
 
-        <Header onToggleMenuIcon={onToogleSidebar}/>
+        <Header onMenuClick={this.onToogleSidebar}/>
         <BodyContainer>
-          <Sidebar visible={this.state.sidebar}/>
+          <Sidebar toggled={this.state.sidebar.toggled}/>
           <ContentContainer>
             <HelloWorld>
               Hello, World

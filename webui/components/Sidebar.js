@@ -6,25 +6,33 @@ import oc from 'open-color';
 
 const Wrapper = styled.div`
   z-index: 1;
-  width: ${p => p.visible ? p.width : '0'};
+  width: ${p => p.toggled ? '0' : p.width };
   transition: width .2s ease-in-out;
+
+  ${media.mobile`
+    width: 100%;
+    height: ${p => p.toggled ? '100%' : '0'};
+    transition: height .2s ease-in-out;
+  `}
 
   background-color: ${oc.indigo[3]};
   border-right: 1px solid ${oc.indigo[4]};
   box-shadow: 3px 3px 6px rgba(0,0,0,0.10), 3px 3px 6px rgba(0,0,0,0.20);
 `;
 
-const Sidebar = ({ visible, width }) => 
-  (<Wrapper visible={visible} width={width}> </Wrapper>)
+const Sidebar = ({ toggled, width }) => (
+  <Wrapper toggled={toggled} width={width}>
+  </Wrapper>
+)
 
 Sidebar.propTypes = {
-  visible: PropTypes.bool,
+  toggled: PropTypes.bool,
   width: PropTypes.string
 };
 
 Sidebar.defaultProps = {
-    visible: true,
-    width: '16rem'
+  toggled: false,
+  width: '16rem'
 };
 
 export default Sidebar;

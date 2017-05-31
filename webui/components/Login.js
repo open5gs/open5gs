@@ -73,7 +73,7 @@ const ErrorBar = ({ visible, message, onClick }) => visible ? (
 ) : null;
 
 ErrorBar.propTypes = {
-  visible: PropTypes.boolean,
+  visible: PropTypes.bool,
   message: PropTypes.string,
   onClick: PropTypes.func
 };
