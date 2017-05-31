@@ -1,4 +1,5 @@
 import Package from '../package';
+import { Component } from 'react';
 import Head from 'next/head';
 
 import styled from 'styled-components';
@@ -6,6 +7,7 @@ import oc from 'open-color';
 import { media, transitions } from '../lib/style-utils';
 
 import Header from './Header';
+import Sidebar from './Sidebar';
 
 import Session from '../lib/session';
 
@@ -13,16 +15,6 @@ const BodyContainer = styled.div`
   display: flex;
   height: calc(100vh - 4rem);
 `
-
-const Sidebar = styled.div`
-  width: 16rem;
-  z-index: 1;
-
-  background-color: ${oc.indigo[3]};
-  border-right: 1px solid ${oc.indigo[4]};
-  box-shadow: 3px 3px 6px rgba(0,0,0,0.10), 3px 3px 6px rgba(0,0,0,0.20);
-`;
-
 const ContentContainer = styled.div`
   flex: 1;
   padding: 1rem;
@@ -43,26 +35,47 @@ const HelloWorld = styled.div`
   background-color: white;
 `;
 
-const App = ({ session }) => {
-  const title = 'Next, EPC ' + Package.version;
+class App extends Component {
+  state = {
+    sidebar: true,
+    error: {
+      status: false,
+      message: ''
+    },
+  };
 
-  return (
-    <div>
-      <Head>
-        <title>{title}</title>
-      </Head>
+  onToogleSidebar = (e) => {
+    this.setState({
+      sidebar: !this.state.sidebar
+    })
+  }
 
-      <Header/>
-      <BodyContainer>
-        <Sidebar/>
-        <ContentContainer>
-          <HelloWorld>
-            Hello, World
-          </HelloWorld>
-        </ContentContainer>
-      </BodyContainer>
-    </div>
-  )
+  render() {
+    const title = 'Next, EPC ' + Package.version;
+    const session = this.props.session;
+
+    const { 
+      onToogleSidebar,
+    } = this;
+
+    return (
+      <div>
+        <Head>
+          <title>{title}</title>
+        </Head>
+
+        <Header onToggleMenuIcon={onToogleSidebar}/>
+        <BodyContainer>
+          <Sidebar visible={this.state.sidebar}/>
+          <ContentContainer>
+            <HelloWorld>
+              Hello, World
+            </HelloWorld>
+          </ContentContainer>
+        </BodyContainer>
+      </div>
+    )
+  }
 }
 
 export default App;

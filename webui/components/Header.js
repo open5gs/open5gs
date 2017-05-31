@@ -46,8 +46,6 @@ const Thumbnail = styled.div`
 `;
 
 async function logout (e) {
-  e.preventDefault()
-
   const session = new Session()
   await session.signout()
 
@@ -57,9 +55,13 @@ async function logout (e) {
 
 class Header extends Component {
   render() {
+    const {
+      handleTest
+    } = this;
+
     return (
       <Wrapper>
-        <Menu>
+        <Menu onClick={this.props.onToggleMenuIcon}>
           <MenuIcon/>
         </Menu>
         <Title>

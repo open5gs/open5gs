@@ -72,6 +72,12 @@ const ErrorBar = ({ visible, message, onClick }) => visible ? (
   </ErrorWrapper>
 ) : null;
 
+ErrorBar.propTypes = {
+  visible: PropTypes.boolean,
+  message: PropTypes.string,
+  onClick: PropTypes.func
+};
+
 const ThumbnailWrapper = styled.div`
   display: flex;
   justify-content: center;
