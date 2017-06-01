@@ -6,6 +6,7 @@ body {
   box-sizing: border-box;
 
   -webkit-appearance: none;
+  -webkit-font-smoothing: subpixel-antialiased;
 
   font-family: 'Roboto', sans-serif;
   background: #f1f3f5;

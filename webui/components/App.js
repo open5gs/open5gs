@@ -50,6 +50,9 @@ class App extends Component {
     sidebar: {
       toggled: false
     },
+    modal: {
+      visible: false
+    },
     error: {
       status: false,
       message: ''
@@ -64,7 +67,7 @@ class App extends Component {
       }
     })
   }
-
+  
   render() {
     const title = 'Next, EPC ' + Package.version;
     const session = this.props.session;
@@ -75,7 +78,7 @@ class App extends Component {
           <title>{title}</title>
         </Head>
 
-        <Header onMenuClick={this.onToogleSidebar}/>
+        <Header onMenuAction={this.onToogleSidebar}/>
         <BodyContainer>
           <Sidebar toggled={this.state.sidebar.toggled}/>
           <ContentContainer>
