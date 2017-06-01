@@ -35,11 +35,6 @@ Wrapper.propTypes = {
   width: PropTypes.string
 };
 
-const ModalBox = styled.div`
-  background: white;
-  border: 1px solid rgba(0,0,0,0.3);
-`
-
 class Modal extends Component {
   static propTypes = {
     visible: PropTypes.bool,
@@ -87,7 +82,7 @@ class Modal extends Component {
             transitionEnterTimeout={500}
             transitionLeaveTimeout={500}>
             {
-              visible && (<ModalBox>{children}</ModalBox>)
+              visible && (<div>{children}</div>)
             }
           </CSSTransitionGroup>
         </Wrapper>

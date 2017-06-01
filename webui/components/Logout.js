@@ -4,63 +4,71 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import oc from 'open-color';
 
-import Thumbnail from './Thumbnail';
 import Modal from './Modal';
 
-const ThumbnailWrapper = styled.div`
-  padding-top: 3rem;
-  padding-bottom: 3rem;
-  display: flex;
-  justify-content: center;
-
-  background: white;
+const Wrapper = styled.div`
 `;
 
 const TitleWrapper = styled.div`
-  color: ${oc.gray[9]};
-  background: ${oc.gray[0]};
+  padding-left: 1rem;
+  font-size: 1.5rem;
+  line-height: 3.5rem;
+  font-weight: 600;
+  color: white;
 
-  font-size: 1.2rem;
-  line-height: 4rem;
-  text-align: center;
+  background-color: ${oc.red[7]};
+`;
+
+const ContentWrapper = styled.div`
+  padding: 0 0 0.8rem 1rem;
+
+  font-size: 1rem;
   color: ${oc.gray[7]};
 
-  background-color: ${oc.pink[2]};
-  border-bottom: 1px solid ${oc.pink[3]};
-  box-shadow: 1px 1px 2px ${oc.pink[3]};
+  background-color: ${oc.gray[1]};
 `;
 
 const ButtonsWrapper = styled.div`
   display: flex;
+  justify-content: flex-end;
+  background-color: ${oc.gray[2]};
 `;
 
-const Button = styled.div`
-  padding-top: 0.2rem;
-  padding-bottom: 0.2rem;
-  flex: 1;
-  display: inline-block;
-  
-  cursor: pointer;
-  text-align: center;
-  font-weight: 500;
-  font-size: 1.5rem;
+const Button = styled.button`
+  display: inline;
+  font-size: 1rem;
+  margin: 1rem 0.5rem;
+  padding: 0.3rem;
+  width: 5rem;
+  border-radius: 3px;
+
   transition: all .3s;
+`;
 
+const YesButton = Button.extend`
+  border: 1px solid ${oc.red[9]};
   color: white;
-  background: ${props => oc[props.color][7]};
-
+  background: ${oc.red[7]};
   &:hover {
-    background: ${props => oc[props.color][6]};
+    background: ${oc.red[5]}
   }
-
   &:active {
-    background: ${props => oc[props.color][8]};
+    background: ${oc.red[8]}
   }
 `;
 
-Button.propType = {
-  color: PropTypes.string
-};
+const NoButton = Button.extend`
+  border: 1px solid ${oc.gray[5]};
+  color: black;
+  background: ${oc.gray[3]};
+  &:hover {
+    background: ${oc.gray[2]}
+  }
+  &:active {
+    background: ${oc.gray[4]}
+  }
+`;
+
 
 class Logout extends Component {
 
@@ -81,23 +89,24 @@ class Logout extends Component {
 
     return (
       <Modal visible={visible} onHide={onHide}>
-        <TitleWrapper>
-          Are you sure you want to logout?
-        </TitleWrapper>
-        <ThumbnailWrapper>
-          <Thumbnail size='8rem' color={oc['blue'][6]} />
-        </ThumbnailWrapper>
-        <ButtonsWrapper>
-          <Button color="teal"
-            onClick={onAction}>
-            OK
-          </Button>
-          <Button 
-            onClick={onHide}
-            color="gray">
-            Cancel
-          </Button>
-        </ButtonsWrapper>
+        <Wrapper>
+          <TitleWrapper>
+            Logout
+          </TitleWrapper>
+          <ContentWrapper>
+            Are you sure you want to logout?
+          </ContentWrapper>
+          <ButtonsWrapper>
+            <YesButton
+              onClick={onAction}>
+              Yes
+            </YesButton>
+            <NoButton 
+              onClick={onHide}>
+              No
+            </NoButton>
+          </ButtonsWrapper>
+        </Wrapper>
       </Modal>
     );
   }
