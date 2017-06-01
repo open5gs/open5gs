@@ -4,18 +4,30 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import oc from 'open-color';
 
+import Thumbnail from './Thumbnail';
 import Modal from './Modal';
 
-const TitleWrapper = styled.div`
+const ThumbnailWrapper = styled.div`
+  padding-top: 3rem;
+  padding-bottom: 3rem;
   display: flex;
   justify-content: center;
-  padding-top: 2rem;
-  padding-bottom: 2rem;
+
+  background: white;
+`;
+
+const TitleWrapper = styled.div`
+  color: ${oc.gray[9]};
+  background: ${oc.gray[0]};
 
   font-size: 1.2rem;
-  color: ${oc.gray[8]};
+  line-height: 4rem;
+  text-align: center;
+  color: ${oc.gray[7]};
 
-  background: ${oc.gray[2]};
+  background-color: ${oc.pink[2]};
+  border-bottom: 1px solid ${oc.pink[3]};
+  box-shadow: 1px 1px 2px ${oc.pink[3]};
 `;
 
 const ButtonsWrapper = styled.div`
@@ -72,6 +84,9 @@ class Logout extends Component {
         <TitleWrapper>
           Are you sure you want to logout?
         </TitleWrapper>
+        <ThumbnailWrapper>
+          <Thumbnail size='8rem' color={oc['blue'][6]} />
+        </ThumbnailWrapper>
         <ButtonsWrapper>
           <Button color="teal"
             onClick={onAction}>
