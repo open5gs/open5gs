@@ -51,7 +51,8 @@ const Thumbnail = styled.div`
 class Header extends Component {
   state = {
     logout: {
-      visible: false
+      visible: false,
+      dimmed: false
     }
   }
 
@@ -60,7 +61,8 @@ class Header extends Component {
       this.setState({
         logout: {
           ...this.state.logout,
-          visible: true
+          visible: true,
+          dimmed: true
         }
       })
     },
@@ -68,11 +70,19 @@ class Header extends Component {
       this.setState({
         logout: {
           ...this.state.logout,
-          visible: false
+          visible: false,
+          dimmed: false
         }
       })
     },
     action: async () => {
+      this.setState({
+        logout: {
+          ...this.state.logout,
+          visible: false,
+        }
+      })
+
       const session = new Session()
       await session.signout()
 
@@ -105,7 +115,7 @@ class Header extends Component {
           {...logout} 
           onHide={logoutHandler.hide}
           onAction={logoutHandler.action} />
-        <Dimmed visible={logout.visible} />
+        <Dimmed visible={logout.dimmed} />
     </Wrapper>
     )
   }
