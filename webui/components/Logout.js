@@ -74,7 +74,6 @@ class Logout extends Component {
 
   static propTypes = { 
     visible: PropTypes.bool, 
-    color: PropTypes.string, 
     onHide: PropTypes.func, 
     onAction: PropTypes.func,
   }
@@ -82,7 +81,6 @@ class Logout extends Component {
   render() {
     const { 
       visible,
-      color,
       onHide,
       onAction,
     } = this.props;

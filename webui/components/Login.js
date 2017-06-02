@@ -81,8 +81,7 @@ ErrorBar.propTypes = {
 const ThumbnailWrapper = styled.div`
   display: flex;
   justify-content: center;
-  padding-top: 3rem;
-  padding-bottom: 3rem;
+  padding: 3rem 0;
 
   background: white;
 `;

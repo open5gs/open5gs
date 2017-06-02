@@ -27,22 +27,22 @@ const Wrapper = styled.div`
 `;
 
 const Menu = styled.div`
-  width: 3.0rem;
+  display: inline-flex;
+  margin: 0 1rem;
+  font-size: 2rem;
 
   text-align: center;
 `;
 
 const Title = styled.div`
-  padding-left: 1.5rem;
-
+  margin: 0 1rem;
   font-weight: 500;
 `;
 
 const Thumbnail = styled.div`
   display: flex;
   justify-content: center;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
+  padding: 1rem 0;
 
   position: absolute;
   right: 1rem;
