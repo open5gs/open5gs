@@ -9,14 +9,18 @@ import UserIcon from 'react-icons/lib/md/supervisor-account';
 
 const Menu = styled.div`
   display: block;
-  z-index: 1;
   width: ${p => p.toggled ? '0' : p.width };
   transition: width .2s ease-in-out;
+  overflow: hidden;
 
   ${media.mobile`
+    position: absolute;
+    top: 4rem;
+    left: 0;
     width: 100%;
     height: ${p => p.toggled ? '100%' : '0'};
     transition: height .2s ease-in-out;
+    z-index: 1;
   `}
 
   background-color: ${oc.indigo[3]};
@@ -46,8 +50,6 @@ const IconWrapper = styled.div`
   display: inline-flex;
   padding-left: 1rem;
   font-size: 1.5rem;
-
-  text-align: center;
 `;
 
 const TitleWrapper = styled.div`

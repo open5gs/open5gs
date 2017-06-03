@@ -15,13 +15,10 @@ import Dimmed from './Dimmed';
 const Wrapper = styled.div`
   display: flex;
   align-items: center;
-  z-index: 2;
+  height: 4rem;
 
-  font-size: 1.5rem;
-  line-height: 4rem;
-
-  background: ${oc.indigo[6]};
   color: white;
+  background: ${oc.indigo[6]};
   border-bottom: 1px solid ${oc.indigo[7]};
   box-shadow: 0 3px 6px rgba(0,0,0,0.10), 0 3px 6px rgba(0,0,0,0.20);
 `;
@@ -29,19 +26,19 @@ const Wrapper = styled.div`
 const Menu = styled.div`
   display: inline-flex;
   margin: 0 1rem;
-  font-size: 2rem;
 
+  font-size: 2rem;
   text-align: center;
 `;
 
 const Title = styled.div`
   margin: 0 1rem;
+
+  font-size: 1.5rem;
   font-weight: 500;
 `;
 
 const Thumbnail = styled.div`
-  display: flex;
-  justify-content: center;
   padding: 1rem 0;
 
   position: absolute;

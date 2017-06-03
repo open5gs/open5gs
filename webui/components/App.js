@@ -13,20 +13,10 @@ import Session from '../lib/session';
 
 const BodyContainer = styled.div`
   display: flex;
-  ${media.mobile`
-    display: block;
-  `}
   height: calc(100vh - 4rem);
 `
 const ContentContainer = styled.div`
   flex: 1;
-  ${media.mobile`
-    position: absolute;
-    top: 4rem;
-    left: 0;
-    width: 100%;
-    z-index: -1;
-  `}
   padding: 1rem;
 `;
 

@@ -6,21 +6,19 @@ import oc from 'open-color';
 
 import Modal from './Modal';
 
-const Wrapper = styled.div`
-`;
-
 const TitleWrapper = styled.div`
   padding-left: 1rem;
-  font-size: 1.5rem;
-  line-height: 3.5rem;
-  font-weight: 600;
-  color: white;
+  line-height: 3rem;
 
+  font-size: 1.2rem;
+
+  color: white;
   background-color: ${oc.red[7]};
 `;
 
 const ContentWrapper = styled.div`
-  padding: 0 0 0.8rem 1rem;
+  padding: 1rem 0 0 1rem;
+  height: 5rem;
 
   font-size: 1rem;
   color: ${oc.gray[7]};
@@ -28,19 +26,22 @@ const ContentWrapper = styled.div`
   background-color: ${oc.gray[1]};
 `;
 
-const ButtonsWrapper = styled.div`
+const ButtonWrapper = styled.div`
   display: flex;
   justify-content: flex-end;
   background-color: ${oc.gray[2]};
 `;
 
 const Button = styled.button`
-  display: inline;
-  font-size: 1rem;
-  margin: 1rem 0.5rem;
+  margin: 0.5rem;
   padding: 0.3rem;
-  width: 5rem;
+  width: 4rem;
+
+  text-align: center;
+  font-size: 0.9rem;
+
   border-radius: 3px;
+  outline: none;
 
   transition: all .3s;
 `;
@@ -86,25 +87,23 @@ class Logout extends Component {
     } = this.props;
 
     return (
-      <Modal visible={visible} onHide={onHide}>
-        <Wrapper>
-          <TitleWrapper>
-            Logout
-          </TitleWrapper>
-          <ContentWrapper>
-            Are you sure you want to logout?
-          </ContentWrapper>
-          <ButtonsWrapper>
-            <YesButton
-              onClick={onAction}>
-              Yes
-            </YesButton>
-            <NoButton 
-              onClick={onHide}>
-              No
-            </NoButton>
-          </ButtonsWrapper>
-        </Wrapper>
+      <Modal visible={visible} onHide={onHide} width="300px">
+        <TitleWrapper>
+          Logout
+        </TitleWrapper>
+        <ContentWrapper>
+          Are you sure you want to logout?
+        </ContentWrapper>
+        <ButtonWrapper>
+          <YesButton
+            onClick={onAction}>
+            Yes
+          </YesButton>
+          <NoButton 
+            onClick={onHide}>
+            No
+          </NoButton>
+        </ButtonWrapper>
       </Modal>
     );
   }

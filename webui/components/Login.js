@@ -12,7 +12,7 @@ import styled from 'styled-components';
 import oc from 'open-color';
 import { media, transitions} from '../lib/style-utils';
 
-import Thumbnail from './Thumbnail';
+import ThumbnailIcon from './Thumbnail';
 import CloseIcon from 'react-icons/lib/md/close';
 
 const Wrapper = styled.div`
@@ -41,7 +41,6 @@ Wrapper.propTypes = {
 const ErrorWrapper = styled.div`
   display: flex;
   align-items: center;
-  z-index: 1;
 
   font-size: 1rem;
   line-height: 3rem;
@@ -78,7 +77,7 @@ ErrorBar.propTypes = {
   onClick: PropTypes.func
 };
 
-const ThumbnailWrapper = styled.div`
+const Thumbnail = styled.div`
   display: flex;
   justify-content: center;
   padding: 3rem 0;
@@ -93,8 +92,7 @@ const Form = styled.div`
 `;
 
 const InputWrapper = styled.div`
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
+  padding: 0.5rem 0;
 `;
 
 const Title = styled.div`
@@ -116,6 +114,8 @@ const Input = styled.input`
   line-height: 1.5rem;
 
   transition: all .25s;
+  outline: none;
+
   &:focus {
     border: 1px solid ${oc.blue[7]};
   }
@@ -131,8 +131,7 @@ Input.propTypes = {
 
 const Button = styled.button`
   margin-top: 1rem;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
+  padding: 1rem 0;
 
   width: 100%;
 
@@ -143,6 +142,7 @@ const Button = styled.button`
   color: white;
   background: ${props => oc[props.color][7]};
   border: 1px solid ${props => oc[props.color][10]};
+  outline: none;
 
   transition: all .3s;
   &:hover {
@@ -268,9 +268,9 @@ class Login extends Component {
             visible={err.status}
             message={err.message}
             onClick={handleErrorClose} />
-          <ThumbnailWrapper>
-            <Thumbnail size='8rem' color={oc['blue'][6]} />
-          </ThumbnailWrapper>
+          <Thumbnail>
+            <ThumbnailIcon size='8rem' color={oc['blue'][6]} />
+          </Thumbnail>
           <Form>
             <InputWrapper>
               <Title>Username</Title>

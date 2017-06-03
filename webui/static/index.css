@@ -1,12 +1,19 @@
 @import url('https://fonts.googleapis.com/css?family=Roboto');
 
-body {
+html, body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 
   -webkit-appearance: none;
+  -moz-appearance: none;
+  -o-appearance: none;
+  -ms-appearance: none;
+
   -webkit-font-smoothing: subpixel-antialiased;
+  -moz-font-smoothing: subpixel-antialiased;
+  -o-font-smoothing: subpixel-antialiased;
+  -ms-font-smoothing: subpixel-antialiased;
 
   font-family: 'Roboto', sans-serif;
   background: #f1f3f5;
