@@ -38,10 +38,8 @@ const HelloWorld = styled.div`
 class App extends Component {
   state = {
     sidebar: {
-      toggled: false
-    },
-    modal: {
-      visible: false
+      toggled: false,
+      view: "PDN"
     },
     error: {
       status: false,
@@ -49,18 +47,36 @@ class App extends Component {
     },
   };
 
-  onToogleSidebar = (e) => {
-    this.setState({
-      sidebar: {
-        ...this.state.sidebar,
-        toggled: !this.state.sidebar.toggled
-      }
-    })
+  sidebarHandler = {
+    toggle: () => {
+      this.setState({
+        sidebar: {
+          ...this.state.sidebar,
+          toggled: !this.state.sidebar.toggled
+        }
+      })
+    },
+    view: (view) => {
+      this.setState({
+        sidebar: {
+          ...this.state.sidebar,
+          view: view,
+        }
+      })
+    }
   }
-  
+
   render() {
     const title = 'Next, EPC ' + Package.version;
     const session = this.props.session;
+
+    const {
+      sidebarHandler
+    } = this;
+
+    const {
+      sidebar 
+    } = this.state;
 
     return (
       <div>
@@ -68,9 +84,12 @@ class App extends Component {
           <title>{title}</title>
         </Head>
 
-        <Header onMenuAction={this.onToogleSidebar}/>
+        <Header onMenuAction={sidebarHandler.toggle}/>
         <BodyContainer>
-          <Sidebar toggled={this.state.sidebar.toggled}/>
+          <Sidebar 
+            toggled={sidebar.toggled}
+            selected={sidebar.view}
+            onSelect={sidebarHandler.view}/>
           <ContentContainer>
             <HelloWorld>
               Hello, World
