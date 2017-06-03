@@ -27,8 +27,7 @@ const Menu = styled.div`
     z-index: 1;
   `}
 
-  background-color: ${oc.indigo[4]};
-  border-right: 1px solid ${oc.indigo[6]};
+  background-color: ${oc.indigo[6]};
   box-shadow: 3px 3px 6px rgba(0,0,0,0.1), 3px 3px 6px rgba(0,0,0,0.2);
 `;
 
@@ -39,14 +38,13 @@ const StyledItem = styled.div`
 
   transition: all .3s;
 
-  color: ${p => p.active ? oc.gray[7] : `white`};
-  background: ${p => p.active ? `#f1f3f5` : oc.indigo[4]};
+  color: white;
+  background: ${p => p.active ? oc.indigo[5] : oc.indigo[6]};
 
-  border-left: ${p => p.active ? `8px solid ${oc.red[7]}` : null};
+  border-left: ${p => p.active ? `12px solid ${oc.indigo[9]}` : null};
 
   &:hover {
-    color: ${p => p.active ? oc.gray[7] : `white`};
-    background: ${p => p.active ? `#f1f3f5` : oc.indigo[3]};
+    background: ${p => p.active ? oc.indigo[5] : oc.indigo[7]};
   }
 `;
 
