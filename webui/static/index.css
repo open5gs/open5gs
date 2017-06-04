@@ -1,4 +1,8 @@
 @import url('https://fonts.googleapis.com/css?family=Roboto');
+@import url('https://fonts.googleapis.com/css?family=Roboto+Condensed');
+@import url('https://fonts.googleapis.com/css?family=Open+Sans');
+@import url('https://fonts.googleapis.com/css?family=Ubuntu');
+@import url('https://fonts.googleapis.com/css?family=Merriweather');
 
 html, body {
   margin: 0;
@@ -16,7 +20,7 @@ html, body {
   -ms-font-smoothing: subpixel-antialiased;
 
   font-family: 'Roboto', sans-serif;
-  background: #f1f3f5;
+  background: #f8f9fa;
 }
 
 * {

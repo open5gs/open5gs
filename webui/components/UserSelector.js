@@ -33,7 +33,7 @@ const StyledItem = styled.div`
   cursor: pointer;
 
   &:hover {
-    background: ${oc.gray[0]};
+    background: ${p => p.active ? `white` : oc.gray[0]};
   }
 `;
 
@@ -47,7 +47,7 @@ const Bar = styled.div`
   height: 3px;
   width: 50%;
 
-  background: ${oc.indigo[9]};
+  background: ${oc.pink[6]};
 
   transition: ease-in .25s;
 

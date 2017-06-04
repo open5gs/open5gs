@@ -20,23 +20,21 @@ const Wrapper = styled.div`
   color: white;
   background: ${oc.indigo[8]};
   border-bottom: 1px solid ${oc.indigo[9]};
-  box-shadow: 0 3px 6px rgba(0,0,0,0.10), 0 3px 6px rgba(0,0,0,0.20);
 `;
 
 const Menu = styled.div`
   display: inline-flex;
-  margin: 0 1rem;
+  margin: 0 1.5rem;
 
   cursor: pointer;
-  font-size: 2rem;
-  text-align: center;
+  font-size: 1.5rem;
 `;
 
 const Title = styled.div`
-  margin: 0 1rem;
+  margin: 0 0.5rem;
 
   font-size: 1.5rem;
-  font-weight: 500;
+  font-family: 'Ubuntu', sans-serif;
 `;
 
 const Thumbnail = styled.div`
@@ -106,7 +104,7 @@ class Header extends Component {
           <MenuIcon/>
         </Menu>
         <Title>
-          Next, EPC
+          Next.EPC
         </Title>
         <Thumbnail onClick={this.logoutHandler.show}>
           <ThumbnailIcon size="2rem" color={oc['pink'][4]} />

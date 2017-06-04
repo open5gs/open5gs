@@ -76,7 +76,7 @@ class App extends Component {
   }
 
   render() {
-    const title = 'Next, EPC ' + Package.version;
+    const title = 'Next.EPC ' + Package.version;
     const session = this.props.session;
 
     const {

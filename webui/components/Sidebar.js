@@ -16,6 +16,9 @@ const Menu = styled.div`
   transition: width .2s ease-in-out;
   overflow: hidden;
 
+  position: relative;
+  z-index: 1;
+
   ${media.mobile`
     position: absolute;
     top: 4rem;
@@ -23,7 +26,6 @@ const Menu = styled.div`
     width: ${p => p.visible ? '100%' : '0'};
     height: ${p => p.visible ? '100%' : '0'};
     transition: height .2s ease-in-out;
-    z-index: 1;
   `}
 
   background-color: ${oc.indigo[6]};
