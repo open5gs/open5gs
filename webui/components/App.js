@@ -11,19 +11,17 @@ import { media, transitions } from '../lib/style-utils';
 
 import Header from './Header';
 import Sidebar from './Sidebar';
+import Container from './Container';
+import PdnContainer from './PdnContainer';
+import UserContainer from './UserContainer';
 
 import Session from '../lib/session';
 
-const BodyContainer = styled.div`
+const Body = styled.div`
   display: flex;
   height: calc(100vh - 4rem);
 `
-const ContentContainer = styled.div`
-  flex: 1;
-  padding: 1rem;
-`;
-
-const HelloWorld = styled.div`
+const Content = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -42,7 +40,7 @@ class App extends Component {
   state = {
     sidebar: {
       visible: this.props.width === SMALL ? false : true,
-      view: "PDN"
+      view: "user"
     },
     error: {
       status: false,
@@ -56,7 +54,7 @@ class App extends Component {
   }
 
   sidebarHandler = {
-    handleToggle: () => {
+    toggle: () => {
       this.setState({
         sidebar: {
           ...this.state.sidebar,
@@ -64,7 +62,7 @@ class App extends Component {
         }
       })
     },
-    view: (view) => {
+    selectView: (view) => {
       this.setState({
         sidebar: {
           ...this.state.sidebar,
@@ -94,19 +92,25 @@ class App extends Component {
         <Head>
           <title>{title}</title>
         </Head>
-
-        <Header onMenuAction={sidebarHandler.handleToggle}/>
-        <BodyContainer>
+        <Header onMenuAction={sidebarHandler.toggle}/>
+        <Body>
           <Sidebar 
             visible={sidebar.visible}
             selected={sidebar.view}
-            onSelect={sidebarHandler.view}/>
-          <ContentContainer>
-            <HelloWorld>
-              Hello, World
-            </HelloWorld>
-          </ContentContainer>
-        </BodyContainer>
+            onSelect={sidebarHandler.selectView}/>
+          <Container visible={sidebar.view === 'pdn'}>
+            <PdnContainer/>
+          </Container>
+          <Container visible={sidebar.view === 'user'}>
+            <UserContainer/>
+          </Container>
+          <Container visible={sidebar.view === 'test1'}>
+            <Content>{sidebar.view}</Content>
+          </Container>
+          <Container visible={sidebar.view === 'test3'}>
+            <Content>{sidebar.view}</Content>
+          </Container>
+        </Body>
       </div>
     )
   }

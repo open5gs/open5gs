@@ -27,6 +27,7 @@ const Menu = styled.div`
   display: inline-flex;
   margin: 0 1rem;
 
+  cursor: pointer;
   font-size: 2rem;
   text-align: center;
 `;
@@ -43,6 +44,8 @@ const Thumbnail = styled.div`
 
   position: absolute;
   right: 1rem;
+
+  cursor: pointer;
 `;
 
 class Header extends Component {

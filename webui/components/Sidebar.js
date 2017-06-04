@@ -15,7 +15,6 @@ const Menu = styled.div`
   width: ${p => p.visible ? p.width : '0' };
   transition: width .2s ease-in-out;
   overflow: hidden;
-  padding: 1rem 0;
 
   ${media.mobile`
     position: absolute;
@@ -38,10 +37,12 @@ const StyledItem = styled.div`
 
   transition: all .3s;
 
+  cursor: pointer;
   color: white;
   background: ${p => p.active ? oc.indigo[5] : oc.indigo[6]};
 
-  border-left: ${p => p.active ? `12px solid ${oc.indigo[9]}` : null};
+  border-left: ${p => p.active ? `12px solid ${oc.indigo[3]}` : 
+    `12px solid ${oc.indigo[7]}`};
 
   &:hover {
     background: ${p => p.active ? oc.indigo[5] : oc.indigo[7]};
@@ -69,23 +70,23 @@ const Item = ({ children, selected, name, onSelect }) => (
 
 const Sidebar = ({ visible, width, selected, onSelect }) => (
   <Menu visible={visible} width={width}>
-    <Item name="PDN" selected={selected} onSelect={onSelect}>
+    <Item name="pdn" selected={selected} onSelect={onSelect}>
       <Icon><PdnIcon/></Icon>
       <Title>PDN</Title>
     </Item>
-    <Item name="User" selected={selected} onSelect={onSelect}>
+    <Item name="user" selected={selected} onSelect={onSelect}>
       <Icon><UserIcon/></Icon>
       <Title>User</Title>
     </Item>
-    <Item name="Test1" selected={selected} onSelect={onSelect}>
+    <Item name="test1" selected={selected} onSelect={onSelect}>
       <Icon><Test1Icon/></Icon>
       <Title>Test111111111</Title>
     </Item>
-    <Item name="Test2" selected={selected} onSelect={onSelect}>
+    <Item name="test2" selected={selected} onSelect={onSelect}>
       <Icon><Test2Icon/></Icon>
       <Title>Testaaaaaaaa</Title>
     </Item>
-    <Item name="Test3" selected={selected} onSelect={onSelect}>
+    <Item name="test3" selected={selected} onSelect={onSelect}>
       <Icon><Test3Icon/></Icon>
       <Title>Test@#!@#!@#</Title>
     </Item>

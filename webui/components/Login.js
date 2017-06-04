@@ -143,6 +143,7 @@ const Button = styled.button`
   background: ${props => oc[props.color][7]};
   border: 1px solid ${props => oc[props.color][10]};
   outline: none;
+  cursor: pointer;
 
   transition: all .3s;
   &:hover {

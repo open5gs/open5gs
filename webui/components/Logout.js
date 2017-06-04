@@ -42,6 +42,7 @@ const Button = styled.button`
 
   border-radius: 3px;
   outline: none;
+  cursor: pointer;
 
   transition: all .3s;
 `;
