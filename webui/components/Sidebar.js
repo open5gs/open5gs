@@ -12,7 +12,7 @@ import Test3Icon from 'react-icons/lib/md/3d-rotation'
 
 const Menu = styled.div`
   display: block;
-  width: ${p => p.toggled ? '0' : p.width };
+  width: ${p => p.visible ? p.width : '0' };
   transition: width .2s ease-in-out;
   overflow: hidden;
   padding: 1rem 0;
@@ -21,8 +21,8 @@ const Menu = styled.div`
     position: absolute;
     top: 4rem;
     left: 0;
-    width: ${p => p.toggled ? '100%' : '0'};
-    height: ${p => p.toggled ? '100%' : '0'};
+    width: ${p => p.visible ? '100%' : '0'};
+    height: ${p => p.visible ? '100%' : '0'};
     transition: height .2s ease-in-out;
     z-index: 1;
   `}
@@ -67,8 +67,8 @@ const Item = ({ children, selected, name, onSelect }) => (
   </StyledItem>
 )
 
-const Sidebar = ({ toggled, width, selected, onSelect }) => (
-  <Menu toggled={toggled} width={width}>
+const Sidebar = ({ visible, width, selected, onSelect }) => (
+  <Menu visible={visible} width={width}>
     <Item name="PDN" selected={selected} onSelect={onSelect}>
       <Icon><PdnIcon/></Icon>
       <Title>PDN</Title>
@@ -93,14 +93,14 @@ const Sidebar = ({ toggled, width, selected, onSelect }) => (
 )
 
 Sidebar.propTypes = {
-  toggled: PropTypes.bool,
+  visible: PropTypes.bool,
   width: PropTypes.string,
   selected: PropTypes.string,
   onSelect: PropTypes.func
 };
 
 Sidebar.defaultProps = {
-  toggled: false,
+  visible: false,
   width: "16rem",
   selected: "PDN"
 };

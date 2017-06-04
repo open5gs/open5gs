@@ -23,6 +23,7 @@
     "prop-types": "^15.5.10",
     "react": "^15.5.4",
     "react-dom": "^15.5.4",
+    "react-event-listener": "^0.4.5",
     "react-icons": "^2.2.5",
     "react-onclickoutside": "^5.11.1",
     "react-transition-group": "^1.1.3",

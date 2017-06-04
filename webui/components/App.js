@@ -1,6 +1,9 @@
 import Package from '../package';
+import withWidth, { SMALL } from '../lib/with-width';
+
 import { Component } from 'react';
 import Head from 'next/head';
+import PropTypes from 'prop-types';
 
 import styled from 'styled-components';
 import oc from 'open-color';
@@ -38,7 +41,7 @@ const HelloWorld = styled.div`
 class App extends Component {
   state = {
     sidebar: {
-      toggled: false,
+      visible: this.props.width === SMALL ? false : true,
       view: "PDN"
     },
     error: {
@@ -47,12 +50,17 @@ class App extends Component {
     },
   };
 
+  static propTypes = {
+    session: PropTypes.string.isRequired,
+    width: PropTypes.number.isRequired
+  }
+
   sidebarHandler = {
-    toggle: () => {
+    handleToggle: () => {
       this.setState({
         sidebar: {
           ...this.state.sidebar,
-          toggled: !this.state.sidebar.toggled
+          visible: !this.state.sidebar.visible
         }
       })
     },
@@ -60,7 +68,10 @@ class App extends Component {
       this.setState({
         sidebar: {
           ...this.state.sidebar,
-          view: view,
+          visible: this.props.width === SMALL ? 
+                    !this.state.sidebar.visible : 
+                    this.state.sidebar.visible,
+          view: view
         }
       })
     }
@@ -84,10 +95,10 @@ class App extends Component {
           <title>{title}</title>
         </Head>
 
-        <Header onMenuAction={sidebarHandler.toggle}/>
+        <Header onMenuAction={sidebarHandler.handleToggle}/>
         <BodyContainer>
           <Sidebar 
-            toggled={sidebar.toggled}
+            visible={sidebar.visible}
             selected={sidebar.view}
             onSelect={sidebarHandler.view}/>
           <ContentContainer>
@@ -101,4 +112,4 @@ class App extends Component {
   }
 }
 
-export default App;
+export default withWidth()(App);

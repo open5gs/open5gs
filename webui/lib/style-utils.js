@@ -14,7 +14,7 @@ export const media = ({
   `,
 
   mobile: (...args) => css`
-    @media (max-width: 600px) {
+    @media (max-width: 768px) {
         ${ css(...args) }
     }
   `
