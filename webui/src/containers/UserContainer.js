@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import oc from 'open-color';
 
-import UserSelector from './UserSelector';
+import UserSelector from '../components/UserSelector';
 
 const Wrapper = styled.div`
 `;

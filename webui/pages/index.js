@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types';
 
-import withSession from '../lib/with-session';
-import Login from '../components/Login';
-import App from '../components/App';
+import withSession from '../src/lib/with-session';
+import Login from '../src/components/Login';
+import App from '../src/App';
 
 const Restricted = (Component) => {
   const checkAuth = (props) => {

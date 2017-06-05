@@ -1,5 +1,4 @@
 import Package from '../package';
-import withWidth, { SMALL } from '../lib/with-width';
 
 import { Component } from 'react';
 import Head from 'next/head';
@@ -7,15 +6,16 @@ import PropTypes from 'prop-types';
 
 import styled from 'styled-components';
 import oc from 'open-color';
-import { media, transitions } from '../lib/style-utils';
+import { media, transitions } from './lib/style-utils';
 
-import Header from './Header';
-import Sidebar from './Sidebar';
-import Container from './Container';
-import PdnContainer from './PdnContainer';
-import UserContainer from './UserContainer';
+import Header from './components/Header';
+import Sidebar from './components/Sidebar';
+import Container from './components/Container';
+import PdnContainer from './containers/PdnContainer';
+import UserContainer from './containers/UserContainer';
 
-import Session from '../lib/session';
+import Session from './lib/session';
+import withWidth, { SMALL } from './lib/with-width';
 
 const Body = styled.div`
   display: flex;
