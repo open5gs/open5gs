@@ -4,6 +4,14 @@ import { Component } from 'react';
 import Head from 'next/head';
 import PropTypes from 'prop-types';
 
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import compose from 'recompose/compose';
+
+import Session from './lib/session';
+import withWidth, { SMALL } from './lib/with-width';
+import * as sidebarActions from './modules/sidebar';
+
 import styled from 'styled-components';
 import oc from 'open-color';
 import { media, transitions } from './lib/style-utils';
@@ -13,9 +21,6 @@ import Sidebar from './components/Sidebar';
 import Container from './components/Container';
 import PdnContainer from './containers/PdnContainer';
 import UserContainer from './containers/UserContainer';
-
-import Session from './lib/session';
-import withWidth, { SMALL } from './lib/with-width';
 
 const Body = styled.div`
   display: flex;
@@ -37,41 +42,36 @@ const Content = styled.div`
 `;
 
 class App extends Component {
-  state = {
-    sidebar: {
-      visible: this.props.width === SMALL ? false : true,
-      view: "user"
-    },
-    error: {
-      status: false,
-      message: ''
-    },
-  };
-
   static propTypes = {
     session: PropTypes.string.isRequired,
     width: PropTypes.number.isRequired
   }
 
-  sidebarHandler = {
-    toggle: () => {
-      this.setState({
-        sidebar: {
-          ...this.state.sidebar,
-          visible: !this.state.sidebar.visible
-        }
-      })
-    },
-    selectView: (view) => {
-      this.setState({
-        sidebar: {
-          ...this.state.sidebar,
-          visible: this.props.width === SMALL ? 
-                    !this.state.sidebar.visible : 
-                    this.state.sidebar.visible,
-          view: view
-        }
-      })
+  componentWillMount() {
+    const { 
+      width,
+      SidebarActions
+    } = this.props;
+
+    if (width !== SMALL) {
+      SidebarActions.setVisibility(true);
+    }
+  }
+
+  handleToggle = () => {
+    const { SidebarActions } = this.props;
+    SidebarActions.toggle();
+  }
+
+  handleSelect = (view) => {
+    const { 
+      width,
+      SidebarActions
+    } = this.props;
+
+    SidebarActions.setView(view);
+    if (width === SMALL) {
+      SidebarActions.toggle();
     }
   }
 
@@ -80,35 +80,37 @@ class App extends Component {
     const session = this.props.session;
 
     const {
-      sidebarHandler
-    } = this;
+      visible,
+      view
+    } = this.props;
 
     const {
-      sidebar 
-    } = this.state;
+      handleToggle,
+      handleSelect
+    } = this;
 
     return (
       <div>
         <Head>
           <title>{title}</title>
         </Head>
-        <Header onMenuAction={sidebarHandler.toggle}/>
+        <Header onMenuAction={handleToggle}/>
         <Body>
           <Sidebar 
-            visible={sidebar.visible}
-            selected={sidebar.view}
-            onSelect={sidebarHandler.selectView}/>
-          <Container visible={sidebar.view === 'pdn'}>
+            visible={visible}
+            selected={view}
+            onSelect={handleSelect}/>
+          <Container visible={view === 'pdn'}>
             <PdnContainer/>
           </Container>
-          <Container visible={sidebar.view === 'user'}>
+          <Container visible={view === 'user'}>
             <UserContainer/>
           </Container>
-          <Container visible={sidebar.view === 'test1'}>
-            <Content>{sidebar.view}</Content>
+          <Container visible={view === 'test1'}>
+            <Content>{view}</Content>
           </Container>
-          <Container visible={sidebar.view === 'test3'}>
-            <Content>{sidebar.view}</Content>
+          <Container visible={view === 'test3'}>
+            <Content>{view}</Content>
           </Container>
         </Body>
       </div>
@@ -116,4 +118,17 @@ class App extends Component {
   }
 }
 
-export default withWidth()(App);
+const enhance = compose(
+  withWidth(),
+  connect(
+    (state) => ({
+      visible: state.sidebar.get('visible'),
+      view: state.sidebar.get('view')
+    }),
+    (dispatch) => ({
+      SidebarActions: bindActionCreators(sidebarActions, dispatch)
+    })
+  )
+);
+
+export default enhance(App);
