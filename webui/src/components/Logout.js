@@ -77,14 +77,14 @@ class Logout extends Component {
   static propTypes = { 
     visible: PropTypes.bool, 
     onHide: PropTypes.func, 
-    onAction: PropTypes.func,
+    onLogout: PropTypes.func,
   }
 
   render() {
     const { 
       visible,
       onHide,
-      onAction,
+      onLogout,
     } = this.props;
 
     return (
@@ -97,7 +97,7 @@ class Logout extends Component {
         </ContentWrapper>
         <ButtonWrapper>
           <YesButton
-            onClick={onAction}>
+            onClick={onLogout}>
             Yes
           </YesButton>
           <NoButton 

@@ -17,12 +17,7 @@ class SidebarContainer extends Component {
     view: PropTypes.string.isRequired
   }
 
-  handleToggle = () => {
-    const { SidebarActions } = this.props;
-    SidebarActions.toggle();
-  }
-
-  handleSelect = (view) => {
+  handleSelectView = (view) => {
     const { 
       width,
       SidebarActions
@@ -41,15 +36,14 @@ class SidebarContainer extends Component {
     } = this.props;
 
     const {
-      handleToggle,
-      handleSelect
+      handleSelectView
     } = this;
 
     return (
       <Sidebar 
         isOpen={isOpen}
-        selected={view}
-        onSelect={handleSelect}/>
+        selectedView={view}
+        onSelectView={handleSelectView}/>
     )
   }
 }

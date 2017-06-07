@@ -14,17 +14,16 @@ import Dimmed from '../components//Dimmed';
 
 class HeaderContainer extends Component {
   state = {
-    logout: {
+    modal: {
       visible: false,
       dimmed: false
     }
   }
 
-  logoutHandler = {
+  modalHandler = {
     show: () => {
       this.setState({
-        logout: {
-          ...this.state.logout,
+        modal: {
           visible: true,
           dimmed: true
         }
@@ -32,17 +31,15 @@ class HeaderContainer extends Component {
     },
     hide: () => {
       this.setState({
-        logout: {
-          ...this.state.logout,
+        modal: {
           visible: false,
           dimmed: false
         }
       })
     },
-    action: async () => {
+    logout: async () => {
       this.setState({
-        logout: {
-          ...this.state.logout,
+        modal: {
           visible: false,
         }
       })
@@ -63,24 +60,24 @@ class HeaderContainer extends Component {
   render() {
     const {
       handleSidebarToggle,
-      logoutHandler
+      modalHandler
     } = this;
 
     const {
-      logout
+      modal
     } = this.state;
 
     return (
       <div>
         <Header 
           onSidebarToggle={handleSidebarToggle}
-          onLogoutRequest={logoutHandler.show}
+          onLogoutRequest={modalHandler.show}
         />
         <Logout 
-          {...logout} 
-          onHide={logoutHandler.hide}
-          onAction={logoutHandler.action} />
-        <Dimmed visible={logout.dimmed} />
+          visible={modal.visible}
+          onHide={modalHandler.hide}
+          onLogout={modalHandler.logout} />
+        <Dimmed visible={modal.dimmed} />
       </div>
     )
   }

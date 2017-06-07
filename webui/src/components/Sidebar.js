@@ -73,34 +73,34 @@ const Item = ({ children, selected, name, onSelect }) => (
 const propTypes = {
   isOpen: PropTypes.bool,
   width: PropTypes.string,
-  selected: PropTypes.string,
-  onSelect: PropTypes.func
+  selectedView: PropTypes.string,
+  onSelectView: PropTypes.func
 }
 
 const defaultProps = {
   width: "16rem",
-  selected: "pdn"
+  selectedView: "pdn"
 }
 
-const Sidebar = ({ isOpen, width, selected, onSelect }) => (
+const Sidebar = ({ isOpen, width, selectedView, onSelectView }) => (
   <Menu visible={isOpen} width={width}>
-    <Item name="pdn" selected={selected} onSelect={onSelect}>
+    <Item name="pdn" selected={selectedView} onSelect={onSelectView}>
       <Icon><PdnIcon/></Icon>
       <Title>PDN</Title>
     </Item>
-    <Item name="user" selected={selected} onSelect={onSelect}>
+    <Item name="user" selected={selectedView} onSelect={onSelectView}>
       <Icon><UserIcon/></Icon>
       <Title>User</Title>
     </Item>
-    <Item name="test1" selected={selected} onSelect={onSelect}>
+    <Item name="test1" selected={selectedView} onSelect={onSelectView}>
       <Icon><Test1Icon/></Icon>
       <Title>Test111111111</Title>
     </Item>
-    <Item name="test2" selected={selected} onSelect={onSelect}>
+    <Item name="test2" selected={selectedView} onSelect={onSelectView}>
       <Icon><Test2Icon/></Icon>
       <Title>Testaaaaaaaa</Title>
     </Item>
-    <Item name="test3" selected={selected} onSelect={onSelect}>
+    <Item name="test3" selected={selectedView} onSelect={onSelectView}>
       <Icon><Test3Icon/></Icon>
       <Title>Test@#!@#!@#</Title>
     </Item>
