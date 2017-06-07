@@ -105,7 +105,7 @@ Sidebar.propTypes = {
 Sidebar.defaultProps = {
   visible: false,
   width: "16rem",
-  selected: "PDN"
+  selected: "pdn"
 };
 
 export default Sidebar;

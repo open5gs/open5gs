@@ -1,4 +1,3 @@
-import { Component } from 'react';
 import PropTypes from 'prop-types';
 
 import styled from 'styled-components';
@@ -6,11 +5,6 @@ import oc from 'open-color';
 
 import MenuIcon from 'react-icons/lib/md/menu';
 import ThumbnailIcon from './Thumbnail';
-
-import Session from '../lib/session';
-
-import Logout from './Logout';
-import Dimmed from './Dimmed';
 
 const Wrapper = styled.div`
   display: flex;
@@ -46,77 +40,25 @@ const Thumbnail = styled.div`
   cursor: pointer;
 `;
 
-class Header extends Component {
-  state = {
-    logout: {
-      visible: false,
-      dimmed: false
-    }
-  }
-
-  logoutHandler = {
-    show: () => {
-      this.setState({
-        logout: {
-          ...this.state.logout,
-          visible: true,
-          dimmed: true
-        }
-      })
-    },
-    hide: () => {
-      this.setState({
-        logout: {
-          ...this.state.logout,
-          visible: false,
-          dimmed: false
-        }
-      })
-    },
-    action: async () => {
-      this.setState({
-        logout: {
-          ...this.state.logout,
-          visible: false,
-        }
-      })
-
-      const session = new Session()
-      await session.signout()
-
-      // @FIXME next/router not working reliably  so using window.location
-      window.location = '/'
-    }
-  }
-
-  render() {
-    const {
-      logoutHandler
-    } = this;
-
-    const {
-      logout
-    } = this.state;
-
-    return (
-      <Wrapper>
-        <Menu onClick={this.props.onMenuAction}>
-          <MenuIcon/>
-        </Menu>
-        <Title>
-          Next.EPC
-        </Title>
-        <Thumbnail onClick={this.logoutHandler.show}>
-          <ThumbnailIcon size="2rem" color={oc['pink'][4]} />
-        </Thumbnail>
-        <Logout 
-          {...logout} 
-          onHide={logoutHandler.hide}
-          onAction={logoutHandler.action} />
-        <Dimmed visible={logout.dimmed} />
-    </Wrapper>
-    )
-  }
+const propTypes = {
+  onSidebarToggle: PropTypes.func.isRequired,
+  onLogout: PropTypes.func.isRequired
 }
+
+const Header = ({ onSidebarToggle, onLogout }) => (
+  <Wrapper>
+    <Menu onClick={onSidebarToggle}>
+      <MenuIcon/>
+    </Menu>
+    <Title>
+      Next.EPC
+    </Title>
+    <Thumbnail onClick={onLogout}>
+      <ThumbnailIcon size="2rem" color={oc['pink'][4]} />
+    </Thumbnail>
+  </Wrapper>
+)
+
+Header.propTypes = propTypes;
 
 export default Header;

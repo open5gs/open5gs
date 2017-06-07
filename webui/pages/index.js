@@ -4,7 +4,7 @@ import withRedux from 'next-redux-wrapper';
 import { initStore } from '../src/store.js';
 import withSession from '../src/lib/with-session';
 import Login from '../src/components/Login';
-import App from '../src/App';
+import App from '../src/containers/App';
 
 const Restricted = (Component) => {
   const checkAuth = (props) => {
