@@ -72,7 +72,7 @@ Item.propTypes = {
   onSelect: PropTypes.func
 };
 
-const UserSelector = ({selected, onSelect}) => (
+const ViewSelector = ({selected, onSelect}) => (
   <Wrapper>
     <ItemContainer>
       <Item 
@@ -92,9 +92,9 @@ const UserSelector = ({selected, onSelect}) => (
   </Wrapper>
 );
 
-UserSelector.propTypes = {
+ViewSelector.propTypes = {
   selected: PropTypes.string,
   onSelect: PropTypes.func
 }
 
-export default UserSelector;
+export default ViewSelector;

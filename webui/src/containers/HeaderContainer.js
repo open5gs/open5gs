@@ -13,17 +13,6 @@ import Logout from '../components//Logout';
 import Dimmed from '../components//Dimmed';
 
 class HeaderContainer extends Component {
-  componentWillMount() {
-    const { 
-      SidebarActions
-    } = this.props;
-  }
-
-  handleToggle = () => {
-    const { SidebarActions } = this.props;
-    SidebarActions.toggle();
-  }
-
   state = {
     logout: {
       visible: false,
@@ -66,6 +55,11 @@ class HeaderContainer extends Component {
     }
   }
 
+  handleSidebarToggle = () => {
+    const { SidebarActions } = this.props;
+    SidebarActions.toggle();
+  }
+
   render() {
     const {
       handleSidebarToggle,
@@ -80,7 +74,7 @@ class HeaderContainer extends Component {
       <div>
         <Header 
           onSidebarToggle={handleSidebarToggle}
-          onLogout={logoutHandler.show}
+          onLogoutRequest={logoutHandler.show}
         />
         <Logout 
           {...logout} 

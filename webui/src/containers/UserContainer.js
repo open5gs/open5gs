@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import oc from 'open-color';
 
-import UserSelector from '../components/UserSelector';
+import ViewSelector from '../components/User/ViewSelector';
 
 const Wrapper = styled.div`
 `;
@@ -25,7 +25,7 @@ class UserContainer extends Component {
 
     return (
       <Wrapper>
-        <UserSelector onSelect={handleSelectView} selected={view}/>
+        <ViewSelector onSelect={handleSelectView} selected={view}/>
       </Wrapper>
     )
   }

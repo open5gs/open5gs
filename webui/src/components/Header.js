@@ -45,7 +45,7 @@ const propTypes = {
   onLogout: PropTypes.func.isRequired
 }
 
-const Header = ({ onSidebarToggle, onLogout }) => (
+const Header = ({ onSidebarToggle, onLogoutRequest }) => (
   <Wrapper>
     <Menu onClick={onSidebarToggle}>
       <MenuIcon/>
@@ -53,7 +53,7 @@ const Header = ({ onSidebarToggle, onLogout }) => (
     <Title>
       Next.EPC
     </Title>
-    <Thumbnail onClick={onLogout}>
+    <Thumbnail onClick={onLogoutRequest}>
       <ThumbnailIcon size="2rem" color={oc['pink'][4]} />
     </Thumbnail>
   </Wrapper>

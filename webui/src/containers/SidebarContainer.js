@@ -12,18 +12,9 @@ import Sidebar from '../components/Sidebar';
 
 class SidebarContainer extends Component {
   static propTypes = {
-    width: PropTypes.number.isRequired
-  }
-
-  componentWillMount() {
-    const { 
-      width,
-      SidebarActions
-    } = this.props;
-
-    if (width !== SMALL) {
-      SidebarActions.setVisibility(true);
-    }
+    width: PropTypes.number.isRequired,
+    isOpen: PropTypes.bool.isRequired,
+    view: PropTypes.string.isRequired
   }
 
   handleToggle = () => {
@@ -37,7 +28,7 @@ class SidebarContainer extends Component {
       SidebarActions
     } = this.props;
 
-    SidebarActions.setView(view);
+    SidebarActions.selectView(view);
     if (width === SMALL) {
       SidebarActions.toggle();
     }
@@ -45,7 +36,7 @@ class SidebarContainer extends Component {
 
   render() {
     const {
-      visible,
+      isOpen,
       view
     } = this.props;
 
@@ -56,7 +47,7 @@ class SidebarContainer extends Component {
 
     return (
       <Sidebar 
-        visible={visible}
+        isOpen={isOpen}
         selected={view}
         onSelect={handleSelect}/>
     )
@@ -67,7 +58,7 @@ const enhance = compose(
   withWidth(),
   connect(
     (state) => ({
-      visible: state.sidebar.get('isOpen'),
+      isOpen: state.sidebar.get('isOpen'),
       view: state.sidebar.get('view')
     }),
     (dispatch) => ({

@@ -9,30 +9,48 @@ import Head from 'next/head';
 import HeaderContainer from '../containers/HeaderContainer';
 import SidebarContainer from '../containers/SidebarContainer';
 
-const Main = styled.div`
+import Package from '../../package';
+
+const Body = styled.div`
   display: flex;
   height: calc(100vh - 4rem);
 `
 
 const propTypes = {
-  title: PropTypes.string;
+  title: PropTypes.string
 }
 
-const Layout = ({title, children}) => (
+const defaultProps = {
+  title: `Next.EPC ${Package.version}`
+}
+
+const Layout = ({ title, children }) => (
   <div>
     <Head>
       <title>{title}</title>
     </Head>
     <HeaderContainer/>
-    <Main>
+    <Body>
       <SidebarContainer/>
       {children}
-    </Main>
+    </Body>
   </div>
 )
 
 Layout.propTypes = propTypes;
+Layout.defaultProps = defaultProps;
 
+const ContainerWrapper = styled.div`
+  flex: 1;
+`;
+
+Layout.Container = ({visible, children}) => visible ? (
+  <ContainerWrapper>
+    {children}
+  </ContainerWrapper>
+) : null;
+
+/* this is a temporal CSS */
 Layout.Content = styled.div`
   display: flex;
   align-items: center;
@@ -47,6 +65,5 @@ Layout.Content = styled.div`
 
   background-color: white;
 `;
-
 
 export default Layout;

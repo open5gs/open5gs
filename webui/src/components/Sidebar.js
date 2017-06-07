@@ -70,8 +70,20 @@ const Item = ({ children, selected, name, onSelect }) => (
   </StyledItem>
 )
 
-const Sidebar = ({ visible, width, selected, onSelect }) => (
-  <Menu visible={visible} width={width}>
+const propTypes = {
+  isOpen: PropTypes.bool,
+  width: PropTypes.string,
+  selected: PropTypes.string,
+  onSelect: PropTypes.func
+}
+
+const defaultProps = {
+  width: "16rem",
+  selected: "pdn"
+}
+
+const Sidebar = ({ isOpen, width, selected, onSelect }) => (
+  <Menu visible={isOpen} width={width}>
     <Item name="pdn" selected={selected} onSelect={onSelect}>
       <Icon><PdnIcon/></Icon>
       <Title>PDN</Title>
@@ -95,17 +107,7 @@ const Sidebar = ({ visible, width, selected, onSelect }) => (
   </Menu>
 )
 
-Sidebar.propTypes = {
-  visible: PropTypes.bool,
-  width: PropTypes.string,
-  selected: PropTypes.string,
-  onSelect: PropTypes.func
-};
-
-Sidebar.defaultProps = {
-  visible: false,
-  width: "16rem",
-  selected: "pdn"
-};
+Sidebar.propTypes = propTypes;
+Sidebar.defaultProps = defaultProps;
 
 export default Sidebar;
