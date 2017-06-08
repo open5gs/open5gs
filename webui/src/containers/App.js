@@ -2,8 +2,7 @@ import { Component } from 'react';
 import PropTypes from 'prop-types';
 
 import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
-import compose from 'recompose/compose';
+import { bindActionCreators, compose } from 'redux';
 
 import withWidth, { SMALL } from '../lib/with-width';
 import * as sidebarActions from '../modules/sidebar';
