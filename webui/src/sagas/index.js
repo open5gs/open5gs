@@ -1,3 +1,8 @@
-export default function* root() {
-  console.log('Hello World');
+import { all } from 'redux-saga/effects';
+import auth from './auth';
+
+export default function* rootSaga() {
+  yield all([
+    auth()
+  ])
 }
