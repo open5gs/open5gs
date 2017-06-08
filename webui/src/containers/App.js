@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators, compose } from 'redux';
 
 import withWidth, { SMALL } from '../lib/with-width';
-import * as sidebarActions from '../modules/sidebar';
+import * as uiActions from '../actions/ui';
 
 import Layout from '../components/Layout';
 import PdnContainer from '../containers/PdnContainer';
@@ -25,11 +25,11 @@ class App extends Component {
   componentWillMount() {
     const { 
       width,
-      SidebarActions
+      UIActions
     } = this.props;
 
     if (width !== SMALL) {
-      SidebarActions.setVisibility(true);
+      UIActions.setSidebarVisibility(true);
     }
   }
 
@@ -61,10 +61,10 @@ const enhance = compose(
   withWidth(),
   connect(
     (state) => ({
-      view: state.sidebar.get('view')
+      view: state.ui.sidebar.view
     }),
     (dispatch) => ({
-      SidebarActions: bindActionCreators(sidebarActions, dispatch)
+      UIActions: bindActionCreators(uiActions, dispatch)
     })
   )
 );
