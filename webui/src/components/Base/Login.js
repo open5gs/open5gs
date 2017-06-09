@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 
 import styled from 'styled-components';
 import oc from 'open-color';
-import { media } from '../../lib/style-utils';
+import { media } from 'helpers/style-utils';
 
 import {ThumbnailIcon} from 'components';
 import CloseIcon from 'react-icons/lib/md/close';

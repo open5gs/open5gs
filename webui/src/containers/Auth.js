@@ -5,7 +5,7 @@ import { bindActionCreators } from 'redux';
 import Router from 'next/router';
 import NProgress from 'nprogress';
 
-import Session from 'lib/session';
+import Session from 'services/session';
 
 import * as authActions from 'actions/auth';
 import * as uiActions from 'actions/ui';

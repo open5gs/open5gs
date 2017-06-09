@@ -1,11 +1,11 @@
 import PropTypes from 'prop-types';
 import withRedux from 'next-redux-wrapper';
 
-import { initStore } from '../src/store.js';
-import withSession from '../src/lib/with-session';
+import { initStore } from 'store.js';
+import withSession from 'helpers/with-session';
 
-import Auth from '../src/containers/Auth';
-import App from '../src/containers/App';
+import Auth from 'containers/Auth';
+import App from 'containers/App';
 
 const Restricted = (Component) => {
   const checkAuth = (props) => {

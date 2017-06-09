@@ -1,5 +1,5 @@
 import React from 'react';
-import Session from './session';
+import Session from 'services/session';
 
 export default (Component) => class extends React.Component {
   static async getInitialProps (ctx) {

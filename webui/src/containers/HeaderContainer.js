@@ -6,7 +6,7 @@ import { bindActionCreators } from 'redux';
 
 import * as uiActions from 'actions/ui';
 
-import Session from 'lib/session';
+import Session from 'services/session';
 
 import { Header, Logout, Dimmed } from 'components';
 
