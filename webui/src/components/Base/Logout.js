@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import oc from 'open-color';
 
-import Modal from './Modal';
+import { Modal } from '../../components';
 
 const TitleWrapper = styled.div`
   padding-left: 1rem;

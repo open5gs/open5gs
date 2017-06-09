@@ -1,5 +1,5 @@
 import { handleActions } from 'redux-actions';
-import { AUTH } from '../actions/auth';
+import { AUTH } from 'actions/auth';
 
 const initialState = {
   isLoggedIn: false,

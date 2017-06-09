@@ -1,5 +1,5 @@
 import { handleActions } from 'redux-actions';
-import { UI } from '../actions/ui';
+import { UI } from 'actions/ui';
 
 const initialState = {
   sidebar: {

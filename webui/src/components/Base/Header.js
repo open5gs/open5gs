@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import oc from 'open-color';
 
 import MenuIcon from 'react-icons/lib/md/menu';
-import ThumbnailIcon from './Thumbnail';
+import {ThumbnailIcon} from 'components';
 
 const Wrapper = styled.div`
   display: flex;

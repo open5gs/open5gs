@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import oc from 'open-color';
 
-import Layout from '../components/Layout';
+import { Layout } from 'components';
 
 const PdnContainer = () => (
   <Layout.Content>

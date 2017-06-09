@@ -6,9 +6,9 @@ import { bindActionCreators, compose } from 'redux';
 import * as uiActions from '../actions/ui';
 import withWidth, { SMALL } from '../lib/with-width';
 
-import Layout from '../components/Layout';
-import PdnContainer from '../containers/PdnContainer';
-import UserContainer from '../containers/UserContainer';
+import { Layout } from 'components';
+import PdnContainer from 'containers/PdnContainer';
+import UserContainer from 'containers/UserContainer';
 
 class App extends Component {
   static propTypes = {

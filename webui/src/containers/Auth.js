@@ -5,12 +5,12 @@ import { bindActionCreators } from 'redux';
 import Router from 'next/router';
 import NProgress from 'nprogress';
 
-import Session from '../lib/session';
+import Session from 'lib/session';
 
-import * as authActions from '../actions/auth';
-import * as uiActions from '../actions/ui';
+import * as authActions from 'actions/auth';
+import * as uiActions from 'actions/ui';
 
-import Login from '../components/Login';
+import { Login } from 'components';
 
 class Auth extends Component {
   state = {

@@ -8,6 +8,9 @@
       "displayName": false, 
       "preprocess": false 
     }],
-    ["polished"]
+    ["polished"],
+    ["module-resolver", {
+      "root": ["./src"]
+    }]
   ]
 }

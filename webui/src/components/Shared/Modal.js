@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 
 import styled from 'styled-components';
 import onClickOutside from 'react-onclickoutside';
-import {media, transitions} from '../lib/style-utils';
 import CSSTransitionGroup from 'react-transition-group/CSSTransitionGroup';
+import {media, transitions} from 'lib/style-utils';
 
 const Wrapper = styled.div`
   position: fixed;

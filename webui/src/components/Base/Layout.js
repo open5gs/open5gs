@@ -1,15 +1,13 @@
 import PropTypes from 'prop-types';
-
-import styled from 'styled-components';
-import { media, transitions} from '../lib/style-utils';
-import oc from 'open-color';
-
 import Head from 'next/head';
 
-import HeaderContainer from '../containers/HeaderContainer';
-import SidebarContainer from '../containers/SidebarContainer';
+import styled from 'styled-components';
+import oc from 'open-color';
 
-import Package from '../../package';
+import HeaderContainer from 'containers/HeaderContainer';
+import SidebarContainer from 'containers/SidebarContainer';
+
+import Package from '../../../package';
 
 const Body = styled.div`
   display: flex;

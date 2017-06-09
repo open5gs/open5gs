@@ -4,13 +4,11 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import * as uiActions from '../actions/ui';
+import * as uiActions from 'actions/ui';
 
-import Session from '../lib/session';
+import Session from 'lib/session';
 
-import Header from '../components/Header';
-import Logout from '../components//Logout';
-import Dimmed from '../components//Dimmed';
+import { Header, Logout, Dimmed } from 'components';
 
 class HeaderContainer extends Component {
   state = {

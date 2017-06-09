@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 
 import styled from 'styled-components';
-import { media, transitions} from '../lib/style-utils';
+import { media, transitions } from 'lib/style-utils';
 import oc from 'open-color';
 
 import PdnIcon from 'react-icons/lib/md/cast';
