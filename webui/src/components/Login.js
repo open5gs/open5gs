@@ -1,16 +1,10 @@
-import Session from '../lib/session';
-
 import { Component } from 'react';
-import Link from 'next/link';
 import Head from 'next/head';
-import Router from 'next/router';
 import PropTypes from 'prop-types';
-
-import NProgress from 'nprogress';
 
 import styled from 'styled-components';
 import oc from 'open-color';
-import { media, transitions} from '../lib/style-utils';
+import { media } from '../lib/style-utils';
 
 import ThumbnailIcon from './Thumbnail';
 import CloseIcon from 'react-icons/lib/md/close';
@@ -161,147 +155,66 @@ Button.propTypes = {
   onClick: PropTypes.func
 };
 
-class Login extends Component {
-  state = {
-    error: {
-      status: false,
-      message: ''
-    },
-    account: {
-      username: '',
-      password: ''
-    },
-    session: {}
-  };
+const Login = ({ 
+  width,
+  form,
+  error,
+  innerRef,
+  onChange,
+  onSubmit,
+  onKeyPress,
+  onErrorReset
+}) => (
+  <div>
+    <Head>
+    <title>NextEPC - Login</title>
+    </Head>
+    <Wrapper width={width}>
+      <ErrorBar 
+        visible={error !== null}
+        message={error && error.message}
+        onClick={onErrorReset} />
+      <Thumbnail>
+        <ThumbnailIcon size='8rem' color={oc['blue'][6]} />
+      </Thumbnail>
+      <Form>
+        <InputWrapper>
+          <Title>Username</Title>
+          <Input 
+            name="username"
+            type="text"
+            placeholder=""
+            value={form.username} 
+            onChange={onChange}
+            onKeyPress={onKeyPress}
+            innerRef={(comp) => {innerRef(comp)}}
+          />
+        </InputWrapper>
+        <InputWrapper>
+          <Title>Password</Title>
+          <Input 
+            name="password"
+            type="password"
+            placeholder=""
+            value={form.password} 
+            onChange={onChange}
+            onKeyPress={onKeyPress}
+          />
+        </InputWrapper>
+        <Button color='teal' onClick={onSubmit}>
+          Login
+        </Button>
+      </Form>
+    </Wrapper>
+  </div>
+);
 
-  static propTypes = {
-    width: PropTypes.string
-  }
+Login.propTypes = {
+  width: PropTypes.string
+}
 
-  static defaultProps = {
-    width: '360px'
-  }
-
-  static async getInitialProps({req}) {
-    const session = new Session({req})
-    return {session: await session.getSession(true)}
-  }
-
-  async componentDidMount() {
-    const session = new Session()
-    this.setState({ 
-      session: await session.getSession(true)
-    });
-
-    this.input.focus();
-  }
-
-  onAction = (e) => {
-    const { 
-      username,
-      password
-    } = this.state.account;
-
-    NProgress.configure({ showSpinner: false });
-    NProgress.start();
-
-    const session = new Session()
-    session.signin(username, password)
-      .then(() => {
-        NProgress.done();
-
-        Router.push('/');
-      })
-      .catch(err => {
-        NProgress.done();
-
-        this.input.focus();
-
-        this.setState({
-          error: { 
-            status: true, 
-            message: err.message
-          }
-        });
-      })
-  }
-
-  handleChange = (e) => {
-    this.setState({ 
-      account: {
-        ...this.state.account,
-        [e.target.name]: e.target.value 
-      }
-    });
-  }
-
-  handleErrorClose = (e) => {
-    this.setState({
-      error: { 
-        status: false
-      }
-    });
-  }
-
-  render() {
-    const { 
-      handleChange,
-      onAction,
-      handleErrorClose
-    } = this;
-
-    const { 
-      username,
-      password
-    } = this.state.account;
-
-    const err = this.state.error;
-
-    const {width} = this.props;
-
-    return (
-      <div>
-        <Head>
-        <title>NextEPC - Login</title>
-        </Head>
-        <Wrapper width={width}>
-          <ErrorBar 
-            visible={err.status}
-            message={err.message}
-            onClick={handleErrorClose} />
-          <Thumbnail>
-            <ThumbnailIcon size='8rem' color={oc['blue'][6]} />
-          </Thumbnail>
-          <Form>
-            <InputWrapper>
-              <Title>Username</Title>
-              <Input 
-                name="username"
-                type="text"
-                placeholder=""
-                value={username} 
-                onChange={handleChange}
-                innerRef={(comp) => { this.input = comp }}
-              />
-            </InputWrapper>
-            <InputWrapper>
-              <Title>Password</Title>
-              <Input 
-                name="password"
-                type="password"
-                placeholder=""
-                value={password} 
-                onChange={handleChange}
-              />
-            </InputWrapper>
-            <Button color='teal' onClick={onAction}>
-              Log in
-            </Button>
-          </Form>
-        </Wrapper>
-      </div>
-    );
-  }
+Login.defaultProps = {
+  width: '360px'
 }
 
 export default Login;

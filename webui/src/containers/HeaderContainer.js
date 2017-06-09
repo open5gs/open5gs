@@ -83,9 +83,11 @@ class HeaderContainer extends Component {
   }
 }
 
-export default connect(
+HeaderContainer = connect(
   null,
   (dispatch) => ({
     UIActions: bindActionCreators(uiActions, dispatch)
   })
 )(HeaderContainer);
+
+export default HeaderContainer;

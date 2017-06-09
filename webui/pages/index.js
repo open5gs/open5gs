@@ -3,12 +3,13 @@ import withRedux from 'next-redux-wrapper';
 
 import { initStore } from '../src/store.js';
 import withSession from '../src/lib/with-session';
-import Login from '../src/components/Login';
+
+import Auth from '../src/containers/Auth';
 import App from '../src/containers/App';
 
 const Restricted = (Component) => {
   const checkAuth = (props) => {
-    return props.isLoggedIn ? <Component {...props} /> : <Login/>
+    return props.isLoggedIn ? <Component {...props} /> : <Auth/>
   }
 
   return withSession(checkAuth);

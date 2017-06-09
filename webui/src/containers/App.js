@@ -1,11 +1,10 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
-
 import { connect } from 'react-redux';
 import { bindActionCreators, compose } from 'redux';
 
-import withWidth, { SMALL } from '../lib/with-width';
 import * as uiActions from '../actions/ui';
+import withWidth, { SMALL } from '../lib/with-width';
 
 import Layout from '../components/Layout';
 import PdnContainer from '../containers/PdnContainer';

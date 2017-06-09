@@ -8,3 +8,6 @@ export const AUTH = {
 }
 
 export const loginRequest = createAction(AUTH.LOGIN_REQUEST); // { username, password }
+export const loginSuccess = createAction(AUTH.LOGIN_SUCCESS);
+export const loginFailure = createAction(AUTH.LOGIN_FAILURE);
+export const logout = createAction(AUTH.LOGOUT);
