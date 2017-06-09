@@ -1,8 +1,7 @@
 import { take, fork, cancel, call, put } from 'redux-saga/effects';
 
 import Session from 'services/session';
-import { AUTH, loginSucess} from 'actions/auth';
-/* import { UI, toggleSidebar } from 'actions/ui'; */
+import { AUTH, loginSuccess } from 'actions/auth';
 
 function* authorize(username, password) {
   try {
@@ -21,9 +20,8 @@ function* authorize(username, password) {
 
 function* loginFlow() {
   while(true) {
-    const { payload } = yield take(AUTH.LOGIN_REQUEST);
-    const { username, password } = payload;
-    const task = yield fork(authroize, username, password);
+    const { username, password } = yield take(AUTH.LOGIN_REQUEST);
+    const task = yield fork(authorize, username, password);
     const action = yield take([AUTH.LOGOUT, AUTH.LOGIN_FAILURE]);
     if (action.type === AUTH.LOGOUT)
       yield cancel(task);
@@ -33,17 +31,3 @@ function* loginFlow() {
 export default function* () {
   yield loginFlow();
 }
-
-/*
-function* testCode() {
-  yield put(toggleSidebar());
-}
-
-function* loginFlow() {
-  yield takeEvery(UI.SELECT_VIEW, testCode)
-}
-
-export default function* () {
-  yield loginFlow();
-}
-*/

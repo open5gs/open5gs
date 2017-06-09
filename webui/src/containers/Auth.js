@@ -6,10 +6,6 @@ import Router from 'next/router';
 import NProgress from 'nprogress';
 
 import Session from 'services/session';
-
-import * as authActions from 'actions/auth';
-import * as uiActions from 'actions/ui';
-
 import { Login } from 'components';
 
 class Auth extends Component {
@@ -60,6 +56,10 @@ class Auth extends Component {
       username,
       password
     } = this.state.form;
+
+    const {
+      loginRequest
+    } = this.props;
 
     NProgress.configure({ showSpinner: false });
     NProgress.start();
@@ -117,12 +117,5 @@ class Auth extends Component {
     );
   }
 }
-
-Auth = connect(
-  null,
-  (dispatch) => ({
-    UIActions: bindActionCreators(uiActions, dispatch)
-  })
-)(Auth);
 
 export default Auth;

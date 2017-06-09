@@ -1,5 +1,3 @@
-import { createAction } from 'redux-actions';
-
 export const AUTH = {
   LOGIN_REQUEST: 'auth/LOGIN_REQUEST',
   LOGIN_SUCCESS: 'auth/LOGIN_SUCCESS',
@@ -7,26 +5,11 @@ export const AUTH = {
   LOGOUT: 'auth/LOGOUT'
 }
 
-/*
-  AuthAction.loginRequest
-    payload : {
-      username,
-      password
-    } 
+function action(type, payload = {}) {
+  return {type, ...payload}
+}
 
-  AuthAction.loginSuccess
-    payload : {
-      username,
-      role
-    } 
-
-  AuthAction.loginFailure
-    payload : null
-
-  AuthAction.logout
-    payload : null
-*/
-export const loginRequest = createAction(AUTH.LOGIN_REQUEST);
-export const loginSuccess = createAction(AUTH.LOGIN_SUCCESS);
-export const loginFailure = createAction(AUTH.LOGIN_FAILURE);
-export const logout = createAction(AUTH.LOGOUT);
+export const loginRequest = (username, password) => action(AUTH.LOGIN_REQUEST, {username, password})
+export const loginSuccess =  (username, role) => action(AUTH.LOGIN_SUCCESS, {username, role})
+export const loginFailure = () => action(AUTH.LOGIN_FAILURE)
+export const logout = () => action(AUTH.LOGOUT)

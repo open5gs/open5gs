@@ -42,7 +42,7 @@ const Thumbnail = styled.div`
 
 const propTypes = {
   onSidebarToggle: PropTypes.func.isRequired,
-  onLogout: PropTypes.func.isRequired
+  onLogoutRequest: PropTypes.func.isRequired
 }
 
 const Header = ({ onSidebarToggle, onLogoutRequest }) => (
