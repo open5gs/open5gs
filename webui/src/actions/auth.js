@@ -7,7 +7,26 @@ export const AUTH = {
   LOGOUT: 'auth/LOGOUT'
 }
 
-export const loginRequest = createAction(AUTH.LOGIN_REQUEST); // { username, password }
+/*
+  AuthAction.loginRequest
+    payload : {
+      username,
+      password
+    } 
+
+  AuthAction.loginSuccess
+    payload : {
+      username,
+      role
+    } 
+
+  AuthAction.loginFailure
+    payload : null
+
+  AuthAction.logout
+    payload : null
+*/
+export const loginRequest = createAction(AUTH.LOGIN_REQUEST);
 export const loginSuccess = createAction(AUTH.LOGIN_SUCCESS);
 export const loginFailure = createAction(AUTH.LOGIN_FAILURE);
 export const logout = createAction(AUTH.LOGOUT);

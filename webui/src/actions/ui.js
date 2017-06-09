@@ -6,6 +6,20 @@ export const UI = {
   SELECT_VIEW: 'ui/SELECT_VIEW'
 }
 
-export const toggleSidebar = createAction(UI.TOGGLE_SIDEBAR); // No payload
-export const setSidebarVisibility = createAction(UI.SET_SIDEBAR_VISIBILITY); // isOpen
-export const selectView = createAction(UI.SELECT_VIEW); // view
+/*
+  UIAction.toggleSidebar
+    payload : null
+
+  UIAction.setSidebarVisibiliy
+    payload : {
+      isOpen
+    } 
+
+  UIAction.selectView
+    payload : {
+      view
+    }
+*/
+export const toggleSidebar = createAction(UI.TOGGLE_SIDEBAR);
+export const setSidebarVisibility = createAction(UI.SET_SIDEBAR_VISIBILITY);
+export const selectView = createAction(UI.SELECT_VIEW);

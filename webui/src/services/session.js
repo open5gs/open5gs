@@ -143,7 +143,7 @@ export default class Session {
           // Update local session data
           this._session = await this.getSession(true)
 
-          return resolve(true)
+          return resolve(this._session)
         }
       }
       xhr.onerror = () => {
