@@ -44,6 +44,6 @@
   "scripts": {
     "dev": "node server/index.js",
     "build": "next build",
-    "start": "NODE_ENV=production node server/index.js"
+    "start": "NODE_ENV=production DB_URI='mongodb://acetcom:sejin123@ds025792.mlab.com:25792/nextepc' node server/index.js"
   }
 }
