@@ -2,7 +2,7 @@ process.env.DB_URI = process.env.DB_URI || 'mongodb://localhost/nextepc';
 
 const next = require('next');
 
-const dev = process.env.NODE_ENV != 'production';
+const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev });
 const handle = app.getRequestHandler();
 
@@ -22,25 +22,23 @@ const secret = process.env.SECRET_KEY || 'change-me';
 const models = require('./models');
 const api = require('./routes');
 
-mongoose.Promise = global.Promise;
-const db = mongoose.connection;
-db.on('error', console.error);
-db.once('open', () => {
-  console.log('Connected to mongod server');
-});
-
-if ({ dev }) {
-  mongoose.set('debug', true);
-}
-
-mongoose.connect(process.env.DB_URI);
-
 Promise.all([ 
   app.prepare(), 
   models.sequelize.sync()
 ])
 .then(() => {
-  const server = express();
+  mongoose.Promise = global.Promise;
+  const db = mongoose.connection;
+  db.on('error', err => { throw err });
+  db.once('open', () => {
+    console.log('Connected to mongod server');
+  });
+
+  if (dev) {
+    mongoose.set('debug', true);
+  }
+
+  mongoose.connect(process.env.DB_URI);
 
   // FIXME : we need to implement landing page for adding admin account
   models.AccountRole.count().then(c => {
@@ -57,6 +55,8 @@ Promise.all([
     }
   });
 
+  const server = express();
+  
   server.use(bodyParser.json());
   server.use(bodyParser.urlencoded({ extended: true }));
 
@@ -88,7 +88,7 @@ Promise.all([
     return handle(req, res);
   });
 
-  if ({ dev }) {
+  if (dev) {
     server.use(morgan('tiny'));
   }
 
