@@ -15,45 +15,44 @@ const mongoose = require('mongoose');
 const MongoStore = require('connect-mongo')(session);
 
 const passport = require('passport');
-require('./passport');
+const LocalStrategy = require('passport-local').Strategy;
 const csrf = require('lusca').csrf();
 const secret = process.env.SECRET_KEY || 'change-me';
 
-const models = require('./models');
 const api = require('./routes');
 
-Promise.all([ 
-  app.prepare(), 
-  models.sequelize.sync()
-])
+const Account = require('./models/account2.js');
+
+mongoose.Promise = global.Promise;
+const db = mongoose.connection;
+
+if (dev) {
+  mongoose.set('debug', true);
+}
+
+mongoose.connect(process.env.DB_URI)
 .then(() => {
-  mongoose.Promise = global.Promise;
-  const db = mongoose.connection;
-  db.on('error', err => { throw err });
-  db.once('open', () => {
-    console.log('Connected to mongod server');
-  });
-
-  if (dev) {
-    mongoose.set('debug', true);
-  }
-
-  mongoose.connect(process.env.DB_URI);
-
-  // FIXME : we need to implement landing page for adding admin account
-  models.AccountRole.count().then(c => {
-    if (c == 0) {
-      models.AccountRole.create({
-        role: 'admin',
-        Accounts: [{
-          username: 'admin',
-          password: '1423'
-        }]
-      }, {
-        include: [ models.AccountRole.Account ]
-      });
+  return app.prepare();
+})
+.then(() => {
+  // FIXME : we need to implement landing page for inserting admin account
+  Account.findByUsername('admin', true, (err, account) => {
+    if (err) {
+      console.error(err);
+      throw err;
     }
-  });
+    if (!account) {
+      const newAccount = new Account();
+      newAccount.username = 'admin';
+      newAccount.roles = [ 'admin' ];
+      Account.register(newAccount, '1423', err => {
+        if (err) {
+          console.error(err);
+          throw err;
+        }
+      })
+    }
+  })
 
   const server = express();
   
@@ -81,6 +80,10 @@ Promise.all([
 
   server.use(passport.initialize());
   server.use(passport.session());
+
+  passport.use(new LocalStrategy(Account.authenticate()));
+  passport.serializeUser(Account.serializeUser());
+  passport.deserializeUser(Account.deserializeUser());
 
   server.use('/api', api);
 

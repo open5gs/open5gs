@@ -25,6 +25,7 @@
     "open-color": "^1.5.1",
     "passport": "^0.3.2",
     "passport-local": "^1.0.0",
+    "passport-local-mongoose": "^4.0.0",
     "prop-types": "^15.5.10",
     "react": "^15.5.4",
     "react-dom": "^15.5.4",
@@ -37,8 +38,6 @@
     "redux": "^3.6.0",
     "redux-actions": "^2.0.3",
     "redux-saga": "^0.15.3",
-    "sequelize": "^3.30.4",
-    "sqlite3": "^3.1.8",
     "styled-components": "2.0.0-19",
     "yarn": "^0.24.5"
   },
