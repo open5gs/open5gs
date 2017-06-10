@@ -21,7 +21,7 @@ const secret = process.env.SECRET_KEY || 'change-me';
 
 const api = require('./routes');
 
-const Account = require('./models/account2.js');
+const Account = require('./models/account.js');
 
 mongoose.Promise = global.Promise;
 const db = mongoose.connection;
