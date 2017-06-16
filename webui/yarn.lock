@@ -162,7 +162,7 @@ async-each@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/async-each/-/async-each-1.0.1.tgz#19d386a1d9edc6e7c1c85d388aedbcc56d33602d"
 
-async@2.1.4, async@^2.1.2:
+async@2.1.4, async@^2.1.2, async@~2.1.0:
   version "2.1.4"
   resolved "https://registry.yarnpkg.com/async/-/async-2.1.4.tgz#2d2160c7788032e4dd6cbe2502f1f9a2c8f6cde4"
   dependencies:
@@ -988,6 +988,10 @@ bluebird@^3.0:
   version "3.5.0"
   resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.5.0.tgz#791420d7f551eea2897453a8a77653f96606d67c"
 
+bluebird@~3.4.0:
+  version "3.4.7"
+  resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.4.7.tgz#f72d760be09b7f76d08ed8fae98b289a8d05fab3"
+
 bn.js@^4.0.0, bn.js@^4.1.0, bn.js@^4.1.1, bn.js@^4.4.0:
   version "4.11.6"
   resolved "https://registry.yarnpkg.com/bn.js/-/bn.js-4.11.6.tgz#53344adb14617a13f6e8dd2ce28905d1c0ba3215"
@@ -1676,6 +1680,19 @@ expand-range@^1.8.1:
   dependencies:
     fill-range "^2.1.0"
 
+express-restify-mongoose@^4.1.3:
+  version "4.1.3"
+  resolved "https://registry.yarnpkg.com/express-restify-mongoose/-/express-restify-mongoose-4.1.3.tgz#68ea3ecde1dc57123683efdf8b8e9237a984613b"
+  dependencies:
+    async "~2.1.0"
+    bluebird "~3.4.0"
+    is-coordinates "~1.0.0"
+    lodash "~4.16.0"
+    mongoose-detective "~0.1.0"
+    moredots "~0.1.0"
+    serialize-error "~2.0.0"
+    weedout "~0.1.0"
+
 express-session@^1.15.2:
   version "1.15.3"
   resolved "https://registry.yarnpkg.com/express-session/-/express-session-1.15.3.tgz#db545f0435a7b1b228ae02da8197f65141735c67"
@@ -2240,6 +2257,13 @@ is-ci@^1.0.10:
   dependencies:
     ci-info "^1.0.0"
 
+is-coordinates@~1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/is-coordinates/-/is-coordinates-1.0.0.tgz#91b8d2ea2db4a832b409b18eade578d9b2b6430c"
+  dependencies:
+    lodash.isarray "^4.0.0"
+    lodash.isnumber "^3.0.3"
+
 is-date-object@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/is-date-object/-/is-date-object-1.0.1.tgz#9aa20eb6aeebbff77fbd33e74ca01b33581d3a16"
@@ -2522,6 +2546,18 @@ lodash-es@^4.17.4, lodash-es@^4.2.0, lodash-es@^4.2.1:
   version "4.17.4"
   resolved "https://registry.yarnpkg.com/lodash-es/-/lodash-es-4.17.4.tgz#dcc1d7552e150a0640073ba9cb31d70f032950e7"
 
+lodash.isarray@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/lodash.isarray/-/lodash.isarray-4.0.0.tgz#2aca496b28c4ca6d726715313590c02e6ea34403"
+
+lodash.isnumber@^3.0.3:
+  version "3.0.3"
+  resolved "https://registry.yarnpkg.com/lodash.isnumber/-/lodash.isnumber-3.0.3.tgz#3ce76810c5928d03352301ac287317f11c0b1ffc"
+
+lodash.isplainobject@~4.0.0:
+  version "4.0.6"
+  resolved "https://registry.yarnpkg.com/lodash.isplainobject/-/lodash.isplainobject-4.0.6.tgz#7c526a52d89b45c45cc690b88163be0497f550cb"
+
 lodash@^4.13.1, lodash@^4.14.0, lodash@^4.3.0, lodash@^4.5.1, lodash@^4.6.1:
   version "4.17.4"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.4.tgz#78203a4d1c328ae1d86dca6460e369b57f4055ae"
@@ -2529,6 +2565,10 @@ lodash@^4.13.1, lodash@^4.14.0, lodash@^4.3.0, lodash@^4.5.1, lodash@^4.6.1:
 lodash@^4.2.0, lodash@^4.2.1:
   version "4.12.0"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.12.0.tgz#2bd6dc46a040f59e686c972ed21d93dc59053258"
+
+lodash@~4.16.0:
+  version "4.16.6"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.16.6.tgz#d22c9ac660288f3843e16ba7d2b5d06cca27d777"
 
 longest@^1.0.1:
   version "1.0.1"
@@ -2690,6 +2730,10 @@ mongodb@2.2.27, "mongodb@>= 1.2.0 <3.0.0":
     mongodb-core "2.1.11"
     readable-stream "2.2.7"
 
+mongoose-detective@~0.1.0:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/mongoose-detective/-/mongoose-detective-0.1.1.tgz#853b05e2fc100c1cfae6d52171f62626de681fce"
+
 mongoose@^4.10.5:
   version "4.10.5"
   resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-4.10.5.tgz#7cd50ee38d5057815e83962e3985f7dd9da769ad"
@@ -2706,6 +2750,12 @@ mongoose@^4.10.5:
     muri "1.2.1"
     regexp-clone "0.0.1"
     sliced "1.0.1"
+
+moredots@~0.1.0:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/moredots/-/moredots-0.1.1.tgz#132713eec40a0cd8c73669757761b1495cfa26df"
+  dependencies:
+    lodash.isplainobject "~4.0.0"
 
 morgan@^1.8.2:
   version "1.8.2"
@@ -3731,6 +3781,10 @@ send@0.15.3:
     range-parser "~1.2.0"
     statuses "~1.3.1"
 
+serialize-error@~2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/serialize-error/-/serialize-error-2.0.0.tgz#6c1153f7ee3fe7f73ff1b1b7d2b494b67b675eba"
+
 serve-static@1.12.3:
   version "1.12.3"
   resolved "https://registry.yarnpkg.com/serve-static/-/serve-static-1.12.3.tgz#9f4ba19e2f3030c547f8af99107838ec38d5b1e2"
@@ -4259,6 +4313,10 @@ webpack@2.5.1:
     watchpack "^1.3.1"
     webpack-sources "^0.2.3"
     yargs "^6.0.0"
+
+weedout@~0.1.0:
+  version "0.1.3"
+  resolved "https://registry.yarnpkg.com/weedout/-/weedout-0.1.3.tgz#cbf2a842c3e65abf7858480de21668d8cf87d300"
 
 whatwg-fetch@>=0.10.0:
   version "2.0.3"

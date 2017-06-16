@@ -1,5 +1,6 @@
 process.env.DB_URI = process.env.DB_URI || 'mongodb://localhost/nextepc';
 
+const co = require('co');
 const next = require('next');
 
 const dev = process.env.NODE_ENV !== 'production';
@@ -23,18 +24,15 @@ const api = require('./routes');
 
 const Account = require('./models/account.js');
 
-mongoose.Promise = global.Promise;
-const db = mongoose.connection;
+co(function* () {
+  yield app.prepare();
 
-if (dev) {
-  mongoose.set('debug', true);
-}
+  mongoose.Promise = global.Promise;
+  if (dev) {
+    mongoose.set('debug', true);
+  }
+  const db = yield mongoose.connect(process.env.DB_URI)
 
-mongoose.connect(process.env.DB_URI)
-.then(() => {
-  return app.prepare();
-})
-.then(() => {
   // FIXME : we need to implement landing page for inserting admin account
   Account.findByUsername('admin', true, (err, account) => {
     if (err) {
@@ -75,8 +73,15 @@ mongoose.connect(process.env.DB_URI)
   }));
 
   server.use((req, res, next) => {
+    req.db = db;
+    next();
+  })
+
+/*
+  server.use((req, res, next) => {
     csrf(req, res, next);
   })
+*/
 
   server.use(passport.initialize());
   server.use(passport.session());
@@ -100,4 +105,4 @@ mongoose.connect(process.env.DB_URI)
     console.log('> Ready on http://localhost:3000');
   });
 })
-.catch(err => console.log(err));
+.catch(error => console.error(error.stack));
