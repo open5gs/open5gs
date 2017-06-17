@@ -7,6 +7,7 @@ import * as uiActions from 'actions/ui';
 import withWidth, { SMALL } from 'helpers/with-width';
 
 import { Layout } from 'components';
+import SubscriberContainer from 'containers/SubscriberContainer';
 import PdnContainer from 'containers/PdnContainer';
 import UserContainer from 'containers/UserContainer';
 
@@ -17,10 +18,6 @@ class App extends Component {
     width: PropTypes.number.isRequired
   }
   
-  static defaultProps = {
-    view: "pdn"
-  }
-
   componentWillMount() {
     const { 
       width,
@@ -39,6 +36,9 @@ class App extends Component {
 
     return (
       <Layout>
+        <Layout.Container visible={view === "subscriber"}>
+          <SubscriberContainer/>
+        </Layout.Container>
         <Layout.Container visible={view === "pdn"}>
           <PdnContainer/>
         </Layout.Container>

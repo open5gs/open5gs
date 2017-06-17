@@ -4,9 +4,9 @@ import styled from 'styled-components';
 import { media, transitions } from 'helpers/style-utils';
 import oc from 'open-color';
 
+import SubscriberIcon from 'react-icons/lib/md/person-add'
 import PdnIcon from 'react-icons/lib/md/cast';
 import UserIcon from 'react-icons/lib/md/supervisor-account';
-import Test1Icon from 'react-icons/lib/md/ac-unit'
 import Test2Icon from 'react-icons/lib/md/access-alarm'
 import Test3Icon from 'react-icons/lib/md/3d-rotation'
 
@@ -79,11 +79,14 @@ const propTypes = {
 
 const defaultProps = {
   width: "16rem",
-  selectedView: "pdn"
 }
 
 const Sidebar = ({ isOpen, width, selectedView, onSelectView }) => (
   <Menu visible={isOpen} width={width}>
+    <Item name="subscriber" selected={selectedView} onSelect={onSelectView}>
+      <Icon><SubscriberIcon/></Icon>
+      <Title>Subscriber</Title>
+    </Item>
     <Item name="pdn" selected={selectedView} onSelect={onSelectView}>
       <Icon><PdnIcon/></Icon>
       <Title>PDN</Title>
@@ -91,10 +94,6 @@ const Sidebar = ({ isOpen, width, selectedView, onSelectView }) => (
     <Item name="user" selected={selectedView} onSelect={onSelectView}>
       <Icon><UserIcon/></Icon>
       <Title>User</Title>
-    </Item>
-    <Item name="test1" selected={selectedView} onSelect={onSelectView}>
-      <Icon><Test1Icon/></Icon>
-      <Title>Test111111111</Title>
     </Item>
     <Item name="test2" selected={selectedView} onSelect={onSelectView}>
       <Icon><Test2Icon/></Icon>

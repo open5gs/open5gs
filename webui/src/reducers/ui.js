@@ -4,7 +4,7 @@ import { UI } from 'actions/ui';
 const initialState = {
   sidebar: {
     isOpen: false,
-    view: "pdn"
+    view: "subscriber"
   }
 }
 
