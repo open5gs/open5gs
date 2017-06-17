@@ -79,9 +79,7 @@ co(function* () {
     next();
   })
 
-  server.use((req, res, next) => {
-    csrf(req, res, next);
-  })
+  server.use(csrf);
 
   server.use(passport.initialize());
   server.use(passport.session());
