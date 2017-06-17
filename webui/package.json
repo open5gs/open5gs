@@ -18,6 +18,7 @@
     "express-session": "^1.15.2",
     "immutable": "^3.8.1",
     "lusca": "^1.4.1",
+    "method-override": "^2.3.9",
     "mongoose": "^4.10.5",
     "morgan": "^1.8.2",
     "next": "^2.3.1",

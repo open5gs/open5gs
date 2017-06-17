@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const Subscriber = new Schema({
-  imsi: { type: String, unique: true, required: true },
+  imsi: { $type: String, unique: true, required: true },
 
   access_restriction_data: Number,
   subscriber_status: Number,
@@ -33,6 +33,6 @@ const Subscriber = new Schema({
     op: String,
     amf: String
   }
-});
+}, { typeKey: '$type' });
 
 module.exports = mongoose.model('Subscriber', Subscriber);

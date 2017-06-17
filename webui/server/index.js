@@ -9,6 +9,7 @@ const handle = app.getRequestHandler();
 
 const express = require('express');
 const bodyParser = require('body-parser');
+const methodOverride = require('method-override');
 const morgan = require('morgan');
 const session = require('express-session');
 
@@ -56,6 +57,7 @@ co(function* () {
   
   server.use(bodyParser.json());
   server.use(bodyParser.urlencoded({ extended: true }));
+  server.use(methodOverride());
 
   server.use(session({
     secret: secret,
