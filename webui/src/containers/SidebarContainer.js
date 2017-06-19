@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators, compose } from 'redux';
 
 import withWidth, { SMALL } from 'helpers/with-width';
-import * as uiActions from 'actions/ui';
+import * as uiActions from 'modules/ui';
 
 import { Sidebar } from 'components';
 

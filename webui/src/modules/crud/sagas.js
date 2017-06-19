@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { all, takeEvery, put, call, take, fork } from 'redux-saga/effects';
-import { CRUD } from 'actions/crud';
+import { CRUD } from './actions';
 
 const crudApi = (method, url, { params, data } = {} ) => {
   return axios({ baseURL: '/api/db', method, url, params, data });

@@ -2,8 +2,7 @@ import { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { fetchSubscribers } from 'actions/subscriber';
-import { fetchCollection } from 'actions/crud';
+import { fetchSubscribers } from 'modules/crud/subscriber';
 
 class SubscriberContainer extends Component {
   componentWillMount() {

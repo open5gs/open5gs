@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import * as uiActions from 'actions/ui';
+import * as uiActions from 'modules/ui';
 
 import Session from 'services/session';
 

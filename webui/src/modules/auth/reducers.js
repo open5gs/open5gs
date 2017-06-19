@@ -1,4 +1,4 @@
-import { AUTH } from 'actions/auth';
+import { AUTH } from './actions';
 
 const initialState = {
   isAuthenticating: false,

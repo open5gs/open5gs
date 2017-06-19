@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import withRedux from 'next-redux-wrapper';
 
-import { initStore } from 'store.js';
+import { initStore } from 'modules/store.js';
 import withSession from 'helpers/with-session';
 
 import Auth from 'containers/Auth';

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { bindActionCreators, compose } from 'redux';
 
-import * as uiActions from 'actions/ui';
+import * as uiActions from 'modules/ui';
 import withWidth, { SMALL } from 'helpers/with-width';
 
 import { Layout } from 'components';

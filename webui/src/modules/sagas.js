@@ -1,6 +1,6 @@
 import { all, fork } from 'redux-saga/effects';
-import auth from './auth';
-import crud from './crud';
+import auth from './auth/sagas';
+import crud from './crud/sagas';
 
 export default function* rootSaga() {
   yield all([

@@ -1,6 +1,6 @@
 import {
   fetchCollection
-} from 'actions/crud'
+} from './actions'
 
 const MODEL = 'subscribers';
 const ID = 'imsi';
