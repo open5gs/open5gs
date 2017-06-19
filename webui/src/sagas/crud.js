@@ -3,8 +3,7 @@ import { all, takeEvery, put, call, take, fork } from 'redux-saga/effects';
 import { CRUD } from 'actions/crud';
 
 const crudApi = (method, url, { params, data } = {} ) => {
-  return axios({ baseURL: '/api/db', method, url, params, data })
-    .then(response => response.data);
+  return axios({ baseURL: '/api/db', method, url, params, data });
 }
 
 function* crudEntity(action) {

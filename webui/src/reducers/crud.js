@@ -13,7 +13,7 @@ export function byIdReducer(state = byIdInitialState, action) {
   switch(action.type) {
     case CRUD.FETCH_SUCCESS:
       const data = state.toJS();
-      action.payload.forEach((document) => {
+      action.payload.data.forEach((document) => {
         data[document[action.meta.id]] = {
           document,
           error: null
