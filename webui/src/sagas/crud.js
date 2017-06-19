@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { all, takeEvery, put, call } from 'redux-saga/effects';
+import { all, takeEvery, put, call, take, fork } from 'redux-saga/effects';
 import { CRUD } from 'actions/crud';
 
 const crudApi = (method, url, { params, data } = {} ) => {
@@ -23,11 +23,14 @@ function* crudEntity(action) {
 }
 
 function* watchFetch() {
-  yield takeEvery(CRUD.FETCH, crudEntity)
+  while(true) {
+    const action = yield take(CRUD.FETCH);
+    yield fork(crudEntity, action);
+  } 
 }
 
 export default function* () {
   yield all([
-    watchFetch()
+    fork(watchFetch)
   ])
 }
