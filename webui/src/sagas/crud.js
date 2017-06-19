@@ -11,6 +11,7 @@ function* crudEntity(action) {
   const { success, failure } = action.meta;
   const meta = {
     ...action.meta,
+    fetchedAt: Date.now()
   }
 
   try {
