@@ -37,13 +37,15 @@ class App extends Component {
     return (
       <Layout>
         <Layout.Container visible={view === "subscriber"}>
-          <SubscriberContainer/>
+          <Layout.Content background="#e9ecef">
+            <SubscriberContainer/>
+          </Layout.Content>
         </Layout.Container>
         <Layout.Container visible={view === "pdn"}>
-          <PdnContainer/>
+          <Layout.Content><PdnContainer/></Layout.Content>
         </Layout.Container>
         <Layout.Container visible={view === "user"}>
-          <UserContainer/>
+          <Layout.Content><UserContainer/></Layout.Content>
         </Layout.Container>
         <Layout.Container visible={view === "test1"}>
           <Layout.Content>{view}</Layout.Content>

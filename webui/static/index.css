@@ -20,7 +20,7 @@ html, body {
   -ms-font-smoothing: subpixel-antialiased;
 
   font-family: 'Roboto', sans-serif;
-  background: #f8f9fa;
+  background: white;
 }
 
 * {

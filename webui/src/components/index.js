@@ -7,7 +7,9 @@ import Logout from './Base/Logout';
 import Modal from './Shared/Modal';
 import ThumbnailIcon from './Shared/ThumbnailIcon';
 import Dimmed from './Shared/Dimmed';
+import Spinner from './Shared/Spinner';
 
+import * as Subscriber from './Subscriber';
 import * as User from './User';
 
 export {
@@ -20,6 +22,8 @@ export {
   Modal,
   ThumbnailIcon,
   Dimmed,
+  Spinner,
 
+  Subscriber,
   User
 }

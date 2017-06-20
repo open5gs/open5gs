@@ -5,6 +5,8 @@ import { connect } from 'react-redux';
 import { fetchSubscribers } from 'modules/crud/subscriber';
 import { select } from 'modules/crud/selectors';
 
+import { Spinner, Subscriber } from 'components';
+
 class SubscriberContainer extends Component {
    componentWillMount() {
     const { subscribers, dispatch } = this.props
@@ -23,17 +25,16 @@ class SubscriberContainer extends Component {
 
   render() {
     const { subscribers } = this.props
+
     if (subscribers.isLoading) {
-      return <div>
-        <p>loading...</p>
-      </div>
+      return <Spinner/>
     } else {
-      return <div>
-        { subscribers.data.map(subscriber => 
-          <li key={subscriber.imsi}>{subscriber.imsi}{subscriber.pdn[0].apn}</li>
-          )
-        }
-      </div>
+      return (
+        <div>
+          <Subscriber.Search />
+          <Subscriber.List subscribers={subscribers.data} />
+        </div>
+      )
     }
   }
 }

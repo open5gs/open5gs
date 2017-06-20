@@ -50,18 +50,10 @@ Layout.Container = ({visible, children}) => visible ? (
 
 /* this is a temporal CSS */
 Layout.Content = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  font-size: 4rem;
-  line-height: 8rem;
-  color: ${oc.gray[5]};
-
-  border-top: 1px solid ${oc.gray[4]};
-  box-shadow: 3px 3px 6px rgba(0,0,0,0.10), 3px 3px 6px rgba(0,0,0,0.20);
-
-  background-color: white;
+  width: 100%;
+  height: 100%;
+  
+  background: ${p => p.background ? p.background : `white`};
 `;
 
 export default Layout;
