@@ -16,15 +16,16 @@ export const CRUD = {
   DELETE_FAILURE: 'crud/DELETE_FAILURE',
 };
 
-export const fetchCollection = (model, id, url, params) => {
+export const fetchCollection = (model, url, params = {}, options = {}) => {
+  const idProperty = options.idProperty || '_id';
   return {
     type: CRUD.FETCH, 
     meta: {
       success: CRUD.FETCH_SUCCESS,
       failure: CRUD.FETCH_FAILURE,
       model,
-      id,
-      params
+      idProperty,
+      params,
     },
     payload: {
       method: 'get',

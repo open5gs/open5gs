@@ -23,9 +23,10 @@ const initialState = fromJS({});
 function byIdReducer(state = byIdInitialState, action) {
   switch(action.type) {
     case CRUD.FETCH_SUCCESS:
+      const idProperty = action.meta ? action.meta.idProperty : '_id';
       const data = state.toJS();
       action.payload.data.forEach((document) => {
-        data[document[action.meta.id]] = {
+        data[document[idProperty]] = {
           document,
           fetchedAt: action.meta.fetchedAt,
           error: null
@@ -44,8 +45,9 @@ function collectionReducer(state = collectionInitialState, action) {
                   .set('fetchedAt', 0)
                   .set('error', null);
     case CRUD.FETCH_SUCCESS:
+      const idProperty = action.meta ? action.meta.idProperty : '_id';
       const data = action.payload.data;
-      const ids = data.map((document) => document[action.meta.id]);
+      const ids = data.map((document) => document[idProperty]);
       return state.set('params', fromJS(action.meta.params))
                   .set('ids', fromJS(ids))
                   .set('otherInfo', fromJS(action.payload).delete('data'))
