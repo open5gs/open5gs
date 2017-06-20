@@ -40,6 +40,7 @@ Layout.defaultProps = defaultProps;
 
 const ContainerWrapper = styled.div`
   flex: 1;
+  overflow-y: scroll;
 `;
 
 Layout.Container = ({visible, children}) => visible ? (
@@ -48,7 +49,6 @@ Layout.Container = ({visible, children}) => visible ? (
   </ContainerWrapper>
 ) : null;
 
-/* this is a temporal CSS */
 Layout.Content = styled.div`
   width: 100%;
   height: 100%;
