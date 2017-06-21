@@ -75,18 +75,16 @@ class Modal extends Component {
     const {visible, children, width} = this.props;
 
     return (
-      <div>
-        <Wrapper width={width}>
-          <CSSTransitionGroup
-            transitionName="modal"
-            transitionEnterTimeout={500}
-            transitionLeaveTimeout={500}>
-            {
-              visible && (<div>{children}</div>)
-            }
-          </CSSTransitionGroup>
-        </Wrapper>
-      </div>
+      <Wrapper width={width}>
+        <CSSTransitionGroup
+          transitionName="modal"
+          transitionEnterTimeout={500}
+          transitionLeaveTimeout={500}>
+          {
+            visible && (<div>{children}</div>)
+          }
+        </CSSTransitionGroup>
+      </Wrapper>
     );
   }
 }

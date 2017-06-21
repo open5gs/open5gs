@@ -8,7 +8,7 @@ import { select } from 'modules/crud/selectors';
 import { Spinner, Subscriber } from 'components';
 
 class SubscriberContainer extends Component {
-   componentWillMount() {
+  componentWillMount() {
     const { subscribers, dispatch } = this.props
     if (subscribers.needsFetch) {
       dispatch(subscribers.fetch)
@@ -26,16 +26,12 @@ class SubscriberContainer extends Component {
   render() {
     const { subscribers } = this.props
 
-    if (subscribers.isLoading) {
-      return <Spinner/>
-    } else {
-      return (
-        <div>
-          <Subscriber.Search />
-          <Subscriber.List subscribers={subscribers.data} />
-        </div>
-      )
-    }
+    return (
+      <div>
+        <Subscriber.Search />
+        <Subscriber.List subscribers={subscribers.data} />
+      </div>
+    )
   }
 }
 
