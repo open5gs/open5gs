@@ -4,7 +4,7 @@ import oc from 'open-color';
 import PropTypes from 'prop-types';
 
 const Wrapper = styled.div`
-  padding : 8rem;
+  padding : 4rem;
   text-align: center;
 `;
 
@@ -17,7 +17,7 @@ const propTypes = {
 const defaultProps = {
   visible: true,
   color: "blue",
-  size: "64"
+  size: "32"
 }
 
 const Spinner = ({visible, color, size}) => visible ? (

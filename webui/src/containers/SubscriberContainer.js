@@ -30,6 +30,7 @@ class SubscriberContainer extends Component {
       <div>
         <Subscriber.Search />
         <Subscriber.List subscribers={subscribers.data} />
+        <Spinner visible={subscribers.isLoading} />
       </div>
     )
   }
