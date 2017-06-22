@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import { fetchSubscribers } from 'modules/crud/subscriber';
 import { select } from 'modules/crud/selectors';
 
+import oc from 'open-color';
 import { Spinner, Subscriber } from 'components';
 
 class SubscriberContainer extends Component {
@@ -30,7 +31,7 @@ class SubscriberContainer extends Component {
       <div>
         <Subscriber.Search />
         <Subscriber.List subscribers={subscribers.data} />
-        <Spinner visible={subscribers.isLoading} />
+        {subscribers.isLoading && <Spinner md color={oc.indigo[9]} />}
       </div>
     )
   }

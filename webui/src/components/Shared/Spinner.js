@@ -1,47 +1,79 @@
-import React from 'react';
-import styled from 'styled-components';
-import oc from 'open-color';
-import PropTypes from 'prop-types';
 
-const Wrapper = styled.div`
-  padding : 4rem;
-  text-align: center;
+import PropTypes from 'prop-types';
+import React from 'react';
+import styled, { keyframes } from 'styled-components';
+
+const circleAnim = keyframes`
+  0% { transform: rotate(0deg); }
+  50% { transform: rotate(180deg); }
+  100% { transform: rotate(360deg); }
 `;
 
-const propTypes = {
-  visible: PropTypes.bool,
-  color: PropTypes.string,
-  size: PropTypes.string,
-}
+const getIconSize = ({ small, medium, large }) => {
+  if (small) return '16px';
+  if (medium) return '64px';
+  if (large) return '96px';
+  return '32px';
+};
 
-const defaultProps = {
-  visible: true,
-  color: "blue",
-  size: "32"
-}
+const getBorderWidth = ({ small, medium, large }) => {
+  if (small) return '1px';
+  if (medium) return '4px';
+  if (large) return '6px';
+  return '2px';
+};
 
-const Spinner = ({visible, color, size}) => visible ? (
-  <Wrapper>
-    <svg width={size} height={size} viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg" stroke={color}>
-    <g fill="none" fillRule="evenodd">
-      <g transform="translate(1 1)" strokeWidth="2">
-        <circle strokeOpacity=".5" cx="18" cy="18" r="18"/>
-        <path d="M36 18c0-9.94-8.06-18-18-18">
-          <animateTransform
-            attributeName="transform"
-            type="rotate"
-            from="0 18 18"
-            to="360 18 18"
-            dur="1s"
-            repeatCount="indefinite"/>
-        </path>
-      </g>
-    </g>
-    </svg>
+const Circle = styled.div`
+  width: ${props => getIconSize(props)};
+  height: ${props => getIconSize(props)};
+  position: relative;
+  display: inline-block;
+  box-sizing: border-box;
+  font-size: 0px;
+  color: ${props => props.color || '#333'};
+`;
+
+const CircleInner = styled.div`
+  position: relative;
+  box-sizing: border-box;
+  display: inline-block;
+  float: none;
+  width: ${props => getIconSize(props)};
+  height: ${props => getIconSize(props)};
+  background: transparent;
+  border: ${props => getBorderWidth(props)} solid currentColor;
+  border-bottom-color: transparent;
+  border-Radius: 100%;
+  animation: ${circleAnim} 0.75s linear infinite;
+`;
+
+const Wrapper = styled.div`
+  text-align: ${props => props.align || 'center'};
+  padding: ${props => props.padding || '2rem'};
+`
+
+const Spinner = ({ sm, md, lg, color, align, padding }) => (
+  <Wrapper align={align} padding={padding}>
+    <Circle
+      small={sm}
+      medium={md}
+      large={lg}
+      color={color}
+    >
+      <CircleInner
+        small={sm}
+        medium={md}
+        large={lg}
+      />
+    </Circle>
   </Wrapper>
-) : null;
+);
 
-Spinner.propTypes = propTypes;
-Spinner.defaultProps = defaultProps;
+Spinner.propTypes = {
+  sm: PropTypes.bool,
+  md: PropTypes.bool,
+  lg: PropTypes.bool,
+  color: PropTypes.string,
+};
 
 export default Spinner;
