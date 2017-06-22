@@ -29,7 +29,6 @@ const Wrapper = styled.div`
 
   ${media.mobile`
     width: 100%;
-    margin: 0 auto;
   `}
 `;
 

@@ -20,11 +20,6 @@ const Sizer = styled.div`
   ${media.tablet`
     width: 100%;
   `}
-
-  ${media.mobile`
-    width: 100%;
-    padding: 0.5rem;
-  `}
 `;
 
 const Card = styled.div`

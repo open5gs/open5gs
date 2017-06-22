@@ -13,7 +13,7 @@ const Wrapper = styled.div`
   margin: 1rem 0.5rem;
   
   ${media.mobile`
-    margin: 0.5rem 0rem;
+    margin: 0.5rem 0.25rem;
   `}
 
   .subscriber-enter {
