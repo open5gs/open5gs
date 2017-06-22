@@ -11,7 +11,8 @@ import Package from '../../../package';
 
 const Body = styled.div`
   display: flex;
-  height: calc(100vh - 4rem);
+  height: 100%;
+  min-height: calc(100vh - 4rem);
 `
 
 const propTypes = {
