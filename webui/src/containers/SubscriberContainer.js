@@ -5,10 +5,29 @@ import { connect } from 'react-redux';
 import { fetchSubscribers } from 'modules/crud/subscriber';
 import { select } from 'modules/crud/selectors';
 
+import styled from 'styled-components';
 import oc from 'open-color';
+import { media } from 'helpers/style-utils';
+
 import { Spinner, Subscriber } from 'components';
 
+const Wrapper = styled.div`
+  width: 100%;
+  height: 100%;
+  padding-top: 2rem;
+
+  background: #e9ecef;
+
+  ${media.mobile`
+     padding-top: 0rem;
+  `}
+`
+
 class SubscriberContainer extends Component {
+  state = {
+    search: ''
+  };
+
   componentWillMount() {
     const { subscribers, dispatch } = this.props
     if (subscribers.needsFetch) {
@@ -24,15 +43,44 @@ class SubscriberContainer extends Component {
     }
   }
 
+  handleSearchChange = (e) => {
+    this.setState({
+      search: e.target.value
+    });
+  }
+
+  handleSearchClear = (e) => {
+    this.setState({
+      search: ''
+    });
+  }
+
   render() {
-    const { subscribers } = this.props
+    const {
+      handleSearchChange,
+      handleSearchClear
+    } = this;
+
+    const { 
+      search
+    } = this.state;
+
+    const { 
+      subscribers 
+    } = this.props
 
     return (
-      <div>
-        <Subscriber.Search />
-        <Subscriber.List subscribers={subscribers.data} />
+      <Wrapper>
+        <Subscriber.Search 
+          onChange={handleSearchChange}
+          value={search}
+          onClear={handleSearchClear} />
+        <Subscriber.List
+          subscribers={subscribers.data}
+          search={search}
+        />
         {subscribers.isLoading && <Spinner md color={oc.indigo[9]} />}
-      </div>
+      </Wrapper>
     )
   }
 }

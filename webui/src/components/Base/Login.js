@@ -54,12 +54,12 @@ const ErrorClose = styled.div`
   right: 1rem;
 `;
 
-const ErrorBar = ({ visible, message, onClick }) => visible ? (
+const ErrorBar = ({ visible, message, onClose }) => visible ? (
   <ErrorWrapper>
     <ErrorMessage>
       {message}
     </ErrorMessage>
-    <ErrorClose onClick={onClick}>
+    <ErrorClose onClick={onClose}>
       <CloseIcon/>
     </ErrorClose>
   </ErrorWrapper>
@@ -68,7 +68,7 @@ const ErrorBar = ({ visible, message, onClick }) => visible ? (
 ErrorBar.propTypes = {
   visible: PropTypes.bool,
   message: PropTypes.string,
-  onClick: PropTypes.func
+  onClose: PropTypes.func
 };
 
 const Thumbnail = styled.div`
@@ -173,7 +173,7 @@ const Login = ({
       <ErrorBar 
         visible={error !== null}
         message={error && error.message}
-        onClick={onErrorReset} />
+        onClose={onErrorReset} />
       <Thumbnail>
         <ThumbnailIcon size='8rem' color={oc['blue'][6]} />
       </Thumbnail>

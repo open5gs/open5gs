@@ -37,9 +37,7 @@ class App extends Component {
     return (
       <Layout>
         <Layout.Container visible={view === "subscriber"}>
-          <Layout.Content background="#e9ecef">
-            <SubscriberContainer/>
-          </Layout.Content>
+          <SubscriberContainer/>
         </Layout.Container>
         <Layout.Container visible={view === "pdn"}>
           <Layout.Content><PdnContainer/></Layout.Content>

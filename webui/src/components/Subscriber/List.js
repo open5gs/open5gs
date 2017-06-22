@@ -30,10 +30,19 @@ const propTypes = {
   subscribers: PropTypes.arrayOf(PropTypes.object)
 }
 
-const List = ({ subscribers }) => {
-  const subscriberList = subscribers.map(subscriber =>
-    <Item key={subscriber.imsi} subscriber={subscriber} />
-  );
+const List = ({ subscribers, search }) => {
+  const subscriberList = subscribers
+    .filter(s => s.imsi.indexOf(search) !== -1)
+    .sort( 
+      (a,b) => {
+        if(a.imsi > b.imsi) return 1;
+        if (a.imsi < b.imsi) return -1;
+        return 0;
+      }
+    )
+    .map(subscriber =>
+      <Item key={subscriber.imsi} subscriber={subscriber} />
+    );
 
   return (
     <Wrapper>

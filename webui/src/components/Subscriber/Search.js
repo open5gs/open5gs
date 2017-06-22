@@ -1,33 +1,84 @@
-import styled from 'styled-components';
-import oc from 'open-color';
 import PropTypes from 'prop-types';
 
-const Search = styled.input`
-  width: 100%;
-  padding: 0.5rem;
+import styled from 'styled-components';
+import oc from 'open-color';
+import { media } from 'helpers/style-utils';
 
-  border: 1px solid ${oc.gray[2]};
+import SearchIcon from 'react-icons/lib/md/search';
+import ClearIcon from 'react-icons/lib/md/clear';
 
-  font-size: 1.5rem;
-  line-height: 2rem;
-  transition: all .25s;
+const Wrapper = styled.div`
+  display: flex;
+  align-items: center;
 
-  &:focus {
-    outline: none;
-    border: 1px solid ${oc.pink[3]};
-    color: ${oc.pink[6]};
+  width: 700px;
+  margin: 0 auto 1rem auto;
+
+  background: white;
+  color: ${oc.gray[6]};
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+  transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+      
+  &:hover {
+    box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
   }
 
-  & + & {
-    margin-top: 1rem;
-  }
+  ${media.tablet`
+    width: 500px;
+  `}
+
+  ${media.mobile`
+    width: 100%;
+    margin: 0 auto;
+  `}
 `;
 
+const SearchIconWrapper = styled.div`
+  display: inline-flex;
+  margin-left: 1rem;
+  font-size: 1.5rem;
+`
+
+const Input = styled.input`
+  padding : 1rem;
+  margin: 0 auto;
+  width: 100%;
+
+  font-size: 1.2rem;
+  font-weight: 300;
+
+  cursor: text;
+
+  border: none;
+  outline: none;
+`
+const ClearIconWrapper = styled.div`
+  display: inline-flex;
+  margin-right: 1rem;
+  font-size: 1.5rem;
+
+  cursor: pointer;
+`
+
+const Search = ({ value, onChange, onClear }) => (
+  <Wrapper>
+    <SearchIconWrapper><SearchIcon/></SearchIconWrapper>
+    <Input 
+      value={value}
+      onChange={onChange}/>
+    {value !== '' && 
+      <ClearIconWrapper onClick={onClear}>
+        <ClearIcon/>
+      </ClearIconWrapper>
+    }
+  </Wrapper>
+
+)
+
 Search.propTypes = {
-  name: PropTypes.string,
   value: PropTypes.string,
-  placeholder: PropTypes.string,
-  onChange: PropTypes.func
+  onChange: PropTypes.func,
+  onClear: PropTypes.func
 };
 
 export default Search;
