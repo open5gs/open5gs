@@ -28,10 +28,14 @@ const Wrapper = styled.div`
 `
 
 const propTypes = {
-  subscribers: PropTypes.arrayOf(PropTypes.object)
+  subscribers: PropTypes.arrayOf(PropTypes.object),
+  onShow: PropTypes.func,
+  onEdit: PropTypes.func,
+  onDelete: PropTypes.func,
+  search: PropTypes.string
 }
 
-const List = ({ subscribers, search }) => {
+const List = ({ subscribers, onShow, onEdit, onDelete, search }) => {
   const subscriberList = subscribers
     .filter(s => s.imsi.indexOf(search) !== -1)
     .sort( 
@@ -42,7 +46,12 @@ const List = ({ subscribers, search }) => {
       }
     )
     .map(subscriber =>
-      <Item key={subscriber.imsi} subscriber={subscriber} />
+      <Item 
+        key={subscriber.imsi}
+        subscriber={subscriber}
+        onShow={onShow}
+        onEdit={onEdit}
+        onDelete={onDelete} />
     );
 
   return (

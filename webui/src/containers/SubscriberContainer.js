@@ -55,10 +55,22 @@ class SubscriberContainer extends Component {
     });
   }
 
+  handleShow = (imsi) => {
+  }
+
+  handleEdit = (imsi) => {
+  }
+
+  handleDelete = (imsi) => {
+  }
+
   render() {
     const {
       handleSearchChange,
-      handleSearchClear
+      handleSearchClear,
+      handleShow,
+      handleEdit,
+      handleDelete
     } = this;
 
     const { 
@@ -77,6 +89,9 @@ class SubscriberContainer extends Component {
           onClear={handleSearchClear} />
         <Subscriber.List
           subscribers={subscribers.data}
+          onShow={handleShow}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
           search={search}
         />
         {subscribers.isLoading && <Spinner md color={oc.indigo[9]} />}
