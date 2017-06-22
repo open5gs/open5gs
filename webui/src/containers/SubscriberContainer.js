@@ -9,7 +9,7 @@ import styled from 'styled-components';
 import oc from 'open-color';
 import { media } from 'helpers/style-utils';
 
-import { Subscriber, Spinner, FloatingButton } from 'components';
+import { Subscriber, Spinner, FloatingButton, Blank } from 'components';
 
 const Wrapper = styled.div`
   width: 100%;
@@ -85,12 +85,21 @@ class SubscriberContainer extends Component {
       subscribers 
     } = this.props
 
+    const {
+      isLoading,
+      data
+    } = subscribers;
+
+    const {
+      length
+    } = data;
+
     return (
       <Wrapper>
-        <Subscriber.Search 
+        {length !== 0 && <Subscriber.Search 
           onChange={handleSearchChange}
           value={search}
-          onClear={handleSearchClear} />
+          onClear={handleSearchClear} />}
         <Subscriber.List
           subscribers={subscribers.data}
           onShow={handleShow}
@@ -98,7 +107,13 @@ class SubscriberContainer extends Component {
           onDelete={handleDelete}
           search={search}
         />
-        {subscribers.isLoading && <Spinner md color={oc.indigo[9]} />}
+        {isLoading && <Spinner md color={oc.indigo[9]} />}
+        <Blank
+          visible={!isLoading && !length}
+          title="ADD A SUBSCRIBER"
+          body="You have no subscribers... yet!"
+          onTitle={handleAdd}
+          />
         <FloatingButton onClick={handleAdd}/>
       </Wrapper>
     )

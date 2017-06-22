@@ -25,7 +25,7 @@ Wrapper.propTypes = {
 
 const Thumbnail = ({size, color}) => (
   <Wrapper size={size} color={color}>
-      <Person />
+    <Person />
   </Wrapper>
 )
 

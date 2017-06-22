@@ -5,7 +5,7 @@ import oc from 'open-color';
 import { media, transitions } from 'helpers/style-utils';
 import CSSTransitionGroup from 'react-transition-group/CSSTransitionGroup';
 
-import { Layout } from 'components';
+import { Layout, Blank } from 'components';
 import Item from './Item';
 
 const Wrapper = styled.div`

@@ -10,6 +10,7 @@ import Dimmed from './Shared/Dimmed';
 import Spinner from './Shared/Spinner';
 import FloatingButton from './Shared/FloatingButton';
 import Tooltip from './Shared/Tooltip';
+import Blank from './Shared/Blank';
 
 import * as Subscriber from './Subscriber';
 import * as User from './User';
@@ -27,6 +28,7 @@ export {
   Spinner,
   FloatingButton,
   Tooltip,
+  Blank,
 
   Subscriber,
   User
