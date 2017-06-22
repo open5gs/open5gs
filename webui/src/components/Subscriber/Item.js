@@ -8,6 +8,8 @@ import { media } from 'helpers/style-utils';
 import EditIcon from 'react-icons/lib/md/edit';
 import DeleteIcon from 'react-icons/lib/md/delete';
 
+import { Tooltip } from 'components';
+
 const Sizer = styled.div`
   display: inline-block;
   width: 33.3%;
@@ -24,7 +26,6 @@ const Sizer = styled.div`
 
 const Card = styled.div`
   position: relative;
-  overflow: hidden;
   display: flex;
 
   background: white;
@@ -36,18 +37,14 @@ const Card = styled.div`
   .actions {
     position: absolute;
     top: 0;
-    right: -6rem;
+    right: 0;
     width: 6rem;
     height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
 
-    background: ${oc.gray[1]};
-    border-left: 1px solid ${oc.gray[2]};
     opacity: 0;
-
-    transition: all .4s;
   }
 
   &:hover {
@@ -55,7 +52,6 @@ const Card = styled.div`
 
     .actions {
       opacity: 1;
-      right: 0rem;
     }
   }
 `;
@@ -69,20 +65,17 @@ const CircleButton = styled.div`
   margin: 0.25rem;
 
   background: white;
-  border: 1px solid ${oc.gray[4]};
-  color: ${oc.gray[4]};
+  color: ${oc.gray[6]};
 
   border-radius: 1rem;
-  font-size: 1.15rem;
+  font-size: 1.5rem;
 
   &:hover {
-    border: 1px solid ${oc.indigo[4]};
     color: ${oc.indigo[6]};
   }
 
   &.delete {
     &:hover {
-      border: 1px solid ${oc.pink[4]};
       color: ${oc.pink[6]};
     }
   }
@@ -114,8 +107,12 @@ const Item = ({ subscriber, onShow, onEdit, onDelete }) => {
       <Card onClick={() => onShow(imsi)}>
         <Imsi>{subscriber.imsi}</Imsi>
         <div className="actions">
-          <CircleButton onClick={() => onEdit(imsi)}><EditIcon/></CircleButton>
-          <CircleButton className="delete" onClick={() => onDelete(imsi)}><DeleteIcon/></CircleButton>
+          <Tooltip content='Edit'>
+            <CircleButton onClick={() => onEdit(imsi)}><EditIcon/></CircleButton>
+          </Tooltip>
+          <Tooltip content='Delete'>
+            <CircleButton className="delete" onClick={() => onDelete(imsi)}><DeleteIcon/></CircleButton>
+          </Tooltip>
         </div>
       </Card>
     </Sizer>

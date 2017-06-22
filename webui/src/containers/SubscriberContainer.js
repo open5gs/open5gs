@@ -9,7 +9,7 @@ import styled from 'styled-components';
 import oc from 'open-color';
 import { media } from 'helpers/style-utils';
 
-import { Spinner, Subscriber } from 'components';
+import { Subscriber, Spinner, FloatingButton } from 'components';
 
 const Wrapper = styled.div`
   width: 100%;
@@ -55,6 +55,9 @@ class SubscriberContainer extends Component {
     });
   }
 
+  handleAdd = (e) => {
+  }
+
   handleShow = (imsi) => {
   }
 
@@ -68,6 +71,7 @@ class SubscriberContainer extends Component {
     const {
       handleSearchChange,
       handleSearchClear,
+      handleAdd,
       handleShow,
       handleEdit,
       handleDelete
@@ -95,6 +99,7 @@ class SubscriberContainer extends Component {
           search={search}
         />
         {subscribers.isLoading && <Spinner md color={oc.indigo[9]} />}
+        <FloatingButton onClick={handleAdd}/>
       </Wrapper>
     )
   }

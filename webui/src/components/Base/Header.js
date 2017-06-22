@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import oc from 'open-color';
 
 import MenuIcon from 'react-icons/lib/md/menu';
-import {ThumbnailIcon} from 'components';
+import { ThumbnailIcon, Tooltip } from 'components';
 
 const Wrapper = styled.div`
   display: flex;
@@ -35,7 +35,7 @@ const Thumbnail = styled.div`
   padding: 1rem 0;
 
   position: absolute;
-  right: 1rem;
+  right: 2rem;
 
   cursor: pointer;
 `;
@@ -54,7 +54,9 @@ const Header = ({ onSidebarToggle, onLogoutRequest }) => (
       Next.EPC
     </Title>
     <Thumbnail onClick={onLogoutRequest}>
-      <ThumbnailIcon size="2rem" color={oc['pink'][4]} />
+      <Tooltip bottom content='Logout' width="80px">
+        <ThumbnailIcon size="2rem" color={oc['pink'][4]} />
+      </Tooltip>
     </Thumbnail>
   </Wrapper>
 )
