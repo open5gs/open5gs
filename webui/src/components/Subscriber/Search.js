@@ -12,7 +12,7 @@ const Wrapper = styled.div`
   align-items: center;
 
   width: 700px;
-  margin: 0 auto 1rem auto;
+  margin: 0 auto;
 
   background: white;
   color: ${oc.gray[6]};
@@ -24,7 +24,7 @@ const Wrapper = styled.div`
   }
 
   ${media.tablet`
-    width: 500px;
+    width: 400px;
   `}
 
   ${media.mobile`

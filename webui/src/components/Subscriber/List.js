@@ -10,9 +10,10 @@ import Item from './Item';
 
 const Wrapper = styled.div`
   display: block;
+  margin: 1rem 0.5rem;
   
   ${media.mobile`
-    margin-top: 0.25rem;
+    margin: 0.5rem 0rem;
   `}
 
   .subscriber-enter {

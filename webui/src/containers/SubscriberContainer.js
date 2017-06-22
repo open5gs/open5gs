@@ -14,12 +14,12 @@ import { Spinner, Subscriber } from 'components';
 const Wrapper = styled.div`
   width: 100%;
   height: 100%;
-  padding-top: 2rem;
+  padding: 2rem 0rem;
 
   background: #e9ecef;
 
   ${media.mobile`
-     padding-top: 0rem;
+     padding: 0rem;
   `}
 `
 
