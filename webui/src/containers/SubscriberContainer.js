@@ -9,7 +9,7 @@ import styled from 'styled-components';
 import oc from 'open-color';
 import { media } from 'helpers/style-utils';
 
-import { Subscriber, Spinner, FloatingButton, Blank } from 'components';
+import { Layout, Subscriber, Spinner, FloatingButton, Blank } from 'components';
 
 class SubscriberContainer extends Component {
   state = {
