@@ -54,7 +54,7 @@ const Header = ({ onSidebarToggle, onLogoutRequest }) => (
       Next.EPC
     </Title>
     <Thumbnail onClick={onLogoutRequest}>
-      <Tooltip bottom content='Logout' width="80px">
+      <Tooltip bottom content='Logout' width="60px">
         <ThumbnailIcon size="2rem" color={oc['pink'][4]} />
       </Tooltip>
     </Thumbnail>
