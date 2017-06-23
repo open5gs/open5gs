@@ -47,7 +47,7 @@ const StyledBody = styled.div`
   font-weight: 300;
 
   color: ${oc.gray[6]};
-  cursor: pointer;
+  cursor: default;
 `;
 
 const Blank = ({visible, title, body, onTitle}) => visible ? (
