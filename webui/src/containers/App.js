@@ -34,6 +34,12 @@ class App extends Component {
       view
     } = this.props;
 
+    if (view === "subscriber") {
+      document.body.style.backgroundColor = "#e9ecef";
+    } else {
+      document.body.style.backgroundColor = "white";
+    }
+
     return (
       <Layout>
         <Layout.Container visible={view === "subscriber"}>

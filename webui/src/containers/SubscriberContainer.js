@@ -11,18 +11,6 @@ import { media } from 'helpers/style-utils';
 
 import { Subscriber, Spinner, FloatingButton, Blank } from 'components';
 
-const Wrapper = styled.div`
-  width: 100%;
-  height: 100%;
-  padding: 2rem 0rem;
-
-  background: #e9ecef;
-
-  ${media.mobile`
-     padding: 0rem;
-  `}
-`
-
 class SubscriberContainer extends Component {
   state = {
     search: ''
@@ -30,6 +18,7 @@ class SubscriberContainer extends Component {
 
   componentWillMount() {
     const { subscribers, dispatch } = this.props
+
     if (subscribers.needsFetch) {
       dispatch(subscribers.fetch)
     }
@@ -95,7 +84,7 @@ class SubscriberContainer extends Component {
     } = data;
 
     return (
-      <Wrapper>
+      <Layout.Content>
         {length !== 0 && <Subscriber.Search 
           onChange={handleSearchChange}
           value={search}
@@ -115,7 +104,7 @@ class SubscriberContainer extends Component {
           onTitle={handleAdd}
           />
         <FloatingButton onClick={handleAdd}/>
-      </Wrapper>
+      </Layout.Content>
     )
   }
 }

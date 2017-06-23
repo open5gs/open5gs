@@ -53,8 +53,6 @@ Layout.Container = ({visible, children}) => visible ? (
 Layout.Content = styled.div`
   width: 100%;
   height: 100%;
-  
-  background: ${p => p.background ? p.background : `white`};
 `;
 
 export default Layout;

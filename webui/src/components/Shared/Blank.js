@@ -9,7 +9,7 @@ const Wrapper = styled.div`
   position: relative;
   display: block;
 
-  padding-top : 4rem;
+  margin-top : 6rem;
 `  
 
 const CircleIcon = styled.div`
