@@ -50,8 +50,6 @@ Layout.Container = ({visible, children}) => visible ? (
 ) : null;
 
 Layout.Content = styled.div`
-  width: 100%;
-  height: 100%;
 `;
 
 export default Layout;
