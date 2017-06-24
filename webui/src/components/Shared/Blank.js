@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import oc from 'open-color';
 
+import { CircleIcon } from 'components';
 import SchoolIcon from 'react-icons/lib/md/school'
 
 const Wrapper = styled.div`
@@ -11,22 +12,6 @@ const Wrapper = styled.div`
 
   margin-top : 6rem;
 `  
-
-const CircleIcon = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  width: ${props => props.size};
-  height: ${props => props.size};
-  margin: 0 auto;
-
-  border-radius: calc(${props => props.size} * 0.5 );
-  font-size: calc(${props => props.size} * 0.75);
-
-  background: ${oc.gray[0]};
-  color: ${oc.gray[8]};
-`;
 
 const StyledTitle = styled.div`
   display: block;
@@ -52,7 +37,7 @@ const StyledBody = styled.div`
 
 const Blank = ({visible, title, body, onTitle}) => visible ? (
   <Wrapper>
-    <CircleIcon size="12rem">
+    <CircleIcon size="12rem" background={oc.gray[0]} color={oc.gray[8]}>
       <SchoolIcon/>
     </CircleIcon>
     <StyledBody>{body}</StyledBody>

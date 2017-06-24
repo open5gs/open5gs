@@ -5,7 +5,7 @@ import Login from './Base/Login';
 import Logout from './Base/Logout';
 
 import Modal from './Shared/Modal';
-import StyledIcon from './Shared/StyledIcon';
+import CircleIcon from './Shared/CircleIcon';
 import Dimmed from './Shared/Dimmed';
 import Spinner from './Shared/Spinner';
 import FloatingButton from './Shared/FloatingButton';
@@ -23,7 +23,7 @@ export {
   Logout,
 
   Modal,
-  StyledIcon,
+  CircleIcon,
   Dimmed,
   Spinner,
   FloatingButton,

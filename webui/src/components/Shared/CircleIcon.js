@@ -6,6 +6,8 @@ import oc from 'open-color';
 const Wrapper = styled.div`
   width: ${p => p.size};
   height: ${p => p.size};
+  margin: 0 auto;
+
   display: flex;
   align-items: center;
   justify-content: center;
@@ -23,22 +25,22 @@ Wrapper.propTypes = {
   color: PropTypes.string
 };
 
-const StyledIcon = ({ children, size, background, color }) => (
+const CircleIcon = ({ children, size, background, color }) => (
   <Wrapper size={size} background={background} color={color}>
     {children}
   </Wrapper>
 )
 
-StyledIcon.propTypes = {
+CircleIcon.propTypes = {
   size: PropTypes.string,
   background: PropTypes.string,
   color: PropTypes.string
 };
 
-StyledIcon.defaultProps = {
+CircleIcon.defaultProps = {
   size: '4rem',
   background: '#000',
   color: 'white'
 };
 
-export default StyledIcon;
+export default CircleIcon;

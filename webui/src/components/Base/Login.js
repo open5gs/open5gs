@@ -6,7 +6,7 @@ import styled from 'styled-components';
 import oc from 'open-color';
 import { media } from 'helpers/style-utils';
 
-import { StyledIcon } from 'components';
+import { CircleIcon } from 'components';
 import PersonIcon from 'react-icons/lib/md/person';
 import CloseIcon from 'react-icons/lib/md/close';
 
@@ -176,9 +176,9 @@ const Login = ({
         message={error && error.message}
         onClose={onErrorReset} />
       <Thumbnail>
-        <StyledIcon size='8rem' background={oc['blue'][6]}>
+        <CircleIcon size='8rem' background={oc['blue'][6]}>
           <PersonIcon/>
-        </StyledIcon>
+        </CircleIcon>
       </Thumbnail>
       <Form>
         <InputWrapper>

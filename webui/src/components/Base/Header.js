@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import oc from 'open-color';
 
-import { StyledIcon, Tooltip } from 'components';
+import { CircleIcon, Tooltip } from 'components';
 import MenuIcon from 'react-icons/lib/md/menu';
 import PersonIcon from 'react-icons/lib/md/person';
 
@@ -56,9 +56,9 @@ const Header = ({ onSidebarToggle, onLogoutRequest }) => (
     </Title>
     <Thumbnail onClick={onLogoutRequest}>
       <Tooltip bottom content='Logout' width="60px">
-        <StyledIcon size="2rem" background={oc['pink'][4]}>
+        <CircleIcon size="2rem" background={oc['pink'][4]}>
           <PersonIcon/>
-        </StyledIcon>
+        </CircleIcon>
       </Tooltip>
     </Thumbnail>
   </Wrapper>
