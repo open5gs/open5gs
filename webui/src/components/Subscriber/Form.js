@@ -5,10 +5,9 @@ import styled from 'styled-components';
 import oc from 'open-color';
 import { media } from 'helpers/style-utils';
 
-import EditIcon from 'react-icons/lib/md/edit';
-import DeleteIcon from 'react-icons/lib/md/delete';
-
 import SchemaForm from 'react-jsonschema-form';
+
+import { Modal } from 'components';
 
 const schema = {
   title: "Todo",
@@ -31,13 +30,24 @@ const Wrapper = styled.div`
   background: white;
 `
 
-const Editor = () => (
-  <Wrapper>
+const propTypes = {
+  visible: PropTypes.bool, 
+  onHide: PropTypes.func, 
+  onSubmit: PropTypes.func,
+};
+
+const Form = ({ visible, onHide, onSubmit }) => (
+  <Modal 
+    visible={visible} 
+    onHide={onHide} 
+    width="300px">
     <SchemaForm schema={schema}
         onChange={log("changed")}
         onSubmit={log("submitted")}
         onError={log("errors")} />
-  </Wrapper>
+  </Modal>
 )
 
-export default Editor;
+Form.PropTypes = propTypes;
+
+export default Form;

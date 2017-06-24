@@ -1,10 +1,9 @@
 import List from './List';
 import Search from './Search';
-import Editor from './Editor';
+import Form from './Form';
 
 export {
   List,
   Search,
-  Editor
-
+  Form
 };

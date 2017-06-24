@@ -12,16 +12,16 @@ import { Header, Logout, Dimmed } from 'components';
 
 class HeaderContainer extends Component {
   state = {
-    modal: {
+    logout: {
       visible: false,
       dimmed: false
     }
-  }
+  };
 
-  modalHandler = {
+  logoutHandler = {
     show: () => {
       this.setState({
-        modal: {
+        logout: {
           visible: true,
           dimmed: true
         }
@@ -29,7 +29,7 @@ class HeaderContainer extends Component {
     },
     hide: () => {
       this.setState({
-        modal: {
+        logout: {
           visible: false,
           dimmed: false
         }
@@ -37,7 +37,7 @@ class HeaderContainer extends Component {
     },
     logout: async () => {
       this.setState({
-        modal: {
+        logout: {
           visible: false,
         }
       })
@@ -48,7 +48,7 @@ class HeaderContainer extends Component {
       // @FIXME next/router not working reliably  so using window.location
       window.location = '/'
     }
-  }
+  };
 
   handleSidebarToggle = () => {
     const { UIActions } = this.props;
@@ -58,24 +58,24 @@ class HeaderContainer extends Component {
   render() {
     const {
       handleSidebarToggle,
-      modalHandler
+      logoutHandler
     } = this;
 
     const {
-      modal
+      logout
     } = this.state;
 
     return (
       <div>
         <Header 
           onSidebarToggle={handleSidebarToggle}
-          onLogoutRequest={modalHandler.show}
+          onLogoutRequest={logoutHandler.show}
         />
         <Logout 
-          visible={modal.visible}
-          onHide={modalHandler.hide}
-          onLogout={modalHandler.logout} />
-        <Dimmed visible={modal.dimmed} />
+          visible={logout.visible}
+          onHide={logoutHandler.hide}
+          onLogout={logoutHandler.logout} />
+        <Dimmed visible={logout.dimmed} />
       </div>
     )
   }

@@ -9,11 +9,22 @@ import styled from 'styled-components';
 import oc from 'open-color';
 import { media } from 'helpers/style-utils';
 
-import { Layout, Subscriber, Spinner, FloatingButton, Blank } from 'components';
+import { 
+  Layout, 
+  Subscriber, 
+  Spinner, 
+  FloatingButton, 
+  Blank,
+  Dimmed
+} from 'components';
 
 class SubscriberContainer extends Component {
   state = {
-    search: ''
+    search: '',
+    form: {
+      visible: false,
+      dimmed: false
+    }
   };
 
   componentWillMount() {
@@ -44,7 +55,30 @@ class SubscriberContainer extends Component {
     });
   }
 
-  handleAdd = (e) => {
+  formHandler = {
+    show: () => {
+      this.setState({
+        form: {
+          visible: true,
+          dimmed: true
+        }
+      })
+    },
+    hide: () => {
+      this.setState({
+        form: {
+          visible: false,
+          dimmed: false
+        }
+      })
+    },
+    submit: async () => {
+      this.setState({
+        form: {
+          visible: false,
+        }
+      })
+    }
   }
 
   handleShow = (imsi) => {
@@ -60,14 +94,15 @@ class SubscriberContainer extends Component {
     const {
       handleSearchChange,
       handleSearchClear,
-      handleAdd,
+      formHandler,
       handleShow,
       handleEdit,
       handleDelete
     } = this;
 
     const { 
-      search
+      search,
+      form
     } = this.state;
 
     const { 
@@ -101,9 +136,15 @@ class SubscriberContainer extends Component {
           visible={!isLoading && !length}
           title="ADD A SUBSCRIBER"
           body="You have no subscribers... yet!"
-          onTitle={handleAdd}
+          onTitle={formHandler.show}
           />
-        <FloatingButton onClick={handleAdd}/>
+        <FloatingButton onClick={formHandler.show}/>
+        <Subscriber.Form 
+          visible={form.visible} 
+          width="400px"
+          onHide={formHandler.hide}
+          onSubmit={formHandler.submit} />
+        <Dimmed visible={form.dimmed} />
       </Layout.Content>
     )
   }

@@ -37,14 +37,18 @@ class Modal extends Component {
     width: PropTypes.string,
     zindex: PropTypes.string,
     transitionEnter: PropTypes.string,
-    transitionLeave: PropTypes.string
+    transitionLeave: PropTypes.string,
+    transitionEnterTimeout: PropTypes.string,
+    transitionLeaveTimeout: PropTypes.string
   }
 
   static defaultProps = {
     width: '400px',
     zindex: '10',
-    transitionEnter: `${transitions.stretchOut} .3s ease-in`,
-    transitionLeave: `${transitions.shrinkIn} .3s ease-in`
+    transitionEnter: `${transitions.stretchOut} .25s ease-in`,
+    transitionLeave: `${transitions.shrinkIn} .25s ease-in`,
+    transitionEnterTimeout: '300',
+    transitionLeaveTimeout: '150'
   }
 
   handleClickOutside = (e) => {
@@ -79,7 +83,9 @@ class Modal extends Component {
       width, 
       zindex,
       transitionEnter,
-      transitionLeave 
+      transitionLeave,
+      transitionEnterTimeout,
+      transitionLeaveTimeout
     } = this.props;
 
     return (
@@ -90,8 +96,8 @@ class Modal extends Component {
         transitionLeave={transitionLeave}>
         <CSSTransitionGroup
           transitionName="modal"
-          transitionEnterTimeout={500}
-          transitionLeaveTimeout={500}>
+          transitionEnterTimeout={transitionEnterTimeout}
+          transitionLeaveTimeout={transitionLeaveTimeout}>
           {
             visible && (<div>{children}</div>)
           }

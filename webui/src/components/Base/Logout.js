@@ -74,48 +74,40 @@ const NoButton = Button.extend`
   }
 `;
 
+const propTypes = {
+  visible: PropTypes.bool, 
+  onHide: PropTypes.func, 
+  onLogout: PropTypes.func,
+};
 
-class Logout extends Component {
+const Logout = ({ visible, onHide, onLogout }) => (
+  <Modal 
+    visible={visible} 
+    onHide={onHide} 
+    width="300px"
+    transitionEnter={`${transitions.slideDown} .5s ease-in-out`}
+    transitionLeave={`${transitions.slideUp} .5s ease-in-out`}
+    transitionEnterTimeout="500"
+    transitionLeaveTimeout="500">
+    <TitleWrapper>
+      Logout
+    </TitleWrapper>
+    <ContentWrapper>
+      Are you sure you want to logout?
+    </ContentWrapper>
+    <ButtonWrapper>
+      <YesButton
+        onClick={onLogout}>
+        Yes
+      </YesButton>
+      <NoButton 
+        onClick={onHide}>
+        No
+      </NoButton>
+    </ButtonWrapper>
+  </Modal>
+)
 
-  static propTypes = { 
-    visible: PropTypes.bool, 
-    onHide: PropTypes.func, 
-    onLogout: PropTypes.func,
-  }
-
-  render() {
-    const { 
-      visible,
-      onHide,
-      onLogout,
-    } = this.props;
-
-    return (
-      <Modal 
-        visible={visible} 
-        onHide={onHide} 
-        width="300px"
-        transitionEnter={`${transitions.slideDown} .5s ease-in-out`}
-        transitionLeave={`${transitions.slideUp} .5s ease-in-out`}>
-        <TitleWrapper>
-          Logout
-        </TitleWrapper>
-        <ContentWrapper>
-          Are you sure you want to logout?
-        </ContentWrapper>
-        <ButtonWrapper>
-          <YesButton
-            onClick={onLogout}>
-            Yes
-          </YesButton>
-          <NoButton 
-            onClick={onHide}>
-            No
-          </NoButton>
-        </ButtonWrapper>
-      </Modal>
-    );
-  }
-}
+Logout.PropTypes = propTypes;
 
 export default Logout;
