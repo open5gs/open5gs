@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import onClickOutside from 'react-onclickoutside';
 import CSSTransitionGroup from 'react-transition-group/CSSTransitionGroup';
-import {media, transitions} from 'helpers/style-utils';
+import { media, transitions } from 'helpers/style-utils';
 
 const Wrapper = styled.div`
   position: fixed;
@@ -14,42 +14,48 @@ const Wrapper = styled.div`
 
   z-index: 10;
 
-  width: ${ props => props.width };
+  width: ${p => p.width};
 
   ${media.mobile`
     width: calc(100% - 2rem);
   `}
 
   .modal-enter {
-    animation: ${transitions.slideDown} .5s ease-in-out;
+    animation: ${p => p.transitionEnter};
     animation-fill-mode: forwards;
   }
 
   .modal-leave {
-    animation: ${transitions.slideUp} .5s ease-in-out;
+    animation: ${p => p.transitionLeave};
     animation-fill-mode: forwards;
   }
 `;
 
 Wrapper.propTypes = {
-  width: PropTypes.string
+  width: PropTypes.string,
+  transitionEnter: PropTypes.string,
+  transitionLeave: PropTypes.string
 };
 
 class Modal extends Component {
   static propTypes = {
     visible: PropTypes.bool,
     onHide: PropTypes.func,
-    width: PropTypes.string
+    width: PropTypes.string,
+    transitionEnter: PropTypes.string,
+    transitionLeave: PropTypes.string
   }
 
   static defaultProps = {
-    width: '400px'
+    width: '400px',
+    transitionEnter: `${transitions.stretchOut} .3s ease-in`,
+    transitionLeave: `${transitions.shrinkIn} .3s ease-in`
   }
 
   handleClickOutside = (e) => {
     const { visible, onHide } = this.props;
 
-    if(!visible) return null;
+    if (!visible) return null;
     onHide();
   }
 
@@ -72,10 +78,19 @@ class Modal extends Component {
   
   render() {
 
-    const {visible, children, width} = this.props;
+    const { 
+      visible, 
+      children, 
+      width, 
+      transitionEnter,
+      transitionLeave 
+    } = this.props;
 
     return (
-      <Wrapper width={width}>
+      <Wrapper 
+        width={width} 
+        transitionEnter={transitionEnter} 
+        transitionLeave={transitionLeave}>
         <CSSTransitionGroup
           transitionName="modal"
           transitionEnterTimeout={500}

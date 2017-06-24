@@ -3,8 +3,9 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import oc from 'open-color';
 
+import { StyledIcon, Tooltip } from 'components';
 import MenuIcon from 'react-icons/lib/md/menu';
-import { ThumbnailIcon, Tooltip } from 'components';
+import PersonIcon from 'react-icons/lib/md/person';
 
 const Wrapper = styled.div`
   display: flex;
@@ -55,7 +56,9 @@ const Header = ({ onSidebarToggle, onLogoutRequest }) => (
     </Title>
     <Thumbnail onClick={onLogoutRequest}>
       <Tooltip bottom content='Logout' width="60px">
-        <ThumbnailIcon size="2rem" color={oc['pink'][4]} />
+        <StyledIcon size="2rem" background={oc['pink'][4]}>
+          <PersonIcon/>
+        </StyledIcon>
       </Tooltip>
     </Thumbnail>
   </Wrapper>

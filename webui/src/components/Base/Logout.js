@@ -5,6 +5,9 @@ import styled from 'styled-components';
 import oc from 'open-color';
 
 import { Modal } from 'components';
+import { transitions } from 'helpers/style-utils';
+
+import PersonIcon from 'react-icons/lib/md/person';
 
 const TitleWrapper = styled.div`
   padding-left: 1rem;
@@ -88,7 +91,12 @@ class Logout extends Component {
     } = this.props;
 
     return (
-      <Modal visible={visible} onHide={onHide} width="300px">
+      <Modal 
+        visible={visible} 
+        onHide={onHide} 
+        width="300px"
+        transitionEnter={`${transitions.slideDown} .5s ease-in-out`}
+        transitionLeave={`${transitions.slideUp} .5s ease-in-out`}>
         <TitleWrapper>
           Logout
         </TitleWrapper>
