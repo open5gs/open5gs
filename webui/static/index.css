@@ -3,6 +3,7 @@
 @import url('https://fonts.googleapis.com/css?family=Open+Sans');
 @import url('https://fonts.googleapis.com/css?family=Ubuntu');
 @import url('https://fonts.googleapis.com/css?family=Merriweather');
+@import url("//netdna.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css");
 
 html, body {
   margin: 0;

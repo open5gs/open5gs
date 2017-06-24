@@ -22,8 +22,8 @@ class SubscriberContainer extends Component {
   state = {
     search: '',
     form: {
-      visible: false,
-      dimmed: false
+      visible: true,
+      dimmed: true
     }
   };
 
