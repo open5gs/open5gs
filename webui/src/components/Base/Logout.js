@@ -5,9 +5,17 @@ import styled from 'styled-components';
 import oc from 'open-color';
 
 import { Modal } from 'components';
-import { transitions } from 'helpers/style-utils';
+import { media, transitions } from 'helpers/style-utils';
 
 import PersonIcon from 'react-icons/lib/md/person';
+
+const Wrapper = styled.div`
+  width: 300px;
+
+  ${media.mobile`
+    width: calc(100% - 2rem);
+  `}
+`;
 
 const TitleWrapper = styled.div`
   padding-left: 1rem;
@@ -84,27 +92,28 @@ const Logout = ({ visible, onHide, onLogout }) => (
   <Modal 
     visible={visible} 
     onHide={onHide} 
-    width="300px"
     transitionEnter={`${transitions.slideDown} .5s ease-in-out`}
     transitionLeave={`${transitions.slideUp} .5s ease-in-out`}
     transitionEnterTimeout="500"
     transitionLeaveTimeout="500">
-    <TitleWrapper>
-      Logout
-    </TitleWrapper>
-    <ContentWrapper>
-      Are you sure you want to logout?
-    </ContentWrapper>
-    <ButtonWrapper>
-      <YesButton
-        onClick={onLogout}>
-        Yes
-      </YesButton>
-      <NoButton 
-        onClick={onHide}>
-        No
-      </NoButton>
-    </ButtonWrapper>
+    <Wrapper>
+      <TitleWrapper>
+        Logout
+      </TitleWrapper>
+      <ContentWrapper>
+        Are you sure you want to logout?
+      </ContentWrapper>
+      <ButtonWrapper>
+        <YesButton
+          onClick={onLogout}>
+          Yes
+        </YesButton>
+        <NoButton 
+          onClick={onHide}>
+          No
+        </NoButton>
+      </ButtonWrapper>
+    </Wrapper>
   </Modal>
 )
 

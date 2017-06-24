@@ -13,11 +13,6 @@ const Wrapper = styled.div`
   transform: translate(-50%, -50%);
 
   z-index: ${p => p.zindex};
-  width: ${p => p.width};
-
-  ${media.mobile`
-    width: calc(100% - 2rem);
-  `}
 
   .modal-enter {
     animation: ${p => p.transitionEnter};
@@ -34,7 +29,6 @@ class Modal extends Component {
   static propTypes = {
     visible: PropTypes.bool,
     onHide: PropTypes.func,
-    width: PropTypes.string,
     zindex: PropTypes.string,
     transitionEnter: PropTypes.string,
     transitionLeave: PropTypes.string,
@@ -43,7 +37,6 @@ class Modal extends Component {
   }
 
   static defaultProps = {
-    width: '400px',
     zindex: '10',
     transitionEnter: `${transitions.stretchOut} .25s ease-in`,
     transitionLeave: `${transitions.shrinkIn} .25s ease-in`,
@@ -80,7 +73,6 @@ class Modal extends Component {
     const { 
       visible, 
       children, 
-      width, 
       zindex,
       transitionEnter,
       transitionLeave,
@@ -90,7 +82,6 @@ class Modal extends Component {
 
     return (
       <Wrapper 
-        width={width} 
         zindex={zindex}
         transitionEnter={transitionEnter} 
         transitionLeave={transitionLeave}>
