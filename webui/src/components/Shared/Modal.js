@@ -12,8 +12,7 @@ const Wrapper = styled.div`
   left: 50%;
   transform: translate(-50%, -50%);
 
-  z-index: 10;
-
+  z-index: ${p => p.zindex};
   width: ${p => p.width};
 
   ${media.mobile`
@@ -31,23 +30,19 @@ const Wrapper = styled.div`
   }
 `;
 
-Wrapper.propTypes = {
-  width: PropTypes.string,
-  transitionEnter: PropTypes.string,
-  transitionLeave: PropTypes.string
-};
-
 class Modal extends Component {
   static propTypes = {
     visible: PropTypes.bool,
     onHide: PropTypes.func,
     width: PropTypes.string,
+    zindex: PropTypes.string,
     transitionEnter: PropTypes.string,
     transitionLeave: PropTypes.string
   }
 
   static defaultProps = {
     width: '400px',
+    zindex: '10',
     transitionEnter: `${transitions.stretchOut} .3s ease-in`,
     transitionLeave: `${transitions.shrinkIn} .3s ease-in`
   }
@@ -82,6 +77,7 @@ class Modal extends Component {
       visible, 
       children, 
       width, 
+      zindex,
       transitionEnter,
       transitionLeave 
     } = this.props;
@@ -89,6 +85,7 @@ class Modal extends Component {
     return (
       <Wrapper 
         width={width} 
+        zindex={zindex}
         transitionEnter={transitionEnter} 
         transitionLeave={transitionLeave}>
         <CSSTransitionGroup

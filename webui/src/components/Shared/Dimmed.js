@@ -7,19 +7,25 @@ const Black = styled.div`
   left: 0px;
   right: 0px;
   bottom: 0px;
-  z-index: 5;
+  z-index: ${p => p.zindex};
 
   background: rgba(0,0,0,0.3);
 `;
 
-const Dimmed = ({visible}) => (
+const Dimmed = ({ visible, zindex }) => (
   <div>
-    {visible && <Black/>}
+    {visible && <Black zindex={zindex}/>}
   </div>
 );
 
 Dimmed.propTypes = {
-  visible: PropTypes.bool
+  visible: PropTypes.bool,
+  zindex: PropTypes.string
 };
+
+Dimmed.defaultProps = {
+  visible: false,
+  zindex: '5'
+}
 
 export default Dimmed;
