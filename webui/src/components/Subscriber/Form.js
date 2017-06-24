@@ -75,10 +75,37 @@ const schema = {
       title: "PDN",
       items: {
         type: "object",
+        required: ["apn"],
         properties: {
           apn: {
             type: "string",
             title: "APN"
+          },
+          type: {
+            type: "string",
+            title: "Type"
+          },
+          ambr: {
+            title: "AMBR",
+            type: "object",
+            properties: {
+              ul: {
+                type: "string",
+                title: "Uplink"
+              },
+              dl: {
+                type: "string",
+                title: "Downlink"
+              }
+            }
+          },
+          qci: {
+            type: "string",
+            title: "QCI"
+          },
+          priority_level: {
+            type: "string",
+            title: "Priority Level"
           },
         }
       }

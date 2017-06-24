@@ -22,9 +22,9 @@ export default class MyDocument extends Document {
           <meta name="author" content="NextEPC" />
           <meta name="description" content={description} />
 
-          <link rel="stylesheet" type="text/css" href="/static/bootstrap.min.css" />
-          <link rel="stylesheet" type="text/css" href="/static/nprogress.css" />
-          <link rel="stylesheet" type="text/css" href="/static/index.css" />
+          <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css" />
+          <link rel="stylesheet" type="text/css" href="/static/css/nprogress.css" />
+          <link rel="stylesheet" type="text/css" href="/static/css/index.css" />
           {styleTags}
         </Head>
         <body>
