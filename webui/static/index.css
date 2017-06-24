@@ -20,6 +20,7 @@ html, body {
   -ms-font-smoothing: subpixel-antialiased;
 
   font-family: 'Roboto', sans-serif;
+  font-size: 16px;
   background: white;
 }
 

@@ -2459,6 +2459,10 @@ jsonify@~0.0.0:
   version "0.0.0"
   resolved "https://registry.yarnpkg.com/jsonify/-/jsonify-0.0.0.tgz#2c74b6ee41d93ca51b7b5aaee8f503631d252a73"
 
+jsonschema@^1.0.2:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/jsonschema/-/jsonschema-1.1.1.tgz#3cede8e3e411d377872eefbc9fdf26383cbc3ed9"
+
 jsprim@^1.2.2:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/jsprim/-/jsprim-1.4.0.tgz#a3b87e40298d8c380552d8cc7628a0bb95a22918"
@@ -2551,6 +2555,10 @@ lodash.isnumber@^3.0.3:
 lodash.isplainobject@~4.0.0:
   version "4.0.6"
   resolved "https://registry.yarnpkg.com/lodash.isplainobject/-/lodash.isplainobject-4.0.6.tgz#7c526a52d89b45c45cc690b88163be0497f550cb"
+
+lodash.topath@^4.5.2:
+  version "4.5.2"
+  resolved "https://registry.yarnpkg.com/lodash.topath/-/lodash.topath-4.5.2.tgz#3616351f3bba61994a0931989660bd03254fd009"
 
 lodash@^4.13.1, lodash@^4.14.0, lodash@^4.17.4, lodash@^4.2.0, lodash@^4.2.1, lodash@^4.3.0, lodash@^4.5.1, lodash@^4.6.1:
   version "4.17.4"
@@ -3287,7 +3295,7 @@ promise@^7.1.1:
   dependencies:
     asap "~2.0.3"
 
-prop-types@15.5.10, prop-types@^15.5.10, prop-types@^15.5.4, prop-types@^15.5.6:
+prop-types@15.5.10, prop-types@^15.5.10, prop-types@^15.5.4, prop-types@^15.5.6, prop-types@^15.5.8:
   version "15.5.10"
   resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.5.10.tgz#2797dfc3126182e3a95e3dfbb2e893ddd7456154"
   dependencies:
@@ -3453,6 +3461,15 @@ react-icons@^2.2.5:
 react-immutable-proptypes@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/react-immutable-proptypes/-/react-immutable-proptypes-2.1.0.tgz#023d6f39bb15c97c071e9e60d00d136eac5fa0b4"
+
+react-jsonschema-form@^0.49.0:
+  version "0.49.0"
+  resolved "https://registry.yarnpkg.com/react-jsonschema-form/-/react-jsonschema-form-0.49.0.tgz#58bf691eae2d016d5c23cb59512f2e74f54ac324"
+  dependencies:
+    jsonschema "^1.0.2"
+    lodash.topath "^4.5.2"
+    prop-types "^15.5.8"
+    setimmediate "^1.0.5"
 
 react-onclickoutside@^5.11.1:
   version "5.11.1"
