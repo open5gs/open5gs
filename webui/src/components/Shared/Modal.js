@@ -32,16 +32,16 @@ class Modal extends Component {
     zindex: PropTypes.string,
     transitionEnter: PropTypes.string,
     transitionLeave: PropTypes.string,
-    transitionEnterTimeout: PropTypes.string,
-    transitionLeaveTimeout: PropTypes.string
+    transitionEnterTimeout: PropTypes.number,
+    transitionLeaveTimeout: PropTypes.number
   }
 
   static defaultProps = {
     zindex: '10',
     transitionEnter: `${transitions.stretchOut} .25s ease-in`,
     transitionLeave: `${transitions.shrinkIn} .25s ease-in`,
-    transitionEnterTimeout: '300',
-    transitionLeaveTimeout: '150'
+    transitionEnterTimeout: 300,
+    transitionLeaveTimeout: 150
   }
 
   handleClickOutside = (e) => {

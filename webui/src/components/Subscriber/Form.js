@@ -11,7 +11,7 @@ import { Modal } from 'components';
 
 const Wrapper = styled.div`
   width: 800px;
-  height: 600px;
+  height: 500px;
   overflow: scroll;
 
   padding: 2rem;
@@ -45,7 +45,7 @@ const schema = {
         },
         "amf": {
           "type": "string",
-          "title": "AMF"
+          "title": "AMF (Authentication Management Field)"
         }
       }
     },
