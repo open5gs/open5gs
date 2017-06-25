@@ -76,6 +76,7 @@ class SubscriberContainer extends Component {
       this.setState({
         form: {
           visible: false,
+          dimmed: false
         }
       })
     }
@@ -139,9 +140,8 @@ class SubscriberContainer extends Component {
           onTitle={formHandler.show}
           />
         <FloatingButton onClick={formHandler.show}/>
-        <Subscriber.Form 
+        <Subscriber.Form
           visible={form.visible} 
-          width="400px"
           onHide={formHandler.hide}
           onSubmit={formHandler.submit} />
         <Dimmed visible={form.dimmed} />
