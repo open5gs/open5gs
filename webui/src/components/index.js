@@ -11,6 +11,8 @@ import Spinner from './Shared/Spinner';
 import FloatingButton from './Shared/FloatingButton';
 import Tooltip from './Shared/Tooltip';
 import Blank from './Shared/Blank';
+import Button from './Shared/Button';
+import withRipple from './Shared/withRipple';
 
 import * as Subscriber from './Subscriber';
 import * as User from './User';
@@ -29,6 +31,8 @@ export {
   FloatingButton,
   Tooltip,
   Blank,
+  Button,
+  withRipple,
 
   Subscriber,
   User

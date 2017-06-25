@@ -1,7 +1,7 @@
-import React from 'react';
+import PropTypes from 'prop-types';
+
 import styled from 'styled-components';
 import oc from 'open-color';
-import PropTypes from 'prop-types';
 
 import AddIcon from 'react-icons/lib/md/add';
 
@@ -40,7 +40,7 @@ const FloatingButton = ({onClick}) => (
 );
 
 FloatingButton.propTypes = {
-    onClick: PropTypes.func
+  onClick: PropTypes.func
 }
 
 export default FloatingButton;

@@ -7,10 +7,10 @@ import { media } from 'helpers/style-utils';
 
 import SchemaForm from 'react-jsonschema-form';
 
-import { Modal } from 'components';
+import { Modal, Button } from 'components';
 
 const schema = {
-  "title": "Subscriber",
+  "title": "",
   "type": "object",
   "required": ["imsi"],
   "properties": {
@@ -161,12 +161,11 @@ const log = (type) => console.log.bind(console, type);
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
+  postion: relative;
   width: 800px;
-  height: 500px;
 
   ${media.mobile`
     width: calc(100vw - 2rem);
-    height: calc(100vh - 8rem);
   `}
 
   background: white;
@@ -174,18 +173,30 @@ const Wrapper = styled.div`
 `
 
 const Header = styled.div`
+  display: flex;
+  justify-content: flex-start;
+
   padding: 1rem;
+  font-size: 1.5rem;
+  background: ${oc.gray[1]};
 `
 
 const Body = styled.div`
   padding: 2rem;
   font-size: 14px;
 
-  overflow-x: hidden;
-  overflow-y: scroll;
+  height: 400px;
+  ${media.mobile`
+    height: calc(100vh - 8rem);
+  `}
+
+  overflow: scroll;
 `
 
 const Footer = styled.div`
+  display: flex;
+  justify-content: flex-end;
+
   padding: 1rem;
 `
 
@@ -209,7 +220,7 @@ class Form extends Component {
         onHide={onHide}>
         <Wrapper>
           <Header>
-            <h1>Subscriber</h1>
+            Create Subscriber
           </Header>
           <Body>
             <SchemaForm
@@ -230,16 +241,12 @@ class Form extends Component {
             </SchemaForm>
           </Body>
           <Footer>
-            <button 
-              type="button" className="btn btn-info"
-              onClick={() => this.submitButton.click()}>
-              SAVE
-            </button>
-            <button 
-              type="button" className="btn btn-danger"
-              onClick={onHide}>
+            <Button clear onClick={onHide}>
               CANCEL
-            </button>
+            </Button>
+            <Button clear onClick={() => this.submitButton.click()}>
+              SAVE
+            </Button>
           </Footer>
         </Wrapper>  
       </Modal>
