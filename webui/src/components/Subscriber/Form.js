@@ -22,96 +22,151 @@ const Wrapper = styled.div`
 `
 
 const schema = {
-  title: "Subscriber",
-  type: "object",
-  required: ["imsi"],
-  properties: {
-    imsi: {
-      type: "string", 
-      title: "IMSI" 
+  "title": "Subscriber",
+  "type": "object",
+  "required": ["imsi"],
+  "properties": {
+    "imsi": {
+      "type": "string", 
+      "title": "IMSI (International Mobile Subscriber Identity)" 
     },
-    ambr: {
-      title: "AMBR",
-      type: "object",
-      properties: {
-        ul: {
-          type: "string",
-          title: "Uplink"
+    "security": {
+      "title": "Security",
+      "type": "object",
+      "required": ["k"],
+      "properties": {
+        "k": {
+          "type": "string",
+          "title": "K (UE Key)"
         },
-        dl: {
-          type: "string",
-          title: "Downlink"
+        "op": {
+          "type": "string",
+          "title": "OP (Operator Key)"
+        },
+        "amf": {
+          "type": "string",
+          "title": "AMF"
         }
       }
     },
-    security: {
-      title: "Security",
-      type: "object",
-      properties: {
-        k: {
-          type: "string",
-          title: "K"
+    "ue_ambr": {
+      "type": "object",
+      "title": "UE AMBR - Aggregate Maximum Bit Rate",
+      "properties": {
+        "max_bandwidth_ul": {
+          "type": "number",
+          "title": "Max Requested Bandwidth UL (Kbps)"
         },
-        sqn: {
-          type: "string",
-          title: "SQN"
-        },
-        rand: {
-          type: "string",
-          title: "RAND"
-        },
-        op: {
-          type: "string",
-          title: "OP"
-        },
-        amf: {
-          type: "string",
-          title: "AMF"
+        "max_bandwidth_dl": {
+          "type": "number",
+          "title": "Max Requested Bandwidth DL (Kbps)"
         }
       }
     },
-    pdns: {
-      type: "array",
-      title: "PDN",
-      items: {
-        type: "object",
-        required: ["apn"],
-        properties: {
-          apn: {
-            type: "string",
-            title: "APN"
+    "pdn": {
+      "type": "array",
+      "title": "PDN - Packet Data Network",
+      "items": {
+        "type": "object",
+        "required": ["apn"],
+        "properties": {
+          "apn": {
+            "type": "string",
+            "title": "APN (Access Point Name)"
           },
-          type: {
-            type: "string",
-            title: "Type"
-          },
-          ambr: {
-            title: "AMBR",
-            type: "object",
-            properties: {
-              ul: {
-                type: "string",
-                title: "Uplink"
+          "qos": {
+            "type": "object",
+            "title": "EPS Subscribed QoS Profile",
+            "properties": {
+              "qci": {
+                "type": "number",
+                "title": "QCI (QoS Class Identifier)",
+                "enum": [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 65, 66, 69, 70 ],
+                "default": 9
               },
-              dl: {
-                type: "string",
-                title: "Downlink"
+              "arp" : {
+                "type": "object",
+                "title": "",
+                "properties": {
+                  "priority_level": {
+                    "type": "number",
+                    "title": "ARP Priority Level (1~15)",
+                    "minimum": 1,
+                    "maximum": 15,
+                    "default": 8
+                  }
+                }
               }
             }
           },
-          qci: {
-            type: "string",
-            title: "QCI"
-          },
-          priority_level: {
-            type: "string",
-            title: "Priority Level"
-          },
+          "pdn_ambr": {
+            "type": "object",
+            "title": "APN AMBR - Aggragate Maximum Bit Rate",
+            "properties": {
+              "max_bandwidth_ul": {
+                "type": "number",
+                "title": "Max Requested Bandwidth UL (Kbps)",
+                "default": 1024000
+              },
+              "max_bandwidth_dl": {
+                "type": "number",
+                "title": "Max Requested Bandwidth DL (Kbps)",
+                "default": 1024000
+              }
+            }
+          }
         }
       }
     }
   }
 };
+
+const uiSchema = {
+  "imsi": {
+    "ui:autofocus": true,
+  },
+  "pdn": {
+    "ui:options":  {
+      "orderable": false
+    },
+    "items": {
+      "qos": {
+        "qci": {
+          "ui:widget": "radio",
+          "ui:options": {
+            "inline": true
+          }
+        }
+      }
+    }
+  }
+}
+
+const formData = {
+  "ue_ambr": {
+    "max_bandwidth_ul": 1024000,
+    "max_bandwidth_dl": 1024000
+  },
+  "security": {
+    "k": "465B5CE8B199B49FAA5F0A2EE238A6BC",
+    "op": "5F1D289C5D354D0A140C2548F5F3E3BA",
+    "amf": "8000"
+  },
+  "pdn": [
+    {
+      "qos": {
+        "qci": 9,
+        "arp": {
+          "priority_level": 8
+        }
+      },
+      "pdn_ambr": {
+        "max_bandwidth_ul": 1024000,
+        "max_bandwidth_dl": 1024000
+      }
+    }
+  ]
+}
 
 const propTypes = {
   visible: PropTypes.bool, 
@@ -126,10 +181,14 @@ const Form = ({ visible, onHide, onSubmit }) => (
     visible={visible} 
     onHide={onHide}>
     <Wrapper>
-    <SchemaForm schema={schema}
+      <SchemaForm 
+        schema={schema}
+        uiSchema={uiSchema}
+        formData={formData}
         onChange={log("changed")}
         onSubmit={log("submitted")}
-        onError={log("errors")} />
+        onError={log("errors")}>
+      </SchemaForm>
     </Wrapper>  
   </Modal>
 )
