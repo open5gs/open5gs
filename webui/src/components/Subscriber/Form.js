@@ -19,6 +19,11 @@ const Wrapper = styled.div`
 
   background: white;
   box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+
+  ${media.mobile`
+    width: 100vw;
+    height: 90vh;
+  `}
 `
 
 const schema = {

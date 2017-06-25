@@ -13,7 +13,7 @@ const Wrapper = styled.div`
   width: 300px;
 
   ${media.mobile`
-    width: calc(100% - 2rem);
+    width: calc(100vw - 2rem);
   `}
 `;
 
