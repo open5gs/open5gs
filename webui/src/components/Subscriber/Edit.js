@@ -1,34 +1,58 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
 
-import SchemaForm from 'react-jsonschema-form';
 import { Form } from 'components';
 
 const schema = {
   "title": "",
   "type": "object",
-  "required": ["imsi"],
   "properties": {
     "imsi": {
       "type": "string", 
-      "title": "IMSI (International Mobile Subscriber Identity)" 
+      "title": "IMSI (International Mobile Subscriber Identity)",
+      "required": true,
+      "pattern": "^\\d+$",
+      "messages": {
+        "required": "is required",
+        "pattern": "does not match decimal digit pattern"
+      }
     },
     "security": {
       "title": "Security",
       "type": "object",
-      "required": ["k"],
       "properties": {
         "k": {
           "type": "string",
-          "title": "K (UE Key)"
+          "title": "K (UE Key)",
+          "default": "465B5CE8B199B49FAA5F0A2EE238A6BC",
+          "required": true,
+          "pattern": "^[0-9|a-f|A-F]+$",
+          "messages": {
+            "required": "is required",
+            "pattern": "does not match two hexadecimal digit pattern"
+          }
         },
         "op": {
           "type": "string",
-          "title": "OP (Operator Key)"
+          "title": "OP (Operator Key)",
+          "default": "5F1D289C5D354D0A140C2548F5F3E3BA",
+          "required": true,
+          "pattern": "^[0-9|a-f|A-F]+$",
+          "messages": {
+            "required": "is required",
+            "pattern": "does not match two hexadecimal digit pattern"
+          }
         },
         "amf": {
           "type": "string",
-          "title": "AMF (Authentication Management Field)"
+          "title": "AMF (Authentication Management Field)",
+          "default": "8000",
+          "required": true,
+          "pattern": "^[0-9|a-f|A-F]+$",
+          "messages": {
+            "required": "is required",
+            "pattern": "does not match two hexadecimal digit pattern"
+          }
         }
       }
     },
@@ -38,25 +62,42 @@ const schema = {
       "properties": {
         "max_bandwidth_ul": {
           "type": "number",
-          "title": "Max Requested Bandwidth UL (Kbps)"
+          "title": "Max Requested Bandwidth UL (Kbps)",
+          "default": 1024000,
+          "required": true,
+          "messages": {
+            "required": "is required",
+          }
         },
         "max_bandwidth_dl": {
           "type": "number",
-          "title": "Max Requested Bandwidth DL (Kbps)"
+          "title": "Max Requested Bandwidth DL (Kbps)",
+          "default": 1024000,
+          "required": true,
+          "messages": {
+            "required": "is required",
+          }
         }
       }
     },
     "pdn": {
       "type": "array",
       "title": "PDN - Packet Data Network",
+      "minItems": 1,
+      "messages": {
+        "minItems": "does not meet minimum PDN of 1"
+      },
       "items": {
         "type": "object",
-        "required": ["apn"],
         "properties": {
           "apn": {
             "type": "string",
             "title": "APN (Access Point Name)",
-            "default": "internet"
+            "default": "internet",
+            "required": true,
+            "messages": {
+              "required": "is required",
+            }
           },
           "qos": {
             "type": "object",
@@ -75,9 +116,13 @@ const schema = {
                   "priority_level": {
                     "type": "number",
                     "title": "ARP Priority Level (1~15)",
+                    "default": 8,
                     "minimum": 1,
                     "maximum": 15,
-                    "default": 8
+                    "required": true,
+                    "messages": {
+                      "required": "is required",
+                    }
                   }
                 }
               }
@@ -90,12 +135,20 @@ const schema = {
               "max_bandwidth_ul": {
                 "type": "number",
                 "title": "Max Requested Bandwidth UL (Kbps)",
-                "default": 1024000
+                "default": 1024000,
+                "required": true,
+                "messages": {
+                  "required": "is required",
+                }
               },
               "max_bandwidth_dl": {
                 "type": "number",
                 "title": "Max Requested Bandwidth DL (Kbps)",
-                "default": 1024000
+                "default": 1024000,
+                "required": true,
+                "messages": {
+                  "required": "is required",
+                }
               }
             }
           }
@@ -126,35 +179,6 @@ const uiSchema = {
   }
 }
 
-const formData = {
-  "ue_ambr": {
-    "max_bandwidth_ul": 1024000,
-    "max_bandwidth_dl": 1024000
-  },
-  "security": {
-    "k": "465B5CE8B199B49FAA5F0A2EE238A6BC",
-    "op": "5F1D289C5D354D0A140C2548F5F3E3BA",
-    "amf": "8000"
-  },
-  "pdn": [
-    {
-      "apn": "internet",
-      "qos": {
-        "qci": 9,
-        "arp": {
-          "priority_level": 8
-        }
-      },
-      "pdn_ambr": {
-        "max_bandwidth_ul": 1024000,
-        "max_bandwidth_dl": 1024000
-      }
-    }
-  ]
-}
-
-const log = (type) => console.log.bind(console, type);
-
 class Edit extends Component {
   static propTypes = {
     visible: PropTypes.bool, 
@@ -162,15 +186,7 @@ class Edit extends Component {
     onSubmit: PropTypes.func,
   }
 
-  submitForm = () => {
-    this.submitButton.click();
-  }
-
   render() {
-    const {
-      submitForm
-    } = this;
-
     const {
       visible,
       onHide,
@@ -179,26 +195,12 @@ class Edit extends Component {
 
     return (
       <Form 
+        schema={schema}
+        uiSchema={uiSchema}
         visible={visible}
         title="Create Subscriber"
         onHide={onHide}
-        onSubmit={submitForm}>
-        <SchemaForm
-          schema={schema}
-          uiSchema={uiSchema}
-          formData={formData}
-          onChange={log("changed")}
-          onSubmit={log("submitted")}
-          onError={log("errors")}>
-          <div>
-            <button type="submit" ref={(el => this.submitButton = el)}/>
-            <style jsx>{`
-              button {
-                display: none;
-              }
-            `}</style>
-          </div>
-        </SchemaForm>
+        onSubmit={onSubmit}>
       </Form>
     )
   }

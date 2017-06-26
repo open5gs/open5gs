@@ -1,8 +1,11 @@
+import { Component } from 'react';
 import PropTypes from 'prop-types';
 
 import styled from 'styled-components';
 import oc from 'open-color';
 import { media } from 'helpers/style-utils';
+
+import JsonSchemaForm from 'react-jsonschema-form';
 
 import Modal from './Modal';
 import Button from './Button';
@@ -49,39 +52,156 @@ const Footer = styled.div`
   padding: 1rem;
 `
 
-const Form = ({ visible, title, children, onHide, onSubmit }) => (
-  <Modal 
-    visible={visible} 
-    onHide={onHide}>
-    <Wrapper>
-      <Header>
-        {title}
-      </Header>
-      <Body>
-        {children}
-      </Body>
-      <Footer>
-        <Button clear onClick={onHide}>
-          CANCEL
-        </Button>
-        <Button clear onClick={onSubmit}>
-          SAVE
-        </Button>
-      </Footer>
-    </Wrapper>  
-  </Modal>
-)
+/* We can UI design with styled-componented. Later! */
+const REQUIRED_FIELD_SYMBOL = "*";
 
-Form.propTypes = {
-  visible: PropTypes.bool,
-  title: PropTypes.string,
-  onHide: PropTypes.func,
-  onSubmit: PropTypes.func
+const CustomTitleField = props => {
+  const { id, title, required } = props;
+  const legend = required ? title + REQUIRED_FIELD_SYMBOL : title;
+  return <legend id={id}>{legend}</legend>;
+
+};
+
+const fields = {
+  TitleField: CustomTitleField
+};
+
+function Label(props) {
+  const { label, required, id } = props;
+  if (!label) {
+    // See #312: Ensure compatibility with old versions of React.
+    return <div />;
+  }
+  return (
+    <label className="control-label" htmlFor={id}>
+      {required ? label + REQUIRED_FIELD_SYMBOL : label}
+    </label>
+  );
 }
 
-Form.defaultProps = {
-  visible: false,
-  title: ""
+const CustomFieldTemplate = props => {
+  const {
+    id,
+    classNames,
+    label,
+    children,
+    errors,
+    help,
+    description,
+    hidden,
+    required,
+    displayLabel,
+  } = props;
+
+  if (hidden) {
+    return children;
+  }
+
+  return (
+    <div className={classNames}>
+      {displayLabel && <Label label={label} required={required} id={id} />}
+      {displayLabel && description ? description : null}
+      {children}
+      {errors}
+      {help}
+    </div>
+  );
+}
+
+const transformErrors = errors => {
+  return errors.map(error => {
+    // use error messages from JSON schema if any
+    if (error.schema.messages && error.schema.messages[error.name]) {
+      return {
+        ...error,
+        message: error.schema.messages[error.name]
+      };
+    }
+    return error;
+  });
+};
+
+const log = (type) => console.log.bind(console, type);
+
+class Form extends Component {
+  static propTypes = {
+    visible: PropTypes.bool,
+    title: PropTypes.string,
+    schema: PropTypes.object,
+    uiSchema: PropTypes.object,
+    formData: PropTypes.object,
+    onHide: PropTypes.func,
+    onSubmit: PropTypes.func
+  };
+
+  static defaultProps = {
+    visible: false,
+    title: ""
+  };
+
+  handleSubmitButton = () => {
+    this.submitButton.click();
+  }
+
+  render() {
+    const {
+      handleSubmitButton
+    } = this;
+
+    const {
+      visible,
+      title,
+      schema,
+      uiSchema,
+      formData,
+      onHide,
+      onSubmit
+    } = this.props;
+
+    return (
+      <Modal 
+        visible={visible} 
+        onHide={onHide}>
+        <Wrapper>
+          <Header>
+            {title}
+          </Header>
+          <Body>
+            <JsonSchemaForm
+              schema={schema}
+              uiSchema={uiSchema}
+              formData={formData}
+              fields={fields}
+              FieldTemplate={CustomFieldTemplate}
+              liveValidate
+              showErrorList={false}
+              transformErrors={transformErrors}
+              autocomplete="off"
+              onChange={log("changed")}
+              onSubmit={onSubmit}
+              onError={log("errors")}>
+              <div>
+                <button type="submit" ref={(el => this.submitButton = el)}/>
+                <style jsx>{`
+                  button {
+                    display: none;
+                  }
+                `}</style>
+              </div>
+            </JsonSchemaForm>
+          </Body>
+          <Footer>
+            <Button clear onClick={onHide}>
+              CANCEL
+            </Button>
+            <Button clear onClick={handleSubmitButton}>
+              SAVE
+            </Button>
+          </Footer>
+        </Wrapper>  
+      </Modal>
+    )
+  }
 }
 
 export default Form;
