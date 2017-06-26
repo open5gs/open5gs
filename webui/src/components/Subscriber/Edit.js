@@ -1,13 +1,8 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
 
-import styled from 'styled-components';
-import oc from 'open-color';
-import { media } from 'helpers/style-utils';
-
 import SchemaForm from 'react-jsonschema-form';
-
-import { Modal, Button } from 'components';
+import { Form } from 'components';
 
 const schema = {
   "title": "",
@@ -60,7 +55,8 @@ const schema = {
         "properties": {
           "apn": {
             "type": "string",
-            "title": "APN (Access Point Name)"
+            "title": "APN (Access Point Name)",
+            "default": "internet"
           },
           "qos": {
             "type": "object",
@@ -142,6 +138,7 @@ const formData = {
   },
   "pdn": [
     {
+      "apn": "internet",
       "qos": {
         "qci": 9,
         "arp": {
@@ -158,56 +155,22 @@ const formData = {
 
 const log = (type) => console.log.bind(console, type);
 
-const Wrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  postion: relative;
-  width: 800px;
-
-  ${media.mobile`
-    width: calc(100vw - 2rem);
-  `}
-
-  background: white;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
-`
-
-const Header = styled.div`
-  display: flex;
-  justify-content: flex-start;
-
-  padding: 1rem;
-  font-size: 1.5rem;
-  background: ${oc.gray[1]};
-`
-
-const Body = styled.div`
-  padding: 2rem;
-  font-size: 14px;
-
-  height: 400px;
-  ${media.mobile`
-    height: calc(100vh - 8rem);
-  `}
-
-  overflow: scroll;
-`
-
-const Footer = styled.div`
-  display: flex;
-  justify-content: flex-end;
-
-  padding: 1rem;
-`
-
-class Form extends Component {
+class Edit extends Component {
   static propTypes = {
     visible: PropTypes.bool, 
     onHide: PropTypes.func, 
     onSubmit: PropTypes.func,
   }
 
+  submitForm = () => {
+    this.submitButton.click();
+  }
+
   render() {
+    const {
+      submitForm
+    } = this;
+
     const {
       visible,
       onHide,
@@ -215,43 +178,30 @@ class Form extends Component {
     } = this.props;
 
     return (
-      <Modal 
-        visible={visible} 
-        onHide={onHide}>
-        <Wrapper>
-          <Header>
-            Create Subscriber
-          </Header>
-          <Body>
-            <SchemaForm
-              schema={schema}
-              uiSchema={uiSchema}
-              formData={formData}
-              onChange={log("changed")}
-              onSubmit={log("submitted")}
-              onError={log("errors")}>
-              <div>
-                <button type="submit" ref={(el => this.submitButton = el)}/>
-                <style jsx>{`
-                  button {
-                    display: none;
-                  }
-                `}</style>
-              </div>
-            </SchemaForm>
-          </Body>
-          <Footer>
-            <Button clear onClick={onHide}>
-              CANCEL
-            </Button>
-            <Button clear onClick={() => this.submitButton.click()}>
-              SAVE
-            </Button>
-          </Footer>
-        </Wrapper>  
-      </Modal>
+      <Form 
+        visible={visible}
+        title="Create Subscriber"
+        onHide={onHide}
+        onSubmit={submitForm}>
+        <SchemaForm
+          schema={schema}
+          uiSchema={uiSchema}
+          formData={formData}
+          onChange={log("changed")}
+          onSubmit={log("submitted")}
+          onError={log("errors")}>
+          <div>
+            <button type="submit" ref={(el => this.submitButton = el)}/>
+            <style jsx>{`
+              button {
+                display: none;
+              }
+            `}</style>
+          </div>
+        </SchemaForm>
+      </Form>
     )
   }
 }
 
-export default Form;
+export default Edit;

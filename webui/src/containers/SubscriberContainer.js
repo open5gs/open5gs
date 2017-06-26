@@ -140,7 +140,7 @@ class SubscriberContainer extends Component {
           onTitle={formHandler.show}
           />
         <FloatingButton onClick={formHandler.show}/>
-        <Subscriber.Form
+        <Subscriber.Edit
           visible={form.visible} 
           onHide={formHandler.hide}
           onSubmit={formHandler.submit} />

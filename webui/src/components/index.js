@@ -13,6 +13,7 @@ import Tooltip from './Shared/Tooltip';
 import Blank from './Shared/Blank';
 import Button from './Shared/Button';
 import withRipple from './Shared/withRipple';
+import Form from './Shared/Form';
 
 import * as Subscriber from './Subscriber';
 import * as User from './User';
@@ -33,6 +34,7 @@ export {
   Blank,
   Button,
   withRipple,
+  Form,
 
   Subscriber,
   User
