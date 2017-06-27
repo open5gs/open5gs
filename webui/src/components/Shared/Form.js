@@ -165,14 +165,15 @@ class Form extends Component {
     const { formData, status, errors } = data;
     const { disableSubmitButton } = this.state;
 
-    // I think there is a library bug React or Jsonschema
-    // For workaround, I'll simply add 'formData' in setState
-    this.setState({
-      disableSubmitButton: status !== 'editing' || errors.length !== 0,
-      formData
-    });
-
-    console.log(data);
+    let check = (status !== 'editing' || errors.length !== 0);
+    if (check !== disableSubmitButton) {
+      // I think there is a library bug React or Jsonschema
+      // For workaround, I'll simply add 'formData' in setState
+      this.setState({
+        disableSubmitButton: check,
+        formData
+      });
+    }
   }
 
   render() {
@@ -191,6 +192,7 @@ class Form extends Component {
       schema,
       uiSchema,
       formData,
+      validate,
       onHide,
       onSubmit
     } = this.props;
@@ -211,6 +213,7 @@ class Form extends Component {
               fields={fields}
               FieldTemplate={CustomFieldTemplate}
               liveValidate
+              validate={validate}
               showErrorList={false}
               transformErrors={transformErrors}
               autocomplete="off"

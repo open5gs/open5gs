@@ -164,19 +164,35 @@ class Edit extends Component {
     onSubmit: PropTypes.func,
   }
 
+  validate = (formData, errors) => {
+    const { subscribers } = this.props;
+    const { imsi } = formData;
+    
+    if (subscribers.filter(subscriber => subscriber.imsi === imsi).length > 0) {
+      errors.imsi.addError("IMSI has already been registered");
+    }
+
+    return errors;
+  }
+
   render() {
+    const {
+      validate,
+    } = this;
+
     const {
       visible,
       onHide,
-      onSubmit
+      onSubmit,
     } = this.props;
 
     return (
       <Form 
-        schema={schema}
-        uiSchema={uiSchema}
         visible={visible}
         title="Create Subscriber"
+        schema={schema}
+        uiSchema={uiSchema}
+        validate={validate}
         onHide={onHide}
         onSubmit={onSubmit}>
       </Form>
