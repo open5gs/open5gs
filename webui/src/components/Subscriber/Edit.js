@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
 
+import withWidth, { SMALL } from 'helpers/with-width';
 import { Form } from 'components';
 
 const schema = {
@@ -23,7 +24,7 @@ const schema = {
         "k": {
           "type": "string",
           "title": "K (UE Key)",
-          "default": "465B5CE8B199B49FAA5F0A2EE238A6BC",
+          "default": "465B5CE8 B199B49F AA5F0A2E E238A6BC",
           "required": true,
           "pattern": "^[0-9a-fA-F\\s]+$",
           "messages": {
@@ -33,7 +34,7 @@ const schema = {
         "op": {
           "type": "string",
           "title": "OP (Operator Key)",
-          "default": "5F1D289C5D354D0A140C2548F5F3E3BA",
+          "default": "5F1D289C 5D354D0A 140C2548 F5F3E3BA",
           "required": true,
           "pattern": "^[0-9a-fA-F\\s]+$",
           "messages": {
@@ -164,12 +165,32 @@ class Edit extends Component {
     onSubmit: PropTypes.func,
   }
 
+  state = {
+    schema,
+    uiSchema
+  };
+
+  componentWillMount() {
+    const { 
+      width,
+    } = this.props;
+
+    if (width === SMALL) {
+      let uiSchema = { ...this.state.uiSchema };
+      delete uiSchema.imsi;
+      this.setState({
+        ...this.state,
+        uiSchema
+      });
+    }
+  }
+
   validate = (formData, errors) => {
     const { subscribers } = this.props;
     const { imsi } = formData;
     
     if (subscribers.filter(subscriber => subscriber.imsi === imsi).length > 0) {
-      errors.imsi.addError("IMSI has already been registered");
+      errors.imsi.addError(`'${imsi}' is duplicated`);
     }
 
     return errors;
@@ -190,8 +211,8 @@ class Edit extends Component {
       <Form 
         visible={visible}
         title="Create Subscriber"
-        schema={schema}
-        uiSchema={uiSchema}
+        schema={this.state.schema}
+        uiSchema={this.state.uiSchema}
         validate={validate}
         onHide={onHide}
         onSubmit={onSubmit}>
@@ -200,4 +221,4 @@ class Edit extends Component {
   }
 }
 
-export default Edit;
+export default withWidth()(Edit);

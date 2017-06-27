@@ -16,7 +16,6 @@ import withRipple from './Shared/withRipple';
 import Form from './Shared/Form';
 
 import * as Subscriber from './Subscriber';
-import * as User from './User';
 
 export {
   Layout,
@@ -36,6 +35,5 @@ export {
   withRipple,
   Form,
 
-  Subscriber,
-  User
+  Subscriber
 }

@@ -7,9 +7,7 @@ import * as uiActions from 'modules/ui';
 import withWidth, { SMALL } from 'helpers/with-width';
 
 import { Layout } from 'components';
-import SubscriberContainer from 'containers/SubscriberContainer';
-import PdnContainer from 'containers/PdnContainer';
-import UserContainer from 'containers/UserContainer';
+import * as Subscriber from 'containers/Subscriber';
 
 class App extends Component {
   static propTypes = {
@@ -43,13 +41,13 @@ class App extends Component {
     return (
       <Layout>
         <Layout.Container visible={view === "subscriber"}>
-          <SubscriberContainer/>
+          <Subscriber.Collection/>
         </Layout.Container>
         <Layout.Container visible={view === "pdn"}>
-          <Layout.Content><PdnContainer/></Layout.Content>
+          <Layout.Content>{view}</Layout.Content>
         </Layout.Container>
         <Layout.Container visible={view === "user"}>
-          <Layout.Content><UserContainer/></Layout.Content>
+          <Layout.Content>{view}</Layout.Content>
         </Layout.Container>
         <Layout.Container visible={view === "test1"}>
           <Layout.Content>{view}</Layout.Content>

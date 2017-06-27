@@ -4,8 +4,8 @@ import Head from 'next/head';
 import styled from 'styled-components';
 import oc from 'open-color';
 
-import HeaderContainer from 'containers/HeaderContainer';
-import SidebarContainer from 'containers/SidebarContainer';
+import Header from 'containers/Header';
+import Sidebar from 'containers/Sidebar';
 
 import Package from '../../../package';
 
@@ -27,9 +27,9 @@ const Layout = ({ title, children }) => (
     <Head>
       <title>{title}</title>
     </Head>
-    <HeaderContainer/>
+    <Header/>
     <Body>
-      <SidebarContainer/>
+      <Sidebar/>
       {children}
     </Body>
   </div>

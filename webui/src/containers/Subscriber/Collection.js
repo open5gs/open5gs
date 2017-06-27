@@ -18,7 +18,7 @@ import {
   Dimmed
 } from 'components';
 
-class SubscriberContainer extends Component {
+class Collection extends Component {
   state = {
     search: '',
     form: {
@@ -155,4 +155,4 @@ function mapStateToProps(state, ownProps) {
   return { subscribers: select(fetchSubscribers(), state.crud) }
 }
 
-export default connect(mapStateToProps)(SubscriberContainer)
+export default connect(mapStateToProps)(Collection)
