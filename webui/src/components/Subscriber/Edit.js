@@ -13,8 +13,7 @@ const schema = {
       "required": true,
       "pattern": "^\\d+$",
       "messages": {
-        "required": "is required",
-        "pattern": "does not match decimal digit pattern"
+        "pattern": "Only digits are allowed"
       }
     },
     "security": {
@@ -26,10 +25,9 @@ const schema = {
           "title": "K (UE Key)",
           "default": "465B5CE8B199B49FAA5F0A2EE238A6BC",
           "required": true,
-          "pattern": "^[0-9|a-f|A-F]+$",
+          "pattern": "^[0-9a-fA-F\\s]+$",
           "messages": {
-            "required": "is required",
-            "pattern": "does not match two hexadecimal digit pattern"
+            "pattern": "Only hexadecimal digits are allowed"
           }
         },
         "op": {
@@ -37,10 +35,9 @@ const schema = {
           "title": "OP (Operator Key)",
           "default": "5F1D289C5D354D0A140C2548F5F3E3BA",
           "required": true,
-          "pattern": "^[0-9|a-f|A-F]+$",
+          "pattern": "^[0-9a-fA-F\\s]+$",
           "messages": {
-            "required": "is required",
-            "pattern": "does not match two hexadecimal digit pattern"
+            "pattern": "Only hexadecimal digits are allowed"
           }
         },
         "amf": {
@@ -48,10 +45,9 @@ const schema = {
           "title": "AMF (Authentication Management Field)",
           "default": "8000",
           "required": true,
-          "pattern": "^[0-9|a-f|A-F]+$",
+          "pattern": "^[0-9a-fA-F\\s]+$",
           "messages": {
-            "required": "is required",
-            "pattern": "does not match two hexadecimal digit pattern"
+            "pattern": "Only hexadecimal digits are allowed"
           }
         }
       }
@@ -64,19 +60,13 @@ const schema = {
           "type": "number",
           "title": "Max Requested Bandwidth UL (Kbps)",
           "default": 1024000,
-          "required": true,
-          "messages": {
-            "required": "is required",
-          }
+          "required": true
         },
         "max_bandwidth_dl": {
           "type": "number",
           "title": "Max Requested Bandwidth DL (Kbps)",
           "default": 1024000,
-          "required": true,
-          "messages": {
-            "required": "is required",
-          }
+          "required": true
         }
       }
     },
@@ -85,7 +75,7 @@ const schema = {
       "title": "PDN - Packet Data Network",
       "minItems": 1,
       "messages": {
-        "minItems": "does not meet minimum PDN of 1"
+        "minItems": "At least one PDN is required"
       },
       "items": {
         "type": "object",
@@ -94,10 +84,7 @@ const schema = {
             "type": "string",
             "title": "APN (Access Point Name)",
             "default": "internet",
-            "required": true,
-            "messages": {
-              "required": "is required",
-            }
+            "required": true
           },
           "qos": {
             "type": "object",
@@ -119,10 +106,7 @@ const schema = {
                     "default": 8,
                     "minimum": 1,
                     "maximum": 15,
-                    "required": true,
-                    "messages": {
-                      "required": "is required",
-                    }
+                    "required": true
                   }
                 }
               }
@@ -136,19 +120,13 @@ const schema = {
                 "type": "number",
                 "title": "Max Requested Bandwidth UL (Kbps)",
                 "default": 1024000,
-                "required": true,
-                "messages": {
-                  "required": "is required",
-                }
+                "required": true
               },
               "max_bandwidth_dl": {
                 "type": "number",
                 "title": "Max Requested Bandwidth DL (Kbps)",
                 "default": 1024000,
-                "required": true,
-                "messages": {
-                  "required": "is required",
-                }
+                "required": true
               }
             }
           }
