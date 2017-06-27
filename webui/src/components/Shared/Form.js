@@ -139,14 +139,53 @@ class Form extends Component {
     title: ""
   };
 
+  constructor(props) {
+    super(props);
+    this.state = this.getStateFromProps(props);
+  }
+
+  componentWillReceiveProps(nextProps) {
+    this.setState(this.getStateFromProps(nextProps));
+  }
+
+  getStateFromProps(props) {
+    const disableSubmitButton = true;
+    const formData = "formData" in props ? props.formData : this.props.formData;
+    return {
+      disableSubmitButton,
+      formData
+    };
+  }
+
   handleSubmitButton = () => {
     this.submitButton.click();
   }
 
+  handleChange = data => {
+    const { formData, status, errors } = data;
+    const { disableSubmitButton } = this.state;
+
+    if (status === 'editing') {
+      // I think there is a library bug React or Jsonschema
+      // For workaround, I'll simply add the form
+      this.setState({
+        disableSubmitButton: false,
+        formData
+      });
+    }
+
+    console.log(data);
+  }
+
   render() {
     const {
-      handleSubmitButton
+      handleSubmitButton,
+      handleChange
     } = this;
+
+    const {
+      disableSubmitButton
+    } = this.state;
 
     const {
       visible,
@@ -170,14 +209,14 @@ class Form extends Component {
             <JsonSchemaForm
               schema={schema}
               uiSchema={uiSchema}
-              formData={formData}
+              formData={this.state.formData}
               fields={fields}
               FieldTemplate={CustomFieldTemplate}
               liveValidate
               showErrorList={false}
               transformErrors={transformErrors}
               autocomplete="off"
-              onChange={log("changed")}
+              onChange={handleChange}
               onSubmit={onSubmit}
               onError={log("errors")}>
               <div>
@@ -194,7 +233,7 @@ class Form extends Component {
             <Button clear onClick={onHide}>
               CANCEL
             </Button>
-            <Button clear onClick={handleSubmitButton}>
+            <Button clear disabled={disableSubmitButton} onClick={handleSubmitButton}>
               SAVE
             </Button>
           </Footer>
