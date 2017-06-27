@@ -165,14 +165,12 @@ class Form extends Component {
     const { formData, status, errors } = data;
     const { disableSubmitButton } = this.state;
 
-    if (status === 'editing') {
-      // I think there is a library bug React or Jsonschema
-      // For workaround, I'll simply add the form
-      this.setState({
-        disableSubmitButton: false,
-        formData
-      });
-    }
+    // I think there is a library bug React or Jsonschema
+    // For workaround, I'll simply add 'formData' in setState
+    this.setState({
+      disableSubmitButton: status !== 'editing' || errors.length !== 0,
+      formData
+    });
 
     console.log(data);
   }
