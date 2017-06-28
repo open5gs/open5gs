@@ -107,10 +107,10 @@ const Item = ({ subscriber, onShow, onEdit, onDelete }) => {
       <Card onClick={() => onShow(imsi)}>
         <Imsi>{subscriber.imsi}</Imsi>
         <div className="actions">
-          <Tooltip content='Edit'>
+          <Tooltip content='Edit' width="60px">
             <CircleButton onClick={() => onEdit(imsi)}><EditIcon/></CircleButton>
           </Tooltip>
-          <Tooltip content='Delete'>
+          <Tooltip content='Delete' width="60px">
             <CircleButton className="delete" onClick={() => onDelete(imsi)}><DeleteIcon/></CircleButton>
           </Tooltip>
         </div>
