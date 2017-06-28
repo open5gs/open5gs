@@ -25,7 +25,26 @@ export const fetchCollection = (model, url, params = {}, options = {}) => {
       failure: CRUD.FETCH_FAILURE,
       model,
       idProperty,
-      params,
+      params
+    },
+    payload: {
+      method: 'get',
+      url,
+      params
+    }
+  }
+}
+
+export const fetchDocument = (model, id, url, params = {}, options = {}) => {
+  const idProperty = options.idProperty || '_id';
+  return {
+    type: CRUD.FETCH_ONE, 
+    meta: {
+      success: CRUD.FETCH_ONE_SUCCESS,
+      failure: CRUD.FETCH_ONE_FAILURE,
+      model,
+      idProperty,
+      id,
     },
     payload: {
       method: 'get',

@@ -132,7 +132,7 @@ class Collection extends Component {
           onDelete={handleDelete}
           search={search}
         />
-        {isLoading && <Spinner md color={oc.indigo[9]} />}
+        {isLoading && <Spinner md />}
         <Blank
           visible={!isLoading && !length}
           title="ADD A SUBSCRIBER"

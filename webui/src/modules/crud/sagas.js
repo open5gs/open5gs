@@ -29,8 +29,16 @@ function* watchFetch() {
   } 
 }
 
+function* watchFetchOne() {
+  while(true) {
+    const action = yield take(CRUD.FETCH_ONE);
+    yield fork(crudEntity, action);
+  } 
+}
+
 export default function* () {
   yield all([
-    fork(watchFetch)
+    fork(watchFetch),
+    fork(watchFetchOne)
   ])
 }

@@ -21,9 +21,10 @@ const modelInitialState = fromJS({
 const initialState = fromJS({});
 
 function byIdReducer(state = byIdInitialState, action) {
+  const idProperty = action.meta ? action.meta.idProperty : '_id';
+  const id = action.meta ? action.meta.id : undefined;
   switch(action.type) {
     case CRUD.FETCH_SUCCESS:
-      const idProperty = action.meta ? action.meta.idProperty : '_id';
       const data = state.toJS();
       action.payload.data.forEach((document) => {
         data[document[idProperty]] = {
@@ -33,6 +34,18 @@ function byIdReducer(state = byIdInitialState, action) {
         }
       })
       return fromJS(data);
+    case CRUD.FETCH_ONE:
+      return state.setIn([id, 'fetchTime'], 0)
+                  .setIn([id, 'error'], null)
+                  .setIn([id, 'document'], null)
+    case CRUD.FETCH_ONE_SUCCESS:
+      return state.setIn([id, 'fetchTime'], action.meta.fetchedAt)
+                  .setIn([id, 'error'], null)
+                  .setIn([id, 'document'], fromJS(action.payload.data))
+    case CRUD.FETCH_ONE_FAILURE:
+      return state.setIn([id, 'fetchTime'], action.meta.fetchedAt)
+                  .setIn([id, 'error'], action.payload)
+                  .setIn([id, 'document'], null)
     default:
       return state;
   }
@@ -83,10 +96,15 @@ function crud(state = initialState, action) {
     case CRUD.FETCH:
     case CRUD.FETCH_SUCCESS:
     case CRUD.FETCH_FAILURE:
-      return state.updateIn([action.meta.model, 'byId'], 
+      return state.updateIn([action.meta.model, 'byId'],
                             (s) => byIdReducer(s, action))
                   .updateIn([action.meta.model, 'collections'],
                             (s) => collectionsReducer(s, action));
+    case CRUD.FETCH_ONE:
+    case CRUD.FETCH_ONE_SUCCESS:
+    case CRUD.FETCH_ONE_FAILURE:
+      return state.updateIn([action.meta.model, 'byId'],
+                            (s) => byIdReducer(s, action))
     default:
       return state;
   }

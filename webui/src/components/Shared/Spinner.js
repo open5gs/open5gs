@@ -1,7 +1,7 @@
-
 import PropTypes from 'prop-types';
-import React from 'react';
+
 import styled, { keyframes } from 'styled-components';
+import oc from 'open-color';
 
 const circleAnim = keyframes`
   0% { transform: rotate(0deg); }
@@ -30,7 +30,7 @@ const Circle = styled.div`
   display: inline-block;
   box-sizing: border-box;
   font-size: 0px;
-  color: ${props => props.color || '#333'};
+  color: ${props => props.color || oc.indigo[8]};
 `;
 
 const CircleInner = styled.div`

@@ -60,6 +60,40 @@ export function selectCollection(modelName, crud, params) {
   }
 }
 
+export function selectDocument(modelName, id, crud, params) {
+  const model = crud.getIn([modelName], Map());
+
+  if (model && model.get('fetchedAt') === 0) {
+    return { 
+      isLoading: true, 
+      needsFetch: false, 
+      error: new Error('Loading...') 
+    }
+  }
+
+  if (id === undefined || model == undefined || !recent(model.get('fetchedAt'))) {
+    return { 
+      isLoading: true, 
+      needsFetch: true, 
+      error: new Error('Loading...') 
+    }
+  }
+
+  if (model.get('error') !== null) {
+    return { 
+      isLoading: false, 
+      needsFetch: false, 
+      error: model.get('error') 
+    }
+  }
+
+  return { 
+    isLoading: false, 
+    needsFetch: false, 
+    data: model.get('document').toJS()
+  }
+}
+
 export function select(action, crud) {
   const model = action.meta.model;
   const params = action.meta.params;
@@ -69,6 +103,12 @@ export function select(action, crud) {
     case CRUD.FETCH:
       selection = selectCollection(model, crud, params);
       break;
+    case CRUD.FETCH_ONE:
+      id = action.meta.id;
+      if (id == null) {
+        throw new Error('Selecting a record, but no ID was given');
+      }
+      selection = selectDocument(model, id, crud, params);
     default:
       throw new Error(`Action type '${action.type}' is not a fetch action.`);
   }
