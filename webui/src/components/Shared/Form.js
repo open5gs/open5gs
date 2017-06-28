@@ -39,7 +39,7 @@ const Body = styled.div`
 
   height: 400px;
   ${media.mobile`
-    height: calc(100vh - 8rem);
+    height: calc(100vh - 16rem);
   `}
 
   overflow: scroll;
