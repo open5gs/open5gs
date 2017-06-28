@@ -189,34 +189,40 @@ class Edit extends Component {
     const { subscribers } = this.props;
     const { imsi } = formData;
     
-    if (subscribers.filter(subscriber => subscriber.imsi === imsi).length > 0) {
+    if (subscribers && subscribers.filter(subscriber => subscriber.imsi === imsi).length > 0) {
       errors.imsi.addError(`'${imsi}' is duplicated`);
     }
 
     return errors;
   }
 
+  handleSubmit = (formData) => {
+    console.log(formData);
+  }
+
   render() {
     const {
       validate,
+      handleSubmit
     } = this;
 
     const {
       visible,
+      title,
       onHide,
-      onSubmit,
+      formData
     } = this.props;
 
     return (
       <Form 
         visible={visible}
-        title="Create Subscriber"
+        title={title}
         schema={this.state.schema}
         uiSchema={this.state.uiSchema}
+        formData={formData}
         validate={validate}
         onHide={onHide}
-        onSubmit={onSubmit}>
-      </Form>
+        onSubmit={handleSubmit} />
     )
   }
 }

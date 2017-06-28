@@ -61,7 +61,7 @@ export function selectCollection(modelName, crud, params) {
 }
 
 export function selectDocument(modelName, id, crud, params) {
-  const model = crud.getIn([modelName], Map());
+  const model = crud.getIn([modelName, 'byId', id]);
 
   if (model && model.get('fetchedAt') === 0) {
     return { 
@@ -98,6 +98,7 @@ export function select(action, crud) {
   const model = action.meta.model;
   const params = action.meta.params;
 
+  let id;
   let selection;
   switch (action.type) {
     case CRUD.FETCH:
@@ -105,10 +106,11 @@ export function select(action, crud) {
       break;
     case CRUD.FETCH_ONE:
       id = action.meta.id;
-      if (id == null) {
+      if (id === null) {
         throw new Error('Selecting a record, but no ID was given');
       }
       selection = selectDocument(model, id, crud, params);
+      break;
     default:
       throw new Error(`Action type '${action.type}' is not a fetch action.`);
   }

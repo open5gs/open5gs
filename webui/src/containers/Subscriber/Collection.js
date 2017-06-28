@@ -5,10 +5,6 @@ import { connect } from 'react-redux';
 import { fetchSubscribers } from 'modules/crud/subscriber';
 import { select } from 'modules/crud/selectors';
 
-import styled from 'styled-components';
-import oc from 'open-color';
-import { media } from 'helpers/style-utils';
-
 import { 
   Layout, 
   Subscriber, 
@@ -18,10 +14,13 @@ import {
   Dimmed
 } from 'components';
 
+import Document from './Document';
+
 class Collection extends Component {
   state = {
     search: '',
-    form: {
+    document: {
+      action: '',
       visible: false,
       dimmed: false
     }
@@ -55,59 +54,58 @@ class Collection extends Component {
     });
   }
 
-  formHandler = {
-    show: () => {
+  documentHandler = {
+    show: (action, payload) => {
       this.setState({
-        form: {
+        document: {
+          action,
           visible: true,
-          dimmed: true
+          dimmed: true,
+          ...payload
         }
       })
     },
     hide: () => {
       this.setState({
-        form: {
+        document: {
+          ...this.state.document,
           visible: false,
           dimmed: false
         }
       })
     },
-    submit: async () => {
-      this.setState({
-        form: {
-          visible: false,
-          dimmed: false
-        }
-      })
+    actions: {
+      add: () => {
+        console.log('add')
+        this.documentHandler.show('add');
+      },
+      browser: (imsi) => {
+        console.log('brower' + imsi)
+      },
+      change: (imsi) => {
+        console.log('change' + imsi)
+        this.documentHandler.show('change', { imsi });
+      },
+      delete: (imsi) => {
+        console.log('delete')
+      }
     }
-  }
-
-  handleShow = (imsi) => {
-  }
-
-  handleEdit = (imsi) => {
-  }
-
-  handleDelete = (imsi) => {
   }
 
   render() {
     const {
       handleSearchChange,
       handleSearchClear,
-      formHandler,
-      handleShow,
-      handleEdit,
-      handleDelete
+      documentHandler
     } = this;
 
     const { 
       search,
-      form
+      document
     } = this.state;
 
     const { 
-      subscribers 
+      subscribers
     } = this.props
 
     const {
@@ -115,37 +113,31 @@ class Collection extends Component {
       data
     } = subscribers;
 
-    const {
-      length
-    } = data;
-
     return (
       <Layout.Content>
-        {length !== 0 && <Subscriber.Search 
+        {data.length !== 0 && <Subscriber.Search 
           onChange={handleSearchChange}
           value={search}
           onClear={handleSearchClear} />}
         <Subscriber.List
-          subscribers={subscribers.data}
-          onShow={handleShow}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
+          subscribers={data}
+          onShow={documentHandler.actions.browser}
+          onEdit={documentHandler.actions.change}
+          onDelete={documentHandler.actions.delete}
           search={search}
         />
         {isLoading && <Spinner md />}
         <Blank
-          visible={!isLoading && !length}
+          visible={!isLoading && !data.length}
           title="ADD A SUBSCRIBER"
           body="You have no subscribers... yet!"
-          onTitle={formHandler.show}
+          onTitle={documentHandler.actions.add}
           />
-        <FloatingButton onClick={formHandler.show}/>
-        <Subscriber.Edit
-          subscribers={subscribers.data}
-          visible={form.visible} 
-          onHide={formHandler.hide}
-          onSubmit={formHandler.submit} />
-        <Dimmed visible={form.dimmed} />
+        <FloatingButton onClick={documentHandler.actions.add}/>
+        <Document 
+          { ...document }
+          onHide={documentHandler.hide} />
+        <Dimmed visible={document.dimmed} />
       </Layout.Content>
     )
   }

@@ -35,15 +35,14 @@ function byIdReducer(state = byIdInitialState, action) {
       })
       return fromJS(data);
     case CRUD.FETCH_ONE:
-      return state.setIn([id, 'fetchTime'], 0)
+      return state.setIn([id, 'fetchedAt'], 0)
                   .setIn([id, 'error'], null)
-                  .setIn([id, 'document'], null)
     case CRUD.FETCH_ONE_SUCCESS:
-      return state.setIn([id, 'fetchTime'], action.meta.fetchedAt)
+      return state.setIn([id, 'fetchedAt'], action.meta.fetchedAt)
                   .setIn([id, 'error'], null)
                   .setIn([id, 'document'], fromJS(action.payload.data))
     case CRUD.FETCH_ONE_FAILURE:
-      return state.setIn([id, 'fetchTime'], action.meta.fetchedAt)
+      return state.setIn([id, 'fetchedAt'], action.meta.fetchedAt)
                   .setIn([id, 'error'], action.payload)
                   .setIn([id, 'document'], null)
     default:
