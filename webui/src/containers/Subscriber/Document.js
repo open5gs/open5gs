@@ -55,6 +55,7 @@ class Document extends Component {
       <div>
         {isLoading && <Spinner md/>}
         <Subscriber.Edit
+          subscribers={subscribers.data}
           formData={data}
           title={title}
           visible={visible} 
@@ -72,6 +73,7 @@ function mapStateToProps(state, ownProps) {
   }
 
   return { 
+    subscribers: select(fetchSubscribers(), state.crud),
     subscriber: subscriber
   }
 }
