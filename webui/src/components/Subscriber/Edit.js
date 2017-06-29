@@ -24,7 +24,6 @@ const schema = {
         "k": {
           "type": "string",
           "title": "K (UE Key)",
-          "default": "465B5CE8 B199B49F AA5F0A2E E238A6BC",
           "required": true,
           "pattern": "^[0-9a-fA-F\\s]+$",
           "messages": {
@@ -34,7 +33,6 @@ const schema = {
         "op": {
           "type": "string",
           "title": "OP (Operator Key)",
-          "default": "5F1D289C 5D354D0A 140C2548 F5F3E3BA",
           "required": true,
           "pattern": "^[0-9a-fA-F\\s]+$",
           "messages": {
@@ -44,7 +42,6 @@ const schema = {
         "amf": {
           "type": "string",
           "title": "AMF (Authentication Management Field)",
-          "default": "8000",
           "required": true,
           "pattern": "^[0-9a-fA-F\\s]+$",
           "messages": {
@@ -60,7 +57,6 @@ const schema = {
         "max_bandwidth_ul": {
           "type": "number",
           "title": "Max Requested Bandwidth UL (Kbps)",
-          "default": 1024000,
           "required": true
         },
         "max_bandwidth_dl": {
@@ -84,7 +80,6 @@ const schema = {
           "apn": {
             "type": "string",
             "title": "APN (Access Point Name)",
-            "default": "internet",
             "required": true
           },
           "qos": {
@@ -153,6 +148,33 @@ const uiSchema = {
       }
     }
   }
+}
+
+const formData = {
+  "security": {
+    k: "465B5CE8 B199B49F AA5F0A2E E238A6BC",
+    op: "5F1D289C 5D354D0A 140C2548 F5F3E3BA",
+    amf: "8000"
+  },
+  "ue_ambr": {
+    "max_bandwidth_ul": 1024000,
+    "max_bandwidth_dl": 1024000
+  },
+  "pdn": [
+    {
+      "apn": "internet",
+      "qos": {
+        "qci": 9,
+        "arp": {
+          "priority_level": 8
+        }
+      },
+      "pdn_ambr": {
+        "max_bandwidth_ul": 1024000,
+        "max_bandwidth_dl": 1024000
+      }
+    }
+  ]
 }
 
 class Edit extends Component {
@@ -244,7 +266,6 @@ class Edit extends Component {
     const {
       visible,
       action,
-      formData,
       onHide,
       onSubmit
     } = this.props;
@@ -255,7 +276,7 @@ class Edit extends Component {
         title={(action === 'change') ? 'Edit Subscriber' : 'Create Subscriber'}
         schema={this.state.schema}
         uiSchema={this.state.uiSchema}
-        formData={formData}
+        formData={(action === 'change') ? this.props.formData : formData}
         validate={validate}
         onHide={onHide}
         onSubmit={onSubmit} />
