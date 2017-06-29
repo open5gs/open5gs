@@ -45,6 +45,7 @@ class Document extends Component {
 
   handleSubmit = (formData) => {
     console.log(formData);
+    this.props.onHide();
   }
 
   render() {

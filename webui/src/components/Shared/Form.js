@@ -122,8 +122,6 @@ const transformErrors = errors => {
   });
 };
 
-const log = (type) => console.log.bind(console, type);
-
 class Form extends Component {
   static propTypes = {
     visible: PropTypes.bool,
@@ -169,7 +167,7 @@ class Form extends Component {
   }
 
   handleChange = data => {
-    const { formData, status, errors } = data;
+    const { formData, errors } = data;
 
     let disableSubmitButton = (errors.length !== 0);
     // I think there is a library bug React or Jsonschema
@@ -225,8 +223,7 @@ class Form extends Component {
                 transformErrors={transformErrors}
                 autocomplete="off"
                 onChange={handleChange}
-                onSubmit={() => onSubmit(this.state.formData)}
-                onError={log("errors")}>
+                onSubmit={() => onSubmit(this.state.formData)}>
                 <div>
                   <button type="submit" ref={(el => this.submitButton = el)}/>
                   <style jsx>{`
