@@ -13,3 +13,7 @@ export const fetchSubscribers = (params = {}) => {
 export const fetchSubscriber = (imsi, params = {}) => {
   return fetchDocument(MODEL, imsi, `${URL}/${imsi}`, params, { idProperty: 'imsi' });
 }
+
+export const deleteSubscriber = (imsi, params = {}) => {
+  return deleteDocument(MODEL, imsi, `${URL}/${imsi}`, params, { idProperty: 'imsi' });
+}

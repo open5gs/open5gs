@@ -45,6 +45,8 @@ function byIdReducer(state = byIdInitialState, action) {
       return state.setIn([id, 'fetchedAt'], action.meta.fetchedAt)
                   .setIn([id, 'error'], action.payload)
                   .setIn([id, 'document'], null)
+    case CRUD.DELETE_SUCCESS:
+      return state.delete(id)
     default:
       return state;
   }
@@ -85,6 +87,10 @@ function collectionsReducer(state = collectionsInitialState, action) {
         return state.push(collectionReducer(undefined, action));
       }
       return state.update(index, s => collectionReducer(s, action));
+    case CRUD.DELETE_SUCCESS:
+      return state.map((item, idx) => (
+        item.set('fetchedAt', null)
+      ))
     default:
       return state;
   }
@@ -98,12 +104,20 @@ function crud(state = initialState, action) {
       return state.updateIn([action.meta.model, 'byId'],
                             (s) => byIdReducer(s, action))
                   .updateIn([action.meta.model, 'collections'],
-                            (s) => collectionsReducer(s, action));
+                            (s) => collectionsReducer(s, action))
     case CRUD.FETCH_ONE:
     case CRUD.FETCH_ONE_SUCCESS:
     case CRUD.FETCH_ONE_FAILURE:
       return state.updateIn([action.meta.model, 'byId'],
                             (s) => byIdReducer(s, action))
+    case CRUD.UPDATE:
+    case CRUD.UPDATE_SUCCESS:
+    case CRUD.UPDATE_FAILURE:
+      return state.updateIn([action.meta.model, 'byId'],
+                            (s) => byIdReducer(s, action))
+                  .updateIn([action.meta.model, 'collections'],
+                            fromJS([]),
+                            (s) => collectionsReducer(s, action))
     default:
       return state;
   }
