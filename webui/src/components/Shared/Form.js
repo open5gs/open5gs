@@ -143,7 +143,12 @@ class Form extends Component {
 
   constructor(props) {
     super(props);
+
     this.state = this.getStateFromProps(props);
+  }
+
+  componentWillMount() {
+    this.setState(this.getStateFromProps(this.props));
   }
 
   componentWillReceiveProps(nextProps) {
@@ -165,17 +170,14 @@ class Form extends Component {
 
   handleChange = data => {
     const { formData, status, errors } = data;
-    const { disableSubmitButton } = this.state;
 
-    let check = (status !== 'editing' || errors.length !== 0);
-    if (check !== disableSubmitButton) {
-      // I think there is a library bug React or Jsonschema
-      // For workaround, I'll simply add 'formData' in setState
-      this.setState({
-        disableSubmitButton: check,
-        formData
-      });
-    }
+    let disableSubmitButton = (status !== 'editing' || errors.length !== 0);
+    // I think there is a library bug React or Jsonschema
+    // For workaround, I'll simply add 'formData' in setState
+    this.setState({
+      disableSubmitButton,
+      formData
+    });
   }
 
   render() {
