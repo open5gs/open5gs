@@ -141,11 +141,6 @@ class Collection extends Component {
   }
 }
 
-function mapStateToProps(state) {
-  return { subscribers: select(fetchSubscribers(), state.crud) }
-}
-
-
 Collection = connect(
   (state) => ({ 
     subscribers: select(fetchSubscribers(), state.crud)
