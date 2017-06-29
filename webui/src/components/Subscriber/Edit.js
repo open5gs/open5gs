@@ -188,12 +188,35 @@ class Edit extends Component {
     }
   }
 
+  validate = (formData, errors) => {
+    if (formData && formData.pdn) {
+      let apns = formData.pdn.map(pdn => { return pdn.apn } )
+      let duplicates = {};
+      for (let i = 0; i < apns.length; i++) {
+        if (duplicates.hasOwnProperty(apns[i])) {
+          duplicates[apns[i]].push(i);
+        } else if (apns.lastIndexOf(apns[i]) !== i) {
+          duplicates[apns[i]] = [i];
+        }
+      }
+
+      for (let key in duplicates) {
+        duplicates[key].forEach(index => 
+          errors.pdn[index].apn.addError(`'${key}' is duplicated`));
+      }
+    }
+    
+    return this.props.validate(formData, errors);
+  }
+
   render() {
+    const {
+      validate
+    } = this;
     const {
       visible,
       title,
       formData,
-      validate,
       onHide,
       onSubmit
     } = this.props;
