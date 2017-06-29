@@ -5,10 +5,7 @@ import { connect } from 'react-redux';
 import { fetchSubscriber, fetchSubscribers } from 'modules/crud/subscriber';
 import { select } from 'modules/crud/selectors';
 
-import { 
-  Subscriber, 
-  Spinner
-} from 'components';
+import { Subscriber } from 'components';
 
 class Document extends Component {
   static propTypes = {
@@ -69,16 +66,14 @@ class Document extends Component {
     } = subscriber;
 
     return (
-      <div>
-        {isLoading && <Spinner/>}
-        <Subscriber.Edit
-          visible={visible} 
-          action={action}
-          formData={data}
-          validate={validate}
-          onHide={onHide}
-          onSubmit={handleSubmit} />
-      </div>
+      <Subscriber.Edit
+        visible={visible} 
+        action={action}
+        isLoading={isLoading}
+        formData={data}
+        validate={validate}
+        onHide={onHide}
+        onSubmit={handleSubmit} />
     )
   }
 }

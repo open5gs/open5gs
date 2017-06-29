@@ -266,6 +266,7 @@ class Edit extends Component {
     const {
       visible,
       action,
+      isLoading,
       onHide,
       onSubmit
     } = this.props;
@@ -276,6 +277,7 @@ class Edit extends Component {
         title={(action === 'change') ? 'Edit Subscriber' : 'Create Subscriber'}
         schema={this.state.schema}
         uiSchema={this.state.uiSchema}
+        isLoading={isLoading}
         formData={(action === 'change') ? this.props.formData : formData}
         validate={validate}
         onHide={onHide}

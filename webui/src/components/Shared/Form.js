@@ -9,6 +9,7 @@ import JsonSchemaForm from 'react-jsonschema-form';
 
 import Modal from './Modal';
 import Button from './Button';
+import Spinner from './Spinner';
 
 const Wrapper = styled.div`
   display: flex;
@@ -192,6 +193,7 @@ class Form extends Component {
       title,
       schema,
       uiSchema,
+      isLoading,
       formData,
       validate,
       onHide,
@@ -207,29 +209,32 @@ class Form extends Component {
             {title}
           </Header>
           <Body>
-            <JsonSchemaForm
-              schema={schema}
-              uiSchema={uiSchema}
-              formData={this.state.formData}
-              fields={fields}
-              FieldTemplate={CustomFieldTemplate}
-              liveValidate
-              validate={validate}
-              showErrorList={false}
-              transformErrors={transformErrors}
-              autocomplete="off"
-              onChange={handleChange}
-              onSubmit={() => onSubmit(this.state.formData)}
-              onError={log("errors")}>
-              <div>
-                <button type="submit" ref={(el => this.submitButton = el)}/>
-                <style jsx>{`
-                  button {
-                    display: none;
-                  }
-                `}</style>
-              </div>
-            </JsonSchemaForm>
+            {isLoading && <Spinner/>}
+            {!isLoading && 
+              <JsonSchemaForm
+                schema={schema}
+                uiSchema={uiSchema}
+                formData={this.state.formData}
+                fields={fields}
+                FieldTemplate={CustomFieldTemplate}
+                liveValidate
+                validate={validate}
+                showErrorList={false}
+                transformErrors={transformErrors}
+                autocomplete="off"
+                onChange={handleChange}
+                onSubmit={() => onSubmit(this.state.formData)}
+                onError={log("errors")}>
+                <div>
+                  <button type="submit" ref={(el => this.submitButton = el)}/>
+                  <style jsx>{`
+                    button {
+                      display: none;
+                    }
+                  `}</style>
+                </div>
+              </JsonSchemaForm>
+            }
           </Body>
           <Footer>
             <Button clear onClick={onHide}>
