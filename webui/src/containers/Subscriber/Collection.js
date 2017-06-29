@@ -76,18 +76,14 @@ class Collection extends Component {
     },
     actions: {
       add: () => {
-        console.log('add')
         this.documentHandler.show('add');
       },
       browser: (imsi) => {
-        console.log('brower' + imsi)
       },
       change: (imsi) => {
-        console.log('change' + imsi)
         this.documentHandler.show('change', { imsi });
       },
       delete: (imsi) => {
-        console.log('delete')
       }
     }
   }

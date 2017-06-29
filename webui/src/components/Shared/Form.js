@@ -130,6 +130,7 @@ class Form extends Component {
     schema: PropTypes.object,
     uiSchema: PropTypes.object,
     formData: PropTypes.object,
+    valdate: PropTypes.func,
     onHide: PropTypes.func,
     onSubmit: PropTypes.func
   };

@@ -11,6 +11,13 @@ import {
 } from 'components';
 
 class Document extends Component {
+  static propTypes = {
+    action: PropTypes.string,
+    visible: PropTypes.bool, 
+    onHide: PropTypes.func, 
+    onSubmit: PropTypes.func,
+  }
+
   componentWillMount() {
     const { subscriber, dispatch } = this.props
 
@@ -27,19 +34,31 @@ class Document extends Component {
     }
   }
 
-  handleSubmit = () => {
+  validate = (formData, errors) => {
+    const { subscribers, action } = this.props;
+    const { imsi } = formData;
+    
+    if (action === 'add' && subscribers && subscribers.data &&
+      subscribers.data.filter(subscriber => subscriber.imsi === imsi).length > 0) {
+      errors.imsi.addError(`'${imsi}' is duplicated`);
+    }
 
+    return errors;
+  }
+
+  handleSubmit = (formData) => {
+    console.log(formData);
   }
 
   render() {
     const {
+      validate,
       handleSubmit
     } = this;
 
     const { 
-      visible,
       action,
-      subscribers,
+      visible,
       subscriber,
       onHide
     } = this.props
@@ -49,16 +68,14 @@ class Document extends Component {
       data
     } = subscriber;
 
-    const title = (action === 'change') ? 'Edit Subscriber' : 'Create Subscriber';
-
     return (
       <div>
-        {isLoading && <Spinner md/>}
+        {isLoading && <Spinner/>}
         <Subscriber.Edit
-          subscribers={subscribers.data}
-          formData={data}
-          title={title}
           visible={visible} 
+          title={(action === 'change') ? 'Edit Subscriber' : 'Create Subscriber'}
+          formData={data}
+          validate={validate}
           onHide={onHide}
           onSubmit={handleSubmit} />
       </div>

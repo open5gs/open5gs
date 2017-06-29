@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import PropTypes from 'prop-types';
 
 import styled from 'styled-components';
@@ -97,28 +97,79 @@ const propTypes = {
   onDelete: PropTypes.func
 }
 
-const Item = ({ subscriber, onShow, onEdit, onDelete }) => {
-  const {
-    imsi
-  } = subscriber;
+class Item extends Component {
+  static propTypes = {
+    subscriber: PropTypes.shape({
+      imsi: PropTypes.string
+    }),
+    onShow: PropTypes.func,
+    onEdit: PropTypes.func,
+    onDelete: PropTypes.func
+  }
 
-  return (
-    <Sizer>
-      <Card onClick={() => onShow(imsi)}>
-        <Imsi>{subscriber.imsi}</Imsi>
-        <div className="actions">
-          <Tooltip content='Edit' width="60px">
-            <CircleButton onClick={() => onEdit(imsi)}><EditIcon/></CircleButton>
-          </Tooltip>
-          <Tooltip content='Delete' width="60px">
-            <CircleButton className="delete" onClick={() => onDelete(imsi)}><DeleteIcon/></CircleButton>
-          </Tooltip>
-        </div>
-      </Card>
-    </Sizer>
-  )
+  handleEdit = e => {
+    e.stopPropagation();
+
+    const {
+      subscriber,
+      onEdit,
+    } = this.props;
+
+    const {
+      imsi
+    } = subscriber;
+
+    onEdit(imsi)
+  }
+
+  handleDelete = e => {
+    e.stopPropagation();
+
+    const {
+      subscriber,
+      onDelete
+    } = this.props;
+
+    const {
+      imsi
+    } = subscriber;
+
+    onDelete(imsi)
+  }
+
+  render() {
+    const {
+      handleEdit,
+      handleDelete
+    } = this;
+    
+    const {
+      subscriber,
+      onShow,
+      onEdit,
+      onDelete
+    } = this.props;
+
+    const {
+      imsi
+    } = subscriber;
+
+    return (
+      <Sizer>
+        <Card onClick={() => onShow(imsi)}>
+          <Imsi>{subscriber.imsi}</Imsi>
+          <div className="actions">
+            <Tooltip content='Edit' width="60px">
+              <CircleButton onClick={handleEdit}><EditIcon/></CircleButton>
+            </Tooltip>
+            <Tooltip content='Delete' width="60px">
+              <CircleButton className="delete" onClick={handleDelete}><DeleteIcon/></CircleButton>
+            </Tooltip>
+          </div>
+        </Card>
+      </Sizer>
+    )
+  }
 }
-
-Item.propTypes = propTypes;
 
 export default Item;

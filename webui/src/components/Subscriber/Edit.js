@@ -161,8 +161,11 @@ const uiSchema = {
 class Edit extends Component {
   static propTypes = {
     visible: PropTypes.bool, 
+    title: PropTypes.string, 
+    formData: PropTypes.object,
+    validate: PropTypes.func, 
     onHide: PropTypes.func, 
-    onSubmit: PropTypes.func,
+    onSubmit: PropTypes.func
   }
 
   state = {
@@ -185,32 +188,14 @@ class Edit extends Component {
     }
   }
 
-  validate = (formData, errors) => {
-    const { subscribers } = this.props;
-    const { imsi } = formData;
-    
-    if (subscribers && subscribers.filter(subscriber => subscriber.imsi === imsi).length > 0) {
-      errors.imsi.addError(`'${imsi}' is duplicated`);
-    }
-
-    return errors;
-  }
-
-  handleSubmit = (formData) => {
-    console.log(formData);
-  }
-
   render() {
-    const {
-      validate,
-      handleSubmit
-    } = this;
-
     const {
       visible,
       title,
+      formData,
+      validate,
       onHide,
-      formData
+      onSubmit
     } = this.props;
 
     return (
@@ -222,7 +207,7 @@ class Edit extends Component {
         formData={formData}
         validate={validate}
         onHide={onHide}
-        onSubmit={handleSubmit} />
+        onSubmit={onSubmit} />
     )
   }
 }
