@@ -51,6 +51,14 @@ function byIdReducer(state = byIdInitialState, action) {
         fetchedAt: action.meta.fetchedAt,
         error: null
       }))
+    case CRUD.UPDATE:
+      return state.setIn([id, 'fetchedAt'], 0);
+    case CRUD.UPDATE_SUCCESS:
+      return state.set(id, fromJS({
+        document: action.payload.data,
+        fetchedAt: action.meta.fetchedAt,
+        error: null
+      }))
     case CRUD.DELETE_SUCCESS:
       return state.delete(id)
     default:
@@ -123,9 +131,11 @@ function crud(state = initialState, action) {
                   .updateIn([action.meta.model, 'collections'],
                             fromJS([]),
                             (s) => collectionsReducer(s, action))
-    case CRUD.DELETE:
+    case CRUD.UPDATE:
+    case CRUD.UPDATE_SUCCESS:
+      return state.updateIn([action.meta.model, 'byId'],
+                            (s) => byIdReducer(s, action))
     case CRUD.DELETE_SUCCESS:
-    case CRUD.DELETE_FAILURE:
       return state.updateIn([action.meta.model, 'byId'],
                             (s) => byIdReducer(s, action))
                   .updateIn([action.meta.model, 'collections'],

@@ -2,6 +2,7 @@ import {
   fetchCollection,
   fetchDocument,
   createDocument,
+  updateDocument,
   deleteDocument
 } from './actions'
 
@@ -18,6 +19,10 @@ export const fetchSubscriber = (imsi, params = {}) => {
 
 export const createSubscriber = (params = {}, data = {}) => {
   return createDocument(MODEL, URL, params, data, { idProperty: 'imsi' });
+}
+
+export const updateSubscriber = (imsi, params = {}, data = {}) => {
+  return updateDocument(MODEL, imsi, `${URL}/${imsi}`, params, data, { idProperty: 'imsi' });
 }
 
 export const deleteSubscriber = (imsi, params = {}) => {

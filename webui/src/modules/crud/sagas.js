@@ -43,6 +43,13 @@ function* watchCreate() {
   } 
 }
 
+function* watchUpdate() {
+  while(true) {
+    const action = yield take(CRUD.UPDATE);
+    yield fork(crudEntity, action);
+  } 
+}
+
 function* watchDelete() {
   while(true) {
     const action = yield take(CRUD.DELETE);
@@ -55,6 +62,7 @@ export default function* () {
     fork(watchFetch),
     fork(watchFetchOne),
     fork(watchCreate),
+    fork(watchUpdate),
     fork(watchDelete)
   ])
 }

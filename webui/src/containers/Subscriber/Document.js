@@ -5,7 +5,8 @@ import { connect } from 'react-redux';
 import { 
   fetchSubscribers,
   fetchSubscriber, 
-  createSubscriber
+  createSubscriber,
+  updateSubscriber
 } from 'modules/crud/subscriber';
 import { select } from 'modules/crud/selectors';
 
@@ -51,6 +52,10 @@ class Document extends Component {
     const { dispatch, action } = this.props;
     if (action === 'add') {
       dispatch(createSubscriber({}, formData));
+    } else if (action === 'change') {
+      dispatch(updateSubscriber(formData.imsi, {}, formData));
+    } else {
+      throw new Error(`Action type '${action}' is invalid.`);
     }
     console.log(formData);
     this.props.onHide();

@@ -73,6 +73,26 @@ export const createDocument = (model, url, params = {}, data = {}, options = {})
   }
 }
 
+export const updateDocument = (model, id, url, params = {}, data = {}, options = {}) => {
+  const idProperty = options.idProperty || '_id';
+  return {
+    type: CRUD.UPDATE, 
+    meta: {
+      success: CRUD.UPDATE_SUCCESS,
+      failure: CRUD.UPDATE_FAILURE,
+      model,
+      idProperty,
+      id
+    },
+    payload: {
+      method: 'patch',
+      url,
+      params,
+      data
+    }
+  }
+}
+
 export const deleteDocument = (model, id, url, params = {}, options = {}) => {
   const idProperty = options.idProperty || '_id';
   return {
