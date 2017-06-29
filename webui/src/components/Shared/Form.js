@@ -171,7 +171,7 @@ class Form extends Component {
   handleChange = data => {
     const { formData, status, errors } = data;
 
-    let disableSubmitButton = (status !== 'editing' || errors.length !== 0);
+    let disableSubmitButton = (errors.length !== 0);
     // I think there is a library bug React or Jsonschema
     // For workaround, I'll simply add 'formData' in setState
     this.setState({
