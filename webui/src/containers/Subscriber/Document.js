@@ -83,16 +83,11 @@ class Document extends Component {
   }
 }
 
-function mapStateToProps(state, ownProps) {
-  let subscriber = {};
-  if (ownProps.imsi) {
-    subscriber = select(fetchSubscriber(ownProps.imsi), state.crud);
-  }
-
-  return { 
+Document = connect(
+  (state, props) => ({ 
     subscribers: select(fetchSubscribers(), state.crud),
-    subscriber: subscriber
-  }
-}
+    subscriber: select(fetchSubscriber(props.imsi), state.crud)
+  })
+)(Document);
 
-export default connect(mapStateToProps)(Document)
+export default Document;

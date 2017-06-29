@@ -98,18 +98,16 @@ export function select(action, crud) {
   const model = action.meta.model;
   const params = action.meta.params;
 
-  let id;
-  let selection;
+  let selection = {};
   switch (action.type) {
     case CRUD.FETCH:
       selection = selectCollection(model, crud, params);
       break;
     case CRUD.FETCH_ONE:
-      id = action.meta.id;
-      if (id === null) {
-        throw new Error('Selecting a record, but no ID was given');
+      if (action.meta.id === undefined) {
+        return selection;
       }
-      selection = selectDocument(model, id, crud, params);
+      selection = selectDocument(model, action.meta.id, crud, params);
       break;
     default:
       throw new Error(`Action type '${action.type}' is not a fetch action.`);
