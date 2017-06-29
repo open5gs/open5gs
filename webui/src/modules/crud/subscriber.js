@@ -1,6 +1,8 @@
 import {
   fetchCollection,
-  fetchDocument
+  fetchDocument,
+  createDocument,
+  deleteDocument
 } from './actions'
 
 const MODEL = 'subscribers';
@@ -12,6 +14,10 @@ export const fetchSubscribers = (params = {}) => {
 
 export const fetchSubscriber = (imsi, params = {}) => {
   return fetchDocument(MODEL, imsi, `${URL}/${imsi}`, params, { idProperty: 'imsi' });
+}
+
+export const createSubscriber = (params = {}, data = {}) => {
+  return createDocument(MODEL, URL, params, data, { idProperty: 'imsi' });
 }
 
 export const deleteSubscriber = (imsi, params = {}) => {

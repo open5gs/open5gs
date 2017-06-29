@@ -2,7 +2,7 @@ import { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { fetchSubscribers } from 'modules/crud/subscriber';
+import { fetchSubscribers, deleteSubscriber } from 'modules/crud/subscriber';
 import { select } from 'modules/crud/selectors';
 
 import { 
@@ -84,6 +84,8 @@ class Collection extends Component {
         this.documentHandler.show('change', { imsi });
       },
       delete: (imsi) => {
+        const { dispatch } = this.props
+        dispatch(deleteSubscriber(imsi));
       }
     }
   }

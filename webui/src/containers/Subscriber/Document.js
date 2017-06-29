@@ -2,7 +2,11 @@ import { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { fetchSubscriber, fetchSubscribers } from 'modules/crud/subscriber';
+import { 
+  fetchSubscribers,
+  fetchSubscriber, 
+  createSubscriber
+} from 'modules/crud/subscriber';
 import { select } from 'modules/crud/selectors';
 
 import { Subscriber } from 'components';
@@ -44,6 +48,10 @@ class Document extends Component {
   }
 
   handleSubmit = (formData) => {
+    const { dispatch, action } = this.props;
+    if (action === 'add') {
+      dispatch(createSubscriber({}, formData));
+    }
     console.log(formData);
     this.props.onHide();
   }

@@ -44,7 +44,7 @@ export const fetchDocument = (model, id, url, params = {}, options = {}) => {
       failure: CRUD.FETCH_ONE_FAILURE,
       model,
       idProperty,
-      id,
+      id
     },
     payload: {
       method: 'get',
@@ -54,16 +54,35 @@ export const fetchDocument = (model, id, url, params = {}, options = {}) => {
   }
 }
 
+export const createDocument = (model, url, params = {}, data = {}, options = {}) => {
+  const idProperty = options.idProperty || '_id';
+  return {
+    type: CRUD.CREATE, 
+    meta: {
+      success: CRUD.CREATE_SUCCESS,
+      failure: CRUD.CREATE_FAILURE,
+      model,
+      idProperty,
+    },
+    payload: {
+      method: 'post',
+      url,
+      params,
+      data
+    }
+  }
+}
+
 export const deleteDocument = (model, id, url, params = {}, options = {}) => {
   const idProperty = options.idProperty || '_id';
   return {
-    type: CRUD.FETCH_ONE, 
+    type: CRUD.DELETE, 
     meta: {
-      success: CRUD.FETCH_ONE_SUCCESS,
-      failure: CRUD.FETCH_ONE_FAILURE,
+      success: CRUD.DELETE_SUCCESS,
+      failure: CRUD.DELETE_FAILURE,
       model,
       idProperty,
-      id,
+      id
     },
     payload: {
       method: 'delete',
