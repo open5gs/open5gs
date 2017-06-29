@@ -73,7 +73,7 @@ class Document extends Component {
         {isLoading && <Spinner/>}
         <Subscriber.Edit
           visible={visible} 
-          title={(action === 'change') ? 'Edit Subscriber' : 'Create Subscriber'}
+          action={action}
           formData={data}
           validate={validate}
           onHide={onHide}

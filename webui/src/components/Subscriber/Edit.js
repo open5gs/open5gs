@@ -138,9 +138,6 @@ const schema = {
 };
 
 const uiSchema = {
-  "imsi": {
-    "ui:autofocus": true,
-  },
   "pdn": {
     "ui:options":  {
       "orderable": false
@@ -168,24 +165,54 @@ class Edit extends Component {
     onSubmit: PropTypes.func
   }
 
-  state = {
-    schema,
-    uiSchema
-  };
+  constructor(props) {
+    super(props);
+
+    this.state = this.getStateFromProps(props);
+  }
 
   componentWillMount() {
-    const { 
-      width,
-    } = this.props;
+    this.setState(this.getStateFromProps(this.props));
+  }
 
-    if (width === SMALL) {
-      let uiSchema = { ...this.state.uiSchema };
-      delete uiSchema.imsi;
-      this.setState({
-        ...this.state,
-        uiSchema
-      });
+  componentWillReceiveProps(nextProps) {
+    this.setState(this.getStateFromProps(nextProps));
+  }
+
+  getStateFromProps(props) {
+    const { 
+      action,
+      width,
+    } = props;
+
+    let state = {
+      schema,
+      uiSchema
+    };
+    
+    if (action === 'change') {
+      state = {
+        ...state,
+        uiSchema : {
+          ...uiSchema,
+          "imsi": {
+            "ui:readonly": true
+          }
+        }
+      }
+    } else if (width !== SMALL) {
+      state = {
+        ...state,
+        uiSchema : {
+          ...uiSchema,
+          "imsi": {
+            "ui:autofocus": true
+          }
+        }
+      }
     }
+
+    return state;
   }
 
   validate = (formData, errors) => {
@@ -213,9 +240,10 @@ class Edit extends Component {
     const {
       validate
     } = this;
+
     const {
       visible,
-      title,
+      action,
       formData,
       onHide,
       onSubmit
@@ -224,7 +252,7 @@ class Edit extends Component {
     return (
       <Form 
         visible={visible}
-        title={title}
+        title={(action === 'change') ? 'Edit Subscriber' : 'Create Subscriber'}
         schema={this.state.schema}
         uiSchema={this.state.uiSchema}
         formData={formData}
