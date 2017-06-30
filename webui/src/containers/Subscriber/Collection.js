@@ -75,13 +75,13 @@ class Collection extends Component {
       })
     },
     actions: {
-      add: () => {
-        this.documentHandler.show('add');
+      create: () => {
+        this.documentHandler.show('create');
       },
       browser: (imsi) => {
       },
-      change: (imsi) => {
-        this.documentHandler.show('change', { imsi });
+      update: (imsi) => {
+        this.documentHandler.show('update', { imsi });
       },
       delete: (imsi) => {
         const { dispatch } = this.props
@@ -120,7 +120,7 @@ class Collection extends Component {
         <Subscriber.List
           subscribers={data}
           onShow={documentHandler.actions.browser}
-          onEdit={documentHandler.actions.change}
+          onEdit={documentHandler.actions.update}
           onDelete={documentHandler.actions.delete}
           search={search}
         />
@@ -129,9 +129,9 @@ class Collection extends Component {
           visible={!isLoading && !data.length}
           title="ADD A SUBSCRIBER"
           body="You have no subscribers... yet!"
-          onTitle={documentHandler.actions.add}
+          onTitle={documentHandler.actions.create}
           />
-        <FloatingButton onClick={documentHandler.actions.add}/>
+        <FloatingButton onClick={documentHandler.actions.create}/>
         <Document 
           { ...document }
           onHide={documentHandler.hide} />

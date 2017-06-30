@@ -115,3 +115,26 @@ export function select(action, crud) {
   selection.fetch = action;
   return selection;
 }
+
+export function selectActionStatus(modelName, crud, action) {
+  const rawStatus = (crud.getIn([modelName, 'actionStatus', action]) || fromJS({})).toJS();
+  const { pending = false, id = null, isSuccess = null, payload = null } = rawStatus;
+
+  if (pending === true) {
+    return { id, pending }
+  }
+
+  if (isSuccess === true) {
+    return {
+      id,
+      pending,
+      response: payload
+    }
+  }
+
+  return {
+    id,
+    pending,
+    error: payload
+  }
+}

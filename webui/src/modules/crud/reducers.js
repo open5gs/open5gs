@@ -130,6 +130,8 @@ function actionStatusReducer(state = actionStatusInitialState, action) {
   const idProperty = action.meta ? action.meta.idProperty : '_id';
   const id = action.meta ? action.meta.id : undefined;
   switch(action.type) {
+    case CRUD.CLEAR_ACTION_STATUS:
+      return state.set(action.payload.action, fromJS({}))
     case CRUD.CREATE:
       return state.set('create', fromJS({
         pending: true,
@@ -220,6 +222,9 @@ function crud(state = initialState, action) {
                             fromJS([]),
                             (s) => collectionsReducer(s, action))
                   .updateIn([action.meta.model, 'actionStatus'],
+                            (s) => actionStatusReducer(s, action))
+    case CRUD.CLEAR_ACTION_STATUS:
+      return state.updateIn([action.payload.model, 'actionStatus'],
                             (s) => actionStatusReducer(s, action))
     default:
       return state;

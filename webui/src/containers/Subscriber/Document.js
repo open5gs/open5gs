@@ -8,7 +8,15 @@ import {
   createSubscriber,
   updateSubscriber
 } from 'modules/crud/subscriber';
-import { select } from 'modules/crud/selectors';
+
+import {
+  clearActionStatus
+} from 'modules/crud/actions';
+
+import { 
+  select, 
+  selectActionStatus 
+} from 'modules/crud/selectors';
 
 import { Subscriber } from 'components';
 
@@ -29,10 +37,15 @@ class Document extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    const { subscriber } = nextProps
-    const { dispatch } = this.props
+    const { subscriber, status } = nextProps
+    const { dispatch, action, onHide } = this.props
     if (subscriber.needsFetch) {
       dispatch(subscriber.fetch)
+    }
+
+    if (status.response) {
+      dispatch(clearActionStatus('subscribers', action));
+      onHide();
     }
   }
 
@@ -40,7 +53,7 @@ class Document extends Component {
     const { subscribers, action } = this.props;
     const { imsi } = formData;
     
-    if (action === 'add' && subscribers && subscribers.data &&
+    if (action === 'create' && subscribers && subscribers.data &&
       subscribers.data.filter(subscriber => subscriber.imsi === imsi).length > 0) {
       errors.imsi.addError(`'${imsi}' is duplicated`);
     }
@@ -50,15 +63,13 @@ class Document extends Component {
 
   handleSubmit = (formData) => {
     const { dispatch, action } = this.props;
-    if (action === 'add') {
+    if (action === 'create') {
       dispatch(createSubscriber({}, formData));
-    } else if (action === 'change') {
+    } else if (action === 'update') {
       dispatch(updateSubscriber(formData.imsi, {}, formData));
     } else {
       throw new Error(`Action type '${action}' is invalid.`);
     }
-    console.log(formData);
-    this.props.onHide();
   }
 
   render() {
@@ -95,7 +106,8 @@ class Document extends Component {
 Document = connect(
   (state, props) => ({ 
     subscribers: select(fetchSubscribers(), state.crud),
-    subscriber: select(fetchSubscriber(props.imsi), state.crud)
+    subscriber: select(fetchSubscriber(props.imsi), state.crud),
+    status: selectActionStatus('subscribers', state.crud, props.action)
   })
 )(Document);
 

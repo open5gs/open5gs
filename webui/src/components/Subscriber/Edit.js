@@ -215,7 +215,7 @@ class Edit extends Component {
       uiSchema
     };
     
-    if (action === 'change') {
+    if (action === 'update') {
       state = {
         ...state,
         uiSchema : {
@@ -277,11 +277,11 @@ class Edit extends Component {
     return (
       <Form 
         visible={visible}
-        title={(action === 'change') ? 'Edit Subscriber' : 'Create Subscriber'}
+        title={(action === 'update') ? 'Edit Subscriber' : 'Create Subscriber'}
         schema={this.state.schema}
         uiSchema={this.state.uiSchema}
         isLoading={isLoading}
-        formData={(action === 'change') ? this.props.formData : formData}
+        formData={(action === 'update') ? this.props.formData : formData}
         validate={validate}
         onHide={onHide}
         onSubmit={onSubmit} />

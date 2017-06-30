@@ -14,6 +14,7 @@ export const CRUD = {
   DELETE: 'crud/DELETE',
   DELETE_SUCCESS: 'crud/DELETE_SUCCESS',
   DELETE_FAILURE: 'crud/DELETE_FAILURE',
+  CLEAR_ACTION_STATUS: 'crud/CLEAR_ACTION_STATUS',
 };
 
 export const fetchCollection = (model, url, params = {}, options = {}) => {
@@ -109,5 +110,12 @@ export const deleteDocument = (model, id, url, params = {}, options = {}) => {
       url,
       params
     }
+  }
+}
+
+export const clearActionStatus = (model, action) => {
+  return {
+    type: CRUD.CLEAR_ACTION_STATUS,
+    payload: { model, action }
   }
 }
