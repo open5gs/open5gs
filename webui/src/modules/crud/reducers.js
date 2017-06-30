@@ -102,9 +102,14 @@ function collectionsReducer(state = collectionsInitialState, action) {
       }
       return state.update(index, s => collectionReducer(s, action));
     case CRUD.CREATE_SUCCESS:
-    case CRUD.DELETE_SUCCESS:
+      const idProperty = action.meta ? action.meta.idProperty : '_id';
       return state.map((item, idx) => (
-        item.set('fetchedAt', null)
+        item.set('ids', item.get('ids').push(action.payload.data[idProperty]))
+      ))
+    case CRUD.DELETE_SUCCESS:
+      const id = action.meta ? action.meta.id : undefined;
+      return state.map((item, idx) => (
+        item.set('ids', item.get('ids').filter(x => x !== id))
       ))
     default:
       return state;
