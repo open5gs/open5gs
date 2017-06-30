@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 import { 
+  MODEL,
   fetchSubscribers,
   fetchSubscriber, 
   createSubscriber,
@@ -44,7 +45,7 @@ class Document extends Component {
     }
 
     if (status.response) {
-      dispatch(clearActionStatus('subscribers', action));
+      dispatch(clearActionStatus(MODEL, action));
       onHide();
     }
   }
@@ -109,7 +110,7 @@ Document = connect(
   (state, props) => ({ 
     subscribers: select(fetchSubscribers(), state.crud),
     subscriber: select(fetchSubscriber(props.imsi), state.crud),
-    status: selectActionStatus('subscribers', state.crud, props.action)
+    status: selectActionStatus(MODEL, state.crud, props.action)
   })
 )(Document);
 
