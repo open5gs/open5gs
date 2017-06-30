@@ -13,9 +13,16 @@ const collectionInitialState = fromJS({
 
 const collectionsInitialState = fromJS([]);
 
+const actionStatusInitialState = fromJS({
+  create: {},
+  update: {},
+  delete: {}
+});
+
 const modelInitialState = fromJS({
   byId: byIdInitialState,
-  collections: collectionsInitialState
+  collections: collectionsInitialState,
+  actionStatus: actionStatusInitialState
 });
 
 const initialState = fromJS({});
@@ -119,6 +126,54 @@ function collectionsReducer(state = collectionsInitialState, action) {
   }
 }
 
+function actionStatusReducer(state = actionStatusInitialState, action) {
+  const idProperty = action.meta ? action.meta.idProperty : '_id';
+  const id = action.meta ? action.meta.id : undefined;
+  switch(action.type) {
+    case CRUD.CREATE:
+      return state.set('create', fromJS({
+        pending: true,
+        id: null
+      }))
+    case CRUD.CREATE_SUCCESS:
+    case CRUD.CREATE_FAILURE:
+      return state.set('create', fromJS({
+        pending:false,
+        id: action.payload.data[idProperty],
+        isSuccess: !action.error,
+        payload: action.payload
+      }))
+    case CRUD.UPDATE:
+      return state.set('update', fromJS({
+        pending: true,
+        id: id
+      }))
+    case CRUD.UPDATE_SUCCESS:
+    case CRUD.UPDATE_FAILURE:
+      return state.set('update', fromJS({
+        pending:false,
+        id: id,
+        isSuccess: !action.error,
+        payload: action.payload
+      }))
+    case CRUD.DELETE:
+      return state.set('delete', fromJS({
+        pending: true,
+        id: id
+      }))
+    case CRUD.DELETE_SUCCESS:
+    case CRUD.DELETE_FAILURE:
+      return state.set('delete', fromJS({
+        pending:false,
+        id: id,
+        isSuccess: !action.error,
+        payload: action.payload
+      }))
+    default:
+      return state;
+  }
+}
+
 function crud(state = initialState, action) {
   switch(action.type) {
     case CRUD.FETCH:
@@ -133,22 +188,39 @@ function crud(state = initialState, action) {
     case CRUD.FETCH_ONE_FAILURE:
       return state.updateIn([action.meta.model, 'byId'],
                             (s) => byIdReducer(s, action))
+    case CRUD.CREATE:
+    case CRUD.CREATE_FAILURE:
+      return state.updateIn([action.meta.model, 'actionStatus'],
+                            (s) => actionStatusReducer(s, action))
     case CRUD.CREATE_SUCCESS:
       return state.updateIn([action.meta.model, 'byId'],
                             (s) => byIdReducer(s, action))
                   .updateIn([action.meta.model, 'collections'],
                             fromJS([]),
                             (s) => collectionsReducer(s, action))
+                  .updateIn([action.meta.model, 'actionStatus'],
+                            (s) => actionStatusReducer(s, action))
     case CRUD.UPDATE:
     case CRUD.UPDATE_SUCCESS:
       return state.updateIn([action.meta.model, 'byId'],
                             (s) => byIdReducer(s, action))
+                  .updateIn([action.meta.model, 'actionStatus'],
+                            (s) => actionStatusReducer(s, action))
+    case CRUD.UPDATE_FAILURE:
+      return state.updateIn([action.meta.model, 'actionStatus'],
+                            (s) => actionStatusReducer(s, action))
+    case CRUD.DELETE:
+    case CRUD.DELETE_FAILURE:
+      return state.updateIn([action.meta.model, 'actionStatus'],
+                            (s) => actionStatusReducer(s, action))
     case CRUD.DELETE_SUCCESS:
       return state.updateIn([action.meta.model, 'byId'],
                             (s) => byIdReducer(s, action))
                   .updateIn([action.meta.model, 'collections'],
                             fromJS([]),
                             (s) => collectionsReducer(s, action))
+                  .updateIn([action.meta.model, 'actionStatus'],
+                            (s) => actionStatusReducer(s, action))
     default:
       return state;
   }
