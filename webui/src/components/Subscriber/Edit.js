@@ -13,6 +13,7 @@ const schema = {
       "title": "IMSI (International Mobile Subscriber Identity)",
       "required": true,
       "pattern": "^\\d+$",
+      "maxLength": 15,
       "messages": {
         "pattern": "Only digits are allowed"
       }
@@ -71,8 +72,10 @@ const schema = {
       "type": "array",
       "title": "PDN - Packet Data Network",
       "minItems": 1,
+      "maxItems": 8,
       "messages": {
-        "minItems": "At least one PDN is required"
+        "minItems": "At least 1 PDN is required",
+        "maxItems": "8 PDNs are supported"
       },
       "items": {
         "type": "object",
