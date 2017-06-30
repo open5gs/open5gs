@@ -270,6 +270,7 @@ class Edit extends Component {
       visible,
       action,
       isLoading,
+      isPending,
       onHide,
       onSubmit
     } = this.props;
@@ -281,6 +282,7 @@ class Edit extends Component {
         schema={this.state.schema}
         uiSchema={this.state.uiSchema}
         isLoading={isLoading}
+        isPending={isPending}
         formData={(action === 'update') ? this.props.formData : formData}
         validate={validate}
         onHide={onHide}

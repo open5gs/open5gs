@@ -191,9 +191,10 @@ class Form extends Component {
     const {
       visible,
       title,
+      isLoading,
+      isPending,
       schema,
       uiSchema,
-      isLoading,
       formData,
       validate,
       onHide,
@@ -239,7 +240,7 @@ class Form extends Component {
             <Button clear onClick={onHide}>
               CANCEL
             </Button>
-            <Button clear disabled={disableSubmitButton} onClick={handleSubmitButton}>
+            <Button clear disabled={isPending || disableSubmitButton} onClick={handleSubmitButton}>
               SAVE
             </Button>
           </Footer>

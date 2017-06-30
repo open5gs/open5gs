@@ -52,7 +52,7 @@ class Document extends Component {
   validate = (formData, errors) => {
     const { subscribers, action } = this.props;
     const { imsi } = formData;
-    
+
     if (action === 'create' && subscribers && subscribers.data &&
       subscribers.data.filter(subscriber => subscriber.imsi === imsi).length > 0) {
       errors.imsi.addError(`'${imsi}' is duplicated`);
@@ -62,7 +62,7 @@ class Document extends Component {
   }
 
   handleSubmit = (formData) => {
-    const { dispatch, action } = this.props;
+    const { dispatch, action, onHide } = this.props;
     if (action === 'create') {
       dispatch(createSubscriber({}, formData));
     } else if (action === 'update') {
@@ -79,8 +79,9 @@ class Document extends Component {
     } = this;
 
     const { 
-      action,
       visible,
+      action,
+      status,
       subscriber,
       onHide
     } = this.props
@@ -95,6 +96,7 @@ class Document extends Component {
         visible={visible} 
         action={action}
         isLoading={isLoading}
+        isPending={status.pending}
         formData={data}
         validate={validate}
         onHide={onHide}
