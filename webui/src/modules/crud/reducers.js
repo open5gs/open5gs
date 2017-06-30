@@ -103,11 +103,14 @@ function collectionsReducer(state = collectionsInitialState, action) {
       return state.update(index, s => collectionReducer(s, action));
     case CRUD.CREATE_SUCCESS:
       const idProperty = action.meta ? action.meta.idProperty : '_id';
-      return state.map((item, idx) => (
+      /* At this point, the ID is stored in the 0-index collection.
+         Later you will need to find the collection to which you want to add the ID. */
+      return state.update(0, item => (
         item.set('ids', item.get('ids').push(action.payload.data[idProperty]))
       ))
     case CRUD.DELETE_SUCCESS:
       const id = action.meta ? action.meta.id : undefined;
+      /* Find ID from all collections and delete them if they exist. */
       return state.map((item, idx) => (
         item.set('ids', item.get('ids').filter(x => x !== id))
       ))
