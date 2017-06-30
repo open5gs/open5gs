@@ -1,4 +1,4 @@
-import { fromJS, toJS, Map, List } from 'immutable';
+import { fromJS, Map, List } from 'immutable';
 import { isEqual } from 'lodash/lang';
 import { CRUD } from './actions';
 
