@@ -224,7 +224,7 @@ class Form extends Component {
                 transformErrors={transformErrors}
                 autocomplete="off"
                 onChange={handleChange}
-                onSubmit={() => onSubmit(this.state.formData)}>
+                onSubmit={data => onSubmit(data.formData)}>
                 <div>
                   <button type="submit" ref={(el => this.submitButton = el)}/>
                   <style jsx>{`

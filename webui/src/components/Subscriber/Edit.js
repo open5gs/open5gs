@@ -63,7 +63,6 @@ const schema = {
         "max_bandwidth_dl": {
           "type": "number",
           "title": "Max Requested Bandwidth DL (Kbps)",
-          "default": 1024000,
           "required": true
         }
       }
