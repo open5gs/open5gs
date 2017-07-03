@@ -61,6 +61,14 @@ class Document extends Component {
     disableValidation: false
   }
 
+  componentWillMount() {
+    const { subscriber, dispatch } = this.props
+
+    if (subscriber.needsFetch) {
+      dispatch(subscriber.fetch)
+    }
+  }
+
   componentWillReceiveProps(nextProps) {
     const { subscriber, status } = nextProps
     const { dispatch, action, onHide } = this.props

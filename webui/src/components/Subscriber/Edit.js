@@ -171,6 +171,10 @@ class Edit extends Component {
     this.state = this.getStateFromProps(props);
   }
 
+  componentWillMount() {
+    this.setState(this.getStateFromProps(this.props));
+  }
+
   componentWillReceiveProps(nextProps) {
     this.setState(this.getStateFromProps(nextProps));
   }
