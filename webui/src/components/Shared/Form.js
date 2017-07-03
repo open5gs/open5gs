@@ -139,29 +139,6 @@ class Form extends Component {
     title: ""
   };
 
-  constructor(props) {
-    super(props);
-
-    this.state = this.getStateFromProps(props);
-  }
-
-  componentWillMount() {
-    this.setState(this.getStateFromProps(this.props));
-  }
-
-  componentWillReceiveProps(nextProps) {
-    this.setState(this.getStateFromProps(nextProps));
-  }
-
-  getStateFromProps(props) {
-    const disableSubmitButton = true;
-    const formData = "formData" in props ? props.formData : this.props.formData;
-    return {
-      disableSubmitButton,
-      formData
-    };
-  }
-
   handleSubmitButton = () => {
     this.submitButton.click();
   }
@@ -180,24 +157,20 @@ class Form extends Component {
 
   render() {
     const {
-      handleSubmitButton,
-      handleChange
+      handleSubmitButton
     } = this;
-
-    const {
-      disableSubmitButton
-    } = this.state;
 
     const {
       visible,
       title,
-      isLoading,
-      isPending,
       schema,
       uiSchema,
       formData,
+      isLoading,
+      disableSubmitButton,
       validate,
       onHide,
+      onChange,
       onSubmit
     } = this.props;
 
@@ -215,7 +188,8 @@ class Form extends Component {
               <JsonSchemaForm
                 schema={schema}
                 uiSchema={uiSchema}
-                formData={this.state.formData}
+                formData={formData}
+                disableSubmitButton={disableSubmitButton}
                 fields={fields}
                 FieldTemplate={CustomFieldTemplate}
                 liveValidate
@@ -223,7 +197,7 @@ class Form extends Component {
                 showErrorList={false}
                 transformErrors={transformErrors}
                 autocomplete="off"
-                onChange={handleChange}
+                onChange={data => onChange(data.formData, data.errors)}
                 onSubmit={data => onSubmit(data.formData)}>
                 <div>
                   <button type="submit" ref={(el => this.submitButton = el)}/>
@@ -231,7 +205,7 @@ class Form extends Component {
                     button {
                       display: none;
                     }
-                  `}</style>
+                  kkk`}</style>
                 </div>
               </JsonSchemaForm>
             }
@@ -240,7 +214,7 @@ class Form extends Component {
             <Button clear onClick={onHide}>
               CANCEL
             </Button>
-            <Button clear disabled={isPending || disableSubmitButton} onClick={handleSubmitButton}>
+            <Button clear disabled={disableSubmitButton} onClick={handleSubmitButton}>
               SAVE
             </Button>
           </Footer>

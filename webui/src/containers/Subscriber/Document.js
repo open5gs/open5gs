@@ -21,6 +21,33 @@ import {
 
 import { Subscriber } from 'components';
 
+const formData = {
+  "security": {
+    k: "465B5CE8 B199B49F AA5F0A2E E238A6BC",
+    op: "5F1D289C 5D354D0A 140C2548 F5F3E3BA",
+    amf: "8000"
+  },
+  "ue_ambr": {
+    "max_bandwidth_ul": 1024000,
+    "max_bandwidth_dl": 1024000
+  },
+  "pdn": [
+    {
+      "apn": "internet",
+      "qos": {
+        "qci": 9,
+        "arp": {
+          "priority_level": 8
+        }
+      },
+      "pdn_ambr": {
+        "max_bandwidth_ul": 1024000,
+        "max_bandwidth_dl": 1024000
+      }
+    }
+  ]
+}
+
 class Document extends Component {
   static propTypes = {
     action: PropTypes.string,
@@ -29,19 +56,26 @@ class Document extends Component {
     onSubmit: PropTypes.func,
   }
 
-  componentWillMount() {
-    const { subscriber, dispatch } = this.props
-
-    if (subscriber.needsFetch) {
-      dispatch(subscriber.fetch)
-    }
+  state = {
+    formData,
+    disableSubmitButton: true,
+    disableValidation: false
   }
 
   componentWillReceiveProps(nextProps) {
     const { subscriber, status } = nextProps
     const { dispatch, action, onHide } = this.props
+
     if (subscriber.needsFetch) {
       dispatch(subscriber.fetch)
+    }
+
+    if (this.props.visible != nextProps.visible) {
+      if (subscriber.data) {
+        this.setState({ formData: subscriber.data })
+      } else {
+        this.setState({ formData });
+      }
     }
 
     if (status.response) {
@@ -51,10 +85,12 @@ class Document extends Component {
   }
 
   validate = (formData, errors) => {
-    const { subscribers, action } = this.props;
+    const { subscribers, action, status } = this.props;
+    const { disableValidation } = this.state;
     const { imsi } = formData;
 
-    if (action === 'create' && subscribers && subscribers.data &&
+    if (action === 'create' && disableValidation !== true && 
+      subscribers && subscribers.data &&
       subscribers.data.filter(subscriber => subscriber.imsi === imsi).length > 0) {
       errors.imsi.addError(`'${imsi}' is duplicated`);
     }
@@ -62,8 +98,21 @@ class Document extends Component {
     return errors;
   }
 
+  handleChange = (formData, errors) => {
+    let disableSubmitButton = (Object.keys(errors).length > 0);
+    // I think there is a bug in React or Jsonschema library
+    // For workaround, I'll simply add 'formData' in setState
+    this.setState({
+      disableSubmitButton,
+      formData
+    });
+  }
+
   handleSubmit = (formData) => {
     const { dispatch, action, onHide } = this.props;
+
+    this.setState({ disableValidation: true })
+
     if (action === 'create') {
       dispatch(createSubscriber({}, formData));
     } else if (action === 'update') {
@@ -76,6 +125,7 @@ class Document extends Component {
   render() {
     const {
       validate,
+      handleChange,
       handleSubmit
     } = this;
 
@@ -87,20 +137,16 @@ class Document extends Component {
       onHide
     } = this.props
 
-    const {
-      isLoading,
-      data
-    } = subscriber;
-
     return (
       <Subscriber.Edit
         visible={visible} 
         action={action}
-        isLoading={isLoading}
-        isPending={status.pending}
-        formData={data}
+        formData={this.state.formData}
+        isLoading={subscriber.isLoading && !status.pending}
+        disableSubmitButton={this.state.disableSubmitButton}
         validate={validate}
         onHide={onHide}
+        onChange={handleChange}
         onSubmit={handleSubmit} />
     )
   }

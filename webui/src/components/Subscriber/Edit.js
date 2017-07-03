@@ -152,33 +152,6 @@ const uiSchema = {
   }
 }
 
-const formData = {
-  "security": {
-    k: "465B5CE8 B199B49F AA5F0A2E E238A6BC",
-    op: "5F1D289C 5D354D0A 140C2548 F5F3E3BA",
-    amf: "8000"
-  },
-  "ue_ambr": {
-    "max_bandwidth_ul": 1024000,
-    "max_bandwidth_dl": 1024000
-  },
-  "pdn": [
-    {
-      "apn": "internet",
-      "qos": {
-        "qci": 9,
-        "arp": {
-          "priority_level": 8
-        }
-      },
-      "pdn_ambr": {
-        "max_bandwidth_ul": 1024000,
-        "max_bandwidth_dl": 1024000
-      }
-    }
-  ]
-}
-
 class Edit extends Component {
   static propTypes = {
     visible: PropTypes.bool, 
@@ -268,9 +241,11 @@ class Edit extends Component {
     const {
       visible,
       action,
+      formData,
       isLoading,
-      isPending,
+      disableSubmitButton,
       onHide,
+      onChange,
       onSubmit
     } = this.props;
 
@@ -281,10 +256,11 @@ class Edit extends Component {
         schema={this.state.schema}
         uiSchema={this.state.uiSchema}
         isLoading={isLoading}
-        isPending={isPending}
-        formData={(action === 'update') ? this.props.formData : formData}
+        formData={formData}
+        disableSubmitButton={disableSubmitButton}
         validate={validate}
         onHide={onHide}
+        onChange={onChange}
         onSubmit={onSubmit} />
     )
   }

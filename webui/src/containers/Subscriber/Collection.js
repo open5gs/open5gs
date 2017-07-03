@@ -37,6 +37,7 @@ class Collection extends Component {
   componentWillReceiveProps(nextProps) {
     const { subscribers } = nextProps
     const { dispatch } = this.props
+
     if (subscribers.needsFetch) {
       dispatch(subscribers.fetch)
     }
@@ -113,7 +114,7 @@ class Collection extends Component {
 
     return (
       <Layout.Content>
-        {data.length !== 0 && <Subscriber.Search 
+        {Object.keys(data).length > 0 && <Subscriber.Search 
           onChange={handleSearchChange}
           value={search}
           onClear={handleSearchClear} />}
@@ -126,7 +127,7 @@ class Collection extends Component {
         />
         {isLoading && <Spinner md />}
         <Blank
-          visible={!isLoading && !data.length}
+          visible={!isLoading && !(Object.keys(data).length > 0)}
           title="ADD A SUBSCRIBER"
           body="You have no subscribers... yet!"
           onTitle={documentHandler.actions.create}
