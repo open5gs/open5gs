@@ -53,7 +53,6 @@ class Document extends Component {
     action: PropTypes.string,
     visible: PropTypes.bool, 
     onHide: PropTypes.func, 
-    onSubmit: PropTypes.func,
   }
 
   state = {
@@ -95,11 +94,29 @@ class Document extends Component {
       errors.imsi.addError(`'${imsi}' is duplicated`);
     }
 
+    if (formData.pdn) {
+      let apns = formData.pdn.map(pdn => { return pdn.apn } )
+      let duplicates = {};
+      for (let i = 0; i < apns.length; i++) {
+        if (duplicates.hasOwnProperty(apns[i])) {
+          duplicates[apns[i]].push(i);
+        } else if (apns.lastIndexOf(apns[i]) !== i) {
+          duplicates[apns[i]] = [i];
+        }
+      }
+
+      for (let key in duplicates) {
+        duplicates[key].forEach(index => 
+          errors.pdn[index].apn.addError(`'${key}' is duplicated`));
+      }
+    }
+
     return errors;
   }
 
   handleChange = (formData, errors) => {
     let disableSubmitButton = (Object.keys(errors).length > 0);
+
     // I think there is a bug in React or Jsonschema library
     // For workaround, I'll simply add 'formData' in setState
     this.setState({
@@ -109,7 +126,7 @@ class Document extends Component {
   }
 
   handleSubmit = (formData) => {
-    const { dispatch, action, onHide } = this.props;
+    const { dispatch, action } = this.props;
 
     this.setState({ disableValidation: true })
 

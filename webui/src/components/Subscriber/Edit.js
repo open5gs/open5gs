@@ -155,10 +155,13 @@ const uiSchema = {
 class Edit extends Component {
   static propTypes = {
     visible: PropTypes.bool, 
-    title: PropTypes.string, 
+    action: PropTypes.string, 
     formData: PropTypes.object,
+    isLoading: PropTypes.bool,
+    disableSubmitButton: PropTypes.bool,
     validate: PropTypes.func, 
     onHide: PropTypes.func, 
+    onChange: PropTypes.func,
     onSubmit: PropTypes.func
   }
 
@@ -166,10 +169,6 @@ class Edit extends Component {
     super(props);
 
     this.state = this.getStateFromProps(props);
-  }
-
-  componentWillMount() {
-    this.setState(this.getStateFromProps(this.props));
   }
 
   componentWillReceiveProps(nextProps) {
@@ -212,38 +211,14 @@ class Edit extends Component {
     return state;
   }
 
-  validate = (formData, errors) => {
-    if (formData && formData.pdn) {
-      let apns = formData.pdn.map(pdn => { return pdn.apn } )
-      let duplicates = {};
-      for (let i = 0; i < apns.length; i++) {
-        if (duplicates.hasOwnProperty(apns[i])) {
-          duplicates[apns[i]].push(i);
-        } else if (apns.lastIndexOf(apns[i]) !== i) {
-          duplicates[apns[i]] = [i];
-        }
-      }
-
-      for (let key in duplicates) {
-        duplicates[key].forEach(index => 
-          errors.pdn[index].apn.addError(`'${key}' is duplicated`));
-      }
-    }
-    
-    return this.props.validate(formData, errors);
-  }
-
   render() {
-    const {
-      validate
-    } = this;
-
     const {
       visible,
       action,
       formData,
       isLoading,
       disableSubmitButton,
+      validate,
       onHide,
       onChange,
       onSubmit
@@ -255,8 +230,8 @@ class Edit extends Component {
         title={(action === 'update') ? 'Edit Subscriber' : 'Create Subscriber'}
         schema={this.state.schema}
         uiSchema={this.state.uiSchema}
-        isLoading={isLoading}
         formData={formData}
+        isLoading={isLoading}
         disableSubmitButton={disableSubmitButton}
         validate={validate}
         onHide={onHide}
