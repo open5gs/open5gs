@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { bindActionCreators, compose } from 'redux';
 
-import * as uiActions from 'modules/ui';
+import * as sidebarActions from 'modules/sidebar';
 import withWidth, { SMALL } from 'helpers/with-width';
 
 import { Layout } from 'components';
@@ -21,16 +21,12 @@ class App extends Component {
   componentWillMount() {
     const { 
       width,
-      UIActions
+      SidebarActions
     } = this.props;
 
     if (width !== SMALL) {
-      UIActions.setSidebarVisibility(true);
+      SidebarActions.setVisibility(true);
     }
-  }
-
-  componentWillReceiveProps(nextProps) {
-    console.log(nextProps);
   }
 
   render() {
@@ -71,10 +67,10 @@ const enhance = compose(
   withWidth(),
   connect(
     (state) => ({
-      view: state.ui.sidebar.view
+      view: state.sidebar.view
     }),
     (dispatch) => ({
-      UIActions: bindActionCreators(uiActions, dispatch)
+      SidebarActions: bindActionCreators(sidebarActions, dispatch)
     })
   )
 );

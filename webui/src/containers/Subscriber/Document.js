@@ -13,20 +13,12 @@ import {
 } from 'modules/crud/subscriber';
 import { clearActionStatus } from 'modules/crud/actions';
 import { select, selectActionStatus } from 'modules/crud/selectors';
+import * as Notification from 'modules/notification/actions'
 
 const notificationOpts = {
-  // uid: 'once-please', // you can specify your own uid if required
   title: 'Hey, it\'s good to see you!',
-  message: 'Now you can see how easy it is to use notifications in React!',
-  position: 'bc',
-  autoDismiss: 2,
-  action: {
-    label: 'Click me!!',
-    callback: () => alert('clicked!')
-  }
+  message: 'Now you can see how easy it is to use notifications in React!'
 };
-
-import * as Notifications from 'modules/notification/actions'
 
 import { Subscriber } from 'components';
 
@@ -101,7 +93,10 @@ class Document extends Component {
       });
       NProgress.done(true);
 
-      dispatch(Notifications.success(notificationOpts))
+      dispatch(Notification.success({
+        title: 'Subscriber',
+        message: 'New subscriber added...'
+      }));
       dispatch(clearActionStatus(MODEL, action));
       onHide();
     }

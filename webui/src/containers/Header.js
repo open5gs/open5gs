@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import * as uiActions from 'modules/ui';
+import * as sidebarActions from 'modules/sidebar';
 
 import Session from 'services/session';
 
@@ -51,8 +51,8 @@ class HeaderContainer extends Component {
   };
 
   handleSidebarToggle = () => {
-    const { UIActions } = this.props;
-    UIActions.toggleSidebar();
+    const { SidebarActions } = this.props;
+    SidebarActions.toggle();
   }
 
   render() {
@@ -84,7 +84,7 @@ class HeaderContainer extends Component {
 HeaderContainer = connect(
   null,
   (dispatch) => ({
-    UIActions: bindActionCreators(uiActions, dispatch)
+    SidebarActions: bindActionCreators(sidebarActions, dispatch)
   })
 )(HeaderContainer);
 

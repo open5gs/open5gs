@@ -2,12 +2,12 @@ import { combineReducers } from 'redux';
 
 import auth from './auth/reducers';
 import crud from './crud/reducers';
-import ui from './ui';
+import sidebar from './sidebar';
 import notifications from './notification/reducers';
 
 export default combineReducers({
   auth,
   crud,
-  ui,
+  sidebar,
   notifications
 });

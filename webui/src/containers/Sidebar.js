@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators, compose } from 'redux';
 
 import withWidth, { SMALL } from 'helpers/with-width';
-import * as uiActions from 'modules/ui';
+import * as sidebarActions from 'modules/sidebar';
 
 import { Sidebar } from 'components';
 
@@ -18,12 +18,12 @@ class SidebarContainer extends Component {
   handleSelectView = (view) => {
     const { 
       width,
-      UIActions
+      SidebarActions
     } = this.props;
 
-    UIActions.selectView(view);
+    SidebarActions.selectView(view);
     if (width === SMALL) {
-      UIActions.toggleSidebar();
+      SidebarActions.toggle();
     }
   }
 
@@ -50,11 +50,11 @@ const enhance = compose(
   withWidth(),
   connect(
     (state) => ({
-      isOpen: state.ui.sidebar.isOpen,
-      view: state.ui.sidebar.view
+      isOpen: state.sidebar.isOpen,
+      view: state.sidebar.view
     }),
     (dispatch) => ({
-      UIActions: bindActionCreators(uiActions, dispatch)
+      SidebarActions: bindActionCreators(sidebarActions, dispatch)
     })
   )
 );

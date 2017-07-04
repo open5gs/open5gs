@@ -9,6 +9,8 @@ export function show(opts = {}, level = 'success') {
     type: NOTIFICATION.SHOW,
     ...opts,
     uid: opts.uid || Date.now(),
+    position: opts.position || 'bc',
+    autoDismiss: opts.autoDismiss === undefined ?  2 : opts.autoDismiss,
     level
   };
 }
