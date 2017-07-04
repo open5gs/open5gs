@@ -2,6 +2,8 @@ import { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
+import NProgress from 'nprogress';
+
 import { 
   MODEL,
   fetchSubscribers,
@@ -9,15 +11,8 @@ import {
   createSubscriber,
   updateSubscriber
 } from 'modules/crud/subscriber';
-
-import {
-  clearActionStatus
-} from 'modules/crud/actions';
-
-import { 
-  select, 
-  selectActionStatus 
-} from 'modules/crud/selectors';
+import { clearActionStatus } from 'modules/crud/actions';
+import { select, selectActionStatus } from 'modules/crud/selectors';
 
 import { Subscriber } from 'components';
 
@@ -86,6 +81,8 @@ class Document extends Component {
     }
 
     if (status.response) {
+      NProgress.done();
+
       dispatch(clearActionStatus(MODEL, action));
       onHide();
     }
@@ -137,6 +134,12 @@ class Document extends Component {
     const { dispatch, action } = this.props;
 
     this.setState({ disableValidation: true })
+
+    NProgress.configure({ 
+      parent: '#nprogress-base-form',
+      trickleSpeed: 5
+    });
+    NProgress.start();
 
     if (action === 'create') {
       dispatch(createSubscriber({}, formData));

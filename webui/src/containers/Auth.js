@@ -61,7 +61,10 @@ class Auth extends Component {
       loginRequest
     } = this.props;
 
-    NProgress.configure({ showSpinner: false });
+    NProgress.configure({ 
+      parent: '#nprogress-base-login',
+      trickleSpeed: 5
+    });
     NProgress.start();
 
     const session = new Session()

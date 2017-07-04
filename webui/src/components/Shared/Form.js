@@ -181,7 +181,7 @@ class Form extends Component {
       <Modal 
         visible={visible} 
         onHide={onHide}>
-        <Wrapper>
+        <Wrapper id='nprogress-base-form'>
           <Header>
             {title}
           </Header>

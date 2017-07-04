@@ -170,7 +170,7 @@ const Login = ({
     <Head>
     <title>NextEPC - Login</title>
     </Head>
-    <Wrapper width={width}>
+    <Wrapper id='nprogress-base-login' width={width}>
       <ErrorBar 
         visible={error !== null}
         message={error && error.message}
