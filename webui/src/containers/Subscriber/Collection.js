@@ -2,8 +2,10 @@ import { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { fetchSubscribers, deleteSubscriber } from 'modules/crud/subscriber';
-import { select } from 'modules/crud/selectors';
+import { MODEL, fetchSubscribers, deleteSubscriber } from 'modules/crud/subscriber';
+import { clearActionStatus } from 'modules/crud/actions';
+import { select, selectActionStatus } from 'modules/crud/selectors';
+import * as Notification from 'modules/notification/actions';
 
 import { 
   Layout, 
@@ -35,11 +37,34 @@ class Collection extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    const { subscribers } = nextProps
+    const { subscribers, status } = nextProps
     const { dispatch } = this.props
 
     if (subscribers.needsFetch) {
       dispatch(subscribers.fetch)
+    }
+
+    if (status.response) {
+      dispatch(Notification.success({
+        title: 'Subscriber',
+        message: `${status.id} has been deleted`
+      }));
+      dispatch(clearActionStatus(MODEL, 'delete'));
+    } 
+
+    if (status.error) {
+      const title = ((((status || {}).error || {}).response || {}).data || {}).name || 'System Error';
+      const message = ((((status || {}).error || {}).response || {}).data || {}).message || 'Unknown Error';
+
+      dispatch(Notification.error({
+        title,
+        message,
+        autoDismiss: 0,
+        action: {
+          label: 'Dismiss'
+        }
+      }));
+      dispatch(clearActionStatus(MODEL, 'delete'));
     }
   }
 
@@ -144,7 +169,8 @@ class Collection extends Component {
 
 Collection = connect(
   (state) => ({ 
-    subscribers: select(fetchSubscribers(), state.crud)
+    subscribers: select(fetchSubscribers(), state.crud),
+    status: selectActionStatus(MODEL, state.crud, 'delete')
   })
 )(Collection);
 

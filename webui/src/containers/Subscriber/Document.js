@@ -4,21 +4,10 @@ import { connect } from 'react-redux';
 
 import NProgress from 'nprogress';
 
-import { 
-  MODEL,
-  fetchSubscribers,
-  fetchSubscriber, 
-  createSubscriber,
-  updateSubscriber
-} from 'modules/crud/subscriber';
+import { MODEL, fetchSubscribers, fetchSubscriber, createSubscriber, updateSubscriber } from 'modules/crud/subscriber';
 import { clearActionStatus } from 'modules/crud/actions';
 import { select, selectActionStatus } from 'modules/crud/selectors';
-import * as Notification from 'modules/notification/actions'
-
-const notificationOpts = {
-  title: 'Hey, it\'s good to see you!',
-  message: 'Now you can see how easy it is to use notifications in React!'
-};
+import * as Notification from 'modules/notification/actions';
 
 import { Subscriber } from 'components';
 
@@ -93,12 +82,36 @@ class Document extends Component {
       });
       NProgress.done(true);
 
+      const message = action === 'create' ? "New subscriber created" : `${status.id} subscriber updated`;
+
       dispatch(Notification.success({
         title: 'Subscriber',
-        message: 'New subscriber added...'
+        message
       }));
       dispatch(clearActionStatus(MODEL, action));
       onHide();
+    } 
+
+    if (status.error) {
+      NProgress.configure({ 
+        parent: 'body',
+        trickleSpeed: 5
+      });
+      NProgress.done(true);
+
+      const title = ((((status || {}).error || {}).response || {}).data || {}).name || 'System Error';
+      const message = ((((status || {}).error || {}).response || {}).data || {}).message || 'Unknown Error';
+
+      dispatch(Notification.error({
+        title,
+        message,
+        autoDismiss: 0,
+        action: {
+          label: 'Dismiss',
+          callback: () => onHide()
+        }
+      }));
+      dispatch(clearActionStatus(MODEL, action));
     }
   }
 

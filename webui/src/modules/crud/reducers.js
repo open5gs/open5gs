@@ -138,10 +138,16 @@ function actionStatusReducer(state = actionStatusInitialState, action) {
         id: null
       }))
     case CRUD.CREATE_SUCCESS:
+      return state.set('create', fromJS({
+        pending: false,
+        id: action.payload.data[idProperty],
+        isSuccess: !action.error,
+        payload: action.payload
+      }))
     case CRUD.CREATE_FAILURE:
       return state.set('create', fromJS({
-        pending:false,
-        id: action.payload.data[idProperty],
+        pending: false,
+        id: null,
         isSuccess: !action.error,
         payload: action.payload
       }))
@@ -153,7 +159,7 @@ function actionStatusReducer(state = actionStatusInitialState, action) {
     case CRUD.UPDATE_SUCCESS:
     case CRUD.UPDATE_FAILURE:
       return state.set('update', fromJS({
-        pending:false,
+        pending: false,
         id: id,
         isSuccess: !action.error,
         payload: action.payload
@@ -166,7 +172,7 @@ function actionStatusReducer(state = actionStatusInitialState, action) {
     case CRUD.DELETE_SUCCESS:
     case CRUD.DELETE_FAILURE:
       return state.set('delete', fromJS({
-        pending:false,
+        pending: false,
         id: id,
         isSuccess: !action.error,
         payload: action.payload
