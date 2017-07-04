@@ -89,7 +89,9 @@ class Document extends Component {
         message
       }));
       dispatch(clearActionStatus(MODEL, action));
+
       onHide();
+      this.setState({ disableValidation: false })
     } 
 
     if (status.error) {
@@ -112,6 +114,8 @@ class Document extends Component {
         }
       }));
       dispatch(clearActionStatus(MODEL, action));
+
+      this.setState({ disableValidation: false })
     }
   }
 
