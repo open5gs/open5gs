@@ -1,22 +1,12 @@
-import {RNS_SHOW_NOTIFICATION, RNS_HIDE_NOTIFICATION, RNS_REMOVE_ALL_NOTIFICATIONS} from './const';
-
-//Example opts
-// {
-//   title: 'Hey, it\'s good to see you!',
-//   message: 'Now you can see how easy it is to use notifications in React!',
-//   position: 'tr',
-//   autoDismiss: 0,
-//   action: {
-//     label: 'Awesome!',
-//     callback: function() {
-//       console.log('Clicked');
-//     }
-//   }
-// }
+export const NOTIFICATION = {
+  SHOW: 'notification/SHOW',
+  HIDE: 'notification/HIDE',
+  CLEAR: 'notification/CLEAR',
+}
 
 export function show(opts = {}, level = 'success') {
   return {
-    type: RNS_SHOW_NOTIFICATION,
+    type: NOTIFICATION.SHOW,
     ...opts,
     uid: opts.uid || Date.now(),
     level
@@ -41,11 +31,11 @@ export function info(opts) {
 
 export function hide(uid) {
   return {
-    type: RNS_HIDE_NOTIFICATION,
+    type: NOTIFICATION.HIDE,
     uid
   };
 }
 
-export function removeAll() {
-  return { type: RNS_REMOVE_ALL_NOTIFICATIONS };
+export function clear() {
+  return { type: NOTIFICATION.CLEAR };
 }
