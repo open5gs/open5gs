@@ -7,9 +7,9 @@ import * as uiActions from 'modules/ui';
 import withWidth, { SMALL } from 'helpers/with-width';
 
 import { Layout } from 'components';
+import Notification from 'containers/Notification';
 import * as Subscriber from 'containers/Subscriber';
 
-import Notifications from './notifications';
 
 class App extends Component {
   static propTypes = {
@@ -35,8 +35,7 @@ class App extends Component {
 
   render() {
     const {
-      view,
-      notification
+      view
     } = this.props;
 
     if (view === "subscriber") {
@@ -62,7 +61,7 @@ class App extends Component {
         <Layout.Container visible={view === "test3"}>
           <Layout.Content>{view}</Layout.Content>
         </Layout.Container>
-        <Notifications notifications={notification} />
+        <Notification/>
       </Layout>
     )
   }
@@ -72,8 +71,7 @@ const enhance = compose(
   withWidth(),
   connect(
     (state) => ({
-      view: state.ui.sidebar.view,
-      notification: state.notification
+      view: state.ui.sidebar.view
     }),
     (dispatch) => ({
       UIActions: bindActionCreators(uiActions, dispatch)

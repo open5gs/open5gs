@@ -14,7 +14,6 @@ import Blank from './Shared/Blank';
 import Button from './Shared/Button';
 import withRipple from './Shared/withRipple';
 import Form from './Shared/Form';
-import Snackbar from './Shared/Snackbar';
 
 import * as Subscriber from './Subscriber';
 
@@ -35,7 +34,6 @@ export {
   Button,
   withRipple,
   Form,
-  Snackbar,
 
   Subscriber
 }
