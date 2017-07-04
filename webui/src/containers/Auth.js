@@ -70,11 +70,19 @@ class Auth extends Component {
     const session = new Session()
     session.signin(username, password)
       .then(() => {
+        NProgress.configure({ 
+          parent: 'body',
+          trickleSpeed: 5
+        });
         NProgress.done();
 
         Router.push('/');
       })
       .catch(err => {
+        NProgress.configure({ 
+          parent: 'body',
+          trickleSpeed: 5
+        });
         NProgress.done();
 
         this.setState({

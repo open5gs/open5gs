@@ -9,6 +9,8 @@ import withWidth, { SMALL } from 'helpers/with-width';
 import { Layout } from 'components';
 import * as Subscriber from 'containers/Subscriber';
 
+import Notifications from './notifications';
+
 class App extends Component {
   static propTypes = {
     session: PropTypes.object.isRequired,
@@ -27,9 +29,14 @@ class App extends Component {
     }
   }
 
+  componentWillReceiveProps(nextProps) {
+    console.log(nextProps);
+  }
+
   render() {
     const {
-      view
+      view,
+      notification
     } = this.props;
 
     if (view === "subscriber") {
@@ -55,6 +62,7 @@ class App extends Component {
         <Layout.Container visible={view === "test3"}>
           <Layout.Content>{view}</Layout.Content>
         </Layout.Container>
+        <Notifications notifications={notification} />
       </Layout>
     )
   }
@@ -64,7 +72,8 @@ const enhance = compose(
   withWidth(),
   connect(
     (state) => ({
-      view: state.ui.sidebar.view
+      view: state.ui.sidebar.view,
+      notification: state.notification
     }),
     (dispatch) => ({
       UIActions: bindActionCreators(uiActions, dispatch)

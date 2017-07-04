@@ -14,6 +14,20 @@ import {
 import { clearActionStatus } from 'modules/crud/actions';
 import { select, selectActionStatus } from 'modules/crud/selectors';
 
+const notificationOpts = {
+  // uid: 'once-please', // you can specify your own uid if required
+  title: 'Hey, it\'s good to see you!',
+  message: 'Now you can see how easy it is to use notifications in React!',
+  position: 'bc',
+  autoDismiss: 2,
+  action: {
+    label: 'Click me!!',
+    callback: () => alert('clicked!')
+  }
+};
+
+import * as Notifications from 'modules/notification/actions'
+
 import { Subscriber } from 'components';
 
 const formData = {
@@ -81,8 +95,13 @@ class Document extends Component {
     }
 
     if (status.response) {
-      NProgress.done();
+      NProgress.configure({ 
+        parent: 'body',
+        trickleSpeed: 5
+      });
+      NProgress.done(true);
 
+      dispatch(Notifications.success(notificationOpts))
       dispatch(clearActionStatus(MODEL, action));
       onHide();
     }
