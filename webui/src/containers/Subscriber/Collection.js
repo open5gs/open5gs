@@ -26,6 +26,10 @@ class Collection extends Component {
       action: '',
       visible: false,
       dimmed: false
+    },
+    confirm: {
+      visible: false,
+      imsi: ''
     }
   };
 
@@ -110,10 +114,30 @@ class Collection extends Component {
       update: (imsi) => {
         this.documentHandler.show('update', { imsi });
       },
-      delete: (imsi) => {
-        const { dispatch } = this.props
-        dispatch(deleteSubscriber(imsi));
-      }
+    }
+  }
+
+  confirmHandler = {
+    show: (imsi) => {
+      this.setState({
+        confirm: {
+          visible: true,
+          imsi
+        }
+      })
+    },
+    hide: () => {
+      this.setState({
+        confirm: {
+          visible: false
+        }
+      })
+    },
+    delete: () => {
+      this.confirmHandler.hide();
+
+      const { dispatch } = this.props
+      dispatch(deleteSubscriber(this.state.confirm.imsi));
     }
   }
 
@@ -121,7 +145,8 @@ class Collection extends Component {
     const {
       handleSearchChange,
       handleSearchClear,
-      documentHandler
+      documentHandler,
+      confirmHandler
     } = this;
 
     const { 
@@ -150,7 +175,7 @@ class Collection extends Component {
           deletedImsi={status.id}
           onShow={documentHandler.actions.browser}
           onEdit={documentHandler.actions.update}
-          onDelete={documentHandler.actions.delete}
+          onDelete={confirmHandler.show}
           search={search}
         />
         {isLoading && <Spinner md />}
@@ -165,6 +190,14 @@ class Collection extends Component {
           { ...document }
           onHide={documentHandler.hide} />
         <Dimmed visible={document.dimmed} />
+        <Confirm
+          visible={this.state.confirm.visible}
+          message="Delete this subscriber?"
+          onOutside={confirmHandler.hide}
+          buttons={[
+            { text: "CANCEL", action: confirmHandler.hide, info:true },
+            { text: "DELETE", action: confirmHandler.delete, danger:true }
+          ]}/>
       </Layout.Content>
     )
   }

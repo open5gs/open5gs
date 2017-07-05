@@ -61,11 +61,13 @@ const Confirm = ({ visible, onOutside, message, buttons }) => {
 
 Confirm.propTypes = {
   visible: PropTypes.bool,
+  disabled: PropTypes.bool,
   onOutside: PropTypes.func,
 }
 
 Confirm.defaultProps = {
   visible: false,
+  disabled: true,
   onOutside: () => {},
 }
 
