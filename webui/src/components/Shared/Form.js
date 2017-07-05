@@ -168,6 +168,7 @@ class Form extends Component {
       title,
       schema,
       uiSchema,
+      disabled,
       formData,
       isLoading,
       disableSubmitButton,
@@ -190,7 +191,14 @@ class Form extends Component {
             {!isLoading && 
               <JsonSchemaForm
                 schema={schema}
-                uiSchema={uiSchema}
+                uiSchema={
+                  disabled ? {
+                    "ui:disabled": true,
+                    ...uiSchema
+                  } : {
+                    ...uiSchema
+                  }
+                }
                 formData={formData}
                 disableSubmitButton={disableSubmitButton}
                 fields={fields}
@@ -214,10 +222,10 @@ class Form extends Component {
             }
           </Body>
           <Footer>
-            <Button clear onClick={onHide}>
+            <Button clear disabled={disabled} onClick={onHide}>
               CANCEL
             </Button>
-            <Button clear disabled={disableSubmitButton} onClick={handleSubmitButton}>
+            <Button clear disabled={disabled || disableSubmitButton} onClick={handleSubmitButton}>
               SAVE
             </Button>
           </Footer>

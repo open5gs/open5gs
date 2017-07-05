@@ -196,7 +196,7 @@ class Edit extends Component {
         uiSchema : {
           ...uiSchema,
           "imsi": {
-            "ui:readonly": true
+            "ui:disabled": true
           }
         }
       }
@@ -220,6 +220,7 @@ class Edit extends Component {
       visible,
       action,
       formData,
+      disabled,
       isLoading,
       disableSubmitButton,
       validate,
@@ -235,6 +236,7 @@ class Edit extends Component {
         schema={this.state.schema}
         uiSchema={this.state.uiSchema}
         formData={formData}
+        disabled={disabled}
         isLoading={isLoading}
         disableSubmitButton={disableSubmitButton}
         validate={validate}

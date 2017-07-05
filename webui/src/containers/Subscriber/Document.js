@@ -47,8 +47,8 @@ class Document extends Component {
 
   state = {
     formData,
-    disableSubmitButton: true,
-    disableValidation: false
+    disabled: false,
+    disableSubmitButton: true
   }
 
   componentWillMount() {
@@ -67,64 +67,62 @@ class Document extends Component {
       dispatch(subscriber.fetch)
     }
 
-    if (this.props.visible != nextProps.visible) {
+    if (this.props.visible === false && nextProps.visible === true) {
       if (subscriber.data) {
         this.setState({ formData: subscriber.data })
       } else {
         this.setState({ formData });
       }
+      this.setState({ 
+        disabled: false,
+        disableSubmitButton: true
+      })
     }
 
-    if (status.response) {
+    if (status.pending === false) {
       NProgress.configure({ 
         parent: 'body',
         trickleSpeed: 5
       });
       NProgress.done(true);
 
-      const message = action === 'create' ? "New subscriber created" : `${status.id} subscriber updated`;
+      if (status.response) {
+        const message = action === 'create' ? "New subscriber created" : `${status.id} subscriber updated`;
 
-      dispatch(Notification.success({
-        title: 'Subscriber',
-        message
-      }));
+        dispatch(Notification.success({
+          title: 'Subscriber',
+          message
+        }));
+      } 
+
+      if (status.error) {
+        const title = ((((status || {}).error || {}).response || {}).data || {}).name || 'System Error';
+        const message = ((((status || {}).error || {}).response || {}).data || {}).message || 'Unknown Error';
+
+        dispatch(Notification.error({
+          title,
+          message,
+          autoDismiss: 0,
+          action: {
+            label: 'Dismiss',
+            callback: () => onHide()
+          }
+        }));
+      }
+
       dispatch(clearActionStatus(MODEL, action));
-
-      onHide();
-      this.setState({ disableValidation: false })
-    } 
-
-    if (status.error) {
-      NProgress.configure({ 
-        parent: 'body',
-        trickleSpeed: 5
-      });
-      NProgress.done(true);
-
-      const title = ((((status || {}).error || {}).response || {}).data || {}).name || 'System Error';
-      const message = ((((status || {}).error || {}).response || {}).data || {}).message || 'Unknown Error';
-
-      dispatch(Notification.error({
-        title,
-        message,
-        autoDismiss: 0,
-        action: {
-          label: 'Dismiss',
-          callback: () => onHide()
-        }
-      }));
-      dispatch(clearActionStatus(MODEL, action));
-
-      this.setState({ disableValidation: false })
+      if (status.response) {
+        onHide();
+      }
     }
   }
 
   validate = (formData, errors) => {
     const { subscribers, action, status } = this.props;
-    const { disableValidation } = this.state;
+    const { disabled } = this.state;
     const { imsi } = formData;
 
-    if (action === 'create' && disableValidation !== true && 
+    if (action === 'create' && disabled !== true && 
       subscribers && subscribers.data &&
       subscribers.data.filter(subscriber => subscriber.imsi === imsi).length > 0) {
       errors.imsi.addError(`'${imsi}' is duplicated`);
@@ -164,7 +162,7 @@ class Document extends Component {
   handleSubmit = (formData) => {
     const { dispatch, action } = this.props;
 
-    this.setState({ disableValidation: true })
+    this.setState({ disabled: true })
 
     NProgress.configure({ 
       parent: '#nprogress-base-form',
@@ -201,6 +199,7 @@ class Document extends Component {
         visible={visible} 
         action={action}
         formData={this.state.formData}
+        disabled={this.state.disabled}
         isLoading={subscriber.isLoading && !status.pending}
         disableSubmitButton={this.state.disableSubmitButton}
         validate={validate}
