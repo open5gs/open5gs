@@ -7,6 +7,7 @@ import { media, transitions } from 'helpers/style-utils';
 
 import Modal from './Modal';
 import Button from './Button';
+import Dimmed from './Dimmed';
 
 const Wrapper = styled.div`
   display: flex;
@@ -33,11 +34,12 @@ const Buttons = styled.div`
   padding: 1rem;
 `
 
-const Confirm = ({ visible, message, buttons, onHide }) => {
+const Confirm = ({ visible, onOutside, message, buttons }) => {
   const buttonList = buttons
     .map(button =>
       <Button
-        clear 
+        key={button.text}
+        clear={true}
         danger={button.danger === true} 
         info={button.info === true} 
         onClick={button.action}>
@@ -45,13 +47,26 @@ const Confirm = ({ visible, message, buttons, onHide }) => {
       </Button>
     );
   return (
-    <Modal visible={visible} onHide={onHide}>
-      <Wrapper>
-        <Message>{message}</Message>
-        <Buttons>{buttonList}</Buttons>
-      </Wrapper>  
-    </Modal>
+    <div>
+      <Modal visible={visible} onOutside={onOutside} zindex='1000'>
+        <Wrapper>
+          <Message>{message}</Message>
+          <Buttons>{buttonList}</Buttons>
+        </Wrapper>
+      </Modal>
+      <Dimmed visible={visible} zindex='999'/>
+    </div>
   )
+}
+
+Confirm.propTypes = {
+  visible: PropTypes.bool,
+  onOutside: PropTypes.func,
+}
+
+Confirm.defaultProps = {
+  visible: false,
+  onOutside: () => {},
 }
 
 export default Confirm;

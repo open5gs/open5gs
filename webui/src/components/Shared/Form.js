@@ -10,6 +10,7 @@ import JsonSchemaForm from 'react-jsonschema-form';
 import Modal from './Modal';
 import Button from './Button';
 import Spinner from './Spinner';
+import Confirm from './Confirm';
 
 const Wrapper = styled.div`
   display: flex;
@@ -143,25 +144,55 @@ class Form extends Component {
     title: ""
   };
 
+  state = {
+    editing: false,
+    confirm: false
+  };
+
+  handleChange = data => {
+    const {
+      onChange
+    } = this.props;
+
+    this.setState({ editing: true })
+    onChange(data.formData, data.errors)
+  }
+
   handleSubmitButton = () => {
+    this.setState({ editing: false })
     this.submitButton.click();
   }
 
-  handleChange = data => {
-    const { formData, errors } = data;
+  handleOutside = () => {
+    const {
+      onHide
+    } = this.props;
 
-    let disableSubmitButton = (errors.length !== 0);
-    // I think there is a library bug React or Jsonschema
-    // For workaround, I'll simply add 'formData' in setState
+    if (this.state.editing === true) {
+      this.setState({ confirm: true })
+    } else {
+      onHide();
+    }
+  }
+
+  handleClose = () => {
+    const {
+      onHide
+    } = this.props;
+
     this.setState({
-      disableSubmitButton,
-      formData
-    });
+      editing: false,
+      confirm: false
+    })
+    onHide();
   }
 
   render() {
     const {
-      handleSubmitButton
+      handleChange,
+      handleSubmitButton,
+      handleOutside,
+      handleClose
     } = this;
 
     const {
@@ -174,64 +205,73 @@ class Form extends Component {
       isLoading,
       disableSubmitButton,
       validate,
-      onHide,
       onChange,
       onSubmit
     } = this.props;
 
     return (
-      <Modal 
-        visible={visible} 
-        onHide={onHide}>
-        <Wrapper id='nprogress-base-form'>
-          <Header>
-            {title}
-          </Header>
-          <Body>
-            {isLoading && <Spinner/>}
-            {!isLoading && 
-              <JsonSchemaForm
-                schema={schema}
-                uiSchema={
-                  disabled ? {
-                    "ui:disabled": true,
-                    ...uiSchema
-                  } : {
-                    ...uiSchema
-                  }
-                }
-                formData={formData}
-                disableSubmitButton={disableSubmitButton}
-                fields={fields}
-                FieldTemplate={CustomFieldTemplate}
-                liveValidate
-                validate={validate}
-                showErrorList={false}
-                transformErrors={transformErrors}
-                autocomplete="off"
-                onChange={data => onChange(data.formData, data.errors)}
-                onSubmit={data => onSubmit(data.formData)}>
-                <div>
-                  <button type="submit" ref={(el => this.submitButton = el)}/>
-                  <style jsx>{`
-                    button {
-                      display: none;
+      <div>
+        <Modal 
+          visible={visible} 
+          onOutside={handleOutside}
+          disableOnClickOutside={this.state.confirm}>
+          <Wrapper id='nprogress-base-form'>
+            <Header>
+              {title}
+            </Header>
+            <Body>
+              {isLoading && <Spinner/>}
+              {!isLoading && 
+                <JsonSchemaForm
+                  schema={schema}
+                  uiSchema={
+                    disabled ? {
+                      "ui:disabled": true,
+                      ...uiSchema
+                    } : {
+                      ...uiSchema
                     }
-                  kkk`}</style>
-                </div>
-              </JsonSchemaForm>
-            }
-          </Body>
-          <Footer>
-            <Button clear disabled={disabled} onClick={onHide}>
-              CANCEL
-            </Button>
-            <Button clear disabled={disabled || disableSubmitButton} onClick={handleSubmitButton}>
-              SAVE
-            </Button>
-          </Footer>
-        </Wrapper>  
-      </Modal>
+                  }
+                  formData={formData}
+                  disableSubmitButton={disableSubmitButton}
+                  fields={fields}
+                  FieldTemplate={CustomFieldTemplate}
+                  liveValidate
+                  validate={validate}
+                  showErrorList={false}
+                  transformErrors={transformErrors}
+                  autocomplete="off"
+                  onChange={handleChange}
+                  onSubmit={data => onSubmit(data.formData)}>
+                  <div>
+                    <button type="submit" ref={(el => this.submitButton = el)}/>
+                    <style jsx>{`
+                      button {
+                        display: none;
+                      }
+                    kkk`}</style>
+                  </div>
+                </JsonSchemaForm>
+              }
+            </Body>
+            <Footer>
+              <Button clear disabled={disabled} onClick={handleClose}>
+                CANCEL
+              </Button>
+              <Button clear disabled={disabled || disableSubmitButton} onClick={handleSubmitButton}>
+                SAVE
+              </Button>
+            </Footer>
+          </Wrapper>  
+        </Modal>
+        <Confirm 
+          visible={this.state.confirm} 
+          message="You have unsaved changes. Are you sure you want to close?"
+          buttons={[
+            { text: "CLOSE", action: handleClose, info:true },
+            { text: "NO", action: () => this.setState({ confirm: false })}
+          ]}/>
+      </div>
     )
   }
 }

@@ -25,7 +25,7 @@ Dimmed.propTypes = {
 
 Dimmed.defaultProps = {
   visible: false,
-  zindex: '5'
+  zindex: '300'
 }
 
 export default Dimmed;

@@ -90,7 +90,7 @@ const propTypes = {
 const Logout = ({ visible, onHide, onLogout }) => (
   <Modal 
     visible={visible} 
-    onHide={onHide} 
+    onOutside={onHide} 
     transitionEnter={`${transitions.slideDown} .5s ease-in-out`}
     transitionLeave={`${transitions.slideUp} .5s ease-in-out`}
     transitionEnterTimeout={500}

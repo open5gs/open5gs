@@ -13,7 +13,8 @@ import {
   Spinner, 
   FloatingButton, 
   Blank,
-  Dimmed
+  Dimmed,
+  Confirm
 } from 'components';
 
 import Document from './Document';

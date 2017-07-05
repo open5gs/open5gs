@@ -28,7 +28,7 @@ const Wrapper = styled.div`
 class Modal extends Component {
   static propTypes = {
     visible: PropTypes.bool,
-    onHide: PropTypes.func,
+    onOutside: PropTypes.func,
     zindex: PropTypes.string,
     transitionEnter: PropTypes.string,
     transitionLeave: PropTypes.string,
@@ -37,7 +37,7 @@ class Modal extends Component {
   }
 
   static defaultProps = {
-    zindex: '10',
+    zindex: '500',
     transitionEnter: `${transitions.stretchOut} .25s ease-in`,
     transitionLeave: `${transitions.shrinkIn} .25s ease-in`,
     transitionEnterTimeout: 300,
@@ -45,16 +45,16 @@ class Modal extends Component {
   }
 
   handleClickOutside = (e) => {
-    const { visible, onHide } = this.props;
+    const { visible, onOutside } = this.props;
 
     if (!visible) return null;
-    onHide();
+    onOutside();
   }
 
   handleKeyUp = (e) => {
-    const { onHide } = this.props
+    const { onOutside } = this.props
     if (e.keyCode === 27) {
-      onHide();
+      onOutside();
     }
   }
   
