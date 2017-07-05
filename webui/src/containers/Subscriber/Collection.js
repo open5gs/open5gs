@@ -121,23 +121,26 @@ class Collection extends Component {
     show: (imsi) => {
       this.setState({
         confirm: {
-          visible: true,
-          imsi
+          imsi,
+          visible: true
         }
       })
     },
     hide: () => {
       this.setState({
         confirm: {
+          ...this.state.confirm,
           visible: false
         }
       })
     },
     delete: () => {
-      this.confirmHandler.hide();
-
       const { dispatch } = this.props
-      dispatch(deleteSubscriber(this.state.confirm.imsi));
+
+      if (this.state.confirm.visible === true) {
+        this.confirmHandler.hide();
+        dispatch(deleteSubscriber(this.state.confirm.imsi));
+      }
     }
   }
 
