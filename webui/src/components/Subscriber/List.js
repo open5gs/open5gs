@@ -35,7 +35,7 @@ const propTypes = {
   search: PropTypes.string
 }
 
-const List = ({ subscribers, onShow, onEdit, onDelete, search }) => {
+const List = ({ subscribers, deletedImsi, onShow, onEdit, onDelete, search }) => {
   const subscriberList = subscribers
     .filter(s => s.imsi.indexOf(search) !== -1)
     .sort( 
@@ -49,6 +49,7 @@ const List = ({ subscribers, onShow, onEdit, onDelete, search }) => {
       <Item 
         key={subscriber.imsi}
         subscriber={subscriber}
+        disabled={deletedImsi === subscriber.imsi}
         onShow={onShow}
         onEdit={onEdit}
         onDelete={onDelete} />

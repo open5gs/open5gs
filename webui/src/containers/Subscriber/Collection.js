@@ -129,7 +129,8 @@ class Collection extends Component {
     } = this.state;
 
     const { 
-      subscribers
+      subscribers,
+      status
     } = this.props
 
     const {
@@ -145,6 +146,7 @@ class Collection extends Component {
           onClear={handleSearchClear} />}
         <Subscriber.List
           subscribers={data}
+          deletedImsi={status.id}
           onShow={documentHandler.actions.browser}
           onEdit={documentHandler.actions.update}
           onDelete={documentHandler.actions.delete}

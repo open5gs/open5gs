@@ -8,7 +8,7 @@ import { media } from 'helpers/style-utils';
 import EditIcon from 'react-icons/lib/md/edit';
 import DeleteIcon from 'react-icons/lib/md/delete';
 
-import { Tooltip } from 'components';
+import { Tooltip, Spinner } from 'components';
 
 const Sizer = styled.div`
   display: inline-block;
@@ -55,7 +55,7 @@ const Card = styled.div`
     box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
 
     .actions {
-      opacity: 1;
+      ${p => p.disabled ? 'opacity: 0;' : 'opacity: 1;'};
     }
   }
 `;
@@ -91,6 +91,17 @@ const Imsi = styled.div`
   font-size: 1.25rem;
   line-height : 3rem;
 `;
+
+const SpinnerWrapper = styled.div`
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 4rem;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`
 
 const propTypes = {
   subscriber: PropTypes.shape({
@@ -171,6 +182,7 @@ class Item extends Component {
               <CircleButton className="delete" onClick={handleDelete}><DeleteIcon/></CircleButton>
             </Tooltip>
           </div>
+          {disabled && <SpinnerWrapper><Spinner sm/></SpinnerWrapper>}
         </Card>
       </Sizer>
     )
