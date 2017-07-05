@@ -79,41 +79,44 @@ class Document extends Component {
       })
     }
 
-    if (status.pending === false) {
+    if (status.response) {
       NProgress.configure({ 
         parent: 'body',
         trickleSpeed: 5
       });
       NProgress.done(true);
 
-      if (status.response) {
-        const message = action === 'create' ? "New subscriber created" : `${status.id} subscriber updated`;
+      const message = action === 'create' ? "New subscriber created" : `${status.id} subscriber updated`;
 
-        dispatch(Notification.success({
-          title: 'Subscriber',
-          message
-        }));
-      } 
-
-      if (status.error) {
-        const title = ((((status || {}).error || {}).response || {}).data || {}).name || 'System Error';
-        const message = ((((status || {}).error || {}).response || {}).data || {}).message || 'Unknown Error';
-
-        dispatch(Notification.error({
-          title,
-          message,
-          autoDismiss: 0,
-          action: {
-            label: 'Dismiss',
-            callback: () => onHide()
-          }
-        }));
-      }
+      dispatch(Notification.success({
+        title: 'Subscriber',
+        message
+      }));
 
       dispatch(clearActionStatus(MODEL, action));
-      if (status.response) {
-        onHide();
-      }
+      onHide();
+    } 
+
+    if (status.error) {
+      NProgress.configure({ 
+        parent: 'body',
+        trickleSpeed: 5
+      });
+      NProgress.done(true);
+
+      const title = ((((status || {}).error || {}).response || {}).data || {}).name || 'System Error';
+      const message = ((((status || {}).error || {}).response || {}).data || {}).message || 'Unknown Error';
+
+      dispatch(Notification.error({
+        title,
+        message,
+        autoDismiss: 0,
+        action: {
+          label: 'Dismiss',
+          callback: () => onHide()
+        }
+      }));
+      dispatch(clearActionStatus(MODEL, action));
     }
   }
 

@@ -44,27 +44,26 @@ class Collection extends Component {
       dispatch(subscribers.fetch)
     }
 
-    if (status.pending === false) {
-      if (status.response) {
-        dispatch(Notification.success({
-          title: 'Subscriber',
-          message: `${status.id} has been deleted`
-        }));
-      } 
+    if (status.response) {
+      dispatch(Notification.success({
+        title: 'Subscriber',
+        message: `${status.id} has been deleted`
+      }));
+      dispatch(clearActionStatus(MODEL, 'delete'));
+    } 
 
-      if (status.error) {
-        const title = ((((status || {}).error || {}).response || {}).data || {}).name || 'System Error';
-        const message = ((((status || {}).error || {}).response || {}).data || {}).message || 'Unknown Error';
+    if (status.error) {
+      const title = ((((status || {}).error || {}).response || {}).data || {}).name || 'System Error';
+      const message = ((((status || {}).error || {}).response || {}).data || {}).message || 'Unknown Error';
 
-        dispatch(Notification.error({
-          title,
-          message,
-          autoDismiss: 0,
-          action: {
-            label: 'Dismiss'
-          }
-        }));
-      }
+      dispatch(Notification.error({
+        title,
+        message,
+        autoDismiss: 0,
+        action: {
+          label: 'Dismiss'
+        }
+      }));
       dispatch(clearActionStatus(MODEL, 'delete'));
     }
   }
