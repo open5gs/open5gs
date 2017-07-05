@@ -48,7 +48,12 @@ const Confirm = ({ visible, onOutside, message, buttons }) => {
     );
   return (
     <div>
-      <Modal visible={visible} onOutside={onOutside} zindex='1000'>
+      <Modal
+        visible={visible}
+        onOutside={onOutside}
+        zindex='1000'
+        transitionEnterTimeout={10}
+        transitionLeaveTimeout={30}>
         <Wrapper>
           <Message>{message}</Message>
           <Buttons>{buttonList}</Buttons>
