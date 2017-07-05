@@ -1,4 +1,3 @@
-import { Component } from 'react';
 import PropTypes from 'prop-types';
 
 import styled from 'styled-components';
@@ -117,6 +116,6 @@ const Logout = ({ visible, onHide, onLogout }) => (
   </Modal>
 )
 
-Logout.PropTypes = propTypes;
+Logout.propTypes = propTypes;
 
 export default Logout;

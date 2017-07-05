@@ -15,6 +15,10 @@ function getBgColor(props) {
     color = oc.violet[7];
     colorDark = oc.violet[8];
   }
+  if (props.info) {
+    color = oc.gray[7];
+    colorDark = oc.gray[8];
+  }
   if (props.danger) {
     color = oc.red[7];
     colorDark = oc.red[8];
@@ -36,6 +40,7 @@ function getBgColor(props) {
 function getHoverColor(props) {
   let color = oc.indigo[8];
   if (props.secondary) color = oc.violet[8];
+  if (props.info) color = oc.gray[8];
   if (props.danger) color = oc.red[8];
   if (props.success) color = oc.lime[8];
   if (props.clear) color = 'transparent';
@@ -46,6 +51,7 @@ function getHoverColor(props) {
 function getActiveColor(props) {
   let color = oc.indigo[9];
   if (props.secondary) color = oc.violet[9];
+  if (props.info) color = oc.gray[9];
   if (props.danger) color = oc.red[9];
   if (props.success) color = oc.lime[9];
 
@@ -55,6 +61,7 @@ function getActiveColor(props) {
 function getColor(props) {
   if (props.primary) return oc.indigo[7];
   if (props.secondary) return oc.violet[7];
+  if (props.info) return oc.gray[7];
   if (props.danger) return oc.red[7];
   if (props.success) return oc.lime[7];
   return oc.indigo[7]; // default

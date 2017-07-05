@@ -14,6 +14,7 @@ import Blank from './Shared/Blank';
 import Button from './Shared/Button';
 import withRipple from './Shared/withRipple';
 import Form from './Shared/Form';
+import Confirm from './Shared/Confirm';
 
 import * as Subscriber from './Subscriber';
 
@@ -34,6 +35,7 @@ export {
   Button,
   withRipple,
   Form,
+  Confirm,
 
   Subscriber
 }
