@@ -15,6 +15,8 @@ const Sizer = styled.div`
   width: 33.3%;
   padding: 0.5rem;
 
+  ${p => p.disabled && 'opacity: 0.5; cursor: not-allowed;'};
+
   ${media.desktop`
     width: 50%;
   `}
@@ -33,6 +35,8 @@ const Card = styled.div`
 
   transition: all 0.3s cubic-bezier(.25,.8,.25,1);
   cursor: pointer;
+
+  ${p => p.disabled && 'pointer-events: none;'}
 
   .actions {
     position: absolute;
@@ -144,6 +148,7 @@ class Item extends Component {
     } = this;
     
     const {
+      disabled,
       subscriber,
       onShow,
       onEdit,
@@ -155,8 +160,8 @@ class Item extends Component {
     } = subscriber;
 
     return (
-      <Sizer>
-        <Card onClick={() => onShow(imsi)}>
+      <Sizer disabled={disabled}>
+        <Card disabled={disabled} onClick={() => onShow(imsi)}>
           <Imsi>{imsi}</Imsi>
           <div className="actions">
             <Tooltip content='Edit' width="60px">

@@ -53,7 +53,7 @@ class Collection extends Component {
     } 
 
     if (status.error) {
-      const title = ((((status || {}).error || {}).response || {}).data || {}).name || 'System Error';
+      const title = ((((status || {}).error || {}).response || {}).data || {}).name || 'Server Error';
       const message = ((((status || {}).error || {}).response || {}).data || {}).message || 'Unknown Error';
 
       dispatch(Notification.error({
