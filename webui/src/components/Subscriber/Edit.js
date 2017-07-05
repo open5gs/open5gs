@@ -158,6 +158,7 @@ class Edit extends Component {
     action: PropTypes.string, 
     formData: PropTypes.object,
     isLoading: PropTypes.bool,
+    disabled: PropTypes.bool,
     disableSubmitButton: PropTypes.bool,
     validate: PropTypes.func, 
     onHide: PropTypes.func, 

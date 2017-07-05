@@ -157,7 +157,7 @@ class Item extends Component {
     return (
       <Sizer>
         <Card onClick={() => onShow(imsi)}>
-          <Imsi>{subscriber.imsi}</Imsi>
+          <Imsi>{imsi}</Imsi>
           <div className="actions">
             <Tooltip content='Edit' width="60px">
               <CircleButton onClick={handleEdit}><EditIcon/></CircleButton>

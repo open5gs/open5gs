@@ -129,6 +129,7 @@ class Form extends Component {
     schema: PropTypes.object,
     uiSchema: PropTypes.object,
     formData: PropTypes.object,
+    disabled: PropTypes.bool,
     isLoading: PropTypes.bool,
     disableSubmitButton: PropTypes.bool,
     valdate: PropTypes.func,
