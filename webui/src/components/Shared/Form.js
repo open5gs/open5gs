@@ -136,7 +136,8 @@ class Form extends Component {
     valdate: PropTypes.func,
     onHide: PropTypes.func,
     onChange: PropTypes.func,
-    onSubmit: PropTypes.func
+    onSubmit: PropTypes.func,
+    onError: PropTypes.func
   };
 
   static defaultProps = {
@@ -206,7 +207,8 @@ class Form extends Component {
       disableSubmitButton,
       validate,
       onChange,
-      onSubmit
+      onSubmit,
+      onError
     } = this.props;
 
     return (
@@ -242,7 +244,8 @@ class Form extends Component {
                   transformErrors={transformErrors}
                   autocomplete="off"
                   onChange={handleChange}
-                  onSubmit={data => onSubmit(data.formData)}>
+                  onSubmit={data => onSubmit(data.formData)}
+                  onError={onError}>
                   <div>
                     <button type="submit" ref={(el => this.submitButton = el)}/>
                     <style jsx>{`

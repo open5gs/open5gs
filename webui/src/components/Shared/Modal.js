@@ -61,9 +61,9 @@ class Modal extends Component {
   componentDidUpdate(prevProps, prevState) {
     if(prevProps.visible !== this.props.visible) {
       if(this.props.visible) {
-        document.body.addEventListener('keyup', this.handleKeyPress);
+        document.body.addEventListener('keyup', this.handleKeyUp);
       } else { 
-        document.body.removeEventListener('keyup', this.handleKeyPress);
+        document.body.removeEventListener('keyup', this.handleKeyUp);
       }
     }
   }

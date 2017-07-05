@@ -182,11 +182,22 @@ class Document extends Component {
     }
   }
 
+  handleError = errors => {
+    const { dispatch } = this.props;
+    errors.map(error =>
+      dispatch(Notification.error({
+        title: 'Validation Error',
+        message: error.stack
+      }))
+    )
+  }
+
   render() {
     const {
       validate,
       handleChange,
-      handleSubmit
+      handleSubmit,
+      handleError
     } = this;
 
     const { 
@@ -208,7 +219,8 @@ class Document extends Component {
         validate={validate}
         onHide={onHide}
         onChange={handleChange}
-        onSubmit={handleSubmit} />
+        onSubmit={handleSubmit}
+        onError={handleError} />
     )
   }
 }

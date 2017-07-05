@@ -163,7 +163,8 @@ class Edit extends Component {
     validate: PropTypes.func, 
     onHide: PropTypes.func, 
     onChange: PropTypes.func,
-    onSubmit: PropTypes.func
+    onSubmit: PropTypes.func,
+    onError: PropTypes.func
   }
 
   constructor(props) {
@@ -227,7 +228,8 @@ class Edit extends Component {
       validate,
       onHide,
       onChange,
-      onSubmit
+      onSubmit,
+      onError
     } = this.props;
 
     return (
@@ -243,7 +245,8 @@ class Edit extends Component {
         validate={validate}
         onHide={onHide}
         onChange={onChange}
-        onSubmit={onSubmit} />
+        onSubmit={onSubmit}
+        onError={onError}/>
     )
   }
 }
