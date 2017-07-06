@@ -8,7 +8,7 @@ import EditIcon from 'react-icons/lib/md/edit';
 import DeleteIcon from 'react-icons/lib/md/delete';
 import CloseIcon from 'react-icons/lib/md/close';
 
-import { Modal, Tooltip } from 'components';
+import { Modal, Tooltip, Heading, Text, LineSeparator } from 'components';
 
 const Wrapper = styled.div`
   display: flex;
@@ -73,8 +73,8 @@ const CircleButton = styled.div`
 `
 
 const Body = styled.div`
-  padding: 2rem;
-  font-size: 14px;
+  display: block;
+  margin: 0.5rem 1rem;
 
   height: 300px;
   ${media.mobile`
@@ -86,6 +86,9 @@ const Body = styled.div`
 
 const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, onHide }) => {
   const imsi = (subscriber || {}).imsi;
+  const security = ((subscriber || {}).security || {});
+  const ue_ambr = ((subscriber || {}).ue_ambr || {});
+  const pdns = ((subscriber || {}).pdn || []);
 
   return (
     <Modal 
@@ -108,7 +111,24 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
           </div>
         </Header>
         <Body>
-        skldafjasdfjalskdf
+          <Heading el='h3'>Security</Heading>
+          <Text>K : {security.k}</Text>
+          <Text>OP : {security.op}</Text>
+          <Text>AMF : {security.amf}</Text>
+          <LineSeparator horizontal />
+          <Heading el='h3'>UE AMBR(Aggregate Maximum Bit Rate)</Heading>
+          <Text>Max Requested Bandwidth UL : {ue_ambr.max_bandwidth_ul} (Kbps)</Text>
+          <Text>Max Requested Bandwidth DL : {ue_ambr.max_bandwidth_dl} (Kbps)</Text>
+          <LineSeparator horizontal />
+          <Heading el='h3'>PDN</Heading>
+          {pdns.map(pdn => 
+            <div key={pdn.apn}>
+              <Text>APN : {pdn.apn}</Text>
+              <Text>QCI : {pdn.qos.qci}</Text>
+              <Text>ARP : {pdn.qos.arp.priority_level}</Text>
+              <Text>AMBR : {pdn.pdn_ambr.max_bandwidth_ul}/{pdn.pdn_ambr.max_bandwidth_ul}</Text>
+            </div>
+          )}
         </Body>
       </Wrapper>
     </Modal>
