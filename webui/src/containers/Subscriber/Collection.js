@@ -27,6 +27,10 @@ class Collection extends Component {
       visible: false,
       dimmed: false
     },
+    view: {
+      visible: false,
+      imsi: ''
+    },
     confirm: {
       visible: false,
       imsi: ''
@@ -109,11 +113,28 @@ class Collection extends Component {
       create: () => {
         this.documentHandler.show('create');
       },
-      browser: (imsi) => {
-      },
       update: (imsi) => {
         this.documentHandler.show('update', { imsi });
-      },
+      }
+    }
+  }
+
+  viewHandler = {
+    show: (subscriber) => {
+      this.setState({
+        view: {
+          subscriber,
+          visible: true
+        }
+      });
+    },
+    hide: () => {
+      this.setState({
+        view: {
+          ...this.state.view,
+          visible: false
+        }
+      })
     }
   }
 
@@ -149,6 +170,7 @@ class Collection extends Component {
       handleSearchChange,
       handleSearchClear,
       documentHandler,
+      viewHandler,
       confirmHandler
     } = this;
 
@@ -176,7 +198,7 @@ class Collection extends Component {
         <Subscriber.List
           subscribers={data}
           deletedImsi={status.id}
-          onShow={documentHandler.actions.browser}
+          onView={viewHandler.show}
           onEdit={documentHandler.actions.update}
           onDelete={confirmHandler.show}
           search={search}
@@ -189,8 +211,16 @@ class Collection extends Component {
           onTitle={documentHandler.actions.create}
           />
         <FloatingButton onClick={documentHandler.actions.create}/>
+        <Subscriber.View
+          visible={this.state.view.visible}
+          subscriber={this.state.view.subscriber}
+          onEdit={documentHandler.actions.update}
+          onDelete={confirmHandler.show}
+          onHide={viewHandler.hide}/>
         <Document 
           { ...document }
+          onEdit={documentHandler.actions.update}
+          onDelete={confirmHandler.show}
           onHide={documentHandler.hide} />
         <Dimmed visible={document.dimmed} />
         <Confirm

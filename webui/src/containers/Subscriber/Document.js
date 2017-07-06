@@ -42,7 +42,7 @@ class Document extends Component {
   static propTypes = {
     action: PropTypes.string,
     visible: PropTypes.bool, 
-    onHide: PropTypes.func, 
+    onHide: PropTypes.func
   }
 
   state = {

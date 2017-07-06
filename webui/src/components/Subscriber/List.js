@@ -29,13 +29,13 @@ const Wrapper = styled.div`
 
 const propTypes = {
   subscribers: PropTypes.arrayOf(PropTypes.object),
-  onShow: PropTypes.func,
+  onView: PropTypes.func,
   onEdit: PropTypes.func,
   onDelete: PropTypes.func,
   search: PropTypes.string
 }
 
-const List = ({ subscribers, deletedImsi, onShow, onEdit, onDelete, search }) => {
+const List = ({ subscribers, deletedImsi, onView, onEdit, onDelete, search }) => {
   const subscriberList = subscribers
     .filter(s => s.imsi.indexOf(search) !== -1)
     .sort( 
@@ -50,7 +50,7 @@ const List = ({ subscribers, deletedImsi, onShow, onEdit, onDelete, search }) =>
         key={subscriber.imsi}
         subscriber={subscriber}
         disabled={deletedImsi === subscriber.imsi}
-        onShow={onShow}
+        onView={onView}
         onEdit={onEdit}
         onDelete={onDelete} />
     );

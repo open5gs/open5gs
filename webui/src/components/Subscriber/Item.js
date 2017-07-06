@@ -107,7 +107,7 @@ const propTypes = {
   subscriber: PropTypes.shape({
     imsi: PropTypes.string
   }),
-  onShow: PropTypes.func,
+  onView: PropTypes.func,
   onEdit: PropTypes.func,
   onDelete: PropTypes.func
 }
@@ -117,7 +117,7 @@ class Item extends Component {
     subscriber: PropTypes.shape({
       imsi: PropTypes.string
     }),
-    onShow: PropTypes.func,
+    onView: PropTypes.func,
     onEdit: PropTypes.func,
     onDelete: PropTypes.func
   }
@@ -161,7 +161,7 @@ class Item extends Component {
     const {
       disabled,
       subscriber,
-      onShow,
+      onView,
       onEdit,
       onDelete
     } = this.props;
@@ -172,7 +172,7 @@ class Item extends Component {
 
     return (
       <Sizer disabled={disabled}>
-        <Card disabled={disabled} onClick={() => onShow(imsi)}>
+        <Card disabled={disabled} onClick={() => onView(subscriber)}>
           <Imsi>{imsi}</Imsi>
           <div className="actions">
             <Tooltip content='Edit' width="60px">
