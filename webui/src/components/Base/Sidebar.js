@@ -28,7 +28,7 @@ const Menu = styled.div`
     transition: height .2s ease-in-out;
   `}
 
-  background-color: ${oc.indigo[6]};
+  background-color: ${oc.indigo[5]};
   box-shadow: 3px 3px 6px rgba(0,0,0,0.1), 3px 3px 6px rgba(0,0,0,0.2);
 `;
 
@@ -41,13 +41,13 @@ const StyledItem = styled.div`
 
   cursor: pointer;
   color: white;
-  background: ${p => p.active ? oc.indigo[5] : oc.indigo[6]};
+  background: ${p => p.active ? oc.indigo[7] : oc.indigo[5]};
 
-  border-left: ${p => p.active ? `12px solid ${oc.indigo[3]}` : 
-    `12px solid ${oc.indigo[7]}`};
+  border-left: ${p => p.active ? `12px solid ${oc.indigo[6]}` :
+    `12px solid ${oc.indigo[4]}`};
 
   &:hover {
-    background: ${p => p.active ? oc.indigo[5] : oc.indigo[7]};
+    background: ${p => p.active ? oc.indigo[7] : oc.indigo[6]};
   }
 `;
 

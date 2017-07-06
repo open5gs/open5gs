@@ -13,8 +13,7 @@ const Wrapper = styled.div`
   height: 4rem;
 
   color: white;
-  background: ${oc.indigo[8]};
-  border-bottom: 1px solid ${oc.indigo[9]};
+  background: ${oc.indigo[9]};
 `;
 
 const Menu = styled.div`
