@@ -6,7 +6,6 @@ import oc from 'open-color';
 
 import SubscriberIcon from 'react-icons/lib/md/person-add'
 import PdnIcon from 'react-icons/lib/md/cast';
-import UserIcon from 'react-icons/lib/md/supervisor-account';
 import Test2Icon from 'react-icons/lib/md/access-alarm'
 import Test3Icon from 'react-icons/lib/md/3d-rotation'
 
@@ -90,10 +89,6 @@ const Sidebar = ({ isOpen, width, selectedView, onSelectView }) => (
     <Item name="pdn" selected={selectedView} onSelect={onSelectView}>
       <Icon><PdnIcon/></Icon>
       <Title>PDN</Title>
-    </Item>
-    <Item name="user" selected={selectedView} onSelect={onSelectView}>
-      <Icon><UserIcon/></Icon>
-      <Title>User</Title>
     </Item>
     <Item name="test2" selected={selectedView} onSelect={onSelectView}>
       <Icon><Test2Icon/></Icon>

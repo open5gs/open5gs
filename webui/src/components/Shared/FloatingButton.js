@@ -12,9 +12,9 @@ const Wrapper = styled.div`
   width: 4rem;
   height: 4rem;
 
-  background: white;
-  border: 3px solid ${oc.pink[6]};
-  color: ${oc.pink[6]};
+  border: 1px solid ${oc.pink[9]};
+  color: white;
+  background: ${oc.pink[8]};
 
   border-radius: 2rem;
   font-size: 2rem;
@@ -28,7 +28,6 @@ const Wrapper = styled.div`
 
   &:hover {
     transform: translateY(-0.5rem); 
-    color: white;
     background: ${oc.pink[6]}; 
   }
 `;
