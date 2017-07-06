@@ -12,7 +12,7 @@ import SecurityIcon from 'react-icons/lib/md/security';
 import PdnIcon from 'react-icons/lib/md/cast';
 import KeyboardControlIcon from 'react-icons/lib/md/keyboard-control';
 
-import { Modal, Tooltip, Heading, Text, LineSeparator } from 'components';
+import { Modal, Tooltip, Dimmed } from 'components';
 
 const Wrapper = styled.div`
   display: flex;
@@ -176,87 +176,90 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
   const pdns = ((subscriber || {}).pdn || []);
 
   return (
-    <Modal 
-      visible={visible} 
-      onOutside={onHide}
-      disableOnClickOutside={disableOnClickOutside}>
-      <Wrapper>
-        <Header>
-          <div className="title">{imsi}</div>
-          <div className="actions">
-            <Tooltip content='Edit' width="60px">
-              <CircleButton onClick={() => onEdit(imsi)}><EditIcon/></CircleButton>
-            </Tooltip>
-            <Tooltip content='Delete' width="60px">
-              <CircleButton className="delete" onClick={() => onDelete(imsi)}><DeleteIcon/></CircleButton>
-            </Tooltip>
-            <Tooltip content='Close' width="60px">
-              <CircleButton className="delete" onClick={onHide}><CloseIcon/></CircleButton>
-            </Tooltip>
-          </div>
-        </Header>
-        <Body>
-          <Subscriber>
-            <div className="header">
-              Subscriber Details
+    <div>
+      <Modal 
+        visible={visible} 
+        onOutside={onHide}
+        disableOnClickOutside={disableOnClickOutside}>
+        <Wrapper>
+          <Header>
+            <div className="title">{imsi}</div>
+            <div className="actions">
+              <Tooltip content='Edit' width="60px">
+                <CircleButton onClick={() => onEdit(imsi)}><EditIcon/></CircleButton>
+              </Tooltip>
+              <Tooltip content='Delete' width="60px">
+                <CircleButton className="delete" onClick={() => onDelete(imsi)}><DeleteIcon/></CircleButton>
+              </Tooltip>
+              <Tooltip content='Close' width="60px">
+                <CircleButton className="delete" onClick={onHide}><CloseIcon/></CircleButton>
+              </Tooltip>
             </div>
-            <div className="body">
-              <div className="left">
-                <SecurityIcon/>
+          </Header>
+          <Body>
+            <Subscriber>
+              <div className="header">
+                Subscriber Details
               </div>
-              <div className="right">
-                <div className="data">
-                  {security.k}
-                  <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>K</span>
+              <div className="body">
+                <div className="left">
+                  <SecurityIcon/>
                 </div>
-                <div className="data">
-                  {security.op}
-                  <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>OP</span>
-                </div>
-                <div className="data">
-                  {security.amf}
-                  <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>AMF</span>
-                </div>
-              </div>
-            </div>
-            <div className="body">
-              <div className="left">
-                <PdnIcon/>
-              </div>
-              <div className="right">
-                <div className="data">
-                  {ue_ambr.max_bandwidth_ul} Kbps
-                  <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>UL</span>
-                </div>
-                <div className="data">
-                  {ue_ambr.max_bandwidth_dl} Kbps
-                  <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>DL</span>
+                <div className="right">
+                  <div className="data">
+                    {security.k}
+                    <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>K</span>
+                  </div>
+                  <div className="data">
+                    {security.op}
+                    <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>OP</span>
+                  </div>
+                  <div className="data">
+                    {security.amf}
+                    <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>AMF</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          </Subscriber>
-          <Pdn>
-            <div className="header">
-              PDN
-            </div>
-            <div className="body" style={{color:oc.gray[5]}}>
-              <div className="data">APN</div>
-              <div className="data">QCI</div>
-              <div className="data">ARP</div>
-              <div className="data">UL/DL(Kbps)</div>
-            </div>
-            {pdns.map(pdn =>
-              <div className="body" key={pdn.apn}>
-                <div className="data">{pdn.apn}</div>
-                <div className="data">{pdn.qos.qci}</div>
-                <div className="data">{pdn.qos.arp.priority_level}</div>
-                <div className="data">{pdn.pdn_ambr.max_bandwidth_ul}/{pdn.pdn_ambr.max_bandwidth_ul}</div>
+              <div className="body">
+                <div className="left">
+                  <PdnIcon/>
+                </div>
+                <div className="right">
+                  <div className="data">
+                    {ue_ambr.max_bandwidth_ul} Kbps
+                    <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>UL</span>
+                  </div>
+                  <div className="data">
+                    {ue_ambr.max_bandwidth_dl} Kbps
+                    <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>DL</span>
+                  </div>
+                </div>
               </div>
-            )}
-          </Pdn>
-        </Body>
-      </Wrapper>
-    </Modal>
+            </Subscriber>
+            <Pdn>
+              <div className="header">
+                PDN
+              </div>
+              <div className="body" style={{color:oc.gray[5]}}>
+                <div className="data">APN</div>
+                <div className="data">QCI</div>
+                <div className="data">ARP</div>
+                <div className="data">UL/DL(Kbps)</div>
+              </div>
+              {pdns.map(pdn =>
+                <div className="body" key={pdn.apn}>
+                  <div className="data">{pdn.apn}</div>
+                  <div className="data">{pdn.qos.qci}</div>
+                  <div className="data">{pdn.qos.arp.priority_level}</div>
+                  <div className="data">{pdn.pdn_ambr.max_bandwidth_ul}/{pdn.pdn_ambr.max_bandwidth_ul}</div>
+                </div>
+              )}
+            </Pdn>
+          </Body>
+        </Wrapper>
+      </Modal>
+      <Dimmed visible={visible}/>
+    </div>
   )
 }
 
