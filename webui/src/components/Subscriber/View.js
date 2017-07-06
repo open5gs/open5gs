@@ -56,10 +56,6 @@ const CircleButton = styled.div`
   justify-content: center;
   margin: 1px;
 
-  ${media.mobile`
-    margin: 0px;
-  `}
-
   color: ${oc.gray[6]};
 
   border-radius: 1rem;
