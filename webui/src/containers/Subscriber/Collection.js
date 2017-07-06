@@ -27,12 +27,13 @@ class Collection extends Component {
       visible: false,
       dimmed: false
     },
-    view: {
+    confirm: {
       visible: false,
       imsi: ''
     },
-    confirm: {
+    view: {
       visible: false,
+      disableOnClickOutside: false,
       imsi: ''
     }
   };
@@ -107,7 +108,7 @@ class Collection extends Component {
     hide: () => {
       this.setState({
         document: {
-          ...this.state.document,
+          action: '',
           visible: false,
           dimmed: false
         },
@@ -123,6 +124,46 @@ class Collection extends Component {
       },
       update: (imsi) => {
         this.documentHandler.show('update', { imsi });
+      }
+    }
+  }
+
+  confirmHandler = {
+    show: (imsi) => {
+      this.setState({
+        confirm: {
+          visible: true,
+          imsi,
+        },
+        view: {
+          ...this.state.view,
+          disableOnClickOutside: true
+        }
+      })
+    },
+    hide: () => {
+      this.setState({
+        confirm: {
+          ...this.state.confirm,
+          visible: false
+        },
+        view: {
+          ...this.state.view,
+          disableOnClickOutside: false
+        }
+      })
+    },
+    actions : {
+      delete: () => {
+        const { dispatch } = this.props
+
+        if (this.state.confirm.visible === true) {
+          this.confirmHandler.hide();
+          this.documentHandler.hide();
+          this.viewHandler.hide();
+
+          dispatch(deleteSubscriber(this.state.confirm.imsi));
+        }
       }
     }
   }
@@ -147,42 +188,6 @@ class Collection extends Component {
     }
   }
 
-  confirmHandler = {
-    show: (imsi) => {
-      this.setState({
-        confirm: {
-          imsi,
-          visible: true
-        },
-        view: {
-          ...this.state.view,
-          disableOnClickOutside: true
-        }
-      })
-    },
-    hide: () => {
-      this.setState({
-        confirm: {
-          ...this.state.confirm,
-          visible: false
-        },
-        view: {
-          ...this.state.view,
-          disableOnClickOutside: false
-        }
-      })
-    },
-    delete: () => {
-      const { dispatch } = this.props
-
-      if (this.state.confirm.visible === true) {
-        this.confirmHandler.hide();
-        this.viewHandler.hide();
-
-        dispatch(deleteSubscriber(this.state.confirm.imsi));
-      }
-    }
-  }
 
   render() {
     const {
@@ -249,7 +254,7 @@ class Collection extends Component {
           onOutside={confirmHandler.hide}
           buttons={[
             { text: "CANCEL", action: confirmHandler.hide, info:true },
-            { text: "DELETE", action: confirmHandler.delete, danger:true }
+            { text: "DELETE", action: confirmHandler.actions.delete, danger:true }
           ]}/>
       </Layout.Content>
     )
