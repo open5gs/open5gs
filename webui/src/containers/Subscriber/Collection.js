@@ -97,6 +97,10 @@ class Collection extends Component {
           visible: true,
           dimmed: true,
           ...payload
+        },
+        view: {
+          ...this.state.view,
+          disableOnClickOutside: true
         }
       })
     },
@@ -106,6 +110,10 @@ class Collection extends Component {
           ...this.state.document,
           visible: false,
           dimmed: false
+        },
+        view: {
+          ...this.state.view,
+          disableOnClickOutside: false
         }
       })
     },
@@ -124,7 +132,8 @@ class Collection extends Component {
       this.setState({
         view: {
           subscriber,
-          visible: true
+          visible: true,
+          disableOnClickOutside: false
         }
       });
     },
@@ -144,6 +153,10 @@ class Collection extends Component {
         confirm: {
           imsi,
           visible: true
+        },
+        view: {
+          ...this.state.view,
+          disableOnClickOutside: true
         }
       })
     },
@@ -152,6 +165,10 @@ class Collection extends Component {
         confirm: {
           ...this.state.confirm,
           visible: false
+        },
+        view: {
+          ...this.state.view,
+          disableOnClickOutside: false
         }
       })
     },
@@ -160,6 +177,8 @@ class Collection extends Component {
 
       if (this.state.confirm.visible === true) {
         this.confirmHandler.hide();
+        this.viewHandler.hide();
+
         dispatch(deleteSubscriber(this.state.confirm.imsi));
       }
     }
@@ -214,6 +233,7 @@ class Collection extends Component {
         <Subscriber.View
           visible={this.state.view.visible}
           subscriber={this.state.view.subscriber}
+          disableOnClickOutside={this.state.view.disableOnClickOutside}
           onEdit={documentHandler.actions.update}
           onDelete={confirmHandler.show}
           onHide={viewHandler.hide}/>

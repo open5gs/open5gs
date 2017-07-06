@@ -88,13 +88,14 @@ const Body = styled.div`
   overflow: scroll;
 `
 
-const View = ({ visible, subscriber, onEdit, onDelete, onHide }) => {
+const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, onHide }) => {
   const imsi = (subscriber || {}).imsi;
 
   return (
     <Modal 
       visible={visible} 
-      onOutside={onHide}>
+      onOutside={onHide}
+      disableOnClickOutside={disableOnClickOutside}>
       <Wrapper>
         <Header>
           <Imsi>{imsi}</Imsi>
