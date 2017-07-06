@@ -172,7 +172,7 @@ class Item extends Component {
 
     return (
       <Sizer disabled={disabled}>
-        <Card disabled={disabled} onClick={() => onView(subscriber)}>
+        <Card disabled={disabled} onClick={() => onView(imsi)}>
           <Imsi>{imsi}</Imsi>
           <div className="actions">
             <Tooltip content='Edit' width="60px">

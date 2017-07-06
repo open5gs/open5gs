@@ -169,10 +169,10 @@ class Collection extends Component {
   }
 
   viewHandler = {
-    show: (subscriber) => {
+    show: (imsi) => {
       this.setState({
         view: {
-          subscriber,
+          imsi,
           visible: true,
           disableOnClickOutside: false
         }
@@ -237,7 +237,8 @@ class Collection extends Component {
         <FloatingButton onClick={documentHandler.actions.create}/>
         <Subscriber.View
           visible={this.state.view.visible}
-          subscriber={this.state.view.subscriber}
+          subscriber={data.filter(subscriber => 
+            subscriber.imsi === this.state.view.imsi)[0]}
           disableOnClickOutside={this.state.view.disableOnClickOutside}
           onEdit={documentHandler.actions.update}
           onDelete={confirmHandler.show}
