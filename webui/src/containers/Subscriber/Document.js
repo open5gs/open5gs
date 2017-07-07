@@ -104,8 +104,17 @@ class Document extends Component {
       });
       NProgress.done(true);
 
-      const title = ((((status || {}).error || {}).response || {}).data || {}).name || 'System Error';
-      const message = ((((status || {}).error || {}).response || {}).data || {}).message || 'Unknown Error';
+      const response = ((status || {}).error || {}).response || {};
+
+      let title = 'Unknown Code';
+      let message = 'Unknown Error';
+      if (response.data && response.data.name && response.data.message) {
+        title = response.data.name;
+        message = response.data.message;
+      } else {
+        title = response.status;
+        message = response.statusText;
+      }
 
       dispatch(Notification.error({
         title,

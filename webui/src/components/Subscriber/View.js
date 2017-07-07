@@ -148,27 +148,6 @@ const Pdn = styled.div`
     }
   }
 `
-/*
-          <Heading el='h3'>Security</Heading>
-          <Text>K : {security.k}</Text>
-          <Text>OP : {security.op}</Text>
-          <Text>AMF : {security.amf}</Text>
-          <LineSeparator horizontal />
-          <Heading el='h3'>UE AMBR(Aggregate Maximum Bit Rate)</Heading>
-          <Text>Max Requested Bandwidth UL : {ue_ambr.max_bandwidth_ul} (Kbps)</Text>
-          <Text>Max Requested Bandwidth DL : {ue_ambr.max_bandwidth_dl} (Kbps)</Text>
-          <LineSeparator horizontal />
-          <Heading el='h3'>PDN</Heading>
-          {pdns.map(pdn => 
-            <div key={pdn.apn}>
-              <Text>APN : {pdn.apn}</Text>
-              <Text>QCI : {pdn.qos.qci}</Text>
-              <Text>ARP : {pdn.qos.arp.priority_level}</Text>
-              <Text>AMBR : {pdn.pdn_ambr.max_bandwidth_ul}/{pdn.pdn_ambr.max_bandwidth_ul}</Text>
-            </div>
-          )}
-          */
-
 const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, onHide }) => {
   const imsi = (subscriber || {}).imsi;
   const security = ((subscriber || {}).security || {});

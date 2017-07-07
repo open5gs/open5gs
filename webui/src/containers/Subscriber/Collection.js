@@ -63,8 +63,15 @@ class Collection extends Component {
     } 
 
     if (status.error) {
-      const title = ((((status || {}).error || {}).response || {}).data || {}).name || 'Server Error';
-      const message = ((((status || {}).error || {}).response || {}).data || {}).message || 'Unknown Error';
+      let title = 'Unknown Code';
+      let message = 'Unknown Error';
+      if (response.data && response.data.name && response.data.message) {
+        title = response.data.name;
+        message = response.data.message;
+      } else {
+        title = response.status;
+        message = response.statusText;
+      }
 
       dispatch(Notification.error({
         title,
