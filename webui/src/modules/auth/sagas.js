@@ -1,7 +1,7 @@
 import { take, fork, cancel, call, put } from 'redux-saga/effects';
 
-import Session from 'services/session';
 import { AUTH, loginSuccess } from './actions';
+import Session from 'modules/auth/session';
 
 function* authorize(username, password) {
   try {

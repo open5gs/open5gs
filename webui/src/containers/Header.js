@@ -6,8 +6,7 @@ import { bindActionCreators } from 'redux';
 
 import * as sidebarActions from 'modules/sidebar';
 
-import Session from 'services/session';
-
+import Session from 'modules/auth/session';
 import { Header, Logout, Dimmed } from 'components';
 
 class HeaderContainer extends Component {
