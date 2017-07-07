@@ -1,9 +1,17 @@
 import axios from 'axios';
 import { all, takeEvery, put, call, take, fork } from 'redux-saga/effects';
 import { CRUD } from './actions';
+import Session from 'modules/auth/session';
 
-const crudApi = (method, url, { params, data } = {} ) => {
-  return axios({ baseURL: '/api/db', method, url, params, data });
+const crudApi = (method, url, csrf, { params, data } = {} ) => {
+  return axios({
+    baseURL: '/api/db',
+    headers: { 'X-CSRF-TOKEN': csrf },
+    method,
+    url,
+    params,
+    data
+  });
 }
 
 function* crudEntity(action) {
@@ -15,7 +23,9 @@ function* crudEntity(action) {
   }
 
   try {
-    const response = yield call(crudApi, method, url, { params, data })
+    const sessionData = new Session();
+    const csrf = ((sessionData || {}).session || {}).csrfToken;
+    const response = yield call(crudApi, method, url, csrf, { params, data })
     yield put({ meta, type: success, payload: response })
   } catch (error) {
     yield put({ meta, type: failure, payload: error, error: true })
