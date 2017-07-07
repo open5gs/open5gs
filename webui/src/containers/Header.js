@@ -45,7 +45,7 @@ class HeaderContainer extends Component {
       const session = new Session()
       await session.signout()
 
-      // @FIXME next/router not working reliably  so using window.location
+      // @FIXME next/router not working reliably so using window.location
       window.location = '/'
     }
   };
