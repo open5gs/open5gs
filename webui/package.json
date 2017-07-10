@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "NextEPC",
   "main": "index.js",
-  "repository": "https://github.com/acetcom/cellwire",
+  "repository": "https://github.com/acetcom/nextepc",
   "author": "NextEPC Group",
   "license": "GPL-3.0",
   "dependencies": {
