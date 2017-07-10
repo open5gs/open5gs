@@ -2,22 +2,22 @@
 
 SUBDIRS = mme hss sgw pgw
 
-noinst_LTLIBRARIES = libcellwire.la
+noinst_LTLIBRARIES = libnextepc.la
 
-libcellwire_la_SOURCES = \
-	cellwire.h 
+libnextepc_la_SOURCES = \
+	nextepc.h 
 
-nodist_libcellwire_la_SOURCES = \
+nodist_libnextepc_la_SOURCES = \
     init.c 
 
-libcellwire_la_DEPENDENCIES = \
+libnextepc_la_DEPENDENCIES = \
     $(top_srcdir)/lib/logger/liblogger.la \
     $(top_srcdir)/src/mme/libmme.la \
     $(top_srcdir)/src/hss/libhss.la \
     $(top_srcdir)/src/sgw/libsgw.la \
     $(top_srcdir)/src/pgw/libpgw.la
 
-libcellwire_la_LIBADD = \
+libnextepc_la_LIBADD = \
     $(top_srcdir)/lib/logger/liblogger.la \
     $(top_srcdir)/src/mme/libmme.la \
     $(top_srcdir)/src/hss/libhss.la \

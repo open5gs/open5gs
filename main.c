@@ -8,13 +8,13 @@
 #include "core_signal.h"
 
 /* Server */
-#include "cellwire.h"
+#include "nextepc.h"
 
 static char *compile_time = __DATE__ " " __TIME__;
 
 static void show_version()
 {
-    printf("CellWire daemon v%s - %s\n", PACKAGE_VERSION, compile_time);
+    printf("NextEPC daemon v%s - %s\n", PACKAGE_VERSION, compile_time);
 }
 
 static void show_help()
@@ -22,7 +22,7 @@ static void show_help()
     show_version();
 
     printf("\n"
-           "Usage: cellwired [arguments]\n"
+           "Usage: nextepcd [arguments]\n"
            "\n"
            "Arguments:\n"
            "   -v                   Show version\n"
@@ -146,19 +146,19 @@ int main(int argc, char *argv[])
 #endif
     }
 
-    if (cellwire_initialize(config_path, log_path) != CORE_OK)
+    if (nextepc_initialize(config_path, log_path) != CORE_OK)
     {
-        d_fatal("CellWire initialization failed. Aborted");
+        d_fatal("NextEPC initialization failed. Aborted");
         return EXIT_FAILURE;
     }
 
     show_version();
-    d_info("CellWire daemon start");
+    d_info("NextEPC daemon start");
     signal_thread(check_signal);
 
-    d_info("CellWire daemon terminating...");
+    d_info("NextEPC daemon terminating...");
 
-    cellwire_terminate();
+    nextepc_terminate();
 
     return EXIT_SUCCESS;
 }

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2017, CellWire Group
+# Copyright (c) 2017, NextEPC Group
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -61,7 +61,7 @@ def write_file(f, string):
 def output_header_to_file(f):
     now = datetime.datetime.now()
     f.write("""/*
- * Copyright (c) 2017, CellWire Group
+ * Copyright (c) 2017, NextEPC Group
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

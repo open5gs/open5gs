@@ -1,4 +1,4 @@
-#define TRACE_MODULE _cellwire_init
+#define TRACE_MODULE _nextepc_init
 
 #include "core_general.h"
 #include "core_debug.h"
@@ -9,7 +9,7 @@
 
 #include "logger.h"
 
-#include "cellwire.h"
+#include "nextepc.h"
 
 static pid_t hss_pid;
 static pid_t logger_pid;
@@ -18,7 +18,7 @@ static thread_id net_thread;
 static int check_signal(int signum);
 void *THREAD_FUNC net_main(thread_id id, void *data);
 
-status_t cellwire_initialize(char *config_path, char *log_path)
+status_t nextepc_initialize(char *config_path, char *log_path)
 {
     status_t rv;
     semaphore_id semaphore;
@@ -75,7 +75,7 @@ status_t cellwire_initialize(char *config_path, char *log_path)
     return CORE_OK;
 }
 
-void cellwire_terminate(void)
+void nextepc_terminate(void)
 {
     thread_delete(net_thread);
     mme_terminate();

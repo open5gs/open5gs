@@ -4,12 +4,12 @@ ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = lib src test
 
-bin_PROGRAMS = cellwired
+bin_PROGRAMS = nextepcd
 
-dist_cellwired_SOURCES = main.c 
+dist_nextepcd_SOURCES = main.c 
 
-cellwired_LDADD = \
-    $(top_srcdir)/src/libcellwire.la
+nextepcd_LDADD = \
+    $(top_srcdir)/src/libnextepc.la
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \

@@ -1,8 +1,8 @@
 ## Process this file with automake to produce Makefile.in.
 
-bin_PROGRAMS = testcellwire
+bin_PROGRAMS = testnextepc
 
-testcellwire_SOURCES = \
+testnextepc_SOURCES = \
 	abts.h abts_tests.h testutil.h \
 	abts.c testutil.c tests1ap.h tests1ap.c \
 	3gpp_test.c \
@@ -10,8 +10,8 @@ testcellwire_SOURCES = \
 	security_test.c \
 	s1ap_sm_test.c nas_sm_test.c
 
-testcellwire_LDADD = \
-    $(top_srcdir)/src/libcellwire.la
+testnextepc_LDADD = \
+    $(top_srcdir)/src/libnextepc.la
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \
@@ -30,7 +30,7 @@ AM_CFLAGS = \
 	-Wall -Werror \
 	-Wno-unused-function -Wno-unused-variable
 
-TESTS = testcellwire
+TESTS = testnextepc
 
 MAINTAINERCLEANFILES = Makefile.in 
 MOSTLYCLEANFILES = core *.stackdump

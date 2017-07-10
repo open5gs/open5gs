@@ -1,5 +1,5 @@
-#ifndef __CELLWIRE_H__
-#define __CELLWIRE_H__
+#ifndef __NEXTEPC_H__
+#define __NEXTEPC_H__
 
 #include "core.h"
 #include "core_errno.h"
@@ -8,8 +8,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
-CORE_DECLARE(status_t) cellwire_initialize(char *config_path, char *log_path);
-CORE_DECLARE_NONSTD(void) cellwire_terminate(void);
+CORE_DECLARE(status_t) nextepc_initialize(char *config_path, char *log_path);
+CORE_DECLARE_NONSTD(void) nextepc_terminate(void);
 
 CORE_DECLARE(status_t) mme_initialize();
 CORE_DECLARE_NONSTD(void) mme_terminate(void);
@@ -27,4 +27,4 @@ CORE_DECLARE_NONSTD(void) pgw_terminate(void);
 }
 #endif /* __cplusplus */
 
-#endif /* !__CELLWIRE_H__ */
+#endif /* !__NEXTEPC_H__ */

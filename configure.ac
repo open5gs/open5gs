@@ -8,7 +8,7 @@ dnl This program is distributed in the hope that it will be useful, but
 dnl WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 dnl implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-AC_INIT([CELLWIRE], [0.1.0], [acetcom@gmail.com])
+AC_INIT([NEXTEPC], [0.1.0], [acetcom@gmail.com])
 
 CORE_CONFIG_NICE(config.nice)
 
@@ -41,15 +41,15 @@ AC_SUBST(OSCPPFLAGS)
 AC_SUBST(OSDIR)
 
 AH_TOP([
-#ifndef __CELLWIRE_CONFIG_H__
-#define __CELLWIRE_CONFIG_H__
+#ifndef __NEXTEPC_CONFIG_H__
+#define __NEXTEPC_CONFIG_H__
 /* need this, because some autoconf tests rely on this (e.g. stpcpy)
  * and it should be used for new programs  */
 #define _GNU_SOURCE  1
 ])
 
 AH_BOTTOM([
-#endif /* __CELLWIRE_CONFIG_H__ */
+#endif /* __NEXTEPC_CONFIG_H__ */
 ])
 
 AH_VERBATIM([_REENTRANT],
@@ -323,7 +323,7 @@ AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 
 echo "
-CellWire configuration
+NextEPC configuration
 --------------------
 version                 : ${PACKAGE_VERSION}
 host                    : ${host}

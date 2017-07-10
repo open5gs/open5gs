@@ -11,12 +11,12 @@ Build from Git
 ==============
 
     test -f configure || autoreconf -iv
-    CFLAGS='-g3' ./configure --prefix=$HOME/Documents/git/cellwire/install
+    CFLAGS='-g3' ./configure --prefix=$HOME/Documents/git/nextepc/install
     make -j `nproc`
     sudo ip tuntap add name pgwtun mode tun
     sudo ./scripts/linux_netconfig.sh
-    sudo ./test/testcellwire
-    ./cellwired
+    sudo ./test/testnextepc
+    ./nextepcd
 
 
 
