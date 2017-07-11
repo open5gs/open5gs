@@ -145,7 +145,7 @@ int main(int argc, char *argv[])
 #endif
     }
 
-    if (nextepc_initialize(config_path, log_path) != CORE_OK)
+    if (epc_initialize(config_path, log_path) != CORE_OK)
     {
         d_fatal("NextEPC initialization failed. Aborted");
         return EXIT_FAILURE;
@@ -157,7 +157,7 @@ int main(int argc, char *argv[])
 
     d_info("NextEPC daemon terminating...");
 
-    nextepc_terminate();
+    epc_terminate();
 
     return EXIT_SUCCESS;
 }

@@ -38,12 +38,12 @@ void core_assert_ok(abts_case* tc, const char* context, status_t rv,
 
 void test_terminate(void)
 {
-    nextepc_terminate();
+    epc_terminate();
 }
 
 void test_initialize(void)
 {
-    nextepc_initialize(NULL, NULL);
+    epc_initialize(NULL, NULL);
 
 #if 0
     inet_pton(AF_INET, "10.1.35.215", &mme_self()->s1ap_addr);

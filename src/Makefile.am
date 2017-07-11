@@ -8,7 +8,7 @@ libepc_la_SOURCES = \
 	init.h 
 
 nodist_libepc_la_SOURCES = \
-    init.c 
+    epc.c init.c
 
 libepc_la_DEPENDENCIES = \
     $(top_srcdir)/lib/logger/liblogger.la \
