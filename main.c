@@ -8,7 +8,7 @@
 #include "core_signal.h"
 
 /* Server */
-#include "init.h"
+#include "app.h"
 
 static char *compile_time = __DATE__ " " __TIME__;
 
@@ -145,7 +145,7 @@ int main(int argc, char *argv[])
 #endif
     }
 
-    if (epc_initialize(config_path, log_path) != CORE_OK)
+    if (app_initialize(config_path, log_path) != CORE_OK)
     {
         d_fatal("NextEPC initialization failed. Aborted");
         return EXIT_FAILURE;
@@ -157,7 +157,7 @@ int main(int argc, char *argv[])
 
     d_info("NextEPC daemon terminating...");
 
-    epc_terminate();
+    app_terminate();
 
     return EXIT_SUCCESS;
 }

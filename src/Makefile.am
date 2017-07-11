@@ -5,7 +5,7 @@ SUBDIRS = mme hss sgw pgw
 noinst_LTLIBRARIES = libmme.la libhss.la libsgw.la libpgw.la libepc.la
 
 COMMON_SOURCES = init.c
-COMMON_INCLUDES = init.h
+COMMON_INCLUDES = app.h
 
 libmme_la_SOURCES = $(COMMON_INCLUDES)
 nodist_libmme_la_SOURCES = mme.c $(COMMON_SOURCES)

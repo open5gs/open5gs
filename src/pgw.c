@@ -4,27 +4,27 @@
 #include "core_signal.h"
 #include "core_semaphore.h"
 
-#include "init.h"
+#include "app.h"
 
-status_t epc_initialize(char *config_path, char *log_path)
+status_t app_initialize(char *config_path, char *log_path)
 {
     status_t rv;
 
-    will_initialize(config_path, log_path);
+    app_will_initialize(config_path, log_path);
 
     rv = pgw_initialize();
     if (rv != CORE_OK) return rv;
 
-    did_initialize(config_path, log_path);
+    app_did_initialize(config_path, log_path);
 
     return CORE_OK;
 }
 
-void epc_terminate(void)
+void app_terminate(void)
 {
-    will_terminate();
+    app_will_terminate();
 
     pgw_terminate();
 
-    did_terminate();
+    app_did_terminate();
 }

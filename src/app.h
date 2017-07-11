@@ -1,5 +1,5 @@
-#ifndef __INIT_H__
-#define __INIT_H__
+#ifndef __APP_H__
+#define __APP_H__
 
 #include "core.h"
 #include "core_errno.h"
@@ -8,13 +8,13 @@
 extern "C" {
 #endif /* __cplusplus */
 
-CORE_DECLARE(status_t) will_initialize(char *config_path, char *log_path);
-CORE_DECLARE(status_t) did_initialize(char *config_path, char *log_path);
-CORE_DECLARE_NONSTD(void) will_terminate(void);
-CORE_DECLARE_NONSTD(void) did_terminate(void);
+CORE_DECLARE(status_t) app_will_initialize(char *config_path, char *log_path);
+CORE_DECLARE(status_t) app_did_initialize(char *config_path, char *log_path);
+CORE_DECLARE_NONSTD(void) app_will_terminate(void);
+CORE_DECLARE_NONSTD(void) app_did_terminate(void);
 
-CORE_DECLARE(status_t) epc_initialize(char *config_path, char *log_path);
-CORE_DECLARE_NONSTD(void) epc_terminate(void);
+CORE_DECLARE(status_t) app_initialize(char *config_path, char *log_path);
+CORE_DECLARE_NONSTD(void) app_terminate(void);
 
 CORE_DECLARE(status_t) mme_initialize();
 CORE_DECLARE_NONSTD(void) mme_terminate(void);

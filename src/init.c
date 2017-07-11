@@ -1,4 +1,4 @@
-#define TRACE_MODULE _init
+#define TRACE_MODULE _app
 
 #include "core_general.h"
 #include "core_debug.h"
@@ -8,14 +8,14 @@
 
 #include "logger.h"
 
-#include "init.h"
+#include "app.h"
 
 static pid_t logger_pid;
 static thread_id net_thread;
 
 void *THREAD_FUNC net_main(thread_id id, void *data);
 
-status_t will_initialize(char *config_path, char *log_path)
+status_t app_will_initialize(char *config_path, char *log_path)
 {
     core_initialize();
 
@@ -33,7 +33,7 @@ status_t will_initialize(char *config_path, char *log_path)
     return CORE_OK;
 }
 
-status_t did_initialize()
+status_t app_did_initialize()
 {
     status_t rv;
 
@@ -43,12 +43,12 @@ status_t did_initialize()
     return CORE_OK;
 }
 
-void will_terminate(void)
+void app_will_terminate(void)
 {
     thread_delete(net_thread);
 }
 
-void did_terminate(void)
+void app_did_terminate(void)
 {
     core_kill(logger_pid, SIGTERM);
 

@@ -4,18 +4,18 @@
 #include "core_signal.h"
 #include "core_semaphore.h"
 
-#include "init.h"
+#include "app.h"
 
 static pid_t hss_pid;
 
 static int check_signal(int signum);
 
-status_t epc_initialize(char *config_path, char *log_path)
+status_t app_initialize(char *config_path, char *log_path)
 {
     status_t rv;
     semaphore_id semaphore;
 
-    will_initialize(config_path, log_path);
+    app_will_initialize(config_path, log_path);
 
     rv = semaphore_create(&semaphore, 0);
     d_assert(rv == CORE_OK, return -1, "semaphore_create() failed");
@@ -51,14 +51,14 @@ status_t epc_initialize(char *config_path, char *log_path)
     rv = semaphore_post(semaphore);
     d_assert(rv == CORE_OK, return -1, "semaphore_post() failed");
 
-    did_initialize(config_path, log_path);
+    app_did_initialize(config_path, log_path);
 
     return CORE_OK;
 }
 
-void epc_terminate(void)
+void app_terminate(void)
 {
-    will_terminate();
+    app_will_terminate();
 
     mme_terminate();
     sgw_terminate();
@@ -66,7 +66,7 @@ void epc_terminate(void)
 
     core_kill(hss_pid, SIGTERM);
 
-    did_terminate();
+    app_did_terminate();
 }
 
 static int check_signal(int signum)

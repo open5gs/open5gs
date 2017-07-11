@@ -5,6 +5,7 @@ Prerequisite
     sudo apt-get install autoconf libtool m4
     sudo apt-get install libsctp-dev
     sudo apt-get install freediameter-dev
+    sudo apt-get install libmongoc-1.0-0
 
 
 Build from Git
@@ -43,3 +44,7 @@ Install Tuntap for Mac OS X
  - Install tuntap_20150118.pkg in /usr/local/Caskroom/tuntap/20150118
  - sudo kextload /Library/Extensions/tun.kext
 
+Install FreeDiameter, MongoDB C driver
+===========================================
+ - brew install freediamter
+ - brew install mongo-c-driver
