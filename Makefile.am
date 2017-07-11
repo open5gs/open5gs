@@ -4,12 +4,22 @@ ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = lib src test
 
-bin_PROGRAMS = nextepcd
+bin_PROGRAMS = mmed hssd sgwd pgwd nextepcd
+
+dist_mmed_SOURCES = main.c 
+mmed_LDADD = $(top_srcdir)/src/libmme.la
+
+dist_hssd_SOURCES = main.c 
+hssd_LDADD = $(top_srcdir)/src/libhss.la
+
+dist_sgwd_SOURCES = main.c 
+sgwd_LDADD = $(top_srcdir)/src/libsgw.la
+
+dist_pgwd_SOURCES = main.c 
+pgwd_LDADD = $(top_srcdir)/src/libpgw.la
 
 dist_nextepcd_SOURCES = main.c 
-
-nextepcd_LDADD = \
-    $(top_srcdir)/src/libepc.la
+nextepcd_LDADD = $(top_srcdir)/src/libepc.la
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \
