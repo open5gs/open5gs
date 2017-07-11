@@ -1,4 +1,4 @@
-#define TRACE_MODULE _nextepc_init
+#define TRACE_MODULE _common_init
 
 #include "core_general.h"
 #include "core_debug.h"
@@ -9,7 +9,7 @@
 
 #include "logger.h"
 
-#include "nextepc.h"
+#include "init.h"
 
 static pid_t hss_pid;
 static pid_t logger_pid;

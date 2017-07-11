@@ -1,5 +1,5 @@
-#ifndef __NEXTEPC_H__
-#define __NEXTEPC_H__
+#ifndef __COMMON_INIT_H__
+#define __COMMON_INIT_H__
 
 #include "core.h"
 #include "core_errno.h"

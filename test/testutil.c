@@ -16,7 +16,7 @@
 
 #include "core_debug.h"
 
-#include "nextepc.h"
+#include "init.h"
 #include "mme_context.h"
 #include "abts.h"
 #include "testutil.h"

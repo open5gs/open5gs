@@ -8,7 +8,7 @@
 #include "core_signal.h"
 
 /* Server */
-#include "nextepc.h"
+#include "init.h"
 
 static char *compile_time = __DATE__ " " __TIME__;
 
@@ -17,12 +17,12 @@ static void show_version()
     printf("NextEPC daemon v%s - %s\n", PACKAGE_VERSION, compile_time);
 }
 
-static void show_help()
+static void show_help(const char *name)
 {
     show_version();
 
     printf("\n"
-           "Usage: nextepcd [arguments]\n"
+           "Usage: %s [arguments]\n"
            "\n"
            "Arguments:\n"
            "   -v                   Show version\n"
@@ -30,8 +30,7 @@ static void show_help()
            "   -d                   Start as daemon\n"
            "   -f                   Set configuration file name\n"
            "   -l log_path          Fork log daemon with file path to be logged to\n"
-           "\n"
-           );
+           "\n", name);
 }
 
 static int check_signal(int signum)
@@ -82,7 +81,7 @@ int main(int argc, char *argv[])
                 show_version();
                 return EXIT_SUCCESS;
             case 'h':
-                show_help();
+                show_help(argv[0]);
                 return EXIT_SUCCESS;
             case 'd':
             {
@@ -109,7 +108,7 @@ int main(int argc, char *argv[])
                 log_path = optarg;
                 break;
             default:
-                show_help();
+                show_help(argv[0]);
                 return EXIT_FAILURE;
         }
     }

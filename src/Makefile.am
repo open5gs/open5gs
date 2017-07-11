@@ -2,22 +2,22 @@
 
 SUBDIRS = mme hss sgw pgw
 
-noinst_LTLIBRARIES = libnextepc.la
+noinst_LTLIBRARIES = libepc.la
 
-libnextepc_la_SOURCES = \
-	nextepc.h 
+libepc_la_SOURCES = \
+	init.h 
 
-nodist_libnextepc_la_SOURCES = \
+nodist_libepc_la_SOURCES = \
     init.c 
 
-libnextepc_la_DEPENDENCIES = \
+libepc_la_DEPENDENCIES = \
     $(top_srcdir)/lib/logger/liblogger.la \
     $(top_srcdir)/src/mme/libmme.la \
     $(top_srcdir)/src/hss/libhss.la \
     $(top_srcdir)/src/sgw/libsgw.la \
     $(top_srcdir)/src/pgw/libpgw.la
 
-libnextepc_la_LIBADD = \
+libepc_la_LIBADD = \
     $(top_srcdir)/lib/logger/liblogger.la \
     $(top_srcdir)/src/mme/libmme.la \
     $(top_srcdir)/src/hss/libhss.la \

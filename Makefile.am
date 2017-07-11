@@ -9,7 +9,7 @@ bin_PROGRAMS = nextepcd
 dist_nextepcd_SOURCES = main.c 
 
 nextepcd_LDADD = \
-    $(top_srcdir)/src/libnextepc.la
+    $(top_srcdir)/src/libepc.la
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \
