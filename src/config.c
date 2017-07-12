@@ -57,8 +57,6 @@ status_t config_initialize(char *config_path)
                 path, rv, core_strerror(rv, str, MAX_CONFIG_FILE_SIZE));
         return rv;
     }
-    str[nbytes-1] = 0;
-
     file_close(file);
 
     jsmn_init(&parser);
