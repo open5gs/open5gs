@@ -71,3 +71,27 @@ void *core_bcd_to_buffer(c_int8_t *in, void *out, int *out_len)
 
     return out;
 }
+
+char *core_cpystrn(char *dst, const char *src, size_t dst_size)
+{
+
+    char *d = dst, *end;
+
+    if (dst_size == 0) {
+        return (dst);
+    }
+
+    if (src) {
+        end = dst + dst_size - 1;
+
+        for (; d < end; ++d, ++src) {
+            if (!(*d = *src)) {
+                return (d);
+            }
+        }
+    }
+
+    *d = '\0';	/* always null terminate */
+
+    return (d);
+}

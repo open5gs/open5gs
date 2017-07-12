@@ -1,0 +1,2 @@
+DB_URI : "mongodb://localhost/nextepc"
+LOG_PATH : "@prefix@/log/nextepc.log"
