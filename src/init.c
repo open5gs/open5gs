@@ -17,12 +17,12 @@ void *THREAD_FUNC net_main(thread_id id, void *data);
 
 status_t app_will_initialize(char *config_path, char *log_path)
 {
+    status_t rv;
+
     core_initialize();
 
-    if (config_path)
-    {
-        /* TODO */
-    }
+    rv = config_initialize(config_path);
+    if (rv != CORE_OK) return rv;
 
     if (log_path)
     {
@@ -52,6 +52,7 @@ void app_did_terminate(void)
 {
     core_kill(logger_pid, SIGTERM);
 
+    config_terminate();
     core_terminate();
 }
 

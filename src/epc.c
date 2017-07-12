@@ -15,10 +15,11 @@ status_t app_initialize(char *config_path, char *log_path)
     status_t rv;
     semaphore_id semaphore;
 
-    app_will_initialize(config_path, log_path);
+    rv = app_will_initialize(config_path, log_path);
+    if (rv != CORE_OK) return rv;
 
     rv = semaphore_create(&semaphore, 0);
-    d_assert(rv == CORE_OK, return -1, "semaphore_create() failed");
+    d_assert(rv == CORE_OK, return rv, "semaphore_create() failed");
 
     hss_pid = fork();
     d_assert(hss_pid >= 0, _exit(EXIT_FAILURE), "fork() failed");
@@ -51,7 +52,8 @@ status_t app_initialize(char *config_path, char *log_path)
     rv = semaphore_post(semaphore);
     d_assert(rv == CORE_OK, return -1, "semaphore_post() failed");
 
-    app_did_initialize(config_path, log_path);
+    rv = app_did_initialize(config_path, log_path);
+    if (rv != CORE_OK) return rv;
 
     return CORE_OK;
 }

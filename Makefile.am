@@ -25,6 +25,8 @@ AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \
     -I$(top_srcdir)/src
 
+dist_sysconf_DATA = support/nextepc.conf
+
 CLEANFILES = symtbl.c
 DISTCLEANFILES = $(DIST_ARCHIVES)
 MAINTAINERCLEANFILES = \
