@@ -101,15 +101,13 @@ status_t context_parse_config()
         {
             self.db_uri = jsmntok_to_string(json, &token[i+1]);
             i++;
-        }
-        if (jsmntok_equal(json, &token[i], "LOG_PATH") == 0)
+        } 
+        else if (jsmntok_equal(json, &token[i], "LOG_PATH") == 0)
         {
             self.log_path = jsmntok_to_string(json, &token[i+1]);
             i++;
         }
     }
-
-    printf("%s, %s\n", self.db_uri, self.log_path);
 
     return CORE_OK;
 }
