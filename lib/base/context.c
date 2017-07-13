@@ -71,8 +71,15 @@ status_t context_read_file(char *file_path)
         config->token, sizeof(config->token)/sizeof(config->token[0]));
     if (config->num_of_token < 0) 
     {
-        d_fatal("Failed to parse configuration '%s'(jsmnerr = %d)", 
+        d_fatal("Failed to parse configuration '%s' (jsmnerr = %d)", 
                 config->json, config->num_of_token);
+        return CORE_ERROR;
+    }
+
+    if (config->num_of_token < 1 || config->token[0].type != JSMN_OBJECT) 
+    {
+        d_fatal("Failed to parse configuration file '%s' (OBJECT expected)",
+                path);
         return CORE_ERROR;
     }
 
@@ -81,23 +88,23 @@ status_t context_read_file(char *file_path)
 
 status_t context_parse_config()
 {
-    config_t *config = &self.config;
     int i;
+    config_t *config = &self.config;
 
-    for (i = 0; i < config->num_of_token; i++) 
+    char *json = config->json;
+    int num_of_token = config->num_of_token;
+    jsmntok_t *token = config->token;
+
+    for (i = 0; i < num_of_token; i++) 
     {
-        if (json_token_streq(config->json, &config->token[i], 
-            "DB_URI") == 0)
+        if (jsmntok_equal(json, &token[i], "DB_URI") == 0)
         {
-            self.db_uri = 
-                json_token_tostr(config->json, &config->token[i+1]);
+            self.db_uri = jsmntok_to_string(json, &token[i+1]);
             i++;
         }
-        if (json_token_streq(config->json, &config->token[i],
-            "LOG_PATH") == 0)
+        if (jsmntok_equal(json, &token[i], "LOG_PATH") == 0)
         {
-            self.log_path = 
-                json_token_tostr(config->json, &config->token[i+1]);
+            self.log_path = jsmntok_to_string(json, &token[i+1]);
             i++;
         }
     }

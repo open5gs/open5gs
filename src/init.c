@@ -29,9 +29,12 @@ status_t app_will_initialize(char *config_path, char *log_path)
     rv = context_parse_config();
     if (rv != CORE_OK) return rv;
 
-    if (log_path)
+    if (log_path) 
+        context_self()->log_path = log_path;
+
+    if (context_self()->log_path)
     {
-        logger_pid = logger_start(log_path);
+        logger_pid = logger_start(context_self()->log_path);
         d_assert(logger_pid > 0, return -1, "logger_start() failed");
     }
 
