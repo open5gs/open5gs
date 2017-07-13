@@ -106,7 +106,7 @@ status_t mme_context_init()
 status_t mme_context_final()
 {
     d_assert(context_initialized == 1, return CORE_ERROR,
-            "HyperCell context already has been finalized");
+            "MME context already has been finalized");
 
     mme_sgw_remove_all();
     mme_enb_remove_all();

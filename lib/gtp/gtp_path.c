@@ -3,7 +3,7 @@
 #include "core_pkbuf.h"
 #include "core_net.h"
 
-#include "3gpp_common.h"
+#include "types.h"
 #include "gtp_path.h"
 
 status_t gtp_listen(net_sock_t **sock, 

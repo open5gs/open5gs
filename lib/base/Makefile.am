@@ -1,12 +1,12 @@
 ## Process this file with automake to produce Makefile.in
 
-noinst_LTLIBRARIES = lib3gpp.la
+noinst_LTLIBRARIES = libbase.la
 
-lib3gpp_la_SOURCES = \
-	3gpp_common.h
+libbase_la_SOURCES = \
+	types.h context.h
 
-nodist_lib3gpp_la_SOURCES = \
-	3gpp_common.c
+nodist_libbase_la_SOURCES = \
+	types.c context.c
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include

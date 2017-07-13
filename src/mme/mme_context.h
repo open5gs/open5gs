@@ -8,7 +8,7 @@
 #include "core_sha2.h"
 #include "core_hash.h"
 
-#include "3gpp_common.h"
+#include "types.h"
 #include "nas_types.h"
 #include "gtp_xact.h"
 

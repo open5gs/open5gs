@@ -5,7 +5,7 @@
 #include "gtp_types.h"
 #include "gtp_tlv.h"
 
-#include "3gpp_common.h"
+#include "types.h"
 #include "mme_context.h"
 
 status_t mme_s11_build_create_session_request(

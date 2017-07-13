@@ -11,11 +11,11 @@ nodist_libs6a_la_SOURCES = \
 	s6a_init.c s6a_fd.c s6a_config.c s6a_dict.c
 
 libs6a_la_DEPENDENCIES = \
-    $(top_srcdir)/lib/3gpp/lib3gpp.la \
+    $(top_srcdir)/lib/base/libbase.la \
     $(top_srcdir)/lib/s6a/freeDiameter/libs6afreeDiameter.la
 
 libs6a_la_LIBADD = \
-    $(top_srcdir)/lib/3gpp/lib3gpp.la \
+    $(top_srcdir)/lib/base/libbase.la \
     $(top_srcdir)/lib/s6a/freeDiameter/libs6afreeDiameter.la
 
 AM_CPPFLAGS = \

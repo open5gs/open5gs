@@ -4,7 +4,7 @@
 #include "core_pool.h"
 #include "core_index.h"
 
-#include "3gpp_common.h"
+#include "types.h"
 #include "gtp_path.h"
 
 #include "sgw_context.h"
@@ -40,7 +40,7 @@ static unsigned int g_sgw_s5u_port = GTPV1_U_UDP_PORT;
 status_t sgw_context_init()
 {
     d_assert(context_initialized == 0, return CORE_ERROR,
-            "MME context already has been initialized");
+            "SGW context already has been initialized");
 
     memset(&self, 0, sizeof(sgw_context_t));
 
@@ -85,7 +85,7 @@ status_t sgw_context_init()
 status_t sgw_context_final()
 {
     d_assert(context_initialized == 1, return CORE_ERROR,
-            "HyperCell context already has been finalized");
+            "SGW context already has been finalized");
 
     gtp_xact_delete_all(&self.s11_node);
     gtp_xact_delete_all(&self.s5c_node);

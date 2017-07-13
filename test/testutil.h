@@ -57,7 +57,7 @@ void core_assert_ok(abts_case* tc, const char *context,
 
 void test_initialize(void);
 
-abts_suite *test_3gpp(abts_suite *suite);
+abts_suite *test_base(abts_suite *suite);
 abts_suite *test_s1ap_message(abts_suite *suite);
 abts_suite *test_s1ap_sm(abts_suite *suite);
 abts_suite *test_nas_message(abts_suite *suite);

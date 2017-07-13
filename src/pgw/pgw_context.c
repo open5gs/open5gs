@@ -34,7 +34,7 @@ static unsigned int g_pgw_s5u_port = GTPV1_U_UDP_PORT;
 status_t pgw_context_init()
 {
     d_assert(context_initiaized == 0, return CORE_ERROR,
-            "MME context already has been initialized");
+            "PGW context already has been initialized");
 
     memset(&self, 0, sizeof(pgw_context_t));
 
@@ -69,7 +69,7 @@ status_t pgw_context_init()
 status_t pgw_context_final()
 {
     d_assert(context_initiaized == 1, return CORE_ERROR,
-            "HyperCell context already has been finalized");
+            "PGW context already has been finalized");
 
     gtp_xact_delete_all(&self.s5c_node);
     pgw_sess_remove_all();

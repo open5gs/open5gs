@@ -23,7 +23,7 @@
 const struct testlist {
     abts_suite *(*func)(abts_suite *suite);
 } alltests[] = {
-    {test_3gpp},
+    {test_base},
     {test_s1ap_message},
     {test_s1ap_sm},
     {test_nas_message},
