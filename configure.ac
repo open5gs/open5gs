@@ -333,4 +333,5 @@ compiler                : ${CC}
 compiler flags          : ${CFLAGS}
 linker flags            : ${LDFLAGS} ${LIBS}
 config file directory   : `eval echo \`echo ${sysconfdir}\``
+log file directory      : `eval echo \`echo ${prefix}/var/log\``
 "

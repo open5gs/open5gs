@@ -28,7 +28,7 @@ AM_CPPFLAGS = \
 dist_sysconf_DATA = support/nextepc.conf
 
 install-data-hook:
-	$(MKDIR_P) $(prefix)/log
+	$(MKDIR_P) $(prefix)/var/log
 
 CLEANFILES = symtbl.c
 DISTCLEANFILES = $(DIST_ARCHIVES)
