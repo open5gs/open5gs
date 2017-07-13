@@ -4,7 +4,7 @@ SUBDIRS = mme hss sgw pgw
 
 noinst_LTLIBRARIES = libmme.la libhss.la libsgw.la libpgw.la libepc.la
 
-COMMON_SOURCES = init.c config.c
+COMMON_SOURCES = init.c
 COMMON_INCLUDES = app.h
 
 libmme_la_SOURCES = $(COMMON_INCLUDES)
@@ -60,7 +60,8 @@ libepc_la_LIBADD = \
 
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/lib/core/include \
-	-I$(top_srcdir)/lib/logger
+	-I$(top_srcdir)/lib/logger \
+	-I$(top_srcdir)/lib/base
 
 AM_CFLAGS = \
 	-Wall -Werror

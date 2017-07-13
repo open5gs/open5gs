@@ -6,6 +6,7 @@
 #include "core_net.h"
 #include "core_signal.h"
 
+#include "context.h"
 #include "logger.h"
 
 #include "app.h"
@@ -20,8 +21,12 @@ status_t app_will_initialize(char *config_path, char *log_path)
     status_t rv;
 
     core_initialize();
+    context_init();
 
-    rv = config_initialize(config_path);
+    rv = context_read_file(config_path);
+    if (rv != CORE_OK) return rv;
+
+    rv = context_parse_config();
     if (rv != CORE_OK) return rv;
 
     if (log_path)
@@ -52,7 +57,7 @@ void app_did_terminate(void)
 {
     core_kill(logger_pid, SIGTERM);
 
-    config_terminate();
+    context_final();
     core_terminate();
 }
 

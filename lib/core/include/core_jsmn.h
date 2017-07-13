@@ -69,6 +69,9 @@ void jsmn_init(jsmn_parser *parser);
 int jsmn_parse(jsmn_parser *parser, const char *js, size_t len,
 		jsmntok_t *tokens, unsigned int num_tokens);
 
+int json_token_streq(char *json, jsmntok_t *token, const char *s);
+char *json_token_tostr(char *json, jsmntok_t *token);
+
 #ifdef __cplusplus
 }
 #endif

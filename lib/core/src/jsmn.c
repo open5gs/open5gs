@@ -1,3 +1,4 @@
+#include "core.h"
 #include "core_jsmn.h"
 
 /**
@@ -312,3 +313,18 @@ void jsmn_init(jsmn_parser *parser) {
 	parser->toksuper = -1;
 }
 
+int json_token_streq(char *json, jsmntok_t *token, const char *s)
+{
+    if (strlen(s) == (size_t)(token->end - token->start) &&
+        strncmp(json + token->start, s, token->end - token->start) == 0) 
+    {
+        return 0;
+    }
+    return -1;
+}
+
+char *json_token_tostr(char *json, jsmntok_t *token)
+{
+    json[token->end] = '\0';
+    return json + token->start;
+}
