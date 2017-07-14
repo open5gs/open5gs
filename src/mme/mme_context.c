@@ -212,10 +212,11 @@ status_t mme_context_parse_config()
                     state = SKIP;
                     stack = ROOT;
                     skip_tokens = t->size;
+
+                    root_tokens--;
+                    if (root_tokens == 0) state = STOP;
                 }
 
-                root_tokens--;
-                if (root_tokens == 0) state = STOP;
                 break;
             }
             case MME_START:
