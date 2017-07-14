@@ -25,6 +25,8 @@ extern "C" {
 #define GRP_PER_MME                 256    /* According to spec it is 65535 */
 #define CODE_PER_MME                256    /* According to spec it is 256 */
 
+#define MAX_NUM_OF_ALGORITHM        8
+
 typedef struct _served_gummei {
     c_uint32_t      num_of_plmn_id;
     plmn_id_t       plmn_id[MAX_PLMN_ID];
@@ -56,17 +58,20 @@ typedef struct _mme_context_t {
      * #define NAS_SECURITY_ALGORITHMS_128_EEA1    1
      * #define NAS_SECURITY_ALGORITHMS_128_EEA2    2
      * #define NAS_SECURITY_ALGORITHMS_128_EEA3    3 */
+    c_uint8_t       num_of_ciphering_order;
+    c_uint8_t       ciphering_order[MAX_NUM_OF_ALGORITHM];
     c_uint8_t       selected_enc_algorithm;
     /* defined in 'nas_ies.h'
      * #define NAS_SECURITY_ALGORITHMS_EIA0        0
      * #define NAS_SECURITY_ALGORITHMS_128_EIA1    1
      * #define NAS_SECURITY_ALGORITHMS_128_EIA1    2
      * #define NAS_SECURITY_ALGORITHMS_128_EIA3    3 */
+    c_uint8_t       num_of_integrity_order;
+    c_uint8_t       integrity_order[MAX_NUM_OF_ALGORITHM];
     c_uint8_t       selected_int_algorithm;
 
     /* S1SetupRequest */
     c_uint16_t      tracking_area_code;
-    c_uint16_t      default_paging_drx;
 
     /* S1SetupResponse */
     srvd_gummei_t   srvd_gummei;

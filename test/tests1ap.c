@@ -95,7 +95,7 @@ status_t tests1ap_build_setup_req(pkbuf_t **pkbuf, c_uint32_t enb_id)
 
     ASN_SEQUENCE_ADD(&ies->supportedTAs, supportedTA);
 
-    ies->defaultPagingDRX = mme_self()->default_paging_drx;
+    ies->defaultPagingDRX = S1ap_PagingDRX_v64;
 
     message.direction = S1AP_PDU_PR_initiatingMessage;
     message.procedureCode = S1ap_ProcedureCode_id_S1Setup;

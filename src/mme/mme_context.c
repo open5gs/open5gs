@@ -60,8 +60,6 @@ status_t mme_context_init()
     /* MCC : 001, MNC : 01 */
     plmn_id_build(&self.plmn_id, 1, 1, 2); 
     self.tracking_area_code = 12345;
-    self.default_paging_drx = S1ap_PagingDRX_v64;
-    self.relative_capacity = 0xff;
 
     self.srvd_gummei.num_of_plmn_id = 1;
     /* MCC : 001, MNC : 01 */
@@ -82,6 +80,8 @@ status_t mme_context_init()
 
 static status_t mme_context_prepare()
 {
+    self.relative_capacity = 0xff;
+
     self.s1ap_port = S1AP_SCTP_PORT;
     self.s11_port = GTPV2_C_UDP_PORT;
 
@@ -119,6 +119,19 @@ static status_t mme_context_validation()
             return CORE_ERROR;
         }
         sgw = mme_sgw_next(sgw);
+    }
+
+    if (self.num_of_integrity_order == 0)
+    {
+        d_error("No MME.SECURITY.INTEGRITY_ORDER in '%s'",
+                context_self()->config.path);
+        return CORE_ERROR;
+    }
+    if (self.num_of_ciphering_order == 0)
+    {
+        d_error("No MME.SECURITY.CIPHERING_ORDER in '%s'",
+                context_self()->config.path);
+        return CORE_ERROR;
     }
 
     return CORE_OK;
@@ -196,13 +209,10 @@ status_t mme_context_parse_config()
             }
             case MME_ROOT:
             {
-                if (jsmntok_equal(json, t, "DEFAULT_PAGING_DRX") == 0)
+                if (jsmntok_equal(json, t, "RELATIVE_CAPACITY") == 0)
                 {
-                    printf("paging_drx : %s\n", jsmntok_to_string(json, t+1));
-                } 
-                else if (jsmntok_equal(json, t, "RELATIVE_CAPACITY") == 0)
-                {
-                    printf("relative : %s\n", jsmntok_to_string(json, t+1));
+                    char *v = jsmntok_to_string(json, t+1);
+                    if (v) self.relative_capacity = atoi(v);
                 }
                 else if (jsmntok_equal(json, t, "NETWORK") == 0)
                 {
@@ -329,8 +339,35 @@ status_t mme_context_parse_config()
 
                             for (arr = 0; arr < size; arr++)
                             {
-                                printf("%s\n", 
-                                        jsmntok_to_string(json, t+m+p));
+                                char *v = jsmntok_to_string(json, t+m+p);
+                                if (v) 
+                                {
+                                    if (strcmp(v, "EIA0") == 0)
+                                    {
+                                        self.integrity_order[arr] = 
+                                            NAS_SECURITY_ALGORITHMS_EIA0;
+                                        self.num_of_integrity_order++;
+                                    }
+                                    else if (strcmp(v, "EIA1") == 0)
+                                    {
+                                        self.integrity_order[arr] = 
+                                            NAS_SECURITY_ALGORITHMS_128_EIA1;
+                                        self.num_of_integrity_order++;
+                                    }
+                                    else if (strcmp(v, "EIA2") == 0)
+                                    {
+                                        self.integrity_order[arr] = 
+                                            NAS_SECURITY_ALGORITHMS_128_EIA2;
+                                        self.num_of_integrity_order++;
+                                    }
+                                    else if (strcmp(v, "EIA3") == 0)
+                                    {
+                                        self.integrity_order[arr] = 
+                                            NAS_SECURITY_ALGORITHMS_128_EIA3;
+                                        self.num_of_integrity_order++;
+                                    }
+                                }
+
                                 p++;
                             }
                         }
@@ -347,8 +384,34 @@ status_t mme_context_parse_config()
 
                             for (arr = 0; arr < size; arr++)
                             {
-                                printf("%s\n", 
-                                        jsmntok_to_string(json, t+m+p));
+                                char *v = jsmntok_to_string(json, t+m+p);
+                                if (v) 
+                                {
+                                    if (strcmp(v, "EEA0") == 0)
+                                    {
+                                        self.ciphering_order[arr] = 
+                                            NAS_SECURITY_ALGORITHMS_EEA0;
+                                        self.num_of_ciphering_order++;
+                                    }
+                                    else if (strcmp(v, "EEA1") == 0)
+                                    {
+                                        self.ciphering_order[arr] = 
+                                            NAS_SECURITY_ALGORITHMS_128_EEA1;
+                                        self.num_of_ciphering_order++;
+                                    }
+                                    else if (strcmp(v, "EEA2") == 0)
+                                    {
+                                        self.ciphering_order[arr] = 
+                                            NAS_SECURITY_ALGORITHMS_128_EEA2;
+                                        self.num_of_ciphering_order++;
+                                    }
+                                    else if (strcmp(v, "EEA3") == 0)
+                                    {
+                                        self.ciphering_order[arr] = 
+                                            NAS_SECURITY_ALGORITHMS_128_EEA3;
+                                        self.num_of_ciphering_order++;
+                                    }
+                                }
                                 p++;
                             }
                         }

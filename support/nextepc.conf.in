@@ -12,14 +12,12 @@
     S6A_CONFIG_PATH : "/Users/acetcom/Documents/git/nextepc/install/mme_fd.conf",
 
     DEFAULT_PAGING_DRX : "v64",
-    RELATIVE_CAPACITY : 255,
+#RELATIVE_CAPACITY : 255,
 
     NETWORK :
     {
       S1AP_ADDR : "10.1.35.215",
-#S1AP_PORT : 36412,
       S11_ADDR: "10.1.35.215",
-#S11_PORT: 2123
     }
     GUMMEI:
     [
@@ -51,14 +49,10 @@
     [
       {
         S11_ADDR: "10.1.35.216",
-#S11_PORT: 2123,
         S1U_ADDR: "10.1.35.216",
-#S1U_PORT: 2125,
 
         S5C_ADDR: "10.1.35.217",
-#S5C_PORT: 2123,
-        S5U_ADDR: "10.1.35.217",
-#S5U_PORT: 2125
+        S5U_ADDR: "10.1.35.217"
       }
     ]
   }
@@ -68,9 +62,7 @@
     NETWORK :
     {
       S5C_ADDR: "10.1.35.219",
-#S5C_PORT: 2123,
-      S5U_ADDR: "10.1.35.219",
-#S5U_PORT: 2125
+      S5U_ADDR: "10.1.35.219"
     }
 
     DNS :
