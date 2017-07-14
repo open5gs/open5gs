@@ -60,7 +60,7 @@ static void s1ap_sm_test1(abts_case *tc, void *data)
     d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_FULL);
 }
 
-#define NUM_OF_TEST_ENB 32
+#define NUM_OF_TEST_ENB 1
 
 static void s1ap_sm_test2(abts_case *tc, void *data)
 {
@@ -115,7 +115,9 @@ abts_suite *test_s1ap_sm(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
+#if 0
     abts_run_test(suite, s1ap_sm_test1, NULL);
+#endif
     abts_run_test(suite, s1ap_sm_test2, NULL);
 
     return suite;

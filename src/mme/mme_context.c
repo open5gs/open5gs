@@ -61,26 +61,6 @@ status_t mme_context_init()
     plmn_id_build(&self.plmn_id, 1, 1, 2); 
     self.tracking_area_code = 12345;
 
-    self.max_num_of_served_gummei = 1;
-
-    self.served_gummei[0].num_of_plmn_id = 1;
-    /* MCC : 001, MNC : 01 */
-    plmn_id_build(&self.served_gummei[0].plmn_id[0], 1, 1, 2); 
-
-    self.served_gummei[0].num_of_mme_gid = 1;
-    self.served_gummei[0].mme_gid[0] = 2;
-    self.served_gummei[0].num_of_mme_code = 1;
-    self.served_gummei[0].mme_code[0] = 1;
-
-    self.served_gummei[1].num_of_plmn_id = 1;
-    /* MCC : 001, MNC : 01 */
-    plmn_id_build(&self.served_gummei[1].plmn_id[0], 2, 2, 2); 
-
-    self.served_gummei[1].num_of_mme_gid = 1;
-    self.served_gummei[1].mme_gid[0] = 4;
-    self.served_gummei[1].num_of_mme_code = 1;
-    self.served_gummei[1].mme_code[0] = 3;
-
     context_initialized = 1;
 
     return CORE_OK;
@@ -129,6 +109,34 @@ static status_t mme_context_validation()
         sgw = mme_sgw_next(sgw);
     }
 
+    if (self.max_num_of_served_gummei == 0)
+    {
+        d_error("No MME.GUMMEI in '%s'",
+                context_self()->config.path);
+        return CORE_ERROR;
+    }
+
+    if (self.served_gummei[0].num_of_plmn_id == 0)
+    {
+        d_error("No MME.GUMMEI.PLMN_ID in '%s'",
+                context_self()->config.path);
+        return CORE_ERROR;
+    }
+
+    if (self.served_gummei[0].num_of_mme_gid == 0)
+    {
+        d_error("No MME.GUMMEI.MME_GID in '%s'",
+                context_self()->config.path);
+        return CORE_ERROR;
+    }
+
+    if (self.served_gummei[0].num_of_mme_code == 0)
+    {
+        d_error("No MME.GUMMEI.MME_CODE in '%s'",
+                context_self()->config.path);
+        return CORE_ERROR;
+    }
+
     if (self.num_of_integrity_order == 0)
     {
         d_error("No MME.SECURITY.INTEGRITY_ORDER in '%s'",
@@ -166,8 +174,8 @@ status_t mme_context_parse_config()
     size_t mme_tokens = 0;
     size_t sgw_tokens = 0;
     size_t skip_tokens = 0;
-    int i, j, m, n, p;
-    int arr, size;
+    int i, j, m, n, p, q;
+    int arr, size, arr1, size1;
 
     rv = mme_context_prepare();
     if (rv != CORE_OK) return rv;
@@ -272,27 +280,96 @@ status_t mme_context_parse_config()
                         size = (t+1)->size;
                     }
 
+                    self.max_num_of_served_gummei = size;
                     for (arr = 0; arr < size; arr++)
                     {
+                        served_gummei_t *gummei = &self.served_gummei[arr];
                         for (n = 1; n > 0; m++, n--)
                         {
                             n += (t+m)->size;
 
-                            if (jsmntok_equal(json, t+m, "MCC") == 0)
+                            if (jsmntok_equal(json, t+m, "PLMN_ID") == 0)
                             {
-                                printf("mcc : %s\n", jsmntok_to_string(json, t+m+1));
-                            }
-                            else if (jsmntok_equal(json, t+m, "MNC") == 0)
-                            {
-                                printf("mnc : %s\n", jsmntok_to_string(json, t+m+1));
-                            }
+                                p = 1;
+                                size1 = 1;
+
+                                if ((t+m+1)->type == JSMN_ARRAY)
+                                {
+                                    p = 2;
+                                    size1 = (t+m+1)->size;
+                                }
+
+                                for (arr1 = 0; arr1 < size1; arr1++)
+                                {
+                                    char *mcc = NULL, *mnc = NULL;
+                                    for (q = 1; q > 0; p++, q--)
+                                    {
+                                        q += (t+m+p)->size;
+                                        if (jsmntok_equal(json, t+m+p, "MCC") == 0)
+                                        {
+                                            mcc = jsmntok_to_string(json, t+m+p+1);
+                                        }
+                                        else if (jsmntok_equal(json, t+m+p, "MNC") == 0)
+                                        {
+                                            mnc = jsmntok_to_string(json, t+m+p+1);
+                                        }
+                                    }
+
+                                    if (mcc && mnc)
+                                    {
+                                        plmn_id_build(&gummei->
+                                            plmn_id[gummei->num_of_plmn_id],
+                                            atoi(mcc), 
+                                            atoi(mnc), strlen(mnc));
+                                        gummei->num_of_plmn_id++;
+                                    }
+                                }
+                            } 
                             else if (jsmntok_equal(json, t+m, "MME_GID") == 0)
                             {
-                                printf("gid : %s\n", jsmntok_to_string(json, t+m+1));
+                                p = 1;
+                                size1 = 1;
+
+                                if ((t+m+1)->type == JSMN_ARRAY)
+                                {
+                                    p = 2;
+                                    size1 = (t+m+1)->size;
+                                }
+
+                                for (arr1 = 0; arr1 < size1; arr1++)
+                                {
+                                    char *v = jsmntok_to_string(json, t+m+p);
+                                    if (v) 
+                                    {
+                                        gummei->mme_gid
+                                            [gummei->num_of_mme_gid] = atoi(v);
+                                        gummei->num_of_mme_gid++;
+                                    }
+                                    p++;
+                                }
                             }
                             else if (jsmntok_equal(json, t+m, "MME_CODE") == 0)
                             {
-                                printf("code : %s\n", jsmntok_to_string(json, t+m+1));
+                                p = 1;
+                                size1 = 1;
+
+                                if ((t+m+1)->type == JSMN_ARRAY)
+                                {
+                                    p = 2;
+                                    size1 = (t+m+1)->size;
+                                }
+
+                                for (arr1 = 0; arr1 < size1; arr1++)
+                                {
+                                    char *v = jsmntok_to_string(json, t+m+p);
+                                    if (v) 
+                                    {
+                                        gummei->mme_code
+                                            [gummei->num_of_mme_code] = atoi(v);
+                                        gummei->num_of_mme_code++;
+                                    }
+                                    p++;
+                                }
                             }
                         }
                     }
