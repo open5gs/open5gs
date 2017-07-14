@@ -32,15 +32,6 @@ pool_declare(mme_pdn_pool, pdn_t, MAX_NUM_OF_UE_PDN);
 
 static int context_initialized = 0;
 
-/* FIXME : Global IP information and port.
- * This should be read from configuration file or arguments
- */
-static char g_mme_ip_addr[20] = "10.1.35.215";
-static unsigned int g_mme_gtp_c_port = GTPV2_C_UDP_PORT;
-
-static char g_sgw_s11_ip_addr[20] = "10.1.35.216";
-static unsigned int g_sgw_s11_port = GTPV2_C_UDP_PORT;
-
 status_t mme_context_init()
 {
 
@@ -62,24 +53,9 @@ status_t mme_context_init()
     index_init(&mme_bearer_pool, MAX_NUM_OF_UE_BEARER);
     pool_init(&mme_pdn_pool, MAX_NUM_OF_UE_PDN);
 
-    self.mme_addr = inet_addr(g_mme_ip_addr);
-
     self.mme_ue_s1ap_id_hash = hash_make();
     self.imsi_ue_hash = hash_make();
     self.guti_ue_hash = hash_make();
-
-    self.s1ap_addr = self.mme_addr;
-    self.s1ap_port = S1AP_SCTP_PORT;
-
-    mme_sgw_t *sgw = mme_sgw_add();
-    d_assert(sgw, return CORE_ERROR, "Can't add SGW context");
-
-    self.s11_addr = self.mme_addr;
-    self.s11_port = g_mme_gtp_c_port;
-
-    /* FIXME : It should be removed : Peer SGW ?*/
-    sgw->gnode.addr = inet_addr(g_sgw_s11_ip_addr);
-    sgw->gnode.port = g_sgw_s11_port;
 
     /* MCC : 001, MNC : 01 */
     plmn_id_build(&self.plmn_id, 1, 1, 2); 
@@ -104,8 +80,53 @@ status_t mme_context_init()
     return CORE_OK;
 }
 
+static status_t mme_context_prepare()
+{
+    self.s1ap_port = S1AP_SCTP_PORT;
+    self.s11_port = GTPV2_C_UDP_PORT;
+
+    return CORE_OK;
+}
+
+static status_t mme_context_validation()
+{
+    if (self.s1ap_addr == 0)
+    {
+        d_error("No MME.NEWORK.S1AP_ADDR in '%s'",
+                context_self()->config.path);
+        return CORE_ERROR;
+    }
+    if (self.s11_addr == 0)
+    {
+        d_error("No MME.NEWORK.S11_ADDR in '%s'",
+                context_self()->config.path);
+        return CORE_ERROR;
+    }
+
+    mme_sgw_t *sgw = mme_sgw_first();
+    if (sgw == NULL)
+    {
+        d_error("No SGW.NEWORK in '%s'",
+                context_self()->config.path);
+        return CORE_ERROR;
+    }
+    while(sgw)
+    {
+        if (sgw->gnode.addr == 0)
+        {
+            d_error("No SGW.NEWORK.S11_ADDR in '%s'",
+                    context_self()->config.path);
+            return CORE_ERROR;
+        }
+        sgw = mme_sgw_next(sgw);
+    }
+
+    return CORE_OK;
+}
+
 status_t mme_context_parse_config()
 {
+    status_t rv;
     config_t *config = &context_self()->config;
 
     char *json = config->json;
@@ -127,6 +148,9 @@ status_t mme_context_parse_config()
     int i, j, m, n, p;
     int arr, size;
 
+    rv = mme_context_prepare();
+    if (rv != CORE_OK) return rv;
+
     for (i = 0, j = 1; j > 0; i++, j--)
     {
         jsmntok_t *t = &token[i];
@@ -144,7 +168,6 @@ status_t mme_context_parse_config()
             }
             case ROOT:
             {
-                printf("root key = %s\n", jsmntok_to_string(json, t));
                 if (jsmntok_equal(json, t, "MME") == 0)
                 {
                     state = MME_START;
@@ -199,19 +222,23 @@ status_t mme_context_parse_config()
 
                             if (jsmntok_equal(json, t+m, "S1AP_ADDR") == 0)
                             {
-                                printf("s1ap_addr : %s\n", jsmntok_to_string(json, t+m+1));
+                                char *v = jsmntok_to_string(json, t+m+1);
+                                if (v) self.s1ap_addr = inet_addr(v);
                             }
                             else if (jsmntok_equal(json, t+m, "S1AP_PORT") == 0)
                             {
-                                printf("s1ap_port : %s\n", jsmntok_to_string(json, t+m+1));
+                                char *v = jsmntok_to_string(json, t+m+1);
+                                if (v) self.s1ap_port = atoi(v);
                             }
                             else if (jsmntok_equal(json, t+m, "S11_ADDR") == 0)
                             {
-                                printf("s11_addr : %s\n", jsmntok_to_string(json, t+m+1));
+                                char *v = jsmntok_to_string(json, t+m+1);
+                                if (v) self.s11_addr = inet_addr(v);
                             }
                             else if (jsmntok_equal(json, t+m, "S11_PORT") == 0)
                             {
-                                printf("s11_port : %s\n", jsmntok_to_string(json, t+m+1));
+                                char *v = jsmntok_to_string(json, t+m+1);
+                                if (v) self.s11_port = atoi(v);
                             }
                         }
                     }
@@ -345,7 +372,6 @@ status_t mme_context_parse_config()
             }
             case SGW_ROOT:
             {
-                printf("sgw key = %s\n", jsmntok_to_string(json, t));
                 if (jsmntok_equal(json, t, "NETWORK") == 0)
                 {
                     m = 1;
@@ -359,17 +385,24 @@ status_t mme_context_parse_config()
 
                     for (arr = 0; arr < size; arr++)
                     {
+                        mme_sgw_t *sgw = mme_sgw_add();
+                        d_assert(sgw, return CORE_ERROR, 
+                                "Can't add SGW context");
+                        sgw->gnode.port = GTPV2_C_UDP_PORT;
+
                         for (n = 1; n > 0; m++, n--)
                         {
                             n += (t+m)->size;
 
                             if (jsmntok_equal(json, t+m, "S11_ADDR") == 0)
                             {
-                                printf("s11_addr : %s\n", jsmntok_to_string(json, t+m+1));
+                                char *v = jsmntok_to_string(json, t+m+1);
+                                if (v) sgw->gnode.addr = inet_addr(v);
                             }
                             else if (jsmntok_equal(json, t+m, "S11_PORT") == 0)
                             {
-                                printf("s11_port : %s\n", jsmntok_to_string(json, t+m+1));
+                                char *v = jsmntok_to_string(json, t+m+1);
+                                if (v) sgw->gnode.port = atoi(v);
                             }
                         }
                     }
@@ -404,6 +437,9 @@ status_t mme_context_parse_config()
 
         }
     }
+
+    rv = mme_context_validation();
+    if (rv != CORE_OK) return rv;
 
     return CORE_OK;
 }

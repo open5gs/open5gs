@@ -36,8 +36,6 @@ typedef struct _served_gummei {
 } srvd_gummei_t;
 
 typedef struct _mme_context_t {
-    c_uint32_t      mme_addr;   /* MME local address */
-
     c_uint32_t      s1ap_addr;  /* MME S1AP local address */
     c_uint16_t      s1ap_port;  /* MME S1AP local port */
     net_sock_t      *s1ap_sock; /* MME S1AP local listen socket */

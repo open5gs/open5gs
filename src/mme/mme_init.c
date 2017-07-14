@@ -21,6 +21,8 @@ status_t mme_initialize()
     rv = mme_context_parse_config();
     if (rv != CORE_OK) return rv;
 
+    printf("port = %d\n", mme_self()->s1ap_port);
+
     ret = mme_s6a_init();
     if (ret != 0) return -1;
 

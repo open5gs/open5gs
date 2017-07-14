@@ -13,8 +13,9 @@ extern "C" {
 #define MAX_NUM_OF_CONFIG_TOKEN 256
 
 typedef struct _config_t {
-    char            json[MAX_CONFIG_FILE_SIZE+1];
-    jsmntok_t       token[MAX_NUM_OF_CONFIG_TOKEN];
+    char *path;
+    char json[MAX_CONFIG_FILE_SIZE+1];
+    jsmntok_t token[MAX_NUM_OF_CONFIG_TOKEN];
 } config_t;
 
 #define MAX_DB_URI_LEN          256

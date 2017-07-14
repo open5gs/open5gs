@@ -118,14 +118,14 @@ status_t context_read_file(char *file_path)
     size_t json_len;
     int result;
 
-    char *path = file_path;
-    if (path == NULL) path = DEFAULT_CONFIG_FILE_PATH;
+    config->path = file_path;
+    if (config->path == NULL) config->path = DEFAULT_CONFIG_FILE_PATH;
 
-    rv = file_open(&file, path, FILE_READ, FILE_OS_DEFAULT);
+    rv = file_open(&file, config->path, FILE_READ, FILE_OS_DEFAULT);
     if (rv != CORE_OK) 
     {
         d_fatal("Can't open configuration file '%s' (errno = %d, %s)", 
-            path, rv, core_strerror(rv, buf, MAX_ERROR_STRING_LEN));
+            config->path, rv, core_strerror(rv, buf, MAX_ERROR_STRING_LEN));
         return rv;
     }
 
@@ -134,7 +134,7 @@ status_t context_read_file(char *file_path)
     if (rv != CORE_OK) 
     {
         d_fatal("Can't read configuration file '%s' (errno = %d, %s)", 
-            path, rv, core_strerror(rv, buf, MAX_ERROR_STRING_LEN));
+            config->path, rv, core_strerror(rv, buf, MAX_ERROR_STRING_LEN));
         return rv;
     }
     file_close(file);
@@ -145,18 +145,18 @@ status_t context_read_file(char *file_path)
     if (result < 0) 
     {
         d_fatal("Failed to parse configuration file '%s' (jsmnerr = %d)", 
-                path, result);
+                config->path, result);
         return CORE_ERROR;
     }
 
     if (result < 1 || config->token[0].type != JSMN_OBJECT) 
     {
         d_fatal("Failed to parse configuration file '%s' (OBJECT expected)",
-                path);
+                config->path);
         return CORE_ERROR;
     }
 
-    d_print("  Config '%s'\n", path);
+    d_print("  Config '%s'\n", config->path);
 
     return CORE_OK;
 }
