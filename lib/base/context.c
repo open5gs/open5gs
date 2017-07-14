@@ -53,8 +53,6 @@ status_t context_parse_config()
             }
             case ROOT:
             {
-                root_tokens--;
-
                 if (jsmntok_equal(json, t, "DB_URI") == 0)
                     self.db_uri = jsmntok_to_string(json, t+1);
                 else if (jsmntok_equal(json, t, "LOG_PATH") == 0)
@@ -63,15 +61,16 @@ status_t context_parse_config()
                 state = SKIP;
                 skip_tokens = t->size;
 
+                root_tokens--;
                 if (root_tokens == 0) state = STOP;
 
                 break;
             }
             case SKIP:
             {
-                skip_tokens--;
                 skip_tokens += t->size;
 
+                skip_tokens--;
                 if (skip_tokens == 0) state = ROOT;
 
                 break;

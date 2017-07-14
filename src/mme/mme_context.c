@@ -6,6 +6,7 @@
 #include "gtp_path.h"
 #include "s1ap_message.h"
 
+#include "context.h"
 #include "mme_context.h"
 #include "mme_event.h"
 
@@ -99,6 +100,310 @@ status_t mme_context_init()
     self.selected_int_algorithm = NAS_SECURITY_ALGORITHMS_128_EIA1;
 
     context_initialized = 1;
+
+    return CORE_OK;
+}
+
+status_t mme_context_parse_config()
+{
+    config_t *config = &context_self()->config;
+
+    char *json = config->json;
+    jsmntok_t *token = config->token;
+
+    typedef enum { 
+        START, ROOT, 
+        MME_START, MME_ROOT, 
+        SGW_START, SGW_ROOT, 
+        SKIP, STOP 
+    } parse_state;
+    parse_state state = START;
+    parse_state stack = STOP;
+
+    size_t root_tokens = 0;
+    size_t mme_tokens = 0;
+    size_t sgw_tokens = 0;
+    size_t skip_tokens = 0;
+    int i, j, m, n, p;
+    int arr, size;
+
+    for (i = 0, j = 1; j > 0; i++, j--)
+    {
+        jsmntok_t *t = &token[i];
+
+        j += t->size;
+
+        switch (state)
+        {
+            case START:
+            {
+                state = ROOT;
+                root_tokens = t->size;
+
+                break;
+            }
+            case ROOT:
+            {
+                printf("root key = %s\n", jsmntok_to_string(json, t));
+                if (jsmntok_equal(json, t, "MME") == 0)
+                {
+                    state = MME_START;
+                }
+                else if (jsmntok_equal(json, t, "SGW") == 0)
+                {
+                    state = SGW_START;
+                }
+                else
+                {
+                    state = SKIP;
+                    stack = ROOT;
+                    skip_tokens = t->size;
+                }
+
+                root_tokens--;
+                if (root_tokens == 0) state = STOP;
+                break;
+            }
+            case MME_START:
+            {
+                state = MME_ROOT;
+                mme_tokens = t->size;
+
+                break;
+            }
+            case MME_ROOT:
+            {
+                if (jsmntok_equal(json, t, "DEFAULT_PAGING_DRX") == 0)
+                {
+                    printf("paging_drx : %s\n", jsmntok_to_string(json, t+1));
+                } 
+                else if (jsmntok_equal(json, t, "RELATIVE_CAPACITY") == 0)
+                {
+                    printf("relative : %s\n", jsmntok_to_string(json, t+1));
+                }
+                else if (jsmntok_equal(json, t, "NETWORK") == 0)
+                {
+                    m = 1;
+                    size = 1;
+
+                    if ((t+1)->type == JSMN_ARRAY)
+                    {
+                        m = 2;
+                    }
+
+                    for (arr = 0; arr < size; arr++)
+                    {
+                        for (n = 1; n > 0; m++, n--)
+                        {
+                            n += (t+m)->size;
+
+                            if (jsmntok_equal(json, t+m, "S1AP_ADDR") == 0)
+                            {
+                                printf("s1ap_addr : %s\n", jsmntok_to_string(json, t+m+1));
+                            }
+                            else if (jsmntok_equal(json, t+m, "S1AP_PORT") == 0)
+                            {
+                                printf("s1ap_port : %s\n", jsmntok_to_string(json, t+m+1));
+                            }
+                            else if (jsmntok_equal(json, t+m, "S11_ADDR") == 0)
+                            {
+                                printf("s11_addr : %s\n", jsmntok_to_string(json, t+m+1));
+                            }
+                            else if (jsmntok_equal(json, t+m, "S11_PORT") == 0)
+                            {
+                                printf("s11_port : %s\n", jsmntok_to_string(json, t+m+1));
+                            }
+                        }
+                    }
+                }
+                else if (jsmntok_equal(json, t, "GUMMEI") == 0)
+                {
+                    m = 1;
+                    size = 1;
+
+                    if ((t+1)->type == JSMN_ARRAY)
+                    {
+                        m = 2;
+                        size = (t+1)->size;
+                    }
+
+                    for (arr = 0; arr < size; arr++)
+                    {
+                        for (n = 1; n > 0; m++, n--)
+                        {
+                            n += (t+m)->size;
+
+                            if (jsmntok_equal(json, t+m, "MCC") == 0)
+                            {
+                                printf("mcc : %s\n", jsmntok_to_string(json, t+m+1));
+                            }
+                            else if (jsmntok_equal(json, t+m, "MNC") == 0)
+                            {
+                                printf("mnc : %s\n", jsmntok_to_string(json, t+m+1));
+                            }
+                            else if (jsmntok_equal(json, t+m, "MME_GID") == 0)
+                            {
+                                printf("gid : %s\n", jsmntok_to_string(json, t+m+1));
+                            }
+                            else if (jsmntok_equal(json, t+m, "MME_CODE") == 0)
+                            {
+                                printf("code : %s\n", jsmntok_to_string(json, t+m+1));
+                            }
+                        }
+                    }
+                }
+                else if (jsmntok_equal(json, t, "TAI") == 0)
+                {
+                    m = 1;
+                    size = 1;
+
+                    if ((t+1)->type == JSMN_ARRAY)
+                    {
+                        m = 2;
+                        size = (t+1)->size;
+                    }
+
+                    for (arr = 0; arr < size; arr++)
+                    {
+                        for (n = 1; n > 0; m++, n--)
+                        {
+                            n += (t+m)->size;
+
+                            if (jsmntok_equal(json, t+m, "MCC") == 0)
+                            {
+                                printf("mcc : %s\n", jsmntok_to_string(json, t+m+1));
+                            }
+                            else if (jsmntok_equal(json, t+m, "MNC") == 0)
+                            {
+                                printf("mnc : %s\n", jsmntok_to_string(json, t+m+1));
+                            }
+                            else if (jsmntok_equal(json, t+m, "TAC") == 0)
+                            {
+                                printf("tac : %s\n", jsmntok_to_string(json, t+m+1));
+                            }
+                        }
+                    }
+                }
+                else if (jsmntok_equal(json, t, "SECURITY") == 0)
+                {
+                    for (m = 1, n = 1; n > 0; m++, n--)
+                    {
+                        n += (t+m)->size;
+                        if (jsmntok_equal(json, t+m, "INTEGRITY_ORDER") == 0)
+                        {
+                            p = 1;
+                            size = 1;
+
+                            if ((t+m+1)->type == JSMN_ARRAY)
+                            {
+                                p = 2;
+                                size = (t+m+1)->size;
+                            }
+
+                            for (arr = 0; arr < size; arr++)
+                            {
+                                printf("%s\n", 
+                                        jsmntok_to_string(json, t+m+p));
+                                p++;
+                            }
+                        }
+                        else if (jsmntok_equal(json, t+m, "CIPHERING_ORDER") == 0)
+                        {
+                            p = 1;
+                            size = 1;
+
+                            if ((t+m+1)->type == JSMN_ARRAY)
+                            {
+                                p = 2;
+                                size = (t+m+1)->size;
+                            }
+
+                            for (arr = 0; arr < size; arr++)
+                            {
+                                printf("%s\n", 
+                                        jsmntok_to_string(json, t+m+p));
+                                p++;
+                            }
+                        }
+                    }
+                }
+
+                state = SKIP;
+                stack = MME_ROOT;
+                skip_tokens = t->size;
+
+                mme_tokens--;
+                if (mme_tokens == 0) stack = ROOT;
+                break;
+            }
+            case SGW_START:
+            {
+                state = SGW_ROOT;
+                sgw_tokens = t->size;
+
+                break;
+            }
+            case SGW_ROOT:
+            {
+                printf("sgw key = %s\n", jsmntok_to_string(json, t));
+                if (jsmntok_equal(json, t, "NETWORK") == 0)
+                {
+                    m = 1;
+                    size = 1;
+
+                    if ((t+1)->type == JSMN_ARRAY)
+                    {
+                        m = 2;
+                        size = (t+1)->size;
+                    }
+
+                    for (arr = 0; arr < size; arr++)
+                    {
+                        for (n = 1; n > 0; m++, n--)
+                        {
+                            n += (t+m)->size;
+
+                            if (jsmntok_equal(json, t+m, "S11_ADDR") == 0)
+                            {
+                                printf("s11_addr : %s\n", jsmntok_to_string(json, t+m+1));
+                            }
+                            else if (jsmntok_equal(json, t+m, "S11_PORT") == 0)
+                            {
+                                printf("s11_port : %s\n", jsmntok_to_string(json, t+m+1));
+                            }
+                        }
+                    }
+                }
+
+                state = SKIP;
+                stack = SGW_ROOT;
+                skip_tokens = t->size;
+
+                sgw_tokens--;
+                if (sgw_tokens == 0) stack = ROOT;
+                break;
+            }
+            case SKIP:
+            {
+                skip_tokens += t->size;
+
+                skip_tokens--;
+                if (skip_tokens == 0) state = stack;
+                break;
+            }
+            case STOP:
+            {
+                break;
+            }
+            default:
+            {
+                d_error("Failed to parse configuration in the state(%u)", 
+                        state);
+                break;
+            }
+
+        }
+    }
 
     return CORE_OK;
 }
