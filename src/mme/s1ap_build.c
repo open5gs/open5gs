@@ -59,8 +59,8 @@ status_t s1ap_build_setup_rsp(pkbuf_t **pkbuf)
                 srvd_gummei->mme_code[j], mmeCode);
             ASN_SEQUENCE_ADD(&servedGUMMEI->servedMMECs, mmeCode);
         }
+        ASN_SEQUENCE_ADD(&ies->servedGUMMEIs, servedGUMMEI);
     }
-    ASN_SEQUENCE_ADD(&ies->servedGUMMEIs, servedGUMMEI);
 
     ies->relativeMMECapacity = mme_self()->relative_capacity;
 
