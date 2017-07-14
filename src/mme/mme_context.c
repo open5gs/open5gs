@@ -34,7 +34,6 @@ static int context_initialized = 0;
 
 status_t mme_context_init()
 {
-
     d_assert(context_initialized == 0, return CORE_ERROR,
             "MME context already has been context_initialized");
 
@@ -56,10 +55,6 @@ status_t mme_context_init()
     self.mme_ue_s1ap_id_hash = hash_make();
     self.imsi_ue_hash = hash_make();
     self.guti_ue_hash = hash_make();
-
-    /* MCC : 001, MNC : 01 */
-    plmn_id_build(&self.plmn_id, 1, 1, 2); 
-    self.tracking_area_code = 12345;
 
     context_initialized = 1;
 
@@ -133,6 +128,13 @@ static status_t mme_context_validation()
     if (self.served_gummei[0].num_of_mme_code == 0)
     {
         d_error("No MME.GUMMEI.MME_CODE in '%s'",
+                context_self()->config.path);
+        return CORE_ERROR;
+    }
+
+    if (self.max_num_of_served_tai == 0)
+    {
+        d_error("No MME.TAI(PLMN_ID.MCC.MNC|TAC) in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
@@ -305,13 +307,17 @@ status_t mme_context_parse_config()
                                     for (q = 1; q > 0; p++, q--)
                                     {
                                         q += (t+m+p)->size;
-                                        if (jsmntok_equal(json, t+m+p, "MCC") == 0)
+                                        if (jsmntok_equal(
+                                                    json, t+m+p, "MCC") == 0)
                                         {
-                                            mcc = jsmntok_to_string(json, t+m+p+1);
+                                            mcc = jsmntok_to_string(
+                                                    json, t+m+p+1);
                                         }
-                                        else if (jsmntok_equal(json, t+m+p, "MNC") == 0)
+                                        else if (jsmntok_equal(
+                                                    json, t+m+p, "MNC") == 0)
                                         {
-                                            mnc = jsmntok_to_string(json, t+m+p+1);
+                                            mnc = jsmntok_to_string(
+                                                    json, t+m+p+1);
                                         }
                                     }
 
@@ -387,22 +393,65 @@ status_t mme_context_parse_config()
 
                     for (arr = 0; arr < size; arr++)
                     {
+                        char *mcc = NULL, *mnc = NULL, *tac = NULL;
+
                         for (n = 1; n > 0; m++, n--)
                         {
                             n += (t+m)->size;
 
-                            if (jsmntok_equal(json, t+m, "MCC") == 0)
+                            if (jsmntok_equal(json, t+m, "PLMN_ID") == 0)
                             {
-                                printf("mcc : %s\n", jsmntok_to_string(json, t+m+1));
-                            }
-                            else if (jsmntok_equal(json, t+m, "MNC") == 0)
-                            {
-                                printf("mnc : %s\n", jsmntok_to_string(json, t+m+1));
+                                p = 1;
+                                size1 = 1;
+
+                                if ((t+m+1)->type == JSMN_ARRAY)
+                                {
+                                    p = 2;
+                                }
+
+                                for (arr1 = 0; arr1 < size1; arr1++)
+                                {
+                                    for (q = 1; q > 0; p++, q--)
+                                    {
+                                        q += (t+m+p)->size;
+                                        if (jsmntok_equal(
+                                                    json, t+m+p, "MCC") == 0)
+                                        {
+                                            mcc = jsmntok_to_string(
+                                                    json, t+m+p+1);
+                                        }
+                                        else if (jsmntok_equal(
+                                                    json, t+m+p, "MNC") == 0)
+                                        {
+                                            mnc = jsmntok_to_string(
+                                                    json, t+m+p+1);
+                                        }
+                                    }
+                                }
                             }
                             else if (jsmntok_equal(json, t+m, "TAC") == 0)
                             {
-                                printf("tac : %s\n", jsmntok_to_string(json, t+m+1));
+                                p = 1;
+
+                                if ((t+m+1)->type == JSMN_ARRAY)
+                                {
+                                    p = 2;
+                                }
+
+                                tac = jsmntok_to_string(json, t+m+p);
                             }
+                        }
+
+                        if (mcc && mnc && tac)
+                        {
+                            tai_t *tai = &self.served_tai[
+                                self.max_num_of_served_tai];
+                           
+                            plmn_id_build(&tai->plmn_id,
+                                atoi(mcc), atoi(mnc), strlen(mnc));
+                            tai->tac = atoi(tac);
+
+                            self.max_num_of_served_tai++;
                         }
                     }
                 }

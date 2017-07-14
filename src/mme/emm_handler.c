@@ -73,7 +73,6 @@ void emm_handle_attach_request(
             mme_ue, &attach_request->esm_message_container);
 
     /* Store UE specific information */
-    memcpy(&mme_ue->visited_plmn_id, &mme_self()->plmn_id, PLMN_ID_LEN);
     if (attach_request->presencemask &
         NAS_ATTACH_REQUEST_LAST_VISITED_REGISTERED_TAI_PRESENT)
     {
@@ -83,6 +82,12 @@ void emm_handle_attach_request(
         memcpy(&mme_ue->visited_plmn_id, 
                 &last_visited_registered_tai->plmn_id,
                 PLMN_ID_LEN);
+    }
+    else
+    {
+        /* FIXME : what will do if we don't know last visited plmn_id */
+        memcpy(&mme_ue->visited_plmn_id,
+                &mme_self()->served_tai[0].plmn_id, PLMN_ID_LEN);
     }
 
     memcpy(&mme_ue->ue_network_capability, 

@@ -25,7 +25,8 @@ extern "C" {
 #define GRP_PER_MME                 256    /* According to spec it is 65535 */
 #define CODE_PER_MME                256    /* According to spec it is 256 */
 
-#define MAX_NUM_OF_SERVED_GUMMEI    4
+#define MAX_NUM_OF_SERVED_TAI       16
+#define MAX_NUM_OF_SERVED_GUMMEI    8
 #define MAX_NUM_OF_ALGORITHM        8
 
 typedef struct _served_gummei {
@@ -52,7 +53,6 @@ typedef struct _mme_context_t {
     gtp_xact_ctx_t  gtp_xact_ctx;   /* GTP Transaction Context for MME */
 
     c_uint32_t      mme_ue_s1ap_id; /** mme_ue_s1ap_id generator */
-    plmn_id_t       plmn_id;
 
     /* defined in 'nas_ies.h'
      * #define NAS_SECURITY_ALGORITHMS_EIA0        0
@@ -70,7 +70,8 @@ typedef struct _mme_context_t {
     c_uint8_t       integrity_order[MAX_NUM_OF_ALGORITHM];
 
     /* S1SetupRequest */
-    c_uint16_t      tracking_area_code;
+    c_uint8_t       max_num_of_served_tai;
+    tai_t           served_tai[MAX_NUM_OF_SERVED_TAI];
 
     /* S1SetupResponse */
     c_uint8_t       max_num_of_served_gummei;

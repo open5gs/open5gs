@@ -20,22 +20,24 @@
       S11_ADDR: "10.1.35.215",
     }
     GUMMEI:
-    [
+    {
+      PLMN_ID : 
       {
         MCC : "001",
-        MNC : "01",
-        MME_GID : 2,
-        MME_CODE : 1
+        MNC : "01"
       }
-    ]
+      MME_GID : 2,
+      MME_CODE : 1
+    }
     TAI:
-    [
+    {
+      PLMN_ID :
       {
         MCC: "001",
         MNC: "01",
-        TAC: 12345
       }
-    ]
+      TAC: 12345
+    }
     SECURITY :
     {
       INTEGRITY_ORDER : [ "EIA1", "EIA2", "EIA0" ]
