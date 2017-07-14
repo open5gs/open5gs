@@ -11,10 +11,12 @@
 #define MAX_NUM_OF_FILE         256
 #define MAX_FILENAME_SIZE       256
 #define MAX_DIRNAME_SIZE        256
-#define MAX_FILEPATH_LEN        256
 
 #define MAX_NUM_OF_TIMER        1024
 
 #define MAX_SIG_DESC_SIZE       256
+
+#define MAX_FILEPATH_LEN        256
+#define MAX_ERROR_STRING_LEN    1024
 
 #endif /* ! __CORE_PARAM_H__ */

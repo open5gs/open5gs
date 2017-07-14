@@ -9,16 +9,11 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define MAX_CONFIG_FILE_SIZE    1024
+#define MAX_CONFIG_FILE_SIZE    2048
 #define MAX_NUM_OF_CONFIG_TOKEN 256
 
 typedef struct _config_t {
     char            json[MAX_CONFIG_FILE_SIZE+1];
-    size_t          json_len;
-
-    jsmn_parser     parser;
-
-    int             num_of_token;
     jsmntok_t       token[MAX_NUM_OF_CONFIG_TOKEN];
 } config_t;
 

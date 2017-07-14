@@ -15,10 +15,80 @@ status_t context_init()
     d_assert(context_initialized == 0, return CORE_ERROR,
             "Context already has been context_initialized");
 
-    /* Initialize context */
     memset(&self, 0, sizeof(context_t));
 
     context_initialized = 1;
+
+    return CORE_OK;
+}
+
+status_t context_parse_config()
+{
+    config_t *config = &self.config;
+
+    char *json = config->json;
+    jsmntok_t *token = config->token;
+
+    typedef enum { START, ROOT, SKIP, STOP } parse_state;
+    parse_state state = START;
+
+    size_t root_tokens = 0;
+    size_t skip_tokens = 0;
+    size_t i = 0, j = 1;
+
+    for (i = 0, j = 1; j > 0; i++, j--)
+    {
+        jsmntok_t *t = &token[i];
+
+        j += t->size;
+
+        switch (state)
+        {
+            case START:
+            {
+                state = ROOT;
+                root_tokens = t->size;
+
+                break;
+            }
+            case ROOT:
+            {
+                root_tokens--;
+
+                if (jsmntok_equal(json, t, "DB_URI") == 0)
+                    self.db_uri = jsmntok_to_string(json, t+1);
+                else if (jsmntok_equal(json, t, "LOG_PATH") == 0)
+                    self.log_path = jsmntok_to_string(json, t+1);
+
+                state = SKIP;
+                skip_tokens = t->size;
+
+                if (root_tokens == 0) state = STOP;
+
+                break;
+            }
+            case SKIP:
+            {
+                skip_tokens--;
+                skip_tokens += t->size;
+
+                if (skip_tokens == 0) state = ROOT;
+
+                break;
+            }
+            case STOP:
+            {
+                break;
+            }
+            default:
+            {
+                d_error("Failed to parse configuration in the state(%u)", 
+                        state);
+                break;
+            }
+
+        }
+    }
 
     return CORE_OK;
 }
@@ -40,9 +110,14 @@ context_t* context_self()
 
 status_t context_read_file(char *file_path)
 {
+    char buf[MAX_ERROR_STRING_LEN];
     config_t *config = &self.config;
     status_t rv;
     file_t *file;
+
+    jsmn_parser parser;
+    size_t json_len;
+    int result;
 
     char *path = file_path;
     if (path == NULL) path = DEFAULT_CONFIG_FILE_PATH;
@@ -51,63 +126,39 @@ status_t context_read_file(char *file_path)
     if (rv != CORE_OK) 
     {
         d_fatal("Can't open configuration file '%s' (errno = %d, %s)", 
-            path, rv, core_strerror(rv, config->json, MAX_CONFIG_FILE_SIZE));
+            path, rv, core_strerror(rv, buf, MAX_ERROR_STRING_LEN));
         return rv;
     }
 
-    config->json_len = MAX_CONFIG_FILE_SIZE;
-    rv = file_read(file, config->json, &config->json_len);
+    json_len = MAX_CONFIG_FILE_SIZE;
+    rv = file_read(file, config->json, &json_len);
     if (rv != CORE_OK) 
     {
         d_fatal("Can't read configuration file '%s' (errno = %d, %s)", 
-                path, rv, core_strerror(rv, config->json, MAX_CONFIG_FILE_SIZE));
+            path, rv, core_strerror(rv, buf, MAX_ERROR_STRING_LEN));
         return rv;
     }
     file_close(file);
 
-    jsmn_init(&config->parser);
-    config->num_of_token = jsmn_parse(
-        &config->parser, config->json, strlen(config->json), 
+    jsmn_init(&parser);
+    result = jsmn_parse(&parser, config->json, strlen(config->json), 
         config->token, sizeof(config->token)/sizeof(config->token[0]));
-    if (config->num_of_token < 0) 
+    if (result < 0) 
     {
-        d_fatal("Failed to parse configuration '%s' (jsmnerr = %d)", 
-                config->json, config->num_of_token);
+        d_fatal("Failed to parse configuration file '%s' (jsmnerr = %d)", 
+                path, result);
         return CORE_ERROR;
     }
 
-    if (config->num_of_token < 1 || config->token[0].type != JSMN_OBJECT) 
+    if (result < 1 || config->token[0].type != JSMN_OBJECT) 
     {
         d_fatal("Failed to parse configuration file '%s' (OBJECT expected)",
                 path);
         return CORE_ERROR;
     }
 
-    return CORE_OK;
-}
-
-status_t context_parse_config()
-{
-    int i;
-    config_t *config = &self.config;
-
-    char *json = config->json;
-    int num_of_token = config->num_of_token;
-    jsmntok_t *token = config->token;
-
-    for (i = 0; i < num_of_token; i++) 
-    {
-        if (jsmntok_equal(json, &token[i], "DB_URI") == 0)
-        {
-            self.db_uri = jsmntok_to_string(json, &token[i+1]);
-            i++;
-        } 
-        else if (jsmntok_equal(json, &token[i], "LOG_PATH") == 0)
-        {
-            self.log_path = jsmntok_to_string(json, &token[i+1]);
-            i++;
-        }
-    }
+    d_print("  Config '%s'\n", path);
 
     return CORE_OK;
 }
+

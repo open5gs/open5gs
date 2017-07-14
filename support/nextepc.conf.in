@@ -1,19 +1,18 @@
 {
-#
-  DB_URI : "mongodb://localhost/nextepc"
-  LOG_PATH : "@prefix@/var/log/nextepc.log"
+  DB_URI : "mongodb://localhost/nextepc",
+  LOG_PATH : "@prefix@/var/log/nextepc.log",
 
   HSS :
   {
-    S6A_CONFIG_PATH : "@prefix@/hss_fd.conf"
-  },
+    S6A_CONFIG_PATH : "/Users/acetcom/Documents/git/nextepc/install/hss_fd.conf"
+  }
 
   MME :
   {
-    S6A_CONFIG_PATH : "@prefix@/mme_fd.conf"
+    S6A_CONFIG_PATH : "/Users/acetcom/Documents/git/nextepc/install/mme_fd.conf",
 
     DEFAULT_PAGING_DRX : "v64",
-    RELATIVE_CAPACITY : 0xff,
+    RELATIVE_CAPACITY : 255,
 
     NETWORK :
     {
@@ -21,16 +20,16 @@
 #S1AP_PORT : 36412,
 #S11_ADDR: "10.1.35.215",
 #S11_PORT: 2123
-    },
+    }
     GUMMEI:
     [
       {
         MCC : "001",
-        MNC : "01"
+        MNC : "01",
         MME_GID : 2,
         MME_CODE : 1
       }
-    ],
+    ]
     TAI:
     [
       {
@@ -38,13 +37,13 @@
         MNC: "01",
         TAC: 12345
       }
-    ],
+    ]
     SECURITY :
     {
-      INTEGRITY_ORDER : [ "EIA1", "EIA2", "EIA0" ],
+      INTEGRITY_ORDER : [ "EIA1", "EIA2", "EIA0" ]
       CIPHERING_ORDER : [ "EEA0", "EEA1", "EEA2" ]
     }
-  },
+  }
 
   SGW :
   {
@@ -59,11 +58,10 @@
         S5C_ADDR: "10.1.35.217",
 #S5C_PORT: 2123,
 #S5U_ADDR: "10.1.35.217",
-#S5U_PORT: 2125,
+#S5U_PORT: 2125
       }
     ]
-  },
-
+  }
 
   PGW :
   {
@@ -72,8 +70,8 @@
       S5C_ADDR: "10.1.35.219",
 #S5C_PORT: 2123,
 #S5U_ADDR: "10.1.35.219",
-#S5U_PORT: 2125,
-    },
+#S5U_PORT: 2125
+    }
 
     DNS :
     {

@@ -145,13 +145,16 @@ int main(int argc, char *argv[])
 #endif
     }
 
+    show_version();
+    d_print("\n");
+
     if (app_initialize(config_path, log_path) != CORE_OK)
     {
         d_fatal("NextEPC initialization failed. Aborted");
         return EXIT_FAILURE;
     }
 
-    show_version();
+    d_print("\n\n");
     d_info("NextEPC daemon start");
     signal_thread(check_signal);
 
