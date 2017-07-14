@@ -298,8 +298,7 @@ void emm_handle_authentication_response(mme_ue_t *mme_ue,
         if (mme_ue->ue_network_capability.eia & 
                 (0x80 >> mme_self()->integrity_order[i]))
         {
-            mme_self()->selected_int_algorithm = 
-                mme_self()->integrity_order[i];
+            mme_ue->selected_int_algorithm = mme_self()->integrity_order[i];
             break;
         }
     }
@@ -308,16 +307,15 @@ void emm_handle_authentication_response(mme_ue_t *mme_ue,
         if (mme_ue->ue_network_capability.eea & 
                 (0x80 >> mme_self()->ciphering_order[i]))
         {
-            mme_self()->selected_enc_algorithm = 
-                mme_self()->ciphering_order[i];
+            mme_ue->selected_enc_algorithm = mme_self()->ciphering_order[i];
             break;
         }
     }
 
     selected_nas_security_algorithms->type_of_integrity_protection_algorithm =
-        mme_self()->selected_int_algorithm;
+        mme_ue->selected_int_algorithm;
     selected_nas_security_algorithms->type_of_ciphering_algorithm =
-        mme_self()->selected_enc_algorithm;
+        mme_ue->selected_enc_algorithm;
 
     nas_key_set_identifier->tsc = 0;
     nas_key_set_identifier->nas_key_set_identifier = 0;
@@ -336,9 +334,9 @@ void emm_handle_authentication_response(mme_ue_t *mme_ue,
         (mme_ue->ms_network_capability.gea1 << 6) | 
         mme_ue->ms_network_capability.extended_gea;
 
-    mme_kdf_nas(MME_KDF_NAS_INT_ALG, mme_self()->selected_int_algorithm,
+    mme_kdf_nas(MME_KDF_NAS_INT_ALG, mme_ue->selected_int_algorithm,
             mme_ue->kasme, mme_ue->knas_int);
-    mme_kdf_nas(MME_KDF_NAS_ENC_ALG, mme_self()->selected_enc_algorithm,
+    mme_kdf_nas(MME_KDF_NAS_ENC_ALG, mme_ue->selected_enc_algorithm,
             mme_ue->kasme, mme_ue->knas_enc);
     mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, mme_ue->kenb);
 

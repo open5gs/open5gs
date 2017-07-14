@@ -70,9 +70,6 @@ status_t mme_context_init()
     self.srvd_gummei.num_of_mme_code = 1;
     self.srvd_gummei.mme_code[0] = 1;
 
-    self.selected_enc_algorithm = NAS_SECURITY_ALGORITHMS_EEA0;
-    self.selected_int_algorithm = NAS_SECURITY_ALGORITHMS_128_EIA1;
-
     context_initialized = 1;
 
     return CORE_OK;

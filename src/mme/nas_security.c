@@ -48,9 +48,9 @@ status_t nas_security_encode(
         mme_ue->ul_count.i32 = 0;
     }
 
-    if (mme_self()->selected_enc_algorithm == 0)
+    if (mme_ue->selected_enc_algorithm == 0)
         ciphered = 0;
-    if (mme_self()->selected_int_algorithm == 0)
+    if (mme_ue->selected_int_algorithm == 0)
         integrity_protected = 0;
 
     if (ciphered || integrity_protected)
@@ -74,7 +74,7 @@ status_t nas_security_encode(
         if (ciphered)
         {
             /* encrypt NAS message */
-            nas_encrypt(mme_self()->selected_enc_algorithm,
+            nas_encrypt(mme_ue->selected_enc_algorithm,
                 mme_ue->knas_enc, mme_ue->dl_count, NAS_SECURITY_BEARER,
                 NAS_SECURITY_DOWNLINK_DIRECTION, new);
         }
@@ -84,7 +84,7 @@ status_t nas_security_encode(
             c_uint8_t mac[NAS_SECURITY_MAC_SIZE];
 
             /* calculate NAS MAC(message authentication code) */
-            nas_mac_calculate(mme_self()->selected_int_algorithm,
+            nas_mac_calculate(mme_ue->selected_int_algorithm,
                 mme_ue->knas_int, mme_ue->dl_count, NAS_SECURITY_BEARER, 
                 NAS_SECURITY_DOWNLINK_DIRECTION, new, mac);
             memcpy(&h.message_authentication_code, mac, sizeof(mac));
@@ -170,9 +170,9 @@ status_t nas_security_decode(
         mme_ue->ul_count.i32 = 0;
     }
 
-    if (mme_self()->selected_enc_algorithm == 0)
+    if (mme_ue->selected_enc_algorithm == 0)
         ciphered = 0;
-    if (mme_self()->selected_int_algorithm == 0)
+    if (mme_ue->selected_int_algorithm == 0)
         integrity_protected = 0;
 
     if (ciphered || integrity_protected)
@@ -188,7 +188,7 @@ status_t nas_security_decode(
         if (ciphered)
         {
             /* decrypt NAS message */
-            nas_encrypt(mme_self()->selected_enc_algorithm,
+            nas_encrypt(mme_ue->selected_enc_algorithm,
                 mme_ue->knas_enc, mme_ue->ul_count.i32, NAS_SECURITY_BEARER,
                 NAS_SECURITY_UPLINK_DIRECTION, pkbuf);
         }
@@ -198,7 +198,7 @@ status_t nas_security_decode(
             c_uint32_t mac32;
 
             /* calculate NAS MAC(message authentication code) */
-            nas_mac_calculate(mme_self()->selected_int_algorithm,
+            nas_mac_calculate(mme_ue->selected_int_algorithm,
                 mme_ue->knas_int, mme_ue->ul_count.i32, NAS_SECURITY_BEARER, 
                 NAS_SECURITY_UPLINK_DIRECTION, pkbuf, mac);
 
