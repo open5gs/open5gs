@@ -253,6 +253,7 @@ void emm_handle_authentication_response(mme_ue_t *mme_ue,
     mme_enb_t *enb = NULL;
     enb_ue_t *enb_ue = NULL;
     pkbuf_t *emmbuf = NULL, *s1apbuf = NULL;
+    int i;
 
     nas_authentication_response_parameter_t *authentication_response_parameter =
         &authentication_response->authentication_response_parameter;
@@ -292,10 +293,31 @@ void emm_handle_authentication_response(mme_ue_t *mme_ue,
     message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
     message.emm.h.message_type = NAS_SECURITY_MODE_COMMAND;
 
-    selected_nas_security_algorithms->type_of_ciphering_algorithm =
-        mme_self()->selected_enc_algorithm;
+    for (i = 0; i < mme_self()->num_of_integrity_order; i++)
+    {
+        if (mme_ue->ue_network_capability.eia & 
+                (0x80 >> mme_self()->integrity_order[i]))
+        {
+            mme_self()->selected_int_algorithm = 
+                mme_self()->integrity_order[i];
+            break;
+        }
+    }
+    for (i = 0; i < mme_self()->num_of_ciphering_order; i++)
+    {
+        if (mme_ue->ue_network_capability.eea & 
+                (0x80 >> mme_self()->ciphering_order[i]))
+        {
+            mme_self()->selected_enc_algorithm = 
+                mme_self()->ciphering_order[i];
+            break;
+        }
+    }
+
     selected_nas_security_algorithms->type_of_integrity_protection_algorithm =
         mme_self()->selected_int_algorithm;
+    selected_nas_security_algorithms->type_of_ciphering_algorithm =
+        mme_self()->selected_enc_algorithm;
 
     nas_key_set_identifier->tsc = 0;
     nas_key_set_identifier->nas_key_set_identifier = 0;
