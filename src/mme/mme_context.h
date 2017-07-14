@@ -25,6 +25,7 @@ extern "C" {
 #define GRP_PER_MME                 256    /* According to spec it is 65535 */
 #define CODE_PER_MME                256    /* According to spec it is 256 */
 
+#define MAX_NUM_OF_SERVED_GUMMEI    4
 #define MAX_NUM_OF_ALGORITHM        8
 
 typedef struct _served_gummei {
@@ -35,7 +36,7 @@ typedef struct _served_gummei {
     c_uint16_t      mme_gid[GRP_PER_MME];
     c_uint32_t      num_of_mme_code;
     c_uint8_t       mme_code[CODE_PER_MME];
-} srvd_gummei_t;
+} served_gummei_t;
 
 typedef struct _mme_context_t {
     c_uint32_t      s1ap_addr;  /* MME S1AP local address */
@@ -72,7 +73,8 @@ typedef struct _mme_context_t {
     c_uint16_t      tracking_area_code;
 
     /* S1SetupResponse */
-    srvd_gummei_t   srvd_gummei;
+    c_uint8_t       max_num_of_served_gummei;
+    served_gummei_t served_gummei[MAX_NUM_OF_SERVED_GUMMEI];
     c_uint8_t       relative_capacity;
 
     list_t          sgw_list;

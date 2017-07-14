@@ -61,14 +61,25 @@ status_t mme_context_init()
     plmn_id_build(&self.plmn_id, 1, 1, 2); 
     self.tracking_area_code = 12345;
 
-    self.srvd_gummei.num_of_plmn_id = 1;
-    /* MCC : 001, MNC : 01 */
-    plmn_id_build(&self.srvd_gummei.plmn_id[0], 1, 1, 2); 
+    self.max_num_of_served_gummei = 1;
 
-    self.srvd_gummei.num_of_mme_gid = 1;
-    self.srvd_gummei.mme_gid[0] = 2;
-    self.srvd_gummei.num_of_mme_code = 1;
-    self.srvd_gummei.mme_code[0] = 1;
+    self.served_gummei[0].num_of_plmn_id = 1;
+    /* MCC : 001, MNC : 01 */
+    plmn_id_build(&self.served_gummei[0].plmn_id[0], 1, 1, 2); 
+
+    self.served_gummei[0].num_of_mme_gid = 1;
+    self.served_gummei[0].mme_gid[0] = 2;
+    self.served_gummei[0].num_of_mme_code = 1;
+    self.served_gummei[0].mme_code[0] = 1;
+
+    self.served_gummei[1].num_of_plmn_id = 1;
+    /* MCC : 001, MNC : 01 */
+    plmn_id_build(&self.served_gummei[1].plmn_id[0], 2, 2, 2); 
+
+    self.served_gummei[1].num_of_mme_gid = 1;
+    self.served_gummei[1].mme_gid[0] = 4;
+    self.served_gummei[1].num_of_mme_code = 1;
+    self.served_gummei[1].mme_code[0] = 3;
 
     context_initialized = 1;
 
