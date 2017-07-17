@@ -73,6 +73,7 @@ typedef struct _pgw_bearer_t {
 } pgw_bearer_t;
 
 CORE_DECLARE(status_t)      pgw_context_init(void);
+CORE_DECLARE(status_t)      pgw_context_parse_config(void);
 CORE_DECLARE(status_t)      pgw_context_final(void);
 
 CORE_DECLARE(pgw_context_t*) pgw_self(void);

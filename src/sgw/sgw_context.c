@@ -103,12 +103,12 @@ status_t sgw_context_parse_config()
     char *json = config->json;
     jsmntok_t *token = config->token;
 
-    typedef enum { 
-        START, ROOT, 
-        MME_START, MME_ROOT, 
-        SGW_START, SGW_ROOT, 
-        PGW_START, PGW_ROOT, 
-        SKIP, STOP 
+    typedef enum {
+        START, ROOT,
+        MME_START, MME_ROOT,
+        SGW_START, SGW_ROOT,
+        PGW_START, PGW_ROOT,
+        SKIP, STOP
     } parse_state;
     parse_state state = START;
     parse_state stack = STOP;
