@@ -11,6 +11,8 @@
 
 #include "pgw_sm.h"
 
+#define MAX_NUM_OF_IP_POOL 16
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -31,12 +33,19 @@ typedef struct _pgw_context_t {
     tm_service_t    tm_service;     /* Timer Service */
     gtp_xact_ctx_t  gtp_xact_ctx;   /* GTP Transaction Context */
 
+    struct {
+        c_uint32_t prefix;
+        c_uint8_t  mask;
+    } ip_pool[MAX_NUM_OF_IP_POOL];
+    c_uint8_t       num_of_ip_pool;
+
     c_uint32_t      primary_dns_addr;
     c_uint32_t      secondary_dns_addr;
 
     net_link_t*     tun_link;  /* PGW Tun Interace for U-plane */
 
     list_t          sess_list;
+    list_t          ip_pool_list;
 } pgw_context_t;
 
 typedef struct _pgw_sess_t {
@@ -72,6 +81,12 @@ typedef struct _pgw_bearer_t {
     pgw_sess_t      *sess;
 } pgw_bearer_t;
 
+typedef struct _pgw_ip_pool_t {
+    lnode_t         node; /**< A node of list_t */
+
+    c_uint32_t      ue_addr;
+} pgw_ip_pool_t;
+
 CORE_DECLARE(status_t)      pgw_context_init(void);
 CORE_DECLARE(status_t)      pgw_context_parse_config(void);
 CORE_DECLARE(status_t)      pgw_context_final(void);
@@ -103,6 +118,10 @@ CORE_DECLARE(pgw_bearer_t*) pgw_bearer_first(pgw_sess_t *sess);
 CORE_DECLARE(pgw_bearer_t*) pgw_bearer_next(pgw_bearer_t *bearer);
 
 CORE_DECLARE(pgw_bearer_t*) pgw_bearer_find_by_packet(pkbuf_t *pkt);
+
+CORE_DECLARE(status_t )     pgw_ip_pool_generate();
+CORE_DECLARE(pgw_ip_pool_t*) pgw_ip_pool_alloc();
+CORE_DECLARE(status_t )     pgw_ip_pool_free(pgw_ip_pool_t *ip_pool);
 
 #ifdef __cplusplus
 }

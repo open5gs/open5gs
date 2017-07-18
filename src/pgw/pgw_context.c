@@ -15,6 +15,7 @@ index_declare(pgw_sess_pool, pgw_sess_t, MAX_NUM_OF_UE);
 index_declare(pgw_bearer_pool, pgw_bearer_t, MAX_NUM_OF_UE_BEARER);
 
 pool_declare(pgw_pdn_pool, pdn_t, MAX_NUM_OF_UE_PDN);
+pool_declare(pgw_ip_pool_pool, pgw_ip_pool_t, MAX_NUM_OF_UE);
 
 static int context_initiaized = 0;
 
@@ -30,6 +31,7 @@ status_t pgw_context_init()
     index_init(&pgw_bearer_pool, MAX_NUM_OF_UE_BEARER);
 
     pool_init(&pgw_pdn_pool, MAX_NUM_OF_UE_PDN);
+    pool_init(&pgw_ip_pool_pool, MAX_NUM_OF_UE);
 
     list_init(&self.s5c_node.local_list);
     list_init(&self.s5c_node.remote_list);
@@ -66,6 +68,12 @@ static status_t pgw_context_validation()
     if (self.s5u_addr == 0)
     {
         d_error("No PGW.NEWORK.S5U_ADDR in '%s'",
+                context_self()->config.path);
+        return CORE_ERROR;
+    }
+    if (self.num_of_ip_pool == 0)
+    {
+        d_error("No PGW.IP_POOL.CIDR in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
@@ -236,6 +244,43 @@ status_t pgw_context_parse_config()
                         }
                     }
                 }
+                if (jsmntok_equal(json, t, "IP_POOL") == 0)
+                {
+                    m = 1;
+                    size = 1;
+
+                    if ((t+1)->type == JSMN_ARRAY)
+                    {
+                        m = 2;
+                        size = (t+1)->size;
+                    }
+
+                    for (arr = 0; arr < size; arr++)
+                    {
+                        for (n = 1; n > 0; m++, n--)
+                        {
+                            n += (t+m)->size;
+
+                            if (jsmntok_equal(json, t+m, "CIDR") == 0)
+                            {
+                                char *v = jsmntok_to_string(json, t+m+1);
+                                if (v)
+                                {
+                                    char *prefix = strsep(&v, "/");
+                                    if (prefix)
+                                    {
+                                        self.ip_pool[self.num_of_ip_pool].prefix
+                                            = inet_addr(prefix);
+                                        self.ip_pool[self.num_of_ip_pool].mask
+                                            = atoi(v);
+                                    }
+                                }
+
+                                self.num_of_ip_pool++;
+                            }
+                        }
+                    }
+                }
                 else if (jsmntok_equal(json, t, "DNS") == 0)
                 {
                     for (m = 1, n = 1; n > 0; m++, n--)
@@ -302,7 +347,11 @@ status_t pgw_context_final()
     d_print("%d not freed in pgw_sess_pool[%d] in PGW-Context\n",
             index_size(&pgw_sess_pool) - pool_avail(&pgw_sess_pool),
             index_size(&pgw_sess_pool));
+    d_print("%d not freed in pgw_ip_pool[%d] in PGW-Context\n",
+            index_size(&pgw_ip_pool_pool) - pool_avail(&pgw_ip_pool_pool),
+            index_size(&pgw_ip_pool_pool));
 
+    pool_final(&pgw_ip_pool_pool);
     pool_final(&pgw_pdn_pool);
 
     index_final(&pgw_bearer_pool);
@@ -625,4 +674,61 @@ pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
     }
 
     return bearer;
+}
+
+status_t pgw_ip_pool_generate()
+{
+    int i, j, k;
+    int pool_index = 0;
+
+    for (i = 0; i < self.num_of_ip_pool; i++)
+    {
+        c_uint32_t mask = htonl(0xffffffff << (32 - self.ip_pool[i].mask));
+        c_uint32_t prefix = self.ip_pool[i].prefix & mask;
+
+        /* Exclude X.X.X.0, X.X.X.255 addresses from ip pool */
+        c_uint32_t exclude_mask[] = { 0, 255 };
+
+        for (j = 1; j < (0xffffffff >> self.ip_pool[i].mask) && 
+                pool_index < MAX_NUM_OF_UE; j++)
+        {
+            int exclude = 0;
+            pgw_ip_pool_t *ip_pool = &pgw_ip_pool_pool.pool[pool_index];
+            ip_pool->ue_addr = prefix + htonl(j);
+
+            for (k = 0; k < sizeof(exclude_mask)/sizeof(exclude_mask[0]); k++)
+            {
+                if ((htonl(ip_pool->ue_addr) & 0x000000ff) == exclude_mask[k])
+                {
+                    exclude = 1;
+                }
+            }
+
+            if (exclude)
+            {
+                continue;
+            }
+            pool_index++;
+        }
+    }
+
+    return CORE_OK;
+}
+pgw_ip_pool_t* pgw_ip_pool_alloc()
+{
+    pgw_ip_pool_t *ip_pool = NULL;
+
+    pool_alloc_node(&pgw_ip_pool_pool, &ip_pool);
+    d_assert(ip_pool, return NULL, "IP Pool context allocation failed");
+
+    list_append(&self.ip_pool_list, ip_pool);
+
+    return ip_pool;
+}
+status_t pgw_ip_pool_free(pgw_ip_pool_t *ip_pool)
+{
+    list_remove(&self.ip_pool_list, ip_pool);
+    pool_free_node(&pgw_ip_pool_pool, ip_pool);
+
+    return CORE_OK;
 }
