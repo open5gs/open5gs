@@ -33,6 +33,9 @@ typedef struct _pgw_context_t {
     tm_service_t    tm_service;     /* Timer Service */
     gtp_xact_ctx_t  gtp_xact_ctx;   /* GTP Transaction Context */
 
+    char            *tun_dev_name;  /* PGW Tunnel device name */
+    net_link_t*     tun_link;       /* PGW Tun Interace for U-plane */
+
     struct {
         c_uint32_t prefix;
         c_uint8_t  mask;
@@ -41,8 +44,6 @@ typedef struct _pgw_context_t {
 
     c_uint32_t      primary_dns_addr;
     c_uint32_t      secondary_dns_addr;
-
-    net_link_t*     tun_link;  /* PGW Tun Interace for U-plane */
 
     list_t          sess_list;
     list_t          ip_pool_list;

@@ -71,6 +71,12 @@ static status_t pgw_context_validation()
                 context_self()->config.path);
         return CORE_ERROR;
     }
+    if (self.tun_dev_name == NULL)
+    {
+        d_error("No PGW.TUNNEL.DEV_NAME in '%s'",
+                context_self()->config.path);
+        return CORE_ERROR;
+    }
     if (self.num_of_ip_pool == 0)
     {
         d_error("No PGW.IP_POOL.CIDR in '%s'",
@@ -244,7 +250,31 @@ status_t pgw_context_parse_config()
                         }
                     }
                 }
-                if (jsmntok_equal(json, t, "IP_POOL") == 0)
+                else if (jsmntok_equal(json, t, "TUNNEL") == 0)
+                {
+                    m = 1;
+                    size = 1;
+
+                    if ((t+1)->type == JSMN_ARRAY)
+                    {
+                        m = 2;
+                    }
+
+                    for (arr = 0; arr < size; arr++)
+                    {
+                        for (n = 1; n > 0; m++, n--)
+                        {
+                            n += (t+m)->size;
+
+                            if (jsmntok_equal(json, t+m, "DEV_NAME") == 0)
+                            {
+                                char *v = jsmntok_to_string(json, t+m+1);
+                                self.tun_dev_name = v;
+                            }
+                        }
+                    }
+                }
+                else if (jsmntok_equal(json, t, "IP_POOL") == 0)
                 {
                     m = 1;
                     size = 1;
