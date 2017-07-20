@@ -9,7 +9,8 @@ nodist_libbase_la_SOURCES = \
 	types.c context.c
 
 AM_CPPFLAGS = \
-    -I$(top_srcdir)/lib/core/include
+    -I$(top_srcdir)/lib/core/include \
+	@MONGOC_CFLAGS@
 
 AM_CFLAGS = \
 	-Wall -Werror

@@ -38,6 +38,12 @@ status_t app_will_initialize(char *config_path, char *log_path)
         d_assert(logger_pid > 0, return -1, "logger_start() failed");
     }
 
+    if (context_self()->db_uri)
+    {
+        rv = context_db_init(context_self()->db_uri);
+        if (rv != CORE_OK) return rv;
+    }
+
     return CORE_OK;
 }
 

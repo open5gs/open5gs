@@ -2,7 +2,7 @@ Prerequisite
 ============
 
     sudo apt-get install git cscope gdb
-    sudo apt-get install autoconf libtool m4
+    sudo apt-get install autoconf libtool m4 pkg-config
     sudo apt-get install libsctp-dev
     sudo apt-get install freediameter-dev
     sudo apt-get install libmongoc-1.0-0

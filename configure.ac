@@ -60,8 +60,7 @@ AH_VERBATIM([_REENTRANT],
 #endif
 ])
 
-dnl Checks for programs.
-# We need a C compiler.
+dnl Checks CC and freinds
 AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_INSTALL
@@ -290,6 +289,9 @@ AC_CHECK_LIB([sctp], [sctp_sendmsg], [LIBS="${LIBS} -lsctp"])
 AC_CHECK_LIB([fdcore], [fd_core_initialize], [LIBS="${LIBS} -lfdcore"])
 AC_CHECK_LIB([fdproto], [fd_libproto_init], [LIBS="${LIBS} -lfdproto"])
 AC_CHECK_LIB([gnutls], [gnutls_global_init], [LIBS="${LIBS} -lgnutls"])
+
+PKG_CHECK_MODULES([MONGOC], libmongoc-1.0 >= 1.6.3)
+LIBS="$LIBS $MONGOC_LIBS"
 
 #####################
 #### Conclusion. ####
