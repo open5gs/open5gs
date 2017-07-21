@@ -40,7 +40,6 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
     struct avp_hdr *hdr;
     union avp_value val;
 
-    hss_ue_t *ue = NULL;
     c_int8_t imsi_bcd[MAX_IMSI_BCD_LEN+1];
     c_uint8_t sqn[HSS_SQN_LEN];
     c_uint8_t autn[AUTN_LEN];
@@ -53,6 +52,7 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
 
     hss_db_auth_info_t auth_info;
     c_uint8_t opc[HSS_KEY_LEN];
+    c_uint8_t zero[RAND_LEN];
     status_t rv;
 	
     d_assert(msg, return EINVAL,);
@@ -68,12 +68,6 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
 
     memcpy(imsi_bcd, (char*)hdr->avp_value->os.data, hdr->avp_value->os.len);
     imsi_bcd[hdr->avp_value->os.len] = 0;
-    ue = hss_ue_find_by_imsi_bcd(imsi_bcd);
-    if (!ue)
-    {
-        d_warn("Cannot find IMSI:%s", imsi_bcd);
-        goto out;
-    }
 
     rv = hss_db_auth_info(imsi_bcd, &auth_info);
     if (rv != CORE_OK)
@@ -82,13 +76,37 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
         goto out;
     }
 
+    memset(zero, 0, sizeof(zero));
+    if (memcmp(auth_info.rand, zero, RAND_LEN) == 0)
+    {
+        core_generate_random_bytes(auth_info.rand, RAND_LEN);
+    }
+
+    rv = hss_db_update_rand_and_sqn(imsi_bcd, auth_info.rand, auth_info.sqn);
+    if (rv != CORE_OK)
+    {
+        d_error("Cannot update rand and sqn for IMSI:'%s'", imsi_bcd);
+        goto out;
+    }
+
+    rv = hss_db_increment_sqn(imsi_bcd);
+    if (rv != CORE_OK)
+    {
+        d_error("Cannot increment sqn for IMSI:'%s'", imsi_bcd);
+        goto out;
+    }
+
     d_assert(fd_msg_search_avp(qry, s6a_visited_plmn_id, &avp) == 0 && 
             avp, goto out,);
     d_assert(fd_msg_avp_hdr(avp, &hdr) == 0 && hdr,,);
 
     if (hdr && hdr->avp_value && hdr->avp_value->os.data)
-        memcpy(&ue->visited_plmn_id, 
+    {
+#if 0  // TODO : check visited_plmn_id
+        memcpy(visited_plmn_id,
                 hdr->avp_value->os.data, hdr->avp_value->os.len);
+#endif
+    }
 
     milenage_opc(auth_info.k, auth_info.op, opc);
     milenage_generate(opc, auth_info.amf, auth_info.k,
@@ -96,8 +114,6 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
         autn, ik, ck, ak, xres, &xres_len);
     hss_kdf_kasme(ck, ik, hdr->avp_value->os.data, sqn, ak, kasme);
 
-    ue->sqn = (ue->sqn + 32) & 0x7ffffffffff;
-	
 	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
 	d_assert(fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1) == 0,
             goto out,);

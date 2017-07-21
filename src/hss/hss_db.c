@@ -144,10 +144,8 @@ status_t hss_db_update_rand_and_sqn(
     query = BCON_NEW("imsi", BCON_UTF8(imsi_bcd));
     update = BCON_NEW("$set",
             "{",
-                "security", "{",
-                    "rand", printable_rand,
-                    "sqn", BCON_INT64(sqn),
-                "}",
+                "security.rand", printable_rand,
+                "security.sqn", BCON_INT64(sqn),
             "}");
 
     if (!mongoc_collection_update(subscriberCollection,
