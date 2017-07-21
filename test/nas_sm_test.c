@@ -1,7 +1,10 @@
+#include <mongoc.h>
+
 #include "core_debug.h"
 #include "core_pkbuf.h"
 #include "core_lib.h"
 
+#include "context.h"
 #include "mme_context.h"
 #include "s1ap_message.h"
 
@@ -45,6 +48,59 @@ static void nas_sm_test1(abts_case *tc, void *data)
     char *_emm_information = 
         "000b402a00000300 000005c00100009d 000800020001001a 001413279fcc7266"
         "0307614771304112 527563490100";
+
+    mongoc_collection_t *collection = NULL;
+    bson_error_t error;
+    const char *json = 
+      "{"
+        "\"_id\" : { \"$oid\" : \"597223158b8861d7605378c6\" }, "
+        "\"imsi\" : \"001010123456819\", "
+        "\"pdn\" : ["
+          "{"
+            "\"apn\" : \"internet\", "
+            "\"_id\" : { \"$oid\" : \"597223158b8861d7605378c7\" }, "
+            "\"pdn_ambr\" : {"
+              "\"max_bandwidth_ul\" : 1024000, "
+              "\"max_bandwidth_dl\" : 1024000  "
+            "},"
+            "\"qos\" : { "
+              "\"qci\" : 9, "
+              "\"arp\" : { "
+                "\"priority_level\" : 8,"
+                "\"pre_emption_vulnerability\" : 1, "
+                "\"pre_emption_capability\" : 1"
+              "} "
+            "}, "
+            "\"type\" : 0"
+          "}"
+        "],"
+        "\"ue_ambr\" : { "
+          "\"max_bandwidth_ul\" : 1024000, "
+          "\"max_bandwidth_dl\" : 1024000 "
+        "},"
+        "\"subscribed_rau_tau_timer\" : 12,"
+        "\"network_access_mode\" : 2, "
+        "\"subscriber_status\" : 0, "
+        "\"access_restriction_data\" : 32, "
+        "\"security\" : { "
+          "\"k\" : \"465B5CE8 B199B49F AA5F0A2E E238A6BC\", "
+          "\"op\" : \"5F1D289C 5D354D0A 140C2548 F5F3E3BA\", "
+          "\"amf\" : \"8000\", "
+          "\"sqn\" : { \"$numberLong\" : \"64\" }, "
+          "\"rand\" : \"20080C38 18183B52 2614162C 07601D0D\" "
+        "}, "
+        "\"__v\" : 0 "
+      "}";
+    bson_t *doc = bson_new_from_json((const uint8_t *)json, -1, &error);;
+    ABTS_PTR_NOTNULL(tc, doc);
+
+    collection = mongoc_client_get_collection(
+        context_self()->db_client, 
+        context_self()->db_name, "subscribers");
+    ABTS_PTR_NOTNULL(tc, collection);
+
+    ABTS_TRUE(tc, mongoc_collection_insert(collection, 
+                MONGOC_INSERT_NONE, doc, NULL, &error));
 
     d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
 
@@ -168,6 +224,12 @@ static void nas_sm_test1(abts_case *tc, void *data)
 
     core_sleep(time_from_msec(300));
     d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_FULL);
+
+    ABTS_TRUE(tc, mongoc_collection_remove(collection, 
+            MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error)) 
+
+    bson_destroy(doc);
+    mongoc_collection_destroy(collection);
 }
 
 /**************************************************************
@@ -184,6 +246,59 @@ static void nas_sm_test2(abts_case *tc, void *data)
     int rc;
     int i;
     int msgindex = 1;
+
+    mongoc_collection_t *collection = NULL;
+    bson_error_t error;
+    const char *json = 
+      "{"
+        "\"_id\" : { \"$oid\" : \"597223158b8861d7605378c6\" }, "
+        "\"imsi\" : \"001010123456826\", "
+        "\"pdn\" : ["
+          "{"
+            "\"apn\" : \"internet\", "
+            "\"_id\" : { \"$oid\" : \"597223158b8861d7605378c7\" }, "
+            "\"pdn_ambr\" : {"
+              "\"max_bandwidth_ul\" : 1024000, "
+              "\"max_bandwidth_dl\" : 1024000  "
+            "},"
+            "\"qos\" : { "
+              "\"qci\" : 9, "
+              "\"arp\" : { "
+                "\"priority_level\" : 8,"
+                "\"pre_emption_vulnerability\" : 1, "
+                "\"pre_emption_capability\" : 1"
+              "} "
+            "}, "
+            "\"type\" : 0"
+          "}"
+        "],"
+        "\"ue_ambr\" : { "
+          "\"max_bandwidth_ul\" : 1024000, "
+          "\"max_bandwidth_dl\" : 1024000 "
+        "},"
+        "\"subscribed_rau_tau_timer\" : 12,"
+        "\"network_access_mode\" : 2, "
+        "\"subscriber_status\" : 0, "
+        "\"access_restriction_data\" : 32, "
+        "\"security\" : { "
+          "\"k\" : \"465B5CE8 B199B49F AA5F0A2E E238A6BC\", "
+          "\"op\" : \"5F1D289C 5D354D0A 140C2548 F5F3E3BA\", "
+          "\"amf\" : \"8000\", "
+          "\"sqn\" : { \"$numberLong\" : \"64\" }, "
+          "\"rand\" : \"2AE4FC02 1DD4D1C2 E0A277C2 317C2E67\" "
+        "}, "
+        "\"__v\" : 0 "
+      "}";
+    bson_t *doc = bson_new_from_json((const uint8_t *)json, -1, &error);;
+    ABTS_PTR_NOTNULL(tc, doc);
+
+    collection = mongoc_client_get_collection(
+        context_self()->db_client, 
+        context_self()->db_name, "subscribers");
+    ABTS_PTR_NOTNULL(tc, collection);
+
+    ABTS_TRUE(tc, mongoc_collection_insert(collection, 
+                MONGOC_INSERT_NONE, doc, NULL, &error));
 
     d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
 
@@ -287,6 +402,12 @@ static void nas_sm_test2(abts_case *tc, void *data)
 
     core_sleep(time_from_msec(300));
     d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_FULL);
+
+    ABTS_TRUE(tc, mongoc_collection_remove(collection, 
+            MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error)) 
+
+    bson_destroy(doc);
+    mongoc_collection_destroy(collection);
 }
 
 abts_suite *test_nas_sm(abts_suite *suite)

@@ -19,27 +19,6 @@ status_t hss_db_init()
         d_assert(subscriberCollection, return CORE_ERROR, 
             "Couldn't find Subscriber Collection in '%s'",
             context_self()->db_name)
-
-#if 0
-        {
-            hss_db_subscription_data_t subscription_data;
-            pdn_t *pdn = &subscription_data.pdn[0];
-            hss_db_subscription_data("001010123456819", &subscription_data);
-            printf("%d, %d, %d, %d\n", 
-                    subscription_data.access_restriction_data,
-                    subscription_data.subscriber_status,
-                    subscription_data.network_access_mode,
-                    subscription_data.subscribed_rau_tau_timer);
-            printf("%d, %d\n", 
-                    subscription_data.max_bandwidth_ul,
-                    subscription_data.max_bandwidth_dl);
-            printf("%s, %lu, %d\n", pdn->apn, strlen(pdn->apn), pdn->s6a_type);
-            printf("%d, %d\n", pdn->max_bandwidth_ul, pdn->max_bandwidth_dl);
-            printf("%d, %d\n", pdn->qci, pdn->priority_level);
-            printf("%d, %d\n", pdn->pre_emption_capability, pdn->pre_emption_vulnerability);
-            printf("num = %d\n", subscription_data.num_of_pdn);
-        }
-#endif
     }
 
     return CORE_OK;

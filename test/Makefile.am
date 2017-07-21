@@ -24,7 +24,8 @@ AM_CPPFLAGS = \
     -I$(top_srcdir)/src/mme \
     -I$(top_srcdir)/src/hss \
     -I$(top_srcdir)/src/sgw \
-    -I$(top_srcdir)/src
+    -I$(top_srcdir)/src \
+	@MONGOC_CFLAGS@
 
 AM_CFLAGS = \
 	-Wall -Werror \
