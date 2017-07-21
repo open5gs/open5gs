@@ -19,6 +19,7 @@ status_t hss_db_init()
         d_assert(subscriberCollection, return CORE_ERROR, 
             "Couldn't find Subscriber Collection in '%s'",
             context_self()->db_name)
+
 #if 0
         {
             hss_db_subscription_data_t subscription_data;
@@ -31,7 +32,7 @@ status_t hss_db_init()
             printf("%d, %d\n", 
                     subscription_data.max_bandwidth_ul,
                     subscription_data.max_bandwidth_dl);
-            printf("%s, %d\n", pdn->apn, pdn->s6a_type);
+            printf("%s, %lu, %d\n", pdn->apn, strlen(pdn->apn), pdn->s6a_type);
             printf("%d, %d\n", pdn->max_bandwidth_ul, pdn->max_bandwidth_dl);
             printf("%d, %d\n", pdn->qci, pdn->priority_level);
             printf("%d, %d\n", pdn->pre_emption_capability, pdn->pre_emption_vulnerability);
@@ -171,18 +172,19 @@ status_t hss_db_increment_sqn(char *imsi_bcd)
     bson_t *update;
     bson_error_t error;
     char printable_rand[128];
+    c_uint64_t max_sqn = 0x7ffffffffff;
 
     d_assert(rand, return CORE_ERROR, "Null param");
     core_hex_to_ascii(rand, RAND_LEN, printable_rand, sizeof(printable_rand));
 
     query = BCON_NEW("imsi", BCON_UTF8(imsi_bcd));
+
     update = BCON_NEW("$inc",
             "{",
-                "security.sqn", BCON_INT64(64),
+                "security.sqn", BCON_INT64(32),
             "}");
-
     if (!mongoc_collection_update(subscriberCollection,
-            MONGOC_UPDATE_NONE, query, update, NULL, &error)) 
+            MONGOC_UPDATE_NONE, query, update, NULL, &error))
     {
         d_error("mongoc_collection_update() failure: %s", error.message);
 
@@ -190,9 +192,25 @@ status_t hss_db_increment_sqn(char *imsi_bcd)
         bson_destroy(update);
         return CORE_ERROR;
     }
+    bson_destroy(update);
+
+    update = BCON_NEW("$bit",
+            "{",
+                "security.sqn", 
+                "{", "and", BCON_INT64(max_sqn), "}",
+            "}");
+    if (!mongoc_collection_update(subscriberCollection,
+            MONGOC_UPDATE_NONE, query, update, NULL, &error))
+    {
+        d_error("mongoc_collection_update() failure: %s", error.message);
+
+        bson_destroy(query);
+        bson_destroy(update);
+        return CORE_ERROR;
+    }
+    bson_destroy(update);
 
     bson_destroy(query);
-    bson_destroy(update);
 
     return CORE_OK;
 }
@@ -305,7 +323,8 @@ status_t hss_db_subscription_data(
                         BSON_ITER_HOLDS_UTF8(&child2_iter))
                     {
                         utf8 = bson_iter_utf8(&child2_iter, &length);
-                        core_cpystrn(pdn->apn, utf8, length+1);
+                        core_cpystrn(pdn->apn+1, utf8, length+1);
+                        pdn->apn[0] = length;
                     }
                     else if (!strcmp(child2_key, "type") &&
                         BSON_ITER_HOLDS_INT32(&child2_iter))

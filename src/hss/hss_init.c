@@ -6,6 +6,7 @@
 
 #include "s6a_lib.h"
 
+#include "hss_db.h"
 #include "hss_context.h"
 #include "hss_kdf.h"
 #include "milenage.h"
@@ -49,6 +50,10 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
     c_uint8_t xres[MAX_RES_LEN];
     c_uint8_t kasme[SHA256_DIGEST_SIZE];
     size_t xres_len = 8;
+
+    hss_db_auth_info_t auth_info;
+    c_uint8_t opc[HSS_KEY_LEN];
+    status_t rv;
 	
     d_assert(msg, return EINVAL,);
 	
@@ -70,6 +75,13 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
         goto out;
     }
 
+    rv = hss_db_auth_info(imsi_bcd, &auth_info);
+    if (rv != CORE_OK)
+    {
+        d_error("Cannot get Auth-Info for IMSI:'%s'", imsi_bcd);
+        goto out;
+    }
+
     d_assert(fd_msg_search_avp(qry, s6a_visited_plmn_id, &avp) == 0 && 
             avp, goto out,);
     d_assert(fd_msg_avp_hdr(avp, &hdr) == 0 && hdr,,);
@@ -78,9 +90,9 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
         memcpy(&ue->visited_plmn_id, 
                 hdr->avp_value->os.data, hdr->avp_value->os.len);
 
-    milenage_opc(ue->k, ue->op, ue->opc);
-    milenage_generate(ue->opc, ue->amf, ue->k, 
-        core_uint64_to_buffer(ue->sqn, HSS_SQN_LEN, sqn), ue->rand, 
+    milenage_opc(auth_info.k, auth_info.op, opc);
+    milenage_generate(opc, auth_info.amf, auth_info.k,
+        core_uint64_to_buffer(auth_info.sqn, HSS_SQN_LEN, sqn), auth_info.rand,
         autn, ik, ck, ak, xres, &xres_len);
     hss_kdf_kasme(ck, ik, hdr->avp_value->os.data, sqn, ak, kasme);
 
@@ -102,7 +114,7 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
             goto out,);
 
     d_assert(fd_msg_avp_new(s6a_rand, 0, &avp_rand) == 0, goto out,);
-    val.os.data = ue->rand;
+    val.os.data = auth_info.rand;
     val.os.len = HSS_KEY_LEN;
     d_assert(fd_msg_avp_setvalue(avp_rand, &val) == 0, goto out,);
     d_assert(
