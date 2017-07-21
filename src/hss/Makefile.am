@@ -3,10 +3,10 @@
 noinst_LTLIBRARIES = libhss.la
 
 libhss_la_SOURCES = \
-	milenage.h hss_kdf.h hss_context.h
+	milenage.h hss_kdf.h hss_context.h hss_db.h
 
 nodist_libhss_la_SOURCES = \
-	milenage.c hss_kdf.c hss_init.c hss_context.c
+	milenage.c hss_kdf.c hss_init.c hss_context.c hss_db.c
 
 libhss_la_DEPENDENCIES = \
     $(top_srcdir)/lib/core/src/libcore.la \
@@ -19,7 +19,8 @@ libhss_la_LIBADD = \
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/lib/core/include \
     -I$(top_srcdir)/lib/base \
-    -I$(top_srcdir)/lib/s6a
+    -I$(top_srcdir)/lib/s6a \
+	@MONGOC_CFLAGS@
 
 AM_CFLAGS = \
 	-Wall -Werror

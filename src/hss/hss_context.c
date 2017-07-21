@@ -4,6 +4,7 @@
 #include "core_pool.h"
 #include "core_lib.h"
 
+#include "hss_db.h"
 #include "hss_context.h"
 
 #define HSS_MAX_NUM_OF_PROFILE  8
@@ -115,11 +116,15 @@ status_t hss_context_init(void)
     memcpy(ue->rand, CORE_HEX(UE4_RAND, strlen(UE4_RAND), buf), 
             RAND_LEN);
 
+    hss_db_init();
+
 	return CORE_OK;
 }
 
 void hss_context_final(void)
 {
+    hss_db_final();
+
     hss_ue_remove_all();
     hss_pdn_remove_all();
     hss_profile_remove_all();
