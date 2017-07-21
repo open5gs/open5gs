@@ -38,6 +38,27 @@ static void misc_test2(abts_case *tc, void *data)
 
 static void misc_test3(abts_case *tc, void *data)
 {
+    c_uint8_t k[16] = "\x46\x5B\x5C\xE8\xB1\x99\xB4\x9F\xAA\x5F\x0A\x2E\xE2\x38\xA6\xBC";
+    c_uint8_t op[16] = "\x5F\x1D\x28\x9C\x5D\x35\x4D\x0A\x14\x0C\x25\x48\xF5\xF3\xE3\xBA";
+    c_uint8_t opc[16] = "\xE8\xED\x28\x9D\xEB\xA9\x52\xE4\x28\x3B\x54\xE8\x8E\x61\x83\xCA";
+    c_uint8_t amf[2] = { 0x80, 0x00 };
+    c_uint8_t lower[4] = "\x12\xab\xcd\xef";
+    c_uint8_t buffer[128];
+
+    ABTS_TRUE(tc, strcmp("465B5CE8 B199B49F AA5F0A2E E238A6BC", 
+        core_hex_to_ascii(k, sizeof(k), buffer, sizeof(buffer))) == 0);
+    ABTS_TRUE(tc, strcmp("5F1D289C 5D354D0A 140C2548 F5F3E3BA",
+        core_hex_to_ascii(op, sizeof(op), buffer, sizeof(buffer))) == 0);
+    ABTS_TRUE(tc, strcmp("E8ED289D EBA952E4 283B54E8 8E6183CA",
+        core_hex_to_ascii(opc, sizeof(opc), buffer, sizeof(buffer))) == 0);
+    ABTS_TRUE(tc, strcmp("8000",
+        core_hex_to_ascii(amf, sizeof(amf), buffer, sizeof(buffer))) == 0);
+    ABTS_TRUE(tc, strcmp("12ABCDEF",
+        core_hex_to_ascii(lower, sizeof(lower), buffer, sizeof(buffer))) == 0);
+}
+
+static void misc_test4(abts_case *tc, void *data)
+{
 #define MAX_SIZE 8
     c_uint8_t tmp[MAX_SIZE] = "\x01\x23\x45\x67\x89\xab\xcd\xef";
     c_uint8_t buf[MAX_SIZE];
@@ -61,7 +82,7 @@ static void misc_test3(abts_case *tc, void *data)
     ABTS_TRUE(tc, memcmp(tmp, core_uint64_to_buffer(num, 1, buf), 1) == 0);
 }
 
-static void misc_test4(abts_case *tc, void *data)
+static void misc_test5(abts_case *tc, void *data)
 {
     ABTS_TRUE(tc, 0x0123456789abcdef ==
             core_buffer_to_uint64("\x01\x23\x45\x67\x89\xab\xcd\xef", 8));
@@ -81,7 +102,7 @@ static void misc_test4(abts_case *tc, void *data)
             core_buffer_to_uint64("\x01", 1));
 }
 
-static void misc_test5(abts_case *tc, void *data)
+static void misc_test6(abts_case *tc, void *data)
 {
     char out[16];
     int out_len;
@@ -103,6 +124,7 @@ abts_suite *testmisc(abts_suite *suite)
     abts_run_test(suite, misc_test3, NULL);
     abts_run_test(suite, misc_test4, NULL);
     abts_run_test(suite, misc_test5, NULL);
+    abts_run_test(suite, misc_test6, NULL);
 
     return suite;
 }
