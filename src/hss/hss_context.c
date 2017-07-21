@@ -108,6 +108,8 @@ status_t hss_context_init(void)
     ue->num_of_pdn = 1;
     memcpy(ue->rand, CORE_HEX(UE3_RAND, strlen(UE3_RAND), buf), 
             RAND_LEN);
+    ue->access_restriction_data = 32;
+    ue->network_access_mode = 2;
 
     ue = hss_ue_add(profile_id, UE4_IMSI);
     d_assert(ue, return -1, "UE context add failed");
@@ -115,6 +117,8 @@ status_t hss_context_init(void)
     ue->num_of_pdn = 1;
     memcpy(ue->rand, CORE_HEX(UE4_RAND, strlen(UE4_RAND), buf), 
             RAND_LEN);
+    ue->access_restriction_data = 32;
+    ue->network_access_mode = 2;
 
     hss_db_init();
 

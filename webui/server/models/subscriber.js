@@ -25,6 +25,11 @@ const Subscriber = new Schema({
     default: 2 // Only Packet
   },
 
+  subscribed_rau_tau_timer: {
+    $type: Number,
+    default: 12 // minites
+  },
+
   ue_ambr: {
     max_bandwidth_ul: Number,
     max_bandwidth_dl: Number

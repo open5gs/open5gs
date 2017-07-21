@@ -6,8 +6,8 @@
 
 #include "s6a_lib.h"
 
-#include "hss_db.h"
 #include "hss_context.h"
+#include "hss_db.h"
 #include "hss_kdf.h"
 #include "milenage.h"
 
@@ -41,6 +41,7 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
     union avp_value val;
 
     c_int8_t imsi_bcd[MAX_IMSI_BCD_LEN+1];
+    c_uint8_t opc[HSS_KEY_LEN];
     c_uint8_t sqn[HSS_SQN_LEN];
     c_uint8_t autn[AUTN_LEN];
     c_uint8_t ik[HSS_KEY_LEN];
@@ -51,7 +52,6 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
     size_t xres_len = 8;
 
     hss_db_auth_info_t auth_info;
-    c_uint8_t opc[HSS_KEY_LEN];
     c_uint8_t zero[RAND_LEN];
     status_t rv;
 	
@@ -190,8 +190,10 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
     struct avp_hdr *hdr;
     union avp_value val;
 
-    hss_ue_t *ue = NULL;
     c_int8_t imsi_bcd[MAX_IMSI_BCD_LEN+1];
+
+    status_t rv;
+    hss_db_subscription_data_t subscription_data;
 	
     d_assert(msg, return EINVAL,);
 	
@@ -206,10 +208,11 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
 
     memcpy(imsi_bcd, (char*)hdr->avp_value->os.data, hdr->avp_value->os.len);
     imsi_bcd[hdr->avp_value->os.len] = 0;
-    ue = hss_ue_find_by_imsi_bcd(imsi_bcd);
-    if (!ue)
+
+    rv = hss_db_subscription_data(imsi_bcd, &subscription_data);
+    if (rv != CORE_OK)
     {
-        d_warn("Cannot find IMSI:%s", imsi_bcd);
+        d_error("Cannot get Subscription-Data for IMSI:'%s'", imsi_bcd);
         goto out;
     }
 
@@ -218,8 +221,12 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
     d_assert(fd_msg_avp_hdr(avp, &hdr) == 0 && hdr,,);
 
     if (hdr && hdr->avp_value && hdr->avp_value->os.data)
-        memcpy(&ue->visited_plmn_id, 
+    {
+#if 0  // TODO : check visited_plmn_id
+        memcpy(visited_plmn_id,
                 hdr->avp_value->os.data, hdr->avp_value->os.len);
+#endif
+    }
 
 	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
 	d_assert(fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1) == 0,
@@ -255,18 +262,18 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
                 goto out,);
 
         d_assert(fd_msg_avp_new(s6a_msisdn, 0, &avp_msisdn) == 0, goto out,);
-        core_bcd_to_buffer(ue->imsi_bcd, msisdn, &msisdn_len);
+        core_bcd_to_buffer(imsi_bcd, msisdn, &msisdn_len);
         val.os.data = msisdn;
         val.os.len = msisdn_len;
         d_assert(fd_msg_avp_setvalue(avp_msisdn, &val) == 0, goto out,);
         d_assert(fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avp_msisdn) == 0, 
                 goto out,);
 
-        if (ue->access_restriction_data)
+        if (subscription_data.access_restriction_data)
         {
             d_assert(fd_msg_avp_new(s6a_access_restriction_data, 0, 
                     &avp_access_restriction_data) == 0, goto out,);
-            val.i32 = ue->access_restriction_data;
+            val.i32 = subscription_data.access_restriction_data;
             d_assert(fd_msg_avp_setvalue(
                     avp_access_restriction_data, &val) == 0, goto out,);
             d_assert(fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, 
@@ -275,7 +282,7 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
 
         d_assert(fd_msg_avp_new(s6a_subscriber_status, 0, 
                     &avp_subscriber_status) == 0, goto out,);
-        val.i32 = ue->subscriber_status;
+        val.i32 = subscription_data.subscriber_status;
         d_assert(fd_msg_avp_setvalue(avp_subscriber_status, &val) == 0, 
             goto out,);
         d_assert(fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, 
@@ -283,7 +290,7 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
 
         d_assert(fd_msg_avp_new(s6a_network_access_mode, 0, 
                     &avp_network_access_mode) == 0, goto out,);
-        val.i32 = ue->network_access_mode;
+        val.i32 = subscription_data.network_access_mode;
         d_assert(fd_msg_avp_setvalue(avp_network_access_mode, &val) == 0, 
                 goto out,);
         d_assert(fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, 
@@ -293,14 +300,14 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
         d_assert(fd_msg_avp_new(s6a_ambr, 0, &avp_ambr) == 0, goto out,);
         d_assert(fd_msg_avp_new(s6a_max_bandwidth_ul, 0, 
                     &avp_max_bandwidth_ul) == 0, goto out,);
-        val.i32 = ue->max_bandwidth_ul * 1024; /* bits per second */
+        val.i32 = subscription_data.max_bandwidth_ul * 1024; /* bits per second */
         d_assert(fd_msg_avp_setvalue(avp_max_bandwidth_ul, &val) == 0, 
                 goto out,);
         d_assert(fd_msg_avp_add(avp_ambr, MSG_BRW_LAST_CHILD, 
                     avp_max_bandwidth_ul) == 0, goto out,);
         d_assert(fd_msg_avp_new(s6a_max_bandwidth_dl, 0, 
                     &avp_max_bandwidth_dl) == 0, goto out,);
-        val.i32 = ue->max_bandwidth_dl * 1024; /* bitsper second */
+        val.i32 = subscription_data.max_bandwidth_dl * 1024; /* bitsper second */
         d_assert(fd_msg_avp_setvalue(avp_max_bandwidth_dl, &val) == 0, 
                 goto out,);
         d_assert(fd_msg_avp_add(avp_ambr, MSG_BRW_LAST_CHILD, 
@@ -308,7 +315,7 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
         d_assert(fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avp_ambr) == 0, 
                 goto out,);
 
-        if (ue->num_of_pdn && ue->pdn[0])
+        if (subscription_data.num_of_pdn)
         {
             /* Set the APN Configuration Profile */
             struct avp *apn_configuration_profile;
@@ -319,7 +326,7 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
 
             d_assert(fd_msg_avp_new(s6a_context_identifier, 0, 
                     &context_identifier) == 0, goto out,);
-            val.i32 = ue->pdn[0]->id;
+            val.i32 = 0; /* FIXME : default PDN Context Identifier */
             d_assert(fd_msg_avp_setvalue(context_identifier, &val) == 0, 
                     goto out,);
             d_assert(fd_msg_avp_add(apn_configuration_profile, 
@@ -333,7 +340,7 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
             d_assert(fd_msg_avp_add(apn_configuration_profile, 
                     MSG_BRW_LAST_CHILD, all_apn_conf_inc_ind) == 0, goto out,);
 
-            for (i = 0; i < ue->num_of_pdn; i++)
+            for (i = 0; i < subscription_data.num_of_pdn; i++)
             {
                 /* Set the APN Configuration */
                 struct avp *apn_configuration, *context_identifier;
@@ -342,7 +349,7 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
                 struct avp *allocation_retention_priority, *priority_level;
                 struct avp *pre_emption_capability, *pre_emption_vulnerability;
 
-                pdn_t *pdn = ue->pdn[i];
+                pdn_t *pdn = &subscription_data.pdn[i];
                 d_assert(pdn, goto out,);
 
                 d_assert(fd_msg_avp_new(s6a_apn_configuration, 0, 
@@ -456,7 +463,7 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
     }
 
     d_assert(fd_msg_avp_new(s6a_subscribed_rau_tau_timer, 0, &avp) == 0, goto out,);
-    val.i32 = ue->subscribed_rau_tau_timer * 60; /* seconds */
+    val.i32 = subscription_data.subscribed_rau_tau_timer * 60; /* seconds */
     d_assert(fd_msg_avp_setvalue(avp, &val) == 0, goto out,);
     d_assert(fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) == 0, goto out,);
 

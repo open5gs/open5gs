@@ -8,13 +8,13 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define HSS_DB_KEY_LEN                 16
-#define HSS_DB_AMF_LEN                 2
+#define HSS_KEY_LEN                 16
+#define HSS_AMF_LEN                 2
 
 typedef struct _hss_db_auth_info_t {
-    c_uint8_t       k[HSS_DB_KEY_LEN];
-    c_uint8_t       op[HSS_DB_KEY_LEN];
-    c_uint8_t       amf[HSS_DB_AMF_LEN];
+    c_uint8_t       k[HSS_KEY_LEN];
+    c_uint8_t       op[HSS_KEY_LEN];
+    c_uint8_t       amf[HSS_AMF_LEN];
     c_uint8_t       rand[RAND_LEN];
     c_uint64_t      sqn;
 } hss_db_auth_info_t;

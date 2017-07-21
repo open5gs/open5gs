@@ -25,10 +25,11 @@ status_t hss_db_init()
             hss_db_subscription_data_t subscription_data;
             pdn_t *pdn = &subscription_data.pdn[0];
             hss_db_subscription_data("001010123456819", &subscription_data);
-            printf("%d, %d, %d\n", 
+            printf("%d, %d, %d, %d\n", 
                     subscription_data.access_restriction_data,
                     subscription_data.subscriber_status,
-                    subscription_data.network_access_mode);
+                    subscription_data.network_access_mode,
+                    subscription_data.subscribed_rau_tau_timer);
             printf("%d, %d\n", 
                     subscription_data.max_bandwidth_ul,
                     subscription_data.max_bandwidth_dl);
@@ -36,6 +37,7 @@ status_t hss_db_init()
             printf("%d, %d\n", pdn->max_bandwidth_ul, pdn->max_bandwidth_dl);
             printf("%d, %d\n", pdn->qci, pdn->priority_level);
             printf("%d, %d\n", pdn->pre_emption_capability, pdn->pre_emption_vulnerability);
+            printf("num = %d\n", subscription_data.num_of_pdn);
         }
 #endif
     }
@@ -62,7 +64,7 @@ status_t hss_db_auth_info(
     const bson_t *document;
     bson_iter_t iter;
     bson_iter_t inner_iter;
-    char buf[HSS_DB_KEY_LEN];
+    char buf[HSS_KEY_LEN];
     char *utf8 = NULL;
     c_uint32_t length = 0;
 
@@ -101,17 +103,17 @@ status_t hss_db_auth_info(
         if (!strcmp(key, "k") && BSON_ITER_HOLDS_UTF8(&inner_iter)) 
         {
             utf8 = (char *)bson_iter_utf8(&inner_iter, &length);
-            memcpy(auth_info->k, CORE_HEX(utf8, length, buf), HSS_DB_KEY_LEN);
+            memcpy(auth_info->k, CORE_HEX(utf8, length, buf), HSS_KEY_LEN);
         }
         else if (!strcmp(key, "op") && BSON_ITER_HOLDS_UTF8(&inner_iter)) 
         {
             utf8 = (char *)bson_iter_utf8(&inner_iter, &length);
-            memcpy(auth_info->op, CORE_HEX(utf8, length, buf), HSS_DB_KEY_LEN);
+            memcpy(auth_info->op, CORE_HEX(utf8, length, buf), HSS_KEY_LEN);
         }
         else if (!strcmp(key, "amf") && BSON_ITER_HOLDS_UTF8(&inner_iter)) 
         {
             utf8 = (char *)bson_iter_utf8(&inner_iter, &length);
-            memcpy(auth_info->amf, CORE_HEX(utf8, length, buf), HSS_DB_AMF_LEN);
+            memcpy(auth_info->amf, CORE_HEX(utf8, length, buf), HSS_AMF_LEN);
         }
         else if (!strcmp(key, "rand") && BSON_ITER_HOLDS_UTF8(&inner_iter)) 
         {
@@ -274,6 +276,12 @@ status_t hss_db_subscription_data(
             subscription_data->network_access_mode =
                 bson_iter_int32(&iter);
         }
+        else if (!strcmp(key, "subscribed_rau_tau_timer") &&
+            BSON_ITER_HOLDS_INT32(&iter))
+        {
+            subscription_data->subscribed_rau_tau_timer =
+                bson_iter_int32(&iter);
+        }
         else if (!strcmp(key, "ue_ambr") &&
             BSON_ITER_HOLDS_DOCUMENT(&iter))
         {
@@ -298,11 +306,12 @@ status_t hss_db_subscription_data(
         else if (!strcmp(key, "pdn") &&
             BSON_ITER_HOLDS_ARRAY(&iter))
         {
+            int pdn_index = 0;
+
             bson_iter_recurse(&iter, &child1_iter);
             while(bson_iter_next(&child1_iter))
             {
                 const char *child1_key = bson_iter_key(&child1_iter);
-                int pdn_index = 0;
                 pdn_t *pdn = NULL;
 
                 d_assert(child1_key, return CORE_ERROR, "PDN is not ARRAY");
@@ -399,6 +408,8 @@ status_t hss_db_subscription_data(
 
                 }
             }
+
+            subscription_data->num_of_pdn = pdn_index + 1;
         }
     }
 
