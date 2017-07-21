@@ -636,6 +636,10 @@ mme_ue_t *emm_find_ue_by_message(enb_ue_t *enb_ue, nas_message_t *message)
                     if (!mme_ue)
                     {
                         mme_ue = mme_ue_add(enb_ue);
+                        strncpy(mme_ue->imsi_bcd, imsi_bcd, 
+                                sizeof(mme_ue->imsi_bcd));
+
+                        mme_ue_set_imsi(mme_ue, imsi, imsi_len);
                     }
 
                     break;
