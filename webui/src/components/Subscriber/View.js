@@ -80,7 +80,7 @@ const Body = styled.div`
   display: block;
   margin: 0.5rem;
 
-  height: 320px;
+  height: 400px;
   ${media.mobile`
     height: calc(100vh - 16rem);
   `}
@@ -201,6 +201,12 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
                     <div className="data">
                       {security.rand}
                       <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>RAND</span>
+                    </div>
+                  }
+                  {security.sqn &&
+                    <div className="data">
+                      {security.sqn}
+                      <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>SQN</span>
                     </div>
                   }
                 </div>
