@@ -3,7 +3,7 @@
 #include "core_pool.h"
 #include "core_event.h"
 
-#include "3gpp_common.h"
+#include "types.h"
 #include "gtp_xact.h"
 
 #define SIZE_OF_GTP_XACT_POOL       32

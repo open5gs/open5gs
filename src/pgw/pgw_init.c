@@ -16,6 +16,12 @@ status_t pgw_initialize()
     rv = pgw_context_init();
     if (rv != CORE_OK) return rv;
 
+    rv = pgw_context_parse_config();
+    if (rv != CORE_OK) return rv;
+
+    rv = pgw_ip_pool_generate();
+    if (rv != CORE_OK) return rv;
+
     rv = thread_create(&pgw_sm_thread, NULL, pgw_sm_main, NULL);
     if (rv != CORE_OK) return rv;
 

@@ -90,6 +90,7 @@ typedef struct _sgw_bearer_t {
 } sgw_bearer_t;
 
 CORE_DECLARE(status_t)      sgw_context_init(void);
+CORE_DECLARE(status_t)      sgw_context_parse_config(void);
 CORE_DECLARE(status_t)      sgw_context_final(void);
 
 CORE_DECLARE(sgw_context_t*) sgw_self(void);

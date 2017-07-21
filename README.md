@@ -1,4 +1,4 @@
-CellWire is an implementation of 3GPP EPC(MME, SGW, PGW, HSS)
+NextEPC is an implementation of 3GPP EPC(MME, SGW, PGW, HSS)
 
 The implementation consists in several components:
   - lib/core : the library contains the core of the framework.

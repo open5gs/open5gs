@@ -3,7 +3,7 @@
 #include "core_pkbuf.h"
 #include "core_net.h"
 
-#include "3gpp_common.h"
+#include "types.h"
 #include "gtp_path.h"
 
 #include "pgw_context.h"
@@ -178,9 +178,6 @@ status_t pgw_path_open()
     {
         int rc;
 
-        /* FIXME : dev_name should be configured */
-        char *tun_dev_name = "pgwtun";
-
         /* NOTE : tun device can be created via following command.
          *
          * $ sudo ip tuntap add name pgwtun mode tun
@@ -193,17 +190,17 @@ status_t pgw_path_open()
          */
 
         /* Open Tun interface */
-        rc = net_tuntap_open(&pgw_self()->tun_link, tun_dev_name, 0);
+        rc = net_tuntap_open(&pgw_self()->tun_link, pgw_self()->tun_dev_name, 0);
         if (rc != 0)
         {
-            d_error("Can not open tun(dev : %s)",tun_dev_name);
+            d_error("Can not open tun(dev : %s)", pgw_self()->tun_dev_name);
             return CORE_ERROR;
         }
 
         rc = net_register_link(pgw_self()->tun_link, _gtpv1_tun_recv_cb, NULL);
         if (rc != 0)
         {
-            d_error("Can not register tun(dev : %s)",tun_dev_name);
+            d_error("Can not register tun(dev : %s)", pgw_self()->tun_dev_name);
             net_tuntap_close(pgw_self()->tun_link);
             return CORE_ERROR;
         }

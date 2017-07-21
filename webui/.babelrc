@@ -1,0 +1,16 @@
+{
+  "presets": [
+    "next/babel"
+  ],
+  "plugins": [
+    ["styled-components", { 
+      "ssr": true, 
+      "displayName": false, 
+      "preprocess": false 
+    }],
+    ["polished"],
+    ["module-resolver", {
+      "root": ["./src"]
+    }]
+  ]
+}

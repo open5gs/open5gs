@@ -1,0 +1,35 @@
+/* @import url('https://fonts.googleapis.com/css?family=Roboto'); */
+
+@font-face {
+  font-family: 'Roboto';
+  src: url('../fonts/Roboto-Regular.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Ubuntu';
+  src: url('../fonts/Ubuntu-Regular.ttf') format('truetype');
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  -o-appearance: none;
+  -ms-appearance: none;
+
+  -webkit-font-smoothing: subpixel-antialiased;
+  -moz-font-smoothing: subpixel-antialiased;
+  -o-font-smoothing: subpixel-antialiased;
+  -ms-font-smoothing: subpixel-antialiased;
+
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  background: white;
+}
+
+* {
+  box-sizing: inherit;
+}

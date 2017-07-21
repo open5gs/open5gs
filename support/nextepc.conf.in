@@ -1,0 +1,86 @@
+{
+  DB_URI : "mongodb://localhost/nextepc",
+  LOG_PATH : "@prefix@/var/log/nextepc.log",
+
+  HSS :
+  {
+    S6A_CONFIG_PATH : "/Users/acetcom/Documents/git/nextepc/install/hss_fd.conf"
+  }
+
+  MME :
+  {
+    S6A_CONFIG_PATH : "/Users/acetcom/Documents/git/nextepc/install/mme_fd.conf",
+
+    DEFAULT_PAGING_DRX : "v64",
+#RELATIVE_CAPACITY : 255,
+
+    NETWORK :
+    {
+      S1AP_ADDR : "10.1.35.215",
+      S11_ADDR: "10.1.35.215",
+    }
+    GUMMEI:
+    {
+      PLMN_ID : 
+      {
+        MCC : "001",
+        MNC : "01"
+      }
+      MME_GID : 2,
+      MME_CODE : 1
+    }
+    TAI:
+    {
+      PLMN_ID :
+      {
+        MCC: "001",
+        MNC: "01",
+      }
+      TAC: 12345
+    }
+    SECURITY :
+    {
+      INTEGRITY_ORDER : [ "EIA1", "EIA2", "EIA0" ]
+      CIPHERING_ORDER : [ "EEA0", "EEA1", "EEA2" ]
+    }
+  }
+
+  SGW :
+  {
+    NETWORK :
+    [
+      {
+        S11_ADDR: "10.1.35.216",
+        S1U_ADDR: "10.1.35.216",
+
+        S5C_ADDR: "10.1.35.217",
+        S5U_ADDR: "10.1.35.217"
+      }
+    ]
+  }
+
+  PGW :
+  {
+    NETWORK :
+    {
+      S5C_ADDR: "10.1.35.219",
+      S5U_ADDR: "10.1.35.219"
+    }
+
+    TUNNEL: 
+    {
+      DEV_NAME: "pgwtun"
+    }
+
+    IP_POOL :
+    {
+      CIDR: 45.45.45.0/24
+    }
+
+    DNS :
+    {
+      PRIMARY_ADDR: "8.8.8.8",
+      SECONDARY_ADDR: "4.4.4.4"
+    }
+  }
+}

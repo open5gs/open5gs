@@ -6,6 +6,7 @@
 #include "gtp_path.h"
 #include "s1ap_message.h"
 
+#include "context.h"
 #include "mme_context.h"
 #include "mme_event.h"
 
@@ -31,18 +32,8 @@ pool_declare(mme_pdn_pool, pdn_t, MAX_NUM_OF_UE_PDN);
 
 static int context_initialized = 0;
 
-/* FIXME : Global IP information and port.
- * This should be read from configuration file or arguments
- */
-static char g_mme_ip_addr[20] = "10.1.35.215";
-static unsigned int g_mme_gtp_c_port = GTPV2_C_UDP_PORT;
-
-static char g_sgw_s11_ip_addr[20] = "10.1.35.216";
-static unsigned int g_sgw_s11_port = GTPV2_C_UDP_PORT;
-
 status_t mme_context_init()
 {
-
     d_assert(context_initialized == 0, return CORE_ERROR,
             "MME context already has been context_initialized");
 
@@ -61,44 +52,592 @@ status_t mme_context_init()
     index_init(&mme_bearer_pool, MAX_NUM_OF_UE_BEARER);
     pool_init(&mme_pdn_pool, MAX_NUM_OF_UE_PDN);
 
-    self.mme_addr = inet_addr(g_mme_ip_addr);
-
     self.mme_ue_s1ap_id_hash = hash_make();
     self.imsi_ue_hash = hash_make();
     self.guti_ue_hash = hash_make();
 
-    self.s1ap_addr = self.mme_addr;
-    self.s1ap_port = S1AP_SCTP_PORT;
+    context_initialized = 1;
 
-    mme_sgw_t *sgw = mme_sgw_add();
-    d_assert(sgw, return CORE_ERROR, "Can't add SGW context");
+    return CORE_OK;
+}
 
-    self.s11_addr = self.mme_addr;
-    self.s11_port = g_mme_gtp_c_port;
-
-    /* FIXME : It should be removed : Peer SGW ?*/
-    sgw->gnode.addr = inet_addr(g_sgw_s11_ip_addr);
-    sgw->gnode.port = g_sgw_s11_port;
-
-    /* MCC : 001, MNC : 01 */
-    plmn_id_build(&self.plmn_id, 1, 1, 2); 
-    self.tracking_area_code = 12345;
-    self.default_paging_drx = S1ap_PagingDRX_v64;
+static status_t mme_context_prepare()
+{
     self.relative_capacity = 0xff;
 
-    self.srvd_gummei.num_of_plmn_id = 1;
-    /* MCC : 001, MNC : 01 */
-    plmn_id_build(&self.srvd_gummei.plmn_id[0], 1, 1, 2); 
+    self.s1ap_port = S1AP_SCTP_PORT;
+    self.s11_port = GTPV2_C_UDP_PORT;
 
-    self.srvd_gummei.num_of_mme_gid = 1;
-    self.srvd_gummei.mme_gid[0] = 2;
-    self.srvd_gummei.num_of_mme_code = 1;
-    self.srvd_gummei.mme_code[0] = 1;
+    return CORE_OK;
+}
 
-    self.selected_enc_algorithm = NAS_SECURITY_ALGORITHMS_EEA0;
-    self.selected_int_algorithm = NAS_SECURITY_ALGORITHMS_128_EIA1;
+static status_t mme_context_validation()
+{
+    if (self.s1ap_addr == 0)
+    {
+        d_error("No MME.NEWORK.S1AP_ADDR in '%s'",
+                context_self()->config.path);
+        return CORE_ERROR;
+    }
+    if (self.s11_addr == 0)
+    {
+        d_error("No MME.NEWORK.S11_ADDR in '%s'",
+                context_self()->config.path);
+        return CORE_ERROR;
+    }
 
-    context_initialized = 1;
+    mme_sgw_t *sgw = mme_sgw_first();
+    if (sgw == NULL)
+    {
+        d_error("No SGW.NEWORK in '%s'",
+                context_self()->config.path);
+        return CORE_ERROR;
+    }
+    while(sgw)
+    {
+        if (sgw->gnode.addr == 0)
+        {
+            d_error("No SGW.NEWORK.S11_ADDR in '%s'",
+                    context_self()->config.path);
+            return CORE_ERROR;
+        }
+        sgw = mme_sgw_next(sgw);
+    }
+
+    if (self.max_num_of_served_gummei == 0)
+    {
+        d_error("No MME.GUMMEI in '%s'",
+                context_self()->config.path);
+        return CORE_ERROR;
+    }
+
+    if (self.served_gummei[0].num_of_plmn_id == 0)
+    {
+        d_error("No MME.GUMMEI.PLMN_ID in '%s'",
+                context_self()->config.path);
+        return CORE_ERROR;
+    }
+
+    if (self.served_gummei[0].num_of_mme_gid == 0)
+    {
+        d_error("No MME.GUMMEI.MME_GID in '%s'",
+                context_self()->config.path);
+        return CORE_ERROR;
+    }
+
+    if (self.served_gummei[0].num_of_mme_code == 0)
+    {
+        d_error("No MME.GUMMEI.MME_CODE in '%s'",
+                context_self()->config.path);
+        return CORE_ERROR;
+    }
+
+    if (self.max_num_of_served_tai == 0)
+    {
+        d_error("No MME.TAI(PLMN_ID.MCC.MNC|TAC) in '%s'",
+                context_self()->config.path);
+        return CORE_ERROR;
+    }
+
+    if (self.num_of_integrity_order == 0)
+    {
+        d_error("No MME.SECURITY.INTEGRITY_ORDER in '%s'",
+                context_self()->config.path);
+        return CORE_ERROR;
+    }
+    if (self.num_of_ciphering_order == 0)
+    {
+        d_error("No MME.SECURITY.CIPHERING_ORDER in '%s'",
+                context_self()->config.path);
+        return CORE_ERROR;
+    }
+
+    return CORE_OK;
+}
+
+status_t mme_context_parse_config()
+{
+    status_t rv;
+    config_t *config = &context_self()->config;
+
+    char *json = config->json;
+    jsmntok_t *token = config->token;
+
+    typedef enum { 
+        START, ROOT, 
+        MME_START, MME_ROOT, 
+        SGW_START, SGW_ROOT, 
+        SKIP, STOP 
+    } parse_state;
+    parse_state state = START;
+    parse_state stack = STOP;
+
+    size_t root_tokens = 0;
+    size_t mme_tokens = 0;
+    size_t sgw_tokens = 0;
+    size_t skip_tokens = 0;
+    int i, j, m, n, p, q;
+    int arr, size, arr1, size1;
+
+    rv = mme_context_prepare();
+    if (rv != CORE_OK) return rv;
+
+    for (i = 0, j = 1; j > 0; i++, j--)
+    {
+        jsmntok_t *t = &token[i];
+
+        j += t->size;
+
+        switch (state)
+        {
+            case START:
+            {
+                state = ROOT;
+                root_tokens = t->size;
+
+                break;
+            }
+            case ROOT:
+            {
+                if (jsmntok_equal(json, t, "MME") == 0)
+                {
+                    state = MME_START;
+                }
+                else if (jsmntok_equal(json, t, "SGW") == 0)
+                {
+                    state = SGW_START;
+                }
+                else
+                {
+                    state = SKIP;
+                    stack = ROOT;
+                    skip_tokens = t->size;
+
+                    root_tokens--;
+                    if (root_tokens == 0) state = STOP;
+                }
+
+                break;
+            }
+            case MME_START:
+            {
+                state = MME_ROOT;
+                mme_tokens = t->size;
+
+                break;
+            }
+            case MME_ROOT:
+            {
+                if (jsmntok_equal(json, t, "RELATIVE_CAPACITY") == 0)
+                {
+                    char *v = jsmntok_to_string(json, t+1);
+                    if (v) self.relative_capacity = atoi(v);
+                }
+                else if (jsmntok_equal(json, t, "NETWORK") == 0)
+                {
+                    m = 1;
+                    size = 1;
+
+                    if ((t+1)->type == JSMN_ARRAY)
+                    {
+                        m = 2;
+                    }
+
+                    for (arr = 0; arr < size; arr++)
+                    {
+                        for (n = 1; n > 0; m++, n--)
+                        {
+                            n += (t+m)->size;
+
+                            if (jsmntok_equal(json, t+m, "S1AP_ADDR") == 0)
+                            {
+                                char *v = jsmntok_to_string(json, t+m+1);
+                                if (v) self.s1ap_addr = inet_addr(v);
+                            }
+                            else if (jsmntok_equal(json, t+m, "S1AP_PORT") == 0)
+                            {
+                                char *v = jsmntok_to_string(json, t+m+1);
+                                if (v) self.s1ap_port = atoi(v);
+                            }
+                            else if (jsmntok_equal(json, t+m, "S11_ADDR") == 0)
+                            {
+                                char *v = jsmntok_to_string(json, t+m+1);
+                                if (v) self.s11_addr = inet_addr(v);
+                            }
+                            else if (jsmntok_equal(json, t+m, "S11_PORT") == 0)
+                            {
+                                char *v = jsmntok_to_string(json, t+m+1);
+                                if (v) self.s11_port = atoi(v);
+                            }
+                        }
+                    }
+                }
+                else if (jsmntok_equal(json, t, "GUMMEI") == 0)
+                {
+                    m = 1;
+                    size = 1;
+
+                    if ((t+1)->type == JSMN_ARRAY)
+                    {
+                        m = 2;
+                        size = (t+1)->size;
+                    }
+
+                    self.max_num_of_served_gummei = size;
+                    for (arr = 0; arr < size; arr++)
+                    {
+                        served_gummei_t *gummei = &self.served_gummei[arr];
+                        for (n = 1; n > 0; m++, n--)
+                        {
+                            n += (t+m)->size;
+
+                            if (jsmntok_equal(json, t+m, "PLMN_ID") == 0)
+                            {
+                                p = 1;
+                                size1 = 1;
+
+                                if ((t+m+1)->type == JSMN_ARRAY)
+                                {
+                                    p = 2;
+                                    size1 = (t+m+1)->size;
+                                }
+
+                                for (arr1 = 0; arr1 < size1; arr1++)
+                                {
+                                    char *mcc = NULL, *mnc = NULL;
+                                    for (q = 1; q > 0; p++, q--)
+                                    {
+                                        q += (t+m+p)->size;
+                                        if (jsmntok_equal(
+                                                    json, t+m+p, "MCC") == 0)
+                                        {
+                                            mcc = jsmntok_to_string(
+                                                    json, t+m+p+1);
+                                        }
+                                        else if (jsmntok_equal(
+                                                    json, t+m+p, "MNC") == 0)
+                                        {
+                                            mnc = jsmntok_to_string(
+                                                    json, t+m+p+1);
+                                        }
+                                    }
+
+                                    if (mcc && mnc)
+                                    {
+                                        plmn_id_build(&gummei->
+                                            plmn_id[gummei->num_of_plmn_id],
+                                            atoi(mcc), 
+                                            atoi(mnc), strlen(mnc));
+                                        gummei->num_of_plmn_id++;
+                                    }
+                                }
+                            } 
+                            else if (jsmntok_equal(json, t+m, "MME_GID") == 0)
+                            {
+                                p = 1;
+                                size1 = 1;
+
+                                if ((t+m+1)->type == JSMN_ARRAY)
+                                {
+                                    p = 2;
+                                    size1 = (t+m+1)->size;
+                                }
+
+                                for (arr1 = 0; arr1 < size1; arr1++)
+                                {
+                                    char *v = jsmntok_to_string(json, t+m+p);
+                                    if (v) 
+                                    {
+                                        gummei->mme_gid
+                                            [gummei->num_of_mme_gid] = atoi(v);
+                                        gummei->num_of_mme_gid++;
+                                    }
+                                    p++;
+                                }
+                            }
+                            else if (jsmntok_equal(json, t+m, "MME_CODE") == 0)
+                            {
+                                p = 1;
+                                size1 = 1;
+
+                                if ((t+m+1)->type == JSMN_ARRAY)
+                                {
+                                    p = 2;
+                                    size1 = (t+m+1)->size;
+                                }
+
+                                for (arr1 = 0; arr1 < size1; arr1++)
+                                {
+                                    char *v = jsmntok_to_string(json, t+m+p);
+                                    if (v) 
+                                    {
+                                        gummei->mme_code
+                                            [gummei->num_of_mme_code] = atoi(v);
+                                        gummei->num_of_mme_code++;
+                                    }
+                                    p++;
+                                }
+                            }
+                        }
+                    }
+                }
+                else if (jsmntok_equal(json, t, "TAI") == 0)
+                {
+                    m = 1;
+                    size = 1;
+
+                    if ((t+1)->type == JSMN_ARRAY)
+                    {
+                        m = 2;
+                        size = (t+1)->size;
+                    }
+
+                    for (arr = 0; arr < size; arr++)
+                    {
+                        char *mcc = NULL, *mnc = NULL, *tac = NULL;
+
+                        for (n = 1; n > 0; m++, n--)
+                        {
+                            n += (t+m)->size;
+
+                            if (jsmntok_equal(json, t+m, "PLMN_ID") == 0)
+                            {
+                                p = 1;
+                                size1 = 1;
+
+                                if ((t+m+1)->type == JSMN_ARRAY)
+                                {
+                                    p = 2;
+                                }
+
+                                for (arr1 = 0; arr1 < size1; arr1++)
+                                {
+                                    for (q = 1; q > 0; p++, q--)
+                                    {
+                                        q += (t+m+p)->size;
+                                        if (jsmntok_equal(
+                                                    json, t+m+p, "MCC") == 0)
+                                        {
+                                            mcc = jsmntok_to_string(
+                                                    json, t+m+p+1);
+                                        }
+                                        else if (jsmntok_equal(
+                                                    json, t+m+p, "MNC") == 0)
+                                        {
+                                            mnc = jsmntok_to_string(
+                                                    json, t+m+p+1);
+                                        }
+                                    }
+                                }
+                            }
+                            else if (jsmntok_equal(json, t+m, "TAC") == 0)
+                            {
+                                p = 1;
+
+                                if ((t+m+1)->type == JSMN_ARRAY)
+                                {
+                                    p = 2;
+                                }
+
+                                tac = jsmntok_to_string(json, t+m+p);
+                            }
+                        }
+
+                        if (mcc && mnc && tac)
+                        {
+                            tai_t *tai = &self.served_tai[
+                                self.max_num_of_served_tai];
+                           
+                            plmn_id_build(&tai->plmn_id,
+                                atoi(mcc), atoi(mnc), strlen(mnc));
+                            tai->tac = atoi(tac);
+
+                            self.max_num_of_served_tai++;
+                        }
+                    }
+                }
+                else if (jsmntok_equal(json, t, "SECURITY") == 0)
+                {
+                    for (m = 1, n = 1; n > 0; m++, n--)
+                    {
+                        n += (t+m)->size;
+                        if (jsmntok_equal(json, t+m, "INTEGRITY_ORDER") == 0)
+                        {
+                            p = 1;
+                            size = 1;
+
+                            if ((t+m+1)->type == JSMN_ARRAY)
+                            {
+                                p = 2;
+                                size = (t+m+1)->size;
+                            }
+
+                            for (arr = 0; arr < size; arr++)
+                            {
+                                char *v = jsmntok_to_string(json, t+m+p);
+                                if (v) 
+                                {
+                                    if (strcmp(v, "EIA0") == 0)
+                                    {
+                                        self.integrity_order[arr] = 
+                                            NAS_SECURITY_ALGORITHMS_EIA0;
+                                        self.num_of_integrity_order++;
+                                    }
+                                    else if (strcmp(v, "EIA1") == 0)
+                                    {
+                                        self.integrity_order[arr] = 
+                                            NAS_SECURITY_ALGORITHMS_128_EIA1;
+                                        self.num_of_integrity_order++;
+                                    }
+                                    else if (strcmp(v, "EIA2") == 0)
+                                    {
+                                        self.integrity_order[arr] = 
+                                            NAS_SECURITY_ALGORITHMS_128_EIA2;
+                                        self.num_of_integrity_order++;
+                                    }
+                                    else if (strcmp(v, "EIA3") == 0)
+                                    {
+                                        self.integrity_order[arr] = 
+                                            NAS_SECURITY_ALGORITHMS_128_EIA3;
+                                        self.num_of_integrity_order++;
+                                    }
+                                }
+
+                                p++;
+                            }
+                        }
+                        else if (jsmntok_equal(json, t+m, "CIPHERING_ORDER") == 0)
+                        {
+                            p = 1;
+                            size = 1;
+
+                            if ((t+m+1)->type == JSMN_ARRAY)
+                            {
+                                p = 2;
+                                size = (t+m+1)->size;
+                            }
+
+                            for (arr = 0; arr < size; arr++)
+                            {
+                                char *v = jsmntok_to_string(json, t+m+p);
+                                if (v) 
+                                {
+                                    if (strcmp(v, "EEA0") == 0)
+                                    {
+                                        self.ciphering_order[arr] = 
+                                            NAS_SECURITY_ALGORITHMS_EEA0;
+                                        self.num_of_ciphering_order++;
+                                    }
+                                    else if (strcmp(v, "EEA1") == 0)
+                                    {
+                                        self.ciphering_order[arr] = 
+                                            NAS_SECURITY_ALGORITHMS_128_EEA1;
+                                        self.num_of_ciphering_order++;
+                                    }
+                                    else if (strcmp(v, "EEA2") == 0)
+                                    {
+                                        self.ciphering_order[arr] = 
+                                            NAS_SECURITY_ALGORITHMS_128_EEA2;
+                                        self.num_of_ciphering_order++;
+                                    }
+                                    else if (strcmp(v, "EEA3") == 0)
+                                    {
+                                        self.ciphering_order[arr] = 
+                                            NAS_SECURITY_ALGORITHMS_128_EEA3;
+                                        self.num_of_ciphering_order++;
+                                    }
+                                }
+                                p++;
+                            }
+                        }
+                    }
+                }
+
+                state = SKIP;
+                stack = MME_ROOT;
+                skip_tokens = t->size;
+
+                mme_tokens--;
+                if (mme_tokens == 0) stack = ROOT;
+                break;
+            }
+            case SGW_START:
+            {
+                state = SGW_ROOT;
+                sgw_tokens = t->size;
+
+                break;
+            }
+            case SGW_ROOT:
+            {
+                if (jsmntok_equal(json, t, "NETWORK") == 0)
+                {
+                    m = 1;
+                    size = 1;
+
+                    if ((t+1)->type == JSMN_ARRAY)
+                    {
+                        m = 2;
+                        size = (t+1)->size;
+                    }
+
+                    for (arr = 0; arr < size; arr++)
+                    {
+                        mme_sgw_t *sgw = mme_sgw_add();
+                        d_assert(sgw, return CORE_ERROR, 
+                                "Can't add SGW context");
+                        sgw->gnode.port = GTPV2_C_UDP_PORT;
+
+                        for (n = 1; n > 0; m++, n--)
+                        {
+                            n += (t+m)->size;
+
+                            if (jsmntok_equal(json, t+m, "S11_ADDR") == 0)
+                            {
+                                char *v = jsmntok_to_string(json, t+m+1);
+                                if (v) sgw->gnode.addr = inet_addr(v);
+                            }
+                            else if (jsmntok_equal(json, t+m, "S11_PORT") == 0)
+                            {
+                                char *v = jsmntok_to_string(json, t+m+1);
+                                if (v) sgw->gnode.port = atoi(v);
+                            }
+                        }
+                    }
+                }
+
+                state = SKIP;
+                stack = SGW_ROOT;
+                skip_tokens = t->size;
+
+                sgw_tokens--;
+                if (sgw_tokens == 0) stack = ROOT;
+                break;
+            }
+            case SKIP:
+            {
+                skip_tokens += t->size;
+
+                skip_tokens--;
+                if (skip_tokens == 0) state = stack;
+                break;
+            }
+            case STOP:
+            {
+                break;
+            }
+            default:
+            {
+                d_error("Failed to parse configuration in the state(%u)", 
+                        state);
+                break;
+            }
+
+        }
+    }
+
+    rv = mme_context_validation();
+    if (rv != CORE_OK) return rv;
 
     return CORE_OK;
 }
@@ -106,7 +645,7 @@ status_t mme_context_init()
 status_t mme_context_final()
 {
     d_assert(context_initialized == 1, return CORE_ERROR,
-            "HyperCell context already has been finalized");
+            "MME context already has been finalized");
 
     mme_sgw_remove_all();
     mme_enb_remove_all();

@@ -104,6 +104,7 @@ void pgw_handle_create_session_request(
     gtp_message_t gtp_message;
     c_uint8_t type = GTP_CREATE_SESSION_RESPONSE_TYPE;
     gtp_create_session_response_t *rsp = &gtp_message.create_session_response;
+    pgw_ip_pool_t *ip_pool = NULL;
 
     gtp_cause_t cause;
     gtp_f_teid_t *sgw_s5c_teid, *sgw_s5u_teid;
@@ -194,8 +195,13 @@ void pgw_handle_create_session_request(
     rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
         len = GTP_F_TEID_IPV4_LEN;
 
+    ip_pool = pgw_ip_pool_alloc();
+    d_assert(ip_pool,
+            pgw_sess_remove(sess); pgw_pdn_remove(pdn); return,
+            "No PDN Context");
+
     pdn->paa.pdn_type = GTP_PDN_TYPE_IPV4;
-    pdn->paa.ipv4_addr = inet_addr("45.45.45.113"); /* FIXME */
+    pdn->paa.ipv4_addr = ip_pool->ue_addr;
 
     rsp->pdn_address_allocation.presence = 1;
     rsp->pdn_address_allocation.data = &pdn->paa;

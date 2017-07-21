@@ -1,5 +1,5 @@
-#ifndef __3GPP_COMMON_H__
-#define __3GPP_COMMON_H__
+#ifndef __TYPES_H__
+#define __TYPES_H__
 
 #include "core_list.h"
 

@@ -258,6 +258,7 @@ int logger_start(const char *path)
         core_signal(SIGINT, check_signal);
         core_signal(SIGTERM, check_signal);
 
+        d_print("  Logging '%s'\n", path);
         ret = logger_start_internal(path);
         d_assert(ret == 0, _exit(EXIT_FAILURE), "logger_start() failed");
 

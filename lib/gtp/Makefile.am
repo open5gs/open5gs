@@ -9,14 +9,14 @@ nodist_libgtp_la_SOURCES = \
 	gtp_tlv.c gtp_types.c gtp_path.c gtp_xact.c
 
 libgtp_la_DEPENDENCIES = \
-    $(top_srcdir)/lib/3gpp/lib3gpp.la
+    $(top_srcdir)/lib/base/libbase.la
 
 libgtp_la_LIBADD = \
-    $(top_srcdir)/lib/3gpp/lib3gpp.la
+    $(top_srcdir)/lib/base/libbase.la
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \
-    -I$(top_srcdir)/lib/3gpp
+    -I$(top_srcdir)/lib/base
 
 AM_CFLAGS = \
 	-Wall -Werror

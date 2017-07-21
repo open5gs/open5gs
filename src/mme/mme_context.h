@@ -8,7 +8,7 @@
 #include "core_sha2.h"
 #include "core_hash.h"
 
-#include "3gpp_common.h"
+#include "types.h"
 #include "nas_types.h"
 #include "gtp_xact.h"
 
@@ -25,6 +25,10 @@ extern "C" {
 #define GRP_PER_MME                 256    /* According to spec it is 65535 */
 #define CODE_PER_MME                256    /* According to spec it is 256 */
 
+#define MAX_NUM_OF_SERVED_TAI       16
+#define MAX_NUM_OF_SERVED_GUMMEI    8
+#define MAX_NUM_OF_ALGORITHM        8
+
 typedef struct _served_gummei {
     c_uint32_t      num_of_plmn_id;
     plmn_id_t       plmn_id[MAX_PLMN_ID];
@@ -33,11 +37,9 @@ typedef struct _served_gummei {
     c_uint16_t      mme_gid[GRP_PER_MME];
     c_uint32_t      num_of_mme_code;
     c_uint8_t       mme_code[CODE_PER_MME];
-} srvd_gummei_t;
+} served_gummei_t;
 
 typedef struct _mme_context_t {
-    c_uint32_t      mme_addr;   /* MME local address */
-
     c_uint32_t      s1ap_addr;  /* MME S1AP local address */
     c_uint16_t      s1ap_port;  /* MME S1AP local port */
     net_sock_t      *s1ap_sock; /* MME S1AP local listen socket */
@@ -51,27 +53,29 @@ typedef struct _mme_context_t {
     gtp_xact_ctx_t  gtp_xact_ctx;   /* GTP Transaction Context for MME */
 
     c_uint32_t      mme_ue_s1ap_id; /** mme_ue_s1ap_id generator */
-    plmn_id_t       plmn_id;
 
     /* defined in 'nas_ies.h'
      * #define NAS_SECURITY_ALGORITHMS_EIA0        0
      * #define NAS_SECURITY_ALGORITHMS_128_EEA1    1
      * #define NAS_SECURITY_ALGORITHMS_128_EEA2    2
      * #define NAS_SECURITY_ALGORITHMS_128_EEA3    3 */
-    c_uint8_t       selected_enc_algorithm;
+    c_uint8_t       num_of_ciphering_order;
+    c_uint8_t       ciphering_order[MAX_NUM_OF_ALGORITHM];
     /* defined in 'nas_ies.h'
      * #define NAS_SECURITY_ALGORITHMS_EIA0        0
      * #define NAS_SECURITY_ALGORITHMS_128_EIA1    1
      * #define NAS_SECURITY_ALGORITHMS_128_EIA1    2
      * #define NAS_SECURITY_ALGORITHMS_128_EIA3    3 */
-    c_uint8_t       selected_int_algorithm;
+    c_uint8_t       num_of_integrity_order;
+    c_uint8_t       integrity_order[MAX_NUM_OF_ALGORITHM];
 
     /* S1SetupRequest */
-    c_uint16_t      tracking_area_code;
-    c_uint16_t      default_paging_drx;
+    c_uint8_t       max_num_of_served_tai;
+    tai_t           served_tai[MAX_NUM_OF_SERVED_TAI];
 
     /* S1SetupResponse */
-    srvd_gummei_t   srvd_gummei;
+    c_uint8_t       max_num_of_served_gummei;
+    served_gummei_t served_gummei[MAX_NUM_OF_SERVED_GUMMEI];
     c_uint8_t       relative_capacity;
 
     list_t          sgw_list;
@@ -178,6 +182,19 @@ struct _mme_ue_t {
         c_uint32_t i32;
     } ul_count;
 
+    /* defined in 'nas_ies.h'
+     * #define NAS_SECURITY_ALGORITHMS_EIA0        0
+     * #define NAS_SECURITY_ALGORITHMS_128_EEA1    1
+     * #define NAS_SECURITY_ALGORITHMS_128_EEA2    2
+     * #define NAS_SECURITY_ALGORITHMS_128_EEA3    3 */
+    c_uint8_t       selected_enc_algorithm;
+    /* defined in 'nas_ies.h'
+     * #define NAS_SECURITY_ALGORITHMS_EIA0        0
+     * #define NAS_SECURITY_ALGORITHMS_128_EIA1    1
+     * #define NAS_SECURITY_ALGORITHMS_128_EIA1    2
+     * #define NAS_SECURITY_ALGORITHMS_128_EIA3    3 */
+    c_uint8_t       selected_int_algorithm;
+
     /* HSS Info */
     c_uint32_t      ula_flags;
     c_uint32_t      max_bandwidth_ul; /* bits per seconds */
@@ -244,6 +261,7 @@ typedef struct _mme_bearer_t {
 } mme_bearer_t;
 
 CORE_DECLARE(status_t)      mme_context_init(void);
+CORE_DECLARE(status_t)      mme_context_parse_config(void);
 CORE_DECLARE(status_t)      mme_context_final(void);
 CORE_DECLARE(mme_context_t*) mme_self(void);
 

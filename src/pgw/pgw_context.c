@@ -6,8 +6,8 @@
 
 #include "gtp_path.h"
 
+#include "context.h"
 #include "pgw_context.h"
-
 
 static pgw_context_t self;
 
@@ -15,26 +15,14 @@ index_declare(pgw_sess_pool, pgw_sess_t, MAX_NUM_OF_UE);
 index_declare(pgw_bearer_pool, pgw_bearer_t, MAX_NUM_OF_UE_BEARER);
 
 pool_declare(pgw_pdn_pool, pdn_t, MAX_NUM_OF_UE_PDN);
+pool_declare(pgw_ip_pool_pool, pgw_ip_pool_t, MAX_NUM_OF_UE);
 
 static int context_initiaized = 0;
-
-/* FIXME : Global IP information and port.
- * This should be read from configuration file or arguments
- */
-
-/* loop back */
-static char g_sgw_s5c_ip_addr[20] = "10.1.35.217";
-static unsigned int g_sgw_s5c_port = GTPV2_C_UDP_PORT;
-
-static char g_pgw_ip_addr[20] = "10.1.35.219";
-static unsigned int g_pgw_s5c_port = GTPV2_C_UDP_PORT;
-
-static unsigned int g_pgw_s5u_port = GTPV1_U_UDP_PORT;
 
 status_t pgw_context_init()
 {
     d_assert(context_initiaized == 0, return CORE_ERROR,
-            "MME context already has been initialized");
+            "PGW context already has been initialized");
 
     memset(&self, 0, sizeof(pgw_context_t));
 
@@ -43,25 +31,337 @@ status_t pgw_context_init()
     index_init(&pgw_bearer_pool, MAX_NUM_OF_UE_BEARER);
 
     pool_init(&pgw_pdn_pool, MAX_NUM_OF_UE_PDN);
+    pool_init(&pgw_ip_pool_pool, MAX_NUM_OF_UE);
 
-    self.pgw_addr = inet_addr(g_pgw_ip_addr);
-
-    self.s5c_addr = self.pgw_addr;
-    self.s5c_port = g_pgw_s5c_port;
-
-    /* FIXME : It shoud be removed : Peer SGW ?*/
-    self.s5c_node.addr = inet_addr(g_sgw_s5c_ip_addr);
-    self.s5c_node.port = g_sgw_s5c_port;
     list_init(&self.s5c_node.local_list);
     list_init(&self.s5c_node.remote_list);
 
-    self.s5u_addr = self.pgw_addr;
-    self.s5u_port = g_pgw_s5u_port;
-
-    self.primary_dns_addr = inet_addr("8.8.8.8");
-    self.secondary_dns_addr = inet_addr("4.4.4.4");
-
     context_initiaized = 1;
+
+    return CORE_OK;
+}
+
+static status_t pgw_context_prepare()
+{
+    self.s5c_port = GTPV2_C_UDP_PORT;
+    self.s5c_node.port = GTPV2_C_UDP_PORT;
+
+    self.s5u_port = GTPV1_U_UDP_PORT;
+
+    return CORE_OK;
+}
+
+static status_t pgw_context_validation()
+{
+    if (self.s5c_node.addr == 0)
+    {
+        d_error("No SGW.NEWORK.S5C_ADDR in '%s'",
+                context_self()->config.path);
+        return CORE_ERROR;
+    }
+    if (self.s5c_addr == 0)
+    {
+        d_error("No PGW.NEWORK.S5C_ADDR in '%s'",
+                context_self()->config.path);
+        return CORE_ERROR;
+    }
+    if (self.s5u_addr == 0)
+    {
+        d_error("No PGW.NEWORK.S5U_ADDR in '%s'",
+                context_self()->config.path);
+        return CORE_ERROR;
+    }
+    if (self.tun_dev_name == NULL)
+    {
+        d_error("No PGW.TUNNEL.DEV_NAME in '%s'",
+                context_self()->config.path);
+        return CORE_ERROR;
+    }
+    if (self.num_of_ip_pool == 0)
+    {
+        d_error("No PGW.IP_POOL.CIDR in '%s'",
+                context_self()->config.path);
+        return CORE_ERROR;
+    }
+    if (self.primary_dns_addr == 0)
+    {
+        d_error("No PGW.DNS.PRIMARY_ADDR in '%s'",
+                context_self()->config.path);
+        return CORE_ERROR;
+    }
+    return CORE_OK;
+}
+
+status_t pgw_context_parse_config()
+{
+    status_t rv;
+    config_t *config = &context_self()->config;
+
+    char *json = config->json;
+    jsmntok_t *token = config->token;
+
+    typedef enum {
+        START, ROOT,
+        SGW_START, SGW_ROOT,
+        PGW_START, PGW_ROOT,
+        SKIP, STOP
+    } parse_state;
+    parse_state state = START;
+    parse_state stack = STOP;
+
+    size_t root_tokens = 0;
+    size_t sgw_tokens = 0;
+    size_t pgw_tokens = 0;
+    size_t skip_tokens = 0;
+    int i, j, m, n;
+    int arr, size;
+
+    rv = pgw_context_prepare();
+    if (rv != CORE_OK) return rv;
+
+    for (i = 0, j = 1; j > 0; i++, j--)
+    {
+        jsmntok_t *t = &token[i];
+
+        j += t->size;
+
+        switch (state)
+        {
+            case START:
+            {
+                state = ROOT;
+                root_tokens = t->size;
+
+                break;
+            }
+            case ROOT:
+            {
+                if (jsmntok_equal(json, t, "SGW") == 0)
+                {
+                    state = SGW_START;
+                }
+                else if (jsmntok_equal(json, t, "PGW") == 0)
+                {
+                    state = PGW_START;
+                }
+                else
+                {
+                    state = SKIP;
+                    stack = ROOT;
+                    skip_tokens = t->size;
+
+                    root_tokens--;
+                    if (root_tokens == 0) state = STOP;
+                }
+                break;
+            }
+            case SGW_START:
+            {
+                state = SGW_ROOT;
+                sgw_tokens = t->size;
+
+                break;
+            }
+            case SGW_ROOT:
+            {
+                if (jsmntok_equal(json, t, "NETWORK") == 0)
+                {
+                    m = 1;
+                    size = 1;
+
+                    if ((t+1)->type == JSMN_ARRAY)
+                    {
+                        m = 2;
+                    }
+
+                    for (arr = 0; arr < size; arr++)
+                    {
+                        for (n = 1; n > 0; m++, n--)
+                        {
+                            n += (t+m)->size;
+
+                            if (jsmntok_equal(json, t+m, "S5C_ADDR") == 0)
+                            {
+                                char *v = jsmntok_to_string(json, t+m+1);
+                                if (v) self.s5c_node.addr = inet_addr(v);
+                            }
+                            else if (jsmntok_equal(json, t+m, "S5C_PORT") == 0)
+                            {
+                                char *v = jsmntok_to_string(json, t+m+1);
+                                if (v) self.s5c_node.port = atoi(v);
+                            }
+                        }
+                    }
+                }
+
+                state = SKIP;
+                stack = SGW_ROOT;
+                skip_tokens = t->size;
+
+                sgw_tokens--;
+                if (sgw_tokens == 0) stack = ROOT;
+                break;
+            }
+            case PGW_START:
+            {
+                state = PGW_ROOT;
+                pgw_tokens = t->size;
+
+                break;
+            }
+            case PGW_ROOT:
+            {
+                if (jsmntok_equal(json, t, "NETWORK") == 0)
+                {
+                    m = 1;
+                    size = 1;
+
+                    if ((t+1)->type == JSMN_ARRAY)
+                    {
+                        m = 2;
+                    }
+
+                    for (arr = 0; arr < size; arr++)
+                    {
+                        for (n = 1; n > 0; m++, n--)
+                        {
+                            n += (t+m)->size;
+
+                            if (jsmntok_equal(json, t+m, "S5C_ADDR") == 0)
+                            {
+                                char *v = jsmntok_to_string(json, t+m+1);
+                                if (v) self.s5c_addr = inet_addr(v);
+                            }
+                            else if (jsmntok_equal(json, t+m, "S5C_PORT") == 0)
+                            {
+                                char *v = jsmntok_to_string(json, t+m+1);
+                                if (v) self.s5c_port = atoi(v);
+                            }
+                            else if (jsmntok_equal(json, t+m, "S5U_ADDR") == 0)
+                            {
+                                char *v = jsmntok_to_string(json, t+m+1);
+                                if (v) self.s5u_addr = inet_addr(v);
+                            }
+                            else if (jsmntok_equal(json, t+m, "S5U_PORT") == 0)
+                            {
+                                char *v = jsmntok_to_string(json, t+m+1);
+                                if (v) self.s5u_port = atoi(v);
+                            }
+                        }
+                    }
+                }
+                else if (jsmntok_equal(json, t, "TUNNEL") == 0)
+                {
+                    m = 1;
+                    size = 1;
+
+                    if ((t+1)->type == JSMN_ARRAY)
+                    {
+                        m = 2;
+                    }
+
+                    for (arr = 0; arr < size; arr++)
+                    {
+                        for (n = 1; n > 0; m++, n--)
+                        {
+                            n += (t+m)->size;
+
+                            if (jsmntok_equal(json, t+m, "DEV_NAME") == 0)
+                            {
+                                char *v = jsmntok_to_string(json, t+m+1);
+                                self.tun_dev_name = v;
+                            }
+                        }
+                    }
+                }
+                else if (jsmntok_equal(json, t, "IP_POOL") == 0)
+                {
+                    m = 1;
+                    size = 1;
+
+                    if ((t+1)->type == JSMN_ARRAY)
+                    {
+                        m = 2;
+                        size = (t+1)->size;
+                    }
+
+                    for (arr = 0; arr < size; arr++)
+                    {
+                        for (n = 1; n > 0; m++, n--)
+                        {
+                            n += (t+m)->size;
+
+                            if (jsmntok_equal(json, t+m, "CIDR") == 0)
+                            {
+                                char *v = jsmntok_to_string(json, t+m+1);
+                                if (v)
+                                {
+                                    char *prefix = strsep(&v, "/");
+                                    if (prefix)
+                                    {
+                                        self.ip_pool[self.num_of_ip_pool].prefix
+                                            = inet_addr(prefix);
+                                        self.ip_pool[self.num_of_ip_pool].mask
+                                            = atoi(v);
+                                    }
+                                }
+
+                                self.num_of_ip_pool++;
+                            }
+                        }
+                    }
+                }
+                else if (jsmntok_equal(json, t, "DNS") == 0)
+                {
+                    for (m = 1, n = 1; n > 0; m++, n--)
+                    {
+                        n += (t+m)->size;
+                        if (jsmntok_equal(json, t+m, "PRIMARY_ADDR") == 0)
+                        {
+                            char *v = jsmntok_to_string(json, t+m+1);
+                            if (v) self.primary_dns_addr = inet_addr(v);
+                        }
+                        else if (jsmntok_equal(
+                                    json, t+m, "SECONDARY_ADDR") == 0)
+                        {
+                            char *v = jsmntok_to_string(json, t+m+1);
+                            if (v) self.secondary_dns_addr = inet_addr(v);
+                        }
+                    }
+                }
+
+                state = SKIP;
+                stack = PGW_ROOT;
+                skip_tokens = t->size;
+
+                pgw_tokens--;
+                if (pgw_tokens == 0) stack = ROOT;
+                break;
+            }
+            case SKIP:
+            {
+                skip_tokens += t->size;
+
+                skip_tokens--;
+                if (skip_tokens == 0) state = stack;
+                break;
+            }
+            case STOP:
+            {
+                break;
+            }
+            default:
+            {
+                d_error("Failed to parse configuration in the state(%u)", 
+                        state);
+                break;
+            }
+
+        }
+    }
+
+    rv = pgw_context_validation();
+    if (rv != CORE_OK) return rv;
 
     return CORE_OK;
 }
@@ -69,7 +369,7 @@ status_t pgw_context_init()
 status_t pgw_context_final()
 {
     d_assert(context_initiaized == 1, return CORE_ERROR,
-            "HyperCell context already has been finalized");
+            "PGW context already has been finalized");
 
     gtp_xact_delete_all(&self.s5c_node);
     pgw_sess_remove_all();
@@ -77,7 +377,11 @@ status_t pgw_context_final()
     d_print("%d not freed in pgw_sess_pool[%d] in PGW-Context\n",
             index_size(&pgw_sess_pool) - pool_avail(&pgw_sess_pool),
             index_size(&pgw_sess_pool));
+    d_print("%d not freed in pgw_ip_pool[%d] in PGW-Context\n",
+            index_size(&pgw_ip_pool_pool) - pool_avail(&pgw_ip_pool_pool),
+            index_size(&pgw_ip_pool_pool));
 
+    pool_final(&pgw_ip_pool_pool);
     pool_final(&pgw_pdn_pool);
 
     index_final(&pgw_bearer_pool);
@@ -400,4 +704,61 @@ pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
     }
 
     return bearer;
+}
+
+status_t pgw_ip_pool_generate()
+{
+    int i, j, k;
+    int pool_index = 0;
+
+    for (i = 0; i < self.num_of_ip_pool; i++)
+    {
+        c_uint32_t mask = htonl(0xffffffff << (32 - self.ip_pool[i].mask));
+        c_uint32_t prefix = self.ip_pool[i].prefix & mask;
+
+        /* Exclude X.X.X.0, X.X.X.255 addresses from ip pool */
+        c_uint32_t exclude_mask[] = { 0, 255 };
+
+        for (j = 1; j < (0xffffffff >> self.ip_pool[i].mask) && 
+                pool_index < MAX_NUM_OF_UE; j++)
+        {
+            int exclude = 0;
+            pgw_ip_pool_t *ip_pool = &pgw_ip_pool_pool.pool[pool_index];
+            ip_pool->ue_addr = prefix + htonl(j);
+
+            for (k = 0; k < sizeof(exclude_mask)/sizeof(exclude_mask[0]); k++)
+            {
+                if ((htonl(ip_pool->ue_addr) & 0x000000ff) == exclude_mask[k])
+                {
+                    exclude = 1;
+                }
+            }
+
+            if (exclude)
+            {
+                continue;
+            }
+            pool_index++;
+        }
+    }
+
+    return CORE_OK;
+}
+pgw_ip_pool_t* pgw_ip_pool_alloc()
+{
+    pgw_ip_pool_t *ip_pool = NULL;
+
+    pool_alloc_node(&pgw_ip_pool_pool, &ip_pool);
+    d_assert(ip_pool, return NULL, "IP Pool context allocation failed");
+
+    list_append(&self.ip_pool_list, ip_pool);
+
+    return ip_pool;
+}
+status_t pgw_ip_pool_free(pgw_ip_pool_t *ip_pool)
+{
+    list_remove(&self.ip_pool_list, ip_pool);
+    pool_free_node(&pgw_ip_pool_pool, ip_pool);
+
+    return CORE_OK;
 }

@@ -16,7 +16,7 @@
 
 #include "core_debug.h"
 
-#include "cellwire.h"
+#include "app.h"
 #include "mme_context.h"
 #include "abts.h"
 #include "testutil.h"
@@ -38,16 +38,12 @@ void core_assert_ok(abts_case* tc, const char* context, status_t rv,
 
 void test_terminate(void)
 {
-    cellwire_terminate();
+    app_terminate();
 }
 
 void test_initialize(void)
 {
-    cellwire_initialize(NULL, NULL);
-
-#if 0
-    inet_pton(AF_INET, "10.1.35.215", &mme_self()->s1ap_addr);
-#endif
+    app_initialize(NULL, NULL);
 
     atexit(test_terminate);
 }

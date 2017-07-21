@@ -4,16 +4,31 @@ ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = lib src test
 
-bin_PROGRAMS = cellwired
+bin_PROGRAMS = mmed hssd sgwd pgwd epcd
 
-dist_cellwired_SOURCES = main.c 
+dist_mmed_SOURCES = main.c 
+mmed_LDADD = $(top_srcdir)/src/libmme.la
 
-cellwired_LDADD = \
-    $(top_srcdir)/src/libcellwire.la
+dist_hssd_SOURCES = main.c 
+hssd_LDADD = $(top_srcdir)/src/libhss.la
+
+dist_sgwd_SOURCES = main.c 
+sgwd_LDADD = $(top_srcdir)/src/libsgw.la
+
+dist_pgwd_SOURCES = main.c 
+pgwd_LDADD = $(top_srcdir)/src/libpgw.la
+
+dist_epcd_SOURCES = main.c 
+epcd_LDADD = $(top_srcdir)/src/libepc.la
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \
     -I$(top_srcdir)/src
+
+dist_sysconf_DATA = support/nextepc.conf
+
+install-data-hook:
+	$(MKDIR_P) $(prefix)/var/log
 
 CLEANFILES = symtbl.c
 DISTCLEANFILES = $(DIST_ARCHIVES)

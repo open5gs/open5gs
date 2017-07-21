@@ -98,6 +98,21 @@ CORE_DECLARE(c_uint64_t) core_buffer_to_uint64(void *buffer, int size);
 
 CORE_DECLARE(void *) core_bcd_to_buffer(c_int8_t *in, void *out, int *out_len);
 
+/*
+ * Apache's "replacement" for the strncpy() function. We roll our
+ * own to implement these specific changes:
+ *   (1) strncpy() doesn't always null terminate and we want it to.
+ *   (2) strncpy() null fills, which is bogus, esp. when copy 8byte
+ *       strings into 8k blocks.
+ *   (3) Instead of returning the pointer to the beginning of
+ *       the destination string, we return a pointer to the
+ *       terminating '\0' to allow us to "check" for truncation
+ *   (4) If src is NULL, null terminate dst (empty string copy)
+ *
+ * apr_cpystrn() follows the same call structure as strncpy().
+ */
+CORE_DECLARE(char *)core_cpystrn(char *dst, const char *src, size_t dst_size);
+
 /** @} */
 
 #ifdef __cplusplus

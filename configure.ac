@@ -8,7 +8,7 @@ dnl This program is distributed in the hope that it will be useful, but
 dnl WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 dnl implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-AC_INIT([CELLWIRE], [0.1.0], [acetcom@gmail.com])
+AC_INIT([NEXTEPC], [0.1.0], [acetcom@gmail.com])
 
 CORE_CONFIG_NICE(config.nice)
 
@@ -41,15 +41,15 @@ AC_SUBST(OSCPPFLAGS)
 AC_SUBST(OSDIR)
 
 AH_TOP([
-#ifndef __CELLWIRE_CONFIG_H__
-#define __CELLWIRE_CONFIG_H__
+#ifndef __NEXTEPC_CONFIG_H__
+#define __NEXTEPC_CONFIG_H__
 /* need this, because some autoconf tests rely on this (e.g. stpcpy)
  * and it should be used for new programs  */
 #define _GNU_SOURCE  1
 ])
 
 AH_BOTTOM([
-#endif /* __CELLWIRE_CONFIG_H__ */
+#endif /* __NEXTEPC_CONFIG_H__ */
 ])
 
 AH_VERBATIM([_REENTRANT],
@@ -60,8 +60,7 @@ AH_VERBATIM([_REENTRANT],
 #endif
 ])
 
-dnl Checks for programs.
-# We need a C compiler.
+dnl Checks CC and freinds
 AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_INSTALL
@@ -291,6 +290,9 @@ AC_CHECK_LIB([fdcore], [fd_core_initialize], [LIBS="${LIBS} -lfdcore"])
 AC_CHECK_LIB([fdproto], [fd_libproto_init], [LIBS="${LIBS} -lfdproto"])
 AC_CHECK_LIB([gnutls], [gnutls_global_init], [LIBS="${LIBS} -lgnutls"])
 
+PKG_CHECK_MODULES([MONGOC], libmongoc-1.0 >= 1.6.3)
+LIBS="$LIBS $MONGOC_LIBS"
+
 #####################
 #### Conclusion. ####
 #####################
@@ -305,7 +307,7 @@ esac
 AC_CONFIG_FILES([lib/core/test/Makefile])
 AC_CONFIG_FILES([lib/core/Makefile])
 AC_CONFIG_FILES([lib/logger/Makefile])
-AC_CONFIG_FILES([lib/3gpp/Makefile])
+AC_CONFIG_FILES([lib/base/Makefile])
 AC_CONFIG_FILES([lib/s1ap/asn1c/Makefile])
 AC_CONFIG_FILES([lib/s1ap/Makefile])
 AC_CONFIG_FILES([lib/nas/Makefile])
@@ -319,11 +321,12 @@ AC_CONFIG_FILES([src/sgw/Makefile])
 AC_CONFIG_FILES([src/pgw/Makefile])
 AC_CONFIG_FILES([src/Makefile])
 AC_CONFIG_FILES([test/Makefile])
+AC_CONFIG_FILES([support/nextepc.conf])
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 
 echo "
-CellWire configuration
+NextEPC configuration
 --------------------
 version                 : ${PACKAGE_VERSION}
 host                    : ${host}
@@ -332,4 +335,5 @@ compiler                : ${CC}
 compiler flags          : ${CFLAGS}
 linker flags            : ${LDFLAGS} ${LIBS}
 config file directory   : `eval echo \`echo ${sysconfdir}\``
+log file directory      : `eval echo \`echo ${prefix}/var/log\``
 "

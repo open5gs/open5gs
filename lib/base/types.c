@@ -1,7 +1,7 @@
-#define TRACE_MODULE _3gpp_common
+#define TRACE_MODULE _types
 
 #include "core_debug.h"
-#include "3gpp_common.h"
+#include "types.h"
 
 #define PLMN_ID_DIGIT1(x) (((x) / 100) % 10)
 #define PLMN_ID_DIGIT2(x) (((x) / 10) % 10)

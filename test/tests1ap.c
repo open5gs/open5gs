@@ -80,22 +80,22 @@ status_t tests1ap_build_setup_req(pkbuf_t **pkbuf, c_uint32_t enb_id)
 
     s1ap_uint32_to_ENB_ID(S1ap_ENB_ID_PR_macroENB_ID, enb_id, 
         &ies->global_ENB_ID.eNB_ID);
-    s1ap_buffer_to_OCTET_STRING(
-        &mme_self()->plmn_id, PLMN_ID_LEN, &ies->global_ENB_ID.pLMNidentity);
+    s1ap_buffer_to_OCTET_STRING(&mme_self()->served_tai[0].plmn_id,
+            PLMN_ID_LEN, &ies->global_ENB_ID.pLMNidentity);
 
     supportedTA = (S1ap_SupportedTAs_Item_t *)
         core_calloc(1, sizeof(S1ap_SupportedTAs_Item_t));
     s1ap_uint16_to_OCTET_STRING(
-            mme_self()->tracking_area_code, &supportedTA->tAC);
+            mme_self()->served_tai[0].tac, &supportedTA->tAC);
     plmnIdentity = (S1ap_PLMNidentity_t *)
         core_calloc(1, sizeof(S1ap_PLMNidentity_t));
-    s1ap_buffer_to_OCTET_STRING(
-        &mme_self()->plmn_id, PLMN_ID_LEN, plmnIdentity);
+    s1ap_buffer_to_OCTET_STRING(&mme_self()->served_tai[0].plmn_id,
+            PLMN_ID_LEN, plmnIdentity);
     ASN_SEQUENCE_ADD(&supportedTA->broadcastPLMNs, plmnIdentity);
 
     ASN_SEQUENCE_ADD(&ies->supportedTAs, supportedTA);
 
-    ies->defaultPagingDRX = mme_self()->default_paging_drx;
+    ies->defaultPagingDRX = S1ap_PagingDRX_v64;
 
     message.direction = S1AP_PDU_PR_initiatingMessage;
     message.procedureCode = S1ap_ProcedureCode_id_S1Setup;

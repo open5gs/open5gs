@@ -2,21 +2,22 @@ Prerequisite
 ============
 
     sudo apt-get install git cscope gdb
-    sudo apt-get install autoconf libtool m4
+    sudo apt-get install autoconf libtool m4 pkg-config
     sudo apt-get install libsctp-dev
     sudo apt-get install freediameter-dev
+    sudo apt-get install libmongoc-1.0-0
 
 
 Build from Git
 ==============
 
     test -f configure || autoreconf -iv
-    CFLAGS='-g3' ./configure --prefix=$HOME/Documents/git/cellwire/install
+    CFLAGS='-g3' ./configure --prefix=$HOME/Documents/git/nextepc/install
     make -j `nproc`
     sudo ip tuntap add name pgwtun mode tun
     sudo ./scripts/linux_netconfig.sh
-    sudo ./test/testcellwire
-    ./cellwired
+    sudo ./test/testnextepc
+    ./nextepcd
 
 
 
@@ -43,3 +44,7 @@ Install Tuntap for Mac OS X
  - Install tuntap_20150118.pkg in /usr/local/Caskroom/tuntap/20150118
  - sudo kextload /Library/Extensions/tun.kext
 
+Install FreeDiameter, MongoDB C driver
+===========================================
+ - brew install freediamter
+ - brew install mongo-c-driver

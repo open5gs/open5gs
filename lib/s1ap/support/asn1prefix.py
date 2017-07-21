@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2017, CellWire Group
+# Copyright (c) 2017, NextEPC Group
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without

@@ -73,7 +73,6 @@ void emm_handle_attach_request(
             mme_ue, &attach_request->esm_message_container);
 
     /* Store UE specific information */
-    memcpy(&mme_ue->visited_plmn_id, &mme_self()->plmn_id, PLMN_ID_LEN);
     if (attach_request->presencemask &
         NAS_ATTACH_REQUEST_LAST_VISITED_REGISTERED_TAI_PRESENT)
     {
@@ -83,6 +82,12 @@ void emm_handle_attach_request(
         memcpy(&mme_ue->visited_plmn_id, 
                 &last_visited_registered_tai->plmn_id,
                 PLMN_ID_LEN);
+    }
+    else
+    {
+        /* FIXME : what will do if we don't know last visited plmn_id */
+        memcpy(&mme_ue->visited_plmn_id,
+                &mme_self()->served_tai[0].plmn_id, PLMN_ID_LEN);
     }
 
     memcpy(&mme_ue->ue_network_capability, 
@@ -253,6 +258,7 @@ void emm_handle_authentication_response(mme_ue_t *mme_ue,
     mme_enb_t *enb = NULL;
     enb_ue_t *enb_ue = NULL;
     pkbuf_t *emmbuf = NULL, *s1apbuf = NULL;
+    int i;
 
     nas_authentication_response_parameter_t *authentication_response_parameter =
         &authentication_response->authentication_response_parameter;
@@ -292,10 +298,29 @@ void emm_handle_authentication_response(mme_ue_t *mme_ue,
     message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
     message.emm.h.message_type = NAS_SECURITY_MODE_COMMAND;
 
-    selected_nas_security_algorithms->type_of_ciphering_algorithm =
-        mme_self()->selected_enc_algorithm;
+    for (i = 0; i < mme_self()->num_of_integrity_order; i++)
+    {
+        if (mme_ue->ue_network_capability.eia & 
+                (0x80 >> mme_self()->integrity_order[i]))
+        {
+            mme_ue->selected_int_algorithm = mme_self()->integrity_order[i];
+            break;
+        }
+    }
+    for (i = 0; i < mme_self()->num_of_ciphering_order; i++)
+    {
+        if (mme_ue->ue_network_capability.eea & 
+                (0x80 >> mme_self()->ciphering_order[i]))
+        {
+            mme_ue->selected_enc_algorithm = mme_self()->ciphering_order[i];
+            break;
+        }
+    }
+
     selected_nas_security_algorithms->type_of_integrity_protection_algorithm =
-        mme_self()->selected_int_algorithm;
+        mme_ue->selected_int_algorithm;
+    selected_nas_security_algorithms->type_of_ciphering_algorithm =
+        mme_ue->selected_enc_algorithm;
 
     nas_key_set_identifier->tsc = 0;
     nas_key_set_identifier->nas_key_set_identifier = 0;
@@ -314,9 +339,9 @@ void emm_handle_authentication_response(mme_ue_t *mme_ue,
         (mme_ue->ms_network_capability.gea1 << 6) | 
         mme_ue->ms_network_capability.extended_gea;
 
-    mme_kdf_nas(MME_KDF_NAS_INT_ALG, mme_self()->selected_int_algorithm,
+    mme_kdf_nas(MME_KDF_NAS_INT_ALG, mme_ue->selected_int_algorithm,
             mme_ue->kasme, mme_ue->knas_int);
-    mme_kdf_nas(MME_KDF_NAS_ENC_ALG, mme_self()->selected_enc_algorithm,
+    mme_kdf_nas(MME_KDF_NAS_ENC_ALG, mme_ue->selected_enc_algorithm,
             mme_ue->kasme, mme_ue->knas_enc);
     mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, mme_ue->kenb);
 
