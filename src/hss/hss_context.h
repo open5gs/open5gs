@@ -2,6 +2,7 @@
 #define __HSS_CONTEXT_H__
 
 #include "core_errno.h"
+#include "core_mutex.h"
 #include "types.h"
 
 #ifdef __cplusplus
@@ -47,7 +48,7 @@ typedef struct _hss_db_subscription_data_t {
 
 typedef struct _hss_context_t {
     void *subscriberCollection;
-
+    mutex_id db_lock;
 } hss_context_t;
 
 CORE_DECLARE(status_t) hss_context_init(void);

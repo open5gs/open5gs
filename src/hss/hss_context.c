@@ -24,6 +24,12 @@ status_t hss_context_init(void)
     /* Initialize HSS context */
     memset(&self, 0, sizeof(hss_context_t));
 
+    if (mutex_create(&self.db_lock, MUTEX_DEFAULT) != CORE_OK)
+    {
+        d_error("Mutex creation failed");
+        return CORE_ERROR;
+    }
+
     context_initialized = 1;
 
 	return CORE_OK;
@@ -33,6 +39,8 @@ status_t hss_context_final(void)
 {
     d_assert(context_initialized == 1, return CORE_ERROR,
             "HSS context already has been finalized");
+
+    mutex_delete(self.db_lock);
 
     context_initialized = 0;
 
@@ -67,8 +75,9 @@ status_t hss_db_final()
 status_t hss_db_auth_info(
     char *imsi_bcd, hss_db_auth_info_t *auth_info)
 {
-    mongoc_cursor_t *cursor;
-    bson_t *query;
+    status_t rv = CORE_OK;
+    mongoc_cursor_t *cursor = NULL;
+    bson_t *query = NULL;
     bson_error_t error;
     const bson_t *document;
     bson_iter_t iter;
@@ -80,6 +89,8 @@ status_t hss_db_auth_info(
     d_assert(imsi_bcd, return CORE_ERROR, "Null param");
     d_assert(auth_info, return CORE_ERROR, "Null param");
 
+    mutex_lock(self.db_lock);
+
     query = BCON_NEW("imsi", BCON_UTF8(imsi_bcd));
     cursor = mongoc_collection_find_with_opts(
             self.subscriberCollection, query, NULL, NULL);
@@ -89,18 +100,16 @@ status_t hss_db_auth_info(
     {
         d_error("Cursor Failure: %s", error.message);
 
-        bson_destroy(query);
-        return CORE_ERROR;
+        rv = CORE_ERROR;
+        goto out;
     }
 
     if (!bson_iter_init_find(&iter, document, "security"))
     {
         d_error("No 'security' field in this document");
 
-        bson_destroy(query);
-        mongoc_cursor_destroy(cursor);
-        return CORE_ERROR;
-
+        rv = CORE_ERROR;
+        goto out;
     }
 
     memset(auth_info, 0, sizeof(hss_db_auth_info_t));
@@ -135,22 +144,28 @@ status_t hss_db_auth_info(
         }
     }
 
-    bson_destroy(query);
-    mongoc_cursor_destroy(cursor);
+out:
+    if (query) bson_destroy(query);
+    if (cursor) mongoc_cursor_destroy(cursor);
 
-    return CORE_OK;
+    mutex_unlock(self.db_lock);
+
+    return rv;
 }
 
 status_t hss_db_update_rand_and_sqn(
     char *imsi_bcd, c_uint8_t *rand, c_uint64_t sqn)
 {
-    bson_t *query;
-    bson_t *update;
+    status_t rv = CORE_OK;
+    bson_t *query = NULL;
+    bson_t *update = NULL;
     bson_error_t error;
     char printable_rand[128];
 
     d_assert(rand, return CORE_ERROR, "Null param");
     core_hex_to_ascii(rand, RAND_LEN, printable_rand, sizeof(printable_rand));
+
+    mutex_lock(self.db_lock);
 
     query = BCON_NEW("imsi", BCON_UTF8(imsi_bcd));
     update = BCON_NEW("$set",
@@ -164,21 +179,22 @@ status_t hss_db_update_rand_and_sqn(
     {
         d_error("mongoc_collection_update() failure: %s", error.message);
 
-        bson_destroy(query);
-        bson_destroy(update);
-        return CORE_ERROR;
+        rv = CORE_ERROR;
     }
 
-    bson_destroy(query);
-    bson_destroy(update);
+    if (query) bson_destroy(query);
+    if (update) bson_destroy(update);
 
-    return CORE_OK;
+    mutex_unlock(self.db_lock);
+
+    return rv;
 }
 
 status_t hss_db_increment_sqn(char *imsi_bcd)
 {
-    bson_t *query;
-    bson_t *update;
+    status_t rv = CORE_OK;
+    bson_t *query = NULL;
+    bson_t *update = NULL;
     bson_error_t error;
     char printable_rand[128];
     c_uint64_t max_sqn = 0x7ffffffffff;
@@ -186,8 +202,9 @@ status_t hss_db_increment_sqn(char *imsi_bcd)
     d_assert(rand, return CORE_ERROR, "Null param");
     core_hex_to_ascii(rand, RAND_LEN, printable_rand, sizeof(printable_rand));
 
-    query = BCON_NEW("imsi", BCON_UTF8(imsi_bcd));
+    mutex_lock(self.db_lock);
 
+    query = BCON_NEW("imsi", BCON_UTF8(imsi_bcd));
     update = BCON_NEW("$inc",
             "{",
                 "security.sqn", BCON_INT64(32),
@@ -197,9 +214,8 @@ status_t hss_db_increment_sqn(char *imsi_bcd)
     {
         d_error("mongoc_collection_update() failure: %s", error.message);
 
-        bson_destroy(query);
-        bson_destroy(update);
-        return CORE_ERROR;
+        rv = CORE_ERROR;
+        goto out;
     }
     bson_destroy(update);
 
@@ -213,13 +229,14 @@ status_t hss_db_increment_sqn(char *imsi_bcd)
     {
         d_error("mongoc_collection_update() failure: %s", error.message);
 
-        bson_destroy(query);
-        bson_destroy(update);
-        return CORE_ERROR;
+        rv = CORE_ERROR;
     }
-    bson_destroy(update);
 
-    bson_destroy(query);
+out:
+    if (query) bson_destroy(query);
+    if (update) bson_destroy(update);
+
+    mutex_unlock(self.db_lock);
 
     return CORE_OK;
 }
@@ -227,8 +244,9 @@ status_t hss_db_increment_sqn(char *imsi_bcd)
 status_t hss_db_subscription_data(
     char *imsi_bcd, hss_db_subscription_data_t *subscription_data)
 {
-    mongoc_cursor_t *cursor;
-    bson_t *query;
+    status_t rv = CORE_ERROR;
+    mongoc_cursor_t *cursor = NULL;
+    bson_t *query = NULL;
     bson_error_t error;
     const bson_t *document;
     bson_iter_t iter;
@@ -239,6 +257,8 @@ status_t hss_db_subscription_data(
     d_assert(imsi_bcd, return CORE_ERROR, "Null param");
     d_assert(subscription_data, return CORE_ERROR, "Null param");
 
+    mutex_lock(self.db_lock);
+
     query = BCON_NEW("imsi", BCON_UTF8(imsi_bcd));
     cursor = mongoc_collection_find_with_opts(
             self.subscriberCollection, query, NULL, NULL);
@@ -248,18 +268,16 @@ status_t hss_db_subscription_data(
     {
         d_error("Cursor Failure: %s", error.message);
 
-        bson_destroy(query);
-        return CORE_ERROR;
+        rv = CORE_ERROR;
+        goto out;
     }
 
     if (!bson_iter_init(&iter, document))
     {
         d_error("bson_iter_init failed in this document");
 
-        bson_destroy(query);
-        mongoc_cursor_destroy(cursor);
-        return CORE_ERROR;
-
+        rv = CORE_ERROR;
+        goto out;
     }
 
     memset(subscription_data, 0, sizeof(hss_db_subscription_data_t));
@@ -323,10 +341,10 @@ status_t hss_db_subscription_data(
                 const char *child1_key = bson_iter_key(&child1_iter);
                 pdn_t *pdn = NULL;
 
-                d_assert(child1_key, return CORE_ERROR, "PDN is not ARRAY");
+                d_assert(child1_key, goto out, "PDN is not ARRAY");
                 pdn_index = atoi(child1_key);
                 d_assert(pdn_index < MAX_NUM_OF_PDN,
-                        return CORE_ERROR, "Overflow of PDN number(%d>%d)",
+                        goto out, "Overflow of PDN number(%d>%d)",
                         pdn_index, MAX_NUM_OF_PDN);
 
                 pdn = &subscription_data->pdn[pdn_index];
@@ -422,8 +440,11 @@ status_t hss_db_subscription_data(
         }
     }
 
-    bson_destroy(query);
-    mongoc_cursor_destroy(cursor);
+out:
+    if (query) bson_destroy(query);
+    if (cursor) mongoc_cursor_destroy(cursor);
+
+    mutex_unlock(self.db_lock);
 
     return CORE_OK;
 }
