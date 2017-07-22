@@ -1,7 +1,8 @@
 #define TRACE_MODULE _context
 
-#include <mongoc.h>
 #include "core_file.h"
+#include "core_debug.h"
+#include <mongoc.h>
 
 #include "context.h"
 

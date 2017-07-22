@@ -4,12 +4,12 @@
 
   HSS :
   {
-    S6A_CONFIG_PATH : "/Users/acetcom/Documents/git/nextepc/install/hss_fd.conf"
+    S6A_CONFIG_PATH : "@prefix@/etc/hss_fd.conf"
   }
 
   MME :
   {
-    S6A_CONFIG_PATH : "/Users/acetcom/Documents/git/nextepc/install/mme_fd.conf",
+    S6A_CONFIG_PATH : "@prefix@/etc/mme_fd.conf",
 
     DEFAULT_PAGING_DRX : "v64",
 #RELATIVE_CAPACITY : 255,

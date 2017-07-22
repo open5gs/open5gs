@@ -1,9 +1,9 @@
 #define TRACE_MODULE _hss_context
 
-#include <mongoc.h>
-
 #include "core_debug.h"
 #include "core_lib.h"
+
+#include <mongoc.h>
 
 #include "context.h"
 #include "hss_context.h"
@@ -196,11 +196,7 @@ status_t hss_db_increment_sqn(char *imsi_bcd)
     bson_t *query = NULL;
     bson_t *update = NULL;
     bson_error_t error;
-    char printable_rand[128];
     c_uint64_t max_sqn = 0x7ffffffffff;
-
-    d_assert(rand, return CORE_ERROR, "Null param");
-    core_hex_to_ascii(rand, RAND_LEN, printable_rand, sizeof(printable_rand));
 
     mutex_lock(self.db_lock);
 
@@ -238,13 +234,13 @@ out:
 
     mutex_unlock(self.db_lock);
 
-    return CORE_OK;
+    return rv;
 }
 
 status_t hss_db_subscription_data(
     char *imsi_bcd, hss_db_subscription_data_t *subscription_data)
 {
-    status_t rv = CORE_ERROR;
+    status_t rv = CORE_OK;
     mongoc_cursor_t *cursor = NULL;
     bson_t *query = NULL;
     bson_error_t error;
@@ -446,5 +442,5 @@ out:
 
     mutex_unlock(self.db_lock);
 
-    return CORE_OK;
+    return rv;
 }

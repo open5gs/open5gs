@@ -47,7 +47,7 @@ status_t app_will_initialize(char *config_path, char *log_path)
     return CORE_OK;
 }
 
-status_t app_did_initialize()
+status_t app_did_initialize(char *config_path, char *log_path)
 {
     status_t rv;
 
