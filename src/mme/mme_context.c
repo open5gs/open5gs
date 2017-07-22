@@ -1055,6 +1055,17 @@ mme_ue_t *mme_ue_this(hash_index_t *hi)
     return hash_this_val(hi);
 }
 
+status_t  mme_ue_set_imsi(mme_ue_t *mme_ue, c_uint8_t *imsi, int imsi_len)
+{
+    d_assert(mme_ue && imsi, return CORE_ERROR, "Invalid Param");
+
+    memcpy(mme_ue->imsi, imsi, imsi_len);
+    mme_ue->imsi_len = imsi_len;
+    hash_set(self.imsi_ue_hash, imsi, imsi_len, mme_ue);
+
+    return CORE_OK;
+}
+
 #if 0
 unsigned int mme_ue_count()
 {
