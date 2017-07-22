@@ -88,14 +88,12 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
         goto out;
     }
 
-#if 0
     rv = hss_db_increment_sqn(imsi_bcd);
     if (rv != CORE_OK)
     {
         d_error("Cannot increment sqn for IMSI:'%s'", imsi_bcd);
         goto out;
     }
-#endif
 
     d_assert(fd_msg_search_avp(qry, s6a_visited_plmn_id, &avp) == 0 && 
             avp, goto out,);

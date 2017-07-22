@@ -101,6 +101,7 @@ static void nas_sm_test1(abts_case *tc, void *data)
 
     ABTS_TRUE(tc, mongoc_collection_insert(collection, 
                 MONGOC_INSERT_NONE, doc, NULL, &error));
+    bson_destroy(doc);
 
     d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
 
@@ -225,10 +226,12 @@ static void nas_sm_test1(abts_case *tc, void *data)
     core_sleep(time_from_msec(300));
     d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_FULL);
 
+    doc = BCON_NEW("imsi", BCON_UTF8("001010123456819"));
+    ABTS_PTR_NOTNULL(tc, doc);
     ABTS_TRUE(tc, mongoc_collection_remove(collection, 
             MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error)) 
-
     bson_destroy(doc);
+
     mongoc_collection_destroy(collection);
 }
 
@@ -299,6 +302,7 @@ static void nas_sm_test2(abts_case *tc, void *data)
 
     ABTS_TRUE(tc, mongoc_collection_insert(collection, 
                 MONGOC_INSERT_NONE, doc, NULL, &error));
+    bson_destroy(doc);
 
     d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
 
@@ -403,10 +407,12 @@ static void nas_sm_test2(abts_case *tc, void *data)
     core_sleep(time_from_msec(300));
     d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_FULL);
 
+    doc = BCON_NEW("imsi", BCON_UTF8("001010123456826"));
+    ABTS_PTR_NOTNULL(tc, doc);
     ABTS_TRUE(tc, mongoc_collection_remove(collection, 
             MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error)) 
-
     bson_destroy(doc);
+
     mongoc_collection_destroy(collection);
 }
 
