@@ -1061,7 +1061,8 @@ status_t  mme_ue_set_imsi(mme_ue_t *mme_ue, c_uint8_t *imsi, int imsi_len)
 
     memcpy(mme_ue->imsi, imsi, imsi_len);
     mme_ue->imsi_len = imsi_len;
-    hash_set(self.imsi_ue_hash, imsi, imsi_len, mme_ue);
+
+    hash_set(self.imsi_ue_hash, mme_ue->imsi, mme_ue->imsi_len, mme_ue);
 
     return CORE_OK;
 }
