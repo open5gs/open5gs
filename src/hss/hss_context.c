@@ -1,19 +1,15 @@
 #define TRACE_MODULE _hss_context
 
+#include <mongoc.h>
+
 #include "core_debug.h"
-#include "core_pool.h"
 #include "core_lib.h"
 
-#include "hss_db.h"
+#include "context.h"
 #include "hss_context.h"
 
-#define HSS_MAX_NUM_OF_PROFILE  8
-
 static hss_context_t self;
-
-pool_declare(hss_profile_pool, hss_profile_t, HSS_MAX_NUM_OF_PROFILE);
-pool_declare(hss_pdn_pool, pdn_t, MAX_NUM_OF_PDN);
-pool_declare(hss_ue_pool, hss_ue_t, MAX_NUM_OF_UE);
+static int context_initialized = 0;
 
 hss_context_t* hss_self()
 {
@@ -22,363 +18,412 @@ hss_context_t* hss_self()
 
 status_t hss_context_init(void)
 {
-    char buf[HSS_KEY_LEN];
+    d_assert(context_initialized == 0, return CORE_ERROR,
+            "HSS context already has been context_initialized");
 
-    hss_profile_id_t profile_id = 1;
-    hss_profile_t *profile;
-    pdn_t *pdn;
-    hss_ue_t *ue;
-    c_int8_t apn[MAX_APN_LEN];
-
+    /* Initialize HSS context */
     memset(&self, 0, sizeof(hss_context_t));
 
-    pool_init(&hss_profile_pool, HSS_MAX_NUM_OF_PROFILE);
-    pool_init(&hss_pdn_pool, MAX_NUM_OF_PDN);
-    pool_init(&hss_ue_pool, MAX_NUM_OF_UE);
-
-    list_init(&self.profile_list);
-    list_init(&self.pdn_list);
-    list_init(&self.ue_list);
-
-    /***********************************************
-     * Profile DB */
-    profile = hss_profile_add(profile_id);
-    d_assert(profile, return -1, "Profile context add failed");
-
-#define OP "5F1D289C5D354D0A140C2548F5F3E3BA"
-#define AMF "8000"
-#define OPc "E8ED289DEBA952E4283B54E88E6183CA"
-#define K "465B5CE8B199B49FAA5F0A2EE238A6BC"
-    memcpy(profile->op, CORE_HEX(OP, strlen(OP), buf), HSS_KEY_LEN);
-    memcpy(profile->amf, CORE_HEX(AMF, strlen(AMF), buf), HSS_AMF_LEN);
-    memcpy(profile->k, CORE_HEX(K, strlen(K), buf), HSS_KEY_LEN);
-    profile->sqn = 64;
-
-    profile->access_restriction_data = 0;
-    profile->subscriber_status = HSS_SUBSCRIBER_STATUS_SERVICE_GRANTED;
-    profile->network_access_mode = HSS_NETWORK_ACCESS_MODE_ONLY_PACKET;
-    profile->max_bandwidth_ul = 102400; /* Kbps */
-    profile->max_bandwidth_dl = 102400; /* Kbps */
-
-    profile->subscribed_rau_tau_timer = 12; /* minutes */
-
-    /***********************************************
-     * PDN DB */
-    apn[0] = 0x08;
-    strcpy(apn+1, "internet");
-
-    pdn = hss_pdn_add(apn);
-    d_assert(pdn, return -1, "PDN context add failed");
-
-    pdn->s6a_type = S6A_PDN_TYPE_IPV4;
-
-    pdn->qci = PDN_QCI_9;
-    pdn->priority_level = 8;
-
-    pdn->pre_emption_capability = PDN_PRE_EMPTION_CAPABILITY_DISABLED;
-    pdn->pre_emption_vulnerability = PDN_PRE_EMPTION_VULNERABILITY_DISABLED;
-
-    pdn->max_bandwidth_ul = 102400; /* Kbps */
-    pdn->max_bandwidth_dl = 102400; /* Kbps */
-
-    /***********************************************
-     * UE DB */
-    #define UE1_IMSI "001010123456800"
-    #define UE2_IMSI "001010123456796"
-
-    #define UE3_IMSI "001010123456819"
-    #define UE3_RAND "20080c3818183b52 2614162c07601d0d"
-
-    #define UE4_IMSI "001010123456826"
-    #define UE4_RAND "2ae4fc021dd4d1c2 e0a277c2317c2e67"
-
-    ue = hss_ue_add(profile_id, UE1_IMSI);
-    d_assert(ue, return -1, "UE context add failed");
-    ue->pdn[0] = pdn;
-    ue->num_of_pdn = 1;
-
-    ue = hss_ue_add(profile_id, UE2_IMSI);
-    d_assert(ue, return -1, "UE context add failed");
-    ue->pdn[0] = pdn;
-    ue->num_of_pdn = 1;
-
-    ue = hss_ue_add(profile_id, UE3_IMSI);
-    d_assert(ue, return -1, "UE context add failed");
-    ue->pdn[0] = pdn;
-    ue->num_of_pdn = 1;
-    memcpy(ue->rand, CORE_HEX(UE3_RAND, strlen(UE3_RAND), buf), 
-            RAND_LEN);
-    ue->access_restriction_data = 32;
-    ue->network_access_mode = 2;
-
-    ue = hss_ue_add(profile_id, UE4_IMSI);
-    d_assert(ue, return -1, "UE context add failed");
-    ue->pdn[0] = pdn;
-    ue->num_of_pdn = 1;
-    memcpy(ue->rand, CORE_HEX(UE4_RAND, strlen(UE4_RAND), buf), 
-            RAND_LEN);
-    ue->access_restriction_data = 32;
-    ue->network_access_mode = 2;
-
-    hss_db_init();
+    context_initialized = 1;
 
 	return CORE_OK;
 }
 
-void hss_context_final(void)
+status_t hss_context_final(void)
 {
-    hss_db_final();
+    d_assert(context_initialized == 1, return CORE_ERROR,
+            "HSS context already has been finalized");
 
-    hss_ue_remove_all();
-    hss_pdn_remove_all();
-    hss_profile_remove_all();
+    context_initialized = 0;
 
-    pool_final(&hss_ue_pool);
-    pool_final(&hss_pdn_pool);
-    pool_final(&hss_profile_pool);
-	
-	return;
+	return CORE_OK;
 }
 
-pdn_t* hss_pdn_add(c_int8_t *apn)
+status_t hss_db_init()
 {
-    pdn_t *pdn = NULL;
-
-    pool_alloc_node(&hss_pdn_pool, &pdn);
-    d_assert(pdn, return NULL, "HSS-UE context allocation failed");
-
-    memset(pdn, 0, sizeof(pdn_t));
-
-    strcpy(pdn->apn, apn);
-    pdn->id = NEXT_ID(self.pdn_id, 1, 0xffffffff);
-    
-    list_append(&self.pdn_list, pdn);
-
-    return pdn;
-}
-
-status_t hss_pdn_remove(pdn_t *pdn)
-{
-    d_assert(pdn, return CORE_ERROR, "Null param");
-
-    list_remove(&self.pdn_list, pdn);
-    pool_free_node(&hss_pdn_pool, pdn);
-
-    return CORE_OK;
-}
-
-status_t hss_pdn_remove_all()
-{
-    pdn_t *pdn = NULL, *next_pdn = NULL;
-    
-    pdn = list_first(&self.pdn_list);
-    while (pdn)
+    if (context_self()->db_client && context_self()->db_name)
     {
-        next_pdn = list_next(pdn);
-
-        hss_pdn_remove(pdn);
-
-        pdn = next_pdn;
+        self.subscriberCollection = mongoc_client_get_collection(
+            context_self()->db_client, 
+            context_self()->db_name, "subscribers");
+        d_assert(self.subscriberCollection, return CORE_ERROR, 
+            "Couldn't find Subscriber Collection in '%s'",
+            context_self()->db_name)
     }
 
     return CORE_OK;
 }
 
-pdn_t* hss_pdn_find_by_apn(c_int8_t *apn)
+status_t hss_db_final()
 {
-    pdn_t *pdn = NULL;
-    
-    pdn = list_first(&self.pdn_list);
-    while (pdn)
+    if (self.subscriberCollection)
     {
-        if (strcmp(pdn->apn, apn) == 0)
-            break;
-
-        pdn = list_next(pdn);
-    }
-
-    return pdn;
-}
-
-pdn_t* hss_pdn_first()
-{
-    return list_first(&self.pdn_list);
-}
-
-pdn_t* hss_pdn_next(pdn_t *pdn)
-{
-    return list_next(pdn);
-}
-
-hss_profile_t* hss_profile_add(hss_profile_id_t id)
-{
-    hss_profile_t *profile = NULL;
-
-    pool_alloc_node(&hss_profile_pool, &profile);
-    d_assert(profile, return NULL, "HSS-UE context allocation failed");
-
-    memset(profile, 0, sizeof(hss_profile_t));
-
-    profile->id = id;
-    
-    list_append(&self.profile_list, profile);
-
-    return profile;
-}
-
-status_t hss_profile_remove(hss_profile_t *profile)
-{
-    d_assert(profile, return CORE_ERROR, "Null param");
-
-    list_remove(&self.profile_list, profile);
-    pool_free_node(&hss_profile_pool, profile);
-
-    return CORE_OK;
-}
-
-status_t hss_profile_remove_all()
-{
-    hss_profile_t *profile = NULL, *next_profile = NULL;
-    
-    profile = list_first(&self.profile_list);
-    while (profile)
-    {
-        next_profile = list_next(profile);
-
-        hss_profile_remove(profile);
-
-        profile = next_profile;
+        mongoc_collection_destroy(self.subscriberCollection);
     }
 
     return CORE_OK;
 }
 
-hss_profile_t* hss_profile_find_by_id(hss_profile_id_t id)
+status_t hss_db_auth_info(
+    char *imsi_bcd, hss_db_auth_info_t *auth_info)
 {
-    hss_profile_t *profile = NULL;
-    
-    profile = list_first(&self.profile_list);
-    while (profile)
-    {
-        if (profile->id == id)
-            break;
+    mongoc_cursor_t *cursor;
+    bson_t *query;
+    bson_error_t error;
+    const bson_t *document;
+    bson_iter_t iter;
+    bson_iter_t inner_iter;
+    char buf[HSS_KEY_LEN];
+    char *utf8 = NULL;
+    c_uint32_t length = 0;
 
-        profile = list_next(profile);
+    d_assert(imsi_bcd, return CORE_ERROR, "Null param");
+    d_assert(auth_info, return CORE_ERROR, "Null param");
+
+    query = BCON_NEW("imsi", BCON_UTF8(imsi_bcd));
+    cursor = mongoc_collection_find_with_opts(
+            self.subscriberCollection, query, NULL, NULL);
+
+    mongoc_cursor_next(cursor, &document);
+    if (mongoc_cursor_error(cursor, &error))
+    {
+        d_error("Cursor Failure: %s", error.message);
+
+        bson_destroy(query);
+        return CORE_ERROR;
     }
 
-    return profile;
-}
-
-hss_profile_t* hss_profile_find_by_name(c_int8_t *name)
-{
-    hss_profile_t *profile = NULL;
-    
-    profile = list_first(&self.profile_list);
-    while (profile)
+    if (!bson_iter_init_find(&iter, document, "security"))
     {
-        if (strcmp(profile->name, name) == 0)
-            break;
+        d_error("No 'security' field in this document");
 
-        profile = list_next(profile);
+        bson_destroy(query);
+        mongoc_cursor_destroy(cursor);
+        return CORE_ERROR;
+
     }
 
-    return profile;
-}
+    memset(auth_info, 0, sizeof(hss_db_auth_info_t));
+    bson_iter_recurse(&iter, &inner_iter);
+    while(bson_iter_next(&inner_iter))
+    {
+        const char *key = bson_iter_key(&inner_iter);
 
-hss_profile_t* hss_profile_first()
-{
-    return list_first(&self.profile_list);
-}
+        if (!strcmp(key, "k") && BSON_ITER_HOLDS_UTF8(&inner_iter)) 
+        {
+            utf8 = (char *)bson_iter_utf8(&inner_iter, &length);
+            memcpy(auth_info->k, CORE_HEX(utf8, length, buf), HSS_KEY_LEN);
+        }
+        else if (!strcmp(key, "op") && BSON_ITER_HOLDS_UTF8(&inner_iter)) 
+        {
+            utf8 = (char *)bson_iter_utf8(&inner_iter, &length);
+            memcpy(auth_info->op, CORE_HEX(utf8, length, buf), HSS_KEY_LEN);
+        }
+        else if (!strcmp(key, "amf") && BSON_ITER_HOLDS_UTF8(&inner_iter)) 
+        {
+            utf8 = (char *)bson_iter_utf8(&inner_iter, &length);
+            memcpy(auth_info->amf, CORE_HEX(utf8, length, buf), HSS_AMF_LEN);
+        }
+        else if (!strcmp(key, "rand") && BSON_ITER_HOLDS_UTF8(&inner_iter)) 
+        {
+            utf8 = (char *)bson_iter_utf8(&inner_iter, &length);
+            memcpy(auth_info->rand, CORE_HEX(utf8, length, buf), RAND_LEN);
+        }
+        else if (!strcmp(key, "sqn") && BSON_ITER_HOLDS_INT64(&inner_iter))
+        {
+            auth_info->sqn = bson_iter_int64(&inner_iter);
+        }
+    }
 
-hss_profile_t* hss_profile_next(hss_profile_t *profile)
-{
-    return list_next(profile);
-}
-
-hss_ue_t* hss_ue_add(hss_profile_id_t id, c_int8_t *imsi_bcd)
-{
-    hss_profile_t *profile = NULL;
-    hss_ue_t *ue = NULL;
-
-    profile = hss_profile_find_by_id(id);
-    d_assert(profile, return NULL, "Can't find Profile = %d", id);
-
-    pool_alloc_node(&hss_ue_pool, &ue);
-    d_assert(ue, return NULL, "HSS-UE context allocation failed");
-
-    memset(ue, 0, sizeof(hss_ue_t));
-
-    memcpy(ue->k, profile->k, HSS_KEY_LEN);
-    memcpy(ue->op, profile->op, HSS_KEY_LEN);
-    memcpy(ue->amf, profile->amf, HSS_AMF_LEN);
-
-    strcpy(ue->imsi_bcd, imsi_bcd);
-
-    core_generate_random_bytes(ue->rand, RAND_LEN);
-    ue->sqn = profile->sqn;
-
-    ue->access_restriction_data = profile->access_restriction_data;
-    ue->subscriber_status = profile->subscriber_status;
-    ue->network_access_mode = profile->network_access_mode;
-    ue->max_bandwidth_ul = profile->max_bandwidth_ul;
-    ue->max_bandwidth_dl = profile->max_bandwidth_dl;
-
-    ue->subscribed_rau_tau_timer = profile->subscribed_rau_tau_timer;
-    
-    list_append(&self.ue_list, ue);
-
-    return ue;
-}
-
-status_t hss_ue_remove(hss_ue_t *ue)
-{
-    d_assert(ue, return CORE_ERROR, "Null param");
-
-    list_remove(&self.ue_list, ue);
-    pool_free_node(&hss_ue_pool, ue);
+    bson_destroy(query);
+    mongoc_cursor_destroy(cursor);
 
     return CORE_OK;
 }
 
-status_t hss_ue_remove_all()
+status_t hss_db_update_rand_and_sqn(
+    char *imsi_bcd, c_uint8_t *rand, c_uint64_t sqn)
 {
-    hss_ue_t *ue = NULL, *next_ue = NULL;
-    
-    ue = list_first(&self.ue_list);
-    while (ue)
+    bson_t *query;
+    bson_t *update;
+    bson_error_t error;
+    char printable_rand[128];
+
+    d_assert(rand, return CORE_ERROR, "Null param");
+    core_hex_to_ascii(rand, RAND_LEN, printable_rand, sizeof(printable_rand));
+
+    query = BCON_NEW("imsi", BCON_UTF8(imsi_bcd));
+    update = BCON_NEW("$set",
+            "{",
+                "security.rand", printable_rand,
+                "security.sqn", BCON_INT64(sqn),
+            "}");
+
+    if (!mongoc_collection_update(self.subscriberCollection,
+            MONGOC_UPDATE_NONE, query, update, NULL, &error)) 
     {
-        next_ue = list_next(ue);
+        d_error("mongoc_collection_update() failure: %s", error.message);
 
-        hss_ue_remove(ue);
-
-        ue = next_ue;
+        bson_destroy(query);
+        bson_destroy(update);
+        return CORE_ERROR;
     }
+
+    bson_destroy(query);
+    bson_destroy(update);
 
     return CORE_OK;
 }
 
-hss_ue_t* hss_ue_find_by_imsi_bcd(c_int8_t *imsi_bcd)
+status_t hss_db_increment_sqn(char *imsi_bcd)
 {
-    hss_ue_t *ue = NULL;
-    
-    ue = list_first(&self.ue_list);
-    while (ue)
-    {
-        if (strcmp(ue->imsi_bcd, imsi_bcd) == 0)
-            break;
+    bson_t *query;
+    bson_t *update;
+    bson_error_t error;
+    char printable_rand[128];
+    c_uint64_t max_sqn = 0x7ffffffffff;
 
-        ue = list_next(ue);
+    d_assert(rand, return CORE_ERROR, "Null param");
+    core_hex_to_ascii(rand, RAND_LEN, printable_rand, sizeof(printable_rand));
+
+    query = BCON_NEW("imsi", BCON_UTF8(imsi_bcd));
+
+    update = BCON_NEW("$inc",
+            "{",
+                "security.sqn", BCON_INT64(32),
+            "}");
+    if (!mongoc_collection_update(self.subscriberCollection,
+            MONGOC_UPDATE_NONE, query, update, NULL, &error))
+    {
+        d_error("mongoc_collection_update() failure: %s", error.message);
+
+        bson_destroy(query);
+        bson_destroy(update);
+        return CORE_ERROR;
+    }
+    bson_destroy(update);
+
+    update = BCON_NEW("$bit",
+            "{",
+                "security.sqn", 
+                "{", "and", BCON_INT64(max_sqn), "}",
+            "}");
+    if (!mongoc_collection_update(self.subscriberCollection,
+            MONGOC_UPDATE_NONE, query, update, NULL, &error))
+    {
+        d_error("mongoc_collection_update() failure: %s", error.message);
+
+        bson_destroy(query);
+        bson_destroy(update);
+        return CORE_ERROR;
+    }
+    bson_destroy(update);
+
+    bson_destroy(query);
+
+    return CORE_OK;
+}
+
+status_t hss_db_subscription_data(
+    char *imsi_bcd, hss_db_subscription_data_t *subscription_data)
+{
+    mongoc_cursor_t *cursor;
+    bson_t *query;
+    bson_error_t error;
+    const bson_t *document;
+    bson_iter_t iter;
+    bson_iter_t child1_iter, child2_iter, child3_iter, child4_iter;
+    const char *utf8 = NULL;
+    c_uint32_t length = 0;
+
+    d_assert(imsi_bcd, return CORE_ERROR, "Null param");
+    d_assert(subscription_data, return CORE_ERROR, "Null param");
+
+    query = BCON_NEW("imsi", BCON_UTF8(imsi_bcd));
+    cursor = mongoc_collection_find_with_opts(
+            self.subscriberCollection, query, NULL, NULL);
+
+    mongoc_cursor_next(cursor, &document);
+    if (mongoc_cursor_error(cursor, &error))
+    {
+        d_error("Cursor Failure: %s", error.message);
+
+        bson_destroy(query);
+        return CORE_ERROR;
     }
 
-    return ue;
-}
+    if (!bson_iter_init(&iter, document))
+    {
+        d_error("bson_iter_init failed in this document");
 
-hss_ue_t* hss_ue_first()
-{
-    return list_first(&self.ue_list);
-}
+        bson_destroy(query);
+        mongoc_cursor_destroy(cursor);
+        return CORE_ERROR;
 
-hss_ue_t* hss_ue_next(hss_ue_t *ue)
-{
-    return list_next(ue);
+    }
+
+    memset(subscription_data, 0, sizeof(hss_db_subscription_data_t));
+    while(bson_iter_next(&iter))
+    {
+        const char *key = bson_iter_key(&iter);
+        if (!strcmp(key, "access_restriction_data") &&
+            BSON_ITER_HOLDS_INT32(&iter))
+        {
+            subscription_data->access_restriction_data =
+                bson_iter_int32(&iter);
+
+        }
+        else if (!strcmp(key, "subscriber_status") &&
+            BSON_ITER_HOLDS_INT32(&iter))
+        {
+            subscription_data->subscriber_status =
+                bson_iter_int32(&iter);
+        }
+        else if (!strcmp(key, "network_access_mode") &&
+            BSON_ITER_HOLDS_INT32(&iter))
+        {
+            subscription_data->network_access_mode =
+                bson_iter_int32(&iter);
+        }
+        else if (!strcmp(key, "subscribed_rau_tau_timer") &&
+            BSON_ITER_HOLDS_INT32(&iter))
+        {
+            subscription_data->subscribed_rau_tau_timer =
+                bson_iter_int32(&iter);
+        }
+        else if (!strcmp(key, "ue_ambr") &&
+            BSON_ITER_HOLDS_DOCUMENT(&iter))
+        {
+            bson_iter_recurse(&iter, &child1_iter);
+            while(bson_iter_next(&child1_iter))
+            {
+                const char *child1_key = bson_iter_key(&child1_iter);
+                if (!strcmp(child1_key, "max_bandwidth_ul") &&
+                    BSON_ITER_HOLDS_INT32(&child1_iter))
+                {
+                    subscription_data->max_bandwidth_ul =
+                        bson_iter_int32(&child1_iter);
+                }
+                else if (!strcmp(child1_key, "max_bandwidth_dl") &&
+                    BSON_ITER_HOLDS_INT32(&child1_iter))
+                {
+                    subscription_data->max_bandwidth_dl =
+                        bson_iter_int32(&child1_iter);
+                }
+            }
+        }
+        else if (!strcmp(key, "pdn") &&
+            BSON_ITER_HOLDS_ARRAY(&iter))
+        {
+            int pdn_index = 0;
+
+            bson_iter_recurse(&iter, &child1_iter);
+            while(bson_iter_next(&child1_iter))
+            {
+                const char *child1_key = bson_iter_key(&child1_iter);
+                pdn_t *pdn = NULL;
+
+                d_assert(child1_key, return CORE_ERROR, "PDN is not ARRAY");
+                pdn_index = atoi(child1_key);
+                d_assert(pdn_index < MAX_NUM_OF_PDN,
+                        return CORE_ERROR, "Overflow of PDN number(%d>%d)",
+                        pdn_index, MAX_NUM_OF_PDN);
+
+                pdn = &subscription_data->pdn[pdn_index];
+
+                bson_iter_recurse(&child1_iter, &child2_iter);
+                while(bson_iter_next(&child2_iter))
+                {
+                    const char *child2_key = bson_iter_key(&child2_iter);
+                    if (!strcmp(child2_key, "apn") &&
+                        BSON_ITER_HOLDS_UTF8(&child2_iter))
+                    {
+                        utf8 = bson_iter_utf8(&child2_iter, &length);
+                        core_cpystrn(pdn->apn+1, utf8, length+1);
+                        pdn->apn[0] = length;
+                    }
+                    else if (!strcmp(child2_key, "type") &&
+                        BSON_ITER_HOLDS_INT32(&child2_iter))
+                    {
+                        pdn->s6a_type = bson_iter_int32(&child2_iter);
+                    }
+                    else if (!strcmp(child2_key, "qos") &&
+                        BSON_ITER_HOLDS_DOCUMENT(&child2_iter))
+                    {
+                        bson_iter_recurse(&child2_iter, &child3_iter);
+                        while(bson_iter_next(&child3_iter))
+                        {
+                            const char *child3_key =
+                                bson_iter_key(&child3_iter);
+                            if (!strcmp(child3_key, "qci") &&
+                                BSON_ITER_HOLDS_INT32(&child3_iter))
+                            {
+                                pdn->qci = bson_iter_int32(&child3_iter);
+                            }
+                            else if (!strcmp(child3_key, "arp") &&
+                                BSON_ITER_HOLDS_DOCUMENT(&child3_iter))
+                            {
+                                bson_iter_recurse(&child3_iter, &child4_iter);
+                                while(bson_iter_next(&child4_iter))
+                                {
+                                    const char *child4_key =
+                                        bson_iter_key(&child4_iter);
+                                    if (!strcmp(child4_key, "priority_level") &&
+                                        BSON_ITER_HOLDS_INT32(&child4_iter))
+                                    {
+                                        pdn->priority_level =
+                                            bson_iter_int32(&child4_iter);
+                                    }
+                                    else if (!strcmp(child4_key,
+                                                "pre_emption_capability") &&
+                                        BSON_ITER_HOLDS_INT32(&child4_iter))
+                                    {
+                                        pdn->pre_emption_capability =
+                                            bson_iter_int32(&child4_iter);
+                                    }
+                                    else if (!strcmp(child4_key,
+                                                "pre_emption_vulnerability") &&
+                                        BSON_ITER_HOLDS_INT32(&child4_iter))
+                                    {
+                                        pdn->pre_emption_vulnerability =
+                                            bson_iter_int32(&child4_iter);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else if (!strcmp(child2_key, "pdn_ambr") &&
+                        BSON_ITER_HOLDS_DOCUMENT(&child2_iter))
+                    {
+                        bson_iter_recurse(&child2_iter, &child3_iter);
+                        while(bson_iter_next(&child3_iter))
+                        {
+                            const char *child3_key =
+                                bson_iter_key(&child3_iter);
+                            if (!strcmp(child3_key, "max_bandwidth_ul") &&
+                                BSON_ITER_HOLDS_INT32(&child3_iter))
+                            {
+                                pdn->max_bandwidth_ul =
+                                    bson_iter_int32(&child3_iter);
+                            }
+                            else if (!strcmp(child3_key, "max_bandwidth_dl") &&
+                                BSON_ITER_HOLDS_INT32(&child3_iter))
+                            {
+                                pdn->max_bandwidth_dl =
+                                    bson_iter_int32(&child3_iter);
+                            }
+                        }
+                    }
+
+                }
+            }
+
+            subscription_data->num_of_pdn = pdn_index + 1;
+        }
+    }
+
+    bson_destroy(query);
+    mongoc_cursor_destroy(cursor);
+
+    return CORE_OK;
 }
