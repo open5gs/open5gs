@@ -161,10 +161,17 @@ void mme_state_operational(fsm_t *s, event_t *e)
                     pkbuf_free(pkbuf); break, "Can't decode NAS_EMM");
 
             mme_ue = enb_ue->mme_ue;
-            if (mme_ue == NULL)
+            if (!mme_ue)
             {
                 /* Find MME UE by NAS message or create if needed */
                 mme_ue = emm_find_ue_by_message(enb_ue, &message);
+
+                /* If not found , create one */
+                if (!mme_ue)
+                {
+                    mme_ue = mme_ue_add(enb_ue);
+                    d_assert(mme_ue, break, "Null param");
+                }
             }
 
             d_assert(mme_ue, pkbuf_free(pkbuf);break, "No MME UE context");

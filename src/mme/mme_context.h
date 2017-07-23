@@ -287,17 +287,16 @@ CORE_DECLARE(mme_ue_t*)     mme_ue_add(enb_ue_t *enb_ue);
 CORE_DECLARE(status_t)      mme_ue_remove(mme_ue_t *mme_ue);
 CORE_DECLARE(status_t)      mme_ue_remove_all();
 
+CORE_DECLARE(status_t)      mme_ue_set_imsi(
+                                mme_ue_t *mme_ue, c_int8_t *imsi_bcd);
 CORE_DECLARE(mme_ue_t*)     mme_ue_find(index_t index);
 CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_imsi(c_uint8_t *imsi, int imsi_len);
+CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_imsi_bcd(c_int8_t *imsi_bcd);
 CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_guti(guti_t *guti);
 
 CORE_DECLARE(hash_index_t *) mme_ue_first();
 CORE_DECLARE(hash_index_t *) mme_ue_next(hash_index_t *hi);
 CORE_DECLARE(mme_ue_t *)    mme_ue_this(hash_index_t *hi);
-
-CORE_DECLARE(status_t)      mme_ue_set_imsi(mme_ue_t *mme_ue,
-                                c_uint8_t *imsi, int imsi_len);
-CORE_DECLARE(status_t)      mme_ue_new_guti(mme_ue_t *mme_ue);
 
 CORE_DECLARE(mme_bearer_t*) mme_sess_add(mme_ue_t *mme_ue, c_uint8_t pti);
 CORE_DECLARE(status_t )     mme_sess_remove(mme_sess_t *sess);

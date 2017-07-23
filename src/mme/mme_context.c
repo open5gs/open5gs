@@ -2,6 +2,7 @@
 
 #include "core_debug.h"
 #include "core_pool.h"
+#include "core_lib.h"
 
 #include "gtp_path.h"
 #include "s1ap_message.h"
@@ -1024,16 +1025,28 @@ mme_ue_t* mme_ue_find(index_t index)
     return index_find(&mme_ue_pool, index);
 }
 
+mme_ue_t* mme_ue_find_by_imsi_bcd(c_int8_t *imsi_bcd)
+{
+    c_uint8_t imsi[MAX_IMSI_LEN];
+    int imsi_len = 0;
+
+    d_assert(imsi_bcd, return NULL,"Invalid param");
+
+    core_bcd_to_buffer(imsi_bcd, imsi, &imsi_len);
+
+    return mme_ue_find_by_imsi(imsi, imsi_len);
+}
+
 mme_ue_t* mme_ue_find_by_imsi(c_uint8_t *imsi, int imsi_len)
 {
-    d_assert(imsi && imsi_len, return NULL,"Invalid Param");
+    d_assert(imsi && imsi_len, return NULL,"Invalid param");
 
     return (mme_ue_t *)hash_get(self.imsi_ue_hash, imsi, imsi_len);
 }
 
 mme_ue_t* mme_ue_find_by_guti(guti_t *guti)
 {
-    d_assert(guti, return NULL,"Invalid Param");
+    d_assert(guti, return NULL,"Invalid param");
 
     return (mme_ue_t *)hash_get(self.guti_ue_hash, guti, sizeof(guti_t));
 }
@@ -1055,19 +1068,8 @@ mme_ue_t *mme_ue_this(hash_index_t *hi)
     return hash_this_val(hi);
 }
 
-status_t mme_ue_set_imsi(mme_ue_t *mme_ue, c_uint8_t *imsi, int imsi_len)
-{
-    d_assert(mme_ue && imsi, return CORE_ERROR, "Invalid Param");
-
-    memcpy(mme_ue->imsi, imsi, imsi_len);
-    mme_ue->imsi_len = imsi_len;
-
-    hash_set(self.imsi_ue_hash, mme_ue->imsi, mme_ue->imsi_len, mme_ue);
-
-    return CORE_OK;
-}
-
-status_t mme_ue_new_guti(mme_ue_t *mme_ue)
+/* At this point, I'm not sure whether this function is exported or not */
+static status_t mme_ue_new_guti(mme_ue_t *mme_ue)
 {
     served_gummei_t *served_gummei = NULL;
 
@@ -1095,6 +1097,20 @@ status_t mme_ue_new_guti(mme_ue_t *mme_ue)
     mme_ue->guti.m_tmsi = NEXT_ID(self.m_tmsi, 1, 0xffffffff);
 
     hash_set(self.guti_ue_hash, &mme_ue->guti, sizeof(guti_t), mme_ue);
+
+    return CORE_OK;
+}
+
+status_t mme_ue_set_imsi(mme_ue_t *mme_ue, c_int8_t *imsi_bcd)
+{
+    d_assert(mme_ue && imsi_bcd, return CORE_ERROR, "Invalid param");
+
+    core_cpystrn(mme_ue->imsi_bcd, imsi_bcd, MAX_IMSI_BCD_LEN+1);
+    core_bcd_to_buffer(mme_ue->imsi_bcd, mme_ue->imsi, &mme_ue->imsi_len);
+
+    hash_set(self.imsi_ue_hash, mme_ue->imsi, mme_ue->imsi_len, mme_ue);
+
+    mme_ue_new_guti(mme_ue);
 
     return CORE_OK;
 }

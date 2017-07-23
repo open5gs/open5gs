@@ -45,8 +45,6 @@ status_t emm_build_attach_accept(
     attach_accept->esm_message_container.data = esmbuf->payload;
     attach_accept->esm_message_container.len = esmbuf->len;
 
-    d_assert(mme_ue_new_guti(mme_ue) == CORE_OK,
-            return CORE_ERROR, "GUTI error");
     attach_accept->presencemask |= NAS_ATTACH_ACCEPT_GUTI_PRESENT;
     guti->length = sizeof(nas_eps_mobile_identity_guti_t);
     guti->guti.odd_even = NAS_EPS_MOBILE_IDENTITY_EVEN;

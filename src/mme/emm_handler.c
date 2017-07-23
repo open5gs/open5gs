@@ -101,29 +101,34 @@ void emm_handle_attach_request(
     {
         case NAS_EPS_MOBILE_IDENTITY_IMSI:
         {
+            c_int8_t imsi_bcd[MAX_IMSI_BCD_LEN+1];
+
             nas_imsi_to_bcd(
                 &eps_mobile_identity->imsi, eps_mobile_identity->length,
-                mme_ue->imsi_bcd);
-            core_bcd_to_buffer(mme_ue->imsi_bcd, mme_ue->imsi, 
-                &mme_ue->imsi_len);
-            d_assert(mme_ue->imsi_len, return,
-                    "Can't get IMSI(len:%d\n", mme_ue->imsi_len);
+                imsi_bcd);
+            mme_ue_set_imsi(mme_ue, imsi_bcd);
 
-            d_info("[NAS] Attach request : UE_IMSI[%s] --> EMM", 
-                    mme_ue->imsi_bcd);
+            d_info("[NAS] Attach request : UE_IMSI[%s] --> EMM", imsi_bcd);
 
             mme_s6a_send_air(mme_ue);
             break;
         }
         case NAS_EPS_MOBILE_IDENTITY_GUTI:
         {
-            nas_eps_mobile_identity_guti_t *guti = NULL;
-            guti = &eps_mobile_identity->guti;
+            nas_eps_mobile_identity_guti_t *nas_guti = NULL;
+            nas_guti = &eps_mobile_identity->guti;
+            guti_t guti;
+
+            guti.plmn_id = nas_guti->plmn_id;
+            guti.mme_gid = nas_guti->mme_gid;
+            guti.mme_code = nas_guti->mme_code;
+            guti.m_tmsi = nas_guti->m_tmsi;
 
             d_info("[NAS] Attach request : UE_GUTI[G:%d,C:%d,M_TMSI:0x%x] --> EMM", 
-                    guti->mme_gid,
-                    guti->mme_code,
-                    guti->m_tmsi);
+                    guti.mme_gid,
+                    guti.mme_code,
+                    guti.m_tmsi);
+
 
             /* FIXME :Check if GUTI was assigend from us */
             
@@ -133,7 +138,6 @@ void emm_handle_attach_request(
              *         The record with GUTI,IMSI should be 
              *         stored in permanent DB
              */
-
 
             /* If not found,
                Initiate NAS Identity procedure to get UE IMSI */
@@ -195,10 +199,12 @@ void emm_handle_identity_response(
 
     if (mobile_identity->imsi.type == NAS_IDENTITY_TYPE_2_IMSI)
     {
+        c_int8_t imsi_bcd[MAX_IMSI_BCD_LEN+1];
+
         nas_imsi_to_bcd(
             &mobile_identity->imsi, mobile_identity->length,
-            mme_ue->imsi_bcd);
-        core_bcd_to_buffer(mme_ue->imsi_bcd, mme_ue->imsi, &mme_ue->imsi_len);
+            imsi_bcd);
+        mme_ue_set_imsi(mme_ue, imsi_bcd);
 
         d_assert(mme_ue->imsi_len, return,
                 "Can't get IMSI(len:%d\n", mme_ue->imsi_len);
@@ -643,29 +649,15 @@ mme_ue_t *emm_find_ue_by_message(enb_ue_t *enb_ue, nas_message_t *message)
             {
                 case NAS_EPS_MOBILE_IDENTITY_IMSI:
                 {
-                    c_uint8_t       imsi[MAX_IMSI_LEN];
-                    int             imsi_len = 0;
-                    c_int8_t        imsi_bcd[MAX_IMSI_BCD_LEN+1];
+                    c_int8_t imsi_bcd[MAX_IMSI_BCD_LEN+1];
 
                     nas_imsi_to_bcd(
                         &eps_mobile_identity->imsi, eps_mobile_identity->length,
                         imsi_bcd);
-                    core_bcd_to_buffer(imsi_bcd, imsi, &imsi_len);
 
                     d_trace(3,"Search mme_ue by UE_IMSI[%s]\n", imsi_bcd);
 
-                    /* Find mme_ue_context by IMSI */
-                    mme_ue = mme_ue_find_by_imsi(imsi, imsi_len);
-
-                    /* If not found , create one */
-                    if (!mme_ue)
-                    {
-                        mme_ue = mme_ue_add(enb_ue);
-                        strncpy(mme_ue->imsi_bcd, imsi_bcd, 
-                                sizeof(mme_ue->imsi_bcd));
-
-                        mme_ue_set_imsi(mme_ue, imsi, imsi_len);
-                    }
+                    mme_ue = mme_ue_find_by_imsi_bcd(imsi_bcd);
 
                     break;
                 }
@@ -686,10 +678,6 @@ mme_ue_t *emm_find_ue_by_message(enb_ue_t *enb_ue, nas_message_t *message)
                             guti.m_tmsi);
 
                     mme_ue = mme_ue_find_by_guti(&guti);
-                    if (!mme_ue)
-                    {
-                        mme_ue = mme_ue_add(enb_ue);
-                    }
                     break;
                 }
                 default:
