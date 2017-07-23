@@ -1055,7 +1055,7 @@ mme_ue_t *mme_ue_this(hash_index_t *hi)
     return hash_this_val(hi);
 }
 
-status_t  mme_ue_set_imsi(mme_ue_t *mme_ue, c_uint8_t *imsi, int imsi_len)
+status_t mme_ue_set_imsi(mme_ue_t *mme_ue, c_uint8_t *imsi, int imsi_len)
 {
     d_assert(mme_ue && imsi, return CORE_ERROR, "Invalid Param");
 
@@ -1063,6 +1063,38 @@ status_t  mme_ue_set_imsi(mme_ue_t *mme_ue, c_uint8_t *imsi, int imsi_len)
     mme_ue->imsi_len = imsi_len;
 
     hash_set(self.imsi_ue_hash, mme_ue->imsi, mme_ue->imsi_len, mme_ue);
+
+    return CORE_OK;
+}
+
+status_t mme_ue_new_guti(mme_ue_t *mme_ue)
+{
+    served_gummei_t *served_gummei = NULL;
+
+    d_assert(mme_ue, return CORE_ERROR, "Invalid param");
+    d_assert(mme_self()->max_num_of_served_gummei > 0,
+            return CORE_ERROR, "Invalid param");
+
+    served_gummei = &mme_self()->served_gummei[0];
+
+    d_assert(served_gummei->num_of_plmn_id > 0,
+            return CORE_ERROR, "Invalid param");
+    d_assert(served_gummei->num_of_mme_gid > 0,
+            return CORE_ERROR, "Invalid param");
+    d_assert(served_gummei->num_of_mme_code > 0,
+            return CORE_ERROR, "Invalid param");
+
+    memset(&mme_ue->guti, 0, sizeof(guti_t));
+
+    /* FIXME : How to generate GUTI?
+     * At this point, I'll use first(0-index) Served GUMMEI in MME_CONTEXT */
+    memcpy(&mme_ue->guti.plmn_id, &served_gummei->plmn_id[0], PLMN_ID_LEN);
+    mme_ue->guti.mme_gid = served_gummei->mme_gid[0];
+    mme_ue->guti.mme_code = served_gummei->mme_code[0];
+
+    mme_ue->guti.m_tmsi = NEXT_ID(self.m_tmsi, 1, 0xffffffff);
+
+    hash_set(self.guti_ue_hash, &mme_ue->guti, sizeof(guti_t), mme_ue);
 
     return CORE_OK;
 }

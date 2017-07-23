@@ -16,9 +16,7 @@ status_t emm_build_attach_accept(
         &attach_accept->eps_attach_result;
     nas_gprs_timer_t *t3412_value = &attach_accept->t3412_value;
     nas_tracking_area_identity_list_t *tai_list = &attach_accept->tai_list;
-#if 1 /* TODO */
     nas_eps_mobile_identity_t *guti = &attach_accept->guti;
-#endif
     nas_gprs_timer_t *t3402_value = &attach_accept->t3402_value;
     nas_gprs_timer_t *t3423_value = &attach_accept->t3423_value;
     nas_eps_network_feature_support_t *eps_network_feature_support =
@@ -47,16 +45,16 @@ status_t emm_build_attach_accept(
     attach_accept->esm_message_container.data = esmbuf->payload;
     attach_accept->esm_message_container.len = esmbuf->len;
 
-#if 1 /* TODO */
+    d_assert(mme_ue_new_guti(mme_ue) == CORE_OK,
+            return CORE_ERROR, "GUTI error");
     attach_accept->presencemask |= NAS_ATTACH_ACCEPT_GUTI_PRESENT;
-    guti->length = 11;
+    guti->length = sizeof(nas_eps_mobile_identity_guti_t);
     guti->guti.odd_even = NAS_EPS_MOBILE_IDENTITY_EVEN;
     guti->guti.type = NAS_EPS_MOBILE_IDENTITY_GUTI;
-    memcpy(&guti->guti.plmn_id, &mme_ue->visited_plmn_id, PLMN_ID_LEN);
-    guti->guti.mme_gid = 2;
-    guti->guti.mme_code = 1;
-    guti->guti.m_tmsi = 0x040001fb;
-#endif
+    memcpy(&guti->guti.plmn_id, &mme_ue->guti.plmn_id, PLMN_ID_LEN);
+    guti->guti.mme_gid = mme_ue->guti.mme_gid;
+    guti->guti.mme_code = mme_ue->guti.mme_code;
+    guti->guti.m_tmsi = mme_ue->guti.m_tmsi;
 
     attach_accept->presencemask |= NAS_ATTACH_ACCEPT_EMM_CAUSE_PRESENT;
     attach_accept->emm_cause = EMM_CAUSE_CS_DOMAIN_NOT_AVAILABLE;

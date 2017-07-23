@@ -52,7 +52,9 @@ typedef struct _mme_context_t {
     tm_service_t    tm_service;     /* Timer Service */
     gtp_xact_ctx_t  gtp_xact_ctx;   /* GTP Transaction Context for MME */
 
+    /* Generator for unique identification */
     c_uint32_t      mme_ue_s1ap_id; /** mme_ue_s1ap_id generator */
+    c_uint32_t      m_tmsi; /** m_tmsi generator */
 
     /* defined in 'nas_ies.h'
      * #define NAS_SECURITY_ALGORITHMS_EIA0        0
@@ -284,22 +286,18 @@ CORE_DECLARE(mme_enb_t*)    mme_enb_next(mme_enb_t *enb);
 CORE_DECLARE(mme_ue_t*)     mme_ue_add(enb_ue_t *enb_ue);
 CORE_DECLARE(status_t)      mme_ue_remove(mme_ue_t *mme_ue);
 CORE_DECLARE(status_t)      mme_ue_remove_all();
+
 CORE_DECLARE(mme_ue_t*)     mme_ue_find(index_t index);
-CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_mme_ue_s1ap_id(
-                                c_uint32_t mme_ue_s1ap_id);
+CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_imsi(c_uint8_t *imsi, int imsi_len);
+CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_guti(guti_t *guti);
+
 CORE_DECLARE(hash_index_t *) mme_ue_first();
 CORE_DECLARE(hash_index_t *) mme_ue_next(hash_index_t *hi);
 CORE_DECLARE(mme_ue_t *)    mme_ue_this(hash_index_t *hi);
-CORE_DECLARE(unsigned int)  mme_ue_count();
-CORE_DECLARE(status_t)      mme_ue_remove_in_enb(mme_enb_t *enb);
-CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_enb_ue_s1ap_id(
-                                mme_enb_t *enb, c_uint32_t enb_ue_s1ap_id);
-CORE_DECLARE(mme_ue_t*)     mme_ue_first_in_enb(mme_enb_t *enb);
-CORE_DECLARE(mme_ue_t*)     mme_ue_next_in_enb(mme_ue_t *mme_ue);
-CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_imsi(c_uint8_t *imsi, int imsi_len);
-CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_guti(guti_t *guti);
-CORE_DECLARE(status_t)      mme_ue_set_imsi(mme_ue_t *mme_ue, c_uint8_t *imsi,
-                                int imsi_len);
+
+CORE_DECLARE(status_t)      mme_ue_set_imsi(mme_ue_t *mme_ue,
+                                c_uint8_t *imsi, int imsi_len);
+CORE_DECLARE(status_t)      mme_ue_new_guti(mme_ue_t *mme_ue);
 
 CORE_DECLARE(mme_bearer_t*) mme_sess_add(mme_ue_t *mme_ue, c_uint8_t pti);
 CORE_DECLARE(status_t )     mme_sess_remove(mme_sess_t *sess);
