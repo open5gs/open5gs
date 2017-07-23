@@ -110,6 +110,7 @@ void emm_handle_attach_request(
 
             d_info("[NAS] Attach request : UE_IMSI[%s] --> EMM", imsi_bcd);
 
+            /* TODO : check if authorization process is needed or not */
             mme_s6a_send_air(mme_ue);
             break;
         }
@@ -138,10 +139,15 @@ void emm_handle_attach_request(
              *         The record with GUTI,IMSI should be 
              *         stored in permanent DB
              */
-
-            /* If not found,
-               Initiate NAS Identity procedure to get UE IMSI */
-            emm_handle_identity_request(mme_ue);
+            if (memcmp(&guti, &mme_ue->guti, sizeof(guti_t)) == 0)
+            {
+                /* TODO : check if authorization process is needed or not */
+                mme_s6a_send_air(mme_ue);
+            }
+            else
+            {
+                emm_handle_identity_request(mme_ue);
+            }
             break;
         }
         default:
@@ -215,6 +221,7 @@ void emm_handle_identity_response(
         return;
     }
 
+    /* TODO : check if authorization process is needed or not */
     /* Send Authentication Information Request to HSS */
     mme_s6a_send_air(mme_ue);
 
