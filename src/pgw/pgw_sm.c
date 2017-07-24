@@ -75,15 +75,20 @@ void pgw_state_operational(fsm_t *s, event_t *e)
             if (rv != CORE_OK)
                 break;
 
-            sess = pgw_sess_find_by_teid(teid);
-            /* sess can be NULL */
+            if (type == GTP_CREATE_SESSION_REQUEST_TYPE)
+            {
+                pgw_handle_create_session_request(
+                    xact, &gtp_message.create_session_request);
+                pkbuf_free(pkbuf);
 
+                break;
+            }
+
+            sess = pgw_sess_find_by_teid(teid);
+            d_assert(sess, pkbuf_free(pkbuf); break, 
+                    "No Session Context(TEID:%d)", teid);
             switch(type)
             {
-                case GTP_CREATE_SESSION_REQUEST_TYPE:
-                    pgw_handle_create_session_request(
-                        xact, &gtp_message.create_session_request);
-                    break;
                 case GTP_DELETE_SESSION_REQUEST_TYPE:
                     pgw_handle_delete_session_request(
                         xact, sess, &gtp_message.delete_session_request);

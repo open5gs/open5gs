@@ -90,7 +90,7 @@ void sgw_state_operational(fsm_t *s, event_t *e)
             {
                 case GTP_CREATE_SESSION_RESPONSE_TYPE:
                     sgw_handle_create_session_response(
-                            xact, sess, type, &gtp_message);
+                            xact, sess, &gtp_message);
                     break;
                 case GTP_MODIFY_BEARER_REQUEST_TYPE:
                     sgw_handle_modify_bearer_request(
@@ -101,8 +101,10 @@ void sgw_state_operational(fsm_t *s, event_t *e)
                             xact, sess, &gtp_message);
                     break;
                 case GTP_DELETE_SESSION_RESPONSE_TYPE:
+#if 0
                     sgw_handle_delete_session_response(
                             xact, sess, &gtp_message);
+#endif
                     break;
                 default:
                     d_warn("Not implmeneted(type:%d)", type);
