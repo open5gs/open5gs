@@ -86,11 +86,11 @@ void sgw_handle_create_session_request(
             return, "failed to send message");
 
     d_info("[GTP] Create Session Reqeust : "
-            "MME[%d] --> SGW", sess->mme_s11_teid);
+            "SGW[%d] --> PGW", sess->sgw_s5c_teid);
 }
 
 void sgw_handle_create_session_response(gtp_xact_t *xact, 
-    sgw_sess_t *sess, c_uint8_t type, gtp_message_t *gtp_message)
+    sgw_sess_t *sess, gtp_message_t *gtp_message)
 {
     status_t rv;
     sgw_bearer_t *bearer = NULL;
@@ -168,11 +168,11 @@ void sgw_handle_create_session_response(gtp_xact_t *xact,
     rsp->bearer_contexts_created.s1_u_enodeb_f_teid.data = &sgw_s1u_teid;
     rsp->bearer_contexts_created.s1_u_enodeb_f_teid.len = GTP_F_TEID_IPV4_LEN;
 
-    rv = gtp_build_msg(&pkbuf, type, gtp_message);
+    rv = gtp_build_msg(&pkbuf, GTP_CREATE_SESSION_RESPONSE_TYPE, gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
-    d_assert(sgw_s11_send_to_mme(
-            xact, type, sess->mme_s11_teid, pkbuf) == CORE_OK, return, 
+    d_assert(sgw_s11_send_to_mme(xact, GTP_CREATE_SESSION_RESPONSE_TYPE,
+            sess->mme_s11_teid, pkbuf) == CORE_OK, return,
             "failed to send message");
     d_info("[GTP] Create Session Response : "
             "SGW[%d] <-- PGW[%d]", sess->sgw_s5c_teid, sess->pgw_s5c_teid);
@@ -237,4 +237,49 @@ CORE_DECLARE(void) sgw_handle_modify_bearer_request(gtp_xact_t *xact,
 
     d_info("[GTP] Modify Bearer Reqeust : "
             "MME[%d] --> SGW[%d]", sess->mme_s11_teid, sess->sgw_s11_teid);
+}
+
+void sgw_handle_delete_session_request(gtp_xact_t *xact,
+    sgw_sess_t *sess, gtp_message_t *gtp_message)
+{
+    status_t rv;
+    pkbuf_t *pkbuf = NULL;
+    gtp_delete_session_request_t *req = NULL;
+    gtp_f_teid_t sgw_s5c_teid;
+
+    d_assert(xact, return, "Null param");
+    d_assert(sess, return, "Null param");
+    d_assert(gtp_message, return, "Null param");
+
+    req = &gtp_message->delete_session_request;
+
+    if (req->sender_f_teid_for_control_plane.presence == 0)
+    {
+        d_error("No GTP TEID");
+        return;
+    }
+
+    //bearer = sgw_default_bearer_in_sess(sess);
+    //d_assert(bearer, sgw_sess_remove(sess); return, "No Bearer Context");
+    
+    /* FIXME: handle "Indication" IE for oi flag */
+
+    /* Send Control Plane(DL) : SGW-S5C */
+    memset(&sgw_s5c_teid, 0, sizeof(gtp_f_teid_t));
+    sgw_s5c_teid.teid = htonl(sess->sgw_s5c_teid);
+    sgw_s5c_teid.ipv4_addr = sess->sgw_s5c_addr;
+    sgw_s5c_teid.interface_type = GTP_F_TEID_S5_S8_SGW_GTP_C;
+    req->sender_f_teid_for_control_plane.presence = 1;
+    req->sender_f_teid_for_control_plane.data = &sgw_s5c_teid;
+    req->sender_f_teid_for_control_plane.len = GTP_F_TEID_IPV4_LEN;
+
+    rv = gtp_build_msg(&pkbuf, GTP_DELETE_SESSION_REQUEST_TYPE, gtp_message);
+    d_assert(rv == CORE_OK, return, "gtp build failed");
+
+    d_assert(sgw_s5c_send_to_pgw(xact, GTP_DELETE_SESSION_REQUEST_TYPE, 
+                sess->pgw_s5c_teid, pkbuf) == CORE_OK, 
+            return, "failed to send message");
+
+    d_info("[GTP] Delete Session Reqeust : "
+            "SGW[%d] --> PGW[%d]", sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 }

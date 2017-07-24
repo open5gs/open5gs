@@ -9,6 +9,8 @@ extern "C" {
 
 CORE_DECLARE(void) pgw_handle_create_session_request(
         gtp_xact_t *xact, gtp_create_session_request_t *req);
+CORE_DECLARE(void) pgw_handle_delete_session_request(
+        gtp_xact_t *xact, pgw_sess_t *sess, gtp_delete_session_request_t *req);
 
 #ifdef __cplusplus
 }

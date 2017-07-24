@@ -96,6 +96,14 @@ void sgw_state_operational(fsm_t *s, event_t *e)
                     sgw_handle_modify_bearer_request(
                             xact, sess, &gtp_message.modify_bearer_request);
                     break;
+                case GTP_DELETE_SESSION_REQUEST_TYPE:
+                    sgw_handle_delete_session_request(
+                            xact, sess, &gtp_message);
+                    break;
+                case GTP_DELETE_SESSION_RESPONSE_TYPE:
+                    sgw_handle_delete_session_response(
+                            xact, sess, &gtp_message);
+                    break;
                 default:
                     d_warn("Not implmeneted(type:%d)", type);
                     break;

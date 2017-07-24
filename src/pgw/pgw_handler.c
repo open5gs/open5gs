@@ -239,3 +239,78 @@ void pgw_handle_create_session_request(
 
     pgw_s5c_send_to_sgw(xact, type, sess->sgw_s5c_teid, pkbuf);
 }
+
+void pgw_handle_delete_session_request(
+        gtp_xact_t *xact, pgw_sess_t *sess, gtp_delete_session_request_t *req)
+{
+    status_t rv;
+    pkbuf_t *pkbuf;
+    gtp_message_t gtp_message;
+    c_uint8_t type = GTP_DELETE_SESSION_RESPONSE_TYPE;
+    gtp_f_teid_t *sgw_s5c_teid;
+    gtp_delete_session_response_t *rsp = &gtp_message.delete_session_response;
+
+    gtp_cause_t cause;
+    c_uint8_t pco_buf[MAX_PCO_LEN];
+    c_int16_t pco_len;
+    
+
+    d_assert(xact, return, "Null param");
+    /* sess can be NULL */
+    d_assert(req, return, "Null param");
+
+    if (req->sender_f_teid_for_control_plane.presence == 0)
+    {
+        d_error("No TEID");
+        return;
+    }
+
+    /* prepare cause */
+    memset(&cause, 0, sizeof(cause));
+    cause.value = GTP_CAUSE_REQUEST_ACCEPTED;
+
+    /* Remove a pgw session */
+    if (sess)
+    {
+        d_info("[GTP] Delete Session Reqeust : "
+            "SGW[%d] --> PGW[%d]", sess->sgw_s5c_teid, sess->pgw_s5c_teid);
+        if (pgw_sess_remove(sess) != CORE_OK)
+        {
+            d_error("Error on PGW session %d removal", sess->index);
+            cause.value = GTP_CAUSE_CONTEXT_NOT_FOUND;
+        }
+    }
+    else
+    {
+        cause.value = GTP_CAUSE_INVALID_PEER;
+    }
+
+    memset(&gtp_message, 0, sizeof(gtp_message_t));
+
+    /* Cause */
+    rsp->cause.presence = 1;
+    rsp->cause.len = sizeof(cause);
+    rsp->cause.data = &cause;
+
+    /* Recovery */
+
+    /* PCO */
+    if (req->protocol_configuration_options.presence == 1)
+    {
+        pco_len = pgw_pco_build(pco_buf, &req->protocol_configuration_options);
+        d_assert(pco_len > 0, return, "pco build failed");
+        rsp->protocol_configuration_options.presence = 1;
+        rsp->protocol_configuration_options.data = pco_buf;
+        rsp->protocol_configuration_options.len = pco_len;
+    }
+
+    /* Private Extension */
+
+    /* build */
+    rv = gtp_build_msg(&pkbuf, type, &gtp_message);
+    d_assert(rv == CORE_OK, return, "gtp build failed");
+
+    /* send */
+    sgw_s5c_teid = req->sender_f_teid_for_control_plane.data;
+    pgw_s5c_send_to_sgw(xact, type, ntohl(sgw_s5c_teid->teid), pkbuf);
+}

@@ -63,6 +63,7 @@ void pgw_state_operational(fsm_t *s, event_t *e)
             c_uint8_t type;
             c_uint32_t teid;
             gtp_message_t gtp_message;
+            pgw_sess_t *sess = NULL;
 
             d_assert(pkbuf, break, "Null param");
             d_assert(sock, pkbuf_free(pkbuf); break, "Null param");
@@ -74,11 +75,18 @@ void pgw_state_operational(fsm_t *s, event_t *e)
             if (rv != CORE_OK)
                 break;
 
+            sess = pgw_sess_find_by_teid(teid);
+            /* sess can be NULL */
+
             switch(type)
             {
                 case GTP_CREATE_SESSION_REQUEST_TYPE:
                     pgw_handle_create_session_request(
                         xact, &gtp_message.create_session_request);
+                    break;
+                case GTP_DELETE_SESSION_REQUEST_TYPE:
+                    pgw_handle_delete_session_request(
+                        xact, sess, &gtp_message.delete_session_request);
                     break;
                 default:
                     d_warn("Not implmeneted(type:%d)", type);
