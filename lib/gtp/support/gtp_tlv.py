@@ -112,7 +112,7 @@ def get_cells(cells):
     instance = cells[4].text.encode('ascii', 'ignore')
     if instance.isdigit() is not True:
         return None
-    ie_type = re.sub('\s*\n*\s*\(NOTE.*\)*', '', cells[3].text.encode('ascii', 'ignore'))
+    ie_type = re.sub('\s*$', '', re.sub('\s*\n*\s*\(NOTE.*\)*', '', cells[3].text.encode('ascii', 'ignore')))
     if ie_type.find('LDN') != -1:
         ie_type = 'LDN'
     elif ie_type.find('APCO') != -1:
@@ -237,6 +237,8 @@ else:
             key = 'APCO'
         elif key.find('Remote UE IP information') != -1:
             key = 'Remote UE IP Information'
+        elif key.find('Procedure Transaction ID') != -1:
+            key = 'PTI'
         else:
             key = re.sub('.*\(', '', row.cells[1].text.encode('ascii', 'ignore'))
             key = re.sub('\)', '', key)
@@ -319,7 +321,9 @@ msg_list["Create Session Response"]["table"] = 13
 msg_list["Modify Bearer Request"]["table"] = 29
 msg_list["Modify Bearer Response"]["table"] = 33
 msg_list["Delete Session Request"]["table"] = 38
+msg_list["Delete Bearer Request"]["table"] = 40
 msg_list["Delete Session Response"]["table"] = 44
+msg_list["Delete Bearer Response"]["table"] = 47
 
 for key in msg_list.keys():
     if "table" in msg_list[key].keys():
