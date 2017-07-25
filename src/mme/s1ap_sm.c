@@ -132,6 +132,33 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
 
             break;
         }
+        case MME_EVT_S1AP_UE_FROM_S11:
+        {
+            index_t enb_index = event_get_param1(e);
+            index_t enb_ue_index = event_get_param2(e);
+            mme_enb_t *enb = NULL;
+            enb_ue_t *enb_ue = NULL;
+
+            d_assert(enb_index, return, "Null param");
+            d_assert(enb_ue_index, return, "Null param");
+
+            enb = mme_enb_find(enb_index);
+            d_assert(enb, return, "Null param");
+
+            enb_ue = enb_ue_find(enb_ue_index);
+            d_assert(enb_ue, return, "Null param");
+
+            switch(event_get_param3(e))
+            {
+                case GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE:
+                {
+                    s1ap_handle_release_access_bearers_response(enb, enb_ue);
+                    break;
+                }
+            }
+
+            break;
+        }
 
         default:
         {

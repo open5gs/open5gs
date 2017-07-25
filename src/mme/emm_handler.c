@@ -551,12 +551,7 @@ void emm_handle_detach_request(
             rv = mme_s11_send_to_sgw(bearer->sgw, 
                     GTP_DELETE_SESSION_REQUEST_TYPE, sess->sgw_s11_teid, 
                     s11buf);
-            if (rv != CORE_OK)
-            {
-                d_error("S11 send error rv %d", rv);
-                pkbuf_free(s11buf);
-                /* continue to send */
-            }
+            d_assert(rv == CORE_OK, return, "S11 send error");
         }
         sess = mme_sess_next(sess);
     }
@@ -628,8 +623,8 @@ void emm_handle_delete_session_response(mme_bearer_t *bearer)
     {
         d_info("[NAS] Detach done : UE[%s] <-- EMM", mme_ue->imsi_bcd);
 
-        rv = s1ap_build_ue_context_release_commmand(&
-                s1apbuf, enb_ue, enb_ue->s1ap.cause);
+        rv = s1ap_build_ue_context_release_commmand(
+                &s1apbuf, enb_ue, &enb_ue->s1ap.cause);
         d_assert(rv == CORE_OK && s1apbuf, return, "s1ap build error");
 
         d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");

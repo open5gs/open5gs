@@ -261,7 +261,7 @@ status_t s1ap_build_initial_context_setup_request(
 }
 
 status_t s1ap_build_ue_context_release_commmand(
-            pkbuf_t **s1apbuf, enb_ue_t *enb_ue, S1ap_Cause_t cause)
+            pkbuf_t **s1apbuf, enb_ue_t *enb_ue, S1ap_Cause_t *cause)
 {
     char buf[INET_ADDRSTRLEN];
 
@@ -271,6 +271,7 @@ status_t s1ap_build_ue_context_release_commmand(
             &message.s1ap_UEContextReleaseCommand_IEs;
 
     d_assert(enb_ue, return CORE_ERROR, "Null param");
+    d_assert(cause, return CORE_ERROR, "Null param");
 
     memset(&message, 0, sizeof(s1ap_message_t));
 
@@ -295,7 +296,28 @@ status_t s1ap_build_ue_context_release_commmand(
         ies->uE_S1AP_IDs.choice.mME_UE_S1AP_ID = enb_ue->mme_ue_s1ap_id;
     }
 
-    ies->cause = cause;
+    ies->cause.present = cause->present;
+    switch(ies->cause.present)
+    {
+        case S1ap_Cause_PR_radioNetwork:
+            ies->cause.choice.radioNetwork = cause->choice.radioNetwork;
+            break;
+        case S1ap_Cause_PR_transport:
+            ies->cause.choice.transport = cause->choice.transport;
+            break;
+        case S1ap_Cause_PR_nas:
+            ies->cause.choice.nas = cause->choice.nas;
+            break;
+        case S1ap_Cause_PR_protocol:
+            ies->cause.choice.protocol = cause->choice.protocol;
+            break;
+        case S1ap_Cause_PR_misc:
+            ies->cause.choice.misc = cause->choice.misc;
+            break;
+        default:
+            d_error("Invalid cause type : %d", ies->cause.present);
+            break;
+    }
 
     message.procedureCode = S1ap_ProcedureCode_id_UEContextRelease;
     message.direction = S1AP_PDU_PR_initiatingMessage;
@@ -303,7 +325,7 @@ status_t s1ap_build_ue_context_release_commmand(
     encoded = s1ap_encode_pdu(s1apbuf, &message);
     s1ap_free_pdu(&message);
 
-    d_assert(s1apbuf && encoded >= 0,return CORE_ERROR,);
+    d_assert(s1apbuf && encoded >= 0, return CORE_ERROR,);
 
     d_info("[S1AP] UE Context Release Command : "
             "UE[mME-UE-S1AP-ID(%d)] <-- eNB[%s:%d]",

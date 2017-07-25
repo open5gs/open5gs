@@ -13,6 +13,8 @@ CORE_DECLARE(status_t) mme_s11_build_modify_bearer_request(
                         pkbuf_t **pkbuf, mme_bearer_t *bearer);
 CORE_DECLARE(status_t) mme_s11_build_delete_session_request(
                         pkbuf_t **pkbuf, mme_sess_t *sess);
+CORE_DECLARE(status_t) mme_s11_build_release_access_bearers_request(
+                        pkbuf_t **pkbuf);
 
 #ifdef __cplusplus
 }

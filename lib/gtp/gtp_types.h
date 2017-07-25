@@ -313,6 +313,10 @@ ED2(c_uint8_t spare:6;,
 #define GTP_SELECTION_MODE_MS_PROVIDED_APN                  1
 #define GTP_SELECTION_MODE_NETWORK_PROVIDED_APN             2
 
+/* 8.65 Node Type */
+#define GTP_NODE_TYPE_MME                                   0
+#define GTP_NODE_TYPE_SGSN                                  1
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

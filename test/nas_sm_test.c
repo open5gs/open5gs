@@ -458,6 +458,10 @@ static void nas_sm_test3(abts_case *tc, void *data)
         "402a000003000000 05c0020000c80008 00020002001a0014 1327dc833e850307"
         "6147717042911120 8a490100";
 
+    char *_ue_context_release_command = 
+        "0017"
+        "0013000002006300 070c020000c80002 0002400120";
+
     mongoc_collection_t *collection = NULL;
     bson_error_t error;
     const char *json =
@@ -627,6 +631,28 @@ static void nas_sm_test3(abts_case *tc, void *data)
     ABTS_TRUE(tc, memcmp(recvbuf->payload, tmp, 28) == 0);
     ABTS_TRUE(tc, memcmp(recvbuf->payload+43, tmp+43, 3) == 0);
     pkbuf_free(recvbuf);
+
+    /* Send UE Release Request */
+    rv = tests1ap_build_ue_context_release_request(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* Receive UE Release Command */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rc = tests1ap_enb_read(sock, recvbuf);
+    recvbuf->len = 23;
+    ABTS_TRUE(tc, memcmp(recvbuf->payload,
+        CORE_HEX(_ue_context_release_command, 
+        strlen(_ue_context_release_command), tmp),
+        recvbuf->len) == 0);
+    pkbuf_free(recvbuf);
+
+    /* Send UE Release Complete */
+    rv = tests1ap_build_ue_context_release_complete(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     /* eNB disonncect from MME */
     rv = tests1ap_enb_close(sock);

@@ -226,3 +226,22 @@ status_t mme_s11_build_delete_session_request(pkbuf_t **pkbuf, mme_sess_t *sess)
 
     return CORE_OK;
 }
+
+status_t mme_s11_build_release_access_bearers_request(pkbuf_t **pkbuf)
+{
+    status_t rv;
+    gtp_message_t gtp_message;
+    gtp_release_access_bearers_request_t *req = 
+        &gtp_message.release_access_bearers_request;
+
+    memset(&gtp_message, 0, sizeof(gtp_message_t));
+
+    req->originating_node.presence = 1;
+    req->originating_node.u8 = GTP_NODE_TYPE_MME;
+
+    rv = gtp_build_msg(pkbuf, 
+            GTP_RELEASE_ACCESS_BEARERS_REQUEST_TYPE, &gtp_message);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");
+
+    return CORE_OK;
+}

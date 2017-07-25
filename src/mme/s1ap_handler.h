@@ -18,10 +18,14 @@ CORE_DECLARE(void) s1ap_handle_ue_capability_info_indication(
         mme_enb_t *enb, s1ap_message_t *message);
 CORE_DECLARE(void) s1ap_handle_initial_context_setup_response(
         mme_enb_t *enb, s1ap_message_t *message);
-CORE_DECLARE(void) s1ap_handle_ue_context_release_complete(
-        mme_enb_t *enb, s1ap_message_t *message);
+
 CORE_DECLARE(void) s1ap_handle_ue_context_release_request(
         mme_enb_t *enb, s1ap_message_t *message);
+CORE_DECLARE(void) s1ap_handle_ue_context_release_complete(
+        mme_enb_t *enb, s1ap_message_t *message);
+
+CORE_DECLARE(void) s1ap_handle_release_access_bearers_response(
+        mme_enb_t *enb, enb_ue_t *enb_ue);
 
 #ifdef __cplusplus
 }

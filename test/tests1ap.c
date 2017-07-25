@@ -349,10 +349,67 @@ status_t tests1ap_build_emm_status(pkbuf_t **pkbuf, int i)
 
         "000d403300000500 0000020001000800 02001f001a000a09 27574292cc020760"
         "65006440080000f1 10002343d0004340 060000f1103039",
+
+        "",
     };
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         0,
         55,
+        0,
+    };
+    char hexbuf[MAX_SDU_LEN];
+    
+    *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    if (!(*pkbuf)) return CORE_ERROR;
+
+    (*pkbuf)->len = len[i];
+    memcpy((*pkbuf)->payload, CORE_HEX(payload[i], strlen(payload[i]), hexbuf),
+            (*pkbuf)->len);
+
+    return CORE_OK;
+}
+
+status_t tests1ap_build_ue_context_release_request(pkbuf_t **pkbuf, int i)
+{
+    char *payload[TESTS1AP_MAX_MESSAGE] = { 
+        "",
+        "",
+
+        "0012"
+        "4018000003000000 05c0020000c80008 0002000200024002 0280",
+
+    };
+    c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
+        0,
+        0,
+        28,
+    };
+    char hexbuf[MAX_SDU_LEN];
+    
+    *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    if (!(*pkbuf)) return CORE_ERROR;
+
+    (*pkbuf)->len = len[i];
+    memcpy((*pkbuf)->payload, CORE_HEX(payload[i], strlen(payload[i]), hexbuf),
+            (*pkbuf)->len);
+
+    return CORE_OK;
+}
+
+status_t tests1ap_build_ue_context_release_complete(pkbuf_t **pkbuf, int i)
+{
+    char *payload[TESTS1AP_MAX_MESSAGE] = { 
+        "",
+        "",
+
+        "2017"
+        "0012000002000040 05c0020000c80008 40020002",
+
+    };
+    c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
+        0,
+        0,
+        22,
     };
     char hexbuf[MAX_SDU_LEN];
     

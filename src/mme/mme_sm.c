@@ -123,6 +123,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
             break;
         }
         case MME_EVT_S1AP_ENB_MSG:
+        case MME_EVT_S1AP_UE_FROM_S11:
         {
             s1ap_message_t message;
             index_t index = event_get_param1(e);
@@ -133,16 +134,22 @@ void mme_state_operational(fsm_t *s, event_t *e)
             d_assert(enb = mme_enb_find(index), break, "No eNB context");
             d_assert(FSM_STATE(&enb->sm), break, "No S1AP State Machine");
 
-            pkbuf = (pkbuf_t *)event_get_param2(e);
-            d_assert(pkbuf, break, "Null param");
-            d_assert(s1ap_decode_pdu(&message, pkbuf) == CORE_OK,
-                    pkbuf_free(pkbuf); break, "Can't decode S1AP_PDU");
+            if (event_get(e) == MME_EVT_S1AP_ENB_MSG)
+            {
+                pkbuf = (pkbuf_t *)event_get_param2(e);
+                d_assert(pkbuf, break, "Null param");
+                d_assert(s1ap_decode_pdu(&message, pkbuf) == CORE_OK,
+                        pkbuf_free(pkbuf); break, "Can't decode S1AP_PDU");
+                event_set_param3(e, (c_uintptr_t)&message);
+            }
 
-            event_set_param3(e, (c_uintptr_t)&message);
             fsm_dispatch(&enb->sm, (fsm_event_t*)e);
 
-            s1ap_free_pdu(&message);
-            pkbuf_free(pkbuf);
+            if (event_get(e) == MME_EVT_S1AP_ENB_MSG)
+            {
+                s1ap_free_pdu(&message);
+                pkbuf_free(pkbuf);
+            }
             break;
         }
         case MME_EVT_EMM_UE_MSG:
@@ -304,6 +311,10 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 case GTP_DELETE_SESSION_RESPONSE_TYPE:
                     mme_s11_handle_delete_session_response(
                             sess, &gtp_message.delete_session_response);
+                    break;
+                case GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE:
+                    mme_s11_handle_release_access_bearers_response(
+                            sess, &gtp_message.release_access_bearers_response);
                     break;
                 default:
                     d_warn("Not implmeneted(type:%d)", type);

@@ -124,3 +124,37 @@ void mme_s11_handle_delete_session_response(
     event_set_param2(&e, (c_uintptr_t)GTP_DELETE_SESSION_RESPONSE_TYPE);
     mme_event_send(&e);
 }
+
+void mme_s11_handle_release_access_bearers_response(
+        mme_sess_t *sess, gtp_release_access_bearers_response_t *rsp)
+{
+    event_t e;
+
+    mme_ue_t *mme_ue;
+    enb_ue_t *enb_ue;
+    mme_enb_t *enb;
+    
+    d_assert(rsp, return, "Null param");
+    d_assert(sess, return, "Null param");
+    mme_ue = sess->mme_ue;
+    d_assert(mme_ue, return, "Null param");
+    enb_ue = mme_ue->enb_ue;
+    d_assert(enb_ue, return, "Null param");
+    enb = enb_ue->enb;
+    d_assert(enb, return, "Null param");
+
+    if (rsp->cause.presence == 0)
+    {
+        d_error("No Cause");
+        return;
+    }
+
+    d_info("[GTP] Release Access Bearers Response : "
+            "MME[%d] <-- SGW[%d]", sess->mme_s11_teid, sess->sgw_s11_teid);
+
+    event_set(&e, MME_EVT_S1AP_UE_FROM_S11);
+    event_set_param1(&e, (c_uintptr_t)enb->index);
+    event_set_param2(&e, (c_uintptr_t)enb_ue->index);
+    event_set_param3(&e, (c_uintptr_t)GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE);
+    mme_event_send(&e);
+}

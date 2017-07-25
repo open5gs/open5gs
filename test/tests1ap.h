@@ -27,6 +27,10 @@ CORE_DECLARE(status_t) tests1ap_build_initial_context_setup_response(
         pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_attach_complete(pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_emm_status(pkbuf_t **pkbuf, int i);
+CORE_DECLARE(status_t) tests1ap_build_ue_context_release_request(
+        pkbuf_t **pkbuf, int i);
+CORE_DECLARE(status_t) tests1ap_build_ue_context_release_complete(
+        pkbuf_t **pkbuf, int i);
 
 #ifdef __cplusplus
 }

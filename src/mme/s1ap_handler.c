@@ -9,6 +9,8 @@
 #include "s1ap_path.h"
 #include "nas_message.h"
 #include "nas_security.h"
+#include "mme_s11_build.h"
+#include "mme_s11_path.h"
 
 #include "s1ap_handler.h"
 
@@ -334,6 +336,7 @@ void s1ap_handle_ue_context_release_request(
 
     enb_ue_t *enb_ue = NULL;
     S1ap_UEContextReleaseRequest_IEs_t *ies = NULL;
+    long cause;
 
     ies = &message->s1ap_UEContextReleaseRequest_IEs;
     d_assert(ies, return, "Null param");
@@ -347,11 +350,90 @@ void s1ap_handle_ue_context_release_request(
         INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
         enb->enb_id);
 
-    /* FIXME : 
-     * 1) Check if cause == user_inactivity 
-     * 2) Send Release_access_bearer_request
-     */
+    switch(ies->cause.present)
+    {
+        case S1ap_Cause_PR_radioNetwork:
+            cause = ies->cause.choice.radioNetwork;
+            if (cause == S1ap_CauseRadioNetwork_user_inactivity)
+            {
+                int release_access_bearer_needed = 0;
+                pkbuf_t *pkbuf = NULL;
+                mme_ue_t *mme_ue = enb_ue->mme_ue;
+                status_t rv;
 
+                if (mme_ue)
+                {
+                    mme_sess_t *sess = mme_sess_first(mme_ue);
+                    while (sess != NULL)
+                    {
+                        mme_bearer_t *bearer = mme_default_bearer_in_sess(sess);
+                        if (bearer != NULL)
+                        {
+                            rv = mme_s11_build_release_access_bearers_request(
+                                    &pkbuf);
+                            d_assert(rv == CORE_OK, return, "S11 build error");
+
+                            rv = mme_s11_send_to_sgw(bearer->sgw, 
+                                    GTP_RELEASE_ACCESS_BEARERS_REQUEST_TYPE, 
+                                    sess->sgw_s11_teid, pkbuf);
+                            d_assert(rv == CORE_OK, return, "S11 send error");
+
+                            release_access_bearer_needed = 1;
+                        }
+                        sess = mme_sess_next(sess);
+                    }
+                }
+
+                if (!release_access_bearer_needed)
+                {
+                    s1ap_handle_release_access_bearers_response(enb, enb_ue);
+                }
+            }
+            else
+            {
+                d_warn("Not implmented (radioNetwork cause : %d)", cause);
+            }
+            break;
+        case S1ap_Cause_PR_transport:
+            cause = ies->cause.choice.transport;
+            d_warn("Not implmented (transport cause : %d)", cause);
+            break;
+        case S1ap_Cause_PR_nas:
+            cause = ies->cause.choice.nas;
+            d_warn("Not implmented (nas cause : %d)", cause);
+            break;
+        case S1ap_Cause_PR_protocol:
+            cause = ies->cause.choice.protocol;
+            d_warn("Not implmented (protocol cause : %d)", cause);
+            break;
+        case S1ap_Cause_PR_misc:
+            cause = ies->cause.choice.misc;
+            d_warn("Not implmented (misc cause : %d)", cause);
+            break;
+        default:
+            d_warn("Invalid cause type : %d", ies->cause.present);
+            break;
+    }
+}
+
+void s1ap_handle_release_access_bearers_response(
+        mme_enb_t *enb, enb_ue_t *enb_ue)
+{
+    status_t rv;
+    pkbuf_t *s1apbuf;
+    S1ap_Cause_t cause;
+
+    d_assert(enb, return, "Null param");
+    d_assert(enb_ue, return, "Null param");
+
+    cause.present = S1ap_Cause_PR_nas;
+    cause.choice.nas = S1ap_CauseNas_normal_release;
+
+    rv = s1ap_build_ue_context_release_commmand(
+            &s1apbuf, enb_ue, &cause);
+    d_assert(rv == CORE_OK && s1apbuf, return, "s1ap build error");
+
+    d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
 }
 
 void s1ap_handle_ue_context_release_complete(
@@ -374,7 +456,6 @@ void s1ap_handle_ue_context_release_complete(
         INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
         enb->enb_id);
 
-    /* BRANDON -> ACETCOM: "pass event to MME SM" or "process here?" */
-    /* process here */
     enb_ue_remove(enb_ue);
 }
+

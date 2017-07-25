@@ -283,3 +283,39 @@ void sgw_handle_delete_session_request(gtp_xact_t *xact,
     d_info("[GTP] Delete Session Reqeust : "
             "SGW[%d] --> PGW[%d]", sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 }
+
+void sgw_handle_release_access_bearers_request(gtp_xact_t *xact, 
+        sgw_sess_t *sess, gtp_release_access_bearers_request_t *req)
+{
+    status_t rv;
+    gtp_release_access_bearers_response_t *rsp = NULL;
+    pkbuf_t *pkbuf = NULL;
+    gtp_message_t gtp_message;
+    
+    gtp_cause_t cause;
+
+    d_assert(sess, return, "Null param");
+    d_assert(xact, return, "Null param");
+
+    rsp = &gtp_message.release_access_bearers_response;
+    memset(&gtp_message, 0, sizeof(gtp_message_t));
+
+    memset(&cause, 0, sizeof(cause));
+    cause.value = GTP_CAUSE_REQUEST_ACCEPTED;
+
+    rsp->cause.presence = 1;
+    rsp->cause.data = &cause;
+    rsp->cause.len = sizeof(cause);
+
+    rv = gtp_build_msg(&pkbuf,
+            GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE, &gtp_message);
+    d_assert(rv == CORE_OK, return, "gtp build failed");
+
+    d_assert(sgw_s11_send_to_mme(xact, 
+            GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE,
+            sess->mme_s11_teid, pkbuf) == CORE_OK, return, 
+            "failed to send message");
+
+    d_info("[GTP] Release Access Bearers Reqeust : "
+            "MME[%d] --> SGW[%d]", sess->mme_s11_teid, sess->sgw_s11_teid);
+}
