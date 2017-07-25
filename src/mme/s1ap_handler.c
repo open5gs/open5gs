@@ -182,6 +182,33 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
         d_assert(enb_ue, return, "Null param");
 
         enb_ue->enb_ue_s1ap_id = ies->eNB_UE_S1AP_ID;
+
+        /* Find MME_UE if s_tmsi included */
+        if (ies->presenceMask &S1AP_INITIALUEMESSAGE_IES_S_TMSI_PRESENT)
+        {
+            S1ap_S_TMSI_t *s_tmsi = &ies->s_tmsi;
+            served_gummei_t *served_gummei = &mme_self()->served_gummei[0];
+            guti_t guti;
+
+            memset(&guti, 0, sizeof(guti_t));
+
+            /* FIXME : Use the first configured plmn_id and mme group id */
+            memcpy(&guti.plmn_id, &served_gummei->plmn_id[0], PLMN_ID_LEN);
+            guti.mme_gid = served_gummei->mme_gid[0];
+
+            /* size must be 1 */
+            memcpy(&guti.mme_code , s_tmsi->mMEC.buf, s_tmsi->mMEC.size); 
+            /* size must be 4 */
+            memcpy(&guti.m_tmsi , s_tmsi->m_TMSI.buf, s_tmsi->m_TMSI.size);
+
+            enb_ue->mme_ue = mme_ue_find_by_guti(&guti);
+            if (!enb_ue->mme_ue)
+            {
+                d_warn("Can not find mme_ue with mme_code = %d, m_tmsi = %d",
+                        guti.mme_code,
+                        guti.m_tmsi);
+            }
+        }
     }
     else
     {
@@ -298,6 +325,33 @@ void s1ap_handle_initial_context_setup_response(
         event_set_param2(&e, (c_uintptr_t)GTP_MODIFY_BEARER_REQUEST_TYPE);
         mme_event_send(&e);
     }
+}
+
+void s1ap_handle_ue_context_release_request(
+        mme_enb_t *enb, s1ap_message_t *message)
+{
+    char buf[INET_ADDRSTRLEN];
+
+    enb_ue_t *enb_ue = NULL;
+    S1ap_UEContextReleaseRequest_IEs_t *ies = NULL;
+
+    ies = &message->s1ap_UEContextReleaseRequest_IEs;
+    d_assert(ies, return, "Null param");
+
+    enb_ue = enb_ue_find_by_mme_ue_s1ap_id(ies->mme_ue_s1ap_id);
+    d_assert(enb_ue, return, "No UE Context[%d]", ies->mme_ue_s1ap_id);
+
+    d_info("[S1AP] UE Context Release Request : "
+            "UE[mME-UE-S1AP-ID(%d)] --> eNB[%s:%d]",
+            enb_ue->mme_ue_s1ap_id,
+        INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+        enb->enb_id);
+
+    /* FIXME : 
+     * 1) Check if cause == user_inactivity 
+     * 2) Send Release_access_bearer_request
+     */
+
 }
 
 void s1ap_handle_ue_context_release_complete(

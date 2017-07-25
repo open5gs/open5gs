@@ -80,6 +80,12 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
                                     enb, message);
                             break;
                         }
+                        case S1ap_ProcedureCode_id_UEContextReleaseRequest:
+                        {
+                            s1ap_handle_ue_context_release_request(
+                                    enb, message);
+                            break;
+                        }
                         default:
                         {
                             d_warn("Not implemented(choice:%d, proc:%d)",
