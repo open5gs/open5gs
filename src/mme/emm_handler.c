@@ -633,6 +633,12 @@ void emm_handle_delete_session_response(mme_bearer_t *bearer)
     }
 }
 
+void emm_handle_service_request(
+        mme_ue_t *mme_ue, nas_service_request_t *service_request)
+{
+    /* TODO */
+}
+
 mme_ue_t *emm_find_ue_by_message(enb_ue_t *enb_ue, nas_message_t *message)
 {
     mme_ue_t *mme_ue = NULL;

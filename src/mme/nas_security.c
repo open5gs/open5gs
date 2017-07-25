@@ -109,8 +109,7 @@ status_t nas_security_encode(
     return CORE_OK;
 }
 
-status_t nas_security_decode(mme_ue_t *mme_ue, pkbuf_t *pkbuf,
-        int *service_request_message, int *mac_failed)
+status_t nas_security_decode(mme_ue_t *mme_ue, pkbuf_t *pkbuf, int *mac_failed)
 {
     c_int32_t hsize = 0;
 
@@ -139,8 +138,6 @@ status_t nas_security_decode(mme_ue_t *mme_ue, pkbuf_t *pkbuf,
             c_uint8_t estimated_sequence_number;
             c_uint8_t sequence_number_high_3bit;
             c_uint8_t mac[NAS_SECURITY_MAC_SIZE];
-
-            *service_request_message = 1;
 
             if (mme_ue->selected_int_algorithm == 0)
             {

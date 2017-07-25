@@ -126,6 +126,14 @@ void emm_state_operational(fsm_t *s, event_t *e)
             message = (nas_message_t *)event_get_param3(e);
             d_assert(message, break, "Null param");
 
+            if (message->emm.h.security_header_type
+                    == NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE)
+            {
+                emm_handle_service_request(
+                        mme_ue, &message->emm.service_request);
+                break;
+            }
+
             switch(message->emm.h.message_type)
             {
                 case NAS_ATTACH_REQUEST:
