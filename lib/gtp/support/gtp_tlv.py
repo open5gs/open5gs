@@ -318,12 +318,20 @@ msg_list["Echo Request"]["table"] = 6
 msg_list["Echo Response"]["table"] = 7
 msg_list["Create Session Request"]["table"] = 8
 msg_list["Create Session Response"]["table"] = 13
+msg_list["Create Bearer Request"]["table"] = 18
+msg_list["Create Bearer Response"]["table"] = 22
 msg_list["Modify Bearer Request"]["table"] = 29
 msg_list["Modify Bearer Response"]["table"] = 33
 msg_list["Delete Session Request"]["table"] = 38
 msg_list["Delete Bearer Request"]["table"] = 40
 msg_list["Delete Session Response"]["table"] = 44
 msg_list["Delete Bearer Response"]["table"] = 47
+msg_list["Modify Bearer Command"]["table"] = 57
+msg_list["Modify Bearer Failure Indication"]["table"] = 60
+msg_list["Update Bearer Request"]["table"] = 62
+msg_list["Update Bearer Response"]["table"] = 66
+msg_list["Delete Bearer Command"]["table"] = 69
+msg_list["Delete Bearer Failure Indication"]["table"] = 72
 
 for key in msg_list.keys():
     if "table" in msg_list[key].keys():

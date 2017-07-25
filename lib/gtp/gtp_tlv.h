@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtp_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-07-25 10:07:02.288006 by acetcom
+ * Created on: 2017-07-25 10:43:47.428237 by acetcom
  * from /Users/acetcom/Documents/29274-d80.docx
  ******************************************************************************/
 
@@ -811,6 +811,130 @@ typedef struct _gtp_delete_session_response_t {
     tlv_epco_t extended_protocol_configuration_options;
 } gtp_delete_session_response_t;
 
+typedef struct _gtp_modify_bearer_command_t {
+    tlv_ambr_t apn_aggregate_maximum_bit_rate;
+    tlv_bearer_context_t bearer_context;
+    tlv_overload_control_information_t mme_s4_sgsn_s_overload_control_information;
+    tlv_overload_control_information_t sgw_s_overload_control_information;
+    tlv_overload_control_information_t twan_epdg_s_overload_control_information;
+    tlv_f_teid_t sender_f_teid_for_control_plane;
+} gtp_modify_bearer_command_t;
+
+typedef struct _gtp_modify_bearer_failure_indication_t {
+    tlv_cause_t cause;
+    tlv_recovery_t recovery;
+    tlv_indication_t indication_flags;
+    tlv_overload_control_information_t pgw_s_overload_control_information;
+    tlv_overload_control_information_t sgw_s_overload_control_information;
+} gtp_modify_bearer_failure_indication_t;
+
+typedef struct _gtp_delete_bearer_command_t {
+    tlv_bearer_context_t bearer_contexts;
+    tlv_uli_t user_location_information;
+    tlv_uli_timestamp_t uli_timestamp;
+    tlv_ue_time_zone_t ue_time_zone;
+    tlv_overload_control_information_t mme_s4_sgsn_s_overload_control_information;
+    tlv_overload_control_information_t sgw_s_overload_control_information;
+    tlv_f_teid_t sender_f_teid_for_control_plane;
+} gtp_delete_bearer_command_t;
+
+typedef struct _gtp_delete_bearer_failure_indication_t {
+    tlv_cause_t cause;
+    tlv_bearer_context_t bearer_context;
+    tlv_recovery_t recovery;
+    tlv_indication_t indication_flags;
+    tlv_overload_control_information_t pgw_s_overload_control_information;
+    tlv_overload_control_information_t sgw_s_overload_control_information;
+} gtp_delete_bearer_failure_indication_t;
+
+typedef struct _gtp_create_bearer_request_t {
+    tlv_pti_t procedure_transaction_id;
+    tlv_ebi_t linked_eps_bearer_id;
+    tlv_pco_t protocol_configuration_options;
+    tlv_bearer_context_t bearer_contexts;
+    tlv_fq_csid_t pgw_fq_csid;
+    tlv_fq_csid_t sgw_fq_csid;
+    tlv_change_reporting_action_t change_reporting_action;
+    tlv_csg_information_reporting_action_t csg_information_reporting_action;
+    tlv_enb_information_reporting_t hnb_information_reporting;
+    tlv_presence_reporting_area_action_t presence_reporting_area_action;
+    tlv_indication_t indication_flags;
+    tlv_load_control_information_t pgw_s_node_level_load_control_information;
+    tlv_load_control_information_t pgw_s_apn_level_load_control_information;
+    tlv_load_control_information_t sgw_s_node_level_load_control_information;
+    tlv_overload_control_information_t pgw_s_overload_control_information;
+    tlv_overload_control_information_t sgw_s_overload_control_information;
+    tlv_f_container_t nbifom_container;
+} gtp_create_bearer_request_t;
+
+typedef struct _gtp_create_bearer_response_t {
+    tlv_cause_t cause;
+    tlv_bearer_context_t bearer_contexts;
+    tlv_recovery_t recovery;
+    tlv_fq_csid_t mme_fq_csid;
+    tlv_fq_csid_t epdg_fq_csid;
+    tlv_fq_csid_t twan_fq_csid;
+    tlv_pco_t protocol_configuration_options;
+    tlv_ue_time_zone_t ue_time_zone;
+    tlv_uli_t user_location_information;
+    tlv_twan_identifier_t twan_identifier;
+    tlv_overload_control_information_t mme_s4_sgsn_s_overload_control_information;
+    tlv_overload_control_information_t sgw_s_overload_control_information;
+    tlv_presence_reporting_area_information_t presence_reporting_area_information;
+    tlv_ip_address_t mme_s4_sgsn_identifier;
+    tlv_overload_control_information_t twan_epdg_s_overload_control_information;
+    tlv_twan_identifier_t wlan_location_information;
+    tlv_twan_identifier_timestamp_t wlan_location_timestamp;
+    tlv_port_number_t ue_udp_port;
+    tlv_f_container_t nbifom_container;
+    tlv_port_number_t ue_tcp_port;
+} gtp_create_bearer_response_t;
+
+typedef struct _gtp_update_bearer_request_t {
+    tlv_bearer_context_t bearer_contexts;
+    tlv_pti_t procedure_transaction_id;
+    tlv_pco_t protocol_configuration_options;
+    tlv_ambr_t aggregate_maximum_bit_rate;
+    tlv_change_reporting_action_t change_reporting_action;
+    tlv_csg_information_reporting_action_t csg_information_reporting_action;
+    tlv_enb_information_reporting_t hnb_information_reporting_;
+    tlv_indication_t indication_flags;
+    tlv_fq_csid_t pgw_fq_csid;
+    tlv_fq_csid_t sgw_fq_csid;
+    tlv_presence_reporting_area_action_t presence_reporting_area_action;
+    tlv_load_control_information_t pgw_s_node_level_load_control_information;
+    tlv_load_control_information_t pgw_s_apn_level_load_control_information;
+    tlv_load_control_information_t sgw_s_node_level_load_control_information;
+    tlv_overload_control_information_t pgw_s_overload_control_information;
+    tlv_overload_control_information_t sgw_s_overload_control_information;
+    tlv_f_container_t nbifom_container;
+} gtp_update_bearer_request_t;
+
+typedef struct _gtp_update_bearer_response_t {
+    tlv_cause_t cause;
+    tlv_bearer_context_t bearer_contexts;
+    tlv_pco_t protocol_configuration_options;
+    tlv_recovery_t recovery;
+    tlv_fq_csid_t mme_fq_csid;
+    tlv_fq_csid_t sgw_fq_csid;
+    tlv_fq_csid_t epdg_fq_csid;
+    tlv_fq_csid_t twan_fq_csid;
+    tlv_indication_t indication_flags;
+    tlv_ue_time_zone_t ue_time_zone;
+    tlv_uli_t user_location_information;
+    tlv_twan_identifier_t twan_identifier;
+    tlv_overload_control_information_t mme_s4_sgsn_s_overload_control_information;
+    tlv_overload_control_information_t sgw_s_overload_control_information;
+    tlv_presence_reporting_area_information_t presence_reporting_area_information;
+    tlv_ip_address_t mme_s4_sgsn_identifier;
+    tlv_overload_control_information_t twan_epdg_s_overload_control_information;
+    tlv_twan_identifier_t wlan_location_information;
+    tlv_twan_identifier_timestamp_t wlan_location_timestamp;
+    tlv_port_number_t ue_udp_port;
+    tlv_f_container_t nbifom_container;
+    tlv_port_number_t ue_tcp_port;
+} gtp_update_bearer_response_t;
+
 typedef struct _gtp_delete_bearer_request_t {
     tlv_ebi_t linked_eps_bearer_id;
     tlv_ebi_t eps_bearer_ids;
@@ -866,6 +990,14 @@ typedef struct _gtp_message_t {
         gtp_modify_bearer_response_t modify_bearer_response;
         gtp_delete_session_request_t delete_session_request;
         gtp_delete_session_response_t delete_session_response;
+        gtp_modify_bearer_command_t modify_bearer_command;
+        gtp_modify_bearer_failure_indication_t modify_bearer_failure_indication;
+        gtp_delete_bearer_command_t delete_bearer_command;
+        gtp_delete_bearer_failure_indication_t delete_bearer_failure_indication;
+        gtp_create_bearer_request_t create_bearer_request;
+        gtp_create_bearer_response_t create_bearer_response;
+        gtp_update_bearer_request_t update_bearer_request;
+        gtp_update_bearer_response_t update_bearer_response;
         gtp_delete_bearer_request_t delete_bearer_request;
         gtp_delete_bearer_response_t delete_bearer_response;
    };

@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtp_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-07-25 10:07:02.300165 by acetcom
+ * Created on: 2017-07-25 10:43:47.442826 by acetcom
  * from /Users/acetcom/Documents/29274-d80.docx
  ******************************************************************************/
 
@@ -2046,6 +2046,170 @@ tlv_desc_t tlv_desc_delete_session_response =
     NULL,
 }};
 
+tlv_desc_t tlv_desc_modify_bearer_command =
+{
+    TLV_MESSAGE,
+    "Modify Bearer Command",
+    0, 0, 0, 0, {
+        &tlv_desc_ambr_0,
+        &tlv_desc_bearer_context_0,
+        &tlv_desc_overload_control_information_0,
+        &tlv_desc_overload_control_information_1,
+        &tlv_desc_overload_control_information_2,
+        &tlv_desc_f_teid_0,
+    NULL,
+}};
+
+tlv_desc_t tlv_desc_modify_bearer_failure_indication =
+{
+    TLV_MESSAGE,
+    "Modify Bearer Failure Indication",
+    0, 0, 0, 0, {
+        &tlv_desc_cause_0,
+        &tlv_desc_recovery_0,
+        &tlv_desc_indication_0,
+        &tlv_desc_overload_control_information_0,
+        &tlv_desc_overload_control_information_1,
+    NULL,
+}};
+
+tlv_desc_t tlv_desc_delete_bearer_command =
+{
+    TLV_MESSAGE,
+    "Delete Bearer Command",
+    0, 0, 0, 0, {
+        &tlv_desc_bearer_context_0,
+        &tlv_desc_uli_0,
+        &tlv_desc_uli_timestamp_0,
+        &tlv_desc_ue_time_zone_0,
+        &tlv_desc_overload_control_information_0,
+        &tlv_desc_overload_control_information_1,
+        &tlv_desc_f_teid_0,
+    NULL,
+}};
+
+tlv_desc_t tlv_desc_delete_bearer_failure_indication =
+{
+    TLV_MESSAGE,
+    "Delete Bearer Failure Indication",
+    0, 0, 0, 0, {
+        &tlv_desc_cause_0,
+        &tlv_desc_bearer_context_0,
+        &tlv_desc_recovery_0,
+        &tlv_desc_indication_0,
+        &tlv_desc_overload_control_information_0,
+        &tlv_desc_overload_control_information_1,
+    NULL,
+}};
+
+tlv_desc_t tlv_desc_create_bearer_request =
+{
+    TLV_MESSAGE,
+    "Create Bearer Request",
+    0, 0, 0, 0, {
+        &tlv_desc_pti_0,
+        &tlv_desc_ebi_0,
+        &tlv_desc_pco_0,
+        &tlv_desc_bearer_context_0,
+        &tlv_desc_fq_csid_0,
+        &tlv_desc_fq_csid_1,
+        &tlv_desc_change_reporting_action_0,
+        &tlv_desc_csg_information_reporting_action_0,
+        &tlv_desc_enb_information_reporting_0,
+        &tlv_desc_presence_reporting_area_action_0,
+        &tlv_desc_indication_0,
+        &tlv_desc_load_control_information_0,
+        &tlv_desc_load_control_information_1,
+        &tlv_desc_load_control_information_2,
+        &tlv_desc_overload_control_information_0,
+        &tlv_desc_overload_control_information_1,
+        &tlv_desc_f_container_0,
+    NULL,
+}};
+
+tlv_desc_t tlv_desc_create_bearer_response =
+{
+    TLV_MESSAGE,
+    "Create Bearer Response",
+    0, 0, 0, 0, {
+        &tlv_desc_cause_0,
+        &tlv_desc_bearer_context_0,
+        &tlv_desc_recovery_0,
+        &tlv_desc_fq_csid_0,
+        &tlv_desc_fq_csid_2,
+        &tlv_desc_fq_csid_3,
+        &tlv_desc_pco_0,
+        &tlv_desc_ue_time_zone_0,
+        &tlv_desc_uli_0,
+        &tlv_desc_twan_identifier_0,
+        &tlv_desc_overload_control_information_0,
+        &tlv_desc_overload_control_information_1,
+        &tlv_desc_presence_reporting_area_information_0,
+        &tlv_desc_ip_address_0,
+        &tlv_desc_overload_control_information_2,
+        &tlv_desc_twan_identifier_1,
+        &tlv_desc_twan_identifier_timestamp_1,
+        &tlv_desc_port_number_0,
+        &tlv_desc_f_container_0,
+        &tlv_desc_port_number_1,
+    NULL,
+}};
+
+tlv_desc_t tlv_desc_update_bearer_request =
+{
+    TLV_MESSAGE,
+    "Update Bearer Request",
+    0, 0, 0, 0, {
+        &tlv_desc_bearer_context_0,
+        &tlv_desc_pti_0,
+        &tlv_desc_pco_0,
+        &tlv_desc_ambr_0,
+        &tlv_desc_change_reporting_action_0,
+        &tlv_desc_csg_information_reporting_action_0,
+        &tlv_desc_enb_information_reporting_0,
+        &tlv_desc_indication_0,
+        &tlv_desc_fq_csid_0,
+        &tlv_desc_fq_csid_1,
+        &tlv_desc_presence_reporting_area_action_0,
+        &tlv_desc_load_control_information_0,
+        &tlv_desc_load_control_information_1,
+        &tlv_desc_load_control_information_2,
+        &tlv_desc_overload_control_information_0,
+        &tlv_desc_overload_control_information_1,
+        &tlv_desc_f_container_0,
+    NULL,
+}};
+
+tlv_desc_t tlv_desc_update_bearer_response =
+{
+    TLV_MESSAGE,
+    "Update Bearer Response",
+    0, 0, 0, 0, {
+        &tlv_desc_cause_0,
+        &tlv_desc_bearer_context_0,
+        &tlv_desc_pco_0,
+        &tlv_desc_recovery_0,
+        &tlv_desc_fq_csid_0,
+        &tlv_desc_fq_csid_1,
+        &tlv_desc_fq_csid_2,
+        &tlv_desc_fq_csid_3,
+        &tlv_desc_indication_0,
+        &tlv_desc_ue_time_zone_0,
+        &tlv_desc_uli_0,
+        &tlv_desc_twan_identifier_0,
+        &tlv_desc_overload_control_information_0,
+        &tlv_desc_overload_control_information_1,
+        &tlv_desc_presence_reporting_area_information_0,
+        &tlv_desc_ip_address_0,
+        &tlv_desc_overload_control_information_2,
+        &tlv_desc_twan_identifier_1,
+        &tlv_desc_twan_identifier_timestamp_1,
+        &tlv_desc_port_number_0,
+        &tlv_desc_f_container_0,
+        &tlv_desc_port_number_1,
+    NULL,
+}};
+
 tlv_desc_t tlv_desc_delete_bearer_request =
 {
     TLV_MESSAGE,
@@ -2141,6 +2305,38 @@ status_t gtp_parse_msg(gtp_message_t *gtp_message, c_uint8_t type, pkbuf_t *pkbu
             rv = tlv_parse_msg(&gtp_message->delete_session_response,
                     &tlv_desc_delete_session_response, pkbuf, TLV_MODE_T1_L2_I1);
             break;
+        case GTP_MODIFY_BEARER_COMMAND_TYPE:
+            rv = tlv_parse_msg(&gtp_message->modify_bearer_command,
+                    &tlv_desc_modify_bearer_command, pkbuf, TLV_MODE_T1_L2_I1);
+            break;
+        case GTP_MODIFY_BEARER_FAILURE_INDICATION_TYPE:
+            rv = tlv_parse_msg(&gtp_message->modify_bearer_failure_indication,
+                    &tlv_desc_modify_bearer_failure_indication, pkbuf, TLV_MODE_T1_L2_I1);
+            break;
+        case GTP_DELETE_BEARER_COMMAND_TYPE:
+            rv = tlv_parse_msg(&gtp_message->delete_bearer_command,
+                    &tlv_desc_delete_bearer_command, pkbuf, TLV_MODE_T1_L2_I1);
+            break;
+        case GTP_DELETE_BEARER_FAILURE_INDICATION_TYPE:
+            rv = tlv_parse_msg(&gtp_message->delete_bearer_failure_indication,
+                    &tlv_desc_delete_bearer_failure_indication, pkbuf, TLV_MODE_T1_L2_I1);
+            break;
+        case GTP_CREATE_BEARER_REQUEST_TYPE:
+            rv = tlv_parse_msg(&gtp_message->create_bearer_request,
+                    &tlv_desc_create_bearer_request, pkbuf, TLV_MODE_T1_L2_I1);
+            break;
+        case GTP_CREATE_BEARER_RESPONSE_TYPE:
+            rv = tlv_parse_msg(&gtp_message->create_bearer_response,
+                    &tlv_desc_create_bearer_response, pkbuf, TLV_MODE_T1_L2_I1);
+            break;
+        case GTP_UPDATE_BEARER_REQUEST_TYPE:
+            rv = tlv_parse_msg(&gtp_message->update_bearer_request,
+                    &tlv_desc_update_bearer_request, pkbuf, TLV_MODE_T1_L2_I1);
+            break;
+        case GTP_UPDATE_BEARER_RESPONSE_TYPE:
+            rv = tlv_parse_msg(&gtp_message->update_bearer_response,
+                    &tlv_desc_update_bearer_response, pkbuf, TLV_MODE_T1_L2_I1);
+            break;
         case GTP_DELETE_BEARER_REQUEST_TYPE:
             rv = tlv_parse_msg(&gtp_message->delete_bearer_request,
                     &tlv_desc_delete_bearer_request, pkbuf, TLV_MODE_T1_L2_I1);
@@ -2194,6 +2390,38 @@ status_t gtp_build_msg(pkbuf_t **pkbuf, c_uint8_t type, gtp_message_t *gtp_messa
         case GTP_DELETE_SESSION_RESPONSE_TYPE:
             rv = tlv_build_msg(pkbuf, &tlv_desc_delete_session_response,
                     &gtp_message->delete_session_response, TLV_MODE_T1_L2_I1);
+            break;
+        case GTP_MODIFY_BEARER_COMMAND_TYPE:
+            rv = tlv_build_msg(pkbuf, &tlv_desc_modify_bearer_command,
+                    &gtp_message->modify_bearer_command, TLV_MODE_T1_L2_I1);
+            break;
+        case GTP_MODIFY_BEARER_FAILURE_INDICATION_TYPE:
+            rv = tlv_build_msg(pkbuf, &tlv_desc_modify_bearer_failure_indication,
+                    &gtp_message->modify_bearer_failure_indication, TLV_MODE_T1_L2_I1);
+            break;
+        case GTP_DELETE_BEARER_COMMAND_TYPE:
+            rv = tlv_build_msg(pkbuf, &tlv_desc_delete_bearer_command,
+                    &gtp_message->delete_bearer_command, TLV_MODE_T1_L2_I1);
+            break;
+        case GTP_DELETE_BEARER_FAILURE_INDICATION_TYPE:
+            rv = tlv_build_msg(pkbuf, &tlv_desc_delete_bearer_failure_indication,
+                    &gtp_message->delete_bearer_failure_indication, TLV_MODE_T1_L2_I1);
+            break;
+        case GTP_CREATE_BEARER_REQUEST_TYPE:
+            rv = tlv_build_msg(pkbuf, &tlv_desc_create_bearer_request,
+                    &gtp_message->create_bearer_request, TLV_MODE_T1_L2_I1);
+            break;
+        case GTP_CREATE_BEARER_RESPONSE_TYPE:
+            rv = tlv_build_msg(pkbuf, &tlv_desc_create_bearer_response,
+                    &gtp_message->create_bearer_response, TLV_MODE_T1_L2_I1);
+            break;
+        case GTP_UPDATE_BEARER_REQUEST_TYPE:
+            rv = tlv_build_msg(pkbuf, &tlv_desc_update_bearer_request,
+                    &gtp_message->update_bearer_request, TLV_MODE_T1_L2_I1);
+            break;
+        case GTP_UPDATE_BEARER_RESPONSE_TYPE:
+            rv = tlv_build_msg(pkbuf, &tlv_desc_update_bearer_response,
+                    &gtp_message->update_bearer_response, TLV_MODE_T1_L2_I1);
             break;
         case GTP_DELETE_BEARER_REQUEST_TYPE:
             rv = tlv_build_msg(pkbuf, &tlv_desc_delete_bearer_request,
