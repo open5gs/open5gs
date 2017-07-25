@@ -423,3 +423,31 @@ status_t tests1ap_build_ue_context_release_complete(pkbuf_t **pkbuf, int i)
     return CORE_OK;
 }
 
+status_t tests1ap_build_service_request(pkbuf_t **pkbuf, int i)
+{
+    char *payload[TESTS1AP_MAX_MESSAGE] = { 
+        "",
+        "",
+
+        "000c"
+        "4037000006000800 020004001a000504 c704d4b800430006 0000f1102b670064"
+        "40080000f11054f6 4010008640014000 6000060040000000 03",
+
+    };
+    c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
+        0,
+        0,
+        59,
+    };
+    char hexbuf[MAX_SDU_LEN];
+    
+    *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    if (!(*pkbuf)) return CORE_ERROR;
+
+    (*pkbuf)->len = len[i];
+    memcpy((*pkbuf)->payload, CORE_HEX(payload[i], strlen(payload[i]), hexbuf),
+            (*pkbuf)->len);
+
+    return CORE_OK;
+}
+

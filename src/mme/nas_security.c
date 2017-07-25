@@ -171,7 +171,7 @@ status_t nas_security_decode(mme_ue_t *mme_ue, pkbuf_t *pkbuf,
 
             if (memcmp(mac + 2, pkbuf->payload + 2, 2) != 0)
             {
-                d_warn("NAS MAC verification failed");
+                d_error("NAS MAC verification failed");
                 *mac_failed = 1;
             }
 
@@ -218,10 +218,7 @@ status_t nas_security_decode(mme_ue_t *mme_ue, pkbuf_t *pkbuf,
     if (mme_ue->selected_enc_algorithm == 0)
         ciphered = 0;
     if (mme_ue->selected_int_algorithm == 0)
-    {
-        d_error("integrity algorithm is not defined");
         integrity_protected = 0;
-    }
 
     if (ciphered || integrity_protected)
     {
@@ -259,7 +256,7 @@ status_t nas_security_decode(mme_ue_t *mme_ue, pkbuf_t *pkbuf,
                         return CORE_ERROR, "pkbuf_header error");
                 return CORE_ERROR;
 #else
-                d_warn("NAS MAC verification failed");
+                d_error("NAS MAC verification failed");
                 *mac_failed = 1;
 #endif
             }

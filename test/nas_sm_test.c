@@ -654,6 +654,14 @@ static void nas_sm_test3(abts_case *tc, void *data)
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
+    core_sleep(time_from_msec(300));
+
+    /* Send Service Request */
+    rv = tests1ap_build_service_request(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
     /* eNB disonncect from MME */
     rv = tests1ap_enb_close(sock);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
