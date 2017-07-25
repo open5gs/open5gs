@@ -19,6 +19,7 @@ static void event_s1ap_to_nas(enb_ue_t *enb_ue, S1ap_NAS_PDU_t *nasPdu)
     nas_esm_header_t *h = NULL;
     pkbuf_t *nasbuf = NULL;
     event_t e;
+    int service_request_message = 0;
     int mac_failed = 0;
 
     d_assert(enb_ue, return, "Null param");
@@ -33,9 +34,9 @@ static void event_s1ap_to_nas(enb_ue_t *enb_ue, S1ap_NAS_PDU_t *nasPdu)
     if (enb_ue->mme_ue)
     {
         d_assert(nas_security_decode(enb_ue->mme_ue, nasbuf, 
-                    &mac_failed) == CORE_OK,
-                 pkbuf_free(nasbuf);return,
-                 "nas_security_decode failed");
+            &service_request_message, &mac_failed) == CORE_OK,
+                pkbuf_free(nasbuf);return,
+                "nas_security_decode failed");
     }
     else
     {
@@ -199,9 +200,10 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
             guti.mme_gid = served_gummei->mme_gid[0];
 
             /* size must be 1 */
-            memcpy(&guti.mme_code , s_tmsi->mMEC.buf, s_tmsi->mMEC.size); 
+            memcpy(&guti.mme_code, s_tmsi->mMEC.buf, s_tmsi->mMEC.size);
             /* size must be 4 */
-            memcpy(&guti.m_tmsi , s_tmsi->m_TMSI.buf, s_tmsi->m_TMSI.size);
+            memcpy(&guti.m_tmsi, s_tmsi->m_TMSI.buf, s_tmsi->m_TMSI.size);
+            guti.m_tmsi = ntohl(guti.m_tmsi);
 
             enb_ue->mme_ue = mme_ue_find_by_guti(&guti);
             if (!enb_ue->mme_ue)

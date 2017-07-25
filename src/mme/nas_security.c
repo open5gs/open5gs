@@ -18,7 +18,6 @@ status_t nas_security_encode(
     switch(message->h.security_header_type)
     {
         case NAS_SECURITY_HEADER_PLAIN_NAS_MESSAGE:
-        case NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE:
             return nas_plain_encode(pkbuf, message);
         case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED:
             integrity_protected = 1;
@@ -110,8 +109,8 @@ status_t nas_security_encode(
     return CORE_OK;
 }
 
-status_t nas_security_decode(
-        mme_ue_t *mme_ue, pkbuf_t *pkbuf, int *mac_failed)
+status_t nas_security_decode(mme_ue_t *mme_ue, pkbuf_t *pkbuf,
+        int *service_request_message, int *mac_failed)
 {
     c_int32_t hsize = 0;
 
@@ -127,11 +126,57 @@ status_t nas_security_decode(
     d_assert(mac_failed, return CORE_ERROR, "Null param");
 
     h = pkbuf->payload;
+    d_assert(h, return CORE_ERROR, "Null param");
     switch(h->security_header_type)
     {
         case NAS_SECURITY_HEADER_PLAIN_NAS_MESSAGE:
-        case NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE:
             return CORE_OK;
+        case NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE:
+        {
+            nas_ksi_and_sequence_number_t *ksi_and_sequence_number =
+                pkbuf->payload + 1;
+            c_uint16_t original_pkbuf_len = pkbuf->len;
+            c_uint8_t estimated_sequence_number;
+            c_uint8_t sequence_number_high_3bit;
+            c_uint8_t mac[NAS_SECURITY_MAC_SIZE];
+
+            *service_request_message = 1;
+
+            if (mme_ue->selected_int_algorithm == 0)
+            {
+                d_warn("integrity algorithm is not defined");
+                break;
+            }
+
+            d_assert(ksi_and_sequence_number, return CORE_ERROR, "Null param");
+            estimated_sequence_number = 
+                ksi_and_sequence_number->sequence_number;
+
+            sequence_number_high_3bit = mme_ue->ul_count.sqn & 0xe0;
+            if ((mme_ue->ul_count.sqn & 0x1f) > estimated_sequence_number)
+            {
+                sequence_number_high_3bit += 0x20;
+            }
+            estimated_sequence_number += sequence_number_high_3bit;
+
+            if (mme_ue->ul_count.sqn > estimated_sequence_number)
+                mme_ue->ul_count.overflow++;
+            mme_ue->ul_count.sqn = estimated_sequence_number;
+
+            pkbuf->len = 2;
+            nas_mac_calculate(mme_ue->selected_int_algorithm,
+                mme_ue->knas_int, mme_ue->ul_count.i32, NAS_SECURITY_BEARER,
+                NAS_SECURITY_UPLINK_DIRECTION, pkbuf, mac);
+            pkbuf->len = original_pkbuf_len;
+
+            if (memcmp(mac + 2, pkbuf->payload + 2, 2) != 0)
+            {
+                d_warn("NAS MAC verification failed");
+                *mac_failed = 1;
+            }
+
+            return CORE_OK;
+        }
         case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED:
             integrity_protected = 1;
             break;
@@ -173,7 +218,10 @@ status_t nas_security_decode(
     if (mme_ue->selected_enc_algorithm == 0)
         ciphered = 0;
     if (mme_ue->selected_int_algorithm == 0)
+    {
+        d_error("integrity algorithm is not defined");
         integrity_protected = 0;
+    }
 
     if (ciphered || integrity_protected)
     {
@@ -192,7 +240,7 @@ status_t nas_security_decode(
                 mme_ue->knas_enc, mme_ue->ul_count.i32, NAS_SECURITY_BEARER,
                 NAS_SECURITY_UPLINK_DIRECTION, pkbuf);
         }
-        if(integrity_protected)
+        if (integrity_protected)
         {
             c_uint8_t mac[NAS_SECURITY_MAC_SIZE];
             c_uint32_t mac32;
