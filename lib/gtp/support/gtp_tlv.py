@@ -332,6 +332,8 @@ msg_list["Update Bearer Request"]["table"] = 62
 msg_list["Update Bearer Response"]["table"] = 66
 msg_list["Delete Bearer Command"]["table"] = 69
 msg_list["Delete Bearer Failure Indication"]["table"] = 72
+msg_list["Release Access Bearers Request"]["table"] = 79
+msg_list["Release Access Bearers Response"]["table"] = 80
 
 for key in msg_list.keys():
     if "table" in msg_list[key].keys():
@@ -370,6 +372,7 @@ type_list["PDN Type"]["size"] = 1                       # Type : 99
 type_list["Port Number"]["size"] = 2                    # Type : 126
 type_list["APN Restriction"]["size"] = 1                # Type : 127
 type_list["Selection Mode"]["size"] = 1                 # Type : 128
+type_list["Node Type"]["size"] = 1                 # Type : 128
 
 f = open(outdir + 'gtp_tlv.h', 'w')
 output_header_to_file(f)

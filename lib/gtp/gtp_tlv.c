@@ -26,8 +26,8 @@
 /*******************************************************************************
  * This file had been created by gtp_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-07-25 10:43:47.442826 by acetcom
- * from /Users/acetcom/Documents/29274-d80.docx
+ * Created on: 2017-07-25 10:57:51.732176 by acetcom
+ * from 29274-d80.docx
  ******************************************************************************/
 
 #include "core_debug.h"
@@ -871,10 +871,10 @@ tlv_desc_t tlv_desc_emlpp_priority_0 =
 
 tlv_desc_t tlv_desc_node_type_0 =
 {
-    TLV_VAR_STR,
+    TLV_UINT8,
     "Node Type",
     TLV_NODE_TYPE_TYPE,
-    0,
+    1,
     0,
     sizeof(tlv_node_type_t),
     { NULL }
@@ -2265,6 +2265,30 @@ tlv_desc_t tlv_desc_delete_bearer_response =
     NULL,
 }};
 
+tlv_desc_t tlv_desc_release_access_bearers_request =
+{
+    TLV_MESSAGE,
+    "Release Access Bearers Request",
+    0, 0, 0, 0, {
+        &tlv_desc_ebi_0,
+        &tlv_desc_node_type_0,
+        &tlv_desc_indication_0,
+    NULL,
+}};
+
+tlv_desc_t tlv_desc_release_access_bearers_response =
+{
+    TLV_MESSAGE,
+    "Release Access Bearers Response",
+    0, 0, 0, 0, {
+        &tlv_desc_cause_0,
+        &tlv_desc_recovery_0,
+        &tlv_desc_indication_0,
+        &tlv_desc_load_control_information_0,
+        &tlv_desc_overload_control_information_0,
+    NULL,
+}};
+
 
 status_t gtp_parse_msg(gtp_message_t *gtp_message, c_uint8_t type, pkbuf_t *pkbuf)
 {
@@ -2344,6 +2368,14 @@ status_t gtp_parse_msg(gtp_message_t *gtp_message, c_uint8_t type, pkbuf_t *pkbu
         case GTP_DELETE_BEARER_RESPONSE_TYPE:
             rv = tlv_parse_msg(&gtp_message->delete_bearer_response,
                     &tlv_desc_delete_bearer_response, pkbuf, TLV_MODE_T1_L2_I1);
+            break;
+        case GTP_RELEASE_ACCESS_BEARERS_REQUEST_TYPE:
+            rv = tlv_parse_msg(&gtp_message->release_access_bearers_request,
+                    &tlv_desc_release_access_bearers_request, pkbuf, TLV_MODE_T1_L2_I1);
+            break;
+        case GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE:
+            rv = tlv_parse_msg(&gtp_message->release_access_bearers_response,
+                    &tlv_desc_release_access_bearers_response, pkbuf, TLV_MODE_T1_L2_I1);
             break;
         default:
             d_warn("Not implmeneted(type:%d)", type);
@@ -2430,6 +2462,14 @@ status_t gtp_build_msg(pkbuf_t **pkbuf, c_uint8_t type, gtp_message_t *gtp_messa
         case GTP_DELETE_BEARER_RESPONSE_TYPE:
             rv = tlv_build_msg(pkbuf, &tlv_desc_delete_bearer_response,
                     &gtp_message->delete_bearer_response, TLV_MODE_T1_L2_I1);
+            break;
+        case GTP_RELEASE_ACCESS_BEARERS_REQUEST_TYPE:
+            rv = tlv_build_msg(pkbuf, &tlv_desc_release_access_bearers_request,
+                    &gtp_message->release_access_bearers_request, TLV_MODE_T1_L2_I1);
+            break;
+        case GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE:
+            rv = tlv_build_msg(pkbuf, &tlv_desc_release_access_bearers_response,
+                    &gtp_message->release_access_bearers_response, TLV_MODE_T1_L2_I1);
             break;
         default:
             d_warn("Not implmeneted(type:%d)", type);

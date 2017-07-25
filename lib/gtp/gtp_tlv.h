@@ -26,8 +26,8 @@
 /*******************************************************************************
  * This file had been created by gtp_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-07-25 10:43:47.428237 by acetcom
- * from /Users/acetcom/Documents/29274-d80.docx
+ * Created on: 2017-07-25 10:57:51.715570 by acetcom
+ * from 29274-d80.docx
  ******************************************************************************/
 
 #ifndef __GTP_TLV_H__
@@ -484,7 +484,7 @@ typedef tlv_octet_t tlv_change_reporting_action_t;
 typedef tlv_octet_t tlv_fq_csid_t;
 typedef tlv_octet_t tlv_channel_needed_t;
 typedef tlv_octet_t tlv_emlpp_priority_t;
-typedef tlv_octet_t tlv_node_type_t;
+typedef tlv_uint8_t tlv_node_type_t;
 typedef tlv_octet_t tlv_fqdn_t;
 typedef tlv_octet_t tlv_ti_t;
 typedef tlv_octet_t tlv_mbms_session_duration_t;
@@ -980,6 +980,20 @@ typedef struct _gtp_delete_bearer_response_t {
     tlv_port_number_t ue_tcp_port	;
 } gtp_delete_bearer_response_t;
 
+typedef struct _gtp_release_access_bearers_request_t {
+    tlv_ebi_t list_of_rabs;
+    tlv_node_type_t originating_node;
+    tlv_indication_t indication_flags;
+} gtp_release_access_bearers_request_t;
+
+typedef struct _gtp_release_access_bearers_response_t {
+    tlv_cause_t cause;
+    tlv_recovery_t recovery;
+    tlv_indication_t indication_flags;
+    tlv_load_control_information_t sgw_s_node_level_load_control_information;
+    tlv_overload_control_information_t sgw_s_overload_control_information;
+} gtp_release_access_bearers_response_t;
+
 typedef struct _gtp_message_t {
    union {
         gtp_echo_request_t echo_request;
@@ -1000,6 +1014,8 @@ typedef struct _gtp_message_t {
         gtp_update_bearer_response_t update_bearer_response;
         gtp_delete_bearer_request_t delete_bearer_request;
         gtp_delete_bearer_response_t delete_bearer_response;
+        gtp_release_access_bearers_request_t release_access_bearers_request;
+        gtp_release_access_bearers_response_t release_access_bearers_response;
    };
 } gtp_message_t;
 
