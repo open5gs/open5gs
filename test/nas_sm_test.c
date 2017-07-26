@@ -266,7 +266,7 @@ static void nas_sm_test2(abts_case *tc, void *data)
     s1ap_message_t message;
     int rc;
     int i;
-    int msgindex = 1;
+    int msgindex = 3;
 
     mongoc_collection_t *collection = NULL;
     bson_error_t error;
@@ -445,7 +445,7 @@ static void nas_sm_test3(abts_case *tc, void *data)
     s1ap_message_t message;
     int rc;
     int i;
-    int msgindex = 2;
+    int msgindex = 6;
 
     c_uint8_t tmp[MAX_SDU_LEN];
     char *_authentication_request =
