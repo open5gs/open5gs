@@ -2,6 +2,9 @@
 
 #include "core_debug.h"
 
+#include "nas_message.h"
+#include "gtp_tlv.h"
+
 #include "mme_event.h"
 
 #include "s1ap_build.h"
@@ -126,6 +129,33 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
                 {
                     d_warn("Not implemented(choice:%d, proc:%d)",
                         message->direction, message->procedureCode);
+                    break;
+                }
+            }
+
+            break;
+        }
+        case MME_EVT_S1AP_UE_FROM_EMM:
+        {
+            index_t enb_index = event_get_param1(e);
+            index_t enb_ue_index = event_get_param2(e);
+            mme_enb_t *enb = NULL;
+            enb_ue_t *enb_ue = NULL;
+
+            d_assert(enb_index, return, "Null param");
+            d_assert(enb_ue_index, return, "Null param");
+
+            enb = mme_enb_find(enb_index);
+            d_assert(enb, return, "Null param");
+
+            enb_ue = enb_ue_find(enb_ue_index);
+            d_assert(enb_ue, return, "Null param");
+
+            switch(event_get_param3(e))
+            {
+                case NAS_DETACH_ACCEPT:
+                {
+                    s1ap_handle_detach_accept(enb, enb_ue);
                     break;
                 }
             }

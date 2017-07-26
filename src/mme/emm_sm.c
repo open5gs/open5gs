@@ -134,6 +134,9 @@ void emm_state_operational(fsm_t *s, event_t *e)
                 break;
             }
 
+            /* save Last EMM Message Type in MME UE Context */
+            mme_ue->last_emm_message_type = message->emm.h.message_type;
+
             switch(message->emm.h.message_type)
             {
                 case NAS_ATTACH_REQUEST:

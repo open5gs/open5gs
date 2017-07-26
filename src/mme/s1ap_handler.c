@@ -415,6 +415,26 @@ void s1ap_handle_ue_context_release_request(
     }
 }
 
+void s1ap_handle_detach_accept(
+        mme_enb_t *enb, enb_ue_t *enb_ue)
+{
+    status_t rv;
+    pkbuf_t *s1apbuf;
+    S1ap_Cause_t cause;
+
+    d_assert(enb, return, "Null param");
+    d_assert(enb_ue, return, "Null param");
+
+    cause.present = S1ap_Cause_PR_nas;
+    cause.choice.nas = S1ap_CauseNas_detach;
+
+    rv = s1ap_build_ue_context_release_commmand(
+            &s1apbuf, enb_ue, &cause);
+    d_assert(rv == CORE_OK && s1apbuf, return, "s1ap build error");
+
+    d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
+}
+
 void s1ap_handle_release_access_bearers_response(
         mme_enb_t *enb, enb_ue_t *enb_ue)
 {
@@ -455,6 +475,6 @@ void s1ap_handle_ue_context_release_complete(
         INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
         enb->enb_id);
 
-    d_assert(enb_ue_remove(enb_ue) == CORE_OK,, "No ENB_UE context");
+    enb_ue_remove(enb_ue);
 }
 

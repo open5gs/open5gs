@@ -19,7 +19,7 @@
 #include "mme_s11_build.h"
 #include "mme_s11_path.h"
 
-void emm_handle_identity_request(mme_ue_t *mme_ue);
+#include "emm_handler.h"
 
 mme_ue_t *emm_find_ue_by_message(enb_ue_t *enb_ue, nas_message_t *message)
 {
@@ -569,16 +569,11 @@ void emm_handle_detach_request(
     status_t rv;
     mme_enb_t *enb = NULL;
     enb_ue_t *enb_ue = NULL;
-    pkbuf_t *emmbuf = NULL, *s11buf = NULL, *s1apbuf = NULL;
+    pkbuf_t *s11buf = NULL;
     mme_sess_t *sess;
+    int delete_session_request_needed = 0;
 
-    nas_message_t message;
     nas_detach_type_t *detach_type = &detach_request->detach_type;
-
-    /* FIXME: nas_key_set_identifier is ignored
-     * detach_type->tsc
-     * detach_type->nas_key_set_identifier 
-     */
 
     d_assert(mme_ue, return, "Null param");
     enb_ue = mme_ue->enb_ue;
@@ -586,9 +581,13 @@ void emm_handle_detach_request(
     enb = enb_ue->enb;
     d_assert(enb, return, "Null param");
 
-    /* Encode ue->s1ap.cause for later use */
-    enb_ue->s1ap.cause.present = S1ap_Cause_PR_nas;
-    enb_ue->s1ap.cause.choice.nas = S1ap_CauseNas_detach;
+    /* save detach_type in MME UE context */
+    d_assert(detach_type, return, "Null param");
+    mme_ue->detach_type.tsc = detach_type->tsc;
+    mme_ue->detach_type.nas_key_set_identifier =
+            detach_type->nas_key_set_identifier;
+    mme_ue->detach_type.switch_off = detach_type->switch_off;
+    mme_ue->detach_type.detach_type = detach_type->detach_type;
 
     switch (detach_type->detach_type)
     {
@@ -622,6 +621,8 @@ void emm_handle_detach_request(
 
         if (bearer != NULL)
         {
+            delete_session_request_needed = 1;
+
             rv = mme_s11_build_delete_session_request(&s11buf, sess);
             d_assert(rv == CORE_OK, return, "S11 build error");
 
@@ -633,9 +634,35 @@ void emm_handle_detach_request(
         sess = mme_sess_next(sess);
     }
 
+    if (!delete_session_request_needed)
+    {
+        emm_handle_detach_accept(mme_ue);
+    }
+}
+
+void emm_handle_detach_accept(mme_ue_t *mme_ue)
+{
+    event_t e;
+
+    status_t rv;
+    nas_message_t message;
+    pkbuf_t *emmbuf = NULL, *s1apbuf = NULL;
+    mme_enb_t *enb = NULL;
+    enb_ue_t *enb_ue = NULL;
+    nas_detach_type_t *detach_type = NULL;
+
+    d_assert(mme_ue, return, "Null param");
+    enb_ue = mme_ue->enb_ue;
+    d_assert(enb_ue, return, "Null param");
+    enb = enb_ue->enb;
+    d_assert(enb, return, "Null param");
+
+    detach_type = &mme_ue->detach_type;
+    d_assert(detach_type, return, "Null param");
+
+    /* reply with detach accept */
     if ((detach_type->switch_off & 0x1) == 0)
     {
-        /* reply with detach accept */
         memset(&message, 0, sizeof(message));
         message.h.security_header_type = 
             NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
@@ -657,17 +684,26 @@ void emm_handle_detach_request(
         d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
     }
 
-    /* TODO: initiate s1 ue context release with a timeout value */
+    event_set(&e, MME_EVT_S1AP_UE_FROM_EMM);
+    event_set_param1(&e, (c_uintptr_t)enb->index);
+    event_set_param2(&e, (c_uintptr_t)enb_ue->index);
+    event_set_param3(&e, (c_uintptr_t)NAS_DETACH_ACCEPT);
+    mme_event_send(&e);
+
+#if 0
+    rv = s1ap_build_ue_context_release_commmand(
+            &s1apbuf, enb_ue, &enb_ue->s1ap.cause);
+    d_assert(rv == CORE_OK && s1apbuf, return, "s1ap build error");
+
+    d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
+#endif
 }
 
 void emm_handle_delete_session_response(mme_bearer_t *bearer)
 {
-    status_t rv;
     mme_ue_t *mme_ue = NULL;
     mme_enb_t *enb = NULL;
-    pkbuf_t *s1apbuf = NULL;
     mme_sess_t *sess;
-    int b_wait = 0;
     enb_ue_t *enb_ue = NULL;
 
     d_assert(bearer, return, "Null param");
@@ -681,32 +717,17 @@ void emm_handle_delete_session_response(mme_bearer_t *bearer)
     sess = mme_sess_find_by_ebi(mme_ue, bearer->ebi);
     mme_sess_remove(sess);
 
-    /* sess and bearer are not valid from here */
+    d_info("[NAS] Delete Session Response : UE[%s] <-- EMM", mme_ue->imsi_bcd);
 
-    sess = mme_sess_first(mme_ue);
-    while (sess != NULL)
+    switch(mme_ue->last_emm_message_type)
     {
-        mme_bearer_t *temp_bearer = mme_default_bearer_in_sess(sess);
-
-        if (temp_bearer != NULL)
+        case NAS_DETACH_REQUEST:
         {
-            b_wait = 1;
+            emm_handle_detach_accept(mme_ue);
             break;
         }
-        sess = mme_sess_next(sess);
-    }
-
-    if (!b_wait)
-    {
-        d_info("[NAS] Detach done : UE[%s] <-- EMM", mme_ue->imsi_bcd);
-
-        rv = s1ap_build_ue_context_release_commmand(
-                &s1apbuf, enb_ue, &enb_ue->s1ap.cause);
-        d_assert(rv == CORE_OK && s1apbuf, return, "s1ap build error");
-
-        d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
-
-        /* TODO: launch a timer */
+        default:
+            break;
     }
 }
 

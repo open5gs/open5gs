@@ -22,6 +22,8 @@ char* mme_event_get_name(event_t *e)
             return "MME_EVT_S1AP_ENB_LO_ACCEPT";
         case MME_EVT_S1AP_ENB_LO_CONNREFUSED:
             return"MME_EVT_S1AP_ENB_LO_CONNREFUSED";
+        case MME_EVT_S1AP_UE_FROM_EMM:
+            return "MME_EVT_S1AP_UE_FROM_EMM";
         case MME_EVT_S1AP_UE_FROM_S11:
             return "MME_EVT_S1AP_UE_FROM_S11";
 

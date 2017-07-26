@@ -123,6 +123,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
             break;
         }
         case MME_EVT_S1AP_ENB_MSG:
+        case MME_EVT_S1AP_UE_FROM_EMM:
         case MME_EVT_S1AP_UE_FROM_S11:
         {
             s1ap_message_t message;

@@ -123,11 +123,6 @@ struct _enb_ue_t {
     tai_t           tai;
     e_cgi_t         e_cgi;
 
-    /* S1AP transactions */
-    struct {
-        S1ap_Cause_t cause;
-    } s1ap;
-
     /* mme_ue_context */
     mme_ue_t        *mme_ue;
 
@@ -161,6 +156,7 @@ struct _mme_ue_t {
     e_cgi_t         e_cgi;
 #endif
     plmn_id_t       visited_plmn_id;
+    nas_detach_type_t detach_type;
 
     /* Security Context */
     int             security_context_available;
@@ -208,9 +204,11 @@ struct _mme_ue_t {
     c_uint8_t       ebi;        /* EPS Bearer ID generator */
     list_t          sess_list;
 
-
-    /* enb ue context */
+    /* eNB UE context */
     enb_ue_t        *enb_ue;
+
+    /* Last Received NAS-EMM Messasge */
+    c_uint8_t       last_emm_message_type;
 };
 
 typedef struct _mme_sess_t {
