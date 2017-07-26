@@ -98,7 +98,18 @@ mme_ue_t *emm_find_ue_by_message(enb_ue_t *enb_ue, nas_message_t *message)
     return mme_ue;
 }
 
-void emm_handle_esm_message_container(
+static status_t emm_send_to_enb(enb_ue_t *enb_ue, pkbuf_t *pkbuf)
+{
+    mme_enb_t *enb = NULL;
+
+    d_assert(enb_ue, return CORE_ERROR, "Null param");
+    enb = enb_ue->enb;
+    d_assert(enb, return CORE_ERROR, "Null param");
+
+    return s1ap_send_to_enb(enb, pkbuf);
+}
+
+static void emm_handle_esm_message_container(
         mme_ue_t *mme_ue, nas_esm_message_container_t *esm_message_container)
 {
     pkbuf_t *esmbuf = NULL;
@@ -240,7 +251,6 @@ void emm_handle_attach_request(
 void emm_handle_identity_request(mme_ue_t *mme_ue)
 {
     status_t rv;
-    mme_enb_t *enb = NULL;
     enb_ue_t *enb_ue = NULL;
     pkbuf_t *emmbuf = NULL, *s1apbuf = NULL;
 
@@ -251,8 +261,6 @@ void emm_handle_identity_request(mme_ue_t *mme_ue)
     d_assert(mme_ue, return, "Null param");
     enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return, "Null param");
-    enb = enb_ue->enb;
-    d_assert(enb, return, "Null param");
 
     memset(&message, 0, sizeof(message));
     message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
@@ -267,7 +275,7 @@ void emm_handle_identity_request(mme_ue_t *mme_ue)
     d_assert(rv == CORE_OK && s1apbuf, 
             pkbuf_free(emmbuf); return, "s1ap build error");
 
-    d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
+    d_assert(emm_send_to_enb(enb_ue, s1apbuf) == CORE_OK,, "s1ap send error");
 }
 
 void emm_handle_identity_response(
@@ -307,7 +315,6 @@ void emm_handle_identity_response(
 void emm_handle_authentication_request(mme_ue_t *mme_ue)
 {
     status_t rv;
-    mme_enb_t *enb = NULL;
     enb_ue_t *enb_ue = NULL;
     pkbuf_t *emmbuf = NULL, *s1apbuf = NULL;
 
@@ -318,8 +325,6 @@ void emm_handle_authentication_request(mme_ue_t *mme_ue)
     d_assert(mme_ue, return, "Null param");
     enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return, "Null param");
-    enb = enb_ue->enb;
-    d_assert(enb, return, "Null param");
 
     memset(&message, 0, sizeof(message));
     message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
@@ -338,14 +343,13 @@ void emm_handle_authentication_request(mme_ue_t *mme_ue)
     d_assert(rv == CORE_OK && s1apbuf, 
             pkbuf_free(emmbuf); return, "s1ap build error");
 
-    d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
+    d_assert(emm_send_to_enb(enb_ue, s1apbuf) == CORE_OK,, "s1ap send error");
 }
 
 void emm_handle_authentication_response(mme_ue_t *mme_ue, 
         nas_authentication_response_t *authentication_response)
 {
     status_t rv;
-    mme_enb_t *enb = NULL;
     enb_ue_t *enb_ue = NULL;
     pkbuf_t *emmbuf = NULL, *s1apbuf = NULL;
     int i;
@@ -366,8 +370,6 @@ void emm_handle_authentication_response(mme_ue_t *mme_ue,
     d_assert(mme_ue, return, "Null param");
     enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return, "Null param");
-    enb = enb_ue->enb;
-    d_assert(enb, return, "Null param");
 
     if (authentication_response_parameter->length != mme_ue->xres_len ||
         memcmp(authentication_response_parameter->res,
@@ -445,7 +447,7 @@ void emm_handle_authentication_response(mme_ue_t *mme_ue,
     d_assert(rv == CORE_OK && s1apbuf, 
             pkbuf_free(emmbuf); return, "s1ap build error");
 
-    d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
+    d_assert(emm_send_to_enb(enb_ue, s1apbuf) == CORE_OK,, "s1ap send error");
 }
 
 void emm_handle_create_session_response(mme_bearer_t *bearer)
@@ -453,7 +455,6 @@ void emm_handle_create_session_response(mme_bearer_t *bearer)
     status_t rv;
     mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
-    mme_enb_t *enb = NULL;
     pkbuf_t *esmbuf = NULL, *emmbuf = NULL, *s1apbuf = NULL;
 
     d_assert(bearer, return, "Null param");
@@ -461,8 +462,6 @@ void emm_handle_create_session_response(mme_bearer_t *bearer)
     d_assert(mme_ue, return, "Null param");
     enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return, "Null param");
-    enb = enb_ue->enb;
-    d_assert(enb, return, "Null param");
 
     rv = esm_build_activate_default_bearer_context(&esmbuf, bearer);
     d_assert(rv == CORE_OK && esmbuf, 
@@ -481,14 +480,13 @@ void emm_handle_create_session_response(mme_bearer_t *bearer)
     d_assert(rv == CORE_OK && s1apbuf, 
             pkbuf_free(emmbuf); return, "s1ap build error");
 
-    d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
+    d_assert(emm_send_to_enb(enb_ue, s1apbuf) == CORE_OK,, "s1ap send error");
 }
 
 void emm_handle_attach_complete(
     mme_ue_t *mme_ue, nas_attach_complete_t *attach_complete)
 {
     status_t rv;
-    mme_enb_t *enb = NULL;
     enb_ue_t *enb_ue = NULL;
     pkbuf_t *emmbuf = NULL, *s1apbuf = NULL;
 
@@ -505,8 +503,6 @@ void emm_handle_attach_complete(
     d_assert(mme_ue, return, "Null param");
     enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return, "Null param");
-    enb = enb_ue->enb;
-    d_assert(enb, return, "Null param");
 
     emm_handle_esm_message_container(
             mme_ue, &attach_complete->esm_message_container);
@@ -552,7 +548,7 @@ void emm_handle_attach_complete(
     d_assert(rv == CORE_OK && s1apbuf, 
             pkbuf_free(emmbuf); return, "s1ap build error");
 
-    d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
+    d_assert(emm_send_to_enb(enb_ue, s1apbuf) == CORE_OK,, "s1ap send error");
 }
 
 void emm_handle_emm_status(mme_ue_t *mme_ue, nas_emm_status_t *emm_status)
@@ -567,27 +563,19 @@ void emm_handle_detach_request(
         mme_ue_t *mme_ue, nas_detach_request_from_ue_t *detach_request)
 {
     status_t rv;
-    mme_enb_t *enb = NULL;
     enb_ue_t *enb_ue = NULL;
     pkbuf_t *s11buf = NULL;
     mme_sess_t *sess;
     int delete_session_request_needed = 0;
+    nas_detach_type_t *detach_type = NULL;
 
-    nas_detach_type_t *detach_type = &detach_request->detach_type;
+    d_assert(detach_request, return, "Null param");
+    detach_type = &detach_request->detach_type;
+    d_assert(detach_type, return, "Null param");
 
     d_assert(mme_ue, return, "Null param");
     enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return, "Null param");
-    enb = enb_ue->enb;
-    d_assert(enb, return, "Null param");
-
-    /* save detach_type in MME UE context */
-    d_assert(detach_type, return, "Null param");
-    mme_ue->detach_type.tsc = detach_type->tsc;
-    mme_ue->detach_type.nas_key_set_identifier =
-            detach_type->nas_key_set_identifier;
-    mme_ue->detach_type.switch_off = detach_type->switch_off;
-    mme_ue->detach_type.detach_type = detach_type->detach_type;
 
     switch (detach_type->detach_type)
     {
@@ -636,11 +624,12 @@ void emm_handle_detach_request(
 
     if (!delete_session_request_needed)
     {
-        emm_handle_detach_accept(mme_ue);
+        emm_handle_detach_accept(mme_ue, detach_request);
     }
 }
 
-void emm_handle_detach_accept(mme_ue_t *mme_ue)
+void emm_handle_detach_accept(
+        mme_ue_t *mme_ue, nas_detach_request_from_ue_t *detach_request)
 {
     event_t e;
 
@@ -657,7 +646,8 @@ void emm_handle_detach_accept(mme_ue_t *mme_ue)
     enb = enb_ue->enb;
     d_assert(enb, return, "Null param");
 
-    detach_type = &mme_ue->detach_type;
+    d_assert(detach_request, return, "Null param");
+    detach_type = &detach_request->detach_type;
     d_assert(detach_type, return, "Null param");
 
     /* reply with detach accept */
@@ -681,7 +671,8 @@ void emm_handle_detach_accept(mme_ue_t *mme_ue)
         d_assert(rv == CORE_OK && s1apbuf, 
             pkbuf_free(emmbuf); return, "s1ap build error");
 
-        d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
+        d_assert(emm_send_to_enb(enb_ue, s1apbuf) == CORE_OK,, 
+                "s1ap send error");
     }
 
     event_set(&e, MME_EVT_S1AP_UE_FROM_EMM);
@@ -689,41 +680,31 @@ void emm_handle_detach_accept(mme_ue_t *mme_ue)
     event_set_param2(&e, (c_uintptr_t)enb_ue->index);
     event_set_param3(&e, (c_uintptr_t)NAS_DETACH_ACCEPT);
     mme_event_send(&e);
-
-#if 0
-    rv = s1ap_build_ue_context_release_commmand(
-            &s1apbuf, enb_ue, &enb_ue->s1ap.cause);
-    d_assert(rv == CORE_OK && s1apbuf, return, "s1ap build error");
-
-    d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
-#endif
 }
 
 void emm_handle_delete_session_response(mme_bearer_t *bearer)
 {
     mme_ue_t *mme_ue = NULL;
-    mme_enb_t *enb = NULL;
     mme_sess_t *sess;
-    enb_ue_t *enb_ue = NULL;
+    nas_message_t *message = NULL;
 
     d_assert(bearer, return, "Null param");
     mme_ue = bearer->mme_ue;
     d_assert(mme_ue, return, "Null param");
-    enb_ue = mme_ue->enb_ue;
-    d_assert(enb_ue, return, "Null param");
-    enb = enb_ue->enb;
-    d_assert(enb, return, "Null param");
+    message = &mme_ue->last_emm_message;
+    d_assert(message, return, "Null param");
 
     sess = mme_sess_find_by_ebi(mme_ue, bearer->ebi);
     mme_sess_remove(sess);
 
     d_info("[NAS] Delete Session Response : UE[%s] <-- EMM", mme_ue->imsi_bcd);
 
-    switch(mme_ue->last_emm_message_type)
+    switch(message->emm.h.message_type)
     {
         case NAS_DETACH_REQUEST:
         {
-            emm_handle_detach_accept(mme_ue);
+            emm_handle_detach_accept(mme_ue,
+                    &message->emm.detach_request_from_ue);
             break;
         }
         default:
@@ -737,15 +718,12 @@ void emm_handle_service_request(
     status_t rv;
     pkbuf_t *s1apbuf = NULL;
     enb_ue_t *enb_ue = NULL;
-    mme_enb_t *enb = NULL;
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
 
     d_assert(mme_ue, return, "Null param");
     enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return, "Null param");
-    enb = enb_ue->enb;
-    d_assert(enb, return, "Null param");
     sess = mme_sess_first(mme_ue);
     d_assert(sess, return, "Null param");
     bearer = mme_default_bearer_in_sess(sess);
@@ -754,6 +732,6 @@ void emm_handle_service_request(
     rv = s1ap_build_initial_context_setup_request(&s1apbuf, bearer, NULL);
     d_assert(rv == CORE_OK && s1apbuf, return, "s1ap build error");
 
-    d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
+    d_assert(emm_send_to_enb(enb_ue, s1apbuf) == CORE_OK,, "s1ap send error");
 }
 

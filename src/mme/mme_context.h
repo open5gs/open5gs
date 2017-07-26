@@ -9,7 +9,7 @@
 #include "core_hash.h"
 
 #include "types.h"
-#include "nas_types.h"
+#include "nas_message.h"
 #include "gtp_xact.h"
 
 #include "mme_sm.h"
@@ -156,7 +156,6 @@ struct _mme_ue_t {
     e_cgi_t         e_cgi;
 #endif
     plmn_id_t       visited_plmn_id;
-    nas_detach_type_t detach_type;
 
     /* Security Context */
     int             security_context_available;
@@ -207,8 +206,9 @@ struct _mme_ue_t {
     /* eNB UE context */
     enb_ue_t        *enb_ue;
 
-    /* Last Received NAS-EMM Messasge */
-    c_uint8_t       last_emm_message_type;
+    /* Last Received NAS Messasge */
+    nas_message_t   last_emm_message;
+    nas_message_t   last_esm_message;
 };
 
 typedef struct _mme_sess_t {

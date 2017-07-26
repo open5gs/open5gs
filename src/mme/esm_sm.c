@@ -88,6 +88,9 @@ void esm_state_operational(fsm_t *s, event_t *e)
             message = (nas_message_t *)event_get_param3(e);
             d_assert(message, break, "Null param");
 
+            /* Save Last Received NAS-ESM message */
+            memcpy(&mme_ue->last_esm_message, message, sizeof(nas_message_t));
+
             switch(message->esm.h.message_type)
             {
                 case NAS_PDN_CONNECTIVITY_REQUEST:

@@ -126,6 +126,9 @@ void emm_state_operational(fsm_t *s, event_t *e)
             message = (nas_message_t *)event_get_param3(e);
             d_assert(message, break, "Null param");
 
+            /* Save Last Received NAS-EMM message */
+            memcpy(&mme_ue->last_emm_message, message, sizeof(nas_message_t));
+
             if (message->emm.h.security_header_type
                     == NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE)
             {
@@ -133,9 +136,6 @@ void emm_state_operational(fsm_t *s, event_t *e)
                         mme_ue, &message->emm.service_request);
                 break;
             }
-
-            /* save Last EMM Message Type in MME UE Context */
-            mme_ue->last_emm_message_type = message->emm.h.message_type;
 
             switch(message->emm.h.message_type)
             {

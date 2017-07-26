@@ -24,7 +24,8 @@ CORE_DECLARE(void) emm_handle_identity_response(
         mme_ue_t *mme_ue, nas_identity_response_t *identity_response);
 CORE_DECLARE(void) emm_handle_detach_request(
     mme_ue_t *mme_ue, nas_detach_request_from_ue_t *detach_request);
-CORE_DECLARE(void) emm_handle_detach_accept(mme_ue_t *mme_ue);
+CORE_DECLARE(void) emm_handle_detach_accept(
+    mme_ue_t *mme_ue, nas_detach_request_from_ue_t *detach_request);
 CORE_DECLARE(void) emm_handle_delete_session_response(mme_bearer_t *bearer);
 CORE_DECLARE(void) emm_handle_service_request(
         mme_ue_t *mme_ue, nas_service_request_t *service_request);
