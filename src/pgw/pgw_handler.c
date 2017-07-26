@@ -151,6 +151,8 @@ void pgw_handle_create_session_request(
     d_assert(bearer, return, "No Bearer Context");
     sess = bearer->sess;
     d_assert(sess, return, "Null param");
+    ip_pool = sess->ip_pool;
+    d_assert(ip_pool, return, "Null param");
 
     memcpy(apn, req->access_point_name.data, req->access_point_name.len);
     apn[req->access_point_name.len] = 0;
@@ -194,11 +196,6 @@ void pgw_handle_create_session_request(
         data = &pgw_s5c_teid;
     rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
         len = GTP_F_TEID_IPV4_LEN;
-
-    ip_pool = pgw_ip_pool_alloc();
-    d_assert(ip_pool,
-            pgw_sess_remove(sess); pgw_pdn_remove(pdn); return,
-            "No PDN Context");
 
     pdn->paa.pdn_type = GTP_PDN_TYPE_IPV4;
     pdn->paa.ipv4_addr = ip_pool->ue_addr;

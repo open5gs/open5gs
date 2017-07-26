@@ -416,12 +416,18 @@ pgw_bearer_t *pgw_sess_add(c_uint8_t id)
     d_assert(bearer, pgw_sess_remove(sess); return NULL, 
             "Can't add default bearer context");
 
+    sess->ip_pool = pgw_ip_pool_alloc();
+    d_assert(sess->ip_pool, pgw_sess_remove(sess); return NULL,
+            "Can't alloc IP pool");
+
     return bearer;
 }
 
 status_t pgw_sess_remove(pgw_sess_t *sess)
 {
     d_assert(sess, return CORE_ERROR, "Null param");
+
+    pgw_ip_pool_free(sess->ip_pool);
 
     pgw_pdn_remove_all(sess);
     pgw_bearer_remove_all(sess);
