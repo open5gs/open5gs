@@ -662,6 +662,28 @@ static void nas_sm_test3(abts_case *tc, void *data)
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
+    /* Receive Initial Context Setup Request */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rc = tests1ap_enb_read(sock, recvbuf);
+    recvbuf->len = 112;
+    pkbuf_free(recvbuf);
+
+    /* Send UE Capability Info Indication */
+    rv = tests1ap_build_ue_capability_info_indication(&sendbuf, msgindex+1);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    core_sleep(time_from_msec(300));
+
+    /* Send Initial Context Setup Response */
+    rv = tests1ap_build_initial_context_setup_response(&sendbuf, msgindex+1);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    core_sleep(time_from_msec(300));
+
     /* eNB disonncect from MME */
     rv = tests1ap_enb_close(sock);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);

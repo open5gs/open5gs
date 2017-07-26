@@ -974,13 +974,6 @@ mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
 
     mme_ue->enb_ue = enb_ue;
     enb_ue->mme_ue = mme_ue;
-#define MME_UE_T3_DURATION     3000 /* 3 seconds */
-    mme_ue->tm_t3 = event_timer(&self.tm_service, MME_EVT_EMM_UE_T3,
-                MME_UE_T3_DURATION, mme_ue->index);
-#if 1 /* example code : please remove if you know the usage */
-    tm_start(mme_ue->tm_t3);
-    tm_stop(mme_ue->tm_t3);
-#endif
 
     fsm_create(&mme_ue->sm, emm_state_initial, emm_state_final);
     fsm_init(&mme_ue->sm, 0);
@@ -991,8 +984,6 @@ mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
 status_t mme_ue_remove(mme_ue_t *mme_ue)
 {
     d_assert(mme_ue, return CORE_ERROR, "Null param");
-
-    tm_delete(mme_ue->tm_t3);
 
     fsm_final(&mme_ue->sm, 0);
     fsm_clear(&mme_ue->sm);

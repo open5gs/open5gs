@@ -162,7 +162,6 @@ status_t s1ap_build_initial_context_setup_request(
     enb_ue_t *enb_ue = NULL;
     pdn_t *pdn = NULL;
 
-    d_assert(emmbuf, return CORE_ERROR, "Null param");
     d_assert(bearer, return CORE_ERROR, "Null param");
     mme_ue = bearer->mme_ue;
     d_assert(mme_ue, return CORE_ERROR, "Null param");
@@ -212,11 +211,14 @@ status_t s1ap_build_initial_context_setup_request(
 
     s1ap_uint32_to_OCTET_STRING(bearer->sgw_s1u_teid, &e_rab->gTP_TEID);
 
-    nasPdu = (S1ap_NAS_PDU_t *)core_calloc(1, sizeof(S1ap_NAS_PDU_t));
-    nasPdu->size = emmbuf->len;
-    nasPdu->buf = core_calloc(nasPdu->size, sizeof(c_uint8_t));
-    memcpy(nasPdu->buf, emmbuf->payload, nasPdu->size);
-    e_rab->nAS_PDU = nasPdu;
+    if (emmbuf && emmbuf->len)
+    {
+        nasPdu = (S1ap_NAS_PDU_t *)core_calloc(1, sizeof(S1ap_NAS_PDU_t));
+        nasPdu->size = emmbuf->len;
+        nasPdu->buf = core_calloc(nasPdu->size, sizeof(c_uint8_t));
+        memcpy(nasPdu->buf, emmbuf->payload, nasPdu->size);
+        e_rab->nAS_PDU = nasPdu;
+    }
 
     ASN_SEQUENCE_ADD(&ies->e_RABToBeSetupListCtxtSUReq, e_rab);
 
@@ -249,13 +251,17 @@ status_t s1ap_build_initial_context_setup_request(
     s1ap_free_pdu(&message);
 
     d_assert(s1apbuf && encoded >= 0,return CORE_ERROR,);
-    pkbuf_free(emmbuf);
 
     d_info("[S1AP] Initial Context Setup Request : "
             "UE[eNB-UE-S1AP-ID(%d)] <-- eNB[%s:%d]",
             enb_ue->enb_ue_s1ap_id,
             INET_NTOP(&enb_ue->enb->s1ap_sock->remote.sin_addr.s_addr, buf),
             enb_ue->enb->enb_id);
+
+    if (emmbuf && emmbuf->len)
+    {
+        pkbuf_free(emmbuf);
+    }
 
     return CORE_OK;
 }

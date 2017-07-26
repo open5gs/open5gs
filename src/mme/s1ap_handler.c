@@ -190,6 +190,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
             S1ap_S_TMSI_t *s_tmsi = &ies->s_tmsi;
             served_gummei_t *served_gummei = &mme_self()->served_gummei[0];
             guti_t guti;
+            mme_ue_t *mme_ue = NULL;
 
             memset(&guti, 0, sizeof(guti_t));
 
@@ -203,12 +204,16 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
             memcpy(&guti.m_tmsi, s_tmsi->m_TMSI.buf, s_tmsi->m_TMSI.size);
             guti.m_tmsi = ntohl(guti.m_tmsi);
 
-            enb_ue->mme_ue = mme_ue_find_by_guti(&guti);
-            if (!enb_ue->mme_ue)
+            mme_ue = mme_ue_find_by_guti(&guti);
+            if (!mme_ue)
             {
-                d_warn("Can not find mme_ue with mme_code = %d, m_tmsi = %d",
-                        guti.mme_code,
-                        guti.m_tmsi);
+                d_error("Can not find mme_ue with mme_code = %d, m_tmsi = %d",
+                        guti.mme_code, guti.m_tmsi);
+            }
+            else
+            {
+                mme_ue->enb_ue = enb_ue;
+                enb_ue->mme_ue = mme_ue;
             }
         }
     }

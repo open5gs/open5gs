@@ -130,11 +130,14 @@ status_t tests1ap_build_initial_ue_msg(pkbuf_t **pkbuf, int i)
         "404c000005000800 020002001a002423 0741710809101010 3254767905f0f000"
         "0000000e0201d011 d1270780000a0000 0d00c10043000600 00f1102b67006440"
         "080000f11054f640 100086400130",
+
+        "",
     };
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         92,
         108,
         80,
+        0,
     };
     char hexbuf[MAX_SDU_LEN];
     
@@ -161,12 +164,15 @@ status_t tests1ap_build_authentication_response(pkbuf_t **pkbuf, int i)
         "000d"
         "4038000005000000 05c0020000c80008 00020002001a000c 0b0753087dc78e7c"
         "421f9eb900644008 0000f11054f64010 004340060000f110 2b67",
+
+        "",
     };
 
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         66,
         57,
         60,
+        0,
     };
     char hexbuf[MAX_SDU_LEN];
     
@@ -193,11 +199,14 @@ status_t tests1ap_build_security_mode_complete(pkbuf_t **pkbuf, int i)
         "4035000005000000 05c0020000c80008 00020002001a0009 0847c0eb1eb80007"
         "5e006440080000f1 1054f64010004340 060000f1102b67",
 
+        "",
+
     };
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         57,
         54,
         57,
+        0,
     };
     char hexbuf[MAX_SDU_LEN];
     
@@ -228,11 +237,14 @@ status_t tests1ap_build_esm_information_response(pkbuf_t **pkbuf, int i)
         "4041000005000000 05c0020000c80008 00020002001a0015 142793b2bedc0102"
         "01da280908696e74 65726e6574006440 080000f11054f640 10004340060000f1"
         "102b67"
+
+        "",
     };
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         146,
         66,
         69,
+        0,
     };
     char hexbuf[MAX_SDU_LEN];
     
@@ -263,10 +275,17 @@ status_t tests1ap_build_ue_capability_info_indication(pkbuf_t **pkbuf, int i)
         "403f000003000000 05c0020000c80008 00020002004a4029 28013001023cd980"
         "00bc000ff06ec4d0 0141b82c00000000 07d404000ef08020 00012a0300008800"
         "00",
+
+        "0016"
+        "403f000003000000 05c0020000c70008 00020004004a4029 28013001023cd980"
+        "00bc000ff06ec4d0 0141b82c00000000 07d404000ef08020 00012a0300008800"
+        "00",
+
     };
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         161,
         51,
+        67,
         67,
     };
     char hexbuf[MAX_SDU_LEN];
@@ -295,10 +314,15 @@ status_t tests1ap_build_initial_context_setup_response(pkbuf_t **pkbuf, int i)
         "0025000003000040 05c0020000c80008 400200020033400f 000032400a0a1f0a"
         "0123a701000008",
 
+        "2009"
+        "0025000003000040 05c0020000c70008 400200040033400f 000032400a0a1f0a"
+        "0123a701000208",
+
     };
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         41,
         38,
+        41,
         41,
     };
     char hexbuf[MAX_SDU_LEN];
@@ -319,16 +343,20 @@ status_t tests1ap_build_attach_complete(pkbuf_t **pkbuf, int i)
         "000d"
         "403a000005000000 05c00100009d0008 00020001001a000e 0d27c183eb950207"
         "4300035200c20064 40080000f1101079 baf0004340060000 f1105ba0",
+
         "",
 
         "000d"
         "403a000005000000 05c0020000c80008 00020002001a000e 0d27f190fc2b0207"
         "4300035200c20064 40080000f11054f6 4010004340060000 f1102b67",
+
+        "",
     };
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         62,
         0,
         62,
+        0,
     };
     char hexbuf[MAX_SDU_LEN];
     
@@ -351,10 +379,13 @@ status_t tests1ap_build_emm_status(pkbuf_t **pkbuf, int i)
         "65006440080000f1 10002343d0004340 060000f1103039",
 
         "",
+
+        "",
     };
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         0,
         55,
+        0,
         0,
     };
     char hexbuf[MAX_SDU_LEN];
@@ -378,11 +409,14 @@ status_t tests1ap_build_ue_context_release_request(pkbuf_t **pkbuf, int i)
         "0012"
         "4018000003000000 05c0020000c80008 0002000200024002 0280",
 
+        "",
+
     };
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         0,
         0,
         28,
+        0,
     };
     char hexbuf[MAX_SDU_LEN];
     
@@ -405,11 +439,14 @@ status_t tests1ap_build_ue_context_release_complete(pkbuf_t **pkbuf, int i)
         "2017"
         "0012000002000040 05c0020000c80008 40020002",
 
+        "",
+
     };
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         0,
         0,
         22,
+        0,
     };
     char hexbuf[MAX_SDU_LEN];
     
@@ -433,11 +470,14 @@ status_t tests1ap_build_service_request(pkbuf_t **pkbuf, int i)
         "4037000006000800 020004001a000504 c704d4b800430006 0000f1102b670064"
         "40080000f11054f6 4010008640014000 6000060040000000 03",
 
+        "",
+
     };
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         0,
         0,
         59,
+        0,
     };
     char hexbuf[MAX_SDU_LEN];
     

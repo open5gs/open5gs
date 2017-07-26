@@ -209,9 +209,6 @@ struct _mme_ue_t {
     list_t          sess_list;
 
 
-    /* Timer Info */
-    tm_block_id     tm_t3;      /**< T3 Timer */
-
     /* enb ue context */
     enb_ue_t        *enb_ue;
 };
