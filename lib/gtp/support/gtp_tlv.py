@@ -326,14 +326,23 @@ msg_list["Delete Session Request"]["table"] = 38
 msg_list["Delete Bearer Request"]["table"] = 40
 msg_list["Delete Session Response"]["table"] = 44
 msg_list["Delete Bearer Response"]["table"] = 47
+msg_list["Downlink Data Notification"]["table"] = 50
+msg_list["Downlink Data Notification Acknowledge"]["table"] = 53
+msg_list["Downlink Data Notification Failure Indication"]["table"] = 54
+msg_list["Delete Indirect Data Forwarding Tunnel Request"]["table"] = 55
+msg_list["Delete Indirect Data Forwarding Tunnel Response"]["table"] = 56
 msg_list["Modify Bearer Command"]["table"] = 57
 msg_list["Modify Bearer Failure Indication"]["table"] = 60
 msg_list["Update Bearer Request"]["table"] = 62
 msg_list["Update Bearer Response"]["table"] = 66
 msg_list["Delete Bearer Command"]["table"] = 69
 msg_list["Delete Bearer Failure Indication"]["table"] = 72
+msg_list["Create Indirect Data Forwarding Tunnel Request"]["table"] = 75
+msg_list["Create Indirect Data Forwarding Tunnel Response"]["table"] = 77
 msg_list["Release Access Bearers Request"]["table"] = 79
 msg_list["Release Access Bearers Response"]["table"] = 80
+msg_list["Modify Access Bearers Request"]["table"] = 84
+msg_list["Modify Access Bearers Response"]["table"] = 87
 
 for key in msg_list.keys():
     if "table" in msg_list[key].keys():
