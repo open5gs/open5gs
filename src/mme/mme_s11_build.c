@@ -190,7 +190,8 @@ status_t mme_s11_build_delete_session_request(pkbuf_t **pkbuf, mme_sess_t *sess)
     mme_bearer_t *bearer;
     gtp_delete_session_request_t *req = &gtp_message.delete_session_request;
 
-    gtp_f_teid_t mme_s11_teid;
+    gtp_uli_t uli;
+    char uli_buf[GTP_MAX_ULI_LEN];
     gtp_indication_t indication;
 
     d_assert(sess, return CORE_ERROR, "Null param");
@@ -206,20 +207,24 @@ status_t mme_s11_build_delete_session_request(pkbuf_t **pkbuf, mme_sess_t *sess)
         req->linked_eps_bearer_id.u8 = bearer->ebi;
     }
 
+    memset(&uli, 0, sizeof(gtp_uli_t));
+    uli.flags.e_cgi = 1;
+    uli.flags.tai = 1;
+    memcpy(&uli.tai.plmn_id, &mme_ue->enb_ue->tai.plmn_id,
+            sizeof(uli.tai.plmn_id));
+    uli.tai.tac = mme_ue->enb_ue->tai.tac;
+    memcpy(&uli.e_cgi.plmn_id, &mme_ue->enb_ue->e_cgi.plmn_id,
+            sizeof(uli.tai.plmn_id));
+    uli.e_cgi.cell_id = mme_ue->enb_ue->e_cgi.cell_id;
+    req->user_location_information.presence = 1;
+    gtp_build_uli(&req->user_location_information, &uli,
+            uli_buf, GTP_MAX_ULI_LEN);
+
     memset(&indication, 0, sizeof(gtp_indication_t));
     indication.oi = 1;
     req->indication_flags.presence = 1;
     req->indication_flags.data = &indication;
     req->indication_flags.len = sizeof(gtp_indication_t);
-
-    memset(&mme_s11_teid, 0, sizeof(gtp_f_teid_t));
-    mme_s11_teid.ipv4 = 1;
-    mme_s11_teid.interface_type = GTP_F_TEID_S11_MME_GTP_C;
-    mme_s11_teid.teid = htonl(sess->mme_s11_teid);
-    mme_s11_teid.ipv4_addr = sess->mme_s11_addr;
-    req->sender_f_teid_for_control_plane.presence = 1;
-    req->sender_f_teid_for_control_plane.data = &mme_s11_teid;
-    req->sender_f_teid_for_control_plane.len = GTP_F_TEID_IPV4_LEN;
 
     rv = gtp_build_msg(pkbuf, GTP_DELETE_SESSION_REQUEST_TYPE, &gtp_message);
     d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");

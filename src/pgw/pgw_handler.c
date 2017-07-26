@@ -247,23 +247,16 @@ void pgw_handle_delete_session_request(
     pkbuf_t *pkbuf;
     gtp_message_t gtp_message;
     c_uint8_t type = GTP_DELETE_SESSION_RESPONSE_TYPE;
-    gtp_f_teid_t *sgw_s5c_teid;
     gtp_delete_session_response_t *rsp = &gtp_message.delete_session_response;
+    c_uint32_t sgw_s5c_teid;
 
     gtp_cause_t cause;
     c_uint8_t pco_buf[MAX_PCO_LEN];
     c_int16_t pco_len;
     
-
     d_assert(xact, return, "Null param");
     /* sess can be NULL */
     d_assert(req, return, "Null param");
-
-    if (req->sender_f_teid_for_control_plane.presence == 0)
-    {
-        d_error("No TEID");
-        return;
-    }
 
     /* prepare cause */
     memset(&cause, 0, sizeof(cause));
@@ -272,8 +265,9 @@ void pgw_handle_delete_session_request(
     /* Remove a pgw session */
     if (sess)
     {
-        d_info("[GTP] Delete Session Reqeust : "
-            "SGW[%d] --> PGW[%d]", sess->sgw_s5c_teid, sess->pgw_s5c_teid);
+        /* backup sgw_s5c_teid in session context */
+        sgw_s5c_teid = sess->sgw_s5c_teid;
+
         if (pgw_sess_remove(sess) != CORE_OK)
         {
             d_error("Error on PGW session %d removal", sess->index);
@@ -311,6 +305,5 @@ void pgw_handle_delete_session_request(
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
     /* send */
-    sgw_s5c_teid = req->sender_f_teid_for_control_plane.data;
-    pgw_s5c_send_to_sgw(xact, type, ntohl(sgw_s5c_teid->teid), pkbuf);
+    pgw_s5c_send_to_sgw(xact, type, sgw_s5c_teid, pkbuf);
 }

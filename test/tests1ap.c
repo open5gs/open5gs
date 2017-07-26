@@ -400,6 +400,38 @@ status_t tests1ap_build_emm_status(pkbuf_t **pkbuf, int i)
     return CORE_OK;
 }
 
+status_t tests1ap_build_detach_request(pkbuf_t **pkbuf, int i)
+{
+    char *payload[TESTS1AP_MAX_MESSAGE] = { 
+        "000c404900000600 080003000100001a 00161517a3f862ae 040745090bf600f1"
+        "10000201020003e6 004300060000f110 2b67006440080000 f1109d67aa500086"
+        "4001300060000600 40020003e6",
+
+        "",
+
+        ""
+
+        "",
+
+    };
+    c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
+        77,
+        0,
+        0,
+        0,
+    };
+    char hexbuf[MAX_SDU_LEN];
+    
+    *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    if (!(*pkbuf)) return CORE_ERROR;
+
+    (*pkbuf)->len = len[i];
+    memcpy((*pkbuf)->payload, CORE_HEX(payload[i], strlen(payload[i]), hexbuf),
+            (*pkbuf)->len);
+
+    return CORE_OK;
+}
+
 status_t tests1ap_build_ue_context_release_request(pkbuf_t **pkbuf, int i)
 {
     char *payload[TESTS1AP_MAX_MESSAGE] = { 
@@ -432,8 +464,8 @@ status_t tests1ap_build_ue_context_release_request(pkbuf_t **pkbuf, int i)
 
 status_t tests1ap_build_ue_context_release_complete(pkbuf_t **pkbuf, int i)
 {
-    char *payload[TESTS1AP_MAX_MESSAGE] = { 
-        "",
+    char *payload[TESTS1AP_MAX_MESSAGE] = {
+        "2017001300000200 004005c00100009d 00084003400527",
         "",
 
         "2017"
@@ -443,13 +475,13 @@ status_t tests1ap_build_ue_context_release_complete(pkbuf_t **pkbuf, int i)
 
     };
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
-        0,
+        23,
         0,
         22,
         0,
     };
     char hexbuf[MAX_SDU_LEN];
-    
+
     *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     if (!(*pkbuf)) return CORE_ERROR;
 

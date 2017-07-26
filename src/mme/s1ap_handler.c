@@ -217,12 +217,6 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
             }
         }
     }
-    else
-    {
-        d_warn("Duplicated: eNB[0x%x] sends "
-            "Initial-UE Message[eNB-UE-S1AP-ID(%d)]",
-            enb->enb_id, enb_ue->enb_ue_s1ap_id);
-    }
 
     memcpy(&enb_ue->tai.plmn_id, pLMNidentity->buf, 
             sizeof(enb_ue->tai.plmn_id));
@@ -461,6 +455,6 @@ void s1ap_handle_ue_context_release_complete(
         INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
         enb->enb_id);
 
-    enb_ue_remove(enb_ue);
+    d_assert(enb_ue_remove(enb_ue) == CORE_OK,, "No ENB_UE context");
 }
 

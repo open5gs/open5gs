@@ -101,10 +101,8 @@ void sgw_state_operational(fsm_t *s, event_t *e)
                             xact, sess, &gtp_message);
                     break;
                 case GTP_DELETE_SESSION_RESPONSE_TYPE:
-#if 0
                     sgw_handle_delete_session_response(
                             xact, sess, &gtp_message);
-#endif
                     break;
                 case GTP_RELEASE_ACCESS_BEARERS_REQUEST_TYPE:
                     sgw_handle_release_access_bearers_request(

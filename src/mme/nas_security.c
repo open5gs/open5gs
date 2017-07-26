@@ -253,7 +253,8 @@ status_t nas_security_decode(mme_ue_t *mme_ue, pkbuf_t *pkbuf, int *mac_failed)
                         return CORE_ERROR, "pkbuf_header error");
                 return CORE_ERROR;
 #else
-                d_error("NAS MAC verification failed");
+                d_error("NAS MAC verification failed(0x%x != 0x%x)",
+                        ntohl(h->message_authentication_code), ntohl(mac32));
                 *mac_failed = 1;
 #endif
             }

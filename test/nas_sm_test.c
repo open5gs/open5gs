@@ -219,6 +219,24 @@ static void nas_sm_test1(abts_case *tc, void *data)
     ABTS_TRUE(tc, memcmp(recvbuf->payload+43, tmp+43, 3) == 0);
     pkbuf_free(recvbuf);
 
+    /* Send Detach Request */
+    rv = tests1ap_build_detach_request(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* Receive UE Context Release Command */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rc = tests1ap_enb_read(sock, recvbuf);
+    recvbuf->len = 23;
+    pkbuf_free(recvbuf);
+
+    /* Send UE Context Release Complete */
+    rv = tests1ap_build_ue_context_release_complete(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
     /* eNB disonncect from MME */
     rv = tests1ap_enb_close(sock);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
