@@ -201,11 +201,9 @@ void mme_state_operational(fsm_t *s, event_t *e)
         case MME_EVT_EMM_BEARER_FROM_S11:
         case MME_EVT_EMM_UE_T3:
         {
-            nas_message_t message;
             index_t index = event_get_param1(e);
             mme_ue_t *mme_ue = NULL;
             mme_bearer_t *bearer = NULL;
-            pkbuf_t *pkbuf = NULL;
 
             if (event_get(e) == MME_EVT_EMM_BEARER_FROM_S11)
             {
@@ -222,21 +220,8 @@ void mme_state_operational(fsm_t *s, event_t *e)
             d_assert(mme_ue, break, "No UE context");
             d_assert(FSM_STATE(&mme_ue->sm), break, "No EMM State Machine");
 
-            if (event_get(e) == MME_EVT_EMM_UE_MSG)
-            {
-                pkbuf = (pkbuf_t *)event_get_param2(e);
-                d_assert(pkbuf, break, "Null param");
-                d_assert(nas_emm_decode(&message, pkbuf) == CORE_OK,
-                        pkbuf_free(pkbuf); break, "Can't decode NAS_EMM");
-                event_set_param3(e, (c_uintptr_t)&message);
-            }
-
             fsm_dispatch(&mme_ue->sm, (fsm_event_t*)e);
 
-            if (event_get(e) == MME_EVT_EMM_UE_MSG)
-            {
-                pkbuf_free(pkbuf);
-            }
             break;
         }
         case MME_EVT_ESM_BEARER_FROM_S6A:

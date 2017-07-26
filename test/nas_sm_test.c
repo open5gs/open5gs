@@ -418,6 +418,16 @@ static void nas_sm_test2(abts_case *tc, void *data)
 
     core_sleep(time_from_msec(300));
 
+    /* Send Initial-UE Message */
+#if 0
+    rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex+1);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    core_sleep(time_from_msec(300));
+#endif
+
     /* eNB disonncect from MME */
     rv = tests1ap_enb_close(sock);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);

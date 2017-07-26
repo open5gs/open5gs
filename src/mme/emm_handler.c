@@ -156,6 +156,11 @@ void emm_handle_attach_request(
 {
     nas_eps_mobile_identity_t *eps_mobile_identity =
                     &attach_request->eps_mobile_identity;
+    enb_ue_t *enb_ue = NULL;
+
+    d_assert(mme_ue, return, "Null param");
+    enb_ue = mme_ue->enb_ue;
+    d_assert(enb_ue, return, "Null param");
 
     emm_handle_esm_message_container(
             mme_ue, &attach_request->esm_message_container);
@@ -198,8 +203,6 @@ void emm_handle_attach_request(
 
             d_info("[NAS] Attach request : UE_IMSI[%s] --> EMM", imsi_bcd);
 
-            /* TODO : check if authorization process is needed or not */
-            mme_s6a_send_air(mme_ue);
             break;
         }
         case NAS_EPS_MOBILE_IDENTITY_GUTI:
@@ -227,15 +230,12 @@ void emm_handle_attach_request(
              *         The record with GUTI,IMSI should be 
              *         stored in permanent DB
              */
-            if (memcmp(&guti, &mme_ue->guti, sizeof(guti_t)) == 0)
-            {
-                /* TODO : check if authorization process is needed or not */
-                mme_s6a_send_air(mme_ue);
-            }
-            else
+            if (memcmp(&guti, &mme_ue->guti, sizeof(guti_t)) != 0)
             {
                 emm_handle_identity_request(mme_ue);
+                return;
             }
+
             break;
         }
         default:
@@ -245,6 +245,29 @@ void emm_handle_attach_request(
             
             return;
         }
+    }
+
+    if (mme_ue->security_context_available)
+    {
+        if (enb_ue->mac_failed)
+        {
+            int delete_session_request_handled = 0;
+
+            emm_handle_delete_session_request(
+                    mme_ue, &delete_session_request_handled);
+            if (!delete_session_request_handled)
+            {
+                mme_s6a_send_air(mme_ue);
+            }
+        }
+        else
+        {
+
+        }
+    }
+    else
+    {
+        mme_s6a_send_air(mme_ue);
     }
 }
 
@@ -562,11 +585,8 @@ void emm_handle_emm_status(mme_ue_t *mme_ue, nas_emm_status_t *emm_status)
 void emm_handle_detach_request(
         mme_ue_t *mme_ue, nas_detach_request_from_ue_t *detach_request)
 {
-    status_t rv;
     enb_ue_t *enb_ue = NULL;
-    pkbuf_t *s11buf = NULL;
-    mme_sess_t *sess;
-    int delete_session_request_needed = 0;
+    int delete_session_request_handled = 0;
     nas_detach_type_t *detach_type = NULL;
 
     d_assert(detach_request, return, "Null param");
@@ -602,27 +622,8 @@ void emm_handle_detach_request(
             break;
     }
     
-    sess = mme_sess_first(mme_ue);
-    while (sess != NULL)
-    {
-        mme_bearer_t *bearer = mme_default_bearer_in_sess(sess);
-
-        if (bearer != NULL)
-        {
-            delete_session_request_needed = 1;
-
-            rv = mme_s11_build_delete_session_request(&s11buf, sess);
-            d_assert(rv == CORE_OK, return, "S11 build error");
-
-            rv = mme_s11_send_to_sgw(bearer->sgw, 
-                    GTP_DELETE_SESSION_REQUEST_TYPE, sess->sgw_s11_teid, 
-                    s11buf);
-            d_assert(rv == CORE_OK, return, "S11 send error");
-        }
-        sess = mme_sess_next(sess);
-    }
-
-    if (!delete_session_request_needed)
+    emm_handle_delete_session_request(mme_ue, &delete_session_request_handled);
+    if (!delete_session_request_handled)
     {
         emm_handle_detach_accept(mme_ue, detach_request);
     }
@@ -682,6 +683,32 @@ void emm_handle_detach_accept(
     mme_event_send(&e);
 }
 
+void emm_handle_delete_session_request(mme_ue_t *mme_ue, int *handled)
+{
+    status_t rv;
+    pkbuf_t *s11buf = NULL;
+
+    *handled = 0;
+    mme_sess_t *sess = mme_sess_first(mme_ue);
+    while (sess != NULL)
+    {
+        mme_bearer_t *bearer = mme_default_bearer_in_sess(sess);
+        if (bearer && bearer->sgw)
+        {
+            rv = mme_s11_build_delete_session_request(&s11buf, sess);
+            d_assert(rv == CORE_OK, return, "S11 build error");
+
+            rv = mme_s11_send_to_sgw(bearer->sgw,
+                    GTP_DELETE_SESSION_REQUEST_TYPE, sess->sgw_s11_teid,
+                    s11buf);
+            d_assert(rv == CORE_OK, return, "S11 send error");
+
+            *handled = 1;
+        }
+        sess = mme_sess_next(sess);
+    }
+}
+
 void emm_handle_delete_session_response(mme_bearer_t *bearer)
 {
     mme_ue_t *mme_ue = NULL;
@@ -697,7 +724,8 @@ void emm_handle_delete_session_response(mme_bearer_t *bearer)
     sess = mme_sess_find_by_ebi(mme_ue, bearer->ebi);
     mme_sess_remove(sess);
 
-    d_info("[NAS] Delete Session Response : UE[%s] <-- EMM", mme_ue->imsi_bcd);
+    d_info("[NAS] Delete Session Response : UE[%s] <-- EMM[%d]",
+            mme_ue->imsi_bcd, message->emm.h.message_type);
 
     switch(message->emm.h.message_type)
     {
@@ -705,6 +733,24 @@ void emm_handle_delete_session_response(mme_bearer_t *bearer)
         {
             emm_handle_detach_accept(mme_ue,
                     &message->emm.detach_request_from_ue);
+            break;
+        }
+        case NAS_ATTACH_REQUEST:
+        {
+            enb_ue_t *enb_ue = mme_ue->enb_ue;
+            d_assert(enb_ue, return, "Null param");
+
+            if (mme_ue->security_context_available && enb_ue->mac_failed)
+            {
+                mme_s6a_send_air(mme_ue);
+            }
+            else
+            {
+                d_error("invalid security parameter"
+                        "(available:%d, mac_failed:%d)",
+                        mme_ue->security_context_available,
+                        enb_ue->mac_failed);
+            }
             break;
         }
         default:
