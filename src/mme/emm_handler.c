@@ -203,6 +203,29 @@ void emm_handle_attach_request(
 
             d_info("[NAS] Attach request : UE_IMSI[%s] --> EMM", imsi_bcd);
 
+            if (mme_ue->security_context_available)
+            {
+                if (enb_ue->mac_failed)
+                {
+                    int delete_session_request_handled = 0;
+
+                    emm_handle_delete_session_request(
+                            mme_ue, &delete_session_request_handled);
+                    if (!delete_session_request_handled)
+                    {
+                        mme_s6a_send_air(mme_ue);
+                    }
+                }
+                else
+                {
+                    emm_handle_attach_accept(mme_ue);
+                }
+            }
+            else
+            {
+                mme_s6a_send_air(mme_ue);
+            }
+
             break;
         }
         case NAS_EPS_MOBILE_IDENTITY_GUTI:
@@ -221,7 +244,6 @@ void emm_handle_attach_request(
                     guti.mme_code,
                     guti.m_tmsi);
 
-
             /* FIXME :Check if GUTI was assigend from us */
             
             /* FIXME :If not, forward the message to other MME */
@@ -230,12 +252,29 @@ void emm_handle_attach_request(
              *         The record with GUTI,IMSI should be 
              *         stored in permanent DB
              */
-            if (memcmp(&guti, &mme_ue->guti, sizeof(guti_t)) != 0)
-            {
-                emm_handle_identity_request(mme_ue);
-                return;
-            }
 
+            if (mme_ue->security_context_available)
+            {
+                if (enb_ue->mac_failed)
+                {
+                    d_assert(0, return, "Not Implmeneted");
+                }
+                else
+                {
+                    if (memcmp(&guti, &mme_ue->guti, sizeof(guti_t)) != 0)
+                    {
+                        emm_handle_identity_request(mme_ue);
+                    }
+                    else
+                    {
+                        emm_handle_attach_accept(mme_ue);
+                    }
+                }
+            }
+            else
+            {
+                d_assert(0, return, "Not Implmeneted");
+            }
             break;
         }
         default:
@@ -245,29 +284,6 @@ void emm_handle_attach_request(
             
             return;
         }
-    }
-
-    if (mme_ue->security_context_available)
-    {
-        if (enb_ue->mac_failed)
-        {
-            int delete_session_request_handled = 0;
-
-            emm_handle_delete_session_request(
-                    mme_ue, &delete_session_request_handled);
-            if (!delete_session_request_handled)
-            {
-                mme_s6a_send_air(mme_ue);
-            }
-        }
-        else
-        {
-
-        }
-    }
-    else
-    {
-        mme_s6a_send_air(mme_ue);
     }
 }
 
@@ -305,9 +321,13 @@ void emm_handle_identity_response(
         mme_ue_t *mme_ue, nas_identity_response_t *identity_response)
 {
     nas_mobile_identity_t *mobile_identity = NULL;
+    enb_ue_t *enb_ue = NULL;
+
+    d_assert(identity_response, return, "Null param");
 
     d_assert(mme_ue, return, "Null param");
-    d_assert(identity_response, return, "Null param");
+    enb_ue = mme_ue->enb_ue;
+    d_assert(enb_ue, return, "Null param");
 
     mobile_identity = &identity_response->mobile_identity;
 
@@ -329,10 +349,28 @@ void emm_handle_identity_response(
         return;
     }
 
-    /* TODO : check if authorization process is needed or not */
-    /* Send Authentication Information Request to HSS */
-    mme_s6a_send_air(mme_ue);
+    if (mme_ue->security_context_available)
+    {
+        if (enb_ue->mac_failed)
+        {
+            int delete_session_request_handled = 0;
 
+            emm_handle_delete_session_request(
+                    mme_ue, &delete_session_request_handled);
+            if (!delete_session_request_handled)
+            {
+                mme_s6a_send_air(mme_ue);
+            }
+        }
+        else
+        {
+            emm_handle_attach_accept(mme_ue);
+        }
+    }
+    else
+    {
+        mme_s6a_send_air(mme_ue);
+    }
 }
 
 void emm_handle_authentication_request(mme_ue_t *mme_ue)
@@ -504,6 +542,20 @@ void emm_handle_create_session_response(mme_bearer_t *bearer)
             pkbuf_free(emmbuf); return, "s1ap build error");
 
     d_assert(emm_send_to_enb(enb_ue, s1apbuf) == CORE_OK,, "s1ap send error");
+}
+
+void emm_handle_attach_accept(mme_ue_t *mme_ue)
+{
+    mme_sess_t *sess = mme_sess_first(mme_ue);
+    while (sess != NULL)
+    {
+        mme_bearer_t *bearer = mme_default_bearer_in_sess(sess);
+        if (bearer)
+        {
+            emm_handle_create_session_response(bearer);
+        }
+        sess = mme_sess_next(sess);
+    }
 }
 
 void emm_handle_attach_complete(
@@ -693,7 +745,7 @@ void emm_handle_delete_session_request(mme_ue_t *mme_ue, int *handled)
     while (sess != NULL)
     {
         mme_bearer_t *bearer = mme_default_bearer_in_sess(sess);
-        if (bearer && bearer->sgw)
+        if (bearer)
         {
             rv = mme_s11_build_delete_session_request(&s11buf, sess);
             d_assert(rv == CORE_OK, return, "S11 build error");
@@ -736,6 +788,7 @@ void emm_handle_delete_session_response(mme_bearer_t *bearer)
             break;
         }
         case NAS_ATTACH_REQUEST:
+        case NAS_IDENTITY_RESPONSE:
         {
             enb_ue_t *enb_ue = mme_ue->enb_ue;
             d_assert(enb_ue, return, "Null param");

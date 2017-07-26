@@ -424,9 +424,9 @@ static void nas_sm_test2(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
+#endif
 
     core_sleep(time_from_msec(300));
-#endif
 
     /* eNB disonncect from MME */
     rv = tests1ap_enb_close(sock);
