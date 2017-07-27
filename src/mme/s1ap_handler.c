@@ -212,8 +212,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
             }
             else
             {
-                mme_ue->enb_ue = enb_ue;
-                enb_ue->mme_ue = mme_ue;
+                mme_associate_ue_context(mme_ue, enb_ue);
             }
         }
     }

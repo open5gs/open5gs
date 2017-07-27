@@ -1,8 +1,8 @@
-#include <mongoc.h>
 
 #include "core_debug.h"
 #include "core_pkbuf.h"
 #include "core_lib.h"
+#include <mongoc.h>
 
 #include "context.h"
 #include "mme_context.h"
@@ -237,6 +237,16 @@ static void nas_sm_test1(abts_case *tc, void *data)
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
+    core_sleep(time_from_msec(300));
+
+    /* Send Initial-UE Message */
+#if 0
+    rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex+1);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+#endif
+
     /* eNB disonncect from MME */
     rv = tests1ap_enb_close(sock);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -419,14 +429,31 @@ static void nas_sm_test2(abts_case *tc, void *data)
     core_sleep(time_from_msec(300));
 
     /* Send Initial-UE Message */
-#if 0
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex+1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
-#endif
 
-    core_sleep(time_from_msec(300));
+    /* Receive Initial Context Setup Request + 
+     * Attach Accept + 
+     * Activate Default Bearer Context Request */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rc = tests1ap_enb_read(sock, recvbuf);
+    recvbuf->len = 223;
+    pkbuf_free(recvbuf);
+
+    /* Send Initial-UE Message with MAC failed */
+    rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex+2);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* Receive Authentication Request */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rc = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_NEQUAL(tc, 0, rc);
+    recvbuf->len = 60;
+    pkbuf_free(recvbuf);
 
     /* eNB disonncect from MME */
     rv = tests1ap_enb_close(sock);
@@ -544,6 +571,9 @@ static void nas_sm_test3(abts_case *tc, void *data)
                 MONGOC_INSERT_NONE, doc, NULL, &error));
     bson_destroy(doc);
 
+    mme_self()->mme_ue_s1ap_id = 33554631;
+    mme_self()->m_tmsi = 2;
+
     d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
 
     /* eNB connects to MME */
@@ -566,7 +596,6 @@ static void nas_sm_test3(abts_case *tc, void *data)
     pkbuf_free(recvbuf);
 
     /* Send Initial-UE Message */
-    mme_self()->mme_ue_s1ap_id = 33554631;
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);

@@ -243,7 +243,7 @@ status_t nas_security_decode(mme_ue_t *mme_ue, pkbuf_t *pkbuf, int *mac_failed)
             memcpy(&mac32, mac, NAS_SECURITY_MAC_SIZE);
             if (h->message_authentication_code != mac32)
             {
-                d_error("NAS MAC verification failed(0x%x != 0x%x)",
+                d_warn("NAS MAC verification failed(0x%x != 0x%x)",
                         ntohl(h->message_authentication_code), ntohl(mac32));
                 *mac_failed = 1;
             }

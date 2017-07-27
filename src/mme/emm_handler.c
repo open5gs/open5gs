@@ -25,6 +25,8 @@ mme_ue_t *emm_find_ue_by_message(enb_ue_t *enb_ue, nas_message_t *message)
 {
     mme_ue_t *mme_ue = NULL;
 
+    d_assert(enb_ue, return NULL, "Null param");
+
     switch(message->emm.h.message_type)
     {
         case NAS_ATTACH_REQUEST:
@@ -68,6 +70,18 @@ mme_ue_t *emm_find_ue_by_message(enb_ue_t *enb_ue, nas_message_t *message)
                             guti.m_tmsi);
 
                     mme_ue = mme_ue_find_by_guti(&guti);
+                    if (!mme_ue)
+                    {
+                        d_warn("Cannot find mme_ue by "
+                                "GUTI[G:%d,C:%d,M_TMSI:0x%x]\n",
+                                guti.mme_gid,
+                                guti.mme_code,
+                                guti.m_tmsi);
+                    }
+                    else
+                    {
+                        mme_associate_ue_context(mme_ue, enb_ue);
+                    }
                     break;
                 }
                 default:
@@ -203,27 +217,32 @@ void emm_handle_attach_request(
 
             d_info("[NAS] Attach request : UE_IMSI[%s] --> EMM", imsi_bcd);
 
-            if (mme_ue->security_context_available)
+            if (!mme_ue->security_context_available)
             {
-                if (enb_ue->mac_failed)
+                /* Initiate HSS Auth Process if No Security Context */
+                mme_s6a_send_air(mme_ue);
+            }
+            else
+            {
+                /* if Security Context is Existed */
+                if (!enb_ue->mac_failed)
                 {
+                    /* MAC verified */
+                    emm_handle_attach_accept(mme_ue);
+                }
+                else
+                {
+                    /* Initiate Delete Session if MAC integrity Failed */
                     int delete_session_request_handled = 0;
 
                     emm_handle_delete_session_request(
                             mme_ue, &delete_session_request_handled);
                     if (!delete_session_request_handled)
                     {
+                        /* Initiate HSS Auth Process if No Session */
                         mme_s6a_send_air(mme_ue);
                     }
                 }
-                else
-                {
-                    emm_handle_attach_accept(mme_ue);
-                }
-            }
-            else
-            {
-                mme_s6a_send_air(mme_ue);
             }
 
             break;
@@ -244,37 +263,43 @@ void emm_handle_attach_request(
                     guti.mme_code,
                     guti.m_tmsi);
 
-            /* FIXME :Check if GUTI was assigend from us */
-            
-            /* FIXME :If not, forward the message to other MME */
-
-            /* FIXME : Find UE based on GUTI.
-             *         The record with GUTI,IMSI should be 
-             *         stored in permanent DB
-             */
-
-            if (mme_ue->security_context_available)
+            if (memcmp(&guti, &mme_ue->guti, sizeof(guti_t)) == 0)
             {
-                if (enb_ue->mac_failed)
+                /* Known GUTI */
+                if (!mme_ue->security_context_available)
                 {
-                    d_assert(0, return, "Not Implmeneted");
+                    /* Initiate HSS Auth Process if No Security Context */
+                    mme_s6a_send_air(mme_ue);
                 }
                 else
                 {
-                    if (memcmp(&guti, &mme_ue->guti, sizeof(guti_t)) != 0)
+                    /* if Security Context is Existed */
+                    if (!enb_ue->mac_failed)
                     {
-                        emm_handle_identity_request(mme_ue);
+                        /* MAC verified */
+                        emm_handle_attach_accept(mme_ue);
                     }
                     else
                     {
-                        emm_handle_attach_accept(mme_ue);
+                        /* Initiate Delete Session if MAC integrity Failed */
+                        int delete_session_request_handled = 0;
+
+                        emm_handle_delete_session_request(
+                                mme_ue, &delete_session_request_handled);
+                        if (!delete_session_request_handled)
+                        {
+                            /* Initiate HSS Auth Process if No Session */
+                            mme_s6a_send_air(mme_ue);
+                        }
                     }
                 }
             }
             else
             {
-                d_assert(0, return, "Not Implmeneted");
+                /* Unknown GUTI */
+                emm_handle_identity_request(mme_ue);
             }
+
             break;
         }
         default:
@@ -349,27 +374,32 @@ void emm_handle_identity_response(
         return;
     }
 
-    if (mme_ue->security_context_available)
+    if (!mme_ue->security_context_available)
     {
-        if (enb_ue->mac_failed)
+        /* Initiate HSS Auth Process if No Security Context */
+        mme_s6a_send_air(mme_ue);
+    }
+    else
+    {
+        /* if Security Context is Existed */
+        if (!enb_ue->mac_failed)
         {
+            /* MAC verified */
+            emm_handle_attach_accept(mme_ue);
+        }
+        else
+        {
+            /* Initiate Delete Session if MAC integrity Failed */
             int delete_session_request_handled = 0;
 
             emm_handle_delete_session_request(
                     mme_ue, &delete_session_request_handled);
             if (!delete_session_request_handled)
             {
+                /* Initiate HSS Auth Process if No Session */
                 mme_s6a_send_air(mme_ue);
             }
         }
-        else
-        {
-            emm_handle_attach_accept(mme_ue);
-        }
-    }
-    else
-    {
-        mme_s6a_send_air(mme_ue);
     }
 }
 

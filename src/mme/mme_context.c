@@ -988,6 +988,12 @@ status_t mme_ue_remove(mme_ue_t *mme_ue)
     fsm_final(&mme_ue->sm, 0);
     fsm_clear(&mme_ue->sm);
 
+    /* Clear hash table */
+    if (mme_ue->guti.m_tmsi != 0)
+        hash_set(self.guti_ue_hash, &mme_ue->guti, sizeof(guti_t), NULL);
+    if (mme_ue->imsi_len != 0)
+        hash_set(self.imsi_ue_hash, mme_ue->imsi, mme_ue->imsi_len, NULL);
+
     mme_sess_remove_all(mme_ue);
     mme_pdn_remove_all(mme_ue);
 
@@ -1077,6 +1083,13 @@ static status_t mme_ue_new_guti(mme_ue_t *mme_ue)
     d_assert(served_gummei->num_of_mme_code > 0,
             return CORE_ERROR, "Invalid param");
 
+    if (mme_ue->guti.m_tmsi != 0)
+    {
+        /* MME has a VALID GUIT
+         * As such, we need to remove previous GUTI in hash table */
+        hash_set(self.guti_ue_hash, &mme_ue->guti, sizeof(guti_t), NULL);
+    }
+
     memset(&mme_ue->guti, 0, sizeof(guti_t));
 
     /* FIXME : How to generate GUTI?
@@ -1105,6 +1118,18 @@ status_t mme_ue_set_imsi(mme_ue_t *mme_ue, c_int8_t *imsi_bcd)
 
     return CORE_OK;
 }
+
+status_t mme_associate_ue_context(mme_ue_t *mme_ue, enb_ue_t *enb_ue)
+{
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    d_assert(enb_ue, return CORE_ERROR, "Null param");
+
+    mme_ue->enb_ue = enb_ue;
+    enb_ue->mme_ue = mme_ue;
+
+    return CORE_OK;
+}
+
 
 #if 0
 unsigned int mme_ue_count()

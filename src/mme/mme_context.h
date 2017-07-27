@@ -282,12 +282,15 @@ CORE_DECLARE(mme_ue_t*)     mme_ue_add(enb_ue_t *enb_ue);
 CORE_DECLARE(status_t)      mme_ue_remove(mme_ue_t *mme_ue);
 CORE_DECLARE(status_t)      mme_ue_remove_all();
 
-CORE_DECLARE(status_t)      mme_ue_set_imsi(
-                                mme_ue_t *mme_ue, c_int8_t *imsi_bcd);
 CORE_DECLARE(mme_ue_t*)     mme_ue_find(index_t index);
 CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_imsi(c_uint8_t *imsi, int imsi_len);
 CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_imsi_bcd(c_int8_t *imsi_bcd);
 CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_guti(guti_t *guti);
+
+CORE_DECLARE(status_t)      mme_ue_set_imsi(
+                                mme_ue_t *mme_ue, c_int8_t *imsi_bcd);
+CORE_DECLARE(status_t)      mme_associate_ue_context(
+                                mme_ue_t *mme_ue, enb_ue_t *enb_ue);
 
 CORE_DECLARE(hash_index_t *) mme_ue_first();
 CORE_DECLARE(hash_index_t *) mme_ue_next(hash_index_t *hi);
