@@ -416,18 +416,12 @@ pgw_bearer_t *pgw_sess_add(c_uint8_t id)
     d_assert(bearer, pgw_sess_remove(sess); return NULL, 
             "Can't add default bearer context");
 
-    sess->ip_pool = pgw_ip_pool_alloc();
-    d_assert(sess->ip_pool, pgw_sess_remove(sess); return NULL,
-            "Can't alloc IP pool");
-
     return bearer;
 }
 
 status_t pgw_sess_remove(pgw_sess_t *sess)
 {
     d_assert(sess, return CORE_ERROR, "Null param");
-
-    pgw_ip_pool_free(sess->ip_pool);
 
     pgw_pdn_remove_all(sess);
     pgw_bearer_remove_all(sess);
@@ -488,6 +482,10 @@ pdn_t* pgw_pdn_add(pgw_sess_t *sess, c_int8_t *apn)
 
     memset(pdn, 0, sizeof(pdn_t));
     strcpy(pdn->apn, apn);
+
+    pdn->ip_pool = pgw_ip_pool_alloc();
+    d_assert(pdn->ip_pool, pgw_pdn_remove(pdn); return NULL,
+            "Can't alloc IP pool");
     
     pdn->context = sess;
     list_append(&sess->pdn_list, pdn);
@@ -502,6 +500,8 @@ status_t pgw_pdn_remove(pdn_t *pdn)
     d_assert(pdn, return CORE_ERROR, "Null param");
     sess = pdn->context;
     d_assert(sess, return CORE_ERROR, "Null param");
+
+    pgw_ip_pool_free(pdn->ip_pool);
 
     list_remove(&sess->pdn_list, pdn);
     pool_free_node(&pgw_pdn_pool, pdn);

@@ -143,6 +143,7 @@ typedef struct _pdn_t {
     c_uint8_t       pre_emption_vulnerability;
 
     void *context;
+    void *ip_pool;
 } pdn_t;
 
 /**************************************************

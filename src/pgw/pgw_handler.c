@@ -151,8 +151,6 @@ void pgw_handle_create_session_request(
     d_assert(bearer, return, "No Bearer Context");
     sess = bearer->sess;
     d_assert(sess, return, "Null param");
-    ip_pool = sess->ip_pool;
-    d_assert(ip_pool, return, "Null param");
 
     memcpy(apn, req->access_point_name.data, req->access_point_name.len);
     apn[req->access_point_name.len] = 0;
@@ -162,6 +160,9 @@ void pgw_handle_create_session_request(
         pdn = pgw_pdn_add(sess, apn);
     }
     d_assert(pdn, pgw_sess_remove(sess); return, "No PDN Context");
+
+    ip_pool = pdn->ip_pool;
+    d_assert(ip_pool, pgw_sess_remove(sess); return, "No IP Pool");
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));
 

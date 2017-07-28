@@ -49,12 +49,6 @@ typedef struct _pgw_context_t {
     list_t          ip_pool_list;
 } pgw_context_t;
 
-typedef struct _pgw_ip_pool_t {
-    lnode_t         node; /**< A node of list_t */
-
-    c_uint32_t      ue_addr;
-} pgw_ip_pool_t;
-
 typedef struct _pgw_sess_t {
     lnode_t         node;       /**< A node of list_t */
     index_t         index;      /**< An index of this node */
@@ -69,7 +63,6 @@ typedef struct _pgw_sess_t {
 
     list_t          pdn_list;
     list_t          bearer_list;
-    pgw_ip_pool_t   *ip_pool;
 } pgw_sess_t;
 
 typedef struct _pgw_bearer_t {
@@ -88,6 +81,12 @@ typedef struct _pgw_bearer_t {
 
     pgw_sess_t      *sess;
 } pgw_bearer_t;
+
+typedef struct _pgw_ip_pool_t {
+    lnode_t         node; /**< A node of list_t */
+
+    c_uint32_t      ue_addr;
+} pgw_ip_pool_t;
 
 CORE_DECLARE(status_t)      pgw_context_init(void);
 CORE_DECLARE(status_t)      pgw_context_parse_config(void);
