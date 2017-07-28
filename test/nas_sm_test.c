@@ -265,7 +265,9 @@ static void nas_sm_test1(abts_case *tc, void *data)
     ABTS_TRUE(tc, memcmp(recvbuf->payload+43, tmp+43, 3) == 0);
     pkbuf_free(recvbuf);
 
-    /* Send Initial-UE Message */
+    /*****************************************************************
+     * Attach Request : GUTI, Integrity Protected
+     * Send Initial-UE Message + Attach Request + PDN Connectivity  */
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex+1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);

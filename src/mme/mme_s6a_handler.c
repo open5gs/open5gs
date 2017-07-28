@@ -156,7 +156,7 @@ int mme_s6a_send_air(mme_ue_t *mme_ue)
 
     /* Reset Security Parameter */
     mme_ue->security_context_available = 0;
-    enb_ue->mac_failed = 0;
+    mme_ue->mac_failed = 0;
     
     /* Create the random value to store with the session */
     pool_alloc_node(&sess_state_pool, &mi);

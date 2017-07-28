@@ -134,7 +134,7 @@ void emm_handle_attach_request(
             else
             {
                 /* if Security Context is Existed */
-                if (!enb_ue->mac_failed)
+                if (!mme_ue->mac_failed)
                 {
                     /* MAC verified */
                     emm_handle_attach_accept(mme_ue);
@@ -189,7 +189,7 @@ void emm_handle_attach_request(
                 else
                 {
                     /* if Security Context is Existed */
-                    if (!enb_ue->mac_failed)
+                    if (!mme_ue->mac_failed)
                     {
                         /* MAC verified */
                         emm_handle_attach_accept(mme_ue);
@@ -298,7 +298,7 @@ void emm_handle_identity_response(
     else
     {
         /* if Security Context is Existed */
-        if (!enb_ue->mac_failed)
+        if (!mme_ue->mac_failed)
         {
             /* MAC verified */
             emm_handle_attach_accept(mme_ue);
@@ -739,7 +739,7 @@ void emm_handle_delete_session_response(mme_bearer_t *bearer)
             enb_ue_t *enb_ue = mme_ue->enb_ue;
             d_assert(enb_ue, return, "Null param");
 
-            if (mme_ue->security_context_available && enb_ue->mac_failed)
+            if (mme_ue->security_context_available && mme_ue->mac_failed)
             {
                 mme_s6a_send_air(mme_ue);
             }
@@ -748,7 +748,7 @@ void emm_handle_delete_session_response(mme_bearer_t *bearer)
                 d_error("invalid security parameter"
                         "(available:%d, mac_failed:%d)",
                         mme_ue->security_context_available,
-                        enb_ue->mac_failed);
+                        mme_ue->mac_failed);
             }
             break;
         }

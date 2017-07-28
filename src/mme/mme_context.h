@@ -128,9 +128,6 @@ struct _enb_ue_t {
 
     /* Connected enodeB */
     mme_enb_t       *enb;
-
-    /* Last NAS Authentication state */
-    int             mac_failed;
 }; 
 
 struct _mme_ue_t {
@@ -155,8 +152,11 @@ struct _mme_ue_t {
 #endif
     plmn_id_t       visited_plmn_id;
 
-    /* Security Context */
+    /* Security Context Status */
     int             security_context_available;
+    int             mac_failed; /* Last NAS Authentication state */
+
+    /* Security Context Parameter */
     nas_ue_network_capability_t ue_network_capability;
     nas_ms_network_capability_t ms_network_capability;
     c_uint8_t       xres[MAX_RES_LEN];

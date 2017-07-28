@@ -1113,15 +1113,10 @@ mme_ue_t* mme_ue_find_by_message(nas_message_t *message)
                     guti.mme_code = nas_guti->mme_code;
                     guti.m_tmsi = nas_guti->m_tmsi;
 
-                    d_trace(3,"Search mme_ue by GUTI[G:%d,C:%d,M_TMSI:0x%x]\n",
-                            guti.mme_gid,
-                            guti.mme_code,
-                            guti.m_tmsi);
-
                     mme_ue = mme_ue_find_by_guti(&guti);
                     if (mme_ue)
                     {
-                        d_warn("Known UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]",
+                        d_trace(3, "Known UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]\n",
                                 guti.mme_gid,
                                 guti.mme_code,
                                 guti.m_tmsi);

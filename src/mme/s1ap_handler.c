@@ -19,7 +19,6 @@ static void event_s1ap_to_nas(enb_ue_t *enb_ue, S1ap_NAS_PDU_t *nasPdu)
     nas_esm_header_t *h = NULL;
     pkbuf_t *nasbuf = NULL;
     event_t e;
-    int mac_failed = 0;
 
     d_assert(enb_ue, return, "Null param");
     d_assert(nasPdu, return, "Null param");
@@ -32,9 +31,12 @@ static void event_s1ap_to_nas(enb_ue_t *enb_ue, S1ap_NAS_PDU_t *nasPdu)
 
     if (enb_ue->mme_ue)
     {
+        int mac_failed = 0;
+
         d_assert(nas_security_decode(
                     enb_ue->mme_ue, nasbuf, &mac_failed) == CORE_OK,
             pkbuf_free(nasbuf);return, "nas_security_decode failed");
+        enb_ue->mme_ue->mac_failed = mac_failed;
     }
     else
     {
@@ -50,13 +52,12 @@ static void event_s1ap_to_nas(enb_ue_t *enb_ue, S1ap_NAS_PDU_t *nasPdu)
                 break;
             }
             default:
-                mac_failed = 1;
-                d_warn("Security Protected (securiry header type:0x%x)", 
+                d_warn("Not Implmeneted : "
+                        "Security Protected (securiry header type:0x%x)", 
                         sh->security_header_type);
                 pkbuf_header(nasbuf, -hsize);
         }
     }
-    enb_ue->mac_failed = mac_failed;
 
     h = nasbuf->payload;
     d_assert(h, pkbuf_free(nasbuf); return, "Null param");
