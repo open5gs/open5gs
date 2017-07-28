@@ -215,7 +215,7 @@ void emm_handle_attach_request(
                 imsi_bcd);
             mme_ue_set_imsi(mme_ue, imsi_bcd);
 
-            d_info("[NAS] Attach request : UE_IMSI[%s] --> EMM", imsi_bcd);
+            d_info("[NAS] Attach request : IMSI[%s] --> EMM", imsi_bcd);
 
             if (!mme_ue->security_context_available)
             {
@@ -259,12 +259,15 @@ void emm_handle_attach_request(
             guti.mme_code = nas_guti->mme_code;
             guti.m_tmsi = nas_guti->m_tmsi;
 
-            d_info("[NAS] Attach request : UE_GUTI[G:%d,C:%d,M_TMSI:0x%x] --> EMM", 
+            d_info("[NAS] Attach request : GUTI[G:%d,C:%d,M_TMSI:0x%x]-"
+                    "IMSI:[%s] --> EMM", 
                     guti.mme_gid,
                     guti.mme_code,
-                    guti.m_tmsi);
+                    guti.m_tmsi,
+                    MME_UE_HAVE_IMSI(mme_ue) 
+                        ? mme_ue->imsi_bcd : "Unknown");
 
-            if (memcmp(&guti, &mme_ue->guti, sizeof(guti_t)) == 0)
+            if (MME_UE_HAVE_IMSI(mme_ue))
             {
                 /* Known GUTI */
                 if (!mme_ue->security_context_available)
