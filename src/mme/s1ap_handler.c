@@ -16,6 +16,9 @@
 
 static void event_s1ap_to_nas(enb_ue_t *enb_ue, S1ap_NAS_PDU_t *nasPdu)
 {
+    nas_security_header_t *sh = NULL;
+    nas_security_header_type_t security_header_type;
+
     nas_esm_header_t *h = NULL;
     pkbuf_t *nasbuf = NULL;
     event_t e;
@@ -29,34 +32,52 @@ static void event_s1ap_to_nas(enb_ue_t *enb_ue, S1ap_NAS_PDU_t *nasPdu)
     d_assert(nasbuf, return, "Null param");
     memcpy(nasbuf->payload, nasPdu->buf, nasPdu->size);
 
+    sh = nasbuf->payload;
+    d_assert(sh, return, "Null param");
+
+    memset(&security_header_type, 0, sizeof(nas_security_header_type_t));
+    switch(sh->security_header_type)
+    {
+        case NAS_SECURITY_HEADER_PLAIN_NAS_MESSAGE:
+            break;
+        case NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE:
+            security_header_type.service_request = 1;
+            break;
+        case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED:
+            security_header_type.integrity_protected = 1;
+            d_assert(pkbuf_header(nasbuf, -6) == CORE_OK,
+                    return, "pkbuf_header error");
+            break;
+        case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED:
+            security_header_type.integrity_protected = 1;
+            security_header_type.ciphered = 1;
+            d_assert(pkbuf_header(nasbuf, -6) == CORE_OK,
+                    return, "pkbuf_header error");
+            break;
+        case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT:
+            security_header_type.integrity_protected = 1;
+            security_header_type.new_security_context = 1;
+            d_assert(pkbuf_header(nasbuf, -6) == CORE_OK,
+                    return, "pkbuf_header error");
+            break;
+        case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHTERD_WITH_NEW_INTEGRITY_CONTEXT:
+            security_header_type.integrity_protected = 1;
+            security_header_type.ciphered = 1;
+            security_header_type.new_security_context = 1;
+            d_assert(pkbuf_header(nasbuf, -6) == CORE_OK,
+                    return, "pkbuf_header error");
+            break;
+        default:
+            d_error("Not implemented(securiry header type:0x%x)", 
+                    sh->security_header_type);
+            return;
+    }
+
     if (enb_ue->mme_ue)
     {
-        int mac_failed = 0;
-
         d_assert(nas_security_decode(
-                    enb_ue->mme_ue, nasbuf, &mac_failed) == CORE_OK,
+            enb_ue->mme_ue, security_header_type, nasbuf) == CORE_OK,
             pkbuf_free(nasbuf);return, "nas_security_decode failed");
-        enb_ue->mme_ue->mac_failed = mac_failed;
-    }
-    else
-    {
-        c_uint32_t hsize = sizeof(nas_security_header_t);
-        nas_security_header_t *sh = NULL;
-
-        sh = nasbuf->payload;
-        switch(sh->security_header_type)
-        {
-            case NAS_SECURITY_HEADER_PLAIN_NAS_MESSAGE:
-            case NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE:
-            {
-                break;
-            }
-            default:
-                d_warn("Not Implmeneted : "
-                        "Security Protected (securiry header type:0x%x)", 
-                        sh->security_header_type);
-                pkbuf_header(nasbuf, -hsize);
-        }
     }
 
     h = nasbuf->payload;

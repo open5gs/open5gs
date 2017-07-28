@@ -105,117 +105,87 @@ status_t nas_security_encode(
     return CORE_OK;
 }
 
-status_t nas_security_decode(mme_ue_t *mme_ue, pkbuf_t *pkbuf, int *mac_failed)
+status_t nas_security_decode(mme_ue_t *mme_ue, 
+    nas_security_header_type_t security_header_type, pkbuf_t *pkbuf)
 {
-    c_int32_t hsize = 0;
-
-    int integrity_protected = 0;
-    int new_security_context = 0;
-    int ciphered = 0;
-
-    nas_security_header_t *h = NULL;
-
     d_assert(mme_ue, return CORE_ERROR, "Null param");
     d_assert(pkbuf, return CORE_ERROR, "Null param");
     d_assert(pkbuf->payload, return CORE_ERROR, "Null param");
-    d_assert(mac_failed, return CORE_ERROR, "Null param");
 
-    h = pkbuf->payload;
-    d_assert(h, return CORE_ERROR, "Null param");
-    switch(h->security_header_type)
+    if (security_header_type.service_request)
     {
-        case NAS_SECURITY_HEADER_PLAIN_NAS_MESSAGE:
-            return CORE_OK;
-        case NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE:
+        nas_ksi_and_sequence_number_t *ksi_and_sequence_number =
+            pkbuf->payload + 1;
+        c_uint16_t original_pkbuf_len = pkbuf->len;
+        c_uint8_t estimated_sequence_number;
+        c_uint8_t sequence_number_high_3bit;
+        c_uint8_t mac[NAS_SECURITY_MAC_SIZE];
+
+        if (mme_ue->selected_int_algorithm == 0)
         {
-            nas_ksi_and_sequence_number_t *ksi_and_sequence_number =
-                pkbuf->payload + 1;
-            c_uint16_t original_pkbuf_len = pkbuf->len;
-            c_uint8_t estimated_sequence_number;
-            c_uint8_t sequence_number_high_3bit;
-            c_uint8_t mac[NAS_SECURITY_MAC_SIZE];
-
-            if (mme_ue->selected_int_algorithm == 0)
-            {
-                d_warn("integrity algorithm is not defined");
-                break;
-            }
-
-            d_assert(ksi_and_sequence_number, return CORE_ERROR, "Null param");
-            estimated_sequence_number = 
-                ksi_and_sequence_number->sequence_number;
-
-            sequence_number_high_3bit = mme_ue->ul_count.sqn & 0xe0;
-            if ((mme_ue->ul_count.sqn & 0x1f) > estimated_sequence_number)
-            {
-                sequence_number_high_3bit += 0x20;
-            }
-            estimated_sequence_number += sequence_number_high_3bit;
-
-            if (mme_ue->ul_count.sqn > estimated_sequence_number)
-                mme_ue->ul_count.overflow++;
-            mme_ue->ul_count.sqn = estimated_sequence_number;
-
-            pkbuf->len = 2;
-            nas_mac_calculate(mme_ue->selected_int_algorithm,
-                mme_ue->knas_int, mme_ue->ul_count.i32, NAS_SECURITY_BEARER,
-                NAS_SECURITY_UPLINK_DIRECTION, pkbuf, mac);
-            pkbuf->len = original_pkbuf_len;
-
-            if (memcmp(mac + 2, pkbuf->payload + 2, 2) != 0)
-            {
-                d_error("NAS MAC verification failed");
-                *mac_failed = 1;
-            }
-
-            return CORE_OK;
-        }
-        case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED:
-            integrity_protected = 1;
-            break;
-        case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED:
-            integrity_protected = 1;
-            ciphered = 1;
-            break;
-        case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT:
-            integrity_protected = 1;
-            new_security_context = 1;
-            break;
-        case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHTERD_WITH_NEW_INTEGRITY_CONTEXT:
-            integrity_protected = 1;
-            new_security_context = 1;
-            ciphered = 1;
-            break;
-        default:
-            d_warn("Not implemented(securiry header type:0x%x)", 
-                    h->security_header_type);
+            d_warn("integrity algorithm is not defined");
             return CORE_ERROR;
-    }
+        }
 
-    hsize = sizeof(nas_security_header_t);
-    d_assert(pkbuf_header(pkbuf, -hsize) == CORE_OK, 
-            return CORE_ERROR, "pkbuf_header error");
+        d_assert(ksi_and_sequence_number, return CORE_ERROR, "Null param");
+        estimated_sequence_number = 
+            ksi_and_sequence_number->sequence_number;
+
+        sequence_number_high_3bit = mme_ue->ul_count.sqn & 0xe0;
+        if ((mme_ue->ul_count.sqn & 0x1f) > estimated_sequence_number)
+        {
+            sequence_number_high_3bit += 0x20;
+        }
+        estimated_sequence_number += sequence_number_high_3bit;
+
+        if (mme_ue->ul_count.sqn > estimated_sequence_number)
+            mme_ue->ul_count.overflow++;
+        mme_ue->ul_count.sqn = estimated_sequence_number;
+
+        pkbuf->len = 2;
+        nas_mac_calculate(mme_ue->selected_int_algorithm,
+            mme_ue->knas_int, mme_ue->ul_count.i32, NAS_SECURITY_BEARER,
+            NAS_SECURITY_UPLINK_DIRECTION, pkbuf, mac);
+        pkbuf->len = original_pkbuf_len;
+
+        if (memcmp(mac + 2, pkbuf->payload + 2, 2) != 0)
+        {
+            d_error("NAS MAC verification failed");
+            mme_ue->mac_failed = 1;
+        }
+
+        return CORE_OK;
+    }
 
     if (!mme_ue->security_context_available)
     {
-        integrity_protected = 0;
-        new_security_context = 0;
-        ciphered = 0;
+        security_header_type.integrity_protected = 0;
+        security_header_type.new_security_context = 0;
+        security_header_type.ciphered = 0;
     }
 
-    if (new_security_context)
+    if (security_header_type.new_security_context)
     {
         mme_ue->ul_count.i32 = 0;
     }
 
     if (mme_ue->selected_enc_algorithm == 0)
-        ciphered = 0;
+        security_header_type.ciphered = 0;
     if (mme_ue->selected_int_algorithm == 0)
-        integrity_protected = 0;
+        security_header_type.integrity_protected = 0;
 
-    if (ciphered || integrity_protected)
+    if (security_header_type.ciphered || 
+        security_header_type.integrity_protected)
     {
-        d_assert(CORE_OK == pkbuf_header(pkbuf, 1),
+        nas_security_header_t *h = NULL;
+
+        /* NAS Security Header */
+        d_assert(CORE_OK == pkbuf_header(pkbuf, 6),
+            return CORE_ERROR, "pkbuf_header error");
+        h = pkbuf->payload;
+
+        /* NAS Security Header.Sequence_Number */
+        d_assert(CORE_OK == pkbuf_header(pkbuf, -5),
             return CORE_ERROR, "pkbuf_header error");
 
         /* calculate ul_count */
@@ -223,14 +193,14 @@ status_t nas_security_decode(mme_ue_t *mme_ue, pkbuf_t *pkbuf, int *mac_failed)
             mme_ue->ul_count.overflow++;
         mme_ue->ul_count.sqn = h->sequence_number;
 
-        if (ciphered)
+        if (security_header_type.ciphered)
         {
             /* decrypt NAS message */
             nas_encrypt(mme_ue->selected_enc_algorithm,
                 mme_ue->knas_enc, mme_ue->ul_count.i32, NAS_SECURITY_BEARER,
                 NAS_SECURITY_UPLINK_DIRECTION, pkbuf);
         }
-        if (integrity_protected)
+        if (security_header_type.integrity_protected)
         {
             c_uint8_t mac[NAS_SECURITY_MAC_SIZE];
             c_uint32_t mac32;
@@ -245,10 +215,11 @@ status_t nas_security_decode(mme_ue_t *mme_ue, pkbuf_t *pkbuf, int *mac_failed)
             {
                 d_warn("NAS MAC verification failed(0x%x != 0x%x)",
                         ntohl(h->message_authentication_code), ntohl(mac32));
-                *mac_failed = 1;
+                mme_ue->mac_failed = 1;
             }
         }
 
+        /* NAS EMM Header or ESM Header */
         d_assert(CORE_OK == pkbuf_header(pkbuf, -1),
             return CORE_ERROR, "pkbuf_header error");
     }

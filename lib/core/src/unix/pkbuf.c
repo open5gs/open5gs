@@ -213,7 +213,8 @@ pkbuf_t* pkbuf_alloc(c_uint16_t headroom, c_uint16_t length)
 
     np->next = NULL;
     np->clbuf = clbuf;
-    np->payload = (void*)CORE_ALIGN((c_uintptr_t)(clbuf->cluster + headroom), BOUNDARY);
+    np->payload = (void*)CORE_ALIGN((c_uintptr_t)(clbuf->cluster + headroom),
+                                    BOUNDARY);
     np->tot_len = length;
     np->len = c_min(length, clbuf->size - (np->payload - clbuf->cluster));
     np->flags = 0;
