@@ -20,11 +20,16 @@ extern "C" {
 #endif /* __cplusplus */
 
 typedef struct _nas_security_header_type_t {
-ED5(c_uint8_t integrity_protected:1;,
-    c_uint8_t ciphered:1;,
-    c_uint8_t new_security_context:1;,
-    c_uint8_t service_request:1;,
-    c_uint8_t reserved:4;)
+    union {
+        struct {
+        ED5(c_uint8_t integrity_protected:1;,
+            c_uint8_t ciphered:1;,
+            c_uint8_t new_security_context:1;,
+            c_uint8_t service_request:1;,
+            c_uint8_t reserved:4;)
+        };
+        c_uint8_t type;
+    };
 } __attribute__ ((packed)) nas_security_header_type_t;
 
 CORE_DECLARE(status_t) nas_security_encode(

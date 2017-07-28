@@ -28,6 +28,8 @@ void mme_state_final(fsm_t *s, event_t *e)
     d_assert(s, return, "Null param");
 }
 
+int test = 0;
+
 void mme_state_operational(fsm_t *s, event_t *e)
 {
     status_t rv;
@@ -176,6 +178,28 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 {
                     mme_ue = mme_ue_add(enb_ue);
                     d_assert(mme_ue, break, "Null param");
+                }
+                else
+                {
+                    /* Here, if the MME_UE Context is found,
+                     * the integrity check is not performed
+                     * For example, ATTACH_REQUEST, 
+                     * TRACKING_AREA_UPDATE_REQUEST message
+                     *
+                     * Now, We will check the MAC in the NAS message*/
+                    nas_security_header_type_t h;
+                    h.type = (c_uint8_t)event_get_param2(e);
+                    if (h.integrity_protected)
+                    {
+                        /* Decryption was performed in S1AP handler.
+                         * So, we disabled 'ciphered' 
+                         * not to decrypt NAS message */
+                        h.ciphered = 0;
+                        d_assert(
+                            nas_security_decode(mme_ue, h, pkbuf) == CORE_OK,
+                            pkbuf_free(pkbuf);return, 
+                            "nas_security_decode failed");
+                    }
                 }
             }
 
