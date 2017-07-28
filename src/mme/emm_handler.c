@@ -70,7 +70,7 @@ static void emm_handle_esm_message_container(
 
     event_set(&e, MME_EVT_ESM_BEARER_MSG);
     event_set_param1(&e, (c_uintptr_t)bearer->index);
-    event_set_param2(&e, (c_uintptr_t)esmbuf);
+    event_set_param3(&e, (c_uintptr_t)esmbuf);
     mme_event_send(&e);
 }
 

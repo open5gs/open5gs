@@ -85,7 +85,7 @@ void esm_state_operational(fsm_t *s, event_t *e)
             d_assert(bearer, return, "Null param");
             mme_ue = bearer->mme_ue;
             d_assert(mme_ue, return, "Null param");
-            message = (nas_message_t *)event_get_param3(e);
+            message = (nas_message_t *)event_get_param4(e);
             d_assert(message, break, "Null param");
 
             /* Save Last Received NAS-ESM message */

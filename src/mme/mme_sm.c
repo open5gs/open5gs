@@ -157,7 +157,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
         {
             nas_message_t message;
             index_t index = event_get_param1(e);
-            pkbuf_t *pkbuf = (pkbuf_t *)event_get_param2(e);
+            pkbuf_t *pkbuf = (pkbuf_t *)event_get_param3(e);
             enb_ue_t *enb_ue = NULL;
             mme_ue_t *mme_ue = NULL;
 
@@ -185,7 +185,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
 
             /* Set event */
             event_set_param1(e, (c_uintptr_t)mme_ue->index);/* mme_ue index */
-            event_set_param3(e, (c_uintptr_t)&message);
+            event_set_param4(e, (c_uintptr_t)&message);
 
             fsm_dispatch(&mme_ue->sm, (fsm_event_t*)e);
 
@@ -239,12 +239,12 @@ void mme_state_operational(fsm_t *s, event_t *e)
 
             if (event_get(e) == MME_EVT_ESM_BEARER_MSG)
             {
-                pkbuf = (pkbuf_t *)event_get_param2(e);
+                pkbuf = (pkbuf_t *)event_get_param3(e);
                 d_assert(pkbuf, break, "Null param");
                 d_assert(nas_esm_decode(&message, pkbuf) == CORE_OK,
                         pkbuf_free(pkbuf); break, "Can't decode NAS_ESM");
 
-                event_set_param3(e, (c_uintptr_t)&message);
+                event_set_param4(e, (c_uintptr_t)&message);
             }
 
             fsm_dispatch(&bearer->sm, (fsm_event_t*)e);

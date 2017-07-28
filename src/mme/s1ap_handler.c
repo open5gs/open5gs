@@ -86,7 +86,7 @@ static void event_s1ap_to_nas(enb_ue_t *enb_ue, S1ap_NAS_PDU_t *nasPdu)
     {
         event_set(&e, MME_EVT_EMM_UE_MSG);
         event_set_param1(&e, (c_uintptr_t)enb_ue->index);
-        event_set_param2(&e, (c_uintptr_t)nasbuf);
+        event_set_param3(&e, (c_uintptr_t)nasbuf);
         mme_event_send(&e);
     }
     else if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_ESM)
@@ -107,7 +107,7 @@ static void event_s1ap_to_nas(enb_ue_t *enb_ue, S1ap_NAS_PDU_t *nasPdu)
         {
             event_set(&e, MME_EVT_ESM_BEARER_MSG);
             event_set_param1(&e, (c_uintptr_t)bearer->index);
-            event_set_param2(&e, (c_uintptr_t)nasbuf);
+            event_set_param3(&e, (c_uintptr_t)nasbuf);
             mme_event_send(&e);
         }
         else
