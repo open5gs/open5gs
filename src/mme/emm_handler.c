@@ -21,97 +21,6 @@
 
 #include "emm_handler.h"
 
-mme_ue_t *emm_find_ue_by_message(enb_ue_t *enb_ue, nas_message_t *message)
-{
-    mme_ue_t *mme_ue = NULL;
-
-    d_assert(enb_ue, return NULL, "Null param");
-
-    switch(message->emm.h.message_type)
-    {
-        case NAS_ATTACH_REQUEST:
-        {
-            nas_attach_request_t *attach_request =
-                &message->emm.attach_request;
-
-            nas_eps_mobile_identity_t *eps_mobile_identity =
-                            &attach_request->eps_mobile_identity;
-
-            switch(eps_mobile_identity->imsi.type)
-            {
-                case NAS_EPS_MOBILE_IDENTITY_IMSI:
-                {
-                    c_int8_t imsi_bcd[MAX_IMSI_BCD_LEN+1];
-
-                    nas_imsi_to_bcd(
-                        &eps_mobile_identity->imsi, eps_mobile_identity->length,
-                        imsi_bcd);
-
-                    d_trace(3,"Search mme_ue by UE_IMSI[%s]\n", imsi_bcd);
-
-                    mme_ue = mme_ue_find_by_imsi_bcd(imsi_bcd);
-
-                    break;
-                }
-                case NAS_EPS_MOBILE_IDENTITY_GUTI:
-                {
-                    nas_eps_mobile_identity_guti_t *nas_guti = NULL;
-                    nas_guti = &eps_mobile_identity->guti;
-                    guti_t guti;
-
-                    guti.plmn_id = nas_guti->plmn_id;
-                    guti.mme_gid = nas_guti->mme_gid;
-                    guti.mme_code = nas_guti->mme_code;
-                    guti.m_tmsi = nas_guti->m_tmsi;
-
-                    d_trace(3,"Search mme_ue by GUTI[G:%d,C:%d,M_TMSI:0x%x]\n",
-                            guti.mme_gid,
-                            guti.mme_code,
-                            guti.m_tmsi);
-
-                    mme_ue = mme_ue_find_by_guti(&guti);
-                    if (!mme_ue)
-                    {
-                        d_warn("Cannot find mme_ue by "
-                                "GUTI[G:%d,C:%d,M_TMSI:0x%x]\n",
-                                guti.mme_gid,
-                                guti.mme_code,
-                                guti.m_tmsi);
-                    }
-                    else
-                    {
-                        mme_associate_ue_context(mme_ue, enb_ue);
-                    }
-                    break;
-                }
-                default:
-                {
-                    printf("Uknown message imsi type =%d\n",
-                        eps_mobile_identity->imsi.type);
-                    break;
-                }
-            }
-            break;
-        }
-        case NAS_DETACH_REQUEST:
-        {
-            /* TODO */
-            break;
-        }
-        case NAS_TRACKING_AREA_UPDATE_REQUEST:
-        {
-            /* TODO */
-            break;
-        }
-        default:
-        {
-            break;
-        }
-    }
-
-    return mme_ue;
-}
-
 static status_t emm_send_to_enb(enb_ue_t *enb_ue, pkbuf_t *pkbuf)
 {
     mme_enb_t *enb = NULL;
@@ -258,6 +167,8 @@ void emm_handle_attach_request(
             guti.mme_gid = nas_guti->mme_gid;
             guti.mme_code = nas_guti->mme_code;
             guti.m_tmsi = nas_guti->m_tmsi;
+
+            mme_associate_ue_context(mme_ue, enb_ue);
 
             d_info("[NAS] Attach request : GUTI[G:%d,C:%d,M_TMSI:0x%x]-"
                     "IMSI:[%s] --> EMM", 

@@ -8,6 +8,7 @@
 #include "s1ap_message.h"
 
 #include "context.h"
+#include "nas_conv.h"
 #include "mme_context.h"
 #include "mme_event.h"
 
@@ -1063,6 +1064,103 @@ mme_ue_t *mme_ue_this(hash_index_t *hi)
 {
     d_assert(hi, return NULL, "Null param");
     return hash_this_val(hi);
+}
+
+mme_ue_t* mme_ue_find_by_message(nas_message_t *message)
+{
+    mme_ue_t *mme_ue = NULL;
+
+    switch(message->emm.h.message_type)
+    {
+        case NAS_ATTACH_REQUEST:
+        {
+            nas_attach_request_t *attach_request =
+                &message->emm.attach_request;
+
+            nas_eps_mobile_identity_t *eps_mobile_identity =
+                            &attach_request->eps_mobile_identity;
+
+            switch(eps_mobile_identity->imsi.type)
+            {
+                case NAS_EPS_MOBILE_IDENTITY_IMSI:
+                {
+                    c_int8_t imsi_bcd[MAX_IMSI_BCD_LEN+1];
+
+                    nas_imsi_to_bcd(
+                        &eps_mobile_identity->imsi, eps_mobile_identity->length,
+                        imsi_bcd);
+
+
+                    mme_ue = mme_ue_find_by_imsi_bcd(imsi_bcd);
+                    if (mme_ue)
+                    {
+                        d_trace(3,"known UE by IMSI[%s]\n", imsi_bcd);
+                    }
+                    else
+                    {
+                        d_trace(3,"Unknown UE by IMSI[%s]\n", imsi_bcd);
+                    }
+                    break;
+                }
+                case NAS_EPS_MOBILE_IDENTITY_GUTI:
+                {
+                    nas_eps_mobile_identity_guti_t *nas_guti = NULL;
+                    nas_guti = &eps_mobile_identity->guti;
+                    guti_t guti;
+
+                    guti.plmn_id = nas_guti->plmn_id;
+                    guti.mme_gid = nas_guti->mme_gid;
+                    guti.mme_code = nas_guti->mme_code;
+                    guti.m_tmsi = nas_guti->m_tmsi;
+
+                    d_trace(3,"Search mme_ue by GUTI[G:%d,C:%d,M_TMSI:0x%x]\n",
+                            guti.mme_gid,
+                            guti.mme_code,
+                            guti.m_tmsi);
+
+                    mme_ue = mme_ue_find_by_guti(&guti);
+                    if (mme_ue)
+                    {
+                        d_warn("Known UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]",
+                                guti.mme_gid,
+                                guti.mme_code,
+                                guti.m_tmsi);
+                    }
+                    else
+                    {
+                        d_warn("Unknown UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]",
+                                guti.mme_gid,
+                                guti.mme_code,
+                                guti.m_tmsi);
+                    }
+                    break;
+                }
+                default:
+                {
+                    d_error("Uknown message imsi type =%d\n",
+                            eps_mobile_identity->imsi.type);
+                    break;
+                }
+            }
+            break;
+        }
+        case NAS_DETACH_REQUEST:
+        {
+            /* TODO */
+            break;
+        }
+        case NAS_TRACKING_AREA_UPDATE_REQUEST:
+        {
+            /* TODO */
+            break;
+        }
+        default:
+        {
+            break;
+        }
+    }
+
+    return mme_ue;
 }
 
 /* At this point, I'm not sure whether this function is exported or not */

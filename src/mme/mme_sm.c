@@ -171,10 +171,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
             mme_ue = enb_ue->mme_ue;
             if (!mme_ue)
             {
-                /* Find MME UE by NAS message or create if needed */
-                mme_ue = emm_find_ue_by_message(enb_ue, &message);
-
-                /* If not found , create one */
+                mme_ue = mme_ue_find_by_message(&message);
                 if (!mme_ue)
                 {
                     mme_ue = mme_ue_add(enb_ue);

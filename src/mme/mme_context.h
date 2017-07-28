@@ -289,6 +289,7 @@ CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_imsi(c_uint8_t *imsi, int imsi_len);
 CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_imsi_bcd(c_int8_t *imsi_bcd);
 CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_guti(guti_t *guti);
 
+CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_message(nas_message_t *message);
 CORE_DECLARE(status_t)      mme_ue_set_imsi(
                                 mme_ue_t *mme_ue, c_int8_t *imsi_bcd);
 CORE_DECLARE(status_t)      mme_associate_ue_context(
