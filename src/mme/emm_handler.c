@@ -232,12 +232,13 @@ void emm_handle_attach_request(
                 }
                 else
                 {
-                    /* Initiate Delete Session if MAC integrity Failed */
-                    int delete_session_request_handled = 0;
-
-                    emm_handle_delete_session_request(
-                            mme_ue, &delete_session_request_handled);
-                    if (!delete_session_request_handled)
+                    /* if MAC integrity Failed */
+                    if (MME_SESSION_IS_CREATED(mme_ue))
+                    {
+                        /* Initiate Delete Session if Session is Created */
+                        emm_handle_delete_session_request(mme_ue);
+                    }
+                    else
                     {
                         /* Initiate HSS Auth Process if No Session */
                         mme_s6a_send_air(mme_ue);
@@ -281,12 +282,13 @@ void emm_handle_attach_request(
                     }
                     else
                     {
-                        /* Initiate Delete Session if MAC integrity Failed */
-                        int delete_session_request_handled = 0;
-
-                        emm_handle_delete_session_request(
-                                mme_ue, &delete_session_request_handled);
-                        if (!delete_session_request_handled)
+                        /* if MAC integrity Failed */
+                        if (MME_SESSION_IS_CREATED(mme_ue))
+                        {
+                            /* Initiate Delete Session if Session is Created */
+                            emm_handle_delete_session_request(mme_ue);
+                        }
+                        else
                         {
                             /* Initiate HSS Auth Process if No Session */
                             mme_s6a_send_air(mme_ue);
@@ -389,12 +391,13 @@ void emm_handle_identity_response(
         }
         else
         {
-            /* Initiate Delete Session if MAC integrity Failed */
-            int delete_session_request_handled = 0;
-
-            emm_handle_delete_session_request(
-                    mme_ue, &delete_session_request_handled);
-            if (!delete_session_request_handled)
+            /* if MAC integrity Failed */
+            if (MME_SESSION_IS_CREATED(mme_ue))
+            {
+                /* Initiate Delete Session if Session is Created */
+                emm_handle_delete_session_request(mme_ue);
+            }
+            else
             {
                 /* Initiate HSS Auth Process if No Session */
                 mme_s6a_send_air(mme_ue);
@@ -668,7 +671,6 @@ void emm_handle_detach_request(
         mme_ue_t *mme_ue, nas_detach_request_from_ue_t *detach_request)
 {
     enb_ue_t *enb_ue = NULL;
-    int delete_session_request_handled = 0;
     nas_detach_type_t *detach_type = NULL;
 
     d_assert(detach_request, return, "Null param");
@@ -704,8 +706,11 @@ void emm_handle_detach_request(
             break;
     }
     
-    emm_handle_delete_session_request(mme_ue, &delete_session_request_handled);
-    if (!delete_session_request_handled)
+    if (MME_SESSION_IS_CREATED(mme_ue))
+    {
+        emm_handle_delete_session_request(mme_ue);
+    }
+    else
     {
         emm_handle_detach_accept(mme_ue, detach_request);
     }
@@ -765,12 +770,11 @@ void emm_handle_detach_accept(
     mme_event_send(&e);
 }
 
-void emm_handle_delete_session_request(mme_ue_t *mme_ue, int *handled)
+void emm_handle_delete_session_request(mme_ue_t *mme_ue)
 {
     status_t rv;
     pkbuf_t *s11buf = NULL;
 
-    *handled = 0;
     mme_sess_t *sess = mme_sess_first(mme_ue);
     while (sess != NULL)
     {
@@ -784,8 +788,6 @@ void emm_handle_delete_session_request(mme_ue_t *mme_ue, int *handled)
                     GTP_DELETE_SESSION_REQUEST_TYPE, sess->sgw_s11_teid,
                     s11buf);
             d_assert(rv == CORE_OK, return, "S11 send error");
-
-            *handled = 1;
         }
         sess = mme_sess_next(sess);
     }

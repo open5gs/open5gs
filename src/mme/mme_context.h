@@ -220,6 +220,10 @@ typedef struct _mme_sess_t {
     c_uint32_t      mme_s11_teid;       
     c_uint32_t      mme_s11_addr;       
 
+#define MME_SESSION_IS_CREATED(mme) \
+    ((mme) && (mme_sess_first(mme_ue)) && \
+    ((mme_sess_first(mme_ue))->sgw_s11_teid) && \
+    ((mme_sess_first(mme_ue))->sgw_s11_addr))
     c_uint32_t      sgw_s11_teid;
     c_uint32_t      sgw_s11_addr;
 
