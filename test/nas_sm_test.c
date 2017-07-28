@@ -266,7 +266,7 @@ static void nas_sm_test1(abts_case *tc, void *data)
     pkbuf_free(recvbuf);
 
     /*****************************************************************
-     * Attach Request : GUTI, Integrity Protected
+     * Attach Request : Known GUTI, Integrity Protected, MAC Matched
      * Send Initial-UE Message + Attach Request + PDN Connectivity  */
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex+1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -301,7 +301,9 @@ static void nas_sm_test1(abts_case *tc, void *data)
 
     core_sleep(time_from_msec(300));
 
-    /* Send Initial-UE Message */
+    /*****************************************************************
+     * Attach Request : Unknown GUTI, Integrity Protected
+     * Send Initial-UE Message + Attach Request + PDN Connectivity  */
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex+2);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
@@ -513,7 +515,9 @@ static void nas_sm_test2(abts_case *tc, void *data)
 
     core_sleep(time_from_msec(300));
 
-    /* Send Initial-UE Message */
+    /*****************************************************************
+     * Attach Request : IMSI, Integrity Protected, MAC Matched
+     * Send Initial-UE Message + Attach Request + PDN Connectivity  */
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex+1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
@@ -527,7 +531,9 @@ static void nas_sm_test2(abts_case *tc, void *data)
     recvbuf->len = 223;
     pkbuf_free(recvbuf);
 
-    /* Send Initial-UE Message with MAC failed */
+    /*****************************************************************
+     * Attach Request : IMSI, Integrity Protected, MAC Failed
+     * Send Initial-UE Message + Attach Request + PDN Connectivity  */
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex+2);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
