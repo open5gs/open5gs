@@ -201,6 +201,8 @@ void mme_state_operational(fsm_t *s, event_t *e)
                             "nas_security_decode failed");
                     }
                 }
+                /* Set mme_ue */
+                mme_associate_ue_context(mme_ue, enb_ue);
             }
 
             d_assert(mme_ue, pkbuf_free(pkbuf);break, "No MME UE context");
