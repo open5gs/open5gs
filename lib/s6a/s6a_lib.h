@@ -51,6 +51,8 @@ struct s6a_config_t {
     char *cnf_diamid; 
     /* Diameter realm of the local peer, default to realm part of cnf_diamid */
     char *cnf_diamrlm; 
+    /* IP address of the local peer */
+    char *cnf_addr;
 
     /* the local port for legacy Diameter (default: 3868) in host byte order */
     c_uint16_t cnf_port;
@@ -60,6 +62,7 @@ struct s6a_config_t {
     /* (supposedly) UTF-8, \0 terminated. 
      * The Diameter Identity of the remote peer. */
     char *pi_diamid; 
+    char *pi_addr; /* IP address of the remote peer */
     c_uint16_t pic_port; /* port to connect to. 0: default. */
     
     int mode;        /* default MODE_MME | MODE_HSS */

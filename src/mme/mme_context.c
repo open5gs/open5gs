@@ -6,6 +6,7 @@
 
 #include "gtp_path.h"
 #include "s1ap_message.h"
+#include "s6a_lib.h"
 
 #include "context.h"
 #include "nas_conv.h"
@@ -63,10 +64,50 @@ status_t mme_context_init()
     return CORE_OK;
 }
 
+status_t mme_context_final()
+{
+    d_assert(context_initialized == 1, return CORE_ERROR,
+            "MME context already has been finalized");
+
+    mme_sgw_remove_all();
+    mme_enb_remove_all();
+
+    d_assert(self.mme_ue_s1ap_id_hash, , "Null param");
+    hash_destroy(self.mme_ue_s1ap_id_hash);
+
+    d_assert(self.imsi_ue_hash, , "Null param");
+    hash_destroy(self.imsi_ue_hash);
+
+    d_assert(self.guti_ue_hash, , "Null param");
+    hash_destroy(self.guti_ue_hash);
+
+    pool_final(&mme_pdn_pool);
+    index_final(&mme_bearer_pool);
+    index_final(&mme_sess_pool);
+    index_final(&mme_ue_pool);
+    index_final(&enb_ue_pool);
+
+    index_final(&mme_enb_pool);
+    pool_final(&mme_sgw_pool);
+
+    context_initialized = 0;
+
+    return CORE_OK;
+}
+
+mme_context_t* mme_self()
+{
+    return &self;
+}
+
 static status_t mme_context_prepare()
 {
     self.relative_capacity = 0xff;
 
+    self.mme_s6a_port = DIAMETER_PORT;
+    self.mme_s6a_tls_port = DIAMETER_SECURE_PORT;
+    self.hss_s6a_port = DIAMETER_PORT;
+    self.hss_s6a_tls_port = DIAMETER_SECURE_PORT;
     self.s1ap_port = S1AP_SCTP_PORT;
     self.s11_port = GTPV2_C_UDP_PORT;
 
@@ -75,6 +116,21 @@ static status_t mme_context_prepare()
 
 static status_t mme_context_validation()
 {
+    if (self.s6a_config_path == NULL)
+    {
+        if (self.mme_s6a_addr == NULL)
+        {
+            d_error("No MME.S6A_CONFIG_PATH or MME.NETWORK.S6A_ADDR in '%s'",
+                    context_self()->config.path);
+            return CORE_ERROR;
+        }
+        if (self.hss_s6a_addr == NULL)
+        {
+            d_error("No MME.S6A_CONFIG_PATH or HSS.NETWORK.S6A_ADDR in '%s'",
+                    context_self()->config.path);
+            return CORE_ERROR;
+        }
+    }
     if (self.s1ap_addr == 0)
     {
         d_error("No MME.NEWORK.S1AP_ADDR in '%s'",
@@ -167,6 +223,7 @@ status_t mme_context_parse_config()
 
     typedef enum { 
         START, ROOT, 
+        HSS_START, HSS_ROOT, 
         MME_START, MME_ROOT, 
         SGW_START, SGW_ROOT, 
         SKIP, STOP 
@@ -175,6 +232,7 @@ status_t mme_context_parse_config()
     parse_state stack = STOP;
 
     size_t root_tokens = 0;
+    size_t hss_tokens = 0;
     size_t mme_tokens = 0;
     size_t sgw_tokens = 0;
     size_t skip_tokens = 0;
@@ -201,7 +259,11 @@ status_t mme_context_parse_config()
             }
             case ROOT:
             {
-                if (jsmntok_equal(json, t, "MME") == 0)
+                if (jsmntok_equal(json, t, "HSS") == 0)
+                {
+                    state = HSS_START;
+                }
+                else if (jsmntok_equal(json, t, "MME") == 0)
                 {
                     state = MME_START;
                 }
@@ -221,6 +283,59 @@ status_t mme_context_parse_config()
 
                 break;
             }
+            case HSS_START:
+            {
+                state = HSS_ROOT;
+                hss_tokens = t->size;
+
+                break;
+            }
+            case HSS_ROOT:
+            {
+                if (jsmntok_equal(json, t, "NETWORK") == 0)
+                {
+                    m = 1;
+                    size = 1;
+
+                    if ((t+1)->type == JSMN_ARRAY)
+                    {
+                        m = 2;
+                    }
+
+                    for (arr = 0; arr < size; arr++)
+                    {
+                        for (n = 1; n > 0; m++, n--)
+                        {
+                            n += (t+m)->size;
+
+                            if (jsmntok_equal(json, t+m, "S6A_ADDR") == 0)
+                            {
+                                self.hss_s6a_addr = 
+                                    jsmntok_to_string(json, t+m+1);
+                            }
+                            else if (jsmntok_equal(json, t+m, "S6A_PORT") == 0)
+                            {
+                                char *v = jsmntok_to_string(json, t+m+1);
+                                if (v) self.hss_s6a_port = atoi(v);
+                            }
+                            else if (jsmntok_equal(
+                                        json, t+m, "S6A_TLS_PORT") == 0)
+                            {
+                                char *v = jsmntok_to_string(json, t+m+1);
+                                if (v) self.hss_s6a_tls_port = atoi(v);
+                            }
+                        }
+                    }
+                }
+
+                state = SKIP;
+                stack = HSS_ROOT;
+                skip_tokens = t->size;
+
+                hss_tokens--;
+                if (hss_tokens == 0) stack = ROOT;
+                break;
+            }
             case MME_START:
             {
                 state = MME_ROOT;
@@ -234,6 +349,10 @@ status_t mme_context_parse_config()
                 {
                     char *v = jsmntok_to_string(json, t+1);
                     if (v) self.relative_capacity = atoi(v);
+                }
+                else if (jsmntok_equal(json, t, "S6A_CONFIG_PATH") == 0)
+                {
+                    self.s6a_config_path = jsmntok_to_string(json, t+1);
                 }
                 else if (jsmntok_equal(json, t, "NETWORK") == 0)
                 {
@@ -251,7 +370,23 @@ status_t mme_context_parse_config()
                         {
                             n += (t+m)->size;
 
-                            if (jsmntok_equal(json, t+m, "S1AP_ADDR") == 0)
+                            if (jsmntok_equal(json, t+m, "S6A_ADDR") == 0)
+                            {
+                                self.mme_s6a_addr = 
+                                    jsmntok_to_string(json, t+m+1);
+                            }
+                            else if (jsmntok_equal(json, t+m, "S6A_PORT") == 0)
+                            {
+                                char *v = jsmntok_to_string(json, t+m+1);
+                                if (v) self.mme_s6a_port = atoi(v);
+                            }
+                            else if (jsmntok_equal(
+                                        json, t+m, "S6A_TLS_PORT") == 0)
+                            {
+                                char *v = jsmntok_to_string(json, t+m+1);
+                                if (v) self.mme_s6a_tls_port = atoi(v);
+                            }
+                            else if (jsmntok_equal(json, t+m, "S1AP_ADDR") == 0)
                             {
                                 char *v = jsmntok_to_string(json, t+m+1);
                                 if (v) self.s1ap_addr = inet_addr(v);
@@ -642,42 +777,6 @@ status_t mme_context_parse_config()
     if (rv != CORE_OK) return rv;
 
     return CORE_OK;
-}
-
-status_t mme_context_final()
-{
-    d_assert(context_initialized == 1, return CORE_ERROR,
-            "MME context already has been finalized");
-
-    mme_sgw_remove_all();
-    mme_enb_remove_all();
-
-    d_assert(self.mme_ue_s1ap_id_hash, , "Null param");
-    hash_destroy(self.mme_ue_s1ap_id_hash);
-
-    d_assert(self.imsi_ue_hash, , "Null param");
-    hash_destroy(self.imsi_ue_hash);
-
-    d_assert(self.guti_ue_hash, , "Null param");
-    hash_destroy(self.guti_ue_hash);
-
-    pool_final(&mme_pdn_pool);
-    index_final(&mme_bearer_pool);
-    index_final(&mme_sess_pool);
-    index_final(&mme_ue_pool);
-    index_final(&enb_ue_pool);
-
-    index_final(&mme_enb_pool);
-    pool_final(&mme_sgw_pool);
-
-    context_initialized = 0;
-
-    return CORE_OK;
-}
-
-mme_context_t* mme_self()
-{
-    return &self;
 }
 
 mme_sgw_t* mme_sgw_add()

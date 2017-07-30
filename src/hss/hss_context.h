@@ -47,6 +47,14 @@ typedef struct _hss_db_subscription_data_t {
 } hss_db_subscription_data_t;
 
 typedef struct _hss_context_t {
+    char*           s6a_config_path;    /* HSS S6A Configuration File Path */
+    char*           hss_s6a_addr;       /* HSS S6A local address (STIRNG)*/
+    c_uint16_t      hss_s6a_port;       /* HSS S6A local port */
+    c_uint16_t      hss_s6a_tls_port;   /* HSS S6A local TLS port */
+    char*           mme_s6a_addr;       /* HSS S6A local address (STIRNG)*/
+    c_uint16_t      mme_s6a_port;       /* HSS S6A local port */
+    c_uint16_t      mme_s6a_tls_port;   /* HSS S6A local TLS port */
+
     void *subscriberCollection;
     mutex_id db_lock;
 } hss_context_t;
@@ -54,6 +62,8 @@ typedef struct _hss_context_t {
 CORE_DECLARE(status_t) hss_context_init(void);
 CORE_DECLARE(status_t) hss_context_final(void);
 CORE_DECLARE(hss_context_t*) hss_self(void);
+
+CORE_DECLARE(status_t) hss_context_parse_config(void);
 
 CORE_DECLARE(status_t) hss_db_init(void);
 CORE_DECLARE(status_t) hss_db_final(void);

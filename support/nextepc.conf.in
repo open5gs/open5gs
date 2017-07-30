@@ -4,18 +4,23 @@
 
   HSS :
   {
-    S6A_CONFIG_PATH : "@prefix@/etc/hss_fd.conf"
+#S6A_CONFIG_PATH : "@prefix@/etc/hss_fd.conf",
+    NETWORK :
+    {
+      S6A_ADDR : "10.1.35.214"
+    }
   }
 
   MME :
   {
-    S6A_CONFIG_PATH : "@prefix@/etc/mme_fd.conf",
+#S6A_CONFIG_PATH : "@prefix@/etc/mme_fd.conf",
 
     DEFAULT_PAGING_DRX : "v64",
 #RELATIVE_CAPACITY : 255,
 
     NETWORK :
     {
+      S6A_ADDR : "10.1.35.215",
       S1AP_ADDR : "10.1.35.215",
       S11_ADDR: "10.1.35.215",
     }

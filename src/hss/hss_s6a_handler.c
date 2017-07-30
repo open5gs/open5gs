@@ -486,6 +486,10 @@ out:
 status_t hss_s6a_init(void)
 {
 	struct disp_when data;
+    int ret;
+
+    ret = s6a_init(MODE_HSS);
+    if (ret != 0) return CORE_ERROR;
 
 	memset(&data, 0, sizeof(data));
 	data.app = s6a_appli;
@@ -518,4 +522,6 @@ void hss_s6a_final(void)
 	if (hdl_ulr) {
 		(void) fd_disp_unregister(&hdl_ulr, NULL);
 	}
+
+    s6a_final();
 }

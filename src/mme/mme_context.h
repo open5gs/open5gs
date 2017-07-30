@@ -40,6 +40,14 @@ typedef struct _served_gummei {
 } served_gummei_t;
 
 typedef struct _mme_context_t {
+    char*           s6a_config_path;    /* MME S6A Configuration File Path */
+    char*           mme_s6a_addr;       /* MME S6A local address (STIRNG)*/
+    c_uint16_t      mme_s6a_port;       /* MME S6A local port */
+    c_uint16_t      mme_s6a_tls_port;   /* MME S6A local TLS port */
+    char*           hss_s6a_addr;       /* HSS S6A local address (STIRNG)*/
+    c_uint16_t      hss_s6a_port;       /* HSS S6A local port */
+    c_uint16_t      hss_s6a_tls_port;   /* HSS S6A local TLS port */
+
     c_uint32_t      s1ap_addr;  /* MME S1AP local address */
     c_uint16_t      s1ap_port;  /* MME S1AP local port */
     net_sock_t      *s1ap_sock; /* MME S1AP local listen socket */
@@ -268,9 +276,10 @@ typedef struct _mme_bearer_t {
 } mme_bearer_t;
 
 CORE_DECLARE(status_t)      mme_context_init(void);
-CORE_DECLARE(status_t)      mme_context_parse_config(void);
 CORE_DECLARE(status_t)      mme_context_final(void);
 CORE_DECLARE(mme_context_t*) mme_self(void);
+
+CORE_DECLARE(status_t)      mme_context_parse_config(void);
 
 CORE_DECLARE(mme_sgw_t*)    mme_sgw_add(void);
 CORE_DECLARE(status_t)      mme_sgw_remove(mme_sgw_t *sgw);

@@ -5,6 +5,8 @@
 
 #include <mongoc.h>
 
+#include "s6a_lib.h"
+
 #include "context.h"
 #include "hss_context.h"
 
@@ -45,6 +47,239 @@ status_t hss_context_final(void)
     context_initialized = 0;
 
 	return CORE_OK;
+}
+
+static status_t hss_context_prepare()
+{
+    self.mme_s6a_port = DIAMETER_PORT;
+    self.mme_s6a_tls_port = DIAMETER_SECURE_PORT;
+    self.hss_s6a_port = DIAMETER_PORT;
+    self.hss_s6a_tls_port = DIAMETER_SECURE_PORT;
+
+    return CORE_OK;
+}
+
+static status_t hss_context_validation()
+{
+    if (self.s6a_config_path == NULL)
+    {
+        if (self.hss_s6a_addr == NULL)
+        {
+            d_error("No HSS.S6A_CONFIG_PATH or HSS.NETWORK.S6A_ADDR in '%s'",
+                    context_self()->config.path);
+            return CORE_ERROR;
+        }
+        if (self.mme_s6a_addr == NULL)
+        {
+            d_error("No HSS.S6A_CONFIG_PATH or MME.NETWORK.S6A_ADDR in '%s'",
+                    context_self()->config.path);
+            return CORE_ERROR;
+        }
+    }
+
+    return CORE_OK;
+}
+
+status_t hss_context_parse_config()
+{
+    status_t rv;
+    config_t *config = &context_self()->config;
+
+    char *json = config->json;
+    jsmntok_t *token = config->token;
+
+    typedef enum {
+        START, ROOT,
+        HSS_START, HSS_ROOT,
+        MME_START, MME_ROOT,
+        SKIP, STOP
+    } parse_state;
+    parse_state state = START;
+    parse_state stack = STOP;
+
+    size_t root_tokens = 0;
+    size_t hss_tokens = 0;
+    size_t mme_tokens = 0;
+    size_t skip_tokens = 0;
+    int i, j, m, n;
+    int arr, size;
+
+    rv = hss_context_prepare();
+    if (rv != CORE_OK) return rv;
+
+    for (i = 0, j = 1; j > 0; i++, j--)
+    {
+        jsmntok_t *t = &token[i];
+
+        j += t->size;
+
+        switch (state)
+        {
+            case START:
+            {
+                state = ROOT;
+                root_tokens = t->size;
+
+                break;
+            }
+            case ROOT:
+            {
+                if (jsmntok_equal(json, t, "HSS") == 0)
+                {
+                    state = HSS_START;
+                }
+                else if (jsmntok_equal(json, t, "MME") == 0)
+                {
+                    state = MME_START;
+                }
+                else
+                {
+                    state = SKIP;
+                    stack = ROOT;
+                    skip_tokens = t->size;
+
+                    root_tokens--;
+                    if (root_tokens == 0) state = STOP;
+                }
+
+                break;
+            }
+            case HSS_START:
+            {
+                state = HSS_ROOT;
+                hss_tokens = t->size;
+
+                break;
+            }
+            case HSS_ROOT:
+            {
+                if (jsmntok_equal(json, t, "S6A_CONFIG_PATH") == 0)
+                {
+                    self.s6a_config_path = jsmntok_to_string(json, t+1);
+                }
+                else if (jsmntok_equal(json, t, "NETWORK") == 0)
+                {
+                    m = 1;
+                    size = 1;
+
+                    if ((t+1)->type == JSMN_ARRAY)
+                    {
+                        m = 2;
+                    }
+
+                    for (arr = 0; arr < size; arr++)
+                    {
+                        for (n = 1; n > 0; m++, n--)
+                        {
+                            n += (t+m)->size;
+
+                            if (jsmntok_equal(json, t+m, "S6A_ADDR") == 0)
+                            {
+                                self.hss_s6a_addr = 
+                                    jsmntok_to_string(json, t+m+1);
+                            }
+                            else if (jsmntok_equal(json, t+m, "S6A_PORT") == 0)
+                            {
+                                char *v = jsmntok_to_string(json, t+m+1);
+                                if (v) self.hss_s6a_port = atoi(v);
+                            }
+                            else if (jsmntok_equal(
+                                        json, t+m, "S6A_TLS_PORT") == 0)
+                            {
+                                char *v = jsmntok_to_string(json, t+m+1);
+                                if (v) self.hss_s6a_tls_port = atoi(v);
+                            }
+                        }
+                    }
+                }
+
+                state = SKIP;
+                stack = HSS_ROOT;
+                skip_tokens = t->size;
+
+                hss_tokens--;
+                if (hss_tokens == 0) stack = ROOT;
+                break;
+            }
+            case MME_START:
+            {
+                state = MME_ROOT;
+                mme_tokens = t->size;
+
+                break;
+            }
+            case MME_ROOT:
+            {
+                if (jsmntok_equal(json, t, "NETWORK") == 0)
+                {
+                    m = 1;
+                    size = 1;
+
+                    if ((t+1)->type == JSMN_ARRAY)
+                    {
+                        m = 2;
+                    }
+
+                    for (arr = 0; arr < size; arr++)
+                    {
+                        for (n = 1; n > 0; m++, n--)
+                        {
+                            n += (t+m)->size;
+
+                            if (jsmntok_equal(json, t+m, "S6A_ADDR") == 0)
+                            {
+                                self.mme_s6a_addr = 
+                                    jsmntok_to_string(json, t+m+1);
+                            }
+                            else if (jsmntok_equal(json, t+m, "S6A_PORT") == 0)
+                            {
+                                char *v = jsmntok_to_string(json, t+m+1);
+                                if (v) self.mme_s6a_port = atoi(v);
+                            }
+                            else if (jsmntok_equal(
+                                        json, t+m, "S6A_TLS_PORT") == 0)
+                            {
+                                char *v = jsmntok_to_string(json, t+m+1);
+                                if (v) self.mme_s6a_tls_port = atoi(v);
+                            }
+                        }
+                    }
+                }
+
+                state = SKIP;
+                stack = MME_ROOT;
+                skip_tokens = t->size;
+
+                mme_tokens--;
+                if (mme_tokens == 0) stack = ROOT;
+                break;
+            }
+            case SKIP:
+            {
+                skip_tokens += t->size;
+
+                skip_tokens--;
+                if (skip_tokens == 0) state = stack;
+                break;
+            }
+            case STOP:
+            {
+                break;
+            }
+            default:
+            {
+                d_error("Failed to parse configuration in the state(%u)", 
+                        state);
+                break;
+            }
+
+        }
+    }
+
+    rv = hss_context_validation();
+    if (rv != CORE_OK) return rv;
+
+    return CORE_OK;
 }
 
 status_t hss_db_init()
