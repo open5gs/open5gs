@@ -126,32 +126,19 @@ void emm_handle_attach_request(
 
             d_info("[NAS] Attach request : IMSI[%s] --> EMM", imsi_bcd);
 
-            if (!mme_ue->security_context_available)
+            if (SECURITY_CONTEXT_IS_VALID(mme_ue))
             {
-                /* Initiate HSS Auth Process if No Security Context */
-                mme_s6a_send_air(mme_ue);
+                emm_handle_attach_accept(mme_ue);
             }
             else
             {
-                /* if Security Context is Existed */
-                if (!mme_ue->mac_failed)
+                if (MME_SESSION_IS_CREATED(mme_ue))
                 {
-                    /* MAC verified */
-                    emm_handle_attach_accept(mme_ue);
+                    emm_handle_delete_session_request(mme_ue);
                 }
                 else
                 {
-                    /* if MAC integrity Failed */
-                    if (MME_SESSION_IS_CREATED(mme_ue))
-                    {
-                        /* Initiate Delete Session if Session is Created */
-                        emm_handle_delete_session_request(mme_ue);
-                    }
-                    else
-                    {
-                        /* Initiate HSS Auth Process if No Session */
-                        mme_s6a_send_air(mme_ue);
-                    }
+                    mme_s6a_send_air(mme_ue);
                 }
             }
 
@@ -179,32 +166,19 @@ void emm_handle_attach_request(
             if (MME_UE_HAVE_IMSI(mme_ue))
             {
                 /* Known GUTI */
-                if (!mme_ue->security_context_available)
+                if (SECURITY_CONTEXT_IS_VALID(mme_ue))
                 {
-                    /* Initiate HSS Auth Process if No Security Context */
-                    mme_s6a_send_air(mme_ue);
+                    emm_handle_attach_accept(mme_ue);
                 }
                 else
                 {
-                    /* if Security Context is Existed */
-                    if (!mme_ue->mac_failed)
+                    if (MME_SESSION_IS_CREATED(mme_ue))
                     {
-                        /* MAC verified */
-                        emm_handle_attach_accept(mme_ue);
+                        emm_handle_delete_session_request(mme_ue);
                     }
                     else
                     {
-                        /* if MAC integrity Failed */
-                        if (MME_SESSION_IS_CREATED(mme_ue))
-                        {
-                            /* Initiate Delete Session if Session is Created */
-                            emm_handle_delete_session_request(mme_ue);
-                        }
-                        else
-                        {
-                            /* Initiate HSS Auth Process if No Session */
-                            mme_s6a_send_air(mme_ue);
-                        }
+                        mme_s6a_send_air(mme_ue);
                     }
                 }
             }
@@ -288,32 +262,19 @@ void emm_handle_identity_response(
         return;
     }
 
-    if (!mme_ue->security_context_available)
+    if (SECURITY_CONTEXT_IS_VALID(mme_ue))
     {
-        /* Initiate HSS Auth Process if No Security Context */
-        mme_s6a_send_air(mme_ue);
+        emm_handle_attach_accept(mme_ue);
     }
     else
     {
-        /* if Security Context is Existed */
-        if (!mme_ue->mac_failed)
+        if (MME_SESSION_IS_CREATED(mme_ue))
         {
-            /* MAC verified */
-            emm_handle_attach_accept(mme_ue);
+            emm_handle_delete_session_request(mme_ue);
         }
         else
         {
-            /* if MAC integrity Failed */
-            if (MME_SESSION_IS_CREATED(mme_ue))
-            {
-                /* Initiate Delete Session if Session is Created */
-                emm_handle_delete_session_request(mme_ue);
-            }
-            else
-            {
-                /* Initiate HSS Auth Process if No Session */
-                mme_s6a_send_air(mme_ue);
-            }
+            mme_s6a_send_air(mme_ue);
         }
     }
 }
@@ -737,17 +698,7 @@ void emm_handle_delete_session_response(mme_bearer_t *bearer)
             enb_ue_t *enb_ue = mme_ue->enb_ue;
             d_assert(enb_ue, return, "Null param");
 
-            if (mme_ue->security_context_available && mme_ue->mac_failed)
-            {
-                mme_s6a_send_air(mme_ue);
-            }
-            else
-            {
-                d_error("invalid security parameter"
-                        "(available:%d, mac_failed:%d)",
-                        mme_ue->security_context_available,
-                        mme_ue->mac_failed);
-            }
+            mme_s6a_send_air(mme_ue);
             break;
         }
         default:

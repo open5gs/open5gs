@@ -152,11 +152,19 @@ struct _mme_ue_t {
 #endif
     plmn_id_t       visited_plmn_id;
 
-    /* Security Context Status */
+#define SECURITY_CONTEXT_IS_VALID(mme) \
+    ((mme) && \
+    ((mme)->security_context_available == 1) && ((mme)->mac_failed == 0))
+#define CLEAR_SECURITY_CONTEXT(mme) \
+    do { \
+        d_assert((mme), break, "Null param"); \
+        (mme)->security_context_available = 0; \
+        (mme)->mac_failed = 0; \
+    } while(0)
     int             security_context_available;
-    int             mac_failed; /* Last NAS Authentication state */
+    int             mac_failed;
 
-    /* Security Context Parameter */
+    /* Security Context */
     nas_ue_network_capability_t ue_network_capability;
     nas_ms_network_capability_t ms_network_capability;
     c_uint8_t       xres[MAX_RES_LEN];
