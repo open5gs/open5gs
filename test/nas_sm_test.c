@@ -51,6 +51,7 @@ static void nas_sm_test1(abts_case *tc, void *data)
 
     mongoc_collection_t *collection = NULL;
     bson_t *doc = NULL;
+    c_int64_t count = 0;
     bson_error_t error;
     const char *json =
       "{"
@@ -143,13 +144,29 @@ static void nas_sm_test1(abts_case *tc, void *data)
                 MONGOC_INSERT_NONE, doc, NULL, &error));
     bson_destroy(doc);
 
+    doc = BCON_NEW("imsi", BCON_UTF8("001010123456819"));
+    ABTS_PTR_NOTNULL(tc, doc);
+    do
+    {
+        count = mongoc_collection_count (
+            collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
+    } while (count == 0);
+    bson_destroy(doc);
+
     doc = bson_new_from_json((const uint8_t *)json2, -1, &error);;
     ABTS_PTR_NOTNULL(tc, doc);
     ABTS_TRUE(tc, mongoc_collection_insert(collection, 
                 MONGOC_INSERT_NONE, doc, NULL, &error));
     bson_destroy(doc);
 
-    core_sleep(time_from_msec(1000));
+    doc = BCON_NEW("imsi", BCON_UTF8("001010123456815"));
+    ABTS_PTR_NOTNULL(tc, doc);
+    do
+    {
+        count = mongoc_collection_count (
+            collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
+    } while (count == 0);
+    bson_destroy(doc);
 
     d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
 
@@ -368,6 +385,7 @@ static void nas_sm_test2(abts_case *tc, void *data)
     int msgindex = 3;
 
     mongoc_collection_t *collection = NULL;
+    c_int64_t count = 0;
     bson_error_t error;
     const char *json =
       "{"
@@ -421,7 +439,14 @@ static void nas_sm_test2(abts_case *tc, void *data)
                 MONGOC_INSERT_NONE, doc, NULL, &error));
     bson_destroy(doc);
 
-    core_sleep(time_from_msec(1000));
+    doc = BCON_NEW("imsi", BCON_UTF8("001010123456826"));
+    ABTS_PTR_NOTNULL(tc, doc);
+    do
+    {
+        count = mongoc_collection_count (
+            collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
+    } while (count == 0);
+    bson_destroy(doc);
 
     d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
 
@@ -613,6 +638,7 @@ static void nas_sm_test3(abts_case *tc, void *data)
         "0013000002006300 070c020000c80002 0002400120";
 
     mongoc_collection_t *collection = NULL;
+    c_int64_t count = 0;
     bson_error_t error;
     const char *json =
       "{"
@@ -666,10 +692,17 @@ static void nas_sm_test3(abts_case *tc, void *data)
                 MONGOC_INSERT_NONE, doc, NULL, &error));
     bson_destroy(doc);
 
+    doc = BCON_NEW("imsi", BCON_UTF8("001010123456797"));
+    ABTS_PTR_NOTNULL(tc, doc);
+    do
+    {
+        count = mongoc_collection_count (
+            collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
+    } while (count == 0);
+    bson_destroy(doc);
+
     mme_self()->mme_ue_s1ap_id = 33554631;
     mme_self()->m_tmsi = 2;
-
-    core_sleep(time_from_msec(1000));
 
     d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
 
