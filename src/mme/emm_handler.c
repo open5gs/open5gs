@@ -168,8 +168,6 @@ void emm_handle_attach_request(
             guti.mme_code = nas_guti->mme_code;
             guti.m_tmsi = nas_guti->m_tmsi;
 
-            mme_associate_ue_context(mme_ue, enb_ue);
-
             d_info("[NAS] Attach request : GUTI[G:%d,C:%d,M_TMSI:0x%x]-"
                     "IMSI:[%s] --> EMM", 
                     guti.mme_gid,

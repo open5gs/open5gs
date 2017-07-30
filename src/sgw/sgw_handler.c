@@ -244,13 +244,10 @@ void sgw_handle_delete_session_request(gtp_xact_t *xact,
 {
     status_t rv;
     pkbuf_t *pkbuf = NULL;
-    //gtp_delete_session_request_t *req = NULL;
 
     d_assert(xact, return, "Null param");
     d_assert(sess, return, "Null param");
     d_assert(gtp_message, return, "Null param");
-
-    //req = &gtp_message->delete_session_request;
 
     rv = gtp_build_msg(&pkbuf, GTP_DELETE_SESSION_REQUEST_TYPE, gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
