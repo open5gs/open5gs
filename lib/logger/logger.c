@@ -260,7 +260,9 @@ int logger_start(const char *path)
 
         d_print("  Logging '%s'\n", path);
         ret = logger_start_internal(path);
-        d_assert(ret == 0, _exit(EXIT_FAILURE), "logger_start() failed");
+        d_assert(ret == 0, _exit(EXIT_FAILURE), 
+                "logger_start() failed\n"
+                "You may need root privileges.");
 
         _exit(EXIT_SUCCESS);
     }

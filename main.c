@@ -151,6 +151,7 @@ int main(int argc, char *argv[])
     if (app_initialize(config_path, log_path) != CORE_OK)
     {
         d_fatal("NextEPC initialization failed. Aborted");
+        app_terminate();
         return EXIT_FAILURE;
     }
 

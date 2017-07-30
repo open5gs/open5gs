@@ -11,7 +11,7 @@
 
 #include "app.h"
 
-static pid_t logger_pid;
+static pid_t logger_pid = 0;
 static thread_id net_thread;
 
 void *THREAD_FUNC net_main(thread_id id, void *data);
@@ -59,13 +59,14 @@ status_t app_did_initialize(char *config_path, char *log_path)
 
 void app_will_terminate(void)
 {
+    if (logger_pid)
+        core_kill(logger_pid, SIGTERM);
+
     thread_delete(net_thread);
 }
 
 void app_did_terminate(void)
 {
-    core_kill(logger_pid, SIGTERM);
-
     context_final();
     core_terminate();
 }

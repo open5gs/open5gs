@@ -6,7 +6,7 @@
 
 #include "app.h"
 
-static pid_t hss_pid;
+static pid_t hss_pid = 0;
 
 static int check_signal(int signum);
 
@@ -18,8 +18,8 @@ status_t app_initialize(char *config_path, char *log_path)
     rv = app_will_initialize(config_path, log_path);
     if (rv != CORE_OK) return rv;
 
-    rv = semaphore_create(&semaphore, 0);
-    d_assert(rv == CORE_OK, return rv, "semaphore_create() failed");
+    d_assert(semaphore_create(&semaphore, 0) == CORE_OK, 
+            return rv, "semaphore_create() failed");
 
     hss_pid = fork();
     d_assert(hss_pid >= 0, _exit(EXIT_FAILURE), "fork() failed");
@@ -27,10 +27,10 @@ status_t app_initialize(char *config_path, char *log_path)
     if (hss_pid == 0)
     {
         /* Child */
-        rv = semaphore_wait(semaphore);
-        d_assert(rv == CORE_OK, _exit(EXIT_FAILURE), "semaphore_wait() failed");
-        rv = semaphore_delete(semaphore);
-        d_assert(rv == CORE_OK, _exit(EXIT_FAILURE), "semaphore_delete() failed");
+        d_assert(semaphore_wait(semaphore) == CORE_OK, 
+                _exit(EXIT_FAILURE), "semaphore_wait() failed");
+        d_assert(semaphore_delete(semaphore) == CORE_OK, 
+                _exit(EXIT_FAILURE), "semaphore_delete() failed");
 
         rv = hss_initialize();
         if (rv != CORE_OK) _exit(EXIT_FAILURE);
@@ -42,31 +42,29 @@ status_t app_initialize(char *config_path, char *log_path)
     }
 
     /* Parent */
-    rv = pgw_initialize();
-    if (rv != CORE_OK) return rv;
-    rv = sgw_initialize();
-    if (rv != CORE_OK) return rv;
-    rv = mme_initialize();
-    if (rv != CORE_OK) return rv;
+    rv = CORE_OK;
+    if (pgw_initialize() != CORE_OK) rv = CORE_ERROR;
+    if (sgw_initialize() != CORE_OK) rv = CORE_ERROR;
+    if (mme_initialize() != CORE_OK) rv = CORE_ERROR;
 
-    rv = semaphore_post(semaphore);
-    d_assert(rv == CORE_OK, return -1, "semaphore_post() failed");
+    d_assert(semaphore_post(semaphore) == CORE_OK,,
+            "semaphore_post() failed");
 
-    rv = app_did_initialize(config_path, log_path);
-    if (rv != CORE_OK) return rv;
+    if (app_did_initialize(config_path, log_path) != CORE_OK) rv = CORE_ERROR;
 
-    return CORE_OK;
+    return rv;;
 }
 
 void app_terminate(void)
 {
     app_will_terminate();
 
+    if (hss_pid)
+        core_kill(hss_pid, SIGTERM);
+
     mme_terminate();
     sgw_terminate();
     pgw_terminate();
-
-    core_kill(hss_pid, SIGTERM);
 
     app_did_terminate();
 }
