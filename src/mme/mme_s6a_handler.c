@@ -573,7 +573,23 @@ status_t mme_s6a_init(void)
 {
     status_t rv;
 
-    rv = s6a_init(MODE_MME);
+    if (mme_self()->s6a_config_path == NULL)
+    {
+        /* This is default diameter configuration if there is no config file 
+         * The Configuration : No TLS, Only TCP */
+        s6a_config_init();
+
+        s6a_config->cnf_diamid = MME_IDENTITY;
+        s6a_config->cnf_diamrlm = S6A_REALM;
+        s6a_config->cnf_addr = mme_self()->mme_s6a_addr;
+        s6a_config->cnf_port = mme_self()->mme_s6a_port;
+
+        s6a_config->pi_diamid = HSS_IDENTITY;
+        s6a_config->pi_addr = mme_self()->hss_s6a_addr;
+        s6a_config->pic_port = mme_self()->hss_s6a_port;
+    }
+
+    rv = s6a_init(mme_self()->s6a_config_path);
     if (rv != CORE_OK) return rv;
 
     pool_init(&sess_state_pool, MAX_NUM_SESSION_STATE);

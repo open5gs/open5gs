@@ -9,17 +9,11 @@ static pthread_t s6a_stats_th = (pthread_t)NULL;
 int s6a_fd_init(const char *conffile);
 void s6a_fd_final();
 
-char *s6a_hss_config();
-char *s6a_mme_config();
-
 int s6a_dict_init(void);
 
 static void s6a_config_dump(void)
 {
 	d_trace(1, "------- s6a configuration dump: ---------\n");
-	d_trace(1, " Mode ............... : %s%s\n", 
-            s6a_config->mode == MODE_MME ? "MME" : "", 
-            s6a_config->mode == MODE_HSS ? "HSS" : "");
 	d_trace(1, " Vendor Id .......... : %u\n", s6a_config->vendor_id);
 	d_trace(1, " Application Id ..... : %u\n", s6a_config->appli_id);
 	d_trace(1, " Duration ........... : %d(sec)\n", s6a_config->duration);
@@ -63,24 +57,18 @@ static void * s6a_stats(void * arg)
 					(long)(now.tv_nsec + 1000000000 - start.tv_nsec) / 1000);
 		}
 		
-		if (s6a_config->mode == MODE_HSS) 
-        {
-			d_trace(1, " HSS: %llu message(s) echoed\n", 
-                    copy.nb_echoed);
-		}
-        else if (s6a_config->mode == MODE_MME) 
-        {
-			d_trace(1, " MME:\n");
-			d_trace(1, "   %llu message(s) sent\n", copy.nb_sent);
-			d_trace(1, "   %llu error(s) received\n", copy.nb_errs);
-			d_trace(1, "   %llu answer(s) received\n", copy.nb_recv);
-			d_trace(1, "     fastest: %ld.%06ld sec.\n", 
-                    copy.shortest / 1000000, copy.shortest % 1000000);
-			d_trace(1, "     slowest: %ld.%06ld sec.\n", 
-                    copy.longest / 1000000, copy.longest % 1000000);
-			d_trace(1, "     Average: %ld.%06ld sec.\n", 
-                    copy.avg / 1000000, copy.avg % 1000000);
-		}
+        d_trace(1, " Local: %llu message(s) echoed\n", 
+                copy.nb_echoed);
+        d_trace(1, " Remote:\n");
+        d_trace(1, "   %llu message(s) sent\n", copy.nb_sent);
+        d_trace(1, "   %llu error(s) received\n", copy.nb_errs);
+        d_trace(1, "   %llu answer(s) received\n", copy.nb_recv);
+        d_trace(1, "     fastest: %ld.%06ld sec.\n", 
+                copy.shortest / 1000000, copy.shortest % 1000000);
+        d_trace(1, "     slowest: %ld.%06ld sec.\n", 
+                copy.longest / 1000000, copy.longest % 1000000);
+        d_trace(1, "     Average: %ld.%06ld sec.\n", 
+                copy.avg / 1000000, copy.avg % 1000000);
 		d_trace(1, "-------------------------------------\n");
 	}
 	
@@ -88,18 +76,10 @@ static void * s6a_stats(void * arg)
 }
 
 /* entry point */
-int s6a_init(int mode)
+int s6a_init(const char *conffile)
 {
     /* Configure Application Mode(MME, HSS) */
-    if (mode == MODE_HSS) 
-    {
-        CHECK_FCT( s6a_fd_init(s6a_hss_config()) );
-    }
-    else if (mode == MODE_MME) 
-    {
-        CHECK_FCT( s6a_fd_init(s6a_mme_config()) );
-    }
-    s6a_config->mode = mode;
+    CHECK_FCT( s6a_fd_init(conffile) );
 
 	/* Initialize the mutex */
 	CHECK_POSIX( pthread_mutex_init(&s6a_config->stats_lock, NULL) );

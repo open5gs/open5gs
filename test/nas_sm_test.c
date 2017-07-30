@@ -149,6 +149,8 @@ static void nas_sm_test1(abts_case *tc, void *data)
                 MONGOC_INSERT_NONE, doc, NULL, &error));
     bson_destroy(doc);
 
+    core_sleep(time_from_msec(1000));
+
     d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
 
     /* eNB connects to MME */
@@ -419,6 +421,8 @@ static void nas_sm_test2(abts_case *tc, void *data)
                 MONGOC_INSERT_NONE, doc, NULL, &error));
     bson_destroy(doc);
 
+    core_sleep(time_from_msec(1000));
+
     d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
 
     c_uint8_t tmp[MAX_SDU_LEN];
@@ -664,6 +668,8 @@ static void nas_sm_test3(abts_case *tc, void *data)
 
     mme_self()->mme_ue_s1ap_id = 33554631;
     mme_self()->m_tmsi = 2;
+
+    core_sleep(time_from_msec(1000));
 
     d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
 

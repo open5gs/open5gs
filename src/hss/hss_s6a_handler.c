@@ -488,7 +488,23 @@ status_t hss_s6a_init(void)
 	struct disp_when data;
     int ret;
 
-    ret = s6a_init(MODE_HSS);
+    if (hss_self()->s6a_config_path == NULL)
+    {
+        /* This is default diameter configuration if there is no config file 
+         * The Configuration : No TLS, Only TCP */
+        s6a_config_init();
+
+        s6a_config->cnf_diamid = HSS_IDENTITY;
+        s6a_config->cnf_diamrlm = S6A_REALM;
+        s6a_config->cnf_addr = hss_self()->hss_s6a_addr;
+        s6a_config->cnf_port = hss_self()->hss_s6a_port;
+
+        s6a_config->pi_diamid = MME_IDENTITY;
+        s6a_config->pi_addr = hss_self()->mme_s6a_addr;
+        s6a_config->pic_port = hss_self()->mme_s6a_port;
+    }
+
+    ret = s6a_init(hss_self()->s6a_config_path);
     if (ret != 0) return CORE_ERROR;
 
 	memset(&data, 0, sizeof(data));

@@ -11,9 +11,9 @@
 extern "C" {
 #endif /* __cplusplus */
 
-/* Mode for the extension */
-#define	MODE_MME 0x1
-#define MODE_HSS 0x2
+#define S6A_REALM "localdomain" /* Default Relam */
+#define MME_IDENTITY "mme.localdomain" /* Default MME Identity */
+#define HSS_IDENTITY "hss.localdomain" /* Default HSS Identity */
 
 #define S6A_RAT_TYPE_WLAN                   0
 #define S6A_RAT_TYPE_VIRTUAL                1
@@ -46,6 +46,8 @@ extern "C" {
 #define AVP_CODE_ALL_APN_CONFIG_INC_IND     (1428)
 #define AVP_CODE_APN_CONFIGURATION          (1430)
 
+/* This is default diameter configuration if there is no config file 
+ * The Configuration : No TLS, Only TCP */
 struct s6a_config_t {
     /* Diameter Identity of the local peer (FQDN -- ASCII) */
     char *cnf_diamid; 
@@ -157,8 +159,10 @@ extern struct dict_object *s6a_pre_emption_capability;
 extern struct dict_object *s6a_pre_emption_vulnerability;
 extern struct dict_object *s6a_served_party_ip_addr;
 
-CORE_DECLARE(int) s6a_init(int mode);
+CORE_DECLARE(int) s6a_init(const char *conffile);
 CORE_DECLARE(void) s6a_final(void);
+
+CORE_DECLARE(int) s6a_config_init(void);
 
 #ifdef __cplusplus
 }

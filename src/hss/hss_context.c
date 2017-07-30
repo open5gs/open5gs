@@ -52,9 +52,7 @@ status_t hss_context_final(void)
 static status_t hss_context_prepare()
 {
     self.mme_s6a_port = DIAMETER_PORT;
-    self.mme_s6a_tls_port = DIAMETER_SECURE_PORT;
     self.hss_s6a_port = DIAMETER_PORT;
-    self.hss_s6a_tls_port = DIAMETER_SECURE_PORT;
 
     return CORE_OK;
 }
@@ -183,12 +181,6 @@ status_t hss_context_parse_config()
                                 char *v = jsmntok_to_string(json, t+m+1);
                                 if (v) self.hss_s6a_port = atoi(v);
                             }
-                            else if (jsmntok_equal(
-                                        json, t+m, "S6A_TLS_PORT") == 0)
-                            {
-                                char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.hss_s6a_tls_port = atoi(v);
-                            }
                         }
                     }
                 }
@@ -235,12 +227,6 @@ status_t hss_context_parse_config()
                             {
                                 char *v = jsmntok_to_string(json, t+m+1);
                                 if (v) self.mme_s6a_port = atoi(v);
-                            }
-                            else if (jsmntok_equal(
-                                        json, t+m, "S6A_TLS_PORT") == 0)
-                            {
-                                char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.mme_s6a_tls_port = atoi(v);
                             }
                         }
                     }

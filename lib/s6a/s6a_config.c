@@ -9,9 +9,6 @@
 static struct s6a_config_t g_conf;
 struct s6a_config_t *s6a_config;
 
-static char *s6a_hss_conffile = SYSCONFDIR "hss_fd.conf";
-static char *s6a_mme_conffile = SYSCONFDIR "mme_fd.conf";
-
 static int s6a_config_apply_internal()
 {
     struct peer_info fddpi;
@@ -40,12 +37,10 @@ static int s6a_config_apply_internal()
             ai->ai_addr, ai->ai_addrlen, EP_FL_CONF),
     freeaddrinfo(ai);
 
-#if 0
     if (s6a_config->cnf_port)
         fd_g_config->cnf_port = s6a_config->cnf_port;
     if (s6a_config->cnf_port_tls)
         fd_g_config->cnf_port_tls = s6a_config->cnf_port_tls;
-#endif
 
     memset(&fddpi, 0, sizeof(fddpi));
     fddpi.config.pic_flags.persist = PI_PRST_ALWAYS;
@@ -100,78 +95,15 @@ status_t s6a_config_apply()
     return CORE_OK;
 }
 
-#define HSS_IDENTITY "hss.localdomain"
-#define HSS_REALM "localdomain"
-
-#define MME_IDENTITY "mme.localdomain"
-#define MME_REALM "localdomain"
-
-static int s6a_common_config(void)
+int s6a_config_init(void)
 {
     memset(&g_conf, 0, sizeof(struct s6a_config_t));
     s6a_config = &g_conf;
 
 	/* Set the default values */
-	s6a_config->mode       = MODE_MME | MODE_HSS;
 	s6a_config->vendor_id  = 10415;	/* 3GPP Vendor ID */
 	s6a_config->appli_id   = 16777251;	/* 3GPP S6A Application ID */
 	s6a_config->duration   = 10; /* 10 seconds */
 	
 	return 0;
-}
-
-char *s6a_hss_config()
-{
-    status_t rv;
-    file_info_t file_info;
-    char *conffile = s6a_hss_conffile;
-
-    s6a_common_config();
-    
-    s6a_config->cnf_diamid = HSS_IDENTITY;
-    s6a_config->cnf_diamrlm = HSS_REALM;
-    s6a_config->cnf_addr = "10.1.35.214";
-#if 0
-    s6a_config->cnf_port = DIAMETER_PORT;
-    s6a_config->cnf_port_tls = DIAMETER_SECURE_PORT;
-#endif
-    s6a_config->pi_diamid = MME_IDENTITY;
-    s6a_config->pi_addr = "10.1.35.215";
-    s6a_config->pic_port = DIAMETER_PORT;
-
-    rv = file_stat(&file_info, conffile, FILE_INFO_TYPE);
-    if (rv == CORE_OK && file_info.filetype == FILE_REG)
-    {
-        return conffile;
-    }
-   
-    return NULL;
-}
-
-char *s6a_mme_config()
-{
-    status_t rv;
-    file_info_t file_info;
-    char *conffile = s6a_mme_conffile;
-
-    s6a_common_config();
-
-    s6a_config->cnf_diamid = MME_IDENTITY;
-    s6a_config->cnf_diamrlm = MME_REALM;
-    s6a_config->cnf_addr = "10.1.35.215";
-#if 0
-    s6a_config->cnf_port = DIAMETER_PORT;
-    s6a_config->cnf_port_tls = DIAMETER_SECURE_PORT;
-#endif
-    s6a_config->pi_diamid = HSS_IDENTITY;
-    s6a_config->pi_addr = "10.1.35.214";
-    s6a_config->pic_port = DIAMETER_PORT;
-
-    rv = file_stat(&file_info, conffile, FILE_INFO_TYPE);
-    if (rv == CORE_OK && file_info.filetype == FILE_REG)
-    {
-        return conffile;
-    }
-
-    return NULL;
 }
