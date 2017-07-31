@@ -15,6 +15,8 @@
 void esm_handle_pdn_connectivity_request(mme_bearer_t *bearer, 
         nas_pdn_connectivity_request_t *pdn_connectivity_request)
 {
+    d_trace(3, "[ESM] Recv PDN CONNECTIVITY REQUEST\n");
+
     if (pdn_connectivity_request->presencemask &
             NAS_PDN_CONNECTIVITY_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
     {
@@ -52,6 +54,8 @@ void esm_handle_s6a_update_location(mme_bearer_t *bearer)
             pkbuf_free(esmbuf); return, "s1ap build error");
 
     d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
+
+    d_trace(3, "[ESM] Send ESM INFORMATION REQUEST\n");
 }
 
 void esm_handle_modify_bearer_request(mme_bearer_t *bearer)
@@ -82,6 +86,8 @@ void esm_handle_information_response(mme_bearer_t *bearer,
     d_assert(bearer, return, "Null param");
     mme_ue = bearer->mme_ue;
     d_assert(mme_ue, return, "Null param");
+
+    d_trace(3, "[ESM] Recv ESM INFORMATION RESPONSE\n");
 
     if (esm_information_response->presencemask &
             NAS_ESM_INFORMATION_RESPONSE_ACCESS_POINT_NAME_PRESENT)
