@@ -407,12 +407,12 @@ status_t sgw_context_setup_trace_module()
     {
         extern int _sgw_sm;
         d_trace_level(&_sgw_sm, sm);
-        extern int _sgw_handler;
-        d_trace_level(&_sgw_handler, sm);
     }
 
     if (gtp)
     {
+        extern int _sgw_handler;
+        d_trace_level(&_sgw_handler, gtp);
         extern int _gtp_path;
         d_trace_level(&_gtp_path, gtp);
         extern int _sgw_path;

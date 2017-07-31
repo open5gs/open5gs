@@ -89,7 +89,7 @@ static void s6a_fd_logger(int printlevel, const char *format, va_list ap)
             d_trace(5, "freeDiameter[%d]: %s\n", printlevel, buffer);
             break;  
 	    case FD_LOG_NOTICE:
-            d_trace(1, "freeDiameter[%d]: %s\n", printlevel, buffer);
+            d_trace(3, "freeDiameter[%d]: %s\n", printlevel, buffer);
             break;
 	    case FD_LOG_ERROR:
             d_error("%s", buffer);

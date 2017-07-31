@@ -13,11 +13,11 @@ int s6a_dict_init(void);
 
 static void s6a_config_dump(void)
 {
-	d_trace(1, "------- s6a configuration dump: ---------\n");
-	d_trace(1, " Vendor Id .......... : %u\n", s6a_config->vendor_id);
-	d_trace(1, " Application Id ..... : %u\n", s6a_config->appli_id);
-	d_trace(1, " Duration ........... : %d(sec)\n", s6a_config->duration);
-	d_trace(1, "------- /s6a configuration dump ---------\n");
+	d_trace(3, "------- s6a configuration dump: ---------\n");
+	d_trace(3, " Vendor Id .......... : %u\n", s6a_config->vendor_id);
+	d_trace(3, " Application Id ..... : %u\n", s6a_config->appli_id);
+	d_trace(3, " Duration ........... : %d(sec)\n", s6a_config->duration);
+	d_trace(3, "------- /s6a configuration dump ---------\n");
 }
 
 /* Function to display statistics periodically */

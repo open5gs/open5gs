@@ -415,12 +415,12 @@ status_t pgw_context_setup_trace_module()
     {
         extern int _pgw_sm;
         d_trace_level(&_pgw_sm, sm);
-        extern int _pgw_handler;
-        d_trace_level(&_pgw_handler, sm);
     }
 
     if (gtp)
     {
+        extern int _pgw_handler;
+        d_trace_level(&_pgw_handler, gtp);
         extern int _gtp_path;
         d_trace_level(&_gtp_path, gtp);
         extern int _pgw_path;
@@ -729,7 +729,7 @@ pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
                     iter_pdn = pgw_pdn_next(iter_pdn))
             {
 
-                d_trace(3,"Dst(%s) in Pkt : PAA(%s) in PDN\n",
+                d_trace(50,"Dst(%s) in Pkt : PAA(%s) in PDN\n",
                         INET_NTOP(&iph->ip_dst.s_addr,buf1),
                         INET_NTOP(&iter_pdn->paa.ipv4_addr, buf2));
 
@@ -737,7 +737,7 @@ pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
                 if (iph->ip_dst.s_addr == iter_pdn->paa.ipv4_addr)
                 {
                     /* Found */
-                    d_trace(3,"Found bearer(id = %d)\n",iter_bearer->id);
+                    d_trace(50,"Found bearer(id = %d)\n",iter_bearer->id);
                     return iter_bearer;
                 }
 

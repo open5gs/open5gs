@@ -365,7 +365,7 @@ f.write("#endif /* %s_IES_DEFS_H_ */\n\n" % (fileprefix.upper()))
 #Generate Decode functions
 f = open(outdir + fileprefix + '_ies_decoder.c', 'w')
 outputHeaderToFile(f, filename)
-f.write("#define TRACE_MODULE ies_decoder\n#include \"core_debug.h\"\n#include \"%s_ies_defs.h\"\n\n" % (fileprefix))
+f.write("#define TRACE_MODULE _s1ap_ies_decoder\n#include \"core_debug.h\"\n#include \"%s_ies_defs.h\"\n\n" % (fileprefix))
 for key in iesDefs:
     if key in ieofielist.values():
         continue
@@ -510,8 +510,7 @@ for key in iesDefs:
 #Generate IES Encode functions
 f = open(outdir + fileprefix + '_ies_encoder.c', 'w')
 outputHeaderToFile(f,filename)
-f.write("#include \"core_debug.h\"\n")
-f.write("#include \"%s_ies_defs.h\"\n\n" % (fileprefix))
+f.write("#define TRACE_MODULE _s1ap_ies_encoder\n#include \"core_debug.h\"\n#include \"%s_ies_defs.h\"\n\n" % (fileprefix))
 for key in iesDefs:
     if key in ieofielist.values():
         continue
@@ -543,6 +542,7 @@ for key in iesDefs:
 
     f.write("    d_assert(%s, return -1, \"Null param\");\n" % (firstwordlower));
     f.write("    d_assert(%s, return -1, \"Null param\");\n\n" % (lowerFirstCamelWord(re.sub('-', '_', key))));
+    f.write("    d_trace(3, \"Encoding message %s\\n\");\n\n" % re.sub('-', '_', keyName))
 
     for ie in iesDefs[key]["ies"]:
         iename = re.sub('-', '_', re.sub('id-', '', ie[0]))
@@ -653,7 +653,7 @@ f.write("""S1ap_IE_t *s1ap_new_ie(S1ap_ProtocolIE_ID_t id, S1ap_Criticality_t cr
 #Generate Free functions
 f = open(outdir + fileprefix + '_ies_free.c', 'w')
 outputHeaderToFile(f, filename)
-f.write("#define TRACE_MODULE ies_free\n#include \"core_debug.h\"\n#include \"%s_ies_defs.h\"\n\n" % (fileprefix))
+f.write("#define TRACE_MODULE _s1ap_ies_free\n#include \"core_debug.h\"\n#include \"%s_ies_defs.h\"\n\n" % (fileprefix))
 for key in iesDefs:
     if key in ieofielist.values():
         continue
