@@ -29,6 +29,15 @@ typedef struct _context_t {
     void *db_client;
     char *db_name;
     void *database;
+
+    struct {
+        int context;
+        int sm;
+        int s1ap;
+        int nas;
+        int gtp;
+        int s6a;
+    } trace_level;
 } context_t;
 
 CORE_DECLARE(status_t)      context_init(void);
@@ -37,6 +46,7 @@ CORE_DECLARE(context_t*)    context_self(void);
 
 CORE_DECLARE(status_t)      context_read_file(char *file_path);
 CORE_DECLARE(status_t)      context_parse_config(void);
+CORE_DECLARE(status_t)      context_setup_trace_module(void);
 
 CORE_DECLARE(status_t)      context_db_init(char *db_uri);
 CORE_DECLARE(status_t)      context_db_final(void);

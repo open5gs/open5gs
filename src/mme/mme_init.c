@@ -21,6 +21,9 @@ status_t mme_initialize()
     rv = mme_context_parse_config();
     if (rv != CORE_OK) return rv;
 
+    rv = mme_context_setup_trace_module();
+    if (rv != CORE_OK) return rv;
+
     ret = mme_s6a_init();
     if (ret != 0) return -1;
 

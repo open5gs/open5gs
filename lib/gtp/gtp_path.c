@@ -86,9 +86,9 @@ status_t gtp_send(net_sock_t *sock, gtp_node_t *gnode, pkbuf_t *pkbuf)
 
     sent = net_sendto(sock, pkbuf->payload, pkbuf->len, 
             gnode->addr, gnode->port);
-    d_trace(1,"Sent %d->%d bytes to [%s:%d]\n", pkbuf->len, sent, 
+    d_trace(50, "Sent %d->%d bytes to [%s:%d]\n", pkbuf->len, sent, 
             INET_NTOP(&gnode->addr, buf), gnode->port);
-    d_trace_hex(1, pkbuf->payload, pkbuf->len);
+    d_trace_hex(50, pkbuf->payload, pkbuf->len);
     if (sent < 0 || sent != pkbuf->len)
     {
         d_error("net_send error (%d:%s)", 
@@ -122,7 +122,7 @@ pkbuf_t *gtp_handle_echo_req(pkbuf_t *pkb)
     }
 
 
-    d_trace(1, "gtp_handle_without_teid(ECHO_REQ)\n");
+    d_trace(3, "gtp_handle_without_teid(ECHO_REQ)\n");
 
     pkb_resp = pkbuf_alloc(0, 100 /* enough for ECHO_RSP; use smaller buffer */);
     d_assert(pkb_resp, return NULL, "Can't allocate pkbuf");

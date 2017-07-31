@@ -29,8 +29,8 @@ static int _gtpv1_tun_recv_cb(net_link_t *net_link, void *data)
 
     recvbuf->len = n;
 
-    d_trace(1, "PDU received from TunTap\n");
-    d_trace_hex(1, recvbuf->payload, recvbuf->len);
+    d_trace(50, "PDU received from TunTap\n");
+    d_trace_hex(50, recvbuf->payload, recvbuf->len);
 
     /* Find the bearer by packet filter */
     bearer = pgw_bearer_find_by_packet(recvbuf);
@@ -64,7 +64,7 @@ static int _gtpv1_tun_recv_cb(net_link_t *net_link, void *data)
         /* Send to SGW */
         gnode.addr = bearer->sgw_s5u_addr;
         gnode.port = GTPV1_U_UDP_PORT;
-        d_trace(1, "Send S5U PDU (teid = 0x%x)to SGW(%s)\n",
+        d_trace(50, "Send S5U PDU (teid = 0x%x)to SGW(%s)\n",
                 bearer->sgw_s5u_teid,
                 INET_NTOP(&gnode.addr, buf));
 
@@ -99,8 +99,8 @@ static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
         return -1;
     }
 
-    d_trace(1, "S5-C PDU received from PGW\n");
-    d_trace_hex(1, pkbuf->payload, pkbuf->len);
+    d_trace(10, "S5-C PDU received from PGW\n");
+    d_trace_hex(10, pkbuf->payload, pkbuf->len);
 
     event_set(&e, PGW_EVT_S5C_SESSION_MSG);
     event_set_param1(&e, (c_uintptr_t)sock);
@@ -133,8 +133,8 @@ static int _gtpv1_u_recv_cb(net_sock_t *sock, void *data)
         return -1;
     }
 
-    d_trace(1, "S5-U PDU received from SGW\n");
-    d_trace_hex(1, pkbuf->payload, pkbuf->len);
+    d_trace(50, "S5-U PDU received from SGW\n");
+    d_trace_hex(50, pkbuf->payload, pkbuf->len);
 
     /* Remove GTP header and send packets to TUN interface */
     if (pkbuf_header(pkbuf, -size) != CORE_OK)

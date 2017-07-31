@@ -268,6 +268,37 @@ status_t hss_context_parse_config()
     return CORE_OK;
 }
 
+status_t hss_context_setup_trace_module()
+{
+    int context = context_self()->trace_level.context;
+    int sm = context_self()->trace_level.sm;
+    int s6a = context_self()->trace_level.s6a;
+
+    if (context)
+    {
+        extern int _context;
+        d_trace_level(&_context, context);
+        extern int _hss_context;
+        d_trace_level(&_hss_context, context);
+    }
+
+    if (sm)
+    {
+        extern int _hss_s6a_handler;
+        d_trace_level(&_hss_s6a_handler, sm);
+    }
+
+    if (s6a)
+    {
+        extern int _s6a;
+        d_trace_level(&_s6a, s6a);
+        extern int _s6a_init;
+        d_trace_level(&_s6a_init, s6a);
+    }
+
+    return CORE_OK;
+}
+
 status_t hss_db_init()
 {
     if (context_self()->db_client && context_self()->db_name)

@@ -113,38 +113,6 @@ int main(int argc, char *argv[])
         }
     }
 
-    {
-#if 0
-        extern int _s1ap_path;
-        d_trace_level(&_s1ap_path, 100);
-        extern int _sgw_path;
-        d_trace_level(&_sgw_path, 100);
-        extern int _pgw_path;
-        d_trace_level(&_pgw_path, 100);
-        extern int _pgw_context;
-        d_trace_level(&_pgw_context, 100);
-        extern int _gtp_xact;
-        d_trace_level(&_gtp_xact, 100);
-        extern int _mme_sm;
-        d_trace_level(&_mme_sm, 100);
-        extern int _s1ap_sm;
-        d_trace_level(&_s1ap_sm, 100);
-        extern int _emm_sm;
-        d_trace_level(&_emm_sm, 100);
-        extern int _bearer_sm;
-        d_trace_level(&_bearer_sm, 100);
-
-        extern int _s1ap_recv;
-        d_trace_level(&_s1ap_recv, 100);
-        extern int _s1ap_send;
-        d_trace_level(&_s1ap_send, 100);
-        extern int _s6a;
-        d_trace_level(&_s6a, 100);
-        extern int _tlv_msg;
-        d_trace_level(&_tlv_msg, 1);
-#endif
-    }
-
     show_version();
     d_print("\n");
 

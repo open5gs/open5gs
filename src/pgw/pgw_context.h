@@ -89,10 +89,11 @@ typedef struct _pgw_ip_pool_t {
 } pgw_ip_pool_t;
 
 CORE_DECLARE(status_t)      pgw_context_init(void);
-CORE_DECLARE(status_t)      pgw_context_parse_config(void);
 CORE_DECLARE(status_t)      pgw_context_final(void);
-
 CORE_DECLARE(pgw_context_t*) pgw_self(void);
+
+CORE_DECLARE(status_t)      pgw_context_parse_config(void);
+CORE_DECLARE(status_t)      pgw_context_setup_trace_module(void);
 
 CORE_DECLARE(pgw_bearer_t*) pgw_sess_add(c_uint8_t id);
 CORE_DECLARE(status_t )     pgw_sess_remove(pgw_sess_t *sess);

@@ -391,7 +391,7 @@ static void s1ap_encode_xer_print_message(
     void *app_key, s1ap_message_t *message_p), 
     asn_app_consume_bytes_f *cb, s1ap_message_t *message_p)
 {
-    if (g_trace_mask && TRACE_MODULE >= 3) 
+    if (g_trace_mask && TRACE_MODULE >= 5)
     {
         char *message_string = core_calloc(HUGE_STRING_LEN, sizeof(c_uint8_t));
         s1ap_string_total_size = 0;

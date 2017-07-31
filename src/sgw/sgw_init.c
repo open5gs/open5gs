@@ -19,6 +19,9 @@ status_t sgw_initialize()
     rv = sgw_context_parse_config();
     if (rv != CORE_OK) return rv;
 
+    rv = sgw_context_setup_trace_module();
+    if (rv != CORE_OK) return rv;
+
     rv = thread_create(&sgw_sm_thread, NULL, sgw_sm_main, NULL);
     if (rv != CORE_OK) return rv;
 

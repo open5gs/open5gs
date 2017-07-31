@@ -88,8 +88,8 @@ static status_t s1ap_recv(net_sock_t *sock, pkbuf_t *pkbuf)
     d_assert(sock, return CORE_ERROR, "Null param");
     d_assert(pkbuf, return CORE_ERROR, "Null param");
 
-    d_trace(1, "S1AP_PDU is received from eNB-Inf\n");
-    d_trace_hex(1, pkbuf->payload, pkbuf->len);
+    d_trace(10, "S1AP_PDU is received from eNB-Inf\n");
+    d_trace_hex(10, pkbuf->payload, pkbuf->len);
 
     event_set(&e, MME_EVT_S1AP_ENB_MSG);
     event_set_param1(&e, (c_uintptr_t)sock->app_index);
@@ -168,10 +168,10 @@ status_t s1ap_send(net_sock_t *s, pkbuf_t *pkbuf)
     d_assert(pkbuf, return CORE_ERROR, "Null param");
 
     sent = net_send(s, pkbuf->payload, pkbuf->len);
-    d_trace(1,"Sent %d->%d bytes to [%s:%d]\n", 
+    d_trace(10,"Sent %d->%d bytes to [%s:%d]\n", 
             pkbuf->len, sent, INET_NTOP(&s->remote.sin_addr.s_addr, buf), 
             ntohs(s->remote.sin_port));
-    d_trace_hex(1, pkbuf->payload, pkbuf->len);
+    d_trace_hex(10, pkbuf->payload, pkbuf->len);
     if (sent < 0 || sent != pkbuf->len)
     {
         d_error("net_send error (%d:%s)", 

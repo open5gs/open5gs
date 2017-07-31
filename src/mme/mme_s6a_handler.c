@@ -126,11 +126,11 @@ out:
     
     /* Display how long it took */
     if (ts.tv_nsec > mi->ts.tv_nsec)
-        d_trace(1, "in %d.%06ld sec\n", 
+        d_trace(3, "in %d.%06ld sec\n", 
                 (int)(ts.tv_sec - mi->ts.tv_sec),
                 (long)(ts.tv_nsec - mi->ts.tv_nsec) / 1000);
     else
-        d_trace(1, "in %d.%06ld sec\n", 
+        d_trace(3, "in %d.%06ld sec\n", 
                 (int)(ts.tv_sec + 1 - mi->ts.tv_sec),
                 (long)(1000000000 + ts.tv_nsec - mi->ts.tv_nsec) / 1000);
     
@@ -451,11 +451,11 @@ out:
     
     /* Display how long it took */
     if (ts.tv_nsec > mi->ts.tv_nsec)
-        d_trace(1, "in %d.%06ld sec\n", 
+        d_trace(3, "in %d.%06ld sec\n", 
                 (int)(ts.tv_sec - mi->ts.tv_sec),
                 (long)(ts.tv_nsec - mi->ts.tv_nsec) / 1000);
     else
-        d_trace(1, "in %d.%06ld sec\n", 
+        d_trace(3, "in %d.%06ld sec\n", 
                 (int)(ts.tv_sec + 1 - mi->ts.tv_sec),
                 (long)(1000000000 + ts.tv_nsec - mi->ts.tv_nsec) / 1000);
     

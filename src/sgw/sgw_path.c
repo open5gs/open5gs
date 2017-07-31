@@ -31,18 +31,18 @@ static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
 
     if (GTP_COMPARE_NODE(gnode, &sgw_self()->s11_node))
     {
-        d_trace(1, "S11 PDU received from MME\n");
+        d_trace(10, "S11 PDU received from MME\n");
         event_set(&e, SGW_EVT_S11_SESSION_MSG);
     }
     else if (GTP_COMPARE_NODE(gnode, &sgw_self()->s5c_node))
     {
-        d_trace(1, "S5-C PDU received from PGW\n");
+        d_trace(10, "S5-C PDU received from PGW\n");
         event_set(&e, SGW_EVT_S5C_SESSION_MSG);
     }
     else
         d_assert(0, pkbuf_free(pkbuf); return -1, "Unknown GTP-Node");
 
-    d_trace_hex(1, pkbuf->payload, pkbuf->len);
+    d_trace_hex(10, pkbuf->payload, pkbuf->len);
 
     event_set_param1(&e, (c_uintptr_t)sock);
     event_set_param2(&e, (c_uintptr_t)gnode);
@@ -77,20 +77,20 @@ static int _gtpv1_s5u_recv_cb(net_sock_t *sock, void *data)
         return -1;
     }
 
-    d_trace(1, "S5-U PDU received from PGW\n");
-    d_trace_hex(1, pkbuf->payload, pkbuf->len);
+    d_trace(50, "S5-U PDU received from PGW\n");
+    d_trace_hex(50, pkbuf->payload, pkbuf->len);
 
     gtp_h = (gtp_header_t *)pkbuf->payload;
     if (gtp_h->type == GTPU_MSGTYPE_ECHO_REQ)
     {
         pkbuf_t *echo_rsp;
 
-        d_trace(1,"Received echo-req");
+        d_trace(3, "Received echo-req");
         echo_rsp = gtp_handle_echo_req(pkbuf);
         if (echo_rsp)
         {
             /* Echo reply */
-            d_trace(1,"Send echo-rsp to peer(PGW) ");
+            d_trace(3, "Send echo-rsp to peer(PGW) ");
 
             gnode.addr = sock->remote.sin_addr.s_addr;
             gnode.port = GTPV1_U_UDP_PORT;
@@ -103,7 +103,7 @@ static int _gtpv1_s5u_recv_cb(net_sock_t *sock, void *data)
     {
         teid = ntohl(gtp_h->teid);
 
-        d_trace(1,"Recv GPDU (teid = 0x%x)",teid);
+        d_trace(50, "Recv GPDU (teid = 0x%x)",teid);
 
         bearer = sgw_bearer_find_by_sgw_s5u_teid(teid);
         if (bearer)
@@ -141,20 +141,20 @@ static int _gtpv1_s1u_recv_cb(net_sock_t *sock, void *data)
         return -1;
     }
 
-    d_trace(1, "S1-U PDU received from ENB\n");
-    d_trace_hex(1, pkbuf->payload, pkbuf->len);
+    d_trace(50, "S1-U PDU received from ENB\n");
+    d_trace_hex(50, pkbuf->payload, pkbuf->len);
 
     gtp_h = (gtp_header_t *)pkbuf->payload;
     if (gtp_h->type == GTPU_MSGTYPE_ECHO_REQ)
     {
         pkbuf_t *echo_rsp;
 
-        d_trace(1,"Received echo-req\n");
+        d_trace(3, "Received echo-req\n");
         echo_rsp = gtp_handle_echo_req(pkbuf);
         if (echo_rsp)
         {
             /* Echo reply */
-            d_trace(1,"Send echo-rsp to peer(ENB)\n");
+            d_trace(3, "Send echo-rsp to peer(ENB)\n");
 
             gnode.addr = sock->remote.sin_addr.s_addr;
             gnode.port = GTPV1_U_UDP_PORT;
@@ -166,7 +166,7 @@ static int _gtpv1_s1u_recv_cb(net_sock_t *sock, void *data)
     else if (gtp_h->type == GTPU_MSGTYPE_GPDU)
     {
         teid = ntohl(gtp_h->teid);
-        d_trace(1,"Recv GPDU (teid = 0x%x) from ENB\n",teid);
+        d_trace(50, "Recv GPDU (teid = 0x%x) from ENB\n",teid);
 
         bearer = sgw_bearer_find_by_sgw_s1u_teid(teid);
         if (bearer)

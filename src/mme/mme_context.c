@@ -765,6 +765,76 @@ status_t mme_context_parse_config()
     return CORE_OK;
 }
 
+status_t mme_context_setup_trace_module()
+{
+    int context = context_self()->trace_level.context;
+    int sm = context_self()->trace_level.sm;
+    int s1ap = context_self()->trace_level.s1ap;
+    int s6a = context_self()->trace_level.s6a;
+    int gtp = context_self()->trace_level.gtp;
+
+    if (context)
+    {
+        extern int _context;
+        d_trace_level(&_context, context);
+        extern int _mme_context;
+        d_trace_level(&_mme_context, context);
+    }
+
+    if (sm)
+    {
+        extern int _mme_sm;
+        d_trace_level(&_mme_sm, sm);
+        extern int _s1ap_sm;
+        d_trace_level(&_s1ap_sm, sm);
+        extern int _emm_sm;
+        d_trace_level(&_emm_sm, sm);
+        extern int _esm_sm;
+        d_trace_level(&_esm_sm, sm);
+
+        extern int _s1ap_handler;
+        d_trace_level(&_s1ap_handler, sm);
+        extern int _emm_handler;
+        d_trace_level(&_emm_handler, sm);
+        extern int _esm_handler;
+        d_trace_level(&_esm_handler, sm);
+        extern int _mme_s11_handler;
+        d_trace_level(&_mme_s11_handler, sm);
+        extern int _mme_s6a_handler;
+        d_trace_level(&_mme_s6a_handler, sm);
+    }
+
+    if (s1ap)
+    {
+        extern int _s1ap_path;
+        d_trace_level(&_s1ap_path, s1ap);
+        extern int _s1ap_recv;
+        d_trace_level(&_s1ap_recv, s1ap);
+        extern int _s1ap_send;
+        d_trace_level(&_s1ap_send, s1ap);
+    }
+    if (s6a)
+    {
+        extern int _s6a;
+        d_trace_level(&_s6a, s6a);
+        extern int _s6a_init;
+        d_trace_level(&_s6a_init, s6a);
+    }
+    if (gtp)
+    {
+        extern int _gtp_path;
+        d_trace_level(&_gtp_path, gtp);
+        extern int _mme_s11_path;
+        d_trace_level(&_mme_s11_path, gtp);
+        extern int _tlv_msg;
+        d_trace_level(&_tlv_msg, gtp);
+        extern int _gtp_xact;
+        d_trace_level(&_gtp_xact, gtp);
+    }
+
+    return CORE_OK;
+}
+
 mme_sgw_t* mme_sgw_add()
 {
     mme_sgw_t *sgw = NULL;

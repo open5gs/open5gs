@@ -62,6 +62,7 @@ CORE_DECLARE(status_t) hss_context_final(void);
 CORE_DECLARE(hss_context_t*) hss_self(void);
 
 CORE_DECLARE(status_t) hss_context_parse_config(void);
+CORE_DECLARE(status_t) hss_context_setup_trace_module(void);
 
 CORE_DECLARE(status_t) hss_db_init(void);
 CORE_DECLARE(status_t) hss_db_final(void);

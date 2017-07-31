@@ -13,6 +13,9 @@ status_t hss_initialize(void)
     rv = hss_context_parse_config();
     if (rv != CORE_OK) return rv;
 
+    rv = hss_context_setup_trace_module();
+    if (rv != CORE_OK) return rv;
+
     rv = hss_db_init();
     if (rv != CORE_OK) return rv;
 

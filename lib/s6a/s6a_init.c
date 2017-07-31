@@ -43,33 +43,33 @@ static void * s6a_stats(void * arg)
 		CHECK_SYS_DO( clock_gettime(CLOCK_REALTIME, &now), );
 		
 		/* Now, display everything */
-		d_trace(1, "------- app_test statistics ---------\n");
+		d_trace(3, "------- s6a statistics ---------\n");
 		if (now.tv_nsec >= start.tv_nsec) 
         {
-			d_trace(1, " Executing for: %d.%06ld sec\n",
+			d_trace(3, " Executing for: %d.%06ld sec\n",
 					(int)(now.tv_sec - start.tv_sec),
 					(long)(now.tv_nsec - start.tv_nsec) / 1000);
 		} 
         else 
         {
-			d_trace(1, " Executing for: %d.%06ld sec\n",
+			d_trace(3, " Executing for: %d.%06ld sec\n",
 					(int)(now.tv_sec - 1 - start.tv_sec),
 					(long)(now.tv_nsec + 1000000000 - start.tv_nsec) / 1000);
 		}
 		
-        d_trace(1, " Local: %llu message(s) echoed\n", 
+        d_trace(3, " Local: %llu message(s) echoed\n", 
                 copy.nb_echoed);
-        d_trace(1, " Remote:\n");
-        d_trace(1, "   %llu message(s) sent\n", copy.nb_sent);
-        d_trace(1, "   %llu error(s) received\n", copy.nb_errs);
-        d_trace(1, "   %llu answer(s) received\n", copy.nb_recv);
-        d_trace(1, "     fastest: %ld.%06ld sec.\n", 
+        d_trace(3, " Remote:\n");
+        d_trace(3, "   %llu message(s) sent\n", copy.nb_sent);
+        d_trace(3, "   %llu error(s) received\n", copy.nb_errs);
+        d_trace(3, "   %llu answer(s) received\n", copy.nb_recv);
+        d_trace(3, "     fastest: %ld.%06ld sec.\n", 
                 copy.shortest / 1000000, copy.shortest % 1000000);
-        d_trace(1, "     slowest: %ld.%06ld sec.\n", 
+        d_trace(3, "     slowest: %ld.%06ld sec.\n", 
                 copy.longest / 1000000, copy.longest % 1000000);
-        d_trace(1, "     Average: %ld.%06ld sec.\n", 
+        d_trace(3, "     Average: %ld.%06ld sec.\n", 
                 copy.avg / 1000000, copy.avg % 1000000);
-		d_trace(1, "-------------------------------------\n");
+		d_trace(3, "-------------------------------------\n");
 	}
 	
 	return NULL; /* never called */

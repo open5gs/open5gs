@@ -34,9 +34,9 @@ static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
     d_assert(sgw, return -1, "Can't find SGW from [%s:%d]",
             INET_NTOP(&gnode.addr, buf), gnode.port);
 
-    d_trace(1, "S11_PDU is received from SGW[%s:%d]\n",
+    d_trace(10, "S11_PDU is received from SGW[%s:%d]\n",
             INET_NTOP(&gnode.addr, buf), gnode.port);
-    d_trace_hex(1, pkbuf->payload, pkbuf->len);
+    d_trace_hex(10, pkbuf->payload, pkbuf->len);
 
     event_set(&e, MME_EVT_S11_UE_MSG);
     event_set_param1(&e, (c_uintptr_t)sock);

@@ -1,4 +1,4 @@
-#define TRACE_MODULE _bearer_sm
+#define TRACE_MODULE _esm_sm
 
 #include "core_debug.h"
 

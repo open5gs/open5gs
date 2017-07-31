@@ -17,6 +17,8 @@
 #include "abts.h"
 #include "abts_tests.h"
 #include "testutil.h"
+
+#include "core_debug.h"
 #include "core_pkbuf.h"
 
 #define ABTS_STAT_SIZE 6
@@ -427,6 +429,7 @@ int main(int argc, const char *const argv[]) {
     int list_provided = 0;
     abts_suite *suite = NULL;
 
+    d_trace_global_off();
     test_initialize();
 
     quiet = !isatty(STDOUT_FILENO);
@@ -446,6 +449,10 @@ int main(int argc, const char *const argv[]) {
         }
         if (!strcmp(argv[i], "-q")) {
             quiet = 1;
+            continue;
+        }
+        if (!strcmp(argv[i], "-t")) {
+            d_trace_global_on();
             continue;
         }
         if (argv[i][0] == '-') {

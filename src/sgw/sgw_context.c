@@ -40,6 +40,32 @@ status_t sgw_context_init()
     return CORE_OK;
 }
 
+status_t sgw_context_final()
+{
+    d_assert(context_initialized == 1, return CORE_ERROR,
+            "SGW context already has been finalized");
+
+    gtp_xact_delete_all(&self.s11_node);
+    gtp_xact_delete_all(&self.s5c_node);
+
+    sgw_sess_remove_all();
+
+    d_print("%d not freed in sgw_sess_pool[%d] in SGW-Context\n",
+            index_size(&sgw_sess_pool) - pool_avail(&sgw_sess_pool),
+            index_size(&sgw_sess_pool));
+    index_final(&sgw_bearer_pool);
+    index_final(&sgw_sess_pool);
+
+    context_initialized = 0;
+    
+    return CORE_OK;
+}
+
+sgw_context_t* sgw_self()
+{
+    return &self;
+}
+
 static status_t sgw_context_prepare()
 {
     self.s11_port = GTPV2_C_UDP_PORT;
@@ -363,30 +389,41 @@ status_t sgw_context_parse_config()
     return CORE_OK;
 }
 
-status_t sgw_context_final()
+status_t sgw_context_setup_trace_module()
 {
-    d_assert(context_initialized == 1, return CORE_ERROR,
-            "SGW context already has been finalized");
+    int context = context_self()->trace_level.context;
+    int sm = context_self()->trace_level.sm;
+    int gtp = context_self()->trace_level.gtp;
 
-    gtp_xact_delete_all(&self.s11_node);
-    gtp_xact_delete_all(&self.s5c_node);
+    if (context)
+    {
+        extern int _context;
+        d_trace_level(&_context, context);
+        extern int _sgw_context;
+        d_trace_level(&_sgw_context, context);
+    }
 
-    sgw_sess_remove_all();
+    if (sm)
+    {
+        extern int _sgw_sm;
+        d_trace_level(&_sgw_sm, sm);
+        extern int _sgw_handler;
+        d_trace_level(&_sgw_handler, sm);
+    }
 
-    d_print("%d not freed in sgw_sess_pool[%d] in SGW-Context\n",
-            index_size(&sgw_sess_pool) - pool_avail(&sgw_sess_pool),
-            index_size(&sgw_sess_pool));
-    index_final(&sgw_bearer_pool);
-    index_final(&sgw_sess_pool);
+    if (gtp)
+    {
+        extern int _gtp_path;
+        d_trace_level(&_gtp_path, gtp);
+        extern int _sgw_path;
+        d_trace_level(&_sgw_path, gtp);
+        extern int _tlv_msg;
+        d_trace_level(&_tlv_msg, gtp);
+        extern int _gtp_xact;
+        d_trace_level(&_gtp_xact, gtp);
+    }
 
-    context_initialized = 0;
-    
     return CORE_OK;
-}
-
-sgw_context_t* sgw_self()
-{
-    return &self;
 }
 
 sgw_bearer_t *sgw_sess_add(c_uint8_t id)

@@ -107,7 +107,7 @@ status_t context_parse_config()
 
     size_t root_tokens = 0;
     size_t skip_tokens = 0;
-    size_t i = 0, j = 1;
+    size_t i, j, m, n;
 
     for (i = 0, j = 1; j > 0; i++, j--)
     {
@@ -127,9 +127,46 @@ status_t context_parse_config()
             case ROOT:
             {
                 if (jsmntok_equal(json, t, "DB_URI") == 0)
+                {
                     self.db_uri = jsmntok_to_string(json, t+1);
+                }
                 else if (jsmntok_equal(json, t, "LOG_PATH") == 0)
+                {
                     self.log_path = jsmntok_to_string(json, t+1);
+                }
+                else if (jsmntok_equal(json, t, "TRACE") == 0)
+                {
+                    for (m = 1, n = 1; n > 0; m++, n--)
+                    {
+                        n += (t+m)->size;
+
+                        char *v = jsmntok_to_string(json, t+m+1);
+                        if (jsmntok_equal(json, t+m, "CONTEXT") == 0)
+                        {
+                            if (v) self.trace_level.context = atoi(v);
+                        }
+                        else if (jsmntok_equal(json, t+m, "SM") == 0)
+                        {
+                            if (v) self.trace_level.sm  = atoi(v);
+                        }
+                        else if (jsmntok_equal(json, t+m, "S1AP") == 0)
+                        {
+                            if (v) self.trace_level.s1ap = atoi(v);
+                        }
+                        else if (jsmntok_equal(json, t+m, "NAS") == 0)
+                        {
+                            if (v) self.trace_level.nas = atoi(v);
+                        }
+                        else if (jsmntok_equal(json, t+m, "S6A") == 0)
+                        {
+                            if (v) self.trace_level.s6a = atoi(v);
+                        }
+                        else if (jsmntok_equal(json, t+m, "GTP") == 0)
+                        {
+                            if (v) self.trace_level.gtp = atoi(v);
+                        }
+                    }
+                }
 
                 state = SKIP;
                 skip_tokens = t->size;

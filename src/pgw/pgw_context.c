@@ -41,6 +41,37 @@ status_t pgw_context_init()
     return CORE_OK;
 }
 
+status_t pgw_context_final()
+{
+    d_assert(context_initiaized == 1, return CORE_ERROR,
+            "PGW context already has been finalized");
+
+    gtp_xact_delete_all(&self.s5c_node);
+    pgw_sess_remove_all();
+
+    d_print("%d not freed in pgw_sess_pool[%d] in PGW-Context\n",
+            index_size(&pgw_sess_pool) - pool_avail(&pgw_sess_pool),
+            index_size(&pgw_sess_pool));
+    d_print("%d not freed in pgw_ip_pool[%d] in PGW-Context\n",
+            index_size(&pgw_ip_pool_pool) - pool_avail(&pgw_ip_pool_pool),
+            index_size(&pgw_ip_pool_pool));
+
+    pool_final(&pgw_ip_pool_pool);
+    pool_final(&pgw_pdn_pool);
+
+    index_final(&pgw_bearer_pool);
+    index_final(&pgw_sess_pool);
+
+    context_initiaized = 0;
+    
+    return CORE_OK;
+}
+
+pgw_context_t* pgw_self()
+{
+    return &self;
+}
+
 static status_t pgw_context_prepare()
 {
     self.s5c_port = GTPV2_C_UDP_PORT;
@@ -366,35 +397,41 @@ status_t pgw_context_parse_config()
     return CORE_OK;
 }
 
-status_t pgw_context_final()
+status_t pgw_context_setup_trace_module()
 {
-    d_assert(context_initiaized == 1, return CORE_ERROR,
-            "PGW context already has been finalized");
+    int context = context_self()->trace_level.context;
+    int sm = context_self()->trace_level.sm;
+    int gtp = context_self()->trace_level.gtp;
 
-    gtp_xact_delete_all(&self.s5c_node);
-    pgw_sess_remove_all();
+    if (context)
+    {
+        extern int _context;
+        d_trace_level(&_context, context);
+        extern int _pgw_context;
+        d_trace_level(&_pgw_context, context);
+    }
 
-    d_print("%d not freed in pgw_sess_pool[%d] in PGW-Context\n",
-            index_size(&pgw_sess_pool) - pool_avail(&pgw_sess_pool),
-            index_size(&pgw_sess_pool));
-    d_print("%d not freed in pgw_ip_pool[%d] in PGW-Context\n",
-            index_size(&pgw_ip_pool_pool) - pool_avail(&pgw_ip_pool_pool),
-            index_size(&pgw_ip_pool_pool));
+    if (sm)
+    {
+        extern int _pgw_sm;
+        d_trace_level(&_pgw_sm, sm);
+        extern int _pgw_handler;
+        d_trace_level(&_pgw_handler, sm);
+    }
 
-    pool_final(&pgw_ip_pool_pool);
-    pool_final(&pgw_pdn_pool);
+    if (gtp)
+    {
+        extern int _gtp_path;
+        d_trace_level(&_gtp_path, gtp);
+        extern int _pgw_path;
+        d_trace_level(&_pgw_path, gtp);
+        extern int _tlv_msg;
+        d_trace_level(&_tlv_msg, gtp);
+        extern int _gtp_xact;
+        d_trace_level(&_gtp_xact, gtp);
+    }
 
-    index_final(&pgw_bearer_pool);
-    index_final(&pgw_sess_pool);
-
-    context_initiaized = 0;
-    
     return CORE_OK;
-}
-
-pgw_context_t* pgw_self()
-{
-    return &self;
 }
 
 pgw_bearer_t *pgw_sess_add(c_uint8_t id)
