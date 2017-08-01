@@ -85,8 +85,6 @@ void emm_handle_attach_request(
     enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return, "Null param");
 
-    d_trace(3, "[EMM] Recv ATTACH REQUEST\n");
-
     emm_handle_esm_message_container(
             mme_ue, &attach_request->esm_message_container);
 
@@ -230,8 +228,6 @@ void emm_handle_identity_request(mme_ue_t *mme_ue)
             pkbuf_free(emmbuf); return, "s1ap build error");
 
     d_assert(emm_send_to_enb(enb_ue, s1apbuf) == CORE_OK,, "s1ap send error");
-
-    d_trace(3, "[EMM] Send IDENTITY REQUEST\n");
 }
 
 void emm_handle_identity_response(
@@ -245,8 +241,6 @@ void emm_handle_identity_response(
     d_assert(mme_ue, return, "Null param");
     enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return, "Null param");
-
-    d_trace(3, "[EMM] Recv IDENTITY RESPONSE\n");
 
     mobile_identity = &identity_response->mobile_identity;
 
@@ -317,8 +311,6 @@ void emm_handle_authentication_request(mme_ue_t *mme_ue)
             pkbuf_free(emmbuf); return, "s1ap build error");
 
     d_assert(emm_send_to_enb(enb_ue, s1apbuf) == CORE_OK,, "s1ap send error");
-
-    d_trace(3, "[EMM] Send AUTHENTICATION REQUEST\n");
 }
 
 void emm_handle_authentication_response(mme_ue_t *mme_ue, 
@@ -345,8 +337,6 @@ void emm_handle_authentication_response(mme_ue_t *mme_ue,
     d_assert(mme_ue, return, "Null param");
     enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return, "Null param");
-
-    d_trace(3, "[EMM] Recv AUTHENTICATION RESPONSE\n");
 
     if (authentication_response_parameter->length != mme_ue->xres_len ||
         memcmp(authentication_response_parameter->res,
@@ -458,8 +448,6 @@ void emm_handle_create_session_response(mme_bearer_t *bearer)
             pkbuf_free(emmbuf); return, "s1ap build error");
 
     d_assert(emm_send_to_enb(enb_ue, s1apbuf) == CORE_OK,, "s1ap send error");
-
-    d_trace(3, "[EMM] Send ATTACH ACCEPT\n");
 }
 
 void emm_handle_attach_accept(mme_ue_t *mme_ue)
@@ -542,7 +530,6 @@ void emm_handle_attach_complete(
             pkbuf_free(emmbuf); return, "s1ap build error");
 
     d_assert(emm_send_to_enb(enb_ue, s1apbuf) == CORE_OK,, "s1ap send error");
-    d_trace(3, "[EMM] Send EMM INFOMRATION\n");
 }
 
 void emm_handle_emm_status(mme_ue_t *mme_ue, nas_emm_status_t *emm_status)
@@ -551,8 +538,6 @@ void emm_handle_emm_status(mme_ue_t *mme_ue, nas_emm_status_t *emm_status)
 
     d_warn("[NAS] EMM status(%d) : UE[%s] --> EMM", 
             emm_status->emm_cause, mme_ue->imsi_bcd);
-    d_trace(3, "[EMM] Recv EMM STATUS\n");
-    d_trace(5, "  Cause:%d\n", emm_status->emm_cause);
 }
 
 void emm_handle_detach_request(
@@ -570,8 +555,6 @@ void emm_handle_detach_request(
     d_assert(enb_ue, return, "Null param");
 
     d_info("[NAS] Detach request : UE_IMSI[%s] --> EMM", mme_ue->imsi_bcd);
-    d_trace(3, "[EMM] Recv DETACH REQUEST\n");
-    d_trace(5, "  Detach Type: 0x%x\n", detach_type->detach_type);
 
     switch (detach_type->detach_type)
     {
@@ -647,7 +630,6 @@ void emm_handle_detach_accept(
 
         d_assert(emm_send_to_enb(enb_ue, s1apbuf) == CORE_OK,, 
                 "s1ap send error");
-        d_trace(3, "[EMM] Send DETACH ATTACH\n");
     }
 
     event_set(&e, MME_EVT_S1AP_UE_FROM_EMM);
@@ -736,8 +718,6 @@ void emm_handle_service_request(
     d_assert(sess, return, "Null param");
     bearer = mme_default_bearer_in_sess(sess);
     d_assert(bearer, return, "Null param");
-
-    d_trace(3, "[EMM] Recv SERVICE REQUEST\n");
 
     rv = s1ap_build_initial_context_setup_request(&s1apbuf, bearer, NULL);
     d_assert(rv == CORE_OK && s1apbuf, return, "s1ap build error");

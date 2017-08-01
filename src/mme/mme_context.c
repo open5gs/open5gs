@@ -816,6 +816,12 @@ status_t mme_context_setup_trace_module()
         d_trace_level(&_emm_handler, nas);
         extern int _esm_handler;
         d_trace_level(&_esm_handler, nas);
+        extern int _nas_decoder;
+        d_trace_level(&_nas_decoder, nas);
+        extern int _nas_encoder;
+        d_trace_level(&_nas_encoder, nas);
+        extern int _nas_ies;
+        d_trace_level(&_nas_ies, nas);
     }
 
     if (s6a)
