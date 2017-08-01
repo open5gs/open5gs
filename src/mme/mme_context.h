@@ -43,8 +43,10 @@ typedef struct _mme_context_t {
     char*           s6a_config_path;    /* MME S6A Configuration File Path */
     char*           mme_s6a_addr;       /* MME S6A local address (STIRNG)*/
     c_uint16_t      mme_s6a_port;       /* MME S6A local port */
-    char*           hss_s6a_addr;       /* HSS S6A local address (STIRNG)*/
-    c_uint16_t      hss_s6a_port;       /* HSS S6A local port */
+    c_uint16_t      mme_s6a_tls_port;   /* MME S6A local TLS port */
+    char*           hss_s6a_addr;       /* HSS S6A address (STIRNG)*/
+    c_uint16_t      hss_s6a_port;       /* HSS S6A port */
+    c_uint16_t      hss_s6a_tls_port;   /* HSS S6A TLS port */
 
     c_uint32_t      s1ap_addr;  /* MME S1AP local address */
     c_uint16_t      s1ap_port;  /* MME S1AP local port */

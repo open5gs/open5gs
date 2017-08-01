@@ -105,7 +105,9 @@ static status_t mme_context_prepare()
     self.relative_capacity = 0xff;
 
     self.mme_s6a_port = DIAMETER_PORT;
+    self.mme_s6a_tls_port = DIAMETER_SECURE_PORT;
     self.hss_s6a_port = DIAMETER_PORT;
+    self.hss_s6a_tls_port = DIAMETER_SECURE_PORT;
     self.s1ap_port = S1AP_SCTP_PORT;
     self.s11_port = GTPV2_C_UDP_PORT;
 
@@ -316,6 +318,12 @@ status_t mme_context_parse_config()
                                 char *v = jsmntok_to_string(json, t+m+1);
                                 if (v) self.hss_s6a_port = atoi(v);
                             }
+                            else if (jsmntok_equal(json, t+m, "S6A_TLS_PORT")
+                                    == 0)
+                            {
+                                char *v = jsmntok_to_string(json, t+m+1);
+                                if (v) self.hss_s6a_tls_port = atoi(v);
+                            }
                         }
                     }
                 }
@@ -371,6 +379,11 @@ status_t mme_context_parse_config()
                             {
                                 char *v = jsmntok_to_string(json, t+m+1);
                                 if (v) self.mme_s6a_port = atoi(v);
+                            }
+                            else if (jsmntok_equal(json, t+m, "S6A_TLS_PORT") == 0)
+                            {
+                                char *v = jsmntok_to_string(json, t+m+1);
+                                if (v) self.mme_s6a_tls_port = atoi(v);
                             }
                             else if (jsmntok_equal(json, t+m, "S1AP_ADDR") == 0)
                             {

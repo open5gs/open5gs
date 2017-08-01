@@ -17,6 +17,8 @@
     NETWORK :
     {
       S6A_ADDR : "10.1.35.214"
+      S6A_PORT : 30868,
+      S6A_TLS_PORT : 30869
     }
   }
 

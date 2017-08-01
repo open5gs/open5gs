@@ -498,6 +498,7 @@ status_t hss_s6a_init(void)
         s6a_config->cnf_diamrlm = S6A_REALM;
         s6a_config->cnf_addr = hss_self()->hss_s6a_addr;
         s6a_config->cnf_port = hss_self()->hss_s6a_port;
+        s6a_config->cnf_port_tls = hss_self()->hss_s6a_tls_port;
 
         s6a_config->pi_diamid = MME_IDENTITY;
         s6a_config->pi_addr = hss_self()->mme_s6a_addr;
