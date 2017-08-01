@@ -8,6 +8,7 @@
 #include "emm_handler.h"
 #include "emm_build.h"
 #include "mme_s6a_handler.h"
+#include "mme_kdf.h"
 
 void emm_state_initial(fsm_t *s, event_t *e)
 {
@@ -161,6 +162,12 @@ void emm_state_operational(fsm_t *s, event_t *e)
                 {
                     d_info("[NAS] Security mode complete : UE[%s] --> EMM",
                             mme_ue->imsi_bcd);
+
+                    /* Update Kenb */
+                    if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+                        mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, 
+                                mme_ue->kenb);
+
                     mme_s6a_send_ulr(mme_ue);
                     break;
                 }
