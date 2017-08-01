@@ -3,6 +3,7 @@
 
 #define MAX_NUM_OF_THREAD       128
 #define MAX_NUM_OF_THREADATTR  MAX_NUM_OF_THREAD
+#define MAX_NUM_OF_PROC         128
 #define MAX_NUM_OF_MUTEX        512
 #define MAX_NUM_OF_COND         512
 #define MAX_NUM_OF_RWLOCK       512

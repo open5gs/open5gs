@@ -105,7 +105,7 @@ static void *dummy_worker(void *opaque)
     d_trace(3, "[%d] thread stopped = %d\n",
             thread->thread, thread_should_stop());
     semaphore_post(thread_stop_info.semaphore);
-    d_trace(3, "[%d] post semaphore for therad_stop_info.semaphore\n",
+    d_trace(3, "[%d] post semaphore for thread_stop_info.semaphore\n",
             thread->thread);
 
     return func;
