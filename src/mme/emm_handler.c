@@ -128,7 +128,35 @@ void emm_handle_attach_request(
 
             if (SECURITY_CONTEXT_IS_VALID(mme_ue))
             {
-                emm_handle_attach_accept(mme_ue);
+                /* Update Kenb */
+                mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, mme_ue->kenb);
+
+                /* FIXME : 
+                 * Need to refine the code to start from ESM_Info_req.
+                 *  Call esm_handle_s6a_update_location(bearer) here
+                 *    or send event ? 
+                 */
+                {
+                    mme_sess_t *sess = mme_sess_first(mme_ue);
+                    while(sess)
+                    {
+                        mme_bearer_t *bearer = mme_bearer_first(sess);
+                        while(bearer)
+                        {
+                            event_t e;
+                            event_set(&e, MME_EVT_ESM_BEARER_FROM_S6A);
+                            event_set_param1(&e, (c_uintptr_t)bearer->index);
+                            event_set_param2(&e, 
+                                    (c_uintptr_t)S6A_CMD_UPDATE_LOCATION);
+                            mme_event_send(&e);
+
+                            bearer = mme_bearer_next(bearer);
+                        }
+
+                        sess = mme_sess_next(sess);
+                    }
+                }
+
             }
             else
             {
@@ -168,7 +196,36 @@ void emm_handle_attach_request(
                 /* Known GUTI */
                 if (SECURITY_CONTEXT_IS_VALID(mme_ue))
                 {
-                    emm_handle_attach_accept(mme_ue);
+                    /* Update Kenb */
+                    mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, 
+                            mme_ue->kenb);
+
+                    /* FIXME : 
+                     * Need to refine the code to start from ESM_Info_req.
+                     *  Call esm_handle_s6a_update_location(bearer) here
+                     *    or send event ? 
+                     */
+                    {
+
+                        mme_sess_t *sess = mme_sess_first(mme_ue);
+                        while(sess)
+                        {
+                            mme_bearer_t *bearer = mme_bearer_first(sess);
+                            while(bearer)
+                            {
+                                event_t e;
+                                event_set(&e, MME_EVT_ESM_BEARER_FROM_S6A);
+                                event_set_param1(&e, (c_uintptr_t)bearer->index);
+                                event_set_param2(&e, 
+                                        (c_uintptr_t)S6A_CMD_UPDATE_LOCATION);
+                                mme_event_send(&e);
+
+                                bearer = mme_bearer_next(bearer);
+                            }
+
+                            sess = mme_sess_next(sess);
+                        }
+                    }
                 }
                 else
                 {
@@ -403,6 +460,7 @@ void emm_handle_authentication_response(mme_ue_t *mme_ue,
     mme_kdf_nas(MME_KDF_NAS_ENC_ALG, mme_ue->selected_enc_algorithm,
             mme_ue->kasme, mme_ue->knas_enc);
     mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, mme_ue->kenb);
+
 
     d_info("[NAS] Security mode command : UE[%s] <-- EMM", 
             mme_ue->imsi_bcd);
