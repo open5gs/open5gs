@@ -399,7 +399,7 @@ for key in iesDefs:
     if len(iesDefs[key]["ies"]) != 0:
         f.write("    d_assert(%s, return -1, \"Null param\");\n\n" % (lowerFirstCamelWord(re.sub('-', '_', key))))
 
-    f.write("    d_trace(3, \"Decoding message %s\\n\");\n\n" % re.sub('-', '_', keyName))
+    f.write("    d_trace(3, \"[S1AP] Decode %s\\n\");\n\n" % re.sub('-', '_', keyName))
     f.write("    memset(&%s, 0, sizeof(%s_t));\n" % (asn1cStructfirstlower, asn1cStruct));
     f.write("    dec_ret = aper_decode(NULL, &asn_DEF_%s, (void **)&%s_p, any_p->buf, any_p->size, 0, 0);\n" % (asn1cStruct, asn1cStructfirstlower));
     f.write("    if (dec_ret.code != RC_OK)\n")
@@ -542,7 +542,7 @@ for key in iesDefs:
 
     f.write("    d_assert(%s, return -1, \"Null param\");\n" % (firstwordlower));
     f.write("    d_assert(%s, return -1, \"Null param\");\n\n" % (lowerFirstCamelWord(re.sub('-', '_', key))));
-    f.write("    d_trace(3, \"Encoding message %s\\n\");\n\n" % re.sub('-', '_', keyName))
+    f.write("    d_trace(3, \"[S1AP] Encode %s\\n\");\n\n" % re.sub('-', '_', keyName))
 
     for ie in iesDefs[key]["ies"]:
         iename = re.sub('-', '_', re.sub('id-', '', ie[0]))

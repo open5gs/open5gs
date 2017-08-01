@@ -30,7 +30,7 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-07-31 23:10:37.521279 by acetcom
+ * Created on: 2017-08-01 09:50:55.545285 by acetcom
  * from ['S1AP-PDU.asn']
  ******************************************************************************/
 #define TRACE_MODULE _s1ap_ies_encoder
@@ -46,7 +46,7 @@ int s1ap_encode_s1ap_deactivatetraceies(
     d_assert(s1ap_DeactivateTrace, return -1, "Null param");
     d_assert(s1ap_DeactivateTraceIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_DeactivateTraceIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_DeactivateTraceIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -84,7 +84,7 @@ int s1ap_encode_s1ap_enbdirectinformationtransferies(
     d_assert(s1ap_ENBDirectInformationTransfer, return -1, "Null param");
     d_assert(s1ap_ENBDirectInformationTransferIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_ENBDirectInformationTransferIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_ENBDirectInformationTransferIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Inter_SystemInformationTransferTypeEDT,
                         S1ap_Criticality_reject,
@@ -106,7 +106,7 @@ int s1ap_encode_s1ap_e_rabreleaseresponseies(
     d_assert(s1ap_E_RABReleaseResponse, return -1, "Null param");
     d_assert(s1ap_E_RABReleaseResponseIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_E_RABReleaseResponseIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_E_RABReleaseResponseIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
@@ -169,7 +169,7 @@ int s1ap_encode_s1ap_uplinknonueassociatedlppatransport_ies(
     d_assert(s1ap_UplinkNonUEAssociatedLPPaTransport, return -1, "Null param");
     d_assert(s1ap_UplinkNonUEAssociatedLPPaTransport_IEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_UplinkNonUEAssociatedLPPaTransport_IEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_UplinkNonUEAssociatedLPPaTransport_IEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Routing_ID,
                         S1ap_Criticality_reject,
@@ -199,7 +199,7 @@ int s1ap_encode_s1ap_tracestarties(
     d_assert(s1ap_TraceStart, return -1, "Null param");
     d_assert(s1ap_TraceStartIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_TraceStartIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_TraceStartIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -237,7 +237,7 @@ int s1ap_encode_s1ap_writereplacewarningresponseies(
     d_assert(s1ap_WriteReplaceWarningResponse, return -1, "Null param");
     d_assert(s1ap_WriteReplaceWarningResponseIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_WriteReplaceWarningResponseIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_WriteReplaceWarningResponseIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MessageIdentifier,
                         S1ap_Criticality_reject,
@@ -289,7 +289,7 @@ int s1ap_encode_s1ap_handovercancelies(
     d_assert(s1ap_HandoverCancel, return -1, "Null param");
     d_assert(s1ap_HandoverCancelIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_HandoverCancelIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_HandoverCancelIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -327,7 +327,7 @@ int s1ap_encode_s1ap_handoverpreparationfailureies(
     d_assert(s1ap_HandoverPreparationFailure, return -1, "Null param");
     d_assert(s1ap_HandoverPreparationFailureIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_HandoverPreparationFailureIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_HandoverPreparationFailureIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
@@ -376,7 +376,7 @@ int s1ap_encode_s1ap_uecontextreleaserequest_ies(
     d_assert(s1ap_UEContextReleaseRequest, return -1, "Null param");
     d_assert(s1ap_UEContextReleaseRequest_IEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_UEContextReleaseRequest_IEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_UEContextReleaseRequest_IEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -425,7 +425,7 @@ int s1ap_encode_s1ap_initialuemessage_ies(
     d_assert(s1ap_InitialUEMessage, return -1, "Null param");
     d_assert(s1ap_InitialUEMessage_IEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_InitialUEMessage_IEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_InitialUEMessage_IEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -545,7 +545,7 @@ int s1ap_encode_s1ap_killrequesties(
     d_assert(s1ap_KillRequest, return -1, "Null param");
     d_assert(s1ap_KillRequestIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_KillRequestIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_KillRequestIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MessageIdentifier,
                         S1ap_Criticality_reject,
@@ -586,7 +586,7 @@ int s1ap_encode_s1ap_writereplacewarningrequesties(
     d_assert(s1ap_WriteReplaceWarningRequest, return -1, "Null param");
     d_assert(s1ap_WriteReplaceWarningRequestIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_WriteReplaceWarningRequestIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_WriteReplaceWarningRequestIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MessageIdentifier,
                         S1ap_Criticality_reject,
@@ -709,7 +709,7 @@ int s1ap_encode_s1ap_uecapabilityinfoindicationies(
     d_assert(s1ap_UECapabilityInfoIndication, return -1, "Null param");
     d_assert(s1ap_UECapabilityInfoIndicationIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_UECapabilityInfoIndicationIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_UECapabilityInfoIndicationIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -747,7 +747,7 @@ int s1ap_encode_s1ap_locationreportingfailureindicationies(
     d_assert(s1ap_LocationReportingFailureIndication, return -1, "Null param");
     d_assert(s1ap_LocationReportingFailureIndicationIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_LocationReportingFailureIndicationIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_LocationReportingFailureIndicationIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -785,7 +785,7 @@ int s1ap_encode_s1ap_initialcontextsetuprequesties(
     d_assert(s1ap_InitialContextSetupRequest, return -1, "Null param");
     d_assert(s1ap_InitialContextSetupRequestIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_InitialContextSetupRequestIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_InitialContextSetupRequestIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -976,7 +976,7 @@ int s1ap_encode_s1ap_locationreporties(
     d_assert(s1ap_LocationReport, return -1, "Null param");
     d_assert(s1ap_LocationReportIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_LocationReportIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_LocationReportIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -1030,7 +1030,7 @@ int s1ap_encode_s1ap_uplinknastransport_ies(
     d_assert(s1ap_UplinkNASTransport, return -1, "Null param");
     d_assert(s1ap_UplinkNASTransport_IEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_UplinkNASTransport_IEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_UplinkNASTransport_IEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -1095,7 +1095,7 @@ int s1ap_encode_s1ap_uecontextmodificationresponseies(
     d_assert(s1ap_UEContextModificationResponse, return -1, "Null param");
     d_assert(s1ap_UEContextModificationResponseIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_UEContextModificationResponseIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_UEContextModificationResponseIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
@@ -1136,7 +1136,7 @@ int s1ap_encode_s1ap_uecontextmodificationrequesties(
     d_assert(s1ap_UEContextModificationRequest, return -1, "Null param");
     d_assert(s1ap_UEContextModificationRequestIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_UEContextModificationRequestIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_UEContextModificationRequestIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -1243,7 +1243,7 @@ int s1ap_encode_s1ap_locationreportingcontrolies(
     d_assert(s1ap_LocationReportingControl, return -1, "Null param");
     d_assert(s1ap_LocationReportingControlIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_LocationReportingControlIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_LocationReportingControlIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -1281,7 +1281,7 @@ int s1ap_encode_s1ap_uplinks1cdma2000tunnelingies(
     d_assert(s1ap_UplinkS1cdma2000tunneling, return -1, "Null param");
     d_assert(s1ap_UplinkS1cdma2000tunnelingIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_UplinkS1cdma2000tunnelingIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_UplinkS1cdma2000tunnelingIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -1379,7 +1379,7 @@ int s1ap_encode_s1ap_handoverrequesties(
     d_assert(s1ap_HandoverRequest, return -1, "Null param");
     d_assert(s1ap_HandoverRequestIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_HandoverRequestIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_HandoverRequestIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -1564,7 +1564,7 @@ int s1ap_encode_s1ap_handoverrequiredies(
     d_assert(s1ap_HandoverRequired, return -1, "Null param");
     d_assert(s1ap_HandoverRequiredIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_HandoverRequiredIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_HandoverRequiredIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -1714,7 +1714,7 @@ int s1ap_encode_s1ap_mmeconfigurationupdateacknowledgeies(
     d_assert(s1ap_MMEConfigurationUpdateAcknowledge, return -1, "Null param");
     d_assert(s1ap_MMEConfigurationUpdateAcknowledgeIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_MMEConfigurationUpdateAcknowledgeIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_MMEConfigurationUpdateAcknowledgeIEs\n");
 
     /* Optional field */
     if (s1ap_MMEConfigurationUpdateAcknowledgeIEs->presenceMask & S1AP_MMECONFIGURATIONUPDATEACKNOWLEDGEIES_CRITICALITYDIAGNOSTICS_PRESENT) {
@@ -1739,7 +1739,7 @@ int s1ap_encode_s1ap_killresponseies(
     d_assert(s1ap_KillResponse, return -1, "Null param");
     d_assert(s1ap_KillResponseIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_KillResponseIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_KillResponseIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MessageIdentifier,
                         S1ap_Criticality_reject,
@@ -1791,7 +1791,7 @@ int s1ap_encode_s1ap_mmestatustransferies(
     d_assert(s1ap_MMEStatusTransfer, return -1, "Null param");
     d_assert(s1ap_MMEStatusTransferIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_MMEStatusTransferIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_MMEStatusTransferIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -1829,7 +1829,7 @@ int s1ap_encode_s1ap_mmeconfigurationupdateies(
     d_assert(s1ap_MMEConfigurationUpdate, return -1, "Null param");
     d_assert(s1ap_MMEConfigurationUpdateIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_MMEConfigurationUpdateIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_MMEConfigurationUpdateIEs\n");
 
     /* Optional field */
     if (s1ap_MMEConfigurationUpdateIEs->presenceMask & S1AP_MMECONFIGURATIONUPDATEIES_MMENAME_PRESENT) {
@@ -1876,7 +1876,7 @@ int s1ap_encode_s1ap_e_rabmodifyrequesties(
     d_assert(s1ap_E_RABModifyRequest, return -1, "Null param");
     d_assert(s1ap_E_RABModifyRequestIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_E_RABModifyRequestIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_E_RABModifyRequestIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -1933,7 +1933,7 @@ int s1ap_encode_s1ap_enbconfigurationupdatefailureies(
     d_assert(s1ap_ENBConfigurationUpdateFailure, return -1, "Null param");
     d_assert(s1ap_ENBConfigurationUpdateFailureIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_ENBConfigurationUpdateFailureIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_ENBConfigurationUpdateFailureIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Cause,
                         S1ap_Criticality_ignore,
@@ -1977,7 +1977,7 @@ int s1ap_encode_s1ap_reseties(
     d_assert(s1ap_Reset, return -1, "Null param");
     d_assert(s1ap_ResetIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_ResetIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_ResetIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Cause,
                         S1ap_Criticality_ignore,
@@ -2007,7 +2007,7 @@ int s1ap_encode_s1ap_s1setupresponseies(
     d_assert(s1ap_S1SetupResponse, return -1, "Null param");
     d_assert(s1ap_S1SetupResponseIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_S1SetupResponseIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_S1SetupResponseIEs\n");
 
     /* Optional field */
     if (s1ap_S1SetupResponseIEs->presenceMask & S1AP_S1SETUPRESPONSEIES_MMENAME_PRESENT) {
@@ -2070,7 +2070,7 @@ int s1ap_encode_s1ap_pagingies(
     d_assert(s1ap_Paging, return -1, "Null param");
     d_assert(s1ap_PagingIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_PagingIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_PagingIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_UEIdentityIndexValue,
                         S1ap_Criticality_ignore,
@@ -2157,7 +2157,7 @@ int s1ap_encode_s1ap_enbconfigurationupdateacknowledgeies(
     d_assert(s1ap_ENBConfigurationUpdateAcknowledge, return -1, "Null param");
     d_assert(s1ap_ENBConfigurationUpdateAcknowledgeIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_ENBConfigurationUpdateAcknowledgeIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_ENBConfigurationUpdateAcknowledgeIEs\n");
 
     /* Optional field */
     if (s1ap_ENBConfigurationUpdateAcknowledgeIEs->presenceMask & S1AP_ENBCONFIGURATIONUPDATEACKNOWLEDGEIES_CRITICALITYDIAGNOSTICS_PRESENT) {
@@ -2182,7 +2182,7 @@ int s1ap_encode_s1ap_e_rabreleasecommandies(
     d_assert(s1ap_E_RABReleaseCommand, return -1, "Null param");
     d_assert(s1ap_E_RABReleaseCommandIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_E_RABReleaseCommandIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_E_RABReleaseCommandIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -2250,7 +2250,7 @@ int s1ap_encode_s1ap_pathswitchrequestfailureies(
     d_assert(s1ap_PathSwitchRequestFailure, return -1, "Null param");
     d_assert(s1ap_PathSwitchRequestFailureIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_PathSwitchRequestFailureIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_PathSwitchRequestFailureIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
@@ -2299,7 +2299,7 @@ int s1ap_encode_s1ap_e_rabmodifyresponseies(
     d_assert(s1ap_E_RABModifyResponse, return -1, "Null param");
     d_assert(s1ap_E_RABModifyResponseIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_E_RABModifyResponseIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_E_RABModifyResponseIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
@@ -2362,7 +2362,7 @@ int s1ap_encode_s1ap_handovernotifyies(
     d_assert(s1ap_HandoverNotify, return -1, "Null param");
     d_assert(s1ap_HandoverNotifyIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_HandoverNotifyIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_HandoverNotifyIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -2408,7 +2408,7 @@ int s1ap_encode_s1ap_handovercancelacknowledgeies(
     d_assert(s1ap_HandoverCancelAcknowledge, return -1, "Null param");
     d_assert(s1ap_HandoverCancelAcknowledgeIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_HandoverCancelAcknowledgeIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_HandoverCancelAcknowledgeIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
@@ -2449,7 +2449,7 @@ int s1ap_encode_s1ap_initialcontextsetupfailureies(
     d_assert(s1ap_InitialContextSetupFailure, return -1, "Null param");
     d_assert(s1ap_InitialContextSetupFailureIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_InitialContextSetupFailureIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_InitialContextSetupFailureIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
@@ -2498,7 +2498,7 @@ int s1ap_encode_s1ap_handovercommandies(
     d_assert(s1ap_HandoverCommand, return -1, "Null param");
     d_assert(s1ap_HandoverCommandIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_HandoverCommandIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_HandoverCommandIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -2588,7 +2588,7 @@ int s1ap_encode_s1ap_mmedirectinformationtransferies(
     d_assert(s1ap_MMEDirectInformationTransfer, return -1, "Null param");
     d_assert(s1ap_MMEDirectInformationTransferIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_MMEDirectInformationTransferIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_MMEDirectInformationTransferIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Inter_SystemInformationTransferTypeMDT,
                         S1ap_Criticality_reject,
@@ -2610,7 +2610,7 @@ int s1ap_encode_s1ap_errorindicationies(
     d_assert(s1ap_ErrorIndication, return -1, "Null param");
     d_assert(s1ap_ErrorIndicationIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_ErrorIndicationIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_ErrorIndicationIEs\n");
 
     /* Optional field */
     if (s1ap_ErrorIndicationIEs->presenceMask & S1AP_ERRORINDICATIONIES_MME_UE_S1AP_ID_PRESENT) {
@@ -2668,7 +2668,7 @@ int s1ap_encode_s1ap_overloadstarties(
     d_assert(s1ap_OverloadStart, return -1, "Null param");
     d_assert(s1ap_OverloadStartIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_OverloadStartIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_OverloadStartIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_OverloadResponse,
                         S1ap_Criticality_reject,
@@ -2712,7 +2712,7 @@ int s1ap_encode_s1ap_downlinknonueassociatedlppatransport_ies(
     d_assert(s1ap_DownlinkNonUEAssociatedLPPaTransport, return -1, "Null param");
     d_assert(s1ap_DownlinkNonUEAssociatedLPPaTransport_IEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_DownlinkNonUEAssociatedLPPaTransport_IEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_DownlinkNonUEAssociatedLPPaTransport_IEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Routing_ID,
                         S1ap_Criticality_reject,
@@ -2742,7 +2742,7 @@ int s1ap_encode_s1ap_handoverrequestacknowledgeies(
     d_assert(s1ap_HandoverRequestAcknowledge, return -1, "Null param");
     d_assert(s1ap_HandoverRequestAcknowledgeIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_HandoverRequestAcknowledgeIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_HandoverRequestAcknowledgeIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
@@ -2829,7 +2829,7 @@ int s1ap_encode_s1ap_downlinkueassociatedlppatransport_ies(
     d_assert(s1ap_DownlinkUEAssociatedLPPaTransport, return -1, "Null param");
     d_assert(s1ap_DownlinkUEAssociatedLPPaTransport_IEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_DownlinkUEAssociatedLPPaTransport_IEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_DownlinkUEAssociatedLPPaTransport_IEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -2875,7 +2875,7 @@ int s1ap_encode_s1ap_uecontextmodificationfailureies(
     d_assert(s1ap_UEContextModificationFailure, return -1, "Null param");
     d_assert(s1ap_UEContextModificationFailureIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_UEContextModificationFailureIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_UEContextModificationFailureIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
@@ -2924,7 +2924,7 @@ int s1ap_encode_s1ap_mmeconfigurationtransferies(
     d_assert(s1ap_MMEConfigurationTransfer, return -1, "Null param");
     d_assert(s1ap_MMEConfigurationTransferIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_MMEConfigurationTransferIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_MMEConfigurationTransferIEs\n");
 
     /* Optional field */
     if (s1ap_MMEConfigurationTransferIEs->presenceMask & S1AP_MMECONFIGURATIONTRANSFERIES_SONCONFIGURATIONTRANSFERMCT_PRESENT) {
@@ -2949,7 +2949,7 @@ int s1ap_encode_s1ap_pathswitchrequestacknowledgeies(
     d_assert(s1ap_PathSwitchRequestAcknowledge, return -1, "Null param");
     d_assert(s1ap_PathSwitchRequestAcknowledgeIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_PathSwitchRequestAcknowledgeIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_PathSwitchRequestAcknowledgeIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
@@ -3042,7 +3042,7 @@ int s1ap_encode_s1ap_s1setupfailureies(
     d_assert(s1ap_S1SetupFailure, return -1, "Null param");
     d_assert(s1ap_S1SetupFailureIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_S1SetupFailureIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_S1SetupFailureIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Cause,
                         S1ap_Criticality_ignore,
@@ -3086,7 +3086,7 @@ int s1ap_encode_s1ap_mmeconfigurationupdatefailureies(
     d_assert(s1ap_MMEConfigurationUpdateFailure, return -1, "Null param");
     d_assert(s1ap_MMEConfigurationUpdateFailureIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_MMEConfigurationUpdateFailureIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_MMEConfigurationUpdateFailureIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Cause,
                         S1ap_Criticality_ignore,
@@ -3130,7 +3130,7 @@ int s1ap_encode_s1ap_initialcontextsetupresponseies(
     d_assert(s1ap_InitialContextSetupResponse, return -1, "Null param");
     d_assert(s1ap_InitialContextSetupResponseIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_InitialContextSetupResponseIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_InitialContextSetupResponseIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
@@ -3198,7 +3198,7 @@ int s1ap_encode_s1ap_downlinks1cdma2000tunnelingies(
     d_assert(s1ap_DownlinkS1cdma2000tunneling, return -1, "Null param");
     d_assert(s1ap_DownlinkS1cdma2000tunnelingIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_DownlinkS1cdma2000tunnelingIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_DownlinkS1cdma2000tunnelingIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -3266,7 +3266,7 @@ int s1ap_encode_s1ap_overloadstopies(
     d_assert(s1ap_OverloadStop, return -1, "Null param");
     d_assert(s1ap_OverloadStopIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_OverloadStopIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_OverloadStopIEs\n");
 
     /* Optional field */
     if (s1ap_OverloadStopIEs->presenceMask & S1AP_OVERLOADSTOPIES_GUMMEILIST_PRESENT) {
@@ -3291,7 +3291,7 @@ int s1ap_encode_s1ap_enbconfigurationupdateies(
     d_assert(s1ap_ENBConfigurationUpdate, return -1, "Null param");
     d_assert(s1ap_ENBConfigurationUpdateIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_ENBConfigurationUpdateIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_ENBConfigurationUpdateIEs\n");
 
     /* Optional field */
     if (s1ap_ENBConfigurationUpdateIEs->presenceMask & S1AP_ENBCONFIGURATIONUPDATEIES_ENBNAME_PRESENT) {
@@ -3349,7 +3349,7 @@ int s1ap_encode_s1ap_tracefailureindicationies(
     d_assert(s1ap_TraceFailureIndication, return -1, "Null param");
     d_assert(s1ap_TraceFailureIndicationIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_TraceFailureIndicationIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_TraceFailureIndicationIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -3395,7 +3395,7 @@ int s1ap_encode_s1ap_enbconfigurationtransferies(
     d_assert(s1ap_ENBConfigurationTransfer, return -1, "Null param");
     d_assert(s1ap_ENBConfigurationTransferIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_ENBConfigurationTransferIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_ENBConfigurationTransferIEs\n");
 
     /* Optional field */
     if (s1ap_ENBConfigurationTransferIEs->presenceMask & S1AP_ENBCONFIGURATIONTRANSFERIES_SONCONFIGURATIONTRANSFERECT_PRESENT) {
@@ -3420,7 +3420,7 @@ int s1ap_encode_s1ap_handoverfailureies(
     d_assert(s1ap_HandoverFailure, return -1, "Null param");
     d_assert(s1ap_HandoverFailureIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_HandoverFailureIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_HandoverFailureIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
@@ -3461,7 +3461,7 @@ int s1ap_encode_s1ap_e_rabsetupresponseies(
     d_assert(s1ap_E_RABSetupResponse, return -1, "Null param");
     d_assert(s1ap_E_RABSetupResponseIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_E_RABSetupResponseIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_E_RABSetupResponseIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
@@ -3524,7 +3524,7 @@ int s1ap_encode_s1ap_uecontextreleasecommand_ies(
     d_assert(s1ap_UEContextReleaseCommand, return -1, "Null param");
     d_assert(s1ap_UEContextReleaseCommand_IEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_UEContextReleaseCommand_IEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_UEContextReleaseCommand_IEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_UE_S1AP_IDs,
                         S1ap_Criticality_reject,
@@ -3554,7 +3554,7 @@ int s1ap_encode_s1ap_pathswitchrequesties(
     d_assert(s1ap_PathSwitchRequest, return -1, "Null param");
     d_assert(s1ap_PathSwitchRequestIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_PathSwitchRequestIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_PathSwitchRequestIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -3657,7 +3657,7 @@ int s1ap_encode_s1ap_downlinknastransport_ies(
     d_assert(s1ap_DownlinkNASTransport, return -1, "Null param");
     d_assert(s1ap_DownlinkNASTransport_IEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_DownlinkNASTransport_IEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_DownlinkNASTransport_IEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -3717,7 +3717,7 @@ int s1ap_encode_s1ap_e_rabreleaseindicationies(
     d_assert(s1ap_E_RABReleaseIndication, return -1, "Null param");
     d_assert(s1ap_E_RABReleaseIndicationIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_E_RABReleaseIndicationIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_E_RABReleaseIndicationIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -3763,7 +3763,7 @@ int s1ap_encode_s1ap_s1setuprequesties(
     d_assert(s1ap_S1SetupRequest, return -1, "Null param");
     d_assert(s1ap_S1SetupRequestIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_S1SetupRequestIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_S1SetupRequestIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Global_ENB_ID,
                         S1ap_Criticality_reject,
@@ -3823,7 +3823,7 @@ int s1ap_encode_s1ap_nasnondeliveryindication_ies(
     d_assert(s1ap_NASNonDeliveryIndication, return -1, "Null param");
     d_assert(s1ap_NASNonDeliveryIndication_IEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_NASNonDeliveryIndication_IEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_NASNonDeliveryIndication_IEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -3869,7 +3869,7 @@ int s1ap_encode_s1ap_celltraffictraceies(
     d_assert(s1ap_CellTrafficTrace, return -1, "Null param");
     d_assert(s1ap_CellTrafficTraceIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_CellTrafficTraceIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_CellTrafficTraceIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -3934,7 +3934,7 @@ int s1ap_encode_s1ap_e_rabsetuprequesties(
     d_assert(s1ap_E_RABSetupRequest, return -1, "Null param");
     d_assert(s1ap_E_RABSetupRequestIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_E_RABSetupRequestIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_E_RABSetupRequestIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -3991,7 +3991,7 @@ int s1ap_encode_s1ap_enbstatustransferies(
     d_assert(s1ap_ENBStatusTransfer, return -1, "Null param");
     d_assert(s1ap_ENBStatusTransferIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_ENBStatusTransferIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_ENBStatusTransferIEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
@@ -4029,7 +4029,7 @@ int s1ap_encode_s1ap_resetacknowledgeies(
     d_assert(s1ap_ResetAcknowledge, return -1, "Null param");
     d_assert(s1ap_ResetAcknowledgeIEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_ResetAcknowledgeIEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_ResetAcknowledgeIEs\n");
 
     /* Optional field */
     if (s1ap_ResetAcknowledgeIEs->presenceMask & S1AP_RESETACKNOWLEDGEIES_UE_ASSOCIATEDLOGICALS1_CONNECTIONLISTRESACK_PRESENT) {
@@ -4065,7 +4065,7 @@ int s1ap_encode_s1ap_uecontextreleasecomplete_ies(
     d_assert(s1ap_UEContextReleaseComplete, return -1, "Null param");
     d_assert(s1ap_UEContextReleaseComplete_IEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_UEContextReleaseComplete_IEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_UEContextReleaseComplete_IEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
@@ -4106,7 +4106,7 @@ int s1ap_encode_s1ap_uplinkueassociatedlppatransport_ies(
     d_assert(s1ap_UplinkUEAssociatedLPPaTransport, return -1, "Null param");
     d_assert(s1ap_UplinkUEAssociatedLPPaTransport_IEs, return -1, "Null param");
 
-    d_trace(3, "Encoding message S1ap_UplinkUEAssociatedLPPaTransport_IEs\n");
+    d_trace(3, "[S1AP] Encode S1ap_UplinkUEAssociatedLPPaTransport_IEs\n");
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,

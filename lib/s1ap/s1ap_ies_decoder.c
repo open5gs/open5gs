@@ -30,7 +30,7 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-07-31 23:10:37.494808 by acetcom
+ * Created on: 2017-08-01 09:50:55.515948 by acetcom
  * from ['S1AP-PDU.asn']
  ******************************************************************************/
 #define TRACE_MODULE _s1ap_ies_decoder
@@ -48,7 +48,7 @@ int s1ap_decode_s1ap_deactivatetraceies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_DeactivateTraceIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_DeactivateTraceIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_DeactivateTraceIEs\n");
 
     memset(&s1ap_DeactivateTrace, 0, sizeof(S1ap_DeactivateTrace_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_DeactivateTrace, (void **)&s1ap_DeactivateTrace_p, any_p->buf, any_p->size, 0, 0);
@@ -126,7 +126,7 @@ int s1ap_decode_s1ap_enbdirectinformationtransferies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_ENBDirectInformationTransferIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_ENBDirectInformationTransferIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_ENBDirectInformationTransferIEs\n");
 
     memset(&s1ap_ENBDirectInformationTransfer, 0, sizeof(S1ap_ENBDirectInformationTransfer_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENBDirectInformationTransfer, (void **)&s1ap_ENBDirectInformationTransfer_p, any_p->buf, any_p->size, 0, 0);
@@ -180,7 +180,7 @@ int s1ap_decode_s1ap_e_rabreleaseresponseies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_E_RABReleaseResponseIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_E_RABReleaseResponseIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_E_RABReleaseResponseIEs\n");
 
     memset(&s1ap_E_RABReleaseResponse, 0, sizeof(S1ap_E_RABReleaseResponse_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_E_RABReleaseResponse, (void **)&s1ap_E_RABReleaseResponse_p, any_p->buf, any_p->size, 0, 0);
@@ -292,7 +292,7 @@ int s1ap_decode_s1ap_uplinknonueassociatedlppatransport_ies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_UplinkNonUEAssociatedLPPaTransport_IEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_UplinkNonUEAssociatedLPPaTransport_IEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_UplinkNonUEAssociatedLPPaTransport_IEs\n");
 
     memset(&s1ap_UplinkNonUEAssociatedLPPaTransport, 0, sizeof(S1ap_UplinkNonUEAssociatedLPPaTransport_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_UplinkNonUEAssociatedLPPaTransport, (void **)&s1ap_UplinkNonUEAssociatedLPPaTransport_p, any_p->buf, any_p->size, 0, 0);
@@ -358,7 +358,7 @@ int s1ap_decode_s1ap_tracestarties(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_TraceStartIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_TraceStartIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_TraceStartIEs\n");
 
     memset(&s1ap_TraceStart, 0, sizeof(S1ap_TraceStart_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_TraceStart, (void **)&s1ap_TraceStart_p, any_p->buf, any_p->size, 0, 0);
@@ -436,7 +436,7 @@ int s1ap_decode_s1ap_writereplacewarningresponseies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_WriteReplaceWarningResponseIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_WriteReplaceWarningResponseIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_WriteReplaceWarningResponseIEs\n");
 
     memset(&s1ap_WriteReplaceWarningResponse, 0, sizeof(S1ap_WriteReplaceWarningResponse_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_WriteReplaceWarningResponse, (void **)&s1ap_WriteReplaceWarningResponse_p, any_p->buf, any_p->size, 0, 0);
@@ -530,7 +530,7 @@ int s1ap_decode_s1ap_handovercancelies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_HandoverCancelIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_HandoverCancelIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_HandoverCancelIEs\n");
 
     memset(&s1ap_HandoverCancel, 0, sizeof(S1ap_HandoverCancel_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_HandoverCancel, (void **)&s1ap_HandoverCancel_p, any_p->buf, any_p->size, 0, 0);
@@ -608,7 +608,7 @@ int s1ap_decode_s1ap_handoverpreparationfailureies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_HandoverPreparationFailureIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_HandoverPreparationFailureIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_HandoverPreparationFailureIEs\n");
 
     memset(&s1ap_HandoverPreparationFailure, 0, sizeof(S1ap_HandoverPreparationFailure_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_HandoverPreparationFailure, (void **)&s1ap_HandoverPreparationFailure_p, any_p->buf, any_p->size, 0, 0);
@@ -700,7 +700,7 @@ int s1ap_decode_s1ap_uecontextreleaserequest_ies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_UEContextReleaseRequest_IEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_UEContextReleaseRequest_IEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_UEContextReleaseRequest_IEs\n");
 
     memset(&s1ap_UEContextReleaseRequest, 0, sizeof(S1ap_UEContextReleaseRequest_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_UEContextReleaseRequest, (void **)&s1ap_UEContextReleaseRequest_p, any_p->buf, any_p->size, 0, 0);
@@ -792,7 +792,7 @@ int s1ap_decode_s1ap_initialuemessage_ies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_InitialUEMessage_IEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_InitialUEMessage_IEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_InitialUEMessage_IEs\n");
 
     memset(&s1ap_InitialUEMessage, 0, sizeof(S1ap_InitialUEMessage_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_InitialUEMessage, (void **)&s1ap_InitialUEMessage_p, any_p->buf, any_p->size, 0, 0);
@@ -978,7 +978,7 @@ int s1ap_decode_s1ap_killrequesties(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_KillRequestIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_KillRequestIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_KillRequestIEs\n");
 
     memset(&s1ap_KillRequest, 0, sizeof(S1ap_KillRequest_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_KillRequest, (void **)&s1ap_KillRequest_p, any_p->buf, any_p->size, 0, 0);
@@ -1058,7 +1058,7 @@ int s1ap_decode_s1ap_writereplacewarningrequesties(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_WriteReplaceWarningRequestIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_WriteReplaceWarningRequestIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_WriteReplaceWarningRequestIEs\n");
 
     memset(&s1ap_WriteReplaceWarningRequest, 0, sizeof(S1ap_WriteReplaceWarningRequest_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_WriteReplaceWarningRequest, (void **)&s1ap_WriteReplaceWarningRequest_p, any_p->buf, any_p->size, 0, 0);
@@ -1246,7 +1246,7 @@ int s1ap_decode_s1ap_uecapabilityinfoindicationies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_UECapabilityInfoIndicationIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_UECapabilityInfoIndicationIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_UECapabilityInfoIndicationIEs\n");
 
     memset(&s1ap_UECapabilityInfoIndication, 0, sizeof(S1ap_UECapabilityInfoIndication_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_UECapabilityInfoIndication, (void **)&s1ap_UECapabilityInfoIndication_p, any_p->buf, any_p->size, 0, 0);
@@ -1324,7 +1324,7 @@ int s1ap_decode_s1ap_locationreportingfailureindicationies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_LocationReportingFailureIndicationIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_LocationReportingFailureIndicationIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_LocationReportingFailureIndicationIEs\n");
 
     memset(&s1ap_LocationReportingFailureIndication, 0, sizeof(S1ap_LocationReportingFailureIndication_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_LocationReportingFailureIndication, (void **)&s1ap_LocationReportingFailureIndication_p, any_p->buf, any_p->size, 0, 0);
@@ -1402,7 +1402,7 @@ int s1ap_decode_s1ap_initialcontextsetuprequesties(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_InitialContextSetupRequestIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_InitialContextSetupRequestIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_InitialContextSetupRequestIEs\n");
 
     memset(&s1ap_InitialContextSetupRequest, 0, sizeof(S1ap_InitialContextSetupRequest_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_InitialContextSetupRequest, (void **)&s1ap_InitialContextSetupRequest_p, any_p->buf, any_p->size, 0, 0);
@@ -1672,7 +1672,7 @@ int s1ap_decode_s1ap_locationreporties(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_LocationReportIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_LocationReportIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_LocationReportIEs\n");
 
     memset(&s1ap_LocationReport, 0, sizeof(S1ap_LocationReport_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_LocationReport, (void **)&s1ap_LocationReport_p, any_p->buf, any_p->size, 0, 0);
@@ -1774,7 +1774,7 @@ int s1ap_decode_s1ap_uplinknastransport_ies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_UplinkNASTransport_IEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_UplinkNASTransport_IEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_UplinkNASTransport_IEs\n");
 
     memset(&s1ap_UplinkNASTransport, 0, sizeof(S1ap_UplinkNASTransport_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_UplinkNASTransport, (void **)&s1ap_UplinkNASTransport_p, any_p->buf, any_p->size, 0, 0);
@@ -1890,7 +1890,7 @@ int s1ap_decode_s1ap_uecontextmodificationresponseies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_UEContextModificationResponseIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_UEContextModificationResponseIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_UEContextModificationResponseIEs\n");
 
     memset(&s1ap_UEContextModificationResponse, 0, sizeof(S1ap_UEContextModificationResponse_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_UEContextModificationResponse, (void **)&s1ap_UEContextModificationResponse_p, any_p->buf, any_p->size, 0, 0);
@@ -1970,7 +1970,7 @@ int s1ap_decode_s1ap_uecontextmodificationrequesties(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_UEContextModificationRequestIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_UEContextModificationRequestIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_UEContextModificationRequestIEs\n");
 
     memset(&s1ap_UEContextModificationRequest, 0, sizeof(S1ap_UEContextModificationRequest_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_UEContextModificationRequest, (void **)&s1ap_UEContextModificationRequest_p, any_p->buf, any_p->size, 0, 0);
@@ -2134,7 +2134,7 @@ int s1ap_decode_s1ap_locationreportingcontrolies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_LocationReportingControlIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_LocationReportingControlIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_LocationReportingControlIEs\n");
 
     memset(&s1ap_LocationReportingControl, 0, sizeof(S1ap_LocationReportingControl_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_LocationReportingControl, (void **)&s1ap_LocationReportingControl_p, any_p->buf, any_p->size, 0, 0);
@@ -2212,7 +2212,7 @@ int s1ap_decode_s1ap_uplinks1cdma2000tunnelingies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_UplinkS1cdma2000tunnelingIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_UplinkS1cdma2000tunnelingIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_UplinkS1cdma2000tunnelingIEs\n");
 
     memset(&s1ap_UplinkS1cdma2000tunneling, 0, sizeof(S1ap_UplinkS1cdma2000tunneling_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_UplinkS1cdma2000tunneling, (void **)&s1ap_UplinkS1cdma2000tunneling_p, any_p->buf, any_p->size, 0, 0);
@@ -2370,7 +2370,7 @@ int s1ap_decode_s1ap_handoverrequesties(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_HandoverRequestIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_HandoverRequestIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_HandoverRequestIEs\n");
 
     memset(&s1ap_HandoverRequest, 0, sizeof(S1ap_HandoverRequest_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_HandoverRequest, (void **)&s1ap_HandoverRequest_p, any_p->buf, any_p->size, 0, 0);
@@ -2636,7 +2636,7 @@ int s1ap_decode_s1ap_handoverrequiredies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_HandoverRequiredIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_HandoverRequiredIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_HandoverRequiredIEs\n");
 
     memset(&s1ap_HandoverRequired, 0, sizeof(S1ap_HandoverRequired_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_HandoverRequired, (void **)&s1ap_HandoverRequired_p, any_p->buf, any_p->size, 0, 0);
@@ -2862,7 +2862,7 @@ int s1ap_decode_s1ap_mmeconfigurationupdateacknowledgeies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_MMEConfigurationUpdateAcknowledgeIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_MMEConfigurationUpdateAcknowledgeIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_MMEConfigurationUpdateAcknowledgeIEs\n");
 
     memset(&s1ap_MMEConfigurationUpdateAcknowledge, 0, sizeof(S1ap_MMEConfigurationUpdateAcknowledge_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MMEConfigurationUpdateAcknowledge, (void **)&s1ap_MMEConfigurationUpdateAcknowledge_p, any_p->buf, any_p->size, 0, 0);
@@ -2918,7 +2918,7 @@ int s1ap_decode_s1ap_killresponseies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_KillResponseIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_KillResponseIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_KillResponseIEs\n");
 
     memset(&s1ap_KillResponse, 0, sizeof(S1ap_KillResponse_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_KillResponse, (void **)&s1ap_KillResponse_p, any_p->buf, any_p->size, 0, 0);
@@ -3012,7 +3012,7 @@ int s1ap_decode_s1ap_mmestatustransferies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_MMEStatusTransferIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_MMEStatusTransferIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_MMEStatusTransferIEs\n");
 
     memset(&s1ap_MMEStatusTransfer, 0, sizeof(S1ap_MMEStatusTransfer_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MMEStatusTransfer, (void **)&s1ap_MMEStatusTransfer_p, any_p->buf, any_p->size, 0, 0);
@@ -3090,7 +3090,7 @@ int s1ap_decode_s1ap_mmeconfigurationupdateies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_MMEConfigurationUpdateIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_MMEConfigurationUpdateIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_MMEConfigurationUpdateIEs\n");
 
     memset(&s1ap_MMEConfigurationUpdate, 0, sizeof(S1ap_MMEConfigurationUpdate_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MMEConfigurationUpdate, (void **)&s1ap_MMEConfigurationUpdate_p, any_p->buf, any_p->size, 0, 0);
@@ -3174,7 +3174,7 @@ int s1ap_decode_s1ap_e_rabmodifyrequesties(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_E_RABModifyRequestIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_E_RABModifyRequestIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_E_RABModifyRequestIEs\n");
 
     memset(&s1ap_E_RABModifyRequest, 0, sizeof(S1ap_E_RABModifyRequest_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_E_RABModifyRequest, (void **)&s1ap_E_RABModifyRequest_p, any_p->buf, any_p->size, 0, 0);
@@ -3268,7 +3268,7 @@ int s1ap_decode_s1ap_enbconfigurationupdatefailureies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_ENBConfigurationUpdateFailureIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_ENBConfigurationUpdateFailureIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_ENBConfigurationUpdateFailureIEs\n");
 
     memset(&s1ap_ENBConfigurationUpdateFailure, 0, sizeof(S1ap_ENBConfigurationUpdateFailure_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENBConfigurationUpdateFailure, (void **)&s1ap_ENBConfigurationUpdateFailure_p, any_p->buf, any_p->size, 0, 0);
@@ -3350,7 +3350,7 @@ int s1ap_decode_s1ap_reseties(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_ResetIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_ResetIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_ResetIEs\n");
 
     memset(&s1ap_Reset, 0, sizeof(S1ap_Reset_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Reset, (void **)&s1ap_Reset_p, any_p->buf, any_p->size, 0, 0);
@@ -3416,7 +3416,7 @@ int s1ap_decode_s1ap_s1setupresponseies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_S1SetupResponseIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_S1SetupResponseIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_S1SetupResponseIEs\n");
 
     memset(&s1ap_S1SetupResponse, 0, sizeof(S1ap_S1SetupResponse_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_S1SetupResponse, (void **)&s1ap_S1SetupResponse_p, any_p->buf, any_p->size, 0, 0);
@@ -3524,7 +3524,7 @@ int s1ap_decode_s1ap_pagingies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_PagingIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_PagingIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_PagingIEs\n");
 
     memset(&s1ap_Paging, 0, sizeof(S1ap_Paging_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_Paging, (void **)&s1ap_Paging_p, any_p->buf, any_p->size, 0, 0);
@@ -3658,7 +3658,7 @@ int s1ap_decode_s1ap_enbconfigurationupdateacknowledgeies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_ENBConfigurationUpdateAcknowledgeIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_ENBConfigurationUpdateAcknowledgeIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_ENBConfigurationUpdateAcknowledgeIEs\n");
 
     memset(&s1ap_ENBConfigurationUpdateAcknowledge, 0, sizeof(S1ap_ENBConfigurationUpdateAcknowledge_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENBConfigurationUpdateAcknowledge, (void **)&s1ap_ENBConfigurationUpdateAcknowledge_p, any_p->buf, any_p->size, 0, 0);
@@ -3714,7 +3714,7 @@ int s1ap_decode_s1ap_e_rabreleasecommandies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_E_RABReleaseCommandIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_E_RABReleaseCommandIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_E_RABReleaseCommandIEs\n");
 
     memset(&s1ap_E_RABReleaseCommand, 0, sizeof(S1ap_E_RABReleaseCommand_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_E_RABReleaseCommand, (void **)&s1ap_E_RABReleaseCommand_p, any_p->buf, any_p->size, 0, 0);
@@ -3822,7 +3822,7 @@ int s1ap_decode_s1ap_pathswitchrequestfailureies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_PathSwitchRequestFailureIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_PathSwitchRequestFailureIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_PathSwitchRequestFailureIEs\n");
 
     memset(&s1ap_PathSwitchRequestFailure, 0, sizeof(S1ap_PathSwitchRequestFailure_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_PathSwitchRequestFailure, (void **)&s1ap_PathSwitchRequestFailure_p, any_p->buf, any_p->size, 0, 0);
@@ -3914,7 +3914,7 @@ int s1ap_decode_s1ap_e_rabmodifyresponseies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_E_RABModifyResponseIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_E_RABModifyResponseIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_E_RABModifyResponseIEs\n");
 
     memset(&s1ap_E_RABModifyResponse, 0, sizeof(S1ap_E_RABModifyResponse_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_E_RABModifyResponse, (void **)&s1ap_E_RABModifyResponse_p, any_p->buf, any_p->size, 0, 0);
@@ -4026,7 +4026,7 @@ int s1ap_decode_s1ap_handovernotifyies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_HandoverNotifyIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_HandoverNotifyIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_HandoverNotifyIEs\n");
 
     memset(&s1ap_HandoverNotify, 0, sizeof(S1ap_HandoverNotify_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_HandoverNotify, (void **)&s1ap_HandoverNotify_p, any_p->buf, any_p->size, 0, 0);
@@ -4116,7 +4116,7 @@ int s1ap_decode_s1ap_handovercancelacknowledgeies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_HandoverCancelAcknowledgeIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_HandoverCancelAcknowledgeIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_HandoverCancelAcknowledgeIEs\n");
 
     memset(&s1ap_HandoverCancelAcknowledge, 0, sizeof(S1ap_HandoverCancelAcknowledge_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_HandoverCancelAcknowledge, (void **)&s1ap_HandoverCancelAcknowledge_p, any_p->buf, any_p->size, 0, 0);
@@ -4196,7 +4196,7 @@ int s1ap_decode_s1ap_initialcontextsetupfailureies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_InitialContextSetupFailureIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_InitialContextSetupFailureIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_InitialContextSetupFailureIEs\n");
 
     memset(&s1ap_InitialContextSetupFailure, 0, sizeof(S1ap_InitialContextSetupFailure_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_InitialContextSetupFailure, (void **)&s1ap_InitialContextSetupFailure_p, any_p->buf, any_p->size, 0, 0);
@@ -4288,7 +4288,7 @@ int s1ap_decode_s1ap_handovercommandies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_HandoverCommandIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_HandoverCommandIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_HandoverCommandIEs\n");
 
     memset(&s1ap_HandoverCommand, 0, sizeof(S1ap_HandoverCommand_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_HandoverCommand, (void **)&s1ap_HandoverCommand_p, any_p->buf, any_p->size, 0, 0);
@@ -4438,7 +4438,7 @@ int s1ap_decode_s1ap_mmedirectinformationtransferies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_MMEDirectInformationTransferIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_MMEDirectInformationTransferIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_MMEDirectInformationTransferIEs\n");
 
     memset(&s1ap_MMEDirectInformationTransfer, 0, sizeof(S1ap_MMEDirectInformationTransfer_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MMEDirectInformationTransfer, (void **)&s1ap_MMEDirectInformationTransfer_p, any_p->buf, any_p->size, 0, 0);
@@ -4492,7 +4492,7 @@ int s1ap_decode_s1ap_errorindicationies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_ErrorIndicationIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_ErrorIndicationIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_ErrorIndicationIEs\n");
 
     memset(&s1ap_ErrorIndication, 0, sizeof(S1ap_ErrorIndication_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ErrorIndication, (void **)&s1ap_ErrorIndication_p, any_p->buf, any_p->size, 0, 0);
@@ -4590,7 +4590,7 @@ int s1ap_decode_s1ap_overloadstarties(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_OverloadStartIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_OverloadStartIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_OverloadStartIEs\n");
 
     memset(&s1ap_OverloadStart, 0, sizeof(S1ap_OverloadStart_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_OverloadStart, (void **)&s1ap_OverloadStart_p, any_p->buf, any_p->size, 0, 0);
@@ -4672,7 +4672,7 @@ int s1ap_decode_s1ap_downlinknonueassociatedlppatransport_ies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_DownlinkNonUEAssociatedLPPaTransport_IEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_DownlinkNonUEAssociatedLPPaTransport_IEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_DownlinkNonUEAssociatedLPPaTransport_IEs\n");
 
     memset(&s1ap_DownlinkNonUEAssociatedLPPaTransport, 0, sizeof(S1ap_DownlinkNonUEAssociatedLPPaTransport_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_DownlinkNonUEAssociatedLPPaTransport, (void **)&s1ap_DownlinkNonUEAssociatedLPPaTransport_p, any_p->buf, any_p->size, 0, 0);
@@ -4738,7 +4738,7 @@ int s1ap_decode_s1ap_handoverrequestacknowledgeies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_HandoverRequestAcknowledgeIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_HandoverRequestAcknowledgeIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_HandoverRequestAcknowledgeIEs\n");
 
     memset(&s1ap_HandoverRequestAcknowledge, 0, sizeof(S1ap_HandoverRequestAcknowledge_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_HandoverRequestAcknowledge, (void **)&s1ap_HandoverRequestAcknowledge_p, any_p->buf, any_p->size, 0, 0);
@@ -4874,7 +4874,7 @@ int s1ap_decode_s1ap_downlinkueassociatedlppatransport_ies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_DownlinkUEAssociatedLPPaTransport_IEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_DownlinkUEAssociatedLPPaTransport_IEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_DownlinkUEAssociatedLPPaTransport_IEs\n");
 
     memset(&s1ap_DownlinkUEAssociatedLPPaTransport, 0, sizeof(S1ap_DownlinkUEAssociatedLPPaTransport_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_DownlinkUEAssociatedLPPaTransport, (void **)&s1ap_DownlinkUEAssociatedLPPaTransport_p, any_p->buf, any_p->size, 0, 0);
@@ -4964,7 +4964,7 @@ int s1ap_decode_s1ap_uecontextmodificationfailureies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_UEContextModificationFailureIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_UEContextModificationFailureIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_UEContextModificationFailureIEs\n");
 
     memset(&s1ap_UEContextModificationFailure, 0, sizeof(S1ap_UEContextModificationFailure_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_UEContextModificationFailure, (void **)&s1ap_UEContextModificationFailure_p, any_p->buf, any_p->size, 0, 0);
@@ -5056,7 +5056,7 @@ int s1ap_decode_s1ap_mmeconfigurationtransferies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_MMEConfigurationTransferIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_MMEConfigurationTransferIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_MMEConfigurationTransferIEs\n");
 
     memset(&s1ap_MMEConfigurationTransfer, 0, sizeof(S1ap_MMEConfigurationTransfer_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MMEConfigurationTransfer, (void **)&s1ap_MMEConfigurationTransfer_p, any_p->buf, any_p->size, 0, 0);
@@ -5112,7 +5112,7 @@ int s1ap_decode_s1ap_pathswitchrequestacknowledgeies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_PathSwitchRequestAcknowledgeIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_PathSwitchRequestAcknowledgeIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_PathSwitchRequestAcknowledgeIEs\n");
 
     memset(&s1ap_PathSwitchRequestAcknowledge, 0, sizeof(S1ap_PathSwitchRequestAcknowledge_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_PathSwitchRequestAcknowledge, (void **)&s1ap_PathSwitchRequestAcknowledge_p, any_p->buf, any_p->size, 0, 0);
@@ -5264,7 +5264,7 @@ int s1ap_decode_s1ap_s1setupfailureies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_S1SetupFailureIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_S1SetupFailureIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_S1SetupFailureIEs\n");
 
     memset(&s1ap_S1SetupFailure, 0, sizeof(S1ap_S1SetupFailure_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_S1SetupFailure, (void **)&s1ap_S1SetupFailure_p, any_p->buf, any_p->size, 0, 0);
@@ -5346,7 +5346,7 @@ int s1ap_decode_s1ap_mmeconfigurationupdatefailureies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_MMEConfigurationUpdateFailureIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_MMEConfigurationUpdateFailureIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_MMEConfigurationUpdateFailureIEs\n");
 
     memset(&s1ap_MMEConfigurationUpdateFailure, 0, sizeof(S1ap_MMEConfigurationUpdateFailure_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_MMEConfigurationUpdateFailure, (void **)&s1ap_MMEConfigurationUpdateFailure_p, any_p->buf, any_p->size, 0, 0);
@@ -5428,7 +5428,7 @@ int s1ap_decode_s1ap_initialcontextsetupresponseies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_InitialContextSetupResponseIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_InitialContextSetupResponseIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_InitialContextSetupResponseIEs\n");
 
     memset(&s1ap_InitialContextSetupResponse, 0, sizeof(S1ap_InitialContextSetupResponse_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_InitialContextSetupResponse, (void **)&s1ap_InitialContextSetupResponse_p, any_p->buf, any_p->size, 0, 0);
@@ -5538,7 +5538,7 @@ int s1ap_decode_s1ap_downlinks1cdma2000tunnelingies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_DownlinkS1cdma2000tunnelingIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_DownlinkS1cdma2000tunnelingIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_DownlinkS1cdma2000tunnelingIEs\n");
 
     memset(&s1ap_DownlinkS1cdma2000tunneling, 0, sizeof(S1ap_DownlinkS1cdma2000tunneling_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_DownlinkS1cdma2000tunneling, (void **)&s1ap_DownlinkS1cdma2000tunneling_p, any_p->buf, any_p->size, 0, 0);
@@ -5658,7 +5658,7 @@ int s1ap_decode_s1ap_overloadstopies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_OverloadStopIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_OverloadStopIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_OverloadStopIEs\n");
 
     memset(&s1ap_OverloadStop, 0, sizeof(S1ap_OverloadStop_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_OverloadStop, (void **)&s1ap_OverloadStop_p, any_p->buf, any_p->size, 0, 0);
@@ -5714,7 +5714,7 @@ int s1ap_decode_s1ap_enbconfigurationupdateies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_ENBConfigurationUpdateIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_ENBConfigurationUpdateIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_ENBConfigurationUpdateIEs\n");
 
     memset(&s1ap_ENBConfigurationUpdate, 0, sizeof(S1ap_ENBConfigurationUpdate_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENBConfigurationUpdate, (void **)&s1ap_ENBConfigurationUpdate_p, any_p->buf, any_p->size, 0, 0);
@@ -5812,7 +5812,7 @@ int s1ap_decode_s1ap_tracefailureindicationies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_TraceFailureIndicationIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_TraceFailureIndicationIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_TraceFailureIndicationIEs\n");
 
     memset(&s1ap_TraceFailureIndication, 0, sizeof(S1ap_TraceFailureIndication_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_TraceFailureIndication, (void **)&s1ap_TraceFailureIndication_p, any_p->buf, any_p->size, 0, 0);
@@ -5902,7 +5902,7 @@ int s1ap_decode_s1ap_enbconfigurationtransferies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_ENBConfigurationTransferIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_ENBConfigurationTransferIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_ENBConfigurationTransferIEs\n");
 
     memset(&s1ap_ENBConfigurationTransfer, 0, sizeof(S1ap_ENBConfigurationTransfer_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENBConfigurationTransfer, (void **)&s1ap_ENBConfigurationTransfer_p, any_p->buf, any_p->size, 0, 0);
@@ -5958,7 +5958,7 @@ int s1ap_decode_s1ap_handoverfailureies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_HandoverFailureIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_HandoverFailureIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_HandoverFailureIEs\n");
 
     memset(&s1ap_HandoverFailure, 0, sizeof(S1ap_HandoverFailure_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_HandoverFailure, (void **)&s1ap_HandoverFailure_p, any_p->buf, any_p->size, 0, 0);
@@ -6038,7 +6038,7 @@ int s1ap_decode_s1ap_e_rabsetupresponseies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_E_RABSetupResponseIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_E_RABSetupResponseIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_E_RABSetupResponseIEs\n");
 
     memset(&s1ap_E_RABSetupResponse, 0, sizeof(S1ap_E_RABSetupResponse_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_E_RABSetupResponse, (void **)&s1ap_E_RABSetupResponse_p, any_p->buf, any_p->size, 0, 0);
@@ -6150,7 +6150,7 @@ int s1ap_decode_s1ap_uecontextreleasecommand_ies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_UEContextReleaseCommand_IEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_UEContextReleaseCommand_IEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_UEContextReleaseCommand_IEs\n");
 
     memset(&s1ap_UEContextReleaseCommand, 0, sizeof(S1ap_UEContextReleaseCommand_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_UEContextReleaseCommand, (void **)&s1ap_UEContextReleaseCommand_p, any_p->buf, any_p->size, 0, 0);
@@ -6216,7 +6216,7 @@ int s1ap_decode_s1ap_pathswitchrequesties(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_PathSwitchRequestIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_PathSwitchRequestIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_PathSwitchRequestIEs\n");
 
     memset(&s1ap_PathSwitchRequest, 0, sizeof(S1ap_PathSwitchRequest_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_PathSwitchRequest, (void **)&s1ap_PathSwitchRequest_p, any_p->buf, any_p->size, 0, 0);
@@ -6374,7 +6374,7 @@ int s1ap_decode_s1ap_downlinknastransport_ies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_DownlinkNASTransport_IEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_DownlinkNASTransport_IEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_DownlinkNASTransport_IEs\n");
 
     memset(&s1ap_DownlinkNASTransport, 0, sizeof(S1ap_DownlinkNASTransport_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_DownlinkNASTransport, (void **)&s1ap_DownlinkNASTransport_p, any_p->buf, any_p->size, 0, 0);
@@ -6480,7 +6480,7 @@ int s1ap_decode_s1ap_e_rabreleaseindicationies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_E_RABReleaseIndicationIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_E_RABReleaseIndicationIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_E_RABReleaseIndicationIEs\n");
 
     memset(&s1ap_E_RABReleaseIndication, 0, sizeof(S1ap_E_RABReleaseIndication_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_E_RABReleaseIndication, (void **)&s1ap_E_RABReleaseIndication_p, any_p->buf, any_p->size, 0, 0);
@@ -6560,7 +6560,7 @@ int s1ap_decode_s1ap_s1setuprequesties(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_S1SetupRequestIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_S1SetupRequestIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_S1SetupRequestIEs\n");
 
     memset(&s1ap_S1SetupRequest, 0, sizeof(S1ap_S1SetupRequest_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_S1SetupRequest, (void **)&s1ap_S1SetupRequest_p, any_p->buf, any_p->size, 0, 0);
@@ -6666,7 +6666,7 @@ int s1ap_decode_s1ap_nasnondeliveryindication_ies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_NASNonDeliveryIndication_IEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_NASNonDeliveryIndication_IEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_NASNonDeliveryIndication_IEs\n");
 
     memset(&s1ap_NASNonDeliveryIndication, 0, sizeof(S1ap_NASNonDeliveryIndication_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_NASNonDeliveryIndication, (void **)&s1ap_NASNonDeliveryIndication_p, any_p->buf, any_p->size, 0, 0);
@@ -6756,7 +6756,7 @@ int s1ap_decode_s1ap_celltraffictraceies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_CellTrafficTraceIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_CellTrafficTraceIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_CellTrafficTraceIEs\n");
 
     memset(&s1ap_CellTrafficTrace, 0, sizeof(S1ap_CellTrafficTrace_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_CellTrafficTrace, (void **)&s1ap_CellTrafficTrace_p, any_p->buf, any_p->size, 0, 0);
@@ -6872,7 +6872,7 @@ int s1ap_decode_s1ap_e_rabsetuprequesties(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_E_RABSetupRequestIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_E_RABSetupRequestIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_E_RABSetupRequestIEs\n");
 
     memset(&s1ap_E_RABSetupRequest, 0, sizeof(S1ap_E_RABSetupRequest_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_E_RABSetupRequest, (void **)&s1ap_E_RABSetupRequest_p, any_p->buf, any_p->size, 0, 0);
@@ -6966,7 +6966,7 @@ int s1ap_decode_s1ap_enbstatustransferies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_ENBStatusTransferIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_ENBStatusTransferIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_ENBStatusTransferIEs\n");
 
     memset(&s1ap_ENBStatusTransfer, 0, sizeof(S1ap_ENBStatusTransfer_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ENBStatusTransfer, (void **)&s1ap_ENBStatusTransfer_p, any_p->buf, any_p->size, 0, 0);
@@ -7044,7 +7044,7 @@ int s1ap_decode_s1ap_resetacknowledgeies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_ResetAcknowledgeIEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_ResetAcknowledgeIEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_ResetAcknowledgeIEs\n");
 
     memset(&s1ap_ResetAcknowledge, 0, sizeof(S1ap_ResetAcknowledge_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_ResetAcknowledge, (void **)&s1ap_ResetAcknowledge_p, any_p->buf, any_p->size, 0, 0);
@@ -7116,7 +7116,7 @@ int s1ap_decode_s1ap_uecontextreleasecomplete_ies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_UEContextReleaseComplete_IEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_UEContextReleaseComplete_IEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_UEContextReleaseComplete_IEs\n");
 
     memset(&s1ap_UEContextReleaseComplete, 0, sizeof(S1ap_UEContextReleaseComplete_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_UEContextReleaseComplete, (void **)&s1ap_UEContextReleaseComplete_p, any_p->buf, any_p->size, 0, 0);
@@ -7196,7 +7196,7 @@ int s1ap_decode_s1ap_uplinkueassociatedlppatransport_ies(
     d_assert(any_p, return -1, "Null param");
     d_assert(s1ap_UplinkUEAssociatedLPPaTransport_IEs, return -1, "Null param");
 
-    d_trace(3, "Decoding message S1ap_UplinkUEAssociatedLPPaTransport_IEs\n");
+    d_trace(3, "[S1AP] Decode S1ap_UplinkUEAssociatedLPPaTransport_IEs\n");
 
     memset(&s1ap_UplinkUEAssociatedLPPaTransport, 0, sizeof(S1ap_UplinkUEAssociatedLPPaTransport_t));
     dec_ret = aper_decode(NULL, &asn_DEF_S1ap_UplinkUEAssociatedLPPaTransport, (void **)&s1ap_UplinkUEAssociatedLPPaTransport_p, any_p->buf, any_p->size, 0, 0);

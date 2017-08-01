@@ -108,10 +108,10 @@ static gtp_xact_t *gtp_xact_create(gtp_xact_ctx_t *context,
     list_append(xact->org == GTP_LOCAL_ORIGINATOR ?  
             &xact->gnode->local_list : &xact->gnode->remote_list, xact);
 
-    d_trace(3, "[%s:%d] %s Create  : xid = 0x%x\n",
-            INET_NTOP(&gnode->addr, buf), gnode->port,
+    d_trace(3, "[%d] %s Create  peer %s:%d\n",
+            xact->xid,
             xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-            xact->xid);
+            INET_NTOP(&gnode->addr, buf), gnode->port);
 
     return xact;
 }
@@ -124,10 +124,10 @@ static status_t gtp_xact_delete(gtp_xact_t *xact)
     d_assert(xact->gnode, , "Null param");
     d_assert(xact->tm_wait, , "Null param");
 
-    d_trace(3, "[%s:%d] %s Delete  : xid = 0x%x\n",
-            INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port,
+    d_trace(3, "[%d] %s Delete  peer %s:%d\n",
+            xact->xid,
             xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-            xact->xid);
+            INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
 
     if (xact->pkbuf)
         pkbuf_free(xact->pkbuf);
@@ -216,10 +216,10 @@ status_t gtp_xact_associated_commit(gtp_xact_t *xact,
     d_assert(xact->gnode, goto out, "Null param");
     d_assert(pkbuf, goto out, "Null param");
 
-    d_trace(3, "[%s:%d] %s Commit  : xid = 0x%x\n",
-            INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port,
+    d_trace(3, "[%d] %s Commit  peer %s:%d\n",
+            xact->xid,
             xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-            xact->xid);
+            INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
 
     xact->pkbuf = pkbuf;
 
@@ -259,10 +259,10 @@ status_t gtp_xact_timeout(index_t index)
     d_assert(xact->sock, goto out, "Null param");
     d_assert(xact->gnode, goto out, "Null param");
 
-    d_trace(3, "[%s:%d] %s Timeout : xid = 0x%x\n",
-            INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port,
+    d_trace(3, "[%d] %s Timeout  peer %s:%d\n",
+            xact->xid,
             xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-            xact->xid);
+            INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
 
     if (xact->org == GTP_LOCAL_ORIGINATOR)
     {
@@ -343,10 +343,10 @@ static gtp_xact_t *gtp_xact_find(
 
     if (xact)
     {
-        d_trace(3, "[%s:%d] %s Find    : xid = 0x%x\n",
-                INET_NTOP(&gnode->addr, buf), gnode->port,
+        d_trace(3, "[%d] %s Find    peer %s:%d\n",
+                xact->xid,
                 xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-                xact->xid);
+                INET_NTOP(&gnode->addr, buf), gnode->port);
     }
 
     return xact;
@@ -380,10 +380,10 @@ status_t gtp_xact_receive(
     }
     d_assert(new, goto out1, "Null param");
 
-    d_trace(3, "[%s:%d] %s Receive : xid = 0x%x\n",
-            INET_NTOP(&gnode->addr, buf), gnode->port,
+    d_trace(3, "[%d] %s Receive peer %s:%d\n",
+            new->xid,
             new->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-            new->xid);
+            INET_NTOP(&gnode->addr, buf), gnode->port);
 
     if (new->org == GTP_LOCAL_ORIGINATOR)
     {

@@ -277,7 +277,8 @@ status_t tlv_build_msg(pkbuf_t **pkbuf, tlv_desc_t *desc, void *msg, int mode)
     d_assert(desc->child_descs[0], return CORE_ERROR,
             "TLV message descriptor has no members");
     
-    d_trace(3, "\n[%s] BUILD MESSAGE\n", desc->name);
+    d_trace(5, "\n");
+    d_trace(3, "[GTP] Build %s\n", desc->name);
 
     r = _tlv_add_compound(&root, NULL, desc, msg, 0);
     d_assert(r > 0 && root, tlv_free_all(root); return CORE_ERROR,
@@ -573,7 +574,8 @@ status_t tlv_parse_msg(void *msg, tlv_desc_t *desc, pkbuf_t *pkbuf, int mode)
     d_assert(desc->child_descs[0], return CORE_ERROR,
             "TLV message descriptor has no members");
 
-    d_trace(3, "\n[%s] PARSE MESSAGE\n", desc->name);
+    d_trace(5, "\n");
+    d_trace(3, "[GTP] Parse %s\n", desc->name);
 
     root = tlv_parse_block(pkbuf->len, pkbuf->payload, mode);
     if (root == NULL)
