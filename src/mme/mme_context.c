@@ -828,12 +828,12 @@ status_t mme_context_setup_trace_module()
     {
         extern int _mme_s6a_handler;
         d_trace_level(&_mme_s6a_handler, s6a);
-        extern int _s6a;
-        d_trace_level(&_s6a, s6a);
+        extern int _s6a_fd;
+        d_trace_level(&_s6a_fd, s6a);
         extern int _s6a_init;
         d_trace_level(&_s6a_init, s6a);
-        extern int _s6a_debug;
-        d_trace_level(&_s6a_debug, s6a);
+        extern int _s6a_hook;
+        d_trace_level(&_s6a_hook, s6a);
     }
 
     if (gtp)

@@ -1,20 +1,27 @@
-#define TRACE_MODULE _s6a_debug
+#define TRACE_MODULE _s6a_hook
 
 #include "core_debug.h"
 
 #include "s6a_lib.h"
 
-static struct fd_hook_hdl *md_hdl = NULL;
+static struct fd_hook_hdl *s6a_hook_hdl = NULL;
 static char * buf = NULL;
 static size_t len;
 static pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
 
+static s6a_hook_user_handler s6a_hook_user_handler_instance = NULL;
+
 /* The callback called when messages are received and sent */
-static void md_hook_cb_tree(enum fd_hook_type type, struct msg * msg, struct peer_hdr * peer, void * other, struct fd_hook_permsgdata *pmd, void * regdata)
+static void s6a_hook_cb_tree(enum fd_hook_type type, struct msg * msg, 
+    struct peer_hdr * peer, void * other, struct fd_hook_permsgdata *pmd, 
+    void * regdata)
 {
 	char * peer_name = peer ? peer->info.pi_diamid : "<unknown peer>";
 	
 	CHECK_POSIX_DO( pthread_mutex_lock(&mtx), );
+
+    if (s6a_hook_user_handler_instance)
+        s6a_hook_user_handler_instance(type, msg, peer, other, pmd, regdata);
 	
 	if (msg) {
 		CHECK_MALLOC_DO( fd_msg_dump_treeview(&buf, &len, NULL, msg, fd_g_config->cnf_dict, (type == HOOK_MESSAGE_PARSING_ERROR) ? 0 : 1, 1), 
@@ -102,7 +109,7 @@ static void md_hook_cb_tree(enum fd_hook_type type, struct msg * msg, struct pee
 	CHECK_POSIX_DO( pthread_mutex_unlock(&mtx), );
 }
 
-int s6a_debug_init()
+int s6a_hook_init()
 {
 	uint32_t mask_errors, mask_sndrcv, mask_routing, mask_peers;
 	uint32_t mask_tree;
@@ -121,12 +128,22 @@ int s6a_debug_init()
 	mask_tree |= mask_peers;
 	
     CHECK_FCT( fd_hook_register( 
-            mask_tree, md_hook_cb_tree, NULL, NULL, &md_hdl) );
+            mask_tree, s6a_hook_cb_tree, NULL, NULL, &s6a_hook_hdl) );
 
 	return 0;
 }
 
-void s6a_debug_final()
+void s6a_hook_final()
 {
-	if (md_hdl) { CHECK_FCT_DO( fd_hook_unregister( md_hdl ), ); }
+	if (s6a_hook_hdl) { CHECK_FCT_DO( fd_hook_unregister( s6a_hook_hdl ), ); }
+}
+
+void s6a_hook_register(s6a_hook_user_handler instance)
+{
+    s6a_hook_user_handler_instance = instance;
+}
+
+void s6a_hook_unregister(void)
+{
+    s6a_hook_user_handler_instance = NULL;
 }

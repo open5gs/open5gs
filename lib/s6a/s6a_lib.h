@@ -164,6 +164,16 @@ CORE_DECLARE(void) s6a_final(void);
 
 CORE_DECLARE(int) s6a_config_init(void);
 
+CORE_DECLARE(int) s6a_hook_init();
+CORE_DECLARE(void) s6a_hook_final();
+
+typedef void (*s6a_hook_user_handler)(
+    enum fd_hook_type type, struct msg *msg, struct peer_hdr *peer, 
+    void *other, struct fd_hook_permsgdata *pmd, void *regdata);
+
+CORE_DECLARE(void) s6a_hook_register(s6a_hook_user_handler instance);
+CORE_DECLARE(void) s6a_hook_unregister();
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

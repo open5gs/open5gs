@@ -1,4 +1,4 @@
-#define TRACE_MODULE _s6a
+#define TRACE_MODULE _s6a_fd
 
 #include "core_debug.h"
 #include "core_param.h"
@@ -11,8 +11,6 @@ static void s6a_gnutls_log_func(int level, const char *str);
 static void s6a_fd_logger(int printlevel, const char *format, va_list ap);
 
 extern status_t s6a_config_apply();
-extern int s6a_debug_init();
-extern void s6a_debug_final();
 
 int s6a_fd_init(const char *conffile)
 {
@@ -46,7 +44,7 @@ int s6a_fd_init(const char *conffile)
     }
 
     /* register debug hook */
-    CHECK_FCT_DO( s6a_debug_init(), goto error );
+    CHECK_FCT_DO( s6a_hook_init(), goto error );
 
 	/* Start the servers */
 	CHECK_FCT_DO( fd_core_start(), goto error );
@@ -63,7 +61,7 @@ error:
 
 void s6a_fd_final()
 {
-    s6a_debug_final();
+    s6a_hook_final();
 
 	CHECK_FCT_DO( fd_core_shutdown(), d_error("fd_core_shutdown() failed") );
 	CHECK_FCT_DO( fd_core_wait_shutdown_complete(), 
