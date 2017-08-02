@@ -14,7 +14,7 @@ void emm_state_initial(fsm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
 
-    mme_sm_trace(1, e);
+    mme_sm_trace(3, e);
 
     FSM_TRAN(s, &emm_state_operational);
 }
@@ -23,7 +23,7 @@ void emm_state_final(fsm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
 
-    mme_sm_trace(1, e);
+    mme_sm_trace(3, e);
 }
 
 void emm_state_operational(fsm_t *s, event_t *e)
@@ -31,7 +31,7 @@ void emm_state_operational(fsm_t *s, event_t *e)
     d_assert(s, return, "Null param");
     d_assert(e, return, "Null param");
 
-    mme_sm_trace(1, e);
+    mme_sm_trace(3, e);
 
     switch (event_get(e))
     {
@@ -221,7 +221,7 @@ void emm_state_exception(fsm_t *s, event_t *e)
     d_assert(s, return, "Null param");
     d_assert(e, return, "Null param");
 
-    mme_sm_trace(1, e);
+    mme_sm_trace(3, e);
 
     switch (event_get(e))
     {

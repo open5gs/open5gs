@@ -429,8 +429,8 @@ int main(int argc, const char *const argv[]) {
     int list_provided = 0;
     abts_suite *suite = NULL;
 
-    d_trace_global_off();
     test_initialize();
+    d_trace_global_off();
 
     quiet = !isatty(STDOUT_FILENO);
 

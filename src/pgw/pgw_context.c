@@ -49,10 +49,10 @@ status_t pgw_context_final()
     gtp_xact_delete_all(&self.s5c_node);
     pgw_sess_remove_all();
 
-    d_print("%d not freed in pgw_sess_pool[%d] in PGW-Context\n",
+    d_trace(1, "%d not freed in pgw_sess_pool[%d] in PGW-Context\n",
             index_size(&pgw_sess_pool) - pool_avail(&pgw_sess_pool),
             index_size(&pgw_sess_pool));
-    d_print("%d not freed in pgw_ip_pool[%d] in PGW-Context\n",
+    d_trace(1, "%d not freed in pgw_ip_pool[%d] in PGW-Context\n",
             index_size(&pgw_ip_pool_pool) - pool_avail(&pgw_ip_pool_pool),
             index_size(&pgw_ip_pool_pool));
 
@@ -420,6 +420,11 @@ status_t pgw_context_setup_trace_module()
 
     if (others)
     {
+        extern int _mutex;
+        d_trace_level(&_mutex, others);
+        extern int _pkbuf;
+        d_trace_level(&_pkbuf, others);
+
         extern int _context;
         d_trace_level(&_context, others);
         extern int _pgw_context;

@@ -50,7 +50,7 @@ status_t sgw_context_final()
 
     sgw_sess_remove_all();
 
-    d_print("%d not freed in sgw_sess_pool[%d] in SGW-Context\n",
+    d_trace(1, "%d not freed in sgw_sess_pool[%d] in SGW-Context\n",
             index_size(&sgw_sess_pool) - pool_avail(&sgw_sess_pool),
             index_size(&sgw_sess_pool));
     index_final(&sgw_bearer_pool);
@@ -412,6 +412,11 @@ status_t sgw_context_setup_trace_module()
 
     if (others)
     {
+        extern int _mutex;
+        d_trace_level(&_mutex, others);
+        extern int _pkbuf;
+        d_trace_level(&_pkbuf, others);
+
         extern int _context;
         d_trace_level(&_context, others);
         extern int _sgw_context;

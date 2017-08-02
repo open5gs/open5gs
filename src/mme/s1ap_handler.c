@@ -153,7 +153,7 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
     }
 #endif
     d_assert(enb->s1ap_sock, return,);
-    d_trace(1, "[S1AP] S1SetupRequest : eNB[%s:%d] --> MME\n",
+    d_trace(3, "[S1AP] S1SetupRequest : eNB[%s:%d] --> MME\n",
         INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
         enb_id);
 
@@ -164,7 +164,7 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
     d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK, , "send error");
 
     d_assert(enb->s1ap_sock, return,);
-    d_trace(1, "[S1AP] S1SetupResponse: eNB[%s:%d] <-- MME\n",
+    d_trace(3, "[S1AP] S1SetupResponse: eNB[%s:%d] <-- MME\n",
         INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
         enb_id);
 }

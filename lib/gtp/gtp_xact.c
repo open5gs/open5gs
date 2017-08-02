@@ -67,7 +67,7 @@ status_t gtp_xact_final(void)
     if (gtp_xact_pool_initialized == 1 && 
         pool_size(&gtp_xact_pool) == pool_avail(&gtp_xact_pool))
     {
-        d_print("%d not freed in gtp_xact_pool[%d] of GTP Transaction\n",
+        d_trace(1, "%d not freed in gtp_xact_pool[%d] of GTP Transaction\n",
                 pool_size(&gtp_xact_pool) - pool_avail(&gtp_xact_pool),
                 pool_size(&gtp_xact_pool));
         index_final(&gtp_xact_pool);

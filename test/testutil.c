@@ -55,6 +55,8 @@ static void test_s6a_hook_handler(enum fd_hook_type type, struct msg * msg,
 
 void test_terminate(void)
 {
+    d_trace_global_on();
+
     app_terminate();
     core_terminate();
 }

@@ -8,7 +8,7 @@
 
 void sgw_state_initial(fsm_t *s, event_t *e)
 {
-    sgw_sm_trace(1, e);
+    sgw_sm_trace(3, e);
 
     d_assert(s, return, "Null param");
 
@@ -17,7 +17,7 @@ void sgw_state_initial(fsm_t *s, event_t *e)
 
 void sgw_state_final(fsm_t *s, event_t *e)
 {
-    sgw_sm_trace(1, e);
+    sgw_sm_trace(3, e);
 
     d_assert(s, return, "Null param");
 }
@@ -26,7 +26,7 @@ void sgw_state_operational(fsm_t *s, event_t *e)
 {
     status_t rv;
 
-    sgw_sm_trace(1, e);
+    sgw_sm_trace(3, e);
 
     d_assert(s, return, "Null param");
 

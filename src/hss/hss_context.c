@@ -299,6 +299,11 @@ status_t hss_context_setup_trace_module()
 
     if (others)
     {
+        extern int _mutex;
+        d_trace_level(&_mutex, others);
+        extern int _pkbuf;
+        d_trace_level(&_pkbuf, others);
+
         extern int _context;
         d_trace_level(&_context, others);
         extern int _hss_context;

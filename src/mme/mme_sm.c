@@ -14,7 +14,7 @@
 
 void mme_state_initial(fsm_t *s, event_t *e)
 {
-    mme_sm_trace(1, e);
+    mme_sm_trace(3, e);
 
     d_assert(s, return, "Null param");
 
@@ -23,7 +23,7 @@ void mme_state_initial(fsm_t *s, event_t *e)
 
 void mme_state_final(fsm_t *s, event_t *e)
 {
-    mme_sm_trace(1, e);
+    mme_sm_trace(3, e);
 
     d_assert(s, return, "Null param");
 }
@@ -35,7 +35,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
     status_t rv;
     char buf[INET_ADDRSTRLEN];
 
-    mme_sm_trace(1, e);
+    mme_sm_trace(3, e);
 
     d_assert(s, return, "Null param");
 

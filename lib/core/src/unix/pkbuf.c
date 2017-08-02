@@ -1,5 +1,6 @@
-#include "core.h"
 #define TRACE_MODULE _pkbuf
+
+#include "core.h"
 #include "core_pkbuf.h"
 #include "core_errno.h"
 #include "core_lib.h"
@@ -82,28 +83,28 @@ status_t pkbuf_final(void)
 
 void pkbuf_show(void)
 {
-    d_print("%d not freed in pkbuf_pool[%d]\n",
+    d_trace(1, "%d not freed in pkbuf_pool[%d]\n",
             pool_size(&pkbuf_pool) - pool_avail(&pkbuf_pool),
             pool_size(&pkbuf_pool));
-    d_print("%d not freed in clbuf_pool[%d]\n",
+    d_trace(1, "%d not freed in clbuf_pool[%d]\n",
             pool_size(&clbuf_pool) - pool_avail(&clbuf_pool),
             pool_size(&clbuf_pool));
-    d_print("%d not freed in cluster128_pool[%d]\n",
+    d_trace(1, "%d not freed in cluster128_pool[%d]\n",
             pool_size(&cluster_128_pool) - pool_avail(&cluster_128_pool),
             pool_size(&cluster_128_pool));
-    d_print("%d not freed in cluster256_pool[%d]\n",
+    d_trace(1, "%d not freed in cluster256_pool[%d]\n",
             pool_size(&cluster_256_pool) - pool_avail(&cluster_256_pool),
             pool_size(&cluster_256_pool));
-    d_print("%d not freed in cluster512_pool[%d]\n",
+    d_trace(1, "%d not freed in cluster512_pool[%d]\n",
             pool_size(&cluster_512_pool) - pool_avail(&cluster_512_pool),
             pool_size(&cluster_512_pool));
-    d_print("%d not freed in cluster1024_pool[%d]\n",
+    d_trace(1, "%d not freed in cluster1024_pool[%d]\n",
             pool_size(&cluster_1024_pool) - pool_avail(&cluster_1024_pool),
             pool_size(&cluster_1024_pool));
-    d_print("%d not freed in cluster2048_pool[%d]\n",
+    d_trace(1, "%d not freed in cluster2048_pool[%d]\n",
             pool_size(&cluster_2048_pool) - pool_avail(&cluster_2048_pool),
             pool_size(&cluster_2048_pool));
-    d_print("%d not freed in cluster8192_pool[%d]\n",
+    d_trace(1, "%d not freed in cluster8192_pool[%d]\n",
             pool_size(&cluster_8192_pool) - pool_avail(&cluster_8192_pool),
             pool_size(&cluster_8192_pool));
 }
