@@ -158,3 +158,24 @@ void mme_s11_handle_release_access_bearers_response(
     event_set_param3(&e, (c_uintptr_t)GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE);
     mme_event_send(&e);
 }
+
+void mme_s11_handle_downlink_data_notification(
+        mme_sess_t *sess, gtp_downlink_data_notification_t *noti)
+{
+    event_t e;
+    mme_bearer_t *bearer = NULL;
+
+    d_assert(sess, return, "Null param");
+    d_assert(noti, return, "Null param");
+
+    d_trace(3, "[GTP] Downlink Data Notification : "
+            "MME[%d] <-- SGW[%d]\n", sess->mme_s11_teid, sess->sgw_s11_teid);
+
+    bearer = mme_bearer_find_by_sess_ebi(sess, noti->eps_bearer_id.u8);
+    d_assert(bearer, return, "No ESM Context");
+
+    event_set(&e, MME_EVT_EMM_BEARER_FROM_S11);
+    event_set_param1(&e, (c_uintptr_t)bearer->index);
+    event_set_param2(&e, (c_uintptr_t)GTP_DOWNLINK_DATA_NOTIFICATION_TYPE);
+    mme_event_send(&e);
+}

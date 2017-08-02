@@ -86,8 +86,18 @@ typedef struct _sgw_bearer_t {
     c_uint32_t      pgw_s5u_teid;  
     c_uint32_t      pgw_s5u_addr;
 
+    c_uint32_t      state;
+
     sgw_sess_t      *sess;
 } sgw_bearer_t;
+
+#define SGW_DL_NOTI_SENT  0x0001
+
+#define CHECK_DL_NOTI_SENT(bearer) ((bearer)->state & SGW_DL_NOTI_SENT)
+#define SET_DL_NOTI_SETNT(bearer) \
+    do { \
+        (bearer)->state |= SGW_DL_NOTI_SENT;\
+    } while (0)
 
 CORE_DECLARE(status_t)      sgw_context_init(void);
 CORE_DECLARE(status_t)      sgw_context_final(void);
@@ -116,6 +126,7 @@ CORE_DECLARE(sgw_bearer_t*) sgw_bearer_find_by_id(
 CORE_DECLARE(sgw_bearer_t*) sgw_default_bearer_in_sess(sgw_sess_t *sess);
 CORE_DECLARE(sgw_bearer_t*) sgw_bearer_first(sgw_sess_t *sess);
 CORE_DECLARE(sgw_bearer_t*) sgw_bearer_next(sgw_bearer_t *bearer);
+CORE_DECLARE(sgw_bearer_t*) sgw_bearer_find(index_t index);
 
 
 #ifdef __cplusplus

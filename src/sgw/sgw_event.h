@@ -15,6 +15,8 @@ typedef enum {
 
     SGW_EVT_TRANSACTION_T3,
 
+    SGW_EVT_LO_DLDATA_NOTI,
+
     SGW_EVT_TOP,
 
 } event_e;

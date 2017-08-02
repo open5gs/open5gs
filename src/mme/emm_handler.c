@@ -785,3 +785,27 @@ void emm_handle_service_request(
     d_assert(emm_send_to_enb(enb_ue, s1apbuf) == CORE_OK,, "s1ap send error");
 }
 
+void emm_handle_downlink_data_notification(mme_bearer_t *bearer)
+{
+    status_t rv;
+    mme_ue_t *mme_ue = NULL;
+    mme_sess_t *sess;
+    pkbuf_t *s11buf = NULL;
+
+    d_assert(bearer, return, "Null param");
+    mme_ue = bearer->mme_ue;
+    d_assert(mme_ue, return, "Null param");
+
+    sess = mme_sess_find_by_ebi(mme_ue, bearer->ebi);
+    d_assert(sess, return, "Null param");
+
+    /* Build Downlink data notification ack */
+    rv = mme_s11_build_downlink_data_notification_ack(&s11buf, sess);
+    d_assert(rv == CORE_OK, return, "S11 build error");
+
+    rv = mme_s11_send_to_sgw(bearer->sgw,
+            GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE, sess->sgw_s11_teid,
+            s11buf);
+
+    /* FIXME : Send s1 paging */
+}

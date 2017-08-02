@@ -319,11 +319,24 @@ void sgw_handle_release_access_bearers_request(gtp_xact_t *xact,
     gtp_release_access_bearers_response_t *rsp = NULL;
     pkbuf_t *pkbuf = NULL;
     gtp_message_t gtp_message;
+    sgw_bearer_t *bearer = NULL, *next_bearer = NULL;
     
     gtp_cause_t cause;
 
     d_assert(sess, return, "Null param");
     d_assert(xact, return, "Null param");
+
+    /* Release S1U(DL) path */
+    bearer = list_first(&sess->bearer_list);
+    while (bearer)
+    {
+        next_bearer = list_next(bearer);
+
+        bearer->enb_s1u_teid = 0;
+        bearer->enb_s1u_addr = 0;
+
+        bearer = next_bearer;
+    }
 
     rsp = &gtp_message.release_access_bearers_response;
     memset(&gtp_message, 0, sizeof(gtp_message_t));
@@ -346,4 +359,51 @@ void sgw_handle_release_access_bearers_request(gtp_xact_t *xact,
 
     d_trace(3, "[GTP] Release Access Bearers Reqeust : "
             "MME[%d] --> SGW[%d]\n", sess->mme_s11_teid, sess->sgw_s11_teid);
+}
+
+void sgw_handle_lo_dldata_notification(sgw_bearer_t *bearer)
+{
+    status_t rv;
+    gtp_downlink_data_notification_t *noti = NULL;
+    pkbuf_t *pkbuf = NULL;
+    gtp_message_t gtp_message;
+    sgw_sess_t *sess = NULL;
+    gtp_xact_t *xact = NULL;
+    /* FIXME : ARP should be retrieved from ? */
+    c_uint8_t arp = 0x61;
+
+    d_assert(bearer, return, "Null param");
+
+    sess = bearer->sess;
+    d_assert(sess, return, "Null param");
+
+
+    /* Build downlink notification message */
+    noti = &gtp_message.downlink_data_notification;
+    memset(&gtp_message, 0, sizeof(gtp_message_t));
+
+    noti->eps_bearer_id.presence = 1;
+    noti->eps_bearer_id.u8 = bearer->id;
+
+    /* FIXME : ARP should be retrieved from ? */
+    noti->allocation_retention_priority.presence = 1;
+    noti->allocation_retention_priority.data = &arp;
+    noti->allocation_retention_priority.len = sizeof(arp);
+
+
+    rv = gtp_build_msg(&pkbuf,
+            GTP_DOWNLINK_DATA_NOTIFICATION_TYPE, &gtp_message);
+    d_assert(rv == CORE_OK, return, "gtp build failed");
+
+    xact = gtp_xact_local_create(&sgw_self()->gtp_xact_ctx, 
+            sgw_self()->s11_sock, &sgw_self()->s11_node);
+    d_assert(xact, return , "Null param");
+
+    d_assert(sgw_s11_send_to_mme(xact, 
+            GTP_DOWNLINK_DATA_NOTIFICATION_TYPE,
+            sess->mme_s11_teid, pkbuf) == CORE_OK, return, 
+            "failed to send message");
+
+    d_trace(3, "[GTP] Downlink Data Notification : "
+            "SGW[%d] --> MME[%d]\n", sess->sgw_s11_teid, sess->mme_s11_teid);
 }

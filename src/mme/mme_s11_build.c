@@ -250,3 +250,34 @@ status_t mme_s11_build_release_access_bearers_request(pkbuf_t **pkbuf)
 
     return CORE_OK;
 }
+
+status_t mme_s11_build_downlink_data_notification_ack(pkbuf_t **pkbuf, 
+        mme_sess_t *sess)
+{
+    status_t rv;
+    mme_ue_t *mme_ue = NULL;
+    gtp_message_t gtp_message;
+    gtp_downlink_data_notification_acknowledge_t *ack = 
+        &gtp_message.downlink_data_notification_acknowledge;
+
+    gtp_cause_t cause;
+
+    d_assert(sess, return CORE_ERROR, "Null param");
+    mme_ue = sess->mme_ue;
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
+
+    memset(&gtp_message, 0, sizeof(gtp_message_t));
+
+    memset(&cause, 0, sizeof(cause));
+    cause.value = GTP_CAUSE_REQUEST_ACCEPTED;
+
+    ack->cause.presence = 1;
+    ack->cause.data = &cause;
+    ack->cause.len = sizeof(cause);
+
+    rv = gtp_build_msg(pkbuf, GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE, 
+            &gtp_message);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");
+
+    return CORE_OK;
+}

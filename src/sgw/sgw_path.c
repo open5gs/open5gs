@@ -108,13 +108,41 @@ static int _gtpv1_s5u_recv_cb(net_sock_t *sock, void *data)
         bearer = sgw_bearer_find_by_sgw_s5u_teid(teid);
         if (bearer)
         {
-            /* Convert Teid and send to enodeB  via s1u */
-            gtp_h->teid =  htonl(bearer->enb_s1u_teid);
-            
-            gnode.addr = bearer->enb_s1u_addr;
-            gnode.port = GTPV1_U_UDP_PORT;
+            if (bearer->enb_s1u_teid)
+            {
+                /* Convert Teid and send to enodeB  via s1u */
+                gtp_h->teid =  htonl(bearer->enb_s1u_teid);
+                
+                gnode.addr = bearer->enb_s1u_addr;
+                gnode.port = GTPV1_U_UDP_PORT;
 
-            gtp_send(sgw_self()->s1u_sock, &gnode, pkbuf);
+                gtp_send(sgw_self()->s1u_sock, &gnode, pkbuf);
+            }
+            else
+            {
+                /* S1U path is deactivated.
+                 * Send downlink_data_notification to MME.
+                 * FIXME : Data buffering required 
+                 *
+                 */
+                if (CHECK_DL_NOTI_SENT(bearer))
+                {
+                    event_t e;
+                    status_t rv;
+
+                    event_set(&e, SGW_EVT_S5C_SESSION_MSG);
+                    event_set_param1(&e, (c_uintptr_t)bearer->index);
+                    rv = sgw_event_send(&e);
+                    if (rv != CORE_OK)
+                    {
+                        d_error("sgw_event_send error");
+                        pkbuf_free(pkbuf);
+                        return -1;
+                    }
+
+                    SET_DL_NOTI_SETNT(bearer);
+                }
+            }
         }
     }
 

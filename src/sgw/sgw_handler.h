@@ -26,6 +26,7 @@ CORE_DECLARE(void) sgw_handle_delete_session_response(gtp_xact_t *xact,
 CORE_DECLARE(void) sgw_handle_release_access_bearers_request(gtp_xact_t *xact, 
         sgw_sess_t *sess, gtp_release_access_bearers_request_t *req);
 
+CORE_DECLARE(void) sgw_handle_lo_dldata_notification(sgw_bearer_t *bearer);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

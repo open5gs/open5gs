@@ -326,6 +326,11 @@ void mme_state_operational(fsm_t *s, event_t *e)
                     mme_s11_handle_release_access_bearers_response(
                             sess, &gtp_message.release_access_bearers_response);
                     break;
+
+                case GTP_DOWNLINK_DATA_NOTIFICATION_TYPE:
+                    mme_s11_handle_downlink_data_notification(
+                            sess, &gtp_message.downlink_data_notification);
+                    break;
                 default:
                     d_warn("Not implmeneted(type:%d)", type);
                     break;

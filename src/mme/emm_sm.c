@@ -59,6 +59,8 @@ void emm_state_operational(fsm_t *s, event_t *e)
                     break;
                 case GTP_DELETE_SESSION_RESPONSE_TYPE:
                     emm_handle_delete_session_response(bearer);
+                case GTP_DOWNLINK_DATA_NOTIFICATION_TYPE:
+                    emm_handle_downlink_data_notification(bearer);
                     break;
             }
 

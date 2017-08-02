@@ -122,6 +122,21 @@ void sgw_state_operational(fsm_t *s, event_t *e)
             gtp_xact_timeout(event_get_param1(e));
             break;
         }
+        case SGW_EVT_LO_DLDATA_NOTI:
+        {
+            index_t index = (index_t)event_get_param1(e);
+            sgw_bearer_t* bearer = sgw_bearer_find(index);
+
+            if (!bearer)
+            {
+                d_error("Can not find bearer with index(%d)",index);
+                break;
+            }
+
+            sgw_handle_lo_dldata_notification(bearer);
+
+            break;
+        }
         default:
         {
             d_error("No handler for event %s", sgw_event_get_name(e));

@@ -17,6 +17,8 @@ CORE_DECLARE(void) mme_s11_handle_delete_session_response(
         mme_sess_t *sess, gtp_delete_session_response_t *rsp);
 CORE_DECLARE(void) mme_s11_handle_release_access_bearers_response(
         mme_sess_t *sess, gtp_release_access_bearers_response_t *rsp);
+CORE_DECLARE(void) mme_s11_handle_downlink_data_notification(
+        mme_sess_t *sess, gtp_downlink_data_notification_t *noti);
 
 #ifdef __cplusplus
 }
