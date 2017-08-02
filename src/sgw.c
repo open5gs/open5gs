@@ -10,12 +10,14 @@ status_t app_initialize(char *config_path, char *log_path)
 {
     status_t rv;
 
-    app_will_initialize(config_path, log_path);
+    rv = app_will_initialize(config_path, log_path);
+    if (rv != CORE_OK) return rv;
 
     rv = sgw_initialize();
     if (rv != CORE_OK) return rv;
 
-    app_did_initialize(config_path, log_path);
+    rv = app_did_initialize(config_path, log_path);
+    if (rv != CORE_OK) return rv;
 
     return CORE_OK;
 }

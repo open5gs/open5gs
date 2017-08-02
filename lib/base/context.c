@@ -250,10 +250,15 @@ status_t context_db_init(char *db_uri)
 status_t context_db_final()
 {
     if (self.database)
+    {
         mongoc_database_destroy(self.database);
-
+        self.database = NULL;
+    }
     if (self.db_client)
+    {
         mongoc_client_destroy(self.db_client);
+        self.db_client = NULL;
+    }
 
     mongoc_cleanup();
 

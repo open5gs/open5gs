@@ -13,8 +13,8 @@
 #include "app.h"
 
 static proc_id logger_proc;
-static void *PROC_FUNC logger_start_func(proc_id id, void *data);
-static void *PROC_FUNC logger_stop_func(proc_id id, void *data);
+static status_t PROC_FUNC logger_start_func(proc_id id, void *data);
+static status_t PROC_FUNC logger_stop_func(proc_id id, void *data);
 static void check_signal(int signum);
 
 status_t app_will_initialize(char *config_path, char *log_path)
@@ -71,10 +71,12 @@ void app_did_terminate(void)
         proc_delete(logger_proc);
     }
 
+#if 0
     context_final();
+#endif
 }
 
-static void *PROC_FUNC logger_start_func(proc_id id, void *data)
+static status_t PROC_FUNC logger_start_func(proc_id id, void *data)
 {
     status_t rv;
     char *path = data;
@@ -88,16 +90,16 @@ static void *PROC_FUNC logger_start_func(proc_id id, void *data)
 
     d_print("  Logging '%s'\n", path);
     rv = logger_start(path);
-    if (rv != CORE_OK) return NULL;
+    if (rv != CORE_OK) return CORE_ERROR;
 
-    return NULL;
+    return CORE_OK;
 }
 
-static void *PROC_FUNC logger_stop_func(proc_id id, void *data)
+static status_t PROC_FUNC logger_stop_func(proc_id id, void *data)
 {
     d_trace(1, "LOGGER terminate...done\n");
 
-    return NULL;
+    return CORE_OK;
 }
 
 static void check_signal(int signum)

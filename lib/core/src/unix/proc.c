@@ -50,22 +50,26 @@ status_t proc_create(proc_id *id,
 
     if (new->proc == 0)
     {
+        status_t rv;
         new->proc = getpid();
         semaphore_post(new->sem1);
         d_trace(3, "[%d] post semaphore for starting\n", new->proc);
 
         d_trace(3, "start func wait\n");
-        new->start_func((proc_id)new, new->data);
-        d_trace(3, "start func done\n");
+        rv = new->start_func((proc_id)new, new->data);
+        d_trace(3, "start func done(rv = %d)\n", rv);
 
         d_trace(3, "deleting semaphore wait\n");
         semaphore_wait(new->sem2);
         semaphore_delete(new->sem2);
         d_trace(3, "deleting semaphore done\n");
 
-        d_trace(3, "stop func wait\n");
-        new->stop_func(new->proc, new->data);
-        d_trace(3, "stop func done\n");
+        if (rv == CORE_OK)
+        {
+            d_trace(3, "stop func wait\n");
+            new->stop_func(new->proc, new->data);
+            d_trace(3, "stop func done\n");
+        }
 
         semaphore_post(new->sem1);
         d_trace(3, "[%d] post semaphore to finish deleting\n", new->proc);

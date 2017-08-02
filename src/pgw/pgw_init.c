@@ -12,6 +12,8 @@ static void *THREAD_FUNC sm_main(thread_id id, void *data);
 static thread_id net_thread;
 static void *THREAD_FUNC net_main(thread_id id, void *data);
 
+static int initialized = 0;
+
 status_t pgw_initialize()
 {
     status_t rv;
@@ -33,11 +35,15 @@ status_t pgw_initialize()
     rv = thread_create(&net_thread, NULL, net_main, NULL);
     if (rv != CORE_OK) return rv;
 
+    initialized = 1;
+
     return CORE_OK;
 }
 
 void pgw_terminate(void)
 {
+    if (!initialized) return;
+
     thread_delete(net_thread);
     thread_delete(sm_thread);
 

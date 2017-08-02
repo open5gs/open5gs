@@ -3,6 +3,8 @@
 #include "hss_context.h"
 #include "hss_s6a_handler.h"
 
+static int initialized = 0;
+
 status_t hss_initialize(void)
 {
     status_t rv;
@@ -22,11 +24,15 @@ status_t hss_initialize(void)
     rv = hss_s6a_init();
     if (rv != CORE_OK) return rv;
 
+    initialized = 1;
+
 	return CORE_OK;
 }
 
 void hss_terminate(void)
 {
+    if (!initialized) return;
+
     hss_s6a_final();
     hss_db_final();
     hss_context_final();

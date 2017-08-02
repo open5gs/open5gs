@@ -11,7 +11,7 @@ extern "C" {
 /** Opaque Thread structure. */
 typedef c_uintptr_t proc_id;
 
-typedef void *(PROC_FUNC *proc_func_t)(proc_id id, void*);
+typedef status_t (PROC_FUNC *proc_func_t)(proc_id id, void*);
 
 /**
  * Initialize Thread
