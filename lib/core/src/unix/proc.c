@@ -11,27 +11,12 @@
 #include "core_semaphore.h"
 #include "core_signal.h"
 
-struct proc_stop_info {
-    pid_t proc;
-    semaphore_id semaphore;
-};
-
 pool_declare(proc_pool, proc_t, MAX_NUM_OF_PROC);
-
-static struct proc_stop_info proc_stop_info;
-
-int proc_should_stop(void)
-{
-    return (proc_stop_info.proc == getpid());
-}
 
 status_t proc_init(void)
 {
     pool_init(&proc_pool, MAX_NUM_OF_PROC);
 
-    memset(&proc_stop_info, 0, sizeof(proc_stop_info));
-
-    semaphore_create(&proc_stop_info.semaphore, 0);
     return CORE_OK;
 }
 
@@ -39,7 +24,6 @@ status_t proc_final(void)
 {
     pool_final(&proc_pool);
 
-    semaphore_delete(proc_stop_info.semaphore);
     return CORE_OK;
 }
 
@@ -50,16 +34,12 @@ static void *dummy_worker(void *opaque)
 
     proc->proc = getpid();
     semaphore_post(proc->semaphore);
-    d_trace(3, "[%d] dummy_worker post semaphore\n", proc->proc);
+    d_trace(3, "[%d] dummy_worker post semaphore for creating\n", proc->proc);
 
-    if (!proc_should_stop())
-        func = proc->func((proc_id)proc, proc->data);
+    func = proc->func((proc_id)proc, proc->data);
 
-    d_trace(3, "[%d] proc stopped = %d\n",
-            proc->proc, proc_should_stop());
-    semaphore_post(proc_stop_info.semaphore);
-    d_trace(3, "[%d] post semaphore for proc_stop_info.semaphore\n",
-            proc->proc);
+    semaphore_post(proc->semaphore);
+    d_trace(3, "[%d] dummy_worker post semaphore for deleting\n", proc->proc);
 
     return func;
 }
@@ -78,14 +58,11 @@ status_t proc_create(proc_id *id, proc_start_t func, void *data)
 
     semaphore_create(&new->semaphore, 0);
 
-        d_trace_level(&_proc, 100);
-
     new->proc = fork();
     d_assert(new->proc >= 0, _exit(EXIT_FAILURE), "fork() failed");
 
     if (new->proc == 0)
     {
-        d_trace_level(&_proc, 100);
         dummy_worker(new);
 
         _exit(EXIT_SUCCESS);
@@ -104,13 +81,13 @@ status_t proc_delete(proc_id id)
 {
     proc_t *proc = (proc_t *)id;
 
-    proc_stop_info.proc = proc->proc;
-    d_trace(3, "proc_stop_info.proc for %d\n", proc_stop_info.proc);
-    core_kill(proc_stop_info.proc, SIGTERM);
-    d_trace(3, "core_kill for %d\n", proc_stop_info.proc);
-    semaphore_wait(proc_stop_info.semaphore);
-    d_trace(3, "semaphore_wait done\n");
-    proc_stop_info.proc = 0;
+    d_trace(3, "core_kill for %d\n", proc->proc);
+    core_kill(proc->proc, SIGTERM);
+    d_trace(3, "core_kill done for %d\n", proc->proc);
+
+    d_trace(3, "proc_delete wait\n");
+    semaphore_wait(proc->semaphore);
+    d_trace(3, "proc_delete done\n");
 
     semaphore_delete(proc->semaphore);
     pool_free_node(&proc_pool, proc);

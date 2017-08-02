@@ -11,9 +11,6 @@
 #include "app.h"
 
 static pid_t logger_pid = 0;
-static thread_id net_thread;
-
-void *THREAD_FUNC net_main(thread_id id, void *data);
 
 status_t app_will_initialize(char *config_path, char *log_path)
 {
@@ -50,11 +47,6 @@ status_t app_will_initialize(char *config_path, char *log_path)
 
 status_t app_did_initialize(char *config_path, char *log_path)
 {
-    status_t rv;
-
-    rv = thread_create(&net_thread, NULL, net_main, NULL);
-    if (rv != CORE_OK) return rv;
-
     return CORE_OK;
 }
 
@@ -62,8 +54,6 @@ void app_will_terminate(void)
 {
     if (logger_pid)
         core_kill(logger_pid, SIGTERM);
-
-    thread_delete(net_thread);
 }
 
 void app_did_terminate(void)
@@ -72,14 +62,4 @@ void app_did_terminate(void)
 #if 0
     core_terminate();
 #endif
-}
-
-void *THREAD_FUNC net_main(thread_id id, void *data)
-{
-    while (!thread_should_stop())
-    {
-        net_fds_read_run(50); 
-    }
-
-    return NULL;
 }

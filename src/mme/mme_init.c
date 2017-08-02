@@ -7,8 +7,11 @@
 
 #include "mme_s6a_handler.h"
 
-static thread_id mme_sm_thread;
-void *THREAD_FUNC mme_sm_main(thread_id id, void *data);
+static thread_id sm_thread;
+static void *THREAD_FUNC sm_main(thread_id id, void *data);
+
+static thread_id net_thread;
+static void *THREAD_FUNC net_main(thread_id id, void *data);
 
 status_t mme_initialize()
 {
@@ -27,7 +30,9 @@ status_t mme_initialize()
     ret = mme_s6a_init();
     if (ret != 0) return -1;
 
-    rv = thread_create(&mme_sm_thread, NULL, mme_sm_main, NULL);
+    rv = thread_create(&sm_thread, NULL, sm_main, NULL);
+    if (rv != CORE_OK) return rv;
+    rv = thread_create(&net_thread, NULL, net_main, NULL);
     if (rv != CORE_OK) return rv;
 
     return CORE_OK;
@@ -35,7 +40,8 @@ status_t mme_initialize()
 
 void mme_terminate(void)
 {
-    thread_delete(mme_sm_thread);
+    thread_delete(net_thread);
+    thread_delete(sm_thread);
 
     mme_s6a_final();
 
@@ -44,7 +50,7 @@ void mme_terminate(void)
     gtp_xact_final();
 }
 
-void *THREAD_FUNC mme_sm_main(thread_id id, void *data)
+static void *THREAD_FUNC sm_main(thread_id id, void *data)
 {
     event_t event;
     fsm_t mme_sm;
@@ -99,7 +105,7 @@ void *THREAD_FUNC mme_sm_main(thread_id id, void *data)
     return NULL;
 }
 
-void *THREAD_FUNC mme_net_main(thread_id id, void *data)
+static void *THREAD_FUNC net_main(thread_id id, void *data)
 {
     while (!thread_should_stop())
     {

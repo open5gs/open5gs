@@ -6,8 +6,11 @@
 #include "pgw_context.h"
 #include "pgw_event.h"
 
-static thread_id pgw_sm_thread;
-void *THREAD_FUNC pgw_sm_main(thread_id id, void *data);
+static thread_id sm_thread;
+static void *THREAD_FUNC sm_main(thread_id id, void *data);
+
+static thread_id net_thread;
+static void *THREAD_FUNC net_main(thread_id id, void *data);
 
 status_t pgw_initialize()
 {
@@ -25,7 +28,9 @@ status_t pgw_initialize()
     rv = pgw_ip_pool_generate();
     if (rv != CORE_OK) return rv;
 
-    rv = thread_create(&pgw_sm_thread, NULL, pgw_sm_main, NULL);
+    rv = thread_create(&sm_thread, NULL, sm_main, NULL);
+    if (rv != CORE_OK) return rv;
+    rv = thread_create(&net_thread, NULL, net_main, NULL);
     if (rv != CORE_OK) return rv;
 
     return CORE_OK;
@@ -33,14 +38,15 @@ status_t pgw_initialize()
 
 void pgw_terminate(void)
 {
-    thread_delete(pgw_sm_thread);
+    thread_delete(net_thread);
+    thread_delete(sm_thread);
 
     pgw_context_final();
 
     gtp_xact_final();
 }
 
-void *THREAD_FUNC pgw_sm_main(thread_id id, void *data)
+static void *THREAD_FUNC sm_main(thread_id id, void *data)
 {
     event_t event;
     fsm_t pgw_sm;
@@ -91,6 +97,16 @@ void *THREAD_FUNC pgw_sm_main(thread_id id, void *data)
     fsm_clear(&pgw_sm);
 
     event_delete(pgw_self()->queue_id);
+
+    return NULL;
+}
+
+static void *THREAD_FUNC net_main(thread_id id, void *data)
+{
+    while (!thread_should_stop())
+    {
+        net_fds_read_run(50); 
+    }
 
     return NULL;
 }

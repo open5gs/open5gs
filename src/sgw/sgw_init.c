@@ -6,8 +6,11 @@
 #include "sgw_context.h"
 #include "sgw_event.h"
 
-static thread_id sgw_sm_thread;
-void *THREAD_FUNC sgw_sm_main(thread_id id, void *data);
+static thread_id sm_thread;
+static void *THREAD_FUNC sm_main(thread_id id, void *data);
+
+static thread_id net_thread;
+static void *THREAD_FUNC net_main(thread_id id, void *data);
 
 status_t sgw_initialize()
 {
@@ -22,7 +25,9 @@ status_t sgw_initialize()
     rv = sgw_context_setup_trace_module();
     if (rv != CORE_OK) return rv;
 
-    rv = thread_create(&sgw_sm_thread, NULL, sgw_sm_main, NULL);
+    rv = thread_create(&sm_thread, NULL, sm_main, NULL);
+    if (rv != CORE_OK) return rv;
+    rv = thread_create(&net_thread, NULL, net_main, NULL);
     if (rv != CORE_OK) return rv;
 
     return CORE_OK;
@@ -30,14 +35,15 @@ status_t sgw_initialize()
 
 void sgw_terminate(void)
 {
-    thread_delete(sgw_sm_thread);
+    thread_delete(net_thread);
+    thread_delete(sm_thread);
 
     sgw_context_final();
 
     gtp_xact_final();
 }
 
-void *THREAD_FUNC sgw_sm_main(thread_id id, void *data)
+static void *THREAD_FUNC sm_main(thread_id id, void *data)
 {
     event_t event;
     fsm_t sgw_sm;
@@ -88,6 +94,16 @@ void *THREAD_FUNC sgw_sm_main(thread_id id, void *data)
     fsm_clear(&sgw_sm);
 
     event_delete(sgw_self()->queue_id);
+
+    return NULL;
+}
+
+static void *THREAD_FUNC net_main(thread_id id, void *data)
+{
+    while (!thread_should_stop())
+    {
+        net_fds_read_run(50); 
+    }
 
     return NULL;
 }
