@@ -459,8 +459,6 @@ void emm_handle_authentication_response(mme_ue_t *mme_ue,
             mme_ue->kasme, mme_ue->knas_int);
     mme_kdf_nas(MME_KDF_NAS_ENC_ALG, mme_ue->selected_enc_algorithm,
             mme_ue->kasme, mme_ue->knas_enc);
-    mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, mme_ue->kenb);
-
 
     d_info("[NAS] Security mode command : UE[%s] <-- EMM", 
             mme_ue->imsi_bcd);
