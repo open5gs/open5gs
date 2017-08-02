@@ -1,7 +1,7 @@
 #define TRACE_MODULE _s1ap_send
 
 #include "core_debug.h"
-#include "core_lib.h"
+#include "core_param.h"
 
 #include "types.h"
 #include "s1ap_message.h"

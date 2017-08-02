@@ -391,26 +391,13 @@ status_t sgw_context_parse_config()
 
 status_t sgw_context_setup_trace_module()
 {
-    int context = context_self()->trace_level.context;
-    int sm = context_self()->trace_level.sm;
     int gtp = context_self()->trace_level.gtp;
-
-    if (context)
-    {
-        extern int _context;
-        d_trace_level(&_context, context);
-        extern int _sgw_context;
-        d_trace_level(&_sgw_context, context);
-    }
-
-    if (sm)
-    {
-        extern int _sgw_sm;
-        d_trace_level(&_sgw_sm, sm);
-    }
+    int others = context_self()->trace_level.others;
 
     if (gtp)
     {
+        extern int _sgw_sm;
+        d_trace_level(&_sgw_sm, gtp);
         extern int _sgw_handler;
         d_trace_level(&_sgw_handler, gtp);
         extern int _gtp_path;
@@ -421,6 +408,14 @@ status_t sgw_context_setup_trace_module()
         d_trace_level(&_tlv_msg, gtp);
         extern int _gtp_xact;
         d_trace_level(&_gtp_xact, gtp);
+    }
+
+    if (others)
+    {
+        extern int _context;
+        d_trace_level(&_context, others);
+        extern int _sgw_context;
+        d_trace_level(&_sgw_context, others);
     }
 
     return CORE_OK;

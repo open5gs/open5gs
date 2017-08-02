@@ -114,7 +114,8 @@ void mme_state_operational(fsm_t *s, event_t *e)
             enb = mme_enb_find(index);
             if (enb)
             {
-                d_info("eNB-S1[%x] connection refused!!!", enb->enb_id);
+                d_trace(1, "eNB-S1[%x] connection refused!!!\n", 
+                        enb->enb_id);
                 mme_enb_remove(enb);
             }
             else

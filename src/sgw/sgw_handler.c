@@ -85,8 +85,8 @@ void sgw_handle_create_session_request(
     d_assert(sgw_s5c_send_to_pgw(xact, type, 0, pkbuf) == CORE_OK, 
             return, "failed to send message");
 
-    d_info("[GTP] Create Session Reqeust : "
-            "SGW[%d] --> PGW", sess->sgw_s5c_teid);
+    d_trace(3, "[GTP] Create Session Reqeust : "
+            "SGW[%d] --> PGW\n", sess->sgw_s5c_teid);
 }
 
 void sgw_handle_create_session_response(gtp_xact_t *xact, 
@@ -174,8 +174,8 @@ void sgw_handle_create_session_response(gtp_xact_t *xact,
     d_assert(sgw_s11_send_to_mme(xact, GTP_CREATE_SESSION_RESPONSE_TYPE,
             sess->mme_s11_teid, pkbuf) == CORE_OK, return,
             "failed to send message");
-    d_info("[GTP] Create Session Response : "
-            "SGW[%d] <-- PGW[%d]", sess->sgw_s5c_teid, sess->pgw_s5c_teid);
+    d_trace(3, "[GTP] Create Session Response : "
+            "SGW[%d] <-- PGW[%d]\n", sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 }
 
 CORE_DECLARE(void) sgw_handle_modify_bearer_request(gtp_xact_t *xact,
@@ -235,8 +235,8 @@ CORE_DECLARE(void) sgw_handle_modify_bearer_request(gtp_xact_t *xact,
             sess->mme_s11_teid, pkbuf) == CORE_OK, return, 
             "failed to send message");
 
-    d_info("[GTP] Modify Bearer Reqeust : "
-            "MME[%d] --> SGW[%d]", sess->mme_s11_teid, sess->sgw_s11_teid);
+    d_trace(3, "[GTP] Modify Bearer Reqeust : "
+            "MME[%d] --> SGW[%d]\n", sess->mme_s11_teid, sess->sgw_s11_teid);
 }
 
 void sgw_handle_delete_session_request(gtp_xact_t *xact,
@@ -256,8 +256,8 @@ void sgw_handle_delete_session_request(gtp_xact_t *xact,
                 sess->pgw_s5c_teid, pkbuf) == CORE_OK, 
             return, "failed to send message");
 
-    d_info("[GTP] Delete Session Reqeust : "
-            "SGW[%d] --> PGW[%d]", sess->sgw_s5c_teid, sess->pgw_s5c_teid);
+    d_trace(3, "[GTP] Delete Session Reqeust : "
+            "SGW[%d] --> PGW[%d]\n", sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 }
 
 void sgw_handle_delete_session_response(gtp_xact_t *xact,
@@ -287,8 +287,8 @@ void sgw_handle_delete_session_response(gtp_xact_t *xact,
     /* Remove a pgw session */
     if (sess)
     {
-        d_info("[GTP] Delete Session Response : "
-            "SGW[%d] --> PGW[%d]", sess->sgw_s5c_teid, sess->pgw_s5c_teid);
+        d_trace(3, "[GTP] Delete Session Response : "
+            "SGW[%d] --> PGW[%d]\n", sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
         /* backup sgw_s5c_teid in session context */
         mme_s11_teid = sess->mme_s11_teid;
@@ -344,6 +344,6 @@ void sgw_handle_release_access_bearers_request(gtp_xact_t *xact,
             sess->mme_s11_teid, pkbuf) == CORE_OK, return, 
             "failed to send message");
 
-    d_info("[GTP] Release Access Bearers Reqeust : "
-            "MME[%d] --> SGW[%d]", sess->mme_s11_teid, sess->sgw_s11_teid);
+    d_trace(3, "[GTP] Release Access Bearers Reqeust : "
+            "MME[%d] --> SGW[%d]\n", sess->mme_s11_teid, sess->sgw_s11_teid);
 }

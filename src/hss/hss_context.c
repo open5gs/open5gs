@@ -282,16 +282,8 @@ status_t hss_context_parse_config()
 
 status_t hss_context_setup_trace_module()
 {
-    int context = context_self()->trace_level.context;
     int s6a = context_self()->trace_level.s6a;
-
-    if (context)
-    {
-        extern int _context;
-        d_trace_level(&_context, context);
-        extern int _hss_context;
-        d_trace_level(&_hss_context, context);
-    }
+    int others = context_self()->trace_level.others;
 
     if (s6a)
     {
@@ -301,6 +293,16 @@ status_t hss_context_setup_trace_module()
         d_trace_level(&_s6a, s6a);
         extern int _s6a_init;
         d_trace_level(&_s6a_init, s6a);
+        extern int _s6a_debug;
+        d_trace_level(&_s6a_debug, s6a);
+    }
+
+    if (others)
+    {
+        extern int _context;
+        d_trace_level(&_context, others);
+        extern int _hss_context;
+        d_trace_level(&_hss_context, others);
     }
 
     return CORE_OK;

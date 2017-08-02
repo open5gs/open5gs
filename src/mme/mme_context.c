@@ -780,35 +780,18 @@ status_t mme_context_parse_config()
 
 status_t mme_context_setup_trace_module()
 {
-    int context = context_self()->trace_level.context;
-    int sm = context_self()->trace_level.sm;
     int s1ap = context_self()->trace_level.s1ap;
     int nas = context_self()->trace_level.nas;
     int s6a = context_self()->trace_level.s6a;
     int gtp = context_self()->trace_level.gtp;
-
-    if (context)
-    {
-        extern int _context;
-        d_trace_level(&_context, context);
-        extern int _mme_context;
-        d_trace_level(&_mme_context, context);
-    }
-
-    if (sm)
-    {
-        extern int _mme_sm;
-        d_trace_level(&_mme_sm, sm);
-        extern int _s1ap_sm;
-        d_trace_level(&_s1ap_sm, sm);
-        extern int _emm_sm;
-        d_trace_level(&_emm_sm, sm);
-        extern int _esm_sm;
-        d_trace_level(&_esm_sm, sm);
-    }
+    int others = context_self()->trace_level.others;
 
     if (s1ap)
     {
+        extern int _s1ap_sm;
+        d_trace_level(&_s1ap_sm, s1ap);
+        extern int _s1ap_build;
+        d_trace_level(&_s1ap_build, s1ap);
         extern int _s1ap_handler;
         d_trace_level(&_s1ap_handler, s1ap);
         extern int _s1ap_path;
@@ -825,6 +808,10 @@ status_t mme_context_setup_trace_module()
 
     if (nas)
     {
+        extern int _emm_sm;
+        d_trace_level(&_emm_sm, nas);
+        extern int _esm_sm;
+        d_trace_level(&_esm_sm, nas);
         extern int _emm_handler;
         d_trace_level(&_emm_handler, nas);
         extern int _esm_handler;
@@ -845,6 +832,8 @@ status_t mme_context_setup_trace_module()
         d_trace_level(&_s6a, s6a);
         extern int _s6a_init;
         d_trace_level(&_s6a_init, s6a);
+        extern int _s6a_debug;
+        d_trace_level(&_s6a_debug, s6a);
     }
 
     if (gtp)
@@ -859,6 +848,16 @@ status_t mme_context_setup_trace_module()
         d_trace_level(&_tlv_msg, gtp);
         extern int _gtp_xact;
         d_trace_level(&_gtp_xact, gtp);
+    }
+
+    if (others)
+    {
+        extern int _context;
+        d_trace_level(&_context, others);
+        extern int _mme_context;
+        d_trace_level(&_mme_context, others);
+        extern int _mme_sm;
+        d_trace_level(&_mme_sm, others);
     }
 
     return CORE_OK;

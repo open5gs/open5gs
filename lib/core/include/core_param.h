@@ -16,6 +16,7 @@
 
 #define MAX_SIG_DESC_SIZE       256
 
+#define HUGE_STRING_LEN         8192
 #define MAX_FILEPATH_LEN        256
 #define MAX_ERROR_STRING_LEN    1024
 

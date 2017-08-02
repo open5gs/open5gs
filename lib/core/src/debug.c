@@ -254,7 +254,7 @@ void d_trace_off(int *mod_name)
 
 int d_msg(int tp, int lv, c_time_t t, char *fn, int ln, char *fmt, ...)
 {
-    char str[384] = {0}, fstr[512] = {0}, *ac_str;
+    char str[384] = {0}, fstr[HUGE_STRING_LEN] = {0}, *ac_str;
     time_exp_t te;
     size_t n;
     char *lv_str[5] = {"NONE", "FATL", "ERRR", "WARN", "INFO"};

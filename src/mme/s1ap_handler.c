@@ -153,7 +153,7 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
     }
 #endif
     d_assert(enb->s1ap_sock, return,);
-    d_info("[S1AP] S1SetupRequest : eNB[%s:%d] --> MME",
+    d_trace(1, "[S1AP] S1SetupRequest : eNB[%s:%d] --> MME\n",
         INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
         enb_id);
 
@@ -164,7 +164,7 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
     d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK, , "send error");
 
     d_assert(enb->s1ap_sock, return,);
-    d_info("[S1AP] S1SetupResponse: eNB[%s:%d] <-- MME",
+    d_trace(1, "[S1AP] S1SetupResponse: eNB[%s:%d] <-- MME\n",
         INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
         enb_id);
 }
@@ -251,7 +251,8 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
     enb_ue->e_cgi.cell_id = (ntohl(enb_ue->e_cgi.cell_id) >> 4);
 
     d_assert(enb->s1ap_sock, enb_ue_remove(enb_ue); return,);
-    d_info("[S1AP] InitialUEMessage : UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]",
+    d_trace(3, "[S1AP] InitialUEMessage : "
+            "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
         enb_ue->enb_ue_s1ap_id,
         INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
         enb->enb_id);
@@ -273,7 +274,8 @@ void s1ap_handle_uplink_nas_transport(
     enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
     d_assert(enb_ue, return, "Null param");
 
-    d_info("[S1AP] uplinkNASTransport : UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]",
+    d_trace(3, "[S1AP] uplinkNASTransport : "
+            "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
         enb_ue->enb_ue_s1ap_id,
         INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
         enb->enb_id);
@@ -295,8 +297,8 @@ void s1ap_handle_ue_capability_info_indication(
     enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
     d_assert(enb_ue, return, "No UE Context[%d]", ies->eNB_UE_S1AP_ID);
 
-    d_info("[S1AP] UE Capability Info Indication : "
-            "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]",
+    d_trace(3, "[S1AP] UE Capability Info Indication : "
+            "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
             enb_ue->enb_ue_s1ap_id,
         INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
         enb->enb_id);
@@ -317,8 +319,8 @@ void s1ap_handle_initial_context_setup_response(
     enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
     d_assert(enb_ue, return, "No UE Context[%d]", ies->eNB_UE_S1AP_ID);
 
-    d_info("[S1AP] Initial Context Setup Response : "
-            "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]",
+    d_trace(3, "[S1AP] Initial Context Setup Response : "
+            "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
             enb_ue->enb_ue_s1ap_id,
         INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
         enb->enb_id);
@@ -366,8 +368,8 @@ void s1ap_handle_ue_context_release_request(
     enb_ue = enb_ue_find_by_mme_ue_s1ap_id(ies->mme_ue_s1ap_id);
     d_assert(enb_ue, return, "No UE Context[%d]", ies->mme_ue_s1ap_id);
 
-    d_info("[S1AP] UE Context Release Request : "
-            "UE[mME-UE-S1AP-ID(%d)] --> eNB[%s:%d]",
+    d_trace(3, "[S1AP] UE Context Release Request : "
+            "UE[mME-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
             enb_ue->mme_ue_s1ap_id,
         INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
         enb->enb_id);
@@ -492,8 +494,8 @@ void s1ap_handle_ue_context_release_complete(
     enb_ue = enb_ue_find_by_mme_ue_s1ap_id(ies->mme_ue_s1ap_id);
     d_assert(enb_ue, return, "No UE Context[%d]", ies->mme_ue_s1ap_id);
 
-    d_info("[S1AP] UE Context Release Complete : "
-            "UE[mME-UE-S1AP-ID(%d)] --> eNB[%s:%d]",
+    d_trace(3, "[S1AP] UE Context Release Complete : "
+            "UE[mME-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
             enb_ue->mme_ue_s1ap_id,
         INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
         enb->enb_id);
