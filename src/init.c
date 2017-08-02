@@ -13,8 +13,8 @@
 #include "app.h"
 
 static proc_id logger_proc;
-static semaphore_id logger_sem;
-static void *PROC_FUNC logger_main(proc_id id, void *data);
+static void *PROC_FUNC logger_start_func(proc_id id, void *data);
+static void *PROC_FUNC logger_stop_func(proc_id id, void *data);
 static void check_signal(int signum);
 
 status_t app_will_initialize(char *config_path, char *log_path)
@@ -41,9 +41,8 @@ status_t app_will_initialize(char *config_path, char *log_path)
 
     if (context_self()->log_path)
     {
-        d_assert(semaphore_create(&logger_sem, 0) == CORE_OK, 
-                return CORE_ERROR, "semaphore_create() failed");
-        rv = proc_create(&logger_proc, logger_main, context_self()->log_path);
+        rv = proc_create(&logger_proc,
+                logger_start_func, logger_stop_func, context_self()->log_path);
         if (rv != CORE_OK) return rv;
     }
 
@@ -69,15 +68,13 @@ void app_did_terminate(void)
 {
     if (context_self()->log_path)
     {
-        d_assert(semaphore_post(logger_sem) == CORE_OK,,
-                "semaphore_post() failed");
         proc_delete(logger_proc);
     }
 
     context_final();
 }
 
-static void *PROC_FUNC logger_main(proc_id id, void *data)
+static void *PROC_FUNC logger_start_func(proc_id id, void *data)
 {
     status_t rv;
     char *path = data;
@@ -93,11 +90,11 @@ static void *PROC_FUNC logger_main(proc_id id, void *data)
     rv = logger_start(path);
     if (rv != CORE_OK) return NULL;
 
-    d_assert(semaphore_wait(logger_sem) == CORE_OK, return NULL,
-            "semaphore_wait() failed");
-    d_assert(semaphore_delete(logger_sem) == CORE_OK, return NULL,
-            "semaphore_delete() failed");
+    return NULL;
+}
 
+static void *PROC_FUNC logger_stop_func(proc_id id, void *data)
+{
     d_trace(1, "LOGGER terminate...done\n");
 
     return NULL;

@@ -7,10 +7,12 @@
 typedef struct _proc_t {
     pid_t proc;
     void *data;
-    proc_start_t func;
+    proc_func_t start_func;
+    proc_func_t stop_func;
     status_t exitval;
 
-    semaphore_id semaphore;
+    semaphore_id sem1;
+    semaphore_id sem2;
 } proc_t;
 
 #endif  /* __CORE_ARCH_PROC_H__ */

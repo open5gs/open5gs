@@ -11,12 +11,7 @@ extern "C" {
 /** Opaque Thread structure. */
 typedef c_uintptr_t proc_id;
 
-typedef void *(PROC_FUNC *proc_start_t)(proc_id id, void*);
-
-/**
- * Check if Thread Should Stop
- */
-CORE_DECLARE(int) proc_should_stop(void);
+typedef void *(PROC_FUNC *proc_func_t)(proc_id id, void*);
 
 /**
  * Initialize Thread
@@ -30,12 +25,10 @@ CORE_DECLARE(status_t) proc_final(void);
 
 /**
  * Create a new proc of execution
- * @param id The newly created proc handle.
- * @param attr The procattr to use to determine how to create the proc
- * @param func The function to start the new proc in
- * @param data Any data to be passed to the starting function
  */
-CORE_DECLARE(status_t) proc_create(proc_id *id, proc_start_t func, void *data);
+CORE_DECLARE(status_t) proc_create(proc_id *id, 
+        proc_func_t start_func, proc_func_t stop_func,
+        void *data);
 
 /**
  * Delete a new proc of execution

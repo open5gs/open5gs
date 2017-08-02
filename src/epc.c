@@ -9,16 +9,16 @@
 #include "app.h"
 
 static proc_id pgw_proc;
-static semaphore_id pgw_sem;
-static void *PROC_FUNC pgw_main(proc_id id, void *data);
+static void *PROC_FUNC pgw_start_func(proc_id id, void *data);
+static void *PROC_FUNC pgw_stop_func(proc_id id, void *data);
 
 static proc_id sgw_proc;
-static semaphore_id sgw_sem;
-static void *PROC_FUNC sgw_main(proc_id id, void *data);
+static void *PROC_FUNC sgw_start_func(proc_id id, void *data);
+static void *PROC_FUNC sgw_stop_func(proc_id id, void *data);
 
 static proc_id hss_proc;
-static semaphore_id hss_sem;
-static void *PROC_FUNC hss_main(proc_id id, void *data);
+static void *PROC_FUNC hss_start_func(proc_id id, void *data);
+static void *PROC_FUNC hss_stop_func(proc_id id, void *data);
 
 status_t app_initialize(char *config_path, char *log_path)
 {
@@ -34,19 +34,13 @@ status_t app_initialize(char *config_path, char *log_path)
         d_trace_level(&_epc_main, others);
     }
 
-    d_assert(semaphore_create(&pgw_sem, 0) == CORE_OK, 
-            return CORE_ERROR, "semaphore_create() failed");
-    rv = proc_create(&pgw_proc, pgw_main, NULL);
+    rv = proc_create(&pgw_proc, pgw_start_func, pgw_stop_func, NULL);
     if (rv != CORE_OK) return rv;
 
-    d_assert(semaphore_create(&sgw_sem, 0) == CORE_OK, 
-            return CORE_ERROR, "semaphore_create() failed");
-    rv = proc_create(&sgw_proc, sgw_main, NULL);
+    rv = proc_create(&sgw_proc, sgw_start_func, sgw_stop_func, NULL);
     if (rv != CORE_OK) return rv;
 
-    d_assert(semaphore_create(&hss_sem, 0) == CORE_OK, 
-            return CORE_ERROR, "semaphore_create() failed");
-    rv = proc_create(&hss_proc, hss_main, NULL);
+    rv = proc_create(&hss_proc, hss_start_func, hss_stop_func, NULL);
     if (rv != CORE_OK) return rv;
 
     d_trace(1, "MME try to initialize\n");
@@ -67,22 +61,14 @@ void app_terminate(void)
     mme_terminate();
     d_trace(1, "MME terminate...done\n");
 
-    d_assert(semaphore_post(hss_sem) == CORE_OK,,
-            "semaphore_post() failed");
     proc_delete(hss_proc);
-
-    d_assert(semaphore_post(sgw_sem) == CORE_OK,,
-            "semaphore_post() failed");
     proc_delete(sgw_proc);
-
-    d_assert(semaphore_post(pgw_sem) == CORE_OK,,
-            "semaphore_post() failed");
     proc_delete(pgw_proc);
 
     app_did_terminate();
 }
 
-static void *PROC_FUNC pgw_main(proc_id id, void *data)
+static void *PROC_FUNC pgw_start_func(proc_id id, void *data)
 {
     status_t rv;
 
@@ -91,11 +77,11 @@ static void *PROC_FUNC pgw_main(proc_id id, void *data)
     if (rv != CORE_OK) return NULL;
     d_trace(1, "PGW initialize...done\n");
 
-    d_assert(semaphore_wait(pgw_sem) == CORE_OK, return NULL,
-            "semaphore_wait() failed");
-    d_assert(semaphore_delete(pgw_sem) == CORE_OK, return NULL,
-            "semaphore_delete() failed");
+    return NULL;
+}
 
+static void *PROC_FUNC pgw_stop_func(proc_id id, void *data)
+{
     d_trace(1, "PGW try to terminate\n");
     pgw_terminate();
     d_trace(1, "PGW terminate...done\n");
@@ -103,7 +89,7 @@ static void *PROC_FUNC pgw_main(proc_id id, void *data)
     return NULL;
 }
 
-static void *PROC_FUNC sgw_main(proc_id id, void *data)
+static void *PROC_FUNC sgw_start_func(proc_id id, void *data)
 {
     status_t rv;
 
@@ -112,11 +98,11 @@ static void *PROC_FUNC sgw_main(proc_id id, void *data)
     if (rv != CORE_OK) return NULL;
     d_trace(1, "SGW initialize...done\n");
 
-    d_assert(semaphore_wait(sgw_sem) == CORE_OK, return NULL,
-            "semaphore_wait() failed");
-    d_assert(semaphore_delete(sgw_sem) == CORE_OK, return NULL,
-            "semaphore_delete() failed");
+    return NULL;
+}
 
+static void *PROC_FUNC sgw_stop_func(proc_id id, void *data)
+{
     d_trace(1, "SGW try to terminate\n");
     sgw_terminate();
     d_trace(1, "SGW terminate...done\n");
@@ -124,7 +110,7 @@ static void *PROC_FUNC sgw_main(proc_id id, void *data)
     return NULL;
 }
 
-static void *PROC_FUNC hss_main(proc_id id, void *data)
+static void *PROC_FUNC hss_start_func(proc_id id, void *data)
 {
     status_t rv;
 
@@ -133,11 +119,11 @@ static void *PROC_FUNC hss_main(proc_id id, void *data)
     if (rv != CORE_OK) return NULL;
     d_trace(1, "HSS initialize...done\n");
 
-    d_assert(semaphore_wait(hss_sem) == CORE_OK, return NULL,
-            "semaphore_wait() failed");
-    d_assert(semaphore_delete(hss_sem) == CORE_OK, return NULL,
-            "semaphore_delete() failed");
+    return NULL;
+}
 
+static void *PROC_FUNC hss_stop_func(proc_id id, void *data)
+{
     d_trace(1, "HSS try to terminate\n");
     hss_terminate();
     d_trace(1, "HSS terminate...done\n");
