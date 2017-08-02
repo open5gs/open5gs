@@ -137,8 +137,8 @@ status_t s1ap_build_downlink_nas_transport(
     d_assert(s1apbuf && encoded >= 0,return CORE_ERROR,);
     pkbuf_free(emmbuf);
 
-    d_info("[S1AP] downlinkNASTransport : "
-            "UE[eNB-UE-S1AP-ID(%d)] <-- eNB[%s:%d]",
+    d_trace(3, "[S1AP] downlinkNASTransport : "
+            "UE[eNB-UE-S1AP-ID(%d)] <-- eNB[%s:%d]\n",
             enb_ue->enb_ue_s1ap_id,
             INET_NTOP(&enb_ue->enb->s1ap_sock->remote.sin_addr.s_addr, buf),
             enb_ue->enb->enb_id);
@@ -252,8 +252,8 @@ status_t s1ap_build_initial_context_setup_request(
 
     d_assert(s1apbuf && encoded >= 0,return CORE_ERROR,);
 
-    d_info("[S1AP] Initial Context Setup Request : "
-            "UE[eNB-UE-S1AP-ID(%d)] <-- eNB[%s:%d]",
+    d_trace(3, "[S1AP] Initial Context Setup Request : "
+            "UE[eNB-UE-S1AP-ID(%d)] <-- eNB[%s:%d]\n",
             enb_ue->enb_ue_s1ap_id,
             INET_NTOP(&enb_ue->enb->s1ap_sock->remote.sin_addr.s_addr, buf),
             enb_ue->enb->enb_id);
@@ -333,8 +333,8 @@ status_t s1ap_build_ue_context_release_commmand(
 
     d_assert(s1apbuf && encoded >= 0, return CORE_ERROR,);
 
-    d_info("[S1AP] UE Context Release Command : "
-            "UE[mME-UE-S1AP-ID(%d)] <-- eNB[%s:%d]",
+    d_trace(3, "[S1AP] UE Context Release Command : "
+            "UE[mME-UE-S1AP-ID(%d)] <-- eNB[%s:%d]\n",
             enb_ue->mme_ue_s1ap_id,
             INET_NTOP(&enb_ue->enb->s1ap_sock->remote.sin_addr.s_addr, buf),
             enb_ue->enb->enb_id);

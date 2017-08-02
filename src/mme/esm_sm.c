@@ -12,7 +12,7 @@ void esm_state_initial(fsm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
 
-    mme_sm_trace(1, e);
+    mme_sm_trace(3, e);
 
     FSM_TRAN(s, &esm_state_operational);
 }
@@ -21,7 +21,7 @@ void esm_state_final(fsm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
 
-    mme_sm_trace(1, e);
+    mme_sm_trace(3, e);
 }
 
 void esm_state_operational(fsm_t *s, event_t *e)
@@ -29,7 +29,7 @@ void esm_state_operational(fsm_t *s, event_t *e)
     d_assert(s, return, "Null param");
     d_assert(e, return, "Null param");
 
-    mme_sm_trace(1, e);
+    mme_sm_trace(3, e);
 
     switch (event_get(e))
     {
@@ -58,8 +58,8 @@ void esm_state_operational(fsm_t *s, event_t *e)
             {
                 case S6A_CMD_UPDATE_LOCATION:
                 {
-                    d_info("[NAS] ESM information request : "
-                            "UE[%s] <--- ESM[%d]", 
+                    d_trace(3, "[NAS] ESM information request : "
+                            "UE[%s] <--- ESM[%d]\n", 
                             mme_ue->imsi_bcd, bearer->pti);
                     esm_handle_s6a_update_location(bearer);
                     break;
@@ -97,8 +97,8 @@ void esm_state_operational(fsm_t *s, event_t *e)
                 {
                     esm_handle_pdn_connectivity_request(
                             bearer, &message->esm.pdn_connectivity_request);
-                    d_info("[NAS] PDN connectivity request : "
-                            "UE[%s] --> ESM[%d]", 
+                    d_trace(3, "[NAS] PDN connectivity request : "
+                            "UE[%s] --> ESM[%d]\n", 
                             mme_ue->imsi_bcd, bearer->pti);
                     break;
                 }
@@ -107,8 +107,8 @@ void esm_state_operational(fsm_t *s, event_t *e)
                     /* FIXME : SGW Selection */
                     bearer->sgw = mme_sgw_first();
 
-                    d_info("[NAS] ESM information response : "
-                            "UE[%s] --> ESM[%d]", 
+                    d_trace(3, "[NAS] ESM information response : "
+                            "UE[%s] --> ESM[%d]\n", 
                             mme_ue->imsi_bcd, bearer->pti);
                     esm_handle_information_response(
                             bearer, &message->esm.esm_information_response);
@@ -116,8 +116,8 @@ void esm_state_operational(fsm_t *s, event_t *e)
                 }
                 case NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_ACCEPT:
                 {
-                    d_info("[NAS] Activate default eps bearer context accept : "
-                            "UE[%s] --> ESM[%d]", 
+                    d_trace(3, "[NAS] Activate default eps bearer "
+                            "context accept : UE[%s] --> ESM[%d]\n", 
                             mme_ue->imsi_bcd, bearer->pti);
                     break;
                 }
@@ -144,7 +144,7 @@ void esm_state_exception(fsm_t *s, event_t *e)
     d_assert(s, return, "Null param");
     d_assert(e, return, "Null param");
 
-    mme_sm_trace(1, e);
+    mme_sm_trace(3, e);
 
     switch (event_get(e))
     {

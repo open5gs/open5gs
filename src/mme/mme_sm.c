@@ -14,7 +14,7 @@
 
 void mme_state_initial(fsm_t *s, event_t *e)
 {
-    mme_sm_trace(1, e);
+    mme_sm_trace(3, e);
 
     d_assert(s, return, "Null param");
 
@@ -23,7 +23,7 @@ void mme_state_initial(fsm_t *s, event_t *e)
 
 void mme_state_final(fsm_t *s, event_t *e)
 {
-    mme_sm_trace(1, e);
+    mme_sm_trace(3, e);
 
     d_assert(s, return, "Null param");
 }
@@ -35,7 +35,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
     status_t rv;
     char buf[INET_ADDRSTRLEN];
 
-    mme_sm_trace(1, e);
+    mme_sm_trace(3, e);
 
     d_assert(s, return, "Null param");
 
@@ -114,7 +114,8 @@ void mme_state_operational(fsm_t *s, event_t *e)
             enb = mme_enb_find(index);
             if (enb)
             {
-                d_info("eNB-S1[%x] connection refused!!!", enb->enb_id);
+                d_trace(1, "eNB-S1[%x] connection refused!!!\n", 
+                        enb->enb_id);
                 mme_enb_remove(enb);
             }
             else

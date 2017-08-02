@@ -1,7 +1,7 @@
 #define TRACE_MODULE _s1ap_recv
 
 #include "core_debug.h"
-#include "core_lib.h"
+#include "core_param.h"
 #include "s1ap_message.h"
 
 static int s1ap_decode_initiating(s1ap_message_t *message,

@@ -74,8 +74,8 @@ void mme_s11_handle_create_session_response(
     bearer->sgw_s1u_teid = ntohl(sgw_s1u_teid->teid);
     bearer->sgw_s1u_addr = sgw_s1u_teid->ipv4_addr;
 
-    d_info("[GTP] Create Session Response : "
-            "MME[%d] <-- SGW[%d]", sess->mme_s11_teid, sess->sgw_s11_teid);
+    d_trace(3, "[GTP] Create Session Response : "
+            "MME[%d] <-- SGW[%d]\n", sess->mme_s11_teid, sess->sgw_s11_teid);
 
     event_set(&e, MME_EVT_EMM_BEARER_FROM_S11);
     event_set_param1(&e, (c_uintptr_t)bearer->index);
@@ -116,8 +116,8 @@ void mme_s11_handle_delete_session_response(
         return;
     }
 
-    d_info("[GTP] Delete Session Response : "
-            "MME[%d] <-- SGW[%d]", sess->mme_s11_teid, sess->sgw_s11_teid);
+    d_trace(3, "[GTP] Delete Session Response : "
+            "MME[%d] <-- SGW[%d]\n", sess->mme_s11_teid, sess->sgw_s11_teid);
 
     event_set(&e, MME_EVT_EMM_BEARER_FROM_S11);
     event_set_param1(&e, (c_uintptr_t)bearer->index);
@@ -149,8 +149,8 @@ void mme_s11_handle_release_access_bearers_response(
         return;
     }
 
-    d_info("[GTP] Release Access Bearers Response : "
-            "MME[%d] <-- SGW[%d]", sess->mme_s11_teid, sess->sgw_s11_teid);
+    d_trace(3, "[GTP] Release Access Bearers Response : "
+            "MME[%d] <-- SGW[%d]\n", sess->mme_s11_teid, sess->sgw_s11_teid);
 
     event_set(&e, MME_EVT_S1AP_UE_FROM_S11);
     event_set_param1(&e, (c_uintptr_t)enb->index);

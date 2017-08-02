@@ -47,7 +47,7 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     mme_ue = mi->mme_ue;
     d_assert(mme_ue, error++; goto out,);
 
-    d_info("[S6A] Authentication-Information-Response : UE[%s] <-- HSS", 
+    d_trace(3, "[S6A] Authentication-Information-Response : UE[%s] <-- HSS\n", 
             mme_ue->imsi_bcd);
     
     /* Value of Result Code */
@@ -237,7 +237,7 @@ int mme_s6a_send_air(mme_ue_t *mme_ue)
     s6a_config->stats.nb_sent++;
     d_assert(pthread_mutex_unlock(&s6a_config->stats_lock) == 0,, );
 
-    d_info("[S6A] Authentication-Information-Request : UE[%s] --> HSS", 
+    d_trace(3, "[S6A] Authentication-Information-Request : UE[%s] --> HSS\n", 
             mme_ue->imsi_bcd);
 
     return 0;
@@ -278,7 +278,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     mme_ue = mi->mme_ue;
     d_assert(mme_ue, error++; goto out,);
 
-    d_info("[S6A] Update-Location-Response : UE[%s] <-- HSS", 
+    d_trace(3, "[S6A] Update-Location-Response : UE[%s] <-- HSS\n", 
             mme_ue->imsi_bcd);
     
     /* Value of Result Code */
@@ -557,7 +557,7 @@ int mme_s6a_send_ulr(mme_ue_t *mme_ue)
     s6a_config->stats.nb_sent++;
     d_assert(pthread_mutex_unlock(&s6a_config->stats_lock) == 0,, );
 
-    d_info("[S6A] Update-Location-Request : UE[%s] --> HSS", 
+    d_trace(3, "[S6A] Update-Location-Request : UE[%s] --> HSS\n", 
             mme_ue->imsi_bcd);
 
     return 0;
@@ -605,7 +605,7 @@ void mme_s6a_final(void)
 {
 	d_assert(fd_sess_handler_destroy(&mme_s6a_reg, NULL) == 0,,);
 
-    d_print("%d not freed in sess_state_pool[%d] of S6A-SM\n",
+    d_trace(1, "%d not freed in sess_state_pool[%d] of S6A-SM\n",
             pool_size(&sess_state_pool) - pool_avail(&sess_state_pool),
             pool_size(&sess_state_pool));
 

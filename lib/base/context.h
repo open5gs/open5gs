@@ -31,12 +31,11 @@ typedef struct _context_t {
     void *database;
 
     struct {
-        int context;
-        int sm;
         int s1ap;
         int nas;
         int gtp;
         int s6a;
+        int others;
     } trace_level;
 } context_t;
 

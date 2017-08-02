@@ -124,7 +124,7 @@ void emm_handle_attach_request(
                 imsi_bcd);
             mme_ue_set_imsi(mme_ue, imsi_bcd);
 
-            d_info("[NAS] Attach request : IMSI[%s] --> EMM", imsi_bcd);
+            d_trace(3, "[NAS] Attach request : IMSI[%s] --> EMM\n", imsi_bcd);
 
             if (SECURITY_CONTEXT_IS_VALID(mme_ue))
             {
@@ -183,8 +183,8 @@ void emm_handle_attach_request(
             guti.mme_code = nas_guti->mme_code;
             guti.m_tmsi = nas_guti->m_tmsi;
 
-            d_info("[NAS] Attach request : GUTI[G:%d,C:%d,M_TMSI:0x%x]-"
-                    "IMSI:[%s] --> EMM", 
+            d_trace(3, "[NAS] Attach request : GUTI[G:%d,C:%d,M_TMSI:0x%x]-"
+                    "IMSI:[%s] --> EMM\n", 
                     guti.mme_gid,
                     guti.mme_code,
                     guti.m_tmsi,
@@ -350,6 +350,9 @@ void emm_handle_authentication_request(mme_ue_t *mme_ue)
     enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return, "Null param");
 
+    d_trace(3, "[NAS] Authentication request : UE[%s] <-- EMM\n",
+             mme_ue->imsi_bcd);
+
     memset(&message, 0, sizeof(message));
     message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
     message.emm.h.message_type = NAS_AUTHENTICATION_REQUEST;
@@ -403,7 +406,7 @@ void emm_handle_authentication_response(mme_ue_t *mme_ue,
         return;
     }
 
-    d_info("[NAS] Authentication response : UE[%s] --> EMM", 
+    d_trace(3, "[NAS] Authentication response : UE[%s] --> EMM\n", 
             mme_ue->imsi_bcd);
 
     memset(&message, 0, sizeof(message));
@@ -460,7 +463,7 @@ void emm_handle_authentication_response(mme_ue_t *mme_ue,
     mme_kdf_nas(MME_KDF_NAS_ENC_ALG, mme_ue->selected_enc_algorithm,
             mme_ue->kasme, mme_ue->knas_enc);
 
-    d_info("[NAS] Security mode command : UE[%s] <-- EMM", 
+    d_trace(3, "[NAS] Security mode command : UE[%s] <-- EMM\n", 
             mme_ue->imsi_bcd);
 
     rv = nas_security_encode(&emmbuf, mme_ue, &message);
@@ -490,14 +493,14 @@ void emm_handle_create_session_response(mme_bearer_t *bearer)
     d_assert(rv == CORE_OK && esmbuf, 
             return, "bearer build error");
 
-    d_info("[NAS] Activate default bearer context request : EMM <-- ESM[%d]",
-            bearer->ebi);
+    d_trace(3, "[NAS] Activate default bearer context request : "
+            "EMM <-- ESM[%d]\n", bearer->ebi);
 
     rv = emm_build_attach_accept(&emmbuf, mme_ue, esmbuf);
     d_assert(rv == CORE_OK && emmbuf, 
             pkbuf_free(esmbuf); return, "emm build error");
 
-    d_info("[NAS] Attach accept : UE[%s] <-- EMM", mme_ue->imsi_bcd);
+    d_trace(3, "[NAS] Attach accept : UE[%s] <-- EMM\n", mme_ue->imsi_bcd);
 
     rv = s1ap_build_initial_context_setup_request(&s1apbuf, bearer, emmbuf);
     d_assert(rv == CORE_OK && s1apbuf, 
@@ -575,7 +578,7 @@ void emm_handle_attach_complete(
         NAS_EMM_INFORMATION_NETWORK_DAYLIGHT_SAVING_TIME_PRESENT;
     network_daylight_saving_time->length = 1;
 
-    d_info("[NAS] EMM information : UE[%s] <-- EMM", 
+    d_trace(3, "[NAS] EMM information : UE[%s] <-- EMM\n", 
             mme_ue->imsi_bcd);
 
     rv = nas_security_encode(&emmbuf, mme_ue, &message);
@@ -610,7 +613,8 @@ void emm_handle_detach_request(
     enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return, "Null param");
 
-    d_info("[NAS] Detach request : UE_IMSI[%s] --> EMM", mme_ue->imsi_bcd);
+    d_trace(3, "[NAS] Detach request : UE_IMSI[%s] --> EMM\n", 
+            mme_ue->imsi_bcd);
 
     switch (detach_type->detach_type)
     {
@@ -674,7 +678,7 @@ void emm_handle_detach_accept(
         message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
         message.emm.h.message_type = NAS_DETACH_ACCEPT;
 
-        d_info("[NAS] Detach accept : UE[%s] <-- EMM", 
+        d_trace(3, "[NAS] Detach accept : UE[%s] <-- EMM\n", 
             mme_ue->imsi_bcd);
 
         rv = nas_security_encode(&emmbuf, mme_ue, &message);
@@ -733,7 +737,7 @@ void emm_handle_delete_session_response(mme_bearer_t *bearer)
     sess = mme_sess_find_by_ebi(mme_ue, bearer->ebi);
     mme_sess_remove(sess);
 
-    d_info("[NAS] Delete Session Response : UE[%s] <-- EMM[%d]",
+    d_trace(3, "[NAS] Delete Session Response : UE[%s] <-- EMM[%d]\n",
             mme_ue->imsi_bcd, message->emm.h.message_type);
 
     switch(message->emm.h.message_type)

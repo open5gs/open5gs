@@ -4,6 +4,7 @@
 
 /* Core library */
 #define TRACE_MODULE _main_
+#include "core_general.h"
 #include "core_debug.h"
 #include "core_signal.h"
 
@@ -116,10 +117,12 @@ int main(int argc, char *argv[])
     show_version();
     d_print("\n");
 
+    core_initialize();
     if (app_initialize(config_path, log_path) != CORE_OK)
     {
         d_fatal("NextEPC initialization failed. Aborted");
         app_terminate();
+        core_terminate();
         return EXIT_FAILURE;
     }
 
@@ -130,6 +133,7 @@ int main(int argc, char *argv[])
     d_info("NextEPC daemon terminating...");
 
     app_terminate();
+    core_terminate();
 
     return EXIT_SUCCESS;
 }

@@ -14,7 +14,7 @@ void emm_state_initial(fsm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
 
-    mme_sm_trace(1, e);
+    mme_sm_trace(3, e);
 
     FSM_TRAN(s, &emm_state_operational);
 }
@@ -23,7 +23,7 @@ void emm_state_final(fsm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
 
-    mme_sm_trace(1, e);
+    mme_sm_trace(3, e);
 }
 
 void emm_state_operational(fsm_t *s, event_t *e)
@@ -31,7 +31,7 @@ void emm_state_operational(fsm_t *s, event_t *e)
     d_assert(s, return, "Null param");
     d_assert(e, return, "Null param");
 
-    mme_sm_trace(1, e);
+    mme_sm_trace(3, e);
 
     switch (event_get(e))
     {
@@ -78,8 +78,6 @@ void emm_state_operational(fsm_t *s, event_t *e)
             {
                 case S6A_CMD_AUTHENTICATION_INFORMATION:
                 {
-                    d_info("[NAS] Authentication request : UE[%s] <-- EMM",
-                             mme_ue->imsi_bcd);
                     emm_handle_authentication_request(mme_ue);
                     break;
                 }
@@ -107,8 +105,8 @@ void emm_state_operational(fsm_t *s, event_t *e)
                 }
                 case GTP_MODIFY_BEARER_RESPONSE_TYPE:
                 {
-                    d_info("[GTP] Modify Bearer Response : "
-                            "MME <-- SGW");
+                    d_trace(3, "[GTP] Modify Bearer Response : "
+                            "MME <-- SGW\n");
                     break;
                 }
             }
@@ -160,8 +158,8 @@ void emm_state_operational(fsm_t *s, event_t *e)
                 }
                 case NAS_SECURITY_MODE_COMPLETE:
                 {
-                    d_info("[NAS] Security mode complete : UE[%s] --> EMM",
-                            mme_ue->imsi_bcd);
+                    d_trace(3, "[NAS] Security mode complete : "
+                            "UE[%s] --> EMM\n", mme_ue->imsi_bcd);
 
                     /* Update Kenb */
                     if (SECURITY_CONTEXT_IS_VALID(mme_ue))
@@ -173,7 +171,7 @@ void emm_state_operational(fsm_t *s, event_t *e)
                 }
                 case NAS_ATTACH_COMPLETE:
                 {
-                    d_info("[NAS] Attach complete : UE[%s] --> EMM",
+                    d_trace(3, "[NAS] Attach complete : UE[%s] --> EMM\n",
                             mme_ue->imsi_bcd);
                     emm_handle_attach_complete(
                             mme_ue, &message->emm.attach_complete);
@@ -223,7 +221,7 @@ void emm_state_exception(fsm_t *s, event_t *e)
     d_assert(s, return, "Null param");
     d_assert(e, return, "Null param");
 
-    mme_sm_trace(1, e);
+    mme_sm_trace(3, e);
 
     switch (event_get(e))
     {

@@ -141,15 +141,7 @@ status_t context_parse_config()
                         n += (t+m)->size;
 
                         char *v = jsmntok_to_string(json, t+m+1);
-                        if (jsmntok_equal(json, t+m, "CONTEXT") == 0)
-                        {
-                            if (v) self.trace_level.context = atoi(v);
-                        }
-                        else if (jsmntok_equal(json, t+m, "SM") == 0)
-                        {
-                            if (v) self.trace_level.sm  = atoi(v);
-                        }
-                        else if (jsmntok_equal(json, t+m, "S1AP") == 0)
+                        if (jsmntok_equal(json, t+m, "S1AP") == 0)
                         {
                             if (v) self.trace_level.s1ap = atoi(v);
                         }
@@ -164,6 +156,10 @@ status_t context_parse_config()
                         else if (jsmntok_equal(json, t+m, "GTP") == 0)
                         {
                             if (v) self.trace_level.gtp = atoi(v);
+                        }
+                        else if (jsmntok_equal(json, t+m, "OTHERS") == 0)
+                        {
+                            if (v) self.trace_level.others = atoi(v);
                         }
                     }
                 }

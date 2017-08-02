@@ -3,12 +3,11 @@
   LOG_PATH : "@prefix@/var/log/nextepc.log",
   TRACE:
   {
-    CONTEXT: 1,
-    SM: 1,
     S1AP: 1,
     NAS: 1,
     S6A: 1,
     GTP: 1,
+    OTHERS: 1,
   }
 
   HSS :

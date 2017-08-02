@@ -8,7 +8,7 @@ libs6a_la_SOURCES = \
 	s6a_lib.h
 
 nodist_libs6a_la_SOURCES = \
-	s6a_init.c s6a_fd.c s6a_config.c s6a_dict.c
+	s6a_init.c s6a_fd.c s6a_config.c s6a_hook.c s6a_dict.c
 
 libs6a_la_DEPENDENCIES = \
     $(top_srcdir)/lib/base/libbase.la \

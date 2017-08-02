@@ -1,6 +1,5 @@
 #define TRACE_MODULE _app
 
-#include "core_general.h"
 #include "core_debug.h"
 #include "core_thread.h"
 #include "core_net.h"
@@ -20,7 +19,9 @@ status_t app_will_initialize(char *config_path, char *log_path)
 {
     status_t rv;
 
+#if 0
     core_initialize();
+#endif
     context_init();
 
     rv = context_read_file(config_path);
@@ -68,7 +69,9 @@ void app_will_terminate(void)
 void app_did_terminate(void)
 {
     context_final();
+#if 0
     core_terminate();
+#endif
 }
 
 void *THREAD_FUNC net_main(thread_id id, void *data)
