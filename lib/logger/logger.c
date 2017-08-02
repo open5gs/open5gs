@@ -22,27 +22,6 @@ static file_t *g_file = NULL;
 
 static int request_stop = 0;
 
-void check_signal(int signum)
-{
-    switch (signum)
-    {
-        case SIGTERM:
-        case SIGINT:
-        {
-            d_info("%s received", 
-                    signum == SIGTERM ? "SIGTERM" : "SIGINT");
-
-            logger_stop();
-            break;
-        }
-        default:
-        {
-            d_error("Unknown signal number = %d\n", signum);
-            break;
-        }
-    }
-}
-
 status_t log_file_backup()
 {
     status_t rv;
@@ -110,7 +89,7 @@ status_t log_file_backup()
     return CORE_OK;
 }
 
-int logger_start_internal(const char *path)
+int logger_start(const char *path)
 {
     status_t rv;
     int ret, count = 0;
@@ -237,38 +216,6 @@ int logger_start_internal(const char *path)
     close(us);
 
     return 0;
-}
-
-int logger_start(const char *path)
-{
-    pid_t pid;
-    int ret;
-    pid = fork();
-
-    d_assert(pid >= 0, _exit(EXIT_FAILURE), "fork() failed");
-
-    if (pid == 0)
-    {
-
-        /* Child */
-        umask(027);
-
-        signal_unblock(SIGINT);
-        signal_unblock(SIGTERM);
-        core_signal(SIGINT, check_signal);
-        core_signal(SIGTERM, check_signal);
-
-        d_print("  Logging '%s'\n", path);
-        ret = logger_start_internal(path);
-        d_assert(ret == 0, _exit(EXIT_FAILURE), 
-                "logger_start() failed\n"
-                "You may need root privileges.");
-
-        _exit(EXIT_SUCCESS);
-    }
-
-    /* Parent */
-    return pid;
 }
 
 void logger_stop()
