@@ -622,8 +622,8 @@ static void nas_sm_test3(abts_case *tc, void *data)
     char *_initial_context_setup_request =
         "00090080c8000006 00000005c0020000 c800080002000200 42000a183e800000"
         "603e800000001800 7700003400724540 0920000000000000 00000f800a0123d8"
-        "000000015b27ac42 a95d020742024906 4000f1102b670032 5201c10509ffffff"
-        "ff0908696e746572 6e657405012d2d2d 015e060000000004 04270f80000d0408"
+        "000000035b27a23a 27b4020742024906 4000f1102b670032 5201c10509ffffff"
+        "ff0908696e746572 6e657405012d2d2d 035e060000000004 04270f80000d0408"
         "080808000d040404 0404500bf600f110 0002010000000353 12172c5949640125"
         "006b00051e000e00 000049002040964d eb63a0afb5d0d374 c1da505f6252d1f9"
         "05ff9c6791b8503a 032c6effa7";
@@ -891,10 +891,8 @@ abts_suite *test_nas_sm(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
-#if 0
     abts_run_test(suite, nas_sm_test1, NULL);
     abts_run_test(suite, nas_sm_test2, NULL);
-#endif
     abts_run_test(suite, nas_sm_test3, NULL);
 
     return suite;
