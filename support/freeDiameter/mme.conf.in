@@ -252,7 +252,7 @@ TLS_CA = "@prefix@/etc/freeDiameter/cacert.pem";
 # Examples:
 #ConnectPeer = "aaa.wide.ad.jp";
 #ConnectPeer = "old.diameter.serv" { TcTimer = 60; TLS_old_method; No_SCTP; Port=3868; } ;
-ConnectPeer = "hss.localdomain" { ConnectTo = "10.1.35.215"; No_TLS; Port = 30868; };
+ConnectPeer = "hss.localdomain" { ConnectTo = "10.1.35.214"; No_TLS; Port = 30868; };
 
 
 ##############################################################
