@@ -34,14 +34,23 @@ status_t app_initialize(char *config_path, char *log_path)
         d_trace_level(&_epc_main, others);
     }
 
-    rv = proc_create(&pgw_proc, pgw_start_func, pgw_stop_func, NULL);
-    if (rv != CORE_OK) return rv;
+    if (context_self()->hidden.disable_pgw == 0)
+    {
+        rv = proc_create(&pgw_proc, pgw_start_func, pgw_stop_func, NULL);
+        if (rv != CORE_OK) return rv;
+    }
 
-    rv = proc_create(&sgw_proc, sgw_start_func, sgw_stop_func, NULL);
-    if (rv != CORE_OK) return rv;
+    if (context_self()->hidden.disable_sgw == 0)
+    {
+        rv = proc_create(&sgw_proc, sgw_start_func, sgw_stop_func, NULL);
+        if (rv != CORE_OK) return rv;
+    }
 
-    rv = proc_create(&hss_proc, hss_start_func, hss_stop_func, NULL);
-    if (rv != CORE_OK) return rv;
+    if (context_self()->hidden.disable_hss == 0)
+    {
+        rv = proc_create(&hss_proc, hss_start_func, hss_stop_func, NULL);
+        if (rv != CORE_OK) return rv;
+    }
 
     d_trace(1, "MME try to initialize\n");
     rv = mme_initialize();

@@ -163,6 +163,27 @@ status_t context_parse_config()
                         }
                     }
                 }
+                else if (jsmntok_equal(json, t, "HIDDEN") == 0)
+                {
+                    for (m = 1, n = 1; n > 0; m++, n--)
+                    {
+                        n += (t+m)->size;
+
+                        char *v = jsmntok_to_string(json, t+m+1);
+                        if (jsmntok_equal(json, t+m, "DISABLE_HSS") == 0)
+                        {
+                            if (v) self.hidden.disable_hss = atoi(v);
+                        }
+                        else if (jsmntok_equal(json, t+m, "DISABLE_SGW") == 0)
+                        {
+                            if (v) self.hidden.disable_sgw = atoi(v);
+                        }
+                        else if (jsmntok_equal(json, t+m, "DISABLE_PGW") == 0)
+                        {
+                            if (v) self.hidden.disable_pgw = atoi(v);
+                        }
+                    }
+                }
 
                 state = SKIP;
                 skip_tokens = t->size;

@@ -20,6 +20,7 @@
 #include "s6a_lib.h"
 
 #include "app.h"
+#include "context.h"
 #include "mme_context.h"
 #include "abts.h"
 #include "testutil.h"
@@ -61,8 +62,11 @@ status_t test_initialize(void)
     {
         d_assert(semaphore_wait(test_sem) == CORE_OK, return CORE_ERROR,
                 "semaphore_wait() failed");
-        d_assert(semaphore_wait(test_sem) == CORE_OK, return CORE_ERROR,
-                "semaphore_wait() failed");
+        if (context_self()->hidden.disable_hss == 0)
+        {
+            d_assert(semaphore_wait(test_sem) == CORE_OK, return CORE_ERROR,
+                    "semaphore_wait() failed");
+        }
         d_assert(semaphore_delete(test_sem) == CORE_OK, return CORE_ERROR,
                 "semaphore_delete() failed");
     }

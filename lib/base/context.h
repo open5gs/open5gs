@@ -37,6 +37,13 @@ typedef struct _context_t {
         int s6a;
         int others;
     } trace_level;
+
+    struct {
+        int disable_hss;
+        int disable_sgw;
+        int disable_pgw;
+    } hidden;
+
 } context_t;
 
 CORE_DECLARE(status_t)      context_init(void);
