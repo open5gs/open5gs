@@ -45,7 +45,7 @@ status_t app_initialize(char *config_path, char *log_path)
 
     d_trace(1, "MME try to initialize\n");
     rv = mme_initialize();
-    if (rv != CORE_OK) return rv;
+    d_assert(rv == CORE_OK, return rv, "Failed to intialize MME");
     d_trace(1, "MME initialize...done\n");
 
     rv = app_did_initialize(config_path, log_path);
@@ -78,7 +78,7 @@ static status_t PROC_FUNC pgw_start_func(proc_id id, void *data)
 
     d_trace(1, "PGW try to initialize\n");
     rv = pgw_initialize();
-    if (rv != CORE_OK) return CORE_ERROR;
+    d_assert(rv == CORE_OK, return rv, "Failed to intialize PGW");
     d_trace(1, "PGW initialize...done\n");
 
     return CORE_OK;
@@ -99,7 +99,7 @@ static status_t PROC_FUNC sgw_start_func(proc_id id, void *data)
 
     d_trace(1, "SGW try to initialize\n");
     rv = sgw_initialize();
-    if (rv != CORE_OK) return CORE_ERROR;
+    d_assert(rv == CORE_OK, return rv, "Failed to intialize SGW");
     d_trace(1, "SGW initialize...done\n");
 
     return CORE_OK;
@@ -120,7 +120,7 @@ static status_t PROC_FUNC hss_start_func(proc_id id, void *data)
 
     d_trace(1, "HSS try to initialize\n");
     rv = hss_initialize();
-    if (rv != CORE_OK) return CORE_ERROR;
+    d_assert(rv == CORE_OK, return rv, "Failed to intialize HSS");
     d_trace(1, "HSS initialize...done\n");
 
     return CORE_OK;

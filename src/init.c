@@ -90,7 +90,7 @@ static status_t PROC_FUNC logger_start_func(proc_id id, void *data)
 
     d_print("  Logging '%s'\n", path);
     rv = logger_start(path);
-    if (rv != CORE_OK) return CORE_ERROR;
+    d_assert(rv == CORE_OK, return rv, "Failed to intialize Logger");
 
     return CORE_OK;
 }
