@@ -24,23 +24,6 @@
 #include "abts.h"
 #include "testutil.h"
 
-#if 0
-void core_assert_ok(abts_case* tc, const char* context, status_t rv,
-                        int lineno)
-{
-    if (rv == CORE_ENOTIMPL)
-    {
-        abts_not_impl(tc, context, lineno);
-    } else if (rv != CORE_OK)
-    {
-        char buf[STRING_MAX], ebuf[128];
-        sprintf(buf, "%s (%d): %s\n", context, rv,
-                core_strerror(rv, ebuf, sizeof ebuf));
-        abts_fail(tc, buf, lineno);
-    }
-}
-#endif
-
 static semaphore_id test_sem;
 static void test_s6a_hook_handler(enum fd_hook_type type, struct msg * msg, 
     struct peer_hdr * peer, void * other, struct fd_hook_permsgdata *pmd, 
@@ -61,23 +44,29 @@ void test_terminate(void)
     core_terminate();
 }
 
-void test_initialize(void)
+status_t test_initialize(void)
 {
+    status_t rv;
+
     s6a_hook_register(test_s6a_hook_handler);
+
+    atexit(test_terminate);
 
     core_initialize();
     d_assert(semaphore_create(&test_sem, 0) == CORE_OK, 
-            return, "semaphore_create() failed");
+            return CORE_ERROR, "semaphore_create() failed");
 
-    app_initialize(NULL, NULL);
+    rv = app_initialize(NULL, NULL);
+    if (rv == CORE_OK)
+    {
+        d_assert(semaphore_wait(test_sem) == CORE_OK, return CORE_ERROR,
+                "semaphore_wait() failed");
+        d_assert(semaphore_wait(test_sem) == CORE_OK, return CORE_ERROR,
+                "semaphore_wait() failed");
+        d_assert(semaphore_delete(test_sem) == CORE_OK, return CORE_ERROR,
+                "semaphore_delete() failed");
+    }
 
-    d_assert(semaphore_wait(test_sem) == CORE_OK, return,
-            "semaphore_wait() failed");
-    d_assert(semaphore_wait(test_sem) == CORE_OK, return,
-            "semaphore_wait() failed");
-    d_assert(semaphore_delete(test_sem) == CORE_OK, return,
-            "semaphore_delete() failed");
-
-    atexit(test_terminate);
+    return rv;
 }
 

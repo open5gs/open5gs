@@ -429,7 +429,10 @@ int main(int argc, const char *const argv[]) {
     int list_provided = 0;
     abts_suite *suite = NULL;
 
-    test_initialize();
+    rv = test_initialize();
+    if (rv != CORE_OK) 
+        return EXIT_FAILURE;
+
     d_trace_global_off();
 
     quiet = !isatty(STDOUT_FILENO);
