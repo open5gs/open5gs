@@ -25,10 +25,15 @@ AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \
     -I$(top_srcdir)/src
 
-dist_sysconf_DATA = support/nextepc.conf
+dist_sysconf_DATA = \
+	support/nextepc.conf \
+	support/freeDiameter/mme.conf \
+	support/freeDiameter/hss.conf
 
 install-data-hook:
 	$(MKDIR_P) $(prefix)/var/log
+	cp -fpR support/freeDiameter $(sysconfdir)
+	rm -f $(sysconfdir)/freeDiameter/*.in
 
 CLEANFILES = symtbl.c
 DISTCLEANFILES = $(DIST_ARCHIVES)
