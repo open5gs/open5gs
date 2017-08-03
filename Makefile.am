@@ -25,13 +25,21 @@ AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \
     -I$(top_srcdir)/src
 
-dist_sysconf_DATA = \
+sysconf_DATA = \
 	support/nextepc.conf
+
+freeDiameterdir = ${prefix}/etc/freeDiameter
+freeDiameter_DATA = \
+	support/freeDiameter/cacert.pem \
+	support/freeDiameter/mme.conf \
+	support/freeDiameter/mme.key.pem \
+	support/freeDiameter/mme.cert.pem \
+	support/freeDiameter/hss.conf \
+	support/freeDiameter/hss.key.pem \
+	support/freeDiameter/hss.cert.pem
 
 install-data-hook:
 	$(MKDIR_P) $(prefix)/var/log
-	cp -fpR support/freeDiameter $(sysconfdir)
-	rm -f $(sysconfdir)/freeDiameter/*.in
 
 CLEANFILES = symtbl.c
 DISTCLEANFILES = $(DIST_ARCHIVES)
