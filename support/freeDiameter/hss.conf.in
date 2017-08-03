@@ -29,14 +29,12 @@ Realm = "localdomain";
 # The port this peer is listening on for incoming connections (TCP and SCTP).
 # Default: 3868. Use 0 to disable.
 #Port = 3868;
-Port = 30868;
 
 # The port this peer is listening on for incoming TLS-protected connections (TCP and SCTP).
 # See TLS_old_method for more information about TLS flavours.
 # Note: we use TLS/SCTP instead of DTLS/SCTP at the moment. This will change in future version of freeDiameter.
 # Default: 5868. Use 0 to disable.
 #SecPort = 5868;
-SecPort = 30869;
 
 # Use RFC3588 method for TLS protection, where TLS is negociated after CER/CEA exchange is completed 
 # on the unsecure connection. The alternative is RFC6733 mechanism, where TLS protects also the 
@@ -53,6 +51,7 @@ SecPort = 30869;
 # Disable use of SCTP protocol (only listen and connect over TCP)
 # Default : SCTP enabled
 #No_SCTP;
+No_SCTP;
 # This option is ignored if freeDiameter is compiled with DISABLE_SCTP option.
 
 # Prefer TCP instead of SCTP for establishing new connections.

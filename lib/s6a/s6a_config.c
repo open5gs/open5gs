@@ -16,6 +16,9 @@ static int s6a_config_apply_internal()
     int ret;
     int disc = 0;
 
+    /* disable SCTP */
+    fd_g_config->cnf_flags.no_sctp = 1;
+
     fd_g_config->cnf_diamid = s6a_config->cnf_diamid;
     fd_os_validate_DiameterIdentity(
             &fd_g_config->cnf_diamid, &fd_g_config->cnf_diamid_len, 1);

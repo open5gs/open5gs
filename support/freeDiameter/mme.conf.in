@@ -51,6 +51,7 @@ Realm = "localdomain";
 # Disable use of SCTP protocol (only listen and connect over TCP)
 # Default : SCTP enabled
 #No_SCTP;
+No_SCTP;
 # This option is ignored if freeDiameter is compiled with DISABLE_SCTP option.
 
 # Prefer TCP instead of SCTP for establishing new connections.
@@ -252,7 +253,7 @@ TLS_CA = "@prefix@/etc/freeDiameter/cacert.pem";
 # Examples:
 #ConnectPeer = "aaa.wide.ad.jp";
 #ConnectPeer = "old.diameter.serv" { TcTimer = 60; TLS_old_method; No_SCTP; Port=3868; } ;
-ConnectPeer = "hss.localdomain" { ConnectTo = "10.1.35.214"; No_TLS; Port = 30868; };
+ConnectPeer = "hss.localdomain" { ConnectTo = "10.1.35.214"; No_TLS; };
 
 
 ##############################################################

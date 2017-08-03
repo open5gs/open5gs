@@ -29,8 +29,6 @@
     NETWORK :
     {
       S6A_ADDR : "10.1.35.215",
-      S6A_PORT : 30868,
-      S6A_TLS_PORT : 30869,
       S1AP_ADDR : "10.1.35.215",
       S11_ADDR: "10.1.35.215",
     }
