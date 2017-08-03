@@ -488,11 +488,12 @@ status_t hss_s6a_init(void)
 	struct disp_when data;
     int ret;
 
+    s6a_config_init();
+
     if (hss_self()->s6a_config_path == NULL)
     {
         /* This is default diameter configuration if there is no config file 
          * The Configuration : No TLS, Only TCP */
-        s6a_config_init();
 
         s6a_config->cnf_diamid = HSS_IDENTITY;
         s6a_config->cnf_diamrlm = S6A_REALM;

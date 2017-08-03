@@ -573,11 +573,12 @@ status_t mme_s6a_init(void)
 {
     status_t rv;
 
+    s6a_config_init();
+
     if (mme_self()->s6a_config_path == NULL)
     {
         /* This is default diameter configuration if there is no config file 
          * The Configuration : No TLS, Only TCP */
-        s6a_config_init();
 
         s6a_config->cnf_diamid = MME_IDENTITY;
         s6a_config->cnf_diamrlm = S6A_REALM;
