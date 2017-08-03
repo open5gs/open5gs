@@ -29,8 +29,6 @@ status_t context_final()
     d_assert(context_initialized == 1, return CORE_ERROR,
             "Context already has been finalized");
 
-    context_db_final();
-
     context_initialized = 0;
 
     return CORE_OK;
@@ -255,8 +253,6 @@ status_t context_db_init(char *db_uri)
     if (!mongoc_client_get_server_status(self.db_client, NULL, &reply, &error)) 
     {
         d_error("Failed to conect to server [%s]", db_uri);
-
-        context_db_final();
         return CORE_ERROR;
     }
 

@@ -51,7 +51,9 @@ status_t proc_create(proc_id *id,
     if (new->proc == 0)
     {
         status_t rv;
+
         new->proc = getpid();
+
         semaphore_post(new->sem1);
         d_trace(3, "[%d] post semaphore for starting\n", new->proc);
 
@@ -61,7 +63,6 @@ status_t proc_create(proc_id *id,
 
         d_trace(3, "deleting semaphore wait\n");
         semaphore_wait(new->sem2);
-        semaphore_delete(new->sem2);
         d_trace(3, "deleting semaphore done\n");
 
         if (rv == CORE_OK)
@@ -73,6 +74,14 @@ status_t proc_create(proc_id *id,
 
         semaphore_post(new->sem1);
         d_trace(3, "[%d] post semaphore to finish deleting\n", new->proc);
+
+        semaphore_delete(new->sem1);
+        semaphore_delete(new->sem2);
+        pool_free_node(&proc_pool, new);
+        d_trace(3, "delete proc-related memory\n");
+
+        core_terminate();
+        d_trace(3, "core terminated in child process\n");
 
         _exit(EXIT_SUCCESS);
     }
@@ -102,6 +111,7 @@ status_t proc_delete(proc_id id)
     d_trace(3, "proc_delete done\n");
 
     semaphore_delete(proc->sem1);
+    semaphore_delete(proc->sem2);
     pool_free_node(&proc_pool, proc);
     d_trace(3, "delete proc-related memory\n");
 

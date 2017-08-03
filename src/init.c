@@ -66,14 +66,17 @@ void app_will_terminate(void)
 
 void app_did_terminate(void)
 {
+    if (context_self()->db_uri)
+    {
+        context_db_final();
+    }
+
     if (context_self()->log_path)
     {
         proc_delete(logger_proc);
     }
 
-#if 0
     context_final();
-#endif
 }
 
 static status_t PROC_FUNC logger_start_func(proc_id id, void *data)
