@@ -81,6 +81,7 @@ SecPort = 30869;
 #ListenOn = "202.249.37.5";
 #ListenOn = "2001:200:903:2::202:1";
 #ListenOn = "fe80::21c:5ff:fe98:7d62%eth0";
+ListenOn = "10.1.35.214";
 
 
 ##############################################################
@@ -253,6 +254,6 @@ TLS_CA = "@prefix@/etc/freeDiameter/cacert.pem";
 # Examples:
 #ConnectPeer = "aaa.wide.ad.jp";
 #ConnectPeer = "old.diameter.serv" { TcTimer = 60; TLS_old_method; No_SCTP; Port=3868; } ;
-ConnectPeer = "mme.localdomain" { ConnectTo = "127.0.0.1"; No_TLS; };
+ConnectPeer = "mme.localdomain" { ConnectTo = "10.1.35.215"; No_TLS; };
 
 ##############################################################
