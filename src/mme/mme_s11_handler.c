@@ -160,11 +160,13 @@ void mme_s11_handle_release_access_bearers_response(
 }
 
 void mme_s11_handle_downlink_data_notification(
-        mme_sess_t *sess, gtp_downlink_data_notification_t *noti)
+        gtp_xact_t *xact, mme_sess_t *sess, 
+        gtp_downlink_data_notification_t *noti)
 {
     event_t e;
     mme_bearer_t *bearer = NULL;
 
+    d_assert(xact, return, "Null param");
     d_assert(sess, return, "Null param");
     d_assert(noti, return, "Null param");
 
@@ -177,5 +179,6 @@ void mme_s11_handle_downlink_data_notification(
     event_set(&e, MME_EVT_EMM_BEARER_FROM_S11);
     event_set_param1(&e, (c_uintptr_t)bearer->index);
     event_set_param2(&e, (c_uintptr_t)GTP_DOWNLINK_DATA_NOTIFICATION_TYPE);
+    event_set_param3(&e, (c_uintptr_t)xact);
     mme_event_send(&e);
 }

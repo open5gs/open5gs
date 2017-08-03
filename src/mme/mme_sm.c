@@ -329,6 +329,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
 
                 case GTP_DOWNLINK_DATA_NOTIFICATION_TYPE:
                     mme_s11_handle_downlink_data_notification(
+                            xact,
                             sess, &gtp_message.downlink_data_notification);
                     break;
                 default:

@@ -313,6 +313,7 @@ static gtp_xact_t *gtp_xact_find(
         case GTP_RELEASE_ACCESS_BEARERS_REQUEST_TYPE:
         case GTP_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
         case GTP_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
+        case GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE:
             xact = list_first(&gnode->remote_list);
             break;
 
@@ -325,6 +326,7 @@ static gtp_xact_t *gtp_xact_find(
         case GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE:
         case GTP_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
         case GTP_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
+        case GTP_DOWNLINK_DATA_NOTIFICATION_TYPE:
             xact = list_first(&gnode->local_list);
             break;
 

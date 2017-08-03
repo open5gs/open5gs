@@ -785,13 +785,15 @@ void emm_handle_service_request(
     d_assert(emm_send_to_enb(enb_ue, s1apbuf) == CORE_OK,, "s1ap send error");
 }
 
-void emm_handle_downlink_data_notification(mme_bearer_t *bearer)
+void emm_handle_downlink_data_notification(gtp_xact_t *xact,
+        mme_bearer_t *bearer)
 {
     status_t rv;
     mme_ue_t *mme_ue = NULL;
     mme_sess_t *sess;
     pkbuf_t *s11buf = NULL;
 
+    d_assert(xact, return, "Null param");
     d_assert(bearer, return, "Null param");
     mme_ue = bearer->mme_ue;
     d_assert(mme_ue, return, "Null param");
@@ -803,9 +805,10 @@ void emm_handle_downlink_data_notification(mme_bearer_t *bearer)
     rv = mme_s11_build_downlink_data_notification_ack(&s11buf, sess);
     d_assert(rv == CORE_OK, return, "S11 build error");
 
-    rv = mme_s11_send_to_sgw(bearer->sgw,
-            GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE, sess->sgw_s11_teid,
-            s11buf);
+    d_assert(gtp_xact_commit(xact, 
+                GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE, 
+                sess->sgw_s11_teid, s11buf) == CORE_OK,
+            return , "xact commit error");
 
     /* FIXME : Send s1 paging */
 }

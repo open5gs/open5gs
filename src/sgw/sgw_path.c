@@ -125,12 +125,12 @@ static int _gtpv1_s5u_recv_cb(net_sock_t *sock, void *data)
                  * FIXME : Data buffering required 
                  *
                  */
-                if (CHECK_DL_NOTI_SENT(bearer))
+                if (!CHECK_DL_NOTI_SENT(bearer))
                 {
                     event_t e;
                     status_t rv;
 
-                    event_set(&e, SGW_EVT_S5C_SESSION_MSG);
+                    event_set(&e, SGW_EVT_LO_DLDATA_NOTI);
                     event_set_param1(&e, (c_uintptr_t)bearer->index);
                     rv = sgw_event_send(&e);
                     if (rv != CORE_OK)

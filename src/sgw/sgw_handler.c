@@ -407,3 +407,10 @@ void sgw_handle_lo_dldata_notification(sgw_bearer_t *bearer)
     d_trace(3, "[GTP] Downlink Data Notification : "
             "SGW[%d] --> MME[%d]\n", sess->sgw_s11_teid, sess->mme_s11_teid);
 }
+
+void sgw_handle_downlink_data_notification_ack(sgw_sess_t *sess,
+        gtp_downlink_data_notification_acknowledge_t *ack)
+{
+    d_trace(3, "[GTP] Downlink Data Notification Ack: "
+            "MME[%d] --> SGW[%d]\n", sess->mme_s11_teid, sess->sgw_s11_teid);
+}

@@ -108,7 +108,11 @@ void sgw_state_operational(fsm_t *s, event_t *e)
                     sgw_handle_release_access_bearers_request(
                             xact, sess, 
                             &gtp_message.release_access_bearers_request);
-
+                    break;
+                case GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE:
+                    sgw_handle_downlink_data_notification_ack(
+                          sess,
+                          &gtp_message.downlink_data_notification_acknowledge);
                     break;
                 default:
                     d_warn("Not implmeneted(type:%d)", type);
