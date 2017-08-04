@@ -335,6 +335,8 @@ void sgw_handle_release_access_bearers_request(gtp_xact_t *xact,
         bearer->enb_s1u_teid = 0;
         bearer->enb_s1u_addr = 0;
 
+        RESET_DL_NOTI_SENT(bearer);
+
         bearer = next_bearer;
     }
 

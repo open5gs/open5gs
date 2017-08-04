@@ -839,4 +839,8 @@ void emm_handle_downlink_data_notification(gtp_xact_t *xact,
         }
         enb = mme_enb_next(enb);
     }
+    /* FIXME : Need to start timer.
+     *  After expiration, re-send paging message.
+     *  Timeer should be stopped when UE sends initialUeMessage
+     */
 }

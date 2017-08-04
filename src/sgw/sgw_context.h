@@ -94,9 +94,13 @@ typedef struct _sgw_bearer_t {
 #define SGW_DL_NOTI_SENT  0x0001
 
 #define CHECK_DL_NOTI_SENT(bearer) ((bearer)->state & SGW_DL_NOTI_SENT)
-#define SET_DL_NOTI_SETNT(bearer) \
+#define SET_DL_NOTI_SENT(bearer) \
     do { \
         (bearer)->state |= SGW_DL_NOTI_SENT;\
+    } while (0)
+#define RESET_DL_NOTI_SENT(bearer) \
+    do { \
+        (bearer)->state &= ~SGW_DL_NOTI_SENT;\
     } while (0)
 
 CORE_DECLARE(status_t)      sgw_context_init(void);

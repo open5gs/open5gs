@@ -140,7 +140,7 @@ static int _gtpv1_s5u_recv_cb(net_sock_t *sock, void *data)
                         return -1;
                     }
 
-                    SET_DL_NOTI_SETNT(bearer);
+                    SET_DL_NOTI_SENT(bearer);
                 }
             }
         }
