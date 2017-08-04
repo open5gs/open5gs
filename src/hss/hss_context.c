@@ -287,6 +287,11 @@ status_t hss_context_setup_trace_module()
 
     if (s6a)
     {
+        if (s6a <= 1) fd_g_debug_lvl = FD_LOG_ERROR;
+        else if (s6a <= 3) fd_g_debug_lvl = FD_LOG_NOTICE;
+        else if (s6a <= 5) fd_g_debug_lvl = FD_LOG_DEBUG;
+        else fd_g_debug_lvl = FD_LOG_ANNOYING;
+
         extern int _hss_s6a_handler;
         d_trace_level(&_hss_s6a_handler, s6a);
         extern int _s6a_fd;

@@ -40,17 +40,12 @@ ED4(c_uint8_t version:3;,
     };
 } __attribute__ ((packed)) gtpv2c_header_t;
 
-static int gtp_xact_pool_initialized = 0;
 index_declare(gtp_xact_pool, gtp_xact_t, SIZE_OF_GTP_XACT_POOL);
 
 status_t gtp_xact_init(gtp_xact_ctx_t *context, 
         tm_service_t *tm_service, c_uintptr_t event)
 {
-    if (gtp_xact_pool_initialized == 0)
-    {
-        index_init(&gtp_xact_pool, SIZE_OF_GTP_XACT_POOL);
-    }
-    gtp_xact_pool_initialized = 1;
+    index_init(&gtp_xact_pool, SIZE_OF_GTP_XACT_POOL);
 
     memset(context, 0, sizeof(gtp_xact_ctx_t));
 
@@ -64,16 +59,15 @@ status_t gtp_xact_init(gtp_xact_ctx_t *context,
 
 status_t gtp_xact_final(void)
 {
-    if (gtp_xact_pool_initialized == 1 && 
-        pool_size(&gtp_xact_pool) == pool_avail(&gtp_xact_pool))
-    {
-        d_trace(1, "%d not freed in gtp_xact_pool[%d] of GTP Transaction\n",
+    if (pool_size(&gtp_xact_pool) != pool_avail(&gtp_xact_pool))
+        d_warn("%d not freed in gtp_xact_pool[%d] of GTP Transaction",
                 pool_size(&gtp_xact_pool) - pool_avail(&gtp_xact_pool),
                 pool_size(&gtp_xact_pool));
-        index_final(&gtp_xact_pool);
 
-        gtp_xact_pool_initialized = 0;
-    }
+    d_trace(3, "%d not freed in gtp_xact_pool[%d] of GTP Transaction\n",
+            pool_size(&gtp_xact_pool) - pool_avail(&gtp_xact_pool),
+            pool_size(&gtp_xact_pool));
+    index_final(&gtp_xact_pool);
 
     return CORE_OK;
 }

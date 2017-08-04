@@ -231,8 +231,6 @@ status_t context_db_init(char *db_uri)
     if (!self.db_client)
     {
         d_error("Failed to parse DB URI [%s]", db_uri);
-
-        context_db_final();
         return CORE_ERROR;
     }
 

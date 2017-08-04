@@ -50,7 +50,11 @@ status_t sgw_context_final()
 
     sgw_sess_remove_all();
 
-    d_trace(1, "%d not freed in sgw_sess_pool[%d] in SGW-Context\n",
+    if (index_size(&sgw_sess_pool) != pool_avail(&sgw_sess_pool))
+        d_warn("%d not freed in sgw_sess_pool[%d] in SGW-Context",
+                index_size(&sgw_sess_pool) - pool_avail(&sgw_sess_pool),
+                index_size(&sgw_sess_pool));
+    d_trace(3, "%d not freed in sgw_sess_pool[%d] in SGW-Context\n",
             index_size(&sgw_sess_pool) - pool_avail(&sgw_sess_pool),
             index_size(&sgw_sess_pool));
     index_final(&sgw_bearer_pool);

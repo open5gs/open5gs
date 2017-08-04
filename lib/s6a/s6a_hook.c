@@ -22,6 +22,29 @@ static void s6a_hook_cb_tree(enum fd_hook_type type, struct msg * msg,
 
     if (s6a_hook_user_handler_instance)
         s6a_hook_user_handler_instance(type, msg, peer, other, pmd, regdata);
+
+    switch(type) {
+	case HOOK_PEER_CONNECT_SUCCESS:
+		{
+			char protobuf[40];
+			if (peer) {
+				CHECK_FCT_DO(fd_peer_cnx_proto_info(peer, protobuf, sizeof(protobuf)), break );
+			} else {
+				protobuf[0] = '-';
+				protobuf[1] = '\0';
+			}
+			d_info("CONNECTED TO '%s' (%s):", peer_name, protobuf);
+		}
+		break;
+    default:
+        break;
+    }
+
+    if (TRACE_MODULE < 3)
+    {
+        pthread_mutex_unlock(&mtx);
+        return;
+    }
 	
 	if (msg) {
 		CHECK_MALLOC_DO( fd_msg_dump_treeview(&buf, &len, NULL, msg, fd_g_config->cnf_dict, (type == HOOK_MESSAGE_PARSING_ERROR) ? 0 : 1, 1), 

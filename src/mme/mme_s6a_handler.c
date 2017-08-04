@@ -606,7 +606,12 @@ void mme_s6a_final(void)
 {
 	d_assert(fd_sess_handler_destroy(&mme_s6a_reg, NULL) == 0,,);
 
-    d_trace(1, "%d not freed in sess_state_pool[%d] of S6A-SM\n",
+    if (pool_size(&sess_state_pool) != pool_avail(&sess_state_pool))
+        d_warn("%d not freed in sess_state_pool[%d] of S6A-SM",
+                pool_size(&sess_state_pool) - pool_avail(&sess_state_pool),
+                pool_size(&sess_state_pool));
+
+    d_trace(3, "%d not freed in sess_state_pool[%d] of S6A-SM\n",
             pool_size(&sess_state_pool) - pool_avail(&sess_state_pool),
             pool_size(&sess_state_pool));
 

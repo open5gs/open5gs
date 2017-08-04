@@ -1,27 +1,24 @@
 #define TRACE_MODULE _epc_main
 
+#include "core_general.h"
 #include "core_debug.h"
-#include "core_signal.h"
 #include "core_semaphore.h"
-#include "core_proc.h"
 
 #include "context.h"
 #include "app.h"
 
-static proc_id pgw_proc = 0;
-static status_t PROC_FUNC pgw_start_func(proc_id id, void *data);
-static status_t PROC_FUNC pgw_stop_func(proc_id id, void *data);
+static semaphore_id pgw_sem1 = 0;
+static semaphore_id pgw_sem2 = 0;
 
-static proc_id sgw_proc = 0;
-static status_t PROC_FUNC sgw_start_func(proc_id id, void *data);
-static status_t PROC_FUNC sgw_stop_func(proc_id id, void *data);
+static semaphore_id sgw_sem1 = 0;
+static semaphore_id sgw_sem2 = 0;
 
-static proc_id hss_proc = 0;
-static status_t PROC_FUNC hss_start_func(proc_id id, void *data);
-static status_t PROC_FUNC hss_stop_func(proc_id id, void *data);
+static semaphore_id hss_sem1 = 0;
+static semaphore_id hss_sem2 = 0;
 
 status_t app_initialize(char *config_path, char *log_path)
 {
+    pid_t pid;
     status_t rv;
     int others = 0;
 
@@ -34,31 +31,157 @@ status_t app_initialize(char *config_path, char *log_path)
         d_trace_level(&_epc_main, others);
     }
 
+
+    /************************* PGW Process **********************/
+
+    semaphore_create(&pgw_sem1, 0); /* copied to PGW/SGW/HSS process */
+    semaphore_create(&pgw_sem2, 0); /* copied to PGW/SGW/HSS process */
+
     if (context_self()->hidden.disable_pgw == 0)
     {
-        rv = proc_create(&pgw_proc, pgw_start_func, pgw_stop_func, NULL);
-        if (rv != CORE_OK) return rv;
+        pid = fork();
+        d_assert(pid >= 0, _exit(EXIT_FAILURE), "fork() failed");
+
+        if (pid == 0)
+        {
+            if (pgw_sem1) semaphore_post(pgw_sem1);
+
+            d_trace(1, "PGW try to initialize\n");
+            rv = pgw_initialize();
+            d_assert(rv == CORE_OK,, "Failed to intialize PGW");
+            d_trace(1, "PGW initialize...done\n");
+
+            if (pgw_sem2) semaphore_wait(pgw_sem2);
+
+            if (rv == CORE_OK)
+            {
+                d_trace(1, "PGW try to terminate\n");
+                pgw_terminate();
+                d_trace(1, "PGW terminate...done\n");
+            }
+
+            if (pgw_sem1) semaphore_post(pgw_sem1);
+
+            /* allocated from parent process */
+            if (pgw_sem1) semaphore_delete(pgw_sem1);
+            if (pgw_sem2) semaphore_delete(pgw_sem2);
+
+            app_did_terminate();
+
+            core_terminate();
+
+            _exit(EXIT_SUCCESS);
+        }
+
+        if (pgw_sem1) semaphore_wait(pgw_sem1);
     }
+
+
+    /************************* SGW Process **********************/
+
+    semaphore_create(&sgw_sem1, 0); /* copied to SGW/HSS process */
+    semaphore_create(&sgw_sem2, 0); /* copied to SGW/HSS process */
 
     if (context_self()->hidden.disable_sgw == 0)
     {
-        rv = proc_create(&sgw_proc, sgw_start_func, sgw_stop_func, NULL);
-        if (rv != CORE_OK) return rv;
+        pid = fork();
+        d_assert(pid >= 0, _exit(EXIT_FAILURE), "fork() failed");
+
+        if (pid == 0)
+        {
+            /* allocated from parent process */
+            if (pgw_sem1) semaphore_delete(pgw_sem1);
+            if (pgw_sem2) semaphore_delete(pgw_sem2);
+
+            if (sgw_sem1) semaphore_post(sgw_sem1);
+
+            d_trace(1, "SGW try to initialize\n");
+            rv = sgw_initialize();
+            d_assert(rv == CORE_OK,, "Failed to intialize SGW");
+            d_trace(1, "SGW initialize...done\n");
+
+            if (sgw_sem2) semaphore_wait(sgw_sem2);
+
+            if (rv == CORE_OK)
+            {
+                d_trace(1, "SGW try to terminate\n");
+                sgw_terminate();
+                d_trace(1, "SGW terminate...done\n");
+            }
+
+            if (sgw_sem1) semaphore_post(sgw_sem1);
+
+            /* allocated from parent process */
+            if (sgw_sem1) semaphore_delete(sgw_sem1);
+            if (sgw_sem2) semaphore_delete(sgw_sem2);
+
+            app_did_terminate();
+
+            core_terminate();
+
+            _exit(EXIT_SUCCESS);
+        }
+
+        if (sgw_sem1) semaphore_wait(sgw_sem1);
     }
+
+
+    /************************* HSS Process **********************/
+
+    semaphore_create(&hss_sem1, 0); /* copied to HSS process */
+    semaphore_create(&hss_sem2, 0); /* copied to HSS process */
 
     if (context_self()->hidden.disable_hss == 0)
     {
-        rv = proc_create(&hss_proc, hss_start_func, hss_stop_func, NULL);
-        if (rv != CORE_OK) return rv;
+        pid = fork();
+        d_assert(pid >= 0, _exit(EXIT_FAILURE), "fork() failed");
+
+        if (pid == 0)
+        {
+            /* allocated from parent process */
+            if (pgw_sem1) semaphore_delete(pgw_sem1);
+            if (pgw_sem2) semaphore_delete(pgw_sem2);
+            if (sgw_sem1) semaphore_delete(sgw_sem1);
+            if (sgw_sem2) semaphore_delete(sgw_sem2);
+
+            if (hss_sem1) semaphore_post(hss_sem1);
+
+            d_trace(1, "HSS try to initialize\n");
+            rv = hss_initialize();
+            d_assert(rv == CORE_OK,, "Failed to intialize HSS");
+            d_trace(1, "HSS initialize...done\n");
+
+            if (hss_sem2) semaphore_wait(hss_sem2);
+
+            if (rv == CORE_OK)
+            {
+                d_trace(1, "HSS try to terminate\n");
+                hss_terminate();
+                d_trace(1, "HSS terminate...done\n");
+            }
+
+            if (hss_sem1) semaphore_post(hss_sem1);
+
+            if (hss_sem1) semaphore_delete(hss_sem1);
+            if (hss_sem2) semaphore_delete(hss_sem2);
+
+            app_did_terminate();
+
+            core_terminate();
+
+            _exit(EXIT_SUCCESS);
+        }
+
+        if (hss_sem1) semaphore_wait(hss_sem1);
     }
+
+    rv = app_did_initialize(config_path, log_path);
+    if (rv != CORE_OK) return rv;
 
     d_trace(1, "MME try to initialize\n");
     rv = mme_initialize();
     d_assert(rv == CORE_OK, return rv, "Failed to intialize MME");
     d_trace(1, "MME initialize...done\n");
-
-    rv = app_did_initialize(config_path, log_path);
-    if (rv != CORE_OK) return rv;
 
     return CORE_OK;;
 }
@@ -71,75 +194,29 @@ void app_terminate(void)
     mme_terminate();
     d_trace(1, "MME terminate...done\n");
 
-    if (hss_proc)
-        proc_delete(hss_proc);
-    if (sgw_proc)
-        proc_delete(sgw_proc);
-    if (pgw_proc)
-        proc_delete(pgw_proc);
+    if (context_self()->hidden.disable_hss == 0)
+    {
+        if (hss_sem2) semaphore_post(hss_sem2);
+        if (hss_sem1) semaphore_wait(hss_sem1);
+    }
+    if (hss_sem1) semaphore_delete(hss_sem1);
+    if (hss_sem2) semaphore_delete(hss_sem2);
+
+    if (context_self()->hidden.disable_sgw == 0)
+    {
+        if (sgw_sem2) semaphore_post(sgw_sem2);
+        if (sgw_sem1) semaphore_wait(sgw_sem1);
+    }
+    if (sgw_sem1) semaphore_delete(sgw_sem1);
+    if (sgw_sem2) semaphore_delete(sgw_sem2);
+
+    if (context_self()->hidden.disable_pgw == 0)
+    {
+        if (pgw_sem2) semaphore_post(pgw_sem2);
+        if (pgw_sem1) semaphore_wait(pgw_sem1);
+    }
+    if (pgw_sem1) semaphore_delete(pgw_sem1);
+    if (pgw_sem2) semaphore_delete(pgw_sem2);
 
     app_did_terminate();
-}
-
-static status_t PROC_FUNC pgw_start_func(proc_id id, void *data)
-{
-    status_t rv;
-
-    d_trace(1, "PGW try to initialize\n");
-    rv = pgw_initialize();
-    d_assert(rv == CORE_OK, return rv, "Failed to intialize PGW");
-    d_trace(1, "PGW initialize...done\n");
-
-    return CORE_OK;
-}
-
-static status_t PROC_FUNC pgw_stop_func(proc_id id, void *data)
-{
-    d_trace(1, "PGW try to terminate\n");
-    pgw_terminate();
-    d_trace(1, "PGW terminate...done\n");
-
-    return CORE_OK;
-}
-
-static status_t PROC_FUNC sgw_start_func(proc_id id, void *data)
-{
-    status_t rv;
-
-    d_trace(1, "SGW try to initialize\n");
-    rv = sgw_initialize();
-    d_assert(rv == CORE_OK, return rv, "Failed to intialize SGW");
-    d_trace(1, "SGW initialize...done\n");
-
-    return CORE_OK;
-}
-
-static status_t PROC_FUNC sgw_stop_func(proc_id id, void *data)
-{
-    d_trace(1, "SGW try to terminate\n");
-    sgw_terminate();
-    d_trace(1, "SGW terminate...done\n");
-
-    return CORE_OK;
-}
-
-static status_t PROC_FUNC hss_start_func(proc_id id, void *data)
-{
-    status_t rv;
-
-    d_trace(1, "HSS try to initialize\n");
-    rv = hss_initialize();
-    d_assert(rv == CORE_OK, return rv, "Failed to intialize HSS");
-    d_trace(1, "HSS initialize...done\n");
-
-    return CORE_OK;
-}
-
-static status_t PROC_FUNC hss_stop_func(proc_id id, void *data)
-{
-    d_trace(1, "HSS try to terminate\n");
-    hss_terminate();
-    d_trace(1, "HSS terminate...done\n");
-
-    return CORE_OK;
 }
