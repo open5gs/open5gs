@@ -80,6 +80,11 @@ static inline int s1ap_free_initiating_message(s1ap_message_t *message)
                     &message->s1ap_UEContextReleaseRequest_IEs);
             break;
 
+        case S1ap_ProcedureCode_id_Paging:
+            s1ap_free_s1ap_pagingies(
+                    &message->s1ap_PagingIEs);
+            break;
+
         default:
             d_warn("Unknown procedure ID (%d) for initiating message\n", 
                     (int)message->procedureCode);

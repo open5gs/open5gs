@@ -29,6 +29,9 @@ extern "C" {
 #define MAX_NUM_OF_SERVED_GUMMEI    8
 #define MAX_NUM_OF_ALGORITHM        8
 
+#define MAX_NUM_OF_TAC              256
+#define MAX_NUM_OF_BPLMN            6
+
 typedef struct _served_gummei {
     c_uint32_t      num_of_plmn_id;
     plmn_id_t       plmn_id[MAX_PLMN_ID];
@@ -109,6 +112,9 @@ typedef struct _mme_enb_t {
     c_uint32_t      enb_id; /** eNB_ID received from eNB */
     net_sock_t      *s1ap_sock;
 
+    c_uint8_t       num_of_tai;
+    tai_t           tai[MAX_NUM_OF_TAC * MAX_NUM_OF_BPLMN];
+
     list_t          enb_ue_list;
 
 } mme_enb_t;
@@ -154,10 +160,8 @@ struct _mme_ue_t {
     guti_t          guti;
 
     /* UE Info */
-#if 0
     tai_t           tai;
     e_cgi_t         e_cgi;
-#endif
     plmn_id_t       visited_plmn_id;
 
 #define SECURITY_CONTEXT_IS_VALID(mme) \

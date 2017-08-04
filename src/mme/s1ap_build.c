@@ -341,3 +341,83 @@ status_t s1ap_build_ue_context_release_commmand(
 
     return CORE_OK;
 }
+
+status_t s1ap_build_paging(pkbuf_t **s1apbuf, mme_ue_t *mme_ue)
+{
+    int encoded;
+    s1ap_message_t message;
+    S1ap_PagingIEs_t *ies = &message.s1ap_PagingIEs;
+    S1ap_TAIItem_t *tai_item = NULL;
+    c_uint16_t index_value;
+    c_uint64_t ue_imsi_value = 0;
+    int i = 0;
+#if 0
+    uint16_t                    presenceMask;
+    S1ap_UEIdentityIndexValue_t ueIdentityIndexValue;
+    S1ap_UEPagingID_t           uePagingID;
+    S1ap_PagingDRX_t            pagingDRX; ///< Optional field
+    S1ap_CNDomain_t             cnDomain;
+    S1ap_TAIList_IEs_t taiList;
+    S1ap_CSG_IdList_t           csG_IdList; ///< Optional field
+    S1ap_PagingPriority_t       pagingPriority; ///< Optional field
+#endif
+
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
+
+    memset(&message, 0, sizeof(s1ap_message_t));
+
+    /* Set UE Identity Index value : IMSI mod 4096 */
+    ies->ueIdentityIndexValue.size = 2;
+    ies->ueIdentityIndexValue.buf = 
+        core_calloc(ies->ueIdentityIndexValue.size, sizeof(c_uint8_t));
+
+    /* Conver string to value */
+    for (i = 0; i < strlen(mme_ue->imsi_bcd); i++)
+    {
+        ue_imsi_value = ue_imsi_value*10 + (mme_ue->imsi_bcd[i] - '0');
+    }
+
+    /* index(10bit) = ue_imsi_value mod 1024 */
+    index_value = ue_imsi_value % 1024;
+    ies->ueIdentityIndexValue.buf[0] = index_value >> 2;
+    ies->ueIdentityIndexValue.buf[1] = (index_value & 0x3f) << 6;
+    ies->ueIdentityIndexValue.bits_unused = 6;
+
+    /* Set Paging Identity */
+    ies->uePagingID.present = S1ap_UEPagingID_PR_s_TMSI;
+    s1ap_uint8_to_OCTET_STRING(mme_ue->guti.mme_code, 
+            &ies->uePagingID.choice.s_TMSI.mMEC);
+
+    s1ap_uint32_to_OCTET_STRING(mme_ue->guti.m_tmsi, 
+            &ies->uePagingID.choice.s_TMSI.m_TMSI);
+
+    /* FIXME : fixed to ps */
+    ies->cnDomain = S1ap_CNDomain_ps;
+
+
+    /* List of TAIs */
+    //S1ap_TAIList_IEs_t taiList;
+    //S1ap_TAIItem_t
+    	///S1ap_TAI_t	 tAI;
+	        //S1ap_PLMNidentity_t	 pLMNidentity;
+        	//S1ap_TAC_t	 tAC;
+    tai_item  = core_calloc(1, sizeof(S1ap_TAIItem_t));
+    s1ap_buffer_to_OCTET_STRING(&mme_ue->tai.plmn_id, sizeof(plmn_id_t),
+            &tai_item->tAI.pLMNidentity);
+    s1ap_uint16_to_OCTET_STRING(mme_ue->tai.tac, &tai_item->tAI.tAC);
+
+    //S1ap_PagingIEs_t *ies = &message.s1ap_PagingIEs;
+    ASN_SEQUENCE_ADD(&ies->taiList, tai_item);
+
+    message.procedureCode = S1ap_ProcedureCode_id_Paging;
+    message.direction = S1AP_PDU_PR_initiatingMessage;
+
+    encoded = s1ap_encode_pdu(s1apbuf, &message);
+    s1ap_free_pdu(&message);
+
+    d_assert(s1apbuf && encoded >= 0, return CORE_ERROR,);
+
+    d_trace(3, "[S1AP] Paging to UE[m_tmsi:0x%x]\n", mme_ue->guti.m_tmsi);
+
+    return CORE_OK;
+}

@@ -113,6 +113,10 @@ void emm_handle_attach_request(
             &attach_request->ms_network_capability,
             sizeof(attach_request->ms_network_capability));
 
+    /* Copy TAI and ECGI from enb_ue */
+    memcpy(&mme_ue->tai, &enb_ue->tai, sizeof(tai_t));
+    memcpy(&mme_ue->e_cgi, &enb_ue->e_cgi, sizeof(e_cgi_t));
+
     switch(eps_mobile_identity->imsi.type)
     {
         case NAS_EPS_MOBILE_IDENTITY_IMSI:
@@ -792,6 +796,9 @@ void emm_handle_downlink_data_notification(gtp_xact_t *xact,
     mme_ue_t *mme_ue = NULL;
     mme_sess_t *sess;
     pkbuf_t *s11buf = NULL;
+    pkbuf_t *s1apbuf = NULL;
+    mme_enb_t *enb = NULL;
+    int i;
 
     d_assert(xact, return, "Null param");
     d_assert(bearer, return, "Null param");
@@ -810,5 +817,26 @@ void emm_handle_downlink_data_notification(gtp_xact_t *xact,
                 sess->sgw_s11_teid, s11buf) == CORE_OK,
             return , "xact commit error");
 
-    /* FIXME : Send s1 paging */
+    /* Send s1 paging */
+
+    /* Find enB with matched TAI */
+    enb =  mme_enb_first();
+    while (enb)
+    {
+        for (i = 0; i < enb->num_of_tai; i++)
+        {
+            if (!memcmp(&enb->tai[i], &mme_ue->tai, sizeof(tai_t)))
+            {
+                /* Buidl S1Ap Paging message */
+                rv = s1ap_build_paging(&s1apbuf, mme_ue);
+                d_assert(rv == CORE_OK && s1apbuf, return, 
+                        "s1ap build error");
+
+                /* Send to enb */
+                d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK, return,
+                        "s1ap send error");
+            }
+        }
+        enb = mme_enb_next(enb);
+    }
 }

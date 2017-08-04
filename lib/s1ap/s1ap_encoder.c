@@ -25,6 +25,8 @@ static inline int s1ap_encode_downlink_nas_transport(
   s1ap_message_t *message_p, pkbuf_t *pkbuf);
 static inline int s1ap_encode_ue_context_release_command(
   s1ap_message_t *message_p, pkbuf_t *pkbuf);
+static inline int s1ap_encode_paging(
+  s1ap_message_t *message_p, pkbuf_t *pkbuf);
 
 static void s1ap_encode_xer_print_message(
     asn_enc_rval_t (*func)(asn_app_consume_bytes_f *cb,
@@ -102,6 +104,11 @@ static inline int s1ap_encode_initiating_message(
                     s1ap_xer_print_s1ap_uecontextreleasecommand, 
                     s1ap_xer__print2sp, message_p);
             ret = s1ap_encode_ue_context_release_command(message_p, pkbuf);
+            break;
+        case S1ap_ProcedureCode_id_Paging:
+            s1ap_encode_xer_print_message(
+                    s1ap_xer_print_s1ap_paging, s1ap_xer__print2sp, message_p);
+            ret = s1ap_encode_paging(message_p, pkbuf);
             break;
         default:
             d_warn("Unknown procedure ID (%d) for initiating message_p\n", 
@@ -376,6 +383,45 @@ static inline int s1ap_encode_ue_context_release_command(
                     &pdu, pkbuf->payload, MAX_SDU_LEN);
 
     ASN_STRUCT_FREE_CONTENTS_ONLY(*td, &ueContextReleaseCommand);
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1AP_PDU, &pdu);
+
+    if (enc_ret.encoded < 0)
+    {
+        d_error("Encoding of %s failed", td->name);
+    }
+
+    return enc_ret.encoded;
+}
+
+static inline int s1ap_encode_paging(s1ap_message_t *message_p, pkbuf_t *pkbuf)
+{
+    asn_enc_rval_t enc_ret = {0};
+
+    S1AP_PDU_t pdu;
+    S1ap_Paging_t paging;
+    asn_TYPE_descriptor_t *td = &asn_DEF_S1ap_Paging;
+
+    memset(&paging, 0, 
+            sizeof(S1ap_Paging_t));
+    if (s1ap_encode_s1ap_pagingies(
+            &paging,
+            &message_p->s1ap_PagingIEs) < 0) 
+    {
+        d_error("Encoding of %s failed", td->name);
+        return -1;
+    }
+
+    memset(&pdu, 0, sizeof (S1AP_PDU_t));
+    pdu.present = S1AP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage.procedureCode = message_p->procedureCode;
+    pdu.choice.initiatingMessage.criticality = S1ap_Criticality_ignore;
+    ANY_fromType_aper(&pdu.choice.initiatingMessage.value, 
+            td, &paging);
+
+    enc_ret = aper_encode_to_buffer(&asn_DEF_S1AP_PDU, 
+                    &pdu, pkbuf->payload, MAX_SDU_LEN);
+
+    ASN_STRUCT_FREE_CONTENTS_ONLY(*td, &paging);
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1AP_PDU, &pdu);
 
     if (enc_ret.encoded < 0)

@@ -129,6 +129,8 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
     S1ap_S1SetupRequestIEs_t *ies = NULL;
     pkbuf_t *s1apbuf = NULL;
     c_uint32_t enb_id;
+    int i,j;
+    int num_of_tai = 0;
 
     d_assert(enb, return, "Null param");
     d_assert(enb->s1ap_sock, return, "Null param");
@@ -138,6 +140,39 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
     d_assert(ies, return, "Null param");
 
     s1ap_ENB_ID_to_uint32(&ies->global_ENB_ID.eNB_ID, &enb_id);
+
+
+    /* Parse Supported TA */
+    for (i = 0; i < ies->supportedTAs.list.count; i++)
+    {
+        S1ap_SupportedTAs_Item_t *tai = NULL;
+        S1ap_TAC_t *tAC;
+
+        tai = (S1ap_SupportedTAs_Item_t *)ies->supportedTAs.list.array[i];
+        tAC = &tai->tAC;
+
+        for (j = 0; j < tai->broadcastPLMNs.list.count; j++)
+        {
+            S1ap_PLMNidentity_t *pLMNidentity = NULL;
+            pLMNidentity = 
+                (S1ap_PLMNidentity_t *)tai->broadcastPLMNs.list.array[j];
+
+            memcpy(&enb->tai[num_of_tai].tac, tAC->buf, sizeof(c_uint16_t));
+            enb->tai[num_of_tai].tac = ntohs(enb->tai[num_of_tai].tac);
+
+            memcpy(&enb->tai[num_of_tai].plmn_id, pLMNidentity->buf, 
+                    sizeof(plmn_id_t));
+            num_of_tai++;
+        }
+    }
+
+    enb->num_of_tai = num_of_tai;
+
+    if (enb->num_of_tai == 0)
+    {
+        d_error("No supported TA exist in s1stup_req messages");
+    }
+
 
 #if 0 /* FIXME : does it needed? */
     if (mme_ctx_enb_find_by_enb_id(enb_id))
@@ -502,4 +537,3 @@ void s1ap_handle_ue_context_release_complete(
 
     enb_ue_remove(enb_ue);
 }
-
