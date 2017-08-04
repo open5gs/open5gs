@@ -83,23 +83,67 @@ status_t pkbuf_final(void)
 
 void pkbuf_show(void)
 {
-    d_trace(1, "[64] %d/%d in pkbuf, [64] %d/%d in clbuf\n",
+    if (pool_size(&pkbuf_pool) != pool_avail(&pkbuf_pool))
+        d_warn("%d not freed in pkbuf_pool[%d]",
+                pool_size(&pkbuf_pool) - pool_avail(&pkbuf_pool),
+                pool_size(&pkbuf_pool));
+    d_trace(3, "%d not freed in pkbuf_pool[%d]\n",
             pool_size(&pkbuf_pool) - pool_avail(&pkbuf_pool),
-            pool_size(&pkbuf_pool),
+            pool_size(&pkbuf_pool));
+
+    if (pool_size(&clbuf_pool) != pool_avail(&clbuf_pool))
+        d_warn("%d not freed in clbuf_pool[%d]",
+                pool_size(&clbuf_pool) - pool_avail(&clbuf_pool),
+                pool_size(&clbuf_pool));
+    d_trace(3, "%d not freed in clbuf_pool[%d]\n",
             pool_size(&clbuf_pool) - pool_avail(&clbuf_pool),
             pool_size(&clbuf_pool));
-    d_trace(1, "[128] %d/%d [256] %d/%d [512] %d/%d [1024] %d/%d [2048] %d/%d "
-            "[8192] %d/%d in cluster\n",
+
+    if (pool_size(&cluster_128_pool) != pool_avail(&cluster_128_pool))
+        d_warn("%d not freed in cluster128_pool[%d]",
+                pool_size(&cluster_128_pool) - pool_avail(&cluster_128_pool),
+                pool_size(&cluster_128_pool));
+    d_trace(3, "%d not freed in cluster128_pool[%d]\n",
             pool_size(&cluster_128_pool) - pool_avail(&cluster_128_pool),
-            pool_size(&cluster_128_pool),
+            pool_size(&cluster_128_pool));
+
+    if (pool_size(&cluster_256_pool) != pool_avail(&cluster_256_pool))
+        d_warn("%d not freed in cluster256_pool[%d]",
+                pool_size(&cluster_256_pool) - pool_avail(&cluster_256_pool),
+                pool_size(&cluster_256_pool));
+    d_trace(3, "%d not freed in cluster256_pool[%d]\n",
             pool_size(&cluster_256_pool) - pool_avail(&cluster_256_pool),
-            pool_size(&cluster_256_pool),
+            pool_size(&cluster_256_pool));
+
+    if (pool_size(&cluster_512_pool) != pool_avail(&cluster_512_pool))
+        d_warn("%d not freed in cluster512_pool[%d]",
+                pool_size(&cluster_512_pool) - pool_avail(&cluster_512_pool),
+                pool_size(&cluster_512_pool));
+    d_trace(3, "%d not freed in cluster512_pool[%d]\n",
             pool_size(&cluster_512_pool) - pool_avail(&cluster_512_pool),
-            pool_size(&cluster_512_pool),
+            pool_size(&cluster_512_pool));
+    
+    if (pool_size(&cluster_1024_pool) != pool_avail(&cluster_1024_pool))
+        d_warn("%d not freed in cluster1024_pool[%d]",
+                pool_size(&cluster_1024_pool) - pool_avail(&cluster_1024_pool),
+                pool_size(&cluster_1024_pool));
+    d_trace(3, "%d not freed in cluster1024_pool[%d]\n",
             pool_size(&cluster_1024_pool) - pool_avail(&cluster_1024_pool),
-            pool_size(&cluster_1024_pool),
+            pool_size(&cluster_1024_pool));
+
+    if (pool_size(&cluster_2048_pool) != pool_avail(&cluster_2048_pool))
+        d_warn("%d not freed in cluster2048_pool[%d]",
+                pool_size(&cluster_2048_pool) - pool_avail(&cluster_2048_pool),
+                pool_size(&cluster_2048_pool));
+    d_trace(3, "%d not freed in cluster2048_pool[%d]\n",
             pool_size(&cluster_2048_pool) - pool_avail(&cluster_2048_pool),
-            pool_size(&cluster_2048_pool),
+            pool_size(&cluster_2048_pool));
+
+    if (pool_size(&cluster_8192_pool) != pool_avail(&cluster_8192_pool))
+        d_warn("%d not freed in cluster8192_pool[%d]",
+                pool_size(&cluster_8192_pool) - pool_avail(&cluster_8192_pool),
+                pool_size(&cluster_8192_pool));
+    d_trace(3, "%d not freed in cluster8192_pool[%d]\n",
             pool_size(&cluster_8192_pool) - pool_avail(&cluster_8192_pool),
             pool_size(&cluster_8192_pool));
 }

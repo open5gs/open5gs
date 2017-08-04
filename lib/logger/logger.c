@@ -4,7 +4,7 @@
 #include "core_debug.h"
 #include "core_param.h"
 #include "core_file.h"
-#include "core_signal.h"
+#include "core_thread.h"
 
 #include <stdio.h>
 #include <sys/socket.h>
@@ -17,10 +17,8 @@
 #define FILE_CHECK_CYCLE 15
 
 static char g_buffer[1024];
-static char g_path[MAX_FILENAME_SIZE] = "wemania.log";
+static char g_path[MAX_FILENAME_SIZE] = "nextepc.log";
 static file_t *g_file = NULL;
-
-static int request_stop = 0;
 
 status_t log_file_backup()
 {
@@ -154,8 +152,7 @@ int logger_start(const char *path)
         return -1;
     }
 
-
-    while (!request_stop)
+    while (!thread_should_stop())
     {
         timer_val.tv_sec = 0;
         timer_val.tv_usec = 50000;
@@ -216,9 +213,4 @@ int logger_start(const char *path)
     close(us);
 
     return 0;
-}
-
-void logger_stop()
-{
-    request_stop = 1;
 }

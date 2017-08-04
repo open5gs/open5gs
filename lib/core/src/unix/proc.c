@@ -56,17 +56,16 @@ status_t proc_create(proc_id *id,
 
         semaphore_post(new->sem1);
 
-        d_trace(3, "core proc try to terminate\n");
         rv = new->start_func((proc_id)new, new->data);
-        d_trace(3, "start_func done(rv = %d)\n", rv);
+        d_trace(3, "[%d] start_func done(rv = %d)\n", new->proc, rv);
 
         semaphore_wait(new->sem2);
-        d_trace(3, "received post from parent\n");
+        d_trace(3, "[%d] semaphore wait in child\n", new->proc);
 
         if (rv == CORE_OK)
         {
             new->stop_func(new->proc, new->data);
-            d_trace(3, "stop_func done(rv = %d)\n", rv);
+            d_trace(3, "[%d] stop_func done(rv = %d)\n", new->proc, rv);
         }
 
         semaphore_post(new->sem1);
@@ -74,10 +73,10 @@ status_t proc_create(proc_id *id,
         semaphore_delete(new->sem1);
         semaphore_delete(new->sem2);
         pool_free_node(&proc_pool, new);
-        d_trace(3, "delete core proc memory\n");
+        d_trace(3, "[%d] delete core proc memory in child\n", new->proc);
 
         core_terminate();
-        d_trace(3, "core proc terminate...done\n");
+        d_trace(3, "[%d[ core proc terminate...done\n", new->proc);
 
         _exit(EXIT_SUCCESS);
     }
@@ -95,21 +94,19 @@ status_t proc_delete(proc_id id)
 {
     proc_t *proc = (proc_t *)id;
 
-    semaphore_post(proc->sem2);
-    d_trace(3, "[%d] post semaphore to start deleting\n", proc->proc);
-
-    d_trace(3, "core_kill for %d\n", proc->proc);
+#if 0
     core_kill(proc->proc, SIGTERM);
     d_trace(3, "core_kill done for %d\n", proc->proc);
+#endif
 
-    d_trace(3, "proc_delete wait\n");
+    semaphore_post(proc->sem2);
     semaphore_wait(proc->sem1);
-    d_trace(3, "proc_delete done\n");
+    d_trace(3, "[%d] semaphore wait in parent\n", proc->proc);
 
     semaphore_delete(proc->sem1);
     semaphore_delete(proc->sem2);
     pool_free_node(&proc_pool, proc);
-    d_trace(3, "delete proc-related memory\n");
+    d_trace(3, "[%d] delete core proc memory in parent\n", proc->proc);
 
     return CORE_OK;
 }
