@@ -58,17 +58,7 @@ status_t test_initialize(void)
     {
         while(1)
         {
-            if (context_self()->hidden.disable_hss == 0)
-            {
-                if (connected_count == 1)
-                    break;
-            }
-            else
-            {
-                if (connected_count == 2)
-                    break;
-            }
-
+            if (connected_count == 1) break;
             core_sleep(time_from_msec(50));
         }
     }
