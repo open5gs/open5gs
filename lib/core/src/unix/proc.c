@@ -55,33 +55,29 @@ status_t proc_create(proc_id *id,
         new->proc = getpid();
 
         semaphore_post(new->sem1);
-        d_trace(3, "[%d] post semaphore for starting\n", new->proc);
 
-        d_trace(3, "start func wait\n");
+        d_trace(3, "core proc try to terminate\n");
         rv = new->start_func((proc_id)new, new->data);
-        d_trace(3, "start func done(rv = %d)\n", rv);
+        d_trace(3, "start_func done(rv = %d)\n", rv);
 
-        d_trace(3, "deleting semaphore wait\n");
         semaphore_wait(new->sem2);
-        d_trace(3, "deleting semaphore done\n");
+        d_trace(3, "received post from parent\n");
 
         if (rv == CORE_OK)
         {
-            d_trace(3, "stop func wait\n");
             new->stop_func(new->proc, new->data);
-            d_trace(3, "stop func done\n");
+            d_trace(3, "stop_func done(rv = %d)\n", rv);
         }
 
         semaphore_post(new->sem1);
-        d_trace(3, "[%d] post semaphore to finish deleting\n", new->proc);
 
         semaphore_delete(new->sem1);
         semaphore_delete(new->sem2);
         pool_free_node(&proc_pool, new);
-        d_trace(3, "delete proc-related memory\n");
+        d_trace(3, "delete core proc memory\n");
 
         core_terminate();
-        d_trace(3, "core terminated in child process\n");
+        d_trace(3, "core proc terminate...done\n");
 
         _exit(EXIT_SUCCESS);
     }

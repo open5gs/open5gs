@@ -34,6 +34,10 @@ status_t app_will_initialize(char *config_path, char *log_path)
     if (others)
     {
         d_trace_level(&_app_init, others);
+#if 0
+        extern int _proc;
+        d_trace_level(&_proc, 3);
+#endif
     }
 
     if (log_path) 
