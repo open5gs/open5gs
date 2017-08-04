@@ -8,7 +8,7 @@
 
 #include "app.h"
 
-static thread_id logger_thread;
+static thread_id logger_thread = 0;
 static void *THREAD_FUNC logger_main(thread_id id, void *data);
 
 status_t app_will_initialize(char *config_path, char *log_path)
@@ -59,7 +59,7 @@ status_t app_did_initialize(char *config_path, char *log_path)
 
 void app_will_terminate(void)
 {
-    if (context_self()->log_path)
+    if (logger_thread)
     {
         thread_delete(logger_thread);
     }

@@ -7,14 +7,14 @@
 #include "context.h"
 #include "app.h"
 
-static semaphore_id pgw_sem1;
-static semaphore_id pgw_sem2;
+static semaphore_id pgw_sem1 = 0;
+static semaphore_id pgw_sem2 = 0;
 
-static semaphore_id sgw_sem1;
-static semaphore_id sgw_sem2;
+static semaphore_id sgw_sem1 = 0;
+static semaphore_id sgw_sem2 = 0;
 
-static semaphore_id hss_sem1;
-static semaphore_id hss_sem2;
+static semaphore_id hss_sem1 = 0;
+static semaphore_id hss_sem2 = 0;
 
 status_t app_initialize(char *config_path, char *log_path)
 {
@@ -44,14 +44,14 @@ status_t app_initialize(char *config_path, char *log_path)
 
         if (pid == 0)
         {
-            semaphore_post(pgw_sem1);
+            if (pgw_sem1) semaphore_post(pgw_sem1);
 
             d_trace(1, "PGW try to initialize\n");
             rv = pgw_initialize();
             d_assert(rv == CORE_OK,, "Failed to intialize PGW");
             d_trace(1, "PGW initialize...done\n");
 
-            semaphore_wait(pgw_sem2);
+            if (pgw_sem2) semaphore_wait(pgw_sem2);
 
             if (rv == CORE_OK)
             {
@@ -60,10 +60,11 @@ status_t app_initialize(char *config_path, char *log_path)
                 d_trace(1, "PGW terminate...done\n");
             }
 
-            semaphore_post(pgw_sem1);
+            if (pgw_sem1) semaphore_post(pgw_sem1);
 
-            semaphore_delete(pgw_sem1); /* allocated from parent process */
-            semaphore_delete(pgw_sem2); /* allocated from parent process */
+            /* allocated from parent process */
+            if (pgw_sem1) semaphore_delete(pgw_sem1);
+            if (pgw_sem2) semaphore_delete(pgw_sem2);
 
             app_did_terminate();
 
@@ -72,7 +73,7 @@ status_t app_initialize(char *config_path, char *log_path)
             _exit(EXIT_SUCCESS);
         }
 
-        semaphore_wait(pgw_sem1);
+        if (pgw_sem1) semaphore_wait(pgw_sem1);
     }
 
 
@@ -88,17 +89,18 @@ status_t app_initialize(char *config_path, char *log_path)
 
         if (pid == 0)
         {
-            semaphore_delete(pgw_sem1); /* allocated from parent process */
-            semaphore_delete(pgw_sem2); /* allocated from parent process */
+            /* allocated from parent process */
+            if (pgw_sem1) semaphore_delete(pgw_sem1);
+            if (pgw_sem2) semaphore_delete(pgw_sem2);
 
-            semaphore_post(sgw_sem1);
+            if (sgw_sem1) semaphore_post(sgw_sem1);
 
             d_trace(1, "SGW try to initialize\n");
             rv = sgw_initialize();
             d_assert(rv == CORE_OK,, "Failed to intialize SGW");
             d_trace(1, "SGW initialize...done\n");
 
-            semaphore_wait(sgw_sem2);
+            if (sgw_sem2) semaphore_wait(sgw_sem2);
 
             if (rv == CORE_OK)
             {
@@ -107,10 +109,11 @@ status_t app_initialize(char *config_path, char *log_path)
                 d_trace(1, "SGW terminate...done\n");
             }
 
-            semaphore_post(sgw_sem1);
+            if (sgw_sem1) semaphore_post(sgw_sem1);
 
-            semaphore_delete(sgw_sem1); /* allocated from parent process */
-            semaphore_delete(sgw_sem2); /* allocated from parent process */
+            /* allocated from parent process */
+            if (sgw_sem1) semaphore_delete(sgw_sem1);
+            if (sgw_sem2) semaphore_delete(sgw_sem2);
 
             app_did_terminate();
 
@@ -119,7 +122,7 @@ status_t app_initialize(char *config_path, char *log_path)
             _exit(EXIT_SUCCESS);
         }
 
-        semaphore_wait(sgw_sem1);
+        if (sgw_sem1) semaphore_wait(sgw_sem1);
     }
 
 
@@ -135,19 +138,20 @@ status_t app_initialize(char *config_path, char *log_path)
 
         if (pid == 0)
         {
-            semaphore_delete(pgw_sem1); /* allocated from parent process */
-            semaphore_delete(pgw_sem2); /* allocated from parent process */
-            semaphore_delete(sgw_sem1); /* allocated from parent process */
-            semaphore_delete(sgw_sem2); /* allocated from parent process */
+            /* allocated from parent process */
+            if (pgw_sem1) semaphore_delete(pgw_sem1);
+            if (pgw_sem2) semaphore_delete(pgw_sem2);
+            if (sgw_sem1) semaphore_delete(sgw_sem1);
+            if (sgw_sem2) semaphore_delete(sgw_sem2);
 
-            semaphore_post(hss_sem1);
+            if (hss_sem1) semaphore_post(hss_sem1);
 
             d_trace(1, "HSS try to initialize\n");
             rv = hss_initialize();
             d_assert(rv == CORE_OK,, "Failed to intialize HSS");
             d_trace(1, "HSS initialize...done\n");
 
-            semaphore_wait(hss_sem2);
+            if (hss_sem2) semaphore_wait(hss_sem2);
 
             if (rv == CORE_OK)
             {
@@ -156,10 +160,10 @@ status_t app_initialize(char *config_path, char *log_path)
                 d_trace(1, "HSS terminate...done\n");
             }
 
-            semaphore_post(hss_sem1);
+            if (hss_sem1) semaphore_post(hss_sem1);
 
-            semaphore_delete(hss_sem1); /* allocated from parent process */
-            semaphore_delete(hss_sem2); /* allocated from parent process */
+            if (hss_sem1) semaphore_delete(hss_sem1);
+            if (hss_sem2) semaphore_delete(hss_sem2);
 
             app_did_terminate();
 
@@ -168,7 +172,7 @@ status_t app_initialize(char *config_path, char *log_path)
             _exit(EXIT_SUCCESS);
         }
 
-        semaphore_wait(hss_sem1);
+        if (hss_sem1) semaphore_wait(hss_sem1);
     }
 
     rv = app_did_initialize(config_path, log_path);
@@ -192,27 +196,27 @@ void app_terminate(void)
 
     if (context_self()->hidden.disable_hss == 0)
     {
-        semaphore_post(hss_sem2);
-        semaphore_wait(hss_sem1);
+        if (hss_sem2) semaphore_post(hss_sem2);
+        if (hss_sem1) semaphore_wait(hss_sem1);
     }
-    semaphore_delete(hss_sem1);
-    semaphore_delete(hss_sem2);
+    if (hss_sem1) semaphore_delete(hss_sem1);
+    if (hss_sem2) semaphore_delete(hss_sem2);
 
     if (context_self()->hidden.disable_sgw == 0)
     {
-        semaphore_post(sgw_sem2);
-        semaphore_wait(sgw_sem1);
+        if (sgw_sem2) semaphore_post(sgw_sem2);
+        if (sgw_sem1) semaphore_wait(sgw_sem1);
     }
-    semaphore_delete(sgw_sem1);
-    semaphore_delete(sgw_sem2);
+    if (sgw_sem1) semaphore_delete(sgw_sem1);
+    if (sgw_sem2) semaphore_delete(sgw_sem2);
 
     if (context_self()->hidden.disable_pgw == 0)
     {
-        semaphore_post(pgw_sem2);
-        semaphore_wait(pgw_sem1);
+        if (pgw_sem2) semaphore_post(pgw_sem2);
+        if (pgw_sem1) semaphore_wait(pgw_sem1);
     }
-    semaphore_delete(pgw_sem1);
-    semaphore_delete(pgw_sem2);
+    if (pgw_sem1) semaphore_delete(pgw_sem1);
+    if (pgw_sem2) semaphore_delete(pgw_sem2);
 
     app_did_terminate();
 }
