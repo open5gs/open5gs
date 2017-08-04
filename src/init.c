@@ -30,17 +30,6 @@ status_t app_will_initialize(char *config_path, char *log_path)
         d_trace_level(&_app_init, others);
     }
 
-    if (log_path) 
-        context_self()->log_path = log_path;
-
-    if (context_self()->log_path)
-    {
-        d_print("  Logging '%s'\n", context_self()->log_path);
-        rv = thread_create(&logger_thread, NULL, 
-                logger_main, context_self()->log_path);
-        if (rv != CORE_OK) return rv;
-    }
-
     if (context_self()->db_uri)
     {
         rv = context_db_init(context_self()->db_uri);
@@ -52,11 +41,29 @@ status_t app_will_initialize(char *config_path, char *log_path)
 
 status_t app_did_initialize(char *config_path, char *log_path)
 {
+    status_t rv;
+
+    if (log_path) 
+        context_self()->log_path = log_path;
+
+    if (context_self()->log_path)
+    {
+        d_print("  Logging '%s'\n", context_self()->log_path);
+        rv = thread_create(&logger_thread, NULL, 
+                logger_main, context_self()->log_path);
+        if (rv != CORE_OK) return rv;
+    }
+
     return CORE_OK;
 }
 
 void app_will_terminate(void)
 {
+    if (context_self()->log_path)
+    {
+        thread_delete(logger_thread);
+    }
+
 }
 
 void app_did_terminate(void)
@@ -64,11 +71,6 @@ void app_did_terminate(void)
     if (context_self()->db_uri)
     {
         context_db_final();
-    }
-
-    if (context_self()->log_path)
-    {
-        thread_delete(logger_thread);
     }
 
     context_final();

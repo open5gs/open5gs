@@ -7,11 +7,10 @@ libcoreunix_la_SOURCES = \
     ../../include/arch/unix/core_arch_file.h \
     ../../include/arch/unix/core_arch_mutex.h \
     ../../include/arch/unix/core_arch_semaphore.h \
-    ../../include/arch/unix/core_arch_thread.h \
-    ../../include/arch/unix/core_arch_proc.h
+    ../../include/arch/unix/core_arch_thread.h
 
 nodist_libcoreunix_la_SOURCES = \
-    cond.c file.c net_lib.c thread.c proc.c errorcodes.c mutex.c rwlock.c \
+    cond.c file.c net_lib.c thread.c errorcodes.c mutex.c rwlock.c \
     start.c time.c semaphore.c signal.c pkbuf.c rand.c atomic.c
 
 AM_CPPFLAGS = \

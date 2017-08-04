@@ -34,7 +34,9 @@ status_t app_initialize(char *config_path, char *log_path)
 
 void app_terminate(void)
 {
+    printf("1\n");
     app_will_terminate();
+    printf("2\n");
 
     d_trace(1, "MME try to terminate\n");
     mme_terminate();

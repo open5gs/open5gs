@@ -273,7 +273,6 @@ typedef  c_int32_t             	c_intptr_t;
  * </PRE>
  */
 #define THREAD_FUNC
-#define PROC_FUNC
 
 /**
  * The public CORE functions are declared with CORE_DECLARE(), so they may
