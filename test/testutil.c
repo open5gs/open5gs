@@ -25,15 +25,14 @@
 #include "abts.h"
 #include "testutil.h"
 
-static semaphore_id test_sem;
+static int connected_count = 0;
 static void test_s6a_hook_handler(enum fd_hook_type type, struct msg * msg, 
     struct peer_hdr * peer, void * other, struct fd_hook_permsgdata *pmd, 
     void * regdata)
 {
     if (type == HOOK_PEER_CONNECT_SUCCESS)
     {
-        d_assert(semaphore_post(test_sem) == CORE_OK,,
-                "semaphore_post() failed");
+        connected_count++;
     }
 }
 
@@ -54,21 +53,24 @@ status_t test_initialize(void)
     atexit(test_terminate);
 
     core_initialize();
-    d_assert(semaphore_create(&test_sem, 0) == CORE_OK, 
-            return CORE_ERROR, "semaphore_create() failed");
-
     rv = app_initialize(NULL, NULL);
     if (rv == CORE_OK)
     {
-        d_assert(semaphore_wait(test_sem) == CORE_OK, return CORE_ERROR,
-                "semaphore_wait() failed");
-        if (context_self()->hidden.disable_hss == 0)
+        while(1)
         {
-            d_assert(semaphore_wait(test_sem) == CORE_OK, return CORE_ERROR,
-                    "semaphore_wait() failed");
+            if (context_self()->hidden.disable_hss == 0)
+            {
+                if (connected_count == 1)
+                    break;
+            }
+            else
+            {
+                if (connected_count == 2)
+                    break;
+            }
+
+            core_sleep(time_from_msec(50));
         }
-        d_assert(semaphore_delete(test_sem) == CORE_OK, return CORE_ERROR,
-                "semaphore_delete() failed");
     }
 
     return rv;
