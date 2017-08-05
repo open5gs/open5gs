@@ -4,10 +4,8 @@
 
 #include "hss_context.h"
 
-status_t hss_fd_init(void)
+int hss_fd_init(void)
 {
-    status_t rv;
-
     fd_context_init(FD_MODE_SERVER);
 
     if (hss_self()->fd_conf_path == NULL)
@@ -26,10 +24,9 @@ status_t hss_fd_init(void)
         fd_self()->pic_port = hss_self()->mme_s6a_port;
     }
 
-    rv = fd_init(hss_self()->fd_conf_path);
-    if (rv != 0) return rv;
+    CHECK_FCT( fd_init(hss_self()->fd_conf_path) );
 
-	return rv;
+	return 0;
 }
 
 void hss_fd_final(void)

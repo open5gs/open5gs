@@ -9,6 +9,7 @@ static int initialized = 0;
 status_t hss_initialize(void)
 {
     status_t rv;
+    int ret;
 
     rv = hss_context_init();
     if (rv != CORE_OK) return rv;
@@ -22,11 +23,11 @@ status_t hss_initialize(void)
     rv = hss_db_init();
     if (rv != CORE_OK) return rv;
 
-    rv = hss_fd_init();
-    if (rv != 0) return rv;
+    ret = hss_fd_init();
+    if (ret != 0) return CORE_ERROR;
 
-    rv = hss_s6a_init();
-    if (rv != CORE_OK) return rv;
+    ret = hss_s6a_init();
+    if (ret != CORE_OK) return CORE_ERROR;
 
     initialized = 1;
 

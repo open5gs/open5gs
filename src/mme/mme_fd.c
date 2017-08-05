@@ -4,10 +4,8 @@
 
 #include "mme_context.h"
 
-status_t mme_fd_init(void)
+int mme_fd_init(void)
 {
-    status_t rv;
-
     fd_context_init(FD_MODE_CLIENT);
 
     if (mme_self()->fd_conf_path == NULL)
@@ -26,10 +24,9 @@ status_t mme_fd_init(void)
         fd_self()->pic_port = mme_self()->hss_s6a_port;
     }
 
-    rv = fd_init(mme_self()->fd_conf_path);
-    if (rv != CORE_OK) return rv;
+    CHECK_FCT( fd_init(mme_self()->fd_conf_path) );
 
-	return rv;
+	return 0;
 }
 
 void mme_fd_final(void)

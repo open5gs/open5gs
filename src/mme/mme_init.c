@@ -19,6 +19,7 @@ static int initialized = 0;
 status_t mme_initialize()
 {
     status_t rv;
+    int ret;
 
     rv = mme_context_init();
     if (rv != CORE_OK) return rv;
@@ -29,11 +30,11 @@ status_t mme_initialize()
     rv = mme_context_setup_trace_module();
     if (rv != CORE_OK) return rv;
 
-    rv = mme_fd_init();
-    if (rv != 0) return rv;
+    ret = mme_fd_init();
+    if (ret != 0) return CORE_ERROR;
 
-    rv = mme_s6a_init();
-    if (rv != 0) return rv;
+    ret = mme_s6a_init();
+    if (ret != 0) return CORE_ERROR;
 
     rv = thread_create(&sm_thread, NULL, sm_main, NULL);
     if (rv != CORE_OK) return rv;
