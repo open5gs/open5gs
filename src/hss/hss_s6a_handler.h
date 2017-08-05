@@ -7,7 +7,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-CORE_DECLARE(status_t) hss_s6a_init(void);
+CORE_DECLARE(int) hss_s6a_init(void);
 CORE_DECLARE(void) hss_s6a_final(void);
 
 #ifdef __cplusplus

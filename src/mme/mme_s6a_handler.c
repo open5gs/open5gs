@@ -776,7 +776,7 @@ int mme_s6a_init(void)
 	/* Advertise the support for the application in the peer */
 	CHECK_FCT( fd_disp_app_support ( s6a_appli, s6a_vendor, 1, 0 ) );
 	
-	return CORE_OK;
+	return 0;
 }
 
 void mme_s6a_final(void)
