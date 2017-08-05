@@ -576,7 +576,7 @@ status_t mme_s6a_init(void)
 
     fd_context_init(FD_MODE_CLIENT);
 
-    if (mme_self()->s6a_config_path == NULL)
+    if (mme_self()->fd_conf_path == NULL)
     {
         /* This is default diameter configuration if there is no config file 
          * The Configuration : No TLS, Only TCP */
@@ -592,7 +592,7 @@ status_t mme_s6a_init(void)
         fd_self()->pic_port = mme_self()->hss_s6a_port;
     }
 
-    rv = fd_init(mme_self()->s6a_config_path);
+    rv = fd_init(mme_self()->fd_conf_path);
     if (rv != CORE_OK) return rv;
 
 	/* Install objects definitions for this application */

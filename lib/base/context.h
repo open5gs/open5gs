@@ -34,7 +34,7 @@ typedef struct _context_t {
         int s1ap;
         int nas;
         int gtp;
-        int s6a;
+        int fd;
         int others;
     } trace_level;
 

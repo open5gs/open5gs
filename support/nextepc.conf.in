@@ -5,14 +5,14 @@
   {
     S1AP: 1,
     NAS: 1,
-    S6A: 1,
+    FD: 1,
     GTP: 1,
     OTHERS: 1,
   }
 
   HSS :
   {
-#S6A_CONFIG_PATH : "@prefix@/etc/freeDiameter/hss.conf",
+#FD_CONF_PATH : "@prefix@/etc/freeDiameter/hss.conf",
     NETWORK :
     {
       S6A_ADDR : "10.1.35.214"
@@ -21,7 +21,7 @@
 
   MME :
   {
-#S6A_CONFIG_PATH : "@prefix@/etc/freeDiameter/mme.conf",
+#FD_CONF_PATH : "@prefix@/etc/freeDiameter/mme.conf",
 
     DEFAULT_PAGING_DRX : "v64",
 #RELATIVE_CAPACITY : 255,

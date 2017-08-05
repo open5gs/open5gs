@@ -147,9 +147,9 @@ status_t context_parse_config()
                         {
                             if (v) self.trace_level.nas = atoi(v);
                         }
-                        else if (jsmntok_equal(json, t+m, "S6A") == 0)
+                        else if (jsmntok_equal(json, t+m, "FD") == 0)
                         {
-                            if (v) self.trace_level.s6a = atoi(v);
+                            if (v) self.trace_level.fd = atoi(v);
                         }
                         else if (jsmntok_equal(json, t+m, "GTP") == 0)
                         {

@@ -47,7 +47,7 @@ typedef struct _hss_db_subscription_data_t {
 } hss_db_subscription_data_t;
 
 typedef struct _hss_context_t {
-    char*           s6a_config_path;    /* HSS S6A Configuration File Path */
+    char*           fd_conf_path;       /* HSS freeDiameter conf path */
     char*           hss_s6a_addr;       /* HSS S6A local address (STIRNG)*/
     c_uint16_t      hss_s6a_port;       /* HSS S6A local port */
     c_uint16_t      hss_s6a_tls_port;   /* HSS S6A local TLS port */

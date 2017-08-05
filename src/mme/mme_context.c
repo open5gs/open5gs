@@ -116,17 +116,17 @@ static status_t mme_context_prepare()
 
 static status_t mme_context_validation()
 {
-    if (self.s6a_config_path == NULL)
+    if (self.fd_conf_path == NULL)
     {
         if (self.mme_s6a_addr == NULL)
         {
-            d_error("No MME.S6A_CONFIG_PATH or MME.NETWORK.S6A_ADDR in '%s'",
+            d_error("No MME.FD_CONF_PATH or MME.NETWORK.S6A_ADDR in '%s'",
                     context_self()->config.path);
             return CORE_ERROR;
         }
         if (self.hss_s6a_addr == NULL)
         {
-            d_error("No MME.S6A_CONFIG_PATH or HSS.NETWORK.S6A_ADDR in '%s'",
+            d_error("No MME.FD_CONF_PATH or HSS.NETWORK.S6A_ADDR in '%s'",
                     context_self()->config.path);
             return CORE_ERROR;
         }
@@ -350,9 +350,9 @@ status_t mme_context_parse_config()
                     char *v = jsmntok_to_string(json, t+1);
                     if (v) self.relative_capacity = atoi(v);
                 }
-                else if (jsmntok_equal(json, t, "S6A_CONFIG_PATH") == 0)
+                else if (jsmntok_equal(json, t, "FD_CONF_PATH") == 0)
                 {
-                    self.s6a_config_path = jsmntok_to_string(json, t+1);
+                    self.fd_conf_path = jsmntok_to_string(json, t+1);
                 }
                 else if (jsmntok_equal(json, t, "NETWORK") == 0)
                 {
@@ -782,7 +782,7 @@ status_t mme_context_setup_trace_module()
 {
     int s1ap = context_self()->trace_level.s1ap;
     int nas = context_self()->trace_level.nas;
-    int s6a = context_self()->trace_level.s6a;
+    int fd = context_self()->trace_level.fd;
     int gtp = context_self()->trace_level.gtp;
     int others = context_self()->trace_level.others;
 
@@ -824,21 +824,21 @@ status_t mme_context_setup_trace_module()
         d_trace_level(&_nas_ies, nas);
     }
 
-    if (s6a)
+    if (fd)
     {
-        if (s6a <= 1) fd_g_debug_lvl = FD_LOG_ERROR;
-        else if (s6a <= 3) fd_g_debug_lvl = FD_LOG_NOTICE;
-        else if (s6a <= 5) fd_g_debug_lvl = FD_LOG_DEBUG;
+        if (fd <= 1) fd_g_debug_lvl = FD_LOG_ERROR;
+        else if (fd <= 3) fd_g_debug_lvl = FD_LOG_NOTICE;
+        else if (fd <= 5) fd_g_debug_lvl = FD_LOG_DEBUG;
         else fd_g_debug_lvl = FD_LOG_ANNOYING;
 
         extern int _mme_s6a_handler;
-        d_trace_level(&_mme_s6a_handler, s6a);
+        d_trace_level(&_mme_s6a_handler, fd);
         extern int _fd_init;
-        d_trace_level(&_fd_init, s6a);
+        d_trace_level(&_fd_init, fd);
         extern int _fd_context;
-        d_trace_level(&_fd_context, s6a);
+        d_trace_level(&_fd_context, fd);
         extern int _fd_logger;
-        d_trace_level(&_fd_logger, s6a);
+        d_trace_level(&_fd_logger, fd);
     }
 
     if (gtp)

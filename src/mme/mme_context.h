@@ -43,7 +43,7 @@ typedef struct _served_gummei {
 } served_gummei_t;
 
 typedef struct _mme_context_t {
-    char*           s6a_config_path;    /* MME S6A Configuration File Path */
+    char*           fd_conf_path;       /* MME freeDiameter conf path */
     char*           mme_s6a_addr;       /* MME S6A local address (STIRNG)*/
     c_uint16_t      mme_s6a_port;       /* MME S6A local port */
     c_uint16_t      mme_s6a_tls_port;   /* MME S6A local TLS port */
