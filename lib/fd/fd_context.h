@@ -34,7 +34,6 @@ struct fd_context_t {
 #define FD_MODE_SERVER   0x1
 #define FD_MODE_CLIENT   0x2
     int mode;        /* default FD_MODE_SERVER | FD_MODE_CLIENT */
-    c_uint32_t vendor_id;    /* default 10415 */
     
     int duration; /* default 10 */
     struct fd_stats {

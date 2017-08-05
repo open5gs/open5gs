@@ -13,10 +13,7 @@ int fd_context_init(int mode)
     memset(&self, 0, sizeof(struct fd_context_t));
 
     self.mode = mode;
-
-	/* Set the default values */
-	self.vendor_id  = 10415;	/* 3GPP Vendor ID */
-	self.duration   = 10;       /* 10 seconds */
+	self.duration = 10;       /* 10 seconds */
 	
 	return 0;
 }
