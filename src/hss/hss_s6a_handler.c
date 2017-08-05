@@ -487,31 +487,9 @@ out:
 status_t hss_s6a_init(void)
 {
 	struct disp_when data;
-    int ret;
-
-    fd_context_init(FD_MODE_SERVER);
-
-    if (hss_self()->fd_conf_path == NULL)
-    {
-        /* This is default diameter configuration if there is no config file 
-         * The Configuration : No TLS, Only TCP */
-
-        fd_self()->cnf_diamid = HSS_IDENTITY;
-        fd_self()->cnf_diamrlm = FD_REALM;
-        fd_self()->cnf_addr = hss_self()->hss_s6a_addr;
-        fd_self()->cnf_port = hss_self()->hss_s6a_port;
-        fd_self()->cnf_port_tls = hss_self()->hss_s6a_tls_port;
-
-        fd_self()->pi_diamid = MME_IDENTITY;
-        fd_self()->pi_addr = hss_self()->mme_s6a_addr;
-        fd_self()->pic_port = hss_self()->mme_s6a_port;
-    }
-
-    ret = fd_init(hss_self()->fd_conf_path);
-    if (ret != 0) return CORE_ERROR;
 
 	/* Install objects definitions for this application */
-	CHECK_FCT( s6a_init() );
+	CHECK_FCT( s6a_dict_init() );
 
 	memset(&data, 0, sizeof(data));
 	data.app = s6a_appli;
@@ -547,6 +525,4 @@ void hss_s6a_final(void)
 	if (hdl_ulr) {
 		(void) fd_disp_unregister(&hdl_ulr, NULL);
 	}
-
-    fd_final();
 }

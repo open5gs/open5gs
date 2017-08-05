@@ -572,33 +572,10 @@ out:
 
 status_t mme_s6a_init(void)
 {
-    status_t rv;
-
-    fd_context_init(FD_MODE_CLIENT);
-
-    if (mme_self()->fd_conf_path == NULL)
-    {
-        /* This is default diameter configuration if there is no config file 
-         * The Configuration : No TLS, Only TCP */
-
-        fd_self()->cnf_diamid = MME_IDENTITY;
-        fd_self()->cnf_diamrlm = FD_REALM;
-        fd_self()->cnf_addr = mme_self()->mme_s6a_addr;
-        fd_self()->cnf_port = mme_self()->mme_s6a_port;
-        fd_self()->cnf_port_tls = mme_self()->mme_s6a_tls_port;
-
-        fd_self()->pi_diamid = HSS_IDENTITY;
-        fd_self()->pi_addr = mme_self()->hss_s6a_addr;
-        fd_self()->pic_port = mme_self()->hss_s6a_port;
-    }
-
-    rv = fd_init(mme_self()->fd_conf_path);
-    if (rv != CORE_OK) return rv;
+    pool_init(&sess_state_pool, MAX_NUM_SESSION_STATE);
 
 	/* Install objects definitions for this application */
-	CHECK_FCT( s6a_init() );
-
-    pool_init(&sess_state_pool, MAX_NUM_SESSION_STATE);
+	CHECK_FCT( s6a_dict_init() );
 
 	d_assert(fd_sess_handler_create(&mme_s6a_reg, 
             (void *)free, NULL, NULL) == 0, return -1,);
@@ -623,6 +600,4 @@ void mme_s6a_final(void)
             pool_size(&sess_state_pool));
 
     pool_final(&sess_state_pool);
-
-    fd_final();
 }

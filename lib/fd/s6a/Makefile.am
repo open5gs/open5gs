@@ -6,7 +6,7 @@ libfds6a_la_SOURCES = \
 	extension.h
 
 nodist_libfds6a_la_SOURCES = \
-	dict_nas_mipv6.c dict_s6a.c s6a_init.c
+	dict_nas_mipv6.c dict_s6a.c dict_init.c
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/fd/s6a \

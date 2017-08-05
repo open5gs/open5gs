@@ -5,6 +5,7 @@
 
 #include "mme_event.h"
 
+#include "mme_fd.h"
 #include "mme_s6a_handler.h"
 
 static thread_id sm_thread;
@@ -18,7 +19,6 @@ static int initialized = 0;
 status_t mme_initialize()
 {
     status_t rv;
-    int ret;
 
     rv = mme_context_init();
     if (rv != CORE_OK) return rv;
@@ -29,8 +29,11 @@ status_t mme_initialize()
     rv = mme_context_setup_trace_module();
     if (rv != CORE_OK) return rv;
 
-    ret = mme_s6a_init();
-    if (ret != 0) return -1;
+    rv = mme_fd_init();
+    if (rv != 0) return rv;
+
+    rv = mme_s6a_init();
+    if (rv != 0) return rv;
 
     rv = thread_create(&sm_thread, NULL, sm_main, NULL);
     if (rv != CORE_OK) return rv;
@@ -50,6 +53,7 @@ void mme_terminate(void)
     thread_delete(sm_thread);
 
     mme_s6a_final();
+    mme_fd_final();
 
     mme_context_final();
 

@@ -108,7 +108,7 @@ extern struct dict_object *s6a_pre_emption_capability;
 extern struct dict_object *s6a_pre_emption_vulnerability;
 extern struct dict_object *s6a_served_party_ip_addr;
 
-int s6a_init(void);
+int s6a_dict_init(void);
 
 #ifdef __cplusplus
 }

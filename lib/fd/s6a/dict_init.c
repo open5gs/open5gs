@@ -88,7 +88,7 @@ int s6a_ext_load()
     return 0;
 }
 
-int s6a_init(void)
+int s6a_dict_init(void)
 {
     uint32_t vendor_id = S6A_VENDOR_ID; 
     uint32_t appli_id = S6A_APPLI_ID;
