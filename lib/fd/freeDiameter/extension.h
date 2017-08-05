@@ -65,8 +65,6 @@ int fd_ext_ ## _function(int major, int minor, char * conffile) {				\
 	return (_function)(conffile);							\
 }														
 
-int fd_avp_search_avp ( struct avp * groupedavp, struct dict_object * what, struct avp ** avp );
-
 #ifdef __cplusplus
 }
 #endif

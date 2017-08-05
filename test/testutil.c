@@ -17,7 +17,7 @@
 #include "core_general.h"
 #include "core_debug.h"
 #include "core_semaphore.h"
-#include "s6a_lib.h"
+#include "fd_lib.h"
 
 #include "app.h"
 #include "context.h"
@@ -26,7 +26,7 @@
 #include "testutil.h"
 
 static int connected_count = 0;
-static void test_s6a_hook_handler(enum fd_hook_type type, struct msg * msg, 
+static void test_fd_logger_handler(enum fd_hook_type type, struct msg * msg, 
     struct peer_hdr * peer, void * other, struct fd_hook_permsgdata *pmd, 
     void * regdata)
 {
@@ -48,7 +48,7 @@ status_t test_initialize(void)
 {
     status_t rv;
 
-    s6a_hook_register(test_s6a_hook_handler);
+    fd_logger_register(test_fd_logger_handler);
 
     atexit(test_terminate);
 

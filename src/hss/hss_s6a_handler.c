@@ -4,6 +4,7 @@
 #include "core_lib.h"
 #include "core_sha2.h"
 
+#include "fd_lib.h"
 #include "s6a_lib.h"
 
 #include "hss_context.h"
@@ -167,9 +168,9 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
 	fd_msg_send(msg, NULL, NULL);
 	
 	/* Add this value to the stats */
-	pthread_mutex_lock(&s6a_config->stats_lock);
-	s6a_config->stats.nb_echoed++;
-	pthread_mutex_unlock(&s6a_config->stats_lock);
+	pthread_mutex_lock(&fd_self()->stats_lock);
+	fd_self()->stats.nb_echoed++;
+	pthread_mutex_unlock(&fd_self()->stats_lock);
 
 	return 0;
 
@@ -470,9 +471,9 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
 	fd_msg_send(msg, NULL, NULL);
 	
 	/* Add this value to the stats */
-	pthread_mutex_lock(&s6a_config->stats_lock);
-	s6a_config->stats.nb_echoed++;
-	pthread_mutex_unlock(&s6a_config->stats_lock);
+	pthread_mutex_lock(&fd_self()->stats_lock);
+	fd_self()->stats.nb_echoed++;
+	pthread_mutex_unlock(&fd_self()->stats_lock);
 
 	return 0;
 
@@ -488,26 +489,29 @@ status_t hss_s6a_init(void)
 	struct disp_when data;
     int ret;
 
-    s6a_config_init();
+    fd_context_init(FD_MODE_SERVER);
 
     if (hss_self()->s6a_config_path == NULL)
     {
         /* This is default diameter configuration if there is no config file 
          * The Configuration : No TLS, Only TCP */
 
-        s6a_config->cnf_diamid = HSS_IDENTITY;
-        s6a_config->cnf_diamrlm = S6A_REALM;
-        s6a_config->cnf_addr = hss_self()->hss_s6a_addr;
-        s6a_config->cnf_port = hss_self()->hss_s6a_port;
-        s6a_config->cnf_port_tls = hss_self()->hss_s6a_tls_port;
+        fd_self()->cnf_diamid = HSS_IDENTITY;
+        fd_self()->cnf_diamrlm = FD_REALM;
+        fd_self()->cnf_addr = hss_self()->hss_s6a_addr;
+        fd_self()->cnf_port = hss_self()->hss_s6a_port;
+        fd_self()->cnf_port_tls = hss_self()->hss_s6a_tls_port;
 
-        s6a_config->pi_diamid = MME_IDENTITY;
-        s6a_config->pi_addr = hss_self()->mme_s6a_addr;
-        s6a_config->pic_port = hss_self()->mme_s6a_port;
+        fd_self()->pi_diamid = MME_IDENTITY;
+        fd_self()->pi_addr = hss_self()->mme_s6a_addr;
+        fd_self()->pic_port = hss_self()->mme_s6a_port;
     }
 
-    ret = s6a_init(hss_self()->s6a_config_path);
+    ret = fd_init(hss_self()->s6a_config_path);
     if (ret != 0) return CORE_ERROR;
+
+	/* Install objects definitions for this application */
+	CHECK_FCT( s6a_init() );
 
 	memset(&data, 0, sizeof(data));
 	data.app = s6a_appli;
@@ -526,6 +530,9 @@ status_t hss_s6a_init(void)
 	d_assert(fd_disp_register(hss_ulr_cb, DISP_HOW_CC, &data, NULL, 
                 &hdl_ulr) == 0, return CORE_ERROR,);
 
+	/* Advertise the support for the application in the peer */
+	CHECK_FCT( fd_disp_app_support ( s6a_appli, s6a_vendor, 1, 0 ) );
+
 	return CORE_OK;
 }
 
@@ -541,5 +548,5 @@ void hss_s6a_final(void)
 		(void) fd_disp_unregister(&hdl_ulr, NULL);
 	}
 
-    s6a_final();
+    fd_final();
 }

@@ -6,7 +6,7 @@
 
 #include "gtp_path.h"
 #include "s1ap_message.h"
-#include "s6a_lib.h"
+#include "fd_lib.h"
 
 #include "context.h"
 #include "nas_conv.h"
@@ -833,12 +833,12 @@ status_t mme_context_setup_trace_module()
 
         extern int _mme_s6a_handler;
         d_trace_level(&_mme_s6a_handler, s6a);
-        extern int _s6a_fd;
-        d_trace_level(&_s6a_fd, s6a);
-        extern int _s6a_init;
-        d_trace_level(&_s6a_init, s6a);
-        extern int _s6a_hook;
-        d_trace_level(&_s6a_hook, s6a);
+        extern int _fd_init;
+        d_trace_level(&_fd_init, s6a);
+        extern int _fd_context;
+        d_trace_level(&_fd_context, s6a);
+        extern int _fd_logger;
+        d_trace_level(&_fd_logger, s6a);
     }
 
     if (gtp)

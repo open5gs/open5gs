@@ -3,6 +3,7 @@
 #include "core_debug.h"
 #include "core_pool.h"
 
+#include "fd_lib.h"
 #include "s6a_lib.h"
 
 #include "mme_event.h"
@@ -98,31 +99,31 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
 
 out:
     /* Free the message */
-    d_assert(pthread_mutex_lock(&s6a_config->stats_lock) == 0,,);
+    d_assert(pthread_mutex_lock(&fd_self()->stats_lock) == 0,,);
     dur = ((ts.tv_sec - mi->ts.tv_sec) * 1000000) + 
         ((ts.tv_nsec - mi->ts.tv_nsec) / 1000);
-    if (s6a_config->stats.nb_recv)
+    if (fd_self()->stats.nb_recv)
     {
         /* Ponderate in the avg */
-        s6a_config->stats.avg = (s6a_config->stats.avg * 
-            s6a_config->stats.nb_recv + dur) / (s6a_config->stats.nb_recv + 1);
+        fd_self()->stats.avg = (fd_self()->stats.avg * 
+            fd_self()->stats.nb_recv + dur) / (fd_self()->stats.nb_recv + 1);
         /* Min, max */
-        if (dur < s6a_config->stats.shortest)
-            s6a_config->stats.shortest = dur;
-        if (dur > s6a_config->stats.longest)
-            s6a_config->stats.longest = dur;
+        if (dur < fd_self()->stats.shortest)
+            fd_self()->stats.shortest = dur;
+        if (dur > fd_self()->stats.longest)
+            fd_self()->stats.longest = dur;
     }
     else
     {
-        s6a_config->stats.shortest = dur;
-        s6a_config->stats.longest = dur;
-        s6a_config->stats.avg = dur;
+        fd_self()->stats.shortest = dur;
+        fd_self()->stats.longest = dur;
+        fd_self()->stats.avg = dur;
     }
     if (error)
-        s6a_config->stats.nb_errs++;
+        fd_self()->stats.nb_errs++;
     else 
-        s6a_config->stats.nb_recv++;
-    d_assert(pthread_mutex_unlock(&s6a_config->stats_lock) == 0,,);
+        fd_self()->stats.nb_recv++;
+    d_assert(pthread_mutex_unlock(&fd_self()->stats_lock) == 0,,);
     
     /* Display how long it took */
     if (ts.tv_nsec > mi->ts.tv_nsec)
@@ -233,9 +234,9 @@ int mme_s6a_send_air(mme_ue_t *mme_ue)
     d_assert(fd_msg_send(&req, mme_s6a_aia_cb, svg) == 0, goto out,);
 
     /* Increment the counter */
-    d_assert(pthread_mutex_lock(&s6a_config->stats_lock) == 0,,);
-    s6a_config->stats.nb_sent++;
-    d_assert(pthread_mutex_unlock(&s6a_config->stats_lock) == 0,, );
+    d_assert(pthread_mutex_lock(&fd_self()->stats_lock) == 0,,);
+    fd_self()->stats.nb_sent++;
+    d_assert(pthread_mutex_unlock(&fd_self()->stats_lock) == 0,, );
 
     d_trace(3, "[S6A] Authentication-Information-Request : UE[%s] --> HSS\n", 
             mme_ue->imsi_bcd);
@@ -423,31 +424,31 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     mme_event_send(&e);
 out:
     /* Free the message */
-    d_assert(pthread_mutex_lock(&s6a_config->stats_lock) == 0,,);
+    d_assert(pthread_mutex_lock(&fd_self()->stats_lock) == 0,,);
     dur = ((ts.tv_sec - mi->ts.tv_sec) * 1000000) + 
         ((ts.tv_nsec - mi->ts.tv_nsec) / 1000);
-    if (s6a_config->stats.nb_recv)
+    if (fd_self()->stats.nb_recv)
     {
         /* Ponderate in the avg */
-        s6a_config->stats.avg = (s6a_config->stats.avg * 
-            s6a_config->stats.nb_recv + dur) / (s6a_config->stats.nb_recv + 1);
+        fd_self()->stats.avg = (fd_self()->stats.avg * 
+            fd_self()->stats.nb_recv + dur) / (fd_self()->stats.nb_recv + 1);
         /* Min, max */
-        if (dur < s6a_config->stats.shortest)
-            s6a_config->stats.shortest = dur;
-        if (dur > s6a_config->stats.longest)
-            s6a_config->stats.longest = dur;
+        if (dur < fd_self()->stats.shortest)
+            fd_self()->stats.shortest = dur;
+        if (dur > fd_self()->stats.longest)
+            fd_self()->stats.longest = dur;
     }
     else
     {
-        s6a_config->stats.shortest = dur;
-        s6a_config->stats.longest = dur;
-        s6a_config->stats.avg = dur;
+        fd_self()->stats.shortest = dur;
+        fd_self()->stats.longest = dur;
+        fd_self()->stats.avg = dur;
     }
     if (error)
-        s6a_config->stats.nb_errs++;
+        fd_self()->stats.nb_errs++;
     else 
-        s6a_config->stats.nb_recv++;
-    d_assert(pthread_mutex_unlock(&s6a_config->stats_lock) == 0,,);
+        fd_self()->stats.nb_recv++;
+    d_assert(pthread_mutex_unlock(&fd_self()->stats_lock) == 0,,);
     
     /* Display how long it took */
     if (ts.tv_nsec > mi->ts.tv_nsec)
@@ -553,9 +554,9 @@ int mme_s6a_send_ulr(mme_ue_t *mme_ue)
     d_assert(fd_msg_send(&req, mme_s6a_ula_cb, svg) == 0, goto out,);
 
     /* Increment the counter */
-    d_assert(pthread_mutex_lock(&s6a_config->stats_lock) == 0,,);
-    s6a_config->stats.nb_sent++;
-    d_assert(pthread_mutex_unlock(&s6a_config->stats_lock) == 0,, );
+    d_assert(pthread_mutex_lock(&fd_self()->stats_lock) == 0,,);
+    fd_self()->stats.nb_sent++;
+    d_assert(pthread_mutex_unlock(&fd_self()->stats_lock) == 0,, );
 
     d_trace(3, "[S6A] Update-Location-Request : UE[%s] --> HSS\n", 
             mme_ue->imsi_bcd);
@@ -573,31 +574,37 @@ status_t mme_s6a_init(void)
 {
     status_t rv;
 
-    s6a_config_init();
+    fd_context_init(FD_MODE_CLIENT);
 
     if (mme_self()->s6a_config_path == NULL)
     {
         /* This is default diameter configuration if there is no config file 
          * The Configuration : No TLS, Only TCP */
 
-        s6a_config->cnf_diamid = MME_IDENTITY;
-        s6a_config->cnf_diamrlm = S6A_REALM;
-        s6a_config->cnf_addr = mme_self()->mme_s6a_addr;
-        s6a_config->cnf_port = mme_self()->mme_s6a_port;
-        s6a_config->cnf_port_tls = mme_self()->mme_s6a_tls_port;
+        fd_self()->cnf_diamid = MME_IDENTITY;
+        fd_self()->cnf_diamrlm = FD_REALM;
+        fd_self()->cnf_addr = mme_self()->mme_s6a_addr;
+        fd_self()->cnf_port = mme_self()->mme_s6a_port;
+        fd_self()->cnf_port_tls = mme_self()->mme_s6a_tls_port;
 
-        s6a_config->pi_diamid = HSS_IDENTITY;
-        s6a_config->pi_addr = mme_self()->hss_s6a_addr;
-        s6a_config->pic_port = mme_self()->hss_s6a_port;
+        fd_self()->pi_diamid = HSS_IDENTITY;
+        fd_self()->pi_addr = mme_self()->hss_s6a_addr;
+        fd_self()->pic_port = mme_self()->hss_s6a_port;
     }
 
-    rv = s6a_init(mme_self()->s6a_config_path);
+    rv = fd_init(mme_self()->s6a_config_path);
     if (rv != CORE_OK) return rv;
+
+	/* Install objects definitions for this application */
+	CHECK_FCT( s6a_init() );
 
     pool_init(&sess_state_pool, MAX_NUM_SESSION_STATE);
 
 	d_assert(fd_sess_handler_create(&mme_s6a_reg, 
             (void *)free, NULL, NULL) == 0, return -1,);
+
+	/* Advertise the support for the application in the peer */
+	CHECK_FCT( fd_disp_app_support ( s6a_appli, s6a_vendor, 1, 0 ) );
 	
 	return CORE_OK;
 }
@@ -617,5 +624,5 @@ void mme_s6a_final(void)
 
     pool_final(&sess_state_pool);
 
-    s6a_final();
+    fd_final();
 }
