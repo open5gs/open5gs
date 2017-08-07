@@ -5,7 +5,7 @@
 
 #include <mongoc.h>
 
-#include "s6a_lib.h"
+#include "fd_lib.h"
 
 #include "context.h"
 #include "hss_context.h"
@@ -61,17 +61,17 @@ static status_t hss_context_prepare()
 
 static status_t hss_context_validation()
 {
-    if (self.s6a_config_path == NULL)
+    if (self.fd_conf_path == NULL)
     {
         if (self.hss_s6a_addr == NULL)
         {
-            d_error("No HSS.S6A_CONFIG_PATH or HSS.NETWORK.S6A_ADDR in '%s'",
+            d_error("No HSS.FD_CONF_PATH or HSS.NETWORK.S6A_ADDR in '%s'",
                     context_self()->config.path);
             return CORE_ERROR;
         }
         if (self.mme_s6a_addr == NULL)
         {
-            d_error("No HSS.S6A_CONFIG_PATH or MME.NETWORK.S6A_ADDR in '%s'",
+            d_error("No HSS.FD_CONF_PATH or MME.NETWORK.S6A_ADDR in '%s'",
                     context_self()->config.path);
             return CORE_ERROR;
         }
@@ -153,9 +153,9 @@ status_t hss_context_parse_config()
             }
             case HSS_ROOT:
             {
-                if (jsmntok_equal(json, t, "S6A_CONFIG_PATH") == 0)
+                if (jsmntok_equal(json, t, "FD_CONF_PATH") == 0)
                 {
-                    self.s6a_config_path = jsmntok_to_string(json, t+1);
+                    self.fd_conf_path = jsmntok_to_string(json, t+1);
                 }
                 else if (jsmntok_equal(json, t, "NETWORK") == 0)
                 {
@@ -282,24 +282,24 @@ status_t hss_context_parse_config()
 
 status_t hss_context_setup_trace_module()
 {
-    int s6a = context_self()->trace_level.s6a;
+    int fd = context_self()->trace_level.fd;
     int others = context_self()->trace_level.others;
 
-    if (s6a)
+    if (fd)
     {
-        if (s6a <= 1) fd_g_debug_lvl = FD_LOG_ERROR;
-        else if (s6a <= 3) fd_g_debug_lvl = FD_LOG_NOTICE;
-        else if (s6a <= 5) fd_g_debug_lvl = FD_LOG_DEBUG;
+        if (fd <= 1) fd_g_debug_lvl = FD_LOG_ERROR;
+        else if (fd <= 3) fd_g_debug_lvl = FD_LOG_NOTICE;
+        else if (fd <= 5) fd_g_debug_lvl = FD_LOG_DEBUG;
         else fd_g_debug_lvl = FD_LOG_ANNOYING;
 
         extern int _hss_s6a_handler;
-        d_trace_level(&_hss_s6a_handler, s6a);
-        extern int _s6a_fd;
-        d_trace_level(&_s6a_fd, s6a);
-        extern int _s6a_init;
-        d_trace_level(&_s6a_init, s6a);
-        extern int _s6a_hook;
-        d_trace_level(&_s6a_hook, s6a);
+        d_trace_level(&_hss_s6a_handler, fd);
+        extern int _fd_init;
+        d_trace_level(&_fd_init, fd);
+        extern int _fd_context;
+        d_trace_level(&_fd_context, fd);
+        extern int _fd_logger;
+        d_trace_level(&_fd_logger, fd);
     }
 
     if (others)

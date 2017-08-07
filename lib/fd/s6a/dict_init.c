@@ -1,8 +1,9 @@
-#define TRACE_MODULE _s6a_dict
-
-#include "core_debug.h"
+#define TRACE_MODULE _s6a_init
 
 #include "s6a_lib.h"
+
+#define S6A_VENDOR_ID       10415;	    /* 3GPP Vendor ID */
+#define S6A_APPLI_ID        16777251;	/* 3GPP S6A Application ID */
 
 struct dict_object *s6a_vendor = NULL;
 struct dict_object *s6a_appli = NULL;
@@ -76,38 +77,29 @@ struct dict_object *s6a_served_party_ip_addr = NULL;
 
 int s6a_ext_load()
 {
-    int ret;
-
     int fd_ext_dict_nas_mipv6_init(int major, int minor, char *conffile);
     int fd_ext_dict_s6a_init(int major, int minor, char *conffile);
 
-    ret = fd_ext_dict_nas_mipv6_init(
-            FD_PROJECT_VERSION_MAJOR, FD_PROJECT_VERSION_MINOR, NULL);
-    if (ret != 0) 
-    {
-        d_error("fd_ext_init_nas_mipv6() failed");
-        return ret;
-    } 
-    ret = fd_ext_dict_s6a_init(
-            FD_PROJECT_VERSION_MAJOR, FD_PROJECT_VERSION_MINOR, NULL);
-    if (ret != 0) 
-    {
-        d_error("fd_ext_init_dict_s6a() failed");
-        return ret;
-    } 
+    CHECK_FCT(fd_ext_dict_nas_mipv6_init(
+            FD_PROJECT_VERSION_MAJOR, FD_PROJECT_VERSION_MINOR, NULL));
+    CHECK_FCT(fd_ext_dict_s6a_init(
+            FD_PROJECT_VERSION_MAJOR, FD_PROJECT_VERSION_MINOR, NULL));
 
     return 0;
 }
 
 int s6a_dict_init(void)
 {
+    uint32_t vendor_id = S6A_VENDOR_ID; 
+    uint32_t appli_id = S6A_APPLI_ID;
+    
     CHECK_FCT(s6a_ext_load());
 
     CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_VENDOR, 
-        VENDOR_BY_ID, (void *)&s6a_config->vendor_id, &s6a_vendor, ENOENT));
+        VENDOR_BY_ID, (void *)&vendor_id, &s6a_vendor, ENOENT));
 
     CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_APPLICATION, 
-        APPLICATION_BY_ID, (void *)&s6a_config->appli_id, &s6a_appli, ENOENT));
+        APPLICATION_BY_ID, (void *)&appli_id, &s6a_appli, ENOENT));
 
     CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_COMMAND, CMD_BY_NAME, 
         "Authentication-Information-Request", &s6a_cmd_air, ENOENT));

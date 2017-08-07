@@ -18,6 +18,7 @@ user@host ~/Documents/git/nextepc$ \
 user@host ~/Documents/git/nextepc$ \
     sudo valgrind --leak-check=full --show-reachable=yes --error-limit=no \
     --gen-suppressions=all --log-file=support/valgrind/test.log \
+    --suppressions=support/valgrind/mongoc.suppressions \
     ./epcd
 
 user@host ~/Documents/git/nextepc/support/valgrind$ \

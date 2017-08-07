@@ -1,4 +1,4 @@
-#define TRACE_MODULE _s6a_fd
+#define TRACE_MODULE _fd_init
 
 #include "core_debug.h"
 #include "core_param.h"
@@ -7,19 +7,21 @@
 
 #include "s6a_lib.h"
 
-static void s6a_gnutls_log_func(int level, const char *str);
-static void s6a_fd_logger(int printlevel, const char *format, va_list ap);
+#include "fd_context.h"
+#include "fd_logger.h"
+#include "fd_lib.h"
 
-extern status_t s6a_config_apply();
+static void fd_gnutls_log_func(int level, const char *str);
+static void fd_log_func(int printlevel, const char *format, va_list ap);
 
-int s6a_fd_init(const char *conffile)
+int fd_init(const char *conffile)
 {
     int ret;
 
-    gnutls_global_set_log_function(s6a_gnutls_log_func);
+    gnutls_global_set_log_function(fd_gnutls_log_func);
     gnutls_global_set_log_level(TRACE_MODULE);
 
-    ret = fd_log_handler_register(s6a_fd_logger);
+    ret = fd_log_handler_register(fd_log_func);
     if (ret != 0) 
     {
         d_error("fd_log_handler_register() failed");
@@ -40,16 +42,18 @@ int s6a_fd_init(const char *conffile)
     }
     else
     {
-        CHECK_FCT_DO( s6a_config_apply(), goto error );
+        CHECK_FCT_DO( fd_set_default_context(), goto error );
     }
 
-    /* register debug hook */
-    CHECK_FCT_DO( s6a_hook_init(), goto error );
+    /* Initialize FD logger */
+    CHECK_FCT_DO( fd_logger_init(), goto error );
 
 	/* Start the servers */
 	CHECK_FCT_DO( fd_core_start(), goto error );
 
 	CHECK_FCT_DO( fd_core_waitstartcomplete(), goto error );
+
+    CHECK_FCT( fd_logger_stats_start() );
 
     return 0;
 error:
@@ -59,21 +63,21 @@ error:
 	return -1;
 }
 
-void s6a_fd_final()
+void fd_final()
 {
-    s6a_hook_final();
+    fd_logger_final();
 
 	CHECK_FCT_DO( fd_core_shutdown(), d_error("fd_core_shutdown() failed") );
 	CHECK_FCT_DO( fd_core_wait_shutdown_complete(), 
             d_error("fd_core_wait_shutdown_complete() failed"));
 }
 
-static void s6a_gnutls_log_func(int level, const char *str)
+static void fd_gnutls_log_func(int level, const char *str)
 {
     d_trace(level, "gnutls[%d]: %s", level, str);
 }
 
-static void s6a_fd_logger(int printlevel, const char *format, va_list ap)
+static void fd_log_func(int printlevel, const char *format, va_list ap)
 {
     char buffer[HUGE_STRING_LEN];
     int  ret = 0;

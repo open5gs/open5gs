@@ -1,8 +1,6 @@
 #ifndef __S6A_LIB_H__
 #define __S6A_LIB_H__
 
-#include "core_errno.h"
-
 #include "freeDiameter/freeDiameter-host.h"
 #include "freeDiameter/libfdcore.h"
 #include "freeDiameter/extension.h"
@@ -10,10 +8,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
-
-#define S6A_REALM "localdomain" /* Default Relam */
-#define MME_IDENTITY "mme.localdomain" /* Default MME Identity */
-#define HSS_IDENTITY "hss.localdomain" /* Default HSS Identity */
 
 #define S6A_RAT_TYPE_WLAN                   0
 #define S6A_RAT_TYPE_VIRTUAL                1
@@ -41,51 +35,6 @@ extern "C" {
 
 #define S6A_UE_SRVCC_NOT_SUPPORTED          (0)
 #define S6A_UE_SRVCC_SUPPORTED              (1)
-
-#define AVP_CODE_CONTEXT_IDENTIFIER         (1423)
-#define AVP_CODE_ALL_APN_CONFIG_INC_IND     (1428)
-#define AVP_CODE_APN_CONFIGURATION          (1430)
-
-/* This is default diameter configuration if there is no config file 
- * The Configuration : No TLS, Only TCP */
-struct s6a_config_t {
-    /* Diameter Identity of the local peer (FQDN -- ASCII) */
-    char *cnf_diamid; 
-    /* Diameter realm of the local peer, default to realm part of cnf_diamid */
-    char *cnf_diamrlm; 
-    /* IP address of the local peer */
-    char *cnf_addr;
-
-    /* the local port for legacy Diameter (default: 3868) in host byte order */
-    c_uint16_t cnf_port;
-    /* the local port for Diameter/TLS (default: 5658) in host byte order */
-    c_uint16_t cnf_port_tls;
-
-    /* (supposedly) UTF-8, \0 terminated. 
-     * The Diameter Identity of the remote peer. */
-    char *pi_diamid; 
-    char *pi_addr; /* IP address of the remote peer */
-    c_uint16_t pic_port; /* port to connect to. 0: default. */
-    
-    int mode;        /* default MODE_MME | MODE_HSS */
-    c_uint32_t vendor_id;    /* default 10415 */
-    c_uint32_t appli_id;    /* default 16777251 */
-    
-    int duration; /* default 10 */
-    struct s6a_stats {
-        unsigned long long nb_echoed; /* server */
-        unsigned long long nb_sent;   /* client */
-        unsigned long long nb_recv;   /* client */
-        unsigned long long nb_errs;   /* client */
-        unsigned long shortest;  /* fastest answer, in microseconds */
-        unsigned long longest;   /* slowest answer, in microseconds */
-        unsigned long avg;       /* average answer time, in microseconds */
-    } stats;
-
-    pthread_mutex_t stats_lock;
-};
-
-extern struct s6a_config_t *s6a_config;
 
 /* Some global variables for dictionary */
 extern struct dict_object *s6a_vendor;
@@ -159,20 +108,7 @@ extern struct dict_object *s6a_pre_emption_capability;
 extern struct dict_object *s6a_pre_emption_vulnerability;
 extern struct dict_object *s6a_served_party_ip_addr;
 
-CORE_DECLARE(int) s6a_init(const char *conffile);
-CORE_DECLARE(void) s6a_final(void);
-
-CORE_DECLARE(int) s6a_config_init(void);
-
-CORE_DECLARE(int) s6a_hook_init();
-CORE_DECLARE(void) s6a_hook_final();
-
-typedef void (*s6a_hook_user_handler)(
-    enum fd_hook_type type, struct msg *msg, struct peer_hdr *peer, 
-    void *other, struct fd_hook_permsgdata *pmd, void *regdata);
-
-CORE_DECLARE(void) s6a_hook_register(s6a_hook_user_handler instance);
-CORE_DECLARE(void) s6a_hook_unregister();
+int s6a_dict_init(void);
 
 #ifdef __cplusplus
 }
