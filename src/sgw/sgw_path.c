@@ -122,6 +122,10 @@ static int _gtpv1_s5u_recv_cb(net_sock_t *sock, void *data)
                     int i;
                     for (i = 0; i < bearer->num_buffered_pkt; i++)
                     {
+                        gtp_h = 
+                            (gtp_header_t *)bearer->buffered_pkts[i]->payload;
+                        gtp_h->teid =  htonl(bearer->enb_s1u_teid);
+
                         gtp_send(sgw_self()->s1u_sock, &gnode, 
                                 bearer->buffered_pkts[i]);
                         pkbuf_free(bearer->buffered_pkts[i]);

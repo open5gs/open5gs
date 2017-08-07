@@ -9,6 +9,7 @@
 #include "emm_build.h"
 #include "mme_s6a_handler.h"
 #include "mme_kdf.h"
+#include "s1ap_handler.h"
 
 void emm_state_initial(fsm_t *s, event_t *e)
 {
@@ -62,8 +63,16 @@ void emm_state_operational(fsm_t *s, event_t *e)
                     break;
                 case GTP_DOWNLINK_DATA_NOTIFICATION_TYPE:
                 {
+                    mme_ue_t *mme_ue = NULL;
                     gtp_xact_t *xact = (gtp_xact_t *)event_get_param3(e);
+
                     emm_handle_downlink_data_notification(xact, bearer);
+                    mme_ue = bearer->mme_ue;
+                    d_assert(mme_ue, break, "Null param");
+
+                    s1ap_handle_paging(mme_ue);
+                    /* Start T3413 */
+                    tm_start(mme_ue->t3413);
                     break;
                 }
             }
@@ -137,6 +146,7 @@ void emm_state_operational(fsm_t *s, event_t *e)
             if (message->emm.h.security_header_type
                     == NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE)
             {
+                mme_ue_paged(mme_ue);
                 emm_handle_service_request(
                         mme_ue, &message->emm.service_request);
                 break;
@@ -146,6 +156,7 @@ void emm_state_operational(fsm_t *s, event_t *e)
             {
                 case NAS_ATTACH_REQUEST:
                 {
+                    mme_ue_paged(mme_ue);
                     emm_handle_attach_request(
                             mme_ue, &message->emm.attach_request);
                     break;
@@ -194,6 +205,11 @@ void emm_state_operational(fsm_t *s, event_t *e)
                             mme_ue, &message->emm.detach_request_from_ue);
                     break;
                 }
+                case NAS_TRACKING_AREA_UPDATE_REQUEST:
+                {
+                    mme_ue_paged(mme_ue);
+                    break;
+                }
                 default:
                 {
                     d_warn("Not implemented(type:%d)", 
@@ -211,6 +227,35 @@ void emm_state_operational(fsm_t *s, event_t *e)
             d_assert(index, return, "Null param");
             mme_ue = mme_ue_find(index);
             d_assert(mme_ue, return, "Null param");
+            break;
+        }
+        case MME_EVT_EMM_UE_T3413:
+        {
+            index_t index = event_get_param1(e);
+            mme_ue_t *mme_ue = NULL;
+
+            d_assert(index, return, "Null param");
+            mme_ue = mme_ue_find(index);
+            d_assert(mme_ue, return, "Null param");
+
+            if (mme_ue->max_paging_retry >= MAX_NUM_OF_PAGING)
+            {
+                /* Paging failed */
+                d_warn("Paging to UE(%s) failed. Stop paging",
+                        mme_ue->imsi_bcd);
+                if (mme_ue->last_paging_msg)
+                {
+                    pkbuf_free(mme_ue->last_paging_msg);
+                    mme_ue->last_paging_msg = NULL;
+                }
+                break;
+            }
+
+            mme_ue->max_paging_retry++;
+            s1ap_handle_paging(mme_ue);
+            /* Start T3413 */
+            tm_start(mme_ue->t3413);
+
             break;
         }
 

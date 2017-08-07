@@ -224,6 +224,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
         case MME_EVT_EMM_UE_FROM_S11:
         case MME_EVT_EMM_BEARER_FROM_S11:
         case MME_EVT_EMM_UE_T3:
+        case MME_EVT_EMM_UE_T3413:
         {
             index_t index = event_get_param1(e);
             mme_ue_t *mme_ue = NULL;

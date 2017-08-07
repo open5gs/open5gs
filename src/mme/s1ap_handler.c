@@ -537,3 +537,40 @@ void s1ap_handle_ue_context_release_complete(
 
     enb_ue_remove(enb_ue);
 }
+
+void s1ap_handle_paging(mme_ue_t *mme_ue)
+{
+    pkbuf_t *s1apbuf = NULL;
+    mme_enb_t *enb = NULL;
+    int i;
+    status_t rv;
+
+    /* Find enB with matched TAI */
+    enb =  mme_enb_first();
+    while (enb)
+    {
+        for (i = 0; i < enb->num_of_tai; i++)
+        {
+            if (!memcmp(&enb->tai[i], &mme_ue->tai, sizeof(tai_t)))
+            {
+                if (mme_ue->last_paging_msg)
+                    s1apbuf = mme_ue->last_paging_msg;
+                else
+                {
+                    /* Buidl S1Ap Paging message */
+                    rv = s1ap_build_paging(&s1apbuf, mme_ue);
+                    d_assert(rv == CORE_OK && s1apbuf, return, 
+                            "s1ap build error");
+
+                    /* Save it for later use */
+                    mme_ue->last_paging_msg = pkbuf_copy(s1apbuf);
+                }
+
+                /* Send to enb */
+                d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK, return,
+                        "s1ap send error");
+            }
+        }
+        enb = mme_enb_next(enb);
+    }
+}

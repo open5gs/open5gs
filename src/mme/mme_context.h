@@ -91,6 +91,9 @@ typedef struct _mme_context_t {
     served_gummei_t served_gummei[MAX_NUM_OF_SERVED_GUMMEI];
     c_uint8_t       relative_capacity;
 
+    /* Timer value*/
+    c_uint32_t      t3413_value; /* Paging retry timer */
+
     list_t          sgw_list;
     list_t          enb_list;
 
@@ -227,6 +230,12 @@ struct _mme_ue_t {
     /* Last Received NAS Messasge */
     nas_message_t   last_emm_message;
     nas_message_t   last_esm_message;
+
+    /* Paging */
+    pkbuf_t         *last_paging_msg;
+    tm_block_id     t3413;
+#define MAX_NUM_OF_PAGING           2
+    c_uint32_t      max_paging_retry;
 };
 
 typedef struct _mme_sess_t {
@@ -364,6 +373,7 @@ CORE_DECLARE(enb_ue_t*)     enb_ue_find_by_mme_ue_s1ap_id(c_uint32_t mme_ue_s1ap
 CORE_DECLARE(enb_ue_t*)     enb_ue_first_in_enb(mme_enb_t *enb);
 CORE_DECLARE(enb_ue_t*)     enb_ue_next_in_enb(enb_ue_t *enb_ue);
 
+CORE_DECLARE(void)          mme_ue_paged(mme_ue_t *mme_ue);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

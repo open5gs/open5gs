@@ -59,6 +59,9 @@ status_t mme_context_init()
     self.imsi_ue_hash = hash_make();
     self.guti_ue_hash = hash_make();
 
+    /* Timer value */
+    self.t3413_value = 2; /* Paging retry Timer: 2 secs */
+
     context_initialized = 1;
 
     return CORE_OK;
@@ -1166,6 +1169,10 @@ mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
     list_init(&mme_ue->pdn_list);
     list_init(&mme_ue->sess_list);
 
+    /* Create t3413 timer */
+    mme_ue->t3413 = event_timer(&self.tm_service, MME_EVT_EMM_UE_T3413,
+            self.t3413_value * 1000, mme_ue->index);
+
     mme_ue->enb_ue = enb_ue;
     enb_ue->mme_ue = mme_ue;
 
@@ -1187,6 +1194,13 @@ status_t mme_ue_remove(mme_ue_t *mme_ue)
         hash_set(self.guti_ue_hash, &mme_ue->guti, sizeof(guti_t), NULL);
     if (mme_ue->imsi_len != 0)
         hash_set(self.imsi_ue_hash, mme_ue->imsi, mme_ue->imsi_len, NULL);
+    
+    /* Delete t3413 timer */
+    tm_delete(mme_ue->t3413);
+
+    /* Free the saved paging msg */
+    if (mme_ue->last_paging_msg)
+        pkbuf_free(mme_ue->last_paging_msg);
 
     mme_sess_remove_all(mme_ue);
     mme_pdn_remove_all(mme_ue);
@@ -1797,3 +1811,15 @@ pdn_t* mme_pdn_next(pdn_t *pdn)
     return list_next(pdn);
 }
 
+void mme_ue_paged(mme_ue_t *mme_ue)
+{
+    d_assert(mme_ue, return , "Null param");
+
+    tm_stop(mme_ue->t3413);
+    if (mme_ue->last_paging_msg)
+    {
+        pkbuf_free(mme_ue->last_paging_msg);
+        mme_ue->last_paging_msg = NULL;
+    }
+    mme_ue->max_paging_retry = 0;
+}
