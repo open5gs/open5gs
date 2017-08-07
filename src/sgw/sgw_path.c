@@ -116,13 +116,25 @@ static int _gtpv1_s5u_recv_cb(net_sock_t *sock, void *data)
                 gnode.addr = bearer->enb_s1u_addr;
                 gnode.port = GTPV1_U_UDP_PORT;
 
+                /* If there is buffered packet, send it first */
+                if (bearer->num_buffered_pkt)
+                {
+                    int i;
+                    for (i = 0; i < bearer->num_buffered_pkt; i++)
+                    {
+                        gtp_send(sgw_self()->s1u_sock, &gnode, 
+                                bearer->buffered_pkts[i]);
+                        pkbuf_free(bearer->buffered_pkts[i]);
+                    }
+                    bearer->num_buffered_pkt = 0;
+                }
+
                 gtp_send(sgw_self()->s1u_sock, &gnode, pkbuf);
             }
             else
             {
                 /* S1U path is deactivated.
                  * Send downlink_data_notification to MME.
-                 * FIXME : Data buffering required 
                  *
                  */
                 if (!CHECK_DL_NOTI_SENT(bearer))
@@ -141,6 +153,13 @@ static int _gtpv1_s5u_recv_cb(net_sock_t *sock, void *data)
                     }
 
                     SET_DL_NOTI_SENT(bearer);
+                }
+
+                /* Buffer the packet */
+                if (bearer->num_buffered_pkt < MAX_NUM_BUFFER_PKT)
+                {
+                    bearer->buffered_pkts[bearer->num_buffered_pkt++] = pkbuf;
+                    return 0;
                 }
             }
         }

@@ -88,6 +88,11 @@ typedef struct _sgw_bearer_t {
 
     c_uint32_t      state;
 
+    /* Pkts which will be buffered in case of UE-IDLE */
+    c_uint32_t      num_buffered_pkt;
+#define MAX_NUM_BUFFER_PKT      512
+    pkbuf_t*         buffered_pkts[MAX_NUM_BUFFER_PKT];
+
     sgw_sess_t      *sess;
 } sgw_bearer_t;
 

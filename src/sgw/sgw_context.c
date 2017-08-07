@@ -527,8 +527,14 @@ sgw_bearer_t* sgw_bearer_add(sgw_sess_t *sess, c_uint8_t id)
 
 status_t sgw_bearer_remove(sgw_bearer_t *bearer)
 {
+    int i;
+
     d_assert(bearer, return CORE_ERROR, "Null param");
     d_assert(bearer->sess, return CORE_ERROR, "Null param");
+
+    /* Free the buffered packets */
+    for (i = 0; i < bearer->num_buffered_pkt; i++)
+        pkbuf_free(bearer->buffered_pkts[i]);
 
     list_remove(&bearer->sess->bearer_list, bearer);
     index_free(&sgw_bearer_pool, bearer);
