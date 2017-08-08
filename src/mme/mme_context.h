@@ -236,6 +236,9 @@ struct _mme_ue_t {
     tm_block_id     t3413;
 #define MAX_NUM_OF_PAGING           2
     c_uint32_t      max_paging_retry;
+
+    /* UE Radio Capability */
+    void            *radio_capa;
 };
 
 typedef struct _mme_sess_t {

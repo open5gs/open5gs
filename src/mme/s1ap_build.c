@@ -244,6 +244,21 @@ status_t s1ap_build_initial_context_setup_request(
     ies->securityKey.bits_unused = 0;
     memcpy(ies->securityKey.buf, mme_ue->kenb, ies->securityKey.size);
 
+    /* Set UeRadioCapability if exists */
+    if (mme_ue->radio_capa)
+    {
+        S1ap_UERadioCapability_t *radio_capa = 
+            (S1ap_UERadioCapability_t *)mme_ue->radio_capa;
+
+        ies->presenceMask |= 
+               S1AP_INITIALCONTEXTSETUPREQUESTIES_UERADIOCAPABILITY_PRESENT;
+
+        ies->ueRadioCapability.size = radio_capa->size;
+        ies->ueRadioCapability.buf = 
+            core_calloc(ies->ueRadioCapability.size, sizeof(c_uint8_t));
+        memcpy(ies->ueRadioCapability.buf, radio_capa->buf, radio_capa->size);
+    }
+
     message.procedureCode = S1ap_ProcedureCode_id_InitialContextSetup;
     message.direction = S1AP_PDU_PR_initiatingMessage;
 
