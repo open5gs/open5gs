@@ -5,10 +5,10 @@ SUBDIRS = s6a
 noinst_LTLIBRARIES = libfd.la
 
 libfd_la_SOURCES = \
-	fd_context.h fd_logger.h fd_init.h
+	fd_context.h fd_message.h fd_logger.h fd_init.h fd_lib.h
 
 nodist_libfd_la_SOURCES = \
-	libapp_sip.c fd_context.c fd_logger.c fd_init.c
+	libapp_sip.c fd_context.c fd_message.c fd_logger.c fd_init.c
 
 libfd_la_DEPENDENCIES = \
     $(top_srcdir)/lib/base/libbase.la \

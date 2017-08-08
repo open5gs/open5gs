@@ -9,6 +9,10 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#define S6A_AVP_CODE_CONTEXT_IDENTIFIER     (1423)
+#define S6A_AVP_CODE_ALL_APN_CONFIG_INC_IND (1428)
+#define S6A_AVP_CODE_APN_CONFIGURATION      (1430)
+
 #define S6A_RAT_TYPE_WLAN                   0
 #define S6A_RAT_TYPE_VIRTUAL                1
 #define S6A_RAT_TYPE_UTRAN                  1000
@@ -37,8 +41,7 @@ extern "C" {
 #define S6A_UE_SRVCC_SUPPORTED              (1)
 
 /* Some global variables for dictionary */
-extern struct dict_object *s6a_vendor;
-extern struct dict_object *s6a_appli;
+extern struct dict_object *s6a_app_id;
 
 extern struct dict_object *s6a_cmd_air;
 extern struct dict_object *s6a_cmd_aia;
@@ -48,14 +51,6 @@ extern struct dict_object *s6a_cmd_pur;
 extern struct dict_object *s6a_cmd_pua;
 extern struct dict_object *s6a_cmd_clr;
 extern struct dict_object *s6a_cmd_cla;
-
-extern struct dict_object *s6a_origin_host;
-extern struct dict_object *s6a_origin_realm;
-extern struct dict_object *s6a_destination_host;
-extern struct dict_object *s6a_destination_realm;
-extern struct dict_object *s6a_user_name;
-extern struct dict_object *s6a_auth_session_state;
-extern struct dict_object *s6a_result_code;
 
 extern struct dict_object *s6a_visited_plmn_id;
 extern struct dict_object *s6a_rat_type;

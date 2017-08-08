@@ -96,12 +96,6 @@ int dict_s6a_init(char * conffile)
 
 	TRACE_ENTRY("%p", conffile);
 
-	struct dict_object * vendor_dict;
-	{
-		struct dict_vendor_data vendor_data = { VENDOR_3GPP_Id, "3GPP" };
-		CHECK_dict_new (DICT_VENDOR, &vendor_data, NULL, &vendor_dict);
-	}
-
 	struct dict_object * s6a_dict;
 	{
 		struct dict_application_data data = { 16777251, "Diameter S6a 3GPP" };

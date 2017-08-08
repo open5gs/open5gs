@@ -62,7 +62,7 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
 	CHECK_FCT( fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0) );
     ans = *msg;
 
-    CHECK_FCT( fd_msg_search_avp(qry, s6a_user_name, &avp) );
+    CHECK_FCT( fd_msg_search_avp(qry, fd_user_name, &avp) );
     CHECK_FCT( fd_msg_avp_hdr(avp, &hdr) );
 
     memcpy(imsi_bcd, (char*)hdr->avp_value->os.data, hdr->avp_value->os.len);
@@ -116,7 +116,7 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
 	CHECK_FCT( fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1) );
 
     /* Set the Auth-Session-State AVP */
-    CHECK_FCT( fd_msg_avp_new(s6a_auth_session_state, 0, &avp) );
+    CHECK_FCT( fd_msg_avp_new(fd_auth_session_state, 0, &avp) );
     val.i32 = 1;
     CHECK_FCT( fd_msg_avp_setvalue(avp, &val) );
     CHECK_FCT( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) );
@@ -195,7 +195,7 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
 	CHECK_FCT( fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0) );
     ans = *msg;
 
-    CHECK_FCT( fd_msg_search_avp(qry, s6a_user_name, &avp) );
+    CHECK_FCT( fd_msg_search_avp(qry, fd_user_name, &avp) );
     CHECK_FCT( fd_msg_avp_hdr(avp, &hdr) );
 
     memcpy(imsi_bcd, (char*)hdr->avp_value->os.data, hdr->avp_value->os.len);
@@ -223,7 +223,7 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
 	CHECK_FCT( fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1) );
 
     /* Set the Auth-Session-Statee AVP */
-    CHECK_FCT( fd_msg_avp_new(s6a_auth_session_state, 0, &avp) );
+    CHECK_FCT( fd_msg_avp_new(fd_auth_session_state, 0, &avp) );
     val.i32 = 1;
     CHECK_FCT( fd_msg_avp_setvalue(avp, &val) );
     CHECK_FCT( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) );
@@ -459,7 +459,7 @@ int hss_s6a_init(void)
 	CHECK_FCT( s6a_dict_init() );
 
 	memset(&data, 0, sizeof(data));
-	data.app = s6a_appli;
+	data.app = s6a_app_id;
 	
 	/* fallback CB if command != unexpected message received */
 	CHECK_FCT( fd_disp_register(hss_fb_cb, DISP_HOW_APPID, &data, NULL,
@@ -476,7 +476,7 @@ int hss_s6a_init(void)
                 &hdl_ulr) );
 
 	/* Advertise the support for the application in the peer */
-	CHECK_FCT( fd_disp_app_support ( s6a_appli, s6a_vendor, 1, 0 ) );
+	CHECK_FCT( fd_disp_app_support ( s6a_app_id, fd_3gpp_vendor_id, 1, 0 ) );
 
 	return 0;
 }

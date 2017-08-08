@@ -7,6 +7,7 @@
 #include "freeDiameter/libfdcore.h"
 
 #include "fd_context.h"
+#include "fd_message.h"
 #include "fd_logger.h"
 
 #ifdef __cplusplus
@@ -16,10 +17,6 @@ extern "C" {
 #define FD_REALM        "localdomain"       /* Default Relam */
 #define MME_IDENTITY    "mme.localdomain"   /* Default MME Identity */
 #define HSS_IDENTITY    "hss.localdomain"   /* Default HSS Identity */
-
-#define AVP_CODE_CONTEXT_IDENTIFIER         (1423)
-#define AVP_CODE_ALL_APN_CONFIG_INC_IND     (1428)
-#define AVP_CODE_APN_CONFIGURATION          (1430)
 
 CORE_DECLARE(int) fd_init(const char *conffile);
 CORE_DECLARE(void) fd_final(void);

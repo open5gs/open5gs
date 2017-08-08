@@ -2,11 +2,9 @@
 
 #include "s6a_lib.h"
 
-#define S6A_VENDOR_ID       10415;	    /* 3GPP Vendor ID */
-#define S6A_APPLI_ID        16777251;	/* 3GPP S6A Application ID */
+#define S6A_APP_ID        16777251;     /* 3GPP S6A Application ID */
 
-struct dict_object *s6a_vendor = NULL;
-struct dict_object *s6a_appli = NULL;
+struct dict_object *s6a_app_id = NULL;
 
 struct dict_object *s6a_cmd_air = NULL;
 struct dict_object *s6a_cmd_aia = NULL;
@@ -16,14 +14,6 @@ struct dict_object *s6a_cmd_pur = NULL;
 struct dict_object *s6a_cmd_pua = NULL;
 struct dict_object *s6a_cmd_clr = NULL;
 struct dict_object *s6a_cmd_cla = NULL;
-
-struct dict_object *s6a_origin_host = NULL;
-struct dict_object *s6a_origin_realm = NULL;
-struct dict_object *s6a_destination_host = NULL;
-struct dict_object *s6a_destination_realm = NULL;
-struct dict_object *s6a_user_name = NULL;
-struct dict_object *s6a_auth_session_state = NULL;
-struct dict_object *s6a_result_code = NULL;
 
 struct dict_object *s6a_visited_plmn_id = NULL;
 struct dict_object *s6a_rat_type = NULL;
@@ -90,16 +80,12 @@ int s6a_ext_load()
 
 int s6a_dict_init(void)
 {
-    uint32_t vendor_id = S6A_VENDOR_ID; 
-    uint32_t appli_id = S6A_APPLI_ID;
+    uint32_t app_id = S6A_APP_ID;
     
     CHECK_FCT(s6a_ext_load());
 
-    CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_VENDOR, 
-        VENDOR_BY_ID, (void *)&vendor_id, &s6a_vendor, ENOENT));
-
     CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_APPLICATION, 
-        APPLICATION_BY_ID, (void *)&appli_id, &s6a_appli, ENOENT));
+        APPLICATION_BY_ID, (void *)&app_id, &s6a_app_id, ENOENT));
 
     CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_COMMAND, CMD_BY_NAME, 
         "Authentication-Information-Request", &s6a_cmd_air, ENOENT));
@@ -118,21 +104,6 @@ int s6a_dict_init(void)
     CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_COMMAND, CMD_BY_NAME, 
         "Cancel-Location-Answer", &s6a_cmd_cla, ENOENT));
 	
-    CHECK_FCT(fd_dict_search (fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME, 
-        "Origin-Host", &s6a_origin_host, ENOENT));
-    CHECK_FCT(fd_dict_search (fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME, 
-        "Origin-Realm", &s6a_origin_realm, ENOENT));
-    CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME, 
-        "Destination-Host", &s6a_destination_host, ENOENT));
-    CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME, 
-        "Destination-Realm", &s6a_destination_realm, ENOENT));
-    CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME, 
-        "User-Name", &s6a_user_name, ENOENT));
-    CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME, 
-        "Auth-Session-State", &s6a_auth_session_state, ENOENT));
-    CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME, 
-        "Result-Code", &s6a_result_code, ENOENT));
-
     CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_AVP, 
         AVP_BY_NAME_ALL_VENDORS, "Visited-PLMN-Id", 
             &s6a_visited_plmn_id, ENOENT));

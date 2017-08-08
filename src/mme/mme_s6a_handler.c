@@ -53,7 +53,7 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
             mme_ue->imsi_bcd);
     
     /* Value of Result Code */
-    CHECK_FCT_DO( fd_msg_search_avp(*msg, s6a_result_code, &avp), return );
+    CHECK_FCT_DO( fd_msg_search_avp(*msg, fd_result_code, &avp), return );
     if (avp)
     {
         CHECK_FCT_DO( fd_msg_avp_hdr(avp, &hdr), return);
@@ -71,7 +71,7 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     }
 
     /* Value of Origin-Host */
-    CHECK_FCT_DO( fd_msg_search_avp(*msg, s6a_origin_host, &avp), return );
+    CHECK_FCT_DO( fd_msg_search_avp(*msg, fd_origin_host, &avp), return );
     if (avp)
     {
         CHECK_FCT_DO( fd_msg_avp_hdr(avp, &hdr), return );
@@ -85,7 +85,7 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     }
 
     /* Value of Origin-Realm */
-    CHECK_FCT_DO( fd_msg_search_avp(*msg, s6a_origin_realm, &avp), return );
+    CHECK_FCT_DO( fd_msg_search_avp(*msg, fd_origin_realm, &avp), return );
     if (avp)
     {
         CHECK_FCT_DO( fd_msg_avp_hdr(avp, &hdr), return );
@@ -244,7 +244,7 @@ void mme_s6a_send_air(mme_ue_t *mme_ue)
             goto out );
 
     /* Set the Auth-Session-State AVP */
-    CHECK_FCT_DO( fd_msg_avp_new(s6a_auth_session_state, 0, &avp), goto out );
+    CHECK_FCT_DO( fd_msg_avp_new(fd_auth_session_state, 0, &avp), goto out );
     val.i32 = 1;
     CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
     CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
@@ -253,14 +253,14 @@ void mme_s6a_send_air(mme_ue_t *mme_ue)
     CHECK_FCT_DO( fd_msg_add_origin(req, 0), goto out );
     
     /* Set the Destination-Realm AVP */
-    CHECK_FCT_DO( fd_msg_avp_new(s6a_destination_realm, 0, &avp), goto out );
+    CHECK_FCT_DO( fd_msg_avp_new(fd_destination_realm, 0, &avp), goto out );
     val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
     val.os.len  = strlen(fd_g_config->cnf_diamrlm);
     CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
     CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
     
     /* Set the User-Name AVP */
-    CHECK_FCT_DO( fd_msg_avp_new(s6a_user_name, 0, &avp), goto out );
+    CHECK_FCT_DO( fd_msg_avp_new(fd_user_name, 0, &avp), goto out );
     val.os.data = (c_uint8_t *)mme_ue->imsi_bcd;
     val.os.len  = strlen(mme_ue->imsi_bcd);
     CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
@@ -348,7 +348,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
             mme_ue->imsi_bcd);
     
     /* Value of Result Code */
-    CHECK_FCT_DO( fd_msg_search_avp(*msg, s6a_result_code, &avp), return );
+    CHECK_FCT_DO( fd_msg_search_avp(*msg, fd_result_code, &avp), return );
     if (avp)
     {
         CHECK_FCT_DO( fd_msg_avp_hdr(avp, &hdr), return);
@@ -366,7 +366,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     }
 
     /* Value of Origin-Host */
-    CHECK_FCT_DO( fd_msg_search_avp(*msg, s6a_origin_host, &avp), return );
+    CHECK_FCT_DO( fd_msg_search_avp(*msg, fd_origin_host, &avp), return );
     if (avp)
     {
         CHECK_FCT_DO( fd_msg_avp_hdr(avp, &hdr), return );
@@ -380,7 +380,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     }
 
     /* Value of Origin-Realm */
-    CHECK_FCT_DO( fd_msg_search_avp(*msg, s6a_origin_realm, &avp), return );
+    CHECK_FCT_DO( fd_msg_search_avp(*msg, fd_origin_realm, &avp), return );
     if (avp)
     {
         CHECK_FCT_DO( fd_msg_avp_hdr(avp, &hdr), return );
@@ -444,11 +444,11 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                 CHECK_FCT_DO( fd_msg_avp_hdr(avpch2, &hdr), return );
                 switch(hdr->avp_code)
                 {
-                    case AVP_CODE_CONTEXT_IDENTIFIER:
+                    case S6A_AVP_CODE_CONTEXT_IDENTIFIER:
                         break;
-                    case AVP_CODE_ALL_APN_CONFIG_INC_IND:
+                    case S6A_AVP_CODE_ALL_APN_CONFIG_INC_IND:
                         break;
-                    case AVP_CODE_APN_CONFIGURATION:
+                    case S6A_AVP_CODE_APN_CONFIGURATION:
                     {
                         c_int8_t apn[MAX_APN_LEN];
                         CHECK_FCT_DO( fd_avp_search_avp(
@@ -692,7 +692,7 @@ void mme_s6a_send_ulr(mme_ue_t *mme_ue)
             goto out );
 
     /* Set the Auth-Session-State AVP */
-    CHECK_FCT_DO( fd_msg_avp_new(s6a_auth_session_state, 0, &avp), goto out );
+    CHECK_FCT_DO( fd_msg_avp_new(fd_auth_session_state, 0, &avp), goto out );
     val.i32 = 1;
     CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
     CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
@@ -701,14 +701,14 @@ void mme_s6a_send_ulr(mme_ue_t *mme_ue)
     CHECK_FCT_DO( fd_msg_add_origin(req, 0), goto out  );
     
     /* Set the Destination-Realm AVP */
-    CHECK_FCT_DO( fd_msg_avp_new(s6a_destination_realm, 0, &avp), goto out );
+    CHECK_FCT_DO( fd_msg_avp_new(fd_destination_realm, 0, &avp), goto out );
     val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
     val.os.len  = strlen(fd_g_config->cnf_diamrlm);
     CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out  );
     CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out  );
     
     /* Set the User-Name AVP */
-    CHECK_FCT_DO( fd_msg_avp_new(s6a_user_name, 0, &avp), goto out );
+    CHECK_FCT_DO( fd_msg_avp_new(fd_user_name, 0, &avp), goto out );
     val.os.data = (c_uint8_t *)mme_ue->imsi_bcd;
     val.os.len  = strlen(mme_ue->imsi_bcd);
     CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out  );
@@ -774,7 +774,7 @@ int mme_s6a_init(void)
 	CHECK_FCT( fd_sess_handler_create(&mme_s6a_reg, (void *)free, NULL, NULL) );
 
 	/* Advertise the support for the application in the peer */
-	CHECK_FCT( fd_disp_app_support ( s6a_appli, s6a_vendor, 1, 0 ) );
+	CHECK_FCT( fd_disp_app_support ( s6a_app_id, fd_3gpp_vendor_id, 1, 0 ) );
 	
 	return 0;
 }
