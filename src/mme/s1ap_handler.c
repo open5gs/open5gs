@@ -338,12 +338,22 @@ void s1ap_handle_ue_capability_info_indication(
         S1ap_UERadioCapability_t *radio_capa = NULL;
         mme_ue_t *mme_ue = enb_ue->mme_ue;
 
-        /* Save UE radio capability */ 
         ue_radio_capa = &ies->ueRadioCapability;
-        mme_ue->radio_capa = core_calloc(1, sizeof(S1ap_UERadioCapability_t));
-        d_assert(mme_ue->radio_capa,return,"core_calloc Error");
 
+        /* Release the previous one */
+        if (mme_ue->radio_capa)
+        {
+            radio_capa = (S1ap_UERadioCapability_t *)mme_ue->radio_capa;
+
+            if (radio_capa->buf)
+                core_free(radio_capa->buf);
+            core_free(mme_ue->radio_capa);
+        }
+        /* Save UE radio capability */ 
+        mme_ue->radio_capa = core_calloc(1, sizeof(S1ap_UERadioCapability_t));
         radio_capa = (S1ap_UERadioCapability_t *)mme_ue->radio_capa;
+        d_assert(radio_capa,return,"core_calloc Error");
+
         radio_capa->size = ue_radio_capa->size;
         radio_capa->buf = 
             core_calloc(radio_capa->size, sizeof(c_uint8_t)); 

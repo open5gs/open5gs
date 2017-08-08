@@ -1209,7 +1209,8 @@ status_t mme_ue_remove(mme_ue_t *mme_ue)
         S1ap_UERadioCapability_t *radio_capa = 
             (S1ap_UERadioCapability_t *)mme_ue->radio_capa;
 
-        core_free(radio_capa->buf);
+        if (radio_capa->buf)
+            core_free(radio_capa->buf);
         core_free(mme_ue->radio_capa);
     }
 
