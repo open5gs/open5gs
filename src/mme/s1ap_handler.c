@@ -332,6 +332,36 @@ void s1ap_handle_ue_capability_info_indication(
     enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
     d_assert(enb_ue, return, "No UE Context[%d]", ies->eNB_UE_S1AP_ID);
 
+    if (enb_ue->mme_ue)
+    {
+        S1ap_UERadioCapability_t *ue_radio_capa = NULL;
+        S1ap_UERadioCapability_t *radio_capa = NULL;
+        mme_ue_t *mme_ue = enb_ue->mme_ue;
+
+        ue_radio_capa = &ies->ueRadioCapability;
+
+        /* Release the previous one */
+        if (mme_ue->radio_capa)
+        {
+            radio_capa = (S1ap_UERadioCapability_t *)mme_ue->radio_capa;
+
+            if (radio_capa->buf)
+                core_free(radio_capa->buf);
+            core_free(mme_ue->radio_capa);
+        }
+        /* Save UE radio capability */ 
+        mme_ue->radio_capa = core_calloc(1, sizeof(S1ap_UERadioCapability_t));
+        radio_capa = (S1ap_UERadioCapability_t *)mme_ue->radio_capa;
+        d_assert(radio_capa,return,"core_calloc Error");
+
+        radio_capa->size = ue_radio_capa->size;
+        radio_capa->buf = 
+            core_calloc(radio_capa->size, sizeof(c_uint8_t)); 
+        d_assert(radio_capa->buf,return,"core_calloc Error(size=%d)",
+                radio_capa->size);
+        memcpy(radio_capa->buf, ue_radio_capa->buf, radio_capa->size);
+    }
+
     d_trace(3, "[S1AP] UE Capability Info Indication : "
             "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
             enb_ue->enb_ue_s1ap_id,

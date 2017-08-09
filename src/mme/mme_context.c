@@ -74,6 +74,7 @@ status_t mme_context_final()
 
     mme_sgw_remove_all();
     mme_enb_remove_all();
+    mme_ue_remove_all();
 
     d_assert(self.mme_ue_s1ap_id_hash, , "Null param");
     hash_destroy(self.mme_ue_s1ap_id_hash);
@@ -1202,8 +1203,27 @@ status_t mme_ue_remove(mme_ue_t *mme_ue)
     if (mme_ue->last_paging_msg)
         pkbuf_free(mme_ue->last_paging_msg);
 
+    /* Free UeRadioCapability */
+    if (mme_ue->radio_capa)
+    {
+        S1ap_UERadioCapability_t *radio_capa = 
+            (S1ap_UERadioCapability_t *)mme_ue->radio_capa;
+
+        if (radio_capa->buf)
+            core_free(radio_capa->buf);
+        core_free(mme_ue->radio_capa);
+    }
+
     mme_sess_remove_all(mme_ue);
     mme_pdn_remove_all(mme_ue);
+
+    if (mme_ue->enb_ue)
+    {
+        if (mme_ue->enb_ue->mme_ue != mme_ue)
+            d_warn("Invalid mme_ue assigend to enb_ue");
+        else
+            mme_ue->enb_ue->mme_ue = NULL;
+    }
 
     index_free(&mme_ue_pool, mme_ue);
 
