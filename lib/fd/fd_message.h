@@ -20,7 +20,8 @@ extern struct dict_object *fd_result_code;
 extern struct dict_object *fd_experimental_result;
 extern struct dict_object *fd_experimental_result_code;
 
-extern struct dict_object *fd_3gpp_vendor_id;
+extern struct dict_object *fd_vendor;
+extern struct dict_object *fd_vendor_id;
 
 CORE_DECLARE(int) fd_message_init(void);
 CORE_DECLARE(int) fd_message_experimental_rescode_set(

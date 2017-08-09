@@ -459,7 +459,7 @@ int hss_s6a_init(void)
 	CHECK_FCT( s6a_dict_init() );
 
 	memset(&data, 0, sizeof(data));
-	data.app = s6a_app_id;
+	data.app = s6a_application;
 	
 	/* fallback CB if command != unexpected message received */
 	CHECK_FCT( fd_disp_register(hss_fb_cb, DISP_HOW_APPID, &data, NULL,
@@ -476,7 +476,7 @@ int hss_s6a_init(void)
                 &hdl_ulr) );
 
 	/* Advertise the support for the application in the peer */
-	CHECK_FCT( fd_disp_app_support ( s6a_app_id, fd_3gpp_vendor_id, 1, 0 ) );
+	CHECK_FCT( fd_disp_app_support ( s6a_application, fd_vendor, 1, 0 ) );
 
 	return 0;
 }

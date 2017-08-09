@@ -4,7 +4,7 @@
 
 #define S6A_APP_ID        16777251;     /* 3GPP S6A Application ID */
 
-struct dict_object *s6a_app_id = NULL;
+struct dict_object *s6a_application = NULL;
 
 struct dict_object *s6a_cmd_air = NULL;
 struct dict_object *s6a_cmd_aia = NULL;
@@ -85,7 +85,7 @@ int s6a_dict_init(void)
     CHECK_FCT(s6a_ext_load());
 
     CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_APPLICATION, 
-        APPLICATION_BY_ID, (void *)&app_id, &s6a_app_id, ENOENT));
+        APPLICATION_BY_ID, (void *)&app_id, &s6a_application, ENOENT));
 
     CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_COMMAND, CMD_BY_NAME, 
         "Authentication-Information-Request", &s6a_cmd_air, ENOENT));

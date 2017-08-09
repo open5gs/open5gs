@@ -774,7 +774,7 @@ int mme_s6a_init(void)
 	CHECK_FCT( fd_sess_handler_create(&mme_s6a_reg, (void *)free, NULL, NULL) );
 
 	/* Advertise the support for the application in the peer */
-	CHECK_FCT( fd_disp_app_support ( s6a_app_id, fd_3gpp_vendor_id, 1, 0 ) );
+	CHECK_FCT( fd_disp_app_support ( s6a_application, fd_vendor, 1, 0 ) );
 	
 	return 0;
 }

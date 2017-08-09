@@ -41,7 +41,7 @@ extern "C" {
 #define S6A_UE_SRVCC_SUPPORTED              (1)
 
 /* Some global variables for dictionary */
-extern struct dict_object *s6a_app_id;
+extern struct dict_object *s6a_application;
 
 extern struct dict_object *s6a_cmd_air;
 extern struct dict_object *s6a_cmd_aia;
