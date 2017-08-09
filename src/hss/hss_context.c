@@ -366,7 +366,13 @@ status_t hss_db_auth_info(
     cursor = mongoc_collection_find_with_opts(
             self.subscriberCollection, query, NULL, NULL);
 
-    mongoc_cursor_next(cursor, &document);
+    if (!mongoc_cursor_next(cursor, &document))
+    {
+        d_warn("Cannot find IMSI in DB : %s\n", imsi_bcd);
+
+        rv = CORE_ERROR;
+        goto out;
+    }
     if (mongoc_cursor_error(cursor, &error))
     {
         d_error("Cursor Failure: %s", error.message);
