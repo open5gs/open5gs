@@ -28,19 +28,22 @@ CORE_DECLARE(void) emm_handle_detach_request(
 CORE_DECLARE(void) emm_handle_detach_accept(
     mme_ue_t *mme_ue, nas_detach_request_from_ue_t *detach_request);
 
-CORE_DECLARE(void) emm_handle_emm_status(
-        mme_ue_t *mme_ue, nas_emm_status_t *emm_status);
-
 CORE_DECLARE(void) emm_handle_service_request(
         mme_ue_t *mme_ue, nas_service_request_t *service_request);
 
-CORE_DECLARE(void) emm_handle_create_session_response(mme_bearer_t *bearer);
-CORE_DECLARE(void) emm_handle_delete_session_request(mme_ue_t *mme_ue);
-CORE_DECLARE(void) emm_handle_delete_session_response(mme_bearer_t *bearer);
-CORE_DECLARE(void) emm_handle_downlink_data_notification(gtp_xact_t *xact, 
-        mme_bearer_t *bearer);
+CORE_DECLARE(void) emm_handle_emm_status(
+        mme_ue_t *mme_ue, nas_emm_status_t *emm_status);
+
+CORE_DECLARE(void) emm_handle_esm_information_request(mme_ue_t *mme_ue);
 
 CORE_DECLARE(void) emm_handle_s6a_aia(mme_ue_t *mme_ue, c_uint32_t result_code);
+CORE_DECLARE(void) emm_handle_s6a_ula(mme_ue_t *mme_ue, c_uint32_t result_code);
+
+CORE_DECLARE(void) emm_handle_s11_create_session_response(mme_bearer_t *bearer);
+CORE_DECLARE(void) emm_handle_s11_delete_session_request(mme_ue_t *mme_ue);
+CORE_DECLARE(void) emm_handle_s11_delete_session_response(mme_bearer_t *bearer);
+CORE_DECLARE(void) emm_handle_s11_downlink_data_notification(gtp_xact_t *xact, 
+        mme_bearer_t *bearer);
 
 #ifdef __cplusplus
 }

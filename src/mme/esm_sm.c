@@ -41,7 +41,6 @@ void esm_state_operational(fsm_t *s, event_t *e)
         {
             break;
         }
-        case MME_EVT_ESM_BEARER_FROM_S6A:
         case MME_EVT_ESM_BEARER_TO_S11:
         {
             index_t index = event_get_param1(e);
@@ -56,14 +55,6 @@ void esm_state_operational(fsm_t *s, event_t *e)
 
             switch(event_get_param2(e))
             {
-                case S6A_CMD_UPDATE_LOCATION:
-                {
-                    d_trace(3, "[NAS] ESM information request : "
-                            "UE[%s] <--- ESM[%d]\n", 
-                            mme_ue->imsi_bcd, bearer->pti);
-                    esm_handle_s6a_update_location(bearer);
-                    break;
-                }
                 case GTP_MODIFY_BEARER_REQUEST_TYPE:
                 {
                     esm_handle_modify_bearer_request(bearer);

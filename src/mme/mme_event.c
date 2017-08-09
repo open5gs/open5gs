@@ -29,9 +29,19 @@ char* mme_event_get_name(event_t *e)
 
         case MME_EVT_EMM_UE_MSG:
             return "MME_EVT_EMM_UE_MSG";
+        case MME_EVT_EMM_UE_FROM_S6A:
+            return "MME_EVT_EMM_UE_FROM_S6A";
+        case MME_EVT_EMM_UE_FROM_S11:
+            return "MME_EVT_EMM_UE_FROM_S11";
+        case MME_EVT_EMM_BEARER_FROM_S11:
+            return "MME_EVT_EMM_BEARER_FROM_S11";
+        case MME_EVT_EMM_UE_T3413:
+            return "MME_EVT_EMM_UE_T3413";
 
         case MME_EVT_ESM_BEARER_MSG:
             return "MME_EVT_ESM_BEARER_MSG";
+        case MME_EVT_ESM_BEARER_TO_S11:
+            return "MME_EVT_ESM_BEARER_TO_S11";
 
         case MME_EVT_S11_UE_MSG:
             return "MME_EVT_S11_UE_MSG";

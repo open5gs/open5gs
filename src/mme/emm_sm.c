@@ -56,17 +56,17 @@ void emm_state_operational(fsm_t *s, event_t *e)
             switch(event_get_param2(e))
             {
                 case GTP_CREATE_SESSION_RESPONSE_TYPE:
-                    emm_handle_create_session_response(bearer);
+                    emm_handle_s11_create_session_response(bearer);
                     break;
                 case GTP_DELETE_SESSION_RESPONSE_TYPE:
-                    emm_handle_delete_session_response(bearer);
+                    emm_handle_s11_delete_session_response(bearer);
                     break;
                 case GTP_DOWNLINK_DATA_NOTIFICATION_TYPE:
                 {
                     mme_ue_t *mme_ue = NULL;
                     gtp_xact_t *xact = (gtp_xact_t *)event_get_param3(e);
 
-                    emm_handle_downlink_data_notification(xact, bearer);
+                    emm_handle_s11_downlink_data_notification(xact, bearer);
                     mme_ue = bearer->mme_ue;
                     d_assert(mme_ue, break, "Null param");
 
@@ -99,24 +99,8 @@ void emm_state_operational(fsm_t *s, event_t *e)
                 }
                 case S6A_CMD_UPDATE_LOCATION:
                 {
-                    mme_sess_t *sess = mme_sess_first(mme_ue);
-                    while(sess)
-                    {
-                        mme_bearer_t *bearer = mme_bearer_first(sess);
-                        while(bearer)
-                        {
-                            event_t e;
-                            event_set(&e, MME_EVT_ESM_BEARER_FROM_S6A);
-                            event_set_param1(&e, (c_uintptr_t)bearer->index);
-                            event_set_param2(&e, 
-                                    (c_uintptr_t)S6A_CMD_UPDATE_LOCATION);
-                            mme_event_send(&e);
-
-                            bearer = mme_bearer_next(bearer);
-                        }
-
-                        sess = mme_sess_next(sess);
-                    }
+                    c_uint32_t result_code = event_get_param3(e);
+                    emm_handle_s6a_ula(mme_ue, result_code);
                     break;
                 }
                 case GTP_MODIFY_BEARER_RESPONSE_TYPE:
@@ -218,16 +202,6 @@ void emm_state_operational(fsm_t *s, event_t *e)
                     break;
                 }
             }
-            break;
-        }
-        case MME_EVT_EMM_UE_T3:
-        {
-            index_t index = event_get_param1(e);
-            mme_ue_t *mme_ue = NULL;
-
-            d_assert(index, return, "Null param");
-            mme_ue = mme_ue_find(index);
-            d_assert(mme_ue, return, "Null param");
             break;
         }
         case MME_EVT_EMM_UE_T3413:

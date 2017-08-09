@@ -342,11 +342,12 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     struct sess_state *mi = NULL;
     struct timespec ts;
     struct session *sess;
-    struct avp *avp;
+    struct avp *avp, *avpch;
     struct avp *avpch1, *avpch2, *avpch3, *avpch4, *avpch5;
     struct avp_hdr *hdr;
     unsigned long dur;
     int error = 0;
+    c_uint32_t result_code = 0;
     int new;
 
     event_t e;
@@ -374,17 +375,29 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     if (avp)
     {
         CHECK_FCT_DO( fd_msg_avp_hdr(avp, &hdr), return);
-        d_trace(3, "Status: %d\n", hdr->avp_value->i32);
-        if (hdr->avp_value->i32 != ER_DIAMETER_SUCCESS)
-        {
-            d_error("ERROR DIAMETER Result Code(%d)", hdr->avp_value->i32);
-            error++;
-        }
+        result_code = hdr->avp_value->i32;
+        d_trace(3, "Result Code: %d\n", hdr->avp_value->i32);
     }
     else
     {
-        d_error("no Result-Code");
-        error++;
+        CHECK_FCT_DO( fd_msg_search_avp(*msg, 
+                fd_experimental_result, &avp), return );
+        if (avp)
+        {
+            CHECK_FCT_DO( fd_avp_search_avp(avp, 
+                    fd_experimental_result_code, &avpch), return );
+            if (avpch)
+            {
+                CHECK_FCT_DO( fd_msg_avp_hdr(avpch, &hdr), return);
+                result_code = hdr->avp_value->i32;
+                d_trace(3, "Experimental Result Code: %d\n", result_code);
+            }
+        }
+        else
+        {
+            d_error("no Result-Code");
+            error++;
+        }
     }
 
     /* Value of Origin-Host */
@@ -638,6 +651,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     event_set(&e, MME_EVT_EMM_UE_FROM_S6A);
     event_set_param1(&e, (c_uintptr_t)mme_ue->index);
     event_set_param2(&e, (c_uintptr_t)S6A_CMD_UPDATE_LOCATION);
+    event_set_param3(&e, (c_uintptr_t)result_code);
     mme_event_send(&e);
 
     /* Free the message */
