@@ -6,13 +6,15 @@
 
 #include "mme_event.h"
 #include "mme_context.h"
+
+#include "s1ap_build.h"
+#include "s1ap_path.h"
+#include "mme_s11_build.h"
 #include "mme_s11_handler.h"
 
 void mme_s11_handle_create_session_response(
         mme_sess_t *sess, gtp_create_session_response_t *rsp)
 {
-    event_t e;
-
     gtp_f_teid_t *sgw_s11_teid = NULL;
     gtp_f_teid_t *sgw_s1u_teid = NULL;
 
@@ -76,40 +78,18 @@ void mme_s11_handle_create_session_response(
 
     d_trace(3, "[GTP] Create Session Response : "
             "MME[%d] <-- SGW[%d]\n", sess->mme_s11_teid, sess->sgw_s11_teid);
-
-    event_set(&e, MME_EVT_EMM_BEARER_FROM_S11);
-    event_set_param1(&e, (c_uintptr_t)bearer->index);
-    event_set_param2(&e, (c_uintptr_t)GTP_CREATE_SESSION_RESPONSE_TYPE);
-    mme_event_send(&e);
 }
 
 void mme_s11_handle_modify_bearer_response(
         mme_sess_t *sess, gtp_modify_bearer_response_t *rsp)
 {
-    mme_ue_t *mme_ue = NULL;
-    event_t e;
-
-    d_assert(sess, return, "Null param");
-    mme_ue = sess->mme_ue;
-
-    event_set(&e, MME_EVT_EMM_UE_FROM_S11);
-    event_set_param1(&e, (c_uintptr_t)mme_ue->index);
-    event_set_param2(&e, (c_uintptr_t)GTP_MODIFY_BEARER_RESPONSE_TYPE);
-    mme_event_send(&e);
+    d_trace(3, "[GTP] Modify Bearer Response : "
+            "MME[%d] <-- SGW[%d]\n", sess->mme_s11_teid, sess->sgw_s11_teid);
 }
 
 void mme_s11_handle_delete_session_response(
         mme_sess_t *sess, gtp_delete_session_response_t *rsp)
 {
-    event_t e;
-
-    mme_bearer_t *bearer;
-    
-    d_assert(sess, return, "Null param");
-    d_assert(rsp, return, "Null param");
-    bearer = mme_default_bearer_in_sess(sess);
-    d_assert(bearer, return, "Null param");
-
     if (rsp->cause.presence == 0)
     {
         d_error("No Cause");
@@ -118,30 +98,13 @@ void mme_s11_handle_delete_session_response(
 
     d_trace(3, "[GTP] Delete Session Response : "
             "MME[%d] <-- SGW[%d]\n", sess->mme_s11_teid, sess->sgw_s11_teid);
-
-    event_set(&e, MME_EVT_EMM_BEARER_FROM_S11);
-    event_set_param1(&e, (c_uintptr_t)bearer->index);
-    event_set_param2(&e, (c_uintptr_t)GTP_DELETE_SESSION_RESPONSE_TYPE);
-    mme_event_send(&e);
 }
 
 void mme_s11_handle_release_access_bearers_response(
         mme_sess_t *sess, gtp_release_access_bearers_response_t *rsp)
 {
-    event_t e;
-
-    mme_ue_t *mme_ue;
-    enb_ue_t *enb_ue;
-    mme_enb_t *enb;
-    
     d_assert(rsp, return, "Null param");
     d_assert(sess, return, "Null param");
-    mme_ue = sess->mme_ue;
-    d_assert(mme_ue, return, "Null param");
-    enb_ue = mme_ue->enb_ue;
-    d_assert(enb_ue, return, "Null param");
-    enb = enb_ue->enb;
-    d_assert(enb, return, "Null param");
 
     if (rsp->cause.presence == 0)
     {
@@ -151,20 +114,15 @@ void mme_s11_handle_release_access_bearers_response(
 
     d_trace(3, "[GTP] Release Access Bearers Response : "
             "MME[%d] <-- SGW[%d]\n", sess->mme_s11_teid, sess->sgw_s11_teid);
-
-    event_set(&e, MME_EVT_S1AP_UE_FROM_S11);
-    event_set_param1(&e, (c_uintptr_t)enb->index);
-    event_set_param2(&e, (c_uintptr_t)enb_ue->index);
-    event_set_param3(&e, (c_uintptr_t)GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE);
-    mme_event_send(&e);
 }
 
 void mme_s11_handle_downlink_data_notification(
         gtp_xact_t *xact, mme_sess_t *sess, 
         gtp_downlink_data_notification_t *noti)
 {
-    event_t e;
+    status_t rv;
     mme_bearer_t *bearer = NULL;
+    pkbuf_t *s11buf = NULL;
 
     d_assert(xact, return, "Null param");
     d_assert(sess, return, "Null param");
@@ -176,9 +134,12 @@ void mme_s11_handle_downlink_data_notification(
     bearer = mme_bearer_find_by_sess_ebi(sess, noti->eps_bearer_id.u8);
     d_assert(bearer, return, "No ESM Context");
 
-    event_set(&e, MME_EVT_EMM_BEARER_FROM_S11);
-    event_set_param1(&e, (c_uintptr_t)bearer->index);
-    event_set_param2(&e, (c_uintptr_t)GTP_DOWNLINK_DATA_NOTIFICATION_TYPE);
-    event_set_param3(&e, (c_uintptr_t)xact);
-    mme_event_send(&e);
+    /* Build Downlink data notification ack */
+    rv = mme_s11_build_downlink_data_notification_ack(&s11buf, sess);
+    d_assert(rv == CORE_OK, return, "S11 build error");
+
+    d_assert(gtp_xact_commit(xact, 
+                GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE, 
+                sess->sgw_s11_teid, s11buf) == CORE_OK,
+            return , "xact commit error");
 }

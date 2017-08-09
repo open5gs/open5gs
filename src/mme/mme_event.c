@@ -22,26 +22,16 @@ char* mme_event_get_name(event_t *e)
             return "MME_EVT_S1AP_ENB_LO_ACCEPT";
         case MME_EVT_S1AP_ENB_LO_CONNREFUSED:
             return"MME_EVT_S1AP_ENB_LO_CONNREFUSED";
-        case MME_EVT_S1AP_UE_FROM_EMM:
-            return "MME_EVT_S1AP_UE_FROM_EMM";
-        case MME_EVT_S1AP_UE_FROM_S11:
-            return "MME_EVT_S1AP_UE_FROM_S11";
 
         case MME_EVT_EMM_UE_MSG:
             return "MME_EVT_EMM_UE_MSG";
         case MME_EVT_EMM_UE_FROM_S6A:
             return "MME_EVT_EMM_UE_FROM_S6A";
-        case MME_EVT_EMM_UE_FROM_S11:
-            return "MME_EVT_EMM_UE_FROM_S11";
-        case MME_EVT_EMM_BEARER_FROM_S11:
-            return "MME_EVT_EMM_BEARER_FROM_S11";
         case MME_EVT_EMM_UE_T3413:
             return "MME_EVT_EMM_UE_T3413";
 
         case MME_EVT_ESM_BEARER_MSG:
             return "MME_EVT_ESM_BEARER_MSG";
-        case MME_EVT_ESM_BEARER_TO_S11:
-            return "MME_EVT_ESM_BEARER_TO_S11";
 
         case MME_EVT_S11_UE_MSG:
             return "MME_EVT_S11_UE_MSG";
@@ -54,4 +44,3 @@ char* mme_event_get_name(event_t *e)
 
     return EVT_NAME_UNKNOWN;
 }
-

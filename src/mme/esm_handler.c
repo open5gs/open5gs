@@ -28,24 +28,6 @@ void esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
     }
 }
 
-void esm_handle_modify_bearer_request(mme_bearer_t *bearer)
-{
-    status_t rv;
-    mme_sess_t *sess = NULL;
-    pkbuf_t *pkbuf = NULL;
-
-    d_assert(bearer, return, "Null param");
-    sess = bearer->sess;
-    d_assert(sess, return, "Null param");
-
-    rv = mme_s11_build_modify_bearer_request(&pkbuf, bearer);
-    d_assert(rv == CORE_OK, return, "S11 build error");
-
-    rv = mme_s11_send_to_sgw(bearer->sgw, 
-            GTP_MODIFY_BEARER_REQUEST_TYPE, sess->sgw_s11_teid, pkbuf);
-    d_assert(rv == CORE_OK, return, "S11 send error");
-}
-
 void esm_handle_information_response(mme_bearer_t *bearer, 
         nas_esm_information_response_t *esm_information_response)
 {

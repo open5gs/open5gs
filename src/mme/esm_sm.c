@@ -41,29 +41,6 @@ void esm_state_operational(fsm_t *s, event_t *e)
         {
             break;
         }
-        case MME_EVT_ESM_BEARER_TO_S11:
-        {
-            index_t index = event_get_param1(e);
-            mme_bearer_t *bearer = NULL;
-            mme_ue_t *mme_ue = NULL;
-
-            d_assert(index, return, "Null param");
-            bearer = mme_bearer_find(index);
-            d_assert(bearer, return, "Null param");
-            mme_ue = bearer->mme_ue;
-            d_assert(mme_ue, return, "Null param");
-
-            switch(event_get_param2(e))
-            {
-                case GTP_MODIFY_BEARER_REQUEST_TYPE:
-                {
-                    esm_handle_modify_bearer_request(bearer);
-                    break;
-                }
-            }
-
-            break;
-        }
         case MME_EVT_ESM_BEARER_MSG:
         {
             index_t index = event_get_param1(e);

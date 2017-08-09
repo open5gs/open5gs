@@ -44,43 +44,7 @@ void emm_state_operational(fsm_t *s, event_t *e)
         {
             break;
         }
-        case MME_EVT_EMM_BEARER_FROM_S11:
-        {
-            index_t index = event_get_param1(e);
-            mme_bearer_t *bearer = NULL;
-
-            d_assert(index, break, "Null param");
-            bearer = mme_bearer_find(index);
-            d_assert(bearer, break, "No Bearer context");
-
-            switch(event_get_param2(e))
-            {
-                case GTP_CREATE_SESSION_RESPONSE_TYPE:
-                    emm_handle_s11_create_session_response(bearer);
-                    break;
-                case GTP_DELETE_SESSION_RESPONSE_TYPE:
-                    emm_handle_s11_delete_session_response(bearer);
-                    break;
-                case GTP_DOWNLINK_DATA_NOTIFICATION_TYPE:
-                {
-                    mme_ue_t *mme_ue = NULL;
-                    gtp_xact_t *xact = (gtp_xact_t *)event_get_param3(e);
-
-                    emm_handle_s11_downlink_data_notification(xact, bearer);
-                    mme_ue = bearer->mme_ue;
-                    d_assert(mme_ue, break, "Null param");
-
-                    s1ap_handle_paging(mme_ue);
-                    /* Start T3413 */
-                    tm_start(mme_ue->t3413);
-                    break;
-                }
-            }
-
-            break;
-        }
         case MME_EVT_EMM_UE_FROM_S6A:
-        case MME_EVT_EMM_UE_FROM_S11:
         {
             index_t index = event_get_param1(e);
             mme_ue_t *mme_ue = NULL;
@@ -101,12 +65,6 @@ void emm_state_operational(fsm_t *s, event_t *e)
                 {
                     c_uint32_t result_code = event_get_param3(e);
                     emm_handle_s6a_ula(mme_ue, result_code);
-                    break;
-                }
-                case GTP_MODIFY_BEARER_RESPONSE_TYPE:
-                {
-                    d_trace(3, "[GTP] Modify Bearer Response : "
-                            "MME <-- SGW\n");
                     break;
                 }
             }

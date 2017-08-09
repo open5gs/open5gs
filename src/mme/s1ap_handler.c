@@ -394,7 +394,10 @@ void s1ap_handle_initial_context_setup_response(
         i < ies->e_RABSetupListCtxtSURes.s1ap_E_RABSetupItemCtxtSURes.count; 
         i++)
     {
-        event_t e;
+        status_t rv;
+        mme_sess_t *sess = NULL;
+        pkbuf_t *pkbuf = NULL;
+
         mme_bearer_t *bearer = NULL;
         mme_ue_t *mme_ue = enb_ue->mme_ue;
         S1ap_E_RABSetupItemCtxtSURes_t *e_rab = NULL;
@@ -411,10 +414,15 @@ void s1ap_handle_initial_context_setup_response(
         memcpy(&bearer->enb_s1u_addr, e_rab->transportLayerAddress.buf,
                 sizeof(bearer->enb_s1u_addr));
 
-        event_set(&e, MME_EVT_ESM_BEARER_TO_S11);
-        event_set_param1(&e, (c_uintptr_t)bearer->index);
-        event_set_param2(&e, (c_uintptr_t)GTP_MODIFY_BEARER_REQUEST_TYPE);
-        mme_event_send(&e);
+        sess = bearer->sess;
+        d_assert(sess, return, "Null param");
+
+        rv = mme_s11_build_modify_bearer_request(&pkbuf, bearer);
+        d_assert(rv == CORE_OK, return, "S11 build error");
+
+        rv = mme_s11_send_to_sgw(bearer->sgw, 
+                GTP_MODIFY_BEARER_REQUEST_TYPE, sess->sgw_s11_teid, pkbuf);
+        d_assert(rv == CORE_OK, return, "S11 send error");
     }
 }
 
@@ -475,7 +483,7 @@ void s1ap_handle_ue_context_release_request(
 
                 if (!release_access_bearer_needed)
                 {
-                    s1ap_handle_release_access_bearers_response(enb, enb_ue);
+                    s1ap_handle_release_access_bearers_response(enb_ue);
                 }
             }
             else
@@ -505,41 +513,21 @@ void s1ap_handle_ue_context_release_request(
     }
 }
 
-void s1ap_handle_detach_accept(
-        mme_enb_t *enb, enb_ue_t *enb_ue)
+void s1ap_handle_release_access_bearers_response(enb_ue_t *enb_ue)
 {
     status_t rv;
+    mme_enb_t *enb = NULL;
     pkbuf_t *s1apbuf;
     S1ap_Cause_t cause;
 
-    d_assert(enb, return, "Null param");
     d_assert(enb_ue, return, "Null param");
-
-    cause.present = S1ap_Cause_PR_nas;
-    cause.choice.nas = S1ap_CauseNas_detach;
-
-    rv = s1ap_build_ue_context_release_commmand(
-            &s1apbuf, enb_ue, &cause);
-    d_assert(rv == CORE_OK && s1apbuf, return, "s1ap build error");
-
-    d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
-}
-
-void s1ap_handle_release_access_bearers_response(
-        mme_enb_t *enb, enb_ue_t *enb_ue)
-{
-    status_t rv;
-    pkbuf_t *s1apbuf;
-    S1ap_Cause_t cause;
-
+    enb = enb_ue->enb;
     d_assert(enb, return, "Null param");
-    d_assert(enb_ue, return, "Null param");
 
     cause.present = S1ap_Cause_PR_nas;
     cause.choice.nas = S1ap_CauseNas_normal_release;
 
-    rv = s1ap_build_ue_context_release_commmand(
-            &s1apbuf, enb_ue, &cause);
+    rv = s1ap_build_ue_context_release_commmand(&s1apbuf, enb_ue, &cause);
     d_assert(rv == CORE_OK && s1apbuf, return, "s1ap build error");
 
     d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
@@ -568,6 +556,7 @@ void s1ap_handle_ue_context_release_complete(
     enb_ue_remove(enb_ue);
 }
 
+/* FIXME : Where is a good location S1AP handler or EMM handler?*/
 void s1ap_handle_paging(mme_ue_t *mme_ue)
 {
     pkbuf_t *s1apbuf = NULL;

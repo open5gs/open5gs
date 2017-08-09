@@ -6,8 +6,10 @@
 
 #include "mme_event.h"
 
+#include "s1ap_handler.h"
 #include "s1ap_path.h"
 #include "nas_security.h"
+#include "emm_handler.h"
 #include "mme_s11_path.h"
 #include "mme_s11_handler.h"
 #include "emm_handler.h"
@@ -126,8 +128,6 @@ void mme_state_operational(fsm_t *s, event_t *e)
             break;
         }
         case MME_EVT_S1AP_ENB_MSG:
-        case MME_EVT_S1AP_UE_FROM_EMM:
-        case MME_EVT_S1AP_UE_FROM_S11:
         {
             s1ap_message_t message;
             index_t index = event_get_param1(e);
@@ -138,22 +138,16 @@ void mme_state_operational(fsm_t *s, event_t *e)
             d_assert(enb = mme_enb_find(index), break, "No eNB context");
             d_assert(FSM_STATE(&enb->sm), break, "No S1AP State Machine");
 
-            if (event_get(e) == MME_EVT_S1AP_ENB_MSG)
-            {
-                pkbuf = (pkbuf_t *)event_get_param2(e);
-                d_assert(pkbuf, break, "Null param");
-                d_assert(s1ap_decode_pdu(&message, pkbuf) == CORE_OK,
-                        pkbuf_free(pkbuf); break, "Can't decode S1AP_PDU");
-                event_set_param3(e, (c_uintptr_t)&message);
-            }
+            pkbuf = (pkbuf_t *)event_get_param2(e);
+            d_assert(pkbuf, break, "Null param");
+            d_assert(s1ap_decode_pdu(&message, pkbuf) == CORE_OK,
+                    pkbuf_free(pkbuf); break, "Can't decode S1AP_PDU");
+            event_set_param3(e, (c_uintptr_t)&message);
 
             fsm_dispatch(&enb->sm, (fsm_event_t*)e);
 
-            if (event_get(e) == MME_EVT_S1AP_ENB_MSG)
-            {
-                s1ap_free_pdu(&message);
-                pkbuf_free(pkbuf);
-            }
+            s1ap_free_pdu(&message);
+            pkbuf_free(pkbuf);
             break;
         }
         case MME_EVT_EMM_UE_MSG:
@@ -221,26 +215,13 @@ void mme_state_operational(fsm_t *s, event_t *e)
             break;
         }
         case MME_EVT_EMM_UE_FROM_S6A:
-        case MME_EVT_EMM_UE_FROM_S11:
-        case MME_EVT_EMM_BEARER_FROM_S11:
         case MME_EVT_EMM_UE_T3413:
         {
             index_t index = event_get_param1(e);
             mme_ue_t *mme_ue = NULL;
-            mme_bearer_t *bearer = NULL;
 
-            if (event_get(e) == MME_EVT_EMM_BEARER_FROM_S11)
-            {
-                d_assert(index, break, "Null param");
-                bearer = mme_bearer_find(index);
-                d_assert(bearer, break, "No ESM context");
-                mme_ue = bearer->mme_ue;
-            }
-            else
-            {
-                d_assert(index, break, "Null param");
-                mme_ue = mme_ue_find(index);
-            }
+            d_assert(index, break, "Null param");
+            mme_ue = mme_ue_find(index);
             d_assert(mme_ue, break, "No UE context");
             d_assert(FSM_STATE(&mme_ue->sm), break, "No EMM State Machine");
 
@@ -248,7 +229,6 @@ void mme_state_operational(fsm_t *s, event_t *e)
 
             break;
         }
-        case MME_EVT_ESM_BEARER_TO_S11:
         case MME_EVT_ESM_BEARER_MSG:
         {
             nas_message_t message;
@@ -312,6 +292,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 case GTP_CREATE_SESSION_RESPONSE_TYPE:
                     mme_s11_handle_create_session_response(
                             sess, &gtp_message.create_session_response);
+                    emm_handle_s11_create_session_response(sess);
                     break;
                 case GTP_MODIFY_BEARER_RESPONSE_TYPE:
                     mme_s11_handle_modify_bearer_response(
@@ -320,17 +301,41 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 case GTP_DELETE_SESSION_RESPONSE_TYPE:
                     mme_s11_handle_delete_session_response(
                             sess, &gtp_message.delete_session_response);
+                    emm_handle_s11_delete_session_response(sess);
                     break;
                 case GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE:
+                {
+                    mme_ue_t *mme_ue = NULL;
+                    enb_ue_t *enb_ue = NULL;
+
                     mme_s11_handle_release_access_bearers_response(
                             sess, &gtp_message.release_access_bearers_response);
+
+                    mme_ue = sess->mme_ue;
+                    d_assert(mme_ue, break, "Null param");
+                    enb_ue = mme_ue->enb_ue;
+                    d_assert(enb_ue, break, "Null param");
+                    
+                    s1ap_handle_release_access_bearers_response(enb_ue);
                     break;
+                }
 
                 case GTP_DOWNLINK_DATA_NOTIFICATION_TYPE:
+                {
+                    mme_ue_t *mme_ue = NULL;
+
                     mme_s11_handle_downlink_data_notification(
                             xact,
                             sess, &gtp_message.downlink_data_notification);
+
+                    mme_ue = sess->mme_ue;
+                    d_assert(mme_ue, break, "Null param");
+
+                    s1ap_handle_paging(mme_ue);
+                    /* Start T3413 */
+                    tm_start(mme_ue->t3413);
                     break;
+                }
                 default:
                     d_warn("Not implmeneted(type:%d)", type);
                     break;
