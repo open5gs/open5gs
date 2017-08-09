@@ -15,6 +15,7 @@
 #include "emm_build.h"
 #include "s1ap_build.h"
 #include "s1ap_path.h"
+#include "fd_lib.h"
 
 #include "mme_s11_build.h"
 #include "mme_s11_path.h"
@@ -813,4 +814,17 @@ void emm_handle_downlink_data_notification(gtp_xact_t *xact,
                 GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE, 
                 sess->sgw_s11_teid, s11buf) == CORE_OK,
             return , "xact commit error");
+}
+
+void emm_handle_s6a_aia(mme_ue_t *mme_ue, c_uint32_t result_code)
+{
+    if (result_code == ER_DIAMETER_SUCCESS)
+    {
+        emm_handle_authentication_request(mme_ue);
+    }
+    else
+    {
+        /* TODO */
+        /* Send Attach Reject */
+    }
 }

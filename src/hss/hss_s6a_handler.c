@@ -54,6 +54,7 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
     hss_db_auth_info_t auth_info;
     c_uint8_t zero[RAND_LEN];
     status_t rv;
+    c_uint32_t result_code = 0;
 	
     d_assert(msg, return EINVAL,);
 	
@@ -71,7 +72,8 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
     rv = hss_db_auth_info(imsi_bcd, &auth_info);
     if (rv != CORE_OK)
     {
-        d_error("Cannot get Auth-Info for IMSI:'%s'", imsi_bcd);
+        d_warn("Cannot get Auth-Info for IMSI:'%s'", imsi_bcd);
+        result_code = S6A_DIAMETER_ERROR_USER_UNKNOWN;
         goto out;
     }
 
@@ -85,6 +87,7 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
     if (rv != CORE_OK)
     {
         d_error("Cannot update rand and sqn for IMSI:'%s'", imsi_bcd);
+        result_code = S6A_DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE;
         goto out;
     }
 
@@ -92,34 +95,23 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
     if (rv != CORE_OK)
     {
         d_error("Cannot increment sqn for IMSI:'%s'", imsi_bcd);
+        result_code = S6A_DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE;
         goto out;
     }
 
     CHECK_FCT( fd_msg_search_avp(qry, s6a_visited_plmn_id, &avp) );
     CHECK_FCT( fd_msg_avp_hdr(avp, &hdr) );
 
-    if (hdr && hdr->avp_value && hdr->avp_value->os.data)
-    {
 #if 0  // TODO : check visited_plmn_id
-        memcpy(visited_plmn_id,
-                hdr->avp_value->os.data, hdr->avp_value->os.len);
+    memcpy(visited_plmn_id,
+            hdr->avp_value->os.data, hdr->avp_value->os.len);
 #endif
-    }
 
     milenage_opc(auth_info.k, auth_info.op, opc);
     milenage_generate(opc, auth_info.amf, auth_info.k,
         core_uint64_to_buffer(auth_info.sqn, HSS_SQN_LEN, sqn), auth_info.rand,
         autn, ik, ck, ak, xres, &xres_len);
     hss_kdf_kasme(ck, ik, hdr->avp_value->os.data, sqn, ak, kasme);
-
-	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
-	CHECK_FCT( fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1) );
-
-    /* Set the Auth-Session-State AVP */
-    CHECK_FCT( fd_msg_avp_new(fd_auth_session_state, 0, &avp) );
-    val.i32 = 1;
-    CHECK_FCT( fd_msg_avp_setvalue(avp, &val) );
-    CHECK_FCT( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) );
 
     /* Set the Authentication-Info */
     CHECK_FCT( fd_msg_avp_new(s6a_authentication_info, 0, &avp) );
@@ -155,7 +147,16 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
 
     CHECK_FCT( fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avp_e_utran_vector) );
     CHECK_FCT( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) );
-	
+
+	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
+	CHECK_FCT( fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1) );
+
+    /* Set the Auth-Session-State AVP */
+    CHECK_FCT( fd_msg_avp_new(fd_auth_session_state, 0, &avp) );
+    val.i32 = 1;
+    CHECK_FCT( fd_msg_avp_setvalue(avp, &val) );
+    CHECK_FCT( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) );
+
 	/* Send the answer */
 	CHECK_FCT( fd_msg_send(msg, NULL, NULL) );
 	
@@ -167,8 +168,7 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
 	return 0;
 
 out:
-	CHECK_FCT( fd_msg_rescode_set(
-            ans, "DIAMETER_AUTHENTICATION_REJECTED", NULL, NULL, 1) );
+    CHECK_FCT( fd_message_experimental_rescode_set(ans, result_code) );
 	CHECK_FCT( fd_msg_send(msg, NULL, NULL) );
 
     return 0;

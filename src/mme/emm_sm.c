@@ -93,7 +93,8 @@ void emm_state_operational(fsm_t *s, event_t *e)
             {
                 case S6A_CMD_AUTHENTICATION_INFORMATION:
                 {
-                    emm_handle_authentication_request(mme_ue);
+                    c_uint32_t result_code = event_get_param3(e);
+                    emm_handle_s6a_aia(mme_ue, result_code);
                     break;
                 }
                 case S6A_CMD_UPDATE_LOCATION:
