@@ -292,17 +292,9 @@ void mme_state_operational(fsm_t *s, event_t *e)
             {
                 case GTP_CREATE_SESSION_RESPONSE_TYPE:
                 {
-                    mme_ue_t *mme_ue = NULL;
-
                     mme_s11_handle_create_session_response(
                             sess, &gtp_message.create_session_response);
-
-                    /* TODO : E_RABSetupRequest */
-
-                    mme_ue = sess->mme_ue;
-                    d_assert(mme_ue, break, "Null param");
-
-                    emm_handle_attach_accept(mme_ue);
+                    emm_handle_attach_accept(sess);
                     break;
                 }
                 case GTP_MODIFY_BEARER_RESPONSE_TYPE:

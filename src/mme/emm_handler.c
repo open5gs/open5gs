@@ -21,12 +21,6 @@
 
 #include "emm_handler.h"
 
-static mme_sess_t *emm_sess_find_by_ue(mme_ue_t *mme_ue)
-{
-    /* TODO : fix the current transaction from the PDN connectivity request's PTI */
-    return mme_sess_first(mme_ue);
-}
-
 static void event_emm_to_esm(
         mme_ue_t *mme_ue, nas_esm_message_container_t *esm_message_container)
 {
@@ -163,17 +157,17 @@ void emm_handle_attach_request(
     event_emm_to_esm(mme_ue, &attach_request->esm_message_container);
 }
 
-void emm_handle_attach_accept(mme_ue_t *mme_ue)
+void emm_handle_attach_accept(mme_sess_t *sess)
 {
     status_t rv;
     enb_ue_t *enb_ue = NULL;
-    mme_sess_t *sess = NULL;
+    mme_ue_t *mme_ue = NULL;
     mme_bearer_t *bearer = NULL;
     pkbuf_t *esmbuf = NULL, *emmbuf = NULL, *s1apbuf = NULL;
 
-    d_assert(mme_ue, return, "Null param");
-    sess = emm_sess_find_by_ue(mme_ue);
     d_assert(sess, return, "Null param");
+    mme_ue = sess->mme_ue;
+    d_assert(mme_ue, return, "Null param");
     enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return, "Null param");
     bearer = mme_default_bearer_in_sess(sess);

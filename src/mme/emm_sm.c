@@ -92,7 +92,7 @@ void emm_state_operational(fsm_t *s, event_t *e)
                     {
                         if (MME_SESSION_IS_VALID(sess))
                         {
-                            emm_handle_attach_accept(mme_ue);
+                            emm_handle_attach_accept(sess);
                         }
                         else
                         {
@@ -179,7 +179,7 @@ void emm_state_operational(fsm_t *s, event_t *e)
                         {
                             if (MME_SESSION_IS_VALID(sess))
                             {
-                                emm_handle_attach_accept(mme_ue);
+                                emm_handle_attach_accept(sess);
                             }
                             else
                             {
