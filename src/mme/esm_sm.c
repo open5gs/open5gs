@@ -9,8 +9,7 @@
 #include "emm_handler.h"
 #include "esm_build.h"
 #include "esm_handler.h"
-#include "mme_s11_build.h"
-#include "mme_s11_path.h"
+#include "mme_s11_handler.h"
 
 void esm_state_initial(fsm_t *s, event_t *e)
 {
@@ -73,57 +72,44 @@ void esm_state_operational(fsm_t *s, event_t *e)
                             "UE[%s] --> ESM[%d]\n", 
                             mme_ue->imsi_bcd, bearer->pti);
 
-                    if (MME_UE_HAVE_IMSI(mme_ue))
+                    if (!MME_UE_HAVE_IMSI(mme_ue))
                     {
-                        /* Known GUTI */
-                        if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+                        /* Continue with Identity Response */
+                        break;
+                    }
+
+                    /* Known GUTI */
+                    if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+                    {
+                        mme_sess_t *sess = bearer->sess;
+                        d_assert(sess, return, "Null param");
+
+                        if (MME_SESSION_HAVE_APN(sess))
                         {
-                            mme_sess_t *sess = bearer->sess;
-                            d_assert(sess, return, "Null param");
-
-                            if (MME_SESSION_HAVE_APN(sess))
+                            if (MME_SESSION_IS_CREATED(mme_ue))
                             {
-                                status_t rv;
-                                pkbuf_t *pkbuf = NULL;
-
-                                if (MME_SESSION_IS_CREATED(mme_ue))
-                                {
-                                    emm_handle_attach_accept(mme_ue);
-                                }
-                                else
-                                {
-                                    rv = mme_s11_build_create_session_request(
-                                            &pkbuf, bearer);
-                                    d_assert(rv == CORE_OK, return,
-                                            "S11 build error");
-
-                                    rv = mme_s11_send_to_sgw(bearer->sgw, 
-                                            GTP_CREATE_SESSION_REQUEST_TYPE,
-                                            0, pkbuf);
-                                    d_assert(rv == CORE_OK, return,
-                                            "S11 send error");
-                                }
+                                emm_handle_attach_accept(mme_ue);
                             }
                             else
                             {
-                                esm_handle_information_request(mme_ue);
+                                mme_s11_handle_create_session_request(bearer);
                             }
                         }
                         else
                         {
-                            if (MME_SESSION_IS_CREATED(mme_ue))
-                            {
-                                emm_handle_s11_delete_session_request(mme_ue);
-                            }
-                            else
-                            {
-                                mme_s6a_send_air(mme_ue);
-                            }
+                            esm_handle_information_request(sess);
                         }
                     }
                     else
                     {
-                        /* Continue with Identity Response */
+                        if (MME_SESSION_IS_CREATED(mme_ue))
+                        {
+                            emm_handle_s11_delete_session_request(mme_ue);
+                        }
+                        else
+                        {
+                            mme_s6a_send_air(mme_ue);
+                        }
                     }
                     break;
                 }

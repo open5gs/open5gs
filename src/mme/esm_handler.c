@@ -29,16 +29,16 @@ void esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
     }
 }
 
-void esm_handle_information_request(mme_ue_t *mme_ue)
+void esm_handle_information_request(mme_sess_t *sess)
 {
     status_t rv;
     pkbuf_t *esmbuf = NULL;
-    mme_sess_t *sess = NULL;
+    mme_ue_t *mme_ue = NULL;
     mme_bearer_t *bearer = NULL;
 
-    d_assert(mme_ue, return, "Null param");
-    sess = mme_sess_first(mme_ue);
     d_assert(sess, return, "Null param");
+    mme_ue = sess->mme_ue;
+    d_assert(mme_ue, return, "Null param");
     bearer = mme_default_bearer_in_sess(sess);
     d_assert(bearer, return, "Null param");
 

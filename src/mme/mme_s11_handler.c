@@ -11,6 +11,21 @@
 #include "s1ap_path.h"
 #include "mme_s11_build.h"
 #include "mme_s11_handler.h"
+#include "mme_s11_path.h"
+
+void mme_s11_handle_create_session_request(mme_bearer_t *bearer)
+{
+    status_t rv;
+    pkbuf_t *pkbuf = NULL;
+
+    rv = mme_s11_build_create_session_request(&pkbuf, bearer);
+    d_assert(rv == CORE_OK, return,
+            "S11 build error");
+
+    rv = mme_s11_send_to_sgw(bearer->sgw, 
+            GTP_CREATE_SESSION_REQUEST_TYPE, 0, pkbuf);
+    d_assert(rv == CORE_OK, return, "S11 send error");
+}
 
 void mme_s11_handle_create_session_response(
         mme_sess_t *sess, gtp_create_session_response_t *rsp)

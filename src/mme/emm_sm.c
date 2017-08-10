@@ -12,8 +12,7 @@
 #include "emm_handler.h"
 #include "emm_build.h"
 #include "esm_handler.h"
-#include "mme_s11_build.h"
-#include "mme_s11_path.h"
+#include "mme_s11_handler.h"
 
 void emm_state_initial(fsm_t *s, event_t *e)
 {
@@ -107,24 +106,13 @@ void emm_state_operational(fsm_t *s, event_t *e)
                                 }
                                 else
                                 {
-                                    status_t rv;
-                                    pkbuf_t *pkbuf = NULL;
-                                    
-                                    rv = mme_s11_build_create_session_request(
-                                            &pkbuf, bearer);
-                                    d_assert(rv == CORE_OK, return,
-                                            "S11 build error");
-
-                                    rv = mme_s11_send_to_sgw(bearer->sgw, 
-                                            GTP_CREATE_SESSION_REQUEST_TYPE,
-                                            0, pkbuf);
-                                    d_assert(rv == CORE_OK, return,
-                                            "S11 send error");
+                                    mme_s11_handle_create_session_request(
+                                            bearer);
                                 }
                             }
                             else
                             {
-                                esm_handle_information_request(mme_ue);
+                                esm_handle_information_request(sess);
                             }
 
                             break;
@@ -198,20 +186,8 @@ void emm_state_operational(fsm_t *s, event_t *e)
                     
                     if (SECURITY_CONTEXT_IS_VALID(mme_ue))
                     {
-                        emm_handle_attach_accept(mme_ue);
-                    }
-                    else
-                    {
-                        if (MME_SESSION_IS_CREATED(mme_ue))
-                        {
-                             emm_handle_s11_delete_session_request(mme_ue);
-                        }
-                        else
-                        {
-                            mme_s6a_send_air(mme_ue);
-                        }
-#if 0
                         nas_message_t *message = NULL;
+
                         message = &mme_ue->last_esm_message;
                         d_assert(message, return, "Null param");
 
@@ -237,24 +213,13 @@ void emm_state_operational(fsm_t *s, event_t *e)
                                     }
                                     else
                                     {
-                                        status_t rv;
-                                        pkbuf_t *pkbuf = NULL;
-                                        
-                                        rv = mme_s11_build_create_session_request(
-                                                &pkbuf, bearer);
-                                        d_assert(rv == CORE_OK, return,
-                                                "S11 build error");
-
-                                        rv = mme_s11_send_to_sgw(bearer->sgw, 
-                                                GTP_CREATE_SESSION_REQUEST_TYPE,
-                                                0, pkbuf);
-                                        d_assert(rv == CORE_OK, return,
-                                                "S11 send error");
+                                        mme_s11_handle_create_session_request(
+                                                bearer);
                                     }
                                 }
                                 else
                                 {
-                                    esm_handle_information_request(mme_ue);
+                                    esm_handle_information_request(sess);
                                 }
 
                                 break;
@@ -264,8 +229,17 @@ void emm_state_operational(fsm_t *s, event_t *e)
                                 break;
                             }
                         }
-#endif
-
+                    }
+                    else
+                    {
+                        if (MME_SESSION_IS_CREATED(mme_ue))
+                        {
+                             emm_handle_s11_delete_session_request(mme_ue);
+                        }
+                        else
+                        {
+                            mme_s6a_send_air(mme_ue);
+                        }
                     }
 
                     break;
