@@ -4,7 +4,6 @@
 
 #include "nas_message.h"
 #include "nas_security.h"
-#include "mme_kdf.h"
 
 status_t nas_security_encode(
         pkbuf_t **pkbuf, mme_ue_t *mme_ue, nas_message_t *message)
@@ -154,10 +153,6 @@ status_t nas_security_decode(mme_ue_t *mme_ue,
             d_error("NAS MAC verification failed");
             mme_ue->mac_failed = 1;
         }
-
-        /* Update Kenb */
-        if (SECURITY_CONTEXT_IS_VALID(mme_ue))
-            mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, mme_ue->kenb);
 
         return CORE_OK;
     }

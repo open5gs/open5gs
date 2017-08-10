@@ -34,19 +34,8 @@ CORE_DECLARE(void) emm_handle_service_request(
 CORE_DECLARE(void) emm_handle_emm_status(
         mme_ue_t *mme_ue, nas_emm_status_t *emm_status);
 
-/** ESM Layer in EMM handler */
-CORE_DECLARE(void) emm_handle_esm_information_request(mme_ue_t *mme_ue);
-
-/** S6A Layer in EMM handler */
-CORE_DECLARE(void) emm_handle_s6a_aia(mme_ue_t *mme_ue, c_uint32_t result_code);
-CORE_DECLARE(void) emm_handle_s6a_ula(mme_ue_t *mme_ue, c_uint32_t result_code);
-
 /** S11 Layer in EMM handler */
-CORE_DECLARE(void) emm_handle_s11_create_session_response(mme_sess_t *sess);
 CORE_DECLARE(void) emm_handle_s11_delete_session_request(mme_ue_t *mme_ue);
-CORE_DECLARE(void) emm_handle_s11_delete_session_response(mme_sess_t *sess);
-CORE_DECLARE(void) emm_handle_s11_downlink_data_notification(gtp_xact_t *xact, 
-        mme_bearer_t *bearer);
 
 #ifdef __cplusplus
 }

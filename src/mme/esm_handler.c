@@ -9,6 +9,7 @@
 #include "esm_build.h"
 #include "s1ap_build.h"
 #include "s1ap_path.h"
+#include "nas_path.h"
 #include "mme_s11_build.h"
 #include "mme_s11_path.h"
 
@@ -27,6 +28,25 @@ void esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
                 bearer->ue_pco_len);
     }
 }
+
+void esm_handle_information_request(mme_ue_t *mme_ue)
+{
+    status_t rv;
+    pkbuf_t *esmbuf = NULL;
+    mme_sess_t *sess = NULL;
+    mme_bearer_t *bearer = NULL;
+
+    d_assert(mme_ue, return, "Null param");
+    sess = mme_sess_first(mme_ue);
+    d_assert(sess, return, "Null param");
+    bearer = mme_default_bearer_in_sess(sess);
+    d_assert(bearer, return, "Null param");
+
+    rv = esm_build_information_request(&esmbuf, bearer);
+    d_assert(rv == CORE_OK && esmbuf, return, "esm_build failed");
+    d_assert(nas_send_to_downlink_nas_transport(mme_ue, esmbuf) == CORE_OK,,);
+}
+
 
 void esm_handle_information_response(mme_bearer_t *bearer, 
         nas_esm_information_response_t *esm_information_response)

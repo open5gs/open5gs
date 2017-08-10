@@ -96,6 +96,8 @@ void mme_s11_handle_delete_session_response(
         return;
     }
 
+    mme_sess_remove(sess);
+
     d_trace(3, "[GTP] Delete Session Response : "
             "MME[%d] <-- SGW[%d]\n", sess->mme_s11_teid, sess->sgw_s11_teid);
 }

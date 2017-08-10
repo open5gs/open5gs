@@ -257,6 +257,10 @@ typedef struct _mme_sess_t {
     c_uint32_t      sgw_s11_teid;
     c_uint32_t      sgw_s11_addr;
 
+#define MME_SESSION_HAVE_APN(sess) \
+    ((sess) && \
+    (mme_default_bearer_in_sess(sess)) && \
+    (mme_default_bearer_in_sess(sess)->pdn))
     /* mme_bearer_first(sess) : Default Bearer Context */
     list_t          bearer_list;
 

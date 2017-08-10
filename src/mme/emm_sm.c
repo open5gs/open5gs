@@ -3,13 +3,17 @@
 #include "core_debug.h"
 
 #include "nas_message.h"
+#include "fd_lib.h"
 
 #include "mme_event.h"
-#include "emm_handler.h"
-#include "emm_build.h"
-#include "mme_s6a_handler.h"
 #include "mme_kdf.h"
 #include "s1ap_handler.h"
+#include "mme_s6a_handler.h"
+#include "emm_handler.h"
+#include "emm_build.h"
+#include "esm_handler.h"
+#include "mme_s11_build.h"
+#include "mme_s11_path.h"
 
 void emm_state_initial(fsm_t *s, event_t *e)
 {
@@ -58,13 +62,79 @@ void emm_state_operational(fsm_t *s, event_t *e)
                 case S6A_CMD_AUTHENTICATION_INFORMATION:
                 {
                     c_uint32_t result_code = event_get_param3(e);
-                    emm_handle_s6a_aia(mme_ue, result_code);
+                    if (result_code != ER_DIAMETER_SUCCESS)
+                    {
+                        /* TODO */
+                        /* Send Attach Reject */
+                        return;
+                    }
+
+                    emm_handle_authentication_request(mme_ue);
                     break;
                 }
                 case S6A_CMD_UPDATE_LOCATION:
                 {
+                    nas_message_t *message = NULL;
                     c_uint32_t result_code = event_get_param3(e);
-                    emm_handle_s6a_ula(mme_ue, result_code);
+                    if (result_code != ER_DIAMETER_SUCCESS)
+                    {
+                        /* TODO */
+                        return;
+                    }
+
+                    message = &mme_ue->last_esm_message;
+                    d_assert(message, return, "Null param");
+
+                    switch(message->esm.h.message_type)
+                    {
+                        case NAS_PDN_CONNECTIVITY_REQUEST:
+                        {
+                            mme_bearer_t *bearer = NULL;
+                            mme_sess_t *sess = NULL;
+
+                            bearer = mme_bearer_find_by_ue_pti(mme_ue, 
+                                message->esm.h.procedure_transaction_identity);
+                            d_assert(bearer, return, "Null param(pti:%d)",
+                                message->esm.h.procedure_transaction_identity);
+                            sess = bearer->sess;
+                            d_assert(sess, return, "Null param");
+
+                            if (MME_SESSION_HAVE_APN(sess))
+                            {
+                                if (MME_SESSION_IS_CREATED(mme_ue))
+                                {
+                                    emm_handle_attach_accept(mme_ue);
+                                }
+                                else
+                                {
+                                    status_t rv;
+                                    pkbuf_t *pkbuf = NULL;
+                                    
+                                    rv = mme_s11_build_create_session_request(
+                                            &pkbuf, bearer);
+                                    d_assert(rv == CORE_OK, return,
+                                            "S11 build error");
+
+                                    rv = mme_s11_send_to_sgw(bearer->sgw, 
+                                            GTP_CREATE_SESSION_REQUEST_TYPE,
+                                            0, pkbuf);
+                                    d_assert(rv == CORE_OK, return,
+                                            "S11 send error");
+                                }
+                            }
+                            else
+                            {
+                                esm_handle_information_request(mme_ue);
+                            }
+
+                            break;
+                        }
+                        default:
+                        {
+                            break;
+                        }
+                    }
+
                     break;
                 }
             }
@@ -92,6 +162,12 @@ void emm_state_operational(fsm_t *s, event_t *e)
                 mme_ue_paged(mme_ue);
                 emm_handle_service_request(
                         mme_ue, &message->emm.service_request);
+
+                /* Update Kenb */
+                if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+                    mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, 
+                            mme_ue->kenb);
+
                 break;
             }
 
@@ -102,12 +178,96 @@ void emm_state_operational(fsm_t *s, event_t *e)
                     mme_ue_paged(mme_ue);
                     emm_handle_attach_request(
                             mme_ue, &message->emm.attach_request);
+
+                    /* Update Kenb */
+                    if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+                        mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, 
+                                mme_ue->kenb);
                     break;
                 }
                 case NAS_IDENTITY_RESPONSE:
                 {
                     emm_handle_identity_response(mme_ue,
                             &message->emm.identity_response);
+
+                    if (!MME_UE_HAVE_IMSI(mme_ue))
+                    {
+                        d_error("Cannot find IMSI");
+                        break;
+                    }
+                    
+                    if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+                    {
+                        emm_handle_attach_accept(mme_ue);
+                    }
+                    else
+                    {
+                        if (MME_SESSION_IS_CREATED(mme_ue))
+                        {
+                             emm_handle_s11_delete_session_request(mme_ue);
+                        }
+                        else
+                        {
+                            mme_s6a_send_air(mme_ue);
+                        }
+#if 0
+                        nas_message_t *message = NULL;
+                        message = &mme_ue->last_esm_message;
+                        d_assert(message, return, "Null param");
+
+                        switch(message->esm.h.message_type)
+                        {
+                            case NAS_PDN_CONNECTIVITY_REQUEST:
+                            {
+                                mme_bearer_t *bearer = NULL;
+                                mme_sess_t *sess = NULL;
+
+                                bearer = mme_bearer_find_by_ue_pti(mme_ue, 
+                                    message->esm.h.procedure_transaction_identity);
+                                d_assert(bearer, return, "Null param(pti:%d)",
+                                    message->esm.h.procedure_transaction_identity);
+                                sess = bearer->sess;
+                                d_assert(sess, return, "Null param");
+
+                                if (MME_SESSION_HAVE_APN(sess))
+                                {
+                                    if (MME_SESSION_IS_CREATED(mme_ue))
+                                    {
+                                        emm_handle_attach_accept(mme_ue);
+                                    }
+                                    else
+                                    {
+                                        status_t rv;
+                                        pkbuf_t *pkbuf = NULL;
+                                        
+                                        rv = mme_s11_build_create_session_request(
+                                                &pkbuf, bearer);
+                                        d_assert(rv == CORE_OK, return,
+                                                "S11 build error");
+
+                                        rv = mme_s11_send_to_sgw(bearer->sgw, 
+                                                GTP_CREATE_SESSION_REQUEST_TYPE,
+                                                0, pkbuf);
+                                        d_assert(rv == CORE_OK, return,
+                                                "S11 send error");
+                                    }
+                                }
+                                else
+                                {
+                                    esm_handle_information_request(mme_ue);
+                                }
+
+                                break;
+                            }
+                            default:
+                            {
+                                break;
+                            }
+                        }
+#endif
+
+                    }
+
                     break;
                 }
                 case NAS_AUTHENTICATION_RESPONSE:

@@ -8,6 +8,7 @@
 
 #include "s1ap_handler.h"
 #include "s1ap_path.h"
+#include "mme_s6a_handler.h"
 #include "nas_security.h"
 #include "emm_handler.h"
 #include "mme_s11_path.h"
@@ -290,19 +291,57 @@ void mme_state_operational(fsm_t *s, event_t *e)
             switch(type)
             {
                 case GTP_CREATE_SESSION_RESPONSE_TYPE:
+                {
+                    mme_ue_t *mme_ue = NULL;
+
                     mme_s11_handle_create_session_response(
                             sess, &gtp_message.create_session_response);
-                    emm_handle_s11_create_session_response(sess);
+
+                    /* TODO : E_RABSetupRequest */
+
+                    mme_ue = sess->mme_ue;
+                    d_assert(mme_ue, break, "Null param");
+
+                    emm_handle_attach_accept(mme_ue);
                     break;
+                }
                 case GTP_MODIFY_BEARER_RESPONSE_TYPE:
                     mme_s11_handle_modify_bearer_response(
                             sess, &gtp_message.modify_bearer_response);
                     break;
                 case GTP_DELETE_SESSION_RESPONSE_TYPE:
+                {
+                    mme_ue_t *mme_ue = NULL;
+                    nas_message_t *message = NULL;
+
+                    d_assert(sess, break, "Null param");
+                    mme_ue = sess->mme_ue;
+                    d_assert(mme_ue, break, "Null param");
+                    message = &mme_ue->last_emm_message;
+                    d_assert(message, break, "Null param");
+
                     mme_s11_handle_delete_session_response(
                             sess, &gtp_message.delete_session_response);
-                    emm_handle_s11_delete_session_response(sess);
+
+                    switch(message->emm.h.message_type)
+                    {
+                        case NAS_DETACH_REQUEST:
+                        {
+                            emm_handle_detach_accept(mme_ue,
+                                    &message->emm.detach_request_from_ue);
+                            break;
+                        }
+                        case NAS_ATTACH_REQUEST:
+                        case NAS_IDENTITY_RESPONSE:
+                        {
+                            mme_s6a_send_air(mme_ue);
+                            break;
+                        }
+                        default:
+                            break;
+                    }
                     break;
+                }
                 case GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE:
                 {
                     mme_ue_t *mme_ue = NULL;
