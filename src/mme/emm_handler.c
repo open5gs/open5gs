@@ -625,21 +625,24 @@ void emm_handle_s11_delete_session_request(mme_ue_t *mme_ue)
     status_t rv;
     pkbuf_t *s11buf = NULL;
     mme_sess_t *sess = NULL;
-    mme_bearer_t *bearer = NULL;
 
     d_assert(mme_ue, return, "Null param");
-    sess = emm_sess_find_by_ue(mme_ue);
-    d_assert(sess, return, "Null param");
-    bearer = mme_default_bearer_in_sess(sess);
-    d_assert(bearer, return, "Null param");
+    sess = mme_sess_first(mme_ue);
+    while (sess != NULL)
+    {
+        mme_bearer_t *bearer = mme_default_bearer_in_sess(sess);
+        if (bearer != NULL)
+        {
+            rv = mme_s11_build_delete_session_request(&s11buf, sess);
+            d_assert(rv == CORE_OK, return, "S11 build error");
 
-    rv = mme_s11_build_delete_session_request(&s11buf, sess);
-    d_assert(rv == CORE_OK, return, "S11 build error");
-
-    rv = mme_s11_send_to_sgw(bearer->sgw,
-            GTP_DELETE_SESSION_REQUEST_TYPE, sess->sgw_s11_teid,
-            s11buf);
-    d_assert(rv == CORE_OK, return, "S11 send error");
+            rv = mme_s11_send_to_sgw(bearer->sgw,
+                    GTP_DELETE_SESSION_REQUEST_TYPE, sess->sgw_s11_teid,
+                    s11buf);
+            d_assert(rv == CORE_OK, return, "S11 send error");
+        }
+        sess = mme_sess_next(sess);
+    }
 }
 
 void emm_handle_s11_delete_session_response(mme_sess_t *sess)
