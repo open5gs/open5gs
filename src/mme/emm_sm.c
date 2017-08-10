@@ -73,7 +73,9 @@ void emm_state_operational(fsm_t *s, event_t *e)
                 }
                 case S6A_CMD_UPDATE_LOCATION:
                 {
-                    nas_message_t *message = NULL;
+                    mme_sess_t *sess = NULL;
+                    mme_bearer_t *bearer = NULL;
+
                     c_uint32_t result_code = event_get_param3(e);
                     if (result_code != ER_DIAMETER_SUCCESS)
                     {
@@ -81,46 +83,25 @@ void emm_state_operational(fsm_t *s, event_t *e)
                         return;
                     }
 
-                    message = &mme_ue->last_esm_message;
-                    d_assert(message, return, "Null param");
+                    sess = mme_sess_find_by_last_esm_message(mme_ue);
+                    d_assert(sess, return, "Null param");
+                    bearer = mme_default_bearer_in_sess(sess);
+                    d_assert(bearer, return, "Null param");
 
-                    switch(message->esm.h.message_type)
+                    if (MME_SESSION_HAVE_APN(sess))
                     {
-                        case NAS_PDN_CONNECTIVITY_REQUEST:
+                        if (MME_SESSION_IS_VALID(sess))
                         {
-                            mme_bearer_t *bearer = NULL;
-                            mme_sess_t *sess = NULL;
-
-                            bearer = mme_bearer_find_by_ue_pti(mme_ue, 
-                                message->esm.h.procedure_transaction_identity);
-                            d_assert(bearer, return, "Null param(pti:%d)",
-                                message->esm.h.procedure_transaction_identity);
-                            sess = bearer->sess;
-                            d_assert(sess, return, "Null param");
-
-                            if (MME_SESSION_HAVE_APN(sess))
-                            {
-                                if (MME_SESSION_IS_CREATED(mme_ue))
-                                {
-                                    emm_handle_attach_accept(mme_ue);
-                                }
-                                else
-                                {
-                                    mme_s11_handle_create_session_request(
-                                            bearer);
-                                }
-                            }
-                            else
-                            {
-                                esm_handle_information_request(sess);
-                            }
-
-                            break;
+                            emm_handle_attach_accept(mme_ue);
                         }
-                        default:
+                        else
                         {
-                            break;
+                            mme_s11_handle_create_session_request(bearer);
                         }
+                    }
+                    else
+                    {
+                        esm_handle_information_request(sess);
                     }
 
                     break;
@@ -175,6 +156,9 @@ void emm_state_operational(fsm_t *s, event_t *e)
                 }
                 case NAS_IDENTITY_RESPONSE:
                 {
+                    mme_sess_t *sess = NULL;
+                    mme_bearer_t *bearer = NULL;
+
                     emm_handle_identity_response(mme_ue,
                             &message->emm.identity_response);
 
@@ -184,55 +168,33 @@ void emm_state_operational(fsm_t *s, event_t *e)
                         break;
                     }
                     
+                    sess = mme_sess_find_by_last_esm_message(mme_ue);
+                    d_assert(sess, return, "Null param");
+                    bearer = mme_default_bearer_in_sess(sess);
+                    d_assert(bearer, return, "Null param");
+
                     if (SECURITY_CONTEXT_IS_VALID(mme_ue))
                     {
-                        nas_message_t *message = NULL;
-
-                        message = &mme_ue->last_esm_message;
-                        d_assert(message, return, "Null param");
-
-                        switch(message->esm.h.message_type)
+                        if (MME_SESSION_HAVE_APN(sess))
                         {
-                            case NAS_PDN_CONNECTIVITY_REQUEST:
+                            if (MME_SESSION_IS_VALID(sess))
                             {
-                                mme_bearer_t *bearer = NULL;
-                                mme_sess_t *sess = NULL;
-
-                                bearer = mme_bearer_find_by_ue_pti(mme_ue, 
-                                    message->esm.h.procedure_transaction_identity);
-                                d_assert(bearer, return, "Null param(pti:%d)",
-                                    message->esm.h.procedure_transaction_identity);
-                                sess = bearer->sess;
-                                d_assert(sess, return, "Null param");
-
-                                if (MME_SESSION_HAVE_APN(sess))
-                                {
-                                    if (MME_SESSION_IS_CREATED(mme_ue))
-                                    {
-                                        emm_handle_attach_accept(mme_ue);
-                                    }
-                                    else
-                                    {
-                                        mme_s11_handle_create_session_request(
-                                                bearer);
-                                    }
-                                }
-                                else
-                                {
-                                    esm_handle_information_request(sess);
-                                }
-
-                                break;
+                                emm_handle_attach_accept(mme_ue);
                             }
-                            default:
+                            else
                             {
-                                break;
+                                mme_s11_handle_create_session_request(bearer);
                             }
                         }
+                        else
+                        {
+                            esm_handle_information_request(sess);
+                        }
+
                     }
                     else
                     {
-                        if (MME_SESSION_IS_CREATED(mme_ue))
+                        if (MME_SESSION_WAS_CREATED(mme_ue))
                         {
                              emm_handle_s11_delete_session_request(mme_ue);
                         }

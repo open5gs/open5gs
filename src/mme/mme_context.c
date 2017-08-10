@@ -1590,6 +1590,36 @@ mme_sess_t* mme_sess_find_by_ebi(mme_ue_t *mme_ue, c_uint8_t ebi)
     return NULL;
 }
 
+mme_sess_t* mme_sess_find_by_last_esm_message(mme_ue_t *mme_ue)
+{
+    mme_bearer_t *bearer = NULL;
+    mme_sess_t *sess = NULL;
+    nas_message_t *message = NULL;
+
+    d_assert(mme_ue, return NULL, "Null param");
+    message = &mme_ue->last_esm_message;
+    d_assert(message, return NULL, "Null param");
+
+    switch(message->esm.h.message_type)
+    {
+        case NAS_PDN_CONNECTIVITY_REQUEST:
+        {
+            bearer = mme_bearer_find_by_ue_pti(mme_ue, 
+                message->esm.h.procedure_transaction_identity);
+
+            if (bearer) sess = bearer->sess;
+
+            break;
+        }
+        default:
+        {
+            break;
+        }
+    }
+
+    return sess;
+}
+
 mme_sess_t* mme_sess_first(mme_ue_t *mme_ue)
 {
     return list_first(&mme_ue->sess_list);

@@ -250,10 +250,14 @@ typedef struct _mme_sess_t {
     c_uint32_t      mme_s11_teid;       
     c_uint32_t      mme_s11_addr;       
 
-#define MME_SESSION_IS_CREATED(mme) \
+#define MME_SESSION_IS_VALID(sess) \
+    (((sess)->sgw_s11_teid) && \
+    ((sess)->sgw_s11_addr))
+
+#define MME_SESSION_WAS_CREATED(mme) \
     ((mme) && (mme_sess_first(mme_ue)) && \
-    ((mme_sess_first(mme_ue))->sgw_s11_teid) && \
-    ((mme_sess_first(mme_ue))->sgw_s11_addr))
+    (MME_SESSION_IS_VALID(mme_sess_first(mme_ue))))
+
     c_uint32_t      sgw_s11_teid;
     c_uint32_t      sgw_s11_addr;
 
@@ -344,6 +348,7 @@ CORE_DECLARE(mme_sess_t*)   mme_sess_find(index_t index);
 CORE_DECLARE(mme_sess_t*)   mme_sess_find_by_teid(c_uint32_t teid);
 CORE_DECLARE(mme_sess_t*)   mme_sess_find_by_ebi(
                                 mme_ue_t *mme_ue, c_uint8_t ebi);
+CORE_DECLARE(mme_sess_t*)   mme_sess_find_by_last_esm_message(mme_ue_t *mme_ue);
 CORE_DECLARE(mme_sess_t*)   mme_sess_first(mme_ue_t *mme_ue);
 CORE_DECLARE(mme_sess_t*)   mme_sess_next(mme_sess_t *sess);
 

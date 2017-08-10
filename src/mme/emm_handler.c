@@ -469,7 +469,7 @@ void emm_handle_detach_request(
             break;
     }
     
-    if (MME_SESSION_IS_CREATED(mme_ue))
+    if (MME_SESSION_WAS_CREATED(mme_ue))
     {
         emm_handle_s11_delete_session_request(mme_ue);
     }

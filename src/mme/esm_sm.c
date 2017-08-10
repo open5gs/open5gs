@@ -48,13 +48,16 @@ void esm_state_operational(fsm_t *s, event_t *e)
         {
             index_t index = event_get_param1(e);
             mme_bearer_t *bearer = NULL;
+            mme_sess_t *sess = NULL;
             mme_ue_t *mme_ue = NULL;
             nas_message_t *message = NULL;
 
             d_assert(index, return, "Null param");
             bearer = mme_bearer_find(index);
             d_assert(bearer, return, "Null param");
-            mme_ue = bearer->mme_ue;
+            sess = bearer->sess;
+            d_assert(sess, return, "Null param");
+            mme_ue = sess->mme_ue;
             d_assert(mme_ue, return, "Null param");
             message = (nas_message_t *)event_get_param4(e);
             d_assert(message, break, "Null param");
@@ -81,12 +84,9 @@ void esm_state_operational(fsm_t *s, event_t *e)
                     /* Known GUTI */
                     if (SECURITY_CONTEXT_IS_VALID(mme_ue))
                     {
-                        mme_sess_t *sess = bearer->sess;
-                        d_assert(sess, return, "Null param");
-
                         if (MME_SESSION_HAVE_APN(sess))
                         {
-                            if (MME_SESSION_IS_CREATED(mme_ue))
+                            if (MME_SESSION_IS_VALID(sess))
                             {
                                 emm_handle_attach_accept(mme_ue);
                             }
@@ -102,7 +102,7 @@ void esm_state_operational(fsm_t *s, event_t *e)
                     }
                     else
                     {
-                        if (MME_SESSION_IS_CREATED(mme_ue))
+                        if (MME_SESSION_WAS_CREATED(mme_ue))
                         {
                             emm_handle_s11_delete_session_request(mme_ue);
                         }
