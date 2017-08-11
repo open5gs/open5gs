@@ -217,8 +217,9 @@ struct _mme_ue_t {
     c_uint32_t      ula_flags;
     c_uint32_t      max_bandwidth_ul; /* bits per seconds */
     c_uint32_t      max_bandwidth_dl; /* bits per seconds */
-    list_t          pdn_list;
     c_uint32_t      subscribed_rau_tau_timer; /* seconds */
+    pdn_t           pdn[MAX_NUM_OF_PDN]; /* APN Profile */
+    int             num_of_pdn;
 
     /* ESM Info */
     c_uint8_t       ebi;        /* EPS Bearer ID generator */
@@ -240,26 +241,6 @@ struct _mme_ue_t {
     /* UE Radio Capability */
     void            *radio_capa;
 };
-
-/**********************************
- * PDN Structure                 */
-typedef struct _pdn_t {
-    lnode_t         node; /**< A node of list_t */
-
-    c_uint32_t      context_identifier;
-    c_int8_t        apn[MAX_APN_LEN];
-#define S6A_PDN_TYPE_IPV4                               0
-#define S6A_PDN_TYPE_IPV6                               1
-#define S6A_PDN_TYPE_IPV4_AND_IPV6                      2
-#define S6A_PDN_TYPE_IPV4_OR_IPV6                       3
-    c_int8_t        pdn_type;
-    paa_t           paa;
-
-    qos_t           qos;
-
-    /* Related Context */
-    mme_ue_t        *mme_ue;
-} pdn_t;
 
 typedef struct _mme_sess_t {
     lnode_t         node;       /**< A node of list_t */
@@ -386,12 +367,9 @@ CORE_DECLARE(mme_bearer_t*) mme_bearer_first(mme_sess_t *sess);
 CORE_DECLARE(mme_bearer_t*) mme_bearer_next(mme_bearer_t *bearer);
 
 CORE_DECLARE(pdn_t*)        mme_pdn_add(mme_ue_t *mme_ue, c_int8_t *apn);
-CORE_DECLARE(status_t)      mme_pdn_remove(pdn_t *pdn);
 CORE_DECLARE(status_t)      mme_pdn_remove_all(mme_ue_t *mme_ue);
 CORE_DECLARE(pdn_t*)        mme_pdn_find_by_apn(
                                 mme_ue_t *mme_ue, c_int8_t *apn);
-CORE_DECLARE(pdn_t*)        mme_pdn_first(mme_ue_t *mme_ue);
-CORE_DECLARE(pdn_t*)        mme_pdn_next(pdn_t *pdn);
 
 CORE_DECLARE(enb_ue_t*)     enb_ue_add(mme_enb_t *enb);
 CORE_DECLARE(unsigned int)  enb_ue_count();

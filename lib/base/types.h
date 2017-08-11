@@ -135,6 +135,21 @@ typedef struct _qos_t {
 
 } qos_t;
 
+/**********************************
+ * PDN Structure                 */
+typedef struct _pdn_t {
+    c_uint32_t      context_identifier;
+    c_int8_t        apn[MAX_APN_LEN];
+#define S6A_PDN_TYPE_IPV4                               0
+#define S6A_PDN_TYPE_IPV6                               1
+#define S6A_PDN_TYPE_IPV4_AND_IPV6                      2
+#define S6A_PDN_TYPE_IPV4_OR_IPV6                       3
+    c_int8_t        pdn_type;
+    paa_t           paa;
+
+    qos_t           qos;
+} pdn_t;
+
 /**************************************************
  * Protocol Configuration Options Structure
  * 8.13 Protocol Configuration Options (PCO) 

@@ -612,7 +612,7 @@ status_t hss_db_subscription_data(
             while(bson_iter_next(&child1_iter))
             {
                 const char *child1_key = bson_iter_key(&child1_iter);
-                hss_db_pdn_t *pdn = NULL;
+                pdn_t *pdn = NULL;
 
                 d_assert(child1_key, goto out, "PDN is not ARRAY");
                 pdn_index = atoi(child1_key);
