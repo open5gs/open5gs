@@ -60,7 +60,7 @@ status_t gtp_xact_init(gtp_xact_ctx_t *context,
 status_t gtp_xact_final(void)
 {
     if (pool_size(&gtp_xact_pool) != pool_avail(&gtp_xact_pool))
-        d_warn("%d not freed in gtp_xact_pool[%d] of GTP Transaction",
+        d_error("%d not freed in gtp_xact_pool[%d] of GTP Transaction",
                 pool_size(&gtp_xact_pool) - pool_avail(&gtp_xact_pool),
                 pool_size(&gtp_xact_pool));
 

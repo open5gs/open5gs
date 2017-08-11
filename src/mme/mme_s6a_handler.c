@@ -820,7 +820,7 @@ void mme_s6a_final(void)
 	CHECK_FCT_DO( fd_sess_handler_destroy(&mme_s6a_reg, NULL), );
 
     if (pool_size(&sess_state_pool) != pool_avail(&sess_state_pool))
-        d_warn("%d not freed in sess_state_pool[%d] of S6A-SM",
+        d_error("%d not freed in sess_state_pool[%d] of S6A-SM",
                 pool_size(&sess_state_pool) - pool_avail(&sess_state_pool),
                 pool_size(&sess_state_pool));
 

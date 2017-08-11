@@ -18,6 +18,11 @@ status_t mutex_init(void)
 
 status_t mutex_final(void)
 {
+    if (pool_size(&mutex_pool) != pool_avail(&mutex_pool))
+        d_error("%d not freed in mutex_pool[%d]",
+                pool_size(&mutex_pool) - pool_avail(&mutex_pool),
+                pool_size(&mutex_pool));
+
     d_trace(1, "%d not freed in mutex_pool[%d]\n",
             pool_size(&mutex_pool) - pool_avail(&mutex_pool),
             pool_size(&mutex_pool));
