@@ -174,7 +174,7 @@ void emm_handle_attach_accept(mme_sess_t *sess)
     d_assert(bearer, return, "Null param");
 
     rv = esm_build_activate_default_bearer_context(&esmbuf, bearer);
-    d_assert(rv == CORE_OK && esmbuf, return, "bearer build error");
+    d_assert(rv == CORE_OK && esmbuf, return, "esm build error");
 
     d_trace(3, "[NAS] Activate default bearer context request : "
             "EMM <-- ESM[%d]\n", bearer->ebi);
@@ -248,6 +248,45 @@ void emm_handle_attach_complete(
 
     rv = nas_security_encode(&emmbuf, mme_ue, &message);
     d_assert(rv == CORE_OK && emmbuf, return, "emm build error");
+    d_assert(nas_send_to_downlink_nas_transport(mme_ue, emmbuf) == CORE_OK,,);
+}
+
+void emm_handle_attach_reject(mme_ue_t *mme_ue)
+{
+    status_t rv;
+    pkbuf_t *esmbuf = NULL, *emmbuf = NULL;
+    nas_message_t *message = NULL;
+
+    d_assert(mme_ue, return, "Null param");
+    message = &mme_ue->last_esm_message;
+    if (message)
+    {
+        switch(message->esm.h.message_type)
+        {
+            case NAS_PDN_CONNECTIVITY_REQUEST:
+            {
+                c_uint8_t pti = message->esm.h.procedure_transaction_identity;
+                rv = esm_build_pdn_connectivity_reject(&esmbuf, pti,
+                        ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+                d_assert(rv == CORE_OK && esmbuf, return, "esm build error");
+                d_trace(3, "[NAS] PDN Connectivity reject : "
+                                "EMM <-- ESM[%d]\n", pti);
+                break;
+            }
+            default:
+            {
+                d_warn("Not implemented(type:%d)", message->esm.h.message_type);
+                break;
+            }
+        }
+    }
+
+    rv = emm_build_attach_reject(&emmbuf,
+            EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED, esmbuf);
+    d_assert(rv == CORE_OK && emmbuf, 
+            pkbuf_free(esmbuf); return, "emm build error");
+    d_trace(3, "[NAS] Attach reject : UE[%s] <-- EMM\n", mme_ue->imsi_bcd);
+
     d_assert(nas_send_to_downlink_nas_transport(mme_ue, emmbuf) == CORE_OK,,);
 }
 
@@ -463,7 +502,7 @@ void emm_handle_detach_request(
             break;
     }
     
-    if (MME_SESSION_WAS_CREATED(mme_ue))
+    if (MME_UE_HAVE_SESSION(mme_ue))
     {
         emm_handle_s11_delete_session_request(mme_ue);
     }

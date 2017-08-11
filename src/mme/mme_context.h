@@ -254,7 +254,7 @@ typedef struct _mme_sess_t {
     (((sess)->sgw_s11_teid) && \
     ((sess)->sgw_s11_addr))
 
-#define MME_SESSION_WAS_CREATED(mme) \
+#define MME_UE_HAVE_SESSION(mme) \
     ((mme) && (mme_sess_first(mme_ue)) && \
     (MME_SESSION_IS_VALID(mme_sess_first(mme_ue))))
 

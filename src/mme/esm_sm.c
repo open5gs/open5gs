@@ -102,7 +102,7 @@ void esm_state_operational(fsm_t *s, event_t *e)
                     }
                     else
                     {
-                        if (MME_SESSION_WAS_CREATED(mme_ue))
+                        if (MME_UE_HAVE_SESSION(mme_ue))
                         {
                             emm_handle_s11_delete_session_request(mme_ue);
                         }

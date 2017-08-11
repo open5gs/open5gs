@@ -14,6 +14,7 @@ CORE_DECLARE(void) emm_handle_attach_request(
 CORE_DECLARE(void) emm_handle_attach_accept(mme_sess_t *sess);
 CORE_DECLARE(void) emm_handle_attach_complete(
     mme_ue_t *mme_ue, nas_attach_complete_t *attach_complete);
+CORE_DECLARE(void) emm_handle_attach_reject(mme_ue_t *mme_ue);
 
 CORE_DECLARE(void) emm_handle_identity_request(mme_ue_t *mme_ue);
 CORE_DECLARE(void) emm_handle_identity_response(

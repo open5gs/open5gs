@@ -9,6 +9,8 @@ extern "C" {
 
 CORE_DECLARE(status_t) emm_build_attach_accept(
         pkbuf_t **emmbuf, mme_ue_t *mme_ue, pkbuf_t *esmbuf);
+CORE_DECLARE(status_t) emm_build_attach_reject(
+        pkbuf_t **emmbuf, nas_emm_cause_t emm_cause, pkbuf_t *esmbuf);
 
 #ifdef __cplusplus
 }

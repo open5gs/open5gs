@@ -24,6 +24,7 @@ status_t emm_build_attach_accept(
 
     d_assert(mme_ue, return CORE_ERROR, "Null param");
     d_assert(mme_ue->enb_ue, return CORE_ERROR, "Null param");
+    d_assert(esmbuf, return CORE_ERROR, "Null param");
 
     memset(&message, 0, sizeof(message));
     message.h.security_header_type = 
@@ -72,6 +73,36 @@ status_t emm_build_attach_accept(
     d_assert(nas_security_encode(emmbuf, mme_ue, &message) == CORE_OK && 
             *emmbuf,,);
     pkbuf_free(esmbuf);
+
+    return CORE_OK;
+}
+
+status_t emm_build_attach_reject(
+        pkbuf_t **emmbuf, nas_emm_cause_t emm_cause, pkbuf_t *esmbuf)
+{
+    nas_message_t message;
+    nas_attach_reject_t *attach_reject = &message.emm.attach_reject;
+
+    memset(&message, 0, sizeof(message));
+    message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    message.emm.h.message_type = NAS_ATTACH_REJECT;
+
+    attach_reject->emm_cause = emm_cause;
+
+    if (esmbuf)
+    {
+        attach_reject->presencemask |= 
+            NAS_ATTACH_REJECT_ESM_MESSAGE_CONTAINER_PRESENT;
+        attach_reject->esm_message_container.data = esmbuf->payload;
+        attach_reject->esm_message_container.len = esmbuf->len;
+    }
+
+    d_assert(nas_plain_encode(emmbuf, &message) == CORE_OK && *emmbuf,,);
+
+    if (esmbuf)
+    {
+        pkbuf_free(esmbuf);
+    }
 
     return CORE_OK;
 }

@@ -7,6 +7,26 @@
 #include "nas_security.h"
 #include "esm_build.h"
 
+status_t esm_build_pdn_connectivity_reject(
+        pkbuf_t **pkbuf, c_uint8_t pti, nas_esm_cause_t esm_cause)
+{
+    nas_message_t message;
+    nas_pdn_connectivity_reject_t *pdn_connectivity_reject = 
+            &message.esm.pdn_connectivity_reject;
+
+    memset(&message, 0, sizeof(message));
+    message.esm.h.eps_bearer_identity = 0;
+    message.esm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_ESM;
+    message.esm.h.procedure_transaction_identity = pti;
+    message.esm.h.message_type = NAS_PDN_CONNECTIVITY_REJECT;
+
+    pdn_connectivity_reject->esm_cause = esm_cause;
+
+    d_assert(nas_plain_encode(pkbuf, &message) == CORE_OK && *pkbuf,,);
+
+    return CORE_OK;
+}
+
 status_t esm_build_information_request(pkbuf_t **pkbuf, mme_bearer_t *bearer)
 {
     nas_message_t message;

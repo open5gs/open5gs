@@ -47,68 +47,6 @@ void emm_state_operational(fsm_t *s, event_t *e)
         {
             break;
         }
-        case MME_EVT_EMM_UE_FROM_S6A:
-        {
-            index_t index = event_get_param1(e);
-            mme_ue_t *mme_ue = NULL;
-
-            d_assert(index, return, "Null param");
-            mme_ue = mme_ue_find(index);
-            d_assert(mme_ue, return, "Null param");
-
-            switch(event_get_param2(e))
-            {
-                case S6A_CMD_AUTHENTICATION_INFORMATION:
-                {
-                    c_uint32_t result_code = event_get_param3(e);
-                    if (result_code != ER_DIAMETER_SUCCESS)
-                    {
-                        /* TODO */
-                        /* Send Attach Reject */
-                        return;
-                    }
-
-                    emm_handle_authentication_request(mme_ue);
-                    break;
-                }
-                case S6A_CMD_UPDATE_LOCATION:
-                {
-                    mme_sess_t *sess = NULL;
-                    mme_bearer_t *bearer = NULL;
-
-                    c_uint32_t result_code = event_get_param3(e);
-                    if (result_code != ER_DIAMETER_SUCCESS)
-                    {
-                        /* TODO */
-                        return;
-                    }
-
-                    sess = mme_sess_find_by_last_esm_message(mme_ue);
-                    d_assert(sess, return, "Null param");
-                    bearer = mme_default_bearer_in_sess(sess);
-                    d_assert(bearer, return, "Null param");
-
-                    if (MME_SESSION_HAVE_APN(sess))
-                    {
-                        if (MME_SESSION_IS_VALID(sess))
-                        {
-                            emm_handle_attach_accept(sess);
-                        }
-                        else
-                        {
-                            mme_s11_handle_create_session_request(bearer);
-                        }
-                    }
-                    else
-                    {
-                        esm_handle_information_request(sess);
-                    }
-
-                    break;
-                }
-            }
-            break;
-        }
         case MME_EVT_EMM_UE_MSG:
         {
             index_t index = event_get_param1(e);
@@ -195,7 +133,7 @@ void emm_state_operational(fsm_t *s, event_t *e)
                     }
                     else
                     {
-                        if (MME_SESSION_WAS_CREATED(mme_ue))
+                        if (MME_UE_HAVE_SESSION(mme_ue))
                         {
                              emm_handle_s11_delete_session_request(mme_ue);
                         }
@@ -288,7 +226,67 @@ void emm_state_operational(fsm_t *s, event_t *e)
 
             break;
         }
+        case MME_EVT_EMM_UE_FROM_S6A:
+        {
+            index_t index = event_get_param1(e);
+            mme_ue_t *mme_ue = NULL;
 
+            d_assert(index, return, "Null param");
+            mme_ue = mme_ue_find(index);
+            d_assert(mme_ue, return, "Null param");
+
+            switch(event_get_param2(e))
+            {
+                case S6A_CMD_AUTHENTICATION_INFORMATION:
+                {
+                    c_uint32_t result_code = event_get_param3(e);
+                    if (result_code != ER_DIAMETER_SUCCESS)
+                    {
+                        emm_handle_attach_reject(mme_ue);
+                        return;
+                    }
+
+                    emm_handle_authentication_request(mme_ue);
+                    break;
+                }
+                case S6A_CMD_UPDATE_LOCATION:
+                {
+                    mme_sess_t *sess = NULL;
+                    mme_bearer_t *bearer = NULL;
+
+                    c_uint32_t result_code = event_get_param3(e);
+                    if (result_code != ER_DIAMETER_SUCCESS)
+                    {
+                        /* TODO */
+                        return;
+                    }
+
+                    sess = mme_sess_find_by_last_esm_message(mme_ue);
+                    d_assert(sess, return, "Null param");
+                    bearer = mme_default_bearer_in_sess(sess);
+                    d_assert(bearer, return, "Null param");
+
+                    if (MME_SESSION_HAVE_APN(sess))
+                    {
+                        if (MME_SESSION_IS_VALID(sess))
+                        {
+                            emm_handle_attach_accept(sess);
+                        }
+                        else
+                        {
+                            mme_s11_handle_create_session_request(bearer);
+                        }
+                    }
+                    else
+                    {
+                        esm_handle_information_request(sess);
+                    }
+
+                    break;
+                }
+            }
+            break;
+        }
         default:
         {
             d_error("Unknown event %s", mme_event_get_name(e));
