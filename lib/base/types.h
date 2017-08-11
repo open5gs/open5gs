@@ -98,6 +98,44 @@ ED2(c_uint8_t spare:5;,
 } __attribute__ ((packed)) paa_t;
 
 /**********************************
+ * QoS Structure                 */
+typedef struct _qos_t {
+    lnode_t         node; /**< A node of list_t */
+
+    c_uint32_t      max_bandwidth_ul; /* Kbps */
+    c_uint32_t      max_bandwidth_dl; /* Kbps */
+
+#define PDN_QCI_1                                       1
+#define PDN_QCI_2                                       2
+#define PDN_QCI_3                                       3
+#define PDN_QCI_4                                       4
+#define PDN_QCI_5                                       5
+#define PDN_QCI_6                                       6
+#define PDN_QCI_7                                       7
+#define PDN_QCI_8                                       8
+#define PDN_QCI_9                                       9
+#define PDN_QCI_65                                      65
+#define PDN_QCI_66                                      66
+#define PDN_QCI_69                                      69
+#define PDN_QCI_70                                      70
+    c_uint8_t       qci;
+
+    /* Values 1 to 8 should only be assigned for services that are authorized 
+     * to receive prioritized treatment within an operator domain. 
+     * Values 9 to 15 may be assigned to resources that are authorized 
+     * by the home network and thus applicable when a UE is roaming. */
+    c_uint8_t       priority_level;
+
+#define PDN_PRE_EMPTION_CAPABILITY_ENABLED              0
+#define PDN_PRE_EMPTION_CAPABILITY_DISABLED             1
+    c_uint8_t       pre_emption_capability;
+#define PDN_PRE_EMPTION_VULNERABILITY_ENABLED           0
+#define PDN_PRE_EMPTION_VULNERABILITY_DISABLED          1
+    c_uint8_t       pre_emption_vulnerability;
+
+} qos_t;
+
+/**********************************
  * PDN Structure                 */
 typedef struct _pdn_t {
     lnode_t         node; /**< A node of list_t */

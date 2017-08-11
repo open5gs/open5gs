@@ -445,7 +445,7 @@ status_t pgw_context_setup_trace_module()
     return CORE_OK;
 }
 
-pgw_bearer_t *pgw_sess_add(c_uint8_t id)
+pgw_bearer_t *pgw_sess_add(c_int8_t *apn, c_uint8_t id)
 {
     pgw_sess_t *sess = NULL;
     pgw_bearer_t *bearer = NULL;
@@ -456,12 +456,17 @@ pgw_bearer_t *pgw_sess_add(c_uint8_t id)
     sess->pgw_s5c_teid = sess->index;  /* derived from an index */
     sess->pgw_s5c_addr = pgw_self()->s5c_addr;
 
-    list_init(&sess->pdn_list);
     list_init(&sess->bearer_list);
     list_append(&self.sess_list, sess);
 
+    strcpy(sess->apn, apn);
+
     bearer = pgw_bearer_add(sess, id);
     d_assert(bearer, pgw_sess_remove(sess); return NULL, 
+            "Can't add default bearer context");
+
+    sess->ip_pool = pgw_ip_pool_alloc();
+    d_assert(sess->ip_pool, pgw_sess_remove(sess); return NULL, 
             "Can't add default bearer context");
 
     return bearer;
@@ -471,7 +476,8 @@ status_t pgw_sess_remove(pgw_sess_t *sess)
 {
     d_assert(sess, return CORE_ERROR, "Null param");
 
-    pgw_pdn_remove_all(sess);
+    pgw_ip_pool_free(sess->ip_pool);
+
     pgw_bearer_remove_all(sess);
 
     list_remove(&self.sess_list, sess);
@@ -508,6 +514,22 @@ pgw_sess_t* pgw_sess_find_by_teid(c_uint32_t teid)
     return pgw_sess_find(teid);
 }
 
+pgw_sess_t* pgw_sess_find_by_apn(c_int8_t *apn)
+{
+    pgw_sess_t *sess = NULL;
+    
+    sess = pgw_sess_first();
+    while (sess)
+    {
+        if (strcmp(sess->apn, apn) == 0)
+            break;
+
+        sess = pgw_sess_next(sess);
+    }
+
+    return sess;
+}
+
 pgw_sess_t* pgw_sess_first()
 {
     return list_first(&self.sess_list);
@@ -518,6 +540,7 @@ pgw_sess_t* pgw_sess_next(pgw_sess_t *sess)
     return list_next(sess);
 }
 
+#if 0
 pdn_t* pgw_pdn_add(pgw_sess_t *sess, c_int8_t *apn)
 {
     pdn_t *pdn = NULL;
@@ -604,6 +627,7 @@ pdn_t* pgw_pdn_next(pdn_t *pdn)
 {
     return list_next(pdn);
 }
+#endif
 
 pgw_bearer_t* pgw_bearer_add(pgw_sess_t *sess, c_uint8_t id)
 {
@@ -702,9 +726,7 @@ pgw_bearer_t* pgw_bearer_next(pgw_bearer_t *bearer)
 pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
 {
     pgw_bearer_t *bearer = NULL;
-    pgw_sess_t *iter_session = NULL;
-    pgw_bearer_t *iter_bearer = NULL;
-    pdn_t *iter_pdn = NULL;
+    pgw_sess_t *sess = NULL;
     struct ip *iph =  NULL;
     char buf1[INET_ADDRSTRLEN];
     char buf2[INET_ADDRSTRLEN];
@@ -719,45 +741,31 @@ pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
         return NULL;
     }
 
-    d_trace(50,"Src(%s)-> Dst(%s), Protocol: %d\n",
+    d_trace(50, "Src(%s)-> Dst(%s), Protocol: %d\n",
             INET_NTOP(&iph->ip_src.s_addr,buf1),
             INET_NTOP(&iph->ip_dst.s_addr,buf2),
             iph->ip_p);
 
     /* FIXME: Need API to find the bearer with packet filter */
     /* Iterate session */
-    for (iter_session = pgw_sess_first(); iter_session ; 
-            iter_session = pgw_sess_next(iter_session))
+    for (sess = pgw_sess_first(); sess; sess = pgw_sess_next(sess))
     {
-        /* Iterate bearer in session */
-        for (iter_bearer = pgw_bearer_first(iter_session);
-                iter_bearer;
-                iter_bearer = pgw_bearer_next(iter_bearer))
+        d_trace(50, "Dst(%s) in Pkt : PAA(%s) in PDN\n",
+                INET_NTOP(&iph->ip_dst.s_addr,buf1),
+                INET_NTOP(&sess->paa.ipv4_addr, buf2));
+
+        if (iph->ip_dst.s_addr == sess->paa.ipv4_addr)
         {
-            /* Iterate pdn in session */
-            for (iter_pdn = pgw_pdn_first(iter_bearer->sess);
-                    iter_pdn;
-                    iter_pdn = pgw_pdn_next(iter_pdn))
-            {
+            /* Found */
+            bearer = pgw_default_bearer_in_sess(sess);
+            d_assert(bearer, return NULL, "No Bearer");
 
-                d_trace(50,"Dst(%s) in Pkt : PAA(%s) in PDN\n",
-                        INET_NTOP(&iph->ip_dst.s_addr,buf1),
-                        INET_NTOP(&iter_pdn->paa.ipv4_addr, buf2));
-
-
-                if (iph->ip_dst.s_addr == iter_pdn->paa.ipv4_addr)
-                {
-                    /* Found */
-                    d_trace(50,"Found bearer(id = %d)\n",iter_bearer->id);
-                    return iter_bearer;
-                }
-
-            }
-
+            d_trace(50, "Found bearer(id = %d)\n",bearer->id);
+            return bearer;
         }
     }
 
-    return bearer;
+    return NULL;
 }
 
 status_t pgw_ip_pool_generate()

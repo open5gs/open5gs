@@ -104,13 +104,11 @@ void pgw_handle_create_session_request(
     gtp_message_t gtp_message;
     c_uint8_t type = GTP_CREATE_SESSION_RESPONSE_TYPE;
     gtp_create_session_response_t *rsp = &gtp_message.create_session_response;
-    pgw_ip_pool_t *ip_pool = NULL;
 
     gtp_cause_t cause;
     gtp_f_teid_t *sgw_s5c_teid, *sgw_s5u_teid;
     gtp_f_teid_t pgw_s5c_teid, pgw_s5u_teid;
     c_int8_t apn[MAX_APN_LEN];
-    pdn_t *pdn = NULL;
     c_uint8_t pco_buf[MAX_PCO_LEN];
     c_int16_t pco_len;
 
@@ -147,22 +145,17 @@ void pgw_handle_create_session_request(
     }
 
     /* Generate Control Plane(UL) : PGW-S5C */
-    bearer = pgw_sess_add(req->bearer_contexts_to_be_created.eps_bearer_id.u8);
-    d_assert(bearer, return, "No Bearer Context");
-    sess = bearer->sess;
-    d_assert(sess, return, "Null param");
-
     memcpy(apn, req->access_point_name.data, req->access_point_name.len);
     apn[req->access_point_name.len] = 0;
-    pdn = pgw_pdn_find_by_apn(sess, apn);
-    if (!pdn)
+    sess = pgw_sess_find_by_apn(apn);
+    if (!sess)
     {
-        pdn = pgw_pdn_add(sess, apn);
+        bearer = pgw_sess_add(apn,
+                req->bearer_contexts_to_be_created.eps_bearer_id.u8);
+        d_assert(bearer, return, "No Bearer Context");
+        sess = bearer->sess;
     }
-    d_assert(pdn, pgw_sess_remove(sess); return, "No PDN Context");
-
-    ip_pool = pdn->ip_pool;
-    d_assert(ip_pool, pgw_sess_remove(sess); return, "No IP Pool");
+    d_assert(sess, return, "No Session Context");
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));
 
@@ -183,7 +176,7 @@ void pgw_handle_create_session_request(
     bearer->sgw_s5u_addr = sgw_s5u_teid->ipv4_addr;
 
     d_trace(3, "[GTP] Create Session Reqeust : "
-            "SGW[%d] --> PGW\n", sess->sgw_s5c_teid);
+            "SGW[%d] --> PGW[%d]\n", sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
     /* Send Control Plane(UL) : PGW-S5C */
     memset(&pgw_s5c_teid, 0, sizeof(gtp_f_teid_t));
@@ -198,11 +191,12 @@ void pgw_handle_create_session_request(
     rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
         len = GTP_F_TEID_IPV4_LEN;
 
-    pdn->paa.pdn_type = GTP_PDN_TYPE_IPV4;
-    pdn->paa.ipv4_addr = ip_pool->ue_addr;
+    d_assert(sess->ip_pool, pgw_sess_remove(sess); return, "No IP Pool");
+    sess->paa.pdn_type = GTP_PDN_TYPE_IPV4;
+    sess->paa.ipv4_addr = sess->ip_pool->ue_addr;
 
     rsp->pdn_address_allocation.presence = 1;
-    rsp->pdn_address_allocation.data = &pdn->paa;
+    rsp->pdn_address_allocation.data = &sess->paa;
     rsp->pdn_address_allocation.len = PAA_IPV4_LEN;
 
     rsp->apn_restriction.presence = 1;

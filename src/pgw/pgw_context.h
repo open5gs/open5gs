@@ -49,6 +49,12 @@ typedef struct _pgw_context_t {
     list_t          ip_pool_list;
 } pgw_context_t;
 
+typedef struct _pgw_ip_pool_t {
+    lnode_t         node; /**< A node of list_t */
+
+    c_uint32_t      ue_addr;
+} pgw_ip_pool_t;
+
 typedef struct _pgw_sess_t {
     lnode_t         node;       /**< A node of list_t */
     index_t         index;      /**< An index of this node */
@@ -61,7 +67,10 @@ typedef struct _pgw_sess_t {
     c_uint32_t      sgw_s5c_teid;
     c_uint32_t      sgw_s5c_addr;
 
-    list_t          pdn_list;
+    c_int8_t        apn[MAX_APN_LEN];
+    paa_t           paa;
+    pgw_ip_pool_t*  ip_pool;
+
     list_t          bearer_list;
 } pgw_sess_t;
 
@@ -79,14 +88,10 @@ typedef struct _pgw_bearer_t {
     c_uint32_t      sgw_s5u_teid;  
     c_uint32_t      sgw_s5u_addr;
 
+    qos_t           qos;
+
     pgw_sess_t      *sess;
 } pgw_bearer_t;
-
-typedef struct _pgw_ip_pool_t {
-    lnode_t         node; /**< A node of list_t */
-
-    c_uint32_t      ue_addr;
-} pgw_ip_pool_t;
 
 CORE_DECLARE(status_t)      pgw_context_init(void);
 CORE_DECLARE(status_t)      pgw_context_final(void);
@@ -95,20 +100,23 @@ CORE_DECLARE(pgw_context_t*) pgw_self(void);
 CORE_DECLARE(status_t)      pgw_context_parse_config(void);
 CORE_DECLARE(status_t)      pgw_context_setup_trace_module(void);
 
-CORE_DECLARE(pgw_bearer_t*) pgw_sess_add(c_uint8_t id);
+CORE_DECLARE(pgw_bearer_t*) pgw_sess_add(c_int8_t *apn, c_uint8_t id);
 CORE_DECLARE(status_t )     pgw_sess_remove(pgw_sess_t *sess);
 CORE_DECLARE(status_t )     pgw_sess_remove_all();
 CORE_DECLARE(pgw_sess_t*)   pgw_sess_find(index_t index);
 CORE_DECLARE(pgw_sess_t*)   pgw_sess_find_by_teid(c_uint32_t teid);
+CORE_DECLARE(pgw_sess_t*)   pgw_sess_find_by_apn(c_int8_t *apn);
 CORE_DECLARE(pgw_sess_t *)  pgw_sess_first();
 CORE_DECLARE(pgw_sess_t *)  pgw_sess_next(pgw_sess_t *sess);
 
+#if 0
 CORE_DECLARE(pdn_t*)        pgw_pdn_add(pgw_sess_t *sess, c_int8_t *apn);
 CORE_DECLARE(status_t)      pgw_pdn_remove(pdn_t *pdn);
 CORE_DECLARE(status_t)      pgw_pdn_remove_all(pgw_sess_t *sess);
 CORE_DECLARE(pdn_t*)        pgw_pdn_find_by_apn(pgw_sess_t *sess, c_int8_t *apn);
 CORE_DECLARE(pdn_t*)        pgw_pdn_first(pgw_sess_t *sess);
 CORE_DECLARE(pdn_t*)        pgw_pdn_next(pdn_t *pdn);
+#endif
 
 CORE_DECLARE(pgw_bearer_t*) pgw_bearer_add(pgw_sess_t *sess, c_uint8_t id);
 CORE_DECLARE(status_t)      pgw_bearer_remove(pgw_bearer_t *bearer);
