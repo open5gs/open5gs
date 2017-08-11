@@ -128,14 +128,14 @@ void emm_state_operational(fsm_t *s, event_t *e)
             if (message->emm.h.security_header_type
                     == NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE)
             {
-                mme_ue_paged(mme_ue);
-                emm_handle_service_request(
-                        mme_ue, &message->emm.service_request);
-
                 /* Update Kenb */
                 if (SECURITY_CONTEXT_IS_VALID(mme_ue))
                     mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, 
                             mme_ue->kenb);
+
+                mme_ue_paged(mme_ue);
+                emm_handle_service_request(
+                        mme_ue, &message->emm.service_request);
 
                 break;
             }
@@ -144,14 +144,15 @@ void emm_state_operational(fsm_t *s, event_t *e)
             {
                 case NAS_ATTACH_REQUEST:
                 {
-                    mme_ue_paged(mme_ue);
-                    emm_handle_attach_request(
-                            mme_ue, &message->emm.attach_request);
-
                     /* Update Kenb */
                     if (SECURITY_CONTEXT_IS_VALID(mme_ue))
                         mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, 
                                 mme_ue->kenb);
+
+                    mme_ue_paged(mme_ue);
+                    emm_handle_attach_request(
+                            mme_ue, &message->emm.attach_request);
+
                     break;
                 }
                 case NAS_IDENTITY_RESPONSE:
