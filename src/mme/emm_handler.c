@@ -254,10 +254,18 @@ void emm_handle_attach_complete(
 void emm_handle_attach_reject(mme_ue_t *mme_ue)
 {
     status_t rv;
-    pkbuf_t *esmbuf = NULL, *emmbuf = NULL;
+    mme_enb_t *enb = NULL;
+    enb_ue_t *enb_ue = NULL;
+    pkbuf_t *s1apbuf = NULL, *esmbuf = NULL, *emmbuf = NULL;
     nas_message_t *message = NULL;
+    S1ap_Cause_t cause;
 
     d_assert(mme_ue, return, "Null param");
+    enb_ue = mme_ue->enb_ue;
+    d_assert(enb_ue, return, "Null param");
+    enb = enb_ue->enb;
+    d_assert(enb, return, "Null param");
+
     message = &mme_ue->last_esm_message;
     if (message)
     {
@@ -285,9 +293,15 @@ void emm_handle_attach_reject(mme_ue_t *mme_ue)
             EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED, esmbuf);
     d_assert(rv == CORE_OK && emmbuf, 
             pkbuf_free(esmbuf); return, "emm build error");
+    d_assert(nas_send_to_downlink_nas_transport(mme_ue, emmbuf) == CORE_OK,,);
     d_trace(3, "[NAS] Attach reject : UE[%s] <-- EMM\n", mme_ue->imsi_bcd);
 
-    d_assert(nas_send_to_downlink_nas_transport(mme_ue, emmbuf) == CORE_OK,,);
+    cause.present = S1ap_Cause_PR_nas;
+    cause.choice.nas = S1ap_CauseNas_authentication_failure;
+
+    rv = s1ap_build_ue_context_release_commmand(&s1apbuf, enb_ue, &cause);
+    d_assert(rv == CORE_OK && s1apbuf, return, "s1ap build error");
+    d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
 }
 
 void emm_handle_identity_request(mme_ue_t *mme_ue)

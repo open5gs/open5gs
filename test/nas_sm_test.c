@@ -360,6 +360,18 @@ static void nas_sm_test1(abts_case *tc, void *data)
     ABTS_INT_NEQUAL(tc, 0, rc);
     pkbuf_free(recvbuf);
 
+    /* Receive UE Release Command */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rc = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_NEQUAL(tc, 0, rc);
+    pkbuf_free(recvbuf);
+
+    /* Send UE Release Complete */
+    rv = tests1ap_build_ue_context_release_complete(&sendbuf, msgindex+2);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
     /* eNB disonncect from MME */
     rv = tests1ap_enb_close(sock);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);

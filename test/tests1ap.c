@@ -187,7 +187,7 @@ status_t tests1ap_build_identity_response(pkbuf_t **pkbuf, int i)
         "",
         "",
         "000d"
-        "403f000005000000 05c00100006c0008 0003000100001a00 121117d7e3248b57"
+        "403f000005000000 05c00100009f0008 0003000100001a00 121117d7e3248b57"
         "0756080910101032 5486510064400800 00f11054f6401000 4340060000f1105b"
         "a0",
 
@@ -663,7 +663,8 @@ status_t tests1ap_build_ue_context_release_complete(pkbuf_t **pkbuf, int i)
     char *payload[TESTS1AP_MAX_MESSAGE] = {
         "2017001300000200 004005c00100009d 00084003400527",
         "",
-        "",
+        "2017"
+        "0012000002000040 05c00100009f0008 40020001",
 
         "",
         "",
@@ -678,7 +679,7 @@ status_t tests1ap_build_ue_context_release_complete(pkbuf_t **pkbuf, int i)
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         23,
         0,
-        0,
+        23,
 
         0,
         0,
