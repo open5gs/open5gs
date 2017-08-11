@@ -133,6 +133,28 @@ static void nas_sm_test1(abts_case *tc, void *data)
         "}, "
         "\"__v\" : 0 "
       "}";
+
+    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
+
+    /* eNB connects to MME */
+    sock = tests1ap_enb_connect();
+    ABTS_PTR_NOTNULL(tc, sock);
+
+    /* Send S1-Setup Reqeust */
+    rv = tests1ap_build_setup_req(&sendbuf, 0x54f64);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* Receive S1-Setup Response */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rc = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = s1ap_decode_pdu(&message, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    s1ap_free_pdu(&message);
+    pkbuf_free(recvbuf);
+
     collection = mongoc_client_get_collection(
         context_self()->db_client,
         context_self()->db_name, "subscribers");
@@ -168,28 +190,9 @@ static void nas_sm_test1(abts_case *tc, void *data)
     } while (count == 0);
     bson_destroy(doc);
 
-    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
-
-    /* eNB connects to MME */
-    sock = tests1ap_enb_connect();
-    ABTS_PTR_NOTNULL(tc, sock);
-
-    /* Send S1-Setup Reqeust */
-    rv = tests1ap_build_setup_req(&sendbuf, 0x54f64);
-    ABTS_INT_EQUAL(tc, CORE_OK, rv);
-    rv = tests1ap_enb_send(sock, sendbuf);
-    ABTS_INT_EQUAL(tc, CORE_OK, rv);
-
-    /* Receive S1-Setup Response */
-    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
-    rv = s1ap_decode_pdu(&message, recvbuf);
-    ABTS_INT_EQUAL(tc, CORE_OK, rv);
-    s1ap_free_pdu(&message);
-    pkbuf_free(recvbuf);
-
-    /* Send Initial-UE Message */
+    /***********************************************************************
+     * Attach Request : Known IMSI, Integrity Protected, No Security Context
+     * Send Initial-UE Message + Attach Request + PDN Connectivity        */
     mme_self()->mme_ue_s1ap_id = 16777372;
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -347,13 +350,6 @@ static void nas_sm_test1(abts_case *tc, void *data)
     recvbuf->len = 63;
     pkbuf_free(recvbuf);
 
-    /* eNB disonncect from MME */
-    rv = tests1ap_enb_close(sock);
-    ABTS_INT_EQUAL(tc, CORE_OK, rv);
-
-    core_sleep(time_from_msec(300));
-    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_FULL);
-
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456819"));
     ABTS_PTR_NOTNULL(tc, doc);
     ABTS_TRUE(tc, mongoc_collection_remove(collection, 
@@ -367,6 +363,13 @@ static void nas_sm_test1(abts_case *tc, void *data)
     bson_destroy(doc);
 
     mongoc_collection_destroy(collection);
+
+    /* eNB disonncect from MME */
+    rv = tests1ap_enb_close(sock);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    core_sleep(time_from_msec(300));
+    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_FULL);
 }
 
 /**************************************************************
@@ -386,6 +389,7 @@ static void nas_sm_test2(abts_case *tc, void *data)
 
     mongoc_collection_t *collection = NULL;
     c_int64_t count = 0;
+    bson_t *doc = NULL;
     bson_error_t error;
     const char *json =
       "{"
@@ -427,26 +431,6 @@ static void nas_sm_test2(abts_case *tc, void *data)
         "}, "
         "\"__v\" : 0 "
       "}";
-    bson_t *doc = bson_new_from_json((const uint8_t *)json, -1, &error);;
-    ABTS_PTR_NOTNULL(tc, doc);
-
-    collection = mongoc_client_get_collection(
-        context_self()->db_client,
-        context_self()->db_name, "subscribers");
-    ABTS_PTR_NOTNULL(tc, collection);
-
-    ABTS_TRUE(tc, mongoc_collection_insert(collection, 
-                MONGOC_INSERT_NONE, doc, NULL, &error));
-    bson_destroy(doc);
-
-    doc = BCON_NEW("imsi", BCON_UTF8("001010123456826"));
-    ABTS_PTR_NOTNULL(tc, doc);
-    do
-    {
-        count = mongoc_collection_count (
-            collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
-    } while (count == 0);
-    bson_destroy(doc);
 
     d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
 
@@ -470,7 +454,30 @@ static void nas_sm_test2(abts_case *tc, void *data)
     s1ap_free_pdu(&message);
     pkbuf_free(recvbuf);
 
-    /* Send Initial-UE Message */
+    doc = bson_new_from_json((const uint8_t *)json, -1, &error);;
+    ABTS_PTR_NOTNULL(tc, doc);
+
+    collection = mongoc_client_get_collection(
+        context_self()->db_client,
+        context_self()->db_name, "subscribers");
+    ABTS_PTR_NOTNULL(tc, collection);
+
+    ABTS_TRUE(tc, mongoc_collection_insert(collection, 
+                MONGOC_INSERT_NONE, doc, NULL, &error));
+    bson_destroy(doc);
+
+    doc = BCON_NEW("imsi", BCON_UTF8("001010123456826"));
+    ABTS_PTR_NOTNULL(tc, doc);
+    do
+    {
+        count = mongoc_collection_count (
+            collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
+    } while (count == 0);
+    bson_destroy(doc);
+
+    /*****************************************************************
+     * Attach Request : Known IMSI, Plain NAS message
+     * Send Initial-UE Message + Attach Request + PDN Connectivity  */
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
@@ -575,13 +582,6 @@ static void nas_sm_test2(abts_case *tc, void *data)
     recvbuf->len = 60;
     pkbuf_free(recvbuf);
 
-    /* eNB disonncect from MME */
-    rv = tests1ap_enb_close(sock);
-    ABTS_INT_EQUAL(tc, CORE_OK, rv);
-
-    core_sleep(time_from_msec(300));
-    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_FULL);
-
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456826"));
     ABTS_PTR_NOTNULL(tc, doc);
     ABTS_TRUE(tc, mongoc_collection_remove(collection, 
@@ -589,6 +589,13 @@ static void nas_sm_test2(abts_case *tc, void *data)
     bson_destroy(doc);
 
     mongoc_collection_destroy(collection);
+
+    /* eNB disonncect from MME */
+    rv = tests1ap_enb_close(sock);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    core_sleep(time_from_msec(300));
+    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_FULL);
 }
 
 /**************************************************************
@@ -639,6 +646,7 @@ static void nas_sm_test3(abts_case *tc, void *data)
 
     mongoc_collection_t *collection = NULL;
     c_int64_t count = 0;
+    bson_t *doc = NULL;
     bson_error_t error;
     const char *json =
       "{"
@@ -680,7 +688,29 @@ static void nas_sm_test3(abts_case *tc, void *data)
         "}, "
         "\"__v\" : 0 "
       "}";
-    bson_t *doc = bson_new_from_json((const uint8_t *)json, -1, &error);;
+
+    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
+
+    /* eNB connects to MME */
+    sock = tests1ap_enb_connect();
+    ABTS_PTR_NOTNULL(tc, sock);
+
+    /* Send S1-Setup Reqeust */
+    rv = tests1ap_build_setup_req(&sendbuf, 0x54f64);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* Receive S1-Setup Response */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rc = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = s1ap_decode_pdu(&message, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    s1ap_free_pdu(&message);
+    pkbuf_free(recvbuf);
+
+    doc = bson_new_from_json((const uint8_t *)json, -1, &error);;
     ABTS_PTR_NOTNULL(tc, doc);
 
     collection = mongoc_client_get_collection(
@@ -704,28 +734,9 @@ static void nas_sm_test3(abts_case *tc, void *data)
     mme_self()->mme_ue_s1ap_id = 33554631;
     mme_self()->m_tmsi = 2;
 
-    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
-
-    /* eNB connects to MME */
-    sock = tests1ap_enb_connect();
-    ABTS_PTR_NOTNULL(tc, sock);
-
-    /* Send S1-Setup Reqeust */
-    rv = tests1ap_build_setup_req(&sendbuf, 0x54f64);
-    ABTS_INT_EQUAL(tc, CORE_OK, rv);
-    rv = tests1ap_enb_send(sock, sendbuf);
-    ABTS_INT_EQUAL(tc, CORE_OK, rv);
-
-    /* Receive S1-Setup Response */
-    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
-    rv = s1ap_decode_pdu(&message, recvbuf);
-    ABTS_INT_EQUAL(tc, CORE_OK, rv);
-    s1ap_free_pdu(&message);
-    pkbuf_free(recvbuf);
-
-    /* Send Initial-UE Message */
+    /*****************************************************************
+     * Attach Request : Known IMSI, Plain NAS message
+     * Send Initial-UE Message + Attach Request + PDN Connectivity  */
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
@@ -867,13 +878,6 @@ static void nas_sm_test3(abts_case *tc, void *data)
 
     core_sleep(time_from_msec(300));
 
-    /* eNB disonncect from MME */
-    rv = tests1ap_enb_close(sock);
-    ABTS_INT_EQUAL(tc, CORE_OK, rv);
-
-    core_sleep(time_from_msec(300));
-    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_FULL);
-
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456797"));
     ABTS_PTR_NOTNULL(tc, doc);
     ABTS_TRUE(tc, mongoc_collection_remove(collection,
@@ -881,6 +885,13 @@ static void nas_sm_test3(abts_case *tc, void *data)
     bson_destroy(doc);
 
     mongoc_collection_destroy(collection);
+
+    /* eNB disonncect from MME */
+    rv = tests1ap_enb_close(sock);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    core_sleep(time_from_msec(300));
+    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_FULL);
 }
 
 abts_suite *test_nas_sm(abts_suite *suite)
