@@ -71,12 +71,15 @@ status_t esm_build_activate_default_bearer_context(
             ->protocol_configuration_options;
     
     mme_ue_t *mme_ue = NULL;
+    mme_sess_t *sess = NULL;
     pdn_t *pdn = NULL;
 
     d_assert(bearer, return CORE_ERROR, "Null param");
-    mme_ue = bearer->mme_ue;
+    sess = bearer->sess;
+    d_assert(sess, return CORE_ERROR, "Null param");
+    mme_ue = sess->mme_ue;
     d_assert(mme_ue, return CORE_ERROR, "Null param");
-    pdn = bearer->pdn;
+    pdn = sess->pdn;
     d_assert(pdn, return CORE_ERROR, "Null param");
 
     memset(&message, 0, sizeof(message));
@@ -86,6 +89,7 @@ status_t esm_build_activate_default_bearer_context(
     message.esm.h.message_type = 
         NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST;
 
+    /* FIXNOW */
     eps_qos->length = 5;
     eps_qos->qci = pdn->qos.qci;
     eps_qos->ul_mbr = 0xff;

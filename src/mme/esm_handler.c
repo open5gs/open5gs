@@ -65,9 +65,9 @@ void esm_handle_information_response(mme_bearer_t *bearer,
     if (esm_information_response->presencemask &
             NAS_ESM_INFORMATION_RESPONSE_ACCESS_POINT_NAME_PRESENT)
     {
-        bearer->pdn = mme_pdn_find_by_apn(mme_ue, 
+        sess->pdn = mme_pdn_find_by_apn(mme_ue, 
                 esm_information_response->access_point_name.apn);
-        d_assert(bearer->pdn, return, "No PDN Context[APN:%s])", 
+        d_assert(sess->pdn, return, "No PDN Context[APN:%s])", 
             esm_information_response->access_point_name.apn);
     }
 

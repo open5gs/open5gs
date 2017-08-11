@@ -31,7 +31,7 @@ status_t mme_s11_build_create_session_request(pkbuf_t **pkbuf, mme_sess_t *sess)
     d_assert(sgw, return CORE_ERROR, "Null param");
     bearer = mme_default_bearer_in_sess(sess);
     d_assert(bearer, return CORE_ERROR, "Null param");
-    pdn = bearer->pdn;
+    pdn = sess->pdn;
     d_assert(pdn, return CORE_ERROR, "Null param");
     mme_ue = sess->mme_ue;
     d_assert(mme_ue, return CORE_ERROR, "Null param");

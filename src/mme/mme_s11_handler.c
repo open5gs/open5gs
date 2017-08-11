@@ -68,7 +68,7 @@ void mme_s11_handle_create_session_response(
     bearer = mme_bearer_find_by_sess_ebi(
             sess, rsp->bearer_contexts_created.eps_bearer_id.u8);
     d_assert(bearer, return, "No ESM Context");
-    pdn = bearer->pdn;
+    pdn = sess->pdn;
     d_assert(pdn, return, "No PDN Context");
 
     /* Receive Control Plane(UL) : SGW-S11 */

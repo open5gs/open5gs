@@ -160,14 +160,17 @@ status_t s1ap_build_initial_context_setup_request(
     S1ap_NAS_PDU_t *nasPdu = NULL;
     mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
+    mme_sess_t *sess = NULL;
     pdn_t *pdn = NULL;
 
     d_assert(bearer, return CORE_ERROR, "Null param");
-    mme_ue = bearer->mme_ue;
+    sess = bearer->sess;
+    d_assert(sess, return CORE_ERROR, "Null param");
+    mme_ue = sess->mme_ue;
     d_assert(mme_ue, return CORE_ERROR, "Null param");
     enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return CORE_ERROR, "Null param");
-    pdn = bearer->pdn;
+    pdn = sess->pdn;
     d_assert(pdn, return CORE_ERROR, "Null param");
 
     memset(&message, 0, sizeof(s1ap_message_t));
@@ -190,11 +193,9 @@ status_t s1ap_build_initial_context_setup_request(
     e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
         priorityLevel = pdn->qos.priority_level;
     e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
-        pre_emptionCapability = 
-        S1ap_Pre_emptionCapability_shall_not_trigger_pre_emption;
+        pre_emptionCapability = !(pdn->qos.pre_emption_capability);
     e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
-        pre_emptionVulnerability = 
-            S1ap_Pre_emptionVulnerability_not_pre_emptable;
+        pre_emptionVulnerability = !(pdn->qos.pre_emption_vulnerability);
 
     gbrQosInformation = core_calloc(1, sizeof(struct S1ap_GBR_QosInformation));
     asn_uint642INTEGER(&gbrQosInformation->e_RAB_MaximumBitrateDL, 0);
