@@ -92,7 +92,7 @@ void esm_state_operational(fsm_t *s, event_t *e)
                             }
                             else
                             {
-                                mme_s11_handle_create_session_request(bearer);
+                                mme_s11_handle_create_session_request(sess);
                             }
                         }
                         else
@@ -116,7 +116,7 @@ void esm_state_operational(fsm_t *s, event_t *e)
                 case NAS_ESM_INFORMATION_RESPONSE:
                 {
                     /* FIXME : SGW Selection */
-                    bearer->sgw = mme_sgw_first();
+                    sess->sgw = mme_sgw_first();
 
                     d_trace(3, "[NAS] ESM information response : "
                             "UE[%s] --> ESM[%d]\n", 

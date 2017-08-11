@@ -122,7 +122,7 @@ void emm_state_operational(fsm_t *s, event_t *e)
                             }
                             else
                             {
-                                mme_s11_handle_create_session_request(bearer);
+                                mme_s11_handle_create_session_request(sess);
                             }
                         }
                         else
@@ -274,7 +274,7 @@ void emm_state_operational(fsm_t *s, event_t *e)
                         }
                         else
                         {
-                            mme_s11_handle_create_session_request(bearer);
+                            mme_s11_handle_create_session_request(sess);
                         }
                     }
                     else

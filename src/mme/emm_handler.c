@@ -619,17 +619,14 @@ void emm_handle_s11_delete_session_request(mme_ue_t *mme_ue)
     sess = mme_sess_first(mme_ue);
     while (sess != NULL)
     {
-        mme_bearer_t *bearer = mme_default_bearer_in_sess(sess);
-        if (bearer != NULL)
-        {
-            rv = mme_s11_build_delete_session_request(&s11buf, sess);
-            d_assert(rv == CORE_OK, return, "S11 build error");
+        rv = mme_s11_build_delete_session_request(&s11buf, sess);
+        d_assert(rv == CORE_OK, return, "S11 build error");
 
-            rv = mme_s11_send_to_sgw(bearer->sgw,
-                    GTP_DELETE_SESSION_REQUEST_TYPE, sess->sgw_s11_teid,
-                    s11buf);
-            d_assert(rv == CORE_OK, return, "S11 send error");
-        }
+        rv = mme_s11_send_to_sgw(sess->sgw,
+                GTP_DELETE_SESSION_REQUEST_TYPE, sess->sgw_s11_teid,
+                s11buf);
+        d_assert(rv == CORE_OK, return, "S11 send error");
+
         sess = mme_sess_next(sess);
     }
 }

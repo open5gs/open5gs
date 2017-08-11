@@ -9,7 +9,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-CORE_DECLARE(void) mme_s11_handle_create_session_request(mme_bearer_t *bearer);
+CORE_DECLARE(void) mme_s11_handle_create_session_request(mme_sess_t *sess);
 CORE_DECLARE(void) mme_s11_handle_create_session_response(
         mme_sess_t *sess, gtp_create_session_response_t *rsp);
 CORE_DECLARE(void) mme_s11_handle_modify_bearer_response(

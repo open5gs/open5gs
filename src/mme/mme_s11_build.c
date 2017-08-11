@@ -8,14 +8,13 @@
 #include "types.h"
 #include "mme_context.h"
 
-status_t mme_s11_build_create_session_request(
-        pkbuf_t **pkbuf, mme_bearer_t *bearer)
+status_t mme_s11_build_create_session_request(pkbuf_t **pkbuf, mme_sess_t *sess)
 {
     status_t rv;
     pdn_t *pdn = NULL;
     mme_sgw_t *sgw = NULL;
     mme_ue_t *mme_ue = NULL;
-    mme_sess_t *sess = NULL;
+    mme_bearer_t *bearer = NULL;
     gtp_message_t gtp_message;
     gtp_create_session_request_t *req = &gtp_message.create_session_request;
 
@@ -27,13 +26,13 @@ status_t mme_s11_build_create_session_request(
     char bearer_qos_buf[GTP_BEARER_QOS_LEN];
     gtp_ue_timezone_t ue_timezone;
 
+    d_assert(sess, return CORE_ERROR, "Null param");
+    sgw = sess->sgw;
+    d_assert(sgw, return CORE_ERROR, "Null param");
+    bearer = mme_default_bearer_in_sess(sess);
     d_assert(bearer, return CORE_ERROR, "Null param");
     pdn = bearer->pdn;
     d_assert(pdn, return CORE_ERROR, "Null param");
-    sgw = bearer->sgw;
-    d_assert(sgw, return CORE_ERROR, "Null param");
-    sess = bearer->sess;
-    d_assert(sess, return CORE_ERROR, "Null param");
     mme_ue = sess->mme_ue;
     d_assert(mme_ue, return CORE_ERROR, "Null param");
     d_assert(mme_ue->enb_ue, return CORE_ERROR, "Null param");

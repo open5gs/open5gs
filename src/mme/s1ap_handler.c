@@ -420,7 +420,7 @@ void s1ap_handle_initial_context_setup_response(
         rv = mme_s11_build_modify_bearer_request(&pkbuf, bearer);
         d_assert(rv == CORE_OK, return, "S11 build error");
 
-        rv = mme_s11_send_to_sgw(bearer->sgw, 
+        rv = mme_s11_send_to_sgw(sess->sgw, 
                 GTP_MODIFY_BEARER_REQUEST_TYPE, sess->sgw_s11_teid, pkbuf);
         d_assert(rv == CORE_OK, return, "S11 send error");
     }
@@ -453,35 +453,28 @@ void s1ap_handle_ue_context_release_request(
             cause = ies->cause.choice.radioNetwork;
             if (cause == S1ap_CauseRadioNetwork_user_inactivity)
             {
-                int release_access_bearer_needed = 0;
                 pkbuf_t *pkbuf = NULL;
                 mme_ue_t *mme_ue = enb_ue->mme_ue;
                 status_t rv;
 
-                if (mme_ue)
+                if (MME_UE_HAVE_SESSION(mme_ue))
                 {
                     mme_sess_t *sess = mme_sess_first(mme_ue);
                     while (sess != NULL)
                     {
-                        mme_bearer_t *bearer = mme_default_bearer_in_sess(sess);
-                        if (bearer != NULL)
-                        {
-                            rv = mme_s11_build_release_access_bearers_request(
-                                    &pkbuf);
-                            d_assert(rv == CORE_OK, return, "S11 build error");
+                        rv = mme_s11_build_release_access_bearers_request(
+                                &pkbuf);
+                        d_assert(rv == CORE_OK, return, "S11 build error");
 
-                            rv = mme_s11_send_to_sgw(bearer->sgw, 
-                                    GTP_RELEASE_ACCESS_BEARERS_REQUEST_TYPE, 
-                                    sess->sgw_s11_teid, pkbuf);
-                            d_assert(rv == CORE_OK, return, "S11 send error");
+                        rv = mme_s11_send_to_sgw(sess->sgw, 
+                                GTP_RELEASE_ACCESS_BEARERS_REQUEST_TYPE, 
+                                sess->sgw_s11_teid, pkbuf);
+                        d_assert(rv == CORE_OK, return, "S11 send error");
 
-                            release_access_bearer_needed = 1;
-                        }
                         sess = mme_sess_next(sess);
                     }
                 }
-
-                if (!release_access_bearer_needed)
+                else
                 {
                     s1ap_handle_release_access_bearers_response(enb_ue);
                 }

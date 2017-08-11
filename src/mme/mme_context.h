@@ -269,6 +269,7 @@ typedef struct _mme_sess_t {
     list_t          bearer_list;
 
     /* Related Context */
+    mme_sgw_t       *sgw;
     mme_ue_t        *mme_ue;
 } mme_sess_t;
 
@@ -292,7 +293,6 @@ typedef struct _mme_bearer_t {
     int             pgw_pco_len;
 
     /* Related Context */
-    mme_sgw_t       *sgw;
     pdn_t           *pdn;
 
     mme_ue_t        *mme_ue;

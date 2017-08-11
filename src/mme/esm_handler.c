@@ -52,12 +52,15 @@ void esm_handle_information_response(mme_bearer_t *bearer,
         nas_esm_information_response_t *esm_information_response)
 {
     mme_ue_t *mme_ue = NULL;
+    mme_sess_t *sess = NULL;
     pkbuf_t *pkbuf = NULL;
     status_t rv;
 
     d_assert(bearer, return, "Null param");
     mme_ue = bearer->mme_ue;
     d_assert(mme_ue, return, "Null param");
+    sess = bearer->sess;
+    d_assert(sess, return, "Null param");
 
     if (esm_information_response->presencemask &
             NAS_ESM_INFORMATION_RESPONSE_ACCESS_POINT_NAME_PRESENT)
@@ -80,10 +83,10 @@ void esm_handle_information_response(mme_bearer_t *bearer,
                 bearer->ue_pco_len);
     }
 
-    rv = mme_s11_build_create_session_request(&pkbuf, bearer);
+    rv = mme_s11_build_create_session_request(&pkbuf, sess);
     d_assert(rv == CORE_OK, return, "S11 build error");
 
-    rv = mme_s11_send_to_sgw(bearer->sgw, 
+    rv = mme_s11_send_to_sgw(sess->sgw, 
             GTP_CREATE_SESSION_REQUEST_TYPE, 0, pkbuf);
     d_assert(rv == CORE_OK, return, "S11 send error");
 }
