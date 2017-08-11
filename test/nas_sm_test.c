@@ -281,7 +281,6 @@ static void nas_sm_test1(abts_case *tc, void *data)
     /* Receive EMM information */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rc = tests1ap_enb_read(sock, recvbuf);
-    recvbuf->len = 46;
     CORE_HEX(_emm_information, strlen(_emm_information), tmp);
     ABTS_TRUE(tc, memcmp(recvbuf->payload, tmp, 28) == 0);
     ABTS_TRUE(tc, memcmp(recvbuf->payload+43, tmp+43, 3) == 0);
@@ -300,7 +299,6 @@ static void nas_sm_test1(abts_case *tc, void *data)
      * Activate Default Bearer Context Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rc = tests1ap_enb_read(sock, recvbuf);
-    recvbuf->len = 233;
     pkbuf_free(recvbuf);
 
     /* Send Detach Request */
@@ -312,7 +310,6 @@ static void nas_sm_test1(abts_case *tc, void *data)
     /* Receive UE Context Release Command */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rc = tests1ap_enb_read(sock, recvbuf);
-    recvbuf->len = 23;
     pkbuf_free(recvbuf);
 
     /* Send UE Context Release Complete */
@@ -334,22 +331,9 @@ static void nas_sm_test1(abts_case *tc, void *data)
     /* Receive Identity Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rc = tests1ap_enb_read(sock, recvbuf);
-    recvbuf->len = 30;
     pkbuf_free(recvbuf);
 
-    /* Send Identity Response */
-    rv = tests1ap_build_identity_response(&sendbuf, msgindex+2);
-    ABTS_INT_EQUAL(tc, CORE_OK, rv);
-    rv = tests1ap_enb_send(sock, sendbuf);
-    ABTS_INT_EQUAL(tc, CORE_OK, rv);
-
-    /* Receive Authentication Request */
-    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
-    recvbuf->len = 63;
-    pkbuf_free(recvbuf);
-
+    /********** Remove Subscriber in Database */
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456819"));
     ABTS_PTR_NOTNULL(tc, doc);
     ABTS_TRUE(tc, mongoc_collection_remove(collection, 
@@ -363,6 +347,18 @@ static void nas_sm_test1(abts_case *tc, void *data)
     bson_destroy(doc);
 
     mongoc_collection_destroy(collection);
+
+    /* Send Identity Response */
+    rv = tests1ap_build_identity_response(&sendbuf, msgindex+2);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* Receive Attach Reject */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rc = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_NEQUAL(tc, 0, rc);
+    pkbuf_free(recvbuf);
 
     /* eNB disonncect from MME */
     rv = tests1ap_enb_close(sock);
@@ -487,7 +483,6 @@ static void nas_sm_test2(abts_case *tc, void *data)
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rc = tests1ap_enb_read(sock, recvbuf);
     ABTS_INT_NEQUAL(tc, 0, rc);
-    recvbuf->len = 60;
     pkbuf_free(recvbuf);
 
     /* Send Authentication Response */
@@ -499,7 +494,6 @@ static void nas_sm_test2(abts_case *tc, void *data)
     /* Receive Security mode Command */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rc = tests1ap_enb_read(sock, recvbuf);
-    recvbuf->len = 40;
     ABTS_INT_NEQUAL(tc, 0, rc);
     pkbuf_free(recvbuf);
     
@@ -512,7 +506,6 @@ static void nas_sm_test2(abts_case *tc, void *data)
     /* Receive ESM Information Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rc = tests1ap_enb_read(sock, recvbuf);
-    recvbuf->len = 33;
     pkbuf_free(recvbuf);
 
     /* Send ESM Information Response */
@@ -526,7 +519,6 @@ static void nas_sm_test2(abts_case *tc, void *data)
      * Activate Default Bearer Context Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rc = tests1ap_enb_read(sock, recvbuf);
-    recvbuf->len = 208;
     pkbuf_free(recvbuf);
 
     /* Send UE Capability Info Indication */
@@ -564,7 +556,6 @@ static void nas_sm_test2(abts_case *tc, void *data)
      * Activate Default Bearer Context Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rc = tests1ap_enb_read(sock, recvbuf);
-    recvbuf->len = 223;
     pkbuf_free(recvbuf);
 
     /*****************************************************************
@@ -579,7 +570,6 @@ static void nas_sm_test2(abts_case *tc, void *data)
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rc = tests1ap_enb_read(sock, recvbuf);
     ABTS_INT_NEQUAL(tc, 0, rc);
-    recvbuf->len = 60;
     pkbuf_free(recvbuf);
 
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456826"));
@@ -794,7 +784,6 @@ static void nas_sm_test3(abts_case *tc, void *data)
      * Activate Default Bearer Context Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rc = tests1ap_enb_read(sock, recvbuf);
-    recvbuf->len = 205;
     pkbuf_free(recvbuf);
 
     /* Send UE Capability Info Indication */
@@ -820,7 +809,6 @@ static void nas_sm_test3(abts_case *tc, void *data)
     /* Receive EMM information */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rc = tests1ap_enb_read(sock, recvbuf);
-    recvbuf->len = 46;
     CORE_HEX(_emm_information, strlen(_emm_information), tmp);
     ABTS_TRUE(tc, memcmp(recvbuf->payload, tmp, 28) == 0);
     ABTS_TRUE(tc, memcmp(recvbuf->payload+43, tmp+43, 3) == 0);
@@ -859,7 +847,6 @@ static void nas_sm_test3(abts_case *tc, void *data)
     /* Receive Initial Context Setup Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rc = tests1ap_enb_read(sock, recvbuf);
-    recvbuf->len = 112;
     pkbuf_free(recvbuf);
 
     /* Send UE Capability Info Indication */

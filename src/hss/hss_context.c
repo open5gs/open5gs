@@ -368,7 +368,7 @@ status_t hss_db_auth_info(
 
     if (!mongoc_cursor_next(cursor, &document))
     {
-        d_warn("Cannot find IMSI in DB : %s\n", imsi_bcd);
+        d_trace(3, "Cannot find IMSI in DB : %s\n", imsi_bcd);
 
         rv = CORE_ERROR;
         goto out;

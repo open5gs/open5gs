@@ -72,7 +72,7 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
     rv = hss_db_auth_info(imsi_bcd, &auth_info);
     if (rv != CORE_OK)
     {
-        d_warn("Cannot get Auth-Info for IMSI:'%s'", imsi_bcd);
+        d_trace(3, "Cannot get Auth-Info for IMSI:'%s'\n", imsi_bcd);
         result_code = S6A_DIAMETER_ERROR_USER_UNKNOWN;
         goto out;
     }
