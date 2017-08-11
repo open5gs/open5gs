@@ -185,10 +185,10 @@ status_t s1ap_build_initial_context_setup_request(
     e_rab = (S1ap_E_RABToBeSetupItemCtxtSUReq_t *)
         core_calloc(1, sizeof(S1ap_E_RABToBeSetupItemCtxtSUReq_t));
     e_rab->e_RAB_ID = bearer->ebi;
-    e_rab->e_RABlevelQoSParameters.qCI = pdn->qci;
+    e_rab->e_RABlevelQoSParameters.qCI = pdn->qos.qci;
 
     e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
-        priorityLevel = pdn->priority_level;
+        priorityLevel = pdn->qos.priority_level;
     e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
         pre_emptionCapability = 
         S1ap_Pre_emptionCapability_shall_not_trigger_pre_emption;

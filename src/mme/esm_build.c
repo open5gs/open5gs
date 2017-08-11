@@ -87,7 +87,7 @@ status_t esm_build_activate_default_bearer_context(
         NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST;
 
     eps_qos->length = 5;
-    eps_qos->qci = pdn->qci;
+    eps_qos->qci = pdn->qos.qci;
     eps_qos->ul_mbr = 0xff;
     eps_qos->dl_mbr = 0xff;
     eps_qos->ul_gbr = 0xff;

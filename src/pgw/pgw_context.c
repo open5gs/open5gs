@@ -14,7 +14,6 @@ static pgw_context_t self;
 index_declare(pgw_sess_pool, pgw_sess_t, MAX_NUM_OF_UE);
 index_declare(pgw_bearer_pool, pgw_bearer_t, MAX_NUM_OF_UE_BEARER);
 
-pool_declare(pgw_pdn_pool, pdn_t, MAX_NUM_OF_UE_PDN);
 pool_declare(pgw_ip_pool_pool, pgw_ip_pool_t, MAX_NUM_OF_UE);
 
 static int context_initiaized = 0;
@@ -30,7 +29,6 @@ status_t pgw_context_init()
     list_init(&self.sess_list);
     index_init(&pgw_bearer_pool, MAX_NUM_OF_UE_BEARER);
 
-    pool_init(&pgw_pdn_pool, MAX_NUM_OF_UE_PDN);
     pool_init(&pgw_ip_pool_pool, MAX_NUM_OF_UE);
 
     list_init(&self.s5c_node.local_list);
@@ -68,7 +66,6 @@ status_t pgw_context_final()
             index_size(&pgw_ip_pool_pool));
 
     pool_final(&pgw_ip_pool_pool);
-    pool_final(&pgw_pdn_pool);
 
     index_final(&pgw_bearer_pool);
     index_final(&pgw_sess_pool);
@@ -539,95 +536,6 @@ pgw_sess_t* pgw_sess_next(pgw_sess_t *sess)
 {
     return list_next(sess);
 }
-
-#if 0
-pdn_t* pgw_pdn_add(pgw_sess_t *sess, c_int8_t *apn)
-{
-    pdn_t *pdn = NULL;
-
-    d_assert(sess, return NULL, "Null param");
-    d_assert(apn, return NULL, "Null param");
-
-    pool_alloc_node(&pgw_pdn_pool, &pdn);
-    d_assert(pdn, return NULL, "PDN context allocation failed");
-
-    memset(pdn, 0, sizeof(pdn_t));
-    strcpy(pdn->apn, apn);
-
-    pdn->ip_pool = pgw_ip_pool_alloc();
-    d_assert(pdn->ip_pool, pgw_pdn_remove(pdn); return NULL,
-            "Can't alloc IP pool");
-    
-    pdn->context = sess;
-    list_append(&sess->pdn_list, pdn);
-
-    return pdn;
-}
-
-status_t pgw_pdn_remove(pdn_t *pdn)
-{
-    pgw_sess_t *sess = NULL;
-
-    d_assert(pdn, return CORE_ERROR, "Null param");
-    sess = pdn->context;
-    d_assert(sess, return CORE_ERROR, "Null param");
-
-    pgw_ip_pool_free(pdn->ip_pool);
-
-    list_remove(&sess->pdn_list, pdn);
-    pool_free_node(&pgw_pdn_pool, pdn);
-
-    return CORE_OK;
-}
-
-status_t pgw_pdn_remove_all(pgw_sess_t *sess)
-{
-    pdn_t *pdn = NULL, *next_pdn = NULL;
-
-    d_assert(sess, return CORE_ERROR, "Null param");
-    
-    pdn = list_first(&sess->pdn_list);
-    while (pdn)
-    {
-        next_pdn = list_next(pdn);
-
-        pgw_pdn_remove(pdn);
-
-        pdn = next_pdn;
-    }
-
-    return CORE_OK;
-}
-
-pdn_t* pgw_pdn_find_by_apn(pgw_sess_t *sess, c_int8_t *apn)
-{
-    pdn_t *pdn = NULL;
-    
-    d_assert(sess, return NULL, "Null param");
-
-    pdn = list_first(&sess->pdn_list);
-    while (pdn)
-    {
-        if (strcmp(pdn->apn, apn) == 0)
-            break;
-
-        pdn = list_next(pdn);
-    }
-
-    return pdn;
-}
-
-pdn_t* pgw_pdn_first(pgw_sess_t *sess)
-{
-    d_assert(sess, return NULL, "Null param");
-    return list_first(&sess->pdn_list);
-}
-
-pdn_t* pgw_pdn_next(pdn_t *pdn)
-{
-    return list_next(pdn);
-}
-#endif
 
 pgw_bearer_t* pgw_bearer_add(pgw_sess_t *sess, c_uint8_t id)
 {

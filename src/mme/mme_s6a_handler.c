@@ -513,7 +513,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                         {
                             CHECK_FCT_DO( 
                                 fd_msg_avp_hdr(avpch3, &hdr), return );
-                            pdn->id = hdr->avp_value->i32;
+                            pdn->context_identifier = hdr->avp_value->i32;
                         }
                         else
                             error++;
@@ -524,7 +524,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                         {
                             CHECK_FCT_DO( 
                                 fd_msg_avp_hdr(avpch3, &hdr), return );
-                            pdn->s6a_type = hdr->avp_value->i32;
+                            pdn->pdn_type = hdr->avp_value->i32;
                         }
                         else
                             error++;
@@ -539,7 +539,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                             {
                                 CHECK_FCT_DO( 
                                     fd_msg_avp_hdr(avpch4, &hdr), return );
-                                pdn->qci = hdr->avp_value->i32;
+                                pdn->qos.qci = hdr->avp_value->i32;
                             }
                             else
                                 error++;
@@ -555,7 +555,8 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                                 {
                                     CHECK_FCT_DO( fd_msg_avp_hdr(avpch5, &hdr),
                                         return );
-                                    pdn->priority_level = hdr->avp_value->i32;
+                                    pdn->qos.priority_level = 
+                                        hdr->avp_value->i32;
 
                                 }
                                 else
@@ -568,7 +569,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                                 {
                                     CHECK_FCT_DO( fd_msg_avp_hdr(avpch5, &hdr),
                                         return );
-                                    pdn->pre_emption_capability =
+                                    pdn->qos.pre_emption_capability =
                                         hdr->avp_value->i32;
                                 }
                                 else
@@ -581,7 +582,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                                 {
                                     CHECK_FCT_DO( fd_msg_avp_hdr(avpch5, &hdr),
                                         return );
-                                    pdn->pre_emption_vulnerability =
+                                    pdn->qos.pre_emption_vulnerability =
                                         hdr->avp_value->i32;
                                 }
                                 else
@@ -604,7 +605,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                             {
                                 CHECK_FCT_DO(
                                     fd_msg_avp_hdr(avpch4, &hdr), return );
-                                pdn->max_bandwidth_ul = hdr->avp_value->i32;
+                                pdn->qos.max_bandwidth_ul = hdr->avp_value->i32;
                             }
                             else
                                 error++;
@@ -615,7 +616,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                             {
                                 CHECK_FCT_DO(
                                     fd_msg_avp_hdr(avpch4, &hdr), return );
-                                pdn->max_bandwidth_dl = hdr->avp_value->i32;
+                                pdn->qos.max_bandwidth_dl = hdr->avp_value->i32;
                             }
                             else
                                 error++;

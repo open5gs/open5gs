@@ -20,9 +20,9 @@ typedef struct _hss_db_auth_info_t {
     c_uint64_t      sqn;
 } hss_db_auth_info_t;
 
-typedef struct _hss_db_apn_t {
+typedef struct _hss_db_pdn_t {
     c_uint32_t      context_identifier;
-    c_int8_t        service_selection[MAX_APN_LEN];
+    c_int8_t        apn[MAX_APN_LEN];
 #define S6A_PDN_TYPE_IPV4                               0
 #define S6A_PDN_TYPE_IPV6                               1
 #define S6A_PDN_TYPE_IPV4_AND_IPV6                      2
@@ -31,7 +31,7 @@ typedef struct _hss_db_apn_t {
     paa_t           paa;
 
     qos_t           qos;
-} hss_db_apn_t;
+} hss_db_pdn_t;
 
 typedef struct _hss_db_subscription_data_t {
 #define HSS_ACCESS_RESTRICTION_UTRAN_NOT_ALLOWED                    (1)
@@ -55,8 +55,8 @@ typedef struct _hss_db_subscription_data_t {
 
     c_uint32_t      subscribed_rau_tau_timer; /* minutes */
 
-    hss_db_apn_t    apn[MAX_NUM_OF_PDN];
-    int             num_of_apn;
+    hss_db_pdn_t    pdn[MAX_NUM_OF_PDN];
+    int             num_of_pdn;
 } hss_db_subscription_data_t;
 
 typedef struct _hss_context_t {

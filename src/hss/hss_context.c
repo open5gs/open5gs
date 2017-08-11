@@ -606,21 +606,21 @@ status_t hss_db_subscription_data(
         else if (!strcmp(key, "pdn") &&
             BSON_ITER_HOLDS_ARRAY(&iter))
         {
-            int apn_index = 0;
+            int pdn_index = 0;
 
             bson_iter_recurse(&iter, &child1_iter);
             while(bson_iter_next(&child1_iter))
             {
                 const char *child1_key = bson_iter_key(&child1_iter);
-                hss_db_apn_t *apn = NULL;
+                hss_db_pdn_t *pdn = NULL;
 
                 d_assert(child1_key, goto out, "PDN is not ARRAY");
-                apn_index = atoi(child1_key);
-                d_assert(apn_index < MAX_NUM_OF_PDN,
+                pdn_index = atoi(child1_key);
+                d_assert(pdn_index < MAX_NUM_OF_PDN,
                         goto out, "Overflow of PDN number(%d>%d)",
-                        apn_index, MAX_NUM_OF_PDN);
+                        pdn_index, MAX_NUM_OF_PDN);
 
-                apn = &subscription_data->apn[apn_index];
+                pdn = &subscription_data->pdn[pdn_index];
 
                 bson_iter_recurse(&child1_iter, &child2_iter);
                 while(bson_iter_next(&child2_iter))
@@ -631,13 +631,13 @@ status_t hss_db_subscription_data(
                     {
                         utf8 = bson_iter_utf8(&child2_iter, &length);
                         /* FIX the bug */
-                        core_cpystrn(apn->service_selection+1, utf8, length+1);
-                        apn->service_selection[0] = length;
+                        core_cpystrn(pdn->apn+1, utf8, length+1);
+                        pdn->apn[0] = length;
                     }
                     else if (!strcmp(child2_key, "type") &&
                         BSON_ITER_HOLDS_INT32(&child2_iter))
                     {
-                        apn->pdn_type = bson_iter_int32(&child2_iter);
+                        pdn->pdn_type = bson_iter_int32(&child2_iter);
                     }
                     else if (!strcmp(child2_key, "qos") &&
                         BSON_ITER_HOLDS_DOCUMENT(&child2_iter))
@@ -650,7 +650,7 @@ status_t hss_db_subscription_data(
                             if (!strcmp(child3_key, "qci") &&
                                 BSON_ITER_HOLDS_INT32(&child3_iter))
                             {
-                                apn->qos.qci = bson_iter_int32(&child3_iter);
+                                pdn->qos.qci = bson_iter_int32(&child3_iter);
                             }
                             else if (!strcmp(child3_key, "arp") &&
                                 BSON_ITER_HOLDS_DOCUMENT(&child3_iter))
@@ -663,21 +663,21 @@ status_t hss_db_subscription_data(
                                     if (!strcmp(child4_key, "priority_level") &&
                                         BSON_ITER_HOLDS_INT32(&child4_iter))
                                     {
-                                        apn->qos.priority_level =
+                                        pdn->qos.priority_level =
                                             bson_iter_int32(&child4_iter);
                                     }
                                     else if (!strcmp(child4_key,
                                                 "pre_emption_capability") &&
                                         BSON_ITER_HOLDS_INT32(&child4_iter))
                                     {
-                                        apn->qos.pre_emption_capability =
+                                        pdn->qos.pre_emption_capability =
                                             bson_iter_int32(&child4_iter);
                                     }
                                     else if (!strcmp(child4_key,
                                                 "pre_emption_vulnerability") &&
                                         BSON_ITER_HOLDS_INT32(&child4_iter))
                                     {
-                                        apn->qos.pre_emption_vulnerability =
+                                        pdn->qos.pre_emption_vulnerability =
                                             bson_iter_int32(&child4_iter);
                                     }
                                 }
@@ -695,13 +695,13 @@ status_t hss_db_subscription_data(
                             if (!strcmp(child3_key, "max_bandwidth_ul") &&
                                 BSON_ITER_HOLDS_INT32(&child3_iter))
                             {
-                                apn->qos.max_bandwidth_ul =
+                                pdn->qos.max_bandwidth_ul =
                                     bson_iter_int32(&child3_iter);
                             }
                             else if (!strcmp(child3_key, "max_bandwidth_dl") &&
                                 BSON_ITER_HOLDS_INT32(&child3_iter))
                             {
-                                apn->qos.max_bandwidth_dl =
+                                pdn->qos.max_bandwidth_dl =
                                     bson_iter_int32(&child3_iter);
                             }
                         }
@@ -710,7 +710,7 @@ status_t hss_db_subscription_data(
                 }
             }
 
-            subscription_data->num_of_apn = apn_index + 1;
+            subscription_data->num_of_pdn = pdn_index + 1;
         }
     }
 

@@ -241,6 +241,26 @@ struct _mme_ue_t {
     void            *radio_capa;
 };
 
+/**********************************
+ * PDN Structure                 */
+typedef struct _pdn_t {
+    lnode_t         node; /**< A node of list_t */
+
+    c_uint32_t      context_identifier;
+    c_int8_t        apn[MAX_APN_LEN];
+#define S6A_PDN_TYPE_IPV4                               0
+#define S6A_PDN_TYPE_IPV6                               1
+#define S6A_PDN_TYPE_IPV4_AND_IPV6                      2
+#define S6A_PDN_TYPE_IPV4_OR_IPV6                       3
+    c_int8_t        pdn_type;
+    paa_t           paa;
+
+    qos_t           qos;
+
+    /* Related Context */
+    mme_ue_t        *mme_ue;
+} pdn_t;
+
 typedef struct _mme_sess_t {
     lnode_t         node;       /**< A node of list_t */
     index_t         index;      /**< An index of this node */
@@ -293,10 +313,9 @@ typedef struct _mme_bearer_t {
     int             pgw_pco_len;
 
     /* Related Context */
-    pdn_t           *pdn;
-
     mme_ue_t        *mme_ue;
     mme_sess_t      *sess;
+    pdn_t           *pdn;
 } mme_bearer_t;
 
 CORE_DECLARE(status_t)      mme_context_init(void);

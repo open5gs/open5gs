@@ -1793,7 +1793,7 @@ pdn_t* mme_pdn_add(mme_ue_t *mme_ue, c_int8_t *apn)
     memset(pdn, 0, sizeof(pdn_t));
     strcpy(pdn->apn, apn);
     
-    pdn->context = mme_ue;
+    pdn->mme_ue = mme_ue;
     list_append(&mme_ue->pdn_list, pdn);
 
     return pdn;
@@ -1804,7 +1804,7 @@ status_t mme_pdn_remove(pdn_t *pdn)
     mme_ue_t *mme_ue = NULL;
 
     d_assert(pdn, return CORE_ERROR, "Null param");
-    mme_ue = pdn->context;
+    mme_ue = pdn->mme_ue;
     d_assert(mme_ue, return CORE_ERROR, "Null param");
 
     list_remove(&mme_ue->pdn_list, pdn);

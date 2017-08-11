@@ -109,15 +109,6 @@ CORE_DECLARE(pgw_sess_t*)   pgw_sess_find_by_apn(c_int8_t *apn);
 CORE_DECLARE(pgw_sess_t *)  pgw_sess_first();
 CORE_DECLARE(pgw_sess_t *)  pgw_sess_next(pgw_sess_t *sess);
 
-#if 0
-CORE_DECLARE(pdn_t*)        pgw_pdn_add(pgw_sess_t *sess, c_int8_t *apn);
-CORE_DECLARE(status_t)      pgw_pdn_remove(pdn_t *pdn);
-CORE_DECLARE(status_t)      pgw_pdn_remove_all(pgw_sess_t *sess);
-CORE_DECLARE(pdn_t*)        pgw_pdn_find_by_apn(pgw_sess_t *sess, c_int8_t *apn);
-CORE_DECLARE(pdn_t*)        pgw_pdn_first(pgw_sess_t *sess);
-CORE_DECLARE(pdn_t*)        pgw_pdn_next(pdn_t *pdn);
-#endif
-
 CORE_DECLARE(pgw_bearer_t*) pgw_bearer_add(pgw_sess_t *sess, c_uint8_t id);
 CORE_DECLARE(status_t)      pgw_bearer_remove(pgw_bearer_t *bearer);
 CORE_DECLARE(status_t)      pgw_bearer_remove_all(pgw_sess_t *sess);
