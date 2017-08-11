@@ -11,7 +11,7 @@ CORE_DECLARE(status_t) mme_s11_listen();
 CORE_DECLARE(status_t) mme_s11_close();
 
 CORE_DECLARE(status_t) mme_s11_send_to_sgw(
-        void *sgw, c_uint8_t type, c_uint32_t teid, pkbuf_t *pkbuf);
+        mme_sess_t *sess, c_uint8_t type, pkbuf_t *pkbuf);
 
 #ifdef __cplusplus
 }

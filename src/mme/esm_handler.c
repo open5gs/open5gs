@@ -10,8 +10,6 @@
 #include "s1ap_build.h"
 #include "s1ap_path.h"
 #include "nas_path.h"
-#include "mme_s11_build.h"
-#include "mme_s11_path.h"
 
 void esm_handle_pdn_connectivity_request(mme_bearer_t *bearer, 
         nas_pdn_connectivity_request_t *pdn_connectivity_request)
@@ -53,8 +51,6 @@ void esm_handle_information_response(mme_bearer_t *bearer,
 {
     mme_ue_t *mme_ue = NULL;
     mme_sess_t *sess = NULL;
-    pkbuf_t *pkbuf = NULL;
-    status_t rv;
 
     d_assert(bearer, return, "Null param");
     mme_ue = bearer->mme_ue;
@@ -82,11 +78,4 @@ void esm_handle_information_response(mme_bearer_t *bearer,
         memcpy(bearer->ue_pco, protocol_configuration_options->buffer, 
                 bearer->ue_pco_len);
     }
-
-    rv = mme_s11_build_create_session_request(&pkbuf, sess);
-    d_assert(rv == CORE_OK, return, "S11 build error");
-
-    rv = mme_s11_send_to_sgw(sess->sgw, 
-            GTP_CREATE_SESSION_REQUEST_TYPE, 0, pkbuf);
-    d_assert(rv == CORE_OK, return, "S11 send error");
 }

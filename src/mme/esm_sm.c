@@ -115,14 +115,13 @@ void esm_state_operational(fsm_t *s, event_t *e)
                 }
                 case NAS_ESM_INFORMATION_RESPONSE:
                 {
-                    /* FIXME : SGW Selection */
-                    sess->sgw = mme_sgw_first();
-
                     d_trace(3, "[NAS] ESM information response : "
                             "UE[%s] --> ESM[%d]\n", 
                             mme_ue->imsi_bcd, bearer->pti);
                     esm_handle_information_response(
                             bearer, &message->esm.esm_information_response);
+
+                    mme_s11_handle_create_session_request(sess);
                     break;
                 }
                 case NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_ACCEPT:

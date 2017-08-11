@@ -18,12 +18,14 @@ void mme_s11_handle_create_session_request(mme_sess_t *sess)
     status_t rv;
     pkbuf_t *pkbuf = NULL;
 
+    /* FIXME : SGW Selection */
+    MME_SESSION_SELECT_SGW(sess);
+
     rv = mme_s11_build_create_session_request(&pkbuf, sess);
     d_assert(rv == CORE_OK, return,
             "S11 build error");
 
-    rv = mme_s11_send_to_sgw(sess->sgw, 
-            GTP_CREATE_SESSION_REQUEST_TYPE, 0, pkbuf);
+    rv = mme_s11_send_to_sgw(sess, GTP_CREATE_SESSION_REQUEST_TYPE, pkbuf);
     d_assert(rv == CORE_OK, return, "S11 send error");
 }
 

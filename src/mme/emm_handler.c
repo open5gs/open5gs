@@ -622,9 +622,7 @@ void emm_handle_s11_delete_session_request(mme_ue_t *mme_ue)
         rv = mme_s11_build_delete_session_request(&s11buf, sess);
         d_assert(rv == CORE_OK, return, "S11 build error");
 
-        rv = mme_s11_send_to_sgw(sess->sgw,
-                GTP_DELETE_SESSION_REQUEST_TYPE, sess->sgw_s11_teid,
-                s11buf);
+        rv = mme_s11_send_to_sgw(sess, GTP_DELETE_SESSION_REQUEST_TYPE, s11buf);
         d_assert(rv == CORE_OK, return, "S11 send error");
 
         sess = mme_sess_next(sess);

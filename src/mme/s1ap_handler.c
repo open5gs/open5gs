@@ -420,8 +420,7 @@ void s1ap_handle_initial_context_setup_response(
         rv = mme_s11_build_modify_bearer_request(&pkbuf, bearer);
         d_assert(rv == CORE_OK, return, "S11 build error");
 
-        rv = mme_s11_send_to_sgw(sess->sgw, 
-                GTP_MODIFY_BEARER_REQUEST_TYPE, sess->sgw_s11_teid, pkbuf);
+        rv = mme_s11_send_to_sgw(sess, GTP_MODIFY_BEARER_REQUEST_TYPE, pkbuf);
         d_assert(rv == CORE_OK, return, "S11 send error");
     }
 }
@@ -466,9 +465,8 @@ void s1ap_handle_ue_context_release_request(
                                 &pkbuf);
                         d_assert(rv == CORE_OK, return, "S11 build error");
 
-                        rv = mme_s11_send_to_sgw(sess->sgw, 
-                                GTP_RELEASE_ACCESS_BEARERS_REQUEST_TYPE, 
-                                sess->sgw_s11_teid, pkbuf);
+                        rv = mme_s11_send_to_sgw(sess,
+                                GTP_RELEASE_ACCESS_BEARERS_REQUEST_TYPE, pkbuf);
                         d_assert(rv == CORE_OK, return, "S11 send error");
 
                         sess = mme_sess_next(sess);
