@@ -605,7 +605,8 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                             {
                                 CHECK_FCT_DO(
                                     fd_msg_avp_hdr(avpch4, &hdr), return );
-                                pdn->qos.max_bandwidth_ul = hdr->avp_value->i32;
+                                pdn->qos.max_bandwidth_ul =
+                                    hdr->avp_value->i32 / 1024; /* Kbps */
                             }
                             else
                                 error++;
@@ -616,7 +617,8 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                             {
                                 CHECK_FCT_DO(
                                     fd_msg_avp_hdr(avpch4, &hdr), return );
-                                pdn->qos.max_bandwidth_dl = hdr->avp_value->i32;
+                                pdn->qos.max_bandwidth_dl =
+                                    hdr->avp_value->i32 / 1024; /* Kbps */
                             }
                             else
                                 error++;
