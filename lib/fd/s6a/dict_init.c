@@ -67,11 +67,8 @@ struct dict_object *s6a_served_party_ip_addr = NULL;
 
 int s6a_ext_load()
 {
-    int fd_ext_dict_nas_mipv6_init(int major, int minor, char *conffile);
     int fd_ext_dict_s6a_init(int major, int minor, char *conffile);
 
-    CHECK_FCT(fd_ext_dict_nas_mipv6_init(
-            FD_PROJECT_VERSION_MAJOR, FD_PROJECT_VERSION_MINOR, NULL));
     CHECK_FCT(fd_ext_dict_s6a_init(
             FD_PROJECT_VERSION_MAJOR, FD_PROJECT_VERSION_MINOR, NULL));
 

@@ -12,7 +12,7 @@
 
   HSS :
   {
-#FD_CONF_PATH : "@prefix@/etc/freeDiameter/hss.conf",
+    FD_CONF_PATH : "@prefix@/etc/freeDiameter/hss.conf",
     NETWORK :
     {
       S6A_ADDR : "10.1.35.214"
@@ -21,7 +21,7 @@
 
   MME :
   {
-#FD_CONF_PATH : "@prefix@/etc/freeDiameter/mme.conf",
+    FD_CONF_PATH : "@prefix@/etc/freeDiameter/mme.conf",
 
     DEFAULT_PAGING_DRX : "v64",
 #RELATIVE_CAPACITY : 255,

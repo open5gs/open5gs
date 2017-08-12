@@ -223,6 +223,9 @@ TLS_CA = "@prefix@/etc/freeDiameter/cacert.pem";
 #  4 - full    - display the complete information on a single long line
 #  8 - tree    - display the complete information in an easier to read format spanning several lines.
 
+LoadExtension = "dbg_msg_dumps.fdx" : "0x8888";
+LoadExtension = "dict_nas_mipv6.fdx";
+
 
 ##############################################################
 ##  Peers configuration
