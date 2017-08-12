@@ -65,6 +65,8 @@ AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_AWK
+AC_PROG_YACC
+AC_PROG_LEX
 AM_PROG_AR
 
 dnl libtool
@@ -292,6 +294,8 @@ AC_CHECK_LIB([gnutls], [gnutls_global_init], [LIBS="${LIBS} -lgnutls"])
 
 PKG_CHECK_MODULES([MONGOC], libmongoc-1.0 >= 1.6.3)
 LIBS="$LIBS $MONGOC_LIBS"
+PKG_CHECK_MODULES([LIBXML2], libxml-2.0 >= 2.9.1)
+LIBS="$LIBS $LIBXML2_LIBS"
 
 #####################
 #### Conclusion. ####
@@ -311,6 +315,7 @@ AC_CONFIG_FILES([lib/base/Makefile])
 AC_CONFIG_FILES([lib/s1ap/asn1c/Makefile])
 AC_CONFIG_FILES([lib/s1ap/Makefile])
 AC_CONFIG_FILES([lib/nas/Makefile])
+AC_CONFIG_FILES([lib/fd/gx/Makefile])
 AC_CONFIG_FILES([lib/fd/s6a/Makefile])
 AC_CONFIG_FILES([lib/fd/Makefile])
 AC_CONFIG_FILES([lib/gtp/Makefile])

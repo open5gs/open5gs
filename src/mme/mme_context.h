@@ -266,9 +266,6 @@ typedef struct _mme_sess_t {
     list_t          bearer_list;
 
     /* Related Context */
-#define MME_SESSION_SELECT_SGW(sess) \
-    ((sess) && ((sess)->sgw = mme_sgw_first()))
-
     mme_sgw_t       *sgw;
     mme_ue_t        *mme_ue;
 

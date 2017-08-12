@@ -2,11 +2,13 @@ Prerequisite
 ============
 
     sudo apt-get install git cscope gdb
+    sudo apt-get install bison flex
     sudo apt-get install autoconf libtool m4 pkg-config
     sudo apt-get install libsctp-dev
     sudo apt-get install freediameter-dev
     sudo apt-get install mongodb
     sudo apt-get install libmongoc-1.0
+    sudo apt-get install libxml2
 
 
 Build from Git

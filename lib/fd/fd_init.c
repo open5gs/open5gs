@@ -5,8 +5,6 @@
 #include "core_signal.h"
 #include "core_semaphore.h"
 
-#include "s6a_lib.h"
-
 #include "fd_context.h"
 #include "fd_logger.h"
 #include "fd_lib.h"

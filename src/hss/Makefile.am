@@ -10,10 +10,12 @@ nodist_libhss_la_SOURCES = \
 
 libhss_la_DEPENDENCIES = \
     $(top_srcdir)/lib/core/src/libcore.la \
+	$(top_srcdir)/lib/fd/s6a/libfds6a.la \
     $(top_srcdir)/lib/fd/libfd.la
 
 libhss_la_LIBADD = \
     $(top_srcdir)/lib/core/src/libcore.la \
+	$(top_srcdir)/lib/fd/s6a/libfds6a.la \
     $(top_srcdir)/lib/fd/libfd.la
 
 AM_CPPFLAGS = \
