@@ -36,7 +36,9 @@ freeDiameter_DATA = \
 	support/freeDiameter/mme.cert.pem \
 	support/freeDiameter/hss.conf \
 	support/freeDiameter/hss.key.pem \
-	support/freeDiameter/hss.cert.pem
+	support/freeDiameter/hss.cert.pem \
+	support/freeDiameter/dict_legacy_xml.conf \
+	support/freeDiameter/dict_gx.xml
 
 install-data-hook:
 	$(MKDIR_P) $(prefix)/var/log
