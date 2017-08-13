@@ -2,16 +2,8 @@
 
 noinst_LTLIBRARIES = libfdgx.la
 
-AM_YFLAGS = -p dict_lxml -d
-AM_LFLAGS = -p -Cem -Pdict_lxml
-
 nodist_libfdgx_la_SOURCES = \
-	dict_lxml.tab.y lex.dict_lxml.l dict_lxml.c dict_lxml_xml.c
-
-AM_CPPFLAGS = \
-    -I$(top_srcdir)/lib/fd/gx \
-    -I$(top_srcdir)/lib/fd/include \
-	@LIBXML2_CFLAGS@
+	dict_init.c
 
 AM_CFLAGS = \
 	-Wall -Werror

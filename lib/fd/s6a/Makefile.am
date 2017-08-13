@@ -5,9 +5,6 @@ noinst_LTLIBRARIES = libfds6a.la
 nodist_libfds6a_la_SOURCES = \
 	dict_init.c
 
-AM_CPPFLAGS = \
-    -I$(top_srcdir)/lib/fd/s6a
-
 AM_CFLAGS = \
 	-Wall -Werror
 
