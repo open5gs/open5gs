@@ -33,6 +33,9 @@ int fd_init(const char *conffile)
         return ret;
     } 
     
+    /* Initialize FD Message */
+    CHECK_FCT( fd_message_init() );
+
 	/* Parse the configuration file */
     if (conffile)
     {
@@ -42,9 +45,6 @@ int fd_init(const char *conffile)
     {
         CHECK_FCT_DO( fd_set_default_context(), goto error );
     }
-
-    /* Initialize FD Message */
-    CHECK_FCT( fd_message_init() );
 
     /* Initialize FD logger */
     CHECK_FCT_DO( fd_logger_init(), goto error );

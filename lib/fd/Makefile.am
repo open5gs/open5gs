@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-SUBDIRS = gx s6a
+SUBDIRS = extensions gx s6a
 
 noinst_LTLIBRARIES = libfd.la
 

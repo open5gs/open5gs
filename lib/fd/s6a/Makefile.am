@@ -2,15 +2,11 @@
 
 noinst_LTLIBRARIES = libfds6a.la
 
-libfds6a_la_SOURCES = \
-	extension.h
-
 nodist_libfds6a_la_SOURCES = \
-	dict_s6a.c dict_init.c
+	dict_init.c
 
 AM_CPPFLAGS = \
-    -I$(top_srcdir)/lib/fd/s6a \
-    -I$(top_srcdir)/lib/fd/include
+    -I$(top_srcdir)/lib/fd/s6a
 
 AM_CFLAGS = \
 	-Wall -Werror

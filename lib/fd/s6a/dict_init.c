@@ -65,22 +65,10 @@ struct dict_object *s6a_pre_emption_capability = NULL;
 struct dict_object *s6a_pre_emption_vulnerability = NULL;
 struct dict_object *s6a_served_party_ip_addr = NULL;
 
-int s6a_ext_load()
-{
-    int fd_ext_dict_s6a_init(int major, int minor, char *conffile);
-
-    CHECK_FCT(fd_ext_dict_s6a_init(
-            FD_PROJECT_VERSION_MAJOR, FD_PROJECT_VERSION_MINOR, NULL));
-
-    return 0;
-}
-
 int s6a_dict_init(void)
 {
     uint32_t app_id = S6A_APP_ID;
     
-    CHECK_FCT(s6a_ext_load());
-
     CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_APPLICATION, 
         APPLICATION_BY_ID, (void *)&app_id, &s6a_application, ENOENT));
 
