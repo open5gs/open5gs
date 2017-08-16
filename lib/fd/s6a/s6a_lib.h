@@ -3,7 +3,6 @@
 
 #include "freeDiameter/freeDiameter-host.h"
 #include "freeDiameter/libfdcore.h"
-#include "freeDiameter/extension.h"
 
 #ifdef __cplusplus
 extern "C" {

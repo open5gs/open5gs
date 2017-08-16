@@ -334,7 +334,9 @@ AC_CONFIG_FILES([test/Makefile])
 AC_CONFIG_FILES([support/nextepc.conf])
 AC_CONFIG_FILES([support/freeDiameter/mme.conf])
 AC_CONFIG_FILES([support/freeDiameter/hss.conf])
-AC_CONFIG_FILES([support/freeDiameter/dict_legacy_xml.conf])
+AC_CONFIG_FILES([support/freeDiameter/pgw.conf])
+AC_CONFIG_FILES([support/freeDiameter/pcrf.conf])
+#AC_CONFIG_FILES([support/freeDiameter/dict_legacy_xml.conf])
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 

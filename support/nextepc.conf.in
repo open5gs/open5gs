@@ -10,15 +10,6 @@
     OTHERS: 1,
   }
 
-  HSS :
-  {
-    FD_CONF_PATH : "@prefix@/etc/freeDiameter/hss.conf",
-    NETWORK :
-    {
-      S6A_ADDR : "10.1.35.214"
-    }
-  }
-
   MME :
   {
     FD_CONF_PATH : "@prefix@/etc/freeDiameter/mme.conf",
@@ -28,7 +19,6 @@
 
     NETWORK :
     {
-      S6A_ADDR : "10.1.35.215",
       S1AP_ADDR : "10.1.35.215",
       S11_ADDR: "10.1.35.215",
     }
@@ -58,6 +48,11 @@
     }
   }
 
+  HSS :
+  {
+    FD_CONF_PATH : "@prefix@/etc/freeDiameter/hss.conf",
+  }
+
   SGW :
   {
     NETWORK :
@@ -74,6 +69,8 @@
 
   PGW :
   {
+    FD_CONF_PATH : "@prefix@/etc/freeDiameter/pgw.conf",
+
     NETWORK :
     {
       S5C_ADDR: "10.1.35.219",
@@ -96,4 +93,10 @@
       SECONDARY_ADDR: "4.4.4.4"
     }
   }
+
+  PCRF :
+  {
+    FD_CONF_PATH : "@prefix@/etc/freeDiameter/pcrf.conf",
+  }
+
 }

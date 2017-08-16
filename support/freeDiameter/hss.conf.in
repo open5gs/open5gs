@@ -231,7 +231,6 @@ LoadExtension = "@prefix@/lib/nextepc/dict_nasreq.so";
 LoadExtension = "@prefix@/lib/nextepc/dict_dcca.so";
 LoadExtension = "@prefix@/lib/nextepc/dict_dcca_3gpp.so";
 LoadExtension = "@prefix@/lib/nextepc/dict_s6a.so";
-#LoadExtension = "@prefix@/lib/nextepc/dict_legacy_xml.so" : "@prefix@/etc/freeDiameter/dict_legacy_xml.conf";
 
 
 ##############################################################

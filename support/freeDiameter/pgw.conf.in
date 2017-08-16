@@ -16,7 +16,7 @@
 # This must be a valid FQDN that resolves to the local host.
 # Default: hostname's FQDN
 #Identity = "aaa.koganei.freediameter.net";
-Identity = "mme.localdomain";
+Identity = "pgw.localdomain";
 
 # The Diameter Realm of this daemon.
 # Default: the domain part of Identity (after the first dot).
@@ -80,7 +80,7 @@ No_SCTP;
 #ListenOn = "202.249.37.5";
 #ListenOn = "2001:200:903:2::202:1";
 #ListenOn = "fe80::21c:5ff:fe98:7d62%eth0";
-ListenOn = "10.1.35.215";
+ListenOn = "10.1.35.219";
 
 
 ##############################################################
@@ -107,7 +107,7 @@ ListenOn = "10.1.35.215";
 # Default : NO DEFAULT
 #TLS_Cred = "<x509 certif file.PEM>" , "<x509 private key file.PEM>";
 #TLS_Cred = "/etc/ssl/certs/freeDiameter.pem", "/etc/ssl/private/freeDiameter.key";
-TLS_Cred = "@prefix@/etc/freeDiameter/mme.cert.pem", "@prefix@/etc/freeDiameter/mme.key.pem";
+TLS_Cred = "@prefix@/etc/freeDiameter/pgw.cert.pem", "@prefix@/etc/freeDiameter/pgw.key.pem";
 
 # Certificate authority / trust anchors
 # The file containing the list of trusted Certificate Authorities (PEM list)
@@ -230,7 +230,7 @@ LoadExtension = "dict_nas_mipv6.fdx";
 LoadExtension = "@prefix@/lib/nextepc/dict_nasreq.so";
 LoadExtension = "@prefix@/lib/nextepc/dict_dcca.so";
 LoadExtension = "@prefix@/lib/nextepc/dict_dcca_3gpp.so";
-LoadExtension = "@prefix@/lib/nextepc/dict_s6a.so";
+#LoadExtension = "@prefix@/lib/nextepc/dict_legacy_xml.so" : "@prefix@/etc/freeDiameter/dict_legacy_xml.conf";
 
 
 ##############################################################
@@ -262,7 +262,7 @@ LoadExtension = "@prefix@/lib/nextepc/dict_s6a.so";
 # Examples:
 #ConnectPeer = "aaa.wide.ad.jp";
 #ConnectPeer = "old.diameter.serv" { TcTimer = 60; TLS_old_method; No_SCTP; Port=3868; } ;
-ConnectPeer = "hss.localdomain" { ConnectTo = "10.1.35.214"; No_TLS; };
+ConnectPeer = "pcrf.localdomain" { ConnectTo = "10.1.35.218"; No_TLS; };
 
 
 ##############################################################
