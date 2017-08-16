@@ -224,7 +224,12 @@ TLS_CA = "@prefix@/etc/freeDiameter/cacert.pem";
 #  8 - tree    - display the complete information in an easier to read format spanning several lines.
 
 LoadExtension = "dbg_msg_dumps.fdx" : "0x8888";
+LoadExtension = "dict_rfc5777.fdx";
+LoadExtension = "dict_mip6i.fdx";
 LoadExtension = "dict_nas_mipv6.fdx";
+LoadExtension = "@prefix@/lib/nextepc/dict_nasreq.so";
+LoadExtension = "@prefix@/lib/nextepc/dict_dcca.so";
+LoadExtension = "@prefix@/lib/nextepc/dict_dcca_3gpp.so";
 LoadExtension = "@prefix@/lib/nextepc/dict_s6a.so";
 #LoadExtension = "@prefix@/lib/nextepc/dict_legacy_xml.so" : "@prefix@/etc/freeDiameter/dict_legacy_xml.conf";
 

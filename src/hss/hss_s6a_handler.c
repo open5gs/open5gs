@@ -169,6 +169,13 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
 
 out:
     CHECK_FCT( fd_message_experimental_rescode_set(ans, result_code) );
+
+    /* Set the Auth-Session-State AVP */
+    CHECK_FCT( fd_msg_avp_new(fd_auth_session_state, 0, &avp) );
+    val.i32 = 1;
+    CHECK_FCT( fd_msg_avp_setvalue(avp, &val) );
+    CHECK_FCT( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) );
+
 	CHECK_FCT( fd_msg_send(msg, NULL, NULL) );
 
     return 0;
@@ -238,22 +245,13 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
     CHECK_FCT( fd_msg_avp_hdr(avp, &hdr) );
     if (!(hdr->avp_value->u32 & S6A_ULR_SKIP_SUBSCRIBER_DATA))
     {
-        struct avp *avp_msisdn, *avp_access_restriction_data;
+        struct avp *avp_access_restriction_data;
         struct avp *avp_subscriber_status, *avp_network_access_mode;
         struct avp *avp_ambr, *avp_max_bandwidth_ul, *avp_max_bandwidth_dl;
         int i;
-        c_uint8_t msisdn[MAX_IMSI_LEN];
-        int msisdn_len;
 
         /* Set the Subscription Data */
         CHECK_FCT( fd_msg_avp_new(s6a_subscription_data, 0, &avp) );
-
-        CHECK_FCT( fd_msg_avp_new(s6a_msisdn, 0, &avp_msisdn) );
-        core_bcd_to_buffer(imsi_bcd, msisdn, &msisdn_len);
-        val.os.data = msisdn;
-        val.os.len = msisdn_len;
-        CHECK_FCT( fd_msg_avp_setvalue(avp_msisdn, &val) );
-        CHECK_FCT( fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avp_msisdn) );
 
         if (subscription_data.access_restriction_data)
         {
@@ -302,7 +300,8 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
         {
             /* Set the APN Configuration Profile */
             struct avp *apn_configuration_profile;
-            struct avp *context_identifier, *all_apn_conf_inc_ind;
+            struct avp *context_identifier;
+            struct avp *all_apn_configuration_included_indicator;
 
             CHECK_FCT( fd_msg_avp_new(s6a_apn_configuration_profile, 0, 
                     &apn_configuration_profile) );
@@ -314,12 +313,15 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
             CHECK_FCT( fd_msg_avp_add(apn_configuration_profile, 
                     MSG_BRW_LAST_CHILD, context_identifier) );
 
-            CHECK_FCT( fd_msg_avp_new(s6a_all_apn_conf_inc_ind, 0, 
-                    &all_apn_conf_inc_ind) );
+            CHECK_FCT( fd_msg_avp_new(
+                    s6a_all_apn_configuration_included_indicator, 0, 
+                    &all_apn_configuration_included_indicator) );
             val.i32 = 0;
-            CHECK_FCT( fd_msg_avp_setvalue(all_apn_conf_inc_ind, &val) );
+            CHECK_FCT( fd_msg_avp_setvalue(
+                    all_apn_configuration_included_indicator, &val) );
             CHECK_FCT( fd_msg_avp_add(apn_configuration_profile, 
-                    MSG_BRW_LAST_CHILD, all_apn_conf_inc_ind) );
+                    MSG_BRW_LAST_CHILD, 
+                    all_apn_configuration_included_indicator) );
 
             for (i = 0; i < subscription_data.num_of_pdn; i++)
             {
@@ -476,7 +478,7 @@ int hss_s6a_init(void)
                 &hdl_ulr) );
 
 	/* Advertise the support for the application in the peer */
-	CHECK_FCT( fd_disp_app_support ( s6a_application, fd_vendor, 1, 0 ) );
+	CHECK_FCT( fd_disp_app_support(s6a_application, fd_vendor, 1, 0) );
 
 	return 0;
 }

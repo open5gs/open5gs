@@ -2,7 +2,10 @@
 
 #include "fd_message.h"
 
-#define FD_3GPP_VENDOR_ID       10415      /* 3GPP Vendor ID */
+#define CHECK_dict_search( _type, _criteria, _what, _result )	\
+	CHECK_FCT(  fd_dict_search( fd_g_config->cnf_dict, (_type), (_criteria), (_what), (_result), ENOENT) );
+
+#define FD_3GPP_VENDOR_ID 10415
 
 struct dict_object *fd_origin_host = NULL;
 struct dict_object *fd_origin_realm = NULL;
@@ -19,31 +22,20 @@ struct dict_object *fd_vendor_id = NULL;
 
 int fd_message_init()
 {
-    struct dict_vendor_data vendor_data = { FD_3GPP_VENDOR_ID, "3GPP" };
-    CHECK_FCT( fd_dict_new(fd_g_config->cnf_dict, DICT_VENDOR,
-                &vendor_data, NULL, &fd_vendor) );
+    vendor_id_t id = FD_3GPP_VENDOR_ID;
 
-    CHECK_FCT( fd_dict_search(fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME, 
-        "Vendor-Id", &fd_vendor_id, ENOENT) );
+    CHECK_dict_search( DICT_VENDOR, VENDOR_BY_ID, (void *)&id, &fd_vendor);
+    CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Vendor-Id", &fd_vendor_id);
 
-    CHECK_FCT( fd_dict_search (fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME, 
-        "Origin-Host", &fd_origin_host, ENOENT) );
-    CHECK_FCT( fd_dict_search (fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME, 
-        "Origin-Realm", &fd_origin_realm, ENOENT) );
-    CHECK_FCT( fd_dict_search(fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME, 
-        "Destination-Host", &fd_destination_host, ENOENT) );
-    CHECK_FCT( fd_dict_search(fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME, 
-        "Destination-Realm", &fd_destination_realm, ENOENT) );
-    CHECK_FCT( fd_dict_search(fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME, 
-        "User-Name", &fd_user_name, ENOENT) );
-    CHECK_FCT( fd_dict_search(fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME, 
-        "Auth-Session-State", &fd_auth_session_state, ENOENT) );
-    CHECK_FCT( fd_dict_search(fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME, 
-        "Result-Code", &fd_result_code, ENOENT) );
-    CHECK_FCT( fd_dict_search(fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME, 
-        "Experimental-Result", &fd_experimental_result, ENOENT) );
-    CHECK_FCT( fd_dict_search(fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME, 
-        "Experimental-Result-Code", &fd_experimental_result_code, ENOENT) );
+    CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Origin-Host", &fd_origin_host);
+    CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Origin-Realm", &fd_origin_realm);
+    CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Destination-Host", &fd_destination_host);
+    CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Destination-Realm", &fd_destination_realm);
+    CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "User-Name", &fd_user_name);
+    CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Auth-Session-State", &fd_auth_session_state);
+    CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Result-Code", &fd_result_code);
+    CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Experimental-Result", &fd_experimental_result);
+    CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Experimental-Result-Code", &fd_experimental_result_code);
 
     return 0;
 }
