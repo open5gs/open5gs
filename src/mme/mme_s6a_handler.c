@@ -18,7 +18,7 @@ struct sess_state {
     struct timespec ts; /* Time of sending the message */
 };
 
-pool_declare(sess_state_pool, struct sess_state, MAX_NUM_SESSION_STATE);
+pool_declare(mme_s6a_sess_pool, struct sess_state, MAX_NUM_SESSION_STATE);
 
 /* MME received Authentication Information Answer from HSS */
 static void mme_s6a_aia_cb(void *data, struct msg **msg)
@@ -226,7 +226,7 @@ out:
     CHECK_FCT_DO( fd_msg_free(*msg), return );
     *msg = NULL;
 
-    pool_free_node(&sess_state_pool, mi);
+    pool_free_node(&mme_s6a_sess_pool, mi);
 
     return;
 }
@@ -250,7 +250,7 @@ void mme_s6a_send_air(mme_ue_t *mme_ue)
     CLEAR_SECURITY_CONTEXT(mme_ue);
     
     /* Create the random value to store with the session */
-    pool_alloc_node(&sess_state_pool, &mi);
+    pool_alloc_node(&mme_s6a_sess_pool, &mi);
     d_assert(mi, return, "malloc failed: %s", strerror(errno));
     
     mi->mme_ue = mme_ue;
@@ -332,7 +332,7 @@ void mme_s6a_send_air(mme_ue_t *mme_ue)
             mme_ue->imsi_bcd);
 
 out:
-    pool_free_node(&sess_state_pool, mi);
+    pool_free_node(&mme_s6a_sess_pool, mi);
     return;
 }
 
@@ -698,7 +698,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     CHECK_FCT_DO( fd_msg_free(*msg), return );
     *msg = NULL;
 
-    pool_free_node(&sess_state_pool, mi);
+    pool_free_node(&mme_s6a_sess_pool, mi);
 
     return;
 }
@@ -715,7 +715,7 @@ void mme_s6a_send_ulr(mme_ue_t *mme_ue)
     d_assert(mme_ue, return, "Null Param");
     
     /* Create the random value to store with the session */
-    pool_alloc_node(&sess_state_pool, &mi);
+    pool_alloc_node(&mme_s6a_sess_pool, &mi);
     d_assert(mi, return, "malloc failed: %s", strerror(errno));
     
     mi->mme_ue = mme_ue;
@@ -799,13 +799,13 @@ void mme_s6a_send_ulr(mme_ue_t *mme_ue)
             mme_ue->imsi_bcd);
 
 out:
-    pool_free_node(&sess_state_pool, mi);
+    pool_free_node(&mme_s6a_sess_pool, mi);
     return;
 }
 
 int mme_s6a_init(void)
 {
-    pool_init(&sess_state_pool, MAX_NUM_SESSION_STATE);
+    pool_init(&mme_s6a_sess_pool, MAX_NUM_SESSION_STATE);
 
 	/* Install objects definitions for this application */
 	CHECK_FCT( s6a_dict_init() );
@@ -822,14 +822,14 @@ void mme_s6a_final(void)
 {
 	CHECK_FCT_DO( fd_sess_handler_destroy(&mme_s6a_reg, NULL), );
 
-    if (pool_size(&sess_state_pool) != pool_avail(&sess_state_pool))
-        d_error("%d not freed in sess_state_pool[%d] of S6A-SM",
-                pool_size(&sess_state_pool) - pool_avail(&sess_state_pool),
-                pool_size(&sess_state_pool));
+    if (pool_size(&mme_s6a_sess_pool) != pool_avail(&mme_s6a_sess_pool))
+        d_error("%d not freed in mme_s6a_sess_pool[%d] of S6A-SM",
+            pool_size(&mme_s6a_sess_pool) - pool_avail(&mme_s6a_sess_pool),
+            pool_size(&mme_s6a_sess_pool));
 
-    d_trace(3, "%d not freed in sess_state_pool[%d] of S6A-SM\n",
-            pool_size(&sess_state_pool) - pool_avail(&sess_state_pool),
-            pool_size(&sess_state_pool));
+    d_trace(3, "%d not freed in mme_s6a_sess_pool[%d] of S6A-SM\n",
+            pool_size(&mme_s6a_sess_pool) - pool_avail(&mme_s6a_sess_pool),
+            pool_size(&mme_s6a_sess_pool));
 
-    pool_final(&sess_state_pool);
+    pool_final(&mme_s6a_sess_pool);
 }

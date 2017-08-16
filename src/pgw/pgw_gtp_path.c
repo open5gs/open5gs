@@ -1,4 +1,4 @@
-#define TRACE_MODULE _pgw_path
+#define TRACE_MODULE _pgw_gtp_path
 #include "core_debug.h"
 #include "core_pkbuf.h"
 #include "core_net.h"
@@ -8,7 +8,7 @@
 
 #include "pgw_context.h"
 #include "pgw_event.h"
-#include "pgw_path.h"
+#include "pgw_gtp_path.h"
 
 static int _gtpv1_tun_recv_cb(net_link_t *net_link, void *data)
 {

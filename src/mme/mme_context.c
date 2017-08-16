@@ -119,18 +119,9 @@ static status_t mme_context_validation()
 {
     if (self.fd_conf_path == NULL)
     {
-        if (self.mme_s6a_addr == NULL)
-        {
-            d_error("No MME.FD_CONF_PATH or MME.NETWORK.S6A_ADDR in '%s'",
-                    context_self()->config.path);
-            return CORE_ERROR;
-        }
-        if (self.hss_s6a_addr == NULL)
-        {
-            d_error("No MME.FD_CONF_PATH or HSS.NETWORK.S6A_ADDR in '%s'",
-                    context_self()->config.path);
-            return CORE_ERROR;
-        }
+        d_error("No MME.FD_CONF_PATH in '%s'",
+                context_self()->config.path);
+        return CORE_ERROR;
     }
     if (self.s1ap_addr == 0)
     {

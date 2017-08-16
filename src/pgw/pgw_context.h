@@ -29,6 +29,8 @@ typedef struct _pgw_context_t {
     c_uint32_t      s5u_port;  /* PGW S5-U local port */
     net_sock_t*     s5u_sock;  /* PGW S5-U local listen socket */
 
+    char*           fd_conf_path;   /* PGW freeDiameter conf path */
+
     msgq_id         queue_id;       /* Qsesssess for processing PGW control plane */
     tm_service_t    tm_service;     /* Timer Service */
     gtp_xact_ctx_t  gtp_xact_ctx;   /* GTP Transaction Context */

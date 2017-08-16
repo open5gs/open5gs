@@ -5,8 +5,8 @@
 
 struct dict_object *gx_application = NULL;
 
-struct dict_object *gx_cmd_air = NULL;
-struct dict_object *gx_cmd_aia = NULL;
+struct dict_object *gx_cmd_ccr = NULL;
+struct dict_object *gx_cmd_cca = NULL;
 
 int gx_dict_init(void)
 {

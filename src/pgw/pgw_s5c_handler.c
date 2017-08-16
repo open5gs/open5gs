@@ -1,4 +1,4 @@
-#define TRACE_MODULE _pgw_handler
+#define TRACE_MODULE _pgw_s5c_handler
 
 #include "core_debug.h"
 
@@ -6,8 +6,8 @@
 
 #include "pgw_event.h"
 #include "pgw_context.h"
-#include "pgw_path.h"
-#include "pgw_handler.h"
+#include "pgw_gtp_path.h"
+#include "pgw_s5c_handler.h"
 
 c_int16_t pgw_pco_build(c_uint8_t *pco_buf, tlv_pco_t *tlv_pco)
 {

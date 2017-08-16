@@ -4,6 +4,7 @@
 #include "core_pool.h"
 #include "core_index.h"
 
+#include "fd_lib.h"
 #include "gtp_path.h"
 
 #include "context.h"
@@ -92,6 +93,12 @@ static status_t pgw_context_prepare()
 
 static status_t pgw_context_validation()
 {
+    if (self.fd_conf_path == NULL)
+    {
+        d_error("No PGW.FD_CONF_PATH in '%s'",
+                context_self()->config.path);
+        return CORE_ERROR;
+    }
     if (self.s5c_node.addr == 0)
     {
         d_error("No SGW.NEWORK.S5C_ADDR in '%s'",
@@ -250,7 +257,11 @@ status_t pgw_context_parse_config()
             }
             case PGW_ROOT:
             {
-                if (jsmntok_equal(json, t, "NETWORK") == 0)
+                if (jsmntok_equal(json, t, "FD_CONF_PATH") == 0)
+                {
+                    self.fd_conf_path = jsmntok_to_string(json, t+1);
+                }
+                else if (jsmntok_equal(json, t, "NETWORK") == 0)
                 {
                     m = 1;
                     size = 1;
@@ -407,19 +418,37 @@ status_t pgw_context_parse_config()
 
 status_t pgw_context_setup_trace_module()
 {
-    int others = context_self()->trace_level.others;
+    int fd = context_self()->trace_level.fd;
     int gtp = context_self()->trace_level.gtp;
+    int others = context_self()->trace_level.others;
+
+    if (fd)
+    {
+        if (fd <= 1) fd_g_debug_lvl = FD_LOG_ERROR;
+        else if (fd <= 3) fd_g_debug_lvl = FD_LOG_NOTICE;
+        else if (fd <= 5) fd_g_debug_lvl = FD_LOG_DEBUG;
+        else fd_g_debug_lvl = FD_LOG_ANNOYING;
+
+        extern int _pgw_gx_handler;
+        d_trace_level(&_pgw_gx_handler, fd);
+        extern int _fd_init;
+        d_trace_level(&_fd_init, fd);
+        extern int _fd_context;
+        d_trace_level(&_fd_context, fd);
+        extern int _fd_logger;
+        d_trace_level(&_fd_logger, fd);
+    }
 
     if (gtp)
     {
         extern int _pgw_sm;
         d_trace_level(&_pgw_sm, gtp);
-        extern int _pgw_handler;
-        d_trace_level(&_pgw_handler, gtp);
+        extern int _pgw_s5c_handler;
+        d_trace_level(&_pgw_s5c_handler, gtp);
         extern int _gtp_path;
         d_trace_level(&_gtp_path, gtp);
-        extern int _pgw_path;
-        d_trace_level(&_pgw_path, gtp);
+        extern int _pgw_gtp_path;
+        d_trace_level(&_pgw_gtp_path, gtp);
         extern int _tlv_msg;
         d_trace_level(&_tlv_msg, gtp);
         extern int _gtp_xact;
