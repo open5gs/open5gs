@@ -5,14 +5,13 @@
 #include "core_signal.h"
 #include "core_semaphore.h"
 
-#include "fd_context.h"
 #include "fd_logger.h"
 #include "fd_lib.h"
 
 static void fd_gnutls_log_func(int level, const char *str);
 static void fd_log_func(int printlevel, const char *format, va_list ap);
 
-int fd_init(const char *conffile)
+int fd_init(int mode, const char *conffile)
 {
     int ret;
 
@@ -34,20 +33,13 @@ int fd_init(const char *conffile)
     } 
     
 	/* Parse the configuration file */
-    if (conffile)
-    {
-        CHECK_FCT_DO( fd_core_parseconf(conffile), goto error );
-    }
-    else
-    {
-        CHECK_FCT_DO( fd_set_default_context(), goto error );
-    }
+    CHECK_FCT_DO( fd_core_parseconf(conffile), goto error );
 
     /* Initialize FD Message */
     CHECK_FCT( fd_message_init() );
 
     /* Initialize FD logger */
-    CHECK_FCT_DO( fd_logger_init(), goto error );
+    CHECK_FCT_DO( fd_logger_init(mode), goto error );
 
 	/* Start the servers */
 	CHECK_FCT_DO( fd_core_start(), goto error );

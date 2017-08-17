@@ -186,32 +186,33 @@ out:
     mme_event_send(&e);
 
     /* Free the message */
-    CHECK_POSIX_DO( pthread_mutex_lock(&fd_self()->stats_lock), );
+    CHECK_POSIX_DO( pthread_mutex_lock(&fd_logger_self()->stats_lock), );
     dur = ((ts.tv_sec - mi->ts.tv_sec) * 1000000) + 
         ((ts.tv_nsec - mi->ts.tv_nsec) / 1000);
-    if (fd_self()->stats.nb_recv)
+    if (fd_logger_self()->stats.nb_recv)
     {
         /* Ponderate in the avg */
-        fd_self()->stats.avg = (fd_self()->stats.avg * 
-            fd_self()->stats.nb_recv + dur) / (fd_self()->stats.nb_recv + 1);
+        fd_logger_self()->stats.avg = (fd_logger_self()->stats.avg * 
+            fd_logger_self()->stats.nb_recv + dur) /
+            (fd_logger_self()->stats.nb_recv + 1);
         /* Min, max */
-        if (dur < fd_self()->stats.shortest)
-            fd_self()->stats.shortest = dur;
-        if (dur > fd_self()->stats.longest)
-            fd_self()->stats.longest = dur;
+        if (dur < fd_logger_self()->stats.shortest)
+            fd_logger_self()->stats.shortest = dur;
+        if (dur > fd_logger_self()->stats.longest)
+            fd_logger_self()->stats.longest = dur;
     }
     else
     {
-        fd_self()->stats.shortest = dur;
-        fd_self()->stats.longest = dur;
-        fd_self()->stats.avg = dur;
+        fd_logger_self()->stats.shortest = dur;
+        fd_logger_self()->stats.longest = dur;
+        fd_logger_self()->stats.avg = dur;
     }
     if (error)
-        fd_self()->stats.nb_errs++;
+        fd_logger_self()->stats.nb_errs++;
     else 
-        fd_self()->stats.nb_recv++;
+        fd_logger_self()->stats.nb_recv++;
 
-    CHECK_POSIX_DO( pthread_mutex_unlock(&fd_self()->stats_lock), );
+    CHECK_POSIX_DO( pthread_mutex_unlock(&fd_logger_self()->stats_lock), );
     
     /* Display how long it took */
     if (ts.tv_nsec > mi->ts.tv_nsec)
@@ -324,9 +325,9 @@ void mme_s6a_send_air(mme_ue_t *mme_ue)
     CHECK_FCT_DO( fd_msg_send(&req, mme_s6a_aia_cb, svg), goto out );
 
     /* Increment the counter */
-    CHECK_POSIX_DO( pthread_mutex_lock(&fd_self()->stats_lock), );
-    fd_self()->stats.nb_sent++;
-    CHECK_POSIX_DO( pthread_mutex_unlock(&fd_self()->stats_lock), );
+    CHECK_POSIX_DO( pthread_mutex_lock(&fd_logger_self()->stats_lock), );
+    fd_logger_self()->stats.nb_sent++;
+    CHECK_POSIX_DO( pthread_mutex_unlock(&fd_logger_self()->stats_lock), );
 
     d_trace(3, "[S6A] Authentication-Information-Request : UE[%s] --> HSS\n", 
             mme_ue->imsi_bcd);
@@ -658,32 +659,33 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     mme_event_send(&e);
 
     /* Free the message */
-    CHECK_POSIX_DO( pthread_mutex_lock(&fd_self()->stats_lock), );
+    CHECK_POSIX_DO( pthread_mutex_lock(&fd_logger_self()->stats_lock), );
     dur = ((ts.tv_sec - mi->ts.tv_sec) * 1000000) + 
         ((ts.tv_nsec - mi->ts.tv_nsec) / 1000);
-    if (fd_self()->stats.nb_recv)
+    if (fd_logger_self()->stats.nb_recv)
     {
         /* Ponderate in the avg */
-        fd_self()->stats.avg = (fd_self()->stats.avg * 
-            fd_self()->stats.nb_recv + dur) / (fd_self()->stats.nb_recv + 1);
+        fd_logger_self()->stats.avg = (fd_logger_self()->stats.avg * 
+            fd_logger_self()->stats.nb_recv + dur) / 
+            (fd_logger_self()->stats.nb_recv + 1);
         /* Min, max */
-        if (dur < fd_self()->stats.shortest)
-            fd_self()->stats.shortest = dur;
-        if (dur > fd_self()->stats.longest)
-            fd_self()->stats.longest = dur;
+        if (dur < fd_logger_self()->stats.shortest)
+            fd_logger_self()->stats.shortest = dur;
+        if (dur > fd_logger_self()->stats.longest)
+            fd_logger_self()->stats.longest = dur;
     }
     else
     {
-        fd_self()->stats.shortest = dur;
-        fd_self()->stats.longest = dur;
-        fd_self()->stats.avg = dur;
+        fd_logger_self()->stats.shortest = dur;
+        fd_logger_self()->stats.longest = dur;
+        fd_logger_self()->stats.avg = dur;
     }
     if (error)
-        fd_self()->stats.nb_errs++;
+        fd_logger_self()->stats.nb_errs++;
     else 
-        fd_self()->stats.nb_recv++;
+        fd_logger_self()->stats.nb_recv++;
 
-    CHECK_POSIX_DO( pthread_mutex_unlock(&fd_self()->stats_lock), );
+    CHECK_POSIX_DO( pthread_mutex_unlock(&fd_logger_self()->stats_lock), );
     
     /* Display how long it took */
     if (ts.tv_nsec > mi->ts.tv_nsec)
@@ -791,9 +793,9 @@ void mme_s6a_send_ulr(mme_ue_t *mme_ue)
     CHECK_FCT_DO( fd_msg_send(&req, mme_s6a_ula_cb, svg), goto out );
 
     /* Increment the counter */
-    CHECK_POSIX_DO( pthread_mutex_lock(&fd_self()->stats_lock), );
-    fd_self()->stats.nb_sent++;
-    CHECK_POSIX_DO( pthread_mutex_unlock(&fd_self()->stats_lock), );
+    CHECK_POSIX_DO( pthread_mutex_lock(&fd_logger_self()->stats_lock), );
+    fd_logger_self()->stats.nb_sent++;
+    CHECK_POSIX_DO( pthread_mutex_unlock(&fd_logger_self()->stats_lock), );
 
     d_trace(3, "[S6A] Update-Location-Request : UE[%s] --> HSS\n", 
             mme_ue->imsi_bcd);
@@ -806,6 +808,8 @@ out:
 int mme_s6a_init(void)
 {
     pool_init(&mme_s6a_sess_pool, MAX_NUM_SESSION_STATE);
+
+    CHECK_FCT( fd_init(FD_MODE_CLIENT, mme_self()->fd_conf_path) );
 
 	/* Install objects definitions for this application */
 	CHECK_FCT( s6a_dict_init() );
@@ -821,6 +825,8 @@ int mme_s6a_init(void)
 void mme_s6a_final(void)
 {
 	CHECK_FCT_DO( fd_sess_handler_destroy(&mme_s6a_reg, NULL), );
+
+    fd_final();
 
     if (pool_size(&mme_s6a_sess_pool) != pool_avail(&mme_s6a_sess_pool))
         d_error("%d not freed in mme_s6a_sess_pool[%d] of S6A-SM",

@@ -10,8 +10,30 @@
 extern "C" {
 #endif /* __cplusplus */
 
-CORE_DECLARE(int) fd_logger_init();
+struct fd_logger_t {
+
+#define FD_MODE_SERVER   0x1
+#define FD_MODE_CLIENT   0x2
+    int mode;        /* default FD_MODE_SERVER | FD_MODE_CLIENT */
+    
+    int duration; /* default 10 */
+    struct fd_stats {
+        unsigned long long nb_echoed; /* server */
+        unsigned long long nb_sent;   /* client */
+        unsigned long long nb_recv;   /* client */
+        unsigned long long nb_errs;   /* client */
+        unsigned long shortest;  /* fastest answer, in microseconds */
+        unsigned long longest;   /* slowest answer, in microseconds */
+        unsigned long avg;       /* average answer time, in microseconds */
+    } stats;
+
+    pthread_mutex_t stats_lock;
+};
+
+CORE_DECLARE(int) fd_logger_init(int mode);
 CORE_DECLARE(void) fd_logger_final();
+
+CORE_DECLARE(struct fd_logger_t*) fd_logger_self();
 
 CORE_DECLARE(int) fd_logger_stats_start();
 

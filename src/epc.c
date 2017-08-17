@@ -44,13 +44,12 @@ status_t app_initialize(char *config_path, char *log_path)
 
         if (pid == 0)
         {
-            if (pgw_sem1) semaphore_post(pgw_sem1);
-
             d_trace(1, "PGW try to initialize\n");
             rv = pgw_initialize();
             d_assert(rv == CORE_OK,, "Failed to intialize PGW");
             d_trace(1, "PGW initialize...done\n");
 
+            if (pgw_sem1) semaphore_post(pgw_sem1);
             if (pgw_sem2) semaphore_wait(pgw_sem2);
 
             if (rv == CORE_OK)
@@ -93,13 +92,12 @@ status_t app_initialize(char *config_path, char *log_path)
             if (pgw_sem1) semaphore_delete(pgw_sem1);
             if (pgw_sem2) semaphore_delete(pgw_sem2);
 
-            if (sgw_sem1) semaphore_post(sgw_sem1);
-
             d_trace(1, "SGW try to initialize\n");
             rv = sgw_initialize();
             d_assert(rv == CORE_OK,, "Failed to intialize SGW");
             d_trace(1, "SGW initialize...done\n");
 
+            if (sgw_sem1) semaphore_post(sgw_sem1);
             if (sgw_sem2) semaphore_wait(sgw_sem2);
 
             if (rv == CORE_OK)
@@ -144,13 +142,12 @@ status_t app_initialize(char *config_path, char *log_path)
             if (sgw_sem1) semaphore_delete(sgw_sem1);
             if (sgw_sem2) semaphore_delete(sgw_sem2);
 
-            if (hss_sem1) semaphore_post(hss_sem1);
-
             d_trace(1, "HSS try to initialize\n");
             rv = hss_initialize();
             d_assert(rv == CORE_OK,, "Failed to intialize HSS");
             d_trace(1, "HSS initialize...done\n");
 
+            if (hss_sem1) semaphore_post(hss_sem1);
             if (hss_sem2) semaphore_wait(hss_sem2);
 
             if (rv == CORE_OK)

@@ -6,7 +6,6 @@
 #include "freeDiameter/freeDiameter-host.h"
 #include "freeDiameter/libfdcore.h"
 
-#include "fd_context.h"
 #include "fd_message.h"
 #include "fd_logger.h"
 
@@ -18,7 +17,7 @@ extern "C" {
 #define MME_IDENTITY    "mme.localdomain"   /* Default MME Identity */
 #define HSS_IDENTITY    "hss.localdomain"   /* Default HSS Identity */
 
-CORE_DECLARE(int) fd_init(const char *conffile);
+CORE_DECLARE(int) fd_init(int mode, const char *conffile);
 CORE_DECLARE(void) fd_final(void);
 
 int fd_avp_search_avp ( struct avp * groupedavp, 

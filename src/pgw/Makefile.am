@@ -10,7 +10,7 @@ libpgw_la_SOURCES = \
 nodist_libpgw_la_SOURCES = \
     pgw_init.c pgw_event.c pgw_context.c pgw_sm.c \
 	pgw_gtp_path.c pgw_s5c_handler.c \
-	pgw_fd.c pgw_gx_handler.c
+	pgw_gx_handler.c
 
 libpgw_la_DEPENDENCIES = \
     $(top_srcdir)/lib/core/src/libcore.la \

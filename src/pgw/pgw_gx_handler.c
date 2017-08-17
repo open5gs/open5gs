@@ -33,6 +33,8 @@ int pgw_gx_init(void)
 {
     pool_init(&pgw_gx_sess_pool, MAX_NUM_SESSION_STATE);
 
+    CHECK_FCT( fd_init(FD_MODE_CLIENT, pgw_self()->fd_conf_path) );
+
 	/* Install objects definitions for this application */
 	CHECK_FCT( gx_dict_init() );
 
@@ -47,6 +49,8 @@ int pgw_gx_init(void)
 void pgw_gx_final(void)
 {
 	CHECK_FCT_DO( fd_sess_handler_destroy(&pgw_gx_reg, NULL), );
+
+    fd_final();
 
     if (pool_size(&pgw_gx_sess_pool) != pool_avail(&pgw_gx_sess_pool))
         d_error("%d not freed in pgw_gx_sess_pool[%d] of S6A-SM",

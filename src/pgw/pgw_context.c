@@ -433,8 +433,6 @@ status_t pgw_context_setup_trace_module()
         d_trace_level(&_pgw_gx_handler, fd);
         extern int _fd_init;
         d_trace_level(&_fd_init, fd);
-        extern int _fd_context;
-        d_trace_level(&_fd_context, fd);
         extern int _fd_logger;
         d_trace_level(&_fd_logger, fd);
     }

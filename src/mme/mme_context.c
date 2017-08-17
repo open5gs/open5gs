@@ -215,7 +215,6 @@ status_t mme_context_parse_config()
 
     typedef enum { 
         START, ROOT, 
-        HSS_START, HSS_ROOT, 
         MME_START, MME_ROOT, 
         SGW_START, SGW_ROOT, 
         SKIP, STOP 
@@ -224,7 +223,6 @@ status_t mme_context_parse_config()
     parse_state stack = STOP;
 
     size_t root_tokens = 0;
-    size_t hss_tokens = 0;
     size_t mme_tokens = 0;
     size_t sgw_tokens = 0;
     size_t skip_tokens = 0;
@@ -251,11 +249,7 @@ status_t mme_context_parse_config()
             }
             case ROOT:
             {
-                if (jsmntok_equal(json, t, "HSS") == 0)
-                {
-                    state = HSS_START;
-                }
-                else if (jsmntok_equal(json, t, "MME") == 0)
+                if (jsmntok_equal(json, t, "MME") == 0)
                 {
                     state = MME_START;
                 }
@@ -273,59 +267,6 @@ status_t mme_context_parse_config()
                     if (root_tokens == 0) state = STOP;
                 }
 
-                break;
-            }
-            case HSS_START:
-            {
-                state = HSS_ROOT;
-                hss_tokens = t->size;
-
-                break;
-            }
-            case HSS_ROOT:
-            {
-                if (jsmntok_equal(json, t, "NETWORK") == 0)
-                {
-                    m = 1;
-                    size = 1;
-
-                    if ((t+1)->type == JSMN_ARRAY)
-                    {
-                        m = 2;
-                    }
-
-                    for (arr = 0; arr < size; arr++)
-                    {
-                        for (n = 1; n > 0; m++, n--)
-                        {
-                            n += (t+m)->size;
-
-                            if (jsmntok_equal(json, t+m, "S6A_ADDR") == 0)
-                            {
-                                self.hss_s6a_addr = 
-                                    jsmntok_to_string(json, t+m+1);
-                            }
-                            else if (jsmntok_equal(json, t+m, "S6A_PORT") == 0)
-                            {
-                                char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.hss_s6a_port = atoi(v);
-                            }
-                            else if (jsmntok_equal(json, t+m, "S6A_TLS_PORT")
-                                    == 0)
-                            {
-                                char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.hss_s6a_tls_port = atoi(v);
-                            }
-                        }
-                    }
-                }
-
-                state = SKIP;
-                stack = HSS_ROOT;
-                skip_tokens = t->size;
-
-                hss_tokens--;
-                if (hss_tokens == 0) stack = ROOT;
                 break;
             }
             case MME_START:
@@ -362,22 +303,7 @@ status_t mme_context_parse_config()
                         {
                             n += (t+m)->size;
 
-                            if (jsmntok_equal(json, t+m, "S6A_ADDR") == 0)
-                            {
-                                self.mme_s6a_addr = 
-                                    jsmntok_to_string(json, t+m+1);
-                            }
-                            else if (jsmntok_equal(json, t+m, "S6A_PORT") == 0)
-                            {
-                                char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.mme_s6a_port = atoi(v);
-                            }
-                            else if (jsmntok_equal(json, t+m, "S6A_TLS_PORT") == 0)
-                            {
-                                char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.mme_s6a_tls_port = atoi(v);
-                            }
-                            else if (jsmntok_equal(json, t+m, "S1AP_ADDR") == 0)
+                            if (jsmntok_equal(json, t+m, "S1AP_ADDR") == 0)
                             {
                                 char *v = jsmntok_to_string(json, t+m+1);
                                 if (v) self.s1ap_addr = inet_addr(v);
@@ -827,8 +753,6 @@ status_t mme_context_setup_trace_module()
         d_trace_level(&_mme_s6a_handler, fd);
         extern int _fd_init;
         d_trace_level(&_fd_init, fd);
-        extern int _fd_context;
-        d_trace_level(&_fd_context, fd);
         extern int _fd_logger;
         d_trace_level(&_fd_logger, fd);
     }

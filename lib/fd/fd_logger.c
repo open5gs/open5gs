@@ -2,8 +2,9 @@
 
 #include "core_debug.h"
 
-#include "fd_context.h"
 #include "fd_logger.h"
+
+static struct fd_logger_t self;
 
 static struct fd_hook_hdl *logger_hdl = NULL;
 static pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
@@ -16,14 +17,19 @@ static void fd_logger_cb(enum fd_hook_type type, struct msg * msg,
     void * regdata);
 static void * fd_stats_worker(void * arg);
 
-int fd_logger_init()
+int fd_logger_init(int mode)
 {
 	uint32_t mask_peers = HOOK_MASK( HOOK_PEER_CONNECT_SUCCESS );
+
+    memset(&self, 0, sizeof(struct fd_logger_t));
+
+    self.mode = mode;
+	self.duration = 60;       /* 60 seconds */
 	
     CHECK_FCT( fd_hook_register( 
             mask_peers, fd_logger_cb, NULL, NULL, &logger_hdl) );
 
-	CHECK_POSIX( pthread_mutex_init(&fd_self()->stats_lock, NULL) );
+	CHECK_POSIX( pthread_mutex_init(&self.stats_lock, NULL) );
 
 	return 0;
 }
@@ -31,9 +37,14 @@ int fd_logger_init()
 void fd_logger_final()
 {
 	CHECK_FCT_DO( fd_thr_term(&fd_stats_th), );
-	CHECK_POSIX_DO( pthread_mutex_destroy(&fd_self()->stats_lock), );
+	CHECK_POSIX_DO( pthread_mutex_destroy(&self.stats_lock), );
 
 	if (logger_hdl) { CHECK_FCT_DO( fd_hook_unregister( logger_hdl ), ); }
+}
+
+struct fd_logger_t* fd_logger_self()
+{
+    return &self;
 }
 
 int fd_logger_stats_start()
@@ -100,12 +111,12 @@ static void * fd_stats_worker(void * arg)
 	/* Now, loop until canceled */
 	while (1) {
 		/* Display statistics every XX seconds */
-		sleep(fd_self()->duration);
+		sleep(self.duration);
 		
 		/* Now, get the current stats */
-		CHECK_POSIX_DO( pthread_mutex_lock(&fd_self()->stats_lock), );
-		memcpy(&copy, &fd_self()->stats, sizeof(struct fd_stats));
-		CHECK_POSIX_DO( pthread_mutex_unlock(&fd_self()->stats_lock), );
+		CHECK_POSIX_DO( pthread_mutex_lock(&self.stats_lock), );
+		memcpy(&copy, &self.stats, sizeof(struct fd_stats));
+		CHECK_POSIX_DO( pthread_mutex_unlock(&self.stats_lock), );
 		
 		/* Get the current execution time */
 		CHECK_SYS_DO( clock_gettime(CLOCK_REALTIME, &now), );
@@ -125,11 +136,11 @@ static void * fd_stats_worker(void * arg)
 					(long)(now.tv_nsec + 1000000000 - start.tv_nsec) / 1000);
 		}
 		
-        if (fd_self()->mode & FD_MODE_SERVER) {
+        if (self.mode & FD_MODE_SERVER) {
             d_trace(3, " Server: %llu message(s) echoed\n", 
                     copy.nb_echoed);
         }
-        if (fd_self()->mode & FD_MODE_CLIENT) {
+        if (self.mode & FD_MODE_CLIENT) {
             d_trace(3, " Client:\n");
             d_trace(3, "   %llu message(s) sent\n", copy.nb_sent);
             d_trace(3, "   %llu error(s) received\n", copy.nb_errs);

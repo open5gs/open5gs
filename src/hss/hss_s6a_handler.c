@@ -161,9 +161,9 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
 	CHECK_FCT( fd_msg_send(msg, NULL, NULL) );
 	
 	/* Add this value to the stats */
-	CHECK_POSIX_DO( pthread_mutex_lock(&fd_self()->stats_lock), );
-	fd_self()->stats.nb_echoed++;
-	CHECK_POSIX_DO( pthread_mutex_unlock(&fd_self()->stats_lock), );
+	CHECK_POSIX_DO( pthread_mutex_lock(&fd_logger_self()->stats_lock), );
+	fd_logger_self()->stats.nb_echoed++;
+	CHECK_POSIX_DO( pthread_mutex_unlock(&fd_logger_self()->stats_lock), );
 
 	return 0;
 
@@ -439,9 +439,9 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
 	CHECK_FCT( fd_msg_send(msg, NULL, NULL) );
 	
 	/* Add this value to the stats */
-	CHECK_POSIX_DO( pthread_mutex_lock(&fd_self()->stats_lock), );
-	fd_self()->stats.nb_echoed++;
-	CHECK_POSIX_DO( pthread_mutex_unlock(&fd_self()->stats_lock), );
+	CHECK_POSIX_DO( pthread_mutex_lock(&fd_logger_self()->stats_lock), );
+	fd_logger_self()->stats.nb_echoed++;
+	CHECK_POSIX_DO( pthread_mutex_unlock(&fd_logger_self()->stats_lock), );
 
 	return 0;
 
@@ -456,6 +456,8 @@ out:
 int hss_s6a_init(void)
 {
 	struct disp_when data;
+
+    CHECK_FCT( fd_init(FD_MODE_SERVER, hss_self()->fd_conf_path) );
 
 	/* Install objects definitions for this application */
 	CHECK_FCT( s6a_dict_init() );
@@ -494,4 +496,6 @@ void hss_s6a_final(void)
 	if (hdl_ulr) {
 		(void) fd_disp_unregister(&hdl_ulr, NULL);
 	}
+
+    fd_final();
 }
