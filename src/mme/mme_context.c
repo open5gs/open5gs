@@ -1425,6 +1425,7 @@ mme_bearer_t *mme_sess_add(mme_ue_t *mme_ue, c_uint8_t pti)
     list_append(&mme_ue->sess_list, sess);
 
     sess->mme_ue = mme_ue;
+    sess->sgw = mme_sgw_first();
 
     bearer = mme_bearer_add(sess, pti);
     d_assert(bearer, mme_sess_remove(sess); return NULL, 
