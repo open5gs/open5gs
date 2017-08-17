@@ -9,7 +9,7 @@
    fun:gnutls_global_init
    fun:fd_core_initialize
    fun:fd_init
-   fun:hss_fd_init
+   fun:hss_s6a_init
    fun:hss_initialize
    fun:app_initialize
    fun:main
@@ -26,7 +26,7 @@
    fun:fd_conf_parse
    fun:fd_core_parseconf
    fun:fd_init
-   fun:hss_fd_init
+   fun:hss_s6a_init
    fun:hss_initialize
    fun:app_initialize
    fun:main
@@ -41,7 +41,7 @@
    fun:gnutls_global_init
    fun:fd_core_initialize
    fun:fd_init
-   fun:hss_fd_init
+   fun:hss_s6a_init
    fun:hss_initialize
    fun:app_initialize
    fun:main
@@ -55,7 +55,24 @@
    fun:fd_log_threadname
    fun:fd_core_initialize
    fun:fd_init
-   fun:hss_fd_init
+   fun:hss_s6a_init
+   fun:hss_initialize
+   fun:app_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:os0dup_int
+   fun:fd_dict_new
+   obj:*
+   obj:*
+   fun:fd_ext_load
+   fun:fd_core_parseconf
+   fun:fd_init
+   fun:hss_s6a_init
    fun:hss_initialize
    fun:app_initialize
    fun:main
@@ -70,7 +87,7 @@
    fun:gnutls_global_init
    fun:fd_core_initialize
    fun:fd_init
-   fun:hss_fd_init
+   fun:hss_s6a_init
    fun:hss_initialize
    fun:app_initialize
    fun:main
@@ -86,7 +103,7 @@
    fun:gnutls_global_init
    fun:fd_core_initialize
    fun:fd_init
-   fun:hss_fd_init
+   fun:hss_s6a_init
    fun:hss_initialize
    fun:app_initialize
    fun:main
@@ -103,7 +120,7 @@
    fun:gnutls_global_init
    fun:fd_core_initialize
    fun:fd_init
-   fun:hss_fd_init
+   fun:hss_s6a_init
    fun:hss_initialize
    fun:app_initialize
    fun:main
@@ -122,7 +139,7 @@
    fun:gnutls_global_init
    fun:fd_core_initialize
    fun:fd_init
-   fun:hss_fd_init
+   fun:hss_s6a_init
    fun:hss_initialize
 }
 {
@@ -139,7 +156,7 @@
    fun:gnutls_global_init
    fun:fd_core_initialize
    fun:fd_init
-   fun:hss_fd_init
+   fun:hss_s6a_init
    fun:hss_initialize
 }
 {
@@ -174,7 +191,7 @@
    fun:gnutls_global_init
    fun:fd_core_initialize
    fun:fd_init
-   fun:hss_fd_init
+   fun:hss_s6a_init
 }
 {
    <insert_a_suppression_name_here>
@@ -204,7 +221,7 @@
    fun:gnutls_global_init
    fun:fd_core_initialize
    fun:fd_init
-   fun:hss_fd_init
+   fun:hss_s6a_init
    fun:hss_initialize
    fun:app_initialize
    fun:main
@@ -221,7 +238,7 @@
    fun:fd_conf_parse
    fun:fd_core_parseconf
    fun:fd_init
-   fun:hss_fd_init
+   fun:hss_s6a_init
    fun:hss_initialize
    fun:app_initialize
    fun:main
@@ -256,7 +273,7 @@
    fun:gnutls_global_init
    fun:fd_core_initialize
    fun:fd_init
-   fun:hss_fd_init
+   fun:hss_s6a_init
    fun:hss_initialize
    fun:app_initialize
 }
@@ -282,6 +299,23 @@
    Memcheck:Leak
    match-leak-kinds: reachable
    fun:malloc
+   fun:_dl_signal_error
+   fun:_dl_signal_cerror
+   fun:_dl_lookup_symbol_x
+   fun:do_sym
+   fun:_dl_sym
+   fun:dlsym_doit
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlsym
+   fun:fd_ext_load
+   fun:fd_core_parseconf
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
    obj:/lib/i386-linux-gnu/libgcrypt.so.11.8.2
    obj:/lib/i386-linux-gnu/libgcrypt.so.11.8.2
    obj:/lib/i386-linux-gnu/libgcrypt.so.11.8.2
@@ -293,6 +327,22 @@
    fun:gcry_check_version
    obj:/usr/lib/i386-linux-gnu/libgnutls.so.26.22.6
    fun:gnutls_global_init
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   fun:fd_hook_register
+   obj:*
+   obj:*
+   fun:fd_ext_load
+   fun:fd_core_parseconf
+   fun:fd_init
+   fun:hss_s6a_init
+   fun:hss_initialize
+   fun:app_initialize
+   fun:main
 }
 {
    <insert_a_suppression_name_here>
@@ -323,7 +373,7 @@
    fun:gnutls_global_init
    fun:fd_core_initialize
    fun:fd_init
-   fun:hss_fd_init
+   fun:hss_s6a_init
    fun:hss_initialize
    fun:app_initialize
    fun:main
@@ -348,12 +398,270 @@
 {
    <insert_a_suppression_name_here>
    Memcheck:Leak
-   match-leak-kinds: reachable
+   match-leak-kinds: definite
    fun:malloc
    fun:fd_dump_extend
    obj:/usr/lib/libfdproto.so.1.2.0
    obj:/usr/lib/libfdproto.so.1.2.0
-   fun:fd_logger_cb_tree
+   obj:*
+   fun:fd_hook_call
+   obj:/usr/lib/libfdcore.so.1.2.0
+   fun:start_thread
+   fun:clone
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   fun:p11_kit_pin_register_callback
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:mme_s6a_init
+   fun:mme_initialize
+   fun:app_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:fddalloc
+   obj:/usr/lib/libfdcore.so.1.2.0
+   fun:fddlex
+   fun:fddparse
+   fun:fd_conf_parse
+   fun:fd_core_parseconf
+   fun:fd_init
+   fun:mme_s6a_init
+   fun:mme_initialize
+   fun:app_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/i386-linux-gnu/libgnutls.so.26.22.6
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:mme_s6a_init
+   fun:mme_initialize
+   fun:app_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   fun:fd_log_threadname
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:mme_s6a_init
+   fun:mme_initialize
+   fun:app_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:os0dup_int
+   fun:fd_dict_new
+   obj:*
+   obj:*
+   fun:fd_ext_load
+   fun:fd_core_parseconf
+   fun:fd_init
+   fun:mme_s6a_init
+   fun:mme_initialize
+   fun:app_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:p11_kit_pin_register_callback
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:mme_s6a_init
+   fun:mme_initialize
+   fun:app_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
+   fun:p11_kit_pin_register_callback
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:mme_s6a_init
+   fun:mme_initialize
+   fun:app_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
+   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
+   fun:p11_kit_pin_register_callback
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:mme_s6a_init
+   fun:mme_initialize
+   fun:app_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.1
+   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
+   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
+   fun:p11_kit_initialize_registered
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:mme_s6a_init
+   fun:mme_initialize
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/i386-linux-gnu/libgnutls.so.26.22.6
+   obj:/lib/i386-linux-gnu/libgcrypt.so.11.8.2
+   obj:/lib/i386-linux-gnu/libgcrypt.so.11.8.2
+   obj:/lib/i386-linux-gnu/libgcrypt.so.11.8.2
+   fun:gcry_check_version
+   obj:/usr/lib/i386-linux-gnu/libgnutls.so.26.22.6
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:mme_s6a_init
+   fun:mme_initialize
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/i386-linux-gnu/libgnutls.so.26.22.6
+   obj:/lib/i386-linux-gnu/libgcrypt.so.11.8.2
+   obj:/lib/i386-linux-gnu/libgcrypt.so.11.8.2
+   obj:/lib/i386-linux-gnu/libgcrypt.so.11.8.2
+   obj:/lib/i386-linux-gnu/libgcrypt.so.11.8.2
+   fun:gcry_control
+   obj:/usr/lib/i386-linux-gnu/libgnutls.so.26.22.6
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:mme_s6a_init
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
+   fun:p11_kit_pin_register_callback
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:mme_s6a_init
+   fun:mme_initialize
+   fun:app_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:fddalloc
+   fun:fdd_create_buffer
+   fun:fddlex
+   fun:fddparse
+   fun:fd_conf_parse
+   fun:fd_core_parseconf
+   fun:fd_init
+   fun:mme_s6a_init
+   fun:mme_initialize
+   fun:app_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:realloc
+   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
+   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
+   fun:p11_kit_pin_register_callback
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:mme_s6a_init
+   fun:mme_initialize
+   fun:app_initialize
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   fun:fd_hook_register
+   obj:*
+   obj:*
+   fun:fd_ext_load
+   fun:fd_core_parseconf
+   fun:fd_init
+   fun:mme_s6a_init
+   fun:mme_initialize
+   fun:app_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:fd_dump_extend
+   obj:/usr/lib/libfdproto.so.1.2.0
+   obj:/usr/lib/libfdproto.so.1.2.0
+   obj:*
    fun:fd_hook_call
    obj:/usr/lib/libfdcore.so.1.2.0
    fun:fd_out_send
@@ -373,8 +681,8 @@
    fun:gnutls_global_init
    fun:fd_core_initialize
    fun:fd_init
-   fun:mme_fd_init
-   fun:mme_initialize
+   fun:pcrf_gx_init
+   fun:pcrf_initialize
    fun:app_initialize
    fun:main
 }
@@ -390,8 +698,8 @@
    fun:fd_conf_parse
    fun:fd_core_parseconf
    fun:fd_init
-   fun:mme_fd_init
-   fun:mme_initialize
+   fun:pcrf_gx_init
+   fun:pcrf_initialize
    fun:app_initialize
    fun:main
 }
@@ -405,8 +713,8 @@
    fun:gnutls_global_init
    fun:fd_core_initialize
    fun:fd_init
-   fun:mme_fd_init
-   fun:mme_initialize
+   fun:pcrf_gx_init
+   fun:pcrf_initialize
    fun:app_initialize
    fun:main
 }
@@ -419,8 +727,25 @@
    fun:fd_log_threadname
    fun:fd_core_initialize
    fun:fd_init
-   fun:mme_fd_init
-   fun:mme_initialize
+   fun:pcrf_gx_init
+   fun:pcrf_initialize
+   fun:app_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:os0dup_int
+   fun:fd_dict_new
+   obj:*
+   obj:*
+   fun:fd_ext_load
+   fun:fd_core_parseconf
+   fun:fd_init
+   fun:pcrf_gx_init
+   fun:pcrf_initialize
    fun:app_initialize
    fun:main
 }
@@ -434,8 +759,8 @@
    fun:gnutls_global_init
    fun:fd_core_initialize
    fun:fd_init
-   fun:mme_fd_init
-   fun:mme_initialize
+   fun:pcrf_gx_init
+   fun:pcrf_initialize
    fun:app_initialize
    fun:main
 }
@@ -450,8 +775,8 @@
    fun:gnutls_global_init
    fun:fd_core_initialize
    fun:fd_init
-   fun:mme_fd_init
-   fun:mme_initialize
+   fun:pcrf_gx_init
+   fun:pcrf_initialize
    fun:app_initialize
    fun:main
 }
@@ -467,8 +792,8 @@
    fun:gnutls_global_init
    fun:fd_core_initialize
    fun:fd_init
-   fun:mme_fd_init
-   fun:mme_initialize
+   fun:pcrf_gx_init
+   fun:pcrf_initialize
    fun:app_initialize
    fun:main
 }
@@ -486,8 +811,8 @@
    fun:gnutls_global_init
    fun:fd_core_initialize
    fun:fd_init
-   fun:mme_fd_init
-   fun:mme_initialize
+   fun:pcrf_gx_init
+   fun:pcrf_initialize
 }
 {
    <insert_a_suppression_name_here>
@@ -503,8 +828,8 @@
    fun:gnutls_global_init
    fun:fd_core_initialize
    fun:fd_init
-   fun:mme_fd_init
-   fun:mme_initialize
+   fun:pcrf_gx_init
+   fun:pcrf_initialize
 }
 {
    <insert_a_suppression_name_here>
@@ -521,7 +846,7 @@
    fun:gnutls_global_init
    fun:fd_core_initialize
    fun:fd_init
-   fun:mme_fd_init
+   fun:pcrf_gx_init
 }
 {
    <insert_a_suppression_name_here>
@@ -534,8 +859,8 @@
    fun:gnutls_global_init
    fun:fd_core_initialize
    fun:fd_init
-   fun:mme_fd_init
-   fun:mme_initialize
+   fun:pcrf_gx_init
+   fun:pcrf_initialize
    fun:app_initialize
    fun:main
 }
@@ -551,8 +876,8 @@
    fun:fd_conf_parse
    fun:fd_core_parseconf
    fun:fd_init
-   fun:mme_fd_init
-   fun:mme_initialize
+   fun:pcrf_gx_init
+   fun:pcrf_initialize
    fun:app_initialize
    fun:main
 }
@@ -569,188 +894,25 @@
    fun:gnutls_global_init
    fun:fd_core_initialize
    fun:fd_init
-   fun:mme_fd_init
-   fun:mme_initialize
+   fun:pcrf_gx_init
+   fun:pcrf_initialize
    fun:app_initialize
 }
 {
    <insert_a_suppression_name_here>
    Memcheck:Leak
-   match-leak-kinds: reachable
+   match-leak-kinds: possible
    fun:malloc
-   fun:fd_dump_extend
-   obj:/usr/lib/libfdproto.so.1.2.0
-   obj:/usr/lib/libfdproto.so.1.2.0
-   fun:fd_logger_cb_tree
-   fun:fd_hook_call
-   obj:/usr/lib/libfdcore.so.1.2.0
-   fun:start_thread
-   fun:clone
-}
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
-   match-leak-kinds: reachable
-   fun:malloc
-   fun:fd_dump_extend
-   obj:/usr/lib/libfdproto.so.1.2.0
-   obj:/usr/lib/libfdproto.so.1.2.0
-   fun:fd_hook_call
-   obj:/usr/lib/libfdcore.so.1.2.0
-   fun:fd_out_send
-   fun:fd_p_dp_initiate
-   obj:/usr/lib/libfdcore.so.1.2.0
-   fun:start_thread
-   fun:clone
-}
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
-   match-leak-kinds: reachable
-   fun:malloc
-   fun:strdup
-   fun:p11_kit_pin_register_callback
-   fun:gnutls_pkcs11_init
-   fun:gnutls_global_init
-   fun:fd_core_initialize
-   fun:fd_init
-   fun:hss_fd_init
-   fun:hss_initialize
-   fun:app_initialize
-   fun:test_initialize
-   fun:main
-}
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
-   match-leak-kinds: reachable
-   fun:malloc
-   fun:fddalloc
-   obj:/usr/lib/libfdcore.so.1.2.0
-   fun:fddlex
-   fun:fddparse
-   fun:fd_conf_parse
+   fun:fd_hook_register
+   obj:*
+   obj:*
+   fun:fd_ext_load
    fun:fd_core_parseconf
    fun:fd_init
-   fun:hss_fd_init
-   fun:hss_initialize
+   fun:pcrf_gx_init
+   fun:pcrf_initialize
    fun:app_initialize
-   fun:test_initialize
-}
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
-   match-leak-kinds: reachable
-   fun:malloc
-   obj:/usr/lib/i386-linux-gnu/libgnutls.so.26.22.6
-   fun:gnutls_pkcs11_init
-   fun:gnutls_global_init
-   fun:fd_core_initialize
-   fun:fd_init
-   fun:hss_fd_init
-   fun:hss_initialize
-   fun:app_initialize
-   fun:test_initialize
    fun:main
-}
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
-   match-leak-kinds: reachable
-   fun:malloc
-   fun:strdup
-   fun:fd_log_threadname
-   fun:fd_core_initialize
-   fun:fd_init
-   fun:hss_fd_init
-   fun:hss_initialize
-   fun:app_initialize
-   fun:test_initialize
-   fun:main
-}
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
-   match-leak-kinds: reachable
-   fun:calloc
-   fun:p11_kit_pin_register_callback
-   fun:gnutls_pkcs11_init
-   fun:gnutls_global_init
-   fun:fd_core_initialize
-   fun:fd_init
-   fun:hss_fd_init
-   fun:hss_initialize
-   fun:app_initialize
-   fun:test_initialize
-   fun:main
-}
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
-   match-leak-kinds: reachable
-   fun:calloc
-   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
-   fun:p11_kit_pin_register_callback
-   fun:gnutls_pkcs11_init
-   fun:gnutls_global_init
-   fun:fd_core_initialize
-   fun:fd_init
-   fun:hss_fd_init
-   fun:hss_initialize
-   fun:app_initialize
-   fun:test_initialize
-   fun:main
-}
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
-   match-leak-kinds: reachable
-   fun:calloc
-   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
-   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
-   fun:p11_kit_pin_register_callback
-   fun:gnutls_pkcs11_init
-   fun:gnutls_global_init
-   fun:fd_core_initialize
-   fun:fd_init
-   fun:hss_fd_init
-   fun:hss_initialize
-   fun:app_initialize
-   fun:test_initialize
-}
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
-   match-leak-kinds: reachable
-   fun:malloc
-   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
-   fun:p11_kit_pin_register_callback
-   fun:gnutls_pkcs11_init
-   fun:gnutls_global_init
-   fun:fd_core_initialize
-   fun:fd_init
-   fun:hss_fd_init
-   fun:hss_initialize
-   fun:app_initialize
-   fun:test_initialize
-   fun:main
-}
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
-   match-leak-kinds: reachable
-   fun:malloc
-   fun:fddalloc
-   fun:fdd_create_buffer
-   fun:fddlex
-   fun:fddparse
-   fun:fd_conf_parse
-   fun:fd_core_parseconf
-   fun:fd_init
-   fun:hss_fd_init
-   fun:hss_initialize
-   fun:app_initialize
-   fun:test_initialize
 }
 {
    <insert_a_suppression_name_here>
@@ -764,7 +926,668 @@
    fun:gnutls_global_init
    fun:fd_core_initialize
    fun:fd_init
-   fun:hss_fd_init
+   fun:pcrf_gx_init
+   fun:pcrf_initialize
+   fun:app_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   fun:p11_kit_pin_register_callback
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:pgw_gx_init
+   fun:pgw_initialize
+   fun:app_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:fddalloc
+   obj:/usr/lib/libfdcore.so.1.2.0
+   fun:fddlex
+   fun:fddparse
+   fun:fd_conf_parse
+   fun:fd_core_parseconf
+   fun:fd_init
+   fun:pgw_gx_init
+   fun:pgw_initialize
+   fun:app_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/i386-linux-gnu/libgnutls.so.26.22.6
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:pgw_gx_init
+   fun:pgw_initialize
+   fun:app_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   fun:fd_log_threadname
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:pgw_gx_init
+   fun:pgw_initialize
+   fun:app_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:os0dup_int
+   fun:fd_dict_new
+   obj:*
+   obj:*
+   fun:fd_ext_load
+   fun:fd_core_parseconf
+   fun:fd_init
+   fun:pgw_gx_init
+   fun:pgw_initialize
+   fun:app_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:p11_kit_pin_register_callback
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:pgw_gx_init
+   fun:pgw_initialize
+   fun:app_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
+   fun:p11_kit_pin_register_callback
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:pgw_gx_init
+   fun:pgw_initialize
+   fun:app_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
+   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
+   fun:p11_kit_pin_register_callback
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:pgw_gx_init
+   fun:pgw_initialize
+   fun:app_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.1
+   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
+   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
+   fun:p11_kit_initialize_registered
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:pgw_gx_init
+   fun:pgw_initialize
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/i386-linux-gnu/libgnutls.so.26.22.6
+   obj:/lib/i386-linux-gnu/libgcrypt.so.11.8.2
+   obj:/lib/i386-linux-gnu/libgcrypt.so.11.8.2
+   obj:/lib/i386-linux-gnu/libgcrypt.so.11.8.2
+   fun:gcry_check_version
+   obj:/usr/lib/i386-linux-gnu/libgnutls.so.26.22.6
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:pgw_gx_init
+   fun:pgw_initialize
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/i386-linux-gnu/libgnutls.so.26.22.6
+   obj:/lib/i386-linux-gnu/libgcrypt.so.11.8.2
+   obj:/lib/i386-linux-gnu/libgcrypt.so.11.8.2
+   obj:/lib/i386-linux-gnu/libgcrypt.so.11.8.2
+   obj:/lib/i386-linux-gnu/libgcrypt.so.11.8.2
+   fun:gcry_control
+   obj:/usr/lib/i386-linux-gnu/libgnutls.so.26.22.6
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:pgw_gx_init
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
+   fun:p11_kit_pin_register_callback
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:pgw_gx_init
+   fun:pgw_initialize
+   fun:app_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:fddalloc
+   fun:fdd_create_buffer
+   fun:fddlex
+   fun:fddparse
+   fun:fd_conf_parse
+   fun:fd_core_parseconf
+   fun:fd_init
+   fun:pgw_gx_init
+   fun:pgw_initialize
+   fun:app_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:realloc
+   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
+   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
+   fun:p11_kit_pin_register_callback
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:pgw_gx_init
+   fun:pgw_initialize
+   fun:app_initialize
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   fun:fd_hook_register
+   obj:*
+   obj:*
+   fun:fd_ext_load
+   fun:fd_core_parseconf
+   fun:fd_init
+   fun:pgw_gx_init
+   fun:pgw_initialize
+   fun:app_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
+   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
+   fun:p11_kit_initialize_registered
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:pgw_gx_init
+   fun:pgw_initialize
+   fun:app_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   fun:p11_kit_pin_register_callback
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:pgw_gx_init
+   fun:pgw_initialize
+   fun:app_initialize
+   fun:test_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:fddalloc
+   obj:/usr/lib/libfdcore.so.1.2.0
+   fun:fddlex
+   fun:fddparse
+   fun:fd_conf_parse
+   fun:fd_core_parseconf
+   fun:fd_init
+   fun:pgw_gx_init
+   fun:pgw_initialize
+   fun:app_initialize
+   fun:test_initialize
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/i386-linux-gnu/libgnutls.so.26.22.6
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:pgw_gx_init
+   fun:pgw_initialize
+   fun:app_initialize
+   fun:test_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   fun:fd_log_threadname
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:pgw_gx_init
+   fun:pgw_initialize
+   fun:app_initialize
+   fun:test_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:os0dup_int
+   fun:fd_dict_new
+   obj:*
+   obj:*
+   fun:fd_ext_load
+   fun:fd_core_parseconf
+   fun:fd_init
+   fun:pgw_gx_init
+   fun:pgw_initialize
+   fun:app_initialize
+   fun:test_initialize
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:p11_kit_pin_register_callback
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:pgw_gx_init
+   fun:pgw_initialize
+   fun:app_initialize
+   fun:test_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
+   fun:p11_kit_pin_register_callback
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:pgw_gx_init
+   fun:pgw_initialize
+   fun:app_initialize
+   fun:test_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
+   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
+   fun:p11_kit_pin_register_callback
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:pgw_gx_init
+   fun:pgw_initialize
+   fun:app_initialize
+   fun:test_initialize
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
+   fun:p11_kit_pin_register_callback
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:pgw_gx_init
+   fun:pgw_initialize
+   fun:app_initialize
+   fun:test_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:fddalloc
+   fun:fdd_create_buffer
+   fun:fddlex
+   fun:fddparse
+   fun:fd_conf_parse
+   fun:fd_core_parseconf
+   fun:fd_init
+   fun:pgw_gx_init
+   fun:pgw_initialize
+   fun:app_initialize
+   fun:test_initialize
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   fun:fd_hook_register
+   obj:*
+   obj:*
+   fun:fd_ext_load
+   fun:fd_core_parseconf
+   fun:fd_init
+   fun:pgw_gx_init
+   fun:pgw_initialize
+   fun:app_initialize
+   fun:test_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
+   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
+   fun:p11_kit_initialize_registered
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:pgw_gx_init
+   fun:pgw_initialize
+   fun:app_initialize
+   fun:test_initialize
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   fun:p11_kit_pin_register_callback
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:hss_s6a_init
+   fun:hss_initialize
+   fun:app_initialize
+   fun:test_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:fddalloc
+   obj:/usr/lib/libfdcore.so.1.2.0
+   fun:fddlex
+   fun:fddparse
+   fun:fd_conf_parse
+   fun:fd_core_parseconf
+   fun:fd_init
+   fun:hss_s6a_init
+   fun:hss_initialize
+   fun:app_initialize
+   fun:test_initialize
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/i386-linux-gnu/libgnutls.so.26.22.6
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:hss_s6a_init
+   fun:hss_initialize
+   fun:app_initialize
+   fun:test_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   fun:fd_log_threadname
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:hss_s6a_init
+   fun:hss_initialize
+   fun:app_initialize
+   fun:test_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:os0dup_int
+   fun:fd_dict_new
+   obj:*
+   obj:*
+   fun:fd_ext_load
+   fun:fd_core_parseconf
+   fun:fd_init
+   fun:hss_s6a_init
+   fun:hss_initialize
+   fun:app_initialize
+   fun:test_initialize
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:p11_kit_pin_register_callback
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:hss_s6a_init
+   fun:hss_initialize
+   fun:app_initialize
+   fun:test_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
+   fun:p11_kit_pin_register_callback
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:hss_s6a_init
+   fun:hss_initialize
+   fun:app_initialize
+   fun:test_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
+   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
+   fun:p11_kit_pin_register_callback
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:hss_s6a_init
+   fun:hss_initialize
+   fun:app_initialize
+   fun:test_initialize
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
+   fun:p11_kit_pin_register_callback
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:hss_s6a_init
+   fun:hss_initialize
+   fun:app_initialize
+   fun:test_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:fddalloc
+   fun:fdd_create_buffer
+   fun:fddlex
+   fun:fddparse
+   fun:fd_conf_parse
+   fun:fd_core_parseconf
+   fun:fd_init
+   fun:hss_s6a_init
+   fun:hss_initialize
+   fun:app_initialize
+   fun:test_initialize
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   fun:fd_hook_register
+   obj:*
+   obj:*
+   fun:fd_ext_load
+   fun:fd_core_parseconf
+   fun:fd_init
+   fun:hss_s6a_init
+   fun:hss_initialize
+   fun:app_initialize
+   fun:test_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
+   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
+   fun:p11_kit_initialize_registered
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:hss_s6a_init
    fun:hss_initialize
    fun:app_initialize
    fun:test_initialize
@@ -780,7 +1603,207 @@
    fun:gnutls_global_init
    fun:fd_core_initialize
    fun:fd_init
-   fun:mme_fd_init
+   fun:pcrf_gx_init
+   fun:pcrf_initialize
+   fun:app_initialize
+   fun:test_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:fddalloc
+   obj:/usr/lib/libfdcore.so.1.2.0
+   fun:fddlex
+   fun:fddparse
+   fun:fd_conf_parse
+   fun:fd_core_parseconf
+   fun:fd_init
+   fun:pcrf_gx_init
+   fun:pcrf_initialize
+   fun:app_initialize
+   fun:test_initialize
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/i386-linux-gnu/libgnutls.so.26.22.6
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:pcrf_gx_init
+   fun:pcrf_initialize
+   fun:app_initialize
+   fun:test_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   fun:fd_log_threadname
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:pcrf_gx_init
+   fun:pcrf_initialize
+   fun:app_initialize
+   fun:test_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:os0dup_int
+   fun:fd_dict_new
+   obj:*
+   obj:*
+   fun:fd_ext_load
+   fun:fd_core_parseconf
+   fun:fd_init
+   fun:pcrf_gx_init
+   fun:pcrf_initialize
+   fun:app_initialize
+   fun:test_initialize
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:p11_kit_pin_register_callback
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:pcrf_gx_init
+   fun:pcrf_initialize
+   fun:app_initialize
+   fun:test_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
+   fun:p11_kit_pin_register_callback
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:pcrf_gx_init
+   fun:pcrf_initialize
+   fun:app_initialize
+   fun:test_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
+   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
+   fun:p11_kit_pin_register_callback
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:pcrf_gx_init
+   fun:pcrf_initialize
+   fun:app_initialize
+   fun:test_initialize
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
+   fun:p11_kit_pin_register_callback
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:pcrf_gx_init
+   fun:pcrf_initialize
+   fun:app_initialize
+   fun:test_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:fddalloc
+   fun:fdd_create_buffer
+   fun:fddlex
+   fun:fddparse
+   fun:fd_conf_parse
+   fun:fd_core_parseconf
+   fun:fd_init
+   fun:pcrf_gx_init
+   fun:pcrf_initialize
+   fun:app_initialize
+   fun:test_initialize
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   fun:fd_hook_register
+   obj:*
+   obj:*
+   fun:fd_ext_load
+   fun:fd_core_parseconf
+   fun:fd_init
+   fun:pcrf_gx_init
+   fun:pcrf_initialize
+   fun:app_initialize
+   fun:test_initialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
+   obj:/usr/lib/i386-linux-gnu/libp11-kit.so.0.0.0
+   fun:p11_kit_initialize_registered
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:pcrf_gx_init
+   fun:pcrf_initialize
+   fun:app_initialize
+   fun:test_initialize
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   fun:p11_kit_pin_register_callback
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:fd_core_initialize
+   fun:fd_init
+   fun:mme_s6a_init
    fun:mme_initialize
    fun:app_initialize
    fun:test_initialize
@@ -798,7 +1821,7 @@
    fun:fd_conf_parse
    fun:fd_core_parseconf
    fun:fd_init
-   fun:mme_fd_init
+   fun:mme_s6a_init
    fun:mme_initialize
    fun:app_initialize
    fun:test_initialize
@@ -813,7 +1836,7 @@
    fun:gnutls_global_init
    fun:fd_core_initialize
    fun:fd_init
-   fun:mme_fd_init
+   fun:mme_s6a_init
    fun:mme_initialize
    fun:app_initialize
    fun:test_initialize
@@ -828,11 +1851,28 @@
    fun:fd_log_threadname
    fun:fd_core_initialize
    fun:fd_init
-   fun:mme_fd_init
+   fun:mme_s6a_init
    fun:mme_initialize
    fun:app_initialize
    fun:test_initialize
    fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:os0dup_int
+   fun:fd_dict_new
+   obj:*
+   obj:*
+   fun:fd_ext_load
+   fun:fd_core_parseconf
+   fun:fd_init
+   fun:mme_s6a_init
+   fun:mme_initialize
+   fun:app_initialize
+   fun:test_initialize
 }
 {
    <insert_a_suppression_name_here>
@@ -844,7 +1884,7 @@
    fun:gnutls_global_init
    fun:fd_core_initialize
    fun:fd_init
-   fun:mme_fd_init
+   fun:mme_s6a_init
    fun:mme_initialize
    fun:app_initialize
    fun:test_initialize
@@ -861,7 +1901,7 @@
    fun:gnutls_global_init
    fun:fd_core_initialize
    fun:fd_init
-   fun:mme_fd_init
+   fun:mme_s6a_init
    fun:mme_initialize
    fun:app_initialize
    fun:test_initialize
@@ -879,7 +1919,7 @@
    fun:gnutls_global_init
    fun:fd_core_initialize
    fun:fd_init
-   fun:mme_fd_init
+   fun:mme_s6a_init
    fun:mme_initialize
    fun:app_initialize
    fun:test_initialize
@@ -895,7 +1935,7 @@
    fun:gnutls_global_init
    fun:fd_core_initialize
    fun:fd_init
-   fun:mme_fd_init
+   fun:mme_s6a_init
    fun:mme_initialize
    fun:app_initialize
    fun:test_initialize
@@ -913,8 +1953,25 @@
    fun:fd_conf_parse
    fun:fd_core_parseconf
    fun:fd_init
-   fun:mme_fd_init
+   fun:mme_s6a_init
    fun:mme_initialize
    fun:app_initialize
    fun:test_initialize
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   fun:fd_hook_register
+   obj:*
+   obj:*
+   fun:fd_ext_load
+   fun:fd_core_parseconf
+   fun:fd_init
+   fun:mme_s6a_init
+   fun:mme_initialize
+   fun:app_initialize
+   fun:test_initialize
+   fun:main
 }
