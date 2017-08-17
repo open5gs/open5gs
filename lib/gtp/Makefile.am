@@ -3,9 +3,7 @@
 noinst_LTLIBRARIES = libgtp.la
 
 libgtp_la_SOURCES = \
-	gtp_tlv.h gtp_types.h gtp_path.h gtp_xact.h
-
-nodist_libgtp_la_SOURCES = \
+	gtp_tlv.h gtp_types.h gtp_path.h gtp_xact.h \
 	gtp_tlv.c gtp_types.c gtp_path.c gtp_xact.c
 
 libgtp_la_DEPENDENCIES = \
@@ -23,5 +21,3 @@ AM_CFLAGS = \
 
 MAINTAINERCLEANFILES = Makefile.in 
 MOSTLYCLEANFILES = *.stackdump
-
-EXTRA_DIST = .libs $(noinst_LTLIBRARIES)

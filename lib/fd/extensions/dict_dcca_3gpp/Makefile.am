@@ -13,5 +13,3 @@ AM_CFLAGS = \
 
 MAINTAINERCLEANFILES = Makefile.in 
 MOSTLYCLEANFILES = *.stackdump
-
-EXTRA_DIST = .libs $(pkglib_LTLIBRARIES)

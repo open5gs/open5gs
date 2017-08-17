@@ -5,9 +5,7 @@ SUBDIRS = asn1c
 noinst_LTLIBRARIES = libs1ap.la
 
 libs1ap_la_SOURCES = \
-	s1ap_asn1c.h s1ap_ies_defs.h s1ap_message.h
-
-nodist_libs1ap_la_SOURCES = \
+	s1ap_asn1c.h s1ap_ies_defs.h s1ap_message.h \
 	s1ap_encoder.c s1ap_decoder.c s1ap_free.c \
 	s1ap_ies_encoder.c s1ap_ies_decoder.c s1ap_ies_free.c s1ap_ies_xer_print.c
 
@@ -29,5 +27,3 @@ AM_CFLAGS = \
 
 MAINTAINERCLEANFILES = Makefile.in 
 MOSTLYCLEANFILES = *.stackdump
-
-EXTRA_DIST = .libs $(noinst_LTLIBRARIES)

@@ -340,7 +340,7 @@ int dict_s6a_init(char * conffile)
 			struct dict_object * cmd;
             struct dict_cmd_data data = {
                 316,                                                    /* Code */
-                "3GPP/Update-Location-Request",                         /* Name */
+                "Update-Location-Request",                              /* Name */
                 CMD_FLAG_REQUEST | CMD_FLAG_PROXIABLE | CMD_FLAG_ERROR, /* Fixed flags */
                 CMD_FLAG_REQUEST | CMD_FLAG_PROXIABLE                   /* Fixed flag values */
             };
@@ -377,7 +377,7 @@ int dict_s6a_init(char * conffile)
 			struct dict_object * cmd;
             struct dict_cmd_data data = {
                 316,                                                    /* Code */
-                "3GPP/Update-Location-Answer",                          /* Name */
+                "Update-Location-Answer",                               /* Name */
                 CMD_FLAG_REQUEST | CMD_FLAG_PROXIABLE | CMD_FLAG_ERROR, /* Fixed flags */
                 CMD_FLAG_PROXIABLE                                      /* Fixed flag values */
             };
@@ -407,7 +407,7 @@ int dict_s6a_init(char * conffile)
 			struct dict_object * cmd;
             struct dict_cmd_data data = {
                 318,                                                    /* Code */
-                "3GPP/Authentication-Information-Request",              /* Name */
+                "Authentication-Information-Request",                   /* Name */
                 CMD_FLAG_REQUEST | CMD_FLAG_PROXIABLE | CMD_FLAG_ERROR, /* Fixed flags */
                 CMD_FLAG_REQUEST | CMD_FLAG_PROXIABLE                   /* Fixed flag values */
             };
@@ -439,7 +439,7 @@ int dict_s6a_init(char * conffile)
 			struct dict_object * cmd;
             struct dict_cmd_data data = {
                 318,                                                    /* Code */
-                "3GPP/Authentication-Information-Answer",               /* Name */
+                "Authentication-Information-Answer",                    /* Name */
                 CMD_FLAG_REQUEST | CMD_FLAG_PROXIABLE | CMD_FLAG_ERROR, /* Fixed flags */
                 CMD_FLAG_PROXIABLE                                      /* Fixed flag values */
             };
@@ -468,10 +468,10 @@ int dict_s6a_init(char * conffile)
 		{
 			struct dict_object * cmd;
 			struct dict_cmd_data data = {
-				321, 					/* Code */
-				"3GPP/Purge-UE-Request", 			/* Name */
-				CMD_FLAG_REQUEST | CMD_FLAG_PROXIABLE | CMD_FLAG_ERROR, 	/* Fixed flags */
-				CMD_FLAG_REQUEST | CMD_FLAG_PROXIABLE 						/* Fixed flag values */
+				321,                                                        /* Code */
+				"Purge-UE-Request",                                         /* Name */
+				CMD_FLAG_REQUEST | CMD_FLAG_PROXIABLE | CMD_FLAG_ERROR,     /* Fixed flags */
+				CMD_FLAG_REQUEST | CMD_FLAG_PROXIABLE                       /* Fixed flag values */
 			};
 			struct local_rules_definition rules[] =
 			{
@@ -497,10 +497,10 @@ int dict_s6a_init(char * conffile)
 		{
 			struct dict_object * cmd;
 			struct dict_cmd_data data = {
-				321, 					/* Code */
-				"3GPP/Purge-UE-Answer", 			/* Name */
-				CMD_FLAG_REQUEST | CMD_FLAG_PROXIABLE | CMD_FLAG_ERROR, 	/* Fixed flags */
-				CMD_FLAG_PROXIABLE 						/* Fixed flag values */
+				321,                                                    /* Code */
+				"Purge-UE-Answer",                                      /* Name */
+				CMD_FLAG_REQUEST | CMD_FLAG_PROXIABLE | CMD_FLAG_ERROR, /* Fixed flags */
+				CMD_FLAG_PROXIABLE                                      /* Fixed flag values */
 			};
 			struct local_rules_definition rules[] =
 			{

@@ -7,6 +7,9 @@
 #include "context.h"
 #include "app.h"
 
+static semaphore_id pcrf_sem1 = 0;
+static semaphore_id pcrf_sem2 = 0;
+
 static semaphore_id pgw_sem1 = 0;
 static semaphore_id pgw_sem2 = 0;
 
@@ -32,6 +35,49 @@ status_t app_initialize(char *config_path, char *log_path)
     }
 
 
+    /************************* PCRF Process **********************/
+    semaphore_create(&pcrf_sem1, 0); /* copied to PCRF/PGW/SGW/HSS process */
+    semaphore_create(&pcrf_sem2, 0); /* copied to PCRF/PGW/SGW/HSS process */
+
+    if (context_self()->hidden.disable_pcrf == 0)
+    {
+        pid = fork();
+        d_assert(pid >= 0, _exit(EXIT_FAILURE), "fork() failed");
+
+        if (pid == 0)
+        {
+            d_trace(1, "PCRF try to initialize\n");
+            rv = pcrf_initialize();
+            d_assert(rv == CORE_OK,, "Failed to intialize PCRF");
+            d_trace(1, "PCRF initialize...done\n");
+
+            if (pcrf_sem1) semaphore_post(pcrf_sem1);
+            if (pcrf_sem2) semaphore_wait(pcrf_sem2);
+
+            if (rv == CORE_OK)
+            {
+                d_trace(1, "PCRF try to terminate\n");
+                pcrf_terminate();
+                d_trace(1, "PCRF terminate...done\n");
+            }
+
+            if (pcrf_sem1) semaphore_post(pcrf_sem1);
+
+            /* allocated from parent process */
+            if (pcrf_sem1) semaphore_delete(pcrf_sem1);
+            if (pcrf_sem2) semaphore_delete(pcrf_sem2);
+
+            app_did_terminate();
+
+            core_terminate();
+
+            _exit(EXIT_SUCCESS);
+        }
+
+        if (pcrf_sem1) semaphore_wait(pcrf_sem1);
+    }
+
+
     /************************* PGW Process **********************/
 
     semaphore_create(&pgw_sem1, 0); /* copied to PGW/SGW/HSS process */
@@ -44,6 +90,10 @@ status_t app_initialize(char *config_path, char *log_path)
 
         if (pid == 0)
         {
+            /* allocated from parent process */
+            if (pcrf_sem1) semaphore_delete(pcrf_sem1);
+            if (pcrf_sem2) semaphore_delete(pcrf_sem2);
+
             d_trace(1, "PGW try to initialize\n");
             rv = pgw_initialize();
             d_assert(rv == CORE_OK,, "Failed to intialize PGW");
@@ -89,6 +139,8 @@ status_t app_initialize(char *config_path, char *log_path)
         if (pid == 0)
         {
             /* allocated from parent process */
+            if (pcrf_sem1) semaphore_delete(pcrf_sem1);
+            if (pcrf_sem2) semaphore_delete(pcrf_sem2);
             if (pgw_sem1) semaphore_delete(pgw_sem1);
             if (pgw_sem2) semaphore_delete(pgw_sem2);
 
@@ -137,6 +189,8 @@ status_t app_initialize(char *config_path, char *log_path)
         if (pid == 0)
         {
             /* allocated from parent process */
+            if (pcrf_sem1) semaphore_delete(pcrf_sem1);
+            if (pcrf_sem2) semaphore_delete(pcrf_sem2);
             if (pgw_sem1) semaphore_delete(pgw_sem1);
             if (pgw_sem2) semaphore_delete(pgw_sem2);
             if (sgw_sem1) semaphore_delete(sgw_sem1);
@@ -214,6 +268,14 @@ void app_terminate(void)
     }
     if (pgw_sem1) semaphore_delete(pgw_sem1);
     if (pgw_sem2) semaphore_delete(pgw_sem2);
+
+    if (context_self()->hidden.disable_pcrf == 0)
+    {
+        if (pcrf_sem2) semaphore_post(pcrf_sem2);
+        if (pcrf_sem1) semaphore_wait(pcrf_sem1);
+    }
+    if (pcrf_sem1) semaphore_delete(pcrf_sem1);
+    if (pcrf_sem2) semaphore_delete(pcrf_sem2);
 
     app_did_terminate();
 }

@@ -5,7 +5,6 @@ SUBDIRS = @OSDIR@
 noinst_LTLIBRARIES = libcore.la
 
 libcore_la_SOURCES = \
-	version.c \
 	../include/core_aes_cmac.h ../include/core_aes.h ../include/core_cond.h \
 	../include/core_debug.h ../include/core_errno.h ../include/core_file.h \
 	../include/core_fsm.h ../include/core_general.h ../include/core.h \
@@ -19,10 +18,8 @@ libcore_la_SOURCES = \
 	../include/core_timer.h ../include/core_tlv.h ../include/core_tlv_msg.h \
 	../include/core_atomic.h ../include/core_portable.h \
 	../include/core_version.h ../include/core_event.h ../include/core_hash.h \
-	../include/core_jsmn.h
-
-nodist_libcore_la_SOURCES = \
-    debug.c fsm.c msgq.c ringbuf.c timer.c tlv.c tlv_msg.c \
+	../include/core_jsmn.h \
+	version.c debug.c fsm.c msgq.c ringbuf.c timer.c tlv.c tlv_msg.c \
 	aes.c aes_cmac.c sha1.c sha1_hmac.c sha2.c sha2_hmac.c misc.c event.c \
 	hash.c jsmn.c
 
@@ -41,5 +38,3 @@ AM_CFLAGS = \
 
 MAINTAINERCLEANFILES = Makefile.in 
 MOSTLYCLEANFILES = core *.stackdump
-
-EXTRA_DIST = .libs $(noinst_LTLIBRARIES)

@@ -54,12 +54,12 @@ int s6a_dict_init(void)
 
     CHECK_dict_search( DICT_APPLICATION, APPLICATION_BY_ID, (void *)&id, &s6a_application);
 
-    CHECK_dict_search( DICT_COMMAND, CMD_BY_NAME, "3GPP/Authentication-Information-Request", &s6a_cmd_air);
-    CHECK_dict_search( DICT_COMMAND, CMD_BY_NAME, "3GPP/Authentication-Information-Answer", &s6a_cmd_aia);
-    CHECK_dict_search( DICT_COMMAND, CMD_BY_NAME, "3GPP/Update-Location-Request", &s6a_cmd_ulr);
-    CHECK_dict_search( DICT_COMMAND, CMD_BY_NAME, "3GPP/Update-Location-Answer", &s6a_cmd_ula);
-    CHECK_dict_search( DICT_COMMAND, CMD_BY_NAME, "3GPP/Purge-UE-Request", &s6a_cmd_pur);
-    CHECK_dict_search( DICT_COMMAND, CMD_BY_NAME, "3GPP/Purge-UE-Answer", &s6a_cmd_pua);
+    CHECK_dict_search( DICT_COMMAND, CMD_BY_NAME, "Authentication-Information-Request", &s6a_cmd_air);
+    CHECK_dict_search( DICT_COMMAND, CMD_BY_NAME, "Authentication-Information-Answer", &s6a_cmd_aia);
+    CHECK_dict_search( DICT_COMMAND, CMD_BY_NAME, "Update-Location-Request", &s6a_cmd_ulr);
+    CHECK_dict_search( DICT_COMMAND, CMD_BY_NAME, "Update-Location-Answer", &s6a_cmd_ula);
+    CHECK_dict_search( DICT_COMMAND, CMD_BY_NAME, "Purge-UE-Request", &s6a_cmd_pur);
+    CHECK_dict_search( DICT_COMMAND, CMD_BY_NAME, "Purge-UE-Answer", &s6a_cmd_pua);
 
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Visited-PLMN-Id", &s6a_visited_plmn_id);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "RAT-Type", &s6a_rat_type);

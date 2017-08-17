@@ -31,6 +31,9 @@ CORE_DECLARE(void) sgw_terminate(void);
 CORE_DECLARE(status_t) pgw_initialize();
 CORE_DECLARE(void) pgw_terminate(void);
 
+CORE_DECLARE(status_t) pcrf_initialize();
+CORE_DECLARE(void) pcrf_terminate(void);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

@@ -180,6 +180,10 @@ status_t context_parse_config()
                         {
                             if (v) self.hidden.disable_pgw = atoi(v);
                         }
+                        else if (jsmntok_equal(json, t+m, "DISABLE_PCRF") == 0)
+                        {
+                            if (v) self.hidden.disable_pcrf = atoi(v);
+                        }
                     }
                 }
 

@@ -803,8 +803,7 @@ ASN_MODULE_INCLUDES+=per_opentype.h
 ASN_MODULE_SOURCES+=per_opentype.c
 
 noinst_LTLIBRARIES=libs1apasn1c.la
-libs1apasn1c_la_SOURCES=$(ASN_MODULE_INCLUDES)
-nodist_libs1apasn1c_la_SOURCES=$(ASN_MODULE_SOURCES)
+libs1apasn1c_la_SOURCES=$(ASN_MODULE_INCLUDES) $(ASN_MODULE_SOURCES)
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include
@@ -814,8 +813,6 @@ AM_CFLAGS = \
 
 MAINTAINERCLEANFILES = Makefile.in 
 MOSTLYCLEANFILES = core *.stackdump Makefile.am.sample converter-sample.c
-
-EXTRA_DIST = .libs $(noinst_LTLIBRARIES)
 
 regen: regenerate-from-asn1-source
 

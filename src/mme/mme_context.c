@@ -105,10 +105,6 @@ static status_t mme_context_prepare()
 {
     self.relative_capacity = 0xff;
 
-    self.mme_s6a_port = DIAMETER_PORT;
-    self.mme_s6a_tls_port = DIAMETER_SECURE_PORT;
-    self.hss_s6a_port = DIAMETER_PORT;
-    self.hss_s6a_tls_port = DIAMETER_SECURE_PORT;
     self.s1ap_port = S1AP_SCTP_PORT;
     self.s11_port = GTPV2_C_UDP_PORT;
 

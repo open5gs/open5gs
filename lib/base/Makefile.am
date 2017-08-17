@@ -3,9 +3,7 @@
 noinst_LTLIBRARIES = libbase.la
 
 libbase_la_SOURCES = \
-	types.h context.h
-
-nodist_libbase_la_SOURCES = \
+	types.h context.h \
 	types.c context.c
 
 AM_CPPFLAGS = \
@@ -19,5 +17,3 @@ DEFS = @DEFS@ -DSYSCONFDIR=\"$(sysconfdir)/\"
 
 MAINTAINERCLEANFILES = Makefile.in 
 MOSTLYCLEANFILES = *.stackdump
-
-EXTRA_DIST = .libs $(noinst_LTLIBRARIES)

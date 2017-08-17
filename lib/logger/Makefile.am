@@ -2,9 +2,8 @@
 
 noinst_LTLIBRARIES = liblogger.la
 
-liblogger_la_SOURCES = logger.h
-
-nodist_liblogger_la_SOURCES = logger.c
+liblogger_la_SOURCES = \
+	logger.h logger.c
 
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/lib/core/include
@@ -14,5 +13,3 @@ AM_CFLAGS = \
 
 MAINTAINERCLEANFILES = Makefile.in
 MOSTLYCLEANFILES = core *.stackdump
-
-EXTRA_DIST = .libs $(noinst_LTLIBRARIES)

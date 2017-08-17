@@ -42,6 +42,7 @@ typedef struct _context_t {
         int disable_hss;
         int disable_sgw;
         int disable_pgw;
+        int disable_pcrf;
     } hidden;
 
 } context_t;

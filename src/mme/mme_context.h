@@ -43,29 +43,23 @@ typedef struct _served_gummei {
 } served_gummei_t;
 
 typedef struct _mme_context_t {
-    char*           fd_conf_path;       /* MME freeDiameter conf path */
-    char*           mme_s6a_addr;       /* MME S6A local address (STIRNG)*/
-    c_uint16_t      mme_s6a_port;       /* MME S6A local port */
-    c_uint16_t      mme_s6a_tls_port;   /* MME S6A local TLS port */
-    char*           hss_s6a_addr;       /* HSS S6A address (STIRNG)*/
-    c_uint16_t      hss_s6a_port;       /* HSS S6A port */
-    c_uint16_t      hss_s6a_tls_port;   /* HSS S6A TLS port */
+    char            *fd_conf_path;  /* MME freeDiameter conf path */
 
-    c_uint32_t      s1ap_addr;  /* MME S1AP local address */
-    c_uint16_t      s1ap_port;  /* MME S1AP local port */
-    net_sock_t      *s1ap_sock; /* MME S1AP local listen socket */
+    c_uint32_t      s1ap_addr;      /* MME S1AP local address */
+    c_uint16_t      s1ap_port;      /* MME S1AP local port */
+    net_sock_t      *s1ap_sock;     /* MME S1AP local listen socket */
 
-    c_uint32_t      s11_addr;   /* MME S11 local address */
-    c_uint16_t      s11_port;   /* MME S11 local port */
-    net_sock_t      *s11_sock;  /* MME S11 local listen socket */
+    c_uint32_t      s11_addr;       /* MME S11 local address */
+    c_uint16_t      s11_port;       /* MME S11 local port */
+    net_sock_t      *s11_sock;      /* MME S11 local listen socket */
 
     msgq_id         queue_id;       /* Queue for processing MME control plane */
     tm_service_t    tm_service;     /* Timer Service */
     gtp_xact_ctx_t  gtp_xact_ctx;   /* GTP Transaction Context for MME */
 
     /* Generator for unique identification */
-    c_uint32_t      mme_ue_s1ap_id; /** mme_ue_s1ap_id generator */
-    c_uint32_t      m_tmsi; /** m_tmsi generator */
+    c_uint32_t      mme_ue_s1ap_id; /* mme_ue_s1ap_id generator */
+    c_uint32_t      m_tmsi;         /* m_tmsi generator */
 
     /* defined in 'nas_ies.h'
      * #define NAS_SECURITY_ALGORITHMS_EIA0        0
@@ -91,28 +85,28 @@ typedef struct _mme_context_t {
     served_gummei_t served_gummei[MAX_NUM_OF_SERVED_GUMMEI];
     c_uint8_t       relative_capacity;
 
-    /* Timer value*/
+    /* Timer value */
     c_uint32_t      t3413_value; /* Paging retry timer */
 
     list_t          sgw_list;
     list_t          enb_list;
 
-    hash_t          *mme_ue_s1ap_id_hash; /* hash table for MME-UE-S1AP-ID */
-    hash_t          *imsi_ue_hash; /* hash table (IMSI : MME_UE) */
-    hash_t          *guti_ue_hash; /* hash table (GUTI : MME_UE) */
+    hash_t          *mme_ue_s1ap_id_hash;   /* hash table for MME-UE-S1AP-ID */
+    hash_t          *imsi_ue_hash;          /* hash table (IMSI : MME_UE) */
+    hash_t          *guti_ue_hash;          /* hash table (GUTI : MME_UE) */
 } mme_context_t;
 
 typedef struct _mme_sgw_t {
-    gtp_node_t      gnode; /* SGW S11 remote GTPv2-C node */
+    gtp_node_t      gnode;  /* SGW S11 remote GTPv2-C node */
 
 } mme_sgw_t;
 
 typedef struct _mme_enb_t {
-    lnode_t         node;   /**< A node of list_t */
-    index_t         index;  /**< An index of this node */
-    fsm_t           sm;
+    lnode_t         node;   /* A node of list_t */
+    index_t         index;  /* An index of this node */
+    fsm_t           sm;     /* A state machine */
 
-    c_uint32_t      enb_id; /** eNB_ID received from eNB */
+    c_uint32_t      enb_id; /* eNB_ID received from eNB */
     net_sock_t      *s1ap_sock;
 
     c_uint8_t       num_of_tai;
@@ -126,15 +120,13 @@ typedef struct _enb_ue_t enb_ue_t;
 typedef struct _mme_ue_t mme_ue_t;
 
 struct _enb_ue_t {
-    lnode_t         node;   /**< A node of list_t */
-    index_t         index;  /**< An index of this node */
-    fsm_t           sm;
-
-    /* State Machine */
+    lnode_t         node;   /* A node of list_t */
+    index_t         index;  /* An index of this node */
+    fsm_t           sm;     /* A state machine */
 
     /* UE identity */
-    c_uint32_t      enb_ue_s1ap_id; /** eNB-UE-S1AP-ID received from eNB */
-    c_uint32_t      mme_ue_s1ap_id; /** MME-UE-S1AP-ID received from MME */
+    c_uint32_t      enb_ue_s1ap_id; /* eNB-UE-S1AP-ID received from eNB */
+    c_uint32_t      mme_ue_s1ap_id; /* MME-UE-S1AP-ID received from MME */
 
     /* UE Info */
     tai_t           tai;
@@ -148,11 +140,9 @@ struct _enb_ue_t {
 }; 
 
 struct _mme_ue_t {
-    lnode_t         node;   /**< A node of list_t */
-    index_t         index;  /**< An index of this node */
-    fsm_t           sm;
-
-    /* State Machine */
+    lnode_t         node;   /* A node of list_t */
+    index_t         index;  /* An index of this node */
+    fsm_t           sm;     /* A state machine */
 
     /* UE identity */
 #define MME_UE_HAVE_IMSI(mme) \
@@ -215,10 +205,10 @@ struct _mme_ue_t {
 
     /* HSS Info */
     c_uint32_t      ula_flags;
-    c_uint32_t      max_bandwidth_ul; /* bits per seconds */
-    c_uint32_t      max_bandwidth_dl; /* bits per seconds */
-    c_uint32_t      subscribed_rau_tau_timer; /* seconds */
-    pdn_t           pdn[MAX_NUM_OF_PDN]; /* APN Profile */
+    c_uint32_t      max_bandwidth_ul;               /* bits per seconds */
+    c_uint32_t      max_bandwidth_dl;               /* bits per seconds */
+    c_uint32_t      subscribed_rau_tau_timer;       /* seconds */
+    pdn_t           pdn[MAX_NUM_OF_PDN];            /* APN Profile */
     int             num_of_pdn;
 
     /* ESM Info */
@@ -243,8 +233,8 @@ struct _mme_ue_t {
 };
 
 typedef struct _mme_sess_t {
-    lnode_t         node;       /**< A node of list_t */
-    index_t         index;      /**< An index of this node */
+    lnode_t         node;       /* A node of list_t */
+    index_t         index;      /* An index of this node */
 
     /* IMPORTANT! 
      * MME-S11-TEID is same with an index */
@@ -275,12 +265,12 @@ typedef struct _mme_sess_t {
 } mme_sess_t;
 
 typedef struct _mme_bearer_t {
-    lnode_t         node;   /**< A node of list_t */
-    index_t         index;  /**< An index of this node */
-    fsm_t           sm;
+    lnode_t         node;   /* A node of list_t */
+    index_t         index;  /* An index of this node */
+    fsm_t           sm;     /* State Machine */
 
-    c_uint8_t       pti;    /** Procedure Trasaction Identity */
-    c_uint8_t       ebi;    /** EPS Bearer ID */    
+    c_uint8_t       pti;    /* Procedure Trasaction Identity */
+    c_uint8_t       ebi;    /* EPS Bearer ID */    
 
     c_uint32_t      enb_s1u_teid;
     c_uint32_t      enb_s1u_addr;
