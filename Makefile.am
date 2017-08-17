@@ -33,17 +33,18 @@ sysconf_DATA = \
 
 freeDiameterdir = ${prefix}/etc/freeDiameter
 freeDiameter_DATA = \
-	support/freeDiameter/cacert.pem \
 	support/freeDiameter/mme.conf \
+	support/freeDiameter/hss.conf \
+	support/freeDiameter/pgw.conf \
+	support/freeDiameter/pcrf.conf
+dist_freeDiameter_DATA = \
+	support/freeDiameter/cacert.pem \
 	support/freeDiameter/mme.key.pem \
 	support/freeDiameter/mme.cert.pem \
-	support/freeDiameter/hss.conf \
 	support/freeDiameter/hss.key.pem \
 	support/freeDiameter/hss.cert.pem \
-	support/freeDiameter/pgw.conf \
 	support/freeDiameter/pgw.key.pem \
 	support/freeDiameter/pgw.cert.pem \
-	support/freeDiameter/pcrf.conf \
 	support/freeDiameter/pcrf.key.pem \
 	support/freeDiameter/pcrf.cert.pem
 
