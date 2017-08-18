@@ -65,6 +65,17 @@ void pgw_gx_send_ccr(pgw_sess_t *sess)
     val.i32 = GX_APPLICATION_ID;
     CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
     CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
+
+    /* Set CCR AVP */
+    CHECK_FCT_DO( fd_msg_avp_new(gx_cc_request_type, 0, &avp), goto out );
+    val.i32 = GX_CC_REQUEST_TYPE_INITIAL_REQUEST;
+    CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
+    CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
+
+    CHECK_FCT_DO( fd_msg_avp_new(gx_cc_request_number, 0, &avp), goto out );
+    val.i32 = 0;
+    CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
+    CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
     
     CHECK_SYS_DO( clock_gettime(CLOCK_REALTIME, &mi->ts), goto out );
     

@@ -8,6 +8,7 @@
 #include "pgw_context.h"
 #include "pgw_gtp_path.h"
 #include "pgw_s5c_handler.h"
+#include "pgw_gx_handler.h"
 
 c_int16_t pgw_pco_build(c_uint8_t *pco_buf, tlv_pco_t *tlv_pco)
 {
@@ -225,6 +226,10 @@ void pgw_handle_create_session_request(
     rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.data = &pgw_s5u_teid;
     rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.len = 
         GTP_F_TEID_IPV4_LEN;
+
+#if 0
+    pgw_gx_send_ccr(sess);
+#endif
 
     rv = gtp_build_msg(&pkbuf, type, &gtp_message);
     d_assert(rv == CORE_OK, pgw_sess_remove(sess); return, "gtp build failed");

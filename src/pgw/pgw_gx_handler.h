@@ -12,10 +12,7 @@ extern "C" {
 CORE_DECLARE(int) pgw_gx_init(void);
 CORE_DECLARE(void) pgw_gx_final(void);
 
-/* PGW Sends Credit Control Request to PCRF */
-#if 0
-CORE_DECLARE(void) pgw_gx_send_ccr(mme_ue_t *mme_ue);
-#endif
+CORE_DECLARE(void) pgw_gx_send_ccr(pgw_sess_t *sess);
 
 #ifdef __cplusplus
 }

@@ -15,32 +15,36 @@ extern struct dict_object *gx_application;
 extern struct dict_object *gx_cmd_ccr;
 extern struct dict_object *gx_cmd_cca;
 
-extern struct dict_object *gx_cc_request_typeg;
-extern struct dict_object *gx_cc_request_numberg;
-extern struct dict_object *gx_network_request_supportg;
-extern struct dict_object *gx_subscription_idg;
-extern struct dict_object *gx_supported_featuresg;
-extern struct dict_object *gx_framed_ip_addressg;
-extern struct dict_object *gx_framed_ipv6_prefixg;
-extern struct dict_object *gx_ip_can_typeg;
-extern struct dict_object *gx_rat_typeg;
-extern struct dict_object *gx_qos_informationg;
-extern struct dict_object *gx_3gpp_user_location_infog;
-extern struct dict_object *gx_called_station_idg;
-extern struct dict_object *gx_default_eps_bearer_qosg;
-extern struct dict_object *gx_3gpp_ms_timezoneg;
-extern struct dict_object *gx_event_triggerg;
-extern struct dict_object *gx_bearer_control_modeg;
-extern struct dict_object *gx_charging_rule_installg;
-extern struct dict_object *gx_charging_rule_definitiong;
-extern struct dict_object *gx_charging_rule_base_nameg;
-extern struct dict_object *gx_charging_rule_nameg;
-extern struct dict_object *gx_flow_informationg;
-extern struct dict_object *gx_flow_directiong;
-extern struct dict_object *gx_flow_descriptiong;
-extern struct dict_object *gx_flow_statusg;
-extern struct dict_object *gx_precedenceg;
-extern struct dict_object *gx_flowsg;
+#define GX_CC_REQUEST_TYPE_INITIAL_REQUEST      1
+#define GX_CC_REQUEST_TYPE_UPDATE_REQUEST       2
+#define GX_CC_REQUEST_TYPE_TERMINATION_REQUEST  3
+#define GX_CC_REQUEST_TYPE_EVENT_REQUEST        4
+extern struct dict_object *gx_cc_request_type;
+extern struct dict_object *gx_cc_request_number;
+extern struct dict_object *gx_network_request_support;
+extern struct dict_object *gx_subscription_id;
+extern struct dict_object *gx_supported_features;
+extern struct dict_object *gx_framed_ip_address;
+extern struct dict_object *gx_framed_ipv6_prefix;
+extern struct dict_object *gx_ip_can_type;
+extern struct dict_object *gx_rat_type;
+extern struct dict_object *gx_qos_information;
+extern struct dict_object *gx_3gpp_user_location_info;
+extern struct dict_object *gx_called_station_id;
+extern struct dict_object *gx_default_eps_bearer_qos;
+extern struct dict_object *gx_3gpp_ms_timezone;
+extern struct dict_object *gx_event_trigger;
+extern struct dict_object *gx_bearer_control_mode;
+extern struct dict_object *gx_charging_rule_install;
+extern struct dict_object *gx_charging_rule_definition;
+extern struct dict_object *gx_charging_rule_base_name;
+extern struct dict_object *gx_charging_rule_name;
+extern struct dict_object *gx_flow_information;
+extern struct dict_object *gx_flow_direction;
+extern struct dict_object *gx_flow_description;
+extern struct dict_object *gx_flow_status;
+extern struct dict_object *gx_precedence;
+extern struct dict_object *gx_flows;
 
 int gx_dict_init(void);
 
