@@ -8,6 +8,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#define S6A_APPLICATION_ID                              16777251
+
 #define S6A_DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE    4181
 #define S6A_DIAMETER_ERROR_USER_UNKNOWN                 5001
 #define S6A_DIAMETER_ERROR_ROAMING_NOT_ALLOWED          5004

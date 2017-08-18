@@ -16,6 +16,7 @@ extern struct dict_object *fd_destination_host;
 extern struct dict_object *fd_destination_realm;
 extern struct dict_object *fd_user_name;
 extern struct dict_object *fd_auth_session_state;
+extern struct dict_object *fd_auth_application_id;
 extern struct dict_object *fd_result_code;
 extern struct dict_object *fd_experimental_result;
 extern struct dict_object *fd_experimental_result_code;

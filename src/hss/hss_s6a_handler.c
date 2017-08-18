@@ -23,7 +23,7 @@ static struct disp_hdl *hdl_ulr = NULL;
 
 /* Default callback for the application. */
 static int hss_fb_cb(struct msg **msg, struct avp *avp, 
-        struct session *sess, void *opaque, enum disp_action *act)
+        struct session *session, void *opaque, enum disp_action *act)
 {
 	/* This CB should never be called */
 	d_warn("Unexpected message received!");
@@ -33,7 +33,7 @@ static int hss_fb_cb(struct msg **msg, struct avp *avp,
 
 /* Callback for incoming Authentication-Information-Request messages */
 static int hss_air_cb( struct msg **msg, struct avp *avp, 
-        struct session *sess, void *opaque, enum disp_action *act)
+        struct session *session, void *opaque, enum disp_action *act)
 {
 	struct msg *ans, *qry;
     struct avp *avp_e_utran_vector, *avp_xres, *avp_kasme, *avp_rand, *avp_autn;
@@ -183,7 +183,7 @@ out:
 
 /* Callback for incoming Update-Location-Request messages */
 static int hss_ulr_cb( struct msg **msg, struct avp *avp, 
-        struct session *sess, void *opaque, enum disp_action *act)
+        struct session *session, void *opaque, enum disp_action *act)
 {
 	struct msg *ans, *qry;
 

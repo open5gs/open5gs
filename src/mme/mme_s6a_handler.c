@@ -20,12 +20,117 @@ struct sess_state {
 
 pool_declare(mme_s6a_sess_pool, struct sess_state, MAX_NUM_SESSION_STATE);
 
+static void mme_s6a_aia_cb(void *data, struct msg **msg);
+static void mme_s6a_ula_cb(void *data, struct msg **msg);
+
+/* MME Sends Authentication Information Request to HSS */
+void mme_s6a_send_air(mme_ue_t *mme_ue)
+{
+    struct msg *req = NULL;
+    struct avp *avp;
+    struct avp *avpch;
+    union avp_value val;
+    struct sess_state *mi = NULL, *svg;
+    struct session *session = NULL;
+
+    d_assert(mme_ue, return, "Null Param");
+
+    /* Clear Security Context */
+    CLEAR_SECURITY_CONTEXT(mme_ue);
+    
+    /* Create the random value to store with the session */
+    pool_alloc_node(&mme_s6a_sess_pool, &mi);
+    d_assert(mi, return, "malloc failed: %s", strerror(errno));
+    
+    mi->mme_ue = mme_ue;
+    
+    /* Create the request */
+    CHECK_FCT_DO( fd_msg_new(s6a_cmd_air, MSGFL_ALLOC_ETEID, &req), goto out );
+    
+    /* Create a new session */
+    #define S6A_APP_SID_OPT  "app_s6a"
+    CHECK_FCT_DO( fd_msg_new_session(req, (os0_t)S6A_APP_SID_OPT, 
+            CONSTSTRLEN(S6A_APP_SID_OPT)), goto out );
+    CHECK_FCT_DO( fd_msg_sess_get(fd_g_config->cnf_dict, req, &session, NULL),
+            goto out );
+
+    /* Set the Auth-Session-State AVP */
+    CHECK_FCT_DO( fd_msg_avp_new(fd_auth_session_state, 0, &avp), goto out );
+    val.i32 = 1;
+    CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
+    CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
+
+    /* Set Origin-Host & Origin-Realm */
+    CHECK_FCT_DO( fd_msg_add_origin(req, 0), goto out );
+    
+    /* Set the Destination-Realm AVP */
+    CHECK_FCT_DO( fd_msg_avp_new(fd_destination_realm, 0, &avp), goto out );
+    val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
+    val.os.len  = strlen(fd_g_config->cnf_diamrlm);
+    CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
+    CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
+    
+    /* Set the User-Name AVP */
+    CHECK_FCT_DO( fd_msg_avp_new(fd_user_name, 0, &avp), goto out );
+    val.os.data = (c_uint8_t *)mme_ue->imsi_bcd;
+    val.os.len  = strlen(mme_ue->imsi_bcd);
+    CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
+    CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
+
+    /* Add the Authentication-Info */
+    CHECK_FCT_DO( fd_msg_avp_new(s6a_req_eutran_auth_info, 0, &avp), goto out );
+    CHECK_FCT_DO( fd_msg_avp_new(s6a_number_of_requested_vectors, 0, &avpch),
+            goto out );
+    val.u32 = 1;
+    CHECK_FCT_DO( fd_msg_avp_setvalue (avpch, &val), goto out );
+    CHECK_FCT_DO( fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch), goto out );
+
+    CHECK_FCT_DO( fd_msg_avp_new(s6a_immediate_response_preferred, 0, &avpch),
+            goto out );
+    val.u32 = 1;
+    CHECK_FCT_DO( fd_msg_avp_setvalue(avpch, &val), goto out );
+    CHECK_FCT_DO( fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch), goto out );
+
+    CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
+
+    /* Set the Visited-PLMN-Id AVP */
+    CHECK_FCT_DO( fd_msg_avp_new(s6a_visited_plmn_id, 0, &avp), goto out );
+    val.os.data = (c_uint8_t *)&mme_ue->visited_plmn_id;
+    val.os.len  = PLMN_ID_LEN;
+    CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
+    CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
+    
+    CHECK_SYS_DO( clock_gettime(CLOCK_REALTIME, &mi->ts), goto out );
+    
+    /* Keep a pointer to the session data for debug purpose, 
+     * in real life we would not need it */
+    svg = mi;
+    
+    /* Store this value in the session */
+    CHECK_FCT_DO( fd_sess_state_store(mme_s6a_reg, session, &mi), goto out );
+    
+    /* Send the request */
+    CHECK_FCT_DO( fd_msg_send(&req, mme_s6a_aia_cb, svg), goto out );
+
+    /* Increment the counter */
+    CHECK_POSIX_DO( pthread_mutex_lock(&fd_logger_self()->stats_lock), );
+    fd_logger_self()->stats.nb_sent++;
+    CHECK_POSIX_DO( pthread_mutex_unlock(&fd_logger_self()->stats_lock), );
+
+    d_trace(3, "[S6A] Authentication-Information-Request : UE[%s] --> HSS\n", 
+            mme_ue->imsi_bcd);
+
+out:
+    pool_free_node(&mme_s6a_sess_pool, mi);
+    return;
+}
+
 /* MME received Authentication Information Answer from HSS */
 static void mme_s6a_aia_cb(void *data, struct msg **msg)
 {
     struct sess_state *mi = NULL;
     struct timespec ts;
-    struct session *sess;
+    struct session *session;
     struct avp *avp, *avpch;
     struct avp *avp_e_utran_vector, *avp_xres, *avp_kasme, *avp_rand, *avp_autn;
     struct avp_hdr *hdr;
@@ -40,17 +145,17 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     CHECK_SYS_DO( clock_gettime(CLOCK_REALTIME, &ts), return );
 
     /* Search the session, retrieve its data */
-    CHECK_FCT_DO( fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &sess, &new),
+    CHECK_FCT_DO( fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new),
             return );
     d_assert(new == 0, return, );
     
-    CHECK_FCT_DO( fd_sess_state_retrieve(mme_s6a_reg, sess, &mi), return );
+    CHECK_FCT_DO( fd_sess_state_retrieve(mme_s6a_reg, session, &mi), return );
     d_assert(mi && (void *)mi == data, return, );
 
     mme_ue = mi->mme_ue;
     d_assert(mme_ue, return, );
 
-    d_trace(3, "[S6A] Authentication-Information-Response : UE[%s] <-- HSS\n", 
+    d_trace(3, "[S6A] Authentication-Information-Answer : UE[%s] <-- HSS\n", 
             mme_ue->imsi_bcd);
     
     /* Value of Result Code */
@@ -232,23 +337,16 @@ out:
     return;
 }
 
-/* MME Sends Authentication Information Request to HSS */
-void mme_s6a_send_air(mme_ue_t *mme_ue)
+/* MME Sends Update Location Request to HSS */
+void mme_s6a_send_ulr(mme_ue_t *mme_ue)
 {
     struct msg *req = NULL;
     struct avp *avp;
-    struct avp *avpch;
     union avp_value val;
     struct sess_state *mi = NULL, *svg;
-    struct session *sess = NULL;
-    enb_ue_t *enb_ue = NULL;
+    struct session *session = NULL;
 
     d_assert(mme_ue, return, "Null Param");
-    enb_ue = mme_ue->enb_ue;
-    d_assert(enb_ue, return, "Null Param");
-
-    /* Clear Security Context */
-    CLEAR_SECURITY_CONTEXT(mme_ue);
     
     /* Create the random value to store with the session */
     pool_alloc_node(&mme_s6a_sess_pool, &mi);
@@ -257,13 +355,13 @@ void mme_s6a_send_air(mme_ue_t *mme_ue)
     mi->mme_ue = mme_ue;
     
     /* Create the request */
-    CHECK_FCT_DO( fd_msg_new(s6a_cmd_air, MSGFL_ALLOC_ETEID, &req), goto out );
+    CHECK_FCT_DO( fd_msg_new(s6a_cmd_ulr, MSGFL_ALLOC_ETEID, &req), goto out );
     
     /* Create a new session */
     #define S6A_APP_SID_OPT  "app_s6a"
     CHECK_FCT_DO( fd_msg_new_session(req, (os0_t)S6A_APP_SID_OPT, 
             CONSTSTRLEN(S6A_APP_SID_OPT)), goto out );
-    CHECK_FCT_DO( fd_msg_sess_get(fd_g_config->cnf_dict, req, &sess, NULL),
+    CHECK_FCT_DO( fd_msg_sess_get(fd_g_config->cnf_dict, req, &session, NULL), 
             goto out );
 
     /* Set the Auth-Session-State AVP */
@@ -273,45 +371,47 @@ void mme_s6a_send_air(mme_ue_t *mme_ue)
     CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
 
     /* Set Origin-Host & Origin-Realm */
-    CHECK_FCT_DO( fd_msg_add_origin(req, 0), goto out );
+    CHECK_FCT_DO( fd_msg_add_origin(req, 0), goto out  );
     
     /* Set the Destination-Realm AVP */
     CHECK_FCT_DO( fd_msg_avp_new(fd_destination_realm, 0, &avp), goto out );
     val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
     val.os.len  = strlen(fd_g_config->cnf_diamrlm);
-    CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
-    CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
+    CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out  );
+    CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out  );
     
     /* Set the User-Name AVP */
     CHECK_FCT_DO( fd_msg_avp_new(fd_user_name, 0, &avp), goto out );
     val.os.data = (c_uint8_t *)mme_ue->imsi_bcd;
     val.os.len  = strlen(mme_ue->imsi_bcd);
+    CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out  );
+    CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
+
+    /* Set the RAT-Type */
+    CHECK_FCT_DO( fd_msg_avp_new(s6a_rat_type, 0, &avp), goto out );
+    val.u32 = S6A_RAT_TYPE_EUTRAN;
     CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
     CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
 
-    /* Add the Authentication-Info */
-    CHECK_FCT_DO( fd_msg_avp_new(s6a_req_eutran_auth_info, 0, &avp), goto out );
-    CHECK_FCT_DO( fd_msg_avp_new(s6a_number_of_requested_vectors, 0, &avpch),
-            goto out );
-    val.u32 = 1;
-    CHECK_FCT_DO( fd_msg_avp_setvalue (avpch, &val), goto out );
-    CHECK_FCT_DO( fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch), goto out );
-
-    CHECK_FCT_DO( fd_msg_avp_new(s6a_immediate_response_preferred, 0, &avpch),
-            goto out );
-    val.u32 = 1;
-    CHECK_FCT_DO( fd_msg_avp_setvalue(avpch, &val), goto out );
-    CHECK_FCT_DO( fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch), goto out );
-
+    /* Set the ULR-Flags */
+    CHECK_FCT_DO( fd_msg_avp_new(s6a_ulr_flags, 0, &avp), goto out );
+    val.u32 = S6A_ULR_S6A_S6D_INDICATOR;
+    CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
     CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
 
-    /* Set the Visited-PLMN-Id AVP */
+    /* Set the Visited-PLMN-Id */
     CHECK_FCT_DO( fd_msg_avp_new(s6a_visited_plmn_id, 0, &avp), goto out );
     val.os.data = (c_uint8_t *)&mme_ue->visited_plmn_id;
     val.os.len  = PLMN_ID_LEN;
     CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
     CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
-    
+
+    /* Set the UE-SRVCC Capability */
+    CHECK_FCT_DO( fd_msg_avp_new(s6a_ue_srvcc_capability, 0, &avp), goto out );
+    val.u32 = S6A_UE_SRVCC_NOT_SUPPORTED;
+    CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
+    CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
+
     CHECK_SYS_DO( clock_gettime(CLOCK_REALTIME, &mi->ts), goto out );
     
     /* Keep a pointer to the session data for debug purpose, 
@@ -319,17 +419,17 @@ void mme_s6a_send_air(mme_ue_t *mme_ue)
     svg = mi;
     
     /* Store this value in the session */
-    CHECK_FCT_DO( fd_sess_state_store(mme_s6a_reg, sess, &mi), goto out );
+    CHECK_FCT_DO( fd_sess_state_store(mme_s6a_reg, session, &mi), goto out ); 
     
     /* Send the request */
-    CHECK_FCT_DO( fd_msg_send(&req, mme_s6a_aia_cb, svg), goto out );
+    CHECK_FCT_DO( fd_msg_send(&req, mme_s6a_ula_cb, svg), goto out );
 
     /* Increment the counter */
     CHECK_POSIX_DO( pthread_mutex_lock(&fd_logger_self()->stats_lock), );
     fd_logger_self()->stats.nb_sent++;
     CHECK_POSIX_DO( pthread_mutex_unlock(&fd_logger_self()->stats_lock), );
 
-    d_trace(3, "[S6A] Authentication-Information-Request : UE[%s] --> HSS\n", 
+    d_trace(3, "[S6A] Update-Location-Request : UE[%s] --> HSS\n", 
             mme_ue->imsi_bcd);
 
 out:
@@ -342,7 +442,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
 {
     struct sess_state *mi = NULL;
     struct timespec ts;
-    struct session *sess;
+    struct session *session;
     struct avp *avp, *avpch;
     struct avp *avpch1, *avpch2, *avpch3, *avpch4, *avpch5;
     struct avp_hdr *hdr;
@@ -358,17 +458,17 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     CHECK_SYS_DO( clock_gettime(CLOCK_REALTIME, &ts), return );
 
     /* Search the session, retrieve its data */
-    CHECK_FCT_DO( fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &sess, &new),
+    CHECK_FCT_DO( fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new),
             return );
     d_assert(new == 0, return, );
     
-    CHECK_FCT_DO( fd_sess_state_retrieve(mme_s6a_reg, sess, &mi), return );
+    CHECK_FCT_DO( fd_sess_state_retrieve(mme_s6a_reg, session, &mi), return );
     d_assert(mi && (void *)mi == data, return, );
 
     mme_ue = mi->mme_ue;
     d_assert(mme_ue, return, );
 
-    d_trace(3, "[S6A] Update-Location-Response : UE[%s] <-- HSS\n", 
+    d_trace(3, "[S6A] Update-Location-Answer : UE[%s] <-- HSS\n", 
             mme_ue->imsi_bcd);
     
     /* Value of Result Code */
@@ -705,105 +805,6 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     return;
 }
 
-/* MME Sends Update Location Request to HSS */
-void mme_s6a_send_ulr(mme_ue_t *mme_ue)
-{
-    struct msg *req = NULL;
-    struct avp *avp;
-    union avp_value val;
-    struct sess_state *mi = NULL, *svg;
-    struct session *sess = NULL;
-
-    d_assert(mme_ue, return, "Null Param");
-    
-    /* Create the random value to store with the session */
-    pool_alloc_node(&mme_s6a_sess_pool, &mi);
-    d_assert(mi, return, "malloc failed: %s", strerror(errno));
-    
-    mi->mme_ue = mme_ue;
-    
-    /* Create the request */
-    CHECK_FCT_DO( fd_msg_new(s6a_cmd_ulr, MSGFL_ALLOC_ETEID, &req), goto out );
-    
-    /* Create a new session */
-    #define S6A_APP_SID_OPT  "app_s6a"
-    CHECK_FCT_DO( fd_msg_new_session(req, (os0_t)S6A_APP_SID_OPT, 
-            CONSTSTRLEN(S6A_APP_SID_OPT)), goto out );
-    CHECK_FCT_DO( fd_msg_sess_get(fd_g_config->cnf_dict, req, &sess, NULL), 
-            goto out );
-
-    /* Set the Auth-Session-State AVP */
-    CHECK_FCT_DO( fd_msg_avp_new(fd_auth_session_state, 0, &avp), goto out );
-    val.i32 = 1;
-    CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
-    CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
-
-    /* Set Origin-Host & Origin-Realm */
-    CHECK_FCT_DO( fd_msg_add_origin(req, 0), goto out  );
-    
-    /* Set the Destination-Realm AVP */
-    CHECK_FCT_DO( fd_msg_avp_new(fd_destination_realm, 0, &avp), goto out );
-    val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
-    val.os.len  = strlen(fd_g_config->cnf_diamrlm);
-    CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out  );
-    CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out  );
-    
-    /* Set the User-Name AVP */
-    CHECK_FCT_DO( fd_msg_avp_new(fd_user_name, 0, &avp), goto out );
-    val.os.data = (c_uint8_t *)mme_ue->imsi_bcd;
-    val.os.len  = strlen(mme_ue->imsi_bcd);
-    CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out  );
-    CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
-
-    /* Set the RAT-Type */
-    CHECK_FCT_DO( fd_msg_avp_new(s6a_rat_type, 0, &avp), goto out );
-    val.u32 = S6A_RAT_TYPE_EUTRAN;
-    CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
-    CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
-
-    /* Set the ULR-Flags */
-    CHECK_FCT_DO( fd_msg_avp_new(s6a_ulr_flags, 0, &avp), goto out );
-    val.u32 = S6A_ULR_S6A_S6D_INDICATOR;
-    CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
-    CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
-
-    /* Set the Visited-PLMN-Id */
-    CHECK_FCT_DO( fd_msg_avp_new(s6a_visited_plmn_id, 0, &avp), goto out );
-    val.os.data = (c_uint8_t *)&mme_ue->visited_plmn_id;
-    val.os.len  = PLMN_ID_LEN;
-    CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
-    CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
-
-    /* Set the UE-SRVCC Capability */
-    CHECK_FCT_DO( fd_msg_avp_new(s6a_ue_srvcc_capability, 0, &avp), goto out );
-    val.u32 = S6A_UE_SRVCC_NOT_SUPPORTED;
-    CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
-    CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
-
-    CHECK_SYS_DO( clock_gettime(CLOCK_REALTIME, &mi->ts), goto out );
-    
-    /* Keep a pointer to the session data for debug purpose, 
-     * in real life we would not need it */
-    svg = mi;
-    
-    /* Store this value in the session */
-    CHECK_FCT_DO( fd_sess_state_store(mme_s6a_reg, sess, &mi), goto out ); 
-    
-    /* Send the request */
-    CHECK_FCT_DO( fd_msg_send(&req, mme_s6a_ula_cb, svg), goto out );
-
-    /* Increment the counter */
-    CHECK_POSIX_DO( pthread_mutex_lock(&fd_logger_self()->stats_lock), );
-    fd_logger_self()->stats.nb_sent++;
-    CHECK_POSIX_DO( pthread_mutex_unlock(&fd_logger_self()->stats_lock), );
-
-    d_trace(3, "[S6A] Update-Location-Request : UE[%s] --> HSS\n", 
-            mme_ue->imsi_bcd);
-
-out:
-    pool_free_node(&mme_s6a_sess_pool, mi);
-    return;
-}
 
 int mme_s6a_init(void)
 {
