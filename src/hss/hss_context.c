@@ -521,9 +521,8 @@ status_t hss_db_subscription_data(
                         BSON_ITER_HOLDS_UTF8(&child2_iter))
                     {
                         utf8 = bson_iter_utf8(&child2_iter, &length);
-                        /* FIX the bug */
-                        core_cpystrn(pdn->apn+1, utf8, length+1);
-                        pdn->apn[0] = length;
+                        core_cpystrn(pdn->apn, utf8,
+                            c_min(length, MAX_APN_LEN)+1);
                     }
                     else if (!strcmp(child2_key, "type") &&
                         BSON_ITER_HOLDS_INT32(&child2_iter))

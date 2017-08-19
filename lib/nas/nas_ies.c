@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-08-01 11:30:40.114797 by acetcom
+ * Created on: 2017-08-19 16:43:29.530361 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -1466,8 +1466,8 @@ c_int16_t nas_decode_tracking_area_identity_list(nas_tracking_area_identity_list
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
     memcpy(tracking_area_identity_list, pkbuf->payload - size, size);
 
-    int i = 0;
     {
+        int i = 0;
         if (tracking_area_identity_list->type == NAS_TRACKING_AREA_IDENTITY_LIST_ONE_PLMN_NON_CONSECUTIVE_TACS)
             for (i = 0; i < tracking_area_identity_list->num + 1 && i < NAS_MAX_TRACKING_AREA_IDENTITY; i++)
                 tracking_area_identity_list->type0.tac[i] = ntohs(tracking_area_identity_list->type0.tac[i]);
@@ -1492,8 +1492,8 @@ c_int16_t nas_encode_tracking_area_identity_list(pkbuf_t *pkbuf, nas_tracking_ar
     nas_tracking_area_identity_list_t target;
 
     memcpy(&target, tracking_area_identity_list, sizeof(nas_tracking_area_identity_list_t));
-    int i = 0;
     {
+        int i = 0;
         if (tracking_area_identity_list->type == NAS_TRACKING_AREA_IDENTITY_LIST_ONE_PLMN_NON_CONSECUTIVE_TACS)
             for (i = 0; i < tracking_area_identity_list->num + 1 && i < NAS_MAX_TRACKING_AREA_IDENTITY; i++)
                 target.type0.tac[i] = htons(tracking_area_identity_list->type0.tac[i]);
@@ -2156,6 +2156,9 @@ c_int16_t nas_decode_access_point_name(nas_access_point_name_t *access_point_nam
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
     memcpy(access_point_name, pkbuf->payload - size, size);
 
+    memmove(&access_point_name->apn[0], &access_point_name->apn[1], access_point_name->length);
+    access_point_name->length--;
+
     d_trace(5, "  ACCESS_POINT_NAME - ");
     d_trace_hex(5, pkbuf->payload - size, size);
 
@@ -2168,6 +2171,10 @@ c_int16_t nas_encode_access_point_name(pkbuf_t *pkbuf, nas_access_point_name_t *
     nas_access_point_name_t target;
 
     memcpy(&target, access_point_name, sizeof(nas_access_point_name_t));
+    core_cpystrn(&target.apn[1], &access_point_name->apn[0], c_min(access_point_name->length, MAX_APN_LEN) + 1);
+    target.apn[0] = access_point_name->length;
+    target.length++; size++;
+
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
     memcpy(pkbuf->payload - size, &target, size);
 

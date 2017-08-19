@@ -65,9 +65,8 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
 
     CHECK_FCT( fd_msg_search_avp(qry, fd_user_name, &avp) );
     CHECK_FCT( fd_msg_avp_hdr(avp, &hdr) );
-
-    memcpy(imsi_bcd, (char*)hdr->avp_value->os.data, hdr->avp_value->os.len);
-    imsi_bcd[hdr->avp_value->os.len] = 0;
+    core_cpystrn(imsi_bcd, (char*)hdr->avp_value->os.data, 
+        c_min(hdr->avp_value->os.len, MAX_IMSI_BCD_LEN)+1);
 
     rv = hss_db_auth_info(imsi_bcd, &auth_info);
     if (rv != CORE_OK)
@@ -101,10 +100,8 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
 
     CHECK_FCT( fd_msg_search_avp(qry, s6a_visited_plmn_id, &avp) );
     CHECK_FCT( fd_msg_avp_hdr(avp, &hdr) );
-
 #if 0  // TODO : check visited_plmn_id
-    memcpy(visited_plmn_id,
-            hdr->avp_value->os.data, hdr->avp_value->os.len);
+    memcpy(visited_plmn_id, hdr->avp_value->os.data, hdr->avp_value->os.len);
 #endif
 
     milenage_opc(auth_info.k, auth_info.op, opc);
@@ -204,9 +201,8 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
 
     CHECK_FCT( fd_msg_search_avp(qry, fd_user_name, &avp) );
     CHECK_FCT( fd_msg_avp_hdr(avp, &hdr) );
-
-    memcpy(imsi_bcd, (char*)hdr->avp_value->os.data, hdr->avp_value->os.len);
-    imsi_bcd[hdr->avp_value->os.len] = 0;
+    core_cpystrn(imsi_bcd, (char*)hdr->avp_value->os.data, 
+        c_min(hdr->avp_value->os.len, MAX_IMSI_BCD_LEN)+1);
 
     rv = hss_db_subscription_data(imsi_bcd, &subscription_data);
     if (rv != CORE_OK)
@@ -217,14 +213,9 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
 
     CHECK_FCT( fd_msg_search_avp(qry, s6a_visited_plmn_id, &avp) );
     CHECK_FCT( fd_msg_avp_hdr(avp, &hdr) );
-
-    if (hdr && hdr->avp_value && hdr->avp_value->os.data)
-    {
 #if 0  // TODO : check visited_plmn_id
-        memcpy(visited_plmn_id,
-                hdr->avp_value->os.data, hdr->avp_value->os.len);
+    memcpy(visited_plmn_id, hdr->avp_value->os.data, hdr->avp_value->os.len);
 #endif
-    }
 
 	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
 	CHECK_FCT( fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1) );
@@ -308,7 +299,7 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
 
             CHECK_FCT( fd_msg_avp_new(s6a_context_identifier, 0, 
                     &context_identifier) );
-            val.i32 = 0; /* FIXME : default PDN Context Identifier */
+            val.i32 = 0;
             CHECK_FCT( fd_msg_avp_setvalue(context_identifier, &val) );
             CHECK_FCT( fd_msg_avp_add(apn_configuration_profile, 
                     MSG_BRW_LAST_CHILD, context_identifier) );

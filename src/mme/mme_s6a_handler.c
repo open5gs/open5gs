@@ -2,6 +2,7 @@
 
 #include "core_debug.h"
 #include "core_pool.h"
+#include "core_lib.h"
 
 #include "fd_lib.h"
 #include "s6a_lib.h"
@@ -593,9 +594,8 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                         {
                             CHECK_FCT_DO( 
                                 fd_msg_avp_hdr(avpch3, &hdr), return );
-                            memcpy(apn, hdr->avp_value->os.data, 
-                                    hdr->avp_value->os.len);
-                            apn[hdr->avp_value->os.len] = 0;
+                            core_cpystrn(apn, (char*)hdr->avp_value->os.data,
+                                c_min(hdr->avp_value->os.len, MAX_APN_LEN)+1);
 
                             pdn = mme_pdn_find_by_apn(mme_ue, apn);
                             if (!pdn)

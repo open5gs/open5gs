@@ -1,6 +1,7 @@
 #define TRACE_MODULE _esm_build
 
 #include "core_debug.h"
+#include "core_lib.h"
 
 #include "nas_message.h"
 
@@ -97,7 +98,8 @@ status_t esm_build_activate_default_bearer_context(
     eps_qos->dl_gbr = 0xff;
 
     access_point_name->length = strlen(pdn->apn);
-    strcpy(access_point_name->apn, pdn->apn);
+    core_cpystrn(access_point_name->apn, pdn->apn,
+            c_min(access_point_name->length, MAX_APN_LEN) + 1);
 
     pdn_address->length = PAA_IPV4_LEN;
     memcpy(&pdn_address->paa, &pdn->paa, pdn_address->length);

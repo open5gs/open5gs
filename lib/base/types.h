@@ -139,7 +139,7 @@ typedef struct _qos_t {
  * PDN Structure                 */
 typedef struct _pdn_t {
     c_uint32_t      context_identifier;
-    c_int8_t        apn[MAX_APN_LEN];
+    c_int8_t        apn[MAX_APN_LEN+1];
 #define S6A_PDN_TYPE_IPV4                               0
 #define S6A_PDN_TYPE_IPV6                               1
 #define S6A_PDN_TYPE_IPV4_AND_IPV6                      2

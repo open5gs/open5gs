@@ -1725,10 +1725,12 @@ pdn_t* mme_pdn_find_by_apn(mme_ue_t *mme_ue, c_int8_t *apn)
     {
         pdn = &mme_ue->pdn[i];
         if (strcmp(pdn->apn, apn) == 0)
-            break;
+        {
+            return pdn;
+        }
     }
 
-    return pdn;
+    return NULL;
 }
 
 void mme_ue_paged(mme_ue_t *mme_ue)
