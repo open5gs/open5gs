@@ -1725,9 +1725,7 @@ pdn_t* mme_pdn_find_by_apn(mme_ue_t *mme_ue, c_int8_t *apn)
     {
         pdn = &mme_ue->pdn[i];
         if (strcmp(pdn->apn, apn) == 0)
-        {
             return pdn;
-        }
     }
 
     return NULL;

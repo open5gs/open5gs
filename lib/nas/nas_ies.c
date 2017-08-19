@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-08-19 16:43:29.530361 by acetcom
+ * Created on: 2017-08-19 20:12:24.335882 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -2156,8 +2156,11 @@ c_int16_t nas_decode_access_point_name(nas_access_point_name_t *access_point_nam
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
     memcpy(access_point_name, pkbuf->payload - size, size);
 
-    memmove(&access_point_name->apn[0], &access_point_name->apn[1], access_point_name->length);
-    access_point_name->length--;
+    {
+        c_int8_t apn[MAX_APN_LEN];
+        access_point_name->length  = apn_parse(apn, access_point_name->apn, access_point_name->length);
+        core_cpystrn(access_point_name->apn, apn, c_min(access_point_name->length, MAX_APN_LEN) + 1);
+    }
 
     d_trace(5, "  ACCESS_POINT_NAME - ");
     d_trace_hex(5, pkbuf->payload - size, size);
@@ -2171,9 +2174,8 @@ c_int16_t nas_encode_access_point_name(pkbuf_t *pkbuf, nas_access_point_name_t *
     nas_access_point_name_t target;
 
     memcpy(&target, access_point_name, sizeof(nas_access_point_name_t));
-    core_cpystrn(&target.apn[1], &access_point_name->apn[0], c_min(access_point_name->length, MAX_APN_LEN) + 1);
-    target.apn[0] = access_point_name->length;
-    target.length++; size++;
+    target.length = apn_build(target.apn, access_point_name->apn, access_point_name->length);
+    size = target.length + sizeof(target.length);
 
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
     memcpy(pkbuf->payload - size, &target, size);

@@ -1,6 +1,7 @@
 #define TRACE_MODULE _pgw_sm
 
 #include "core_debug.h"
+#include "core_lib.h"
 
 #include "fd_lib.h"
 #include "gx_lib.h"
@@ -94,15 +95,14 @@ void pgw_state_operational(fsm_t *s, event_t *e)
                     break;
                 }
 
-                memcpy(apn,
+                apn_parse(apn,
                     req->access_point_name.data, req->access_point_name.len);
-                apn[req->access_point_name.len] = 0;
                 sess = pgw_sess_find_by_apn(apn);
                 if (!sess)
                 {
                     pgw_bearer_t *bearer = NULL;
                     bearer = pgw_sess_add(apn,
-                            req->bearer_contexts_to_be_created.eps_bearer_id.u8);
+                        req->bearer_contexts_to_be_created.eps_bearer_id.u8);
                     d_assert(bearer, pkbuf_free(pkbuf); break,
                             "No Bearer Context");
                     sess = bearer->sess;

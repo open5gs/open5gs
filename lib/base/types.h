@@ -150,6 +150,9 @@ typedef struct _pdn_t {
     qos_t           qos;
 } pdn_t;
 
+CORE_DECLARE(c_int16_t) apn_build(c_int8_t *dst, c_int8_t *src, c_int16_t len);
+CORE_DECLARE(c_int16_t) apn_parse(c_int8_t *dst, c_int8_t *src, c_int16_t len);
+
 /**************************************************
  * Protocol Configuration Options Structure
  * 8.13 Protocol Configuration Options (PCO) 

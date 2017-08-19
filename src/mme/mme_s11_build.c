@@ -25,6 +25,7 @@ status_t mme_s11_build_create_session_request(pkbuf_t **pkbuf, mme_sess_t *sess)
     gtp_bearer_qos_t bearer_qos;
     char bearer_qos_buf[GTP_BEARER_QOS_LEN];
     gtp_ue_timezone_t ue_timezone;
+    c_int8_t apn[MAX_APN_LEN];
 
     d_assert(sess, return CORE_ERROR, "Null param");
     sgw = sess->sgw;
@@ -86,8 +87,8 @@ status_t mme_s11_build_create_session_request(pkbuf_t **pkbuf, mme_sess_t *sess)
     req->pgw_s5_s8_address_for_control_plane_or_pmip.len = GTP_F_TEID_IPV4_LEN;
 
     req->access_point_name.presence = 1;
-    req->access_point_name.data = pdn->apn;
-    req->access_point_name.len = strlen(pdn->apn);
+    req->access_point_name.len = apn_build(apn, pdn->apn, strlen(pdn->apn));
+    req->access_point_name.data = apn;
 
     req->selection_mode.presence = 1;
     req->selection_mode.u8 = 

@@ -88,10 +88,12 @@ type_list["Short MAC"]["encode"] = \
 "    target = htons(*short_mac);\n\n"
 
 type_list["Access point name"]["decode"] = \
-"    memmove(&access_point_name->apn[0], &access_point_name->apn[1], access_point_name->length);\n" \
-"    access_point_name->length--;\n\n"
+"    {\n" \
+"        c_int8_t apn[MAX_APN_LEN];\n" \
+"        access_point_name->length  = apn_parse(apn, access_point_name->apn, access_point_name->length);\n" \
+"        core_cpystrn(access_point_name->apn, apn, c_min(access_point_name->length, MAX_APN_LEN) + 1);\n" \
+"    }\n\n"
 
 type_list["Access point name"]["encode"] = \
-"    core_cpystrn(&target.apn[1], &access_point_name->apn[0], c_min(access_point_name->length, MAX_APN_LEN) + 1);\n" \
-"    target.apn[0] = access_point_name->length;\n" \
-"    target.length++; size++;\n\n"
+"    target.length = apn_build(target.apn, access_point_name->apn, access_point_name->length);\n" \
+"    size = target.length + sizeof(target.length);\n\n"

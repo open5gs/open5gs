@@ -1,6 +1,8 @@
 #define TRACE_MODULE _types
 
 #include "core_debug.h"
+#include "core_lib.h"
+
 #include "types.h"
 
 #define PLMN_ID_DIGIT1(x) (((x) / 100) % 10)
@@ -37,6 +39,28 @@ void *plmn_id_build(plmn_id_t *plmn_id,
     plmn_id->mnc3 = PLMN_ID_DIGIT3(mnc);
 
     return plmn_id;
+}
+
+c_int16_t apn_build(c_int8_t *dst, c_int8_t *src, c_int16_t len)
+{
+    char *dot = NULL;
+
+    core_cpystrn(dst+1, src, c_min(len, MAX_APN_LEN)+1);
+
+    dot = strchr(src, '.');
+    if (dot)
+        dst[0] = src - dot;
+    else
+        dst[0] = len;
+
+    return len+1;
+}
+
+c_int16_t apn_parse(c_int8_t *dst, c_int8_t *src, c_int16_t len)
+{
+    core_cpystrn(dst, src+1, c_min(len, MAX_APN_LEN)+1);
+
+    return len-1;
 }
 
 /* 8.13 Protocol Configuration Options (PCO) 
