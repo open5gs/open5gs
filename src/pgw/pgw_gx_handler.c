@@ -6,6 +6,7 @@
 #include "fd_lib.h"
 #include "gx_lib.h"
 
+#include "pgw_event.h"
 #include "pgw_gx_handler.h"
 
 #define MAX_NUM_SESSION_STATE 32
@@ -13,6 +14,7 @@
 static struct session_handler *pgw_gx_reg = NULL;
 
 struct sess_state {
+    gtp_xact_t *xact;
     pgw_sess_t *sess;
     struct timespec ts; /* Time of sending the message */
 };
@@ -21,7 +23,8 @@ pool_declare(pgw_gx_sess_pool, struct sess_state, MAX_NUM_SESSION_STATE);
 
 static void pgw_gx_cca_cb(void *data, struct msg **msg);
 
-void pgw_gx_send_ccr(pgw_sess_t *sess)
+void pgw_gx_send_ccr(
+    gtp_xact_t *xact, pgw_sess_t *sess, c_uint32_t cc_request_type)
 {
     struct msg *req = NULL;
     struct avp *avp;
@@ -38,6 +41,7 @@ void pgw_gx_send_ccr(pgw_sess_t *sess)
     pool_alloc_node(&pgw_gx_sess_pool, &mi);
     d_assert(mi, return, "malloc failed: %s", strerror(errno));
     
+    mi->xact = xact;
     mi->sess = sess;
     
     /* Create the request */
@@ -66,9 +70,9 @@ void pgw_gx_send_ccr(pgw_sess_t *sess)
     CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
     CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
 
-    /* Set CCR AVP */
+    /* Set CC-Request-Type, CC-Request-Number */
     CHECK_FCT_DO( fd_msg_avp_new(gx_cc_request_type, 0, &avp), goto out );
-    val.i32 = GX_CC_REQUEST_TYPE_INITIAL_REQUEST;
+    val.i32 = cc_request_type;
     CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
     CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
 
@@ -94,10 +98,8 @@ void pgw_gx_send_ccr(pgw_sess_t *sess)
     fd_logger_self()->stats.nb_sent++;
     CHECK_POSIX_DO( pthread_mutex_unlock(&fd_logger_self()->stats_lock), );
 
-#if 0
-    d_trace(3, "[S6A] Authentication-Information-Request : UE[%s] --> HSS\n", 
-            mme_ue->imsi_bcd);
-#endif
+    d_trace(3, "[Gx] Credit-Control-Request : PGW[%d] --> PCRF\n", 
+            sess->pgw_s5c_teid);
 
 out:
     pool_free_node(&pgw_gx_sess_pool, mi);
@@ -117,11 +119,11 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
     unsigned long dur;
     int error = 0;
     c_uint32_t result_code = 0;
+    c_uint32_t cc_request_type = 0;
     int new;
 
-#if 0
     event_t e;
-#endif
+    gtp_xact_t *xact = NULL;
     pgw_sess_t *sess = NULL;
     
     CHECK_SYS_DO( clock_gettime(CLOCK_REALTIME, &ts), return );
@@ -134,13 +136,13 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
     CHECK_FCT_DO( fd_sess_state_retrieve(pgw_gx_reg, session, &mi), return );
     d_assert(mi && (void *)mi == data, return, );
 
+    xact = mi->xact;
+    d_assert(xact, return, );
     sess = mi->sess;
     d_assert(sess, return, );
 
-#if 0
-    d_trace(3, "[Gx] Credit-Information-Answer : UE[%s] <-- HSS\n", 
-            mme_ue->imsi_bcd);
-#endif
+    d_trace(3, "[Gx] Credit-Control-Answer : PGW[%d] <-- PCRF\n", 
+            sess->pgw_s5c_teid);
     
     /* Value of Result Code */
     CHECK_FCT_DO( fd_msg_search_avp(*msg, fd_result_code, &avp), return );
@@ -207,14 +209,24 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
         goto out;
     }
 
+    CHECK_FCT_DO(
+        fd_msg_search_avp(*msg, gx_cc_request_type, &avp), return );
+    if (avp)
+    {
+        CHECK_FCT_DO( fd_msg_avp_hdr(avp, &hdr), return );
+        cc_request_type = hdr->avp_value->i32;
+    }
+    else
+        error++;
+
 out:
-#if 0
-    event_set(&e, MME_EVT_EMM_UE_FROM_S6A);
-    event_set_param1(&e, (c_uintptr_t)mme_ue->index);
-    event_set_param2(&e, (c_uintptr_t)S6A_CMD_AUTHENTICATION_INFORMATION);
-    event_set_param3(&e, (c_uintptr_t)result_code);
-    mme_event_send(&e);
-#endif
+    event_set(&e, PGW_EVT_S5C_SESSION_FROM_GX);
+    event_set_param1(&e, (c_uintptr_t)xact->index);
+    event_set_param2(&e, (c_uintptr_t)sess->index);
+    event_set_param3(&e, (c_uintptr_t)GX_CMD_CREDIT_CONTROL);
+    event_set_param4(&e, (c_uintptr_t)cc_request_type);
+    event_set_param5(&e, (c_uintptr_t)result_code);
+    pgw_event_send(&e);
 
     /* Free the message */
     CHECK_POSIX_DO( pthread_mutex_lock(&fd_logger_self()->stats_lock), );

@@ -27,21 +27,23 @@ static int pcrf_ccr_cb( struct msg **msg, struct avp *avp,
         struct session *sess, void *opaque, enum disp_action *act)
 {
 	struct msg *ans, *qry;
-#if 0
     struct avp_hdr *hdr;
-#endif
     union avp_value val;
 
+    c_uint32_t cc_request_type = 0;
     c_uint32_t result_code = 0;
 	
     d_assert(msg, return EINVAL,);
 
-    printf("pcrf received message\n");
-	
 	/* Create answer header */
 	qry = *msg;
 	CHECK_FCT( fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0) );
     ans = *msg;
+
+    /* Get CC-Request-Type */
+    CHECK_FCT( fd_msg_search_avp(qry, gx_cc_request_type, &avp) );
+    CHECK_FCT( fd_msg_avp_hdr(avp, &hdr) );
+    cc_request_type = hdr->avp_value->i32;
 
 	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
 	CHECK_FCT( fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1) );
@@ -52,9 +54,9 @@ static int pcrf_ccr_cb( struct msg **msg, struct avp *avp,
     CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
     CHECK_FCT_DO( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp), goto out );
 
-    /* Set CCR AVP */
+    /* Set CC-Request-Type, CC-Request-Number */
     CHECK_FCT_DO( fd_msg_avp_new(gx_cc_request_type, 0, &avp), goto out );
-    val.i32 = GX_CC_REQUEST_TYPE_INITIAL_REQUEST;
+    val.i32 = cc_request_type;
     CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
     CHECK_FCT_DO( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp), goto out );
 

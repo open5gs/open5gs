@@ -71,6 +71,8 @@ CORE_DECLARE(status_t) gtp_xact_receive(
         c_uint8_t *type, c_uint32_t *teid, gtp_message_t *gtp_message, 
         pkbuf_t *pkbuf);
 
+CORE_DECLARE(gtp_xact_t *) gtp_xact_find(index_t index);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

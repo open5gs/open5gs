@@ -12,7 +12,8 @@ extern "C" {
 CORE_DECLARE(int) pgw_gx_init(void);
 CORE_DECLARE(void) pgw_gx_final(void);
 
-CORE_DECLARE(void) pgw_gx_send_ccr(pgw_sess_t *sess);
+CORE_DECLARE(void) pgw_gx_send_ccr(
+    gtp_xact_t *xact, pgw_sess_t *sess, c_uint32_t cc_request_type);
 
 #ifdef __cplusplus
 }

@@ -257,7 +257,7 @@ void emm_state_operational(fsm_t *s, event_t *e)
                     c_uint32_t result_code = event_get_param3(e);
                     if (result_code != ER_DIAMETER_SUCCESS)
                     {
-                        /* TODO */
+                        d_error("Not impleneted");
                         return;
                     }
 
@@ -282,6 +282,11 @@ void emm_state_operational(fsm_t *s, event_t *e)
                         esm_handle_information_request(sess);
                     }
 
+                    break;
+                }
+                default:
+                {
+                    d_error("Invalid type(%d)", event_get_param2(e));
                     break;
                 }
             }

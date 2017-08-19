@@ -20,6 +20,9 @@ char* pgw_event_get_name(event_t *e)
         case PGW_EVT_TRANSACTION_T3:
             return "PGW_EVT_TRANSACTION_T3";
 
+        case PGW_EVT_S5C_SESSION_FROM_GX:
+            return "PGW_EVT_S5C_SESSION_FROM_GX";
+
         default: 
            break;
     }

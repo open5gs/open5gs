@@ -69,6 +69,9 @@ typedef struct _pgw_sess_t {
     c_uint32_t      sgw_s5c_teid;
     c_uint32_t      sgw_s5c_addr;
 
+    /* Last Received GTP Messasge */
+    gtp_message_t   last_gtp_message;
+
     c_int8_t        apn[MAX_APN_LEN];
     paa_t           paa;
     pgw_ip_pool_t*  ip_pool;
