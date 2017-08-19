@@ -8,7 +8,7 @@
 #include "types.h"
 
 #include "testutil.h"
-#include "tests1ap.h"
+#include "testpacket.h"
 
 static void s1ap_message_test1(abts_case *tc, void *data)
 {

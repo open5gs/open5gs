@@ -4,11 +4,9 @@ bin_PROGRAMS = testepc
 
 testepc_SOURCES = \
 	abts.h abts_tests.h testutil.h \
-	abts.c testutil.c tests1ap.h tests1ap.c \
-	base_test.c \
-	s1ap_message_test.c nas_message_test.c gtp_message_test.c \
-	security_test.c \
-	s1ap_sm_test.c nas_sm_test.c
+	abts.c testutil.c testpacket.h testpacket.c \
+	base_test.c s1ap_message_test.c nas_message_test.c gtp_message_test.c \
+	security_test.c s1setup_test.c attach_test.c
 
 testepc_LDADD = \
     $(top_srcdir)/src/libepc.la

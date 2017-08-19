@@ -9,13 +9,13 @@
 #include "s1ap_message.h"
 
 #include "testutil.h"
-#include "tests1ap.h"
+#include "testpacket.h"
 
 /**************************************************************
  * eNB : MACRO
  * UE : IMSI 
  * Protocol Configuration Options in ESM information response */
-static void nas_sm_test1(abts_case *tc, void *data)
+static void attach_test1(abts_case *tc, void *data)
 {
     status_t rv;
     net_sock_t *sock;
@@ -384,7 +384,7 @@ static void nas_sm_test1(abts_case *tc, void *data)
  * eNB : HOME
  * UE : IMSI 
  * Protocol Configuration Options in PDN Connectivity Request */
-static void nas_sm_test2(abts_case *tc, void *data)
+static void attach_test2(abts_case *tc, void *data)
 {
     status_t rv;
     net_sock_t *sock;
@@ -602,7 +602,7 @@ static void nas_sm_test2(abts_case *tc, void *data)
 
 /**************************************************************
  * Attach -> Release -> Service Request */
-static void nas_sm_test3(abts_case *tc, void *data)
+static void attach_test3(abts_case *tc, void *data)
 {
     status_t rv;
     net_sock_t *sock;
@@ -893,13 +893,13 @@ static void nas_sm_test3(abts_case *tc, void *data)
     d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_FULL);
 }
 
-abts_suite *test_nas_sm(abts_suite *suite)
+abts_suite *test_attach(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
-    abts_run_test(suite, nas_sm_test1, NULL);
-    abts_run_test(suite, nas_sm_test2, NULL);
-    abts_run_test(suite, nas_sm_test3, NULL);
+    abts_run_test(suite, attach_test1, NULL);
+    abts_run_test(suite, attach_test2, NULL);
+    abts_run_test(suite, attach_test3, NULL);
 
     return suite;
 }

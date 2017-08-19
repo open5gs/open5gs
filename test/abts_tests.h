@@ -25,11 +25,11 @@ const struct testlist {
 } alltests[] = {
     {test_base},
     {test_s1ap_message},
-    {test_s1ap_sm},
     {test_nas_message},
-    {test_nas_sm},
-    {test_security},
     {test_gtp_message},
+    {test_security},
+    {test_s1setup},
+    {test_attach},
 };
 
 #endif /* APR_TEST_INCLUDES */
