@@ -90,12 +90,17 @@ status_t esm_build_activate_default_bearer_context(
     message.esm.h.message_type = 
         NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST;
 
+#if 0 /* default bearer is not needed */
     eps_qos->length = 5;
     eps_qos->qci = pdn->qos.qci;
     eps_qos->ul_mbr = 0xff;
     eps_qos->dl_mbr = 0xff;
     eps_qos->ul_gbr = 0xff;
     eps_qos->dl_gbr = 0xff;
+#else
+    eps_qos->length = 1;
+    eps_qos->qci = pdn->qos.qci;
+#endif
 
     access_point_name->length = strlen(pdn->apn);
     core_cpystrn(access_point_name->apn, pdn->apn,
@@ -104,12 +109,13 @@ status_t esm_build_activate_default_bearer_context(
     pdn_address->length = PAA_IPV4_LEN;
     memcpy(&pdn_address->paa, &pdn->paa, pdn_address->length);
 
-    /* FIXME */
-    activate_default_eps_bearer_context_request->presencemask |=
-        NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_APN_AMBR_PRESENT;
-    apn_ambr->length = 6;
-    apn_ambr->dl_apn_ambr_extended2 = 4;
-    apn_ambr->ul_apn_ambr_extended2 = 4;
+    if (pdn->qos.max_bandwidth_dl || pdn->qos.max_bandwidth_ul)
+    {
+        activate_default_eps_bearer_context_request->presencemask |=
+            NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_APN_AMBR_PRESENT;
+        apn_ambr_build(apn_ambr,
+                pdn->qos.max_bandwidth_dl, pdn->qos.max_bandwidth_ul);
+    }
 
     if (bearer->pgw_pco_len)
     {

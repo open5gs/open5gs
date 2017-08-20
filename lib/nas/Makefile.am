@@ -4,7 +4,7 @@ noinst_LTLIBRARIES = libnas.la
 
 libnas_la_SOURCES = \
 	nas_message.h nas_ies.h nas_types.h \
-	nas_decoder.c nas_encoder.c nas_ies.c
+	nas_decoder.c nas_encoder.c nas_ies.c nas_types.c
 
 libnas_la_DEPENDENCIES = \
     $(top_srcdir)/lib/base/libbase.la

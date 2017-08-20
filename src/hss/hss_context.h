@@ -37,8 +37,8 @@ typedef struct _hss_db_subscription_data_t {
 #define HSS_NETWORK_ACCESS_MODE_ONLY_PACKET                 2
     c_uint32_t      network_access_mode;
 
-    c_uint32_t      max_bandwidth_ul; /* Kbps */
-    c_uint32_t      max_bandwidth_dl; /* Kbps */
+    c_uint32_t      max_bandwidth_ul; /* bits per second */
+    c_uint32_t      max_bandwidth_dl; /* bits per second */
 
     c_uint32_t      subscribed_rau_tau_timer; /* minutes */
 

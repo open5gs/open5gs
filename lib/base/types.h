@@ -102,8 +102,8 @@ ED2(c_uint8_t spare:5;,
 typedef struct _qos_t {
     lnode_t         node; /**< A node of list_t */
 
-    c_uint32_t      max_bandwidth_ul; /* Kbps */
-    c_uint32_t      max_bandwidth_dl; /* Kbps */
+    c_uint32_t      max_bandwidth_ul; /* bits per second */
+    c_uint32_t      max_bandwidth_dl; /* bits per second */
 
 #define PDN_QCI_1                                       1
 #define PDN_QCI_2                                       2

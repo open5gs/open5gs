@@ -273,15 +273,13 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
         CHECK_FCT( fd_msg_avp_new(s6a_ambr, 0, &avp_ambr) );
         CHECK_FCT( fd_msg_avp_new(s6a_max_bandwidth_ul, 0, 
                     &avp_max_bandwidth_ul) );
-        /* bits per second */
-        val.i32 = subscription_data.max_bandwidth_ul * 1024; 
+        val.u32 = subscription_data.max_bandwidth_ul;
         CHECK_FCT( fd_msg_avp_setvalue(avp_max_bandwidth_ul, &val) );
         CHECK_FCT( fd_msg_avp_add(avp_ambr, MSG_BRW_LAST_CHILD, 
                     avp_max_bandwidth_ul) );
         CHECK_FCT( fd_msg_avp_new(s6a_max_bandwidth_dl, 0, 
                     &avp_max_bandwidth_dl) );
-        /* bits per second */
-        val.i32 = subscription_data.max_bandwidth_dl * 1024;
+        val.u32 = subscription_data.max_bandwidth_dl;
         CHECK_FCT( fd_msg_avp_setvalue(avp_max_bandwidth_dl, &val) );
         CHECK_FCT( fd_msg_avp_add(avp_ambr, MSG_BRW_LAST_CHILD, 
                     avp_max_bandwidth_dl) );
@@ -397,13 +395,13 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
                 CHECK_FCT( fd_msg_avp_new(s6a_ambr, 0, &avp_ambr) );
                 CHECK_FCT( fd_msg_avp_new(s6a_max_bandwidth_ul, 0, 
                             &avp_max_bandwidth_ul) );
-                val.i32 = pdn->qos.max_bandwidth_ul * 1024;/* bits per second */
+                val.u32 = pdn->qos.max_bandwidth_ul;
                 CHECK_FCT( fd_msg_avp_setvalue(avp_max_bandwidth_ul, &val) );
                 CHECK_FCT( fd_msg_avp_add(avp_ambr, MSG_BRW_LAST_CHILD, 
                             avp_max_bandwidth_ul) );
                 CHECK_FCT( fd_msg_avp_new(s6a_max_bandwidth_dl, 0, 
                             &avp_max_bandwidth_dl) );
-                val.i32 = pdn->qos.max_bandwidth_dl * 1024;/* bits per second */
+                val.u32 = pdn->qos.max_bandwidth_dl;
                 CHECK_FCT( fd_msg_avp_setvalue(avp_max_bandwidth_dl, &val) );
                 CHECK_FCT( fd_msg_avp_add(avp_ambr, MSG_BRW_LAST_CHILD, 
                             avp_max_bandwidth_dl) );
