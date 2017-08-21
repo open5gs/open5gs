@@ -27,13 +27,11 @@ const formData = {
       "qos": {
         "qci": 9,
         "arp": {
-          "priority_level": 8
+          "priority_level": 8,
+          "pre_emption_capability": 1,
+          "pre_emption_vulnerability": 1
         }
       },
-      "pdn_ambr": {
-        "max_bandwidth_ul": 1024000,
-        "max_bandwidth_dl": 1024000
-      }
     }
   ]
 }

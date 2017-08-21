@@ -5,12 +5,12 @@ import withWidth, { SMALL } from 'helpers/with-width';
 import { Form } from 'components';
 
 const schema = {
-  "title": "",
+  "title": "Subscriber",
   "type": "object",
   "properties": {
     "imsi": {
       "type": "string", 
-      "title": "IMSI (International Mobile Subscriber Identity)",
+      "title": "IMSI*",
       "required": true,
       "pattern": "^\\d+$",
       "maxLength": 15,
@@ -19,12 +19,12 @@ const schema = {
       }
     },
     "security": {
-      "title": "Security",
+      "title": "",
       "type": "object",
       "properties": {
         "k": {
           "type": "string",
-          "title": "K (UE Key)",
+          "title": "Subscriber Key (K)*",
           "required": true,
           "pattern": "^[0-9a-fA-F\\s]+$",
           "messages": {
@@ -33,7 +33,7 @@ const schema = {
         },
         "op": {
           "type": "string",
-          "title": "OP (Operator Key)",
+          "title": "Operator Key (OP)*",
           "required": true,
           "pattern": "^[0-9a-fA-F\\s]+$",
           "messages": {
@@ -42,7 +42,7 @@ const schema = {
         },
         "amf": {
           "type": "string",
-          "title": "AMF (Authentication Management Field)",
+          "title": "Authentication Management Field (AMF)*",
           "required": true,
           "pattern": "^[0-9a-fA-F\\s]+$",
           "messages": {
@@ -53,23 +53,23 @@ const schema = {
     },
     "ue_ambr": {
       "type": "object",
-      "title": "UE AMBR - Aggregate Maximum Bit Rate",
+      "title": "",
       "properties": {
-        "max_bandwidth_ul": {
-          "type": "number",
-          "title": "Max Requested Bandwidth UL (Kbps)",
-          "required": true
-        },
         "max_bandwidth_dl": {
           "type": "number",
-          "title": "Max Requested Bandwidth DL (Kbps)",
+          "title": "UE-AMBR Downlink (Kbps)*",
+          "required": true
+        },
+        "max_bandwidth_ul": {
+          "type": "number",
+          "title": "UE-AMBR Uplink (Kbps)*",
           "required": true
         }
       }
     },
     "pdn": {
       "type": "array",
-      "title": "PDN - Packet Data Network",
+      "title": "EPS Session",
       "minItems": 1,
       "maxItems": 8,
       "messages": {
@@ -81,16 +81,16 @@ const schema = {
         "properties": {
           "apn": {
             "type": "string",
-            "title": "APN (Access Point Name)",
+            "title": "Access Point Name (APN)*",
             "required": true
           },
           "qos": {
             "type": "object",
-            "title": "EPS Subscribed QoS Profile",
+            "title": "",
             "properties": {
               "qci": {
                 "type": "number",
-                "title": "QCI (QoS Class Identifier)",
+                "title": "QoS Class Identifier (QCI)*",
                 "enum": [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 65, 66, 69, 70 ],
                 "default": 9
               },
@@ -100,32 +100,47 @@ const schema = {
                 "properties": {
                   "priority_level": {
                     "type": "number",
-                    "title": "ARP Priority Level (1~15)",
+                    "title": "ARP Priority Level (1-15)*",
                     "default": 8,
                     "minimum": 1,
                     "maximum": 15,
                     "required": true
-                  }
+                  },
+                  "pre_emption_capability": {
+                    "type": "number",
+                    "title": "Capability*",
+                    "enum": [1, 0],
+                    "enumNames": ["Disabled", "Enabled"],
+                    "default": 1,
+                    "required": true
+                  },
+                  "pre_emption_vulnerability": {
+                    "type": "number",
+                    "title": "Vulnerability*",
+                    "default": 1,
+                    "minimum": 0,
+                    "maximum": 1,
+                    "enum": [1, 0],
+                    "enumNames": ["Disabled", "Enabled"],
+                    "default": 1,
+                    "required": true
+                  },
                 }
               }
             }
           },
           "pdn_ambr": {
             "type": "object",
-            "title": "APN AMBR - Aggragate Maximum Bit Rate",
+            "title": "",
             "properties": {
-              "max_bandwidth_ul": {
-                "type": "number",
-                "title": "Max Requested Bandwidth UL (Kbps)",
-                "default": 1024000,
-                "required": true
-              },
               "max_bandwidth_dl": {
                 "type": "number",
-                "title": "Max Requested Bandwidth DL (Kbps)",
-                "default": 1024000,
-                "required": true
-              }
+                "title": "APN-AMBR Downlink (Kbps)",
+              },
+              "max_bandwidth_ul": {
+                "type": "number",
+                "title": "APN-AMBR Uplink (Kbps)",
+              },
             }
           }
         }
@@ -135,6 +150,28 @@ const schema = {
 };
 
 const uiSchema = {
+  "imsi" : {
+    classNames: "col-xs-12",
+  },
+  "security" : {
+    "k" : {
+      classNames: "col-xs-12",
+    },
+    "op" : {
+      classNames: "col-xs-7",
+    },
+    "amf" : {
+      classNames: "col-xs-5",
+    },
+  },
+  "ue_ambr" : {
+    "max_bandwidth_dl" : {
+      classNames: "col-xs-6"
+    },
+    "max_bandwidth_ul" : {
+      classNames: "col-xs-6"
+    },
+  },
   "pdn": {
     "ui:options":  {
       "orderable": false
@@ -145,8 +182,27 @@ const uiSchema = {
           "ui:widget": "radio",
           "ui:options": {
             "inline": true
+          },
+        },
+        "arp": {
+          "priority_level": {
+            classNames: "col-xs-6"
+          },
+          "pre_emption_capability": {
+            classNames: "col-xs-3"
+          },
+          "pre_emption_vulnerability": {
+            classNames: "col-xs-3"
           }
         }
+      },
+      "pdn_ambr" : {
+        "max_bandwidth_dl" : {
+          classNames: "col-xs-6"
+        },
+        "max_bandwidth_ul" : {
+          classNames: "col-xs-6"
+        },
       }
     }
   }

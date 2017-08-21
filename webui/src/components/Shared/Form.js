@@ -65,7 +65,7 @@ const CustomTitleField = props => {
 };
 
 const fields = {
-  TitleField: CustomTitleField
+  TitleField: CustomTitleField,
 };
 
 function Label(props) {
@@ -252,7 +252,7 @@ class Form extends Component {
                       button {
                         display: none;
                       }
-                    kkk`}</style>
+                    `}</style>
                   </div>
                 </JsonSchemaForm>
               }

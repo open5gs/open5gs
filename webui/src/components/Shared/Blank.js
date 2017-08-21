@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import oc from 'open-color';
 
 import { CircleIcon } from 'components';
-import SchoolIcon from 'react-icons/lib/md/school'
+import SchoolIcon from 'react-icons/lib/md/import-contacts'
 
 const Wrapper = styled.div`
   position: relative;

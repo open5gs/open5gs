@@ -45,16 +45,7 @@ class App extends Component {
         <Layout.Container visible={view === "subscriber"}>
           <Subscriber.Collection/>
         </Layout.Container>
-        <Layout.Container visible={view === "pdn"}>
-          <Layout.Content>{view}</Layout.Content>
-        </Layout.Container>
-        <Layout.Container visible={view === "user"}>
-          <Layout.Content>{view}</Layout.Content>
-        </Layout.Container>
-        <Layout.Container visible={view === "test1"}>
-          <Layout.Content>{view}</Layout.Content>
-        </Layout.Container>
-        <Layout.Container visible={view === "test3"}>
+        <Layout.Container visible={view === "profile"}>
           <Layout.Content>{view}</Layout.Content>
         </Layout.Container>
         <Notification/>

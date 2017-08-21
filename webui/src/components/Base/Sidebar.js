@@ -5,9 +5,7 @@ import { media, transitions } from 'helpers/style-utils';
 import oc from 'open-color';
 
 import SubscriberIcon from 'react-icons/lib/md/person-add'
-import PdnIcon from 'react-icons/lib/md/cast';
-import Test2Icon from 'react-icons/lib/md/access-alarm'
-import Test3Icon from 'react-icons/lib/md/3d-rotation'
+import ProfileIcon from 'react-icons/lib/md/folder-shared';
 
 const Menu = styled.div`
   display: block;
@@ -86,17 +84,9 @@ const Sidebar = ({ isOpen, width, selectedView, onSelectView }) => (
       <Icon><SubscriberIcon/></Icon>
       <Title>Subscriber</Title>
     </Item>
-    <Item name="pdn" selected={selectedView} onSelect={onSelectView}>
-      <Icon><PdnIcon/></Icon>
-      <Title>PDN</Title>
-    </Item>
-    <Item name="test2" selected={selectedView} onSelect={onSelectView}>
-      <Icon><Test2Icon/></Icon>
-      <Title>Testaaaaaaaa</Title>
-    </Item>
-    <Item name="test3" selected={selectedView} onSelect={onSelectView}>
-      <Icon><Test3Icon/></Icon>
-      <Title>Test@#!@#!@#</Title>
+    <Item name="profile" selected={selectedView} onSelect={onSelectView}>
+      <Icon><ProfileIcon/></Icon>
+      <Title>Profile</Title>
     </Item>
   </Menu>
 )
