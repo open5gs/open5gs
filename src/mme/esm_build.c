@@ -109,12 +109,11 @@ status_t esm_build_activate_default_bearer_context(
     pdn_address->length = PAA_IPV4_LEN;
     memcpy(&pdn_address->paa, &pdn->paa, pdn_address->length);
 
-    if (pdn->qos.max_bandwidth_dl || pdn->qos.max_bandwidth_ul)
+    if (pdn->ambr.downlink || pdn->ambr.uplink)
     {
         activate_default_eps_bearer_context_request->presencemask |=
             NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_APN_AMBR_PRESENT;
-        apn_ambr_build(apn_ambr,
-                pdn->qos.max_bandwidth_dl, pdn->qos.max_bandwidth_ul);
+        apn_ambr_build(apn_ambr, pdn->ambr.downlink, pdn->ambr.uplink);
     }
 
     if (bearer->pgw_pco_len)

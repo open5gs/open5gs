@@ -273,13 +273,13 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
         CHECK_FCT( fd_msg_avp_new(s6a_ambr, 0, &avp_ambr) );
         CHECK_FCT( fd_msg_avp_new(s6a_max_bandwidth_ul, 0, 
                     &avp_max_bandwidth_ul) );
-        val.u32 = subscription_data.max_bandwidth_ul;
+        val.u32 = subscription_data.ambr.uplink;
         CHECK_FCT( fd_msg_avp_setvalue(avp_max_bandwidth_ul, &val) );
         CHECK_FCT( fd_msg_avp_add(avp_ambr, MSG_BRW_LAST_CHILD, 
                     avp_max_bandwidth_ul) );
         CHECK_FCT( fd_msg_avp_new(s6a_max_bandwidth_dl, 0, 
                     &avp_max_bandwidth_dl) );
-        val.u32 = subscription_data.max_bandwidth_dl;
+        val.u32 = subscription_data.ambr.downlink;
         CHECK_FCT( fd_msg_avp_setvalue(avp_max_bandwidth_dl, &val) );
         CHECK_FCT( fd_msg_avp_add(avp_ambr, MSG_BRW_LAST_CHILD, 
                     avp_max_bandwidth_dl) );
@@ -365,21 +365,21 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
 
                 CHECK_FCT( fd_msg_avp_new(s6a_priority_level, 0, 
                         &priority_level) );
-                val.u32 = pdn->qos.priority_level;
+                val.u32 = pdn->qos.arp.priority_level;
                 CHECK_FCT( fd_msg_avp_setvalue(priority_level, &val) );
                 CHECK_FCT( fd_msg_avp_add(allocation_retention_priority, 
                     MSG_BRW_LAST_CHILD, priority_level) );
 
                 CHECK_FCT( fd_msg_avp_new(s6a_pre_emption_capability, 0, 
                         &pre_emption_capability) );
-                val.u32 = pdn->qos.pre_emption_capability;
+                val.u32 = pdn->qos.arp.pre_emption_capability;
                 CHECK_FCT( fd_msg_avp_setvalue(pre_emption_capability, &val) );
                 CHECK_FCT( fd_msg_avp_add(allocation_retention_priority, 
                     MSG_BRW_LAST_CHILD, pre_emption_capability) );
 
                 CHECK_FCT( fd_msg_avp_new(s6a_pre_emption_vulnerability, 0, 
                         &pre_emption_vulnerability) );
-                val.u32 = pdn->qos.pre_emption_vulnerability;
+                val.u32 = pdn->qos.arp.pre_emption_vulnerability;
                 CHECK_FCT(
                     fd_msg_avp_setvalue(pre_emption_vulnerability, &val) );
                 CHECK_FCT( fd_msg_avp_add(allocation_retention_priority, 
@@ -395,13 +395,13 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
                 CHECK_FCT( fd_msg_avp_new(s6a_ambr, 0, &avp_ambr) );
                 CHECK_FCT( fd_msg_avp_new(s6a_max_bandwidth_ul, 0, 
                             &avp_max_bandwidth_ul) );
-                val.u32 = pdn->qos.max_bandwidth_ul;
+                val.u32 = pdn->ambr.uplink;
                 CHECK_FCT( fd_msg_avp_setvalue(avp_max_bandwidth_ul, &val) );
                 CHECK_FCT( fd_msg_avp_add(avp_ambr, MSG_BRW_LAST_CHILD, 
                             avp_max_bandwidth_ul) );
                 CHECK_FCT( fd_msg_avp_new(s6a_max_bandwidth_dl, 0, 
                             &avp_max_bandwidth_dl) );
-                val.u32 = pdn->qos.max_bandwidth_dl;
+                val.u32 = pdn->ambr.downlink;
                 CHECK_FCT( fd_msg_avp_setvalue(avp_max_bandwidth_dl, &val) );
                 CHECK_FCT( fd_msg_avp_add(avp_ambr, MSG_BRW_LAST_CHILD, 
                             avp_max_bandwidth_dl) );

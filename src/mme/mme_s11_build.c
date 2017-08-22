@@ -106,8 +106,8 @@ status_t mme_s11_build_create_session_request(pkbuf_t **pkbuf, mme_sess_t *sess)
     req->maximum_apn_restriction.u8 = GTP_APN_NO_RESTRICTION;
 
     memset(&ambr, 0, sizeof(gtp_ambr_t));
-    ambr.uplink = htonl(pdn->qos.max_bandwidth_ul);
-    ambr.downlink = htonl(pdn->qos.max_bandwidth_dl);
+    ambr.uplink = htonl(pdn->ambr.uplink);
+    ambr.downlink = htonl(pdn->ambr.downlink);
     req->aggregate_maximum_bit_rate.presence = 1;
     req->aggregate_maximum_bit_rate.data = &ambr;
     req->aggregate_maximum_bit_rate.len = sizeof(ambr);
@@ -124,10 +124,11 @@ status_t mme_s11_build_create_session_request(pkbuf_t **pkbuf, mme_sess_t *sess)
     req->bearer_contexts_to_be_created.eps_bearer_id.u8 = bearer->ebi;
 
     memset(&bearer_qos, 0, sizeof(bearer_qos));
-    bearer_qos.pre_emption_vulnerability = pdn->qos.pre_emption_vulnerability;
-    bearer_qos.pre_emption_capability = pdn->qos.pre_emption_capability;
     bearer_qos.qci = pdn->qos.qci;
-    bearer_qos.priority_level = pdn->qos.priority_level;
+    bearer_qos.priority_level = pdn->qos.arp.priority_level;
+    bearer_qos.pre_emption_capability = pdn->qos.arp.pre_emption_capability;
+    bearer_qos.pre_emption_vulnerability =
+        pdn->qos.arp.pre_emption_vulnerability;
     req->bearer_contexts_to_be_created.bearer_level_qos.presence = 1;
     gtp_build_bearer_qos(&req->bearer_contexts_to_be_created.bearer_level_qos,
             &bearer_qos, bearer_qos_buf, GTP_BEARER_QOS_LEN);

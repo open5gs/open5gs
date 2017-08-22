@@ -205,10 +205,9 @@ struct _mme_ue_t {
 
     /* HSS Info */
     c_uint32_t      ula_flags;
-    c_uint32_t      max_bandwidth_ul;               /* bits per seconds */
-    c_uint32_t      max_bandwidth_dl;               /* bits per seconds */
-    c_uint32_t      subscribed_rau_tau_timer;       /* seconds */
-    pdn_t           pdn[MAX_NUM_OF_PDN];            /* APN Profile */
+    bitrate_t       ambr;                       /* UE-AMBR */
+    c_uint32_t      subscribed_rau_tau_timer;   /* unit: seconds */
+    pdn_t           pdn[MAX_NUM_OF_PDN];        /* APN Configruration */
     int             num_of_pdn;
 
     /* ESM Info */

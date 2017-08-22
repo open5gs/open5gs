@@ -483,13 +483,13 @@ status_t hss_db_subscription_data(
                 if (!strcmp(child1_key, "uplink") &&
                     BSON_ITER_HOLDS_INT32(&child1_iter))
                 {
-                    subscription_data->max_bandwidth_ul =
+                    subscription_data->ambr.uplink =
                         bson_iter_int32(&child1_iter) * 1024;
                 }
                 else if (!strcmp(child1_key, "downlink") &&
                     BSON_ITER_HOLDS_INT32(&child1_iter))
                 {
-                    subscription_data->max_bandwidth_dl =
+                    subscription_data->ambr.downlink =
                         bson_iter_int32(&child1_iter) * 1024;
                 }
             }
@@ -553,21 +553,21 @@ status_t hss_db_subscription_data(
                                     if (!strcmp(child4_key, "priority_level") &&
                                         BSON_ITER_HOLDS_INT32(&child4_iter))
                                     {
-                                        pdn->qos.priority_level =
+                                        pdn->qos.arp.priority_level =
                                             bson_iter_int32(&child4_iter);
                                     }
                                     else if (!strcmp(child4_key,
                                                 "pre_emption_capability") &&
                                         BSON_ITER_HOLDS_INT32(&child4_iter))
                                     {
-                                        pdn->qos.pre_emption_capability =
+                                        pdn->qos.arp.pre_emption_capability =
                                             bson_iter_int32(&child4_iter);
                                     }
                                     else if (!strcmp(child4_key,
                                                 "pre_emption_vulnerability") &&
                                         BSON_ITER_HOLDS_INT32(&child4_iter))
                                     {
-                                        pdn->qos.pre_emption_vulnerability =
+                                        pdn->qos.arp.pre_emption_vulnerability =
                                             bson_iter_int32(&child4_iter);
                                     }
                                 }
@@ -585,13 +585,13 @@ status_t hss_db_subscription_data(
                             if (!strcmp(child3_key, "uplink") &&
                                 BSON_ITER_HOLDS_INT32(&child3_iter))
                             {
-                                pdn->qos.max_bandwidth_ul =
+                                pdn->ambr.uplink =
                                     bson_iter_int32(&child3_iter) * 1024;
                             }
                             else if (!strcmp(child3_key, "downlink") &&
                                 BSON_ITER_HOLDS_INT32(&child3_iter))
                             {
-                                pdn->qos.max_bandwidth_dl =
+                                pdn->ambr.downlink =
                                     bson_iter_int32(&child3_iter) * 1024;
                             }
                         }

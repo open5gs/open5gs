@@ -182,10 +182,10 @@ status_t s1ap_build_initial_context_setup_request(
 
     asn_uint642INTEGER(
             &ies->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateUL, 
-            mme_ue->max_bandwidth_ul);
+            mme_ue->ambr.uplink);
     asn_uint642INTEGER(
             &ies->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateDL, 
-            mme_ue->max_bandwidth_dl);
+            mme_ue->ambr.downlink);
 
     e_rab = (S1ap_E_RABToBeSetupItemCtxtSUReq_t *)
         core_calloc(1, sizeof(S1ap_E_RABToBeSetupItemCtxtSUReq_t));
@@ -193,11 +193,11 @@ status_t s1ap_build_initial_context_setup_request(
     e_rab->e_RABlevelQoSParameters.qCI = pdn->qos.qci;
 
     e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
-        priorityLevel = pdn->qos.priority_level;
+        priorityLevel = pdn->qos.arp.priority_level;
     e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
-        pre_emptionCapability = !(pdn->qos.pre_emption_capability);
+        pre_emptionCapability = !(pdn->qos.arp.pre_emption_capability);
     e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
-        pre_emptionVulnerability = !(pdn->qos.pre_emption_vulnerability);
+        pre_emptionVulnerability = !(pdn->qos.arp.pre_emption_vulnerability);
 
 #if 0 /* Not needed in default bearer */
     gbrQosInformation = core_calloc(1, sizeof(struct S1ap_GBR_QosInformation));

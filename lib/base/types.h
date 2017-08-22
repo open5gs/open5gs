@@ -97,13 +97,15 @@ ED2(c_uint8_t spare:5;,
     c_uint32_t ipv4_addr2;
 } __attribute__ ((packed)) paa_t;
 
+typedef struct _bitrate_t {
+    c_uint64_t downlink;        /* bits per seconds */
+    c_uint64_t uplink;          /* bits per seconds */
+} bitrate_t;
+
 /**********************************
  * QoS Structure                 */
 typedef struct _qos_t {
-    lnode_t         node; /**< A node of list_t */
-
-    c_uint32_t      max_bandwidth_ul; /* bits per second */
-    c_uint32_t      max_bandwidth_dl; /* bits per second */
+    lnode_t         node; /* A node of list_t */
 
 #define PDN_QCI_1                                       1
 #define PDN_QCI_2                                       2
@@ -120,19 +122,23 @@ typedef struct _qos_t {
 #define PDN_QCI_70                                      70
     c_uint8_t       qci;
 
-    /* Values 1 to 8 should only be assigned for services that are authorized 
-     * to receive prioritized treatment within an operator domain. 
+    struct {
+    /* Values 1 to 8 should only be assigned for services that are
+     * authorized to receive prioritized treatment within an operator domain. 
      * Values 9 to 15 may be assigned to resources that are authorized 
      * by the home network and thus applicable when a UE is roaming. */
-    c_uint8_t       priority_level;
+        c_uint8_t       priority_level;
 
 #define PDN_PRE_EMPTION_CAPABILITY_ENABLED              0
 #define PDN_PRE_EMPTION_CAPABILITY_DISABLED             1
-    c_uint8_t       pre_emption_capability;
+        c_uint8_t       pre_emption_capability;
 #define PDN_PRE_EMPTION_VULNERABILITY_ENABLED           0
 #define PDN_PRE_EMPTION_VULNERABILITY_DISABLED          1
-    c_uint8_t       pre_emption_vulnerability;
+        c_uint8_t       pre_emption_vulnerability;
+    } arp;
 
+    bitrate_t       mbr;  /* Maxmimum Bit Rate (MBR) */
+    bitrate_t       gbr;  /* Guaranteed Bit Rate (GBR) */
 } qos_t;
 
 /**********************************
@@ -148,6 +154,7 @@ typedef struct _pdn_t {
     paa_t           paa;
 
     qos_t           qos;
+    bitrate_t       ambr; /* APN-AMBR */
 } pdn_t;
 
 CORE_DECLARE(c_int16_t) apn_build(c_int8_t *dst, c_int8_t *src, c_int16_t len);
