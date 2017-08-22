@@ -473,20 +473,20 @@ status_t hss_db_subscription_data(
             subscription_data->subscribed_rau_tau_timer =
                 bson_iter_int32(&iter);
         }
-        else if (!strcmp(key, "ue_ambr") &&
+        else if (!strcmp(key, "ambr") &&
             BSON_ITER_HOLDS_DOCUMENT(&iter))
         {
             bson_iter_recurse(&iter, &child1_iter);
             while(bson_iter_next(&child1_iter))
             {
                 const char *child1_key = bson_iter_key(&child1_iter);
-                if (!strcmp(child1_key, "max_bandwidth_ul") &&
+                if (!strcmp(child1_key, "uplink") &&
                     BSON_ITER_HOLDS_INT32(&child1_iter))
                 {
                     subscription_data->max_bandwidth_ul =
                         bson_iter_int32(&child1_iter) * 1024;
                 }
-                else if (!strcmp(child1_key, "max_bandwidth_dl") &&
+                else if (!strcmp(child1_key, "downlink") &&
                     BSON_ITER_HOLDS_INT32(&child1_iter))
                 {
                     subscription_data->max_bandwidth_dl =
@@ -574,7 +574,7 @@ status_t hss_db_subscription_data(
                             }
                         }
                     }
-                    else if (!strcmp(child2_key, "pdn_ambr") &&
+                    else if (!strcmp(child2_key, "ambr") &&
                         BSON_ITER_HOLDS_DOCUMENT(&child2_iter))
                     {
                         bson_iter_recurse(&child2_iter, &child3_iter);
@@ -582,13 +582,13 @@ status_t hss_db_subscription_data(
                         {
                             const char *child3_key =
                                 bson_iter_key(&child3_iter);
-                            if (!strcmp(child3_key, "max_bandwidth_ul") &&
+                            if (!strcmp(child3_key, "uplink") &&
                                 BSON_ITER_HOLDS_INT32(&child3_iter))
                             {
                                 pdn->qos.max_bandwidth_ul =
                                     bson_iter_int32(&child3_iter) * 1024;
                             }
-                            else if (!strcmp(child3_key, "max_bandwidth_dl") &&
+                            else if (!strcmp(child3_key, "downlink") &&
                                 BSON_ITER_HOLDS_INT32(&child3_iter))
                             {
                                 pdn->qos.max_bandwidth_dl =
