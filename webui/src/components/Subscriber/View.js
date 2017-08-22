@@ -18,7 +18,7 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   postion: relative;
-  width: 600px;
+  width: 900px;
 
   ${media.mobile`
     width: calc(100vw - 4rem);
@@ -80,7 +80,7 @@ const Body = styled.div`
   display: block;
   margin: 0.5rem;
 
-  height: 400px;
+  height: 500px;
   ${media.mobile`
     height: calc(100vh - 16rem);
   `}
@@ -141,8 +141,18 @@ const Pdn = styled.div`
     flex:1;
     margin: 0px 32px;
 
-    .data {
+    .small_data {
+      width: 40px;
+      font-size: 12px;
+      margin: 4px;
+    }
+    .medium_data {
       width: 80px;
+      font-size: 12px;
+      margin: 4px;
+    }
+    .large_data {
+      width: 160px;
       font-size: 12px;
       margin: 4px;
     }
@@ -151,7 +161,7 @@ const Pdn = styled.div`
 const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, onHide }) => {
   const imsi = (subscriber || {}).imsi;
   const security = ((subscriber || {}).security || {});
-  const ue_ambr = ((subscriber || {}).ue_ambr || {});
+  const ambr = ((subscriber || {}).ambr || {});
   const pdns = ((subscriber || {}).pdn || []);
 
   return (
@@ -178,7 +188,7 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
           <Body>
             <Subscriber>
               <div className="header">
-                Subscriber Details
+                Subscriber Configuration
               </div>
               <div className="body">
                 <div className="left">
@@ -217,11 +227,11 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
                 </div>
                 <div className="right">
                   <div className="data">
-                    {ue_ambr.max_bandwidth_ul} Kbps
+                    {ambr.downlink} Kbps
                     <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>UL</span>
                   </div>
                   <div className="data">
-                    {ue_ambr.max_bandwidth_dl} Kbps
+                    {ambr.uplink} Kbps
                     <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>DL</span>
                   </div>
                 </div>
@@ -229,20 +239,78 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
             </Subscriber>
             <Pdn>
               <div className="header">
-                PDN
+                APN Configrations
               </div>
               <div className="body" style={{color:oc.gray[5]}}>
-                <div className="data">APN</div>
-                <div className="data">QCI</div>
-                <div className="data">ARP</div>
-                <div className="data">UL/DL(Kbps)</div>
+                <div className="medium_data">APN</div>
+                <div className="small_data">QCI</div>
+                <div className="small_data">ARP</div>
+                <div className="medium_data">Capability</div>
+                <div className="medium_data">Vulnerablility</div>
+                <div className="large_data">MBR DL/UL(Kbps)</div>
+                <div className="large_data">GBR DL/UL(Kbps)</div>
               </div>
               {pdns.map(pdn =>
-                <div className="body" key={pdn.apn}>
-                  <div className="data">{pdn.apn}</div>
-                  <div className="data">{pdn.qos.qci}</div>
-                  <div className="data">{pdn.qos.arp.priority_level}</div>
-                  <div className="data">{pdn.pdn_ambr.max_bandwidth_ul}/{pdn.pdn_ambr.max_bandwidth_ul}</div>
+                <div key={pdn.apn}>
+                  <div className="body">
+                    <div className="medium_data">{pdn.apn}</div>
+                    <div className="small_data">{pdn.qos.qci}</div>
+                    <div className="small_data">{pdn.qos.arp.priority_level}</div>
+                    <div className="medium_data">{pdn.qos.arp.pre_emption_capability === 1 ? "Disabled" : "Enabled"}</div>
+                    <div className="medium_data">{pdn.qos.arp.pre_emption_vulnerability === 1 ? "Disabled" : "Enabled"}</div>
+                    {pdn['ambr'] === undefined ? 
+                      <div className="large_data">
+                        unlimited/unlimited
+                        </div> :
+                      <div className="large_data">
+                        {pdn.ambr['downlink'] === undefined ? "unlimited" : pdn.ambr.downlink}
+                        /
+                        {pdn.ambr['uplink'] === undefined ? "unlimited" : pdn.ambr.uplink}
+                      </div>
+                    }
+                  </div>
+                  {pdn['pcc_rule'] !== undefined &&
+                    pdn.pcc_rule.map(pcc_rule =>
+                      <div>
+                        <div className="body">
+                          <div className="medium_data"></div>
+                          <div className="small_data">{pcc_rule.qos.qci}</div>
+                          <div className="small_data">{pcc_rule.qos.arp.priority_level}</div>
+                          <div className="medium_data">{pcc_rule.qos.arp.pre_emption_capability === 1 ? "Disabled" : "Enabled"}</div>
+                          <div className="medium_data">{pcc_rule.qos.arp.pre_emption_vulnerability === 1 ? "Disabled" : "Enabled"}</div>
+                          {pcc_rule.qos['mbr'] === undefined ? 
+                            <div className="large_data">
+                              unlimited/unlimited
+                              </div> :
+                            <div className="large_data">
+                              {pcc_rule.qos.mbr['downlink'] === undefined ? "unlimited" : pcc_rule.qos.mbr.downlink}
+                              /
+                              {pcc_rule.qos.mbr['uplink'] === undefined ? "unlimited" : pcc_rule.qos.mbr.uplink}
+                            </div>
+                          }
+                          {pcc_rule.qos['gbr'] === undefined ? 
+                            <div className="large_data">
+                              unlimited/unlimited
+                              </div> :
+                            <div className="large_data">
+                              {pcc_rule.qos.gbr['downlink'] === undefined ? "unlimited" : pcc_rule.qos.gbr.downlink}
+                              /
+                              {pcc_rule.qos.gbr['uplink'] === undefined ? "unlimited" : pcc_rule.qos.gbr.uplink}
+                            </div>
+                          }
+                        </div>
+                        {pcc_rule['flow'] !== undefined &&
+                          pcc_rule.flow.map(flow =>
+                            <div className="body" key={flow.description}>
+                              <div className="medium_data"></div>
+                              <div className="small_data" style={{color:oc.gray[5]}}>FLOW</div>
+                              <div className="large_data" style={{width:"640px"}}>{flow.description}</div>
+                            </div>
+                          )
+                        }
+                      </div>
+                    )
+                  }
                 </div>
               )}
             </Pdn>

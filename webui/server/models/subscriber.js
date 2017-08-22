@@ -30,9 +30,9 @@ const Subscriber = new Schema({
     default: 12 // minites
   },
 
-  ue_ambr: {
-    max_bandwidth_ul: Number,
-    max_bandwidth_dl: Number
+  ambr: {
+    downlink: Number,
+    uplink: Number
   },
 
   pdn: [{
@@ -45,17 +45,42 @@ const Subscriber = new Schema({
       arp: {
         priority_level: Number,
         pre_emption_capability: {
-          $type: Number, default: 1 // Capability Disabled 
+          $type: Number, default: 1 // Capability Disabled
         },
         pre_emption_vulnerability: {
-          $type : Number, default: 1 // Vulnerability Disabled 
+          $type : Number, default: 1 // Vulnerability Disabled
         }
       }
     },
-    pdn_ambr: {
-      max_bandwidth_ul: Number,
-      max_bandwidth_dl: Number
-    }
+    ambr: {
+      downlink: Number,
+      uplink: Number
+    },
+    pcc_rule: [{
+      flow: [{
+        description: String
+      }],
+      qos: {
+        qci: Number,
+        arp: {
+          priority_level: Number,
+          pre_emption_capability: {
+            $type: Number, default: 1 // Capability Disabled
+          },
+          pre_emption_vulnerability: {
+            $type : Number, default: 1 // Vulnerability Disabled
+          }
+        },
+        mbr: {
+          downlink: Number,
+          uplink: Number
+        },
+        gbr: {
+          downlink: Number,
+          uplink: Number
+        },
+      },
+    }]
   }]
 }, { typeKey: '$type' });
 

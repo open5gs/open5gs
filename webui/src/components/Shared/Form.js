@@ -16,7 +16,7 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   postion: relative;
-  width: 800px;
+  width: 1050px;
 
   ${media.mobile`
     width: calc(100vw - 2rem);
@@ -39,7 +39,7 @@ const Body = styled.div`
   padding: 2rem;
   font-size: 14px;
 
-  height: 400px;
+  height: 500px;
   ${media.mobile`
     height: calc(100vh - 16rem);
   `}

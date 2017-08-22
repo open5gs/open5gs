@@ -17,9 +17,9 @@ const formData = {
     op: "5F1D289C 5D354D0A 140C2548 F5F3E3BA",
     amf: "8000"
   },
-  "ue_ambr": {
-    "max_bandwidth_ul": 1024000,
-    "max_bandwidth_dl": 1024000
+  "ambr": {
+    "downlink": 1024000,
+    "uplink": 1024000
   },
   "pdn": [
     {

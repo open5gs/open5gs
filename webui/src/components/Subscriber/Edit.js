@@ -5,7 +5,7 @@ import withWidth, { SMALL } from 'helpers/with-width';
 import { Form } from 'components';
 
 const schema = {
-  "title": "Subscriber",
+  "title": "Subscriber Configuration",
   "type": "object",
   "properties": {
     "imsi": {
@@ -51,16 +51,16 @@ const schema = {
         }
       }
     },
-    "ue_ambr": {
+    "ambr": {
       "type": "object",
       "title": "",
       "properties": {
-        "max_bandwidth_dl": {
+        "downlink": {
           "type": "number",
           "title": "UE-AMBR Downlink (Kbps)*",
           "required": true
         },
-        "max_bandwidth_ul": {
+        "uplink": {
           "type": "number",
           "title": "UE-AMBR Uplink (Kbps)*",
           "required": true
@@ -69,12 +69,12 @@ const schema = {
     },
     "pdn": {
       "type": "array",
-      "title": "EPS Session",
+      "title": "APN Configurations",
       "minItems": 1,
       "maxItems": 8,
       "messages": {
-        "minItems": "At least 1 PDN is required",
-        "maxItems": "8 PDNs are supported"
+        "minItems": "At least 1 APN is required",
+        "maxItems": "8 APNs are supported"
       },
       "items": {
         "type": "object",
@@ -92,7 +92,7 @@ const schema = {
                 "type": "number",
                 "title": "QoS Class Identifier (QCI)*",
                 "enum": [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 65, 66, 69, 70 ],
-                "default": 9
+                "default": 9,
               },
               "arp" : {
                 "type": "object",
@@ -112,7 +112,6 @@ const schema = {
                     "enum": [1, 0],
                     "enumNames": ["Disabled", "Enabled"],
                     "default": 1,
-                    "required": true
                   },
                   "pre_emption_vulnerability": {
                     "type": "number",
@@ -123,24 +122,128 @@ const schema = {
                     "enum": [1, 0],
                     "enumNames": ["Disabled", "Enabled"],
                     "default": 1,
-                    "required": true
                   },
                 }
               }
             }
           },
-          "pdn_ambr": {
+          "ambr": {
             "type": "object",
             "title": "",
             "properties": {
-              "max_bandwidth_dl": {
+              "downlink": {
                 "type": "number",
                 "title": "APN-AMBR Downlink (Kbps)",
               },
-              "max_bandwidth_ul": {
+              "uplink": {
                 "type": "number",
                 "title": "APN-AMBR Uplink (Kbps)",
               },
+            }
+          },
+          "pcc_rule": {
+            "type": "array",
+            "title": "PCC Rules",
+            "maxItems": 16,
+            "messages": {
+              "maxItems": "16 PCC Rules are supported"
+            },
+            "items": {
+              "type": "object",
+              "properties": {
+                "flow": {
+                  "type": "array",
+                  "title": "",
+                  "minItems": 1,
+                  "maxItems": 16,
+                  "messages": {
+                    "minItems": "At least 1 Flow is required",
+                    "maxItems": "16 Flows are supported"
+                  },
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "description": {
+                        "type": "string",
+                        "title": "Flow Description*",
+                        "default": "permit in ip from any to any",
+                        "required": true
+                      }
+                    }
+                  }
+                },
+                "qos": {
+                  "type": "object",
+                  "title": "",
+                  "properties": {
+                    "qci": {
+                      "type": "number",
+                      "title": "QoS Class Identifier (QCI)*",
+                      "enum": [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 65, 66, 69, 70 ],
+                      "default": 9,
+                    },
+                    "arp" : {
+                      "type": "object",
+                      "title": "",
+                      "properties": {
+                        "priority_level": {
+                          "type": "number",
+                          "title": "ARP Priority Level (1-15)*",
+                          "default": 8,
+                          "minimum": 1,
+                          "maximum": 15,
+                          "required": true
+                        },
+                        "pre_emption_capability": {
+                          "type": "number",
+                          "title": "Capability*",
+                          "enum": [1, 0],
+                          "enumNames": ["Disabled", "Enabled"],
+                          "default": 1,
+                        },
+                        "pre_emption_vulnerability": {
+                          "type": "number",
+                          "title": "Vulnerability*",
+                          "default": 1,
+                          "minimum": 0,
+                          "maximum": 1,
+                          "enum": [1, 0],
+                          "enumNames": ["Disabled", "Enabled"],
+                          "default": 1,
+                        },
+                      }
+                    },
+                    "mbr": {
+                      "type": "object",
+                      "title": "",
+                      "properties": {
+                        "downlink": {
+                          "type": "number",
+                          "title": "MBR Downlink (Kbps)",
+                        },
+                        "uplink": {
+                          "type": "number",
+                          "title": "MBR Uplink (Kbps)",
+                        },
+                      }
+                    },
+                    "gbr": {
+                      "type": "object",
+                      "title": "",
+                      "properties": {
+                        "downlink": {
+                          "type": "number",
+                          "title": "GBR Downlink (Kbps)",
+                        },
+                        "uplink": {
+                          "type": "number",
+                          "title": "GBR Uplink (Kbps)",
+                        },
+                      }
+                    },
+                  },
+                },
+              }
             }
           }
         }
@@ -164,18 +267,15 @@ const uiSchema = {
       classNames: "col-xs-5",
     },
   },
-  "ue_ambr" : {
-    "max_bandwidth_dl" : {
+  "ambr" : {
+    "downlink" : {
       classNames: "col-xs-6"
     },
-    "max_bandwidth_ul" : {
+    "uplink" : {
       classNames: "col-xs-6"
     },
   },
   "pdn": {
-    "ui:options":  {
-      "orderable": false
-    },
     "items": {
       "qos": {
         "qci": {
@@ -196,13 +296,55 @@ const uiSchema = {
           }
         }
       },
-      "pdn_ambr" : {
-        "max_bandwidth_dl" : {
+      "ambr" : {
+        "downlink" : {
           classNames: "col-xs-6"
         },
-        "max_bandwidth_ul" : {
+        "uplink" : {
           classNames: "col-xs-6"
         },
+      },
+      "pcc_rule": {
+        "items": {
+          "flow": {
+            "ui:help": "Hint: See IPFilterRule in RFC 3588!"
+          },
+          "qos": {
+            "qci": {
+              "ui:widget": "radio",
+              "ui:options": {
+                "inline": true
+              },
+            },
+            "arp": {
+              "priority_level": {
+                classNames: "col-xs-6"
+              },
+              "pre_emption_capability": {
+                classNames: "col-xs-3"
+              },
+              "pre_emption_vulnerability": {
+                classNames: "col-xs-3"
+              }
+            },
+            "mbr": {
+              "downlink": {
+                classNames: "col-xs-6"
+              },
+              "uplink": {
+                classNames: "col-xs-6"
+              }
+            },
+            "gbr": {
+              "downlink": {
+                classNames: "col-xs-6"
+              },
+              "uplink": {
+                classNames: "col-xs-6"
+              }
+            }
+          }
+        }
       }
     }
   }
