@@ -58,7 +58,7 @@ c_int16_t apn_build(c_int8_t *dst, c_int8_t *src, c_int16_t len)
 
 c_int16_t apn_parse(c_int8_t *dst, c_int8_t *src, c_int16_t len)
 {
-    core_cpystrn(dst, src+1, c_min(len, MAX_APN_LEN)+1);
+    core_cpystrn(dst, src+1, c_min(len-1, MAX_APN_LEN)+1);
 
     return len-1;
 }

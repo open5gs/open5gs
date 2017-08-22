@@ -34,7 +34,7 @@ void mme_s6a_send_air(mme_ue_t *mme_ue)
     struct sess_state *mi = NULL, *svg;
     struct session *session = NULL;
 
-    d_assert(mme_ue, return, "Null Param");
+    d_assert(mme_ue, return, "Null param");
 
     /* Clear Security Context */
     CLEAR_SECURITY_CONTEXT(mme_ue);

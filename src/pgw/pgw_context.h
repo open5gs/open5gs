@@ -72,9 +72,18 @@ typedef struct _pgw_sess_t {
     /* Last Received GTP Messasge */
     gtp_message_t   last_gtp_message;
 
-    c_int8_t        apn[MAX_APN_LEN];
-    paa_t           paa;
+    /* IMSI */
+    c_uint8_t       imsi[MAX_IMSI_LEN];
+    int             imsi_len;
+    c_int8_t        imsi_bcd[MAX_IMSI_BCD_LEN+1];
+
+    /* APN Configuration */
+    pdn_t           pdn;
     pgw_ip_pool_t*  ip_pool;
+
+    /* User-Lication-Info */
+    tai_t           tai;
+    e_cgi_t         e_cgi;
 
     list_t          bearer_list;
 } pgw_sess_t;

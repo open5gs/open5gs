@@ -1,4 +1,4 @@
-#define TRACE_MODULE _pcrf_gx_handler
+#define TRACE_MODULE _pcrf_fd_path
 
 #include "core_debug.h"
 
@@ -8,12 +8,12 @@
 #include "pcrf_context.h"
 
 /* handler for fallback cb */
-static struct disp_hdl *hdl_fb = NULL; 
+static struct disp_hdl *hdl_gx_fb = NULL; 
 /* handler for Credit-Control-Request cb */
-static struct disp_hdl *hdl_ccr = NULL; 
+static struct disp_hdl *hdl_gx_ccr = NULL; 
 
 /* Default callback for the application. */
-static int pcrf_fb_cb(struct msg **msg, struct avp *avp, 
+static int pcrf_gx_fb_cb(struct msg **msg, struct avp *avp, 
         struct session *sess, void *opaque, enum disp_action *act)
 {
 	/* This CB should never be called */
@@ -23,7 +23,7 @@ static int pcrf_fb_cb(struct msg **msg, struct avp *avp,
 }
 
 /* Callback for incoming Credit-Control-Request messages */
-static int pcrf_ccr_cb( struct msg **msg, struct avp *avp, 
+static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp, 
         struct session *sess, void *opaque, enum disp_action *act)
 {
 	struct msg *ans, *qry;
@@ -89,7 +89,7 @@ out:
     return 0;
 }
 
-int pcrf_gx_init(void)
+int pcrf_fd_init(void)
 {
 	struct disp_when data;
 
@@ -102,13 +102,13 @@ int pcrf_gx_init(void)
 	data.app = gx_application;
 	
 	/* fallback CB if command != unexpected message received */
-	CHECK_FCT( fd_disp_register(pcrf_fb_cb, DISP_HOW_APPID, &data, NULL,
-                &hdl_fb) );
+	CHECK_FCT( fd_disp_register(pcrf_gx_fb_cb, DISP_HOW_APPID, &data, NULL,
+                &hdl_gx_fb) );
 	
 	/* specific handler for Credit-Control-Request */
 	data.command = gx_cmd_ccr;
-	CHECK_FCT( fd_disp_register(pcrf_ccr_cb, DISP_HOW_CC, &data, NULL,
-                &hdl_ccr) );
+	CHECK_FCT( fd_disp_register(pcrf_gx_ccr_cb, DISP_HOW_CC, &data, NULL,
+                &hdl_gx_ccr) );
 
 	/* Advertise the support for the application in the peer */
 	CHECK_FCT( fd_disp_app_support(gx_application, fd_vendor, 1, 0) );
@@ -116,13 +116,13 @@ int pcrf_gx_init(void)
 	return 0;
 }
 
-void pcrf_gx_final(void)
+void pcrf_fd_final(void)
 {
-	if (hdl_fb) {
-		(void) fd_disp_unregister(&hdl_fb, NULL);
+	if (hdl_gx_fb) {
+		(void) fd_disp_unregister(&hdl_gx_fb, NULL);
 	}
-	if (hdl_ccr) {
-		(void) fd_disp_unregister(&hdl_ccr, NULL);
+	if (hdl_gx_ccr) {
+		(void) fd_disp_unregister(&hdl_gx_ccr, NULL);
 	}
 
     fd_final();

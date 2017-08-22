@@ -113,6 +113,28 @@ static void misc_test6(abts_case *tc, void *data)
     core_bcd_to_buffer(MEI, out, &out_len);
     ABTS_TRUE(tc, 
             memcmp("\x53\x61\x20\x00\x91\x78\x84\x00", out, out_len) == 0);
+#define IMSI "001010123456819"
+    core_bcd_to_buffer(IMSI, out, &out_len);
+    ABTS_TRUE(tc, 
+            memcmp("\x00\x01\x01\x21\x43\x65\x18\xf9", out, out_len) == 0);
+}
+
+static void misc_test7(abts_case *tc, void *data)
+{
+    char out[32];
+    c_uint8_t buf1[6] = "\x94\x71\x52\x76\x00\x41";
+    int buf1_len = 6;
+    c_uint8_t buf2[8] = "\x53\x61\x20\x00\x91\x78\x84\x00";
+    int buf2_len = 8;
+    c_uint8_t buf3[8] = "\x00\x01\x01\x21\x43\x65\x18\xf9";
+    int buf3_len = 8;
+
+    core_buffer_to_bcd(buf1, buf1_len, out);
+    ABTS_TRUE(tc, strcmp("491725670014", out) == 0);
+    core_buffer_to_bcd(buf2, buf2_len, out);
+    ABTS_TRUE(tc, strcmp("3516020019874800", out) == 0);
+    core_buffer_to_bcd(buf3, buf3_len, out);
+    ABTS_TRUE(tc, strcmp("001010123456819", out) == 0);
 }
 
 abts_suite *testmisc(abts_suite *suite)
@@ -125,6 +147,7 @@ abts_suite *testmisc(abts_suite *suite)
     abts_run_test(suite, misc_test4, NULL);
     abts_run_test(suite, misc_test5, NULL);
     abts_run_test(suite, misc_test6, NULL);
+    abts_run_test(suite, misc_test7, NULL);
 
     return suite;
 }

@@ -86,6 +86,30 @@ void *core_bcd_to_buffer(c_int8_t *in, void *out, int *out_len)
     }
 
     *out_len = (in_len + 1) / 2;
+    if (in_len & 0x01)
+    {
+        out_p[(*out_len)-1] |= 0xF0;
+    }
+
+    return out;
+}
+
+void *core_buffer_to_bcd(c_uint8_t *in, int in_len, void *out)
+{
+    int i = 0;
+    c_uint8_t *out_p = out;
+
+    for (i = 0; i < in_len; i++) 
+    {
+        out_p[i*2] = 0x30 + (in[i] & 0x0F);
+        out_p[i*2+1] = 0x30 + ((in[i] & 0xF0) >> 4);
+    }
+
+    out_p[in_len*2] = 0;
+    if ((out_p[in_len*2-1] & 0x0F) == 0x0F)
+    {
+        out_p[in_len*2-1] = 0;
+    }
 
     return out;
 }

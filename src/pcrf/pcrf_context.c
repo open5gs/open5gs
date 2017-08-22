@@ -185,8 +185,8 @@ status_t pcrf_context_setup_trace_module()
         else if (fd <= 5) fd_g_debug_lvl = FD_LOG_DEBUG;
         else fd_g_debug_lvl = FD_LOG_ANNOYING;
 
-        extern int _pcrf_gx_handler;
-        d_trace_level(&_pcrf_gx_handler, fd);
+        extern int _pcrf_fd_path;
+        d_trace_level(&_pcrf_fd_path, fd);
         extern int _fd_init;
         d_trace_level(&_fd_init, fd);
         extern int _fd_logger;

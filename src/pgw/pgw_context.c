@@ -429,8 +429,8 @@ status_t pgw_context_setup_trace_module()
         else if (fd <= 5) fd_g_debug_lvl = FD_LOG_DEBUG;
         else fd_g_debug_lvl = FD_LOG_ANNOYING;
 
-        extern int _pgw_gx_handler;
-        d_trace_level(&_pgw_gx_handler, fd);
+        extern int _pgw_fd_path;
+        d_trace_level(&_pgw_fd_path, fd);
         extern int _fd_init;
         d_trace_level(&_fd_init, fd);
         extern int _fd_logger;
@@ -483,7 +483,7 @@ pgw_bearer_t *pgw_sess_add(c_int8_t *apn, c_uint8_t id)
     list_init(&sess->bearer_list);
     list_append(&self.sess_list, sess);
 
-    strcpy(sess->apn, apn);
+    strcpy(sess->pdn.apn, apn);
 
     bearer = pgw_bearer_add(sess, id);
     d_assert(bearer, pgw_sess_remove(sess); return NULL, 
@@ -545,7 +545,7 @@ pgw_sess_t* pgw_sess_find_by_apn(c_int8_t *apn)
     sess = pgw_sess_first();
     while (sess)
     {
-        if (strcmp(sess->apn, apn) == 0)
+        if (strcmp(sess->pdn.apn, apn) == 0)
             break;
 
         sess = pgw_sess_next(sess);
@@ -687,9 +687,9 @@ pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
     {
         d_trace(50, "Dst(%s) in Pkt : PAA(%s) in PDN\n",
                 INET_NTOP(&iph->ip_dst.s_addr,buf1),
-                INET_NTOP(&sess->paa.ipv4_addr, buf2));
+                INET_NTOP(&sess->pdn.paa.ipv4_addr, buf2));
 
-        if (iph->ip_dst.s_addr == sess->paa.ipv4_addr)
+        if (iph->ip_dst.s_addr == sess->pdn.paa.ipv4_addr)
         {
             /* Found */
             bearer = pgw_default_bearer_in_sess(sess);

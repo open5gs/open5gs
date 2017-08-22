@@ -1,7 +1,7 @@
 #define TRACE_MODULE _pcrf_init
 
 #include "pcrf_context.h"
-#include "pcrf_gx_handler.h"
+#include "pcrf_fd_path.h"
 
 static int initialized = 0;
 
@@ -22,7 +22,7 @@ status_t pcrf_initialize(void)
     rv = pcrf_db_init();
     if (rv != CORE_OK) return rv;
 
-    ret = pcrf_gx_init();
+    ret = pcrf_fd_init();
     if (ret != CORE_OK) return CORE_ERROR;
 
     initialized = 1;
@@ -34,7 +34,7 @@ void pcrf_terminate(void)
 {
     if (!initialized) return;
 
-    pcrf_gx_final();
+    pcrf_fd_final();
 
     pcrf_db_final();
     pcrf_context_final();

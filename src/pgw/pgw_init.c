@@ -6,7 +6,7 @@
 #include "pgw_context.h"
 #include "pgw_event.h"
 
-#include "pgw_gx_handler.h"
+#include "pgw_fd_path.h"
 
 static thread_id sm_thread;
 static void *THREAD_FUNC sm_main(thread_id id, void *data);
@@ -33,7 +33,7 @@ status_t pgw_initialize()
     rv = pgw_ip_pool_generate();
     if (rv != CORE_OK) return rv;
 
-    ret = pgw_gx_init();
+    ret = pgw_fd_init();
     if (ret != 0) return CORE_ERROR;
 
     rv = thread_create(&sm_thread, NULL, sm_main, NULL);
@@ -53,7 +53,7 @@ void pgw_terminate(void)
     thread_delete(net_thread);
     thread_delete(sm_thread);
 
-    pgw_gx_final();
+    pgw_fd_final();
 
     pgw_context_final();
 

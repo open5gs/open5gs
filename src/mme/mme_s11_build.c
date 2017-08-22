@@ -46,9 +46,11 @@ status_t mme_s11_build_create_session_request(pkbuf_t **pkbuf, mme_sess_t *sess)
     req->imsi.len = mme_ue->imsi_len;
 
     /* Not used */
+#if 0
     req->msisdn.presence = 1;
     req->msisdn.data = mme_ue->imsi;
     req->msisdn.len = mme_ue->imsi_len;
+#endif
 
     memset(&uli, 0, sizeof(gtp_uli_t));
     uli.flags.e_cgi = 1;
@@ -57,7 +59,7 @@ status_t mme_s11_build_create_session_request(pkbuf_t **pkbuf, mme_sess_t *sess)
             sizeof(uli.tai.plmn_id));
     uli.tai.tac = mme_ue->enb_ue->tai.tac;
     memcpy(&uli.e_cgi.plmn_id, &mme_ue->enb_ue->e_cgi.plmn_id, 
-            sizeof(uli.tai.plmn_id));
+            sizeof(uli.e_cgi.plmn_id));
     uli.e_cgi.cell_id = mme_ue->enb_ue->e_cgi.cell_id;
     req->user_location_information.presence = 1;
     gtp_build_uli(&req->user_location_information, &uli, 
@@ -105,12 +107,15 @@ status_t mme_s11_build_create_session_request(pkbuf_t **pkbuf, mme_sess_t *sess)
     req->maximum_apn_restriction.presence = 1;
     req->maximum_apn_restriction.u8 = GTP_APN_NO_RESTRICTION;
 
-    memset(&ambr, 0, sizeof(gtp_ambr_t));
-    ambr.uplink = htonl(pdn->ambr.uplink);
-    ambr.downlink = htonl(pdn->ambr.downlink);
-    req->aggregate_maximum_bit_rate.presence = 1;
-    req->aggregate_maximum_bit_rate.data = &ambr;
-    req->aggregate_maximum_bit_rate.len = sizeof(ambr);
+    if (pdn->ambr.uplink || pdn->ambr.downlink)
+    {
+        memset(&ambr, 0, sizeof(gtp_ambr_t));
+        ambr.uplink = htonl(pdn->ambr.uplink);
+        ambr.downlink = htonl(pdn->ambr.downlink);
+        req->aggregate_maximum_bit_rate.presence = 1;
+        req->aggregate_maximum_bit_rate.data = &ambr;
+        req->aggregate_maximum_bit_rate.len = sizeof(ambr);
+    }
 
     if (bearer->ue_pco_len)
     {
@@ -133,6 +138,7 @@ status_t mme_s11_build_create_session_request(pkbuf_t **pkbuf, mme_sess_t *sess)
     gtp_build_bearer_qos(&req->bearer_contexts_to_be_created.bearer_level_qos,
             &bearer_qos, bearer_qos_buf, GTP_BEARER_QOS_LEN);
 
+    /* FIXME : where did we receive this information from MS */
     memset(&ue_timezone, 0, sizeof(ue_timezone));
     ue_timezone.timezone = 0x40;
     ue_timezone.daylight_saving_time = 

@@ -11,7 +11,7 @@
 #include "pgw_event.h"
 #include "pgw_gtp_path.h"
 #include "pgw_s5c_handler.h"
-#include "pgw_gx_handler.h"
+#include "pgw_fd_path.h"
 
 void pgw_state_initial(fsm_t *s, event_t *e)
 {
@@ -121,13 +121,13 @@ void pgw_state_operational(fsm_t *s, event_t *e)
             switch(type)
             {
                 case GTP_CREATE_SESSION_REQUEST_TYPE:
-                    pgw_handle_create_session_request(
+                    pgw_s5c_handle_create_session_request(
                         xact, sess, &gtp_message.create_session_request);
                     pgw_gx_send_ccr(xact, sess,
                         GX_CC_REQUEST_TYPE_INITIAL_REQUEST);
                     break;
                 case GTP_DELETE_SESSION_REQUEST_TYPE:
-                    pgw_handle_delete_session_request(
+                    pgw_s5c_handle_delete_session_request(
                         xact, sess, &gtp_message.delete_session_request);
                     pgw_gx_send_ccr(xact, sess,
                         GX_CC_REQUEST_TYPE_TERMINATION_REQUEST);
@@ -167,18 +167,19 @@ void pgw_state_operational(fsm_t *s, event_t *e)
                     if (result_code != ER_DIAMETER_SUCCESS)
                     {
                         d_error("Not impleneted");
-                        return;
+                        break;
                     }
                     switch(event_get_param4(e))
                     {
                         case GX_CC_REQUEST_TYPE_INITIAL_REQUEST:
                         {
-                            pgw_handle_create_session_response(xact, sess);
+                            pgw_s5c_handle_create_session_response(xact, sess);
+
                             break;
                         }
                         case GX_CC_REQUEST_TYPE_TERMINATION_REQUEST:
                         {
-                            pgw_handle_delete_session_response(xact, sess);
+                            pgw_s5c_handle_delete_session_response(xact, sess);
                             break;
                         }
                         default:
