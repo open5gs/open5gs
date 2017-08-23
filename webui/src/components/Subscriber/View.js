@@ -142,7 +142,7 @@ const Pdn = styled.div`
     margin: 0px 32px;
 
     .small_data {
-      width: 40px;
+      width: 60px;
       font-size: 12px;
       margin: 4px;
     }
@@ -301,10 +301,13 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
                         </div>
                         {pcc_rule['flow'] !== undefined &&
                           pcc_rule.flow.map(flow =>
-                            <div className="body" key={flow.description}>
+                            <div className="body">
                               <div className="medium_data"></div>
-                              <div className="small_data" style={{color:oc.gray[5]}}>FLOW</div>
-                              <div className="large_data" style={{width:"640px"}}>{flow.description}</div>
+                              <div className="small_data" style={{color:oc.gray[5]}}>
+                                {flow.direction == 1 && "Downlink"}
+                                {flow.direction == 2 && "Uplink"}
+                              </div>
+                              <div className="large_data" style={{width:"480px"}}>{flow.description}</div>
                             </div>
                           )
                         }

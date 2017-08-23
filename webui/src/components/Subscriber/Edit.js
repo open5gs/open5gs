@@ -116,9 +116,6 @@ const schema = {
                   "pre_emption_vulnerability": {
                     "type": "number",
                     "title": "Vulnerability*",
-                    "default": 1,
-                    "minimum": 0,
-                    "maximum": 1,
                     "enum": [1, 0],
                     "enumNames": ["Disabled", "Enabled"],
                     "default": 1,
@@ -163,11 +160,22 @@ const schema = {
                   "items": {
                     "type": "object",
                     "properties": {
+                      "direction": {
+                        "type": "number",
+                        "title": "Flow Direction*",
+                        "enum": [1, 2],
+                        "enumNames": ["Downlink", "Uplink"],
+                        "default": 1,
+                      },
                       "description": {
                         "type": "string",
-                        "title": "Flow Description*",
-                        "default": "permit in ip from any to any",
-                        "required": true
+                        "title": "Description*",
+                        "default": "permit out ip from any to any",
+                        "required": true,
+                        "pattern": "^permit\\s+out",
+                        "messages": {
+                          "pattern": "Begin with reserved keyword 'permit out'."
+                        }
                       }
                     }
                   }
@@ -307,7 +315,15 @@ const uiSchema = {
       "pcc_rule": {
         "items": {
           "flow": {
-            "ui:help": "Hint: See IPFilterRule in RFC 3588!"
+            "items": {
+              "direction": {
+                classNames: "col-xs-12"
+              },
+              "description": {
+                classNames: "col-xs-12",
+                "ui:help": "Hint: Flow-Description(TS29.212), IPFilterRule(RFC 3588)",
+              },
+            },
           },
           "qos": {
             "qci": {

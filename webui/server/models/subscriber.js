@@ -58,6 +58,7 @@ const Subscriber = new Schema({
     },
     pcc_rule: [{
       flow: [{
+        direction: Number,
         description: String
       }],
       qos: {
