@@ -87,6 +87,7 @@ void emm_state_operational(fsm_t *s, event_t *e)
                         mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, 
                                 mme_ue->kenb);
 
+                    mme_ue_reset_ebi(mme_ue);
                     mme_ue_paged(mme_ue);
                     emm_handle_attach_request(
                             mme_ue, &message->emm.attach_request);

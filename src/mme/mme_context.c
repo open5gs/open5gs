@@ -1355,58 +1355,13 @@ status_t mme_associate_ue_context(mme_ue_t *mme_ue, enb_ue_t *enb_ue)
     return CORE_OK;
 }
 
-
-#if 0
-unsigned int mme_ue_count()
+status_t mme_ue_reset_ebi(mme_ue_t *mme_ue)
 {
-    d_assert(self.mme_ue_s1ap_id_hash, return 0, "Null param");
-    return hash_count(self.mme_ue_s1ap_id_hash);
-}
-
-status_t mme_ue_remove_in_enb(mme_enb_t *enb)
-{
-    mme_ue_t *mme_ue = NULL, *next_mme_ue = NULL;
-    
-    mme_ue = mme_ue_first_in_enb(enb);
-    while (mme_ue)
-    {
-        next_mme_ue = mme_ue_next_in_enb(mme_ue);
-
-        mme_ue_remove(mme_ue);
-
-        mme_ue = next_mme_ue;
-    }
+    /* Setup EBI Generator */
+    mme_ue->ebi = MIN_EPS_BEARER_ID - 1;
 
     return CORE_OK;
 }
-
-mme_ue_t* mme_ue_find_by_enb_ue_s1ap_id(
-        mme_enb_t *enb, c_uint32_t enb_ue_s1ap_id)
-{
-    mme_ue_t *mme_ue = NULL;
-    
-    mme_ue = mme_ue_first_in_enb(enb);
-    while (mme_ue)
-    {
-        if (enb_ue_s1ap_id == mme_ue->enb_ue_s1ap_id)
-            break;
-
-        mme_ue = mme_ue_next_in_enb(mme_ue);
-    }
-
-    return mme_ue;
-}
-
-mme_ue_t* mme_ue_first_in_enb(mme_enb_t *enb)
-{
-    return list_first(&enb->enb_ue_list);
-}
-
-mme_ue_t* mme_ue_next_in_enb(mme_ue_t *mme_ue)
-{
-    return list_next(mme_ue);
-}
-#endif
 
 mme_bearer_t *mme_sess_add(mme_ue_t *mme_ue, c_uint8_t pti)
 {
@@ -1418,8 +1373,6 @@ mme_bearer_t *mme_sess_add(mme_ue_t *mme_ue, c_uint8_t pti)
 
     sess->mme_s11_teid = sess->index;
     sess->mme_s11_addr = mme_self()->s11_addr;
-
-    sess->ebi = MIN_EPS_BEARER_ID - 1; /* Setup EBI Generator */
 
     list_init(&sess->bearer_list);
     list_append(&mme_ue->sess_list, sess);
@@ -1551,7 +1504,7 @@ mme_bearer_t* mme_bearer_add(mme_sess_t *sess, c_uint8_t pti)
     d_assert(bearer, return NULL, "Null param");
 
     bearer->pti = pti;
-    bearer->ebi = NEXT_ID(sess->ebi, MIN_EPS_BEARER_ID, MAX_EPS_BEARER_ID);
+    bearer->ebi = NEXT_ID(mme_ue->ebi, MIN_EPS_BEARER_ID, MAX_EPS_BEARER_ID);
 
     list_append(&sess->bearer_list, bearer);
     

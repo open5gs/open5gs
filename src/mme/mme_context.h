@@ -211,6 +211,7 @@ struct _mme_ue_t {
     int             num_of_pdn;
 
     /* ESM Info */
+    c_uint8_t       ebi; /* EPS Bearer ID generator */
     list_t          sess_list;
 
     /* eNB UE context */
@@ -250,8 +251,6 @@ typedef struct _mme_sess_t {
     c_uint32_t      sgw_s11_teid;
     c_uint32_t      sgw_s11_addr;
 
-    /* EPS Bearer ID generator */
-    c_uint8_t       ebi;
     /* mme_bearer_first(sess) : Default Bearer Context */
     list_t          bearer_list;
 
@@ -325,6 +324,7 @@ CORE_DECLARE(status_t)      mme_ue_set_imsi(
                                 mme_ue_t *mme_ue, c_int8_t *imsi_bcd);
 CORE_DECLARE(status_t)      mme_associate_ue_context(
                                 mme_ue_t *mme_ue, enb_ue_t *enb_ue);
+CORE_DECLARE(status_t)      mme_ue_reset_ebi(mme_ue_t *mme_ue);
 
 CORE_DECLARE(hash_index_t *) mme_ue_first();
 CORE_DECLARE(hash_index_t *) mme_ue_next(hash_index_t *hi);
