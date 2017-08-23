@@ -606,6 +606,191 @@ void emm_handle_emm_status(mme_ue_t *mme_ue, nas_emm_status_t *emm_status)
             emm_status->emm_cause, mme_ue->imsi_bcd);
 }
 
+void emm_handle_tau_request(
+        mme_ue_t *mme_ue, nas_tracking_area_update_request_t *tau_request)
+{
+    nas_eps_mobile_identity_t *eps_mobile_identity =
+                    &tau_request->old_guti;
+    enb_ue_t *enb_ue = NULL;
+
+    d_assert(mme_ue, return, "Null param");
+    enb_ue = mme_ue->enb_ue;
+    d_assert(enb_ue, return, "Null param");
+
+    /* Store UE specific information */
+    if (tau_request->presencemask &
+        NAS_TRACKING_AREA_UPDATE_REQUEST_LAST_VISITED_REGISTERED_TAI_PRESENT)
+    {
+        nas_tracking_area_identity_t *last_visited_registered_tai = 
+            &tau_request->last_visited_registered_tai;
+
+        memcpy(&mme_ue->visited_plmn_id, 
+                &last_visited_registered_tai->plmn_id,
+                PLMN_ID_LEN);
+    }
+    else
+    {
+        /* FIXME : what will do if we don't know last visited plmn_id */
+        memcpy(&mme_ue->visited_plmn_id,
+                &mme_self()->served_tai[0].plmn_id, PLMN_ID_LEN);
+    }
+
+    if (tau_request->presencemask &
+            NAS_TRACKING_AREA_UPDATE_REQUEST_UE_NETWORK_CAPABILITY_PRESENT)
+    {
+        memcpy(&mme_ue->ue_network_capability, 
+                &tau_request->ue_network_capability,
+                sizeof(tau_request->ue_network_capability));
+    }
+
+    if (tau_request->presencemask &
+            NAS_TRACKING_AREA_UPDATE_REQUEST_MS_NETWORK_CAPABILITY_PRESENT)
+    {
+        memcpy(&mme_ue->ms_network_capability, 
+                &tau_request->ms_network_capability,
+                sizeof(tau_request->ms_network_capability));
+    }
+
+    /* Copy TAI and ECGI from enb_ue */
+    memcpy(&mme_ue->tai, &enb_ue->tai, sizeof(tai_t));
+    memcpy(&mme_ue->e_cgi, &enb_ue->e_cgi, sizeof(e_cgi_t));
+
+    /* TODO: 
+     *   1) Consider if MME is changed or not.
+     *   2) Consider if SGW is changed or not.
+     */
+    switch(eps_mobile_identity->imsi.type)
+    {
+        case NAS_EPS_MOBILE_IDENTITY_GUTI:
+        {
+            nas_eps_mobile_identity_guti_t *nas_guti = NULL;
+            nas_guti = &eps_mobile_identity->guti;
+            guti_t guti;
+
+            guti.plmn_id = nas_guti->plmn_id;
+            guti.mme_gid = nas_guti->mme_gid;
+            guti.mme_code = nas_guti->mme_code;
+            guti.m_tmsi = nas_guti->m_tmsi;
+
+            d_trace(3, "[NAS] TAU request : GUTI[G:%d,C:%d,M_TMSI:0x%x]-"
+                    "IMSI:[%s] --> EMM\n", 
+                    guti.mme_gid,
+                    guti.mme_code,
+                    guti.m_tmsi,
+                    MME_UE_HAVE_IMSI(mme_ue) 
+                        ? mme_ue->imsi_bcd : "Unknown");
+
+            if (!MME_UE_HAVE_IMSI(mme_ue))
+            {
+                /* Unknown GUTI */
+
+                /* FIXME : Need to check if GUTI is allocated to old MME.
+                 * if so , transmit context request to get the context of ue.
+                 */
+
+                /* Send TAU reject */
+                emm_handle_tau_reject(mme_ue, 
+                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+            }
+            else if (!SECURITY_CONTEXT_IS_VALID(mme_ue))
+            {
+                /* Need Authencation */
+                d_warn("Need Authenticatoin");
+            }
+            else
+            {
+                /* Send TAU accept */
+                emm_handle_tau_accept(mme_ue);
+            }
+
+            break;
+        }
+        default:
+        {
+            d_warn("Not implemented(type:%d)", 
+                    eps_mobile_identity->imsi.type);
+            
+            return;
+        }
+    }
+
+    //event_emm_to_esm(mme_ue, &attach_request->esm_message_container);
+}
+
+void emm_handle_tau_accept(mme_ue_t *mme_ue)
+{
+    status_t rv;
+    mme_enb_t *enb = NULL;
+    enb_ue_t *enb_ue = NULL;
+    pkbuf_t *emmbuf = NULL, *s1apbuf = NULL;
+    S1ap_Cause_t cause;
+
+    d_assert(mme_ue, return, "Null param");
+    enb_ue = mme_ue->enb_ue;
+    d_assert(enb_ue, return, "Null param");
+    enb = enb_ue->enb;
+    d_assert(enb, return, "Null param");
+
+    /* Build TAU accept */
+    if (emm_build_tau_accept(&emmbuf, mme_ue) != CORE_OK)
+    {
+        d_error("emm_build_tau_accept error");
+        pkbuf_free(emmbuf);
+        return;
+    }
+
+    /* Send Dl NAS to UE */
+    d_assert(nas_send_to_downlink_nas_transport(mme_ue, emmbuf) == CORE_OK,,);
+
+
+    /* FIXME : delay required before sending UE context release to make sure 
+     * that UE receive DL NAS ? */
+    cause.present = S1ap_Cause_PR_nas;
+    cause.choice.nas = S1ap_CauseNas_normal_release;
+
+    rv = s1ap_build_ue_context_release_commmand(&s1apbuf, enb_ue, &cause);
+    d_assert(rv == CORE_OK && s1apbuf, return, "s1ap build error");
+
+    d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
+}
+
+void emm_handle_tau_reject(mme_ue_t *mme_ue, nas_emm_cause_t emm_cause)
+{
+    status_t rv;
+    mme_enb_t *enb = NULL;
+    enb_ue_t *enb_ue = NULL;
+    pkbuf_t *emmbuf = NULL, *s1apbuf = NULL;
+    S1ap_Cause_t cause;
+
+    d_assert(mme_ue, return, "Null param");
+    enb_ue = mme_ue->enb_ue;
+    d_assert(enb_ue, return, "Null param");
+    enb = enb_ue->enb;
+    d_assert(enb, return, "Null param");
+
+    /* Build TAU reject */
+    if (emm_build_tau_reject(&emmbuf, emm_cause, mme_ue) != CORE_OK)
+    {
+        d_error("emm_build_tau_accept error");
+        pkbuf_free(emmbuf);
+        return;
+    }
+
+    /* Send Dl NAS to UE */
+    d_assert(nas_send_to_downlink_nas_transport(mme_ue, emmbuf) == CORE_OK,,);
+
+
+    /* FIXME : delay required before sending UE context release to make sure 
+     * that UE receive DL NAS ? */
+    cause.present = S1ap_Cause_PR_nas;
+    cause.choice.nas = S1ap_CauseNas_normal_release;
+
+    rv = s1ap_build_ue_context_release_commmand(&s1apbuf, enb_ue, &cause);
+    d_assert(rv == CORE_OK && s1apbuf, return, "s1ap build error");
+
+    d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
+}
+
 /***********************************************************************
  * S11 Layer in EMM Handler 
  */

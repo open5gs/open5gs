@@ -186,6 +186,8 @@ void emm_state_operational(fsm_t *s, event_t *e)
                 case NAS_TRACKING_AREA_UPDATE_REQUEST:
                 {
                     mme_ue_paged(mme_ue);
+                    emm_handle_tau_request(
+                            mme_ue, &message->emm.tracking_area_update_request);
                     break;
                 }
                 default:
