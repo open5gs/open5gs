@@ -77,17 +77,43 @@ void sgw_state_operational(fsm_t *s, event_t *e)
 
             if (type == GTP_CREATE_SESSION_REQUEST_TYPE)
             {
-                sgw_handle_create_session_request(xact, type, &gtp_message);
-                pkbuf_free(pkbuf);
+                gtp_create_session_request_t *req = 
+                    &gtp_message.create_session_request;
+                c_int8_t apn[MAX_APN_LEN];
 
-                break;
+                if (req->access_point_name.presence == 0)
+                {
+                    d_error("No APN");
+
+                    pkbuf_free(pkbuf);
+                    break;
+                }
+
+                apn_parse(apn,
+                    req->access_point_name.data, req->access_point_name.len);
+                sess = sgw_sess_find_by_apn(apn);
+                if (!sess)
+                {
+                    sgw_bearer_t *bearer = NULL;
+                    bearer = sgw_sess_add(apn,
+                        req->bearer_contexts_to_be_created.eps_bearer_id.u8);
+                    d_assert(bearer, pkbuf_free(pkbuf); break,
+                            "No Bearer Context");
+                    sess = bearer->sess;
+                }
             }
+            else
+            {
+                sess = sgw_sess_find_by_teid(teid);
+            }
+            d_assert(sess, pkbuf_free(pkbuf); break, "No Session Context");
 
-            sess = sgw_sess_find_by_teid(teid);
-            d_assert(sess, pkbuf_free(pkbuf); break, 
-                    "No Session Context(TEID:%d)", teid);
             switch(type)
             {
+                case GTP_CREATE_SESSION_REQUEST_TYPE:
+                    sgw_handle_create_session_request(
+                            xact, sess, &gtp_message);
+                    break;
                 case GTP_CREATE_SESSION_RESPONSE_TYPE:
                     sgw_handle_create_session_response(
                             xact, sess, &gtp_message);

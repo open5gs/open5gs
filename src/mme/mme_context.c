@@ -1073,8 +1073,6 @@ mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
     index_alloc(&mme_ue_pool, &mme_ue);
     d_assert(mme_ue, return NULL, "Null param");
 
-    mme_ue->ebi = MIN_EPS_BEARER_ID - 1; /* Setup EBI Generator */
-
     list_init(&mme_ue->sess_list);
 
     /* Create t3413 timer */
@@ -1421,6 +1419,8 @@ mme_bearer_t *mme_sess_add(mme_ue_t *mme_ue, c_uint8_t pti)
     sess->mme_s11_teid = sess->index;
     sess->mme_s11_addr = mme_self()->s11_addr;
 
+    sess->ebi = MIN_EPS_BEARER_ID - 1; /* Setup EBI Generator */
+
     list_init(&sess->bearer_list);
     list_append(&mme_ue->sess_list, sess);
 
@@ -1551,7 +1551,7 @@ mme_bearer_t* mme_bearer_add(mme_sess_t *sess, c_uint8_t pti)
     d_assert(bearer, return NULL, "Null param");
 
     bearer->pti = pti;
-    bearer->ebi = NEXT_ID(mme_ue->ebi, MIN_EPS_BEARER_ID, MAX_EPS_BEARER_ID);
+    bearer->ebi = NEXT_ID(sess->ebi, MIN_EPS_BEARER_ID, MAX_EPS_BEARER_ID);
 
     list_append(&sess->bearer_list, bearer);
     

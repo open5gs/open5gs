@@ -8,6 +8,7 @@
 #include "core_hash.h"
 
 #include "gtp_xact.h"
+#include "types.h"
 
 #include "sgw_sm.h"
 
@@ -31,12 +32,10 @@ typedef struct _sgw_context_t {
     c_uint32_t      s1u_addr;  /* SGW S1-U local address */
     c_uint32_t      s1u_port;  /* SGW S1-U local port */
     net_sock_t*     s1u_sock;  /* SGW S1-U local listen socket */
-    //gtp_node_t      s1u_node;  /* PGW S1-U remote GTPv1-U node */
 
     c_uint32_t      s5u_addr;  /* SGW S5-U local address */
     c_uint32_t      s5u_port;  /* SGW S5-U local port */
     net_sock_t*     s5u_sock;  /* SGW S5-U local listen socket */
-    //gtp_node_t      s5u_node;  /* PGW S5-U remote GTPv1-U node */
 
     msgq_id         queue_id;       /* Queue for processing SGW control plane */
     tm_service_t    tm_service;     /* Timer Service */
@@ -62,6 +61,14 @@ typedef struct _sgw_sess_t {
     c_uint32_t      sgw_s5c_addr;       
     c_uint32_t      pgw_s5c_teid;   /* PGW-S5C-F-TEID */
     c_uint32_t      pgw_s5c_addr;   /* PGW-S5C-F-TEID IPv4 Address */
+
+    /* IMSI */
+    c_uint8_t       imsi[MAX_IMSI_LEN];
+    int             imsi_len;
+    c_int8_t        imsi_bcd[MAX_IMSI_BCD_LEN+1];
+
+    /* APN Configuration */
+    pdn_t           pdn;
 
     list_t          bearer_list;
 } sgw_sess_t;
@@ -115,11 +122,12 @@ CORE_DECLARE(sgw_context_t*) sgw_self(void);
 CORE_DECLARE(status_t)      sgw_context_parse_config(void);
 CORE_DECLARE(status_t)      sgw_context_setup_trace_module(void);
 
-CORE_DECLARE(sgw_bearer_t*) sgw_sess_add(c_uint8_t id);
+CORE_DECLARE(sgw_bearer_t*) sgw_sess_add(c_int8_t *apn, c_uint8_t id);
 CORE_DECLARE(status_t )     sgw_sess_remove(sgw_sess_t *sess);
 CORE_DECLARE(status_t )     sgw_sess_remove_all();
 CORE_DECLARE(sgw_sess_t*)   sgw_sess_find(index_t index);
 CORE_DECLARE(sgw_sess_t*)   sgw_sess_find_by_teid(c_uint32_t teid);
+CORE_DECLARE(sgw_sess_t*)   sgw_sess_find_by_apn(c_int8_t *apn);
 CORE_DECLARE(sgw_sess_t *)  sgw_sess_first();
 CORE_DECLARE(sgw_sess_t *)  sgw_sess_next(sgw_sess_t *sess);
 

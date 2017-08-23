@@ -211,7 +211,6 @@ struct _mme_ue_t {
     int             num_of_pdn;
 
     /* ESM Info */
-    c_uint8_t       ebi;        /* EPS Bearer ID generator */
     list_t          sess_list;
 
     /* eNB UE context */
@@ -251,6 +250,8 @@ typedef struct _mme_sess_t {
     c_uint32_t      sgw_s11_teid;
     c_uint32_t      sgw_s11_addr;
 
+    /* EPS Bearer ID generator */
+    c_uint8_t       ebi;
     /* mme_bearer_first(sess) : Default Bearer Context */
     list_t          bearer_list;
 

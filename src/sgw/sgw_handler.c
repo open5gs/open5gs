@@ -1,6 +1,7 @@
 #define TRACE_MODULE _sgw_handler
 
 #include "core_debug.h"
+#include "core_lib.h"
 
 #include "gtp_types.h"
 
@@ -9,8 +10,8 @@
 #include "sgw_path.h"
 #include "sgw_handler.h"
 
-void sgw_handle_create_session_request(
-        gtp_xact_t *xact, c_uint8_t type, gtp_message_t *gtp_message)
+void sgw_handle_create_session_request(gtp_xact_t *xact,
+        sgw_sess_t *sess, gtp_message_t *gtp_message)
 {
     status_t rv;
     gtp_create_session_request_t *req = NULL;
@@ -18,17 +19,24 @@ void sgw_handle_create_session_request(
     gtp_f_teid_t *mme_s11_teid = NULL;
     gtp_f_teid_t sgw_s5c_teid, sgw_s5u_teid;
 
-    sgw_sess_t *sess = NULL;
     sgw_bearer_t *bearer = NULL;
 
     d_assert(xact, return, "Null param");
+    d_assert(sess, return, "Null param");
     d_assert(gtp_message, return, "Null param");
+    bearer = sgw_default_bearer_in_sess(sess);
+    d_assert(bearer, return, "Null param");
 
     req = &gtp_message->create_session_request;
 
     if (req->sender_f_teid_for_control_plane.presence == 0)
     {
-        d_error("No GTP TEID");
+        d_error("No IMSI");
+        return;
+    }
+    if (req->sender_f_teid_for_control_plane.presence == 0)
+    {
+        d_error("No TEID");
         return;
     }
     if (req->bearer_contexts_to_be_created.presence == 0)
@@ -42,15 +50,10 @@ void sgw_handle_create_session_request(
         return;
     }
 
-    /* Generate Control Plane(UL) : SGW-S11 */
-    /* Generate Control Plane(DL) : SGW-S5C */
-    /* Generate Data Plane(UL) : SGW-S1U */
-    /* Generate Data Plane(DL) : SGW-S5U */
-    bearer = sgw_sess_add(
-            req->bearer_contexts_to_be_created.eps_bearer_id.u8);
-    d_assert(bearer, return, "No Bearer Context");
-    sess = bearer->sess;
-    d_assert(sess, return, "Null param");
+    /* Set IMSI */
+    sess->imsi_len = req->imsi.len;
+    memcpy(sess->imsi, req->imsi.data, sess->imsi_len);
+    core_buffer_to_bcd(sess->imsi, sess->imsi_len, sess->imsi_bcd);
 
     /* Receive Control Plane(DL) : MME-S11 */
     mme_s11_teid = req->sender_f_teid_for_control_plane.data;
@@ -79,11 +82,11 @@ void sgw_handle_create_session_request(
     req->bearer_contexts_to_be_created.s5_s8_u_sgw_f_teid.len = 
         GTP_F_TEID_IPV4_LEN;
 
-    rv = gtp_build_msg(&pkbuf, type, gtp_message);
+    rv = gtp_build_msg(&pkbuf, GTP_CREATE_SESSION_REQUEST_TYPE, gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
-    d_assert(sgw_s5c_send_to_pgw(xact, type, 0, pkbuf) == CORE_OK, 
-            return, "failed to send message");
+    d_assert(sgw_s5c_send_to_pgw(xact, GTP_CREATE_SESSION_REQUEST_TYPE, 0,
+            pkbuf) == CORE_OK, return, "failed to send message");
 
     d_trace(3, "[GTP] Create Session Reqeust : "
             "SGW[%d] --> PGW\n", sess->sgw_s5c_teid);

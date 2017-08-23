@@ -97,8 +97,6 @@ c_int16_t pgw_pco_build(c_uint8_t *pco_buf, tlv_pco_t *tlv_pco)
     return size;
 }
 
-
-
 void pgw_s5c_handle_create_session_request(
         gtp_xact_t *xact, pgw_sess_t *sess, gtp_create_session_request_t *req)
 {
@@ -119,7 +117,6 @@ void pgw_s5c_handle_create_session_request(
         d_error("No IMSI");
         return;
     }
-
     if (req->sender_f_teid_for_control_plane.presence == 0)
     {
         d_error("No TEID");

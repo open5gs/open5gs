@@ -430,7 +430,7 @@ status_t sgw_context_setup_trace_module()
     return CORE_OK;
 }
 
-sgw_bearer_t *sgw_sess_add(c_uint8_t id)
+sgw_bearer_t *sgw_sess_add(c_int8_t *apn, c_uint8_t id)
 {
     sgw_sess_t *sess = NULL;
     sgw_bearer_t *bearer = NULL;
@@ -443,6 +443,8 @@ sgw_bearer_t *sgw_sess_add(c_uint8_t id)
 
     sess->sgw_s5c_teid = sess->index;  /* derived from an index */
     sess->sgw_s5c_addr = sgw_self()->s5c_addr;
+
+    strcpy(sess->pdn.apn, apn);
 
     list_init(&sess->bearer_list);
     list_append(&self.sess_list, sess);
@@ -492,6 +494,22 @@ sgw_sess_t* sgw_sess_find(index_t index)
 sgw_sess_t* sgw_sess_find_by_teid(c_uint32_t teid)
 {
     return sgw_sess_find(teid);
+}
+
+sgw_sess_t* sgw_sess_find_by_apn(c_int8_t *apn)
+{
+    sgw_sess_t *sess = NULL;
+    
+    sess = sgw_sess_first();
+    while (sess)
+    {
+        if (strcmp(sess->pdn.apn, apn) == 0)
+            break;
+
+        sess = sgw_sess_next(sess);
+    }
+
+    return sess;
 }
 
 sgw_sess_t* sgw_sess_first()

@@ -30,6 +30,7 @@ const struct testlist {
     {test_security},
     {test_s1setup},
     {test_attach},
+    {test_volte},
 };
 
 #endif /* APR_TEST_INCLUDES */

@@ -64,5 +64,6 @@ abts_suite *test_gtp_message(abts_suite *suite);
 abts_suite *test_security(abts_suite *suite);
 abts_suite *test_s1setup(abts_suite *suite);
 abts_suite *test_attach(abts_suite *suite);
+abts_suite *test_volte(abts_suite *suite);
 
 #endif /* __TESTUTIL_H__ */
