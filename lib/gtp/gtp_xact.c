@@ -288,7 +288,7 @@ out:
     return CORE_ERROR;
 }
 
-static gtp_xact_t *gtp_xact_find(
+static gtp_xact_t *gtp_xact_find_by_sqn(
         gtp_node_t *gnode, c_uint8_t type, c_uint32_t sqn)
 {
     char buf[INET_ADDRSTRLEN];
@@ -369,7 +369,7 @@ status_t gtp_xact_receive(
     h = pkbuf->payload;
     d_assert(h, goto out1, "Null param");
 
-    new = gtp_xact_find(gnode, h->type, h->sqn);
+    new = gtp_xact_find_by_sqn(gnode, h->type, h->sqn);
     if (!new)
     {
         new = gtp_xact_remote_create(context, sock, gnode, h->sqn);
@@ -442,3 +442,10 @@ out1:
     pkbuf_free(pkbuf);
     return CORE_ERROR;
 }
+
+gtp_xact_t *gtp_xact_find(index_t index)
+{
+    d_assert(index, return NULL, "Invalid Index");
+    return index_find(&gtp_xact_pool, index);
+}
+

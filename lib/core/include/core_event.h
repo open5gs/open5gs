@@ -23,11 +23,23 @@ extern "C" {
     ((__ptr_e)->param3 = (c_uintptr_t)(__param))
 #define event_set_param4(__ptr_e, __param) \
     ((__ptr_e)->param4 = (c_uintptr_t)(__param))
+#define event_set_param5(__ptr_e, __param) \
+    ((__ptr_e)->param5 = (c_uintptr_t)(__param))
+#define event_set_param6(__ptr_e, __param) \
+    ((__ptr_e)->param6 = (c_uintptr_t)(__param))
+#define event_set_param7(__ptr_e, __param) \
+    ((__ptr_e)->param7 = (c_uintptr_t)(__param))
+#define event_set_param8(__ptr_e, __param) \
+    ((__ptr_e)->param8 = (c_uintptr_t)(__param))
 
 #define event_get_param1(__ptr_e) ((__ptr_e)->param1)
 #define event_get_param2(__ptr_e) ((__ptr_e)->param2)
 #define event_get_param3(__ptr_e) ((__ptr_e)->param3)
 #define event_get_param4(__ptr_e) ((__ptr_e)->param4)
+#define event_get_param5(__ptr_e) ((__ptr_e)->param5)
+#define event_get_param6(__ptr_e) ((__ptr_e)->param6)
+#define event_get_param7(__ptr_e) ((__ptr_e)->param7)
+#define event_get_param8(__ptr_e) ((__ptr_e)->param8)
 
 #define event_timer(__tm_service, __ptr_e, __duration, __param) \
     event_timer_create((__tm_service), TIMER_TYPE_ONE_SHOT, \
@@ -43,6 +55,10 @@ typedef struct {
     c_uintptr_t param2;
     c_uintptr_t param3;
     c_uintptr_t param4;
+    c_uintptr_t param5;
+    c_uintptr_t param6;
+    c_uintptr_t param7;
+    c_uintptr_t param8;
 } event_t;
 
 extern char *FSM_NAME_INIT_SIG;

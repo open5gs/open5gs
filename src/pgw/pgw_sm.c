@@ -1,11 +1,17 @@
 #define TRACE_MODULE _pgw_sm
+
 #include "core_debug.h"
+#include "core_lib.h"
+
+#include "fd_lib.h"
+#include "gx_lib.h"
 
 #include "pgw_sm.h"
 #include "pgw_context.h"
 #include "pgw_event.h"
 #include "pgw_gtp_path.h"
 #include "pgw_s5c_handler.h"
+#include "pgw_gx_handler.h"
 
 void pgw_state_initial(fsm_t *s, event_t *e)
 {
@@ -77,21 +83,54 @@ void pgw_state_operational(fsm_t *s, event_t *e)
 
             if (type == GTP_CREATE_SESSION_REQUEST_TYPE)
             {
-                pgw_handle_create_session_request(
-                    xact, &gtp_message.create_session_request);
-                pkbuf_free(pkbuf);
+                gtp_create_session_request_t *req = 
+                    &gtp_message.create_session_request;
+                c_int8_t apn[MAX_APN_LEN];
 
-                break;
+                if (req->access_point_name.presence == 0)
+                {
+                    d_error("No APN");
+
+                    pkbuf_free(pkbuf);
+                    break;
+                }
+
+                apn_parse(apn,
+                    req->access_point_name.data, req->access_point_name.len);
+                sess = pgw_sess_find_by_apn(apn);
+                if (!sess)
+                {
+                    pgw_bearer_t *bearer = NULL;
+                    bearer = pgw_sess_add(apn,
+                        req->bearer_contexts_to_be_created.eps_bearer_id.u8);
+                    d_assert(bearer, pkbuf_free(pkbuf); break,
+                            "No Bearer Context");
+                    sess = bearer->sess;
+                }
             }
+            else
+            {
+                sess = pgw_sess_find_by_teid(teid);
+            }
+            d_assert(sess, pkbuf_free(pkbuf); break, "No Session Context");
 
-            sess = pgw_sess_find_by_teid(teid);
-            d_assert(sess, pkbuf_free(pkbuf); break, 
-                    "No Session Context(TEID:%d)", teid);
+            /* Store Last GTP Message for Session */
+            memcpy(&sess->last_gtp_message,
+                    &gtp_message, sizeof(gtp_message_t));
+
             switch(type)
             {
+                case GTP_CREATE_SESSION_REQUEST_TYPE:
+                    pgw_handle_create_session_request(
+                        xact, sess, &gtp_message.create_session_request);
+                    pgw_gx_send_ccr(xact, sess,
+                        GX_CC_REQUEST_TYPE_INITIAL_REQUEST);
+                    break;
                 case GTP_DELETE_SESSION_REQUEST_TYPE:
                     pgw_handle_delete_session_request(
                         xact, sess, &gtp_message.delete_session_request);
+                    pgw_gx_send_ccr(xact, sess,
+                        GX_CC_REQUEST_TYPE_TERMINATION_REQUEST);
                     break;
                 default:
                     d_warn("Not implmeneted(type:%d)", type);
@@ -103,6 +142,60 @@ void pgw_state_operational(fsm_t *s, event_t *e)
         case PGW_EVT_TRANSACTION_T3:
         {
             gtp_xact_timeout(event_get_param1(e));
+            break;
+        }
+        case PGW_EVT_S5C_SESSION_FROM_GX:
+        {
+            index_t xact_index = event_get_param1(e);
+            gtp_xact_t *xact = NULL;
+            index_t sess_index = event_get_param2(e);
+            pgw_sess_t *sess = NULL;
+
+            d_assert(xact_index, return, "Null param");
+            xact = gtp_xact_find(xact_index);
+            d_assert(xact, return, "Null param");
+
+            d_assert(sess_index, return, "Null param");
+            sess = pgw_sess_find(sess_index);
+            d_assert(sess, return, "Null param");
+
+            switch(event_get_param3(e))
+            {
+                case GX_CMD_CREDIT_CONTROL:
+                {
+                    c_uint32_t result_code = event_get_param5(e);
+                    if (result_code != ER_DIAMETER_SUCCESS)
+                    {
+                        d_error("Not impleneted");
+                        return;
+                    }
+                    switch(event_get_param4(e))
+                    {
+                        case GX_CC_REQUEST_TYPE_INITIAL_REQUEST:
+                        {
+                            pgw_handle_create_session_response(xact, sess);
+                            break;
+                        }
+                        case GX_CC_REQUEST_TYPE_TERMINATION_REQUEST:
+                        {
+                            pgw_handle_delete_session_response(xact, sess);
+                            break;
+                        }
+                        default:
+                        {
+                            d_error("Not implemented(%d)", event_get_param4(e));
+                            break;
+                        }
+                    }
+                    break;
+                }
+                default:
+                {
+                    d_error("Invalid type(%d)", event_get_param3(e));
+                    break;
+                }
+            }
+
             break;
         }
         default:

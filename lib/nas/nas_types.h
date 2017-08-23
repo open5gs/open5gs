@@ -982,74 +982,7 @@ typedef struct _nas_access_point_name_t {
 } __attribute__ ((packed)) nas_access_point_name_t;
 
 /* 9.9.4.2 APN aggregate maximum bit rate
- * O TLV 4-8 
-APN-AMBR for downlink, octet 3
-
-Bits
-8 7 6 5 4 3 2 1
-0 0 0 0 0 0 0 0 Reserved
-
-0 0 0 0 0 0 0 1 The APN-AMBR is binary coded in 8 bits, using a granularity of 1 kbps
-        to          giving a range of values from 1 kbps to 63 kbps in 1 kbps increments.
-0 0 1 1 1 1 1 1 
-
-0 1 0 0 0 0 0 0 The APN-AMBR is 64 kbps + ((the binary coded value in 8 bits –01000000) * 8 kbps)
-        to          giving a range of values from 64 kbps to 568 kbps in 8 kbps increments.
-0 1 1 1 1 1 1 1 
-
-1 0 0 0 0 0 0 0 The APN-AMBR is 576 kbps + ((the binary coded value in 8 bits –10000000) * 64 kbps)
-        to          giving a range of values from 576 kbps to 8640 kbps in 64 kbps increments.
-1 1 1 1 1 1 1 0 
-
-1 1 1 1 1 1 1 1 0kbps
-
-If the network wants to indicate an APN-AMBR for downlink higher than 8640 kbps, it shall set octet 3 to "11111110", i.e. 8640 kbps, and shall encode the value for the APN-AMBR in octet 5.
-
-
-APN-AMBR for uplink, octet 4
-
-Coding is identical to that of APN-AMBR for downlink.
-
-
-APN-AMBR for downlink (extended), octet 5
-
-Bits
-8 7 6 5 4 3 2 1
-0 0 0 0 0 0 0 0 Use the value indicated by the APN-AMBR for downlink in octet 3.
-
-                    For all other values: Ignore the value indicated by the APN-AMBR for downlink in octet 3
-                    and use the following value:
-0 0 0 0 0 0 0 1 The APN-AMBR is 8600 kbps + ((the binary coded value in 8 bits) * 100 kbps),
-        to          giving a range of values from 8700 kbps to 16000 kbps in 100 kbps increments.
-0 1 0 0 1 0 1 0 
-
-0 1 0 0 1 0 1 1 The APN-AMBR is 16 Mbps + ((the binary coded value in 8 bits - 01001010) * 1 Mbps),
-        to          giving a range of values from 17 Mbps to 128 Mbps in 1 Mbps increments.
-1 0 1 1 1 0 1 0 
-
-1 0 1 1 1 0 1 1 The APN-AMBR is 128 Mbps + ((the binary coded value in 8 bits - 10111010) * 2 Mbps),
-        to          giving a range of values from 130 Mbps to 256 Mbps in 2 Mbps increments.
-1 1 1 1 1 0 1 0 
-
-All other values shall be interpreted as '1 1 1 1 1 0 1 0'.
-
-
-APN-AMBR for uplink (extended), octet 6
-
-This field is an extension of the APN-AMBR for uplink in octet 4. The coding is identical to that of the APN-AMBR for downlink (extended).
-
-
-APN-AMBR for downlink (extended-2), octet 7
-
-Bits
-8 7 6 5 4 3 2 1
-0 0 0 0 0 0 0 0 Use the value indicated by the APN-AMBR for downlink and APN-AMBR for downlink (extended) in
-                    octets 3 and 5.
-
-0 0 0 0 0 0 0 1 The APN-AMBR is (the binary coded value in 8 bits) * 256 Mbps + (the value indicated by 
-        to          the APN-AMBR for downlink and APN-AMBR for downlink (extended) in octets 3 and 5), 
-1 1 1 1 1 1 1 0 giving a range of 256 Mbps to 65280 Mbps.
-*/
+ * O TLV 4-8  */
 typedef struct _nas_apn_aggregate_maximum_bit_rate_t {
     c_uint8_t length;
     c_uint8_t dl_apn_ambr;
@@ -1059,6 +992,10 @@ typedef struct _nas_apn_aggregate_maximum_bit_rate_t {
     c_uint8_t dl_apn_ambr_extended2;
     c_uint8_t ul_apn_ambr_extended2;
 } __attribute__ ((packed)) nas_apn_aggregate_maximum_bit_rate_t;
+
+CORE_DECLARE(void) apn_ambr_build(
+    nas_apn_aggregate_maximum_bit_rate_t * apn_aggregate_maximum_bit_rate,
+    c_uint32_t dl_ambr, c_uint32_t ul_ambr);
 
 /* 9.9.4.2A Connectivity type
  * See subclause 10.5.6.19 in 3GPP TS 24.008 [13].

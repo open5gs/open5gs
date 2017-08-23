@@ -14,8 +14,8 @@ type_list["Tracking area identity"]["encode"] = \
 "    target.tac = htons(tracking_area_identity->tac);\n\n"
 
 type_list["Tracking area identity list"]["decode"] = \
-"    int i = 0;\n" \
 "    {\n" \
+"        int i = 0;\n" \
 "        if (tracking_area_identity_list->type == NAS_TRACKING_AREA_IDENTITY_LIST_ONE_PLMN_NON_CONSECUTIVE_TACS)\n" \
 "            for (i = 0; i < tracking_area_identity_list->num + 1 && i < NAS_MAX_TRACKING_AREA_IDENTITY; i++)\n" \
 "                tracking_area_identity_list->type0.tac[i] = ntohs(tracking_area_identity_list->type0.tac[i]);\n" \
@@ -28,8 +28,8 @@ type_list["Tracking area identity list"]["decode"] = \
 "            return -1;\n" \
 "    }\n\n"
 type_list["Tracking area identity list"]["encode"] = \
-"    int i = 0;\n" \
 "    {\n" \
+"        int i = 0;\n" \
 "        if (tracking_area_identity_list->type == NAS_TRACKING_AREA_IDENTITY_LIST_ONE_PLMN_NON_CONSECUTIVE_TACS)\n" \
 "            for (i = 0; i < tracking_area_identity_list->num + 1 && i < NAS_MAX_TRACKING_AREA_IDENTITY; i++)\n" \
 "                target.type0.tac[i] = htons(tracking_area_identity_list->type0.tac[i]);\n" \
@@ -86,3 +86,14 @@ type_list["Short MAC"]["decode"] = \
 "    *short_mac = ntohs(*short_mac);\n\n"
 type_list["Short MAC"]["encode"] = \
 "    target = htons(*short_mac);\n\n"
+
+type_list["Access point name"]["decode"] = \
+"    {\n" \
+"        c_int8_t apn[MAX_APN_LEN];\n" \
+"        access_point_name->length  = apn_parse(apn, access_point_name->apn, access_point_name->length);\n" \
+"        core_cpystrn(access_point_name->apn, apn, c_min(access_point_name->length, MAX_APN_LEN) + 1);\n" \
+"    }\n\n"
+
+type_list["Access point name"]["encode"] = \
+"    target.length = apn_build(target.apn, access_point_name->apn, access_point_name->length);\n" \
+"    size = target.length + sizeof(target.length);\n\n"

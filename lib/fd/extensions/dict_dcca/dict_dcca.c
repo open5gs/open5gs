@@ -69,11 +69,25 @@ static int dict_dcca_entry(char * conffile)
 	
     /* Applications section */
     {
+#if 0 /* modified by acetcom */
 	/* DCCA */
 	{
 	    struct dict_application_data data = {        4, "Diameter Credit Control Application" 			};
 	    CHECK_dict_new( DICT_APPLICATION, &data, NULL, &dcca);
 	}                                
+#else
+                /* Create the vendors */
+                {
+                        struct dict_vendor_data vendor_data = { 10415, "3GPP" };
+                        CHECK_FCT(fd_dict_new(fd_g_config->cnf_dict, DICT_VENDOR, &vendor_data, NULL, NULL));
+                }
+                {
+                        struct dict_object * vendor;
+                        CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_VENDOR, VENDOR_BY_NAME, "3GPP", &vendor, ENOENT));
+                        struct dict_application_data app_data = { 16777238, "Gx" };
+                        CHECK_FCT(fd_dict_new(fd_g_config->cnf_dict, DICT_APPLICATION, &app_data, vendor, &dcca));
+                }
+#endif /* end of modification */
     }
 	
     /* Result codes */

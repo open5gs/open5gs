@@ -102,8 +102,8 @@ ED2(c_uint8_t spare:5;,
 typedef struct _qos_t {
     lnode_t         node; /**< A node of list_t */
 
-    c_uint32_t      max_bandwidth_ul; /* Kbps */
-    c_uint32_t      max_bandwidth_dl; /* Kbps */
+    c_uint32_t      max_bandwidth_ul; /* bits per second */
+    c_uint32_t      max_bandwidth_dl; /* bits per second */
 
 #define PDN_QCI_1                                       1
 #define PDN_QCI_2                                       2
@@ -139,7 +139,7 @@ typedef struct _qos_t {
  * PDN Structure                 */
 typedef struct _pdn_t {
     c_uint32_t      context_identifier;
-    c_int8_t        apn[MAX_APN_LEN];
+    c_int8_t        apn[MAX_APN_LEN+1];
 #define S6A_PDN_TYPE_IPV4                               0
 #define S6A_PDN_TYPE_IPV6                               1
 #define S6A_PDN_TYPE_IPV4_AND_IPV6                      2
@@ -149,6 +149,9 @@ typedef struct _pdn_t {
 
     qos_t           qos;
 } pdn_t;
+
+CORE_DECLARE(c_int16_t) apn_build(c_int8_t *dst, c_int8_t *src, c_int16_t len);
+CORE_DECLARE(c_int16_t) apn_parse(c_int8_t *dst, c_int8_t *src, c_int16_t len);
 
 /**************************************************
  * Protocol Configuration Options Structure

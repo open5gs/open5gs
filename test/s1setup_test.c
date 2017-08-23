@@ -7,11 +7,11 @@
 #include "types.h"
 
 #include "testutil.h"
-#include "tests1ap.h"
+#include "testpacket.h"
 
 #define NUM_OF_TEST_DUPLICATED_ENB 4
 
-static void s1ap_sm_test1(abts_case *tc, void *data)
+static void s1setup_test1(abts_case *tc, void *data)
 {
     status_t rv;
     net_sock_t *sock[NUM_OF_TEST_DUPLICATED_ENB];
@@ -62,7 +62,7 @@ static void s1ap_sm_test1(abts_case *tc, void *data)
 
 #define NUM_OF_TEST_ENB 32
 
-static void s1ap_sm_test2(abts_case *tc, void *data)
+static void s1setup_test2(abts_case *tc, void *data)
 {
     status_t rv;
     net_sock_t *sock[NUM_OF_TEST_ENB];
@@ -111,12 +111,12 @@ static void s1ap_sm_test2(abts_case *tc, void *data)
     d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_FULL);
 }
 
-abts_suite *test_s1ap_sm(abts_suite *suite)
+abts_suite *test_s1setup(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
-    abts_run_test(suite, s1ap_sm_test1, NULL);
-    abts_run_test(suite, s1ap_sm_test2, NULL);
+    abts_run_test(suite, s1setup_test1, NULL);
+    abts_run_test(suite, s1setup_test2, NULL);
 
     return suite;
 }

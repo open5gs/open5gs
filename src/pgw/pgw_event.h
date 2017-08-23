@@ -7,11 +7,15 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#define GX_CMD_CREDIT_CONTROL 272
+
 typedef enum {
     PGW_EVT_BASE = FSM_USER_SIG,
 
     PGW_EVT_S5C_SESSION_MSG,
     PGW_EVT_TRANSACTION_T3,
+
+    PGW_EVT_S5C_SESSION_FROM_GX,
 
     PGW_EVT_TOP,
 

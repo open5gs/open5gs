@@ -147,10 +147,12 @@ static int dict_dcca_3gpp_entry(char * conffile)
 	/* Applications section */
 	{
                 /* Create the vendors */
+#if 0 /* modified by acetcom */
                 {
                         struct dict_vendor_data vendor_data = { 10415, "3GPP" };
                         CHECK_FCT(fd_dict_new(fd_g_config->cnf_dict, DICT_VENDOR, &vendor_data, NULL, NULL));
                 }
+#endif /* end of modification */
                 {
                         struct dict_vendor_data vendor_data = { 5535, "3GPP2" };
                         CHECK_FCT(fd_dict_new(fd_g_config->cnf_dict, DICT_VENDOR, &vendor_data, NULL, NULL));
@@ -174,12 +176,14 @@ static int dict_dcca_3gpp_entry(char * conffile)
                         CHECK_FCT(fd_dict_new(fd_g_config->cnf_dict, DICT_APPLICATION, &app_data, vendor, NULL));
                 }
 
+#if 0 /* modified by acetcom */
                 {
                         struct dict_object * vendor;
                         CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_VENDOR, VENDOR_BY_NAME, "3GPP", &vendor, ENOENT));
                         struct dict_application_data app_data = { 16777238, "Gx" };
                         CHECK_FCT(fd_dict_new(fd_g_config->cnf_dict, DICT_APPLICATION, &app_data, vendor, NULL));
                 }
+#endif /* end of modification */
 	}
 
 
