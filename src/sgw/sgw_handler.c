@@ -31,11 +31,6 @@ void sgw_handle_create_session_request(gtp_xact_t *xact,
 
     if (req->sender_f_teid_for_control_plane.presence == 0)
     {
-        d_error("No IMSI");
-        return;
-    }
-    if (req->sender_f_teid_for_control_plane.presence == 0)
-    {
         d_error("No TEID");
         return;
     }
@@ -49,11 +44,6 @@ void sgw_handle_create_session_request(gtp_xact_t *xact,
         d_error("No EPS Bearer ID");
         return;
     }
-
-    /* Set IMSI */
-    sess->imsi_len = req->imsi.len;
-    memcpy(sess->imsi, req->imsi.data, sess->imsi_len);
-    core_buffer_to_bcd(sess->imsi, sess->imsi_len, sess->imsi_bcd);
 
     /* Receive Control Plane(DL) : MME-S11 */
     mme_s11_teid = req->sender_f_teid_for_control_plane.data;

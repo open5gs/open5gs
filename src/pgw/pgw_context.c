@@ -3,6 +3,7 @@
 #include "core_debug.h"
 #include "core_pool.h"
 #include "core_index.h"
+#include "core_lib.h"
 
 #include "fd_lib.h"
 #include "gtp_path.h"
@@ -27,13 +28,14 @@ status_t pgw_context_init()
     memset(&self, 0, sizeof(pgw_context_t));
 
     index_init(&pgw_sess_pool, MAX_NUM_OF_UE);
-    list_init(&self.sess_list);
     index_init(&pgw_bearer_pool, MAX_NUM_OF_UE_BEARER);
 
     pool_init(&pgw_ip_pool_pool, MAX_NUM_OF_UE);
 
     list_init(&self.s5c_node.local_list);
     list_init(&self.s5c_node.remote_list);
+
+    self.sess_hash = hash_make();
 
     context_initiaized = 1;
 
@@ -47,6 +49,9 @@ status_t pgw_context_final()
 
     gtp_xact_delete_all(&self.s5c_node);
     pgw_sess_remove_all();
+
+    d_assert(self.sess_hash, , "Null param");
+    hash_destroy(self.sess_hash);
 
     if (index_size(&pgw_sess_pool) != pool_avail(&pgw_sess_pool))
         d_warn("%d not freed in pgw_sess_pool[%d] in PGW-Context",
@@ -469,7 +474,18 @@ status_t pgw_context_setup_trace_module()
     return CORE_OK;
 }
 
-pgw_bearer_t *pgw_sess_add(c_int8_t *apn, c_uint8_t id)
+static void *sess_hash_keygen(c_uint8_t *out, int *out_len,
+        c_uint8_t *imsi, int imsi_len, c_int8_t *apn)
+{
+    memcpy(out, imsi, imsi_len);
+    core_cpystrn((char*)(out+imsi_len), apn, MAX_APN_LEN+1);
+    *out_len = imsi_len+strlen((char*)(out+imsi_len));
+
+    return out;
+}
+
+pgw_bearer_t *pgw_sess_add(
+        c_uint8_t *imsi, int imsi_len, c_int8_t *apn, c_uint8_t id)
 {
     pgw_sess_t *sess = NULL;
     pgw_bearer_t *bearer = NULL;
@@ -480,10 +496,17 @@ pgw_bearer_t *pgw_sess_add(c_int8_t *apn, c_uint8_t id)
     sess->pgw_s5c_teid = sess->index;  /* derived from an index */
     sess->pgw_s5c_addr = pgw_self()->s5c_addr;
 
-    list_init(&sess->bearer_list);
-    list_append(&self.sess_list, sess);
+    /* Set IMSI */
+    sess->imsi_len = imsi_len;
+    memcpy(sess->imsi, imsi, sess->imsi_len);
+    core_buffer_to_bcd(sess->imsi, sess->imsi_len, sess->imsi_bcd);
 
-    strcpy(sess->pdn.apn, apn);
+    /* Set APN */
+    core_cpystrn(sess->pdn.apn, apn, MAX_APN_LEN+1);
+
+    list_init(&sess->bearer_list);
+
+    core_cpystrn(sess->pdn.apn, apn, MAX_APN_LEN+1);
 
     bearer = pgw_bearer_add(sess, id);
     d_assert(bearer, pgw_sess_remove(sess); return NULL, 
@@ -493,18 +516,25 @@ pgw_bearer_t *pgw_sess_add(c_int8_t *apn, c_uint8_t id)
     d_assert(sess->ip_pool, pgw_sess_remove(sess); return NULL, 
             "Can't add default bearer context");
 
+    /* Generate Hash Key : IMSI + APN */
+    sess_hash_keygen(sess->hash_keybuf, &sess->hash_keylen,
+            imsi, imsi_len, apn);
+    hash_set(self.sess_hash, sess->hash_keybuf, sess->hash_keylen, sess);
+
     return bearer;
 }
 
 status_t pgw_sess_remove(pgw_sess_t *sess)
 {
+    d_assert(self.sess_hash, return CORE_ERROR, "Null param");
     d_assert(sess, return CORE_ERROR, "Null param");
+
+    hash_set(self.sess_hash, sess->hash_keybuf, sess->hash_keylen, NULL);
 
     pgw_ip_pool_free(sess->ip_pool);
 
     pgw_bearer_remove_all(sess);
 
-    list_remove(&self.sess_list, sess);
     index_free(&pgw_sess_pool, sess);
 
     return CORE_OK;
@@ -512,16 +542,13 @@ status_t pgw_sess_remove(pgw_sess_t *sess)
 
 status_t pgw_sess_remove_all()
 {
-    pgw_sess_t *sess = NULL, *next_sess = NULL;
-    
-    sess = pgw_sess_first();
-    while (sess)
+    hash_index_t *hi = NULL;
+    pgw_sess_t *sess = NULL;
+
+    for (hi = pgw_sess_first(); hi; hi = pgw_sess_next(hi))
     {
-        next_sess = pgw_sess_next(sess);
-
+        sess = pgw_sess_this(hi);
         pgw_sess_remove(sess);
-
-        sess = next_sess;
     }
 
     return CORE_OK;
@@ -538,30 +565,66 @@ pgw_sess_t* pgw_sess_find_by_teid(c_uint32_t teid)
     return pgw_sess_find(teid);
 }
 
-pgw_sess_t* pgw_sess_find_by_apn(c_int8_t *apn)
+pgw_sess_t* pgw_sess_find_by_imsi_apn(
+    c_uint8_t *imsi, int imsi_len, c_int8_t *apn)
+{
+    c_uint8_t keybuf[MAX_IMSI_LEN+MAX_APN_LEN+1];
+    int keylen = 0;
+
+    d_assert(self.sess_hash, return NULL, "Null param");
+
+    sess_hash_keygen(keybuf, &keylen, imsi, imsi_len, apn);
+    return (pgw_sess_t *)hash_get(self.sess_hash, keybuf, keylen);
+}
+
+pgw_sess_t *pgw_sess_find_or_add_by_message(gtp_message_t *gtp_message)
 {
     pgw_sess_t *sess = NULL;
-    
-    sess = pgw_sess_first();
-    while (sess)
-    {
-        if (strcmp(sess->pdn.apn, apn) == 0)
-            break;
 
-        sess = pgw_sess_next(sess);
+    gtp_create_session_request_t *req = &gtp_message->create_session_request;
+    c_int8_t apn[MAX_APN_LEN];
+
+    if (req->sender_f_teid_for_control_plane.presence == 0)
+    {
+        d_error("No IMSI");
+        return NULL;
+    }
+
+    if (req->access_point_name.presence == 0)
+    {
+        d_error("No APN");
+        return NULL;
+    }
+
+    apn_parse(apn, req->access_point_name.data, req->access_point_name.len);
+    sess = pgw_sess_find_by_imsi_apn(req->imsi.data, req->imsi.len, apn);
+    if (!sess)
+    {
+        pgw_bearer_t *bearer = NULL;
+        bearer = pgw_sess_add(req->imsi.data, req->imsi.len, apn,
+            req->bearer_contexts_to_be_created.eps_bearer_id.u8);
+        d_assert(bearer, return NULL, "No Bearer Context");
+        sess = bearer->sess;
     }
 
     return sess;
 }
 
-pgw_sess_t* pgw_sess_first()
+hash_index_t* pgw_sess_first()
 {
-    return list_first(&self.sess_list);
+    d_assert(self.sess_hash, return NULL, "Null param");
+    return hash_first(self.sess_hash);
 }
 
-pgw_sess_t* pgw_sess_next(pgw_sess_t *sess)
+hash_index_t* pgw_sess_next(hash_index_t *hi)
 {
-    return list_next(sess);
+    return hash_next(hi);
+}
+
+pgw_sess_t *pgw_sess_this(hash_index_t *hi)
+{
+    d_assert(hi, return NULL, "Null param");
+    return hash_this_val(hi);
 }
 
 pgw_bearer_t* pgw_bearer_add(pgw_sess_t *sess, c_uint8_t id)
@@ -661,6 +724,7 @@ pgw_bearer_t* pgw_bearer_next(pgw_bearer_t *bearer)
 pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
 {
     pgw_bearer_t *bearer = NULL;
+    hash_index_t *hi = NULL;
     pgw_sess_t *sess = NULL;
     struct ip *iph =  NULL;
     char buf1[INET_ADDRSTRLEN];
@@ -683,8 +747,9 @@ pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
 
     /* FIXME: Need API to find the bearer with packet filter */
     /* Iterate session */
-    for (sess = pgw_sess_first(); sess; sess = pgw_sess_next(sess))
+    for (hi = pgw_sess_first(); hi; hi = pgw_sess_next(hi))
     {
+        sess = pgw_sess_this(hi);
         d_trace(50, "Dst(%s) in Pkt : PAA(%s) in PDN\n",
                 INET_NTOP(&iph->ip_dst.s_addr,buf1),
                 INET_NTOP(&sess->pdn.paa.ipv4_addr, buf2));

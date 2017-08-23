@@ -47,8 +47,9 @@ typedef struct _pgw_context_t {
     c_uint32_t      primary_dns_addr;
     c_uint32_t      secondary_dns_addr;
 
-    list_t          sess_list;
     list_t          ip_pool_list;
+
+    hash_t          *sess_hash; /* hash table (IMSI+APN) */
 } pgw_context_t;
 
 typedef struct _pgw_ip_pool_t {
@@ -85,6 +86,10 @@ typedef struct _pgw_sess_t {
     tai_t           tai;
     e_cgi_t         e_cgi;
 
+    /* Hash Key : IMSI+APN */
+    c_uint8_t       hash_keybuf[MAX_IMSI_LEN+MAX_APN_LEN+1];
+    int             hash_keylen;
+
     list_t          bearer_list;
 } pgw_sess_t;
 
@@ -114,14 +119,19 @@ CORE_DECLARE(pgw_context_t*) pgw_self(void);
 CORE_DECLARE(status_t)      pgw_context_parse_config(void);
 CORE_DECLARE(status_t)      pgw_context_setup_trace_module(void);
 
-CORE_DECLARE(pgw_bearer_t*) pgw_sess_add(c_int8_t *apn, c_uint8_t id);
+CORE_DECLARE(pgw_bearer_t*) pgw_sess_add(
+        c_uint8_t *imsi, int imsi_len, c_int8_t *apn, c_uint8_t id);
 CORE_DECLARE(status_t )     pgw_sess_remove(pgw_sess_t *sess);
 CORE_DECLARE(status_t )     pgw_sess_remove_all();
 CORE_DECLARE(pgw_sess_t*)   pgw_sess_find(index_t index);
 CORE_DECLARE(pgw_sess_t*)   pgw_sess_find_by_teid(c_uint32_t teid);
-CORE_DECLARE(pgw_sess_t*)   pgw_sess_find_by_apn(c_int8_t *apn);
-CORE_DECLARE(pgw_sess_t *)  pgw_sess_first();
-CORE_DECLARE(pgw_sess_t *)  pgw_sess_next(pgw_sess_t *sess);
+CORE_DECLARE(pgw_sess_t*)   pgw_sess_find_by_imsi_apn(
+        c_uint8_t *imsi, int imsi_len, c_int8_t *apn);
+CORE_DECLARE(pgw_sess_t *)  pgw_sess_find_or_add_by_message(
+        gtp_message_t *gtp_message);
+CORE_DECLARE(hash_index_t *)  pgw_sess_first();
+CORE_DECLARE(hash_index_t *)  pgw_sess_next(hash_index_t *hi);
+CORE_DECLARE(pgw_sess_t *)  pgw_sess_this(hash_index_t *hi);
 
 CORE_DECLARE(pgw_bearer_t*) pgw_bearer_add(pgw_sess_t *sess, c_uint8_t id);
 CORE_DECLARE(status_t)      pgw_bearer_remove(pgw_bearer_t *bearer);
