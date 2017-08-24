@@ -1278,7 +1278,49 @@ mme_ue_t* mme_ue_find_by_message(nas_message_t *message)
         }
         case NAS_TRACKING_AREA_UPDATE_REQUEST:
         {
-            /* TODO */
+            nas_tracking_area_update_request_t *tau_request =
+                &message->emm.tracking_area_update_request;
+
+            nas_eps_mobile_identity_t *eps_mobile_identity =
+                            &tau_request->old_guti;
+
+            switch(eps_mobile_identity->imsi.type)
+            {
+                case NAS_EPS_MOBILE_IDENTITY_GUTI:
+                {
+                    nas_eps_mobile_identity_guti_t *nas_guti = NULL;
+                    nas_guti = &eps_mobile_identity->guti;
+                    guti_t guti;
+
+                    guti.plmn_id = nas_guti->plmn_id;
+                    guti.mme_gid = nas_guti->mme_gid;
+                    guti.mme_code = nas_guti->mme_code;
+                    guti.m_tmsi = nas_guti->m_tmsi;
+
+                    mme_ue = mme_ue_find_by_guti(&guti);
+                    if (mme_ue)
+                    {
+                        d_trace(3, "Known UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]\n",
+                                guti.mme_gid,
+                                guti.mme_code,
+                                guti.m_tmsi);
+                    }
+                    else
+                    {
+                        d_warn("Unknown UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]",
+                                guti.mme_gid,
+                                guti.mme_code,
+                                guti.m_tmsi);
+                    }
+                    break;
+                }
+                default:
+                {
+                    d_error("Uknown message imsi type =%d\n",
+                            eps_mobile_identity->imsi.type);
+                    break;
+                }
+            }
             break;
         }
         default:
