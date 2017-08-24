@@ -2448,6 +2448,10 @@ mongoose-detective@~0.1.0:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/mongoose-detective/-/mongoose-detective-0.1.1.tgz#853b05e2fc100c1cfae6d52171f62626de681fce"
 
+mongoose-long@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/mongoose-long/-/mongoose-long-0.1.1.tgz#cc32e05b0cf50c85e25a19359d43a936fe9505a3"
+
 mongoose@^4.10.5:
   version "4.10.6"
   resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-4.10.6.tgz#cc57dad8c8b9145cbd2ca5696a5081a959e8fcd8"

@@ -20,6 +20,7 @@
     "lusca": "^1.4.1",
     "method-override": "^2.3.9",
     "mongoose": "^4.10.5",
+    "mongoose-long": "^0.1.1",
     "morgan": "^1.8.2",
     "next": "^2.3.1",
     "next-redux-wrapper": "^1.1.2",

@@ -489,16 +489,16 @@ status_t hss_db_subscription_data(
             {
                 const char *child1_key = bson_iter_key(&child1_iter);
                 if (!strcmp(child1_key, "uplink") &&
-                    BSON_ITER_HOLDS_INT32(&child1_iter))
+                    BSON_ITER_HOLDS_INT64(&child1_iter))
                 {
                     subscription_data->ambr.uplink =
-                        bson_iter_int32(&child1_iter) * 1024;
+                        bson_iter_int64(&child1_iter) * 1024;
                 }
                 else if (!strcmp(child1_key, "downlink") &&
-                    BSON_ITER_HOLDS_INT32(&child1_iter))
+                    BSON_ITER_HOLDS_INT64(&child1_iter))
                 {
                     subscription_data->ambr.downlink =
-                        bson_iter_int32(&child1_iter) * 1024;
+                        bson_iter_int64(&child1_iter) * 1024;
                 }
             }
         }
@@ -591,16 +591,16 @@ status_t hss_db_subscription_data(
                             const char *child3_key =
                                 bson_iter_key(&child3_iter);
                             if (!strcmp(child3_key, "uplink") &&
-                                BSON_ITER_HOLDS_INT32(&child3_iter))
+                                BSON_ITER_HOLDS_INT64(&child3_iter))
                             {
                                 pdn->ambr.uplink =
-                                    bson_iter_int32(&child3_iter) * 1024;
+                                    bson_iter_int64(&child3_iter) * 1024;
                             }
                             else if (!strcmp(child3_key, "downlink") &&
-                                BSON_ITER_HOLDS_INT32(&child3_iter))
+                                BSON_ITER_HOLDS_INT64(&child3_iter))
                             {
                                 pdn->ambr.downlink =
-                                    bson_iter_int32(&child3_iter) * 1024;
+                                    bson_iter_int64(&child3_iter) * 1024;
                             }
                         }
                     }

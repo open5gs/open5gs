@@ -38,10 +38,6 @@ static void volte_test1(abts_case *tc, void *data)
           "{"
             "\"apn\" : \"internet\", "
             "\"_id\" : { \"$oid\" : \"597223158b8861d7605378c7\" }, "
-            "\"ambr\" : {"
-              "\"uplink\" : 1024000, "
-              "\"downlink\" : 1024000  "
-            "},"
             "\"qos\" : { "
               "\"qci\" : 9, "
               "\"arp\" : { "
@@ -54,8 +50,8 @@ static void volte_test1(abts_case *tc, void *data)
           "}"
         "],"
         "\"ambr\" : { "
-          "\"uplink\" : 1024000, "
-          "\"downlink\" : 1024000 "
+          "\"uplink\" : { \"$numberLong\" : \"1024000\" }, "
+          "\"downlink\" : { \"$numberLong\" : \"1024000\" } "
         "},"
         "\"subscribed_rau_tau_timer\" : 12,"
         "\"network_access_mode\" : 2, "
@@ -71,9 +67,7 @@ static void volte_test1(abts_case *tc, void *data)
         "\"__v\" : 0 "
       "}";
 
-#if 1
     d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
-#endif
 
     /* eNB connects to MME */
     sock = tests1ap_enb_connect();

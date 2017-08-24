@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+require('mongoose-long')(mongoose);
 
 const Subscriber = new Schema({
   imsi: { $type: String, unique: true, required: true },
@@ -9,7 +10,7 @@ const Subscriber = new Schema({
     op: String,
     amf: String,
     rand: String,
-    sqn: Number
+    sqn: Schema.Types.Long
   },
 
   access_restriction_data: { 
@@ -31,8 +32,8 @@ const Subscriber = new Schema({
   },
 
   ambr: {
-    downlink: Number,
-    uplink: Number
+    downlink: Schema.Types.Long,
+    uplink: Schema.Types.Long
   },
 
   pdn: [{
@@ -53,8 +54,8 @@ const Subscriber = new Schema({
       }
     },
     ambr: {
-      downlink: Number,
-      uplink: Number
+      downlink: Schema.Types.Long,
+      uplink: Schema.Types.Long
     },
     pcc_rule: [{
       flow: [{
@@ -73,12 +74,12 @@ const Subscriber = new Schema({
           }
         },
         mbr: {
-          downlink: Number,
-          uplink: Number
+          downlink: Schema.Types.Long,
+          uplink: Schema.Types.Long
         },
         gbr: {
-          downlink: Number,
-          uplink: Number
+          downlink: Schema.Types.Long,
+          uplink: Schema.Types.Long
         },
       },
     }]

@@ -213,14 +213,18 @@ status_t pcrf_db_init()
 {
     if (context_self()->db_client && context_self()->db_name)
     {
-        gx_pdn_data_t pdn_data;
         self.subscriberCollection = mongoc_client_get_collection(
             context_self()->db_client, 
             context_self()->db_name, "subscribers");
         d_assert(self.subscriberCollection, return CORE_ERROR, 
             "Couldn't find Subscriber Collection in '%s'",
             context_self()->db_name);
+#if 0
+        {
+        gx_pdn_data_t pdn_data;
         pcrf_db_pdn_data("123", "internet", &pdn_data);
+        }
+#endif
     }
 
     return CORE_OK;
@@ -384,16 +388,16 @@ status_t pcrf_db_pdn_data(
                             const char *child3_key =
                                 bson_iter_key(&child3_iter);
                             if (!strcmp(child3_key, "uplink") &&
-                                BSON_ITER_HOLDS_INT32(&child3_iter))
+                                BSON_ITER_HOLDS_INT64(&child3_iter))
                             {
                                 pdn->ambr.uplink =
-                                    bson_iter_int32(&child3_iter) * 1024;
+                                    bson_iter_int64(&child3_iter) * 1024;
                             }
                             else if (!strcmp(child3_key, "downlink") &&
-                                BSON_ITER_HOLDS_INT32(&child3_iter))
+                                BSON_ITER_HOLDS_INT64(&child3_iter))
                             {
                                 pdn->ambr.downlink =
-                                    bson_iter_int32(&child3_iter) * 1024;
+                                    bson_iter_int64(&child3_iter) * 1024;
                             }
                         }
                     }
@@ -492,20 +496,20 @@ status_t pcrf_db_pdn_data(
                                                     bson_iter_key(&child6_iter);
                                                 if (!strcmp(child6_key,
                                                         "downlink") &&
-                                                    BSON_ITER_HOLDS_INT32(
+                                                    BSON_ITER_HOLDS_INT64(
                                                         &child6_iter))
                                                 {
                                                     pcc_rule->qos.mbr.downlink =
-                                                        bson_iter_int32(
+                                                        bson_iter_int64(
                                                             &child6_iter);
                                                 }
                                                 else if (!strcmp(child6_key,
                                                         "uplink") &&
-                                                    BSON_ITER_HOLDS_INT32(
+                                                    BSON_ITER_HOLDS_INT64(
                                                         &child6_iter))
                                                 {
                                                     pcc_rule->qos.mbr.uplink =
-                                                        bson_iter_int32(
+                                                        bson_iter_int64(
                                                             &child6_iter);
                                                 }
                                             }
@@ -522,20 +526,20 @@ status_t pcrf_db_pdn_data(
                                                     bson_iter_key(&child6_iter);
                                                 if (!strcmp(child6_key,
                                                         "downlink") &&
-                                                    BSON_ITER_HOLDS_INT32(
+                                                    BSON_ITER_HOLDS_INT64(
                                                         &child6_iter))
                                                 {
                                                     pcc_rule->qos.gbr.downlink =
-                                                        bson_iter_int32(
+                                                        bson_iter_int64(
                                                             &child6_iter);
                                                 }
                                                 else if (!strcmp(child6_key,
                                                         "uplink") &&
-                                                    BSON_ITER_HOLDS_INT32(
+                                                    BSON_ITER_HOLDS_INT64(
                                                         &child6_iter))
                                                 {
                                                     pcc_rule->qos.gbr.uplink =
-                                                        bson_iter_int32(
+                                                        bson_iter_int64(
                                                             &child6_iter);
                                                 }
                                             }
