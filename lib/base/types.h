@@ -13,7 +13,6 @@ extern "C" {
 
 #define MAX_NUM_OF_PDN          8
 #define MAX_NUM_OF_BEARER       8
-#define MAX_NUM_OF_UE_PDN       (MAX_NUM_OF_UE * MAX_NUM_OF_PDN)
 #define MAX_NUM_OF_UE_BEARER    (MAX_NUM_OF_UE * MAX_NUM_OF_BEARER)
 
 #define IPV6_LEN                16
@@ -140,6 +139,25 @@ typedef struct _qos_t {
     bitrate_t       mbr;  /* Maxmimum Bit Rate (MBR) */
     bitrate_t       gbr;  /* Guaranteed Bit Rate (GBR) */
 } qos_t;
+
+/**********************************
+ * Flow  Structure               */
+typedef struct _flow_t {
+    c_uint8_t direction;
+#define MAX_FLOW_DESCRIPTION_LEN 255
+    c_uint8_t description[MAX_FLOW_DESCRIPTION_LEN+1];
+} flow_t;
+
+/**********************************
+ * PCC Rule Structure            */
+#define MAX_NUM_OF_PCC_RULE                             16
+typedef struct _pcc_rule_t {
+#define MAX_NUM_OF_FLOW                                 16
+    flow_t flow[MAX_NUM_OF_FLOW];
+    int num_of_flow;
+        
+    qos_t  qos;
+} pcc_rule_t;
 
 /**********************************
  * PDN Structure                 */

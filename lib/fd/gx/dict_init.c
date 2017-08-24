@@ -1,4 +1,4 @@
-#include "gx_lib.h"
+#include "gx_dict.h"
 
 #define CHECK_dict_search( _type, _criteria, _what, _result )	\
 	CHECK_FCT(  fd_dict_search( fd_g_config->cnf_dict, (_type), (_criteria), (_what), (_result), ENOENT) );

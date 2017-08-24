@@ -1,5 +1,5 @@
-#ifndef __GX_LIB_H__
-#define __GX_LIB_H__
+#ifndef __GX_DICT_H__
+#define __GX_DICT_H__
 
 #include "freeDiameter/freeDiameter-host.h"
 #include "freeDiameter/libfdcore.h"
@@ -91,4 +91,4 @@ int gx_dict_init(void);
 }
 #endif /* __cplusplus */
 
-#endif /* ! __GX_LIB_H__ */
+#endif /* __GX_DICT_H__ */

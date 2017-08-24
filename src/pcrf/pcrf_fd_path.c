@@ -3,7 +3,7 @@
 #include "core_debug.h"
 
 #include "fd_lib.h"
-#include "gx_lib.h"
+#include "gx_dict.h"
 
 #include "pcrf_context.h"
 

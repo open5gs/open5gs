@@ -4,7 +4,7 @@
 #include "core_pool.h"
 
 #include "fd_lib.h"
-#include "gx_lib.h"
+#include "gx_dict.h"
 
 #include "pgw_event.h"
 #include "pgw_fd_path.h"

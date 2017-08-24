@@ -4,7 +4,7 @@
 #include "core_lib.h"
 
 #include "fd_lib.h"
-#include "gx_lib.h"
+#include "gx_dict.h"
 
 #include "pgw_sm.h"
 #include "pgw_context.h"

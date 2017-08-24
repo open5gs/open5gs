@@ -218,7 +218,7 @@ status_t hss_db_init()
             context_self()->db_name, "subscribers");
         d_assert(self.subscriberCollection, return CORE_ERROR, 
             "Couldn't find Subscriber Collection in '%s'",
-            context_self()->db_name)
+            context_self()->db_name);
     }
 
     return CORE_OK;
@@ -264,6 +264,7 @@ status_t hss_db_auth_info(
         rv = CORE_ERROR;
         goto out;
     }
+
     if (mongoc_cursor_error(cursor, &error))
     {
         d_error("Cursor Failure: %s", error.message);
@@ -427,7 +428,14 @@ status_t hss_db_subscription_data(
     cursor = mongoc_collection_find_with_opts(
             self.subscriberCollection, query, NULL, NULL);
 
-    mongoc_cursor_next(cursor, &document);
+    if (!mongoc_cursor_next(cursor, &document))
+    {
+        d_error("Cannot find IMSI in DB : %s", imsi_bcd);
+
+        rv = CORE_ERROR;
+        goto out;
+    }
+
     if (mongoc_cursor_error(cursor, &error))
     {
         d_error("Cursor Failure: %s", error.message);
@@ -596,11 +604,10 @@ status_t hss_db_subscription_data(
                             }
                         }
                     }
-
                 }
+                pdn_index++;
             }
-
-            subscription_data->num_of_pdn = pdn_index + 1;
+            subscription_data->num_of_pdn = pdn_index;
         }
     }
 
