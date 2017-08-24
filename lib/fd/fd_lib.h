@@ -13,9 +13,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define FD_REALM        "localdomain"       /* Default Relam */
-#define MME_IDENTITY    "mme.localdomain"   /* Default MME Identity */
-#define HSS_IDENTITY    "hss.localdomain"   /* Default HSS Identity */
+#define FD_DIAMETER_ERROR_USER_UNKNOWN                  5001
 
 CORE_DECLARE(int) fd_init(int mode, const char *conffile);
 CORE_DECLARE(void) fd_final(void);

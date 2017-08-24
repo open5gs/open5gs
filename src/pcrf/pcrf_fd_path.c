@@ -1,9 +1,11 @@
 #define TRACE_MODULE _pcrf_fd_path
 
 #include "core_debug.h"
+#include "core_lib.h"
 
 #include "fd_lib.h"
 #include "gx_dict.h"
+#include "gx_message.h"
 
 #include "pcrf_context.h"
 
@@ -27,8 +29,15 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
         struct session *sess, void *opaque, enum disp_action *act)
 {
 	struct msg *ans, *qry;
+    struct avp *avpch1, *avpch2, *avpch3, *avpch4;
     struct avp_hdr *hdr;
     union avp_value val;
+
+    status_t rv;
+    gx_pdn_data_t pdn_data;
+    c_int8_t imsi_bcd[MAX_IMSI_BCD_LEN+1];
+    c_int8_t apn[MAX_APN_LEN+1];
+    int i, j;
 
     c_uint32_t cc_request_type = 0;
     c_uint32_t result_code = 0;
@@ -44,9 +53,6 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     CHECK_FCT( fd_msg_search_avp(qry, gx_cc_request_type, &avp) );
     CHECK_FCT( fd_msg_avp_hdr(avp, &hdr) );
     cc_request_type = hdr->avp_value->i32;
-
-	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
-	CHECK_FCT( fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1) );
 
     /* Set the Auth-Application-Id AVP */
     CHECK_FCT_DO( fd_msg_avp_new(fd_auth_application_id, 0, &avp), goto out );
@@ -65,6 +71,207 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
     CHECK_FCT_DO( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp), goto out );
 
+    /* Get IMSI + APN */
+    CHECK_FCT( fd_msg_search_avp(qry, gx_subscription_id, &avp) );
+    CHECK_FCT( fd_msg_avp_hdr(avp, &hdr) );
+    CHECK_FCT( fd_avp_search_avp(avp, gx_subscription_id_type, &avpch1) );
+    CHECK_FCT( fd_msg_avp_hdr(avpch1, &hdr) );
+    if (hdr->avp_value->i32 != GX_SUBSCRIPTION_ID_TYPE_END_USER_IMSI)
+    {
+        d_error("Not implemented Subscription-Id-Type(%d)",
+                hdr->avp_value->i32);
+        goto out;
+    }
+    CHECK_FCT( fd_avp_search_avp(avp, gx_subscription_id_data, &avpch1) );
+    CHECK_FCT( fd_msg_avp_hdr(avpch1, &hdr) );
+    core_cpystrn(imsi_bcd, (char*)hdr->avp_value->os.data, 
+        c_min(hdr->avp_value->os.len, MAX_IMSI_BCD_LEN)+1);
+
+    CHECK_FCT( fd_msg_search_avp(qry, gx_called_station_id, &avp) );
+    CHECK_FCT( fd_msg_avp_hdr(avp, &hdr) );
+    core_cpystrn(apn, (char*)hdr->avp_value->os.data, 
+        c_min(hdr->avp_value->os.len, MAX_IMSI_BCD_LEN)+1);
+
+    rv = pcrf_db_pdn_data(imsi_bcd, apn, &pdn_data);
+    if (rv != CORE_OK)
+    {
+        d_error("Cannot get data for IMSI(%s)+APN(%s)'\n", imsi_bcd, apn);
+        result_code = FD_DIAMETER_ERROR_USER_UNKNOWN;
+        goto out;
+    }
+
+    /* Set Charging-Rule-Install */
+    CHECK_FCT( fd_msg_avp_new(gx_charging_rule_install, 0, &avp) );
+
+    for (i = 0; i < pdn_data.num_of_pcc_rule; i++)
+    {
+        pcc_rule_t *pcc_rule = &pdn_data.pcc_rule[i];
+
+        CHECK_FCT( fd_msg_avp_new(gx_charging_rule_definition, 0, &avpch1) );
+
+        CHECK_FCT( fd_msg_avp_new(gx_charging_rule_name, 0, &avpch2) );
+        /* Rule Name is automatically configured by order */
+        sprintf(pcc_rule->name, "%s%d", apn, i+1);
+        val.os.data = (c_uint8_t *)pcc_rule->name;
+        val.os.len = strlen(pcc_rule->name);
+        CHECK_FCT( fd_msg_avp_setvalue(avpch2, &val) );
+        CHECK_FCT( fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2) );
+
+        for (j = 0; j < pcc_rule->num_of_flow; j++)
+        {
+            flow_t *flow = &pcc_rule->flow[j];
+
+            CHECK_FCT( fd_msg_avp_new(gx_flow_information, 0, &avpch2) );
+
+            CHECK_FCT( fd_msg_avp_new(gx_flow_direction, 0, &avpch3) ); 
+            val.i32 = flow->direction;
+            CHECK_FCT( fd_msg_avp_setvalue(avpch3, &val) );
+            CHECK_FCT( fd_msg_avp_add(avpch2, MSG_BRW_LAST_CHILD, avpch3) );
+
+            CHECK_FCT( fd_msg_avp_new(gx_flow_description, 0, &avpch3) ); 
+            val.os.data = (c_uint8_t *)flow->description;
+            val.os.len = strlen(flow->description);
+            CHECK_FCT( fd_msg_avp_setvalue(avpch3, &val) );
+            CHECK_FCT( fd_msg_avp_add(avpch2, MSG_BRW_LAST_CHILD, avpch3) );
+
+            CHECK_FCT( fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2) );
+        }
+
+        CHECK_FCT( fd_msg_avp_new(gx_flow_status, 0, &avpch2) );
+        val.i32 = GX_FLOW_STATUS_ENABLED;
+        CHECK_FCT( fd_msg_avp_setvalue(avpch2, &val) );
+        CHECK_FCT( fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2) );
+
+        CHECK_FCT( fd_msg_avp_new(gx_qos_information, 0, &avpch2) )
+
+        CHECK_FCT( fd_msg_avp_new(gx_qos_class_identifier, 0, &avpch3) );
+        val.u32 = pcc_rule->qos.qci;
+        CHECK_FCT( fd_msg_avp_setvalue (avpch3, &val) );
+        CHECK_FCT( fd_msg_avp_add (avpch2, MSG_BRW_LAST_CHILD, avpch3) );
+
+        CHECK_FCT( fd_msg_avp_new(gx_allocation_retention_priority, 0, &avpch3) );
+
+        CHECK_FCT( fd_msg_avp_new(gx_priority_level, 0, &avpch4) );
+        val.u32 = pcc_rule->qos.arp.priority_level;
+        CHECK_FCT( fd_msg_avp_setvalue (avpch4, &val) );
+        CHECK_FCT( fd_msg_avp_add (avpch3, MSG_BRW_LAST_CHILD, avpch4) );
+
+        CHECK_FCT( fd_msg_avp_new(gx_pre_emption_capability, 0, &avpch4) );
+        val.u32 = pcc_rule->qos.arp.pre_emption_capability;
+        CHECK_FCT( fd_msg_avp_setvalue (avpch4, &val) );
+        CHECK_FCT( fd_msg_avp_add (avpch3, MSG_BRW_LAST_CHILD, avpch4) );
+
+        CHECK_FCT( fd_msg_avp_new(gx_pre_emption_vulnerability, 0, &avpch4) );
+        val.u32 = pcc_rule->qos.arp.pre_emption_vulnerability;
+        CHECK_FCT( fd_msg_avp_setvalue (avpch4, &val) );
+        CHECK_FCT( fd_msg_avp_add (avpch3, MSG_BRW_LAST_CHILD, avpch4) );
+
+        CHECK_FCT( fd_msg_avp_add (avpch2, MSG_BRW_LAST_CHILD, avpch3) );
+
+        if (pcc_rule->qos.mbr.uplink)
+        {
+            CHECK_FCT( fd_msg_avp_new(gx_max_requested_bandwidth_ul, 0,
+                    &avpch3) );
+            val.u32 = pcc_rule->qos.mbr.uplink;
+            CHECK_FCT( fd_msg_avp_setvalue (avpch3, &val) );
+            CHECK_FCT( fd_msg_avp_add (avpch2, MSG_BRW_LAST_CHILD, avpch3) );
+        }
+
+        if (pcc_rule->qos.mbr.downlink)
+        {
+            CHECK_FCT( fd_msg_avp_new(gx_max_requested_bandwidth_dl, 0,
+                    &avpch3) );
+            val.u32 = pcc_rule->qos.mbr.downlink;
+            CHECK_FCT( fd_msg_avp_setvalue (avpch3, &val) );
+            CHECK_FCT( fd_msg_avp_add (avpch2, MSG_BRW_LAST_CHILD, avpch3) );
+        }
+
+        if (pcc_rule->qos.gbr.uplink)
+        {
+            CHECK_FCT( fd_msg_avp_new(gx_guaranteed_bitrate_ul, 0, &avpch3) );
+            val.u32 = pcc_rule->qos.gbr.uplink;
+            CHECK_FCT( fd_msg_avp_setvalue (avpch3, &val) );
+            CHECK_FCT( fd_msg_avp_add (avpch2, MSG_BRW_LAST_CHILD, avpch3) );
+        }
+
+        if (pcc_rule->qos.gbr.downlink)
+        {
+            CHECK_FCT( fd_msg_avp_new(gx_guaranteed_bitrate_dl, 0, &avpch3) );
+            val.u32 = pcc_rule->qos.gbr.downlink;
+            CHECK_FCT( fd_msg_avp_setvalue (avpch3, &val) );
+            CHECK_FCT( fd_msg_avp_add (avpch2, MSG_BRW_LAST_CHILD, avpch3) );
+        }
+
+        CHECK_FCT( fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2) );
+
+        CHECK_FCT( fd_msg_avp_new(gx_precedence, 0, &avpch2) )
+        val.u32 = i + 1; /* Precendence is automatically configured by order */
+        CHECK_FCT( fd_msg_avp_setvalue (avpch2, &val) );
+        CHECK_FCT( fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2) );
+
+        CHECK_FCT( fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch1) );
+    }
+    CHECK_FCT( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) );
+
+    /* Set QoS-Information */
+    if (pdn_data.pdn.ambr.downlink || pdn_data.pdn.ambr.uplink)
+    {
+        CHECK_FCT( fd_msg_avp_new(gx_qos_information, 0, &avp) );
+
+        if (pdn_data.pdn.ambr.uplink)
+        {
+            CHECK_FCT( fd_msg_avp_new(gx_apn_aggregate_max_bitrate_ul, 0,
+                    &avpch1) );
+            val.u32 = pdn_data.pdn.ambr.uplink;
+            CHECK_FCT( fd_msg_avp_setvalue (avpch1, &val) );
+            CHECK_FCT( fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1) );
+        }
+        
+        if (pdn_data.pdn.ambr.downlink)
+        {
+            CHECK_FCT( fd_msg_avp_new(gx_apn_aggregate_max_bitrate_dl, 0,
+                    &avpch1) );
+            val.u32 = pdn_data.pdn.ambr.downlink;
+            CHECK_FCT( fd_msg_avp_setvalue (avpch1, &val) );
+            CHECK_FCT( fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1) );
+        }
+
+        CHECK_FCT( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) );
+    }
+
+    /* Set Default-EPS-Bearer-QoS */
+    CHECK_FCT( fd_msg_avp_new(gx_default_eps_bearer_qos, 0, &avp) );
+
+    CHECK_FCT( fd_msg_avp_new(gx_qos_class_identifier, 0, &avpch1) );
+    val.u32 = pdn_data.pdn.qos.qci;
+    CHECK_FCT( fd_msg_avp_setvalue (avpch1, &val) );
+    CHECK_FCT( fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1) );
+
+    CHECK_FCT( fd_msg_avp_new(gx_allocation_retention_priority, 0, &avpch1) );
+
+    CHECK_FCT( fd_msg_avp_new(gx_priority_level, 0, &avpch2) );
+    val.u32 = pdn_data.pdn.qos.arp.priority_level;
+    CHECK_FCT( fd_msg_avp_setvalue (avpch2, &val) );
+    CHECK_FCT( fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2) );
+
+    CHECK_FCT( fd_msg_avp_new(gx_pre_emption_capability, 0, &avpch2) );
+    val.u32 = pdn_data.pdn.qos.arp.pre_emption_capability;
+    CHECK_FCT( fd_msg_avp_setvalue (avpch2, &val) );
+    CHECK_FCT( fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2) );
+
+    CHECK_FCT( fd_msg_avp_new(gx_pre_emption_vulnerability, 0, &avpch2) );
+    val.u32 = pdn_data.pdn.qos.arp.pre_emption_vulnerability;
+    CHECK_FCT( fd_msg_avp_setvalue (avpch2, &val) );
+    CHECK_FCT( fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2) );
+
+    CHECK_FCT( fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1) );
+
+    CHECK_FCT( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) );
+
+
+	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
+	CHECK_FCT( fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1) );
+
 	/* Send the answer */
 	CHECK_FCT( fd_msg_send(msg, NULL, NULL) );
 	
@@ -77,12 +284,6 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
 
 out:
     CHECK_FCT( fd_message_experimental_rescode_set(ans, result_code) );
-
-    /* Set the Auth-Application-Id AVP */
-    CHECK_FCT_DO( fd_msg_avp_new(fd_auth_application_id, 0, &avp), goto out );
-    val.i32 = GX_APPLICATION_ID;
-    CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
-    CHECK_FCT_DO( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp), goto out );
 
 	CHECK_FCT( fd_msg_send(msg, NULL, NULL) );
 

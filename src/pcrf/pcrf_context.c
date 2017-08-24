@@ -219,12 +219,6 @@ status_t pcrf_db_init()
         d_assert(self.subscriberCollection, return CORE_ERROR, 
             "Couldn't find Subscriber Collection in '%s'",
             context_self()->db_name);
-#if 0
-        {
-        gx_pdn_data_t pdn_data;
-        pcrf_db_pdn_data("123", "internet", &pdn_data);
-        }
-#endif
     }
 
     return CORE_OK;
@@ -501,7 +495,7 @@ status_t pcrf_db_pdn_data(
                                                 {
                                                     pcc_rule->qos.mbr.downlink =
                                                         bson_iter_int64(
-                                                            &child6_iter);
+                                                        &child6_iter) * 1024;
                                                 }
                                                 else if (!strcmp(child6_key,
                                                         "uplink") &&
@@ -510,7 +504,7 @@ status_t pcrf_db_pdn_data(
                                                 {
                                                     pcc_rule->qos.mbr.uplink =
                                                         bson_iter_int64(
-                                                            &child6_iter);
+                                                        &child6_iter) * 1024;
                                                 }
                                             }
                                         }
@@ -531,7 +525,7 @@ status_t pcrf_db_pdn_data(
                                                 {
                                                     pcc_rule->qos.gbr.downlink =
                                                         bson_iter_int64(
-                                                            &child6_iter);
+                                                        &child6_iter) * 1024;
                                                 }
                                                 else if (!strcmp(child6_key,
                                                         "uplink") &&
@@ -540,7 +534,7 @@ status_t pcrf_db_pdn_data(
                                                 {
                                                     pcc_rule->qos.gbr.uplink =
                                                         bson_iter_int64(
-                                                            &child6_iter);
+                                                        &child6_iter) * 1024;
                                                 }
                                             }
                                         }

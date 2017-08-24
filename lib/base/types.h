@@ -145,13 +145,15 @@ typedef struct _qos_t {
 typedef struct _flow_t {
     c_uint8_t direction;
 #define MAX_FLOW_DESCRIPTION_LEN 255
-    c_uint8_t description[MAX_FLOW_DESCRIPTION_LEN+1];
+    c_int8_t description[MAX_FLOW_DESCRIPTION_LEN+1];
 } flow_t;
 
 /**********************************
  * PCC Rule Structure            */
 #define MAX_NUM_OF_PCC_RULE                             16
 typedef struct _pcc_rule_t {
+#define MAX_PCC_RULE_NAME_LEN                           128
+    c_int8_t name[MAX_PCC_RULE_NAME_LEN+1];
 #define MAX_NUM_OF_FLOW                                 16
     flow_t flow[MAX_NUM_OF_FLOW];
     int num_of_flow;

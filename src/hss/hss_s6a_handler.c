@@ -72,7 +72,7 @@ static int hss_air_cb( struct msg **msg, struct avp *avp,
     if (rv != CORE_OK)
     {
         d_trace(3, "Cannot get Auth-Info for IMSI:'%s'\n", imsi_bcd);
-        result_code = S6A_DIAMETER_ERROR_USER_UNKNOWN;
+        result_code = FD_DIAMETER_ERROR_USER_UNKNOWN;
         goto out;
     }
 
@@ -392,22 +392,25 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
                     MSG_BRW_LAST_CHILD, eps_subscribed_qos_profile) );
 
                 /* Set AMBR */
-                CHECK_FCT( fd_msg_avp_new(s6a_ambr, 0, &avp_ambr) );
-                CHECK_FCT( fd_msg_avp_new(s6a_max_bandwidth_ul, 0, 
-                            &avp_max_bandwidth_ul) );
-                val.u32 = pdn->ambr.uplink;
-                CHECK_FCT( fd_msg_avp_setvalue(avp_max_bandwidth_ul, &val) );
-                CHECK_FCT( fd_msg_avp_add(avp_ambr, MSG_BRW_LAST_CHILD, 
-                            avp_max_bandwidth_ul) );
-                CHECK_FCT( fd_msg_avp_new(s6a_max_bandwidth_dl, 0, 
-                            &avp_max_bandwidth_dl) );
-                val.u32 = pdn->ambr.downlink;
-                CHECK_FCT( fd_msg_avp_setvalue(avp_max_bandwidth_dl, &val) );
-                CHECK_FCT( fd_msg_avp_add(avp_ambr, MSG_BRW_LAST_CHILD, 
-                            avp_max_bandwidth_dl) );
+                if (pdn->ambr.downlink || pdn->ambr.uplink)
+                {
+                    CHECK_FCT( fd_msg_avp_new(s6a_ambr, 0, &avp_ambr) );
+                    CHECK_FCT( fd_msg_avp_new(s6a_max_bandwidth_ul, 0, 
+                                &avp_max_bandwidth_ul) );
+                    val.u32 = pdn->ambr.uplink;
+                    CHECK_FCT( fd_msg_avp_setvalue(avp_max_bandwidth_ul, &val) );
+                    CHECK_FCT( fd_msg_avp_add(avp_ambr, MSG_BRW_LAST_CHILD, 
+                                avp_max_bandwidth_ul) );
+                    CHECK_FCT( fd_msg_avp_new(s6a_max_bandwidth_dl, 0, 
+                                &avp_max_bandwidth_dl) );
+                    val.u32 = pdn->ambr.downlink;
+                    CHECK_FCT( fd_msg_avp_setvalue(avp_max_bandwidth_dl, &val) );
+                    CHECK_FCT( fd_msg_avp_add(avp_ambr, MSG_BRW_LAST_CHILD, 
+                                avp_max_bandwidth_dl) );
 
-                CHECK_FCT( fd_msg_avp_add(apn_configuration, 
-                        MSG_BRW_LAST_CHILD, avp_ambr) );
+                    CHECK_FCT( fd_msg_avp_add(apn_configuration, 
+                            MSG_BRW_LAST_CHILD, avp_ambr) );
+                }
 
                 CHECK_FCT( fd_msg_avp_add(apn_configuration_profile, 
                         MSG_BRW_LAST_CHILD, apn_configuration) );

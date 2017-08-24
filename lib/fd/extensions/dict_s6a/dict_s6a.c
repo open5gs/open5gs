@@ -288,7 +288,7 @@ int dict_s6a_init(char * conffile)
 			{
                 { { .avp_vendor = 10415, .avp_name = "Context-Identifier" }, RULE_REQUIRED, -1, 1 },
                 { { .avp_vendor = 10415, .avp_name = "All-APN-Configurations-Included-Indicator" }, RULE_REQUIRED, -1, 1 },
-                { { .avp_vendor = 10415, .avp_name = "APN-Configuration" }, RULE_REQUIRED, -1, 1 },
+                { { .avp_vendor = 10415, .avp_name = "APN-Configuration" }, RULE_REQUIRED, -1, -1 },
 			};
 
             CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "APN-Configuration-Profile", &avp);
