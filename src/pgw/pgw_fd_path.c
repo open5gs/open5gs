@@ -335,8 +335,7 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
     gx_message = gxbuf->payload;
     d_assert(gx_message, return, "Null param");
 
-    d_trace(3, "[Gx] Credit-Control-Answer : PGW[%d] <-- PCRF\n", 
-            sess->pgw_s5c_teid);
+    d_trace(3, "[Gx] Credit-Control-Answer : PGW <-- PCRF\n");
 
     /* Set Credit Control Command */
     memset(gx_message, 0, gxbuf_len);
@@ -348,7 +347,7 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
     if (avp)
     {
         CHECK_FCT_DO( fd_msg_avp_hdr(avp, &hdr), return);
-        cca_message->result_code = hdr->avp_value->i32;
+        gx_message->result_code = hdr->avp_value->i32;
         d_trace(3, "Result Code: %d\n", hdr->avp_value->i32);
     }
     else
@@ -362,9 +361,9 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
             if (avpch1)
             {
                 CHECK_FCT_DO( fd_msg_avp_hdr(avpch1, &hdr), return);
-                cca_message->result_code = hdr->avp_value->i32;
+                gx_message->result_code = hdr->avp_value->i32;
                 d_trace(3, "Experimental Result Code: %d\n",
-                        cca_message->result_code);
+                        gx_message->result_code);
             }
         }
         else
@@ -402,9 +401,9 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
         error++;
     }
 
-    if (cca_message->result_code != ER_DIAMETER_SUCCESS)
+    if (gx_message->result_code != ER_DIAMETER_SUCCESS)
     {
-        d_warn("ERROR DIAMETER Result Code(%d)", cca_message->result_code);
+        d_warn("ERROR DIAMETER Result Code(%d)", gx_message->result_code);
         error++;
         goto out;
     }

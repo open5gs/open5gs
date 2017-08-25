@@ -25,8 +25,6 @@ char* mme_event_get_name(event_t *e)
 
         case MME_EVT_EMM_UE_MSG:
             return "MME_EVT_EMM_UE_MSG";
-        case MME_EVT_EMM_UE_FROM_S6A:
-            return "MME_EVT_EMM_UE_FROM_S6A";
         case MME_EVT_EMM_UE_T3413:
             return "MME_EVT_EMM_UE_T3413";
 
@@ -37,6 +35,9 @@ char* mme_event_get_name(event_t *e)
             return "MME_EVT_S11_UE_MSG";
         case MME_EVT_S11_TRANSACTION_T3:
             return "MME_EVT_S11_TRANSACTION_T3";
+
+        case MME_EVT_S6A_MESSAGE:
+            return "MME_EVT_S6A_MESSAGE";
 
         default: 
            break;

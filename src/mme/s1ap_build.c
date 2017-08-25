@@ -2,12 +2,13 @@
 
 #include "core_debug.h"
 
+#include "s6a_message.h"
+
 #include "mme_context.h"
 
 #include "mme_kdf.h"
 #include "s1ap_build.h"
 #include "s1ap_conv.h"
-
 
 status_t s1ap_build_setup_rsp(pkbuf_t **pkbuf)
 {
@@ -163,6 +164,7 @@ status_t s1ap_build_initial_context_setup_request(
     mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
     mme_sess_t *sess = NULL;
+    s6a_subscription_data_t *subscription_data = NULL;
     pdn_t *pdn = NULL;
 
     d_assert(bearer, return CORE_ERROR, "Null param");
@@ -172,6 +174,8 @@ status_t s1ap_build_initial_context_setup_request(
     d_assert(mme_ue, return CORE_ERROR, "Null param");
     enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return CORE_ERROR, "Null param");
+    subscription_data = &mme_ue->subscription_data;
+    d_assert(subscription_data, return CORE_ERROR, "Null param");
     pdn = sess->pdn;
     d_assert(pdn, return CORE_ERROR, "Null param");
 
@@ -182,10 +186,10 @@ status_t s1ap_build_initial_context_setup_request(
 
     asn_uint642INTEGER(
             &ies->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateUL, 
-            mme_ue->ambr.uplink);
+            subscription_data->ambr.uplink);
     asn_uint642INTEGER(
             &ies->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateDL, 
-            mme_ue->ambr.downlink);
+            subscription_data->ambr.downlink);
 
     e_rab = (S1ap_E_RABToBeSetupItemCtxtSUReq_t *)
         core_calloc(1, sizeof(S1ap_E_RABToBeSetupItemCtxtSUReq_t));

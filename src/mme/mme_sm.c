@@ -14,6 +14,9 @@
 #include "mme_s11_path.h"
 #include "mme_s11_handler.h"
 #include "emm_handler.h"
+#include "esm_handler.h"
+#include "fd_lib.h"
+#include "mme_s6a_handler.h"
 
 void mme_state_initial(fsm_t *s, event_t *e)
 {
@@ -215,7 +218,6 @@ void mme_state_operational(fsm_t *s, event_t *e)
 
             break;
         }
-        case MME_EVT_EMM_UE_FROM_S6A:
         case MME_EVT_EMM_UE_T3413:
         {
             index_t index = event_get_param1(e);
@@ -377,6 +379,80 @@ void mme_state_operational(fsm_t *s, event_t *e)
         case MME_EVT_S11_TRANSACTION_T3:
         {
             gtp_xact_timeout(event_get_param1(e));
+            break;
+        }
+        case MME_EVT_S6A_MESSAGE:
+        {
+            index_t index = event_get_param1(e);
+            mme_ue_t *mme_ue = NULL;
+            pkbuf_t *s6abuf = (pkbuf_t *)event_get_param2(e);
+            s6a_message_t *s6a_message = NULL;
+
+            d_assert(index, return, "Null param");
+            mme_ue = mme_ue_find(index);
+            d_assert(mme_ue, return, "Null param");
+
+            d_assert(s6abuf, return, "Null param");
+            s6a_message = s6abuf->payload;
+            d_assert(s6a_message, return, "Null param");
+
+            switch(s6a_message->cmd_code)
+            {
+                case S6A_CMD_CODE_AUTHENTICATION_INFORMATION:
+                {
+                    if (s6a_message->result_code != ER_DIAMETER_SUCCESS)
+                    {
+                        emm_handle_attach_reject(mme_ue);
+                        break;
+                    }
+
+                    mme_s6a_handle_aia(mme_ue, &s6a_message->aia_message);
+                    emm_handle_authentication_request(mme_ue);
+                    break;
+                }
+                case S6A_CMD_CODE_UPDATE_LOCATION:
+                {
+                    mme_sess_t *sess = NULL;
+                    mme_bearer_t *bearer = NULL;
+
+                    if (s6a_message->result_code != ER_DIAMETER_SUCCESS)
+                    {
+                        d_error("Not impleneted");
+                        break;
+                    }
+
+                    mme_s6a_handle_ula(mme_ue, &s6a_message->ula_message);
+
+                    sess = mme_sess_find_by_last_esm_message(mme_ue);
+                    d_assert(sess, break, "Null param");
+                    bearer = mme_default_bearer_in_sess(sess);
+                    d_assert(bearer, break, "Null param");
+
+                    if (MME_SESSION_HAVE_APN(sess))
+                    {
+                        if (MME_SESSION_IS_VALID(sess))
+                        {
+                            emm_handle_attach_accept(sess);
+                        }
+                        else
+                        {
+                            mme_s11_handle_create_session_request(sess);
+                        }
+                    }
+                    else
+                    {
+                        esm_handle_information_request(sess);
+                    }
+
+                    break;
+                }
+                default:
+                {
+                    d_error("Invalid type(%d)", event_get_param2(e));
+                    break;
+                }
+            }
+            pkbuf_free(s6abuf);
             break;
         }
         default:

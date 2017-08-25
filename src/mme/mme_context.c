@@ -1683,42 +1683,32 @@ mme_bearer_t* mme_bearer_next(mme_bearer_t *bearer)
     return list_next(bearer);
 }
 
-pdn_t* mme_pdn_add(mme_ue_t *mme_ue, c_int8_t *apn)
-{
-    pdn_t *pdn = NULL;
-
-    d_assert(mme_ue, return NULL, "Null param");
-    d_assert(apn, return NULL, "Null param");
-
-    pdn = &mme_ue->pdn[mme_ue->num_of_pdn];
-    d_assert(pdn, return NULL, "PDN context allocation failed");
-
-    memset(pdn, 0, sizeof(pdn_t));
-    strcpy(pdn->apn, apn);
-
-    mme_ue->num_of_pdn++;
-    
-    return pdn;
-}
-
 status_t mme_pdn_remove_all(mme_ue_t *mme_ue)
 {
+    s6a_subscription_data_t *subscription_data = NULL;
+
     d_assert(mme_ue, return CORE_ERROR, "Null param");
-    mme_ue->num_of_pdn = 0;
+    subscription_data = &mme_ue->subscription_data;
+    d_assert(subscription_data, return CORE_ERROR, "Null param");
+
+    subscription_data->num_of_pdn = 0;
     
     return CORE_OK;
 }
 
 pdn_t* mme_pdn_find_by_apn(mme_ue_t *mme_ue, c_int8_t *apn)
 {
+    s6a_subscription_data_t *subscription_data = NULL;
     pdn_t *pdn = NULL;
     int i = 0;
     
     d_assert(mme_ue, return NULL, "Null param");
+    subscription_data = &mme_ue->subscription_data;
+    d_assert(subscription_data, return NULL, "Null param");
 
-    for (i = 0; i < mme_ue->num_of_pdn; i++)
+    for (i = 0; i < subscription_data->num_of_pdn; i++)
     {
-        pdn = &mme_ue->pdn[i];
+        pdn = &subscription_data->pdn[i];
         if (strcmp(pdn->apn, apn) == 0)
             return pdn;
     }

@@ -11,6 +11,7 @@
 #include "types.h"
 #include "nas_message.h"
 #include "gtp_xact.h"
+#include "s6a_message.h"
 
 #include "mme_sm.h"
 
@@ -204,11 +205,7 @@ struct _mme_ue_t {
     c_uint8_t       selected_int_algorithm;
 
     /* HSS Info */
-    c_uint32_t      ula_flags;
-    bitrate_t       ambr;                       /* UE-AMBR */
-    c_uint32_t      subscribed_rau_tau_timer;   /* unit: seconds */
-    pdn_t           pdn[MAX_NUM_OF_PDN];        /* APN Configruration */
-    int             num_of_pdn;
+    s6a_subscription_data_t subscription_data;
 
     /* ESM Info */
     c_uint8_t       ebi; /* EPS Bearer ID generator */

@@ -35,8 +35,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     union avp_value val;
 
     status_t rv;
-    gx_message_t gx_message;
-    gx_cca_message_t *cca_message = NULL;
+    gx_cca_message_t cca_message;
     c_int8_t imsi_bcd[MAX_IMSI_BCD_LEN+1];
     c_int8_t apn[MAX_APN_LEN+1];
     int i, j;
@@ -47,9 +46,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     d_assert(msg, return EINVAL,);
 
     /* Initialize Message */
-    memset(&gx_message, 0, sizeof(gx_message_t));
-    gx_message.cmd_code = GX_CMD_CODE_CREDIT_CONTROL;
-    cca_message = &gx_message.cca_message;
+    memset(&cca_message, 0, sizeof(gx_cca_message_t));
 
 	/* Create answer header */
 	qry = *msg;
@@ -99,7 +96,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     core_cpystrn(apn, (char*)hdr->avp_value->os.data, 
         c_min(hdr->avp_value->os.len, MAX_IMSI_BCD_LEN)+1);
 
-    rv = pcrf_db_pdn_data(imsi_bcd, apn, cca_message);
+    rv = pcrf_db_pdn_data(imsi_bcd, apn, &cca_message);
     if (rv != CORE_OK)
     {
         d_error("Cannot get data for IMSI(%s)+APN(%s)'\n", imsi_bcd, apn);
@@ -110,9 +107,9 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     /* Set Charging-Rule-Install */
     CHECK_FCT( fd_msg_avp_new(gx_charging_rule_install, 0, &avp) );
 
-    for (i = 0; i < cca_message->num_of_pcc_rule; i++)
+    for (i = 0; i < cca_message.num_of_pcc_rule; i++)
     {
-        pcc_rule_t *pcc_rule = &cca_message->pcc_rule[i];
+        pcc_rule_t *pcc_rule = &cca_message.pcc_rule[i];
 
         CHECK_FCT( fd_msg_avp_new(gx_charging_rule_definition, 0, &avpch1) );
 
@@ -222,24 +219,24 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     CHECK_FCT( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) );
 
     /* Set QoS-Information */
-    if (cca_message->pdn.ambr.downlink || cca_message->pdn.ambr.uplink)
+    if (cca_message.pdn.ambr.downlink || cca_message.pdn.ambr.uplink)
     {
         CHECK_FCT( fd_msg_avp_new(gx_qos_information, 0, &avp) );
 
-        if (cca_message->pdn.ambr.uplink)
+        if (cca_message.pdn.ambr.uplink)
         {
             CHECK_FCT( fd_msg_avp_new(gx_apn_aggregate_max_bitrate_ul, 0,
                     &avpch1) );
-            val.u32 = cca_message->pdn.ambr.uplink;
+            val.u32 = cca_message.pdn.ambr.uplink;
             CHECK_FCT( fd_msg_avp_setvalue (avpch1, &val) );
             CHECK_FCT( fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1) );
         }
         
-        if (cca_message->pdn.ambr.downlink)
+        if (cca_message.pdn.ambr.downlink)
         {
             CHECK_FCT( fd_msg_avp_new(gx_apn_aggregate_max_bitrate_dl, 0,
                     &avpch1) );
-            val.u32 = cca_message->pdn.ambr.downlink;
+            val.u32 = cca_message.pdn.ambr.downlink;
             CHECK_FCT( fd_msg_avp_setvalue (avpch1, &val) );
             CHECK_FCT( fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1) );
         }
@@ -251,24 +248,24 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     CHECK_FCT( fd_msg_avp_new(gx_default_eps_bearer_qos, 0, &avp) );
 
     CHECK_FCT( fd_msg_avp_new(gx_qos_class_identifier, 0, &avpch1) );
-    val.u32 = cca_message->pdn.qos.qci;
+    val.u32 = cca_message.pdn.qos.qci;
     CHECK_FCT( fd_msg_avp_setvalue (avpch1, &val) );
     CHECK_FCT( fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1) );
 
     CHECK_FCT( fd_msg_avp_new(gx_allocation_retention_priority, 0, &avpch1) );
 
     CHECK_FCT( fd_msg_avp_new(gx_priority_level, 0, &avpch2) );
-    val.u32 = cca_message->pdn.qos.arp.priority_level;
+    val.u32 = cca_message.pdn.qos.arp.priority_level;
     CHECK_FCT( fd_msg_avp_setvalue (avpch2, &val) );
     CHECK_FCT( fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2) );
 
     CHECK_FCT( fd_msg_avp_new(gx_pre_emption_capability, 0, &avpch2) );
-    val.u32 = cca_message->pdn.qos.arp.pre_emption_capability;
+    val.u32 = cca_message.pdn.qos.arp.pre_emption_capability;
     CHECK_FCT( fd_msg_avp_setvalue (avpch2, &val) );
     CHECK_FCT( fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2) );
 
     CHECK_FCT( fd_msg_avp_new(gx_pre_emption_vulnerability, 0, &avpch2) );
-    val.u32 = cca_message->pdn.qos.arp.pre_emption_vulnerability;
+    val.u32 = cca_message.pdn.qos.arp.pre_emption_vulnerability;
     CHECK_FCT( fd_msg_avp_setvalue (avpch2, &val) );
     CHECK_FCT( fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2) );
 
@@ -287,7 +284,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
 	fd_logger_self()->stats.nb_echoed++;
 	CHECK_POSIX_DO( pthread_mutex_unlock(&fd_logger_self()->stats_lock), );
 
-    gx_message_free(&gx_message);
+    gx_cca_message_free(&cca_message);
 
     return 0;
 
@@ -296,7 +293,7 @@ out:
 
 	CHECK_FCT( fd_msg_send(msg, NULL, NULL) );
 
-    gx_message_free(&gx_message);
+    gx_cca_message_free(&cca_message);
 
     return 0;
 }

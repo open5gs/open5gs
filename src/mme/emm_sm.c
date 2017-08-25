@@ -4,6 +4,7 @@
 
 #include "nas_message.h"
 #include "fd_lib.h"
+#include "s6a_message.h"
 
 #include "mme_event.h"
 #include "mme_kdf.h"
@@ -227,72 +228,6 @@ void emm_state_operational(fsm_t *s, event_t *e)
             /* Start T3413 */
             tm_start(mme_ue->t3413);
 
-            break;
-        }
-        case MME_EVT_EMM_UE_FROM_S6A:
-        {
-            index_t index = event_get_param1(e);
-            mme_ue_t *mme_ue = NULL;
-
-            d_assert(index, return, "Null param");
-            mme_ue = mme_ue_find(index);
-            d_assert(mme_ue, return, "Null param");
-
-            switch(event_get_param2(e))
-            {
-                case S6A_CMD_AUTHENTICATION_INFORMATION:
-                {
-                    c_uint32_t result_code = event_get_param3(e);
-                    if (result_code != ER_DIAMETER_SUCCESS)
-                    {
-                        emm_handle_attach_reject(mme_ue);
-                        return;
-                    }
-
-                    emm_handle_authentication_request(mme_ue);
-                    break;
-                }
-                case S6A_CMD_UPDATE_LOCATION:
-                {
-                    mme_sess_t *sess = NULL;
-                    mme_bearer_t *bearer = NULL;
-
-                    c_uint32_t result_code = event_get_param3(e);
-                    if (result_code != ER_DIAMETER_SUCCESS)
-                    {
-                        d_error("Not impleneted");
-                        return;
-                    }
-
-                    sess = mme_sess_find_by_last_esm_message(mme_ue);
-                    d_assert(sess, return, "Null param");
-                    bearer = mme_default_bearer_in_sess(sess);
-                    d_assert(bearer, return, "Null param");
-
-                    if (MME_SESSION_HAVE_APN(sess))
-                    {
-                        if (MME_SESSION_IS_VALID(sess))
-                        {
-                            emm_handle_attach_accept(sess);
-                        }
-                        else
-                        {
-                            mme_s11_handle_create_session_request(sess);
-                        }
-                    }
-                    else
-                    {
-                        esm_handle_information_request(sess);
-                    }
-
-                    break;
-                }
-                default:
-                {
-                    d_error("Invalid type(%d)", event_get_param2(e));
-                    break;
-                }
-            }
             break;
         }
         default:

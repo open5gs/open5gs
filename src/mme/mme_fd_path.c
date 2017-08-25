@@ -138,11 +138,15 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     struct avp_hdr *hdr;
     unsigned long dur;
     int error = 0;
-    c_uint32_t result_code = 0;
     int new;
 
     event_t e;
     mme_ue_t *mme_ue = NULL;
+    pkbuf_t *s6abuf = NULL;
+    s6a_message_t *s6a_message = NULL;
+    s6a_aia_message_t *aia_message = NULL;
+    c_uint16_t s6abuf_len = 0;
+    e_utran_vector_t *e_utran_vector = NULL;
     
     CHECK_SYS_DO( clock_gettime(CLOCK_REALTIME, &ts), return );
 
@@ -157,15 +161,29 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     mme_ue = mi->mme_ue;
     d_assert(mme_ue, return, );
 
-    d_trace(3, "[S6A] Authentication-Information-Answer : UE[%s] <-- HSS\n", 
-            mme_ue->imsi_bcd);
+    s6abuf_len = sizeof(s6a_message_t);
+    d_assert(s6abuf_len < 8192, return, "Not supported size:%d", s6abuf_len);
+    s6abuf = pkbuf_alloc(0, s6abuf_len);
+    d_assert(s6abuf, return, "Null param");
+    s6a_message = s6abuf->payload;
+    d_assert(s6a_message, return, "Null param");
+
+    d_trace(3, "[S6A] Authentication-Information-Answer : UE <-- HSS\n");
+
+    /* Set Authentication-Information Command */
+    memset(s6a_message, 0, s6abuf_len);
+    s6a_message->cmd_code = S6A_CMD_CODE_AUTHENTICATION_INFORMATION;
+    aia_message = &s6a_message->aia_message;
+    d_assert(aia_message, return, "Null param");
+    e_utran_vector = &aia_message->e_utran_vector;
+    d_assert(e_utran_vector, return, "Null param");
     
     /* Value of Result Code */
     CHECK_FCT_DO( fd_msg_search_avp(*msg, fd_result_code, &avp), return );
     if (avp)
     {
         CHECK_FCT_DO( fd_msg_avp_hdr(avp, &hdr), return);
-        result_code = hdr->avp_value->i32;
+        s6a_message->result_code = hdr->avp_value->i32;
         d_trace(3, "Result Code: %d\n", hdr->avp_value->i32);
     }
     else
@@ -179,8 +197,9 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
             if (avpch)
             {
                 CHECK_FCT_DO( fd_msg_avp_hdr(avpch, &hdr), return);
-                result_code = hdr->avp_value->i32;
-                d_trace(3, "Experimental Result Code: %d\n", result_code);
+                s6a_message->result_code = hdr->avp_value->i32;
+                d_trace(3, "Experimental Result Code: %d\n",
+                        s6a_message->result_code);
             }
         }
         else
@@ -218,9 +237,9 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
         error++;
     }
 
-    if (result_code != ER_DIAMETER_SUCCESS)
+    if (s6a_message->result_code != ER_DIAMETER_SUCCESS)
     {
-        d_warn("ERROR DIAMETER Result Code(%d)", result_code);
+        d_warn("ERROR DIAMETER Result Code(%d)", s6a_message->result_code);
         error++;
         goto out;
     }
@@ -248,8 +267,9 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     if (avp)
     {
         CHECK_FCT_DO( fd_msg_avp_hdr(avp_xres, &hdr), return );
-        memcpy(mme_ue->xres, hdr->avp_value->os.data, hdr->avp_value->os.len);
-        mme_ue->xres_len = hdr->avp_value->os.len;
+        memcpy(e_utran_vector->xres,
+                hdr->avp_value->os.data, hdr->avp_value->os.len);
+        e_utran_vector->xres_len = hdr->avp_value->os.len;
     }
     else
         error++;
@@ -259,7 +279,8 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     if (avp)
     {
         CHECK_FCT_DO( fd_msg_avp_hdr(avp_kasme, &hdr), return );
-        memcpy(mme_ue->kasme, hdr->avp_value->os.data, hdr->avp_value->os.len);
+        memcpy(e_utran_vector->kasme,
+                hdr->avp_value->os.data, hdr->avp_value->os.len);
     }
     else
         error++;
@@ -270,7 +291,8 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     if (avp)
     {
         CHECK_FCT_DO( fd_msg_avp_hdr(avp_rand, &hdr), return );
-        memcpy(mme_ue->rand, hdr->avp_value->os.data, hdr->avp_value->os.len);
+        memcpy(e_utran_vector->rand,
+                hdr->avp_value->os.data, hdr->avp_value->os.len);
     }
     else
         error++;
@@ -280,16 +302,16 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     if (avp)
     {
         CHECK_FCT_DO( fd_msg_avp_hdr(avp_autn, &hdr), return );
-        memcpy(mme_ue->autn, hdr->avp_value->os.data, hdr->avp_value->os.len);
+        memcpy(e_utran_vector->autn,
+                hdr->avp_value->os.data, hdr->avp_value->os.len);
     }
     else
         error++;
 
 out:
-    event_set(&e, MME_EVT_EMM_UE_FROM_S6A);
+    event_set(&e, MME_EVT_S6A_MESSAGE);
     event_set_param1(&e, (c_uintptr_t)mme_ue->index);
-    event_set_param2(&e, (c_uintptr_t)S6A_CMD_AUTHENTICATION_INFORMATION);
-    event_set_param3(&e, (c_uintptr_t)result_code);
+    event_set_param2(&e, (c_uintptr_t)s6abuf);
     mme_event_send(&e);
 
     /* Free the message */
@@ -450,12 +472,15 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     struct avp_hdr *hdr;
     unsigned long dur;
     int error = 0;
-    c_uint32_t result_code = 0;
     int new;
 
     event_t e;
     mme_ue_t *mme_ue = NULL;
-    pdn_t *pdn = NULL;
+    pkbuf_t *s6abuf = NULL;
+    s6a_message_t *s6a_message = NULL;
+    s6a_ula_message_t *ula_message = NULL;
+    s6a_subscription_data_t *subscription_data = NULL;
+    c_uint16_t s6abuf_len = 0;
 
     CHECK_SYS_DO( clock_gettime(CLOCK_REALTIME, &ts), return );
 
@@ -470,15 +495,29 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     mme_ue = mi->mme_ue;
     d_assert(mme_ue, return, );
 
-    d_trace(3, "[S6A] Update-Location-Answer : UE[%s] <-- HSS\n", 
-            mme_ue->imsi_bcd);
+    s6abuf_len = sizeof(s6a_message_t);
+    d_assert(s6abuf_len < 8192, return, "Not supported size:%d", s6abuf_len);
+    s6abuf = pkbuf_alloc(0, s6abuf_len);
+    d_assert(s6abuf, return, "Null param");
+    s6a_message = s6abuf->payload;
+    d_assert(s6a_message, return, "Null param");
+
+    d_trace(3, "[S6A] Update-Location-Answer : UE <-- HSS\n");
+
+    /* Set Authentication-Information Command */
+    memset(s6a_message, 0, s6abuf_len);
+    s6a_message->cmd_code = S6A_CMD_CODE_UPDATE_LOCATION;
+    ula_message = &s6a_message->ula_message;
+    d_assert(ula_message, return, "Null param");
+    subscription_data = &ula_message->subscription_data;
+    d_assert(subscription_data, return, "Null param");
     
     /* Value of Result Code */
     CHECK_FCT_DO( fd_msg_search_avp(*msg, fd_result_code, &avp), return );
     if (avp)
     {
         CHECK_FCT_DO( fd_msg_avp_hdr(avp, &hdr), return);
-        result_code = hdr->avp_value->i32;
+        s6a_message->result_code = hdr->avp_value->i32;
         d_trace(3, "Result Code: %d\n", hdr->avp_value->i32);
     }
     else
@@ -492,8 +531,9 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
             if (avpch)
             {
                 CHECK_FCT_DO( fd_msg_avp_hdr(avpch, &hdr), return);
-                result_code = hdr->avp_value->i32;
-                d_trace(3, "Experimental Result Code: %d\n", result_code);
+                s6a_message->result_code = hdr->avp_value->i32;
+                d_trace(3, "Experimental Result Code: %d\n",
+                        s6a_message->result_code);
             }
         }
         else
@@ -535,7 +575,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     if (avp)
     {
         CHECK_FCT_DO( fd_msg_avp_hdr(avp, &hdr), return );
-        mme_ue->ula_flags = hdr->avp_value->i32;
+        ula_message->ula_flags = hdr->avp_value->i32;
     }
     else
         error++;
@@ -553,7 +593,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
             if (avpch2)
             {
                 CHECK_FCT_DO( fd_msg_avp_hdr(avpch2, &hdr), return );
-                mme_ue->ambr.uplink = hdr->avp_value->u32;
+                subscription_data->ambr.uplink = hdr->avp_value->u32;
             }
             else
                 error++;
@@ -563,7 +603,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
             if (avpch2)
             {
                 CHECK_FCT_DO( fd_msg_avp_hdr(avpch2, &hdr), return );
-                mme_ue->ambr.downlink = hdr->avp_value->u32;
+                subscription_data->ambr.downlink = hdr->avp_value->u32;
             }
             else
                 error++;
@@ -588,26 +628,21 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                         break;
                     case S6A_AVP_CODE_APN_CONFIGURATION:
                     {
-                        c_int8_t apn[MAX_APN_LEN];
+                        pdn_t *pdn = &subscription_data->pdn[
+                                        subscription_data->num_of_pdn];
+                        d_assert(pdn, return, );
                         CHECK_FCT_DO( fd_avp_search_avp(
                             avpch2, s6a_service_selection, &avpch3), return );
                         if (avpch3)
                         {
                             CHECK_FCT_DO( 
                                 fd_msg_avp_hdr(avpch3, &hdr), return );
-                            core_cpystrn(apn, (char*)hdr->avp_value->os.data,
+                            core_cpystrn(pdn->apn,
+                                (char*)hdr->avp_value->os.data,
                                 c_min(hdr->avp_value->os.len, MAX_APN_LEN)+1);
-
-                            pdn = mme_pdn_find_by_apn(mme_ue, apn);
-                            if (!pdn)
-                                pdn = mme_pdn_add(mme_ue, apn);
-                            else
-                                d_warn("Duplicate APN:[%s]", apn);
                         }
                         else
                             error++;
-
-                        d_assert(pdn, return, );
 
                         CHECK_FCT_DO( fd_avp_search_avp(avpch2,
                             s6a_context_identifier, &avpch3), return );
@@ -723,6 +758,8 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                             else
                                 error++;
                         }
+
+                        subscription_data->num_of_pdn++;
                         break;
                     }
                     default:
@@ -746,15 +783,14 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     if (avp)
     {
         CHECK_FCT_DO( fd_msg_avp_hdr(avp, &hdr), return );
-        mme_ue->subscribed_rau_tau_timer = hdr->avp_value->i32;
+        subscription_data->subscribed_rau_tau_timer = hdr->avp_value->i32;
     }
     else
         error++;
     
-    event_set(&e, MME_EVT_EMM_UE_FROM_S6A);
+    event_set(&e, MME_EVT_S6A_MESSAGE);
     event_set_param1(&e, (c_uintptr_t)mme_ue->index);
-    event_set_param2(&e, (c_uintptr_t)S6A_CMD_UPDATE_LOCATION);
-    event_set_param3(&e, (c_uintptr_t)result_code);
+    event_set_param2(&e, (c_uintptr_t)s6abuf);
     mme_event_send(&e);
 
     /* Free the message */

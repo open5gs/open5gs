@@ -8,9 +8,6 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define S6A_CMD_UPDATE_LOCATION 316
-#define S6A_CMD_AUTHENTICATION_INFORMATION 318
-
 /* forward declaration */
 typedef enum {
     MME_EVT_BASE = FSM_USER_SIG,
@@ -20,13 +17,14 @@ typedef enum {
     MME_EVT_S1AP_ENB_LO_CONNREFUSED,
 
     MME_EVT_EMM_UE_MSG,
-    MME_EVT_EMM_UE_FROM_S6A,
     MME_EVT_EMM_UE_T3413,
 
     MME_EVT_ESM_BEARER_MSG,
 
     MME_EVT_S11_UE_MSG,
     MME_EVT_S11_TRANSACTION_T3,
+
+    MME_EVT_S6A_MESSAGE,
 
     MME_EVT_TOP,
 

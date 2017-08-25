@@ -1,5 +1,5 @@
-#ifndef __MME_HANDLER_H__
-#define __MME_HANDLER_H__
+#ifndef __MME_S11_HANDLER_H__
+#define __MME_S11_HANDLER_H__
 
 #include "gtp_tlv.h"
 
@@ -26,4 +26,4 @@ CORE_DECLARE(void) mme_s11_handle_downlink_data_notification(
 }
 #endif /* __cplusplus */
 
-#endif /* __MME_HANDLER_H__ */
+#endif /* __MME_S11_HANDLER_H__ */

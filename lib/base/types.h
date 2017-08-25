@@ -169,10 +169,11 @@ typedef struct _pdn_t {
 #define S6A_PDN_TYPE_IPV4_AND_IPV6              2
 #define S6A_PDN_TYPE_IPV4_OR_IPV6               3
     c_int8_t        pdn_type;
-    paa_t           paa;
 
     qos_t           qos;
     bitrate_t       ambr; /* APN-AMBR */
+
+    paa_t           paa;
 } pdn_t;
 
 CORE_DECLARE(c_int16_t) apn_build(c_int8_t *dst, c_int8_t *src, c_int16_t len);

@@ -159,9 +159,9 @@ void pgw_state_operational(fsm_t *s, event_t *e)
                 case GX_CMD_CODE_CREDIT_CONTROL:
                 {
                     gx_cca_message_t *cca_message = &gx_message->cca_message;
-                    if (cca_message->result_code != ER_DIAMETER_SUCCESS)
+                    if (gx_message->result_code != ER_DIAMETER_SUCCESS)
                     {
-                        d_error("Not impleneted(%d)", cca_message->result_code);
+                        d_error("Not impleneted(%d)", gx_message->result_code);
                         break;
                     }
                     switch(cca_message->cc_request_type)
@@ -186,6 +186,7 @@ void pgw_state_operational(fsm_t *s, event_t *e)
                             break;
                         }
                     }
+                    gx_cca_message_free(cca_message);
                     break;
                 }
                 default:
@@ -195,7 +196,6 @@ void pgw_state_operational(fsm_t *s, event_t *e)
                 }
             }
 
-            gx_message_free(gx_message);
             pkbuf_free(gxbuf);
             pkbuf_free(gtpbuf);
             break;
