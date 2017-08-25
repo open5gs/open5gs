@@ -29,7 +29,7 @@ CORE_DECLARE(status_t) pcrf_db_init(void);
 CORE_DECLARE(status_t) pcrf_db_final(void);
 
 CORE_DECLARE(status_t) pcrf_db_pdn_data(
-        c_int8_t *imsi_bcd, c_int8_t *apn, gx_pdn_data_t *pdn_data);
+        c_int8_t *imsi_bcd, c_int8_t *apn, gx_cca_message_t *cca_message);
 
 #ifdef __cplusplus
 }

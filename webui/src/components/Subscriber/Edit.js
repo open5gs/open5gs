@@ -141,9 +141,9 @@ const schema = {
           "pcc_rule": {
             "type": "array",
             "title": "PCC Rules",
-            "maxItems": 16,
+            "maxItems": 8,
             "messages": {
-              "maxItems": "16 PCC Rules are supported"
+              "maxItems": "8 PCC Rules are supported"
             },
             "items": {
               "type": "object",
@@ -152,10 +152,10 @@ const schema = {
                   "type": "array",
                   "title": "",
                   "minItems": 1,
-                  "maxItems": 16,
+                  "maxItems": 8,
                   "messages": {
                     "minItems": "At least 1 Flow is required",
-                    "maxItems": "16 Flows are supported"
+                    "maxItems": "8 Flows are supported"
                   },
                   "items": {
                     "type": "object",

@@ -14,6 +14,8 @@ extern "C" {
 #define MAX_NUM_OF_PDN          8
 #define MAX_NUM_OF_BEARER       8
 #define MAX_NUM_OF_UE_BEARER    (MAX_NUM_OF_UE * MAX_NUM_OF_BEARER)
+#define MAX_NUM_OF_PCC_RULE     8 
+#define MAX_NUM_OF_FLOW         8
 
 #define IPV6_LEN                16
 
@@ -104,8 +106,6 @@ typedef struct _bitrate_t {
 /**********************************
  * QoS Structure                 */
 typedef struct _qos_t {
-    lnode_t         node; /* A node of list_t */
-
 #define PDN_QCI_1                                       1
 #define PDN_QCI_2                                       2
 #define PDN_QCI_3                                       3
@@ -144,19 +144,17 @@ typedef struct _qos_t {
  * Flow  Structure               */
 typedef struct _flow_t {
     c_uint8_t direction;
-#define MAX_FLOW_DESCRIPTION_LEN 255
-    c_int8_t description[MAX_FLOW_DESCRIPTION_LEN+1];
+    c_int8_t *description;
 } flow_t;
 
 /**********************************
  * PCC Rule Structure            */
-#define MAX_NUM_OF_PCC_RULE                             16
 typedef struct _pcc_rule_t {
-#define MAX_PCC_RULE_NAME_LEN                           128
-    c_int8_t name[MAX_PCC_RULE_NAME_LEN+1];
-#define MAX_NUM_OF_FLOW                                 16
+    c_int8_t *name;
     flow_t flow[MAX_NUM_OF_FLOW];
     int num_of_flow;
+    c_int8_t flow_status;
+    c_uint32_t precedence;
         
     qos_t  qos;
 } pcc_rule_t;
@@ -166,10 +164,10 @@ typedef struct _pcc_rule_t {
 typedef struct _pdn_t {
     c_uint32_t      context_identifier;
     c_int8_t        apn[MAX_APN_LEN+1];
-#define S6A_PDN_TYPE_IPV4                               0
-#define S6A_PDN_TYPE_IPV6                               1
-#define S6A_PDN_TYPE_IPV4_AND_IPV6                      2
-#define S6A_PDN_TYPE_IPV4_OR_IPV6                       3
+#define S6A_PDN_TYPE_IPV4                       0
+#define S6A_PDN_TYPE_IPV6                       1
+#define S6A_PDN_TYPE_IPV4_AND_IPV6              2
+#define S6A_PDN_TYPE_IPV4_OR_IPV6               3
     c_int8_t        pdn_type;
     paa_t           paa;
 

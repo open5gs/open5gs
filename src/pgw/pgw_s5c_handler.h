@@ -11,12 +11,8 @@ extern "C" {
 
 CORE_DECLARE(void) pgw_s5c_handle_create_session_request(
         gtp_xact_t *xact, pgw_sess_t *sess, gtp_create_session_request_t *req);
-CORE_DECLARE(void) pgw_s5c_handle_create_session_response(
-        gtp_xact_t *xact, pgw_sess_t *sess);
 CORE_DECLARE(void) pgw_s5c_handle_delete_session_request(
         gtp_xact_t *xact, pgw_sess_t *sess, gtp_delete_session_request_t *req);
-CORE_DECLARE(void) pgw_s5c_handle_delete_session_response(
-        gtp_xact_t *xact, pgw_sess_t *sess);
 
 #ifdef __cplusplus
 }

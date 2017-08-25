@@ -2,9 +2,11 @@
 
 #include "core_debug.h"
 #include "core_pool.h"
+#include "core_lib.h"
 
 #include "fd_lib.h"
 #include "gx_dict.h"
+#include "gx_message.h"
 
 #include "pgw_event.h"
 #include "pgw_fd_path.h"
@@ -16,6 +18,7 @@ static struct session_handler *pgw_gx_reg = NULL;
 struct sess_state {
     gtp_xact_t *xact;
     pgw_sess_t *sess;
+    pkbuf_t *gtpbuf;
     struct timespec ts; /* Time of sending the message */
 };
 
@@ -23,8 +26,8 @@ pool_declare(pgw_gx_sess_pool, struct sess_state, MAX_NUM_SESSION_STATE);
 
 static void pgw_gx_cca_cb(void *data, struct msg **msg);
 
-void pgw_gx_send_ccr(
-    gtp_xact_t *xact, pgw_sess_t *sess, c_uint32_t cc_request_type)
+void pgw_gx_send_ccr(gtp_xact_t *xact, pgw_sess_t *sess,
+        pkbuf_t *gtpbuf, c_uint32_t cc_request_type)
 {
     struct msg *req = NULL;
     struct avp *avp;
@@ -42,6 +45,7 @@ void pgw_gx_send_ccr(
     
     mi->xact = xact;
     mi->sess = sess;
+    mi->gtpbuf = gtpbuf;
     
     /* Create the request */
     CHECK_FCT_DO( fd_msg_new(gx_cmd_ccr, MSGFL_ALLOC_ETEID, &req), goto out );
@@ -293,20 +297,19 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
     struct sess_state *mi = NULL;
     struct timespec ts;
     struct session *session;
-    struct avp *avp, *avpch1;
-#if 0
-    struct avp *avp_e_utran_vector, *avp_xres, *avp_kasme, *avp_rand, *avp_autn;
-#endif
+    struct avp *avp, *avpch1, *avpch2, *avpch3, *avpch4;
     struct avp_hdr *hdr;
     unsigned long dur;
     int error = 0;
-    c_uint32_t result_code = 0;
-    c_uint32_t cc_request_type = 0;
     int new;
 
     event_t e;
     gtp_xact_t *xact = NULL;
     pgw_sess_t *sess = NULL;
+    pkbuf_t *gxbuf = NULL, *gtpbuf = NULL;
+    gx_message_t *gx_message = NULL;
+    gx_cca_message_t *cca_message = NULL;
+    c_uint16_t gxbuf_len = 0;
     
     CHECK_SYS_DO( clock_gettime(CLOCK_REALTIME, &ts), return );
 
@@ -319,19 +322,33 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
     d_assert(mi && (void *)mi == data, return, );
 
     xact = mi->xact;
-    d_assert(xact, return, );
+    d_assert(xact, return, "Null param");
     sess = mi->sess;
-    d_assert(sess, return, );
+    d_assert(sess, return, "Null param");
+    gtpbuf = mi->gtpbuf;
+    d_assert(gtpbuf, return, "Null param");
+
+    gxbuf_len = sizeof(gx_message_t);
+    d_assert(gxbuf_len < 8192, return, "Not supported size:%d", gxbuf_len);
+    gxbuf = pkbuf_alloc(0, gxbuf_len);
+    d_assert(gxbuf, return, "Null param");
+    gx_message = gxbuf->payload;
+    d_assert(gx_message, return, "Null param");
 
     d_trace(3, "[Gx] Credit-Control-Answer : PGW[%d] <-- PCRF\n", 
             sess->pgw_s5c_teid);
+
+    /* Set Credit Control Command */
+    memset(gx_message, 0, gxbuf_len);
+    gx_message->cmd_code = GX_CMD_CODE_CREDIT_CONTROL;
+    cca_message = &gx_message->cca_message;
     
     /* Value of Result Code */
     CHECK_FCT_DO( fd_msg_search_avp(*msg, fd_result_code, &avp), return );
     if (avp)
     {
         CHECK_FCT_DO( fd_msg_avp_hdr(avp, &hdr), return);
-        result_code = hdr->avp_value->i32;
+        cca_message->result_code = hdr->avp_value->i32;
         d_trace(3, "Result Code: %d\n", hdr->avp_value->i32);
     }
     else
@@ -345,8 +362,9 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
             if (avpch1)
             {
                 CHECK_FCT_DO( fd_msg_avp_hdr(avpch1, &hdr), return);
-                result_code = hdr->avp_value->i32;
-                d_trace(3, "Experimental Result Code: %d\n", result_code);
+                cca_message->result_code = hdr->avp_value->i32;
+                d_trace(3, "Experimental Result Code: %d\n",
+                        cca_message->result_code);
             }
         }
         else
@@ -384,9 +402,9 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
         error++;
     }
 
-    if (result_code != ER_DIAMETER_SUCCESS)
+    if (cca_message->result_code != ER_DIAMETER_SUCCESS)
     {
-        d_warn("ERROR DIAMETER Result Code(%d)", result_code);
+        d_warn("ERROR DIAMETER Result Code(%d)", cca_message->result_code);
         error++;
         goto out;
     }
@@ -396,18 +414,279 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
     if (avp)
     {
         CHECK_FCT_DO( fd_msg_avp_hdr(avp, &hdr), return );
-        cc_request_type = hdr->avp_value->i32;
+        cca_message->cc_request_type = hdr->avp_value->i32;
     }
     else
         error++;
 
+    CHECK_FCT_DO(
+        fd_msg_search_avp(*msg, gx_charging_rule_install, &avp), return );
+    if (avp)
+    {
+        CHECK_FCT_DO( fd_msg_browse(avp, MSG_BRW_FIRST_CHILD, &avpch1, NULL),
+                return );
+        while(avpch1)
+        {
+            CHECK_FCT_DO( fd_msg_avp_hdr(avpch1, &hdr), return );
+            switch(hdr->avp_code)
+            {
+                case GX_AVP_CODE_CHARGING_RULE_DEFINITION:
+                {
+                    pcc_rule_t *pcc_rule = 
+                        &cca_message->pcc_rule[cca_message->num_of_pcc_rule];
+
+                    CHECK_FCT_DO( fd_msg_browse(avpch1,
+                            MSG_BRW_FIRST_CHILD, &avpch2, NULL), return );
+                    while(avpch2)
+                    {
+
+                        CHECK_FCT_DO( fd_msg_avp_hdr(avpch2, &hdr), return );
+                        switch(hdr->avp_code)
+                        {
+                            case GX_AVP_CODE_CHARGING_RULE_NAME:
+                            {
+                                pcc_rule->name = 
+                                    core_malloc(hdr->avp_value->os.len+1);
+                                core_cpystrn(pcc_rule->name,
+                                    (char*)hdr->avp_value->os.data,
+                                    hdr->avp_value->os.len+1);
+                                break;
+                            }
+                            case GX_AVP_CODE_FLOW_INFORMATION:
+                            {
+                                flow_t *flow =
+                                    &pcc_rule->flow[pcc_rule->num_of_flow];
+
+                                CHECK_FCT_DO( fd_avp_search_avp(avpch2,
+                                        gx_flow_direction, &avpch3), return );
+                                if (avpch3)
+                                {
+                                    CHECK_FCT_DO( fd_msg_avp_hdr(
+                                                avpch3, &hdr), return );
+                                    flow->direction = hdr->avp_value->i32;
+                                }
+
+                                CHECK_FCT_DO( fd_avp_search_avp(avpch2,
+                                        gx_flow_description, &avpch3), return );
+                                if (avpch3)
+                                {
+                                    CHECK_FCT_DO( fd_msg_avp_hdr(
+                                            avpch3, &hdr), return );
+                                    flow->description =
+                                        core_malloc(hdr->avp_value->os.len+1);
+                                    core_cpystrn(flow->description,
+                                        (char*)hdr->avp_value->os.data,
+                                        hdr->avp_value->os.len+1);
+                                }
+
+                                pcc_rule->num_of_flow++;
+                                break;
+                            }
+                            case GX_AVP_CODE_FLOW_STATUS:
+                            {
+                                pcc_rule->flow_status = hdr->avp_value->i32;
+                                break;
+                            }
+                            case GX_AVP_CODE_QOS_INFORMATION:
+                            {
+                                CHECK_FCT_DO( fd_avp_search_avp(avpch2,
+                                    gx_qos_class_identifier, &avpch3), return );
+                                if (avpch3)
+                                {
+                                    CHECK_FCT_DO( fd_msg_avp_hdr(
+                                            avpch3, &hdr), return );
+                                    pcc_rule->qos.qci = hdr->avp_value->u32;
+                                }
+                                else
+                                    error++;
+
+                                CHECK_FCT_DO( fd_avp_search_avp(avpch2,
+                                    gx_allocation_retention_priority,
+                                    &avpch3), return );
+                                if (avpch3)
+                                {
+                                    CHECK_FCT_DO( fd_avp_search_avp(avpch3,
+                                        gx_priority_level, &avpch4), return );
+                                    if (avpch4)
+                                    {
+                                        CHECK_FCT_DO( fd_msg_avp_hdr(avpch4,
+                                            &hdr), return );
+                                        pcc_rule->qos.arp.priority_level =
+                                            hdr->avp_value->u32;
+                                    }
+                                    else
+                                        error++;
+
+                                    CHECK_FCT_DO( fd_avp_search_avp(avpch3,
+                                        gx_pre_emption_capability, &avpch4),
+                                        return );
+                                    if (avpch4)
+                                    {
+                                        CHECK_FCT_DO( fd_msg_avp_hdr(
+                                                avpch4, &hdr), return );
+                                        pcc_rule->qos.arp.
+                                            pre_emption_capability =
+                                                hdr->avp_value->u32;
+                                    }
+                                    else
+                                        error++;
+
+                                    CHECK_FCT_DO( fd_avp_search_avp(avpch3,
+                                            gx_pre_emption_vulnerability,
+                                            &avpch4), return );
+                                    if (avpch4)
+                                    {
+                                        CHECK_FCT_DO( fd_msg_avp_hdr(avpch4,
+                                                &hdr), return );
+                                        pcc_rule->qos.arp.
+                                            pre_emption_vulnerability =
+                                                hdr->avp_value->u32;
+                                    }
+                                    else
+                                        error++;
+                                }
+                                else
+                                    error++;
+
+                                CHECK_FCT_DO( fd_avp_search_avp(avpch2,
+                                        gx_max_requested_bandwidth_ul,
+                                        &avpch3), return );
+                                if (avpch3)
+                                {
+                                    CHECK_FCT_DO( fd_msg_avp_hdr(
+                                            avpch3, &hdr), return );
+                                    pcc_rule->qos.mbr.uplink =
+                                        hdr->avp_value->u32;
+                                }
+                                CHECK_FCT_DO( fd_avp_search_avp(avpch2,
+                                    gx_max_requested_bandwidth_dl,
+                                    &avpch3), return );
+                                if (avpch3)
+                                {
+                                    CHECK_FCT_DO( fd_msg_avp_hdr(
+                                        avpch3, &hdr), return );
+                                    pcc_rule->qos.mbr.downlink =
+                                        hdr->avp_value->u32;
+                                }
+                                CHECK_FCT_DO( fd_avp_search_avp(avpch2,
+                                        gx_guaranteed_bitrate_ul, &avpch3),
+                                        return );
+                                if (avpch3)
+                                {
+                                    CHECK_FCT_DO( fd_msg_avp_hdr(
+                                        avpch3, &hdr), return );
+                                    pcc_rule->qos.gbr.uplink =
+                                        hdr->avp_value->u32;
+                                }
+                                CHECK_FCT_DO( fd_avp_search_avp(avpch2,
+                                    gx_guaranteed_bitrate_dl, &avpch3),
+                                    return );
+                                if (avpch3)
+                                {
+                                    CHECK_FCT_DO( fd_msg_avp_hdr(avpch3,
+                                        &hdr), return );
+                                    pcc_rule->qos.gbr.downlink =
+                                        hdr->avp_value->u32;
+                                }
+                                break;
+                            }
+                            case GX_AVP_CODE_PRECEDENCE:
+                            {
+                                pcc_rule->precedence = hdr->avp_value->i32;
+                                break;
+                            }
+                            default:
+                            {
+                                d_error("Not implemented(%d)", hdr->avp_code);
+                                break;
+                            }
+                        }
+                        fd_msg_browse(avpch2, MSG_BRW_NEXT, &avpch2, NULL);
+                    }
+
+                    cca_message->num_of_pcc_rule++;
+
+                    break;
+                }
+                default:
+                {
+                    d_error("Not supported(%d)", hdr->avp_code);
+                    break;
+                }
+            }
+            fd_msg_browse(avpch1, MSG_BRW_NEXT, &avpch1, NULL);
+        }
+    }
+
+    CHECK_FCT_DO(fd_msg_search_avp(*msg, gx_qos_information, &avp), return );
+    if (avp)
+    {
+        CHECK_FCT_DO( fd_avp_search_avp(avp,
+                gx_apn_aggregate_max_bitrate_ul, &avpch1), return );
+        if (avpch1)
+        {
+            CHECK_FCT_DO( fd_msg_avp_hdr(avpch1, &hdr), return );
+            cca_message->pdn.ambr.uplink = hdr->avp_value->u32;
+        }
+        CHECK_FCT_DO( fd_avp_search_avp(avp,
+                gx_apn_aggregate_max_bitrate_dl, &avpch1), return );
+        if (avpch1)
+        {
+            CHECK_FCT_DO( fd_msg_avp_hdr(avpch1, &hdr), return );
+            cca_message->pdn.ambr.downlink = hdr->avp_value->u32;
+        }
+    }
+
+    CHECK_FCT_DO(fd_msg_search_avp(*msg, gx_default_eps_bearer_qos, &avp),
+            return );
+    if (avp)
+    {
+        CHECK_FCT_DO( fd_avp_search_avp(avp,
+                    gx_qos_class_identifier, &avpch1), return );
+        if (avpch1)
+        {
+            CHECK_FCT_DO( fd_msg_avp_hdr(avpch1, &hdr), return );
+            cca_message->pdn.qos.qci = hdr->avp_value->u32;
+        }
+
+        CHECK_FCT_DO( fd_avp_search_avp(avp,
+                    gx_allocation_retention_priority, &avpch1), return );
+        if (avpch1)
+        {
+            CHECK_FCT_DO( fd_avp_search_avp(avpch1,
+                        gx_priority_level, &avpch4), return );
+            if (avpch4)
+            {
+                CHECK_FCT_DO( fd_msg_avp_hdr(avpch4, &hdr), return );
+                cca_message->pdn.qos.arp.priority_level = hdr->avp_value->u32;
+            }
+
+            CHECK_FCT_DO( fd_avp_search_avp(avpch1,
+                        gx_pre_emption_capability, &avpch4), return );
+            if (avpch4)
+            {
+                CHECK_FCT_DO( fd_msg_avp_hdr(avpch4, &hdr), return );
+                cca_message->pdn.qos.arp.pre_emption_capability =
+                    hdr->avp_value->u32;
+            }
+
+            CHECK_FCT_DO( fd_avp_search_avp(avpch1,
+                        gx_pre_emption_vulnerability, &avpch4), return );
+            if (avpch4)
+            {
+                CHECK_FCT_DO( fd_msg_avp_hdr(avpch4, &hdr), return );
+                cca_message->pdn.qos.arp.pre_emption_vulnerability =
+                    hdr->avp_value->u32;
+            }
+        }
+    }
+
 out:
-    event_set(&e, PGW_EVT_S5C_SESSION_FROM_GX);
+    event_set(&e, PGW_EVT_GX_MESSAGE);
     event_set_param1(&e, (c_uintptr_t)xact->index);
     event_set_param2(&e, (c_uintptr_t)sess->index);
-    event_set_param3(&e, (c_uintptr_t)GX_CMD_CREDIT_CONTROL);
-    event_set_param4(&e, (c_uintptr_t)cc_request_type);
-    event_set_param5(&e, (c_uintptr_t)result_code);
+    event_set_param3(&e, (c_uintptr_t)gxbuf);
+    event_set_param4(&e, (c_uintptr_t)gtpbuf);
     pgw_event_send(&e);
 
     /* Free the message */

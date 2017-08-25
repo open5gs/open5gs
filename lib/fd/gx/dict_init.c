@@ -1,3 +1,5 @@
+#define TRACE_MODULE _gx_dict
+
 #include "gx_dict.h"
 
 #define CHECK_dict_search( _type, _criteria, _what, _result )	\

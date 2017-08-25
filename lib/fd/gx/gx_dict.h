@@ -10,15 +10,18 @@ extern "C" {
 
 #define GX_APPLICATION_ID 16777238
 
+#define GX_AVP_CODE_CHARGING_RULE_DEFINITION        (1003)
+#define GX_AVP_CODE_CHARGING_RULE_NAME              (1005)
+#define GX_AVP_CODE_FLOW_INFORMATION                (1058)
+#define GX_AVP_CODE_FLOW_STATUS                     (511)
+#define GX_AVP_CODE_QOS_INFORMATION                 (1016)
+#define GX_AVP_CODE_PRECEDENCE                      (1010)
+
 extern struct dict_object *gx_application;
 
 extern struct dict_object *gx_cmd_ccr;
 extern struct dict_object *gx_cmd_cca;
 
-#define GX_CC_REQUEST_TYPE_INITIAL_REQUEST      1
-#define GX_CC_REQUEST_TYPE_UPDATE_REQUEST       2
-#define GX_CC_REQUEST_TYPE_TERMINATION_REQUEST  3
-#define GX_CC_REQUEST_TYPE_EVENT_REQUEST        4
 extern struct dict_object *gx_cc_request_type;
 extern struct dict_object *gx_cc_request_number;
 extern struct dict_object *gx_network_request_support;

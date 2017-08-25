@@ -1,6 +1,7 @@
 #define TRACE_MODULE _pcrf_context
 
 #include "core_debug.h"
+#include "core_pkbuf.h"
 #include "core_lib.h"
 
 #include <mongoc.h>
@@ -235,7 +236,7 @@ status_t pcrf_db_final()
 }
 
 status_t pcrf_db_pdn_data(
-        c_int8_t *imsi_bcd, c_int8_t *apn, gx_pdn_data_t *pdn_data)
+    c_int8_t *imsi_bcd, c_int8_t *apn, gx_cca_message_t *cca_message)
 {
     status_t rv = CORE_OK;
     mongoc_cursor_t *cursor = NULL;
@@ -251,7 +252,7 @@ status_t pcrf_db_pdn_data(
 
     d_assert(imsi_bcd, return CORE_ERROR, "Null param");
     d_assert(apn, return CORE_ERROR, "Null param");
-    d_assert(pdn_data, return CORE_ERROR, "Null param");
+    d_assert(cca_message, return CORE_ERROR, "Null param");
 
     mutex_lock(self.db_lock);
 
@@ -291,7 +292,6 @@ status_t pcrf_db_pdn_data(
         goto out;
     }
 
-    memset(pdn_data, 0, sizeof(gx_pdn_data_t));
     while(bson_iter_next(&iter))
     {
         const char *key = bson_iter_key(&iter);
@@ -311,7 +311,7 @@ status_t pcrf_db_pdn_data(
                 d_assert(pdn_index == 0, goto out, 
                         "Invalid PDN Index(%d)", pdn_index);
 
-                pdn = &pdn_data->pdn;
+                pdn = &cca_message->pdn;
                 bson_iter_recurse(&child1_iter, &child2_iter);
                 while(bson_iter_next(&child2_iter))
                 {
@@ -415,7 +415,7 @@ status_t pcrf_db_pdn_data(
                                     "Overflow of PCC RULE number(%d>%d)",
                                     pcc_rule_index, MAX_NUM_OF_PCC_RULE);
 
-                            pcc_rule = &pdn_data->pcc_rule[pcc_rule_index];
+                            pcc_rule = &cca_message->pcc_rule[pcc_rule_index];
                             bson_iter_recurse(&child3_iter, &child4_iter);
                             while(bson_iter_next(&child4_iter))
                             {
@@ -583,11 +583,11 @@ status_t pcrf_db_pdn_data(
                                             {
                                                 utf8 = bson_iter_utf8(
                                                         &child6_iter, &length);
+                                                flow->description =
+                                                    core_malloc(length+1);
                                                 core_cpystrn(
-                                                (char*)flow->description,
-                                                utf8,
-                                                c_min(length,
-                                                MAX_FLOW_DESCRIPTION_LEN)+1);
+                                                    (char*)flow->description,
+                                                    utf8, length+1);
                                             }
                                         }
                                         flow_index++;
@@ -597,7 +597,7 @@ status_t pcrf_db_pdn_data(
                             }
                             pcc_rule_index++;
                         }
-                        pdn_data->num_of_pcc_rule = pcc_rule_index;
+                        cca_message->num_of_pcc_rule = pcc_rule_index;
                     }
                 }
             }
@@ -606,6 +606,7 @@ status_t pcrf_db_pdn_data(
 
 out:
     if (query) bson_destroy(query);
+    if (opts) bson_destroy(opts);
     if (cursor) mongoc_cursor_destroy(cursor);
 
     mutex_unlock(self.db_lock);
