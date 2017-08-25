@@ -1,14 +1,15 @@
-#define TRACE_MODULE _mme_s6a_handler
+#define TRACE_MODULE _mme_fd_path
 
 #include "core_debug.h"
 #include "core_pool.h"
 #include "core_lib.h"
 
 #include "fd_lib.h"
-#include "s6a_lib.h"
+#include "s6a_dict.h"
+#include "s6a_message.h"
 
 #include "mme_event.h"
-#include "mme_s6a_handler.h"
+#include "mme_fd_path.h"
 
 #define MAX_NUM_SESSION_STATE 32
 
@@ -804,7 +805,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
 }
 
 
-int mme_s6a_init(void)
+int mme_fd_init(void)
 {
     pool_init(&mme_s6a_sess_pool, MAX_NUM_SESSION_STATE);
 
@@ -821,7 +822,7 @@ int mme_s6a_init(void)
 	return 0;
 }
 
-void mme_s6a_final(void)
+void mme_fd_final(void)
 {
 	CHECK_FCT_DO( fd_sess_handler_destroy(&mme_s6a_reg, NULL), );
 

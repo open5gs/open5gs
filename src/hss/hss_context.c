@@ -185,8 +185,8 @@ status_t hss_context_setup_trace_module()
         else if (fd <= 5) fd_g_debug_lvl = FD_LOG_DEBUG;
         else fd_g_debug_lvl = FD_LOG_ANNOYING;
 
-        extern int _hss_s6a_handler;
-        d_trace_level(&_hss_s6a_handler, fd);
+        extern int _hss_fd_path;
+        d_trace_level(&_hss_fd_path, fd);
         extern int _fd_init;
         d_trace_level(&_fd_init, fd);
         extern int _fd_logger;
@@ -407,7 +407,7 @@ out:
 }
 
 status_t hss_db_subscription_data(
-    char *imsi_bcd, hss_db_subscription_data_t *subscription_data)
+    char *imsi_bcd, s6a_subscription_data_t *subscription_data)
 {
     status_t rv = CORE_OK;
     mongoc_cursor_t *cursor = NULL;
@@ -452,7 +452,7 @@ status_t hss_db_subscription_data(
         goto out;
     }
 
-    memset(subscription_data, 0, sizeof(hss_db_subscription_data_t));
+    memset(subscription_data, 0, sizeof(s6a_subscription_data_t));
     while(bson_iter_next(&iter))
     {
         const char *key = bson_iter_key(&iter);

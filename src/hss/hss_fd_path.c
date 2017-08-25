@@ -1,11 +1,12 @@
-#define TRACE_MODULE _hss_s6a_handler
+#define TRACE_MODULE _hss_fd_path
 
 #include "core_debug.h"
 #include "core_lib.h"
 #include "core_sha2.h"
 
 #include "fd_lib.h"
-#include "s6a_lib.h"
+#include "s6a_dict.h"
+#include "s6a_message.h"
 
 #include "hss_context.h"
 #include "hss_kdf.h"
@@ -15,14 +16,14 @@
 #define HSS_AK_LEN 6
 
 /* handler for fallback cb */
-static struct disp_hdl *hdl_fb = NULL; 
+static struct disp_hdl *hdl_s6a_fb = NULL; 
 /* handler for Authentication-Information-Request cb */
-static struct disp_hdl *hdl_air = NULL; 
+static struct disp_hdl *hdl_s6a_air = NULL; 
 /* handler for Update-Location-Request cb */
-static struct disp_hdl *hdl_ulr = NULL; 
+static struct disp_hdl *hdl_s6a_ulr = NULL; 
 
 /* Default callback for the application. */
-static int hss_fb_cb(struct msg **msg, struct avp *avp, 
+static int hss_s6a_fb_cb(struct msg **msg, struct avp *avp, 
         struct session *session, void *opaque, enum disp_action *act)
 {
 	/* This CB should never be called */
@@ -32,7 +33,7 @@ static int hss_fb_cb(struct msg **msg, struct avp *avp,
 }
 
 /* Callback for incoming Authentication-Information-Request messages */
-static int hss_air_cb( struct msg **msg, struct avp *avp, 
+static int hss_s6a_air_cb( struct msg **msg, struct avp *avp, 
         struct session *session, void *opaque, enum disp_action *act)
 {
 	struct msg *ans, *qry;
@@ -179,7 +180,7 @@ out:
 }
 
 /* Callback for incoming Update-Location-Request messages */
-static int hss_ulr_cb( struct msg **msg, struct avp *avp, 
+static int hss_s6a_ulr_cb( struct msg **msg, struct avp *avp, 
         struct session *session, void *opaque, enum disp_action *act)
 {
 	struct msg *ans, *qry;
@@ -190,7 +191,7 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
     c_int8_t imsi_bcd[MAX_IMSI_BCD_LEN+1];
 
     status_t rv;
-    hss_db_subscription_data_t subscription_data;
+    s6a_subscription_data_t subscription_data;
 	
     d_assert(msg, return EINVAL,);
 	
@@ -228,7 +229,7 @@ static int hss_ulr_cb( struct msg **msg, struct avp *avp,
 
     /* Set the ULA Flags */
     CHECK_FCT( fd_msg_avp_new(s6a_ula_flags, 0, &avp) );
-    val.i32 = S6A_ULA_MME_REGISTERED_FOR_SMS;
+    val.i32 = S6A_ULA_FLAGS_MME_REGISTERED_FOR_SMS;
     CHECK_FCT( fd_msg_avp_setvalue(avp, &val) );
     CHECK_FCT( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) );
 
@@ -445,7 +446,7 @@ out:
     return 0;
 }
 
-int hss_s6a_init(void)
+int hss_fd_init(void)
 {
 	struct disp_when data;
 
@@ -458,18 +459,18 @@ int hss_s6a_init(void)
 	data.app = s6a_application;
 	
 	/* fallback CB if command != unexpected message received */
-	CHECK_FCT( fd_disp_register(hss_fb_cb, DISP_HOW_APPID, &data, NULL,
-                &hdl_fb) );
+	CHECK_FCT( fd_disp_register(hss_s6a_fb_cb, DISP_HOW_APPID, &data, NULL,
+                &hdl_s6a_fb) );
 	
 	/* specific handler for Authentication-Information-Request */
 	data.command = s6a_cmd_air;
-	CHECK_FCT( fd_disp_register(hss_air_cb, DISP_HOW_CC, &data, NULL,
-                &hdl_air) );
+	CHECK_FCT( fd_disp_register(hss_s6a_air_cb, DISP_HOW_CC, &data, NULL,
+                &hdl_s6a_air) );
 
 	/* specific handler for Location-Update-Request */
 	data.command = s6a_cmd_ulr;
-	CHECK_FCT( fd_disp_register(hss_ulr_cb, DISP_HOW_CC, &data, NULL, 
-                &hdl_ulr) );
+	CHECK_FCT( fd_disp_register(hss_s6a_ulr_cb, DISP_HOW_CC, &data, NULL, 
+                &hdl_s6a_ulr) );
 
 	/* Advertise the support for the application in the peer */
 	CHECK_FCT( fd_disp_app_support(s6a_application, fd_vendor, 1, 0) );
@@ -477,16 +478,16 @@ int hss_s6a_init(void)
 	return 0;
 }
 
-void hss_s6a_final(void)
+void hss_fd_final(void)
 {
-	if (hdl_fb) {
-		(void) fd_disp_unregister(&hdl_fb, NULL);
+	if (hdl_s6a_fb) {
+		(void) fd_disp_unregister(&hdl_s6a_fb, NULL);
 	}
-	if (hdl_air) {
-		(void) fd_disp_unregister(&hdl_air, NULL);
+	if (hdl_s6a_air) {
+		(void) fd_disp_unregister(&hdl_s6a_air, NULL);
 	}
-	if (hdl_ulr) {
-		(void) fd_disp_unregister(&hdl_ulr, NULL);
+	if (hdl_s6a_ulr) {
+		(void) fd_disp_unregister(&hdl_s6a_ulr, NULL);
 	}
 
     fd_final();

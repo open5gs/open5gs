@@ -8,7 +8,7 @@
 #include "mme_event.h"
 #include "mme_kdf.h"
 #include "s1ap_handler.h"
-#include "mme_s6a_handler.h"
+#include "mme_fd_path.h"
 #include "emm_handler.h"
 #include "emm_build.h"
 #include "esm_handler.h"

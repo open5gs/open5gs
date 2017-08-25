@@ -5,7 +5,7 @@
 #include "nas_message.h"
 
 #include "mme_event.h"
-#include "mme_s6a_handler.h"
+#include "mme_fd_path.h"
 #include "emm_handler.h"
 #include "esm_build.h"
 #include "esm_handler.h"

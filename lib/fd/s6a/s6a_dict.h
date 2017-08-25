@@ -8,14 +8,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define S6A_APPLICATION_ID                              16777251
-
-#define S6A_DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE    4181
-#define S6A_DIAMETER_ERROR_ROAMING_NOT_ALLOWED          5004
-#define S6A_DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION     5420
-#define S6A_DIAMETER_ERROR_RAT_NOT_ALLOWED              5421
-#define S6A_DIAMETER_ERROR_EQUIPMENT_UNKNOWN            5422
-#define S6A_DIAMETER_ERROR_UNKOWN_SERVING_NODE          5423
+#define S6A_APPLICATION_ID                  16777251
 
 #define S6A_AVP_CODE_CONTEXT_IDENTIFIER     (1423)
 #define S6A_AVP_CODE_ALL_APN_CONFIG_INC_IND (1428)
@@ -41,9 +34,6 @@ extern "C" {
 #define S6A_ULR_NODE_TYPE_IND               (1 << 4)
 #define S6A_ULR_INITIAL_ATTACH_IND          (1 << 5)
 #define S6A_ULR_PS_LCS_SUPPORTED_BY_UE      (1 << 6)
-
-#define S6A_ULA_SEPARATION_INDICATION       (0)
-#define S6A_ULA_MME_REGISTERED_FOR_SMS      (1)
 
 #define S6A_UE_SRVCC_NOT_SUPPORTED          (0)
 #define S6A_UE_SRVCC_SUPPORTED              (1)

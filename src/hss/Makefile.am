@@ -3,8 +3,8 @@
 noinst_LTLIBRARIES = libhss.la
 
 libhss_la_SOURCES = \
-	milenage.h hss_kdf.h hss_context.h hss_s6a_handler.h \
-	milenage.c hss_kdf.c hss_init.c hss_context.c hss_s6a_handler.c
+	milenage.h hss_kdf.h hss_context.h hss_fd_path.h \
+	milenage.c hss_kdf.c hss_init.c hss_context.c hss_fd_path.c
 
 libhss_la_DEPENDENCIES = \
     $(top_srcdir)/lib/core/src/libcore.la \

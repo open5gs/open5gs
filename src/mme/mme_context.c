@@ -745,8 +745,8 @@ status_t mme_context_setup_trace_module()
         else if (fd <= 5) fd_g_debug_lvl = FD_LOG_DEBUG;
         else fd_g_debug_lvl = FD_LOG_ANNOYING;
 
-        extern int _mme_s6a_handler;
-        d_trace_level(&_mme_s6a_handler, fd);
+        extern int _mme_fd_path;
+        d_trace_level(&_mme_fd_path, fd);
         extern int _fd_init;
         d_trace_level(&_fd_init, fd);
         extern int _fd_logger;
