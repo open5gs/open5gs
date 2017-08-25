@@ -16,25 +16,25 @@ char* mme_event_get_name(event_t *e)
         case FSM_EXIT_SIG: 
             return FSM_NAME_EXIT_SIG;
 
-        case MME_EVT_S1AP_ENB_MSG:
-            return "MME_EVT_S1AP_ENB_MSG";
-        case MME_EVT_S1AP_ENB_LO_ACCEPT:
-            return "MME_EVT_S1AP_ENB_LO_ACCEPT";
-        case MME_EVT_S1AP_ENB_LO_CONNREFUSED:
-            return"MME_EVT_S1AP_ENB_LO_CONNREFUSED";
+        case MME_EVT_S1AP_MESSAGE:
+            return "MME_EVT_S1AP_MESSAGE";
+        case MME_EVT_S1AP_LO_ACCEPT:
+            return "MME_EVT_S1AP_LO_ACCEPT";
+        case MME_EVT_S1AP_LO_CONNREFUSED:
+            return"MME_EVT_S1AP_LO_CONNREFUSED";
 
-        case MME_EVT_EMM_UE_MSG:
-            return "MME_EVT_EMM_UE_MSG";
-        case MME_EVT_EMM_UE_T3413:
-            return "MME_EVT_EMM_UE_T3413";
+        case MME_EVT_EMM_MESSAGE:
+            return "MME_EVT_EMM_MESSAGE";
+        case MME_EVT_EMM_T3413:
+            return "MME_EVT_EMM_T3413";
 
-        case MME_EVT_ESM_BEARER_MSG:
-            return "MME_EVT_ESM_BEARER_MSG";
+        case MME_EVT_ESM_MESSAGE:
+            return "MME_EVT_ESM_MESSAGE";
 
-        case MME_EVT_S11_UE_MSG:
-            return "MME_EVT_S11_UE_MSG";
-        case MME_EVT_S11_TRANSACTION_T3:
-            return "MME_EVT_S11_TRANSACTION_T3";
+        case MME_EVT_S11_MESSAGE:
+            return "MME_EVT_S11_MESSAGE";
+        case MME_EVT_S11_T3:
+            return "MME_EVT_S11_T3";
 
         case MME_EVT_S6A_MESSAGE:
             return "MME_EVT_S6A_MESSAGE";

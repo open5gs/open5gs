@@ -176,8 +176,6 @@ struct _mme_ue_t {
     c_uint8_t       xres[MAX_RES_LEN];
     c_uint8_t       xres_len;
     c_uint8_t       kasme[SHA256_DIGEST_SIZE];
-    c_uint8_t       rand[RAND_LEN];
-    c_uint8_t       autn[AUTN_LEN];
     c_uint8_t       knas_int[SHA256_DIGEST_SIZE/2]; 
     c_uint8_t       knas_enc[SHA256_DIGEST_SIZE/2];
     c_uint8_t       kenb[SHA256_DIGEST_SIZE];

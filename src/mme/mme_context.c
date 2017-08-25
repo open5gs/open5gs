@@ -1076,7 +1076,7 @@ mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
     list_init(&mme_ue->sess_list);
 
     /* Create t3413 timer */
-    mme_ue->t3413 = event_timer(&self.tm_service, MME_EVT_EMM_UE_T3413,
+    mme_ue->t3413 = event_timer(&self.tm_service, MME_EVT_EMM_T3413,
             self.t3413_value * 1000, mme_ue->index);
 
     mme_ue->enb_ue = enb_ue;

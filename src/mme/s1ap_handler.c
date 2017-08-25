@@ -84,7 +84,7 @@ static void event_s1ap_to_nas(enb_ue_t *enb_ue, S1ap_NAS_PDU_t *nasPdu)
     d_assert(h, pkbuf_free(nasbuf); return, "Null param");
     if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_EMM)
     {
-        event_set(&e, MME_EVT_EMM_UE_MSG);
+        event_set(&e, MME_EVT_EMM_MESSAGE);
         event_set_param1(&e, (c_uintptr_t)enb_ue->index);
         event_set_param2(&e, (c_uintptr_t)security_header_type.type);
         event_set_param3(&e, (c_uintptr_t)nasbuf);
@@ -106,7 +106,7 @@ static void event_s1ap_to_nas(enb_ue_t *enb_ue, S1ap_NAS_PDU_t *nasPdu)
                 h->procedure_transaction_identity);
         if (bearer)
         {
-            event_set(&e, MME_EVT_ESM_BEARER_MSG);
+            event_set(&e, MME_EVT_ESM_MESSAGE);
             event_set_param1(&e, (c_uintptr_t)bearer->index);
             event_set_param2(&e, (c_uintptr_t)security_header_type.type);
             event_set_param3(&e, (c_uintptr_t)nasbuf);

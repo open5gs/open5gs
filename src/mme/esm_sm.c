@@ -44,7 +44,7 @@ void esm_state_operational(fsm_t *s, event_t *e)
         {
             break;
         }
-        case MME_EVT_ESM_BEARER_MSG:
+        case MME_EVT_ESM_MESSAGE:
         {
             index_t index = event_get_param1(e);
             mme_bearer_t *bearer = NULL;

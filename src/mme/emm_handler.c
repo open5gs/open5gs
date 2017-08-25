@@ -57,7 +57,7 @@ static void event_emm_to_esm(
     memcpy(esmbuf->payload, 
             esm_message_container->data, esm_message_container->len);
 
-    event_set(&e, MME_EVT_ESM_BEARER_MSG);
+    event_set(&e, MME_EVT_ESM_MESSAGE);
     event_set_param1(&e, (c_uintptr_t)bearer->index);
     event_set_param3(&e, (c_uintptr_t)esmbuf);
     mme_event_send(&e);
@@ -355,34 +355,6 @@ void emm_handle_identity_response(
     {
         d_warn("Not supported Identity type(%d)", mobile_identity->imsi.type);
     }
-}
-
-void emm_handle_authentication_request(mme_ue_t *mme_ue)
-{
-    pkbuf_t *emmbuf = NULL;
-
-    nas_message_t message;
-    nas_authentication_request_t *authentication_request = 
-        &message.emm.authentication_request;
-
-    d_assert(mme_ue, return, "Null param");
-
-    d_trace(3, "[NAS] Authentication request : UE[%s] <-- EMM\n",
-             mme_ue->imsi_bcd);
-
-    memset(&message, 0, sizeof(message));
-    message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
-    message.emm.h.message_type = NAS_AUTHENTICATION_REQUEST;
-
-    memcpy(authentication_request->authentication_parameter_rand.rand,
-            mme_ue->rand, RAND_LEN);
-    memcpy(authentication_request->authentication_parameter_autn.autn,
-            mme_ue->autn, AUTN_LEN);
-    authentication_request->authentication_parameter_autn.length = 
-            AUTN_LEN;
-
-    d_assert(nas_plain_encode(&emmbuf, &message) == CORE_OK && emmbuf,,);
-    d_assert(nas_send_to_downlink_nas_transport(mme_ue, emmbuf) == CORE_OK,,);
 }
 
 void emm_handle_authentication_response(mme_ue_t *mme_ue, 

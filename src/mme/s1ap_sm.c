@@ -43,7 +43,7 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
         {
             break;
         }
-        case MME_EVT_S1AP_ENB_MSG:
+        case MME_EVT_S1AP_MESSAGE:
         {
             index_t index = event_get_param1(e);
             mme_enb_t *enb = NULL;

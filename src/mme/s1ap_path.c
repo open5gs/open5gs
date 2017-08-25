@@ -68,7 +68,7 @@ static int _s1ap_accept_cb(net_sock_t *net_sock, void *data)
             INET_NTOP(&remote_sock->remote.sin_addr.s_addr, buf));
 
         event_t e;
-        event_set(&e, MME_EVT_S1AP_ENB_LO_ACCEPT);
+        event_set(&e, MME_EVT_S1AP_LO_ACCEPT);
         event_set_param1(&e, (c_uintptr_t)remote_sock);
         /* FIXME : how to close remote_sock */
         mme_event_send(&e);
@@ -91,7 +91,7 @@ static status_t s1ap_recv(net_sock_t *sock, pkbuf_t *pkbuf)
     d_trace(10, "S1AP_PDU is received from eNB-Inf\n");
     d_trace_hex(10, pkbuf->payload, pkbuf->len);
 
-    event_set(&e, MME_EVT_S1AP_ENB_MSG);
+    event_set(&e, MME_EVT_S1AP_MESSAGE);
     event_set_param1(&e, (c_uintptr_t)sock->app_index);
     event_set_param2(&e, (c_uintptr_t)pkbuf);
     return mme_event_send(&e);
@@ -136,7 +136,7 @@ int _s1ap_recv_cb(net_sock_t *sock, void *data)
 
         event_t e;
 
-        event_set(&e, MME_EVT_S1AP_ENB_LO_CONNREFUSED);
+        event_set(&e, MME_EVT_S1AP_LO_CONNREFUSED);
         event_set_param1(&e, (c_uintptr_t)sock->app_index);
         mme_event_send(&e);
 

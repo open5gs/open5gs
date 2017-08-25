@@ -48,7 +48,7 @@ void emm_state_operational(fsm_t *s, event_t *e)
         {
             break;
         }
-        case MME_EVT_EMM_UE_MSG:
+        case MME_EVT_EMM_MESSAGE:
         {
             index_t index = event_get_param1(e);
             mme_ue_t *mme_ue = NULL;
@@ -201,7 +201,7 @@ void emm_state_operational(fsm_t *s, event_t *e)
             }
             break;
         }
-        case MME_EVT_EMM_UE_T3413:
+        case MME_EVT_EMM_T3413:
         {
             index_t index = event_get_param1(e);
             mme_ue_t *mme_ue = NULL;
