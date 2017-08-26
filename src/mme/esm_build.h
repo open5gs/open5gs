@@ -11,10 +11,10 @@ CORE_DECLARE(status_t) esm_build_pdn_connectivity_reject(pkbuf_t **pkbuf,
                             c_uint8_t pti, nas_esm_cause_t esm_cause);
 
 CORE_DECLARE(status_t) esm_build_information_request(pkbuf_t **pkbuf,
-                            mme_bearer_t *bearer);
+                            mme_sess_t *sess);
 
 CORE_DECLARE(status_t) esm_build_activate_default_bearer_context(
-                            pkbuf_t **pkbuf, mme_bearer_t *bearer);
+                            pkbuf_t **pkbuf, mme_sess_t *sess);
 
 #ifdef __cplusplus
 }

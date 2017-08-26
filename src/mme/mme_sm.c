@@ -236,32 +236,26 @@ void mme_state_operational(fsm_t *s, event_t *e)
         {
             nas_message_t message;
             index_t index = event_get_param1(e);
-            mme_bearer_t *bearer = NULL;
+            mme_sess_t *sess = NULL;
             mme_ue_t *mme_ue = NULL;
             pkbuf_t *pkbuf = NULL;
 
             d_assert(index, break, "Null param");
-            bearer = mme_bearer_find(index);
-            d_assert(bearer, break, "No ESM context");
-            d_assert(mme_ue = bearer->mme_ue, break, "No UE context");
-            d_assert(FSM_STATE(&bearer->sm), break, "No ESM State Machine");
+            sess = mme_sess_find(index);
+            d_assert(sess, break, "No Session context");
+            d_assert(mme_ue = sess->mme_ue, break, "No UE context");
+            d_assert(FSM_STATE(&sess->sm), break, "No ESM State Machine");
 
-            if (event_get(e) == MME_EVT_ESM_MESSAGE)
-            {
-                pkbuf = (pkbuf_t *)event_get_param3(e);
-                d_assert(pkbuf, break, "Null param");
-                d_assert(nas_esm_decode(&message, pkbuf) == CORE_OK,
-                        pkbuf_free(pkbuf); break, "Can't decode NAS_ESM");
+            pkbuf = (pkbuf_t *)event_get_param3(e);
+            d_assert(pkbuf, break, "Null param");
+            d_assert(nas_esm_decode(&message, pkbuf) == CORE_OK,
+                    pkbuf_free(pkbuf); break, "Can't decode NAS_ESM");
 
-                event_set_param4(e, (c_uintptr_t)&message);
-            }
+            event_set_param4(e, (c_uintptr_t)&message);
 
-            fsm_dispatch(&bearer->sm, (fsm_event_t*)e);
+            fsm_dispatch(&sess->sm, (fsm_event_t*)e);
 
-            if (event_get(e) == MME_EVT_ESM_MESSAGE)
-            {
-                pkbuf_free(pkbuf);
-            }
+            pkbuf_free(pkbuf);
 
             break;
         }

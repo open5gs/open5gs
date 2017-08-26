@@ -31,6 +31,7 @@ static void event_emm_to_esm(
     c_uint8_t pti = NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
     c_uint8_t ebi = NAS_EPS_BEARER_IDENTITY_UNASSIGNED;
     mme_bearer_t *bearer = NULL;
+    mme_sess_t *sess = NULL;
 
     d_assert(mme_ue, return, "Null param");
     d_assert(esm_message_container, return, "Null param");
@@ -41,13 +42,18 @@ static void event_emm_to_esm(
 
     pti = h->procedure_transaction_identity;
     ebi = h->eps_bearer_identity;
-    if (pti == NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED && ebi)
-        bearer = mme_bearer_find_by_ue_ebi(mme_ue, ebi);
-    else if (ebi == NAS_EPS_BEARER_IDENTITY_UNASSIGNED && pti)
-        bearer = mme_bearer_find_by_ue_pti(mme_ue, pti);
 
-    if (!bearer)
-        bearer = mme_sess_add(mme_ue, pti);
+    if (ebi != NAS_EPS_BEARER_IDENTITY_UNASSIGNED)
+        sess = mme_sess_find_by_ebi(mme_ue, ebi);
+    else if (pti != NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED)
+        sess = mme_sess_find_by_pti(mme_ue, pti);
+    else
+        d_assert(0, return, "Invalid pti(%d) and ebi(%d)\n", pti, ebi);
+
+    if (!sess)
+        sess = mme_sess_add(mme_ue, pti);
+    d_assert(sess, return, "Null param");
+    bearer = mme_default_bearer_in_sess(sess);
     d_assert(bearer, return, "No Bearer Context");
 
     /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 
@@ -58,7 +64,7 @@ static void event_emm_to_esm(
             esm_message_container->data, esm_message_container->len);
 
     event_set(&e, MME_EVT_ESM_MESSAGE);
-    event_set_param1(&e, (c_uintptr_t)bearer->index);
+    event_set_param1(&e, (c_uintptr_t)sess->index);
     event_set_param3(&e, (c_uintptr_t)esmbuf);
     mme_event_send(&e);
 }
@@ -162,7 +168,6 @@ void emm_handle_attach_accept(mme_sess_t *sess)
     status_t rv;
     enb_ue_t *enb_ue = NULL;
     mme_ue_t *mme_ue = NULL;
-    mme_bearer_t *bearer = NULL;
     pkbuf_t *esmbuf = NULL, *emmbuf = NULL, *s1apbuf = NULL;
 
     d_assert(sess, return, "Null param");
@@ -170,14 +175,12 @@ void emm_handle_attach_accept(mme_sess_t *sess)
     d_assert(mme_ue, return, "Null param");
     enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return, "Null param");
-    bearer = mme_default_bearer_in_sess(sess);
-    d_assert(bearer, return, "Null param");
 
-    rv = esm_build_activate_default_bearer_context(&esmbuf, bearer);
+    rv = esm_build_activate_default_bearer_context(&esmbuf, sess);
     d_assert(rv == CORE_OK && esmbuf, return, "esm build error");
 
     d_trace(3, "[NAS] Activate default bearer context request : "
-            "EMM <-- ESM[%d]\n", bearer->ebi);
+            "EMM <-- ESM[%d]\n", sess->ebi);
 
     rv = emm_build_attach_accept(&emmbuf, mme_ue, esmbuf);
     d_assert(rv == CORE_OK && emmbuf, 
@@ -185,7 +188,7 @@ void emm_handle_attach_accept(mme_sess_t *sess)
 
     d_trace(3, "[NAS] Attach accept : UE[%s] <-- EMM\n", mme_ue->imsi_bcd);
 
-    rv = s1ap_build_initial_context_setup_request(&s1apbuf, bearer, emmbuf);
+    rv = s1ap_build_initial_context_setup_request(&s1apbuf, sess, emmbuf);
     d_assert(rv == CORE_OK && s1apbuf, 
             pkbuf_free(emmbuf); return, "s1ap build error");
 
@@ -554,17 +557,14 @@ void emm_handle_service_request(
     pkbuf_t *s1apbuf = NULL;
     enb_ue_t *enb_ue = NULL;
     mme_sess_t *sess = NULL;
-    mme_bearer_t *bearer = NULL;
 
     d_assert(mme_ue, return, "Null param");
     enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return, "Null param");
     sess = mme_sess_first(mme_ue);
     d_assert(sess, return, "Null param");
-    bearer = mme_default_bearer_in_sess(sess);
-    d_assert(bearer, return, "Null param");
 
-    rv = s1ap_build_initial_context_setup_request(&s1apbuf, bearer, NULL);
+    rv = s1ap_build_initial_context_setup_request(&s1apbuf, sess, NULL);
     d_assert(rv == CORE_OK && s1apbuf, return, "s1ap build error");
 
     d_assert(nas_send_to_enb(enb_ue, s1apbuf) == CORE_OK,, "s1ap send error");

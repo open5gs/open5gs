@@ -1405,13 +1405,20 @@ status_t mme_ue_reset_ebi(mme_ue_t *mme_ue)
     return CORE_OK;
 }
 
-mme_bearer_t *mme_sess_add(mme_ue_t *mme_ue, c_uint8_t pti)
+mme_sess_t *mme_sess_add(mme_ue_t *mme_ue, c_uint8_t pti)
 {
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
 
+    d_assert(mme_ue, return NULL, "Null param");
+    d_assert(pti != NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
+            return NULL, "Invalid PTI(%d)", pti);
+
     index_alloc(&mme_sess_pool, &sess);
     d_assert(sess, return NULL, "Null param");
+
+    sess->pti = pti;
+    sess->ebi = NEXT_ID(mme_ue->ebi, MIN_EPS_BEARER_ID, MAX_EPS_BEARER_ID);
 
     sess->mme_s11_teid = sess->index;
     sess->mme_s11_addr = mme_self()->s11_addr;
@@ -1422,17 +1429,23 @@ mme_bearer_t *mme_sess_add(mme_ue_t *mme_ue, c_uint8_t pti)
     sess->mme_ue = mme_ue;
     sess->sgw = mme_sgw_first();
 
-    bearer = mme_bearer_add(sess, pti);
+    bearer = mme_bearer_add(sess);
     d_assert(bearer, mme_sess_remove(sess); return NULL, 
             "Can't add default bearer context");
 
-    return bearer;
+    fsm_create(&sess->sm, esm_state_initial, esm_state_final);
+    fsm_init(&sess->sm, 0);
+
+    return sess;
 }
 
 status_t mme_sess_remove(mme_sess_t *sess)
 {
     d_assert(sess, return CORE_ERROR, "Null param");
     d_assert(sess->mme_ue, return CORE_ERROR, "Null param");
+
+    fsm_final(&sess->sm, 0);
+    fsm_clear(&sess->sm);
 
     mme_bearer_remove_all(sess);
 
@@ -1470,22 +1483,31 @@ mme_sess_t* mme_sess_find_by_teid(c_uint32_t teid)
     return mme_sess_find(teid);
 }
 
-mme_sess_t* mme_sess_find_by_ebi(mme_ue_t *mme_ue, c_uint8_t ebi)
+mme_sess_t* mme_sess_find_by_pti(mme_ue_t *mme_ue, c_uint8_t pti)
 {
     mme_sess_t *sess = NULL;
-    mme_bearer_t *bearer = NULL;
     
     sess = mme_sess_first(mme_ue);
     while (sess)
     {
-        bearer = mme_bearer_first(sess);
-        while (bearer)
-        {
-            if (ebi == bearer->ebi)
-                return sess;
+        if (pti == sess->pti)
+            return sess;
 
-            bearer = mme_bearer_next(bearer);
-        }
+        sess = mme_sess_next(sess);
+    }
+
+    return NULL;
+}
+
+mme_sess_t* mme_sess_find_by_ebi(mme_ue_t *mme_ue, c_uint8_t ebi)
+{
+    mme_sess_t *sess = NULL;
+    
+    sess = mme_sess_first(mme_ue);
+    while (sess)
+    {
+        if (ebi == sess->ebi)
+            return sess;
 
         sess = mme_sess_next(sess);
     }
@@ -1495,7 +1517,6 @@ mme_sess_t* mme_sess_find_by_ebi(mme_ue_t *mme_ue, c_uint8_t ebi)
 
 mme_sess_t* mme_sess_find_by_last_esm_message(mme_ue_t *mme_ue)
 {
-    mme_bearer_t *bearer = NULL;
     mme_sess_t *sess = NULL;
     nas_message_t *message = NULL;
 
@@ -1507,10 +1528,8 @@ mme_sess_t* mme_sess_find_by_last_esm_message(mme_ue_t *mme_ue)
     {
         case NAS_PDN_CONNECTIVITY_REQUEST:
         {
-            bearer = mme_bearer_find_by_ue_pti(mme_ue, 
+            sess = mme_sess_find_by_pti(mme_ue, 
                 message->esm.h.procedure_transaction_identity);
-
-            if (bearer) sess = bearer->sess;
 
             break;
         }
@@ -1533,7 +1552,7 @@ mme_sess_t* mme_sess_next(mme_sess_t *sess)
     return list_next(sess);
 }
 
-mme_bearer_t* mme_bearer_add(mme_sess_t *sess, c_uint8_t pti)
+mme_bearer_t* mme_bearer_add(mme_sess_t *sess)
 {
     mme_bearer_t *bearer = NULL;
     mme_ue_t *mme_ue = NULL;
@@ -1545,16 +1564,10 @@ mme_bearer_t* mme_bearer_add(mme_sess_t *sess, c_uint8_t pti)
     index_alloc(&mme_bearer_pool, &bearer);
     d_assert(bearer, return NULL, "Null param");
 
-    bearer->pti = pti;
-    bearer->ebi = NEXT_ID(mme_ue->ebi, MIN_EPS_BEARER_ID, MAX_EPS_BEARER_ID);
-
     list_append(&sess->bearer_list, bearer);
     
     bearer->mme_ue = mme_ue;
     bearer->sess = sess;
-
-    fsm_create(&bearer->sm, esm_state_initial, esm_state_final);
-    fsm_init(&bearer->sm, 0);
 
     return bearer;
 }
@@ -1564,9 +1577,6 @@ status_t mme_bearer_remove(mme_bearer_t *bearer)
     d_assert(bearer, return CORE_ERROR, "Null param");
     d_assert(bearer->sess, return CORE_ERROR, "Null param");
     
-    fsm_final(&bearer->sm, 0);
-    fsm_clear(&bearer->sm);
-
     list_remove(&bearer->sess->bearer_list, bearer);
     index_free(&mme_bearer_pool, bearer);
 
@@ -1596,74 +1606,6 @@ mme_bearer_t* mme_bearer_find(index_t index)
 {
     d_assert(index, return NULL, "Invalid Index");
     return index_find(&mme_bearer_pool, index);
-}
-
-mme_bearer_t* mme_bearer_find_by_ue_pti(mme_ue_t *mme_ue, c_uint8_t pti)
-{
-    mme_sess_t *sess = NULL;
-    mme_bearer_t *bearer = NULL;
-
-    d_assert(mme_ue, return NULL, "Null param");
-
-    sess = mme_sess_first(mme_ue);
-    while (sess)
-    {
-        bearer = mme_bearer_first(sess);
-        while (bearer)
-        {
-            if (pti == bearer->pti)
-                return bearer;
-
-            bearer = mme_bearer_next(bearer);
-        }
-
-        sess = mme_sess_next(sess);
-    }
-
-    return NULL;
-}
-
-mme_bearer_t* mme_bearer_find_by_ue_ebi(mme_ue_t *mme_ue, c_uint8_t ebi)
-{
-    mme_sess_t *sess = NULL;
-    mme_bearer_t *bearer = NULL;
-
-    d_assert(mme_ue, return NULL, "Null param");
-
-    sess = mme_sess_first(mme_ue);
-    while (sess)
-    {
-        bearer = mme_bearer_first(sess);
-        while (bearer)
-        {
-            if (ebi == bearer->ebi)
-                return bearer;
-
-            bearer = mme_bearer_next(bearer);
-        }
-
-        sess = mme_sess_next(sess);
-    }
-
-    return NULL;
-}
-
-mme_bearer_t* mme_bearer_find_by_sess_ebi(mme_sess_t *sess, c_uint8_t ebi)
-{
-    mme_bearer_t *bearer = NULL;
-
-    d_assert(sess, return NULL, "Null param");
-
-    bearer = mme_bearer_first(sess);
-    while (bearer)
-    {
-        if (ebi == bearer->ebi)
-            return bearer;
-
-        bearer = mme_bearer_next(bearer);
-    }
-
-    return NULL;
 }
 
 mme_bearer_t* mme_default_bearer_in_sess(mme_sess_t *sess)

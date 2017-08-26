@@ -47,15 +47,12 @@ void esm_state_operational(fsm_t *s, event_t *e)
         case MME_EVT_ESM_MESSAGE:
         {
             index_t index = event_get_param1(e);
-            mme_bearer_t *bearer = NULL;
             mme_sess_t *sess = NULL;
             mme_ue_t *mme_ue = NULL;
             nas_message_t *message = NULL;
 
             d_assert(index, return, "Null param");
-            bearer = mme_bearer_find(index);
-            d_assert(bearer, return, "Null param");
-            sess = bearer->sess;
+            sess = mme_sess_find(index);
             d_assert(sess, return, "Null param");
             mme_ue = sess->mme_ue;
             d_assert(mme_ue, return, "Null param");
@@ -70,10 +67,10 @@ void esm_state_operational(fsm_t *s, event_t *e)
                 case NAS_PDN_CONNECTIVITY_REQUEST:
                 {
                     esm_handle_pdn_connectivity_request(
-                            bearer, &message->esm.pdn_connectivity_request);
+                            sess, &message->esm.pdn_connectivity_request);
                     d_trace(3, "[NAS] PDN connectivity request : "
                             "UE[%s] --> ESM[%d]\n", 
-                            mme_ue->imsi_bcd, bearer->pti);
+                            mme_ue->imsi_bcd, sess->pti);
 
                     if (!MME_UE_HAVE_IMSI(mme_ue))
                     {
@@ -117,9 +114,9 @@ void esm_state_operational(fsm_t *s, event_t *e)
                 {
                     d_trace(3, "[NAS] ESM information response : "
                             "UE[%s] --> ESM[%d]\n", 
-                            mme_ue->imsi_bcd, bearer->pti);
+                            mme_ue->imsi_bcd, sess->pti);
                     esm_handle_information_response(
-                            bearer, &message->esm.esm_information_response);
+                            sess, &message->esm.esm_information_response);
 
                     mme_s11_handle_create_session_request(sess);
                     break;
@@ -128,7 +125,7 @@ void esm_state_operational(fsm_t *s, event_t *e)
                 {
                     d_trace(3, "[NAS] Activate default eps bearer "
                             "context accept : UE[%s] --> ESM[%d]\n", 
-                            mme_ue->imsi_bcd, bearer->pti);
+                            mme_ue->imsi_bcd, sess->pti);
                     break;
                 }
                 default:

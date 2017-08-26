@@ -148,7 +148,7 @@ status_t s1ap_build_downlink_nas_transport(
 }
 
 status_t s1ap_build_initial_context_setup_request(
-            pkbuf_t **s1apbuf, mme_bearer_t *bearer, pkbuf_t *emmbuf)
+            pkbuf_t **s1apbuf, mme_sess_t *sess, pkbuf_t *emmbuf)
 {
     char buf[INET_ADDRSTRLEN];
 
@@ -163,13 +163,13 @@ status_t s1ap_build_initial_context_setup_request(
     S1ap_NAS_PDU_t *nasPdu = NULL;
     mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
-    mme_sess_t *sess = NULL;
+    mme_bearer_t *bearer = NULL;
     s6a_subscription_data_t *subscription_data = NULL;
     pdn_t *pdn = NULL;
 
-    d_assert(bearer, return CORE_ERROR, "Null param");
-    sess = bearer->sess;
     d_assert(sess, return CORE_ERROR, "Null param");
+    bearer = mme_default_bearer_in_sess(sess);
+    d_assert(bearer, return CORE_ERROR, "Null param");
     mme_ue = sess->mme_ue;
     d_assert(mme_ue, return CORE_ERROR, "Null param");
     enb_ue = mme_ue->enb_ue;
@@ -193,7 +193,7 @@ status_t s1ap_build_initial_context_setup_request(
 
     e_rab = (S1ap_E_RABToBeSetupItemCtxtSUReq_t *)
         core_calloc(1, sizeof(S1ap_E_RABToBeSetupItemCtxtSUReq_t));
-    e_rab->e_RAB_ID = bearer->ebi;
+    e_rab->e_RAB_ID = sess->ebi;
     e_rab->e_RABlevelQoSParameters.qCI = pdn->qos.qci;
 
     e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.

@@ -119,7 +119,7 @@ CORE_DECLARE(pgw_context_t*) pgw_self(void);
 CORE_DECLARE(status_t)      pgw_context_parse_config(void);
 CORE_DECLARE(status_t)      pgw_context_setup_trace_module(void);
 
-CORE_DECLARE(pgw_bearer_t*) pgw_sess_add(
+CORE_DECLARE(pgw_sess_t*)   pgw_sess_add(
         c_uint8_t *imsi, int imsi_len, c_int8_t *apn, c_uint8_t id);
 CORE_DECLARE(status_t )     pgw_sess_remove(pgw_sess_t *sess);
 CORE_DECLARE(status_t )     pgw_sess_remove_all();

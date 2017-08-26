@@ -484,7 +484,7 @@ static void *sess_hash_keygen(c_uint8_t *out, int *out_len,
     return out;
 }
 
-pgw_bearer_t *pgw_sess_add(
+pgw_sess_t *pgw_sess_add(
         c_uint8_t *imsi, int imsi_len, c_int8_t *apn, c_uint8_t id)
 {
     pgw_sess_t *sess = NULL;
@@ -521,7 +521,7 @@ pgw_bearer_t *pgw_sess_add(
             imsi, imsi_len, apn);
     hash_set(self.sess_hash, sess->hash_keybuf, sess->hash_keylen, sess);
 
-    return bearer;
+    return sess;
 }
 
 status_t pgw_sess_remove(pgw_sess_t *sess)
@@ -600,11 +600,9 @@ pgw_sess_t *pgw_sess_find_or_add_by_message(gtp_message_t *gtp_message)
     sess = pgw_sess_find_by_imsi_apn(req->imsi.data, req->imsi.len, apn);
     if (!sess)
     {
-        pgw_bearer_t *bearer = NULL;
-        bearer = pgw_sess_add(req->imsi.data, req->imsi.len, apn,
+        sess = pgw_sess_add(req->imsi.data, req->imsi.len, apn,
             req->bearer_contexts_to_be_created.eps_bearer_id.u8);
-        d_assert(bearer, return NULL, "No Bearer Context");
-        sess = bearer->sess;
+        d_assert(sess, return NULL, "No Session Context");
     }
 
     return sess;

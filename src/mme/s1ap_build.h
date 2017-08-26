@@ -14,7 +14,7 @@ CORE_DECLARE(status_t) s1ap_build_setup_failure(
 CORE_DECLARE(status_t) s1ap_build_downlink_nas_transport(
             pkbuf_t **s1apbuf, enb_ue_t *enb_ue, pkbuf_t *emmbuf);
 CORE_DECLARE(status_t) s1ap_build_initial_context_setup_request(
-            pkbuf_t **s1apbuf, mme_bearer_t *bearer, pkbuf_t *emmbuf);
+            pkbuf_t **s1apbuf, mme_sess_t *sess, pkbuf_t *emmbuf);
 CORE_DECLARE(status_t) s1ap_build_ue_context_release_commmand(
             pkbuf_t **s1apbuf, enb_ue_t *enb_ue, S1ap_Cause_t *cause);
 CORE_DECLARE(status_t) s1ap_build_paging(pkbuf_t **s1apbuf, mme_ue_t *mme_ue);

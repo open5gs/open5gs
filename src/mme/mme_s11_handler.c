@@ -41,8 +41,12 @@ void mme_s11_handle_create_session_response(
     mme_bearer_t *bearer = NULL;
     pdn_t *pdn = NULL;
     
-    d_assert(sess, return, "Null param");
     d_assert(rsp, return, "Null param");
+    d_assert(sess, return, "Null param");
+    bearer = mme_default_bearer_in_sess(sess);
+    d_assert(bearer, return, "Null param");
+    pdn = sess->pdn;
+    d_assert(pdn, return, "Null param");
 
     if (rsp->sender_f_teid_for_control_plane.presence == 0)
     {
@@ -70,12 +74,6 @@ void mme_s11_handle_create_session_response(
         return;
     }
 
-    bearer = mme_bearer_find_by_sess_ebi(
-            sess, rsp->bearer_contexts_created.eps_bearer_id.u8);
-    d_assert(bearer, return, "No ESM Context");
-    pdn = sess->pdn;
-    d_assert(pdn, return, "No PDN Context");
-
     /* Receive Control Plane(UL) : SGW-S11 */
     sgw_s11_teid = rsp->sender_f_teid_for_control_plane.data;
     sess->sgw_s11_teid = ntohl(sgw_s11_teid->teid);
@@ -86,9 +84,9 @@ void mme_s11_handle_create_session_response(
 
     if (rsp->protocol_configuration_options.presence)
     {
-        bearer->pgw_pco_len = rsp->protocol_configuration_options.len;
-        memcpy(bearer->pgw_pco, rsp->protocol_configuration_options.data,
-                bearer->pgw_pco_len);
+        sess->pgw_pco_len = rsp->protocol_configuration_options.len;
+        memcpy(sess->pgw_pco, rsp->protocol_configuration_options.data,
+                sess->pgw_pco_len);
     }
 
     /* Receive Data Plane(UL) : SGW-S1U */
@@ -143,7 +141,6 @@ void mme_s11_handle_downlink_data_notification(
         gtp_downlink_data_notification_t *noti)
 {
     status_t rv;
-    mme_bearer_t *bearer = NULL;
     pkbuf_t *s11buf = NULL;
 
     d_assert(xact, return, "Null param");
@@ -152,9 +149,6 @@ void mme_s11_handle_downlink_data_notification(
 
     d_trace(3, "[GTP] Downlink Data Notification : "
             "MME[%d] <-- SGW[%d]\n", sess->mme_s11_teid, sess->sgw_s11_teid);
-
-    bearer = mme_bearer_find_by_sess_ebi(sess, noti->eps_bearer_id.u8);
-    d_assert(bearer, return, "No ESM Context");
 
     /* Build Downlink data notification ack */
     rv = mme_s11_build_downlink_data_notification_ack(&s11buf, sess);

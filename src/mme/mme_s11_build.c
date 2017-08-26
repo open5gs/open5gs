@@ -14,7 +14,6 @@ status_t mme_s11_build_create_session_request(pkbuf_t **pkbuf, mme_sess_t *sess)
     pdn_t *pdn = NULL;
     mme_sgw_t *sgw = NULL;
     mme_ue_t *mme_ue = NULL;
-    mme_bearer_t *bearer = NULL;
     gtp_message_t gtp_message;
     gtp_create_session_request_t *req = &gtp_message.create_session_request;
 
@@ -30,8 +29,6 @@ status_t mme_s11_build_create_session_request(pkbuf_t **pkbuf, mme_sess_t *sess)
     d_assert(sess, return CORE_ERROR, "Null param");
     sgw = sess->sgw;
     d_assert(sgw, return CORE_ERROR, "Null param");
-    bearer = mme_default_bearer_in_sess(sess);
-    d_assert(bearer, return CORE_ERROR, "Null param");
     pdn = sess->pdn;
     d_assert(pdn, return CORE_ERROR, "Null param");
     mme_ue = sess->mme_ue;
@@ -117,16 +114,16 @@ status_t mme_s11_build_create_session_request(pkbuf_t **pkbuf, mme_sess_t *sess)
         req->aggregate_maximum_bit_rate.len = sizeof(ambr);
     }
 
-    if (bearer->ue_pco_len)
+    if (sess->ue_pco_len)
     {
         req->protocol_configuration_options.presence = 1;
-        req->protocol_configuration_options.data = bearer->ue_pco;
-        req->protocol_configuration_options.len = bearer->ue_pco_len;
+        req->protocol_configuration_options.data = sess->ue_pco;
+        req->protocol_configuration_options.len = sess->ue_pco_len;
     }
 
     req->bearer_contexts_to_be_created.presence = 1;
     req->bearer_contexts_to_be_created.eps_bearer_id.presence = 1;
-    req->bearer_contexts_to_be_created.eps_bearer_id.u8 = bearer->ebi;
+    req->bearer_contexts_to_be_created.eps_bearer_id.u8 = sess->ebi;
 
     memset(&bearer_qos, 0, sizeof(bearer_qos));
     bearer_qos.qci = pdn->qos.qci;
@@ -164,13 +161,19 @@ status_t mme_s11_build_modify_bearer_request(
     gtp_message_t gtp_message;
     gtp_modify_bearer_request_t *req = &gtp_message.modify_bearer_request;
 
+    mme_sess_t *sess = NULL;
+
     gtp_f_teid_t enb_s1u_teid;
+
+    d_assert(bearer, return CORE_ERROR, "Null param");
+    sess = bearer->sess;
+    d_assert(sess, return CORE_ERROR, "Null param");
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));
 
     req->bearer_contexts_to_be_modified.presence = 1;
     req->bearer_contexts_to_be_modified.eps_bearer_id.presence = 1;
-    req->bearer_contexts_to_be_modified.eps_bearer_id.u8 = bearer->ebi;
+    req->bearer_contexts_to_be_modified.eps_bearer_id.u8 = sess->ebi;
 
     /* Send Data Plane(DL) : ENB-S1U */
     memset(&enb_s1u_teid, 0, sizeof(gtp_f_teid_t));
@@ -194,7 +197,6 @@ status_t mme_s11_build_delete_session_request(pkbuf_t **pkbuf, mme_sess_t *sess)
     status_t rv;
     mme_ue_t *mme_ue = NULL;
     gtp_message_t gtp_message;
-    mme_bearer_t *bearer;
     gtp_delete_session_request_t *req = &gtp_message.delete_session_request;
 
     gtp_uli_t uli;
@@ -207,12 +209,8 @@ status_t mme_s11_build_delete_session_request(pkbuf_t **pkbuf, mme_sess_t *sess)
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));
 
-    bearer = mme_default_bearer_in_sess(sess);
-    if (bearer)
-    {
-        req->linked_eps_bearer_id.presence = 1;
-        req->linked_eps_bearer_id.u8 = bearer->ebi;
-    }
+    req->linked_eps_bearer_id.presence = 1;
+    req->linked_eps_bearer_id.u8 = sess->ebi;
 
     memset(&uli, 0, sizeof(gtp_uli_t));
     uli.flags.e_cgi = 1;

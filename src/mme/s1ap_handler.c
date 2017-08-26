@@ -92,7 +92,7 @@ static void event_s1ap_to_nas(enb_ue_t *enb_ue, S1ap_NAS_PDU_t *nasPdu)
     }
     else if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_ESM)
     {
-        mme_bearer_t *bearer = NULL;
+        mme_sess_t *sess = NULL;
         mme_ue_t *mme_ue = enb_ue->mme_ue;
 
         if (!mme_ue)
@@ -102,12 +102,11 @@ static void event_s1ap_to_nas(enb_ue_t *enb_ue, S1ap_NAS_PDU_t *nasPdu)
             return;
         }
 
-        bearer = mme_bearer_find_by_ue_pti(mme_ue, 
-                h->procedure_transaction_identity);
-        if (bearer)
+        sess = mme_sess_find_by_pti(mme_ue, h->procedure_transaction_identity);
+        if (sess)
         {
             event_set(&e, MME_EVT_ESM_MESSAGE);
-            event_set_param1(&e, (c_uintptr_t)bearer->index);
+            event_set_param1(&e, (c_uintptr_t)sess->index);
             event_set_param2(&e, (c_uintptr_t)security_header_type.type);
             event_set_param3(&e, (c_uintptr_t)nasbuf);
             mme_event_send(&e);
@@ -406,16 +405,15 @@ void s1ap_handle_initial_context_setup_response(
             ies->e_RABSetupListCtxtSURes.s1ap_E_RABSetupItemCtxtSURes.array[i];
         d_assert(e_rab, return, "Null param");
 
-        bearer = mme_bearer_find_by_ue_ebi(mme_ue, e_rab->e_RAB_ID);
+        sess = mme_sess_find_by_ebi(mme_ue, e_rab->e_RAB_ID);
+        d_assert(sess, return, "Null param");
+        bearer = mme_default_bearer_in_sess(sess);
         d_assert(bearer, return, "Null param");
         memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf, 
                 sizeof(bearer->enb_s1u_teid));
         bearer->enb_s1u_teid = ntohl(bearer->enb_s1u_teid);
         memcpy(&bearer->enb_s1u_addr, e_rab->transportLayerAddress.buf,
                 sizeof(bearer->enb_s1u_addr));
-
-        sess = bearer->sess;
-        d_assert(sess, return, "Null param");
 
         rv = mme_s11_build_modify_bearer_request(&pkbuf, bearer);
         d_assert(rv == CORE_OK, return, "S11 build error");
