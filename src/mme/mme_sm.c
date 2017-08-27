@@ -270,6 +270,8 @@ void mme_state_operational(fsm_t *s, event_t *e)
             c_uint32_t teid;
             gtp_message_t gtp_message;
             mme_sess_t *sess = NULL;
+            mme_ue_t *mme_ue = NULL;
+            enb_ue_t *enb_ue = NULL;
 
             d_assert(pkbuf, break, "Null param");
             d_assert(sock, pkbuf_free(pkbuf); break, "Null param");
@@ -284,13 +286,25 @@ void mme_state_operational(fsm_t *s, event_t *e)
             sess = mme_sess_find_by_teid(teid);
             d_assert(sess, pkbuf_free(pkbuf); break, 
                     "No Session Context(TEID:%d)", teid);
+            mme_ue = sess->mme_ue;
+            d_assert(mme_ue, pkbuf_free(pkbuf);break, "Null param");
+            enb_ue = mme_ue->enb_ue;
+            d_assert(enb_ue, break, "Null param");
+                    
             switch(type)
             {
                 case GTP_CREATE_SESSION_RESPONSE_TYPE:
                 {
                     mme_s11_handle_create_session_response(
                             sess, &gtp_message.create_session_response);
-                    emm_handle_attach_accept(sess);
+                    if (MME_SESSION_IN_ATTACH_STATE(sess))
+                    {
+                        emm_handle_attach_accept(mme_ue);
+                    }
+                    else
+                    {
+                        d_error("Not implemented of multiple PDN");
+                    }
                     break;
                 }
                 case GTP_MODIFY_BEARER_RESPONSE_TYPE:
@@ -299,64 +313,61 @@ void mme_state_operational(fsm_t *s, event_t *e)
                     break;
                 case GTP_DELETE_SESSION_RESPONSE_TYPE:
                 {
-                    mme_ue_t *mme_ue = NULL;
-                    nas_message_t *message = NULL;
-
-                    d_assert(sess, break, "Null param");
-                    mme_ue = sess->mme_ue;
-                    d_assert(mme_ue, break, "Null param");
-                    message = &mme_ue->last_emm_message;
-                    d_assert(message, break, "Null param");
-
                     mme_s11_handle_delete_session_response(
                             sess, &gtp_message.delete_session_response);
 
-                    switch(message->emm.h.message_type)
+                    if (MME_UE_DETACH_INITIATED(mme_ue))
                     {
-                        case NAS_DETACH_REQUEST:
+                        /* Detach Request is Initiated */
+                        if (mme_sess_first(mme_ue) == NULL)
                         {
-                            emm_handle_detach_accept(mme_ue,
-                                    &message->emm.detach_request_from_ue);
-                            break;
+                            /* All session is deleted */
+                            emm_handle_detach_accept(mme_ue);
                         }
-                        case NAS_ATTACH_REQUEST:
-                        case NAS_IDENTITY_RESPONSE:
+                        else
                         {
-                            mme_s6a_send_air(mme_ue);
-                            break;
+                            d_trace(3, "wait to delete all sessions"
+                                    "in detach state\n");
                         }
-                        default:
-                            break;
                     }
+                    else
+                    {
+                        if (mme_sess_first(mme_ue) == NULL)
+                        {
+                            /* If no session, it menas UE try to attach */
+                            mme_s6a_send_air(mme_ue);
+                        }
+                        else
+                        {
+                            if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+                            {
+                                /* PDN Disconnect Request */
+                                d_error("Not implemented of multiple PDN");
+                            }
+                            else
+                            {
+                                d_trace(3, "wait to delete all sessions"
+                                        "in no security context\n");
+                            }
+                        }
+                    }
+
                     break;
                 }
                 case GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE:
                 {
-                    mme_ue_t *mme_ue = NULL;
-                    enb_ue_t *enb_ue = NULL;
-
                     mme_s11_handle_release_access_bearers_response(
                             sess, &gtp_message.release_access_bearers_response);
 
-                    mme_ue = sess->mme_ue;
-                    d_assert(mme_ue, break, "Null param");
-                    enb_ue = mme_ue->enb_ue;
-                    d_assert(enb_ue, break, "Null param");
-                    
                     s1ap_handle_release_access_bearers_response(enb_ue);
                     break;
                 }
 
                 case GTP_DOWNLINK_DATA_NOTIFICATION_TYPE:
                 {
-                    mme_ue_t *mme_ue = NULL;
-
                     mme_s11_handle_downlink_data_notification(
                             xact,
                             sess, &gtp_message.downlink_data_notification);
-
-                    mme_ue = sess->mme_ue;
-                    d_assert(mme_ue, break, "Null param");
 
                     s1ap_handle_paging(mme_ue);
                     /* Start T3413 */
@@ -406,7 +417,6 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 case S6A_CMD_CODE_UPDATE_LOCATION:
                 {
                     mme_sess_t *sess = NULL;
-                    mme_bearer_t *bearer = NULL;
 
                     if (s6a_message->result_code != ER_DIAMETER_SUCCESS)
                     {
@@ -416,25 +426,32 @@ void mme_state_operational(fsm_t *s, event_t *e)
 
                     mme_s6a_handle_ula(mme_ue, &s6a_message->ula_message);
 
-                    sess = mme_sess_find_by_last_esm_message(mme_ue);
+                    sess = mme_sess_first(mme_ue);
                     d_assert(sess, break, "Null param");
-                    bearer = mme_default_bearer_in_sess(sess);
-                    d_assert(bearer, break, "Null param");
 
-                    if (MME_SESSION_HAVE_APN(sess))
+                    if (MME_UE_HAVE_DEFAULT_BEARER(mme_ue))
                     {
-                        if (MME_SESSION_IS_VALID(sess))
-                        {
-                            emm_handle_attach_accept(sess);
-                        }
-                        else
-                        {
-                            mme_s11_handle_create_session_request(sess);
-                        }
+                        /* if there is default bearer, UE attached completely */
+                        d_error("Not implemented for Tracking Area Update");
                     }
                     else
                     {
-                        esm_handle_information_request(sess);
+                        /* Attaching state */
+                        if (MME_UE_HAVE_APN(mme_ue))
+                        {
+                            if (MME_UE_HAVE_SESSION(mme_ue))
+                            {
+                                emm_handle_attach_accept(mme_ue);
+                            }
+                            else
+                            {
+                                mme_s11_handle_create_session_request(sess);
+                            }
+                        }
+                        else
+                        {
+                            esm_handle_information_request(sess);
+                        }
                     }
 
                     break;

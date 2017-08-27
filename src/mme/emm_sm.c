@@ -61,9 +61,6 @@ void emm_state_operational(fsm_t *s, event_t *e)
             message = (nas_message_t *)event_get_param4(e);
             d_assert(message, break, "Null param");
 
-            /* Save Last Received NAS-EMM message */
-            memcpy(&mme_ue->last_emm_message, message, sizeof(nas_message_t));
-
             if (message->emm.h.security_header_type
                     == NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE)
             {
@@ -88,7 +85,8 @@ void emm_state_operational(fsm_t *s, event_t *e)
                         mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, 
                                 mme_ue->kenb);
 
-                    mme_ue_reset_ebi(mme_ue);
+                    CLEAR_EPS_BEARER_ID(mme_ue);
+
                     mme_ue_paged(mme_ue);
                     emm_handle_attach_request(
                             mme_ue, &message->emm.attach_request);
@@ -98,7 +96,6 @@ void emm_state_operational(fsm_t *s, event_t *e)
                 case NAS_IDENTITY_RESPONSE:
                 {
                     mme_sess_t *sess = NULL;
-                    mme_bearer_t *bearer = NULL;
 
                     emm_handle_identity_response(mme_ue,
                             &message->emm.identity_response);
@@ -109,18 +106,16 @@ void emm_state_operational(fsm_t *s, event_t *e)
                         break;
                     }
                     
-                    sess = mme_sess_find_by_last_esm_message(mme_ue);
+                    sess = mme_sess_first(mme_ue);
                     d_assert(sess, return, "Null param");
-                    bearer = mme_default_bearer_in_sess(sess);
-                    d_assert(bearer, return, "Null param");
 
                     if (SECURITY_CONTEXT_IS_VALID(mme_ue))
                     {
-                        if (MME_SESSION_HAVE_APN(sess))
+                        if (MME_UE_HAVE_APN(mme_ue))
                         {
-                            if (MME_SESSION_IS_VALID(sess))
+                            if (MME_UE_HAVE_SESSION(mme_ue))
                             {
-                                emm_handle_attach_accept(sess);
+                                emm_handle_attach_accept(mme_ue);
                             }
                             else
                             {
@@ -137,7 +132,8 @@ void emm_state_operational(fsm_t *s, event_t *e)
                     {
                         if (MME_UE_HAVE_SESSION(mme_ue))
                         {
-                             emm_handle_s11_delete_session_request(mme_ue);
+                            mme_s11_handle_delete_all_sessions_request_in_ue(
+                                    mme_ue);
                         }
                         else
                         {
@@ -183,6 +179,16 @@ void emm_state_operational(fsm_t *s, event_t *e)
                 {
                     emm_handle_detach_request(
                             mme_ue, &message->emm.detach_request_from_ue);
+    
+                    if (MME_UE_HAVE_SESSION(mme_ue))
+                    {
+                        mme_s11_handle_delete_all_sessions_request_in_ue(
+                            mme_ue);
+                    }
+                    else
+                    {
+                        emm_handle_detach_accept(mme_ue);
+                    }
                     break;
                 }
                 case NAS_TRACKING_AREA_UPDATE_REQUEST:

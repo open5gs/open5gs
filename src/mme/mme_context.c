@@ -19,9 +19,6 @@
 
 #define S1AP_SCTP_PORT              36412
 
-#define MIN_EPS_BEARER_ID           5
-#define MAX_EPS_BEARER_ID           15
-
 static mme_context_t self;
 
 pool_declare(mme_sgw_pool, mme_sgw_t, MAX_NUM_OF_SGW);
@@ -1397,14 +1394,6 @@ status_t mme_associate_ue_context(mme_ue_t *mme_ue, enb_ue_t *enb_ue)
     return CORE_OK;
 }
 
-status_t mme_ue_reset_ebi(mme_ue_t *mme_ue)
-{
-    /* Setup EBI Generator */
-    mme_ue->ebi = MIN_EPS_BEARER_ID - 1;
-
-    return CORE_OK;
-}
-
 mme_sess_t *mme_sess_add(mme_ue_t *mme_ue, c_uint8_t pti)
 {
     mme_sess_t *sess = NULL;
@@ -1513,33 +1502,6 @@ mme_sess_t* mme_sess_find_by_ebi(mme_ue_t *mme_ue, c_uint8_t ebi)
     }
 
     return NULL;
-}
-
-mme_sess_t* mme_sess_find_by_last_esm_message(mme_ue_t *mme_ue)
-{
-    mme_sess_t *sess = NULL;
-    nas_message_t *message = NULL;
-
-    d_assert(mme_ue, return NULL, "Null param");
-    message = &mme_ue->last_esm_message;
-    d_assert(message, return NULL, "Null param");
-
-    switch(message->esm.h.message_type)
-    {
-        case NAS_PDN_CONNECTIVITY_REQUEST:
-        {
-            sess = mme_sess_find_by_pti(mme_ue, 
-                message->esm.h.procedure_transaction_identity);
-
-            break;
-        }
-        default:
-        {
-            break;
-        }
-    }
-
-    return sess;
 }
 
 mme_sess_t* mme_sess_first(mme_ue_t *mme_ue)

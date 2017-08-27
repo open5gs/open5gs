@@ -98,11 +98,24 @@ void mme_s11_handle_create_session_response(
             "MME[%d] <-- SGW[%d]\n", sess->mme_s11_teid, sess->sgw_s11_teid);
 }
 
-void mme_s11_handle_modify_bearer_response(
-        mme_sess_t *sess, gtp_modify_bearer_response_t *rsp)
+void mme_s11_handle_delete_all_sessions_request_in_ue(mme_ue_t *mme_ue)
 {
-    d_trace(3, "[GTP] Modify Bearer Response : "
-            "MME[%d] <-- SGW[%d]\n", sess->mme_s11_teid, sess->sgw_s11_teid);
+    status_t rv;
+    pkbuf_t *s11buf = NULL;
+    mme_sess_t *sess = NULL;
+
+    d_assert(mme_ue, return, "Null param");
+    sess = mme_sess_first(mme_ue);
+    while (sess != NULL)
+    {
+        rv = mme_s11_build_delete_session_request(&s11buf, sess);
+        d_assert(rv == CORE_OK, return, "S11 build error");
+
+        rv = mme_s11_send_to_sgw(sess, GTP_DELETE_SESSION_REQUEST_TYPE, s11buf);
+        d_assert(rv == CORE_OK, return, "S11 send error");
+
+        sess = mme_sess_next(sess);
+    }
 }
 
 void mme_s11_handle_delete_session_response(
@@ -114,9 +127,16 @@ void mme_s11_handle_delete_session_response(
         return;
     }
 
-    mme_sess_remove(sess);
-
     d_trace(3, "[GTP] Delete Session Response : "
+            "MME[%d] <-- SGW[%d]\n", sess->mme_s11_teid, sess->sgw_s11_teid);
+
+    mme_sess_remove(sess);
+}
+
+void mme_s11_handle_modify_bearer_response(
+        mme_sess_t *sess, gtp_modify_bearer_response_t *rsp)
+{
+    d_trace(3, "[GTP] Modify Bearer Response : "
             "MME[%d] <-- SGW[%d]\n", sess->mme_s11_teid, sess->sgw_s11_teid);
 }
 

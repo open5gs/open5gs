@@ -163,16 +163,16 @@ void emm_handle_attach_request(
     event_emm_to_esm(mme_ue, &attach_request->esm_message_container);
 }
 
-void emm_handle_attach_accept(mme_sess_t *sess)
+void emm_handle_attach_accept(mme_ue_t *mme_ue)
 {
     status_t rv;
+    mme_sess_t *sess = NULL;
     enb_ue_t *enb_ue = NULL;
-    mme_ue_t *mme_ue = NULL;
     pkbuf_t *esmbuf = NULL, *emmbuf = NULL, *s1apbuf = NULL;
 
-    d_assert(sess, return, "Null param");
-    mme_ue = sess->mme_ue;
     d_assert(mme_ue, return, "Null param");
+    sess = mme_sess_first(mme_ue);
+    d_assert(sess, return, "Null param");
     enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return, "Null param");
 
@@ -259,8 +259,8 @@ void emm_handle_attach_reject(mme_ue_t *mme_ue)
     status_t rv;
     mme_enb_t *enb = NULL;
     enb_ue_t *enb_ue = NULL;
+    mme_sess_t *sess = NULL;
     pkbuf_t *s1apbuf = NULL, *esmbuf = NULL, *emmbuf = NULL;
-    nas_message_t *message = NULL;
     S1ap_Cause_t cause;
 
     d_assert(mme_ue, return, "Null param");
@@ -269,27 +269,14 @@ void emm_handle_attach_reject(mme_ue_t *mme_ue)
     enb = enb_ue->enb;
     d_assert(enb, return, "Null param");
 
-    message = &mme_ue->last_esm_message;
-    if (message)
+    sess = mme_sess_first(mme_ue);
+    if (sess)
     {
-        switch(message->esm.h.message_type)
-        {
-            case NAS_PDN_CONNECTIVITY_REQUEST:
-            {
-                c_uint8_t pti = message->esm.h.procedure_transaction_identity;
-                rv = esm_build_pdn_connectivity_reject(&esmbuf, pti,
-                        ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
-                d_assert(rv == CORE_OK && esmbuf, return, "esm build error");
-                d_trace(3, "[NAS] PDN Connectivity reject : "
-                                "EMM <-- ESM[%d]\n", pti);
-                break;
-            }
-            default:
-            {
-                d_warn("Not implemented(type:%d)", message->esm.h.message_type);
-                break;
-            }
-        }
+        rv = esm_build_pdn_connectivity_reject(&esmbuf, sess->pti,
+                ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+        d_assert(rv == CORE_OK && esmbuf, return, "esm build error");
+        d_trace(3, "[NAS] PDN Connectivity reject : "
+                        "EMM <-- ESM[%d]\n", sess->pti);
     }
 
     rv = emm_build_attach_reject(&emmbuf,
@@ -459,12 +446,8 @@ void emm_handle_detach_request(
         mme_ue_t *mme_ue, nas_detach_request_from_ue_t *detach_request)
 {
     enb_ue_t *enb_ue = NULL;
-    nas_detach_type_t *detach_type = NULL;
 
     d_assert(detach_request, return, "Null param");
-    detach_type = &detach_request->detach_type;
-    d_assert(detach_type, return, "Null param");
-
     d_assert(mme_ue, return, "Null param");
     enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return, "Null param");
@@ -472,7 +455,7 @@ void emm_handle_detach_request(
     d_trace(3, "[NAS] Detach request : UE_IMSI[%s] --> EMM\n", 
             mme_ue->imsi_bcd);
 
-    switch (detach_type->detach_type)
+    switch (detach_request->detach_type.detach_type)
     {
         /* 0 0 1 : EPS detach */
         case NAS_DETACH_TYPE_FROM_UE_EPS_DETACH: 
@@ -490,26 +473,17 @@ void emm_handle_detach_request(
         default: /* all other values */
             break;
     }
-    
-    if (MME_UE_HAVE_SESSION(mme_ue))
-    {
-        emm_handle_s11_delete_session_request(mme_ue);
-    }
-    else
-    {
-        emm_handle_detach_accept(mme_ue, detach_request);
-    }
+
+    SET_DETACH_TYPE(mme_ue, detach_request->detach_type);
 }
 
-void emm_handle_detach_accept(
-        mme_ue_t *mme_ue, nas_detach_request_from_ue_t *detach_request)
+void emm_handle_detach_accept(mme_ue_t *mme_ue)
 {
     status_t rv;
     mme_enb_t *enb = NULL;
     enb_ue_t *enb_ue = NULL;
     nas_message_t message;
     pkbuf_t *emmbuf = NULL, *s1apbuf = NULL;
-    nas_detach_type_t *detach_type = NULL;
     S1ap_Cause_t cause;
 
     d_assert(mme_ue, return, "Null param");
@@ -518,12 +492,8 @@ void emm_handle_detach_accept(
     enb = enb_ue->enb;
     d_assert(enb, return, "Null param");
 
-    d_assert(detach_request, return, "Null param");
-    detach_type = &detach_request->detach_type;
-    d_assert(detach_type, return, "Null param");
-
     /* reply with detach accept */
-    if ((detach_type->switch_off & 0x1) == 0)
+    if ((mme_ue->detach_type.switch_off & 0x1) == 0)
     {
         memset(&message, 0, sizeof(message));
         message.h.security_header_type = 
@@ -540,6 +510,8 @@ void emm_handle_detach_accept(
         d_assert(rv == CORE_OK && emmbuf, return, "emm build error");
         d_assert(nas_send_to_downlink_nas_transport(mme_ue, emmbuf) == CORE_OK,,);
     }
+
+    CLEAR_DETACH_TYPE(mme_ue);
 
     cause.present = S1ap_Cause_PR_nas;
     cause.choice.nas = S1ap_CauseNas_detach;
@@ -761,27 +733,4 @@ void emm_handle_tau_reject(mme_ue_t *mme_ue, nas_emm_cause_t emm_cause)
     d_assert(rv == CORE_OK && s1apbuf, return, "s1ap build error");
 
     d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
-}
-
-/***********************************************************************
- * S11 Layer in EMM Handler 
- */
-void emm_handle_s11_delete_session_request(mme_ue_t *mme_ue)
-{
-    status_t rv;
-    pkbuf_t *s11buf = NULL;
-    mme_sess_t *sess = NULL;
-
-    d_assert(mme_ue, return, "Null param");
-    sess = mme_sess_first(mme_ue);
-    while (sess != NULL)
-    {
-        rv = mme_s11_build_delete_session_request(&s11buf, sess);
-        d_assert(rv == CORE_OK, return, "S11 build error");
-
-        rv = mme_s11_send_to_sgw(sess, GTP_DELETE_SESSION_REQUEST_TYPE, s11buf);
-        d_assert(rv == CORE_OK, return, "S11 send error");
-
-        sess = mme_sess_next(sess);
-    }
 }

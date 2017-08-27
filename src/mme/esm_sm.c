@@ -59,9 +59,6 @@ void esm_state_operational(fsm_t *s, event_t *e)
             message = (nas_message_t *)event_get_param4(e);
             d_assert(message, break, "Null param");
 
-            /* Save Last Received NAS-ESM message */
-            memcpy(&mme_ue->last_esm_message, message, sizeof(nas_message_t));
-
             switch(message->esm.h.message_type)
             {
                 case NAS_PDN_CONNECTIVITY_REQUEST:
@@ -81,11 +78,11 @@ void esm_state_operational(fsm_t *s, event_t *e)
                     /* Known GUTI */
                     if (SECURITY_CONTEXT_IS_VALID(mme_ue))
                     {
-                        if (MME_SESSION_HAVE_APN(sess))
+                        if (MME_UE_HAVE_APN(mme_ue))
                         {
-                            if (MME_SESSION_IS_VALID(sess))
+                            if (MME_UE_HAVE_SESSION(mme_ue))
                             {
-                                emm_handle_attach_accept(sess);
+                                emm_handle_attach_accept(mme_ue);
                             }
                             else
                             {
@@ -101,7 +98,8 @@ void esm_state_operational(fsm_t *s, event_t *e)
                     {
                         if (MME_UE_HAVE_SESSION(mme_ue))
                         {
-                            emm_handle_s11_delete_session_request(mme_ue);
+                            mme_s11_handle_delete_all_sessions_request_in_ue(
+                                    mme_ue);
                         }
                         else
                         {

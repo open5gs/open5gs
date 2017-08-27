@@ -206,15 +206,19 @@ struct _mme_ue_t {
     s6a_subscription_data_t subscription_data;
 
     /* ESM Info */
+#define MIN_EPS_BEARER_ID           5
+#define MAX_EPS_BEARER_ID           15
+
+#define CLEAR_EPS_BEARER_ID(mme) \
+    do { \
+        d_assert((mme), break, "Null param"); \
+        (mme)->ebi = MIN_EPS_BEARER_ID - 1; \
+    } while(0)
     c_uint8_t       ebi; /* EPS Bearer ID generator */
     list_t          sess_list;
 
     /* eNB UE context */
     enb_ue_t        *enb_ue;
-
-    /* Last Received NAS Messasge */
-    nas_message_t   last_emm_message;
-    nas_message_t   last_esm_message;
 
     /* Paging */
     pkbuf_t         *last_paging_msg;
@@ -224,6 +228,20 @@ struct _mme_ue_t {
 
     /* UE Radio Capability */
     void            *radio_capa;
+
+#define MME_UE_DETACH_INITIATED(mme) \
+    ((mme_ue) && (mme_ue)->detach_type.detach_type)
+#define SET_DETACH_TYPE(mme, type) \
+    do { \
+        d_assert((mme), break, "Null param"); \
+        (mme)->detach_type = (type); \
+    } while(0)
+#define CLEAR_DETACH_TYPE(mme) \
+    do { \
+        d_assert((mme), break, "Null param"); \
+        memset(&((mme)->detach_type), 0, sizeof(nas_detach_type_t)); \
+    } while(0)
+    nas_detach_type_t detach_type;
 };
 
 typedef struct _mme_sess_t {
@@ -232,6 +250,9 @@ typedef struct _mme_sess_t {
     fsm_t           sm;         /* State Machine */
 
     c_uint8_t       pti;        /* Procedure Trasaction Identity */
+
+#define MME_SESSION_IN_ATTACH_STATE(sess) \
+    ((sess) && ((sess)->ebi == MIN_EPS_BEARER_ID))
     c_uint8_t       ebi;        /* EPS Bearer ID */    
 
     /* IMPORTANT! 
@@ -239,22 +260,12 @@ typedef struct _mme_sess_t {
     c_uint32_t      mme_s11_teid;       
     c_uint32_t      mme_s11_addr;       
 
-#define MME_SESSION_IS_VALID(sess) \
-    (((sess)->sgw_s11_teid) && \
-    ((sess)->sgw_s11_addr))
-
 #define MME_UE_HAVE_SESSION(mme) \
-    ((mme) && (mme_sess_first(mme_ue)) && \
-    (MME_SESSION_IS_VALID(mme_sess_first(mme_ue))))
-
+    ((mme) && (mme_sess_first(mme)) && \
+    (((mme_sess_first(mme))->sgw_s11_teid) && \
+     ((mme_sess_first(mme))->sgw_s11_addr)))
     c_uint32_t      sgw_s11_teid;
     c_uint32_t      sgw_s11_addr;
-
-    /* Protocol Configuration Options */
-    c_uint8_t       ue_pco[MAX_PCO_LEN];  
-    int             ue_pco_len;
-    c_uint8_t       pgw_pco[MAX_PCO_LEN];  
-    int             pgw_pco_len;
 
     /* mme_bearer_first(sess) : Default Bearer Context */
     list_t          bearer_list;
@@ -263,15 +274,29 @@ typedef struct _mme_sess_t {
     mme_sgw_t       *sgw;
     mme_ue_t        *mme_ue;
 
-#define MME_SESSION_HAVE_APN(sess) \
-    ((sess) && ((sess)->pdn))
+#define MME_UE_HAVE_APN(mme) \
+    ((mme) && (mme_sess_first(mme)) && \
+    ((mme_sess_first(mme))->pdn))
     pdn_t           *pdn;
+
+    /* Protocol Configuration Options */
+    c_uint8_t       ue_pco[MAX_PCO_LEN];  
+    int             ue_pco_len;
+    c_uint8_t       pgw_pco[MAX_PCO_LEN];  
+    int             pgw_pco_len;
 } mme_sess_t;
 
 typedef struct _mme_bearer_t {
     lnode_t         node;   /* A node of list_t */
     index_t         index;  /* An index of this node */
 
+#define MME_UE_HAVE_DEFAULT_BEARER(mme) \
+    ((mme) && (mme_sess_first(mme)) && \
+     (mme_default_bearer_in_sess(mme_sess_first(mme))) && \
+     ((mme_default_bearer_in_sess(mme_sess_first(mme)))->enb_s1u_teid) && \
+     ((mme_default_bearer_in_sess(mme_sess_first(mme)))->enb_s1u_addr) && \
+     ((mme_default_bearer_in_sess(mme_sess_first(mme)))->sgw_s1u_teid) && \
+     ((mme_default_bearer_in_sess(mme_sess_first(mme)))->sgw_s1u_addr))
     c_uint32_t      enb_s1u_teid;
     c_uint32_t      enb_s1u_addr;
     c_uint32_t      sgw_s1u_teid;
@@ -319,7 +344,6 @@ CORE_DECLARE(status_t)      mme_ue_set_imsi(
                                 mme_ue_t *mme_ue, c_int8_t *imsi_bcd);
 CORE_DECLARE(status_t)      mme_associate_ue_context(
                                 mme_ue_t *mme_ue, enb_ue_t *enb_ue);
-CORE_DECLARE(status_t)      mme_ue_reset_ebi(mme_ue_t *mme_ue);
 
 CORE_DECLARE(hash_index_t *) mme_ue_first();
 CORE_DECLARE(hash_index_t *) mme_ue_next(hash_index_t *hi);
@@ -334,7 +358,6 @@ CORE_DECLARE(mme_sess_t*)   mme_sess_find_by_pti(
                                 mme_ue_t *mme_ue, c_uint8_t pti);
 CORE_DECLARE(mme_sess_t*)   mme_sess_find_by_ebi(
                                 mme_ue_t *mme_ue, c_uint8_t ebi);
-CORE_DECLARE(mme_sess_t*)   mme_sess_find_by_last_esm_message(mme_ue_t *mme_ue);
 CORE_DECLARE(mme_sess_t*)   mme_sess_first(mme_ue_t *mme_ue);
 CORE_DECLARE(mme_sess_t*)   mme_sess_next(mme_sess_t *sess);
 
