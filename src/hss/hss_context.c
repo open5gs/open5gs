@@ -515,9 +515,9 @@ status_t hss_db_subscription_data(
 
                 d_assert(child1_key, goto out, "PDN is not ARRAY");
                 pdn_index = atoi(child1_key);
-                d_assert(pdn_index < MAX_NUM_OF_PDN,
+                d_assert(pdn_index < MAX_NUM_OF_SESS,
                         goto out, "Overflow of PDN number(%d>%d)",
-                        pdn_index, MAX_NUM_OF_PDN);
+                        pdn_index, MAX_NUM_OF_SESS);
 
                 pdn = &subscription_data->pdn[pdn_index];
 

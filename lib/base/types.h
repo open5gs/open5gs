@@ -7,20 +7,20 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define MAX_UE_PER_ENB          128
 #define MAX_NUM_OF_ENB          128
-#define MAX_NUM_OF_UE           (MAX_NUM_OF_ENB * MAX_UE_PER_ENB)
+#define MAX_NUM_OF_UE           128
+#define MAX_NUM_OF_SESS         4
+#define MAX_NUM_OF_BEARER       4
 
-#define MAX_NUM_OF_PDN          8
-#define MAX_NUM_OF_BEARER       8
-#define MAX_NUM_OF_UE_BEARER    (MAX_NUM_OF_UE * MAX_NUM_OF_BEARER)
+#define MAX_POOL_OF_UE          (MAX_NUM_OF_ENB * MAX_NUM_OF_UE)
+#define MAX_POOL_OF_SESS        (MAX_POOL_OF_UE * MAX_NUM_OF_SESS)
+#define MAX_POOL_OF_BEARER      (MAX_POOL_OF_SESS * MAX_NUM_OF_BEARER)
+
 #define MAX_NUM_OF_PCC_RULE     8 
 #define MAX_NUM_OF_FLOW         8
 
-#define IPV6_LEN                16
-
 #define MAX_SDU_LEN             2048
-
+#define IPV6_LEN                16
 #define PLMN_ID_LEN             3
 
 #define BCD_TO_BUFFER_LEN(x)    (((x)+1)/2)
@@ -32,6 +32,8 @@ extern "C" {
 #define MAX_RES_LEN             16
 
 #define MAX_APN_LEN             100
+#define MAX_PCO_LEN             251
+#define MAX_PCC_RULE_NAME_LEN   128
 
 #define NEXT_ID(__id, __min, __max) \
     ((__id) = ((__id) == (__max) ? (__min) : ((__id) + 1)))
@@ -150,7 +152,7 @@ typedef struct _flow_t {
 /**********************************
  * PCC Rule Structure            */
 typedef struct _pcc_rule_t {
-    c_int8_t *name;
+    c_int8_t name[MAX_PCC_RULE_NAME_LEN+1];
     flow_t flow[MAX_NUM_OF_FLOW];
     int num_of_flow;
     c_int8_t flow_status;
@@ -212,7 +214,6 @@ typedef struct _pco_id_t {
 } pco_id_t;
 
 #define MAX_NUM_OF_PROTOCOL_OR_CONTAINER_ID    8
-#define MAX_PCO_LEN 251
 typedef struct _pco_t {
 ED3(c_uint8_t ext:1;,
     c_uint8_t spare:4;,

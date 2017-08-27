@@ -71,10 +71,10 @@ const schema = {
       "type": "array",
       "title": "APN Configurations",
       "minItems": 1,
-      "maxItems": 8,
+      "maxItems": 4,
       "messages": {
         "minItems": "At least 1 APN is required",
-        "maxItems": "8 APNs are supported"
+        "maxItems": "4 APNs are supported"
       },
       "items": {
         "type": "object",

@@ -114,8 +114,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
         CHECK_FCT( fd_msg_avp_new(gx_charging_rule_definition, 0, &avpch1) );
 
         CHECK_FCT( fd_msg_avp_new(gx_charging_rule_name, 0, &avpch2) );
-        /* Rule Name is automatically configured by order */
-        pcc_rule->name = core_malloc(strlen(apn)*2);
+        /* Charing-Rule-Name is automatically configured by order */
         sprintf(pcc_rule->name, "%s%d", apn, i+1);
         val.os.data = (c_uint8_t *)pcc_rule->name;
         val.os.len = strlen(pcc_rule->name);

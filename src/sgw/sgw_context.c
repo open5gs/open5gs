@@ -14,8 +14,8 @@
 
 static sgw_context_t self;
 
-index_declare(sgw_sess_pool, sgw_sess_t, MAX_NUM_OF_UE);
-index_declare(sgw_bearer_pool, sgw_bearer_t, MAX_NUM_OF_UE_BEARER);
+index_declare(sgw_sess_pool, sgw_sess_t, MAX_POOL_OF_SESS);
+index_declare(sgw_bearer_pool, sgw_bearer_t, MAX_POOL_OF_BEARER);
 
 static int context_initialized = 0;
 
@@ -26,8 +26,8 @@ status_t sgw_context_init()
 
     memset(&self, 0, sizeof(sgw_context_t));
 
-    index_init(&sgw_sess_pool, MAX_NUM_OF_UE);
-    index_init(&sgw_bearer_pool, MAX_NUM_OF_UE_BEARER);
+    index_init(&sgw_sess_pool, MAX_POOL_OF_SESS);
+    index_init(&sgw_bearer_pool, MAX_POOL_OF_BEARER);
 
     list_init(&self.s11_node.local_list);
     list_init(&self.s11_node.remote_list);
@@ -643,7 +643,7 @@ status_t sgw_bearer_remove_all(sgw_sess_t *sess)
 
 sgw_bearer_t* sgw_bearer_find(index_t index)
 {
-    d_assert(index && index < MAX_NUM_OF_UE_BEARER, return NULL, 
+    d_assert(index && index < MAX_POOL_OF_BEARER, return NULL, 
             "Invalid Index(%d)",index);
 
     return index_find(&sgw_bearer_pool, index);

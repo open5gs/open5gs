@@ -13,10 +13,10 @@
 
 static pgw_context_t self;
 
-index_declare(pgw_sess_pool, pgw_sess_t, MAX_NUM_OF_UE);
-index_declare(pgw_bearer_pool, pgw_bearer_t, MAX_NUM_OF_UE_BEARER);
+index_declare(pgw_sess_pool, pgw_sess_t, MAX_POOL_OF_SESS);
+index_declare(pgw_bearer_pool, pgw_bearer_t, MAX_POOL_OF_BEARER);
 
-pool_declare(pgw_ip_pool_pool, pgw_ip_pool_t, MAX_NUM_OF_UE);
+pool_declare(pgw_ip_pool_pool, pgw_ip_pool_t, MAX_POOL_OF_SESS);
 
 static int context_initiaized = 0;
 
@@ -27,10 +27,10 @@ status_t pgw_context_init()
 
     memset(&self, 0, sizeof(pgw_context_t));
 
-    index_init(&pgw_sess_pool, MAX_NUM_OF_UE);
-    index_init(&pgw_bearer_pool, MAX_NUM_OF_UE_BEARER);
+    index_init(&pgw_sess_pool, MAX_POOL_OF_SESS);
+    index_init(&pgw_bearer_pool, MAX_POOL_OF_BEARER);
 
-    pool_init(&pgw_ip_pool_pool, MAX_NUM_OF_UE);
+    pool_init(&pgw_ip_pool_pool, MAX_POOL_OF_SESS);
 
     list_init(&self.s5c_node.local_list);
     list_init(&self.s5c_node.remote_list);
@@ -780,7 +780,7 @@ status_t pgw_ip_pool_generate()
         c_uint32_t exclude_mask[] = { 0, 255 };
 
         for (j = 1; j < (0xffffffff >> self.ip_pool[i].mask) && 
-                pool_index < MAX_NUM_OF_UE; j++)
+                pool_index < MAX_NUM_OF_SESS; j++)
         {
             int exclude = 0;
             pgw_ip_pool_t *ip_pool = &pgw_ip_pool_pool.pool[pool_index];

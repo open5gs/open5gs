@@ -27,10 +27,10 @@ static mme_context_t self;
 pool_declare(mme_sgw_pool, mme_sgw_t, MAX_NUM_OF_SGW);
 
 index_declare(mme_enb_pool, mme_enb_t, MAX_NUM_OF_ENB);
-index_declare(mme_ue_pool, mme_ue_t, MAX_NUM_OF_UE);
-index_declare(enb_ue_pool, enb_ue_t, MAX_NUM_OF_UE);
-index_declare(mme_sess_pool, mme_sess_t, MAX_NUM_OF_UE);
-index_declare(mme_bearer_pool, mme_bearer_t, MAX_NUM_OF_UE_BEARER);
+index_declare(mme_ue_pool, mme_ue_t, MAX_POOL_OF_UE);
+index_declare(enb_ue_pool, enb_ue_t, MAX_POOL_OF_UE);
+index_declare(mme_sess_pool, mme_sess_t, MAX_POOL_OF_SESS);
+index_declare(mme_bearer_pool, mme_bearer_t, MAX_POOL_OF_BEARER);
 
 static int context_initialized = 0;
 
@@ -48,10 +48,10 @@ status_t mme_context_init()
     index_init(&mme_enb_pool, MAX_NUM_OF_ENB);
     list_init(&self.enb_list);
 
-    index_init(&mme_ue_pool, MAX_NUM_OF_UE);
-    index_init(&enb_ue_pool, MAX_NUM_OF_UE);
-    index_init(&mme_sess_pool, MAX_NUM_OF_UE);
-    index_init(&mme_bearer_pool, MAX_NUM_OF_UE_BEARER);
+    index_init(&mme_ue_pool, MAX_POOL_OF_UE);
+    index_init(&enb_ue_pool, MAX_POOL_OF_UE);
+    index_init(&mme_sess_pool, MAX_POOL_OF_SESS);
+    index_init(&mme_bearer_pool, MAX_POOL_OF_BEARER);
 
     self.mme_ue_s1ap_id_hash = hash_make();
     self.imsi_ue_hash = hash_make();

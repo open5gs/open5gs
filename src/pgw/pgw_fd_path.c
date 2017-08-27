@@ -444,11 +444,10 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
                         {
                             case GX_AVP_CODE_CHARGING_RULE_NAME:
                             {
-                                pcc_rule->name = 
-                                    core_malloc(hdr->avp_value->os.len+1);
                                 core_cpystrn(pcc_rule->name,
                                     (char*)hdr->avp_value->os.data,
-                                    hdr->avp_value->os.len+1);
+                                    c_min(hdr->avp_value->os.len,
+                                        MAX_PCC_RULE_NAME_LEN)+1);
                                 break;
                             }
                             case GX_AVP_CODE_FLOW_INFORMATION:
