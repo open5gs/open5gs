@@ -101,6 +101,10 @@ void mme_s6a_send_air(mme_ue_t *mme_ue)
     val.os.len  = PLMN_ID_LEN;
     CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
     CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
+
+    /* Set Vendor-Specific-Application-Id AVP */
+    CHECK_FCT_DO( fd_message_vendor_specific_appid_set(
+                req, S6A_APPLICATION_ID), goto out );
     
     CHECK_SYS_DO( clock_gettime(CLOCK_REALTIME, &mi->ts), goto out );
     
@@ -435,6 +439,10 @@ void mme_s6a_send_ulr(mme_ue_t *mme_ue)
     val.u32 = S6A_UE_SRVCC_NOT_SUPPORTED;
     CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
     CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
+
+    /* Set Vendor-Specific-Application-Id AVP */
+    CHECK_FCT_DO( fd_message_vendor_specific_appid_set(
+                req, S6A_APPLICATION_ID), goto out );
 
     CHECK_SYS_DO( clock_gettime(CLOCK_REALTIME, &mi->ts), goto out );
     

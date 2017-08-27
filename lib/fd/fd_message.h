@@ -20,6 +20,7 @@ extern struct dict_object *fd_auth_application_id;
 extern struct dict_object *fd_result_code;
 extern struct dict_object *fd_experimental_result;
 extern struct dict_object *fd_experimental_result_code;
+extern struct dict_object *fd_vendor_specific_application_id;
 
 extern struct dict_object *fd_vendor;
 extern struct dict_object *fd_vendor_id;
@@ -27,6 +28,8 @@ extern struct dict_object *fd_vendor_id;
 CORE_DECLARE(int) fd_message_init(void);
 CORE_DECLARE(int) fd_message_experimental_rescode_set(
         struct msg *msg, c_uint32_t result_code);
+CORE_DECLARE(int) fd_message_vendor_specific_appid_set(
+        struct msg *msg, c_uint32_t app_id);
 
 #ifdef __cplusplus
 }

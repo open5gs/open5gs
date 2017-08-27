@@ -17,6 +17,7 @@ struct dict_object *fd_auth_application_id = NULL;
 struct dict_object *fd_result_code = NULL;
 struct dict_object *fd_experimental_result = NULL;
 struct dict_object *fd_experimental_result_code = NULL;
+struct dict_object *fd_vendor_specific_application_id = NULL;
 
 struct dict_object *fd_vendor = NULL;
 struct dict_object *fd_vendor_id = NULL;
@@ -38,6 +39,7 @@ int fd_message_init()
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Result-Code", &fd_result_code);
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Experimental-Result", &fd_experimental_result);
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Experimental-Result-Code", &fd_experimental_result_code);
+    CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Vendor-Specific-Application-Id", &fd_vendor_specific_application_id);
 
     return 0;
 }
@@ -67,6 +69,33 @@ int fd_message_experimental_rescode_set(
     CHECK_FCT( fd_msg_avp_add(msg, MSG_BRW_LAST_CHILD, avp) );
 
     CHECK_FCT( fd_msg_add_origin(msg, 0) );
+
+    return 0;
+}
+
+int fd_message_vendor_specific_appid_set(struct msg *msg, c_uint32_t app_id)
+{
+    struct avp *avp;
+    struct avp *avp_vendor;
+    struct avp *avp_vendor_specific_application_id;
+    union avp_value value;
+
+    CHECK_FCT( fd_msg_avp_new(fd_vendor_specific_application_id, 0, &avp) );
+
+    CHECK_FCT( fd_msg_avp_new(fd_vendor_id, 0, &avp_vendor) );
+    value.u32 = FD_3GPP_VENDOR_ID;
+    CHECK_FCT( fd_msg_avp_setvalue(avp_vendor, &value) );
+    CHECK_FCT( fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avp_vendor) );
+
+    CHECK_FCT( fd_msg_avp_new(
+            fd_auth_application_id, 0, &avp_vendor_specific_application_id) );
+    value.u32 = app_id;
+    CHECK_FCT(
+            fd_msg_avp_setvalue(avp_vendor_specific_application_id, &value) );
+    CHECK_FCT( fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, 
+                avp_vendor_specific_application_id) );
+
+    CHECK_FCT( fd_msg_avp_add(msg, MSG_BRW_LAST_CHILD, avp) );
 
     return 0;
 }

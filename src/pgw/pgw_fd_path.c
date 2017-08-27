@@ -80,7 +80,7 @@ void pgw_gx_send_ccr(gtp_xact_t *xact, pgw_sess_t *sess,
     CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
 
     CHECK_FCT_DO( fd_msg_avp_new(gx_cc_request_number, 0, &avp), goto out );
-    val.i32 = 0;
+    val.i32 = 1;
     CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
     CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
 
@@ -103,160 +103,169 @@ void pgw_gx_send_ccr(gtp_xact_t *xact, pgw_sess_t *sess,
 
     CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
 
-    /* Set Supported-Features */
-    CHECK_FCT_DO( fd_msg_avp_new(gx_supported_features, 0, &avp),
-            goto out );
-
-    CHECK_FCT_DO( fd_msg_avp_new(gx_feature_list_id, 0, &avpch1),
-            goto out );
-    val.i32 = 1;
-    CHECK_FCT_DO( fd_msg_avp_setvalue (avpch1, &val), goto out );
-    CHECK_FCT_DO( fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1), goto out );
-
-    CHECK_FCT_DO( fd_msg_avp_new(gx_feature_list, 0, &avpch1),
-            goto out );
-    val.u32 = 0x0000000b;
-    CHECK_FCT_DO( fd_msg_avp_setvalue (avpch1, &val), goto out );
-    CHECK_FCT_DO( fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1), goto out );
-
-    CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
-
-    /* Set Network-Request-Support */
-    CHECK_FCT_DO( fd_msg_avp_new(gx_network_request_support, 0, &avp),
-            goto out );
-    val.i32 = 1;
-    CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
-    CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
-
-    /* Set Framed-IP-Address */
-    CHECK_FCT_DO( fd_msg_avp_new(gx_framed_ip_address, 0, &avp),
-            goto out );
-    val.os.data = (c_uint8_t*)&sess->ip_pool->ue_addr;
-    val.os.len = sizeof(sess->ip_pool->ue_addr);
-    CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
-    CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
-
-    /* Set IP-Can-Type */
-    CHECK_FCT_DO( fd_msg_avp_new(gx_ip_can_type, 0, &avp),
-            goto out );
-    val.i32 = GX_IP_CAN_TYPE_3GPP_EPS;
-    CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
-    CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
-
-    /* Set RAT-Type */
-    CHECK_FCT_DO( fd_msg_avp_new(gx_rat_type, 0, &avp),
-            goto out );
-    val.i32 = GX_RAT_TYPE_EUTRAN;
-    CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
-    CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
-
-    /* Set QoS-Information */
-    if (sess->pdn.ambr.downlink || sess->pdn.ambr.uplink)
+    if (cc_request_type != GX_CC_REQUEST_TYPE_TERMINATION_REQUEST)
     {
-        CHECK_FCT_DO( fd_msg_avp_new(gx_qos_information, 0, &avp),
+        /* Set Supported-Features */
+        CHECK_FCT_DO( fd_msg_avp_new(gx_supported_features, 0, &avp),
                 goto out );
 
-        if (sess->pdn.ambr.uplink)
-        {
-            CHECK_FCT_DO( fd_msg_avp_new(gx_apn_aggregate_max_bitrate_ul, 0,
-                    &avpch1), goto out );
-            val.u32 = sess->pdn.ambr.uplink;
-            CHECK_FCT_DO( fd_msg_avp_setvalue (avpch1, &val), goto out );
-            CHECK_FCT_DO( fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1),
-                    goto out );
-        }
-        
-        if (sess->pdn.ambr.downlink)
-        {
-            CHECK_FCT_DO( fd_msg_avp_new(gx_apn_aggregate_max_bitrate_dl, 0,
-                    &avpch1), goto out );
-            val.u32 = sess->pdn.ambr.downlink;
-            CHECK_FCT_DO( fd_msg_avp_setvalue (avpch1, &val), goto out );
-            CHECK_FCT_DO( fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1),
-                    goto out );
-        }
-
-        CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
-    }
-
-    /* Set Default-EPS-Bearer-QoS */
-    CHECK_FCT_DO( fd_msg_avp_new(gx_default_eps_bearer_qos, 0, &avp),
-            goto out );
-
-    CHECK_FCT_DO( fd_msg_avp_new(gx_qos_class_identifier, 0, &avpch1),
-            goto out );
-    val.u32 = sess->pdn.qos.qci;
-    CHECK_FCT_DO( fd_msg_avp_setvalue (avpch1, &val), goto out );
-    CHECK_FCT_DO( fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1),
-            goto out );
-
-    CHECK_FCT_DO( fd_msg_avp_new(gx_allocation_retention_priority, 0, &avpch1),
-            goto out );
-
-    CHECK_FCT_DO( fd_msg_avp_new(gx_priority_level, 0, &avpch2), goto out );
-    val.u32 = sess->pdn.qos.arp.priority_level;
-    CHECK_FCT_DO( fd_msg_avp_setvalue (avpch2, &val), goto out );
-    CHECK_FCT_DO( fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2),
-            goto out );
-
-    CHECK_FCT_DO( fd_msg_avp_new(gx_pre_emption_capability, 0, &avpch2),
-            goto out );
-    val.u32 = sess->pdn.qos.arp.pre_emption_capability;
-    CHECK_FCT_DO( fd_msg_avp_setvalue (avpch2, &val), goto out );
-    CHECK_FCT_DO( fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2),
-            goto out );
-
-    CHECK_FCT_DO( fd_msg_avp_new(gx_pre_emption_vulnerability, 0, &avpch2),
-            goto out );
-    val.u32 = sess->pdn.qos.arp.pre_emption_vulnerability;
-    CHECK_FCT_DO( fd_msg_avp_setvalue (avpch2, &val), goto out );
-    CHECK_FCT_DO( fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2),
-            goto out );
-
-    CHECK_FCT_DO( fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1),
-            goto out );
-
-    CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
-
-    /* Set 3GPP-User-Location-Info */
-    {
-        struct gx_uli_t {
-            c_uint8_t type;
-            tai_t tai;
-            e_cgi_t e_cgi;
-        } gx_uli;
-
-        memset(&gx_uli, 0, sizeof(gx_uli));
-        gx_uli.type = GX_3GPP_USER_LOCATION_INFO_TYPE_TAI_AND_ECGI;
-        memcpy(&gx_uli.tai.plmn_id, &sess->tai.plmn_id, 
-                sizeof(sess->tai.plmn_id));
-        gx_uli.tai.tac = htons(sess->tai.tac);
-        memcpy(&gx_uli.e_cgi.plmn_id, &sess->e_cgi.plmn_id, 
-                sizeof(sess->e_cgi.plmn_id));
-        gx_uli.e_cgi.cell_id = htonl(sess->e_cgi.cell_id);
-
-        CHECK_FCT_DO( fd_msg_avp_new(gx_3gpp_user_location_info, 0, &avp),
+        CHECK_FCT_DO( fd_msg_avp_new(gx_feature_list_id, 0, &avpch1),
                 goto out );
-        val.os.data = (c_uint8_t*)&gx_uli;
-        val.os.len = sizeof(gx_uli);
+        val.i32 = 1;
+        CHECK_FCT_DO( fd_msg_avp_setvalue (avpch1, &val), goto out );
+        CHECK_FCT_DO( fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1),
+                goto out );
+
+        CHECK_FCT_DO( fd_msg_avp_new(gx_feature_list, 0, &avpch1),
+                goto out );
+        val.u32 = 0x0000000b;
+        CHECK_FCT_DO( fd_msg_avp_setvalue (avpch1, &val), goto out );
+        CHECK_FCT_DO( fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1),
+                goto out );
+
+        CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp),
+                goto out );
+
+        /* Set Network-Request-Support */
+        CHECK_FCT_DO( fd_msg_avp_new(gx_network_request_support, 0, &avp),
+                goto out );
+        val.i32 = 1;
         CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
         CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
-    }
 
-    /* Set 3GPP-MS-Timezone */
-    {
-        gtp_ue_timezone_t ue_timezone;
-        memset(&ue_timezone, 0, sizeof(ue_timezone));
-        ue_timezone.timezone = 0x40;
-        ue_timezone.daylight_saving_time = 
-            GTP_UE_TIME_ZONE_NO_ADJUSTMENT_FOR_DAYLIGHT_SAVING_TIME;
-
-        CHECK_FCT_DO( fd_msg_avp_new(gx_3gpp_ms_timezone, 0, &avp),
+        /* Set Framed-IP-Address */
+        CHECK_FCT_DO( fd_msg_avp_new(gx_framed_ip_address, 0, &avp),
                 goto out );
-        val.os.data = (c_uint8_t*)&ue_timezone;
-        val.os.len = sizeof(ue_timezone);
+        val.os.data = (c_uint8_t*)&sess->ip_pool->ue_addr;
+        val.os.len = sizeof(sess->ip_pool->ue_addr);
         CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
         CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
+
+        /* Set IP-Can-Type */
+        CHECK_FCT_DO( fd_msg_avp_new(gx_ip_can_type, 0, &avp),
+                goto out );
+        val.i32 = GX_IP_CAN_TYPE_3GPP_EPS;
+        CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
+        CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
+
+        /* Set RAT-Type */
+        CHECK_FCT_DO( fd_msg_avp_new(gx_rat_type, 0, &avp),
+                goto out );
+        val.i32 = GX_RAT_TYPE_EUTRAN;
+        CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
+        CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
+
+        /* Set QoS-Information */
+        if (sess->pdn.ambr.downlink || sess->pdn.ambr.uplink)
+        {
+            CHECK_FCT_DO( fd_msg_avp_new(gx_qos_information, 0, &avp),
+                    goto out );
+
+            if (sess->pdn.ambr.uplink)
+            {
+                CHECK_FCT_DO( fd_msg_avp_new(gx_apn_aggregate_max_bitrate_ul,
+                        0, &avpch1), goto out );
+                val.u32 = sess->pdn.ambr.uplink;
+                CHECK_FCT_DO( fd_msg_avp_setvalue (avpch1, &val), goto out );
+                CHECK_FCT_DO( fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1),
+                        goto out );
+            }
+            
+            if (sess->pdn.ambr.downlink)
+            {
+                CHECK_FCT_DO( fd_msg_avp_new(gx_apn_aggregate_max_bitrate_dl, 0,
+                        &avpch1), goto out );
+                val.u32 = sess->pdn.ambr.downlink;
+                CHECK_FCT_DO( fd_msg_avp_setvalue (avpch1, &val), goto out );
+                CHECK_FCT_DO( fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1),
+                        goto out );
+            }
+
+            CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp),
+                    goto out );
+        }
+
+        /* Set Default-EPS-Bearer-QoS */
+        CHECK_FCT_DO( fd_msg_avp_new(gx_default_eps_bearer_qos, 0, &avp),
+                goto out );
+
+        CHECK_FCT_DO( fd_msg_avp_new(gx_qos_class_identifier, 0, &avpch1),
+                goto out );
+        val.u32 = sess->pdn.qos.qci;
+        CHECK_FCT_DO( fd_msg_avp_setvalue (avpch1, &val), goto out );
+        CHECK_FCT_DO( fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1),
+                goto out );
+
+        CHECK_FCT_DO( fd_msg_avp_new(gx_allocation_retention_priority, 0,
+                &avpch1), goto out );
+
+        CHECK_FCT_DO( fd_msg_avp_new(gx_priority_level, 0, &avpch2), goto out );
+        val.u32 = sess->pdn.qos.arp.priority_level;
+        CHECK_FCT_DO( fd_msg_avp_setvalue (avpch2, &val), goto out );
+        CHECK_FCT_DO( fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2),
+                goto out );
+
+        CHECK_FCT_DO( fd_msg_avp_new(gx_pre_emption_capability, 0, &avpch2),
+                goto out );
+        val.u32 = sess->pdn.qos.arp.pre_emption_capability;
+        CHECK_FCT_DO( fd_msg_avp_setvalue (avpch2, &val), goto out );
+        CHECK_FCT_DO( fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2),
+                goto out );
+
+        CHECK_FCT_DO( fd_msg_avp_new(gx_pre_emption_vulnerability, 0, &avpch2),
+                goto out );
+        val.u32 = sess->pdn.qos.arp.pre_emption_vulnerability;
+        CHECK_FCT_DO( fd_msg_avp_setvalue (avpch2, &val), goto out );
+        CHECK_FCT_DO( fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2),
+                goto out );
+
+        CHECK_FCT_DO( fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1),
+                goto out );
+
+        CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
+
+        /* Set 3GPP-User-Location-Info */
+        {
+            struct gx_uli_t {
+                c_uint8_t type;
+                tai_t tai;
+                e_cgi_t e_cgi;
+            } gx_uli;
+
+            memset(&gx_uli, 0, sizeof(gx_uli));
+            gx_uli.type = GX_3GPP_USER_LOCATION_INFO_TYPE_TAI_AND_ECGI;
+            memcpy(&gx_uli.tai.plmn_id, &sess->tai.plmn_id, 
+                    sizeof(sess->tai.plmn_id));
+            gx_uli.tai.tac = htons(sess->tai.tac);
+            memcpy(&gx_uli.e_cgi.plmn_id, &sess->e_cgi.plmn_id, 
+                    sizeof(sess->e_cgi.plmn_id));
+            gx_uli.e_cgi.cell_id = htonl(sess->e_cgi.cell_id);
+
+            CHECK_FCT_DO( fd_msg_avp_new(gx_3gpp_user_location_info, 0, &avp),
+                    goto out );
+            val.os.data = (c_uint8_t*)&gx_uli;
+            val.os.len = sizeof(gx_uli);
+            CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
+            CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp),
+                    goto out );
+        }
+
+        /* Set 3GPP-MS-Timezone */
+        {
+            gtp_ue_timezone_t ue_timezone;
+            memset(&ue_timezone, 0, sizeof(ue_timezone));
+            ue_timezone.timezone = 0x40;
+            ue_timezone.daylight_saving_time = 
+                GTP_UE_TIME_ZONE_NO_ADJUSTMENT_FOR_DAYLIGHT_SAVING_TIME;
+
+            CHECK_FCT_DO( fd_msg_avp_new(gx_3gpp_ms_timezone, 0, &avp),
+                    goto out );
+            val.os.data = (c_uint8_t*)&ue_timezone;
+            val.os.len = sizeof(ue_timezone);
+            CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
+            CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp),
+                    goto out );
+        }
     }
 
     /* Set Called-Station-Id */

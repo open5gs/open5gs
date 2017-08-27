@@ -155,6 +155,10 @@ static int hss_s6a_air_cb( struct msg **msg, struct avp *avp,
     CHECK_FCT( fd_msg_avp_setvalue(avp, &val) );
     CHECK_FCT( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) );
 
+    /* Set Vendor-Specific-Application-Id AVP */
+    CHECK_FCT_DO( fd_message_vendor_specific_appid_set(
+                ans, S6A_APPLICATION_ID), goto out );
+
 	/* Send the answer */
 	CHECK_FCT( fd_msg_send(msg, NULL, NULL) );
 	
@@ -174,6 +178,10 @@ out:
     CHECK_FCT( fd_msg_avp_setvalue(avp, &val) );
     CHECK_FCT( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) );
 
+    /* Set Vendor-Specific-Application-Id AVP */
+    CHECK_FCT_DO( fd_message_vendor_specific_appid_set(
+                ans, S6A_APPLICATION_ID), goto out );
+
 	CHECK_FCT( fd_msg_send(msg, NULL, NULL) );
 
     return 0;
@@ -191,6 +199,7 @@ static int hss_s6a_ulr_cb( struct msg **msg, struct avp *avp,
     c_int8_t imsi_bcd[MAX_IMSI_BCD_LEN+1];
 
     status_t rv;
+    c_uint32_t result_code = 0;
     s6a_subscription_data_t subscription_data;
 	
     d_assert(msg, return EINVAL,);
@@ -209,6 +218,7 @@ static int hss_s6a_ulr_cb( struct msg **msg, struct avp *avp,
     if (rv != CORE_OK)
     {
         d_error("Cannot get Subscription-Data for IMSI:'%s'", imsi_bcd);
+        result_code = FD_DIAMETER_ERROR_USER_UNKNOWN;
         goto out;
     }
 
@@ -221,7 +231,7 @@ static int hss_s6a_ulr_cb( struct msg **msg, struct avp *avp,
 	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
 	CHECK_FCT( fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1) );
 
-    /* Set the Auth-Session-Statee AVP */
+    /* Set the Auth-Session-State AVP */
     CHECK_FCT( fd_msg_avp_new(fd_auth_session_state, 0, &avp) );
     val.i32 = 1;
     CHECK_FCT( fd_msg_avp_setvalue(avp, &val) );
@@ -428,6 +438,10 @@ static int hss_s6a_ulr_cb( struct msg **msg, struct avp *avp,
     CHECK_FCT( fd_msg_avp_setvalue(avp, &val) );
     CHECK_FCT( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) );
 
+    /* Set Vendor-Specific-Application-Id AVP */
+    CHECK_FCT_DO( fd_message_vendor_specific_appid_set(
+                ans, S6A_APPLICATION_ID), goto out );
+
 	/* Send the answer */
 	CHECK_FCT( fd_msg_send(msg, NULL, NULL) );
 	
@@ -439,8 +453,18 @@ static int hss_s6a_ulr_cb( struct msg **msg, struct avp *avp,
 	return 0;
 
 out:
-	CHECK_FCT( fd_msg_rescode_set(
-            ans, "DIAMETER_AUTHENTICATION_REJECTED", NULL, NULL, 1) );
+    CHECK_FCT( fd_message_experimental_rescode_set(ans, result_code) );
+
+    /* Set the Auth-Session-State AVP */
+    CHECK_FCT( fd_msg_avp_new(fd_auth_session_state, 0, &avp) );
+    val.i32 = 1;
+    CHECK_FCT( fd_msg_avp_setvalue(avp, &val) );
+    CHECK_FCT( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) );
+
+    /* Set Vendor-Specific-Application-Id AVP */
+    CHECK_FCT_DO( fd_message_vendor_specific_appid_set(
+                ans, S6A_APPLICATION_ID), goto out );
+
 	CHECK_FCT( fd_msg_send(msg, NULL, NULL) );
 
     return 0;

@@ -71,7 +71,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     CHECK_FCT_DO( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp), goto out );
 
     CHECK_FCT_DO( fd_msg_avp_new(gx_cc_request_number, 0, &avp), goto out );
-    val.i32 = 0;
+    val.i32 = 1;
     CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
     CHECK_FCT_DO( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp), goto out );
 
@@ -104,173 +104,204 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
         goto out;
     }
 
-    /* Set Charging-Rule-Install */
-    CHECK_FCT( fd_msg_avp_new(gx_charging_rule_install, 0, &avp) );
-
-    for (i = 0; i < cca_message.num_of_pcc_rule; i++)
+    if (cc_request_type != GX_CC_REQUEST_TYPE_TERMINATION_REQUEST)
     {
-        pcc_rule_t *pcc_rule = &cca_message.pcc_rule[i];
+        /* Set Charging-Rule-Install */
+        if (cca_message.num_of_pcc_rule)
+            CHECK_FCT( fd_msg_avp_new(gx_charging_rule_install, 0, &avp) );
 
-        CHECK_FCT( fd_msg_avp_new(gx_charging_rule_definition, 0, &avpch1) );
-
-        CHECK_FCT( fd_msg_avp_new(gx_charging_rule_name, 0, &avpch2) );
-        /* Charing-Rule-Name is automatically configured by order */
-        sprintf(pcc_rule->name, "%s%d", apn, i+1);
-        val.os.data = (c_uint8_t *)pcc_rule->name;
-        val.os.len = strlen(pcc_rule->name);
-        CHECK_FCT( fd_msg_avp_setvalue(avpch2, &val) );
-        CHECK_FCT( fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2) );
-
-        for (j = 0; j < pcc_rule->num_of_flow; j++)
+        for (i = 0; i < cca_message.num_of_pcc_rule; i++)
         {
-            flow_t *flow = &pcc_rule->flow[j];
+            pcc_rule_t *pcc_rule = &cca_message.pcc_rule[i];
 
-            CHECK_FCT( fd_msg_avp_new(gx_flow_information, 0, &avpch2) );
+            CHECK_FCT( fd_msg_avp_new(gx_charging_rule_definition, 0,
+                        &avpch1) );
 
-            CHECK_FCT( fd_msg_avp_new(gx_flow_direction, 0, &avpch3) ); 
-            val.i32 = flow->direction;
-            CHECK_FCT( fd_msg_avp_setvalue(avpch3, &val) );
-            CHECK_FCT( fd_msg_avp_add(avpch2, MSG_BRW_LAST_CHILD, avpch3) );
+            CHECK_FCT( fd_msg_avp_new(gx_charging_rule_name, 0, &avpch2) );
+            /* Charing-Rule-Name is automatically configured by order */
+            sprintf(pcc_rule->name, "%s%d", apn, i+1);
+            val.os.data = (c_uint8_t *)pcc_rule->name;
+            val.os.len = strlen(pcc_rule->name);
+            CHECK_FCT( fd_msg_avp_setvalue(avpch2, &val) );
+            CHECK_FCT( fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2) );
 
-            CHECK_FCT( fd_msg_avp_new(gx_flow_description, 0, &avpch3) ); 
-            val.os.data = (c_uint8_t *)flow->description;
-            val.os.len = strlen(flow->description);
-            CHECK_FCT( fd_msg_avp_setvalue(avpch3, &val) );
-            CHECK_FCT( fd_msg_avp_add(avpch2, MSG_BRW_LAST_CHILD, avpch3) );
+            for (j = 0; j < pcc_rule->num_of_flow; j++)
+            {
+                flow_t *flow = &pcc_rule->flow[j];
+
+                CHECK_FCT( fd_msg_avp_new(gx_flow_information, 0, &avpch2) );
+
+                CHECK_FCT( fd_msg_avp_new(gx_flow_direction, 0, &avpch3) ); 
+                val.i32 = flow->direction;
+                CHECK_FCT( fd_msg_avp_setvalue(avpch3, &val) );
+                CHECK_FCT( fd_msg_avp_add(avpch2, MSG_BRW_LAST_CHILD, avpch3) );
+
+                CHECK_FCT( fd_msg_avp_new(gx_flow_description, 0, &avpch3) ); 
+                val.os.data = (c_uint8_t *)flow->description;
+                val.os.len = strlen(flow->description);
+                CHECK_FCT( fd_msg_avp_setvalue(avpch3, &val) );
+                CHECK_FCT( fd_msg_avp_add(avpch2, MSG_BRW_LAST_CHILD, avpch3) );
+
+                CHECK_FCT( fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2) );
+            }
+
+            CHECK_FCT( fd_msg_avp_new(gx_flow_status, 0, &avpch2) );
+            val.i32 = GX_FLOW_STATUS_ENABLED;
+            CHECK_FCT( fd_msg_avp_setvalue(avpch2, &val) );
+            CHECK_FCT( fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2) );
+
+            CHECK_FCT( fd_msg_avp_new(gx_qos_information, 0, &avpch2) )
+
+            CHECK_FCT( fd_msg_avp_new(gx_qos_class_identifier, 0, &avpch3) );
+            val.u32 = pcc_rule->qos.qci;
+            CHECK_FCT( fd_msg_avp_setvalue (avpch3, &val) );
+            CHECK_FCT( fd_msg_avp_add (avpch2, MSG_BRW_LAST_CHILD, avpch3) );
+
+            CHECK_FCT( fd_msg_avp_new(gx_allocation_retention_priority, 0,
+                        &avpch3) );
+
+            CHECK_FCT( fd_msg_avp_new(gx_priority_level, 0, &avpch4) );
+            val.u32 = pcc_rule->qos.arp.priority_level;
+            CHECK_FCT( fd_msg_avp_setvalue (avpch4, &val) );
+            CHECK_FCT( fd_msg_avp_add (avpch3, MSG_BRW_LAST_CHILD, avpch4) );
+
+            CHECK_FCT( fd_msg_avp_new(gx_pre_emption_capability, 0, &avpch4) );
+            val.u32 = pcc_rule->qos.arp.pre_emption_capability;
+            CHECK_FCT( fd_msg_avp_setvalue (avpch4, &val) );
+            CHECK_FCT( fd_msg_avp_add (avpch3, MSG_BRW_LAST_CHILD, avpch4) );
+
+            CHECK_FCT( fd_msg_avp_new(gx_pre_emption_vulnerability, 0,
+                        &avpch4) );
+            val.u32 = pcc_rule->qos.arp.pre_emption_vulnerability;
+            CHECK_FCT( fd_msg_avp_setvalue (avpch4, &val) );
+            CHECK_FCT( fd_msg_avp_add (avpch3, MSG_BRW_LAST_CHILD, avpch4) );
+
+            CHECK_FCT( fd_msg_avp_add (avpch2, MSG_BRW_LAST_CHILD, avpch3) );
+
+            if (pcc_rule->qos.mbr.uplink)
+            {
+                CHECK_FCT(
+                    fd_msg_avp_new(gx_max_requested_bandwidth_ul, 0, &avpch3) );
+                val.u32 = pcc_rule->qos.mbr.uplink;
+                CHECK_FCT( fd_msg_avp_setvalue (avpch3, &val) );
+                CHECK_FCT(
+                    fd_msg_avp_add (avpch2, MSG_BRW_LAST_CHILD, avpch3) );
+            }
+
+            if (pcc_rule->qos.mbr.downlink)
+            {
+                CHECK_FCT(
+                    fd_msg_avp_new(gx_max_requested_bandwidth_dl, 0, &avpch3) );
+                val.u32 = pcc_rule->qos.mbr.downlink;
+                CHECK_FCT( fd_msg_avp_setvalue (avpch3, &val) );
+                CHECK_FCT(
+                    fd_msg_avp_add (avpch2, MSG_BRW_LAST_CHILD, avpch3) );
+            }
+
+            if (pcc_rule->qos.gbr.uplink)
+            {
+                CHECK_FCT(
+                    fd_msg_avp_new(gx_guaranteed_bitrate_ul, 0, &avpch3) );
+                val.u32 = pcc_rule->qos.gbr.uplink;
+                CHECK_FCT( fd_msg_avp_setvalue (avpch3, &val) );
+                CHECK_FCT(
+                    fd_msg_avp_add (avpch2, MSG_BRW_LAST_CHILD, avpch3) );
+            }
+
+            if (pcc_rule->qos.gbr.downlink)
+            {
+                CHECK_FCT(
+                    fd_msg_avp_new(gx_guaranteed_bitrate_dl, 0, &avpch3) );
+                val.u32 = pcc_rule->qos.gbr.downlink;
+                CHECK_FCT( fd_msg_avp_setvalue (avpch3, &val) );
+                CHECK_FCT(
+                    fd_msg_avp_add (avpch2, MSG_BRW_LAST_CHILD, avpch3) );
+            }
 
             CHECK_FCT( fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2) );
-        }
 
-        CHECK_FCT( fd_msg_avp_new(gx_flow_status, 0, &avpch2) );
-        val.i32 = GX_FLOW_STATUS_ENABLED;
-        CHECK_FCT( fd_msg_avp_setvalue(avpch2, &val) );
-        CHECK_FCT( fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2) );
+            CHECK_FCT( fd_msg_avp_new(gx_precedence, 0, &avpch2) )
+            val.u32 = i + 1; /* Precendence is automatically configured by order */
+            CHECK_FCT( fd_msg_avp_setvalue (avpch2, &val) );
+            CHECK_FCT( fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2) );
 
-        CHECK_FCT( fd_msg_avp_new(gx_qos_information, 0, &avpch2) )
-
-        CHECK_FCT( fd_msg_avp_new(gx_qos_class_identifier, 0, &avpch3) );
-        val.u32 = pcc_rule->qos.qci;
-        CHECK_FCT( fd_msg_avp_setvalue (avpch3, &val) );
-        CHECK_FCT( fd_msg_avp_add (avpch2, MSG_BRW_LAST_CHILD, avpch3) );
-
-        CHECK_FCT( fd_msg_avp_new(gx_allocation_retention_priority, 0, &avpch3) );
-
-        CHECK_FCT( fd_msg_avp_new(gx_priority_level, 0, &avpch4) );
-        val.u32 = pcc_rule->qos.arp.priority_level;
-        CHECK_FCT( fd_msg_avp_setvalue (avpch4, &val) );
-        CHECK_FCT( fd_msg_avp_add (avpch3, MSG_BRW_LAST_CHILD, avpch4) );
-
-        CHECK_FCT( fd_msg_avp_new(gx_pre_emption_capability, 0, &avpch4) );
-        val.u32 = pcc_rule->qos.arp.pre_emption_capability;
-        CHECK_FCT( fd_msg_avp_setvalue (avpch4, &val) );
-        CHECK_FCT( fd_msg_avp_add (avpch3, MSG_BRW_LAST_CHILD, avpch4) );
-
-        CHECK_FCT( fd_msg_avp_new(gx_pre_emption_vulnerability, 0, &avpch4) );
-        val.u32 = pcc_rule->qos.arp.pre_emption_vulnerability;
-        CHECK_FCT( fd_msg_avp_setvalue (avpch4, &val) );
-        CHECK_FCT( fd_msg_avp_add (avpch3, MSG_BRW_LAST_CHILD, avpch4) );
-
-        CHECK_FCT( fd_msg_avp_add (avpch2, MSG_BRW_LAST_CHILD, avpch3) );
-
-        if (pcc_rule->qos.mbr.uplink)
-        {
-            CHECK_FCT( fd_msg_avp_new(gx_max_requested_bandwidth_ul, 0,
-                    &avpch3) );
-            val.u32 = pcc_rule->qos.mbr.uplink;
-            CHECK_FCT( fd_msg_avp_setvalue (avpch3, &val) );
-            CHECK_FCT( fd_msg_avp_add (avpch2, MSG_BRW_LAST_CHILD, avpch3) );
-        }
-
-        if (pcc_rule->qos.mbr.downlink)
-        {
-            CHECK_FCT( fd_msg_avp_new(gx_max_requested_bandwidth_dl, 0,
-                    &avpch3) );
-            val.u32 = pcc_rule->qos.mbr.downlink;
-            CHECK_FCT( fd_msg_avp_setvalue (avpch3, &val) );
-            CHECK_FCT( fd_msg_avp_add (avpch2, MSG_BRW_LAST_CHILD, avpch3) );
-        }
-
-        if (pcc_rule->qos.gbr.uplink)
-        {
-            CHECK_FCT( fd_msg_avp_new(gx_guaranteed_bitrate_ul, 0, &avpch3) );
-            val.u32 = pcc_rule->qos.gbr.uplink;
-            CHECK_FCT( fd_msg_avp_setvalue (avpch3, &val) );
-            CHECK_FCT( fd_msg_avp_add (avpch2, MSG_BRW_LAST_CHILD, avpch3) );
-        }
-
-        if (pcc_rule->qos.gbr.downlink)
-        {
-            CHECK_FCT( fd_msg_avp_new(gx_guaranteed_bitrate_dl, 0, &avpch3) );
-            val.u32 = pcc_rule->qos.gbr.downlink;
-            CHECK_FCT( fd_msg_avp_setvalue (avpch3, &val) );
-            CHECK_FCT( fd_msg_avp_add (avpch2, MSG_BRW_LAST_CHILD, avpch3) );
-        }
-
-        CHECK_FCT( fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2) );
-
-        CHECK_FCT( fd_msg_avp_new(gx_precedence, 0, &avpch2) )
-        val.u32 = i + 1; /* Precendence is automatically configured by order */
-        CHECK_FCT( fd_msg_avp_setvalue (avpch2, &val) );
-        CHECK_FCT( fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2) );
-
-        CHECK_FCT( fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch1) );
-    }
-    CHECK_FCT( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) );
-
-    /* Set QoS-Information */
-    if (cca_message.pdn.ambr.downlink || cca_message.pdn.ambr.uplink)
-    {
-        CHECK_FCT( fd_msg_avp_new(gx_qos_information, 0, &avp) );
-
-        if (cca_message.pdn.ambr.uplink)
-        {
-            CHECK_FCT( fd_msg_avp_new(gx_apn_aggregate_max_bitrate_ul, 0,
-                    &avpch1) );
-            val.u32 = cca_message.pdn.ambr.uplink;
-            CHECK_FCT( fd_msg_avp_setvalue (avpch1, &val) );
-            CHECK_FCT( fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1) );
+            CHECK_FCT( fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch1) );
         }
         
-        if (cca_message.pdn.ambr.downlink)
+        if (cca_message.num_of_pcc_rule)
+            CHECK_FCT( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) );
+
+        /* Set QoS-Information */
+        if (cca_message.pdn.ambr.downlink || cca_message.pdn.ambr.uplink)
         {
-            CHECK_FCT( fd_msg_avp_new(gx_apn_aggregate_max_bitrate_dl, 0,
-                    &avpch1) );
-            val.u32 = cca_message.pdn.ambr.downlink;
-            CHECK_FCT( fd_msg_avp_setvalue (avpch1, &val) );
-            CHECK_FCT( fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1) );
+            CHECK_FCT( fd_msg_avp_new(gx_qos_information, 0, &avp) );
+
+            if (cca_message.pdn.ambr.uplink)
+            {
+                CHECK_FCT(
+                    fd_msg_avp_new(gx_apn_aggregate_max_bitrate_ul, 0, &avpch1) );
+                val.u32 = cca_message.pdn.ambr.uplink;
+                CHECK_FCT( fd_msg_avp_setvalue (avpch1, &val) );
+                CHECK_FCT( fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1) );
+            }
+            
+            if (cca_message.pdn.ambr.downlink)
+            {
+                CHECK_FCT( fd_msg_avp_new(gx_apn_aggregate_max_bitrate_dl, 0,
+                        &avpch1) );
+                val.u32 = cca_message.pdn.ambr.downlink;
+                CHECK_FCT( fd_msg_avp_setvalue (avpch1, &val) );
+                CHECK_FCT( fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1) );
+            }
+
+            CHECK_FCT( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) );
         }
+
+        /* Set Default-EPS-Bearer-QoS */
+        CHECK_FCT( fd_msg_avp_new(gx_default_eps_bearer_qos, 0, &avp) );
+
+        CHECK_FCT( fd_msg_avp_new(gx_qos_class_identifier, 0, &avpch1) );
+        val.u32 = cca_message.pdn.qos.qci;
+        CHECK_FCT( fd_msg_avp_setvalue (avpch1, &val) );
+        CHECK_FCT( fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1) );
+
+        CHECK_FCT(
+            fd_msg_avp_new(gx_allocation_retention_priority, 0, &avpch1) );
+
+        CHECK_FCT( fd_msg_avp_new(gx_priority_level, 0, &avpch2) );
+        val.u32 = cca_message.pdn.qos.arp.priority_level;
+        CHECK_FCT( fd_msg_avp_setvalue (avpch2, &val) );
+        CHECK_FCT( fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2) );
+
+        CHECK_FCT( fd_msg_avp_new(gx_pre_emption_capability, 0, &avpch2) );
+        val.u32 = cca_message.pdn.qos.arp.pre_emption_capability;
+        CHECK_FCT( fd_msg_avp_setvalue (avpch2, &val) );
+        CHECK_FCT( fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2) );
+
+        CHECK_FCT( fd_msg_avp_new(gx_pre_emption_vulnerability, 0, &avpch2) );
+        val.u32 = cca_message.pdn.qos.arp.pre_emption_vulnerability;
+        CHECK_FCT( fd_msg_avp_setvalue (avpch2, &val) );
+        CHECK_FCT( fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2) );
+
+        CHECK_FCT( fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1) );
+
+        CHECK_FCT( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) );
+
+        /* Set Supported Features */
+        CHECK_FCT( fd_msg_avp_new(gx_supported_features, 0, &avp) );
+
+        CHECK_FCT( fd_msg_avp_new(gx_feature_list_id, 0, &avpch1) );
+        val.i32 = 1;
+        CHECK_FCT( fd_msg_avp_setvalue (avpch1, &val) );
+        CHECK_FCT( fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1) );
+
+        CHECK_FCT( fd_msg_avp_new(gx_feature_list, 0, &avpch1) );
+        val.u32 = 0x0000000b;
+        CHECK_FCT( fd_msg_avp_setvalue (avpch1, &val) );
+        CHECK_FCT( fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1) );
 
         CHECK_FCT( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) );
     }
-
-    /* Set Default-EPS-Bearer-QoS */
-    CHECK_FCT( fd_msg_avp_new(gx_default_eps_bearer_qos, 0, &avp) );
-
-    CHECK_FCT( fd_msg_avp_new(gx_qos_class_identifier, 0, &avpch1) );
-    val.u32 = cca_message.pdn.qos.qci;
-    CHECK_FCT( fd_msg_avp_setvalue (avpch1, &val) );
-    CHECK_FCT( fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1) );
-
-    CHECK_FCT( fd_msg_avp_new(gx_allocation_retention_priority, 0, &avpch1) );
-
-    CHECK_FCT( fd_msg_avp_new(gx_priority_level, 0, &avpch2) );
-    val.u32 = cca_message.pdn.qos.arp.priority_level;
-    CHECK_FCT( fd_msg_avp_setvalue (avpch2, &val) );
-    CHECK_FCT( fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2) );
-
-    CHECK_FCT( fd_msg_avp_new(gx_pre_emption_capability, 0, &avpch2) );
-    val.u32 = cca_message.pdn.qos.arp.pre_emption_capability;
-    CHECK_FCT( fd_msg_avp_setvalue (avpch2, &val) );
-    CHECK_FCT( fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2) );
-
-    CHECK_FCT( fd_msg_avp_new(gx_pre_emption_vulnerability, 0, &avpch2) );
-    val.u32 = cca_message.pdn.qos.arp.pre_emption_vulnerability;
-    CHECK_FCT( fd_msg_avp_setvalue (avpch2, &val) );
-    CHECK_FCT( fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2) );
-
-    CHECK_FCT( fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1) );
-
-    CHECK_FCT( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) );
 
 	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
 	CHECK_FCT( fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1) );
