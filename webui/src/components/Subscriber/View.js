@@ -270,7 +270,7 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
                       </div>
                     }
                     <div className="large_data"></div>
-                    <div className="small_data">{pdn.pgw.ipv4}</div>
+                    <div className="small_data">{(pdn.pgw || {}).ipv4}</div>
                   </div>
                   {pdn['pcc_rule'] !== undefined &&
                     pdn.pcc_rule.map((pcc_rule, index) =>

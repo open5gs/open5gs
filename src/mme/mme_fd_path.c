@@ -740,6 +740,39 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                         else
                             error++;
 
+                        CHECK_FCT_DO( fd_avp_search_avp(avpch2,
+                                fd_mip6_agent_info, &avpch3), return );
+                        if (avpch3)
+                        {
+                            CHECK_FCT_DO( fd_avp_search_avp(avpch3,
+                                fd_mip_home_agent_address, &avpch4), return );
+                            if (avpch4)
+                            {
+                                struct sockaddr_storage ss;
+                                struct sockaddr_in *sin;
+
+                                CHECK_FCT_DO(
+                                    fd_msg_avp_hdr(avpch4, &hdr), return );
+                                CHECK_FCT_DO(
+                                    fd_msg_avp_value_interpret(avpch4, &ss),
+                                    return);
+                                sin = (struct sockaddr_in *)&ss;
+                                d_assert(sin, return, "Null param");
+                                if (sin->sin_family == AF_INET)
+                                {
+                                    pdn->pgw.ipv4_addr = sin->sin_addr.s_addr;
+                                }
+                                else
+                                {
+                                    d_error("Not implemented(%d)",
+                                            sin->sin_family);
+                                }
+                            }
+                            else
+                                error++;
+
+                        }
+
                         CHECK_FCT_DO( fd_avp_search_avp(avpch2, s6a_ambr, 
                                 &avpch3), return );
                         if (avpch3)

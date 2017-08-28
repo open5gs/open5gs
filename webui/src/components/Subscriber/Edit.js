@@ -144,13 +144,8 @@ const schema = {
             "properties": {
               "ipv4": {
                 "type": "string",
-                "title": "PGW IPv4 Address*",
-                "required": true,
-                "pattern": "^[0-9\\.]+$",
-                "messages": {
-                  "pattern": "Invalid IPv4 Address Format"
-                },
-                "default": "10.1.35.218",
+                "title": "PGW IPv4 Address",
+                "format" : "ipv4"
               },
             }
           },

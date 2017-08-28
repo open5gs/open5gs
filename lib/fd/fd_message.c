@@ -18,6 +18,8 @@ struct dict_object *fd_result_code = NULL;
 struct dict_object *fd_experimental_result = NULL;
 struct dict_object *fd_experimental_result_code = NULL;
 struct dict_object *fd_vendor_specific_application_id = NULL;
+struct dict_object *fd_mip6_agent_info = NULL;
+struct dict_object *fd_mip_home_agent_address = NULL;
 
 struct dict_object *fd_vendor = NULL;
 struct dict_object *fd_vendor_id = NULL;
@@ -40,6 +42,8 @@ int fd_message_init()
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Experimental-Result", &fd_experimental_result);
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Experimental-Result-Code", &fd_experimental_result_code);
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Vendor-Specific-Application-Id", &fd_vendor_specific_application_id);
+    CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "MIP6-Agent-Info", &fd_mip6_agent_info);
+    CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "MIP-Home-Agent-Address", &fd_mip_home_agent_address);
 
     return 0;
 }

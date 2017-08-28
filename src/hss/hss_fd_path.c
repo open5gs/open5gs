@@ -201,7 +201,8 @@ static int hss_s6a_ulr_cb( struct msg **msg, struct avp *avp,
     status_t rv;
     c_uint32_t result_code = 0;
     s6a_subscription_data_t subscription_data;
-	
+    struct sockaddr_in sin;
+
     d_assert(msg, return EINVAL,);
 	
 	/* Create answer header */
@@ -308,7 +309,7 @@ static int hss_s6a_ulr_cb( struct msg **msg, struct avp *avp,
 
             CHECK_FCT( fd_msg_avp_new(s6a_context_identifier, 0, 
                     &context_identifier) );
-            val.i32 = 0;
+            val.i32 = 1; /* Context Identifier : 1 */
             CHECK_FCT( fd_msg_avp_setvalue(context_identifier, &val) );
             CHECK_FCT( fd_msg_avp_add(apn_configuration_profile, 
                     MSG_BRW_LAST_CHILD, context_identifier) );
@@ -331,13 +332,16 @@ static int hss_s6a_ulr_cb( struct msg **msg, struct avp *avp,
                 struct avp *eps_subscribed_qos_profile, *qos_class_identifier;
                 struct avp *allocation_retention_priority, *priority_level;
                 struct avp *pre_emption_capability, *pre_emption_vulnerability;
+                struct avp *mip6_agent_info, *mip_home_agent_address;
 
                 pdn_t *pdn = &subscription_data.pdn[i];
                 d_assert(pdn, goto out,);
+                pdn->context_identifier = i+1;
 
                 CHECK_FCT( fd_msg_avp_new(s6a_apn_configuration, 0, 
                     &apn_configuration) );
 
+                /* Set Context-Identifier */
                 CHECK_FCT( fd_msg_avp_new(s6a_context_identifier, 0, 
                         &context_identifier) );
                 val.i32 = pdn->context_identifier;
@@ -345,12 +349,14 @@ static int hss_s6a_ulr_cb( struct msg **msg, struct avp *avp,
                 CHECK_FCT( fd_msg_avp_add(apn_configuration, 
                         MSG_BRW_LAST_CHILD, context_identifier) );
 
+                /* Set PDN-Type */
                 CHECK_FCT( fd_msg_avp_new(s6a_pdn_type, 0, &pdn_type) );
                 val.i32 = pdn->pdn_type;
                 CHECK_FCT( fd_msg_avp_setvalue(pdn_type, &val) );
                 CHECK_FCT( fd_msg_avp_add(apn_configuration, 
                         MSG_BRW_LAST_CHILD, pdn_type) );
 
+                /* Set Service-Selection */
                 CHECK_FCT( fd_msg_avp_new(s6a_service_selection, 0, 
                         &service_selection) );
                 val.os.data = (c_uint8_t *)pdn->apn;
@@ -359,7 +365,7 @@ static int hss_s6a_ulr_cb( struct msg **msg, struct avp *avp,
                 CHECK_FCT( fd_msg_avp_add(apn_configuration, 
                         MSG_BRW_LAST_CHILD, service_selection) );
 
-                    /* Set the EPS Subscribed QoS Profile */
+                /* Set the EPS Subscribed QoS Profile */
                 CHECK_FCT( fd_msg_avp_new(s6a_eps_subscribed_qos_profile, 0, 
                         &eps_subscribed_qos_profile) );
 
@@ -401,6 +407,24 @@ static int hss_s6a_ulr_cb( struct msg **msg, struct avp *avp,
 
                 CHECK_FCT( fd_msg_avp_add(apn_configuration, 
                     MSG_BRW_LAST_CHILD, eps_subscribed_qos_profile) );
+
+                /* Set MIP6-Agent-Info */
+                if (pdn->pgw.ipv4_addr)
+                {
+                    CHECK_FCT( fd_msg_avp_new(fd_mip6_agent_info, 0,
+                                &mip6_agent_info) );
+                    CHECK_FCT( fd_msg_avp_new(fd_mip_home_agent_address, 0,
+                                &mip_home_agent_address) );
+                    sin.sin_family = AF_INET;
+                    sin.sin_addr.s_addr = pdn->pgw.ipv4_addr;
+                    CHECK_FCT( fd_msg_avp_value_encode (
+                                &sin, mip_home_agent_address ) );
+                    CHECK_FCT( fd_msg_avp_add(mip6_agent_info,
+                                MSG_BRW_LAST_CHILD, mip_home_agent_address) );
+
+                    CHECK_FCT( fd_msg_avp_add(apn_configuration, 
+                            MSG_BRW_LAST_CHILD, mip6_agent_info) );
+                }
 
                 /* Set AMBR */
                 if (pdn->ambr.downlink || pdn->ambr.uplink)

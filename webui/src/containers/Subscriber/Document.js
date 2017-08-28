@@ -34,9 +34,6 @@ const formData = {
           "pre_emption_vulnerability": 1
         }
       },
-      "pgw": {
-        "ipv4": "10.1.35.218",
-      }
     }
   ]
 }

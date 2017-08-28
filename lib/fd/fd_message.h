@@ -21,6 +21,8 @@ extern struct dict_object *fd_result_code;
 extern struct dict_object *fd_experimental_result;
 extern struct dict_object *fd_experimental_result_code;
 extern struct dict_object *fd_vendor_specific_application_id;
+extern struct dict_object *fd_mip6_agent_info;
+extern struct dict_object *fd_mip_home_agent_address;
 
 extern struct dict_object *fd_vendor;
 extern struct dict_object *fd_vendor_id;

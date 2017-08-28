@@ -604,6 +604,23 @@ status_t hss_db_subscription_data(
                             }
                         }
                     }
+                    else if (!strcmp(child2_key, "pgw") &&
+                        BSON_ITER_HOLDS_DOCUMENT(&child2_iter))
+                    {
+                        bson_iter_recurse(&child2_iter, &child3_iter);
+                        while(bson_iter_next(&child3_iter))
+                        {
+                            const char *child3_key =
+                                bson_iter_key(&child3_iter);
+                            if (!strcmp(child3_key, "ipv4") &&
+                                BSON_ITER_HOLDS_UTF8(&child3_iter))
+                            {
+                                utf8 = (char *)bson_iter_utf8(
+                                        &child3_iter, &length);
+                                pdn->pgw.ipv4_addr = inet_addr(utf8);
+                            }
+                        }
+                    }
                 }
                 pdn_index++;
             }
