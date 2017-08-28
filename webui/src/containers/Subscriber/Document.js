@@ -46,9 +46,7 @@ class Document extends Component {
   }
 
   state = {
-    formData,
-    disabled: false,
-    disableSubmitButton: true
+    formData
   }
 
   componentWillMount() {
@@ -67,7 +65,7 @@ class Document extends Component {
       dispatch(subscriber.fetch)
     }
 
-    if (this.props.visible === false && nextProps.visible === true) {
+//    if (this.props.visible === false && nextProps.visible === true) {
       if (subscriber.data) {
         // Mongoose library has a problem for 64bit-long type
         //
@@ -88,11 +86,7 @@ class Document extends Component {
       } else {
         this.setState({ formData });
       }
-      this.setState({ 
-        disabled: false,
-        disableSubmitButton: true
-      })
-    }
+//    }
 
     if (status.response) {
       NProgress.configure({ 
@@ -146,11 +140,9 @@ class Document extends Component {
 
   validate = (formData, errors) => {
     const { subscribers, action, status } = this.props;
-    const { disabled } = this.state;
     const { imsi } = formData;
 
-    if (action === 'create' && disabled !== true && 
-      subscribers && subscribers.data &&
+    if (action === 'create' && subscribers && subscribers.data &&
       subscribers.data.filter(subscriber => subscriber.imsi === imsi).length > 0) {
       errors.imsi.addError(`'${imsi}' is duplicated`);
     }
@@ -175,21 +167,8 @@ class Document extends Component {
     return errors;
   }
 
-  handleChange = (formData, errors) => {
-    let disableSubmitButton = (Object.keys(errors).length > 0);
-
-    // I think there is a bug in React or Jsonschema library
-    // For workaround, I'll simply add 'formData' in setState
-    this.setState({
-      disableSubmitButton,
-      formData
-    });
-  }
-
   handleSubmit = (formData) => {
     const { dispatch, action } = this.props;
-
-    this.setState({ disabled: true })
 
     NProgress.configure({ 
       parent: '#nprogress-base-form',
@@ -237,12 +216,9 @@ class Document extends Component {
         visible={visible} 
         action={action}
         formData={this.state.formData}
-        disabled={this.state.disabled}
         isLoading={subscriber.isLoading && !status.pending}
-        disableSubmitButton={this.state.disableSubmitButton}
         validate={validate}
         onHide={onHide}
-        onChange={handleChange}
         onSubmit={handleSubmit}
         onError={handleError} />
     )

@@ -372,11 +372,8 @@ class Edit extends Component {
     action: PropTypes.string, 
     formData: PropTypes.object,
     isLoading: PropTypes.bool,
-    disabled: PropTypes.bool,
-    disableSubmitButton: PropTypes.bool,
     validate: PropTypes.func, 
     onHide: PropTypes.func, 
-    onChange: PropTypes.func,
     onSubmit: PropTypes.func,
     onError: PropTypes.func
   }
@@ -385,10 +382,6 @@ class Edit extends Component {
     super(props);
 
     this.state = this.getStateFromProps(props);
-  }
-
-  componentWillMount() {
-    this.setState(this.getStateFromProps(this.props));
   }
 
   componentWillReceiveProps(nextProps) {
@@ -436,12 +429,9 @@ class Edit extends Component {
       visible,
       action,
       formData,
-      disabled,
       isLoading,
-      disableSubmitButton,
       validate,
       onHide,
-      onChange,
       onSubmit,
       onError
     } = this.props;
@@ -453,12 +443,9 @@ class Edit extends Component {
         schema={this.state.schema}
         uiSchema={this.state.uiSchema}
         formData={formData}
-        disabled={disabled}
         isLoading={isLoading}
-        disableSubmitButton={disableSubmitButton}
         validate={validate}
         onHide={onHide}
-        onChange={onChange}
         onSubmit={onSubmit}
         onError={onError}/>
     )

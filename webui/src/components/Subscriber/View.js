@@ -270,8 +270,8 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
                     }
                   </div>
                   {pdn['pcc_rule'] !== undefined &&
-                    pdn.pcc_rule.map(pcc_rule =>
-                      <div>
+                    pdn.pcc_rule.map((pcc_rule, index) =>
+                      <div key={index}>
                         <div className="body">
                           <div className="medium_data"></div>
                           <div className="small_data">{pcc_rule.qos.qci}</div>
@@ -300,8 +300,8 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
                           }
                         </div>
                         {pcc_rule['flow'] !== undefined &&
-                          pcc_rule.flow.map(flow =>
-                            <div className="body">
+                          pcc_rule.flow.map((flow, index) =>
+                            <div className="body" key={index}>
                               <div className="medium_data"></div>
                               <div className="small_data" style={{color:oc.gray[5]}}>
                                 {flow.direction == 1 && "Downlink"}

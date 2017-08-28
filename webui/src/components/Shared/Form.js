@@ -130,12 +130,9 @@ class Form extends Component {
     schema: PropTypes.object,
     uiSchema: PropTypes.object,
     formData: PropTypes.object,
-    disabled: PropTypes.bool,
     isLoading: PropTypes.bool,
-    disableSubmitButton: PropTypes.bool,
     valdate: PropTypes.func,
     onHide: PropTypes.func,
-    onChange: PropTypes.func,
     onSubmit: PropTypes.func,
     onError: PropTypes.func
   };
@@ -145,22 +142,42 @@ class Form extends Component {
     title: ""
   };
 
-  state = {
-    editing: false,
-    confirm: false
-  };
+  state = {};
+
+  componentWillReceiveProps(nextProps) {
+    if (this.props.visible === false && nextProps.visible === true) {
+      // Initialize State Variable when form view is visible for the first time
+      this.setState({ 
+        formData: nextProps.formData,
+        disabled: false,
+        editing: false,
+        confirm: false,
+        disableSubmitButton: true
+      })
+    }
+  }
 
   handleChange = data => {
+    this.setState({
+      editing: true,
+      disableSubmitButton: (Object.keys(data.errors).length > 0),
+      formData: data.formData
+    })
+  }
+
+  handleSubmit = data => {
     const {
-      onChange
+      onSubmit
     } = this.props;
 
-    this.setState({ editing: true })
-    onChange(data.formData, data.errors)
+    onSubmit(data.formData);
   }
 
   handleSubmitButton = () => {
-    this.setState({ editing: false })
+    this.setState({
+      disabled: true,
+      disableSubmitButton: true
+    })
     this.submitButton.click();
   }
 
@@ -181,16 +198,14 @@ class Form extends Component {
       onHide
     } = this.props;
 
-    this.setState({
-      editing: false,
-      confirm: false
-    })
+    this.setState({ confirm: false })
     onHide();
   }
 
   render() {
     const {
       handleChange,
+      handleSubmit,
       handleSubmitButton,
       handleOutside,
       handleClose
@@ -201,15 +216,17 @@ class Form extends Component {
       title,
       schema,
       uiSchema,
-      disabled,
-      formData,
       isLoading,
-      disableSubmitButton,
       validate,
-      onChange,
       onSubmit,
       onError
     } = this.props;
+
+    const {
+      disabled,
+      disableSubmitButton,
+      formData
+    } = this.state;
 
     return (
       <div>
@@ -244,7 +261,7 @@ class Form extends Component {
                   transformErrors={transformErrors}
                   autocomplete="off"
                   onChange={handleChange}
-                  onSubmit={data => onSubmit(data.formData)}
+                  onSubmit={handleSubmit}
                   onError={onError}>
                   <div>
                     <button type="submit" ref={(el => this.submitButton = el)}/>
