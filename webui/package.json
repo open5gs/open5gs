@@ -42,7 +42,8 @@
     "redux": "^3.6.0",
     "redux-actions": "^2.0.3",
     "redux-saga": "^0.15.3",
-    "styled-components": "2.0.0-19"
+    "styled-components": "2.0.0-19",
+    "traverse": "^0.6.6"
   },
   "scripts": {
     "dev": "node server/index.js",

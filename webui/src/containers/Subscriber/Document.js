@@ -11,6 +11,8 @@ import * as Notification from 'modules/notification/actions';
 
 import { Subscriber } from 'components';
 
+import traverse from 'traverse';
+
 const formData = {
   "security": {
     k: "465B5CE8 B199B49F AA5F0A2E E238A6BC",
@@ -67,6 +69,21 @@ class Document extends Component {
 
     if (this.props.visible === false && nextProps.visible === true) {
       if (subscriber.data) {
+        // Mongoose library has a problem for 64bit-long type
+        //
+        //   FETCH : the library returns 'Number' type for 64bit-long type
+        //   CREATE/UPDATE : the library returns 'String' type for 64bit-long type
+        //
+        // In this case, I cannot avoid json-schema validation function
+        // So, I've changed the type from 'String' to 'Number' if the key name is 'downlink' and 'uplink'
+        // 
+        //    The followings are changed from 'String' to 'Number' after DB CREATE or UPDATE
+        //     - ambr.downlink, ambr.uplink, qos.mbr.downlink, qos.mbr.uplink, qos.gbr.downlink, qos.gbr.uplink
+        // 
+        traverse(subscriber.data).forEach(function(x) {
+          if (this.key == 'downlink') this.update(Number(x));
+          if (this.key == 'uplink') this.update(Number(x));
+        })
         this.setState({ formData: subscriber.data })
       } else {
         this.setState({ formData });
