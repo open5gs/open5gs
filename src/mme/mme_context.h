@@ -54,6 +54,9 @@ typedef struct _mme_context_t {
     c_uint16_t      s11_port;       /* MME S11 local port */
     net_sock_t      *s11_sock;      /* MME S11 local listen socket */
 
+    c_uint32_t      s5c_addr;       /* PGW S5C remote address */
+    c_uint16_t      s5c_port;       /* MME S5C remote port */
+
     msgq_id         queue_id;       /* Queue for processing MME control plane */
     tm_service_t    tm_service;     /* Timer Service */
     gtp_xact_ctx_t  gtp_xact_ctx;   /* GTP Transaction Context for MME */
@@ -277,6 +280,9 @@ typedef struct _mme_sess_t {
 #define MME_UE_HAVE_APN(mme) \
     ((mme) && (mme_sess_first(mme)) && \
     ((mme_sess_first(mme))->pdn))
+#define MME_SESSION_GET_PGW_IPV4_ADDR(sess) \
+    (((sess) && ((sess)->pdn) && (((sess)->pdn)->pgw.ipv4_addr)) ? \
+      (((sess)->pdn)->pgw.ipv4_addr) : (mme_self()->s5c_addr))
     pdn_t           *pdn;
 
     /* Protocol Configuration Options */

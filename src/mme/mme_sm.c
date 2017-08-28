@@ -407,7 +407,10 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 {
                     if (s6a_message->result_code != ER_DIAMETER_SUCCESS)
                     {
-                        emm_handle_attach_reject(mme_ue);
+                        emm_handle_attach_reject(mme_ue,
+                            S1ap_CauseNas_authentication_failure,
+                            EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED,
+                            ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
                         break;
                     }
 
@@ -420,7 +423,10 @@ void mme_state_operational(fsm_t *s, event_t *e)
 
                     if (s6a_message->result_code != ER_DIAMETER_SUCCESS)
                     {
-                        d_error("Not impleneted");
+                        emm_handle_attach_reject(mme_ue,
+                            S1ap_CauseNas_unspecified,
+                            EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED,
+                            ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
                         break;
                     }
 

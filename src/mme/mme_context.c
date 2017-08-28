@@ -104,6 +104,7 @@ static status_t mme_context_prepare()
 
     self.s1ap_port = S1AP_SCTP_PORT;
     self.s11_port = GTPV2_C_UDP_PORT;
+    self.s5c_port = GTPV2_C_UDP_PORT;
 
     return CORE_OK;
 }
@@ -210,6 +211,7 @@ status_t mme_context_parse_config()
         START, ROOT, 
         MME_START, MME_ROOT, 
         SGW_START, SGW_ROOT, 
+        PGW_START, PGW_ROOT, 
         SKIP, STOP 
     } parse_state;
     parse_state state = START;
@@ -218,6 +220,7 @@ status_t mme_context_parse_config()
     size_t root_tokens = 0;
     size_t mme_tokens = 0;
     size_t sgw_tokens = 0;
+    size_t pgw_tokens = 0;
     size_t skip_tokens = 0;
     int i, j, m, n, p, q;
     int arr, size, arr1, size1;
@@ -249,6 +252,10 @@ status_t mme_context_parse_config()
                 else if (jsmntok_equal(json, t, "SGW") == 0)
                 {
                     state = SGW_START;
+                }
+                else if (jsmntok_equal(json, t, "PGW") == 0)
+                {
+                    state = PGW_START;
                 }
                 else
                 {
@@ -659,6 +666,54 @@ status_t mme_context_parse_config()
 
                 sgw_tokens--;
                 if (sgw_tokens == 0) stack = ROOT;
+                break;
+            }
+            case PGW_START:
+            {
+                state = PGW_ROOT;
+                pgw_tokens = t->size;
+
+                break;
+            }
+            case PGW_ROOT:
+            {
+                if (jsmntok_equal(json, t, "NETWORK") == 0)
+                {
+                    m = 1;
+                    size = 1;
+
+                    if ((t+1)->type == JSMN_ARRAY)
+                    {
+                        m = 2;
+                        size = (t+1)->size;
+                    }
+
+                    for (arr = 0; arr < size; arr++)
+                    {
+                        for (n = 1; n > 0; m++, n--)
+                        {
+                            n += (t+m)->size;
+
+                            if (jsmntok_equal(json, t+m, "S5C_ADDR") == 0)
+                            {
+                                char *v = jsmntok_to_string(json, t+m+1);
+                                if (v) self.s5c_addr = inet_addr(v);
+                            }
+                            else if (jsmntok_equal(json, t+m, "S5C_PORT") == 0)
+                            {
+                                char *v = jsmntok_to_string(json, t+m+1);
+                                if (v) self.s5c_port = atoi(v);
+                            }
+                        }
+                    }
+                }
+
+                state = SKIP;
+                stack = PGW_ROOT;
+                skip_tokens = t->size;
+
+                pgw_tokens--;
+                if (pgw_tokens == 0) stack = ROOT;
                 break;
             }
             case SKIP:

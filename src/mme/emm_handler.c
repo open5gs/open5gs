@@ -254,7 +254,10 @@ void emm_handle_attach_complete(
     d_assert(nas_send_to_downlink_nas_transport(mme_ue, emmbuf) == CORE_OK,,);
 }
 
-void emm_handle_attach_reject(mme_ue_t *mme_ue)
+void emm_handle_attach_reject(mme_ue_t *mme_ue,
+    e_S1ap_CauseNas s1ap_cause_nas,
+    nas_emm_cause_t emm_cause,
+    nas_esm_cause_t esm_cause)
 {
     status_t rv;
     mme_enb_t *enb = NULL;
@@ -272,22 +275,20 @@ void emm_handle_attach_reject(mme_ue_t *mme_ue)
     sess = mme_sess_first(mme_ue);
     if (sess)
     {
-        rv = esm_build_pdn_connectivity_reject(&esmbuf, sess->pti,
-                ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+        rv = esm_build_pdn_connectivity_reject(&esmbuf, sess->pti, esm_cause);
         d_assert(rv == CORE_OK && esmbuf, return, "esm build error");
         d_trace(3, "[NAS] PDN Connectivity reject : "
                         "EMM <-- ESM[%d]\n", sess->pti);
     }
 
-    rv = emm_build_attach_reject(&emmbuf,
-            EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED, esmbuf);
+    rv = emm_build_attach_reject(&emmbuf, emm_cause, esmbuf);
     d_assert(rv == CORE_OK && emmbuf, 
             pkbuf_free(esmbuf); return, "emm build error");
     d_assert(nas_send_to_downlink_nas_transport(mme_ue, emmbuf) == CORE_OK,,);
     d_trace(3, "[NAS] Attach reject : UE[%s] <-- EMM\n", mme_ue->imsi_bcd);
 
     cause.present = S1ap_Cause_PR_nas;
-    cause.choice.nas = S1ap_CauseNas_authentication_failure;
+    cause.choice.nas = s1ap_cause_nas;;
 
     rv = s1ap_build_ue_context_release_commmand(&s1apbuf, enb_ue, &cause);
     d_assert(rv == CORE_OK && s1apbuf, return, "s1ap build error");

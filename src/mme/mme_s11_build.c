@@ -25,12 +25,15 @@ status_t mme_s11_build_create_session_request(pkbuf_t **pkbuf, mme_sess_t *sess)
     char bearer_qos_buf[GTP_BEARER_QOS_LEN];
     gtp_ue_timezone_t ue_timezone;
     c_int8_t apn[MAX_APN_LEN];
+    c_uint32_t pgw_ipv4_addr = 0;
 
     d_assert(sess, return CORE_ERROR, "Null param");
     sgw = sess->sgw;
     d_assert(sgw, return CORE_ERROR, "Null param");
     pdn = sess->pdn;
     d_assert(pdn, return CORE_ERROR, "Null param");
+    pgw_ipv4_addr = MME_SESSION_GET_PGW_IPV4_ADDR(sess);
+    d_assert(pgw_ipv4_addr, return CORE_ERROR, "Null param");
     mme_ue = sess->mme_ue;
     d_assert(mme_ue, return CORE_ERROR, "Null param");
     d_assert(mme_ue->enb_ue, return CORE_ERROR, "Null param");
@@ -41,13 +44,6 @@ status_t mme_s11_build_create_session_request(pkbuf_t **pkbuf, mme_sess_t *sess)
     req->imsi.presence = 1;
     req->imsi.data = mme_ue->imsi;
     req->imsi.len = mme_ue->imsi_len;
-
-    /* Not used */
-#if 0
-    req->msisdn.presence = 1;
-    req->msisdn.data = mme_ue->imsi;
-    req->msisdn.len = mme_ue->imsi_len;
-#endif
 
     memset(&uli, 0, sizeof(gtp_uli_t));
     uli.flags.e_cgi = 1;
@@ -81,6 +77,7 @@ status_t mme_s11_build_create_session_request(pkbuf_t **pkbuf, mme_sess_t *sess)
     memset(&pgw_s5c_teid, 0, sizeof(gtp_f_teid_t));
     pgw_s5c_teid.ipv4 = 1;
     pgw_s5c_teid.interface_type = GTP_F_TEID_S5_S8_PGW_GTP_C;
+    pgw_s5c_teid.ipv4_addr = pgw_ipv4_addr;
     req->pgw_s5_s8_address_for_control_plane_or_pmip.presence = 1;
     req->pgw_s5_s8_address_for_control_plane_or_pmip.data = &pgw_s5c_teid;
     req->pgw_s5_s8_address_for_control_plane_or_pmip.len = GTP_F_TEID_IPV4_LEN;

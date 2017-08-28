@@ -83,8 +83,6 @@ static void volte_test1(abts_case *tc, void *data)
             "\"priority_level\" : 6,"
             "\"pre_emption_vulnerability\" : 1,"
             "\"pre_emption_capability\" : 1 } },"
-        "\"pgw\" : {"
-          "\"ipv4\" : \"1.0.0.4\" },"
         "\"type\" : 0 }"
       "],"
       "\"ambr\" : {"
