@@ -57,6 +57,9 @@ const Subscriber = new Schema({
       downlink: Schema.Types.Long,
       uplink: Schema.Types.Long
     },
+    pgw: {
+      ipv4: String
+    },
     pcc_rule: [{
       flow: [{
         direction: Number,

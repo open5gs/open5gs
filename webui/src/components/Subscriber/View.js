@@ -152,7 +152,7 @@ const Pdn = styled.div`
       margin: 4px;
     }
     .large_data {
-      width: 160px;
+      width: 140px;
       font-size: 12px;
       margin: 4px;
     }
@@ -249,6 +249,7 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
                 <div className="medium_data">Vulnerablility</div>
                 <div className="large_data">MBR DL/UL(Kbps)</div>
                 <div className="large_data">GBR DL/UL(Kbps)</div>
+                <div className="medium_data">PGW IP</div>
               </div>
               {pdns.map(pdn =>
                 <div key={pdn.apn}>
@@ -268,6 +269,8 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
                         {pdn.ambr['uplink'] === undefined ? "unlimited" : pdn.ambr.uplink}
                       </div>
                     }
+                    <div className="large_data"></div>
+                    <div className="small_data">{pdn.pgw.ipv4}</div>
                   </div>
                   {pdn['pcc_rule'] !== undefined &&
                     pdn.pcc_rule.map((pcc_rule, index) =>
