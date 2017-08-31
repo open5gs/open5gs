@@ -60,9 +60,7 @@ void sgw_state_operational(fsm_t *s, event_t *e)
             gtp_node_t *gnode = (gtp_node_t *)event_get_param2(e);
             pkbuf_t *pkbuf = (pkbuf_t *)event_get_param3(e);
             gtp_xact_t *xact = NULL;
-            c_uint8_t type;
-            c_uint32_t teid;
-            gtp_message_t gtp_message;
+            gtp_message_t message;
             sgw_sess_t *sess = NULL;
 
             d_assert(pkbuf, break, "Null param");
@@ -70,51 +68,51 @@ void sgw_state_operational(fsm_t *s, event_t *e)
             d_assert(gnode, pkbuf_free(pkbuf); break, "Null param");
 
             rv = gtp_xact_receive(
-                    &sgw_self()->gtp_xact_ctx, sock, gnode,
-                    &xact, &type, &teid, &gtp_message, pkbuf);
+                    &sgw_self()->gtp_xact_ctx, sock, gnode, pkbuf,
+                    &xact, &message);
             if (rv != CORE_OK)
                 break;
 
-            if (type == GTP_CREATE_SESSION_REQUEST_TYPE)
-                sess = sgw_sess_find_or_add_by_message(&gtp_message);
+            if (message.h.type == GTP_CREATE_SESSION_REQUEST_TYPE)
+                sess = sgw_sess_find_or_add_by_message(&message);
             else
-                sess = sgw_sess_find_by_teid(teid);
+                sess = sgw_sess_find_by_teid(message.h.teid);
             d_assert(sess, pkbuf_free(pkbuf); break, "No Session Context");
 
-            switch(type)
+            switch(message.h.type)
             {
                 case GTP_CREATE_SESSION_REQUEST_TYPE:
                     sgw_handle_create_session_request(
-                            xact, sess, &gtp_message);
+                            xact, sess, &message);
                     break;
                 case GTP_CREATE_SESSION_RESPONSE_TYPE:
                     sgw_handle_create_session_response(
-                            xact, sess, &gtp_message);
+                            xact, sess, &message);
                     break;
                 case GTP_MODIFY_BEARER_REQUEST_TYPE:
                     sgw_handle_modify_bearer_request(
-                            xact, sess, &gtp_message.modify_bearer_request);
+                            xact, sess, &message.modify_bearer_request);
                     break;
                 case GTP_DELETE_SESSION_REQUEST_TYPE:
                     sgw_handle_delete_session_request(
-                            xact, sess, &gtp_message);
+                            xact, sess, &message);
                     break;
                 case GTP_DELETE_SESSION_RESPONSE_TYPE:
                     sgw_handle_delete_session_response(
-                            xact, sess, &gtp_message);
+                            xact, sess, &message);
                     break;
                 case GTP_RELEASE_ACCESS_BEARERS_REQUEST_TYPE:
                     sgw_handle_release_access_bearers_request(
                             xact, sess, 
-                            &gtp_message.release_access_bearers_request);
+                            &message.release_access_bearers_request);
                     break;
                 case GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE:
                     sgw_handle_downlink_data_notification_ack(
                           sess,
-                          &gtp_message.downlink_data_notification_acknowledge);
+                          &message.downlink_data_notification_acknowledge);
                     break;
                 default:
-                    d_warn("Not implmeneted(type:%d)", type);
+                    d_warn("Not implmeneted(type:%d)", message.h.type);
                     break;
             }
             pkbuf_free(pkbuf);

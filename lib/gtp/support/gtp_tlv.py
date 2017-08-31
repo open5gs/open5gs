@@ -531,9 +531,9 @@ f.write("   };\n");
 f.write("} gtp_message_t;\n\n")
 
 f.write("""CORE_DECLARE(status_t) gtp_parse_msg(
-        gtp_message_t *gtp_message, c_uint8_t type, pkbuf_t *pkbuf);
+        gtp_message_t *gtp_message, pkbuf_t *pkbuf);
 CORE_DECLARE(status_t) gtp_build_msg(
-        pkbuf_t **pkbuf, c_uint8_t type, gtp_message_t *gtp_message);
+        pkbuf_t **pkbuf, gtp_message_t *gtp_message);
 
 #ifdef __cplusplus
 }
@@ -610,12 +610,34 @@ for (k, v) in sorted_msg_list:
         f.write("}};\n\n")
 f.write("\n")
 
-f.write("""status_t gtp_parse_msg(gtp_message_t *gtp_message, c_uint8_t type, pkbuf_t *pkbuf)
+f.write("""status_t gtp_parse_msg(gtp_message_t *gtp_message, pkbuf_t *pkbuf)
 {
     status_t rv = CORE_ERROR;
+    gtp_header_t *h = NULL;
+    c_uint16_t size = 0;
+
+    d_assert(gtp_message, return CORE_ERROR, "Null param");
+    d_assert(pkbuf, return CORE_ERROR, "Null param");
+    d_assert(pkbuf->payload, return CORE_ERROR, "Null param");
+
+    h = pkbuf->payload;
+    d_assert(h, return CORE_ERROR, "Null param");
     
     memset(gtp_message, 0, sizeof(gtp_message_t));
-    switch(type)
+
+    if (h->teid_presence)
+        size = GTPV2C_HEADER_LEN;
+    else
+        size = GTPV2C_HEADER_LEN-GTPV2C_TEID_LEN;
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK,
+            return CORE_ERROR, "pkbuf_header error");
+    memcpy(&gtp_message->h, pkbuf->payload - size, size);
+
+    if (h->teid_presence)
+        gtp_message->h.teid = ntohl(gtp_message->h.teid);
+
+    switch(gtp_message->h.type)
     {
 """)
 for (k, v) in sorted_msg_list:
@@ -625,7 +647,7 @@ for (k, v) in sorted_msg_list:
         f.write("                    &tlv_desc_%s, pkbuf, TLV_MODE_T1_L2_I1);\n" % v_lower(k))
         f.write("            break;\n")
 f.write("""        default:
-            d_warn("Not implmeneted(type:%d)", type);
+            d_warn("Not implmeneted(type:%d)", gtp_message->h.type);
             break;
     }
 
@@ -634,11 +656,12 @@ f.write("""        default:
 
 """)
 
-f.write("""status_t gtp_build_msg(pkbuf_t **pkbuf, c_uint8_t type, gtp_message_t *gtp_message)
+f.write("""status_t gtp_build_msg(pkbuf_t **pkbuf, gtp_message_t *gtp_message)
 {
     status_t rv = CORE_ERROR;
 
-    switch(type)
+    d_assert(gtp_message, return rv, "Null param");
+    switch(gtp_message->h.type)
     {
 """)
 for (k, v) in sorted_msg_list:
@@ -648,7 +671,7 @@ for (k, v) in sorted_msg_list:
         f.write("                    &gtp_message->%s, TLV_MODE_T1_L2_I1);\n" % v_lower(k))
         f.write("            break;\n")
 f.write("""        default:
-            d_warn("Not implmeneted(type:%d)", type);
+            d_warn("Not implmeneted(type:%d)", gtp_message->h.type);
             break;
     }
 

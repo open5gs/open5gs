@@ -266,9 +266,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
             gtp_node_t *gnode = (gtp_node_t *)event_get_param2(e);
             pkbuf_t *pkbuf = (pkbuf_t *)event_get_param3(e);
             gtp_xact_t *xact = NULL;
-            c_uint8_t type;
-            c_uint32_t teid;
-            gtp_message_t gtp_message;
+            gtp_message_t message;
             mme_sess_t *sess = NULL;
             mme_ue_t *mme_ue = NULL;
             enb_ue_t *enb_ue = NULL;
@@ -278,25 +276,25 @@ void mme_state_operational(fsm_t *s, event_t *e)
             d_assert(gnode, pkbuf_free(pkbuf); break, "Null param");
 
             rv = gtp_xact_receive(
-                    &mme_self()->gtp_xact_ctx, sock, gnode,
-                    &xact, &type, &teid, &gtp_message, pkbuf);
+                    &mme_self()->gtp_xact_ctx, sock, gnode, pkbuf,
+                    &xact, &message);
             if (rv != CORE_OK)
                 break;
 
-            sess = mme_sess_find_by_teid(teid);
+            sess = mme_sess_find_by_teid(message.h.teid);
             d_assert(sess, pkbuf_free(pkbuf); break, 
-                    "No Session Context(TEID:%d)", teid);
+                    "No Session Context(TEID:%d)", message.h.teid);
             mme_ue = sess->mme_ue;
             d_assert(mme_ue, pkbuf_free(pkbuf);break, "Null param");
             enb_ue = mme_ue->enb_ue;
             d_assert(enb_ue, break, "Null param");
                     
-            switch(type)
+            switch(message.h.type)
             {
                 case GTP_CREATE_SESSION_RESPONSE_TYPE:
                 {
                     mme_s11_handle_create_session_response(
-                            sess, &gtp_message.create_session_response);
+                            sess, &message.create_session_response);
                     if (MME_SESSION_IN_ATTACH_STATE(sess))
                     {
                         emm_handle_attach_accept(mme_ue);
@@ -309,12 +307,12 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 }
                 case GTP_MODIFY_BEARER_RESPONSE_TYPE:
                     mme_s11_handle_modify_bearer_response(
-                            sess, &gtp_message.modify_bearer_response);
+                            sess, &message.modify_bearer_response);
                     break;
                 case GTP_DELETE_SESSION_RESPONSE_TYPE:
                 {
                     mme_s11_handle_delete_session_response(
-                            sess, &gtp_message.delete_session_response);
+                            sess, &message.delete_session_response);
 
                     if (MME_UE_DETACH_INITIATED(mme_ue))
                     {
@@ -357,7 +355,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 case GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE:
                 {
                     mme_s11_handle_release_access_bearers_response(
-                            sess, &gtp_message.release_access_bearers_response);
+                            sess, &message.release_access_bearers_response);
 
                     s1ap_handle_release_access_bearers_response(enb_ue);
                     break;
@@ -367,7 +365,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 {
                     mme_s11_handle_downlink_data_notification(
                             xact,
-                            sess, &gtp_message.downlink_data_notification);
+                            sess, &message.downlink_data_notification);
 
                     s1ap_handle_paging(mme_ue);
                     /* Start T3413 */
@@ -375,7 +373,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
                     break;
                 }
                 default:
-                    d_warn("Not implmeneted(type:%d)", type);
+                    d_warn("Not implmeneted(type:%d)", message.h.type);
                     break;
             }
             pkbuf_free(pkbuf);

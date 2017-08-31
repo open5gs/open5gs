@@ -72,7 +72,8 @@ void sgw_handle_create_session_request(gtp_xact_t *xact,
     req->bearer_contexts_to_be_created.s5_s8_u_sgw_f_teid.len = 
         GTP_F_TEID_IPV4_LEN;
 
-    rv = gtp_build_msg(&pkbuf, GTP_CREATE_SESSION_REQUEST_TYPE, gtp_message);
+    gtp_message->h.type = GTP_CREATE_SESSION_REQUEST_TYPE;
+    rv = gtp_build_msg(&pkbuf, gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
     d_assert(sgw_s5c_send_to_pgw(xact, GTP_CREATE_SESSION_REQUEST_TYPE, 0,
@@ -161,7 +162,8 @@ void sgw_handle_create_session_response(gtp_xact_t *xact,
     rsp->bearer_contexts_created.s1_u_enodeb_f_teid.data = &sgw_s1u_teid;
     rsp->bearer_contexts_created.s1_u_enodeb_f_teid.len = GTP_F_TEID_IPV4_LEN;
 
-    rv = gtp_build_msg(&pkbuf, GTP_CREATE_SESSION_RESPONSE_TYPE, gtp_message);
+    gtp_message->h.type = GTP_CREATE_SESSION_RESPONSE_TYPE;
+    rv = gtp_build_msg(&pkbuf, gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
     d_assert(sgw_s11_send_to_mme(xact, GTP_CREATE_SESSION_RESPONSE_TYPE,
@@ -221,7 +223,8 @@ CORE_DECLARE(void) sgw_handle_modify_bearer_request(gtp_xact_t *xact,
     rsp->cause.data = &cause;
     rsp->cause.len = sizeof(cause);
 
-    rv = gtp_build_msg(&pkbuf, GTP_MODIFY_BEARER_RESPONSE_TYPE, &gtp_message);
+    gtp_message.h.type = GTP_MODIFY_BEARER_RESPONSE_TYPE;
+    rv = gtp_build_msg(&pkbuf, &gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
     d_assert(sgw_s11_send_to_mme(xact, GTP_MODIFY_BEARER_RESPONSE_TYPE, 
@@ -242,7 +245,8 @@ void sgw_handle_delete_session_request(gtp_xact_t *xact,
     d_assert(sess, return, "Null param");
     d_assert(gtp_message, return, "Null param");
 
-    rv = gtp_build_msg(&pkbuf, GTP_DELETE_SESSION_REQUEST_TYPE, gtp_message);
+    gtp_message->h.type = GTP_DELETE_SESSION_REQUEST_TYPE;
+    rv = gtp_build_msg(&pkbuf, gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
     d_assert(sgw_s5c_send_to_pgw(xact, GTP_DELETE_SESSION_REQUEST_TYPE, 
@@ -297,7 +301,8 @@ void sgw_handle_delete_session_response(gtp_xact_t *xact,
         cause->value = GTP_CAUSE_INVALID_PEER;
     }
 
-    rv = gtp_build_msg(&pkbuf, GTP_DELETE_SESSION_RESPONSE_TYPE, gtp_message);
+    gtp_message->h.type = GTP_DELETE_SESSION_RESPONSE_TYPE;
+    rv = gtp_build_msg(&pkbuf, gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
     d_assert(sgw_s11_send_to_mme(xact, GTP_DELETE_SESSION_RESPONSE_TYPE,
@@ -343,8 +348,8 @@ void sgw_handle_release_access_bearers_request(gtp_xact_t *xact,
     rsp->cause.data = &cause;
     rsp->cause.len = sizeof(cause);
 
-    rv = gtp_build_msg(&pkbuf,
-            GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE, &gtp_message);
+    gtp_message.h.type = GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE;
+    rv = gtp_build_msg(&pkbuf, &gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
     d_assert(sgw_s11_send_to_mme(xact, 
@@ -385,9 +390,8 @@ void sgw_handle_lo_dldata_notification(sgw_bearer_t *bearer)
     noti->allocation_retention_priority.data = &arp;
     noti->allocation_retention_priority.len = sizeof(arp);
 
-
-    rv = gtp_build_msg(&pkbuf,
-            GTP_DOWNLINK_DATA_NOTIFICATION_TYPE, &gtp_message);
+    gtp_message.h.type = GTP_DOWNLINK_DATA_NOTIFICATION_TYPE;
+    rv = gtp_build_msg(&pkbuf, &gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
     xact = gtp_xact_local_create(&sgw_self()->gtp_xact_ctx, 

@@ -145,7 +145,8 @@ status_t mme_s11_build_create_session_request(pkbuf_t **pkbuf, mme_sess_t *sess)
     req->charging_characteristics.data = (c_uint8_t *)"\x54\x00";
     req->charging_characteristics.len = 2;
 
-    rv = gtp_build_msg(pkbuf, GTP_CREATE_SESSION_REQUEST_TYPE, &gtp_message);
+    gtp_message.h.type = GTP_CREATE_SESSION_REQUEST_TYPE;
+    rv = gtp_build_msg(pkbuf, &gtp_message);
     d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");
 
     return CORE_OK;
@@ -183,7 +184,8 @@ status_t mme_s11_build_modify_bearer_request(
     req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.len = 
         GTP_F_TEID_IPV4_LEN;
 
-    rv = gtp_build_msg(pkbuf, GTP_MODIFY_BEARER_REQUEST_TYPE, &gtp_message);
+    gtp_message.h.type = GTP_MODIFY_BEARER_REQUEST_TYPE;
+    rv = gtp_build_msg(pkbuf, &gtp_message);
     d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");
 
     return CORE_OK;
@@ -228,7 +230,8 @@ status_t mme_s11_build_delete_session_request(pkbuf_t **pkbuf, mme_sess_t *sess)
     req->indication_flags.data = &indication;
     req->indication_flags.len = sizeof(gtp_indication_t);
 
-    rv = gtp_build_msg(pkbuf, GTP_DELETE_SESSION_REQUEST_TYPE, &gtp_message);
+    gtp_message.h.type = GTP_DELETE_SESSION_REQUEST_TYPE;
+    rv = gtp_build_msg(pkbuf, &gtp_message);
     d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");
 
     return CORE_OK;
@@ -246,8 +249,8 @@ status_t mme_s11_build_release_access_bearers_request(pkbuf_t **pkbuf)
     req->originating_node.presence = 1;
     req->originating_node.u8 = GTP_NODE_TYPE_MME;
 
-    rv = gtp_build_msg(pkbuf, 
-            GTP_RELEASE_ACCESS_BEARERS_REQUEST_TYPE, &gtp_message);
+    gtp_message.h.type = GTP_RELEASE_ACCESS_BEARERS_REQUEST_TYPE;
+    rv = gtp_build_msg(pkbuf, &gtp_message);
     d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");
 
     return CORE_OK;
@@ -277,8 +280,8 @@ status_t mme_s11_build_downlink_data_notification_ack(pkbuf_t **pkbuf,
     ack->cause.data = &cause;
     ack->cause.len = sizeof(cause);
 
-    rv = gtp_build_msg(pkbuf, GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE, 
-            &gtp_message);
+    gtp_message.h.type = GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE;
+    rv = gtp_build_msg(pkbuf, &gtp_message);
     d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");
 
     return CORE_OK;

@@ -69,9 +69,7 @@ void pgw_state_operational(fsm_t *s, event_t *e)
             pkbuf_t *copybuf = NULL;
             c_uint16_t copybuf_len = 0;
             gtp_xact_t *xact = NULL;
-            c_uint8_t type;
-            c_uint32_t teid;
-            gtp_message_t *gtp_message = NULL;
+            gtp_message_t *message = NULL;
             pgw_sess_t *sess = NULL;
 
             d_assert(recvbuf, break, "Null param");
@@ -81,43 +79,39 @@ void pgw_state_operational(fsm_t *s, event_t *e)
             copybuf_len = sizeof(gtp_message_t);
             copybuf = pkbuf_alloc(0, copybuf_len);
             d_assert(copybuf, break, "Null param");
-            gtp_message = copybuf->payload;
-            d_assert(gtp_message, break, "Null param");
+            message = copybuf->payload;
+            d_assert(message, break, "Null param");
 
             rv = gtp_xact_receive(
-                    &pgw_self()->gtp_xact_ctx, sock, gnode,
-                    &xact, &type, &teid, gtp_message, recvbuf);
+                    &pgw_self()->gtp_xact_ctx, sock, gnode, recvbuf,
+                    &xact, message);
             if (rv != CORE_OK)
                 break;
 
-            if (type == GTP_CREATE_SESSION_REQUEST_TYPE)
-                sess = pgw_sess_find_or_add_by_message(gtp_message);
+            if (message->h.type == GTP_CREATE_SESSION_REQUEST_TYPE)
+                sess = pgw_sess_find_or_add_by_message(message);
             else
-                sess = pgw_sess_find_by_teid(teid);
+                sess = pgw_sess_find_by_teid(message->h.teid);
             d_assert(sess, pkbuf_free(recvbuf); break, "No Session Context");
 
-            /* Store Last GTP Message for Session */
-            memcpy(&sess->last_gtp_message,
-                    gtp_message, sizeof(gtp_message_t));
-
-            switch(type)
+            switch(message->h.type)
             {
                 case GTP_CREATE_SESSION_REQUEST_TYPE:
                     pgw_s5c_handle_create_session_request(
-                        xact, sess, &gtp_message->create_session_request);
+                        xact, sess, &message->create_session_request);
                     pgw_gx_send_ccr(xact, sess, copybuf,
                         GX_CC_REQUEST_TYPE_INITIAL_REQUEST);
                     break;
                 case GTP_DELETE_SESSION_REQUEST_TYPE:
                     pgw_s5c_handle_delete_session_request(
-                        xact, sess, &gtp_message->delete_session_request);
+                        xact, sess, &message->delete_session_request);
                     pgw_gx_send_ccr(xact, sess, copybuf,
                         GX_CC_REQUEST_TYPE_TERMINATION_REQUEST);
                     break;
                 default:
                     pkbuf_free(copybuf);
 
-                    d_warn("Not implmeneted(type:%d)", type);
+                    d_warn("Not implmeneted(type:%d)", message->h.type);
                     break;
             }
             pkbuf_free(recvbuf);
@@ -137,7 +131,7 @@ void pgw_state_operational(fsm_t *s, event_t *e)
             pkbuf_t *gxbuf = (pkbuf_t *)event_get_param3(e);
             gx_message_t *gx_message = NULL;
             pkbuf_t *gtpbuf = (pkbuf_t *)event_get_param4(e);
-            gtp_message_t *gtp_message = NULL;
+            gtp_message_t *message = NULL;
 
             d_assert(xact_index, return, "Null param");
             xact = gtp_xact_find(xact_index);
@@ -152,7 +146,7 @@ void pgw_state_operational(fsm_t *s, event_t *e)
             d_assert(gx_message, return, "Null param");
 
             d_assert(gtpbuf, return, "Null param");
-            gtp_message = gtpbuf->payload;
+            message = gtpbuf->payload;
 
             switch(gx_message->cmd_code)
             {
@@ -170,14 +164,14 @@ void pgw_state_operational(fsm_t *s, event_t *e)
                         {
                             pgw_gx_handle_cca_initial_request(
                                     xact, sess, cca_message,
-                                    &gtp_message->create_session_request);
+                                    &message->create_session_request);
                             break;
                         }
                         case GX_CC_REQUEST_TYPE_TERMINATION_REQUEST:
                         {
                             pgw_gx_handle_cca_termination_request(
                                     xact, sess, cca_message,
-                                    &gtp_message->delete_session_request);
+                                    &message->delete_session_request);
                             break;
                         }
                         default:

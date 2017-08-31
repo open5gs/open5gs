@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtp_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-08-31 10:18:49.801691 by acetcom
+ * Created on: 2017-08-31 12:05:13.855408 by acetcom
  * from 29274-d80.docx
  ******************************************************************************/
 
@@ -2406,12 +2406,34 @@ tlv_desc_t tlv_desc_modify_access_bearers_response =
 }};
 
 
-status_t gtp_parse_msg(gtp_message_t *gtp_message, c_uint8_t type, pkbuf_t *pkbuf)
+status_t gtp_parse_msg(gtp_message_t *gtp_message, pkbuf_t *pkbuf)
 {
     status_t rv = CORE_ERROR;
+    gtp_header_t *h = NULL;
+    c_uint16_t size = 0;
+
+    d_assert(gtp_message, return CORE_ERROR, "Null param");
+    d_assert(pkbuf, return CORE_ERROR, "Null param");
+    d_assert(pkbuf->payload, return CORE_ERROR, "Null param");
+
+    h = pkbuf->payload;
+    d_assert(h, return CORE_ERROR, "Null param");
     
     memset(gtp_message, 0, sizeof(gtp_message_t));
-    switch(type)
+
+    if (h->teid_presence)
+        size = GTPV2C_HEADER_LEN;
+    else
+        size = GTPV2C_HEADER_LEN-GTPV2C_TEID_LEN;
+
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK,
+            return CORE_ERROR, "pkbuf_header error");
+    memcpy(&gtp_message->h, pkbuf->payload - size, size);
+
+    if (h->teid_presence)
+        gtp_message->h.teid = ntohl(gtp_message->h.teid);
+
+    switch(gtp_message->h.type)
     {
         case GTP_ECHO_REQUEST_TYPE:
             rv = tlv_parse_msg(&gtp_message->echo_request,
@@ -2530,18 +2552,19 @@ status_t gtp_parse_msg(gtp_message_t *gtp_message, c_uint8_t type, pkbuf_t *pkbu
                     &tlv_desc_modify_access_bearers_response, pkbuf, TLV_MODE_T1_L2_I1);
             break;
         default:
-            d_warn("Not implmeneted(type:%d)", type);
+            d_warn("Not implmeneted(type:%d)", gtp_message->h.type);
             break;
     }
 
     return rv;
 }
 
-status_t gtp_build_msg(pkbuf_t **pkbuf, c_uint8_t type, gtp_message_t *gtp_message)
+status_t gtp_build_msg(pkbuf_t **pkbuf, gtp_message_t *gtp_message)
 {
     status_t rv = CORE_ERROR;
 
-    switch(type)
+    d_assert(gtp_message, return rv, "Null param");
+    switch(gtp_message->h.type)
     {
         case GTP_ECHO_REQUEST_TYPE:
             rv = tlv_build_msg(pkbuf, &tlv_desc_echo_request,
@@ -2660,7 +2683,7 @@ status_t gtp_build_msg(pkbuf_t **pkbuf, c_uint8_t type, gtp_message_t *gtp_messa
                     &gtp_message->modify_access_bearers_response, TLV_MODE_T1_L2_I1);
             break;
         default:
-            d_warn("Not implmeneted(type:%d)", type);
+            d_warn("Not implmeneted(type:%d)", gtp_message->h.type);
             break;
     }
 

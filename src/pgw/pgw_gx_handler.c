@@ -17,7 +17,6 @@ void pgw_gx_handle_cca_initial_request(
     pgw_bearer_t *bearer = NULL;
 
     gtp_message_t gtp_message;
-    c_uint8_t type = GTP_CREATE_SESSION_RESPONSE_TYPE;
     gtp_create_session_response_t *rsp = NULL;
 
     gtp_cause_t cause;
@@ -97,10 +96,11 @@ void pgw_gx_handle_cca_initial_request(
     rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.len = 
         GTP_F_TEID_IPV4_LEN;
 
-    rv = gtp_build_msg(&pkbuf, type, &gtp_message);
+    gtp_message.h.type = GTP_CREATE_SESSION_RESPONSE_TYPE;
+    rv = gtp_build_msg(&pkbuf, &gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
-    pgw_s5c_send_to_sgw(xact, type, sess->sgw_s5c_teid, pkbuf);
+    pgw_s5c_send_to_sgw(xact, gtp_message.h.type, sess->sgw_s5c_teid, pkbuf);
 }
 void pgw_gx_handle_cca_termination_request(
         gtp_xact_t *xact, pgw_sess_t *sess,
@@ -110,7 +110,6 @@ void pgw_gx_handle_cca_termination_request(
     pkbuf_t *pkbuf;
 
     gtp_message_t gtp_message;
-    c_uint8_t type = GTP_DELETE_SESSION_RESPONSE_TYPE;
     gtp_delete_session_response_t *rsp = NULL;
 
     c_uint32_t sgw_s5c_teid;
@@ -157,11 +156,12 @@ void pgw_gx_handle_cca_termination_request(
     /* Private Extension */
 
     /* build */
-    rv = gtp_build_msg(&pkbuf, type, &gtp_message);
+    gtp_message.h.type = GTP_DELETE_SESSION_RESPONSE_TYPE;
+    rv = gtp_build_msg(&pkbuf, &gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
     /* send */
-    pgw_s5c_send_to_sgw(xact, type, sgw_s5c_teid, pkbuf);
+    pgw_s5c_send_to_sgw(xact, gtp_message.h.type, sgw_s5c_teid, pkbuf);
 }
 
 static c_int16_t pgw_pco_build(c_uint8_t *pco_buf, tlv_pco_t *tlv_pco)
