@@ -429,10 +429,6 @@ int main(int argc, const char *const argv[]) {
     int list_provided = 0;
     abts_suite *suite = NULL;
 
-    rv = test_initialize();
-    if (rv != CORE_OK) 
-        return EXIT_FAILURE;
-
     d_trace_global_off();
 
     quiet = !isatty(STDOUT_FILENO);
@@ -464,6 +460,10 @@ int main(int argc, const char *const argv[]) {
         }
         list_provided = 1;
     }
+
+    rv = test_initialize();
+    if (rv != CORE_OK) 
+        return EXIT_FAILURE;
 
     if (list_provided) {
         /* Waste a little space here, because it is easier than counting the

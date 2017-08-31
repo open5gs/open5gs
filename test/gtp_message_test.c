@@ -5,7 +5,7 @@
 
 #include "types.h"
 #include "gtp_types.h"
-#include "gtp_tlv.h"
+#include "gtp_message.h"
 
 #include "testutil.h"
 

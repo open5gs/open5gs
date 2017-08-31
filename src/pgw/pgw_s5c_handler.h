@@ -1,7 +1,7 @@
 #ifndef __PGW_S5C_HANDLER_H__
 #define __PGW_S5C_HANDLER_H__
 
-#include "gtp_tlv.h"
+#include "gtp_message.h"
 
 #include "pgw_context.h"
 

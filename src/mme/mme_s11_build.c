@@ -3,7 +3,7 @@
 #include "core_debug.h"
 
 #include "gtp_types.h"
-#include "gtp_tlv.h"
+#include "gtp_message.h"
 
 #include "types.h"
 #include "mme_context.h"

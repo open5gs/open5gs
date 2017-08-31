@@ -8,7 +8,7 @@
 #include "core_timer.h"
 
 #include "gtp_path.h"
-#include "gtp_tlv.h"
+#include "gtp_message.h"
 
 #ifdef __cplusplus
 extern "C" {

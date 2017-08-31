@@ -16,31 +16,16 @@
     (GTP_XACT_LOCAL_DURATION * GTP_XACT_LOCAL_RETRY_COUNT) /* 9 seconds */
 #define GTP_XACT_REMOTE_RETRY_COUNT 1 
 
-/* 5.1 General format */
-#define GTPV2C_HEADER_LEN   12
-#define GTPV2C_TEID_LEN     4
-
-typedef struct _gtpv2c_header_t {
-ED4(c_uint8_t version:3;,
-    c_uint8_t piggybacked:1;,
-    c_uint8_t teid_presence:1;,
-    c_uint8_t spare1:3;)
-    c_uint8_t type;
-    c_uint16_t length;
-    union {
-        struct {
-            c_uint32_t teid;
-            /* sqn : 31bit ~ 8bit, spare : 7bit ~ 0bit */
-#define GTP_XID_TO_SQN(__xid) htonl(((__xid) << 8))
-#define GTP_SQN_TO_XID(__sqn) (ntohl(__sqn) >> 8)
-            c_uint32_t sqn; 
-        };
-        /* sqn : 31bit ~ 8bit, spare : 7bit ~ 0bit */
-        c_uint32_t sqn_only;
-    };
-} __attribute__ ((packed)) gtpv2c_header_t;
+typedef enum {
+    GTP_XACT_UNKNOWN_STAGE,
+    GTP_XACT_INITIAL_STAGE,
+    GTP_XACT_INTERMEDIATE_STAGE,
+    GTP_XACT_FINAL_STAGE,
+} gtp_xact_stage_t;
 
 index_declare(gtp_xact_pool, gtp_xact_t, SIZE_OF_GTP_XACT_POOL);
+
+static gtp_xact_stage_t gtp_xact_get_stage(c_uint8_t type, c_uint32_t sqn);
 
 status_t gtp_xact_init(gtp_xact_ctx_t *context, 
         tm_service_t *tm_service, c_uintptr_t event)
@@ -203,7 +188,7 @@ status_t gtp_xact_associated_commit(gtp_xact_t *xact,
     gtp_xact_t *assoc_xact, c_uint8_t type, c_uint32_t teid, pkbuf_t *pkbuf)
 {
     char buf[INET_ADDRSTRLEN];
-    gtpv2c_header_t *h = NULL;
+    gtp_header_t *h = NULL;
     
     d_assert(xact, goto out, "Null param");
     d_assert(xact->sock, goto out, "Null param");
@@ -221,7 +206,7 @@ status_t gtp_xact_associated_commit(gtp_xact_t *xact,
     h = pkbuf->payload;
     d_assert(h, goto out, "Null param");
 
-    memset(h, 0, sizeof(gtpv2c_header_t));
+    memset(h, 0, sizeof(gtp_header_t));
     h->version = 2;
     h->teid_presence = 1;
     h->type = type;
@@ -296,37 +281,24 @@ static gtp_xact_t *gtp_xact_find_by_sqn(
     gtp_xact_t *xact = NULL;
 
     d_assert(gnode, return NULL, "Null param");
-    switch(type)
+
+    switch(gtp_xact_get_stage(type, sqn))
     {
-        case GTP_CREATE_SESSION_REQUEST_TYPE:
-        case GTP_MODIFY_BEARER_REQUEST_TYPE:
-        case GTP_DELETE_SESSION_REQUEST_TYPE:
-        case GTP_CREATE_BEARER_REQUEST_TYPE:
-        case GTP_UPDATE_BEARER_REQUEST_TYPE:
-        case GTP_DELETE_BEARER_REQUEST_TYPE:
-        case GTP_RELEASE_ACCESS_BEARERS_REQUEST_TYPE:
-        case GTP_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
-        case GTP_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
-        case GTP_DOWNLINK_DATA_NOTIFICATION_TYPE:
+        case GTP_XACT_INITIAL_STAGE:
             xact = list_first(&gnode->remote_list);
             break;
-
-        case GTP_CREATE_SESSION_RESPONSE_TYPE:
-        case GTP_MODIFY_BEARER_RESPONSE_TYPE:
-        case GTP_DELETE_SESSION_RESPONSE_TYPE:
-        case GTP_CREATE_BEARER_RESPONSE_TYPE:
-        case GTP_UPDATE_BEARER_RESPONSE_TYPE:
-        case GTP_DELETE_BEARER_RESPONSE_TYPE:
-        case GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE:
-        case GTP_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
-        case GTP_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
-        case GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE:
+        case GTP_XACT_INTERMEDIATE_STAGE:
             xact = list_first(&gnode->local_list);
+            break;
+        case GTP_XACT_FINAL_STAGE:
+            if (sqn & GTP_MAX_XACT_ID)
+                xact = list_first(&gnode->remote_list);
+            else
+                xact = list_first(&gnode->local_list);
             break;
 
         default:
-            d_error("Not implemented GTPv2 Message Type(%d)", type);
-            return NULL;
+            d_assert(0, return NULL, "Unknown stage");
     }
 
     xid = GTP_SQN_TO_XID(sqn);
@@ -356,7 +328,7 @@ status_t gtp_xact_receive(
 {
     char buf[INET_ADDRSTRLEN];
     status_t rv;
-    gtpv2c_header_t *h = NULL;
+    gtp_header_t *h = NULL;
     gtp_xact_t *new = NULL;
 
     d_assert(pkbuf, return CORE_ERROR, "Null param");
@@ -449,3 +421,52 @@ gtp_xact_t *gtp_xact_find(index_t index)
     return index_find(&gtp_xact_pool, index);
 }
 
+static gtp_xact_stage_t gtp_xact_get_stage(c_uint8_t type, c_uint32_t sqn)
+{
+    gtp_xact_stage_t stage = GTP_XACT_UNKNOWN_STAGE;
+
+    switch(type)
+    {
+        case GTP_CREATE_SESSION_REQUEST_TYPE:
+        case GTP_MODIFY_BEARER_REQUEST_TYPE:
+        case GTP_DELETE_SESSION_REQUEST_TYPE:
+        case GTP_MODIFY_BEARER_COMMAND_TYPE:
+        case GTP_DELETE_BEARER_COMMAND_TYPE:
+        case GTP_BEARER_RESOURCE_COMMAND_TYPE:
+        case GTP_RELEASE_ACCESS_BEARERS_REQUEST_TYPE:
+        case GTP_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
+        case GTP_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
+        case GTP_DOWNLINK_DATA_NOTIFICATION_TYPE:
+            stage = GTP_XACT_INITIAL_STAGE;
+            break;
+        case GTP_CREATE_BEARER_REQUEST_TYPE:
+        case GTP_UPDATE_BEARER_REQUEST_TYPE:
+        case GTP_DELETE_BEARER_REQUEST_TYPE:
+            if (sqn & GTP_MAX_XACT_ID)
+                stage = GTP_XACT_INTERMEDIATE_STAGE;
+            else
+                stage = GTP_XACT_INITIAL_STAGE;
+            break;
+        case GTP_CREATE_SESSION_RESPONSE_TYPE:
+        case GTP_MODIFY_BEARER_RESPONSE_TYPE:
+        case GTP_DELETE_SESSION_RESPONSE_TYPE:
+        case GTP_MODIFY_BEARER_FAILURE_INDICATION_TYPE:
+        case GTP_DELETE_BEARER_FAILURE_INDICATION_TYPE:
+        case GTP_BEARER_RESOURCE_FAILURE_INDICATION_TYPE:
+        case GTP_CREATE_BEARER_RESPONSE_TYPE:
+        case GTP_UPDATE_BEARER_RESPONSE_TYPE:
+        case GTP_DELETE_BEARER_RESPONSE_TYPE:
+        case GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE:
+        case GTP_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
+        case GTP_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
+        case GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE:
+            stage = GTP_XACT_FINAL_STAGE;
+            break;
+
+        default:
+            d_error("Not implemented GTPv2 Message Type(%d)", type);
+            break;
+    }
+
+    return stage;
+}

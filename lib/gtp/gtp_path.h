@@ -15,25 +15,6 @@ extern "C" {
 #define GTP_COMPARE_NODE(__id1, __id2) \
     (((__id1)->addr) == ((__id2)->addr) && ((__id1)->port) == ((__id2)->port))
 
-/* GTP-U message type, defined in 3GPP TS 29.281 Release 11 */
-#define GTPU_MSGTYPE_ECHO_REQ               1
-#define GTPU_MSGTYPE_ECHO_RSP               2
-#define GTPU_MSGTYPE_ERR_IND                26
-#define GTPU_MSGTYPE_SUPP_EXTHDR_NOTI       31
-#define GTPU_MSGTYPE_END_MARKER             254
-#define GTPU_MSGTYPE_GPDU                   255
-
-/* GTU-U flags */
-#define GTPU_FLAGS_PN                       0x1
-#define GTPU_FLAGS_S                        0x2
-
-typedef struct _gtp_header
-{
-    c_uint8_t flags;
-    c_uint8_t type;
-    c_uint16_t length;
-    c_uint32_t teid;
-} gtp_header_t;
 /**
  * This structure represents the commonalities of GTP node such as MME, SGW,
  * PGW gateway. Some of members may not be used by the specific type of node */

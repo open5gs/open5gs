@@ -26,12 +26,12 @@
 /*******************************************************************************
  * This file had been created by gtp_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-07-27 00:04:53.815790 by acetcom
+ * Created on: 2017-08-31 10:18:49.801691 by acetcom
  * from 29274-d80.docx
  ******************************************************************************/
 
 #include "core_debug.h"
-#include "gtp_tlv.h"
+#include "gtp_message.h"
 
 tlv_desc_t tlv_desc_imsi_0 =
 {

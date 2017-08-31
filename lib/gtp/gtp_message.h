@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtp_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-07-27 00:04:53.794907 by acetcom
+ * Created on: 2017-08-31 10:18:49.786605 by acetcom
  * from 29274-d80.docx
  ******************************************************************************/
 
@@ -39,6 +39,46 @@
 extern "C" {
 #endif /* __cplusplus */
 
+/* 5.1 General format */
+#define GTPV2C_HEADER_LEN   12
+#define GTPV2C_TEID_LEN     4
+typedef struct _gtp_header_t {
+    union {
+        struct {
+        ED4(c_uint8_t version:3;,
+            c_uint8_t piggybacked:1;,
+            c_uint8_t teid_presence:1;,
+            c_uint8_t spare1:3;)
+        };
+/* GTU-U flags */
+#define GTPU_FLAGS_PN                       0x1
+#define GTPU_FLAGS_S                        0x2
+        c_uint8_t flags;
+    };
+    c_uint8_t type;
+    c_uint16_t length;
+    union {
+        struct {
+            c_uint32_t teid;
+            /* sqn : 31bit ~ 8bit, spare : 7bit ~ 0bit */
+#define GTP_XID_TO_SQN(__xid) htonl(((__xid) << 8))
+#define GTP_SQN_TO_XID(__sqn) (ntohl(__sqn) >> 8)
+            c_uint32_t sqn;
+        };
+        /* sqn : 31bit ~ 8bit, spare : 7bit ~ 0bit */
+        c_uint32_t sqn_only;
+    };
+} __attribute__ ((packed)) gtp_header_t;
+
+/* GTP-U message type, defined in 3GPP TS 29.281 Release 11 */
+#define GTPU_MSGTYPE_ECHO_REQ               1
+#define GTPU_MSGTYPE_ECHO_RSP               2
+#define GTPU_MSGTYPE_ERR_IND                26
+#define GTPU_MSGTYPE_SUPP_EXTHDR_NOTI       31
+#define GTPU_MSGTYPE_END_MARKER             254
+#define GTPU_MSGTYPE_GPDU                   255
+
+/* GTPv2-C message type */
 #define GTP_ECHO_REQUEST_TYPE 1
 #define GTP_ECHO_RESPONSE_TYPE 2
 #define GTP_VERSION_NOT_SUPPORTED_INDICATION_TYPE 3
@@ -1066,6 +1106,7 @@ typedef struct _gtp_modify_access_bearers_response_t {
 } gtp_modify_access_bearers_response_t;
 
 typedef struct _gtp_message_t {
+   gtp_header_t h;
    union {
         gtp_echo_request_t echo_request;
         gtp_echo_response_t echo_response;

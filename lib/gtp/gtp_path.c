@@ -4,6 +4,7 @@
 #include "core_net.h"
 
 #include "types.h"
+#include "gtp_message.h"
 #include "gtp_path.h"
 
 status_t gtp_listen(net_sock_t **sock, 

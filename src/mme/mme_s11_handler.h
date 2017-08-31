@@ -1,7 +1,7 @@
 #ifndef __MME_S11_HANDLER_H__
 #define __MME_S11_HANDLER_H__
 
-#include "gtp_tlv.h"
+#include "gtp_message.h"
 
 #include "mme_context.h"
 

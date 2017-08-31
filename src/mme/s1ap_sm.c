@@ -3,7 +3,7 @@
 #include "core_debug.h"
 
 #include "nas_message.h"
-#include "gtp_tlv.h"
+#include "gtp_message.h"
 
 #include "mme_event.h"
 
