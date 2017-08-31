@@ -155,7 +155,7 @@ static int _gtpv1_u_recv_cb(net_sock_t *sock, void *data)
     return 0;
 }
 
-status_t pgw_path_open()
+status_t pgw_gtp_open()
 {
     status_t rv;
 
@@ -210,7 +210,7 @@ status_t pgw_path_open()
     return CORE_OK;
 }
 
-status_t pgw_path_close()
+status_t pgw_gtp_close()
 {
     status_t rv;
 

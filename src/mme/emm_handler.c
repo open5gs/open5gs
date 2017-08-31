@@ -17,7 +17,7 @@
 #include "nas_path.h"
 
 #include "mme_s11_build.h"
-#include "mme_s11_path.h"
+#include "mme_gtp_path.h"
 
 #include "emm_handler.h"
 

@@ -3,7 +3,7 @@
 
 #include "sgw_context.h"
 #include "sgw_event.h"
-#include "sgw_path.h"
+#include "sgw_gtp_path.h"
 #include "sgw_handler.h"
 
 void sgw_state_initial(fsm_t *s, event_t *e)
@@ -34,7 +34,7 @@ void sgw_state_operational(fsm_t *s, event_t *e)
     {
         case FSM_ENTRY_SIG:
         {
-            rv = sgw_path_open();
+            rv = sgw_gtp_open();
             if (rv != CORE_OK)
             {
                 d_error("Can't establish SGW path");
@@ -44,7 +44,7 @@ void sgw_state_operational(fsm_t *s, event_t *e)
         }
         case FSM_EXIT_SIG:
         {
-            rv = sgw_path_close();
+            rv = sgw_gtp_close();
             if (rv != CORE_OK)
             {
                 d_error("Can't close SGW path");

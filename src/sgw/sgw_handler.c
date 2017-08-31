@@ -7,7 +7,7 @@
 
 #include "sgw_event.h"
 #include "sgw_context.h"
-#include "sgw_path.h"
+#include "sgw_gtp_path.h"
 #include "sgw_handler.h"
 
 void sgw_handle_create_session_request(gtp_xact_t *xact,

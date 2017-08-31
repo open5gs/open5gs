@@ -8,7 +8,7 @@
 
 #include "sgw_context.h"
 #include "sgw_event.h"
-#include "sgw_path.h"
+#include "sgw_gtp_path.h"
 
 static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
 {
@@ -236,7 +236,7 @@ static int _gtpv1_s1u_recv_cb(net_sock_t *sock, void *data)
     return 0;
 }
 
-status_t sgw_path_open()
+status_t sgw_gtp_open()
 {
     status_t rv;
 
@@ -275,7 +275,7 @@ status_t sgw_path_open()
     return CORE_OK;
 }
 
-status_t sgw_path_close()
+status_t sgw_gtp_close()
 {
     status_t rv;
 

@@ -5,7 +5,7 @@
 
 #include "mme_event.h"
 #include "mme_context.h"
-#include "mme_s11_path.h"
+#include "mme_gtp_path.h"
 
 static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
 {
@@ -52,7 +52,7 @@ static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
     return 0;
 }
 
-status_t mme_s11_listen()
+status_t mme_gtp_open()
 {
     status_t rv;
 
@@ -67,7 +67,7 @@ status_t mme_s11_listen()
     return CORE_OK;
 }
 
-status_t mme_s11_close()
+status_t mme_gtp_close()
 {
     status_t rv;
 

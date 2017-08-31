@@ -10,7 +10,7 @@
 #include "nas_message.h"
 #include "nas_security.h"
 #include "mme_s11_build.h"
-#include "mme_s11_path.h"
+#include "mme_gtp_path.h"
 
 #include "s1ap_handler.h"
 

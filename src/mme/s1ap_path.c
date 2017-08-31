@@ -8,7 +8,7 @@
 
 static int _s1ap_accept_cb(net_sock_t *net_sock, void *data);
 
-status_t s1ap_listen(void)
+status_t s1ap_open(void)
 {
     char buf[INET_ADDRSTRLEN];
     int rc;

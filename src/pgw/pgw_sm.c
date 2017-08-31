@@ -42,7 +42,7 @@ void pgw_state_operational(fsm_t *s, event_t *e)
     {
         case FSM_ENTRY_SIG:
         {
-            rv = pgw_path_open();
+            rv = pgw_gtp_open();
             if (rv != CORE_OK)
             {
                 d_error("Can't establish PGW path");
@@ -52,7 +52,7 @@ void pgw_state_operational(fsm_t *s, event_t *e)
         }
         case FSM_EXIT_SIG:
         {
-            rv = pgw_path_close();
+            rv = pgw_gtp_close();
             if (rv != CORE_OK)
             {
                 d_error("Can't close PGW path");

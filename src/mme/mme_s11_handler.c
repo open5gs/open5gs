@@ -11,7 +11,7 @@
 #include "s1ap_path.h"
 #include "mme_s11_build.h"
 #include "mme_s11_handler.h"
-#include "mme_s11_path.h"
+#include "mme_gtp_path.h"
 
 void mme_s11_handle_create_session_request(mme_sess_t *sess)
 {

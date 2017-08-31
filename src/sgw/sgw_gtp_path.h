@@ -7,8 +7,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
-CORE_DECLARE(status_t) sgw_path_open();
-CORE_DECLARE(status_t) sgw_path_close();
+CORE_DECLARE(status_t) sgw_gtp_open();
+CORE_DECLARE(status_t) sgw_gtp_close();
 
 CORE_DECLARE(status_t) sgw_s11_send_to_mme(
     gtp_xact_t *xact, c_uint8_t type, c_uint32_t teid, pkbuf_t *pkbuf);

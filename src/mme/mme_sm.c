@@ -11,7 +11,7 @@
 #include "mme_fd_path.h"
 #include "nas_security.h"
 #include "emm_handler.h"
-#include "mme_s11_path.h"
+#include "mme_gtp_path.h"
 #include "mme_s11_handler.h"
 #include "emm_handler.h"
 #include "esm_handler.h"
@@ -49,14 +49,14 @@ void mme_state_operational(fsm_t *s, event_t *e)
     {
         case FSM_ENTRY_SIG:
         {
-            rv = mme_s11_listen();
+            rv = mme_gtp_open();
             if (rv != CORE_OK)
             {
                 d_error("Can't establish S11 path");
                 break;
             }
 
-            rv = s1ap_listen();
+            rv = s1ap_open();
             if (rv != CORE_OK)
             {
                 d_error("Can't establish S1AP path");
@@ -66,7 +66,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
         }
         case FSM_EXIT_SIG:
         {
-            rv = mme_s11_close();
+            rv = mme_gtp_close();
             if (rv != CORE_OK)
             {
                 d_error("Can't close S11 path");
