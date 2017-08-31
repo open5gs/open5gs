@@ -275,9 +275,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
             d_assert(sock, pkbuf_free(pkbuf); break, "Null param");
             d_assert(gnode, pkbuf_free(pkbuf); break, "Null param");
 
-            rv = gtp_xact_receive(
-                    &mme_self()->gtp_xact_ctx, sock, gnode, pkbuf,
-                    &xact, &message);
+            rv = gtp_xact_receive(sock, gnode, pkbuf, &xact, &message);
             if (rv != CORE_OK)
                 break;
 
@@ -294,7 +292,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 case GTP_CREATE_SESSION_RESPONSE_TYPE:
                 {
                     mme_s11_handle_create_session_response(
-                            sess, &message.create_session_response);
+                        xact, sess, &message.create_session_response);
                     if (MME_SESSION_IN_ATTACH_STATE(sess))
                     {
                         emm_handle_attach_accept(mme_ue);
@@ -307,12 +305,12 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 }
                 case GTP_MODIFY_BEARER_RESPONSE_TYPE:
                     mme_s11_handle_modify_bearer_response(
-                            sess, &message.modify_bearer_response);
+                        xact, sess, &message.modify_bearer_response);
                     break;
                 case GTP_DELETE_SESSION_RESPONSE_TYPE:
                 {
                     mme_s11_handle_delete_session_response(
-                            sess, &message.delete_session_response);
+                        xact, sess, &message.delete_session_response);
 
                     if (MME_UE_DETACH_INITIATED(mme_ue))
                     {
@@ -355,7 +353,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 case GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE:
                 {
                     mme_s11_handle_release_access_bearers_response(
-                            sess, &message.release_access_bearers_response);
+                        xact, sess, &message.release_access_bearers_response);
 
                     s1ap_handle_release_access_bearers_response(enb_ue);
                     break;
@@ -364,8 +362,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 case GTP_DOWNLINK_DATA_NOTIFICATION_TYPE:
                 {
                     mme_s11_handle_downlink_data_notification(
-                            xact,
-                            sess, &message.downlink_data_notification);
+                        xact, sess, &message.downlink_data_notification);
 
                     s1ap_handle_paging(mme_ue);
                     /* Start T3413 */

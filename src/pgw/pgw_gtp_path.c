@@ -237,11 +237,16 @@ status_t pgw_gtp_close()
 status_t pgw_s5c_send_to_sgw(
         gtp_xact_t *xact, c_uint8_t type, c_uint32_t teid, pkbuf_t *pkbuf)
 {
+    status_t rv;
+
     d_assert(pkbuf, return CORE_ERROR, "Null param");
     d_assert(xact, return CORE_ERROR, "Null param");
 
-    d_assert(gtp_xact_commit(xact, type, teid, pkbuf) == CORE_OK,
-            return CORE_ERROR, "xact commit error");
+    rv = gtp_xact_update_tx(xact, type, teid, pkbuf, PGW_EVT_S5C_T3);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "gtp_xact_update_tx error");
+
+    rv = gtp_xact_commit(xact);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "xact_commit error");
 
     return CORE_OK;
 }

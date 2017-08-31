@@ -67,9 +67,7 @@ void sgw_state_operational(fsm_t *s, event_t *e)
             d_assert(sock, pkbuf_free(pkbuf); break, "Null param");
             d_assert(gnode, pkbuf_free(pkbuf); break, "Null param");
 
-            rv = gtp_xact_receive(
-                    &sgw_self()->gtp_xact_ctx, sock, gnode, pkbuf,
-                    &xact, &message);
+            rv = gtp_xact_receive(sock, gnode, pkbuf, &xact, &message);
             if (rv != CORE_OK)
                 break;
 

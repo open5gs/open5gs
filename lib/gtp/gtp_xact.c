@@ -5,6 +5,7 @@
 
 #include "types.h"
 #include "gtp_xact.h"
+#include "gtp_message.h"
 
 #define SIZE_OF_GTP_XACT_POOL       32
 #define GTP_MIN_XACT_ID             1
@@ -23,27 +24,39 @@ typedef enum {
     GTP_XACT_FINAL_STAGE,
 } gtp_xact_stage_t;
 
+static int gtp_xact_initialized = 0;
+static tm_service_t *g_tm_service = NULL;
+static c_uint32_t g_xact_id = 0;
+
 index_declare(gtp_xact_pool, gtp_xact_t, SIZE_OF_GTP_XACT_POOL);
 
 static gtp_xact_stage_t gtp_xact_get_stage(c_uint8_t type, c_uint32_t sqn);
+static status_t gtp_xact_delete(gtp_xact_t *xact);
 
 status_t gtp_xact_init(gtp_xact_ctx_t *context, 
         tm_service_t *tm_service, c_uintptr_t event)
 {
+    d_assert(gtp_xact_initialized == 0, return CORE_ERROR,
+        "GTP Transaction already has been initialized");
+
     index_init(&gtp_xact_pool, SIZE_OF_GTP_XACT_POOL);
 
     memset(context, 0, sizeof(gtp_xact_ctx_t));
 
-    context->g_xact_id = 0;
-
-    context->tm_service = tm_service;
+    g_xact_id = 0;
+    g_tm_service = tm_service;
     context->event = event;;
+
+    gtp_xact_initialized = 1;
 
     return CORE_OK;
 }
 
 status_t gtp_xact_final(void)
 {
+    d_assert(gtp_xact_initialized == 1, return CORE_ERROR,
+        "GTP Transaction context already has been finalized");
+
     if (pool_size(&gtp_xact_pool) != pool_avail(&gtp_xact_pool))
         d_error("%d not freed in gtp_xact_pool[%d] of GTP Transaction",
                 pool_size(&gtp_xact_pool) - pool_avail(&gtp_xact_pool),
@@ -54,41 +67,16 @@ status_t gtp_xact_final(void)
             pool_size(&gtp_xact_pool));
     index_final(&gtp_xact_pool);
 
-    return CORE_OK;
-}
-
-static status_t gtp_xact_delete(gtp_xact_t *xact)
-{
-    char buf[INET_ADDRSTRLEN];
-
-    d_assert(xact, , "Null param");
-    d_assert(xact->gnode, , "Null param");
-    d_assert(xact->tm_wait, , "Null param");
-
-    d_trace(3, "[%d] %s Delete  peer %s:%d\n",
-            xact->xid,
-            xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-            INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
-
-    if (xact->pkbuf)
-        pkbuf_free(xact->pkbuf);
-
-    tm_delete(xact->tm_wait);
-
-    list_remove(xact->org == GTP_LOCAL_ORIGINATOR ? &xact->gnode->local_list :
-            &xact->gnode->remote_list, xact);
-    index_free(&gtp_xact_pool, xact);
+    gtp_xact_initialized = 0;
 
     return CORE_OK;
 }
 
-gtp_xact_t *gtp_xact_local_create(
-        gtp_xact_ctx_t *context, net_sock_t *sock, gtp_node_t *gnode)
+gtp_xact_t *gtp_xact_local_create(net_sock_t *sock, gtp_node_t *gnode)
 {
     char buf[INET_ADDRSTRLEN];
     gtp_xact_t *xact = NULL;
 
-    d_assert(context, return NULL, "Null param");
     d_assert(sock, return NULL, "Null param");
     d_assert(gnode, return NULL, "Null param");
 
@@ -96,17 +84,9 @@ gtp_xact_t *gtp_xact_local_create(
     d_assert(xact, return NULL, "Transaction allocation failed");
 
     xact->org = GTP_LOCAL_ORIGINATOR;
-    xact->xid = NEXT_ID(context->g_xact_id, GTP_MIN_XACT_ID, GTP_MAX_XACT_ID);
+    xact->xid = NEXT_ID(g_xact_id, GTP_MIN_XACT_ID, GTP_MAX_XACT_ID);
     xact->sock = sock;
     xact->gnode = gnode;
-
-    xact->tm_wait = event_timer(context->tm_service, context->event, 
-            GTP_XACT_LOCAL_DURATION, xact->index);
-    d_assert(xact->tm_wait, 
-            index_free(&gtp_xact_pool, xact); return NULL,
-            "Timer allocation failed");
-    xact->retry_count = GTP_XACT_LOCAL_RETRY_COUNT;
-    tm_start(xact->tm_wait);
 
     list_append(xact->org == GTP_LOCAL_ORIGINATOR ?  
             &xact->gnode->local_list : &xact->gnode->remote_list, xact);
@@ -119,13 +99,12 @@ gtp_xact_t *gtp_xact_local_create(
     return xact;
 }
 
-gtp_xact_t *gtp_xact_remote_create(gtp_xact_ctx_t *context, 
+gtp_xact_t *gtp_xact_remote_create(
     net_sock_t *sock, gtp_node_t *gnode, c_uint32_t sqn)
 {
     char buf[INET_ADDRSTRLEN];
     gtp_xact_t *xact = NULL;
 
-    d_assert(context, return NULL, "Null param");
     d_assert(sock, return NULL, "Null param");
     d_assert(gnode, return NULL, "Null param");
 
@@ -137,13 +116,18 @@ gtp_xact_t *gtp_xact_remote_create(gtp_xact_ctx_t *context,
     xact->sock = sock;
     xact->gnode = gnode;
 
-    xact->tm_wait = event_timer(context->tm_service, context->event, 
-            GTP_XACT_REMOTE_DURATION, xact->index);
-    d_assert(xact->tm_wait, 
-            index_free(&gtp_xact_pool, xact); return NULL,
-            "Timer allocation failed");
-    xact->retry_count = GTP_XACT_REMOTE_RETRY_COUNT;
-    tm_start(xact->tm_wait);
+#if 0
+    if (event)
+    {
+        xact->tm_wait = event_timer(context->tm_service, event, 
+                GTP_XACT_REMOTE_DURATION, xact->index);
+        d_assert(xact->tm_wait, 
+                index_free(&gtp_xact_pool, xact); return NULL,
+                "Timer allocation failed");
+        xact->retry_count = GTP_XACT_REMOTE_RETRY_COUNT;
+        tm_start(xact->tm_wait);
+    }
+#endif
 
     list_append(xact->org == GTP_LOCAL_ORIGINATOR ?  
             &xact->gnode->local_list : &xact->gnode->remote_list, xact);
@@ -174,33 +158,26 @@ void gtp_xact_delete_all(gtp_node_t *gnode)
     }
 }
 
-status_t gtp_xact_commit(gtp_xact_t *xact, 
-    c_uint8_t type, c_uint32_t teid, pkbuf_t *pkbuf)
-{
-    return gtp_xact_associated_commit(xact, NULL, type, teid, pkbuf);
-}
-
-status_t gtp_xact_associated_commit(gtp_xact_t *xact, 
-    gtp_xact_t *assoc_xact, c_uint8_t type, c_uint32_t teid, pkbuf_t *pkbuf)
+status_t gtp_xact_update_tx(gtp_xact_t *xact,
+    c_uint8_t type, c_uint32_t teid, pkbuf_t *pkbuf,
+    c_uintptr_t event)
 {
     char buf[INET_ADDRSTRLEN];
     gtp_header_t *h = NULL;
     
-    d_assert(xact, goto out, "Null param");
-    d_assert(xact->sock, goto out, "Null param");
-    d_assert(xact->gnode, goto out, "Null param");
-    d_assert(pkbuf, goto out, "Null param");
+    d_assert(xact, return CORE_ERROR, "Null param");
+    d_assert(xact->sock, return CORE_ERROR, "Null param");
+    d_assert(xact->gnode, return CORE_ERROR, "Null param");
+    d_assert(pkbuf, return CORE_ERROR, "Null param");
 
-    d_trace(3, "[%d] %s Commit  peer %s:%d\n",
+    d_trace(3, "[%d] %s UPD-TX  peer %s:%d\n",
             xact->xid,
             xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
             INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
 
-    xact->pkbuf = pkbuf;
-
     pkbuf_header(pkbuf, GTPV2C_HEADER_LEN);
     h = pkbuf->payload;
-    d_assert(h, goto out, "Null param");
+    d_assert(h, return CORE_ERROR, "Null param");
 
     memset(h, 0, sizeof(gtp_header_t));
     h->version = 2;
@@ -210,17 +187,87 @@ status_t gtp_xact_associated_commit(gtp_xact_t *xact,
     h->teid = htonl(teid);
     h->sqn = GTP_XID_TO_SQN(xact->xid);
 
-    d_assert(gtp_send(xact->sock, xact->gnode, xact->pkbuf) == CORE_OK,
-            goto out, "gtp_send error");
+    xact->type = h->type;
+    xact->pkbuf = pkbuf;
 
-    if (assoc_xact)
-        gtp_xact_associate(xact, assoc_xact);
+    if (event)
+    {
+        xact->tm_wait = event_timer(g_tm_service, event,
+                GTP_XACT_LOCAL_DURATION, xact->index);
+        d_assert(xact->tm_wait, return CORE_ERROR, "Timer allocation failed");
+        xact->retry_count = GTP_XACT_LOCAL_RETRY_COUNT;
+    }
 
     return CORE_OK;
+}
 
-out:
-    gtp_xact_delete(xact);
-    return CORE_ERROR;
+status_t gtp_xact_update_rx(gtp_xact_t *xact,
+        c_uint8_t type, c_uintptr_t event)
+{
+    status_t rv;
+    char buf[INET_ADDRSTRLEN];
+
+    d_trace(3, "[%d] %s UPD-Rx  peer %s:%d\n",
+            xact->xid,
+            xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
+            INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+
+    if (xact->org == GTP_REMOTE_ORIGINATOR)
+    {
+        if (xact->pkbuf)
+        {
+            d_warn("[%d]%s Request Duplicated. Retransmit!",
+                    xact->gnode->port,
+                    xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE");
+            rv = gtp_send(xact->sock, xact->gnode, xact->pkbuf);
+            d_assert(rv == CORE_OK, return CORE_ERROR, "gtp_send error");
+
+            return CORE_EAGAIN;
+        }
+        else if (xact->assoc_xact)
+        {
+            d_warn("[%d]%s Request Duplicated. Discard Associated transaction!",
+                    xact->gnode->port,
+                    xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE");
+
+            return CORE_EAGAIN;
+        }
+    }
+
+    xact->type = type;
+
+    return CORE_OK;
+}
+
+
+status_t gtp_xact_commit(gtp_xact_t *xact)
+{
+    char buf[INET_ADDRSTRLEN];
+    
+    d_assert(xact, return CORE_ERROR, "Null param");
+    d_assert(xact->sock, return CORE_ERROR, "Null param");
+    d_assert(xact->gnode, return CORE_ERROR, "Null param");
+    d_assert(xact->pkbuf, return CORE_ERROR, "Null param");
+
+    d_trace(3, "[%d] %s Commit  peer %s:%d\n",
+            xact->xid,
+            xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
+            INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+
+    if (xact->org == GTP_LOCAL_ORIGINATOR)
+    {
+        gtp_xact_stage_t stage = gtp_xact_get_stage(xact->type, xact->xid);
+        if (stage == GTP_XACT_FINAL_STAGE)
+        {
+            gtp_xact_delete(xact);
+            return CORE_OK;
+        }
+    }
+
+    d_assert(gtp_send(xact->sock, xact->gnode, xact->pkbuf) == CORE_OK,
+            return CORE_ERROR, "gtp_send error");
+
+    return CORE_OK;
 }
 
 status_t gtp_xact_timeout(index_t index)
@@ -269,54 +316,7 @@ out:
     return CORE_ERROR;
 }
 
-static gtp_xact_t *gtp_xact_find_by_sqn(
-        gtp_node_t *gnode, c_uint8_t type, c_uint32_t sqn)
-{
-    char buf[INET_ADDRSTRLEN];
-    c_uint32_t xid;
-    gtp_xact_t *xact = NULL;
-
-    d_assert(gnode, return NULL, "Null param");
-
-    switch(gtp_xact_get_stage(type, sqn))
-    {
-        case GTP_XACT_INITIAL_STAGE:
-            xact = list_first(&gnode->remote_list);
-            break;
-        case GTP_XACT_INTERMEDIATE_STAGE:
-            xact = list_first(&gnode->local_list);
-            break;
-        case GTP_XACT_FINAL_STAGE:
-            if (sqn & GTP_MAX_XACT_ID)
-                xact = list_first(&gnode->remote_list);
-            else
-                xact = list_first(&gnode->local_list);
-            break;
-
-        default:
-            d_assert(0, return NULL, "Unknown stage");
-    }
-
-    xid = GTP_SQN_TO_XID(sqn);
-    while(xact)
-    {
-        if (xact->xid == xid)
-            break;
-        xact = list_next(xact);
-    }
-
-    if (xact)
-    {
-        d_trace(3, "[%d] %s Find    peer %s:%d\n",
-                xact->xid,
-                xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-                INET_NTOP(&gnode->addr, buf), gnode->port);
-    }
-
-    return xact;
-}
-
-status_t gtp_xact_receive(gtp_xact_ctx_t *context,
+status_t gtp_xact_receive(
         net_sock_t *sock, gtp_node_t *gnode, pkbuf_t *pkbuf,
         gtp_xact_t **xact, gtp_message_t *message)
 {
@@ -325,7 +325,6 @@ status_t gtp_xact_receive(gtp_xact_ctx_t *context,
     gtp_xact_t *new = NULL;
     gtp_header_t *h = NULL;
 
-    d_assert(context, return CORE_ERROR, "Null param");
     d_assert(sock, return CORE_ERROR, "Null param");
     d_assert(gnode, return CORE_ERROR, "Null param");
     d_assert(pkbuf, return CORE_ERROR, "Null param");
@@ -333,10 +332,10 @@ status_t gtp_xact_receive(gtp_xact_ctx_t *context,
     h = pkbuf->payload;
     d_assert(h, return CORE_ERROR, "Null param");
 
-    new = gtp_xact_find_by_sqn(gnode, h->type, h->sqn);
+    new = gtp_xact_find_by_xid(gnode, h->type, GTP_SQN_TO_XID(h->sqn));
     if (!new)
     {
-        new = gtp_xact_remote_create(context, sock, gnode, h->sqn);
+        new = gtp_xact_remote_create(sock, gnode, h->sqn);
     }
     d_assert(new, return CORE_ERROR, "Null param");
 
@@ -345,38 +344,11 @@ status_t gtp_xact_receive(gtp_xact_ctx_t *context,
             new->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
             INET_NTOP(&gnode->addr, buf), gnode->port);
 
-    if (new->org == GTP_LOCAL_ORIGINATOR)
+    rv = gtp_xact_update_rx(new, h->type, 0);
+    if (rv != CORE_OK)
     {
-        gtp_xact_t *assoc_xact = new->assoc_xact;
-
-        if (assoc_xact)
-            gtp_xact_deassociate(new, assoc_xact);
-
-        gtp_xact_delete(new);
-        new = assoc_xact;
-    }
-    else
-    {
-        if (new->pkbuf)
-        {
-            d_warn("[%d]%s Request Duplicated. Retransmit!",
-                    new->gnode->port,
-                    new->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE");
-            rv = gtp_send(new->sock, new->gnode, new->pkbuf);
-            d_assert(rv == CORE_OK, return CORE_ERROR, "gtp_send error");
-
-            pkbuf_free(pkbuf);
-            return CORE_EAGAIN;
-        }
-        else if (new->assoc_xact)
-        {
-            d_warn("[%d]%s Request Duplicated. Discard Associated transaction!",
-                    new->gnode->port,
-                    new->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE");
-
-            pkbuf_free(pkbuf);
-            return CORE_EAGAIN;
-        }
+        pkbuf_free(pkbuf);
+        return rv;
     }
 
     rv = gtp_parse_msg(message, pkbuf);
@@ -393,7 +365,7 @@ gtp_xact_t *gtp_xact_find(index_t index)
     return index_find(&gtp_xact_pool, index);
 }
 
-static gtp_xact_stage_t gtp_xact_get_stage(c_uint8_t type, c_uint32_t sqn)
+static gtp_xact_stage_t gtp_xact_get_stage(c_uint8_t type, c_uint32_t xid)
 {
     gtp_xact_stage_t stage = GTP_XACT_UNKNOWN_STAGE;
 
@@ -414,7 +386,7 @@ static gtp_xact_stage_t gtp_xact_get_stage(c_uint8_t type, c_uint32_t sqn)
         case GTP_CREATE_BEARER_REQUEST_TYPE:
         case GTP_UPDATE_BEARER_REQUEST_TYPE:
         case GTP_DELETE_BEARER_REQUEST_TYPE:
-            if (sqn & GTP_MAX_XACT_ID)
+            if (xid & GTP_MAX_XACT_ID)
                 stage = GTP_XACT_INTERMEDIATE_STAGE;
             else
                 stage = GTP_XACT_INITIAL_STAGE;
@@ -443,6 +415,51 @@ static gtp_xact_stage_t gtp_xact_get_stage(c_uint8_t type, c_uint32_t sqn)
     return stage;
 }
 
+gtp_xact_t *gtp_xact_find_by_xid(
+        gtp_node_t *gnode, c_uint8_t type, c_uint32_t xid)
+{
+    char buf[INET_ADDRSTRLEN];
+    gtp_xact_t *xact = NULL;
+
+    d_assert(gnode, return NULL, "Null param");
+
+    switch(gtp_xact_get_stage(type, xid))
+    {
+        case GTP_XACT_INITIAL_STAGE:
+            xact = list_first(&gnode->remote_list);
+            break;
+        case GTP_XACT_INTERMEDIATE_STAGE:
+            xact = list_first(&gnode->local_list);
+            break;
+        case GTP_XACT_FINAL_STAGE:
+            if (xid & GTP_MAX_XACT_ID)
+                xact = list_first(&gnode->remote_list);
+            else
+                xact = list_first(&gnode->local_list);
+            break;
+
+        default:
+            d_assert(0, return NULL, "Unknown stage");
+    }
+
+    while(xact)
+    {
+        if (xact->xid == xid)
+            break;
+        xact = list_next(xact);
+    }
+
+    if (xact)
+    {
+        d_trace(3, "[%d] %s Find    peer %s:%d\n",
+                xact->xid,
+                xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
+                INET_NTOP(&gnode->addr, buf), gnode->port);
+    }
+
+    return xact;
+}
+
 void gtp_xact_associate(gtp_xact_t *xact1, gtp_xact_t *xact2)
 {
     d_assert(xact1, return, "Null param");
@@ -465,5 +482,34 @@ void gtp_xact_deassociate(gtp_xact_t *xact1, gtp_xact_t *xact2)
 
     xact1->assoc_xact = NULL;
     xact2->assoc_xact = NULL;
+}
+
+static status_t gtp_xact_delete(gtp_xact_t *xact)
+{
+    char buf[INET_ADDRSTRLEN];
+
+    d_assert(xact, , "Null param");
+    d_assert(xact->gnode, , "Null param");
+    d_assert(xact->tm_wait, , "Null param");
+
+    d_trace(3, "[%d] %s Delete  peer %s:%d\n",
+            xact->xid,
+            xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
+            INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+
+    if (xact->pkbuf)
+        pkbuf_free(xact->pkbuf);
+
+    if (xact->tm_wait)
+        tm_delete(xact->tm_wait);
+
+    if (xact->assoc_xact)
+        gtp_xact_deassociate(xact, xact->assoc_xact);
+
+    list_remove(xact->org == GTP_LOCAL_ORIGINATOR ? &xact->gnode->local_list :
+            &xact->gnode->remote_list, xact);
+    index_free(&gtp_xact_pool, xact);
+
+    return CORE_OK;
 }
 

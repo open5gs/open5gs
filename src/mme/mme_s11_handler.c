@@ -33,8 +33,10 @@ void mme_s11_handle_create_session_request(mme_sess_t *sess)
 }
 
 void mme_s11_handle_create_session_response(
-        mme_sess_t *sess, gtp_create_session_response_t *rsp)
+        gtp_xact_t *xact, mme_sess_t *sess, 
+        gtp_create_session_response_t *rsp)
 {
+    status_t rv;
     gtp_f_teid_t *sgw_s11_teid = NULL;
     gtp_f_teid_t *sgw_s1u_teid = NULL;
 
@@ -96,6 +98,9 @@ void mme_s11_handle_create_session_response(
 
     d_trace(3, "[GTP] Create Session Response : "
             "MME[%d] <-- SGW[%d]\n", sess->mme_s11_teid, sess->sgw_s11_teid);
+
+    rv = gtp_xact_commit(xact);
+    d_assert(rv == CORE_OK, return, "xact_commit error");
 }
 
 void mme_s11_handle_delete_all_sessions_request_in_ue(mme_ue_t *mme_ue)
@@ -119,8 +124,11 @@ void mme_s11_handle_delete_all_sessions_request_in_ue(mme_ue_t *mme_ue)
 }
 
 void mme_s11_handle_delete_session_response(
-        mme_sess_t *sess, gtp_delete_session_response_t *rsp)
+        gtp_xact_t *xact, mme_sess_t *sess, 
+        gtp_delete_session_response_t *rsp)
 {
+    status_t rv;
+
     if (rsp->cause.presence == 0)
     {
         d_error("No Cause");
@@ -131,18 +139,29 @@ void mme_s11_handle_delete_session_response(
             "MME[%d] <-- SGW[%d]\n", sess->mme_s11_teid, sess->sgw_s11_teid);
 
     mme_sess_remove(sess);
+
+    rv = gtp_xact_commit(xact);
+    d_assert(rv == CORE_OK, return, "xact_commit error");
 }
 
 void mme_s11_handle_modify_bearer_response(
-        mme_sess_t *sess, gtp_modify_bearer_response_t *rsp)
+        gtp_xact_t *xact, mme_sess_t *sess, 
+        gtp_modify_bearer_response_t *rsp)
 {
+    status_t rv;
+
     d_trace(3, "[GTP] Modify Bearer Response : "
             "MME[%d] <-- SGW[%d]\n", sess->mme_s11_teid, sess->sgw_s11_teid);
+
+    rv = gtp_xact_commit(xact);
+    d_assert(rv == CORE_OK, return, "xact_commit error");
 }
 
 void mme_s11_handle_release_access_bearers_response(
-        mme_sess_t *sess, gtp_release_access_bearers_response_t *rsp)
+        gtp_xact_t *xact, mme_sess_t *sess, 
+        gtp_release_access_bearers_response_t *rsp)
 {
+    status_t rv;
     d_assert(rsp, return, "Null param");
     d_assert(sess, return, "Null param");
 
@@ -154,6 +173,9 @@ void mme_s11_handle_release_access_bearers_response(
 
     d_trace(3, "[GTP] Release Access Bearers Response : "
             "MME[%d] <-- SGW[%d]\n", sess->mme_s11_teid, sess->sgw_s11_teid);
+
+    rv = gtp_xact_commit(xact);
+    d_assert(rv == CORE_OK, return, "xact_commit error");
 }
 
 void mme_s11_handle_downlink_data_notification(
@@ -174,8 +196,11 @@ void mme_s11_handle_downlink_data_notification(
     rv = mme_s11_build_downlink_data_notification_ack(&s11buf, sess);
     d_assert(rv == CORE_OK, return, "S11 build error");
 
-    d_assert(gtp_xact_commit(xact, 
-                GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE, 
-                sess->sgw_s11_teid, s11buf) == CORE_OK,
-            return , "xact commit error");
+    rv = gtp_xact_update_tx(xact, 
+            GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE, 
+            sess->sgw_s11_teid, s11buf, 0);
+    d_assert(rv == CORE_OK, return, "xact_update_tx error");
+
+    rv = gtp_xact_commit(xact);
+    d_assert(rv == CORE_OK, return, "xact_commit error");
 }

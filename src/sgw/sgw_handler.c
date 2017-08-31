@@ -83,10 +83,11 @@ void sgw_handle_create_session_request(gtp_xact_t *xact,
             "SGW[%d] --> PGW\n", sess->sgw_s5c_teid);
 }
 
-void sgw_handle_create_session_response(gtp_xact_t *xact, 
+void sgw_handle_create_session_response(gtp_xact_t *s5c_xact, 
     sgw_sess_t *sess, gtp_message_t *gtp_message)
 {
     status_t rv;
+    gtp_xact_t *s11_xact = NULL;
     sgw_bearer_t *bearer = NULL;
     gtp_create_session_response_t *rsp = NULL;
     pkbuf_t *pkbuf = NULL;
@@ -97,7 +98,9 @@ void sgw_handle_create_session_response(gtp_xact_t *xact,
     gtp_f_teid_t sgw_s1u_teid;
 
     d_assert(sess, return, "Null param");
-    d_assert(xact, return, "Null param");
+    d_assert(s5c_xact, return, "Null param");
+    s11_xact = s5c_xact->assoc_xact;
+    d_assert(s11_xact, return, "Null param");
     d_assert(gtp_message, return, "Null param");
 
     rsp = &gtp_message->create_session_response;
@@ -166,7 +169,10 @@ void sgw_handle_create_session_response(gtp_xact_t *xact,
     rv = gtp_build_msg(&pkbuf, gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
-    d_assert(sgw_s11_send_to_mme(xact, GTP_CREATE_SESSION_RESPONSE_TYPE,
+    rv = gtp_xact_commit(s5c_xact);
+    d_assert(rv == CORE_OK, return, "xact_commit error");
+
+    d_assert(sgw_s11_send_to_mme(s11_xact, gtp_message->h.type,
             sess->mme_s11_teid, pkbuf) == CORE_OK, return,
             "failed to send message");
     d_trace(3, "[GTP] Create Session Response : "
@@ -257,17 +263,20 @@ void sgw_handle_delete_session_request(gtp_xact_t *xact,
             "SGW[%d] --> PGW[%d]\n", sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 }
 
-void sgw_handle_delete_session_response(gtp_xact_t *xact,
+void sgw_handle_delete_session_response(gtp_xact_t *s5c_xact,
     sgw_sess_t *sess, gtp_message_t *gtp_message)
 {
     status_t rv;
+    gtp_xact_t *s11_xact = NULL;
     gtp_delete_session_response_t *rsp = NULL;
     pkbuf_t *pkbuf = NULL;
     c_uint32_t mme_s11_teid;
     gtp_cause_t *cause = NULL;
 
     d_assert(sess, return, "Null param");
-    d_assert(xact, return, "Null param");
+    d_assert(s5c_xact, return, "Null param");
+    s11_xact = s5c_xact->assoc_xact;
+    d_assert(s11_xact, return, "Null param");
     d_assert(gtp_message, return, "Null param");
 
     rsp = &gtp_message->delete_session_response;
@@ -305,7 +314,10 @@ void sgw_handle_delete_session_response(gtp_xact_t *xact,
     rv = gtp_build_msg(&pkbuf, gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
-    d_assert(sgw_s11_send_to_mme(xact, GTP_DELETE_SESSION_RESPONSE_TYPE,
+    rv = gtp_xact_commit(s5c_xact);
+    d_assert(rv == CORE_OK, return, "xact_commit error");
+
+    d_assert(sgw_s11_send_to_mme(s11_xact, gtp_message->h.type,
             mme_s11_teid, pkbuf) == CORE_OK, return,
             "failed to send message");
 }
@@ -394,9 +406,8 @@ void sgw_handle_lo_dldata_notification(sgw_bearer_t *bearer)
     rv = gtp_build_msg(&pkbuf, &gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
-    xact = gtp_xact_local_create(&sgw_self()->gtp_xact_ctx, 
-            sgw_self()->s11_sock, &sgw_self()->s11_node);
-    d_assert(xact, return , "Null param");
+    xact = gtp_xact_local_create(sgw_self()->s11_sock, &sgw_self()->s11_node);
+    d_assert(xact, return, "Null param");
 
     d_assert(sgw_s11_send_to_mme(xact, 
             GTP_DOWNLINK_DATA_NOTIFICATION_TYPE,

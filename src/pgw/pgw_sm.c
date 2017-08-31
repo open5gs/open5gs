@@ -82,9 +82,7 @@ void pgw_state_operational(fsm_t *s, event_t *e)
             message = copybuf->payload;
             d_assert(message, break, "Null param");
 
-            rv = gtp_xact_receive(
-                    &pgw_self()->gtp_xact_ctx, sock, gnode, recvbuf,
-                    &xact, message);
+            rv = gtp_xact_receive(sock, gnode, recvbuf, &xact, message);
             if (rv != CORE_OK)
                 break;
 

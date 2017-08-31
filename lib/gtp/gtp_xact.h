@@ -41,7 +41,8 @@ typedef struct _gtp_xact_t {
     net_sock_t      *sock;          /**< GTP Socket */
     gtp_node_t      *gnode;         /**< Relevant GTP node context */
 
-    pkbuf_t         *pkbuf;         /**< Relevant GTP node context */
+    c_uint8_t       type;           /**< Save transmitted GTP message type */
+    pkbuf_t         *pkbuf;         /**< Save transmiited packet */
 
     tm_block_id     tm_wait;        /**< Timer waiting for next message */
     c_uint8_t       retry_count;    /**< Retry count waiting for next message */
@@ -53,23 +54,27 @@ CORE_DECLARE(status_t) gtp_xact_init(gtp_xact_ctx_t *context,
     tm_service_t *tm_service, c_uintptr_t event);
 CORE_DECLARE(status_t) gtp_xact_final(void);
 
-CORE_DECLARE(gtp_xact_t *) gtp_xact_local_create(gtp_xact_ctx_t *context, 
+CORE_DECLARE(gtp_xact_t *) gtp_xact_local_create(
         net_sock_t *sock, gtp_node_t *gnode);
-CORE_DECLARE(gtp_xact_t *) gtp_xact_remote_create(gtp_xact_ctx_t *context, 
+CORE_DECLARE(gtp_xact_t *) gtp_xact_remote_create(
         net_sock_t *sock, gtp_node_t *gnode, c_uint32_t sqn);
 CORE_DECLARE(void) gtp_xact_delete_all(gtp_node_t *gnode);
 
-CORE_DECLARE(status_t) gtp_xact_commit(
-    gtp_xact_t *xact, c_uint8_t type, c_uint32_t teid, pkbuf_t *pkbuf);
-CORE_DECLARE(status_t) gtp_xact_associated_commit(gtp_xact_t *xact, 
-    gtp_xact_t *assoc_xact, c_uint8_t type, c_uint32_t teid, pkbuf_t *pkbuf);
+CORE_DECLARE(status_t) gtp_xact_update_tx(gtp_xact_t *xact,
+        c_uint8_t type, c_uint32_t teid, pkbuf_t *pkbuf, c_uintptr_t event);
+CORE_DECLARE(status_t) gtp_xact_update_rx(gtp_xact_t *xact,
+        c_uint8_t type, c_uintptr_t event);
+
+CORE_DECLARE(status_t) gtp_xact_commit(gtp_xact_t *xact);
 CORE_DECLARE(status_t) gtp_xact_timeout(index_t index);
 
-CORE_DECLARE(status_t) gtp_xact_receive(gtp_xact_ctx_t *context,
+CORE_DECLARE(status_t) gtp_xact_receive(
         net_sock_t *sock, gtp_node_t *gnode, pkbuf_t *pkbuf,
         gtp_xact_t **xact, gtp_message_t *gtp_message);
 
 CORE_DECLARE(gtp_xact_t *) gtp_xact_find(index_t index);
+CORE_DECLARE(gtp_xact_t *)gtp_xact_find_by_xid(
+        gtp_node_t *gnode, c_uint8_t type, c_uint32_t xid);
 CORE_DECLARE(void) gtp_xact_associate(gtp_xact_t *xact1, gtp_xact_t *xact2);
 CORE_DECLARE(void) gtp_xact_deassociate(gtp_xact_t *xact1, gtp_xact_t *xact2);
 
