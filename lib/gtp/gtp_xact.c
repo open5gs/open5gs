@@ -203,9 +203,10 @@ status_t gtp_xact_update_tx(gtp_xact_t *xact,
         {
             case GTP_XACT_INITIAL_STAGE:
                 d_assert(xact->step == 0, return CORE_ERROR,
-                    "[%d] %s invalid step-%d peer %s:%d\n", xact->xid,
+                    "[%d] %s invalid step %d for type %d peer %s:%d\n",
+                    xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-                    xact->step,
+                    xact->step, type,
                     INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
                 break;
 
@@ -214,9 +215,10 @@ status_t gtp_xact_update_tx(gtp_xact_t *xact,
 
             case GTP_XACT_FINAL_STAGE:
                 d_assert(xact->step == 2, return CORE_ERROR,
-                    "[%d] %s invalid step-%d peer %s:%d\n", xact->xid,
+                    "[%d] %s invalid step %d for type %d peer %s:%d\n",
+                    xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-                    xact->step,
+                    xact->step, type,
                     INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
                 break;
 
@@ -234,9 +236,10 @@ status_t gtp_xact_update_tx(gtp_xact_t *xact,
             case GTP_XACT_INTERMEDIATE_STAGE:
             case GTP_XACT_FINAL_STAGE:
                 d_assert(xact->step == 1, return CORE_ERROR,
-                    "[%d] %s invalid step-%d peer %s:%d\n", xact->xid,
+                    "[%d] %s invalid step %d for type %d peer %s:%d\n",
+                    xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-                    xact->step,
+                    xact->step, type,
                     INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
                 break;
 
@@ -296,9 +299,10 @@ status_t gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type)
                     pkbuf_t *pkbuf = NULL;
 
                     d_assert(xact->step == 3, return CORE_ERROR,
-                        "[%d] %s invalid step-%d peer %s:%d\n", xact->xid,
+                        "[%d] %s invalid step %d for type %d peer %s:%d\n",
+                        xact->xid,
                         xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-                        xact->step,
+                        xact->step, type,
                         INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
 
                     pkbuf = xact->seq[2].pkbuf;
@@ -327,9 +331,10 @@ status_t gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type)
                 }
 
                 d_assert(xact->step == 1, return CORE_ERROR,
-                    "[%d] %s invalid step-%d peer %s:%d\n", xact->xid,
+                    "[%d] %s invalid step %d for type %d peer %s:%d\n",
+                    xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-                    xact->step,
+                    xact->step, type,
                     INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
 
                 if (xact->tm_duplicated)
@@ -339,10 +344,10 @@ status_t gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type)
 
             case GTP_XACT_FINAL_STAGE:
                 d_assert(xact->step == 1, return CORE_ERROR,
-                    "[%d] %s invalid step-%d peer %s:%d\n",
+                    "[%d] %s invalid step %d for type %d peer %s:%d\n",
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-                    xact->step,
+                    xact->step, type,
                     INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
 
                 break;
@@ -361,9 +366,10 @@ status_t gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type)
                     pkbuf_t *pkbuf = NULL;
 
                     d_assert(xact->step == 2, return CORE_ERROR,
-                        "[%d] %s invalid step-%d peer %s:%d\n", xact->xid,
+                        "[%d] %s invalid step %d for type %d peer %s:%d\n",
+                        xact->xid,
                         xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-                        xact->step,
+                        xact->step, type,
                         INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
 
                     pkbuf = xact->seq[1].pkbuf;
@@ -392,9 +398,10 @@ status_t gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type)
                 }
 
                 d_assert(xact->step == 0, return CORE_ERROR,
-                    "[%d] %s invalid step-%d peer %s:%d\n", xact->xid,
+                    "[%d] %s invalid step %d for type %d peer %s:%d\n",
+                    xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-                    xact->step,
+                    xact->step, type,
                     INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
 
                 if (xact->tm_duplicated)
@@ -407,9 +414,10 @@ status_t gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type)
 
             case GTP_XACT_FINAL_STAGE:
                 d_assert(xact->step == 2, return CORE_ERROR,
-                    "[%d] %s invalid step-%d peer %s:%d\n", xact->xid,
+                    "[%d] %s invalid step %d for type %d peer %s:%d\n",
+                    xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-                    xact->step,
+                    xact->step, type,
                     INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
 
                 /* continue */
@@ -463,9 +471,10 @@ status_t gtp_xact_commit(gtp_xact_t *xact)
             case GTP_XACT_INITIAL_STAGE:
             {
                 d_assert(xact->step == 1, return CORE_ERROR,
-                    "[%d] %s invalid step-%d peer %s:%d\n", xact->xid,
+                    "[%d] %s invalid step %d for type %d peer %s:%d\n",
+                    xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-                    xact->step,
+                    xact->step, type,
                     INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
 
                 if (xact->tm_response)
@@ -478,11 +487,11 @@ status_t gtp_xact_commit(gtp_xact_t *xact)
                 d_assert(0, return CORE_ERROR, "invalid step(%d)", xact->step);
 
             case GTP_XACT_FINAL_STAGE:
-                d_assert(xact->step == 2 || xact->step == 3,
-                    return CORE_ERROR,
-                    "[%d] %s invalid step-%d peer %s:%d\n", xact->xid,
+                d_assert(xact->step == 2 || xact->step == 3, return CORE_ERROR,
+                    "[%d] %s invalid step %d for type %d peer %s:%d\n",
+                    xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-                    xact->step,
+                    xact->step, type,
                     INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
 
                 if (xact->step == 2)
@@ -506,9 +515,10 @@ status_t gtp_xact_commit(gtp_xact_t *xact)
 
             case GTP_XACT_INTERMEDIATE_STAGE:
                 d_assert(xact->step == 2, return CORE_ERROR,
-                    "[%d] %s invalid step-%d peer %s:%d\n", xact->xid,
+                    "[%d] %s invalid step %d for type %d peer %s:%d\n",
+                    xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-                    xact->step,
+                    xact->step, type,
                     INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
 
                 if (xact->tm_response)
@@ -519,9 +529,10 @@ status_t gtp_xact_commit(gtp_xact_t *xact)
             case GTP_XACT_FINAL_STAGE:
                 d_assert(xact->step == 2 || xact->step == 3,
                     return CORE_ERROR,
-                    "[%d] %s invalid step-%d peer %s:%d\n", xact->xid,
+                    "[%d] %s invalid step %d for type %d peer %s:%d\n",
+                    xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-                    xact->step,
+                    xact->step, type,
                     INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
 
                 if (xact->step == 3)
