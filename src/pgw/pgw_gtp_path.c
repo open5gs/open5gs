@@ -242,7 +242,7 @@ status_t pgw_s5c_send_to_sgw(
     d_assert(pkbuf, return CORE_ERROR, "Null param");
     d_assert(xact, return CORE_ERROR, "Null param");
 
-    rv = gtp_xact_update_tx(xact, type, teid, pkbuf, PGW_EVT_S5C_T3);
+    rv = gtp_xact_update_tx(xact, type, teid, pkbuf);
     d_assert(rv == CORE_OK, return CORE_ERROR, "gtp_xact_update_tx error");
 
     rv = gtp_xact_commit(xact);

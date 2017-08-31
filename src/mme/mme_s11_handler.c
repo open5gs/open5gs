@@ -198,7 +198,7 @@ void mme_s11_handle_downlink_data_notification(
 
     rv = gtp_xact_update_tx(xact, 
             GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE, 
-            sess->sgw_s11_teid, s11buf, 0);
+            sess->sgw_s11_teid, s11buf);
     d_assert(rv == CORE_OK, return, "xact_update_tx error");
 
     rv = gtp_xact_commit(xact);

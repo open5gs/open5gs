@@ -116,9 +116,10 @@ void sgw_state_operational(fsm_t *s, event_t *e)
             pkbuf_free(pkbuf);
             break;
         }
-        case SGW_EVT_GTP_T3:
+        case SGW_EVT_T3_RESPONSE:
+        case SGW_EVT_T3_DUPLICATED:
         {
-            gtp_xact_timeout(event_get_param1(e));
+            gtp_xact_timeout(event_get_param1(e), event_get(e));
             break;
         }
         case SGW_EVT_LO_DLDATA_NOTI:

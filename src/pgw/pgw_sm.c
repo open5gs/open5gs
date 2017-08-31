@@ -115,9 +115,10 @@ void pgw_state_operational(fsm_t *s, event_t *e)
             pkbuf_free(recvbuf);
             break;
         }
-        case PGW_EVT_S5C_T3:
+        case PGW_EVT_S5C_T3_RESPONSE:
+        case PGW_EVT_S5C_T3_DUPLICATED:
         {
-            gtp_xact_timeout(event_get_param1(e));
+            gtp_xact_timeout(event_get_param1(e), event_get(e));
             break;
         }
         case PGW_EVT_GX_MESSAGE:

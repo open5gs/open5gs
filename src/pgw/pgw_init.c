@@ -73,8 +73,8 @@ static void *THREAD_FUNC sm_main(thread_id id, void *data)
     d_assert(pgw_self()->queue_id, return NULL, 
             "PGW event queue creation failed");
     tm_service_init(&pgw_self()->tm_service);
-    gtp_xact_init(&pgw_self()->gtp_xact_ctx, 
-            &pgw_self()->tm_service, PGW_EVT_S5C_T3);
+    gtp_xact_init(&pgw_self()->tm_service,
+            PGW_EVT_S5C_T3_RESPONSE, PGW_EVT_S5C_T3_DUPLICATED);
 
     fsm_create(&pgw_sm, pgw_state_initial, pgw_state_final);
     fsm_init(&pgw_sm, 0);

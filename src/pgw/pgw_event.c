@@ -17,8 +17,10 @@ char* pgw_event_get_name(event_t *e)
 
         case PGW_EVT_S5C_MESSAGE:
             return "PGW_EVT_S5C_MESSAGE";
-        case PGW_EVT_S5C_T3:
-            return "PGW_EVT_S5C_T3";
+        case PGW_EVT_S5C_T3_RESPONSE:
+            return "PGW_EVT_S5C_T3_RESPONSE";
+        case PGW_EVT_S5C_T3_DUPLICATED:
+            return "PGW_EVT_S5C_T3_DUPLICATED";
 
         case PGW_EVT_GX_MESSAGE:
             return "PGW_EVT_GX_SESSION_MSG";

@@ -62,8 +62,8 @@ static void *THREAD_FUNC sm_main(thread_id id, void *data)
     d_assert(sgw_self()->queue_id, return NULL, 
             "SGW event queue creation failed");
     tm_service_init(&sgw_self()->tm_service);
-    gtp_xact_init(&sgw_self()->gtp_xact_ctx, 
-            &sgw_self()->tm_service, SGW_EVT_GTP_T3);
+    gtp_xact_init(&sgw_self()->tm_service,
+            SGW_EVT_T3_RESPONSE, SGW_EVT_T3_DUPLICATED);
 
     fsm_create(&sgw_sm, sgw_state_initial, sgw_state_final);
     fsm_init(&sgw_sm, 0);

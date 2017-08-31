@@ -310,7 +310,7 @@ status_t sgw_s11_send_to_mme(
     d_assert(pkbuf, return CORE_ERROR, "Null param");
     d_assert(xact, return CORE_ERROR, "Null param");
 
-    rv = gtp_xact_update_tx(xact, type, teid, pkbuf, SGW_EVT_GTP_T3);
+    rv = gtp_xact_update_tx(xact, type, teid, pkbuf);
     d_assert(rv == CORE_OK, return CORE_ERROR, "gtp_xact_update_tx error");
 
     rv = gtp_xact_commit(xact);
@@ -330,7 +330,7 @@ status_t sgw_s5c_send_to_pgw(
     xact = gtp_xact_local_create(sgw_self()->s5c_sock, &sgw_self()->s5c_node);
     d_assert(xact, return CORE_ERROR, "Null param");
 
-    rv = gtp_xact_update_tx(xact, type, teid, pkbuf, SGW_EVT_GTP_T3);
+    rv = gtp_xact_update_tx(xact, type, teid, pkbuf);
     d_assert(rv == CORE_OK, return CORE_ERROR, "xact_update_tx error");
 
     gtp_xact_associate(xact, assoc_xact);

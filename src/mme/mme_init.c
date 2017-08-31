@@ -69,8 +69,8 @@ static void *THREAD_FUNC sm_main(thread_id id, void *data)
     d_assert(mme_self()->queue_id, return NULL, 
             "MME event queue creation failed");
     tm_service_init(&mme_self()->tm_service);
-    gtp_xact_init(&mme_self()->gtp_xact_ctx, 
-            &mme_self()->tm_service, MME_EVT_S11_T3);
+    gtp_xact_init(&mme_self()->tm_service,
+            MME_EVT_S11_T3_RESPONSE, MME_EVT_S11_T3_DUPLICATED);
 
     fsm_create(&mme_sm, mme_state_initial, mme_state_final);
     fsm_init(&mme_sm, 0);

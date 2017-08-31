@@ -97,7 +97,7 @@ status_t mme_s11_send_to_sgw(mme_sess_t *sess, c_uint8_t type, pkbuf_t *pkbuf)
     xact = gtp_xact_local_create(mme_self()->s11_sock, sgw);
     d_assert(xact, return CORE_ERROR, "Null param");
 
-    rv = gtp_xact_update_tx(xact, type, teid, pkbuf, MME_EVT_S11_T3);
+    rv = gtp_xact_update_tx(xact, type, teid, pkbuf);
     d_assert(rv == CORE_OK, return CORE_ERROR, "xact_update_tx error");
 
     rv = gtp_xact_commit(xact);

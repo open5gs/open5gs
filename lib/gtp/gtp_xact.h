@@ -15,16 +15,6 @@ extern "C" {
 #endif /* __cplusplus */
 
 /**
- * Transaction Configuration
- */
-typedef struct _gtp_xact_ctx_t {
-    c_uint32_t g_xact_id;
-
-    tm_service_t *tm_service;
-    c_uintptr_t event;
-} gtp_xact_ctx_t;
-
-/**
  * Transaction context
  */
 typedef struct _gtp_xact_t {
@@ -41,17 +31,25 @@ typedef struct _gtp_xact_t {
     net_sock_t      *sock;          /**< GTP Socket */
     gtp_node_t      *gnode;         /**< Relevant GTP node context */
 
-    c_uint8_t       type;           /**< Save transmitted GTP message type */
-    pkbuf_t         *pkbuf;         /**< Save transmiited packet */
+    int             step;           /**< Current step in the sequence.
+                                         1 : Initial 
+                                         2 : Triggered 
+                                         3 : Triggered-Reply */
+    struct {
+        c_uint8_t   type;           /**< Message type history */
+        pkbuf_t     *pkbuf;         /**< Packet history */
+    } seq[3];                       /**< history for the each step */
 
-    tm_block_id     tm_wait;        /**< Timer waiting for next message */
-    c_uint8_t       retry_count;    /**< Retry count waiting for next message */
+    tm_block_id     tm_response;    /**< Timer waiting for next message */
+    c_uint8_t       response_rcount;
+    tm_block_id     tm_duplicated;  /**< Timer waiting for duplicated message */
+    c_uint8_t       duplicated_rcount;
 
     struct _gtp_xact_t *assoc_xact; /**< Associated transaction */
 } gtp_xact_t;
 
-CORE_DECLARE(status_t) gtp_xact_init(gtp_xact_ctx_t *context, 
-    tm_service_t *tm_service, c_uintptr_t event);
+CORE_DECLARE(status_t) gtp_xact_init(tm_service_t *tm_service,
+        c_uintptr_t response_event, c_uintptr_t duplicated_event);
 CORE_DECLARE(status_t) gtp_xact_final(void);
 
 CORE_DECLARE(gtp_xact_t *) gtp_xact_local_create(
@@ -61,12 +59,11 @@ CORE_DECLARE(gtp_xact_t *) gtp_xact_remote_create(
 CORE_DECLARE(void) gtp_xact_delete_all(gtp_node_t *gnode);
 
 CORE_DECLARE(status_t) gtp_xact_update_tx(gtp_xact_t *xact,
-        c_uint8_t type, c_uint32_t teid, pkbuf_t *pkbuf, c_uintptr_t event);
-CORE_DECLARE(status_t) gtp_xact_update_rx(gtp_xact_t *xact,
-        c_uint8_t type, c_uintptr_t event);
+        c_uint8_t type, c_uint32_t teid, pkbuf_t *pkbuf);
+CORE_DECLARE(status_t) gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type);
 
 CORE_DECLARE(status_t) gtp_xact_commit(gtp_xact_t *xact);
-CORE_DECLARE(status_t) gtp_xact_timeout(index_t index);
+CORE_DECLARE(status_t) gtp_xact_timeout(index_t index, c_uintptr_t event);
 
 CORE_DECLARE(status_t) gtp_xact_receive(
         net_sock_t *sock, gtp_node_t *gnode, pkbuf_t *pkbuf,

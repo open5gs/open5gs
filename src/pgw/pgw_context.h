@@ -33,7 +33,6 @@ typedef struct _pgw_context_t {
 
     msgq_id         queue_id;       /* Qsesssess for processing PGW control plane */
     tm_service_t    tm_service;     /* Timer Service */
-    gtp_xact_ctx_t  gtp_xact_ctx;   /* GTP Transaction Context */
 
     char            *tun_dev_name;  /* PGW Tunnel device name */
     net_link_t*     tun_link;       /* PGW Tun Interace for U-plane */

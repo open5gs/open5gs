@@ -20,8 +20,10 @@ char* sgw_event_get_name(event_t *e)
         case SGW_EVT_S5C_MESSAGE:
             return "SGW_EVT_S5C_MESSAGE";
 
-        case SGW_EVT_GTP_T3:
-            return "SGW_EVT_GTP_T3";
+        case SGW_EVT_T3_RESPONSE:
+            return "SGW_EVT_T3_RESPONSE";
+        case SGW_EVT_T3_DUPLICATED:
+            return "SGW_EVT_T3_DUPLICATED";
 
         default: 
            break;
