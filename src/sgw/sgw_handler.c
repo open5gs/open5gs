@@ -74,11 +74,13 @@ void sgw_handle_create_session_request(gtp_xact_t *s11_xact,
         GTP_F_TEID_IPV4_LEN;
 
     gtp_message->h.type = GTP_CREATE_SESSION_REQUEST_TYPE;
+    gtp_message->h.teid = sess->pgw_s5c_teid;
+
     rv = gtp_build_msg(&pkbuf, gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
     s5c_xact = gtp_xact_local_create(sgw_self()->s5c_sock,
-            &sgw_self()->s5c_node, gtp_message->h.type, 0, pkbuf);
+            &sgw_self()->s5c_node, &gtp_message->h, pkbuf);
     d_assert(s5c_xact, return, "Null param");
 
     gtp_xact_associate(s11_xact, s5c_xact);
@@ -176,11 +178,12 @@ void sgw_handle_create_session_response(gtp_xact_t *s5c_xact,
     d_assert(rv == CORE_OK, return, "xact_commit error");
 
     gtp_message->h.type = GTP_CREATE_SESSION_RESPONSE_TYPE;
+    gtp_message->h.teid = sess->mme_s11_teid;
+
     rv = gtp_build_msg(&pkbuf, gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
-    rv = gtp_xact_update_tx(s11_xact,
-            gtp_message->h.type, sess->mme_s11_teid, pkbuf);
+    rv = gtp_xact_update_tx(s11_xact, &gtp_message->h, pkbuf);
     d_assert(rv == CORE_OK, return, "gtp_xact_update_tx error");
 
     rv = gtp_xact_commit(s11_xact);
@@ -241,11 +244,12 @@ CORE_DECLARE(void) sgw_handle_modify_bearer_request(gtp_xact_t *s11_xact,
     rsp->cause.len = sizeof(cause);
 
     gtp_message.h.type = GTP_MODIFY_BEARER_RESPONSE_TYPE;
+    gtp_message.h.teid = sess->mme_s11_teid;
+
     rv = gtp_build_msg(&pkbuf, &gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
-    rv = gtp_xact_update_tx(s11_xact,
-            gtp_message.h.type, sess->mme_s11_teid, pkbuf);
+    rv = gtp_xact_update_tx(s11_xact, &gtp_message.h, pkbuf);
     d_assert(rv == CORE_OK, return, "gtp_xact_update_tx error");
 
     rv = gtp_xact_commit(s11_xact);
@@ -267,12 +271,14 @@ void sgw_handle_delete_session_request(gtp_xact_t *s11_xact,
     d_assert(gtp_message, return, "Null param");
 
     gtp_message->h.type = GTP_DELETE_SESSION_REQUEST_TYPE;
+    gtp_message->h.teid = sess->pgw_s5c_teid;
+
     rv = gtp_build_msg(&pkbuf, gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
     s5c_xact = gtp_xact_local_create(
             sgw_self()->s5c_sock, &sgw_self()->s5c_node,
-            gtp_message->h.type, sess->pgw_s5c_teid, pkbuf);
+            &gtp_message->h, pkbuf);
     d_assert(s5c_xact, return, "Null param");
 
     gtp_xact_associate(s11_xact, s5c_xact);
@@ -335,11 +341,12 @@ void sgw_handle_delete_session_response(gtp_xact_t *s5c_xact,
     d_assert(rv == CORE_OK, return, "xact_commit error");
 
     gtp_message->h.type = GTP_DELETE_SESSION_RESPONSE_TYPE;
+    gtp_message->h.teid = mme_s11_teid;
+
     rv = gtp_build_msg(&pkbuf, gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
-    rv = gtp_xact_update_tx(s11_xact,
-            gtp_message->h.type, mme_s11_teid, pkbuf);
+    rv = gtp_xact_update_tx(s11_xact, &gtp_message->h, pkbuf);
     d_assert(rv == CORE_OK, return, "gtp_xact_update_tx error");
 
     rv = gtp_xact_commit(s11_xact);
@@ -385,11 +392,12 @@ void sgw_handle_release_access_bearers_request(gtp_xact_t *s11_xact,
     rsp->cause.len = sizeof(cause);
 
     gtp_message.h.type = GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE;
+    gtp_message.h.teid = sess->mme_s11_teid;
+
     rv = gtp_build_msg(&pkbuf, &gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
-    rv = gtp_xact_update_tx(s11_xact,
-            gtp_message.h.type, sess->mme_s11_teid, pkbuf);
+    rv = gtp_xact_update_tx(s11_xact, &gtp_message.h, pkbuf);
     d_assert(rv == CORE_OK, return, "gtp_xact_update_tx error");
 
     rv = gtp_xact_commit(s11_xact);
@@ -415,7 +423,6 @@ void sgw_handle_lo_dldata_notification(sgw_bearer_t *bearer)
     sess = bearer->sess;
     d_assert(sess, return, "Null param");
 
-
     /* Build downlink notification message */
     noti = &gtp_message.downlink_data_notification;
     memset(&gtp_message, 0, sizeof(gtp_message_t));
@@ -429,11 +436,13 @@ void sgw_handle_lo_dldata_notification(sgw_bearer_t *bearer)
     noti->allocation_retention_priority.len = sizeof(arp);
 
     gtp_message.h.type = GTP_DOWNLINK_DATA_NOTIFICATION_TYPE;
+    gtp_message.h.teid = sess->mme_s11_teid;
+
     rv = gtp_build_msg(&pkbuf, &gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
     xact = gtp_xact_local_create(sgw_self()->s11_sock, &sgw_self()->s11_node,
-        GTP_DOWNLINK_DATA_NOTIFICATION_TYPE, sess->mme_s11_teid, pkbuf);
+            &gtp_message.h, pkbuf);
     d_assert(xact, return, "Null param");
 
     rv = gtp_xact_commit(xact);

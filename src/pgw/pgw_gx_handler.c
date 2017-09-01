@@ -97,10 +97,12 @@ void pgw_gx_handle_cca_initial_request(
         GTP_F_TEID_IPV4_LEN;
 
     gtp_message.h.type = GTP_CREATE_SESSION_RESPONSE_TYPE;
+    gtp_message.h.teid = sess->sgw_s5c_teid;
+
     rv = gtp_build_msg(&pkbuf, &gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
-    rv = gtp_xact_update_tx(xact, gtp_message.h.type, sess->sgw_s5c_teid, pkbuf);
+    rv = gtp_xact_update_tx(xact, &gtp_message.h, pkbuf);
     d_assert(rv == CORE_OK, return, "gtp_xact_update_tx error");
 
     rv = gtp_xact_commit(xact);
@@ -161,11 +163,13 @@ void pgw_gx_handle_cca_termination_request(
 
     /* build */
     gtp_message.h.type = GTP_DELETE_SESSION_RESPONSE_TYPE;
+    gtp_message.h.teid = sgw_s5c_teid;
+
     rv = gtp_build_msg(&pkbuf, &gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
     /* send */
-    rv = gtp_xact_update_tx(xact, gtp_message.h.type, sgw_s5c_teid, pkbuf);
+    rv = gtp_xact_update_tx(xact, &gtp_message.h, pkbuf);
     d_assert(rv == CORE_OK, return, "gtp_xact_update_tx error");
 
     rv = gtp_xact_commit(xact);

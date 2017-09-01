@@ -394,6 +394,7 @@ void s1ap_handle_initial_context_setup_response(
         i++)
     {
         status_t rv;
+        gtp_header_t h;
         gtp_xact_t *xact = NULL;
         mme_sess_t *sess = NULL;
         pkbuf_t *pkbuf = NULL;
@@ -416,12 +417,15 @@ void s1ap_handle_initial_context_setup_response(
         memcpy(&bearer->enb_s1u_addr, e_rab->transportLayerAddress.buf,
                 sizeof(bearer->enb_s1u_addr));
 
-        rv = mme_s11_build_modify_bearer_request(&pkbuf, bearer);
+        memset(&h, 0, sizeof(gtp_header_t));
+        h.type = GTP_MODIFY_BEARER_REQUEST_TYPE;
+        h.teid = sess->sgw_s11_teid;
+
+        rv = mme_s11_build_modify_bearer_request(&pkbuf, h.type, bearer);
         d_assert(rv == CORE_OK, return, "S11 build error");
 
         xact = gtp_xact_local_create(
-                mme_self()->s11_sock, (gtp_node_t *)sess->sgw,
-                GTP_MODIFY_BEARER_REQUEST_TYPE, sess->sgw_s11_teid, pkbuf);
+                mme_self()->s11_sock, (gtp_node_t *)sess->sgw, &h, pkbuf);
         d_assert(xact, return, "Null param");
 
         rv = gtp_xact_commit(xact);
@@ -456,7 +460,6 @@ void s1ap_handle_ue_context_release_request(
             cause = ies->cause.choice.radioNetwork;
             if (cause == S1ap_CauseRadioNetwork_user_inactivity)
             {
-                pkbuf_t *pkbuf = NULL;
                 mme_ue_t *mme_ue = enb_ue->mme_ue;
                 status_t rv;
 
@@ -465,16 +468,21 @@ void s1ap_handle_ue_context_release_request(
                     mme_sess_t *sess = mme_sess_first(mme_ue);
                     while (sess != NULL)
                     {
+                        gtp_header_t h;
+                        pkbuf_t *pkbuf = NULL;
                         gtp_xact_t *xact = NULL;
 
+                        memset(&h, 0, sizeof(gtp_header_t));
+                        h.type = GTP_RELEASE_ACCESS_BEARERS_REQUEST_TYPE;
+                        h.teid = sess->sgw_s11_teid;
+
                         rv = mme_s11_build_release_access_bearers_request(
-                                &pkbuf);
+                                &pkbuf, h.type);
                         d_assert(rv == CORE_OK, return, "S11 build error");
 
                         xact = gtp_xact_local_create(
                                 mme_self()->s11_sock, (gtp_node_t *)sess->sgw,
-                                GTP_RELEASE_ACCESS_BEARERS_REQUEST_TYPE,
-                                sess->sgw_s11_teid, pkbuf);
+                                &h, pkbuf);
                         d_assert(xact, return, "Null param");
 
                         rv = gtp_xact_commit(xact);

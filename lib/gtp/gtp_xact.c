@@ -73,8 +73,8 @@ status_t gtp_xact_final(void)
     return CORE_OK;
 }
 
-gtp_xact_t *gtp_xact_local_create(net_sock_t *sock, gtp_node_t *gnode,
-        c_uint8_t type, c_uint32_t teid, pkbuf_t *pkbuf)
+gtp_xact_t *gtp_xact_local_create(net_sock_t *sock,
+        gtp_node_t *gnode, gtp_header_t *hdesc, pkbuf_t *pkbuf)
 {
     status_t rv;
     char buf[INET_ADDRSTRLEN];
@@ -110,7 +110,7 @@ gtp_xact_t *gtp_xact_local_create(net_sock_t *sock, gtp_node_t *gnode,
     list_append(xact->org == GTP_LOCAL_ORIGINATOR ?  
             &xact->gnode->local_list : &xact->gnode->remote_list, xact);
 
-    rv = gtp_xact_update_tx(xact, type, teid, pkbuf);
+    rv = gtp_xact_update_tx(xact, hdesc, pkbuf);
     d_assert(rv == CORE_OK, return NULL, "Update Tx failed");
 
     d_trace(3, "[%d] %s Create  peer %s:%d\n",
@@ -184,7 +184,7 @@ void gtp_xact_delete_all(gtp_node_t *gnode)
 }
 
 status_t gtp_xact_update_tx(gtp_xact_t *xact,
-    c_uint8_t type, c_uint32_t teid, pkbuf_t *pkbuf)
+        gtp_header_t *hdesc, pkbuf_t *pkbuf)
 {
     char buf[INET_ADDRSTRLEN];
     gtp_xact_stage_t stage;
@@ -193,15 +193,16 @@ status_t gtp_xact_update_tx(gtp_xact_t *xact,
     d_assert(xact, return CORE_ERROR, "Null param");
     d_assert(xact->sock, return CORE_ERROR, "Null param");
     d_assert(xact->gnode, return CORE_ERROR, "Null param");
+    d_assert(hdesc, return CORE_ERROR, "Null param");
     d_assert(pkbuf, return CORE_ERROR, "Null param");
 
     d_trace(3, "[%d] %s UPD TX-%d  peer %s:%d\n",
             xact->xid,
             xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-            type,
+            hdesc->type,
             INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
 
-    stage = gtp_xact_get_stage(type, xact->xid);
+    stage = gtp_xact_get_stage(hdesc->type, xact->xid);
     if (xact->org == GTP_LOCAL_ORIGINATOR)
     {
         switch(stage)
@@ -211,7 +212,7 @@ status_t gtp_xact_update_tx(gtp_xact_t *xact,
                     "[%d] %s invalid step %d for type %d peer %s:%d\n",
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-                    xact->step, type,
+                    xact->step, hdesc->type,
                     INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
                 break;
 
@@ -223,7 +224,7 @@ status_t gtp_xact_update_tx(gtp_xact_t *xact,
                     "[%d] %s invalid step %d for type %d peer %s:%d\n",
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-                    xact->step, type,
+                    xact->step, hdesc->type,
                     INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
                 break;
 
@@ -244,7 +245,7 @@ status_t gtp_xact_update_tx(gtp_xact_t *xact,
                     "[%d] %s invalid step %d for type %d peer %s:%d\n",
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-                    xact->step, type,
+                    xact->step, hdesc->type,
                     INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
                 break;
 
@@ -263,9 +264,9 @@ status_t gtp_xact_update_tx(gtp_xact_t *xact,
     memset(h, 0, sizeof(gtp_header_t));
     h->version = 2;
     h->teid_presence = 1;
-    h->type = type;
+    h->type = hdesc->type;
     h->length = htons(pkbuf->len - 4);
-    h->teid = htonl(teid);
+    h->teid = htonl(hdesc->teid);
     h->sqn = GTP_XID_TO_SQN(xact->xid);
 
     /* Save Message type and packet of this step */

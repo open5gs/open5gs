@@ -8,7 +8,8 @@
 #include "types.h"
 #include "mme_context.h"
 
-status_t mme_s11_build_create_session_request(pkbuf_t **pkbuf, mme_sess_t *sess)
+status_t mme_s11_build_create_session_request(
+        pkbuf_t **pkbuf, c_uint8_t type, mme_sess_t *sess)
 {
     status_t rv;
     pdn_t *pdn = NULL;
@@ -145,7 +146,7 @@ status_t mme_s11_build_create_session_request(pkbuf_t **pkbuf, mme_sess_t *sess)
     req->charging_characteristics.data = (c_uint8_t *)"\x54\x00";
     req->charging_characteristics.len = 2;
 
-    gtp_message.h.type = GTP_CREATE_SESSION_REQUEST_TYPE;
+    gtp_message.h.type = type;
     rv = gtp_build_msg(pkbuf, &gtp_message);
     d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");
 
@@ -153,7 +154,7 @@ status_t mme_s11_build_create_session_request(pkbuf_t **pkbuf, mme_sess_t *sess)
 }
 
 status_t mme_s11_build_modify_bearer_request(
-            pkbuf_t **pkbuf, mme_bearer_t *bearer)
+        pkbuf_t **pkbuf, c_uint8_t type, mme_bearer_t *bearer)
 {
     status_t rv;
     gtp_message_t gtp_message;
@@ -184,14 +185,15 @@ status_t mme_s11_build_modify_bearer_request(
     req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.len = 
         GTP_F_TEID_IPV4_LEN;
 
-    gtp_message.h.type = GTP_MODIFY_BEARER_REQUEST_TYPE;
+    gtp_message.h.type = type;
     rv = gtp_build_msg(pkbuf, &gtp_message);
     d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");
 
     return CORE_OK;
 }
 
-status_t mme_s11_build_delete_session_request(pkbuf_t **pkbuf, mme_sess_t *sess)
+status_t mme_s11_build_delete_session_request(
+        pkbuf_t **pkbuf, c_uint8_t type, mme_sess_t *sess)
 {
     status_t rv;
     mme_ue_t *mme_ue = NULL;
@@ -230,14 +232,15 @@ status_t mme_s11_build_delete_session_request(pkbuf_t **pkbuf, mme_sess_t *sess)
     req->indication_flags.data = &indication;
     req->indication_flags.len = sizeof(gtp_indication_t);
 
-    gtp_message.h.type = GTP_DELETE_SESSION_REQUEST_TYPE;
+    gtp_message.h.type = type;
     rv = gtp_build_msg(pkbuf, &gtp_message);
     d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");
 
     return CORE_OK;
 }
 
-status_t mme_s11_build_release_access_bearers_request(pkbuf_t **pkbuf)
+status_t mme_s11_build_release_access_bearers_request(
+        pkbuf_t **pkbuf, c_uint8_t type)
 {
     status_t rv;
     gtp_message_t gtp_message;
@@ -249,15 +252,15 @@ status_t mme_s11_build_release_access_bearers_request(pkbuf_t **pkbuf)
     req->originating_node.presence = 1;
     req->originating_node.u8 = GTP_NODE_TYPE_MME;
 
-    gtp_message.h.type = GTP_RELEASE_ACCESS_BEARERS_REQUEST_TYPE;
+    gtp_message.h.type = type;
     rv = gtp_build_msg(pkbuf, &gtp_message);
     d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");
 
     return CORE_OK;
 }
 
-status_t mme_s11_build_downlink_data_notification_ack(pkbuf_t **pkbuf, 
-        mme_sess_t *sess)
+status_t mme_s11_build_downlink_data_notification_ack(
+        pkbuf_t **pkbuf, c_uint8_t type, mme_sess_t *sess)
 {
     status_t rv;
     mme_ue_t *mme_ue = NULL;
@@ -280,7 +283,7 @@ status_t mme_s11_build_downlink_data_notification_ack(pkbuf_t **pkbuf,
     ack->cause.data = &cause;
     ack->cause.len = sizeof(cause);
 
-    gtp_message.h.type = GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE;
+    gtp_message.h.type = type;
     rv = gtp_build_msg(pkbuf, &gtp_message);
     d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");
 

@@ -16,6 +16,7 @@
 void mme_s11_handle_create_session_request(mme_sess_t *sess)
 {
     status_t rv;
+    gtp_header_t h;
     pkbuf_t *pkbuf = NULL;
     gtp_xact_t *xact = NULL;
 
@@ -25,12 +26,16 @@ void mme_s11_handle_create_session_request(mme_sess_t *sess)
     if (!sess->sgw) sess->sgw = mme_sgw_first();
     d_assert(sess->sgw, return, "Null param");
 
-    rv = mme_s11_build_create_session_request(&pkbuf, sess);
+    memset(&h, 0, sizeof(gtp_header_t));
+    h.type = GTP_CREATE_SESSION_REQUEST_TYPE;
+    h.teid = sess->sgw_s11_teid;
+
+    rv = mme_s11_build_create_session_request(&pkbuf, h.type, sess);
     d_assert(rv == CORE_OK, return,
             "S11 build error");
 
     xact = gtp_xact_local_create(mme_self()->s11_sock, (gtp_node_t *)sess->sgw,
-            GTP_CREATE_SESSION_REQUEST_TYPE, sess->sgw_s11_teid, pkbuf);
+            &h, pkbuf);
     d_assert(xact, return, "Null param");
 
     rv = gtp_xact_commit(xact);
@@ -118,14 +123,18 @@ void mme_s11_handle_delete_all_sessions_request_in_ue(mme_ue_t *mme_ue)
     sess = mme_sess_first(mme_ue);
     while (sess != NULL)
     {
+        gtp_header_t h;
         gtp_xact_t *xact = NULL;
 
-        rv = mme_s11_build_delete_session_request(&s11buf, sess);
+        memset(&h, 0, sizeof(gtp_header_t));
+        h.type = GTP_DELETE_SESSION_REQUEST_TYPE;
+        h.teid = sess->sgw_s11_teid;
+
+        rv = mme_s11_build_delete_session_request(&s11buf, h.type, sess);
         d_assert(rv == CORE_OK, return, "S11 build error");
 
         xact = gtp_xact_local_create(
-                mme_self()->s11_sock, (gtp_node_t *)sess->sgw,
-                GTP_DELETE_SESSION_REQUEST_TYPE, sess->sgw_s11_teid, s11buf);
+                mme_self()->s11_sock, (gtp_node_t *)sess->sgw, &h, s11buf);
         d_assert(xact, return, "Null param");
 
         rv = gtp_xact_commit(xact);
@@ -195,6 +204,7 @@ void mme_s11_handle_downlink_data_notification(
         gtp_downlink_data_notification_t *noti)
 {
     status_t rv;
+    gtp_header_t h;
     pkbuf_t *s11buf = NULL;
 
     d_assert(xact, return, "Null param");
@@ -205,12 +215,14 @@ void mme_s11_handle_downlink_data_notification(
             "MME[%d] <-- SGW[%d]\n", sess->mme_s11_teid, sess->sgw_s11_teid);
 
     /* Build Downlink data notification ack */
-    rv = mme_s11_build_downlink_data_notification_ack(&s11buf, sess);
+    memset(&h, 0, sizeof(gtp_header_t));
+    h.type = GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE;
+    h.teid = sess->sgw_s11_teid;
+
+    rv = mme_s11_build_downlink_data_notification_ack(&s11buf, h.type, sess);
     d_assert(rv == CORE_OK, return, "S11 build error");
 
-    rv = gtp_xact_update_tx(xact, 
-            GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE, 
-            sess->sgw_s11_teid, s11buf);
+    rv = gtp_xact_update_tx(xact, &h, s11buf);
     d_assert(rv == CORE_OK, return, "xact_update_tx error");
 
     rv = gtp_xact_commit(xact);
