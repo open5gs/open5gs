@@ -193,7 +193,7 @@ status_t s1ap_build_initial_context_setup_request(
 
     e_rab = (S1ap_E_RABToBeSetupItemCtxtSUReq_t *)
         core_calloc(1, sizeof(S1ap_E_RABToBeSetupItemCtxtSUReq_t));
-    e_rab->e_RAB_ID = sess->ebi;
+    e_rab->e_RAB_ID = bearer->ebi;
     e_rab->e_RABlevelQoSParameters.qCI = pdn->qos.qci;
 
     e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.

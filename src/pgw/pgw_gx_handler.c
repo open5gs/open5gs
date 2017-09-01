@@ -80,7 +80,7 @@ void pgw_gx_handle_cca_initial_request(
 
     rsp->bearer_contexts_created.presence = 1;
     rsp->bearer_contexts_created.eps_bearer_id.presence = 1;
-    rsp->bearer_contexts_created.eps_bearer_id.u8 = bearer->id;
+    rsp->bearer_contexts_created.eps_bearer_id.u8 = bearer->ebi;
 
     /* TODO : Bearer QoS 
      * if PCRF changes Bearer QoS, this should be included. */

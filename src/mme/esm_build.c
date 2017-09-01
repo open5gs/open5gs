@@ -72,6 +72,7 @@ status_t esm_build_activate_default_bearer_context(
             ->protocol_configuration_options;
     
     mme_ue_t *mme_ue = NULL;
+    mme_bearer_t *bearer = NULL;
     pdn_t *pdn = NULL;
 
     d_assert(sess, return CORE_ERROR, "Null param");
@@ -79,9 +80,11 @@ status_t esm_build_activate_default_bearer_context(
     d_assert(mme_ue, return CORE_ERROR, "Null param");
     pdn = sess->pdn;
     d_assert(pdn, return CORE_ERROR, "Null param");
+    bearer = mme_default_bearer_in_sess(sess);
+    d_assert(bearer, return CORE_ERROR, "Null param");
 
     memset(&message, 0, sizeof(message));
-    message.esm.h.eps_bearer_identity = sess->ebi;
+    message.esm.h.eps_bearer_identity = bearer->ebi;
     message.esm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_ESM;
     message.esm.h.procedure_transaction_identity = sess->pti;
     message.esm.h.message_type = 

@@ -131,22 +131,6 @@ CORE_DECLARE(sgw_context_t*) sgw_self(void);
 CORE_DECLARE(status_t)      sgw_context_parse_config(void);
 CORE_DECLARE(status_t)      sgw_context_setup_trace_module(void);
 
-#if 0
-CORE_DECLARE(sgw_sess_t*)    sgw_sess_add(
-        c_uint8_t *imsi, int imsi_len, c_int8_t *apn, c_uint8_t id);
-CORE_DECLARE(status_t)      sgw_sess_remove(sgw_sess_t *sess);
-CORE_DECLARE(status_t)      sgw_sess_remove_all();
-CORE_DECLARE(sgw_sess_t*)   sgw_sess_find(index_t index);
-CORE_DECLARE(sgw_sess_t*)   sgw_sess_find_by_teid(c_uint32_t teid);
-CORE_DECLARE(sgw_sess_t*)   sgw_sess_find_by_imsi_apn(
-        c_uint8_t *imsi, int imsi_len, c_int8_t *apn);
-CORE_DECLARE(sgw_sess_t *)  sgw_sess_find_or_add_by_message(
-        gtp_message_t *gtp_message);
-CORE_DECLARE(hash_index_t *)  sgw_sess_first();
-CORE_DECLARE(hash_index_t *)  sgw_sess_next(hash_index_t *hi);
-CORE_DECLARE(sgw_sess_t *)  sgw_sess_this(hash_index_t *hi);
-#endif
-
 CORE_DECLARE(sgw_ue_t*)     sgw_ue_add(c_uint8_t *imsi, int imsi_len,
                                 c_int8_t *apn, c_uint8_t id);
 CORE_DECLARE(status_t)      sgw_ue_remove(sgw_ue_t *sgw_ue);

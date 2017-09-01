@@ -625,7 +625,7 @@ pgw_sess_t *pgw_sess_this(hash_index_t *hi)
     return hash_this_val(hi);
 }
 
-pgw_bearer_t* pgw_bearer_add(pgw_sess_t *sess, c_uint8_t id)
+pgw_bearer_t* pgw_bearer_add(pgw_sess_t *sess, c_uint8_t ebi)
 {
     pgw_bearer_t *bearer = NULL;
 
@@ -634,7 +634,7 @@ pgw_bearer_t* pgw_bearer_add(pgw_sess_t *sess, c_uint8_t id)
     index_alloc(&pgw_bearer_pool, &bearer);
     d_assert(bearer, return NULL, "Bearer context allocation failed");
 
-    bearer->id = id;
+    bearer->ebi = ebi;
     bearer->pgw_s5u_teid = bearer->index;
     bearer->pgw_s5u_addr = pgw_self()->s5u_addr;
     
@@ -685,7 +685,7 @@ pgw_bearer_t* pgw_bearer_find_by_pgw_s5u_teid(c_uint32_t pgw_s5u_teid)
     return pgw_bearer_find(pgw_s5u_teid);
 }
 
-pgw_bearer_t* pgw_bearer_find_by_id(pgw_sess_t *sess, c_uint8_t id)
+pgw_bearer_t* pgw_bearer_find_by_ebi(pgw_sess_t *sess, c_uint8_t ebi)
 {
     pgw_bearer_t *bearer = NULL;
     
@@ -694,7 +694,7 @@ pgw_bearer_t* pgw_bearer_find_by_id(pgw_sess_t *sess, c_uint8_t id)
     bearer = list_first(&sess->bearer_list);
     while (bearer)
     {
-        if (bearer->id == id)
+        if (bearer->ebi == ebi)
             break;
 
         bearer = list_next(bearer);
@@ -758,7 +758,7 @@ pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
             bearer = pgw_default_bearer_in_sess(sess);
             d_assert(bearer, return NULL, "No Bearer");
 
-            d_trace(50, "Found bearer(id = %d)\n",bearer->id);
+            d_trace(50, "Found bearer(EBI = %d)\n", bearer->ebi);
             return bearer;
         }
     }

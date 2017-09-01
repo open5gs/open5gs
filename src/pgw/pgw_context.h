@@ -93,7 +93,7 @@ typedef struct _pgw_bearer_t {
     lnode_t         node; /**< A node of list_t */
     index_t         index;
 
-    c_uint8_t       id;
+    c_uint8_t       ebi;
 
     /* IMPORTANT! 
      * PGW-S5U-TEID is same with an index */
@@ -129,11 +129,11 @@ CORE_DECLARE(hash_index_t *)  pgw_sess_first();
 CORE_DECLARE(hash_index_t *)  pgw_sess_next(hash_index_t *hi);
 CORE_DECLARE(pgw_sess_t *)  pgw_sess_this(hash_index_t *hi);
 
-CORE_DECLARE(pgw_bearer_t*) pgw_bearer_add(pgw_sess_t *sess, c_uint8_t id);
+CORE_DECLARE(pgw_bearer_t*) pgw_bearer_add(pgw_sess_t *sess, c_uint8_t ebi);
 CORE_DECLARE(status_t)      pgw_bearer_remove(pgw_bearer_t *bearer);
 CORE_DECLARE(status_t)      pgw_bearer_remove_all(pgw_sess_t *sess);
-CORE_DECLARE(pgw_bearer_t*) pgw_bearer_find_by_id(
-                                pgw_sess_t *sess, c_uint8_t id);
+CORE_DECLARE(pgw_bearer_t*) pgw_bearer_find_by_ebi(
+                                pgw_sess_t *sess, c_uint8_t ebi);
 CORE_DECLARE(pgw_bearer_t*) pgw_default_bearer_in_sess(pgw_sess_t *sess);
 CORE_DECLARE(pgw_bearer_t*) pgw_bearer_first(pgw_sess_t *sess);
 CORE_DECLARE(pgw_bearer_t*) pgw_bearer_next(pgw_bearer_t *bearer);

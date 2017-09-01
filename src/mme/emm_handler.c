@@ -177,7 +177,7 @@ void emm_handle_attach_accept(mme_ue_t *mme_ue)
     d_assert(rv == CORE_OK && esmbuf, return, "esm build error");
 
     d_trace(3, "[NAS] Activate default bearer context request : "
-            "EMM <-- ESM[%d]\n", sess->ebi);
+            "EMM <-- ESM[%d]\n", sess->pti);
 
     rv = emm_build_attach_accept(&emmbuf, mme_ue, esmbuf);
     d_assert(rv == CORE_OK && emmbuf, 

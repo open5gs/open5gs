@@ -1470,7 +1470,6 @@ mme_sess_t *mme_sess_add(mme_ue_t *mme_ue, c_uint8_t pti)
     d_assert(sess, return NULL, "Null param");
 
     sess->pti = pti;
-    sess->ebi = NEXT_ID(mme_ue->ebi, MIN_EPS_BEARER_ID, MAX_EPS_BEARER_ID);
 
     list_init(&sess->bearer_list);
     list_append(&mme_ue->sess_list, sess);
@@ -1478,7 +1477,8 @@ mme_sess_t *mme_sess_add(mme_ue_t *mme_ue, c_uint8_t pti)
     sess->mme_ue = mme_ue;
     sess->sgw = mme_sgw_first();
 
-    bearer = mme_bearer_add(sess);
+    bearer = mme_bearer_add(sess,
+                NEXT_ID(mme_ue->ebi, MIN_EPS_BEARER_ID, MAX_EPS_BEARER_ID));
     d_assert(bearer, mme_sess_remove(sess); return NULL, 
             "Can't add default bearer context");
 
@@ -1545,16 +1545,11 @@ mme_sess_t* mme_sess_find_by_pti(mme_ue_t *mme_ue, c_uint8_t pti)
 
 mme_sess_t* mme_sess_find_by_ebi(mme_ue_t *mme_ue, c_uint8_t ebi)
 {
-    mme_sess_t *sess = NULL;
-    
-    sess = mme_sess_first(mme_ue);
-    while (sess)
-    {
-        if (ebi == sess->ebi)
-            return sess;
+    mme_bearer_t *bearer = NULL;
 
-        sess = mme_sess_next(sess);
-    }
+    bearer = mme_bearer_find_by_ue_ebi(mme_ue, ebi);
+    if (bearer)
+        return bearer->sess;
 
     return NULL;
 }
@@ -1569,7 +1564,7 @@ mme_sess_t* mme_sess_next(mme_sess_t *sess)
     return list_next(sess);
 }
 
-mme_bearer_t* mme_bearer_add(mme_sess_t *sess)
+mme_bearer_t* mme_bearer_add(mme_sess_t *sess, c_uint8_t ebi)
 {
     mme_bearer_t *bearer = NULL;
     mme_ue_t *mme_ue = NULL;
@@ -1580,6 +1575,8 @@ mme_bearer_t* mme_bearer_add(mme_sess_t *sess)
 
     index_alloc(&mme_bearer_pool, &bearer);
     d_assert(bearer, return NULL, "Null param");
+
+    bearer->ebi = ebi;
 
     list_append(&sess->bearer_list, bearer);
     
@@ -1623,6 +1620,42 @@ mme_bearer_t* mme_bearer_find(index_t index)
 {
     d_assert(index, return NULL, "Invalid Index");
     return index_find(&mme_bearer_pool, index);
+}
+
+mme_bearer_t* mme_bearer_find_by_sess_ebi(mme_sess_t *sess, c_uint8_t ebi)
+{
+    mme_bearer_t *bearer = NULL;
+
+    bearer = mme_bearer_first(sess);
+    while(bearer)
+    {
+        if (ebi == bearer->ebi)
+            return bearer;
+
+        bearer = mme_bearer_next(bearer);
+    }
+
+    return NULL;
+}
+
+mme_bearer_t* mme_bearer_find_by_ue_ebi(mme_ue_t *mme_ue, c_uint8_t ebi)
+{
+    mme_sess_t *sess = NULL;
+    mme_bearer_t *bearer = NULL;
+    
+    sess = mme_sess_first(mme_ue);
+    while (sess)
+    {
+        bearer = mme_bearer_find_by_sess_ebi(sess, ebi);
+        if (bearer)
+        {
+            return bearer;
+        }
+
+        sess = mme_sess_next(sess);
+    }
+
+    return NULL;
 }
 
 mme_bearer_t* mme_default_bearer_in_sess(mme_sess_t *sess)

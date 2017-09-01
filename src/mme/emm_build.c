@@ -143,11 +143,11 @@ status_t emm_build_tau_accept(pkbuf_t **emmbuf, mme_ue_t *mme_ue)
 
     tau_accept->eps_bearer_context_status.length = 2;
     tau_accept->eps_bearer_context_status.ebi5 = 
-        (mme_sess_find_by_ebi(mme_ue, 5) ? 1 : 0);
+        (mme_bearer_find_by_ue_ebi(mme_ue, 5) ? 1 : 0);
     tau_accept->eps_bearer_context_status.ebi6 = 
-        (mme_sess_find_by_ebi(mme_ue, 6) ? 1 : 0);
+        (mme_bearer_find_by_ue_ebi(mme_ue, 6) ? 1 : 0);
     tau_accept->eps_bearer_context_status.ebi7 = 
-        (mme_sess_find_by_ebi(mme_ue, 7) ? 1 : 0);
+        (mme_bearer_find_by_ue_ebi(mme_ue, 7) ? 1 : 0);
     /* FIXME : Need to set other ebi */
 
     /* Set T3402 */
