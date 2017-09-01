@@ -12,9 +12,6 @@ extern "C" {
 #define GTPV2_C_UDP_PORT                2123
 #define GTPV1_U_UDP_PORT                2152
 
-#define GTP_COMPARE_NODE(__id1, __id2) \
-    (((__id1)->addr) == ((__id2)->addr) && ((__id1)->port) == ((__id2)->port))
-
 /**
  * This structure represents the commonalities of GTP node such as MME, SGW,
  * PGW gateway. Some of members may not be used by the specific type of node */
