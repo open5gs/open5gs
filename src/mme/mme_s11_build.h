@@ -16,7 +16,7 @@ CORE_DECLARE(status_t) mme_s11_build_delete_session_request(
 CORE_DECLARE(status_t) mme_s11_build_release_access_bearers_request(
         pkbuf_t **pkbuf, c_uint8_t type);
 CORE_DECLARE(status_t) mme_s11_build_downlink_data_notification_ack(
-        pkbuf_t **pkbuf, c_uint8_t type, mme_sess_t *sess);
+        pkbuf_t **pkbuf, c_uint8_t type, mme_ue_t *mme_ue);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

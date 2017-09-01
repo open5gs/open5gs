@@ -4,7 +4,8 @@
 #include "sgw_context.h"
 #include "sgw_event.h"
 #include "sgw_gtp_path.h"
-#include "sgw_handler.h"
+#include "sgw_s11_handler.h"
+#include "sgw_s5c_handler.h"
 
 void sgw_state_initial(fsm_t *s, event_t *e)
 {
@@ -53,6 +54,56 @@ void sgw_state_operational(fsm_t *s, event_t *e)
             break;
         }
         case SGW_EVT_S11_MESSAGE:
+        {
+            status_t rv;
+            net_sock_t *sock = (net_sock_t *)event_get_param1(e);
+            gtp_node_t *gnode = (gtp_node_t *)event_get_param2(e);
+            pkbuf_t *pkbuf = (pkbuf_t *)event_get_param3(e);
+            gtp_xact_t *xact = NULL;
+            gtp_message_t message;
+            sgw_ue_t *sgw_ue = NULL;
+
+            d_assert(pkbuf, break, "Null param");
+            d_assert(sock, pkbuf_free(pkbuf); break, "Null param");
+            d_assert(gnode, pkbuf_free(pkbuf); break, "Null param");
+
+            rv = gtp_xact_receive(sock, gnode, pkbuf, &xact, &message);
+            if (rv != CORE_OK)
+                break;
+
+            if (message.h.type == GTP_CREATE_SESSION_REQUEST_TYPE)
+                sgw_ue = sgw_ue_find_or_add_by_message(&message);
+            else
+                sgw_ue = sgw_ue_find_by_teid(message.h.teid);
+            d_assert(sgw_ue, pkbuf_free(pkbuf); break, "No Session Context");
+
+            switch(message.h.type)
+            {
+                case GTP_CREATE_SESSION_REQUEST_TYPE:
+                    sgw_handle_create_session_request(xact, sgw_ue, &message);
+                    break;
+                case GTP_MODIFY_BEARER_REQUEST_TYPE:
+                    sgw_handle_modify_bearer_request(xact, sgw_ue,
+                            &message.modify_bearer_request);
+                    break;
+                case GTP_DELETE_SESSION_REQUEST_TYPE:
+                    sgw_handle_delete_session_request(xact, sgw_ue, &message);
+                    break;
+                case GTP_RELEASE_ACCESS_BEARERS_REQUEST_TYPE:
+                    sgw_handle_release_access_bearers_request(xact, sgw_ue, 
+                        &message.release_access_bearers_request);
+                    break;
+                case GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE:
+                    sgw_handle_downlink_data_notification_ack(sgw_ue,
+                        &message.downlink_data_notification_acknowledge);
+                    break;
+                default:
+                    d_warn("Not implmeneted(type:%d)", message.h.type);
+                    break;
+            }
+            pkbuf_free(pkbuf);
+            break;
+        }
         case SGW_EVT_S5C_MESSAGE:
         {
             status_t rv;
@@ -71,37 +122,16 @@ void sgw_state_operational(fsm_t *s, event_t *e)
             if (rv != CORE_OK)
                 break;
 
-            if (message.h.type == GTP_CREATE_SESSION_REQUEST_TYPE)
-                sess = sgw_sess_find_or_add_by_message(&message);
-            else
-                sess = sgw_sess_find_by_teid(message.h.teid);
+            sess = sgw_sess_find_by_teid(message.h.teid);
             d_assert(sess, pkbuf_free(pkbuf); break, "No Session Context");
 
             switch(message.h.type)
             {
-                case GTP_CREATE_SESSION_REQUEST_TYPE:
-                    sgw_handle_create_session_request(xact, sess, &message);
-                    break;
                 case GTP_CREATE_SESSION_RESPONSE_TYPE:
                     sgw_handle_create_session_response(xact, sess, &message);
                     break;
-                case GTP_MODIFY_BEARER_REQUEST_TYPE:
-                    sgw_handle_modify_bearer_request(xact, sess,
-                            &message.modify_bearer_request);
-                    break;
-                case GTP_DELETE_SESSION_REQUEST_TYPE:
-                    sgw_handle_delete_session_request(xact, sess, &message);
-                    break;
                 case GTP_DELETE_SESSION_RESPONSE_TYPE:
                     sgw_handle_delete_session_response(xact, sess, &message);
-                    break;
-                case GTP_RELEASE_ACCESS_BEARERS_REQUEST_TYPE:
-                    sgw_handle_release_access_bearers_request(xact, sess, 
-                        &message.release_access_bearers_request);
-                    break;
-                case GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE:
-                    sgw_handle_downlink_data_notification_ack(sess,
-                        &message.downlink_data_notification_acknowledge);
                     break;
                 default:
                     d_warn("Not implmeneted(type:%d)", message.h.type);

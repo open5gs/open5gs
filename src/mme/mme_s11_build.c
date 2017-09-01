@@ -69,8 +69,8 @@ status_t mme_s11_build_create_session_request(
     memset(&mme_s11_teid, 0, sizeof(gtp_f_teid_t));
     mme_s11_teid.ipv4 = 1;
     mme_s11_teid.interface_type = GTP_F_TEID_S11_MME_GTP_C;
-    mme_s11_teid.teid = htonl(sess->mme_s11_teid);
-    mme_s11_teid.ipv4_addr = sess->mme_s11_addr;
+    mme_s11_teid.teid = htonl(mme_ue->mme_s11_teid);
+    mme_s11_teid.ipv4_addr = mme_ue->mme_s11_addr;
     req->sender_f_teid_for_control_plane.presence = 1;
     req->sender_f_teid_for_control_plane.data = &mme_s11_teid;
     req->sender_f_teid_for_control_plane.len = GTP_F_TEID_IPV4_LEN;
@@ -260,18 +260,15 @@ status_t mme_s11_build_release_access_bearers_request(
 }
 
 status_t mme_s11_build_downlink_data_notification_ack(
-        pkbuf_t **pkbuf, c_uint8_t type, mme_sess_t *sess)
+        pkbuf_t **pkbuf, c_uint8_t type, mme_ue_t *mme_ue)
 {
     status_t rv;
-    mme_ue_t *mme_ue = NULL;
     gtp_message_t gtp_message;
     gtp_downlink_data_notification_acknowledge_t *ack = 
         &gtp_message.downlink_data_notification_acknowledge;
 
     gtp_cause_t cause;
 
-    d_assert(sess, return CORE_ERROR, "Null param");
-    mme_ue = sess->mme_ue;
     d_assert(mme_ue, return CORE_ERROR, "Null param");
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));

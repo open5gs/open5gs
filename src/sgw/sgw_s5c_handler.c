@@ -1,0 +1,180 @@
+#define TRACE_MODULE _sgw_s5c_handler
+
+#include "core_debug.h"
+#include "core_lib.h"
+
+#include "gtp_types.h"
+
+#include "sgw_event.h"
+#include "sgw_context.h"
+#include "sgw_gtp_path.h"
+#include "sgw_s5c_handler.h"
+
+void sgw_handle_create_session_response(gtp_xact_t *s5c_xact, 
+    sgw_sess_t *sess, gtp_message_t *gtp_message)
+{
+    status_t rv;
+    gtp_xact_t *s11_xact = NULL;
+    sgw_bearer_t *bearer = NULL;
+    gtp_create_session_response_t *rsp = NULL;
+    pkbuf_t *pkbuf = NULL;
+    sgw_ue_t *sgw_ue = NULL;
+
+    gtp_f_teid_t *pgw_s5c_teid = NULL;
+    gtp_f_teid_t sgw_s11_teid;
+    gtp_f_teid_t *pgw_s5u_teid = NULL;
+    gtp_f_teid_t sgw_s1u_teid;
+
+    d_assert(sess, return, "Null param");
+    sgw_ue = sess->sgw_ue;
+    d_assert(sgw_ue, return, "Null param");
+    d_assert(s5c_xact, return, "Null param");
+    s11_xact = s5c_xact->assoc_xact;
+    d_assert(s11_xact, return, "Null param");
+    d_assert(gtp_message, return, "Null param");
+
+    rsp = &gtp_message->create_session_response;
+
+    if (rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
+            presence == 0)
+    {
+        d_error("No GTP TEID");
+        return;
+    }
+    if (rsp->bearer_contexts_created.presence == 0)
+    {
+        d_error("No Bearer");
+        return;
+    }
+    if (rsp->bearer_contexts_created.eps_bearer_id.presence == 0)
+    {
+        d_error("No EPS Bearer ID");
+        return;
+    }
+    if (rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.presence == 0)
+    {
+        d_error("No GTP TEID");
+        return;
+    }
+
+    bearer = sgw_bearer_find_by_sess_ebi(sess, 
+                rsp->bearer_contexts_created.eps_bearer_id.u8);
+    d_assert(bearer, return, "No Bearer Context");
+
+    /* Receive Control Plane(UL) : PGW-S5C */
+    pgw_s5c_teid = rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
+                data;
+    sess->pgw_s5c_teid = ntohl(pgw_s5c_teid->teid);
+    sess->pgw_s5c_addr = pgw_s5c_teid->ipv4_addr;
+    rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
+                presence = 0;
+
+    /* Receive Data Plane(UL) : PGW-S5U */
+    pgw_s5u_teid = rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.data;
+    bearer->pgw_s5u_teid = ntohl(pgw_s5u_teid->teid);
+    bearer->pgw_s5u_addr = pgw_s5u_teid->ipv4_addr;
+    rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.presence = 0;
+
+    /* Send Control Plane(UL) : SGW-S11 */
+    memset(&sgw_s11_teid, 0, sizeof(gtp_f_teid_t));
+    sgw_s11_teid.ipv4 = 1;
+    sgw_s11_teid.interface_type = GTP_F_TEID_S11_S4_SGW_GTP_C;
+    sgw_s11_teid.ipv4_addr = sgw_ue->sgw_s11_addr;
+    sgw_s11_teid.teid = htonl(sgw_ue->sgw_s11_teid);
+    rsp->sender_f_teid_for_control_plane.presence = 1;
+    rsp->sender_f_teid_for_control_plane.data = &sgw_s11_teid;
+    rsp->sender_f_teid_for_control_plane.len = GTP_F_TEID_IPV4_LEN;
+
+    /* Send Data Plane(UL) : SGW-S1U */
+    memset(&sgw_s1u_teid, 0, sizeof(gtp_f_teid_t));
+    sgw_s1u_teid.ipv4 = 1;
+    sgw_s1u_teid.interface_type = GTP_F_TEID_S1_U_SGW_GTP_U;
+    sgw_s1u_teid.ipv4_addr = bearer->sgw_s1u_addr;
+    sgw_s1u_teid.teid = htonl(bearer->sgw_s1u_teid);
+    rsp->bearer_contexts_created.s1_u_enodeb_f_teid.presence = 1;
+    rsp->bearer_contexts_created.s1_u_enodeb_f_teid.data = &sgw_s1u_teid;
+    rsp->bearer_contexts_created.s1_u_enodeb_f_teid.len = GTP_F_TEID_IPV4_LEN;
+
+    rv = gtp_xact_commit(s5c_xact);
+    d_assert(rv == CORE_OK, return, "xact_commit error");
+
+    gtp_message->h.type = GTP_CREATE_SESSION_RESPONSE_TYPE;
+    gtp_message->h.teid = sgw_ue->mme_s11_teid;
+
+    rv = gtp_build_msg(&pkbuf, gtp_message);
+    d_assert(rv == CORE_OK, return, "gtp build failed");
+
+    rv = gtp_xact_update_tx(s11_xact, &gtp_message->h, pkbuf);
+    d_assert(rv == CORE_OK, return, "gtp_xact_update_tx error");
+
+    rv = gtp_xact_commit(s11_xact);
+    d_assert(rv == CORE_OK, return, "xact_commit error");
+
+    d_trace(3, "[GTP] Create Session Response : "
+            "SGW[%d] <-- PGW[%d]\n", sess->sgw_s5c_teid, sess->pgw_s5c_teid);
+}
+
+void sgw_handle_delete_session_response(gtp_xact_t *s5c_xact,
+    sgw_sess_t *sess, gtp_message_t *gtp_message)
+{
+    status_t rv;
+    gtp_xact_t *s11_xact = NULL;
+    gtp_delete_session_response_t *rsp = NULL;
+    pkbuf_t *pkbuf = NULL;
+    c_uint32_t mme_s11_teid;
+    gtp_cause_t *cause = NULL;
+    sgw_ue_t *sgw_ue = NULL;
+
+    d_assert(sess, return, "Null param");
+    sgw_ue = sess->sgw_ue;
+    d_assert(s5c_xact, return, "Null param");
+    s11_xact = s5c_xact->assoc_xact;
+    d_assert(s11_xact, return, "Null param");
+    d_assert(gtp_message, return, "Null param");
+
+    rsp = &gtp_message->delete_session_response;
+
+    if (rsp->cause.presence == 0)
+    {
+        d_error("No Cause");
+        return;
+    }
+
+    cause = rsp->cause.data;
+    d_assert(cause, return, "Null param");
+
+    /* Remove a pgw session */
+    if (sess)
+    {
+        d_trace(3, "[GTP] Delete Session Response : "
+            "SGW[%d] --> PGW[%d]\n", sess->sgw_s5c_teid, sess->pgw_s5c_teid);
+
+        /* backup sgw_s5c_teid in session context */
+        mme_s11_teid = sgw_ue->mme_s11_teid;
+
+        if (sgw_sess_remove(sess) != CORE_OK)
+        {
+            d_error("Error on PGW session %d removal", sess->index);
+            cause->value = GTP_CAUSE_CONTEXT_NOT_FOUND;
+        }
+    }
+    else
+    {
+        cause->value = GTP_CAUSE_INVALID_PEER;
+    }
+
+    rv = gtp_xact_commit(s5c_xact);
+    d_assert(rv == CORE_OK, return, "xact_commit error");
+
+    gtp_message->h.type = GTP_DELETE_SESSION_RESPONSE_TYPE;
+    gtp_message->h.teid = mme_s11_teid;
+
+    rv = gtp_build_msg(&pkbuf, gtp_message);
+    d_assert(rv == CORE_OK, return, "gtp build failed");
+
+    rv = gtp_xact_update_tx(s11_xact, &gtp_message->h, pkbuf);
+    d_assert(rv == CORE_OK, return, "gtp_xact_update_tx error");
+
+    rv = gtp_xact_commit(s11_xact);
+    d_assert(rv == CORE_OK, return, "xact_commit error");
+}

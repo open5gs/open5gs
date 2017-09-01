@@ -155,6 +155,14 @@ struct _mme_ue_t {
     c_int8_t        imsi_bcd[MAX_IMSI_BCD_LEN+1];
     guti_t          guti;
 
+    /* IMPORTANT!
+     * MME-S11-TEID is same with an index */
+    c_uint32_t      mme_s11_teid;
+    c_uint32_t      mme_s11_addr;
+
+    c_uint32_t      sgw_s11_teid;
+    c_uint32_t      sgw_s11_addr;
+
     /* UE Info */
     tai_t           tai;
     e_cgi_t         e_cgi;
@@ -246,28 +254,16 @@ struct _mme_ue_t {
     nas_detach_type_t detach_type;
 };
 
+#define MME_UE_IN_ATTACH_STATE(mme) \
+    ((mme) && mme_sess_first(mme) && \
+    (mme_sess_next(mme_sess_first(mme)) == NULL))
 typedef struct _mme_sess_t {
     lnode_t         node;       /* A node of list_t */
     index_t         index;      /* An index of this node */
     fsm_t           sm;         /* State Machine */
 
     c_uint8_t       pti;        /* Procedure Trasaction Identity */
-
-#define MME_SESSION_IN_ATTACH_STATE(sess) \
-    ((sess) && ((sess)->ebi == MIN_EPS_BEARER_ID))
     c_uint8_t       ebi;        /* EPS Bearer ID */    
-
-    /* IMPORTANT! 
-     * MME-S11-TEID is same with an index */
-    c_uint32_t      mme_s11_teid;       
-    c_uint32_t      mme_s11_addr;       
-
-#define MME_UE_HAVE_SESSION(mme) \
-    ((mme) && (mme_sess_first(mme)) && \
-    (((mme_sess_first(mme))->sgw_s11_teid) && \
-     ((mme_sess_first(mme))->sgw_s11_addr)))
-    c_uint32_t      sgw_s11_teid;
-    c_uint32_t      sgw_s11_addr;
 
     /* mme_bearer_first(sess) : Default Bearer Context */
     list_t          bearer_list;
@@ -294,6 +290,12 @@ typedef struct _mme_sess_t {
 typedef struct _mme_bearer_t {
     lnode_t         node;   /* A node of list_t */
     index_t         index;  /* An index of this node */
+
+#define MME_UE_HAVE_SESSION(mme) \
+    ((mme) && (mme_sess_first(mme)) && \
+     (mme_default_bearer_in_sess(mme_sess_first(mme))) && \
+     ((mme_default_bearer_in_sess(mme_sess_first(mme)))->sgw_s1u_teid) && \
+     ((mme_default_bearer_in_sess(mme_sess_first(mme)))->sgw_s1u_addr))
 
 #define MME_UE_HAVE_DEFAULT_BEARER(mme) \
     ((mme) && (mme_sess_first(mme)) && \
@@ -343,6 +345,7 @@ CORE_DECLARE(mme_ue_t*)     mme_ue_find(index_t index);
 CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_imsi(c_uint8_t *imsi, int imsi_len);
 CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_imsi_bcd(c_int8_t *imsi_bcd);
 CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_guti(guti_t *guti);
+CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_teid(c_uint32_t teid);
 
 CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_message(nas_message_t *message);
 CORE_DECLARE(status_t)      mme_ue_set_imsi(
@@ -358,7 +361,6 @@ CORE_DECLARE(mme_sess_t*)   mme_sess_add(mme_ue_t *mme_ue, c_uint8_t pti);
 CORE_DECLARE(status_t )     mme_sess_remove(mme_sess_t *sess);
 CORE_DECLARE(status_t )     mme_sess_remove_all(mme_ue_t *mme_ue);
 CORE_DECLARE(mme_sess_t*)   mme_sess_find(index_t index);
-CORE_DECLARE(mme_sess_t*)   mme_sess_find_by_teid(c_uint32_t teid);
 CORE_DECLARE(mme_sess_t*)   mme_sess_find_by_pti(
                                 mme_ue_t *mme_ue, c_uint8_t pti);
 CORE_DECLARE(mme_sess_t*)   mme_sess_find_by_ebi(

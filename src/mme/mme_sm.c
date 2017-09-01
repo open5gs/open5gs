@@ -267,7 +267,6 @@ void mme_state_operational(fsm_t *s, event_t *e)
             pkbuf_t *pkbuf = (pkbuf_t *)event_get_param3(e);
             gtp_xact_t *xact = NULL;
             gtp_message_t message;
-            mme_sess_t *sess = NULL;
             mme_ue_t *mme_ue = NULL;
             enb_ue_t *enb_ue = NULL;
 
@@ -279,21 +278,19 @@ void mme_state_operational(fsm_t *s, event_t *e)
             if (rv != CORE_OK)
                 break;
 
-            sess = mme_sess_find_by_teid(message.h.teid);
-            d_assert(sess, pkbuf_free(pkbuf); break, 
-                    "No Session Context(TEID:%d)", message.h.teid);
-            mme_ue = sess->mme_ue;
-            d_assert(mme_ue, pkbuf_free(pkbuf);break, "Null param");
+            mme_ue = mme_ue_find_by_teid(message.h.teid);
+            d_assert(mme_ue, pkbuf_free(pkbuf); break, 
+                    "No UE Context(TEID:%d)", message.h.teid);
             enb_ue = mme_ue->enb_ue;
-            d_assert(enb_ue, break, "Null param");
+            d_assert(enb_ue, pkbuf_free(pkbuf);break, "Null param");
                     
             switch(message.h.type)
             {
                 case GTP_CREATE_SESSION_RESPONSE_TYPE:
                 {
                     mme_s11_handle_create_session_response(
-                        xact, sess, &message.create_session_response);
-                    if (MME_SESSION_IN_ATTACH_STATE(sess))
+                        xact, mme_ue, &message.create_session_response);
+                    if (MME_UE_IN_ATTACH_STATE(mme_ue))
                     {
                         emm_handle_attach_accept(mme_ue);
                     }
@@ -305,12 +302,12 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 }
                 case GTP_MODIFY_BEARER_RESPONSE_TYPE:
                     mme_s11_handle_modify_bearer_response(
-                        xact, sess, &message.modify_bearer_response);
+                        xact, mme_ue, &message.modify_bearer_response);
                     break;
                 case GTP_DELETE_SESSION_RESPONSE_TYPE:
                 {
                     mme_s11_handle_delete_session_response(
-                        xact, sess, &message.delete_session_response);
+                        xact, mme_ue, &message.delete_session_response);
 
                     if (MME_UE_DETACH_INITIATED(mme_ue))
                     {
@@ -353,7 +350,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 case GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE:
                 {
                     mme_s11_handle_release_access_bearers_response(
-                        xact, sess, &message.release_access_bearers_response);
+                        xact, mme_ue, &message.release_access_bearers_response);
 
                     s1ap_handle_release_access_bearers_response(enb_ue);
                     break;
@@ -362,7 +359,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 case GTP_DOWNLINK_DATA_NOTIFICATION_TYPE:
                 {
                     mme_s11_handle_downlink_data_notification(
-                        xact, sess, &message.downlink_data_notification);
+                        xact, mme_ue, &message.downlink_data_notification);
 
                     s1ap_handle_paging(mme_ue);
                     /* Start T3413 */
@@ -407,6 +404,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
                             S1ap_CauseNas_authentication_failure,
                             EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED,
                             ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+
                         break;
                     }
 
@@ -423,6 +421,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
                             S1ap_CauseNas_unspecified,
                             EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED,
                             ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+
                         break;
                     }
 

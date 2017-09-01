@@ -46,6 +46,16 @@ typedef struct _gtp_xact_t {
     c_uint8_t       duplicated_rcount;
 
     struct _gtp_xact_t *assoc_xact; /**< Associated transaction */
+
+#define GTP_XACT_STORE_SESSION(xact, session) \
+    do { \
+        d_assert((xact), break, "Null param"); \
+        d_assert((session), break, "Null param"); \
+        ((xact)->sess) = (session); \
+    } while(0)
+
+#define GTP_XACT_RETRIEVE_SESSION(xact) ((xact) ? ((xact)->sess) : NULL)
+    void            *sess;          /**< Session Store */
 } gtp_xact_t;
 
 CORE_DECLARE(status_t) gtp_xact_init(tm_service_t *tm_service,

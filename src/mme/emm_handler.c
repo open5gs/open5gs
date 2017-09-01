@@ -30,7 +30,6 @@ static void event_emm_to_esm(
     nas_esm_header_t *h = NULL;
     c_uint8_t pti = NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
     c_uint8_t ebi = NAS_EPS_BEARER_IDENTITY_UNASSIGNED;
-    mme_bearer_t *bearer = NULL;
     mme_sess_t *sess = NULL;
 
     d_assert(mme_ue, return, "Null param");
@@ -53,8 +52,6 @@ static void event_emm_to_esm(
     if (!sess)
         sess = mme_sess_add(mme_ue, pti);
     d_assert(sess, return, "Null param");
-    bearer = mme_default_bearer_in_sess(sess);
-    d_assert(bearer, return, "No Bearer Context");
 
     /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 
      * When calculating AES_CMAC, we need to use the headroom of the packet. */

@@ -14,6 +14,7 @@
 
 static sgw_context_t self;
 
+index_declare(sgw_ue_pool, sgw_ue_t, MAX_POOL_OF_UE);
 index_declare(sgw_sess_pool, sgw_sess_t, MAX_POOL_OF_SESS);
 index_declare(sgw_bearer_pool, sgw_bearer_t, MAX_POOL_OF_BEARER);
 
@@ -26,6 +27,7 @@ status_t sgw_context_init()
 
     memset(&self, 0, sizeof(sgw_context_t));
 
+    index_init(&sgw_ue_pool, MAX_POOL_OF_UE);
     index_init(&sgw_sess_pool, MAX_POOL_OF_SESS);
     index_init(&sgw_bearer_pool, MAX_POOL_OF_BEARER);
 
@@ -35,7 +37,7 @@ status_t sgw_context_init()
     list_init(&self.s5c_node.local_list);
     list_init(&self.s5c_node.remote_list);
 
-    self.sess_hash = hash_make();
+    self.imsi_ue_hash = hash_make();
 
     context_initialized = 1;
 
@@ -50,20 +52,14 @@ status_t sgw_context_final()
     gtp_xact_delete_all(&self.s11_node);
     gtp_xact_delete_all(&self.s5c_node);
 
-    sgw_sess_remove_all();
+    sgw_ue_remove_all();
 
-    d_assert(self.sess_hash, , "Null param");
-    hash_destroy(self.sess_hash);
+    d_assert(self.imsi_ue_hash, , "Null param");
+    hash_destroy(self.imsi_ue_hash);
 
-    if (index_size(&sgw_sess_pool) != pool_avail(&sgw_sess_pool))
-        d_warn("%d not freed in sgw_sess_pool[%d] in SGW-Context",
-                index_size(&sgw_sess_pool) - pool_avail(&sgw_sess_pool),
-                index_size(&sgw_sess_pool));
-    d_trace(3, "%d not freed in sgw_sess_pool[%d] in SGW-Context\n",
-            index_size(&sgw_sess_pool) - pool_avail(&sgw_sess_pool),
-            index_size(&sgw_sess_pool));
     index_final(&sgw_bearer_pool);
     index_final(&sgw_sess_pool);
+    index_final(&sgw_ue_pool);
 
     context_initialized = 0;
     
@@ -407,8 +403,10 @@ status_t sgw_context_setup_trace_module()
     {
         extern int _sgw_sm;
         d_trace_level(&_sgw_sm, gtp);
-        extern int _sgw_handler;
-        d_trace_level(&_sgw_handler, gtp);
+        extern int _sgw_s11_handler;
+        d_trace_level(&_sgw_s11_handler, gtp);
+        extern int _sgw_s11_handler;
+        d_trace_level(&_sgw_s11_handler, gtp);
         extern int _gtp_path;
         d_trace_level(&_gtp_path, gtp);
         extern int _sgw_path;
@@ -435,78 +433,197 @@ status_t sgw_context_setup_trace_module()
     return CORE_OK;
 }
 
-static void *sess_hash_keygen(c_uint8_t *out, int *out_len,
-        c_uint8_t *imsi, int imsi_len, c_int8_t *apn)
+sgw_ue_t* sgw_ue_add(
+        c_uint8_t *imsi, int imsi_len, c_int8_t *apn, c_uint8_t ebi)
 {
-    memcpy(out, imsi, imsi_len);
-    core_cpystrn((char*)(out+imsi_len), apn, MAX_APN_LEN+1);
-    *out_len = imsi_len+strlen((char*)(out+imsi_len));
+    sgw_ue_t *sgw_ue = NULL;
+    sgw_sess_t *sess = NULL;
 
-    return out;
+    index_alloc(&sgw_ue_pool, &sgw_ue);
+    d_assert(sgw_ue, return NULL, "Null param");
+
+    sgw_ue->sgw_s11_teid = sgw_ue->index;
+    sgw_ue->sgw_s11_addr = sgw_self()->s11_addr;
+
+    /* Set IMSI */
+    sgw_ue->imsi_len = imsi_len;
+    memcpy(sgw_ue->imsi, imsi, sgw_ue->imsi_len);
+#if 0
+    core_buffer_to_bcd(sgw_ue->imsi, sgw_ue->imsi_len, sgw_ue->imsi_bcd);
+#endif
+
+    list_init(&sgw_ue->sess_list);
+
+    sess = sgw_sess_add(sgw_ue, apn, ebi);
+    d_assert(sess, index_free(&sgw_ue_pool, sgw_ue); return NULL, "Null param");
+
+    hash_set(self.imsi_ue_hash, sgw_ue->imsi, sgw_ue->imsi_len, sgw_ue);
+
+    return sgw_ue;
+}
+
+status_t sgw_ue_remove(sgw_ue_t *sgw_ue)
+{
+    d_assert(sgw_ue, return CORE_ERROR, "Null param");
+
+    /* Clear hash table */
+    if (sgw_ue->imsi_len != 0)
+        hash_set(self.imsi_ue_hash, sgw_ue->imsi, sgw_ue->imsi_len, NULL);
+    
+    sgw_sess_remove_all(sgw_ue);
+
+    index_free(&sgw_ue_pool, sgw_ue);
+
+    return CORE_OK;
+}
+
+status_t sgw_ue_remove_all()
+{
+    hash_index_t *hi = NULL;
+    sgw_ue_t *sgw_ue = NULL;
+
+    for (hi = sgw_ue_first(); hi; hi = sgw_ue_next(hi))
+    {
+        sgw_ue = sgw_ue_this(hi);
+        sgw_ue_remove(sgw_ue);
+    }
+
+    return CORE_OK;
+}
+
+sgw_ue_t* sgw_ue_find(index_t index)
+{
+    d_assert(index, return NULL, "Invalid index = 0x%x", index);
+    return index_find(&sgw_ue_pool, index);
+}
+
+sgw_ue_t* sgw_ue_find_by_imsi_bcd(c_int8_t *imsi_bcd)
+{
+    c_uint8_t imsi[MAX_IMSI_LEN];
+    int imsi_len = 0;
+
+    d_assert(imsi_bcd, return NULL,"Invalid param");
+
+    core_bcd_to_buffer(imsi_bcd, imsi, &imsi_len);
+
+    return sgw_ue_find_by_imsi(imsi, imsi_len);
+}
+
+sgw_ue_t* sgw_ue_find_by_imsi(c_uint8_t *imsi, int imsi_len)
+{
+    d_assert(imsi && imsi_len, return NULL,"Invalid param");
+
+    return (sgw_ue_t *)hash_get(self.imsi_ue_hash, imsi, imsi_len);
+}
+
+sgw_ue_t* sgw_ue_find_by_teid(c_uint32_t teid)
+{
+    return sgw_ue_find(teid);
+}
+
+sgw_ue_t *sgw_ue_find_or_add_by_message(gtp_message_t *gtp_message)
+{
+    sgw_ue_t *sgw_ue = NULL;
+
+    gtp_create_session_request_t *req = &gtp_message->create_session_request;
+
+    if (req->sender_f_teid_for_control_plane.presence == 0)
+    {
+        d_error("No IMSI");
+        return NULL;
+    }
+
+    if (req->access_point_name.presence == 0)
+    {
+        d_error("No APN");
+        return NULL;
+    }
+
+    sgw_ue = sgw_ue_find_by_imsi(req->imsi.data, req->imsi.len);
+    if (!sgw_ue)
+    {
+        c_int8_t apn[MAX_APN_LEN];
+        apn_parse(apn, req->access_point_name.data, req->access_point_name.len);
+        sgw_ue = sgw_ue_add(req->imsi.data, req->imsi.len, apn,
+            req->bearer_contexts_to_be_created.eps_bearer_id.u8);
+        d_assert(sgw_ue, return NULL, "No UE Context");
+    }
+
+    return sgw_ue;
+}
+
+hash_index_t *sgw_ue_first()
+{
+    d_assert(self.imsi_ue_hash, return NULL, "Null param");
+    return hash_first(self.imsi_ue_hash);
+}
+
+hash_index_t *sgw_ue_next(hash_index_t *hi)
+{
+    return hash_next(hi);
+}
+
+sgw_ue_t *sgw_ue_this(hash_index_t *hi)
+{
+    d_assert(hi, return NULL, "Null param");
+    return hash_this_val(hi);
 }
 
 sgw_sess_t *sgw_sess_add(
-    c_uint8_t *imsi, int imsi_len, c_int8_t *apn, c_uint8_t id)
+        sgw_ue_t *sgw_ue, c_int8_t *apn, c_uint8_t ebi)
 {
     sgw_sess_t *sess = NULL;
     sgw_bearer_t *bearer = NULL;
 
-    d_assert(self.sess_hash, return NULL, "Null param");
+    d_assert(sgw_ue, return NULL, "Null param");
+    d_assert(ebi, return NULL, "Invalid EBI(%d)", ebi);
 
     index_alloc(&sgw_sess_pool, &sess);
     d_assert(sess, return NULL, "Null param");
 
-    sess->sgw_s11_teid = sess->index;  /* derived from an index */
-    sess->sgw_s11_addr = sgw_self()->s11_addr;
-
-    sess->sgw_s5c_teid = sess->index;  /* derived from an index */
+    sess->sgw_s5c_teid = sess->index;
     sess->sgw_s5c_addr = sgw_self()->s5c_addr;
-
-    /* Set IMSI */
-    sess->imsi_len = imsi_len;
-    memcpy(sess->imsi, imsi, sess->imsi_len);
-    core_buffer_to_bcd(sess->imsi, sess->imsi_len, sess->imsi_bcd);
 
     /* Set APN */
     core_cpystrn(sess->pdn.apn, apn, MAX_APN_LEN+1);
 
     list_init(&sess->bearer_list);
+    list_append(&sgw_ue->sess_list, sess);
 
-    bearer = sgw_bearer_add(sess, id);
+    sess->sgw_ue = sgw_ue;
+
+    bearer = sgw_bearer_add(sess, ebi);
     d_assert(bearer, sgw_sess_remove(sess); return NULL, 
             "Can't add default bearer context");
-
-    /* Generate Hash Key : IMSI + APN */
-    sess_hash_keygen(sess->hash_keybuf, &sess->hash_keylen,
-            imsi, imsi_len, apn);
-    hash_set(self.sess_hash, sess->hash_keybuf, sess->hash_keylen, sess);
 
     return sess;
 }
 
 status_t sgw_sess_remove(sgw_sess_t *sess)
 {
-    d_assert(self.sess_hash, return CORE_ERROR, "Null param");
     d_assert(sess, return CORE_ERROR, "Null param");
-
-    hash_set(self.sess_hash, sess->hash_keybuf, sess->hash_keylen, NULL);
+    d_assert(sess->sgw_ue, return CORE_ERROR, "Null param");
 
     sgw_bearer_remove_all(sess);
 
+    list_remove(&sess->sgw_ue->sess_list, sess);
     index_free(&sgw_sess_pool, sess);
 
     return CORE_OK;
 }
 
-status_t sgw_sess_remove_all()
+status_t sgw_sess_remove_all(sgw_ue_t *sgw_ue)
 {
-    hash_index_t *hi = NULL;
-    sgw_sess_t *sess = NULL;
-
-    for (hi = sgw_sess_first(); hi; hi = sgw_sess_next(hi))
+    sgw_sess_t *sess = NULL, *next_sess = NULL;
+    
+    sess = sgw_sess_first(sgw_ue);
+    while (sess)
     {
-        sess = sgw_sess_this(hi);
+        next_sess = sgw_sess_next(sess);
+
         sgw_sess_remove(sess);
+
+        sess = next_sess;
     }
 
     return CORE_OK;
@@ -523,68 +640,44 @@ sgw_sess_t* sgw_sess_find_by_teid(c_uint32_t teid)
     return sgw_sess_find(teid);
 }
 
-sgw_sess_t* sgw_sess_find_by_imsi_apn(
-    c_uint8_t *imsi, int imsi_len, c_int8_t *apn)
-{
-    c_uint8_t keybuf[MAX_IMSI_LEN+MAX_APN_LEN+1];
-    int keylen = 0;
-
-    d_assert(self.sess_hash, return NULL, "Null param");
-
-    sess_hash_keygen(keybuf, &keylen, imsi, imsi_len, apn);
-    return (sgw_sess_t *)hash_get(self.sess_hash, keybuf, keylen);
-}
-
-sgw_sess_t *sgw_sess_find_or_add_by_message(gtp_message_t *gtp_message)
+sgw_sess_t* sgw_sess_find_by_apn(sgw_ue_t *sgw_ue, c_int8_t *apn)
 {
     sgw_sess_t *sess = NULL;
-
-    gtp_create_session_request_t *req = &gtp_message->create_session_request;
-    c_int8_t apn[MAX_APN_LEN];
-
-    if (req->sender_f_teid_for_control_plane.presence == 0)
+    
+    sess = sgw_sess_first(sgw_ue);
+    while (sess)
     {
-        d_error("No IMSI");
-        return NULL;
+        if (strcmp(sess->pdn.apn, apn) == 0)
+            return sess;
+
+        sess = sgw_sess_next(sess);
     }
 
-    if (req->access_point_name.presence == 0)
-    {
-        d_error("No APN");
-        return NULL;
-    }
-
-    apn_parse(apn, req->access_point_name.data, req->access_point_name.len);
-    sess = sgw_sess_find_by_imsi_apn(req->imsi.data, req->imsi.len, apn);
-    if (!sess)
-    {
-        sess = sgw_sess_add(req->imsi.data, req->imsi.len, apn,
-            req->bearer_contexts_to_be_created.eps_bearer_id.u8);
-        d_assert(sess, return NULL, "No Session Context");
-    }
-
-    return sess;
+    return NULL;
 }
 
-hash_index_t* sgw_sess_first()
+sgw_sess_t* sgw_sess_find_by_ebi(sgw_ue_t *sgw_ue, c_uint8_t ebi)
 {
-    d_assert(self.sess_hash, return NULL, "Null param");
-    return hash_first(self.sess_hash);
+    sgw_bearer_t *bearer = NULL;
+
+    bearer = sgw_bearer_find_by_ue_ebi(sgw_ue, ebi);
+    if (bearer)
+        return bearer->sess;
+
+    return NULL;
 }
 
-hash_index_t* sgw_sess_next(hash_index_t *hi)
+sgw_sess_t* sgw_sess_first(sgw_ue_t *sgw_ue)
 {
-    return hash_next(hi);
+    return list_first(&sgw_ue->sess_list);
 }
 
-sgw_sess_t *sgw_sess_this(hash_index_t *hi)
+sgw_sess_t* sgw_sess_next(sgw_sess_t *sess)
 {
-    d_assert(hi, return NULL, "Null param");
-    return hash_this_val(hi);
+    return list_next(sess);
 }
 
-
-sgw_bearer_t* sgw_bearer_add(sgw_sess_t *sess, c_uint8_t id)
+sgw_bearer_t* sgw_bearer_add(sgw_sess_t *sess, c_uint8_t ebi)
 {
     sgw_bearer_t *bearer = NULL;
 
@@ -593,7 +686,7 @@ sgw_bearer_t* sgw_bearer_add(sgw_sess_t *sess, c_uint8_t id)
     index_alloc(&sgw_bearer_pool, &bearer);
     d_assert(bearer, return NULL, "Bearer context allocation failed");
 
-    bearer->id = id;
+    bearer->ebi = ebi;
     bearer->sgw_s1u_teid = bearer->index;
     bearer->sgw_s1u_addr = sgw_self()->s1u_addr;
     bearer->sgw_s5u_teid = bearer->index;
@@ -659,22 +752,40 @@ sgw_bearer_t* sgw_bearer_find_by_sgw_s1u_teid(c_uint32_t sgw_s1u_teid)
     return sgw_bearer_find(sgw_s1u_teid);
 }
 
-sgw_bearer_t* sgw_bearer_find_by_id(sgw_sess_t *sess, c_uint8_t id)
+sgw_bearer_t* sgw_bearer_find_by_sess_ebi(sgw_sess_t *sess, c_uint8_t ebi)
 {
     sgw_bearer_t *bearer = NULL;
-    
-    d_assert(sess, return NULL, "Null param");
 
-    bearer = list_first(&sess->bearer_list);
-    while (bearer)
+    bearer = sgw_bearer_first(sess);
+    while(bearer)
     {
-        if (bearer->id == id)
-            break;
+        if (ebi == bearer->ebi)
+            return bearer;
 
-        bearer = list_next(bearer);
+        bearer = sgw_bearer_next(bearer);
     }
 
-    return bearer;
+    return NULL;
+}
+
+sgw_bearer_t* sgw_bearer_find_by_ue_ebi(sgw_ue_t *sgw_ue, c_uint8_t ebi)
+{
+    sgw_sess_t *sess = NULL;
+    sgw_bearer_t *bearer = NULL;
+    
+    sess = sgw_sess_first(sgw_ue);
+    while (sess)
+    {
+        bearer = sgw_bearer_find_by_sess_ebi(sess, ebi);
+        if (bearer)
+        {
+            return bearer;
+        }
+
+        sess = sgw_sess_next(sess);
+    }
+
+    return NULL;
 }
 
 sgw_bearer_t* sgw_default_bearer_in_sess(sgw_sess_t *sess)

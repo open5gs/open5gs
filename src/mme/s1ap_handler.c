@@ -419,7 +419,7 @@ void s1ap_handle_initial_context_setup_response(
 
         memset(&h, 0, sizeof(gtp_header_t));
         h.type = GTP_MODIFY_BEARER_REQUEST_TYPE;
-        h.teid = sess->sgw_s11_teid;
+        h.teid = mme_ue->sgw_s11_teid;
 
         rv = mme_s11_build_modify_bearer_request(&pkbuf, h.type, bearer);
         d_assert(rv == CORE_OK, return, "S11 build error");
@@ -474,7 +474,7 @@ void s1ap_handle_ue_context_release_request(
 
                         memset(&h, 0, sizeof(gtp_header_t));
                         h.type = GTP_RELEASE_ACCESS_BEARERS_REQUEST_TYPE;
-                        h.teid = sess->sgw_s11_teid;
+                        h.teid = mme_ue->sgw_s11_teid;
 
                         rv = mme_s11_build_release_access_bearers_request(
                                 &pkbuf, h.type);

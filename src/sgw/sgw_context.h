@@ -40,12 +40,17 @@ typedef struct _sgw_context_t {
     msgq_id         queue_id;       /* Queue for processing SGW control plane */
     tm_service_t    tm_service;     /* Timer Service */
 
-    hash_t          *sess_hash; /* hash table (IMSI+APN) */
+    hash_t          *imsi_ue_hash;  /* hash table (IMSI : SGW_UE) */
 } sgw_context_t;
 
-typedef struct _sgw_sess_t {
-    lnode_t         node;       /* A node of list_t */
-    index_t         index;      /* An index of this node */
+typedef struct _sgw_ue_t {
+    lnode_t         node;   /* A node of list_t */
+    index_t         index;  /* An index of this node */
+
+    /* UE identity */
+    c_uint8_t       imsi[MAX_IMSI_LEN];
+    int             imsi_len;
+    c_int8_t        imsi_bcd[MAX_IMSI_BCD_LEN+1];
 
     /* IMPORTANT! 
      * SGW-S11-F-TEID is same with an index */
@@ -54,6 +59,13 @@ typedef struct _sgw_sess_t {
     c_uint32_t      mme_s11_teid;   /* MME-S11-F-TEID */
     c_uint32_t      mme_s11_addr;   /* MME-S11-F-TEID IPv4 Address */
 
+    list_t          sess_list;
+} sgw_ue_t;
+
+typedef struct _sgw_sess_t {
+    lnode_t         node;       /* A node of list_t */
+    index_t         index;      /* An index of this node */
+
     /* IMPORTANT! 
      * SGW-S5C-F-TEID is same with an index */
     c_uint32_t      sgw_s5c_teid;       
@@ -61,26 +73,20 @@ typedef struct _sgw_sess_t {
     c_uint32_t      pgw_s5c_teid;   /* PGW-S5C-F-TEID */
     c_uint32_t      pgw_s5c_addr;   /* PGW-S5C-F-TEID IPv4 Address */
 
-    /* IMSI */
-    c_uint8_t       imsi[MAX_IMSI_LEN];
-    int             imsi_len;
-    c_int8_t        imsi_bcd[MAX_IMSI_BCD_LEN+1];
-
     /* APN Configuration */
     pdn_t           pdn;
 
-    /* Hash Key : IMSI+APN */
-    c_uint8_t       hash_keybuf[MAX_IMSI_LEN+MAX_APN_LEN+1];
-    int             hash_keylen;
-
     list_t          bearer_list;
+
+    /* Related Context */
+    sgw_ue_t        *sgw_ue;
 } sgw_sess_t;
 
 typedef struct _sgw_bearer_t {
     lnode_t         node; /**< A node of list_t */
     index_t         index;
 
-    c_uint8_t       id;
+    c_uint8_t       ebi;
 
     /* IMPORTANT! 
      * SGW-S1U-TEID is same with an index */
@@ -125,6 +131,7 @@ CORE_DECLARE(sgw_context_t*) sgw_self(void);
 CORE_DECLARE(status_t)      sgw_context_parse_config(void);
 CORE_DECLARE(status_t)      sgw_context_setup_trace_module(void);
 
+#if 0
 CORE_DECLARE(sgw_sess_t*)    sgw_sess_add(
         c_uint8_t *imsi, int imsi_len, c_int8_t *apn, c_uint8_t id);
 CORE_DECLARE(status_t)      sgw_sess_remove(sgw_sess_t *sess);
@@ -138,16 +145,48 @@ CORE_DECLARE(sgw_sess_t *)  sgw_sess_find_or_add_by_message(
 CORE_DECLARE(hash_index_t *)  sgw_sess_first();
 CORE_DECLARE(hash_index_t *)  sgw_sess_next(hash_index_t *hi);
 CORE_DECLARE(sgw_sess_t *)  sgw_sess_this(hash_index_t *hi);
+#endif
 
-CORE_DECLARE(sgw_bearer_t*) sgw_bearer_add(sgw_sess_t *sess, c_uint8_t id);
+CORE_DECLARE(sgw_ue_t*)     sgw_ue_add(c_uint8_t *imsi, int imsi_len,
+                                c_int8_t *apn, c_uint8_t id);
+CORE_DECLARE(status_t)      sgw_ue_remove(sgw_ue_t *sgw_ue);
+CORE_DECLARE(status_t)      sgw_ue_remove_all();
+
+CORE_DECLARE(sgw_ue_t*)     sgw_ue_find(index_t index);
+CORE_DECLARE(sgw_ue_t*)     sgw_ue_find_by_imsi(c_uint8_t *imsi, int imsi_len);
+CORE_DECLARE(sgw_ue_t*)     sgw_ue_find_by_imsi_bcd(c_int8_t *imsi_bcd);
+CORE_DECLARE(sgw_ue_t*)     sgw_ue_find_by_teid(c_uint32_t teid);
+CORE_DECLARE(sgw_ue_t *)    sgw_ue_find_or_add_by_message(
+                                gtp_message_t *gtp_message);
+
+CORE_DECLARE(hash_index_t *) sgw_ue_first();
+CORE_DECLARE(hash_index_t *) sgw_ue_next(hash_index_t *hi);
+CORE_DECLARE(sgw_ue_t *)    sgw_ue_this(hash_index_t *hi);
+
+CORE_DECLARE(sgw_sess_t*)   sgw_sess_add(sgw_ue_t *sgw_ue,
+                                c_int8_t *apn, c_uint8_t ebi);
+CORE_DECLARE(status_t )     sgw_sess_remove(sgw_sess_t *sess);
+CORE_DECLARE(status_t )     sgw_sess_remove_all(sgw_ue_t *sgw_ue);
+CORE_DECLARE(sgw_sess_t*)   sgw_sess_find(index_t index);
+CORE_DECLARE(sgw_sess_t*)   sgw_sess_find_by_apn(
+                                sgw_ue_t *sgw_ue, c_int8_t *apn);
+CORE_DECLARE(sgw_sess_t*)   sgw_sess_find_by_ebi(
+                                sgw_ue_t *sgw_ue, c_uint8_t ebi);
+CORE_DECLARE(sgw_sess_t*)   sgw_sess_find_by_teid(c_uint32_t teid);
+CORE_DECLARE(sgw_sess_t*)   sgw_sess_first(sgw_ue_t *sgw_ue);
+CORE_DECLARE(sgw_sess_t*)   sgw_sess_next(sgw_sess_t *sess);
+
+CORE_DECLARE(sgw_bearer_t*) sgw_bearer_add(sgw_sess_t *sess, c_uint8_t ebi);
 CORE_DECLARE(status_t)      sgw_bearer_remove(sgw_bearer_t *bearer);
 CORE_DECLARE(status_t)      sgw_bearer_remove_all(sgw_sess_t *sess);
 CORE_DECLARE(sgw_bearer_t*) sgw_bearer_find_by_sgw_s5u_teid(
                                 c_uint32_t sgw_s5u_teid);
 CORE_DECLARE(sgw_bearer_t*) sgw_bearer_find_by_sgw_s1u_teid(
                                 c_uint32_t sgw_s1u_teid);
-CORE_DECLARE(sgw_bearer_t*) sgw_bearer_find_by_id(
-                                sgw_sess_t *sess, c_uint8_t id);
+CORE_DECLARE(sgw_bearer_t*) sgw_bearer_find_by_sess_ebi(
+                                sgw_sess_t *sess, c_uint8_t ebi);
+CORE_DECLARE(sgw_bearer_t*) sgw_bearer_find_by_ue_ebi(
+                                sgw_ue_t *sgw_ue, c_uint8_t ebi);
 CORE_DECLARE(sgw_bearer_t*) sgw_default_bearer_in_sess(sgw_sess_t *sess);
 CORE_DECLARE(sgw_bearer_t*) sgw_bearer_first(sgw_sess_t *sess);
 CORE_DECLARE(sgw_bearer_t*) sgw_bearer_next(sgw_bearer_t *bearer);

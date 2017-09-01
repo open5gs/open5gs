@@ -1127,6 +1127,9 @@ mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
 
     list_init(&mme_ue->sess_list);
 
+    mme_ue->mme_s11_teid = mme_ue->index;
+    mme_ue->mme_s11_addr = mme_self()->s11_addr;
+
     /* Create t3413 timer */
     mme_ue->t3413 = event_timer(&self.tm_service, MME_EVT_EMM_T3413,
             self.t3413_value * 1000, mme_ue->index);
@@ -1231,6 +1234,11 @@ mme_ue_t* mme_ue_find_by_guti(guti_t *guti)
     d_assert(guti, return NULL,"Invalid param");
 
     return (mme_ue_t *)hash_get(self.guti_ue_hash, guti, sizeof(guti_t));
+}
+
+mme_ue_t* mme_ue_find_by_teid(c_uint32_t teid)
+{
+    return mme_ue_find(teid);
 }
 
 hash_index_t *mme_ue_first()
@@ -1464,9 +1472,6 @@ mme_sess_t *mme_sess_add(mme_ue_t *mme_ue, c_uint8_t pti)
     sess->pti = pti;
     sess->ebi = NEXT_ID(mme_ue->ebi, MIN_EPS_BEARER_ID, MAX_EPS_BEARER_ID);
 
-    sess->mme_s11_teid = sess->index;
-    sess->mme_s11_addr = mme_self()->s11_addr;
-
     list_init(&sess->bearer_list);
     list_append(&mme_ue->sess_list, sess);
 
@@ -1520,11 +1525,6 @@ mme_sess_t* mme_sess_find(index_t index)
 {
     d_assert(index, return NULL, "Invalid Index");
     return index_find(&mme_sess_pool, index);
-}
-
-mme_sess_t* mme_sess_find_by_teid(c_uint32_t teid)
-{
-    return mme_sess_find(teid);
 }
 
 mme_sess_t* mme_sess_find_by_pti(mme_ue_t *mme_ue, c_uint8_t pti)
