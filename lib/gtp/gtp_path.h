@@ -23,6 +23,7 @@ typedef struct _gtp_node_t {
 
     c_uint32_t      addr;           /**< Network byte order IP Address */
     c_uint16_t      port;           /**< Host byte order Port number */
+    net_sock_t      *sock;          /**< Socket Descriptor */
 
     list_t          local_list;    
     list_t          remote_list;   
@@ -33,8 +34,7 @@ CORE_DECLARE(status_t) gtp_listen(net_sock_t **sock,
 CORE_DECLARE(status_t) gtp_close(net_sock_t *sock);
 
 CORE_DECLARE(pkbuf_t *) gtp_read(net_sock_t *sock);
-CORE_DECLARE(status_t) gtp_send(net_sock_t *sock, 
-    gtp_node_t *gnode, pkbuf_t *pkbuf);
+CORE_DECLARE(status_t) gtp_send(gtp_node_t *gnode, pkbuf_t *pkbuf);
 
 CORE_DECLARE(pkbuf_t*) gtp_handle_echo_req(pkbuf_t *pkt);
 #ifdef __cplusplus

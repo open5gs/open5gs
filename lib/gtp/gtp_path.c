@@ -76,14 +76,16 @@ pkbuf_t *gtp_read(net_sock_t *sock)
     }
 }
 
-status_t gtp_send(net_sock_t *sock, gtp_node_t *gnode, pkbuf_t *pkbuf)
+status_t gtp_send(gtp_node_t *gnode, pkbuf_t *pkbuf)
 {
     char buf[INET_ADDRSTRLEN];
     ssize_t sent;
+    net_sock_t *sock = NULL;
 
-    d_assert(sock, return CORE_ERROR, "Null param");
     d_assert(gnode, return CORE_ERROR, "Null param");
     d_assert(pkbuf, return CORE_ERROR, "Null param");
+    sock = gnode->sock;
+    d_assert(sock, return CORE_ERROR, "Null param");
 
     sent = net_sendto(sock, pkbuf->payload, pkbuf->len, 
             gnode->addr, gnode->port);

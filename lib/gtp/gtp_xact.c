@@ -73,14 +73,13 @@ status_t gtp_xact_final(void)
     return CORE_OK;
 }
 
-gtp_xact_t *gtp_xact_local_create(net_sock_t *sock,
+gtp_xact_t *gtp_xact_local_create(
         gtp_node_t *gnode, gtp_header_t *hdesc, pkbuf_t *pkbuf)
 {
     status_t rv;
     char buf[INET_ADDRSTRLEN];
     gtp_xact_t *xact = NULL;
 
-    d_assert(sock, return NULL, "Null param");
     d_assert(gnode, return NULL, "Null param");
 
     index_alloc(&gtp_xact_pool, &xact);
@@ -88,7 +87,6 @@ gtp_xact_t *gtp_xact_local_create(net_sock_t *sock,
 
     xact->org = GTP_LOCAL_ORIGINATOR;
     xact->xid = NEXT_ID(g_xact_id, GTP_MIN_XACT_ID, GTP_MAX_XACT_ID);
-    xact->sock = sock;
     xact->gnode = gnode;
 
     if (g_response_event)
@@ -121,13 +119,11 @@ gtp_xact_t *gtp_xact_local_create(net_sock_t *sock,
     return xact;
 }
 
-gtp_xact_t *gtp_xact_remote_create(
-        net_sock_t *sock, gtp_node_t *gnode, c_uint32_t sqn)
+gtp_xact_t *gtp_xact_remote_create(gtp_node_t *gnode, c_uint32_t sqn)
 {
     char buf[INET_ADDRSTRLEN];
     gtp_xact_t *xact = NULL;
 
-    d_assert(sock, return NULL, "Null param");
     d_assert(gnode, return NULL, "Null param");
 
     index_alloc(&gtp_xact_pool, &xact);
@@ -135,7 +131,6 @@ gtp_xact_t *gtp_xact_remote_create(
 
     xact->org = GTP_REMOTE_ORIGINATOR;
     xact->xid = GTP_SQN_TO_XID(sqn);
-    xact->sock = sock;
     xact->gnode = gnode;
 
     if (g_response_event)
@@ -191,7 +186,6 @@ status_t gtp_xact_update_tx(gtp_xact_t *xact,
     gtp_header_t *h = NULL;
     
     d_assert(xact, return CORE_ERROR, "Null param");
-    d_assert(xact->sock, return CORE_ERROR, "Null param");
     d_assert(xact->gnode, return CORE_ERROR, "Null param");
     d_assert(hdesc, return CORE_ERROR, "Null param");
     d_assert(pkbuf, return CORE_ERROR, "Null param");
@@ -321,7 +315,7 @@ status_t gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type)
                                 xact->gnode->port,
                                 xact->org == GTP_LOCAL_ORIGINATOR ?
                                     "LOCAL " : "REMOTE");
-                        rv = gtp_send(xact->sock, xact->gnode, pkbuf);
+                        rv = gtp_send(xact->gnode, pkbuf);
                         d_assert(rv == CORE_OK, return CORE_ERROR,
                                 "gtp_send error");
                     }
@@ -388,7 +382,7 @@ status_t gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type)
                                 xact->gnode->port,
                                 xact->org == GTP_LOCAL_ORIGINATOR ?
                                     "LOCAL " : "REMOTE");
-                        rv = gtp_send(xact->sock, xact->gnode, pkbuf);
+                        rv = gtp_send(xact->gnode, pkbuf);
                         d_assert(rv == CORE_OK, return CORE_ERROR,
                                 "gtp_send error");
                     }
@@ -459,7 +453,6 @@ status_t gtp_xact_commit(gtp_xact_t *xact)
     gtp_xact_stage_t stage;
     
     d_assert(xact, return CORE_ERROR, "Null param");
-    d_assert(xact->sock, return CORE_ERROR, "Null param");
     d_assert(xact->gnode, return CORE_ERROR, "Null param");
 
     d_trace(3, "[%d] %s Commit  peer %s:%d\n",
@@ -559,7 +552,7 @@ status_t gtp_xact_commit(gtp_xact_t *xact)
     pkbuf = xact->seq[xact->step-1].pkbuf;
     d_assert(pkbuf, return CORE_ERROR, "Null param");
 
-    rv = gtp_send(xact->sock, xact->gnode, pkbuf);
+    rv = gtp_send(xact->gnode, pkbuf);
     d_assert(rv == CORE_OK, return CORE_ERROR, "gtp_send error");
 
     return CORE_OK;
@@ -573,7 +566,6 @@ status_t gtp_xact_timeout(index_t index, c_uintptr_t event)
     d_assert(index, goto out, "Invalid Index");
     xact = index_find(&gtp_xact_pool, index);
     d_assert(xact, goto out, "Null param");
-    d_assert(xact->sock, goto out, "Null param");
     d_assert(xact->gnode, goto out, "Null param");
 
     if (event == g_response_event)
@@ -593,7 +585,7 @@ status_t gtp_xact_timeout(index_t index, c_uintptr_t event)
             pkbuf = xact->seq[xact->step-1].pkbuf;
             d_assert(pkbuf, return CORE_ERROR, "Null param");
 
-            d_assert(gtp_send(xact->sock, xact->gnode, pkbuf) == CORE_OK,
+            d_assert(gtp_send(xact->gnode, pkbuf) == CORE_OK,
                     goto out, "gtp_send error");
         }
         else
@@ -629,8 +621,7 @@ out:
     return CORE_ERROR;
 }
 
-status_t gtp_xact_receive(
-        net_sock_t *sock, gtp_node_t *gnode, pkbuf_t *pkbuf,
+status_t gtp_xact_receive(gtp_node_t *gnode, pkbuf_t *pkbuf,
         gtp_xact_t **xact, gtp_message_t *message)
 {
     char buf[INET_ADDRSTRLEN];
@@ -638,7 +629,6 @@ status_t gtp_xact_receive(
     gtp_xact_t *new = NULL;
     gtp_header_t *h = NULL;
 
-    d_assert(sock, return CORE_ERROR, "Null param");
     d_assert(gnode, return CORE_ERROR, "Null param");
     d_assert(pkbuf, return CORE_ERROR, "Null param");
     d_assert(pkbuf->payload, return CORE_ERROR, "Null param");
@@ -648,7 +638,7 @@ status_t gtp_xact_receive(
     new = gtp_xact_find_by_xid(gnode, h->type, GTP_SQN_TO_XID(h->sqn));
     if (!new)
     {
-        new = gtp_xact_remote_create(sock, gnode, h->sqn);
+        new = gtp_xact_remote_create(gnode, h->sqn);
     }
     d_assert(new, return CORE_ERROR, "Null param");
 

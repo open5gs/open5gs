@@ -44,9 +44,8 @@ static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
 
     d_trace_hex(10, pkbuf->payload, pkbuf->len);
 
-    event_set_param1(&e, (c_uintptr_t)sock);
-    event_set_param2(&e, (c_uintptr_t)gnode);
-    event_set_param3(&e, (c_uintptr_t)pkbuf);
+    event_set_param1(&e, (c_uintptr_t)gnode);
+    event_set_param2(&e, (c_uintptr_t)pkbuf);
     rv = sgw_event_send(&e);
     if (rv != CORE_OK)
     {
@@ -94,8 +93,9 @@ static int _gtpv1_s5u_recv_cb(net_sock_t *sock, void *data)
 
             gnode.addr = sock->remote.sin_addr.s_addr;
             gnode.port = GTPV1_U_UDP_PORT;
+            gnode.sock = sgw_self()->s5u_sock;
 
-            gtp_send(sgw_self()->s5u_sock, &gnode, echo_rsp);
+            gtp_send(&gnode, echo_rsp);
             pkbuf_free(echo_rsp);
         }
     }
@@ -115,6 +115,7 @@ static int _gtpv1_s5u_recv_cb(net_sock_t *sock, void *data)
                 
                 gnode.addr = bearer->enb_s1u_addr;
                 gnode.port = GTPV1_U_UDP_PORT;
+                gnode.sock = sgw_self()->s1u_sock;
 
                 /* If there is buffered packet, send it first */
                 if (bearer->num_buffered_pkt)
@@ -126,14 +127,13 @@ static int _gtpv1_s5u_recv_cb(net_sock_t *sock, void *data)
                             (gtp_header_t *)bearer->buffered_pkts[i]->payload;
                         gtp_h->teid =  htonl(bearer->enb_s1u_teid);
 
-                        gtp_send(sgw_self()->s1u_sock, &gnode, 
-                                bearer->buffered_pkts[i]);
+                        gtp_send(&gnode, bearer->buffered_pkts[i]);
                         pkbuf_free(bearer->buffered_pkts[i]);
                     }
                     bearer->num_buffered_pkt = 0;
                 }
 
-                gtp_send(sgw_self()->s1u_sock, &gnode, pkbuf);
+                gtp_send(&gnode, pkbuf);
             }
             else
             {
@@ -209,8 +209,9 @@ static int _gtpv1_s1u_recv_cb(net_sock_t *sock, void *data)
 
             gnode.addr = sock->remote.sin_addr.s_addr;
             gnode.port = GTPV1_U_UDP_PORT;
+            gnode.sock = sgw_self()->s1u_sock;
 
-            gtp_send(sgw_self()->s1u_sock, &gnode, echo_rsp);
+            gtp_send(&gnode, echo_rsp);
             pkbuf_free(echo_rsp);
         }
     }
@@ -227,8 +228,9 @@ static int _gtpv1_s1u_recv_cb(net_sock_t *sock, void *data)
             
             gnode.addr = bearer->pgw_s5u_addr;
             gnode.port = GTPV1_U_UDP_PORT;
+            gnode.sock = sgw_self()->s5u_sock;
 
-            gtp_send(sgw_self()->s5u_sock, &gnode, pkbuf);
+            gtp_send(&gnode, pkbuf);
         }
     }
 
@@ -248,6 +250,8 @@ status_t sgw_gtp_open()
         return rv;
     }
 
+    sgw_self()->s11_node.sock = sgw_self()->s11_sock;
+
     rv = gtp_listen(&sgw_self()->s5c_sock, _gtpv2_c_recv_cb, 
             sgw_self()->s5c_addr, sgw_self()->s5c_port, &sgw_self()->s5c_node);
     if (rv != CORE_OK)
@@ -255,6 +259,8 @@ status_t sgw_gtp_open()
         d_error("Can't establish S5-C Path for SGW");
         return rv;
     }
+
+    sgw_self()->s5c_node.sock = sgw_self()->s5c_sock;
 
     rv = gtp_listen(&sgw_self()->s5u_sock, _gtpv1_s5u_recv_cb, 
             sgw_self()->s5u_addr, sgw_self()->s5u_port, NULL);

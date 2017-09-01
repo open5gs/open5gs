@@ -13,6 +13,8 @@
 
 static pgw_context_t self;
 
+pool_declare(pgw_sgw_pool, pgw_sgw_t, MAX_NUM_OF_GTP_NODE);
+
 index_declare(pgw_sess_pool, pgw_sess_t, MAX_POOL_OF_SESS);
 index_declare(pgw_bearer_pool, pgw_bearer_t, MAX_POOL_OF_BEARER);
 
@@ -26,6 +28,9 @@ status_t pgw_context_init()
             "PGW context already has been initialized");
 
     memset(&self, 0, sizeof(pgw_context_t));
+
+    pool_init(&pgw_sgw_pool, MAX_NUM_OF_GTP_NODE);
+    list_init(&self.sgw_list);
 
     index_init(&pgw_sess_pool, MAX_POOL_OF_SESS);
     index_init(&pgw_bearer_pool, MAX_POOL_OF_BEARER);
@@ -49,6 +54,8 @@ status_t pgw_context_final()
 
     gtp_xact_delete_all(&self.s5c_node);
     pgw_sess_remove_all();
+
+    pgw_sgw_remove_all();
 
     d_assert(self.sess_hash, , "Null param");
     hash_destroy(self.sess_hash);
@@ -75,6 +82,8 @@ status_t pgw_context_final()
 
     index_final(&pgw_bearer_pool);
     index_final(&pgw_sess_pool);
+
+    pool_final(&pgw_sgw_pool);
 
     context_initiaized = 0;
     
@@ -472,6 +481,78 @@ status_t pgw_context_setup_trace_module()
     }
 
     return CORE_OK;
+}
+
+pgw_sgw_t* pgw_sgw_add()
+{
+    pgw_sgw_t *sgw = NULL;
+
+    pool_alloc_node(&pgw_sgw_pool, &sgw);
+    d_assert(sgw, return NULL, "Null param");
+
+    memset(sgw, 0, sizeof(pgw_sgw_t));
+
+    list_init(&sgw->local_list);
+    list_init(&sgw->remote_list);
+
+    list_append(&self.sgw_list, sgw);
+    
+    return sgw;
+}
+
+status_t pgw_sgw_remove(pgw_sgw_t *sgw)
+{
+    d_assert(sgw, return CORE_ERROR, "Null param");
+
+    gtp_xact_delete_all(sgw);
+
+    list_remove(&self.sgw_list, sgw);
+    pool_free_node(&pgw_sgw_pool, sgw);
+
+    return CORE_OK;
+}
+
+status_t pgw_sgw_remove_all()
+{
+    pgw_sgw_t *sgw = NULL, *next_sgw = NULL;
+    
+    sgw = pgw_sgw_first();
+    while (sgw)
+    {
+        next_sgw = pgw_sgw_next(sgw);
+
+        pgw_sgw_remove(sgw);
+
+        sgw = next_sgw;
+    }
+
+    return CORE_OK;
+}
+
+pgw_sgw_t* pgw_sgw_find_by_node(pgw_sgw_t *gnode)
+{
+    pgw_sgw_t *sgw = NULL;
+    
+    sgw = pgw_sgw_first();
+    while (sgw)
+    {
+        if (GTP_COMPARE_NODE(sgw, gnode))
+            break;
+
+        sgw = pgw_sgw_next(sgw);
+    }
+
+    return sgw;
+}
+
+pgw_sgw_t* pgw_sgw_first()
+{
+    return list_first(&self.sgw_list);
+}
+
+pgw_sgw_t* pgw_sgw_next(pgw_sgw_t *sgw)
+{
+    return list_next(sgw);
 }
 
 static void *sess_hash_keygen(c_uint8_t *out, int *out_len,

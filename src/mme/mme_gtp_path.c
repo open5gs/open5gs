@@ -29,6 +29,7 @@ static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
 
     gnode.addr = sock->remote.sin_addr.s_addr;
     gnode.port = ntohs(sock->remote.sin_port);
+    gnode.sock = sock; /* is it needed? */
 
     sgw = mme_sgw_find_by_node(&gnode);
     d_assert(sgw, return -1, "Can't find SGW from [%s:%d]",
@@ -39,9 +40,8 @@ static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
     d_trace_hex(10, pkbuf->payload, pkbuf->len);
 
     event_set(&e, MME_EVT_S11_MESSAGE);
-    event_set_param1(&e, (c_uintptr_t)sock);
-    event_set_param2(&e, (c_uintptr_t)sgw);
-    event_set_param3(&e, (c_uintptr_t)pkbuf);
+    event_set_param1(&e, (c_uintptr_t)sgw);
+    event_set_param2(&e, (c_uintptr_t)pkbuf);
     rv = mme_event_send(&e);
     if (rv != CORE_OK)
     {
@@ -55,6 +55,7 @@ static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
 status_t mme_gtp_open()
 {
     status_t rv;
+    mme_sgw_t *sgw = mme_sgw_first();
 
     rv = gtp_listen(&mme_self()->s11_sock, _gtpv2_c_recv_cb, 
             mme_self()->s11_addr, mme_self()->s11_port, NULL);
@@ -62,6 +63,13 @@ status_t mme_gtp_open()
     {
         d_error("Can't establish S11 Path for SGW");
         return rv;
+    }
+
+    /* socket descriptor needs in gnode when packet is sending initilly */
+    while(sgw)
+    {
+        sgw->sock = mme_self()->s11_sock;
+        sgw = mme_sgw_next(sgw);
     }
 
     return CORE_OK;

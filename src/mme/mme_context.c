@@ -15,13 +15,11 @@
 
 #define MAX_CELL_PER_ENB            8
 
-#define MAX_NUM_OF_SGW              8
-
 #define S1AP_SCTP_PORT              36412
 
 static mme_context_t self;
 
-pool_declare(mme_sgw_pool, mme_sgw_t, MAX_NUM_OF_SGW);
+pool_declare(mme_sgw_pool, mme_sgw_t, MAX_NUM_OF_GTP_NODE);
 
 index_declare(mme_enb_pool, mme_enb_t, MAX_NUM_OF_ENB);
 index_declare(mme_ue_pool, mme_ue_t, MAX_POOL_OF_UE);
@@ -39,7 +37,7 @@ status_t mme_context_init()
     /* Initialize MME context */
     memset(&self, 0, sizeof(mme_context_t));
 
-    pool_init(&mme_sgw_pool, MAX_NUM_OF_SGW);
+    pool_init(&mme_sgw_pool, MAX_NUM_OF_GTP_NODE);
     list_init(&self.sgw_list);
 
     index_init(&mme_enb_pool, MAX_NUM_OF_ENB);
@@ -139,7 +137,7 @@ static status_t mme_context_validation()
     }
     while(sgw)
     {
-        if (sgw->gnode.addr == 0)
+        if (sgw->addr == 0)
         {
             d_error("No SGW.NEWORK.S11_ADDR in '%s'",
                     context_self()->config.path);
@@ -640,7 +638,7 @@ status_t mme_context_parse_config()
                         mme_sgw_t *sgw = mme_sgw_add();
                         d_assert(sgw, return CORE_ERROR, 
                                 "Can't add SGW context");
-                        sgw->gnode.port = GTPV2_C_UDP_PORT;
+                        sgw->port = GTPV2_C_UDP_PORT;
 
                         for (n = 1; n > 0; m++, n--)
                         {
@@ -649,12 +647,12 @@ status_t mme_context_parse_config()
                             if (jsmntok_equal(json, t+m, "S11_ADDR") == 0)
                             {
                                 char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) sgw->gnode.addr = inet_addr(v);
+                                if (v) sgw->addr = inet_addr(v);
                             }
                             else if (jsmntok_equal(json, t+m, "S11_PORT") == 0)
                             {
                                 char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) sgw->gnode.port = atoi(v);
+                                if (v) sgw->port = atoi(v);
                             }
                         }
                     }
@@ -846,8 +844,8 @@ mme_sgw_t* mme_sgw_add()
 
     memset(sgw, 0, sizeof(mme_sgw_t));
 
-    list_init(&sgw->gnode.local_list);
-    list_init(&sgw->gnode.remote_list);
+    list_init(&sgw->local_list);
+    list_init(&sgw->remote_list);
 
     list_append(&self.sgw_list, sgw);
     
@@ -858,7 +856,7 @@ status_t mme_sgw_remove(mme_sgw_t *sgw)
 {
     d_assert(sgw, return CORE_ERROR, "Null param");
 
-    gtp_xact_delete_all(&sgw->gnode);
+    gtp_xact_delete_all(sgw);
 
     list_remove(&self.sgw_list, sgw);
     pool_free_node(&mme_sgw_pool, sgw);
@@ -883,14 +881,14 @@ status_t mme_sgw_remove_all()
     return CORE_OK;
 }
 
-mme_sgw_t* mme_sgw_find_by_node(gtp_node_t *gnode)
+mme_sgw_t* mme_sgw_find_by_node(mme_sgw_t *gnode)
 {
     mme_sgw_t *sgw = NULL;
     
     sgw = mme_sgw_first();
     while (sgw)
     {
-        if (GTP_COMPARE_NODE(&sgw->gnode, gnode))
+        if (GTP_COMPARE_NODE(sgw, gnode))
             break;
 
         sgw = mme_sgw_next(sgw);

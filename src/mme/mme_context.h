@@ -33,6 +33,10 @@ extern "C" {
 #define MAX_NUM_OF_TAC              256
 #define MAX_NUM_OF_BPLMN            6
 
+typedef struct _enb_ue_t enb_ue_t;
+typedef struct _mme_ue_t mme_ue_t;
+typedef gtp_node_t mme_sgw_t;
+
 typedef struct _served_gummei {
     c_uint32_t      num_of_plmn_id;
     plmn_id_t       plmn_id[MAX_PLMN_ID];
@@ -55,7 +59,7 @@ typedef struct _mme_context_t {
     net_sock_t      *s11_sock;      /* MME S11 local listen socket */
 
     c_uint32_t      s5c_addr;       /* PGW S5C remote address */
-    c_uint16_t      s5c_port;       /* MME S5C remote port */
+    c_uint16_t      s5c_port;       /* PGW S5C remote port */
 
     msgq_id         queue_id;       /* Queue for processing MME control plane */
     tm_service_t    tm_service;     /* Timer Service */
@@ -91,18 +95,13 @@ typedef struct _mme_context_t {
     /* Timer value */
     c_uint32_t      t3413_value; /* Paging retry timer */
 
-    list_t          sgw_list;
-    list_t          enb_list;
+    list_t          sgw_list;  /* SGW GTP Node List */
+    list_t          enb_list;  /* eNB S1AP Node List */
 
     hash_t          *mme_ue_s1ap_id_hash;   /* hash table for MME-UE-S1AP-ID */
     hash_t          *imsi_ue_hash;          /* hash table (IMSI : MME_UE) */
     hash_t          *guti_ue_hash;          /* hash table (GUTI : MME_UE) */
 } mme_context_t;
-
-typedef struct _mme_sgw_t {
-    gtp_node_t      gnode;  /* SGW S11 remote GTPv2-C node */
-
-} mme_sgw_t;
 
 typedef struct _mme_enb_t {
     lnode_t         node;   /* A node of list_t */
@@ -118,9 +117,6 @@ typedef struct _mme_enb_t {
     list_t          enb_ue_list;
 
 } mme_enb_t;
-
-typedef struct _enb_ue_t enb_ue_t;
-typedef struct _mme_ue_t mme_ue_t;
 
 struct _enb_ue_t {
     lnode_t         node;   /* A node of list_t */

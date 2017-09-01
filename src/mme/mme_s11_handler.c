@@ -37,8 +37,7 @@ void mme_s11_handle_create_session_request(mme_sess_t *sess)
     d_assert(rv == CORE_OK, return,
             "S11 build error");
 
-    xact = gtp_xact_local_create(mme_self()->s11_sock, (gtp_node_t *)sess->sgw,
-            &h, pkbuf);
+    xact = gtp_xact_local_create(sess->sgw, &h, pkbuf);
     d_assert(xact, return, "Null param");
 
     GTP_XACT_STORE_SESSION(xact, sess);
@@ -141,8 +140,7 @@ void mme_s11_handle_delete_all_sessions_request_in_ue(mme_ue_t *mme_ue)
         rv = mme_s11_build_delete_session_request(&s11buf, h.type, sess);
         d_assert(rv == CORE_OK, return, "S11 build error");
 
-        xact = gtp_xact_local_create(
-                mme_self()->s11_sock, (gtp_node_t *)sess->sgw, &h, s11buf);
+        xact = gtp_xact_local_create(sess->sgw, &h, s11buf);
         d_assert(xact, return, "Null param");
 
         GTP_XACT_STORE_SESSION(xact, sess);

@@ -64,11 +64,12 @@ static int _gtpv1_tun_recv_cb(net_link_t *net_link, void *data)
         /* Send to SGW */
         gnode.addr = bearer->sgw_s5u_addr;
         gnode.port = GTPV1_U_UDP_PORT;
+        gnode.sock = pgw_self()->s5u_sock;
         d_trace(50, "Send S5U PDU (teid = 0x%x)to SGW(%s)\n",
                 bearer->sgw_s5u_teid,
                 INET_NTOP(&gnode.addr, buf));
 
-        rv =  gtp_send(pgw_self()->s5u_sock, &gnode, recvbuf);
+        rv =  gtp_send(&gnode, recvbuf);
     }
     else
     {
@@ -103,9 +104,8 @@ static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
     d_trace_hex(10, pkbuf->payload, pkbuf->len);
 
     event_set(&e, PGW_EVT_S5C_MESSAGE);
-    event_set_param1(&e, (c_uintptr_t)sock);
-    event_set_param2(&e, (c_uintptr_t)gnode);
-    event_set_param3(&e, (c_uintptr_t)pkbuf);
+    event_set_param1(&e, (c_uintptr_t)gnode);
+    event_set_param2(&e, (c_uintptr_t)pkbuf);
     rv = pgw_event_send(&e);
     if (rv != CORE_OK)
     {
@@ -166,6 +166,8 @@ status_t pgw_gtp_open()
         d_error("Can't establish S5-C Path for PGW");
         return rv;
     }
+
+    pgw_self()->s5c_node.sock = pgw_self()->s5c_sock;
 
     rv = gtp_listen(&pgw_self()->s5u_sock, _gtpv1_u_recv_cb, 
             pgw_self()->s5u_addr, pgw_self()->s5u_port, NULL);

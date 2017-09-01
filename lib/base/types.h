@@ -11,6 +11,7 @@ extern "C" {
 #define MAX_NUM_OF_UE           128
 #define MAX_NUM_OF_SESS         4
 #define MAX_NUM_OF_BEARER       4
+#define MAX_NUM_OF_GTP_NODE     8
 
 #define MAX_POOL_OF_UE          (MAX_NUM_OF_ENB * MAX_NUM_OF_UE)
 #define MAX_POOL_OF_SESS        (MAX_POOL_OF_UE * MAX_NUM_OF_SESS)

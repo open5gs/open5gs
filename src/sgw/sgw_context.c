@@ -12,6 +12,9 @@
 #include "context.h"
 #include "sgw_context.h"
 
+pool_declare(sgw_mme_pool, sgw_mme_t, MAX_NUM_OF_GTP_NODE);
+pool_declare(sgw_pgw_pool, sgw_pgw_t, MAX_NUM_OF_GTP_NODE);
+
 static sgw_context_t self;
 
 index_declare(sgw_ue_pool, sgw_ue_t, MAX_POOL_OF_UE);
@@ -26,6 +29,11 @@ status_t sgw_context_init()
             "SGW context already has been initialized");
 
     memset(&self, 0, sizeof(sgw_context_t));
+
+    pool_init(&sgw_mme_pool, MAX_NUM_OF_GTP_NODE);
+    list_init(&self.mme_list);
+    pool_init(&sgw_pgw_pool, MAX_NUM_OF_GTP_NODE);
+    list_init(&self.pgw_list);
 
     index_init(&sgw_ue_pool, MAX_POOL_OF_UE);
     index_init(&sgw_sess_pool, MAX_POOL_OF_SESS);
@@ -54,12 +62,18 @@ status_t sgw_context_final()
 
     sgw_ue_remove_all();
 
+    sgw_mme_remove_all();
+    sgw_pgw_remove_all();
+
     d_assert(self.imsi_ue_hash, , "Null param");
     hash_destroy(self.imsi_ue_hash);
 
     index_final(&sgw_bearer_pool);
     index_final(&sgw_sess_pool);
     index_final(&sgw_ue_pool);
+
+    pool_final(&sgw_mme_pool);
+    pool_final(&sgw_pgw_pool);
 
     context_initialized = 0;
     
@@ -431,6 +445,150 @@ status_t sgw_context_setup_trace_module()
     }
 
     return CORE_OK;
+}
+
+sgw_mme_t* sgw_mme_add()
+{
+    sgw_mme_t *sgw = NULL;
+
+    pool_alloc_node(&sgw_mme_pool, &sgw);
+    d_assert(sgw, return NULL, "Null param");
+
+    memset(sgw, 0, sizeof(sgw_mme_t));
+
+    list_init(&sgw->local_list);
+    list_init(&sgw->remote_list);
+
+    list_append(&self.mme_list, sgw);
+    
+    return sgw;
+}
+
+status_t sgw_mme_remove(sgw_mme_t *sgw)
+{
+    d_assert(sgw, return CORE_ERROR, "Null param");
+
+    gtp_xact_delete_all(sgw);
+
+    list_remove(&self.mme_list, sgw);
+    pool_free_node(&sgw_mme_pool, sgw);
+
+    return CORE_OK;
+}
+
+status_t sgw_mme_remove_all()
+{
+    sgw_mme_t *sgw = NULL, *next_sgw = NULL;
+    
+    sgw = sgw_mme_first();
+    while (sgw)
+    {
+        next_sgw = sgw_mme_next(sgw);
+
+        sgw_mme_remove(sgw);
+
+        sgw = next_sgw;
+    }
+
+    return CORE_OK;
+}
+
+sgw_mme_t* sgw_mme_find_by_node(sgw_mme_t *gnode)
+{
+    sgw_mme_t *sgw = NULL;
+    
+    sgw = sgw_mme_first();
+    while (sgw)
+    {
+        if (GTP_COMPARE_NODE(sgw, gnode))
+            break;
+
+        sgw = sgw_mme_next(sgw);
+    }
+
+    return sgw;
+}
+
+sgw_mme_t* sgw_mme_first()
+{
+    return list_first(&self.mme_list);
+}
+
+sgw_mme_t* sgw_mme_next(sgw_mme_t *sgw)
+{
+    return list_next(sgw);
+}
+
+sgw_pgw_t* sgw_pgw_add()
+{
+    sgw_pgw_t *sgw = NULL;
+
+    pool_alloc_node(&sgw_pgw_pool, &sgw);
+    d_assert(sgw, return NULL, "Null param");
+
+    memset(sgw, 0, sizeof(sgw_pgw_t));
+
+    list_init(&sgw->local_list);
+    list_init(&sgw->remote_list);
+
+    list_append(&self.pgw_list, sgw);
+    
+    return sgw;
+}
+
+status_t sgw_pgw_remove(sgw_pgw_t *sgw)
+{
+    d_assert(sgw, return CORE_ERROR, "Null param");
+
+    gtp_xact_delete_all(sgw);
+
+    list_remove(&self.pgw_list, sgw);
+    pool_free_node(&sgw_pgw_pool, sgw);
+
+    return CORE_OK;
+}
+
+status_t sgw_pgw_remove_all()
+{
+    sgw_pgw_t *sgw = NULL, *next_sgw = NULL;
+    
+    sgw = sgw_pgw_first();
+    while (sgw)
+    {
+        next_sgw = sgw_pgw_next(sgw);
+
+        sgw_pgw_remove(sgw);
+
+        sgw = next_sgw;
+    }
+
+    return CORE_OK;
+}
+
+sgw_pgw_t* sgw_pgw_find_by_node(sgw_pgw_t *gnode)
+{
+    sgw_pgw_t *sgw = NULL;
+    
+    sgw = sgw_pgw_first();
+    while (sgw)
+    {
+        if (GTP_COMPARE_NODE(sgw, gnode))
+            break;
+
+        sgw = sgw_pgw_next(sgw);
+    }
+
+    return sgw;
+}
+
+sgw_pgw_t* sgw_pgw_first()
+{
+    return list_first(&self.pgw_list);
+}
+
+sgw_pgw_t* sgw_pgw_next(sgw_pgw_t *sgw)
+{
+    return list_next(sgw);
 }
 
 sgw_ue_t* sgw_ue_add(

@@ -63,9 +63,8 @@ void pgw_state_operational(fsm_t *s, event_t *e)
         case PGW_EVT_S5C_MESSAGE:
         {
             status_t rv;
-            net_sock_t *sock = (net_sock_t *)event_get_param1(e);
-            gtp_node_t *gnode = (gtp_node_t *)event_get_param2(e);
-            pkbuf_t *recvbuf = (pkbuf_t *)event_get_param3(e);
+            gtp_node_t *gnode = (gtp_node_t *)event_get_param1(e);
+            pkbuf_t *recvbuf = (pkbuf_t *)event_get_param2(e);
             pkbuf_t *copybuf = NULL;
             c_uint16_t copybuf_len = 0;
             gtp_xact_t *xact = NULL;
@@ -73,7 +72,6 @@ void pgw_state_operational(fsm_t *s, event_t *e)
             pgw_sess_t *sess = NULL;
 
             d_assert(recvbuf, break, "Null param");
-            d_assert(sock, pkbuf_free(recvbuf); break, "Null param");
             d_assert(gnode, pkbuf_free(recvbuf); break, "Null param");
 
             copybuf_len = sizeof(gtp_message_t);
@@ -82,7 +80,7 @@ void pgw_state_operational(fsm_t *s, event_t *e)
             message = copybuf->payload;
             d_assert(message, break, "Null param");
 
-            rv = gtp_xact_receive(sock, gnode, recvbuf, &xact, message);
+            rv = gtp_xact_receive(gnode, recvbuf, &xact, message);
             if (rv != CORE_OK)
                 break;
 

@@ -17,6 +17,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
+typedef gtp_node_t pgw_sgw_t;
+
 typedef struct _pgw_context_t {
     c_uint32_t      pgw_addr;  /* PGW local address */
 
@@ -46,6 +48,7 @@ typedef struct _pgw_context_t {
     c_uint32_t      primary_dns_addr;
     c_uint32_t      secondary_dns_addr;
 
+    list_t          sgw_list;  /* SGW GTP Node List */
     list_t          ip_pool_list;
 
     hash_t          *sess_hash; /* hash table (IMSI+APN) */
@@ -114,6 +117,13 @@ CORE_DECLARE(pgw_context_t*) pgw_self(void);
 
 CORE_DECLARE(status_t)      pgw_context_parse_config(void);
 CORE_DECLARE(status_t)      pgw_context_setup_trace_module(void);
+
+CORE_DECLARE(pgw_sgw_t*)    pgw_sgw_add(void);
+CORE_DECLARE(status_t)      pgw_sgw_remove(pgw_sgw_t *sgw);
+CORE_DECLARE(status_t)      pgw_sgw_remove_all(void);
+CORE_DECLARE(pgw_sgw_t*)    pgw_sgw_find_by_node(gtp_node_t *gnode);
+CORE_DECLARE(pgw_sgw_t*)    pgw_sgw_first(void);
+CORE_DECLARE(pgw_sgw_t*)    pgw_sgw_next(pgw_sgw_t *sgw);
 
 CORE_DECLARE(pgw_sess_t*)   pgw_sess_add(
         c_uint8_t *imsi, int imsi_len, c_int8_t *apn, c_uint8_t id);
