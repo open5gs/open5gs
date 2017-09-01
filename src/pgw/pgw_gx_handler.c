@@ -100,7 +100,11 @@ void pgw_gx_handle_cca_initial_request(
     rv = gtp_build_msg(&pkbuf, &gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
-    pgw_s5c_send_to_sgw(xact, gtp_message.h.type, sess->sgw_s5c_teid, pkbuf);
+    rv = gtp_xact_update_tx(xact, gtp_message.h.type, sess->sgw_s5c_teid, pkbuf);
+    d_assert(rv == CORE_OK, return, "gtp_xact_update_tx error");
+
+    rv = gtp_xact_commit(xact);
+    d_assert(rv == CORE_OK, return, "xact_commit error");
 }
 void pgw_gx_handle_cca_termination_request(
         gtp_xact_t *xact, pgw_sess_t *sess,
@@ -161,7 +165,11 @@ void pgw_gx_handle_cca_termination_request(
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
     /* send */
-    pgw_s5c_send_to_sgw(xact, gtp_message.h.type, sgw_s5c_teid, pkbuf);
+    rv = gtp_xact_update_tx(xact, gtp_message.h.type, sgw_s5c_teid, pkbuf);
+    d_assert(rv == CORE_OK, return, "gtp_xact_update_tx error");
+
+    rv = gtp_xact_commit(xact);
+    d_assert(rv == CORE_OK, return, "xact_commit error");
 }
 
 static c_int16_t pgw_pco_build(c_uint8_t *pco_buf, tlv_pco_t *tlv_pco)

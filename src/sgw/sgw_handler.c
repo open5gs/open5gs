@@ -10,7 +10,7 @@
 #include "sgw_gtp_path.h"
 #include "sgw_handler.h"
 
-void sgw_handle_create_session_request(gtp_xact_t *xact,
+void sgw_handle_create_session_request(gtp_xact_t *s11_xact,
         sgw_sess_t *sess, gtp_message_t *gtp_message)
 {
     status_t rv;
@@ -19,9 +19,10 @@ void sgw_handle_create_session_request(gtp_xact_t *xact,
     gtp_f_teid_t *mme_s11_teid = NULL;
     gtp_f_teid_t sgw_s5c_teid, sgw_s5u_teid;
 
+    gtp_xact_t *s5c_xact = NULL;
     sgw_bearer_t *bearer = NULL;
 
-    d_assert(xact, return, "Null param");
+    d_assert(s11_xact, return, "Null param");
     d_assert(sess, return, "Null param");
     d_assert(gtp_message, return, "Null param");
     bearer = sgw_default_bearer_in_sess(sess);
@@ -76,8 +77,14 @@ void sgw_handle_create_session_request(gtp_xact_t *xact,
     rv = gtp_build_msg(&pkbuf, gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
-    d_assert(sgw_s5c_send_to_pgw(xact, GTP_CREATE_SESSION_REQUEST_TYPE, 0,
-            pkbuf) == CORE_OK, return, "failed to send message");
+    s5c_xact = gtp_xact_local_create(sgw_self()->s5c_sock,
+            &sgw_self()->s5c_node, gtp_message->h.type, 0, pkbuf);
+    d_assert(s5c_xact, return, "Null param");
+
+    gtp_xact_associate(s11_xact, s5c_xact);
+
+    rv = gtp_xact_commit(s5c_xact);
+    d_assert(rv == CORE_OK, return, "xact_commit error");
 
     d_trace(3, "[GTP] Create Session Reqeust : "
             "SGW[%d] --> PGW\n", sess->sgw_s5c_teid);
@@ -165,21 +172,25 @@ void sgw_handle_create_session_response(gtp_xact_t *s5c_xact,
     rsp->bearer_contexts_created.s1_u_enodeb_f_teid.data = &sgw_s1u_teid;
     rsp->bearer_contexts_created.s1_u_enodeb_f_teid.len = GTP_F_TEID_IPV4_LEN;
 
+    rv = gtp_xact_commit(s5c_xact);
+    d_assert(rv == CORE_OK, return, "xact_commit error");
+
     gtp_message->h.type = GTP_CREATE_SESSION_RESPONSE_TYPE;
     rv = gtp_build_msg(&pkbuf, gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
-    rv = gtp_xact_commit(s5c_xact);
+    rv = gtp_xact_update_tx(s11_xact,
+            gtp_message->h.type, sess->mme_s11_teid, pkbuf);
+    d_assert(rv == CORE_OK, return, "gtp_xact_update_tx error");
+
+    rv = gtp_xact_commit(s11_xact);
     d_assert(rv == CORE_OK, return, "xact_commit error");
 
-    d_assert(sgw_s11_send_to_mme(s11_xact, gtp_message->h.type,
-            sess->mme_s11_teid, pkbuf) == CORE_OK, return,
-            "failed to send message");
     d_trace(3, "[GTP] Create Session Response : "
             "SGW[%d] <-- PGW[%d]\n", sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 }
 
-CORE_DECLARE(void) sgw_handle_modify_bearer_request(gtp_xact_t *xact,
+CORE_DECLARE(void) sgw_handle_modify_bearer_request(gtp_xact_t *s11_xact,
     sgw_sess_t *sess, gtp_modify_bearer_request_t *req)
 {
     status_t rv;
@@ -192,7 +203,7 @@ CORE_DECLARE(void) sgw_handle_modify_bearer_request(gtp_xact_t *xact,
     gtp_f_teid_t *enb_s1u_teid = NULL;
 
     d_assert(sess, return, "Null param");
-    d_assert(xact, return, "Null param");
+    d_assert(s11_xact, return, "Null param");
 
     if (req->bearer_contexts_to_be_modified.presence == 0)
     {
@@ -233,21 +244,25 @@ CORE_DECLARE(void) sgw_handle_modify_bearer_request(gtp_xact_t *xact,
     rv = gtp_build_msg(&pkbuf, &gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
-    d_assert(sgw_s11_send_to_mme(xact, GTP_MODIFY_BEARER_RESPONSE_TYPE, 
-            sess->mme_s11_teid, pkbuf) == CORE_OK, return, 
-            "failed to send message");
+    rv = gtp_xact_update_tx(s11_xact,
+            gtp_message.h.type, sess->mme_s11_teid, pkbuf);
+    d_assert(rv == CORE_OK, return, "gtp_xact_update_tx error");
+
+    rv = gtp_xact_commit(s11_xact);
+    d_assert(rv == CORE_OK, return, "xact_commit error");
 
     d_trace(3, "[GTP] Modify Bearer Reqeust : "
             "MME[%d] --> SGW[%d]\n", sess->mme_s11_teid, sess->sgw_s11_teid);
 }
 
-void sgw_handle_delete_session_request(gtp_xact_t *xact,
+void sgw_handle_delete_session_request(gtp_xact_t *s11_xact,
     sgw_sess_t *sess, gtp_message_t *gtp_message)
 {
     status_t rv;
     pkbuf_t *pkbuf = NULL;
+    gtp_xact_t *s5c_xact = NULL;
 
-    d_assert(xact, return, "Null param");
+    d_assert(s11_xact, return, "Null param");
     d_assert(sess, return, "Null param");
     d_assert(gtp_message, return, "Null param");
 
@@ -255,9 +270,15 @@ void sgw_handle_delete_session_request(gtp_xact_t *xact,
     rv = gtp_build_msg(&pkbuf, gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
-    d_assert(sgw_s5c_send_to_pgw(xact, GTP_DELETE_SESSION_REQUEST_TYPE, 
-                sess->pgw_s5c_teid, pkbuf) == CORE_OK, 
-            return, "failed to send message");
+    s5c_xact = gtp_xact_local_create(
+            sgw_self()->s5c_sock, &sgw_self()->s5c_node,
+            gtp_message->h.type, sess->pgw_s5c_teid, pkbuf);
+    d_assert(s5c_xact, return, "Null param");
+
+    gtp_xact_associate(s11_xact, s5c_xact);
+
+    rv = gtp_xact_commit(s5c_xact);
+    d_assert(rv == CORE_OK, return, "xact_commit error");
 
     d_trace(3, "[GTP] Delete Session Reqeust : "
             "SGW[%d] --> PGW[%d]\n", sess->sgw_s5c_teid, sess->pgw_s5c_teid);
@@ -310,19 +331,22 @@ void sgw_handle_delete_session_response(gtp_xact_t *s5c_xact,
         cause->value = GTP_CAUSE_INVALID_PEER;
     }
 
+    rv = gtp_xact_commit(s5c_xact);
+    d_assert(rv == CORE_OK, return, "xact_commit error");
+
     gtp_message->h.type = GTP_DELETE_SESSION_RESPONSE_TYPE;
     rv = gtp_build_msg(&pkbuf, gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
-    rv = gtp_xact_commit(s5c_xact);
-    d_assert(rv == CORE_OK, return, "xact_commit error");
+    rv = gtp_xact_update_tx(s11_xact,
+            gtp_message->h.type, mme_s11_teid, pkbuf);
+    d_assert(rv == CORE_OK, return, "gtp_xact_update_tx error");
 
-    d_assert(sgw_s11_send_to_mme(s11_xact, gtp_message->h.type,
-            mme_s11_teid, pkbuf) == CORE_OK, return,
-            "failed to send message");
+    rv = gtp_xact_commit(s11_xact);
+    d_assert(rv == CORE_OK, return, "xact_commit error");
 }
 
-void sgw_handle_release_access_bearers_request(gtp_xact_t *xact, 
+void sgw_handle_release_access_bearers_request(gtp_xact_t *s11_xact, 
         sgw_sess_t *sess, gtp_release_access_bearers_request_t *req)
 {
     status_t rv;
@@ -334,7 +358,7 @@ void sgw_handle_release_access_bearers_request(gtp_xact_t *xact,
     gtp_cause_t cause;
 
     d_assert(sess, return, "Null param");
-    d_assert(xact, return, "Null param");
+    d_assert(s11_xact, return, "Null param");
 
     /* Release S1U(DL) path */
     bearer = list_first(&sess->bearer_list);
@@ -364,10 +388,12 @@ void sgw_handle_release_access_bearers_request(gtp_xact_t *xact,
     rv = gtp_build_msg(&pkbuf, &gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
-    d_assert(sgw_s11_send_to_mme(xact, 
-            GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE,
-            sess->mme_s11_teid, pkbuf) == CORE_OK, return, 
-            "failed to send message");
+    rv = gtp_xact_update_tx(s11_xact,
+            gtp_message.h.type, sess->mme_s11_teid, pkbuf);
+    d_assert(rv == CORE_OK, return, "gtp_xact_update_tx error");
+
+    rv = gtp_xact_commit(s11_xact);
+    d_assert(rv == CORE_OK, return, "xact_commit error");
 
     d_trace(3, "[GTP] Release Access Bearers Reqeust : "
             "MME[%d] --> SGW[%d]\n", sess->mme_s11_teid, sess->sgw_s11_teid);
@@ -406,13 +432,12 @@ void sgw_handle_lo_dldata_notification(sgw_bearer_t *bearer)
     rv = gtp_build_msg(&pkbuf, &gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
-    xact = gtp_xact_local_create(sgw_self()->s11_sock, &sgw_self()->s11_node);
+    xact = gtp_xact_local_create(sgw_self()->s11_sock, &sgw_self()->s11_node,
+        GTP_DOWNLINK_DATA_NOTIFICATION_TYPE, sess->mme_s11_teid, pkbuf);
     d_assert(xact, return, "Null param");
 
-    d_assert(sgw_s11_send_to_mme(xact, 
-            GTP_DOWNLINK_DATA_NOTIFICATION_TYPE,
-            sess->mme_s11_teid, pkbuf) == CORE_OK, return, 
-            "failed to send message");
+    rv = gtp_xact_commit(xact);
+    d_assert(rv == CORE_OK, return, "xact_commit error");
 
     d_trace(3, "[GTP] Downlink Data Notification : "
             "SGW[%d] --> MME[%d]\n", sess->sgw_s11_teid, sess->mme_s11_teid);

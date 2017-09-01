@@ -10,9 +10,6 @@ extern "C" {
 CORE_DECLARE(status_t) pgw_gtp_open();
 CORE_DECLARE(status_t) pgw_gtp_close();
 
-CORE_DECLARE(status_t) pgw_s5c_send_to_sgw(
-        gtp_xact_t *xact, c_uint8_t type, c_uint32_t teid, pkbuf_t *pkbuf);
-
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

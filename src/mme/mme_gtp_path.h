@@ -10,9 +10,6 @@ extern "C" {
 CORE_DECLARE(status_t) mme_gtp_open();
 CORE_DECLARE(status_t) mme_gtp_close();
 
-CORE_DECLARE(status_t) mme_s11_send_to_sgw(
-        mme_sess_t *sess, c_uint8_t type, pkbuf_t *pkbuf);
-
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

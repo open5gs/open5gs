@@ -80,34 +80,28 @@ void sgw_state_operational(fsm_t *s, event_t *e)
             switch(message.h.type)
             {
                 case GTP_CREATE_SESSION_REQUEST_TYPE:
-                    sgw_handle_create_session_request(
-                            xact, sess, &message);
+                    sgw_handle_create_session_request(xact, sess, &message);
                     break;
                 case GTP_CREATE_SESSION_RESPONSE_TYPE:
-                    sgw_handle_create_session_response(
-                            xact, sess, &message);
+                    sgw_handle_create_session_response(xact, sess, &message);
                     break;
                 case GTP_MODIFY_BEARER_REQUEST_TYPE:
-                    sgw_handle_modify_bearer_request(
-                            xact, sess, &message.modify_bearer_request);
+                    sgw_handle_modify_bearer_request(xact, sess,
+                            &message.modify_bearer_request);
                     break;
                 case GTP_DELETE_SESSION_REQUEST_TYPE:
-                    sgw_handle_delete_session_request(
-                            xact, sess, &message);
+                    sgw_handle_delete_session_request(xact, sess, &message);
                     break;
                 case GTP_DELETE_SESSION_RESPONSE_TYPE:
-                    sgw_handle_delete_session_response(
-                            xact, sess, &message);
+                    sgw_handle_delete_session_response(xact, sess, &message);
                     break;
                 case GTP_RELEASE_ACCESS_BEARERS_REQUEST_TYPE:
-                    sgw_handle_release_access_bearers_request(
-                            xact, sess, 
-                            &message.release_access_bearers_request);
+                    sgw_handle_release_access_bearers_request(xact, sess, 
+                        &message.release_access_bearers_request);
                     break;
                 case GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE:
-                    sgw_handle_downlink_data_notification_ack(
-                          sess,
-                          &message.downlink_data_notification_acknowledge);
+                    sgw_handle_downlink_data_notification_ack(sess,
+                        &message.downlink_data_notification_acknowledge);
                     break;
                 default:
                     d_warn("Not implmeneted(type:%d)", message.h.type);

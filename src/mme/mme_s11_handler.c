@@ -17,19 +17,24 @@ void mme_s11_handle_create_session_request(mme_sess_t *sess)
 {
     status_t rv;
     pkbuf_t *pkbuf = NULL;
+    gtp_xact_t *xact = NULL;
 
     /* Use round-robin for selecting SGW */
     d_assert(sess, return, "Null param");
-    d_assert(sess->sgw, return, "Null param");
     sess->sgw = mme_sgw_next(sess->sgw);
     if (!sess->sgw) sess->sgw = mme_sgw_first();
+    d_assert(sess->sgw, return, "Null param");
 
     rv = mme_s11_build_create_session_request(&pkbuf, sess);
     d_assert(rv == CORE_OK, return,
             "S11 build error");
 
-    rv = mme_s11_send_to_sgw(sess, GTP_CREATE_SESSION_REQUEST_TYPE, pkbuf);
-    d_assert(rv == CORE_OK, return, "S11 send error");
+    xact = gtp_xact_local_create(mme_self()->s11_sock, (gtp_node_t *)sess->sgw,
+            GTP_CREATE_SESSION_REQUEST_TYPE, sess->sgw_s11_teid, pkbuf);
+    d_assert(xact, return, "Null param");
+
+    rv = gtp_xact_commit(xact);
+    d_assert(rv == CORE_OK, return, "xact_commit error");
 }
 
 void mme_s11_handle_create_session_response(
@@ -113,11 +118,18 @@ void mme_s11_handle_delete_all_sessions_request_in_ue(mme_ue_t *mme_ue)
     sess = mme_sess_first(mme_ue);
     while (sess != NULL)
     {
+        gtp_xact_t *xact = NULL;
+
         rv = mme_s11_build_delete_session_request(&s11buf, sess);
         d_assert(rv == CORE_OK, return, "S11 build error");
 
-        rv = mme_s11_send_to_sgw(sess, GTP_DELETE_SESSION_REQUEST_TYPE, s11buf);
-        d_assert(rv == CORE_OK, return, "S11 send error");
+        xact = gtp_xact_local_create(
+                mme_self()->s11_sock, (gtp_node_t *)sess->sgw,
+                GTP_DELETE_SESSION_REQUEST_TYPE, sess->sgw_s11_teid, s11buf);
+        d_assert(xact, return, "Null param");
+
+        rv = gtp_xact_commit(xact);
+        d_assert(rv == CORE_OK, return, "xact_commit error");
 
         sess = mme_sess_next(sess);
     }

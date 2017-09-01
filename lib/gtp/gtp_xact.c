@@ -73,8 +73,10 @@ status_t gtp_xact_final(void)
     return CORE_OK;
 }
 
-gtp_xact_t *gtp_xact_local_create(net_sock_t *sock, gtp_node_t *gnode)
+gtp_xact_t *gtp_xact_local_create(net_sock_t *sock, gtp_node_t *gnode,
+        c_uint8_t type, c_uint32_t teid, pkbuf_t *pkbuf)
 {
+    status_t rv;
     char buf[INET_ADDRSTRLEN];
     gtp_xact_t *xact = NULL;
 
@@ -107,6 +109,9 @@ gtp_xact_t *gtp_xact_local_create(net_sock_t *sock, gtp_node_t *gnode)
 
     list_append(xact->org == GTP_LOCAL_ORIGINATOR ?  
             &xact->gnode->local_list : &xact->gnode->remote_list, xact);
+
+    rv = gtp_xact_update_tx(xact, type, teid, pkbuf);
+    d_assert(rv == CORE_OK, return NULL, "Update Tx failed");
 
     d_trace(3, "[%d] %s Create  peer %s:%d\n",
             xact->xid,

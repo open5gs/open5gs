@@ -80,28 +80,3 @@ status_t mme_gtp_close()
 
     return CORE_OK;
 }
-
-status_t mme_s11_send_to_sgw(mme_sess_t *sess, c_uint8_t type, pkbuf_t *pkbuf)
-{
-    status_t rv;
-    gtp_xact_t *xact = NULL;
-    void *sgw = NULL;
-    c_uint32_t teid;
-    d_assert(sess, return CORE_ERROR, "Null param");
-    d_assert(pkbuf, return CORE_ERROR, "Null param");
-
-    sgw = sess->sgw;
-    d_assert(sgw, return CORE_ERROR, "Null param");
-    teid = sess->sgw_s11_teid;
-
-    xact = gtp_xact_local_create(mme_self()->s11_sock, sgw);
-    d_assert(xact, return CORE_ERROR, "Null param");
-
-    rv = gtp_xact_update_tx(xact, type, teid, pkbuf);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "xact_update_tx error");
-
-    rv = gtp_xact_commit(xact);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "xact_commit error");
-
-    return CORE_OK;
-}
