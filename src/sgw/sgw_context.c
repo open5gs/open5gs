@@ -448,9 +448,7 @@ sgw_ue_t* sgw_ue_add(
     /* Set IMSI */
     sgw_ue->imsi_len = imsi_len;
     memcpy(sgw_ue->imsi, imsi, sgw_ue->imsi_len);
-#if 0
     core_buffer_to_bcd(sgw_ue->imsi, sgw_ue->imsi_len, sgw_ue->imsi_bcd);
-#endif
 
     list_init(&sgw_ue->sess_list);
 

@@ -99,16 +99,22 @@ void *core_buffer_to_bcd(c_uint8_t *in, int in_len, void *out)
     int i = 0;
     c_uint8_t *out_p = out;
 
-    for (i = 0; i < in_len; i++) 
+    for (i = 0; i < in_len-1; i++) 
     {
         out_p[i*2] = 0x30 + (in[i] & 0x0F);
         out_p[i*2+1] = 0x30 + ((in[i] & 0xF0) >> 4);
     }
 
-    out_p[in_len*2] = 0;
-    if ((out_p[in_len*2-1] & 0x0F) == 0x0F)
+    if ((in[i] & 0xF0) == 0xF0)
     {
-        out_p[in_len*2-1] = 0;
+        out_p[i*2] = 0x30 + (in[i] & 0x0F);
+        out_p[i*2+1] = 0;
+    }
+    else
+    {
+        out_p[i*2] = 0x30 + (in[i] & 0x0F);
+        out_p[i*2+1] = 0x30 + ((in[i] & 0xF0) >> 4);
+        out_p[i*2+2] = 0;
     }
 
     return out;
