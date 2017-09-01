@@ -881,14 +881,14 @@ status_t mme_sgw_remove_all()
     return CORE_OK;
 }
 
-mme_sgw_t* mme_sgw_find_by_node(mme_sgw_t *gnode)
+mme_sgw_t* mme_sgw_find(c_uint32_t addr, c_uint16_t port)
 {
     mme_sgw_t *sgw = NULL;
     
     sgw = mme_sgw_first();
     while (sgw)
     {
-        if (GTP_COMPARE_NODE(sgw, gnode))
+        if (sgw->addr == addr && sgw->port == port)
             break;
 
         sgw = mme_sgw_next(sgw);

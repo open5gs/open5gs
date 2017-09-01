@@ -25,12 +25,10 @@ typedef struct _sgw_context_t {
     c_uint32_t      s11_addr;  /* SGW S11 local address */
     c_uint32_t      s11_port;  /* SGW S11 local port */
     net_sock_t*     s11_sock;  /* SGW S11 local listen socket */
-    gtp_node_t      s11_node;  /* MME S11 remote GTPv2-C node */
 
     c_uint32_t      s5c_addr;  /* SGW S5-C local address */
     c_uint32_t      s5c_port;  /* SGW S5-C local port */
     net_sock_t*     s5c_sock;  /* SGW S5-C local listen socket */
-    gtp_node_t      s5c_node;  /* PGW S5-C remote GTPv2-C node */
 
     c_uint32_t      s1u_addr;  /* SGW S1-U local address */
     c_uint32_t      s1u_port;  /* SGW S1-U local port */
@@ -85,6 +83,8 @@ typedef struct _sgw_sess_t {
     list_t          bearer_list;
 
     /* Related Context */
+    sgw_mme_t       *mme;
+    sgw_mme_t       *pgw;
     sgw_ue_t        *sgw_ue;
 } sgw_sess_t;
 
@@ -138,18 +138,18 @@ CORE_DECLARE(status_t)      sgw_context_parse_config(void);
 CORE_DECLARE(status_t)      sgw_context_setup_trace_module(void);
 
 CORE_DECLARE(sgw_mme_t*)    sgw_mme_add(void);
-CORE_DECLARE(status_t)      sgw_mme_remove(sgw_mme_t *sgw);
+CORE_DECLARE(status_t)      sgw_mme_remove(sgw_mme_t *mme);
 CORE_DECLARE(status_t)      sgw_mme_remove_all(void);
-CORE_DECLARE(sgw_mme_t*)    sgw_mme_find_by_node(gtp_node_t *gnode);
+CORE_DECLARE(sgw_mme_t*)    sgw_mme_find(c_uint32_t addr, c_uint16_t port);
 CORE_DECLARE(sgw_mme_t*)    sgw_mme_first(void);
-CORE_DECLARE(sgw_mme_t*)    sgw_mme_next(sgw_mme_t *sgw);
+CORE_DECLARE(sgw_mme_t*)    sgw_mme_next(sgw_mme_t *mme);
 
 CORE_DECLARE(sgw_pgw_t*)    sgw_pgw_add(void);
-CORE_DECLARE(status_t)      sgw_pgw_remove(sgw_pgw_t *sgw);
+CORE_DECLARE(status_t)      sgw_pgw_remove(sgw_pgw_t *pgw);
 CORE_DECLARE(status_t)      sgw_pgw_remove_all(void);
-CORE_DECLARE(sgw_pgw_t*)    sgw_pgw_find_by_node(gtp_node_t *gnode);
+CORE_DECLARE(sgw_pgw_t*)    sgw_pgw_find(c_uint32_t addr, c_uint16_t port);
 CORE_DECLARE(sgw_pgw_t*)    sgw_pgw_first(void);
-CORE_DECLARE(sgw_pgw_t*)    sgw_pgw_next(sgw_pgw_t *sgw);
+CORE_DECLARE(sgw_pgw_t*)    sgw_pgw_next(sgw_pgw_t *pgw);
 
 CORE_DECLARE(sgw_ue_t*)     sgw_ue_add(c_uint8_t *imsi, int imsi_len,
                                 c_int8_t *apn, c_uint8_t id);

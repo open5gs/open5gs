@@ -637,9 +637,7 @@ status_t gtp_xact_receive(gtp_node_t *gnode, pkbuf_t *pkbuf,
 
     new = gtp_xact_find_by_xid(gnode, h->type, GTP_SQN_TO_XID(h->sqn));
     if (!new)
-    {
         new = gtp_xact_remote_create(gnode, h->sqn);
-    }
     d_assert(new, return CORE_ERROR, "Null param");
 
     d_trace(3, "[%d] %s Receive peer %s:%d\n",

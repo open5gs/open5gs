@@ -25,7 +25,6 @@ typedef struct _pgw_context_t {
     c_uint32_t      s5c_addr;  /* PGW S5-C local address */
     c_uint32_t      s5c_port;  /* PGW S5-C local port */
     net_sock_t*     s5c_sock;  /* PGW S5-C local listen socket */
-    gtp_node_t      s5c_node;  /* PGW S5-C remote GTPv2-C node */
 
     c_uint32_t      s5u_addr;  /* PGW S5-U local address */
     c_uint32_t      s5u_port;  /* PGW S5-U local port */
@@ -121,7 +120,7 @@ CORE_DECLARE(status_t)      pgw_context_setup_trace_module(void);
 CORE_DECLARE(pgw_sgw_t*)    pgw_sgw_add(void);
 CORE_DECLARE(status_t)      pgw_sgw_remove(pgw_sgw_t *sgw);
 CORE_DECLARE(status_t)      pgw_sgw_remove_all(void);
-CORE_DECLARE(pgw_sgw_t*)    pgw_sgw_find_by_node(gtp_node_t *gnode);
+CORE_DECLARE(pgw_sgw_t*)    pgw_sgw_find(c_uint32_t addr, c_uint16_t port);
 CORE_DECLARE(pgw_sgw_t*)    pgw_sgw_first(void);
 CORE_DECLARE(pgw_sgw_t*)    pgw_sgw_next(pgw_sgw_t *sgw);
 

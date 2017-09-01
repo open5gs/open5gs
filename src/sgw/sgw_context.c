@@ -39,12 +39,6 @@ status_t sgw_context_init()
     index_init(&sgw_sess_pool, MAX_POOL_OF_SESS);
     index_init(&sgw_bearer_pool, MAX_POOL_OF_BEARER);
 
-    list_init(&self.s11_node.local_list);
-    list_init(&self.s11_node.remote_list);
-
-    list_init(&self.s5c_node.local_list);
-    list_init(&self.s5c_node.remote_list);
-
     self.imsi_ue_hash = hash_make();
 
     context_initialized = 1;
@@ -57,11 +51,7 @@ status_t sgw_context_final()
     d_assert(context_initialized == 1, return CORE_ERROR,
             "SGW context already has been finalized");
 
-    gtp_xact_delete_all(&self.s11_node);
-    gtp_xact_delete_all(&self.s5c_node);
-
     sgw_ue_remove_all();
-
     sgw_mme_remove_all();
     sgw_pgw_remove_all();
 
@@ -88,11 +78,7 @@ sgw_context_t* sgw_self()
 static status_t sgw_context_prepare()
 {
     self.s11_port = GTPV2_C_UDP_PORT;
-    self.s11_node.port = GTPV2_C_UDP_PORT;
-
     self.s5c_port = GTPV2_C_UDP_PORT;
-    self.s5c_node.port = GTPV2_C_UDP_PORT;
-
     self.s1u_port = GTPV1_U_UDP_PORT;
     self.s5u_port = GTPV1_U_UDP_PORT;
 
@@ -101,18 +87,6 @@ static status_t sgw_context_prepare()
 
 static status_t sgw_context_validation()
 {
-    if (self.s11_node.addr == 0)
-    {
-        d_error("No MME.NEWORK.S11_ADDR in '%s'",
-                context_self()->config.path);
-        return CORE_ERROR;
-    }
-    if (self.s5c_node.addr == 0)
-    {
-        d_error("No PGW.NEWORK.S5C_ADDR in '%s'",
-                context_self()->config.path);
-        return CORE_ERROR;
-    }
     if (self.s11_addr == 0)
     {
         d_error("No SGW.NEWORK.S11_ADDR in '%s'",
@@ -150,18 +124,14 @@ status_t sgw_context_parse_config()
 
     typedef enum {
         START, ROOT,
-        MME_START, MME_ROOT,
         SGW_START, SGW_ROOT,
-        PGW_START, PGW_ROOT,
         SKIP, STOP
     } parse_state;
     parse_state state = START;
     parse_state stack = STOP;
 
     size_t root_tokens = 0;
-    size_t mme_tokens = 0;
     size_t sgw_tokens = 0;
-    size_t pgw_tokens = 0;
     size_t skip_tokens = 0;
     int i, j, m, n;
     int arr, size;
@@ -186,17 +156,9 @@ status_t sgw_context_parse_config()
             }
             case ROOT:
             {
-                if (jsmntok_equal(json, t, "MME") == 0)
-                {
-                    state = MME_START;
-                }
-                else if (jsmntok_equal(json, t, "SGW") == 0)
+                if (jsmntok_equal(json, t, "SGW") == 0)
                 {
                     state = SGW_START;
-                }
-                else if (jsmntok_equal(json, t, "PGW") == 0)
-                {
-                    state = PGW_START;
                 }
                 else
                 {
@@ -207,53 +169,6 @@ status_t sgw_context_parse_config()
                     root_tokens--;
                     if (root_tokens == 0) state = STOP;
                 }
-                break;
-            }
-            case MME_START:
-            {
-                state = MME_ROOT;
-                mme_tokens = t->size;
-
-                break;
-            }
-            case MME_ROOT:
-            {
-                if (jsmntok_equal(json, t, "NETWORK") == 0)
-                {
-                    m = 1;
-                    size = 1;
-
-                    if ((t+1)->type == JSMN_ARRAY)
-                    {
-                        m = 2;
-                    }
-
-                    for (arr = 0; arr < size; arr++)
-                    {
-                        for (n = 1; n > 0; m++, n--)
-                        {
-                            n += (t+m)->size;
-
-                            if (jsmntok_equal(json, t+m, "S11_ADDR") == 0)
-                            {
-                                char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.s11_node.addr = inet_addr(v);
-                            }
-                            else if (jsmntok_equal(json, t+m, "S11_PORT") == 0)
-                            {
-                                char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.s11_node.port = atoi(v);
-                            }
-                        }
-                    }
-                }
-
-                state = SKIP;
-                stack = MME_ROOT;
-                skip_tokens = t->size;
-
-                mme_tokens--;
-                if (mme_tokens == 0) stack = ROOT;
                 break;
             }
             case SGW_START:
@@ -333,53 +248,6 @@ status_t sgw_context_parse_config()
                 if (sgw_tokens == 0) stack = ROOT;
                 break;
             }
-            case PGW_START:
-            {
-                state = PGW_ROOT;
-                pgw_tokens = t->size;
-
-                break;
-            }
-            case PGW_ROOT:
-            {
-                if (jsmntok_equal(json, t, "NETWORK") == 0)
-                {
-                    m = 1;
-                    size = 1;
-
-                    if ((t+1)->type == JSMN_ARRAY)
-                    {
-                        m = 2;
-                    }
-
-                    for (arr = 0; arr < size; arr++)
-                    {
-                        for (n = 1; n > 0; m++, n--)
-                        {
-                            n += (t+m)->size;
-
-                            if (jsmntok_equal(json, t+m, "S5C_ADDR") == 0)
-                            {
-                                char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.s5c_node.addr = inet_addr(v);
-                            }
-                            else if (jsmntok_equal(json, t+m, "S5C_PORT") == 0)
-                            {
-                                char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.s5c_node.port = atoi(v);
-                            }
-                        }
-                    }
-                }
-
-                state = SKIP;
-                stack = PGW_ROOT;
-                skip_tokens = t->size;
-
-                pgw_tokens--;
-                if (pgw_tokens == 0) stack = ROOT;
-                break;
-            }
             case SKIP:
             {
                 skip_tokens += t->size;
@@ -449,64 +317,64 @@ status_t sgw_context_setup_trace_module()
 
 sgw_mme_t* sgw_mme_add()
 {
-    sgw_mme_t *sgw = NULL;
+    sgw_mme_t *mme = NULL;
 
-    pool_alloc_node(&sgw_mme_pool, &sgw);
-    d_assert(sgw, return NULL, "Null param");
+    pool_alloc_node(&sgw_mme_pool, &mme);
+    d_assert(mme, return NULL, "Null param");
 
-    memset(sgw, 0, sizeof(sgw_mme_t));
+    memset(mme, 0, sizeof(sgw_mme_t));
 
-    list_init(&sgw->local_list);
-    list_init(&sgw->remote_list);
+    list_init(&mme->local_list);
+    list_init(&mme->remote_list);
 
-    list_append(&self.mme_list, sgw);
+    list_append(&self.mme_list, mme);
     
-    return sgw;
+    return mme;
 }
 
-status_t sgw_mme_remove(sgw_mme_t *sgw)
+status_t sgw_mme_remove(sgw_mme_t *mme)
 {
-    d_assert(sgw, return CORE_ERROR, "Null param");
+    d_assert(mme, return CORE_ERROR, "Null param");
 
-    gtp_xact_delete_all(sgw);
+    gtp_xact_delete_all(mme);
 
-    list_remove(&self.mme_list, sgw);
-    pool_free_node(&sgw_mme_pool, sgw);
+    list_remove(&self.mme_list, mme);
+    pool_free_node(&sgw_mme_pool, mme);
 
     return CORE_OK;
 }
 
 status_t sgw_mme_remove_all()
 {
-    sgw_mme_t *sgw = NULL, *next_sgw = NULL;
+    sgw_mme_t *mme = NULL, *next_mme = NULL;
     
-    sgw = sgw_mme_first();
-    while (sgw)
+    mme = sgw_mme_first();
+    while (mme)
     {
-        next_sgw = sgw_mme_next(sgw);
+        next_mme = sgw_mme_next(mme);
 
-        sgw_mme_remove(sgw);
+        sgw_mme_remove(mme);
 
-        sgw = next_sgw;
+        mme = next_mme;
     }
 
     return CORE_OK;
 }
 
-sgw_mme_t* sgw_mme_find_by_node(sgw_mme_t *gnode)
+sgw_mme_t* sgw_mme_find(c_uint32_t addr, c_uint16_t port)
 {
-    sgw_mme_t *sgw = NULL;
+    sgw_mme_t *mme = NULL;
     
-    sgw = sgw_mme_first();
-    while (sgw)
+    mme = sgw_mme_first();
+    while (mme)
     {
-        if (GTP_COMPARE_NODE(sgw, gnode))
+        if (mme->addr == addr && mme->port == port)
             break;
 
-        sgw = sgw_mme_next(sgw);
+        mme = sgw_mme_next(mme);
     }
 
-    return sgw;
+    return mme;
 }
 
 sgw_mme_t* sgw_mme_first()
@@ -514,71 +382,71 @@ sgw_mme_t* sgw_mme_first()
     return list_first(&self.mme_list);
 }
 
-sgw_mme_t* sgw_mme_next(sgw_mme_t *sgw)
+sgw_mme_t* sgw_mme_next(sgw_mme_t *mme)
 {
-    return list_next(sgw);
+    return list_next(mme);
 }
 
 sgw_pgw_t* sgw_pgw_add()
 {
-    sgw_pgw_t *sgw = NULL;
+    sgw_pgw_t *pgw = NULL;
 
-    pool_alloc_node(&sgw_pgw_pool, &sgw);
-    d_assert(sgw, return NULL, "Null param");
+    pool_alloc_node(&sgw_pgw_pool, &pgw);
+    d_assert(pgw, return NULL, "Null param");
 
-    memset(sgw, 0, sizeof(sgw_pgw_t));
+    memset(pgw, 0, sizeof(sgw_pgw_t));
 
-    list_init(&sgw->local_list);
-    list_init(&sgw->remote_list);
+    list_init(&pgw->local_list);
+    list_init(&pgw->remote_list);
 
-    list_append(&self.pgw_list, sgw);
+    list_append(&self.pgw_list, pgw);
     
-    return sgw;
+    return pgw;
 }
 
-status_t sgw_pgw_remove(sgw_pgw_t *sgw)
+status_t sgw_pgw_remove(sgw_pgw_t *pgw)
 {
-    d_assert(sgw, return CORE_ERROR, "Null param");
+    d_assert(pgw, return CORE_ERROR, "Null param");
 
-    gtp_xact_delete_all(sgw);
+    gtp_xact_delete_all(pgw);
 
-    list_remove(&self.pgw_list, sgw);
-    pool_free_node(&sgw_pgw_pool, sgw);
+    list_remove(&self.pgw_list, pgw);
+    pool_free_node(&sgw_pgw_pool, pgw);
 
     return CORE_OK;
 }
 
 status_t sgw_pgw_remove_all()
 {
-    sgw_pgw_t *sgw = NULL, *next_sgw = NULL;
+    sgw_pgw_t *pgw = NULL, *next_pgw = NULL;
     
-    sgw = sgw_pgw_first();
-    while (sgw)
+    pgw = sgw_pgw_first();
+    while (pgw)
     {
-        next_sgw = sgw_pgw_next(sgw);
+        next_pgw = sgw_pgw_next(pgw);
 
-        sgw_pgw_remove(sgw);
+        sgw_pgw_remove(pgw);
 
-        sgw = next_sgw;
+        pgw = next_pgw;
     }
 
     return CORE_OK;
 }
 
-sgw_pgw_t* sgw_pgw_find_by_node(sgw_pgw_t *gnode)
+sgw_pgw_t* sgw_pgw_find(c_uint32_t addr, c_uint16_t port)
 {
-    sgw_pgw_t *sgw = NULL;
+    sgw_pgw_t *pgw = NULL;
     
-    sgw = sgw_pgw_first();
-    while (sgw)
+    pgw = sgw_pgw_first();
+    while (pgw)
     {
-        if (GTP_COMPARE_NODE(sgw, gnode))
+        if (pgw->addr == addr && pgw->port == port)
             break;
 
-        sgw = sgw_pgw_next(sgw);
+        pgw = sgw_pgw_next(pgw);
     }
 
-    return sgw;
+    return pgw;
 }
 
 sgw_pgw_t* sgw_pgw_first()
@@ -586,9 +454,9 @@ sgw_pgw_t* sgw_pgw_first()
     return list_first(&self.pgw_list);
 }
 
-sgw_pgw_t* sgw_pgw_next(sgw_pgw_t *sgw)
+sgw_pgw_t* sgw_pgw_next(sgw_pgw_t *pgw)
 {
-    return list_next(sgw);
+    return list_next(pgw);
 }
 
 sgw_ue_t* sgw_ue_add(

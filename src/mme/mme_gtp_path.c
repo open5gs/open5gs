@@ -13,7 +13,8 @@ static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
     status_t rv;
     event_t e;
     pkbuf_t *pkbuf = NULL;
-    gtp_node_t gnode;
+    c_uint32_t addr;
+    c_uint16_t port;
     mme_sgw_t *sgw = NULL;
 
     d_assert(sock, return -1, "Null param");
@@ -27,16 +28,17 @@ static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
         return -1;
     }
 
-    gnode.addr = sock->remote.sin_addr.s_addr;
-    gnode.port = ntohs(sock->remote.sin_port);
-    gnode.sock = sock; /* is it needed? */
+    addr = sock->remote.sin_addr.s_addr;
+    port = ntohs(sock->remote.sin_port);
 
-    sgw = mme_sgw_find_by_node(&gnode);
+    sgw = mme_sgw_find(addr, port);
     d_assert(sgw, return -1, "Can't find SGW from [%s:%d]",
-            INET_NTOP(&gnode.addr, buf), gnode.port);
+            INET_NTOP(&addr, buf), port);
+
+    sgw->sock = sock; /* Is it needed? */
 
     d_trace(10, "S11_PDU is received from SGW[%s:%d]\n",
-            INET_NTOP(&gnode.addr, buf), gnode.port);
+            INET_NTOP(&addr, buf), port);
     d_trace_hex(10, pkbuf->payload, pkbuf->len);
 
     event_set(&e, MME_EVT_S11_MESSAGE);

@@ -37,9 +37,6 @@ status_t pgw_context_init()
 
     pool_init(&pgw_ip_pool_pool, MAX_POOL_OF_SESS);
 
-    list_init(&self.s5c_node.local_list);
-    list_init(&self.s5c_node.remote_list);
-
     self.sess_hash = hash_make();
 
     context_initiaized = 1;
@@ -52,9 +49,7 @@ status_t pgw_context_final()
     d_assert(context_initiaized == 1, return CORE_ERROR,
             "PGW context already has been finalized");
 
-    gtp_xact_delete_all(&self.s5c_node);
     pgw_sess_remove_all();
-
     pgw_sgw_remove_all();
 
     d_assert(self.sess_hash, , "Null param");
@@ -98,8 +93,6 @@ pgw_context_t* pgw_self()
 static status_t pgw_context_prepare()
 {
     self.s5c_port = GTPV2_C_UDP_PORT;
-    self.s5c_node.port = GTPV2_C_UDP_PORT;
-
     self.s5u_port = GTPV1_U_UDP_PORT;
 
     return CORE_OK;
@@ -110,12 +103,6 @@ static status_t pgw_context_validation()
     if (self.fd_conf_path == NULL)
     {
         d_error("No PGW.FD_CONF_PATH in '%s'",
-                context_self()->config.path);
-        return CORE_ERROR;
-    }
-    if (self.s5c_node.addr == 0)
-    {
-        d_error("No SGW.NEWORK.S5C_ADDR in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
@@ -162,7 +149,6 @@ status_t pgw_context_parse_config()
 
     typedef enum {
         START, ROOT,
-        SGW_START, SGW_ROOT,
         PGW_START, PGW_ROOT,
         SKIP, STOP
     } parse_state;
@@ -170,7 +156,6 @@ status_t pgw_context_parse_config()
     parse_state stack = STOP;
 
     size_t root_tokens = 0;
-    size_t sgw_tokens = 0;
     size_t pgw_tokens = 0;
     size_t skip_tokens = 0;
     int i, j, m, n;
@@ -196,11 +181,7 @@ status_t pgw_context_parse_config()
             }
             case ROOT:
             {
-                if (jsmntok_equal(json, t, "SGW") == 0)
-                {
-                    state = SGW_START;
-                }
-                else if (jsmntok_equal(json, t, "PGW") == 0)
+                if (jsmntok_equal(json, t, "PGW") == 0)
                 {
                     state = PGW_START;
                 }
@@ -213,53 +194,6 @@ status_t pgw_context_parse_config()
                     root_tokens--;
                     if (root_tokens == 0) state = STOP;
                 }
-                break;
-            }
-            case SGW_START:
-            {
-                state = SGW_ROOT;
-                sgw_tokens = t->size;
-
-                break;
-            }
-            case SGW_ROOT:
-            {
-                if (jsmntok_equal(json, t, "NETWORK") == 0)
-                {
-                    m = 1;
-                    size = 1;
-
-                    if ((t+1)->type == JSMN_ARRAY)
-                    {
-                        m = 2;
-                    }
-
-                    for (arr = 0; arr < size; arr++)
-                    {
-                        for (n = 1; n > 0; m++, n--)
-                        {
-                            n += (t+m)->size;
-
-                            if (jsmntok_equal(json, t+m, "S5C_ADDR") == 0)
-                            {
-                                char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.s5c_node.addr = inet_addr(v);
-                            }
-                            else if (jsmntok_equal(json, t+m, "S5C_PORT") == 0)
-                            {
-                                char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.s5c_node.port = atoi(v);
-                            }
-                        }
-                    }
-                }
-
-                state = SKIP;
-                stack = SGW_ROOT;
-                skip_tokens = t->size;
-
-                sgw_tokens--;
-                if (sgw_tokens == 0) stack = ROOT;
                 break;
             }
             case PGW_START:
@@ -529,14 +463,14 @@ status_t pgw_sgw_remove_all()
     return CORE_OK;
 }
 
-pgw_sgw_t* pgw_sgw_find_by_node(pgw_sgw_t *gnode)
+pgw_sgw_t* pgw_sgw_find(c_uint32_t addr, c_uint16_t port)
 {
     pgw_sgw_t *sgw = NULL;
     
     sgw = pgw_sgw_first();
     while (sgw)
     {
-        if (GTP_COMPARE_NODE(sgw, gnode))
+        if (sgw->addr == addr && sgw->port == port)
             break;
 
         sgw = pgw_sgw_next(sgw);

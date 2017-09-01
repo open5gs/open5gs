@@ -15,10 +15,12 @@ static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
     event_t e;
     status_t rv;
     pkbuf_t *pkbuf = NULL;
-    gtp_node_t *gnode = data;
+    c_uint32_t addr;
+    c_uint16_t port;
+    event_e event = (event_e)data;
 
     d_assert(sock, return -1, "Null param");
-    d_assert(gnode, return -1, "Null param");
+    d_assert(data, return -1, "Null param");
 
     pkbuf = gtp_read(sock);
     if (pkbuf == NULL)
@@ -29,23 +31,42 @@ static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
         return -1;
     }
 
-    if (GTP_COMPARE_NODE(gnode, &sgw_self()->s11_node))
+    addr = sock->remote.sin_addr.s_addr;
+    port = ntohs(sock->remote.sin_port);
+
+    event_set(&e, event);
+    event_set_param2(&e, (c_uintptr_t)pkbuf);
+    if (event == SGW_EVT_S11_MESSAGE)
     {
+        sgw_mme_t *mme = sgw_mme_find(addr, port);
+        if (!mme)
+        {
+            mme = sgw_mme_add();
+            d_assert(mme, return -1, "Can't add MME-GTP node");
+
+            mme->addr = addr;
+            mme->port = port;
+            mme->sock = sock;
+        }
+
         d_trace(10, "S11 PDU received from MME\n");
-        event_set(&e, SGW_EVT_S11_MESSAGE);
+
+        event_set_param1(&e, (c_uintptr_t)mme);
     }
-    else if (GTP_COMPARE_NODE(gnode, &sgw_self()->s5c_node))
+    else if (event == SGW_EVT_S5C_MESSAGE)
     {
+        sgw_pgw_t *pgw = sgw_pgw_find(addr, port);
+        d_assert(pgw, return -1, "Can't add PGW-GTP node");
+
         d_trace(10, "S5-C PDU received from PGW\n");
-        event_set(&e, SGW_EVT_S5C_MESSAGE);
+
+        event_set_param1(&e, (c_uintptr_t)pgw);
     }
     else
         d_assert(0, pkbuf_free(pkbuf); return -1, "Unknown GTP-Node");
 
     d_trace_hex(10, pkbuf->payload, pkbuf->len);
 
-    event_set_param1(&e, (c_uintptr_t)gnode);
-    event_set_param2(&e, (c_uintptr_t)pkbuf);
     rv = sgw_event_send(&e);
     if (rv != CORE_OK)
     {
@@ -243,24 +264,22 @@ status_t sgw_gtp_open()
     status_t rv;
 
     rv = gtp_listen(&sgw_self()->s11_sock, _gtpv2_c_recv_cb, 
-            sgw_self()->s11_addr, sgw_self()->s11_port, &sgw_self()->s11_node);
+            sgw_self()->s11_addr, sgw_self()->s11_port,
+            (void*)SGW_EVT_S11_MESSAGE);
     if (rv != CORE_OK)
     {
         d_error("Can't establish S11 Path for SGW");
         return rv;
     }
 
-    sgw_self()->s11_node.sock = sgw_self()->s11_sock;
-
     rv = gtp_listen(&sgw_self()->s5c_sock, _gtpv2_c_recv_cb, 
-            sgw_self()->s5c_addr, sgw_self()->s5c_port, &sgw_self()->s5c_node);
+            sgw_self()->s5c_addr, sgw_self()->s5c_port,
+            (void*)SGW_EVT_S5C_MESSAGE);
     if (rv != CORE_OK)
     {
         d_error("Can't establish S5-C Path for SGW");
         return rv;
     }
-
-    sgw_self()->s5c_node.sock = sgw_self()->s5c_sock;
 
     rv = gtp_listen(&sgw_self()->s5u_sock, _gtpv1_s5u_recv_cb, 
             sgw_self()->s5u_addr, sgw_self()->s5u_port, NULL);
