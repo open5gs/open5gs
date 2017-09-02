@@ -264,6 +264,13 @@ typedef struct _mme_sess_t {
     list_t          bearer_list;
 
     /* Related Context */
+#define MME_S11_PATH_IN_SESSION(session) \
+    do { \
+        d_assert((session), return, "Null param"); \
+        (session)->sgw = mme_sgw_next((session)->sgw); \
+        if (!(session)->sgw) (session)->sgw = mme_sgw_first(); \
+        d_assert((session)->sgw, return, "Null param"); \
+    } while(0)
     mme_sgw_t       *sgw;
     mme_ue_t        *mme_ue;
 

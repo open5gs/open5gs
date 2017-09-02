@@ -22,10 +22,8 @@ void mme_s11_handle_create_session_request(mme_sess_t *sess)
     mme_ue_t *mme_ue = NULL;
 
     /* Use round-robin for selecting SGW */
-    d_assert(sess, return, "Null param");
-    sess->sgw = mme_sgw_next(sess->sgw);
-    if (!sess->sgw) sess->sgw = mme_sgw_first();
-    d_assert(sess->sgw, return, "Null param");
+    MME_S11_PATH_IN_SESSION(sess);
+
     mme_ue = sess->mme_ue;
     d_assert(mme_ue, return, "Null param");
 
@@ -39,8 +37,6 @@ void mme_s11_handle_create_session_request(mme_sess_t *sess)
 
     xact = gtp_xact_local_create(sess->sgw, &h, pkbuf);
     d_assert(xact, return, "Null param");
-
-    GTP_XACT_STORE_SESSION(xact, sess);
 
     rv = gtp_xact_commit(xact);
     d_assert(rv == CORE_OK, return, "xact_commit error");
@@ -60,12 +56,6 @@ void mme_s11_handle_create_session_response(
     d_assert(xact, return, "Null param");
     d_assert(mme_ue, return, "Null param");
     d_assert(rsp, return, "Null param");
-    sess = GTP_XACT_RETRIEVE_SESSION(xact);
-    d_assert(sess, return, "Null param");
-    bearer = mme_default_bearer_in_sess(sess);
-    d_assert(bearer, return, "Null param");
-    pdn = sess->pdn;
-    d_assert(pdn, return, "Null param");
 
     if (rsp->sender_f_teid_for_control_plane.presence == 0)
     {
@@ -92,6 +82,14 @@ void mme_s11_handle_create_session_response(
         d_error("No GTP TEID");
         return;
     }
+
+    bearer = mme_bearer_find_by_ue_ebi(mme_ue, 
+            rsp->bearer_contexts_created.eps_bearer_id.u8);
+    d_assert(bearer, return, "Null param");
+    sess = bearer->sess;
+    d_assert(sess, return, "Null param");
+    pdn = sess->pdn;
+    d_assert(pdn, return, "Null param");
 
     /* Receive Control Plane(UL) : SGW-S11 */
     sgw_s11_teid = rsp->sender_f_teid_for_control_plane.data;

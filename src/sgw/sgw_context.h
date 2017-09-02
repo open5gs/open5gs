@@ -83,7 +83,19 @@ typedef struct _sgw_sess_t {
     list_t          bearer_list;
 
     /* Related Context */
+#define SGW_S11_PATH_IN_SESSION(session, xaction) \
+    do { \
+        d_assert((session), return, "Null param"); \
+        d_assert((xaction), return, "Null param"); \
+        (session)->mme = (xaction)->gnode; \
+    } while(0)
     sgw_mme_t       *mme;
+#define SGW_S5C_PATH_IN_SESSION(session, gnode) \
+    do { \
+        d_assert((session), return, "Null param"); \
+        d_assert((gnode), return, "Null param"); \
+        (session)->pgw = gnode; \
+    } while(0)
     sgw_mme_t       *pgw;
     sgw_ue_t        *sgw_ue;
 } sgw_sess_t;

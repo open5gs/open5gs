@@ -96,6 +96,8 @@ void pgw_gx_handle_cca_initial_request(
     rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.len = 
         GTP_F_TEID_IPV4_LEN;
 
+    PGW_S5C_PATH_IN_SESSION(sess, xact);
+
     gtp_message.h.type = GTP_CREATE_SESSION_RESPONSE_TYPE;
     gtp_message.h.teid = sess->sgw_s5c_teid;
 
