@@ -91,12 +91,35 @@ void emm_state_operational(fsm_t *s, event_t *e)
                     emm_handle_attach_request(
                             mme_ue, &message->emm.attach_request);
 
+                    if (!MME_UE_HAVE_IMSI(mme_ue))
+                    {
+                        /* Unknown GUTI */
+                        emm_handle_identity_request(mme_ue);
+                        break;
+                    }
+
+                    if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+                    {
+                        event_emm_to_esm(
+                            mme_ue, &mme_ue->last_pdn_connectivity_request);
+                    }
+                    else
+                    {
+                        if (MME_UE_HAVE_SESSION(mme_ue))
+                        {
+                            mme_s11_handle_delete_all_sessions_request_in_ue(
+                                    mme_ue);
+                        }
+                        else
+                        {
+                            mme_s6a_send_air(mme_ue);
+                        }
+                    }
+
                     break;
                 }
                 case NAS_IDENTITY_RESPONSE:
                 {
-                    mme_sess_t *sess = NULL;
-
                     emm_handle_identity_response(mme_ue,
                             &message->emm.identity_response);
 
@@ -106,27 +129,10 @@ void emm_state_operational(fsm_t *s, event_t *e)
                         break;
                     }
                     
-                    sess = mme_sess_first(mme_ue);
-                    d_assert(sess, return, "Null param");
-
                     if (SECURITY_CONTEXT_IS_VALID(mme_ue))
                     {
-                        if (MME_UE_HAVE_APN(mme_ue))
-                        {
-                            if (MME_UE_HAVE_SESSION(mme_ue))
-                            {
-                                emm_handle_attach_accept(mme_ue);
-                            }
-                            else
-                            {
-                                mme_s11_handle_create_session_request(sess);
-                            }
-                        }
-                        else
-                        {
-                            esm_handle_information_request(sess);
-                        }
-
+                        event_emm_to_esm(mme_ue,
+                            &mme_ue->last_pdn_connectivity_request);
                     }
                     else
                     {

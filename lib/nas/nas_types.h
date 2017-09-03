@@ -456,6 +456,25 @@ ED4(c_uint8_t tsc:1;,
 
 /* 9.9.3.15 ESM message container
  * M LV-E 5-n */
+#define NAS_ESM_CLEAR_MESSAGE(msg) \
+    do { \
+        d_assert((msg), , "Null param"); \
+        if ((msg)->data) \
+        { \
+            core_free((msg)->data); \
+            (msg)->data = NULL; \
+            (msg)->len = 0; \
+        } \
+    } while(0)
+#define NAS_ESM_STORE_MESSAGE(dst, src) \
+    do { \
+        d_assert((src),, "Null param") \
+        d_assert((dst),, "Null param") \
+        NAS_ESM_CLEAR_MESSAGE(dst); \
+        (dst)->len = (src)->len; \
+        (dst)->data = core_calloc(1, sizeof((dst)->len)); \
+        memcpy((dst)->data, (src)->data, (dst)->len); \
+    } while(0)
 typedef struct _nas_esm_message_container_t {
     c_uint16_t len;
     c_uint8_t *data;

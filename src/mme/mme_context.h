@@ -226,6 +226,9 @@ struct _mme_ue_t {
     /* eNB UE context */
     enb_ue_t        *enb_ue;
 
+    /* PDN Connectivity Request */
+    nas_esm_message_container_t last_pdn_connectivity_request;
+
     /* Paging */
     pkbuf_t         *last_paging_msg;
     tm_block_id     t3413;

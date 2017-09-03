@@ -21,7 +21,7 @@
 
 #include "emm_handler.h"
 
-static void event_emm_to_esm(
+void event_emm_to_esm(
         mme_ue_t *mme_ue, nas_esm_message_container_t *esm_message_container)
 {
     pkbuf_t *esmbuf = NULL;
@@ -69,13 +69,18 @@ static void event_emm_to_esm(
 void emm_handle_attach_request(
         mme_ue_t *mme_ue, nas_attach_request_t *attach_request)
 {
+    enb_ue_t *enb_ue = NULL;
     nas_eps_mobile_identity_t *eps_mobile_identity =
                     &attach_request->eps_mobile_identity;
-    enb_ue_t *enb_ue = NULL;
+    nas_esm_message_container_t *esm_message_container =
+                    &attach_request->esm_message_container;
 
     d_assert(mme_ue, return, "Null param");
     enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return, "Null param");
+
+    d_assert(esm_message_container, return, "Null param");
+    d_assert(esm_message_container->len, return, "Null param");
 
     /* Store UE specific information */
     if (attach_request->presencemask &
@@ -140,12 +145,6 @@ void emm_handle_attach_request(
                     MME_UE_HAVE_IMSI(mme_ue) 
                         ? mme_ue->imsi_bcd : "Unknown");
 
-            if (!MME_UE_HAVE_IMSI(mme_ue))
-            {
-                /* Unknown GUTI */
-                emm_handle_identity_request(mme_ue);
-            }
-
             break;
         }
         default:
@@ -157,7 +156,8 @@ void emm_handle_attach_request(
         }
     }
 
-    event_emm_to_esm(mme_ue, &attach_request->esm_message_container);
+    NAS_ESM_STORE_MESSAGE(
+            &mme_ue->last_pdn_connectivity_request, esm_message_container);
 }
 
 void emm_handle_attach_accept(mme_ue_t *mme_ue)
@@ -655,8 +655,6 @@ void emm_handle_tau_request(
             return;
         }
     }
-
-    //event_emm_to_esm(mme_ue, &attach_request->esm_message_container);
 }
 
 void emm_handle_tau_accept(mme_ue_t *mme_ue)

@@ -1157,6 +1157,9 @@ status_t mme_ue_remove(mme_ue_t *mme_ue)
     /* Delete t3413 timer */
     tm_delete(mme_ue->t3413);
 
+    /* Free the saved PDN Connectivity Request */
+    NAS_ESM_CLEAR_MESSAGE(&mme_ue->last_pdn_connectivity_request);
+
     /* Free the saved paging msg */
     if (mme_ue->last_paging_msg)
         pkbuf_free(mme_ue->last_paging_msg);

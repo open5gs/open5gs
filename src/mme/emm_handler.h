@@ -9,6 +9,9 @@
 extern "C" {
 #endif /* __cplusplus */
 
+CORE_DECLARE(void) event_emm_to_esm(
+        mme_ue_t *mme_ue, nas_esm_message_container_t *esm_message_container);
+
 CORE_DECLARE(void) emm_handle_attach_request(
     mme_ue_t *mme_ue, nas_attach_request_t *attach_request);
 CORE_DECLARE(void) emm_handle_attach_accept(mme_ue_t *mme_ue);

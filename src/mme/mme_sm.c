@@ -411,8 +411,6 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 }
                 case S6A_CMD_CODE_UPDATE_LOCATION:
                 {
-                    mme_sess_t *sess = NULL;
-
                     if (s6a_message->result_code != ER_DIAMETER_SUCCESS)
                     {
                         emm_handle_attach_reject(mme_ue,
@@ -425,9 +423,6 @@ void mme_state_operational(fsm_t *s, event_t *e)
 
                     mme_s6a_handle_ula(mme_ue, &s6a_message->ula_message);
 
-                    sess = mme_sess_first(mme_ue);
-                    d_assert(sess, break, "Null param");
-
                     if (MME_UE_HAVE_DEFAULT_BEARER(mme_ue))
                     {
                         /* if there is default bearer, UE attached completely */
@@ -435,22 +430,8 @@ void mme_state_operational(fsm_t *s, event_t *e)
                     }
                     else
                     {
-                        /* Attaching state */
-                        if (MME_UE_HAVE_APN(mme_ue))
-                        {
-                            if (MME_UE_HAVE_SESSION(mme_ue))
-                            {
-                                emm_handle_attach_accept(mme_ue);
-                            }
-                            else
-                            {
-                                mme_s11_handle_create_session_request(sess);
-                            }
-                        }
-                        else
-                        {
-                            esm_handle_information_request(sess);
-                        }
+                        event_emm_to_esm(mme_ue,
+                                &mme_ue->last_pdn_connectivity_request);
                     }
 
                     break;

@@ -69,42 +69,25 @@ void esm_state_operational(fsm_t *s, event_t *e)
                             "UE[%s] --> ESM[%d]\n", 
                             mme_ue->imsi_bcd, sess->pti);
 
-                    if (!MME_UE_HAVE_IMSI(mme_ue))
-                    {
-                        /* Continue with Identity Response */
-                        break;
-                    }
+                    d_assert(MME_UE_HAVE_IMSI(mme_ue), break,
+                        "No IMSI in PDN_CPNNECTIVITY_REQUEST");
+                    d_assert(SECURITY_CONTEXT_IS_VALID(mme_ue), break,
+                        "No Security Context in PDN_CPNNECTIVITY_REQUEST");
 
-                    /* Known GUTI */
-                    if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+                    if (MME_UE_HAVE_APN(mme_ue))
                     {
-                        if (MME_UE_HAVE_APN(mme_ue))
+                        if (MME_UE_HAVE_SESSION(mme_ue))
                         {
-                            if (MME_UE_HAVE_SESSION(mme_ue))
-                            {
-                                emm_handle_attach_accept(mme_ue);
-                            }
-                            else
-                            {
-                                mme_s11_handle_create_session_request(sess);
-                            }
+                            emm_handle_attach_accept(mme_ue);
                         }
                         else
                         {
-                            esm_handle_information_request(sess);
+                            mme_s11_handle_create_session_request(sess);
                         }
                     }
                     else
                     {
-                        if (MME_UE_HAVE_SESSION(mme_ue))
-                        {
-                            mme_s11_handle_delete_all_sessions_request_in_ue(
-                                    mme_ue);
-                        }
-                        else
-                        {
-                            mme_s6a_send_air(mme_ue);
-                        }
+                        esm_handle_information_request(sess);
                     }
                     break;
                 }
