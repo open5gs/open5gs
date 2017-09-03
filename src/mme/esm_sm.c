@@ -56,7 +56,7 @@ void esm_state_operational(fsm_t *s, event_t *e)
             d_assert(sess, return, "Null param");
             mme_ue = sess->mme_ue;
             d_assert(mme_ue, return, "Null param");
-            message = (nas_message_t *)event_get_param4(e);
+            message = (nas_message_t *)event_get_param3(e);
             d_assert(message, break, "Null param");
 
             switch(message->esm.h.message_type)

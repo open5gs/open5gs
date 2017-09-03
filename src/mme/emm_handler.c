@@ -62,7 +62,7 @@ void event_emm_to_esm(
 
     event_set(&e, MME_EVT_ESM_MESSAGE);
     event_set_param1(&e, (c_uintptr_t)sess->index);
-    event_set_param3(&e, (c_uintptr_t)esmbuf);
+    event_set_param2(&e, (c_uintptr_t)esmbuf);
     mme_event_send(&e);
 }
 

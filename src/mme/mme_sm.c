@@ -246,12 +246,12 @@ void mme_state_operational(fsm_t *s, event_t *e)
             d_assert(mme_ue = sess->mme_ue, break, "No UE context");
             d_assert(FSM_STATE(&sess->sm), break, "No ESM State Machine");
 
-            pkbuf = (pkbuf_t *)event_get_param3(e);
+            pkbuf = (pkbuf_t *)event_get_param2(e);
             d_assert(pkbuf, break, "Null param");
             d_assert(nas_esm_decode(&message, pkbuf) == CORE_OK,
                     pkbuf_free(pkbuf); break, "Can't decode NAS_ESM");
 
-            event_set_param4(e, (c_uintptr_t)&message);
+            event_set_param3(e, (c_uintptr_t)&message);
 
             fsm_dispatch(&sess->sm, (fsm_event_t*)e);
 
