@@ -910,6 +910,7 @@ mme_sgw_t* mme_sgw_next(mme_sgw_t *sgw)
 mme_enb_t* mme_enb_add(net_sock_t *s1ap_sock)
 {
     mme_enb_t *enb = NULL;
+    event_t e;
 
     index_alloc(&mme_enb_pool, &enb);
     d_assert(enb, return NULL, "Null param");
@@ -922,17 +923,21 @@ mme_enb_t* mme_enb_add(net_sock_t *s1ap_sock)
     list_init(&enb->enb_ue_list);
     list_append(&self.enb_list, enb);
 
+    event_set_param1(&e, (c_uintptr_t)enb->index);
     fsm_create(&enb->sm, s1ap_state_initial, s1ap_state_final);
-    fsm_init(&enb->sm, 0);
+    fsm_init(&enb->sm, (fsm_event_t *)&e);
     
     return enb;
 }
 
 status_t mme_enb_remove(mme_enb_t *enb)
 {
+    event_t e;
+
     d_assert(enb, return CORE_ERROR, "Null param");
 
-    fsm_final(&enb->sm, 0);
+    event_set_param1(&e, (c_uintptr_t)enb->index);
+    fsm_final(&enb->sm, (fsm_event_t *)&e);
     fsm_clear(&enb->sm);
 
     enb_ue_remove_in_enb(enb);
@@ -1117,6 +1122,7 @@ enb_ue_t* enb_ue_next_in_enb(enb_ue_t *enb_ue)
 mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
 {
     mme_ue_t *mme_ue = NULL;
+    event_t e;
 
     d_assert(enb_ue, return NULL, "Null param");
 
@@ -1135,17 +1141,21 @@ mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
     mme_ue->enb_ue = enb_ue;
     enb_ue->mme_ue = mme_ue;
 
+    event_set_param1(&e, (c_uintptr_t)mme_ue->index);
     fsm_create(&mme_ue->sm, emm_state_initial, emm_state_final);
-    fsm_init(&mme_ue->sm, 0);
+    fsm_init(&mme_ue->sm, (fsm_event_t *)&e);
     
     return mme_ue;
 }
 
 status_t mme_ue_remove(mme_ue_t *mme_ue)
 {
+    event_t e;
+
     d_assert(mme_ue, return CORE_ERROR, "Null param");
 
-    fsm_final(&mme_ue->sm, 0);
+    event_set_param1(&e, (c_uintptr_t)mme_ue->index);
+    fsm_final(&mme_ue->sm, (fsm_event_t *)&e);
     fsm_clear(&mme_ue->sm);
 
     /* Clear hash table */
@@ -1462,6 +1472,7 @@ mme_sess_t *mme_sess_add(mme_ue_t *mme_ue, c_uint8_t pti)
 {
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
+    event_t e;
 
     d_assert(mme_ue, return NULL, "Null param");
     d_assert(pti != NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
@@ -1483,18 +1494,22 @@ mme_sess_t *mme_sess_add(mme_ue_t *mme_ue, c_uint8_t pti)
     d_assert(bearer, mme_sess_remove(sess); return NULL, 
             "Can't add default bearer context");
 
+    event_set_param1(&e, (c_uintptr_t)sess->index);
     fsm_create(&sess->sm, esm_state_initial, esm_state_final);
-    fsm_init(&sess->sm, 0);
+    fsm_init(&sess->sm, (fsm_event_t *)&e);
 
     return sess;
 }
 
 status_t mme_sess_remove(mme_sess_t *sess)
 {
+    event_t e;
+
     d_assert(sess, return CORE_ERROR, "Null param");
     d_assert(sess->mme_ue, return CORE_ERROR, "Null param");
 
-    fsm_final(&sess->sm, 0);
+    event_set_param1(&e, (c_uintptr_t)sess->index);
+    fsm_final(&sess->sm, (fsm_event_t *)&e);
     fsm_clear(&sess->sm);
 
     mme_bearer_remove_all(sess);

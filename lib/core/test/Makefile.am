@@ -18,7 +18,7 @@ AM_CPPFLAGS = \
 
 AM_CFLAGS = \
 	-Wall -Werror @OSCPPFLAGS@ \
-	-Wno-unused-function
+	-Wno-unused-function -Wno-unused-variable
 
 TESTS = testcore
 

@@ -91,11 +91,11 @@ typedef struct _pgw_sess_t {
     list_t          bearer_list;
 
     /* Related Context */
-#define PGW_S5C_PATH_IN_SESSION(session, xaction) \
+#define PGW_S5C_PATH_IN_SESSION(__sESS, __xACT) \
     do { \
-        d_assert((session), return, "Null param"); \
-        d_assert((xaction), return, "Null param"); \
-        (session)->sgw = (xaction)->gnode; \
+        d_assert((__sESS), return, "Null param"); \
+        d_assert((__xACT), return, "Null param"); \
+        (__sESS)->sgw = (__xACT)->gnode; \
     } while(0)
     pgw_sgw_t       *sgw;
 } pgw_sess_t;

@@ -118,35 +118,44 @@ void mme_s11_handle_create_session_response(
     d_assert(rv == CORE_OK, return, "xact_commit error");
 }
 
-void mme_s11_handle_delete_all_sessions_request_in_ue(mme_ue_t *mme_ue)
+void mme_s11_handle_delete_all_sessions_in_ue(mme_ue_t *mme_ue)
 {
     status_t rv;
     pkbuf_t *s11buf = NULL;
-    mme_sess_t *sess = NULL;
+    mme_sess_t *sess = NULL, *next_sess = NULL;
 
     d_assert(mme_ue, return, "Null param");
     sess = mme_sess_first(mme_ue);
     while (sess != NULL)
     {
-        gtp_header_t h;
-        gtp_xact_t *xact = NULL;
+        next_sess = mme_sess_next(sess);
 
-        memset(&h, 0, sizeof(gtp_header_t));
-        h.type = GTP_DELETE_SESSION_REQUEST_TYPE;
-        h.teid = mme_ue->sgw_s11_teid;
+        if (MME_SESSION_IS_VALID(sess))
+        {
+            gtp_header_t h;
+            gtp_xact_t *xact = NULL;
 
-        rv = mme_s11_build_delete_session_request(&s11buf, h.type, sess);
-        d_assert(rv == CORE_OK, return, "S11 build error");
+            memset(&h, 0, sizeof(gtp_header_t));
+            h.type = GTP_DELETE_SESSION_REQUEST_TYPE;
+            h.teid = mme_ue->sgw_s11_teid;
 
-        xact = gtp_xact_local_create(sess->sgw, &h, s11buf);
-        d_assert(xact, return, "Null param");
+            rv = mme_s11_build_delete_session_request(&s11buf, h.type, sess);
+            d_assert(rv == CORE_OK, return, "S11 build error");
 
-        GTP_XACT_STORE_SESSION(xact, sess);
+            xact = gtp_xact_local_create(sess->sgw, &h, s11buf);
+            d_assert(xact, return, "Null param");
 
-        rv = gtp_xact_commit(xact);
-        d_assert(rv == CORE_OK, return, "xact_commit error");
+            GTP_XACT_STORE_SESSION(xact, sess);
 
-        sess = mme_sess_next(sess);
+            rv = gtp_xact_commit(xact);
+            d_assert(rv == CORE_OK, return, "xact_commit error");
+        }
+        else
+        {
+            mme_sess_remove(sess);
+        }
+
+        sess = next_sess;
     }
 }
 

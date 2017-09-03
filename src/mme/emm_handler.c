@@ -152,7 +152,7 @@ void emm_handle_attach_request(
             d_warn("Not implemented(type:%d)", 
                     eps_mobile_identity->imsi.type);
             
-            return;
+            break;
         }
     }
 
@@ -472,7 +472,8 @@ void emm_handle_detach_request(
             break;
     }
 
-    SET_DETACH_TYPE(mme_ue, detach_request->detach_type);
+    /* Save detach type */
+    mme_ue->detach_type = detach_request->detach_type;
 }
 
 void emm_handle_detach_accept(mme_ue_t *mme_ue)
@@ -508,8 +509,6 @@ void emm_handle_detach_accept(mme_ue_t *mme_ue)
         d_assert(rv == CORE_OK && emmbuf, return, "emm build error");
         d_assert(nas_send_to_downlink_nas_transport(mme_ue, emmbuf) == CORE_OK,,);
     }
-
-    CLEAR_DETACH_TYPE(mme_ue);
 
     cause.present = S1ap_Cause_PR_nas;
     cause.choice.nas = S1ap_CauseNas_detach;

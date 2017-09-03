@@ -2,6 +2,7 @@
 #define __MME_EVENT_H__
 
 #include "core_event.h"
+#include "core_fsm.h"
 #include "core_pkbuf.h"
 
 #ifdef __cplusplus

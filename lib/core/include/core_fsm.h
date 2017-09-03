@@ -7,14 +7,21 @@
 extern "C" {
 #endif /* __cplusplus */
 
+extern char *FSM_NAME_INIT_SIG;
+extern char *FSM_NAME_ENTRY_SIG;
+extern char *FSM_NAME_EXIT_SIG;
+
 typedef enum _fsm_signal_t {
     FSM_ENTRY_SIG,
     FSM_EXIT_SIG,
     FSM_USER_SIG
 } fsm_signal_t;
 
-typedef c_uint32_t fsm_event_t;
-typedef c_uint32_t fsm_state_t;
+typedef struct {
+    c_uintptr_t event;
+} fsm_event_t;
+typedef c_uintptr_t fsm_state_t;
+
 typedef void (*fsm_handler_t)(void *s, void *e);
 
 typedef struct _fsm_t {
@@ -40,6 +47,9 @@ CORE_DECLARE(void) fsm_final(fsm_t *s, fsm_event_t *e);
 
 #define FSM_STATE(__s) \
     (((fsm_t *)__s)->state)
+
+#define FSM_CHECK(__s, __f) \
+    (FSM_STATE(__s) == (fsm_handler_t)__f)
 
 #ifdef __cplusplus
 }

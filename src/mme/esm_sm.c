@@ -29,10 +29,18 @@ void esm_state_final(fsm_t *s, event_t *e)
 
 void esm_state_operational(fsm_t *s, event_t *e)
 {
+    mme_sess_t *sess = NULL;
+    mme_ue_t *mme_ue = NULL;
+
     d_assert(s, return, "Null param");
     d_assert(e, return, "Null param");
 
     mme_sm_trace(3, e);
+
+    sess = mme_sess_find(event_get_param1(e));
+    d_assert(sess, return, "Null param");
+    mme_ue = sess->mme_ue;
+    d_assert(mme_ue, return, "Null param");
 
     switch (event_get(e))
     {
@@ -46,17 +54,7 @@ void esm_state_operational(fsm_t *s, event_t *e)
         }
         case MME_EVT_ESM_MESSAGE:
         {
-            index_t index = event_get_param1(e);
-            mme_sess_t *sess = NULL;
-            mme_ue_t *mme_ue = NULL;
-            nas_message_t *message = NULL;
-
-            d_assert(index, return, "Null param");
-            sess = mme_sess_find(index);
-            d_assert(sess, return, "Null param");
-            mme_ue = sess->mme_ue;
-            d_assert(mme_ue, return, "Null param");
-            message = (nas_message_t *)event_get_param3(e);
+            nas_message_t *message = (nas_message_t *)event_get_param3(e);
             d_assert(message, break, "Null param");
 
             switch(message->esm.h.message_type)

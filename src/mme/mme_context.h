@@ -144,8 +144,8 @@ struct _mme_ue_t {
     fsm_t           sm;     /* A state machine */
 
     /* UE identity */
-#define MME_UE_HAVE_IMSI(mme) \
-    ((mme) && ((mme)->imsi_len))
+#define MME_UE_HAVE_IMSI(__mME) \
+    ((__mME) && ((__mME)->imsi_len))
     c_uint8_t       imsi[MAX_IMSI_LEN];
     int             imsi_len;
     c_int8_t        imsi_bcd[MAX_IMSI_BCD_LEN+1];
@@ -164,14 +164,14 @@ struct _mme_ue_t {
     e_cgi_t         e_cgi;
     plmn_id_t       visited_plmn_id;
 
-#define SECURITY_CONTEXT_IS_VALID(mme) \
-    ((mme) && \
-    ((mme)->security_context_available == 1) && ((mme)->mac_failed == 0))
-#define CLEAR_SECURITY_CONTEXT(mme) \
+#define SECURITY_CONTEXT_IS_VALID(__mME) \
+    ((__mME) && \
+    ((__mME)->security_context_available == 1) && ((__mME)->mac_failed == 0))
+#define CLEAR_SECURITY_CONTEXT(__mME) \
     do { \
-        d_assert((mme), break, "Null param"); \
-        (mme)->security_context_available = 0; \
-        (mme)->mac_failed = 0; \
+        d_assert((__mME), break, "Null param"); \
+        (__mME)->security_context_available = 0; \
+        (__mME)->mac_failed = 0; \
     } while(0)
     int             security_context_available;
     int             mac_failed;
@@ -215,10 +215,10 @@ struct _mme_ue_t {
 #define MIN_EPS_BEARER_ID           5
 #define MAX_EPS_BEARER_ID           15
 
-#define CLEAR_EPS_BEARER_ID(mme) \
+#define CLEAR_EPS_BEARER_ID(__mME) \
     do { \
-        d_assert((mme), break, "Null param"); \
-        (mme)->ebi = MIN_EPS_BEARER_ID - 1; \
+        d_assert((__mME), break, "Null param"); \
+        (__mME)->ebi = MIN_EPS_BEARER_ID - 1; \
     } while(0)
     c_uint8_t       ebi; /* EPS Bearer ID generator */
     list_t          sess_list;
@@ -238,24 +238,10 @@ struct _mme_ue_t {
     /* UE Radio Capability */
     void            *radio_capa;
 
-#define MME_UE_DETACH_INITIATED(mme) \
-    ((mme_ue) && (mme_ue)->detach_type.detach_type)
-#define SET_DETACH_TYPE(mme, type) \
-    do { \
-        d_assert((mme), break, "Null param"); \
-        (mme)->detach_type = (type); \
-    } while(0)
-#define CLEAR_DETACH_TYPE(mme) \
-    do { \
-        d_assert((mme), break, "Null param"); \
-        memset(&((mme)->detach_type), 0, sizeof(nas_detach_type_t)); \
-    } while(0)
+    /* Detach Request */
     nas_detach_type_t detach_type;
 };
 
-#define MME_UE_IN_ATTACH_STATE(mme) \
-    ((mme) && mme_sess_first(mme) && \
-    (mme_sess_next(mme_sess_first(mme)) == NULL))
 typedef struct _mme_sess_t {
     lnode_t         node;       /* A node of list_t */
     index_t         index;      /* An index of this node */
@@ -267,22 +253,22 @@ typedef struct _mme_sess_t {
     list_t          bearer_list;
 
     /* Related Context */
-#define MME_S11_PATH_IN_SESSION(session) \
+#define MME_S11_PATH_IN_SESSION(__sESS) \
     do { \
-        d_assert((session), return, "Null param"); \
-        (session)->sgw = mme_sgw_next((session)->sgw); \
-        if (!(session)->sgw) (session)->sgw = mme_sgw_first(); \
-        d_assert((session)->sgw, return, "Null param"); \
+        d_assert((__sESS), return, "Null param"); \
+        (__sESS)->sgw = mme_sgw_next((__sESS)->sgw); \
+        if (!(__sESS)->sgw) (__sESS)->sgw = mme_sgw_first(); \
+        d_assert((__sESS)->sgw, return, "Null param"); \
     } while(0)
     mme_sgw_t       *sgw;
     mme_ue_t        *mme_ue;
 
-#define MME_UE_HAVE_APN(mme) \
-    ((mme) && (mme_sess_first(mme)) && \
-    ((mme_sess_first(mme))->pdn))
-#define MME_SESSION_GET_PGW_IPV4_ADDR(sess) \
-    (((sess) && ((sess)->pdn) && (((sess)->pdn)->pgw.ipv4_addr)) ? \
-      (((sess)->pdn)->pgw.ipv4_addr) : (mme_self()->s5c_addr))
+#define MME_UE_HAVE_APN(__mME) \
+    ((__mME) && (mme_sess_first(__mME)) && \
+    ((mme_sess_first(__mME))->pdn))
+#define MME_SESSION_GET_PGW_IPV4_ADDR(__sESS) \
+    (((__sESS) && ((__sESS)->pdn) && (((__sESS)->pdn)->pgw.ipv4_addr)) ? \
+      (((__sESS)->pdn)->pgw.ipv4_addr) : (mme_self()->s5c_addr))
     pdn_t           *pdn;
 
     /* Protocol Configuration Options */
@@ -298,19 +284,14 @@ typedef struct _mme_bearer_t {
 
     c_uint8_t       ebi;        /* EPS Bearer ID */    
 
-#define MME_UE_HAVE_SESSION(mme) \
-    ((mme) && (mme_sess_first(mme)) && \
-     (mme_default_bearer_in_sess(mme_sess_first(mme))) && \
-     ((mme_default_bearer_in_sess(mme_sess_first(mme)))->sgw_s1u_teid) && \
-     ((mme_default_bearer_in_sess(mme_sess_first(mme)))->sgw_s1u_addr))
+#define MME_SESSION_IS_VALID(__sESS) \
+    ((__sESS) && (mme_bearer_first(__sESS)) && \
+     ((mme_default_bearer_in_sess(__sESS)->sgw_s1u_teid) && \
+      (mme_default_bearer_in_sess(__sESS)->sgw_s1u_addr)))
 
-#define MME_UE_HAVE_DEFAULT_BEARER(mme) \
-    ((mme) && (mme_sess_first(mme)) && \
-     (mme_default_bearer_in_sess(mme_sess_first(mme))) && \
-     ((mme_default_bearer_in_sess(mme_sess_first(mme)))->enb_s1u_teid) && \
-     ((mme_default_bearer_in_sess(mme_sess_first(mme)))->enb_s1u_addr) && \
-     ((mme_default_bearer_in_sess(mme_sess_first(mme)))->sgw_s1u_teid) && \
-     ((mme_default_bearer_in_sess(mme_sess_first(mme)))->sgw_s1u_addr))
+#define MME_UE_HAVE_SESSION(__mME) \
+    ((__mME) && (mme_sess_first(__mME)) && \
+     MME_SESSION_IS_VALID(mme_sess_first(__mME)))
     c_uint32_t      enb_s1u_teid;
     c_uint32_t      enb_s1u_addr;
     c_uint32_t      sgw_s1u_teid;

@@ -3,7 +3,6 @@
 
 #include "core_msgq.h"
 #include "core_timer.h"
-#include "core_fsm.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -50,7 +49,7 @@ extern "C" {
             (__duration), (__ptr_e), (__param))
 
 typedef struct {
-    fsm_event_t event;
+    c_uintptr_t event;
     c_uintptr_t param1;
     c_uintptr_t param2;
     c_uintptr_t param3;
@@ -60,10 +59,6 @@ typedef struct {
     c_uintptr_t param7;
     c_uintptr_t param8;
 } event_t;
-
-extern char *FSM_NAME_INIT_SIG;
-extern char *FSM_NAME_ENTRY_SIG;
-extern char *FSM_NAME_EXIT_SIG;
 
 extern char *EVT_NAME_UNKNOWN;
 

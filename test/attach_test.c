@@ -301,6 +301,18 @@ static void attach_test1(abts_case *tc, void *data)
     rc = tests1ap_enb_read(sock, recvbuf);
     pkbuf_free(recvbuf);
 
+    /* Send Attach Complete + 
+     * Activate Default EPS Bearer Context Accept */
+    rv = tests1ap_build_attach_complete(&sendbuf, msgindex+1);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* Receive EMM information */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rc = tests1ap_enb_read(sock, recvbuf);
+    pkbuf_free(recvbuf);
+
     /* Send Detach Request */
     rv = tests1ap_build_detach_request(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -566,6 +578,18 @@ static void attach_test2(abts_case *tc, void *data)
     /* Receive Initial Context Setup Request + 
      * Attach Accept + 
      * Activate Default Bearer Context Request */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rc = tests1ap_enb_read(sock, recvbuf);
+    pkbuf_free(recvbuf);
+
+    /* Send Attach Complete + 
+     * Activate Default EPS Bearer Context Accept */
+    rv = tests1ap_build_attach_complete(&sendbuf, msgindex+1);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* Receive EMM information */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rc = tests1ap_enb_read(sock, recvbuf);
     pkbuf_free(recvbuf);

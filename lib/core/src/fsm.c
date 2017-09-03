@@ -1,9 +1,15 @@
 #include "core_fsm.h"
 
-static fsm_event_t fsm_event[] = {
+static fsm_event_t entry_event = {
     FSM_ENTRY_SIG,
-    FSM_EXIT_SIG
 };
+static fsm_event_t exit_event = {
+    FSM_EXIT_SIG,
+};
+
+char *FSM_NAME_INIT_SIG = "INIT";
+char *FSM_NAME_ENTRY_SIG = "ENTRY";
+char *FSM_NAME_EXIT_SIG = "EXIT";
 
 void fsm_init(fsm_t *s, fsm_event_t *e)
 {
@@ -12,7 +18,15 @@ void fsm_init(fsm_t *s, fsm_event_t *e)
         (*s->initial)(s, e);
         if (s->initial != s->state)
         {
-            (*s->state)(s, &fsm_event[FSM_ENTRY_SIG]);
+            if (e)
+            {
+                e->event = FSM_ENTRY_SIG;
+                (*s->state)(s, e);
+            }
+            else
+            {
+                (*s->state)(s, &entry_event);
+            }
         }
     }
 }
@@ -25,8 +39,24 @@ void fsm_dispatch(fsm_t *s, fsm_event_t *e)
     (*tmp)(s, e);
     if (s->state != (fsm_state_t)0)
     {
-        (*tmp)(s, &fsm_event[FSM_EXIT_SIG]);
-        (*s->state)(s, &fsm_event[FSM_ENTRY_SIG]);
+        if (e)
+        {
+            e->event = FSM_EXIT_SIG;
+            (*tmp)(s, e);
+        }
+        else
+        {
+            (*tmp)(s, &exit_event);
+        }
+        if (e)
+        {
+            e->event = FSM_ENTRY_SIG;
+            (*s->state)(s, e);
+        }
+        else
+        {
+            (*tmp)(s, &entry_event);
+        }
     }
     else
     {
@@ -38,12 +68,20 @@ void fsm_final(fsm_t *s, fsm_event_t *e)
 {
     if (s->final != s->state)
     {
-        (*s->state)(s, &fsm_event[FSM_EXIT_SIG]);
+        if (e)
+        {
+            e->event = FSM_EXIT_SIG;
+            (*s->state)(s, e);
+        }
+        else
+        {
+            (*s->state)(s, &exit_event);
+        }
     }
 
     if (s->final != (fsm_state_t)0)
     {
-        (*s->final)(s, 0);
+        (*s->final)(s, e);
     }
 
     s->state = s->initial;

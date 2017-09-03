@@ -2,6 +2,7 @@
 #define __SGW_EVENT_H__
 
 #include "core_event.h"
+#include "core_fsm.h"
 
 #ifdef __cplusplus
 extern "C" {

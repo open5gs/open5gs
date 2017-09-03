@@ -8,7 +8,7 @@ enum bomb_signal_t {
 };
 
 typedef struct _tick_event_t {
-    fsm_event_t event;
+    c_uintptr_t event;
 } tick_event_t;
 
 typedef struct _bomb_t {
@@ -176,17 +176,17 @@ enum alarm_signal_t {
 };
 
 typedef struct _alarm_t {
-    fsm_t           fsm;
+    fsm_t        fsm;
     c_uint32_t   time;
 } alarm_t;
 
 typedef struct _set_event_t {
-    fsm_event_t     event;
+    c_uintptr_t  event;
     c_uint8_t    digit;
 } set_event_t;
 
 typedef struct _time_event_t {
-    fsm_event_t     event;
+    c_uintptr_t  event;
     c_uint8_t    current_time;
 } time_event_t;
 

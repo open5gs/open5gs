@@ -83,18 +83,18 @@ typedef struct _sgw_sess_t {
     list_t          bearer_list;
 
     /* Related Context */
-#define SGW_S11_PATH_IN_SESSION(session, xaction) \
+#define SGW_S11_PATH_IN_SESSION(__sESS, __xACT) \
     do { \
-        d_assert((session), return, "Null param"); \
-        d_assert((xaction), return, "Null param"); \
-        (session)->mme = (xaction)->gnode; \
+        d_assert((__sESS), return, "Null param"); \
+        d_assert((__xACT), return, "Null param"); \
+        (__sESS)->mme = (__xACT)->gnode; \
     } while(0)
     sgw_mme_t       *mme;
-#define SGW_S5C_PATH_IN_SESSION(session, gnode) \
+#define SGW_S5C_PATH_IN_SESSION(__sESS, __gNODE) \
     do { \
-        d_assert((session), return, "Null param"); \
-        d_assert((gnode), return, "Null param"); \
-        (session)->pgw = gnode; \
+        d_assert((__sESS), return, "Null param"); \
+        d_assert((__gNODE), return, "Null param"); \
+        (__sESS)->pgw = __gNODE; \
     } while(0)
     sgw_mme_t       *pgw;
     sgw_ue_t        *sgw_ue;
@@ -132,14 +132,14 @@ typedef struct _sgw_bearer_t {
 
 #define SGW_DL_NOTI_SENT  0x0001
 
-#define CHECK_DL_NOTI_SENT(bearer) ((bearer)->state & SGW_DL_NOTI_SENT)
-#define SET_DL_NOTI_SENT(bearer) \
+#define CHECK_DL_NOTI_SENT(__bEARER) ((__bEARER)->state & SGW_DL_NOTI_SENT)
+#define SET_DL_NOTI_SENT(__bEARER) \
     do { \
-        (bearer)->state |= SGW_DL_NOTI_SENT;\
+        (__bEARER)->state |= SGW_DL_NOTI_SENT;\
     } while (0)
-#define RESET_DL_NOTI_SENT(bearer) \
+#define RESET_DL_NOTI_SENT(__bEARER) \
     do { \
-        (bearer)->state &= ~SGW_DL_NOTI_SENT;\
+        (__bEARER)->state &= ~SGW_DL_NOTI_SENT;\
     } while (0)
 
 CORE_DECLARE(status_t)      sgw_context_init(void);

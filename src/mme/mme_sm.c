@@ -34,8 +34,6 @@ void mme_state_final(fsm_t *s, event_t *e)
     d_assert(s, return, "Null param");
 }
 
-int test = 0;
-
 void mme_state_operational(fsm_t *s, event_t *e)
 {
     status_t rv;
@@ -113,11 +111,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
         }
         case MME_EVT_S1AP_LO_CONNREFUSED:
         {
-            index_t index = event_get_param1(e);
-            mme_enb_t *enb = NULL;
-
-            d_assert(index, break, "Null param");
-            enb = mme_enb_find(index);
+            mme_enb_t *enb = mme_enb_find(event_get_param1(e));
             if (enb)
             {
                 d_trace(1, "eNB-S1[%x] connection refused!!!\n", 
@@ -134,12 +128,11 @@ void mme_state_operational(fsm_t *s, event_t *e)
         case MME_EVT_S1AP_MESSAGE:
         {
             s1ap_message_t message;
-            index_t index = event_get_param1(e);
             mme_enb_t *enb = NULL;
             pkbuf_t *pkbuf = NULL;
             
-            d_assert(index, break, "Null param");
-            d_assert(enb = mme_enb_find(index), break, "No eNB context");
+            enb = mme_enb_find(event_get_param1(e));
+            d_assert(enb, break, "No eNB context");
             d_assert(FSM_STATE(&enb->sm), break, "No S1AP State Machine");
 
             pkbuf = (pkbuf_t *)event_get_param2(e);
@@ -157,14 +150,13 @@ void mme_state_operational(fsm_t *s, event_t *e)
         case MME_EVT_EMM_MESSAGE:
         {
             nas_message_t message;
-            index_t index = event_get_param1(e);
-            pkbuf_t *pkbuf = (pkbuf_t *)event_get_param3(e);
+            pkbuf_t *pkbuf = NULL;
             enb_ue_t *enb_ue = NULL;
             mme_ue_t *mme_ue = NULL;
 
-            enb_ue = enb_ue_find(index);
+            enb_ue = enb_ue_find(event_get_param1(e));
             d_assert(enb_ue, break, "No ENB UE context");
-
+            pkbuf = (pkbuf_t *)event_get_param3(e);
             d_assert(pkbuf, break, "Null param");
             d_assert(nas_emm_decode(&message, pkbuf) == CORE_OK,
                     pkbuf_free(pkbuf); break, "Can't decode NAS_EMM");
@@ -220,11 +212,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
         }
         case MME_EVT_EMM_T3413:
         {
-            index_t index = event_get_param1(e);
-            mme_ue_t *mme_ue = NULL;
-
-            d_assert(index, break, "Null param");
-            mme_ue = mme_ue_find(index);
+            mme_ue_t *mme_ue = mme_ue_find(event_get_param1(e));
             d_assert(mme_ue, break, "No UE context");
             d_assert(FSM_STATE(&mme_ue->sm), break, "No EMM State Machine");
 
@@ -235,13 +223,11 @@ void mme_state_operational(fsm_t *s, event_t *e)
         case MME_EVT_ESM_MESSAGE:
         {
             nas_message_t message;
-            index_t index = event_get_param1(e);
             mme_sess_t *sess = NULL;
             mme_ue_t *mme_ue = NULL;
             pkbuf_t *pkbuf = NULL;
 
-            d_assert(index, break, "Null param");
-            sess = mme_sess_find(index);
+            sess = mme_sess_find(event_get_param1(e));
             d_assert(sess, break, "No Session context");
             d_assert(mme_ue = sess->mme_ue, break, "No UE context");
             d_assert(FSM_STATE(&sess->sm), break, "No ESM State Machine");
@@ -257,6 +243,72 @@ void mme_state_operational(fsm_t *s, event_t *e)
 
             pkbuf_free(pkbuf);
 
+            break;
+        }
+        case MME_EVT_S6A_MESSAGE:
+        {
+            mme_ue_t *mme_ue = mme_ue_find(event_get_param1(e));
+            pkbuf_t *s6abuf = (pkbuf_t *)event_get_param2(e);
+            s6a_message_t *s6a_message = NULL;
+
+            d_assert(mme_ue, return, "Null param");
+            d_assert(s6abuf, return, "Null param");
+            s6a_message = s6abuf->payload;
+            d_assert(s6a_message, return, "Null param");
+
+            switch(s6a_message->cmd_code)
+            {
+                case S6A_CMD_CODE_AUTHENTICATION_INFORMATION:
+                {
+                    if (s6a_message->result_code != ER_DIAMETER_SUCCESS)
+                    {
+                        emm_handle_attach_reject(mme_ue,
+                            S1ap_CauseNas_authentication_failure,
+                            EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED,
+                            ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+
+                        FSM_TRAN(&mme_ue->sm, emm_state_detached);
+                        break;
+                    }
+
+                    mme_s6a_handle_aia(mme_ue, &s6a_message->aia_message);
+                    break;
+                }
+                case S6A_CMD_CODE_UPDATE_LOCATION:
+                {
+                    if (s6a_message->result_code != ER_DIAMETER_SUCCESS)
+                    {
+                        emm_handle_attach_reject(mme_ue,
+                            S1ap_CauseNas_unspecified,
+                            EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED,
+                            ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+
+                        FSM_TRAN(&mme_ue->sm, emm_state_detached);
+                        break;
+                    }
+
+                    mme_s6a_handle_ula(mme_ue, &s6a_message->ula_message);
+
+                    if (FSM_CHECK(&mme_ue->sm, emm_state_default_esm))
+                    {
+                        event_emm_to_esm(mme_ue,
+                                &mme_ue->last_pdn_connectivity_request);
+                    }
+                    else if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
+                    {
+                        d_error("Not implemented for Tracking Area Update");
+                    }
+                    else
+                        d_assert(0,, "Invaild EMM state");
+                    break;
+                }
+                default:
+                {
+                    d_error("Invalid type(%d)", event_get_param2(e));
+                    break;
+                }
+            }
+            pkbuf_free(s6abuf);
             break;
         }
         case MME_EVT_S11_MESSAGE:
@@ -288,14 +340,18 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 {
                     mme_s11_handle_create_session_response(
                         xact, mme_ue, &message.create_session_response);
-                    if (MME_UE_IN_ATTACH_STATE(mme_ue))
+
+                    if (FSM_CHECK(&mme_ue->sm, emm_state_default_esm))
                     {
                         emm_handle_attach_accept(mme_ue);
                     }
-                    else
+                    else if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
                     {
-                        d_error("Not implemented of multiple PDN");
+                        d_assert(0, , "Coming Soon!");
                     }
+                    else
+                        d_assert(0, break, "Invalid EMM state");
+
                     break;
                 }
                 case GTP_MODIFY_BEARER_RESPONSE_TYPE:
@@ -307,41 +363,26 @@ void mme_state_operational(fsm_t *s, event_t *e)
                     mme_s11_handle_delete_session_response(
                         xact, mme_ue, &message.delete_session_response);
 
-                    if (MME_UE_DETACH_INITIATED(mme_ue))
-                    {
-                        /* Detach Request is Initiated */
-                        if (mme_sess_first(mme_ue) == NULL)
-                        {
-                            /* All session is deleted */
-                            emm_handle_detach_accept(mme_ue);
-                        }
-                        else
-                        {
-                            d_trace(3, "wait to delete all sessions"
-                                    "in detach state\n");
-                        }
-                    }
-                    else
+                    if (FSM_CHECK(&mme_ue->sm, emm_state_auth))
                     {
                         if (mme_sess_first(mme_ue) == NULL)
                         {
-                            /* If no session, it menas UE try to attach */
                             mme_s6a_send_air(mme_ue);
                         }
-                        else
+                    }
+                    else if (FSM_CHECK(&mme_ue->sm, emm_state_detached))
+                    {
+                        if (mme_sess_first(mme_ue) == NULL)
                         {
-                            if (SECURITY_CONTEXT_IS_VALID(mme_ue))
-                            {
-                                /* PDN Disconnect Request */
-                                d_error("Not implemented of multiple PDN");
-                            }
-                            else
-                            {
-                                d_trace(3, "wait to delete all sessions"
-                                        "in no security context\n");
-                            }
+                            emm_handle_detach_accept(mme_ue);
                         }
                     }
+                    else if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
+                    {
+                        d_assert(0, , "Coming Soon!");
+                    }
+                    else
+                        d_assert(0, break, "Invalid EMM state");
 
                     break;
                 }
@@ -375,74 +416,6 @@ void mme_state_operational(fsm_t *s, event_t *e)
         case MME_EVT_S11_T3_DUPLICATED:
         {
             gtp_xact_timeout(event_get_param1(e), event_get(e));
-            break;
-        }
-        case MME_EVT_S6A_MESSAGE:
-        {
-            index_t index = event_get_param1(e);
-            mme_ue_t *mme_ue = NULL;
-            pkbuf_t *s6abuf = (pkbuf_t *)event_get_param2(e);
-            s6a_message_t *s6a_message = NULL;
-
-            d_assert(index, return, "Null param");
-            mme_ue = mme_ue_find(index);
-            d_assert(mme_ue, return, "Null param");
-
-            d_assert(s6abuf, return, "Null param");
-            s6a_message = s6abuf->payload;
-            d_assert(s6a_message, return, "Null param");
-
-            switch(s6a_message->cmd_code)
-            {
-                case S6A_CMD_CODE_AUTHENTICATION_INFORMATION:
-                {
-                    if (s6a_message->result_code != ER_DIAMETER_SUCCESS)
-                    {
-                        emm_handle_attach_reject(mme_ue,
-                            S1ap_CauseNas_authentication_failure,
-                            EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED,
-                            ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
-
-                        break;
-                    }
-
-                    mme_s6a_handle_aia(mme_ue, &s6a_message->aia_message);
-                    break;
-                }
-                case S6A_CMD_CODE_UPDATE_LOCATION:
-                {
-                    if (s6a_message->result_code != ER_DIAMETER_SUCCESS)
-                    {
-                        emm_handle_attach_reject(mme_ue,
-                            S1ap_CauseNas_unspecified,
-                            EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED,
-                            ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
-
-                        break;
-                    }
-
-                    mme_s6a_handle_ula(mme_ue, &s6a_message->ula_message);
-
-                    if (MME_UE_HAVE_DEFAULT_BEARER(mme_ue))
-                    {
-                        /* if there is default bearer, UE attached completely */
-                        d_error("Not implemented for Tracking Area Update");
-                    }
-                    else
-                    {
-                        event_emm_to_esm(mme_ue,
-                                &mme_ue->last_pdn_connectivity_request);
-                    }
-
-                    break;
-                }
-                default:
-                {
-                    d_error("Invalid type(%d)", event_get_param2(e));
-                    break;
-                }
-            }
-            pkbuf_free(s6abuf);
             break;
         }
         default:
