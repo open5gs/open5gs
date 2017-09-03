@@ -123,12 +123,9 @@ void emm_state_operational(fsm_t *s, event_t *e)
                     emm_handle_identity_response(mme_ue,
                             &message->emm.identity_response);
 
-                    if (!MME_UE_HAVE_IMSI(mme_ue))
-                    {
-                        d_error("Cannot find IMSI");
-                        break;
-                    }
-                    
+                    d_assert(MME_UE_HAVE_IMSI(mme_ue), break,
+                        "No IMSI in IDENTITY_RESPONSE");
+
                     if (SECURITY_CONTEXT_IS_VALID(mme_ue))
                     {
                         event_emm_to_esm(mme_ue,
