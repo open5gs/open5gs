@@ -40,8 +40,8 @@ typedef struct _gtp_xact_t {
 
     tm_block_id     tm_response;    /**< Timer waiting for next message */
     c_uint8_t       response_rcount;
-    tm_block_id     tm_duplicated;  /**< Timer waiting for duplicated message */
-    c_uint8_t       duplicated_rcount;
+    tm_block_id     tm_holding;  /**< Timer waiting for holding message */
+    c_uint8_t       holding_rcount;
 
     struct _gtp_xact_t *assoc_xact; /**< Associated transaction */
 
@@ -57,7 +57,7 @@ typedef struct _gtp_xact_t {
 } gtp_xact_t;
 
 CORE_DECLARE(status_t) gtp_xact_init(tm_service_t *tm_service,
-        c_uintptr_t response_event, c_uintptr_t duplicated_event);
+        c_uintptr_t response_event, c_uintptr_t holding_event);
 CORE_DECLARE(status_t) gtp_xact_final(void);
 
 CORE_DECLARE(gtp_xact_t *) gtp_xact_local_create(

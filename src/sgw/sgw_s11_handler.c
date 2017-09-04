@@ -10,7 +10,7 @@
 #include "sgw_gtp_path.h"
 #include "sgw_s11_handler.h"
 
-void sgw_handle_create_session_request(gtp_xact_t *s11_xact,
+void sgw_s11_handle_create_session_request(gtp_xact_t *s11_xact,
         sgw_ue_t *sgw_ue, gtp_message_t *gtp_message)
 {
     status_t rv;
@@ -137,7 +137,7 @@ void sgw_handle_create_session_request(gtp_xact_t *s11_xact,
             "SGW[%d] --> PGW\n", sess->sgw_s5c_teid);
 }
 
-CORE_DECLARE(void) sgw_handle_modify_bearer_request(gtp_xact_t *s11_xact,
+CORE_DECLARE(void) sgw_s11_handle_modify_bearer_request(gtp_xact_t *s11_xact,
     sgw_ue_t *sgw_ue, gtp_modify_bearer_request_t *req)
 {
     status_t rv;
@@ -204,7 +204,7 @@ CORE_DECLARE(void) sgw_handle_modify_bearer_request(gtp_xact_t *s11_xact,
         "MME[%d] --> SGW[%d]\n", sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
 }
 
-void sgw_handle_delete_session_request(gtp_xact_t *s11_xact,
+void sgw_s11_handle_delete_session_request(gtp_xact_t *s11_xact,
     sgw_ue_t *sgw_ue, gtp_message_t *gtp_message)
 {
     status_t rv;
@@ -247,7 +247,7 @@ void sgw_handle_delete_session_request(gtp_xact_t *s11_xact,
         "SGW[%d] --> PGW[%d]\n", sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 }
 
-void sgw_handle_release_access_bearers_request(gtp_xact_t *s11_xact, 
+void sgw_s11_handle_release_access_bearers_request(gtp_xact_t *s11_xact, 
         sgw_ue_t *sgw_ue, gtp_release_access_bearers_request_t *req)
 {
     status_t rv;
@@ -309,7 +309,7 @@ void sgw_handle_release_access_bearers_request(gtp_xact_t *s11_xact,
         "MME[%d] --> SGW[%d]\n", sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
 }
 
-void sgw_handle_lo_dldata_notification(sgw_bearer_t *bearer)
+void sgw_s11_handle_lo_dldata_notification(sgw_bearer_t *bearer)
 {
     status_t rv;
     gtp_downlink_data_notification_t *noti = NULL;
@@ -356,7 +356,7 @@ void sgw_handle_lo_dldata_notification(sgw_bearer_t *bearer)
         "SGW[%d] --> MME[%d]\n", sgw_ue->sgw_s11_teid, sgw_ue->mme_s11_teid);
 }
 
-void sgw_handle_downlink_data_notification_ack(sgw_ue_t *sgw_ue,
+void sgw_s11_handle_downlink_data_notification_ack(sgw_ue_t *sgw_ue,
         gtp_downlink_data_notification_acknowledge_t *ack)
 {
     d_trace(3, "[GTP] Downlink Data Notification Ack: "

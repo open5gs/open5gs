@@ -78,21 +78,23 @@ void sgw_state_operational(fsm_t *s, event_t *e)
             switch(message.h.type)
             {
                 case GTP_CREATE_SESSION_REQUEST_TYPE:
-                    sgw_handle_create_session_request(xact, sgw_ue, &message);
+                    sgw_s11_handle_create_session_request(xact, sgw_ue,
+                            &message);
                     break;
                 case GTP_MODIFY_BEARER_REQUEST_TYPE:
-                    sgw_handle_modify_bearer_request(xact, sgw_ue,
+                    sgw_s11_handle_modify_bearer_request(xact, sgw_ue,
                             &message.modify_bearer_request);
                     break;
                 case GTP_DELETE_SESSION_REQUEST_TYPE:
-                    sgw_handle_delete_session_request(xact, sgw_ue, &message);
+                    sgw_s11_handle_delete_session_request(xact, sgw_ue,
+                            &message);
                     break;
                 case GTP_RELEASE_ACCESS_BEARERS_REQUEST_TYPE:
-                    sgw_handle_release_access_bearers_request(xact, sgw_ue, 
+                    sgw_s11_handle_release_access_bearers_request(xact, sgw_ue,
                         &message.release_access_bearers_request);
                     break;
                 case GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE:
-                    sgw_handle_downlink_data_notification_ack(sgw_ue,
+                    sgw_s11_handle_downlink_data_notification_ack(sgw_ue,
                         &message.downlink_data_notification_acknowledge);
                     break;
                 default:
@@ -124,10 +126,16 @@ void sgw_state_operational(fsm_t *s, event_t *e)
             switch(message.h.type)
             {
                 case GTP_CREATE_SESSION_RESPONSE_TYPE:
-                    sgw_handle_create_session_response(xact, sess, &message);
+                    sgw_s5c_handle_create_session_response(xact, sess,
+                            &message);
                     break;
                 case GTP_DELETE_SESSION_RESPONSE_TYPE:
-                    sgw_handle_delete_session_response(xact, sess, &message);
+                    sgw_s5c_handle_delete_session_response(xact, sess,
+                            &message);
+                    break;
+                case GTP_CREATE_BEARER_REQUEST_TYPE:
+                    sgw_s5c_handle_create_bearer_request(xact, sess,
+                            &message);
                     break;
                 default:
                     d_warn("Not implmeneted(type:%d)", message.h.type);
@@ -137,7 +145,7 @@ void sgw_state_operational(fsm_t *s, event_t *e)
             break;
         }
         case SGW_EVT_T3_RESPONSE:
-        case SGW_EVT_T3_DUPLICATED:
+        case SGW_EVT_T3_HOLDING:
         {
             gtp_xact_timeout(event_get_param1(e), event_get(e));
             break;
@@ -153,7 +161,7 @@ void sgw_state_operational(fsm_t *s, event_t *e)
                 break;
             }
 
-            sgw_handle_lo_dldata_notification(bearer);
+            sgw_s11_handle_lo_dldata_notification(bearer);
 
             break;
         }

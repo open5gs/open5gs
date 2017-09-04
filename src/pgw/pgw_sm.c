@@ -114,7 +114,7 @@ void pgw_state_operational(fsm_t *s, event_t *e)
             break;
         }
         case PGW_EVT_S5C_T3_RESPONSE:
-        case PGW_EVT_S5C_T3_DUPLICATED:
+        case PGW_EVT_S5C_T3_HOLDING:
         {
             gtp_xact_timeout(event_get_param1(e), event_get(e));
             break;

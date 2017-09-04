@@ -22,8 +22,8 @@ char* sgw_event_get_name(event_t *e)
 
         case SGW_EVT_T3_RESPONSE:
             return "SGW_EVT_T3_RESPONSE";
-        case SGW_EVT_T3_DUPLICATED:
-            return "SGW_EVT_T3_DUPLICATED";
+        case SGW_EVT_T3_HOLDING:
+            return "SGW_EVT_T3_HOLDING";
 
         default: 
            break;

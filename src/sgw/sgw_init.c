@@ -63,7 +63,7 @@ static void *THREAD_FUNC sm_main(thread_id id, void *data)
             "SGW event queue creation failed");
     tm_service_init(&sgw_self()->tm_service);
     gtp_xact_init(&sgw_self()->tm_service,
-            SGW_EVT_T3_RESPONSE, SGW_EVT_T3_DUPLICATED);
+            SGW_EVT_T3_RESPONSE, SGW_EVT_T3_HOLDING);
 
     fsm_create(&sgw_sm, sgw_state_initial, sgw_state_final);
     fsm_init(&sgw_sm, 0);

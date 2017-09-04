@@ -35,8 +35,8 @@ char* mme_event_get_name(event_t *e)
             return "MME_EVT_S11_MESSAGE";
         case MME_EVT_S11_T3_RESPONSE:
             return "MME_EVT_S11_T3_RESPONSE";
-        case MME_EVT_S11_T3_DUPLICATED:
-            return "MME_EVT_S11_T3_DUPLICATED";
+        case MME_EVT_S11_T3_HOLDING:
+            return "MME_EVT_S11_T3_HOLDING";
 
         case MME_EVT_S6A_MESSAGE:
             return "MME_EVT_S6A_MESSAGE";

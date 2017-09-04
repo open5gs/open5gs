@@ -10,7 +10,7 @@
 #include "sgw_gtp_path.h"
 #include "sgw_s5c_handler.h"
 
-void sgw_handle_create_session_response(gtp_xact_t *s5c_xact, 
+void sgw_s5c_handle_create_session_response(gtp_xact_t *s5c_xact, 
     sgw_sess_t *sess, gtp_message_t *gtp_message)
 {
     status_t rv;
@@ -114,7 +114,7 @@ void sgw_handle_create_session_response(gtp_xact_t *s5c_xact,
             "SGW[%d] <-- PGW[%d]\n", sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 }
 
-void sgw_handle_delete_session_response(gtp_xact_t *s5c_xact,
+void sgw_s5c_handle_delete_session_response(gtp_xact_t *s5c_xact,
     sgw_sess_t *sess, gtp_message_t *gtp_message)
 {
     status_t rv;
@@ -178,3 +178,83 @@ void sgw_handle_delete_session_response(gtp_xact_t *s5c_xact,
     rv = gtp_xact_commit(s11_xact);
     d_assert(rv == CORE_OK, return, "xact_commit error");
 }
+
+void sgw_s5c_handle_create_bearer_request(gtp_xact_t *s5c_xact, 
+    sgw_sess_t *sess, gtp_message_t *gtp_message)
+{
+    status_t rv;
+    gtp_xact_t *s11_xact = NULL;
+    sgw_bearer_t *bearer = NULL;
+    gtp_create_bearer_request_t *req = NULL;
+    pkbuf_t *pkbuf = NULL;
+    sgw_ue_t *sgw_ue = NULL;
+
+    gtp_f_teid_t *pgw_s5u_teid = NULL;
+    gtp_f_teid_t sgw_s1u_teid;
+
+    d_assert(sess, return, "Null param");
+    sgw_ue = sess->sgw_ue;
+    d_assert(sgw_ue, return, "Null param");
+    d_assert(s5c_xact, return, "Null param");
+    d_assert(gtp_message, return, "Null param");
+
+    req = &gtp_message->create_bearer_request;
+
+    if (req->linked_eps_bearer_id.presence == 0)
+    {
+        d_error("No Linked EBI");
+        return;
+    }
+    if (req->bearer_contexts.presence == 0)
+    {
+        d_error("No Bearer");
+        return;
+    }
+    if (req->bearer_contexts.eps_bearer_id.presence == 0)
+    {
+        d_error("No EPS Bearer ID");
+        return;
+    }
+    if (req->bearer_contexts.s5_s8_u_sgw_f_teid.presence == 0)
+    {
+        d_error("No GTP TEID");
+        return;
+    }
+
+    bearer = sgw_bearer_add(sess);
+    d_assert(bearer, return, "No Bearer Context");
+
+    /* Receive Data Plane(UL) : PGW-S5U */
+    pgw_s5u_teid = req->bearer_contexts.s5_s8_u_sgw_f_teid.data;
+    bearer->pgw_s5u_teid = ntohl(pgw_s5u_teid->teid);
+    bearer->pgw_s5u_addr = pgw_s5u_teid->ipv4_addr;
+    req->bearer_contexts.s5_s8_u_sgw_f_teid.presence = 0;
+
+    /* Send Data Plane(UL) : SGW-S1U */
+    memset(&sgw_s1u_teid, 0, sizeof(gtp_f_teid_t));
+    sgw_s1u_teid.ipv4 = 1;
+    sgw_s1u_teid.interface_type = GTP_F_TEID_S1_U_SGW_GTP_U;
+    sgw_s1u_teid.ipv4_addr = bearer->sgw_s1u_addr;
+    sgw_s1u_teid.teid = htonl(bearer->sgw_s1u_teid);
+    req->bearer_contexts.s1_u_enodeb_f_teid.presence = 1;
+    req->bearer_contexts.s1_u_enodeb_f_teid.data = &sgw_s1u_teid;
+    req->bearer_contexts.s1_u_enodeb_f_teid.len = GTP_F_TEID_IPV4_LEN;
+
+    gtp_message->h.type = GTP_CREATE_BEARER_REQUEST_TYPE;
+    gtp_message->h.teid = sgw_ue->mme_s11_teid;
+
+    rv = gtp_build_msg(&pkbuf, gtp_message);
+    d_assert(rv == CORE_OK, return, "gtp build failed");
+
+    s11_xact = gtp_xact_local_create(sess->mme, &gtp_message->h, pkbuf);
+    d_assert(s11_xact, return, "Null param");
+
+    gtp_xact_associate(s5c_xact, s11_xact);
+
+    rv = gtp_xact_commit(s11_xact);
+    d_assert(rv == CORE_OK, return, "xact_commit error");
+
+    d_trace(3, "[GTP] Create Bearer Request : SGW[%d] <-- PGW[%d]\n",
+            bearer->sgw_s1u_teid, bearer->pgw_s5u_teid);
+}
+

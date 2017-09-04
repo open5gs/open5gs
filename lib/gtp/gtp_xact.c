@@ -27,7 +27,7 @@ typedef enum {
 static int gtp_xact_initialized = 0;
 static tm_service_t *g_tm_service = NULL;
 static c_uintptr_t g_response_event = 0;
-static c_uintptr_t g_duplicated_event = 0;
+static c_uintptr_t g_holding_event = 0;
 static c_uint32_t g_xact_id = 0;
 
 index_declare(gtp_xact_pool, gtp_xact_t, SIZE_OF_GTP_XACT_POOL);
@@ -36,7 +36,7 @@ static gtp_xact_stage_t gtp_xact_get_stage(c_uint8_t type, c_uint32_t sqn);
 static status_t gtp_xact_delete(gtp_xact_t *xact);
 
 status_t gtp_xact_init(tm_service_t *tm_service,
-        c_uintptr_t response_event, c_uintptr_t duplicated_event)
+        c_uintptr_t response_event, c_uintptr_t holding_event)
 {
     d_assert(gtp_xact_initialized == 0, return CORE_ERROR,
         "GTP Transaction already has been initialized");
@@ -46,7 +46,7 @@ status_t gtp_xact_init(tm_service_t *tm_service,
     g_xact_id = 0;
     g_tm_service = tm_service;
     g_response_event = response_event;
-    g_duplicated_event = duplicated_event;
+    g_holding_event = holding_event;
 
     gtp_xact_initialized = 1;
 
@@ -97,12 +97,12 @@ gtp_xact_t *gtp_xact_local_create(
         xact->response_rcount = GTP_T3_RESPONSE_RETRY_COUNT;
     }
 
-    if (g_duplicated_event)
+    if (g_holding_event)
     {
-        xact->tm_duplicated = event_timer(g_tm_service,
-                g_duplicated_event, GTP_T3_DUPLICATED_DURATION, xact->index);
-        d_assert(xact->tm_duplicated, return NULL, "Timer allocation failed");
-        xact->duplicated_rcount = GTP_T3_DUPLICATED_RETRY_COUNT;
+        xact->tm_holding = event_timer(g_tm_service,
+                g_holding_event, GTP_T3_DUPLICATED_DURATION, xact->index);
+        d_assert(xact->tm_holding, return NULL, "Timer allocation failed");
+        xact->holding_rcount = GTP_T3_DUPLICATED_RETRY_COUNT;
     }
 
     list_append(xact->org == GTP_LOCAL_ORIGINATOR ?  
@@ -141,12 +141,12 @@ gtp_xact_t *gtp_xact_remote_create(gtp_node_t *gnode, c_uint32_t sqn)
         xact->response_rcount = GTP_T3_RESPONSE_RETRY_COUNT;
     }
 
-    if (g_duplicated_event)
+    if (g_holding_event)
     {
-        xact->tm_duplicated = event_timer(g_tm_service,
-                g_duplicated_event, GTP_T3_DUPLICATED_DURATION, xact->index);
-        d_assert(xact->tm_duplicated, return NULL, "Timer allocation failed");
-        xact->duplicated_rcount = GTP_T3_DUPLICATED_RETRY_COUNT;
+        xact->tm_holding = event_timer(g_tm_service,
+                g_holding_event, GTP_T3_DUPLICATED_DURATION, xact->index);
+        d_assert(xact->tm_holding, return NULL, "Timer allocation failed");
+        xact->holding_rcount = GTP_T3_DUPLICATED_RETRY_COUNT;
     }
 
     list_append(xact->org == GTP_LOCAL_ORIGINATOR ?  
@@ -203,7 +203,7 @@ status_t gtp_xact_update_tx(gtp_xact_t *xact,
         {
             case GTP_XACT_INITIAL_STAGE:
                 d_assert(xact->step == 0, return CORE_ERROR,
-                    "[%d] %s invalid step %d for type %d peer %s:%d\n",
+                    "[%d] %s invalid step %d for type %d peer %s:%d",
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                     xact->step, hdesc->type,
@@ -215,7 +215,7 @@ status_t gtp_xact_update_tx(gtp_xact_t *xact,
 
             case GTP_XACT_FINAL_STAGE:
                 d_assert(xact->step == 2, return CORE_ERROR,
-                    "[%d] %s invalid step %d for type %d peer %s:%d\n",
+                    "[%d] %s invalid step %d for type %d peer %s:%d",
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                     xact->step, hdesc->type,
@@ -236,7 +236,7 @@ status_t gtp_xact_update_tx(gtp_xact_t *xact,
             case GTP_XACT_INTERMEDIATE_STAGE:
             case GTP_XACT_FINAL_STAGE:
                 d_assert(xact->step == 1, return CORE_ERROR,
-                    "[%d] %s invalid step %d for type %d peer %s:%d\n",
+                    "[%d] %s invalid step %d for type %d peer %s:%d",
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                     xact->step, hdesc->type,
@@ -298,8 +298,9 @@ status_t gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type)
                 {
                     pkbuf_t *pkbuf = NULL;
 
-                    d_assert(xact->step == 3, return CORE_ERROR,
-                        "[%d] %s invalid step %d for type %d peer %s:%d\n",
+                    d_assert(xact->step == 2 || xact->step == 3,
+                        return CORE_ERROR,
+                        "[%d] %s invalid step %d for type %d peer %s:%d",
                         xact->xid,
                         xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                         xact->step, type,
@@ -308,43 +309,51 @@ status_t gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type)
                     pkbuf = xact->seq[2].pkbuf;
                     if (pkbuf)
                     {
-                        if (xact->tm_duplicated)
-                            tm_start(xact->tm_duplicated);
+                        if (xact->tm_holding)
+                            tm_start(xact->tm_holding);
 
-                        d_warn("[%d]%s Request Duplicated. Retransmit!",
-                                xact->gnode->port,
+                        d_warn("[%d] %s Request Duplicated. Retransmit!"
+                                " for type %d peer %s:%d",
+                                xact->xid,
                                 xact->org == GTP_LOCAL_ORIGINATOR ?
-                                    "LOCAL " : "REMOTE");
+                                    "LOCAL " : "REMOTE",
+                                xact->step, type,
+                                INET_NTOP(&xact->gnode->addr, buf),
+                                xact->gnode->port);
                         rv = gtp_send(xact->gnode, pkbuf);
                         d_assert(rv == CORE_OK, return CORE_ERROR,
                                 "gtp_send error");
                     }
                     else
                     {
-                        d_warn("[%d]%s Request Duplicated. Discard!",
-                                xact->gnode->port,
+                        d_warn("[%d] %s Request Duplicated. Discard!"
+                                " for type %d peer %s:%d",
+                                xact->xid,
                                 xact->org == GTP_LOCAL_ORIGINATOR ?
-                                    "LOCAL " : "REMOTE");
+                                    "LOCAL " : "REMOTE",
+                                xact->step, type,
+                                INET_NTOP(&xact->gnode->addr, buf),
+                                xact->gnode->port);
                     }
 
                     return CORE_EAGAIN;
                 }
 
                 d_assert(xact->step == 1, return CORE_ERROR,
-                    "[%d] %s invalid step %d for type %d peer %s:%d\n",
+                    "[%d] %s invalid step %d for type %d peer %s:%d",
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                     xact->step, type,
                     INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
 
-                if (xact->tm_duplicated)
-                    tm_start(xact->tm_duplicated);
+                if (xact->tm_holding)
+                    tm_start(xact->tm_holding);
 
                 break;
 
             case GTP_XACT_FINAL_STAGE:
                 d_assert(xact->step == 1, return CORE_ERROR,
-                    "[%d] %s invalid step %d for type %d peer %s:%d\n",
+                    "[%d] %s invalid step %d for type %d peer %s:%d",
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                     xact->step, type,
@@ -365,8 +374,9 @@ status_t gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type)
                 {
                     pkbuf_t *pkbuf = NULL;
 
-                    d_assert(xact->step == 1, return CORE_ERROR,
-                        "[%d] %s invalid step %d for type %d peer %s:%d\n",
+                    d_assert(xact->step == 1 || xact->step == 2,
+                        return CORE_ERROR,
+                        "[%d] %s invalid step %d for type %d peer %s:%d",
                         xact->xid,
                         xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                         xact->step, type,
@@ -375,37 +385,45 @@ status_t gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type)
                     pkbuf = xact->seq[1].pkbuf;
                     if (pkbuf)
                     {
-                        if (xact->tm_duplicated)
-                            tm_start(xact->tm_duplicated);
+                        if (xact->tm_holding)
+                            tm_start(xact->tm_holding);
 
-                        d_warn("[%d]%s Request Duplicated. Retransmit!",
-                                xact->gnode->port,
+                        d_warn("[%d] %s Request Duplicated. Retransmit!"
+                                " for step %d type %d peer %s:%d",
+                                xact->xid,
                                 xact->org == GTP_LOCAL_ORIGINATOR ?
-                                    "LOCAL " : "REMOTE");
+                                    "LOCAL " : "REMOTE",
+                                xact->step, type,
+                                INET_NTOP(&xact->gnode->addr, buf),
+                                xact->gnode->port);
                         rv = gtp_send(xact->gnode, pkbuf);
                         d_assert(rv == CORE_OK, return CORE_ERROR,
                                 "gtp_send error");
                     }
                     else
                     {
-                        d_warn("[%d]%s Request Duplicated. Discard!",
-                                xact->gnode->port,
+                        d_warn("[%d] %s Request Duplicated. Discard!"
+                                " for step %d type %d peer %s:%d",
+                                xact->xid,
                                 xact->org == GTP_LOCAL_ORIGINATOR ?
-                                    "LOCAL " : "REMOTE");
+                                    "LOCAL " : "REMOTE",
+                                xact->step, type,
+                                INET_NTOP(&xact->gnode->addr, buf),
+                                xact->gnode->port);
                     }
 
                     return CORE_EAGAIN;
                 }
 
                 d_assert(xact->step == 0, return CORE_ERROR,
-                    "[%d] %s invalid step %d for type %d peer %s:%d\n",
+                    "[%d] %s invalid step %d for type %d peer %s:%d",
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                     xact->step, type,
                     INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
 
-                if (xact->tm_duplicated)
-                    tm_start(xact->tm_duplicated);
+                if (xact->tm_holding)
+                    tm_start(xact->tm_holding);
 
                 break;
 
@@ -414,7 +432,7 @@ status_t gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type)
 
             case GTP_XACT_FINAL_STAGE:
                 d_assert(xact->step == 2, return CORE_ERROR,
-                    "[%d] %s invalid step %d for type %d peer %s:%d\n",
+                    "[%d] %s invalid step %d for type %d peer %s:%d",
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                     xact->step, type,
@@ -470,7 +488,7 @@ status_t gtp_xact_commit(gtp_xact_t *xact)
             case GTP_XACT_INITIAL_STAGE:
             {
                 d_assert(xact->step == 1, return CORE_ERROR,
-                    "[%d] %s invalid step %d for type %d peer %s:%d\n",
+                    "[%d] %s invalid step %d for type %d peer %s:%d",
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                     xact->step, type,
@@ -487,7 +505,7 @@ status_t gtp_xact_commit(gtp_xact_t *xact)
 
             case GTP_XACT_FINAL_STAGE:
                 d_assert(xact->step == 2 || xact->step == 3, return CORE_ERROR,
-                    "[%d] %s invalid step %d for type %d peer %s:%d\n",
+                    "[%d] %s invalid step %d for type %d peer %s:%d",
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                     xact->step, type,
@@ -514,7 +532,7 @@ status_t gtp_xact_commit(gtp_xact_t *xact)
 
             case GTP_XACT_INTERMEDIATE_STAGE:
                 d_assert(xact->step == 2, return CORE_ERROR,
-                    "[%d] %s invalid step %d for type %d peer %s:%d\n",
+                    "[%d] %s invalid step %d for type %d peer %s:%d",
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                     xact->step, type,
@@ -528,7 +546,7 @@ status_t gtp_xact_commit(gtp_xact_t *xact)
             case GTP_XACT_FINAL_STAGE:
                 d_assert(xact->step == 2 || xact->step == 3,
                     return CORE_ERROR,
-                    "[%d] %s invalid step %d for type %d peer %s:%d\n",
+                    "[%d] %s invalid step %d for type %d peer %s:%d",
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                     xact->step, type,
@@ -570,10 +588,13 @@ status_t gtp_xact_timeout(index_t index, c_uintptr_t event)
 
     if (event == g_response_event)
     {
-        d_trace(3, "[%d] %s Response Timeout  peer %s:%d\n",
+        d_trace(3, "[%d] %s Response Timeout "
+                "for step %d type %d peer %s:%d\n",
                 xact->xid,
                 xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-                INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+                xact->step, xact->seq[xact->step-1].type,
+                INET_NTOP(&xact->gnode->addr, buf),
+                xact->gnode->port);
 
         if (--xact->response_rcount > 0)
         {
@@ -590,26 +611,40 @@ status_t gtp_xact_timeout(index_t index, c_uintptr_t event)
         }
         else
         {
-            d_warn("[%d]%s No Reponse. Give up",
-                    xact->gnode->port,
-                    xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE");
+            d_warn("[%d] %s No Reponse. Give up! "
+                    "for step %d type %d peer %s:%d",
+                    xact->xid,
+                    xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
+                    xact->step, xact->seq[xact->step-1].type,
+                    INET_NTOP(&xact->gnode->addr, buf),
+                    xact->gnode->port);
             gtp_xact_delete(xact);
         }
     }
-    else if (event == g_duplicated_event)
+    else if (event == g_holding_event)
     {
-        d_trace(3, "[%d] %s Duplicated Timeout  peer %s:%d\n",
+        d_trace(3, "[%d] %s Holding Timeout "
+                "for step %d type %d peer %s:%d\n",
                 xact->xid,
                 xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-                INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+                xact->step, xact->seq[xact->step-1].type,
+                INET_NTOP(&xact->gnode->addr, buf),
+                xact->gnode->port);
 
-        if (--xact->duplicated_rcount > 0)
+        if (--xact->holding_rcount > 0)
         {
-            if (xact->tm_duplicated)
-                tm_start(xact->tm_duplicated);
+            if (xact->tm_holding)
+                tm_start(xact->tm_holding);
         }
         else
         {
+            d_trace(3, "[%d] %s Delete Transaction "
+                    "for step %d type %d peer %s:%d\n",
+                    xact->xid,
+                    xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
+                    xact->step, xact->seq[xact->step-1].type,
+                    INET_NTOP(&xact->gnode->addr, buf),
+                    xact->gnode->port);
             gtp_xact_delete(xact);
         }
     }
@@ -806,8 +841,8 @@ static status_t gtp_xact_delete(gtp_xact_t *xact)
 
     if (xact->tm_response)
         tm_delete(xact->tm_response);
-    if (xact->tm_duplicated)
-        tm_delete(xact->tm_duplicated);
+    if (xact->tm_holding)
+        tm_delete(xact->tm_holding);
 
     if (xact->assoc_xact)
         gtp_xact_deassociate(xact, xact->assoc_xact);
