@@ -31,27 +31,11 @@ void event_emm_to_esm(
     c_uint8_t pti = NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
     c_uint8_t ebi = NAS_EPS_BEARER_IDENTITY_UNASSIGNED;
     mme_sess_t *sess = NULL;
+    mme_bearer_t *bearer = NULL;
 
     d_assert(mme_ue, return, "Null param");
     d_assert(esm_message_container, return, "Null param");
     d_assert(esm_message_container->len, return, "Null param");
-
-    h = (nas_esm_header_t *)esm_message_container->data;
-    d_assert(h, return, "Null param");
-
-    pti = h->procedure_transaction_identity;
-    ebi = h->eps_bearer_identity;
-
-    if (ebi != NAS_EPS_BEARER_IDENTITY_UNASSIGNED)
-        sess = mme_sess_find_by_ebi(mme_ue, ebi);
-    else if (pti != NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED)
-        sess = mme_sess_find_by_pti(mme_ue, pti);
-    else
-        d_assert(0, return, "Invalid pti(%d) and ebi(%d)\n", pti, ebi);
-
-    if (!sess)
-        sess = mme_sess_add(mme_ue, pti);
-    d_assert(sess, return, "Null param");
 
     /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 
      * When calculating AES_CMAC, we need to use the headroom of the packet. */
@@ -60,8 +44,29 @@ void event_emm_to_esm(
     memcpy(esmbuf->payload, 
             esm_message_container->data, esm_message_container->len);
 
+    h = (nas_esm_header_t *)esm_message_container->data;
+    d_assert(h, return, "Null param");
+
+    pti = h->procedure_transaction_identity;
+    ebi = h->eps_bearer_identity;
+
+    if (ebi != NAS_EPS_BEARER_IDENTITY_UNASSIGNED)
+        bearer = mme_bearer_find_by_ue_ebi(mme_ue, ebi);
+    else if (pti != NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED)
+        bearer = mme_bearer_find_by_ue_pti(mme_ue, pti);
+    else
+        d_assert(0, return, "Invalid pti(%d) and ebi(%d)\n", pti, ebi);
+
+    if (!bearer)
+    {
+        sess = mme_sess_add(mme_ue, pti);
+        d_assert(sess, return, "Null param");
+        bearer = mme_default_bearer_in_sess(sess);
+    }
+    d_assert(bearer, return, "Null param");
+
     event_set(&e, MME_EVT_ESM_MESSAGE);
-    event_set_param1(&e, (c_uintptr_t)sess->index);
+    event_set_param1(&e, (c_uintptr_t)bearer->index);
     event_set_param2(&e, (c_uintptr_t)esmbuf);
     mme_event_send(&e);
 }
@@ -177,7 +182,7 @@ void emm_handle_attach_accept(mme_ue_t *mme_ue)
     d_assert(rv == CORE_OK && esmbuf, return, "esm build error");
 
     d_trace(3, "[NAS] Activate default bearer context request : "
-            "EMM <-- ESM[%d]\n", sess->pti);
+            "EMM <-- ESM\n");
 
     rv = emm_build_attach_accept(&emmbuf, mme_ue, esmbuf);
     d_assert(rv == CORE_OK && emmbuf, 
@@ -260,6 +265,7 @@ void emm_handle_attach_reject(mme_ue_t *mme_ue,
     mme_enb_t *enb = NULL;
     enb_ue_t *enb_ue = NULL;
     mme_sess_t *sess = NULL;
+    mme_bearer_t *bearer = NULL;
     pkbuf_t *s1apbuf = NULL, *esmbuf = NULL, *emmbuf = NULL;
     S1ap_Cause_t cause;
 
@@ -272,10 +278,15 @@ void emm_handle_attach_reject(mme_ue_t *mme_ue,
     sess = mme_sess_first(mme_ue);
     if (sess)
     {
-        rv = esm_build_pdn_connectivity_reject(&esmbuf, sess->pti, esm_cause);
-        d_assert(rv == CORE_OK && esmbuf, return, "esm build error");
-        d_trace(3, "[NAS] PDN Connectivity reject : "
-                        "EMM <-- ESM[%d]\n", sess->pti);
+        bearer = mme_default_bearer_in_sess(sess);
+        if (bearer)
+        {
+            rv = esm_build_pdn_connectivity_reject(
+                    &esmbuf, bearer->pti, esm_cause);
+            d_assert(rv == CORE_OK && esmbuf, return, "esm build error");
+            d_trace(3, "[NAS] PDN Connectivity reject : EMM <-- ESM\n",
+                    bearer->pti);
+        }
     }
 
     rv = emm_build_attach_reject(&emmbuf, emm_cause, esmbuf);

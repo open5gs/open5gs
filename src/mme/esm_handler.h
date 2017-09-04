@@ -11,7 +11,6 @@ extern "C" {
 
 CORE_DECLARE(void) esm_handle_pdn_connectivity_request(mme_sess_t *sess, 
         nas_pdn_connectivity_request_t *pdn_connectivity_request);
-CORE_DECLARE(void) esm_handle_information_request(mme_sess_t *sess);
 CORE_DECLARE(void) esm_handle_information_response(mme_sess_t *sess, 
         nas_esm_information_response_t *bearer_information_response);
 

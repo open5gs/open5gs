@@ -42,7 +42,7 @@ status_t pgw_s5c_build_create_session_response(
     rsp->cause.len = sizeof(cause);
     rsp->cause.data = &cause;
 
-    /* Send Control Plane(UL) : PGW-S5C */
+    /* Control Plane(UL) : PGW-S5C */
     memset(&pgw_s5c_teid, 0, sizeof(gtp_f_teid_t));
     pgw_s5c_teid.ipv4 = 1;
     pgw_s5c_teid.interface_type = GTP_F_TEID_S5_S8_PGW_GTP_C;
@@ -55,6 +55,7 @@ status_t pgw_s5c_build_create_session_response(
     rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
         len = GTP_F_TEID_IPV4_LEN;
 
+    /* PDN Address Allocation */
     d_assert(sess->ip_pool, return CORE_ERROR, "No IP Pool");
     sess->pdn.paa.pdn_type = GTP_PDN_TYPE_IPV4;
     sess->pdn.paa.ipv4_addr = sess->ip_pool->ue_addr;
@@ -63,12 +64,14 @@ status_t pgw_s5c_build_create_session_response(
     rsp->pdn_address_allocation.data = &sess->pdn.paa;
     rsp->pdn_address_allocation.len = PAA_IPV4_LEN;
 
+    /* APN Restriction */
     rsp->apn_restriction.presence = 1;
     rsp->apn_restriction.u8 = GTP_APN_NO_RESTRICTION;
     
     /* TODO : APN-AMBR
      * if PCRF changes APN-AMBR, this should be included. */
 
+    /* PCO */
     if (req->protocol_configuration_options.presence == 1)
     {
         pco_len = pgw_pco_build(pco_buf, &req->protocol_configuration_options);
@@ -78,6 +81,7 @@ status_t pgw_s5c_build_create_session_response(
         rsp->protocol_configuration_options.len = pco_len;
     }
 
+    /* Bearer EBI */
     rsp->bearer_contexts_created.presence = 1;
     rsp->bearer_contexts_created.eps_bearer_id.presence = 1;
     rsp->bearer_contexts_created.eps_bearer_id.u8 = bearer->ebi;
@@ -85,7 +89,7 @@ status_t pgw_s5c_build_create_session_response(
     /* TODO : Bearer QoS 
      * if PCRF changes Bearer QoS, this should be included. */
 
-    /* Send Data Plane(UL) : PGW-S5U */
+    /* Data Plane(UL) : PGW-S5U */
     memset(&pgw_s5u_teid, 0, sizeof(gtp_f_teid_t));
     pgw_s5u_teid.ipv4 = 1;
     pgw_s5u_teid.interface_type = GTP_F_TEID_S5_S8_PGW_GTP_U;
@@ -175,15 +179,17 @@ status_t pgw_s5c_build_create_bearer_request(
 
     req = &gtp_message.create_bearer_request;
     memset(&gtp_message, 0, sizeof(gtp_message_t));
-
+ 
+    /* Linked EBI */
     req->linked_eps_bearer_id.presence = 1;
     req->linked_eps_bearer_id.u8 = linked_bearer->ebi;
 
+    /* Bearer EBI */
     req->bearer_contexts.presence = 1;
-
     req->bearer_contexts.eps_bearer_id.presence = 1;
     req->bearer_contexts.eps_bearer_id.u8 = bearer->ebi;
 
+    /* Data Plane(UL) : PGW_S5U */
     memset(&pgw_s5u_teid, 0, sizeof(gtp_f_teid_t));
     pgw_s5u_teid.ipv4 = 1;
     pgw_s5u_teid.interface_type = GTP_F_TEID_S5_S8_PGW_GTP_U;
@@ -193,6 +199,7 @@ status_t pgw_s5c_build_create_bearer_request(
     req->bearer_contexts.s5_s8_u_sgw_f_teid.data = &pgw_s5u_teid;
     req->bearer_contexts.s5_s8_u_sgw_f_teid.len = GTP_F_TEID_IPV4_LEN;
 
+    /* Bearer QoS */
     memset(&bearer_qos, 0, sizeof(bearer_qos));
     bearer_qos.qci = bearer->qos.qci;
     bearer_qos.priority_level = bearer->qos.arp.priority_level;

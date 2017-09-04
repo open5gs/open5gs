@@ -28,13 +28,13 @@ status_t esm_build_pdn_connectivity_reject(
     return CORE_OK;
 }
 
-status_t esm_build_information_request(pkbuf_t **pkbuf, mme_sess_t *sess)
+status_t esm_build_information_request(pkbuf_t **pkbuf, mme_bearer_t *bearer)
 {
     nas_message_t message;
     mme_ue_t *mme_ue = NULL;
 
-    d_assert(sess, return CORE_ERROR, "Null param");
-    mme_ue = sess->mme_ue;
+    d_assert(bearer, return CORE_ERROR, "Null param");
+    mme_ue = bearer->mme_ue;
     d_assert(mme_ue, return CORE_ERROR, "Null param");
 
     memset(&message, 0, sizeof(message));
@@ -43,7 +43,7 @@ status_t esm_build_information_request(pkbuf_t **pkbuf, mme_sess_t *sess)
     message.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
 
     message.esm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_ESM;
-    message.esm.h.procedure_transaction_identity = sess->pti;
+    message.esm.h.procedure_transaction_identity = bearer->pti;
     message.esm.h.message_type = NAS_ESM_INFORMATION_REQUEST;
 
     d_assert(nas_security_encode(pkbuf, mme_ue, &message) == CORE_OK && 
@@ -86,7 +86,7 @@ status_t esm_build_activate_default_bearer_context(
     memset(&message, 0, sizeof(message));
     message.esm.h.eps_bearer_identity = bearer->ebi;
     message.esm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_ESM;
-    message.esm.h.procedure_transaction_identity = sess->pti;
+    message.esm.h.procedure_transaction_identity = bearer->pti;
     message.esm.h.message_type = 
         NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST;
 

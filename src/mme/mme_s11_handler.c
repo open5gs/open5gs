@@ -91,7 +91,7 @@ void mme_s11_handle_create_session_response(
     pdn = sess->pdn;
     d_assert(pdn, return, "Null param");
 
-    /* Receive Control Plane(UL) : SGW-S11 */
+    /* Control Plane(UL) : SGW-S11 */
     sgw_s11_teid = rsp->sender_f_teid_for_control_plane.data;
     mme_ue->sgw_s11_teid = ntohl(sgw_s11_teid->teid);
     mme_ue->sgw_s11_addr = sgw_s11_teid->ipv4_addr;
@@ -99,6 +99,7 @@ void mme_s11_handle_create_session_response(
     memcpy(&pdn->paa, rsp->pdn_address_allocation.data,
             rsp->pdn_address_allocation.len);
 
+    /* PCO */
     if (rsp->protocol_configuration_options.presence)
     {
         sess->pgw_pco_len = rsp->protocol_configuration_options.len;
@@ -106,12 +107,28 @@ void mme_s11_handle_create_session_response(
                 sess->pgw_pco_len);
     }
 
-    /* Receive Data Plane(UL) : SGW-S1U */
+    /* Data Plane(UL) : SGW-S1U */
     sgw_s1u_teid = rsp->bearer_contexts_created.s1_u_enodeb_f_teid.data;
     bearer->sgw_s1u_teid = ntohl(sgw_s1u_teid->teid);
     bearer->sgw_s1u_addr = sgw_s1u_teid->ipv4_addr;
 
     d_trace(3, "[GTP] Create Session Response : "
+            "MME[%d] <-- SGW[%d]\n", mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
+
+    rv = gtp_xact_commit(xact);
+    d_assert(rv == CORE_OK, return, "xact_commit error");
+}
+
+void mme_s11_handle_modify_bearer_response(
+        gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_modify_bearer_response_t *rsp)
+{
+    status_t rv;
+
+    d_assert(xact, return, "Null param");
+    d_assert(mme_ue, return, "Null param");
+    d_assert(rsp, return, "Null param");
+
+    d_trace(3, "[GTP] Modify Bearer Response : "
             "MME[%d] <-- SGW[%d]\n", mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     rv = gtp_xact_commit(xact);
@@ -186,20 +203,73 @@ void mme_s11_handle_delete_session_response(
     d_assert(rv == CORE_OK, return, "xact_commit error");
 }
 
-void mme_s11_handle_modify_bearer_response(
-        gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_modify_bearer_response_t *rsp)
+void mme_s11_handle_create_bearer_request(
+        gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_create_bearer_request_t *req)
 {
-    status_t rv;
+    mme_bearer_t *bearer = NULL;
+    mme_sess_t *sess = NULL;
+
+    gtp_f_teid_t *sgw_s1u_teid = NULL;
+    gtp_bearer_qos_t bearer_qos;
 
     d_assert(xact, return, "Null param");
     d_assert(mme_ue, return, "Null param");
-    d_assert(rsp, return, "Null param");
+    d_assert(req, return, "Null param");
 
-    d_trace(3, "[GTP] Modify Bearer Response : "
+    d_trace(3, "[GTP] Create Bearer Request : "
             "MME[%d] <-- SGW[%d]\n", mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
-    rv = gtp_xact_commit(xact);
-    d_assert(rv == CORE_OK, return, "xact_commit error");
+    if (req->linked_eps_bearer_id.presence == 0)
+    {
+        d_error("No Linked EBI");
+        return;
+    }
+    if (req->bearer_contexts.presence == 0)
+    {
+        d_error("No Bearer");
+        return;
+    }
+    if (req->bearer_contexts.eps_bearer_id.presence == 0)
+    {
+        d_error("No EPS Bearer ID");
+        return;
+    }
+    if (req->bearer_contexts.s1_u_enodeb_f_teid.presence == 0)
+    {
+        d_error("No GTP TEID");
+        return;
+    }
+    if (req->bearer_contexts.bearer_level_qos.presence == 0)
+    {
+        d_error("No QoS");
+        return;
+    }
+
+    sess = mme_sess_find_by_ebi(mme_ue, req->linked_eps_bearer_id.u8);
+    d_assert(sess, return, 
+            "No Session Context(EBI:%d)", req->linked_eps_bearer_id);
+
+    bearer = mme_bearer_add(sess);
+    d_assert(bearer, return, "No Bearer Context");
+
+    /* Data Plane(UL) : SGW-S1U */
+    sgw_s1u_teid = req->bearer_contexts.s1_u_enodeb_f_teid.data;
+    bearer->sgw_s1u_teid = ntohl(sgw_s1u_teid->teid);
+    bearer->sgw_s1u_addr = sgw_s1u_teid->ipv4_addr;
+
+    /* Bearer QoS */
+    d_assert(gtp_parse_bearer_qos(&bearer_qos,
+        &req->bearer_contexts.bearer_level_qos) ==
+        req->bearer_contexts.bearer_level_qos.len, return,);
+    bearer->qos.qci = bearer_qos.qci;
+    bearer->qos.arp.priority_level = bearer_qos.priority_level;
+    bearer->qos.arp.pre_emption_capability =
+                    bearer_qos.pre_emption_capability;
+    bearer->qos.arp.pre_emption_vulnerability =
+                    bearer_qos.pre_emption_vulnerability;
+
+    /* Save Transaction */
+    bearer->xact = xact;
 }
 
 void mme_s11_handle_release_access_bearers_response(

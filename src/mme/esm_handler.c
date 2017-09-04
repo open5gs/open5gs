@@ -29,22 +29,6 @@ void esm_handle_pdn_connectivity_request(mme_sess_t *sess,
     }
 }
 
-void esm_handle_information_request(mme_sess_t *sess)
-{
-    status_t rv;
-    pkbuf_t *esmbuf = NULL;
-    mme_ue_t *mme_ue = NULL;
-
-    d_assert(sess, return, "Null param");
-    mme_ue = sess->mme_ue;
-    d_assert(mme_ue, return, "Null param");
-
-    rv = esm_build_information_request(&esmbuf, sess);
-    d_assert(rv == CORE_OK && esmbuf, return, "esm_build failed");
-    d_assert(nas_send_to_downlink_nas_transport(mme_ue, esmbuf) == CORE_OK,,);
-}
-
-
 void esm_handle_information_response(mme_sess_t *sess, 
         nas_esm_information_response_t *esm_information_response)
 {

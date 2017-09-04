@@ -1472,7 +1472,6 @@ mme_sess_t *mme_sess_add(mme_ue_t *mme_ue, c_uint8_t pti)
 {
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
-    event_t e;
 
     d_assert(mme_ue, return NULL, "Null param");
     d_assert(pti != NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
@@ -1481,36 +1480,24 @@ mme_sess_t *mme_sess_add(mme_ue_t *mme_ue, c_uint8_t pti)
     index_alloc(&mme_sess_pool, &sess);
     d_assert(sess, return NULL, "Null param");
 
-    sess->pti = pti;
-
     list_init(&sess->bearer_list);
     list_append(&mme_ue->sess_list, sess);
 
     sess->mme_ue = mme_ue;
     sess->sgw = mme_sgw_first();
 
-    bearer = mme_bearer_add(sess,
-                NEXT_ID(mme_ue->ebi, MIN_EPS_BEARER_ID, MAX_EPS_BEARER_ID));
+    bearer = mme_bearer_add(sess);
     d_assert(bearer, mme_sess_remove(sess); return NULL, 
             "Can't add default bearer context");
-
-    event_set_param1(&e, (c_uintptr_t)sess->index);
-    fsm_create(&sess->sm, esm_state_initial, esm_state_final);
-    fsm_init(&sess->sm, &e);
+    bearer->pti = pti;
 
     return sess;
 }
 
 status_t mme_sess_remove(mme_sess_t *sess)
 {
-    event_t e;
-
     d_assert(sess, return CORE_ERROR, "Null param");
     d_assert(sess->mme_ue, return CORE_ERROR, "Null param");
-
-    event_set_param1(&e, (c_uintptr_t)sess->index);
-    fsm_final(&sess->sm, &e);
-    fsm_clear(&sess->sm);
 
     mme_bearer_remove_all(sess);
 
@@ -1545,16 +1532,11 @@ mme_sess_t* mme_sess_find(index_t index)
 
 mme_sess_t* mme_sess_find_by_pti(mme_ue_t *mme_ue, c_uint8_t pti)
 {
-    mme_sess_t *sess = NULL;
-    
-    sess = mme_sess_first(mme_ue);
-    while (sess)
-    {
-        if (pti == sess->pti)
-            return sess;
+    mme_bearer_t *bearer = NULL;
 
-        sess = mme_sess_next(sess);
-    }
+    bearer = mme_bearer_find_by_ue_pti(mme_ue, pti);
+    if (bearer)
+        return bearer->sess;
 
     return NULL;
 }
@@ -1580,8 +1562,10 @@ mme_sess_t* mme_sess_next(mme_sess_t *sess)
     return list_next(sess);
 }
 
-mme_bearer_t* mme_bearer_add(mme_sess_t *sess, c_uint8_t ebi)
+mme_bearer_t* mme_bearer_add(mme_sess_t *sess)
 {
+    event_t e;
+
     mme_bearer_t *bearer = NULL;
     mme_ue_t *mme_ue = NULL;
 
@@ -1592,20 +1576,30 @@ mme_bearer_t* mme_bearer_add(mme_sess_t *sess, c_uint8_t ebi)
     index_alloc(&mme_bearer_pool, &bearer);
     d_assert(bearer, return NULL, "Null param");
 
-    bearer->ebi = ebi;
+    bearer->ebi = NEXT_ID(mme_ue->ebi, MIN_EPS_BEARER_ID, MAX_EPS_BEARER_ID);
 
     list_append(&sess->bearer_list, bearer);
     
     bearer->mme_ue = mme_ue;
     bearer->sess = sess;
 
+    event_set_param1(&e, (c_uintptr_t)bearer->index);
+    fsm_create(&bearer->sm, esm_state_initial, esm_state_final);
+    fsm_init(&bearer->sm, &e);
+
     return bearer;
 }
 
 status_t mme_bearer_remove(mme_bearer_t *bearer)
 {
+    event_t e;
+
     d_assert(bearer, return CORE_ERROR, "Null param");
     d_assert(bearer->sess, return CORE_ERROR, "Null param");
+
+    event_set_param1(&e, (c_uintptr_t)bearer->index);
+    fsm_final(&bearer->sm, &e);
+    fsm_clear(&bearer->sm);
     
     list_remove(&bearer->sess->bearer_list, bearer);
     index_free(&mme_bearer_pool, bearer);
@@ -1636,6 +1630,42 @@ mme_bearer_t* mme_bearer_find(index_t index)
 {
     d_assert(index, return NULL, "Invalid Index");
     return index_find(&mme_bearer_pool, index);
+}
+
+mme_bearer_t* mme_bearer_find_by_sess_pti(mme_sess_t *sess, c_uint8_t pti)
+{
+    mme_bearer_t *bearer = NULL;
+
+    bearer = mme_bearer_first(sess);
+    while(bearer)
+    {
+        if (pti == bearer->pti)
+            return bearer;
+
+        bearer = mme_bearer_next(bearer);
+    }
+
+    return NULL;
+}
+
+mme_bearer_t* mme_bearer_find_by_ue_pti(mme_ue_t *mme_ue, c_uint8_t pti)
+{
+    mme_sess_t *sess = NULL;
+    mme_bearer_t *bearer = NULL;
+    
+    sess = mme_sess_first(mme_ue);
+    while (sess)
+    {
+        bearer = mme_bearer_find_by_sess_pti(sess, pti);
+        if (bearer)
+        {
+            return bearer;
+        }
+
+        sess = mme_sess_next(sess);
+    }
+
+    return NULL;
 }
 
 mme_bearer_t* mme_bearer_find_by_sess_ebi(mme_sess_t *sess, c_uint8_t ebi)

@@ -66,12 +66,12 @@ void pgw_s5c_handle_create_session_request(
     memcpy(sess->imsi, req->imsi.data, sess->imsi_len);
     core_buffer_to_bcd(sess->imsi, sess->imsi_len, sess->imsi_bcd);
 
-    /* Receive Control Plane(DL) : SGW-S5C */
+    /* Control Plane(DL) : SGW-S5C */
     sgw_s5c_teid = req->sender_f_teid_for_control_plane.data;
     sess->sgw_s5c_teid = ntohl(sgw_s5c_teid->teid);
     sess->sgw_s5c_addr = sgw_s5c_teid->ipv4_addr;
 
-    /* Receive Control Plane(DL) : SGW-S5U */
+    /* Control Plane(DL) : SGW-S5U */
     sgw_s5u_teid = req->bearer_contexts_to_be_created.s5_s8_u_sgw_f_teid.data;
     bearer->sgw_s5u_teid = ntohl(sgw_s5u_teid->teid);
     bearer->sgw_s5u_addr = sgw_s5u_teid->ipv4_addr;

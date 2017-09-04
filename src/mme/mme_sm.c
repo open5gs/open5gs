@@ -223,14 +223,11 @@ void mme_state_operational(fsm_t *s, event_t *e)
         case MME_EVT_ESM_MESSAGE:
         {
             nas_message_t message;
-            mme_sess_t *sess = NULL;
-            mme_ue_t *mme_ue = NULL;
+            mme_bearer_t *bearer = NULL;
             pkbuf_t *pkbuf = NULL;
 
-            sess = mme_sess_find(event_get_param1(e));
-            d_assert(sess, break, "No Session context");
-            d_assert(mme_ue = sess->mme_ue, break, "No UE context");
-            d_assert(FSM_STATE(&sess->sm), break, "No ESM State Machine");
+            bearer = mme_bearer_find(event_get_param1(e));
+            d_assert(bearer, break, "No Bearer context");
 
             pkbuf = (pkbuf_t *)event_get_param2(e);
             d_assert(pkbuf, break, "Null param");
@@ -239,7 +236,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
 
             event_set_param3(e, (c_uintptr_t)&message);
 
-            fsm_dispatch(&sess->sm, (fsm_event_t*)e);
+            fsm_dispatch(&bearer->sm, (fsm_event_t*)e);
 
             pkbuf_free(pkbuf);
 
@@ -388,6 +385,10 @@ void mme_state_operational(fsm_t *s, event_t *e)
 
                     break;
                 }
+                case GTP_CREATE_BEARER_REQUEST_TYPE:
+                    mme_s11_handle_create_bearer_request(
+                        xact, mme_ue, &message.create_bearer_request);
+                    break;
                 case GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE:
                 {
                     mme_s11_handle_release_access_bearers_response(
