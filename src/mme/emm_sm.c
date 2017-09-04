@@ -14,6 +14,7 @@
 #include "emm_build.h"
 #include "esm_handler.h"
 #include "mme_s11_handler.h"
+#include "nas_path.h"
 
 void emm_state_initial(fsm_t *s, event_t *e)
 {
@@ -96,7 +97,7 @@ void emm_state_detached(fsm_t *s, event_t *e)
                         {
                             mme_s6a_send_air(mme_ue);
                         }
-                        FSM_TRAN(s, &emm_state_auth);
+                        FSM_TRAN(s, &emm_state_authentication);
                     }
 
                     break;
@@ -128,10 +129,15 @@ void emm_state_identity(fsm_t *s, event_t *e)
     {
         case FSM_ENTRY_SIG:
         {
-            mme_ue_t *mme_ue = mme_ue_find(event_get_param1(e));
-            d_assert(mme_ue, return, "Null param");
+            status_t rv;
+            pkbuf_t *emmbuf = NULL;
 
-            emm_handle_identity_request(mme_ue);
+            rv = emm_build_identity_request(&emmbuf, mme_ue);
+            d_assert(rv == CORE_OK && emmbuf, break, "emm build error");
+
+            rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
+            d_assert(rv == CORE_OK && emmbuf, break, "emm send error");
+
             break;
         }
         case FSM_EXIT_SIG:
@@ -169,7 +175,7 @@ void emm_state_identity(fsm_t *s, event_t *e)
                         {
                             mme_s6a_send_air(mme_ue);
                         }
-                        FSM_TRAN(s, &emm_state_auth);
+                        FSM_TRAN(s, &emm_state_authentication);
                     }
                     break;
                 }
@@ -196,7 +202,7 @@ void emm_state_identity(fsm_t *s, event_t *e)
     }
 }
 
-void emm_state_auth(fsm_t *s, event_t *e)
+void emm_state_authentication(fsm_t *s, event_t *e)
 {
     mme_ue_t *mme_ue = NULL;
 
@@ -229,8 +235,72 @@ void emm_state_auth(fsm_t *s, event_t *e)
                 {
                     emm_handle_authentication_response(
                             mme_ue, &message->emm.authentication_response);
+                    FSM_TRAN(s, &emm_state_security_mode);
                     break;
                 }
+                case NAS_EMM_STATUS:
+                {
+                    emm_handle_emm_status(mme_ue, &message->emm.emm_status);
+                    FSM_TRAN(s, &emm_state_detached);
+                    break;
+                }
+                default:
+                {
+                    d_warn("Unknown message(type:%d)", 
+                            message->emm.h.message_type);
+                    break;
+                }
+            }
+            break;
+        }
+        default:
+        {
+            d_error("Unknown event %s", mme_event_get_name(e));
+            break;
+        }
+    }
+}
+
+void emm_state_security_mode(fsm_t *s, event_t *e)
+{
+    mme_ue_t *mme_ue = NULL;
+
+    d_assert(s, return, "Null param");
+    d_assert(e, return, "Null param");
+
+    mme_sm_trace(3, e);
+
+    mme_ue = mme_ue_find(event_get_param1(e));
+    d_assert(mme_ue, return, "Null param");
+
+    switch (event_get(e))
+    {
+        case FSM_ENTRY_SIG:
+        {
+            status_t rv;
+            pkbuf_t *emmbuf = NULL;
+
+            rv = emm_build_security_mode_command(&emmbuf, mme_ue);
+            d_assert(rv == CORE_OK && emmbuf, break, "emm build error");
+
+            rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
+            d_assert(rv == CORE_OK && emmbuf, break, "emm send error");
+
+            d_trace(3, "[NAS] Security mode command : UE[%s] <-- EMM\n", 
+                    mme_ue->imsi_bcd);
+            break;
+        }
+        case FSM_EXIT_SIG:
+        {
+            break;
+        }
+        case MME_EVT_EMM_MESSAGE:
+        {
+            nas_message_t *message = (nas_message_t *)event_get_param4(e);
+            d_assert(message, break, "Null param");
+
+            switch(message->emm.h.message_type)
+            {
                 case NAS_SECURITY_MODE_COMPLETE:
                 {
                     d_trace(3, "[NAS] Security mode complete : "
@@ -409,7 +479,7 @@ void emm_state_attached(fsm_t *s, event_t *e)
                         {
                             mme_s6a_send_air(mme_ue);
                         }
-                        FSM_TRAN(s, &emm_state_auth);
+                        FSM_TRAN(s, &emm_state_authentication);
                     }
 
                     break;

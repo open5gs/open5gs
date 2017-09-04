@@ -925,7 +925,7 @@ mme_enb_t* mme_enb_add(net_sock_t *s1ap_sock)
 
     event_set_param1(&e, (c_uintptr_t)enb->index);
     fsm_create(&enb->sm, s1ap_state_initial, s1ap_state_final);
-    fsm_init(&enb->sm, (fsm_event_t *)&e);
+    fsm_init(&enb->sm, &e);
     
     return enb;
 }
@@ -937,7 +937,7 @@ status_t mme_enb_remove(mme_enb_t *enb)
     d_assert(enb, return CORE_ERROR, "Null param");
 
     event_set_param1(&e, (c_uintptr_t)enb->index);
-    fsm_final(&enb->sm, (fsm_event_t *)&e);
+    fsm_final(&enb->sm, &e);
     fsm_clear(&enb->sm);
 
     enb_ue_remove_in_enb(enb);
@@ -1143,7 +1143,7 @@ mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
 
     event_set_param1(&e, (c_uintptr_t)mme_ue->index);
     fsm_create(&mme_ue->sm, emm_state_initial, emm_state_final);
-    fsm_init(&mme_ue->sm, (fsm_event_t *)&e);
+    fsm_init(&mme_ue->sm, &e);
     
     return mme_ue;
 }
@@ -1155,7 +1155,7 @@ status_t mme_ue_remove(mme_ue_t *mme_ue)
     d_assert(mme_ue, return CORE_ERROR, "Null param");
 
     event_set_param1(&e, (c_uintptr_t)mme_ue->index);
-    fsm_final(&mme_ue->sm, (fsm_event_t *)&e);
+    fsm_final(&mme_ue->sm, &e);
     fsm_clear(&mme_ue->sm);
 
     /* Clear hash table */
@@ -1496,7 +1496,7 @@ mme_sess_t *mme_sess_add(mme_ue_t *mme_ue, c_uint8_t pti)
 
     event_set_param1(&e, (c_uintptr_t)sess->index);
     fsm_create(&sess->sm, esm_state_initial, esm_state_final);
-    fsm_init(&sess->sm, (fsm_event_t *)&e);
+    fsm_init(&sess->sm, &e);
 
     return sess;
 }
@@ -1509,7 +1509,7 @@ status_t mme_sess_remove(mme_sess_t *sess)
     d_assert(sess->mme_ue, return CORE_ERROR, "Null param");
 
     event_set_param1(&e, (c_uintptr_t)sess->index);
-    fsm_final(&sess->sm, (fsm_event_t *)&e);
+    fsm_final(&sess->sm, &e);
     fsm_clear(&sess->sm);
 
     mme_bearer_remove_all(sess);

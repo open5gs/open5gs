@@ -1,9 +1,13 @@
 #include "core_fsm.h"
 
-static fsm_event_t entry_event = {
+typedef struct _event_t {
+    fsm_event_t event;
+} event_t;
+
+static event_t entry_event = {
     FSM_ENTRY_SIG,
 };
-static fsm_event_t exit_event = {
+static event_t exit_event = {
     FSM_EXIT_SIG,
 };
 
@@ -11,33 +15,38 @@ char *FSM_NAME_INIT_SIG = "INIT";
 char *FSM_NAME_ENTRY_SIG = "ENTRY";
 char *FSM_NAME_EXIT_SIG = "EXIT";
 
-void fsm_init(fsm_t *s, fsm_event_t *e)
+void fsm_init(void *s, void *_e)
 {
-    if (s->initial != (fsm_state_t)0)
+    fsm_t *fsm = s;
+    event_t *e = _e;
+
+    if (fsm->initial != (fsm_state_t)0)
     {
-        (*s->initial)(s, e);
-        if (s->initial != s->state)
+        (*fsm->initial)(s, e);
+        if (fsm->initial != fsm->state)
         {
             if (e)
             {
                 e->event = FSM_ENTRY_SIG;
-                (*s->state)(s, e);
+                (*fsm->state)(s, e);
             }
             else
             {
-                (*s->state)(s, &entry_event);
+                (*fsm->state)(s, &entry_event);
             }
         }
     }
 }
 
-void fsm_dispatch(fsm_t *s, fsm_event_t *e)
+void fsm_dispatch(void *s, void *_e)
 {
-    fsm_handler_t tmp = s->state;
-    s->state = (fsm_handler_t)0;
+    fsm_t *fsm = s;
+    event_t *e = _e;
+    fsm_handler_t tmp = fsm->state;
+    fsm->state = (fsm_handler_t)0;
 
     (*tmp)(s, e);
-    if (s->state != (fsm_state_t)0)
+    if (fsm->state != (fsm_state_t)0)
     {
         if (e)
         {
@@ -51,7 +60,7 @@ void fsm_dispatch(fsm_t *s, fsm_event_t *e)
         if (e)
         {
             e->event = FSM_ENTRY_SIG;
-            (*s->state)(s, e);
+            (*fsm->state)(s, e);
         }
         else
         {
@@ -60,29 +69,32 @@ void fsm_dispatch(fsm_t *s, fsm_event_t *e)
     }
     else
     {
-        s->state = tmp;
+        fsm->state = tmp;
     }
 }
 
-void fsm_final(fsm_t *s, fsm_event_t *e)
+void fsm_final(void *s, void *_e)
 {
-    if (s->final != s->state)
+    fsm_t *fsm = s;
+    event_t *e = _e;
+
+    if (fsm->final != fsm->state)
     {
         if (e)
         {
             e->event = FSM_EXIT_SIG;
-            (*s->state)(s, e);
+            (*fsm->state)(s, e);
         }
         else
         {
-            (*s->state)(s, &exit_event);
+            (*fsm->state)(s, &exit_event);
         }
     }
 
-    if (s->final != (fsm_state_t)0)
+    if (fsm->final != (fsm_state_t)0)
     {
-        (*s->final)(s, e);
+        (*fsm->final)(s, e);
     }
 
-    s->state = s->initial;
+    fsm->state = fsm->initial;
 }

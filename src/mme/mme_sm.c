@@ -267,7 +267,8 @@ void mme_state_operational(fsm_t *s, event_t *e)
                             EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED,
                             ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
 
-                        FSM_TRAN(&mme_ue->sm, emm_state_detached);
+                        fsm_final(&mme_ue->sm, e);
+                        fsm_init(&mme_ue->sm, e);
                         break;
                     }
 
@@ -283,7 +284,8 @@ void mme_state_operational(fsm_t *s, event_t *e)
                             EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED,
                             ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
 
-                        FSM_TRAN(&mme_ue->sm, emm_state_detached);
+                        fsm_final(&mme_ue->sm, e);
+                        fsm_init(&mme_ue->sm, e);
                         break;
                     }
 
@@ -363,7 +365,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
                     mme_s11_handle_delete_session_response(
                         xact, mme_ue, &message.delete_session_response);
 
-                    if (FSM_CHECK(&mme_ue->sm, emm_state_auth))
+                    if (FSM_CHECK(&mme_ue->sm, emm_state_authentication))
                     {
                         if (mme_sess_first(mme_ue) == NULL)
                         {

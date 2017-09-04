@@ -17,9 +17,7 @@ typedef enum _fsm_signal_t {
     FSM_USER_SIG
 } fsm_signal_t;
 
-typedef struct {
-    c_uintptr_t event;
-} fsm_event_t;
+typedef c_uintptr_t fsm_event_t;
 typedef c_uintptr_t fsm_state_t;
 
 typedef void (*fsm_handler_t)(void *s, void *e);
@@ -38,9 +36,9 @@ typedef struct _fsm_t {
     ((__s)->initial = (__s)->state = (__s)->final = NULL)
 
 
-CORE_DECLARE(void) fsm_init(fsm_t *s, fsm_event_t *e);
-CORE_DECLARE(void) fsm_dispatch(fsm_t *s, fsm_event_t *e);
-CORE_DECLARE(void) fsm_final(fsm_t *s, fsm_event_t *e);
+CORE_DECLARE(void) fsm_init(void *s, void *e);
+CORE_DECLARE(void) fsm_dispatch(void *s, void *e);
+CORE_DECLARE(void) fsm_final(void *s, void *e);
 
 #define FSM_TRAN(__s, __target) \
     ((fsm_t *)__s)->state = (fsm_handler_t)(__target)

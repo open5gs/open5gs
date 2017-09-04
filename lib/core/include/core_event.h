@@ -3,6 +3,7 @@
 
 #include "core_msgq.h"
 #include "core_timer.h"
+#include "core_fsm.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -49,7 +50,7 @@ extern "C" {
             (__duration), (__ptr_e), (__param))
 
 typedef struct {
-    c_uintptr_t event;
+    fsm_event_t event;
     c_uintptr_t param1;
     c_uintptr_t param2;
     c_uintptr_t param3;

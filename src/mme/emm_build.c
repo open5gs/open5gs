@@ -5,7 +5,106 @@
 #include "nas_message.h"
 
 #include "nas_security.h"
+#include "mme_kdf.h"
 #include "emm_build.h"
+
+status_t emm_build_identity_request(
+        pkbuf_t **emmbuf, mme_ue_t *mme_ue)
+{
+    nas_message_t message;
+    nas_identity_request_t *identity_request = 
+        &message.emm.identity_request;
+
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
+
+    memset(&message, 0, sizeof(message));
+    message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    message.emm.h.message_type = NAS_IDENTITY_REQUEST;
+
+    /* Request IMSI */
+    identity_request->identity_type.type = NAS_IDENTITY_TYPE_2_IMSI;
+
+    d_assert(nas_plain_encode(emmbuf, &message) == CORE_OK && *emmbuf,,);
+
+    return CORE_OK;
+}
+status_t emm_build_security_mode_command(
+        pkbuf_t **emmbuf, mme_ue_t *mme_ue)
+{
+    status_t rv;
+    int i;
+
+    nas_message_t message;
+    nas_security_mode_command_t *security_mode_command = 
+        &message.emm.security_mode_command;
+    nas_security_algorithms_t *selected_nas_security_algorithms =
+        &security_mode_command->selected_nas_security_algorithms;
+    nas_key_set_identifier_t *nas_key_set_identifier =
+        &security_mode_command->nas_key_set_identifier;
+    nas_ue_security_capability_t *replayed_ue_security_capabilities = 
+        &security_mode_command->replayed_ue_security_capabilities;
+
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
+
+    memset(&message, 0, sizeof(message));
+    message.h.security_header_type = 
+       NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT;
+    message.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
+
+    message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    message.emm.h.message_type = NAS_SECURITY_MODE_COMMAND;
+
+    for (i = 0; i < mme_self()->num_of_integrity_order; i++)
+    {
+        if (mme_ue->ue_network_capability.eia & 
+                (0x80 >> mme_self()->integrity_order[i]))
+        {
+            mme_ue->selected_int_algorithm = mme_self()->integrity_order[i];
+            break;
+        }
+    }
+    for (i = 0; i < mme_self()->num_of_ciphering_order; i++)
+    {
+        if (mme_ue->ue_network_capability.eea & 
+                (0x80 >> mme_self()->ciphering_order[i]))
+        {
+            mme_ue->selected_enc_algorithm = mme_self()->ciphering_order[i];
+            break;
+        }
+    }
+
+    selected_nas_security_algorithms->type_of_integrity_protection_algorithm =
+        mme_ue->selected_int_algorithm;
+    selected_nas_security_algorithms->type_of_ciphering_algorithm =
+        mme_ue->selected_enc_algorithm;
+
+    nas_key_set_identifier->tsc = 0;
+    nas_key_set_identifier->nas_key_set_identifier = 0;
+
+    replayed_ue_security_capabilities->length =
+        sizeof(replayed_ue_security_capabilities->eea) +
+        sizeof(replayed_ue_security_capabilities->eia) +
+        sizeof(replayed_ue_security_capabilities->uea) +
+        sizeof(replayed_ue_security_capabilities->uia) +
+        sizeof(replayed_ue_security_capabilities->gea);
+    replayed_ue_security_capabilities->eea = mme_ue->ue_network_capability.eea;
+    replayed_ue_security_capabilities->eia = mme_ue->ue_network_capability.eia;
+    replayed_ue_security_capabilities->uea = mme_ue->ue_network_capability.uea;
+    replayed_ue_security_capabilities->uia = mme_ue->ue_network_capability.uia;
+    replayed_ue_security_capabilities->gea = 
+        (mme_ue->ms_network_capability.gea1 << 6) | 
+        mme_ue->ms_network_capability.extended_gea;
+
+    mme_kdf_nas(MME_KDF_NAS_INT_ALG, mme_ue->selected_int_algorithm,
+            mme_ue->kasme, mme_ue->knas_int);
+    mme_kdf_nas(MME_KDF_NAS_ENC_ALG, mme_ue->selected_enc_algorithm,
+            mme_ue->kasme, mme_ue->knas_enc);
+
+    rv = nas_security_encode(emmbuf, mme_ue, &message);
+    d_assert(rv == CORE_OK && *emmbuf, return CORE_ERROR, "emm build error");
+
+    return CORE_OK;
+}
 
 status_t emm_build_attach_accept(
         pkbuf_t **emmbuf, mme_ue_t *mme_ue, pkbuf_t *esmbuf)
