@@ -93,8 +93,7 @@ status_t pgw_s5c_build_create_session_response(
     pgw_s5u_teid.teid = htonl(bearer->pgw_s5u_teid);
     rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.presence = 1;
     rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.data = &pgw_s5u_teid;
-    rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.len = 
-        GTP_F_TEID_IPV4_LEN;
+    rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.len = GTP_F_TEID_IPV4_LEN;
 
     gtp_message.h.type = type;
     rv = gtp_build_msg(pkbuf, &gtp_message);
@@ -147,6 +146,68 @@ status_t pgw_s5c_build_delete_session_response(
     /* Private Extension */
 
     /* build */
+    gtp_message.h.type = type;
+    rv = gtp_build_msg(pkbuf, &gtp_message);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");
+
+    return CORE_OK;
+}
+
+status_t pgw_s5c_build_create_bearer_request(
+        pkbuf_t **pkbuf, c_uint8_t type, pgw_bearer_t *bearer)
+{
+    status_t rv;
+    pgw_sess_t *sess = NULL;
+    pgw_bearer_t *linked_bearer = NULL;
+
+    gtp_message_t gtp_message;
+    gtp_create_bearer_request_t *req = NULL;
+
+    gtp_f_teid_t pgw_s5u_teid;
+    gtp_bearer_qos_t bearer_qos;
+    char bearer_qos_buf[GTP_BEARER_QOS_LEN];
+
+    d_assert(bearer, return CORE_ERROR, "Null param");
+    sess = bearer->sess;
+    d_assert(sess, return CORE_ERROR, "Null param");
+    linked_bearer = pgw_default_bearer_in_sess(sess);
+    d_assert(linked_bearer, return CORE_ERROR, "Null param");
+
+    req = &gtp_message.create_bearer_request;
+    memset(&gtp_message, 0, sizeof(gtp_message_t));
+
+    req->linked_eps_bearer_id.presence = 1;
+    req->linked_eps_bearer_id.u8 = linked_bearer->ebi;
+
+    req->bearer_contexts.presence = 1;
+
+    req->bearer_contexts.eps_bearer_id.presence = 1;
+    req->bearer_contexts.eps_bearer_id.u8 = bearer->ebi;
+
+    memset(&pgw_s5u_teid, 0, sizeof(gtp_f_teid_t));
+    pgw_s5u_teid.ipv4 = 1;
+    pgw_s5u_teid.interface_type = GTP_F_TEID_S5_S8_PGW_GTP_U;
+    pgw_s5u_teid.ipv4_addr = bearer->pgw_s5u_addr;
+    pgw_s5u_teid.teid = htonl(bearer->pgw_s5u_teid);
+    req->bearer_contexts.s5_s8_u_sgw_f_teid.presence = 1;
+    req->bearer_contexts.s5_s8_u_sgw_f_teid.data = &pgw_s5u_teid;
+    req->bearer_contexts.s5_s8_u_sgw_f_teid.len = GTP_F_TEID_IPV4_LEN;
+
+    memset(&bearer_qos, 0, sizeof(bearer_qos));
+    bearer_qos.qci = bearer->qos.qci;
+    bearer_qos.priority_level = bearer->qos.arp.priority_level;
+    bearer_qos.pre_emption_capability = bearer->qos.arp.pre_emption_capability;
+    bearer_qos.pre_emption_vulnerability =
+        bearer->qos.arp.pre_emption_vulnerability;
+    bearer_qos.dl_mbr = bearer->qos.mbr.downlink;
+    bearer_qos.ul_mbr = bearer->qos.mbr.uplink;
+    bearer_qos.dl_gbr = bearer->qos.gbr.downlink;
+    bearer_qos.ul_gbr = bearer->qos.gbr.uplink;
+
+    req->bearer_contexts.bearer_level_qos.presence = 1;
+    gtp_build_bearer_qos(&req->bearer_contexts.bearer_level_qos,
+            &bearer_qos, bearer_qos_buf, GTP_BEARER_QOS_LEN);
+
     gtp_message.h.type = type;
     rv = gtp_build_msg(pkbuf, &gtp_message);
     d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");

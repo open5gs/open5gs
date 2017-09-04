@@ -134,8 +134,6 @@ static void attach_test1(abts_case *tc, void *data)
         "\"__v\" : 0 "
       "}";
 
-    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
-
     /* eNB connects to MME */
     sock = tests1ap_enb_connect();
     ABTS_PTR_NOTNULL(tc, sock);
@@ -389,7 +387,6 @@ static void attach_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     core_sleep(time_from_msec(300));
-    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_FULL);
 }
 
 /**************************************************************
@@ -451,8 +448,6 @@ static void attach_test2(abts_case *tc, void *data)
         "}, "
         "\"__v\" : 0 "
       "}";
-
-    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
 
     c_uint8_t tmp[MAX_SDU_LEN];
     /* eNB connects to MME */
@@ -621,7 +616,6 @@ static void attach_test2(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     core_sleep(time_from_msec(300));
-    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_FULL);
 }
 
 /**************************************************************
@@ -714,8 +708,6 @@ static void attach_test3(abts_case *tc, void *data)
         "}, "
         "\"__v\" : 0 "
       "}";
-
-    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
 
     /* eNB connects to MME */
     sock = tests1ap_enb_connect();
@@ -914,7 +906,6 @@ static void attach_test3(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     core_sleep(time_from_msec(300));
-    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_FULL);
 }
 
 abts_suite *test_attach(abts_suite *suite)

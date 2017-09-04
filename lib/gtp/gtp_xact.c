@@ -365,7 +365,7 @@ status_t gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type)
                 {
                     pkbuf_t *pkbuf = NULL;
 
-                    d_assert(xact->step == 2, return CORE_ERROR,
+                    d_assert(xact->step == 1, return CORE_ERROR,
                         "[%d] %s invalid step %d for type %d peer %s:%d\n",
                         xact->xid,
                         xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",

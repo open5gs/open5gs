@@ -430,6 +430,7 @@ int main(int argc, const char *const argv[]) {
     abts_suite *suite = NULL;
 
     d_trace_global_off();
+    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
 
     quiet = !isatty(STDOUT_FILENO);
 
@@ -452,6 +453,7 @@ int main(int argc, const char *const argv[]) {
         }
         if (!strcmp(argv[i], "-t")) {
             d_trace_global_on();
+            d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_FULL);
             continue;
         }
         if (argv[i][0] == '-') {

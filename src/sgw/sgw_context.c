@@ -616,9 +616,10 @@ sgw_sess_t *sgw_sess_add(
 
     sess->sgw_ue = sgw_ue;
 
-    bearer = sgw_bearer_add(sess, ebi);
+    bearer = sgw_bearer_add(sess);
     d_assert(bearer, sgw_sess_remove(sess); return NULL, 
             "Can't add default bearer context");
+    bearer->ebi = ebi;
 
     return sess;
 }
@@ -701,7 +702,7 @@ sgw_sess_t* sgw_sess_next(sgw_sess_t *sess)
     return list_next(sess);
 }
 
-sgw_bearer_t* sgw_bearer_add(sgw_sess_t *sess, c_uint8_t ebi)
+sgw_bearer_t* sgw_bearer_add(sgw_sess_t *sess)
 {
     sgw_bearer_t *bearer = NULL;
 
@@ -710,7 +711,6 @@ sgw_bearer_t* sgw_bearer_add(sgw_sess_t *sess, c_uint8_t ebi)
     index_alloc(&sgw_bearer_pool, &bearer);
     d_assert(bearer, return NULL, "Bearer context allocation failed");
 
-    bearer->ebi = ebi;
     bearer->sgw_s1u_teid = bearer->index;
     bearer->sgw_s1u_addr = sgw_self()->s1u_addr;
     bearer->sgw_s5u_teid = bearer->index;

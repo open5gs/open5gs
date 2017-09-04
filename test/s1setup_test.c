@@ -27,7 +27,6 @@ static void s1setup_test1(abts_case *tc, void *data)
         ABTS_PTR_NOTNULL(tc, sock[i]);
     }
 
-    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_WARN);
     for (i = 0; i < NUM_OF_TEST_DUPLICATED_ENB; i++)
     {
         rv = tests1ap_build_setup_req(&sendbuf, 0x54f64);
@@ -45,8 +44,6 @@ static void s1setup_test1(abts_case *tc, void *data)
         s1ap_free_pdu(&message);
     }
 
-    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
-
     for (i = 0; i < NUM_OF_TEST_DUPLICATED_ENB; i++)
     {
         rv = tests1ap_enb_close(sock[i]);
@@ -56,8 +53,6 @@ static void s1setup_test1(abts_case *tc, void *data)
     pkbuf_free(recvbuf);
 
     core_sleep(time_from_msec(300));
-
-    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_FULL);
 }
 
 #define NUM_OF_TEST_ENB 32
@@ -78,7 +73,6 @@ static void s1setup_test2(abts_case *tc, void *data)
         ABTS_PTR_NOTNULL(tc, sock[i]);
     }
 
-    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_WARN);
     for (i = 0; i < NUM_OF_TEST_ENB; i++)
     {
         rv = tests1ap_build_setup_req(&sendbuf, 0x54f64+i);
@@ -96,8 +90,6 @@ static void s1setup_test2(abts_case *tc, void *data)
         s1ap_free_pdu(&message);
     }
 
-    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
-
     for (i = 0; i < NUM_OF_TEST_ENB; i++)
     {
         rv = tests1ap_enb_close(sock[i]);
@@ -107,8 +99,6 @@ static void s1setup_test2(abts_case *tc, void *data)
     pkbuf_free(recvbuf);
 
     core_sleep(time_from_sec(1));
-
-    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_FULL);
 }
 
 abts_suite *test_s1setup(abts_suite *suite)

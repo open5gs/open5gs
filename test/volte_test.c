@@ -101,8 +101,6 @@ static void volte_test1(abts_case *tc, void *data)
       "\"__v\" : 0"
     "}";
 
-    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
-
     /* eNB connects to MME */
     sock = tests1ap_enb_connect();
     ABTS_PTR_NOTNULL(tc, sock);
@@ -234,7 +232,6 @@ static void volte_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     core_sleep(time_from_msec(300));
-    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_FULL);
 }
 
 abts_suite *test_volte(abts_suite *suite)

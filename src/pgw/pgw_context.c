@@ -502,7 +502,7 @@ static void *sess_hash_keygen(c_uint8_t *out, int *out_len,
 }
 
 pgw_sess_t *pgw_sess_add(
-        c_uint8_t *imsi, int imsi_len, c_int8_t *apn, c_uint8_t id)
+        c_uint8_t *imsi, int imsi_len, c_int8_t *apn, c_uint8_t ebi)
 {
     pgw_sess_t *sess = NULL;
     pgw_bearer_t *bearer = NULL;
@@ -525,9 +525,10 @@ pgw_sess_t *pgw_sess_add(
 
     core_cpystrn(sess->pdn.apn, apn, MAX_APN_LEN+1);
 
-    bearer = pgw_bearer_add(sess, id);
+    bearer = pgw_bearer_add(sess);
     d_assert(bearer, pgw_sess_remove(sess); return NULL, 
             "Can't add default bearer context");
+    bearer->ebi = ebi;
 
     sess->ip_pool = pgw_ip_pool_alloc();
     d_assert(sess->ip_pool, pgw_sess_remove(sess); return NULL, 
@@ -642,7 +643,7 @@ pgw_sess_t *pgw_sess_this(hash_index_t *hi)
     return hash_this_val(hi);
 }
 
-pgw_bearer_t* pgw_bearer_add(pgw_sess_t *sess, c_uint8_t ebi)
+pgw_bearer_t* pgw_bearer_add(pgw_sess_t *sess)
 {
     pgw_bearer_t *bearer = NULL;
 
@@ -651,7 +652,6 @@ pgw_bearer_t* pgw_bearer_add(pgw_sess_t *sess, c_uint8_t ebi)
     index_alloc(&pgw_bearer_pool, &bearer);
     d_assert(bearer, return NULL, "Bearer context allocation failed");
 
-    bearer->ebi = ebi;
     bearer->pgw_s5u_teid = bearer->index;
     bearer->pgw_s5u_addr = pgw_self()->s5u_addr;
     
@@ -708,16 +708,57 @@ pgw_bearer_t* pgw_bearer_find_by_ebi(pgw_sess_t *sess, c_uint8_t ebi)
     
     d_assert(sess, return NULL, "Null param");
 
-    bearer = list_first(&sess->bearer_list);
+    bearer = pgw_bearer_first(sess);
     while (bearer)
     {
         if (bearer->ebi == ebi)
             break;
 
-        bearer = list_next(bearer);
+        bearer = pgw_bearer_next(bearer);
     }
 
     return bearer;
+}
+
+pgw_bearer_t* pgw_bearer_find_by_qci_arp(pgw_sess_t *sess, 
+                                c_uint8_t qci,
+                                c_uint8_t priority_level,
+                                c_uint8_t pre_emption_capability,
+                                c_uint8_t pre_emption_vulnerability)
+{
+    pgw_bearer_t *bearer = NULL;
+
+    d_assert(sess, return NULL, "Null param");
+
+    bearer = pgw_default_bearer_in_sess(sess);
+    if (!bearer) return NULL;
+
+    if (sess->pdn.qos.qci == qci &&
+        sess->pdn.qos.arp.priority_level == priority_level &&
+        sess->pdn.qos.arp.pre_emption_capability == 
+            pre_emption_capability &&
+        sess->pdn.qos.arp.pre_emption_vulnerability == 
+            pre_emption_vulnerability)
+    {
+        return bearer;
+    }
+
+    bearer = pgw_bearer_next(bearer);
+    while(bearer)
+    {
+        if (bearer->qos.qci == qci &&
+            bearer->qos.arp.priority_level == priority_level &&
+            bearer->qos.arp.pre_emption_capability == 
+                pre_emption_capability &&
+            bearer->qos.arp.pre_emption_vulnerability == 
+                pre_emption_vulnerability)
+        {
+            return bearer;
+        }
+        bearer = pgw_bearer_next(bearer);
+    }
+
+    return NULL;
 }
 
 pgw_bearer_t* pgw_default_bearer_in_sess(pgw_sess_t *sess)

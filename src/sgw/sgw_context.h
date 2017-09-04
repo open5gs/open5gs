@@ -192,7 +192,7 @@ CORE_DECLARE(sgw_sess_t*)   sgw_sess_find_by_teid(c_uint32_t teid);
 CORE_DECLARE(sgw_sess_t*)   sgw_sess_first(sgw_ue_t *sgw_ue);
 CORE_DECLARE(sgw_sess_t*)   sgw_sess_next(sgw_sess_t *sess);
 
-CORE_DECLARE(sgw_bearer_t*) sgw_bearer_add(sgw_sess_t *sess, c_uint8_t ebi);
+CORE_DECLARE(sgw_bearer_t*) sgw_bearer_add(sgw_sess_t *sess);
 CORE_DECLARE(status_t)      sgw_bearer_remove(sgw_bearer_t *bearer);
 CORE_DECLARE(status_t)      sgw_bearer_remove_all(sgw_sess_t *sess);
 CORE_DECLARE(sgw_bearer_t*) sgw_bearer_find_by_sgw_s5u_teid(
