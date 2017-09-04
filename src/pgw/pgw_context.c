@@ -389,6 +389,8 @@ status_t pgw_context_setup_trace_module()
     {
         extern int _pgw_sm;
         d_trace_level(&_pgw_sm, gtp);
+        extern int _pgw_s5c_build;
+        d_trace_level(&_pgw_s5c_build, gtp);
         extern int _pgw_s5c_handler;
         d_trace_level(&_pgw_s5c_handler, gtp);
         extern int _gtp_path;
