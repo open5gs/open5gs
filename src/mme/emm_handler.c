@@ -292,27 +292,6 @@ void emm_handle_attach_reject(mme_ue_t *mme_ue,
     d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
 }
 
-void emm_handle_identity_request(mme_ue_t *mme_ue)
-{
-    pkbuf_t *emmbuf = NULL;
-
-    nas_message_t message;
-    nas_identity_request_t *identity_request = 
-        &message.emm.identity_request;
-
-    d_assert(mme_ue, return, "Null param");
-
-    memset(&message, 0, sizeof(message));
-    message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
-    message.emm.h.message_type = NAS_IDENTITY_REQUEST;
-
-    /* Request IMSI */
-    identity_request->identity_type.type = NAS_IDENTITY_TYPE_2_IMSI;
-
-    d_assert(nas_plain_encode(&emmbuf, &message) == CORE_OK && emmbuf,,);
-    d_assert(nas_send_to_downlink_nas_transport(mme_ue, emmbuf) == CORE_OK,,);
-}
-
 void emm_handle_identity_response(
         mme_ue_t *mme_ue, nas_identity_response_t *identity_response)
 {

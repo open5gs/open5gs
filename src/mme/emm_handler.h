@@ -22,10 +22,8 @@ CORE_DECLARE(void) emm_handle_attach_reject(mme_ue_t *mme_ue,
     nas_emm_cause_t emm_cause,
     nas_esm_cause_t esm_cause);
 
-CORE_DECLARE(void) emm_handle_identity_request(mme_ue_t *mme_ue);
 CORE_DECLARE(void) emm_handle_identity_response(
         mme_ue_t *mme_ue, nas_identity_response_t *identity_response);
-
 CORE_DECLARE(void) emm_handle_authentication_response(
     mme_ue_t *mme_ue, nas_authentication_response_t *authentication_response);
 
