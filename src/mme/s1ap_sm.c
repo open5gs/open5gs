@@ -106,6 +106,11 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
                                     enb, message);
                             break;
                         }
+                        case S1ap_ProcedureCode_id_E_RABSetup :
+                        {
+                            s1ap_handle_e_rab_setup_response(enb, message);
+                            break;
+                        }
                         case S1ap_ProcedureCode_id_UEContextRelease :
                         {
                             s1ap_handle_ue_context_release_complete(

@@ -113,6 +113,11 @@ static inline int s1ap_free_successfull_outcome(s1ap_message_t *message)
                 &message->s1ap_InitialContextSetupResponseIEs);
             break;
 
+        case S1ap_ProcedureCode_id_E_RABSetup: 
+            s1ap_free_s1ap_e_rabsetupresponseies(
+                &message->s1ap_E_RABSetupResponseIEs);
+            break;
+
         case S1ap_ProcedureCode_id_UEContextRelease: 
             s1ap_free_s1ap_uecontextreleasecomplete_ies(
                     &message->s1ap_UEContextReleaseComplete_IEs);

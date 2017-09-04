@@ -224,6 +224,20 @@ static void volte_test1(abts_case *tc, void *data)
     ABTS_INT_NEQUAL(tc, 0, rc);
     pkbuf_free(recvbuf);
 
+    /* Send E-RAB Setup */
+    rv = tests1ap_build_e_rab_setup_response(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    core_sleep(time_from_msec(300));
+
+    /* Send Activate dedicated EPS bearer context accept */
+    rv = tests1ap_build_activate_dedicated_bearer_accept(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
     /********** Remove Subscriber in Database */
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456819"));
     ABTS_PTR_NOTNULL(tc, doc);

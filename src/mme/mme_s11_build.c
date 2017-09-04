@@ -169,11 +169,12 @@ status_t mme_s11_build_modify_bearer_request(
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));
 
+    /* Bearer Context : EBI */
     req->bearer_contexts_to_be_modified.presence = 1;
     req->bearer_contexts_to_be_modified.eps_bearer_id.presence = 1;
     req->bearer_contexts_to_be_modified.eps_bearer_id.u8 = bearer->ebi;
 
-    /* Send Data Plane(DL) : ENB-S1U */
+    /* Data Plane(DL) : ENB-S1U */
     memset(&enb_s1u_teid, 0, sizeof(gtp_f_teid_t));
     enb_s1u_teid.ipv4 = 1;
     enb_s1u_teid.interface_type = GTP_F_TEID_S1_U_ENODEB_GTP_U;
@@ -233,6 +234,51 @@ status_t mme_s11_build_delete_session_request(
     req->indication_flags.presence = 1;
     req->indication_flags.data = &indication;
     req->indication_flags.len = sizeof(gtp_indication_t);
+
+    gtp_message.h.type = type;
+    rv = gtp_build_msg(pkbuf, &gtp_message);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");
+
+    return CORE_OK;
+}
+
+status_t mme_s11_build_create_bearer_response(
+        pkbuf_t **pkbuf, c_uint8_t type, mme_bearer_t *bearer)
+{
+    status_t rv;
+    gtp_message_t gtp_message;
+    gtp_create_bearer_response_t *rsp = &gtp_message.create_bearer_response;
+
+    gtp_cause_t cause;
+    gtp_f_teid_t enb_s1u_teid;
+
+    d_assert(bearer, return CORE_ERROR, "Null param");
+
+    memset(&gtp_message, 0, sizeof(gtp_message_t));
+
+    /* Set Cause */
+    memset(&cause, 0, sizeof(cause));
+    cause.value = GTP_CAUSE_REQUEST_ACCEPTED;
+    rsp->cause.presence = 1;
+    rsp->cause.len = sizeof(cause);
+    rsp->cause.data = &cause;
+
+    /* Bearer Context : EBI */
+    rsp->bearer_contexts.presence = 1;
+    rsp->bearer_contexts.eps_bearer_id.presence = 1;
+    rsp->bearer_contexts.eps_bearer_id.u8 = bearer->ebi;
+
+    /* Data Plane(DL) : ENB-S1U */
+    memset(&enb_s1u_teid, 0, sizeof(gtp_f_teid_t));
+    enb_s1u_teid.ipv4 = 1;
+    enb_s1u_teid.interface_type = GTP_F_TEID_S1_U_ENODEB_GTP_U;
+    enb_s1u_teid.ipv4_addr = bearer->enb_s1u_addr;
+    enb_s1u_teid.teid = htonl(bearer->enb_s1u_teid);
+    rsp->bearer_contexts.s1_u_enodeb_f_teid.presence = 1;
+    rsp->bearer_contexts.s1_u_enodeb_f_teid.data = &enb_s1u_teid;
+    rsp->bearer_contexts.s1_u_enodeb_f_teid.len = GTP_F_TEID_IPV4_LEN;
+
+    /* TODO : UE Time Zone */
 
     gtp_message.h.type = type;
     rv = gtp_build_msg(pkbuf, &gtp_message);

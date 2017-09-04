@@ -300,9 +300,9 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
     d_assert(enb->s1ap_sock, enb_ue_remove(enb_ue); return,);
     d_trace(3, "[S1AP] InitialUEMessage : "
             "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
-        enb_ue->enb_ue_s1ap_id,
-        INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
-        enb->enb_id);
+            enb_ue->enb_ue_s1ap_id,
+            INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+            enb->enb_id);
 
     event_s1ap_to_nas(enb_ue, &ies->nas_pdu);
 }
@@ -319,13 +319,13 @@ void s1ap_handle_uplink_nas_transport(
     d_assert(ies, return, "Null param");
 
     enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
-    d_assert(enb_ue, return, "Null param");
+    d_assert(enb_ue, return, "No UE Context[%d]", ies->eNB_UE_S1AP_ID);
 
     d_trace(3, "[S1AP] uplinkNASTransport : "
             "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
-        enb_ue->enb_ue_s1ap_id,
-        INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
-        enb->enb_id);
+            enb_ue->enb_ue_s1ap_id,
+            INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+            enb->enb_id);
 
     event_s1ap_to_nas(enb_ue, &ies->nas_pdu);
 }
@@ -377,8 +377,8 @@ void s1ap_handle_ue_capability_info_indication(
     d_trace(3, "[S1AP] UE Capability Info Indication : "
             "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
             enb_ue->enb_ue_s1ap_id,
-        INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
-        enb->enb_id);
+            INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+            enb->enb_id);
 }
 
 void s1ap_handle_initial_context_setup_response(
@@ -399,12 +399,11 @@ void s1ap_handle_initial_context_setup_response(
     d_trace(3, "[S1AP] Initial Context Setup Response : "
             "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
             enb_ue->enb_ue_s1ap_id,
-        INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
-        enb->enb_id);
+            INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+            enb->enb_id);
 
-    for (i = 0; 
-        i < ies->e_RABSetupListCtxtSURes.s1ap_E_RABSetupItemCtxtSURes.count; 
-        i++)
+    for (i = 0; i < ies->e_RABSetupListCtxtSURes.
+            s1ap_E_RABSetupItemCtxtSURes.count; i++)
     {
         status_t rv;
         gtp_header_t h;
@@ -438,6 +437,72 @@ void s1ap_handle_initial_context_setup_response(
         d_assert(rv == CORE_OK, return, "S11 build error");
 
         xact = gtp_xact_local_create(sess->sgw, &h, pkbuf);
+        d_assert(xact, return, "Null param");
+
+        rv = gtp_xact_commit(xact);
+        d_assert(rv == CORE_OK, return, "xact_commit error");
+    }
+}
+
+void s1ap_handle_e_rab_setup_response(
+        mme_enb_t *enb, s1ap_message_t *message)
+{
+    char buf[INET_ADDRSTRLEN];
+    int i;
+
+    enb_ue_t *enb_ue = NULL;
+    S1ap_E_RABSetupResponseIEs_t *ies = NULL;
+
+    d_assert(enb, return, "Null param");
+    d_assert(message, return, "Null param");
+
+    ies = &message->s1ap_E_RABSetupResponseIEs;
+    d_assert(ies, return, "Null param");
+
+    enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
+    d_assert(enb_ue, return, "No UE Context[%d]", ies->eNB_UE_S1AP_ID);
+
+    d_trace(3, "[S1AP] E-RAB Setup Response : "
+            "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
+            enb_ue->enb_ue_s1ap_id,
+            INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+            enb->enb_id);
+
+    for (i = 0; i < ies->e_RABSetupListBearerSURes.
+            s1ap_E_RABSetupItemBearerSURes.count; i++)
+    {
+        status_t rv;
+        gtp_header_t h;
+        gtp_xact_t *xact = NULL;
+        pkbuf_t *pkbuf = NULL;
+
+        mme_bearer_t *bearer = NULL;
+        mme_ue_t *mme_ue = enb_ue->mme_ue;
+        S1ap_E_RABSetupItemBearerSURes_t *e_rab = NULL;
+
+        e_rab = (S1ap_E_RABSetupItemBearerSURes_t *)ies->
+            e_RABSetupListBearerSURes.s1ap_E_RABSetupItemBearerSURes.array[i];
+        d_assert(e_rab, return, "Null param");
+
+        bearer = mme_bearer_find_by_ue_ebi(mme_ue, e_rab->e_RAB_ID);
+        d_assert(bearer, return, "Null param");
+        xact = bearer->xact;
+        d_assert(xact, return, "Null param");
+
+        memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf, 
+                sizeof(bearer->enb_s1u_teid));
+        bearer->enb_s1u_teid = ntohl(bearer->enb_s1u_teid);
+        memcpy(&bearer->enb_s1u_addr, e_rab->transportLayerAddress.buf,
+                sizeof(bearer->enb_s1u_addr));
+
+        memset(&h, 0, sizeof(gtp_header_t));
+        h.type = GTP_CREATE_BEARER_RESPONSE_TYPE;
+        h.teid = mme_ue->sgw_s11_teid;
+
+        rv = mme_s11_build_create_bearer_response(&pkbuf, h.type, bearer);
+        d_assert(rv == CORE_OK, return, "S11 build error");
+
+        rv = gtp_xact_update_tx(xact, &h, pkbuf);
         d_assert(xact, return, "Null param");
 
         rv = gtp_xact_commit(xact);
@@ -570,8 +635,8 @@ void s1ap_handle_ue_context_release_complete(
     d_trace(3, "[S1AP] UE Context Release Complete : "
             "UE[mME-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
             enb_ue->mme_ue_s1ap_id,
-        INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
-        enb->enb_id);
+            INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+            enb->enb_id);
 
     enb_ue_remove(enb_ue);
 }

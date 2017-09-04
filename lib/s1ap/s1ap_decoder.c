@@ -161,7 +161,14 @@ static int s1ap_decode_successfull_outcome(s1ap_message_t *message,
                     s1ap_xer_print_s1ap_initialcontextsetupresponse,
                     s1ap_xer__print2sp, message);
             break;
-
+        case S1ap_ProcedureCode_id_E_RABSetup: 
+            ret = s1ap_decode_s1ap_e_rabsetupresponseies(
+                    &message->s1ap_E_RABSetupResponseIEs, 
+                    &successfullOutcome_p->value);
+            s1ap_decode_xer_print_message(
+                    s1ap_xer_print_s1ap_e_rabsetupresponse,
+                    s1ap_xer__print2sp, message);
+            break;
         case S1ap_ProcedureCode_id_UEContextRelease: 
             ret = s1ap_decode_s1ap_uecontextreleasecomplete_ies(
                     &message->s1ap_UEContextReleaseComplete_IEs, 
@@ -206,7 +213,6 @@ static int s1ap_decode_unsuccessfull_outcome(s1ap_message_t *message,
                     s1ap_xer_print_s1ap_initialcontextsetupfailure,
                     s1ap_xer__print2sp, message);
             break;
-
         default: 
             d_error("Unknown procedure ID (%d) for "
                     "unsuccessfull outcome message", 
