@@ -59,3 +59,29 @@ void esm_handle_information_response(mme_sess_t *sess,
                 sess->ue_pco_len);
     }
 }
+
+void esm_handle_activate_dedicated_bearer_request(mme_bearer_t *bearer)
+{
+    status_t rv;
+    mme_ue_t *mme_ue = NULL;
+    enb_ue_t *enb_ue = NULL;
+    pkbuf_t *esmbuf = NULL, *s1apbuf = NULL;
+
+    d_assert(bearer, return, "Null param");
+    mme_ue = bearer->mme_ue;
+    d_assert(mme_ue, return, "Null param");
+    enb_ue = mme_ue->enb_ue;
+    d_assert(enb_ue, return, "Null param");
+
+    rv = esm_build_activate_dedicated_bearer_context(&esmbuf, bearer);
+    d_assert(rv == CORE_OK && esmbuf, return, "esm build error");
+
+    d_trace(3, "[NAS] Activate dedicated bearer context request : "
+            "EMM <-- ESM\n");
+
+    rv = s1ap_build_e_rab_setup_request(&s1apbuf, bearer, esmbuf);
+    d_assert(rv == CORE_OK && s1apbuf, 
+            pkbuf_free(esmbuf); return, "s1ap build error");
+
+    d_assert(nas_send_to_enb(enb_ue, s1apbuf) == CORE_OK,,);
+}

@@ -176,3 +176,43 @@ void apn_ambr_build(
     apn_aggregate_maximum_bit_rate->length = length*2;
 }
 
+void eps_qos_build(nas_eps_quality_of_service_t *eps_qos, c_uint8_t qci,
+    c_uint64_t dl_mbr, c_uint64_t ul_mbr, c_uint64_t dl_gbr, c_uint64_t ul_gbr)
+{
+    c_uint8_t length = 0;
+
+    dl_mbr = dl_mbr / 1024; /* Kbps */
+    ul_mbr = ul_mbr / 1024; /* Kbps */
+    dl_gbr = dl_gbr / 1024; /* Kbps */
+    ul_gbr = ul_gbr / 1024; /* Kbps */
+
+    memset(eps_qos, 0, sizeof(nas_eps_quality_of_service_t));
+
+    eps_qos->qci = qci;
+
+    length = c_max(length, br_calculate(
+                &eps_qos->dl_mbr,
+                &eps_qos->dl_mbr_extended,
+                &eps_qos->dl_mbr_extended2,
+                dl_mbr));
+
+    length = c_max(length, br_calculate(
+                &eps_qos->ul_mbr,
+                &eps_qos->ul_mbr_extended,
+                &eps_qos->ul_mbr_extended2,
+                ul_mbr));
+
+    length = c_max(length, br_calculate(
+                &eps_qos->dl_gbr,
+                &eps_qos->dl_gbr_extended,
+                &eps_qos->dl_gbr_extended2,
+                dl_gbr));
+
+    length = c_max(length, br_calculate(
+                &eps_qos->ul_gbr,
+                &eps_qos->ul_gbr_extended,
+                &eps_qos->ul_gbr_extended2,
+                ul_gbr));
+
+    eps_qos->length = length*4+1;
+}

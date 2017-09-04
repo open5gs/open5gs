@@ -55,6 +55,11 @@ static inline int s1ap_free_initiating_message(s1ap_message_t *message)
                     &message->s1ap_InitialContextSetupRequestIEs);
             break;
 
+        case S1ap_ProcedureCode_id_E_RABSetup:
+            s1ap_free_s1ap_e_rabsetuprequesties(
+                    &message->s1ap_E_RABSetupRequestIEs);
+            break;
+
         case S1ap_ProcedureCode_id_downlinkNASTransport:
             s1ap_free_s1ap_downlinknastransport_ies(
                     &message->s1ap_DownlinkNASTransport_IEs);

@@ -267,6 +267,10 @@ void mme_s11_handle_create_bearer_request(
                     bearer_qos.pre_emption_capability;
     bearer->qos.arp.pre_emption_vulnerability =
                     bearer_qos.pre_emption_vulnerability;
+    bearer->qos.mbr.downlink = bearer_qos.dl_mbr;
+    bearer->qos.mbr.uplink = bearer_qos.ul_mbr;
+    bearer->qos.gbr.downlink = bearer_qos.dl_gbr;
+    bearer->qos.gbr.uplink = bearer_qos.ul_gbr;
 
     /* Save Transaction */
     bearer->xact = xact;

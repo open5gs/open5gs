@@ -157,9 +157,6 @@ status_t s1ap_build_initial_context_setup_request(
     S1ap_InitialContextSetupRequestIEs_t *ies =
             &message.s1ap_InitialContextSetupRequestIEs;
     S1ap_E_RABToBeSetupItemCtxtSUReq_t *e_rab = NULL;
-#if 0 /* Not needed in default bearer */
-	struct S1ap_GBR_QosInformation *gbrQosInformation = NULL; /* OPTIONAL */
-#endif
     S1ap_NAS_PDU_t *nasPdu = NULL;
     mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
@@ -202,15 +199,6 @@ status_t s1ap_build_initial_context_setup_request(
         pre_emptionCapability = !(pdn->qos.arp.pre_emption_capability);
     e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
         pre_emptionVulnerability = !(pdn->qos.arp.pre_emption_vulnerability);
-
-#if 0 /* Not needed in default bearer */
-    gbrQosInformation = core_calloc(1, sizeof(struct S1ap_GBR_QosInformation));
-    asn_uint642INTEGER(&gbrQosInformation->e_RAB_MaximumBitrateDL, 0);
-    asn_uint642INTEGER(&gbrQosInformation->e_RAB_MaximumBitrateUL, 0);
-    asn_uint642INTEGER(&gbrQosInformation->e_RAB_GuaranteedBitrateDL, 0);
-    asn_uint642INTEGER(&gbrQosInformation->e_RAB_GuaranteedBitrateUL, 0);
-    e_rab->e_RABlevelQoSParameters.gbrQosInformation = gbrQosInformation;
-#endif
 
     e_rab->transportLayerAddress.size = 4;
     e_rab->transportLayerAddress.buf = 
@@ -286,6 +274,90 @@ status_t s1ap_build_initial_context_setup_request(
     {
         pkbuf_free(emmbuf);
     }
+
+    return CORE_OK;
+}
+
+status_t s1ap_build_e_rab_setup_request(
+            pkbuf_t **s1apbuf, mme_bearer_t *bearer, pkbuf_t *esmbuf)
+{
+    char buf[INET_ADDRSTRLEN];
+
+    int encoded;
+    s1ap_message_t message;
+    S1ap_E_RABSetupRequestIEs_t *ies = &message.s1ap_E_RABSetupRequestIEs;
+    S1ap_E_RABToBeSetupItemBearerSUReq_t *e_rab = NULL;
+	struct S1ap_GBR_QosInformation *gbrQosInformation = NULL; /* OPTIONAL */
+    S1ap_NAS_PDU_t *nasPdu = NULL;
+    mme_ue_t *mme_ue = NULL;
+    enb_ue_t *enb_ue = NULL;
+
+    d_assert(esmbuf, return CORE_ERROR, "Null param");
+    d_assert(bearer, return CORE_ERROR, "Null param");
+
+    mme_ue = bearer->mme_ue;
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    enb_ue = mme_ue->enb_ue;
+    d_assert(enb_ue, return CORE_ERROR, "Null param");
+
+    memset(&message, 0, sizeof(s1ap_message_t));
+
+    ies->mme_ue_s1ap_id = enb_ue->mme_ue_s1ap_id;
+    ies->eNB_UE_S1AP_ID = enb_ue->enb_ue_s1ap_id;
+
+    e_rab = (S1ap_E_RABToBeSetupItemBearerSUReq_t *)
+        core_calloc(1, sizeof(S1ap_E_RABToBeSetupItemBearerSUReq_t));
+    e_rab->e_RAB_ID = bearer->ebi;
+    e_rab->e_RABlevelQoSParameters.qCI = bearer->qos.qci;
+
+    e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
+        priorityLevel = bearer->qos.arp.priority_level;
+    e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
+        pre_emptionCapability = !(bearer->qos.arp.pre_emption_capability);
+    e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
+        pre_emptionVulnerability = !(bearer->qos.arp.pre_emption_vulnerability);
+
+    gbrQosInformation = core_calloc(1, sizeof(struct S1ap_GBR_QosInformation));
+    asn_uint642INTEGER(&gbrQosInformation->e_RAB_MaximumBitrateDL,
+            bearer->qos.mbr.downlink);
+    asn_uint642INTEGER(&gbrQosInformation->e_RAB_MaximumBitrateUL,
+            bearer->qos.mbr.uplink);
+    asn_uint642INTEGER(&gbrQosInformation->e_RAB_GuaranteedBitrateDL,
+            bearer->qos.gbr.downlink);
+    asn_uint642INTEGER(&gbrQosInformation->e_RAB_GuaranteedBitrateUL,
+            bearer->qos.gbr.uplink);
+    e_rab->e_RABlevelQoSParameters.gbrQosInformation = gbrQosInformation;
+
+    e_rab->transportLayerAddress.size = 4;
+    e_rab->transportLayerAddress.buf = 
+        core_calloc(e_rab->transportLayerAddress.size, sizeof(c_uint8_t));
+    memcpy(e_rab->transportLayerAddress.buf, &bearer->sgw_s1u_addr,
+            e_rab->transportLayerAddress.size);
+
+    s1ap_uint32_to_OCTET_STRING(bearer->sgw_s1u_teid, &e_rab->gTP_TEID);
+
+    nasPdu = &e_rab->nAS_PDU;
+    nasPdu->size = esmbuf->len;
+    nasPdu->buf = core_calloc(nasPdu->size, sizeof(c_uint8_t));
+    memcpy(nasPdu->buf, esmbuf->payload, nasPdu->size);
+
+    ASN_SEQUENCE_ADD(&ies->e_RABToBeSetupListBearerSUReq, e_rab);
+
+    message.procedureCode = S1ap_ProcedureCode_id_E_RABSetup;
+    message.direction = S1AP_PDU_PR_initiatingMessage;
+
+    encoded = s1ap_encode_pdu(s1apbuf, &message);
+    s1ap_free_pdu(&message);
+
+    d_assert(s1apbuf && encoded >= 0,return CORE_ERROR,);
+
+    d_trace(3, "[S1AP] E-RAB Setup Request : "
+            "UE[eNB-UE-S1AP-ID(%d)] <-- eNB[%s:%d]\n",
+            enb_ue->enb_ue_s1ap_id,
+            INET_NTOP(&enb_ue->enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+            enb_ue->enb->enb_id);
+
+    pkbuf_free(esmbuf);
 
     return CORE_OK;
 }

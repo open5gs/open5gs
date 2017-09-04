@@ -90,17 +90,8 @@ status_t esm_build_activate_default_bearer_context(
     message.esm.h.message_type = 
         NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST;
 
-#if 0 /* default bearer is not needed */
-    eps_qos->length = 5;
-    eps_qos->qci = pdn->qos.qci;
-    eps_qos->ul_mbr = 0xff;
-    eps_qos->dl_mbr = 0xff;
-    eps_qos->ul_gbr = 0xff;
-    eps_qos->dl_gbr = 0xff;
-#else
     eps_qos->length = 1;
     eps_qos->qci = pdn->qos.qci;
-#endif
 
     access_point_name->length = strlen(pdn->apn);
     core_cpystrn(access_point_name->apn, pdn->apn,
@@ -126,6 +117,49 @@ status_t esm_build_activate_default_bearer_context(
     }
 
     d_assert(nas_plain_encode(pkbuf, &message) == CORE_OK && *pkbuf,,);
+
+    return CORE_OK;
+}
+
+status_t esm_build_activate_dedicated_bearer_context(
+        pkbuf_t **pkbuf, mme_bearer_t *bearer)
+{
+    mme_ue_t *mme_ue = NULL;
+    mme_bearer_t *linked_bearer = NULL;
+
+    nas_message_t message;
+    nas_activate_dedicated_eps_bearer_context_request_t 
+        *activate_dedicated_eps_bearer_context_request = 
+            &message.esm.activate_dedicated_eps_bearer_context_request;
+    nas_linked_eps_bearer_identity_t *linked_ebi =
+        &activate_dedicated_eps_bearer_context_request->
+            linked_eps_bearer_identity;
+    nas_eps_quality_of_service_t *eps_qos =
+        &activate_dedicated_eps_bearer_context_request->eps_qos;
+    
+    d_assert(bearer, return CORE_ERROR, "Null param");
+    mme_ue = bearer->mme_ue;
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    linked_bearer = mme_linked_bearer(bearer); 
+    d_assert(linked_bearer, return CORE_ERROR, "Null param");
+
+    memset(&message, 0, sizeof(message));
+    message.h.security_header_type = 
+       NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
+    message.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    message.esm.h.eps_bearer_identity = bearer->ebi;
+    message.esm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_ESM;
+    message.esm.h.procedure_transaction_identity = 0;
+    message.esm.h.message_type = 
+        NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST;
+
+    linked_ebi->eps_bearer_identity = linked_bearer->ebi;
+    eps_qos_build(eps_qos, bearer->qos.qci,
+            bearer->qos.mbr.downlink, bearer->qos.mbr.uplink,
+            bearer->qos.gbr.downlink, bearer->qos.gbr.uplink);
+
+    d_assert(nas_security_encode(pkbuf, mme_ue, &message) == CORE_OK && 
+            *pkbuf,,);
 
     return CORE_OK;
 }

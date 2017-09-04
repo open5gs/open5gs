@@ -1044,6 +1044,10 @@ typedef struct _nas_eps_quality_of_service_t {
     c_uint8_t dl_gbr_extended2;
 } nas_eps_quality_of_service_t;
 
+CORE_DECLARE(void) eps_qos_build(nas_eps_quality_of_service_t *eps_qos,
+    c_uint8_t qci,
+    c_uint64_t dl_mbr, c_uint64_t ul_mbr, c_uint64_t dl_gbr, c_uint64_t ul_gbr);
+
 /* 9.9.4.4 ESM cause
  * M V 1 
  * Annex B (informative): Cause values for EPS session management 
@@ -1108,8 +1112,8 @@ ED3(c_uint8_t type:4;,
 /* 9.9.4.6 Linked EPS bearer identity
  * M V 1/2 */
 typedef struct _nas_linked_eps_bearer_identity_t {
-ED2(c_uint8_t eps_bearer_identity:4;,
-    c_uint8_t spare:4;)
+ED2(c_uint8_t spare:4;,
+    c_uint8_t eps_bearer_identity:4;)
 } __attribute__ ((packed)) nas_linked_eps_bearer_identity_t;
 
 /* 9.9.4.7 LLC service access point identifier

@@ -1709,6 +1709,17 @@ mme_bearer_t* mme_default_bearer_in_sess(mme_sess_t *sess)
     return mme_bearer_first(sess);
 }
 
+mme_bearer_t* mme_linked_bearer(mme_bearer_t *bearer)
+{
+    mme_sess_t *sess = NULL;
+
+    d_assert(bearer, return NULL, "Null param");
+    sess = bearer->sess;
+    d_assert(sess, return NULL, "Null param");
+
+    return mme_default_bearer_in_sess(sess);
+}
+
 mme_bearer_t* mme_bearer_first(mme_sess_t *sess)
 {
     d_assert(sess, return NULL, "Null param");

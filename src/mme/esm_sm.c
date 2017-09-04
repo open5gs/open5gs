@@ -113,9 +113,21 @@ void esm_state_operational(fsm_t *s, event_t *e)
                 }
                 case NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_ACCEPT:
                 {
+                    mme_bearer_t *dedicated_bearer = NULL;
+
                     d_trace(3, "[NAS] Activate default eps bearer "
                             "context accept : UE[%s] --> ESM[%d]\n", 
                             mme_ue->imsi_bcd, bearer->pti);
+                    dedicated_bearer = mme_bearer_next(bearer);
+                    while(dedicated_bearer)
+                    {
+                        if (MME_BEARER_IS_VALID(dedicated_bearer))
+                            continue;
+
+                        esm_handle_activate_dedicated_bearer_request(
+                                dedicated_bearer);
+                        dedicated_bearer = mme_bearer_next(dedicated_bearer);
+                    }
                     break;
                 }
                 default:
