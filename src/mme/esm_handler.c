@@ -124,7 +124,25 @@ void esm_handle_activate_default_bearer_accept(mme_bearer_t *bearer)
     {
         if (!MME_HAVE_ENB_S1U_PATH(dedicated_bearer))
         {
-            esm_handle_activate_dedicated_bearer_request(dedicated_bearer);
+            enb_ue_t *enb_ue = NULL;
+            pkbuf_t *esmbuf = NULL, *s1apbuf = NULL;
+
+            enb_ue = mme_ue->enb_ue;
+            d_assert(enb_ue, return, "Null param");
+
+            rv = esm_build_activate_dedicated_bearer_context(
+                    &esmbuf, dedicated_bearer);
+            d_assert(rv == CORE_OK && esmbuf, return, "esm build error");
+
+            d_trace(3, "[NAS] Activate dedicated bearer context request : "
+                    "EMM <-- ESM\n");
+
+            rv = s1ap_build_e_rab_setup_request(
+                    &s1apbuf, dedicated_bearer, esmbuf);
+            d_assert(rv == CORE_OK && s1apbuf, 
+                    pkbuf_free(esmbuf); return, "s1ap build error");
+
+            d_assert(nas_send_to_enb(enb_ue, s1apbuf) == CORE_OK,,);
         }
         dedicated_bearer = mme_bearer_next(dedicated_bearer);
     }

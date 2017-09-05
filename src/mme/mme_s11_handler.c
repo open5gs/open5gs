@@ -12,6 +12,8 @@
 #include "mme_s11_build.h"
 #include "mme_s11_handler.h"
 #include "mme_gtp_path.h"
+#include "esm_build.h"
+#include "nas_path.h"
 
 void mme_s11_handle_create_session_request(mme_sess_t *sess)
 {
@@ -206,6 +208,7 @@ void mme_s11_handle_delete_session_response(
 void mme_s11_handle_create_bearer_request(
         gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_create_bearer_request_t *req)
 {
+    status_t rv;
     mme_bearer_t *bearer = NULL;
     mme_sess_t *sess = NULL;
 
@@ -272,8 +275,31 @@ void mme_s11_handle_create_bearer_request(
     bearer->qos.gbr.downlink = bearer_qos.dl_gbr;
     bearer->qos.gbr.uplink = bearer_qos.ul_gbr;
 
-    /* Save Transaction */
-    bearer->xact = xact;
+    if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
+    {
+        enb_ue_t *enb_ue = NULL;
+        pkbuf_t *esmbuf = NULL, *s1apbuf = NULL;
+
+        enb_ue = mme_ue->enb_ue;
+        d_assert(enb_ue, return, "Null param");
+
+        rv = esm_build_activate_dedicated_bearer_context(&esmbuf, bearer);
+        d_assert(rv == CORE_OK && esmbuf, return, "esm build error");
+
+        d_trace(3, "[NAS] Activate dedicated bearer context request : "
+                "EMM <-- ESM\n");
+
+        rv = s1ap_build_e_rab_setup_request(&s1apbuf, bearer, esmbuf);
+        d_assert(rv == CORE_OK && s1apbuf, 
+                pkbuf_free(esmbuf); return, "s1ap build error");
+
+        d_assert(nas_send_to_enb(enb_ue, s1apbuf) == CORE_OK,,);
+    }
+    else
+    {
+        /* Save Transaction. will be handled after EMM-attached */
+        bearer->xact = xact;
+    }
 }
 
 void mme_s11_handle_release_access_bearers_response(

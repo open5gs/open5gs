@@ -190,29 +190,33 @@ void eps_qos_build(nas_eps_quality_of_service_t *eps_qos, c_uint8_t qci,
 
     eps_qos->qci = qci;
 
-    length = c_max(length, br_calculate(
-                &eps_qos->dl_mbr,
-                &eps_qos->dl_mbr_extended,
-                &eps_qos->dl_mbr_extended2,
-                dl_mbr));
+    if (dl_mbr)
+        length = c_max(length, br_calculate(
+                    &eps_qos->dl_mbr,
+                    &eps_qos->dl_mbr_extended,
+                    &eps_qos->dl_mbr_extended2,
+                    dl_mbr));
 
-    length = c_max(length, br_calculate(
-                &eps_qos->ul_mbr,
-                &eps_qos->ul_mbr_extended,
-                &eps_qos->ul_mbr_extended2,
-                ul_mbr));
+    if (ul_mbr)
+        length = c_max(length, br_calculate(
+                    &eps_qos->ul_mbr,
+                    &eps_qos->ul_mbr_extended,
+                    &eps_qos->ul_mbr_extended2,
+                    ul_mbr));
 
-    length = c_max(length, br_calculate(
-                &eps_qos->dl_gbr,
-                &eps_qos->dl_gbr_extended,
-                &eps_qos->dl_gbr_extended2,
-                dl_gbr));
+    if (dl_gbr)
+        length = c_max(length, br_calculate(
+                    &eps_qos->dl_gbr,
+                    &eps_qos->dl_gbr_extended,
+                    &eps_qos->dl_gbr_extended2,
+                    dl_gbr));
 
-    length = c_max(length, br_calculate(
-                &eps_qos->ul_gbr,
-                &eps_qos->ul_gbr_extended,
-                &eps_qos->ul_gbr_extended2,
-                ul_gbr));
+    if (ul_gbr)
+        length = c_max(length, br_calculate(
+                    &eps_qos->ul_gbr,
+                    &eps_qos->ul_gbr_extended,
+                    &eps_qos->ul_gbr_extended2,
+                    ul_gbr));
 
     eps_qos->length = length*4+1;
 }

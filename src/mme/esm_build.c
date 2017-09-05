@@ -90,8 +90,9 @@ status_t esm_build_activate_default_bearer_context(
     message.esm.h.message_type = 
         NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST;
 
-    eps_qos->length = 1;
-    eps_qos->qci = pdn->qos.qci;
+    eps_qos_build(eps_qos, pdn->qos.qci,
+            pdn->qos.mbr.downlink, pdn->qos.mbr.uplink,
+            pdn->qos.gbr.downlink, pdn->qos.gbr.uplink);
 
     access_point_name->length = strlen(pdn->apn);
     core_cpystrn(access_point_name->apn, pdn->apn,

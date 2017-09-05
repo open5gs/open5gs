@@ -157,6 +157,7 @@ status_t s1ap_build_initial_context_setup_request(
     S1ap_InitialContextSetupRequestIEs_t *ies =
             &message.s1ap_InitialContextSetupRequestIEs;
     S1ap_E_RABToBeSetupItemCtxtSUReq_t *e_rab = NULL;
+	struct S1ap_GBR_QosInformation *gbrQosInformation = NULL; /* OPTIONAL */
     S1ap_NAS_PDU_t *nasPdu = NULL;
     mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
@@ -199,6 +200,31 @@ status_t s1ap_build_initial_context_setup_request(
         pre_emptionCapability = !(pdn->qos.arp.pre_emption_capability);
     e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
         pre_emptionVulnerability = !(pdn->qos.arp.pre_emption_vulnerability);
+
+    if (pdn->qos.mbr.downlink || pdn->qos.mbr.uplink ||
+        pdn->qos.gbr.downlink || pdn->qos.gbr.uplink)
+    {
+        if (pdn->qos.mbr.downlink == 0)
+            pdn->qos.mbr.downlink = MAX_BIT_RATE;
+        if (pdn->qos.mbr.uplink == 0)
+            pdn->qos.mbr.uplink = MAX_BIT_RATE;
+        if (pdn->qos.gbr.downlink == 0)
+            pdn->qos.gbr.downlink = MAX_BIT_RATE;
+        if (pdn->qos.gbr.uplink == 0)
+            pdn->qos.gbr.uplink = MAX_BIT_RATE;
+
+        gbrQosInformation = 
+                core_calloc(1, sizeof(struct S1ap_GBR_QosInformation));
+        asn_uint642INTEGER(&gbrQosInformation->e_RAB_MaximumBitrateDL,
+                pdn->qos.mbr.downlink);
+        asn_uint642INTEGER(&gbrQosInformation->e_RAB_MaximumBitrateUL,
+                pdn->qos.mbr.uplink);
+        asn_uint642INTEGER(&gbrQosInformation->e_RAB_GuaranteedBitrateDL,
+                pdn->qos.gbr.downlink);
+        asn_uint642INTEGER(&gbrQosInformation->e_RAB_GuaranteedBitrateUL,
+                pdn->qos.gbr.uplink);
+        e_rab->e_RABlevelQoSParameters.gbrQosInformation = gbrQosInformation;
+    }
 
     e_rab->transportLayerAddress.size = 4;
     e_rab->transportLayerAddress.buf = 
@@ -317,16 +343,30 @@ status_t s1ap_build_e_rab_setup_request(
     e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
         pre_emptionVulnerability = !(bearer->qos.arp.pre_emption_vulnerability);
 
-    gbrQosInformation = core_calloc(1, sizeof(struct S1ap_GBR_QosInformation));
-    asn_uint642INTEGER(&gbrQosInformation->e_RAB_MaximumBitrateDL,
-            bearer->qos.mbr.downlink);
-    asn_uint642INTEGER(&gbrQosInformation->e_RAB_MaximumBitrateUL,
-            bearer->qos.mbr.uplink);
-    asn_uint642INTEGER(&gbrQosInformation->e_RAB_GuaranteedBitrateDL,
-            bearer->qos.gbr.downlink);
-    asn_uint642INTEGER(&gbrQosInformation->e_RAB_GuaranteedBitrateUL,
-            bearer->qos.gbr.uplink);
-    e_rab->e_RABlevelQoSParameters.gbrQosInformation = gbrQosInformation;
+    if (bearer->qos.mbr.downlink || bearer->qos.mbr.uplink ||
+        bearer->qos.gbr.downlink || bearer->qos.gbr.uplink)
+    {
+        if (bearer->qos.mbr.downlink == 0)
+            bearer->qos.mbr.downlink = MAX_BIT_RATE;
+        if (bearer->qos.mbr.uplink == 0)
+            bearer->qos.mbr.uplink = MAX_BIT_RATE;
+        if (bearer->qos.gbr.downlink == 0)
+            bearer->qos.gbr.downlink = MAX_BIT_RATE;
+        if (bearer->qos.gbr.uplink == 0)
+            bearer->qos.gbr.uplink = MAX_BIT_RATE;
+
+        gbrQosInformation = 
+                core_calloc(1, sizeof(struct S1ap_GBR_QosInformation));
+        asn_uint642INTEGER(&gbrQosInformation->e_RAB_MaximumBitrateDL,
+                bearer->qos.mbr.downlink);
+        asn_uint642INTEGER(&gbrQosInformation->e_RAB_MaximumBitrateUL,
+                bearer->qos.mbr.uplink);
+        asn_uint642INTEGER(&gbrQosInformation->e_RAB_GuaranteedBitrateDL,
+                bearer->qos.gbr.downlink);
+        asn_uint642INTEGER(&gbrQosInformation->e_RAB_GuaranteedBitrateUL,
+                bearer->qos.gbr.uplink);
+        e_rab->e_RABlevelQoSParameters.gbrQosInformation = gbrQosInformation;
+    }
 
     e_rab->transportLayerAddress.size = 4;
     e_rab->transportLayerAddress.buf = 

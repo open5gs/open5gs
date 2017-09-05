@@ -101,6 +101,8 @@ ED2(c_uint8_t spare:5;,
     c_uint32_t ipv4_addr2;
 } __attribute__ ((packed)) paa_t;
 
+#define MAX_BIT_RATE C_UINT64_C(10000000000)
+
 typedef struct _bitrate_t {
     c_uint64_t downlink;        /* bits per seconds */
     c_uint64_t uplink;          /* bits per seconds */
