@@ -195,6 +195,7 @@ CORE_DECLARE(sgw_sess_t*)   sgw_sess_next(sgw_sess_t *sess);
 CORE_DECLARE(sgw_bearer_t*) sgw_bearer_add(sgw_sess_t *sess);
 CORE_DECLARE(status_t)      sgw_bearer_remove(sgw_bearer_t *bearer);
 CORE_DECLARE(status_t)      sgw_bearer_remove_all(sgw_sess_t *sess);
+CORE_DECLARE(sgw_bearer_t*) sgw_bearer_find(index_t index);
 CORE_DECLARE(sgw_bearer_t*) sgw_bearer_find_by_sgw_s5u_teid(
                                 c_uint32_t sgw_s5u_teid);
 CORE_DECLARE(sgw_bearer_t*) sgw_bearer_find_by_sgw_s1u_teid(

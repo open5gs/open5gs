@@ -250,7 +250,7 @@ status_t mme_s11_build_create_bearer_response(
     gtp_create_bearer_response_t *rsp = &gtp_message.create_bearer_response;
 
     gtp_cause_t cause;
-    gtp_f_teid_t enb_s1u_teid;
+    gtp_f_teid_t enb_s1u_teid, sgw_s1u_teid;
 
     d_assert(bearer, return CORE_ERROR, "Null param");
 
@@ -277,6 +277,21 @@ status_t mme_s11_build_create_bearer_response(
     rsp->bearer_contexts.s1_u_enodeb_f_teid.presence = 1;
     rsp->bearer_contexts.s1_u_enodeb_f_teid.data = &enb_s1u_teid;
     rsp->bearer_contexts.s1_u_enodeb_f_teid.len = GTP_F_TEID_IPV4_LEN;
+    
+    /* Data Plane(UL) : SGW-S1U */
+    memset(&sgw_s1u_teid, 0, sizeof(gtp_f_teid_t));
+    sgw_s1u_teid.ipv4 = 1;
+    sgw_s1u_teid.interface_type = GTP_F_TEID_S1_U_SGW_GTP_U;
+    sgw_s1u_teid.ipv4_addr = bearer->sgw_s1u_addr;
+    sgw_s1u_teid.teid = htonl(bearer->sgw_s1u_teid);
+    rsp->bearer_contexts.s4_u_sgsn_f_teid.presence = 1;
+    rsp->bearer_contexts.s4_u_sgsn_f_teid.data = &sgw_s1u_teid;
+    rsp->bearer_contexts.s4_u_sgsn_f_teid.len = GTP_F_TEID_IPV4_LEN;
+
+    /* Bearer Context : Cause */
+    rsp->bearer_contexts.cause.presence = 1;
+    rsp->bearer_contexts.cause.len = sizeof(cause);
+    rsp->bearer_contexts.cause.data = &cause;
 
     /* TODO : UE Time Zone */
 

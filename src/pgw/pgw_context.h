@@ -150,6 +150,9 @@ CORE_DECLARE(pgw_sess_t *)  pgw_sess_this(hash_index_t *hi);
 CORE_DECLARE(pgw_bearer_t*) pgw_bearer_add(pgw_sess_t *sess);
 CORE_DECLARE(status_t)      pgw_bearer_remove(pgw_bearer_t *bearer);
 CORE_DECLARE(status_t)      pgw_bearer_remove_all(pgw_sess_t *sess);
+CORE_DECLARE(pgw_bearer_t*) pgw_bearer_find(index_t index);
+CORE_DECLARE(pgw_bearer_t*) pgw_bearer_find_by_pgw_s5u_teid(
+                                c_uint32_t pgw_s5u_teid);
 CORE_DECLARE(pgw_bearer_t*) pgw_bearer_find_by_ebi(
                                 pgw_sess_t *sess, c_uint8_t ebi);
 CORE_DECLARE(pgw_bearer_t*) pgw_bearer_find_by_qci_arp(pgw_sess_t *sess, 

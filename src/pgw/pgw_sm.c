@@ -97,19 +97,24 @@ void pgw_state_operational(fsm_t *s, event_t *e)
                         xact, sess, &message->create_session_request);
                     pgw_gx_send_ccr(xact, sess, copybuf,
                         GX_CC_REQUEST_TYPE_INITIAL_REQUEST);
-                    break;
+                    goto out;
                 case GTP_DELETE_SESSION_REQUEST_TYPE:
                     pgw_s5c_handle_delete_session_request(
                         xact, sess, &message->delete_session_request);
                     pgw_gx_send_ccr(xact, sess, copybuf,
                         GX_CC_REQUEST_TYPE_TERMINATION_REQUEST);
+                    goto out;
+
+                case GTP_CREATE_BEARER_RESPONSE_TYPE:
+                    pgw_s5c_handle_create_bearer_response(
+                        xact, sess, &message->create_bearer_response);
                     break;
                 default:
-                    pkbuf_free(copybuf);
-
                     d_warn("Not implmeneted(type:%d)", message->h.type);
                     break;
             }
+            pkbuf_free(copybuf);
+out:
             pkbuf_free(recvbuf);
             break;
         }
