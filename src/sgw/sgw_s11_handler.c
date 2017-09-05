@@ -106,8 +106,8 @@ void sgw_s11_handle_create_session_request(gtp_xact_t *s11_xact,
     }
 
     /* Setup GTP Node */
-    SGW_S5C_PATH_IN_SESSION(sess, pgw);
-    SGW_S11_PATH_IN_SESSION(sess, s11_xact);
+    CONNECT_MME_GTP_NODE(sess, s11_xact);
+    CONNECT_PGW_GTP_NODE(sess, pgw);
 
     req->pgw_s5_s8_address_for_control_plane_or_pmip.presence = 0;
 

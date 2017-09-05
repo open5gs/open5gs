@@ -36,7 +36,7 @@ status_t mme_s11_build_create_session_request(
     d_assert(pdn, return CORE_ERROR, "Null param");
     bearer = mme_default_bearer_in_sess(sess);
     d_assert(bearer, return CORE_ERROR, "Null param");
-    pgw_ipv4_addr = MME_SESSION_GET_PGW_IPV4_ADDR(sess);
+    pgw_ipv4_addr = MME_GET_PGW_IPV4_ADDR(sess);
     d_assert(pgw_ipv4_addr, return CORE_ERROR, "Null param");
     mme_ue = sess->mme_ue;
     d_assert(mme_ue, return CORE_ERROR, "Null param");

@@ -16,6 +16,9 @@
 #include "mme_s11_handler.h"
 #include "nas_path.h"
 
+void emm_state_attach_request(fsm_t *s, event_t *e,
+        mme_ue_t *mme_ue, nas_message_t *message);
+
 void emm_state_initial(fsm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
@@ -63,43 +66,7 @@ void emm_state_detached(fsm_t *s, event_t *e)
             {
                 case NAS_ATTACH_REQUEST:
                 {
-                    /* Update Kenb */
-                    if (SECURITY_CONTEXT_IS_VALID(mme_ue))
-                        mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, 
-                                mme_ue->kenb);
-
-                    CLEAR_EPS_BEARER_ID(mme_ue);
-                    mme_ue_paged(mme_ue);
-
-                    emm_handle_attach_request(
-                            mme_ue, &message->emm.attach_request);
-
-                    if (!MME_UE_HAVE_IMSI(mme_ue))
-                    {
-                        /* Unknown GUTI */
-                        FSM_TRAN(s, &emm_state_identity);
-                        break;
-                    }
-
-                    if (SECURITY_CONTEXT_IS_VALID(mme_ue))
-                    {
-                        event_emm_to_esm(
-                            mme_ue, &mme_ue->last_pdn_connectivity_request);
-                        FSM_TRAN(s, &emm_state_default_esm);
-                    }
-                    else
-                    {
-                        if (MME_UE_HAVE_SESSION(mme_ue))
-                        {
-                            mme_s11_handle_delete_all_sessions_in_ue(mme_ue);
-                        }
-                        else
-                        {
-                            mme_s6a_send_air(mme_ue);
-                        }
-                        FSM_TRAN(s, &emm_state_authentication);
-                    }
-
+                    emm_state_attach_request(s, e, mme_ue, message);
                     break;
                 }
             }
@@ -167,7 +134,7 @@ void emm_state_identity(fsm_t *s, event_t *e)
                     }
                     else
                     {
-                        if (MME_UE_HAVE_SESSION(mme_ue))
+                        if (MME_HAVE_SGW_S11_PATH(mme_ue))
                         {
                             mme_s11_handle_delete_all_sessions_in_ue(mme_ue);
                         }
@@ -445,43 +412,7 @@ void emm_state_attached(fsm_t *s, event_t *e)
             {
                 case NAS_ATTACH_REQUEST:
                 {
-                    /* Update Kenb */
-                    if (SECURITY_CONTEXT_IS_VALID(mme_ue))
-                        mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, 
-                                mme_ue->kenb);
-
-                    CLEAR_EPS_BEARER_ID(mme_ue);
-                    mme_ue_paged(mme_ue);
-
-                    emm_handle_attach_request(
-                            mme_ue, &message->emm.attach_request);
-
-                    if (!MME_UE_HAVE_IMSI(mme_ue))
-                    {
-                        /* Unknown GUTI */
-                        FSM_TRAN(s, &emm_state_identity);
-                        break;
-                    }
-
-                    if (SECURITY_CONTEXT_IS_VALID(mme_ue))
-                    {
-                        event_emm_to_esm(
-                            mme_ue, &mme_ue->last_pdn_connectivity_request);
-                        FSM_TRAN(s, &emm_state_default_esm);
-                    }
-                    else
-                    {
-                        if (MME_UE_HAVE_SESSION(mme_ue))
-                        {
-                            mme_s11_handle_delete_all_sessions_in_ue(mme_ue);
-                        }
-                        else
-                        {
-                            mme_s6a_send_air(mme_ue);
-                        }
-                        FSM_TRAN(s, &emm_state_authentication);
-                    }
-
+                    emm_state_attach_request(s, e, mme_ue, message);
                     break;
                 }
                 case NAS_EMM_STATUS:
@@ -495,7 +426,7 @@ void emm_state_attached(fsm_t *s, event_t *e)
                     emm_handle_detach_request(
                             mme_ue, &message->emm.detach_request_from_ue);
     
-                    if (MME_UE_HAVE_SESSION(mme_ue))
+                    if (MME_HAVE_SGW_S11_PATH(mme_ue))
                     {
                         mme_s11_handle_delete_all_sessions_in_ue(mme_ue);
                     }
@@ -552,3 +483,49 @@ void emm_state_attached(fsm_t *s, event_t *e)
         }
     }
 }
+
+void emm_state_attach_request(fsm_t *s, event_t *e,
+        mme_ue_t *mme_ue, nas_message_t *message)
+{
+    d_assert(s, return, "Null param");
+    d_assert(e, return, "Null param");
+    d_assert(mme_ue, return, "Null param");
+    d_assert(message, return, "Null param");
+
+    /* Update Kenb */
+    if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+        mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, 
+                mme_ue->kenb);
+
+    CLEAR_EPS_BEARER_ID(mme_ue);
+    mme_ue_paged(mme_ue);
+
+    emm_handle_attach_request(mme_ue, &message->emm.attach_request);
+
+    if (!MME_UE_HAVE_IMSI(mme_ue))
+    {
+        /* Unknown GUTI */
+        FSM_TRAN(s, &emm_state_identity);
+    }
+    else
+    {
+        if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+        {
+            event_emm_to_esm(mme_ue, &mme_ue->last_pdn_connectivity_request);
+            FSM_TRAN(s, &emm_state_default_esm);
+        }
+        else
+        {
+            if (MME_HAVE_SGW_S11_PATH(mme_ue))
+            {
+                mme_s11_handle_delete_all_sessions_in_ue(mme_ue);
+            }
+            else
+            {
+                mme_s6a_send_air(mme_ue);
+            }
+            FSM_TRAN(s, &emm_state_authentication);
+        }
+    }
+}
+

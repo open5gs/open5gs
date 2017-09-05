@@ -83,14 +83,14 @@ typedef struct _sgw_sess_t {
     list_t          bearer_list;
 
     /* Related Context */
-#define SGW_S11_PATH_IN_SESSION(__sESS, __xACT) \
+#define CONNECT_MME_GTP_NODE(__sESS, __xACT) \
     do { \
         d_assert((__sESS), return, "Null param"); \
         d_assert((__xACT), return, "Null param"); \
         (__sESS)->mme = (__xACT)->gnode; \
     } while(0)
     sgw_mme_t       *mme;
-#define SGW_S5C_PATH_IN_SESSION(__sESS, __gNODE) \
+#define CONNECT_PGW_GTP_NODE(__sESS, __gNODE) \
     do { \
         d_assert((__sESS), return, "Null param"); \
         d_assert((__gNODE), return, "Null param"); \

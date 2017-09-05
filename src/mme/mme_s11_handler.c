@@ -22,7 +22,7 @@ void mme_s11_handle_create_session_request(mme_sess_t *sess)
     mme_ue_t *mme_ue = NULL;
 
     /* Use round-robin for selecting SGW */
-    MME_S11_PATH_IN_SESSION(sess);
+    CONNECT_SGW_GTP_NODE(sess);
 
     mme_ue = sess->mme_ue;
     d_assert(mme_ue, return, "Null param");
@@ -147,7 +147,7 @@ void mme_s11_handle_delete_all_sessions_in_ue(mme_ue_t *mme_ue)
     {
         next_sess = mme_sess_next(sess);
 
-        if (MME_SESSION_IS_VALID(sess))
+        if (MME_HAVE_SGW_S1U_PATH(sess))
         {
             gtp_header_t h;
             gtp_xact_t *xact = NULL;

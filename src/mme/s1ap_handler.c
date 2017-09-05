@@ -540,7 +540,7 @@ void s1ap_handle_ue_context_release_request(
                 mme_ue_t *mme_ue = enb_ue->mme_ue;
                 status_t rv;
 
-                if (MME_UE_HAVE_SESSION(mme_ue))
+                if (MME_HAVE_SGW_S11_PATH(mme_ue))
                 {
                     mme_sess_t *sess = mme_sess_first(mme_ue);
                     while (sess != NULL)

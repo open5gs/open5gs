@@ -362,6 +362,11 @@ void mme_state_operational(fsm_t *s, event_t *e)
                     mme_s11_handle_delete_session_response(
                         xact, mme_ue, &message.delete_session_response);
 
+                    if (mme_sess_first(mme_ue) == NULL)
+                    {
+                        CLEAR_SGW_S11_PATH(mme_ue);
+                    }
+
                     if (FSM_CHECK(&mme_ue->sm, emm_state_authentication))
                     {
                         if (mme_sess_first(mme_ue) == NULL)

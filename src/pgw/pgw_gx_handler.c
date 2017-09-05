@@ -61,7 +61,7 @@ void pgw_gx_handle_cca_initial_request(
     d_assert(cca_message, return, "Null param");
     d_assert(req, return, "Null param");
 
-    PGW_S5C_PATH_IN_SESSION(sess, xact);
+    CONNECT_SGW_GTP_NODE(sess, xact);
 
     memset(&h, 0, sizeof(gtp_header_t));
     h.type = GTP_CREATE_SESSION_RESPONSE_TYPE;

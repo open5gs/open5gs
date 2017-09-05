@@ -242,14 +242,20 @@ struct _mme_ue_t {
     nas_detach_type_t detach_type;
 };
 
-#define MME_SESSION_IS_VALID(__sESS) \
+#define MME_HAVE_SGW_S1U_PATH(__sESS) \
     ((__sESS) && (mme_bearer_first(__sESS)) && \
      ((mme_default_bearer_in_sess(__sESS)->sgw_s1u_teid) && \
       (mme_default_bearer_in_sess(__sESS)->sgw_s1u_addr)))
 
-#define MME_UE_HAVE_SESSION(__mME) \
-    ((__mME) && (mme_sess_first(__mME)) && \
-     MME_SESSION_IS_VALID(mme_sess_first(__mME)))
+#define MME_HAVE_SGW_S11_PATH(__mME) \
+     ((__mME) && ((__mME)->sgw_s11_teid) && ((__mME)->sgw_s11_addr))
+
+#define CLEAR_SGW_S11_PATH(__mME) \
+    do { \
+        d_assert((__mME), break, "Null param"); \
+        (__mME)->sgw_s11_teid = 0; \
+        (__mME)->sgw_s11_addr = 0; \
+    } while(0)
 typedef struct _mme_sess_t {
     lnode_t         node;       /* A node of list_t */
     index_t         index;      /* An index of this node */
@@ -258,7 +264,7 @@ typedef struct _mme_sess_t {
     list_t          bearer_list;
 
     /* Related Context */
-#define MME_S11_PATH_IN_SESSION(__sESS) \
+#define CONNECT_SGW_GTP_NODE(__sESS) \
     do { \
         d_assert((__sESS), return, "Null param"); \
         (__sESS)->sgw = mme_sgw_next((__sESS)->sgw); \
@@ -271,7 +277,7 @@ typedef struct _mme_sess_t {
 #define MME_UE_HAVE_APN(__mME) \
     ((__mME) && (mme_sess_first(__mME)) && \
     ((mme_sess_first(__mME))->pdn))
-#define MME_SESSION_GET_PGW_IPV4_ADDR(__sESS) \
+#define MME_GET_PGW_IPV4_ADDR(__sESS) \
     (((__sESS) && ((__sESS)->pdn) && (((__sESS)->pdn)->pgw.ipv4_addr)) ? \
       (((__sESS)->pdn)->pgw.ipv4_addr) : (mme_self()->s5c_addr))
     pdn_t           *pdn;
@@ -283,7 +289,7 @@ typedef struct _mme_sess_t {
     int             pgw_pco_len;
 } mme_sess_t;
 
-#define MME_BEARER_IS_VALID(__bEARER) \
+#define MME_HAVE_ENB_S1U_PATH(__bEARER) \
     ((__bEARER) && ((__bEARER)->enb_s1u_teid) && ((__bEARER)->enb_s1u_addr))
 typedef struct _mme_bearer_t {
     lnode_t         node;   /* A node of list_t */
