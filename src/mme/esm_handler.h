@@ -15,6 +15,10 @@ CORE_DECLARE(void) esm_handle_information_response(mme_sess_t *sess,
         nas_esm_information_response_t *bearer_information_response);
 CORE_DECLARE(void) esm_handle_activate_dedicated_bearer_request(
         mme_bearer_t *bearer);
+CORE_DECLARE(void) esm_handle_activate_default_bearer_accept(
+        mme_bearer_t *bearer);
+CORE_DECLARE(void) esm_handle_activate_dedicated_bearer_accept(
+        mme_bearer_t *bearer);
 
 #ifdef __cplusplus
 }

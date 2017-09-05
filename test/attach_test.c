@@ -191,6 +191,8 @@ static void attach_test1(abts_case *tc, void *data)
     /***********************************************************************
      * Attach Request : Known IMSI, Integrity Protected, No Security Context
      * Send Initial-UE Message + Attach Request + PDN Connectivity        */
+    core_sleep(time_from_msec(300));
+
     mme_self()->mme_ue_s1ap_id = 16777372;
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -287,6 +289,8 @@ static void attach_test1(abts_case *tc, void *data)
     /*****************************************************************
      * Attach Request : Known GUTI, Integrity Protected, MAC Matched
      * Send Initial-UE Message + Attach Request + PDN Connectivity  */
+    core_sleep(time_from_msec(300));
+
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex+1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
@@ -311,6 +315,8 @@ static void attach_test1(abts_case *tc, void *data)
     rc = tests1ap_enb_read(sock, recvbuf);
     pkbuf_free(recvbuf);
 
+    core_sleep(time_from_msec(300));
+
     /* Send Detach Request */
     rv = tests1ap_build_detach_request(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -333,6 +339,8 @@ static void attach_test1(abts_case *tc, void *data)
     /*****************************************************************
      * Attach Request : Unknown GUTI, Integrity Protected
      * Send Initial-UE Message + Attach Request + PDN Connectivity  */
+    core_sleep(time_from_msec(300));
+
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex+2);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
@@ -493,6 +501,8 @@ static void attach_test2(abts_case *tc, void *data)
     /*****************************************************************
      * Attach Request : Known IMSI, Plain NAS message
      * Send Initial-UE Message + Attach Request + PDN Connectivity  */
+    core_sleep(time_from_msec(300));
+
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
@@ -560,11 +570,11 @@ static void attach_test2(abts_case *tc, void *data)
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    core_sleep(time_from_msec(300));
-
     /*****************************************************************
      * Attach Request : IMSI, Integrity Protected, MAC Matched
      * Send Initial-UE Message + Attach Request + PDN Connectivity  */
+    core_sleep(time_from_msec(300));
+
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex+1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
@@ -592,6 +602,8 @@ static void attach_test2(abts_case *tc, void *data)
     /*****************************************************************
      * Attach Request : IMSI, Integrity Protected, MAC Failed
      * Send Initial-UE Message + Attach Request + PDN Connectivity  */
+    core_sleep(time_from_msec(300));
+
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex+2);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
@@ -755,6 +767,8 @@ static void attach_test3(abts_case *tc, void *data)
     /*****************************************************************
      * Attach Request : Known IMSI, Plain NAS message
      * Send Initial-UE Message + Attach Request + PDN Connectivity  */
+    core_sleep(time_from_msec(300));
+
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
@@ -843,6 +857,8 @@ static void attach_test3(abts_case *tc, void *data)
     pkbuf_free(recvbuf);
 
     /* Send UE Release Request */
+    core_sleep(time_from_msec(300));
+
     rv = tests1ap_build_ue_context_release_request(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
@@ -864,9 +880,9 @@ static void attach_test3(abts_case *tc, void *data)
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
+    /* Send Service Request */
     core_sleep(time_from_msec(300));
 
-    /* Send Service Request */
     rv = tests1ap_build_service_request(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);

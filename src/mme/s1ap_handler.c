@@ -429,18 +429,21 @@ void s1ap_handle_initial_context_setup_response(
         memcpy(&bearer->enb_s1u_addr, e_rab->transportLayerAddress.buf,
                 sizeof(bearer->enb_s1u_addr));
 
-        memset(&h, 0, sizeof(gtp_header_t));
-        h.type = GTP_MODIFY_BEARER_REQUEST_TYPE;
-        h.teid = mme_ue->sgw_s11_teid;
+        if (FSM_CHECK(&bearer->sm, esm_state_active))
+        {
+            memset(&h, 0, sizeof(gtp_header_t));
+            h.type = GTP_MODIFY_BEARER_REQUEST_TYPE;
+            h.teid = mme_ue->sgw_s11_teid;
 
-        rv = mme_s11_build_modify_bearer_request(&pkbuf, h.type, bearer);
-        d_assert(rv == CORE_OK, return, "S11 build error");
+            rv = mme_s11_build_modify_bearer_request(&pkbuf, h.type, bearer);
+            d_assert(rv == CORE_OK, return, "S11 build error");
 
-        xact = gtp_xact_local_create(sess->sgw, &h, pkbuf);
-        d_assert(xact, return, "Null param");
+            xact = gtp_xact_local_create(sess->sgw, &h, pkbuf);
+            d_assert(xact, return, "Null param");
 
-        rv = gtp_xact_commit(xact);
-        d_assert(rv == CORE_OK, return, "xact_commit error");
+            rv = gtp_xact_commit(xact);
+            d_assert(rv == CORE_OK, return, "xact_commit error");
+        }
     }
 }
 
@@ -495,18 +498,21 @@ void s1ap_handle_e_rab_setup_response(
         memcpy(&bearer->enb_s1u_addr, e_rab->transportLayerAddress.buf,
                 sizeof(bearer->enb_s1u_addr));
 
-        memset(&h, 0, sizeof(gtp_header_t));
-        h.type = GTP_CREATE_BEARER_RESPONSE_TYPE;
-        h.teid = mme_ue->sgw_s11_teid;
+        if (FSM_CHECK(&bearer->sm, esm_state_active))
+        {
+            memset(&h, 0, sizeof(gtp_header_t));
+            h.type = GTP_CREATE_BEARER_RESPONSE_TYPE;
+            h.teid = mme_ue->sgw_s11_teid;
 
-        rv = mme_s11_build_create_bearer_response(&pkbuf, h.type, bearer);
-        d_assert(rv == CORE_OK, return, "S11 build error");
+            rv = mme_s11_build_create_bearer_response(&pkbuf, h.type, bearer);
+            d_assert(rv == CORE_OK, return, "S11 build error");
 
-        rv = gtp_xact_update_tx(xact, &h, pkbuf);
-        d_assert(xact, return, "Null param");
+            rv = gtp_xact_update_tx(xact, &h, pkbuf);
+            d_assert(xact, return, "Null param");
 
-        rv = gtp_xact_commit(xact);
-        d_assert(rv == CORE_OK, return, "xact_commit error");
+            rv = gtp_xact_commit(xact);
+            d_assert(rv == CORE_OK, return, "xact_commit error");
+        }
     }
 }
 
