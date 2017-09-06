@@ -69,8 +69,8 @@ static void nas_message_test2(abts_case *tc, void *data)
     attach_accept->tai_list.length = 6;
     plmn_id_build(&attach_accept->tai_list.type0.plmn_id, 417, 99, 2);
     attach_accept->tai_list.type0.tac[0] = 12345;
-    attach_accept->esm_message_container.len = sizeof(esm_buffer);
-    attach_accept->esm_message_container.data = 
+    attach_accept->esm_message_container.length = sizeof(esm_buffer);
+    attach_accept->esm_message_container.buffer = 
         CORE_HEX(esm_payload, strlen(esm_payload), esm_buffer);
 
     attach_accept->presencemask |= NAS_ATTACH_ACCEPT_GUTI_PRESENT;

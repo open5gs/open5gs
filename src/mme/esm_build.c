@@ -108,13 +108,15 @@ status_t esm_build_activate_default_bearer_context(
         apn_ambr_build(apn_ambr, pdn->ambr.downlink, pdn->ambr.uplink);
     }
 
-    if (sess->pgw_pco_len)
+    if (sess->pgw_pco.presence && sess->pgw_pco.len && sess->pgw_pco.data)
     {
         activate_default_eps_bearer_context_request->presencemask |=
             NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
-        protocol_configuration_options->length = sess->pgw_pco_len;
+        protocol_configuration_options->length = sess->pgw_pco.len;
         memcpy(protocol_configuration_options->buffer, 
-                sess->pgw_pco, protocol_configuration_options->length);
+                sess->pgw_pco.data, protocol_configuration_options->length);
+
+        TLV_CLEAR_DATA(&sess->pgw_pco);
     }
 
     d_assert(nas_plain_encode(pkbuf, &message) == CORE_OK && *pkbuf,,);
@@ -161,11 +163,12 @@ status_t esm_build_activate_dedicated_bearer_context(
             bearer->qos.mbr.downlink, bearer->qos.mbr.uplink,
             bearer->qos.gbr.downlink, bearer->qos.gbr.uplink);
 
-    tft->length = bearer->tft_len;
+    tft->length = bearer->tft.len;
     d_assert(tft->length, return CORE_ERROR, "No TFT Len");
-    d_assert(bearer->tft, return CORE_ERROR, "Null param");
-    memcpy(tft->buffer, bearer->tft, tft->length);
-    core_free(bearer->tft);
+    d_assert(bearer->tft.data, return CORE_ERROR, "Null param");
+    memcpy(tft->buffer, bearer->tft.data, tft->length);
+
+    TLV_CLEAR_DATA(&bearer->tft);
 
     d_assert(nas_security_encode(pkbuf, mme_ue, &message) == CORE_OK && 
             *pkbuf,,);

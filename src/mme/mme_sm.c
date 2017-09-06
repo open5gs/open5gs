@@ -291,7 +291,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
                     if (FSM_CHECK(&mme_ue->sm, emm_state_default_esm))
                     {
                         event_emm_to_esm(mme_ue,
-                                &mme_ue->last_pdn_connectivity_request);
+                                &mme_ue->pdn_connectivity_request);
                     }
                     else if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
                     {

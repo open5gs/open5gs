@@ -104,9 +104,7 @@ void mme_s11_handle_create_session_response(
     /* PCO */
     if (rsp->protocol_configuration_options.presence)
     {
-        sess->pgw_pco_len = rsp->protocol_configuration_options.len;
-        memcpy(sess->pgw_pco, rsp->protocol_configuration_options.data,
-                sess->pgw_pco_len);
+        TLV_STORE_DATA(&sess->pgw_pco, &rsp->protocol_configuration_options);
     }
 
     /* Data Plane(UL) : SGW-S1U */
@@ -281,10 +279,7 @@ void mme_s11_handle_create_bearer_request(
     bearer->qos.gbr.uplink = bearer_qos.ul_gbr;
 
     /* Bearer TFT */
-    bearer->tft_len = req->bearer_contexts.tft.len;
-    d_assert(bearer->tft_len, return, "No TFT Len");
-    bearer->tft = core_calloc(1, bearer->tft_len);
-    memcpy(bearer->tft, req->bearer_contexts.tft.data, bearer->tft_len);
+    TLV_STORE_DATA(&bearer->tft, &req->bearer_contexts.tft);
 
     if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
     {

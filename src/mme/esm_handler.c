@@ -22,11 +22,8 @@ void esm_handle_pdn_connectivity_request(mme_sess_t *sess,
     {
         nas_protocol_configuration_options_t *protocol_configuration_options = 
             &pdn_connectivity_request->protocol_configuration_options;
-        sess->ue_pco_len = protocol_configuration_options->length;
-        d_assert(sess->ue_pco_len <= MAX_PCO_LEN, return, 
-                "length(%d) exceeds MAX:%d", sess->ue_pco_len, MAX_PCO_LEN);
-        memcpy(sess->ue_pco, protocol_configuration_options->buffer, 
-                sess->ue_pco_len);
+
+        NAS_STORE_DATA(&sess->ue_pco, protocol_configuration_options);
     }
 }
 
@@ -53,11 +50,7 @@ void esm_handle_information_response(mme_sess_t *sess,
     {
         nas_protocol_configuration_options_t *protocol_configuration_options = 
             &esm_information_response->protocol_configuration_options;
-        sess->ue_pco_len = protocol_configuration_options->length;
-        d_assert(sess->ue_pco_len <= MAX_PCO_LEN, return, 
-                "length(%d) exceeds MAX:%d", sess->ue_pco_len, MAX_PCO_LEN);
-        memcpy(sess->ue_pco, protocol_configuration_options->buffer, 
-                sess->ue_pco_len);
+        NAS_STORE_DATA(&sess->ue_pco, protocol_configuration_options);
     }
 }
 

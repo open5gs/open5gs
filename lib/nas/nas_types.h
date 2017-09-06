@@ -7,6 +7,27 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#define NAS_CLEAR_DATA(__dATA) \
+    do { \
+        d_assert((__dATA), , "Null param"); \
+        if ((__dATA)->buffer) \
+        { \
+            core_free((__dATA)->buffer); \
+            (__dATA)->buffer = NULL; \
+            (__dATA)->length = 0; \
+        } \
+    } while(0)
+#define NAS_STORE_DATA(__dST, __sRC) \
+    do { \
+        d_assert((__sRC),, "Null param") \
+        d_assert((__sRC)->buffer,, "Null param") \
+        d_assert((__dST),, "Null param") \
+        NAS_CLEAR_DATA(__dST); \
+        (__dST)->length = (__sRC)->length; \
+        (__dST)->buffer = core_calloc(1, sizeof((__dST)->length)); \
+        memcpy((__dST)->buffer, (__sRC)->buffer, (__dST)->length); \
+    } while(0)
+
 /* 9.9.2.0 Additional information
  * O TLV 3-n */
 #define NAX_MAX_ADDITIONAL_INFORMATION_LEN 255
@@ -456,28 +477,9 @@ ED4(c_uint8_t tsc:1;,
 
 /* 9.9.3.15 ESM message container
  * M LV-E 5-n */
-#define NAS_ESM_CLEAR_MESSAGE(msg) \
-    do { \
-        d_assert((msg), , "Null param"); \
-        if ((msg)->data) \
-        { \
-            core_free((msg)->data); \
-            (msg)->data = NULL; \
-            (msg)->len = 0; \
-        } \
-    } while(0)
-#define NAS_ESM_STORE_MESSAGE(dst, src) \
-    do { \
-        d_assert((src),, "Null param") \
-        d_assert((dst),, "Null param") \
-        NAS_ESM_CLEAR_MESSAGE(dst); \
-        (dst)->len = (src)->len; \
-        (dst)->data = core_calloc(1, sizeof((dst)->len)); \
-        memcpy((dst)->data, (src)->data, (dst)->len); \
-    } while(0)
 typedef struct _nas_esm_message_container_t {
-    c_uint16_t len;
-    c_uint8_t *data;
+    c_uint16_t length;
+    c_uint8_t *buffer;
 } nas_esm_message_container_t;
 
 /* 9.9.3.16 GPRS timer
@@ -961,8 +963,8 @@ typedef c_uint8_t nas_generic_message_container_type_t;
 /* 9.9.3.43 Generic message container
  * M LV-E 3-n */
 typedef struct _nas_generic_message_container_t {
-    c_uint16_t len;
-    c_uint8_t *data;
+    c_uint16_t length;
+    c_uint8_t *buffer;
 } nas_generic_message_container_t;
 
 /* 9.9.3.44 Voice domain preference and UE's usage setting
@@ -1279,8 +1281,8 @@ ED3(c_uint8_t type:4;,
 /* 9.9.4.26 Extended protocol configuration options
  * O TLV-E 4-65538 */
 typedef struct _nas_extended_protocol_configuration_options_t {
-    c_uint16_t len;
-    c_uint8_t *data;
+    c_uint16_t length;
+    c_uint8_t *buffer;
 } __attribute__ ((packed)) nas_extended_protocol_configuration_options_t;
 
 /* 9.9.4.27 Header compression configuration status

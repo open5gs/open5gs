@@ -226,8 +226,8 @@ struct _mme_ue_t {
     /* eNB UE context */
     enb_ue_t        *enb_ue;
 
-    /* PDN Connectivity Request */
-    nas_esm_message_container_t last_pdn_connectivity_request;
+    /* Save PDN Connectivity Request */
+    nas_esm_message_container_t pdn_connectivity_request;
 
     /* Paging */
     pkbuf_t         *last_paging_msg;
@@ -282,11 +282,14 @@ typedef struct _mme_sess_t {
       (((__sESS)->pdn)->pgw.ipv4_addr) : (mme_self()->s5c_addr))
     pdn_t           *pdn;
 
-    /* Protocol Configuration Options */
-    c_uint8_t       ue_pco[MAX_PCO_LEN];  
-    int             ue_pco_len;
-    c_uint8_t       pgw_pco[MAX_PCO_LEN];  
-    int             pgw_pco_len;
+    /* Save Protocol Configuration Options from UE */
+    struct {
+        c_uint8_t length;
+        c_uint8_t *buffer;
+    } ue_pco; 
+
+    /* Save Protocol Configuration Options from PGW */
+    tlv_octet_t     pgw_pco;
 } mme_sess_t;
 
 #define MME_HAVE_ENB_S1U_PATH(__bEARER) \
@@ -305,8 +308,7 @@ typedef struct _mme_bearer_t {
     c_uint32_t      sgw_s1u_addr;
 
     qos_t           qos;
-    c_uint8_t       *tft;
-    c_uint8_t       tft_len;
+    tlv_octet_t     tft;   /* Saved TFT */
 
     /* Related Context */
     mme_ue_t        *mme_ue;

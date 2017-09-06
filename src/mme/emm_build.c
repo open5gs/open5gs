@@ -142,8 +142,8 @@ status_t emm_build_attach_accept(
     tai_list->num = 0; /* +1 = 1 elements */
     memcpy(&tai_list->type2.tai[0], &mme_ue->enb_ue->tai, sizeof(tai_t));
 
-    attach_accept->esm_message_container.data = esmbuf->payload;
-    attach_accept->esm_message_container.len = esmbuf->len;
+    attach_accept->esm_message_container.buffer = esmbuf->payload;
+    attach_accept->esm_message_container.length = esmbuf->len;
 
     attach_accept->presencemask |= NAS_ATTACH_ACCEPT_GUTI_PRESENT;
     guti->length = sizeof(nas_eps_mobile_identity_guti_t);
@@ -192,8 +192,8 @@ status_t emm_build_attach_reject(
     {
         attach_reject->presencemask |= 
             NAS_ATTACH_REJECT_ESM_MESSAGE_CONTAINER_PRESENT;
-        attach_reject->esm_message_container.data = esmbuf->payload;
-        attach_reject->esm_message_container.len = esmbuf->len;
+        attach_reject->esm_message_container.buffer = esmbuf->payload;
+        attach_reject->esm_message_container.length = esmbuf->len;
     }
 
     d_assert(nas_plain_encode(emmbuf, &message) == CORE_OK && *emmbuf,,);

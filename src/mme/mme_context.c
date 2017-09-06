@@ -1168,7 +1168,7 @@ status_t mme_ue_remove(mme_ue_t *mme_ue)
     tm_delete(mme_ue->t3413);
 
     /* Free the saved PDN Connectivity Request */
-    NAS_ESM_CLEAR_MESSAGE(&mme_ue->last_pdn_connectivity_request);
+    NAS_CLEAR_DATA(&mme_ue->pdn_connectivity_request);
 
     /* Free the saved paging msg */
     if (mme_ue->last_paging_msg)
@@ -1501,6 +1501,9 @@ status_t mme_sess_remove(mme_sess_t *sess)
 
     mme_bearer_remove_all(sess);
 
+    NAS_CLEAR_DATA(&sess->ue_pco);
+    TLV_CLEAR_DATA(&sess->pgw_pco);
+
     list_remove(&sess->mme_ue->sess_list, sess);
     index_free(&mme_sess_pool, sess);
 
@@ -1601,8 +1604,7 @@ status_t mme_bearer_remove(mme_bearer_t *bearer)
     fsm_final(&bearer->sm, &e);
     fsm_clear(&bearer->sm);
 
-    if (bearer->tft)
-        core_free(bearer->tft);
+    TLV_CLEAR_DATA(&bearer->tft);
     
     list_remove(&bearer->sess->bearer_list, bearer);
     index_free(&mme_bearer_pool, bearer);

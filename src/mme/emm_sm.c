@@ -129,7 +129,7 @@ void emm_state_identity(fsm_t *s, event_t *e)
                     if (SECURITY_CONTEXT_IS_VALID(mme_ue))
                     {
                         event_emm_to_esm(mme_ue,
-                            &mme_ue->last_pdn_connectivity_request);
+                            &mme_ue->pdn_connectivity_request);
                         FSM_TRAN(s, &emm_state_default_esm);
                     }
                     else
@@ -511,7 +511,7 @@ void emm_state_attach_request(fsm_t *s, event_t *e,
     {
         if (SECURITY_CONTEXT_IS_VALID(mme_ue))
         {
-            event_emm_to_esm(mme_ue, &mme_ue->last_pdn_connectivity_request);
+            event_emm_to_esm(mme_ue, &mme_ue->pdn_connectivity_request);
             FSM_TRAN(s, &emm_state_default_esm);
         }
         else

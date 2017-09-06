@@ -100,6 +100,28 @@ typedef struct _tlv_int32_t {
 } tlv_int32_t;
 
 /* Octets */
+#define TLV_CLEAR_DATA(__dATA) \
+    do { \
+        d_assert((__dATA), , "Null param"); \
+        if ((__dATA)->data) \
+        { \
+            core_free((__dATA)->data); \
+            (__dATA)->data = NULL; \
+            (__dATA)->len = 0; \
+            (__dATA)->presence = 0; \
+        } \
+    } while(0)
+#define TLV_STORE_DATA(__dST, __sRC) \
+    do { \
+        d_assert((__sRC),, "Null param") \
+        d_assert((__sRC)->data,, "Null param") \
+        d_assert((__dST),, "Null param") \
+        TLV_CLEAR_DATA(__dST); \
+        (__dST)->presence = (__sRC)->presence; \
+        (__dST)->len = (__sRC)->len; \
+        (__dST)->data = core_calloc(1, sizeof((__dST)->len)); \
+        memcpy((__dST)->data, (__sRC)->data, (__dST)->len); \
+    } while(0)
 typedef struct _tlv_octet_t {
     tlv_presence_t presence;
     void *data;

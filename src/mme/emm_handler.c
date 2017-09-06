@@ -35,16 +35,16 @@ void event_emm_to_esm(
 
     d_assert(mme_ue, return, "Null param");
     d_assert(esm_message_container, return, "Null param");
-    d_assert(esm_message_container->len, return, "Null param");
+    d_assert(esm_message_container->length, return, "Null param");
 
     /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 
      * When calculating AES_CMAC, we need to use the headroom of the packet. */
-    esmbuf = pkbuf_alloc(NAS_HEADROOM, esm_message_container->len);
+    esmbuf = pkbuf_alloc(NAS_HEADROOM, esm_message_container->length);
     d_assert(esmbuf, return, "Null param");
     memcpy(esmbuf->payload, 
-            esm_message_container->data, esm_message_container->len);
+            esm_message_container->buffer, esm_message_container->length);
 
-    h = (nas_esm_header_t *)esm_message_container->data;
+    h = (nas_esm_header_t *)esm_message_container->buffer;
     d_assert(h, return, "Null param");
 
     pti = h->procedure_transaction_identity;
@@ -85,7 +85,7 @@ void emm_handle_attach_request(
     d_assert(enb_ue, return, "Null param");
 
     d_assert(esm_message_container, return, "Null param");
-    d_assert(esm_message_container->len, return, "Null param");
+    d_assert(esm_message_container->length, return, "Null param");
 
     /* Store UE specific information */
     if (attach_request->presencemask &
@@ -161,8 +161,7 @@ void emm_handle_attach_request(
         }
     }
 
-    NAS_ESM_STORE_MESSAGE(
-            &mme_ue->last_pdn_connectivity_request, esm_message_container);
+    NAS_STORE_DATA(&mme_ue->pdn_connectivity_request, esm_message_container);
 }
 
 void emm_handle_attach_accept(mme_ue_t *mme_ue)
