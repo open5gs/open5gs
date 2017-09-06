@@ -181,7 +181,7 @@ const schema = {
                       "description": {
                         "type": "string",
                         "title": "Description*",
-                        "default": "permit out ip from any to any",
+                        "default": "permit out udp from any 1-65535 to 45.45.45.45",
                         "required": true,
                         "pattern": "^permit\\s+out",
                         "messages": {
