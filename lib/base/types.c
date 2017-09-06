@@ -41,26 +41,47 @@ void *plmn_id_build(plmn_id_t *plmn_id,
     return plmn_id;
 }
 
-c_int16_t apn_build(c_int8_t *dst, c_int8_t *src, c_int16_t len)
+c_int16_t apn_build(c_int8_t *dst, c_int8_t *src, c_int16_t length)
 {
-    char *dot = NULL;
+    int i = 0, j = 0;
 
-    core_cpystrn(dst+1, src, c_min(len, MAX_APN_LEN)+1);
+    for (i = 0, j = 0; i < length; i++, j++)
+    {
+        if (src[i] == '.')
+        {
+            dst[i-j] = j;
+            j = -1;
+        }
+        else
+        {
+            dst[i+1] = src[i];
+        }
+    }
+    dst[i-j] = j;
 
-    dot = strchr(src, '.');
-    if (dot)
-        dst[0] = src - dot;
-    else
-        dst[0] = len;
-
-    return len+1;
+    return length+1;
 }
 
-c_int16_t apn_parse(c_int8_t *dst, c_int8_t *src, c_int16_t len)
+c_int16_t apn_parse(c_int8_t *dst, c_int8_t *src, c_int16_t length)
 {
-    core_cpystrn(dst, src+1, c_min(len-1, MAX_APN_LEN)+1);
+    int i = 0, j = 0;
+    c_uint8_t len = 0;
 
-    return len-1;
+    do
+    {
+        len = src[i++];
+        memcpy(&dst[j], &src[i], len);
+
+        i += len;
+        j += len;
+        
+        if (i < length)
+            dst[j++] = '.';
+        else
+            dst[j] = 0;
+    } while(i < length);
+
+    return j;
 }
 
 /* 8.13 Protocol Configuration Options (PCO) 

@@ -32,7 +32,10 @@ void emm_state_exception(fsm_t *s, event_t *e);
 void esm_state_initial(fsm_t *s, event_t *e);
 void esm_state_final(fsm_t *s, event_t *e);
 void esm_state_inactive(fsm_t *s, event_t *e);
+void esm_state_information(fsm_t *s, event_t *e);
 void esm_state_active(fsm_t *s, event_t *e);
+void esm_state_session_exception(fsm_t *s, event_t *e);
+void esm_state_bearer_exception(fsm_t *s, event_t *e);
 
 #define mme_sm_print(__pe) \
     d_print("%s(): %s\n", __func__, mme_event_get_name(__pe))

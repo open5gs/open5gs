@@ -94,7 +94,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     CHECK_FCT( fd_msg_search_avp(qry, gx_called_station_id, &avp) );
     CHECK_FCT( fd_msg_avp_hdr(avp, &hdr) );
     core_cpystrn(apn, (char*)hdr->avp_value->os.data, 
-        c_min(hdr->avp_value->os.len, MAX_IMSI_BCD_LEN)+1);
+        c_min(hdr->avp_value->os.len, MAX_APN_LEN)+1);
 
     rv = pcrf_db_pdn_data(imsi_bcd, apn, &cca_message);
     if (rv != CORE_OK)

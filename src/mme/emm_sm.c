@@ -16,7 +16,7 @@
 #include "mme_s11_handler.h"
 #include "nas_path.h"
 
-void emm_state_attach_request(fsm_t *s, event_t *e,
+static void emm_state_attach_request(fsm_t *s, event_t *e,
         mme_ue_t *mme_ue, nas_message_t *message);
 
 void emm_state_initial(fsm_t *s, event_t *e)
@@ -484,7 +484,43 @@ void emm_state_attached(fsm_t *s, event_t *e)
     }
 }
 
-void emm_state_attach_request(fsm_t *s, event_t *e,
+void emm_state_exception(fsm_t *s, event_t *e)
+{
+    mme_ue_t *mme_ue = NULL;
+    mme_sess_t *sess = NULL;
+    mme_bearer_t *bearer = NULL;
+
+    d_assert(s, return, "Null param");
+    d_assert(e, return, "Null param");
+
+    mme_sm_trace(3, e);
+
+    bearer = mme_bearer_find(event_get_param1(e));
+    d_assert(bearer, return, "Null param");
+    sess = bearer->sess;
+    d_assert(sess, return, "Null param");
+    mme_ue = sess->mme_ue;
+    d_assert(mme_ue, return, "Null param");
+
+    switch (event_get(e))
+    {
+        case FSM_ENTRY_SIG:
+        {
+            break;
+        }
+        case FSM_EXIT_SIG:
+        {
+            break;
+        }
+        default:
+        {
+            d_error("Unknown event %s", mme_event_get_name(e));
+            break;
+        }
+    }
+}
+
+static void emm_state_attach_request(fsm_t *s, event_t *e,
         mme_ue_t *mme_ue, nas_message_t *message)
 {
     d_assert(s, return, "Null param");
@@ -528,4 +564,3 @@ void emm_state_attach_request(fsm_t *s, event_t *e,
         }
     }
 }
-

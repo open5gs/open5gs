@@ -11,7 +11,8 @@ extern "C" {
 
 CORE_DECLARE(void) mme_s11_handle_create_session_request(mme_sess_t *sess);
 CORE_DECLARE(void) mme_s11_handle_create_session_response(
-        gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_create_session_response_t *rsp);
+        gtp_xact_t *xact, mme_bearer_t *bearer,
+        gtp_create_session_response_t *rsp);
 CORE_DECLARE(void) mme_s11_handle_modify_bearer_response(
         gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_modify_bearer_response_t *rsp);
 CORE_DECLARE(void) mme_s11_handle_delete_all_sessions_in_ue(mme_ue_t *mme_ue);

@@ -15,7 +15,20 @@
 void esm_handle_pdn_connectivity_request(mme_sess_t *sess, 
         nas_pdn_connectivity_request_t *pdn_connectivity_request)
 {
+    mme_ue_t *mme_ue = NULL;
+
     d_assert(sess, return, "Null param");
+    mme_ue = sess->mme_ue;
+    d_assert(mme_ue, return, "Null param");
+
+    if (pdn_connectivity_request->presencemask &
+            NAS_PDN_CONNECTIVITY_REQUEST_ACCESS_POINT_NAME_PRESENT)
+    {
+        sess->pdn = mme_pdn_find_by_apn(mme_ue, 
+                pdn_connectivity_request->access_point_name.apn);
+        d_assert(sess->pdn, return, "No PDN Context[APN:%s])", 
+            pdn_connectivity_request->access_point_name.apn);
+    }
 
     if (pdn_connectivity_request->presencemask &
             NAS_PDN_CONNECTIVITY_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT)
@@ -54,32 +67,6 @@ void esm_handle_information_response(mme_sess_t *sess,
     }
 }
 
-void esm_handle_activate_dedicated_bearer_request(mme_bearer_t *bearer)
-{
-    status_t rv;
-    mme_ue_t *mme_ue = NULL;
-    enb_ue_t *enb_ue = NULL;
-    pkbuf_t *esmbuf = NULL, *s1apbuf = NULL;
-
-    d_assert(bearer, return, "Null param");
-    mme_ue = bearer->mme_ue;
-    d_assert(mme_ue, return, "Null param");
-    enb_ue = mme_ue->enb_ue;
-    d_assert(enb_ue, return, "Null param");
-
-    rv = esm_build_activate_dedicated_bearer_context(&esmbuf, bearer);
-    d_assert(rv == CORE_OK && esmbuf, return, "esm build error");
-
-    d_trace(3, "[NAS] Activate dedicated bearer context request : "
-            "EMM <-- ESM\n");
-
-    rv = s1ap_build_e_rab_setup_request(&s1apbuf, bearer, esmbuf);
-    d_assert(rv == CORE_OK && s1apbuf, 
-            pkbuf_free(esmbuf); return, "s1ap build error");
-
-    d_assert(nas_send_to_enb(enb_ue, s1apbuf) == CORE_OK,,);
-}
-
 void esm_handle_activate_default_bearer_accept(mme_bearer_t *bearer)
 {
     status_t rv;
@@ -110,12 +97,9 @@ void esm_handle_activate_default_bearer_accept(mme_bearer_t *bearer)
 
         rv = gtp_xact_commit(xact);
         d_assert(rv == CORE_OK, return, "xact_commit error");
-    }
 
-    dedicated_bearer = mme_bearer_next(bearer);
-    while(dedicated_bearer)
-    {
-        if (!MME_HAVE_ENB_S1U_PATH(dedicated_bearer))
+        dedicated_bearer = mme_bearer_next(bearer);
+        while(dedicated_bearer)
         {
             enb_ue_t *enb_ue = NULL;
             pkbuf_t *esmbuf = NULL, *s1apbuf = NULL;
@@ -136,8 +120,9 @@ void esm_handle_activate_default_bearer_accept(mme_bearer_t *bearer)
                     pkbuf_free(esmbuf); return, "s1ap build error");
 
             d_assert(nas_send_to_enb(enb_ue, s1apbuf) == CORE_OK,,);
+
+            dedicated_bearer = mme_bearer_next(dedicated_bearer);
         }
-        dedicated_bearer = mme_bearer_next(dedicated_bearer);
     }
 }
 

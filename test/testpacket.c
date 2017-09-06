@@ -755,7 +755,8 @@ status_t tests1ap_build_e_rab_setup_response(pkbuf_t **pkbuf, int i)
     char *payload[TESTS1AP_MAX_MESSAGE] = { 
         "2005002600000300 004005c00200003c 0008400300010000 1c400f000027400a"
         "0c1f0a012da50100 b410",
-        "",
+        "2005002600000300 004005c00200003c 0008400300010000 1c400f000027400a"
+        "0e1f0a012da50100 b410",
         "",
 
         "",
@@ -769,6 +770,50 @@ status_t tests1ap_build_e_rab_setup_response(pkbuf_t **pkbuf, int i)
     };
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         42,
+        42,
+        0,
+
+        0,
+        0,
+        0,
+
+        0,
+        0,
+        0,
+    };
+    char hexbuf[MAX_SDU_LEN];
+    
+    *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    if (!(*pkbuf)) return CORE_ERROR;
+
+    (*pkbuf)->len = len[i];
+    memcpy((*pkbuf)->payload, CORE_HEX(payload[i], strlen(payload[i]), hexbuf),
+            (*pkbuf)->len);
+
+    return CORE_OK;
+}
+
+status_t tests1ap_build_activate_default_bearer_accept(
+        pkbuf_t **pkbuf, int i)
+{
+    char *payload[TESTS1AP_MAX_MESSAGE] = { 
+        "000d40370000"
+        "0500000005c08000 0107000800030001 00001a000a0927e7 f5bb400b6200c200"
+        "6440080055f50100 19d0100043400600 55f5011022",
+        "",
+        "",
+
+        "",
+        "",
+        "",
+
+        "",
+        "",
+        "",
+
+    };
+    c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
+        59,
         0,
         0,
 
@@ -799,7 +844,9 @@ status_t tests1ap_build_activate_dedicated_bearer_accept(
         "000d403700000500"
         "000005c00200003c 0008000300010000 1a000a0927c035da 96036200c6006440"
         "080000f1109d67aa 50004340060000f1 102b67",
-        "",
+        "000d403700000500"
+        "000005c00200003c 0008000300010000 1a000a0927078a5f 34037200c6006440"
+        "080000f1109d67aa 50004340060000f1 102b67",
         "",
 
         "",
@@ -813,7 +860,7 @@ status_t tests1ap_build_activate_dedicated_bearer_accept(
     };
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         59,
-        0,
+        59,
         0,
 
         0,
@@ -836,3 +883,48 @@ status_t tests1ap_build_activate_dedicated_bearer_accept(
     return CORE_OK;
 }
 
+status_t tests1ap_build_pdn_connectivity_request(
+        pkbuf_t **pkbuf, int i)
+{
+    char *payload[TESTS1AP_MAX_MESSAGE] = { 
+        "000d40680000"
+        "0500000005c08000 0107000800030001 00001a003b3a277c 81dab50a0205d011"
+        "281208696e746572 6e6574036e673204 6d6e6574271a8080 2110010000108106"
+        "0000000083060000 0000000d00000a00 006440080055f501 0019d01000434006"
+        "0055f5011022",
+        "",
+        "",
+
+        "",
+        "",
+        "",
+
+        "",
+        "",
+        "",
+
+    };
+    c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
+        108,
+        0,
+        0,
+
+        0,
+        0,
+        0,
+
+        59,
+        0,
+        0,
+    };
+    char hexbuf[MAX_SDU_LEN];
+    
+    *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    if (!(*pkbuf)) return CORE_ERROR;
+
+    (*pkbuf)->len = len[i];
+    memcpy((*pkbuf)->payload, CORE_HEX(payload[i], strlen(payload[i]), hexbuf),
+            (*pkbuf)->len);
+
+    return CORE_OK;
+}

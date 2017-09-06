@@ -9,6 +9,8 @@
 #include "s1ap_path.h"
 #include "nas_message.h"
 #include "nas_security.h"
+#include "nas_path.h"
+#include "esm_build.h"
 #include "mme_s11_build.h"
 #include "mme_gtp_path.h"
 
@@ -381,6 +383,63 @@ void s1ap_handle_ue_capability_info_indication(
             enb->enb_id);
 }
 
+void s1ap_handle_activate_default_bearer_accept(mme_bearer_t *bearer)
+{
+    status_t rv;
+    gtp_header_t h;
+    gtp_xact_t *xact = NULL;
+    mme_ue_t *mme_ue = NULL;
+    mme_sess_t *sess = NULL;
+    mme_bearer_t *dedicated_bearer = NULL;
+    pkbuf_t *pkbuf = NULL;
+
+    d_assert(bearer, return, "Null param");
+    sess = bearer->sess;
+    d_assert(sess, return, "Null param");
+    mme_ue = sess->mme_ue;
+    d_assert(mme_ue, return, "Null param");
+
+    memset(&h, 0, sizeof(gtp_header_t));
+    h.type = GTP_MODIFY_BEARER_REQUEST_TYPE;
+    h.teid = mme_ue->sgw_s11_teid;
+
+    rv = mme_s11_build_modify_bearer_request(&pkbuf, h.type, bearer);
+    d_assert(rv == CORE_OK, return, "S11 build error");
+
+    xact = gtp_xact_local_create(sess->sgw, &h, pkbuf);
+    d_assert(xact, return, "Null param");
+
+    rv = gtp_xact_commit(xact);
+    d_assert(rv == CORE_OK, return, "xact_commit error");
+
+    dedicated_bearer = mme_bearer_next(bearer);
+    while(dedicated_bearer)
+    {
+        enb_ue_t *enb_ue = NULL;
+        pkbuf_t *esmbuf = NULL, *s1apbuf = NULL;
+
+        enb_ue = mme_ue->enb_ue;
+        d_assert(enb_ue, return, "Null param");
+
+        rv = esm_build_activate_dedicated_bearer_context(
+                &esmbuf, dedicated_bearer);
+        d_assert(rv == CORE_OK && esmbuf, return, "esm build error");
+
+        d_trace(3, "[NAS] Activate dedicated bearer context request : "
+                "EMM <-- ESM\n");
+
+        rv = s1ap_build_e_rab_setup_request(
+                &s1apbuf, dedicated_bearer, esmbuf);
+        d_assert(rv == CORE_OK && s1apbuf, 
+                pkbuf_free(esmbuf); return, "s1ap build error");
+
+        d_assert(nas_send_to_enb(enb_ue, s1apbuf) == CORE_OK,,);
+
+        dedicated_bearer = mme_bearer_next(dedicated_bearer);
+    }
+}
+
+
 void s1ap_handle_initial_context_setup_response(
         mme_enb_t *enb, s1ap_message_t *message)
 {
@@ -405,11 +464,7 @@ void s1ap_handle_initial_context_setup_response(
     for (i = 0; i < ies->e_RABSetupListCtxtSURes.
             s1ap_E_RABSetupItemCtxtSURes.count; i++)
     {
-        status_t rv;
-        gtp_header_t h;
-        gtp_xact_t *xact = NULL;
         mme_sess_t *sess = NULL;
-        pkbuf_t *pkbuf = NULL;
 
         mme_bearer_t *bearer = NULL;
         mme_ue_t *mme_ue = enb_ue->mme_ue;
@@ -431,18 +486,7 @@ void s1ap_handle_initial_context_setup_response(
 
         if (FSM_CHECK(&bearer->sm, esm_state_active))
         {
-            memset(&h, 0, sizeof(gtp_header_t));
-            h.type = GTP_MODIFY_BEARER_REQUEST_TYPE;
-            h.teid = mme_ue->sgw_s11_teid;
-
-            rv = mme_s11_build_modify_bearer_request(&pkbuf, h.type, bearer);
-            d_assert(rv == CORE_OK, return, "S11 build error");
-
-            xact = gtp_xact_local_create(sess->sgw, &h, pkbuf);
-            d_assert(xact, return, "Null param");
-
-            rv = gtp_xact_commit(xact);
-            d_assert(rv == CORE_OK, return, "xact_commit error");
+            s1ap_handle_activate_default_bearer_accept(bearer);
         }
     }
 }
@@ -479,7 +523,7 @@ void s1ap_handle_e_rab_setup_response(
         gtp_xact_t *xact = NULL;
         pkbuf_t *pkbuf = NULL;
 
-        mme_bearer_t *bearer = NULL;
+        mme_bearer_t *bearer = NULL, *linked_bearer = NULL;
         mme_ue_t *mme_ue = enb_ue->mme_ue;
         S1ap_E_RABSetupItemBearerSURes_t *e_rab = NULL;
 
@@ -489,8 +533,6 @@ void s1ap_handle_e_rab_setup_response(
 
         bearer = mme_bearer_find_by_ue_ebi(mme_ue, e_rab->e_RAB_ID);
         d_assert(bearer, return, "Null param");
-        xact = bearer->xact;
-        d_assert(xact, return, "Null param");
 
         memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf, 
                 sizeof(bearer->enb_s1u_teid));
@@ -500,18 +542,34 @@ void s1ap_handle_e_rab_setup_response(
 
         if (FSM_CHECK(&bearer->sm, esm_state_active))
         {
-            memset(&h, 0, sizeof(gtp_header_t));
-            h.type = GTP_CREATE_BEARER_RESPONSE_TYPE;
-            h.teid = mme_ue->sgw_s11_teid;
+            linked_bearer = mme_linked_bearer(bearer);
+            d_assert(linked_bearer, return, "Null param");
+        
+            if (linked_bearer->ebi == bearer->ebi)
+            {
+                /* Default Bearer */
+                s1ap_handle_activate_default_bearer_accept(bearer);
+            }
+            else
+            {
+                /* Dedicated Bearer */
+                xact = bearer->xact;
+                d_assert(xact, return, "Null param");
 
-            rv = mme_s11_build_create_bearer_response(&pkbuf, h.type, bearer);
-            d_assert(rv == CORE_OK, return, "S11 build error");
+                memset(&h, 0, sizeof(gtp_header_t));
+                h.type = GTP_CREATE_BEARER_RESPONSE_TYPE;
+                h.teid = mme_ue->sgw_s11_teid;
 
-            rv = gtp_xact_update_tx(xact, &h, pkbuf);
-            d_assert(xact, return, "Null param");
+                rv = mme_s11_build_create_bearer_response(
+                        &pkbuf, h.type, bearer);
+                d_assert(rv == CORE_OK, return, "S11 build error");
 
-            rv = gtp_xact_commit(xact);
-            d_assert(rv == CORE_OK, return, "xact_commit error");
+                rv = gtp_xact_update_tx(xact, &h, pkbuf);
+                d_assert(xact, return, "Null param");
+
+                rv = gtp_xact_commit(xact);
+                d_assert(rv == CORE_OK, return, "xact_commit error");
+            }
         }
     }
 }

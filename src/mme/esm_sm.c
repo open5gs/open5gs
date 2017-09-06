@@ -73,17 +73,6 @@ void esm_state_inactive(fsm_t *s, event_t *e)
                             mme_ue, sess, bearer, message);
                     break;
                 }
-                case NAS_ESM_INFORMATION_RESPONSE:
-                {
-                    d_trace(3, "[NAS] ESM information response : "
-                            "UE[%s] --> ESM[%d]\n", 
-                            mme_ue->imsi_bcd, bearer->pti);
-                    esm_handle_information_response(
-                            sess, &message->esm.esm_information_response);
-
-                    mme_s11_handle_create_session_request(sess);
-                    break;
-                }
                 case NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_ACCEPT:
                 {
                     d_trace(3, "[NAS] Activate default EPS bearer "
@@ -101,6 +90,79 @@ void esm_state_inactive(fsm_t *s, event_t *e)
                             mme_ue->imsi_bcd, bearer->pti);
                     esm_handle_activate_dedicated_bearer_accept(bearer);
                     FSM_TRAN(s, esm_state_active);
+                    break;
+                }
+                default:
+                {
+                    d_warn("Not implemented(type:%d)", 
+                            message->esm.h.message_type);
+                    break;
+                }
+            }
+            break;
+        }
+
+        default:
+        {
+            d_error("Unknown event %s", mme_event_get_name(e));
+            break;
+        }
+    }
+}
+
+void esm_state_information(fsm_t *s, event_t *e)
+{
+    mme_ue_t *mme_ue = NULL;
+    mme_sess_t *sess = NULL;
+    mme_bearer_t *bearer = NULL;
+
+    d_assert(s, return, "Null param");
+    d_assert(e, return, "Null param");
+
+    mme_sm_trace(3, e);
+
+    bearer = mme_bearer_find(event_get_param1(e));
+    d_assert(bearer, return, "Null param");
+    sess = bearer->sess;
+    d_assert(sess, return, "Null param");
+    mme_ue = sess->mme_ue;
+    d_assert(mme_ue, return, "Null param");
+
+    switch (event_get(e))
+    {
+        case FSM_ENTRY_SIG:
+        {
+            status_t rv;
+            pkbuf_t *esmbuf = NULL;
+
+            rv = esm_build_information_request(&esmbuf, bearer);
+            d_assert(rv == CORE_OK && esmbuf, return,
+                    "esm_build failed");
+            d_assert(nas_send_to_downlink_nas_transport(
+                    mme_ue, esmbuf) == CORE_OK,,);
+            break;
+        }
+        case FSM_EXIT_SIG:
+        {
+            break;
+        }
+        case MME_EVT_ESM_MESSAGE:
+        {
+            nas_message_t *message = (nas_message_t *)event_get_param3(e);
+            d_assert(message, break, "Null param");
+
+            switch(message->esm.h.message_type)
+            {
+                case NAS_ESM_INFORMATION_RESPONSE:
+                {
+                    d_trace(3, "[NAS] ESM information response : "
+                            "UE[%s] --> ESM[%d]\n", 
+                            mme_ue->imsi_bcd, bearer->pti);
+                    esm_handle_information_response(
+                            sess, &message->esm.esm_information_response);
+
+                    mme_s11_handle_create_session_request(sess);
+                    FSM_TRAN(s, esm_state_inactive);
                     break;
                 }
                 default:
@@ -181,6 +243,46 @@ void esm_state_active(fsm_t *s, event_t *e)
     }
 }
 
+void esm_state_session_exception(fsm_t *s, event_t *e)
+{
+    switch (event_get(e))
+    {
+        case FSM_ENTRY_SIG:
+        {
+            break;
+        }
+        case FSM_EXIT_SIG:
+        {
+            break;
+        }
+        default:
+        {
+            d_error("Unknown event %s", mme_event_get_name(e));
+            break;
+        }
+    }
+}
+
+void esm_state_bearer_exception(fsm_t *s, event_t *e)
+{
+    switch (event_get(e))
+    {
+        case FSM_ENTRY_SIG:
+        {
+            break;
+        }
+        case FSM_EXIT_SIG:
+        {
+            break;
+        }
+        default:
+        {
+            d_error("Unknown event %s", mme_event_get_name(e));
+            break;
+        }
+    }
+}
+
 static void esm_state_pdn_connectivity_request(
     fsm_t *s, event_t *e, mme_ue_t *mme_ue, mme_sess_t *sess,
     mme_bearer_t *bearer, nas_message_t *message)
@@ -205,25 +307,25 @@ static void esm_state_pdn_connectivity_request(
 
     if (MME_UE_HAVE_APN(mme_ue))
     {
-        if (MME_HAVE_SGW_S11_PATH(mme_ue))
+        if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
         {
-            emm_handle_attach_accept(mme_ue);
+            mme_s11_handle_create_session_request(sess);
         }
         else
         {
-            mme_s11_handle_create_session_request(sess);
+            if (MME_HAVE_SGW_S11_PATH(mme_ue))
+            {
+                emm_handle_attach_accept(mme_ue);
+            }
+            else
+            {
+                mme_s11_handle_create_session_request(sess);
+            }
         }
     }
     else
     {
-        status_t rv;
-        pkbuf_t *esmbuf = NULL;
-
-        rv = esm_build_information_request(&esmbuf, bearer);
-        d_assert(rv == CORE_OK && esmbuf, return,
-                "esm_build failed");
-        d_assert(nas_send_to_downlink_nas_transport(
-                mme_ue, esmbuf) == CORE_OK,,);
+        FSM_TRAN(s, esm_state_information);
     }
 }
 

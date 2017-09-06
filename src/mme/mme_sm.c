@@ -6,14 +6,16 @@
 
 #include "mme_event.h"
 
+#include "s1ap_build.h"
 #include "s1ap_handler.h"
 #include "s1ap_path.h"
 #include "mme_fd_path.h"
-#include "nas_security.h"
-#include "emm_handler.h"
 #include "mme_gtp_path.h"
 #include "mme_s11_handler.h"
+#include "nas_security.h"
+#include "nas_path.h"
 #include "emm_handler.h"
+#include "esm_build.h"
 #include "esm_handler.h"
 #include "fd_lib.h"
 #include "mme_s6a_handler.h"
@@ -205,6 +207,10 @@ void mme_state_operational(fsm_t *s, event_t *e)
             event_set_param4(e, (c_uintptr_t)&message);
 
             fsm_dispatch(&mme_ue->sm, (fsm_event_t*)e);
+            if (FSM_CHECK(&mme_ue->sm, emm_state_exception))
+            {
+                mme_ue_remove(mme_ue);
+            }
 
             pkbuf_free(pkbuf);
 
@@ -237,6 +243,16 @@ void mme_state_operational(fsm_t *s, event_t *e)
             event_set_param3(e, (c_uintptr_t)&message);
 
             fsm_dispatch(&bearer->sm, (fsm_event_t*)e);
+            if (FSM_CHECK(&bearer->sm, esm_state_session_exception))
+            {
+                mme_sess_t *sess = bearer->sess;
+                d_assert(sess, break, "Null param");
+                mme_sess_remove(sess);
+            }
+            else if (FSM_CHECK(&bearer->sm, esm_state_bearer_exception))
+            {
+                mme_bearer_remove(bearer);
+            }
 
             pkbuf_free(pkbuf);
 
@@ -264,8 +280,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
                             EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED,
                             ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
 
-                        fsm_final(&mme_ue->sm, e);
-                        fsm_init(&mme_ue->sm, e);
+                        mme_ue_remove(mme_ue);
                         break;
                     }
 
@@ -281,8 +296,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
                             EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED,
                             ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
 
-                        fsm_final(&mme_ue->sm, e);
-                        fsm_init(&mme_ue->sm, e);
+                        mme_ue_remove(mme_ue);
                         break;
                     }
 
@@ -337,8 +351,29 @@ void mme_state_operational(fsm_t *s, event_t *e)
             {
                 case GTP_CREATE_SESSION_RESPONSE_TYPE:
                 {
-                    mme_s11_handle_create_session_response(
-                        xact, mme_ue, &message.create_session_response);
+                    mme_bearer_t *bearer = NULL;
+
+                    gtp_create_session_response_t *rsp
+                        = &message.create_session_response;
+                    d_assert(rsp, return, "Null param");
+
+                    if (rsp->bearer_contexts_created.presence == 0)
+                    {
+                        d_error("No Bearer");
+                        return;
+                    }
+                    if (rsp->bearer_contexts_created.
+                            eps_bearer_id.presence == 0)
+                    {
+                        d_error("No EPS Bearer ID");
+                        return;
+                    }
+
+                    bearer = mme_bearer_find_by_ue_ebi(mme_ue, 
+                            rsp->bearer_contexts_created.eps_bearer_id.u8);
+                    d_assert(bearer, return, "Null param");
+
+                    mme_s11_handle_create_session_response(xact, bearer, rsp);
 
                     if (FSM_CHECK(&mme_ue->sm, emm_state_default_esm))
                     {
@@ -346,7 +381,29 @@ void mme_state_operational(fsm_t *s, event_t *e)
                     }
                     else if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
                     {
-                        d_assert(0, , "Coming Soon!");
+                        mme_sess_t *sess = NULL;
+                        enb_ue_t *enb_ue = NULL;
+                        pkbuf_t *esmbuf = NULL, *s1apbuf = NULL;
+
+                        sess = bearer->sess;
+                        d_assert(sess, return, "Null param");
+                        enb_ue = mme_ue->enb_ue;
+                        d_assert(enb_ue, return, "Null param");
+
+                        rv = esm_build_activate_default_bearer_context(
+                                &esmbuf, sess);
+                        d_assert(rv == CORE_OK && esmbuf, return,
+                                "esm build error");
+
+                        d_trace(3, "[NAS] Activate default bearer "
+                                "context request : EMM <-- ESM\n");
+
+                        rv = s1ap_build_e_rab_setup_request(
+                                &s1apbuf, bearer, esmbuf);
+                        d_assert(rv == CORE_OK && s1apbuf, 
+                                pkbuf_free(esmbuf); return, "s1ap build error");
+
+                        d_assert(nas_send_to_enb(enb_ue, s1apbuf) == CORE_OK,,);
                     }
                     else
                         d_assert(0, break, "Invalid EMM state");

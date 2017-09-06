@@ -44,24 +44,24 @@ void mme_s11_handle_create_session_request(mme_sess_t *sess)
     d_assert(rv == CORE_OK, return, "xact_commit error");
 }
 
-void mme_s11_handle_create_session_response(
-        gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_create_session_response_t *rsp)
+void mme_s11_handle_create_session_response(gtp_xact_t *xact,
+        mme_bearer_t *bearer, gtp_create_session_response_t *rsp)
 {
     status_t rv;
     gtp_f_teid_t *sgw_s11_teid = NULL;
     gtp_f_teid_t *sgw_s1u_teid = NULL;
 
+    mme_ue_t *mme_ue = NULL;
     mme_sess_t *sess = NULL;
-    mme_bearer_t *bearer = NULL;
     pdn_t *pdn = NULL;
     
     d_assert(xact, return, "Null param");
-    d_assert(mme_ue, return, "Null param");
+    d_assert(bearer, return, "Null param");
     d_assert(rsp, return, "Null param");
 
     if (rsp->sender_f_teid_for_control_plane.presence == 0)
     {
-        d_error("No GTP TEID");
+        d_error("No S11 TEID");
         return;
     }
     if (rsp->pdn_address_allocation.presence == 0)
@@ -69,25 +69,14 @@ void mme_s11_handle_create_session_response(
         d_error("No PDN Address Allocation");
         return;
     }
-    if (rsp->bearer_contexts_created.presence == 0)
-    {
-        d_error("No Bearer");
-        return;
-    }
-    if (rsp->bearer_contexts_created.eps_bearer_id.presence == 0)
-    {
-        d_error("No EPS Bearer ID");
-        return;
-    }
     if (rsp->bearer_contexts_created.s1_u_enodeb_f_teid.presence == 0)
     {
-        d_error("No GTP TEID");
+        d_error("No S1U TEID");
         return;
     }
 
-    bearer = mme_bearer_find_by_ue_ebi(mme_ue, 
-            rsp->bearer_contexts_created.eps_bearer_id.u8);
-    d_assert(bearer, return, "Null param");
+    mme_ue = bearer->mme_ue;
+    d_assert(mme_ue, return, "Null param");
     sess = bearer->sess;
     d_assert(sess, return, "Null param");
     pdn = sess->pdn;
@@ -206,7 +195,6 @@ void mme_s11_handle_delete_session_response(
 void mme_s11_handle_create_bearer_request(
         gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_create_bearer_request_t *req)
 {
-    status_t rv;
     mme_bearer_t *bearer = NULL;
     mme_sess_t *sess = NULL;
 
@@ -278,34 +266,11 @@ void mme_s11_handle_create_bearer_request(
     bearer->qos.gbr.downlink = bearer_qos.dl_gbr;
     bearer->qos.gbr.uplink = bearer_qos.ul_gbr;
 
-    /* Bearer TFT */
+    /* Save Bearer TFT */
     TLV_STORE_DATA(&bearer->tft, &req->bearer_contexts.tft);
 
-    if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
-    {
-        enb_ue_t *enb_ue = NULL;
-        pkbuf_t *esmbuf = NULL, *s1apbuf = NULL;
-
-        enb_ue = mme_ue->enb_ue;
-        d_assert(enb_ue, return, "Null param");
-
-        rv = esm_build_activate_dedicated_bearer_context(&esmbuf, bearer);
-        d_assert(rv == CORE_OK && esmbuf, return, "esm build error");
-
-        d_trace(3, "[NAS] Activate dedicated bearer context request : "
-                "EMM <-- ESM\n");
-
-        rv = s1ap_build_e_rab_setup_request(&s1apbuf, bearer, esmbuf);
-        d_assert(rv == CORE_OK && s1apbuf, 
-                pkbuf_free(esmbuf); return, "s1ap build error");
-
-        d_assert(nas_send_to_enb(enb_ue, s1apbuf) == CORE_OK,,);
-    }
-    else
-    {
-        /* Save Transaction. will be handled after EMM-attached */
-        bearer->xact = xact;
-    }
+    /* Save Transaction. will be handled after EMM-attached */
+    bearer->xact = xact;
 }
 
 void mme_s11_handle_release_access_bearers_response(

@@ -84,9 +84,16 @@ status_t esm_build_activate_default_bearer_context(
     d_assert(bearer, return CORE_ERROR, "Null param");
 
     memset(&message, 0, sizeof(message));
+    if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
+    {
+        message.h.security_header_type = 
+           NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
+        message.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    }
     message.esm.h.eps_bearer_identity = bearer->ebi;
     message.esm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_ESM;
-    message.esm.h.procedure_transaction_identity = bearer->pti;
+    if (!FSM_CHECK(&mme_ue->sm, emm_state_attached))
+        message.esm.h.procedure_transaction_identity = bearer->pti;
     message.esm.h.message_type = 
         NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST;
 
@@ -119,7 +126,15 @@ status_t esm_build_activate_default_bearer_context(
         TLV_CLEAR_DATA(&sess->pgw_pco);
     }
 
-    d_assert(nas_plain_encode(pkbuf, &message) == CORE_OK && *pkbuf,,);
+    if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
+    {
+        d_assert(nas_security_encode(pkbuf, mme_ue, &message) == CORE_OK && 
+                *pkbuf,,);
+    }
+    else
+    {
+        d_assert(nas_plain_encode(pkbuf, &message) == CORE_OK && *pkbuf,,);
+    }
 
     return CORE_OK;
 }
