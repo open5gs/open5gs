@@ -185,6 +185,72 @@ CORE_DECLARE(c_int16_t) gtp_build_bearer_qos(
 #define GTP_RAT_TYPE_VIRTUAL                                7
 #define GTP_RAT_TYPE_EUTRAN_NB_IOT                          8
 
+/* 8.19 EPS Bearer Level Traffic Flow Template (Bearer TFT) 
+ * See subclause 10.5.6.12 in 3GPP TS 24.008 [13]. */
+#define GTP_MAX_TRAFFIC_FLOW_TEMPLATE 255
+
+#define GTP_MAX_NUM_OF_PACKET_FILTER_COMPONENT 16
+typedef struct _gtp_tft_t {
+    union {
+        struct {
+#define GTP_TFT_CODE_IGNORE_THIS_IE                         0
+#define GTP_TFT_CODE_CREATE_NEW_TFT                         1
+#define GTP_TFT_CODE_DELETE_EXISTING_TFT                    2
+#define GTP_TFT_CODE_ADD_PACKET_FILTERS_TO_EXISTING_TFT     3
+#define GTP_TFT_CODE_REPLACE_PACKET_FILTERS_IN_EXISTING     4
+#define GTP_TFT_CODE_DELETE_PACKET_FILTERS_FROM_EXISTING    5
+#define GTP_TFT_CODE_NO_TFT_OPERATION                       6
+ED3(c_uint8_t code:3;,
+    c_uint8_t e_bit:1;,
+    c_uint8_t num_of_packet_filter:4;)
+        };
+        c_uint8_t flags;
+    };
+    struct {
+        union {
+            struct {
+            ED3(c_uint8_t spare:2;,
+                c_uint8_t direction:2;,
+                c_uint8_t identifier:4;)
+            };
+            c_uint8_t flags;
+        };
+        c_uint8_t precedence;
+        c_uint8_t length;
+#define GTP_PACKET_FILTER_PROTOCOL_IDENTIFIER_NEXT_HEADER_TYPE 48
+#define GTP_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE 16
+#define GTP_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE 17
+#define GTP_PACKET_FILTER_IPV6_REMOTE_ADDRESS_TYPE 32
+#define GTP_PACKET_FILTER_IPV6_REMOTE_ADDRESS_PREFIX_LENGTH_TYPE 33
+#define GTP_PACKET_FILTER_IPV6_LOCAL_ADDRESS_PREFIX_LENGTH_TYPE 35
+#define GTP_PACKET_FILTER_SINGLE_LOCAL_PORT_TYPE 64
+#define GTP_PACKET_FILTER_LOCAL_PORT_RANGE_TYPE 65
+#define GTP_PACKET_FILTER_SINGLE_REMOTE_PORT_TYPE 80
+#define GTP_PACKET_FILTER_REMOTE_PORT_RANGE_TYPE 81
+#define GTP_PACKET_FILTER_SECURITY_PARAMETER_INDEX_TYPE 96
+#define GTP_PACKET_FILTER_TOS_TRAFFIC_CLASS_TYPE 112
+#define GTP_PACKET_FILTER_FLOW_LABEL_TYPE 128
+        struct {
+            c_uint8_t type;
+            union {
+                c_uint8_t proto;
+                struct {
+                    c_uint32_t addr;
+                    c_uint32_t mask;
+                } ipv4;
+                struct {
+                    c_uint16_t low;
+                    c_uint16_t high;
+                } port;
+            };
+        } component[GTP_MAX_NUM_OF_PACKET_FILTER_COMPONENT];
+        c_uint8_t num_of_component;
+    } pf[MAX_NUM_OF_PACKET_FILTER];
+} gtp_tft_t;
+
+CORE_DECLARE(c_int16_t) gtp_build_tft(
+    tlv_octet_t *octet, gtp_tft_t *tft, void *data, int data_len);
+
 /* 8.21 User Location Information (ULI) */
 #define GTP_MAX_ULI_LEN sizeof(gtp_uli_t)
 typedef struct _gtp_uli_cgi_t {

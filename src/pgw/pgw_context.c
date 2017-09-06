@@ -19,6 +19,7 @@ index_declare(pgw_sess_pool, pgw_sess_t, MAX_POOL_OF_SESS);
 index_declare(pgw_bearer_pool, pgw_bearer_t, MAX_POOL_OF_BEARER);
 
 pool_declare(pgw_ip_pool_pool, pgw_ip_pool_t, MAX_POOL_OF_SESS);
+pool_declare(pgw_pf_pool, pgw_pf_t, MAX_POOL_OF_PF);
 
 static int context_initiaized = 0;
 
@@ -36,6 +37,7 @@ status_t pgw_context_init()
     index_init(&pgw_bearer_pool, MAX_POOL_OF_BEARER);
 
     pool_init(&pgw_ip_pool_pool, MAX_POOL_OF_SESS);
+    pool_init(&pgw_pf_pool, MAX_POOL_OF_PF);
 
     self.sess_hash = hash_make();
 
@@ -73,6 +75,7 @@ status_t pgw_context_final()
             index_size(&pgw_ip_pool_pool) - pool_avail(&pgw_ip_pool_pool),
             index_size(&pgw_ip_pool_pool));
 
+    pool_final(&pgw_pf_pool);
     pool_final(&pgw_ip_pool_pool);
 
     index_final(&pgw_bearer_pool);
@@ -652,6 +655,8 @@ pgw_bearer_t* pgw_bearer_add(pgw_sess_t *sess)
     index_alloc(&pgw_bearer_pool, &bearer);
     d_assert(bearer, return NULL, "Bearer context allocation failed");
 
+    list_init(&bearer->pf_list);
+
     bearer->pgw_s5u_teid = bearer->index;
     bearer->pgw_s5u_addr = pgw_self()->s5u_addr;
     
@@ -665,6 +670,8 @@ status_t pgw_bearer_remove(pgw_bearer_t *bearer)
 {
     d_assert(bearer, return CORE_ERROR, "Null param");
     d_assert(bearer->sess, return CORE_ERROR, "Null param");
+
+    pgw_pf_remove_all(bearer);
 
     list_remove(&bearer->sess->bearer_list, bearer);
     index_free(&pgw_bearer_pool, bearer);
@@ -822,6 +829,80 @@ pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
     }
 
     return NULL;
+}
+
+pgw_pf_t *pgw_pf_add(pgw_bearer_t *bearer, c_uint32_t precedence)
+{
+    pgw_pf_t *pf = NULL;
+
+    d_assert(bearer, return NULL, "Null param");
+
+    pool_alloc_node(&pgw_pf_pool, &pf);
+    d_assert(pf, return NULL, "Null param");
+
+    pf->identifier = NEXT_ID(bearer->pf_identifier, 1, 15);
+
+    list_append(&bearer->pf_list, pf);
+
+    pf->bearer = bearer;
+
+    return pf;
+}
+
+status_t pgw_pf_remove(pgw_pf_t *pf)
+{
+    d_assert(pf, return CORE_ERROR, "Null param");
+    d_assert(pf->bearer, return CORE_ERROR, "Null param");
+
+    list_remove(&pf->bearer->pf_list, pf);
+    pool_free_node(&pgw_pf_pool, pf);
+
+    return CORE_OK;
+}
+
+status_t pgw_pf_remove_all(pgw_bearer_t *bearer)
+{
+    pgw_pf_t *pf = NULL, *next_pf = NULL;
+
+    d_assert(bearer, return CORE_ERROR, "Null param");
+    
+    pf = pgw_pf_first(bearer);
+    while (pf)
+    {
+        next_pf = pgw_pf_next(pf);
+
+        pgw_pf_remove(pf);
+
+        pf = next_pf;
+    }
+
+    return CORE_OK;
+}
+
+pgw_pf_t* pgw_pf_find_by_id(pgw_bearer_t *bearer, c_uint8_t id)
+{
+    pgw_pf_t *pf = NULL;
+    
+    pf = pgw_pf_first(bearer);
+    while (pf)
+    {
+        if (pf->identifier == id)
+            return pf;
+
+        pf = pgw_pf_next(pf);
+    }
+
+    return CORE_OK;
+}
+
+pgw_pf_t* pgw_pf_first(pgw_bearer_t *bearer)
+{
+    return list_first(&bearer->pf_list);
+}
+
+pgw_pf_t* pgw_pf_next(pgw_pf_t *pf)
+{
+    return list_next(pf);
 }
 
 status_t pgw_ip_pool_generate()

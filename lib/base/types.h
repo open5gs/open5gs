@@ -11,14 +11,17 @@ extern "C" {
 #define MAX_NUM_OF_UE           128
 #define MAX_NUM_OF_SESS         4
 #define MAX_NUM_OF_BEARER       4
+#define MAX_NUM_OF_PF           16  /* Num of Packet Filter per Bearer */
 #define MAX_NUM_OF_GTP_NODE     8
 
 #define MAX_POOL_OF_UE          (MAX_NUM_OF_ENB * MAX_NUM_OF_UE)
 #define MAX_POOL_OF_SESS        (MAX_POOL_OF_UE * MAX_NUM_OF_SESS)
 #define MAX_POOL_OF_BEARER      (MAX_POOL_OF_SESS * MAX_NUM_OF_BEARER)
+#define MAX_POOL_OF_PF          (MAX_POOL_OF_BEARER * MAX_NUM_OF_PF)
 
-#define MAX_NUM_OF_PCC_RULE     8 
-#define MAX_NUM_OF_FLOW         8
+#define MAX_NUM_OF_PCC_RULE         8 
+#define MAX_NUM_OF_FLOW             8   /* Num of Flow per PCC Rule */
+#define MAX_NUM_OF_PACKET_FILTER    16  /* Num of Packet Filter per Bearer */
 
 #define MAX_SDU_LEN             2048
 #define IPV6_LEN                16
@@ -147,6 +150,8 @@ typedef struct _qos_t {
 
 /**********************************
  * Flow  Structure               */
+#define FLOW_DOWNLINK_ONLY    1
+#define FLOW_UPLINK_ONLY      2
 typedef struct _flow_t {
     c_uint8_t direction;
     c_int8_t *description;

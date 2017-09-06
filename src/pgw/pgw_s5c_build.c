@@ -170,6 +170,10 @@ status_t pgw_s5c_build_create_bearer_request(
     gtp_f_teid_t pgw_s5u_teid;
     gtp_bearer_qos_t bearer_qos;
     char bearer_qos_buf[GTP_BEARER_QOS_LEN];
+    gtp_tft_t tft;
+    int i, j, len;
+    char tft_buf[GTP_MAX_TRAFFIC_FLOW_TEMPLATE];
+    pgw_pf_t *pf = NULL;
 
     d_assert(bearer, return CORE_ERROR, "Null param");
     sess = bearer->sess;
@@ -214,6 +218,95 @@ status_t pgw_s5c_build_create_bearer_request(
     req->bearer_contexts.bearer_level_qos.presence = 1;
     gtp_build_bearer_qos(&req->bearer_contexts.bearer_level_qos,
             &bearer_qos, bearer_qos_buf, GTP_BEARER_QOS_LEN);
+
+    /* Bearer TFT */
+    memset(&tft, 0, sizeof(tft));
+    tft.code = GTP_TFT_CODE_CREATE_NEW_TFT;
+
+    i = 0;
+    pf = pgw_pf_first(bearer);
+    while(pf)
+    {
+        tft.pf[i].direction = pf->direction;
+        tft.pf[i].identifier = pf->identifier - 1;
+        tft.pf[i].precedence = i+1;
+
+        j = 0, len = 0;
+        if (pf->rule.proto)
+        {
+            tft.pf[i].component[j].type = 
+                GTP_PACKET_FILTER_PROTOCOL_IDENTIFIER_NEXT_HEADER_TYPE;
+            tft.pf[i].component[j].proto = pf->rule.proto;
+            j++; len += 2;
+        }
+
+        if (pf->rule.ipv4.local.addr)
+        {
+            tft.pf[i].component[j].type = 
+                GTP_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE;
+            tft.pf[i].component[j].ipv4.addr = pf->rule.ipv4.local.addr;
+            tft.pf[i].component[j].ipv4.mask = pf->rule.ipv4.local.mask;
+            j++; len += 9;
+        }
+
+        if (pf->rule.ipv4.remote.addr)
+        {
+            tft.pf[i].component[j].type = 
+                GTP_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE;
+            tft.pf[i].component[j].ipv4.addr = pf->rule.ipv4.remote.addr;
+            tft.pf[i].component[j].ipv4.mask = pf->rule.ipv4.remote.mask;
+            j++; len += 9;
+        }
+
+        if (pf->rule.port.local.low)
+        {
+            if (pf->rule.port.local.low == pf->rule.port.local.high)
+            {
+                tft.pf[i].component[j].type = 
+                    GTP_PACKET_FILTER_SINGLE_LOCAL_PORT_TYPE;
+                tft.pf[i].component[j].port.low = pf->rule.port.local.low;
+                j++; len += 3;
+            }
+            else
+            {
+                tft.pf[i].component[j].type = 
+                    GTP_PACKET_FILTER_LOCAL_PORT_RANGE_TYPE;
+                tft.pf[i].component[j].port.low = pf->rule.port.local.low;
+                tft.pf[i].component[j].port.high = pf->rule.port.local.high;
+                j++; len += 5;
+            }
+        }
+
+        if (pf->rule.port.remote.low)
+        {
+            if (pf->rule.port.remote.low == pf->rule.port.remote.high)
+            {
+                tft.pf[i].component[j].type = 
+                    GTP_PACKET_FILTER_SINGLE_LOCAL_PORT_TYPE;
+                tft.pf[i].component[j].port.low = pf->rule.port.remote.low;
+                j++; len += 3;
+            }
+            else
+            {
+                tft.pf[i].component[j].type = 
+                    GTP_PACKET_FILTER_LOCAL_PORT_RANGE_TYPE;
+                tft.pf[i].component[j].port.low = pf->rule.port.remote.low;
+                tft.pf[i].component[j].port.high = pf->rule.port.remote.high;
+                j++; len += 5;
+            }
+        }
+
+        tft.pf[i].num_of_component = j;
+        tft.pf[i].length = len;
+        i++;
+
+        pf = pgw_pf_next(pf);
+    }
+    tft.num_of_packet_filter = i;
+
+    req->bearer_contexts.tft.presence = 1;
+    gtp_build_tft(&req->bearer_contexts.tft,
+            &tft, tft_buf, GTP_MAX_TRAFFIC_FLOW_TEMPLATE);
 
     gtp_message.h.type = type;
     rv = gtp_build_msg(pkbuf, &gtp_message);

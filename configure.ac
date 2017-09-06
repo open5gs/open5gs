@@ -28,6 +28,7 @@ case $host in
     *linux*)
         OSDIR="unix"
         OSCPPFLAGS="-DLINUX=1"
+        IPFW_CPPFLAGS="-DNEED_SYSCTLBYNAME -DNEED_SIN_LEN"
         ;;
     *-apple-darwin*)
         OSDIR="unix"
@@ -39,6 +40,7 @@ case $host in
 esac
 AC_SUBST(OSCPPFLAGS)
 AC_SUBST(OSDIR)
+AC_SUBST(IPFW_CPPFLAGS)
 
 AH_TOP([
 #ifndef __NEXTEPC_CONFIG_H__
@@ -329,6 +331,7 @@ AC_CONFIG_FILES([lib/fd/gx/Makefile])
 AC_CONFIG_FILES([lib/fd/s6a/Makefile])
 AC_CONFIG_FILES([lib/fd/Makefile])
 AC_CONFIG_FILES([lib/gtp/Makefile])
+AC_CONFIG_FILES([lib/ipfw/Makefile])
 AC_CONFIG_FILES([lib/Makefile])
 AC_CONFIG_FILES([src/mme/Makefile])
 AC_CONFIG_FILES([src/hss/Makefile])

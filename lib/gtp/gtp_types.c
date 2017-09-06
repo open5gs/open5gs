@@ -97,6 +97,143 @@ c_int16_t gtp_build_bearer_qos(
     return octet->len;
 }
 
+/* 8.19 EPS Bearer Level Traffic Flow Template (Bearer TFT) 
+ * See subclause 10.5.6.12 in 3GPP TS 24.008 [13]. */
+c_int16_t gtp_build_tft(
+    tlv_octet_t *octet, gtp_tft_t *tft, void *data, int data_len)
+{
+    gtp_tft_t target;
+    c_uint16_t size = 0;
+    int i, j;
+
+    d_assert(tft, return -1, "Null param");
+    d_assert(octet, return -1, "Null param");
+    d_assert(data, return -1, "Null param");
+    d_assert(data_len >= GTP_MAX_TRAFFIC_FLOW_TEMPLATE,
+            return -1, "Null param");
+
+    octet->data = data;
+    memcpy(&target, tft, sizeof(gtp_tft_t));
+
+    d_assert(size + sizeof(target.flags) <= data_len, 
+            return -1, "encode error");
+    memcpy(octet->data + size, &target.flags, sizeof(target.flags));
+    size += sizeof(target.flags);
+
+    for (i = 0; i < target.num_of_packet_filter; i++)
+    {
+        d_assert(size + sizeof(target.pf[i].flags) <= data_len, 
+                return -1, "encode error");
+        memcpy(octet->data + size, &target.pf[i].flags,
+                sizeof(target.pf[i].flags));
+        size += sizeof(target.pf[i].flags);
+
+        d_assert(size + sizeof(target.pf[i].precedence) <= data_len, 
+                return -1, "encode error");
+        memcpy(octet->data + size, &target.pf[i].precedence,
+                sizeof(target.pf[i].precedence));
+        size += sizeof(target.pf[i].precedence);
+
+        d_assert(size + sizeof(target.pf[i].length) <= data_len, 
+                return -1, "encode error");
+        memcpy(octet->data + size, &target.pf[i].length,
+                sizeof(target.pf[i].length));
+        size += sizeof(target.pf[i].length);
+
+        for (j = 0; j < target.pf[i].num_of_component; j++)
+        {
+            d_assert(size +
+                sizeof(target.pf[i].component[j].type) <= data_len, 
+                return -1, "encode error");
+            memcpy(octet->data + size, &target.pf[i].component[j].type,
+                sizeof(target.pf[i].component[j].type));
+            size += sizeof(target.pf[i].component[j].type);
+            switch(target.pf[i].component[j].type)
+            {
+                case GTP_PACKET_FILTER_PROTOCOL_IDENTIFIER_NEXT_HEADER_TYPE:
+                {
+                    d_assert(size +
+                        sizeof(target.pf[i].component[j].proto) <= data_len, 
+                        return -1, "encode error");
+                    memcpy(octet->data + size, &target.pf[i].component[j].proto,
+                        sizeof(target.pf[i].component[j].proto));
+                    size += sizeof(target.pf[i].component[j].proto);
+                    break;
+                }
+                case GTP_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE:
+                case GTP_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE:
+                    d_assert(size +
+                        sizeof(target.pf[i].component[j].ipv4.addr)
+                            <= data_len, 
+                        return -1, "encode error");
+                    memcpy(octet->data + size,
+                        &target.pf[i].component[j].ipv4.addr,
+                        sizeof(target.pf[i].component[j].ipv4.addr));
+                    size += sizeof(target.pf[i].component[j].ipv4.addr);
+
+                    d_assert(size +
+                        sizeof(target.pf[i].component[j].ipv4.mask)
+                            <= data_len, 
+                        return -1, "encode error");
+                    memcpy(octet->data + size,
+                        &target.pf[i].component[j].ipv4.mask,
+                        sizeof(target.pf[i].component[j].ipv4.mask));
+                    size += sizeof(target.pf[i].component[j].ipv4.mask);
+                    break;
+
+                case GTP_PACKET_FILTER_SINGLE_LOCAL_PORT_TYPE:
+                case GTP_PACKET_FILTER_SINGLE_REMOTE_PORT_TYPE:
+                    d_assert(size +
+                        sizeof(target.pf[i].component[j].port.low)
+                            <= data_len, 
+                        return -1, "encode error");
+                    target.pf[i].component[j].port.low = 
+                        htons(target.pf[i].component[j].port.low);
+                    memcpy(octet->data + size,
+                        &target.pf[i].component[j].port.low,
+                        sizeof(target.pf[i].component[j].port.low));
+                    size += sizeof(target.pf[i].component[j].port.low);
+                    break;
+                    
+                case GTP_PACKET_FILTER_LOCAL_PORT_RANGE_TYPE:
+                case GTP_PACKET_FILTER_REMOTE_PORT_RANGE_TYPE:
+                    d_assert(size +
+                        sizeof(target.pf[i].component[j].port.low)
+                            <= data_len, 
+                        return -1, "encode error");
+                    target.pf[i].component[j].port.low = 
+                        htons(target.pf[i].component[j].port.low);
+                    memcpy(octet->data + size,
+                        &target.pf[i].component[j].port.low,
+                        sizeof(target.pf[i].component[j].port.low));
+                    size += sizeof(target.pf[i].component[j].port.low);
+
+                    d_assert(size +
+                        sizeof(target.pf[i].component[j].port.high)
+                            <= data_len, 
+                        return -1, "encode error");
+                    target.pf[i].component[j].port.high = 
+                        htons(target.pf[i].component[j].port.high);
+                    memcpy(octet->data + size,
+                        &target.pf[i].component[j].port.high,
+                        sizeof(target.pf[i].component[j].port.high));
+                    size += sizeof(target.pf[i].component[j].port.high);
+                    break;
+                default:
+                    d_error("Unknown Packet Filter Type(%d)", 
+                            target.pf[i].component[j].type);
+                    return -1;
+            }
+        }
+    }
+
+
+    octet->len = size;
+
+    return octet->len;
+}
+
+
 /* 8.21 User Location Information (ULI) */
 c_int16_t gtp_parse_uli(gtp_uli_t *uli, tlv_octet_t *octet)
 {

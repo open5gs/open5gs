@@ -114,10 +114,51 @@ typedef struct _pgw_bearer_t {
     c_uint32_t      sgw_s5u_teid;  
     c_uint32_t      sgw_s5u_addr;
 
+    /* QoS Infomration */
     qos_t           qos;
+
+    /* Packet Filter Identifier Generator(1~15) */
+    c_uint8_t       pf_identifier;
+    /* Packet Filter List */
+    list_t          pf_list;
 
     pgw_sess_t      *sess;
 } pgw_bearer_t;
+
+typedef struct _pgw_rule_t {
+    c_uint8_t proto;
+    struct {
+        struct {
+            c_uint32_t addr;
+            c_uint32_t mask;
+        } local;
+        struct {
+            c_uint32_t addr;
+            c_uint32_t mask;
+        } remote;
+    } ipv4;
+    struct {
+        struct {
+            c_uint16_t low;
+            c_uint32_t high;
+        } local;
+        struct {
+            c_uint16_t low;
+            c_uint32_t high;
+        } remote;
+    } port;
+} pgw_rule_t;
+
+typedef struct _pgw_pf_t {
+    lnode_t         node;
+
+ED3(c_uint8_t spare:2;,
+    c_uint8_t direction:2;,
+    c_uint8_t identifier:4;)
+    pgw_rule_t      rule;
+
+    pgw_bearer_t    *bearer;
+} pgw_pf_t;
 
 CORE_DECLARE(status_t)      pgw_context_init(void);
 CORE_DECLARE(status_t)      pgw_context_final(void);
@@ -165,6 +206,15 @@ CORE_DECLARE(pgw_bearer_t*) pgw_bearer_first(pgw_sess_t *sess);
 CORE_DECLARE(pgw_bearer_t*) pgw_bearer_next(pgw_bearer_t *bearer);
 
 CORE_DECLARE(pgw_bearer_t*) pgw_bearer_find_by_packet(pkbuf_t *pkt);
+
+CORE_DECLARE(pgw_pf_t*)     pgw_pf_add(
+                                pgw_bearer_t *bearer, c_uint32_t precedence);
+CORE_DECLARE(status_t )     pgw_pf_remove(pgw_pf_t *pf);
+CORE_DECLARE(status_t )     pgw_pf_remove_all(pgw_bearer_t *bearer);
+CORE_DECLARE(pgw_pf_t*)     pgw_pf_find_by_id(
+                                pgw_bearer_t *pgw_bearer, c_uint8_t id);
+CORE_DECLARE(pgw_pf_t*)     pgw_pf_first(pgw_bearer_t *bearer);
+CORE_DECLARE(pgw_pf_t*)     pgw_pf_next(pgw_pf_t *pf);
 
 CORE_DECLARE(status_t )     pgw_ip_pool_generate();
 CORE_DECLARE(pgw_ip_pool_t*) pgw_ip_pool_alloc();
