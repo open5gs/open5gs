@@ -79,7 +79,11 @@ status_t pgw_compile_packet_filter(pgw_rule_t *pgw_rule, c_int8_t *description)
             {
                 uint32_t *a = ((ipfw_insn_u32 *)cmd)->d;
                 pgw_rule->ipv4.local.addr = a[0];
-                pgw_rule->ipv4.local.mask = a[1];
+                if (cmd->opcode == O_IP_SRC_MASK)
+                    pgw_rule->ipv4.local.mask = a[1];
+                else
+                    pgw_rule->ipv4.local.mask = 0xffffffff;
+
                 break;
             }
             case O_IP_DST:
@@ -87,7 +91,10 @@ status_t pgw_compile_packet_filter(pgw_rule_t *pgw_rule, c_int8_t *description)
             {
                 uint32_t *a = ((ipfw_insn_u32 *)cmd)->d;
                 pgw_rule->ipv4.remote.addr = a[0];
-                pgw_rule->ipv4.remote.mask = a[1];
+                if (cmd->opcode == O_IP_SRC_MASK)
+                    pgw_rule->ipv4.remote.mask = a[1];
+                else
+                    pgw_rule->ipv4.remote.mask = 0xffffffff;
                 break;
             }
             case O_IP_SRCPORT:

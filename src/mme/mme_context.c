@@ -1600,6 +1600,9 @@ status_t mme_bearer_remove(mme_bearer_t *bearer)
     event_set_param1(&e, (c_uintptr_t)bearer->index);
     fsm_final(&bearer->sm, &e);
     fsm_clear(&bearer->sm);
+
+    if (bearer->tft)
+        core_free(bearer->tft);
     
     list_remove(&bearer->sess->bearer_list, bearer);
     index_free(&mme_bearer_pool, bearer);

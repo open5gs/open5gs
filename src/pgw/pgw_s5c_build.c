@@ -282,14 +282,14 @@ status_t pgw_s5c_build_create_bearer_request(
             if (pf->rule.port.remote.low == pf->rule.port.remote.high)
             {
                 tft.pf[i].component[j].type = 
-                    GTP_PACKET_FILTER_SINGLE_LOCAL_PORT_TYPE;
+                    GTP_PACKET_FILTER_SINGLE_REMOTE_PORT_TYPE;
                 tft.pf[i].component[j].port.low = pf->rule.port.remote.low;
                 j++; len += 3;
             }
             else
             {
                 tft.pf[i].component[j].type = 
-                    GTP_PACKET_FILTER_LOCAL_PORT_RANGE_TYPE;
+                    GTP_PACKET_FILTER_REMOTE_PORT_RANGE_TYPE;
                 tft.pf[i].component[j].port.low = pf->rule.port.remote.low;
                 tft.pf[i].component[j].port.high = pf->rule.port.remote.high;
                 j++; len += 5;

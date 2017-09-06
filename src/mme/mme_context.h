@@ -305,6 +305,8 @@ typedef struct _mme_bearer_t {
     c_uint32_t      sgw_s1u_addr;
 
     qos_t           qos;
+    c_uint8_t       *tft;
+    c_uint8_t       tft_len;
 
     /* Related Context */
     mme_ue_t        *mme_ue;

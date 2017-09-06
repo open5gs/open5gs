@@ -137,6 +137,8 @@ status_t esm_build_activate_dedicated_bearer_context(
             linked_eps_bearer_identity;
     nas_eps_quality_of_service_t *eps_qos =
         &activate_dedicated_eps_bearer_context_request->eps_qos;
+    nas_traffic_flow_template_t *tft = 
+        &activate_dedicated_eps_bearer_context_request->tft;
     
     d_assert(bearer, return CORE_ERROR, "Null param");
     mme_ue = bearer->mme_ue;
@@ -158,6 +160,12 @@ status_t esm_build_activate_dedicated_bearer_context(
     eps_qos_build(eps_qos, bearer->qos.qci,
             bearer->qos.mbr.downlink, bearer->qos.mbr.uplink,
             bearer->qos.gbr.downlink, bearer->qos.gbr.uplink);
+
+    tft->length = bearer->tft_len;
+    d_assert(tft->length, return CORE_ERROR, "No TFT Len");
+    d_assert(bearer->tft, return CORE_ERROR, "Null param");
+    memcpy(tft->buffer, bearer->tft, tft->length);
+    core_free(bearer->tft);
 
     d_assert(nas_security_encode(pkbuf, mme_ue, &message) == CORE_OK && 
             *pkbuf,,);

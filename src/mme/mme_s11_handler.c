@@ -247,6 +247,11 @@ void mme_s11_handle_create_bearer_request(
         d_error("No QoS");
         return;
     }
+    if (req->bearer_contexts.tft.presence == 0)
+    {
+        d_error("No TFT");
+        return;
+    }
 
     sess = mme_sess_find_by_ebi(mme_ue, req->linked_eps_bearer_id.u8);
     d_assert(sess, return, 
@@ -274,6 +279,12 @@ void mme_s11_handle_create_bearer_request(
     bearer->qos.mbr.uplink = bearer_qos.ul_mbr;
     bearer->qos.gbr.downlink = bearer_qos.dl_gbr;
     bearer->qos.gbr.uplink = bearer_qos.ul_gbr;
+
+    /* Bearer TFT */
+    bearer->tft_len = req->bearer_contexts.tft.len;
+    d_assert(bearer->tft_len, return, "No TFT Len");
+    bearer->tft = core_calloc(1, bearer->tft_len);
+    memcpy(bearer->tft, req->bearer_contexts.tft.data, bearer->tft_len);
 
     if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
     {
