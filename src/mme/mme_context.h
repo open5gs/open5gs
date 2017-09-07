@@ -260,6 +260,8 @@ typedef struct _mme_sess_t {
     lnode_t         node;       /* A node of list_t */
     index_t         index;      /* An index of this node */
 
+    c_uint8_t       pti;        /* Procedure Trasaction Identity */
+
     /* mme_bearer_first(sess) : Default Bearer Context */
     list_t          bearer_list;
 
@@ -300,7 +302,6 @@ typedef struct _mme_bearer_t {
     fsm_t           sm;     /* State Machine */
 
     c_uint8_t       ebi;        /* EPS Bearer ID */    
-    c_uint8_t       pti;        /* Procedure Trasaction Identity */
 
     c_uint32_t      enb_s1u_teid;
     c_uint32_t      enb_s1u_addr;
@@ -374,10 +375,6 @@ CORE_DECLARE(mme_bearer_t*) mme_bearer_add(mme_sess_t *sess);
 CORE_DECLARE(status_t)      mme_bearer_remove(mme_bearer_t *bearer);
 CORE_DECLARE(status_t)      mme_bearer_remove_all(mme_sess_t *sess);
 CORE_DECLARE(mme_bearer_t*) mme_bearer_find(index_t index);
-CORE_DECLARE(mme_bearer_t*) mme_bearer_find_by_sess_pti(
-                                mme_sess_t *sess, c_uint8_t pti);
-CORE_DECLARE(mme_bearer_t*) mme_bearer_find_by_ue_pti(
-                                mme_ue_t *mme_ue, c_uint8_t pti);
 CORE_DECLARE(mme_bearer_t*) mme_bearer_find_by_sess_ebi(
                                 mme_sess_t *sess, c_uint8_t ebi);
 CORE_DECLARE(mme_bearer_t*) mme_bearer_find_by_ue_ebi(

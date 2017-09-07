@@ -399,7 +399,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
                         enb_ue = mme_ue->enb_ue;
                         d_assert(enb_ue, return, "Null param");
 
-                        rv = esm_build_activate_default_bearer_context(
+                        rv = esm_build_activate_default_bearer_context_request(
                                 &esmbuf, sess);
                         d_assert(rv == CORE_OK && esmbuf, return,
                                 "esm build error");

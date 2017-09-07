@@ -267,7 +267,7 @@ void s1ap_handle_activate_default_bearer_accept(mme_bearer_t *bearer)
     dedicated_bearer = mme_bearer_next(bearer);
     while(dedicated_bearer)
     {
-        rv = nas_send_activate_dedicated_bearer_context(
+        rv = nas_send_activate_dedicated_bearer_context_request(
                 enb_ue, dedicated_bearer);
         d_assert(rv == CORE_OK, return,
                 "nas_send_activate_dedicated_bearer_context failed");

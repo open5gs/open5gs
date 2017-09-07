@@ -32,8 +32,11 @@ status_t esm_build_information_request(pkbuf_t **pkbuf, mme_bearer_t *bearer)
 {
     nas_message_t message;
     mme_ue_t *mme_ue = NULL;
+    mme_sess_t *sess = NULL;
 
     d_assert(bearer, return CORE_ERROR, "Null param");
+    sess = bearer->sess;
+    d_assert(sess, return CORE_ERROR, "Null param");
     mme_ue = bearer->mme_ue;
     d_assert(mme_ue, return CORE_ERROR, "Null param");
 
@@ -43,7 +46,7 @@ status_t esm_build_information_request(pkbuf_t **pkbuf, mme_bearer_t *bearer)
     message.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
 
     message.esm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_ESM;
-    message.esm.h.procedure_transaction_identity = bearer->pti;
+    message.esm.h.procedure_transaction_identity = sess->pti;
     message.esm.h.message_type = NAS_ESM_INFORMATION_REQUEST;
 
     d_assert(nas_security_encode(pkbuf, mme_ue, &message) == CORE_OK && 
@@ -52,7 +55,7 @@ status_t esm_build_information_request(pkbuf_t **pkbuf, mme_bearer_t *bearer)
     return CORE_OK;
 }
 
-status_t esm_build_activate_default_bearer_context(
+status_t esm_build_activate_default_bearer_context_request(
         pkbuf_t **pkbuf, mme_sess_t *sess)
 {
     nas_message_t message;
@@ -92,8 +95,7 @@ status_t esm_build_activate_default_bearer_context(
     }
     message.esm.h.eps_bearer_identity = bearer->ebi;
     message.esm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_ESM;
-    if (!FSM_CHECK(&mme_ue->sm, emm_state_attached))
-        message.esm.h.procedure_transaction_identity = bearer->pti;
+    message.esm.h.procedure_transaction_identity = sess->pti;
     message.esm.h.message_type = 
         NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST;
 
@@ -139,7 +141,7 @@ status_t esm_build_activate_default_bearer_context(
     return CORE_OK;
 }
 
-status_t esm_build_activate_dedicated_bearer_context(
+status_t esm_build_activate_dedicated_bearer_context_request(
         pkbuf_t **pkbuf, mme_bearer_t *bearer)
 {
     mme_ue_t *mme_ue = NULL;

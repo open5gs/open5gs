@@ -78,7 +78,7 @@ void esm_state_inactive(fsm_t *s, event_t *e)
                 {
                     d_trace(3, "[NAS] Activate default EPS bearer "
                             "context accept : UE[%s] --> ESM[%d]\n", 
-                            mme_ue->imsi_bcd, bearer->pti);
+                            mme_ue->imsi_bcd, bearer->ebi);
 
                     esm_handle_activate_default_bearer_accept(bearer);
                     FSM_TRAN(s, esm_state_active);
@@ -90,7 +90,7 @@ void esm_state_inactive(fsm_t *s, event_t *e)
 
                     d_trace(3, "[NAS] Activate dedicated EPS bearer "
                             "context accept : UE[%s] --> ESM[%d]\n", 
-                            mme_ue->imsi_bcd, bearer->pti);
+                            mme_ue->imsi_bcd, bearer->ebi);
                     rv = mme_gtp_send_create_bearer_response(bearer);
                     d_assert(rv == CORE_OK, return,
                             "mme_gtp_send_create_bearer_response failed");
@@ -162,7 +162,7 @@ void esm_state_information(fsm_t *s, event_t *e)
                 {
                     d_trace(3, "[NAS] ESM information response : "
                             "UE[%s] --> ESM[%d]\n", 
-                            mme_ue->imsi_bcd, bearer->pti);
+                            mme_ue->imsi_bcd, sess->pti);
                     esm_handle_information_response(
                             sess, &message->esm.esm_information_response);
 
@@ -300,7 +300,7 @@ static void esm_state_pdn_connectivity_request(
     d_assert(message, return, "Null param");
 
     d_trace(3, "[NAS] PDN connectivity request : UE[%s] --> ESM[%d]\n", 
-            mme_ue->imsi_bcd, bearer->pti);
+            mme_ue->imsi_bcd, sess->pti);
 
     d_assert(MME_UE_HAVE_IMSI(mme_ue), return,
         "No IMSI in PDN_CPNNECTIVITY_REQUEST");

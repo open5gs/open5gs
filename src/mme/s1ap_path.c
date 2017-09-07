@@ -206,7 +206,6 @@ status_t s1ap_send_to_esm(mme_ue_t *mme_ue, pkbuf_t *esmbuf)
     event_t e;
     nas_esm_header_t *h = NULL;
 
-    mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
     c_uint8_t pti = NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
     c_uint8_t ebi = NAS_EPS_BEARER_IDENTITY_UNASSIGNED;
@@ -219,19 +218,33 @@ status_t s1ap_send_to_esm(mme_ue_t *mme_ue, pkbuf_t *esmbuf)
     pti = h->procedure_transaction_identity;
     ebi = h->eps_bearer_identity;
 
-    if (ebi != NAS_EPS_BEARER_IDENTITY_UNASSIGNED)
-        bearer = mme_bearer_find_by_ue_ebi(mme_ue, ebi);
-    else if (pti != NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED)
-        bearer = mme_bearer_find_by_ue_pti(mme_ue, pti);
-    else
-        d_assert(0, return CORE_ERROR,
-                "Invalid pti(%d) and ebi(%d)\n", pti, ebi);
-
-    if (!bearer)
+    if (h->message_type == NAS_PDN_DISCONNECT_REQUEST)
     {
-        sess = mme_sess_add(mme_ue, pti);
-        d_assert(sess, return CORE_ERROR, "Null param");
-        bearer = mme_default_bearer_in_sess(sess);
+        nas_pdn_disconnect_request_t *pdn_disconnect_request = 
+            esmbuf->payload + sizeof(nas_esm_header_t);
+        nas_linked_eps_bearer_identity_t *linked_eps_bearer_identity =
+            &pdn_disconnect_request->linked_eps_bearer_identity;
+
+        bearer = mme_bearer_find_by_ue_ebi(mme_ue,
+                linked_eps_bearer_identity->eps_bearer_identity);
+        d_assert(bearer, return CORE_ERROR,
+                "Invalid pti(%d) and ebi(%d)\n", pti, ebi);
+    }
+    else
+    {
+        if (ebi != NAS_EPS_BEARER_IDENTITY_UNASSIGNED)
+            bearer = mme_bearer_find_by_ue_ebi(mme_ue, ebi);
+        else if (pti != NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED)
+        {
+            mme_sess_t *sess = mme_sess_find_by_pti(mme_ue, pti);
+            if (!sess)
+                sess = mme_sess_add(mme_ue, pti);
+            d_assert(sess, return CORE_ERROR, "Null param");
+            bearer = mme_default_bearer_in_sess(sess);
+        }
+        else
+            d_assert(0, return CORE_ERROR,
+                    "Invalid pti(%d) and ebi(%d)\n", pti, ebi);
     }
     d_assert(bearer, return CORE_ERROR, "Null param");
 
@@ -322,7 +335,6 @@ status_t s1ap_send_to_nas(enb_ue_t *enb_ue, S1ap_NAS_PDU_t *nasPdu)
     else if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_ESM)
     {
         mme_ue_t *mme_ue = enb_ue->mme_ue;
-
         d_assert(mme_ue, return CORE_ERROR, "Null param");
         s1ap_send_to_esm(mme_ue, nasbuf);
     }

@@ -71,7 +71,7 @@ status_t nas_send_attach_accept(mme_ue_t *mme_ue)
     enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return CORE_ERROR, "Null param");
 
-    rv = esm_build_activate_default_bearer_context(&esmbuf, sess);
+    rv = esm_build_activate_default_bearer_context_request(&esmbuf, sess);
     d_assert(rv == CORE_OK && esmbuf, return CORE_ERROR, "esm build error");
 
     d_trace(3, "[NAS] Activate default bearer context request : "
@@ -100,7 +100,6 @@ status_t nas_send_attach_reject(mme_ue_t *mme_ue,
     mme_enb_t *enb = NULL;
     enb_ue_t *enb_ue = NULL;
     mme_sess_t *sess = NULL;
-    mme_bearer_t *bearer = NULL;
     pkbuf_t *s1apbuf = NULL, *esmbuf = NULL, *emmbuf = NULL;
     S1ap_Cause_t cause;
 
@@ -113,16 +112,12 @@ status_t nas_send_attach_reject(mme_ue_t *mme_ue,
     sess = mme_sess_first(mme_ue);
     if (sess)
     {
-        bearer = mme_default_bearer_in_sess(sess);
-        if (bearer)
-        {
-            rv = esm_build_pdn_connectivity_reject(
-                    &esmbuf, bearer->pti, esm_cause);
-            d_assert(rv == CORE_OK && esmbuf, return CORE_ERROR,
-                    "esm build error");
-            d_trace(3, "[NAS] PDN Connectivity reject : EMM <-- ESM\n",
-                    bearer->pti);
-        }
+        rv = esm_build_pdn_connectivity_reject(
+                &esmbuf, sess->pti, esm_cause);
+        d_assert(rv == CORE_OK && esmbuf, return CORE_ERROR,
+                "esm build error");
+        d_trace(3, "[NAS] PDN Connectivity reject : EMM <-- ESM\n",
+                sess->pti);
     }
 
     rv = emm_build_attach_reject(&emmbuf, emm_cause, esmbuf);
@@ -143,7 +138,7 @@ status_t nas_send_attach_reject(mme_ue_t *mme_ue,
     return CORE_OK;
 }
 
-status_t nas_send_activate_dedicated_bearer_context(
+status_t nas_send_activate_dedicated_bearer_context_request(
         enb_ue_t *enb_ue, mme_bearer_t *bearer)
 {
     status_t rv;
@@ -152,7 +147,7 @@ status_t nas_send_activate_dedicated_bearer_context(
     d_assert(enb_ue, return CORE_ERROR, "Null param");
     d_assert(bearer, return CORE_ERROR, "Null param");
 
-    rv = esm_build_activate_dedicated_bearer_context(&esmbuf, bearer);
+    rv = esm_build_activate_dedicated_bearer_context_request(&esmbuf, bearer);
     d_assert(rv == CORE_OK && esmbuf, return CORE_ERROR, "esm build error");
 
     d_trace(3, "[NAS] Activate dedicated bearer context request : "
