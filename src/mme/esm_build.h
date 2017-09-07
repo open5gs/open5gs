@@ -15,6 +15,8 @@ CORE_DECLARE(status_t) esm_build_activate_default_bearer_context_request(
                             pkbuf_t **pkbuf, mme_sess_t *sess);
 CORE_DECLARE(status_t) esm_build_activate_dedicated_bearer_context_request(
                             pkbuf_t **pkbuf, mme_bearer_t *bearer);
+CORE_DECLARE(status_t) esm_build_deactivate_bearer_context_request(
+        pkbuf_t **pkbuf, mme_bearer_t *bearer, nas_esm_cause_t esm_cause);
 
 #ifdef __cplusplus
 }

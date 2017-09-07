@@ -268,6 +268,33 @@ static void volte_test1(abts_case *tc, void *data)
 
     core_sleep(time_from_msec(300));
 
+    /* Send PDN disconnectivity request */
+    rv = tests1ap_build_pdn_disconnectivity_request(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* Receive E-RAB Release Command +
+     * Deactivate EPS bearer context request */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rc = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_NEQUAL(tc, 0, rc);
+    pkbuf_free(recvbuf);
+
+    /* Send E-RAB Release Response */
+    rv = tests1ap_build_e_rab_release_response(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* Deactivate EPS bearer context accept */
+    rv = tests1ap_build_deactivate_bearer_accept(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    core_sleep(time_from_msec(300));
+
     /********** Remove Subscriber in Database */
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456819"));
     ABTS_PTR_NOTNULL(tc, doc);
@@ -529,7 +556,9 @@ abts_suite *test_volte(abts_suite *suite)
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, volte_test1, NULL);
+#if 0
     abts_run_test(suite, volte_test2, NULL);
+#endif
 
     return suite;
 }

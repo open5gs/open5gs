@@ -473,6 +473,11 @@ void mme_state_operational(fsm_t *s, event_t *e)
 
                         if (FSM_CHECK(&bearer->sm, esm_state_disconnect))
                         {
+                            rv = nas_send_deactivate_bearer_context_request(
+                                    enb_ue, bearer);
+                            d_assert(rv == CORE_OK, break,
+                                "nas_send_deactivate_bearer"
+                                "_context_request failed");
                         }
                         else
                         {

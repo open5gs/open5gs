@@ -78,19 +78,19 @@ static int s1ap_decode_initiating(s1ap_message_t *message,
     message->procedureCode = initiating_p->procedureCode;
     switch (initiating_p->procedureCode) 
     {
-        case S1ap_ProcedureCode_id_uplinkNASTransport: 
-            ret = s1ap_decode_s1ap_uplinknastransport_ies(
-                    &message->s1ap_UplinkNASTransport_IEs, 
-                    &initiating_p->value);
-            s1ap_decode_xer_print_message(s1ap_xer_print_s1ap_uplinknastransport, 
-                    s1ap_xer__print2sp, message);
-            break;
-
         case S1ap_ProcedureCode_id_S1Setup: 
             ret = s1ap_decode_s1ap_s1setuprequesties(
                     &message->s1ap_S1SetupRequestIEs, 
                     &initiating_p->value);
             s1ap_decode_xer_print_message(s1ap_xer_print_s1ap_s1setuprequest,
+                    s1ap_xer__print2sp, message);
+            break;
+
+        case S1ap_ProcedureCode_id_uplinkNASTransport: 
+            ret = s1ap_decode_s1ap_uplinknastransport_ies(
+                    &message->s1ap_UplinkNASTransport_IEs, 
+                    &initiating_p->value);
+            s1ap_decode_xer_print_message(s1ap_xer_print_s1ap_uplinknastransport, 
                     s1ap_xer__print2sp, message);
             break;
 
@@ -102,19 +102,19 @@ static int s1ap_decode_initiating(s1ap_message_t *message,
                     s1ap_xer__print2sp, message);
             break;
 
-        case S1ap_ProcedureCode_id_UEContextReleaseRequest: 
-            ret = s1ap_decode_s1ap_uecontextreleaserequest_ies(
-                    &message->s1ap_UEContextReleaseRequest_IEs, &initiating_p->value);
-            s1ap_decode_xer_print_message(s1ap_xer_print_s1ap_uecontextreleaserequest,
-                    s1ap_xer__print2sp, message);
-            break;
-
         case S1ap_ProcedureCode_id_UECapabilityInfoIndication: 
             ret = s1ap_decode_s1ap_uecapabilityinfoindicationies(
                     &message->s1ap_UECapabilityInfoIndicationIEs, 
                     &initiating_p->value);
             s1ap_decode_xer_print_message(
                     s1ap_xer_print_s1ap_uecapabilityinfoindication,
+                    s1ap_xer__print2sp, message);
+            break;
+
+        case S1ap_ProcedureCode_id_UEContextReleaseRequest: 
+            ret = s1ap_decode_s1ap_uecontextreleaserequest_ies(
+                    &message->s1ap_UEContextReleaseRequest_IEs, &initiating_p->value);
+            s1ap_decode_xer_print_message(s1ap_xer_print_s1ap_uecontextreleaserequest,
                     s1ap_xer__print2sp, message);
             break;
 
@@ -167,6 +167,14 @@ static int s1ap_decode_successfull_outcome(s1ap_message_t *message,
                     &successfullOutcome_p->value);
             s1ap_decode_xer_print_message(
                     s1ap_xer_print_s1ap_e_rabsetupresponse,
+                    s1ap_xer__print2sp, message);
+            break;
+        case S1ap_ProcedureCode_id_E_RABRelease: 
+            ret = s1ap_decode_s1ap_e_rabreleaseresponseies(
+                    &message->s1ap_E_RABReleaseResponseIEs, 
+                    &successfullOutcome_p->value);
+            s1ap_decode_xer_print_message(
+                    s1ap_xer_print_s1ap_e_rabreleaseresponse,
                     s1ap_xer__print2sp, message);
             break;
         case S1ap_ProcedureCode_id_UEContextRelease: 

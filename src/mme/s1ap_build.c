@@ -402,6 +402,104 @@ status_t s1ap_build_e_rab_setup_request(
     return CORE_OK;
 }
 
+static void s1ap_build_cause(S1ap_Cause_t *dst, S1ap_Cause_t *src)
+{
+    d_assert(src, return, "Null param");
+    d_assert(dst, return, "Null param");
+
+    dst->present = src->present;
+    switch(dst->present)
+    {
+        case S1ap_Cause_PR_radioNetwork:
+            dst->choice.radioNetwork = src->choice.radioNetwork;
+            break;
+        case S1ap_Cause_PR_transport:
+            dst->choice.transport = src->choice.transport;
+            break;
+        case S1ap_Cause_PR_nas:
+            dst->choice.nas = src->choice.nas;
+            break;
+        case S1ap_Cause_PR_protocol:
+            dst->choice.protocol = src->choice.protocol;
+            break;
+        case S1ap_Cause_PR_misc:
+            dst->choice.misc = src->choice.misc;
+            break;
+        default:
+            d_error("Invalid src type : %d", dst->present);
+            break;
+    }
+}
+
+status_t s1ap_build_e_rab_release_command(pkbuf_t **s1apbuf,
+        mme_bearer_t *bearer, pkbuf_t *esmbuf, S1ap_Cause_t *cause)
+{
+    char buf[INET_ADDRSTRLEN];
+
+    int encoded;
+    s1ap_message_t message;
+    S1ap_E_RABReleaseCommandIEs_t *ies = &message.s1ap_E_RABReleaseCommandIEs;
+    S1ap_E_RABItem_t *e_rab = NULL;
+    S1ap_NAS_PDU_t *nasPdu = NULL;
+    mme_ue_t *mme_ue = NULL;
+    enb_ue_t *enb_ue = NULL;
+    s6a_subscription_data_t *subscription_data = NULL;
+
+    d_assert(esmbuf, return CORE_ERROR, "Null param");
+    d_assert(bearer, return CORE_ERROR, "Null param");
+
+    mme_ue = bearer->mme_ue;
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    enb_ue = mme_ue->enb_ue;
+    d_assert(enb_ue, return CORE_ERROR, "Null param");
+    subscription_data = &mme_ue->subscription_data;
+    d_assert(subscription_data, return CORE_ERROR, "Null param");
+
+    memset(&message, 0, sizeof(s1ap_message_t));
+
+    ies->mme_ue_s1ap_id = enb_ue->mme_ue_s1ap_id;
+    ies->eNB_UE_S1AP_ID = enb_ue->enb_ue_s1ap_id;
+
+    ies->presenceMask |= 
+           S1AP_E_RABRELEASECOMMANDIES_UEAGGREGATEMAXIMUMBITRATE_PRESENT;
+    asn_uint642INTEGER(
+            &ies->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateUL, 
+            subscription_data->ambr.uplink);
+    asn_uint642INTEGER(
+            &ies->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateDL, 
+            subscription_data->ambr.downlink);
+
+    e_rab = (S1ap_E_RABItem_t *)core_calloc(1, sizeof(S1ap_E_RABItem_t));
+    e_rab->e_RAB_ID = bearer->ebi;
+    s1ap_build_cause(&e_rab->cause, cause);
+
+    ies->presenceMask |= S1AP_E_RABRELEASECOMMANDIES_NAS_PDU_PRESENT;
+    nasPdu = &ies->nas_pdu;
+    nasPdu->size = esmbuf->len;
+    nasPdu->buf = core_calloc(nasPdu->size, sizeof(c_uint8_t));
+    memcpy(nasPdu->buf, esmbuf->payload, nasPdu->size);
+
+    ASN_SEQUENCE_ADD(&ies->e_RABToBeReleasedList, e_rab);
+
+    message.procedureCode = S1ap_ProcedureCode_id_E_RABRelease;
+    message.direction = S1AP_PDU_PR_initiatingMessage;
+
+    encoded = s1ap_encode_pdu(s1apbuf, &message);
+    s1ap_free_pdu(&message);
+
+    d_assert(s1apbuf && encoded >= 0,return CORE_ERROR,);
+
+    d_trace(3, "[S1AP] E-RAB Release Command : "
+            "UE[eNB-UE-S1AP-ID(%d)] <-- eNB[%s:%d]\n",
+            enb_ue->enb_ue_s1ap_id,
+            INET_NTOP(&enb_ue->enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+            enb_ue->enb->enb_id);
+
+    pkbuf_free(esmbuf);
+
+    return CORE_OK;
+}
+
 status_t s1ap_build_ue_context_release_commmand(
             pkbuf_t **s1apbuf, enb_ue_t *enb_ue, S1ap_Cause_t *cause)
 {

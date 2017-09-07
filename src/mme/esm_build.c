@@ -192,3 +192,38 @@ status_t esm_build_activate_dedicated_bearer_context_request(
 
     return CORE_OK;
 }
+
+status_t esm_build_deactivate_bearer_context_request(
+        pkbuf_t **pkbuf, mme_bearer_t *bearer, nas_esm_cause_t esm_cause)
+{
+    mme_ue_t *mme_ue = NULL;
+    mme_sess_t *sess = NULL;
+
+    nas_message_t message;
+    nas_deactivate_eps_bearer_context_request_t 
+        *deactivate_eps_bearer_context_request = 
+            &message.esm.deactivate_eps_bearer_context_request;
+    
+    d_assert(bearer, return CORE_ERROR, "Null param");
+    sess = bearer->sess;
+    d_assert(sess, return CORE_ERROR, "Null param");
+    mme_ue = bearer->mme_ue;
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
+
+    memset(&message, 0, sizeof(message));
+    message.h.security_header_type = 
+       NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
+    message.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    message.esm.h.eps_bearer_identity = bearer->ebi;
+    message.esm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_ESM;
+    message.esm.h.procedure_transaction_identity = sess->pti;
+    message.esm.h.message_type = 
+        NAS_DEACTIVATE_EPS_BEARER_CONTEXT_REQUEST;
+
+    deactivate_eps_bearer_context_request->esm_cause = esm_cause;
+
+    d_assert(nas_security_encode(pkbuf, mme_ue, &message) == CORE_OK && 
+            *pkbuf,,);
+
+    return CORE_OK;
+}

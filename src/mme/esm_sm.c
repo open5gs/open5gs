@@ -301,8 +301,7 @@ void esm_state_disconnect(fsm_t *s, event_t *e)
             {
                 default:
                 {
-                    d_warn("Not implemented(type:%d)", 
-                            message->esm.h.message_type);
+                    FSM_TRAN(s, esm_state_session_exception);
                     break;
                 }
             }

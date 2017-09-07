@@ -161,3 +161,30 @@ status_t nas_send_activate_dedicated_bearer_context_request(
 
     return CORE_OK;
 }
+
+status_t nas_send_deactivate_bearer_context_request(
+        enb_ue_t *enb_ue, mme_bearer_t *bearer)
+{
+    status_t rv;
+    pkbuf_t *esmbuf = NULL, *s1apbuf = NULL;
+    S1ap_Cause_t cause;
+
+    d_assert(enb_ue, return CORE_ERROR, "Null param");
+    d_assert(bearer, return CORE_ERROR, "Null param");
+
+    rv = esm_build_deactivate_bearer_context_request(
+            &esmbuf, bearer, ESM_CAUSE_REGULAR_DEACTIVATION);
+    d_assert(rv == CORE_OK && esmbuf, return CORE_ERROR, "esm build error");
+
+    d_trace(3, "[NAS] Deactivate bearer context request : EMM <-- ESM\n");
+
+    cause.present = S1ap_Cause_PR_nas;
+    cause.choice.nas = S1ap_CauseNas_normal_release;
+    rv = s1ap_build_e_rab_release_command(&s1apbuf, bearer, esmbuf, &cause);
+    d_assert(rv == CORE_OK && s1apbuf, 
+            pkbuf_free(esmbuf); return CORE_ERROR, "s1ap build error");
+
+    d_assert(nas_send_to_enb(enb_ue, s1apbuf) == CORE_OK,,);
+
+    return CORE_OK;
+}

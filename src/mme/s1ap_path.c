@@ -206,6 +206,7 @@ status_t s1ap_send_to_esm(mme_ue_t *mme_ue, pkbuf_t *esmbuf)
     event_t e;
     nas_esm_header_t *h = NULL;
 
+    mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
     c_uint8_t pti = NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
     c_uint8_t ebi = NAS_EPS_BEARER_IDENTITY_UNASSIGNED;
@@ -229,6 +230,9 @@ status_t s1ap_send_to_esm(mme_ue_t *mme_ue, pkbuf_t *esmbuf)
                 linked_eps_bearer_identity->eps_bearer_identity);
         d_assert(bearer, return CORE_ERROR,
                 "Invalid pti(%d) and ebi(%d)\n", pti, ebi);
+        sess = bearer->sess;
+        d_assert(sess, return CORE_ERROR, "Null param");
+        sess->pti = pti;
     }
     else
     {
@@ -236,7 +240,7 @@ status_t s1ap_send_to_esm(mme_ue_t *mme_ue, pkbuf_t *esmbuf)
             bearer = mme_bearer_find_by_ue_ebi(mme_ue, ebi);
         else if (pti != NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED)
         {
-            mme_sess_t *sess = mme_sess_find_by_pti(mme_ue, pti);
+            sess = mme_sess_find_by_pti(mme_ue, pti);
             if (!sess)
                 sess = mme_sess_add(mme_ue, pti);
             d_assert(sess, return CORE_ERROR, "Null param");

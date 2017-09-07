@@ -20,6 +20,8 @@ CORE_DECLARE(status_t) nas_send_attach_reject(mme_ue_t *mme_ue,
     nas_esm_cause_t esm_cause);
 CORE_DECLARE(status_t) nas_send_activate_dedicated_bearer_context_request(
         enb_ue_t *enb_ue, mme_bearer_t *bearer);
+CORE_DECLARE(status_t) nas_send_deactivate_bearer_context_request(
+        enb_ue_t *enb_ue, mme_bearer_t *bearer);
 
 #ifdef __cplusplus
 }
