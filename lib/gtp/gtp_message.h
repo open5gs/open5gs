@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtp_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-08-31 12:05:13.838521 by acetcom
+ * Created on: 2017-09-07 14:05:57.076773 by acetcom
  * from 29274-d80.docx
  ******************************************************************************/
 
@@ -40,8 +40,9 @@ extern "C" {
 #endif /* __cplusplus */
 
 /* 5.1 General format */
+#define GTPV1U_HEADER_LEN   8
 #define GTPV2C_HEADER_LEN   12
-#define GTPV2C_TEID_LEN     4
+#define GTP_TEID_LEN        4
 typedef struct _gtp_header_t {
     union {
         struct {

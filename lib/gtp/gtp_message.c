@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtp_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-08-31 12:05:13.855408 by acetcom
+ * Created on: 2017-09-07 14:05:57.092990 by acetcom
  * from 29274-d80.docx
  ******************************************************************************/
 
@@ -2424,7 +2424,7 @@ status_t gtp_parse_msg(gtp_message_t *gtp_message, pkbuf_t *pkbuf)
     if (h->teid_presence)
         size = GTPV2C_HEADER_LEN;
     else
-        size = GTPV2C_HEADER_LEN-GTPV2C_TEID_LEN;
+        size = GTPV2C_HEADER_LEN-GTP_TEID_LEN;
 
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK,
             return CORE_ERROR, "pkbuf_header error");

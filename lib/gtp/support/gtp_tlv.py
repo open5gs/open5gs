@@ -395,8 +395,9 @@ extern "C" {
 #endif /* __cplusplus */
 
 /* 5.1 General format */
+#define GTPV1U_HEADER_LEN   8
 #define GTPV2C_HEADER_LEN   12
-#define GTPV2C_TEID_LEN     4
+#define GTP_TEID_LEN        4
 typedef struct _gtp_header_t {
     union {
         struct {
@@ -628,7 +629,7 @@ f.write("""status_t gtp_parse_msg(gtp_message_t *gtp_message, pkbuf_t *pkbuf)
     if (h->teid_presence)
         size = GTPV2C_HEADER_LEN;
     else
-        size = GTPV2C_HEADER_LEN-GTPV2C_TEID_LEN;
+        size = GTPV2C_HEADER_LEN-GTP_TEID_LEN;
 
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK,
             return CORE_ERROR, "pkbuf_header error");

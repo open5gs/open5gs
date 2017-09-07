@@ -17,7 +17,7 @@ static int _gtpv1_tun_recv_cb(net_link_t *net_link, void *data)
     status_t rv;
     pgw_bearer_t *bearer = NULL;
 
-    recvbuf = pkbuf_alloc(sizeof(gtp_header_t), MAX_SDU_LEN);
+    recvbuf = pkbuf_alloc(GTPV1U_HEADER_LEN, MAX_SDU_LEN);
     d_assert(recvbuf, return -1, "pkbuf_alloc error");
 
     n = net_link_read(net_link, recvbuf->payload, recvbuf->len, 0);
@@ -41,7 +41,7 @@ static int _gtpv1_tun_recv_cb(net_link_t *net_link, void *data)
         char buf[INET_ADDRSTRLEN];
 
         /* Add GTP-U header */
-        rv = pkbuf_header(recvbuf, sizeof(gtp_header_t));
+        rv = pkbuf_header(recvbuf, GTPV1U_HEADER_LEN);
         if (rv != CORE_OK)
         {
             d_error("pkbuf_header error");
@@ -135,7 +135,7 @@ static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
 static int _gtpv1_u_recv_cb(net_sock_t *sock, void *data)
 {
     pkbuf_t *pkbuf = NULL;
-    c_uint32_t size = sizeof(gtp_header_t);
+    c_uint32_t size = GTPV1U_HEADER_LEN;
 
     d_assert(sock, return -1, "Null param");
 
