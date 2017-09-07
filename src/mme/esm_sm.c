@@ -185,6 +185,7 @@ void esm_state_information(fsm_t *s, event_t *e)
 
 void esm_state_active(fsm_t *s, event_t *e)
 {
+    status_t rv;
     mme_ue_t *mme_ue = NULL;
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
@@ -205,6 +206,30 @@ void esm_state_active(fsm_t *s, event_t *e)
     {
         case FSM_ENTRY_SIG:
         {
+            enb_ue_t *enb_ue = NULL;
+            mme_bearer_t *linked_bearer = mme_linked_bearer(bearer);
+
+            d_assert(linked_bearer, return, "Null param");
+            enb_ue = mme_ue->enb_ue;
+            d_assert(enb_ue, return, "Null param");
+
+            if (linked_bearer->ebi == bearer->ebi)
+            {
+                /* Check dedicated bearer */
+                mme_bearer_t *dedicated_bearer = mme_bearer_next(bearer);
+                while(dedicated_bearer)
+                {
+                    if (!MME_HAVE_ENB_S1U_PATH(dedicated_bearer))
+                    {
+                        rv = nas_send_activate_dedicated_bearer_context(
+                                enb_ue, dedicated_bearer);
+                        d_assert(rv == CORE_OK, return,
+                        "nas_send_activate_dedicated_bearer_context failed");
+                    }
+
+                    dedicated_bearer = mme_bearer_next(dedicated_bearer);
+                }
+            }
             break;
         }
         case FSM_EXIT_SIG:

@@ -79,22 +79,9 @@ void esm_handle_activate_default_bearer_accept(mme_bearer_t *bearer)
 
     if (MME_HAVE_ENB_S1U_PATH(bearer))
     {
-        mme_bearer_t *dedicated_bearer = NULL;
-
         rv = mme_gtp_send_modify_bearer_request(bearer);
         d_assert(rv == CORE_OK, return,
             "mme_gtp_send_modify_bearer_request failed");
-
-        dedicated_bearer = mme_bearer_next(bearer);
-        while(dedicated_bearer)
-        {
-            rv = nas_send_activate_dedicated_bearer_context(
-                    enb_ue, dedicated_bearer);
-            d_assert(rv == CORE_OK, return,
-                "nas_send_activate_dedicated_bearer_context failed");
-
-            dedicated_bearer = mme_bearer_next(dedicated_bearer);
-        }
     }
 }
 

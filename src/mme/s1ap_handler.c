@@ -325,22 +325,10 @@ void s1ap_handle_initial_context_setup_response(
         if (FSM_CHECK(&bearer->sm, esm_state_active))
         {
             status_t rv;
-            mme_bearer_t *dedicated_bearer = NULL;
 
             rv = mme_gtp_send_modify_bearer_request(bearer);
             d_assert(rv == CORE_OK, return,
                     "mme_gtp_send_modify_bearer_request failed");
-
-            dedicated_bearer = mme_bearer_next(bearer);
-            while(dedicated_bearer)
-            {
-                rv = nas_send_activate_dedicated_bearer_context(
-                        enb_ue, dedicated_bearer);
-                d_assert(rv == CORE_OK, return,
-                        "nas_send_activate_dedicated_bearer_context failed");
-
-                dedicated_bearer = mme_bearer_next(dedicated_bearer);
-            }
         }
     }
 }
@@ -398,22 +386,9 @@ void s1ap_handle_e_rab_setup_response(
         
             if (linked_bearer->ebi == bearer->ebi) /* Default Bearer */
             {
-                mme_bearer_t *dedicated_bearer = NULL;
-
                 rv = mme_gtp_send_modify_bearer_request(bearer);
                 d_assert(rv == CORE_OK, return,
                     "mme_gtp_send_modify_bearer_request failed");
-
-                dedicated_bearer = mme_bearer_next(bearer);
-                while(dedicated_bearer)
-                {
-                    rv = nas_send_activate_dedicated_bearer_context(
-                            enb_ue, dedicated_bearer);
-                    d_assert(rv == CORE_OK, return,
-                        "nas_send_activate_dedicated_bearer_context failed");
-
-                    dedicated_bearer = mme_bearer_next(dedicated_bearer);
-                }
             }
             else /* Dedicated Bearer */
             {
