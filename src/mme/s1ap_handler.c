@@ -8,7 +8,6 @@
 #include "s1ap_build.h"
 #include "s1ap_path.h"
 #include "nas_path.h"
-#include "mme_s11_build.h"
 #include "mme_gtp_path.h"
 
 #include "s1ap_handler.h"
@@ -321,15 +320,6 @@ void s1ap_handle_initial_context_setup_response(
         bearer->enb_s1u_teid = ntohl(bearer->enb_s1u_teid);
         memcpy(&bearer->enb_s1u_addr, e_rab->transportLayerAddress.buf,
                 sizeof(bearer->enb_s1u_addr));
-
-        if (FSM_CHECK(&bearer->sm, esm_state_active))
-        {
-            status_t rv;
-
-            rv = mme_gtp_send_modify_bearer_request(bearer);
-            d_assert(rv == CORE_OK, return,
-                    "mme_gtp_send_modify_bearer_request failed");
-        }
     }
 }
 
@@ -360,8 +350,6 @@ void s1ap_handle_e_rab_setup_response(
     for (i = 0; i < ies->e_RABSetupListBearerSURes.
             s1ap_E_RABSetupItemBearerSURes.count; i++)
     {
-        status_t rv;
-
         mme_bearer_t *bearer = NULL;
         mme_ue_t *mme_ue = enb_ue->mme_ue;
         S1ap_E_RABSetupItemBearerSURes_t *e_rab = NULL;
@@ -378,25 +366,6 @@ void s1ap_handle_e_rab_setup_response(
         bearer->enb_s1u_teid = ntohl(bearer->enb_s1u_teid);
         memcpy(&bearer->enb_s1u_addr, e_rab->transportLayerAddress.buf,
                 sizeof(bearer->enb_s1u_addr));
-
-        if (FSM_CHECK(&bearer->sm, esm_state_active))
-        {
-            mme_bearer_t *linked_bearer = mme_linked_bearer(bearer);
-            d_assert(linked_bearer, return, "Null param");
-        
-            if (linked_bearer->ebi == bearer->ebi) /* Default Bearer */
-            {
-                rv = mme_gtp_send_modify_bearer_request(bearer);
-                d_assert(rv == CORE_OK, return,
-                    "mme_gtp_send_modify_bearer_request failed");
-            }
-            else /* Dedicated Bearer */
-            {
-                rv = mme_gtp_send_create_bearer_response(bearer);
-                d_assert(rv == CORE_OK, return,
-                        "mme_gtp_send_create_bearer_response failed");
-            }
-        }
     }
 }
 
@@ -435,23 +404,9 @@ void s1ap_handle_ue_context_release_request(
                     mme_sess_t *sess = mme_sess_first(mme_ue);
                     while (sess != NULL)
                     {
-                        gtp_header_t h;
-                        pkbuf_t *pkbuf = NULL;
-                        gtp_xact_t *xact = NULL;
-
-                        memset(&h, 0, sizeof(gtp_header_t));
-                        h.type = GTP_RELEASE_ACCESS_BEARERS_REQUEST_TYPE;
-                        h.teid = mme_ue->sgw_s11_teid;
-
-                        rv = mme_s11_build_release_access_bearers_request(
-                                &pkbuf, h.type);
-                        d_assert(rv == CORE_OK, return, "S11 build error");
-
-                        xact = gtp_xact_local_create(sess->sgw, &h, pkbuf);
-                        d_assert(xact, return, "Null param");
-
-                        rv = gtp_xact_commit(xact);
-                        d_assert(rv == CORE_OK, return, "xact_commit error");
+                        rv = mme_gtp_send_release_access_bearers_response(sess);
+                        d_assert(rv == CORE_OK, return, 
+                        "mme_gtp_send_release_access_bearers_response failed");
 
                         sess = mme_sess_next(sess);
                     }

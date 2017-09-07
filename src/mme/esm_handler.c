@@ -77,24 +77,18 @@ void esm_handle_activate_default_bearer_accept(mme_bearer_t *bearer)
     enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return, "Null param");
 
-    if (MME_HAVE_ENB_S1U_PATH(bearer))
+    rv = mme_gtp_send_modify_bearer_request(bearer);
+    d_assert(rv == CORE_OK, return,
+        "mme_gtp_send_modify_bearer_request failed");
+
+    mme_bearer_t *dedicated_bearer = mme_bearer_next(bearer);
+    while(dedicated_bearer)
     {
-        rv = mme_gtp_send_modify_bearer_request(bearer);
+        rv = nas_send_activate_dedicated_bearer_context(
+                enb_ue, dedicated_bearer);
         d_assert(rv == CORE_OK, return,
-            "mme_gtp_send_modify_bearer_request failed");
-    }
-}
+            "nas_send_activate_dedicated_bearer_context failed");
 
-void esm_handle_activate_dedicated_bearer_accept(mme_bearer_t *bearer)
-{
-    status_t rv;
-
-    d_assert(bearer, return, "Null param");
-
-    if (MME_HAVE_ENB_S1U_PATH(bearer))
-    {
-        rv = mme_gtp_send_create_bearer_response(bearer);
-        d_assert(rv == CORE_OK, return,
-                "mme_gtp_send_create_bearer_response failed");
+        dedicated_bearer = mme_bearer_next(dedicated_bearer);
     }
 }
