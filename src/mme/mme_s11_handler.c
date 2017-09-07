@@ -124,59 +124,6 @@ void mme_s11_handle_modify_bearer_response(
     d_assert(rv == CORE_OK, return, "xact_commit error");
 }
 
-void mme_s11_handle_delete_all_sessions_in_ue(mme_ue_t *mme_ue)
-{
-    status_t rv;
-    mme_sess_t *sess = NULL, *next_sess = NULL;
-
-    d_assert(mme_ue, return, "Null param");
-    sess = mme_sess_first(mme_ue);
-    while (sess != NULL)
-    {
-        next_sess = mme_sess_next(sess);
-
-        if (MME_HAVE_SGW_S1U_PATH(sess))
-        {
-            rv = mme_gtp_send_delete_session_request(sess);
-            d_assert(rv == CORE_OK, return,
-                    "mme_gtp_send_delete_session_request error");
-        }
-        else
-        {
-            mme_sess_remove(sess);
-        }
-
-        sess = next_sess;
-    }
-}
-
-void mme_s11_handle_delete_session_response(
-        gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_delete_session_response_t *rsp)
-{
-    status_t rv;
-    mme_sess_t *sess = NULL;
-
-    d_assert(xact, return, "Null param");
-    d_assert(mme_ue, return, "Null param");
-    d_assert(rsp, return, "Null param");
-    sess = GTP_XACT_RETRIEVE_SESSION(xact);
-    d_assert(sess, return, "Null param");
-
-    if (rsp->cause.presence == 0)
-    {
-        d_error("No Cause");
-        return;
-    }
-
-    d_trace(3, "[GTP] Delete Session Response : "
-            "MME[%d] <-- SGW[%d]\n", mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
-
-    mme_sess_remove(sess);
-
-    rv = gtp_xact_commit(xact);
-    d_assert(rv == CORE_OK, return, "xact_commit error");
-}
-
 void mme_s11_handle_create_bearer_request(
         gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_create_bearer_request_t *req)
 {

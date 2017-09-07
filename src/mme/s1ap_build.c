@@ -536,28 +536,7 @@ status_t s1ap_build_ue_context_release_commmand(
         ies->uE_S1AP_IDs.choice.mME_UE_S1AP_ID = enb_ue->mme_ue_s1ap_id;
     }
 
-    ies->cause.present = cause->present;
-    switch(ies->cause.present)
-    {
-        case S1ap_Cause_PR_radioNetwork:
-            ies->cause.choice.radioNetwork = cause->choice.radioNetwork;
-            break;
-        case S1ap_Cause_PR_transport:
-            ies->cause.choice.transport = cause->choice.transport;
-            break;
-        case S1ap_Cause_PR_nas:
-            ies->cause.choice.nas = cause->choice.nas;
-            break;
-        case S1ap_Cause_PR_protocol:
-            ies->cause.choice.protocol = cause->choice.protocol;
-            break;
-        case S1ap_Cause_PR_misc:
-            ies->cause.choice.misc = cause->choice.misc;
-            break;
-        default:
-            d_error("Invalid cause type : %d", ies->cause.present);
-            break;
-    }
+    s1ap_build_cause(&ies->cause, cause);
 
     message.procedureCode = S1ap_ProcedureCode_id_UEContextRelease;
     message.direction = S1AP_PDU_PR_initiatingMessage;

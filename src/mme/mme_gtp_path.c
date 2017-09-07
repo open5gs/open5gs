@@ -154,6 +154,34 @@ status_t mme_gtp_send_delete_session_request(mme_sess_t *sess)
     return CORE_OK;
 }
 
+status_t mme_gtp_send_delete_all_sessions(mme_ue_t *mme_ue)
+{
+    status_t rv;
+    mme_sess_t *sess = NULL, *next_sess = NULL;
+
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    sess = mme_sess_first(mme_ue);
+    while (sess != NULL)
+    {
+        next_sess = mme_sess_next(sess);
+
+        if (MME_HAVE_SGW_S1U_PATH(sess))
+        {
+            rv = mme_gtp_send_delete_session_request(sess);
+            d_assert(rv == CORE_OK, return CORE_ERROR,
+                    "mme_gtp_send_delete_session_request error");
+        }
+        else
+        {
+            mme_sess_remove(sess);
+        }
+
+        sess = next_sess;
+    }
+
+    return CORE_OK;
+}
+
 status_t mme_gtp_send_create_bearer_response(mme_bearer_t *bearer)
 {
     status_t rv;

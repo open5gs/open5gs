@@ -13,8 +13,8 @@
 #include "emm_handler.h"
 #include "emm_build.h"
 #include "esm_handler.h"
-#include "mme_s11_handler.h"
 #include "nas_path.h"
+#include "mme_gtp_path.h"
 
 static void emm_state_attach_request(fsm_t *s, event_t *e,
         mme_ue_t *mme_ue, nas_message_t *message);
@@ -82,6 +82,7 @@ void emm_state_detached(fsm_t *s, event_t *e)
 
 void emm_state_identity(fsm_t *s, event_t *e)
 {
+    status_t rv;
     mme_ue_t *mme_ue = NULL;
 
     d_assert(s, return, "Null param");
@@ -96,7 +97,6 @@ void emm_state_identity(fsm_t *s, event_t *e)
     {
         case FSM_ENTRY_SIG:
         {
-            status_t rv;
             pkbuf_t *emmbuf = NULL;
 
             rv = emm_build_identity_request(&emmbuf, mme_ue);
@@ -139,7 +139,9 @@ void emm_state_identity(fsm_t *s, event_t *e)
                     {
                         if (MME_HAVE_SGW_S11_PATH(mme_ue))
                         {
-                            mme_s11_handle_delete_all_sessions_in_ue(mme_ue);
+                            rv = mme_gtp_send_delete_all_sessions(mme_ue);
+                            d_assert(rv == CORE_OK, break,
+                                "mme_gtp_send_delete_all_sessions failed");
                         }
                         else
                         {
@@ -431,7 +433,10 @@ void emm_state_attached(fsm_t *s, event_t *e)
     
                     if (MME_HAVE_SGW_S11_PATH(mme_ue))
                     {
-                        mme_s11_handle_delete_all_sessions_in_ue(mme_ue);
+                        status_t rv;
+                        rv = mme_gtp_send_delete_all_sessions(mme_ue);
+                        d_assert(rv == CORE_OK, break,
+                            "mme_gtp_send_delete_all_sessions failed");
                     }
                     else
                     {
@@ -526,6 +531,8 @@ void emm_state_exception(fsm_t *s, event_t *e)
 static void emm_state_attach_request(fsm_t *s, event_t *e,
         mme_ue_t *mme_ue, nas_message_t *message)
 {
+    status_t rv;
+
     d_assert(s, return, "Null param");
     d_assert(e, return, "Null param");
     d_assert(mme_ue, return, "Null param");
@@ -550,7 +557,6 @@ static void emm_state_attach_request(fsm_t *s, event_t *e,
     {
         if (SECURITY_CONTEXT_IS_VALID(mme_ue))
         {
-            status_t rv;
             rv = nas_send_emm_to_esm(mme_ue, &mme_ue->pdn_connectivity_request);
             d_assert(rv == CORE_OK,, "nas_send_emm_to_esm failed");
             FSM_TRAN(s, &emm_state_default_esm);
@@ -559,7 +565,9 @@ static void emm_state_attach_request(fsm_t *s, event_t *e,
         {
             if (MME_HAVE_SGW_S11_PATH(mme_ue))
             {
-                mme_s11_handle_delete_all_sessions_in_ue(mme_ue);
+                rv = mme_gtp_send_delete_all_sessions(mme_ue);
+                d_assert(rv == CORE_OK, return,
+                    "mme_gtp_send_delete_all_sessions failed");
             }
             else
             {
