@@ -4,8 +4,8 @@
 #include "core_net.h"
 
 #include "mme_event.h"
-#include "mme_context.h"
 #include "mme_gtp_path.h"
+#include "mme_s11_build.h"
 
 static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
 {
@@ -87,6 +87,71 @@ status_t mme_gtp_close()
         d_error("Can't close S11 Path for SGW");
         return rv;
     }
+
+    return CORE_OK;
+}
+
+status_t mme_gtp_send_modify_bearer_request(mme_bearer_t *bearer)
+{
+    status_t rv;
+
+    gtp_xact_t *xact = NULL;
+    mme_ue_t *mme_ue = NULL;
+    mme_sess_t *sess = NULL;
+
+    gtp_header_t h;
+    pkbuf_t *pkbuf = NULL;
+
+    d_assert(bearer, return CORE_ERROR, "Null param");
+    sess = bearer->sess;
+    d_assert(sess, return CORE_ERROR, "Null param");
+    mme_ue = sess->mme_ue;
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
+
+    memset(&h, 0, sizeof(gtp_header_t));
+    h.type = GTP_MODIFY_BEARER_REQUEST_TYPE;
+    h.teid = mme_ue->sgw_s11_teid;
+
+    rv = mme_s11_build_modify_bearer_request(&pkbuf, h.type, bearer);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "S11 build error");
+
+    xact = gtp_xact_local_create(sess->sgw, &h, pkbuf);
+    d_assert(xact, return CORE_ERROR, "Null param");
+
+    rv = gtp_xact_commit(xact);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "xact_commit error");
+
+    return CORE_OK;
+}
+
+status_t mme_gtp_send_create_bearer_response(mme_bearer_t *bearer)
+{
+    status_t rv;
+
+    gtp_xact_t *xact = NULL;
+    mme_ue_t *mme_ue = NULL;
+
+    gtp_header_t h;
+    pkbuf_t *pkbuf = NULL;
+
+    d_assert(bearer, return CORE_ERROR, "Null param");
+    mme_ue = bearer->mme_ue;
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    xact = bearer->xact;
+    d_assert(xact, return CORE_ERROR, "Null param");
+
+    memset(&h, 0, sizeof(gtp_header_t));
+    h.type = GTP_CREATE_BEARER_RESPONSE_TYPE;
+    h.teid = mme_ue->sgw_s11_teid;
+
+    rv = mme_s11_build_create_bearer_response(&pkbuf, h.type, bearer);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "S11 build error");
+
+    rv = gtp_xact_update_tx(xact, &h, pkbuf);
+    d_assert(xact, return CORE_ERROR, "Null param");
+
+    rv = gtp_xact_commit(xact);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "xact_commit error");
 
     return CORE_OK;
 }

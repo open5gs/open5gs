@@ -7,134 +7,11 @@
 #include "s1ap_conv.h"
 #include "s1ap_build.h"
 #include "s1ap_path.h"
-#include "nas_message.h"
-#include "nas_security.h"
 #include "nas_path.h"
-#include "esm_build.h"
 #include "mme_s11_build.h"
 #include "mme_gtp_path.h"
 
 #include "s1ap_handler.h"
-
-static void event_s1ap_to_nas(enb_ue_t *enb_ue, S1ap_NAS_PDU_t *nasPdu)
-{
-    nas_security_header_t *sh = NULL;
-    nas_security_header_type_t security_header_type;
-
-    nas_esm_header_t *h = NULL;
-    pkbuf_t *nasbuf = NULL;
-    event_t e;
-
-    d_assert(enb_ue, return, "Null param");
-    d_assert(nasPdu, return, "Null param");
-
-    /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 
-     * When calculating AES_CMAC, we need to use the headroom of the packet. */
-    nasbuf = pkbuf_alloc(NAS_HEADROOM, nasPdu->size);
-    d_assert(nasbuf, return, "Null param");
-    memcpy(nasbuf->payload, nasPdu->buf, nasPdu->size);
-
-    sh = nasbuf->payload;
-    d_assert(sh, return, "Null param");
-
-    memset(&security_header_type, 0, sizeof(nas_security_header_type_t));
-    switch(sh->security_header_type)
-    {
-        case NAS_SECURITY_HEADER_PLAIN_NAS_MESSAGE:
-            break;
-        case NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE:
-            security_header_type.service_request = 1;
-            break;
-        case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED:
-            security_header_type.integrity_protected = 1;
-            d_assert(pkbuf_header(nasbuf, -6) == CORE_OK,
-                    return, "pkbuf_header error");
-            break;
-        case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED:
-            security_header_type.integrity_protected = 1;
-            security_header_type.ciphered = 1;
-            d_assert(pkbuf_header(nasbuf, -6) == CORE_OK,
-                    return, "pkbuf_header error");
-            break;
-        case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT:
-            security_header_type.integrity_protected = 1;
-            security_header_type.new_security_context = 1;
-            d_assert(pkbuf_header(nasbuf, -6) == CORE_OK,
-                    return, "pkbuf_header error");
-            break;
-        case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHTERD_WITH_NEW_INTEGRITY_CONTEXT:
-            security_header_type.integrity_protected = 1;
-            security_header_type.ciphered = 1;
-            security_header_type.new_security_context = 1;
-            d_assert(pkbuf_header(nasbuf, -6) == CORE_OK,
-                    return, "pkbuf_header error");
-            break;
-        default:
-            d_error("Not implemented(securiry header type:0x%x)", 
-                    sh->security_header_type);
-            return;
-    }
-
-    if (enb_ue->mme_ue)
-    {
-        d_assert(nas_security_decode(
-            enb_ue->mme_ue, security_header_type, nasbuf) == CORE_OK,
-            pkbuf_free(nasbuf);return, "nas_security_decode failed");
-    }
-
-    h = nasbuf->payload;
-    d_assert(h, pkbuf_free(nasbuf); return, "Null param");
-    if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_EMM)
-    {
-        event_set(&e, MME_EVT_EMM_MESSAGE);
-        event_set_param1(&e, (c_uintptr_t)enb_ue->index);
-        event_set_param2(&e, (c_uintptr_t)security_header_type.type);
-        event_set_param3(&e, (c_uintptr_t)nasbuf);
-        mme_event_send(&e);
-    }
-    else if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_ESM)
-    {
-        mme_ue_t *mme_ue = enb_ue->mme_ue;
-        mme_sess_t *sess = NULL;
-        mme_bearer_t *bearer = NULL;
-        c_uint8_t pti = NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
-        c_uint8_t ebi = NAS_EPS_BEARER_IDENTITY_UNASSIGNED;
-
-        if (!mme_ue)
-        {
-            d_error("No mme_ue exists");
-            pkbuf_free(nasbuf);
-            return;
-        }
-
-        pti = h->procedure_transaction_identity;
-        ebi = h->eps_bearer_identity;
-
-        if (ebi != NAS_EPS_BEARER_IDENTITY_UNASSIGNED)
-            bearer = mme_bearer_find_by_ue_ebi(mme_ue, ebi);
-        else if (pti != NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED)
-            bearer = mme_bearer_find_by_ue_pti(mme_ue, pti);
-        else
-            d_assert(0, return, "Invalid pti(%d) and ebi(%d)\n", pti, ebi);
-
-        if (!bearer)
-        {
-            sess = mme_sess_add(mme_ue, pti);
-            d_assert(sess, return, "Null param");
-            bearer = mme_default_bearer_in_sess(sess);
-        }
-        d_assert(bearer, return, "Null param");
-
-        event_set(&e, MME_EVT_ESM_MESSAGE);
-        event_set_param1(&e, (c_uintptr_t)bearer->index);
-        event_set_param2(&e, (c_uintptr_t)nasbuf);
-        mme_event_send(&e);
-    }
-    else
-        d_assert(0, pkbuf_free(nasbuf); return, "Unknown protocol:%d", 
-                h->protocol_discriminator);
-}
-
 
 void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
 {
@@ -187,20 +64,6 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
         d_error("No supported TA exist in s1stup_req messages");
     }
 
-
-#if 0 /* FIXME : does it needed? */
-    if (mme_ctx_enb_find_by_enb_id(enb_id))
-    {
-        S1ap_Cause_t cause;
-        d_error("eNB-id[0x%x] duplicated from [%s]", enb_id,
-                INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf));
-
-        cause.present = S1ap_Cause_PR_protocol;
-        cause.choice.protocol = 
-            S1ap_CauseProtocol_message_not_compatible_with_receiver_state;
-        rv = s1ap_build_setup_failure(&s1apbuf, cause);
-    }
-#endif
     d_assert(enb->s1ap_sock, return,);
     d_trace(3, "[S1AP] S1SetupRequest : eNB[%s:%d] --> MME\n",
         INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
@@ -306,7 +169,8 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
             INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
             enb->enb_id);
 
-    event_s1ap_to_nas(enb_ue, &ies->nas_pdu);
+    d_assert(s1ap_send_to_nas(enb_ue, &ies->nas_pdu) == CORE_OK,,
+            "s1ap_send_to_nas failed");
 }
 
 void s1ap_handle_uplink_nas_transport(
@@ -329,7 +193,8 @@ void s1ap_handle_uplink_nas_transport(
             INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
             enb->enb_id);
 
-    event_s1ap_to_nas(enb_ue, &ies->nas_pdu);
+    d_assert(s1ap_send_to_nas(enb_ue, &ies->nas_pdu) == CORE_OK,,
+            "s1ap_send_to_nas failed");
 }
 
 void s1ap_handle_ue_capability_info_indication(
@@ -386,54 +251,27 @@ void s1ap_handle_ue_capability_info_indication(
 void s1ap_handle_activate_default_bearer_accept(mme_bearer_t *bearer)
 {
     status_t rv;
-    gtp_header_t h;
-    gtp_xact_t *xact = NULL;
     mme_ue_t *mme_ue = NULL;
-    mme_sess_t *sess = NULL;
+    enb_ue_t *enb_ue = NULL;
     mme_bearer_t *dedicated_bearer = NULL;
-    pkbuf_t *pkbuf = NULL;
 
     d_assert(bearer, return, "Null param");
-    sess = bearer->sess;
-    d_assert(sess, return, "Null param");
-    mme_ue = sess->mme_ue;
+    mme_ue = bearer->mme_ue;
     d_assert(mme_ue, return, "Null param");
+    enb_ue = mme_ue->enb_ue;
+    d_assert(enb_ue, return, "Null param");
 
-    memset(&h, 0, sizeof(gtp_header_t));
-    h.type = GTP_MODIFY_BEARER_REQUEST_TYPE;
-    h.teid = mme_ue->sgw_s11_teid;
-
-    rv = mme_s11_build_modify_bearer_request(&pkbuf, h.type, bearer);
-    d_assert(rv == CORE_OK, return, "S11 build error");
-
-    xact = gtp_xact_local_create(sess->sgw, &h, pkbuf);
-    d_assert(xact, return, "Null param");
-
-    rv = gtp_xact_commit(xact);
-    d_assert(rv == CORE_OK, return, "xact_commit error");
+    rv = mme_gtp_send_modify_bearer_request(bearer);
+    d_assert(rv == CORE_OK, return,
+            "mme_gtp_send_modify_bearer_request failed");
 
     dedicated_bearer = mme_bearer_next(bearer);
     while(dedicated_bearer)
     {
-        enb_ue_t *enb_ue = NULL;
-        pkbuf_t *esmbuf = NULL, *s1apbuf = NULL;
-
-        enb_ue = mme_ue->enb_ue;
-        d_assert(enb_ue, return, "Null param");
-
-        rv = esm_build_activate_dedicated_bearer_context(
-                &esmbuf, dedicated_bearer);
-        d_assert(rv == CORE_OK && esmbuf, return, "esm build error");
-
-        d_trace(3, "[NAS] Activate dedicated bearer context request : "
-                "EMM <-- ESM\n");
-
-        rv = s1ap_build_e_rab_setup_request(
-                &s1apbuf, dedicated_bearer, esmbuf);
-        d_assert(rv == CORE_OK && s1apbuf, 
-                pkbuf_free(esmbuf); return, "s1ap build error");
-
-        d_assert(nas_send_to_enb(enb_ue, s1apbuf) == CORE_OK,,);
+        rv = nas_send_activate_dedicated_bearer_context(
+                enb_ue, dedicated_bearer);
+        d_assert(rv == CORE_OK, return,
+                "nas_send_activate_dedicated_bearer_context failed");
 
         dedicated_bearer = mme_bearer_next(dedicated_bearer);
     }
@@ -486,7 +324,23 @@ void s1ap_handle_initial_context_setup_response(
 
         if (FSM_CHECK(&bearer->sm, esm_state_active))
         {
-            s1ap_handle_activate_default_bearer_accept(bearer);
+            status_t rv;
+            mme_bearer_t *dedicated_bearer = NULL;
+
+            rv = mme_gtp_send_modify_bearer_request(bearer);
+            d_assert(rv == CORE_OK, return,
+                    "mme_gtp_send_modify_bearer_request failed");
+
+            dedicated_bearer = mme_bearer_next(bearer);
+            while(dedicated_bearer)
+            {
+                rv = nas_send_activate_dedicated_bearer_context(
+                        enb_ue, dedicated_bearer);
+                d_assert(rv == CORE_OK, return,
+                        "nas_send_activate_dedicated_bearer_context failed");
+
+                dedicated_bearer = mme_bearer_next(dedicated_bearer);
+            }
         }
     }
 }
@@ -519,11 +373,8 @@ void s1ap_handle_e_rab_setup_response(
             s1ap_E_RABSetupItemBearerSURes.count; i++)
     {
         status_t rv;
-        gtp_header_t h;
-        gtp_xact_t *xact = NULL;
-        pkbuf_t *pkbuf = NULL;
 
-        mme_bearer_t *bearer = NULL, *linked_bearer = NULL;
+        mme_bearer_t *bearer = NULL;
         mme_ue_t *mme_ue = enb_ue->mme_ue;
         S1ap_E_RABSetupItemBearerSURes_t *e_rab = NULL;
 
@@ -542,33 +393,33 @@ void s1ap_handle_e_rab_setup_response(
 
         if (FSM_CHECK(&bearer->sm, esm_state_active))
         {
-            linked_bearer = mme_linked_bearer(bearer);
+            mme_bearer_t *linked_bearer = mme_linked_bearer(bearer);
             d_assert(linked_bearer, return, "Null param");
         
-            if (linked_bearer->ebi == bearer->ebi)
+            if (linked_bearer->ebi == bearer->ebi) /* Default Bearer */
             {
-                /* Default Bearer */
-                s1ap_handle_activate_default_bearer_accept(bearer);
+                mme_bearer_t *dedicated_bearer = NULL;
+
+                rv = mme_gtp_send_modify_bearer_request(bearer);
+                d_assert(rv == CORE_OK, return,
+                    "mme_gtp_send_modify_bearer_request failed");
+
+                dedicated_bearer = mme_bearer_next(bearer);
+                while(dedicated_bearer)
+                {
+                    rv = nas_send_activate_dedicated_bearer_context(
+                            enb_ue, dedicated_bearer);
+                    d_assert(rv == CORE_OK, return,
+                        "nas_send_activate_dedicated_bearer_context failed");
+
+                    dedicated_bearer = mme_bearer_next(dedicated_bearer);
+                }
             }
-            else
+            else /* Dedicated Bearer */
             {
-                /* Dedicated Bearer */
-                xact = bearer->xact;
-                d_assert(xact, return, "Null param");
-
-                memset(&h, 0, sizeof(gtp_header_t));
-                h.type = GTP_CREATE_BEARER_RESPONSE_TYPE;
-                h.teid = mme_ue->sgw_s11_teid;
-
-                rv = mme_s11_build_create_bearer_response(
-                        &pkbuf, h.type, bearer);
-                d_assert(rv == CORE_OK, return, "S11 build error");
-
-                rv = gtp_xact_update_tx(xact, &h, pkbuf);
-                d_assert(xact, return, "Null param");
-
-                rv = gtp_xact_commit(xact);
-                d_assert(rv == CORE_OK, return, "xact_commit error");
+                rv = mme_gtp_send_create_bearer_response(bearer);
+                d_assert(rv == CORE_OK, return,
+                        "mme_gtp_send_create_bearer_response failed");
             }
         }
     }

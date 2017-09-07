@@ -315,7 +315,10 @@ static void esm_state_pdn_connectivity_request(
         {
             if (MME_HAVE_SGW_S11_PATH(mme_ue))
             {
-                emm_handle_attach_accept(mme_ue);
+                status_t rv;
+                rv = nas_send_attach_accept(mme_ue);
+                d_assert(rv == CORE_OK, return,
+                        "nas_send_attach_accept failed");
             }
             else
             {

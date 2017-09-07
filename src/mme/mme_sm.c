@@ -260,6 +260,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
         }
         case MME_EVT_S6A_MESSAGE:
         {
+            status_t rv;
             mme_ue_t *mme_ue = mme_ue_find(event_get_param1(e));
             pkbuf_t *s6abuf = (pkbuf_t *)event_get_param2(e);
             s6a_message_t *s6a_message = NULL;
@@ -275,10 +276,12 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 {
                     if (s6a_message->result_code != ER_DIAMETER_SUCCESS)
                     {
-                        emm_handle_attach_reject(mme_ue,
+                        rv = nas_send_attach_reject(mme_ue,
                             S1ap_CauseNas_authentication_failure,
                             EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED,
                             ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+                        d_assert(rv == CORE_OK,,
+                                "nas_send_attach_reject failed");
 
                         mme_ue_remove(mme_ue);
                         break;
@@ -291,10 +294,12 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 {
                     if (s6a_message->result_code != ER_DIAMETER_SUCCESS)
                     {
-                        emm_handle_attach_reject(mme_ue,
+                        rv = nas_send_attach_reject(mme_ue,
                             S1ap_CauseNas_unspecified,
                             EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED,
                             ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+                        d_assert(rv == CORE_OK,,
+                                "nas_send_attach_reject failed");
 
                         mme_ue_remove(mme_ue);
                         break;
@@ -304,8 +309,10 @@ void mme_state_operational(fsm_t *s, event_t *e)
 
                     if (FSM_CHECK(&mme_ue->sm, emm_state_default_esm))
                     {
-                        event_emm_to_esm(mme_ue,
+                        rv = nas_send_emm_to_esm(mme_ue,
                                 &mme_ue->pdn_connectivity_request);
+                        d_assert(rv == CORE_OK,,
+                                "nas_send_emm_to_esm failed");
                     }
                     else if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
                     {
@@ -377,7 +384,9 @@ void mme_state_operational(fsm_t *s, event_t *e)
 
                     if (FSM_CHECK(&mme_ue->sm, emm_state_default_esm))
                     {
-                        emm_handle_attach_accept(mme_ue);
+                        rv = nas_send_attach_accept(mme_ue);
+                        d_assert(rv == CORE_OK, return,
+                                "nas_send_attach_accept failed");
                     }
                     else if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
                     {

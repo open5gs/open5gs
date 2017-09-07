@@ -5,6 +5,7 @@
 #include "mme_event.h"
 
 #include "s1ap_path.h"
+#include "nas_security.h"
 
 static int _s1ap_accept_cb(net_sock_t *net_sock, void *data);
 
@@ -199,3 +200,137 @@ status_t s1ap_send_to_enb(mme_enb_t *enb, pkbuf_t *pkbuf)
 
     return rv;
 }
+
+status_t s1ap_send_to_esm(mme_ue_t *mme_ue, pkbuf_t *esmbuf)
+{
+    event_t e;
+    nas_esm_header_t *h = NULL;
+
+    mme_sess_t *sess = NULL;
+    mme_bearer_t *bearer = NULL;
+    c_uint8_t pti = NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
+    c_uint8_t ebi = NAS_EPS_BEARER_IDENTITY_UNASSIGNED;
+
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    d_assert(esmbuf, return CORE_ERROR, "Null param");
+    h = esmbuf->payload;
+    d_assert(h, return CORE_ERROR, "Null param");
+
+    pti = h->procedure_transaction_identity;
+    ebi = h->eps_bearer_identity;
+
+    if (ebi != NAS_EPS_BEARER_IDENTITY_UNASSIGNED)
+        bearer = mme_bearer_find_by_ue_ebi(mme_ue, ebi);
+    else if (pti != NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED)
+        bearer = mme_bearer_find_by_ue_pti(mme_ue, pti);
+    else
+        d_assert(0, return CORE_ERROR,
+                "Invalid pti(%d) and ebi(%d)\n", pti, ebi);
+
+    if (!bearer)
+    {
+        sess = mme_sess_add(mme_ue, pti);
+        d_assert(sess, return CORE_ERROR, "Null param");
+        bearer = mme_default_bearer_in_sess(sess);
+    }
+    d_assert(bearer, return CORE_ERROR, "Null param");
+
+    event_set(&e, MME_EVT_ESM_MESSAGE);
+    event_set_param1(&e, (c_uintptr_t)bearer->index);
+    event_set_param2(&e, (c_uintptr_t)esmbuf);
+    mme_event_send(&e);
+
+    return CORE_OK;
+}
+
+status_t s1ap_send_to_nas(enb_ue_t *enb_ue, S1ap_NAS_PDU_t *nasPdu)
+{
+    nas_security_header_t *sh = NULL;
+    nas_security_header_type_t security_header_type;
+
+    nas_emm_header_t *h = NULL;
+    pkbuf_t *nasbuf = NULL;
+    event_t e;
+
+    d_assert(enb_ue, return CORE_ERROR, "Null param");
+    d_assert(nasPdu, return CORE_ERROR, "Null param");
+
+    /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 
+     * When calculating AES_CMAC, we need to use the headroom of the packet. */
+    nasbuf = pkbuf_alloc(NAS_HEADROOM, nasPdu->size);
+    d_assert(nasbuf, return CORE_ERROR, "Null param");
+    memcpy(nasbuf->payload, nasPdu->buf, nasPdu->size);
+
+    sh = nasbuf->payload;
+    d_assert(sh, return CORE_ERROR, "Null param");
+
+    memset(&security_header_type, 0, sizeof(nas_security_header_type_t));
+    switch(sh->security_header_type)
+    {
+        case NAS_SECURITY_HEADER_PLAIN_NAS_MESSAGE:
+            break;
+        case NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE:
+            security_header_type.service_request = 1;
+            break;
+        case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED:
+            security_header_type.integrity_protected = 1;
+            d_assert(pkbuf_header(nasbuf, -6) == CORE_OK,
+                    return CORE_ERROR, "pkbuf_header error");
+            break;
+        case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED:
+            security_header_type.integrity_protected = 1;
+            security_header_type.ciphered = 1;
+            d_assert(pkbuf_header(nasbuf, -6) == CORE_OK,
+                    return CORE_ERROR, "pkbuf_header error");
+            break;
+        case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT:
+            security_header_type.integrity_protected = 1;
+            security_header_type.new_security_context = 1;
+            d_assert(pkbuf_header(nasbuf, -6) == CORE_OK,
+                    return CORE_ERROR, "pkbuf_header error");
+            break;
+        case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHTERD_WITH_NEW_INTEGRITY_CONTEXT:
+            security_header_type.integrity_protected = 1;
+            security_header_type.ciphered = 1;
+            security_header_type.new_security_context = 1;
+            d_assert(pkbuf_header(nasbuf, -6) == CORE_OK,
+                    return CORE_ERROR, "pkbuf_header error");
+            break;
+        default:
+            d_error("Not implemented(securiry header type:0x%x)", 
+                    sh->security_header_type);
+            return CORE_ERROR;
+    }
+
+    if (enb_ue->mme_ue)
+    {
+        d_assert(nas_security_decode(
+            enb_ue->mme_ue, security_header_type, nasbuf) == CORE_OK,
+            pkbuf_free(nasbuf);return CORE_ERROR, "nas_security_decode failed");
+    }
+
+    h = nasbuf->payload;
+    d_assert(h, pkbuf_free(nasbuf); return CORE_ERROR, "Null param");
+    if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_EMM)
+    {
+        event_set(&e, MME_EVT_EMM_MESSAGE);
+        event_set_param1(&e, (c_uintptr_t)enb_ue->index);
+        event_set_param2(&e, (c_uintptr_t)security_header_type.type);
+        event_set_param3(&e, (c_uintptr_t)nasbuf);
+        mme_event_send(&e);
+    }
+    else if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_ESM)
+    {
+        mme_ue_t *mme_ue = enb_ue->mme_ue;
+
+        d_assert(mme_ue, return CORE_ERROR, "Null param");
+        s1ap_send_to_esm(mme_ue, nasbuf);
+    }
+    else
+        d_assert(0, pkbuf_free(nasbuf); return CORE_ERROR,
+                "Unknown protocol:%d", h->protocol_discriminator);
+
+    return CORE_OK;
+}
+
+

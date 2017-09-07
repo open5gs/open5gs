@@ -128,8 +128,11 @@ void emm_state_identity(fsm_t *s, event_t *e)
 
                     if (SECURITY_CONTEXT_IS_VALID(mme_ue))
                     {
-                        event_emm_to_esm(mme_ue,
+                        status_t rv;
+                        rv = nas_send_emm_to_esm(mme_ue,
                             &mme_ue->pdn_connectivity_request);
+                        d_assert(rv == CORE_OK,,
+                                "nas_send_emm_to_esm failed");
                         FSM_TRAN(s, &emm_state_default_esm);
                     }
                     else
@@ -547,7 +550,9 @@ static void emm_state_attach_request(fsm_t *s, event_t *e,
     {
         if (SECURITY_CONTEXT_IS_VALID(mme_ue))
         {
-            event_emm_to_esm(mme_ue, &mme_ue->pdn_connectivity_request);
+            status_t rv;
+            rv = nas_send_emm_to_esm(mme_ue, &mme_ue->pdn_connectivity_request);
+            d_assert(rv == CORE_OK,, "nas_send_emm_to_esm failed");
             FSM_TRAN(s, &emm_state_default_esm);
         }
         else

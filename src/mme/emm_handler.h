@@ -9,18 +9,10 @@
 extern "C" {
 #endif /* __cplusplus */
 
-CORE_DECLARE(void) event_emm_to_esm(
-        mme_ue_t *mme_ue, nas_esm_message_container_t *esm_message_container);
-
 CORE_DECLARE(void) emm_handle_attach_request(
     mme_ue_t *mme_ue, nas_attach_request_t *attach_request);
-CORE_DECLARE(void) emm_handle_attach_accept(mme_ue_t *mme_ue);
 CORE_DECLARE(void) emm_handle_attach_complete(
     mme_ue_t *mme_ue, nas_attach_complete_t *attach_complete);
-CORE_DECLARE(void) emm_handle_attach_reject(mme_ue_t *mme_ue,
-    e_S1ap_CauseNas s1ap_cause_nas,
-    nas_emm_cause_t emm_cause,
-    nas_esm_cause_t esm_cause);
 
 CORE_DECLARE(void) emm_handle_identity_response(
         mme_ue_t *mme_ue, nas_identity_response_t *identity_response);
