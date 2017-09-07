@@ -157,7 +157,7 @@ out:
                     gx_cca_message_t *cca_message = &gx_message->cca_message;
                     if (gx_message->result_code != ER_DIAMETER_SUCCESS)
                     {
-                        d_error("Not impleneted(%d)", gx_message->result_code);
+                        d_error("Not implemented(%d)", gx_message->result_code);
                         break;
                     }
                     switch(cca_message->cc_request_type)
