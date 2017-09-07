@@ -190,6 +190,7 @@ void esm_state_information(fsm_t *s, event_t *e)
 
 void esm_state_active(fsm_t *s, event_t *e)
 {
+    status_t rv;
     mme_ue_t *mme_ue = NULL;
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
@@ -230,6 +231,74 @@ void esm_state_active(fsm_t *s, event_t *e)
                     FSM_TRAN(s, esm_state_inactive);
                     break;
                 }
+                case NAS_PDN_DISCONNECT_REQUEST:
+                {
+                    if (MME_HAVE_SGW_S1U_PATH(sess))
+                    {
+                        rv = mme_gtp_send_delete_session_request(sess);
+                        d_assert(rv == CORE_OK, return,
+                                "mme_gtp_send_delete_session_request error");
+                    }
+                    else
+                    {
+                        mme_sess_remove(sess);
+                    }
+                    FSM_TRAN(s, esm_state_disconnect);
+                    break;
+                }
+                default:
+                {
+                    d_warn("Not implemented(type:%d)", 
+                            message->esm.h.message_type);
+                    break;
+                }
+            }
+            break;
+        }
+
+        default:
+        {
+            d_error("Unknown event %s", mme_event_get_name(e));
+            break;
+        }
+    }
+}
+
+void esm_state_disconnect(fsm_t *s, event_t *e)
+{
+    mme_ue_t *mme_ue = NULL;
+    mme_sess_t *sess = NULL;
+    mme_bearer_t *bearer = NULL;
+
+    d_assert(s, return, "Null param");
+    d_assert(e, return, "Null param");
+
+    mme_sm_trace(3, e);
+
+    bearer = mme_bearer_find(event_get_param1(e));
+    d_assert(bearer, return, "Null param");
+    sess = bearer->sess;
+    d_assert(sess, return, "Null param");
+    mme_ue = sess->mme_ue;
+    d_assert(mme_ue, return, "Null param");
+
+    switch (event_get(e))
+    {
+        case FSM_ENTRY_SIG:
+        {
+            break;
+        }
+        case FSM_EXIT_SIG:
+        {
+            break;
+        }
+        case MME_EVT_ESM_MESSAGE:
+        {
+            nas_message_t *message = (nas_message_t *)event_get_param3(e);
+            d_assert(message, break, "Null param");
+
+            switch(message->esm.h.message_type)
+            {
                 default:
                 {
                     d_warn("Not implemented(type:%d)", 

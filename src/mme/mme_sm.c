@@ -348,6 +348,8 @@ void mme_state_operational(fsm_t *s, event_t *e)
             if (rv != CORE_OK)
                 break;
 
+            d_assert(xact, return, "Null param");
+
             mme_ue = mme_ue_find_by_teid(message.h.teid);
             d_assert(mme_ue, pkbuf_free(pkbuf); break, 
                     "No UE Context(TEID:%d)", message.h.teid);
@@ -425,31 +427,57 @@ void mme_state_operational(fsm_t *s, event_t *e)
                     break;
                 case GTP_DELETE_SESSION_RESPONSE_TYPE:
                 {
-                    mme_s11_handle_delete_session_response(
-                        xact, mme_ue, &message.delete_session_response);
+                    mme_sess_t *sess = NULL;
+                    gtp_delete_session_response_t *rsp = 
+                        &message.delete_session_response;
 
-                    if (mme_sess_first(mme_ue) == NULL)
+                    d_assert(rsp, return, "Null param");
+                    sess = GTP_XACT_RETRIEVE_SESSION(xact);
+                    d_assert(sess, return, "Null param");
+
+                    if (rsp->cause.presence == 0)
                     {
-                        CLEAR_SGW_S11_PATH(mme_ue);
+                        d_error("No Cause");
+                        return;
                     }
+
+                    d_trace(3, "[GTP] Delete Session Response : "
+                            "MME[%d] <-- SGW[%d]\n",
+                            mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
+
+                    rv = gtp_xact_commit(xact);
+                    d_assert(rv == CORE_OK, return, "xact_commit error");
 
                     if (FSM_CHECK(&mme_ue->sm, emm_state_authentication))
                     {
+                        mme_sess_remove(sess);
                         if (mme_sess_first(mme_ue) == NULL)
                         {
+                            CLEAR_SGW_S11_PATH(mme_ue);
                             mme_s6a_send_air(mme_ue);
                         }
                     }
                     else if (FSM_CHECK(&mme_ue->sm, emm_state_detached))
                     {
+                        mme_sess_remove(sess);
                         if (mme_sess_first(mme_ue) == NULL)
                         {
+                            CLEAR_SGW_S11_PATH(mme_ue);
                             emm_handle_detach_accept(mme_ue);
                         }
                     }
                     else if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
                     {
-                        d_assert(0, , "Coming Soon!");
+                        mme_bearer_t *bearer = mme_default_bearer_in_sess(sess);
+                        d_assert(bearer, return, "Null param");
+
+                        if (FSM_CHECK(&bearer->sm, esm_state_disconnect))
+                        {
+                        }
+                        else
+                        {
+                            d_assert(0, break, "Invalid ESM state");
+                        }
                     }
                     else
                         d_assert(0, break, "Invalid EMM state");

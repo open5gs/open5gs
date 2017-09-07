@@ -124,6 +124,36 @@ status_t mme_gtp_send_modify_bearer_request(mme_bearer_t *bearer)
     return CORE_OK;
 }
 
+status_t mme_gtp_send_delete_session_request(mme_sess_t *sess)
+{
+    status_t rv;
+    pkbuf_t *s11buf = NULL;
+    gtp_header_t h;
+    gtp_xact_t *xact = NULL;
+    mme_ue_t *mme_ue = NULL;
+
+    d_assert(sess, return CORE_ERROR, "Null param");
+    mme_ue = sess->mme_ue;
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
+
+    memset(&h, 0, sizeof(gtp_header_t));
+    h.type = GTP_DELETE_SESSION_REQUEST_TYPE;
+    h.teid = mme_ue->sgw_s11_teid;
+
+    rv = mme_s11_build_delete_session_request(&s11buf, h.type, sess);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "S11 build error");
+
+    xact = gtp_xact_local_create(sess->sgw, &h, s11buf);
+    d_assert(xact, return CORE_ERROR, "Null param");
+
+    GTP_XACT_STORE_SESSION(xact, sess);
+
+    rv = gtp_xact_commit(xact);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "xact_commit error");
+
+    return CORE_OK;
+}
+
 status_t mme_gtp_send_create_bearer_response(mme_bearer_t *bearer)
 {
     status_t rv;

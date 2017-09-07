@@ -127,7 +127,6 @@ void mme_s11_handle_modify_bearer_response(
 void mme_s11_handle_delete_all_sessions_in_ue(mme_ue_t *mme_ue)
 {
     status_t rv;
-    pkbuf_t *s11buf = NULL;
     mme_sess_t *sess = NULL, *next_sess = NULL;
 
     d_assert(mme_ue, return, "Null param");
@@ -138,23 +137,9 @@ void mme_s11_handle_delete_all_sessions_in_ue(mme_ue_t *mme_ue)
 
         if (MME_HAVE_SGW_S1U_PATH(sess))
         {
-            gtp_header_t h;
-            gtp_xact_t *xact = NULL;
-
-            memset(&h, 0, sizeof(gtp_header_t));
-            h.type = GTP_DELETE_SESSION_REQUEST_TYPE;
-            h.teid = mme_ue->sgw_s11_teid;
-
-            rv = mme_s11_build_delete_session_request(&s11buf, h.type, sess);
-            d_assert(rv == CORE_OK, return, "S11 build error");
-
-            xact = gtp_xact_local_create(sess->sgw, &h, s11buf);
-            d_assert(xact, return, "Null param");
-
-            GTP_XACT_STORE_SESSION(xact, sess);
-
-            rv = gtp_xact_commit(xact);
-            d_assert(rv == CORE_OK, return, "xact_commit error");
+            rv = mme_gtp_send_delete_session_request(sess);
+            d_assert(rv == CORE_OK, return,
+                    "mme_gtp_send_delete_session_request error");
         }
         else
         {
