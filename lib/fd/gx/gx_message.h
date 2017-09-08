@@ -23,6 +23,20 @@ typedef struct _gx_message_t {
 #define GX_CMD_CODE_CREDIT_CONTROL              272
     c_uint16_t          cmd_code;
 
+/* Result-Code AVP */
+#define GX_DIAMETER_ERROR_USER_UNKNOWN                  5030
+
+/* Experimental-Result-Codes */
+#define GX_DIAMETER_ERROR_LATE_OVERLAPPING_REQUEST      5453
+#define GX_DIAMETER_ERROR_TIMED_OUT_REQUEST             5454
+#define GX_DIAMETER_ERROR_INITIAL_PARAMETERS            5140
+#define GX_DIAMETER_ERROR_TRIGGER_EVENT                 5141
+#define GX_DIAMETER_PCC_RULE_EVENT                      5142
+#define GX_DIAMETER_ERROR_BEARER_NOT_AUTHORIZED         5143
+#define GX_DIAMETER_ERROR_TRAFFIC_MAPPING_INFO_REJECTED 5144
+#define GX_DIAMETER_ERROR_CONFLICTING_REQUEST           5147
+#define GX_DIAMETER_ADC_RULE_EVENT                      5148
+#define GX_DIAMETER_ERROR_NBIFOM_NOT_AUTHORIZED         5149
     c_uint32_t          result_code;
 
     gx_cca_message_t    cca_message;

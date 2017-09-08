@@ -73,7 +73,7 @@ static int hss_s6a_air_cb( struct msg **msg, struct avp *avp,
     if (rv != CORE_OK)
     {
         d_trace(3, "Cannot get Auth-Info for IMSI:'%s'\n", imsi_bcd);
-        result_code = FD_DIAMETER_ERROR_USER_UNKNOWN;
+        result_code = S6A_DIAMETER_ERROR_USER_UNKNOWN;
         goto out;
     }
 
@@ -219,7 +219,7 @@ static int hss_s6a_ulr_cb( struct msg **msg, struct avp *avp,
     if (rv != CORE_OK)
     {
         d_error("Cannot get Subscription-Data for IMSI:'%s'", imsi_bcd);
-        result_code = FD_DIAMETER_ERROR_USER_UNKNOWN;
+        result_code = S6A_DIAMETER_ERROR_USER_UNKNOWN;
         goto out;
     }
 

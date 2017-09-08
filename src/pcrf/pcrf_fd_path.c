@@ -41,7 +41,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     int i, j;
 
     c_uint32_t cc_request_type = 0;
-    c_uint32_t result_code = 0;
+    c_uint32_t result_code = GX_DIAMETER_ERROR_USER_UNKNOWN;
 	
     d_assert(msg, return EINVAL,);
 
@@ -100,7 +100,6 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     if (rv != CORE_OK)
     {
         d_error("Cannot get data for IMSI(%s)+APN(%s)'\n", imsi_bcd, apn);
-        result_code = FD_DIAMETER_ERROR_USER_UNKNOWN;
         goto out;
     }
 
@@ -319,7 +318,15 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     return 0;
 
 out:
-    CHECK_FCT( fd_message_experimental_rescode_set(ans, result_code) );
+    if (result_code == GX_DIAMETER_ERROR_USER_UNKNOWN)
+    {
+        CHECK_FCT( fd_msg_rescode_set(ans,
+                    "DIAMETER_ERROR_USER_UNKNOWN", NULL, NULL, 1) );
+    }
+    else
+    {
+        CHECK_FCT( fd_message_experimental_rescode_set(ans, result_code) );
+    }
 
 	CHECK_FCT( fd_msg_send(msg, NULL, NULL) );
 

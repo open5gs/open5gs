@@ -77,10 +77,6 @@ void esm_handle_activate_default_bearer_accept(mme_bearer_t *bearer)
     enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return, "Null param");
 
-    rv = mme_gtp_send_modify_bearer_request(bearer);
-    d_assert(rv == CORE_OK, return,
-        "mme_gtp_send_modify_bearer_request failed");
-
     mme_bearer_t *dedicated_bearer = mme_bearer_next(bearer);
     while(dedicated_bearer)
     {

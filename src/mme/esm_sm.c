@@ -35,6 +35,7 @@ void esm_state_final(fsm_t *s, event_t *e)
 
 void esm_state_inactive(fsm_t *s, event_t *e)
 {
+    status_t rv;
     mme_ue_t *mme_ue = NULL;
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
@@ -80,20 +81,30 @@ void esm_state_inactive(fsm_t *s, event_t *e)
                             "context accept : UE[%s] --> ESM[%d]\n", 
                             mme_ue->imsi_bcd, bearer->ebi);
 
+                    if (MME_HAVE_ENB_S1U_PATH(bearer))
+                    {
+                        rv = mme_gtp_send_modify_bearer_request(bearer);
+                        d_assert(rv == CORE_OK, return,
+                                "mme_gtp_send_modify_bearer_request failed");
+                    }
+
                     esm_handle_activate_default_bearer_accept(bearer);
                     FSM_TRAN(s, esm_state_active);
                     break;
                 }
                 case NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_ACCEPT:
                 {
-                    status_t rv;
-
                     d_trace(3, "[NAS] Activate dedicated EPS bearer "
                             "context accept : UE[%s] --> ESM[%d]\n", 
                             mme_ue->imsi_bcd, bearer->ebi);
-                    rv = mme_gtp_send_create_bearer_response(bearer);
-                    d_assert(rv == CORE_OK, return,
-                            "mme_gtp_send_create_bearer_response failed");
+
+                    if (MME_HAVE_ENB_S1U_PATH(bearer))
+                    {
+                        rv = mme_gtp_send_create_bearer_response(bearer);
+                        d_assert(rv == CORE_OK, return,
+                                "mme_gtp_send_create_bearer_response failed");
+                    }
+
                     FSM_TRAN(s, esm_state_active);
                     break;
                 }

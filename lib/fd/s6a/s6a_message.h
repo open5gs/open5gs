@@ -57,7 +57,9 @@ typedef struct _s6a_message_t {
 #define S6A_CMD_CODE_AUTHENTICATION_INFORMATION         318
     c_uint16_t              cmd_code;
 
+    /* Experimental Result Code */
 #define S6A_DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE    4181
+#define S6A_DIAMETER_ERROR_USER_UNKNOWN                 5001
 #define S6A_DIAMETER_ERROR_ROAMING_NOT_ALLOWED          5004
 #define S6A_DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION     5420
 #define S6A_DIAMETER_ERROR_RAT_NOT_ALLOWED              5421

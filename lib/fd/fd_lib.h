@@ -13,8 +13,6 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define FD_DIAMETER_ERROR_USER_UNKNOWN                  5001
-
 CORE_DECLARE(int) fd_init(int mode, const char *conffile);
 CORE_DECLARE(void) fd_final(void);
 

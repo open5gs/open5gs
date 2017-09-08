@@ -302,7 +302,6 @@ void s1ap_handle_initial_context_setup_response(
             s1ap_E_RABSetupItemCtxtSURes.count; i++)
     {
         mme_sess_t *sess = NULL;
-
         mme_bearer_t *bearer = NULL;
         mme_ue_t *mme_ue = enb_ue->mme_ue;
         S1ap_E_RABSetupItemCtxtSURes_t *e_rab = NULL;
@@ -320,6 +319,14 @@ void s1ap_handle_initial_context_setup_response(
         bearer->enb_s1u_teid = ntohl(bearer->enb_s1u_teid);
         memcpy(&bearer->enb_s1u_addr, e_rab->transportLayerAddress.buf,
                 sizeof(bearer->enb_s1u_addr));
+
+        if (FSM_CHECK(&bearer->sm, esm_state_active))
+        {
+            status_t rv;
+            rv = mme_gtp_send_modify_bearer_request(bearer);
+            d_assert(rv == CORE_OK, return,
+                    "mme_gtp_send_modify_bearer_request failed");
+        }
     }
 }
 
@@ -366,6 +373,27 @@ void s1ap_handle_e_rab_setup_response(
         bearer->enb_s1u_teid = ntohl(bearer->enb_s1u_teid);
         memcpy(&bearer->enb_s1u_addr, e_rab->transportLayerAddress.buf,
                 sizeof(bearer->enb_s1u_addr));
+
+        if (FSM_CHECK(&bearer->sm, esm_state_active))
+        {
+            status_t rv;
+
+            mme_bearer_t *linked_bearer = mme_linked_bearer(bearer);
+            d_assert(bearer, return, "Null param");
+
+            if (bearer->ebi == linked_bearer->ebi)
+            {
+                rv = mme_gtp_send_modify_bearer_request(bearer);
+                d_assert(rv == CORE_OK, return,
+                        "mme_gtp_send_modify_bearer_request failed");
+            }
+            else
+            {
+                rv = mme_gtp_send_create_bearer_response(bearer);
+                d_assert(rv == CORE_OK, return,
+                        "mme_gtp_send_create_bearer_response failed");
+            }
+        }
     }
 }
 
