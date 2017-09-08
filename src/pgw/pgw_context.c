@@ -1,5 +1,7 @@
 #define TRACE_MODULE _pgw_context
-
+#ifndef __FAVOR_BSD
+#define __FAVOR_BSD
+#endif
 #include "core_debug.h"
 #include "core_pool.h"
 #include "core_index.h"
@@ -10,6 +12,11 @@
 
 #include "context.h"
 #include "pgw_context.h"
+
+
+#include <netinet/tcp.h>
+#include <netinet/udp.h>
+
 
 static pgw_context_t self;
 
@@ -786,6 +793,7 @@ pgw_bearer_t* pgw_bearer_next(pgw_bearer_t *bearer)
 
 pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
 {
+    pgw_bearer_t *default_bearer = NULL;
     pgw_bearer_t *bearer = NULL;
     hash_index_t *hi = NULL;
     pgw_sess_t *sess = NULL;
@@ -808,8 +816,11 @@ pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
             INET_NTOP(&iph->ip_dst.s_addr,buf2),
             iph->ip_p);
 
-    /* FIXME: Need API to find the bearer with packet filter */
-    /* Iterate session */
+    /* TODO: Need to use the method of FAST matching algorithm and 
+     *          implementation .
+     *       Until be ready, linear searching will be use to find the bearer.
+     */
+
     for (hi = pgw_sess_first(); hi; hi = pgw_sess_next(hi))
     {
         sess = pgw_sess_this(hi);
@@ -820,11 +831,150 @@ pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
         if (iph->ip_dst.s_addr == sess->pdn.paa.ipv4_addr)
         {
             /* Found */
-            bearer = pgw_default_bearer_in_sess(sess);
-            d_assert(bearer, return NULL, "No Bearer");
 
-            d_trace(50, "Found bearer(EBI = %d)\n", bearer->ebi);
-            return bearer;
+            /* Save the default bearer */
+            default_bearer = pgw_default_bearer_in_sess(sess);
+            d_assert(default_bearer, return NULL, "No default Bearer");
+
+            bearer = pgw_bearer_next(default_bearer);
+            /* Find the bearer with matched */
+            for (; bearer; bearer = pgw_bearer_next(bearer))
+            {
+                pgw_pf_t *pf = NULL;
+
+                for (pf = pgw_pf_first(bearer); pf; pf = pgw_pf_next(pf))
+                {
+                    d_trace(50,"Dir:%d Proto:%d Src = 0x%x/0x%x (low:%d high:%d)"
+                            "Dst = 0x%x/0x%x (low:%d high:%d)\n",
+                            pf->direction,
+                            pf->rule.proto,
+                            ntohl(pf->rule.ipv4.local.addr),
+                            ntohl(pf->rule.ipv4.local.mask),
+                            pf->rule.port.local.low,
+                            pf->rule.port.local.high,
+                            ntohl(pf->rule.ipv4.remote.addr),
+                            ntohl(pf->rule.ipv4.remote.mask),
+                            pf->rule.port.remote.low,
+                            pf->rule.port.remote.high);
+
+                    if (pf->direction != 1)
+                    {
+                        continue;
+                    }
+
+                    if (((iph->ip_src.s_addr & pf->rule.ipv4.local.mask) ==
+                          pf->rule.ipv4.local.addr)  &&
+                        ((iph->ip_dst.s_addr & pf->rule.ipv4.remote.mask) ==
+                          pf->rule.ipv4.remote.addr))
+                    {
+                        /* Protocol match */
+                        if (pf->rule.proto == 0) /* IP */
+                        {
+                            /* No need to match port */
+                            break;
+                        }
+
+                        if (pf->rule.proto == iph->ip_p)
+                        {
+                            if (pf->rule.proto == IPPROTO_TCP)
+                            {
+                                struct tcphdr *tcph = 
+                                    (struct tcphdr *)
+                                    ((char *)iph + (iph->ip_hl)*4);
+
+                                /* Source port */
+                                if (pf->rule.port.local.low && 
+                                      ntohs(tcph->th_sport) < 
+                                              pf->rule.port.local.low)
+                                {
+                                    continue;
+                                }
+
+                                if (pf->rule.port.local.high && 
+                                      ntohs(tcph->th_sport) > 
+                                              pf->rule.port.local.high)
+                                {
+                                    continue;
+                                }
+
+                                /* Dst Port*/
+                                if (pf->rule.port.remote.low && 
+                                      ntohs(tcph->th_dport) < 
+                                              pf->rule.port.remote.low)
+                                {
+                                    continue;
+                                }
+
+                                if (pf->rule.port.remote.high && 
+                                      ntohs(tcph->th_dport) > 
+                                              pf->rule.port.remote.high)
+                                {
+                                    continue;
+                                }
+
+                                /* Matched */
+                                break;
+                            }
+                            else if (pf->rule.proto == IPPROTO_UDP)
+                            {
+                                struct udphdr *udph = 
+                                    (struct udphdr *)
+                                    ((char *)iph + (iph->ip_hl)*4);
+
+                                /* Source port */
+                                if (pf->rule.port.local.low && 
+                                      ntohs(udph->uh_sport) < 
+                                              pf->rule.port.local.low)
+                                {
+                                    continue;
+                                }
+
+                                if (pf->rule.port.local.high && 
+                                      ntohs(udph->uh_sport) > 
+                                              pf->rule.port.local.high)
+                                {
+                                    continue;
+                                }
+
+                                /* Dst Port*/
+                                if (pf->rule.port.remote.low && 
+                                      ntohs(udph->uh_dport) < 
+                                              pf->rule.port.remote.low)
+                                {
+                                    continue;
+                                }
+
+                                if (pf->rule.port.remote.high && 
+                                      ntohs(udph->uh_dport) > 
+                                              pf->rule.port.remote.high)
+                                {
+                                    continue;
+                                }
+
+                                /* Matched */
+                                break;
+                            }
+                            else
+                            {
+                                /* No need to match port */
+                                break;
+                            }
+
+                        }
+                    }
+
+                }
+
+                if (pf)
+                {
+                    bearer = pf->bearer;
+                    d_trace(50,"Found bearer ebi = %d\n",bearer->ebi);
+                    break;
+                }
+
+            }
+
+            return (bearer ? bearer : default_bearer);
         }
     }
 

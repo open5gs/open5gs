@@ -91,7 +91,7 @@ status_t pgw_compile_packet_filter(pgw_rule_t *pgw_rule, c_int8_t *description)
             {
                 uint32_t *a = ((ipfw_insn_u32 *)cmd)->d;
                 pgw_rule->ipv4.remote.addr = a[0];
-                if (cmd->opcode == O_IP_SRC_MASK)
+                if (cmd->opcode == O_IP_DST_MASK)
                     pgw_rule->ipv4.remote.mask = a[1];
                 else
                     pgw_rule->ipv4.remote.mask = 0xffffffff;
