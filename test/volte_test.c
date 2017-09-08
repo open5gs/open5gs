@@ -253,7 +253,7 @@ static void volte_test1(abts_case *tc, void *data)
     pkbuf_free(recvbuf);
 
     /* Send Activate dedicated EPS bearer context accept */
-    rv = tests1ap_build_activate_dedicated_bearer_accept(&sendbuf, msgindex+1);
+    rv = tests1ap_build_activate_dedicated_bearer_accept(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -530,7 +530,7 @@ static void volte_test2(abts_case *tc, void *data)
     core_sleep(time_from_msec(300));
 
     /* Send Activate dedicated EPS bearer context accept */
-    rv = tests1ap_build_activate_dedicated_bearer_accept(&sendbuf, msgindex);
+    rv = tests1ap_build_activate_dedicated_bearer_accept(&sendbuf, msgindex+1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -556,9 +556,7 @@ abts_suite *test_volte(abts_suite *suite)
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, volte_test1, NULL);
-#if 0
     abts_run_test(suite, volte_test2, NULL);
-#endif
 
     return suite;
 }
