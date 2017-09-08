@@ -10,14 +10,23 @@
 
 #include "esm_build.h"
 
-void esm_handle_pdn_connectivity_request(mme_sess_t *sess, 
+void esm_handle_pdn_connectivity_request(mme_bearer_t *bearer, 
         nas_pdn_connectivity_request_t *pdn_connectivity_request)
 {
+    status_t rv;
     mme_ue_t *mme_ue = NULL;
+    mme_sess_t *sess = NULL;
 
+    d_assert(bearer, return, "Null param");
+    sess = bearer->sess;
     d_assert(sess, return, "Null param");
     mme_ue = sess->mme_ue;
     d_assert(mme_ue, return, "Null param");
+
+    d_assert(MME_UE_HAVE_IMSI(mme_ue), return,
+        "No IMSI in PDN_CPNNECTIVITY_REQUEST");
+    d_assert(SECURITY_CONTEXT_IS_VALID(mme_ue), return,
+        "No Security Context in PDN_CPNNECTIVITY_REQUEST");
 
     if (pdn_connectivity_request->presencemask &
             NAS_PDN_CONNECTIVITY_REQUEST_ACCESS_POINT_NAME_PRESENT)
@@ -36,11 +45,53 @@ void esm_handle_pdn_connectivity_request(mme_sess_t *sess,
 
         NAS_STORE_DATA(&sess->ue_pco, protocol_configuration_options);
     }
+
+    if (MME_UE_HAVE_APN(mme_ue))
+    {
+        if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
+        {
+            rv = mme_gtp_send_create_session_request(sess);
+            d_assert(rv == CORE_OK, return,
+                    "mme_gtp_send_create_session_request failed");
+        }
+        else
+        {
+            if (MME_HAVE_SGW_S11_PATH(mme_ue))
+            {
+                if (mme_ue->nas_eps.type == MME_UE_EPS_ATTACH_TYPE)
+                {
+                    rv = nas_send_attach_accept(mme_ue);
+                    d_assert(rv == CORE_OK, return,
+                            "nas_send_attach_accept failed");
+                }
+                else if (mme_ue->nas_eps.type == MME_UE_EPS_UPDATE_TYPE)
+                {
+                    rv = nas_send_tau_accept(mme_ue);
+                    d_assert(rv == CORE_OK, return,
+                            "nas_send_tau_accept failed");
+                }
+                else
+                    d_assert(0, return, "Invalid EPS type(%d)",
+                            mme_ue->nas_eps.type);
+            }
+            else
+            {
+                rv = mme_gtp_send_create_session_request(sess);
+                d_assert(rv == CORE_OK, return,
+                        "mme_gtp_send_create_session_request failed");
+            }
+        }
+    }
+    else
+    {
+        FSM_TRAN(&bearer->sm, esm_state_information);
+    }
 }
 
 void esm_handle_information_response(mme_sess_t *sess, 
         nas_esm_information_response_t *esm_information_response)
 {
+    status_t rv;
     mme_ue_t *mme_ue = NULL;
 
     d_assert(sess, return, "Null param");
@@ -63,6 +114,10 @@ void esm_handle_information_response(mme_sess_t *sess,
             &esm_information_response->protocol_configuration_options;
         NAS_STORE_DATA(&sess->ue_pco, protocol_configuration_options);
     }
+
+    rv = mme_gtp_send_create_session_request(sess);
+    d_assert(rv == CORE_OK, return,
+            "mme_gtp_send_create_session_request failed");
 }
 
 void esm_handle_activate_default_bearer_accept(mme_bearer_t *bearer)

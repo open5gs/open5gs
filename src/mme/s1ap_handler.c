@@ -400,6 +400,7 @@ void s1ap_handle_e_rab_setup_response(
 void s1ap_handle_ue_context_release_request(
         mme_enb_t *enb, s1ap_message_t *message)
 {
+    status_t rv;
     char buf[INET_ADDRSTRLEN];
 
     enb_ue_t *enb_ue = NULL;
@@ -425,7 +426,6 @@ void s1ap_handle_ue_context_release_request(
             if (cause == S1ap_CauseRadioNetwork_user_inactivity)
             {
                 mme_ue_t *mme_ue = enb_ue->mme_ue;
-                status_t rv;
 
                 if (MME_HAVE_SGW_S11_PATH(mme_ue))
                 {
@@ -441,7 +441,12 @@ void s1ap_handle_ue_context_release_request(
                 }
                 else
                 {
-                    s1ap_handle_release_access_bearers_response(enb_ue);
+                    S1ap_Cause_t cause;
+
+                    cause.present = S1ap_Cause_PR_nas;
+                    cause.choice.nas = S1ap_CauseNas_normal_release;
+                    rv = s1ap_send_ue_context_release_commmand(enb_ue, &cause);
+                    d_assert(rv == CORE_OK, return, "s1ap send error");
                 }
             }
             else
@@ -469,26 +474,6 @@ void s1ap_handle_ue_context_release_request(
             d_warn("Invalid cause type : %d", ies->cause.present);
             break;
     }
-}
-
-void s1ap_handle_release_access_bearers_response(enb_ue_t *enb_ue)
-{
-    status_t rv;
-    mme_enb_t *enb = NULL;
-    pkbuf_t *s1apbuf;
-    S1ap_Cause_t cause;
-
-    d_assert(enb_ue, return, "Null param");
-    enb = enb_ue->enb;
-    d_assert(enb, return, "Null param");
-
-    cause.present = S1ap_Cause_PR_nas;
-    cause.choice.nas = S1ap_CauseNas_normal_release;
-
-    rv = s1ap_build_ue_context_release_commmand(&s1apbuf, enb_ue, &cause);
-    d_assert(rv == CORE_OK && s1apbuf, return, "s1ap build error");
-
-    d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
 }
 
 void s1ap_handle_ue_context_release_complete(

@@ -1164,15 +1164,11 @@ status_t mme_ue_remove(mme_ue_t *mme_ue)
     if (mme_ue->imsi_len != 0)
         hash_set(self.imsi_ue_hash, mme_ue->imsi, mme_ue->imsi_len, NULL);
     
-    /* Delete t3413 timer */
-    tm_delete(mme_ue->t3413);
-
-    /* Free the saved PDN Connectivity Request */
+    /* Clear the saved PDN Connectivity Request */
     NAS_CLEAR_DATA(&mme_ue->pdn_connectivity_request);
 
-    /* Free the saved paging msg */
-    if (mme_ue->last_paging_msg)
-        pkbuf_free(mme_ue->last_paging_msg);
+    /* Clear Paging info : t3413, last_paing_msg */
+    CLEAR_PAGING_INFO(mme_ue);
 
     /* Free UeRadioCapability */
     if (mme_ue->radio_capa)
@@ -1737,17 +1733,4 @@ pdn_t* mme_pdn_find_by_apn(mme_ue_t *mme_ue, c_int8_t *apn)
     }
 
     return NULL;
-}
-
-void mme_ue_paged(mme_ue_t *mme_ue)
-{
-    d_assert(mme_ue, return , "Null param");
-
-    tm_stop(mme_ue->t3413);
-    if (mme_ue->last_paging_msg)
-    {
-        pkbuf_free(mme_ue->last_paging_msg);
-        mme_ue->last_paging_msg = NULL;
-    }
-    mme_ue->max_paging_retry = 0;
 }

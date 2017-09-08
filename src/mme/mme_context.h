@@ -143,6 +143,16 @@ struct _mme_ue_t {
     index_t         index;  /* An index of this node */
     fsm_t           sm;     /* A state machine */
 
+    struct {
+#define MME_UE_EPS_ATTACH_TYPE                  1
+#define MME_UE_EPS_UPDATE_TYPE                  2
+        c_uint8_t   type;
+        union {
+            nas_eps_attach_type_t attach;
+            nas_eps_update_type_t update;
+        };
+    } nas_eps;
+
     /* UE identity */
 #define MME_UE_HAVE_IMSI(__mME) \
     ((__mME) && ((__mME)->imsi_len))
@@ -230,6 +240,18 @@ struct _mme_ue_t {
     nas_esm_message_container_t pdn_connectivity_request;
 
     /* Paging */
+#define CLEAR_PAGING_INFO(__mME) \
+    do { \
+        d_assert((__mME), break, "Null param"); \
+        \
+        tm_stop((__mME)->t3413); \
+        if ((__mME)->last_paging_msg) \
+        { \
+            pkbuf_free((__mME)->last_paging_msg); \
+            (__mME)->last_paging_msg = NULL; \
+        } \
+        (__mME)->max_paging_retry = 0; \
+    } while(0);
     pkbuf_t         *last_paging_msg;
     tm_block_id     t3413;
 #define MAX_NUM_OF_PAGING           2
@@ -268,10 +290,10 @@ typedef struct _mme_sess_t {
     /* Related Context */
 #define CONNECT_SGW_GTP_NODE(__sESS) \
     do { \
-        d_assert((__sESS), return, "Null param"); \
+        d_assert((__sESS), break, "Null param"); \
         (__sESS)->sgw = mme_sgw_next((__sESS)->sgw); \
         if (!(__sESS)->sgw) (__sESS)->sgw = mme_sgw_first(); \
-        d_assert((__sESS)->sgw, return, "Null param"); \
+        d_assert((__sESS)->sgw, break, "Null param"); \
     } while(0)
     mme_sgw_t       *sgw;
     mme_ue_t        *mme_ue;
@@ -400,7 +422,6 @@ CORE_DECLARE(enb_ue_t*)     enb_ue_find_by_mme_ue_s1ap_id(c_uint32_t mme_ue_s1ap
 CORE_DECLARE(enb_ue_t*)     enb_ue_first_in_enb(mme_enb_t *enb);
 CORE_DECLARE(enb_ue_t*)     enb_ue_next_in_enb(enb_ue_t *enb_ue);
 
-CORE_DECLARE(void)          mme_ue_paged(mme_ue_t *mme_ue);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

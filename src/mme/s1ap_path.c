@@ -4,8 +4,9 @@
 
 #include "mme_event.h"
 
-#include "s1ap_path.h"
+#include "s1ap_build.h"
 #include "nas_security.h"
+#include "s1ap_path.h"
 
 static int _s1ap_accept_cb(net_sock_t *net_sock, void *data);
 
@@ -350,3 +351,23 @@ status_t s1ap_send_to_nas(enb_ue_t *enb_ue, S1ap_NAS_PDU_t *nasPdu)
 }
 
 
+status_t s1ap_send_ue_context_release_commmand(
+        enb_ue_t *enb_ue, S1ap_Cause_t *cause)
+{
+    status_t rv;
+    mme_enb_t *enb = NULL;
+    pkbuf_t *s1apbuf = NULL;
+
+    d_assert(enb_ue, return CORE_ERROR, "Null param");
+    d_assert(cause, return CORE_ERROR, "Null param");
+    enb = enb_ue->enb;
+    d_assert(enb, return CORE_ERROR, "Null param");
+
+    rv = s1ap_build_ue_context_release_commmand(&s1apbuf, enb_ue, cause);
+    d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
+
+    d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,
+            return CORE_ERROR, "s1ap send error");
+    
+    return CORE_OK;
+}

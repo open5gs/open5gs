@@ -14,10 +14,8 @@
 #include "emm_build.h"
 #include "esm_handler.h"
 #include "nas_path.h"
+#include "s1ap_path.h"
 #include "mme_gtp_path.h"
-
-static void emm_state_attach_request(fsm_t *s, event_t *e,
-        mme_ue_t *mme_ue, nas_message_t *message);
 
 void emm_state_initial(fsm_t *s, event_t *e)
 {
@@ -66,7 +64,8 @@ void emm_state_detached(fsm_t *s, event_t *e)
             {
                 case NAS_ATTACH_REQUEST:
                 {
-                    emm_state_attach_request(s, e, mme_ue, message);
+                    emm_handle_attach_request(
+                            mme_ue, &message->emm.attach_request);
                     break;
                 }
             }
@@ -122,33 +121,6 @@ void emm_state_identity(fsm_t *s, event_t *e)
                 {
                     emm_handle_identity_response(mme_ue,
                             &message->emm.identity_response);
-
-                    d_assert(MME_UE_HAVE_IMSI(mme_ue), break,
-                        "No IMSI in IDENTITY_RESPONSE");
-
-                    if (SECURITY_CONTEXT_IS_VALID(mme_ue))
-                    {
-                        status_t rv;
-                        rv = nas_send_emm_to_esm(mme_ue,
-                            &mme_ue->pdn_connectivity_request);
-                        d_assert(rv == CORE_OK,,
-                                "nas_send_emm_to_esm failed");
-                        FSM_TRAN(s, &emm_state_default_esm);
-                    }
-                    else
-                    {
-                        if (MME_HAVE_SGW_S11_PATH(mme_ue))
-                        {
-                            rv = mme_gtp_send_delete_all_sessions(mme_ue);
-                            d_assert(rv == CORE_OK, break,
-                                "mme_gtp_send_delete_all_sessions failed");
-                        }
-                        else
-                        {
-                            mme_s6a_send_air(mme_ue);
-                        }
-                        FSM_TRAN(s, &emm_state_authentication);
-                    }
                     break;
                 }
                 case NAS_EMM_STATUS:
@@ -401,15 +373,8 @@ void emm_state_attached(fsm_t *s, event_t *e)
             if (message->emm.h.security_header_type
                     == NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE)
             {
-                /* Update Kenb */
-                if (SECURITY_CONTEXT_IS_VALID(mme_ue))
-                    mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, 
-                            mme_ue->kenb);
-
-                mme_ue_paged(mme_ue);
                 emm_handle_service_request(
                         mme_ue, &message->emm.service_request);
-
                 break;
             }
 
@@ -417,7 +382,8 @@ void emm_state_attached(fsm_t *s, event_t *e)
             {
                 case NAS_ATTACH_REQUEST:
                 {
-                    emm_state_attach_request(s, e, mme_ue, message);
+                    emm_handle_attach_request(
+                            mme_ue, &message->emm.attach_request);
                     break;
                 }
                 case NAS_EMM_STATUS:
@@ -430,27 +396,28 @@ void emm_state_attached(fsm_t *s, event_t *e)
                 {
                     emm_handle_detach_request(
                             mme_ue, &message->emm.detach_request_from_ue);
-    
-                    if (MME_HAVE_SGW_S11_PATH(mme_ue))
-                    {
-                        status_t rv;
-                        rv = mme_gtp_send_delete_all_sessions(mme_ue);
-                        d_assert(rv == CORE_OK, break,
-                            "mme_gtp_send_delete_all_sessions failed");
-                    }
-                    else
-                    {
-                        emm_handle_detach_accept(mme_ue);
-                    }
-
                     FSM_TRAN(s, &emm_state_detached);
                     break;
                 }
                 case NAS_TRACKING_AREA_UPDATE_REQUEST:
                 {
-                    mme_ue_paged(mme_ue);
                     emm_handle_tau_request(
                             mme_ue, &message->emm.tracking_area_update_request);
+                    break;
+                }
+                case NAS_TRACKING_AREA_UPDATE_COMPLETE:
+                {
+                    status_t rv;
+                    S1ap_Cause_t cause;
+                    enb_ue_t *enb_ue = mme_ue->enb_ue;
+
+                    d_assert(enb_ue, return, "Null param");
+
+                    cause.present = S1ap_Cause_PR_nas;
+                    cause.choice.nas = S1ap_CauseNas_normal_release;
+
+                    rv = s1ap_send_ue_context_release_commmand(enb_ue, &cause);
+                    d_assert(rv == CORE_OK, return, "s1ap send error");
                     break;
                 }
                 default:
@@ -524,56 +491,6 @@ void emm_state_exception(fsm_t *s, event_t *e)
         {
             d_error("Unknown event %s", mme_event_get_name(e));
             break;
-        }
-    }
-}
-
-static void emm_state_attach_request(fsm_t *s, event_t *e,
-        mme_ue_t *mme_ue, nas_message_t *message)
-{
-    status_t rv;
-
-    d_assert(s, return, "Null param");
-    d_assert(e, return, "Null param");
-    d_assert(mme_ue, return, "Null param");
-    d_assert(message, return, "Null param");
-
-    /* Update Kenb */
-    if (SECURITY_CONTEXT_IS_VALID(mme_ue))
-        mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, 
-                mme_ue->kenb);
-
-    CLEAR_EPS_BEARER_ID(mme_ue);
-    mme_ue_paged(mme_ue);
-
-    emm_handle_attach_request(mme_ue, &message->emm.attach_request);
-
-    if (!MME_UE_HAVE_IMSI(mme_ue))
-    {
-        /* Unknown GUTI */
-        FSM_TRAN(s, &emm_state_identity);
-    }
-    else
-    {
-        if (SECURITY_CONTEXT_IS_VALID(mme_ue))
-        {
-            rv = nas_send_emm_to_esm(mme_ue, &mme_ue->pdn_connectivity_request);
-            d_assert(rv == CORE_OK,, "nas_send_emm_to_esm failed");
-            FSM_TRAN(s, &emm_state_default_esm);
-        }
-        else
-        {
-            if (MME_HAVE_SGW_S11_PATH(mme_ue))
-            {
-                rv = mme_gtp_send_delete_all_sessions(mme_ue);
-                d_assert(rv == CORE_OK, return,
-                    "mme_gtp_send_delete_all_sessions failed");
-            }
-            else
-            {
-                mme_s6a_send_air(mme_ue);
-            }
-            FSM_TRAN(s, &emm_state_authentication);
         }
     }
 }

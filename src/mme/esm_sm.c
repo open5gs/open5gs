@@ -13,10 +13,6 @@
 #include "nas_path.h"
 #include "mme_gtp_path.h"
 
-static void esm_state_pdn_connectivity_request(
-    fsm_t *s, event_t *e, mme_ue_t *mme_ue, mme_sess_t *sess,
-    mme_bearer_t *bearer, nas_message_t *message);
-
 void esm_state_initial(fsm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
@@ -71,8 +67,8 @@ void esm_state_inactive(fsm_t *s, event_t *e)
             {
                 case NAS_PDN_CONNECTIVITY_REQUEST:
                 {
-                    esm_state_pdn_connectivity_request(s, e,
-                            mme_ue, sess, bearer, message);
+                    esm_handle_pdn_connectivity_request(
+                            bearer, &message->esm.pdn_connectivity_request);
                     break;
                 }
                 case NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_ACCEPT:
@@ -176,8 +172,6 @@ void esm_state_information(fsm_t *s, event_t *e)
                             mme_ue->imsi_bcd, sess->pti);
                     esm_handle_information_response(
                             sess, &message->esm.esm_information_response);
-
-                    mme_s11_handle_create_session_request(sess);
                     FSM_TRAN(s, esm_state_inactive);
                     break;
                 }
@@ -237,8 +231,8 @@ void esm_state_active(fsm_t *s, event_t *e)
             {
                 case NAS_PDN_CONNECTIVITY_REQUEST:
                 {
-                    esm_state_pdn_connectivity_request(s, e,
-                            mme_ue, sess, bearer, message);
+                    esm_handle_pdn_connectivity_request(
+                            bearer, &message->esm.pdn_connectivity_request);
                     FSM_TRAN(s, esm_state_inactive);
                     break;
                 }
@@ -366,53 +360,3 @@ void esm_state_bearer_exception(fsm_t *s, event_t *e)
         }
     }
 }
-
-static void esm_state_pdn_connectivity_request(
-    fsm_t *s, event_t *e, mme_ue_t *mme_ue, mme_sess_t *sess,
-    mme_bearer_t *bearer, nas_message_t *message)
-{
-    d_assert(s, return, "Null param");
-    d_assert(e, return, "Null param");
-    d_assert(mme_ue, return, "Null param");
-    d_assert(sess, return, "Null param");
-    d_assert(bearer, return, "Null param");
-    d_assert(message, return, "Null param");
-
-    d_trace(3, "[NAS] PDN connectivity request : UE[%s] --> ESM[%d]\n", 
-            mme_ue->imsi_bcd, sess->pti);
-
-    d_assert(MME_UE_HAVE_IMSI(mme_ue), return,
-        "No IMSI in PDN_CPNNECTIVITY_REQUEST");
-    d_assert(SECURITY_CONTEXT_IS_VALID(mme_ue), return,
-        "No Security Context in PDN_CPNNECTIVITY_REQUEST");
-
-    esm_handle_pdn_connectivity_request(
-            sess, &message->esm.pdn_connectivity_request);
-
-    if (MME_UE_HAVE_APN(mme_ue))
-    {
-        if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
-        {
-            mme_s11_handle_create_session_request(sess);
-        }
-        else
-        {
-            if (MME_HAVE_SGW_S11_PATH(mme_ue))
-            {
-                status_t rv;
-                rv = nas_send_attach_accept(mme_ue);
-                d_assert(rv == CORE_OK, return,
-                        "nas_send_attach_accept failed");
-            }
-            else
-            {
-                mme_s11_handle_create_session_request(sess);
-            }
-        }
-    }
-    else
-    {
-        FSM_TRAN(s, esm_state_information);
-    }
-}
-

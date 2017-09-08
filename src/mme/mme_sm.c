@@ -386,9 +386,21 @@ void mme_state_operational(fsm_t *s, event_t *e)
 
                     if (FSM_CHECK(&mme_ue->sm, emm_state_default_esm))
                     {
-                        rv = nas_send_attach_accept(mme_ue);
-                        d_assert(rv == CORE_OK, return,
-                                "nas_send_attach_accept failed");
+                        if (mme_ue->nas_eps.type == MME_UE_EPS_ATTACH_TYPE)
+                        {
+                            rv = nas_send_attach_accept(mme_ue);
+                            d_assert(rv == CORE_OK, return,
+                                    "nas_send_attach_accept failed");
+                        }
+                        else if (mme_ue->nas_eps.type == MME_UE_EPS_UPDATE_TYPE)
+                        {
+                            rv = nas_send_tau_accept(mme_ue);
+                            d_assert(rv == CORE_OK, return,
+                                    "nas_send_tau_accept failed");
+                        }
+                        else
+                            d_assert(0, return, "Invalid EPS type(%d)",
+                                    mme_ue->nas_eps.type);
                     }
                     else if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
                     {
@@ -495,10 +507,15 @@ void mme_state_operational(fsm_t *s, event_t *e)
                     break;
                 case GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE:
                 {
+                    S1ap_Cause_t cause;
+
                     mme_s11_handle_release_access_bearers_response(
                         xact, mme_ue, &message.release_access_bearers_response);
 
-                    s1ap_handle_release_access_bearers_response(enb_ue);
+                    cause.present = S1ap_Cause_PR_nas;
+                    cause.choice.nas = S1ap_CauseNas_normal_release;
+                    rv = s1ap_send_ue_context_release_commmand(enb_ue, &cause);
+                    d_assert(rv == CORE_OK,, "s1ap send error");
                     break;
                 }
 

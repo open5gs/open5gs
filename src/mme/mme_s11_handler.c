@@ -15,35 +15,6 @@
 #include "esm_build.h"
 #include "nas_path.h"
 
-void mme_s11_handle_create_session_request(mme_sess_t *sess)
-{
-    status_t rv;
-    gtp_header_t h;
-    pkbuf_t *pkbuf = NULL;
-    gtp_xact_t *xact = NULL;
-    mme_ue_t *mme_ue = NULL;
-
-    /* Use round-robin for selecting SGW */
-    CONNECT_SGW_GTP_NODE(sess);
-
-    mme_ue = sess->mme_ue;
-    d_assert(mme_ue, return, "Null param");
-
-    memset(&h, 0, sizeof(gtp_header_t));
-    h.type = GTP_CREATE_SESSION_REQUEST_TYPE;
-    h.teid = mme_ue->sgw_s11_teid;
-
-    rv = mme_s11_build_create_session_request(&pkbuf, h.type, sess);
-    d_assert(rv == CORE_OK, return,
-            "S11 build error");
-
-    xact = gtp_xact_local_create(sess->sgw, &h, pkbuf);
-    d_assert(xact, return, "Null param");
-
-    rv = gtp_xact_commit(xact);
-    d_assert(rv == CORE_OK, return, "xact_commit error");
-}
-
 void mme_s11_handle_create_session_response(gtp_xact_t *xact,
         mme_bearer_t *bearer, gtp_create_session_response_t *rsp)
 {

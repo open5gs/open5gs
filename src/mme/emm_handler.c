@@ -15,6 +15,7 @@
 #include "s1ap_build.h"
 #include "s1ap_path.h"
 #include "nas_path.h"
+#include "mme_fd_path.h"
 
 #include "mme_s11_build.h"
 #include "mme_gtp_path.h"
@@ -24,7 +25,11 @@
 void emm_handle_attach_request(
         mme_ue_t *mme_ue, nas_attach_request_t *attach_request)
 {
+    status_t rv;
+
     enb_ue_t *enb_ue = NULL;
+    nas_eps_attach_type_t *eps_attach_type =
+                    &attach_request->eps_attach_type;
     nas_eps_mobile_identity_t *eps_mobile_identity =
                     &attach_request->eps_mobile_identity;
     nas_esm_message_container_t *esm_message_container =
@@ -36,6 +41,18 @@ void emm_handle_attach_request(
 
     d_assert(esm_message_container, return, "Null param");
     d_assert(esm_message_container->length, return, "Null param");
+
+    if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+        mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, 
+                mme_ue->kenb);
+
+    CLEAR_EPS_BEARER_ID(mme_ue);
+    CLEAR_PAGING_INFO(mme_ue);
+
+    /* Set EPS Attach Type */
+    memcpy(&mme_ue->nas_eps.attach, eps_attach_type,
+            sizeof(nas_eps_attach_type_t));
+    mme_ue->nas_eps.type = MME_UE_EPS_ATTACH_TYPE;
 
     /* Store UE specific information */
     if (attach_request->presencemask &
@@ -112,6 +129,35 @@ void emm_handle_attach_request(
     }
 
     NAS_STORE_DATA(&mme_ue->pdn_connectivity_request, esm_message_container);
+
+    if (!MME_UE_HAVE_IMSI(mme_ue))
+    {
+        /* Unknown GUTI */
+        FSM_TRAN(&mme_ue->sm, &emm_state_identity);
+    }
+    else
+    {
+        if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+        {
+            rv = nas_send_emm_to_esm(mme_ue, &mme_ue->pdn_connectivity_request);
+            d_assert(rv == CORE_OK,, "nas_send_emm_to_esm failed");
+            FSM_TRAN(&mme_ue->sm, &emm_state_default_esm);
+        }
+        else
+        {
+            if (MME_HAVE_SGW_S11_PATH(mme_ue))
+            {
+                rv = mme_gtp_send_delete_all_sessions(mme_ue);
+                d_assert(rv == CORE_OK, return,
+                    "mme_gtp_send_delete_all_sessions failed");
+            }
+            else
+            {
+                mme_s6a_send_air(mme_ue);
+            }
+            FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
+        }
+    }
 }
 
 void emm_handle_attach_complete(
@@ -177,6 +223,8 @@ void emm_handle_attach_complete(
 void emm_handle_identity_response(
         mme_ue_t *mme_ue, nas_identity_response_t *identity_response)
 {
+    status_t rv;
+
     nas_mobile_identity_t *mobile_identity = NULL;
     enb_ue_t *enb_ue = NULL;
 
@@ -204,6 +252,29 @@ void emm_handle_identity_response(
     {
         d_warn("Not supported Identity type(%d)", mobile_identity->imsi.type);
     }
+
+    d_assert(MME_UE_HAVE_IMSI(mme_ue), return, "No IMSI in IDENTITY_RESPONSE");
+
+    if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+    {
+        rv = nas_send_emm_to_esm(mme_ue, &mme_ue->pdn_connectivity_request);
+        d_assert(rv == CORE_OK, return, "nas_send_emm_to_esm failed");
+        FSM_TRAN(&mme_ue->sm, &emm_state_default_esm);
+    }
+    else
+    {
+        if (MME_HAVE_SGW_S11_PATH(mme_ue))
+        {
+            rv = mme_gtp_send_delete_all_sessions(mme_ue);
+            d_assert(rv == CORE_OK, return,
+                    "mme_gtp_send_delete_all_sessions failed");
+        }
+        else
+        {
+            mme_s6a_send_air(mme_ue);
+        }
+        FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
+    }
 }
 
 void emm_handle_authentication_response(mme_ue_t *mme_ue, 
@@ -229,6 +300,7 @@ void emm_handle_authentication_response(mme_ue_t *mme_ue,
 void emm_handle_detach_request(
         mme_ue_t *mme_ue, nas_detach_request_from_ue_t *detach_request)
 {
+    status_t rv;
     enb_ue_t *enb_ue = NULL;
 
     d_assert(detach_request, return, "Null param");
@@ -260,22 +332,30 @@ void emm_handle_detach_request(
 
     /* Save detach type */
     mme_ue->detach_type = detach_request->detach_type;
+
+    if (MME_HAVE_SGW_S11_PATH(mme_ue))
+    {
+        rv = mme_gtp_send_delete_all_sessions(mme_ue);
+        d_assert(rv == CORE_OK, return,
+            "mme_gtp_send_delete_all_sessions failed");
+    }
+    else
+    {
+        emm_handle_detach_accept(mme_ue);
+    }
 }
 
 void emm_handle_detach_accept(mme_ue_t *mme_ue)
 {
     status_t rv;
-    mme_enb_t *enb = NULL;
     enb_ue_t *enb_ue = NULL;
     nas_message_t message;
-    pkbuf_t *emmbuf = NULL, *s1apbuf = NULL;
+    pkbuf_t *emmbuf = NULL;
     S1ap_Cause_t cause;
 
     d_assert(mme_ue, return, "Null param");
     enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return, "Null param");
-    enb = enb_ue->enb;
-    d_assert(enb, return, "Null param");
 
     /* reply with detach accept */
     if ((mme_ue->detach_type.switch_off & 0x1) == 0)
@@ -296,13 +376,11 @@ void emm_handle_detach_accept(mme_ue_t *mme_ue)
         d_assert(nas_send_to_downlink_nas_transport(mme_ue, emmbuf) == CORE_OK,,);
     }
 
+    /* FIXME : delay is needed */
     cause.present = S1ap_Cause_PR_nas;
     cause.choice.nas = S1ap_CauseNas_detach;
-
-    rv = s1ap_build_ue_context_release_commmand(&s1apbuf, enb_ue, &cause);
-    d_assert(rv == CORE_OK && s1apbuf, return, "s1ap build error");
-
-    d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
+    rv = s1ap_send_ue_context_release_commmand(enb_ue, &cause);
+    d_assert(rv == CORE_OK, , "s1ap send error");
 }
 
 void emm_handle_service_request(
@@ -318,6 +396,12 @@ void emm_handle_service_request(
     d_assert(enb_ue, return, "Null param");
     sess = mme_sess_first(mme_ue);
     d_assert(sess, return, "Null param");
+
+    /* Update Kenb */
+    if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+        mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, mme_ue->kenb);
+
+    CLEAR_PAGING_INFO(mme_ue);
 
     rv = s1ap_build_initial_context_setup_request(&s1apbuf, sess, NULL);
     d_assert(rv == CORE_OK && s1apbuf, return, "s1ap build error");
@@ -336,6 +420,10 @@ void emm_handle_emm_status(mme_ue_t *mme_ue, nas_emm_status_t *emm_status)
 void emm_handle_tau_request(
         mme_ue_t *mme_ue, nas_tracking_area_update_request_t *tau_request)
 {
+    status_t rv;
+
+    nas_eps_update_type_t *eps_update_type =
+                    &tau_request->eps_update_type;
     nas_eps_mobile_identity_t *eps_mobile_identity =
                     &tau_request->old_guti;
     enb_ue_t *enb_ue = NULL;
@@ -343,6 +431,13 @@ void emm_handle_tau_request(
     d_assert(mme_ue, return, "Null param");
     enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return, "Null param");
+
+    CLEAR_PAGING_INFO(mme_ue);
+
+    /* Set EPS Attach Type */
+    memcpy(&mme_ue->nas_eps.update, eps_update_type,
+            sizeof(nas_eps_update_type_t));
+    mme_ue->nas_eps.type = MME_UE_EPS_UPDATE_TYPE;
 
     /* Store UE specific information */
     if (tau_request->presencemask &
@@ -407,6 +502,7 @@ void emm_handle_tau_request(
                     MME_UE_HAVE_IMSI(mme_ue) 
                         ? mme_ue->imsi_bcd : "Unknown");
 
+#if 0
             if (!MME_UE_HAVE_IMSI(mme_ue))
             {
                 /* Unknown GUTI */
@@ -416,7 +512,7 @@ void emm_handle_tau_request(
                  */
 
                 /* Send TAU reject */
-                emm_handle_tau_reject(mme_ue, 
+                nas_send_tau_reject(mme_ue, 
                         EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
             }
             else if (!SECURITY_CONTEXT_IS_VALID(mme_ue))
@@ -427,9 +523,9 @@ void emm_handle_tau_request(
             else
             {
                 /* Send TAU accept */
-                emm_handle_tau_accept(mme_ue);
+                nas_send_tau_accept(mme_ue);
             }
-
+#endif
             break;
         }
         default:
@@ -440,78 +536,33 @@ void emm_handle_tau_request(
             return;
         }
     }
-}
 
-void emm_handle_tau_accept(mme_ue_t *mme_ue)
-{
-    status_t rv;
-    mme_enb_t *enb = NULL;
-    enb_ue_t *enb_ue = NULL;
-    pkbuf_t *emmbuf = NULL, *s1apbuf = NULL;
-    S1ap_Cause_t cause;
-
-    d_assert(mme_ue, return, "Null param");
-    enb_ue = mme_ue->enb_ue;
-    d_assert(enb_ue, return, "Null param");
-    enb = enb_ue->enb;
-    d_assert(enb, return, "Null param");
-
-    /* Build TAU accept */
-    if (emm_build_tau_accept(&emmbuf, mme_ue) != CORE_OK)
+    if (!MME_UE_HAVE_IMSI(mme_ue))
     {
-        d_error("emm_build_tau_accept error");
-        pkbuf_free(emmbuf);
-        return;
+        /* Unknown GUTI */
+        FSM_TRAN(&mme_ue->sm, &emm_state_identity);
     }
-
-    /* Send Dl NAS to UE */
-    d_assert(nas_send_to_downlink_nas_transport(mme_ue, emmbuf) == CORE_OK,,);
-
-
-    /* FIXME : delay required before sending UE context release to make sure 
-     * that UE receive DL NAS ? */
-    cause.present = S1ap_Cause_PR_nas;
-    cause.choice.nas = S1ap_CauseNas_normal_release;
-
-    rv = s1ap_build_ue_context_release_commmand(&s1apbuf, enb_ue, &cause);
-    d_assert(rv == CORE_OK && s1apbuf, return, "s1ap build error");
-
-    d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
-}
-
-void emm_handle_tau_reject(mme_ue_t *mme_ue, nas_emm_cause_t emm_cause)
-{
-    status_t rv;
-    mme_enb_t *enb = NULL;
-    enb_ue_t *enb_ue = NULL;
-    pkbuf_t *emmbuf = NULL, *s1apbuf = NULL;
-    S1ap_Cause_t cause;
-
-    d_assert(mme_ue, return, "Null param");
-    enb_ue = mme_ue->enb_ue;
-    d_assert(enb_ue, return, "Null param");
-    enb = enb_ue->enb;
-    d_assert(enb, return, "Null param");
-
-    /* Build TAU reject */
-    if (emm_build_tau_reject(&emmbuf, emm_cause, mme_ue) != CORE_OK)
+    else
     {
-        d_error("emm_build_tau_accept error");
-        pkbuf_free(emmbuf);
-        return;
+        if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+        {
+            /* Send TAU accept */
+            rv = nas_send_tau_accept(mme_ue);
+            d_assert(rv == CORE_OK, return, "nas_send_tau_accept failed");
+        }
+        else
+        {
+            if (MME_HAVE_SGW_S11_PATH(mme_ue))
+            {
+                rv = mme_gtp_send_delete_all_sessions(mme_ue);
+                d_assert(rv == CORE_OK, return,
+                    "mme_gtp_send_delete_all_sessions failed");
+            }
+            else
+            {
+                mme_s6a_send_air(mme_ue);
+            }
+            FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
+        }
     }
-
-    /* Send Dl NAS to UE */
-    d_assert(nas_send_to_downlink_nas_transport(mme_ue, emmbuf) == CORE_OK,,);
-
-
-    /* FIXME : delay required before sending UE context release to make sure 
-     * that UE receive DL NAS ? */
-    cause.present = S1ap_Cause_PR_nas;
-    cause.choice.nas = S1ap_CauseNas_normal_release;
-
-    rv = s1ap_build_ue_context_release_commmand(&s1apbuf, enb_ue, &cause);
-    d_assert(rv == CORE_OK && s1apbuf, return, "s1ap build error");
-
-    d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,, "s1ap send error");
 }

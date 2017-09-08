@@ -30,9 +30,6 @@ CORE_DECLARE(void) emm_handle_emm_status(
     mme_ue_t *mme_ue, nas_emm_status_t *emm_status);
 CORE_DECLARE(void) emm_handle_tau_request(
     mme_ue_t *mme_ue, nas_tracking_area_update_request_t *tau_request);
-CORE_DECLARE(void) emm_handle_tau_accept(mme_ue_t *mme_ue);
-CORE_DECLARE(void) emm_handle_tau_reject(mme_ue_t *mme_ue, 
-    nas_esm_cause_t emm_cause);
 
 #ifdef __cplusplus
 }
