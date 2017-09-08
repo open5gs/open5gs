@@ -140,11 +140,11 @@ typedef struct _pgw_rule_t {
     struct {
         struct {
             c_uint16_t low;
-            c_uint32_t high;
+            c_uint16_t high;
         } local;
         struct {
             c_uint16_t low;
-            c_uint32_t high;
+            c_uint16_t high;
         } remote;
     } port;
 } pgw_rule_t;
