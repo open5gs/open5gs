@@ -9,21 +9,41 @@
 #include "esm_build.h"
 
 status_t esm_build_pdn_connectivity_reject(
-        pkbuf_t **pkbuf, c_uint8_t pti, nas_esm_cause_t esm_cause)
+        pkbuf_t **pkbuf, mme_sess_t *sess, nas_esm_cause_t esm_cause)
 {
+    mme_ue_t *mme_ue = NULL;
     nas_message_t message;
     nas_pdn_connectivity_reject_t *pdn_connectivity_reject = 
             &message.esm.pdn_connectivity_reject;
 
+    d_assert(sess, return CORE_ERROR, "Null param");
+    mme_ue = sess->mme_ue;
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
+
     memset(&message, 0, sizeof(message));
+    if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
+    {
+        message.h.security_header_type = 
+           NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
+        message.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    }
     message.esm.h.eps_bearer_identity = 0;
     message.esm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_ESM;
-    message.esm.h.procedure_transaction_identity = pti;
+    message.esm.h.procedure_transaction_identity = sess->pti;
     message.esm.h.message_type = NAS_PDN_CONNECTIVITY_REJECT;
 
     pdn_connectivity_reject->esm_cause = esm_cause;
 
-    d_assert(nas_plain_encode(pkbuf, &message) == CORE_OK && *pkbuf,,);
+    if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
+    {
+        d_assert(nas_security_encode(pkbuf, mme_ue, &message) == CORE_OK && 
+                *pkbuf, return CORE_ERROR,);
+    }
+    else
+    {
+        d_assert(nas_plain_encode(pkbuf, &message) == CORE_OK && *pkbuf,
+                return CORE_ERROR,);
+    }
 
     return CORE_OK;
 }
@@ -50,7 +70,7 @@ status_t esm_build_information_request(pkbuf_t **pkbuf, mme_bearer_t *bearer)
     message.esm.h.message_type = NAS_ESM_INFORMATION_REQUEST;
 
     d_assert(nas_security_encode(pkbuf, mme_ue, &message) == CORE_OK && 
-            *pkbuf,,);
+            *pkbuf, return CORE_ERROR,);
 
     return CORE_OK;
 }
@@ -131,11 +151,12 @@ status_t esm_build_activate_default_bearer_context_request(
     if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
     {
         d_assert(nas_security_encode(pkbuf, mme_ue, &message) == CORE_OK && 
-                *pkbuf,,);
+                *pkbuf, return CORE_ERROR,);
     }
     else
     {
-        d_assert(nas_plain_encode(pkbuf, &message) == CORE_OK && *pkbuf,,);
+        d_assert(nas_plain_encode(pkbuf, &message) == CORE_OK && *pkbuf,
+                return CORE_ERROR,);
     }
 
     return CORE_OK;
@@ -188,7 +209,7 @@ status_t esm_build_activate_dedicated_bearer_context_request(
     TLV_CLEAR_DATA(&bearer->tft);
 
     d_assert(nas_security_encode(pkbuf, mme_ue, &message) == CORE_OK && 
-            *pkbuf,,);
+            *pkbuf, return CORE_ERROR,);
 
     return CORE_OK;
 }
@@ -223,7 +244,7 @@ status_t esm_build_deactivate_bearer_context_request(
     deactivate_eps_bearer_context_request->esm_cause = esm_cause;
 
     d_assert(nas_security_encode(pkbuf, mme_ue, &message) == CORE_OK && 
-            *pkbuf,,);
+            *pkbuf, return CORE_ERROR,);
 
     return CORE_OK;
 }

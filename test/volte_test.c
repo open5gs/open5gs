@@ -214,8 +214,6 @@ static void volte_test1(abts_case *tc, void *data)
     ABTS_INT_NEQUAL(tc, 0, rc);
     pkbuf_free(recvbuf);
 
-    core_sleep(time_from_msec(300));
-
     /* Send PDN Connectivity Request */
     rv = tests1ap_build_pdn_connectivity_request(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -294,6 +292,18 @@ static void volte_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     core_sleep(time_from_msec(300));
+
+    /* Send INVALID PDN Connectivity Request */
+    rv = tests1ap_build_pdn_connectivity_request(&sendbuf, msgindex+1);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* Receive PDN Connectivity Reject */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rc = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_NEQUAL(tc, 0, rc);
+    pkbuf_free(recvbuf);
 
     /********** Remove Subscriber in Database */
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456819"));

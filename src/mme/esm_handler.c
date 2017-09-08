@@ -33,8 +33,20 @@ void esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
     {
         sess->pdn = mme_pdn_find_by_apn(mme_ue, 
                 pdn_connectivity_request->access_point_name.apn);
-        d_assert(sess->pdn, return, "No PDN Context[APN:%s])", 
-            pdn_connectivity_request->access_point_name.apn);
+        if (!sess->pdn)
+        {
+            if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
+            {
+                nas_send_pdn_connectivity_reject(
+                        sess, ESM_CAUSE_MISSING_OR_UNKNOWN_APN);
+                FSM_TRAN(&bearer->sm, esm_state_session_exception);
+                return;
+            }
+            else
+            {
+                d_assert(0, return, "Invalid EMM State");
+            }
+        }
     }
 
     if (pdn_connectivity_request->presencemask &

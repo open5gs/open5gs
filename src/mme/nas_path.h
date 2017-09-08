@@ -11,17 +11,19 @@ extern "C" {
 
 CORE_DECLARE(status_t) nas_send_to_enb(enb_ue_t *enb_ue, pkbuf_t *pkbuf);
 CORE_DECLARE(status_t) nas_send_emm_to_esm(
-        mme_ue_t *mme_ue, nas_esm_message_container_t *esm_message_container);
+    mme_ue_t *mme_ue, nas_esm_message_container_t *esm_message_container);
 CORE_DECLARE(status_t) nas_send_to_downlink_nas_transport(
     mme_ue_t *mme_ue, pkbuf_t *pkbuf);
 CORE_DECLARE(status_t) nas_send_attach_accept(mme_ue_t *mme_ue);
 CORE_DECLARE(status_t) nas_send_attach_reject(mme_ue_t *mme_ue,
     e_S1ap_CauseNas s1ap_cause_nas, nas_emm_cause_t emm_cause,
     nas_esm_cause_t esm_cause);
+CORE_DECLARE(status_t) nas_send_pdn_connectivity_reject(
+    mme_sess_t *sess, nas_esm_cause_t esm_cause);
 CORE_DECLARE(status_t) nas_send_activate_dedicated_bearer_context_request(
-        enb_ue_t *enb_ue, mme_bearer_t *bearer);
+    enb_ue_t *enb_ue, mme_bearer_t *bearer);
 CORE_DECLARE(status_t) nas_send_deactivate_bearer_context_request(
-        enb_ue_t *enb_ue, mme_bearer_t *bearer);
+    enb_ue_t *enb_ue, mme_bearer_t *bearer);
 CORE_DECLARE(status_t) nas_send_tau_accept(mme_ue_t *mme_ue);
 CORE_DECLARE(status_t) nas_send_tau_reject(mme_ue_t *mme_ue, 
     nas_esm_cause_t emm_cause);

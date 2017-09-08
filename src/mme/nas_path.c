@@ -112,8 +112,7 @@ status_t nas_send_attach_reject(mme_ue_t *mme_ue,
     sess = mme_sess_first(mme_ue);
     if (sess)
     {
-        rv = esm_build_pdn_connectivity_reject(
-                &esmbuf, sess->pti, esm_cause);
+        rv = esm_build_pdn_connectivity_reject(&esmbuf, sess, esm_cause);
         d_assert(rv == CORE_OK && esmbuf, return CORE_ERROR,
                 "esm build error");
         d_trace(3, "[NAS] PDN Connectivity reject : EMM <-- ESM\n",
@@ -131,6 +130,27 @@ status_t nas_send_attach_reject(mme_ue_t *mme_ue,
     cause.choice.nas = s1ap_cause_nas;;
     rv = s1ap_send_ue_context_release_commmand(enb_ue, &cause);
     d_assert(rv == CORE_OK, return CORE_ERROR, "s1ap send error");
+
+    return CORE_OK;
+}
+
+status_t nas_send_pdn_connectivity_reject(
+    mme_sess_t *sess, nas_esm_cause_t esm_cause)
+{
+    status_t rv;
+    mme_ue_t *mme_ue;
+    pkbuf_t *esmbuf = NULL;
+
+    d_assert(sess, return CORE_ERROR, "Null param");
+    mme_ue = sess->mme_ue;
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
+
+    rv = esm_build_pdn_connectivity_reject(&esmbuf, sess, esm_cause);
+    d_assert(rv == CORE_OK && esmbuf, return CORE_ERROR, "esm build error");
+
+    rv = nas_send_to_downlink_nas_transport(mme_ue, esmbuf);
+    d_assert(rv == CORE_OK, return CORE_ERROR,
+            "nas_send_to_downlink_nas_transport");
 
     return CORE_OK;
 }
@@ -204,7 +224,8 @@ status_t nas_send_tau_accept(mme_ue_t *mme_ue)
         d_assert(rv == CORE_OK, return CORE_ERROR, "emm build error");
 
         /* Send Dl NAS to UE */
-        d_assert(nas_send_to_downlink_nas_transport(mme_ue, emmbuf) == CORE_OK,,);
+        rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf) == CORE_OK;
+        d_assert(rv == CORE_OK,, "nas_send_to_downlink_nas_transport");
      
         /* FIXME : delay required before sending UE context release to make sure 
          * that UE receive DL NAS ? */
