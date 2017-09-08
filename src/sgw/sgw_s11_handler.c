@@ -180,6 +180,9 @@ CORE_DECLARE(void) sgw_s11_handle_modify_bearer_request(gtp_xact_t *s11_xact,
     bearer->enb_s1u_teid = ntohl(enb_s1u_teid->teid);
     bearer->enb_s1u_addr = enb_s1u_teid->ipv4_addr;
 
+    /* Reset UE state */
+    SGW_RESET_UE_STATE(sgw_ue, SGW_S1U_INACTIVE);
+
     rsp = &gtp_message.modify_bearer_response;
     memset(&gtp_message, 0, sizeof(gtp_message_t));
 
@@ -312,6 +315,9 @@ void sgw_s11_handle_create_bearer_response(gtp_xact_t *s11_xact,
     bearer->enb_s1u_addr = enb_s1u_teid->ipv4_addr;
     req->bearer_contexts.s1_u_enodeb_f_teid.presence = 0;
 
+    /* Reset UE state */
+    SGW_RESET_UE_STATE(sgw_ue, SGW_S1U_INACTIVE);
+
     /* Data Plane(DL) : SGW-S5U */
     memset(&sgw_s5u_teid, 0, sizeof(gtp_f_teid_t));
     sgw_s5u_teid.teid = htonl(bearer->sgw_s5u_teid);
@@ -362,6 +368,11 @@ void sgw_s11_handle_release_access_bearers_request(gtp_xact_t *s11_xact,
     d_assert(s11_xact, return, "Null param");
     d_assert(req, return, "Null param");
 
+    /* Set UE state to S1UE_INACTIVE */
+    SGW_SET_UE_STATE(sgw_ue, SGW_S1U_INACTIVE);
+    /* ReSet UE state to S1UE_INACTIVE */
+    SGW_RESET_UE_STATE(sgw_ue, SGW_DL_NOTI_SENT);
+
     /* Release S1U(DL) path */
     sess = sgw_sess_first(sgw_ue);
     while (sess)
@@ -373,8 +384,6 @@ void sgw_s11_handle_release_access_bearers_request(gtp_xact_t *s11_xact,
 
             bearer->enb_s1u_teid = 0;
             bearer->enb_s1u_addr = 0;
-
-            RESET_DL_NOTI_SENT(bearer);
 
             bearer = next_bearer;
         }

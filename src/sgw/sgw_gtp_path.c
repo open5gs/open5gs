@@ -162,30 +162,52 @@ static int _gtpv1_s5u_recv_cb(net_sock_t *sock, void *data)
                  * Send downlink_data_notification to MME.
                  *
                  */
-                if (!CHECK_DL_NOTI_SENT(bearer))
-                {
-                    event_t e;
-                    status_t rv;
+                sgw_ue_t *sgw_ue = NULL;
 
-                    event_set(&e, SGW_EVT_LO_DLDATA_NOTI);
-                    event_set_param1(&e, (c_uintptr_t)bearer->index);
-                    rv = sgw_event_send(&e);
-                    if (rv != CORE_OK)
+                d_assert(bearer->sess, pkbuf_free(pkbuf); return 0,
+                        "Session is NULL");
+                d_assert(bearer->sess->sgw_ue, pkbuf_free(pkbuf); return 0,
+                        "SGW_UE  is NULL");
+
+                sgw_ue = bearer->sess->sgw_ue;
+
+                if ((SGW_GET_UE_STATE(sgw_ue) & SGW_S1U_INACTIVE))
+                {
+                    if ( !(SGW_GET_UE_STATE(sgw_ue) & SGW_DL_NOTI_SENT))
                     {
-                        d_error("sgw_event_send error");
-                        pkbuf_free(pkbuf);
-                        return -1;
+                        event_t e;
+                        status_t rv;
+
+                        event_set(&e, SGW_EVT_LO_DLDATA_NOTI);
+                        event_set_param1(&e, (c_uintptr_t)bearer->index);
+                        rv = sgw_event_send(&e);
+                        if (rv != CORE_OK)
+                        {
+                            d_error("sgw_event_send error");
+                            pkbuf_free(pkbuf);
+                            return -1;
+                        }
+
+                        SGW_SET_UE_STATE(sgw_ue, SGW_DL_NOTI_SENT);
                     }
 
-                    SET_DL_NOTI_SENT(bearer);
+                    /* Buffer the packet */
+                    if (bearer->num_buffered_pkt < MAX_NUM_BUFFER_PKT)
+                    {
+                        bearer->buffered_pkts[bearer->num_buffered_pkt++] = 
+                            pkbuf;
+                        return 0;
+                    }
+                }
+                else
+                {
+                    /* UE is S1U_ACTIVE state but there is no s1u teid */
+                    d_warn("UE is ACITVE but there is no matched "
+                            "s1u_teid(tedid = 0x%x)",teid);
+
+                    /* Just drop it */
                 }
 
-                /* Buffer the packet */
-                if (bearer->num_buffered_pkt < MAX_NUM_BUFFER_PKT)
-                {
-                    bearer->buffered_pkts[bearer->num_buffered_pkt++] = pkbuf;
-                    return 0;
-                }
             }
         }
     }

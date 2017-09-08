@@ -353,8 +353,6 @@ void mme_state_operational(fsm_t *s, event_t *e)
             mme_ue = mme_ue_find_by_teid(message.h.teid);
             d_assert(mme_ue, pkbuf_free(pkbuf); break, 
                     "No UE Context(TEID:%d)", message.h.teid);
-            enb_ue = mme_ue->enb_ue;
-            d_assert(enb_ue, pkbuf_free(pkbuf);break, "Null param");
                     
             switch(message.h.type)
             {
@@ -485,6 +483,9 @@ void mme_state_operational(fsm_t *s, event_t *e)
 
                         if (FSM_CHECK(&bearer->sm, esm_state_disconnect))
                         {
+                            enb_ue = mme_ue->enb_ue;
+                            d_assert(enb_ue, break, "Null param");
+
                             rv = nas_send_deactivate_bearer_context_request(
                                     enb_ue, bearer);
                             d_assert(rv == CORE_OK, break,
@@ -508,6 +509,9 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 case GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE:
                 {
                     S1ap_Cause_t cause;
+
+                    enb_ue = mme_ue->enb_ue;
+                    d_assert(enb_ue, break, "Null param");
 
                     mme_s11_handle_release_access_bearers_response(
                         xact, mme_ue, &message.release_access_bearers_response);

@@ -63,6 +63,15 @@ typedef struct _sgw_ue_t {
     c_uint32_t      mme_s11_teid;   /* MME-S11-F-TEID */
     c_uint32_t      mme_s11_addr;   /* MME-S11-F-TEID IPv4 Address */
 
+#define SGW_S1U_INACTIVE  0x0001
+#define SGW_DL_NOTI_SENT  0x0002
+
+#define SGW_GET_UE_STATE(__uE)  ((__uE)->state)
+#define SGW_SET_UE_STATE(__uE,__sTATE)  ((__uE)->state |= (__sTATE))
+#define SGW_RESET_UE_STATE(__uE, __sTATE)  ((__uE)->state &= ~(__sTATE))
+
+    c_uint32_t      state;
+
     list_t          sess_list;
 } sgw_ue_t;
 
@@ -120,7 +129,6 @@ typedef struct _sgw_bearer_t {
     c_uint32_t      pgw_s5u_teid;  
     c_uint32_t      pgw_s5u_addr;
 
-    c_uint32_t      state;
 
     /* Pkts which will be buffered in case of UE-IDLE */
     c_uint32_t      num_buffered_pkt;
@@ -129,18 +137,6 @@ typedef struct _sgw_bearer_t {
 
     sgw_sess_t      *sess;
 } sgw_bearer_t;
-
-#define SGW_DL_NOTI_SENT  0x0001
-
-#define CHECK_DL_NOTI_SENT(__bEARER) ((__bEARER)->state & SGW_DL_NOTI_SENT)
-#define SET_DL_NOTI_SENT(__bEARER) \
-    do { \
-        (__bEARER)->state |= SGW_DL_NOTI_SENT;\
-    } while (0)
-#define RESET_DL_NOTI_SENT(__bEARER) \
-    do { \
-        (__bEARER)->state &= ~SGW_DL_NOTI_SENT;\
-    } while (0)
 
 CORE_DECLARE(status_t)      sgw_context_init(void);
 CORE_DECLARE(status_t)      sgw_context_final(void);
