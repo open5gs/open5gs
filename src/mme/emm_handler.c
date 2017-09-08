@@ -394,19 +394,47 @@ void emm_handle_service_request(
     d_assert(mme_ue, return, "Null param");
     enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return, "Null param");
-    sess = mme_sess_first(mme_ue);
-    d_assert(sess, return, "Null param");
 
-    /* Update Kenb */
-    if (SECURITY_CONTEXT_IS_VALID(mme_ue))
-        mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, mme_ue->kenb);
+    if (!MME_UE_HAVE_IMSI(mme_ue))
+    {
+        /* Unknown UE. Send Service_reject to force UE to attach */
+        nas_send_service_reject(mme_ue, 
+                EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+        return;
+    }
+    else
+    {
+        sess = mme_sess_first(mme_ue);
+        d_assert(sess, return, "Null param");
 
-    CLEAR_PAGING_INFO(mme_ue);
+        CLEAR_PAGING_INFO(mme_ue);
 
-    rv = s1ap_build_initial_context_setup_request(&s1apbuf, sess, NULL);
-    d_assert(rv == CORE_OK && s1apbuf, return, "s1ap build error");
+        /* Update Kenb */
+        if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+        {
+            mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, mme_ue->kenb);
 
-    d_assert(nas_send_to_enb(enb_ue, s1apbuf) == CORE_OK,, "s1ap send error");
+            rv = s1ap_build_initial_context_setup_request(&s1apbuf, sess, NULL);
+            d_assert(rv == CORE_OK && s1apbuf, return, "s1ap build error");
+
+            d_assert(nas_send_to_enb(enb_ue, s1apbuf) == CORE_OK,, "s1ap send error");
+        }
+        else
+        {
+            if (MME_HAVE_SGW_S11_PATH(mme_ue))
+            {
+                rv = mme_gtp_send_delete_all_sessions(mme_ue);
+                d_assert(rv == CORE_OK, return,
+                    "mme_gtp_send_delete_all_sessions failed");
+            }
+            else
+            {
+                mme_s6a_send_air(mme_ue);
+            }
+
+            FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
+        }
+    }
 }
 
 void emm_handle_emm_status(mme_ue_t *mme_ue, nas_emm_status_t *emm_status)
@@ -539,8 +567,16 @@ void emm_handle_tau_request(
 
     if (!MME_UE_HAVE_IMSI(mme_ue))
     {
+#if 0   /* FIXME : TAU message does not have PDC_CONNECTIVTY message. 
+           So even if ininiate the attach-like procedure, it failed.
+           */
         /* Unknown GUTI */
         FSM_TRAN(&mme_ue->sm, &emm_state_identity);
+#else
+        /* Send TAU reject */
+        nas_send_tau_reject(mme_ue, 
+                EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+#endif
     }
     else
     {

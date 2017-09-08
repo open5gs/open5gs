@@ -297,3 +297,22 @@ status_t emm_build_tau_reject(pkbuf_t **emmbuf, nas_emm_cause_t emm_cause,
 
     return CORE_OK;
 }
+
+status_t emm_build_service_reject(pkbuf_t **emmbuf, nas_emm_cause_t emm_cause, 
+        mme_ue_t *mme_ue)
+{
+    nas_message_t message;
+    nas_service_reject_t *service_reject = &message.emm.service_reject;
+
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
+
+    memset(&message, 0, sizeof(message));
+    message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    message.emm.h.message_type = NAS_SERVICE_REJECT;
+
+    service_reject->emm_cause = emm_cause;
+
+    d_assert(nas_plain_encode(emmbuf, &message) == CORE_OK && *emmbuf,,);
+
+    return CORE_OK;
+}

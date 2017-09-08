@@ -60,12 +60,32 @@ void emm_state_detached(fsm_t *s, event_t *e)
             nas_message_t *message = (nas_message_t *)event_get_param4(e);
             d_assert(message, break, "Null param");
 
+            if (message->emm.h.security_header_type
+                    == NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE)
+            {
+                emm_handle_service_request(
+                        mme_ue, &message->emm.service_request);
+                break;
+            }
+
             switch(message->emm.h.message_type)
             {
                 case NAS_ATTACH_REQUEST:
                 {
                     emm_handle_attach_request(
                             mme_ue, &message->emm.attach_request);
+                    break;
+                }
+                case NAS_TRACKING_AREA_UPDATE_REQUEST:
+                {
+                    emm_handle_tau_request(
+                            mme_ue, &message->emm.tracking_area_update_request);
+                    break;
+                }
+                default:
+                {
+                    d_warn("Unknown message type = %d", 
+                            message->emm.h.message_type);
                     break;
                 }
             }

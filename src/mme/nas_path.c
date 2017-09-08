@@ -266,7 +266,40 @@ status_t nas_send_tau_reject(mme_ue_t *mme_ue, nas_emm_cause_t emm_cause)
     /* Build TAU reject */
     if (emm_build_tau_reject(&emmbuf, emm_cause, mme_ue) != CORE_OK)
     {
-        d_error("emm_build_tau_accept error");
+        d_error("emm_build_tau_reject error");
+        pkbuf_free(emmbuf);
+        return CORE_ERROR;
+    }
+
+    /* Send Dl NAS to UE */
+    d_assert(nas_send_to_downlink_nas_transport(mme_ue, emmbuf) == CORE_OK,,);
+
+
+    /* FIXME : delay required before sending UE context release to make sure 
+     * that UE receive DL NAS ? */
+    cause.present = S1ap_Cause_PR_nas;
+    cause.choice.nas = S1ap_CauseNas_normal_release;
+    rv = s1ap_send_ue_context_release_commmand(enb_ue, &cause);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "s1ap send error");
+
+    return CORE_OK;
+}
+
+status_t nas_send_service_reject(mme_ue_t *mme_ue, nas_emm_cause_t emm_cause)
+{
+    status_t rv;
+    enb_ue_t *enb_ue = NULL;
+    pkbuf_t *emmbuf = NULL;
+    S1ap_Cause_t cause;
+
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    enb_ue = mme_ue->enb_ue;
+    d_assert(enb_ue, return CORE_ERROR, "Null param");
+
+    /* Build TAU reject */
+    if (emm_build_service_reject(&emmbuf, emm_cause, mme_ue) != CORE_OK)
+    {
+        d_error("emm_build_service_reject error");
         pkbuf_free(emmbuf);
         return CORE_ERROR;
     }
