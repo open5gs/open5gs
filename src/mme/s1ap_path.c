@@ -4,8 +4,10 @@
 
 #include "mme_event.h"
 
-#include "s1ap_build.h"
 #include "nas_security.h"
+#include "nas_path.h"
+
+#include "s1ap_build.h"
 #include "s1ap_path.h"
 
 static int _s1ap_accept_cb(net_sock_t *net_sock, void *data);
@@ -350,6 +352,25 @@ status_t s1ap_send_to_nas(enb_ue_t *enb_ue, S1ap_NAS_PDU_t *nasPdu)
     return CORE_OK;
 }
 
+status_t s1ap_send_initial_context_setup_request(mme_ue_t *mme_ue)
+{
+    status_t rv;
+    pkbuf_t *s1apbuf = NULL;
+    mme_sess_t *sess = NULL;
+
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
+
+    sess = mme_sess_first(mme_ue);
+    d_assert(sess, return CORE_ERROR, "Null param");
+
+    rv = s1ap_build_initial_context_setup_request(&s1apbuf, sess, NULL);
+    d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
+
+    rv = nas_send_to_enb(mme_ue, s1apbuf);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "s1ap send error");
+
+    return CORE_OK;
+}
 
 status_t s1ap_send_ue_context_release_commmand(
         enb_ue_t *enb_ue, S1ap_Cause_t *cause)

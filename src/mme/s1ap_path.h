@@ -19,6 +19,9 @@ CORE_DECLARE(status_t) s1ap_send_to_enb(mme_enb_t *enb, pkbuf_t *pkb);
 CORE_DECLARE(status_t) s1ap_send_to_nas(
         enb_ue_t *enb_ue, S1ap_NAS_PDU_t *nasPdu);
 CORE_DECLARE(status_t) s1ap_send_to_esm(mme_ue_t *mme_ue, pkbuf_t *esmbuf);
+
+CORE_DECLARE(status_t) s1ap_send_initial_context_setup_request(
+        mme_ue_t *mme_ue);
 CORE_DECLARE(status_t) s1ap_send_ue_context_release_commmand(
         enb_ue_t *enb_ue, S1ap_Cause_t *cause);
 

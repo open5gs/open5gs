@@ -10,14 +10,10 @@
 #include "mme_kdf.h"
 #include "nas_security.h"
 #include "nas_conv.h"
-#include "esm_build.h"
-#include "emm_build.h"
-#include "s1ap_build.h"
+
 #include "s1ap_path.h"
 #include "nas_path.h"
 #include "mme_fd_path.h"
-
-#include "mme_s11_build.h"
 #include "mme_gtp_path.h"
 
 #include "emm_handler.h"
@@ -255,25 +251,52 @@ void emm_handle_identity_response(
 
     d_assert(MME_UE_HAVE_IMSI(mme_ue), return, "No IMSI in IDENTITY_RESPONSE");
 
-    if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+    if (mme_ue->nas_eps.type == MME_UE_EPS_ATTACH_TYPE) /* ATTACH_REQUEST */
     {
-        rv = nas_send_emm_to_esm(mme_ue, &mme_ue->pdn_connectivity_request);
-        d_assert(rv == CORE_OK, return, "nas_send_emm_to_esm failed");
-        FSM_TRAN(&mme_ue->sm, &emm_state_default_esm);
-    }
-    else
-    {
-        if (MME_HAVE_SGW_S11_PATH(mme_ue))
+        if (SECURITY_CONTEXT_IS_VALID(mme_ue))
         {
-            rv = mme_gtp_send_delete_all_sessions(mme_ue);
-            d_assert(rv == CORE_OK, return,
-                    "mme_gtp_send_delete_all_sessions failed");
+            rv = nas_send_emm_to_esm(mme_ue, &mme_ue->pdn_connectivity_request);
+            d_assert(rv == CORE_OK, return, "nas_send_emm_to_esm failed");
+            FSM_TRAN(&mme_ue->sm, &emm_state_default_esm);
         }
         else
         {
-            mme_s6a_send_air(mme_ue);
+            if (MME_HAVE_SGW_S11_PATH(mme_ue))
+            {
+                rv = mme_gtp_send_delete_all_sessions(mme_ue);
+                d_assert(rv == CORE_OK, return,
+                        "mme_gtp_send_delete_all_sessions failed");
+            }
+            else
+            {
+                mme_s6a_send_air(mme_ue);
+            }
+            FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
         }
-        FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
+    }
+    else if (mme_ue->nas_eps.type == MME_UE_EPS_UPDATE_TYPE) /* TAU_REQUEST */
+    {
+        if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+        {
+            /* Send TAU accept */
+            rv = nas_send_tau_accept(mme_ue);
+            d_assert(rv == CORE_OK, return, "nas_send_tau_accept failed");
+        }
+        else
+        {
+            if (MME_HAVE_SGW_S11_PATH(mme_ue))
+            {
+                mme_s6a_send_air(mme_ue);
+                FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
+            }
+            else
+            {
+                /* Send TAU reject */
+                nas_send_tau_reject(mme_ue, 
+                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                FSM_TRAN(&mme_ue->sm, &emm_state_detached);
+            }
+        }
     }
 }
 
@@ -341,72 +364,30 @@ void emm_handle_detach_request(
     }
     else
     {
-        emm_handle_detach_accept(mme_ue);
+        rv = nas_send_detach_accept(mme_ue);
+        d_assert(rv == CORE_OK, return,
+            "nas_send_detach_accept failed");
     }
-}
-
-void emm_handle_detach_accept(mme_ue_t *mme_ue)
-{
-    status_t rv;
-    enb_ue_t *enb_ue = NULL;
-    nas_message_t message;
-    pkbuf_t *emmbuf = NULL;
-    S1ap_Cause_t cause;
-
-    d_assert(mme_ue, return, "Null param");
-    enb_ue = mme_ue->enb_ue;
-    d_assert(enb_ue, return, "Null param");
-
-    /* reply with detach accept */
-    if ((mme_ue->detach_type.switch_off & 0x1) == 0)
-    {
-        memset(&message, 0, sizeof(message));
-        message.h.security_header_type = 
-            NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
-        message.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
-
-        message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
-        message.emm.h.message_type = NAS_DETACH_ACCEPT;
-
-        d_trace(3, "[NAS] Detach accept : UE[%s] <-- EMM\n", 
-            mme_ue->imsi_bcd);
-
-        rv = nas_security_encode(&emmbuf, mme_ue, &message);
-        d_assert(rv == CORE_OK && emmbuf, return, "emm build error");
-        d_assert(nas_send_to_downlink_nas_transport(mme_ue, emmbuf) == CORE_OK,,);
-    }
-
-    /* FIXME : delay is needed */
-    cause.present = S1ap_Cause_PR_nas;
-    cause.choice.nas = S1ap_CauseNas_detach;
-    rv = s1ap_send_ue_context_release_commmand(enb_ue, &cause);
-    d_assert(rv == CORE_OK, , "s1ap send error");
 }
 
 void emm_handle_service_request(
         mme_ue_t *mme_ue, nas_service_request_t *service_request)
 {
     status_t rv;
-    pkbuf_t *s1apbuf = NULL;
-    enb_ue_t *enb_ue = NULL;
-    mme_sess_t *sess = NULL;
 
     d_assert(mme_ue, return, "Null param");
-    enb_ue = mme_ue->enb_ue;
-    d_assert(enb_ue, return, "Null param");
 
     if (!MME_UE_HAVE_IMSI(mme_ue))
     {
-        /* Unknown UE. Send Service_reject to force UE to attach */
+        /* Unknown UE. Send Service_reject to force UE to attach
+         * 
+         * FIXME : how about FSM_TRAN(&mme_ue->sm, emm_state_identity);
+         */
         nas_send_service_reject(mme_ue, 
                 EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-        return;
     }
     else
     {
-        sess = mme_sess_first(mme_ue);
-        d_assert(sess, return, "Null param");
-
         CLEAR_PAGING_INFO(mme_ue);
 
         /* Update Kenb */
@@ -414,10 +395,8 @@ void emm_handle_service_request(
         {
             mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, mme_ue->kenb);
 
-            rv = s1ap_build_initial_context_setup_request(&s1apbuf, sess, NULL);
-            d_assert(rv == CORE_OK && s1apbuf, return, "s1ap build error");
-
-            d_assert(nas_send_to_enb(enb_ue, s1apbuf) == CORE_OK,, "s1ap send error");
+            rv = s1ap_send_initial_context_setup_request(mme_ue);
+            d_assert(rv == CORE_OK, return, "s1ap send error");
         }
         else
         {
@@ -529,31 +508,6 @@ void emm_handle_tau_request(
                     guti.m_tmsi,
                     MME_UE_HAVE_IMSI(mme_ue) 
                         ? mme_ue->imsi_bcd : "Unknown");
-
-#if 0
-            if (!MME_UE_HAVE_IMSI(mme_ue))
-            {
-                /* Unknown GUTI */
-
-                /* FIXME : Need to check if GUTI is allocated to old MME.
-                 * if so , transmit context request to get the context of ue.
-                 */
-
-                /* Send TAU reject */
-                nas_send_tau_reject(mme_ue, 
-                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-            }
-            else if (!SECURITY_CONTEXT_IS_VALID(mme_ue))
-            {
-                /* Need Authencation */
-                d_warn("Need Authenticatoin");
-            }
-            else
-            {
-                /* Send TAU accept */
-                nas_send_tau_accept(mme_ue);
-            }
-#endif
             break;
         }
         default:
@@ -567,16 +521,7 @@ void emm_handle_tau_request(
 
     if (!MME_UE_HAVE_IMSI(mme_ue))
     {
-#if 0   /* FIXME : TAU message does not have PDC_CONNECTIVTY message. 
-           So even if ininiate the attach-like procedure, it failed.
-           */
-        /* Unknown GUTI */
         FSM_TRAN(&mme_ue->sm, &emm_state_identity);
-#else
-        /* Send TAU reject */
-        nas_send_tau_reject(mme_ue, 
-                EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-#endif
     }
     else
     {
@@ -590,15 +535,16 @@ void emm_handle_tau_request(
         {
             if (MME_HAVE_SGW_S11_PATH(mme_ue))
             {
-                rv = mme_gtp_send_delete_all_sessions(mme_ue);
-                d_assert(rv == CORE_OK, return,
-                    "mme_gtp_send_delete_all_sessions failed");
+                mme_s6a_send_air(mme_ue);
+                FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
             }
             else
             {
-                mme_s6a_send_air(mme_ue);
+                /* Send TAU reject */
+                nas_send_tau_reject(mme_ue, 
+                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                FSM_TRAN(&mme_ue->sm, &emm_state_detached);
             }
-            FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
         }
     }
 }

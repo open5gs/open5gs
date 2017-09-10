@@ -70,21 +70,9 @@ void esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
         {
             if (MME_HAVE_SGW_S11_PATH(mme_ue))
             {
-                if (mme_ue->nas_eps.type == MME_UE_EPS_ATTACH_TYPE)
-                {
-                    rv = nas_send_attach_accept(mme_ue);
-                    d_assert(rv == CORE_OK, return,
-                            "nas_send_attach_accept failed");
-                }
-                else if (mme_ue->nas_eps.type == MME_UE_EPS_UPDATE_TYPE)
-                {
-                    rv = nas_send_tau_accept(mme_ue);
-                    d_assert(rv == CORE_OK, return,
-                            "nas_send_tau_accept failed");
-                }
-                else
-                    d_assert(0, return, "Invalid EPS type(%d)",
-                            mme_ue->nas_eps.type);
+                rv = nas_send_attach_accept(mme_ue);
+                d_assert(rv == CORE_OK, return,
+                        "nas_send_attach_accept failed");
             }
             else
             {
@@ -135,20 +123,14 @@ void esm_handle_information_response(mme_sess_t *sess,
 void esm_handle_activate_default_bearer_accept(mme_bearer_t *bearer)
 {
     status_t rv;
-    mme_ue_t *mme_ue = NULL;
-    enb_ue_t *enb_ue = NULL;
 
     d_assert(bearer, return, "Null param");
-    mme_ue = bearer->mme_ue;
-    d_assert(mme_ue, return, "Null param");
-    enb_ue = mme_ue->enb_ue;
-    d_assert(enb_ue, return, "Null param");
 
     mme_bearer_t *dedicated_bearer = mme_bearer_next(bearer);
     while(dedicated_bearer)
     {
         rv = nas_send_activate_dedicated_bearer_context_request(
-                enb_ue, dedicated_bearer);
+                dedicated_bearer);
         d_assert(rv == CORE_OK, return,
             "nas_send_activate_dedicated_bearer_context failed");
 

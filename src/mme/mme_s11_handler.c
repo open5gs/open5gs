@@ -7,27 +7,27 @@
 #include "mme_event.h"
 #include "mme_context.h"
 
-#include "s1ap_build.h"
 #include "s1ap_path.h"
+#include "mme_gtp_path.h"
+#include "nas_path.h"
+#include "mme_fd_path.h"
+
 #include "mme_s11_build.h"
 #include "mme_s11_handler.h"
-#include "mme_gtp_path.h"
-#include "esm_build.h"
-#include "nas_path.h"
 
-void mme_s11_handle_create_session_response(gtp_xact_t *xact,
-        mme_bearer_t *bearer, gtp_create_session_response_t *rsp)
+void mme_s11_handle_create_session_response(
+        gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_create_session_response_t *rsp)
 {
     status_t rv;
     gtp_f_teid_t *sgw_s11_teid = NULL;
     gtp_f_teid_t *sgw_s1u_teid = NULL;
 
-    mme_ue_t *mme_ue = NULL;
+    mme_bearer_t *bearer = NULL;
     mme_sess_t *sess = NULL;
     pdn_t *pdn = NULL;
     
     d_assert(xact, return, "Null param");
-    d_assert(bearer, return, "Null param");
+    d_assert(mme_ue, return, "Null param");
     d_assert(rsp, return, "Null param");
 
     if (rsp->sender_f_teid_for_control_plane.presence == 0)
@@ -45,9 +45,22 @@ void mme_s11_handle_create_session_response(gtp_xact_t *xact,
         d_error("No S1U TEID");
         return;
     }
+    if (rsp->bearer_contexts_created.presence == 0)
+    {
+        d_error("No Bearer");
+        return;
+    }
+    if (rsp->bearer_contexts_created.  eps_bearer_id.presence == 0)
+    {
+        d_error("No EPS Bearer ID");
+        return;
+    }
 
-    mme_ue = bearer->mme_ue;
     d_assert(mme_ue, return, "Null param");
+
+    bearer = mme_bearer_find_by_ue_ebi(mme_ue, 
+            rsp->bearer_contexts_created.eps_bearer_id.u8);
+    d_assert(bearer, return, "Null param");
     sess = bearer->sess;
     d_assert(sess, return, "Null param");
     pdn = sess->pdn;
@@ -77,6 +90,19 @@ void mme_s11_handle_create_session_response(gtp_xact_t *xact,
 
     rv = gtp_xact_commit(xact);
     d_assert(rv == CORE_OK, return, "xact_commit error");
+
+    if (FSM_CHECK(&mme_ue->sm, emm_state_default_esm))
+    {
+        rv = nas_send_attach_accept(mme_ue);
+        d_assert(rv == CORE_OK, return, "nas_send_attach_accept failed");
+    }
+    else if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
+    {
+        rv = nas_send_activate_default_bearer_context_request(bearer);
+        d_assert(rv == CORE_OK, return, "nas send failed");
+    }
+    else
+        d_assert(0,, "Invalid EMM state");
 }
 
 void mme_s11_handle_modify_bearer_response(
@@ -95,6 +121,69 @@ void mme_s11_handle_modify_bearer_response(
     d_assert(rv == CORE_OK, return, "xact_commit error");
 }
 
+void mme_s11_handle_delete_session_response(
+        gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_delete_session_response_t *rsp)
+{
+    status_t rv;
+    mme_sess_t *sess = NULL;
+
+    d_assert(rsp, return, "Null param");
+    sess = GTP_XACT_RETRIEVE_SESSION(xact);
+    d_assert(sess, return, "Null param");
+
+    if (rsp->cause.presence == 0)
+    {
+        d_error("No Cause");
+        return;
+    }
+
+    d_trace(3, "[GTP] Delete Session Response : MME[%d] <-- SGW[%d]\n",
+            mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
+
+    rv = gtp_xact_commit(xact);
+    d_assert(rv == CORE_OK, return, "xact_commit error");
+
+    if (FSM_CHECK(&mme_ue->sm, emm_state_authentication))
+    {
+        mme_sess_remove(sess);
+        if (mme_sess_first(mme_ue) == NULL)
+        {
+            CLEAR_SGW_S11_PATH(mme_ue);
+            mme_s6a_send_air(mme_ue);
+        }
+    }
+    else if (FSM_CHECK(&mme_ue->sm, emm_state_detached))
+    {
+        mme_sess_remove(sess);
+        if (mme_sess_first(mme_ue) == NULL)
+        {
+            CLEAR_SGW_S11_PATH(mme_ue);
+            rv = nas_send_detach_accept(mme_ue);
+            d_assert(rv == CORE_OK, return, "nas_send_detach_accept failed");
+
+        }
+    }
+    else if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
+    {
+        mme_bearer_t *bearer = mme_default_bearer_in_sess(sess);
+        d_assert(bearer, return, "Null param");
+
+        if (FSM_CHECK(&bearer->sm, esm_state_disconnect))
+        {
+
+            rv = nas_send_deactivate_bearer_context_request(bearer);
+            d_assert(rv == CORE_OK, return,
+                "nas_send_deactivate_bearer_context_request failed");
+        }
+        else
+        {
+            d_assert(0,, "Invalid ESM state");
+        }
+    }
+    else
+        d_assert(0,, "Invalid EMM state");
+
+}
 void mme_s11_handle_create_bearer_request(
         gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_create_bearer_request_t *req)
 {
@@ -181,10 +270,15 @@ void mme_s11_handle_release_access_bearers_response(
         gtp_release_access_bearers_response_t *rsp)
 {
     status_t rv;
+    enb_ue_t *enb_ue = NULL;
+    S1ap_Cause_t cause;
 
     d_assert(xact, return, "Null param");
     d_assert(mme_ue, return, "Null param");
     d_assert(rsp, return, "Null param");
+
+    enb_ue = mme_ue->enb_ue;
+    d_assert(enb_ue, return, "Null param");
 
     if (rsp->cause.presence == 0)
     {
@@ -197,6 +291,11 @@ void mme_s11_handle_release_access_bearers_response(
 
     rv = gtp_xact_commit(xact);
     d_assert(rv == CORE_OK, return, "xact_commit error");
+
+    cause.present = S1ap_Cause_PR_nas;
+    cause.choice.nas = S1ap_CauseNas_normal_release;
+    rv = s1ap_send_ue_context_release_commmand(enb_ue, &cause);
+    d_assert(rv == CORE_OK,, "s1ap send error");
 }
 
 void mme_s11_handle_downlink_data_notification(

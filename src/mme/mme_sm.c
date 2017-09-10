@@ -6,18 +6,16 @@
 
 #include "mme_event.h"
 
-#include "s1ap_build.h"
 #include "s1ap_handler.h"
 #include "s1ap_path.h"
-#include "mme_fd_path.h"
-#include "mme_gtp_path.h"
-#include "mme_s11_handler.h"
 #include "nas_security.h"
 #include "nas_path.h"
 #include "emm_handler.h"
-#include "esm_build.h"
 #include "esm_handler.h"
+#include "mme_gtp_path.h"
+#include "mme_s11_handler.h"
 #include "fd_lib.h"
+#include "mme_fd_path.h"
 #include "mme_s6a_handler.h"
 
 void mme_state_initial(fsm_t *s, event_t *e)
@@ -255,7 +253,6 @@ void mme_state_operational(fsm_t *s, event_t *e)
             }
 
             pkbuf_free(pkbuf);
-
             break;
         }
         case MME_EVT_S6A_MESSAGE:
@@ -270,56 +267,31 @@ void mme_state_operational(fsm_t *s, event_t *e)
             s6a_message = s6abuf->payload;
             d_assert(s6a_message, return, "Null param");
 
+            if (s6a_message->result_code != ER_DIAMETER_SUCCESS)
+            {
+                rv = nas_send_attach_reject(mme_ue,
+                    S1ap_CauseNas_authentication_failure,
+                    EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED,
+                    ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+                d_assert(rv == CORE_OK,,
+                        "nas_send_attach_reject failed");
+
+                mme_ue_remove(mme_ue);
+
+                pkbuf_free(s6abuf);
+                break;
+            }
+
             switch(s6a_message->cmd_code)
             {
                 case S6A_CMD_CODE_AUTHENTICATION_INFORMATION:
                 {
-                    if (s6a_message->result_code != ER_DIAMETER_SUCCESS)
-                    {
-                        rv = nas_send_attach_reject(mme_ue,
-                            S1ap_CauseNas_authentication_failure,
-                            EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED,
-                            ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
-                        d_assert(rv == CORE_OK,,
-                                "nas_send_attach_reject failed");
-
-                        mme_ue_remove(mme_ue);
-                        break;
-                    }
-
                     mme_s6a_handle_aia(mme_ue, &s6a_message->aia_message);
                     break;
                 }
                 case S6A_CMD_CODE_UPDATE_LOCATION:
                 {
-                    if (s6a_message->result_code != ER_DIAMETER_SUCCESS)
-                    {
-                        rv = nas_send_attach_reject(mme_ue,
-                            S1ap_CauseNas_unspecified,
-                            EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED,
-                            ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
-                        d_assert(rv == CORE_OK,,
-                                "nas_send_attach_reject failed");
-
-                        mme_ue_remove(mme_ue);
-                        break;
-                    }
-
                     mme_s6a_handle_ula(mme_ue, &s6a_message->ula_message);
-
-                    if (FSM_CHECK(&mme_ue->sm, emm_state_default_esm))
-                    {
-                        rv = nas_send_emm_to_esm(mme_ue,
-                                &mme_ue->pdn_connectivity_request);
-                        d_assert(rv == CORE_OK,,
-                                "nas_send_emm_to_esm failed");
-                    }
-                    else if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
-                    {
-                        d_error("Not implemented for Tracking Area Update");
-                    }
-                    else
-                        d_assert(0,, "Invaild EMM state");
                     break;
                 }
                 default:
@@ -339,7 +311,6 @@ void mme_state_operational(fsm_t *s, event_t *e)
             gtp_xact_t *xact = NULL;
             gtp_message_t message;
             mme_ue_t *mme_ue = NULL;
-            enb_ue_t *enb_ue = NULL;
 
             d_assert(pkbuf, break, "Null param");
             d_assert(gnode, pkbuf_free(pkbuf); break, "Null param");
@@ -357,174 +328,26 @@ void mme_state_operational(fsm_t *s, event_t *e)
             switch(message.h.type)
             {
                 case GTP_CREATE_SESSION_RESPONSE_TYPE:
-                {
-                    mme_bearer_t *bearer = NULL;
-
-                    gtp_create_session_response_t *rsp
-                        = &message.create_session_response;
-                    d_assert(rsp, return, "Null param");
-
-                    if (rsp->bearer_contexts_created.presence == 0)
-                    {
-                        d_error("No Bearer");
-                        return;
-                    }
-                    if (rsp->bearer_contexts_created.
-                            eps_bearer_id.presence == 0)
-                    {
-                        d_error("No EPS Bearer ID");
-                        return;
-                    }
-
-                    bearer = mme_bearer_find_by_ue_ebi(mme_ue, 
-                            rsp->bearer_contexts_created.eps_bearer_id.u8);
-                    d_assert(bearer, return, "Null param");
-
-                    mme_s11_handle_create_session_response(xact, bearer, rsp);
-
-                    if (FSM_CHECK(&mme_ue->sm, emm_state_default_esm))
-                    {
-                        if (mme_ue->nas_eps.type == MME_UE_EPS_ATTACH_TYPE)
-                        {
-                            rv = nas_send_attach_accept(mme_ue);
-                            d_assert(rv == CORE_OK, return,
-                                    "nas_send_attach_accept failed");
-                        }
-                        else if (mme_ue->nas_eps.type == MME_UE_EPS_UPDATE_TYPE)
-                        {
-                            rv = nas_send_tau_accept(mme_ue);
-                            d_assert(rv == CORE_OK, return,
-                                    "nas_send_tau_accept failed");
-                        }
-                        else
-                            d_assert(0, return, "Invalid EPS type(%d)",
-                                    mme_ue->nas_eps.type);
-                    }
-                    else if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
-                    {
-                        mme_sess_t *sess = NULL;
-                        enb_ue_t *enb_ue = NULL;
-                        pkbuf_t *esmbuf = NULL, *s1apbuf = NULL;
-
-                        sess = bearer->sess;
-                        d_assert(sess, return, "Null param");
-                        enb_ue = mme_ue->enb_ue;
-                        d_assert(enb_ue, return, "Null param");
-
-                        rv = esm_build_activate_default_bearer_context_request(
-                                &esmbuf, sess);
-                        d_assert(rv == CORE_OK && esmbuf, return,
-                                "esm build error");
-
-                        d_trace(3, "[NAS] Activate default bearer "
-                                "context request : EMM <-- ESM\n");
-
-                        rv = s1ap_build_e_rab_setup_request(
-                                &s1apbuf, bearer, esmbuf);
-                        d_assert(rv == CORE_OK && s1apbuf, 
-                                pkbuf_free(esmbuf); return, "s1ap build error");
-
-                        d_assert(nas_send_to_enb(enb_ue, s1apbuf) == CORE_OK,,);
-                    }
-                    else
-                        d_assert(0, break, "Invalid EMM state");
-
+                    mme_s11_handle_create_session_response(
+                        xact, mme_ue, &message.create_session_response);
                     break;
-                }
                 case GTP_MODIFY_BEARER_RESPONSE_TYPE:
                     mme_s11_handle_modify_bearer_response(
                         xact, mme_ue, &message.modify_bearer_response);
                     break;
                 case GTP_DELETE_SESSION_RESPONSE_TYPE:
-                {
-                    mme_sess_t *sess = NULL;
-                    gtp_delete_session_response_t *rsp = 
-                        &message.delete_session_response;
-
-                    d_assert(rsp, return, "Null param");
-                    sess = GTP_XACT_RETRIEVE_SESSION(xact);
-                    d_assert(sess, return, "Null param");
-
-                    if (rsp->cause.presence == 0)
-                    {
-                        d_error("No Cause");
-                        return;
-                    }
-
-                    d_trace(3, "[GTP] Delete Session Response : "
-                            "MME[%d] <-- SGW[%d]\n",
-                            mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
-
-                    rv = gtp_xact_commit(xact);
-                    d_assert(rv == CORE_OK, return, "xact_commit error");
-
-                    if (FSM_CHECK(&mme_ue->sm, emm_state_authentication))
-                    {
-                        mme_sess_remove(sess);
-                        if (mme_sess_first(mme_ue) == NULL)
-                        {
-                            CLEAR_SGW_S11_PATH(mme_ue);
-                            mme_s6a_send_air(mme_ue);
-                        }
-                    }
-                    else if (FSM_CHECK(&mme_ue->sm, emm_state_detached))
-                    {
-                        mme_sess_remove(sess);
-                        if (mme_sess_first(mme_ue) == NULL)
-                        {
-                            CLEAR_SGW_S11_PATH(mme_ue);
-                            emm_handle_detach_accept(mme_ue);
-                        }
-                    }
-                    else if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
-                    {
-                        mme_bearer_t *bearer = mme_default_bearer_in_sess(sess);
-                        d_assert(bearer, return, "Null param");
-
-                        if (FSM_CHECK(&bearer->sm, esm_state_disconnect))
-                        {
-                            enb_ue = mme_ue->enb_ue;
-                            d_assert(enb_ue, break, "Null param");
-
-                            rv = nas_send_deactivate_bearer_context_request(
-                                    enb_ue, bearer);
-                            d_assert(rv == CORE_OK, break,
-                                "nas_send_deactivate_bearer"
-                                "_context_request failed");
-                        }
-                        else
-                        {
-                            d_assert(0, break, "Invalid ESM state");
-                        }
-                    }
-                    else
-                        d_assert(0, break, "Invalid EMM state");
-
+                    mme_s11_handle_delete_session_response(
+                        xact, mme_ue, &message.delete_session_response);
                     break;
-                }
                 case GTP_CREATE_BEARER_REQUEST_TYPE:
                     mme_s11_handle_create_bearer_request(
                         xact, mme_ue, &message.create_bearer_request);
                     break;
                 case GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE:
-                {
-                    S1ap_Cause_t cause;
-
-                    enb_ue = mme_ue->enb_ue;
-                    d_assert(enb_ue, break, "Null param");
-
                     mme_s11_handle_release_access_bearers_response(
                         xact, mme_ue, &message.release_access_bearers_response);
-
-                    cause.present = S1ap_Cause_PR_nas;
-                    cause.choice.nas = S1ap_CauseNas_normal_release;
-                    rv = s1ap_send_ue_context_release_commmand(enb_ue, &cause);
-                    d_assert(rv == CORE_OK,, "s1ap send error");
                     break;
-                }
-
                 case GTP_DOWNLINK_DATA_NOTIFICATION_TYPE:
-                {
                     mme_s11_handle_downlink_data_notification(
                         xact, mme_ue, &message.downlink_data_notification);
 
@@ -532,7 +355,6 @@ void mme_state_operational(fsm_t *s, event_t *e)
                     /* Start T3413 */
                     tm_start(mme_ue->t3413);
                     break;
-                }
                 default:
                     d_warn("Not implmeneted(type:%d)", message.h.type);
                     break;

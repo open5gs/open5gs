@@ -10,6 +10,8 @@
 #include "s1ap_build.h"
 #include "s1ap_conv.h"
 
+static void s1ap_build_cause(S1ap_Cause_t *dst, S1ap_Cause_t *src);
+
 status_t s1ap_build_setup_rsp(pkbuf_t **pkbuf)
 {
     int erval;
@@ -402,35 +404,6 @@ status_t s1ap_build_e_rab_setup_request(
     return CORE_OK;
 }
 
-static void s1ap_build_cause(S1ap_Cause_t *dst, S1ap_Cause_t *src)
-{
-    d_assert(src, return, "Null param");
-    d_assert(dst, return, "Null param");
-
-    dst->present = src->present;
-    switch(dst->present)
-    {
-        case S1ap_Cause_PR_radioNetwork:
-            dst->choice.radioNetwork = src->choice.radioNetwork;
-            break;
-        case S1ap_Cause_PR_transport:
-            dst->choice.transport = src->choice.transport;
-            break;
-        case S1ap_Cause_PR_nas:
-            dst->choice.nas = src->choice.nas;
-            break;
-        case S1ap_Cause_PR_protocol:
-            dst->choice.protocol = src->choice.protocol;
-            break;
-        case S1ap_Cause_PR_misc:
-            dst->choice.misc = src->choice.misc;
-            break;
-        default:
-            d_error("Invalid src type : %d", dst->present);
-            break;
-    }
-}
-
 status_t s1ap_build_e_rab_release_command(pkbuf_t **s1apbuf,
         mme_bearer_t *bearer, pkbuf_t *esmbuf, S1ap_Cause_t *cause)
 {
@@ -617,3 +590,33 @@ status_t s1ap_build_paging(pkbuf_t **s1apbuf, mme_ue_t *mme_ue)
 
     return CORE_OK;
 }
+
+static void s1ap_build_cause(S1ap_Cause_t *dst, S1ap_Cause_t *src)
+{
+    d_assert(src, return, "Null param");
+    d_assert(dst, return, "Null param");
+
+    dst->present = src->present;
+    switch(dst->present)
+    {
+        case S1ap_Cause_PR_radioNetwork:
+            dst->choice.radioNetwork = src->choice.radioNetwork;
+            break;
+        case S1ap_Cause_PR_transport:
+            dst->choice.transport = src->choice.transport;
+            break;
+        case S1ap_Cause_PR_nas:
+            dst->choice.nas = src->choice.nas;
+            break;
+        case S1ap_Cause_PR_protocol:
+            dst->choice.protocol = src->choice.protocol;
+            break;
+        case S1ap_Cause_PR_misc:
+            dst->choice.misc = src->choice.misc;
+            break;
+        default:
+            d_error("Invalid src type : %d", dst->present);
+            break;
+    }
+}
+

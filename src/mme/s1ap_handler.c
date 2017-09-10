@@ -5,11 +5,11 @@
 #include "mme_event.h"
 
 #include "s1ap_conv.h"
-#include "s1ap_build.h"
 #include "s1ap_path.h"
 #include "nas_path.h"
 #include "mme_gtp_path.h"
 
+#include "s1ap_build.h"
 #include "s1ap_handler.h"
 
 void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
@@ -250,15 +250,9 @@ void s1ap_handle_ue_capability_info_indication(
 void s1ap_handle_activate_default_bearer_accept(mme_bearer_t *bearer)
 {
     status_t rv;
-    mme_ue_t *mme_ue = NULL;
-    enb_ue_t *enb_ue = NULL;
     mme_bearer_t *dedicated_bearer = NULL;
 
     d_assert(bearer, return, "Null param");
-    mme_ue = bearer->mme_ue;
-    d_assert(mme_ue, return, "Null param");
-    enb_ue = mme_ue->enb_ue;
-    d_assert(enb_ue, return, "Null param");
 
     rv = mme_gtp_send_modify_bearer_request(bearer);
     d_assert(rv == CORE_OK, return,
@@ -268,7 +262,7 @@ void s1ap_handle_activate_default_bearer_accept(mme_bearer_t *bearer)
     while(dedicated_bearer)
     {
         rv = nas_send_activate_dedicated_bearer_context_request(
-                enb_ue, dedicated_bearer);
+                dedicated_bearer);
         d_assert(rv == CORE_OK, return,
                 "nas_send_activate_dedicated_bearer_context failed");
 
@@ -499,7 +493,6 @@ void s1ap_handle_ue_context_release_complete(
     enb_ue_remove(enb_ue);
 }
 
-/* FIXME : Where is a good location S1AP handler or EMM handler?*/
 void s1ap_handle_paging(mme_ue_t *mme_ue)
 {
     pkbuf_t *s1apbuf = NULL;

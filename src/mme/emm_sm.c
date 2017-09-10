@@ -60,6 +60,7 @@ void emm_state_detached(fsm_t *s, event_t *e)
             nas_message_t *message = (nas_message_t *)event_get_param4(e);
             d_assert(message, break, "Null param");
 
+#if 0 /* FIXME : Does it needed? */
             if (message->emm.h.security_header_type
                     == NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE)
             {
@@ -67,6 +68,7 @@ void emm_state_detached(fsm_t *s, event_t *e)
                         mme_ue, &message->emm.service_request);
                 break;
             }
+#endif
 
             switch(message->emm.h.message_type)
             {
@@ -76,12 +78,15 @@ void emm_state_detached(fsm_t *s, event_t *e)
                             mme_ue, &message->emm.attach_request);
                     break;
                 }
+
+#if 0 /* FIXME : Does it needed? */
                 case NAS_TRACKING_AREA_UPDATE_REQUEST:
                 {
                     emm_handle_tau_request(
                             mme_ue, &message->emm.tracking_area_update_request);
                     break;
                 }
+#endif
                 default:
                 {
                     d_warn("Unknown message type = %d", 
@@ -340,6 +345,22 @@ void emm_state_default_esm(fsm_t *s, event_t *e)
                     FSM_TRAN(s, &emm_state_attached);
                     break;
                 }
+                case NAS_TRACKING_AREA_UPDATE_COMPLETE:
+                {
+                    status_t rv;
+                    S1ap_Cause_t cause;
+                    enb_ue_t *enb_ue = mme_ue->enb_ue;
+
+                    d_assert(enb_ue, return, "Null param");
+
+                    cause.present = S1ap_Cause_PR_nas;
+                    cause.choice.nas = S1ap_CauseNas_normal_release;
+
+                    rv = s1ap_send_ue_context_release_commmand(enb_ue, &cause);
+                    d_assert(rv == CORE_OK, return, "s1ap send error");
+                    FSM_TRAN(s, &emm_state_attached);
+                    break;
+                }
                 case NAS_EMM_STATUS:
                 {
                     emm_handle_emm_status(mme_ue, &message->emm.emm_status);
@@ -423,21 +444,6 @@ void emm_state_attached(fsm_t *s, event_t *e)
                 {
                     emm_handle_tau_request(
                             mme_ue, &message->emm.tracking_area_update_request);
-                    break;
-                }
-                case NAS_TRACKING_AREA_UPDATE_COMPLETE:
-                {
-                    status_t rv;
-                    S1ap_Cause_t cause;
-                    enb_ue_t *enb_ue = mme_ue->enb_ue;
-
-                    d_assert(enb_ue, return, "Null param");
-
-                    cause.present = S1ap_Cause_PR_nas;
-                    cause.choice.nas = S1ap_CauseNas_normal_release;
-
-                    rv = s1ap_send_ue_context_release_commmand(enb_ue, &cause);
-                    d_assert(rv == CORE_OK, return, "s1ap send error");
                     break;
                 }
                 default:
