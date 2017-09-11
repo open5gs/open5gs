@@ -86,6 +86,11 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
                                     enb, message);
                             break;
                         }
+                        case S1ap_ProcedureCode_id_PathSwitchRequest:
+                        {
+                            s1ap_handle_path_switch_request(enb, message);
+                            break;
+                        }
                         default:
                         {
                             d_warn("Not implemented(choice:%d, proc:%d)",

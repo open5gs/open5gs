@@ -35,6 +35,10 @@ CORE_DECLARE(status_t) tests1ap_build_ue_context_release_complete(
         pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_service_request(
         pkbuf_t **pkbuf, int i);
+CORE_DECLARE(status_t) tests1ap_build_pdn_connectivity_request(
+        pkbuf_t **pkbuf, int i);
+CORE_DECLARE(status_t) tests1ap_build_pdn_disconnectivity_request(
+        pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_e_rab_setup_response(
         pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_e_rab_release_response(
@@ -45,9 +49,7 @@ CORE_DECLARE(status_t) tests1ap_build_activate_dedicated_bearer_accept(
         pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_deactivate_bearer_accept(
         pkbuf_t **pkbuf, int i);
-CORE_DECLARE(status_t) tests1ap_build_pdn_connectivity_request(
-        pkbuf_t **pkbuf, int i);
-CORE_DECLARE(status_t) tests1ap_build_pdn_disconnectivity_request(
+CORE_DECLARE(status_t) tests1ap_build_path_switch_request(
         pkbuf_t **pkbuf, int i);
 
 #ifdef __cplusplus

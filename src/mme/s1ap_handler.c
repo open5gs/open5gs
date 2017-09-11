@@ -31,7 +31,6 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
 
     s1ap_ENB_ID_to_uint32(&ies->global_ENB_ID.eNB_ID, &enb_id);
 
-
     /* Parse Supported TA */
     for (i = 0; i < ies->supportedTAs.list.count; i++)
     {
@@ -120,7 +119,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
         enb_ue->enb_ue_s1ap_id = ies->eNB_UE_S1AP_ID;
 
         /* Find MME_UE if s_tmsi included */
-        if (ies->presenceMask &S1AP_INITIALUEMESSAGE_IES_S_TMSI_PRESENT)
+        if (ies->presenceMask & S1AP_INITIALUEMESSAGE_IES_S_TMSI_PRESENT)
         {
             S1ap_S_TMSI_t *s_tmsi = &ies->s_tmsi;
             served_gummei_t *served_gummei = &mme_self()->served_gummei[0];
@@ -528,4 +527,126 @@ void s1ap_handle_paging(mme_ue_t *mme_ue)
         }
         enb = mme_enb_next(enb);
     }
+}
+
+void s1ap_handle_path_switch_request(
+        mme_enb_t *enb, s1ap_message_t *message)
+{
+    char buf[INET_ADDRSTRLEN];
+    int i;
+
+    enb_ue_t *enb_ue = NULL;
+    mme_ue_t *mme_ue = NULL;
+
+    S1ap_PathSwitchRequestIEs_t *ies = NULL;
+    S1ap_EUTRAN_CGI_t *eutran_cgi;
+	S1ap_PLMNidentity_t *pLMNidentity = NULL;
+	S1ap_CellIdentity_t	*cell_ID = NULL;
+    S1ap_TAI_t *tai;
+	S1ap_TAC_t *tAC = NULL;
+    S1ap_UESecurityCapabilities_t *ueSecurityCapabilities = NULL;
+	S1ap_EncryptionAlgorithms_t	*encryptionAlgorithms = NULL;
+	S1ap_IntegrityProtectionAlgorithms_t *integrityProtectionAlgorithms = NULL;
+    c_uint16_t eea = 0, eia = 0;
+
+    d_assert(enb, return, "Null param");
+
+    ies = &message->s1ap_PathSwitchRequestIEs;
+    d_assert(ies, return, "Null param");
+
+    eutran_cgi = &ies->eutran_cgi;
+    d_assert(eutran_cgi, return,);
+    pLMNidentity = &eutran_cgi->pLMNidentity;
+    d_assert(pLMNidentity && pLMNidentity->size == sizeof(plmn_id_t), return,);
+    cell_ID = &eutran_cgi->cell_ID;
+    d_assert(cell_ID, return,);
+
+    tai = &ies->tai;
+    d_assert(tai, return,);
+    pLMNidentity = &tai->pLMNidentity;
+    d_assert(pLMNidentity && pLMNidentity->size == sizeof(plmn_id_t), return,);
+    tAC = &tai->tAC;
+    d_assert(tAC && tAC->size == sizeof(c_uint16_t), return,);
+
+    ueSecurityCapabilities = &ies->ueSecurityCapabilities;
+    d_assert(ueSecurityCapabilities, return,);
+    encryptionAlgorithms =
+        &ueSecurityCapabilities->encryptionAlgorithms;
+    integrityProtectionAlgorithms =
+        &ueSecurityCapabilities->integrityProtectionAlgorithms;
+
+    enb_ue = enb_ue_find_by_mme_ue_s1ap_id(ies->sourceMME_UE_S1AP_ID);
+    if (!enb_ue)
+    {
+        S1ap_Cause_t cause;
+        d_error("Cannot find UE from sourceMME-UE-S1AP-ID[%d] and eNB[%s:%d]",
+                ies->sourceMME_UE_S1AP_ID,
+                INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+                enb->enb_id);
+
+        cause.present = S1ap_Cause_PR_radioNetwork;
+        cause.choice.radioNetwork = 
+            S1ap_CauseRadioNetwork_unknown_mme_ue_s1ap_id;
+        s1ap_send_path_switch_failure(enb, ies->eNB_UE_S1AP_ID,
+                ies->sourceMME_UE_S1AP_ID, &cause);
+        return;
+    }
+
+    mme_ue = enb_ue->mme_ue;
+    d_assert(mme_ue, return, "Null param");
+
+    enb_ue->enb_ue_s1ap_id = ies->eNB_UE_S1AP_ID;
+
+    memcpy(&enb_ue->tai.plmn_id, pLMNidentity->buf, 
+            sizeof(enb_ue->tai.plmn_id));
+    memcpy(&enb_ue->tai.tac, tAC->buf, sizeof(enb_ue->tai.tac));
+    enb_ue->tai.tac = ntohs(enb_ue->tai.tac);
+    memcpy(&enb_ue->e_cgi.plmn_id, pLMNidentity->buf, 
+            sizeof(enb_ue->e_cgi.plmn_id));
+    memcpy(&enb_ue->e_cgi.cell_id, cell_ID->buf, sizeof(enb_ue->e_cgi.cell_id));
+    enb_ue->e_cgi.cell_id = (ntohl(enb_ue->e_cgi.cell_id) >> 4);
+
+    memcpy(&eea, encryptionAlgorithms->buf, sizeof(eea));
+    eea = ntohs(eea);
+    if (eea == 0)
+        mme_ue->ue_network_capability.eea0 = 1;
+    else
+        mme_ue->ue_network_capability.eea0 = eea >> 9;
+
+    memcpy(&eia, integrityProtectionAlgorithms->buf, sizeof(eia));
+    eia = ntohs(eia);
+    if (eea == 0)
+        mme_ue->ue_network_capability.eia0 = 1;
+    else
+        mme_ue->ue_network_capability.eia0 = eia >> 9;
+
+    for (i = 0; i < ies->e_RABToBeSwitchedDLList.
+            s1ap_E_RABToBeSwitchedDLItem.count; i++)
+    {
+        mme_bearer_t *bearer = NULL;
+        S1ap_E_RABToBeSwitchedDLItem_t *e_rab = NULL;
+
+        e_rab = (S1ap_E_RABToBeSwitchedDLItem_t *)ies->e_RABToBeSwitchedDLList.
+            s1ap_E_RABToBeSwitchedDLItem.array[i];
+        d_assert(e_rab, return, "Null param");
+
+        bearer = mme_bearer_find_by_ue_ebi(mme_ue, e_rab->e_RAB_ID);
+        d_assert(bearer, return, "Null param");
+
+        memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf, 
+                sizeof(bearer->enb_s1u_teid));
+        bearer->enb_s1u_teid = ntohl(bearer->enb_s1u_teid);
+        memcpy(&bearer->enb_s1u_addr, e_rab->transportLayerAddress.buf,
+                sizeof(bearer->enb_s1u_addr));
+    }
+
+    d_trace(3, "[S1AP] PathSwitchRequest : "
+            "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
+            enb_ue->enb_ue_s1ap_id,
+            INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+            enb->enb_id);
+
+#if 0
+    s1ap_send_path_switch_ack(mme_ue);
+#endif
 }

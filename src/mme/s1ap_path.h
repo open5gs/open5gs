@@ -25,6 +25,10 @@ CORE_DECLARE(status_t) s1ap_send_initial_context_setup_request(
 CORE_DECLARE(status_t) s1ap_send_ue_context_release_commmand(
         enb_ue_t *enb_ue, S1ap_Cause_t *cause);
 
+CORE_DECLARE(status_t) s1ap_send_path_switch_ack(mme_ue_t *mme_ue);
+CORE_DECLARE(status_t) s1ap_send_path_switch_failure(mme_enb_t *enb,
+    c_uint32_t enb_ue_s1ap_id, c_uint32_t mme_ue_s1ap_id, S1ap_Cause_t *cause);
+
 int _s1ap_recv_cb(net_sock_t *net_sock, void *data);
 
 #ifdef __cplusplus

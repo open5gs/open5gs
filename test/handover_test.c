@@ -74,10 +74,10 @@ static void handover_test1(abts_case *tc, void *data)
           "\"downlink\" : { \"$numberLong\" : \"35840\" },"
           "\"uplink\" : { \"$numberLong\" : \"15360\" } },"
         "\"qos\" : {"
-          "\"qci\" : 6,"
+          "\"qci\" : 7,"
           "\"arp\" : {"
-            "\"priority_level\" : 6,"
-            "\"pre_emption_vulnerability\" : 1,"
+            "\"priority_level\" : 1,"
+            "\"pre_emption_vulnerability\" : 0,"
             "\"pre_emption_capability\" : 1 } },"
         "\"type\" : 0 }"
       "],"
@@ -96,6 +96,9 @@ static void handover_test1(abts_case *tc, void *data)
           "\"rand\" : \"0a303a1e 63603f61 404c1241 30320f39\" }, "
       "\"__v\" : 0"
     "}";
+
+    mme_self()->mme_ue_s1ap_id = 16777689;
+    mme_self()->m_tmsi = 0x0400031f;
 
     /* Two eNB connects to MME */
     sock1 = tests1ap_enb_connect();
@@ -246,6 +249,16 @@ static void handover_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock1, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    core_sleep(time_from_msec(300));
+
+    /* Send Path Switch Request */
+    rv = tests1ap_build_path_switch_request(&sendbuf, 0);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock2, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    core_sleep(time_from_msec(300));
 
     /********** Remove Subscriber in Database */
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456801"));

@@ -599,6 +599,81 @@ status_t s1ap_build_paging(pkbuf_t **s1apbuf, mme_ue_t *mme_ue)
     return CORE_OK;
 }
 
+status_t s1ap_build_path_switch_ack(pkbuf_t **s1apbuf, mme_ue_t *mme_ue)
+{
+    char buf[INET_ADDRSTRLEN];
+
+    int encoded;
+    s1ap_message_t message;
+    S1ap_PathSwitchRequestAcknowledgeIEs_t *ies = 
+        &message.s1ap_PathSwitchRequestAcknowledgeIEs;
+    enb_ue_t *enb_ue = NULL;
+
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    enb_ue = mme_ue->enb_ue;
+    d_assert(enb_ue, return CORE_ERROR, "Null param");
+
+    memset(&message, 0, sizeof(s1ap_message_t));
+
+    ies->mme_ue_s1ap_id = enb_ue->mme_ue_s1ap_id;
+    ies->eNB_UE_S1AP_ID = enb_ue->enb_ue_s1ap_id;
+
+    ies->securityContext.nextHopChainingCount = 0;
+    ies->securityContext.nextHopParameter.size = SHA256_DIGEST_SIZE;
+    ies->securityContext.nextHopParameter.buf = 
+        core_calloc(ies->securityContext.nextHopParameter.size,
+        sizeof(c_uint8_t));
+    ies->securityContext.nextHopParameter.bits_unused = 0;
+    memcpy(ies->securityContext.nextHopParameter.buf,
+            mme_ue->kenb, ies->securityContext.nextHopParameter.size);
+
+    message.procedureCode = S1ap_ProcedureCode_id_PathSwitchRequest;
+    message.direction = S1AP_PDU_PR_successfulOutcome;
+
+    encoded = s1ap_encode_pdu(s1apbuf, &message);
+    s1ap_free_pdu(&message);
+
+    d_assert(s1apbuf && encoded >= 0,return CORE_ERROR,);
+
+    d_trace(3, "[S1AP] Path Switch Ack : "
+            "UE[mME-UE-S1AP-ID(%d)] <-- eNB[%s:%d]\n",
+            enb_ue->mme_ue_s1ap_id,
+            INET_NTOP(&enb_ue->enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+            enb_ue->enb->enb_id);
+
+    return CORE_OK;
+}
+
+status_t s1ap_build_path_switch_failure(pkbuf_t **s1apbuf,
+    c_uint32_t enb_ue_s1ap_id, c_uint32_t mme_ue_s1ap_id, S1ap_Cause_t *cause)
+{
+    int encoded;
+    s1ap_message_t message;
+    S1ap_PathSwitchRequestFailureIEs_t *ies = 
+        &message.s1ap_PathSwitchRequestFailureIEs;
+
+    memset(&message, 0, sizeof(s1ap_message_t));
+
+    ies->mme_ue_s1ap_id = mme_ue_s1ap_id;
+    ies->eNB_UE_S1AP_ID = enb_ue_s1ap_id;
+
+    s1ap_build_cause(&ies->cause, cause);
+
+    message.procedureCode = S1ap_ProcedureCode_id_PathSwitchRequest;
+    message.direction = S1AP_PDU_PR_unsuccessfulOutcome;
+
+    encoded = s1ap_encode_pdu(s1apbuf, &message);
+    s1ap_free_pdu(&message);
+
+    d_assert(s1apbuf && encoded >= 0,return CORE_ERROR,);
+
+    d_trace(3, "[S1AP] PathSwitchFailure : "
+            "UE[eNB-UE-S1AP-ID(%d), mME-UE-S1AP-ID(%d)]",
+            enb_ue_s1ap_id, mme_ue_s1ap_id);
+
+    return CORE_OK;
+}
+
 static void s1ap_build_cause(S1ap_Cause_t *dst, S1ap_Cause_t *src)
 {
     d_assert(src, return, "Null param");

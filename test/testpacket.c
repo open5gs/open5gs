@@ -785,6 +785,100 @@ status_t tests1ap_build_service_request(pkbuf_t **pkbuf, int i)
     return CORE_OK;
 }
 
+status_t tests1ap_build_pdn_connectivity_request(
+        pkbuf_t **pkbuf, int i)
+{
+    char *payload[TESTS1AP_MAX_MESSAGE] = { 
+        "000d40680000"
+        "0500000005c08000 0107000800030001 00001a003b3a277c 81dab50a0205d011"
+        "281208696e746572 6e6574036e673204 6d6e6574271a8080 2110010000108106"
+        "0000000083060000 0000000d00000a00 006440080055f501 0019d01000434006"
+        "0055f5011022",
+        "000d40680000"
+        "0500000005c08000 0107000800030001 00001a003b3a2710 3fdafa0a0209d011"
+        "281208706e746572 6e6574036e673204 6d6e6574271a8080 2110010000108106"
+        "0000000083060000 0000000d00000a00 006440080055f501 0019d01000434006"
+        "0055f5011022",
+        "",
+
+        "",
+        "",
+        "",
+
+        "",
+        "",
+        "",
+
+    };
+    c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
+        108,
+        108,
+        0,
+
+        0,
+        0,
+        0,
+
+        0,
+        0,
+        0,
+    };
+    char hexbuf[MAX_SDU_LEN];
+    
+    *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    if (!(*pkbuf)) return CORE_ERROR;
+
+    (*pkbuf)->len = len[i];
+    memcpy((*pkbuf)->payload, CORE_HEX(payload[i], strlen(payload[i]), hexbuf),
+            (*pkbuf)->len);
+
+    return CORE_OK;
+}
+
+status_t tests1ap_build_pdn_disconnectivity_request(
+        pkbuf_t **pkbuf, int i)
+{
+    char *payload[TESTS1AP_MAX_MESSAGE] = { 
+        "000d40380000"
+        "0500000005c08000 0108000800030001 00001a000b0a2732 423c53040206d206"
+        "006440080055f501 0019d01000434006 0055f5011022",
+        "",
+        "",
+
+        "",
+        "",
+        "",
+
+        "",
+        "",
+        "",
+
+    };
+    c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
+        60,
+        0,
+        0,
+
+        0,
+        0,
+        0,
+
+        0,
+        0,
+        0,
+    };
+    char hexbuf[MAX_SDU_LEN];
+    
+    *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    if (!(*pkbuf)) return CORE_ERROR;
+
+    (*pkbuf)->len = len[i];
+    memcpy((*pkbuf)->payload, CORE_HEX(payload[i], strlen(payload[i]), hexbuf),
+            (*pkbuf)->len);
+
+    return CORE_OK;
+}
+
 status_t tests1ap_build_e_rab_setup_response(pkbuf_t **pkbuf, int i)
 {
     char *payload[TESTS1AP_MAX_MESSAGE] = { 
@@ -1013,63 +1107,14 @@ status_t tests1ap_build_deactivate_bearer_accept(
     return CORE_OK;
 }
 
-status_t tests1ap_build_pdn_connectivity_request(
+status_t tests1ap_build_path_switch_request(
         pkbuf_t **pkbuf, int i)
 {
     char *payload[TESTS1AP_MAX_MESSAGE] = { 
-        "000d40680000"
-        "0500000005c08000 0107000800030001 00001a003b3a277c 81dab50a0205d011"
-        "281208696e746572 6e6574036e673204 6d6e6574271a8080 2110010000108106"
-        "0000000083060000 0000000d00000a00 006440080055f501 0019d01000434006"
-        "0055f5011022",
-        "000d40680000"
-        "0500000005c08000 0107000800030001 00001a003b3a2710 3fdafa0a0209d011"
-        "281208706e746572 6e6574036e673204 6d6e6574271a8080 2110010000108106"
-        "0000000083060000 0000000d00000a00 006440080055f501 0019d01000434006"
-        "0055f5011022",
-        "",
-
-        "",
-        "",
-        "",
-
-        "",
-        "",
-        "",
-
-    };
-    c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
-        108,
-        108,
-        0,
-
-        0,
-        0,
-        0,
-
-        0,
-        0,
-        0,
-    };
-    char hexbuf[MAX_SDU_LEN];
-    
-    *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    if (!(*pkbuf)) return CORE_ERROR;
-
-    (*pkbuf)->len = len[i];
-    memcpy((*pkbuf)->payload, CORE_HEX(payload[i], strlen(payload[i]), hexbuf),
-            (*pkbuf)->len);
-
-    return CORE_OK;
-}
-
-status_t tests1ap_build_pdn_disconnectivity_request(
-        pkbuf_t **pkbuf, int i)
-{
-    char *payload[TESTS1AP_MAX_MESSAGE] = { 
-        "000d40380000"
-        "0500000005c08000 0108000800030001 00001a000b0a2732 423c53040206d206"
-        "006440080055f501 0019d01000434006 0055f5011022",
+        "0003"
+        "005d000007000800 0200010016001d01 0017000a0a1f0a01 2db0010000080017"
+        "000a0c1f0a012db0 0100001000580005 c0010001da006440 080000f1103631d6"
+        "20004340060000f1 105ba0006b400518 000c0000009d4007 0000f110000201",
         "",
         "",
 
@@ -1083,7 +1128,7 @@ status_t tests1ap_build_pdn_disconnectivity_request(
 
     };
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
-        60,
+        97,
         0,
         0,
 
