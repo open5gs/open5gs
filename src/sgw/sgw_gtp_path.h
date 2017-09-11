@@ -10,6 +10,8 @@ extern "C" {
 CORE_DECLARE(status_t) sgw_gtp_open();
 CORE_DECLARE(status_t) sgw_gtp_close();
 
+CORE_DECLARE(status_t) sgw_gtp_send_end_marker(sgw_bearer_t *bearer);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

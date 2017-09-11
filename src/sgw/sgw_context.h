@@ -51,17 +51,17 @@ typedef struct _sgw_ue_t {
     lnode_t         node;   /* A node of list_t */
     index_t         index;  /* An index of this node */
 
-    /* UE identity */
-    c_uint8_t       imsi[MAX_IMSI_LEN];
-    int             imsi_len;
-    c_int8_t        imsi_bcd[MAX_IMSI_BCD_LEN+1];
-
     /* IMPORTANT! 
      * SGW-S11-F-TEID is same with an index */
     c_uint32_t      sgw_s11_teid;       
     c_uint32_t      sgw_s11_addr;       
     c_uint32_t      mme_s11_teid;   /* MME-S11-F-TEID */
     c_uint32_t      mme_s11_addr;   /* MME-S11-F-TEID IPv4 Address */
+
+    /* UE identity */
+    c_uint8_t       imsi[MAX_IMSI_LEN];
+    int             imsi_len;
+    c_int8_t        imsi_bcd[MAX_IMSI_BCD_LEN+1];
 
 #define SGW_S1U_INACTIVE  0x0001
 #define SGW_DL_NOTI_SENT  0x0002
@@ -129,6 +129,9 @@ typedef struct _sgw_bearer_t {
     c_uint32_t      pgw_s5u_teid;  
     c_uint32_t      pgw_s5u_addr;
 
+    /* User-Lication-Info */
+    tai_t           tai;
+    e_cgi_t         e_cgi;
 
     /* Pkts which will be buffered in case of UE-IDLE */
     c_uint32_t      num_buffered_pkt;

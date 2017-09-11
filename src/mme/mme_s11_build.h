@@ -9,16 +9,23 @@ extern "C" {
 
 CORE_DECLARE(status_t) mme_s11_build_create_session_request(
         pkbuf_t **pkbuf, c_uint8_t type, mme_sess_t *sess);
-CORE_DECLARE(status_t) mme_s11_build_modify_bearer_request(
-        pkbuf_t **pkbuf, c_uint8_t type, mme_bearer_t *bearer);
+
+#define MME_S11_MODIFY_BEARER_REQUEST_ULI_PRESENT (1<<0)
+CORE_DECLARE(status_t) mme_s11_build_modify_bearer_request(pkbuf_t **pkbuf,
+        c_uint8_t type, mme_bearer_t *bearer, c_uint32_t presencemask);
+
 CORE_DECLARE(status_t) mme_s11_build_delete_session_request(
         pkbuf_t **pkbuf, c_uint8_t type, mme_sess_t *sess);
+
 CORE_DECLARE(status_t) mme_s11_build_create_bearer_response(
         pkbuf_t **pkbuf, c_uint8_t type, mme_bearer_t *bearer);
+
 CORE_DECLARE(status_t) mme_s11_build_release_access_bearers_request(
         pkbuf_t **pkbuf, c_uint8_t type);
+
 CORE_DECLARE(status_t) mme_s11_build_downlink_data_notification_ack(
         pkbuf_t **pkbuf, c_uint8_t type, mme_ue_t *mme_ue);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

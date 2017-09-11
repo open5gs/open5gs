@@ -18,6 +18,7 @@ void pgw_s5c_handle_create_session_request(
     gtp_bearer_qos_t bearer_qos;
     gtp_ambr_t *ambr = NULL;
     gtp_uli_t uli;
+    c_uint16_t decoded = 0;
 
     d_assert(xact, return, "Null param");
     d_assert(sess, return, "Null param");
@@ -78,9 +79,10 @@ void pgw_s5c_handle_create_session_request(
     bearer->sgw_s5u_teid = ntohl(sgw_s5u_teid->teid);
     bearer->sgw_s5u_addr = sgw_s5u_teid->ipv4_addr;
 
-    d_assert(gtp_parse_bearer_qos(&bearer_qos,
-        &req->bearer_contexts_to_be_created.bearer_level_qos) ==
-        req->bearer_contexts_to_be_created.bearer_level_qos.len, return,);
+    decoded = gtp_parse_bearer_qos(&bearer_qos,
+        &req->bearer_contexts_to_be_created.bearer_level_qos);
+    d_assert(req->bearer_contexts_to_be_created.bearer_level_qos.len ==
+            decoded, return,);
     sess->pdn.qos.qci = bearer_qos.qci;
     sess->pdn.qos.arp.priority_level = bearer_qos.priority_level;
     sess->pdn.qos.arp.pre_emption_capability =
@@ -97,8 +99,8 @@ void pgw_s5c_handle_create_session_request(
     }
     
     /* Set User Location Information */
-    d_assert(gtp_parse_uli(&uli, &req->user_location_information) ==
-        req->user_location_information.len, return,);
+    decoded = gtp_parse_uli(&uli, &req->user_location_information);
+    d_assert(req->user_location_information.len == decoded, return,);
     memcpy(&sess->tai.plmn_id, &uli.tai.plmn_id, sizeof(uli.tai.plmn_id));
     sess->tai.tac = uli.tai.tac;
     memcpy(&sess->e_cgi.plmn_id, &uli.e_cgi.plmn_id, sizeof(uli.e_cgi.plmn_id));

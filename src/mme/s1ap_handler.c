@@ -9,6 +9,7 @@
 #include "nas_path.h"
 #include "mme_gtp_path.h"
 
+#include "mme_s11_build.h"
 #include "s1ap_build.h"
 #include "s1ap_handler.h"
 
@@ -246,30 +247,6 @@ void s1ap_handle_ue_capability_info_indication(
             enb->enb_id);
 }
 
-void s1ap_handle_activate_default_bearer_accept(mme_bearer_t *bearer)
-{
-    status_t rv;
-    mme_bearer_t *dedicated_bearer = NULL;
-
-    d_assert(bearer, return, "Null param");
-
-    rv = mme_gtp_send_modify_bearer_request(bearer);
-    d_assert(rv == CORE_OK, return,
-            "mme_gtp_send_modify_bearer_request failed");
-
-    dedicated_bearer = mme_bearer_next(bearer);
-    while(dedicated_bearer)
-    {
-        rv = nas_send_activate_dedicated_bearer_context_request(
-                dedicated_bearer);
-        d_assert(rv == CORE_OK, return,
-                "nas_send_activate_dedicated_bearer_context failed");
-
-        dedicated_bearer = mme_bearer_next(dedicated_bearer);
-    }
-}
-
-
 void s1ap_handle_initial_context_setup_response(
         mme_enb_t *enb, s1ap_message_t *message)
 {
@@ -316,9 +293,13 @@ void s1ap_handle_initial_context_setup_response(
         if (FSM_CHECK(&bearer->sm, esm_state_active))
         {
             status_t rv;
-            rv = mme_gtp_send_modify_bearer_request(bearer);
-            d_assert(rv == CORE_OK, return,
-                    "mme_gtp_send_modify_bearer_request failed");
+            c_uint32_t presencemask = 0;
+
+            if (mme_ue->nas_eps.type == MME_UE_EPS_UPDATE_TYPE)
+                presencemask = MME_S11_MODIFY_BEARER_REQUEST_ULI_PRESENT;
+
+            rv = mme_gtp_send_modify_bearer_request(bearer, presencemask);
+            d_assert(rv == CORE_OK, return, "gtp send failed");
         }
     }
 }
@@ -376,15 +357,13 @@ void s1ap_handle_e_rab_setup_response(
 
             if (bearer->ebi == linked_bearer->ebi)
             {
-                rv = mme_gtp_send_modify_bearer_request(bearer);
-                d_assert(rv == CORE_OK, return,
-                        "mme_gtp_send_modify_bearer_request failed");
+                rv = mme_gtp_send_modify_bearer_request(bearer, 0);
+                d_assert(rv == CORE_OK, return, "gtp send failed");
             }
             else
             {
                 rv = mme_gtp_send_create_bearer_response(bearer);
-                d_assert(rv == CORE_OK, return,
-                        "mme_gtp_send_create_bearer_response failed");
+                d_assert(rv == CORE_OK, return, "gtp send failed");
             }
         }
     }
@@ -623,6 +602,8 @@ void s1ap_handle_path_switch_request(
     for (i = 0; i < ies->e_RABToBeSwitchedDLList.
             s1ap_E_RABToBeSwitchedDLItem.count; i++)
     {
+        status_t rv;
+
         mme_bearer_t *bearer = NULL;
         S1ap_E_RABToBeSwitchedDLItem_t *e_rab = NULL;
 
@@ -638,6 +619,10 @@ void s1ap_handle_path_switch_request(
         bearer->enb_s1u_teid = ntohl(bearer->enb_s1u_teid);
         memcpy(&bearer->enb_s1u_addr, e_rab->transportLayerAddress.buf,
                 sizeof(bearer->enb_s1u_addr));
+
+        rv = mme_gtp_send_modify_bearer_request(
+                bearer, MME_S11_MODIFY_BEARER_REQUEST_ULI_PRESENT);
+        d_assert(rv == CORE_OK, return, "gtp send failed");
     }
 
     d_trace(3, "[S1AP] PathSwitchRequest : "

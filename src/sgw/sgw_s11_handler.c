@@ -14,6 +14,7 @@ void sgw_s11_handle_create_session_request(gtp_xact_t *s11_xact,
         sgw_ue_t *sgw_ue, gtp_message_t *gtp_message)
 {
     status_t rv;
+    c_uint16_t decoded;
     gtp_create_session_request_t *req = NULL;
     pkbuf_t *pkbuf = NULL;
     gtp_f_teid_t *mme_s11_teid = NULL;
@@ -22,6 +23,7 @@ void sgw_s11_handle_create_session_request(gtp_xact_t *s11_xact,
     c_uint32_t addr;
     c_uint16_t port;
     gtp_f_teid_t sgw_s5c_teid, sgw_s5u_teid;
+    gtp_uli_t uli;
 
     gtp_xact_t *s5c_xact = NULL;
     sgw_sess_t *sess = NULL;
@@ -56,6 +58,11 @@ void sgw_s11_handle_create_session_request(gtp_xact_t *s11_xact,
     if (req->pgw_s5_s8_address_for_control_plane_or_pmip.presence == 0)
     {
         d_error("No PGW IP");
+        return;
+    }
+    if (req->user_location_information.presence == 0)
+    {
+        d_error("No User Location Inforamtion");
         return;
     }
 
@@ -121,6 +128,14 @@ void sgw_s11_handle_create_session_request(gtp_xact_t *s11_xact,
     req->bearer_contexts_to_be_created.s5_s8_u_sgw_f_teid.len = 
         GTP_F_TEID_IPV4_LEN;
 
+    /* Set User Location Information */
+    decoded = gtp_parse_uli(&uli, &req->user_location_information);
+    d_assert(req->user_location_information.len == decoded, return,);
+    memcpy(&bearer->tai.plmn_id, &uli.tai.plmn_id, sizeof(uli.tai.plmn_id));
+    bearer->tai.tac = uli.tai.tac;
+    memcpy(&bearer->e_cgi.plmn_id, &uli.e_cgi.plmn_id, sizeof(uli.e_cgi.plmn_id));
+    bearer->e_cgi.cell_id = uli.e_cgi.cell_id;
+
     gtp_message->h.type = GTP_CREATE_SESSION_REQUEST_TYPE;
     gtp_message->h.teid = sess->pgw_s5c_teid;
 
@@ -143,6 +158,7 @@ CORE_DECLARE(void) sgw_s11_handle_modify_bearer_request(gtp_xact_t *s11_xact,
     sgw_ue_t *sgw_ue, gtp_modify_bearer_request_t *req)
 {
     status_t rv;
+    c_uint16_t decoded;
     sgw_bearer_t *bearer = NULL;
     gtp_modify_bearer_response_t *rsp = NULL;
     pkbuf_t *pkbuf = NULL;
@@ -150,6 +166,7 @@ CORE_DECLARE(void) sgw_s11_handle_modify_bearer_request(gtp_xact_t *s11_xact,
     
     gtp_cause_t cause;
     gtp_f_teid_t *enb_s1u_teid = NULL;
+    gtp_uli_t uli;
 
     d_assert(s11_xact, return, "Null param");
     d_assert(sgw_ue, return, "Null param");
@@ -174,6 +191,23 @@ CORE_DECLARE(void) sgw_s11_handle_modify_bearer_request(gtp_xact_t *s11_xact,
     bearer = sgw_bearer_find_by_ue_ebi(sgw_ue, 
                 req->bearer_contexts_to_be_modified.eps_bearer_id.u8);
     d_assert(bearer, return, "No Bearer Context");
+
+    /* Set User Location Information */
+    if (req->user_location_information.presence == 1)
+    {
+        decoded = gtp_parse_uli(&uli, &req->user_location_information);
+        d_assert(req->user_location_information.len == decoded, return,);
+        memcpy(&bearer->tai.plmn_id, &uli.tai.plmn_id, sizeof(uli.tai.plmn_id));
+        bearer->tai.tac = uli.tai.tac;
+        memcpy(&bearer->e_cgi.plmn_id, &uli.e_cgi.plmn_id, sizeof(uli.e_cgi.plmn_id));
+        if (bearer->e_cgi.cell_id != uli.e_cgi.cell_id)
+        {
+            rv = sgw_gtp_send_end_marker(bearer);
+            d_assert(rv == CORE_OK, return, "gtp send failed");
+
+            bearer->e_cgi.cell_id = uli.e_cgi.cell_id;
+        }
+    }
 
     /* Data Plane(DL) : eNB-S1U */
     enb_s1u_teid = req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.data;
@@ -256,6 +290,7 @@ void sgw_s11_handle_create_bearer_response(gtp_xact_t *s11_xact,
     sgw_ue_t *sgw_ue, gtp_message_t *gtp_message)
 {
     status_t rv;
+    c_uint16_t decoded;
     pkbuf_t *pkbuf = NULL;
     gtp_xact_t *s5c_xact = NULL;
     sgw_sess_t *sess = NULL;
@@ -264,6 +299,7 @@ void sgw_s11_handle_create_bearer_response(gtp_xact_t *s11_xact,
 
     gtp_f_teid_t *sgw_s1u_teid = NULL, *enb_s1u_teid = NULL;
     gtp_f_teid_t sgw_s5u_teid, pgw_s5u_teid;
+    gtp_uli_t uli;
 
     d_assert(s11_xact, return, "Null param");
     d_assert(sgw_ue, return, "Null param");
@@ -294,6 +330,11 @@ void sgw_s11_handle_create_bearer_response(gtp_xact_t *s11_xact,
         d_error("No SGW TEID");
         return;
     }
+    if (req->user_location_information.presence == 0)
+    {
+        d_error("No User Location Inforamtion");
+        return;
+    }
 
     /* Correlate with SGW-S1U-TEID */
     sgw_s1u_teid = req->bearer_contexts.s4_u_sgsn_f_teid.data;
@@ -314,6 +355,13 @@ void sgw_s11_handle_create_bearer_response(gtp_xact_t *s11_xact,
     bearer->enb_s1u_teid = ntohl(enb_s1u_teid->teid);
     bearer->enb_s1u_addr = enb_s1u_teid->ipv4_addr;
     req->bearer_contexts.s1_u_enodeb_f_teid.presence = 0;
+
+    decoded = gtp_parse_uli(&uli, &req->user_location_information);
+    d_assert(req->user_location_information.len == decoded, return,);
+    memcpy(&bearer->tai.plmn_id, &uli.tai.plmn_id, sizeof(uli.tai.plmn_id));
+    bearer->tai.tac = uli.tai.tac;
+    memcpy(&bearer->e_cgi.plmn_id, &uli.e_cgi.plmn_id, sizeof(uli.e_cgi.plmn_id));
+    bearer->e_cgi.cell_id = uli.e_cgi.cell_id;
 
     /* Reset UE state */
     SGW_RESET_UE_STATE(sgw_ue, SGW_S1U_INACTIVE);

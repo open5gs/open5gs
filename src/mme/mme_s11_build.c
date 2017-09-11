@@ -8,6 +8,8 @@
 #include "types.h"
 #include "mme_context.h"
 
+#include "mme_s11_build.h"
+
 status_t mme_s11_build_create_session_request(
         pkbuf_t **pkbuf, c_uint8_t type, mme_sess_t *sess)
 {
@@ -158,14 +160,16 @@ status_t mme_s11_build_create_session_request(
     return CORE_OK;
 }
 
-status_t mme_s11_build_modify_bearer_request(
-        pkbuf_t **pkbuf, c_uint8_t type, mme_bearer_t *bearer)
+status_t mme_s11_build_modify_bearer_request(pkbuf_t **pkbuf,
+        c_uint8_t type, mme_bearer_t *bearer, c_uint32_t presencemask)
 {
     status_t rv;
     gtp_message_t gtp_message;
     gtp_modify_bearer_request_t *req = &gtp_message.modify_bearer_request;
 
     gtp_f_teid_t enb_s1u_teid;
+    gtp_uli_t uli;
+    char uli_buf[GTP_MAX_ULI_LEN];
 
     d_assert(bearer, return CORE_ERROR, "Null param");
 
@@ -186,6 +190,25 @@ status_t mme_s11_build_modify_bearer_request(
     req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.data = &enb_s1u_teid;
     req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.len = 
         GTP_F_TEID_IPV4_LEN;
+
+    if (presencemask & MME_S11_MODIFY_BEARER_REQUEST_ULI_PRESENT)
+    {
+        mme_ue_t *mme_ue = bearer->mme_ue;
+        d_assert(mme_ue, return CORE_ERROR, "Null param");
+        
+        memset(&uli, 0, sizeof(gtp_uli_t));
+        uli.flags.e_cgi = 1;
+        uli.flags.tai = 1;
+        memcpy(&uli.tai.plmn_id, &mme_ue->enb_ue->tai.plmn_id, 
+                sizeof(uli.tai.plmn_id));
+        uli.tai.tac = mme_ue->enb_ue->tai.tac;
+        memcpy(&uli.e_cgi.plmn_id, &mme_ue->enb_ue->e_cgi.plmn_id, 
+                sizeof(uli.e_cgi.plmn_id));
+        uli.e_cgi.cell_id = mme_ue->enb_ue->e_cgi.cell_id;
+        req->user_location_information.presence = 1;
+        gtp_build_uli(&req->user_location_information, &uli, 
+                uli_buf, GTP_MAX_ULI_LEN);
+    }
 
     gtp_message.h.type = type;
     rv = gtp_build_msg(pkbuf, &gtp_message);
@@ -251,10 +274,16 @@ status_t mme_s11_build_create_bearer_response(
     gtp_message_t gtp_message;
     gtp_create_bearer_response_t *rsp = &gtp_message.create_bearer_response;
 
+    mme_ue_t *mme_ue = NULL;
+
     gtp_cause_t cause;
     gtp_f_teid_t enb_s1u_teid, sgw_s1u_teid;
+    gtp_uli_t uli;
+    char uli_buf[GTP_MAX_ULI_LEN];
 
     d_assert(bearer, return CORE_ERROR, "Null param");
+    mme_ue = bearer->mme_ue;
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));
 
@@ -294,6 +323,19 @@ status_t mme_s11_build_create_bearer_response(
     rsp->bearer_contexts.cause.presence = 1;
     rsp->bearer_contexts.cause.len = sizeof(cause);
     rsp->bearer_contexts.cause.data = &cause;
+
+    memset(&uli, 0, sizeof(gtp_uli_t));
+    uli.flags.e_cgi = 1;
+    uli.flags.tai = 1;
+    memcpy(&uli.tai.plmn_id, &mme_ue->enb_ue->tai.plmn_id, 
+            sizeof(uli.tai.plmn_id));
+    uli.tai.tac = mme_ue->enb_ue->tai.tac;
+    memcpy(&uli.e_cgi.plmn_id, &mme_ue->enb_ue->e_cgi.plmn_id, 
+            sizeof(uli.e_cgi.plmn_id));
+    uli.e_cgi.cell_id = mme_ue->enb_ue->e_cgi.cell_id;
+    rsp->user_location_information.presence = 1;
+    gtp_build_uli(&rsp->user_location_information, &uli, 
+            uli_buf, GTP_MAX_ULI_LEN);
 
     /* TODO : UE Time Zone */
 

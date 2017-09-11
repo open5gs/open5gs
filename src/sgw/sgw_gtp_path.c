@@ -349,3 +349,38 @@ status_t sgw_gtp_close()
 
     return CORE_OK;
 }
+
+status_t sgw_gtp_send_end_marker(sgw_bearer_t *bearer)
+{
+    status_t rv;
+    pkbuf_t *pkbuf = NULL;
+    gtp_header_t *h = NULL;
+    gtp_node_t gnode;
+
+    d_assert(bearer, return CORE_ERROR,);
+
+    pkbuf = pkbuf_alloc(0, 100 /* enough for END_MARKER; use smaller buffer */);
+    d_assert(pkbuf, return CORE_ERROR,);
+    h = (gtp_header_t *)pkbuf->payload;
+
+    memset(h, 0, GTPV1U_HEADER_LEN);
+
+    /*
+     * Flags
+     * 0x20 - Version : GTP release 99 version (1)
+     * 0x10 - Protocol Type : GTP (1)
+     */
+    h->flags = 0x30;
+    h->type = GTPU_MSGTYPE_END_MARKER;
+    h->teid =  htonl(bearer->enb_s1u_teid);
+    
+    gnode.addr = bearer->enb_s1u_addr;
+    gnode.port = GTPV1_U_UDP_PORT;
+    gnode.sock = sgw_self()->s1u_sock;
+
+    rv = gtp_send(&gnode, pkbuf);
+    d_assert(rv == CORE_OK, , "gtp send failed");
+    pkbuf_free(pkbuf);
+
+    return rv;
+}
