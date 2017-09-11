@@ -204,7 +204,6 @@ void emm_state_authentication(fsm_t *s, event_t *e)
                 {
                     emm_handle_authentication_response(
                             mme_ue, &message->emm.authentication_response);
-                    FSM_TRAN(s, &emm_state_security_mode);
                     break;
                 }
                 case NAS_EMM_STATUS:
@@ -487,21 +486,7 @@ void emm_state_attached(fsm_t *s, event_t *e)
 
 void emm_state_exception(fsm_t *s, event_t *e)
 {
-    mme_ue_t *mme_ue = NULL;
-    mme_sess_t *sess = NULL;
-    mme_bearer_t *bearer = NULL;
-
-    d_assert(s, return, "Null param");
-    d_assert(e, return, "Null param");
-
     mme_sm_trace(3, e);
-
-    bearer = mme_bearer_find(event_get_param1(e));
-    d_assert(bearer, return, "Null param");
-    sess = bearer->sess;
-    d_assert(sess, return, "Null param");
-    mme_ue = sess->mme_ue;
-    d_assert(mme_ue, return, "Null param");
 
     switch (event_get(e))
     {

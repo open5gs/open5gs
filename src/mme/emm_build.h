@@ -17,6 +17,10 @@ CORE_DECLARE(status_t) emm_build_identity_request(
 CORE_DECLARE(status_t) emm_build_security_mode_command(
         pkbuf_t **emmbuf, mme_ue_t *mme_ue);
 
+CORE_DECLARE(status_t) emm_build_authentication_request(
+        pkbuf_t **emmbuf, e_utran_vector_t *e_utran_vector);
+CORE_DECLARE(status_t) emm_build_authentication_reject(pkbuf_t **emmbuf);
+
 CORE_DECLARE(status_t) emm_build_detach_accept(
         pkbuf_t **emmbuf, mme_ue_t *mme_ue);
 

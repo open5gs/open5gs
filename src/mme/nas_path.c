@@ -123,15 +123,55 @@ status_t nas_send_attach_reject(mme_ue_t *mme_ue,
     }
 
     rv = emm_build_attach_reject(&emmbuf, emm_cause, esmbuf);
-    d_assert(rv == CORE_OK && emmbuf, 
-            pkbuf_free(esmbuf); return CORE_ERROR, "emm build error");
-    d_assert(nas_send_to_downlink_nas_transport(mme_ue, emmbuf) == CORE_OK,,);
+    d_assert(rv == CORE_OK && emmbuf,
+            esmbuf ? pkbuf_free(esmbuf) : 1; return CORE_ERROR,
+            "emm build error");
+    rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
+    d_assert(rv == CORE_OK,
+            esmbuf ? pkbuf_free(esmbuf) : 1; return CORE_ERROR,
+            "nas send error");
 
     /* FIXME : delay is needed */
     cause.present = S1ap_Cause_PR_nas;
     cause.choice.nas = s1ap_cause_nas;;
     rv = s1ap_send_ue_context_release_commmand(enb_ue, &cause);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "s1ap send error");
+    d_assert(rv == CORE_OK,, "s1ap send error");
+
+    return rv;
+}
+
+status_t nas_send_authentication_request(
+        mme_ue_t *mme_ue, e_utran_vector_t *e_utran_vector)
+{
+    status_t rv;
+    pkbuf_t *emmbuf = NULL;
+
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    d_assert(e_utran_vector, return CORE_ERROR, "Null param");
+
+    rv = emm_build_authentication_request(&emmbuf, e_utran_vector);
+    d_assert(rv == CORE_OK && emmbuf, return CORE_ERROR,
+            "nas_build_detach_accept failed"); 
+
+    rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
+    d_assert(rv == CORE_OK,, "nas send failed");
+
+    return rv;
+}
+
+status_t nas_send_authentication_reject(mme_ue_t *mme_ue)
+{
+    status_t rv;
+    pkbuf_t *emmbuf = NULL;
+
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
+
+    rv = emm_build_authentication_reject(&emmbuf);
+    d_assert(rv == CORE_OK && emmbuf, return CORE_ERROR,
+            "nas_build_detach_accept failed"); 
+
+    rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
+    d_assert(rv == CORE_OK,, "nas send failed");
 
     return CORE_OK;
 }

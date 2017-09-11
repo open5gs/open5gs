@@ -102,7 +102,8 @@ static void volte_test1(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, sock);
 
     /* Send S1-Setup Reqeust */
-    rv = tests1ap_build_setup_req(&sendbuf, 0x54f64);
+    rv = tests1ap_build_setup_req(
+            &sendbuf, S1ap_ENB_ID_PR_macroENB_ID, 0x54f64);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -412,7 +413,8 @@ static void volte_test2(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, sock);
 
     /* Send S1-Setup Reqeust */
-    rv = tests1ap_build_setup_req(&sendbuf, 0x54f64);
+    rv = tests1ap_build_setup_req(
+            &sendbuf, S1ap_ENB_ID_PR_macroENB_ID, 0x54f64);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);

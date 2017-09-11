@@ -11,6 +11,7 @@
 status_t emm_build_attach_accept(
         pkbuf_t **emmbuf, mme_ue_t *mme_ue, pkbuf_t *esmbuf)
 {
+    status_t rv;
     nas_message_t message;
     nas_attach_accept_t *attach_accept = &message.emm.attach_accept;
     nas_eps_attach_result_t *eps_attach_result = 
@@ -71,8 +72,8 @@ status_t emm_build_attach_accept(
     eps_network_feature_support->epc_lcs = 1;
     eps_network_feature_support->ims_vops = 1;
 
-    d_assert(nas_security_encode(emmbuf, mme_ue, &message) == CORE_OK && 
-            *emmbuf,,);
+    rv = nas_security_encode(emmbuf, mme_ue, &message);
+    d_assert(rv == CORE_OK && *emmbuf,, "nas_security_encode error");
     pkbuf_free(esmbuf);
 
     return CORE_OK;
@@ -81,6 +82,7 @@ status_t emm_build_attach_accept(
 status_t emm_build_attach_reject(
         pkbuf_t **emmbuf, nas_emm_cause_t emm_cause, pkbuf_t *esmbuf)
 {
+    status_t rv;
     nas_message_t message;
     nas_attach_reject_t *attach_reject = &message.emm.attach_reject;
 
@@ -98,19 +100,21 @@ status_t emm_build_attach_reject(
         attach_reject->esm_message_container.length = esmbuf->len;
     }
 
-    d_assert(nas_plain_encode(emmbuf, &message) == CORE_OK && *emmbuf,,);
+    rv = nas_plain_encode(emmbuf, &message);
+    d_assert(rv == CORE_OK && *emmbuf,, "nas_plain_encode error");
 
     if (esmbuf)
     {
         pkbuf_free(esmbuf);
     }
 
-    return CORE_OK;
+    return rv;
 }
 
 status_t emm_build_identity_request(
         pkbuf_t **emmbuf, mme_ue_t *mme_ue)
 {
+    status_t rv;
     nas_message_t message;
     nas_identity_request_t *identity_request = 
         &message.emm.identity_request;
@@ -124,9 +128,53 @@ status_t emm_build_identity_request(
     /* Request IMSI */
     identity_request->identity_type.type = NAS_IDENTITY_TYPE_2_IMSI;
 
-    d_assert(nas_plain_encode(emmbuf, &message) == CORE_OK && *emmbuf,,);
+    rv = nas_plain_encode(emmbuf, &message);
+    d_assert(rv == CORE_OK && *emmbuf,, "nas_plain_encode error");
 
-    return CORE_OK;
+    return rv;
+}
+
+status_t emm_build_authentication_request(
+        pkbuf_t **emmbuf, e_utran_vector_t *e_utran_vector)
+{
+    status_t rv;
+    nas_message_t message;
+    nas_authentication_request_t *authentication_request = 
+        &message.emm.authentication_request;
+
+    d_assert(e_utran_vector, return CORE_ERROR, "Null param");
+
+    memset(&message, 0, sizeof(message));
+    message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    message.emm.h.message_type = NAS_AUTHENTICATION_REQUEST;
+
+    memcpy(authentication_request->authentication_parameter_rand.rand,
+            e_utran_vector->rand, RAND_LEN);
+    memcpy(authentication_request->authentication_parameter_autn.autn,
+            e_utran_vector->autn, AUTN_LEN);
+    authentication_request->authentication_parameter_autn.length = 
+            AUTN_LEN;
+
+    rv = nas_plain_encode(emmbuf, &message);
+    d_assert(rv == CORE_OK && *emmbuf, , "nas encode error");
+
+    return rv;
+}
+
+status_t emm_build_authentication_reject(pkbuf_t **emmbuf)
+{
+    status_t rv;
+    nas_message_t message;
+
+    memset(&message, 0, sizeof(message));
+
+    message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    message.emm.h.message_type = NAS_AUTHENTICATION_REJECT;
+
+    rv = nas_plain_encode(emmbuf, &message);
+    d_assert(rv == CORE_OK && *emmbuf,, "nas_plain_encode error");
+
+    return rv;
 }
 
 status_t emm_build_security_mode_command(

@@ -122,7 +122,7 @@ static void s1ap_message_test5(abts_case *tc, void *data)
     pkbuf_t *pkbuf;
     int result;
 
-    rv = tests1ap_build_setup_req(&pkbuf, 0x54f64);
+    rv = tests1ap_build_setup_req(&pkbuf, S1ap_ENB_ID_PR_macroENB_ID, 0x54f64);
 
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     ABTS_PTR_NOTNULL(tc, pkbuf);

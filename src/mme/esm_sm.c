@@ -323,6 +323,8 @@ void esm_state_disconnect(fsm_t *s, event_t *e)
 
 void esm_state_session_exception(fsm_t *s, event_t *e)
 {
+    mme_sm_trace(3, e);
+
     switch (event_get(e))
     {
         case FSM_ENTRY_SIG:
@@ -343,6 +345,8 @@ void esm_state_session_exception(fsm_t *s, event_t *e)
 
 void esm_state_bearer_exception(fsm_t *s, event_t *e)
 {
+    mme_sm_trace(3, e);
+
     switch (event_get(e))
     {
         case FSM_ENTRY_SIG:

@@ -319,12 +319,18 @@ void emm_handle_authentication_response(mme_ue_t *mme_ue,
         memcmp(authentication_response_parameter->res,
             mme_ue->xres, mme_ue->xres_len) != 0)
     {
-        d_error("authentication failed");
-        return;
-    }
+        status_t rv;
 
-    d_trace(3, "[NAS] Authentication response : UE[%s] --> EMM\n", 
-            mme_ue->imsi_bcd);
+        d_error("authentication failed");
+
+        rv = nas_send_authentication_reject(mme_ue);
+        d_assert(rv == CORE_OK,, "nas send error");
+        FSM_TRAN(&mme_ue->sm, &emm_state_detached);
+    }
+    else
+    {
+        FSM_TRAN(&mme_ue->sm, &emm_state_security_mode);
+    }
 }
 
 void emm_handle_detach_request(
