@@ -38,11 +38,23 @@ void emm_handle_attach_request(
     d_assert(esm_message_container, return, "Null param");
     d_assert(esm_message_container->length, return, "Null param");
 
-    if (SECURITY_CONTEXT_IS_VALID(mme_ue))
-        mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, mme_ue->kenb);
-
+    /*
+     * ATTACH_REQUEST
+     *   Clear EBI generator
+     *   Clear Paging Timer and Message
+     *   Update KeNB
+     *
+     * TAU_REQUEST
+     *   Clear Paging Timer and Message
+     *
+     * SERVICE_REQUEST
+     *   Clear Paging Timer and Message
+     *   Update KeNB
+     */
     CLEAR_EPS_BEARER_ID(mme_ue);
     CLEAR_PAGING_INFO(mme_ue);
+    if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+        mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, mme_ue->kenb);
 
     /* Set EPS Attach Type */
     memcpy(&mme_ue->nas_eps.attach, eps_attach_type,
@@ -127,7 +139,6 @@ void emm_handle_attach_request(
 
     if (!MME_UE_HAVE_IMSI(mme_ue))
     {
-        /* Unknown GUTI */
         FSM_TRAN(&mme_ue->sm, &emm_state_identity);
     }
     else
@@ -373,24 +384,35 @@ void emm_handle_service_request(
 
     d_assert(mme_ue, return, "Null param");
 
+    /*
+     * ATTACH_REQUEST
+     *   Clear EBI generator
+     *   Clear Paging Timer and Message
+     *   Update KeNB
+     *
+     * TAU_REQUEST
+     *   Clear Paging Timer and Message
+     *
+     * SERVICE_REQUEST
+     *   Clear Paging Timer and Message
+     *   Update KeNB
+     */
+    CLEAR_PAGING_INFO(mme_ue);
+    if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+        mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, mme_ue->kenb);
+
+    /* Set EPS Update Type */
+    mme_ue->nas_eps.type = MME_UE_EPS_UPDATE_TYPE;
+
     if (!MME_UE_HAVE_IMSI(mme_ue))
     {
-        /* Unknown UE. Send Service_reject to force UE to attach
-         * 
-         * FIXME : how about FSM_TRAN(&mme_ue->sm, emm_state_identity);
-         */
-        nas_send_service_reject(mme_ue, 
-                EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+        FSM_TRAN(&mme_ue->sm, &emm_state_identity);
     }
     else
     {
-        CLEAR_PAGING_INFO(mme_ue);
-
-        /* Update Kenb */
         if (SECURITY_CONTEXT_IS_VALID(mme_ue))
         {
-            mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, mme_ue->kenb);
-
+            /* Send Initial Context Setup Request */
             rv = s1ap_send_initial_context_setup_request(mme_ue);
             d_assert(rv == CORE_OK, return, "s1ap send error");
         }
@@ -398,16 +420,17 @@ void emm_handle_service_request(
         {
             if (MME_HAVE_SGW_S11_PATH(mme_ue))
             {
-                rv = mme_gtp_send_delete_all_sessions(mme_ue);
-                d_assert(rv == CORE_OK, return,
-                    "mme_gtp_send_delete_all_sessions failed");
+                /* Re-authentication */
+                mme_s6a_send_air(mme_ue);
+                FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
             }
             else
             {
-                mme_s6a_send_air(mme_ue);
+                /* Send Service Reject */
+                nas_send_service_reject(mme_ue, 
+                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                FSM_TRAN(&mme_ue->sm, &emm_state_detached);
             }
-
-            FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
         }
     }
 }
@@ -435,9 +458,22 @@ void emm_handle_tau_request(
     enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return, "Null param");
 
+    /*
+     * ATTACH_REQUEST
+     *   Clear EBI generator
+     *   Clear Paging Timer and Message
+     *   Update KeNB
+     *
+     * TAU_REQUEST
+     *   Clear Paging Timer and Message
+     *
+     * SERVICE_REQUEST
+     *   Clear Paging Timer and Message
+     *   Update KeNB
+     */
     CLEAR_PAGING_INFO(mme_ue);
 
-    /* Set EPS Attach Type */
+    /* Set EPS Update Type */
     memcpy(&mme_ue->nas_eps.update, eps_update_type,
             sizeof(nas_eps_update_type_t));
     mme_ue->nas_eps.type = MME_UE_EPS_UPDATE_TYPE;
@@ -523,7 +559,7 @@ void emm_handle_tau_request(
     {
         if (SECURITY_CONTEXT_IS_VALID(mme_ue))
         {
-            /* Send TAU accept */
+            /* Send TAU Accept */
             rv = nas_send_tau_accept(mme_ue);
             d_assert(rv == CORE_OK, return, "nas_send_tau_accept failed");
         }
@@ -531,6 +567,7 @@ void emm_handle_tau_request(
         {
             if (MME_HAVE_SGW_S11_PATH(mme_ue))
             {
+                /* Re-authentication */
                 mme_s6a_send_air(mme_ue);
                 FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
             }

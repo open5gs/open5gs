@@ -362,7 +362,7 @@ status_t nas_send_service_reject(mme_ue_t *mme_ue, nas_emm_cause_t emm_cause)
     enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return CORE_ERROR, "Null param");
 
-    /* Build TAU reject */
+    /* Build Service Reject */
     if (emm_build_service_reject(&emmbuf, emm_cause, mme_ue) != CORE_OK)
     {
         d_error("emm_build_service_reject error");
