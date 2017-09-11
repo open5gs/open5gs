@@ -356,14 +356,10 @@ status_t s1ap_send_initial_context_setup_request(mme_ue_t *mme_ue)
 {
     status_t rv;
     pkbuf_t *s1apbuf = NULL;
-    mme_sess_t *sess = NULL;
 
     d_assert(mme_ue, return CORE_ERROR, "Null param");
 
-    sess = mme_sess_first(mme_ue);
-    d_assert(sess, return CORE_ERROR, "Null param");
-
-    rv = s1ap_build_initial_context_setup_request(&s1apbuf, sess, NULL);
+    rv = s1ap_build_initial_context_setup_request(&s1apbuf, mme_ue, NULL);
     d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
 
     rv = nas_send_to_enb(mme_ue, s1apbuf);

@@ -150,7 +150,7 @@ status_t s1ap_build_downlink_nas_transport(
 }
 
 status_t s1ap_build_initial_context_setup_request(
-            pkbuf_t **s1apbuf, mme_sess_t *sess, pkbuf_t *emmbuf)
+            pkbuf_t **s1apbuf, mme_ue_t *mme_ue, pkbuf_t *emmbuf)
 {
     char buf[INET_ADDRSTRLEN];
 
@@ -161,23 +161,16 @@ status_t s1ap_build_initial_context_setup_request(
     S1ap_E_RABToBeSetupItemCtxtSUReq_t *e_rab = NULL;
 	struct S1ap_GBR_QosInformation *gbrQosInformation = NULL; /* OPTIONAL */
     S1ap_NAS_PDU_t *nasPdu = NULL;
-    mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
+    mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
     s6a_subscription_data_t *subscription_data = NULL;
-    pdn_t *pdn = NULL;
 
-    d_assert(sess, return CORE_ERROR, "Null param");
-    bearer = mme_default_bearer_in_sess(sess);
-    d_assert(bearer, return CORE_ERROR, "Null param");
-    mme_ue = sess->mme_ue;
     d_assert(mme_ue, return CORE_ERROR, "Null param");
     enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return CORE_ERROR, "Null param");
     subscription_data = &mme_ue->subscription_data;
     d_assert(subscription_data, return CORE_ERROR, "Null param");
-    pdn = sess->pdn;
-    d_assert(pdn, return CORE_ERROR, "Null param");
 
     memset(&message, 0, sizeof(s1ap_message_t));
 
@@ -191,61 +184,76 @@ status_t s1ap_build_initial_context_setup_request(
             &ies->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateDL, 
             subscription_data->ambr.downlink);
 
-    e_rab = (S1ap_E_RABToBeSetupItemCtxtSUReq_t *)
-        core_calloc(1, sizeof(S1ap_E_RABToBeSetupItemCtxtSUReq_t));
-    e_rab->e_RAB_ID = bearer->ebi;
-    e_rab->e_RABlevelQoSParameters.qCI = pdn->qos.qci;
-
-    e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
-        priorityLevel = pdn->qos.arp.priority_level;
-    e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
-        pre_emptionCapability = !(pdn->qos.arp.pre_emption_capability);
-    e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
-        pre_emptionVulnerability = !(pdn->qos.arp.pre_emption_vulnerability);
-
-    if (pdn->qos.mbr.downlink || pdn->qos.mbr.uplink ||
-        pdn->qos.gbr.downlink || pdn->qos.gbr.uplink)
+    sess = mme_sess_first(mme_ue);
+    while(sess)
     {
-        if (pdn->qos.mbr.downlink == 0)
-            pdn->qos.mbr.downlink = MAX_BIT_RATE;
-        if (pdn->qos.mbr.uplink == 0)
-            pdn->qos.mbr.uplink = MAX_BIT_RATE;
-        if (pdn->qos.gbr.downlink == 0)
-            pdn->qos.gbr.downlink = MAX_BIT_RATE;
-        if (pdn->qos.gbr.uplink == 0)
-            pdn->qos.gbr.uplink = MAX_BIT_RATE;
+        bearer = mme_bearer_first(sess);
+        while(bearer)
+        {
+            e_rab = (S1ap_E_RABToBeSetupItemCtxtSUReq_t *)
+                core_calloc(1, sizeof(S1ap_E_RABToBeSetupItemCtxtSUReq_t));
+            e_rab->e_RAB_ID = bearer->ebi;
+            e_rab->e_RABlevelQoSParameters.qCI = bearer->qos.qci;
 
-        gbrQosInformation = 
-                core_calloc(1, sizeof(struct S1ap_GBR_QosInformation));
-        asn_uint642INTEGER(&gbrQosInformation->e_RAB_MaximumBitrateDL,
-                pdn->qos.mbr.downlink);
-        asn_uint642INTEGER(&gbrQosInformation->e_RAB_MaximumBitrateUL,
-                pdn->qos.mbr.uplink);
-        asn_uint642INTEGER(&gbrQosInformation->e_RAB_GuaranteedBitrateDL,
-                pdn->qos.gbr.downlink);
-        asn_uint642INTEGER(&gbrQosInformation->e_RAB_GuaranteedBitrateUL,
-                pdn->qos.gbr.uplink);
-        e_rab->e_RABlevelQoSParameters.gbrQosInformation = gbrQosInformation;
+            e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
+                priorityLevel = bearer->qos.arp.priority_level;
+            e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
+                pre_emptionCapability =
+                    !(bearer->qos.arp.pre_emption_capability);
+            e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
+                pre_emptionVulnerability =
+                    !(bearer->qos.arp.pre_emption_vulnerability);
+
+            if (bearer->qos.mbr.downlink || bearer->qos.mbr.uplink ||
+                bearer->qos.gbr.downlink || bearer->qos.gbr.uplink)
+            {
+                if (bearer->qos.mbr.downlink == 0)
+                    bearer->qos.mbr.downlink = MAX_BIT_RATE;
+                if (bearer->qos.mbr.uplink == 0)
+                    bearer->qos.mbr.uplink = MAX_BIT_RATE;
+                if (bearer->qos.gbr.downlink == 0)
+                    bearer->qos.gbr.downlink = MAX_BIT_RATE;
+                if (bearer->qos.gbr.uplink == 0)
+                    bearer->qos.gbr.uplink = MAX_BIT_RATE;
+
+                gbrQosInformation = 
+                        core_calloc(1, sizeof(struct S1ap_GBR_QosInformation));
+                asn_uint642INTEGER(&gbrQosInformation->e_RAB_MaximumBitrateDL,
+                        bearer->qos.mbr.downlink);
+                asn_uint642INTEGER(&gbrQosInformation->e_RAB_MaximumBitrateUL,
+                        bearer->qos.mbr.uplink);
+                asn_uint642INTEGER(&gbrQosInformation->
+                        e_RAB_GuaranteedBitrateDL, bearer->qos.gbr.downlink);
+                asn_uint642INTEGER(&gbrQosInformation->
+                        e_RAB_GuaranteedBitrateUL, bearer->qos.gbr.uplink);
+                e_rab->e_RABlevelQoSParameters.gbrQosInformation =
+                        gbrQosInformation;
+            }
+
+            e_rab->transportLayerAddress.size = 4;
+            e_rab->transportLayerAddress.buf = core_calloc(
+                    e_rab->transportLayerAddress.size, sizeof(c_uint8_t));
+            memcpy(e_rab->transportLayerAddress.buf, &bearer->sgw_s1u_addr,
+                    e_rab->transportLayerAddress.size);
+
+            s1ap_uint32_to_OCTET_STRING(bearer->sgw_s1u_teid, &e_rab->gTP_TEID);
+
+            if (emmbuf && emmbuf->len)
+            {
+                nasPdu = (S1ap_NAS_PDU_t *)core_calloc(
+                        1, sizeof(S1ap_NAS_PDU_t));
+                nasPdu->size = emmbuf->len;
+                nasPdu->buf = core_calloc(nasPdu->size, sizeof(c_uint8_t));
+                memcpy(nasPdu->buf, emmbuf->payload, nasPdu->size);
+                e_rab->nAS_PDU = nasPdu;
+            }
+
+            ASN_SEQUENCE_ADD(&ies->e_RABToBeSetupListCtxtSUReq, e_rab);
+
+            bearer = mme_bearer_next(bearer);
+        }
+        sess = mme_sess_next(sess);
     }
-
-    e_rab->transportLayerAddress.size = 4;
-    e_rab->transportLayerAddress.buf = 
-        core_calloc(e_rab->transportLayerAddress.size, sizeof(c_uint8_t));
-    memcpy(e_rab->transportLayerAddress.buf, &bearer->sgw_s1u_addr,
-            e_rab->transportLayerAddress.size);
-
-    s1ap_uint32_to_OCTET_STRING(bearer->sgw_s1u_teid, &e_rab->gTP_TEID);
-
-    if (emmbuf && emmbuf->len)
-    {
-        nasPdu = (S1ap_NAS_PDU_t *)core_calloc(1, sizeof(S1ap_NAS_PDU_t));
-        nasPdu->size = emmbuf->len;
-        nasPdu->buf = core_calloc(nasPdu->size, sizeof(c_uint8_t));
-        memcpy(nasPdu->buf, emmbuf->payload, nasPdu->size);
-        e_rab->nAS_PDU = nasPdu;
-    }
-
-    ASN_SEQUENCE_ADD(&ies->e_RABToBeSetupListCtxtSUReq, e_rab);
 
     ies->ueSecurityCapabilities.encryptionAlgorithms.size = 2;
     ies->ueSecurityCapabilities.encryptionAlgorithms.buf = 

@@ -63,22 +63,19 @@ void esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
         if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
         {
             rv = mme_gtp_send_create_session_request(sess);
-            d_assert(rv == CORE_OK, return,
-                    "mme_gtp_send_create_session_request failed");
+            d_assert(rv == CORE_OK, return, "gtp send failed");
         }
         else
         {
             if (MME_HAVE_SGW_S11_PATH(mme_ue))
             {
                 rv = nas_send_attach_accept(mme_ue);
-                d_assert(rv == CORE_OK, return,
-                        "nas_send_attach_accept failed");
+                d_assert(rv == CORE_OK, return, "nas send failed");
             }
             else
             {
                 rv = mme_gtp_send_create_session_request(sess);
-                d_assert(rv == CORE_OK, return,
-                        "mme_gtp_send_create_session_request failed");
+                d_assert(rv == CORE_OK, return, "gtp send failed");
             }
         }
     }

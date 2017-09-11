@@ -39,8 +39,7 @@ void emm_handle_attach_request(
     d_assert(esm_message_container->length, return, "Null param");
 
     if (SECURITY_CONTEXT_IS_VALID(mme_ue))
-        mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, 
-                mme_ue->kenb);
+        mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, mme_ue->kenb);
 
     CLEAR_EPS_BEARER_ID(mme_ue);
     CLEAR_PAGING_INFO(mme_ue);
@@ -144,8 +143,7 @@ void emm_handle_attach_request(
             if (MME_HAVE_SGW_S11_PATH(mme_ue))
             {
                 rv = mme_gtp_send_delete_all_sessions(mme_ue);
-                d_assert(rv == CORE_OK, return,
-                    "mme_gtp_send_delete_all_sessions failed");
+                d_assert(rv == CORE_OK, return, "gtp send failed");
             }
             else
             {
@@ -237,8 +235,7 @@ void emm_handle_identity_response(
         c_int8_t imsi_bcd[MAX_IMSI_BCD_LEN+1];
 
         nas_imsi_to_bcd(
-            &mobile_identity->imsi, mobile_identity->length,
-            imsi_bcd);
+            &mobile_identity->imsi, mobile_identity->length, imsi_bcd);
         mme_ue_set_imsi(mme_ue, imsi_bcd);
 
         d_assert(mme_ue->imsi_len, return,
@@ -264,8 +261,7 @@ void emm_handle_identity_response(
             if (MME_HAVE_SGW_S11_PATH(mme_ue))
             {
                 rv = mme_gtp_send_delete_all_sessions(mme_ue);
-                d_assert(rv == CORE_OK, return,
-                        "mme_gtp_send_delete_all_sessions failed");
+                d_assert(rv == CORE_OK, return, "gtp send failed");
             }
             else
             {

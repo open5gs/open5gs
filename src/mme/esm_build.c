@@ -105,6 +105,8 @@ status_t esm_build_activate_default_bearer_context_request(
     d_assert(pdn, return CORE_ERROR, "Null param");
     bearer = mme_default_bearer_in_sess(sess);
     d_assert(bearer, return CORE_ERROR, "Null param");
+    d_assert(mme_bearer_next(bearer) == NULL,
+            return CORE_ERROR, "there is dedicated bearer");
 
     memset(&message, 0, sizeof(message));
     if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
@@ -119,9 +121,11 @@ status_t esm_build_activate_default_bearer_context_request(
     message.esm.h.message_type = 
         NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST;
 
-    eps_qos_build(eps_qos, pdn->qos.qci,
-            pdn->qos.mbr.downlink, pdn->qos.mbr.uplink,
-            pdn->qos.gbr.downlink, pdn->qos.gbr.uplink);
+    memcpy(&bearer->qos, &pdn->qos, sizeof(qos_t));
+
+    eps_qos_build(eps_qos, bearer->qos.qci,
+            bearer->qos.mbr.downlink, bearer->qos.mbr.uplink,
+            bearer->qos.gbr.downlink, bearer->qos.gbr.uplink);
 
     access_point_name->length = strlen(pdn->apn);
     core_cpystrn(access_point_name->apn, pdn->apn,

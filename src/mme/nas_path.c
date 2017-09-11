@@ -68,25 +68,27 @@ status_t nas_send_attach_accept(mme_ue_t *mme_ue)
 {
     status_t rv;
     mme_sess_t *sess = NULL;
+    mme_bearer_t *bearer = NULL;
     pkbuf_t *esmbuf = NULL, *emmbuf = NULL, *s1apbuf = NULL;
 
     d_assert(mme_ue, return CORE_ERROR, "Null param");
     sess = mme_sess_first(mme_ue);
     d_assert(sess, return CORE_ERROR, "Null param");
+    d_assert(mme_sess_next(sess) == NULL,
+            return CORE_ERROR, "there is another session");
+    bearer = mme_default_bearer_in_sess(sess);
+    d_assert(bearer, return CORE_ERROR, "Null param");
+    d_assert(mme_bearer_next(bearer) == NULL,
+            return CORE_ERROR, "there is dedicated bearer");
 
     rv = esm_build_activate_default_bearer_context_request(&esmbuf, sess);
     d_assert(rv == CORE_OK && esmbuf, return CORE_ERROR, "esm build error");
-
-    d_trace(3, "[NAS] Activate default bearer context request : "
-            "EMM <-- ESM\n");
 
     rv = emm_build_attach_accept(&emmbuf, mme_ue, esmbuf);
     d_assert(rv == CORE_OK && emmbuf, 
             pkbuf_free(esmbuf); return CORE_ERROR, "emm build error");
 
-    d_trace(3, "[NAS] Attach accept : UE[%s] <-- EMM\n", mme_ue->imsi_bcd);
-
-    rv = s1ap_build_initial_context_setup_request(&s1apbuf, sess, emmbuf);
+    rv = s1ap_build_initial_context_setup_request(&s1apbuf, mme_ue, emmbuf);
     d_assert(rv == CORE_OK && s1apbuf, 
             pkbuf_free(emmbuf); return CORE_ERROR, "s1ap build error");
 
@@ -117,17 +119,13 @@ status_t nas_send_attach_reject(mme_ue_t *mme_ue,
     if (sess)
     {
         rv = esm_build_pdn_connectivity_reject(&esmbuf, sess, esm_cause);
-        d_assert(rv == CORE_OK && esmbuf, return CORE_ERROR,
-                "esm build error");
-        d_trace(3, "[NAS] PDN Connectivity reject : EMM <-- ESM\n",
-                sess->pti);
+        d_assert(rv == CORE_OK && esmbuf, return CORE_ERROR, "esm build error");
     }
 
     rv = emm_build_attach_reject(&emmbuf, emm_cause, esmbuf);
     d_assert(rv == CORE_OK && emmbuf, 
             pkbuf_free(esmbuf); return CORE_ERROR, "emm build error");
     d_assert(nas_send_to_downlink_nas_transport(mme_ue, emmbuf) == CORE_OK,,);
-    d_trace(3, "[NAS] Attach reject : UE[%s] <-- EMM\n", mme_ue->imsi_bcd);
 
     /* FIXME : delay is needed */
     cause.present = S1ap_Cause_PR_nas;
@@ -206,8 +204,6 @@ status_t nas_send_activate_default_bearer_context_request(mme_bearer_t *bearer)
 
     rv = esm_build_activate_default_bearer_context_request(&esmbuf, sess);
     d_assert(rv == CORE_OK && esmbuf, return CORE_ERROR, "esm build error");
-
-    d_trace(3, "[NAS] Activate default bearer context request : EMM <-- ESM\n");
 
     rv = s1ap_build_e_rab_setup_request(&s1apbuf, bearer, esmbuf);
     d_assert(rv == CORE_OK && s1apbuf, 
@@ -307,13 +303,10 @@ status_t nas_send_tau_accept(mme_ue_t *mme_ue)
     }
     else
     {
-        mme_sess_t *sess = mme_sess_first(mme_ue);
-        d_assert(sess, return CORE_ERROR, "Null param");
-
         rv = emm_build_tau_accept(&emmbuf, mme_ue);
         d_assert(rv == CORE_OK, return CORE_ERROR, "emm build error");
 
-        rv = s1ap_build_initial_context_setup_request(&s1apbuf, sess, emmbuf);
+        rv = s1ap_build_initial_context_setup_request(&s1apbuf, mme_ue, emmbuf);
         d_assert(rv == CORE_OK && s1apbuf, 
                 pkbuf_free(emmbuf); return CORE_ERROR, "s1ap build error");
 
