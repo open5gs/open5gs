@@ -123,8 +123,7 @@ status_t mme_gtp_send_create_session_request(mme_sess_t *sess)
 }
 
 
-status_t mme_gtp_send_modify_bearer_request(
-        mme_bearer_t *bearer, c_uint32_t presencemask)
+status_t mme_gtp_send_modify_bearer_request(mme_bearer_t *bearer)
 {
     status_t rv;
 
@@ -145,8 +144,7 @@ status_t mme_gtp_send_modify_bearer_request(
     h.type = GTP_MODIFY_BEARER_REQUEST_TYPE;
     h.teid = mme_ue->sgw_s11_teid;
 
-    rv = mme_s11_build_modify_bearer_request(
-            &pkbuf, h.type, bearer, presencemask);
+    rv = mme_s11_build_modify_bearer_request(&pkbuf, h.type, bearer);
     d_assert(rv == CORE_OK, return CORE_ERROR, "S11 build error");
 
     xact = gtp_xact_local_create(sess->sgw, &h, pkbuf);

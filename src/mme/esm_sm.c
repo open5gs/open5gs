@@ -79,9 +79,11 @@ void esm_state_inactive(fsm_t *s, event_t *e)
 
                     if (MME_HAVE_ENB_S1U_PATH(bearer))
                     {
-                        rv = mme_gtp_send_modify_bearer_request(bearer, 0);
-                        d_assert(rv == CORE_OK, return,
-                                "mme_gtp_send_modify_bearer_request failed");
+                        MODIFY_BEARER_TRANSACTION_BEGIN(
+                                mme_ue, MODIFY_BEARER_BY_EPS_ATTACH);
+
+                        rv = mme_gtp_send_modify_bearer_request(bearer);
+                        d_assert(rv == CORE_OK, return, "gtp send failed");
                     }
 
                     esm_handle_activate_default_bearer_accept(bearer);
@@ -97,8 +99,7 @@ void esm_state_inactive(fsm_t *s, event_t *e)
                     if (MME_HAVE_ENB_S1U_PATH(bearer))
                     {
                         rv = mme_gtp_send_create_bearer_response(bearer);
-                        d_assert(rv == CORE_OK, return,
-                                "mme_gtp_send_create_bearer_response failed");
+                        d_assert(rv == CORE_OK, return, "gtp send failed");
                     }
 
                     FSM_TRAN(s, esm_state_active);

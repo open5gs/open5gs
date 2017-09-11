@@ -160,18 +160,22 @@ status_t mme_s11_build_create_session_request(
     return CORE_OK;
 }
 
-status_t mme_s11_build_modify_bearer_request(pkbuf_t **pkbuf,
-        c_uint8_t type, mme_bearer_t *bearer, c_uint32_t presencemask)
+status_t mme_s11_build_modify_bearer_request(
+        pkbuf_t **pkbuf, c_uint8_t type, mme_bearer_t *bearer)
 {
     status_t rv;
     gtp_message_t gtp_message;
     gtp_modify_bearer_request_t *req = &gtp_message.modify_bearer_request;
+
+    mme_ue_t *mme_ue = NULL;
 
     gtp_f_teid_t enb_s1u_teid;
     gtp_uli_t uli;
     char uli_buf[GTP_MAX_ULI_LEN];
 
     d_assert(bearer, return CORE_ERROR, "Null param");
+    mme_ue = bearer->mme_ue;
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));
 
@@ -191,11 +195,9 @@ status_t mme_s11_build_modify_bearer_request(pkbuf_t **pkbuf,
     req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.len = 
         GTP_F_TEID_IPV4_LEN;
 
-    if (presencemask & MME_S11_MODIFY_BEARER_REQUEST_ULI_PRESENT)
+    if (mme_ue->modify_bearer.type == MODIFY_BEARER_BY_EPS_UPDATE ||
+        mme_ue->modify_bearer.type == MODIFY_BEARER_BY_PATH_SWITCH_REQUEST)
     {
-        mme_ue_t *mme_ue = bearer->mme_ue;
-        d_assert(mme_ue, return CORE_ERROR, "Null param");
-        
         memset(&uli, 0, sizeof(gtp_uli_t));
         uli.flags.e_cgi = 1;
         uli.flags.tai = 1;
@@ -213,6 +215,8 @@ status_t mme_s11_build_modify_bearer_request(pkbuf_t **pkbuf,
     gtp_message.h.type = type;
     rv = gtp_build_msg(pkbuf, &gtp_message);
     d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");
+
+    mme_ue->modify_bearer.counter.request++;
 
     return CORE_OK;
 }

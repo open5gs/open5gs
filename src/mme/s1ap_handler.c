@@ -253,6 +253,7 @@ void s1ap_handle_initial_context_setup_response(
     char buf[INET_ADDRSTRLEN];
     int i = 0;
 
+    mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
     S1ap_InitialContextSetupResponseIEs_t *ies = NULL;
 
@@ -261,6 +262,8 @@ void s1ap_handle_initial_context_setup_response(
 
     enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
     d_assert(enb_ue, return, "No UE Context[%d]", ies->eNB_UE_S1AP_ID);
+    mme_ue = enb_ue->mme_ue;
+    d_assert(mme_ue, return,);
 
     d_trace(3, "[S1AP] Initial Context Setup Response : "
             "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
@@ -268,12 +271,20 @@ void s1ap_handle_initial_context_setup_response(
             INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
             enb->enb_id);
 
+    if (mme_ue->nas_eps.type == MME_UE_EPS_ATTACH_TYPE)
+    {
+        MODIFY_BEARER_TRANSACTION_BEGIN(mme_ue, MODIFY_BEARER_BY_EPS_ATTACH);
+    }
+    else if (mme_ue->nas_eps.type == MME_UE_EPS_UPDATE_TYPE)
+    {
+        MODIFY_BEARER_TRANSACTION_BEGIN(mme_ue, MODIFY_BEARER_BY_EPS_UPDATE);
+    }
+
     for (i = 0; i < ies->e_RABSetupListCtxtSURes.
             s1ap_E_RABSetupItemCtxtSURes.count; i++)
     {
         mme_sess_t *sess = NULL;
         mme_bearer_t *bearer = NULL;
-        mme_ue_t *mme_ue = enb_ue->mme_ue;
         S1ap_E_RABSetupItemCtxtSURes_t *e_rab = NULL;
 
         e_rab = (S1ap_E_RABSetupItemCtxtSURes_t *)
@@ -293,12 +304,7 @@ void s1ap_handle_initial_context_setup_response(
         if (FSM_CHECK(&bearer->sm, esm_state_active))
         {
             status_t rv;
-            c_uint32_t presencemask = 0;
-
-            if (mme_ue->nas_eps.type == MME_UE_EPS_UPDATE_TYPE)
-                presencemask = MME_S11_MODIFY_BEARER_REQUEST_ULI_PRESENT;
-
-            rv = mme_gtp_send_modify_bearer_request(bearer, presencemask);
+            rv = mme_gtp_send_modify_bearer_request(bearer);
             d_assert(rv == CORE_OK, return, "gtp send failed");
         }
     }
@@ -312,6 +318,7 @@ void s1ap_handle_e_rab_setup_response(
 
     enb_ue_t *enb_ue = NULL;
     S1ap_E_RABSetupResponseIEs_t *ies = NULL;
+    mme_ue_t *mme_ue = NULL;
 
     d_assert(enb, return, "Null param");
     d_assert(message, return, "Null param");
@@ -321,6 +328,8 @@ void s1ap_handle_e_rab_setup_response(
 
     enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
     d_assert(enb_ue, return, "No UE Context[%d]", ies->eNB_UE_S1AP_ID);
+    mme_ue = enb_ue->mme_ue;
+    d_assert(mme_ue, return,);
 
     d_trace(3, "[S1AP] E-RAB Setup Response : "
             "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
@@ -328,11 +337,12 @@ void s1ap_handle_e_rab_setup_response(
             INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
             enb->enb_id);
 
+    MODIFY_BEARER_TRANSACTION_BEGIN(mme_ue, MODIFY_BEARER_BY_E_RAB_SETUP);
+
     for (i = 0; i < ies->e_RABSetupListBearerSURes.
             s1ap_E_RABSetupItemBearerSURes.count; i++)
     {
         mme_bearer_t *bearer = NULL;
-        mme_ue_t *mme_ue = enb_ue->mme_ue;
         S1ap_E_RABSetupItemBearerSURes_t *e_rab = NULL;
 
         e_rab = (S1ap_E_RABSetupItemBearerSURes_t *)ies->
@@ -357,7 +367,7 @@ void s1ap_handle_e_rab_setup_response(
 
             if (bearer->ebi == linked_bearer->ebi)
             {
-                rv = mme_gtp_send_modify_bearer_request(bearer, 0);
+                rv = mme_gtp_send_modify_bearer_request(bearer);
                 d_assert(rv == CORE_OK, return, "gtp send failed");
             }
             else
@@ -599,6 +609,9 @@ void s1ap_handle_path_switch_request(
     else
         mme_ue->ue_network_capability.eia0 = eia >> 9;
 
+    MODIFY_BEARER_TRANSACTION_BEGIN(mme_ue,
+            MODIFY_BEARER_BY_PATH_SWITCH_REQUEST);
+
     for (i = 0; i < ies->e_RABToBeSwitchedDLList.
             s1ap_E_RABToBeSwitchedDLItem.count; i++)
     {
@@ -620,8 +633,7 @@ void s1ap_handle_path_switch_request(
         memcpy(&bearer->enb_s1u_addr, e_rab->transportLayerAddress.buf,
                 sizeof(bearer->enb_s1u_addr));
 
-        rv = mme_gtp_send_modify_bearer_request(
-                bearer, MME_S11_MODIFY_BEARER_REQUEST_ULI_PRESENT);
+        rv = mme_gtp_send_modify_bearer_request(bearer);
         d_assert(rv == CORE_OK, return, "gtp send failed");
     }
 

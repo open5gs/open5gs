@@ -262,6 +262,33 @@ struct _mme_ue_t {
 
     /* Detach Request */
     nas_detach_type_t detach_type;
+
+    /* Modify Bearer Request/Response */
+    struct {
+#define MODIFY_BEARER_BY_EPS_ATTACH 1
+#define MODIFY_BEARER_BY_EPS_UPDATE 2 
+#define MODIFY_BEARER_BY_E_RAB_SETUP 3
+#define MODIFY_BEARER_BY_PATH_SWITCH_REQUEST 4
+        c_uint8_t type;
+
+#define MODIFY_BEARER_TRANSACTION_BEGIN(__mME, __tYPE) \
+        do { \
+            d_assert((__mME), break,); \
+            d_assert(\
+                ((__mME)->modify_bearer.counter.request) == \
+                ((__mME)->modify_bearer.counter.response), break,); \
+            (__mME)->modify_bearer.type = (__tYPE); \
+        } while(0);
+
+#define MODIFY_BEARER_TRANSACTION_END(__mME) \
+        (__mME) && \
+        ((__mME)->modify_bearer.counter.request) == \
+        ((__mME)->modify_bearer.counter.response)
+        struct {
+            c_uint64_t request;
+            c_uint64_t response;
+        } counter;
+    } modify_bearer;
 };
 
 #define MME_HAVE_SGW_S1U_PATH(__sESS) \
