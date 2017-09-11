@@ -86,19 +86,20 @@ static int s1ap_decode_initiating(s1ap_message_t *message,
                     s1ap_xer__print2sp, message);
             break;
 
-        case S1ap_ProcedureCode_id_uplinkNASTransport: 
-            ret = s1ap_decode_s1ap_uplinknastransport_ies(
-                    &message->s1ap_UplinkNASTransport_IEs, 
-                    &initiating_p->value);
-            s1ap_decode_xer_print_message(s1ap_xer_print_s1ap_uplinknastransport, 
-                    s1ap_xer__print2sp, message);
-            break;
-
         case S1ap_ProcedureCode_id_initialUEMessage: 
             ret = s1ap_decode_s1ap_initialuemessage_ies(
                     &message->s1ap_InitialUEMessage_IEs, 
                     &initiating_p->value);
             s1ap_decode_xer_print_message(s1ap_xer_print_s1ap_initialuemessage,
+                    s1ap_xer__print2sp, message);
+            break;
+
+        case S1ap_ProcedureCode_id_uplinkNASTransport: 
+            ret = s1ap_decode_s1ap_uplinknastransport_ies(
+                    &message->s1ap_UplinkNASTransport_IEs, 
+                    &initiating_p->value);
+            s1ap_decode_xer_print_message(
+                    s1ap_xer_print_s1ap_uplinknastransport, 
                     s1ap_xer__print2sp, message);
             break;
 
@@ -113,8 +114,17 @@ static int s1ap_decode_initiating(s1ap_message_t *message,
 
         case S1ap_ProcedureCode_id_UEContextReleaseRequest: 
             ret = s1ap_decode_s1ap_uecontextreleaserequest_ies(
-                    &message->s1ap_UEContextReleaseRequest_IEs, &initiating_p->value);
-            s1ap_decode_xer_print_message(s1ap_xer_print_s1ap_uecontextreleaserequest,
+                    &message->s1ap_UEContextReleaseRequest_IEs,
+                    &initiating_p->value);
+            s1ap_decode_xer_print_message(
+                    s1ap_xer_print_s1ap_uecontextreleaserequest,
+                    s1ap_xer__print2sp, message);
+            break;
+
+        case S1ap_ProcedureCode_id_PathSwitchRequest:
+            ret = s1ap_decode_s1ap_pathswitchrequesties(
+                    &message->s1ap_PathSwitchRequestIEs, &initiating_p->value);
+            s1ap_decode_xer_print_message(s1ap_xer_print_s1ap_pathswitchrequest,
                     s1ap_xer__print2sp, message);
             break;
 

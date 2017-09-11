@@ -75,11 +75,6 @@ static inline int s1ap_free_initiating_message(s1ap_message_t *message)
                     &message->s1ap_E_RABReleaseCommandIEs);
             break;
 
-        case S1ap_ProcedureCode_id_NASNonDeliveryIndication: 
-            s1ap_free_s1ap_nasnondeliveryindication_ies(
-                    &message->s1ap_NASNonDeliveryIndication_IEs);
-            break;
-
         case S1ap_ProcedureCode_id_UEContextRelease:
             s1ap_free_s1ap_uecontextreleasecommand_ies(
                     &message->s1ap_UEContextReleaseCommand_IEs);
@@ -93,6 +88,16 @@ static inline int s1ap_free_initiating_message(s1ap_message_t *message)
         case S1ap_ProcedureCode_id_Paging:
             s1ap_free_s1ap_pagingies(
                     &message->s1ap_PagingIEs);
+            break;
+
+        case S1ap_ProcedureCode_id_PathSwitchRequest:
+            s1ap_free_s1ap_pathswitchrequesties(
+                    &message->s1ap_PathSwitchRequestIEs);
+            break;
+
+        case S1ap_ProcedureCode_id_NASNonDeliveryIndication: 
+            s1ap_free_s1ap_nasnondeliveryindication_ies(
+                    &message->s1ap_NASNonDeliveryIndication_IEs);
             break;
 
         default:
@@ -133,6 +138,11 @@ static inline int s1ap_free_successfull_outcome(s1ap_message_t *message)
                     &message->s1ap_UEContextReleaseComplete_IEs);
             break;
 
+        case S1ap_ProcedureCode_id_PathSwitchRequest:
+            s1ap_free_s1ap_pathswitchrequestacknowledgeies(
+                    &message->s1ap_PathSwitchRequestAcknowledgeIEs);
+            break;
+
         default:
             d_warn("Unknown procedure ID (%d) for successfull "
                     "outcome message\n", (int)message->procedureCode);
@@ -154,6 +164,11 @@ static inline int s1ap_free_unsuccessfull_outcome(s1ap_message_t *message)
         case S1ap_ProcedureCode_id_InitialContextSetup: 
             s1ap_free_s1ap_initialcontextsetupfailureies(
                 &message->s1ap_InitialContextSetupFailureIEs);
+            break;
+
+        case S1ap_ProcedureCode_id_PathSwitchRequest:
+            s1ap_free_s1ap_pathswitchrequestfailureies(
+                    &message->s1ap_PathSwitchRequestFailureIEs);
             break;
 
         default:
