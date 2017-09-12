@@ -618,14 +618,14 @@ status_t s1ap_build_path_switch_ack(pkbuf_t **s1apbuf, mme_ue_t *mme_ue)
     ies->mme_ue_s1ap_id = enb_ue->mme_ue_s1ap_id;
     ies->eNB_UE_S1AP_ID = enb_ue->enb_ue_s1ap_id;
 
-    ies->securityContext.nextHopChainingCount = 0;
+    ies->securityContext.nextHopChainingCount = mme_ue->nhcc;
     ies->securityContext.nextHopParameter.size = SHA256_DIGEST_SIZE;
     ies->securityContext.nextHopParameter.buf = 
         core_calloc(ies->securityContext.nextHopParameter.size,
         sizeof(c_uint8_t));
     ies->securityContext.nextHopParameter.bits_unused = 0;
     memcpy(ies->securityContext.nextHopParameter.buf,
-            mme_ue->kenb, ies->securityContext.nextHopParameter.size);
+            mme_ue->nh, ies->securityContext.nextHopParameter.size);
 
     message.procedureCode = S1ap_ProcedureCode_id_PathSwitchRequest;
     message.direction = S1AP_PDU_PR_successfulOutcome;

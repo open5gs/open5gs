@@ -36,3 +36,17 @@ void mme_kdf_enb(c_uint8_t *kasme, c_uint32_t ul_count, c_uint8_t *kenb)
 
     hmac_sha256(kasme, 32, s, 7, kenb, 32);
 }
+
+void mme_kdf_nh(c_uint8_t *kasme, c_uint8_t *sync_input, c_uint8_t *kenb)
+{
+    c_uint8_t s[35];
+
+    s[0] = 0x12; /* FC Value */
+
+    memcpy(s+1, sync_input, 32);
+
+    s[33] = 0x00;
+    s[34] = 0x20;
+
+    hmac_sha256(kasme, 32, s, 35, kenb, 32);
+}

@@ -276,8 +276,12 @@ void emm_state_security_mode(fsm_t *s, event_t *e)
 
                     /* Update Kenb */
                     if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+                    {
                         mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, 
                                 mme_ue->kenb);
+                        mme_kdf_nh(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
+                        mme_ue->nhcc = 1;
+                    }
 
                     mme_s6a_send_ulr(mme_ue);
                     FSM_TRAN(s, &emm_state_default_esm);

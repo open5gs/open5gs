@@ -4,6 +4,7 @@
 
 #include "mme_event.h"
 
+#include "mme_kdf.h"
 #include "s1ap_conv.h"
 #include "s1ap_path.h"
 #include "nas_path.h"
@@ -609,6 +610,13 @@ void s1ap_handle_path_switch_request(
     else
         mme_ue->ue_network_capability.eia0 = eia >> 9;
 
+    {
+        c_uint8_t new_nh[SHA256_DIGEST_SIZE];
+        mme_ue->nhcc++;
+        mme_kdf_nh(mme_ue->kasme, mme_ue->nh, new_nh);
+        memcpy(mme_ue->nh, new_nh, SHA256_DIGEST_SIZE);
+    }
+
     MODIFY_BEARER_TRANSACTION_BEGIN(mme_ue,
             MODIFY_BEARER_BY_PATH_SWITCH_REQUEST);
 
@@ -642,8 +650,4 @@ void s1ap_handle_path_switch_request(
             enb_ue->enb_ue_s1ap_id,
             INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
             enb->enb_id);
-
-#if 0
-    s1ap_send_path_switch_ack(mme_ue);
-#endif
 }

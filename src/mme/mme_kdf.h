@@ -19,7 +19,10 @@
 CORE_DECLARE(void) mme_kdf_nas(c_uint8_t algorithm_type_distinguishers,
     c_uint8_t algorithm_identity, c_uint8_t *kasme, c_uint8_t *knas);
 
-CORE_DECLARE(void) mme_kdf_enb(c_uint8_t *kasme, c_uint32_t ul_count, 
-        c_uint8_t *kenb);
+CORE_DECLARE(void) mme_kdf_enb(
+        c_uint8_t *kasme, c_uint32_t ul_count, c_uint8_t *kenb);
+
+CORE_DECLARE(void) mme_kdf_nh(
+        c_uint8_t *kasme, c_uint8_t *sync_input, c_uint8_t *kenb);
 
 #endif /* __MME_KDF_H__ */

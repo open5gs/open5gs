@@ -54,7 +54,11 @@ void emm_handle_attach_request(
     CLEAR_EPS_BEARER_ID(mme_ue);
     CLEAR_PAGING_INFO(mme_ue);
     if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+    {
         mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, mme_ue->kenb);
+        mme_kdf_nh(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
+        mme_ue->nhcc = 1;
+    }
 
     /* Set EPS Attach Type */
     memcpy(&mme_ue->nas_eps.attach, eps_attach_type,
@@ -405,7 +409,11 @@ void emm_handle_service_request(
      */
     CLEAR_PAGING_INFO(mme_ue);
     if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+    {
         mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, mme_ue->kenb);
+        mme_kdf_nh(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
+        mme_ue->nhcc = 1;
+    }
 
     /* Set EPS Update Type */
     mme_ue->nas_eps.type = MME_UE_EPS_UPDATE_TYPE;

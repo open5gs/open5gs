@@ -194,7 +194,6 @@ struct _mme_ue_t {
     c_uint8_t       kasme[SHA256_DIGEST_SIZE];
     c_uint8_t       knas_int[SHA256_DIGEST_SIZE/2]; 
     c_uint8_t       knas_enc[SHA256_DIGEST_SIZE/2];
-    c_uint8_t       kenb[SHA256_DIGEST_SIZE];
     c_uint32_t      dl_count;
     union {
         struct {
@@ -204,6 +203,13 @@ struct _mme_ue_t {
         } __attribute__ ((packed));
         c_uint32_t i32;
     } ul_count;
+    c_uint8_t       kenb[SHA256_DIGEST_SIZE];
+
+    struct {
+    ED2(c_uint8_t nhcc_spare:5;,
+        c_uint8_t nhcc:3;) /* Next Hop Channing Counter */
+    };
+    c_uint8_t       nh[SHA256_DIGEST_SIZE]; /* NH Security Key */
 
     /* defined in 'nas_ies.h'
      * #define NAS_SECURITY_ALGORITHMS_EIA0        0

@@ -22,6 +22,12 @@ static void handover_test1(abts_case *tc, void *data)
     int i;
     int msgindex = 9;
 
+    c_uint8_t tmp[MAX_SDU_LEN];
+    char *_nh1 = "10"
+        "3715a966536b75b4 d46e99774dcdb344 5ce5e893fbbf28f4 9f58508c36f827cc";
+    char *_nh2 = "18"
+        "a29ed36339514717 481992f77f47a9af 934a7b763afcec39 edf5071461db6ae8";
+
     mongoc_collection_t *collection = NULL;
     bson_t *doc = NULL;
     c_int64_t count = 0;
@@ -262,6 +268,22 @@ static void handover_test1(abts_case *tc, void *data)
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rc = tests1ap_enb_read(sock1, recvbuf);
     ABTS_INT_NEQUAL(tc, 0, rc);
+    ABTS_TRUE(tc, memcmp(recvbuf->payload + 26,
+                CORE_HEX(_nh1, strlen(_nh1), tmp), 33) == 0);
+    pkbuf_free(recvbuf);
+
+    /* Send Path Switch Request */
+    rv = tests1ap_build_path_switch_request(&sendbuf, 1);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock2, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* Receive Path Switch Ack */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rc = tests1ap_enb_read(sock1, recvbuf);
+    ABTS_INT_NEQUAL(tc, 0, rc);
+    ABTS_TRUE(tc, memcmp(recvbuf->payload + 26,
+                CORE_HEX(_nh2, strlen(_nh2), tmp), 33) == 0);
     pkbuf_free(recvbuf);
 
     /********** Remove Subscriber in Database */
