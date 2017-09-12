@@ -128,6 +128,13 @@ static int s1ap_decode_initiating(s1ap_message_t *message,
                     s1ap_xer__print2sp, message);
             break;
 
+        case S1ap_ProcedureCode_id_HandoverPreparation:
+            ret = s1ap_decode_s1ap_handoverrequiredies(
+                    &message->s1ap_HandoverRequiredIEs, &initiating_p->value);
+            s1ap_decode_xer_print_message(s1ap_xer_print_s1ap_handoverrequired,
+                    s1ap_xer__print2sp, message);
+            break;
+
         case S1ap_ProcedureCode_id_NASNonDeliveryIndication: 
             ret = s1ap_decode_s1ap_nasnondeliveryindication_ies(
                     &message->s1ap_NASNonDeliveryIndication_IEs, 
@@ -196,6 +203,15 @@ static int s1ap_decode_successfull_outcome(s1ap_message_t *message,
                     s1ap_xer__print2sp, message);
             break;
 
+        case S1ap_ProcedureCode_id_HandoverResourceAllocation: 
+            ret = s1ap_decode_s1ap_handoverrequestacknowledgeies(
+                    &message->s1ap_HandoverRequestAcknowledgeIEs, 
+                    &successfullOutcome_p->value);
+            s1ap_decode_xer_print_message(
+                    s1ap_xer_print_s1ap_handoverrequestacknowledge,
+                    s1ap_xer__print2sp, message);
+            break;
+
         default: 
             d_error("Unknown procedure ID (%ld) for successfull "
                     "outcome message", successfullOutcome_p->procedureCode);
@@ -231,6 +247,16 @@ static int s1ap_decode_unsuccessfull_outcome(s1ap_message_t *message,
                     s1ap_xer_print_s1ap_initialcontextsetupfailure,
                     s1ap_xer__print2sp, message);
             break;
+
+        case S1ap_ProcedureCode_id_HandoverResourceAllocation: 
+            ret = s1ap_decode_s1ap_handoverfailureies(
+                    &message->s1ap_HandoverFailureIEs, 
+                    &unSuccessfulOutcome_p->value);
+            s1ap_decode_xer_print_message(
+                    s1ap_xer_print_s1ap_handoverfailure,
+                    s1ap_xer__print2sp, message);
+            break;
+
         default: 
             d_error("Unknown procedure ID (%d) for "
                     "unsuccessfull outcome message", 

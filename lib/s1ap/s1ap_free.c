@@ -95,6 +95,16 @@ static inline int s1ap_free_initiating_message(s1ap_message_t *message)
                     &message->s1ap_PathSwitchRequestIEs);
             break;
 
+        case S1ap_ProcedureCode_id_HandoverPreparation:
+            s1ap_free_s1ap_handoverrequiredies(
+                    &message->s1ap_HandoverRequiredIEs);
+            break;
+
+        case S1ap_ProcedureCode_id_HandoverResourceAllocation:
+            s1ap_free_s1ap_handoverrequesties(
+                    &message->s1ap_HandoverRequestIEs);
+            break;
+
         case S1ap_ProcedureCode_id_NASNonDeliveryIndication: 
             s1ap_free_s1ap_nasnondeliveryindication_ies(
                     &message->s1ap_NASNonDeliveryIndication_IEs);
@@ -143,6 +153,16 @@ static inline int s1ap_free_successfull_outcome(s1ap_message_t *message)
                     &message->s1ap_PathSwitchRequestAcknowledgeIEs);
             break;
 
+        case S1ap_ProcedureCode_id_HandoverResourceAllocation: 
+            s1ap_free_s1ap_handoverrequestacknowledgeies(
+                    &message->s1ap_HandoverRequestAcknowledgeIEs);
+            break;
+
+        case S1ap_ProcedureCode_id_HandoverPreparation: 
+            s1ap_free_s1ap_handovercommandies(
+                    &message->s1ap_HandoverCommandIEs);
+            break;
+
         default:
             d_warn("Unknown procedure ID (%d) for successfull "
                     "outcome message\n", (int)message->procedureCode);
@@ -169,6 +189,16 @@ static inline int s1ap_free_unsuccessfull_outcome(s1ap_message_t *message)
         case S1ap_ProcedureCode_id_PathSwitchRequest:
             s1ap_free_s1ap_pathswitchrequestfailureies(
                     &message->s1ap_PathSwitchRequestFailureIEs);
+            break;
+
+        case S1ap_ProcedureCode_id_HandoverResourceAllocation: 
+            s1ap_free_s1ap_handoverfailureies(
+                    &message->s1ap_HandoverFailureIEs);
+            break;
+
+        case S1ap_ProcedureCode_id_HandoverPreparation: 
+            s1ap_free_s1ap_handoverpreparationfailureies(
+                    &message->s1ap_HandoverPreparationFailureIEs);
             break;
 
         default:
