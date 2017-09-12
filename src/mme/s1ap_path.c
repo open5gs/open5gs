@@ -7,6 +7,7 @@
 #include "nas_security.h"
 #include "nas_path.h"
 
+#include "s1ap_conv.h"
 #include "s1ap_build.h"
 #include "s1ap_path.h"
 
@@ -423,4 +424,54 @@ status_t s1ap_send_path_switch_failure(mme_enb_t *enb,
     
     return rv;
 }
+status_t s1ap_send_handover_request(
+        mme_ue_t *mme_ue, S1ap_HandoverRequiredIEs_t *ies)
+{
+    status_t rv;
+    pkbuf_t *s1apbuf = NULL;
+    S1ap_TargetID_t *targetID = NULL;
 
+    c_uint32_t enb_id;
+    mme_enb_t *enb = NULL;
+    enb_ue_t *enb_ue = NULL;
+
+    d_assert(mme_ue, return CORE_ERROR,);
+    d_assert(ies, return CORE_ERROR,);
+
+    targetID = &ies->targetID;
+    d_assert(targetID, return CORE_ERROR,);
+
+    switch(targetID->present)
+    {
+        case S1ap_TargetID_PR_targeteNB_ID:
+        {
+            s1ap_ENB_ID_to_uint32(
+                &targetID->choice.targeteNB_ID.global_S1ap_ENB_ID.eNB_ID,
+                &enb_id);
+            break;
+        }
+        default:
+        {
+            d_error("Not implemented(%d)", targetID->present);
+            return CORE_ERROR;
+        }
+    }
+
+    enb = mme_enb_find_by_enb_id(enb_id);
+    d_assert(enb, return CORE_ERROR,
+            "Cannot find target eNB = %d", enb_id);
+
+    enb_ue = enb_ue_add(enb);
+    d_assert(enb_ue, return CORE_ERROR,);
+
+    mme_partial_associate_ue_context(mme_ue, enb_ue);
+
+    rv = s1ap_build_handover_request(&s1apbuf, mme_ue, enb_ue, ies);
+    d_assert(rv == CORE_OK && s1apbuf,
+            enb_ue_remove(enb_ue); return CORE_ERROR, "s1ap build error");
+
+    rv = s1ap_send_to_enb(enb, s1apbuf);
+    d_assert(rv == CORE_OK, enb_ue_remove(enb_ue), "s1ap send error");
+
+    return rv;
+}

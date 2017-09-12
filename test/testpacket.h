@@ -51,6 +51,12 @@ CORE_DECLARE(status_t) tests1ap_build_deactivate_bearer_accept(
         pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_path_switch_request(
         pkbuf_t **pkbuf, int i);
+CORE_DECLARE(status_t) tests1ap_build_handover_required(pkbuf_t **pkbuf, int i);
+CORE_DECLARE(status_t) tests1ap_build_handover_request_ack(
+        pkbuf_t **pkbuf, int i);
+CORE_DECLARE(status_t) tests1ap_build_enb_status_transfer(
+        pkbuf_t **pkbuf, int i);
+CORE_DECLARE(status_t) tests1ap_build_handover_notify(pkbuf_t **pkbuf, int i);
 
 #ifdef __cplusplus
 }

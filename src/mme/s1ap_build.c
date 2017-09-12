@@ -261,7 +261,7 @@ status_t s1ap_build_initial_context_setup_request(
                     sizeof(c_uint8_t));
     ies->ueSecurityCapabilities.encryptionAlgorithms.bits_unused = 0;
     ies->ueSecurityCapabilities.encryptionAlgorithms.buf[0] = 
-        mme_ue->ue_network_capability.eea;
+        (mme_ue->ue_network_capability.eea << 1);
 
     ies->ueSecurityCapabilities.integrityProtectionAlgorithms.size = 2;
     ies->ueSecurityCapabilities.integrityProtectionAlgorithms.buf =
@@ -673,6 +673,150 @@ status_t s1ap_build_path_switch_failure(pkbuf_t **s1apbuf,
 
     return CORE_OK;
 }
+
+status_t s1ap_build_handover_request(
+        pkbuf_t **s1apbuf, mme_ue_t *mme_ue, enb_ue_t *enb_ue,
+        S1ap_HandoverRequiredIEs_t *required)
+{
+    char buf[INET_ADDRSTRLEN];
+
+    int encoded;
+    s1ap_message_t message;
+    S1ap_HandoverRequestIEs_t *ies = &message.s1ap_HandoverRequestIEs;
+    S1ap_E_RABToBeSetupItemHOReq_t *e_rab = NULL;
+	struct S1ap_GBR_QosInformation *gbrQosInformation = NULL; /* OPTIONAL */
+
+    mme_sess_t *sess = NULL;
+    mme_bearer_t *bearer = NULL;
+    s6a_subscription_data_t *subscription_data = NULL;
+
+    d_assert(enb_ue, return CORE_ERROR, "Null param");
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    d_assert(required, return CORE_ERROR, "Null param");
+    subscription_data = &mme_ue->subscription_data;
+    d_assert(subscription_data, return CORE_ERROR, "Null param");
+
+    memset(&message, 0, sizeof(s1ap_message_t));
+
+    ies->mme_ue_s1ap_id = enb_ue->mme_ue_s1ap_id;
+    ies->handoverType = required->handoverType;
+    s1ap_build_cause(&ies->cause, &required->cause);
+
+    asn_uint642INTEGER(
+            &ies->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateUL, 
+            subscription_data->ambr.uplink);
+    asn_uint642INTEGER(
+            &ies->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateDL, 
+            subscription_data->ambr.downlink);
+
+    sess = mme_sess_first(mme_ue);
+    while(sess)
+    {
+        bearer = mme_bearer_first(sess);
+        while(bearer)
+        {
+            e_rab = (S1ap_E_RABToBeSetupItemHOReq_t *)
+                core_calloc(1, sizeof(S1ap_E_RABToBeSetupItemHOReq_t));
+            e_rab->e_RAB_ID = bearer->ebi;
+            e_rab->e_RABlevelQosParameters.qCI = bearer->qos.qci;
+
+            e_rab->e_RABlevelQosParameters.allocationRetentionPriority.
+                priorityLevel = bearer->qos.arp.priority_level;
+            e_rab->e_RABlevelQosParameters.allocationRetentionPriority.
+                pre_emptionCapability =
+                    !(bearer->qos.arp.pre_emption_capability);
+            e_rab->e_RABlevelQosParameters.allocationRetentionPriority.
+                pre_emptionVulnerability =
+                    !(bearer->qos.arp.pre_emption_vulnerability);
+
+            if (bearer->qos.mbr.downlink || bearer->qos.mbr.uplink ||
+                bearer->qos.gbr.downlink || bearer->qos.gbr.uplink)
+            {
+                if (bearer->qos.mbr.downlink == 0)
+                    bearer->qos.mbr.downlink = MAX_BIT_RATE;
+                if (bearer->qos.mbr.uplink == 0)
+                    bearer->qos.mbr.uplink = MAX_BIT_RATE;
+                if (bearer->qos.gbr.downlink == 0)
+                    bearer->qos.gbr.downlink = MAX_BIT_RATE;
+                if (bearer->qos.gbr.uplink == 0)
+                    bearer->qos.gbr.uplink = MAX_BIT_RATE;
+
+                gbrQosInformation = 
+                        core_calloc(1, sizeof(struct S1ap_GBR_QosInformation));
+                asn_uint642INTEGER(&gbrQosInformation->e_RAB_MaximumBitrateDL,
+                        bearer->qos.mbr.downlink);
+                asn_uint642INTEGER(&gbrQosInformation->e_RAB_MaximumBitrateUL,
+                        bearer->qos.mbr.uplink);
+                asn_uint642INTEGER(&gbrQosInformation->
+                        e_RAB_GuaranteedBitrateDL, bearer->qos.gbr.downlink);
+                asn_uint642INTEGER(&gbrQosInformation->
+                        e_RAB_GuaranteedBitrateUL, bearer->qos.gbr.uplink);
+                e_rab->e_RABlevelQosParameters.gbrQosInformation =
+                        gbrQosInformation;
+            }
+
+            e_rab->transportLayerAddress.size = 4;
+            e_rab->transportLayerAddress.buf = core_calloc(
+                    e_rab->transportLayerAddress.size, sizeof(c_uint8_t));
+            memcpy(e_rab->transportLayerAddress.buf, &bearer->sgw_s1u_addr,
+                    e_rab->transportLayerAddress.size);
+
+            s1ap_uint32_to_OCTET_STRING(bearer->sgw_s1u_teid, &e_rab->gTP_TEID);
+
+            ASN_SEQUENCE_ADD(&ies->e_RABToBeSetupListHOReq, e_rab);
+
+            bearer = mme_bearer_next(bearer);
+        }
+        sess = mme_sess_next(sess);
+    }
+
+    s1ap_buffer_to_OCTET_STRING(
+            required->source_ToTarget_TransparentContainer.buf, 
+            required->source_ToTarget_TransparentContainer.size, 
+            &ies->source_ToTarget_TransparentContainer);
+
+    ies->ueSecurityCapabilities.encryptionAlgorithms.size = 2;
+    ies->ueSecurityCapabilities.encryptionAlgorithms.buf = 
+        core_calloc(ies->ueSecurityCapabilities.encryptionAlgorithms.size, 
+                    sizeof(c_uint8_t));
+    ies->ueSecurityCapabilities.encryptionAlgorithms.bits_unused = 0;
+    ies->ueSecurityCapabilities.encryptionAlgorithms.buf[0] = 
+        (mme_ue->ue_network_capability.eea << 1);
+
+    ies->ueSecurityCapabilities.integrityProtectionAlgorithms.size = 2;
+    ies->ueSecurityCapabilities.integrityProtectionAlgorithms.buf =
+        core_calloc(ies->ueSecurityCapabilities.
+                        integrityProtectionAlgorithms.size, sizeof(c_uint8_t));
+    ies->ueSecurityCapabilities.integrityProtectionAlgorithms.bits_unused = 0;
+    ies->ueSecurityCapabilities.integrityProtectionAlgorithms.buf[0] =
+        (mme_ue->ue_network_capability.eia << 1);
+
+    ies->securityContext.nextHopChainingCount = mme_ue->nhcc;
+    ies->securityContext.nextHopParameter.size = SHA256_DIGEST_SIZE;
+    ies->securityContext.nextHopParameter.buf = 
+        core_calloc(ies->securityContext.nextHopParameter.size,
+        sizeof(c_uint8_t));
+    ies->securityContext.nextHopParameter.bits_unused = 0;
+    memcpy(ies->securityContext.nextHopParameter.buf,
+            mme_ue->nh, ies->securityContext.nextHopParameter.size);
+
+    message.procedureCode = S1ap_ProcedureCode_id_HandoverResourceAllocation;
+    message.direction = S1AP_PDU_PR_initiatingMessage;
+
+    encoded = s1ap_encode_pdu(s1apbuf, &message);
+    s1ap_free_pdu(&message);
+
+    d_assert(s1apbuf && encoded >= 0,return CORE_ERROR,);
+
+    d_trace(3, "[S1AP] Handover Request : ",
+            "UE[mME-UE-S1AP-ID(%d)] <-- eNB[%s:%d]\n",
+            enb_ue->mme_ue_s1ap_id,
+            INET_NTOP(&enb_ue->enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+            enb_ue->enb->enb_id);
+
+    return CORE_OK;
+}
+
 
 static void s1ap_build_cause(S1ap_Cause_t *dst, S1ap_Cause_t *src)
 {

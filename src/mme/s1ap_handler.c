@@ -613,17 +613,13 @@ void s1ap_handle_path_switch_request(
 
     memcpy(&eea, encryptionAlgorithms->buf, sizeof(eea));
     eea = ntohs(eea);
-    if (eea == 0)
-        mme_ue->ue_network_capability.eea0 = 1;
-    else
-        mme_ue->ue_network_capability.eea0 = eea >> 9;
+    mme_ue->ue_network_capability.eea = eea >> 9;
+    mme_ue->ue_network_capability.eea0 = 1;
 
     memcpy(&eia, integrityProtectionAlgorithms->buf, sizeof(eia));
     eia = ntohs(eia);
-    if (eea == 0)
-        mme_ue->ue_network_capability.eia0 = 1;
-    else
-        mme_ue->ue_network_capability.eia0 = eia >> 9;
+    mme_ue->ue_network_capability.eia = eia >> 9;
+    mme_ue->ue_network_capability.eia0 = 0;
 
     MODIFY_BEARER_TRANSACTION_BEGIN(mme_ue,
             MODIFY_BEARER_BY_PATH_SWITCH_REQUEST);
@@ -662,10 +658,137 @@ void s1ap_handle_path_switch_request(
 
 void s1ap_handle_handover_required(mme_enb_t *enb, s1ap_message_t *message)
 {
+    status_t rv;
+    char buf[INET_ADDRSTRLEN];
+
+    enb_ue_t *enb_ue = NULL;
+    mme_ue_t *mme_ue = NULL;
+
+    S1ap_HandoverRequiredIEs_t *ies = NULL;
+
+    d_assert(enb, return,);
+
+    ies = &message->s1ap_HandoverRequiredIEs;
+    d_assert(ies, return,);
+
+    enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
+    d_assert(enb_ue, return,
+            "Cannot find UE for eNB-UE-S1AP-ID[%d] and eNB[%s:%d]",
+            ies->eNB_UE_S1AP_ID,
+            INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+            enb->enb_id);
+    d_assert(enb_ue->mme_ue_s1ap_id == ies->mme_ue_s1ap_id, return,
+            "Conflict MME-UE-S1AP-ID : %d != %d\n",
+            enb_ue->mme_ue_s1ap_id, ies->mme_ue_s1ap_id);
+
+    mme_ue = enb_ue->mme_ue;
+    d_assert(mme_ue, return,);
+
+    if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+    {
+        mme_ue->nhcc++;
+        mme_kdf_nh(mme_ue->kasme, mme_ue->nh, mme_ue->nh);
+    }
+    else
+    {
+        d_assert(0, return,);
+    }
+
+    rv = s1ap_send_handover_request(mme_ue, ies);
+    d_assert(rv == CORE_OK,, "s1ap send error");
+
+    d_trace(3, "[S1AP] Handover Required : "
+            "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
+            enb_ue->enb_ue_s1ap_id,
+            INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+            enb->enb_id);
 }
 
 void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
 {
+    //status_t rv;
+    char buf[INET_ADDRSTRLEN];
+    int i;
+
+    enb_ue_t *enb_ue = NULL;
+    mme_ue_t *mme_ue = NULL;
+
+    S1ap_HandoverRequestAcknowledgeIEs_t *ies = NULL;
+
+    d_assert(enb, return,);
+
+    ies = &message->s1ap_HandoverRequestAcknowledgeIEs;
+    d_assert(ies, return,);
+
+    enb_ue = enb_ue_find_by_mme_ue_s1ap_id(ies->mme_ue_s1ap_id);
+    d_assert(enb_ue, return,
+            "Cannot find UE for MME-UE-S1AP-ID[%d] and eNB[%s:%d]",
+            ies->mme_ue_s1ap_id,
+            INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+            enb->enb_id);
+
+    enb_ue->enb_ue_s1ap_id = ies->eNB_UE_S1AP_ID;
+
+    mme_ue = enb_ue->mme_ue;
+    d_assert(mme_ue, return,);
+
+    for (i = 0; i < ies->e_RABAdmittedList.s1ap_E_RABAdmittedItem.count; i++)
+    {
+        mme_bearer_t *bearer = NULL;
+        S1ap_E_RABAdmittedItem_t *e_rab = NULL;
+
+        e_rab = (S1ap_E_RABAdmittedItem_t *)ies->e_RABAdmittedList.
+            s1ap_E_RABAdmittedItem.array[i];
+        d_assert(e_rab, return, "Null param");
+
+        bearer = mme_bearer_find_by_ue_ebi(mme_ue, e_rab->e_RAB_ID);
+        d_assert(bearer, return, "Null param");
+
+        memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf, 
+                sizeof(bearer->enb_s1u_teid));
+        bearer->enb_s1u_teid = ntohl(bearer->enb_s1u_teid);
+        memcpy(&bearer->enb_s1u_addr, e_rab->transportLayerAddress.buf,
+                sizeof(bearer->enb_s1u_addr));
+
+        if (e_rab->dL_transportLayerAddress && e_rab->dL_gTP_TEID)
+        {
+            d_assert(e_rab->dL_gTP_TEID->buf, return,);
+            d_assert(e_rab->dL_transportLayerAddress->buf, return,);
+            memcpy(&bearer->enb_dl_teid, e_rab->dL_gTP_TEID->buf, 
+                    sizeof(bearer->enb_dl_teid));
+            bearer->enb_dl_teid = ntohl(bearer->enb_dl_teid);
+            memcpy(&bearer->enb_dl_addr, e_rab->dL_transportLayerAddress->buf,
+                    sizeof(bearer->enb_dl_addr));
+        }
+
+        if (e_rab->uL_S1ap_TransportLayerAddress && e_rab->uL_S1ap_GTP_TEID)
+        {
+            d_assert(e_rab->uL_S1ap_GTP_TEID->buf, return,);
+            d_assert(e_rab->uL_S1ap_TransportLayerAddress->buf, return,);
+            memcpy(&bearer->enb_ul_teid, e_rab->uL_S1ap_GTP_TEID->buf, 
+                    sizeof(bearer->enb_ul_teid));
+            bearer->enb_ul_teid = ntohl(bearer->enb_ul_teid);
+            memcpy(&bearer->enb_ul_addr,
+                    e_rab->uL_S1ap_TransportLayerAddress->buf,
+                    sizeof(bearer->enb_ul_addr));
+        }
+
+#if 0
+        rv = mme_gtp_send_modify_bearer_request(bearer);
+        d_assert(rv == CORE_OK, return, "gtp send failed");
+#endif
+    }
+
+#if 0
+    rv = s1ap_send_handover_request(mme_ue, ies);
+    d_assert(rv == CORE_OK,, "s1ap send error");
+#endif
+
+    d_trace(3, "[S1AP] Handover Request Ack : "
+            "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
+            enb_ue->enb_ue_s1ap_id,
+            INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+            enb->enb_id);
 }
 
 void s1ap_handle_handover_failure(mme_enb_t *enb, s1ap_message_t *message)

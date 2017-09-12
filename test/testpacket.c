@@ -165,10 +165,12 @@ status_t tests1ap_build_initial_ue_msg(pkbuf_t **pkbuf, int i)
         "1004615380008640 0130",
 
         "000c"
-        "406b000005000800 020002001a004342 0741710849506806 0000902702e06000"
-        "2d0201d031d12726 8080211001000010 8106000000008306 00000000000d0000"
-        "0300000100000c00 000a000010005c0a 00c1004300060004 9699000200644008"
-        "0004969904f00000 0086400130",
+        "4080830000060008 0002000c001a0050 4f1744b524490507 41020bf600f11000"
+        "0201010003e802e0 6000210204d011d1 271a808021100100 0010810600000000"
+        "830600000000000d 00000a005200f110 30395c0a00901103 4f18a6f15d0100e0"
+        "004300060000f110 3039006440080000 f110001f20a00086 400130004b000700"
+        "00f110000201",
+
     };
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         92,
@@ -184,7 +186,7 @@ status_t tests1ap_build_initial_ue_msg(pkbuf_t **pkbuf, int i)
         0,
 
         108,
-        111,
+        136,
     };
     char hexbuf[MAX_SDU_LEN];
     
@@ -215,6 +217,11 @@ status_t tests1ap_build_identity_response(pkbuf_t **pkbuf, int i)
         "",
         "",
         "",
+        
+        "",
+        "000d"
+        "403e000005000000 05c0020000c40008 0002000c001a0012 1117c07eb5f50607"
+        "5608091010103254 8651006440080000 f110001f20a00043 40060000f1103039",
     };
 
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
@@ -229,6 +236,9 @@ status_t tests1ap_build_identity_response(pkbuf_t **pkbuf, int i)
         0,
         0,
         0,
+
+        0,
+        66,
     };
     char hexbuf[MAX_SDU_LEN];
     
@@ -262,9 +272,15 @@ status_t tests1ap_build_authentication_response(pkbuf_t **pkbuf, int i)
         "",
         "",
 
+        
         "000d"
         "4038000005000000 05c0010001da0008 00020001001a000c 0b0753084ce11ef1"
         "24b1854500644008 0000f11004615380 004340060000f110 5ba0",
+
+        "000d"
+        "403e000005000000 05c0020000c40008 0002000c001a0012 1117deff957c0707"
+        "5308e3b925330735 7093006440080000 f110001f20a00043 40060000f1103039",
+
     };
 
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
@@ -281,6 +297,7 @@ status_t tests1ap_build_authentication_response(pkbuf_t **pkbuf, int i)
         0,
 
         60,
+        66,
     };
     char hexbuf[MAX_SDU_LEN];
     
@@ -313,10 +330,14 @@ status_t tests1ap_build_security_mode_complete(pkbuf_t **pkbuf, int i)
         "",
         "",
 
+
         "000d"
         "4035000005000000 05c0010001da0008 00020001001a0009 0847d3b0ef030007"
         "5e006440080000f1 1004615380004340 060000f1105ba0",
 
+        "000d"
+        "4035000005000000 05c0020000c40008 0002000c001a0009 084790282df90007"
+        "5e006440080000f1 10001f20a0004340 060000f1103039",
     };
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         57,
@@ -331,6 +352,7 @@ status_t tests1ap_build_security_mode_complete(pkbuf_t **pkbuf, int i)
         0,
         0,
 
+        57,
         57,
     };
     char hexbuf[MAX_SDU_LEN];
@@ -369,10 +391,16 @@ status_t tests1ap_build_esm_information_response(pkbuf_t **pkbuf, int i)
         "",
         "",
 
+
         "000d"
         "4041000005000000 05c0010001da0008 00020001001a0015 14279a2476c80102"
         "07da280908696e74 65726e6574006440 080000f110046153 80004340060000f1"
         "105ba0",
+
+        "000d"
+        "4041000005000000 05c0020000c40008 0002000c001a0015 14274f280bff0102"
+        "04da280908696e74 65726e6574006440 080000f110001f20 a0004340060000f1"
+        "103039",
     };
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         146,
@@ -387,6 +415,7 @@ status_t tests1ap_build_esm_information_response(pkbuf_t **pkbuf, int i)
         0,
         0,
 
+        69,
         69,
     };
     char hexbuf[MAX_SDU_LEN];
@@ -434,6 +463,10 @@ status_t tests1ap_build_ue_capability_info_indication(pkbuf_t **pkbuf, int i)
         "0016"
         "4030000003000000 05c0010001da0008 00020001004a401a 1900b801014c5980"
         "809c000bf06ec4d0 0140302c00000000 0000",
+
+        "0016"
+        "4030000003000000 05c0020000c40008 0002000c004a401a 1900b801014c5980"
+        "0018000bf06ec4d0 0100302c00000000 0000",
     };
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         161,
@@ -448,6 +481,7 @@ status_t tests1ap_build_ue_capability_info_indication(pkbuf_t **pkbuf, int i)
         67,
         0,
 
+        52,
         52,
     };
     char hexbuf[MAX_SDU_LEN];
@@ -490,6 +524,10 @@ status_t tests1ap_build_initial_context_setup_response(pkbuf_t **pkbuf, int i)
         "2009"
         "0025000003000040 05c0010001da0008 400200010033400f 000032400a0a1f0a"
         "012d8301000008",
+
+        "2009"
+        "0025000003000040 05c0020000c40008 4002000c0033400f 000032400a0a1f0a"
+        "01237b01000808",
     };
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         41,
@@ -504,6 +542,7 @@ status_t tests1ap_build_initial_context_setup_response(pkbuf_t **pkbuf, int i)
         41,
         0,
 
+        41,
         41,
     };
     char hexbuf[MAX_SDU_LEN];
@@ -548,6 +587,10 @@ status_t tests1ap_build_attach_complete(pkbuf_t **pkbuf, int i)
         "403a000005000000 05c0010001da0008 00020001001a000e 0d272e3456f70207"
         "4300035200c20064 40080000f1100461 5380004340060000 f1105ba0",
 
+        "000d"
+        "403a000005000000 05c0020000c40008 0002000c001a000e 0d276a543e560207"
+        "4300035200c20064 40080000f110001f 20a0004340060000 f1103039",
+
     };
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         62,
@@ -562,6 +605,7 @@ status_t tests1ap_build_attach_complete(pkbuf_t **pkbuf, int i)
         0,
         0,
 
+        62,
         62,
     };
     char hexbuf[MAX_SDU_LEN];
@@ -709,7 +753,9 @@ status_t tests1ap_build_ue_context_release_complete(pkbuf_t **pkbuf, int i)
 {
     char *payload[TESTS1AP_MAX_MESSAGE] = {
         "2017001300000200 004005c00100009d 00084003400527",
+
         "",
+
         "2017"
         "0012000002000040 05c00100009f0008 40020001",
 
@@ -721,6 +767,12 @@ status_t tests1ap_build_ue_context_release_complete(pkbuf_t **pkbuf, int i)
         "0012000002000040 05c0020000c80008 40020002",
         "",
         "",
+
+
+        "",
+
+        "2017"
+        "0012000002000040 05c0020000c40008 4002000c",
 
     };
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
@@ -735,6 +787,9 @@ status_t tests1ap_build_ue_context_release_complete(pkbuf_t **pkbuf, int i)
         22,
         0,
         0,
+
+        0,
+        22,
     };
     char hexbuf[MAX_SDU_LEN];
 
@@ -905,6 +960,10 @@ status_t tests1ap_build_e_rab_setup_response(pkbuf_t **pkbuf, int i)
 
         "2005002600000300 004005c00200003c 0008400300010000 1c400f000027400a"
         "0c1f0a012da50100 b410",
+
+        "2005"
+        "0025000003000040 05c0020000c40008 4002000c001c400f 000027400a0c1f0a"
+        "01237b01000810",
     };
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         42,
@@ -920,6 +979,7 @@ status_t tests1ap_build_e_rab_setup_response(pkbuf_t **pkbuf, int i)
         0,
 
         42,
+        41,
     };
     char hexbuf[MAX_SDU_LEN];
     
@@ -1042,6 +1102,10 @@ status_t tests1ap_build_activate_dedicated_bearer_accept(
         "000d403700000500"
         "000005c00200003c 0008000300010000 1a000a0927a27f49 d6036200c6006440"
         "080000f1109d67aa 50004340060000f1 102b67",
+
+        "000d"
+        "4036000005000000 05c0020000c40008 0002000c001a000a 0927e3c77e000362"
+        "00c6006440080000 f110001f20a00043 40060000f1103039",
     };
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         59,
@@ -1057,6 +1121,7 @@ status_t tests1ap_build_activate_dedicated_bearer_accept(
         0,
 
         59,
+        58,
     };
     char hexbuf[MAX_SDU_LEN];
     
@@ -1140,6 +1205,196 @@ status_t tests1ap_build_path_switch_request(
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         97,
         97,
+        0,
+
+        0,
+        0,
+        0,
+
+        0,
+        0,
+        0,
+    };
+    char hexbuf[MAX_SDU_LEN];
+    
+    *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    if (!(*pkbuf)) return CORE_ERROR;
+
+    (*pkbuf)->len = len[i];
+    memcpy((*pkbuf)->payload, CORE_HEX(payload[i], strlen(payload[i]), hexbuf),
+            (*pkbuf)->len);
+
+    return CORE_OK;
+}
+
+
+status_t tests1ap_build_handover_required(
+        pkbuf_t **pkbuf, int i)
+{
+    char *payload[TESTS1AP_MAX_MESSAGE] = { 
+        "0000"
+        "0081030000060000 0005c0020000c400 080002000c000100 0100000240020220"
+        "0004000d0000f110 0000043000f11030 3900680080d080ce 4080ab0f1014c598"
+        "00018000bf06ec4d 00100302c0000000 000015a800140672 0af00348f10013d0"
+        "3bc58414903bc588 09401de2c2100440 13f212249010127d ad808fd50398381c"
+        "08fd503983805f50 37868baa010c846f b057874162d62e82 1f42f2e159f821d0"
+        "9c0009e28aa1a001 2d888026d0600040 8008066072003e41 5250d46210208184"
+        "3423c135002214d6 dfb0a0b06502c402 000004008177faab 4677235334a0e867"
+        "213e804030000100 4e40024500004e40 0246000000f11000 043a000000f11000"
+        "1f20a0000022",
+        "",
+        "",
+
+        "",
+        "",
+        "",
+
+        "",
+        "",
+        "",
+
+    };
+    c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
+        264,
+        0,
+        0,
+
+        0,
+        0,
+        0,
+
+        0,
+        0,
+        0,
+    };
+    char hexbuf[MAX_SDU_LEN];
+    
+    *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    if (!(*pkbuf)) return CORE_ERROR;
+
+    (*pkbuf)->len = len[i];
+    memcpy((*pkbuf)->payload, CORE_HEX(payload[i], strlen(payload[i]), hexbuf),
+            (*pkbuf)->len);
+
+    return CORE_OK;
+}
+
+status_t tests1ap_build_handover_request_ack(
+        pkbuf_t **pkbuf, int i)
+{
+    char *payload[TESTS1AP_MAX_MESSAGE] = { 
+        "2001"
+        "0080e80000040000 4005c0020000c500 0840020008001240 47010014401f78a1"
+        "f00a01237c010007 080f800a01237c01 0007090f800a0123 7c0100070a001440"
+        "1f78c1f00a01237c 010007100f800a01 237c010007110f80 0a01237c01000712"
+        "007b008086808400 80810bf900d8af40 00a0339057801f47 88009e81de2c20a4"
+        "81de2c404a00ef16 2000010044013f21 2249008093efd243 3914cd2aa0a0142f"
+        "f2214d6dfb82c194 0b10080000020040 bbfd55aeab41ad80 8fd50398381c08fd"
+        "503983804d037868 baa016423342bc3a 18b58fa084ca833f a17970acfc10e84e"
+        "0004f14550d00096 c88900",
+        "",
+        "",
+
+        "",
+        "",
+        "",
+
+        "",
+        "",
+        "",
+
+    };
+    c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
+        237,
+        0,
+        0,
+
+        0,
+        0,
+        0,
+
+        0,
+        0,
+        0,
+    };
+    char hexbuf[MAX_SDU_LEN];
+    
+    *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    if (!(*pkbuf)) return CORE_ERROR;
+
+    (*pkbuf)->len = len[i];
+    memcpy((*pkbuf)->payload, CORE_HEX(payload[i], strlen(payload[i]), hexbuf),
+            (*pkbuf)->len);
+
+    return CORE_OK;
+}
+
+status_t tests1ap_build_enb_status_transfer(
+        pkbuf_t **pkbuf, int i)
+{
+    char *payload[TESTS1AP_MAX_MESSAGE] = { 
+        "0018"
+        "4027000003000000 05c0020000c40008 0002000c005a0011 00000059400b0500"
+        "004b000000001100 00",
+        "",
+        "",
+
+        "",
+        "",
+        "",
+
+        "",
+        "",
+        "",
+
+    };
+    c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
+        43,
+        0,
+        0,
+
+        0,
+        0,
+        0,
+
+        0,
+        0,
+        0,
+    };
+    char hexbuf[MAX_SDU_LEN];
+    
+    *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    if (!(*pkbuf)) return CORE_ERROR;
+
+    (*pkbuf)->len = len[i];
+    memcpy((*pkbuf)->payload, CORE_HEX(payload[i], strlen(payload[i]), hexbuf),
+            (*pkbuf)->len);
+
+    return CORE_OK;
+}
+
+status_t tests1ap_build_handover_notify(
+        pkbuf_t **pkbuf, int i)
+{
+    char *payload[TESTS1AP_MAX_MESSAGE] = { 
+        "0002"
+        "4028000004000000 05c0020000c30008 0002000800644008 0000f11000043a00"
+        "004340060000f110 3039",
+        "",
+        "",
+
+        "",
+        "",
+        "",
+
+        "",
+        "",
+        "",
+
+    };
+    c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
+        44,
+        0,
         0,
 
         0,

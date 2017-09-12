@@ -121,7 +121,6 @@ typedef struct _mme_enb_t {
 struct _enb_ue_t {
     lnode_t         node;   /* A node of list_t */
     index_t         index;  /* An index of this node */
-    fsm_t           sm;     /* A state machine */
 
     /* UE identity */
     c_uint32_t      enb_ue_s1ap_id; /* eNB-UE-S1AP-ID received from eNB */
@@ -352,16 +351,21 @@ typedef struct _mme_sess_t {
 #define MME_HAVE_ENB_S1U_PATH(__bEARER) \
     ((__bEARER) && ((__bEARER)->enb_s1u_teid) && ((__bEARER)->enb_s1u_addr))
 typedef struct _mme_bearer_t {
-    lnode_t         node;   /* A node of list_t */
-    index_t         index;  /* An index of this node */
-    fsm_t           sm;     /* State Machine */
+    lnode_t         node;           /* A node of list_t */
+    index_t         index;          /* An index of this node */
+    fsm_t           sm;             /* State Machine */
 
-    c_uint8_t       ebi;        /* EPS Bearer ID */    
+    c_uint8_t       ebi;            /* EPS Bearer ID */    
 
     c_uint32_t      enb_s1u_teid;
     c_uint32_t      enb_s1u_addr;
     c_uint32_t      sgw_s1u_teid;
     c_uint32_t      sgw_s1u_addr;
+
+    c_uint32_t      enb_dl_teid;
+    c_uint32_t      enb_dl_addr;
+    c_uint32_t      enb_ul_teid;
+    c_uint32_t      enb_ul_addr;
 
     qos_t           qos;
     tlv_octet_t     tft;   /* Saved TFT */
@@ -409,6 +413,8 @@ CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_message(nas_message_t *message);
 CORE_DECLARE(status_t)      mme_ue_set_imsi(
                                 mme_ue_t *mme_ue, c_int8_t *imsi_bcd);
 CORE_DECLARE(status_t)      mme_associate_ue_context(
+                                mme_ue_t *mme_ue, enb_ue_t *enb_ue);
+CORE_DECLARE(status_t)      mme_partial_associate_ue_context(
                                 mme_ue_t *mme_ue, enb_ue_t *enb_ue);
 
 CORE_DECLARE(hash_index_t *) mme_ue_first();

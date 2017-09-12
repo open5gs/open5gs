@@ -1464,6 +1464,16 @@ status_t mme_associate_ue_context(mme_ue_t *mme_ue, enb_ue_t *enb_ue)
     return CORE_OK;
 }
 
+status_t mme_partial_associate_ue_context(mme_ue_t *mme_ue, enb_ue_t *enb_ue)
+{
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    d_assert(enb_ue, return CORE_ERROR, "Null param");
+
+    enb_ue->mme_ue = mme_ue;
+
+    return CORE_OK;
+}
+
 mme_sess_t *mme_sess_add(mme_ue_t *mme_ue, c_uint8_t pti)
 {
     mme_sess_t *sess = NULL;
