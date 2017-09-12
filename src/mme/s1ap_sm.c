@@ -91,6 +91,21 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
                             s1ap_handle_path_switch_request(enb, message);
                             break;
                         }
+                        case S1ap_ProcedureCode_id_HandoverPreparation:
+                        {
+                            s1ap_handle_handover_required(enb, message);
+                            break;
+                        }
+                        case S1ap_ProcedureCode_id_eNBStatusTransfer:
+                        {
+                            s1ap_handle_enb_status_transfer(enb, message);
+                            break;
+                        }
+                        case S1ap_ProcedureCode_id_HandoverNotification:
+                        {
+                            s1ap_handle_handover_notification(enb, message);
+                            break;
+                        }
                         default:
                         {
                             d_warn("Not implemented(choice:%d, proc:%d)",
@@ -126,6 +141,11 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
                                     enb, message);
                             break;
                         }
+                        case S1ap_ProcedureCode_id_HandoverResourceAllocation:
+                        {
+                            s1ap_handle_handover_request_ack(enb, message);
+                            break;
+                        }
                         default:
                         {
                             d_warn("Not implemented(choice:%d, proc:%d)",
@@ -136,10 +156,27 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
                     break;
                 }
                 case S1AP_PDU_PR_unsuccessfulOutcome :
+                {
+                    switch(message->procedureCode)
+                    {
+                        case S1ap_ProcedureCode_id_HandoverResourceAllocation :
+                        {
+                            s1ap_handle_handover_failure(enb, message);
+                            break;
+                        }
+                        default:
+                        {
+                            d_warn("Not implemented(choice:%d, proc:%d)",
+                                    message->direction, message->procedureCode);
+                            break;
+                        }
+                    }
+                    break;
+                }
                 default:
                 {
                     d_warn("Not implemented(choice:%d, proc:%d)",
-                        message->direction, message->procedureCode);
+                            message->direction, message->procedureCode);
                     break;
                 }
             }

@@ -105,6 +105,21 @@ static inline int s1ap_free_initiating_message(s1ap_message_t *message)
                     &message->s1ap_HandoverRequestIEs);
             break;
 
+        case S1ap_ProcedureCode_id_eNBStatusTransfer:
+            s1ap_free_s1ap_enbstatustransferies(
+                    &message->s1ap_ENBStatusTransferIEs);
+            break;
+
+        case S1ap_ProcedureCode_id_MMEStatusTransfer:
+            s1ap_free_s1ap_mmestatustransferies(
+                    &message->s1ap_MMEStatusTransferIEs);
+            break;
+
+        case S1ap_ProcedureCode_id_HandoverNotification:
+            s1ap_free_s1ap_handovernotifyies(
+                    &message->s1ap_HandoverNotifyIEs);
+            break;
+
         case S1ap_ProcedureCode_id_NASNonDeliveryIndication: 
             s1ap_free_s1ap_nasnondeliveryindication_ies(
                     &message->s1ap_NASNonDeliveryIndication_IEs);

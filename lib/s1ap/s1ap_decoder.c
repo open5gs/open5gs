@@ -135,6 +135,20 @@ static int s1ap_decode_initiating(s1ap_message_t *message,
                     s1ap_xer__print2sp, message);
             break;
 
+        case S1ap_ProcedureCode_id_eNBStatusTransfer:
+            ret = s1ap_decode_s1ap_enbstatustransferies(
+                    &message->s1ap_ENBStatusTransferIEs, &initiating_p->value);
+            s1ap_decode_xer_print_message(s1ap_xer_print_s1ap_enbstatustransfer,
+                    s1ap_xer__print2sp, message);
+            break;
+
+        case S1ap_ProcedureCode_id_HandoverNotification:
+            ret = s1ap_decode_s1ap_handovernotifyies(
+                    &message->s1ap_HandoverNotifyIEs, &initiating_p->value);
+            s1ap_decode_xer_print_message(s1ap_xer_print_s1ap_handovernotify,
+                    s1ap_xer__print2sp, message);
+            break;
+
         case S1ap_ProcedureCode_id_NASNonDeliveryIndication: 
             ret = s1ap_decode_s1ap_nasnondeliveryindication_ies(
                     &message->s1ap_NASNonDeliveryIndication_IEs, 
@@ -170,6 +184,7 @@ static int s1ap_decode_successfull_outcome(s1ap_message_t *message,
                     s1ap_xer_print_s1ap_s1setupresponse,
                     s1ap_xer__print2sp, message);
             break;
+
         case S1ap_ProcedureCode_id_InitialContextSetup: 
             ret = s1ap_decode_s1ap_initialcontextsetupresponseies(
                     &message->s1ap_InitialContextSetupResponseIEs, 
@@ -178,6 +193,7 @@ static int s1ap_decode_successfull_outcome(s1ap_message_t *message,
                     s1ap_xer_print_s1ap_initialcontextsetupresponse,
                     s1ap_xer__print2sp, message);
             break;
+
         case S1ap_ProcedureCode_id_E_RABSetup: 
             ret = s1ap_decode_s1ap_e_rabsetupresponseies(
                     &message->s1ap_E_RABSetupResponseIEs, 
@@ -186,6 +202,7 @@ static int s1ap_decode_successfull_outcome(s1ap_message_t *message,
                     s1ap_xer_print_s1ap_e_rabsetupresponse,
                     s1ap_xer__print2sp, message);
             break;
+
         case S1ap_ProcedureCode_id_E_RABRelease: 
             ret = s1ap_decode_s1ap_e_rabreleaseresponseies(
                     &message->s1ap_E_RABReleaseResponseIEs, 
@@ -194,6 +211,7 @@ static int s1ap_decode_successfull_outcome(s1ap_message_t *message,
                     s1ap_xer_print_s1ap_e_rabreleaseresponse,
                     s1ap_xer__print2sp, message);
             break;
+
         case S1ap_ProcedureCode_id_UEContextRelease: 
             ret = s1ap_decode_s1ap_uecontextreleasecomplete_ies(
                     &message->s1ap_UEContextReleaseComplete_IEs, 
@@ -239,6 +257,7 @@ static int s1ap_decode_unsuccessfull_outcome(s1ap_message_t *message,
                     s1ap_xer_print_s1ap_s1setupfailure,
                     s1ap_xer__print2sp, message);
             break;
+
         case S1ap_ProcedureCode_id_InitialContextSetup: 
             ret = s1ap_decode_s1ap_initialcontextsetupfailureies(
                     &message->s1ap_InitialContextSetupFailureIEs, 

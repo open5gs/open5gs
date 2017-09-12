@@ -659,3 +659,23 @@ void s1ap_handle_path_switch_request(
             INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
             enb->enb_id);
 }
+
+void s1ap_handle_handover_required(mme_enb_t *enb, s1ap_message_t *message)
+{
+}
+
+void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
+{
+}
+
+void s1ap_handle_handover_failure(mme_enb_t *enb, s1ap_message_t *message)
+{
+}
+
+void s1ap_handle_enb_status_transfer(mme_enb_t *enb, s1ap_message_t *message)
+{
+}
+
+void s1ap_handle_handover_notification(mme_enb_t *enb, s1ap_message_t *message)
+{
+}

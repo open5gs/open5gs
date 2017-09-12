@@ -31,6 +31,18 @@ CORE_DECLARE(void) s1ap_handle_paging(mme_ue_t *mme_ue);
 CORE_DECLARE(void) s1ap_handle_path_switch_request(
         mme_enb_t *enb, s1ap_message_t *message);
 
+CORE_DECLARE(void) s1ap_handle_handover_required(
+        mme_enb_t *enb, s1ap_message_t *message);
+CORE_DECLARE(void) s1ap_handle_handover_request_ack(
+        mme_enb_t *enb, s1ap_message_t *message);
+CORE_DECLARE(void) s1ap_handle_handover_failure(
+        mme_enb_t *enb, s1ap_message_t *message);
+
+CORE_DECLARE(void) s1ap_handle_enb_status_transfer(
+        mme_enb_t *enb, s1ap_message_t *message);
+CORE_DECLARE(void) s1ap_handle_handover_notification(
+        mme_enb_t *enb, s1ap_message_t *message);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
