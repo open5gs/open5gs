@@ -528,6 +528,8 @@ void s1ap_handle_path_switch_request(
     enb_ue_t *enb_ue = NULL;
     mme_ue_t *mme_ue = NULL;
 
+    S1ap_Cause_t cause;
+
     S1ap_PathSwitchRequestIEs_t *ies = NULL;
     S1ap_EUTRAN_CGI_t *eutran_cgi;
 	S1ap_PLMNidentity_t *pLMNidentity = NULL;
@@ -568,7 +570,6 @@ void s1ap_handle_path_switch_request(
     enb_ue = enb_ue_find_by_mme_ue_s1ap_id(ies->sourceMME_UE_S1AP_ID);
     if (!enb_ue)
     {
-        S1ap_Cause_t cause;
         d_error("Cannot find UE from sourceMME-UE-S1AP-ID[%d] and eNB[%s:%d]",
                 ies->sourceMME_UE_S1AP_ID,
                 INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
@@ -584,6 +585,20 @@ void s1ap_handle_path_switch_request(
 
     mme_ue = enb_ue->mme_ue;
     d_assert(mme_ue, return, "Null param");
+
+    if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+    {
+        mme_ue->nhcc++;
+        mme_kdf_nh(mme_ue->kasme, mme_ue->nh, mme_ue->nh);
+    }
+    else
+    {
+        cause.present = S1ap_Cause_PR_nas;
+        cause.choice.radioNetwork = S1ap_CauseNas_authentication_failure;
+        s1ap_send_path_switch_failure(enb, ies->eNB_UE_S1AP_ID,
+                ies->sourceMME_UE_S1AP_ID, &cause);
+        return;
+    }
 
     enb_ue->enb_ue_s1ap_id = ies->eNB_UE_S1AP_ID;
 
@@ -609,13 +624,6 @@ void s1ap_handle_path_switch_request(
         mme_ue->ue_network_capability.eia0 = 1;
     else
         mme_ue->ue_network_capability.eia0 = eia >> 9;
-
-    {
-        c_uint8_t new_nh[SHA256_DIGEST_SIZE];
-        mme_ue->nhcc++;
-        mme_kdf_nh(mme_ue->kasme, mme_ue->nh, new_nh);
-        memcpy(mme_ue->nh, new_nh, SHA256_DIGEST_SIZE);
-    }
 
     MODIFY_BEARER_TRANSACTION_BEGIN(mme_ue,
             MODIFY_BEARER_BY_PATH_SWITCH_REQUEST);
