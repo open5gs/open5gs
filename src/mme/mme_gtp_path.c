@@ -250,23 +250,53 @@ status_t mme_gtp_send_create_bearer_response(mme_bearer_t *bearer)
     return CORE_OK;
 }
 
-status_t mme_gtp_send_release_access_bearers_response(mme_sess_t *sess)
+status_t mme_gtp_send_release_access_bearers_request(mme_ue_t *mme_ue)
 {
     status_t rv;
     gtp_header_t h;
     pkbuf_t *pkbuf = NULL;
     gtp_xact_t *xact = NULL;
-    mme_ue_t *mme_ue = NULL;
+    mme_sess_t *sess = NULL;
 
-    d_assert(sess, return CORE_ERROR, "Null param");
-    mme_ue = sess->mme_ue;
     d_assert(mme_ue, return CORE_ERROR, "Null param");
+    sess = mme_sess_first(mme_ue);
+    d_assert(sess, return CORE_ERROR, "Null param");
 
     memset(&h, 0, sizeof(gtp_header_t));
     h.type = GTP_RELEASE_ACCESS_BEARERS_REQUEST_TYPE;
     h.teid = mme_ue->sgw_s11_teid;
 
     rv = mme_s11_build_release_access_bearers_request(&pkbuf, h.type);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "S11 build error");
+
+    xact = gtp_xact_local_create(sess->sgw, &h, pkbuf);
+    d_assert(xact, return CORE_ERROR, "Null param");
+
+    rv = gtp_xact_commit(xact);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "xact_commit error");
+
+    return CORE_OK;
+}
+
+status_t mme_gtp_send_create_indirect_data_forwarding_tunnel_request(
+        mme_ue_t *mme_ue)
+{
+    status_t rv;
+    gtp_header_t h;
+    pkbuf_t *pkbuf = NULL;
+    gtp_xact_t *xact = NULL;
+    mme_sess_t *sess = NULL;
+
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    sess = mme_sess_first(mme_ue);
+    d_assert(sess, return CORE_ERROR, "Null param");
+
+    memset(&h, 0, sizeof(gtp_header_t));
+    h.type = GTP_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE;
+    h.teid = mme_ue->sgw_s11_teid;
+
+    rv = mme_s11_build_create_indirect_data_forwarding_tunnel_request(
+            &pkbuf, h.type, mme_ue);
     d_assert(rv == CORE_OK, return CORE_ERROR, "S11 build error");
 
     xact = gtp_xact_local_create(sess->sgw, &h, pkbuf);

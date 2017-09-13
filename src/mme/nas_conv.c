@@ -1,4 +1,4 @@
-#define TRACE_MODULE _nasconv
+#define TRACE_MODULE _nas_conv
 
 #include "core_debug.h"
 

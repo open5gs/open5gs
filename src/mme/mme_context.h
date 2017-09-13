@@ -356,6 +356,31 @@ typedef struct _mme_sess_t {
 
 #define MME_HAVE_ENB_S1U_PATH(__bEARER) \
     ((__bEARER) && ((__bEARER)->enb_s1u_teid) && ((__bEARER)->enb_s1u_addr))
+
+#define MME_HAVE_DL_INDIRECT_TUNNEL(__bEARER) \
+    ((__bEARER) && ((__bEARER)->enb_dl_teid) && ((__bEARER)->enb_dl_addr))
+#define MME_HAVE_UL_INDIRECT_TUNNEL(__bEARER) \
+    ((__bEARER) && ((__bEARER)->enb_ul_teid) && ((__bEARER)->enb_ul_addr))
+#define CLEAR_INDIRECT_TUNNEL(__mME) \
+    do { \
+        mme_sess_t *sess = NULL; \
+        mme_bearer_t *bearer = NULL; \
+        d_assert((__mME), break, "Null param"); \
+        sess = mme_sess_first(__mME); \
+        while (sess != NULL) \
+        { \
+            bearer = mme_bearer_first(sess); \
+            while(bearer != NULL) \
+            { \
+                bearer->enb_dl_teid = 0; \
+                bearer->enb_dl_addr = 0; \
+                bearer->enb_ul_teid = 0; \
+                bearer->enb_ul_addr = 0; \
+                bearer = mme_bearer_next(bearer); \
+            } \
+            sess = mme_sess_next(sess); \
+        } \
+    } while(0)
 typedef struct _mme_bearer_t {
     lnode_t         node;           /* A node of list_t */
     index_t         index;          /* An index of this node */

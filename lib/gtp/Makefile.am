@@ -3,8 +3,8 @@
 noinst_LTLIBRARIES = libgtp.la
 
 libgtp_la_SOURCES = \
-	gtp_message.h gtp_types.h gtp_path.h gtp_xact.h \
-	gtp_message.c gtp_types.c gtp_path.c gtp_xact.c
+	gtp_message.h gtp_types.h gtp_conv.h gtp_path.h gtp_xact.h \
+	gtp_message.c gtp_types.c gtp_conv.c gtp_path.c gtp_xact.c
 
 libgtp_la_DEPENDENCIES = \
     $(top_srcdir)/lib/base/libbase.la

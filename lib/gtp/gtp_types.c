@@ -27,7 +27,9 @@
 
 #include "core_debug.h"
 #include "core_lib.h"
+
 #include "gtp_types.h"
+#include "gtp_message.h"
 
 /* 8.13 Protocol Configuration Options (PCO) 
  * 10.5.6.3 Protocol configuration options in 3GPP TS 24.008 */

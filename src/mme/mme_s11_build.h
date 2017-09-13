@@ -19,6 +19,9 @@ CORE_DECLARE(status_t) mme_s11_build_release_access_bearers_request(
         pkbuf_t **pkbuf, c_uint8_t type);
 CORE_DECLARE(status_t) mme_s11_build_downlink_data_notification_ack(
         pkbuf_t **pkbuf, c_uint8_t type, mme_ue_t *mme_ue);
+CORE_DECLARE(status_t)
+        mme_s11_build_create_indirect_data_forwarding_tunnel_request(
+            pkbuf_t **pkbuf, c_uint8_t type, mme_ue_t *mme_ue);
 
 #ifdef __cplusplus
 }

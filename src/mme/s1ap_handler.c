@@ -399,18 +399,12 @@ void s1ap_handle_ue_context_release_request(
             if (cause == S1ap_CauseRadioNetwork_user_inactivity)
             {
                 mme_ue_t *mme_ue = enb_ue->mme_ue;
+                d_assert(mme_ue, return,);
 
                 if (MME_HAVE_SGW_S11_PATH(mme_ue))
                 {
-                    mme_sess_t *sess = mme_sess_first(mme_ue);
-                    while (sess != NULL)
-                    {
-                        rv = mme_gtp_send_release_access_bearers_response(sess);
-                        d_assert(rv == CORE_OK, return, 
-                        "mme_gtp_send_release_access_bearers_response failed");
-
-                        sess = mme_sess_next(sess);
-                    }
+                    rv = mme_gtp_send_release_access_bearers_request(mme_ue);
+                    d_assert(rv == CORE_OK, return, "gtp send failed");
                 }
                 else
                 {
@@ -696,7 +690,7 @@ void s1ap_handle_handover_required(mme_enb_t *enb, s1ap_message_t *message)
 
 void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
 {
-    //status_t rv;
+    status_t rv;
     char buf[INET_ADDRSTRLEN];
     int i;
 
@@ -762,15 +756,19 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
                     e_rab->uL_S1ap_TransportLayerAddress->buf,
                     sizeof(bearer->enb_ul_addr));
         }
-
-#if 0
-        rv = mme_gtp_send_modify_bearer_request(bearer);
-        d_assert(rv == CORE_OK, return, "gtp send failed");
-#endif
     }
 
     S1AP_STORE_DATA(
         &mme_ue->container, &ies->target_ToSource_TransparentContainer);
+
+    rv = mme_gtp_send_create_indirect_data_forwarding_tunnel_request(mme_ue);
+    d_assert(rv == CORE_OK, return, "gtp send failed");
+
+
+#if 0
+    rv = mme_gtp_send_modify_bearer_request(bearer);
+    d_assert(rv == CORE_OK, return, "gtp send failed");
+#endif
 
 #if 0
     rv = s1ap_send_handover_request(mme_ue, ies);

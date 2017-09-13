@@ -7,17 +7,19 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define MAX_NUM_OF_ENB          128
-#define MAX_NUM_OF_UE           128
-#define MAX_NUM_OF_SESS         4
-#define MAX_NUM_OF_BEARER       4
-#define MAX_NUM_OF_PF           16  /* Num of Packet Filter per Bearer */
-#define MAX_NUM_OF_GTP_NODE     8
+#define MAX_NUM_OF_ENB              128
+#define MAX_NUM_OF_UE               128
+#define MAX_NUM_OF_SESS             4
+#define MAX_NUM_OF_BEARER           4
+#define MAX_NUM_OF_TUNNEL           3   /* Num of Indirect Tunnel per Bearer */
+#define MAX_NUM_OF_PF               16  /* Num of Packet Filter per Bearer */
+#define MAX_NUM_OF_GTP_NODE         8
 
-#define MAX_POOL_OF_UE          (MAX_NUM_OF_ENB * MAX_NUM_OF_UE)
-#define MAX_POOL_OF_SESS        (MAX_POOL_OF_UE * MAX_NUM_OF_SESS)
-#define MAX_POOL_OF_BEARER      (MAX_POOL_OF_SESS * MAX_NUM_OF_BEARER)
-#define MAX_POOL_OF_PF          (MAX_POOL_OF_BEARER * MAX_NUM_OF_PF)
+#define MAX_POOL_OF_UE              (MAX_NUM_OF_ENB * MAX_NUM_OF_UE)
+#define MAX_POOL_OF_SESS            (MAX_POOL_OF_UE * MAX_NUM_OF_SESS)
+#define MAX_POOL_OF_BEARER          (MAX_POOL_OF_SESS * MAX_NUM_OF_BEARER)
+#define MAX_POOL_OF_TUNNEL          (MAX_POOL_OF_BEARER * MAX_NUM_OF_TUNNEL)
+#define MAX_POOL_OF_PF              (MAX_POOL_OF_BEARER * MAX_NUM_OF_PF)
 
 #define MAX_NUM_OF_PCC_RULE         8 
 #define MAX_NUM_OF_FLOW             8   /* Num of Flow per PCC Rule */
