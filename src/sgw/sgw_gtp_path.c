@@ -4,6 +4,7 @@
 #include "core_net.h"
 
 #include "types.h"
+#include "gtp_types.h"
 #include "gtp_path.h"
 
 #include "sgw_context.h"
@@ -221,7 +222,7 @@ static int _gtpv1_s1u_recv_cb(net_sock_t *sock, void *data)
     pkbuf_t *pkbuf = NULL;
     gtp_node_t gnode;
     gtp_header_t *gtp_h = NULL;
-    sgw_bearer_t *bearer = NULL;
+    sgw_tunnel_t *tunnel = NULL;
     c_uint32_t teid;
 
     d_assert(sock, return -1, "Null param");
@@ -263,6 +264,28 @@ static int _gtpv1_s1u_recv_cb(net_sock_t *sock, void *data)
         teid = ntohl(gtp_h->teid);
         d_trace(50, "Recv GPDU (teid = 0x%x) from ENB\n",teid);
 
+        tunnel = sgw_tunnel_find_by_teid(teid);
+        if (tunnel)
+        {
+            gtp_h->teid =  htonl(tunnel->remote_teid);
+            
+            gnode.addr = tunnel->remote_addr;
+            gnode.port = GTPV1_U_UDP_PORT;
+            if (tunnel->interface_type == GTP_F_TEID_S1_U_ENODEB_GTP_U)
+                gnode.sock = sgw_self()->s5u_sock;
+            else if (tunnel->interface_type ==
+                    GTP_F_TEID_ENODEB_GTP_U_FOR_DL_DATA_FORWARDING)
+                gnode.sock = sgw_self()->s1u_sock;
+            else if (tunnel->interface_type ==
+                    GTP_F_TEID_ENODEB_GTP_U_FOR_UL_DATA_FORWARDING)
+                gnode.sock = sgw_self()->s1u_sock;
+            else
+                d_assert(0, return -1, "Invalid type(%d)",
+                        tunnel->interface_type);
+
+            gtp_send(&gnode, pkbuf);
+        }
+#if 0
         bearer = sgw_bearer_find_by_sgw_s1u_teid(teid);
         if (bearer)
         {
@@ -275,6 +298,7 @@ static int _gtpv1_s1u_recv_cb(net_sock_t *sock, void *data)
 
             gtp_send(&gnode, pkbuf);
         }
+#endif
     }
 
     pkbuf_free(pkbuf);
