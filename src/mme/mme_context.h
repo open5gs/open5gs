@@ -9,6 +9,7 @@
 #include "core_hash.h"
 
 #include "types.h"
+#include "s1ap_message.h"
 #include "nas_message.h"
 #include "gtp_xact.h"
 #include "s6a_message.h"
@@ -267,6 +268,9 @@ struct _mme_ue_t {
 
     /* Detach Request */
     nas_detach_type_t detach_type;
+
+    /* S1AP Transparent Container */
+    OCTET_STRING_t container;
 
     /* GTP Request/Response Counter */
 #define GTP_COUNTER_INCREMENT(__mME, __tYPE) \

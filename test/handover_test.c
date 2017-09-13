@@ -601,7 +601,7 @@ abts_suite *test_handover(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
-#if 1
+#if 0
     abts_run_test(suite, handover_test1, NULL);
 #else
     abts_run_test(suite, handover_test2, NULL);

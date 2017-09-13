@@ -1181,6 +1181,9 @@ status_t mme_ue_remove(mme_ue_t *mme_ue)
         core_free(mme_ue->radio_capa);
     }
 
+    /* Clear Transparent Container */
+    S1AP_CLEAR_DATA(&mme_ue->container);
+
     mme_sess_remove_all(mme_ue);
     mme_pdn_remove_all(mme_ue);
 

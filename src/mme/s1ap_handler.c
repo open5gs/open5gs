@@ -769,6 +769,9 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
 #endif
     }
 
+    S1AP_STORE_DATA(
+        &mme_ue->container, &ies->target_ToSource_TransparentContainer);
+
 #if 0
     rv = s1ap_send_handover_request(mme_ue, ies);
     d_assert(rv == CORE_OK,, "s1ap send error");

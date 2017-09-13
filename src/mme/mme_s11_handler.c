@@ -150,32 +150,32 @@ void mme_s11_handle_delete_session_response(
 
     if (FSM_CHECK(&mme_ue->sm, emm_state_authentication))
     {
-        mme_sess_remove(sess);
-        if (mme_sess_first(mme_ue) == NULL)
-        {
+        GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_DELETE_SESSION,
             CLEAR_SGW_S11_PATH(mme_ue);
             mme_s6a_send_air(mme_ue);
-        }
+        );
+
+        mme_sess_remove(sess);
     }
     else if (FSM_CHECK(&mme_ue->sm, emm_state_detached))
     {
-        mme_sess_remove(sess);
-        if (mme_sess_first(mme_ue) == NULL)
-        {
+        GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_DELETE_SESSION,
             CLEAR_SGW_S11_PATH(mme_ue);
             rv = nas_send_detach_accept(mme_ue);
             d_assert(rv == CORE_OK, return, "nas_send_detach_accept failed");
+        );
 
-        }
+        mme_sess_remove(sess);
     }
     else if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
     {
         mme_bearer_t *bearer = mme_default_bearer_in_sess(sess);
         d_assert(bearer, return, "Null param");
 
+        GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_DELETE_SESSION,); 
+
         if (FSM_CHECK(&bearer->sm, esm_state_disconnect))
         {
-
             rv = nas_send_deactivate_bearer_context_request(bearer);
             d_assert(rv == CORE_OK, return,
                 "nas_send_deactivate_bearer_context_request failed");
