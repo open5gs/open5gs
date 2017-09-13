@@ -272,15 +272,6 @@ void s1ap_handle_initial_context_setup_response(
             INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
             enb->enb_id);
 
-    if (mme_ue->nas_eps.type == MME_UE_EPS_ATTACH_TYPE)
-    {
-        MODIFY_BEARER_TRANSACTION_BEGIN(mme_ue, MODIFY_BEARER_BY_EPS_ATTACH);
-    }
-    else if (mme_ue->nas_eps.type == MME_UE_EPS_UPDATE_TYPE)
-    {
-        MODIFY_BEARER_TRANSACTION_BEGIN(mme_ue, MODIFY_BEARER_BY_EPS_UPDATE);
-    }
-
     for (i = 0; i < ies->e_RABSetupListCtxtSURes.
             s1ap_E_RABSetupItemCtxtSURes.count; i++)
     {
@@ -305,7 +296,8 @@ void s1ap_handle_initial_context_setup_response(
         if (FSM_CHECK(&bearer->sm, esm_state_active))
         {
             status_t rv;
-            rv = mme_gtp_send_modify_bearer_request(bearer);
+            rv = mme_gtp_send_modify_bearer_request(bearer,
+                mme_ue->nas_eps.type != MME_UE_EPS_ATTACH_TYPE ? 1 : 0);
             d_assert(rv == CORE_OK, return, "gtp send failed");
         }
     }
@@ -338,8 +330,6 @@ void s1ap_handle_e_rab_setup_response(
             INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
             enb->enb_id);
 
-    MODIFY_BEARER_TRANSACTION_BEGIN(mme_ue, MODIFY_BEARER_BY_E_RAB_SETUP);
-
     for (i = 0; i < ies->e_RABSetupListBearerSURes.
             s1ap_E_RABSetupItemBearerSURes.count; i++)
     {
@@ -368,7 +358,7 @@ void s1ap_handle_e_rab_setup_response(
 
             if (bearer->ebi == linked_bearer->ebi)
             {
-                rv = mme_gtp_send_modify_bearer_request(bearer);
+                rv = mme_gtp_send_modify_bearer_request(bearer, 0);
                 d_assert(rv == CORE_OK, return, "gtp send failed");
             }
             else
@@ -621,9 +611,6 @@ void s1ap_handle_path_switch_request(
     mme_ue->ue_network_capability.eia = eia >> 9;
     mme_ue->ue_network_capability.eia0 = 0;
 
-    MODIFY_BEARER_TRANSACTION_BEGIN(mme_ue,
-            MODIFY_BEARER_BY_PATH_SWITCH_REQUEST);
-
     for (i = 0; i < ies->e_RABToBeSwitchedDLList.
             s1ap_E_RABToBeSwitchedDLItem.count; i++)
     {
@@ -645,7 +632,10 @@ void s1ap_handle_path_switch_request(
         memcpy(&bearer->enb_s1u_addr, e_rab->transportLayerAddress.buf,
                 sizeof(bearer->enb_s1u_addr));
 
-        rv = mme_gtp_send_modify_bearer_request(bearer);
+        GTP_COUNTER_INCREMENT(
+                mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_PATH_SWITCH);
+
+        rv = mme_gtp_send_modify_bearer_request(bearer, 1);
         d_assert(rv == CORE_OK, return, "gtp send failed");
     }
 

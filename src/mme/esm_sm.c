@@ -79,10 +79,7 @@ void esm_state_inactive(fsm_t *s, event_t *e)
 
                     if (MME_HAVE_ENB_S1U_PATH(bearer))
                     {
-                        MODIFY_BEARER_TRANSACTION_BEGIN(
-                                mme_ue, MODIFY_BEARER_BY_EPS_ATTACH);
-
-                        rv = mme_gtp_send_modify_bearer_request(bearer);
+                        rv = mme_gtp_send_modify_bearer_request(bearer, 0);
                         d_assert(rv == CORE_OK, return, "gtp send failed");
                     }
 

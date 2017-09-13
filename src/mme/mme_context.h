@@ -268,32 +268,36 @@ struct _mme_ue_t {
     /* Detach Request */
     nas_detach_type_t detach_type;
 
-    /* Modify Bearer Request/Response */
-    struct {
-#define MODIFY_BEARER_BY_EPS_ATTACH 1
-#define MODIFY_BEARER_BY_EPS_UPDATE 2 
-#define MODIFY_BEARER_BY_E_RAB_SETUP 3
-#define MODIFY_BEARER_BY_PATH_SWITCH_REQUEST 4
-        c_uint8_t type;
-
-#define MODIFY_BEARER_TRANSACTION_BEGIN(__mME, __tYPE) \
+    /* GTP Request/Response Counter */
+#define GTP_COUNTER_INCREMENT(__mME, __tYPE) \
         do { \
             d_assert((__mME), break,); \
-            d_assert(\
-                ((__mME)->modify_bearer.counter.request) == \
-                ((__mME)->modify_bearer.counter.response), break,); \
-            (__mME)->modify_bearer.type = (__tYPE); \
+            ((__mME)->gtp_counter[__tYPE].request)++; \
         } while(0);
 
-#define MODIFY_BEARER_TRANSACTION_END(__mME) \
-        (__mME) && \
-        ((__mME)->modify_bearer.counter.request) == \
-        ((__mME)->modify_bearer.counter.response)
-        struct {
-            c_uint64_t request;
-            c_uint64_t response;
-        } counter;
-    } modify_bearer;
+#define GTP_COUNTER_CHECK(__mME, __tYPE, __eXPR) \
+        do { \
+            d_assert((__mME), break,); \
+            ((__mME)->gtp_counter[__tYPE].response)++; \
+            if (((__mME)->gtp_counter[__tYPE].request) == \
+                ((__mME)->gtp_counter[__tYPE].response)) \
+            { \
+                ((__mME)->gtp_counter[__tYPE].request) = 0; \
+                ((__mME)->gtp_counter[__tYPE].response) = 0; \
+                __eXPR \
+            } \
+        } while(0);
+
+#define MAX_NUM_OF_GTP_COUNTER 16
+
+#define GTP_COUNTER_DELETE_SESSION 0
+#define GTP_COUNTER_MODIFY_BEARER_BY_PATH_SWITCH 1
+#define GTP_COUNTER_CREATE_INDIRECT_TUNNEL 2
+#define GTP_COUNTER_DELETE_INDIRECT_TUNNEL 3
+    struct {
+        c_uint8_t request;
+        c_uint8_t response;
+    } gtp_counter[MAX_NUM_OF_GTP_COUNTER];
 };
 
 #define MME_HAVE_SGW_S1U_PATH(__sESS) \

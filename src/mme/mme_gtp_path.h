@@ -13,7 +13,8 @@ CORE_DECLARE(status_t) mme_gtp_open();
 CORE_DECLARE(status_t) mme_gtp_close();
 
 CORE_DECLARE(status_t) mme_gtp_send_create_session_request(mme_sess_t *sess);
-CORE_DECLARE(status_t) mme_gtp_send_modify_bearer_request(mme_bearer_t *bearer);
+CORE_DECLARE(status_t) mme_gtp_send_modify_bearer_request(
+        mme_bearer_t *bearer, int uli_present);
 CORE_DECLARE(status_t) mme_gtp_send_delete_session_request(mme_sess_t *sess);
 CORE_DECLARE(status_t) mme_gtp_send_delete_all_sessions(mme_ue_t *mme_ue);
 CORE_DECLARE(status_t) mme_gtp_send_create_bearer_response(

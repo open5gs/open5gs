@@ -161,7 +161,7 @@ status_t mme_s11_build_create_session_request(
 }
 
 status_t mme_s11_build_modify_bearer_request(
-        pkbuf_t **pkbuf, c_uint8_t type, mme_bearer_t *bearer)
+        pkbuf_t **pkbuf, c_uint8_t type, mme_bearer_t *bearer, int uli_present)
 {
     status_t rv;
     gtp_message_t gtp_message;
@@ -195,8 +195,7 @@ status_t mme_s11_build_modify_bearer_request(
     req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.len = 
         GTP_F_TEID_IPV4_LEN;
 
-    if (mme_ue->modify_bearer.type == MODIFY_BEARER_BY_EPS_UPDATE ||
-        mme_ue->modify_bearer.type == MODIFY_BEARER_BY_PATH_SWITCH_REQUEST)
+    if (uli_present)
     {
         memset(&uli, 0, sizeof(gtp_uli_t));
         uli.flags.e_cgi = 1;
@@ -215,8 +214,6 @@ status_t mme_s11_build_modify_bearer_request(
     gtp_message.h.type = type;
     rv = gtp_build_msg(pkbuf, &gtp_message);
     d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");
-
-    mme_ue->modify_bearer.counter.request++;
 
     return CORE_OK;
 }

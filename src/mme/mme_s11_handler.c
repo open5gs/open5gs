@@ -120,16 +120,10 @@ void mme_s11_handle_modify_bearer_response(
     rv = gtp_xact_commit(xact);
     d_assert(rv == CORE_OK, return, "xact_commit error");
 
-    mme_ue->modify_bearer.counter.response++;
-
-    if (MODIFY_BEARER_TRANSACTION_END(mme_ue))
-    {
-        if (mme_ue->modify_bearer.type == MODIFY_BEARER_BY_PATH_SWITCH_REQUEST)
-        {
-            rv = s1ap_send_path_switch_ack(mme_ue);
-            d_assert(rv == CORE_OK, return, "s1ap send error");
-        }
-    }
+    GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_PATH_SWITCH,
+        rv = s1ap_send_path_switch_ack(mme_ue);
+        d_assert(rv == CORE_OK, return, "s1ap send error");
+    );
 }
 
 void mme_s11_handle_delete_session_response(

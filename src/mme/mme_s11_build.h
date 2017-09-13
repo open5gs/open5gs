@@ -10,7 +10,7 @@ extern "C" {
 CORE_DECLARE(status_t) mme_s11_build_create_session_request(
         pkbuf_t **pkbuf, c_uint8_t type, mme_sess_t *sess);
 CORE_DECLARE(status_t) mme_s11_build_modify_bearer_request(
-        pkbuf_t **pkbuf, c_uint8_t type, mme_bearer_t *bearer);
+        pkbuf_t **pkbuf, c_uint8_t type, mme_bearer_t *bearer, int uli_present);
 CORE_DECLARE(status_t) mme_s11_build_delete_session_request(
         pkbuf_t **pkbuf, c_uint8_t type, mme_sess_t *sess);
 CORE_DECLARE(status_t) mme_s11_build_create_bearer_response(
