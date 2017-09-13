@@ -557,14 +557,24 @@ for key in iesDefs:
             elif ie[3] == "conditional":
                 f.write("    /* Conditional field */\n")
             f.write("    if (%s->presenceMask & %s_%s_PRESENT) {\n" % (lowerFirstCamelWord(re.sub('-', '_', key)), keyupperunderscore, ieupperunderscore))
-            #f.write("        == %s_%s_PRESENT) {\n" % (keyupperunderscore, ieupperunderscore))
+            if ie[2] in ieofielist.keys():
+                f.write("        %s_t %s;\n\n" % (ietypeunderscore, ienamefirstwordlower))
+                f.write("        memset(&%s, 0, sizeof(%s_t));\n" % (ienamefirstwordlower, ietypeunderscore))
+                f.write("\n")
+                f.write("        if (%s_encode_%s(&%s, &%s->%s) < 0) return -1;\n" % (fileprefix, ietypeunderscore.lower(), ienamefirstwordlower, lowerFirstCamelWord(re.sub('-', '_', key)), ienamefirstwordlower))
             f.write("        if ((ie = %s_new_ie(%s_ProtocolIE_ID_%s,\n" % (fileprefix, fileprefix_first_upper, re.sub('-', '_', ie[0])))
             f.write("                            %s_Criticality_%s,\n" % (fileprefix_first_upper, ie[1]))
             f.write("                            &asn_DEF_%s,\n" % (ietypeunderscore))
-            f.write("                            &%s->%s)) == NULL) {\n" % (lowerFirstCamelWord(re.sub('-', '_', key)), ienamefirstwordlower))
+            if ie[2] in ieofielist.keys():
+                f.write("                            &%s)) == NULL) {\n" % (ienamefirstwordlower))
+            else:
+                f.write("                            &%s->%s)) == NULL) {\n" % (lowerFirstCamelWord(re.sub('-', '_', key)), ienamefirstwordlower))
             f.write("            return -1;\n")
             f.write("        }\n")
             f.write("        ASN_SEQUENCE_ADD(&%s->%slist, ie);\n" % (firstwordlower, iesaccess))
+            if ie[2] in ieofielist.keys():
+                f.write("        /* Free any dynamic allocation that is no more used */\n")
+                f.write("        ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_%s, &%s);\n\n" % (ietypeunderscore, ienamefirstwordlower))
             f.write("    }\n\n")
         else:
             if ie[2] in ieofielist.keys():
@@ -576,9 +586,9 @@ for key in iesDefs:
             f.write("                        %s_Criticality_%s,\n" % (fileprefix_first_upper, ie[1]))
             f.write("                        &asn_DEF_%s,\n" % (ietypeunderscore))
             if ie[2] in ieofielist.keys():
-                f.write("                          &%s)) == NULL) {\n" % (ienamefirstwordlower))
+                f.write("                        &%s)) == NULL) {\n" % (ienamefirstwordlower))
             else:
-                f.write("                          &%s->%s)) == NULL) {\n" % (lowerFirstCamelWord(re.sub('-', '_', key)), ienamefirstwordlower))
+                f.write("                        &%s->%s)) == NULL) {\n" % (lowerFirstCamelWord(re.sub('-', '_', key)), ienamefirstwordlower))
             f.write("        return -1;\n")
             f.write("    }\n")
             f.write("    ASN_SEQUENCE_ADD(&%s->%slist, ie);\n\n" % (firstwordlower, iesaccess))

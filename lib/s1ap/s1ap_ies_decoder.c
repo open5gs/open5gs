@@ -30,7 +30,7 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-08-01 09:50:55.515948 by acetcom
+ * Created on: 2017-09-13 23:14:37.559559 by acetcom
  * from ['S1AP-PDU.asn']
  ******************************************************************************/
 #define TRACE_MODULE _s1ap_ies_decoder

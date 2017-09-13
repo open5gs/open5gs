@@ -30,7 +30,7 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-08-01 09:50:55.545285 by acetcom
+ * Created on: 2017-09-13 23:14:37.589252 by acetcom
  * from ['S1AP-PDU.asn']
  ******************************************************************************/
 #define TRACE_MODULE _s1ap_ies_encoder
@@ -51,7 +51,7 @@ int s1ap_encode_s1ap_deactivatetraceies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_DeactivateTraceIEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_DeactivateTraceIEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_DeactivateTrace->protocolIEs.list, ie);
@@ -59,7 +59,7 @@ int s1ap_encode_s1ap_deactivatetraceies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_DeactivateTraceIEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_DeactivateTraceIEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_DeactivateTrace->protocolIEs.list, ie);
@@ -67,7 +67,7 @@ int s1ap_encode_s1ap_deactivatetraceies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_UTRAN_Trace_ID,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_E_UTRAN_Trace_ID,
-                          &s1ap_DeactivateTraceIEs->e_UTRAN_Trace_ID)) == NULL) {
+                        &s1ap_DeactivateTraceIEs->e_UTRAN_Trace_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_DeactivateTrace->protocolIEs.list, ie);
@@ -89,7 +89,7 @@ int s1ap_encode_s1ap_enbdirectinformationtransferies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Inter_SystemInformationTransferTypeEDT,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_Inter_SystemInformationTransferType,
-                          &s1ap_ENBDirectInformationTransferIEs->inter_SystemInformationTransferTypeEDT)) == NULL) {
+                        &s1ap_ENBDirectInformationTransferIEs->inter_SystemInformationTransferTypeEDT)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_ENBDirectInformationTransfer->protocolIEs.list, ie);
@@ -111,7 +111,7 @@ int s1ap_encode_s1ap_e_rabreleaseresponseies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_E_RABReleaseResponseIEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_E_RABReleaseResponseIEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_E_RABReleaseResponse->protocolIEs.list, ie);
@@ -119,31 +119,47 @@ int s1ap_encode_s1ap_e_rabreleaseresponseies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_E_RABReleaseResponseIEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_E_RABReleaseResponseIEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_E_RABReleaseResponse->protocolIEs.list, ie);
 
     /* Optional field */
     if (s1ap_E_RABReleaseResponseIEs->presenceMask & S1AP_E_RABRELEASERESPONSEIES_E_RABRELEASELISTBEARERRELCOMP_PRESENT) {
+        S1ap_E_RABReleaseListBearerRelComp_t e_RABReleaseListBearerRelComp;
+
+        memset(&e_RABReleaseListBearerRelComp, 0, sizeof(S1ap_E_RABReleaseListBearerRelComp_t));
+
+        if (s1ap_encode_s1ap_e_rabreleaselistbearerrelcomp(&e_RABReleaseListBearerRelComp, &s1ap_E_RABReleaseResponseIEs->e_RABReleaseListBearerRelComp) < 0) return -1;
         if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABReleaseListBearerRelComp,
                             S1ap_Criticality_ignore,
                             &asn_DEF_S1ap_E_RABReleaseListBearerRelComp,
-                            &s1ap_E_RABReleaseResponseIEs->e_RABReleaseListBearerRelComp)) == NULL) {
+                            &e_RABReleaseListBearerRelComp)) == NULL) {
             return -1;
         }
         ASN_SEQUENCE_ADD(&s1ap_E_RABReleaseResponse->protocolIEs.list, ie);
+        /* Free any dynamic allocation that is no more used */
+        ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABReleaseListBearerRelComp, &e_RABReleaseListBearerRelComp);
+
     }
 
     /* Optional field */
     if (s1ap_E_RABReleaseResponseIEs->presenceMask & S1AP_E_RABRELEASERESPONSEIES_E_RABFAILEDTORELEASELIST_PRESENT) {
+        S1ap_E_RABList_t e_RABFailedToReleaseList;
+
+        memset(&e_RABFailedToReleaseList, 0, sizeof(S1ap_E_RABList_t));
+
+        if (s1ap_encode_s1ap_e_rablist(&e_RABFailedToReleaseList, &s1ap_E_RABReleaseResponseIEs->e_RABFailedToReleaseList) < 0) return -1;
         if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABFailedToReleaseList,
                             S1ap_Criticality_ignore,
                             &asn_DEF_S1ap_E_RABList,
-                            &s1ap_E_RABReleaseResponseIEs->e_RABFailedToReleaseList)) == NULL) {
+                            &e_RABFailedToReleaseList)) == NULL) {
             return -1;
         }
         ASN_SEQUENCE_ADD(&s1ap_E_RABReleaseResponse->protocolIEs.list, ie);
+        /* Free any dynamic allocation that is no more used */
+        ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABList, &e_RABFailedToReleaseList);
+
     }
 
     /* Optional field */
@@ -174,7 +190,7 @@ int s1ap_encode_s1ap_uplinknonueassociatedlppatransport_ies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Routing_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_Routing_ID,
-                          &s1ap_UplinkNonUEAssociatedLPPaTransport_IEs->routing_ID)) == NULL) {
+                        &s1ap_UplinkNonUEAssociatedLPPaTransport_IEs->routing_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_UplinkNonUEAssociatedLPPaTransport->protocolIEs.list, ie);
@@ -182,7 +198,7 @@ int s1ap_encode_s1ap_uplinknonueassociatedlppatransport_ies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_LPPa_PDU,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_LPPa_PDU,
-                          &s1ap_UplinkNonUEAssociatedLPPaTransport_IEs->lpPa_PDU)) == NULL) {
+                        &s1ap_UplinkNonUEAssociatedLPPaTransport_IEs->lpPa_PDU)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_UplinkNonUEAssociatedLPPaTransport->protocolIEs.list, ie);
@@ -204,7 +220,7 @@ int s1ap_encode_s1ap_tracestarties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_TraceStartIEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_TraceStartIEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_TraceStart->protocolIEs.list, ie);
@@ -212,7 +228,7 @@ int s1ap_encode_s1ap_tracestarties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_TraceStartIEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_TraceStartIEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_TraceStart->protocolIEs.list, ie);
@@ -220,7 +236,7 @@ int s1ap_encode_s1ap_tracestarties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_TraceActivation,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_TraceActivation,
-                          &s1ap_TraceStartIEs->traceActivation)) == NULL) {
+                        &s1ap_TraceStartIEs->traceActivation)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_TraceStart->protocolIEs.list, ie);
@@ -242,7 +258,7 @@ int s1ap_encode_s1ap_writereplacewarningresponseies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MessageIdentifier,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_MessageIdentifier,
-                          &s1ap_WriteReplaceWarningResponseIEs->messageIdentifier)) == NULL) {
+                        &s1ap_WriteReplaceWarningResponseIEs->messageIdentifier)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_WriteReplaceWarningResponse->protocolIEs.list, ie);
@@ -250,7 +266,7 @@ int s1ap_encode_s1ap_writereplacewarningresponseies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_SerialNumber,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_SerialNumber,
-                          &s1ap_WriteReplaceWarningResponseIEs->serialNumber)) == NULL) {
+                        &s1ap_WriteReplaceWarningResponseIEs->serialNumber)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_WriteReplaceWarningResponse->protocolIEs.list, ie);
@@ -294,7 +310,7 @@ int s1ap_encode_s1ap_handovercancelies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_HandoverCancelIEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_HandoverCancelIEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_HandoverCancel->protocolIEs.list, ie);
@@ -302,7 +318,7 @@ int s1ap_encode_s1ap_handovercancelies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_HandoverCancelIEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_HandoverCancelIEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_HandoverCancel->protocolIEs.list, ie);
@@ -310,7 +326,7 @@ int s1ap_encode_s1ap_handovercancelies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Cause,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_Cause,
-                          &s1ap_HandoverCancelIEs->cause)) == NULL) {
+                        &s1ap_HandoverCancelIEs->cause)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_HandoverCancel->protocolIEs.list, ie);
@@ -332,7 +348,7 @@ int s1ap_encode_s1ap_handoverpreparationfailureies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_HandoverPreparationFailureIEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_HandoverPreparationFailureIEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_HandoverPreparationFailure->protocolIEs.list, ie);
@@ -340,7 +356,7 @@ int s1ap_encode_s1ap_handoverpreparationfailureies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_HandoverPreparationFailureIEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_HandoverPreparationFailureIEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_HandoverPreparationFailure->protocolIEs.list, ie);
@@ -348,7 +364,7 @@ int s1ap_encode_s1ap_handoverpreparationfailureies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Cause,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_Cause,
-                          &s1ap_HandoverPreparationFailureIEs->cause)) == NULL) {
+                        &s1ap_HandoverPreparationFailureIEs->cause)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_HandoverPreparationFailure->protocolIEs.list, ie);
@@ -381,7 +397,7 @@ int s1ap_encode_s1ap_uecontextreleaserequest_ies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_UEContextReleaseRequest_IEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_UEContextReleaseRequest_IEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_UEContextReleaseRequest->protocolIEs.list, ie);
@@ -389,7 +405,7 @@ int s1ap_encode_s1ap_uecontextreleaserequest_ies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_UEContextReleaseRequest_IEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_UEContextReleaseRequest_IEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_UEContextReleaseRequest->protocolIEs.list, ie);
@@ -397,7 +413,7 @@ int s1ap_encode_s1ap_uecontextreleaserequest_ies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Cause,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_Cause,
-                          &s1ap_UEContextReleaseRequest_IEs->cause)) == NULL) {
+                        &s1ap_UEContextReleaseRequest_IEs->cause)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_UEContextReleaseRequest->protocolIEs.list, ie);
@@ -430,7 +446,7 @@ int s1ap_encode_s1ap_initialuemessage_ies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_InitialUEMessage_IEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_InitialUEMessage_IEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_InitialUEMessage->protocolIEs.list, ie);
@@ -438,7 +454,7 @@ int s1ap_encode_s1ap_initialuemessage_ies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_NAS_PDU,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_NAS_PDU,
-                          &s1ap_InitialUEMessage_IEs->nas_pdu)) == NULL) {
+                        &s1ap_InitialUEMessage_IEs->nas_pdu)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_InitialUEMessage->protocolIEs.list, ie);
@@ -446,7 +462,7 @@ int s1ap_encode_s1ap_initialuemessage_ies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_TAI,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_TAI,
-                          &s1ap_InitialUEMessage_IEs->tai)) == NULL) {
+                        &s1ap_InitialUEMessage_IEs->tai)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_InitialUEMessage->protocolIEs.list, ie);
@@ -454,7 +470,7 @@ int s1ap_encode_s1ap_initialuemessage_ies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_EUTRAN_CGI,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_EUTRAN_CGI,
-                          &s1ap_InitialUEMessage_IEs->eutran_cgi)) == NULL) {
+                        &s1ap_InitialUEMessage_IEs->eutran_cgi)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_InitialUEMessage->protocolIEs.list, ie);
@@ -462,7 +478,7 @@ int s1ap_encode_s1ap_initialuemessage_ies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_RRC_Establishment_Cause,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_RRC_Establishment_Cause,
-                          &s1ap_InitialUEMessage_IEs->rrC_Establishment_Cause)) == NULL) {
+                        &s1ap_InitialUEMessage_IEs->rrC_Establishment_Cause)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_InitialUEMessage->protocolIEs.list, ie);
@@ -550,7 +566,7 @@ int s1ap_encode_s1ap_killrequesties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MessageIdentifier,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_MessageIdentifier,
-                          &s1ap_KillRequestIEs->messageIdentifier)) == NULL) {
+                        &s1ap_KillRequestIEs->messageIdentifier)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_KillRequest->protocolIEs.list, ie);
@@ -558,7 +574,7 @@ int s1ap_encode_s1ap_killrequesties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_SerialNumber,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_SerialNumber,
-                          &s1ap_KillRequestIEs->serialNumber)) == NULL) {
+                        &s1ap_KillRequestIEs->serialNumber)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_KillRequest->protocolIEs.list, ie);
@@ -591,7 +607,7 @@ int s1ap_encode_s1ap_writereplacewarningrequesties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MessageIdentifier,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_MessageIdentifier,
-                          &s1ap_WriteReplaceWarningRequestIEs->messageIdentifier)) == NULL) {
+                        &s1ap_WriteReplaceWarningRequestIEs->messageIdentifier)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_WriteReplaceWarningRequest->protocolIEs.list, ie);
@@ -599,7 +615,7 @@ int s1ap_encode_s1ap_writereplacewarningrequesties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_SerialNumber,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_SerialNumber,
-                          &s1ap_WriteReplaceWarningRequestIEs->serialNumber)) == NULL) {
+                        &s1ap_WriteReplaceWarningRequestIEs->serialNumber)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_WriteReplaceWarningRequest->protocolIEs.list, ie);
@@ -618,7 +634,7 @@ int s1ap_encode_s1ap_writereplacewarningrequesties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_RepetitionPeriod,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_RepetitionPeriod,
-                          &s1ap_WriteReplaceWarningRequestIEs->repetitionPeriod)) == NULL) {
+                        &s1ap_WriteReplaceWarningRequestIEs->repetitionPeriod)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_WriteReplaceWarningRequest->protocolIEs.list, ie);
@@ -637,7 +653,7 @@ int s1ap_encode_s1ap_writereplacewarningrequesties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_NumberofBroadcastRequest,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_NumberofBroadcastRequest,
-                          &s1ap_WriteReplaceWarningRequestIEs->numberofBroadcastRequest)) == NULL) {
+                        &s1ap_WriteReplaceWarningRequestIEs->numberofBroadcastRequest)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_WriteReplaceWarningRequest->protocolIEs.list, ie);
@@ -714,7 +730,7 @@ int s1ap_encode_s1ap_uecapabilityinfoindicationies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_UECapabilityInfoIndicationIEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_UECapabilityInfoIndicationIEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_UECapabilityInfoIndication->protocolIEs.list, ie);
@@ -722,7 +738,7 @@ int s1ap_encode_s1ap_uecapabilityinfoindicationies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_UECapabilityInfoIndicationIEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_UECapabilityInfoIndicationIEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_UECapabilityInfoIndication->protocolIEs.list, ie);
@@ -730,7 +746,7 @@ int s1ap_encode_s1ap_uecapabilityinfoindicationies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_UERadioCapability,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_UERadioCapability,
-                          &s1ap_UECapabilityInfoIndicationIEs->ueRadioCapability)) == NULL) {
+                        &s1ap_UECapabilityInfoIndicationIEs->ueRadioCapability)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_UECapabilityInfoIndication->protocolIEs.list, ie);
@@ -752,7 +768,7 @@ int s1ap_encode_s1ap_locationreportingfailureindicationies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_LocationReportingFailureIndicationIEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_LocationReportingFailureIndicationIEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_LocationReportingFailureIndication->protocolIEs.list, ie);
@@ -760,7 +776,7 @@ int s1ap_encode_s1ap_locationreportingfailureindicationies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_LocationReportingFailureIndicationIEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_LocationReportingFailureIndicationIEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_LocationReportingFailureIndication->protocolIEs.list, ie);
@@ -768,7 +784,7 @@ int s1ap_encode_s1ap_locationreportingfailureindicationies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Cause,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_Cause,
-                          &s1ap_LocationReportingFailureIndicationIEs->cause)) == NULL) {
+                        &s1ap_LocationReportingFailureIndicationIEs->cause)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_LocationReportingFailureIndication->protocolIEs.list, ie);
@@ -790,7 +806,7 @@ int s1ap_encode_s1ap_initialcontextsetuprequesties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_InitialContextSetupRequestIEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_InitialContextSetupRequestIEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_InitialContextSetupRequest->protocolIEs.list, ie);
@@ -798,7 +814,7 @@ int s1ap_encode_s1ap_initialcontextsetuprequesties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_InitialContextSetupRequestIEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_InitialContextSetupRequestIEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_InitialContextSetupRequest->protocolIEs.list, ie);
@@ -806,7 +822,7 @@ int s1ap_encode_s1ap_initialcontextsetuprequesties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_uEaggregateMaximumBitrate,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_UEAggregateMaximumBitrate,
-                          &s1ap_InitialContextSetupRequestIEs->uEaggregateMaximumBitrate)) == NULL) {
+                        &s1ap_InitialContextSetupRequestIEs->uEaggregateMaximumBitrate)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_InitialContextSetupRequest->protocolIEs.list, ie);
@@ -819,7 +835,7 @@ int s1ap_encode_s1ap_initialcontextsetuprequesties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABToBeSetupListCtxtSUReq,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_E_RABToBeSetupListCtxtSUReq,
-                          &e_RABToBeSetupListCtxtSUReq)) == NULL) {
+                        &e_RABToBeSetupListCtxtSUReq)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_InitialContextSetupRequest->protocolIEs.list, ie);
@@ -830,7 +846,7 @@ int s1ap_encode_s1ap_initialcontextsetuprequesties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_UESecurityCapabilities,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_UESecurityCapabilities,
-                          &s1ap_InitialContextSetupRequestIEs->ueSecurityCapabilities)) == NULL) {
+                        &s1ap_InitialContextSetupRequestIEs->ueSecurityCapabilities)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_InitialContextSetupRequest->protocolIEs.list, ie);
@@ -838,7 +854,7 @@ int s1ap_encode_s1ap_initialcontextsetuprequesties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_SecurityKey,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_SecurityKey,
-                          &s1ap_InitialContextSetupRequestIEs->securityKey)) == NULL) {
+                        &s1ap_InitialContextSetupRequestIEs->securityKey)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_InitialContextSetupRequest->protocolIEs.list, ie);
@@ -981,7 +997,7 @@ int s1ap_encode_s1ap_locationreporties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_LocationReportIEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_LocationReportIEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_LocationReport->protocolIEs.list, ie);
@@ -989,7 +1005,7 @@ int s1ap_encode_s1ap_locationreporties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_LocationReportIEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_LocationReportIEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_LocationReport->protocolIEs.list, ie);
@@ -997,7 +1013,7 @@ int s1ap_encode_s1ap_locationreporties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_EUTRAN_CGI,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_EUTRAN_CGI,
-                          &s1ap_LocationReportIEs->eutran_cgi)) == NULL) {
+                        &s1ap_LocationReportIEs->eutran_cgi)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_LocationReport->protocolIEs.list, ie);
@@ -1005,7 +1021,7 @@ int s1ap_encode_s1ap_locationreporties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_TAI,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_TAI,
-                          &s1ap_LocationReportIEs->tai)) == NULL) {
+                        &s1ap_LocationReportIEs->tai)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_LocationReport->protocolIEs.list, ie);
@@ -1013,7 +1029,7 @@ int s1ap_encode_s1ap_locationreporties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_RequestType,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_RequestType,
-                          &s1ap_LocationReportIEs->requestType)) == NULL) {
+                        &s1ap_LocationReportIEs->requestType)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_LocationReport->protocolIEs.list, ie);
@@ -1035,7 +1051,7 @@ int s1ap_encode_s1ap_uplinknastransport_ies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_UplinkNASTransport_IEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_UplinkNASTransport_IEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_UplinkNASTransport->protocolIEs.list, ie);
@@ -1043,7 +1059,7 @@ int s1ap_encode_s1ap_uplinknastransport_ies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_UplinkNASTransport_IEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_UplinkNASTransport_IEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_UplinkNASTransport->protocolIEs.list, ie);
@@ -1051,7 +1067,7 @@ int s1ap_encode_s1ap_uplinknastransport_ies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_NAS_PDU,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_NAS_PDU,
-                          &s1ap_UplinkNASTransport_IEs->nas_pdu)) == NULL) {
+                        &s1ap_UplinkNASTransport_IEs->nas_pdu)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_UplinkNASTransport->protocolIEs.list, ie);
@@ -1059,7 +1075,7 @@ int s1ap_encode_s1ap_uplinknastransport_ies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_EUTRAN_CGI,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_EUTRAN_CGI,
-                          &s1ap_UplinkNASTransport_IEs->eutran_cgi)) == NULL) {
+                        &s1ap_UplinkNASTransport_IEs->eutran_cgi)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_UplinkNASTransport->protocolIEs.list, ie);
@@ -1067,7 +1083,7 @@ int s1ap_encode_s1ap_uplinknastransport_ies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_TAI,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_TAI,
-                          &s1ap_UplinkNASTransport_IEs->tai)) == NULL) {
+                        &s1ap_UplinkNASTransport_IEs->tai)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_UplinkNASTransport->protocolIEs.list, ie);
@@ -1100,7 +1116,7 @@ int s1ap_encode_s1ap_uecontextmodificationresponseies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_UEContextModificationResponseIEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_UEContextModificationResponseIEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_UEContextModificationResponse->protocolIEs.list, ie);
@@ -1108,7 +1124,7 @@ int s1ap_encode_s1ap_uecontextmodificationresponseies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_UEContextModificationResponseIEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_UEContextModificationResponseIEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_UEContextModificationResponse->protocolIEs.list, ie);
@@ -1141,7 +1157,7 @@ int s1ap_encode_s1ap_uecontextmodificationrequesties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_UEContextModificationRequestIEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_UEContextModificationRequestIEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_UEContextModificationRequest->protocolIEs.list, ie);
@@ -1149,7 +1165,7 @@ int s1ap_encode_s1ap_uecontextmodificationrequesties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_UEContextModificationRequestIEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_UEContextModificationRequestIEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_UEContextModificationRequest->protocolIEs.list, ie);
@@ -1248,7 +1264,7 @@ int s1ap_encode_s1ap_locationreportingcontrolies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_LocationReportingControlIEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_LocationReportingControlIEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_LocationReportingControl->protocolIEs.list, ie);
@@ -1256,7 +1272,7 @@ int s1ap_encode_s1ap_locationreportingcontrolies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_LocationReportingControlIEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_LocationReportingControlIEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_LocationReportingControl->protocolIEs.list, ie);
@@ -1264,7 +1280,7 @@ int s1ap_encode_s1ap_locationreportingcontrolies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_RequestType,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_RequestType,
-                          &s1ap_LocationReportingControlIEs->requestType)) == NULL) {
+                        &s1ap_LocationReportingControlIEs->requestType)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_LocationReportingControl->protocolIEs.list, ie);
@@ -1286,7 +1302,7 @@ int s1ap_encode_s1ap_uplinks1cdma2000tunnelingies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_UplinkS1cdma2000tunnelingIEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_UplinkS1cdma2000tunnelingIEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_UplinkS1cdma2000tunneling->protocolIEs.list, ie);
@@ -1294,7 +1310,7 @@ int s1ap_encode_s1ap_uplinks1cdma2000tunnelingies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_UplinkS1cdma2000tunnelingIEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_UplinkS1cdma2000tunnelingIEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_UplinkS1cdma2000tunneling->protocolIEs.list, ie);
@@ -1302,7 +1318,7 @@ int s1ap_encode_s1ap_uplinks1cdma2000tunnelingies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_cdma2000RATType,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_Cdma2000RATType,
-                          &s1ap_UplinkS1cdma2000tunnelingIEs->cdma2000RATType)) == NULL) {
+                        &s1ap_UplinkS1cdma2000tunnelingIEs->cdma2000RATType)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_UplinkS1cdma2000tunneling->protocolIEs.list, ie);
@@ -1310,7 +1326,7 @@ int s1ap_encode_s1ap_uplinks1cdma2000tunnelingies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_cdma2000SectorID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_Cdma2000SectorID,
-                          &s1ap_UplinkS1cdma2000tunnelingIEs->cdma2000SectorID)) == NULL) {
+                        &s1ap_UplinkS1cdma2000tunnelingIEs->cdma2000SectorID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_UplinkS1cdma2000tunneling->protocolIEs.list, ie);
@@ -1351,7 +1367,7 @@ int s1ap_encode_s1ap_uplinks1cdma2000tunnelingies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_cdma2000PDU,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_Cdma2000PDU,
-                          &s1ap_UplinkS1cdma2000tunnelingIEs->cdma2000PDU)) == NULL) {
+                        &s1ap_UplinkS1cdma2000tunnelingIEs->cdma2000PDU)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_UplinkS1cdma2000tunneling->protocolIEs.list, ie);
@@ -1384,7 +1400,7 @@ int s1ap_encode_s1ap_handoverrequesties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_HandoverRequestIEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_HandoverRequestIEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_HandoverRequest->protocolIEs.list, ie);
@@ -1392,7 +1408,7 @@ int s1ap_encode_s1ap_handoverrequesties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_HandoverType,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_HandoverType,
-                          &s1ap_HandoverRequestIEs->handoverType)) == NULL) {
+                        &s1ap_HandoverRequestIEs->handoverType)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_HandoverRequest->protocolIEs.list, ie);
@@ -1400,7 +1416,7 @@ int s1ap_encode_s1ap_handoverrequesties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Cause,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_Cause,
-                          &s1ap_HandoverRequestIEs->cause)) == NULL) {
+                        &s1ap_HandoverRequestIEs->cause)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_HandoverRequest->protocolIEs.list, ie);
@@ -1408,7 +1424,7 @@ int s1ap_encode_s1ap_handoverrequesties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_uEaggregateMaximumBitrate,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_UEAggregateMaximumBitrate,
-                          &s1ap_HandoverRequestIEs->uEaggregateMaximumBitrate)) == NULL) {
+                        &s1ap_HandoverRequestIEs->uEaggregateMaximumBitrate)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_HandoverRequest->protocolIEs.list, ie);
@@ -1421,7 +1437,7 @@ int s1ap_encode_s1ap_handoverrequesties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABToBeSetupListHOReq,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_E_RABToBeSetupListHOReq,
-                          &e_RABToBeSetupListHOReq)) == NULL) {
+                        &e_RABToBeSetupListHOReq)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_HandoverRequest->protocolIEs.list, ie);
@@ -1432,7 +1448,7 @@ int s1ap_encode_s1ap_handoverrequesties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Source_ToTarget_TransparentContainer,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_Source_ToTarget_TransparentContainer,
-                          &s1ap_HandoverRequestIEs->source_ToTarget_TransparentContainer)) == NULL) {
+                        &s1ap_HandoverRequestIEs->source_ToTarget_TransparentContainer)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_HandoverRequest->protocolIEs.list, ie);
@@ -1440,7 +1456,7 @@ int s1ap_encode_s1ap_handoverrequesties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_UESecurityCapabilities,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_UESecurityCapabilities,
-                          &s1ap_HandoverRequestIEs->ueSecurityCapabilities)) == NULL) {
+                        &s1ap_HandoverRequestIEs->ueSecurityCapabilities)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_HandoverRequest->protocolIEs.list, ie);
@@ -1492,7 +1508,7 @@ int s1ap_encode_s1ap_handoverrequesties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_SecurityContext,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_SecurityContext,
-                          &s1ap_HandoverRequestIEs->securityContext)) == NULL) {
+                        &s1ap_HandoverRequestIEs->securityContext)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_HandoverRequest->protocolIEs.list, ie);
@@ -1569,7 +1585,7 @@ int s1ap_encode_s1ap_handoverrequiredies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_HandoverRequiredIEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_HandoverRequiredIEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_HandoverRequired->protocolIEs.list, ie);
@@ -1577,7 +1593,7 @@ int s1ap_encode_s1ap_handoverrequiredies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_HandoverRequiredIEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_HandoverRequiredIEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_HandoverRequired->protocolIEs.list, ie);
@@ -1585,7 +1601,7 @@ int s1ap_encode_s1ap_handoverrequiredies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_HandoverType,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_HandoverType,
-                          &s1ap_HandoverRequiredIEs->handoverType)) == NULL) {
+                        &s1ap_HandoverRequiredIEs->handoverType)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_HandoverRequired->protocolIEs.list, ie);
@@ -1593,7 +1609,7 @@ int s1ap_encode_s1ap_handoverrequiredies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Cause,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_Cause,
-                          &s1ap_HandoverRequiredIEs->cause)) == NULL) {
+                        &s1ap_HandoverRequiredIEs->cause)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_HandoverRequired->protocolIEs.list, ie);
@@ -1601,7 +1617,7 @@ int s1ap_encode_s1ap_handoverrequiredies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_TargetID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_TargetID,
-                          &s1ap_HandoverRequiredIEs->targetID)) == NULL) {
+                        &s1ap_HandoverRequiredIEs->targetID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_HandoverRequired->protocolIEs.list, ie);
@@ -1631,7 +1647,7 @@ int s1ap_encode_s1ap_handoverrequiredies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Source_ToTarget_TransparentContainer,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_Source_ToTarget_TransparentContainer,
-                          &s1ap_HandoverRequiredIEs->source_ToTarget_TransparentContainer)) == NULL) {
+                        &s1ap_HandoverRequiredIEs->source_ToTarget_TransparentContainer)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_HandoverRequired->protocolIEs.list, ie);
@@ -1744,7 +1760,7 @@ int s1ap_encode_s1ap_killresponseies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MessageIdentifier,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_MessageIdentifier,
-                          &s1ap_KillResponseIEs->messageIdentifier)) == NULL) {
+                        &s1ap_KillResponseIEs->messageIdentifier)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_KillResponse->protocolIEs.list, ie);
@@ -1752,7 +1768,7 @@ int s1ap_encode_s1ap_killresponseies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_SerialNumber,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_SerialNumber,
-                          &s1ap_KillResponseIEs->serialNumber)) == NULL) {
+                        &s1ap_KillResponseIEs->serialNumber)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_KillResponse->protocolIEs.list, ie);
@@ -1796,7 +1812,7 @@ int s1ap_encode_s1ap_mmestatustransferies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_MMEStatusTransferIEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_MMEStatusTransferIEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_MMEStatusTransfer->protocolIEs.list, ie);
@@ -1804,7 +1820,7 @@ int s1ap_encode_s1ap_mmestatustransferies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_MMEStatusTransferIEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_MMEStatusTransferIEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_MMEStatusTransfer->protocolIEs.list, ie);
@@ -1812,7 +1828,7 @@ int s1ap_encode_s1ap_mmestatustransferies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_StatusTransfer_TransparentContainer,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_ENB_StatusTransfer_TransparentContainer,
-                          &s1ap_MMEStatusTransferIEs->eNB_StatusTransfer_TransparentContainer)) == NULL) {
+                        &s1ap_MMEStatusTransferIEs->eNB_StatusTransfer_TransparentContainer)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_MMEStatusTransfer->protocolIEs.list, ie);
@@ -1881,7 +1897,7 @@ int s1ap_encode_s1ap_e_rabmodifyrequesties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_E_RABModifyRequestIEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_E_RABModifyRequestIEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_E_RABModifyRequest->protocolIEs.list, ie);
@@ -1889,7 +1905,7 @@ int s1ap_encode_s1ap_e_rabmodifyrequesties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_E_RABModifyRequestIEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_E_RABModifyRequestIEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_E_RABModifyRequest->protocolIEs.list, ie);
@@ -1913,7 +1929,7 @@ int s1ap_encode_s1ap_e_rabmodifyrequesties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABToBeModifiedListBearerModReq,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_E_RABToBeModifiedListBearerModReq,
-                          &e_RABToBeModifiedListBearerModReq)) == NULL) {
+                        &e_RABToBeModifiedListBearerModReq)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_E_RABModifyRequest->protocolIEs.list, ie);
@@ -1938,7 +1954,7 @@ int s1ap_encode_s1ap_enbconfigurationupdatefailureies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Cause,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_Cause,
-                          &s1ap_ENBConfigurationUpdateFailureIEs->cause)) == NULL) {
+                        &s1ap_ENBConfigurationUpdateFailureIEs->cause)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_ENBConfigurationUpdateFailure->protocolIEs.list, ie);
@@ -1982,7 +1998,7 @@ int s1ap_encode_s1ap_reseties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Cause,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_Cause,
-                          &s1ap_ResetIEs->cause)) == NULL) {
+                        &s1ap_ResetIEs->cause)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_Reset->protocolIEs.list, ie);
@@ -1990,7 +2006,7 @@ int s1ap_encode_s1ap_reseties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_ResetType,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_ResetType,
-                          &s1ap_ResetIEs->resetType)) == NULL) {
+                        &s1ap_ResetIEs->resetType)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_Reset->protocolIEs.list, ie);
@@ -2023,7 +2039,7 @@ int s1ap_encode_s1ap_s1setupresponseies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_ServedGUMMEIs,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_ServedGUMMEIs,
-                          &s1ap_S1SetupResponseIEs->servedGUMMEIs)) == NULL) {
+                        &s1ap_S1SetupResponseIEs->servedGUMMEIs)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_S1SetupResponse->protocolIEs.list, ie);
@@ -2031,7 +2047,7 @@ int s1ap_encode_s1ap_s1setupresponseies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_RelativeMMECapacity,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_RelativeMMECapacity,
-                          &s1ap_S1SetupResponseIEs->relativeMMECapacity)) == NULL) {
+                        &s1ap_S1SetupResponseIEs->relativeMMECapacity)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_S1SetupResponse->protocolIEs.list, ie);
@@ -2075,7 +2091,7 @@ int s1ap_encode_s1ap_pagingies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_UEIdentityIndexValue,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_UEIdentityIndexValue,
-                          &s1ap_PagingIEs->ueIdentityIndexValue)) == NULL) {
+                        &s1ap_PagingIEs->ueIdentityIndexValue)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_Paging->protocolIEs.list, ie);
@@ -2083,7 +2099,7 @@ int s1ap_encode_s1ap_pagingies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_UEPagingID,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_UEPagingID,
-                          &s1ap_PagingIEs->uePagingID)) == NULL) {
+                        &s1ap_PagingIEs->uePagingID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_Paging->protocolIEs.list, ie);
@@ -2102,7 +2118,7 @@ int s1ap_encode_s1ap_pagingies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_CNDomain,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_CNDomain,
-                          &s1ap_PagingIEs->cnDomain)) == NULL) {
+                        &s1ap_PagingIEs->cnDomain)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_Paging->protocolIEs.list, ie);
@@ -2115,7 +2131,7 @@ int s1ap_encode_s1ap_pagingies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_TAIList,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_TAIList,
-                          &taiList)) == NULL) {
+                        &taiList)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_Paging->protocolIEs.list, ie);
@@ -2187,7 +2203,7 @@ int s1ap_encode_s1ap_e_rabreleasecommandies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_E_RABReleaseCommandIEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_E_RABReleaseCommandIEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_E_RABReleaseCommand->protocolIEs.list, ie);
@@ -2195,7 +2211,7 @@ int s1ap_encode_s1ap_e_rabreleasecommandies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_E_RABReleaseCommandIEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_E_RABReleaseCommandIEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_E_RABReleaseCommand->protocolIEs.list, ie);
@@ -2219,7 +2235,7 @@ int s1ap_encode_s1ap_e_rabreleasecommandies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABToBeReleasedList,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_E_RABList,
-                          &e_RABToBeReleasedList)) == NULL) {
+                        &e_RABToBeReleasedList)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_E_RABReleaseCommand->protocolIEs.list, ie);
@@ -2255,7 +2271,7 @@ int s1ap_encode_s1ap_pathswitchrequestfailureies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_PathSwitchRequestFailureIEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_PathSwitchRequestFailureIEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_PathSwitchRequestFailure->protocolIEs.list, ie);
@@ -2263,7 +2279,7 @@ int s1ap_encode_s1ap_pathswitchrequestfailureies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_PathSwitchRequestFailureIEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_PathSwitchRequestFailureIEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_PathSwitchRequestFailure->protocolIEs.list, ie);
@@ -2271,7 +2287,7 @@ int s1ap_encode_s1ap_pathswitchrequestfailureies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Cause,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_Cause,
-                          &s1ap_PathSwitchRequestFailureIEs->cause)) == NULL) {
+                        &s1ap_PathSwitchRequestFailureIEs->cause)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_PathSwitchRequestFailure->protocolIEs.list, ie);
@@ -2304,7 +2320,7 @@ int s1ap_encode_s1ap_e_rabmodifyresponseies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_E_RABModifyResponseIEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_E_RABModifyResponseIEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_E_RABModifyResponse->protocolIEs.list, ie);
@@ -2312,31 +2328,47 @@ int s1ap_encode_s1ap_e_rabmodifyresponseies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_E_RABModifyResponseIEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_E_RABModifyResponseIEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_E_RABModifyResponse->protocolIEs.list, ie);
 
     /* Optional field */
     if (s1ap_E_RABModifyResponseIEs->presenceMask & S1AP_E_RABMODIFYRESPONSEIES_E_RABMODIFYLISTBEARERMODRES_PRESENT) {
+        S1ap_E_RABModifyListBearerModRes_t e_RABModifyListBearerModRes;
+
+        memset(&e_RABModifyListBearerModRes, 0, sizeof(S1ap_E_RABModifyListBearerModRes_t));
+
+        if (s1ap_encode_s1ap_e_rabmodifylistbearermodres(&e_RABModifyListBearerModRes, &s1ap_E_RABModifyResponseIEs->e_RABModifyListBearerModRes) < 0) return -1;
         if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABModifyListBearerModRes,
                             S1ap_Criticality_ignore,
                             &asn_DEF_S1ap_E_RABModifyListBearerModRes,
-                            &s1ap_E_RABModifyResponseIEs->e_RABModifyListBearerModRes)) == NULL) {
+                            &e_RABModifyListBearerModRes)) == NULL) {
             return -1;
         }
         ASN_SEQUENCE_ADD(&s1ap_E_RABModifyResponse->protocolIEs.list, ie);
+        /* Free any dynamic allocation that is no more used */
+        ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABModifyListBearerModRes, &e_RABModifyListBearerModRes);
+
     }
 
     /* Optional field */
     if (s1ap_E_RABModifyResponseIEs->presenceMask & S1AP_E_RABMODIFYRESPONSEIES_E_RABFAILEDTOMODIFYLIST_PRESENT) {
+        S1ap_E_RABList_t e_RABFailedToModifyList;
+
+        memset(&e_RABFailedToModifyList, 0, sizeof(S1ap_E_RABList_t));
+
+        if (s1ap_encode_s1ap_e_rablist(&e_RABFailedToModifyList, &s1ap_E_RABModifyResponseIEs->e_RABFailedToModifyList) < 0) return -1;
         if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABFailedToModifyList,
                             S1ap_Criticality_ignore,
                             &asn_DEF_S1ap_E_RABList,
-                            &s1ap_E_RABModifyResponseIEs->e_RABFailedToModifyList)) == NULL) {
+                            &e_RABFailedToModifyList)) == NULL) {
             return -1;
         }
         ASN_SEQUENCE_ADD(&s1ap_E_RABModifyResponse->protocolIEs.list, ie);
+        /* Free any dynamic allocation that is no more used */
+        ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABList, &e_RABFailedToModifyList);
+
     }
 
     /* Optional field */
@@ -2367,7 +2399,7 @@ int s1ap_encode_s1ap_handovernotifyies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_HandoverNotifyIEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_HandoverNotifyIEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_HandoverNotify->protocolIEs.list, ie);
@@ -2375,7 +2407,7 @@ int s1ap_encode_s1ap_handovernotifyies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_HandoverNotifyIEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_HandoverNotifyIEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_HandoverNotify->protocolIEs.list, ie);
@@ -2383,7 +2415,7 @@ int s1ap_encode_s1ap_handovernotifyies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_EUTRAN_CGI,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_EUTRAN_CGI,
-                          &s1ap_HandoverNotifyIEs->eutran_cgi)) == NULL) {
+                        &s1ap_HandoverNotifyIEs->eutran_cgi)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_HandoverNotify->protocolIEs.list, ie);
@@ -2391,7 +2423,7 @@ int s1ap_encode_s1ap_handovernotifyies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_TAI,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_TAI,
-                          &s1ap_HandoverNotifyIEs->tai)) == NULL) {
+                        &s1ap_HandoverNotifyIEs->tai)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_HandoverNotify->protocolIEs.list, ie);
@@ -2413,7 +2445,7 @@ int s1ap_encode_s1ap_handovercancelacknowledgeies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_HandoverCancelAcknowledgeIEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_HandoverCancelAcknowledgeIEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_HandoverCancelAcknowledge->protocolIEs.list, ie);
@@ -2421,7 +2453,7 @@ int s1ap_encode_s1ap_handovercancelacknowledgeies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_HandoverCancelAcknowledgeIEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_HandoverCancelAcknowledgeIEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_HandoverCancelAcknowledge->protocolIEs.list, ie);
@@ -2454,7 +2486,7 @@ int s1ap_encode_s1ap_initialcontextsetupfailureies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_InitialContextSetupFailureIEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_InitialContextSetupFailureIEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_InitialContextSetupFailure->protocolIEs.list, ie);
@@ -2462,7 +2494,7 @@ int s1ap_encode_s1ap_initialcontextsetupfailureies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_InitialContextSetupFailureIEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_InitialContextSetupFailureIEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_InitialContextSetupFailure->protocolIEs.list, ie);
@@ -2470,7 +2502,7 @@ int s1ap_encode_s1ap_initialcontextsetupfailureies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Cause,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_Cause,
-                          &s1ap_InitialContextSetupFailureIEs->cause)) == NULL) {
+                        &s1ap_InitialContextSetupFailureIEs->cause)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_InitialContextSetupFailure->protocolIEs.list, ie);
@@ -2503,7 +2535,7 @@ int s1ap_encode_s1ap_handovercommandies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_HandoverCommandIEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_HandoverCommandIEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_HandoverCommand->protocolIEs.list, ie);
@@ -2511,7 +2543,7 @@ int s1ap_encode_s1ap_handovercommandies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_HandoverCommandIEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_HandoverCommandIEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_HandoverCommand->protocolIEs.list, ie);
@@ -2519,37 +2551,53 @@ int s1ap_encode_s1ap_handovercommandies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_HandoverType,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_HandoverType,
-                          &s1ap_HandoverCommandIEs->handoverType)) == NULL) {
+                        &s1ap_HandoverCommandIEs->handoverType)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_HandoverCommand->protocolIEs.list, ie);
 
     /* Optional field */
     if (s1ap_HandoverCommandIEs->presenceMask & S1AP_HANDOVERCOMMANDIES_E_RABDATAFORWARDINGLIST_PRESENT) {
+        S1ap_E_RABDataForwardingList_t e_RABDataForwardingList;
+
+        memset(&e_RABDataForwardingList, 0, sizeof(S1ap_E_RABDataForwardingList_t));
+
+        if (s1ap_encode_s1ap_e_rabdataforwardinglist(&e_RABDataForwardingList, &s1ap_HandoverCommandIEs->e_RABDataForwardingList) < 0) return -1;
         if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABDataForwardingList,
                             S1ap_Criticality_ignore,
                             &asn_DEF_S1ap_E_RABDataForwardingList,
-                            &s1ap_HandoverCommandIEs->e_RABDataForwardingList)) == NULL) {
+                            &e_RABDataForwardingList)) == NULL) {
             return -1;
         }
         ASN_SEQUENCE_ADD(&s1ap_HandoverCommand->protocolIEs.list, ie);
+        /* Free any dynamic allocation that is no more used */
+        ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABDataForwardingList, &e_RABDataForwardingList);
+
     }
 
     /* Optional field */
     if (s1ap_HandoverCommandIEs->presenceMask & S1AP_HANDOVERCOMMANDIES_E_RABTORELEASELISTHOCMD_PRESENT) {
+        S1ap_E_RABList_t e_RABtoReleaseListHOCmd;
+
+        memset(&e_RABtoReleaseListHOCmd, 0, sizeof(S1ap_E_RABList_t));
+
+        if (s1ap_encode_s1ap_e_rablist(&e_RABtoReleaseListHOCmd, &s1ap_HandoverCommandIEs->e_RABtoReleaseListHOCmd) < 0) return -1;
         if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABtoReleaseListHOCmd,
                             S1ap_Criticality_ignore,
                             &asn_DEF_S1ap_E_RABList,
-                            &s1ap_HandoverCommandIEs->e_RABtoReleaseListHOCmd)) == NULL) {
+                            &e_RABtoReleaseListHOCmd)) == NULL) {
             return -1;
         }
         ASN_SEQUENCE_ADD(&s1ap_HandoverCommand->protocolIEs.list, ie);
+        /* Free any dynamic allocation that is no more used */
+        ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABList, &e_RABtoReleaseListHOCmd);
+
     }
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Target_ToSource_TransparentContainer,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_Target_ToSource_TransparentContainer,
-                          &s1ap_HandoverCommandIEs->target_ToSource_TransparentContainer)) == NULL) {
+                        &s1ap_HandoverCommandIEs->target_ToSource_TransparentContainer)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_HandoverCommand->protocolIEs.list, ie);
@@ -2593,7 +2641,7 @@ int s1ap_encode_s1ap_mmedirectinformationtransferies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Inter_SystemInformationTransferTypeMDT,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_Inter_SystemInformationTransferType,
-                          &s1ap_MMEDirectInformationTransferIEs->inter_SystemInformationTransferTypeMDT)) == NULL) {
+                        &s1ap_MMEDirectInformationTransferIEs->inter_SystemInformationTransferTypeMDT)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_MMEDirectInformationTransfer->protocolIEs.list, ie);
@@ -2673,7 +2721,7 @@ int s1ap_encode_s1ap_overloadstarties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_OverloadResponse,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_OverloadResponse,
-                          &s1ap_OverloadStartIEs->overloadResponse)) == NULL) {
+                        &s1ap_OverloadStartIEs->overloadResponse)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_OverloadStart->protocolIEs.list, ie);
@@ -2717,7 +2765,7 @@ int s1ap_encode_s1ap_downlinknonueassociatedlppatransport_ies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Routing_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_Routing_ID,
-                          &s1ap_DownlinkNonUEAssociatedLPPaTransport_IEs->routing_ID)) == NULL) {
+                        &s1ap_DownlinkNonUEAssociatedLPPaTransport_IEs->routing_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_DownlinkNonUEAssociatedLPPaTransport->protocolIEs.list, ie);
@@ -2725,7 +2773,7 @@ int s1ap_encode_s1ap_downlinknonueassociatedlppatransport_ies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_LPPa_PDU,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_LPPa_PDU,
-                          &s1ap_DownlinkNonUEAssociatedLPPaTransport_IEs->lpPa_PDU)) == NULL) {
+                        &s1ap_DownlinkNonUEAssociatedLPPaTransport_IEs->lpPa_PDU)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_DownlinkNonUEAssociatedLPPaTransport->protocolIEs.list, ie);
@@ -2747,7 +2795,7 @@ int s1ap_encode_s1ap_handoverrequestacknowledgeies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_HandoverRequestAcknowledgeIEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_HandoverRequestAcknowledgeIEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_HandoverRequestAcknowledge->protocolIEs.list, ie);
@@ -2755,7 +2803,7 @@ int s1ap_encode_s1ap_handoverrequestacknowledgeies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_HandoverRequestAcknowledgeIEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_HandoverRequestAcknowledgeIEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_HandoverRequestAcknowledge->protocolIEs.list, ie);
@@ -2768,7 +2816,7 @@ int s1ap_encode_s1ap_handoverrequestacknowledgeies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABAdmittedList,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_E_RABAdmittedList,
-                          &e_RABAdmittedList)) == NULL) {
+                        &e_RABAdmittedList)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_HandoverRequestAcknowledge->protocolIEs.list, ie);
@@ -2778,19 +2826,27 @@ int s1ap_encode_s1ap_handoverrequestacknowledgeies(
 
     /* Optional field */
     if (s1ap_HandoverRequestAcknowledgeIEs->presenceMask & S1AP_HANDOVERREQUESTACKNOWLEDGEIES_E_RABFAILEDTOSETUPLISTHOREQACK_PRESENT) {
+        S1ap_E_RABFailedtoSetupListHOReqAck_t e_RABFailedToSetupListHOReqAck;
+
+        memset(&e_RABFailedToSetupListHOReqAck, 0, sizeof(S1ap_E_RABFailedtoSetupListHOReqAck_t));
+
+        if (s1ap_encode_s1ap_e_rabfailedtosetuplisthoreqack(&e_RABFailedToSetupListHOReqAck, &s1ap_HandoverRequestAcknowledgeIEs->e_RABFailedToSetupListHOReqAck) < 0) return -1;
         if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABFailedToSetupListHOReqAck,
                             S1ap_Criticality_ignore,
                             &asn_DEF_S1ap_E_RABFailedtoSetupListHOReqAck,
-                            &s1ap_HandoverRequestAcknowledgeIEs->e_RABFailedToSetupListHOReqAck)) == NULL) {
+                            &e_RABFailedToSetupListHOReqAck)) == NULL) {
             return -1;
         }
         ASN_SEQUENCE_ADD(&s1ap_HandoverRequestAcknowledge->protocolIEs.list, ie);
+        /* Free any dynamic allocation that is no more used */
+        ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABFailedtoSetupListHOReqAck, &e_RABFailedToSetupListHOReqAck);
+
     }
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Target_ToSource_TransparentContainer,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_Target_ToSource_TransparentContainer,
-                          &s1ap_HandoverRequestAcknowledgeIEs->target_ToSource_TransparentContainer)) == NULL) {
+                        &s1ap_HandoverRequestAcknowledgeIEs->target_ToSource_TransparentContainer)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_HandoverRequestAcknowledge->protocolIEs.list, ie);
@@ -2834,7 +2890,7 @@ int s1ap_encode_s1ap_downlinkueassociatedlppatransport_ies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_DownlinkUEAssociatedLPPaTransport_IEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_DownlinkUEAssociatedLPPaTransport_IEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_DownlinkUEAssociatedLPPaTransport->protocolIEs.list, ie);
@@ -2842,7 +2898,7 @@ int s1ap_encode_s1ap_downlinkueassociatedlppatransport_ies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_DownlinkUEAssociatedLPPaTransport_IEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_DownlinkUEAssociatedLPPaTransport_IEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_DownlinkUEAssociatedLPPaTransport->protocolIEs.list, ie);
@@ -2850,7 +2906,7 @@ int s1ap_encode_s1ap_downlinkueassociatedlppatransport_ies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Routing_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_Routing_ID,
-                          &s1ap_DownlinkUEAssociatedLPPaTransport_IEs->routing_ID)) == NULL) {
+                        &s1ap_DownlinkUEAssociatedLPPaTransport_IEs->routing_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_DownlinkUEAssociatedLPPaTransport->protocolIEs.list, ie);
@@ -2858,7 +2914,7 @@ int s1ap_encode_s1ap_downlinkueassociatedlppatransport_ies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_LPPa_PDU,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_LPPa_PDU,
-                          &s1ap_DownlinkUEAssociatedLPPaTransport_IEs->lpPa_PDU)) == NULL) {
+                        &s1ap_DownlinkUEAssociatedLPPaTransport_IEs->lpPa_PDU)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_DownlinkUEAssociatedLPPaTransport->protocolIEs.list, ie);
@@ -2880,7 +2936,7 @@ int s1ap_encode_s1ap_uecontextmodificationfailureies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_UEContextModificationFailureIEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_UEContextModificationFailureIEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_UEContextModificationFailure->protocolIEs.list, ie);
@@ -2888,7 +2944,7 @@ int s1ap_encode_s1ap_uecontextmodificationfailureies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_UEContextModificationFailureIEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_UEContextModificationFailureIEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_UEContextModificationFailure->protocolIEs.list, ie);
@@ -2896,7 +2952,7 @@ int s1ap_encode_s1ap_uecontextmodificationfailureies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Cause,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_Cause,
-                          &s1ap_UEContextModificationFailureIEs->cause)) == NULL) {
+                        &s1ap_UEContextModificationFailureIEs->cause)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_UEContextModificationFailure->protocolIEs.list, ie);
@@ -2954,7 +3010,7 @@ int s1ap_encode_s1ap_pathswitchrequestacknowledgeies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_PathSwitchRequestAcknowledgeIEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_PathSwitchRequestAcknowledgeIEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_PathSwitchRequestAcknowledge->protocolIEs.list, ie);
@@ -2962,7 +3018,7 @@ int s1ap_encode_s1ap_pathswitchrequestacknowledgeies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_PathSwitchRequestAcknowledgeIEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_PathSwitchRequestAcknowledgeIEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_PathSwitchRequestAcknowledge->protocolIEs.list, ie);
@@ -2980,30 +3036,46 @@ int s1ap_encode_s1ap_pathswitchrequestacknowledgeies(
 
     /* Optional field */
     if (s1ap_PathSwitchRequestAcknowledgeIEs->presenceMask & S1AP_PATHSWITCHREQUESTACKNOWLEDGEIES_E_RABTOBESWITCHEDULLIST_PRESENT) {
+        S1ap_E_RABToBeSwitchedULList_t e_RABToBeSwitchedULList;
+
+        memset(&e_RABToBeSwitchedULList, 0, sizeof(S1ap_E_RABToBeSwitchedULList_t));
+
+        if (s1ap_encode_s1ap_e_rabtobeswitchedullist(&e_RABToBeSwitchedULList, &s1ap_PathSwitchRequestAcknowledgeIEs->e_RABToBeSwitchedULList) < 0) return -1;
         if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABToBeSwitchedULList,
                             S1ap_Criticality_ignore,
                             &asn_DEF_S1ap_E_RABToBeSwitchedULList,
-                            &s1ap_PathSwitchRequestAcknowledgeIEs->e_RABToBeSwitchedULList)) == NULL) {
+                            &e_RABToBeSwitchedULList)) == NULL) {
             return -1;
         }
         ASN_SEQUENCE_ADD(&s1ap_PathSwitchRequestAcknowledge->protocolIEs.list, ie);
+        /* Free any dynamic allocation that is no more used */
+        ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABToBeSwitchedULList, &e_RABToBeSwitchedULList);
+
     }
 
     /* Optional field */
     if (s1ap_PathSwitchRequestAcknowledgeIEs->presenceMask & S1AP_PATHSWITCHREQUESTACKNOWLEDGEIES_E_RABTOBERELEASEDLIST_PRESENT) {
+        S1ap_E_RABList_t e_RABToBeReleasedList;
+
+        memset(&e_RABToBeReleasedList, 0, sizeof(S1ap_E_RABList_t));
+
+        if (s1ap_encode_s1ap_e_rablist(&e_RABToBeReleasedList, &s1ap_PathSwitchRequestAcknowledgeIEs->e_RABToBeReleasedList) < 0) return -1;
         if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABToBeReleasedList,
                             S1ap_Criticality_ignore,
                             &asn_DEF_S1ap_E_RABList,
-                            &s1ap_PathSwitchRequestAcknowledgeIEs->e_RABToBeReleasedList)) == NULL) {
+                            &e_RABToBeReleasedList)) == NULL) {
             return -1;
         }
         ASN_SEQUENCE_ADD(&s1ap_PathSwitchRequestAcknowledge->protocolIEs.list, ie);
+        /* Free any dynamic allocation that is no more used */
+        ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABList, &e_RABToBeReleasedList);
+
     }
 
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_SecurityContext,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_SecurityContext,
-                          &s1ap_PathSwitchRequestAcknowledgeIEs->securityContext)) == NULL) {
+                        &s1ap_PathSwitchRequestAcknowledgeIEs->securityContext)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_PathSwitchRequestAcknowledge->protocolIEs.list, ie);
@@ -3047,7 +3119,7 @@ int s1ap_encode_s1ap_s1setupfailureies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Cause,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_Cause,
-                          &s1ap_S1SetupFailureIEs->cause)) == NULL) {
+                        &s1ap_S1SetupFailureIEs->cause)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_S1SetupFailure->protocolIEs.list, ie);
@@ -3091,7 +3163,7 @@ int s1ap_encode_s1ap_mmeconfigurationupdatefailureies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Cause,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_Cause,
-                          &s1ap_MMEConfigurationUpdateFailureIEs->cause)) == NULL) {
+                        &s1ap_MMEConfigurationUpdateFailureIEs->cause)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_MMEConfigurationUpdateFailure->protocolIEs.list, ie);
@@ -3135,7 +3207,7 @@ int s1ap_encode_s1ap_initialcontextsetupresponseies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_InitialContextSetupResponseIEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_InitialContextSetupResponseIEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_InitialContextSetupResponse->protocolIEs.list, ie);
@@ -3143,7 +3215,7 @@ int s1ap_encode_s1ap_initialcontextsetupresponseies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_InitialContextSetupResponseIEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_InitialContextSetupResponseIEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_InitialContextSetupResponse->protocolIEs.list, ie);
@@ -3156,7 +3228,7 @@ int s1ap_encode_s1ap_initialcontextsetupresponseies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABSetupListCtxtSURes,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_E_RABSetupListCtxtSURes,
-                          &e_RABSetupListCtxtSURes)) == NULL) {
+                        &e_RABSetupListCtxtSURes)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_InitialContextSetupResponse->protocolIEs.list, ie);
@@ -3166,13 +3238,21 @@ int s1ap_encode_s1ap_initialcontextsetupresponseies(
 
     /* Optional field */
     if (s1ap_InitialContextSetupResponseIEs->presenceMask & S1AP_INITIALCONTEXTSETUPRESPONSEIES_E_RABFAILEDTOSETUPLISTCTXTSURES_PRESENT) {
+        S1ap_E_RABList_t e_RABFailedToSetupListCtxtSURes;
+
+        memset(&e_RABFailedToSetupListCtxtSURes, 0, sizeof(S1ap_E_RABList_t));
+
+        if (s1ap_encode_s1ap_e_rablist(&e_RABFailedToSetupListCtxtSURes, &s1ap_InitialContextSetupResponseIEs->e_RABFailedToSetupListCtxtSURes) < 0) return -1;
         if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABFailedToSetupListCtxtSURes,
                             S1ap_Criticality_ignore,
                             &asn_DEF_S1ap_E_RABList,
-                            &s1ap_InitialContextSetupResponseIEs->e_RABFailedToSetupListCtxtSURes)) == NULL) {
+                            &e_RABFailedToSetupListCtxtSURes)) == NULL) {
             return -1;
         }
         ASN_SEQUENCE_ADD(&s1ap_InitialContextSetupResponse->protocolIEs.list, ie);
+        /* Free any dynamic allocation that is no more used */
+        ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABList, &e_RABFailedToSetupListCtxtSURes);
+
     }
 
     /* Optional field */
@@ -3203,7 +3283,7 @@ int s1ap_encode_s1ap_downlinks1cdma2000tunnelingies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_DownlinkS1cdma2000tunnelingIEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_DownlinkS1cdma2000tunnelingIEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_DownlinkS1cdma2000tunneling->protocolIEs.list, ie);
@@ -3211,20 +3291,28 @@ int s1ap_encode_s1ap_downlinks1cdma2000tunnelingies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_DownlinkS1cdma2000tunnelingIEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_DownlinkS1cdma2000tunnelingIEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_DownlinkS1cdma2000tunneling->protocolIEs.list, ie);
 
     /* Optional field */
     if (s1ap_DownlinkS1cdma2000tunnelingIEs->presenceMask & S1AP_DOWNLINKS1CDMA2000TUNNELINGIES_E_RABDATAFORWARDINGLIST_PRESENT) {
+        S1ap_E_RABDataForwardingList_t e_RABDataForwardingList;
+
+        memset(&e_RABDataForwardingList, 0, sizeof(S1ap_E_RABDataForwardingList_t));
+
+        if (s1ap_encode_s1ap_e_rabdataforwardinglist(&e_RABDataForwardingList, &s1ap_DownlinkS1cdma2000tunnelingIEs->e_RABDataForwardingList) < 0) return -1;
         if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABDataForwardingList,
                             S1ap_Criticality_ignore,
                             &asn_DEF_S1ap_E_RABDataForwardingList,
-                            &s1ap_DownlinkS1cdma2000tunnelingIEs->e_RABDataForwardingList)) == NULL) {
+                            &e_RABDataForwardingList)) == NULL) {
             return -1;
         }
         ASN_SEQUENCE_ADD(&s1ap_DownlinkS1cdma2000tunneling->protocolIEs.list, ie);
+        /* Free any dynamic allocation that is no more used */
+        ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABDataForwardingList, &e_RABDataForwardingList);
+
     }
 
     /* Optional field */
@@ -3241,7 +3329,7 @@ int s1ap_encode_s1ap_downlinks1cdma2000tunnelingies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_cdma2000RATType,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_Cdma2000RATType,
-                          &s1ap_DownlinkS1cdma2000tunnelingIEs->cdma2000RATType)) == NULL) {
+                        &s1ap_DownlinkS1cdma2000tunnelingIEs->cdma2000RATType)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_DownlinkS1cdma2000tunneling->protocolIEs.list, ie);
@@ -3249,7 +3337,7 @@ int s1ap_encode_s1ap_downlinks1cdma2000tunnelingies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_cdma2000PDU,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_Cdma2000PDU,
-                          &s1ap_DownlinkS1cdma2000tunnelingIEs->cdma2000PDU)) == NULL) {
+                        &s1ap_DownlinkS1cdma2000tunnelingIEs->cdma2000PDU)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_DownlinkS1cdma2000tunneling->protocolIEs.list, ie);
@@ -3354,7 +3442,7 @@ int s1ap_encode_s1ap_tracefailureindicationies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_TraceFailureIndicationIEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_TraceFailureIndicationIEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_TraceFailureIndication->protocolIEs.list, ie);
@@ -3362,7 +3450,7 @@ int s1ap_encode_s1ap_tracefailureindicationies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_TraceFailureIndicationIEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_TraceFailureIndicationIEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_TraceFailureIndication->protocolIEs.list, ie);
@@ -3370,7 +3458,7 @@ int s1ap_encode_s1ap_tracefailureindicationies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_UTRAN_Trace_ID,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_E_UTRAN_Trace_ID,
-                          &s1ap_TraceFailureIndicationIEs->e_UTRAN_Trace_ID)) == NULL) {
+                        &s1ap_TraceFailureIndicationIEs->e_UTRAN_Trace_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_TraceFailureIndication->protocolIEs.list, ie);
@@ -3378,7 +3466,7 @@ int s1ap_encode_s1ap_tracefailureindicationies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Cause,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_Cause,
-                          &s1ap_TraceFailureIndicationIEs->cause)) == NULL) {
+                        &s1ap_TraceFailureIndicationIEs->cause)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_TraceFailureIndication->protocolIEs.list, ie);
@@ -3425,7 +3513,7 @@ int s1ap_encode_s1ap_handoverfailureies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_HandoverFailureIEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_HandoverFailureIEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_HandoverFailure->protocolIEs.list, ie);
@@ -3433,7 +3521,7 @@ int s1ap_encode_s1ap_handoverfailureies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Cause,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_Cause,
-                          &s1ap_HandoverFailureIEs->cause)) == NULL) {
+                        &s1ap_HandoverFailureIEs->cause)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_HandoverFailure->protocolIEs.list, ie);
@@ -3466,7 +3554,7 @@ int s1ap_encode_s1ap_e_rabsetupresponseies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_E_RABSetupResponseIEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_E_RABSetupResponseIEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_E_RABSetupResponse->protocolIEs.list, ie);
@@ -3474,31 +3562,47 @@ int s1ap_encode_s1ap_e_rabsetupresponseies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_E_RABSetupResponseIEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_E_RABSetupResponseIEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_E_RABSetupResponse->protocolIEs.list, ie);
 
     /* Optional field */
     if (s1ap_E_RABSetupResponseIEs->presenceMask & S1AP_E_RABSETUPRESPONSEIES_E_RABSETUPLISTBEARERSURES_PRESENT) {
+        S1ap_E_RABSetupListBearerSURes_t e_RABSetupListBearerSURes;
+
+        memset(&e_RABSetupListBearerSURes, 0, sizeof(S1ap_E_RABSetupListBearerSURes_t));
+
+        if (s1ap_encode_s1ap_e_rabsetuplistbearersures(&e_RABSetupListBearerSURes, &s1ap_E_RABSetupResponseIEs->e_RABSetupListBearerSURes) < 0) return -1;
         if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABSetupListBearerSURes,
                             S1ap_Criticality_ignore,
                             &asn_DEF_S1ap_E_RABSetupListBearerSURes,
-                            &s1ap_E_RABSetupResponseIEs->e_RABSetupListBearerSURes)) == NULL) {
+                            &e_RABSetupListBearerSURes)) == NULL) {
             return -1;
         }
         ASN_SEQUENCE_ADD(&s1ap_E_RABSetupResponse->protocolIEs.list, ie);
+        /* Free any dynamic allocation that is no more used */
+        ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABSetupListBearerSURes, &e_RABSetupListBearerSURes);
+
     }
 
     /* Optional field */
     if (s1ap_E_RABSetupResponseIEs->presenceMask & S1AP_E_RABSETUPRESPONSEIES_E_RABFAILEDTOSETUPLISTBEARERSURES_PRESENT) {
+        S1ap_E_RABList_t e_RABFailedToSetupListBearerSURes;
+
+        memset(&e_RABFailedToSetupListBearerSURes, 0, sizeof(S1ap_E_RABList_t));
+
+        if (s1ap_encode_s1ap_e_rablist(&e_RABFailedToSetupListBearerSURes, &s1ap_E_RABSetupResponseIEs->e_RABFailedToSetupListBearerSURes) < 0) return -1;
         if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABFailedToSetupListBearerSURes,
                             S1ap_Criticality_ignore,
                             &asn_DEF_S1ap_E_RABList,
-                            &s1ap_E_RABSetupResponseIEs->e_RABFailedToSetupListBearerSURes)) == NULL) {
+                            &e_RABFailedToSetupListBearerSURes)) == NULL) {
             return -1;
         }
         ASN_SEQUENCE_ADD(&s1ap_E_RABSetupResponse->protocolIEs.list, ie);
+        /* Free any dynamic allocation that is no more used */
+        ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABList, &e_RABFailedToSetupListBearerSURes);
+
     }
 
     /* Optional field */
@@ -3529,7 +3633,7 @@ int s1ap_encode_s1ap_uecontextreleasecommand_ies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_UE_S1AP_IDs,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_UE_S1AP_IDs,
-                          &s1ap_UEContextReleaseCommand_IEs->uE_S1AP_IDs)) == NULL) {
+                        &s1ap_UEContextReleaseCommand_IEs->uE_S1AP_IDs)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_UEContextReleaseCommand->protocolIEs.list, ie);
@@ -3537,7 +3641,7 @@ int s1ap_encode_s1ap_uecontextreleasecommand_ies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Cause,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_Cause,
-                          &s1ap_UEContextReleaseCommand_IEs->cause)) == NULL) {
+                        &s1ap_UEContextReleaseCommand_IEs->cause)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_UEContextReleaseCommand->protocolIEs.list, ie);
@@ -3559,7 +3663,7 @@ int s1ap_encode_s1ap_pathswitchrequesties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_PathSwitchRequestIEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_PathSwitchRequestIEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_PathSwitchRequest->protocolIEs.list, ie);
@@ -3572,7 +3676,7 @@ int s1ap_encode_s1ap_pathswitchrequesties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABToBeSwitchedDLList,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_E_RABToBeSwitchedDLList,
-                          &e_RABToBeSwitchedDLList)) == NULL) {
+                        &e_RABToBeSwitchedDLList)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_PathSwitchRequest->protocolIEs.list, ie);
@@ -3583,7 +3687,7 @@ int s1ap_encode_s1ap_pathswitchrequesties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_SourceMME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_PathSwitchRequestIEs->sourceMME_UE_S1AP_ID)) == NULL) {
+                        &s1ap_PathSwitchRequestIEs->sourceMME_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_PathSwitchRequest->protocolIEs.list, ie);
@@ -3591,7 +3695,7 @@ int s1ap_encode_s1ap_pathswitchrequesties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_EUTRAN_CGI,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_EUTRAN_CGI,
-                          &s1ap_PathSwitchRequestIEs->eutran_cgi)) == NULL) {
+                        &s1ap_PathSwitchRequestIEs->eutran_cgi)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_PathSwitchRequest->protocolIEs.list, ie);
@@ -3599,7 +3703,7 @@ int s1ap_encode_s1ap_pathswitchrequesties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_TAI,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_TAI,
-                          &s1ap_PathSwitchRequestIEs->tai)) == NULL) {
+                        &s1ap_PathSwitchRequestIEs->tai)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_PathSwitchRequest->protocolIEs.list, ie);
@@ -3607,7 +3711,7 @@ int s1ap_encode_s1ap_pathswitchrequesties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_UESecurityCapabilities,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_UESecurityCapabilities,
-                          &s1ap_PathSwitchRequestIEs->ueSecurityCapabilities)) == NULL) {
+                        &s1ap_PathSwitchRequestIEs->ueSecurityCapabilities)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_PathSwitchRequest->protocolIEs.list, ie);
@@ -3662,7 +3766,7 @@ int s1ap_encode_s1ap_downlinknastransport_ies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_DownlinkNASTransport_IEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_DownlinkNASTransport_IEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_DownlinkNASTransport->protocolIEs.list, ie);
@@ -3670,7 +3774,7 @@ int s1ap_encode_s1ap_downlinknastransport_ies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_DownlinkNASTransport_IEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_DownlinkNASTransport_IEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_DownlinkNASTransport->protocolIEs.list, ie);
@@ -3678,7 +3782,7 @@ int s1ap_encode_s1ap_downlinknastransport_ies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_NAS_PDU,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_NAS_PDU,
-                          &s1ap_DownlinkNASTransport_IEs->nas_pdu)) == NULL) {
+                        &s1ap_DownlinkNASTransport_IEs->nas_pdu)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_DownlinkNASTransport->protocolIEs.list, ie);
@@ -3722,7 +3826,7 @@ int s1ap_encode_s1ap_e_rabreleaseindicationies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_E_RABReleaseIndicationIEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_E_RABReleaseIndicationIEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_E_RABReleaseIndication->protocolIEs.list, ie);
@@ -3730,7 +3834,7 @@ int s1ap_encode_s1ap_e_rabreleaseindicationies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_E_RABReleaseIndicationIEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_E_RABReleaseIndicationIEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_E_RABReleaseIndication->protocolIEs.list, ie);
@@ -3743,7 +3847,7 @@ int s1ap_encode_s1ap_e_rabreleaseindicationies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABReleasedList,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_E_RABList,
-                          &e_RABReleasedList)) == NULL) {
+                        &e_RABReleasedList)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_E_RABReleaseIndication->protocolIEs.list, ie);
@@ -3768,7 +3872,7 @@ int s1ap_encode_s1ap_s1setuprequesties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Global_ENB_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_Global_ENB_ID,
-                          &s1ap_S1SetupRequestIEs->global_ENB_ID)) == NULL) {
+                        &s1ap_S1SetupRequestIEs->global_ENB_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_S1SetupRequest->protocolIEs.list, ie);
@@ -3787,7 +3891,7 @@ int s1ap_encode_s1ap_s1setuprequesties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_SupportedTAs,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_SupportedTAs,
-                          &s1ap_S1SetupRequestIEs->supportedTAs)) == NULL) {
+                        &s1ap_S1SetupRequestIEs->supportedTAs)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_S1SetupRequest->protocolIEs.list, ie);
@@ -3795,7 +3899,7 @@ int s1ap_encode_s1ap_s1setuprequesties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_DefaultPagingDRX,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_PagingDRX,
-                          &s1ap_S1SetupRequestIEs->defaultPagingDRX)) == NULL) {
+                        &s1ap_S1SetupRequestIEs->defaultPagingDRX)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_S1SetupRequest->protocolIEs.list, ie);
@@ -3828,7 +3932,7 @@ int s1ap_encode_s1ap_nasnondeliveryindication_ies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_NASNonDeliveryIndication_IEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_NASNonDeliveryIndication_IEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_NASNonDeliveryIndication->protocolIEs.list, ie);
@@ -3836,7 +3940,7 @@ int s1ap_encode_s1ap_nasnondeliveryindication_ies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_NASNonDeliveryIndication_IEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_NASNonDeliveryIndication_IEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_NASNonDeliveryIndication->protocolIEs.list, ie);
@@ -3844,7 +3948,7 @@ int s1ap_encode_s1ap_nasnondeliveryindication_ies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_NAS_PDU,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_NAS_PDU,
-                          &s1ap_NASNonDeliveryIndication_IEs->nas_pdu)) == NULL) {
+                        &s1ap_NASNonDeliveryIndication_IEs->nas_pdu)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_NASNonDeliveryIndication->protocolIEs.list, ie);
@@ -3852,7 +3956,7 @@ int s1ap_encode_s1ap_nasnondeliveryindication_ies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Cause,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_Cause,
-                          &s1ap_NASNonDeliveryIndication_IEs->cause)) == NULL) {
+                        &s1ap_NASNonDeliveryIndication_IEs->cause)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_NASNonDeliveryIndication->protocolIEs.list, ie);
@@ -3874,7 +3978,7 @@ int s1ap_encode_s1ap_celltraffictraceies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_CellTrafficTraceIEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_CellTrafficTraceIEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_CellTrafficTrace->protocolIEs.list, ie);
@@ -3882,7 +3986,7 @@ int s1ap_encode_s1ap_celltraffictraceies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_CellTrafficTraceIEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_CellTrafficTraceIEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_CellTrafficTrace->protocolIEs.list, ie);
@@ -3890,7 +3994,7 @@ int s1ap_encode_s1ap_celltraffictraceies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_UTRAN_Trace_ID,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_E_UTRAN_Trace_ID,
-                          &s1ap_CellTrafficTraceIEs->e_UTRAN_Trace_ID)) == NULL) {
+                        &s1ap_CellTrafficTraceIEs->e_UTRAN_Trace_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_CellTrafficTrace->protocolIEs.list, ie);
@@ -3898,7 +4002,7 @@ int s1ap_encode_s1ap_celltraffictraceies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_EUTRAN_CGI,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_EUTRAN_CGI,
-                          &s1ap_CellTrafficTraceIEs->eutran_cgi)) == NULL) {
+                        &s1ap_CellTrafficTraceIEs->eutran_cgi)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_CellTrafficTrace->protocolIEs.list, ie);
@@ -3906,7 +4010,7 @@ int s1ap_encode_s1ap_celltraffictraceies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_TraceCollectionEntityIPAddress,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_TransportLayerAddress,
-                          &s1ap_CellTrafficTraceIEs->traceCollectionEntityIPAddress)) == NULL) {
+                        &s1ap_CellTrafficTraceIEs->traceCollectionEntityIPAddress)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_CellTrafficTrace->protocolIEs.list, ie);
@@ -3939,7 +4043,7 @@ int s1ap_encode_s1ap_e_rabsetuprequesties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_E_RABSetupRequestIEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_E_RABSetupRequestIEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_E_RABSetupRequest->protocolIEs.list, ie);
@@ -3947,7 +4051,7 @@ int s1ap_encode_s1ap_e_rabsetuprequesties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_E_RABSetupRequestIEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_E_RABSetupRequestIEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_E_RABSetupRequest->protocolIEs.list, ie);
@@ -3971,7 +4075,7 @@ int s1ap_encode_s1ap_e_rabsetuprequesties(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABToBeSetupListBearerSUReq,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_E_RABToBeSetupListBearerSUReq,
-                          &e_RABToBeSetupListBearerSUReq)) == NULL) {
+                        &e_RABToBeSetupListBearerSUReq)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_E_RABSetupRequest->protocolIEs.list, ie);
@@ -3996,7 +4100,7 @@ int s1ap_encode_s1ap_enbstatustransferies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_ENBStatusTransferIEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_ENBStatusTransferIEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_ENBStatusTransfer->protocolIEs.list, ie);
@@ -4004,7 +4108,7 @@ int s1ap_encode_s1ap_enbstatustransferies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_ENBStatusTransferIEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_ENBStatusTransferIEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_ENBStatusTransfer->protocolIEs.list, ie);
@@ -4012,7 +4116,7 @@ int s1ap_encode_s1ap_enbstatustransferies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_StatusTransfer_TransparentContainer,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_ENB_StatusTransfer_TransparentContainer,
-                          &s1ap_ENBStatusTransferIEs->eNB_StatusTransfer_TransparentContainer)) == NULL) {
+                        &s1ap_ENBStatusTransferIEs->eNB_StatusTransfer_TransparentContainer)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_ENBStatusTransfer->protocolIEs.list, ie);
@@ -4033,13 +4137,21 @@ int s1ap_encode_s1ap_resetacknowledgeies(
 
     /* Optional field */
     if (s1ap_ResetAcknowledgeIEs->presenceMask & S1AP_RESETACKNOWLEDGEIES_UE_ASSOCIATEDLOGICALS1_CONNECTIONLISTRESACK_PRESENT) {
+        S1ap_UE_associatedLogicalS1_ConnectionListResAck_t uE_associatedLogicalS1_ConnectionListResAck;
+
+        memset(&uE_associatedLogicalS1_ConnectionListResAck, 0, sizeof(S1ap_UE_associatedLogicalS1_ConnectionListResAck_t));
+
+        if (s1ap_encode_s1ap_ue_associatedlogicals1_connectionlistresack(&uE_associatedLogicalS1_ConnectionListResAck, &s1ap_ResetAcknowledgeIEs->uE_associatedLogicalS1_ConnectionListResAck) < 0) return -1;
         if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_UE_associatedLogicalS1_ConnectionListResAck,
                             S1ap_Criticality_ignore,
                             &asn_DEF_S1ap_UE_associatedLogicalS1_ConnectionListResAck,
-                            &s1ap_ResetAcknowledgeIEs->uE_associatedLogicalS1_ConnectionListResAck)) == NULL) {
+                            &uE_associatedLogicalS1_ConnectionListResAck)) == NULL) {
             return -1;
         }
         ASN_SEQUENCE_ADD(&s1ap_ResetAcknowledge->protocolIEs.list, ie);
+        /* Free any dynamic allocation that is no more used */
+        ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UE_associatedLogicalS1_ConnectionListResAck, &uE_associatedLogicalS1_ConnectionListResAck);
+
     }
 
     /* Optional field */
@@ -4070,7 +4182,7 @@ int s1ap_encode_s1ap_uecontextreleasecomplete_ies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_UEContextReleaseComplete_IEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_UEContextReleaseComplete_IEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_UEContextReleaseComplete->protocolIEs.list, ie);
@@ -4078,7 +4190,7 @@ int s1ap_encode_s1ap_uecontextreleasecomplete_ies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_ignore,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_UEContextReleaseComplete_IEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_UEContextReleaseComplete_IEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_UEContextReleaseComplete->protocolIEs.list, ie);
@@ -4111,7 +4223,7 @@ int s1ap_encode_s1ap_uplinkueassociatedlppatransport_ies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_MME_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_MME_UE_S1AP_ID,
-                          &s1ap_UplinkUEAssociatedLPPaTransport_IEs->mme_ue_s1ap_id)) == NULL) {
+                        &s1ap_UplinkUEAssociatedLPPaTransport_IEs->mme_ue_s1ap_id)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_UplinkUEAssociatedLPPaTransport->protocolIEs.list, ie);
@@ -4119,7 +4231,7 @@ int s1ap_encode_s1ap_uplinkueassociatedlppatransport_ies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_eNB_UE_S1AP_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_ENB_UE_S1AP_ID,
-                          &s1ap_UplinkUEAssociatedLPPaTransport_IEs->eNB_UE_S1AP_ID)) == NULL) {
+                        &s1ap_UplinkUEAssociatedLPPaTransport_IEs->eNB_UE_S1AP_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_UplinkUEAssociatedLPPaTransport->protocolIEs.list, ie);
@@ -4127,7 +4239,7 @@ int s1ap_encode_s1ap_uplinkueassociatedlppatransport_ies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Routing_ID,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_Routing_ID,
-                          &s1ap_UplinkUEAssociatedLPPaTransport_IEs->routing_ID)) == NULL) {
+                        &s1ap_UplinkUEAssociatedLPPaTransport_IEs->routing_ID)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_UplinkUEAssociatedLPPaTransport->protocolIEs.list, ie);
@@ -4135,7 +4247,7 @@ int s1ap_encode_s1ap_uplinkueassociatedlppatransport_ies(
     if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_LPPa_PDU,
                         S1ap_Criticality_reject,
                         &asn_DEF_S1ap_LPPa_PDU,
-                          &s1ap_UplinkUEAssociatedLPPaTransport_IEs->lpPa_PDU)) == NULL) {
+                        &s1ap_UplinkUEAssociatedLPPaTransport_IEs->lpPa_PDU)) == NULL) {
         return -1;
     }
     ASN_SEQUENCE_ADD(&s1ap_UplinkUEAssociatedLPPaTransport->protocolIEs.list, ie);

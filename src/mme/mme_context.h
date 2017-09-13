@@ -360,10 +360,14 @@ typedef struct _mme_sess_t {
 #define MME_HAVE_ENB_S1U_PATH(__bEARER) \
     ((__bEARER) && ((__bEARER)->enb_s1u_teid) && ((__bEARER)->enb_s1u_addr))
 
-#define MME_HAVE_DL_INDIRECT_TUNNEL(__bEARER) \
+#define MME_HAVE_ENB_DL_INDIRECT_TUNNEL(__bEARER) \
     ((__bEARER) && ((__bEARER)->enb_dl_teid) && ((__bEARER)->enb_dl_addr))
-#define MME_HAVE_UL_INDIRECT_TUNNEL(__bEARER) \
+#define MME_HAVE_ENB_UL_INDIRECT_TUNNEL(__bEARER) \
     ((__bEARER) && ((__bEARER)->enb_ul_teid) && ((__bEARER)->enb_ul_addr))
+#define MME_HAVE_SGW_DL_INDIRECT_TUNNEL(__bEARER) \
+    ((__bEARER) && ((__bEARER)->sgw_dl_teid) && ((__bEARER)->sgw_dl_addr))
+#define MME_HAVE_SGW_UL_INDIRECT_TUNNEL(__bEARER) \
+    ((__bEARER) && ((__bEARER)->sgw_ul_teid) && ((__bEARER)->sgw_ul_addr))
 #define CLEAR_INDIRECT_TUNNEL(__mME) \
     do { \
         mme_sess_t *sess = NULL; \

@@ -424,7 +424,7 @@ status_t mme_s11_build_create_indirect_data_forwarding_tunnel_request(
         bearer = mme_bearer_first(sess);
         while(bearer != NULL)
         {
-            if (MME_HAVE_DL_INDIRECT_TUNNEL(bearer))
+            if (MME_HAVE_ENB_DL_INDIRECT_TUNNEL(bearer))
             {
                 bearers[i]->presence = 1;
                 bearers[i]->eps_bearer_id.presence = 1;
@@ -443,7 +443,7 @@ status_t mme_s11_build_create_indirect_data_forwarding_tunnel_request(
                 i++;
             }
 
-            if (MME_HAVE_UL_INDIRECT_TUNNEL(bearer))
+            if (MME_HAVE_ENB_UL_INDIRECT_TUNNEL(bearer))
             {
                 bearers[i]->presence = 1;
                 bearers[i]->eps_bearer_id.presence = 1;

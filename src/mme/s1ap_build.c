@@ -839,39 +839,72 @@ status_t s1ap_build_handover_command(pkbuf_t **s1apbuf, enb_ue_t *enb_ue)
     ies->eNB_UE_S1AP_ID = enb_ue->enb_ue_s1ap_id;
     ies->handoverType = enb_ue->handover_type;
 
-    ies->presenceMask |=
-        S1AP_HANDOVERCOMMANDIES_E_RABDATAFORWARDINGLIST_PRESENT;
     sess = mme_sess_first(mme_ue);
     while(sess)
     {
         bearer = mme_bearer_first(sess);
         while(bearer)
         {
-            e_rab = (S1ap_E_RABDataForwardingItem_t *)
-                core_calloc(1, sizeof(S1ap_E_RABDataForwardingItem_t));
-            e_rab->e_RAB_ID = bearer->ebi;
+            if (MME_HAVE_SGW_DL_INDIRECT_TUNNEL(bearer) ||
+                MME_HAVE_SGW_UL_INDIRECT_TUNNEL(bearer))
+            {
+                e_rab = (S1ap_E_RABDataForwardingItem_t *)
+                    core_calloc(1, sizeof(S1ap_E_RABDataForwardingItem_t));
+                e_rab->e_RAB_ID = bearer->ebi;
+            }
 
-            /*
-            e_rab->dL_transportLayerAddress = (S1ap_TransportLayerAddress_t *)
-                core_calloc(1, sizeof(S1ap_TransportLayerAddress_t));
-            e_rab->dL_transportLayerAddress->size = 4;
-            e_rab->dL_transportLayerAddress->buf = core_calloc(
-                    e_rab->dL_transportLayerAddress->size, sizeof(c_uint8_t));
-            memcpy(e_rab->dL_transportLayerAddress->buf,
-                    &bearer->sgw_dl_addr,
-                    e_rab->dL_transportLayerAddress->size);
+            if (MME_HAVE_SGW_DL_INDIRECT_TUNNEL(bearer))
+            {
+                e_rab->dL_transportLayerAddress =
+                    (S1ap_TransportLayerAddress_t *)
+                    core_calloc(1, sizeof(S1ap_TransportLayerAddress_t));
+                e_rab->dL_transportLayerAddress->size = 4;
+                e_rab->dL_transportLayerAddress->buf = core_calloc(
+                        e_rab->dL_transportLayerAddress->size, sizeof(c_uint8_t));
+                memcpy(e_rab->dL_transportLayerAddress->buf,
+                        &bearer->sgw_dl_addr,
+                        e_rab->dL_transportLayerAddress->size);
 
-            e_rab->dL_gTP_TEID = (S1ap_GTP_TEID_t *)
-                core_calloc(1, sizeof(S1ap_GTP_TEID_t));
-            s1ap_uint32_to_OCTET_STRING(
-                    bearer->sgw_dl_teid, e_rab->dL_gTP_TEID);
-                    */
+                e_rab->dL_gTP_TEID = (S1ap_GTP_TEID_t *)
+                    core_calloc(1, sizeof(S1ap_GTP_TEID_t));
+                s1ap_uint32_to_OCTET_STRING(
+                        bearer->sgw_dl_teid, e_rab->dL_gTP_TEID);
+            }
 
-            ASN_SEQUENCE_ADD(&ies->e_RABDataForwardingList, e_rab);
+            if (MME_HAVE_SGW_UL_INDIRECT_TUNNEL(bearer))
+            {
+                e_rab->uL_S1ap_TransportLayerAddress =
+                    (S1ap_TransportLayerAddress_t *)
+                    core_calloc(1, sizeof(S1ap_TransportLayerAddress_t));
+                e_rab->uL_S1ap_TransportLayerAddress->size = 4;
+                e_rab->uL_S1ap_TransportLayerAddress->buf = core_calloc(
+                        e_rab->uL_S1ap_TransportLayerAddress->size,
+                        sizeof(c_uint8_t));
+                memcpy(e_rab->uL_S1ap_TransportLayerAddress->buf,
+                        &bearer->sgw_ul_addr,
+                        e_rab->uL_S1ap_TransportLayerAddress->size);
+
+                e_rab->uL_S1ap_GTP_TEID = (S1ap_GTP_TEID_t *)
+                    core_calloc(1, sizeof(S1ap_GTP_TEID_t));
+                s1ap_uint32_to_OCTET_STRING(
+                        bearer->sgw_ul_teid, e_rab->uL_S1ap_GTP_TEID);
+            }
+
+            if (MME_HAVE_SGW_DL_INDIRECT_TUNNEL(bearer) ||
+                MME_HAVE_SGW_UL_INDIRECT_TUNNEL(bearer))
+            {
+                ASN_SEQUENCE_ADD(&ies->e_RABDataForwardingList, e_rab);
+            }
 
             bearer = mme_bearer_next(bearer);
         }
         sess = mme_sess_next(sess);
+    }
+
+    if (ies->e_RABDataForwardingList.s1ap_E_RABDataForwardingItem.count)
+    {
+        ies->presenceMask |=
+            S1AP_HANDOVERCOMMANDIES_E_RABDATAFORWARDINGLIST_PRESENT;
     }
 
     s1ap_buffer_to_OCTET_STRING(mme_ue->container.buf, mme_ue->container.size, 
