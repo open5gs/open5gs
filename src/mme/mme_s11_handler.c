@@ -3,6 +3,7 @@
 #include "core_debug.h"
 
 #include "gtp_types.h"
+#include "gtp_conv.h"
 
 #include "mme_event.h"
 #include "mme_context.h"
@@ -337,4 +338,67 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
         gtp_xact_t *xact, mme_ue_t *mme_ue,
         gtp_create_indirect_data_forwarding_tunnel_response_t *rsp)
 {
+    status_t rv;
+    enb_ue_t *enb_ue = NULL;
+    mme_bearer_t *bearer = NULL;
+    int i;
+
+    tlv_bearer_context_t *bearers[GTP_MAX_NUM_OF_INDIRECT_TUNNEL];
+    gtp_f_teid_t *teid = NULL;
+
+    d_assert(xact, return, "Null param");
+    d_assert(mme_ue, return, "Null param");
+    d_assert(rsp, return, "Null param");
+
+    enb_ue = mme_ue->enb_ue;
+    d_assert(enb_ue, return, "Null param");
+
+    if (rsp->cause.presence == 0)
+    {
+        d_error("No Cause");
+        return;
+    }
+
+    d_trace(3, "[GTP] Create Indirect Data Forwarding Tunnel Response : "
+            "MME[%d] <-- SGW[%d]\n", mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
+
+    rv = gtp_xact_commit(xact);
+    d_assert(rv == CORE_OK, return, "xact_commit error");
+
+    gtp_bearers_in_create_indirect_tunnel_response(&bearers, rsp);
+
+    for (i = 0; bearers[i]->presence; i++)
+    {
+        if (bearers[i]->eps_bearer_id.presence == 0)
+        {
+            d_error("No EBI");
+            return;
+        }
+
+        bearer = mme_bearer_find_by_ue_ebi(mme_ue, 
+                    bearers[i]->eps_bearer_id.u8);
+        d_assert(bearer, return, "No Bearer Context");
+
+        if (bearers[i]->s4_u_sgsn_f_teid.presence)
+        {
+            teid = bearers[i]->s4_u_sgsn_f_teid.data;
+            d_assert(teid, return,);
+
+            bearer->sgw_dl_teid = ntohl(teid->teid);
+            bearer->sgw_dl_addr = teid->ipv4_addr;
+        }
+        else if (bearers[i]->s2b_u_epdg_f_teid_5.presence)
+        {
+            teid = bearers[i]->s2b_u_epdg_f_teid_5.data;
+            d_assert(teid, return,);
+
+            bearer->sgw_ul_teid = ntohl(teid->teid);
+            bearer->sgw_ul_addr = teid->ipv4_addr;
+        }
+        else
+            d_assert(0, return, "Not Supported");
+    }
+
+    rv = s1ap_send_handover_command(enb_ue);
+    d_assert(rv == CORE_OK,, "s1ap send error");
 }

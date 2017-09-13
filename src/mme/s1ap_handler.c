@@ -678,6 +678,8 @@ void s1ap_handle_handover_required(mme_enb_t *enb, s1ap_message_t *message)
         d_assert(0, return,);
     }
 
+    enb_ue->handover_type = ies->handoverType;
+
     rv = s1ap_send_handover_request(mme_ue, ies);
     d_assert(rv == CORE_OK,, "s1ap send error");
 

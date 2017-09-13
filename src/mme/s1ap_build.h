@@ -31,6 +31,8 @@ CORE_DECLARE(status_t) s1ap_build_path_switch_failure(pkbuf_t **s1apbuf,
 CORE_DECLARE(status_t) s1ap_build_handover_request(
         pkbuf_t **s1apbuf, mme_ue_t *mme_ue, enb_ue_t *enb_ue,
         S1ap_HandoverRequiredIEs_t *required);
+CORE_DECLARE(status_t) s1ap_build_handover_command(
+        pkbuf_t **s1apbuf, enb_ue_t *enb_ue);
 
 #ifdef __cplusplus
 }

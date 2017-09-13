@@ -131,6 +131,9 @@ struct _enb_ue_t {
     tai_t           tai;
     e_cgi_t         e_cgi;
 
+    /* Handover Info */
+    S1ap_HandoverType_t handover_type;
+
     /* mme_ue_context */
     mme_ue_t        *mme_ue;
 
@@ -376,6 +379,10 @@ typedef struct _mme_sess_t {
                 bearer->enb_dl_addr = 0; \
                 bearer->enb_ul_teid = 0; \
                 bearer->enb_ul_addr = 0; \
+                bearer->sgw_dl_teid = 0; \
+                bearer->sgw_dl_addr = 0; \
+                bearer->sgw_ul_teid = 0; \
+                bearer->sgw_ul_addr = 0; \
                 bearer = mme_bearer_next(bearer); \
             } \
             sess = mme_sess_next(sess); \
@@ -397,6 +404,11 @@ typedef struct _mme_bearer_t {
     c_uint32_t      enb_dl_addr;
     c_uint32_t      enb_ul_teid;
     c_uint32_t      enb_ul_addr;
+
+    c_uint32_t      sgw_dl_teid;
+    c_uint32_t      sgw_dl_addr;
+    c_uint32_t      sgw_ul_teid;
+    c_uint32_t      sgw_ul_addr;
 
     qos_t           qos;
     tlv_octet_t     tft;   /* Saved TFT */

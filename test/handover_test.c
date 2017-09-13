@@ -576,7 +576,11 @@ static void handover_test2(abts_case *tc, void *data)
     rv = tests1ap_enb_send(sock2, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    core_sleep(time_from_msec(1000));
+    /* Receive Handover Command */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rc = tests1ap_enb_read(sock1, recvbuf);
+    ABTS_INT_NEQUAL(tc, 0, rc);
+    pkbuf_free(recvbuf);
 
     /********** Remove Subscriber in Database */
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456815"));
@@ -601,7 +605,7 @@ abts_suite *test_handover(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
-#if 0
+#if 1
     abts_run_test(suite, handover_test1, NULL);
 #else
     abts_run_test(suite, handover_test2, NULL);

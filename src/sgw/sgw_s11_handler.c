@@ -542,7 +542,6 @@ void sgw_s11_handle_create_indirect_data_forwarding_tunnel_request(
     gtp_f_teid_t *req_teid = NULL;
     gtp_f_teid_t rsp_teid[GTP_MAX_NUM_OF_INDIRECT_TUNNEL];
 
-
     d_assert(sgw_ue, return, "Null param");
     d_assert(s11_xact, return, "Null param");
     d_assert(req, return, "Null param");
@@ -565,6 +564,7 @@ void sgw_s11_handle_create_indirect_data_forwarding_tunnel_request(
         if (req_bearers[i]->eps_bearer_id.presence == 0)
         {
             d_error("No EBI");
+            return;
         }
 
         bearer = sgw_bearer_find_by_ue_ebi(sgw_ue, 

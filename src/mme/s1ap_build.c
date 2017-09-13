@@ -817,6 +817,83 @@ status_t s1ap_build_handover_request(
     return CORE_OK;
 }
 
+status_t s1ap_build_handover_command(pkbuf_t **s1apbuf, enb_ue_t *enb_ue)
+{
+    char buf[INET_ADDRSTRLEN];
+
+    int encoded;
+    s1ap_message_t message;
+    S1ap_HandoverCommandIEs_t *ies = &message.s1ap_HandoverCommandIEs;
+    S1ap_E_RABDataForwardingItem_t *e_rab = NULL;
+
+    mme_ue_t *mme_ue = NULL;
+    mme_sess_t *sess = NULL;
+    mme_bearer_t *bearer = NULL;
+
+    d_assert(enb_ue, return CORE_ERROR, "Null param");
+    mme_ue = enb_ue->mme_ue;
+
+    memset(&message, 0, sizeof(s1ap_message_t));
+
+    ies->mme_ue_s1ap_id = enb_ue->mme_ue_s1ap_id;
+    ies->eNB_UE_S1AP_ID = enb_ue->enb_ue_s1ap_id;
+    ies->handoverType = enb_ue->handover_type;
+
+    ies->presenceMask |=
+        S1AP_HANDOVERCOMMANDIES_E_RABDATAFORWARDINGLIST_PRESENT;
+    sess = mme_sess_first(mme_ue);
+    while(sess)
+    {
+        bearer = mme_bearer_first(sess);
+        while(bearer)
+        {
+            e_rab = (S1ap_E_RABDataForwardingItem_t *)
+                core_calloc(1, sizeof(S1ap_E_RABDataForwardingItem_t));
+            e_rab->e_RAB_ID = bearer->ebi;
+
+            /*
+            e_rab->dL_transportLayerAddress = (S1ap_TransportLayerAddress_t *)
+                core_calloc(1, sizeof(S1ap_TransportLayerAddress_t));
+            e_rab->dL_transportLayerAddress->size = 4;
+            e_rab->dL_transportLayerAddress->buf = core_calloc(
+                    e_rab->dL_transportLayerAddress->size, sizeof(c_uint8_t));
+            memcpy(e_rab->dL_transportLayerAddress->buf,
+                    &bearer->sgw_dl_addr,
+                    e_rab->dL_transportLayerAddress->size);
+
+            e_rab->dL_gTP_TEID = (S1ap_GTP_TEID_t *)
+                core_calloc(1, sizeof(S1ap_GTP_TEID_t));
+            s1ap_uint32_to_OCTET_STRING(
+                    bearer->sgw_dl_teid, e_rab->dL_gTP_TEID);
+                    */
+
+            ASN_SEQUENCE_ADD(&ies->e_RABDataForwardingList, e_rab);
+
+            bearer = mme_bearer_next(bearer);
+        }
+        sess = mme_sess_next(sess);
+    }
+
+    s1ap_buffer_to_OCTET_STRING(mme_ue->container.buf, mme_ue->container.size, 
+            &ies->target_ToSource_TransparentContainer);
+    S1AP_CLEAR_DATA(&mme_ue->container);
+
+    message.procedureCode = S1ap_ProcedureCode_id_HandoverPreparation;
+    message.direction = S1AP_PDU_PR_successfulOutcome;
+
+    encoded = s1ap_encode_pdu(s1apbuf, &message);
+    s1ap_free_pdu(&message);
+
+    d_assert(s1apbuf && encoded >= 0,return CORE_ERROR,);
+
+    d_trace(3, "[S1AP] Handover Command : ",
+            "UE[mME-UE-S1AP-ID(%d)] <-- eNB[%s:%d]\n",
+            enb_ue->mme_ue_s1ap_id,
+            INET_NTOP(&enb_ue->enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+            enb_ue->enb->enb_id);
+
+    return CORE_OK;
+}
 
 static void s1ap_build_cause(S1ap_Cause_t *dst, S1ap_Cause_t *src)
 {
