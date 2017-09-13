@@ -148,8 +148,9 @@ struct _mme_ue_t {
     fsm_t           sm;     /* A state machine */
 
     struct {
-#define MME_UE_EPS_ATTACH_TYPE                  1
-#define MME_UE_EPS_UPDATE_TYPE                  2
+#define MME_EPS_TYPE_ATTACH_REQUEST                 1
+#define MME_EPS_TYPE_TAU_REQUEST                    2
+#define MME_EPS_TYPE_SERVICE_REQUEST                3
         c_uint8_t   type;
         union {
             nas_eps_attach_type_t attach;

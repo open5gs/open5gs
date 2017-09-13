@@ -297,7 +297,7 @@ void s1ap_handle_initial_context_setup_response(
         {
             status_t rv;
             rv = mme_gtp_send_modify_bearer_request(bearer,
-                mme_ue->nas_eps.type != MME_UE_EPS_ATTACH_TYPE ? 1 : 0);
+                mme_ue->nas_eps.type != MME_EPS_TYPE_ATTACH_REQUEST ? 1 : 0);
             d_assert(rv == CORE_OK, return, "gtp send failed");
         }
     }

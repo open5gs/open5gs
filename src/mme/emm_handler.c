@@ -63,7 +63,7 @@ void emm_handle_attach_request(
     /* Set EPS Attach Type */
     memcpy(&mme_ue->nas_eps.attach, eps_attach_type,
             sizeof(nas_eps_attach_type_t));
-    mme_ue->nas_eps.type = MME_UE_EPS_ATTACH_TYPE;
+    mme_ue->nas_eps.type = MME_EPS_TYPE_ATTACH_REQUEST;
 
     /* Store UE specific information */
     if (attach_request->presencemask &
@@ -263,7 +263,7 @@ void emm_handle_identity_response(
 
     d_assert(MME_UE_HAVE_IMSI(mme_ue), return, "No IMSI in IDENTITY_RESPONSE");
 
-    if (mme_ue->nas_eps.type == MME_UE_EPS_ATTACH_TYPE) /* ATTACH_REQUEST */
+    if (mme_ue->nas_eps.type == MME_EPS_TYPE_ATTACH_REQUEST)
     {
         if (SECURITY_CONTEXT_IS_VALID(mme_ue))
         {
@@ -285,7 +285,7 @@ void emm_handle_identity_response(
             FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
         }
     }
-    else if (mme_ue->nas_eps.type == MME_UE_EPS_UPDATE_TYPE) /* TAU_REQUEST */
+    else if (mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST)
     {
         if (SECURITY_CONTEXT_IS_VALID(mme_ue))
         {
@@ -304,6 +304,28 @@ void emm_handle_identity_response(
             {
                 /* Send TAU reject */
                 nas_send_tau_reject(mme_ue, 
+                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                FSM_TRAN(&mme_ue->sm, &emm_state_detached);
+            }
+        }
+    }
+    else if (mme_ue->nas_eps.type == MME_EPS_TYPE_SERVICE_REQUEST)
+    {
+        if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+        {
+            rv = s1ap_send_initial_context_setup_request(mme_ue);
+            d_assert(rv == CORE_OK, return, "s1ap send error");
+        }
+        else
+        {
+            if (MME_HAVE_SGW_S11_PATH(mme_ue))
+            {
+                mme_s6a_send_air(mme_ue);
+                FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
+            }
+            else
+            {
+                nas_send_service_reject(mme_ue, 
                         EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                 FSM_TRAN(&mme_ue->sm, &emm_state_detached);
             }
@@ -416,7 +438,7 @@ void emm_handle_service_request(
     }
 
     /* Set EPS Update Type */
-    mme_ue->nas_eps.type = MME_UE_EPS_UPDATE_TYPE;
+    mme_ue->nas_eps.type = MME_EPS_TYPE_SERVICE_REQUEST;
 
     if (!MME_UE_HAVE_IMSI(mme_ue))
     {
@@ -426,7 +448,6 @@ void emm_handle_service_request(
     {
         if (SECURITY_CONTEXT_IS_VALID(mme_ue))
         {
-            /* Send Initial Context Setup Request */
             rv = s1ap_send_initial_context_setup_request(mme_ue);
             d_assert(rv == CORE_OK, return, "s1ap send error");
         }
@@ -434,13 +455,11 @@ void emm_handle_service_request(
         {
             if (MME_HAVE_SGW_S11_PATH(mme_ue))
             {
-                /* Re-authentication */
                 mme_s6a_send_air(mme_ue);
                 FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
             }
             else
             {
-                /* Send Service Reject */
                 nas_send_service_reject(mme_ue, 
                         EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                 FSM_TRAN(&mme_ue->sm, &emm_state_detached);
@@ -490,7 +509,7 @@ void emm_handle_tau_request(
     /* Set EPS Update Type */
     memcpy(&mme_ue->nas_eps.update, eps_update_type,
             sizeof(nas_eps_update_type_t));
-    mme_ue->nas_eps.type = MME_UE_EPS_UPDATE_TYPE;
+    mme_ue->nas_eps.type = MME_EPS_TYPE_TAU_REQUEST;
 
     /* Store UE specific information */
     if (tau_request->presencemask &
