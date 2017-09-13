@@ -763,19 +763,17 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
     S1AP_STORE_DATA(
         &mme_ue->container, &ies->target_ToSource_TransparentContainer);
 
-    rv = mme_gtp_send_create_indirect_data_forwarding_tunnel_request(mme_ue);
-    d_assert(rv == CORE_OK, return, "gtp send failed");
-
-
-#if 0
-    rv = mme_gtp_send_modify_bearer_request(bearer);
-    d_assert(rv == CORE_OK, return, "gtp send failed");
-#endif
-
-#if 0
-    rv = s1ap_send_handover_request(mme_ue, ies);
-    d_assert(rv == CORE_OK,, "s1ap send error");
-#endif
+    if (i > 0)
+    {
+        rv = mme_gtp_send_create_indirect_data_forwarding_tunnel_request(
+                mme_ue);
+        d_assert(rv == CORE_OK, return, "gtp send failed");
+    }
+    else
+    {
+        rv = s1ap_send_handover_command(mme_ue);
+        d_assert(rv == CORE_OK, return, "gtp send failed");
+    }
 
     d_trace(3, "[S1AP] Handover Request Ack : "
             "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
@@ -786,10 +784,39 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
 
 void s1ap_handle_handover_failure(mme_enb_t *enb, s1ap_message_t *message)
 {
+    d_error("Not implemented");
 }
 
 void s1ap_handle_enb_status_transfer(mme_enb_t *enb, s1ap_message_t *message)
 {
+//    status_t rv;
+    char buf[INET_ADDRSTRLEN];
+
+    enb_ue_t *source = NULL, *target = NULL;
+    mme_ue_t *mme_ue = NULL;
+
+    S1ap_ENBStatusTransferIEs_t *ies = NULL;
+
+    d_assert(enb, return,);
+
+    ies = &message->s1ap_ENBStatusTransferIEs;
+    d_assert(ies, return,);
+
+    source = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
+    d_assert(source, return,
+            "Cannot find UE for eNB-UE-S1AP-ID[%d] and eNB[%s:%d]",
+            ies->eNB_UE_S1AP_ID,
+            INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+            enb->enb_id);
+    d_assert(source->mme_ue_s1ap_id == ies->mme_ue_s1ap_id, return,
+            "Conflict MME-UE-S1AP-ID : %d != %d\n",
+            source->mme_ue_s1ap_id, ies->mme_ue_s1ap_id);
+
+    mme_ue = source->mme_ue;
+    d_assert(mme_ue, return,);
+    target = source->target;
+    d_assert(target, return,);
+
 }
 
 void s1ap_handle_handover_notification(mme_enb_t *enb, s1ap_message_t *message)

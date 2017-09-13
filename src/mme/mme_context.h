@@ -133,11 +133,12 @@ struct _enb_ue_t {
 
     /* Handover Info */
     S1ap_HandoverType_t handover_type;
+    enb_ue_t        *target;
 
-    /* mme_ue_context */
+    /* MME UE(NAS) */
     mme_ue_t        *mme_ue;
 
-    /* Connected enodeB */
+    /* Connected eNB */
     mme_enb_t       *enb;
 }; 
 
@@ -285,6 +286,7 @@ struct _mme_ue_t {
 #define GTP_COUNTER_CHECK(__mME, __tYPE, __eXPR) \
         do { \
             d_assert((__mME), break,); \
+            if ((__mME)->gtp_counter[__tYPE].request == 0) break; \
             ((__mME)->gtp_counter[__tYPE].response)++; \
             if (((__mME)->gtp_counter[__tYPE].request) == \
                 ((__mME)->gtp_counter[__tYPE].response)) \
@@ -461,8 +463,8 @@ CORE_DECLARE(status_t)      mme_ue_set_imsi(
                                 mme_ue_t *mme_ue, c_int8_t *imsi_bcd);
 CORE_DECLARE(status_t)      mme_associate_ue_context(
                                 mme_ue_t *mme_ue, enb_ue_t *enb_ue);
-CORE_DECLARE(status_t)      mme_partial_associate_ue_context(
-                                mme_ue_t *mme_ue, enb_ue_t *enb_ue);
+CORE_DECLARE(status_t)      mme_handover_associate_ue_context(
+                                mme_ue_t *mme_ue, enb_ue_t *target);
 
 CORE_DECLARE(hash_index_t *) mme_ue_first();
 CORE_DECLARE(hash_index_t *) mme_ue_next(hash_index_t *hi);

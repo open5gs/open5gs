@@ -1467,12 +1467,17 @@ status_t mme_associate_ue_context(mme_ue_t *mme_ue, enb_ue_t *enb_ue)
     return CORE_OK;
 }
 
-status_t mme_partial_associate_ue_context(mme_ue_t *mme_ue, enb_ue_t *enb_ue)
+status_t mme_handover_associate_ue_context(mme_ue_t *mme_ue, enb_ue_t *target)
 {
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
-    d_assert(enb_ue, return CORE_ERROR, "Null param");
+    enb_ue_t *source = NULL;
 
-    enb_ue->mme_ue = mme_ue;
+    d_assert(target, return CORE_ERROR, "Null param");
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    source = mme_ue->enb_ue;
+    d_assert(source, return CORE_ERROR, "Null param");
+
+    target->mme_ue = mme_ue;
+    source->target = target;
 
     return CORE_OK;
 }

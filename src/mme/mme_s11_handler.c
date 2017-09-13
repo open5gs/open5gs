@@ -339,7 +339,6 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
         gtp_create_indirect_data_forwarding_tunnel_response_t *rsp)
 {
     status_t rv;
-    enb_ue_t *enb_ue = NULL;
     mme_bearer_t *bearer = NULL;
     int i;
 
@@ -349,9 +348,6 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
     d_assert(xact, return, "Null param");
     d_assert(mme_ue, return, "Null param");
     d_assert(rsp, return, "Null param");
-
-    enb_ue = mme_ue->enb_ue;
-    d_assert(enb_ue, return, "Null param");
 
     if (rsp->cause.presence == 0)
     {
@@ -399,6 +395,6 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
             d_assert(0, return, "Not Supported");
     }
 
-    rv = s1ap_send_handover_command(enb_ue);
+    rv = s1ap_send_handover_command(mme_ue);
     d_assert(rv == CORE_OK,, "s1ap send error");
 }

@@ -464,7 +464,7 @@ status_t s1ap_send_handover_request(
     enb_ue = enb_ue_add(enb);
     d_assert(enb_ue, return CORE_ERROR,);
 
-    mme_partial_associate_ue_context(mme_ue, enb_ue);
+    mme_handover_associate_ue_context(mme_ue, enb_ue);
 
     rv = s1ap_build_handover_request(&s1apbuf, mme_ue, enb_ue, ies);
     d_assert(rv == CORE_OK && s1apbuf,
@@ -476,13 +476,16 @@ status_t s1ap_send_handover_request(
     return rv;
 }
 
-status_t s1ap_send_handover_command(enb_ue_t *enb_ue)
+status_t s1ap_send_handover_command(mme_ue_t *mme_ue)
 {
     status_t rv;
     pkbuf_t *s1apbuf = NULL;
 
     mme_enb_t *enb = NULL;
+    enb_ue_t *enb_ue = NULL;
 
+    d_assert(mme_ue, return CORE_ERROR,);
+    enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return CORE_ERROR,);
     enb = enb_ue->enb;
     d_assert(enb, return CORE_ERROR,);
