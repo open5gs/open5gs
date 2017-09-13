@@ -11,7 +11,7 @@ extern "C" {
 #define MAX_NUM_OF_UE               128
 #define MAX_NUM_OF_SESS             4
 #define MAX_NUM_OF_BEARER           4
-#define MAX_NUM_OF_TUNNEL           3   /* Num of Indirect Tunnel per Bearer */
+#define MAX_NUM_OF_TUNNEL           3   /* Num of Tunnel per Bearer */
 #define MAX_NUM_OF_PF               16  /* Num of Packet Filter per Bearer */
 #define MAX_NUM_OF_GTP_NODE         8
 

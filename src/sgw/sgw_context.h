@@ -16,6 +16,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
+typedef struct _sgw_tunnel_t sgw_tunnel_t;
 typedef gtp_node_t sgw_mme_t;
 typedef gtp_node_t sgw_pgw_t;
 
@@ -122,6 +123,10 @@ typedef struct _sgw_bearer_t {
     c_uint32_t      enb_s1u_teid;
     c_uint32_t      enb_s1u_addr;
 
+    sgw_tunnel_t    *s1u_tunnel;
+    sgw_tunnel_t    *dl_tunnel;
+    sgw_tunnel_t    *ul_tunnel;
+
     /* IMPORTANT! 
      * SGW-S5U-TEID is same with an index */
     c_uint32_t      sgw_s5u_teid;  
@@ -140,6 +145,18 @@ typedef struct _sgw_bearer_t {
 
     sgw_sess_t      *sess;
 } sgw_bearer_t;
+
+typedef struct _sgw_tunnel_t {
+    index_t         index;
+
+    c_uint32_t      local_teid;
+    c_uint32_t      local_addr;
+    c_uint32_t      remote_teid;
+    c_uint32_t      remote_addr;
+
+    /* Related Context */
+    sgw_bearer_t    *bearer;
+} sgw_tunnel_t;
 
 CORE_DECLARE(status_t)      sgw_context_init(void);
 CORE_DECLARE(status_t)      sgw_context_final(void);
@@ -208,6 +225,11 @@ CORE_DECLARE(sgw_bearer_t*) sgw_bearer_first(sgw_sess_t *sess);
 CORE_DECLARE(sgw_bearer_t*) sgw_bearer_next(sgw_bearer_t *bearer);
 CORE_DECLARE(sgw_bearer_t*) sgw_bearer_find(index_t index);
 
+CORE_DECLARE(sgw_tunnel_t*) sgw_tunnel_add(sgw_bearer_t *bearer);
+CORE_DECLARE(status_t)      sgw_tunnel_remove(sgw_tunnel_t *tunnel);
+CORE_DECLARE(status_t)      sgw_tunnel_remove_all(sgw_bearer_t *bearer);
+CORE_DECLARE(sgw_tunnel_t*) sgw_tunnel_find(index_t index);
+CORE_DECLARE(sgw_tunnel_t*) sgw_tunnel_find_by_teid(c_uint32_t teid);
 
 #ifdef __cplusplus
 }

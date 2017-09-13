@@ -20,6 +20,7 @@ static sgw_context_t self;
 index_declare(sgw_ue_pool, sgw_ue_t, MAX_POOL_OF_UE);
 index_declare(sgw_sess_pool, sgw_sess_t, MAX_POOL_OF_SESS);
 index_declare(sgw_bearer_pool, sgw_bearer_t, MAX_POOL_OF_BEARER);
+index_declare(sgw_tunnel_pool, sgw_tunnel_t, MAX_POOL_OF_TUNNEL);
 
 static int context_initialized = 0;
 
@@ -38,6 +39,7 @@ status_t sgw_context_init()
     index_init(&sgw_ue_pool, MAX_POOL_OF_UE);
     index_init(&sgw_sess_pool, MAX_POOL_OF_SESS);
     index_init(&sgw_bearer_pool, MAX_POOL_OF_BEARER);
+    index_init(&sgw_tunnel_pool, MAX_POOL_OF_TUNNEL);
 
     self.imsi_ue_hash = hash_make();
 
@@ -58,6 +60,7 @@ status_t sgw_context_final()
     d_assert(self.imsi_ue_hash, , "Null param");
     hash_destroy(self.imsi_ue_hash);
 
+    index_final(&sgw_tunnel_pool);
     index_final(&sgw_bearer_pool);
     index_final(&sgw_sess_pool);
     index_final(&sgw_ue_pool);
@@ -705,11 +708,15 @@ sgw_sess_t* sgw_sess_next(sgw_sess_t *sess)
 sgw_bearer_t* sgw_bearer_add(sgw_sess_t *sess)
 {
     sgw_bearer_t *bearer = NULL;
+    sgw_tunnel_t *tunnel = NULL;
 
     d_assert(sess, return NULL, "Null param");
 
     index_alloc(&sgw_bearer_pool, &bearer);
     d_assert(bearer, return NULL, "Bearer context allocation failed");
+
+    tunnel = sgw_tunnel_add(bearer);
+    d_assert(bearer, return NULL, "Tunnel context allocation failed");
 
     bearer->sgw_s1u_teid = bearer->index;
     bearer->sgw_s1u_addr = sgw_self()->s1u_addr;
@@ -728,6 +735,8 @@ status_t sgw_bearer_remove(sgw_bearer_t *bearer)
 
     d_assert(bearer, return CORE_ERROR, "Null param");
     d_assert(bearer->sess, return CORE_ERROR, "Null param");
+
+    sgw_tunnel_remove_all(bearer);
 
     /* Free the buffered packets */
     for (i = 0; i < bearer->num_buffered_pkt; i++)
@@ -828,3 +837,63 @@ sgw_bearer_t* sgw_bearer_next(sgw_bearer_t *bearer)
     return list_next(bearer);
 }
 
+sgw_tunnel_t* sgw_tunnel_add(sgw_bearer_t *bearer)
+{
+    sgw_tunnel_t *tunnel = NULL;
+
+    d_assert(bearer, return NULL, "Null param");
+
+    index_alloc(&sgw_tunnel_pool, &tunnel);
+    d_assert(tunnel, return NULL, "Bearer context allocation failed");
+
+    tunnel->local_teid = tunnel->index;
+    tunnel->local_addr = sgw_self()->s1u_addr;
+
+    tunnel->bearer = bearer;
+    
+    return tunnel;
+}
+
+status_t sgw_tunnel_remove(sgw_tunnel_t *tunnel)
+{
+    d_assert(tunnel, return CORE_ERROR, "Null param");
+    d_assert(tunnel->bearer, return CORE_ERROR, "Null param");
+
+    if (tunnel->bearer->s1u_tunnel == tunnel)
+        tunnel->bearer->s1u_tunnel = NULL;
+    if (tunnel->bearer->dl_tunnel == tunnel)
+        tunnel->bearer->dl_tunnel = NULL;
+    if (tunnel->bearer->ul_tunnel == tunnel)
+        tunnel->bearer->ul_tunnel = NULL;
+
+    index_free(&sgw_tunnel_pool, tunnel);
+
+    return CORE_OK;
+}
+
+status_t sgw_tunnel_remove_all(sgw_bearer_t *bearer)
+{
+    d_assert(bearer, return CORE_ERROR, "Null param");
+
+    if (bearer->s1u_tunnel)
+        sgw_tunnel_remove(bearer->s1u_tunnel);
+    if (bearer->dl_tunnel)
+        sgw_tunnel_remove(bearer->dl_tunnel);
+    if (bearer->ul_tunnel)
+        sgw_tunnel_remove(bearer->ul_tunnel);
+
+    return CORE_OK;
+}
+
+sgw_tunnel_t* sgw_tunnel_find(index_t index)
+{
+    d_assert(index && index < MAX_POOL_OF_BEARER, return NULL, 
+            "Invalid Index(%d)",index);
+
+    return index_find(&sgw_tunnel_pool, index);
+}
+
+sgw_tunnel_t* sgw_tunnel_find_by_teid(c_uint32_t teid)
+{
+    return sgw_tunnel_find(teid);
+}
