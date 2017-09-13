@@ -123,10 +123,6 @@ typedef struct _sgw_bearer_t {
     c_uint32_t      enb_s1u_teid;
     c_uint32_t      enb_s1u_addr;
 
-    sgw_tunnel_t    *s1u_tunnel;
-    sgw_tunnel_t    *dl_tunnel;
-    sgw_tunnel_t    *ul_tunnel;
-
     /* IMPORTANT! 
      * SGW-S5U-TEID is same with an index */
     c_uint32_t      sgw_s5u_teid;  
@@ -143,11 +139,14 @@ typedef struct _sgw_bearer_t {
 #define MAX_NUM_BUFFER_PKT      512
     pkbuf_t*        buffered_pkts[MAX_NUM_BUFFER_PKT];
 
+    list_t          tunnel_list;
     sgw_sess_t      *sess;
 } sgw_bearer_t;
 
 typedef struct _sgw_tunnel_t {
     index_t         index;
+
+    c_uint8_t       interface_type;
 
     c_uint32_t      local_teid;
     c_uint32_t      local_addr;
@@ -225,11 +224,14 @@ CORE_DECLARE(sgw_bearer_t*) sgw_bearer_first(sgw_sess_t *sess);
 CORE_DECLARE(sgw_bearer_t*) sgw_bearer_next(sgw_bearer_t *bearer);
 CORE_DECLARE(sgw_bearer_t*) sgw_bearer_find(index_t index);
 
-CORE_DECLARE(sgw_tunnel_t*) sgw_tunnel_add(sgw_bearer_t *bearer);
-CORE_DECLARE(status_t)      sgw_tunnel_remove(sgw_tunnel_t *tunnel);
-CORE_DECLARE(status_t)      sgw_tunnel_remove_all(sgw_bearer_t *bearer);
+CORE_DECLARE(sgw_tunnel_t*) sgw_tunnel_add(
+        sgw_bearer_t *bearer, c_uint8_t interface_type);
+CORE_DECLARE(status_t) sgw_tunnel_remove(sgw_tunnel_t *tunnel);
+CORE_DECLARE(status_t) sgw_tunnel_remove_all(sgw_bearer_t *bearer);
 CORE_DECLARE(sgw_tunnel_t*) sgw_tunnel_find(index_t index);
 CORE_DECLARE(sgw_tunnel_t*) sgw_tunnel_find_by_teid(c_uint32_t teid);
+CORE_DECLARE(sgw_tunnel_t*) sgw_tunnel_first(sgw_bearer_t *bearer);
+CORE_DECLARE(sgw_tunnel_t*) sgw_tunnel_next(sgw_tunnel_t *tunnel);
 
 #ifdef __cplusplus
 }

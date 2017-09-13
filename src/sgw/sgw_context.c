@@ -7,6 +7,7 @@
 #include "core_lib.h"
 
 #include "types.h"
+#include "gtp_types.h"
 #include "gtp_path.h"
 
 #include "context.h"
@@ -715,8 +716,8 @@ sgw_bearer_t* sgw_bearer_add(sgw_sess_t *sess)
     index_alloc(&sgw_bearer_pool, &bearer);
     d_assert(bearer, return NULL, "Bearer context allocation failed");
 
-    tunnel = sgw_tunnel_add(bearer);
-    d_assert(bearer, return NULL, "Tunnel context allocation failed");
+    tunnel = sgw_tunnel_add(bearer, GTP_F_TEID_S1_U_ENODEB_GTP_U);
+    d_assert(tunnel, return NULL, "Tunnel context allocation failed");
 
     bearer->sgw_s1u_teid = bearer->index;
     bearer->sgw_s1u_addr = sgw_self()->s1u_addr;
@@ -837,20 +838,22 @@ sgw_bearer_t* sgw_bearer_next(sgw_bearer_t *bearer)
     return list_next(bearer);
 }
 
-sgw_tunnel_t* sgw_tunnel_add(sgw_bearer_t *bearer)
+sgw_tunnel_t* sgw_tunnel_add(sgw_bearer_t *bearer, c_uint8_t interface_type)
 {
     sgw_tunnel_t *tunnel = NULL;
 
     d_assert(bearer, return NULL, "Null param");
 
     index_alloc(&sgw_tunnel_pool, &tunnel);
-    d_assert(tunnel, return NULL, "Bearer context allocation failed");
+    d_assert(tunnel, return NULL, "Tunnel context allocation failed");
 
+    tunnel->interface_type = interface_type;
     tunnel->local_teid = tunnel->index;
     tunnel->local_addr = sgw_self()->s1u_addr;
-
-    tunnel->bearer = bearer;
     
+    tunnel->bearer = bearer;
+    list_append(&bearer->tunnel_list, tunnel);
+
     return tunnel;
 }
 
@@ -859,13 +862,7 @@ status_t sgw_tunnel_remove(sgw_tunnel_t *tunnel)
     d_assert(tunnel, return CORE_ERROR, "Null param");
     d_assert(tunnel->bearer, return CORE_ERROR, "Null param");
 
-    if (tunnel->bearer->s1u_tunnel == tunnel)
-        tunnel->bearer->s1u_tunnel = NULL;
-    if (tunnel->bearer->dl_tunnel == tunnel)
-        tunnel->bearer->dl_tunnel = NULL;
-    if (tunnel->bearer->ul_tunnel == tunnel)
-        tunnel->bearer->ul_tunnel = NULL;
-
+    list_remove(&tunnel->bearer->tunnel_list, tunnel);
     index_free(&sgw_tunnel_pool, tunnel);
 
     return CORE_OK;
@@ -873,14 +870,19 @@ status_t sgw_tunnel_remove(sgw_tunnel_t *tunnel)
 
 status_t sgw_tunnel_remove_all(sgw_bearer_t *bearer)
 {
-    d_assert(bearer, return CORE_ERROR, "Null param");
+    sgw_tunnel_t *tunnel = NULL, *next_tunnel = NULL;
 
-    if (bearer->s1u_tunnel)
-        sgw_tunnel_remove(bearer->s1u_tunnel);
-    if (bearer->dl_tunnel)
-        sgw_tunnel_remove(bearer->dl_tunnel);
-    if (bearer->ul_tunnel)
-        sgw_tunnel_remove(bearer->ul_tunnel);
+    d_assert(bearer, return CORE_ERROR, "Null param");
+    
+    tunnel = list_first(&bearer->tunnel_list);
+    while (tunnel)
+    {
+        next_tunnel = list_next(tunnel);
+
+        sgw_tunnel_remove(tunnel);
+
+        tunnel = next_tunnel;
+    }
 
     return CORE_OK;
 }
@@ -896,4 +898,15 @@ sgw_tunnel_t* sgw_tunnel_find(index_t index)
 sgw_tunnel_t* sgw_tunnel_find_by_teid(c_uint32_t teid)
 {
     return sgw_tunnel_find(teid);
+}
+
+sgw_tunnel_t* sgw_tunnel_first(sgw_bearer_t *bearer)
+{
+    d_assert(bearer, return NULL, "Null param");
+    return list_first(&bearer->tunnel_list);
+}
+
+sgw_tunnel_t* sgw_tunnel_next(sgw_tunnel_t *tunnel)
+{
+    return list_next(tunnel);
 }
