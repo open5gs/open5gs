@@ -4,6 +4,7 @@
 #include "core_lib.h"
 
 #include "gtp_types.h"
+#include "gtp_conv.h"
 
 #include "sgw_event.h"
 #include "sgw_context.h"
@@ -519,5 +520,122 @@ void sgw_s11_handle_downlink_data_notification_ack(sgw_ue_t *sgw_ue,
         gtp_downlink_data_notification_acknowledge_t *ack)
 {
     d_trace(3, "[GTP] Downlink Data Notification Ack: "
+        "MME[%d] --> SGW[%d]\n", sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
+}
+
+void sgw_s11_handle_create_indirect_data_forwarding_tunnel_request(
+        gtp_xact_t *s11_xact, sgw_ue_t *sgw_ue,
+        gtp_create_indirect_data_forwarding_tunnel_request_t *req)
+{
+    status_t rv;
+    gtp_create_indirect_data_forwarding_tunnel_response_t *rsp = NULL;
+    pkbuf_t *pkbuf = NULL;
+    gtp_message_t gtp_message;
+    int i;
+
+    sgw_bearer_t *bearer = NULL;
+    sgw_tunnel_t *tunnel = NULL;
+    
+    gtp_cause_t cause;
+    tlv_bearer_context_t *req_bearers[GTP_MAX_NUM_OF_INDIRECT_TUNNEL];
+    tlv_bearer_context_t *rsp_bearers[GTP_MAX_NUM_OF_INDIRECT_TUNNEL];
+    gtp_f_teid_t *req_teid = NULL;
+    gtp_f_teid_t rsp_teid[GTP_MAX_NUM_OF_INDIRECT_TUNNEL];
+
+
+    d_assert(sgw_ue, return, "Null param");
+    d_assert(s11_xact, return, "Null param");
+    d_assert(req, return, "Null param");
+
+    rsp = &gtp_message.create_indirect_data_forwarding_tunnel_response;
+    memset(&gtp_message, 0, sizeof(gtp_message_t));
+
+    gtp_bearers_in_create_indirect_tunnel_request(&req_bearers, req);
+    gtp_bearers_in_create_indirect_tunnel_response(&rsp_bearers, rsp);
+
+    memset(&cause, 0, sizeof(cause));
+    cause.value = GTP_CAUSE_REQUEST_ACCEPTED;
+
+    rsp->cause.presence = 1;
+    rsp->cause.data = &cause;
+    rsp->cause.len = sizeof(cause);
+
+    for (i = 0; req_bearers[i]->presence; i++)
+    {
+        if (req_bearers[i]->eps_bearer_id.presence == 0)
+        {
+            d_error("No EBI");
+        }
+
+        bearer = sgw_bearer_find_by_ue_ebi(sgw_ue, 
+                    req_bearers[i]->eps_bearer_id.u8);
+        d_assert(bearer, return, "No Bearer Context");
+
+        if (req_bearers[i]->s1_u_enodeb_f_teid.presence)
+        {
+            req_teid = req_bearers[i]->s1_u_enodeb_f_teid.data;
+            d_assert(req_teid, return,);
+
+            tunnel = sgw_tunnel_add(bearer,
+                    GTP_F_TEID_SGW_GTP_U_FOR_DL_DATA_FORWARDING);
+            d_assert(tunnel, return, "No Tunnel Context");
+
+        }
+        else if (req_bearers[i]->s12_rnc_f_teid.presence)
+        {
+            req_teid = req_bearers[i]->s12_rnc_f_teid.data;
+            d_assert(req_teid, return,);
+
+            tunnel = sgw_tunnel_add(bearer,
+                    GTP_F_TEID_SGW_GTP_U_FOR_UL_DATA_FORWARDING);
+            d_assert(tunnel, return, "No Tunnel Context");
+        }
+        else
+            d_assert(0, return, "Not Supported");
+
+        tunnel->remote_teid = ntohl(req_teid->teid);
+        tunnel->remote_addr = req_teid->ipv4_addr;
+
+        d_assert(rsp_bearers[i], return,);
+        rsp_bearers[i]->presence = 1;
+        rsp_bearers[i]->eps_bearer_id.presence = 1;
+        rsp_bearers[i]->eps_bearer_id.u8 = bearer->ebi;
+
+        memset(&rsp_teid[i], 0, sizeof(gtp_f_teid_t));
+        rsp_teid[i].ipv4 = 1;
+        rsp_teid[i].ipv4_addr = tunnel->local_addr;
+        rsp_teid[i].teid = htonl(tunnel->local_teid);
+        rsp_teid[i].interface_type = tunnel->interface_type;
+
+        if (tunnel->interface_type ==
+                GTP_F_TEID_SGW_GTP_U_FOR_DL_DATA_FORWARDING)
+        {
+            rsp_bearers[i]->s4_u_sgsn_f_teid.presence = 1;
+            rsp_bearers[i]->s4_u_sgsn_f_teid.data = &rsp_teid[i];
+            rsp_bearers[i]->s4_u_sgsn_f_teid.len = GTP_F_TEID_IPV4_LEN;
+        }
+        else if (tunnel->interface_type ==
+                GTP_F_TEID_SGW_GTP_U_FOR_UL_DATA_FORWARDING)
+        {
+            rsp_bearers[i]->s2b_u_epdg_f_teid_5.presence = 1;
+            rsp_bearers[i]->s2b_u_epdg_f_teid_5.data = &rsp_teid[i];
+            rsp_bearers[i]->s2b_u_epdg_f_teid_5.len = GTP_F_TEID_IPV4_LEN;
+        }
+    }
+
+    gtp_message.h.type =
+        GTP_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE;
+    gtp_message.h.teid = sgw_ue->mme_s11_teid;
+
+    rv = gtp_build_msg(&pkbuf, &gtp_message);
+    d_assert(rv == CORE_OK, return, "gtp build failed");
+
+    rv = gtp_xact_update_tx(s11_xact, &gtp_message.h, pkbuf);
+    d_assert(rv == CORE_OK, return, "gtp_xact_update_tx error");
+
+    rv = gtp_xact_commit(s11_xact);
+    d_assert(rv == CORE_OK, return, "xact_commit error");
+
+    d_trace(3, "[GTP] Create Indirect Data Forwarding Tunnel Response : "
         "MME[%d] --> SGW[%d]\n", sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
 }

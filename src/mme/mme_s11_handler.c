@@ -332,3 +332,9 @@ void mme_s11_handle_downlink_data_notification(
     rv = gtp_xact_commit(xact);
     d_assert(rv == CORE_OK, return, "xact_commit error");
 }
+
+void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
+        gtp_xact_t *xact, mme_ue_t *mme_ue,
+        gtp_create_indirect_data_forwarding_tunnel_response_t *rsp)
+{
+}

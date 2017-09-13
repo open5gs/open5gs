@@ -93,7 +93,7 @@ void sgw_s5c_handle_create_session_response(gtp_xact_t *s5c_xact,
     /* Send Data Plane(UL) : SGW-S1U */
     memset(&sgw_s1u_teid, 0, sizeof(gtp_f_teid_t));
     sgw_s1u_teid.ipv4 = 1;
-    sgw_s1u_teid.interface_type = GTP_F_TEID_S1_U_SGW_GTP_U;
+    sgw_s1u_teid.interface_type = tunnel->interface_type;
     sgw_s1u_teid.ipv4_addr = tunnel->local_addr;
     sgw_s1u_teid.teid = htonl(tunnel->local_teid);
     rsp->bearer_contexts_created.s1_u_enodeb_f_teid.presence = 1;
@@ -242,7 +242,7 @@ void sgw_s5c_handle_create_bearer_request(gtp_xact_t *s5c_xact,
     /* Send Data Plane(UL) : SGW-S1U */
     memset(&sgw_s1u_teid, 0, sizeof(gtp_f_teid_t));
     sgw_s1u_teid.ipv4 = 1;
-    sgw_s1u_teid.interface_type = GTP_F_TEID_S1_U_SGW_GTP_U;
+    sgw_s1u_teid.interface_type = tunnel->interface_type;
     sgw_s1u_teid.ipv4_addr = tunnel->local_addr;
     sgw_s1u_teid.teid = htonl(tunnel->local_teid);
     req->bearer_contexts.s1_u_enodeb_f_teid.presence = 1;

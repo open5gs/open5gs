@@ -223,10 +223,6 @@ CORE_DECLARE(status_t) sgw_tunnel_remove_all(sgw_bearer_t *bearer);
 CORE_DECLARE(sgw_tunnel_t*) sgw_tunnel_find(index_t index);
 CORE_DECLARE(sgw_tunnel_t*) sgw_tunnel_find_by_teid(c_uint32_t teid);
 CORE_DECLARE(sgw_tunnel_t*) sgw_direct_tunnel_in_bearer(sgw_bearer_t *bearer);
-CORE_DECLARE(sgw_tunnel_t*) sgw_dl_indirect_tunnel_in_bearer(
-        sgw_bearer_t *bearer);
-CORE_DECLARE(sgw_tunnel_t*) sgw_ul_indirect_tunnel_in_bearer(
-        sgw_bearer_t *bearer);
 CORE_DECLARE(sgw_tunnel_t*) sgw_tunnel_first(sgw_bearer_t *bearer);
 CORE_DECLARE(sgw_tunnel_t*) sgw_tunnel_next(sgw_tunnel_t *tunnel);
 

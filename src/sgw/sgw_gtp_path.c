@@ -271,13 +271,13 @@ static int _gtpv1_s1u_recv_cb(net_sock_t *sock, void *data)
             
             gnode.addr = tunnel->remote_addr;
             gnode.port = GTPV1_U_UDP_PORT;
-            if (tunnel->interface_type == GTP_F_TEID_S1_U_ENODEB_GTP_U)
+            if (tunnel->interface_type == GTP_F_TEID_S1_U_SGW_GTP_U)
                 gnode.sock = sgw_self()->s5u_sock;
             else if (tunnel->interface_type ==
-                    GTP_F_TEID_ENODEB_GTP_U_FOR_DL_DATA_FORWARDING)
+                    GTP_F_TEID_SGW_GTP_U_FOR_DL_DATA_FORWARDING)
                 gnode.sock = sgw_self()->s1u_sock;
             else if (tunnel->interface_type ==
-                    GTP_F_TEID_ENODEB_GTP_U_FOR_UL_DATA_FORWARDING)
+                    GTP_F_TEID_SGW_GTP_U_FOR_UL_DATA_FORWARDING)
                 gnode.sock = sgw_self()->s1u_sock;
             else
                 d_assert(0, return -1, "Invalid type(%d)",

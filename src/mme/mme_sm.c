@@ -355,6 +355,11 @@ void mme_state_operational(fsm_t *s, event_t *e)
                     /* Start T3413 */
                     tm_start(mme_ue->t3413);
                     break;
+                case GTP_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
+                    mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
+                        xact, mme_ue,
+                        &message.create_indirect_data_forwarding_tunnel_response);
+                    break;
                 default:
                     d_warn("Not implmeneted(type:%d)", message.h.type);
                     break;

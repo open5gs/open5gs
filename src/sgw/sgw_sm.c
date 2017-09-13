@@ -101,6 +101,12 @@ void sgw_state_operational(fsm_t *s, event_t *e)
                     sgw_s11_handle_downlink_data_notification_ack(sgw_ue,
                         &message.downlink_data_notification_acknowledge);
                     break;
+                case GTP_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
+                    sgw_s11_handle_create_indirect_data_forwarding_tunnel_request(
+                        xact, sgw_ue,
+                        &message.
+                            create_indirect_data_forwarding_tunnel_request);
+                    break;
                 default:
                     d_warn("Not implmeneted(type:%d)", message.h.type);
                     break;

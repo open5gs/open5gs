@@ -441,7 +441,6 @@ status_t mme_s11_build_create_indirect_data_forwarding_tunnel_request(
                 bearers[i]->s1_u_enodeb_f_teid.data = &tunnel_teid[i];
                 bearers[i]->s1_u_enodeb_f_teid.len = GTP_F_TEID_IPV4_LEN;
                 i++;
-                printf("DL\n");
             }
 
             if (MME_HAVE_UL_INDIRECT_TUNNEL(bearer))
@@ -460,7 +459,6 @@ status_t mme_s11_build_create_indirect_data_forwarding_tunnel_request(
                 bearers[i]->s12_rnc_f_teid.presence = 1;
                 bearers[i]->s12_rnc_f_teid.data = &tunnel_teid[i];
                 bearers[i]->s12_rnc_f_teid.len = GTP_F_TEID_IPV4_LEN;
-                printf("UL\n");
                 i++;
             }
 

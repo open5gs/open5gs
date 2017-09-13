@@ -724,7 +724,7 @@ sgw_bearer_t* sgw_bearer_add(sgw_sess_t *sess)
 
     list_init(&bearer->tunnel_list);
 
-    tunnel = sgw_tunnel_add(bearer, GTP_F_TEID_S1_U_ENODEB_GTP_U);
+    tunnel = sgw_tunnel_add(bearer, GTP_F_TEID_S1_U_SGW_GTP_U);
     d_assert(tunnel, return NULL, "Tunnel context allocation failed");
 
     return bearer;
@@ -905,48 +905,10 @@ sgw_tunnel_t* sgw_direct_tunnel_in_bearer(sgw_bearer_t *bearer)
     tunnel = sgw_tunnel_first(bearer);
     while(tunnel)
     {
-        if (tunnel->interface_type == GTP_F_TEID_S1_U_ENODEB_GTP_U)
+        if (tunnel->interface_type == GTP_F_TEID_S1_U_SGW_GTP_U)
         {
             return tunnel;
         }
-
-        tunnel = sgw_tunnel_next(tunnel);
-    }
-
-    return NULL;
-}
-
-sgw_tunnel_t* sgw_dl_indirect_tunnel_in_bearer(sgw_bearer_t *bearer)
-{
-    sgw_tunnel_t *tunnel = NULL;
-
-    d_assert(bearer, return NULL, "Null param");
-    
-    tunnel = sgw_tunnel_first(bearer);
-    while (tunnel)
-    {
-        if (tunnel->interface_type ==
-                GTP_F_TEID_ENODEB_GTP_U_FOR_DL_DATA_FORWARDING)
-            return tunnel;
-
-        tunnel = sgw_tunnel_next(tunnel);
-    }
-
-    return NULL;
-}
-
-sgw_tunnel_t* sgw_ul_indirect_tunnel_in_bearer(sgw_bearer_t *bearer)
-{
-    sgw_tunnel_t *tunnel = NULL;
-
-    d_assert(bearer, return NULL, "Null param");
-    
-    tunnel = sgw_tunnel_first(bearer);
-    while (tunnel)
-    {
-        if (tunnel->interface_type ==
-                GTP_F_TEID_ENODEB_GTP_U_FOR_UL_DATA_FORWARDING)
-            return tunnel;
 
         tunnel = sgw_tunnel_next(tunnel);
     }
