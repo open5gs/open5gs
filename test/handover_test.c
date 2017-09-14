@@ -588,6 +588,18 @@ static void handover_test2(abts_case *tc, void *data)
     rv = tests1ap_enb_send(sock1, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
+    /* Receive MME Status Transfer */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rc = tests1ap_enb_read(sock2, recvbuf);
+    ABTS_INT_NEQUAL(tc, 0, rc);
+    pkbuf_free(recvbuf);
+
+    /* Send Handover Notify */
+    rv = tests1ap_build_handover_notify(&sendbuf, 0);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock2, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
     core_sleep(time_from_msec(1000));
 
     /********** Remove Subscriber in Database */

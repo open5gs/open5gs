@@ -298,10 +298,11 @@ struct _mme_ue_t {
             } \
         } while(0);
 
-#define MAX_NUM_OF_GTP_COUNTER                      16
+#define MAX_NUM_OF_GTP_COUNTER                          16
 
-#define GTP_COUNTER_DELETE_SESSION                  0
-#define GTP_COUNTER_MODIFY_BEARER_BY_PATH_SWITCH    1
+#define GTP_COUNTER_DELETE_SESSION                      0
+#define GTP_COUNTER_MODIFY_BEARER_BY_PATH_SWITCH        1
+#define GTP_COUNTER_MODIFY_BEARER_BY_HANDOVER_NOTIFY    2
     struct {
         c_uint8_t request;
         c_uint8_t response;
@@ -406,6 +407,9 @@ typedef struct _mme_bearer_t {
     c_uint32_t      enb_s1u_addr;
     c_uint32_t      sgw_s1u_teid;
     c_uint32_t      sgw_s1u_addr;
+
+    c_uint32_t      target_s1u_teid;  /* Target S1U TEID from HO-Req-Ack */
+    c_uint32_t      target_s1u_addr;  /* Target S1U ADDR from HO-Req-Ack */
 
     c_uint32_t      enb_dl_teid;
     c_uint32_t      enb_dl_addr;

@@ -251,6 +251,7 @@ void s1ap_handle_ue_capability_info_indication(
 void s1ap_handle_initial_context_setup_response(
         mme_enb_t *enb, s1ap_message_t *message)
 {
+    status_t rv;
     char buf[INET_ADDRSTRLEN];
     int i = 0;
 
@@ -295,9 +296,13 @@ void s1ap_handle_initial_context_setup_response(
 
         if (FSM_CHECK(&bearer->sm, esm_state_active))
         {
-            status_t rv;
-            rv = mme_gtp_send_modify_bearer_request(bearer,
-                mme_ue->nas_eps.type != MME_EPS_TYPE_ATTACH_REQUEST ? 1 : 0);
+            if (mme_ue->nas_eps.type == MME_EPS_TYPE_ATTACH_REQUEST)
+            {
+                /* if ATTACH REQUEST,
+                   ULI(CellID, TAC) is excluded in  Modify Bearer Request */
+                enb_ue = NULL;
+            }
+            rv = mme_gtp_send_modify_bearer_request(enb_ue, bearer);
             d_assert(rv == CORE_OK, return, "gtp send failed");
         }
     }
@@ -358,7 +363,7 @@ void s1ap_handle_e_rab_setup_response(
 
             if (bearer->ebi == linked_bearer->ebi)
             {
-                rv = mme_gtp_send_modify_bearer_request(bearer, 0);
+                rv = mme_gtp_send_modify_bearer_request(NULL, bearer);
                 d_assert(rv == CORE_OK, return, "gtp send failed");
             }
             else
@@ -629,7 +634,7 @@ void s1ap_handle_path_switch_request(
         GTP_COUNTER_INCREMENT(
                 mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_PATH_SWITCH);
 
-        rv = mme_gtp_send_modify_bearer_request(bearer, 1);
+        rv = mme_gtp_send_modify_bearer_request(enb_ue, bearer);
         d_assert(rv == CORE_OK, return, "gtp send failed");
     }
 
@@ -730,11 +735,11 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
         bearer = mme_bearer_find_by_ue_ebi(mme_ue, e_rab->e_RAB_ID);
         d_assert(bearer, return, "Null param");
 
-        memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf, 
-                sizeof(bearer->enb_s1u_teid));
-        bearer->enb_s1u_teid = ntohl(bearer->enb_s1u_teid);
-        memcpy(&bearer->enb_s1u_addr, e_rab->transportLayerAddress.buf,
-                sizeof(bearer->enb_s1u_addr));
+        memcpy(&bearer->target_s1u_teid, e_rab->gTP_TEID.buf, 
+                sizeof(bearer->target_s1u_teid));
+        bearer->target_s1u_teid = ntohl(bearer->target_s1u_teid);
+        memcpy(&bearer->target_s1u_addr, e_rab->transportLayerAddress.buf,
+                sizeof(bearer->target_s1u_addr));
 
         if (e_rab->dL_transportLayerAddress && e_rab->dL_gTP_TEID)
         {
@@ -789,7 +794,7 @@ void s1ap_handle_handover_failure(mme_enb_t *enb, s1ap_message_t *message)
 
 void s1ap_handle_enb_status_transfer(mme_enb_t *enb, s1ap_message_t *message)
 {
-//    status_t rv;
+    status_t rv;
     char buf[INET_ADDRSTRLEN];
 
     enb_ue_t *source = NULL, *target = NULL;
@@ -817,8 +822,87 @@ void s1ap_handle_enb_status_transfer(mme_enb_t *enb, s1ap_message_t *message)
     target = source->target;
     d_assert(target, return,);
 
+    rv = s1ap_send_mme_status_transfer(target, ies);
+    d_assert(rv == CORE_OK,,);
 }
 
 void s1ap_handle_handover_notification(mme_enb_t *enb, s1ap_message_t *message)
 {
+    status_t rv;
+    char buf[INET_ADDRSTRLEN];
+
+    enb_ue_t *source = NULL, *target = NULL;
+    mme_ue_t *mme_ue = NULL;
+    mme_sess_t *sess = NULL;
+    mme_bearer_t *bearer = NULL;
+
+    S1ap_HandoverNotifyIEs_t *ies = NULL;
+    S1ap_EUTRAN_CGI_t *eutran_cgi;
+	S1ap_PLMNidentity_t *pLMNidentity = NULL;
+	S1ap_CellIdentity_t	*cell_ID = NULL;
+    S1ap_TAI_t *tai;
+	S1ap_TAC_t *tAC = NULL;
+
+    d_assert(enb, return,);
+
+    ies = &message->s1ap_HandoverNotifyIEs;
+    d_assert(ies, return,);
+
+    eutran_cgi = &ies->eutran_cgi;
+    d_assert(eutran_cgi, return,);
+    pLMNidentity = &eutran_cgi->pLMNidentity;
+    d_assert(pLMNidentity && pLMNidentity->size == sizeof(plmn_id_t), return,);
+    cell_ID = &eutran_cgi->cell_ID;
+    d_assert(cell_ID, return,);
+
+    tai = &ies->tai;
+    d_assert(tai, return,);
+    pLMNidentity = &tai->pLMNidentity;
+    d_assert(pLMNidentity && pLMNidentity->size == sizeof(plmn_id_t), return,);
+    tAC = &tai->tAC;
+    d_assert(tAC && tAC->size == sizeof(c_uint16_t), return,);
+
+    target = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
+    d_assert(target, return,
+            "Cannot find UE for eNB-UE-S1AP-ID[%d] and eNB[%s:%d]",
+            ies->eNB_UE_S1AP_ID,
+            INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+            enb->enb_id);
+    d_assert(target->mme_ue_s1ap_id == ies->mme_ue_s1ap_id, return,
+            "Conflict MME-UE-S1AP-ID : %d != %d\n",
+            target->mme_ue_s1ap_id, ies->mme_ue_s1ap_id);
+
+    mme_ue = target->mme_ue;
+    d_assert(mme_ue, return,);
+    source = mme_ue->enb_ue;
+    d_assert(source, return,);
+
+    memcpy(&target->tai.plmn_id, pLMNidentity->buf, 
+            sizeof(target->tai.plmn_id));
+    memcpy(&target->tai.tac, tAC->buf, sizeof(target->tai.tac));
+    target->tai.tac = ntohs(target->tai.tac);
+    memcpy(&target->e_cgi.plmn_id, pLMNidentity->buf, 
+            sizeof(target->e_cgi.plmn_id));
+    memcpy(&target->e_cgi.cell_id, cell_ID->buf, sizeof(target->e_cgi.cell_id));
+    target->e_cgi.cell_id = (ntohl(target->e_cgi.cell_id) >> 4);
+
+    sess = mme_sess_first(mme_ue);
+    while(sess)
+    {
+        bearer = mme_bearer_first(sess);
+        while(bearer)
+        {
+            bearer->enb_s1u_teid = bearer->target_s1u_teid;
+            bearer->enb_s1u_addr = bearer->target_s1u_addr;
+
+            GTP_COUNTER_INCREMENT(
+                    mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_HANDOVER_NOTIFY);
+
+            rv = mme_gtp_send_modify_bearer_request(target, bearer);
+            d_assert(rv == CORE_OK, return, "gtp send failed");
+
+            bearer = mme_bearer_next(bearer);
+        }
+        sess = mme_sess_next(sess);
+    }
 }

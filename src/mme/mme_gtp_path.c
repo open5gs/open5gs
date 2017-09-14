@@ -124,7 +124,7 @@ status_t mme_gtp_send_create_session_request(mme_sess_t *sess)
 
 
 status_t mme_gtp_send_modify_bearer_request(
-        mme_bearer_t *bearer, int uli_present)
+        enb_ue_t *enb_ue, mme_bearer_t *bearer)
 {
     status_t rv;
 
@@ -145,8 +145,7 @@ status_t mme_gtp_send_modify_bearer_request(
     h.type = GTP_MODIFY_BEARER_REQUEST_TYPE;
     h.teid = mme_ue->sgw_s11_teid;
 
-    rv = mme_s11_build_modify_bearer_request(
-            &pkbuf, h.type, bearer, uli_present);
+    rv = mme_s11_build_modify_bearer_request(&pkbuf, h.type, enb_ue, bearer);
     d_assert(rv == CORE_OK, return CORE_ERROR, "S11 build error");
 
     xact = gtp_xact_local_create(sess->sgw, &h, pkbuf);
@@ -165,16 +164,19 @@ status_t mme_gtp_send_delete_session_request(mme_sess_t *sess)
     gtp_header_t h;
     gtp_xact_t *xact = NULL;
     mme_ue_t *mme_ue = NULL;
+    enb_ue_t *enb_ue = NULL;
 
     d_assert(sess, return CORE_ERROR, "Null param");
     mme_ue = sess->mme_ue;
     d_assert(mme_ue, return CORE_ERROR, "Null param");
+    enb_ue = mme_ue->enb_ue;
+    d_assert(enb_ue, return CORE_ERROR, "Null param");
 
     memset(&h, 0, sizeof(gtp_header_t));
     h.type = GTP_DELETE_SESSION_REQUEST_TYPE;
     h.teid = mme_ue->sgw_s11_teid;
 
-    rv = mme_s11_build_delete_session_request(&s11buf, h.type, sess);
+    rv = mme_s11_build_delete_session_request(&s11buf, h.type, enb_ue, sess);
     d_assert(rv == CORE_OK, return CORE_ERROR, "S11 build error");
 
     xact = gtp_xact_local_create(sess->sgw, &h, s11buf);
@@ -224,6 +226,7 @@ status_t mme_gtp_send_create_bearer_response(mme_bearer_t *bearer)
 
     gtp_xact_t *xact = NULL;
     mme_ue_t *mme_ue = NULL;
+    enb_ue_t *enb_ue = NULL;
 
     gtp_header_t h;
     pkbuf_t *pkbuf = NULL;
@@ -231,6 +234,8 @@ status_t mme_gtp_send_create_bearer_response(mme_bearer_t *bearer)
     d_assert(bearer, return CORE_ERROR, "Null param");
     mme_ue = bearer->mme_ue;
     d_assert(mme_ue, return CORE_ERROR, "Null param");
+    enb_ue = mme_ue->enb_ue;
+    d_assert(enb_ue, return CORE_ERROR, "Null param");
     xact = bearer->xact;
     d_assert(xact, return CORE_ERROR, "Null param");
 
@@ -238,7 +243,7 @@ status_t mme_gtp_send_create_bearer_response(mme_bearer_t *bearer)
     h.type = GTP_CREATE_BEARER_RESPONSE_TYPE;
     h.teid = mme_ue->sgw_s11_teid;
 
-    rv = mme_s11_build_create_bearer_response(&pkbuf, h.type, bearer);
+    rv = mme_s11_build_create_bearer_response(&pkbuf, h.type, enb_ue, bearer);
     d_assert(rv == CORE_OK, return CORE_ERROR, "S11 build error");
 
     rv = gtp_xact_update_tx(xact, &h, pkbuf);

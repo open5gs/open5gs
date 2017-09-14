@@ -285,20 +285,6 @@ static int _gtpv1_s1u_recv_cb(net_sock_t *sock, void *data)
 
             gtp_send(&gnode, pkbuf);
         }
-#if 0
-        bearer = sgw_bearer_find_by_sgw_s1u_teid(teid);
-        if (bearer)
-        {
-            /* Convert Teid and send to PGW  via s5u */
-            gtp_h->teid =  htonl(bearer->pgw_s5u_teid);
-            
-            gnode.addr = bearer->pgw_s5u_addr;
-            gnode.port = GTPV1_U_UDP_PORT;
-            gnode.sock = sgw_self()->s5u_sock;
-
-            gtp_send(&gnode, pkbuf);
-        }
-#endif
     }
 
     pkbuf_free(pkbuf);

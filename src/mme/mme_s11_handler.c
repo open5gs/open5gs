@@ -125,6 +125,10 @@ void mme_s11_handle_modify_bearer_response(
         rv = s1ap_send_path_switch_ack(mme_ue);
         d_assert(rv == CORE_OK, return, "s1ap send error");
     );
+
+    GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_HANDOVER_NOTIFY,
+            printf("Handover Notify\n");
+    );
 }
 
 void mme_s11_handle_delete_session_response(
@@ -324,7 +328,7 @@ void mme_s11_handle_downlink_data_notification(
     h.type = GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE;
     h.teid = mme_ue->sgw_s11_teid;
 
-    rv = mme_s11_build_downlink_data_notification_ack(&s11buf, h.type, mme_ue);
+    rv = mme_s11_build_downlink_data_notification_ack(&s11buf, h.type);
     d_assert(rv == CORE_OK, return, "S11 build error");
 
     rv = gtp_xact_update_tx(xact, &h, s11buf);

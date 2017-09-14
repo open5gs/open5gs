@@ -33,6 +33,8 @@ CORE_DECLARE(status_t) s1ap_build_handover_request(
         S1ap_HandoverRequiredIEs_t *required);
 CORE_DECLARE(status_t) s1ap_build_handover_command(
         pkbuf_t **s1apbuf, enb_ue_t *enb_ue);
+CORE_DECLARE(status_t) s1ap_build_mme_status_transfer(pkbuf_t **s1apbuf,
+        enb_ue_t *enb_ue, S1ap_ENBStatusTransferIEs_t *enb_ies);
 
 #ifdef __cplusplus
 }

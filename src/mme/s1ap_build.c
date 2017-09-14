@@ -928,6 +928,43 @@ status_t s1ap_build_handover_command(pkbuf_t **s1apbuf, enb_ue_t *enb_ue)
     return CORE_OK;
 }
 
+status_t s1ap_build_mme_status_transfer(pkbuf_t **s1apbuf,
+        enb_ue_t *enb_ue, S1ap_ENBStatusTransferIEs_t *enb_ies)
+{
+    char buf[INET_ADDRSTRLEN];
+
+    int encoded;
+    s1ap_message_t message;
+    S1ap_MMEStatusTransferIEs_t *mme_ies = &message.s1ap_MMEStatusTransferIEs;
+
+    d_assert(enb_ue, return CORE_ERROR, "Null param");
+    d_assert(enb_ies, return CORE_ERROR, "Null param");
+
+    memset(&message, 0, sizeof(s1ap_message_t));
+
+    mme_ies->mme_ue_s1ap_id = enb_ue->mme_ue_s1ap_id;
+    mme_ies->eNB_UE_S1AP_ID = enb_ue->enb_ue_s1ap_id;
+    memcpy(&mme_ies->eNB_StatusTransfer_TransparentContainer,
+            &enb_ies->eNB_StatusTransfer_TransparentContainer,
+            sizeof(S1ap_ENB_StatusTransfer_TransparentContainer_t));
+
+    message.procedureCode = S1ap_ProcedureCode_id_MMEStatusTransfer;
+    message.direction = S1AP_PDU_PR_initiatingMessage;
+
+    encoded = s1ap_encode_pdu(s1apbuf, &message);
+    s1ap_free_pdu(&message);
+
+    d_assert(s1apbuf && encoded >= 0,return CORE_ERROR,);
+
+    d_trace(3, "[S1AP] MME Status Transfer : ",
+            "UE[mME-UE-S1AP-ID(%d)] <-- eNB[%s:%d]\n",
+            enb_ue->mme_ue_s1ap_id,
+            INET_NTOP(&enb_ue->enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+            enb_ue->enb->enb_id);
+
+    return CORE_OK;
+}
+
 static void s1ap_build_cause(S1ap_Cause_t *dst, S1ap_Cause_t *src)
 {
     d_assert(src, return, "Null param");
