@@ -409,12 +409,20 @@ void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
 {
     status_t rv;
 
+    S1ap_Cause_t cause;
+
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
+    enb_ue_t *source_ue = NULL, *target_ue = NULL;
 
     d_assert(xact, return, "Null param");
     d_assert(mme_ue, return, "Null param");
     d_assert(rsp, return, "Null param");
+
+    target_ue = mme_ue->enb_ue;
+    d_assert(target_ue, return, "Null param");
+    source_ue = target_ue->source_ue;
+    d_assert(source_ue, return, "Null param");
 
     if (rsp->cause.presence == 0)
     {
@@ -440,4 +448,10 @@ void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
         }
         sess = mme_sess_next(sess);
     }
+
+    cause.present = S1ap_Cause_PR_nas;
+    cause.choice.nas = S1ap_CauseNas_normal_release;
+
+    rv = s1ap_send_ue_context_release_commmand(source_ue, &cause);
+    d_assert(rv == CORE_OK, return, "s1ap send error");
 }
