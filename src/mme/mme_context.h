@@ -317,10 +317,11 @@ struct _mme_ue_t {
 #define CONNECT_SGW_GTP_NODE(__mME) \
     do { \
         d_assert((__mME), break, "Null param"); \
-        (__mME)->sgw = mme_sgw_next(self.sgw); \
-        if (!(__mME)->sgw) (__mME)->sgw = mme_sgw_first(); \
-        self.sgw = (__mME)->sgw; \
-        d_assert((__mME)->sgw, break, "Null param"); \
+        (__mME)->sgw = self.sgw; \
+        d_assert(((__mME)->sgw), break, "Null param"); \
+        self.sgw = mme_sgw_next((__mME)->sgw); \
+        if (!self.sgw) self.sgw = mme_sgw_first(); \
+        d_assert(self.sgw, break, "Null param"); \
     } while(0)
     mme_sgw_t       *sgw;
 };

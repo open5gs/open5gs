@@ -614,6 +614,64 @@ static void handover_test2(abts_case *tc, void *data)
 
     core_sleep(time_from_msec(300));
 
+    /* Send Handover Required */
+    rv = tests1ap_build_handover_required(&sendbuf, 1);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock2, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* Receive Handover Request */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rc = tests1ap_enb_read(sock1, recvbuf);
+    ABTS_INT_NEQUAL(tc, 0, rc);
+    pkbuf_free(recvbuf);
+
+#if 0
+    /* Send Handover Request Ack */
+    rv = tests1ap_build_handover_request_ack(&sendbuf, 1);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock1, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* Receive Handover Command */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rc = tests1ap_enb_read(sock2, recvbuf);
+    ABTS_INT_NEQUAL(tc, 0, rc);
+    pkbuf_free(recvbuf);
+
+    /* Send eNB Status Transfer */
+    rv = tests1ap_build_enb_status_transfer(&sendbuf, 1);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock2, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* Receive MME Status Transfer */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rc = tests1ap_enb_read(sock1, recvbuf);
+    ABTS_INT_NEQUAL(tc, 0, rc);
+    pkbuf_free(recvbuf);
+
+    /* Send Handover Notify */
+    rv = tests1ap_build_handover_notify(&sendbuf, 1);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock1, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* Receive UE Context Release Command */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rc = tests1ap_enb_read(sock2, recvbuf);
+    ABTS_INT_NEQUAL(tc, 0, rc);
+    pkbuf_free(recvbuf);
+
+    /* Send UE Context Release Complete */
+    rv = tests1ap_build_ue_context_release_complete(&sendbuf, msgindex+1);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock2, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    core_sleep(time_from_msec(300));
+#endif
+
     /********** Remove Subscriber in Database */
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456815"));
     ABTS_PTR_NOTNULL(tc, doc);

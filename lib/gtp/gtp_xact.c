@@ -7,7 +7,7 @@
 #include "gtp_xact.h"
 #include "gtp_message.h"
 
-#define SIZE_OF_GTP_XACT_POOL       32
+#define SIZE_OF_GTP_XACT_POOL       64
 #define GTP_MIN_XACT_ID             1
 #define GTP_MAX_XACT_ID             0x800000
 

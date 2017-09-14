@@ -1056,15 +1056,14 @@ status_t enb_ue_remove(enb_ue_t *enb_ue)
     target_ue = enb_ue->target_ue;
     if (target_ue)
         target_ue->source_ue = NULL;
+    else if (enb_ue->mme_ue)
+        enb_ue->mme_ue->enb_ue = NULL;
 
     list_remove(&enb_ue->enb->enb_ue_list, enb_ue);
     hash_set(self.mme_ue_s1ap_id_hash, &enb_ue->mme_ue_s1ap_id, 
             sizeof(enb_ue->mme_ue_s1ap_id), NULL);
 
     index_free(&enb_ue_pool, enb_ue);
-
-    if (enb_ue->mme_ue)
-        enb_ue->mme_ue->enb_ue = NULL;
 
     return CORE_OK;
 }
