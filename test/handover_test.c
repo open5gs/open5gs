@@ -614,6 +614,7 @@ static void handover_test2(abts_case *tc, void *data)
 
     core_sleep(time_from_msec(300));
 
+#if 0
     /* Send Handover Required */
     rv = tests1ap_build_handover_required(&sendbuf, 1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -626,7 +627,6 @@ static void handover_test2(abts_case *tc, void *data)
     ABTS_INT_NEQUAL(tc, 0, rc);
     pkbuf_free(recvbuf);
 
-#if 0
     /* Send Handover Request Ack */
     rv = tests1ap_build_handover_request_ack(&sendbuf, 1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
