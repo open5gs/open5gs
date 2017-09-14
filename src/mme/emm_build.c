@@ -43,7 +43,7 @@ status_t emm_build_attach_accept(
     tai_list->length = 6;
     tai_list->type = 2;
     tai_list->num = 0; /* +1 = 1 elements */
-    memcpy(&tai_list->type2.tai[0], &mme_ue->enb_ue->tai, sizeof(tai_t));
+    memcpy(&tai_list->type2.tai[0], &mme_ue->tai, sizeof(tai_t));
 
     attach_accept->esm_message_container.buffer = esmbuf->payload;
     attach_accept->esm_message_container.length = esmbuf->len;

@@ -153,14 +153,15 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
         }
     }
 
-    memcpy(&enb_ue->tai.plmn_id, pLMNidentity->buf, 
-            sizeof(enb_ue->tai.plmn_id));
-    memcpy(&enb_ue->tai.tac, tAC->buf, sizeof(enb_ue->tai.tac));
-    enb_ue->tai.tac = ntohs(enb_ue->tai.tac);
-    memcpy(&enb_ue->e_cgi.plmn_id, pLMNidentity->buf, 
-            sizeof(enb_ue->e_cgi.plmn_id));
-    memcpy(&enb_ue->e_cgi.cell_id, cell_ID->buf, sizeof(enb_ue->e_cgi.cell_id));
-    enb_ue->e_cgi.cell_id = (ntohl(enb_ue->e_cgi.cell_id) >> 4);
+    memcpy(&enb_ue->nas.tai.plmn_id, pLMNidentity->buf, 
+            sizeof(enb_ue->nas.tai.plmn_id));
+    memcpy(&enb_ue->nas.tai.tac, tAC->buf, sizeof(enb_ue->nas.tai.tac));
+    enb_ue->nas.tai.tac = ntohs(enb_ue->nas.tai.tac);
+    memcpy(&enb_ue->nas.e_cgi.plmn_id, pLMNidentity->buf, 
+            sizeof(enb_ue->nas.e_cgi.plmn_id));
+    memcpy(&enb_ue->nas.e_cgi.cell_id, cell_ID->buf,
+            sizeof(enb_ue->nas.e_cgi.cell_id));
+    enb_ue->nas.e_cgi.cell_id = (ntohl(enb_ue->nas.e_cgi.cell_id) >> 4);
 
     d_assert(enb->s1ap_sock, enb_ue_remove(enb_ue); return,);
     d_trace(3, "[S1AP] InitialUEMessage : "
@@ -590,14 +591,14 @@ void s1ap_handle_path_switch_request(
 
     enb_ue->enb_ue_s1ap_id = ies->eNB_UE_S1AP_ID;
 
-    memcpy(&enb_ue->tai.plmn_id, pLMNidentity->buf, 
-            sizeof(enb_ue->tai.plmn_id));
-    memcpy(&enb_ue->tai.tac, tAC->buf, sizeof(enb_ue->tai.tac));
-    enb_ue->tai.tac = ntohs(enb_ue->tai.tac);
-    memcpy(&enb_ue->e_cgi.plmn_id, pLMNidentity->buf, 
-            sizeof(enb_ue->e_cgi.plmn_id));
-    memcpy(&enb_ue->e_cgi.cell_id, cell_ID->buf, sizeof(enb_ue->e_cgi.cell_id));
-    enb_ue->e_cgi.cell_id = (ntohl(enb_ue->e_cgi.cell_id) >> 4);
+    memcpy(&mme_ue->tai.plmn_id, pLMNidentity->buf, 
+            sizeof(mme_ue->tai.plmn_id));
+    memcpy(&mme_ue->tai.tac, tAC->buf, sizeof(mme_ue->tai.tac));
+    mme_ue->tai.tac = ntohs(mme_ue->tai.tac);
+    memcpy(&mme_ue->e_cgi.plmn_id, pLMNidentity->buf, 
+            sizeof(mme_ue->e_cgi.plmn_id));
+    memcpy(&mme_ue->e_cgi.cell_id, cell_ID->buf, sizeof(mme_ue->e_cgi.cell_id));
+    mme_ue->e_cgi.cell_id = (ntohl(mme_ue->e_cgi.cell_id) >> 4);
 
     memcpy(&eea, encryptionAlgorithms->buf, sizeof(eea));
     eea = ntohs(eea);
@@ -876,14 +877,14 @@ void s1ap_handle_handover_notification(mme_enb_t *enb, s1ap_message_t *message)
     source = mme_ue->enb_ue;
     d_assert(source, return,);
 
-    memcpy(&target->tai.plmn_id, pLMNidentity->buf, 
-            sizeof(target->tai.plmn_id));
-    memcpy(&target->tai.tac, tAC->buf, sizeof(target->tai.tac));
-    target->tai.tac = ntohs(target->tai.tac);
-    memcpy(&target->e_cgi.plmn_id, pLMNidentity->buf, 
-            sizeof(target->e_cgi.plmn_id));
-    memcpy(&target->e_cgi.cell_id, cell_ID->buf, sizeof(target->e_cgi.cell_id));
-    target->e_cgi.cell_id = (ntohl(target->e_cgi.cell_id) >> 4);
+    memcpy(&mme_ue->tai.plmn_id, pLMNidentity->buf, 
+            sizeof(mme_ue->tai.plmn_id));
+    memcpy(&mme_ue->tai.tac, tAC->buf, sizeof(mme_ue->tai.tac));
+    mme_ue->tai.tac = ntohs(mme_ue->tai.tac);
+    memcpy(&mme_ue->e_cgi.plmn_id, pLMNidentity->buf, 
+            sizeof(mme_ue->e_cgi.plmn_id));
+    memcpy(&mme_ue->e_cgi.cell_id, cell_ID->buf, sizeof(mme_ue->e_cgi.cell_id));
+    mme_ue->e_cgi.cell_id = (ntohl(mme_ue->e_cgi.cell_id) >> 4);
 
     sess = mme_sess_first(mme_ue);
     while(sess)

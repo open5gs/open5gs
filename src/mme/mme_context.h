@@ -127,19 +127,22 @@ struct _enb_ue_t {
     c_uint32_t      enb_ue_s1ap_id; /* eNB-UE-S1AP-ID received from eNB */
     c_uint32_t      mme_ue_s1ap_id; /* MME-UE-S1AP-ID received from MME */
 
-    /* UE Info */
-    tai_t           tai;
-    e_cgi_t         e_cgi;
-
     /* Handover Info */
     S1ap_HandoverType_t handover_type;
     enb_ue_t        *target;
 
-    /* MME UE(NAS) */
-    mme_ue_t        *mme_ue;
+    /* Use mme_ue->tai, mme_ue->e_cgi.
+     * Do not access enb_ue->nas.tai enb_ue->nas.e_cgi.
+     * 
+     * Save TAI and ECGI. And then, this will copy 'mme_ue_t' context later */
+    struct {
+        tai_t           tai;
+        e_cgi_t         e_cgi;
+    } nas;
 
-    /* Connected eNB */
+    /* Related Context */
     mme_enb_t       *enb;
+    mme_ue_t        *mme_ue;
 }; 
 
 struct _mme_ue_t {

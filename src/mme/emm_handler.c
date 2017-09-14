@@ -91,8 +91,8 @@ void emm_handle_attach_request(
             sizeof(attach_request->ms_network_capability));
 
     /* Copy TAI and ECGI from enb_ue */
-    memcpy(&mme_ue->tai, &enb_ue->tai, sizeof(tai_t));
-    memcpy(&mme_ue->e_cgi, &enb_ue->e_cgi, sizeof(e_cgi_t));
+    memcpy(&mme_ue->tai, &enb_ue->nas.tai, sizeof(tai_t));
+    memcpy(&mme_ue->e_cgi, &enb_ue->nas.e_cgi, sizeof(e_cgi_t));
 
     switch(eps_mobile_identity->imsi.type)
     {
@@ -546,8 +546,8 @@ void emm_handle_tau_request(
     }
 
     /* Copy TAI and ECGI from enb_ue */
-    memcpy(&mme_ue->tai, &enb_ue->tai, sizeof(tai_t));
-    memcpy(&mme_ue->e_cgi, &enb_ue->e_cgi, sizeof(e_cgi_t));
+    memcpy(&mme_ue->tai, &enb_ue->nas.tai, sizeof(tai_t));
+    memcpy(&mme_ue->e_cgi, &enb_ue->nas.e_cgi, sizeof(e_cgi_t));
 
     /* TODO: 
      *   1) Consider if MME is changed or not.
