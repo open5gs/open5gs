@@ -148,7 +148,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
             }
             else
             {
-                mme_associate_ue_context(mme_ue, enb_ue);
+                mme_ue_associate_enb_ue(mme_ue, enb_ue);
             }
         }
     }
@@ -650,7 +650,7 @@ void s1ap_handle_handover_required(mme_enb_t *enb, s1ap_message_t *message)
     status_t rv;
     char buf[INET_ADDRSTRLEN];
 
-    enb_ue_t *enb_ue = NULL;
+    enb_ue_t *source_ue = NULL;
     mme_ue_t *mme_ue = NULL;
 
     S1ap_HandoverRequiredIEs_t *ies = NULL;
@@ -660,17 +660,17 @@ void s1ap_handle_handover_required(mme_enb_t *enb, s1ap_message_t *message)
     ies = &message->s1ap_HandoverRequiredIEs;
     d_assert(ies, return,);
 
-    enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
-    d_assert(enb_ue, return,
+    source_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
+    d_assert(source_ue, return,
             "Cannot find UE for eNB-UE-S1AP-ID[%d] and eNB[%s:%d]",
             ies->eNB_UE_S1AP_ID,
             INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
             enb->enb_id);
-    d_assert(enb_ue->mme_ue_s1ap_id == ies->mme_ue_s1ap_id, return,
+    d_assert(source_ue->mme_ue_s1ap_id == ies->mme_ue_s1ap_id, return,
             "Conflict MME-UE-S1AP-ID : %d != %d\n",
-            enb_ue->mme_ue_s1ap_id, ies->mme_ue_s1ap_id);
+            source_ue->mme_ue_s1ap_id, ies->mme_ue_s1ap_id);
 
-    mme_ue = enb_ue->mme_ue;
+    mme_ue = source_ue->mme_ue;
     d_assert(mme_ue, return,);
 
     if (SECURITY_CONTEXT_IS_VALID(mme_ue))
@@ -683,14 +683,14 @@ void s1ap_handle_handover_required(mme_enb_t *enb, s1ap_message_t *message)
         d_assert(0, return,);
     }
 
-    enb_ue->handover_type = ies->handoverType;
+    source_ue->handover_type = ies->handoverType;
 
     rv = s1ap_send_handover_request(mme_ue, ies);
     d_assert(rv == CORE_OK,, "s1ap send error");
 
     d_trace(3, "[S1AP] Handover Required : "
             "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
-            enb_ue->enb_ue_s1ap_id,
+            source_ue->enb_ue_s1ap_id,
             INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
             enb->enb_id);
 }
@@ -701,7 +701,7 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
     char buf[INET_ADDRSTRLEN];
     int i;
 
-    enb_ue_t *enb_ue = NULL;
+    enb_ue_t *target_ue = NULL;
     mme_ue_t *mme_ue = NULL;
 
     S1ap_HandoverRequestAcknowledgeIEs_t *ies = NULL;
@@ -711,16 +711,16 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
     ies = &message->s1ap_HandoverRequestAcknowledgeIEs;
     d_assert(ies, return,);
 
-    enb_ue = enb_ue_find_by_mme_ue_s1ap_id(ies->mme_ue_s1ap_id);
-    d_assert(enb_ue, return,
+    target_ue = enb_ue_find_by_mme_ue_s1ap_id(ies->mme_ue_s1ap_id);
+    d_assert(target_ue, return,
             "Cannot find UE for MME-UE-S1AP-ID[%d] and eNB[%s:%d]",
             ies->mme_ue_s1ap_id,
             INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
             enb->enb_id);
 
-    enb_ue->enb_ue_s1ap_id = ies->eNB_UE_S1AP_ID;
+    target_ue->enb_ue_s1ap_id = ies->eNB_UE_S1AP_ID;
 
-    mme_ue = enb_ue->mme_ue;
+    mme_ue = target_ue->mme_ue;
     d_assert(mme_ue, return,);
 
     for (i = 0; i < ies->e_RABAdmittedList.s1ap_E_RABAdmittedItem.count; i++)
@@ -782,7 +782,7 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
 
     d_trace(3, "[S1AP] Handover Request Ack : "
             "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
-            enb_ue->enb_ue_s1ap_id,
+            target_ue->enb_ue_s1ap_id,
             INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
             enb->enb_id);
 }
@@ -797,8 +797,7 @@ void s1ap_handle_enb_status_transfer(mme_enb_t *enb, s1ap_message_t *message)
     status_t rv;
     char buf[INET_ADDRSTRLEN];
 
-    enb_ue_t *source = NULL, *target = NULL;
-    mme_ue_t *mme_ue = NULL;
+    enb_ue_t *source_ue = NULL, *target_ue = NULL;
 
     S1ap_ENBStatusTransferIEs_t *ies = NULL;
 
@@ -807,22 +806,20 @@ void s1ap_handle_enb_status_transfer(mme_enb_t *enb, s1ap_message_t *message)
     ies = &message->s1ap_ENBStatusTransferIEs;
     d_assert(ies, return,);
 
-    source = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
-    d_assert(source, return,
+    source_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
+    d_assert(source_ue, return,
             "Cannot find UE for eNB-UE-S1AP-ID[%d] and eNB[%s:%d]",
             ies->eNB_UE_S1AP_ID,
             INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
             enb->enb_id);
-    d_assert(source->mme_ue_s1ap_id == ies->mme_ue_s1ap_id, return,
+    d_assert(source_ue->mme_ue_s1ap_id == ies->mme_ue_s1ap_id, return,
             "Conflict MME-UE-S1AP-ID : %d != %d\n",
-            source->mme_ue_s1ap_id, ies->mme_ue_s1ap_id);
+            source_ue->mme_ue_s1ap_id, ies->mme_ue_s1ap_id);
 
-    mme_ue = source->mme_ue;
-    d_assert(mme_ue, return,);
-    target = source->target;
-    d_assert(target, return,);
+    target_ue = source_ue->target_ue;
+    d_assert(target_ue, return,);
 
-    rv = s1ap_send_mme_status_transfer(target, ies);
+    rv = s1ap_send_mme_status_transfer(target_ue, ies);
     d_assert(rv == CORE_OK,,);
 }
 
@@ -831,7 +828,7 @@ void s1ap_handle_handover_notification(mme_enb_t *enb, s1ap_message_t *message)
     status_t rv;
     char buf[INET_ADDRSTRLEN];
 
-    enb_ue_t *source = NULL, *target = NULL;
+    enb_ue_t *target_ue = NULL;
     mme_ue_t *mme_ue = NULL;
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
@@ -862,20 +859,20 @@ void s1ap_handle_handover_notification(mme_enb_t *enb, s1ap_message_t *message)
     tAC = &tai->tAC;
     d_assert(tAC && tAC->size == sizeof(c_uint16_t), return,);
 
-    target = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
-    d_assert(target, return,
+    target_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
+    d_assert(target_ue, return,
             "Cannot find UE for eNB-UE-S1AP-ID[%d] and eNB[%s:%d]",
             ies->eNB_UE_S1AP_ID,
             INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
             enb->enb_id);
-    d_assert(target->mme_ue_s1ap_id == ies->mme_ue_s1ap_id, return,
+    d_assert(target_ue->mme_ue_s1ap_id == ies->mme_ue_s1ap_id, return,
             "Conflict MME-UE-S1AP-ID : %d != %d\n",
-            target->mme_ue_s1ap_id, ies->mme_ue_s1ap_id);
+            target_ue->mme_ue_s1ap_id, ies->mme_ue_s1ap_id);
 
-    mme_ue = target->mme_ue;
+    mme_ue = target_ue->mme_ue;
     d_assert(mme_ue, return,);
-    source = mme_ue->enb_ue;
-    d_assert(source, return,);
+
+    mme_ue_associate_enb_ue(mme_ue, target_ue);
 
     memcpy(&mme_ue->tai.plmn_id, pLMNidentity->buf, 
             sizeof(mme_ue->tai.plmn_id));

@@ -1456,7 +1456,7 @@ status_t mme_ue_set_imsi(mme_ue_t *mme_ue, c_int8_t *imsi_bcd)
     return CORE_OK;
 }
 
-status_t mme_associate_ue_context(mme_ue_t *mme_ue, enb_ue_t *enb_ue)
+status_t mme_ue_associate_enb_ue(mme_ue_t *mme_ue, enb_ue_t *enb_ue)
 {
     d_assert(mme_ue, return CORE_ERROR, "Null param");
     d_assert(enb_ue, return CORE_ERROR, "Null param");
@@ -1467,17 +1467,18 @@ status_t mme_associate_ue_context(mme_ue_t *mme_ue, enb_ue_t *enb_ue)
     return CORE_OK;
 }
 
-status_t mme_handover_associate_ue_context(mme_ue_t *mme_ue, enb_ue_t *target)
+status_t mme_ue_associate_target_ue(mme_ue_t *mme_ue, enb_ue_t *target_ue)
 {
-    enb_ue_t *source = NULL;
+    enb_ue_t *source_ue = NULL;
 
-    d_assert(target, return CORE_ERROR, "Null param");
+    d_assert(target_ue, return CORE_ERROR, "Null param");
     d_assert(mme_ue, return CORE_ERROR, "Null param");
-    source = mme_ue->enb_ue;
-    d_assert(source, return CORE_ERROR, "Null param");
+    source_ue = mme_ue->enb_ue;
+    d_assert(source_ue, return CORE_ERROR, "Null param");
 
-    target->mme_ue = mme_ue;
-    source->target = target;
+    target_ue->mme_ue = mme_ue;
+    target_ue->source_ue = source_ue;
+    source_ue->target_ue = target_ue;
 
     return CORE_OK;
 }

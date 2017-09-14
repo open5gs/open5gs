@@ -432,8 +432,8 @@ status_t s1ap_send_handover_request(
     S1ap_TargetID_t *targetID = NULL;
 
     c_uint32_t enb_id;
-    mme_enb_t *enb = NULL;
-    enb_ue_t *enb_ue = NULL;
+    mme_enb_t *target_enb = NULL;
+    enb_ue_t *target_ue = NULL;
 
     d_assert(mme_ue, return CORE_ERROR,);
     d_assert(ies, return CORE_ERROR,);
@@ -457,21 +457,21 @@ status_t s1ap_send_handover_request(
         }
     }
 
-    enb = mme_enb_find_by_enb_id(enb_id);
-    d_assert(enb, return CORE_ERROR,
+    target_enb = mme_enb_find_by_enb_id(enb_id);
+    d_assert(target_enb, return CORE_ERROR,
             "Cannot find target eNB = %d", enb_id);
 
-    enb_ue = enb_ue_add(enb);
-    d_assert(enb_ue, return CORE_ERROR,);
+    target_ue = enb_ue_add(target_enb);
+    d_assert(target_ue, return CORE_ERROR,);
 
-    mme_handover_associate_ue_context(mme_ue, enb_ue);
+    mme_ue_associate_target_ue(mme_ue, target_ue);
 
-    rv = s1ap_build_handover_request(&s1apbuf, mme_ue, enb_ue, ies);
+    rv = s1ap_build_handover_request(&s1apbuf, mme_ue, target_ue, ies);
     d_assert(rv == CORE_OK && s1apbuf,
-            enb_ue_remove(enb_ue); return CORE_ERROR, "s1ap build error");
+            enb_ue_remove(target_ue); return CORE_ERROR, "s1ap build error");
 
-    rv = s1ap_send_to_enb(enb, s1apbuf);
-    d_assert(rv == CORE_OK, enb_ue_remove(enb_ue), "s1ap send error");
+    rv = s1ap_send_to_enb(target_enb, s1apbuf);
+    d_assert(rv == CORE_OK, enb_ue_remove(target_ue), "s1ap send error");
 
     return rv;
 }

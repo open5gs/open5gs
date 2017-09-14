@@ -129,7 +129,8 @@ struct _enb_ue_t {
 
     /* Handover Info */
     S1ap_HandoverType_t handover_type;
-    enb_ue_t        *target;
+    enb_ue_t        *source_ue;
+    enb_ue_t        *target_ue;
 
     /* Use mme_ue->tai, mme_ue->e_cgi.
      * Do not access enb_ue->nas.tai enb_ue->nas.e_cgi.
@@ -457,10 +458,10 @@ CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_teid(c_uint32_t teid);
 CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_message(nas_message_t *message);
 CORE_DECLARE(status_t)      mme_ue_set_imsi(
                                 mme_ue_t *mme_ue, c_int8_t *imsi_bcd);
-CORE_DECLARE(status_t)      mme_associate_ue_context(
+CORE_DECLARE(status_t)      mme_ue_associate_enb_ue(
                                 mme_ue_t *mme_ue, enb_ue_t *enb_ue);
-CORE_DECLARE(status_t)      mme_handover_associate_ue_context(
-                                mme_ue_t *mme_ue, enb_ue_t *target);
+CORE_DECLARE(status_t)      mme_ue_associate_target_ue(
+                                mme_ue_t *mme_ue, enb_ue_t *target_ue);
 
 CORE_DECLARE(hash_index_t *) mme_ue_first();
 CORE_DECLARE(hash_index_t *) mme_ue_next(hash_index_t *hi);
