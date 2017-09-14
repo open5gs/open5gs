@@ -360,6 +360,11 @@ void mme_state_operational(fsm_t *s, event_t *e)
                         xact, mme_ue,
                         &message.create_indirect_data_forwarding_tunnel_response);
                     break;
+                case GTP_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
+                    mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
+                        xact, mme_ue,
+                        &message.delete_indirect_data_forwarding_tunnel_response);
+                    break;
                 default:
                     d_warn("Not implmeneted(type:%d)", message.h.type);
                     break;

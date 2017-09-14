@@ -28,6 +28,8 @@ CORE_DECLARE(void) sgw_s11_handle_downlink_data_notification_ack(
 CORE_DECLARE(void) sgw_s11_handle_create_indirect_data_forwarding_tunnel_request(
         gtp_xact_t *s11_xact, sgw_ue_t *sgw_ue,
         gtp_create_indirect_data_forwarding_tunnel_request_t *req);
+CORE_DECLARE(void) sgw_s11_handle_delete_indirect_data_forwarding_tunnel_request(
+        gtp_xact_t *s11_xact, sgw_ue_t *sgw_ue);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

@@ -21,8 +21,12 @@ CORE_DECLARE(status_t) mme_gtp_send_create_bearer_response(
         mme_bearer_t *bearer);
 CORE_DECLARE(status_t) mme_gtp_send_release_access_bearers_request(
         mme_ue_t *mme_ue);
+
 CORE_DECLARE(status_t)
         mme_gtp_send_create_indirect_data_forwarding_tunnel_request(
+        mme_ue_t *mme_ue);
+CORE_DECLARE(status_t)
+        mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(
         mme_ue_t *mme_ue);
 
 #ifdef __cplusplus

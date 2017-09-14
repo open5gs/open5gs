@@ -638,6 +638,9 @@ f.write("""status_t gtp_parse_msg(gtp_message_t *gtp_message, pkbuf_t *pkbuf)
     if (h->teid_presence)
         gtp_message->h.teid = ntohl(gtp_message->h.teid);
 
+    if (pkbuf->len == 0)
+        return CORE_OK;
+
     switch(gtp_message->h.type)
     {
 """)

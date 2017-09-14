@@ -107,6 +107,10 @@ void sgw_state_operational(fsm_t *s, event_t *e)
                         &message.
                             create_indirect_data_forwarding_tunnel_request);
                     break;
+                case GTP_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
+                    sgw_s11_handle_delete_indirect_data_forwarding_tunnel_request(
+                        xact, sgw_ue);
+                    break;
                 default:
                     d_warn("Not implmeneted(type:%d)", message.h.type);
                     break;

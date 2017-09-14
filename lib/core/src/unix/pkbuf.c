@@ -22,7 +22,6 @@ pool_declare(pkbuf_pool, pkbuf_t, MAX_NUM_OF_PKBUF);
 #define SIZEOF_CLUSTER_1024     CORE_ALIGN(1024+MAX_SIZEOF_HEADROOM, BOUNDARY)
 #define SIZEOF_CLUSTER_2048     CORE_ALIGN(2048+MAX_SIZEOF_HEADROOM, BOUNDARY)
 #define SIZEOF_CLUSTER_8192     CORE_ALIGN(8192+MAX_SIZEOF_HEADROOM, BOUNDARY)
-#define SIZEOF_CLUSTER_32768    CORE_ALIGN(32768+MAX_SIZEOF_HEADROOM, BOUNDARY)
 
 #define MAX_NUM_OF_CLUSTER_128      256
 #define MAX_NUM_OF_CLUSTER_256      32 
@@ -30,7 +29,6 @@ pool_declare(pkbuf_pool, pkbuf_t, MAX_NUM_OF_PKBUF);
 #define MAX_NUM_OF_CLUSTER_1024     32
 #define MAX_NUM_OF_CLUSTER_2048     32
 #define MAX_NUM_OF_CLUSTER_8192     32
-#define MAX_NUM_OF_CLUSTER_32768    8
 
 typedef c_uint8_t cluster_128_t[SIZEOF_CLUSTER_128];
 typedef c_uint8_t cluster_256_t[SIZEOF_CLUSTER_256];
@@ -38,7 +36,6 @@ typedef c_uint8_t cluster_512_t[SIZEOF_CLUSTER_512];
 typedef c_uint8_t cluster_1024_t[SIZEOF_CLUSTER_1024];
 typedef c_uint8_t cluster_2048_t[SIZEOF_CLUSTER_2048];
 typedef c_uint8_t cluster_8192_t[SIZEOF_CLUSTER_8192];
-typedef c_uint8_t cluster_32768_t[SIZEOF_CLUSTER_32768];
 
 pool_declare(cluster_128_pool, cluster_128_t, MAX_NUM_OF_CLUSTER_128);
 pool_declare(cluster_256_pool, cluster_256_t, MAX_NUM_OF_CLUSTER_256);
@@ -46,7 +43,6 @@ pool_declare(cluster_512_pool, cluster_512_t, MAX_NUM_OF_CLUSTER_512);
 pool_declare(cluster_1024_pool, cluster_1024_t, MAX_NUM_OF_CLUSTER_1024);
 pool_declare(cluster_2048_pool, cluster_2048_t, MAX_NUM_OF_CLUSTER_2048);
 pool_declare(cluster_8192_pool, cluster_8192_t, MAX_NUM_OF_CLUSTER_8192);
-pool_declare(cluster_32768_pool, cluster_32768_t, MAX_NUM_OF_CLUSTER_32768);
 
 static mutex_id mutex;
 
@@ -63,7 +59,6 @@ status_t pkbuf_init(void)
     pool_init(&cluster_1024_pool, MAX_NUM_OF_CLUSTER_1024);
     pool_init(&cluster_2048_pool, MAX_NUM_OF_CLUSTER_2048);
     pool_init(&cluster_8192_pool, MAX_NUM_OF_CLUSTER_8192);
-    pool_init(&cluster_32768_pool, MAX_NUM_OF_CLUSTER_32768);
 
     return CORE_OK;
 }
@@ -80,7 +75,6 @@ status_t pkbuf_final(void)
     pool_final(&cluster_1024_pool);
     pool_final(&cluster_2048_pool);
     pool_final(&cluster_8192_pool);
-    pool_final(&cluster_32768_pool);
 
     mutex_delete(mutex);
 
@@ -152,13 +146,6 @@ void pkbuf_show(void)
     d_trace(3, "%d not freed in cluster8192_pool[%d]\n",
             pool_size(&cluster_8192_pool) - pool_avail(&cluster_8192_pool),
             pool_size(&cluster_8192_pool));
-    if (pool_size(&cluster_32768_pool) != pool_avail(&cluster_32768_pool))
-        d_error("%d not freed in cluster32768_pool[%d]",
-            pool_size(&cluster_32768_pool) - pool_avail(&cluster_32768_pool),
-            pool_size(&cluster_32768_pool));
-    d_trace(3, "%d not freed in cluster32768_pool[%d]\n",
-            pool_size(&cluster_32768_pool) - pool_avail(&cluster_32768_pool),
-            pool_size(&cluster_32768_pool));
 }
 
 static clbuf_t* clbuf_alloc(c_uint16_t length);
@@ -202,11 +189,6 @@ static clbuf_t* clbuf_alloc(c_uint16_t length)
         pool_alloc_node(&cluster_8192_pool, &cluster);
         clbuf->size = SIZEOF_CLUSTER_8192;
     }
-    else if (length <= 32768)
-    {
-        pool_alloc_node(&cluster_32768_pool, &cluster);
-        clbuf->size = SIZEOF_CLUSTER_32768;
-    }
 
     d_assert(cluster, pool_free_node(&clbuf_pool, clbuf); return NULL,
             "No more free cluster. length:%d requested", length);
@@ -241,9 +223,6 @@ static void clbuf_free(clbuf_t *clbuf)
             break;
         case SIZEOF_CLUSTER_8192:
             pool_free_node(&cluster_8192_pool, clbuf->cluster);
-            break;
-        case SIZEOF_CLUSTER_32768:
-            pool_free_node(&cluster_32768_pool, clbuf->cluster);
             break;
         default:
             d_assert(0, return, "clbuf has invalid size %d", clbuf->size);

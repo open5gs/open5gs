@@ -27,6 +27,9 @@ CORE_DECLARE(void) mme_s11_handle_downlink_data_notification(
 CORE_DECLARE(void) mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
         gtp_xact_t *xact, mme_ue_t *mme_ue,
         gtp_create_indirect_data_forwarding_tunnel_response_t *rsp);
+CORE_DECLARE(void) mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
+        gtp_xact_t *xact, mme_ue_t *mme_ue,
+        gtp_delete_indirect_data_forwarding_tunnel_response_t *rsp);
 
 #ifdef __cplusplus
 }

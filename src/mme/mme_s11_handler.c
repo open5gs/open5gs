@@ -127,7 +127,9 @@ void mme_s11_handle_modify_bearer_response(
     );
 
     GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_HANDOVER_NOTIFY,
-            printf("Handover Notify\n");
+        rv = mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(
+            mme_ue);
+        d_assert(rv == CORE_OK, return, "gtp send error");
     );
 }
 
@@ -387,7 +389,7 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
             bearer->sgw_dl_teid = ntohl(teid->teid);
             bearer->sgw_dl_addr = teid->ipv4_addr;
         }
-        else if (bearers[i]->s2b_u_epdg_f_teid_5.presence)
+        if (bearers[i]->s2b_u_epdg_f_teid_5.presence)
         {
             teid = bearers[i]->s2b_u_epdg_f_teid_5.data;
             d_assert(teid, return,);
@@ -395,10 +397,47 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
             bearer->sgw_ul_teid = ntohl(teid->teid);
             bearer->sgw_ul_addr = teid->ipv4_addr;
         }
-        else
-            d_assert(0, return, "Not Supported");
     }
 
     rv = s1ap_send_handover_command(mme_ue);
     d_assert(rv == CORE_OK,, "s1ap send error");
+}
+
+void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
+        gtp_xact_t *xact, mme_ue_t *mme_ue,
+        gtp_delete_indirect_data_forwarding_tunnel_response_t *rsp)
+{
+    status_t rv;
+
+    mme_sess_t *sess = NULL;
+    mme_bearer_t *bearer = NULL;
+
+    d_assert(xact, return, "Null param");
+    d_assert(mme_ue, return, "Null param");
+    d_assert(rsp, return, "Null param");
+
+    if (rsp->cause.presence == 0)
+    {
+        d_error("No Cause");
+        return;
+    }
+
+    d_trace(3, "[GTP] Delete Indirect Data Forwarding Tunnel Response : "
+            "MME[%d] <-- SGW[%d]\n", mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
+
+    rv = gtp_xact_commit(xact);
+    d_assert(rv == CORE_OK, return, "xact_commit error");
+
+    sess = mme_sess_first(mme_ue);
+    while(sess)
+    {
+        bearer = mme_bearer_first(sess);
+        while(bearer)
+        {
+            CLEAR_INDIRECT_TUNNEL(bearer);
+
+            bearer = mme_bearer_next(bearer);
+        }
+        sess = mme_sess_next(sess);
+    }
 }

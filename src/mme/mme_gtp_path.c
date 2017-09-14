@@ -312,3 +312,32 @@ status_t mme_gtp_send_create_indirect_data_forwarding_tunnel_request(
 
     return CORE_OK;
 }
+
+status_t mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(
+        mme_ue_t *mme_ue)
+{
+    status_t rv;
+    gtp_header_t h;
+    pkbuf_t *pkbuf = NULL;
+    gtp_xact_t *xact = NULL;
+    mme_sess_t *sess = NULL;
+
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    sess = mme_sess_first(mme_ue);
+    d_assert(sess, return CORE_ERROR, "Null param");
+
+    memset(&h, 0, sizeof(gtp_header_t));
+    h.type = GTP_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE;
+    h.teid = mme_ue->sgw_s11_teid;
+
+    pkbuf = pkbuf_alloc(TLV_MAX_HEADROOM, 0);
+    d_assert(pkbuf, return CORE_ERROR, "S11 build error");
+
+    xact = gtp_xact_local_create(sess->sgw, &h, pkbuf);
+    d_assert(xact, return CORE_ERROR, "Null param");
+
+    rv = gtp_xact_commit(xact);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "xact_commit error");
+
+    return CORE_OK;
+}

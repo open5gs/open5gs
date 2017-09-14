@@ -7,7 +7,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define GTP_MAX_NUM_OF_INDIRECT_TUNNEL      22
+#define GTP_MAX_NUM_OF_INDIRECT_TUNNEL      11
 
 /* Create Indirect Data Forwarding Tunnel Request/Response */
 CORE_DECLARE(void) gtp_bearers_in_create_indirect_tunnel_request(
