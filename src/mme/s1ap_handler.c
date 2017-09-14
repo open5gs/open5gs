@@ -296,13 +296,12 @@ void s1ap_handle_initial_context_setup_response(
 
         if (FSM_CHECK(&bearer->sm, esm_state_active))
         {
-            if (mme_ue->nas_eps.type == MME_EPS_TYPE_ATTACH_REQUEST)
+            int uli_presence = 0;
+            if (mme_ue->nas_eps.type != MME_EPS_TYPE_ATTACH_REQUEST)
             {
-                /* if ATTACH REQUEST,
-                   ULI(CellID, TAC) is excluded in  Modify Bearer Request */
-                enb_ue = NULL;
+                uli_presence = 1;
             }
-            rv = mme_gtp_send_modify_bearer_request(enb_ue, bearer);
+            rv = mme_gtp_send_modify_bearer_request(bearer, uli_presence);
             d_assert(rv == CORE_OK, return, "gtp send failed");
         }
     }
@@ -363,7 +362,7 @@ void s1ap_handle_e_rab_setup_response(
 
             if (bearer->ebi == linked_bearer->ebi)
             {
-                rv = mme_gtp_send_modify_bearer_request(NULL, bearer);
+                rv = mme_gtp_send_modify_bearer_request(bearer, 0);
                 d_assert(rv == CORE_OK, return, "gtp send failed");
             }
             else
@@ -634,7 +633,7 @@ void s1ap_handle_path_switch_request(
         GTP_COUNTER_INCREMENT(
                 mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_PATH_SWITCH);
 
-        rv = mme_gtp_send_modify_bearer_request(enb_ue, bearer);
+        rv = mme_gtp_send_modify_bearer_request(bearer, 1);
         d_assert(rv == CORE_OK, return, "gtp send failed");
     }
 
@@ -898,7 +897,7 @@ void s1ap_handle_handover_notification(mme_enb_t *enb, s1ap_message_t *message)
             GTP_COUNTER_INCREMENT(
                     mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_HANDOVER_NOTIFY);
 
-            rv = mme_gtp_send_modify_bearer_request(target, bearer);
+            rv = mme_gtp_send_modify_bearer_request(bearer, 1);
             d_assert(rv == CORE_OK, return, "gtp send failed");
 
             bearer = mme_bearer_next(bearer);

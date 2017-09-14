@@ -205,6 +205,7 @@ CORE_DECLARE(void) sgw_s11_handle_modify_bearer_request(gtp_xact_t *s11_xact,
         {
             rv = sgw_gtp_send_end_marker(bearer);
             d_assert(rv == CORE_OK, return, "gtp send failed");
+            printf("SEND END MARKER\n");
 
             bearer->e_cgi.cell_id = uli.e_cgi.cell_id;
         }

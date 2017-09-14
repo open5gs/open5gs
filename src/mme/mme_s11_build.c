@@ -43,7 +43,6 @@ status_t mme_s11_build_create_session_request(
     d_assert(pgw_ipv4_addr, return CORE_ERROR, "Null param");
     mme_ue = sess->mme_ue;
     d_assert(mme_ue, return CORE_ERROR, "Null param");
-    d_assert(mme_ue->enb_ue, return CORE_ERROR, "Null param");
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));
 
@@ -55,12 +54,11 @@ status_t mme_s11_build_create_session_request(
     memset(&uli, 0, sizeof(gtp_uli_t));
     uli.flags.e_cgi = 1;
     uli.flags.tai = 1;
-    memcpy(&uli.tai.plmn_id, &mme_ue->enb_ue->tai.plmn_id, 
-            sizeof(uli.tai.plmn_id));
-    uli.tai.tac = mme_ue->enb_ue->tai.tac;
-    memcpy(&uli.e_cgi.plmn_id, &mme_ue->enb_ue->e_cgi.plmn_id, 
+    memcpy(&uli.tai.plmn_id, &mme_ue->tai.plmn_id, sizeof(uli.tai.plmn_id));
+    uli.tai.tac = mme_ue->tai.tac;
+    memcpy(&uli.e_cgi.plmn_id, &mme_ue->e_cgi.plmn_id, 
             sizeof(uli.e_cgi.plmn_id));
-    uli.e_cgi.cell_id = mme_ue->enb_ue->e_cgi.cell_id;
+    uli.e_cgi.cell_id = mme_ue->e_cgi.cell_id;
     req->user_location_information.presence = 1;
     gtp_build_uli(&req->user_location_information, &uli, 
             uli_buf, GTP_MAX_ULI_LEN);
@@ -161,8 +159,8 @@ status_t mme_s11_build_create_session_request(
     return CORE_OK;
 }
 
-status_t mme_s11_build_modify_bearer_request(
-        pkbuf_t **pkbuf, c_uint8_t type, enb_ue_t *enb_ue, mme_bearer_t *bearer)
+status_t mme_s11_build_modify_bearer_request(pkbuf_t **pkbuf,
+        c_uint8_t type, mme_bearer_t *bearer, int uli_presence)
 {
     status_t rv;
     gtp_message_t gtp_message;
@@ -172,7 +170,11 @@ status_t mme_s11_build_modify_bearer_request(
     gtp_uli_t uli;
     char uli_buf[GTP_MAX_ULI_LEN];
 
+    mme_ue_t *mme_ue = NULL;
+
     d_assert(bearer, return CORE_ERROR, "Null param");
+    mme_ue = bearer->mme_ue;
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));
 
@@ -192,17 +194,16 @@ status_t mme_s11_build_modify_bearer_request(
     req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.len = 
         GTP_F_TEID_IPV4_LEN;
 
-    if (enb_ue)
+    if (uli_presence)
     {
         memset(&uli, 0, sizeof(gtp_uli_t));
         uli.flags.e_cgi = 1;
         uli.flags.tai = 1;
-        memcpy(&uli.tai.plmn_id, &enb_ue->tai.plmn_id, 
-                sizeof(uli.tai.plmn_id));
-        uli.tai.tac = enb_ue->tai.tac;
-        memcpy(&uli.e_cgi.plmn_id, &enb_ue->e_cgi.plmn_id, 
+        memcpy(&uli.tai.plmn_id, &mme_ue->tai.plmn_id, sizeof(uli.tai.plmn_id));
+        uli.tai.tac = mme_ue->tai.tac;
+        memcpy(&uli.e_cgi.plmn_id, &mme_ue->e_cgi.plmn_id, 
                 sizeof(uli.e_cgi.plmn_id));
-        uli.e_cgi.cell_id = enb_ue->e_cgi.cell_id;
+        uli.e_cgi.cell_id = mme_ue->e_cgi.cell_id;
         req->user_location_information.presence = 1;
         gtp_build_uli(&req->user_location_information, &uli, 
                 uli_buf, GTP_MAX_ULI_LEN);
@@ -216,10 +217,9 @@ status_t mme_s11_build_modify_bearer_request(
 }
 
 status_t mme_s11_build_delete_session_request(
-        pkbuf_t **pkbuf, c_uint8_t type, enb_ue_t *enb_ue, mme_sess_t *sess)
+        pkbuf_t **pkbuf, c_uint8_t type, mme_sess_t *sess)
 {
     status_t rv;
-    mme_bearer_t *bearer = NULL;
     gtp_message_t gtp_message;
     gtp_delete_session_request_t *req = &gtp_message.delete_session_request;
 
@@ -227,7 +227,12 @@ status_t mme_s11_build_delete_session_request(
     char uli_buf[GTP_MAX_ULI_LEN];
     gtp_indication_t indication;
 
+    mme_bearer_t *bearer = NULL;
+    mme_ue_t *mme_ue = NULL;
+
     d_assert(sess, return CORE_ERROR, "Null param");
+    mme_ue = sess->mme_ue;
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
     bearer = mme_default_bearer_in_sess(sess);
     d_assert(bearer, return CORE_ERROR, "Null param");
 
@@ -236,21 +241,16 @@ status_t mme_s11_build_delete_session_request(
     req->linked_eps_bearer_id.presence = 1;
     req->linked_eps_bearer_id.u8 = bearer->ebi;
 
-    if (enb_ue)
-    {
-        memset(&uli, 0, sizeof(gtp_uli_t));
-        uli.flags.e_cgi = 1;
-        uli.flags.tai = 1;
-        memcpy(&uli.tai.plmn_id, &enb_ue->tai.plmn_id,
-                sizeof(uli.tai.plmn_id));
-        uli.tai.tac = enb_ue->tai.tac;
-        memcpy(&uli.e_cgi.plmn_id, &enb_ue->e_cgi.plmn_id,
-                sizeof(uli.tai.plmn_id));
-        uli.e_cgi.cell_id = enb_ue->e_cgi.cell_id;
-        req->user_location_information.presence = 1;
-        gtp_build_uli(&req->user_location_information, &uli,
-                uli_buf, GTP_MAX_ULI_LEN);
-    }
+    memset(&uli, 0, sizeof(gtp_uli_t));
+    uli.flags.e_cgi = 1;
+    uli.flags.tai = 1;
+    memcpy(&uli.tai.plmn_id, &mme_ue->tai.plmn_id, sizeof(uli.tai.plmn_id));
+    uli.tai.tac = mme_ue->tai.tac;
+    memcpy(&uli.e_cgi.plmn_id, &mme_ue->e_cgi.plmn_id, sizeof(uli.tai.plmn_id));
+    uli.e_cgi.cell_id = mme_ue->e_cgi.cell_id;
+    req->user_location_information.presence = 1;
+    gtp_build_uli(&req->user_location_information, &uli,
+            uli_buf, GTP_MAX_ULI_LEN);
 
     memset(&indication, 0, sizeof(gtp_indication_t));
     indication.oi = 1;
@@ -266,7 +266,7 @@ status_t mme_s11_build_delete_session_request(
 }
 
 status_t mme_s11_build_create_bearer_response(
-        pkbuf_t **pkbuf, c_uint8_t type, enb_ue_t *enb_ue, mme_bearer_t *bearer)
+        pkbuf_t **pkbuf, c_uint8_t type, mme_bearer_t *bearer)
 {
     status_t rv;
     gtp_message_t gtp_message;
@@ -277,7 +277,11 @@ status_t mme_s11_build_create_bearer_response(
     gtp_uli_t uli;
     char uli_buf[GTP_MAX_ULI_LEN];
 
+    mme_ue_t *mme_ue = NULL;
+
     d_assert(bearer, return CORE_ERROR, "Null param");
+    mme_ue = bearer->mme_ue;
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));
 
@@ -318,21 +322,17 @@ status_t mme_s11_build_create_bearer_response(
     rsp->bearer_contexts.cause.len = sizeof(cause);
     rsp->bearer_contexts.cause.data = &cause;
 
-    if (enb_ue)
-    {
-        memset(&uli, 0, sizeof(gtp_uli_t));
-        uli.flags.e_cgi = 1;
-        uli.flags.tai = 1;
-        memcpy(&uli.tai.plmn_id, &enb_ue->tai.plmn_id, 
-                sizeof(uli.tai.plmn_id));
-        uli.tai.tac = enb_ue->tai.tac;
-        memcpy(&uli.e_cgi.plmn_id, &enb_ue->e_cgi.plmn_id, 
-                sizeof(uli.e_cgi.plmn_id));
-        uli.e_cgi.cell_id = enb_ue->e_cgi.cell_id;
-        rsp->user_location_information.presence = 1;
-        gtp_build_uli(&rsp->user_location_information, &uli, 
-                uli_buf, GTP_MAX_ULI_LEN);
-    }
+    memset(&uli, 0, sizeof(gtp_uli_t));
+    uli.flags.e_cgi = 1;
+    uli.flags.tai = 1;
+    memcpy(&uli.tai.plmn_id, &mme_ue->tai.plmn_id, sizeof(uli.tai.plmn_id));
+    uli.tai.tac = mme_ue->tai.tac;
+    memcpy(&uli.e_cgi.plmn_id, &mme_ue->e_cgi.plmn_id, 
+            sizeof(uli.e_cgi.plmn_id));
+    uli.e_cgi.cell_id = mme_ue->e_cgi.cell_id;
+    rsp->user_location_information.presence = 1;
+    gtp_build_uli(&rsp->user_location_information, &uli, 
+            uli_buf, GTP_MAX_ULI_LEN);
 
     /* TODO : UE Time Zone */
 
