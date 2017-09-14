@@ -1046,9 +1046,15 @@ unsigned int enb_ue_count()
 
 status_t enb_ue_remove(enb_ue_t *enb_ue)
 {
+    enb_ue_t *target_ue = NULL;
+
     d_assert(self.mme_ue_s1ap_id_hash, return CORE_ERROR, "Null param");
     d_assert(enb_ue, return CORE_ERROR, "Null param");
     d_assert(enb_ue->enb, return CORE_ERROR, "Null param");
+    
+    target_ue = enb_ue->target_ue;
+    if (target_ue)
+        target_ue->source_ue = NULL;
 
     list_remove(&enb_ue->enb->enb_ue_list, enb_ue);
     hash_set(self.mme_ue_s1ap_id_hash, &enb_ue->mme_ue_s1ap_id, 
