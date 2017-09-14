@@ -33,8 +33,6 @@ status_t mme_s11_build_create_session_request(
     c_uint32_t pgw_ipv4_addr = 0;
 
     d_assert(sess, return CORE_ERROR, "Null param");
-    sgw = sess->sgw;
-    d_assert(sgw, return CORE_ERROR, "Null param");
     pdn = sess->pdn;
     d_assert(pdn, return CORE_ERROR, "Null param");
     bearer = mme_default_bearer_in_sess(sess);
@@ -43,6 +41,8 @@ status_t mme_s11_build_create_session_request(
     d_assert(pgw_ipv4_addr, return CORE_ERROR, "Null param");
     mme_ue = sess->mme_ue;
     d_assert(mme_ue, return CORE_ERROR, "Null param");
+    sgw = mme_ue->sgw;
+    d_assert(sgw, return CORE_ERROR, "Null param");
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));
 

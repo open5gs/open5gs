@@ -710,17 +710,22 @@ sgw_bearer_t* sgw_bearer_add(sgw_sess_t *sess)
 {
     sgw_bearer_t *bearer = NULL;
     sgw_tunnel_t *tunnel = NULL;
+    sgw_ue_t *sgw_ue = NULL;
 
     d_assert(sess, return NULL, "Null param");
+    sgw_ue = sess->sgw_ue;
+    d_assert(sgw_ue, return NULL, "Null param");
 
     index_alloc(&sgw_bearer_pool, &bearer);
     d_assert(bearer, return NULL, "Bearer context allocation failed");
 
     bearer->sgw_s5u_teid = bearer->index;
     bearer->sgw_s5u_addr = sgw_self()->s5u_addr;
-    
-    bearer->sess = sess;
+
     list_append(&sess->bearer_list, bearer);
+    
+    bearer->sgw_ue = sgw_ue;
+    bearer->sess = sess;
 
     list_init(&bearer->tunnel_list);
 

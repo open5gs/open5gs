@@ -68,6 +68,8 @@ typedef struct _mme_context_t {
     /* Generator for unique identification */
     c_uint32_t      mme_ue_s1ap_id; /* mme_ue_s1ap_id generator */
     c_uint32_t      m_tmsi;         /* m_tmsi generator */
+    /* Iterator for SGW round-robin */
+    mme_sgw_t       *sgw;
 
     /* defined in 'nas_ies.h'
      * #define NAS_SECURITY_ALGORITHMS_EIA0        0
@@ -311,6 +313,16 @@ struct _mme_ue_t {
         c_uint8_t request;
         c_uint8_t response;
     } gtp_counter[MAX_NUM_OF_GTP_COUNTER];
+
+#define CONNECT_SGW_GTP_NODE(__mME) \
+    do { \
+        d_assert((__mME), break, "Null param"); \
+        (__mME)->sgw = mme_sgw_next(self.sgw); \
+        if (!(__mME)->sgw) (__mME)->sgw = mme_sgw_first(); \
+        self.sgw = (__mME)->sgw; \
+        d_assert((__mME)->sgw, break, "Null param"); \
+    } while(0)
+    mme_sgw_t       *sgw;
 };
 
 #define MME_HAVE_SGW_S1U_PATH(__sESS) \
@@ -337,14 +349,6 @@ typedef struct _mme_sess_t {
     list_t          bearer_list;
 
     /* Related Context */
-#define CONNECT_SGW_GTP_NODE(__sESS) \
-    do { \
-        d_assert((__sESS), break, "Null param"); \
-        (__sESS)->sgw = mme_sgw_next((__sESS)->sgw); \
-        if (!(__sESS)->sgw) (__sESS)->sgw = mme_sgw_first(); \
-        d_assert((__sESS)->sgw, break, "Null param"); \
-    } while(0)
-    mme_sgw_t       *sgw;
     mme_ue_t        *mme_ue;
 
 #define MME_UE_HAVE_APN(__mME) \

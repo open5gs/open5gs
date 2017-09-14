@@ -99,9 +99,6 @@ status_t mme_gtp_send_create_session_request(mme_sess_t *sess)
     gtp_xact_t *xact = NULL;
     mme_ue_t *mme_ue = NULL;
 
-    /* Use round-robin for selecting SGW */
-    CONNECT_SGW_GTP_NODE(sess);
-
     mme_ue = sess->mme_ue;
     d_assert(mme_ue, return CORE_ERROR, "Null param");
 
@@ -113,7 +110,7 @@ status_t mme_gtp_send_create_session_request(mme_sess_t *sess)
     d_assert(rv == CORE_OK, return CORE_ERROR,
             "S11 build error");
 
-    xact = gtp_xact_local_create(sess->sgw, &h, pkbuf);
+    xact = gtp_xact_local_create(mme_ue->sgw, &h, pkbuf);
     d_assert(xact, return CORE_ERROR, "Null param");
 
     rv = gtp_xact_commit(xact);
@@ -130,15 +127,12 @@ status_t mme_gtp_send_modify_bearer_request(
 
     gtp_xact_t *xact = NULL;
     mme_ue_t *mme_ue = NULL;
-    mme_sess_t *sess = NULL;
 
     gtp_header_t h;
     pkbuf_t *pkbuf = NULL;
 
     d_assert(bearer, return CORE_ERROR, "Null param");
-    sess = bearer->sess;
-    d_assert(sess, return CORE_ERROR, "Null param");
-    mme_ue = sess->mme_ue;
+    mme_ue = bearer->mme_ue;
     d_assert(mme_ue, return CORE_ERROR, "Null param");
 
     memset(&h, 0, sizeof(gtp_header_t));
@@ -149,7 +143,7 @@ status_t mme_gtp_send_modify_bearer_request(
             &pkbuf, h.type, bearer, uli_presence);
     d_assert(rv == CORE_OK, return CORE_ERROR, "S11 build error");
 
-    xact = gtp_xact_local_create(sess->sgw, &h, pkbuf);
+    xact = gtp_xact_local_create(mme_ue->sgw, &h, pkbuf);
     d_assert(xact, return CORE_ERROR, "Null param");
 
     rv = gtp_xact_commit(xact);
@@ -177,7 +171,7 @@ status_t mme_gtp_send_delete_session_request(mme_sess_t *sess)
     rv = mme_s11_build_delete_session_request(&s11buf, h.type, sess);
     d_assert(rv == CORE_OK, return CORE_ERROR, "S11 build error");
 
-    xact = gtp_xact_local_create(sess->sgw, &h, s11buf);
+    xact = gtp_xact_local_create(mme_ue->sgw, &h, s11buf);
     d_assert(xact, return CORE_ERROR, "Null param");
 
     GTP_XACT_STORE_SESSION(xact, sess);
@@ -256,11 +250,8 @@ status_t mme_gtp_send_release_access_bearers_request(mme_ue_t *mme_ue)
     gtp_header_t h;
     pkbuf_t *pkbuf = NULL;
     gtp_xact_t *xact = NULL;
-    mme_sess_t *sess = NULL;
 
     d_assert(mme_ue, return CORE_ERROR, "Null param");
-    sess = mme_sess_first(mme_ue);
-    d_assert(sess, return CORE_ERROR, "Null param");
 
     memset(&h, 0, sizeof(gtp_header_t));
     h.type = GTP_RELEASE_ACCESS_BEARERS_REQUEST_TYPE;
@@ -269,7 +260,7 @@ status_t mme_gtp_send_release_access_bearers_request(mme_ue_t *mme_ue)
     rv = mme_s11_build_release_access_bearers_request(&pkbuf, h.type);
     d_assert(rv == CORE_OK, return CORE_ERROR, "S11 build error");
 
-    xact = gtp_xact_local_create(sess->sgw, &h, pkbuf);
+    xact = gtp_xact_local_create(mme_ue->sgw, &h, pkbuf);
     d_assert(xact, return CORE_ERROR, "Null param");
 
     rv = gtp_xact_commit(xact);
@@ -285,11 +276,8 @@ status_t mme_gtp_send_create_indirect_data_forwarding_tunnel_request(
     gtp_header_t h;
     pkbuf_t *pkbuf = NULL;
     gtp_xact_t *xact = NULL;
-    mme_sess_t *sess = NULL;
 
     d_assert(mme_ue, return CORE_ERROR, "Null param");
-    sess = mme_sess_first(mme_ue);
-    d_assert(sess, return CORE_ERROR, "Null param");
 
     memset(&h, 0, sizeof(gtp_header_t));
     h.type = GTP_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE;
@@ -299,7 +287,7 @@ status_t mme_gtp_send_create_indirect_data_forwarding_tunnel_request(
             &pkbuf, h.type, mme_ue);
     d_assert(rv == CORE_OK, return CORE_ERROR, "S11 build error");
 
-    xact = gtp_xact_local_create(sess->sgw, &h, pkbuf);
+    xact = gtp_xact_local_create(mme_ue->sgw, &h, pkbuf);
     d_assert(xact, return CORE_ERROR, "Null param");
 
     rv = gtp_xact_commit(xact);
@@ -315,11 +303,8 @@ status_t mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(
     gtp_header_t h;
     pkbuf_t *pkbuf = NULL;
     gtp_xact_t *xact = NULL;
-    mme_sess_t *sess = NULL;
 
     d_assert(mme_ue, return CORE_ERROR, "Null param");
-    sess = mme_sess_first(mme_ue);
-    d_assert(sess, return CORE_ERROR, "Null param");
 
     memset(&h, 0, sizeof(gtp_header_t));
     h.type = GTP_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE;
@@ -328,7 +313,7 @@ status_t mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(
     pkbuf = pkbuf_alloc(TLV_MAX_HEADROOM, 0);
     d_assert(pkbuf, return CORE_ERROR, "S11 build error");
 
-    xact = gtp_xact_local_create(sess->sgw, &h, pkbuf);
+    xact = gtp_xact_local_create(mme_ue->sgw, &h, pkbuf);
     d_assert(xact, return CORE_ERROR, "Null param");
 
     rv = gtp_xact_commit(xact);

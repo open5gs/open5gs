@@ -145,6 +145,7 @@ static status_t mme_context_validation()
         }
         sgw = mme_sgw_next(sgw);
     }
+    self.sgw = mme_sgw_first();
 
     if (self.max_num_of_served_gummei == 0)
     {
@@ -1150,6 +1151,8 @@ mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
     event_set_param1(&e, (c_uintptr_t)mme_ue->index);
     fsm_create(&mme_ue->sm, emm_state_initial, emm_state_final);
     fsm_init(&mme_ue->sm, &e);
+
+    CONNECT_SGW_GTP_NODE(mme_ue);
     
     return mme_ue;
 }
@@ -1505,7 +1508,6 @@ mme_sess_t *mme_sess_add(mme_ue_t *mme_ue, c_uint8_t pti)
     list_append(&mme_ue->sess_list, sess);
 
     sess->mme_ue = mme_ue;
-    sess->sgw = mme_sgw_first();
     sess->pti = pti;
 
     bearer = mme_bearer_add(sess);

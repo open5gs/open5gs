@@ -74,6 +74,14 @@ typedef struct _sgw_ue_t {
     c_uint32_t      state;
 
     list_t          sess_list;
+
+#define CONNECT_MME_GTP_NODE(__sGW, __xACT) \
+    do { \
+        d_assert((__sGW), return, "Null param"); \
+        d_assert((__xACT), return, "Null param"); \
+        (__sGW)->mme = (__xACT)->gnode; \
+    } while(0)
+    sgw_mme_t       *mme;
 } sgw_ue_t;
 
 typedef struct _sgw_sess_t {
@@ -93,13 +101,6 @@ typedef struct _sgw_sess_t {
     list_t          bearer_list;
 
     /* Related Context */
-#define CONNECT_MME_GTP_NODE(__sESS, __xACT) \
-    do { \
-        d_assert((__sESS), return, "Null param"); \
-        d_assert((__xACT), return, "Null param"); \
-        (__sESS)->mme = (__xACT)->gnode; \
-    } while(0)
-    sgw_mme_t       *mme;
 #define CONNECT_PGW_GTP_NODE(__sESS, __gNODE) \
     do { \
         d_assert((__sESS), return, "Null param"); \
@@ -134,6 +135,7 @@ typedef struct _sgw_bearer_t {
 
     list_t          tunnel_list;
     sgw_sess_t      *sess;
+    sgw_ue_t        *sgw_ue;
 } sgw_bearer_t;
 
 typedef struct _sgw_tunnel_t {

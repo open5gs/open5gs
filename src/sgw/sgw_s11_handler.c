@@ -114,7 +114,7 @@ void sgw_s11_handle_create_session_request(gtp_xact_t *s11_xact,
     }
 
     /* Setup GTP Node */
-    CONNECT_MME_GTP_NODE(sess, s11_xact);
+    CONNECT_MME_GTP_NODE(sgw_ue, s11_xact);
     CONNECT_PGW_GTP_NODE(sess, pgw);
 
     req->pgw_s5_s8_address_for_control_plane_or_pmip.presence = 0;
@@ -476,16 +476,13 @@ void sgw_s11_handle_lo_dldata_notification(sgw_bearer_t *bearer)
     pkbuf_t *pkbuf = NULL;
     gtp_message_t gtp_message;
     sgw_ue_t *sgw_ue = NULL;
-    sgw_sess_t *sess = NULL;
     gtp_xact_t *xact = NULL;
     /* FIXME : ARP should be retrieved from ? */
     c_uint8_t arp = 0x61;
 
     d_assert(bearer, return, "Null param");
 
-    sess = bearer->sess;
-    d_assert(sess, return, "Null param");
-    sgw_ue = sess->sgw_ue;
+    sgw_ue = bearer->sgw_ue;
     d_assert(sgw_ue, return, "Null param");
 
     /* Build downlink notification message */
@@ -506,7 +503,7 @@ void sgw_s11_handle_lo_dldata_notification(sgw_bearer_t *bearer)
     rv = gtp_build_msg(&pkbuf, &gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
-    xact = gtp_xact_local_create(sess->mme, &gtp_message.h, pkbuf);
+    xact = gtp_xact_local_create(sgw_ue->mme, &gtp_message.h, pkbuf);
     d_assert(xact, return, "Null param");
 
     rv = gtp_xact_commit(xact);
