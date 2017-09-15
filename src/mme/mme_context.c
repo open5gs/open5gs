@@ -1079,6 +1079,24 @@ status_t enb_ue_remove_in_enb(mme_enb_t *enb)
     return CORE_OK;
 }
 
+status_t enb_ue_switch_to_enb(enb_ue_t *enb_ue, mme_enb_t *new_enb)
+{
+    d_assert(enb_ue, return CORE_ERROR, "Null param");
+    d_assert(enb_ue->enb, return CORE_ERROR, "Null param");
+    d_assert(new_enb, return CORE_ERROR, "Null param");
+
+    /* Remove from the old enb */
+    list_remove(&enb_ue->enb->enb_ue_list, enb_ue);
+
+    /* Add to the new enb */
+    list_append(&new_enb->enb_ue_list, enb_ue);
+
+    /* Switch to enb */
+    enb_ue->enb = new_enb;
+
+    return CORE_ERROR;
+}
+
 enb_ue_t* enb_ue_find(index_t index)
 {
     d_assert(index, return NULL, "Invalid Index");

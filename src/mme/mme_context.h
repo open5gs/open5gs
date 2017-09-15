@@ -509,6 +509,8 @@ CORE_DECLARE(enb_ue_t*)     enb_ue_add(mme_enb_t *enb);
 CORE_DECLARE(unsigned int)  enb_ue_count();
 CORE_DECLARE(status_t)      enb_ue_remove(enb_ue_t *enb_ue);
 CORE_DECLARE(status_t)      enb_ue_remove_in_enb(mme_enb_t *enb);
+CORE_DECLARE(status_t)      enb_ue_switch_to_enb(enb_ue_t *enb_ue, 
+                                mme_enb_t *new_enb);
 CORE_DECLARE(enb_ue_t*)     enb_ue_find(index_t index);
 CORE_DECLARE(enb_ue_t*)     enb_ue_find_by_enb_ue_s1ap_id(mme_enb_t *enb, 
                                 c_uint32_t enb_ue_s1ap_id);

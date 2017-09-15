@@ -638,6 +638,9 @@ void s1ap_handle_path_switch_request(
         d_assert(rv == CORE_OK, return, "gtp send failed");
     }
 
+    /* Switch to enb */
+    enb_ue_switch_to_enb(enb_ue, enb);
+
     d_trace(3, "[S1AP] PathSwitchRequest : "
             "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
             enb_ue->enb_ue_s1ap_id,
