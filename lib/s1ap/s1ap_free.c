@@ -105,6 +105,11 @@ static inline int s1ap_free_initiating_message(s1ap_message_t *message)
                     &message->s1ap_HandoverRequestIEs);
             break;
 
+        case S1ap_ProcedureCode_id_HandoverCancel:
+            s1ap_free_s1ap_handovercancelies(
+                    &message->s1ap_HandoverCancelIEs);
+            break;
+
         case S1ap_ProcedureCode_id_eNBStatusTransfer:
             s1ap_free_s1ap_enbstatustransferies(
                     &message->s1ap_ENBStatusTransferIEs);
@@ -171,6 +176,11 @@ static inline int s1ap_free_successfull_outcome(s1ap_message_t *message)
         case S1ap_ProcedureCode_id_HandoverResourceAllocation: 
             s1ap_free_s1ap_handoverrequestacknowledgeies(
                     &message->s1ap_HandoverRequestAcknowledgeIEs);
+            break;
+
+        case S1ap_ProcedureCode_id_HandoverCancel:
+            s1ap_free_s1ap_handovercancelacknowledgeies(
+                    &message->s1ap_HandoverCancelAcknowledgeIEs);
             break;
 
         case S1ap_ProcedureCode_id_HandoverPreparation: 

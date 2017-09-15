@@ -135,6 +135,13 @@ static int s1ap_decode_initiating(s1ap_message_t *message,
                     s1ap_xer__print2sp, message);
             break;
 
+        case S1ap_ProcedureCode_id_HandoverCancel:
+            ret = s1ap_decode_s1ap_handovercancelies(
+                    &message->s1ap_HandoverCancelIEs, &initiating_p->value);
+            s1ap_decode_xer_print_message(s1ap_xer_print_s1ap_handovercancel,
+                    s1ap_xer__print2sp, message);
+            break;
+
         case S1ap_ProcedureCode_id_eNBStatusTransfer:
             ret = s1ap_decode_s1ap_enbstatustransferies(
                     &message->s1ap_ENBStatusTransferIEs, &initiating_p->value);

@@ -127,6 +127,8 @@ void mme_s11_handle_modify_bearer_response(
     );
 
     GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_HANDOVER_NOTIFY,
+        GTP_COUNTER_INCREMENT(mme_ue,
+            GTP_COUNTER_DELETE_INDIRECT_TUNNEL_BY_HANDOVER_NOTIFY);
         rv = mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(
             mme_ue);
         d_assert(rv == CORE_OK, return, "gtp send error");
@@ -346,6 +348,7 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
 {
     status_t rv;
     mme_bearer_t *bearer = NULL;
+    enb_ue_t *source_ue = NULL;
     int i;
 
     tlv_bearer_context_t *bearers[GTP_MAX_NUM_OF_INDIRECT_TUNNEL];
@@ -354,6 +357,9 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
     d_assert(xact, return, "Null param");
     d_assert(mme_ue, return, "Null param");
     d_assert(rsp, return, "Null param");
+
+    source_ue = mme_ue->enb_ue;
+    d_assert(source_ue, return, "Null param");
 
     if (rsp->cause.presence == 0)
     {
@@ -399,7 +405,7 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
         }
     }
 
-    rv = s1ap_send_handover_command(mme_ue);
+    rv = s1ap_send_handover_command(source_ue);
     d_assert(rv == CORE_OK,, "s1ap send error");
 }
 
@@ -418,11 +424,6 @@ void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
     d_assert(xact, return, "Null param");
     d_assert(mme_ue, return, "Null param");
     d_assert(rsp, return, "Null param");
-
-    target_ue = mme_ue->enb_ue;
-    d_assert(target_ue, return, "Null param");
-    source_ue = target_ue->source_ue;
-    d_assert(source_ue, return, "Null param");
 
     if (rsp->cause.presence == 0)
     {
@@ -449,9 +450,32 @@ void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
         sess = mme_sess_next(sess);
     }
 
-    cause.present = S1ap_Cause_PR_nas;
-    cause.choice.nas = S1ap_CauseNas_normal_release;
+    GTP_COUNTER_CHECK(mme_ue,
+            GTP_COUNTER_DELETE_INDIRECT_TUNNEL_BY_HANDOVER_NOTIFY,
+        target_ue = mme_ue->enb_ue;
+        d_assert(target_ue, return, "Null param");
+        source_ue = target_ue->source_ue;
+        d_assert(source_ue, return, "Null param");
 
-    rv = s1ap_send_ue_context_release_commmand(source_ue, &cause);
-    d_assert(rv == CORE_OK, return, "s1ap send error");
+        cause.present = S1ap_Cause_PR_nas;
+        cause.choice.nas = S1ap_CauseNas_normal_release;
+
+        rv = s1ap_send_ue_context_release_commmand(source_ue, &cause);
+        d_assert(rv == CORE_OK, return, "s1ap send error");
+    );
+
+    GTP_COUNTER_CHECK(mme_ue,
+            GTP_COUNTER_DELETE_INDIRECT_TUNNEL_BY_HANDOVER_CANCEL,
+        source_ue = mme_ue->enb_ue;
+        d_assert(source_ue, return, "Null param");
+        target_ue = source_ue->target_ue;
+        d_assert(target_ue, return, "Null param");
+
+        cause.present = S1ap_Cause_PR_radioNetwork;
+        cause.choice.nas = S1ap_CauseRadioNetwork_handover_cancelled;
+
+        rv = s1ap_send_ue_context_release_commmand(target_ue, &cause);
+        d_assert(rv == CORE_OK, return, "s1ap send error");
+    );
+
 }

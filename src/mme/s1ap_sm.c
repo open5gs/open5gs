@@ -96,6 +96,11 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
                             s1ap_handle_handover_required(enb, message);
                             break;
                         }
+                        case S1ap_ProcedureCode_id_HandoverCancel:
+                        {
+                            s1ap_handle_handover_cancel(enb, message);
+                            break;
+                        }
                         case S1ap_ProcedureCode_id_eNBStatusTransfer:
                         {
                             s1ap_handle_enb_status_transfer(enb, message);

@@ -701,6 +701,7 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
     char buf[INET_ADDRSTRLEN];
     int i;
 
+    enb_ue_t *source_ue = NULL;
     enb_ue_t *target_ue = NULL;
     mme_ue_t *mme_ue = NULL;
 
@@ -722,6 +723,8 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
 
     mme_ue = target_ue->mme_ue;
     d_assert(mme_ue, return,);
+    source_ue = target_ue->source_ue;
+    d_assert(source_ue, return,);
 
     for (i = 0; i < ies->e_RABAdmittedList.s1ap_E_RABAdmittedItem.count; i++)
     {
@@ -776,7 +779,7 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
     }
     else
     {
-        rv = s1ap_send_handover_command(mme_ue);
+        rv = s1ap_send_handover_command(source_ue);
         d_assert(rv == CORE_OK, return, "gtp send failed");
     }
 
@@ -790,6 +793,76 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
 void s1ap_handle_handover_failure(mme_enb_t *enb, s1ap_message_t *message)
 {
     d_error("Not implemented");
+}
+
+void s1ap_handle_handover_cancel(mme_enb_t *enb, s1ap_message_t *message)
+{
+    status_t rv;
+    char buf[INET_ADDRSTRLEN];
+
+    enb_ue_t *source_ue = NULL;
+    mme_ue_t *mme_ue = NULL;
+    mme_sess_t *sess = NULL;
+    mme_bearer_t *bearer = NULL;
+    int need_to_delete_indirect_tunnel = 0;
+
+    S1ap_HandoverCancelIEs_t *ies = NULL;
+
+    d_assert(enb, return,);
+
+    ies = &message->s1ap_HandoverCancelIEs;
+    d_assert(ies, return,);
+
+    source_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
+    d_assert(source_ue, return,
+            "Cannot find UE for eNB-UE-S1AP-ID[%d] and eNB[%s:%d]",
+            ies->eNB_UE_S1AP_ID,
+            INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+            enb->enb_id);
+    d_assert(source_ue->mme_ue_s1ap_id == ies->mme_ue_s1ap_id, return,
+            "Conflict MME-UE-S1AP-ID : %d != %d\n",
+            source_ue->mme_ue_s1ap_id, ies->mme_ue_s1ap_id);
+
+    mme_ue = source_ue->mme_ue;
+    d_assert(mme_ue, return,);
+
+    sess = mme_sess_first(mme_ue);
+    while(sess)
+    {
+        bearer = mme_bearer_first(sess);
+        while(bearer)
+        {
+            if (MME_HAVE_SGW_DL_INDIRECT_TUNNEL(bearer) ||
+                MME_HAVE_SGW_UL_INDIRECT_TUNNEL(bearer))
+            {
+                need_to_delete_indirect_tunnel = 1;
+            }
+
+            bearer = mme_bearer_next(bearer);
+        }
+        sess = mme_sess_next(sess);
+    }
+
+    if (need_to_delete_indirect_tunnel)
+    {
+        GTP_COUNTER_INCREMENT(mme_ue,
+            GTP_COUNTER_DELETE_INDIRECT_TUNNEL_BY_HANDOVER_CANCEL);
+
+        rv = mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(
+            mme_ue);
+        d_assert(rv == CORE_OK, return, "gtp send error");
+    }
+    else
+    {
+        rv = s1ap_send_handover_cancel_ack(source_ue);
+        d_assert(rv == CORE_OK,, "s1ap send error");
+    }
+
+    d_trace(3, "[S1AP] Handover Cancel : "
+            "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
+            source_ue->enb_ue_s1ap_id,
+            INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+            enb->enb_id);
 }
 
 void s1ap_handle_enb_status_transfer(mme_enb_t *enb, s1ap_message_t *message)

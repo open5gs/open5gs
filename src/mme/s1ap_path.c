@@ -481,21 +481,38 @@ status_t s1ap_send_handover_request(
     return rv;
 }
 
-status_t s1ap_send_handover_command(mme_ue_t *mme_ue)
+status_t s1ap_send_handover_command(enb_ue_t *source_ue)
 {
     status_t rv;
     pkbuf_t *s1apbuf = NULL;
 
     mme_enb_t *enb = NULL;
-    enb_ue_t *enb_ue = NULL;
 
-    d_assert(mme_ue, return CORE_ERROR,);
-    enb_ue = mme_ue->enb_ue;
-    d_assert(enb_ue, return CORE_ERROR,);
-    enb = enb_ue->enb;
+    d_assert(source_ue, return CORE_ERROR,);
+    enb = source_ue->enb;
     d_assert(enb, return CORE_ERROR,);
 
-    rv = s1ap_build_handover_command(&s1apbuf, enb_ue);
+    rv = s1ap_build_handover_command(&s1apbuf, source_ue);
+    d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
+
+    rv = s1ap_send_to_enb(enb, s1apbuf);
+    d_assert(rv == CORE_OK,, "s1ap send error");
+
+    return rv;
+}
+
+status_t s1ap_send_handover_cancel_ack(enb_ue_t *source_ue)
+{
+    status_t rv;
+    pkbuf_t *s1apbuf = NULL;
+
+    mme_enb_t *enb = NULL;
+
+    d_assert(source_ue, return CORE_ERROR,);
+    enb = source_ue->enb;
+    d_assert(enb, return CORE_ERROR,);
+
+    rv = s1ap_build_handover_cancel_ack(&s1apbuf, source_ue);
     d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
 
     rv = s1ap_send_to_enb(enb, s1apbuf);
@@ -505,18 +522,18 @@ status_t s1ap_send_handover_command(mme_ue_t *mme_ue)
 }
 
 status_t s1ap_send_mme_status_transfer(
-        enb_ue_t *enb_ue, S1ap_ENBStatusTransferIEs_t *ies)
+        enb_ue_t *target_ue, S1ap_ENBStatusTransferIEs_t *ies)
 {
     status_t rv;
     pkbuf_t *s1apbuf = NULL;
 
     mme_enb_t *enb = NULL;
 
-    d_assert(enb_ue, return CORE_ERROR,);
-    enb = enb_ue->enb;
+    d_assert(target_ue, return CORE_ERROR,);
+    enb = target_ue->enb;
     d_assert(enb, return CORE_ERROR,);
 
-    rv = s1ap_build_mme_status_transfer(&s1apbuf, enb_ue, ies);
+    rv = s1ap_build_mme_status_transfer(&s1apbuf, target_ue, ies);
     d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
 
     rv = s1ap_send_to_enb(enb, s1apbuf);

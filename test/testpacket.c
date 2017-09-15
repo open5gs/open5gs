@@ -769,13 +769,14 @@ status_t tests1ap_build_ue_context_release_complete(pkbuf_t **pkbuf, int i)
         "",
 
 
-        "",
-
         "2017"
         "0012000002000040 05c0020000c40008 4002000c",
 
         "2017"
         "0012000002000040 05c0020000c50008 40020008",
+
+        "2017"
+        "0012000002000040 05c0020000c70008 40020008",
 
     };
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
@@ -791,7 +792,7 @@ status_t tests1ap_build_ue_context_release_complete(pkbuf_t **pkbuf, int i)
         0,
         0,
 
-        0,
+        22,
         22,
         22,
     };
@@ -1257,7 +1258,17 @@ status_t tests1ap_build_handover_required(
         "3423c135002214d6 dfb0a0b06502c402 000004008177faab 4677235334a0e867"
         "2134804030000100 4e40024500004e40 0246000000f11000 1f20a10000f11000"
         "043a000000350000 f110001f20a00000 22",
-        "",
+
+        "0000"
+        "0081190000060000 0005c0020000c600 080002000d000100 0100000240020220"
+        "0004000d0000f110 0000043000f11030 3900680080e680e4 4080ab0f1014c598"
+        "00018000bf06ec4d 00100302c0000000 000015a800140672 0af00348f10013d0"
+        "3bc58414903bc588 09401de2c2100440 13f212249010127d ad808fd50398381c"
+        "08fd503983805f50 37868baa010c846f b057874162d62e82 1f42f2e159f821d0"
+        "9c0009e28aa1a001 2d888050514c0040 8008066072003e41 5250d46210208184"
+        "3423c135002214d6 dfb0a0b06502c402 000004008177faab 4677235334a0e867"
+        "213e804030000100 4e40024500004e40 0246000000f11000 043a020000f11000"
+        "1f20a00000340000 f11000043a000000 350000f110001f20 a0000022",
 
         "",
         "",
@@ -1271,7 +1282,7 @@ status_t tests1ap_build_handover_required(
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         264,
         275,
-        0,
+        286,
 
         0,
         0,
@@ -1316,7 +1327,16 @@ status_t tests1ap_build_handover_request_ack(
         "f2214d6dfb82c194 0b10080000020040 bbfd55aeab01ad80 8fd50398381c08fd"
         "503983804d037868 baa016423342bc3a 18b58fa084ca833f a17970acfc10e84e"
         "0004f14550d00096 c88980",
-        "",
+
+        "2001"
+        "0080e80000040000 4005c0020000c700 0840020009001240 47010014401f78a1"
+        "f00a01237c010008 080f800a01237c01 0008090f800a0123 7c0100080a001440"
+        "1f78c1f00a01237c 010008100f800a01 237c010008110f80 0a01237c01000812"
+        "007b008086808400 80810bf900d8af40 00a0339057801f47 88009e81de2c20a4"
+        "81de2c404a00ef16 2000010044013f21 2249008093efd243 3914cd2aa0a0144f"
+        "f2214d6dfb82c194 0b10080000020040 bbfd55aeab81ad80 8fd50398381c08fd"
+        "503983804d037868 baa016423342bc3a 18b58fa084ca833f a17970acfc10e84e"
+        "0004f14550d00096 c88a00",
 
         "",
         "",
@@ -1330,7 +1350,7 @@ status_t tests1ap_build_handover_request_ack(
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         237,
         237,
-        0,
+        237,
 
         0,
         0,
@@ -1398,8 +1418,7 @@ status_t tests1ap_build_enb_status_transfer(
     return CORE_OK;
 }
 
-status_t tests1ap_build_handover_notify(
-        pkbuf_t **pkbuf, int i)
+status_t tests1ap_build_handover_notify(pkbuf_t **pkbuf, int i)
 {
     char *payload[TESTS1AP_MAX_MESSAGE] = { 
         "0002"
@@ -1422,6 +1441,48 @@ status_t tests1ap_build_handover_notify(
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         44,
         44,
+        0,
+
+        0,
+        0,
+        0,
+
+        0,
+        0,
+        0,
+    };
+    char hexbuf[MAX_SDU_LEN];
+    
+    *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    if (!(*pkbuf)) return CORE_ERROR;
+
+    (*pkbuf)->len = len[i];
+    memcpy((*pkbuf)->payload, CORE_HEX(payload[i], strlen(payload[i]), hexbuf),
+            (*pkbuf)->len);
+
+    return CORE_OK;
+}
+
+status_t tests1ap_build_handover_cancel(pkbuf_t **pkbuf, int i)
+{
+    char *payload[TESTS1AP_MAX_MESSAGE] = { 
+        "0004"
+        "0018000003000000 05c0020000c60008 0002000d00024002 0120",
+        "",
+        "",
+
+        "",
+        "",
+        "",
+
+        "",
+        "",
+        "",
+
+    };
+    c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
+        28,
+        0,
         0,
 
         0,

@@ -675,7 +675,7 @@ status_t s1ap_build_path_switch_failure(pkbuf_t **s1apbuf,
 }
 
 status_t s1ap_build_handover_request(
-        pkbuf_t **s1apbuf, mme_ue_t *mme_ue, enb_ue_t *enb_ue,
+        pkbuf_t **s1apbuf, mme_ue_t *mme_ue, enb_ue_t *target_ue,
         S1ap_HandoverRequiredIEs_t *required)
 {
     char buf[INET_ADDRSTRLEN];
@@ -690,7 +690,7 @@ status_t s1ap_build_handover_request(
     mme_bearer_t *bearer = NULL;
     s6a_subscription_data_t *subscription_data = NULL;
 
-    d_assert(enb_ue, return CORE_ERROR, "Null param");
+    d_assert(target_ue, return CORE_ERROR, "Null param");
     d_assert(mme_ue, return CORE_ERROR, "Null param");
     d_assert(required, return CORE_ERROR, "Null param");
     subscription_data = &mme_ue->subscription_data;
@@ -698,7 +698,7 @@ status_t s1ap_build_handover_request(
 
     memset(&message, 0, sizeof(s1ap_message_t));
 
-    ies->mme_ue_s1ap_id = enb_ue->mme_ue_s1ap_id;
+    ies->mme_ue_s1ap_id = target_ue->mme_ue_s1ap_id;
     ies->handoverType = required->handoverType;
     s1ap_build_cause(&ies->cause, &required->cause);
 
@@ -810,14 +810,14 @@ status_t s1ap_build_handover_request(
 
     d_trace(3, "[S1AP] Handover Request : ",
             "UE[mME-UE-S1AP-ID(%d)] <-- eNB[%s:%d]\n",
-            enb_ue->mme_ue_s1ap_id,
-            INET_NTOP(&enb_ue->enb->s1ap_sock->remote.sin_addr.s_addr, buf),
-            enb_ue->enb->enb_id);
+            target_ue->mme_ue_s1ap_id,
+            INET_NTOP(&target_ue->enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+            target_ue->enb->enb_id);
 
     return CORE_OK;
 }
 
-status_t s1ap_build_handover_command(pkbuf_t **s1apbuf, enb_ue_t *enb_ue)
+status_t s1ap_build_handover_command(pkbuf_t **s1apbuf, enb_ue_t *source_ue)
 {
     char buf[INET_ADDRSTRLEN];
 
@@ -830,14 +830,14 @@ status_t s1ap_build_handover_command(pkbuf_t **s1apbuf, enb_ue_t *enb_ue)
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
 
-    d_assert(enb_ue, return CORE_ERROR, "Null param");
-    mme_ue = enb_ue->mme_ue;
+    d_assert(source_ue, return CORE_ERROR, "Null param");
+    mme_ue = source_ue->mme_ue;
 
     memset(&message, 0, sizeof(s1ap_message_t));
 
-    ies->mme_ue_s1ap_id = enb_ue->mme_ue_s1ap_id;
-    ies->eNB_UE_S1AP_ID = enb_ue->enb_ue_s1ap_id;
-    ies->handoverType = enb_ue->handover_type;
+    ies->mme_ue_s1ap_id = source_ue->mme_ue_s1ap_id;
+    ies->eNB_UE_S1AP_ID = source_ue->enb_ue_s1ap_id;
+    ies->handoverType = source_ue->handover_type;
 
     sess = mme_sess_first(mme_ue);
     while(sess)
@@ -921,15 +921,48 @@ status_t s1ap_build_handover_command(pkbuf_t **s1apbuf, enb_ue_t *enb_ue)
 
     d_trace(3, "[S1AP] Handover Command : ",
             "UE[mME-UE-S1AP-ID(%d)] <-- eNB[%s:%d]\n",
-            enb_ue->mme_ue_s1ap_id,
-            INET_NTOP(&enb_ue->enb->s1ap_sock->remote.sin_addr.s_addr, buf),
-            enb_ue->enb->enb_id);
+            source_ue->mme_ue_s1ap_id,
+            INET_NTOP(&source_ue->enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+            source_ue->enb->enb_id);
+
+    return CORE_OK;
+}
+
+status_t s1ap_build_handover_cancel_ack(pkbuf_t **s1apbuf, enb_ue_t *source_ue)
+{
+    char buf[INET_ADDRSTRLEN];
+
+    int encoded;
+    s1ap_message_t message;
+    S1ap_HandoverCancelAcknowledgeIEs_t *ies =
+        &message.s1ap_HandoverCancelAcknowledgeIEs;
+
+    d_assert(source_ue, return CORE_ERROR, "Null param");
+
+    memset(&message, 0, sizeof(s1ap_message_t));
+
+    ies->mme_ue_s1ap_id = source_ue->mme_ue_s1ap_id;
+    ies->eNB_UE_S1AP_ID = source_ue->enb_ue_s1ap_id;
+
+    message.procedureCode = S1ap_ProcedureCode_id_HandoverCancel;
+    message.direction = S1AP_PDU_PR_successfulOutcome;
+
+    encoded = s1ap_encode_pdu(s1apbuf, &message);
+    s1ap_free_pdu(&message);
+
+    d_assert(s1apbuf && encoded >= 0,return CORE_ERROR,);
+
+    d_trace(3, "[S1AP] Handover Cancel Ack : ",
+            "UE[mME-UE-S1AP-ID(%d)] <-- eNB[%s:%d]\n",
+            source_ue->mme_ue_s1ap_id,
+            INET_NTOP(&source_ue->enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+            source_ue->enb->enb_id);
 
     return CORE_OK;
 }
 
 status_t s1ap_build_mme_status_transfer(pkbuf_t **s1apbuf,
-        enb_ue_t *enb_ue, S1ap_ENBStatusTransferIEs_t *enb_ies)
+        enb_ue_t *target_ue, S1ap_ENBStatusTransferIEs_t *enb_ies)
 {
     char buf[INET_ADDRSTRLEN];
     int i;
@@ -938,13 +971,13 @@ status_t s1ap_build_mme_status_transfer(pkbuf_t **s1apbuf,
     s1ap_message_t message;
     S1ap_MMEStatusTransferIEs_t *mme_ies = &message.s1ap_MMEStatusTransferIEs;
 
-    d_assert(enb_ue, return CORE_ERROR, "Null param");
+    d_assert(target_ue, return CORE_ERROR, "Null param");
     d_assert(enb_ies, return CORE_ERROR, "Null param");
 
     memset(&message, 0, sizeof(s1ap_message_t));
 
-    mme_ies->mme_ue_s1ap_id = enb_ue->mme_ue_s1ap_id;
-    mme_ies->eNB_UE_S1AP_ID = enb_ue->enb_ue_s1ap_id;
+    mme_ies->mme_ue_s1ap_id = target_ue->mme_ue_s1ap_id;
+    mme_ies->eNB_UE_S1AP_ID = target_ue->enb_ue_s1ap_id;
 
     for (i = 0; i < enb_ies->eNB_StatusTransfer_TransparentContainer.
             bearers_SubjectToStatusTransferList.list.count; i++)
@@ -974,9 +1007,9 @@ status_t s1ap_build_mme_status_transfer(pkbuf_t **s1apbuf,
 
     d_trace(3, "[S1AP] MME Status Transfer : ",
             "UE[mME-UE-S1AP-ID(%d)] <-- eNB[%s:%d]\n",
-            enb_ue->mme_ue_s1ap_id,
-            INET_NTOP(&enb_ue->enb->s1ap_sock->remote.sin_addr.s_addr, buf),
-            enb_ue->enb->enb_id);
+            target_ue->mme_ue_s1ap_id,
+            INET_NTOP(&target_ue->enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+            target_ue->enb->enb_id);
 
     return CORE_OK;
 }

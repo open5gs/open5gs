@@ -39,6 +39,8 @@ static inline int s1ap_encode_handover_request(
     s1ap_message_t *message_p, pkbuf_t *pkbuf);
 static inline int s1ap_encode_handover_command(
     s1ap_message_t *message_p, pkbuf_t *pkbuf);
+static inline int s1ap_encode_handover_cancel_ack(
+    s1ap_message_t *message_p, pkbuf_t *pkbuf);
 static inline int s1ap_encode_handover_preparation_failure(
     s1ap_message_t *message_p, pkbuf_t *pkbuf);
 static inline int s1ap_encode_mme_status_transfer(
@@ -190,6 +192,13 @@ static inline int s1ap_encode_successfull_outcome(
                     s1ap_xer_print_s1ap_handovercommand,
                     s1ap_xer__print2sp, message_p);
             ret = s1ap_encode_handover_command(message_p, pkbuf);
+            break;
+
+        case S1ap_ProcedureCode_id_HandoverCancel:
+            s1ap_encode_xer_print_message(
+                    s1ap_xer_print_s1ap_handovercancelacknowledge,
+                    s1ap_xer__print2sp, message_p);
+            ret = s1ap_encode_handover_cancel_ack(message_p, pkbuf);
             break;
 
         default:
@@ -724,6 +733,7 @@ static inline int s1ap_encode_handover_command(
 
     return enc_ret.encoded;
 }
+
 static inline int s1ap_encode_handover_preparation_failure(
   s1ap_message_t *message_p, pkbuf_t *pkbuf)
 {
@@ -751,6 +761,43 @@ static inline int s1ap_encode_handover_preparation_failure(
                     &pdu, pkbuf->payload, MAX_SDU_LEN);
 
     ASN_STRUCT_FREE_CONTENTS_ONLY(*td, &failure);
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1AP_PDU, &pdu);
+
+    if (enc_ret.encoded < 0)
+    {
+        d_error("Encoding of %s failed", td->name);
+    }
+
+    return enc_ret.encoded;
+}
+
+static inline int s1ap_encode_handover_cancel_ack(
+  s1ap_message_t *message_p, pkbuf_t *pkbuf)
+{
+    asn_enc_rval_t enc_ret = {0};
+
+    S1AP_PDU_t pdu;
+    S1ap_HandoverCancelAcknowledge_t ack;
+    asn_TYPE_descriptor_t *td = &asn_DEF_S1ap_HandoverCommand;
+
+    memset(&ack, 0, sizeof(S1ap_HandoverCommand_t));
+    if (s1ap_encode_s1ap_handovercancelacknowledgeies(
+            &ack, &message_p->s1ap_HandoverCancelAcknowledgeIEs) < 0) 
+    {
+        d_error("Encoding of %s failed", td->name);
+        return -1;
+    }
+
+    memset(&pdu, 0, sizeof (S1AP_PDU_t));
+    pdu.present = S1AP_PDU_PR_successfulOutcome;
+    pdu.choice.successfulOutcome.procedureCode = message_p->procedureCode;
+    pdu.choice.successfulOutcome.criticality = S1ap_Criticality_reject;
+    ANY_fromType_aper(&pdu.choice.successfulOutcome.value, td, &ack);
+
+    enc_ret = aper_encode_to_buffer(&asn_DEF_S1AP_PDU, 
+                    &pdu, pkbuf->payload, MAX_SDU_LEN);
+
+    ASN_STRUCT_FREE_CONTENTS_ONLY(*td, &ack);
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1AP_PDU, &pdu);
 
     if (enc_ret.encoded < 0)

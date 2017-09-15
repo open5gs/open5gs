@@ -304,11 +304,13 @@ struct _mme_ue_t {
             } \
         } while(0);
 
-#define MAX_NUM_OF_GTP_COUNTER                          16
+#define MAX_NUM_OF_GTP_COUNTER                                  16
 
-#define GTP_COUNTER_DELETE_SESSION                      0
-#define GTP_COUNTER_MODIFY_BEARER_BY_PATH_SWITCH        1
-#define GTP_COUNTER_MODIFY_BEARER_BY_HANDOVER_NOTIFY    2
+#define GTP_COUNTER_DELETE_SESSION                              0
+#define GTP_COUNTER_MODIFY_BEARER_BY_PATH_SWITCH                1
+#define GTP_COUNTER_MODIFY_BEARER_BY_HANDOVER_NOTIFY            2
+#define GTP_COUNTER_DELETE_INDIRECT_TUNNEL_BY_HANDOVER_NOTIFY   3
+#define GTP_COUNTER_DELETE_INDIRECT_TUNNEL_BY_HANDOVER_CANCEL   4
     struct {
         c_uint8_t request;
         c_uint8_t response;

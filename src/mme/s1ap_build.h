@@ -29,12 +29,16 @@ CORE_DECLARE(status_t) s1ap_build_path_switch_failure(pkbuf_t **s1apbuf,
     c_uint32_t enb_ue_s1ap_id, c_uint32_t mme_ue_s1ap_id, S1ap_Cause_t *cause);
 
 CORE_DECLARE(status_t) s1ap_build_handover_request(
-        pkbuf_t **s1apbuf, mme_ue_t *mme_ue, enb_ue_t *enb_ue,
+        pkbuf_t **s1apbuf, mme_ue_t *mme_ue, enb_ue_t *target_ue,
         S1ap_HandoverRequiredIEs_t *required);
+
 CORE_DECLARE(status_t) s1ap_build_handover_command(
-        pkbuf_t **s1apbuf, enb_ue_t *enb_ue);
+        pkbuf_t **s1apbuf, enb_ue_t *source_ue);
+CORE_DECLARE(status_t) s1ap_build_handover_cancel_ack(
+        pkbuf_t **s1apbuf, enb_ue_t *source_ue);
+
 CORE_DECLARE(status_t) s1ap_build_mme_status_transfer(pkbuf_t **s1apbuf,
-        enb_ue_t *enb_ue, S1ap_ENBStatusTransferIEs_t *enb_ies);
+        enb_ue_t *target_ue, S1ap_ENBStatusTransferIEs_t *enb_ies);
 
 #ifdef __cplusplus
 }

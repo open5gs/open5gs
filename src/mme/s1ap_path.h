@@ -31,9 +31,11 @@ CORE_DECLARE(status_t) s1ap_send_path_switch_failure(mme_enb_t *enb,
 
 CORE_DECLARE(status_t) s1ap_send_handover_request(
         mme_ue_t *mme_ue, S1ap_HandoverRequiredIEs_t *required);
-CORE_DECLARE(status_t) s1ap_send_handover_command(mme_ue_t *mme_ue);
+CORE_DECLARE(status_t) s1ap_send_handover_command(enb_ue_t *source_ue);
+CORE_DECLARE(status_t) s1ap_send_handover_cancel_ack(enb_ue_t *source_ue);
+
 CORE_DECLARE(status_t) s1ap_send_mme_status_transfer(
-        enb_ue_t *enb_ue, S1ap_ENBStatusTransferIEs_t *ies);
+        enb_ue_t *target_ue, S1ap_ENBStatusTransferIEs_t *ies);
 
 int _s1ap_recv_cb(net_sock_t *net_sock, void *data);
 
