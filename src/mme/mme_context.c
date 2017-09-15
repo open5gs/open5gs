@@ -1094,7 +1094,7 @@ status_t enb_ue_switch_to_enb(enb_ue_t *enb_ue, mme_enb_t *new_enb)
     /* Switch to enb */
     enb_ue->enb = new_enb;
 
-    return CORE_ERROR;
+    return CORE_OK;
 }
 
 enb_ue_t* enb_ue_find(index_t index)
