@@ -259,7 +259,8 @@ static int _gtpv1_s1u_recv_cb(net_sock_t *sock, void *data)
             pkbuf_free(echo_rsp);
         }
     }
-    else if (gtp_h->type == GTPU_MSGTYPE_GPDU)
+    else if (gtp_h->type == GTPU_MSGTYPE_GPDU || 
+                gtp_h->type == GTPU_MSGTYPE_END_MARKER)
     {
         teid = ntohl(gtp_h->teid);
         d_trace(50, "Recv GPDU (teid = 0x%x) from ENB\n",teid);
