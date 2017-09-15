@@ -1047,18 +1047,12 @@ unsigned int enb_ue_count()
 
 status_t enb_ue_remove(enb_ue_t *enb_ue)
 {
-    enb_ue_t *target_ue = NULL;
-
     d_assert(self.mme_ue_s1ap_id_hash, return CORE_ERROR, "Null param");
     d_assert(enb_ue, return CORE_ERROR, "Null param");
     d_assert(enb_ue->enb, return CORE_ERROR, "Null param");
-    
-    target_ue = enb_ue->target_ue;
-    if (target_ue)
-        target_ue->source_ue = NULL;
-    else if (enb_ue->mme_ue)
-        enb_ue->mme_ue->enb_ue = NULL;
 
+    mme_ue_deassociate_source_ue(enb_ue);
+    
     list_remove(&enb_ue->enb->enb_ue_list, enb_ue);
     hash_set(self.mme_ue_s1ap_id_hash, &enb_ue->mme_ue_s1ap_id, 
             sizeof(enb_ue->mme_ue_s1ap_id), NULL);
@@ -1144,9 +1138,6 @@ mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
     mme_ue->t3413 = event_timer(&self.tm_service, MME_EVT_EMM_T3413,
             self.t3413_value * 1000, mme_ue->index);
 
-    mme_ue->enb_ue = enb_ue;
-    enb_ue->mme_ue = mme_ue;
-
     event_set_param1(&e, (c_uintptr_t)mme_ue->index);
     fsm_create(&mme_ue->sm, emm_state_initial, emm_state_final);
     fsm_init(&mme_ue->sm, &e);
@@ -1195,6 +1186,7 @@ status_t mme_ue_remove(mme_ue_t *mme_ue)
     mme_sess_remove_all(mme_ue);
     mme_pdn_remove_all(mme_ue);
 
+#if 0 /* FIXME : Dees it needed? */
     if (mme_ue->enb_ue)
     {
         if (mme_ue->enb_ue->mme_ue != mme_ue)
@@ -1202,6 +1194,7 @@ status_t mme_ue_remove(mme_ue_t *mme_ue)
         else
             mme_ue->enb_ue->mme_ue = NULL;
     }
+#endif
 
     index_free(&mme_ue_pool, mme_ue);
 
@@ -1464,6 +1457,14 @@ status_t mme_ue_set_imsi(mme_ue_t *mme_ue, c_int8_t *imsi_bcd)
     return CORE_OK;
 }
 
+/* 
+ * mme_ue is associated with enb_ue like the following conditions 
+ *
+ * S1AP Initial UE-Message : S-TMSI
+ * NAS ATTACH_REQUEST : IMSI, GUTI
+ * NAS TAU_REQUEST : GUTI
+ * S1AP Handover Notification
+ */
 status_t mme_ue_associate_enb_ue(mme_ue_t *mme_ue, enb_ue_t *enb_ue)
 {
     d_assert(mme_ue, return CORE_ERROR, "Null param");
@@ -1475,6 +1476,11 @@ status_t mme_ue_associate_enb_ue(mme_ue_t *mme_ue, enb_ue_t *enb_ue)
     return CORE_OK;
 }
 
+/* 
+ * mme_ue is associated with target_ue like the following conditions 
+ *
+ * S1AP Handover Required
+ */
 status_t mme_ue_associate_target_ue(mme_ue_t *mme_ue, enb_ue_t *target_ue)
 {
     enb_ue_t *source_ue = NULL;
@@ -1487,6 +1493,23 @@ status_t mme_ue_associate_target_ue(mme_ue_t *mme_ue, enb_ue_t *target_ue)
     target_ue->mme_ue = mme_ue;
     target_ue->source_ue = source_ue;
     source_ue->target_ue = target_ue;
+
+    return CORE_OK;
+}
+
+/* 
+ * mme_ue is deassociated with source like the following conditions 
+ *
+ * UE Context Release Complete : enb_ue_remove()
+ */
+status_t mme_ue_deassociate_source_ue(enb_ue_t *source_ue)
+{
+    enb_ue_t *target_ue = source_ue->target_ue;
+
+    if (target_ue)
+        target_ue->source_ue = NULL;
+    else if (source_ue->mme_ue)
+        source_ue->mme_ue->enb_ue = NULL;
 
     return CORE_OK;
 }
