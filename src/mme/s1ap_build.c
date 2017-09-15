@@ -932,6 +932,7 @@ status_t s1ap_build_mme_status_transfer(pkbuf_t **s1apbuf,
         enb_ue_t *enb_ue, S1ap_ENBStatusTransferIEs_t *enb_ies)
 {
     char buf[INET_ADDRSTRLEN];
+    int i;
 
     int encoded;
     s1ap_message_t message;
@@ -944,9 +945,24 @@ status_t s1ap_build_mme_status_transfer(pkbuf_t **s1apbuf,
 
     mme_ies->mme_ue_s1ap_id = enb_ue->mme_ue_s1ap_id;
     mme_ies->eNB_UE_S1AP_ID = enb_ue->enb_ue_s1ap_id;
-    memcpy(&mme_ies->eNB_StatusTransfer_TransparentContainer,
-            &enb_ies->eNB_StatusTransfer_TransparentContainer,
-            sizeof(S1ap_ENB_StatusTransfer_TransparentContainer_t));
+
+    for (i = 0; i < enb_ies->eNB_StatusTransfer_TransparentContainer.
+            bearers_SubjectToStatusTransferList.list.count; i++)
+    {
+        S1ap_IE_t *enb_ie = NULL, *mme_ie = NULL;
+
+        enb_ie = (S1ap_IE_t *)enb_ies->
+            eNB_StatusTransfer_TransparentContainer.
+            bearers_SubjectToStatusTransferList.list.array[i];
+        d_assert(enb_ie, return CORE_ERROR, "Null param");
+
+        mme_ie = s1ap_copy_ie(enb_ie);
+        d_assert(mme_ie, return CORE_ERROR, "Null param");
+
+        ASN_SEQUENCE_ADD(&mme_ies->
+                eNB_StatusTransfer_TransparentContainer.
+                bearers_SubjectToStatusTransferList, mme_ie);
+    }
 
     message.procedureCode = S1ap_ProcedureCode_id_MMEStatusTransfer;
     message.direction = S1AP_PDU_PR_initiatingMessage;

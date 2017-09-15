@@ -22,6 +22,7 @@ CORE_DECLARE(void) s1ap_uint32_to_ENB_ID(
 CORE_DECLARE(void) s1ap_ENB_ID_to_uint32(
         S1ap_ENB_ID_t *eNB_ID, c_uint32_t *uint32);
 
+CORE_DECLARE(S1ap_IE_t *) s1ap_copy_ie(S1ap_IE_t *ie);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

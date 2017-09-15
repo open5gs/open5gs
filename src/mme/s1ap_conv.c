@@ -108,3 +108,20 @@ void s1ap_ENB_ID_to_uint32(S1ap_ENB_ID_t *eNB_ID, c_uint32_t *uint32)
         d_assert(0, return, "Invalid param");
     }
 }
+
+S1ap_IE_t *s1ap_copy_ie(S1ap_IE_t *ie)
+{
+    S1ap_IE_t *buff;
+
+    buff = core_malloc(sizeof (S1ap_IE_t));
+    d_assert(buff, return NULL,);
+
+    memset((void *)buff, 0, sizeof(S1ap_IE_t));
+    buff->id = ie->id;
+    buff->criticality = ie->criticality;
+    buff->value.size = ie->value.size;
+    buff->value.buf = core_calloc(1, buff->value.size);
+    memcpy(buff->value.buf, ie->value.buf, buff->value.size);
+
+    return buff;
+}
