@@ -807,6 +807,7 @@ void s1ap_handle_handover_cancel(mme_enb_t *enb, s1ap_message_t *message)
     int need_to_delete_indirect_tunnel = 0;
 
     S1ap_HandoverCancelIEs_t *ies = NULL;
+    S1ap_Cause_t cause;
 
     d_assert(enb, return,);
 
@@ -854,8 +855,19 @@ void s1ap_handle_handover_cancel(mme_enb_t *enb, s1ap_message_t *message)
     }
     else
     {
+        enb_ue_t *target_ue = NULL;
+
         rv = s1ap_send_handover_cancel_ack(source_ue);
         d_assert(rv == CORE_OK,, "s1ap send error");
+
+        target_ue = source_ue->target_ue;
+        d_assert(target_ue, return,);
+        
+        cause.present = S1ap_Cause_PR_radioNetwork;
+        cause.choice.nas = S1ap_CauseRadioNetwork_handover_cancelled;
+
+        rv = s1ap_send_ue_context_release_commmand(target_ue, &cause);
+        d_assert(rv == CORE_OK, return, "s1ap send error");
     }
 
     d_trace(3, "[S1AP] Handover Cancel : "
