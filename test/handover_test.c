@@ -266,7 +266,7 @@ static void handover_test1(abts_case *tc, void *data)
 
     /* Receive Path Switch Ack */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock1, recvbuf);
+    rc = tests1ap_enb_read(sock2, recvbuf);
     ABTS_INT_NEQUAL(tc, 0, rc);
     ABTS_TRUE(tc, memcmp(recvbuf->payload + 26,
                 CORE_HEX(_nh1, strlen(_nh1), tmp), 33) == 0);
@@ -275,7 +275,7 @@ static void handover_test1(abts_case *tc, void *data)
     /* Send Path Switch Request */
     rv = tests1ap_build_path_switch_request(&sendbuf, 1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
-    rv = tests1ap_enb_send(sock2, sendbuf);
+    rv = tests1ap_enb_send(sock1, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     /* Receive Path Switch Ack */
@@ -737,9 +737,7 @@ abts_suite *test_handover(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
-#if 0
     abts_run_test(suite, handover_test1, NULL);
-#endif
     abts_run_test(suite, handover_test2, NULL);
 
     return suite;
