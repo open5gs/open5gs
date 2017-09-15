@@ -216,14 +216,14 @@ static inline int s1ap_free_unsuccessfull_outcome(s1ap_message_t *message)
                     &message->s1ap_PathSwitchRequestFailureIEs);
             break;
 
-        case S1ap_ProcedureCode_id_HandoverResourceAllocation: 
-            s1ap_free_s1ap_handoverfailureies(
-                    &message->s1ap_HandoverFailureIEs);
-            break;
-
         case S1ap_ProcedureCode_id_HandoverPreparation: 
             s1ap_free_s1ap_handoverpreparationfailureies(
                     &message->s1ap_HandoverPreparationFailureIEs);
+            break;
+
+        case S1ap_ProcedureCode_id_HandoverResourceAllocation: 
+            s1ap_free_s1ap_handoverfailureies(
+                    &message->s1ap_HandoverFailureIEs);
             break;
 
         default:

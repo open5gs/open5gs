@@ -1498,14 +1498,40 @@ status_t mme_ue_associate_target_ue(mme_ue_t *mme_ue, enb_ue_t *target_ue)
 }
 
 /* 
- * mme_ue is deassociated with source like the following conditions 
+ * mme_ue is deassociated with target_ue like the following conditions 
  *
- * UE Context Release Complete : enb_ue_remove()
+ * Handover Cancel ->  Delete Indirect Tunnel -> Deassociate -> UL Relase
+ * Handover Cancel ->  Deassociate -> UL Relase
+ * S1AP Handover Failure
+ */
+status_t mme_ue_deassociate_target_ue(enb_ue_t *target_ue)
+{
+    enb_ue_t *source_ue = NULL;
+
+    d_assert(target_ue, return CORE_ERROR,);
+
+    target_ue->mme_ue = NULL;
+    target_ue->source_ue = NULL;
+
+    source_ue = target_ue->source_ue;
+    if (source_ue)
+        source_ue->target_ue = NULL;
+
+    return CORE_OK;
+}
+
+/* 
+ * mme_ue is deassociated with source_ue like the following conditions 
+ *
+ * S1AP UE Context Release Complete : enb_ue_remove()
  */
 status_t mme_ue_deassociate_source_ue(enb_ue_t *source_ue)
 {
-    enb_ue_t *target_ue = source_ue->target_ue;
+    enb_ue_t *target_ue = NULL;
+    
+    d_assert(source_ue, return CORE_ERROR,);
 
+    target_ue = source_ue->target_ue;
     if (target_ue)
         target_ue->source_ue = NULL;
     else if (source_ue->mme_ue)

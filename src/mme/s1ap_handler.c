@@ -680,7 +680,10 @@ void s1ap_handle_handover_required(mme_enb_t *enb, s1ap_message_t *message)
     }
     else
     {
-        d_assert(0, return,);
+        rv = s1ap_send_handover_preparation_failure(source_ue, &ies->cause);
+        d_assert(rv == CORE_OK, return, "s1ap send error");
+
+        return;
     }
 
     source_ue->handover_type = ies->handoverType;
@@ -792,7 +795,44 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
 
 void s1ap_handle_handover_failure(mme_enb_t *enb, s1ap_message_t *message)
 {
-    d_error("Not implemented");
+    status_t rv;
+    char buf[INET_ADDRSTRLEN];
+
+    S1ap_HandoverFailureIEs_t *ies = NULL;
+    S1ap_Cause_t cause;
+    enb_ue_t *target_ue = NULL;
+    enb_ue_t *source_ue = NULL;
+
+    d_assert(enb, return,);
+
+    ies = &message->s1ap_HandoverFailureIEs;
+    d_assert(ies, return,);
+
+    target_ue = enb_ue_find_by_mme_ue_s1ap_id(ies->mme_ue_s1ap_id);
+    d_assert(target_ue, return,
+            "Cannot find UE for MME-UE-S1AP-ID[%d] and eNB[%s:%d]",
+            ies->mme_ue_s1ap_id,
+            INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+            enb->enb_id);
+
+    source_ue = target_ue->source_ue;
+    d_assert(source_ue, return,);
+    rv = s1ap_send_handover_preparation_failure(source_ue, &ies->cause);
+    d_assert(rv == CORE_OK, return, "s1ap send error");
+
+    mme_ue_deassociate_target_ue(target_ue);
+
+    cause.present = S1ap_Cause_PR_radioNetwork;
+    cause.choice.nas = S1ap_CauseRadioNetwork_ho_failure_in_target_EPC_eNB_or_target_system;
+
+    rv = s1ap_send_ue_context_release_commmand(target_ue, &cause);
+    d_assert(rv == CORE_OK, return, "s1ap send error");
+
+    d_trace(3, "[S1AP] Handover Failure : "
+            "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
+            target_ue->enb_ue_s1ap_id,
+            INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
+            enb->enb_id);
 }
 
 void s1ap_handle_handover_cancel(mme_enb_t *enb, s1ap_message_t *message)
@@ -862,6 +902,8 @@ void s1ap_handle_handover_cancel(mme_enb_t *enb, s1ap_message_t *message)
 
         target_ue = source_ue->target_ue;
         d_assert(target_ue, return,);
+
+        mme_ue_deassociate_target_ue(target_ue);
         
         cause.present = S1ap_Cause_PR_radioNetwork;
         cause.choice.nas = S1ap_CauseRadioNetwork_handover_cancelled;

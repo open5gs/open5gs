@@ -424,6 +424,69 @@ status_t s1ap_send_path_switch_failure(mme_enb_t *enb,
     
     return rv;
 }
+
+status_t s1ap_send_handover_command(enb_ue_t *source_ue)
+{
+    status_t rv;
+    pkbuf_t *s1apbuf = NULL;
+
+    mme_enb_t *enb = NULL;
+
+    d_assert(source_ue, return CORE_ERROR,);
+    enb = source_ue->enb;
+    d_assert(enb, return CORE_ERROR,);
+
+    rv = s1ap_build_handover_command(&s1apbuf, source_ue);
+    d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
+
+    rv = s1ap_send_to_enb(enb, s1apbuf);
+    d_assert(rv == CORE_OK,, "s1ap send error");
+
+    return rv;
+}
+
+status_t s1ap_send_handover_preparation_failure(
+        enb_ue_t *source_ue, S1ap_Cause_t *cause)
+{
+    status_t rv;
+    pkbuf_t *s1apbuf = NULL;
+
+    mme_enb_t *enb = NULL;
+
+    d_assert(source_ue, return CORE_ERROR,);
+    enb = source_ue->enb;
+    d_assert(enb, return CORE_ERROR,);
+
+    rv = s1ap_build_handover_preparation_failure(&s1apbuf, source_ue, cause);
+    d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
+
+    rv = s1ap_send_to_enb(enb, s1apbuf);
+    d_assert(rv == CORE_OK,, "s1ap send error");
+
+    return rv;
+}
+
+status_t s1ap_send_handover_cancel_ack(enb_ue_t *source_ue)
+{
+    status_t rv;
+    pkbuf_t *s1apbuf = NULL;
+
+    mme_enb_t *enb = NULL;
+
+    d_assert(source_ue, return CORE_ERROR,);
+    enb = source_ue->enb;
+    d_assert(enb, return CORE_ERROR,);
+
+    rv = s1ap_build_handover_cancel_ack(&s1apbuf, source_ue);
+    d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
+
+    rv = s1ap_send_to_enb(enb, s1apbuf);
+    d_assert(rv == CORE_OK,, "s1ap send error");
+
+    return rv;
+}
+
+
 status_t s1ap_send_handover_request(
         mme_ue_t *mme_ue, S1ap_HandoverRequiredIEs_t *ies)
 {
@@ -477,46 +540,6 @@ status_t s1ap_send_handover_request(
 
     rv = s1ap_send_to_enb(target_enb, s1apbuf);
     d_assert(rv == CORE_OK, enb_ue_remove(target_ue), "s1ap send error");
-
-    return rv;
-}
-
-status_t s1ap_send_handover_command(enb_ue_t *source_ue)
-{
-    status_t rv;
-    pkbuf_t *s1apbuf = NULL;
-
-    mme_enb_t *enb = NULL;
-
-    d_assert(source_ue, return CORE_ERROR,);
-    enb = source_ue->enb;
-    d_assert(enb, return CORE_ERROR,);
-
-    rv = s1ap_build_handover_command(&s1apbuf, source_ue);
-    d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
-
-    rv = s1ap_send_to_enb(enb, s1apbuf);
-    d_assert(rv == CORE_OK,, "s1ap send error");
-
-    return rv;
-}
-
-status_t s1ap_send_handover_cancel_ack(enb_ue_t *source_ue)
-{
-    status_t rv;
-    pkbuf_t *s1apbuf = NULL;
-
-    mme_enb_t *enb = NULL;
-
-    d_assert(source_ue, return CORE_ERROR,);
-    enb = source_ue->enb;
-    d_assert(enb, return CORE_ERROR,);
-
-    rv = s1ap_build_handover_cancel_ack(&s1apbuf, source_ue);
-    d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
-
-    rv = s1ap_send_to_enb(enb, s1apbuf);
-    d_assert(rv == CORE_OK,, "s1ap send error");
 
     return rv;
 }

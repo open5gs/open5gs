@@ -471,6 +471,8 @@ void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
         target_ue = source_ue->target_ue;
         d_assert(target_ue, return, "Null param");
 
+        mme_ue_deassociate_target_ue(target_ue);
+
         cause.present = S1ap_Cause_PR_radioNetwork;
         cause.choice.nas = S1ap_CauseRadioNetwork_handover_cancelled;
 

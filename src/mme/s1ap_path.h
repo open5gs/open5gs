@@ -29,9 +29,13 @@ CORE_DECLARE(status_t) s1ap_send_path_switch_ack(mme_ue_t *mme_ue);
 CORE_DECLARE(status_t) s1ap_send_path_switch_failure(mme_enb_t *enb,
     c_uint32_t enb_ue_s1ap_id, c_uint32_t mme_ue_s1ap_id, S1ap_Cause_t *cause);
 
+CORE_DECLARE(status_t) s1ap_send_handover_command(enb_ue_t *source_ue);
+CORE_DECLARE(status_t) s1ap_send_handover_preparation_failure(
+        enb_ue_t *source_ue, S1ap_Cause_t *cause);
+
 CORE_DECLARE(status_t) s1ap_send_handover_request(
         mme_ue_t *mme_ue, S1ap_HandoverRequiredIEs_t *required);
-CORE_DECLARE(status_t) s1ap_send_handover_command(enb_ue_t *source_ue);
+
 CORE_DECLARE(status_t) s1ap_send_handover_cancel_ack(enb_ue_t *source_ue);
 
 CORE_DECLARE(status_t) s1ap_send_mme_status_transfer(

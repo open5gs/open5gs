@@ -469,6 +469,7 @@ CORE_DECLARE(status_t)      mme_ue_associate_enb_ue(
                                 mme_ue_t *mme_ue, enb_ue_t *enb_ue);
 CORE_DECLARE(status_t)      mme_ue_associate_target_ue(
                                 mme_ue_t *mme_ue, enb_ue_t *target_ue);
+CORE_DECLARE(status_t)      mme_ue_deassociate_target_ue(enb_ue_t *target_ue);
 CORE_DECLARE(status_t)      mme_ue_deassociate_source_ue(enb_ue_t *source_ue);
 
 CORE_DECLARE(hash_index_t *) mme_ue_first();
