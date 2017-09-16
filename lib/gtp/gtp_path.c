@@ -53,7 +53,17 @@ pkbuf_t *gtp_read(net_sock_t *sock)
     d_assert(sock, return NULL, "Null param");
 
     pkb = pkbuf_alloc(0, MAX_SDU_LEN);
-    d_assert(pkb, return NULL, "Can't allocate pkbuf");
+    if (pkb == NULL)
+    {
+        char tmp_buf[MAX_SDU_LEN];
+
+        d_fatal("Can't allocate pkbuf");
+
+        /* Read data from socket to exit from select */
+        net_read(sock, tmp_buf, MAX_SDU_LEN, 0);
+
+        return NULL;
+    }
 
     r = net_read(sock, pkb->payload, pkb->len, 0);
     if (r <= 0)
