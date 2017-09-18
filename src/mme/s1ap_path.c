@@ -570,7 +570,8 @@ status_t s1ap_send_handover_request(
     target_ue = enb_ue_add(target_enb);
     d_assert(target_ue, return CORE_ERROR,);
 
-    mme_ue_associate_target_ue(mme_ue, target_ue);
+    rv = source_ue_associate_target_ue(source_ue, target_ue);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
 
     rv = s1ap_build_handover_request(&s1apbuf, mme_ue, target_ue, ies);
     d_assert(rv == CORE_OK && s1apbuf,

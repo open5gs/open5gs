@@ -759,10 +759,10 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
 
     target_ue->enb_ue_s1ap_id = ies->eNB_UE_S1AP_ID;
 
-    mme_ue = target_ue->mme_ue;
-    d_assert(mme_ue, return,);
     source_ue = target_ue->source_ue;
     d_assert(source_ue, return,);
+    mme_ue = source_ue->mme_ue;
+    d_assert(mme_ue, return,);
 
     for (i = 0; i < ies->e_RABAdmittedList.s1ap_E_RABAdmittedItem.count; i++)
     {
@@ -855,8 +855,6 @@ void s1ap_handle_handover_failure(mme_enb_t *enb, s1ap_message_t *message)
     rv = s1ap_send_handover_preparation_failure(source_ue, &ies->cause);
     d_assert(rv == CORE_OK, return, "s1ap send error");
 
-    mme_ue_deassociate_target_ue(target_ue);
-
     cause.present = S1ap_Cause_PR_radioNetwork;
     cause.choice.nas = S1ap_CauseRadioNetwork_ho_failure_in_target_EPC_eNB_or_target_system;
 
@@ -902,12 +900,10 @@ void s1ap_handle_handover_cancel(mme_enb_t *enb, s1ap_message_t *message)
     rv = s1ap_send_handover_cancel_ack(source_ue);
     d_assert(rv == CORE_OK,, "s1ap send error");
 
-    mme_ue_deassociate_target_ue(target_ue);
-    
     cause.present = S1ap_Cause_PR_radioNetwork;
     cause.choice.nas = S1ap_CauseRadioNetwork_handover_cancelled;
 
-    rv = s1ap_send_ue_context_release_commmand(target_ue, &cause, 0);
+    rv = s1ap_send_ue_context_release_commmand(target_ue, &cause, 300);
     d_assert(rv == CORE_OK, return, "s1ap send error");
 
     d_trace(3, "[S1AP] Handover Cancel : "
@@ -953,6 +949,7 @@ void s1ap_handle_handover_notification(mme_enb_t *enb, s1ap_message_t *message)
     status_t rv;
     char buf[INET_ADDRSTRLEN];
 
+    enb_ue_t *source_ue = NULL;
     enb_ue_t *target_ue = NULL;
     mme_ue_t *mme_ue = NULL;
     mme_sess_t *sess = NULL;
@@ -994,7 +991,9 @@ void s1ap_handle_handover_notification(mme_enb_t *enb, s1ap_message_t *message)
             "Conflict MME-UE-S1AP-ID : %d != %d\n",
             target_ue->mme_ue_s1ap_id, ies->mme_ue_s1ap_id);
 
-    mme_ue = target_ue->mme_ue;
+    source_ue = target_ue->source_ue;
+    d_assert(source_ue, return,);
+    mme_ue = source_ue->mme_ue;
     d_assert(mme_ue, return,);
 
     mme_ue_associate_enb_ue(mme_ue, target_ue);

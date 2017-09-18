@@ -1047,11 +1047,13 @@ unsigned int enb_ue_count()
 
 status_t enb_ue_remove(enb_ue_t *enb_ue)
 {
+    status_t rv;
     d_assert(self.mme_ue_s1ap_id_hash, return CORE_ERROR, "Null param");
     d_assert(enb_ue, return CORE_ERROR, "Null param");
     d_assert(enb_ue->enb, return CORE_ERROR, "Null param");
 
-    mme_ue_deassociate_source_ue(enb_ue);
+    rv = source_ue_deassociate_target_ue(enb_ue);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "Null param");
     
     list_remove(&enb_ue->enb->enb_ue_list, enb_ue);
     hash_set(self.mme_ue_s1ap_id_hash, &enb_ue->mme_ue_s1ap_id, 
@@ -1478,8 +1480,6 @@ status_t mme_ue_set_imsi(mme_ue_t *mme_ue, c_int8_t *imsi_bcd)
 }
 
 /* 
- * mme_ue is associated with enb_ue like the following conditions 
- *
  * S1AP Initial UE-Message : S-TMSI
  * NAS ATTACH_REQUEST : IMSI, GUTI
  * NAS TAU_REQUEST : GUTI
@@ -1497,18 +1497,33 @@ status_t mme_ue_associate_enb_ue(mme_ue_t *mme_ue, enb_ue_t *enb_ue)
 }
 
 /* 
- * mme_ue is associated with target_ue like the following conditions 
+ * mme_ue_remove()
  *
+ * Note : should not call in enb_ue_remove()
+ */
+status_t mme_ue_deassociate_enb_ue(mme_ue_t *mme_ue, enb_ue_t *enb_ue)
+{
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    d_assert(enb_ue, return CORE_ERROR, "Null param");
+
+    mme_ue->enb_ue = NULL;
+    enb_ue->mme_ue = NULL;
+
+    return CORE_OK;
+}
+
+/* 
  * S1AP Handover Required
  */
-status_t mme_ue_associate_target_ue(mme_ue_t *mme_ue, enb_ue_t *target_ue)
+status_t source_ue_associate_target_ue(
+        enb_ue_t *source_ue, enb_ue_t *target_ue)
 {
-    enb_ue_t *source_ue = NULL;
+    mme_ue_t *mme_ue = NULL;
 
-    d_assert(target_ue, return CORE_ERROR, "Null param");
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
-    source_ue = mme_ue->enb_ue;
     d_assert(source_ue, return CORE_ERROR, "Null param");
+    d_assert(target_ue, return CORE_ERROR, "Null param");
+    mme_ue = source_ue->mme_ue;
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
 
     target_ue->mme_ue = mme_ue;
     target_ue->source_ue = source_ue;
@@ -1518,44 +1533,34 @@ status_t mme_ue_associate_target_ue(mme_ue_t *mme_ue, enb_ue_t *target_ue)
 }
 
 /* 
- * mme_ue is deassociated with target_ue like the following conditions 
- *
- * Handover Cancel ->  Delete Indirect Tunnel -> Deassociate -> UL Relase
- * Handover Cancel ->  Deassociate -> UL Relase
- * S1AP Handover Failure
+ * enb_ue_remove()
  */
-status_t mme_ue_deassociate_target_ue(enb_ue_t *target_ue)
+status_t source_ue_deassociate_target_ue(enb_ue_t *enb_ue)
 {
     enb_ue_t *source_ue = NULL;
-
-    d_assert(target_ue, return CORE_ERROR,);
-
-    target_ue->mme_ue = NULL;
-    target_ue->source_ue = NULL;
-
-    source_ue = target_ue->source_ue;
-    if (source_ue)
-        source_ue->target_ue = NULL;
-
-    return CORE_OK;
-}
-
-/* 
- * mme_ue is deassociated with source_ue like the following conditions 
- *
- * S1AP UE Context Release Complete : enb_ue_remove()
- */
-status_t mme_ue_deassociate_source_ue(enb_ue_t *source_ue)
-{
     enb_ue_t *target_ue = NULL;
-    
-    d_assert(source_ue, return CORE_ERROR,);
+    d_assert(enb_ue, return CORE_ERROR,);
 
-    target_ue = source_ue->target_ue;
-    if (target_ue)
+    if (enb_ue->target_ue)
+    {
+        source_ue = enb_ue;
+        target_ue = enb_ue->target_ue;
+
+        d_assert(source_ue->target_ue, return CORE_ERROR,);
+        d_assert(target_ue->source_ue, return CORE_ERROR,);
+        source_ue->target_ue = NULL;
         target_ue->source_ue = NULL;
-    else if (source_ue->mme_ue)
-        source_ue->mme_ue->enb_ue = NULL;
+    }
+    else if (enb_ue->source_ue)
+    {
+        target_ue = enb_ue;
+        source_ue = enb_ue->source_ue;
+
+        d_assert(source_ue->target_ue, return CORE_ERROR,);
+        d_assert(target_ue->source_ue, return CORE_ERROR,);
+        source_ue->target_ue = NULL;
+        target_ue->source_ue = NULL;
+    }
 
     return CORE_OK;
 }

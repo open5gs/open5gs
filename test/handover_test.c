@@ -694,14 +694,19 @@ static void handover_test2(abts_case *tc, void *data)
     ABTS_INT_NEQUAL(tc, 0, rc);
     pkbuf_free(recvbuf);
 
-#if 0
     /* Send Handover Cancel */
     rv = tests1ap_build_handover_cancel(&sendbuf, 0);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock1, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    /* Receive UE Context Release Command */
+    /* Recv Handover Cancel Ack */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rc = tests1ap_enb_read(sock1, recvbuf);
+    ABTS_INT_NEQUAL(tc, 0, rc);
+    pkbuf_free(recvbuf);
+
+    /* Recv UE Context Relase Command */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rc = tests1ap_enb_read(sock2, recvbuf);
     ABTS_INT_NEQUAL(tc, 0, rc);
@@ -714,7 +719,6 @@ static void handover_test2(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     core_sleep(time_from_msec(300));
-#endif
 
     /********** Remove Subscriber in Database */
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456815"));
