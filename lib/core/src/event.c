@@ -66,20 +66,20 @@ status_t event_timedrecv(msgq_id queue_id, event_t *e, c_time_t timeout)
     return rv;
 }
 
-void* event_timer_expire_func(c_uintptr_t queue_id, c_uintptr_t event,
-        c_uintptr_t param1, c_uintptr_t param2, c_uintptr_t param3,
-        c_uintptr_t param4, c_uintptr_t param5)
+void* event_timer_expire_func(c_uintptr_t queue_id, c_uintptr_t param1,
+        c_uintptr_t param2, c_uintptr_t param3, c_uintptr_t param4,
+        c_uintptr_t param5, c_uintptr_t param6)
 {
     event_t e;
     status_t rv;
 
     d_assert(queue_id, return NULL, "Null param");
-    event_set(&e, event);
-    event_set_param1(&e, param1);
-    event_set_param2(&e, param2);
-    event_set_param3(&e, param3);
-    event_set_param4(&e, param4);
-    event_set_param5(&e, param5);
+    event_set(&e, param1);
+    event_set_param1(&e, param2);
+    event_set_param2(&e, param3);
+    event_set_param3(&e, param4);
+    event_set_param4(&e, param5);
+    event_set_param5(&e, param6);
 
     rv = event_send(queue_id, &e);
     if (rv != CORE_OK)

@@ -147,6 +147,27 @@ void mme_state_operational(fsm_t *s, event_t *e)
             pkbuf_free(pkbuf);
             break;
         }
+        case MME_EVT_S1AP_DELAYED_SEND:
+        {
+            mme_enb_t *enb = NULL;
+            pkbuf_t *pkbuf = NULL;
+            tm_block_id timer = 0;
+
+            enb = mme_enb_find(event_get_param1(e));
+            d_assert(enb, break,);
+
+            pkbuf = (pkbuf_t *)event_get_param2(e);
+            d_assert(pkbuf, break,);
+
+            timer = event_get_param3(e);
+            d_assert(timer, pkbuf_free(pkbuf);break,);
+
+            rv = s1ap_send_to_enb(enb, pkbuf);
+            d_assert(rv == CORE_OK, pkbuf_free(pkbuf),);
+
+            tm_delete(timer);
+            break;
+        }
         case MME_EVT_EMM_MESSAGE:
         {
             nas_message_t message;

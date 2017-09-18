@@ -694,6 +694,7 @@ static void handover_test2(abts_case *tc, void *data)
     ABTS_INT_NEQUAL(tc, 0, rc);
     pkbuf_free(recvbuf);
 
+#if 0
     /* Send Handover Cancel */
     rv = tests1ap_build_handover_cancel(&sendbuf, 0);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -713,6 +714,7 @@ static void handover_test2(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     core_sleep(time_from_msec(300));
+#endif
 
     /********** Remove Subscriber in Database */
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456815"));

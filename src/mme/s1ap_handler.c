@@ -417,7 +417,8 @@ void s1ap_handle_ue_context_release_request(
 
                     cause.present = S1ap_Cause_PR_nas;
                     cause.choice.nas = S1ap_CauseNas_normal_release;
-                    rv = s1ap_send_ue_context_release_commmand(enb_ue, &cause);
+                    rv = s1ap_send_ue_context_release_commmand(
+                            enb_ue, &cause, 0);
                     d_assert(rv == CORE_OK, return, "s1ap send error");
                 }
             }
@@ -451,9 +452,14 @@ void s1ap_handle_ue_context_release_request(
 void s1ap_handle_ue_context_release_complete(
         mme_enb_t *enb, s1ap_message_t *message)
 {
+    status_t rv;
     char buf[INET_ADDRSTRLEN];
 
     enb_ue_t *enb_ue = NULL;
+    mme_ue_t *mme_ue = NULL;
+    mme_sess_t *sess = NULL;
+    mme_bearer_t *bearer = NULL;
+    int need_to_delete_indirect_tunnel = 0;
     S1ap_UEContextReleaseComplete_IEs_t *ies = NULL;
 
     ies = &message->s1ap_UEContextReleaseComplete_IEs;
@@ -461,6 +467,8 @@ void s1ap_handle_ue_context_release_complete(
 
     enb_ue = enb_ue_find_by_mme_ue_s1ap_id(ies->mme_ue_s1ap_id);
     d_assert(enb_ue, return, "No UE Context[%d]", ies->mme_ue_s1ap_id);
+    mme_ue = enb_ue->mme_ue;
+    d_assert(mme_ue, return,);
 
     d_trace(3, "[S1AP] UE Context Release Complete : "
             "UE[mME-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
@@ -469,6 +477,30 @@ void s1ap_handle_ue_context_release_complete(
             enb->enb_id);
 
     enb_ue_remove(enb_ue);
+
+    sess = mme_sess_first(mme_ue);
+    while(sess)
+    {
+        bearer = mme_bearer_first(sess);
+        while(bearer)
+        {
+            if (MME_HAVE_SGW_DL_INDIRECT_TUNNEL(bearer) ||
+                MME_HAVE_SGW_UL_INDIRECT_TUNNEL(bearer))
+            {
+                need_to_delete_indirect_tunnel = 1;
+            }
+
+            bearer = mme_bearer_next(bearer);
+        }
+        sess = mme_sess_next(sess);
+    }
+
+    if (need_to_delete_indirect_tunnel)
+    {
+        rv = mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(
+            mme_ue);
+        d_assert(rv == CORE_OK, return, "gtp send error");
+    }
 }
 
 void s1ap_handle_paging(mme_ue_t *mme_ue)
@@ -828,7 +860,7 @@ void s1ap_handle_handover_failure(mme_enb_t *enb, s1ap_message_t *message)
     cause.present = S1ap_Cause_PR_radioNetwork;
     cause.choice.nas = S1ap_CauseRadioNetwork_ho_failure_in_target_EPC_eNB_or_target_system;
 
-    rv = s1ap_send_ue_context_release_commmand(target_ue, &cause);
+    rv = s1ap_send_ue_context_release_commmand(target_ue, &cause, 0);
     d_assert(rv == CORE_OK, return, "s1ap send error");
 
     d_trace(3, "[S1AP] Handover Failure : "
@@ -844,10 +876,7 @@ void s1ap_handle_handover_cancel(mme_enb_t *enb, s1ap_message_t *message)
     char buf[INET_ADDRSTRLEN];
 
     enb_ue_t *source_ue = NULL;
-    mme_ue_t *mme_ue = NULL;
-    mme_sess_t *sess = NULL;
-    mme_bearer_t *bearer = NULL;
-    int need_to_delete_indirect_tunnel = 0;
+    enb_ue_t *target_ue = NULL;
 
     S1ap_HandoverCancelIEs_t *ies = NULL;
     S1ap_Cause_t cause;
@@ -867,53 +896,19 @@ void s1ap_handle_handover_cancel(mme_enb_t *enb, s1ap_message_t *message)
             "Conflict MME-UE-S1AP-ID : %d != %d\n",
             source_ue->mme_ue_s1ap_id, ies->mme_ue_s1ap_id);
 
-    mme_ue = source_ue->mme_ue;
-    d_assert(mme_ue, return,);
+    target_ue = source_ue->target_ue;
+    d_assert(target_ue, return,);
 
-    sess = mme_sess_first(mme_ue);
-    while(sess)
-    {
-        bearer = mme_bearer_first(sess);
-        while(bearer)
-        {
-            if (MME_HAVE_SGW_DL_INDIRECT_TUNNEL(bearer) ||
-                MME_HAVE_SGW_UL_INDIRECT_TUNNEL(bearer))
-            {
-                need_to_delete_indirect_tunnel = 1;
-            }
+    rv = s1ap_send_handover_cancel_ack(source_ue);
+    d_assert(rv == CORE_OK,, "s1ap send error");
 
-            bearer = mme_bearer_next(bearer);
-        }
-        sess = mme_sess_next(sess);
-    }
+    mme_ue_deassociate_target_ue(target_ue);
+    
+    cause.present = S1ap_Cause_PR_radioNetwork;
+    cause.choice.nas = S1ap_CauseRadioNetwork_handover_cancelled;
 
-    if (need_to_delete_indirect_tunnel)
-    {
-        GTP_COUNTER_INCREMENT(mme_ue,
-            GTP_COUNTER_DELETE_INDIRECT_TUNNEL_BY_HANDOVER_CANCEL);
-
-        rv = mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(
-            mme_ue);
-        d_assert(rv == CORE_OK, return, "gtp send error");
-    }
-    else
-    {
-        enb_ue_t *target_ue = NULL;
-
-        rv = s1ap_send_handover_cancel_ack(source_ue);
-        d_assert(rv == CORE_OK,, "s1ap send error");
-
-        target_ue = source_ue->target_ue;
-        d_assert(target_ue, return,);
-
-        mme_ue_deassociate_target_ue(target_ue);
-        
-        cause.present = S1ap_Cause_PR_radioNetwork;
-        cause.choice.nas = S1ap_CauseRadioNetwork_handover_cancelled;
-
-        rv = s1ap_send_ue_context_release_commmand(target_ue, &cause);
-        d_assert(rv == CORE_OK, return, "s1ap send error");
-    }
+    rv = s1ap_send_ue_context_release_commmand(target_ue, &cause, 0);
+    d_assert(rv == CORE_OK, return, "s1ap send error");
 
     d_trace(3, "[S1AP] Handover Cancel : "
             "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",

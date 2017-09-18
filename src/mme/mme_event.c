@@ -18,6 +18,8 @@ char* mme_event_get_name(event_t *e)
 
         case MME_EVT_S1AP_MESSAGE:
             return "MME_EVT_S1AP_MESSAGE";
+        case MME_EVT_S1AP_DELAYED_SEND:
+            return "MME_EVT_S1AP_DELAYED_SEND";
         case MME_EVT_S1AP_LO_ACCEPT:
             return "MME_EVT_S1AP_LO_ACCEPT";
         case MME_EVT_S1AP_LO_CONNREFUSED:

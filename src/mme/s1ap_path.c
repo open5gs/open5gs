@@ -215,6 +215,34 @@ status_t s1ap_send_to_enb(mme_enb_t *enb, pkbuf_t *pkbuf)
     return rv;
 }
 
+status_t s1ap_delayed_send_to_enb(
+        mme_enb_t *enb, pkbuf_t *pkbuf, c_uint32_t duration)
+{
+    tm_block_id timer = 0;
+
+    d_assert(enb, return CORE_ERROR,);
+    d_assert(pkbuf, return CORE_ERROR,);
+        
+    if (duration)
+    {
+        timer = timer_create(
+                &mme_self()->tm_service, MME_EVT_S1AP_DELAYED_SEND, duration);
+        d_assert(timer, return CORE_ERROR,);
+
+        timer_set_param1(timer, (c_uintptr_t)enb->index);
+        timer_set_param2(timer, (c_uintptr_t)pkbuf);
+        timer_set_param3(timer, timer);
+
+        tm_start(timer);
+
+        return CORE_OK;
+    }
+    else
+    {
+        return s1ap_send_to_enb(enb, pkbuf);
+    }
+}
+
 status_t s1ap_send_to_esm(mme_ue_t *mme_ue, pkbuf_t *esmbuf)
 {
     event_t e;
@@ -380,7 +408,7 @@ status_t s1ap_send_initial_context_setup_request(mme_ue_t *mme_ue)
 }
 
 status_t s1ap_send_ue_context_release_commmand(
-        enb_ue_t *enb_ue, S1ap_Cause_t *cause)
+        enb_ue_t *enb_ue, S1ap_Cause_t *cause, c_uint32_t delay)
 {
     status_t rv;
     mme_enb_t *enb = NULL;
@@ -394,7 +422,7 @@ status_t s1ap_send_ue_context_release_commmand(
     rv = s1ap_build_ue_context_release_commmand(&s1apbuf, enb_ue, cause);
     d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
 
-    rv = s1ap_send_to_enb(enb, s1apbuf);
+    rv = s1ap_delayed_send_to_enb(enb, s1apbuf, delay);
     d_assert(rv == CORE_OK,, "s1ap send error");
     
     return CORE_OK;
