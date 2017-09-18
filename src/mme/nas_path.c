@@ -131,7 +131,6 @@ status_t nas_send_attach_reject(mme_ue_t *mme_ue,
             esmbuf ? pkbuf_free(esmbuf) : 1; return CORE_ERROR,
             "nas send error");
 
-    /* FIXME : delay is needed */
     cause.present = S1ap_Cause_PR_nas;
     cause.choice.nas = s1ap_cause_nas;;
     rv = s1ap_send_ue_context_release_commmand(enb_ue, &cause, 0);

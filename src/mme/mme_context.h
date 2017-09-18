@@ -465,8 +465,7 @@ CORE_DECLARE(status_t)      mme_ue_set_imsi(
                                 mme_ue_t *mme_ue, c_int8_t *imsi_bcd);
 CORE_DECLARE(status_t)      mme_ue_associate_enb_ue(
                                 mme_ue_t *mme_ue, enb_ue_t *enb_ue);
-CORE_DECLARE(status_t)      mme_ue_deassociate_enb_ue(
-                                mme_ue_t *mme_ue, enb_ue_t *enb_ue);
+CORE_DECLARE(status_t)      mme_ue_deassociate_enb_ue(enb_ue_t *enb_ue);
 CORE_DECLARE(status_t)      source_ue_associate_target_ue(
                                 enb_ue_t *source_ue, enb_ue_t *target_ue);
 CORE_DECLARE(status_t)      source_ue_deassociate_target_ue(enb_ue_t *enb_ue);

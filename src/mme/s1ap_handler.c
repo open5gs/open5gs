@@ -501,6 +501,14 @@ void s1ap_handle_ue_context_release_complete(
             mme_ue);
         d_assert(rv == CORE_OK, return, "gtp send error");
     }
+    else
+    {
+        if (!FSM_CHECK(&mme_ue->sm, emm_state_detached) &&
+            !FSM_CHECK(&mme_ue->sm, emm_state_attached))
+        {
+            mme_ue_remove(mme_ue);
+        }
+    }
 }
 
 void s1ap_handle_paging(mme_ue_t *mme_ue)

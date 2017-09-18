@@ -296,8 +296,6 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 d_assert(rv == CORE_OK,,
                         "nas_send_attach_reject failed");
 
-                mme_ue_remove(mme_ue);
-
                 pkbuf_free(s6abuf);
                 break;
             }

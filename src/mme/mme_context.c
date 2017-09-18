@@ -1208,15 +1208,7 @@ status_t mme_ue_remove(mme_ue_t *mme_ue)
     mme_sess_remove_all(mme_ue);
     mme_pdn_remove_all(mme_ue);
 
-#if 0 /* FIXME : Dees it needed? */
-    if (mme_ue->enb_ue)
-    {
-        if (mme_ue->enb_ue->mme_ue != mme_ue)
-            d_warn("Invalid mme_ue assigend to enb_ue");
-        else
-            mme_ue->enb_ue->mme_ue = NULL;
-    }
-#endif
+    mme_ue_deassociate_enb_ue(mme_ue->enb_ue);
 
     index_free(&mme_ue_pool, mme_ue);
 
@@ -1500,11 +1492,18 @@ status_t mme_ue_associate_enb_ue(mme_ue_t *mme_ue, enb_ue_t *enb_ue)
  * mme_ue_remove()
  *
  * Note : should not call in enb_ue_remove()
+ *
+ * When mme_ue is removed, enb_ue->mme_ue must be NULL.
+ * However, when enb_ue is removed, mme_ue->enb_ue need not be NULL.
+ * mme_ue->enb_ue will be updated again when enb_ue is added.
  */
-status_t mme_ue_deassociate_enb_ue(mme_ue_t *mme_ue, enb_ue_t *enb_ue)
+status_t mme_ue_deassociate_enb_ue(enb_ue_t *enb_ue)
 {
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    mme_ue_t *mme_ue = NULL;
+
     d_assert(enb_ue, return CORE_ERROR, "Null param");
+    mme_ue = enb_ue->mme_ue;
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
 
     mme_ue->enb_ue = NULL;
     enb_ue->mme_ue = NULL;
@@ -1534,6 +1533,10 @@ status_t source_ue_associate_target_ue(
 
 /* 
  * enb_ue_remove()
+ *
+ * enb_ue->mme_ue->enb_ue should not be set to NULL.
+ * This is because enb_ue is not known as source_ue or target_ue.
+ * Therefore, when enb_ue is removed, leave enb_ue->mme_ue->enb_ue as is.
  */
 status_t source_ue_deassociate_target_ue(enb_ue_t *enb_ue)
 {
