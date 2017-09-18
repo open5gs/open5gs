@@ -111,7 +111,17 @@ int _s1ap_recv_cb(net_sock_t *sock, void *data)
     d_assert(sock, return -1, "Null param");
 
     pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    d_assert(pkbuf, return -1, "Can't allocate pkbufuf");
+    if (pkbuf == NULL)
+    {
+        char tmp_buf[MAX_SDU_LEN];
+
+        d_fatal("Can't allocate pkbuf");
+
+        /* Read data from socket to exit from select */
+        net_read(sock, tmp_buf, MAX_SDU_LEN, 0);
+
+        return -1;
+    }
 
     r = net_read(sock, pkbuf->payload, pkbuf->len, 0);
     if (r == -2)
