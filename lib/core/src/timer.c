@@ -12,9 +12,12 @@ typedef struct _tm_block_t {
     c_uint32_t      expire_time;
 
     expire_func_t   expire_func;
-    c_uintptr_t     arg1;
-    c_uintptr_t     arg2;
-    c_uintptr_t     arg3;
+    c_uintptr_t     param1;
+    c_uintptr_t     param2;
+    c_uintptr_t     param3;
+    c_uintptr_t     param4;
+    c_uintptr_t     param5;
+    c_uintptr_t     param6;
 
     tm_type_e       type;
     c_uint8_t       running;
@@ -71,7 +74,8 @@ status_t tm_execute_tm_service(tm_service_t *p_tm_s, c_uintptr_t data)
         if(tm->expire_time < cur_time)
         {
             /* execute expiry function */
-            tm->expire_func(data, tm->arg1, tm->arg2, tm->arg3);
+            tm->expire_func(data, tm->param1, tm->param2, tm->param3,
+                    tm->param4, tm->param5, tm->param6);
 
             /* remove this tm_block from the active list */
             _tm_remove(&(p_tm_s->active_list), tm);
@@ -135,7 +139,8 @@ static void _tm_free(tm_block_t *tm)
 
 }
 
-tm_block_id tm_create(tm_service_t *tm_service)
+tm_block_id tm_create(tm_service_t *tm_service,
+        tm_type_e type, c_uint32_t duration, expire_func_t expire_func)
 {
     tm_block_t *tm = NULL;
     tm = _tm_get();
@@ -144,6 +149,10 @@ tm_block_id tm_create(tm_service_t *tm_service)
     tm->tm_s = tm_service;
 
     _tm_add(&(tm->tm_s->idle_list), tm);
+
+    tm->type = type;
+    tm->duration = duration;
+    tm->expire_func = expire_func;
 
     return (tm_block_id)tm;
 }
@@ -164,23 +173,6 @@ void tm_delete(tm_block_id id)
     return;
 }
 
-status_t tm_set(
-    tm_block_id id, tm_type_e type, c_uint32_t duration,
-    expire_func_t expire_func,
-    c_uintptr_t arg1, c_uintptr_t arg2, c_uintptr_t arg3)
-{
-    tm_block_t *tm = (tm_block_t *)id;
-
-    tm->type = type;
-    tm->duration = duration;
-    tm->expire_func = expire_func;
-    tm->arg1 = arg1;
-    tm->arg2 = arg2;
-    tm->arg3 = arg3;
-
-    return CORE_OK;
-}
-
 status_t tm_set_duration(tm_block_id id, c_uint32_t duration)
 {
     tm_block_t *tm = (tm_block_t *)id;
@@ -190,16 +182,56 @@ status_t tm_set_duration(tm_block_id id, c_uint32_t duration)
     return CORE_OK;
 }
 
-status_t tm_set_by_desc(tm_block_id id, tm_desc_t *desc)
+status_t tm_set_param1(tm_block_id id, c_uintptr_t param)
 {
     tm_block_t *tm = (tm_block_t *)id;
 
-    tm->type = desc->type;
-    tm->duration = desc->duration;
-    tm->expire_func = desc->expire_func;
-    tm->arg1 = desc->arg1;
-    tm->arg2 = desc->arg2;
-    tm->arg3 = desc->arg3;
+    tm->param1 = param;
+
+    return CORE_OK;
+}
+
+status_t tm_set_param2(tm_block_id id, c_uintptr_t param)
+{
+    tm_block_t *tm = (tm_block_t *)id;
+
+    tm->param2 = param;
+
+    return CORE_OK;
+}
+
+status_t tm_set_param3(tm_block_id id, c_uintptr_t param)
+{
+    tm_block_t *tm = (tm_block_t *)id;
+
+    tm->param3 = param;
+
+    return CORE_OK;
+}
+
+status_t tm_set_param4(tm_block_id id, c_uintptr_t param)
+{
+    tm_block_t *tm = (tm_block_t *)id;
+
+    tm->param4 = param;
+
+    return CORE_OK;
+}
+
+status_t tm_set_param5(tm_block_id id, c_uintptr_t param)
+{
+    tm_block_t *tm = (tm_block_t *)id;
+
+    tm->param5 = param;
+
+    return CORE_OK;
+}
+
+status_t tm_set_param6(tm_block_id id, c_uintptr_t param)
+{
+    tm_block_t *tm = (tm_block_t *)id;
+
+    tm->param6 = param;
 
     return CORE_OK;
 }

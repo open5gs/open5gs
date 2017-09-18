@@ -91,17 +91,19 @@ gtp_xact_t *gtp_xact_local_create(
 
     if (g_response_event)
     {
-        xact->tm_response = event_timer(g_tm_service,
-                g_response_event, GTP_T3_RESPONSE_DURATION, xact->index);
+        xact->tm_response = timer_create(g_tm_service,
+                g_response_event, GTP_T3_RESPONSE_DURATION);
         d_assert(xact->tm_response, return NULL, "Timer allocation failed");
+        timer_set_param1(xact->tm_response, xact->index);
         xact->response_rcount = GTP_T3_RESPONSE_RETRY_COUNT;
     }
 
     if (g_holding_event)
     {
-        xact->tm_holding = event_timer(g_tm_service,
-                g_holding_event, GTP_T3_DUPLICATED_DURATION, xact->index);
+        xact->tm_holding = timer_create(g_tm_service,
+                g_holding_event, GTP_T3_DUPLICATED_DURATION);
         d_assert(xact->tm_holding, return NULL, "Timer allocation failed");
+        timer_set_param1(xact->tm_holding, xact->index);
         xact->holding_rcount = GTP_T3_DUPLICATED_RETRY_COUNT;
     }
 
@@ -135,17 +137,19 @@ gtp_xact_t *gtp_xact_remote_create(gtp_node_t *gnode, c_uint32_t sqn)
 
     if (g_response_event)
     {
-        xact->tm_response = event_timer(g_tm_service,
-                g_response_event, GTP_T3_RESPONSE_DURATION, xact->index);
+        xact->tm_response = timer_create(g_tm_service,
+                g_response_event, GTP_T3_RESPONSE_DURATION);
         d_assert(xact->tm_response, return NULL, "Timer allocation failed");
+        timer_set_param1(xact->tm_response, xact->index);
         xact->response_rcount = GTP_T3_RESPONSE_RETRY_COUNT;
     }
 
     if (g_holding_event)
     {
-        xact->tm_holding = event_timer(g_tm_service,
-                g_holding_event, GTP_T3_DUPLICATED_DURATION, xact->index);
+        xact->tm_holding = timer_create(g_tm_service,
+                g_holding_event, GTP_T3_DUPLICATED_DURATION);
         d_assert(xact->tm_holding, return NULL, "Timer allocation failed");
+        timer_set_param1(xact->tm_holding, xact->index);
         xact->holding_rcount = GTP_T3_DUPLICATED_RETRY_COUNT;
     }
 

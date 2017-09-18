@@ -1153,8 +1153,10 @@ mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
     mme_ue->mme_s11_addr = mme_self()->s11_addr;
 
     /* Create t3413 timer */
-    mme_ue->t3413 = event_timer(&self.tm_service, MME_EVT_EMM_T3413,
-            self.t3413_value * 1000, mme_ue->index);
+    mme_ue->t3413 = timer_create(&self.tm_service, MME_EVT_EMM_T3413,
+            self.t3413_value * 1000);
+    d_assert(mme_ue->t3413, return NULL, "Null param");
+    timer_set_param1(mme_ue->t3413, mme_ue->index);
 
     event_set_param1(&e, (c_uintptr_t)mme_ue->index);
     fsm_create(&mme_ue->sm, emm_state_initial, emm_state_final);

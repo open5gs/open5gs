@@ -41,13 +41,18 @@ extern "C" {
 #define event_get_param7(__ptr_e) ((__ptr_e)->param7)
 #define event_get_param8(__ptr_e) ((__ptr_e)->param8)
 
-#define event_timer(__tm_service, __ptr_e, __duration, __param) \
+#define timer_create(__tm_service, __ptr_e, __duration) \
     event_timer_create((__tm_service), TIMER_TYPE_ONE_SHOT, \
-            (__duration), (__ptr_e), (__param))
-
-#define event_timer_periodic(__tm_service, __ptr_e, __duration, __param) \
+            (__duration), (__ptr_e))
+#define periodic_timer_create(__tm_service, __ptr_e, __duration) \
     event_timer_create((__tm_service), TIMER_TYPE_PERIODIC, \
-            (__duration), (__ptr_e), (__param))
+            (__duration), (__ptr_e))
+
+#define timer_set_param1(__ptr_e, __param) tm_set_param2(__ptr_e, __param);
+#define timer_set_param2(__ptr_e, __param) tm_set_param3(__ptr_e, __param);
+#define timer_set_param3(__ptr_e, __param) tm_set_param4(__ptr_e, __param);
+#define timer_set_param4(__ptr_e, __param) tm_set_param5(__ptr_e, __param);
+#define timer_set_param5(__ptr_e, __param) tm_set_param6(__ptr_e, __param);
 
 typedef struct {
     fsm_event_t event;
@@ -101,9 +106,8 @@ CORE_DECLARE(status_t) event_timedrecv(
 /**
  * Create a timer
  */
-CORE_DECLARE(tm_block_id) event_timer_create(
-        tm_service_t *tm_service, tm_type_e type, c_uint32_t duration, 
-        c_uintptr_t event, c_uintptr_t param);
+CORE_DECLARE(tm_block_id) event_timer_create(tm_service_t *tm_service,
+        tm_type_e type, c_uint32_t duration, c_uintptr_t event);
 
 #ifdef __cplusplus
 }

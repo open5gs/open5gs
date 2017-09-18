@@ -26,17 +26,19 @@ test_timer_eliment timer_eliment[] ={
 
 
 void test_expire_func_1(c_uintptr_t data,
-        c_uintptr_t arg1, c_uintptr_t arg2, c_uintptr_t arg3)
+        c_uintptr_t param1, c_uintptr_t param2, c_uintptr_t param3,
+        c_uintptr_t param4, c_uintptr_t param5, c_uintptr_t param6)
 {
-    c_uint32_t index = arg2;
+    c_uint32_t index = param2;
 
     expire_check[index] = TRUE;
 }
 
 void test_expire_func_2(c_uintptr_t data,
-        c_uintptr_t arg1, c_uintptr_t arg2, c_uintptr_t arg3)
+        c_uintptr_t param1, c_uintptr_t param2, c_uintptr_t param3,
+        c_uintptr_t param4, c_uintptr_t param5, c_uintptr_t param6)
 {
-    c_uint32_t index = arg2;
+    c_uint32_t index = param2;
 
     expire_check[index]++;
 }
@@ -77,9 +79,11 @@ static void timer_test_1(abts_case *tc, void *data)
 
     for(n = 0; n < sizeof(timer_eliment) / sizeof(test_timer_eliment); n++)
     {
-        id_array[n] = tm_create(&tm_service);
-        tm_set(id_array[n], TIMER_TYPE_ONE_SHOT, timer_eliment[n].duration,
-            test_expire_func_1, (c_uintptr_t)id_array[n], n, 0);
+        id_array[n] = tm_create(&tm_service, TIMER_TYPE_ONE_SHOT,
+                timer_eliment[n].duration, test_expire_func_1);
+
+        tm_set_param1(id_array[n], (c_uintptr_t)id_array[n]);
+        tm_set_param2(id_array[n], n);
     }
 
 
@@ -275,9 +279,10 @@ static void timer_test_2(abts_case *tc, void *data)
         tm_num[tm_idx]++;
         duration += (TEST_TIMER_PRECISION >> 1);
 
-        id_array[n] = tm_create(&tm_service);
-        tm_set(id_array[n], TIMER_TYPE_ONE_SHOT, duration,
-            test_expire_func_2, (c_uintptr_t)id_array[n], tm_idx, 0);
+        id_array[n] = tm_create(&tm_service,
+                TIMER_TYPE_ONE_SHOT, duration, test_expire_func_2);
+        tm_set_param1(id_array[n], (c_uintptr_t)id_array[n]);
+        tm_set_param2(id_array[n], tm_idx);
     }
 
     for(n = 0; n < TEST_TIMER_NUM; n++)
@@ -329,10 +334,10 @@ static void timer_test_3(abts_case *tc, void *data)
         id_duration[n] = duration;
         duration += (TEST_TIMER_PRECISION >> 1);
 
-
-        id_array[n] = tm_create(&tm_service);
-        tm_set(id_array[n], TIMER_TYPE_ONE_SHOT, duration,
-            test_expire_func_2, (c_uint32_t)id_array[n], tm_idx, 0);
+        id_array[n] = tm_create(&tm_service,
+                TIMER_TYPE_ONE_SHOT, duration, test_expire_func_2);
+        tm_set_param1(id_array[n], (c_uintptr_t)id_array[n]);
+        tm_set_param2(id_array[n], tm_idx);
     }
 
     for(n = 0; n < TEST_TIMER_NUM; n++)

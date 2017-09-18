@@ -66,15 +66,20 @@ status_t event_timedrecv(msgq_id queue_id, event_t *e, c_time_t timeout)
     return rv;
 }
 
-void* event_timer_expire_func(
-        c_uintptr_t queue_id, c_uintptr_t event, c_uintptr_t param)
+void* event_timer_expire_func(c_uintptr_t queue_id, c_uintptr_t event,
+        c_uintptr_t param1, c_uintptr_t param2, c_uintptr_t param3,
+        c_uintptr_t param4, c_uintptr_t param5)
 {
     event_t e;
     status_t rv;
 
     d_assert(queue_id, return NULL, "Null param");
     event_set(&e, event);
-    event_set_param1(&e, param);
+    event_set_param1(&e, param1);
+    event_set_param2(&e, param2);
+    event_set_param3(&e, param3);
+    event_set_param4(&e, param4);
+    event_set_param5(&e, param5);
 
     rv = event_send(queue_id, &e);
     if (rv != CORE_OK)
@@ -86,15 +91,14 @@ void* event_timer_expire_func(
 }
 
 tm_block_id event_timer_create(tm_service_t *tm_service, tm_type_e type, 
-        c_uint32_t duration, c_uintptr_t event, c_uintptr_t param)
+        c_uint32_t duration, c_uintptr_t event)
 {
     tm_block_id id;
 
-    id = tm_create(tm_service);
+    id = tm_create(tm_service,
+            type, duration, (expire_func_t)event_timer_expire_func);
+    tm_set_param1(id, event);
     d_assert(id, return 0, "tm_create() failed");
-
-    tm_set(id, type, duration, (expire_func_t)event_timer_expire_func, 
-            event, param, 0);
 
     return id;
 }
