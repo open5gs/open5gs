@@ -158,11 +158,18 @@ class Form extends Component {
   }
 
   handleChange = data => {
+    const {
+      onChange
+    } = this.props;
+
     this.setState({
       editing: true,
       disableSubmitButton: (Object.keys(data.errors).length > 0),
       formData: data.formData
     })
+
+    if (onChange)
+      onChange(data.formData);
   }
 
   handleSubmit = data => {

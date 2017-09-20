@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import NProgress from 'nprogress';
 
 import { MODEL, fetchSubscribers, fetchSubscriber, createSubscriber, updateSubscriber } from 'modules/crud/subscriber';
+import { fetchProfiles } from 'modules/crud/profile';
 import { clearActionStatus } from 'modules/crud/actions';
 import { select, selectActionStatus } from 'modules/crud/selectors';
 import * as Notification from 'modules/notification/actions';
@@ -46,7 +47,6 @@ class Document extends Component {
   }
 
   state = {
-    profileIdx: 0,
     formData
   }
 
@@ -55,6 +55,9 @@ class Document extends Component {
 
     if (subscriber.needsFetch) {
       dispatch(subscriber.fetch)
+    }
+    if (profiles.needsFetch) {
+      dispatch(profiles.fetch)
     }
   }
 
@@ -65,30 +68,37 @@ class Document extends Component {
     if (subscriber.needsFetch) {
       dispatch(subscriber.fetch)
     }
-
-    let data;
-    if (subscriber.data) {
-      data = subscriber.data;
-    } else {
-      data = profiles[0];
+    if (profiles.needsFetch) {
+      dispatch(profiles.fetch)
     }
 
-    // Mongoose library has a problem for 64bit-long type
-    //
-    //   FETCH : the library returns 'Number' type for 64bit-long type
-    //   CREATE/UPDATE : the library returns 'String' type for 64bit-long type
-    //
-    // In this case, I cannot avoid json-schema validation function
-    // So, I've changed the type from 'String' to 'Number' if the key name is 'downlink' and 'uplink'
-    // 
-    //    The followings are changed from 'String' to 'Number' after DB CREATE or UPDATE
-    //     - ambr.downlink, ambr.uplink, qos.mbr.downlink, qos.mbr.uplink, qos.gbr.downlink, qos.gbr.uplink
-    // 
-    traverse(data).forEach(function(x) {
-      if (this.key == 'downlink') this.update(Number(x));
-      if (this.key == 'uplink') this.update(Number(x));
-    })
-    this.setState({ formData: data })
+    if (subscriber.data) {
+      // Mongoose library has a problem for 64bit-long type
+      //
+      //   FETCH : the library returns 'Number' type for 64bit-long type
+      //   CREATE/UPDATE : the library returns 'String' type for 64bit-long type
+      //
+      // In this case, I cannot avoid json-schema validation function
+      // So, I've changed the type from 'String' to 'Number' if the key name is 'downlink' and 'uplink'
+      // 
+      //    The followings are changed from 'String' to 'Number' after DB CREATE or UPDATE
+      //     - ambr.downlink, ambr.uplink, qos.mbr.downlink, qos.mbr.uplink, qos.gbr.downlink, qos.gbr.uplink
+      // 
+      traverse(subscriber.data).forEach(function(x) {
+        if (this.key == 'downlink') this.update(Number(x));
+        if (this.key == 'uplink') this.update(Number(x));
+      })
+      this.setState({ formData: subscriber.data })
+    } else {
+      this.setState({ formData });
+    }
+
+    profiles.data.map(profile => 
+      traverse(profile).forEach(function(x) {
+        if (this.key == 'downlink') this.update(Number(x));
+        if (this.key == 'uplink') this.update(Number(x));
+      })
+    );
 
     if (status.response) {
       NProgress.configure({ 
@@ -200,7 +210,6 @@ class Document extends Component {
   render() {
     const {
       validate,
-      handleChange,
       handleSubmit,
       handleError
     } = this;
@@ -210,6 +219,7 @@ class Document extends Component {
       action,
       status,
       subscriber,
+      profiles,
       onHide
     } = this.props
 
@@ -218,6 +228,7 @@ class Document extends Component {
         visible={visible} 
         action={action}
         formData={this.state.formData}
+        profiles={profiles.data}
         isLoading={subscriber.isLoading && !status.pending}
         validate={validate}
         onHide={onHide}
@@ -231,6 +242,7 @@ Document = connect(
   (state, props) => ({ 
     subscribers: select(fetchSubscribers(), state.crud),
     subscriber: select(fetchSubscriber(props.imsi), state.crud),
+    profiles: select(fetchProfiles(), state.crud),
     status: selectActionStatus(MODEL, state.crud, props.action)
   })
 )(Document);

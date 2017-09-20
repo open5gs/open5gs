@@ -8,6 +8,12 @@ const schema = {
   "title": "Subscriber Configuration",
   "type": "object",
   "properties": {
+    "profile": {
+      "type": "number", 
+      "title": "Profile",
+      "enum": [ 0, 1 ],
+      "default": 0
+    },
     "imsi": {
       "type": "string", 
       "title": "IMSI*",
@@ -402,50 +408,93 @@ class Edit extends Component {
   getStateFromProps(props) {
     const { 
       action,
+      profiles,
       width,
+      formData,
     } = props;
 
     let state = {
       schema,
-      uiSchema
+      uiSchema,
+      formData,
+      profile:''
     };
-    
+
+    if (action === 'create' && Object.keys(profiles).length > 0) {
+      state = Object.assign(state, {
+        profile : profiles[0]._id
+      })
+      state.schema.properties = Object.assign(state.schema.properties, {
+        profile: {
+          type: "string", 
+          title: "Profile",
+          enum: profiles.map(profile => profile._id),
+          enumNames: profiles.map(profile => profile.title),
+          default: state.profile
+        }
+      })
+
+      state = Object.assign(state, {
+        formData : profiles.filter(profile => profile._id === state.profile)[0]
+      })
+
+      delete state.uiSchema.profile;
+    } else {
+      state.uiSchema = Object.assign(state.uiSchema, {
+        "profile": {
+          "ui:widget" : "hidden",
+        }
+      });
+    }
+
     if (action === 'update') {
-      state = {
-        ...state,
-        uiSchema : {
-          ...uiSchema,
-          "imsi": {
-            "ui:disabled": true
-          }
+      state.uiSchema = Object.assign(state.uiSchema, {
+        "imsi": {
+          "ui:disabled": true
         }
-      }
+      });
     } else if (width !== SMALL) {
-      state = {
-        ...state,
-        uiSchema : {
-          ...uiSchema,
-          "imsi": {
-            "ui:autofocus": true
-          }
+      state.uiSchema = Object.assign(state.uiSchema, {
+        "imsi": {
+          "ui:autofocus": true
         }
-      }
+      });
     }
 
     return state;
   }
 
+  handleChange = (formData) => {
+    const {
+      profiles
+    } = this.props;
+
+    if (this.state.profile !== formData.profile) {
+      this.setState({
+        profile: formData.profile,
+        formData : profiles.filter(profile => profile._id === formData.profile)[0]
+      });
+    }
+  }
+
   render() {
+    const {
+      handleChange
+    } = this;
+
     const {
       visible,
       action,
-      formData,
       isLoading,
       validate,
       onHide,
       onSubmit,
       onError
     } = this.props;
+
+    const {
+      formData
+    } = this.state;
 
     return (
       <Form 
@@ -457,6 +506,7 @@ class Edit extends Component {
         isLoading={isLoading}
         validate={validate}
         onHide={onHide}
+        onChange={handleChange}
         onSubmit={onSubmit}
         onError={onError}/>
     )

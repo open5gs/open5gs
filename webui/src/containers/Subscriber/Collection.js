@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 import { MODEL, fetchSubscribers, deleteSubscriber } from 'modules/crud/subscriber';
-import { fetchProfiles } from 'modules/crud/profile';
 import { clearActionStatus } from 'modules/crud/actions';
 import { select, selectActionStatus } from 'modules/crud/selectors';
 import * as Notification from 'modules/notification/actions';
@@ -40,26 +39,19 @@ class Collection extends Component {
   };
 
   componentWillMount() {
-    const { subscribers, profiles, dispatch } = this.props
+    const { subscribers, dispatch } = this.props
 
     if (subscribers.needsFetch) {
       dispatch(subscribers.fetch)
-    }
-
-    if (profiles.needsFetch) {
-      dispatch(profiles.fetch)
     }
   }
 
   componentWillReceiveProps(nextProps) {
-    const { subscribers, profiles, status } = nextProps
+    const { subscribers, status } = nextProps
     const { dispatch } = this.props
 
     if (subscribers.needsFetch) {
       dispatch(subscribers.fetch)
-    }
-    if (profiles.needsFetch) {
-      dispatch(profiles.fetch)
     }
 
     if (status.response) {
@@ -220,7 +212,6 @@ class Collection extends Component {
 
     const { 
       subscribers,
-      profiles,
       status
     } = this.props
 
@@ -261,7 +252,6 @@ class Collection extends Component {
           onHide={viewHandler.hide}/>
         <Document 
           { ...document }
-          profiles={profiles.data}
           onEdit={documentHandler.actions.update}
           onDelete={confirmHandler.show}
           onHide={documentHandler.hide} />
@@ -282,7 +272,6 @@ class Collection extends Component {
 Collection = connect(
   (state) => ({ 
     subscribers: select(fetchSubscribers(), state.crud),
-    profiles: select(fetchProfiles(), state.crud),
     status: selectActionStatus(MODEL, state.crud, 'delete')
   })
 )(Collection);

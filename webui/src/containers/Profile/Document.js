@@ -191,7 +191,6 @@ class Document extends Component {
   render() {
     const {
       validate,
-      handleChange,
       handleSubmit,
       handleError
     } = this;
