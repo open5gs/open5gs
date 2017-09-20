@@ -8,12 +8,7 @@ const schema = {
   "title": "Subscriber Configuration",
   "type": "object",
   "properties": {
-    "profile": {
-      "type": "number", 
-      "title": "Profile",
-      "enum": [ 0, 1 ],
-      "default": 0
-    },
+    "profile": {},
     "imsi": {
       "type": "string", 
       "title": "IMSI*",
