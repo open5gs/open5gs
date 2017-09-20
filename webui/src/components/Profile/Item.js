@@ -15,6 +15,7 @@ const Card = styled.div`
   display: flex;
   padding : 0.5rem;
 
+  background: white;
   cursor: pointer;
 
   ${p => p.disabled && 'opacity: 0.5; cursor: not-allowed; pointer-events: none;'}
@@ -69,13 +70,23 @@ const Profile = styled.div`
   display: flex;
   flex-direction: row;
   flex:1;
-  color: ${oc.gray[8]};
-  font-size: 1.25rem;
   line-height: 2.5rem;
   margin : 0 2rem;
 
-  .data {
+  .title {
+    font-size: 1.25rem;
+    color: ${oc.gray[8]};
     width: 320px;
+  }
+  .ambr {
+    font-size: 1.1rem;
+    color: ${oc.gray[6]};
+    width: 240px;
+  }
+  .apn {
+    font-size: 1.1rem;
+    color: ${oc.gray[6]};
+    width: 120px;
   }
 `;
 
@@ -163,8 +174,9 @@ class Item extends Component {
     return (
       <Card disabled={disabled} onClick={() => onView(_id)}>
         <Profile>
-          <div className="data">{title}</div>
-          <div className="data">{pdn[0].apn}</div>
+          <div className="title">{title}</div>
+          <div className="ambr">{ambr.downlink}/{ambr.uplink}</div>
+          <div className="apn">{pdn[0].apn}</div>
         </Profile>
         <div className="actions">
           <Tooltip content='Edit' width="60px">

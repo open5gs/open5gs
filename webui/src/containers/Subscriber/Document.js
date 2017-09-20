@@ -46,11 +46,12 @@ class Document extends Component {
   }
 
   state = {
+    profileIdx: 0,
     formData
   }
 
   componentWillMount() {
-    const { subscriber, dispatch } = this.props
+    const { subscriber, profiles, dispatch } = this.props
 
     if (subscriber.needsFetch) {
       dispatch(subscriber.fetch)
@@ -58,33 +59,36 @@ class Document extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    const { subscriber, status } = nextProps
+    const { subscriber, profiles, status } = nextProps
     const { dispatch, action, onHide } = this.props
 
     if (subscriber.needsFetch) {
       dispatch(subscriber.fetch)
     }
 
+    let data;
     if (subscriber.data) {
-      // Mongoose library has a problem for 64bit-long type
-      //
-      //   FETCH : the library returns 'Number' type for 64bit-long type
-      //   CREATE/UPDATE : the library returns 'String' type for 64bit-long type
-      //
-      // In this case, I cannot avoid json-schema validation function
-      // So, I've changed the type from 'String' to 'Number' if the key name is 'downlink' and 'uplink'
-      // 
-      //    The followings are changed from 'String' to 'Number' after DB CREATE or UPDATE
-      //     - ambr.downlink, ambr.uplink, qos.mbr.downlink, qos.mbr.uplink, qos.gbr.downlink, qos.gbr.uplink
-      // 
-      traverse(subscriber.data).forEach(function(x) {
-        if (this.key == 'downlink') this.update(Number(x));
-        if (this.key == 'uplink') this.update(Number(x));
-      })
-      this.setState({ formData: subscriber.data })
+      data = subscriber.data;
     } else {
-      this.setState({ formData });
+      data = profiles[0];
     }
+
+    // Mongoose library has a problem for 64bit-long type
+    //
+    //   FETCH : the library returns 'Number' type for 64bit-long type
+    //   CREATE/UPDATE : the library returns 'String' type for 64bit-long type
+    //
+    // In this case, I cannot avoid json-schema validation function
+    // So, I've changed the type from 'String' to 'Number' if the key name is 'downlink' and 'uplink'
+    // 
+    //    The followings are changed from 'String' to 'Number' after DB CREATE or UPDATE
+    //     - ambr.downlink, ambr.uplink, qos.mbr.downlink, qos.mbr.uplink, qos.gbr.downlink, qos.gbr.uplink
+    // 
+    traverse(data).forEach(function(x) {
+      if (this.key == 'downlink') this.update(Number(x));
+      if (this.key == 'uplink') this.update(Number(x));
+    })
+    this.setState({ formData: data })
 
     if (status.response) {
       NProgress.configure({ 
