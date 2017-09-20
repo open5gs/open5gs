@@ -17,6 +17,7 @@ import Form from './Shared/Form';
 import Confirm from './Shared/Confirm';
 
 import * as Subscriber from './Subscriber';
+import * as Profile from './Profile';
 
 export {
   Layout,
@@ -37,5 +38,6 @@ export {
   Form,
   Confirm,
 
-  Subscriber
+  Subscriber,
+  Profile
 }

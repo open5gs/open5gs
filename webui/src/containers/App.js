@@ -9,6 +9,7 @@ import withWidth, { SMALL } from 'helpers/with-width';
 import { Layout } from 'components';
 import Notification from 'containers/Notification';
 import * as Subscriber from 'containers/Subscriber';
+import * as Profile from 'containers/Profile';
 
 
 class App extends Component {
@@ -46,7 +47,7 @@ class App extends Component {
           <Subscriber.Collection/>
         </Layout.Container>
         <Layout.Container visible={view === "profile"}>
-          <Layout.Content>{view}</Layout.Content>
+          <Profile.Collection/>
         </Layout.Container>
         <Notification/>
       </Layout>

@@ -10,4 +10,10 @@ restify.serve(router, Subscriber, {
   idProperty: 'imsi'
 });
 
+const Profile = require('../models/profile');
+restify.serve(router, Profile, {
+  prefix: '',
+  version: ''
+});
+
 module.exports = router;
