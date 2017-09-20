@@ -34,20 +34,13 @@ const propTypes = {
   onDelete: PropTypes.func,
 }
 
-const List = ({ profiles, deletedImsi, onView, onEdit, onDelete }) => {
+const List = ({ profiles, deletedId, onView, onEdit, onDelete }) => {
   const profileList = profiles
-    .sort( 
-      (a,b) => {
-        if(a.imsi > b.imsi) return 1;
-        if (a.imsi < b.imsi) return -1;
-        return 0;
-      }
-    )
     .map(profile =>
       <Item 
         key={profile._id}
         profile={profile}
-        disabled={deletedImsi === profile.imsi}
+        disabled={deletedId === profile._id}
         onView={onView}
         onEdit={onEdit}
         onDelete={onDelete} />

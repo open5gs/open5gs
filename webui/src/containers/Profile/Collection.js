@@ -56,7 +56,8 @@ class Collection extends Component {
     if (status.response) {
       dispatch(Notification.success({
         title: 'Profile',
-        message: `${status.id} has been deleted`
+//        message: `${status.id} has been deleted`
+        message: `This profile has been deleted`
       }));
       dispatch(clearActionStatus(MODEL, 'delete'));
     } 
@@ -208,7 +209,7 @@ class Collection extends Component {
       <Layout.Content>
         <Profile.List
           profiles={data}
-          deletedImsi={status.id}
+          deletedId={status.id}
           onView={viewHandler.show}
           onEdit={documentHandler.actions.update}
           onDelete={confirmHandler.show}

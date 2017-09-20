@@ -85,7 +85,7 @@ const CircleButton = styled.div`
   }
 `
 
-const Imsi = styled.div`
+const Title = styled.div`
   padding-left: 1rem;
   color: ${oc.gray[8]};
   font-size: 1.25rem;
@@ -105,7 +105,7 @@ const SpinnerWrapper = styled.div`
 
 const propTypes = {
   profile: PropTypes.shape({
-    imsi: PropTypes.string
+    title: PropTypes.string
   }),
   onView: PropTypes.func,
   onEdit: PropTypes.func,
@@ -115,7 +115,7 @@ const propTypes = {
 class Item extends Component {
   static propTypes = {
     profile: PropTypes.shape({
-      imsi: PropTypes.string
+      title: PropTypes.string
     }),
     onView: PropTypes.func,
     onEdit: PropTypes.func,
@@ -168,13 +168,13 @@ class Item extends Component {
 
     const {
       _id,
-      imsi
+      title
     } = profile;
 
     return (
       <Sizer disabled={disabled}>
         <Card disabled={disabled} onClick={() => onView(_id)}>
-          <Imsi>{imsi}</Imsi>
+          <Title>{title}</Title>
           <div className="actions">
             <Tooltip content='Edit' width="60px">
               <CircleButton onClick={handleEdit}><EditIcon/></CircleButton>

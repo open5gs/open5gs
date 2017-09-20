@@ -93,7 +93,8 @@ class Document extends Component {
       });
       NProgress.done(true);
 
-      const message = action === 'create' ? "New profile created" : `${status.id} profile updated`;
+//      const message = action === 'create' ? "New profile created" : `${status.id} profile updated`;
+      const message = action === 'create' ? "New profile created" : `This profile updated`;
 
       dispatch(Notification.success({
         title: 'Profile',
@@ -138,12 +139,6 @@ class Document extends Component {
 
   validate = (formData, errors) => {
     const { profiles, action, status } = this.props;
-    const { imsi } = formData;
-
-    if (action === 'create' && profiles && profiles.data &&
-      profiles.data.filter(profile => profile.imsi === imsi).length > 0) {
-      errors.imsi.addError(`'${imsi}' is duplicated`);
-    }
 
     if (formData.pdn) {
       let apns = formData.pdn.map(pdn => { return pdn.apn } )

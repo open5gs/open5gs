@@ -8,15 +8,10 @@ const schema = {
   "title": "Profile Configuration",
   "type": "object",
   "properties": {
-    "imsi": {
+    "title": {
       "type": "string", 
-      "title": "IMSI*",
+      "title": "Title*",
       "required": true,
-      "pattern": "^\\d+$",
-      "maxLength": 15,
-      "messages": {
-        "pattern": "Only digits are allowed"
-      }
     },
     "security": {
       "title": "",
@@ -272,7 +267,7 @@ const schema = {
 };
 
 const uiSchema = {
-  "imsi" : {
+  "title" : {
     classNames: "col-xs-12",
   },
   "security" : {
@@ -415,7 +410,7 @@ class Edit extends Component {
         ...state,
         uiSchema : {
           ...uiSchema,
-          "imsi": {
+          "title": {
             "ui:disabled": true
           }
         }
@@ -425,7 +420,7 @@ class Edit extends Component {
         ...state,
         uiSchema : {
           ...uiSchema,
-          "imsi": {
+          "title": {
             "ui:autofocus": true
           }
         }

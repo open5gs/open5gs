@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 require('mongoose-long')(mongoose);
 
 const Profile = new Schema({
-  imsi: { $type: String, required: true },
+  title: { $type: String, required: true },
 
   security: {
     k: String,

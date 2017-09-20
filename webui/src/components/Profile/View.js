@@ -160,7 +160,7 @@ const Pdn = styled.div`
 `
 const View = ({ visible, disableOnClickOutside, profile, onEdit, onDelete, onHide }) => {
   const _id = (profile || {})._id;
-  const imsi = (profile || {}).imsi;
+  const title = (profile || {}).title;
   const security = ((profile || {}).security || {});
   const ambr = ((profile || {}).ambr || {});
   const pdns = ((profile || {}).pdn || []);
@@ -173,7 +173,7 @@ const View = ({ visible, disableOnClickOutside, profile, onEdit, onDelete, onHid
         disableOnClickOutside={disableOnClickOutside}>
         <Wrapper>
           <Header>
-            <div className="title">{imsi}</div>
+            <div className="title">{title}</div>
             <div className="actions">
               <Tooltip content='Edit' width="60px">
                 <CircleButton onClick={() => onEdit(_id)}><EditIcon/></CircleButton>
