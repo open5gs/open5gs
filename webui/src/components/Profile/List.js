@@ -10,21 +10,11 @@ import Item from './Item';
 
 const Wrapper = styled.div`
   display: block;
-  margin: 1rem 0.5rem;
+  margin: 2rem;
   
   ${media.mobile`
     margin: 0.5rem 0.25rem;
   `}
-
-  .profile-enter {
-    animation: ${transitions.stretchOut} .3s ease-in;
-    animation-fill-mode: forwards;
-  }   
-    
-  .profile-leave { 
-    animation: ${transitions.shrinkIn} .15s ease-in;
-    animation-fill-mode: forwards;
-  }   
 `
 
 const propTypes = {
@@ -48,12 +38,7 @@ const List = ({ profiles, deletedId, onView, onEdit, onDelete }) => {
 
   return (
     <Wrapper>
-      <CSSTransitionGroup
-        transitionName="profile"
-        transitionEnterTimeout={300}
-        transitionLeaveTimeout={150}>
-        {profileList}
-      </CSSTransitionGroup>
+      {profileList}
     </Wrapper>
   )
 }

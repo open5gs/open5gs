@@ -10,39 +10,20 @@ import DeleteIcon from 'react-icons/lib/md/delete';
 
 import { Tooltip, Spinner } from 'components';
 
-const Sizer = styled.div`
-  display: inline-block;
-  width: 33.3%;
-  padding: 0.5rem;
-
-  ${p => p.disabled && 'opacity: 0.5; cursor: not-allowed;'};
-
-  ${media.desktop`
-    width: 50%;
-  `}
-
-  ${media.tablet`
-    width: 100%;
-  `}
-`;
-
 const Card = styled.div`
   position: relative;
   display: flex;
+  padding : 0.5rem;
 
-  background: white;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-
-  transition: all 0.3s cubic-bezier(.25,.8,.25,1);
   cursor: pointer;
 
-  ${p => p.disabled && 'pointer-events: none;'}
+  ${p => p.disabled && 'opacity: 0.5; cursor: not-allowed; pointer-events: none;'}
 
   .actions {
     position: absolute;
     top: 0;
     right: 0;
-    width: 6rem;
+    width: 8rem;
     height: 100%;
     display: flex;
     align-items: center;
@@ -52,7 +33,7 @@ const Card = styled.div`
   }
 
   &:hover {
-    box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+    background: ${oc.gray[1]};
 
     .actions {
       ${p => p.disabled ? 'opacity: 0;' : 'opacity: 1;'};
@@ -66,9 +47,8 @@ const CircleButton = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 1px;
+  margin: 1px 4px;
 
-  background: white;
   color: ${oc.gray[6]};
 
   border-radius: 1rem;
@@ -85,11 +65,18 @@ const CircleButton = styled.div`
   }
 `
 
-const Title = styled.div`
-  padding-left: 1rem;
+const Profile = styled.div`
+  display: flex;
+  flex-direction: row;
+  flex:1;
   color: ${oc.gray[8]};
   font-size: 1.25rem;
-  line-height : 3rem;
+  line-height: 2.5rem;
+  margin : 0 2rem;
+
+  .data {
+    width: 320px;
+  }
 `;
 
 const SpinnerWrapper = styled.div`
@@ -168,24 +155,27 @@ class Item extends Component {
 
     const {
       _id,
-      title
+      title,
+      pdn,
+      ambr
     } = profile;
 
     return (
-      <Sizer disabled={disabled}>
-        <Card disabled={disabled} onClick={() => onView(_id)}>
-          <Title>{title}</Title>
-          <div className="actions">
-            <Tooltip content='Edit' width="60px">
-              <CircleButton onClick={handleEdit}><EditIcon/></CircleButton>
-            </Tooltip>
-            <Tooltip content='Delete' width="60px">
-              <CircleButton className="delete" onClick={handleDelete}><DeleteIcon/></CircleButton>
-            </Tooltip>
-          </div>
-          {disabled && <SpinnerWrapper><Spinner sm/></SpinnerWrapper>}
-        </Card>
-      </Sizer>
+      <Card disabled={disabled} onClick={() => onView(_id)}>
+        <Profile>
+          <div className="data">{title}</div>
+          <div className="data">{pdn[0].apn}</div>
+        </Profile>
+        <div className="actions">
+          <Tooltip content='Edit' width="60px">
+            <CircleButton onClick={handleEdit}><EditIcon/></CircleButton>
+          </Tooltip>
+          <Tooltip content='Delete' width="60px">
+            <CircleButton className="delete" onClick={handleDelete}><DeleteIcon/></CircleButton>
+          </Tooltip>
+        </div>
+        {disabled && <SpinnerWrapper><Spinner sm/></SpinnerWrapper>}
+      </Card>
     )
   }
 }
