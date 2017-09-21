@@ -162,14 +162,15 @@ class Form extends Component {
       onChange
     } = this.props;
 
+    let formDataChanged = null;  
+    if (onChange) {
+       formDataChanged = onChange(data.formData);
+    }
     this.setState({
       editing: true,
       disableSubmitButton: (Object.keys(data.errors).length > 0),
-      formData: data.formData
+      formData: formDataChanged ? formDataChanged : data.formData
     })
-
-    if (onChange)
-      onChange(data.formData);
   }
 
   handleSubmit = data => {

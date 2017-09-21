@@ -8,7 +8,6 @@ const schema = {
   "title": "Subscriber Configuration",
   "type": "object",
   "properties": {
-    "profile": {},
     "imsi": {
       "type": "string", 
       "title": "IMSI*",
@@ -412,34 +411,43 @@ class Edit extends Component {
       schema,
       uiSchema,
       formData,
-      profile:''
     };
 
     if (action === 'create' && Object.keys(profiles).length > 0) {
-      state = Object.assign(state, {
-        profile : profiles[0]._id
-      })
-      state.schema.properties = Object.assign(state.schema.properties, {
-        profile: {
-          type: "string", 
-          title: "Profile",
-          enum: profiles.map(profile => profile._id),
-          enumNames: profiles.map(profile => profile.title),
-          default: state.profile
+      if (this.state.profile === undefined) {
+        state = Object.assign(state, {
+          profile : profiles[0]._id
+        })
+      } else {
+        state = Object.assign(state, {
+          profile : this.state.profile
+        })
+      }
+
+      state = {
+        ...state,
+        "schema" : {
+          ...schema,
+          "properties": {
+            profile: {
+              type: "string", 
+              title: "Profile",
+              enum: profiles.map(profile => profile._id),
+              enumNames: profiles.map(profile => profile.title),
+              default: state.profile
+            },
+            ...schema.properties
+          }
         }
-      })
+      }
 
       state = Object.assign(state, {
-        formData : profiles.filter(profile => profile._id === state.profile)[0]
+        formData : this.getFormDataFromProfile(state.profile)
       })
 
       delete state.uiSchema.profile;
     } else {
-      state.uiSchema = Object.assign(state.uiSchema, {
-        "profile": {
-          "ui:widget" : "hidden",
-        }
-      });
+      delete state.schema.properties.profile;
     }
 
     if (action === 'update') {
@@ -459,17 +467,39 @@ class Edit extends Component {
     return state;
   }
 
+  getFormDataFromProfile(profile) {
+    let formData;
+    
+    
+    formData = Object.assign({}, this.props.profiles.filter(p => p._id === profile)[0]);
+    formData = Object.assign(formData, { profile });
+
+    delete formData.title;
+    delete formData._id;
+    delete formData.__v;
+
+    return formData;
+  }
+
   handleChange = (formData) => {
     const {
+      action,
       profiles
     } = this.props;
 
-    if (this.state.profile !== formData.profile) {
-      this.setState({
-        profile: formData.profile,
-        formData : profiles.filter(profile => profile._id === formData.profile)[0]
-      });
+    if (action === 'create' && Object.keys(profiles).length > 0) {
+      if (this.state.profile !== formData.profile) {
+        let data = this.getFormDataFromProfile(formData.profile)
+        this.setState({
+          profile: formData.profile,
+          formData : data
+        });
+
+        return data;
+      }
     }
+
+    return undefined;
   }
 
   render() {
