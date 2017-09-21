@@ -482,6 +482,8 @@ CORE_DECLARE(mme_sess_t*)   mme_sess_find_by_pti(
                                 mme_ue_t *mme_ue, c_uint8_t pti);
 CORE_DECLARE(mme_sess_t*)   mme_sess_find_by_ebi(
                                 mme_ue_t *mme_ue, c_uint8_t ebi);
+CORE_DECLARE(mme_sess_t*)   mme_sess_find_by_apn(
+                                mme_ue_t *mme_ue, c_int8_t *apn);
 CORE_DECLARE(mme_sess_t*)   mme_sess_first(mme_ue_t *mme_ue);
 CORE_DECLARE(mme_sess_t*)   mme_sess_next(mme_sess_t *sess);
 
@@ -493,6 +495,8 @@ CORE_DECLARE(mme_bearer_t*) mme_bearer_find_by_sess_ebi(
                                 mme_sess_t *sess, c_uint8_t ebi);
 CORE_DECLARE(mme_bearer_t*) mme_bearer_find_by_ue_ebi(
                                 mme_ue_t *mme_ue, c_uint8_t ebi);
+CORE_DECLARE(mme_bearer_t*) mme_bearer_find_or_add_by_message(
+                                mme_ue_t *mme_ue, nas_message_t *message);
 CORE_DECLARE(mme_bearer_t*) mme_default_bearer_in_sess(mme_sess_t *sess);
 CORE_DECLARE(mme_bearer_t*) mme_linked_bearer(mme_bearer_t *bearer);
 CORE_DECLARE(mme_bearer_t*) mme_bearer_first(mme_sess_t *sess);

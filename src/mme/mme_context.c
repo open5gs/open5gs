@@ -1659,6 +1659,22 @@ mme_sess_t* mme_sess_find_by_ebi(mme_ue_t *mme_ue, c_uint8_t ebi)
     return NULL;
 }
 
+mme_sess_t* mme_sess_find_by_apn(mme_ue_t *mme_ue, c_int8_t *apn)
+{
+    mme_sess_t *sess = NULL;
+
+    sess = mme_sess_first(mme_ue);
+    while(sess)
+    {
+        if (sess->pdn && strcmp(sess->pdn->apn, apn) == 0)
+            return sess;
+
+        sess = mme_sess_next(sess);
+    }
+
+    return NULL;
+}
+
 mme_sess_t* mme_sess_first(mme_ue_t *mme_ue)
 {
     return list_first(&mme_ue->sess_list);
@@ -1775,6 +1791,75 @@ mme_bearer_t* mme_bearer_find_by_ue_ebi(mme_ue_t *mme_ue, c_uint8_t ebi)
     }
 
     return NULL;
+}
+
+mme_bearer_t* mme_bearer_find_or_add_by_message(
+        mme_ue_t *mme_ue, nas_message_t *message)
+{
+    c_uint8_t pti = NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
+    c_uint8_t ebi = NAS_EPS_BEARER_IDENTITY_UNASSIGNED;
+
+    mme_bearer_t *bearer = NULL;
+    mme_sess_t *sess = NULL;
+
+    d_assert(mme_ue, return NULL,);
+    d_assert(message, return NULL,);
+
+    if (message->esm.h.message_type == NAS_PDN_DISCONNECT_REQUEST)
+    {
+        nas_pdn_disconnect_request_t *pdn_disconnect_request = 
+            &message->esm.pdn_disconnect_request;
+        nas_linked_eps_bearer_identity_t *linked_eps_bearer_identity =
+            &pdn_disconnect_request->linked_eps_bearer_identity;
+
+        bearer = mme_bearer_find_by_ue_ebi(mme_ue,
+                linked_eps_bearer_identity->eps_bearer_identity);
+        d_assert(bearer, return NULL,
+                "Invalid pti(%d) and ebi(%d)\n", pti, ebi);
+        sess = bearer->sess;
+        d_assert(sess, return NULL, "Null param");
+        sess->pti = pti;
+
+        return bearer;
+    }
+
+    pti = message->esm.h.procedure_transaction_identity;
+    ebi = message->esm.h.eps_bearer_identity;
+
+    if (ebi != NAS_EPS_BEARER_IDENTITY_UNASSIGNED)
+    {
+        bearer = mme_bearer_find_by_ue_ebi(mme_ue, ebi);
+        d_assert(bearer, return NULL,);
+        return bearer;
+    }
+        
+    d_assert(pti != NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
+            return NULL, );
+
+    if (message->esm.h.message_type == NAS_PDN_CONNECTIVITY_REQUEST)
+    {
+        nas_pdn_connectivity_request_t *pdn_connectivity_request =
+            &message->esm.pdn_connectivity_request;
+        if (pdn_connectivity_request->presencemask &
+                NAS_PDN_CONNECTIVITY_REQUEST_ACCESS_POINT_NAME_PRESENT)
+            sess = mme_sess_find_by_apn(mme_ue,
+                    pdn_connectivity_request->access_point_name.apn);
+        else
+            sess = mme_sess_first(mme_ue);
+
+        if (!sess)
+            sess = mme_sess_add(mme_ue, pti);
+        d_assert(sess, return NULL,);
+    }
+    else
+    {
+        sess = mme_sess_find_by_pti(mme_ue, pti);
+        d_assert(sess, return NULL,);
+    }
+
+    bearer = mme_default_bearer_in_sess(sess);
+    d_assert(bearer, return NULL,);
+    return bearer;
 }
 
 mme_bearer_t* mme_default_bearer_in_sess(mme_sess_t *sess)

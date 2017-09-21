@@ -247,17 +247,22 @@ void mme_state_operational(fsm_t *s, event_t *e)
         case MME_EVT_ESM_MESSAGE:
         {
             nas_message_t message;
+            mme_ue_t *mme_ue = NULL;
             mme_bearer_t *bearer = NULL;
             pkbuf_t *pkbuf = NULL;
 
-            bearer = mme_bearer_find(event_get_param1(e));
-            d_assert(bearer, break, "No Bearer context");
+            mme_ue = mme_ue_find(event_get_param1(e));
+            d_assert(mme_ue, break, "No UE context");
 
             pkbuf = (pkbuf_t *)event_get_param2(e);
             d_assert(pkbuf, break, "Null param");
             d_assert(nas_esm_decode(&message, pkbuf) == CORE_OK,
                     pkbuf_free(pkbuf); break, "Can't decode NAS_ESM");
 
+            bearer = mme_bearer_find_or_add_by_message(mme_ue, &message);
+            d_assert(bearer, break, "No Bearer context");
+
+            event_set_param1(e, (c_uintptr_t)bearer->index);
             event_set_param3(e, (c_uintptr_t)&message);
 
             fsm_dispatch(&bearer->sm, (fsm_event_t*)e);
