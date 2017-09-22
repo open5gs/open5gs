@@ -103,11 +103,27 @@ class Document extends Component {
 
   validate = (formData, errors) => {
     const { accounts, action, status } = this.props;
-    const { username } = formData;
+    const { username, password1, password2 } = formData;
 
     if (action === 'create' && accounts && accounts.data &&
       accounts.data.filter(account => account.username === username).length > 0) {
       errors.username.addError(`'${username}' is duplicated`);
+    }
+
+    if (action === 'create') {
+       if (password1 === undefined) {
+          errors.password1.addError(`is required`);
+       }
+       if (password2 === undefined) {
+          errors.password2.addError(`is required`);
+       }
+    }
+
+    if (password1 != password2) {
+      if (Object.keys(errors.password1.__errors).length == 0)
+        errors.password1.addError(`is not matched`);
+      if (Object.keys(errors.password2.__errors).length == 0)
+        errors.password2.addError(`is not matched`);
     }
 
     return errors;
@@ -131,31 +147,39 @@ class Document extends Component {
     });
   };
 
-  handleSubmit = (formData) => {
+  submit = (formData) => {
     const { dispatch, action } = this.props;
 
-    this.generatePassword(formData.password1, (err, salt, hash) => {
-      if (err) throw err
+    NProgress.configure({ 
+      parent: '#nprogress-base-form',
+      trickleSpeed: 5
+    });
+    NProgress.start();
 
-      formData = Object.assign(formData, {
-        salt,
-        hash,
+    if (action === 'create') {
+      dispatch(createAccount({}, formData));
+    } else if (action === 'update') {
+      dispatch(updateAccount(formData.username, {}, formData));
+    } else {
+      throw new Error(`Action type '${action}' is invalid.`);
+    }
+  }
+
+  handleSubmit = (formData) => {
+    if (formData.password1 === undefined) {
+      this.submit(formData);
+    } else {
+      this.generatePassword(formData.password1, (err, salt, hash) => {
+        if (err) throw err
+
+        formData = Object.assign(formData, {
+          salt,
+          hash,
+        })
+
+        this.submit(formData);
       })
-
-      NProgress.configure({ 
-        parent: '#nprogress-base-form',
-        trickleSpeed: 5
-      });
-      NProgress.start();
-
-      if (action === 'create') {
-        dispatch(createAccount({}, formData));
-      } else if (action === 'update') {
-        dispatch(updateAccount(formData.username, {}, formData));
-      } else {
-        throw new Error(`Action type '${action}' is invalid.`);
-      }
-    })
+    }
   }
 
   handleError = errors => {
