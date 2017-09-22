@@ -32,7 +32,8 @@ class App extends Component {
 
   render() {
     const {
-      view
+      view,
+      session
     } = this.props;
 
     if (view === "subscriber") {
@@ -50,7 +51,7 @@ class App extends Component {
           <Profile.Collection/>
         </Layout.Container>
         <Layout.Container visible={view === "account"}>
-          <Account.Collection/>
+          <Account.Collection session={session}/>
         </Layout.Container>
         <Notification/>
       </Layout>

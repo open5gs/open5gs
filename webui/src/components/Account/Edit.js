@@ -35,17 +35,6 @@ const schema = {
 };
 
 const uiSchema = {
-  "roles" : {
-    "classNames" : "col-xs-12",
-    "ui:options": {
-      "addable": false,
-      "orderable": false,
-      "removable": false
-    }
-  },
-  "username" : {
-    "classNames" : "col-xs-12",
-  },
   "password1" : {
     "classNames" : "col-xs-6",
     "ui:widget": "password",
@@ -75,27 +64,57 @@ class Edit extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
+
     this.setState(this.getStateFromProps(nextProps));
   }
 
   getStateFromProps(props) {
     const { 
+      session,
       action,
       width,
       formData,
     } = props;
 
+    const {
+      username,
+      roles
+    } = session.user;
+    
     let state = {
       schema,
       uiSchema,
       formData,
     };
 
+    if (action === 'update' && (roles.indexOf('admin') === -1 || formData.username === username)) {
+      state.uiSchema = Object.assign(state.uiSchema, {
+        "roles": {
+          "ui:disabled": true,
+          "ui:options": {
+            "addable": false,
+            "orderable": false,
+            "removable": false
+          }
+        },
+      });
+    } else {
+      state.uiSchema = Object.assign(state.uiSchema, {
+        "roles": {
+          "ui:options": {
+            "addable": false,
+            "orderable": false,
+            "removable": false
+          }
+        },
+      });
+    }
+
     if (action === 'update') {
       state.uiSchema = Object.assign(state.uiSchema, {
         "username": {
           "ui:disabled": true
-        }
+        },
       });
     } else if (width !== SMALL) {
       state.uiSchema = Object.assign(state.uiSchema, {

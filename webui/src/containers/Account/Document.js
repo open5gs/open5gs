@@ -200,6 +200,7 @@ class Document extends Component {
     } = this;
 
     const { 
+      session,
       visible,
       action,
       status,
@@ -209,6 +210,7 @@ class Document extends Component {
 
     return (
       <Account.Edit
+        session={session}
         visible={visible} 
         action={action}
         formData={this.state.formData}

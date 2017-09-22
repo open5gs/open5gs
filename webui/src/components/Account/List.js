@@ -20,17 +20,22 @@ const propTypes = {
   accounts: PropTypes.arrayOf(PropTypes.object),
   onEdit: PropTypes.func,
   onDelete: PropTypes.func,
-  search: PropTypes.string
 }
 
-const List = ({ accounts, deletedId, onEdit, onDelete, search }) => {
+const List = ({ accounts, deletedId, onEdit, onDelete, session }) => {
+  const {
+    username,
+    roles
+  } = session.user;
+
   const accountList = accounts
-    .filter(s => s.username.indexOf(search) !== -1)
     .map(account =>
       <Item 
         key={account.username}
+        session={session}
         account={account}
-        disabled={deletedId === account.username}
+        disabled={deletedId === account.username || (roles.indexOf('admin') === -1 && account.username !== username)}
+        spinner={deletedId === account.username}
         onEdit={onEdit}
         onDelete={onDelete} />
     );

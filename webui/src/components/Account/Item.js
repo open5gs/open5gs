@@ -149,29 +149,27 @@ class Item extends Component {
     } = this;
     
     const {
+      session,
       disabled,
+      spinner,
       account,
       onEdit,
       onDelete
     } = this.props;
 
-    const {
-      username,
-      roles
-    } = account;
-
     return (
       <Card disabled={disabled} onClick={handleEdit}>
         <Account>
-          <div className='username'>{username}</div>
-          <div className='role'>{roles[0]}</div>
+          <div className='username'>{account.username}</div>
+          <div className='role'>{account.roles[0]}</div>
         </Account>
-        <div className="actions">
-          <Tooltip content='Delete' width="60px">
-            <CircleButton className="delete" onClick={handleDelete}><DeleteIcon/></CircleButton>
-          </Tooltip>
-        </div>
-        {disabled && <SpinnerWrapper><Spinner sm/></SpinnerWrapper>}
+        {session.user.username !== account.username &&
+          <div className="actions">
+            <Tooltip content='Delete' width="60px">
+              <CircleButton className="delete" onClick={handleDelete}><DeleteIcon/></CircleButton>
+            </Tooltip>
+          </div>}
+        {spinner && <SpinnerWrapper><Spinner sm/></SpinnerWrapper>}
       </Card>
     )
   }

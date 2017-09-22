@@ -21,7 +21,6 @@ import Document from './Document';
 
 class Collection extends Component {
   state = {
-    search: '',
     document: {
       action: '',
       visible: false,
@@ -78,18 +77,6 @@ class Collection extends Component {
       }));
       dispatch(clearActionStatus(MODEL, 'delete'));
     }
-  }
-
-  handleSearchChange = (e) => {
-    this.setState({
-      search: e.target.value
-    });
-  }
-
-  handleSearchClear = (e) => {
-    this.setState({
-      search: ''
-    });
   }
 
   documentHandler = {
@@ -162,14 +149,19 @@ class Collection extends Component {
     } = this;
 
     const { 
-      search,
       document
     } = this.state;
 
     const { 
+      session,
       accounts,
       status
     } = this.props
+
+    const {
+      username,
+      roles
+    } = session.user;
 
     const {
       isLoading,
@@ -179,16 +171,17 @@ class Collection extends Component {
     return (
       <Layout.Content>
         <Account.List
+          session={session}
           accounts={data}
           deletedId={status.id}
           onEdit={documentHandler.actions.update}
           onDelete={confirmHandler.show}
-          search={search}
         />
         {isLoading && <Spinner md />}
-        <FloatingButton onClick={documentHandler.actions.create}/>
+        {roles.indexOf('admin') !== -1 && <FloatingButton onClick={documentHandler.actions.create}/>}
         <Document 
           { ...document }
+          session={session}
           onEdit={documentHandler.actions.update}
           onDelete={confirmHandler.show}
           onHide={documentHandler.hide} />
