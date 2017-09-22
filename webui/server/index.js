@@ -34,13 +34,13 @@ co(function* () {
   }
   const db = yield mongoose.connect(process.env.DB_URI)
 
-  // FIXME : we need to implement landing page for inserting admin account
-  Account.findByUsername('admin', true, (err, account) => {
+  Account.count((err, count) => {
     if (err) {
       console.error(err);
       throw err;
     }
-    if (!account) {
+
+    if (!count) {
       const newAccount = new Account();
       newAccount.username = 'admin';
       newAccount.roles = [ 'admin' ];

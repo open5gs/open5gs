@@ -12,6 +12,7 @@ const schema = {
       "type": "string", 
       "title": "Username*",
       "required": true,
+      "maxLength": 24
     },
     "roles": {
       "type" : "array",

@@ -12,6 +12,7 @@ const schema = {
       "type": "string", 
       "title": "Title*",
       "required": true,
+      "maxLength": 24
     },
     "security": {
       "title": "",
