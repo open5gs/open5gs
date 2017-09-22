@@ -10,7 +10,7 @@ const schema = {
   "properties": {
     "username": {
       "type": "string", 
-      "title": "Username",
+      "title": "Username*",
       "required": true,
     },
     "roles": {
@@ -20,22 +20,40 @@ const schema = {
         "type": "string",
         "title": "Role",
         "enum": [ "user", "admin" ],
-      }
+        "required": true,
+      },
+    },
+    "password1": {
+      "type": "string", 
+      "title": "Password*",
+    },
+    "password2": {
+      "type": "string", 
+      "title": "Confirm Password*",
     },
   }
 };
 
 const uiSchema = {
-  "username" : {
-    classNames: "col-xs-12",
-  },
   "roles" : {
+    "classNames" : "col-xs-12",
     "ui:options": {
       "addable": false,
       "orderable": false,
       "removable": false
     }
-  }
+  },
+  "username" : {
+    "classNames" : "col-xs-12",
+  },
+  "password1" : {
+    "classNames" : "col-xs-6",
+    "ui:widget": "password",
+  },
+  "password2" : {
+    "classNames" : "col-xs-6",
+    "ui:widget": "password",
+  },
 }
 
 class Edit extends Component {
@@ -110,7 +128,7 @@ class Edit extends Component {
         visible={visible}
         title={(action === 'update') ? 'Edit Account' : 'Create Account'}
         width="480px"
-        height="240px"
+        height="400px"
         schema={this.state.schema}
         uiSchema={this.state.uiSchema}
         formData={formData}

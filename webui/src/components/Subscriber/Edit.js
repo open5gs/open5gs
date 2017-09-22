@@ -431,7 +431,7 @@ class Edit extends Component {
           "properties": {
             profile: {
               type: "string", 
-              title: "Profile",
+              title: "Profile*",
               enum: profiles.map(profile => profile._id),
               enumNames: profiles.map(profile => profile.title),
               default: state.profile

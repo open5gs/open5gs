@@ -12,9 +12,10 @@ import * as Notification from 'modules/notification/actions';
 import { Account } from 'components';
 
 import traverse from 'traverse';
+import crypto from 'crypto';
 
 const formData = {
-  "roles": [ "user" ]
+  "roles": [ "user" ],
 }
 
 class Document extends Component {
@@ -112,22 +113,49 @@ class Document extends Component {
     return errors;
   }
 
+  generatePassword = function(password, cb) {
+    crypto.randomBytes(32, function(randomBytesErr, buf) {
+      if (randomBytesErr) {
+        return cb(randomBytesErr);
+      }
+      var salt = buf.toString('hex');
+
+      crypto.pbkdf2(password, salt, 25000, 512, 'sha256', function(pbkdf2Err, hashRaw) {
+        if (pbkdf2Err) {
+          return cb(pbkdf2Err);
+        }
+        var hash = new Buffer(hashRaw, 'binary').toString('hex');
+
+        cb(null, salt, hash);
+      });
+    });
+  };
+
   handleSubmit = (formData) => {
     const { dispatch, action } = this.props;
 
-    NProgress.configure({ 
-      parent: '#nprogress-base-form',
-      trickleSpeed: 5
-    });
-    NProgress.start();
+    this.generatePassword(formData.password1, (err, salt, hash) => {
+      if (err) throw err
 
-    if (action === 'create') {
-      dispatch(createAccount({}, formData));
-    } else if (action === 'update') {
-      dispatch(updateAccount(formData.username, {}, formData));
-    } else {
-      throw new Error(`Action type '${action}' is invalid.`);
-    }
+      formData = Object.assign(formData, {
+        salt,
+        hash,
+      })
+
+      NProgress.configure({ 
+        parent: '#nprogress-base-form',
+        trickleSpeed: 5
+      });
+      NProgress.start();
+
+      if (action === 'create') {
+        dispatch(createAccount({}, formData));
+      } else if (action === 'update') {
+        dispatch(updateAccount(formData.username, {}, formData));
+      } else {
+        throw new Error(`Action type '${action}' is invalid.`);
+      }
+    })
   }
 
   handleError = errors => {
