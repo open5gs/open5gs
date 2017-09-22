@@ -118,13 +118,13 @@ static status_t pgw_context_validation()
     }
     if (self.s5c_addr == 0)
     {
-        d_error("No PGW.NEWORK.S5C_ADDR in '%s'",
+        d_error("No PGW.NEWORK.S5C_IPV4 in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
     if (self.s5u_addr == 0)
     {
-        d_error("No PGW.NEWORK.S5U_ADDR in '%s'",
+        d_error("No PGW.NEWORK.S5U_IPV4 in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
@@ -142,7 +142,7 @@ static status_t pgw_context_validation()
     }
     if (self.primary_dns_addr == 0)
     {
-        d_error("No PGW.DNS.PRIMARY_ADDR in '%s'",
+        d_error("No PGW.DNS.PRIMARY_IPV4 in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
@@ -235,7 +235,7 @@ status_t pgw_context_parse_config()
                         {
                             n += (t+m)->size;
 
-                            if (jsmntok_equal(json, t+m, "S5C_ADDR") == 0)
+                            if (jsmntok_equal(json, t+m, "S5C_IPV4") == 0)
                             {
                                 char *v = jsmntok_to_string(json, t+m+1);
                                 if (v) self.s5c_addr = inet_addr(v);
@@ -245,7 +245,7 @@ status_t pgw_context_parse_config()
                                 char *v = jsmntok_to_string(json, t+m+1);
                                 if (v) self.s5c_port = atoi(v);
                             }
-                            else if (jsmntok_equal(json, t+m, "S5U_ADDR") == 0)
+                            else if (jsmntok_equal(json, t+m, "S5U_IPV4") == 0)
                             {
                                 char *v = jsmntok_to_string(json, t+m+1);
                                 if (v) self.s5u_addr = inet_addr(v);
@@ -324,13 +324,13 @@ status_t pgw_context_parse_config()
                     for (m = 1, n = 1; n > 0; m++, n--)
                     {
                         n += (t+m)->size;
-                        if (jsmntok_equal(json, t+m, "PRIMARY_ADDR") == 0)
+                        if (jsmntok_equal(json, t+m, "PRIMARY_IPV4") == 0)
                         {
                             char *v = jsmntok_to_string(json, t+m+1);
                             if (v) self.primary_dns_addr = inet_addr(v);
                         }
                         else if (jsmntok_equal(
-                                    json, t+m, "SECONDARY_ADDR") == 0)
+                                    json, t+m, "SECONDARY_IPV4") == 0)
                         {
                             char *v = jsmntok_to_string(json, t+m+1);
                             if (v) self.secondary_dns_addr = inet_addr(v);

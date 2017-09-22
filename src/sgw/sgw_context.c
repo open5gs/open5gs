@@ -92,25 +92,25 @@ static status_t sgw_context_validation()
 {
     if (self.s11_addr == 0)
     {
-        d_error("No SGW.NEWORK.S11_ADDR in '%s'",
+        d_error("No SGW.NEWORK.S11_IPV4 in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
     if (self.s5c_addr == 0)
     {
-        d_error("No SGW.NEWORK.S5C_ADDR in '%s'",
+        d_error("No SGW.NEWORK.S5C_IPV4 in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
     if (self.s1u_addr == 0)
     {
-        d_error("No SGW.NEWORK.S1U_ADDR in '%s'",
+        d_error("No SGW.NEWORK.S1U_IPV4 in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
     if (self.s5u_addr == 0)
     {
-        d_error("No SGW.NEWORK.S5U_ADDR in '%s'",
+        d_error("No SGW.NEWORK.S5U_IPV4 in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
@@ -199,7 +199,7 @@ status_t sgw_context_parse_config()
                         {
                             n += (t+m)->size;
 
-                            if (jsmntok_equal(json, t+m, "S11_ADDR") == 0)
+                            if (jsmntok_equal(json, t+m, "S11_IPV4") == 0)
                             {
                                 char *v = jsmntok_to_string(json, t+m+1);
                                 if (v) self.s11_addr = inet_addr(v);
@@ -209,7 +209,7 @@ status_t sgw_context_parse_config()
                                 char *v = jsmntok_to_string(json, t+m+1);
                                 if (v) self.s11_port = atoi(v);
                             }
-                            else if (jsmntok_equal(json, t+m, "S5C_ADDR") == 0)
+                            else if (jsmntok_equal(json, t+m, "S5C_IPV4") == 0)
                             {
                                 char *v = jsmntok_to_string(json, t+m+1);
                                 if (v) self.s5c_addr = inet_addr(v);
@@ -219,7 +219,7 @@ status_t sgw_context_parse_config()
                                 char *v = jsmntok_to_string(json, t+m+1);
                                 if (v) self.s5c_port = atoi(v);
                             }
-                            else if (jsmntok_equal(json, t+m, "S1U_ADDR") == 0)
+                            else if (jsmntok_equal(json, t+m, "S1U_IPV4") == 0)
                             {
                                 char *v = jsmntok_to_string(json, t+m+1);
                                 if (v) self.s1u_addr = inet_addr(v);
@@ -229,7 +229,7 @@ status_t sgw_context_parse_config()
                                 char *v = jsmntok_to_string(json, t+m+1);
                                 if (v) self.s1u_port = atoi(v);
                             }
-                            else if (jsmntok_equal(json, t+m, "S5U_ADDR") == 0)
+                            else if (jsmntok_equal(json, t+m, "S5U_IPV4") == 0)
                             {
                                 char *v = jsmntok_to_string(json, t+m+1);
                                 if (v) self.s5u_addr = inet_addr(v);
