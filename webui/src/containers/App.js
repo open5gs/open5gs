@@ -10,7 +10,7 @@ import { Layout } from 'components';
 import Notification from 'containers/Notification';
 import * as Subscriber from 'containers/Subscriber';
 import * as Profile from 'containers/Profile';
-
+import * as Account from 'containers/Account';
 
 class App extends Component {
   static propTypes = {
@@ -48,6 +48,9 @@ class App extends Component {
         </Layout.Container>
         <Layout.Container visible={view === "profile"}>
           <Profile.Collection/>
+        </Layout.Container>
+        <Layout.Container visible={view === "account"}>
+          <Account.Collection/>
         </Layout.Container>
         <Notification/>
       </Layout>

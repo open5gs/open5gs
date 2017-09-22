@@ -16,7 +16,7 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   postion: relative;
-  width: 1050px;
+  width: ${p => p.width || `1050px`};
 
   ${media.mobile`
     width: calc(100vw - 2rem);
@@ -39,7 +39,7 @@ const Body = styled.div`
   padding: 2rem;
   font-size: 14px;
 
-  height: 500px;
+  height: ${p => p.height || `500px`};
   ${media.mobile`
     height: calc(100vh - 16rem);
   `}
@@ -242,11 +242,11 @@ class Form extends Component {
           visible={visible} 
           onOutside={handleOutside}
           disableOnClickOutside={this.state.confirm}>
-          <Wrapper id='nprogress-base-form'>
+          <Wrapper id='nprogress-base-form' width={this.props.width}>
             <Header>
               {title}
             </Header>
-            <Body>
+            <Body height={this.props.height}>
               {isLoading && <Spinner/>}
               {!isLoading && 
                 <JsonSchemaForm

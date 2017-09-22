@@ -16,4 +16,11 @@ restify.serve(router, Profile, {
   version: ''
 });
 
+const Account = require('../models/account');
+restify.serve(router, Account, {
+  prefix: '',
+  version: '',
+  idProperty: 'username'
+});
+
 module.exports = router;

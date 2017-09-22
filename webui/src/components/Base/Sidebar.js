@@ -88,6 +88,10 @@ const Sidebar = ({ isOpen, width, selectedView, onSelectView }) => (
       <Icon><ProfileIcon/></Icon>
       <Title>Profile</Title>
     </Item>
+    <Item name="account" selected={selectedView} onSelect={onSelectView}>
+      <Icon><ProfileIcon/></Icon>
+      <Title>Account</Title>
+    </Item>
   </Menu>
 )
 

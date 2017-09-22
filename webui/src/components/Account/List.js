@@ -17,27 +17,27 @@ const Wrapper = styled.div`
 `
 
 const propTypes = {
-  profiles: PropTypes.arrayOf(PropTypes.object),
-  onView: PropTypes.func,
+  accounts: PropTypes.arrayOf(PropTypes.object),
   onEdit: PropTypes.func,
   onDelete: PropTypes.func,
+  search: PropTypes.string
 }
 
-const List = ({ profiles, deletedId, onView, onEdit, onDelete }) => {
-  const profileList = profiles
-    .map(profile =>
+const List = ({ accounts, deletedId, onEdit, onDelete, search }) => {
+  const accountList = accounts
+    .filter(s => s.username.indexOf(search) !== -1)
+    .map(account =>
       <Item 
-        key={profile._id}
-        profile={profile}
-        disabled={deletedId === profile._id}
-        onView={onView}
+        key={account.username}
+        account={account}
+        disabled={deletedId === account.username}
         onEdit={onEdit}
         onDelete={onDelete} />
     );
 
   return (
     <Wrapper>
-      {profileList}
+      {accountList}
     </Wrapper>
   )
 }

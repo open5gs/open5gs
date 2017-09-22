@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import styled from 'styled-components';
 import oc from 'open-color';
-import { media } from 'helpers/style-utils';
+import { media  } from 'helpers/style-utils';
 
 import EditIcon from 'react-icons/lib/md/edit';
 import DeleteIcon from 'react-icons/lib/md/delete';
@@ -13,11 +13,11 @@ import { Tooltip, Spinner } from 'components';
 const Card = styled.div`
   position: relative;
   display: flex;
-  padding : 0.5rem;
+  padding: 0.5rem;
 
   cursor: pointer;
 
-  ${p => p.disabled && 'opacity: 0.5; cursor: not-allowed; pointer-events: none;'}
+  ${p => p.disabled && 'opacity: 0.5; cursor: not-allowed; pointer-events: none;'};
 
   .actions {
     position: absolute;
@@ -47,7 +47,7 @@ const CircleButton = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 1px 4px;
+  margin: 1px;
 
   color: ${oc.gray[6]};
 
@@ -65,27 +65,22 @@ const CircleButton = styled.div`
   }
 `
 
-const Profile = styled.div`
+const Account = styled.div`
   display: flex;
   flex-direction: row;
   flex:1;
   line-height: 2.5rem;
   margin : 0 2rem;
 
-  .title {
+  .username {
     font-size: 1.25rem;
     color: ${oc.gray[8]};
     width: 320px;
   }
-  .ambr {
+  .role {
     font-size: 1.1rem;
     color: ${oc.gray[6]};
     width: 240px;
-  }
-  .apn {
-    font-size: 1.1rem;
-    color: ${oc.gray[6]};
-    width: 120px;
   }
 `;
 
@@ -101,20 +96,18 @@ const SpinnerWrapper = styled.div`
 `
 
 const propTypes = {
-  profile: PropTypes.shape({
-    title: PropTypes.string
+  account: PropTypes.shape({
+    username: PropTypes.string
   }),
-  onView: PropTypes.func,
   onEdit: PropTypes.func,
   onDelete: PropTypes.func
 }
 
 class Item extends Component {
   static propTypes = {
-    profile: PropTypes.shape({
-      title: PropTypes.string
+    account: PropTypes.shape({
+      username: PropTypes.string
     }),
-    onView: PropTypes.func,
     onEdit: PropTypes.func,
     onDelete: PropTypes.func
   }
@@ -123,30 +116,30 @@ class Item extends Component {
     e.stopPropagation();
 
     const {
-      profile,
+      account,
       onEdit,
     } = this.props;
 
     const {
-      _id
-    } = profile;
+      username
+    } = account;
 
-    onEdit(_id)
+    onEdit(username)
   }
 
   handleDelete = e => {
     e.stopPropagation();
 
     const {
-      profile,
+      account,
       onDelete
     } = this.props;
 
     const {
-      _id
-    } = profile;
+      username
+    } = account;
 
-    onDelete(_id)
+    onDelete(username)
   }
 
   render() {
@@ -157,30 +150,23 @@ class Item extends Component {
     
     const {
       disabled,
-      profile,
-      onView,
+      account,
       onEdit,
       onDelete
     } = this.props;
 
     const {
-      _id,
-      title,
-      pdn,
-      ambr
-    } = profile;
+      username,
+      roles
+    } = account;
 
     return (
-      <Card disabled={disabled} onClick={() => onView(_id)}>
-        <Profile>
-          <div className="title">{title}</div>
-          <div className="ambr">{ambr.downlink}/{ambr.uplink}</div>
-          <div className="apn">{pdn[0].apn}</div>
-        </Profile>
+      <Card disabled={disabled} onClick={handleEdit}>
+        <Account>
+          <div className='username'>{username}</div>
+          <div className='role'>{roles[0]}</div>
+        </Account>
         <div className="actions">
-          <Tooltip content='Edit' width="60px">
-            <CircleButton onClick={handleEdit}><EditIcon/></CircleButton>
-          </Tooltip>
           <Tooltip content='Delete' width="60px">
             <CircleButton className="delete" onClick={handleDelete}><DeleteIcon/></CircleButton>
           </Tooltip>
