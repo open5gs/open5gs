@@ -65,6 +65,29 @@ void emm_state_detached(fsm_t *s, event_t *e)
             {
                 emm_handle_service_request(
                         mme_ue, &message->emm.service_request);
+
+                if (MME_UE_HAVE_IMSI(mme_ue))
+                {
+                    if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+                    {
+                        /* Nothing */
+                    }
+                    else
+                    {
+                        if (MME_HAVE_SGW_S11_PATH(mme_ue))
+                        {
+                            FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
+                        }
+                        else
+                        {
+                            FSM_TRAN(&mme_ue->sm, &emm_state_detached);
+                        }
+                    }
+                }
+                else
+                {
+                    FSM_TRAN(&mme_ue->sm, &emm_state_identity);
+                }
                 break;
             }
 
@@ -74,6 +97,22 @@ void emm_state_detached(fsm_t *s, event_t *e)
                 {
                     emm_handle_attach_request(
                             mme_ue, &message->emm.attach_request);
+
+                    if (MME_UE_HAVE_IMSI(mme_ue))
+                    {
+                        if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+                        {
+                            FSM_TRAN(&mme_ue->sm, &emm_state_default_esm);
+                        }
+                        else
+                        {
+                            FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
+                        }
+                    }
+                    else
+                    {
+                        FSM_TRAN(&mme_ue->sm, &emm_state_identity);
+                    }
                     break;
                 }
 
@@ -81,6 +120,30 @@ void emm_state_detached(fsm_t *s, event_t *e)
                 {
                     emm_handle_tau_request(
                             mme_ue, &message->emm.tracking_area_update_request);
+
+                    if (MME_UE_HAVE_IMSI(mme_ue))
+                    {
+                        if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+                        {
+                            /* Nothing */
+                        }
+                        else
+                        {
+                            if (MME_HAVE_SGW_S11_PATH(mme_ue))
+                            {
+                                FSM_TRAN(&mme_ue->sm,
+                                        &emm_state_authentication);
+                            }
+                            else
+                            {
+                                FSM_TRAN(&mme_ue->sm, &emm_state_detached);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        FSM_TRAN(&mme_ue->sm, &emm_state_identity);
+                    }
                     break;
                 }
 
@@ -143,6 +206,39 @@ void emm_state_identity(fsm_t *s, event_t *e)
                 {
                     emm_handle_identity_response(mme_ue,
                             &message->emm.identity_response);
+
+                    if (mme_ue->nas_eps.type == MME_EPS_TYPE_ATTACH_REQUEST)
+                    {
+                        if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+                        {
+                            FSM_TRAN(&mme_ue->sm, &emm_state_default_esm);
+                        }
+                        else
+                        {
+                            FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
+                        }
+                    }
+                    else if (mme_ue->nas_eps.type ==
+                                MME_EPS_TYPE_SERVICE_REQUEST ||
+                            mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST)
+                    {
+                        if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+                        {
+                            /* Nothing */
+                        }
+                        else
+                        {
+                            if (MME_HAVE_SGW_S11_PATH(mme_ue))
+                            {
+                                FSM_TRAN(&mme_ue->sm,
+                                        &emm_state_authentication);
+                            }
+                            else
+                            {
+                                FSM_TRAN(&mme_ue->sm, &emm_state_detached);
+                            }
+                        }
+                    }
                     break;
                 }
                 case NAS_EMM_STATUS:
@@ -199,8 +295,32 @@ void emm_state_authentication(fsm_t *s, event_t *e)
             {
                 case NAS_AUTHENTICATION_RESPONSE:
                 {
-                    emm_handle_authentication_response(
-                            mme_ue, &message->emm.authentication_response);
+                    nas_authentication_response_t *authentication_response =
+                        &message->emm.authentication_response;
+                    nas_authentication_response_parameter_t
+                        *authentication_response_parameter =
+                            &authentication_response->
+                                authentication_response_parameter;
+
+                    d_assert(mme_ue, return, "Null param");
+
+                    if (authentication_response_parameter->length != 
+                            mme_ue->xres_len ||
+                        memcmp(authentication_response_parameter->res,
+                            mme_ue->xres, mme_ue->xres_len) != 0)
+                    {
+                        status_t rv;
+
+                        d_error("authentication failed");
+
+                        rv = nas_send_authentication_reject(mme_ue);
+                        d_assert(rv == CORE_OK,, "nas send error");
+                        FSM_TRAN(&mme_ue->sm, &emm_state_detached);
+                    }
+                    else
+                    {
+                        FSM_TRAN(&mme_ue->sm, &emm_state_security_mode);
+                    }
                     break;
                 }
                 case NAS_EMM_STATUS:
@@ -417,6 +537,29 @@ void emm_state_attached(fsm_t *s, event_t *e)
             {
                 emm_handle_service_request(
                         mme_ue, &message->emm.service_request);
+
+                if (MME_UE_HAVE_IMSI(mme_ue))
+                {
+                    if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+                    {
+                        /* Nothing */
+                    }
+                    else
+                    {
+                        if (MME_HAVE_SGW_S11_PATH(mme_ue))
+                        {
+                            FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
+                        }
+                        else
+                        {
+                            FSM_TRAN(&mme_ue->sm, &emm_state_detached);
+                        }
+                    }
+                }
+                else
+                {
+                    FSM_TRAN(&mme_ue->sm, &emm_state_identity);
+                }
                 break;
             }
 
@@ -426,6 +569,22 @@ void emm_state_attached(fsm_t *s, event_t *e)
                 {
                     emm_handle_attach_request(
                             mme_ue, &message->emm.attach_request);
+
+                    if (MME_UE_HAVE_IMSI(mme_ue))
+                    {
+                        if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+                        {
+                            FSM_TRAN(&mme_ue->sm, &emm_state_default_esm);
+                        }
+                        else
+                        {
+                            FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
+                        }
+                    }
+                    else
+                    {
+                        FSM_TRAN(&mme_ue->sm, &emm_state_identity);
+                    }
                     break;
                 }
                 case NAS_EMM_STATUS:
@@ -445,6 +604,30 @@ void emm_state_attached(fsm_t *s, event_t *e)
                 {
                     emm_handle_tau_request(
                             mme_ue, &message->emm.tracking_area_update_request);
+
+                    if (MME_UE_HAVE_IMSI(mme_ue))
+                    {
+                        if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+                        {
+                            /* Nothing */
+                        }
+                        else
+                        {
+                            if (MME_HAVE_SGW_S11_PATH(mme_ue))
+                            {
+                                FSM_TRAN(&mme_ue->sm,
+                                        &emm_state_authentication);
+                            }
+                            else
+                            {
+                                FSM_TRAN(&mme_ue->sm, &emm_state_detached);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        FSM_TRAN(&mme_ue->sm, &emm_state_identity);
+                    }
                     break;
                 }
                 default:

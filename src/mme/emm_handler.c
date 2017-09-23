@@ -141,17 +141,12 @@ void emm_handle_attach_request(
 
     NAS_STORE_DATA(&mme_ue->pdn_connectivity_request, esm_message_container);
 
-    if (!MME_UE_HAVE_IMSI(mme_ue))
-    {
-        FSM_TRAN(&mme_ue->sm, &emm_state_identity);
-    }
-    else
+    if (MME_UE_HAVE_IMSI(mme_ue))
     {
         if (SECURITY_CONTEXT_IS_VALID(mme_ue))
         {
             rv = nas_send_emm_to_esm(mme_ue, &mme_ue->pdn_connectivity_request);
             d_assert(rv == CORE_OK,, "nas_send_emm_to_esm failed");
-            FSM_TRAN(&mme_ue->sm, &emm_state_default_esm);
         }
         else
         {
@@ -164,7 +159,6 @@ void emm_handle_attach_request(
             {
                 mme_s6a_send_air(mme_ue);
             }
-            FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
         }
     }
 }
@@ -269,7 +263,6 @@ void emm_handle_identity_response(
         {
             rv = nas_send_emm_to_esm(mme_ue, &mme_ue->pdn_connectivity_request);
             d_assert(rv == CORE_OK, return, "nas_send_emm_to_esm failed");
-            FSM_TRAN(&mme_ue->sm, &emm_state_default_esm);
         }
         else
         {
@@ -282,7 +275,6 @@ void emm_handle_identity_response(
             {
                 mme_s6a_send_air(mme_ue);
             }
-            FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
         }
     }
     else if (mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST)
@@ -298,14 +290,12 @@ void emm_handle_identity_response(
             if (MME_HAVE_SGW_S11_PATH(mme_ue))
             {
                 mme_s6a_send_air(mme_ue);
-                FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
             }
             else
             {
                 /* Send TAU reject */
                 nas_send_tau_reject(mme_ue, 
                         EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                FSM_TRAN(&mme_ue->sm, &emm_state_detached);
             }
         }
     }
@@ -321,41 +311,13 @@ void emm_handle_identity_response(
             if (MME_HAVE_SGW_S11_PATH(mme_ue))
             {
                 mme_s6a_send_air(mme_ue);
-                FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
             }
             else
             {
                 nas_send_service_reject(mme_ue, 
                         EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                FSM_TRAN(&mme_ue->sm, &emm_state_detached);
             }
         }
-    }
-}
-
-void emm_handle_authentication_response(mme_ue_t *mme_ue, 
-        nas_authentication_response_t *authentication_response)
-{
-    nas_authentication_response_parameter_t *authentication_response_parameter =
-        &authentication_response->authentication_response_parameter;
-
-    d_assert(mme_ue, return, "Null param");
-
-    if (authentication_response_parameter->length != mme_ue->xres_len ||
-        memcmp(authentication_response_parameter->res,
-            mme_ue->xres, mme_ue->xres_len) != 0)
-    {
-        status_t rv;
-
-        d_error("authentication failed");
-
-        rv = nas_send_authentication_reject(mme_ue);
-        d_assert(rv == CORE_OK,, "nas send error");
-        FSM_TRAN(&mme_ue->sm, &emm_state_detached);
-    }
-    else
-    {
-        FSM_TRAN(&mme_ue->sm, &emm_state_security_mode);
     }
 }
 
@@ -440,11 +402,7 @@ void emm_handle_service_request(
     /* Set EPS Update Type */
     mme_ue->nas_eps.type = MME_EPS_TYPE_SERVICE_REQUEST;
 
-    if (!MME_UE_HAVE_IMSI(mme_ue))
-    {
-        FSM_TRAN(&mme_ue->sm, &emm_state_identity);
-    }
-    else
+    if (MME_UE_HAVE_IMSI(mme_ue))
     {
         if (SECURITY_CONTEXT_IS_VALID(mme_ue))
         {
@@ -456,13 +414,11 @@ void emm_handle_service_request(
             if (MME_HAVE_SGW_S11_PATH(mme_ue))
             {
                 mme_s6a_send_air(mme_ue);
-                FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
             }
             else
             {
                 nas_send_service_reject(mme_ue, 
                         EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                FSM_TRAN(&mme_ue->sm, &emm_state_detached);
             }
         }
     }
@@ -584,11 +540,7 @@ void emm_handle_tau_request(
         }
     }
 
-    if (!MME_UE_HAVE_IMSI(mme_ue))
-    {
-        FSM_TRAN(&mme_ue->sm, &emm_state_identity);
-    }
-    else
+    if (MME_UE_HAVE_IMSI(mme_ue))
     {
         if (SECURITY_CONTEXT_IS_VALID(mme_ue))
         {
@@ -602,14 +554,12 @@ void emm_handle_tau_request(
             {
                 /* Re-authentication */
                 mme_s6a_send_air(mme_ue);
-                FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
             }
             else
             {
                 /* Send TAU reject */
                 nas_send_tau_reject(mme_ue, 
                         EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                FSM_TRAN(&mme_ue->sm, &emm_state_detached);
             }
         }
     }

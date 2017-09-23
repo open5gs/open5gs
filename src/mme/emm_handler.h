@@ -16,8 +16,6 @@ CORE_DECLARE(void) emm_handle_attach_complete(
 
 CORE_DECLARE(void) emm_handle_identity_response(
         mme_ue_t *mme_ue, nas_identity_response_t *identity_response);
-CORE_DECLARE(void) emm_handle_authentication_response(
-    mme_ue_t *mme_ue, nas_authentication_response_t *authentication_response);
 
 CORE_DECLARE(void) emm_handle_detach_request(
     mme_ue_t *mme_ue, nas_detach_request_from_ue_t *detach_request);
