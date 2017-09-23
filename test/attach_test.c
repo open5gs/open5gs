@@ -297,11 +297,24 @@ static void attach_test1(abts_case *tc, void *data)
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
+    /* Receive ESM Information Request */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rc = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_NEQUAL(tc, 0, rc);
+    pkbuf_free(recvbuf);
+
+    /* Send ESM Information Response */
+    rv = tests1ap_build_esm_information_response(&sendbuf, msgindex+1);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
     /* Receive Initial Context Setup Request + 
      * Attach Accept + 
      * Activate Default Bearer Context Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rc = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_NEQUAL(tc, 0, rc);
     pkbuf_free(recvbuf);
 
     /* Send Attach Complete + 
@@ -578,6 +591,18 @@ static void attach_test2(abts_case *tc, void *data)
     core_sleep(time_from_msec(300));
 
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex+1);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* Receive ESM Information Request */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rc = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_NEQUAL(tc, 0, rc);
+    pkbuf_free(recvbuf);
+
+    /* Send ESM Information Response */
+    rv = tests1ap_build_esm_information_response(&sendbuf, msgindex+1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
