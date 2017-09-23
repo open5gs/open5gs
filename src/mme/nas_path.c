@@ -228,6 +228,26 @@ status_t nas_send_pdn_connectivity_reject(
     return CORE_OK;
 }
 
+status_t nas_send_esm_information_request(mme_bearer_t *bearer)
+{
+    status_t rv;
+    mme_ue_t *mme_ue = NULL;
+    pkbuf_t *esmbuf = NULL;
+
+    d_assert(bearer, return CORE_ERROR, "Null param");
+    mme_ue = bearer->mme_ue;
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
+
+    rv = esm_build_information_request(&esmbuf, bearer);
+    d_assert(rv == CORE_OK && esmbuf, return CORE_ERROR, "esm build error");
+
+    rv = nas_send_to_downlink_nas_transport(mme_ue, esmbuf);
+    d_assert(rv == CORE_OK, return CORE_ERROR,
+            "nas_send_to_downlink_nas_transport");
+
+    return CORE_OK;
+}
+
 status_t nas_send_activate_default_bearer_context_request(mme_bearer_t *bearer)
 {
     status_t rv;

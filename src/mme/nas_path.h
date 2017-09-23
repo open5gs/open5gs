@@ -28,6 +28,7 @@ CORE_DECLARE(status_t) nas_send_detach_accept(mme_ue_t *mme_ue);
 
 CORE_DECLARE(status_t) nas_send_pdn_connectivity_reject(
     mme_sess_t *sess, nas_esm_cause_t esm_cause);
+CORE_DECLARE(status_t) nas_send_esm_information_request(mme_bearer_t *bearer);
 CORE_DECLARE(status_t) nas_send_activate_default_bearer_context_request(
     mme_bearer_t *bearer);
 CORE_DECLARE(status_t) nas_send_activate_dedicated_bearer_context_request(

@@ -67,8 +67,21 @@ void esm_state_inactive(fsm_t *s, event_t *e)
             {
                 case NAS_PDN_CONNECTIVITY_REQUEST:
                 {
-                    esm_handle_pdn_connectivity_request(
+                    rv = esm_handle_pdn_connectivity_request(
                             bearer, &message->esm.pdn_connectivity_request);
+                    if (rv != CORE_OK)
+                        FSM_TRAN(s, esm_state_session_exception);
+                    break;
+                }
+                case NAS_ESM_INFORMATION_RESPONSE:
+                {
+                    d_trace(3, "[NAS] ESM information response : "
+                            "UE[%s] --> ESM[%d]\n", 
+                            mme_ue->imsi_bcd, sess->pti);
+                    rv = esm_handle_information_response(
+                            sess, &message->esm.esm_information_response);
+                    if (rv != CORE_OK)
+                        FSM_TRAN(s, esm_state_session_exception);
                     break;
                 }
                 case NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_ACCEPT:
@@ -100,77 +113,6 @@ void esm_state_inactive(fsm_t *s, event_t *e)
                     }
 
                     FSM_TRAN(s, esm_state_active);
-                    break;
-                }
-                default:
-                {
-                    d_warn("Not implemented(type:%d)", 
-                            message->esm.h.message_type);
-                    break;
-                }
-            }
-            break;
-        }
-
-        default:
-        {
-            d_error("Unknown event %s", mme_event_get_name(e));
-            break;
-        }
-    }
-}
-
-void esm_state_information(fsm_t *s, event_t *e)
-{
-    mme_ue_t *mme_ue = NULL;
-    mme_sess_t *sess = NULL;
-    mme_bearer_t *bearer = NULL;
-
-    d_assert(s, return, "Null param");
-    d_assert(e, return, "Null param");
-
-    mme_sm_trace(3, e);
-
-    bearer = mme_bearer_find(event_get_param1(e));
-    d_assert(bearer, return, "Null param");
-    sess = bearer->sess;
-    d_assert(sess, return, "Null param");
-    mme_ue = sess->mme_ue;
-    d_assert(mme_ue, return, "Null param");
-
-    switch (event_get(e))
-    {
-        case FSM_ENTRY_SIG:
-        {
-            status_t rv;
-            pkbuf_t *esmbuf = NULL;
-
-            rv = esm_build_information_request(&esmbuf, bearer);
-            d_assert(rv == CORE_OK && esmbuf, return,
-                    "esm_build failed");
-            d_assert(nas_send_to_downlink_nas_transport(
-                    mme_ue, esmbuf) == CORE_OK,,);
-            break;
-        }
-        case FSM_EXIT_SIG:
-        {
-            break;
-        }
-        case MME_EVT_ESM_MESSAGE:
-        {
-            nas_message_t *message = (nas_message_t *)event_get_param3(e);
-            d_assert(message, break, "Null param");
-
-            switch(message->esm.h.message_type)
-            {
-                case NAS_ESM_INFORMATION_RESPONSE:
-                {
-                    d_trace(3, "[NAS] ESM information response : "
-                            "UE[%s] --> ESM[%d]\n", 
-                            mme_ue->imsi_bcd, sess->pti);
-                    esm_handle_information_response(
-                            sess, &message->esm.esm_information_response);
-                    FSM_TRAN(s, esm_state_inactive);
                     break;
                 }
                 default:
@@ -229,9 +171,12 @@ void esm_state_active(fsm_t *s, event_t *e)
             {
                 case NAS_PDN_CONNECTIVITY_REQUEST:
                 {
-                    esm_handle_pdn_connectivity_request(
+                    rv = esm_handle_pdn_connectivity_request(
                             bearer, &message->esm.pdn_connectivity_request);
-                    FSM_TRAN(s, esm_state_inactive);
+                    if (rv != CORE_OK)
+                        FSM_TRAN(s, esm_state_session_exception);
+                    else
+                        FSM_TRAN(s, esm_state_inactive);
                     break;
                 }
                 case NAS_PDN_DISCONNECT_REQUEST:
