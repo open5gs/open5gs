@@ -766,7 +766,6 @@ status_t s1ap_build_handover_command(pkbuf_t **s1apbuf, enb_ue_t *source_ue)
 
     s1ap_buffer_to_OCTET_STRING(mme_ue->container.buf, mme_ue->container.size, 
             &ies->target_ToSource_TransparentContainer);
-    S1AP_CLEAR_DATA(&mme_ue->container);
 
     message.procedureCode = S1ap_ProcedureCode_id_HandoverPreparation;
     message.direction = S1AP_PDU_PR_successfulOutcome;

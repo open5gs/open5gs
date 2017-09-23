@@ -121,8 +121,6 @@ status_t mme_s11_build_create_session_request(
         req->protocol_configuration_options.presence = 1;
         req->protocol_configuration_options.data = sess->ue_pco.buffer;
         req->protocol_configuration_options.len = sess->ue_pco.length;
-
-        NAS_CLEAR_DATA(&sess->ue_pco);
     }
 
     req->bearer_contexts_to_be_created.presence = 1;

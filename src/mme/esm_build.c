@@ -148,8 +148,6 @@ status_t esm_build_activate_default_bearer_context_request(
         protocol_configuration_options->length = sess->pgw_pco.len;
         memcpy(protocol_configuration_options->buffer, 
                 sess->pgw_pco.data, protocol_configuration_options->length);
-
-        TLV_CLEAR_DATA(&sess->pgw_pco);
     }
 
     if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
@@ -209,8 +207,6 @@ status_t esm_build_activate_dedicated_bearer_context_request(
     d_assert(tft->length, return CORE_ERROR, "No TFT Len");
     d_assert(bearer->tft.data, return CORE_ERROR, "Null param");
     memcpy(tft->buffer, bearer->tft.data, tft->length);
-
-    TLV_CLEAR_DATA(&bearer->tft);
 
     d_assert(nas_security_encode(pkbuf, mme_ue, &message) == CORE_OK && 
             *pkbuf, return CORE_ERROR,);
