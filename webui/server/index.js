@@ -32,7 +32,10 @@ co(function* () {
   if (dev) {
     mongoose.set('debug', true);
   }
-  const db = yield mongoose.connect(process.env.DB_URI)
+  const db = yield mongoose.connect(process.env.DB_URI, {
+    useMongoClient: true,
+    /* other options */
+  })
 
   Account.count((err, count) => {
     if (err) {
