@@ -313,7 +313,7 @@ static void tlv_test_1(abts_case *tc, void *data)
     tlv_t *root_tlv = NULL, *parsed_tlv = NULL, *pTlv;
     c_uint8_t parent_block[4000];
     c_uint8_t *pos = NULL;
-    int mode = (int)data;
+    c_uint8_t mode = (c_uintptr_t)data;
 
     tlv_test_set_tlv_value();
 
@@ -432,7 +432,7 @@ static void tlv_test_2(abts_case *tc, void *data)
     tlv_t *root_tlv = NULL;
     tlv_t *embed_tlv = NULL;
     c_uint8_t embed_block[1000];;
-    int mode = (int)data;
+    c_uint8_t mode = (c_uintptr_t)data;
 
     tlv_test_set_tlv_value();
 
@@ -481,7 +481,7 @@ static void tlv_test_2(abts_case *tc, void *data)
 static void tlv_test_3(abts_case *tc, void *data)
 {
     tlv_t *root_tlv = NULL, *parent_tlv = NULL;
-    int mode = (int)data;
+    c_uint8_t mode = (c_uintptr_t)data;
 
     tlv_test_set_tlv_value();
 
@@ -512,7 +512,7 @@ static void tlv_test_4(abts_case *tc, void *data)
 {
     tlv_t *root_tlv = NULL, *parent_tlv = NULL;
     c_uint8_t tlv_buff[2000];
-    int mode = (int)data;
+    c_uint8_t mode = (c_uintptr_t)data;
 
     tlv_test_set_tlv_value();
 
@@ -545,7 +545,7 @@ static void tlv_test_5(abts_case *tc, void *data)
     c_uint8_t *pos = NULL;
     c_uint16_t c_16 = 0x1122;
     c_uint32_t c_32 = 0x11223344;
-    int mode = (int)data;
+    c_uint8_t mode = (c_uintptr_t)data;
 
     /* tlv encoding for test */
     c_16 = htons(c_16);
