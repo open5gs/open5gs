@@ -1849,6 +1849,9 @@ mme_bearer_t* mme_bearer_find_or_add_by_message(
 
         if (!sess)
             sess = mme_sess_add(mme_ue, pti);
+        else
+            sess->pti = pti;
+
         d_assert(sess, return NULL,);
     }
     else
