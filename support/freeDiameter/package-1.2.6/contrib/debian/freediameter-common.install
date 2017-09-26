@@ -1,6 +1,0 @@
-usr/lib/libfdproto.so*
-usr/lib/libfdcore.so*
-usr/lib/freeDiameter/acl_wl.fdx
-usr/lib/freeDiameter/rt_default.fdx
-usr/lib/freeDiameter/rt_ereg.fdx
-usr/lib/freeDiameter/dbg_monitor.fdx
