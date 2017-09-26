@@ -1,0 +1,44 @@
+##### a sample Configuration file for DiamEAP
+
+# MySQL Database settings
+# Specify connection parameters for DiamEAP MySQL database: 
+# - username and password to connect to the MySQL Server
+# - databaseserver : the MySQL server location. It can be the IP address or the host name where MySQL server is located. 'localhost' can be used as the location if the server is locatd in the same host than DiamEAP.
+# - database_name : the created database for DiamEAP.
+
+# Syntax :
+# DiamEAP_MySQL = "<username>" , "<password>" , "<databaseserver>" , "<database_name>";
+
+
+
+##### Extensible Authentication Protocol (EAP) Methods Plugins #####
+# An EAP method is identified by its EAP method name, EAP TYPE, VENDOR and path to its EAP Method Plugin. 
+# Optionally, path to a configuration file of plugin can also be provided. 
+# Location of plugins and their configuration files can be provided by the absolute pathor the relative path from the location configured in cmake.
+# An EAP Method Plugin can not be loaded twice. Only the first added method will be loaded.
+# Any EAP Method plugin with a same EAP_TYPE value than an already loaded one will be discarded.
+# EAP Methods are added in the same order they are added to the the configuration file.
+ 
+# Syntax : 
+# Load_plugin = "<EAP method name>":EAP_TYPE:VENDOR:"<Path to EAP method >":"<Path to configuration file>";
+#
+# Example:
+# Load_plugin = "EAP MD5":4:0:"/extensions/eap_md5.emp":"";
+# Load_plugin = "EAP TLS":13:0;"/extensions/eap_tls.emp":"/doc/eap_tls_plugin.diameap.conf";
+
+Load_plugin = "EAP Identity":1:0:"/extensions/eap_identity.emp":"";
+
+# Enable/disable checking User's Identity. If disabled, default parameters value will be used for authentication and authorization attributes.
+# Default values are defined in database for 'Default User'.
+Check_User_Identity = 1;
+
+# In addition to authentication DiamEAP can be configured to check authorization of authenticated users. If set to 0 authorization is disabled, otherwise enabled.( by default disabled).
+Authorization = 1;
+
+# This parameter specify the maximum number of seconds provided to the access device for responding to an EAP request. (by default set to 30 seconds)
+#Multi_Round_Time_Out=30;
+
+# After receivin a number of invalid EAP packets, DiamEAP reject the authentication by responding with Failure Authentication. 
+# The default value of maximum number of invalid EAP packets is set to 5 packets. 
+# The value of maximum invalid EAP packets can be modified by adding a new value.
+#MAX_Invalid_EAP_Packets=5;

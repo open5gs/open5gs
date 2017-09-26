@@ -1,0 +1,21 @@
+# This file contains information for configuring the rt_ereg extension.
+# To find how to have freeDiameter load this extension, please refer to the freeDiameter documentation.
+#
+# The rt_ereg extension allows creation of routing rules based on AVP value matching regular expressions.
+
+# First, one must indicate which AVP should be used for matching. 
+# At the moment, only AVP with OCTETSTRING types are valid.
+#  AVP = "User-Name";
+# This parameter is mandatory. There is no default value.
+
+# Then a list of rules follow. A rule has this format:
+#  "pattern" : "server" += score ;
+# Where:
+#  pattern is the quoted-string regex to match, 
+#  server is the next hop in the routing list that will receive the
+#  score, which can be positive or negative.
+# Example:
+#  "[[:digit:]]*" : "serverA.example.net" += -3 ;
+#    means that if the AVP value is only numeric, the ServerA will have its score decreased by 3 points.
+#    (reminder: the server with the peer with the highest score gets the message)
+# Note that all rules are tested for each message that contain the AVP, not only the first match.

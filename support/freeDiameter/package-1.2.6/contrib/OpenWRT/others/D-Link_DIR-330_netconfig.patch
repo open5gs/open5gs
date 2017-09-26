@@ -1,0 +1,35 @@
+diff --git a/target/linux/brcm47xx/base-files/etc/init.d/netconfig b/target/linux/brcm47xx/base-files/etc/init.d/netconfig
+index d7839b6..6446483 100755
+--- a/target/linux/brcm47xx/base-files/etc/init.d/netconfig
++++ b/target/linux/brcm47xx/base-files/etc/init.d/netconfig
+@@ -150,6 +150,30 @@ start() {
+ 				}
+ 			}
+ 		}
++                if (model == "D-Link DIR-330") { # boardtype is 0x0472, so we need to reset the parameters
++		   # The switch is on eth1, this script defaults to switch on eth0, so we write the values directly instead.
++                       print "#### DIR-330: eth1 must be up for configuring the switch "
++                       print "config interface switchport"
++                       print " option ifname \"eth1\""
++                       print " option proto none"
++                       print ""
++		        print "config switch eth1"
++                       print " option enable   1"
++                       print ""
++                       print "config switch_vlan eth1_0"
++                       print " option device   \"eth1\""
++                       print " option vlan     0"
++                       print " option ports    \"0 1 2 3 5t\""
++                       print ""
++                       print "config switch_vlan eth1_1"
++                       print " option device   \"eth1\""
++                       print " option vlan     1"
++                       print " option ports    \"4 5t\""
++                       print ""
++                        c["lan_ifname"] = "eth0.0"
++                        c["wan_ifname"] = "eth0.1"
++                }
++
+ 		# Buffalo WBR-B11 and Buffalo WBR-G54
+ 		if (nvram["boardtype"] == "bcm94710ap") {
+ 			c["vlan0ports"] = "0 1 2 3 4 5u"
