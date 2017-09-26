@@ -254,8 +254,13 @@ status_t hss_db_auth_info(
     mutex_lock(self.db_lock);
 
     query = BCON_NEW("imsi", BCON_UTF8(imsi_bcd));
+#if MONGOC_MAJOR_VERSION >= 1 && MONGOC_MINOR_VERSION >= 5
     cursor = mongoc_collection_find_with_opts(
             self.subscriberCollection, query, NULL, NULL);
+#else
+    cursor = mongoc_collection_find(self.subscriberCollection,
+            MONGOC_QUERY_NONE, 0, 0, 0, query, NULL, NULL);
+#endif
 
     if (!mongoc_cursor_next(cursor, &document))
     {
@@ -425,8 +430,13 @@ status_t hss_db_subscription_data(
     mutex_lock(self.db_lock);
 
     query = BCON_NEW("imsi", BCON_UTF8(imsi_bcd));
+#if MONGOC_MAJOR_VERSION >= 1 && MONGOC_MINOR_VERSION >= 5
     cursor = mongoc_collection_find_with_opts(
             self.subscriberCollection, query, NULL, NULL);
+#else
+    cursor = mongoc_collection_find(self.subscriberCollection,
+            MONGOC_QUERY_NONE, 0, 0, 0, query, NULL, NULL);
+#endif
 
     if (!mongoc_cursor_next(cursor, &document))
     {

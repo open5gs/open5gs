@@ -294,7 +294,7 @@ AC_CHECK_LIB([fdcore], [fd_core_initialize], [LIBS="${LIBS} -lfdcore"])
 AC_CHECK_LIB([fdproto], [fd_libproto_init], [LIBS="${LIBS} -lfdproto"])
 AC_CHECK_LIB([gnutls], [gnutls_global_init], [LIBS="${LIBS} -lgnutls"])
 
-PKG_CHECK_MODULES([MONGOC], libmongoc-1.0 >= 1.6.3)
+PKG_CHECK_MODULES([MONGOC], libmongoc-1.0 >= 1.3.1)
 LIBS="$LIBS $MONGOC_LIBS"
 #PKG_CHECK_MODULES([LIBXML2], libxml-2.0 >= 2.9.1)
 #LIBS="$LIBS $LIBXML2_LIBS"

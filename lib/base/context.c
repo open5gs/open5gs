@@ -238,7 +238,9 @@ status_t context_db_init(char *db_uri)
         return CORE_ERROR;
     }
 
+#if MONGOC_MAJOR_VERSION >= 1 && MONGOC_MINOR_VERSION >= 4
     mongoc_client_set_error_api(self.db_client, 2);
+#endif
 
     uri = mongoc_client_get_uri(self.db_client);
     d_assert(uri, context_db_final(); return CORE_ERROR,

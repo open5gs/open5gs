@@ -256,17 +256,32 @@ status_t pcrf_db_pdn_data(
 
     mutex_lock(self.db_lock);
 
-    query = BCON_NEW(
-            "imsi", BCON_UTF8(imsi_bcd),
-            "pdn.apn", BCON_UTF8(apn));
     opts = BCON_NEW(
             "projection", "{",
                 "imsi", BCON_INT64(1),
                 "pdn.$", BCON_INT64(1),
             "}"
             );
+#if MONGOC_MAJOR_VERSION >= 1 && MONGOC_MINOR_VERSION >= 5
+    query = BCON_NEW(
+            "imsi", BCON_UTF8(imsi_bcd),
+            "pdn.apn", BCON_UTF8(apn));
     cursor = mongoc_collection_find_with_opts(
             self.subscriberCollection, query, opts, NULL);
+#else
+    query = BCON_NEW(
+            "$query", "{",
+                "imsi", BCON_UTF8(imsi_bcd),
+                "pdn.apn", BCON_UTF8(apn),
+            "}",
+            "$projection", "{",
+                "imsi", BCON_INT64(1),
+                "pdn.$", BCON_INT64(1),
+            "}"
+            );
+    cursor = mongoc_collection_find(self.subscriberCollection,
+            MONGOC_QUERY_NONE, 0, 0, 0, query, NULL, NULL);
+#endif
 
     if (!mongoc_cursor_next(cursor, &document))
     {
