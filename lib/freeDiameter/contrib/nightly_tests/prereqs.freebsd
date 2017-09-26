@@ -1,0 +1,5 @@
+# 1: install base system and ports
+# 2: install wget with command: pkg_add -r -v wget
+# Finally, install the other packages from this file
+# pkg_add -r -F -v `wget http://www.freediameter.net/hg/freeDiameter/raw-file/tip/contrib/nightly_tests/prereqs.freebsd -O - | grep -v -e "^#"`
+bash cmake mercurial flex bison libgcrypt gnutls postgresql84-client postgresql84-server mysql50-client libxml2 swig

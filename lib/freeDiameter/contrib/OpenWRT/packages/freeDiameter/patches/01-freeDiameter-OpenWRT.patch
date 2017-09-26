@@ -1,0 +1,19 @@
+diff -Nur freeDiameter/CMakeLists.txt freeDiameter-OpenWRT/CMakeLists.txt
+--- freeDiameter/CMakeLists.txt	2010-08-13 16:19:35.000000000 +0900
++++ freeDiameter-OpenWRT/CMakeLists.txt	2010-08-13 16:21:32.000000000 +0900
+@@ -51,6 +51,14 @@
+   SET(DEBUG 1)
+ ENDIF (CMAKE_BUILD_TYPE MATCHES "Debug|Profiling|DebugValgrind")
+ 
++# OpenWRT
++SET(IN_OPENWRT $ENV{IN_OPENWRT})
++IF (IN_OPENWRT)
++  ADD_DEFINITIONS("$ENV{TARGET_LDFLAGS}" "$ENV{TARGET_CPPFLAGS}" "$ENV{TARGET_CFLAGS}")
++  INCLUDE_DIRECTORIES("$ENV{TARGET_LDFLAGS}" "$ENV{TARGET_CPPFLAGS}" "$ENV{TARGET_CFLAGS}")
++ENDIF(IN_OPENWRT)
++
++
+ # some subfolders use yacc and lex parsers
+ SET(BISON_GENERATE_DEFINES TRUE)
+ SET(BISON_PREFIX_OUTPUTS TRUE)
+Binary files freeDiameter/.hg/dirstate and freeDiameter-OpenWRT/.hg/dirstate differ

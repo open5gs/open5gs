@@ -1,0 +1,3 @@
+/* Following variable is expended at build time based on the result of "hg id" command */
+#cmakedefine FD_PROJECT_VERSION_HG
+#define FD_PROJECT_VERSION_HG_VAL "@FD_PROJECT_VERSION_HG@"

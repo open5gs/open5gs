@@ -1,0 +1,305 @@
+#####################
+#  !! IMPORTANT !!  #
+#####################
+
+The uClibc library that is shipped with OpenWRT lacks support for several POSIX thread
+features, such as pthread_cleanup_{push,pop}, that are required by the freeDiameter
+framework.
+
+Until these features are included in the base OpenWRT system, the framework will not 
+behave correctly on this platform.
+
+Therefore, the OpenWRT port is NOT usable properly at this moment with uClibc.
+
+A test software is included in test_required for checking if new uClibc distributions 
+support the required features. You'll have to adapt the Makefile according to your environment.
+
+An alternative choice if your hardware allows it is to use (e)glibc in your openwrt image.
+
+#####################
+
+
+
+This HOWTO describes how to generate a set of ipkg modules for 
+providing support of freeDiameter in an OpenWRT system.
+
+This HOWTO is written for OpenWRT 10.03 (BackFire) and no guarantee is provided
+that it will work for you. Be prepared to eventually brick your routeur...
+
+Table of contents:
+0) Quick HOWTO: optimistic step-by-step instructions.
+1) Prerequisites: get the OpenWRT development environment ready.
+2) Supplied packages: use the existing packages when possible (gnutls, ...)
+3) Other dependencies: provide for additional missing dependencies (sctp ...)
+4) freediameter package: now create the freeDiameter package
+5) Configuration: how to set the configuration on the router.
+
+This HOWTO will NOT cover how to install OpenWRT on your access device, nor 
+its basic configuration. Please refer to OpenWRT website for this type of HOWTOs.
+
+
+==============================================
+0) Quick HOWTO
+==============================================
+The following instructions should allow you to put freeDiameter on your OpenWRT-compatible router.
+In case something goes wrong, you should follow the detailed instructions in the remaining of 
+this file.
+
+Be warned: playing with the software in your router may brick it, i.e. make it unusable forever. 
+Do it at your own risk.
+
+1) Get the OpenWRT environment:
+$ git clone git://nbd.name/openwrt.git
+$ cd openwrt
+
+2) Get the feeds
+$ cp feeds.conf.default feeds.conf
+$ echo "src-hg freediameter http://www.freediameter.net/hg/fD-OWRT-packages" >> feeds.conf
+$ scripts/feeds update
+$ scripts/feeds install freeDiameter
+
+3) Configure your image
+$ make menuconfig
+(set Target System and Target Profile as needed for your equipment)
+
+- Network --->
+   freeDiameter (M)
+   freeDiameter-test (M)
+   wpad (*)
+   wpad-mini ( )
+   
+
+4) Set the C library to glibc instead of uClibc (broken support, see #26)
+
+- Advanced configuration options (for developers) --->
+  - Toolchain Options ---->
+    C Library implementation (Use eglibc)
+
+
+5) Build the image and packages, this takes a while
+$ make world
+
+6) Export the bin/* directory through a webserver. 
+   We assume it is available at http://192.168.1.25/owrt
+   
+7) Flash the router with your new image -- THIS DESTROYS ALL CONFIG ON THE ROUTER!
+$ ssh root@192.168.1.1
+# cd /tmp
+# wget http://192.168.1.25/owrt/openwrt-brcm47xx-squashfs.trx
+    ;; change the file name with yours
+# mtd -r write openwrt-brcm47xx-squashfs.trx linux
+    ;; wait for reboot
+$ telnet 192.168.1.1
+# passwd
+# sync
+# exit
+
+8) Update the opkg router's config to get your new packages
+ssh root@192.168.1.1
+# echo "src/gz localrepo http://192.168.1.25/owrt/packages" >> /etc/opkg.conf 
+# opkg update
+
+9) Install freeDiameter, you're done. Optionnaly, install also certtool on the router before, to 
+   generate the TLS certificate automatically.
+# opkg install freeDiameter
+
+==============================================
+1) Prerequisites:
+==============================================
+
+We will first need a working OpenWRT toolchain environment. You can retrieve
+pre-compiled binaries of such toolchains ("Image builder") on the OpenWRT website. Anyway,
+in case the architecture you are interested in is not listed, you can build
+the full toolchain from source. This is the path we are following in this HOWTO.
+
+a) Retrieve the latest OpenWRT source, using subversion or git.
+Since I have to go through a proxy, I use the later here, svn being quite annoying with proxies.
+Note, the following commands must not be run as root.
+$ git clone git://nbd.name/openwrt.git
+ (Note: you might instead use "backfire.git" if you want to stick with an OpenWRT release.)
+$ cd openwrt
+$ cp feeds.conf.default feeds.conf
+
+b) If you are using git, you have to edit the feeds.conf file to use git as well for packages.
+Do the following modifications in this case:
+$ vi feeds.conf
+ Comment out this line:
+src-svn packages https://svn.openwrt.org/openwrt/packages
+ Add this line instead:
+src-git packages git://nbd.name/packages.git
+
+ You can leave uncommented the luci (for GNUTLS) and Xwrt (webif) repositories. Since these repositories
+use svn over http, you can use subversion even if you are behind a proxy.
+
+c) Then issue the following command to update the package list:
+$ scripts/feeds update
+
+d) Now, let's already create the toolchain and basic image.
+$ make menuconfig
+
+This will open a menu for you. You must select the target you are building for.
+See http://wiki.openwrt.org/toh/start for the table of hardware and associated information.
+In my case, I am using a Buffalo WZR-HP-G300NH router. I therefore select these options:
+- Target System --->
+   Atheros AR71xx/AR7240/AR913x
+- Target Profile --->
+   Buffalo WZR-HP-G300NH
+   
+For many routeurs, the recommended kernel is a 2.4x version. I have NOT tried with such kernel,
+and the SCTP support is likely to be different in this generation of kernels. I strongly recommend
+to go with a 2.6x kernel, whenever possible. 
+   
+e) As per freeDiameter ticket #26, you also need to change the library to glibc instead of uClibc.
+Change the option as follow:
+
+- Advanced configuration options (for developers) --->
+  - Toolchain Options ---->
+    C Library implementation (Use eglibc)
+
+f) Once configured, create the toolchain and default image (this takes a while):
+$ make world
+
+After this command completes successfully, your build environment is ready.
+The resulting image and packages are stored in the "bin/" subdirectory.
+It is very convenient if you make this repository available in http to your routeur.
+
+You should probably try at this early stage to flash your device with the image you have generated.
+If the default basic image does not work, it is probably not worth adding new problems on top of it.
+
+For troubleshooting, please consult OpenWRT documentation directly.
+"make prereq" may help you building the initial image also.
+See http://downloads.openwrt.org/docs/buildroot-documentation.html for additional information
+concerning this step.
+
+You should now be able to login on your routeur with telnet (first time) or ssh (after setting a password).
+
+==============================================
+2) Supplied packages:
+==============================================
+
+There are some dependencies of freeDiameter already available in the OpenWRT packages repository. 
+You can check for the available packages with the script:
+$ ./scripts/feeds search <package>
+
+We will now describe how to install these dependencies. At the time this HOWTO is written, 
+the OpenWRT repositories contains packages for sctp, ipv6, gnutls, pthreads and hostapd. 
+Follow these instructions to build them.
+
+Alternatively, you can find these packages pre-compiled in the OpenWRT packages repository.
+
+a) Add the packages
+$ scripts/feeds install libgnutls
+$ scripts/feeds install sctp
+
+b) Select the following components in the menu:
+$ make menuconfig
+- Base system --->
+   libpthread (M)
+   
+- Network --->
+   sctp (M)
+   hostapd (M)
+   wpad-mini ( )
+
+- Libraries --->
+   SSL --->
+     libgnutls (M)
+   
+- Kernel modules --->
+   Network Support --->
+     kmod-ipv6 (M)
+     
+Quit and save the new config, then:
+$ make world
+
+This will add a bunch of modules in your bin directory that will be required for freeDiameter.
+Since we are removing the wpad-mini daemon from the base image, this image (trx or bin file) is also recompiled.
+
+Note that if you are setting your device as WPA supplicant also (wireless client), you must select wpad instead of hostapd.
+(in any case, the -mini version is not suitable since we will use the RADIUS authentication).
+
+
+You should now reflash your routeur with the new firmware image. The simplest way to achieve if your routeur has enough
+flash memory is to:
+- copy the new trx image to your routeur's /tmp (using wget or scp)
+- run this command (on the device) -- replace <newfile.trx> with your actual filename:
+ root@OpenWrt:~# mtd -r write <newfile.trx> linux
+
+WARNING: this will erase your existing configuration on the routeur. 
+In case you need to save it, you may try the sysupgrade command instead.
+
+This will reboot the device after writing the new image file.
+Afterwards, if you have set up the http server on your development machine properly 
+(let's assume it has IP address 192.168.1.25)
+you can run the following command on your router:
+ root@OpenWrt:~# echo "src/gz mydev http://192.168.1.25/packages" >> /etc/opkg.conf 
+ root@OpenWrt:~# opkg update
+
+Install the newly compiled packages with:
+ root@OpenWrt:~# opkg install kmod-ipv6 hostapd libpthread sctp
+
+==============================================
+3) Missing packages:
+==============================================
+
+UPDATE: Starting from revision r22917, sctp and kmod-sctp are included in the OpenWRT distribution, and have been removed
+from freeDiameter package. One may consider using a freeDiameter package prior to 2010/09/05 in order to get the sctp 
+package, or a more recent OpenWRT environment. 
+
+PREVIOUS SITUATION: If you are using components prior to 2010/09/05, the following applies:
+P: 
+P: There are other dependencies for freeDiameter that are not provided by OpenWRT packages. 
+P: For convenience, we include these meta-packages in the freeDiameter distribution -- but they
+P: might not be up-to-date.
+P: 
+P: a) Adding the contributed directory to the feeds
+P:   Add the following line in your feeds.conf file:
+P: src-link freediameter /path/to/freediameter/contrib/OpenWRT/packages/
+P: 
+P: Then run: 
+P: $ scripts/feeds update
+P: 
+P: This should allow you to install the missing dependencies as follow:
+P: 
+P: 
+P: b) SCTP library (note: you might alternatively compile freeDiameter without SCTP support).
+P: $ scripts/feeds install sctp
+P: 
+P: 
+P: c) Select these components in the menu:
+P: $ make menuconfig
+P: - Libraries --->
+P:    sctp (M)
+P: 
+P: Quit and save the new config, then:
+P: $ make world
+P: 
+P: 
+P: d) Install this on the router as well:
+P:  root@OpenWrt:~# opkg update
+P:  root@OpenWrt:~# opkg install sctp
+
+
+==============================================
+4) freediameter package:
+==============================================
+
+Now, your environment should be ready to compile the freeDiameter ipkg package.
+$ scripts/feeds install freeDiameter
+
+Note that in order to build this package, you need to have cmake & flex on your compilation machine.
+
+$ make menuconfig
+- Network --->
+   freeDiameter (M)
+   freeDiameter-test (M)
+   
+Quit and save the new config, then:
+$ make world
+
+On your router, run:
+# opkg update
+# opkg install freeDiameter
+
+
+

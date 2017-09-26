@@ -1,0 +1,8 @@
+#User configuration
+username = "awestfahl"
+password = "test"
+sip_aor = "sip:awestfahl@tera.ics.keio.ac.jp"
+
+#Destination information
+destination_realm = "freediameter.net"
+destination_sip = "sip:awestfahl@freediameter.net"
