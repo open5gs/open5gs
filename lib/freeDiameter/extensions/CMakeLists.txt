@@ -37,15 +37,15 @@ INCLUDE_DIRECTORIES(${LFDCORE_INCLUDES})
 # Diameter applications dictionaries
 
 FD_EXTENSION_SUBDIR(dict_nasreq "NASREQ (RFC4005) Dictionary definitions"       ON)
-FD_EXTENSION_SUBDIR(dict_eap    "Diameter EAP (RFC4072) Dictionary definitions" ON)
+FD_EXTENSION_SUBDIR(dict_eap    "Diameter EAP (RFC4072) Dictionary definitions" OFF)
 
 FD_EXTENSION_SUBDIR(dict_dcca   "Diameter CC (RFC4006) Dictionary definitions [incomplete]" ON)
 FD_EXTENSION_SUBDIR(dict_dcca_3gpp   "Diameter CC 3GPP Dictionary definitions [incomplete]" ON)
-FD_EXTENSION_SUBDIR(dict_dcca_starent   "Diameter CC Starent Dictionary definitions" ON)
+FD_EXTENSION_SUBDIR(dict_dcca_starent   "Diameter CC Starent Dictionary definitions" OFF)
 
-FD_EXTENSION_SUBDIR(dict_sip    "Diameter SIP (RFC4740) Dictionary definitions" ON)
+FD_EXTENSION_SUBDIR(dict_sip    "Diameter SIP (RFC4740) Dictionary definitions" OFF)
 
-FD_EXTENSION_SUBDIR(dict_mip6a     "Diameter Mobile IPv6 Auth Dictionary definitions"         ON)
+FD_EXTENSION_SUBDIR(dict_mip6a     "Diameter Mobile IPv6 Auth Dictionary definitions"         OFF)
 FD_EXTENSION_SUBDIR(dict_mip6i     "Diameter Mobile IPv6 IKE Dictionary definitions"          ON)
 FD_EXTENSION_SUBDIR(dict_nas_mipv6 "Diameter NAS-to-HAAA Interaction Dictionary definitions"  ON)
 FD_EXTENSION_SUBDIR(dict_rfc5777   "Classification and QoS (RFC 5777) Dictionary definitions" ON)
@@ -67,28 +67,28 @@ FD_EXTENSION_SUBDIR(app_redirect "Diameter Redirect server: send configurable Re
 ####
 # Routing extensions
 
-FD_EXTENSION_SUBDIR(rt_busypeers "Handling of Diameter TOO_BUSY messages and relay timeouts"	ON)
-FD_EXTENSION_SUBDIR(rt_default   "Configurable routing rules for freeDiameter" 		     	ON)
+FD_EXTENSION_SUBDIR(rt_busypeers "Handling of Diameter TOO_BUSY messages and relay timeouts"	OFF)
+FD_EXTENSION_SUBDIR(rt_default   "Configurable routing rules for freeDiameter" 		     	OFF)
 FD_EXTENSION_SUBDIR(rt_ereg      "Configurable routing based on regexp matching of AVP values" OFF)
-FD_EXTENSION_SUBDIR(rt_ignore_dh "Stow Destination-Host in Proxy-Info, restore to Origin-Host for answers"	ON)
-FD_EXTENSION_SUBDIR(rt_load_balance "Balance load over multiple equal hosts, based on outstanding requests"	ON)
-FD_EXTENSION_SUBDIR(rt_randomize "Randomly choose one of the highest scored hosts and increase its score by one"	ON)
-FD_EXTENSION_SUBDIR(rt_redirect  "Handling of Diameter Redirect messages" 			ON)
+FD_EXTENSION_SUBDIR(rt_ignore_dh "Stow Destination-Host in Proxy-Info, restore to Origin-Host for answers"	OFF)
+FD_EXTENSION_SUBDIR(rt_load_balance "Balance load over multiple equal hosts, based on outstanding requests"	OFF)
+FD_EXTENSION_SUBDIR(rt_randomize "Randomly choose one of the highest scored hosts and increase its score by one"	OFF)
+FD_EXTENSION_SUBDIR(rt_redirect  "Handling of Diameter Redirect messages" 			OFF)
 
 
 ####
 # Peers security extensions
 
-FD_EXTENSION_SUBDIR(acl_wl "White-list based authorization of incoming connections" ON)
+FD_EXTENSION_SUBDIR(acl_wl "White-list based authorization of incoming connections" OFF)
 
 
 ####
 # Debug & test extensions
 
-FD_EXTENSION_SUBDIR(dbg_monitor "Outputs periodical status information"              ON)
-FD_EXTENSION_SUBDIR(dbg_msg_timings "Show some timing information for messages"      ON)
+FD_EXTENSION_SUBDIR(dbg_monitor "Outputs periodical status information"              OFF)
+FD_EXTENSION_SUBDIR(dbg_msg_timings "Show some timing information for messages"      OFF)
 FD_EXTENSION_SUBDIR(dbg_msg_dumps "Show human-readable content of the received & sent messages"      ON)
-FD_EXTENSION_SUBDIR(dbg_rt      "Routing extension for debugging the routing module" ON)
+FD_EXTENSION_SUBDIR(dbg_rt      "Routing extension for debugging the routing module" OFF)
 FD_EXTENSION_SUBDIR(test_app    "Testing application to send dummy message to another peer, like a Diameter 'ping'" OFF)
 FD_EXTENSION_SUBDIR(test_sip    "Testing application to simulate Diameter-SIP client (RFC4740)" OFF)
 FD_EXTENSION_SUBDIR(dbg_interactive "Python-interpreter based module"                OFF)
