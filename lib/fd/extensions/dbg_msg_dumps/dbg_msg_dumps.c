@@ -156,8 +156,8 @@ static void md_hook_cb_tree(enum fd_hook_type type, struct msg * msg, struct pee
 		break;
 
 /* Not handled */
-	case HOOK_DATA_RECEIVED:
-		break;
+    default:
+        break;
 	}
 	
 	CHECK_POSIX_DO( pthread_mutex_unlock(&mtx), );
@@ -235,8 +235,8 @@ static void md_hook_cb_full(enum fd_hook_type type, struct msg * msg, struct pee
 		}
 		break;
 /* Not handled */
-	case HOOK_DATA_RECEIVED:
-		break;
+    default:
+        break;
 	}
 	
 	CHECK_POSIX_DO( pthread_mutex_unlock(&mtx), );
@@ -314,8 +314,8 @@ static void md_hook_cb_compact(enum fd_hook_type type, struct msg * msg, struct 
 		}
 		break;
 /* Not handled */
-	case HOOK_DATA_RECEIVED:
-		break;
+    default:
+        break;
 	}
 	
 	CHECK_POSIX_DO( pthread_mutex_unlock(&mtx), );
