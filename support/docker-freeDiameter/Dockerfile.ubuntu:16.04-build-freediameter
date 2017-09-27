@@ -1,0 +1,16 @@
+FROM ubuntu:16.04
+
+# Base dependencies
+# freeDiameter core dependencies
+# freeDiameter extension dependencies
+# Debian package dependencies
+RUN apt update && apt -y install \
+    bison flex wget gcc g++ cmake git \
+    libsctp-dev libgnutls-dev libidn11-dev \
+    libxml2-dev libpostgresql-ocaml-dev libmysql-ocaml-dev libgcrypt-dev swig python-dev \
+    fakeroot debhelper
+
+WORKDIR /root
+ADD ./build-freediameter.sh /root/
+#ENTRYPOINT ["ls"]
+ENTRYPOINT ["/root/build-freediameter.sh"]
