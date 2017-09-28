@@ -1,0 +1,9 @@
+# OpenSUSE packages names of dependencies for nightly tests (using "zypper install <packages>"):
+# zypper install `wget http://www.freediameter.net/hg/freeDiameter/raw-file/tip/contrib/nightly_tests/prereqs.opensuse -O - | grep -v -e "^#"`
+cmake mercurial make gcc gcc-c++ flex bison lksctp-tools-devel libgnutls-devel libgcrypt-devel
+postgresql-server postgresql-devel libmysqlclient-devel libxml2-devel swig python-devel
+
+# Afterwards, you may need to issue the following command so that postgresql starts at boot: 
+#  insserv postgresql
+# or for open Suse 12.x:
+#  systemctl enable postgresql.service

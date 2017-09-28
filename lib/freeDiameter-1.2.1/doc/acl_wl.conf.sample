@@ -1,0 +1,19 @@
+# Configuration file for the peer whitelist extension.
+#
+# This extension is meant to allow connection from remote peers, without actively
+# maintaining this connection ourselves (as it would be the case by declaring the 
+# peer in a ConnectPeer directive).
+# The format of this file is very simple. It contains a list of peer names
+# separated by spaces or newlines. 
+#
+# The peer name must be a fqdn. We allow also a special "*" character as the
+# first label of the fqdn, to allow all fqdn with the same domain name.
+# Example: *.example.net will allow host1.example.net and host2.example.net
+#
+# At the beginning of a line, the following flags are allowed (case sensitive) -- either or both can appear:
+# ALLOW_OLD_TLS : we accept unprotected CER/CEA exchange with Inband-Security-Id = TLS
+# ALLOW_IPSEC   : we accept implicitly protected connection with with peer (Inband-Security-Id = IPSec)
+# It is specified for example as:
+# ALLOW_IPSEC vpn.example.net vpn2.example.net *.vpn.example.net
+# These flag take effect from their position, until the end of the line.
+

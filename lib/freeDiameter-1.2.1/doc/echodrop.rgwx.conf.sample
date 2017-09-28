@@ -1,0 +1,33 @@
+# Sample configuration file for the echodrop.rgwx plugin of RADIUS/Diameter translation agent.
+#
+# This plugin allows to easily specify the following handling of RADIUS attributes
+# received in a RADIUS request:
+#  - ECHO: the attribute will be copied verbatim in the RADIUS answer.
+#  - DROP: the attribute is discarded.
+#
+# In both cases, the attribute is NOT translated in Diameter message.
+#
+# The format of this file is:
+# <action> CODE <code> [ VENDOR <vid> [ TLV <type> | EXT <ext-type> ] ];
+# Where:
+#    <action>: is either DROP or ECHO.
+#    <code>  : is a (decimal) integer between 0 and 255, and designates the type of the attribute.
+#
+#  The remaining of the line is optional, and should only be used 
+#  with lines containing "CODE 26" (Vendor-Specific Attribute)
+#    <vid> : a Vendor value (32 bit), see RFC2865 section 5.26 for detail.
+#
+#  <type>    : The attribute is interpreted as TLV (rfc3865, section 5.26) 
+#		and we match only this "vendor type" value (8 bits).
+#
+#  <ext-type>: NOTE: THIS OPTION IS NOT SUPPORTED PROPERLY YET!!!!
+#	       The attribute is interpreted as extended attribute (draft-ietf-radext-extended-attributes-08)
+#               and we match only this "Ext-Type" value (16 bits).
+#              This option should only be used with "CODE 26 VENDOR 0".
+#		
+# Note that the Proxy-State (code 33) attribute is handled directly as an ECHO parameter by the gateway core.
+
+# Examples:
+# DROP code 18 ; # Reply-Message attribute, should not be included in requests
+# DROP code 26 vendor 9 ; # Drop any Cisco-specific attribute
+# ECHO code 26 vendor 0 ext 256 ; # Echo any extended attribute with the type 256.

@@ -1,0 +1,123 @@
+See http://www.freediameter.net/trac/wiki/DebRepository for instructions on how to
+install freeDiameter from existing package.
+
+See INSTALL file for general instructions on building freeDiameter from sources.
+
+The remaining of this file contains specific instructions for building the freeDiameter 
+package files for Debian and Ubuntu systems.
+
+
+
+
+freeDiameter is shipped with the necessary files to generate the Debian package. 
+All related files are in the directory "contrib/debian" of the distribution.
+As a first step, you have to link this directory from your top-level dir:
+  ln -s contrib/debian
+ 
+============================================
+
+The following packages are required to compile freeDiameter from source:
+ cmake make gcc g++ flex bison libsctp1 libsctp-dev libgnutls-dev libgcrypt-dev libidn11-dev
+ 
+(note that libidn and libsctp can be avoided by defining DISABLE_SCTP and DIAMID_IDNA_REJECT)
+ 
+Additionnaly, these ones may be useful:
+ mercurial gdb
+ 
+Extensions additional dependencies:
+ app_acct:
+	libpq-dev
+
+ app_sip:
+ app_diameap:
+ 	libmysqlclient-dev
+	
+ dict_legacy_xml:
+ 	libxml2-dev
+	
+ dbg_interactive:
+ 	swig python-dev
+	
+============================================
+
+If your debhelper environment is recent (> 7.3.9 for cmake support), 
+the following commands should generate the freeDiameter packages for you:
+
+# Install the dependencies for building the source:
+sudo apt-get -y install mercurial cmake make gcc g++ bison flex libsctp-dev libgnutls-dev libgcrypt-dev libidn11-dev ssl-cert debhelper fakeroot \
+   libpq-dev libmysqlclient-dev libxml2-dev swig python-dev
+
+# Retrieve the latest version of the source package
+cd 
+hg clone http://www.freediameter.net/hg/freeDiameter
+cd freeDiameter
+
+# Prepare for Debian package
+ln -s contrib/debian
+
+# Build the packages
+fakeroot dh binary
+
+# Install the packages
+cd ..
+sudo dpkg -i *.deb
+
+
+# The following lines may help you getting started.... (execute as root)
+ln -s /etc/ssl/certs/ssl-cert-snakeoil.pem /etc/ssl/certs/freeDiameter.pem
+ln -s /etc/ssl/private/ssl-cert-snakeoil.key /etc/ssl/private/freeDiameter.key
+zcat /usr/share/doc/freediameter-daemon/examples/freediameter.conf.sample.gz > /etc/freeDiameter/freeDiameter.conf
+echo "Identity=\"localhost.localdomain\";" >> /etc/freeDiameter/freeDiameter.conf
+freeDiameterd
+
+===========================================
+
+freeDiameter is tested regularly on all current Ubuntu distributions since Intrepid (compiled from source as described below)
+Ubuntu Hardy support is known to be broken.
+
+The Debian package has been generated with success on Debian (>=Squeeze) and Ubuntu (>=Karmic).
+
+
+===========================================-
+Step by step instructions without using the debhelper tools:
+
+1) Install all packages dependencies
+# sudo apt-get install mercurial cmake make gcc g++ bison flex libsctp-dev libgnutls-dev libgcrypt-dev libidn11-dev
+
+2) (OPTION) If you will compile modules that require postgresql, also install:
+# sudo apt-get install libpq-dev
+   and for mysql:
+# sudo apt-get install libmysqlclient-dev
+
+3) (OPTION) If you want a more user-friendly interface, install this:
+# sudo apt-get install cmake-curses-gui
+
+4) Retrieve the source files
+# hg clone http://www.freediameter.net/hg/freeDiameter
+
+5) Create a build directory, and enter it
+# mkdir fDbuild
+# cd fDbuild
+
+6) Configure and generate the Makefiles
+# cmake ../freeDiameter
+# make edit_cache
+
+7) Compile all files:
+# make
+
+8) (OPTION) See available targets:
+# make help
+
+9) (OPTION) Check the software has a correct basic behavior on your environment. -- only if you did not disable the tests in step 6
+# make test
+
+10) (OPTION) Install the software in configured locations:
+# sudo make install
+
+
+===========================================
+
+Note: On Ubuntu Quantal Quetzal, you may have to force use of python 2.7 
+library for the dbg_interactive extension, as on some systems CMake selects the 3.2 library
+by default.

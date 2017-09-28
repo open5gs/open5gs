@@ -1,0 +1,21 @@
+The simplest way to install on NetBSD, DragonFly, MirBSD or other
+pkgsrc platforms is:
+	pkg_add freeDiameter
+
+If no binary package exists:
+	cd /usr/pkgsrc/net/freeDiameter
+	make install
+
+If you want to build and install freeDiameter from the repository,
+you'll need to install:
+	pkg_add bison pkg-config libidn gnutls libgcrypt mercurial
+and follow the usual installation note.
+
+NetBSD does not support SCTP, so you have to add
+	-DDISABLE_SCTP:BOOL=ON
+to the cmake command line.
+
+For the optional extensions, you need mysql*-client, postgres*-client,
+libxml2.  For the debugging extensions, you also need swig and a
+python -- install as usual.
+

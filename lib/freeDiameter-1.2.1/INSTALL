@@ -1,0 +1,39 @@
+This package uses CMake (cmake.org) as building system. You'll need the cmake tool in order 
+to generate the Makefiles for your platform. You can also select which extensions must be built
+with cmake. After the initial cmake configuration, you will need several tools such as make, a 
+C compiler (tested mostly with gcc), flex (> 2.5.4), bison, ...
+
+You may retrieve the source package in several ways:
+ - as a pre-packaged version for your platform. Check the website for supported platforms.
+ - as a tarball containing the source.
+ - directly from the repository using Mercurial tool:
+      hg clone http://www.freediameter.net/hg/freeDiameter
+   In order to update later:
+      hg pull -u
+
+Building in a separate directory is recommended:
+# mkdir build
+# cd build
+# cmake ../
+# make
+
+You can pass options to instruct cmake about which components to compile on the command-line.
+You can also use a CMake front-end (for example ccmake or cmake-gui). 
+If your cmake installation is recent, the edit_cache target is a good help as well:
+# mkdir build
+# cd build
+# cmake ../
+# make help
+# make edit_cache
+# make
+
+You can disable the unit tests by doing:
+# cmake -DBUILD_TESTING:BOOL=OFF ../
+# make
+
+When the tests are enabled, you can run them with:
+# make test
+
+See the INSTALL.* files for additional platform-specific information.
+Note that the most up-to-date INSTALL file is the Ubuntu one. You may want to read there
+in addition to your own platform file.

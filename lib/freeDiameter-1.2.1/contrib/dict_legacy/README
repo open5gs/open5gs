@@ -1,0 +1,14 @@
+The dictionary.dtd file originates from draft-frascone-xml-dictionary-00.
+A few modifications may have been performed (see file history in Mercurial)
+However, no DTD validation is performed by the parser, but the extension
+expects a known format therefore the flexibility is limited.
+
+
+Additional XML dictionary files can be found:
+  - Circum project (circum.sf.net)
+  	under share/*.xml
+
+  - OpenDiameter project (diameter.sf.net)
+  	under libdiameter/config/dictionary.xml (will probably require some stripping)
+ 
+
