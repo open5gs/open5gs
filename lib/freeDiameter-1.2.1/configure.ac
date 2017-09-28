@@ -93,26 +93,24 @@ AC_DEFINE_UNQUOTED([DEFAULT_EXTENSIONS_PATH],
 AC_SUBST(PREFIX)
 
 
-AC_CHECK_HEADERS([signalent.h])
 AC_CHECK_FUNCS([strndup])
-AC_CHECK_DECL([ntohll],[AC_DEFINE([HAVE_NTOHLL],[1],
+AC_CHECK_DECL([ntohll],[AC_DEFINE([HAVE_NTOHLL], [1],
               [Define to 1 if you have ntohll.])])
-AC_DEFINE([HAVE_AI_ADDRCONFIG], [],
-          [Define to 1 if you have AI_ADDRCONFIG defined in netdb.h])
-AC_DEFINE([HAVE_PTHREAD_BAR], [],
-          [Define to 1 if you have pthread_barrier_wait in libpthread])
-AC_DEFINE([SCTP_CONNECTX_4_ARGS], [],
-          [Define to 1 if sctp_connectx function accepts 4 arguments])
 AC_CHECK_LIB([rt], [clock_gettime],
              [AC_DEFINE([HAVE_CLOCK_GETTIME], [1], [Define clock_gettime])])
 AC_CHECK_LIB([pthread], [pthread_barrier_wait],
-             [AC_DEFINE(HAVE_PTHREAD_BAR, 1)], [])
+             [AC_DEFINE([HAVE_PTHREAD_BAR], [1],
+                        [Define to 1 if you have pthread_barrier_wait in libpthread])],
+             [])
 AC_CHECK_DECL([AI_ADDRCONFIG],
-              [AC_DEFINE(HAVE_AI_ADDRCONFIG, 1)], [], [[#include <netdb.h>]])
+              [AC_DEFINE([HAVE_AI_ADDRCONFIG], [1], [Define AI_ADDRCONFIG])], [], [[#include <netdb.h>]])
 AC_MSG_CHECKING(if sctp_connectx accepts 4 arguments)
 AC_LINK_IFELSE([AC_LANG_SOURCE([
-                [int main() { return sctp_connectx(0, NULL, 0, NULL); }]])
-], [AC_DEFINE(SCTP_CONNECTX_4_ARGS, 1)])
+                [#include <unistd.h>
+                 #include <netinet/sctp.h>
+                 int main() { return sctp_connectx(0, NULL, 0, NULL); }]])
+], [AC_DEFINE([SCTP_CONNECTX_4_ARGS], [1],
+              [Define to 1 if sctp_connectx function accepts 4 arguments])])
 AC_CHECK_LIB([gnutls], [gnutls_hash],
              [AC_DEFINE(GNUTLS_VERSION_210, 1,
               [Define to 1 if you have gnutls 2.10 installed])], [])
