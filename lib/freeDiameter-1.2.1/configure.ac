@@ -25,6 +25,8 @@ AH_TOP([
 #ifndef FD_IS_CONFIG
 #define FD_IS_CONFIG
 
+#define _GNU_SOURCE  1
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -69,6 +71,8 @@ AC_C_BIGENDIAN
 #############################
 AC_DEFINE_UNQUOTED([FD_PROJECT_BINARY],
         ["freeDiameterd"], [Project Binary])
+AC_DEFINE_UNQUOTED([FD_PROJECT_NAME],
+        ["freeDiameter"], [Project Name])
 AC_DEFINE_UNQUOTED([FD_PROJECT_VERSION_MAJOR],
         [`echo $PACKAGE_VERSION | $SED 's/^\([[^\.]]\+\)\.\([[^\.]]\+\)\.\([[^\.]]\+\).*/\1/'`],
         [Major version of this package])
