@@ -18,7 +18,7 @@ AM_INIT_AUTOMAKE([1.10 -Wall -Werror foreign])
 AC_PREREQ(2.63)
 
 # Where to generate output; srcdir location.
-AC_CONFIG_HEADERS([include/freeDiameter/freeDiameter-host.h:include/freeDiameter/freeDiameter-host.hin])dnl Keep filename to 8.3 for MS-DOS.
+AC_CONFIG_HEADERS([include/freeDiameter/config.h])
 AC_CANONICAL_HOST
 case $host in
     *linux*)
@@ -155,6 +155,7 @@ fi
 #### Conclusion. ####
 #####################
 
+AC_CONFIG_FILES([include/freeDiameter/freeDiameter-host.h:include/freeDiameter/freeDiameter-host.hin])
 AC_CONFIG_FILES([libfdcore/Makefile])
 AC_CONFIG_FILES([libfdproto/Makefile])
 AC_CONFIG_FILES([Makefile])

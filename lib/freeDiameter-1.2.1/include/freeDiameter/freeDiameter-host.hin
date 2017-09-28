@@ -1,0 +1,15 @@
+#ifndef __FD_HOST_H__
+#define __FD_HOST_H__
+
+#undef PACKAGE
+#undef PACKAGE_BUGREPORT
+#undef PACKAGE_NAME
+#undef PACKAGE_STRING
+#undef PACKAGE_TARNAME
+#undef PACKAGE_URL
+#undef PACKAGE_VERSION
+#undef VERSION
+
+#include "config.h"
+
+#endif /* __FD_HOST_H__ */
