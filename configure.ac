@@ -67,6 +67,7 @@ AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_AWK
+AC_PROG_SED
 #AC_PROG_YACC
 #AC_PROG_LEX
 AM_PROG_AR
@@ -152,13 +153,13 @@ AC_SUBST(int64_literal)
 AC_SUBST(uint64_literal)
 
 AC_DEFINE_UNQUOTED([PACKAGE_VERSION_MAJOR],
-        [`echo $PACKAGE_VERSION | sed 's/^\([[^\.]]\+\)\.\([[^\.]]\+\)\.\([[^\.]]\+\).*/\1/'`],
+        [`echo $PACKAGE_VERSION | $SED 's/^\([[^\.]]\+\)\.\([[^\.]]\+\)\.\([[^\.]]\+\).*/\1/'`],
         [Major version of this package])
 AC_DEFINE_UNQUOTED([PACKAGE_VERSION_MINOR],
-        [`echo $PACKAGE_VERSION | sed 's/^\([[^\.]]\+\)\.\([[^\.]]\+\)\.\([[^\.]]\+\).*/\2/'`],
+        [`echo $PACKAGE_VERSION | $SED 's/^\([[^\.]]\+\)\.\([[^\.]]\+\)\.\([[^\.]]\+\).*/\2/'`],
         [Minor version of this package])
 AC_DEFINE_UNQUOTED([PACKAGE_VERSION_PATCHLEVEL],
-        [`echo $PACKAGE_VERSION | sed 's/^\([[^\.]]\+\)\.\([[^\.]]\+\)\.\([[^\.]]\+\).*/\3/'`],
+        [`echo $PACKAGE_VERSION | $SED 's/^\([[^\.]]\+\)\.\([[^\.]]\+\)\.\([[^\.]]\+\).*/\3/'`],
         [Patch version of this package])
 
 ##################################
