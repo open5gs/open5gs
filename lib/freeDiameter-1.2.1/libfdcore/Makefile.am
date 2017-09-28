@@ -16,8 +16,7 @@ AM_LFLAGS = -p -Cem -Pfdd
 AM_CPPFLAGS = \
     -I$(top_srcdir)/include
 
-AM_CFLAGS = \
-	-Wall -Werror -Wno-unused-variable
+AM_CFLAGS =
 
 MAINTAINERCLEANFILES = version.h fdd.c Makefile.in
 MOSTLYCLEANFILES = *.stackdump

@@ -80,7 +80,9 @@ AC_C_BIGENDIAN
 #### From FreeDiameter CMAKE 
 #############################
 touch include/freeDiameter/version.h
+rm -f libfdcore/fdd.tab.y
 ln -s fdd.y libfdcore/fdd.tab.y
+rm -f libfdcore/lex.fdd.l
 ln -s fdd.l libfdcore/lex.fdd.l
 
 AC_DEFINE_UNQUOTED([FD_PROJECT_BINARY],
@@ -122,13 +124,6 @@ AC_CHECK_LIB([pthread], [pthread_barrier_wait],
              [])
 AC_CHECK_DECL([AI_ADDRCONFIG],
               [AC_DEFINE([HAVE_AI_ADDRCONFIG], [1], [Define AI_ADDRCONFIG])], [], [[#include <netdb.h>]])
-AC_MSG_CHECKING(if sctp_connectx accepts 4 arguments)
-AC_LINK_IFELSE([AC_LANG_SOURCE([
-                [#include <unistd.h>
-                 #include <netinet/sctp.h>
-                 int main() { return sctp_connectx(0, NULL, 0, NULL); }]])
-], [AC_DEFINE([SCTP_CONNECTX_4_ARGS], [1],
-              [Define to 1 if sctp_connectx function accepts 4 arguments])])
 AC_CHECK_LIB([gnutls], [gnutls_hash],
              [AC_DEFINE(GNUTLS_VERSION_210, 1,
               [Define to 1 if you have gnutls 2.10 installed])], [])
@@ -141,6 +136,20 @@ AC_CHECK_LIB([gnutls], [gnutls_x509_trust_list_verify_crt],
 AC_CHECK_LIB([gnutls], [gnutls_handshake_set_timeout],
              [AC_DEFINE(GNUTLS_VERSION_310, 1,
               [Define to 1 if you have gnutls 3.1 installed])], [])
+
+AC_CACHE_CHECK([whether sctp_connectx function accepts 4 arguments],
+               [ap_cv_sctp_connectx],
+[AC_TRY_COMPILE(
+ [#include <unistd.h>
+#include <netinet/sctp.h>],
+ [sctp_connectx(0, NULL, 0, NULL);],
+ [ap_cv_sctp_connectx=yes], [ap_cv_sctp_connectx=no])
+])
+
+if test "$ap_cv_sctp_connectx" = "yes"; then
+    AC_DEFINE([SCTP_CONNECTX_4_ARGS], [1],
+              [Define 1 if sctp_connectx function accepts 4 arguments])
+fi
 
 #####################
 #### Conclusion. ####

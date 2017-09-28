@@ -11,8 +11,7 @@ libfdproto_la_SOURCES = \
 AM_CPPFLAGS = \
     -I$(top_srcdir)/include
 
-AM_CFLAGS = \
-	-Wall -Werror -Wno-unused-variable
+AM_CFLAGS = 
 
 MAINTAINERCLEANFILES = Makefile.in
 MOSTLYCLEANFILES = *.stackdump
