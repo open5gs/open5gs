@@ -22,14 +22,17 @@ AC_CONFIG_HEADERS([include/freeDiameter/config.h])
 AC_CANONICAL_HOST
 case $host in
     *linux*)
+        sctp=true;
         ;;
     *-apple-darwin*)
         AC_DEFINE_UNQUOTED([DISABLE_SCTP],
                 [1], [Disable SCTP])
+        sctp=false;
         ;;
     *)
         ;;
 esac
+AM_CONDITIONAL([SCTP], [test x$sctp = xtrue])
 
 AH_TOP([
 #ifndef FD_IS_CONFIG

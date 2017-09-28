@@ -10,6 +10,10 @@ libfdcore_la_SOURCES = \
 	p_out.c p_psm.c p_sr.c routing_dispatch.c server.c tcp.c \
 	fdd.tab.y lex.fdd.l version.c
 
+if SCTP
+libfdcore_la_SOURCES += sctp.c sctp3436.c
+endif
+
 AM_YFLAGS = -p fdd -d
 AM_LFLAGS = -p -Cem -Pfdd
 
