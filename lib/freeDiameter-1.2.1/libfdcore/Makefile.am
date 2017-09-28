@@ -3,6 +3,7 @@
 noinst_LTLIBRARIES = libfdcore.la
 
 libfdcore_la_SOURCES = \
+	fdcore-internal.h \
 	apps.c cnxctx.h config.c core.c cnxctx.c endpoints.c events.c \
 	extensions.c fifo_stats.c hooks.c dict_base_proto.c messages.c \
 	queues.c peers.c p_ce.c p_cnx.c p_dw.c p_dp.c p_expiry.c \
@@ -18,5 +19,5 @@ AM_CPPFLAGS = \
 AM_CFLAGS = \
 	-Wall -Werror -Wno-unused-variable
 
-MAINTAINERCLEANFILES = fdd.c Makefile.in 
+MAINTAINERCLEANFILES = version.h fdd.c Makefile.in
 MOSTLYCLEANFILES = *.stackdump

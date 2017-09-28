@@ -2,7 +2,7 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = libfdcore
+SUBDIRS = libfdcore libfdproto
 
 MAINTAINERCLEANFILES = \
     configure config.in \
@@ -12,5 +12,6 @@ MAINTAINERCLEANFILES = \
 	build-aux/ltmain.sh build-aux/test-driver build-aux/compile \
 	build-aux/config.sub build-aux/missing build-aux/install-sh \
 	build-aux/ylwrap include/freeDiameter/freeDiameter-host.hin* \
-    Makefile.in
+    Makefile.in \
+	include/freeDiameter/version.h libfdcore/fdd.tab.y libfdcore/lex.fdd.l
 MOSTLYCLEANFILES = core *.stackdump

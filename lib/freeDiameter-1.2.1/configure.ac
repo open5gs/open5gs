@@ -20,6 +20,16 @@ AC_PREREQ(2.63)
 # Where to generate output; srcdir location.
 AC_CONFIG_HEADERS([include/freeDiameter/freeDiameter-host.h:include/freeDiameter/freeDiameter-host.hin])dnl Keep filename to 8.3 for MS-DOS.
 AC_CANONICAL_HOST
+case $host in
+    *linux*)
+        ;;
+    *-apple-darwin*)
+        AC_DEFINE_UNQUOTED([DISABLE_SCTP],
+                [1], [Disable SCTP])
+        ;;
+    *)
+        ;;
+esac
 
 AH_TOP([
 #ifndef FD_IS_CONFIG
@@ -69,6 +79,10 @@ AC_C_BIGENDIAN
 #############################
 #### From FreeDiameter CMAKE 
 #############################
+touch include/freeDiameter/version.h
+ln -s fdd.y libfdcore/fdd.tab.y
+ln -s fdd.l libfdcore/lex.fdd.l
+
 AC_DEFINE_UNQUOTED([FD_PROJECT_BINARY],
         ["freeDiameterd"], [Project Binary])
 AC_DEFINE_UNQUOTED([FD_PROJECT_NAME],
@@ -133,6 +147,7 @@ AC_CHECK_LIB([gnutls], [gnutls_handshake_set_timeout],
 #####################
 
 AC_CONFIG_FILES([libfdcore/Makefile])
+AC_CONFIG_FILES([libfdproto/Makefile])
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 
