@@ -75,7 +75,9 @@ static void fd_logger_cb(enum fd_hook_type type, struct msg * msg,
 	CHECK_POSIX_DO( pthread_mutex_lock(&mtx), );
 
     if (user_handler)
+    {
         user_handler(type, msg, peer, other, pmd, regdata);
+    }
 
 	switch (type) {
 /* peers */
