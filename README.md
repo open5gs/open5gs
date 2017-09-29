@@ -1,8 +1,5 @@
----
-title: Installation
-order: 2
-page: guides
----
+Installation
+============
 
 This post will guide you on how to get installed with **NextEPC**. To date, **NextEPC** has been compiled and tested on GNU/Linux distributions(Debian, Ubuntu, Fedora, OpenSUSE) and FreeBSD.
 
@@ -52,11 +49,8 @@ make install
 ```
 (this might require sudo depending on the configured target directories)
 
----
-title: Web Setup
-order: 3
-page: guides
----
+Web Setup
+=========
 
 NextEPC is configured with **Mongo DB**, which manages _Subscriber Information_ mainly, and **Configuration File** made in _JSON_ format.
 
@@ -107,11 +101,8 @@ Use **Web Browser** to connect it. _http://localhost:3000_
 
 Then, you can change your password in _Account_ Menu.
 
----
-title: Network Configuration
-order: 4
-page: guides
----
+Network Configuration
+=====================
 
 NextEPC consists of five nodes such as _MME, SGW, PGW, HSS and PCRF_. Basically, each node can be installed in a physically separate host or in the same host.
 
@@ -182,11 +173,8 @@ Once you are done, run the testing script.
 ```
 You can see the simulated packet through **Wireshark**.  _(FILTER : s1ap || gtpv2 || diameter)_
 
----
-title: Running NextEPC
-order: 5
-page: guides
----
+Running NextEPC
+===============
 
 ## Update GUMMEI and TAI
 
