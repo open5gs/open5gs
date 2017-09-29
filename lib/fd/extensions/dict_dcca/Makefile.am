@@ -8,6 +8,9 @@ dict_dcca_la_SOURCES = \
 AM_LDFLAGS = \
 	-module -avoid-version -shared
 
+AM_CPPFLAGS = \
+	-I$(top_srcdir)/lib/@FREEDIAMETER_DIR@/include
+
 AM_CFLAGS = \
 	-Wall -Werror
 

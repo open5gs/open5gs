@@ -74,7 +74,7 @@ AC_PROG_LEX
 AM_PROG_AR
 
 dnl libtool
-LT_INIT
+LT_INIT([dlopen])
 
 dnl Check Endian
 AC_C_BIGENDIAN

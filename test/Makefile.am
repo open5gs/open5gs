@@ -24,11 +24,14 @@ AM_CPPFLAGS = \
     -I$(top_srcdir)/src/hss \
     -I$(top_srcdir)/src/sgw \
     -I$(top_srcdir)/src \
+	-I$(top_srcdir)/lib/@FREEDIAMETER_DIR@/include \
 	@MONGOC_CFLAGS@
 
 AM_CFLAGS = \
 	-Wall -Werror \
 	-Wno-unused-function -Wno-unused-variable
+
+AM_LDFLAGS = -export-dynamic
 
 TESTS = testepc
 

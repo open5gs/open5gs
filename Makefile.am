@@ -8,21 +8,27 @@ bin_PROGRAMS = mmed hssd sgwd pgwd pcrfd epcd
 
 dist_mmed_SOURCES = main.c 
 mmed_LDADD = $(top_srcdir)/src/libmme.la
+mmed_LDFLAGS = -export-dynamic
 
 dist_hssd_SOURCES = main.c 
 hssd_LDADD = $(top_srcdir)/src/libhss.la
+hssd_LDFLAGS = -export-dynamic
 
 dist_sgwd_SOURCES = main.c 
 sgwd_LDADD = $(top_srcdir)/src/libsgw.la
+sgwd_LDFLAGS = -export-dynamic
 
 dist_pgwd_SOURCES = main.c 
 pgwd_LDADD = $(top_srcdir)/src/libpgw.la
+pgwd_LDFLAGS = -export-dynamic
 
 dist_pcrfd_SOURCES = main.c 
 pcrfd_LDADD = $(top_srcdir)/src/libpcrf.la
+pcrfd_LDFLAGS = -export-dynamic
 
 dist_epcd_SOURCES = main.c 
 epcd_LDADD = $(top_srcdir)/src/libepc.la
+epcd_LDFLAGS = -export-dynamic
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \

@@ -7,7 +7,8 @@ libfdgx_la_SOURCES = \
 
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/lib/core/include \
-    -I$(top_srcdir)/lib/base
+    -I$(top_srcdir)/lib/base \
+	-I$(top_srcdir)/lib/@FREEDIAMETER_DIR@/include
 
 AM_CFLAGS = \
 	-Wall -Werror

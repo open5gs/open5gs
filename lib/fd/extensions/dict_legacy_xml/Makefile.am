@@ -14,6 +14,7 @@ AM_LDFLAGS = \
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/fd/gx \
+	-I$(top_srcdir)/lib/@FREEDIAMETER_DIR@/include \
 	@LIBXML2_CFLAGS@
 
 AM_CFLAGS = \

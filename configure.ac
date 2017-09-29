@@ -290,19 +290,26 @@ AC_CHECK_FUNCS(\
 )
 
 AC_CHECK_LIB([pthread], [pthread_mutex_init], [LIBS="${LIBS} -lpthread"])
+AC_CHECK_LIB([dl], [dlopen], [LIBS="${LIBS} -ldl"])
 AC_CHECK_LIB([sctp], [sctp_sendmsg], [LIBS="${LIBS} -lsctp"])
-AC_CHECK_LIB([fdcore], [fd_core_initialize], [LIBS="${LIBS} -lfdcore"])
-AC_CHECK_LIB([fdproto], [fd_libproto_init], [LIBS="${LIBS} -lfdproto"])
 AC_CHECK_LIB([gnutls], [gnutls_global_init], [LIBS="${LIBS} -lgnutls"])
+AC_CHECK_LIB([gcrypt], [gcry_control], [LIBS="${LIBS} -lgcrypt"])
+AC_CHECK_LIB([idn], [idna_strerror], [LIBS="${LIBS} -lidn"])
+#AC_CHECK_LIB([fdcore], [fd_core_initialize], [LIBS="${LIBS} -lfdcore"])
+#AC_CHECK_LIB([fdproto], [fd_libproto_init], [LIBS="${LIBS} -lfdproto"])
 
 PKG_CHECK_MODULES([MONGOC], libmongoc-1.0 >= 1.3.1)
 LIBS="$LIBS $MONGOC_LIBS"
 #PKG_CHECK_MODULES([LIBXML2], libxml-2.0 >= 2.9.1)
 #LIBS="$LIBS $LIBXML2_LIBS"
+FREEDIAMETER_DIR=freeDiameter-1.2.1
+AC_SUBST(FREEDIAMETER_DIR)
 
 #####################
 #### Conclusion. ####
 #####################
+
+AC_CONFIG_SUBDIRS([lib/freeDiameter-1.2.1])
 
 AC_CONFIG_FILES([lib/core/include/core.h])
 AC_CONFIG_FILES([lib/core/src/Makefile])

@@ -21,6 +21,7 @@ AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/base \
     -I$(top_srcdir)/lib/fd/s6a \
     -I$(top_srcdir)/lib/fd \
+	-I$(top_srcdir)/lib/@FREEDIAMETER_DIR@/include \
 	@MONGOC_CFLAGS@
 
 AM_CFLAGS = \
