@@ -1,29 +1,3 @@
-Prerequisite
-============
-
-    sudo apt-get install git cscope gdb
-    sudo apt-get install bison flex
-    sudo apt-get install autoconf libtool m4 pkg-config
-    sudo apt-get install libsctp-dev
-    sudo apt-get install freediameter-dev
-    sudo apt-get install mongodb
-    sudo apt-get install libmongoc-1.0
-    sudo apt-get install libxml2
-
-
-Build from Git
-==============
-
-    test -f configure || autoreconf -iv
-    CFLAGS='-g3' ./configure --prefix=$HOME/Documents/git/nextepc/install
-    make -j `nproc`
-    sudo ip tuntap add name pgwtun mode tun
-    sudo ./scripts/linux_netconfig.sh
-    sudo ./test/testnextepc
-    ./nextepcd
-
-
-
 Install SCTP for Mac OS X 10.11(El Captian)
 ===========================================
  - Reference : https://github.com/sctplab/SCTP_NKE_ElCapitan
