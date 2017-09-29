@@ -47,7 +47,8 @@ AH_TOP([
 #define __NEXTEPC_CONFIG_H__
 /* need this, because some autoconf tests rely on this (e.g. stpcpy)
  * and it should be used for new programs  */
-#define _GNU_SOURCE  1
+#define _DEFAULT_SOURCE 1
+#define _GNU_SOURCE  	1
 ])
 
 AH_BOTTOM([
