@@ -13,8 +13,10 @@
 #include "config.h"
 #endif
 
+#if 0 /* modified by acetcom */
 #ifndef _BSD_SOURCE
 #define _BSD_SOURCE /* for snprintf() on some linux systems  */
+#endif
 #endif
 
 #include <stdio.h>	/* For snprintf(3) */
