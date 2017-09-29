@@ -48,7 +48,7 @@ AH_TOP([
 /* need this, because some autoconf tests rely on this (e.g. stpcpy)
  * and it should be used for new programs  */
 #define _DEFAULT_SOURCE 1
-#define _GNU_SOURCE  	1
+#define _BSD_SOURCE  	1
 ])
 
 AH_BOTTOM([
@@ -193,6 +193,8 @@ AC_CHECK_HEADERS( \
     netinet/ether.h \
     netinet/in.h \
     netinet/ip.h \
+    netinet/udp.h \
+    netinet/tcp.h \
     netinet/sctp.h \
     sys/ioctl.h \
     sys/param.h \

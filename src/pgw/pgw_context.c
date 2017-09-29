@@ -1,7 +1,4 @@
 #define TRACE_MODULE _pgw_context
-#ifndef __FAVOR_BSD
-#define __FAVOR_BSD
-#endif
 #include "core_debug.h"
 #include "core_pool.h"
 #include "core_index.h"
@@ -12,11 +9,6 @@
 
 #include "context.h"
 #include "pgw_context.h"
-
-
-#include <netinet/tcp.h>
-#include <netinet/udp.h>
-
 
 static pgw_context_t self;
 

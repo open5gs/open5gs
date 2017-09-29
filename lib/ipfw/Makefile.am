@@ -11,7 +11,7 @@ libipfw_la_SOURCES = \
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/lib/ipfw/objs/include_e \
 	-include glue.h \
-	-DUSERSPACE -D__BSD_VISIBLE -DNEED_STRTONUM -DNEED_ROUNDUP2 \
+	-D_BSD_SOURCE -DUSERSPACE -D__BSD_VISIBLE -DNEED_STRTONUM -DNEED_ROUNDUP2 \
 	@IPFW_CPPFLAGS@
 
 AM_CFLAGS = \

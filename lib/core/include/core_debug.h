@@ -39,10 +39,6 @@ extern int g_trace_mask;
 CORE_DECLARE(int) d_msg(int tp, int lv, c_time_t t, char *fn, int ln,
         char *fmt, ...);
 
-/* if C99 supported */
-#if (defined _ISOC99_SOURCE || defined _ISOC9X_SOURCE \
-     || (defined __STDC_VERSION__ && __STDC_VERSION__ >= 199901L))
-
 /**
  * Use for printing message. This always print out the message.
  */
@@ -141,21 +137,6 @@ CORE_DECLARE(int) d_msg(int tp, int lv, c_time_t t, char *fn, int ln,
             "!("#cond"). "fmt, ## __VA_ARGS__); \
         expr; \
     }
-
-#else /* C99 */
-
-#define d_print
-
-#define d_trace
-
-#define d_info
-#define d_warn
-#define d_error
-#define d_fatal
-
-#define d_assert
-
-#endif /* C99 */
 
 void d_msg_init();
 
