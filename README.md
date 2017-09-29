@@ -10,12 +10,7 @@ We will describe this guide using **Ubuntu 16.04 LTS (Xenial)**. You'll need to 
 The first step is to use **apt-get** to install all depedencies.
 
 ```bash
-sudo apt-get -y install git gcc flex bison make
-sudo apt-get -y install autoconf libtool pkg-config
-sudo apt-get -y install libsctp-dev libssl-dev
-sudo apt-get -y install libgnutls-dev libgcrypt-dev
-sudo apt-get -y install libmongoc-dev libbson-dev
-sudo apt-get -y install mongodb
+sudo apt-get -y install git gcc flex bison make autoconf libtool pkg-config libsctp-dev libssl-dev libgnutls-dev libgcrypt-dev libmongoc-dev libbson-dev mongodb
 ```
 
 ## Retrieve the latest version of the source package
@@ -67,8 +62,7 @@ Or, you can install _Node.js_ and _NPM_ on **Ubuntu** as follows:
 
 ```bash
 sudo apt-get -y install curl
-curl -sL https://deb.nodesource.com/setup_8.x | \
-    sudo -E bash -
+curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
 sudo apt-get -y install nodejs
 ```
 
