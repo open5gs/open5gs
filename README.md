@@ -136,7 +136,7 @@ A configuration file is located `etc/nextepc.conf` from the installed paths. If 
 
 For example, if you want the IP aliasing address of *PGW* to be _10.1.35.254_, `PGW.NETWORK.S5C_IPV4` and `PGW_NETWORK.S5U_IPV4` field should be updated like the followings.
 
-```json
+<pre>
   PGW :
   {
     FD_CONF_PATH : "/etc/freeDiameter
@@ -163,7 +163,7 @@ For example, if you want the IP aliasing address of *PGW* to be _10.1.35.254_, `
       SECONDARY_IPV4: "4.4.4.4"
     }
   }
-```
+</pre>
 
 ## Testing Network Configuration
 
@@ -180,7 +180,7 @@ Running NextEPC
 
 The followings are the **GUMMEI** and **TAI** of the *MME* currently set to Default. Your *eNodeB* will also have a **PLMN ID** and **TAC** set. Refer to these parameters to change the setting of MME or eNodeB.
 
-```json
+<pre>
 GUMMEI:
 {
   PLMN_ID : 
@@ -200,11 +200,11 @@ TAI:
   }
   TAC: 12345
 }
-```
+</pre>
 
 For reference, MME can set several GUMMEI and TAI as **JSON array notation** as follows.
 
-```json
+<pre>
 GUMMEI:
 [
   {
@@ -245,7 +245,7 @@ TAI:
     TAC: 6789
   }
 ]
-```
+</pre>
 
 ## Register Subscriber Information
 
