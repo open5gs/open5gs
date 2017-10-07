@@ -1,0 +1,42 @@
+# compiler output
+*.o
+*.lo
+*.a
+*.la
+*.conf
+.deps
+.libs
+
+# generated files
+lib/freeDiameter-*/libfdcore/fdd.tab.[chy]
+lib/freeDiameter-*/libfdcore/lex.fdd.[cl]
+lib/freeDiameter-*/include/freeDiameter/version.h
+lib/freeDiameter-*/include/freeDiameter/config.h.in
+lib/freeDiameter-*/include/freeDiameter/freeDiameter-host.h
+lib/core/include/core.h
+
+# autotools
+stamp-h1
+config.h
+config.in
+config.nice
+config.log
+configure
+aclocal.m4
+config.status
+libtool
+autom4te.cache
+build-aux
+Makefile
+Makefile.in
+m4
+
+# executables
+lib/core/test/testcore
+test/testepc
+mmed
+pcrfd
+pgwd
+sgwd
+epcd
+hssd
