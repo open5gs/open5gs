@@ -1,5 +1,5 @@
-Installation
-============
+Building NextEPC
+================
 
 This post will guide you on how to get installed with **NextEPC**. To date, **NextEPC** has been compiled and tested on GNU/Linux distributions(Debian, Ubuntu, Fedora, OpenSUSE) and FreeBSD.
 
