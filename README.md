@@ -3,7 +3,7 @@ Building NextEPC
 
 This post will guide you on how to get installed with **NextEPC**. To date, **NextEPC** has been compiled and tested on GNU/Linux distributions(Debian, Ubuntu, Fedora, OpenSUSE) and FreeBSD.
 
-We will describe this guide using **Ubuntu 16.04 LTS (Xenial)**. You'll need to install **Ubuntu** if you don't have it installed already. To get the latest Ubuntu version please visit the official Ubuntu website: [https://www.ubuntu.com/download/](https://www.ubuntu.com/download/). 
+We will describe this guide using **Ubuntu 16.04 LTS (Xenial)**. You'll need to install **Ubuntu** if you don't have it installed already. To get the latest Ubuntu version, please visit the official Ubuntu website: [https://www.ubuntu.com/download/](https://www.ubuntu.com/download/). 
 
 ## Install the dependencies for building the source
 
