@@ -8,7 +8,7 @@ dnl This program is distributed in the hope that it will be useful, but
 dnl WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 dnl implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-AC_INIT([NEXTEPC], [0.1.0], [acetcom@gmail.com])
+AC_INIT([NEXTEPC], [0.1.1], [acetcom@gmail.com])
 
 CORE_CONFIG_NICE(config.nice)
 
