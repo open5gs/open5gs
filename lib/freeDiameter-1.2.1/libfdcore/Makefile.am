@@ -17,6 +17,8 @@ endif
 AM_YFLAGS = -p fdd -d
 AM_LFLAGS = -p -Cem -Pfdd
 
+BUILT_SOURCES = fdd.tab.h
+
 AM_CPPFLAGS = \
     -I$(top_srcdir)/include
 
