@@ -347,10 +347,11 @@ struct sysctlhead {
 
 
 #endif /* EMULATE_SYSCTL */
+
+#ifndef __FreeBSD__
 int sysctlbyname(const char *name, void *oldp, size_t *oldlenp, void *newp,
          size_t newlen);
 
-#ifndef __FreeBSD__
 #define test_bit(ix, pData)     ((*pData) & (1<<(ix)))
 #define __set_bit(ix, pData)    (*pData) |= (1<<(ix))
 #define __clear_bit(ix, pData)  (*pData) &= ~(1<<(ix))

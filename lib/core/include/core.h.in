@@ -144,10 +144,6 @@
 #include <netinet/tcp.h>
 #endif
 
-#if HAVE_NETINET_SCTP_H
-#include <netinet/sctp.h>
-#endif
-
 #if HAVE_SYS_IOCTL_H
 #include <sys/ioctl.h>
 #endif

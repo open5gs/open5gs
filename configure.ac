@@ -192,7 +192,7 @@ AC_CHECK_HEADERS( \
     net/if.h \
     netinet/ether.h \
     netinet/in.h \
-    netinet/ip.h \
+    netinet/in_systm.h \
     netinet/udp.h \
     netinet/tcp.h \
     netinet/sctp.h \
@@ -206,6 +206,17 @@ AC_CHECK_HEADERS( \
     sys/wait.h \
     sys/uio.h \
 )
+
+AC_CHECK_HEADERS(netinet/ip.h,,,[[
+#include <sys/types.h>
+#if HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
+#endif
+#include <netinet/in.h>
+#if HAVE_NETINET_IN_SYSTM_H
+#include <netinet/in_systm.h>
+#endif
+]])
 
 ##########################################
 #### Checks for typedefs, structures, ####
