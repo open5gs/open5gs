@@ -80,37 +80,23 @@ sgw_context_t* sgw_self()
 
 static status_t sgw_context_prepare()
 {
-    self.s11_port = GTPV2_C_UDP_PORT;
-    self.s5c_port = GTPV2_C_UDP_PORT;
-    self.s1u_port = GTPV1_U_UDP_PORT;
-    self.s5u_port = GTPV1_U_UDP_PORT;
+    self.gtpc_port = GTPV2_C_UDP_PORT;
+    self.gtpu_port = GTPV1_U_UDP_PORT;
 
     return CORE_OK;
 }
 
 static status_t sgw_context_validation()
 {
-    if (self.s11_addr == 0)
+    if (self.gtpc_addr == 0)
     {
-        d_error("No SGW.NEWORK.S11_IPV4 in '%s'",
+        d_error("No SGW.NEWORK.GTPC_IPV4 in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
-    if (self.s5c_addr == 0)
+    if (self.gtpu_addr == 0)
     {
-        d_error("No SGW.NEWORK.S5C_IPV4 in '%s'",
-                context_self()->config.path);
-        return CORE_ERROR;
-    }
-    if (self.s1u_addr == 0)
-    {
-        d_error("No SGW.NEWORK.S1U_IPV4 in '%s'",
-                context_self()->config.path);
-        return CORE_ERROR;
-    }
-    if (self.s5u_addr == 0)
-    {
-        d_error("No SGW.NEWORK.S5U_IPV4 in '%s'",
+        d_error("No SGW.NEWORK.GTPU_IPV4 in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
@@ -199,45 +185,25 @@ status_t sgw_context_parse_config()
                         {
                             n += (t+m)->size;
 
-                            if (jsmntok_equal(json, t+m, "S11_IPV4") == 0)
+                            if (jsmntok_equal(json, t+m, "GTPC_IPV4") == 0)
                             {
                                 char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.s11_addr = inet_addr(v);
+                                if (v) self.gtpc_addr = inet_addr(v);
                             }
-                            else if (jsmntok_equal(json, t+m, "S11_PORT") == 0)
+                            else if (jsmntok_equal(json, t+m, "GTPC_PORT") == 0)
                             {
                                 char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.s11_port = atoi(v);
+                                if (v) self.gtpc_port = atoi(v);
                             }
-                            else if (jsmntok_equal(json, t+m, "S5C_IPV4") == 0)
+                            else if (jsmntok_equal(json, t+m, "GTPU_IPV4") == 0)
                             {
                                 char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.s5c_addr = inet_addr(v);
+                                if (v) self.gtpu_addr = inet_addr(v);
                             }
-                            else if (jsmntok_equal(json, t+m, "S5C_PORT") == 0)
+                            else if (jsmntok_equal(json, t+m, "GTPU_PORT") == 0)
                             {
                                 char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.s5c_port = atoi(v);
-                            }
-                            else if (jsmntok_equal(json, t+m, "S1U_IPV4") == 0)
-                            {
-                                char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.s1u_addr = inet_addr(v);
-                            }
-                            else if (jsmntok_equal(json, t+m, "S1U_PORT") == 0)
-                            {
-                                char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.s1u_port = atoi(v);
-                            }
-                            else if (jsmntok_equal(json, t+m, "S5U_IPV4") == 0)
-                            {
-                                char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.s5u_addr = inet_addr(v);
-                            }
-                            else if (jsmntok_equal(json, t+m, "S5U_PORT") == 0)
-                            {
-                                char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.s5u_port = atoi(v);
+                                if (v) self.gtpu_port = atoi(v);
                             }
                         }
                     }
@@ -472,7 +438,7 @@ sgw_ue_t* sgw_ue_add(
     d_assert(sgw_ue, return NULL, "Null param");
 
     sgw_ue->sgw_s11_teid = sgw_ue->index;
-    sgw_ue->sgw_s11_addr = sgw_self()->s11_addr;
+    sgw_ue->sgw_s11_addr = sgw_self()->gtpc_addr;
 
     /* Set IMSI */
     sgw_ue->imsi_len = imsi_len;
@@ -609,7 +575,7 @@ sgw_sess_t *sgw_sess_add(
     d_assert(sess, return NULL, "Null param");
 
     sess->sgw_s5c_teid = sess->index;
-    sess->sgw_s5c_addr = sgw_self()->s5c_addr;
+    sess->sgw_s5c_addr = sgw_self()->gtpc_addr;
 
     /* Set APN */
     core_cpystrn(sess->pdn.apn, apn, MAX_APN_LEN+1);
@@ -719,9 +685,6 @@ sgw_bearer_t* sgw_bearer_add(sgw_sess_t *sess)
     index_alloc(&sgw_bearer_pool, &bearer);
     d_assert(bearer, return NULL, "Bearer context allocation failed");
 
-    bearer->sgw_s5u_teid = bearer->index;
-    bearer->sgw_s5u_addr = sgw_self()->s5u_addr;
-
     list_append(&sess->bearer_list, bearer);
     
     bearer->sgw_ue = sgw_ue;
@@ -730,6 +693,9 @@ sgw_bearer_t* sgw_bearer_add(sgw_sess_t *sess)
     list_init(&bearer->tunnel_list);
 
     tunnel = sgw_tunnel_add(bearer, GTP_F_TEID_S1_U_SGW_GTP_U);
+    d_assert(tunnel, return NULL, "Tunnel context allocation failed");
+
+    tunnel = sgw_tunnel_add(bearer, GTP_F_TEID_S5_S8_SGW_GTP_U);
     d_assert(tunnel, return NULL, "Tunnel context allocation failed");
 
     return bearer;
@@ -849,7 +815,7 @@ sgw_tunnel_t* sgw_tunnel_add(sgw_bearer_t *bearer, c_uint8_t interface_type)
 
     tunnel->interface_type = interface_type;
     tunnel->local_teid = tunnel->index;
-    tunnel->local_addr = sgw_self()->s1u_addr;
+    tunnel->local_addr = sgw_self()->gtpu_addr;
 
     tunnel->bearer = bearer;
 
@@ -901,7 +867,8 @@ sgw_tunnel_t* sgw_tunnel_find_by_teid(c_uint32_t teid)
     return sgw_tunnel_find(teid);
 }
 
-sgw_tunnel_t* sgw_direct_tunnel_in_bearer(sgw_bearer_t *bearer)
+sgw_tunnel_t* sgw_tunnel_find_by_interface_type(
+        sgw_bearer_t *bearer, c_uint8_t interface_type)
 {
     sgw_tunnel_t *tunnel = NULL;
 
@@ -910,7 +877,7 @@ sgw_tunnel_t* sgw_direct_tunnel_in_bearer(sgw_bearer_t *bearer)
     tunnel = sgw_tunnel_first(bearer);
     while(tunnel)
     {
-        if (tunnel->interface_type == GTP_F_TEID_S1_U_SGW_GTP_U)
+        if (tunnel->interface_type == interface_type)
         {
             return tunnel;
         }
@@ -919,6 +886,17 @@ sgw_tunnel_t* sgw_direct_tunnel_in_bearer(sgw_bearer_t *bearer)
     }
 
     return NULL;
+}
+
+sgw_tunnel_t* sgw_s1u_tunnel_in_bearer(sgw_bearer_t *bearer)
+{
+    return sgw_tunnel_find_by_interface_type(
+            bearer, GTP_F_TEID_S1_U_SGW_GTP_U);
+}
+sgw_tunnel_t* sgw_s5u_tunnel_in_bearer(sgw_bearer_t *bearer)
+{
+    return sgw_tunnel_find_by_interface_type(
+            bearer, GTP_F_TEID_S5_S8_SGW_GTP_U);
 }
 
 sgw_tunnel_t* sgw_tunnel_first(sgw_bearer_t *bearer)

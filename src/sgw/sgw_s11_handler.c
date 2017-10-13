@@ -29,6 +29,7 @@ void sgw_s11_handle_create_session_request(gtp_xact_t *s11_xact,
     gtp_xact_t *s5c_xact = NULL;
     sgw_sess_t *sess = NULL;
     sgw_bearer_t *bearer = NULL;
+    sgw_tunnel_t *s5u_tunnel = NULL;
 
     d_assert(s11_xact, return, "Null param");
     d_assert(sgw_ue, return, "Null param");
@@ -79,6 +80,8 @@ void sgw_s11_handle_create_session_request(gtp_xact_t *s11_xact,
     d_assert(sess, return, "Null param");
     bearer = sgw_default_bearer_in_sess(sess);
     d_assert(bearer, return, "Null param");
+    s5u_tunnel = sgw_s5u_tunnel_in_bearer(bearer);
+    d_assert(s5u_tunnel, return, "Null param");
 
     /* Receive Control Plane(DL) : MME-S11 */
     mme_s11_teid = req->sender_f_teid_for_control_plane.data;
@@ -110,7 +113,7 @@ void sgw_s11_handle_create_session_request(gtp_xact_t *s11_xact,
 
         pgw->addr = addr;
         pgw->port = port;
-        pgw->sock = sgw_self()->s5c_sock;
+        pgw->sock = sgw_self()->gtpc_sock;
     }
 
     /* Setup GTP Node */
@@ -121,8 +124,8 @@ void sgw_s11_handle_create_session_request(gtp_xact_t *s11_xact,
 
     /* Data Plane(DL) : SGW-S5U */
     memset(&sgw_s5u_teid, 0, sizeof(gtp_f_teid_t));
-    sgw_s5u_teid.teid = htonl(bearer->sgw_s5u_teid);
-    sgw_s5u_teid.ipv4_addr = bearer->sgw_s5u_addr;
+    sgw_s5u_teid.teid = htonl(s5u_tunnel->local_teid);
+    sgw_s5u_teid.ipv4_addr = s5u_tunnel->local_addr;
     sgw_s5u_teid.interface_type = GTP_F_TEID_S5_S8_SGW_GTP_U;
     req->bearer_contexts_to_be_created.s5_s8_u_sgw_f_teid.presence = 1;
     req->bearer_contexts_to_be_created.s5_s8_u_sgw_f_teid.data = &sgw_s5u_teid;
@@ -161,6 +164,7 @@ CORE_DECLARE(void) sgw_s11_handle_modify_bearer_request(gtp_xact_t *s11_xact,
     status_t rv;
     c_uint16_t decoded;
     sgw_bearer_t *bearer = NULL;
+    sgw_tunnel_t *s1u_tunnel = NULL;
     gtp_modify_bearer_response_t *rsp = NULL;
     pkbuf_t *pkbuf = NULL;
     gtp_message_t gtp_message;
@@ -192,6 +196,8 @@ CORE_DECLARE(void) sgw_s11_handle_modify_bearer_request(gtp_xact_t *s11_xact,
     bearer = sgw_bearer_find_by_ue_ebi(sgw_ue, 
                 req->bearer_contexts_to_be_modified.eps_bearer_id.u8);
     d_assert(bearer, return, "No Bearer Context");
+    s1u_tunnel = sgw_s1u_tunnel_in_bearer(bearer);
+    d_assert(s1u_tunnel, return, "No S1U Tunnel Context");
 
     /* Set User Location Information */
     if (req->user_location_information.presence == 1)
@@ -212,8 +218,8 @@ CORE_DECLARE(void) sgw_s11_handle_modify_bearer_request(gtp_xact_t *s11_xact,
 
     /* Data Plane(DL) : eNB-S1U */
     enb_s1u_teid = req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.data;
-    bearer->enb_s1u_teid = ntohl(enb_s1u_teid->teid);
-    bearer->enb_s1u_addr = enb_s1u_teid->ipv4_addr;
+    s1u_tunnel->remote_teid = ntohl(enb_s1u_teid->teid);
+    s1u_tunnel->remote_addr = enb_s1u_teid->ipv4_addr;
 
     /* Reset UE state */
     SGW_RESET_UE_STATE(sgw_ue, SGW_S1U_INACTIVE);
@@ -296,7 +302,7 @@ void sgw_s11_handle_create_bearer_response(gtp_xact_t *s11_xact,
     gtp_xact_t *s5c_xact = NULL;
     sgw_sess_t *sess = NULL;
     sgw_bearer_t *bearer = NULL;
-    sgw_tunnel_t *tunnel = NULL;
+    sgw_tunnel_t *s1u_tunnel = NULL, *s5u_tunnel = NULL;
     gtp_create_bearer_response_t *req = NULL;
 
     gtp_f_teid_t *sgw_s1u_teid = NULL, *enb_s1u_teid = NULL;
@@ -344,10 +350,12 @@ void sgw_s11_handle_create_bearer_response(gtp_xact_t *s11_xact,
     req->bearer_contexts.s4_u_sgsn_f_teid.presence = 0;
 
     /* Find the Tunnel by SGW-S1U-TEID */
-    tunnel = sgw_tunnel_find_by_teid(ntohl(sgw_s1u_teid->teid));
-    d_assert(tunnel, return, "Null param");
-    bearer = tunnel->bearer;
+    s1u_tunnel = sgw_tunnel_find_by_teid(ntohl(sgw_s1u_teid->teid));
+    d_assert(s1u_tunnel, return, "Null param");
+    bearer = s1u_tunnel->bearer;
     d_assert(bearer, return, "Null param");
+    s5u_tunnel = sgw_s5u_tunnel_in_bearer(bearer);
+    d_assert(s5u_tunnel, return, "Null param");
     sess = bearer->sess;
     d_assert(sess, return, "Null param");
 
@@ -356,8 +364,8 @@ void sgw_s11_handle_create_bearer_response(gtp_xact_t *s11_xact,
 
     /* Data Plane(DL) : eNB-S1U */
     enb_s1u_teid = req->bearer_contexts.s1_u_enodeb_f_teid.data;
-    bearer->enb_s1u_teid = ntohl(enb_s1u_teid->teid);
-    bearer->enb_s1u_addr = enb_s1u_teid->ipv4_addr;
+    s1u_tunnel->remote_teid = ntohl(enb_s1u_teid->teid);
+    s1u_tunnel->remote_addr = enb_s1u_teid->ipv4_addr;
     req->bearer_contexts.s1_u_enodeb_f_teid.presence = 0;
 
     decoded = gtp_parse_uli(&uli, &req->user_location_information);
@@ -372,8 +380,8 @@ void sgw_s11_handle_create_bearer_response(gtp_xact_t *s11_xact,
 
     /* Data Plane(DL) : SGW-S5U */
     memset(&sgw_s5u_teid, 0, sizeof(gtp_f_teid_t));
-    sgw_s5u_teid.teid = htonl(bearer->sgw_s5u_teid);
-    sgw_s5u_teid.ipv4_addr = bearer->sgw_s5u_addr;
+    sgw_s5u_teid.teid = htonl(s5u_tunnel->local_teid);
+    sgw_s5u_teid.ipv4_addr = s5u_tunnel->local_addr;
     sgw_s5u_teid.interface_type = GTP_F_TEID_S5_S8_SGW_GTP_U;
     req->bearer_contexts.s5_s8_u_sgw_f_teid.presence = 1;
     req->bearer_contexts.s5_s8_u_sgw_f_teid.data = &sgw_s5u_teid;
@@ -381,8 +389,8 @@ void sgw_s11_handle_create_bearer_response(gtp_xact_t *s11_xact,
 
     /* Data Plane(DL) : PGW-S5U */
     memset(&pgw_s5u_teid, 0, sizeof(gtp_f_teid_t));
-    pgw_s5u_teid.teid = htonl(tunnel->remote_teid);
-    pgw_s5u_teid.ipv4_addr = tunnel->remote_addr;
+    pgw_s5u_teid.teid = htonl(s5u_tunnel->remote_teid);
+    pgw_s5u_teid.ipv4_addr = s5u_tunnel->remote_addr;
     pgw_s5u_teid.interface_type = GTP_F_TEID_S5_S8_PGW_GTP_U;
     req->bearer_contexts.s5_s8_u_pgw_f_teid.presence = 1;
     req->bearer_contexts.s5_s8_u_pgw_f_teid.data = &pgw_s5u_teid;
@@ -412,6 +420,7 @@ void sgw_s11_handle_release_access_bearers_request(gtp_xact_t *s11_xact,
     pkbuf_t *pkbuf = NULL;
     gtp_message_t gtp_message;
     sgw_bearer_t *bearer = NULL, *next_bearer = NULL;
+    sgw_tunnel_t *s1u_tunnel = NULL;
     sgw_sess_t *sess = NULL;
     
     gtp_cause_t cause;
@@ -434,8 +443,11 @@ void sgw_s11_handle_release_access_bearers_request(gtp_xact_t *s11_xact,
         {
             next_bearer = list_next(bearer);
 
-            bearer->enb_s1u_teid = 0;
-            bearer->enb_s1u_addr = 0;
+            s1u_tunnel = sgw_s1u_tunnel_in_bearer(bearer);
+            d_assert(s1u_tunnel, return, "Null param");
+
+            s1u_tunnel->remote_teid = 0;
+            s1u_tunnel->remote_addr = 0;
 
             bearer = next_bearer;
         }

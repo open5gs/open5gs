@@ -21,26 +21,16 @@ typedef gtp_node_t sgw_mme_t;
 typedef gtp_node_t sgw_pgw_t;
 
 typedef struct _sgw_context_t {
-    c_uint32_t      sgw_addr;     /* SGW local address */
+    c_uint32_t      gtpc_addr; /* GTP-U local address */
+    c_uint32_t      gtpc_port; /* GTP-U local port */
+    net_sock_t*     gtpc_sock; /* GTP-U local listen socket */
 
-    c_uint32_t      s11_addr;  /* SGW S11 local address */
-    c_uint32_t      s11_port;  /* SGW S11 local port */
-    net_sock_t*     s11_sock;  /* SGW S11 local listen socket */
+    c_uint32_t      gtpu_addr; /* GTP-U local address */
+    c_uint32_t      gtpu_port; /* GTP-U local port */
+    net_sock_t*     gtpu_sock; /* GTP-U local listen socket */
 
-    c_uint32_t      s5c_addr;  /* SGW S5-C local address */
-    c_uint32_t      s5c_port;  /* SGW S5-C local port */
-    net_sock_t*     s5c_sock;  /* SGW S5-C local listen socket */
-
-    c_uint32_t      s1u_addr;  /* SGW S1-U local address */
-    c_uint32_t      s1u_port;  /* SGW S1-U local port */
-    net_sock_t*     s1u_sock;  /* SGW S1-U local listen socket */
-
-    c_uint32_t      s5u_addr;  /* SGW S5-U local address */
-    c_uint32_t      s5u_port;  /* SGW S5-U local port */
-    net_sock_t*     s5u_sock;  /* SGW S5-U local listen socket */
-
-    msgq_id         queue_id;       /* Queue for processing SGW control plane */
-    tm_service_t    tm_service;     /* Timer Service */
+    msgq_id         queue_id;  /* Queue for processing SGW control plane */
+    tm_service_t    tm_service;/* Timer Service */
 
     list_t          mme_list;  /* MME GTP Node List */
     list_t          pgw_list;  /* PGW GTP Node List */
@@ -116,13 +106,6 @@ typedef struct _sgw_bearer_t {
     index_t         index;
 
     c_uint8_t       ebi;
-
-    /* IMPORTANT! 
-     * SGW-S5U-TEID is same with an index */
-    c_uint32_t      sgw_s5u_teid;  
-    c_uint32_t      sgw_s5u_addr;
-    c_uint32_t      enb_s1u_teid;
-    c_uint32_t      enb_s1u_addr;
 
     /* User-Lication-Info */
     tai_t           tai;
@@ -224,7 +207,10 @@ CORE_DECLARE(status_t) sgw_tunnel_remove(sgw_tunnel_t *tunnel);
 CORE_DECLARE(status_t) sgw_tunnel_remove_all(sgw_bearer_t *bearer);
 CORE_DECLARE(sgw_tunnel_t*) sgw_tunnel_find(index_t index);
 CORE_DECLARE(sgw_tunnel_t*) sgw_tunnel_find_by_teid(c_uint32_t teid);
-CORE_DECLARE(sgw_tunnel_t*) sgw_direct_tunnel_in_bearer(sgw_bearer_t *bearer);
+CORE_DECLARE(sgw_tunnel_t*) sgw_tunnel_find_by_interface_type(
+        sgw_bearer_t *bearer, c_uint8_t interface_type);
+CORE_DECLARE(sgw_tunnel_t*) sgw_s1u_tunnel_in_bearer(sgw_bearer_t *bearer);
+CORE_DECLARE(sgw_tunnel_t*) sgw_s5u_tunnel_in_bearer(sgw_bearer_t *bearer);
 CORE_DECLARE(sgw_tunnel_t*) sgw_tunnel_first(sgw_bearer_t *bearer);
 CORE_DECLARE(sgw_tunnel_t*) sgw_tunnel_next(sgw_tunnel_t *tunnel);
 
