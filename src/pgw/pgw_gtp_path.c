@@ -64,7 +64,7 @@ static int _gtpv1_tun_recv_cb(net_link_t *net_link, void *data)
         /* Send to SGW */
         gnode.addr = bearer->sgw_s5u_addr;
         gnode.port = GTPV1_U_UDP_PORT;
-        gnode.sock = pgw_self()->s5u_sock;
+        gnode.sock = pgw_self()->gtpu_sock;
         d_trace(50, "Send S5U PDU (teid = 0x%x)to SGW(%s)\n",
                 bearer->sgw_s5u_teid,
                 INET_NTOP(&gnode.addr, buf));
@@ -174,19 +174,19 @@ status_t pgw_gtp_open()
 {
     status_t rv;
 
-    rv = gtp_listen(&pgw_self()->s5c_sock, _gtpv2_c_recv_cb, 
-            pgw_self()->s5c_addr, pgw_self()->s5c_port, NULL);
+    rv = gtp_listen(&pgw_self()->gtpc_sock, _gtpv2_c_recv_cb, 
+            pgw_self()->gtpc_addr, pgw_self()->gtpc_port, NULL);
     if (rv != CORE_OK)
     {
-        d_error("Can't establish S5-C Path for PGW");
+        d_error("Can't establish GTP-C Path for PGW");
         return rv;
     }
 
-    rv = gtp_listen(&pgw_self()->s5u_sock, _gtpv1_u_recv_cb, 
-            pgw_self()->s5u_addr, pgw_self()->s5u_port, NULL);
+    rv = gtp_listen(&pgw_self()->gtpu_sock, _gtpv1_u_recv_cb, 
+            pgw_self()->gtpu_addr, pgw_self()->gtpu_port, NULL);
     if (rv != CORE_OK)
     {
-        d_error("Can't establish S5-U Path for PGW");
+        d_error("Can't establish GTP-U Path for PGW");
         return rv;
     }
 
@@ -229,17 +229,17 @@ status_t pgw_gtp_close()
 {
     status_t rv;
 
-    rv = gtp_close(pgw_self()->s5c_sock);
+    rv = gtp_close(pgw_self()->gtpc_sock);
     if (rv != CORE_OK)
     {
-        d_error("Can't close S5-C Path for MME");
+        d_error("Can't close GTP-C Path for MME");
         return rv;
     }
 
-    rv = gtp_close(pgw_self()->s5u_sock);
+    rv = gtp_close(pgw_self()->gtpu_sock);
     if (rv != CORE_OK)
     {
-        d_error("Can't close S5-U Path for MME");
+        d_error("Can't close GTP-U Path for MME");
         return rv;
     }
 

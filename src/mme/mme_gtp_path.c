@@ -53,18 +53,18 @@ status_t mme_gtp_open()
     status_t rv;
     mme_sgw_t *sgw = mme_sgw_first();
 
-    rv = gtp_listen(&mme_self()->s11_sock, _gtpv2_c_recv_cb, 
-            mme_self()->s11_addr, mme_self()->s11_port, NULL);
+    rv = gtp_listen(&mme_self()->gtpc_sock, _gtpv2_c_recv_cb, 
+            mme_self()->gtpc_addr, mme_self()->gtpc_port, NULL);
     if (rv != CORE_OK)
     {
-        d_error("Can't establish S11 Path for SGW");
+        d_error("Can't establish GTP-C Path for SGW");
         return rv;
     }
 
     /* socket descriptor needs in gnode when packet is sending initilly */
     while(sgw)
     {
-        sgw->sock = mme_self()->s11_sock;
+        sgw->sock = mme_self()->gtpc_sock;
         sgw = mme_sgw_next(sgw);
     }
 
@@ -75,10 +75,10 @@ status_t mme_gtp_close()
 {
     status_t rv;
 
-    rv = gtp_close(mme_self()->s11_sock);
+    rv = gtp_close(mme_self()->gtpc_sock);
     if (rv != CORE_OK)
     {
-        d_error("Can't close S11 Path for SGW");
+        d_error("Can't close GTP-C Path for SGW");
         return rv;
     }
 

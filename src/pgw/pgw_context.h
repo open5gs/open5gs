@@ -22,13 +22,13 @@ typedef gtp_node_t pgw_sgw_t;
 typedef struct _pgw_context_t {
     c_uint32_t      pgw_addr;  /* PGW local address */
 
-    c_uint32_t      s5c_addr;  /* PGW S5-C local address */
-    c_uint32_t      s5c_port;  /* PGW S5-C local port */
-    net_sock_t*     s5c_sock;  /* PGW S5-C local listen socket */
+    c_uint32_t      gtpc_addr;  /* PGW GTP-C local address */
+    c_uint32_t      gtpc_port;  /* PGW GTP-C local port */
+    net_sock_t*     gtpc_sock;  /* PGW GTP-C local listen socket */
 
-    c_uint32_t      s5u_addr;  /* PGW S5-U local address */
-    c_uint32_t      s5u_port;  /* PGW S5-U local port */
-    net_sock_t*     s5u_sock;  /* PGW S5-U local listen socket */
+    c_uint32_t      gtpu_addr;  /* PGW GTP-U local address */
+    c_uint32_t      gtpu_port;  /* PGW GTP-U local port */
+    net_sock_t*     gtpu_sock;  /* PGW GTP-U local listen socket */
 
     char*           fd_conf_path;   /* PGW freeDiameter conf path */
 

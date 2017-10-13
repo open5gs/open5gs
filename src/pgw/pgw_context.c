@@ -94,8 +94,8 @@ pgw_context_t* pgw_self()
 
 static status_t pgw_context_prepare()
 {
-    self.s5c_port = GTPV2_C_UDP_PORT;
-    self.s5u_port = GTPV1_U_UDP_PORT;
+    self.gtpc_port = GTPV2_C_UDP_PORT;
+    self.gtpu_port = GTPV1_U_UDP_PORT;
 
     return CORE_OK;
 }
@@ -108,15 +108,15 @@ static status_t pgw_context_validation()
                 context_self()->config.path);
         return CORE_ERROR;
     }
-    if (self.s5c_addr == 0)
+    if (self.gtpc_addr == 0)
     {
-        d_error("No PGW.NEWORK.S5C_IPV4 in '%s'",
+        d_error("No PGW.NEWORK.GTPC_IPV4 in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
-    if (self.s5u_addr == 0)
+    if (self.gtpu_addr == 0)
     {
-        d_error("No PGW.NEWORK.S5U_IPV4 in '%s'",
+        d_error("No PGW.NEWORK.GTPU_IPV4 in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
@@ -227,25 +227,25 @@ status_t pgw_context_parse_config()
                         {
                             n += (t+m)->size;
 
-                            if (jsmntok_equal(json, t+m, "S5C_IPV4") == 0)
+                            if (jsmntok_equal(json, t+m, "GTPC_IPV4") == 0)
                             {
                                 char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.s5c_addr = inet_addr(v);
+                                if (v) self.gtpc_addr = inet_addr(v);
                             }
-                            else if (jsmntok_equal(json, t+m, "S5C_PORT") == 0)
+                            else if (jsmntok_equal(json, t+m, "GTPC_PORT") == 0)
                             {
                                 char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.s5c_port = atoi(v);
+                                if (v) self.gtpc_port = atoi(v);
                             }
-                            else if (jsmntok_equal(json, t+m, "S5U_IPV4") == 0)
+                            else if (jsmntok_equal(json, t+m, "GTPU_IPV4") == 0)
                             {
                                 char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.s5u_addr = inet_addr(v);
+                                if (v) self.gtpu_addr = inet_addr(v);
                             }
-                            else if (jsmntok_equal(json, t+m, "S5U_PORT") == 0)
+                            else if (jsmntok_equal(json, t+m, "GTPU_PORT") == 0)
                             {
                                 char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.s5u_port = atoi(v);
+                                if (v) self.gtpu_port = atoi(v);
                             }
                         }
                     }
@@ -513,7 +513,7 @@ pgw_sess_t *pgw_sess_add(
     d_assert(sess, return NULL, "Null param");
 
     sess->pgw_s5c_teid = sess->index;  /* derived from an index */
-    sess->pgw_s5c_addr = pgw_self()->s5c_addr;
+    sess->pgw_s5c_addr = pgw_self()->gtpc_addr;
 
     /* Set IMSI */
     sess->imsi_len = imsi_len;
@@ -657,7 +657,7 @@ pgw_bearer_t* pgw_bearer_add(pgw_sess_t *sess)
     list_init(&bearer->pf_list);
 
     bearer->pgw_s5u_teid = bearer->index;
-    bearer->pgw_s5u_addr = pgw_self()->s5u_addr;
+    bearer->pgw_s5u_addr = pgw_self()->gtpu_addr;
     
     bearer->sess = sess;
     list_append(&sess->bearer_list, bearer);

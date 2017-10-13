@@ -101,7 +101,7 @@ static status_t mme_context_prepare()
     self.relative_capacity = 0xff;
 
     self.s1ap_port = S1AP_SCTP_PORT;
-    self.s11_port = GTPV2_C_UDP_PORT;
+    self.gtpc_port = GTPV2_C_UDP_PORT;
     self.s5c_port = GTPV2_C_UDP_PORT;
 
     return CORE_OK;
@@ -121,9 +121,9 @@ static status_t mme_context_validation()
                 context_self()->config.path);
         return CORE_ERROR;
     }
-    if (self.s11_addr == 0)
+    if (self.gtpc_addr == 0)
     {
-        d_error("No MME.NEWORK.S11_IPV4 in '%s'",
+        d_error("No MME.NEWORK.GTPC_IPV4 in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
@@ -139,7 +139,7 @@ static status_t mme_context_validation()
     {
         if (sgw->addr == 0)
         {
-            d_error("No SGW.NEWORK.S11_IPV4 in '%s'",
+            d_error("No SGW.NEWORK.GTPC_IPV4 in '%s'",
                     context_self()->config.path);
             return CORE_ERROR;
         }
@@ -312,15 +312,15 @@ status_t mme_context_parse_config()
                                 char *v = jsmntok_to_string(json, t+m+1);
                                 if (v) self.s1ap_port = atoi(v);
                             }
-                            else if (jsmntok_equal(json, t+m, "S11_IPV4") == 0)
+                            else if (jsmntok_equal(json, t+m, "GTPC_IPV4") == 0)
                             {
                                 char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.s11_addr = inet_addr(v);
+                                if (v) self.gtpc_addr = inet_addr(v);
                             }
-                            else if (jsmntok_equal(json, t+m, "S11_PORT") == 0)
+                            else if (jsmntok_equal(json, t+m, "GTPC_PORT") == 0)
                             {
                                 char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.s11_port = atoi(v);
+                                if (v) self.gtpc_port = atoi(v);
                             }
                         }
                     }
@@ -645,12 +645,12 @@ status_t mme_context_parse_config()
                         {
                             n += (t+m)->size;
 
-                            if (jsmntok_equal(json, t+m, "S11_IPV4") == 0)
+                            if (jsmntok_equal(json, t+m, "GTPC_IPV4") == 0)
                             {
                                 char *v = jsmntok_to_string(json, t+m+1);
                                 if (v) sgw->addr = inet_addr(v);
                             }
-                            else if (jsmntok_equal(json, t+m, "S11_PORT") == 0)
+                            else if (jsmntok_equal(json, t+m, "GTPC_PORT") == 0)
                             {
                                 char *v = jsmntok_to_string(json, t+m+1);
                                 if (v) sgw->port = atoi(v);
@@ -693,12 +693,12 @@ status_t mme_context_parse_config()
                         {
                             n += (t+m)->size;
 
-                            if (jsmntok_equal(json, t+m, "S5C_IPV4") == 0)
+                            if (jsmntok_equal(json, t+m, "GTPC_IPV4") == 0)
                             {
                                 char *v = jsmntok_to_string(json, t+m+1);
                                 if (v) self.s5c_addr = inet_addr(v);
                             }
-                            else if (jsmntok_equal(json, t+m, "S5C_PORT") == 0)
+                            else if (jsmntok_equal(json, t+m, "GTPC_PORT") == 0)
                             {
                                 char *v = jsmntok_to_string(json, t+m+1);
                                 if (v) self.s5c_port = atoi(v);
@@ -1152,7 +1152,7 @@ mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
     list_init(&mme_ue->sess_list);
 
     mme_ue->mme_s11_teid = mme_ue->index;
-    mme_ue->mme_s11_addr = mme_self()->s11_addr;
+    mme_ue->mme_s11_addr = mme_self()->gtpc_addr;
 
     /* Create t3413 timer */
     mme_ue->t3413 = timer_create(&self.tm_service, MME_EVT_EMM_T3413,

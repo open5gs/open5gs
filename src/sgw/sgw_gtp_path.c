@@ -11,7 +11,7 @@
 #include "sgw_event.h"
 #include "sgw_gtp_path.h"
 
-static int _gtpc_recv_cb(net_sock_t *sock, void *data)
+static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
 {
     event_t e;
     status_t rv;
@@ -81,7 +81,7 @@ static int _gtpc_recv_cb(net_sock_t *sock, void *data)
     return 0;
 }
 
-static int _gtpu_recv_cb(net_sock_t *sock, void *data)
+static int _gtpv1_u_recv_cb(net_sock_t *sock, void *data)
 {
     pkbuf_t *pkbuf = NULL;
     gtp_node_t gnode;
@@ -453,7 +453,7 @@ status_t sgw_gtp_open()
 {
     status_t rv;
 
-    rv = gtp_listen(&sgw_self()->gtpc_sock, _gtpc_recv_cb, 
+    rv = gtp_listen(&sgw_self()->gtpc_sock, _gtpv2_c_recv_cb, 
             sgw_self()->gtpc_addr, sgw_self()->gtpc_port, NULL);
     if (rv != CORE_OK)
     {
@@ -461,7 +461,7 @@ status_t sgw_gtp_open()
         return rv;
     }
 
-    rv = gtp_listen(&sgw_self()->gtpu_sock, _gtpu_recv_cb, 
+    rv = gtp_listen(&sgw_self()->gtpu_sock, _gtpv1_u_recv_cb, 
             sgw_self()->gtpu_addr, sgw_self()->gtpu_port, NULL);
     if (rv != CORE_OK)
     {

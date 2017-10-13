@@ -55,9 +55,9 @@ typedef struct _mme_context_t {
     c_uint16_t      s1ap_port;      /* MME S1AP local port */
     net_sock_t      *s1ap_sock;     /* MME S1AP local listen socket */
 
-    c_uint32_t      s11_addr;       /* MME S11 local address */
-    c_uint16_t      s11_port;       /* MME S11 local port */
-    net_sock_t      *s11_sock;      /* MME S11 local listen socket */
+    c_uint32_t      gtpc_addr;      /* MME GTPC local address */
+    c_uint16_t      gtpc_port;      /* MME GTPC local port */
+    net_sock_t      *gtpc_sock;     /* MME GTPC local listen socket */
 
     c_uint32_t      s5c_addr;       /* PGW S5C remote address */
     c_uint16_t      s5c_port;       /* PGW S5C remote port */
