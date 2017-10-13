@@ -26,6 +26,11 @@ case $host in
                 [1], [Disable SCTP])
         sctp=false;
         ;;
+    *-freebsd*)
+        AC_DEFINE_UNQUOTED([SCTP_USE_MAPPED_ADDRESSES],
+                [1], [Disable SCTP])
+        sctp=true;
+        ;;
     *)
         sctp=true;
         ;;
