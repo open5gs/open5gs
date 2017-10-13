@@ -121,13 +121,16 @@ void sgw_state_operational(fsm_t *s, event_t *e)
         case SGW_EVT_S5C_MESSAGE:
         {
             status_t rv;
-            gtp_node_t *gnode = (gtp_node_t *)event_get_param1(e);
-            pkbuf_t *pkbuf = (pkbuf_t *)event_get_param2(e);
+            gtp_node_t *gnode = NULL;
+            c_uint32_t addr = (c_uint32_t)event_get_param1(e);
+            c_uint16_t port = (c_uint16_t)event_get_param2(e);
+            pkbuf_t *pkbuf = (pkbuf_t *)event_get_param3(e);
             gtp_xact_t *xact = NULL;
             gtp_message_t message;
             sgw_sess_t *sess = NULL;
 
             d_assert(pkbuf, break, "Null param");
+            gnode = sgw_pgw_find(addr, port);
             d_assert(gnode, pkbuf_free(pkbuf); break, "Null param");
 
             rv = gtp_xact_receive(gnode, pkbuf, &xact, &message);

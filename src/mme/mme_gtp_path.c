@@ -15,7 +15,6 @@ static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
     pkbuf_t *pkbuf = NULL;
     c_uint32_t addr;
     c_uint16_t port;
-    mme_sgw_t *sgw = NULL;
 
     d_assert(sock, return -1, "Null param");
 
@@ -31,19 +30,14 @@ static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
     addr = sock->remote.sin_addr.s_addr;
     port = ntohs(sock->remote.sin_port);
 
-    sgw = mme_sgw_find(addr, port);
-    d_assert(sgw, return -1, "Can't find SGW from [%s:%d]",
-            INET_NTOP(&addr, buf), port);
-
-    sgw->sock = sock; /* Is it needed? */
-
     d_trace(10, "S11_PDU is received from SGW[%s:%d]\n",
             INET_NTOP(&addr, buf), port);
     d_trace_hex(10, pkbuf->payload, pkbuf->len);
 
     event_set(&e, MME_EVT_S11_MESSAGE);
-    event_set_param1(&e, (c_uintptr_t)sgw);
-    event_set_param2(&e, (c_uintptr_t)pkbuf);
+    event_set_param1(&e, (c_uintptr_t)addr);
+    event_set_param2(&e, (c_uintptr_t)port);
+    event_set_param3(&e, (c_uintptr_t)pkbuf);
     rv = mme_event_send(&e);
     if (rv != CORE_OK)
     {

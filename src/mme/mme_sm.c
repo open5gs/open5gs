@@ -329,13 +329,16 @@ void mme_state_operational(fsm_t *s, event_t *e)
         case MME_EVT_S11_MESSAGE:
         {
             status_t rv;
-            gtp_node_t *gnode = (gtp_node_t *)event_get_param1(e);
-            pkbuf_t *pkbuf = (pkbuf_t *)event_get_param2(e);
+            gtp_node_t *gnode = NULL;
+            c_uint32_t addr = (c_uint32_t)event_get_param1(e);
+            c_uint16_t port = (c_uint16_t)event_get_param2(e);
+            pkbuf_t *pkbuf = (pkbuf_t *)event_get_param3(e);
             gtp_xact_t *xact = NULL;
             gtp_message_t message;
             mme_ue_t *mme_ue = NULL;
 
             d_assert(pkbuf, break, "Null param");
+            gnode = mme_sgw_find(addr, port);
             d_assert(gnode, pkbuf_free(pkbuf); break, "Null param");
 
             rv = gtp_xact_receive(gnode, pkbuf, &xact, &message);
