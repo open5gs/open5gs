@@ -147,10 +147,9 @@ static int _gtpv1_u_recv_cb(net_sock_t *sock, void *data)
             tunnel->interface_type ==
                 GTP_F_TEID_SGW_GTP_U_FOR_UL_DATA_FORWARDING)
         {
-            sgw_tunnel_t *s1u_tunnel = NULL, *s5u_tunnel = NULL;
+            sgw_tunnel_t *s5u_tunnel = NULL;
             d_trace(50, "Recv GPDU (teid = 0x%x) from eNB\n", teid);
 
-            s1u_tunnel = tunnel;
             s5u_tunnel = sgw_s5u_tunnel_in_bearer(bearer);
             d_assert(s5u_tunnel, return -1, "Null param");
             gnode.addr = s5u_tunnel->remote_addr;
@@ -160,10 +159,9 @@ static int _gtpv1_u_recv_cb(net_sock_t *sock, void *data)
         }
         else if (tunnel->interface_type == GTP_F_TEID_S5_S8_SGW_GTP_U)
         {
-            sgw_tunnel_t *s1u_tunnel = NULL, *s5u_tunnel = NULL;
+            sgw_tunnel_t *s1u_tunnel = NULL;
             d_trace(50, "Recv GPDU (teid = 0x%x) from PGW\n", teid);
 
-            s5u_tunnel = tunnel;
             s1u_tunnel = sgw_s1u_tunnel_in_bearer(bearer);
             d_assert(s1u_tunnel, return -1, "Null param");
             gnode.addr = s1u_tunnel->remote_addr;
