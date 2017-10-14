@@ -12,6 +12,11 @@ CORE_DECLARE(status_t) tests1ap_enb_close(net_sock_t *sock);
 CORE_DECLARE(int) tests1ap_enb_send(net_sock_t *sock, pkbuf_t *sendbuf);
 CORE_DECLARE(int) tests1ap_enb_read(net_sock_t *sock, pkbuf_t *recvbuf);
 
+CORE_DECLARE(net_sock_t) *testgtpu_enb_connect(void);
+CORE_DECLARE(status_t) testgtpu_enb_close(net_sock_t *sock);
+CORE_DECLARE(int) testgtpu_enb_send(net_sock_t *sock);
+CORE_DECLARE(int) testgtpu_enb_read(net_sock_t *sock, pkbuf_t *recvbuf);
+
 CORE_DECLARE(status_t) tests1ap_build_setup_req(
         pkbuf_t **pkbuf, S1ap_ENB_ID_PR present, c_uint32_t enb_id);
 CORE_DECLARE(status_t) tests1ap_build_initial_ue_msg(pkbuf_t **pkbuf, int i);

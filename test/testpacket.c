@@ -64,6 +64,133 @@ int tests1ap_enb_read(net_sock_t *sock, pkbuf_t *recvbuf)
     return rc;
 }
 
+net_sock_t *testgtpu_enb_connect(void)
+{
+    char buf[INET_ADDRSTRLEN];
+    int rc;
+    mme_context_t *mme = mme_self();
+    net_sock_t *sock = NULL;
+
+    if (!mme) return NULL;
+
+    rc = net_listen_ext(&sock, SOCK_DGRAM, IPPROTO_UDP,
+            0, mme->s1ap_addr, GTPV1_U_UDP_PORT);
+    if (rc != 0) return NULL;
+
+    return sock;
+}
+
+status_t testgtpu_enb_close(net_sock_t *sock)
+{
+    return net_close(sock);
+}
+
+static uint16_t in_cksum(uint16_t *addr, int len)
+{
+  int nleft = len;
+  uint32_t sum = 0;
+  uint16_t *w = addr;
+  uint16_t answer = 0;
+
+  // Adding 16 bits sequentially in sum
+  while (nleft > 1) {
+    sum += *w;
+    nleft -= 2;
+    w++;
+  }
+
+  // If an odd byte is left
+  if (nleft == 1) {
+    *(unsigned char *) (&answer) = *(unsigned char *) w;
+    sum += answer;
+  }
+
+  sum = (sum >> 16) + (sum & 0xffff);
+  sum += (sum >> 16);
+  answer = ~sum;
+
+  return answer;
+}
+
+int testgtpu_enb_send(net_sock_t *sock)
+{
+    mme_sgw_t *sgw = mme_sgw_first();
+    if (!sgw) return -1;
+
+    status_t rv;
+    pkbuf_t *pkbuf = NULL;
+    gtp_header_t *gtp_h = NULL;
+    gtp_node_t gnode;
+    struct ip *ip_h =  NULL;
+    struct icmp_header_t {
+        c_int8_t type;
+        c_int8_t code;
+        c_int16_t checksum;
+        union
+        {
+            struct
+            {
+                c_int16_t id;
+                c_int16_t sequence;
+            } echo;         /* echo datagram */
+            u_int32_t   gateway;    /* gateway address */
+            struct
+            {
+                c_int16_t __glibc_reserved;
+                c_int16_t mtu;
+            } frag;         /* path mtu discovery */
+        } un;
+    } *icmp_h = NULL;
+
+    pkbuf = pkbuf_alloc(0, 100 /* enough for ICMP; use smaller buffer */);
+    d_assert(pkbuf, return CORE_ERROR,);
+    memset(pkbuf->payload, 0, pkbuf->len);
+    
+    gtp_h = (gtp_header_t *)pkbuf->payload;
+    ip_h = (struct ip *)(pkbuf->payload + GTPV1U_HEADER_LEN);
+    icmp_h = (struct icmp_header_t *)
+            (pkbuf->payload + GTPV1U_HEADER_LEN + sizeof(struct ip));
+
+    gtp_h->flags = 0x30;
+    gtp_h->type = GTPU_MSGTYPE_GPDU;
+    gtp_h->teid = htonl(1);
+    gtp_h->length = htons(sizeof(struct ip) + sizeof(struct icmp_header_t));
+
+    ip_h->ip_v = 4;
+    ip_h->ip_hl = 5;
+    ip_h->ip_tos = 0;
+    ip_h->ip_id = rand();
+    ip_h->ip_off = 0;
+    ip_h->ip_ttl = 255;
+    ip_h->ip_p = IPPROTO_ICMP;
+    ip_h->ip_len = gtp_h->length;
+    ip_h->ip_src.s_addr = inet_addr("45.45.0.1");
+    ip_h->ip_dst.s_addr = inet_addr("45.45.0.1");
+    ip_h->ip_sum = in_cksum(
+            (unsigned short *)ip_h, sizeof(struct ip));
+    
+    icmp_h->type = 8;
+    icmp_h->un.echo.sequence = rand();
+    icmp_h->un.echo.id = rand();
+    icmp_h->checksum = in_cksum(
+            (unsigned short *)icmp_h, sizeof(struct icmp_header_t));
+
+    gnode.addr = sgw->addr;
+    gnode.port = GTPV1_U_UDP_PORT;
+    gnode.sock = sock;
+
+    rv = gtp_send(&gnode, pkbuf);
+    pkbuf_free(pkbuf);
+
+    if (rv != CORE_OK) return -1;
+
+    return 0;
+}
+
+int testgtpu_enb_read(net_sock_t *sock, pkbuf_t *recvbuf)
+{
+    return tests1ap_enb_read(sock, recvbuf);
+}
 
 status_t tests1ap_build_setup_req(
         pkbuf_t **pkbuf, S1ap_ENB_ID_PR present, c_uint32_t enb_id)
@@ -507,7 +634,7 @@ status_t tests1ap_build_initial_context_setup_response(pkbuf_t **pkbuf, int i)
     char *payload[TESTS1AP_MAX_MESSAGE] = { 
         "2009"
         "0025000003000040 05c00100009d0008 400200010033400f 000032400a0a1f0a"
-        "012d2801000008",
+        "0123d700000001",
         "",
         "",
 

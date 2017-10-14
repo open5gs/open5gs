@@ -32,7 +32,7 @@ case $host in
         ;;
     *-apple-darwin*)
         OSDIR="unix"
-        OSPPCFLAGS="-DDARWIN -DSIGPROCMASK_SETS_THREAD_MASK"
+        OSCPPFLAGS="-DDARWIN -DSIGPROCMASK_SETS_THREAD_MASK"
         ;;
     *)
         OSDIR="unix"

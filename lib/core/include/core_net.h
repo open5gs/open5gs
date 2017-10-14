@@ -266,6 +266,8 @@ CORE_DECLARE(int) net_fds_read_run(long timeout);
 CORE_DECLARE(int) net_tuntap_open(net_link_t **net_link, char *tuntap_dev_name, 
         int is_tap);
 
+CORE_DECLARE(int) net_tuntap_set_ipv4(c_uint32_t ip_addr, c_uint8_t bits);
+
 CORE_DECLARE(int) net_tuntap_close(net_link_t *net_link);
 
 #ifdef __cplusplus

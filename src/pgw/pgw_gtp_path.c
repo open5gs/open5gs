@@ -192,6 +192,8 @@ status_t pgw_gtp_open()
 
     {
         int rc;
+        int i;
+        char buf[INET_ADDRSTRLEN];
 
         /* NOTE : tun device can be created via following command.
          *
@@ -210,6 +212,20 @@ status_t pgw_gtp_open()
         {
             d_error("Can not open tun(dev : %s)", pgw_self()->tun_dev_name);
             return CORE_ERROR;
+        }
+
+        for (i = 0; i < pgw_self()->num_of_ip_pool; i++)
+        {
+            rc = net_tuntap_set_ipv4(
+                    pgw_self()->ip_pool[i].prefix, pgw_self()->ip_pool[i].mask);
+            if (rc != 0)
+            {
+                d_error("Can not configure tun(dev : %s for %s/%d)",
+                        pgw_self()->tun_dev_name,
+                        INET_NTOP(&pgw_self()->ip_pool[i].prefix, buf),
+                        pgw_self()->ip_pool[i].mask);
+                return CORE_ERROR;
+            }
         }
 
         rc = net_register_link(pgw_self()->tun_link, _gtpv1_tun_recv_cb, NULL);

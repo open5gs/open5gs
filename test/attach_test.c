@@ -19,6 +19,7 @@ static void attach_test1(abts_case *tc, void *data)
 {
     status_t rv;
     net_sock_t *sock;
+    net_sock_t *gtpu;
     pkbuf_t *sendbuf;
     pkbuf_t *recvbuf;
     s1ap_message_t message;
@@ -39,8 +40,8 @@ static void attach_test1(abts_case *tc, void *data)
     char *_initial_context_setup_request = 
         "00090080d8000006 00000005c0010000 9d00080002000100 42000a183e800000"
         "603e800000001800 8086000034008080 450009200f800a01 23d8000000017127"
-        "fcf13a9702074202 49064000f1105ba0 00485221c1010909 08696e7465726e65"
-        "7405012d2d2d015e 06fefeeeee030327 2980c22304030000 0480211002000010"
+        "a21f172602074202 49064000f1105ba0 00485221c1010909 08696e7465726e65"
+        "7405012d2d00015e 06fefeeeee030327 2980c22304030000 0480211002000010"
         "8106080808088306 04040404000d0408 080808000d040404 0404500bf600f110"
         "0002010000000153 12172c5949640125 006b000518000c00 00004900203311c6"
         "03c6a6d67f695e5a c02bb75b381b693c 3893a6d932fd9182 3544e3e79b000000"
@@ -137,6 +138,10 @@ static void attach_test1(abts_case *tc, void *data)
     /* eNB connects to MME */
     sock = tests1ap_enb_connect();
     ABTS_PTR_NOTNULL(tc, sock);
+
+    /* eNB connects to SGW */
+    gtpu = testgtpu_enb_connect();
+    ABTS_PTR_NOTNULL(tc, gtpu);
 
     /* Send S1-Setup Reqeust */
     rv = tests1ap_build_setup_req(
@@ -287,6 +292,19 @@ static void attach_test1(abts_case *tc, void *data)
     ABTS_TRUE(tc, memcmp(recvbuf->payload+43, tmp+43, 3) == 0);
     pkbuf_free(recvbuf);
 
+    core_sleep(time_from_msec(300));
+
+    /* Send GTP-U ICMP Packet */
+    rv = testgtpu_enb_send(gtpu);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+#if 0
+    /* Receive GTP-U ICMP Packet */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rc = testgtpu_enb_read(gtpu, recvbuf);
+    pkbuf_free(recvbuf);
+#endif
+
     /*****************************************************************
      * Attach Request : Known GUTI, Integrity Protected, MAC Matched
      * Send Initial-UE Message + Attach Request + PDN Connectivity  */
@@ -406,6 +424,10 @@ static void attach_test1(abts_case *tc, void *data)
 
     /* eNB disonncect from MME */
     rv = tests1ap_enb_close(sock);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* eNB disonncect from SGW */
+    rv = testgtpu_enb_close(gtpu);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     core_sleep(time_from_msec(300));

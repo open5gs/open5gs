@@ -1225,6 +1225,66 @@ cleanup:
 #endif
 }
 
+int net_tuntap_set_ipv4(c_uint32_t ip_addr, c_uint8_t bits)
+{
+#if LINUX == 1
+    /* No root priviledge */
+    return 0;
+#elif defined(DARWIN)
+    c_uint32_t mask_addr = htonl(0xffffffff << (32 - bits));
+    int sock = socket(AF_INET, SOCK_DGRAM, 0);
+
+    char *dev = "tun0";
+	struct ifaliasreq ifa;
+	struct ifreq ifr;
+	struct sockaddr_in addr;
+	struct sockaddr_in mask;
+
+	(void)memset(&ifa, '\0', sizeof ifa);
+	(void)strlcpy(ifa.ifra_name, dev, sizeof ifa.ifra_name);
+
+	(void)memset(&ifr, '\0', sizeof ifr);
+	(void)strlcpy(ifr.ifr_name, dev, sizeof ifr.ifr_name);
+
+	/* Delete previously assigned address */
+	(void)ioctl(sock, SIOCDIFADDR, &ifr);
+
+	/*
+	 * Fill-in the destination address and netmask,
+         * but don't care of the broadcast address
+	 */
+	(void)memset(&addr, '\0', sizeof addr);
+	addr.sin_family = AF_INET;
+	addr.sin_addr.s_addr = ip_addr;
+	addr.sin_len = sizeof addr;
+	(void)memcpy(&ifa.ifra_addr, &addr, sizeof addr);
+
+	(void)memset(&mask, '\0', sizeof mask);
+	mask.sin_family = AF_INET;
+	mask.sin_addr.s_addr = mask_addr;
+	mask.sin_len = sizeof mask;
+	(void)memcpy(&ifa.ifra_mask, &mask, sizeof ifa.ifra_mask);
+
+	/* Simpler than calling SIOCSIFADDR and/or SIOCSIFBRDADDR */
+	if (ioctl(sock, SIOCSIFADDR, &ifa) == -1) {
+		d_error("Can't set IP/netmask");
+		return -1;
+	}
+
+	(void)memcpy(&ifr.ifr_addr, &addr, sizeof addr);
+	if (ioctl(sock, SIOCSIFDSTADDR, &ifr) == -1) {
+		d_error("Can't set IP/netmask");
+		return -1;
+	}
+
+    close(sock);
+	return 0;
+#else
+    /* TODO */
+    return 0;
+#endif  /* LINUX != 1 */
+}
+
 
 #if LINUX == 1
 int net_link_open(net_link_t **net_link, char *device, int proto)
