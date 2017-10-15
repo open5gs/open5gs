@@ -1049,7 +1049,7 @@ pgw_pf_t* pgw_pf_next(pgw_pf_t *pf)
 
 status_t pgw_ip_pool_generate()
 {
-    int i, j, k;
+    int i, j;
     int pool_index = 0;
 
     for (i = 0; i < self.num_of_ip_pool; i++)
@@ -1057,6 +1057,27 @@ status_t pgw_ip_pool_generate()
         c_uint32_t mask = htonl(0xffffffff << (32 - self.ip_pool[i].mask));
         c_uint32_t prefix = self.ip_pool[i].prefix & mask;
 
+#if 1   /* Update IP assign rule from bradon's comment */
+        c_uint32_t broadcast = prefix + ~mask;
+
+        for (j = 1; j < (0xffffffff >> self.ip_pool[i].mask) && 
+                pool_index < MAX_POOL_OF_SESS; j++)
+        {
+            pgw_ip_pool_t *ip_pool = &pgw_ip_pool_pool.pool[pool_index];
+            ip_pool->ue_addr = prefix + htonl(j);
+
+            /* Exclude Network Address */
+            if (ip_pool->ue_addr == prefix) continue;
+
+            /* Exclude Broadcast Address */
+            if (ip_pool->ue_addr == broadcast) continue;
+
+            /* Exclude TUN IP Address */
+            if (ip_pool->ue_addr == self.ip_pool[i].prefix) continue;
+
+            pool_index++;
+        }
+#else
         /* Exclude X.X.X.0, X.X.X.255 addresses from ip pool */
         c_uint32_t exclude_mask[] = { 0, 255 };
 
@@ -1081,6 +1102,7 @@ status_t pgw_ip_pool_generate()
             }
             pool_index++;
         }
+#endif
     }
 
     return CORE_OK;
