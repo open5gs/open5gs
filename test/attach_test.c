@@ -40,8 +40,8 @@ static void attach_test1(abts_case *tc, void *data)
     char *_initial_context_setup_request = 
         "00090080d8000006 00000005c0010000 9d00080002000100 42000a183e800000"
         "603e800000001800 8086000034008080 450009200f800a01 23d8000000017127"
-        "a21f172602074202 49064000f1105ba0 00485221c1010909 08696e7465726e65"
-        "7405012d2d00015e 06fefeeeee030327 2980c22304030000 0480211002000010"
+        "45c2015402074202 49064000f1105ba0 00485221c1010909 08696e7465726e65"
+        "7405012d2d00025e 06fefeeeee030327 2980c22304030000 0480211002000010"
         "8106080808088306 04040404000d0408 080808000d040404 0404500bf600f110"
         "0002010000000153 12172c5949640125 006b000518000c00 00004900203311c6"
         "03c6a6d67f695e5a c02bb75b381b693c 3893a6d932fd9182 3544e3e79b000000"
@@ -298,12 +298,10 @@ static void attach_test1(abts_case *tc, void *data)
     rv = testgtpu_enb_send(gtpu);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-#if LINUX != 1
     /* Receive GTP-U ICMP Packet */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rc = testgtpu_enb_read(gtpu, recvbuf);
     pkbuf_free(recvbuf);
-#endif
 
     /*****************************************************************
      * Attach Request : Known GUTI, Integrity Protected, MAC Matched
