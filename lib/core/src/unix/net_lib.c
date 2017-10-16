@@ -1171,6 +1171,7 @@ int net_raw_open(net_link_t **net_link, int proto)
 }
 
 /** Create tuntap socket */
+#if 0 /* deprecated */
 int net_tuntap_open(net_link_t **net_link, char *tuntap_dev_name, 
         int is_tap)
 {
@@ -1224,35 +1225,96 @@ cleanup:
     return -1;
 #endif
 }
+#endif
 
-int net_tuntap_set_ipv4(c_uint32_t ip_addr, c_uint8_t bits)
+/** Create tun socket */
+int net_tun_open(net_link_t **net_link, char *ifname, int is_tap)
 {
+    int sock;
+    net_link_t *new_link = NULL;
 #if LINUX == 1
-    /* No root priviledge */
+    char *dev = "/dev/net/tun";
+    int rc;
+    struct ifreq ifr;
+    int flags = IFF_NO_PI;
+
+    sock = open(dev, O_RDWR);
+    if (sock < 0)
+    {
+        d_error("Can not open %s",dev);
+        return -1;
+    }
+#else
+    char name[C_PATH_MAX];
+    int tun = 0;
+
+#define TUNTAP_ID_MAX 255
+    for (tun = 0; tun < TUNTAP_ID_MAX; tun++)
+    {
+        (void)snprintf(name, sizeof(name), "/dev/tun%i", tun);
+        if ((sock = open(name, O_RDWR)) > 0)
+        {
+            (void)snprintf(name, sizeof(name), "tun%i", tun);
+            ifname = name;
+            break;
+        }
+    }
+#endif
+
+    pool_alloc_node(&link_pool, &new_link);
+    d_assert(new_link != NULL, return -1,"No link pool is availabe\n");
+
+#if LINUX == 1
+    memset(&ifr, 0, sizeof(ifr));
+
+    ifr.ifr_flags = (is_tap ? (flags | IFF_TAP) : (flags | IFF_TUN));
+    strncpy(ifr.ifr_name, ifname, IFNAMSIZ);
+
+    rc = ioctl(sock, TUNSETIFF, (void *)&ifr);
+    if (rc < 0)
+    {
+        d_error("iotcl error(dev:%s flags = %d)", ifname, flags);
+        goto cleanup;
+    }
+#endif
+
+    /* Save socket descriptor */
+    new_link->fd = sock;
+    /* Save the interface name */
+    strncpy(new_link->ifname, ifname, IFNAMSIZ);
+
+    *net_link = new_link;
     return 0;
-#elif defined(DARWIN)
+
+#if LINUX == 1
+cleanup:
+    pool_free_node(&link_pool, new_link);
+    close(sock);
+    return -1;
+#endif
+}
+
+int net_tun_set_ipv4(net_link_t *link, c_uint32_t ip_addr, c_uint8_t bits)
+{
+#if LINUX != 1
     c_uint32_t mask_addr = htonl(0xffffffff << (32 - bits));
     int sock = socket(AF_INET, SOCK_DGRAM, 0);
-
-    char *dev = "tun0";
+    
 	struct ifaliasreq ifa;
 	struct ifreq ifr;
 	struct sockaddr_in addr;
 	struct sockaddr_in mask;
 
 	(void)memset(&ifa, '\0', sizeof ifa);
-	(void)strlcpy(ifa.ifra_name, dev, sizeof ifa.ifra_name);
+	(void)strlcpy(ifa.ifra_name, link->ifname, sizeof ifa.ifra_name);
 
 	(void)memset(&ifr, '\0', sizeof ifr);
-	(void)strlcpy(ifr.ifr_name, dev, sizeof ifr.ifr_name);
+	(void)strlcpy(ifr.ifr_name, link->ifname, sizeof ifr.ifr_name);
 
 	/* Delete previously assigned address */
 	(void)ioctl(sock, SIOCDIFADDR, &ifr);
 
-	/*
-	 * Fill-in the destination address and netmask,
-         * but don't care of the broadcast address
-	 */
+#if defined(DARWIN)
 	(void)memset(&addr, '\0', sizeof addr);
 	addr.sin_family = AF_INET;
 	addr.sin_addr.s_addr = ip_addr;
@@ -1273,16 +1335,41 @@ int net_tuntap_set_ipv4(c_uint32_t ip_addr, c_uint8_t bits)
 
 	(void)memcpy(&ifr.ifr_addr, &addr, sizeof addr);
 	if (ioctl(sock, SIOCSIFDSTADDR, &ifr) == -1) {
-		d_error("Can't set IP/netmask");
+		d_error("Can't set dst IP/netmask");
 		return -1;
 	}
+#else
+	(void)memset(&addr, '\0', sizeof addr);
+	addr.sin_family = AF_INET;
+	addr.sin_addr.s_addr = ip_addr;
+	addr.sin_len = sizeof addr;
+	(void)memcpy(&ifa.ifra_addr, &addr, sizeof addr);
+	(void)memcpy(&ifa.ifra_broadaddr, &addr, sizeof addr);
+
+	(void)memset(&mask, '\0', sizeof mask);
+	mask.sin_family = AF_INET;
+	mask.sin_addr.s_addr = mask_addr;
+	mask.sin_len = sizeof mask;
+	(void)memcpy(&ifa.ifra_mask, &mask, sizeof ifa.ifra_mask);
+
+	(void)memset(&addr, '\0', sizeof addr);
+	addr.sin_family = AF_INET;
+	addr.sin_addr.s_addr = ip_addr;
+	addr.sin_len = sizeof addr;
+	(void)memcpy(&ifr.ifr_addr, &addr, sizeof addr);
+
+	if (ioctl(sock, SIOCAIFADDR, &ifa) == -1) {
+		d_error("Can't src IP address(dev:%s err:%s)",
+                link->ifname, strerror(errno));
+		return -1;
+	}
+#endif  /* !defined(DARWIN) */
 
     close(sock);
+
+#endif  /* LINUX == 1 */
+
 	return 0;
-#else
-    /* TODO */
-    return 0;
-#endif  /* LINUX != 1 */
 }
 
 
@@ -1431,7 +1518,7 @@ int net_raw_close(net_link_t *net_link)
     return 0;
 }
 
-int net_tuntap_close(net_link_t *net_link)
+int net_tun_close(net_link_t *net_link)
 {
     d_assert(net_link,return -1, "net_link is NULL\n");
     close(net_link->fd);
