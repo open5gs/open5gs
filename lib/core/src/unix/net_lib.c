@@ -1326,31 +1326,6 @@ int net_tun_set_ipv4(net_link_t *link, c_uint32_t ip_addr, c_uint8_t bits)
 	/* Delete previously assigned address */
 	(void)ioctl(sock, SIOCDIFADDR, &ifr);
 
-#if defined(DARWIN)
-	(void)memset(&addr, '\0', sizeof addr);
-	addr.sin_family = AF_INET;
-	addr.sin_addr.s_addr = ip_addr;
-	addr.sin_len = sizeof addr;
-	(void)memcpy(&ifa.ifra_addr, &addr, sizeof addr);
-
-	(void)memset(&mask, '\0', sizeof mask);
-	mask.sin_family = AF_INET;
-	mask.sin_addr.s_addr = mask_addr;
-	mask.sin_len = sizeof mask;
-	(void)memcpy(&ifa.ifra_mask, &mask, sizeof ifa.ifra_mask);
-
-	/* Simpler than calling SIOCSIFADDR and/or SIOCSIFBRDADDR */
-	if (ioctl(sock, SIOCSIFADDR, &ifa) == -1) {
-		d_error("Can't set IP/netmask");
-		return -1;
-	}
-
-	(void)memcpy(&ifr.ifr_addr, &addr, sizeof addr);
-	if (ioctl(sock, SIOCSIFDSTADDR, &ifr) == -1) {
-		d_error("Can't set dst IP/netmask");
-		return -1;
-	}
-#else
 	(void)memset(&addr, '\0', sizeof(addr));
 	addr.sin_family = AF_INET;
 	addr.sin_addr.s_addr = ip_addr;
@@ -1369,7 +1344,6 @@ int net_tun_set_ipv4(net_link_t *link, c_uint32_t ip_addr, c_uint8_t bits)
                 link->ifname, strerror(errno));
 		return -1;
 	}
-#endif  /* !defined(DARWIN) */
 
     close(sock); /* AF_INET, SOCK_DGRAM */
 
@@ -1428,7 +1402,6 @@ int net_tun_set_ipv4(net_link_t *link, c_uint32_t ip_addr, c_uint8_t bits)
 
 	return 0;
 }
-
 
 #if LINUX == 1
 int net_link_open(net_link_t **net_link, char *device, int proto)
