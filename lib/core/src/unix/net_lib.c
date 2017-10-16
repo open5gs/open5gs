@@ -16,6 +16,8 @@
 #include <linux/if_tun.h>
 #endif
 
+#include <net/route.h>
+
 #define NET_FD_TYPE_SOCK    0
 #define NET_FD_TYPE_LINK    1
 
@@ -1297,13 +1299,21 @@ cleanup:
 int net_tun_set_ipv4(net_link_t *link, c_uint32_t ip_addr, c_uint8_t bits)
 {
 #if LINUX != 1
-    c_uint32_t mask_addr = htonl(0xffffffff << (32 - bits));
-    int sock = socket(AF_INET, SOCK_DGRAM, 0);
+    int sock;
     
 	struct ifaliasreq ifa;
 	struct ifreq ifr;
 	struct sockaddr_in addr;
 	struct sockaddr_in mask;
+    c_uint32_t mask_addr = htonl(0xffffffff << (32 - bits));
+
+    char buf[512];
+    int len;
+    struct rt_msghdr *rtm;
+    struct sockaddr_in dst, gw;
+	struct sockaddr_in *paddr;
+
+    sock = socket(AF_INET, SOCK_DGRAM, 0);
 
 	(void)memset(&ifa, '\0', sizeof ifa);
 	(void)strlcpy(ifa.ifra_name, link->ifname, sizeof ifa.ifra_name);
@@ -1339,33 +1349,78 @@ int net_tun_set_ipv4(net_link_t *link, c_uint32_t ip_addr, c_uint8_t bits)
 		return -1;
 	}
 #else
-	(void)memset(&addr, '\0', sizeof addr);
+	(void)memset(&addr, '\0', sizeof(addr));
 	addr.sin_family = AF_INET;
 	addr.sin_addr.s_addr = ip_addr;
-	addr.sin_len = sizeof addr;
-	(void)memcpy(&ifa.ifra_addr, &addr, sizeof addr);
-	(void)memcpy(&ifa.ifra_broadaddr, &addr, sizeof addr);
+	addr.sin_len = sizeof(addr);
+	(void)memcpy(&ifa.ifra_addr, &addr, sizeof(addr));
+	(void)memcpy(&ifa.ifra_broadaddr, &addr, sizeof(addr));
 
-	(void)memset(&mask, '\0', sizeof mask);
+	(void)memset(&mask, '\0', sizeof(mask));
 	mask.sin_family = AF_INET;
-	mask.sin_addr.s_addr = mask_addr;
-	mask.sin_len = sizeof mask;
-	(void)memcpy(&ifa.ifra_mask, &mask, sizeof ifa.ifra_mask);
-
-	(void)memset(&addr, '\0', sizeof addr);
-	addr.sin_family = AF_INET;
-	addr.sin_addr.s_addr = ip_addr;
-	addr.sin_len = sizeof addr;
-	(void)memcpy(&ifr.ifr_addr, &addr, sizeof addr);
+	mask.sin_addr.s_addr = 0xffffffff;
+	mask.sin_len = sizeof(mask);
+	(void)memcpy(&ifa.ifra_mask, &mask, sizeof(ifa.ifra_mask));
 
 	if (ioctl(sock, SIOCAIFADDR, &ifa) == -1) {
-		d_error("Can't src IP address(dev:%s err:%s)",
+		d_error("Can't IP address(dev:%s err:%s)",
                 link->ifname, strerror(errno));
 		return -1;
 	}
 #endif  /* !defined(DARWIN) */
 
-    close(sock);
+    close(sock); /* AF_INET, SOCK_DGRAM */
+
+    sock = socket(PF_ROUTE, SOCK_RAW, 0);
+    if (sock < 0)
+    {
+        d_error("Can't open PF_ROUTE(%s)", strerror(errno));
+        return -1;
+    }
+
+    (void)memset(&buf, 0, sizeof(buf));
+    rtm = (struct rt_msghdr *)buf;
+    rtm->rtm_type = RTM_ADD;
+    rtm->rtm_version = RTM_VERSION;
+    rtm->rtm_pid = getpid();
+    rtm->rtm_seq = 0;
+    rtm->rtm_flags = RTF_UP | RTF_GATEWAY;
+    rtm->rtm_addrs = RTA_DST | RTA_GATEWAY | RTA_NETMASK;
+    paddr = (struct sockaddr_in *)(rtm + 1);
+
+	(void)memset(&dst, '\0', sizeof(dst));
+	dst.sin_family = AF_INET;
+	dst.sin_addr.s_addr = ip_addr & mask_addr;
+	dst.sin_len = sizeof(dst);
+	(void)memcpy(paddr, &dst, sizeof(dst));
+    paddr = (struct sockaddr_in *)((char *)paddr +
+            CORE_ALIGN(sizeof(*paddr), sizeof(c_uintptr_t)));
+
+	(void)memset(&gw, '\0', sizeof(gw));
+	gw.sin_family = AF_INET;
+	gw.sin_addr.s_addr = ip_addr;
+	gw.sin_len = sizeof(gw);
+	(void)memcpy(paddr, &gw, sizeof(gw));
+    paddr = (struct sockaddr_in *)((char *)paddr +
+            CORE_ALIGN(sizeof(*paddr), sizeof(c_uintptr_t)));
+
+	(void)memset(&mask, '\0', sizeof(mask));
+	mask.sin_family = AF_INET;
+	mask.sin_addr.s_addr = mask_addr;
+	mask.sin_len = sizeof(mask);
+	(void)memcpy(paddr, &mask, sizeof(mask));
+    paddr = (struct sockaddr_in *)((char *)paddr +
+            CORE_ALIGN(sizeof(*paddr), sizeof(c_uintptr_t)));
+
+    len = (char*)paddr - buf;
+    rtm->rtm_msglen = len;
+    if (write(sock, buf, len) < 0)
+    {
+        d_error("Can't add routing(%s)", strerror(errno));
+        return -1;
+    }
+
+    close(sock); /* PF_ROUTE, SOCK_RAW */
 
 #endif  /* LINUX == 1 */
 
