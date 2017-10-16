@@ -165,7 +165,7 @@ int testgtpu_enb_send(net_sock_t *sock)
     ip_h->ip_p = IPPROTO_ICMP;
     ip_h->ip_len = gtp_h->length;
     ip_h->ip_src.s_addr = inet_addr("45.45.0.2");
-    ip_h->ip_dst.s_addr = inet_addr("45.45.0.1");
+    ip_h->ip_dst.s_addr = inet_addr("10.1.35.215");
     ip_h->ip_sum = in_cksum(
             (unsigned short *)ip_h, sizeof(struct ip));
     

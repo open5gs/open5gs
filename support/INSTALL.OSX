@@ -25,3 +25,7 @@ Install FreeDiameter, MongoDB C driver
 ===========================================
  - brew install freediamter
  - brew install mongo-c-driver
+
+Enable IP Fowarding
+====================
+ - sysctl -w net.inet.ip.forwarding=1
