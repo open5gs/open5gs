@@ -28,7 +28,7 @@ AM_CPPFLAGS = \
 	@MONGOC_CFLAGS@
 
 AM_CFLAGS = \
-	-Wall -Werror
+	-Wall -Werror \
 	-Wno-unused-function -Wno-unused-variable
 
 AM_LDFLAGS = -export-dynamic
