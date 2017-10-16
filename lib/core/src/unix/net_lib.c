@@ -16,7 +16,9 @@
 #include <linux/if_tun.h>
 #endif
 
+#if HAVE_NET_ROUTE_H
 #include <net/route.h>
+#endif
 
 #define NET_FD_TYPE_SOCK    0
 #define NET_FD_TYPE_LINK    1

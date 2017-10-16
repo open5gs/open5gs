@@ -298,12 +298,10 @@ static void attach_test1(abts_case *tc, void *data)
     rv = testgtpu_enb_send(gtpu);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-#if LINUX == 1
     /* Receive GTP-U ICMP Packet */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rc = testgtpu_enb_read(gtpu, recvbuf);
     pkbuf_free(recvbuf);
-#endif
 
     /*****************************************************************
      * Attach Request : Known GUTI, Integrity Protected, MAC Matched
