@@ -161,7 +161,7 @@ status_t context_parse_config()
                         }
                     }
                 }
-                else if (jsmntok_equal(json, t, "HIDDEN") == 0)
+                else if (jsmntok_equal(json, t, "NODE") == 0)
                 {
                     for (m = 1, n = 1; n > 0; m++, n--)
                     {

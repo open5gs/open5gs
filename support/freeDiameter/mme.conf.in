@@ -107,8 +107,7 @@ ListenOn = "10.1.35.215";
 # Default : NO DEFAULT
 #TLS_Cred = "<x509 certif file.PEM>" , "<x509 private key file.PEM>";
 #TLS_Cred = "/etc/ssl/certs/freeDiameter.pem", "/etc/ssl/private/freeDiameter.key";
-TLS_Cred = "@prefix@/etc/freeDiameter/mme.cert.pem",
-           "@prefix@/etc/freeDiameter/mme.key.pem";
+TLS_Cred = "@prefix@/etc/freeDiameter/mme.cert.pem", "@prefix@/etc/freeDiameter/mme.key.pem";
 
 # Certificate authority / trust anchors
 # The file containing the list of trusted Certificate Authorities (PEM list)

@@ -120,15 +120,9 @@ static status_t pgw_context_validation()
                 context_self()->config.path);
         return CORE_ERROR;
     }
-    if (self.tun_dev_name == NULL)
+    if (self.num_of_ue_network == 0)
     {
-        d_error("No PGW.TUNNEL.DEV_NAME in '%s'",
-                context_self()->config.path);
-        return CORE_ERROR;
-    }
-    if (self.num_of_ip_pool == 0)
-    {
-        d_error("No PGW.IP_POOL.CIDR in '%s'",
+        d_error("No PGW.UE_NETWORK.IPV4_POOL in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
@@ -250,7 +244,7 @@ status_t pgw_context_parse_config()
                         }
                     }
                 }
-                else if (jsmntok_equal(json, t, "TUNNEL") == 0)
+                else if (jsmntok_equal(json, t, "UE_NETWORK") == 0)
                 {
                     m = 1;
                     size = 1;
@@ -262,52 +256,41 @@ status_t pgw_context_parse_config()
 
                     for (arr = 0; arr < size; arr++)
                     {
+                        char *if_name = NULL;
+                        c_uint32_t addr = 0;
+                        c_uint8_t bits = 0;
                         for (n = 1; n > 0; m++, n--)
                         {
                             n += (t+m)->size;
 
-                            if (jsmntok_equal(json, t+m, "DEV_NAME") == 0)
+                            if (jsmntok_equal(json, t+m, "IF_NAME") == 0)
                             {
-                                char *v = jsmntok_to_string(json, t+m+1);
-                                self.tun_dev_name = v;
+                                if_name = jsmntok_to_string(json, t+m+1);
                             }
-                        }
-                    }
-                }
-                else if (jsmntok_equal(json, t, "IP_POOL") == 0)
-                {
-                    m = 1;
-                    size = 1;
-
-                    if ((t+1)->type == JSMN_ARRAY)
-                    {
-                        m = 2;
-                        size = (t+1)->size;
-                    }
-
-                    for (arr = 0; arr < size; arr++)
-                    {
-                        for (n = 1; n > 0; m++, n--)
-                        {
-                            n += (t+m)->size;
-
-                            if (jsmntok_equal(json, t+m, "CIDR") == 0)
+                            else if (jsmntok_equal(json, t+m, "IPV4_POOL") == 0)
                             {
                                 char *v = jsmntok_to_string(json, t+m+1);
                                 if (v)
                                 {
-                                    char *prefix = strsep(&v, "/");
-                                    if (prefix)
+                                    char *str = strsep(&v, "/");
+                                    if (str)
                                     {
-                                        self.ip_pool[self.num_of_ip_pool].prefix
-                                            = inet_addr(prefix);
-                                        self.ip_pool[self.num_of_ip_pool].mask
-                                            = atoi(v);
+                                        addr = inet_addr(str);
+                                        bits = atoi(v);
                                     }
                                 }
-
-                                self.num_of_ip_pool++;
                             }
+                        }
+
+                        if (addr)
+                        {
+                            self.ue_network[self.num_of_ue_network].if_name =
+                                if_name;
+                            self.ue_network[self.num_of_ue_network].ipv4.addr =
+                                addr;
+                            self.ue_network[self.num_of_ue_network].ipv4.bits =
+                                bits;
+                            self.num_of_ue_network++;
                         }
                     }
                 }
@@ -1052,15 +1035,16 @@ status_t pgw_ip_pool_generate()
     int i, j;
     int pool_index = 0;
 
-    for (i = 0; i < self.num_of_ip_pool; i++)
+    for (i = 0; i < self.num_of_ue_network; i++)
     {
-        c_uint32_t mask = htonl(0xffffffff << (32 - self.ip_pool[i].mask));
-        c_uint32_t prefix = self.ip_pool[i].prefix & mask;
+        c_uint32_t mask = 
+            htonl(0xffffffff << (32 - self.ue_network[i].ipv4.bits));
+        c_uint32_t prefix = self.ue_network[i].ipv4.addr & mask;
 
 #if 1   /* Update IP assign rule from bradon's comment */
         c_uint32_t broadcast = prefix + ~mask;
 
-        for (j = 1; j < (0xffffffff >> self.ip_pool[i].mask) && 
+        for (j = 1; j < (0xffffffff >> self.ue_network[i].ipv4.bits) &&
                 pool_index < MAX_POOL_OF_SESS; j++)
         {
             pgw_ip_pool_t *ip_pool = &pgw_ip_pool_pool.pool[pool_index];
@@ -1073,11 +1057,11 @@ status_t pgw_ip_pool_generate()
             if (ip_pool->ue_addr == broadcast) continue;
 
             /* Exclude TUN IP Address */
-            if (ip_pool->ue_addr == self.ip_pool[i].prefix) continue;
+            if (ip_pool->ue_addr == self.ue_network[i].ipv4.addr) continue;
 
             pool_index++;
         }
-#else
+#else   /* Deprecated */
         /* Exclude X.X.X.0, X.X.X.255 addresses from ip pool */
         c_uint32_t exclude_mask[] = { 0, 255 };
 

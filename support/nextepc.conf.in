@@ -9,38 +9,47 @@
     GTP: 1,
     OTHERS: 1,
   }
+  NODE:
+  {
+    DISABLE_HSS: 0,
+    DISABLE_SGW: 0,
+    DISABLE_PGW: 0,
+    DISABLE_PCRF: 0
+  }
 
   MME :
   {
     FD_CONF_PATH : "@prefix@/etc/freeDiameter/mme.conf",
-
     DEFAULT_PAGING_DRX : "v64",
 #RELATIVE_CAPACITY : 255,
-
     NETWORK :
     {
       S1AP_IPV4 : "10.1.35.215",
       GTPC_IPV4: "10.1.35.215",
     }
     GUMMEI:
-    {
-      PLMN_ID : 
+    [
       {
-        MCC : "001",
-        MNC : "01"
+        PLMN_ID : 
+        {
+          MCC : "001",
+          MNC : "01"
+        }
+        MME_GID : 2,
+        MME_CODE : 1
       }
-      MME_GID : 2,
-      MME_CODE : 1
-    }
+    ] 
     TAI:
-    {
-      PLMN_ID :
+    [
       {
-        MCC: "001",
-        MNC: "01",
+        PLMN_ID :
+        {
+          MCC: "001",
+          MNC: "01",
+        }
+        TAC: 12345
       }
-      TAC: 12345
-    }
+    ]
     SECURITY :
     {
       INTEGRITY_ORDER : [ "EIA1", "EIA2", "EIA0" ]
@@ -67,23 +76,18 @@
   PGW :
   {
     FD_CONF_PATH : "@prefix@/etc/freeDiameter/pgw.conf",
-
     NETWORK :
     {
       GTPC_IPV4: "10.1.35.219",
       GTPU_IPV4: "10.1.35.219"
     }
-
-    TUNNEL: 
-    {
-      DEV_NAME: "pgwtun"
-    }
-
-    IP_POOL :
-    {
-      CIDR: 45.45.0.1/16
-    }
-
+    UE_NETWORK:
+    [
+      {
+        IF_NAME: "pgwtun",
+        IPV4_POOL: "45.45.0.1/16"
+      }
+    ]
     DNS :
     {
       PRIMARY_IPV4: "8.8.8.8",

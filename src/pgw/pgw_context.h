@@ -11,7 +11,7 @@
 
 #include "pgw_sm.h"
 
-#define MAX_NUM_OF_IP_POOL 16
+#define MAX_NUM_OF_UE_NETWORK 16
 
 #ifdef __cplusplus
 extern "C" {
@@ -35,14 +35,15 @@ typedef struct _pgw_context_t {
     msgq_id         queue_id;       /* Qsesssess for processing PGW control plane */
     tm_service_t    tm_service;     /* Timer Service */
 
-    char            *tun_dev_name;  /* PGW Tunnel device name */
-    net_link_t*     tun_link;       /* PGW Tun Interace for U-plane */
-
     struct {
-        c_uint32_t prefix;
-        c_uint8_t  mask;
-    } ip_pool[MAX_NUM_OF_IP_POOL];
-    c_uint8_t       num_of_ip_pool;
+        net_link_t* tun_link;       /* PGW Tun Interace for U-plane */
+        char *if_name;
+        struct {
+            c_uint32_t addr;
+            c_uint8_t  bits;
+        } ipv4;
+    } ue_network[MAX_NUM_OF_UE_NETWORK];
+    c_uint8_t       num_of_ue_network;
 
     c_uint32_t      primary_dns_addr;
     c_uint32_t      secondary_dns_addr;
