@@ -160,7 +160,7 @@ static int _gtpv1_u_recv_cb(net_sock_t *sock, void *data)
         return -1;
     }
 
-    if (net_link_write(pgw_self()->ue_network[(int)data].tun_link,
+    if (net_link_write(pgw_self()->ue_network[(c_uintptr_t)data].tun_link,
                 pkbuf->payload, pkbuf->len) <= 0)
     {
         d_error("Can not send packets to tuntap");
