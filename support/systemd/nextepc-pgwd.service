@@ -1,0 +1,13 @@
+[Unit]
+Description=NextEPC S-GW Daemon
+After=networking.service
+
+[Service]
+Type=simple
+Restart=always
+ExecStart=/usr/bin/nextepc-pgwd -f /etc/nextepc/pgw.cfg
+RestartSec=2
+RestartPreventExitStatus=1
+
+[Install]
+WantedBy=multi-user.target

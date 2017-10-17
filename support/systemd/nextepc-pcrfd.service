@@ -1,0 +1,13 @@
+[Unit]
+Description=NextEPC PCRF Daemon
+After=networking.service
+
+[Service]
+Type=simple
+Restart=always
+ExecStart=/usr/bin/nextepc-pcrfd -f /etc/nextepc/pcrfd.cfg
+RestartSec=2
+RestartPreventExitStatus=1
+
+[Install]
+WantedBy=multi-user.target

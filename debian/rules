@@ -12,7 +12,7 @@ VERSION := $(shell echo '$(DEBVERS)' | sed -e 's/[+-].*//' -e 's/~//g')
 export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 
 %:
-	dh $@ --with autoreconf
+	dh $@ --with autoreconf --with systemd
 
 override_dh_auto_test:
 	# skip 'make test' as currently it expects config/log in system paths

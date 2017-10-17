@@ -186,6 +186,29 @@ adl_RECURSIVE_EVAL(["${sysconfdir}"], [SYSCONF_DIR])
 AC_SUBST(LIB_DIR)
 AC_SUBST(SYSCONF_DIR)
 
+AC_SUBST(systemd_unit_dir)
+AC_ARG_WITH(
+    systemd-unit-dir,
+    AS_HELP_STRING(
+            [--with-systemdsystemunitdir=DIR],
+            [systemd unit directory @<:@SYSTEMD_UNIT_DIR@:>@
+        Defaults to the correct value for debian /etc/systemd/system/]
+    ),
+    [
+            systemd_unit_dir="$withval"
+    ],
+    [
+        # default to the systemd admin unit directory
+        which pkg-config
+        pkg_config_exists=$?
+        if test x"$pkg_config_exists" = x"0"; then
+            systemd_unit_dir=`pkg-config systemd --variable=systemdsystemunitdir`
+        else
+            systemd_unit_dir="/etc/systemd/system/"
+        fi
+    ]
+)
+
 ##################################
 #### Checks for header files. ####
 ##################################
@@ -380,6 +403,7 @@ AC_CONFIG_FILES([support/freeDiameter/hss.conf])
 AC_CONFIG_FILES([support/freeDiameter/pgw.conf])
 AC_CONFIG_FILES([support/freeDiameter/pcrf.conf])
 #AC_CONFIG_FILES([support/freeDiameter/dict_legacy_xml.conf])
+AC_CONFIG_FILES([support/systemd/Makefile])
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 
