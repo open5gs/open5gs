@@ -55,7 +55,7 @@ dist_freeDiameter_DATA = \
 	support/freeDiameter/pcrf.cert.pem
 
 install-data-hook:
-	$(MKDIR_P) $(prefix)/var/log
+	$(MKDIR_P) $(DESTDIR)/$(prefix)/var/log
 
 CLEANFILES = symtbl.c
 DISTCLEANFILES = $(DIST_ARCHIVES)
