@@ -196,6 +196,7 @@ AC_CHECK_HEADERS( \
     netinet/udp.h \
     netinet/tcp.h \
     netinet/sctp.h \
+    usrsctp.h \
     sys/ioctl.h \
     sys/param.h \
     sys/socket.h \
@@ -305,17 +306,39 @@ AC_CHECK_FUNCS(\
 
 AC_CHECK_LIB([pthread], [pthread_mutex_init], [LIBS="${LIBS} -lpthread"])
 AC_CHECK_LIB([dl], [dlopen], [LIBS="${LIBS} -ldl"])
-AC_CHECK_LIB([sctp], [sctp_sendmsg], [LIBS="${LIBS} -lsctp"])
-AC_CHECK_LIB([gnutls], [gnutls_global_init], [LIBS="${LIBS} -lgnutls"])
-AC_CHECK_LIB([gcrypt], [gcry_control], [LIBS="${LIBS} -lgcrypt"])
-AC_CHECK_LIB([idn], [idna_strerror], [LIBS="${LIBS} -lidn"])
-#AC_CHECK_LIB([fdcore], [fd_core_initialize], [LIBS="${LIBS} -lfdcore"])
-#AC_CHECK_LIB([fdproto], [fd_libproto_init], [LIBS="${LIBS} -lfdproto"])
+AC_CHECK_LIB([sctp], [sctp_sendmsg], [have_sctp_lib=yes], [have_sctp_lib=no])
+if test "$have_sctp_lib" == "yes"; then
+  LIBS="${LIBS} -lsctp"
+else
+  AC_CHECK_LIB([usrsctp], [usrsctp_init], [have_usrsctp_lib=yes], [have_usrsctp_lib=no])
+  if test "$have_usrsctp_lib" == "yes"; then
+    LIBS="${LIBS} -lusrsctp"
+    AC_DEFINE([USE_USRSCTP], [1], [Define to 1 if you have the usrsctp library.])
+  else
+    AC_MSG_ERROR([You must install the SCTP libraries and development headers to enable SCTP support.])
+  fi 
+fi
+AC_CHECK_LIB([gnutls], [gnutls_global_init], [have_gnutls_lib=yes], [have_gnutls_lib=no])
+if test "$have_gnutls_lib" == "yes"; then
+  LIBS="${LIBS} -lgnutls"
+else
+  AC_MSG_ERROR([You must install the GnuTLS libraries and development headers to enable GnuTLS support.])
+fi
+AC_CHECK_LIB([gcrypt], [gcry_control], [have_gcrypt_lib=yes], [have_gcrypt_lib=no])
+if test "$have_gcrypt_lib" == "yes"; then
+  LIBS="${LIBS} -lgcrypt"
+else
+  AC_MSG_ERROR([You must install the Libgcrypt libraries and development headers to enable Libgcrypt support.])
+fi
+AC_CHECK_LIB([idn], [idna_strerror], [have_idn_lib=yes], [have_idn_lib=no])
+if test "$have_idn_lib" == "yes"; then
+  LIBS="${LIBS} -lidn"
+else
+  AC_MSG_ERROR([You must install the GNU Libidn libraries and development headers to enable GNU Libidn support.])
+fi
 
 PKG_CHECK_MODULES([MONGOC], libmongoc-1.0 >= 1.3.1)
 LIBS="$LIBS $MONGOC_LIBS"
-#PKG_CHECK_MODULES([LIBXML2], libxml-2.0 >= 2.9.1)
-#LIBS="$LIBS $LIBXML2_LIBS"
 FREEDIAMETER_DIR=freeDiameter-1.2.1
 AC_SUBST(FREEDIAMETER_DIR)
 

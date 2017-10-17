@@ -7,8 +7,14 @@
 #include "core_errno.h"
 #include "core_time.h"
 
+#if USE_USRSCTP
+#if HAVE_USRSCTP_H
+#include <usrsctp.h>
+#endif
+#else
 #if HAVE_NETINET_SCTP_H
 #include <netinet/sctp.h>
+#endif
 #endif
 
 #if LINUX == 1
