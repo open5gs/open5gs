@@ -135,6 +135,7 @@ static net_sock_t *net_sock_create(int type, int protocol)
 
     if (protocol == IPPROTO_SCTP) 
     {
+#if USE_USRSCTP != 1
         struct sctp_event_subscribe event;
         struct sctp_paddrparams heartbeat;
         struct sctp_rtoinfo rtoinfo;
@@ -250,6 +251,7 @@ static net_sock_t *net_sock_create(int type, int protocol)
                     initmsg.sinit_max_instreams,
                     initmsg.sinit_max_attempts,
                     initmsg.sinit_max_init_timeo);
+#endif
     }
 
     /* Set socket descriptor */
@@ -442,6 +444,7 @@ int net_read(net_sock_t *net_sock, char *buffer, size_t size, int timeout)
         }
         else if (net_sock->proto == IPPROTO_SCTP)
         {
+#if USE_USRSCTP != 1
             struct sctp_sndrcvinfo sndrcvinfo;
             int flags = 0;
             struct sockaddr remote_addr;
@@ -508,6 +511,7 @@ int net_read(net_sock_t *net_sock, char *buffer, size_t size, int timeout)
                 }
                 return -1;
             }
+#endif
         }
         else
         {
@@ -555,6 +559,7 @@ int net_write(net_sock_t *net_sock, char *buffer, size_t size,
     }
     else if (net_sock->proto == IPPROTO_SCTP)
     {
+#if USE_USRSCTP != 1
         rc = sctp_sendmsg(net_sock->sock_id, buffer, size,
                 (struct sockaddr *)dest_addr, addrsize,
                 htonl(net_sock->ppid), 
@@ -565,12 +570,10 @@ int net_write(net_sock_t *net_sock, char *buffer, size_t size,
         if (rc < 0) net_sock->sndrcv_errno = errno;
 
         return rc;
-    }
-    else 
-    {
-        return -1;
+#endif
     }
 
+    return -1;
 }
 
 int net_send(net_sock_t *net_sock, char *buffer, size_t size)
