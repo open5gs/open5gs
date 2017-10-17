@@ -112,7 +112,7 @@ static uint16_t in_cksum(uint16_t *addr, int len)
   return answer;
 }
 
-int testgtpu_enb_send(net_sock_t *sock)
+int testgtpu_enb_send(net_sock_t *sock, c_uint32_t src_ip, c_uint32_t dst_ip)
 {
     mme_sgw_t *sgw = mme_sgw_first();
     if (!sgw) return -1;
@@ -164,8 +164,8 @@ int testgtpu_enb_send(net_sock_t *sock)
     ip_h->ip_ttl = 255;
     ip_h->ip_p = IPPROTO_ICMP;
     ip_h->ip_len = gtp_h->length;
-    ip_h->ip_src.s_addr = inet_addr("45.45.0.2");
-    ip_h->ip_dst.s_addr = inet_addr("10.1.35.215");
+    ip_h->ip_src.s_addr = src_ip;
+    ip_h->ip_dst.s_addr = dst_ip;
     ip_h->ip_sum = in_cksum(
             (unsigned short *)ip_h, sizeof(struct ip));
     

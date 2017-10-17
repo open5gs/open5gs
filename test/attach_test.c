@@ -295,7 +295,7 @@ static void attach_test1(abts_case *tc, void *data)
     core_sleep(time_from_msec(300));
 
     /* Send GTP-U ICMP Packet */
-    rv = testgtpu_enb_send(gtpu);
+    rv = testgtpu_enb_send(gtpu, inet_addr("45.45.0.2"), mme_self()->s1ap_addr);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     /* Receive GTP-U ICMP Packet */
