@@ -1,6 +1,6 @@
 {
   DB_URI : "mongodb://localhost/nextepc",
-  LOG_PATH : "@prefix@/var/log/nextepc.log",
+  LOG_PATH : "@localstatedir@/log/nextepc.log",
   TRACE:
   {
     S1AP: 1,
@@ -12,7 +12,7 @@
 
   MME :
   {
-    FD_CONF_PATH : "@prefix@/etc/freeDiameter/mme.conf",
+    FD_CONF_PATH : "@sysconfdir@/freeDiameter/mme.conf",
 
     DEFAULT_PAGING_DRX : "v64",
 #RELATIVE_CAPACITY : 255,
@@ -50,7 +50,7 @@
 
   HSS :
   {
-    FD_CONF_PATH : "@prefix@/etc/freeDiameter/hss.conf",
+    FD_CONF_PATH : "@sysconfdir@/freeDiameter/hss.conf",
   }
 
   SGW :
@@ -69,7 +69,7 @@
 
   PGW :
   {
-    FD_CONF_PATH : "@prefix@/etc/freeDiameter/pgw.conf",
+    FD_CONF_PATH : "@sysconfdir@/freeDiameter/pgw.conf",
 
     NETWORK :
     {
@@ -96,7 +96,7 @@
 
   PCRF :
   {
-    FD_CONF_PATH : "@prefix@/etc/freeDiameter/pcrf.conf",
+    FD_CONF_PATH : "@sysconfdir@/freeDiameter/pcrf.conf",
   }
 
 }
