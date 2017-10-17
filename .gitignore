@@ -40,3 +40,18 @@ nextepc-pgwd
 nextepc-sgwd
 nextepc-epcd
 nextepc-hssd
+
+# debian
+debian/*.debhelper.log
+debian/*.debhelper
+debian/*.substvars
+debian/tmp
+debian/files
+debian/autoreconf.before
+debian/autoreconf.after
+debian/nextepc-core
+debian/nextepc-mme
+debian/nextepc-sgw
+debian/nextepc-pgw
+debian/nextepc-pcrf
+debian/nextepc-hss

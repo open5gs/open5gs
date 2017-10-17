@@ -1,0 +1,4 @@
+usr/bin/nextepc-pgwd
+etc/freeDiameter/pgw.conf
+etc/freeDiameter/pgw.cert.pem
+etc/freeDiameter/pgw.key.pem

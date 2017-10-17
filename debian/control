@@ -1,0 +1,111 @@
+Source: nextepc
+Maintainer: Harald Welte <laforge@gnumonks.org>
+Section: net
+Priority: optional
+Build-Depends: debhelper (>= 9),
+               autotools-dev,
+               pkg-config,
+               git,
+               dh-autoreconf,
+               flex,
+               bison,
+               libsctp-dev,
+               libssl-dev,
+               libgnutls28-dev,
+               libgcrypt-dev,
+               libmongoc-dev,
+               libbson-dev
+Standards-Version: 3.9.6
+Vcs-Browser: https://github.com/acetcom/nextepc
+Vcs-Git: git://github.com/acetcom/nextepc
+Homepage: https://nextepc.org/
+
+Package: nextepc-core
+Architecture: any
+Multi-Arch: same
+Depends: ${shlibs:Depends},
+         ${misc:Depends}
+Description: Open Source based 3GPP EPC (Shared Files)
+ NextEPC is a C-language Open Source implementation of the 3GPP Evolved
+ Packet Core, i.e. the core network of an LTE network.
+ .
+ This package contains some core libraries/plugins required by the other
+ binary packages such as nextepc-{mme,sgw,pgw,pcrf,hss}.
+
+Package: nextepc-mme
+Architecture: any
+Multi-Arch: same
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         nextepc-core (= ${binary:Version})
+Description: Open Source based 3GPP EPC MME (Mobility Management Entity)
+ NextEPC is a C-language Open Source implementation of the 3GPP Evolved
+ Packet Core, i.e. the core network of an LTE network.
+ .
+ This package provides the MME (Mobility Management Engine), which
+ terminates the S1 interfaces from the eNodeBs cells in the cellular
+ network, and interfaces via S11 to the SGW as well as via S6a to the
+ HSS.
+
+Package: nextepc-sgw
+Architecture: any
+Multi-Arch: same
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         nextepc-core (= ${binary:Version})
+Description: Open Source based 3GPP EPC SGW (Serving Gateway)
+ NextEPC is a C-language Open Source implementation of the 3GPP Evolved
+ Packet Core, i.e. the core network of an LTE network.
+ .
+ This package provides the SGW (Serving Gateway) which is situated
+ between the MME and PGW.  It implements the S11 interface to the MME,
+ and the S5 interface to the PGW.
+
+Package: nextepc-pgw
+Architecture: any
+Multi-Arch: same
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         nextepc-core (= ${binary:Version})
+Description: Open Source based 3GPP EPC PGW (Packet Data Network Gateway)
+ NextEPC is a C-language Open Source implementation of the 3GPP Evolved
+ Packet Core, i.e. the core network of an LTE network.
+ .
+ This package provides the PGW or PDN-GW (Packet Data Network Gateway)
+ element f the EPC, i.e. the gateway between the EPC and the external
+ packet data network, such as the public Internet.  It implements the S5
+ interface towards the S-GW, the SGi interface towards the Internet,
+ and the S7 interface towards the PCRF.
+
+Package: nextepc-pcrf
+Architecture: any
+Multi-Arch: same
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         nextepc-core (= ${binary:Version})
+Description: Open Source based 3GPP EPC PGW (Policy and Charging Rules Function)
+ NextEPC is a C-language Open Source implementation of the 3GPP Evolved
+ Packet Core, i.e. the core network of an LTE network.
+ .
+ This package contains the PCRF (Policy and Charging Rules Function),
+ which controls the service quality (QoS) of individual connections and
+ how to account/charge related traffic.  It implements the Gx interface
+ towards the PGW using the DIAMETER protocol.
+
+Package: nextepc-hss
+Architecture: any
+Multi-Arch: same
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         nextepc-core (= ${binary:Version}),
+         mongodb
+Description: Open Source based 3GPP EPC HSS (Home Subscriber Server)
+ NextEPC is a C-language Open Source implementation of the 3GPP Evolved
+ Packet Core, i.e. the core network of an LTE network.
+ .
+ This package provides the HSS (Home Subscriber Server) element of the
+ EPC, i.e. the central database of mobile network subscribers, with
+ their IMSI, MSISDN, cryptographic key materials, service subscription
+ information, etc.  It implements the S6a interface towards the MME
+ using the DIAMETER protocol.
+

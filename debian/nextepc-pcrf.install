@@ -1,0 +1,4 @@
+usr/bin/nextepc-pcrfd
+etc/freeDiameter/pcrf.conf
+etc/freeDiameter/pcrf.cert.pem
+etc/freeDiameter/pcrf.key.pem

@@ -1,0 +1,4 @@
+usr/bin/nextepc-hssd
+etc/freeDiameter/hss.conf
+etc/freeDiameter/hss.cert.pem
+etc/freeDiameter/hss.key.pem

@@ -1,0 +1,4 @@
+usr/bin/nextepc-mmed
+etc/freeDiameter/mme.conf
+etc/freeDiameter/mme.cert.pem
+etc/freeDiameter/mme.key.pem

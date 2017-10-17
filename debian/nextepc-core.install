@@ -1,0 +1,4 @@
+usr/lib/*/nextepc/*
+var/log
+etc/nextepc.conf
+etc/freeDiameter/cacert.pem
