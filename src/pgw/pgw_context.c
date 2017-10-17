@@ -252,6 +252,7 @@ status_t pgw_context_parse_config()
                     if ((t+1)->type == JSMN_ARRAY)
                     {
                         m = 2;
+                        size = (t+1)->size;
                     }
 
                     for (arr = 0; arr < size; arr++)
@@ -282,7 +283,7 @@ status_t pgw_context_parse_config()
                             }
                         }
 
-                        if (addr)
+                        if (addr && bits)
                         {
                             self.ue_network[self.num_of_ue_network].if_name =
                                 if_name;
