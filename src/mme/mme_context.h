@@ -99,8 +99,9 @@ typedef struct _mme_context_t {
     c_uint32_t      t3413_value; /* Paging retry timer */
 
     list_t          sgw_list;  /* SGW GTP Node List */
-    list_t          enb_list;  /* eNB S1AP Node List */
 
+    hash_t          *s1ap_sock_hash;        /* hash table for S1AP IP address */
+    hash_t          *enb_id_hash;           /* hash table for ENB-ID */
     hash_t          *mme_ue_s1ap_id_hash;   /* hash table for MME-UE-S1AP-ID */
     hash_t          *imsi_ue_hash;          /* hash table (IMSI : MME_UE) */
     hash_t          *guti_ue_hash;          /* hash table (GUTI : MME_UE) */
@@ -111,8 +112,9 @@ typedef struct _mme_enb_t {
     index_t         index;  /* An index of this node */
     fsm_t           sm;     /* A state machine */
 
-    c_uint32_t      enb_id; /* eNB_ID received from eNB */
-    net_sock_t      *s1ap_sock;
+    c_uint32_t      enb_id;     /* eNB_ID received from eNB */
+    c_uint32_t      s1ap_addr;  /* eNB S1AP IP address */
+    net_sock_t      *s1ap_sock; /* eNB S1AP Socket */
 
     c_uint8_t       num_of_tai;
     tai_t           tai[MAX_NUM_OF_TAC * MAX_NUM_OF_BPLMN];
@@ -441,14 +443,17 @@ CORE_DECLARE(mme_sgw_t*)    mme_sgw_find(c_uint32_t addr, c_uint16_t port);
 CORE_DECLARE(mme_sgw_t*)    mme_sgw_first(void);
 CORE_DECLARE(mme_sgw_t*)    mme_sgw_next(mme_sgw_t *sgw);
 
-CORE_DECLARE(mme_enb_t*)    mme_enb_add(net_sock_t *s1ap_sock);
+CORE_DECLARE(mme_enb_t*)    mme_enb_add(net_sock_t *sock);
 CORE_DECLARE(status_t)      mme_enb_remove(mme_enb_t *enb);
 CORE_DECLARE(status_t)      mme_enb_remove_all(void);
 CORE_DECLARE(mme_enb_t*)    mme_enb_find(index_t index);
 CORE_DECLARE(mme_enb_t*)    mme_enb_find_by_sock(net_sock_t *sock);
 CORE_DECLARE(mme_enb_t*)    mme_enb_find_by_enb_id(c_uint32_t enb_id);
-CORE_DECLARE(mme_enb_t*)    mme_enb_first(void);
-CORE_DECLARE(mme_enb_t*)    mme_enb_next(mme_enb_t *enb);
+CORE_DECLARE(status_t)      mme_enb_set_enb_id(
+        mme_enb_t *enb, c_uint32_t enb_id);
+CORE_DECLARE(hash_index_t *) mme_enb_first();
+CORE_DECLARE(hash_index_t *) mme_enb_next(hash_index_t *hi);
+CORE_DECLARE(mme_enb_t *)    mme_enb_this(hash_index_t *hi);
 
 CORE_DECLARE(mme_ue_t*)     mme_ue_add(enb_ue_t *enb_ue);
 CORE_DECLARE(status_t)      mme_ue_remove(mme_ue_t *mme_ue);

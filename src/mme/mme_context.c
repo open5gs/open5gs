@@ -41,13 +41,13 @@ status_t mme_context_init()
     list_init(&self.sgw_list);
 
     index_init(&mme_enb_pool, MAX_NUM_OF_ENB);
-    list_init(&self.enb_list);
-
     index_init(&mme_ue_pool, MAX_POOL_OF_UE);
     index_init(&enb_ue_pool, MAX_POOL_OF_UE);
     index_init(&mme_sess_pool, MAX_POOL_OF_SESS);
     index_init(&mme_bearer_pool, MAX_POOL_OF_BEARER);
 
+    self.s1ap_sock_hash = hash_make();
+    self.enb_id_hash = hash_make();
     self.mme_ue_s1ap_id_hash = hash_make();
     self.imsi_ue_hash = hash_make();
     self.guti_ue_hash = hash_make();
@@ -69,12 +69,15 @@ status_t mme_context_final()
     mme_enb_remove_all();
     mme_ue_remove_all();
 
+    d_assert(self.s1ap_sock_hash, , "Null param");
+    hash_destroy(self.s1ap_sock_hash);
+    d_assert(self.enb_id_hash, , "Null param");
+    hash_destroy(self.enb_id_hash);
+
     d_assert(self.mme_ue_s1ap_id_hash, , "Null param");
     hash_destroy(self.mme_ue_s1ap_id_hash);
-
     d_assert(self.imsi_ue_hash, , "Null param");
     hash_destroy(self.imsi_ue_hash);
-
     d_assert(self.guti_ue_hash, , "Null param");
     hash_destroy(self.guti_ue_hash);
 
@@ -908,7 +911,7 @@ mme_sgw_t* mme_sgw_next(mme_sgw_t *sgw)
     return list_next(sgw);
 }
 
-mme_enb_t* mme_enb_add(net_sock_t *s1ap_sock)
+mme_enb_t* mme_enb_add(net_sock_t *sock)
 {
     mme_enb_t *enb = NULL;
     event_t e;
@@ -918,15 +921,17 @@ mme_enb_t* mme_enb_add(net_sock_t *s1ap_sock)
 
     /* IMPORTANT! 
      * eNB Index is saved in net_sock_t structure */
-    s1ap_sock->app_index = enb->index;
+    sock->app_index = enb->index;
 
-    enb->s1ap_sock = s1ap_sock;
+    enb->s1ap_sock = sock;
     list_init(&enb->enb_ue_list);
-    list_append(&self.enb_list, enb);
 
     event_set_param1(&e, (c_uintptr_t)enb->index);
     fsm_create(&enb->sm, s1ap_state_initial, s1ap_state_final);
     fsm_init(&enb->sm, &e);
+
+    hash_set(self.s1ap_sock_hash,
+            &enb->s1ap_sock, sizeof(enb->s1ap_sock), enb);
     
     return enb;
 }
@@ -936,6 +941,13 @@ status_t mme_enb_remove(mme_enb_t *enb)
     event_t e;
 
     d_assert(enb, return CORE_ERROR, "Null param");
+    d_assert(enb->s1ap_sock, return CORE_ERROR, "Null param");
+
+    hash_set(self.s1ap_sock_hash,
+            &enb->s1ap_sock, sizeof(enb->s1ap_sock), NULL);
+
+    if (enb->enb_id)
+        hash_set(self.enb_id_hash, &enb->enb_id, sizeof(enb->enb_id), NULL);
 
     event_set_param1(&e, (c_uintptr_t)enb->index);
     fsm_final(&enb->sm, &e);
@@ -946,7 +958,6 @@ status_t mme_enb_remove(mme_enb_t *enb)
     net_unregister_sock(enb->s1ap_sock);
     net_close(enb->s1ap_sock);
 
-    list_remove(&self.enb_list, enb);
     index_free(&mme_enb_pool, enb);
 
     return CORE_OK;
@@ -954,16 +965,13 @@ status_t mme_enb_remove(mme_enb_t *enb)
 
 status_t mme_enb_remove_all()
 {
-    mme_enb_t *enb = NULL, *next_enb = NULL;
-    
-    enb = mme_enb_first();
-    while (enb)
+    hash_index_t *hi = NULL;
+    mme_enb_t *enb = NULL;
+
+    for (hi = mme_enb_first(); hi; hi = mme_enb_next(hi))
     {
-        next_enb = mme_enb_next(enb);
-
+        enb = mme_enb_this(hi);
         mme_enb_remove(enb);
-
-        enb = next_enb;
     }
 
     return CORE_OK;
@@ -977,44 +985,44 @@ mme_enb_t* mme_enb_find(index_t index)
 
 mme_enb_t* mme_enb_find_by_sock(net_sock_t *sock)
 {
-    mme_enb_t *enb = NULL;
-    
-    enb = mme_enb_first();
-    while (enb)
-    {
-        if (sock == enb->s1ap_sock)
-            break;
+    d_assert(sock, return NULL,"Invalid param");
+    return (mme_enb_t *)hash_get(self.s1ap_sock_hash, &sock, sizeof(sock));
 
-        enb = mme_enb_next(enb);
-    }
-
-    return enb;
+    return NULL;
 }
 
 mme_enb_t* mme_enb_find_by_enb_id(c_uint32_t enb_id)
 {
-    mme_enb_t *enb = NULL;
-    
-    enb = list_first(&self.enb_list);
-    while (enb)
-    {
-        if (enb_id == enb->enb_id)
-            break;
-
-        enb = list_next(enb);
-    }
-
-    return enb;
+    d_assert(enb_id, return NULL,"Invalid param");
+    return (mme_enb_t *)hash_get(self.enb_id_hash, &enb_id, sizeof(enb_id));
 }
 
-mme_enb_t* mme_enb_first()
+status_t mme_enb_set_enb_id(mme_enb_t *enb, c_uint32_t enb_id)
 {
-    return list_first(&self.enb_list);
+    d_assert(enb, return CORE_ERROR, "Invalid param");
+    d_assert(enb_id, return CORE_ERROR, "Invalid param");
+
+    enb->enb_id = enb_id;
+    hash_set(self.enb_id_hash, &enb->enb_id, sizeof(enb->enb_id), enb);
+
+    return CORE_OK;
 }
 
-mme_enb_t* mme_enb_next(mme_enb_t *enb)
+hash_index_t* mme_enb_first()
 {
-    return list_next(enb);
+    d_assert(self.s1ap_sock_hash, return NULL, "Null param");
+    return hash_first(self.s1ap_sock_hash);
+}
+
+hash_index_t* mme_enb_next(hash_index_t *hi)
+{
+    return hash_next(hi);
+}
+
+mme_enb_t *mme_enb_this(hash_index_t *hi)
+{
+    d_assert(hi, return NULL, "Null param");
+    return hash_this_val(hi);
 }
 
 /** enb_ue_context handling function */

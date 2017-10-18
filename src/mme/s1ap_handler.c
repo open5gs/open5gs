@@ -69,7 +69,8 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
         INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
         enb_id);
 
-    enb->enb_id = enb_id;
+    d_assert(mme_enb_set_enb_id(enb, enb_id) == CORE_OK,
+            return, "hash add error");
 
     d_assert(s1ap_build_setup_rsp(&s1apbuf) == CORE_OK, 
             return, "build error");
@@ -514,14 +515,15 @@ void s1ap_handle_ue_context_release_complete(
 void s1ap_handle_paging(mme_ue_t *mme_ue)
 {
     pkbuf_t *s1apbuf = NULL;
+    hash_index_t *hi = NULL;
     mme_enb_t *enb = NULL;
     int i;
     status_t rv;
 
     /* Find enB with matched TAI */
-    enb =  mme_enb_first();
-    while (enb)
+    for (hi = mme_enb_first(); hi; hi = mme_enb_next(hi))
     {
+        enb = mme_enb_this(hi);
         for (i = 0; i < enb->num_of_tai; i++)
         {
             if (!memcmp(&enb->tai[i], &mme_ue->tai, sizeof(tai_t)))
@@ -544,7 +546,6 @@ void s1ap_handle_paging(mme_ue_t *mme_ue)
                         "s1ap send error");
             }
         }
-        enb = mme_enb_next(enb);
     }
 }
 
