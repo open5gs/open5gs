@@ -7,7 +7,7 @@
 #include "core_errno.h"
 #include "core_time.h"
 
-#if USE_USRSCTP
+#if USE_USRSCTP == 1
 #if HAVE_USRSCTP_H
 #include <usrsctp.h>
 #endif
@@ -135,7 +135,6 @@ static net_sock_t *net_sock_create(int type, int protocol)
 
     if (protocol == IPPROTO_SCTP) 
     {
-#if USE_USRSCTP != 1
         struct sctp_event_subscribe event;
         struct sctp_paddrparams heartbeat;
         struct sctp_rtoinfo rtoinfo;
@@ -151,8 +150,13 @@ static net_sock_t *net_sock_create(int type, int protocol)
         event.sctp_send_failure_event = 1;
         event.sctp_shutdown_event = 1;
 
+#if USE_USRSCTP == 1
+        if (setsockopt(sock, IPPROTO_SCTP, SCTP_EVENT,
+                                &event, sizeof( event)) != 0 ) 
+#else
         if (setsockopt(sock, IPPROTO_SCTP, SCTP_EVENTS,
                                 &event, sizeof( event)) != 0 ) 
+#endif
         {
             d_error("Unable to subscribe to SCTP events: (%d:%s)",
                     errno, strerror( errno ));
@@ -251,7 +255,6 @@ static net_sock_t *net_sock_create(int type, int protocol)
                     initmsg.sinit_max_instreams,
                     initmsg.sinit_max_attempts,
                     initmsg.sinit_max_init_timeo);
-#endif
     }
 
     /* Set socket descriptor */
@@ -444,15 +447,20 @@ int net_read(net_sock_t *net_sock, char *buffer, size_t size, int timeout)
         }
         else if (net_sock->proto == IPPROTO_SCTP)
         {
-#if USE_USRSCTP != 1
-            struct sctp_sndrcvinfo sndrcvinfo;
             int flags = 0;
             struct sockaddr remote_addr;
             socklen_t addr_len = sizeof(struct sockaddr);
+#if USE_USRSCTP == 1
+            rc = usrsctp_recvv((struct socket *)net_sock, buffer, size,
+                        (struct sockaddr *)&remote_addr, &addr_len, 
+                        NULL, NULL, NULL, &flags);
+#else
+            struct sctp_sndrcvinfo sndrcvinfo;
 
             rc = sctp_recvmsg(net_sock->sock_id, buffer, size,
                         (struct sockaddr *)&remote_addr, &addr_len, 
                         &sndrcvinfo, &flags);
+#endif
             if (rc < 0) net_sock->sndrcv_errno = errno;
 
             /* Save the remote address */
@@ -486,6 +494,7 @@ int net_read(net_sock_t *net_sock, char *buffer, size_t size, int timeout)
                                     SCTP_COMM_LOST)
                                 net_sock->sndrcv_errno = ECONNREFUSED;
                             break;
+#if USE_USRSCTP != 1
                         case SCTP_SEND_FAILED :
                             d_error("SCTP_SEND_FAILED"
                                     "(type:0x%x, flags:0x%x, error:0x%x)\n", 
@@ -493,6 +502,7 @@ int net_read(net_sock_t *net_sock, char *buffer, size_t size, int timeout)
                                     not->sn_send_failed.ssf_flags,
                                     not->sn_send_failed.ssf_error);
                             break;
+#endif
                         case SCTP_SHUTDOWN_EVENT :
                             d_trace(3, "SCTP_SHUTDOWN_EVENT\n");
                             net_sock->sndrcv_errno = ECONNREFUSED;
@@ -511,7 +521,6 @@ int net_read(net_sock_t *net_sock, char *buffer, size_t size, int timeout)
                 }
                 return -1;
             }
-#endif
         }
         else
         {
@@ -585,7 +594,7 @@ int net_send(net_sock_t *net_sock, char *buffer, size_t size)
 }
 
 int net_sendto(net_sock_t *net_sock, char *buffer, size_t size,
-        c_uint32_t ip_addr, c_uint16_t port)
+        c_uint32_t addr, c_uint16_t port)
 {
     struct sockaddr_in sock_addr;
     d_assert(net_sock && buffer, return -1, "Invalid params\n");
@@ -593,10 +602,9 @@ int net_sendto(net_sock_t *net_sock, char *buffer, size_t size,
     memset(&sock_addr, 0, sizeof(sock_addr));
     sock_addr.sin_family = AF_INET;
     sock_addr.sin_port = htons(port);
-    sock_addr.sin_addr.s_addr = ip_addr;
+    sock_addr.sin_addr.s_addr = addr;
 
-    return net_write(net_sock, buffer, size, 
-                &sock_addr, sizeof(sock_addr));
+    return net_write(net_sock, buffer, size, &sock_addr, sizeof(sock_addr));
 }
 
 /** Close the socket */

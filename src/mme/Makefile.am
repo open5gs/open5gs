@@ -22,6 +22,12 @@ libmme_la_SOURCES = \
 	mme_gtp_path.c mme_s11_build.c mme_s11_handler.c \
 	mme_sm.c 
 
+if USRSCTP
+libmme_la_SOURCES += s1ap_usrsctp.c
+else
+libmme_la_SOURCES += s1ap_sctp.c
+endif
+
 libmme_la_DEPENDENCIES = \
     $(top_srcdir)/lib/core/src/libcore.la \
     $(top_srcdir)/lib/s1ap/libs1ap.la \

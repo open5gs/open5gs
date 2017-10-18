@@ -12,6 +12,7 @@
 #include "nas_conv.h"
 #include "mme_context.h"
 #include "mme_event.h"
+#include "s1ap_path.h"
 
 #define MAX_CELL_PER_ENB            8
 
@@ -762,6 +763,13 @@ status_t mme_context_setup_trace_module()
         d_trace_level(&_s1ap_build, s1ap);
         extern int _s1ap_handler;
         d_trace_level(&_s1ap_handler, s1ap);
+#if USE_USRSCTP == 1
+        extern int _s1ap_usrsctp;
+        d_trace_level(&_s1ap_usrsctp, s1ap);
+#else
+        extern int _s1ap_sctp;
+        d_trace_level(&_s1ap_sctp, s1ap);
+#endif
         extern int _s1ap_path;
         d_trace_level(&_s1ap_path, s1ap);
         extern int _s1ap_recv;
@@ -950,8 +958,7 @@ status_t mme_enb_remove(mme_enb_t *enb)
 
     enb_ue_remove_in_enb(enb);
 
-    net_unregister_sock(enb->s1ap_sock);
-    net_close(enb->s1ap_sock);
+    s1ap_sctp_close(enb->s1ap_sock);
 
     index_free(&mme_enb_pool, enb);
 

@@ -114,6 +114,7 @@ typedef struct _mme_enb_t {
 
     c_uint32_t      enb_id;     /* eNB_ID received from eNB */
     c_uint32_t      s1ap_addr;  /* eNB S1AP IP address */
+    c_uint16_t      s1ap_port;  /* eNB S1AP Port */
     net_sock_t      *s1ap_sock; /* eNB S1AP Socket */
 
     c_uint8_t       num_of_tai;

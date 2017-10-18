@@ -318,6 +318,7 @@ else
     AC_MSG_ERROR([You must install the SCTP libraries and development headers to enable SCTP support.])
   fi 
 fi
+AM_CONDITIONAL([USRSCTP], [test x$have_usrsctp_lib = xyes])
 AC_CHECK_LIB([gnutls], [gnutls_global_init], [have_gnutls_lib=yes], [have_gnutls_lib=no])
 if test "$have_gnutls_lib" == "yes"; then
   LIBS="${LIBS} -lgnutls"

@@ -113,7 +113,7 @@ CORE_DECLARE(int) net_write(net_sock_t *net_sock, char *buffer, size_t size,
 CORE_DECLARE(int) net_send(net_sock_t *net_sock, char *buffer, size_t size);
 
 CORE_DECLARE(int) net_sendto(net_sock_t *net_sock, char *buffer, size_t size,
-        c_uint32_t ip_addr, c_uint16_t port);
+        c_uint32_t addr, c_uint16_t port);
 
 
 /** Close the socket

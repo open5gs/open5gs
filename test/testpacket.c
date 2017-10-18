@@ -9,31 +9,52 @@
 #include "s1ap_conv.h"
 #include "s1ap_path.h"
 
+#if USE_USRSCTP == 1
+#if HAVE_USRSCTP_H
+#include <usrsctp.h>
+#endif
+#endif
+
 net_sock_t *tests1ap_enb_connect(void)
 {
     char buf[INET_ADDRSTRLEN];
     status_t rv;
     mme_context_t *mme = mme_self();
     net_sock_t *sock = NULL;
+#if USE_USRSCTP == 1
+    struct sockaddr_in remote_addr;
+    struct socket *psock = NULL;
+#endif
 
     if (!mme) return NULL;
 
+#if USE_USRSCTP == 1
+    struct socket *s1ap_usrsctp_connect(c_uint32_t addr);
+    sock = (net_sock_t *)s1ap_usrsctp_connect(mme_self()->s1ap_addr);
+#else
     rv = net_open_ext(&sock, mme->s1ap_addr, 
             INET_NTOP(&mme->s1ap_addr, buf), 0, mme->s1ap_port, 
             SOCK_SEQPACKET, IPPROTO_SCTP, SCTP_S1AP_PPID, 0);
     if (rv != CORE_OK) return NULL;
+#endif
 
     return sock;
 }
 
 status_t tests1ap_enb_close(net_sock_t *sock)
 {
+#if USE_USRSCTP == 1
+    usrsctp_close((struct socket *)sock);
+    return CORE_OK;
+#else
     return net_close(sock);
+#endif
 }
 
 int tests1ap_enb_send(net_sock_t *sock, pkbuf_t *sendbuf)
 {
-    return s1ap_send(sock, sendbuf);
+    return s1ap_sendto(sock, sendbuf, mme_self()->s1ap_addr,
+            mme_self()->s1ap_port);
 }
 
 int tests1ap_enb_read(net_sock_t *sock, pkbuf_t *recvbuf)

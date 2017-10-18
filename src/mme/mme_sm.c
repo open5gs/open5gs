@@ -12,7 +12,6 @@
 #include "nas_path.h"
 #include "emm_handler.h"
 #include "esm_handler.h"
-#include "mme_gtp_path.h"
 #include "mme_s11_handler.h"
 #include "fd_lib.h"
 #include "mme_fd_path.h"
@@ -47,47 +46,20 @@ void mme_state_operational(fsm_t *s, event_t *e)
     {
         case FSM_ENTRY_SIG:
         {
-            rv = mme_gtp_open();
-            if (rv != CORE_OK)
-            {
-                d_error("Can't establish S11 path");
-                break;
-            }
-
-            rv = s1ap_open();
-            if (rv != CORE_OK)
-            {
-                d_error("Can't establish S1AP path");
-                break;
-            }
             break;
         }
         case FSM_EXIT_SIG:
         {
-            rv = mme_gtp_close();
-            if (rv != CORE_OK)
-            {
-                d_error("Can't close S11 path");
-                break;
-            }
-
-            rv = s1ap_close();
-            if (rv != CORE_OK)
-            {
-                d_error("Can't close S1AP path");
-                break;
-            }
-
             break;
         }
         case MME_EVT_S1AP_LO_ACCEPT:
         {
-            int rc;
-
             net_sock_t *sock = (net_sock_t *)event_get_param1(e);
             d_assert(sock, break, "Null param");
             c_uint32_t addr = (c_uint32_t)event_get_param2(e);
             d_assert(addr, break, "Null param");
+            c_uint16_t port = (c_uint16_t)event_get_param3(e);
+            d_assert(port, break, "Null param");
 
             d_trace(1, "eNB-S1 accepted[%s] in master_sm module\n", 
                 INET_NTOP(&addr, buf));
@@ -95,18 +67,23 @@ void mme_state_operational(fsm_t *s, event_t *e)
             mme_enb_t *enb = mme_enb_find_by_sock(sock);
             if (!enb)
             {
-                rc = net_register_sock(sock, _s1ap_recv_cb, NULL);
+#if USE_USRSCTP != 1
+                int rc = net_register_sock(sock, s1ap_recv_cb, NULL);
                 d_assert(rc == 0, break, "register _s1ap_recv_cb failed");
+#endif
 
                 mme_enb_t *enb = mme_enb_add(sock);
                 d_assert(enb, break, "Null param");
                 enb->s1ap_addr = addr;
+                enb->s1ap_port = port;
             }
             else
             {
                 d_warn("eNB context duplicated with IP-address [%s]!!!", 
                         INET_NTOP(&addr, buf));
+#if USE_USRSCTP != 1
                 net_close(sock);
+#endif
                 d_warn("S1 Socket Closed");
             }
             
