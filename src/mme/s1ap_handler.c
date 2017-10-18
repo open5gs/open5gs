@@ -66,8 +66,7 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
 
     d_assert(enb->s1ap_sock, return,);
     d_trace(3, "[S1AP] S1SetupRequest : eNB[%s:%d] --> MME\n",
-        INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
-        enb_id);
+        INET_NTOP(&enb->s1ap_addr, buf), enb_id);
 
     d_assert(mme_enb_set_enb_id(enb, enb_id) == CORE_OK,
             return, "hash add error");
@@ -78,8 +77,7 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
 
     d_assert(enb->s1ap_sock, return,);
     d_trace(3, "[S1AP] S1SetupResponse: eNB[%s:%d] <-- MME\n",
-        INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
-        enb_id);
+        INET_NTOP(&enb->s1ap_addr, buf), enb_id);
 }
 
 void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
@@ -168,8 +166,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
     d_trace(3, "[S1AP] InitialUEMessage : "
             "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
             enb_ue->enb_ue_s1ap_id,
-            INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
-            enb->enb_id);
+            INET_NTOP(&enb->s1ap_addr, buf), enb->enb_id);
 
     d_assert(s1ap_send_to_nas(enb_ue, &ies->nas_pdu) == CORE_OK,,
             "s1ap_send_to_nas failed");
@@ -192,8 +189,7 @@ void s1ap_handle_uplink_nas_transport(
     d_trace(3, "[S1AP] uplinkNASTransport : "
             "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
             enb_ue->enb_ue_s1ap_id,
-            INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
-            enb->enb_id);
+            INET_NTOP(&enb->s1ap_addr, buf), enb->enb_id);
 
     d_assert(s1ap_send_to_nas(enb_ue, &ies->nas_pdu) == CORE_OK,,
             "s1ap_send_to_nas failed");
@@ -246,8 +242,7 @@ void s1ap_handle_ue_capability_info_indication(
     d_trace(3, "[S1AP] UE Capability Info Indication : "
             "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
             enb_ue->enb_ue_s1ap_id,
-            INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
-            enb->enb_id);
+            INET_NTOP(&enb->s1ap_addr, buf), enb->enb_id);
 }
 
 void s1ap_handle_initial_context_setup_response(
@@ -272,8 +267,7 @@ void s1ap_handle_initial_context_setup_response(
     d_trace(3, "[S1AP] Initial Context Setup Response : "
             "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
             enb_ue->enb_ue_s1ap_id,
-            INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
-            enb->enb_id);
+            INET_NTOP(&enb->s1ap_addr, buf), enb->enb_id);
 
     for (i = 0; i < ies->e_RABSetupListCtxtSURes.
             s1ap_E_RABSetupItemCtxtSURes.count; i++)
@@ -333,8 +327,7 @@ void s1ap_handle_e_rab_setup_response(
     d_trace(3, "[S1AP] E-RAB Setup Response : "
             "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
             enb_ue->enb_ue_s1ap_id,
-            INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
-            enb->enb_id);
+            INET_NTOP(&enb->s1ap_addr, buf), enb->enb_id);
 
     for (i = 0; i < ies->e_RABSetupListBearerSURes.
             s1ap_E_RABSetupItemBearerSURes.count; i++)
@@ -395,8 +388,7 @@ void s1ap_handle_ue_context_release_request(
     d_trace(3, "[S1AP] UE Context Release Request : "
             "UE[mME-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
             enb_ue->mme_ue_s1ap_id,
-        INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
-        enb->enb_id);
+            INET_NTOP(&enb->s1ap_addr, buf), enb->enb_id);
 
     switch(ies->cause.present)
     {
@@ -474,8 +466,7 @@ void s1ap_handle_ue_context_release_complete(
     d_trace(3, "[S1AP] UE Context Release Complete : "
             "UE[mME-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
             enb_ue->mme_ue_s1ap_id,
-            INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
-            enb->enb_id);
+            INET_NTOP(&enb->s1ap_addr, buf), enb->enb_id);
 
     enb_ue_remove(enb_ue);
 
@@ -602,8 +593,7 @@ void s1ap_handle_path_switch_request(
     {
         d_error("Cannot find UE from sourceMME-UE-S1AP-ID[%d] and eNB[%s:%d]",
                 ies->sourceMME_UE_S1AP_ID,
-                INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
-                enb->enb_id);
+                INET_NTOP(&enb->s1ap_addr, buf), enb->enb_id);
 
         cause.present = S1ap_Cause_PR_radioNetwork;
         cause.choice.radioNetwork = 
@@ -685,8 +675,7 @@ void s1ap_handle_path_switch_request(
     d_trace(3, "[S1AP] PathSwitchRequest : "
             "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
             enb_ue->enb_ue_s1ap_id,
-            INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
-            enb->enb_id);
+            INET_NTOP(&enb->s1ap_addr, buf), enb->enb_id);
 }
 
 void s1ap_handle_handover_required(mme_enb_t *enb, s1ap_message_t *message)
@@ -708,8 +697,7 @@ void s1ap_handle_handover_required(mme_enb_t *enb, s1ap_message_t *message)
     d_assert(source_ue, return,
             "Cannot find UE for eNB-UE-S1AP-ID[%d] and eNB[%s:%d]",
             ies->eNB_UE_S1AP_ID,
-            INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
-            enb->enb_id);
+            INET_NTOP(&enb->s1ap_addr, buf), enb->enb_id);
     d_assert(source_ue->mme_ue_s1ap_id == ies->mme_ue_s1ap_id, return,
             "Conflict MME-UE-S1AP-ID : %d != %d\n",
             source_ue->mme_ue_s1ap_id, ies->mme_ue_s1ap_id);
@@ -738,8 +726,7 @@ void s1ap_handle_handover_required(mme_enb_t *enb, s1ap_message_t *message)
     d_trace(3, "[S1AP] Handover Required : "
             "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
             source_ue->enb_ue_s1ap_id,
-            INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
-            enb->enb_id);
+            INET_NTOP(&enb->s1ap_addr, buf), enb->enb_id);
 }
 
 void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
@@ -763,8 +750,7 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
     d_assert(target_ue, return,
             "Cannot find UE for MME-UE-S1AP-ID[%d] and eNB[%s:%d]",
             ies->mme_ue_s1ap_id,
-            INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
-            enb->enb_id);
+            INET_NTOP(&enb->s1ap_addr, buf), enb->enb_id);
 
     target_ue->enb_ue_s1ap_id = ies->eNB_UE_S1AP_ID;
 
@@ -833,8 +819,7 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
     d_trace(3, "[S1AP] Handover Request Ack : "
             "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
             target_ue->enb_ue_s1ap_id,
-            INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
-            enb->enb_id);
+            INET_NTOP(&enb->s1ap_addr, buf), enb->enb_id);
 }
 
 void s1ap_handle_handover_failure(mme_enb_t *enb, s1ap_message_t *message)
@@ -856,8 +841,7 @@ void s1ap_handle_handover_failure(mme_enb_t *enb, s1ap_message_t *message)
     d_assert(target_ue, return,
             "Cannot find UE for MME-UE-S1AP-ID[%d] and eNB[%s:%d]",
             ies->mme_ue_s1ap_id,
-            INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
-            enb->enb_id);
+            INET_NTOP(&enb->s1ap_addr, buf), enb->enb_id);
 
     source_ue = target_ue->source_ue;
     d_assert(source_ue, return,);
@@ -873,8 +857,7 @@ void s1ap_handle_handover_failure(mme_enb_t *enb, s1ap_message_t *message)
     d_trace(3, "[S1AP] Handover Failure : "
             "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
             target_ue->enb_ue_s1ap_id,
-            INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
-            enb->enb_id);
+            INET_NTOP(&enb->s1ap_addr, buf), enb->enb_id);
 }
 
 void s1ap_handle_handover_cancel(mme_enb_t *enb, s1ap_message_t *message)
@@ -897,8 +880,7 @@ void s1ap_handle_handover_cancel(mme_enb_t *enb, s1ap_message_t *message)
     d_assert(source_ue, return,
             "Cannot find UE for eNB-UE-S1AP-ID[%d] and eNB[%s:%d]",
             ies->eNB_UE_S1AP_ID,
-            INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
-            enb->enb_id);
+            INET_NTOP(&enb->s1ap_addr, buf), enb->enb_id);
     d_assert(source_ue->mme_ue_s1ap_id == ies->mme_ue_s1ap_id, return,
             "Conflict MME-UE-S1AP-ID : %d != %d\n",
             source_ue->mme_ue_s1ap_id, ies->mme_ue_s1ap_id);
@@ -918,8 +900,7 @@ void s1ap_handle_handover_cancel(mme_enb_t *enb, s1ap_message_t *message)
     d_trace(3, "[S1AP] Handover Cancel : "
             "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
             source_ue->enb_ue_s1ap_id,
-            INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
-            enb->enb_id);
+            INET_NTOP(&enb->s1ap_addr, buf), enb->enb_id);
 }
 
 void s1ap_handle_enb_status_transfer(mme_enb_t *enb, s1ap_message_t *message)
@@ -940,8 +921,7 @@ void s1ap_handle_enb_status_transfer(mme_enb_t *enb, s1ap_message_t *message)
     d_assert(source_ue, return,
             "Cannot find UE for eNB-UE-S1AP-ID[%d] and eNB[%s:%d]",
             ies->eNB_UE_S1AP_ID,
-            INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
-            enb->enb_id);
+            INET_NTOP(&enb->s1ap_addr, buf), enb->enb_id);
     d_assert(source_ue->mme_ue_s1ap_id == ies->mme_ue_s1ap_id, return,
             "Conflict MME-UE-S1AP-ID : %d != %d\n",
             source_ue->mme_ue_s1ap_id, ies->mme_ue_s1ap_id);
@@ -994,8 +974,7 @@ void s1ap_handle_handover_notification(mme_enb_t *enb, s1ap_message_t *message)
     d_assert(target_ue, return,
             "Cannot find UE for eNB-UE-S1AP-ID[%d] and eNB[%s:%d]",
             ies->eNB_UE_S1AP_ID,
-            INET_NTOP(&enb->s1ap_sock->remote.sin_addr.s_addr, buf),
-            enb->enb_id);
+            INET_NTOP(&enb->s1ap_addr, buf), enb->enb_id);
     d_assert(target_ue->mme_ue_s1ap_id == ies->mme_ue_s1ap_id, return,
             "Conflict MME-UE-S1AP-ID : %d != %d\n",
             target_ue->mme_ue_s1ap_id, ies->mme_ue_s1ap_id);

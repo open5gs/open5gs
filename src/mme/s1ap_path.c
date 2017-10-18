@@ -69,12 +69,14 @@ static int _s1ap_accept_cb(net_sock_t *net_sock, void *data)
     r = net_accept(&remote_sock, net_sock, 0);
     if (r > 0)
     {
+        c_uint32_t addr = remote_sock->remote.sin_addr.s_addr;
         d_trace(1, "eNB-S1 accepted[%s] in s1_path module\n", 
-            INET_NTOP(&remote_sock->remote.sin_addr.s_addr, buf));
+            INET_NTOP(&addr, buf));
 
         event_t e;
         event_set(&e, MME_EVT_S1AP_LO_ACCEPT);
         event_set_param1(&e, (c_uintptr_t)remote_sock);
+        event_set_param2(&e, (c_uintptr_t)addr);
         /* FIXME : how to close remote_sock */
         mme_event_send(&e);
     }
@@ -97,7 +99,7 @@ static status_t s1ap_recv(net_sock_t *sock, pkbuf_t *pkbuf)
     d_trace_hex(10, pkbuf->payload, pkbuf->len);
 
     event_set(&e, MME_EVT_S1AP_MESSAGE);
-    event_set_param1(&e, (c_uintptr_t)sock->app_index);
+    event_set_param1(&e, (c_uintptr_t)sock);
     event_set_param2(&e, (c_uintptr_t)pkbuf);
     return mme_event_send(&e);
 }
@@ -152,7 +154,7 @@ int _s1ap_recv_cb(net_sock_t *sock, void *data)
         event_t e;
 
         event_set(&e, MME_EVT_S1AP_LO_CONNREFUSED);
-        event_set_param1(&e, (c_uintptr_t)sock->app_index);
+        event_set_param1(&e, (c_uintptr_t)sock);
         mme_event_send(&e);
 
         return -1;

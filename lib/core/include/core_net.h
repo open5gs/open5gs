@@ -47,7 +47,6 @@ typedef struct {
     struct sockaddr_in remote;
     int opt;
 
-    index_t app_index;
     int sndrcv_errno;
 } net_sock_t;
 
