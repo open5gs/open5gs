@@ -8,18 +8,17 @@
 #include "s1ap_path.h"
 
 #if HAVE_USRSCTP_H
-#undef SCTP_DEBUG
+#ifndef INET
+#define INET            1
+#endif
+#ifndef INET6
+#define INET6           1
+#endif
 #include <usrsctp.h>
 #endif
 
-#define LOCAL_UDP_PORT 8277
+#define LOCAL_UDP_PORT  9899
 
-static int s1ap_usrsctp_thread_should_stop = 0;
-static thread_id s1ap_usrsctp_thread;
-
-struct socket *s1ap_usrsctp_connect(c_uint32_t addr);
-
-static void *THREAD_FUNC s1ap_usrsctp_accept_cb(thread_id id, void *data);
 static int s1ap_usrsctp_recv_cb(struct socket *sock,
         union sctp_sockstore addr, void *data, size_t datalen,
         struct sctp_rcvinfo rcv, int flags, void *ulp_info);
@@ -32,7 +31,17 @@ status_t s1ap_open(void)
 
     struct socket *psock = NULL;
     struct sockaddr_in local_addr;
-	struct sctp_setadaptation ind = {0};
+	const int on = 1;
+	struct sctp_event event;
+	c_uint16_t event_types[] = {
+        SCTP_ASSOC_CHANGE,
+        SCTP_PEER_ADDR_CHANGE,
+        SCTP_REMOTE_ERROR,
+        SCTP_SHUTDOWN_EVENT,
+        SCTP_ADAPTATION_INDICATION,
+        SCTP_PARTIAL_DELIVERY_EVENT
+    };
+	int i;
 
     usrsctp_init(LOCAL_UDP_PORT, NULL, debug_printf);
 #ifdef SCTP_DEBUG
@@ -51,14 +60,32 @@ status_t s1ap_open(void)
 
     mme_self()->s1ap_sock = (net_sock_t *)psock;
 
+	if (usrsctp_setsockopt(psock, IPPROTO_SCTP, SCTP_RECVRCVINFO,
+                &on, sizeof(int)) < 0)
+    {
+		d_error("usrsctp_setsockopt SCTP_RECVRCVINFO");
+        return CORE_ERROR;
+	}
+
+	memset(&event, 0, sizeof(event));
+	event.se_assoc_id = SCTP_FUTURE_ASSOC;
+	event.se_on = 1;
+	for (i = 0; i < (int)(sizeof(event_types)/sizeof(c_uint16_t)); i++)
+    {
+		event.se_type = event_types[i];
+		if (usrsctp_setsockopt(psock, IPPROTO_SCTP, SCTP_EVENT,
+                    &event, sizeof(struct sctp_event)) < 0)
+        {
+			d_error("usrsctp_setsockopt SCTP_EVENT");
+            return CORE_ERROR;
+		}
+	}
+
     memset((void *)&local_addr, 0, sizeof(struct sockaddr_in));
     local_addr.sin_family = AF_INET;
     local_addr.sin_len = sizeof(struct sockaddr_in);
     local_addr.sin_port = htons(mme_self()->s1ap_port);
-#if 1 /* FIXME : At this time, I'll just test using loopback */
-    mme_self()->s1ap_addr = inet_addr("127.0.0.1");
-#endif
-    local_addr.sin_addr.s_addr = mme_self()->s1ap_addr;
+    local_addr.sin_addr.s_addr = 0;
 
     if (usrsctp_bind(psock, (struct sockaddr *)&local_addr,
                 sizeof(struct sockaddr_in)) == -1)
@@ -68,26 +95,11 @@ status_t s1ap_open(void)
         return CORE_ERROR;
     }
 
-	if (usrsctp_setsockopt(psock, IPPROTO_SCTP, SCTP_ADAPTATION_LAYER,
-        (const void*)&ind, (socklen_t)sizeof(struct sctp_setadaptation)) < 0)
-    {
-		perror("setsockopt");
-	}
-
     if (usrsctp_listen(psock, 1) < 0)
     {
         d_error("usrsctp_listen failed");
         return CORE_ERROR;
     }
-
-#if 0
-    if (thread_create(&s1ap_usrsctp_thread,
-                NULL, s1ap_usrsctp_accept_cb, NULL) != CORE_OK)
-    {
-        d_error("accept thread creation failed");
-        return CORE_ERROR;
-    }
-#endif
 
     d_trace(1, "s1_enb_listen() %s:%d\n", 
         INET_NTOP(&mme_self()->s1ap_addr, buf), mme_self()->s1ap_port);
@@ -97,19 +109,12 @@ status_t s1ap_open(void)
 
 status_t s1ap_close()
 {
-    struct socket *dummy;
-
     d_assert(mme_self(), return CORE_ERROR, "Null param");
     d_assert(mme_self()->s1ap_sock != NULL, return CORE_ERROR,
             "S1-ENB path already opened");
 
-    s1ap_usrsctp_thread_should_stop = 1;
-    dummy = s1ap_usrsctp_connect(mme_self()->s1ap_addr);
-    thread_delete(s1ap_usrsctp_thread);
-    usrsctp_close(dummy);
     usrsctp_close((struct socket *)mme_self()->s1ap_sock);
-    core_sleep(time_from_msec(100));
-    d_assert(usrsctp_finish() == 0, , "failed to execute 'usrsctp_finish()'");
+    while(usrsctp_finish() != 0) core_sleep(time_from_msec(50));
 
     return CORE_OK;
 }
@@ -159,78 +164,11 @@ status_t s1ap_sendto(net_sock_t *s, pkbuf_t *pkbuf,
     return CORE_OK;
 }
 
-struct socket *s1ap_usrsctp_connect(c_uint32_t addr)
-{
-    struct sockaddr_in remote_addr;
-    struct socket *psock = NULL;
-
-    if (!(psock = usrsctp_socket(AF_INET, SOCK_SEQPACKET, IPPROTO_SCTP,
-                    NULL, NULL, 0, NULL)))
-    {
-        d_error("usrsctp_socket error");
-        return NULL;
-    }
-
-    memset((void *)&remote_addr, 0, sizeof(struct sockaddr_in));
-    remote_addr.sin_family = AF_INET;
-    remote_addr.sin_len = sizeof(struct sockaddr_in);
-    remote_addr.sin_port = htons(mme_self()->s1ap_port);
-    remote_addr.sin_addr.s_addr = addr;
-    if (usrsctp_connect(psock, (struct sockaddr *)&remote_addr,
-                sizeof(struct sockaddr_in)) == -1)
-    {
-        d_error("usrsctp_connect error");
-        return NULL;
-    }
-
-    return psock;
-}
-
-static void *THREAD_FUNC s1ap_usrsctp_accept_cb(thread_id id, void *data)
-{
-    char buf[INET_ADDRSTRLEN];
-    struct socket *psock = (struct socket *)mme_self()->s1ap_sock;
-
-    struct sockaddr_in remote_addr;
-    struct socket *conn_sock;
-    socklen_t addr_len;
-
-    event_t e;
-    c_uint32_t addr;
-    c_uint16_t port;
-
-    while (!s1ap_usrsctp_thread_should_stop)
-    {
-        memset(&remote_addr, 0, sizeof(struct sockaddr_in));
-        addr_len = sizeof(struct sockaddr_in);
-
-        if ((conn_sock = usrsctp_accept(psock,
-                    (struct sockaddr *)&remote_addr, &addr_len)) == NULL)
-        {
-            d_error("usrsctp_accept failed");
-            continue;
-        }
-
-        d_trace(1, "eNB-S1 accepted[%s] in s1_path module\n", 
-            INET_NTOP(&addr, buf));
-
-        addr = remote_addr.sin_addr.s_addr;
-        port = ntohs(remote_addr.sin_port);
-
-        event_set(&e, MME_EVT_S1AP_LO_ACCEPT);
-        event_set_param1(&e, (c_uintptr_t)conn_sock);
-        event_set_param2(&e, (c_uintptr_t)addr);
-        event_set_param3(&e, (c_uintptr_t)port);
-        mme_event_send(&e);
-    }
-
-    return NULL;
-}
-
 static int s1ap_usrsctp_recv_cb(struct socket *sock,
     union sctp_sockstore addr, void *data, size_t datalen,
     struct sctp_rcvinfo rcv, int flags, void *ulp_info)
 {
+#if 0
     event_t e;
     pkbuf_t *pkbuf;
 
@@ -259,6 +197,56 @@ static int s1ap_usrsctp_recv_cb(struct socket *sock,
 
     free(data);
     return 1;
+#else
+	char namebuf[INET6_ADDRSTRLEN];
+	const char *name;
+	uint16_t port;
+
+	if (data) {
+		if (flags & MSG_NOTIFICATION) {
+			printf("Notification of length %d received.\n", (int)datalen);
+		} else {
+			switch (addr.sa.sa_family) {
+#ifdef INET
+			case AF_INET:
+				name = inet_ntop(AF_INET, &addr.sin.sin_addr, namebuf, INET_ADDRSTRLEN);
+				port = ntohs(addr.sin.sin_port);
+				break;
+#endif
+#ifdef INET6
+			case AF_INET6:
+				name = inet_ntop(AF_INET6, &addr.sin6.sin6_addr, namebuf, INET6_ADDRSTRLEN),
+				port = ntohs(addr.sin6.sin6_port);
+				break;
+#endif
+			case AF_CONN:
+#ifdef _WIN32
+				_snprintf(namebuf, INET6_ADDRSTRLEN, "%p", addr.sconn.sconn_addr);
+#else
+				snprintf(namebuf, INET6_ADDRSTRLEN, "%p", addr.sconn.sconn_addr);
+#endif
+				name = namebuf;
+				port = ntohs(addr.sconn.sconn_port);
+				break;
+			default:
+				name = NULL;
+				port = 0;
+				break;
+			}
+			printf("Msg of length %d received from %s:%u on stream %u with SSN %u and TSN %u, PPID %u, context %u.\n",
+			       (int)datalen,
+			       name,
+			       port,
+			       rcv.rcv_sid,
+			       rcv.rcv_ssn,
+			       rcv.rcv_tsn,
+			       ntohl(rcv.rcv_ppid),
+			       rcv.rcv_context);
+		}
+		free(data);
+	}
+	return (1);
+#endif
 }
 
 static void debug_printf(const char *format, ...)

@@ -219,6 +219,8 @@ AC_CHECK_HEADERS(netinet/ip.h net/route.h,,,[[
 #endif
 ]])
 
+AC_CHECK_HEADERS(netinet/ip_icmp.h, [], [], [#include <netinet/ip.h>])
+
 ##########################################
 #### Checks for typedefs, structures, ####
 ####  and compiler characteristics.   ####
@@ -229,6 +231,41 @@ AC_C_BIGENDIAN
 AC_CHECK_MEMBERS([struct tm.tm_gmtoff, struct tm.__tm_gmtoff],,,[
 #include <sys/types.h>
 #include <time.h>])
+
+AC_CHECK_MEMBER(struct sockaddr.sa_len,
+                AC_DEFINE(HAVE_SA_LEN, 1, [Define this if your stack has sa_len in sockaddr struct.]),,
+                [#ifdef HAVE_SYS_TYPES_H
+                 #include <sys/types.h>
+                 #endif
+                 #include <sys/socket.h>])
+
+AC_CHECK_MEMBER(struct sockaddr_in.sin_len,
+                AC_DEFINE(HAVE_SIN_LEN, 1, [Define this if your IPv4 has sin_len in sockaddr_in struct.]),,
+                [#ifdef HAVE_SYS_TYPES_H
+                 #include <sys/types.h>
+                 #endif
+                 #include <netinet/in.h>])
+
+AC_CHECK_MEMBER(struct sockaddr_in6.sin6_len,
+                AC_DEFINE(HAVE_SIN6_LEN, 1, [Define this if your IPv6 has sin6_len in sockaddr_in6 struct.]),,
+                [#ifdef HAVE_SYS_TYPES_H
+                 #include <sys/types.h>
+                 #endif
+                 #include <netinet/in.h>])
+
+AC_CHECK_MEMBER(struct sockaddr_conn.sconn_len,
+                AC_DEFINE(HAVE_SCONN_LEN, 1, [Define this if your userland stack has sconn_len in sockaddr_conn struct.]),,
+                [#include "usrsctplib/usrsctp.h"])
+
+AC_MSG_CHECKING(for socklen_t)
+AC_TRY_COMPILE([#ifdef HAVE_SYS_TYPES_H
+                #include <sys/types.h>
+                #endif
+                #include <sys/socket.h>],
+               [socklen_t x; x = 1; return ((int)x);],
+               [AC_MSG_RESULT(yes)],
+               [AC_MSG_RESULT(int)
+                AC_DEFINE(socklen_t, int, [Define a type for socklen_t.])])
 
 AC_CHECK_FILE(/dev/random,
     AC_DEFINE([HAVE_DEV_RANDOM], [1],
@@ -304,6 +341,9 @@ AC_CHECK_FUNCS(\
     sched_yield \
 )
 
+AC_CHECK_FUNCS(socket, , AC_CHECK_LIB(socket, socket))
+AC_CHECK_FUNCS(inet_addr, , AC_CHECK_LIB(nsl, inet_addr))
+
 AC_CHECK_LIB([pthread], [pthread_mutex_init], [LIBS="${LIBS} -lpthread"])
 AC_CHECK_LIB([dl], [dlopen], [LIBS="${LIBS} -ldl"])
 AC_CHECK_LIB([sctp], [sctp_sendmsg], [have_sctp_lib=yes], [have_sctp_lib=no])
@@ -314,8 +354,6 @@ else
   if test "$have_usrsctp_lib" == "yes"; then
     LIBS="${LIBS} -lusrsctp"
     AC_DEFINE([USE_USRSCTP], [1], [Define to 1 if you have the usrsctp library.])
-  else
-    AC_MSG_ERROR([You must install the SCTP libraries and development headers to enable SCTP support.])
   fi 
 fi
 AM_CONDITIONAL([USRSCTP], [test x$have_usrsctp_lib = xyes])

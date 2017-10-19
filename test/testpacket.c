@@ -10,6 +10,12 @@
 #include "s1ap_path.h"
 
 #if USE_USRSCTP == 1
+#ifndef INET
+#define INET            1
+#endif
+#ifndef INET6
+#define INET6           1
+#endif
 #if HAVE_USRSCTP_H
 #include <usrsctp.h>
 #endif
@@ -20,25 +26,46 @@ net_sock_t *tests1ap_enb_connect(void)
     char buf[INET_ADDRSTRLEN];
     status_t rv;
     mme_context_t *mme = mme_self();
-    net_sock_t *sock = NULL;
 #if USE_USRSCTP == 1
     struct sockaddr_in remote_addr;
     struct socket *psock = NULL;
+#else
+    net_sock_t *sock = NULL;
 #endif
 
     if (!mme) return NULL;
 
 #if USE_USRSCTP == 1
-    struct socket *s1ap_usrsctp_connect(c_uint32_t addr);
-    sock = (net_sock_t *)s1ap_usrsctp_connect(mme_self()->s1ap_addr);
+    mme_self()->s1ap_addr = inet_addr("127.0.0.1");
+
+    if (!(psock = usrsctp_socket(AF_INET, SOCK_SEQPACKET, IPPROTO_SCTP,
+                    NULL, NULL, 0, NULL)))
+    {
+        d_error("usrsctp_socket error");
+        return NULL;
+    }
+
+    memset((void *)&remote_addr, 0, sizeof(struct sockaddr_in));
+    remote_addr.sin_family = AF_INET;
+    remote_addr.sin_len = sizeof(struct sockaddr_in);
+    remote_addr.sin_port = htons(mme_self()->s1ap_port);
+    remote_addr.sin_addr.s_addr = mme_self()->s1ap_addr;
+    if (usrsctp_connect(psock, (struct sockaddr *)&remote_addr,
+                sizeof(struct sockaddr_in)) == -1)
+    {
+        d_error("usrsctp_connect error");
+        return NULL;
+    }
+
+    return (net_sock_t *)psock;
 #else
     rv = net_open_ext(&sock, mme->s1ap_addr, 
             INET_NTOP(&mme->s1ap_addr, buf), 0, mme->s1ap_port, 
             SOCK_SEQPACKET, IPPROTO_SCTP, SCTP_S1AP_PPID, 0);
     if (rv != CORE_OK) return NULL;
-#endif
 
     return sock;
+#endif
 }
 
 status_t tests1ap_enb_close(net_sock_t *sock)
