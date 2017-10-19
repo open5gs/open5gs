@@ -655,6 +655,7 @@ int  net_accept(net_sock_t **new_accept_sock, net_sock_t *net_sock, int timeout)
 
             node->sock_id = new_sock;
             node->proto = net_sock->proto;
+            node->ppid = net_sock->ppid;
             *new_accept_sock = node;
 
             /* Save local and remote address */
