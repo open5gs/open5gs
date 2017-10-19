@@ -36,7 +36,6 @@ static void s1setup_test1(abts_case *tc, void *data)
         rv = tests1ap_enb_send(sock[i], sendbuf);
         ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-#if 0
         rc = tests1ap_enb_read(sock[i], recvbuf);
         ABTS_INT_NEQUAL(tc, 0, rc);
 
@@ -44,10 +43,7 @@ static void s1setup_test1(abts_case *tc, void *data)
         ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
         s1ap_free_pdu(&message);
-#endif
     }
-
-    core_sleep(time_from_msec(1000));
 
     for (i = 0; i < NUM_OF_TEST_DUPLICATED_ENB; i++)
     {

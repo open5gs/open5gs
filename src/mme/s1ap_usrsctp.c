@@ -31,9 +31,9 @@ status_t s1ap_open(void)
 
     struct socket *psock = NULL;
     struct sockaddr_in local_addr;
-	const int on = 1;
-	struct sctp_event event;
-	c_uint16_t event_types[] = {
+    const int on = 1;
+    struct sctp_event event;
+    c_uint16_t event_types[] = {
         SCTP_ASSOC_CHANGE,
         SCTP_PEER_ADDR_CHANGE,
         SCTP_REMOTE_ERROR,
@@ -41,7 +41,7 @@ status_t s1ap_open(void)
         SCTP_ADAPTATION_INDICATION,
         SCTP_PARTIAL_DELIVERY_EVENT
     };
-	int i;
+    int i;
 
     usrsctp_init(LOCAL_UDP_PORT, NULL, debug_printf);
 #ifdef SCTP_DEBUG
@@ -60,26 +60,26 @@ status_t s1ap_open(void)
 
     mme_self()->s1ap_sock = (net_sock_t *)psock;
 
-	if (usrsctp_setsockopt(psock, IPPROTO_SCTP, SCTP_RECVRCVINFO,
+    if (usrsctp_setsockopt(psock, IPPROTO_SCTP, SCTP_RECVRCVINFO,
                 &on, sizeof(int)) < 0)
     {
-		d_error("usrsctp_setsockopt SCTP_RECVRCVINFO");
+        d_error("usrsctp_setsockopt SCTP_RECVRCVINFO");
         return CORE_ERROR;
-	}
+    }
 
-	memset(&event, 0, sizeof(event));
-	event.se_assoc_id = SCTP_FUTURE_ASSOC;
-	event.se_on = 1;
-	for (i = 0; i < (int)(sizeof(event_types)/sizeof(c_uint16_t)); i++)
+    memset(&event, 0, sizeof(event));
+    event.se_assoc_id = SCTP_FUTURE_ASSOC;
+    event.se_on = 1;
+    for (i = 0; i < (int)(sizeof(event_types)/sizeof(c_uint16_t)); i++)
     {
-		event.se_type = event_types[i];
-		if (usrsctp_setsockopt(psock, IPPROTO_SCTP, SCTP_EVENT,
+        event.se_type = event_types[i];
+        if (usrsctp_setsockopt(psock, IPPROTO_SCTP, SCTP_EVENT,
                     &event, sizeof(struct sctp_event)) < 0)
         {
-			d_error("usrsctp_setsockopt SCTP_EVENT");
+            d_error("usrsctp_setsockopt SCTP_EVENT");
             return CORE_ERROR;
-		}
-	}
+        }
+    }
 
     memset((void *)&local_addr, 0, sizeof(struct sockaddr_in));
     local_addr.sin_family = AF_INET;
@@ -132,7 +132,7 @@ status_t s1ap_sendto(net_sock_t *s, pkbuf_t *pkbuf,
     ssize_t sent;
     struct socket *psock = (struct socket *)s;
     struct sockaddr_in remote_addr;
-	struct sctp_sndinfo sndinfo;
+    struct sctp_sndinfo sndinfo;
 
     d_assert(s, return CORE_ERROR, "Null param");
     d_assert(pkbuf, return CORE_ERROR, "Null param");
@@ -144,7 +144,7 @@ status_t s1ap_sendto(net_sock_t *s, pkbuf_t *pkbuf,
     remote_addr.sin_addr.s_addr = addr;
 
     memset((void *)&sndinfo, 0, sizeof(struct sctp_sndinfo));
-	sndinfo.snd_ppid = SCTP_S1AP_PPID;
+    sndinfo.snd_ppid = htonl(SCTP_S1AP_PPID);
     sent = usrsctp_sendv(psock, pkbuf->payload, pkbuf->len, 
             (struct sockaddr *)&remote_addr, 1,
             (void *)&sndinfo, (socklen_t)sizeof(struct sctp_sndinfo),
@@ -164,89 +164,248 @@ status_t s1ap_sendto(net_sock_t *s, pkbuf_t *pkbuf,
     return CORE_OK;
 }
 
+static void
+handle_association_change_event(struct sctp_assoc_change *sac)
+{
+    unsigned int i, n;
+
+    printf("Association change ");
+    switch (sac->sac_state) {
+    case SCTP_COMM_UP:
+        printf("SCTP_COMM_UP");
+        break;
+    case SCTP_COMM_LOST:
+        printf("SCTP_COMM_LOST");
+        break;
+    case SCTP_RESTART:
+        printf("SCTP_RESTART");
+        break;
+    case SCTP_SHUTDOWN_COMP:
+        printf("SCTP_SHUTDOWN_COMP");
+        break;
+    case SCTP_CANT_STR_ASSOC:
+        printf("SCTP_CANT_STR_ASSOC");
+        break;
+    default:
+        printf("UNKNOWN");
+        break;
+    }
+    printf(", streams (in/out) = (%u/%u)",
+           sac->sac_inbound_streams, sac->sac_outbound_streams);
+    n = sac->sac_length - sizeof(struct sctp_assoc_change);
+    if (((sac->sac_state == SCTP_COMM_UP) ||
+         (sac->sac_state == SCTP_RESTART)) && (n > 0)) {
+        printf(", supports");
+        for (i = 0; i < n; i++) {
+            switch (sac->sac_info[i]) {
+            case SCTP_ASSOC_SUPPORTS_PR:
+                printf(" PR");
+                break;
+            case SCTP_ASSOC_SUPPORTS_AUTH:
+                printf(" AUTH");
+                break;
+            case SCTP_ASSOC_SUPPORTS_ASCONF:
+                printf(" ASCONF");
+                break;
+            case SCTP_ASSOC_SUPPORTS_MULTIBUF:
+                printf(" MULTIBUF");
+                break;
+            case SCTP_ASSOC_SUPPORTS_RE_CONFIG:
+                printf(" RE-CONFIG");
+                break;
+            default:
+                printf(" UNKNOWN(0x%02x)", sac->sac_info[i]);
+                break;
+            }
+        }
+    } else if (((sac->sac_state == SCTP_COMM_LOST) ||
+                (sac->sac_state == SCTP_CANT_STR_ASSOC)) && (n > 0)) {
+        printf(", ABORT =");
+        for (i = 0; i < n; i++) {
+            printf(" 0x%02x", sac->sac_info[i]);
+        }
+    }
+    printf(".\n");
+    if ((sac->sac_state == SCTP_CANT_STR_ASSOC) ||
+        (sac->sac_state == SCTP_SHUTDOWN_COMP) ||
+        (sac->sac_state == SCTP_COMM_LOST)) {
+        exit(0);
+    }
+    return;
+}
+
+static void
+handle_peer_address_change_event(struct sctp_paddr_change *spc)
+{
+    char addr_buf[INET6_ADDRSTRLEN];
+    const char *addr;
+    struct sockaddr_in *sin;
+    struct sockaddr_in6 *sin6;
+    struct sockaddr_conn *sconn;
+
+    switch (spc->spc_aaddr.ss_family) {
+    case AF_INET:
+        sin = (struct sockaddr_in *)&spc->spc_aaddr;
+        addr = inet_ntop(AF_INET, &sin->sin_addr, addr_buf, INET_ADDRSTRLEN);
+        break;
+    case AF_INET6:
+        sin6 = (struct sockaddr_in6 *)&spc->spc_aaddr;
+        addr = inet_ntop(AF_INET6, &sin6->sin6_addr, addr_buf, INET6_ADDRSTRLEN);
+        break;
+    case AF_CONN:
+        sconn = (struct sockaddr_conn *)&spc->spc_aaddr;
+#ifdef _WIN32
+        _snprintf(addr_buf, INET6_ADDRSTRLEN, "%p", sconn->sconn_addr);
+#else
+        snprintf(addr_buf, INET6_ADDRSTRLEN, "%p", sconn->sconn_addr);
+#endif
+        addr = addr_buf;
+        break;
+    default:
+#ifdef _WIN32
+        _snprintf(addr_buf, INET6_ADDRSTRLEN, "Unknown family %d", spc->spc_aaddr.ss_family);
+#else
+        snprintf(addr_buf, INET6_ADDRSTRLEN, "Unknown family %d", spc->spc_aaddr.ss_family);
+#endif
+        addr = addr_buf;
+        break;
+    }
+    printf("Peer address %s is now ", addr);
+    switch (spc->spc_state) {
+    case SCTP_ADDR_AVAILABLE:
+        printf("SCTP_ADDR_AVAILABLE");
+        break;
+    case SCTP_ADDR_UNREACHABLE:
+        printf("SCTP_ADDR_UNREACHABLE");
+        break;
+    case SCTP_ADDR_REMOVED:
+        printf("SCTP_ADDR_REMOVED");
+        break;
+    case SCTP_ADDR_ADDED:
+        printf("SCTP_ADDR_ADDED");
+        break;
+    case SCTP_ADDR_MADE_PRIM:
+        printf("SCTP_ADDR_MADE_PRIM");
+        break;
+    case SCTP_ADDR_CONFIRMED:
+        printf("SCTP_ADDR_CONFIRMED");
+        break;
+    default:
+        printf("UNKNOWN");
+        break;
+    }
+    printf(" (error = 0x%08x).\n", spc->spc_error);
+    return;
+}
+
+static void
+handle_send_failed_event(struct sctp_send_failed_event *ssfe)
+{
+    size_t i, n;
+
+    if (ssfe->ssfe_flags & SCTP_DATA_UNSENT) {
+        printf("Unsent ");
+    }
+    if (ssfe->ssfe_flags & SCTP_DATA_SENT) {
+        printf("Sent ");
+    }
+    if (ssfe->ssfe_flags & ~(SCTP_DATA_SENT | SCTP_DATA_UNSENT)) {
+        printf("(flags = %x) ", ssfe->ssfe_flags);
+    }
+    printf("message with PPID = %u, SID = %u, flags: 0x%04x due to error = 0x%08x",
+           ntohl(ssfe->ssfe_info.snd_ppid), ssfe->ssfe_info.snd_sid,
+           ssfe->ssfe_info.snd_flags, ssfe->ssfe_error);
+    n = ssfe->ssfe_length - sizeof(struct sctp_send_failed_event);
+    for (i = 0; i < n; i++) {
+        printf(" 0x%02x", ssfe->ssfe_data[i]);
+    }
+    printf(".\n");
+    return;
+}
+
+static void
+handle_notification(union sctp_notification *notif, size_t n)
+{
+    if (notif->sn_header.sn_length != (uint32_t)n) {
+        return;
+    }
+    switch (notif->sn_header.sn_type) {
+    case SCTP_ASSOC_CHANGE:
+        handle_association_change_event(&(notif->sn_assoc_change));
+        break;
+    case SCTP_PEER_ADDR_CHANGE:
+        handle_peer_address_change_event(&(notif->sn_paddr_change));
+        break;
+    case SCTP_REMOTE_ERROR:
+        break;
+    case SCTP_SHUTDOWN_EVENT:
+        break;
+    case SCTP_ADAPTATION_INDICATION:
+        break;
+    case SCTP_PARTIAL_DELIVERY_EVENT:
+        break;
+    case SCTP_AUTHENTICATION_EVENT:
+        break;
+    case SCTP_SENDER_DRY_EVENT:
+        break;
+    case SCTP_NOTIFICATIONS_STOPPED_EVENT:
+        break;
+    case SCTP_SEND_FAILED_EVENT:
+        handle_send_failed_event(&(notif->sn_send_failed_event));
+        break;
+    case SCTP_STREAM_RESET_EVENT:
+        break;
+    case SCTP_ASSOC_RESET_EVENT:
+        break;
+    case SCTP_STREAM_CHANGE_EVENT:
+        break;
+    default:
+        break;
+    }
+}
+
 static int s1ap_usrsctp_recv_cb(struct socket *sock,
     union sctp_sockstore addr, void *data, size_t datalen,
     struct sctp_rcvinfo rcv, int flags, void *ulp_info)
 {
-#if 0
-    event_t e;
-    pkbuf_t *pkbuf;
+    if (data) {
+        if (flags & MSG_NOTIFICATION) {
+            handle_notification((union sctp_notification *)data, datalen);
+        } else {
+            event_t e;
+            pkbuf_t *pkbuf;
+            c_uint32_t sin_addr = addr.sin.sin_addr.s_addr;
+            c_uint16_t sin_port = ntohs(addr.sin.sin_port);
+            c_uint32_t ppid = ntohl(rcv.rcv_ppid);
 
-    if (data == NULL)
-    {
-        return 1;
+            if (ppid == SCTP_S1AP_PPID)
+            {
+                /* FIXME : we need to find when eNB connects MME firstly */
+                mme_enb_t *enb = mme_enb_find_by_sock((net_sock_t *)sock);
+                if (!enb)
+                {
+                    event_set(&e, MME_EVT_S1AP_LO_ACCEPT);
+                    event_set_param1(&e, (c_uintptr_t)sock);
+                    event_set_param2(&e, (c_uintptr_t)&sin_addr);
+                    event_set_param3(&e, (c_uintptr_t)&sin_port);
+                    mme_event_send(&e);
+                }
+
+                pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+                d_assert(pkbuf, return 1, );
+
+                pkbuf->len = datalen;
+                memcpy(pkbuf->payload, data, pkbuf->len);
+
+                event_set(&e, MME_EVT_S1AP_MESSAGE);
+                event_set_param1(&e, (c_uintptr_t)sock);
+                event_set_param2(&e, (c_uintptr_t)pkbuf);
+                mme_event_send(&e);
+            }
+        }
+        free(data);
     }
-
-    if (datalen == 0)
-    {
-        return 1;
-    }
-
-    pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    d_assert(pkbuf, return 1, );
-
-    pkbuf->len = datalen;
-    memcpy(pkbuf->payload, data, pkbuf->len);
-
-    d_print_hex(pkbuf->payload, pkbuf->len);
-
-    event_set(&e, MME_EVT_S1AP_MESSAGE);
-    event_set_param1(&e, (c_uintptr_t)sock);
-    event_set_param2(&e, (c_uintptr_t)pkbuf);
-    mme_event_send(&e);
-
-    free(data);
-    return 1;
-#else
-	char namebuf[INET6_ADDRSTRLEN];
-	const char *name;
-	uint16_t port;
-
-	if (data) {
-		if (flags & MSG_NOTIFICATION) {
-			printf("Notification of length %d received.\n", (int)datalen);
-		} else {
-			switch (addr.sa.sa_family) {
-#ifdef INET
-			case AF_INET:
-				name = inet_ntop(AF_INET, &addr.sin.sin_addr, namebuf, INET_ADDRSTRLEN);
-				port = ntohs(addr.sin.sin_port);
-				break;
-#endif
-#ifdef INET6
-			case AF_INET6:
-				name = inet_ntop(AF_INET6, &addr.sin6.sin6_addr, namebuf, INET6_ADDRSTRLEN),
-				port = ntohs(addr.sin6.sin6_port);
-				break;
-#endif
-			case AF_CONN:
-#ifdef _WIN32
-				_snprintf(namebuf, INET6_ADDRSTRLEN, "%p", addr.sconn.sconn_addr);
-#else
-				snprintf(namebuf, INET6_ADDRSTRLEN, "%p", addr.sconn.sconn_addr);
-#endif
-				name = namebuf;
-				port = ntohs(addr.sconn.sconn_port);
-				break;
-			default:
-				name = NULL;
-				port = 0;
-				break;
-			}
-			printf("Msg of length %d received from %s:%u on stream %u with SSN %u and TSN %u, PPID %u, context %u.\n",
-			       (int)datalen,
-			       name,
-			       port,
-			       rcv.rcv_sid,
-			       rcv.rcv_ssn,
-			       rcv.rcv_tsn,
-			       ntohl(rcv.rcv_ppid),
-			       rcv.rcv_context);
-		}
-		free(data);
-	}
-	return (1);
-#endif
+    return (1);
 }
 
 static void debug_printf(const char *format, ...)
