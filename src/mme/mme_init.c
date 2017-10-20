@@ -64,6 +64,8 @@ void mme_terminate(void)
 
     mme_context_final();
 
+    s1ap_final();
+
     gtp_xact_final();
 }
 

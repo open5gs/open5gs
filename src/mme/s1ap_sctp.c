@@ -58,6 +58,11 @@ status_t s1ap_sctp_close(net_sock_t *sock)
     return CORE_OK;
 }
 
+status_t s1ap_final()
+{
+    return CORE_OK;
+}
+
 static int s1ap_accept_cb(net_sock_t *net_sock, void *data)
 {
     char buf[INET_ADDRSTRLEN];

@@ -16,6 +16,8 @@ CORE_DECLARE(status_t) s1ap_close();
 
 CORE_DECLARE(status_t) s1ap_sctp_close(net_sock_t *sock);
 
+CORE_DECLARE(status_t) s1ap_final();
+
 #if 0 /* depreciated */
 CORE_DECLARE(status_t) s1ap_send(net_sock_t *s, pkbuf_t *pkb);
 #endif

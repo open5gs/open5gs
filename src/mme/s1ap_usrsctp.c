@@ -116,24 +116,34 @@ status_t s1ap_open(void)
     return CORE_OK;
 }
 
-status_t s1ap_close()
+status_t s1ap_final()
 {
-    struct socket *psock = (struct socket *)mme_self()->s1ap_sock;
-    d_assert(mme_self(), return CORE_ERROR, "Null param");
-    d_assert(mme_self()->s1ap_sock != NULL, return CORE_ERROR,
-            "S1-ENB path already opened");
-
     accept_thread_should_stop = 1;
-    usrsctp_close(psock);
-#if 0 /* FIXME : how to release usrsctp_accept() blocking */
     while(usrsctp_finish() != 0)
     {
         d_error("try to finsih SCTP\n");
         core_sleep(time_from_msec(1000));
     }
 
+#if 0
     thread_delete(accept_thread);
+#else
+    d_error("[FIXME] should delete accept_thread : "
+            "how to release usrsctp_accept() blocking?");
 #endif
+    return CORE_OK;
+}
+
+status_t s1ap_close()
+{
+    struct socket *psock = NULL;
+
+    d_assert(mme_self(), return CORE_ERROR, "Null param");
+    d_assert(mme_self()->s1ap_sock != NULL, return CORE_ERROR,
+            "S1-ENB path already opened");
+
+    psock = (struct socket *)mme_self()->s1ap_sock;
+    usrsctp_close(psock);
 
     return CORE_OK;
 }
