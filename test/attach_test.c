@@ -294,6 +294,7 @@ static void attach_test1(abts_case *tc, void *data)
 
     core_sleep(time_from_msec(300));
 
+#if USE_USRSCTP != 1
     /* Send GTP-U ICMP Packet */
     rv = testgtpu_enb_send(gtpu, inet_addr("45.45.0.2"), mme_self()->s1ap_addr);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -302,6 +303,7 @@ static void attach_test1(abts_case *tc, void *data)
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rc = testgtpu_enb_read(gtpu, recvbuf);
     pkbuf_free(recvbuf);
+#endif
 
     /*****************************************************************
      * Attach Request : Known GUTI, Integrity Protected, MAC Matched

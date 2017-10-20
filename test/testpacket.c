@@ -29,6 +29,7 @@ net_sock_t *tests1ap_enb_connect(void)
 #if USE_USRSCTP == 1
     struct sockaddr_in remote_addr;
     struct socket *psock = NULL;
+    const int on = 1;
 #else
     net_sock_t *sock = NULL;
 #endif
@@ -42,6 +43,13 @@ net_sock_t *tests1ap_enb_connect(void)
                     NULL, NULL, 0, NULL)))
     {
         d_error("usrsctp_socket error");
+        return NULL;
+    }
+
+    if (usrsctp_setsockopt(psock, IPPROTO_SCTP, SCTP_RECVRCVINFO,
+                &on, sizeof(int)) < 0)
+    {
+        d_error("usrsctp_setsockopt SCTP_RECVRCVINFO failed");
         return NULL;
     }
 
@@ -92,12 +100,12 @@ int tests1ap_enb_read(net_sock_t *sock, pkbuf_t *recvbuf)
 	struct socket *psock = (struct socket *)sock;
 	struct sockaddr_in addr;
 	char name[INET6_ADDRSTRLEN];
-	ssize_t n;
-	int flags;
+	ssize_t n = 0;
+	int flags = 0;
 	socklen_t from_len;
 	socklen_t infolen;
 	struct sctp_rcvinfo rcv_info;
-	unsigned int infotype;
+	unsigned int infotype = 0;
 
     while(1)
     {
@@ -105,32 +113,17 @@ int tests1ap_enb_read(net_sock_t *sock, pkbuf_t *recvbuf)
                 (struct sockaddr *)&addr, &from_len, (void *)&rcv_info,
                 &infolen, &infotype, &flags);
         if (n > 0) {
-            if (flags & MSG_NOTIFICATION) {
-                printf("Notification of length %llu received.\n",
-                        (unsigned long long)n);
-            } else {
+            if (flags & MSG_NOTIFICATION)
+            {
+                /* Nothing to do */
+            }
+            else
+            {
                 c_uint32_t ppid = ntohl(rcv_info.rcv_ppid);
-                if (infotype == SCTP_RECVV_RCVINFO) {
-                    printf("Msg of length %llu received from %s:%u"
-                           "on stream %u with SSN %u and TSN %u, PPID %u,"
-                           "context %u, complete %d.\n",
-                            (unsigned long long)n,
-                            inet_ntop(AF_INET, &addr.sin_addr,
-                                name, INET_ADDRSTRLEN), ntohs(addr.sin_port),
-                            rcv_info.rcv_sid,
-                            rcv_info.rcv_ssn,
-                            rcv_info.rcv_tsn,
-                            ppid,
-                            rcv_info.rcv_context,
-                            (flags & MSG_EOR) ? 1 : 0);
-                } else {
-#if 0
-                    if (ppid == SCTP_S1AP_PPID)
-#endif
-                    {
-                        rc = n;
-                        break;
-                    }
+                if (ppid == SCTP_S1AP_PPID && n > 0)
+                {
+                    rc = n;
+                    break;
                 }
             }
         }
