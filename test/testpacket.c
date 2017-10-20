@@ -88,6 +88,7 @@ int tests1ap_enb_read(net_sock_t *sock, pkbuf_t *recvbuf)
 {
     int rc = 0;
 
+#if USE_USRSCTP == 1
 	struct socket *psock = (struct socket *)sock;
 	struct sockaddr_in addr;
 	char name[INET6_ADDRSTRLEN];
@@ -98,32 +99,64 @@ int tests1ap_enb_read(net_sock_t *sock, pkbuf_t *recvbuf)
 	struct sctp_rcvinfo rcv_info;
 	unsigned int infotype;
 
-    n = usrsctp_recvv(psock, recvbuf->payload, MAX_SDU_LEN,
-            (struct sockaddr *)&addr, &from_len, (void *)&rcv_info,
-            &infolen, &infotype, &flags);
-    if (n > 0) {
-        if (flags & MSG_NOTIFICATION) {
-            printf("Notification of length %llu received.\n",
-                    (unsigned long long)n);
-        } else {
-            if (infotype == SCTP_RECVV_RCVINFO) {
-                printf("Msg of length %llu received from %s:%u"
-                       "on stream %u with SSN %u and TSN %u, PPID %u,"
-                       "context %u, complete %d.\n",
-                        (unsigned long long)n,
-                        inet_ntop(AF_INET, &addr.sin_addr,
-                            name, INET_ADDRSTRLEN), ntohs(addr.sin_port),
-                        rcv_info.rcv_sid,
-                        rcv_info.rcv_ssn,
-                        rcv_info.rcv_tsn,
-                        ntohl(rcv_info.rcv_ppid),
-                        rcv_info.rcv_context,
-                        (flags & MSG_EOR) ? 1 : 0);
+    while(1)
+    {
+        n = usrsctp_recvv(psock, recvbuf->payload, MAX_SDU_LEN,
+                (struct sockaddr *)&addr, &from_len, (void *)&rcv_info,
+                &infolen, &infotype, &flags);
+        if (n > 0) {
+            if (flags & MSG_NOTIFICATION) {
+                printf("Notification of length %llu received.\n",
+                        (unsigned long long)n);
             } else {
-                rc = n;
+                c_uint32_t ppid = ntohl(rcv_info.rcv_ppid);
+                if (infotype == SCTP_RECVV_RCVINFO) {
+                    printf("Msg of length %llu received from %s:%u"
+                           "on stream %u with SSN %u and TSN %u, PPID %u,"
+                           "context %u, complete %d.\n",
+                            (unsigned long long)n,
+                            inet_ntop(AF_INET, &addr.sin_addr,
+                                name, INET_ADDRSTRLEN), ntohs(addr.sin_port),
+                            rcv_info.rcv_sid,
+                            rcv_info.rcv_ssn,
+                            rcv_info.rcv_tsn,
+                            ppid,
+                            rcv_info.rcv_context,
+                            (flags & MSG_EOR) ? 1 : 0);
+                } else {
+#if 0
+                    if (ppid == SCTP_S1AP_PPID)
+#endif
+                    {
+                        rc = n;
+                        break;
+                    }
+                }
             }
         }
     }
+#else
+    while(1)
+    {
+        rc = net_read(sock, recvbuf->payload, recvbuf->len, 0);
+        if (rc == -2) 
+        {
+            continue;
+        }
+        else if (rc <= 0)
+        {
+            if (sock->sndrcv_errno == EAGAIN)
+            {
+                continue;
+            }
+            break;
+        }
+        else
+        {
+            break;
+        }
+    }
+#endif
 
     return rc;
 }
