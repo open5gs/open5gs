@@ -125,13 +125,13 @@ status_t s1ap_close()
 
     accept_thread_should_stop = 1;
     usrsctp_close(psock);
+#if 0 /* FIXME : how to release usrsctp_accept() blocking */
     while(usrsctp_finish() != 0)
     {
         d_error("try to finsih SCTP\n");
         core_sleep(time_from_msec(1000));
     }
 
-#if 0 /* FIXME : how to release usrsctp_accept() blocking */
     thread_delete(accept_thread);
 #endif
 
@@ -204,11 +204,7 @@ static int s1ap_usrsctp_recv_cb(struct socket *sock,
     union sctp_sockstore addr, void *data, size_t datalen,
     struct sctp_rcvinfo rcv, int flags, void *ulp_info)
 {
-    if (data == NULL)
-    {
-        usrsctp_close(sock);
-    }
-    else
+    if (data)
     {
         if (flags & MSG_NOTIFICATION)
         {
