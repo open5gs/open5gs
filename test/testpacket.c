@@ -59,8 +59,10 @@ static uint16_t in_cksum(uint16_t *addr, int len)
 
 int testgtpu_enb_send(net_sock_t *sock, c_uint32_t src_ip, c_uint32_t dst_ip)
 {
-    mme_sgw_t *sgw = mme_sgw_first();
-    if (!sgw) return -1;
+    hash_index_t *hi = NULL;
+    mme_ue_t *mme_ue = NULL;
+    mme_sess_t *sess = NULL;
+    mme_bearer_t *bearer = NULL;
 
     status_t rv;
     pkbuf_t *pkbuf = NULL;
@@ -86,6 +88,15 @@ int testgtpu_enb_send(net_sock_t *sock, c_uint32_t src_ip, c_uint32_t dst_ip)
             } frag;         /* path mtu discovery */
         } un;
     } *icmp_h = NULL;
+
+    hi = mme_ue_first();
+    if (!hi) return -1;
+    mme_ue = mme_ue_this(hi);
+    if (!mme_ue) return -1;
+    sess = mme_sess_first(mme_ue);
+    if (!sess) return -1;
+    bearer = mme_bearer_first(sess);
+    if (!bearer) return -1;
 
     pkbuf = pkbuf_alloc(0, 100 /* enough for ICMP; use smaller buffer */);
     d_assert(pkbuf, return CORE_ERROR,);
@@ -120,7 +131,7 @@ int testgtpu_enb_send(net_sock_t *sock, c_uint32_t src_ip, c_uint32_t dst_ip)
     icmp_h->checksum = in_cksum(
             (unsigned short *)icmp_h, sizeof(struct icmp_header_t));
 
-    gnode.addr = sgw->addr;
+    gnode.addr = bearer->sgw_s1u_addr;
     gnode.port = GTPV1_U_UDP_PORT;
     gnode.sock = sock;
 

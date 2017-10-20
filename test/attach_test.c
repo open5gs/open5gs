@@ -257,11 +257,17 @@ static void attach_test1(abts_case *tc, void *data)
      * Activate Default Bearer Context Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rc = tests1ap_enb_read(sock, recvbuf);
+    /* 
+     * We cannot check it since SGW S1U ADDR is changed
+     * from configuration file
+     */ 
+#if 0 
     recvbuf->len = 233;
     ABTS_TRUE(tc, memcmp(recvbuf->payload, 
         CORE_HEX(_initial_context_setup_request, 
             strlen(_initial_context_setup_request), tmp),
         recvbuf->len) == 0);
+#endif
     pkbuf_free(recvbuf);
 
     /* Send UE Capability Info Indication */
