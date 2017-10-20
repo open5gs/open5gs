@@ -19,7 +19,7 @@ net_sock_t *testgtpu_enb_connect(void)
     if (!mme) return NULL;
 
     rc = net_listen_ext(&sock, SOCK_DGRAM, IPPROTO_UDP,
-            0, mme->s1ap_addr, GTPV1_U_UDP_PORT);
+            0, mme->gtpc_addr, GTPV1_U_UDP_PORT);
     if (rc != 0) return NULL;
 
     return sock;

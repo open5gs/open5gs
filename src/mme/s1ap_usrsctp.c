@@ -91,7 +91,7 @@ status_t s1ap_open(void)
     local_addr.sin_family = AF_INET;
     local_addr.sin_len = sizeof(struct sockaddr_in);
     local_addr.sin_port = htons(mme_self()->s1ap_port);
-    local_addr.sin_addr.s_addr = 0;
+    local_addr.sin_addr.s_addr = mme_self()->s1ap_addr;
 
     if (usrsctp_bind(psock, (struct sockaddr *)&local_addr,
                 sizeof(struct sockaddr_in)) == -1)

@@ -48,7 +48,7 @@ net_sock_t *tests1ap_enb_connect(void)
     remote_addr.sin_family = AF_INET;
     remote_addr.sin_len = sizeof(struct sockaddr_in);
     remote_addr.sin_port = htons(mme_self()->s1ap_port);
-    remote_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    remote_addr.sin_addr.s_addr = mme_self()->s1ap_addr;
     if (usrsctp_connect(psock, (struct sockaddr *)&remote_addr,
                 sizeof(struct sockaddr_in)) == -1)
     {
@@ -67,7 +67,7 @@ status_t tests1ap_enb_close(net_sock_t *sock)
 
 int tests1ap_enb_send(net_sock_t *sock, pkbuf_t *sendbuf)
 {
-    return s1ap_sendto(sock, sendbuf, inet_addr("127.0.0.1"),
+    return s1ap_sendto(sock, sendbuf, mme_self()->s1ap_addr,
             mme_self()->s1ap_port);
 }
 
