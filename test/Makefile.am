@@ -8,6 +8,12 @@ testepc_SOURCES = \
 	base_test.c s1ap_message_test.c nas_message_test.c gtp_message_test.c \
 	security_test.c s1setup_test.c attach_test.c volte_test.c handover_test.c
 
+if USRSCTP
+testepc_SOURCES += testusrsctp.c
+else
+testepc_SOURCES += testsctp.c
+endif
+
 testepc_LDADD = \
     $(top_srcdir)/src/libepc.la
 

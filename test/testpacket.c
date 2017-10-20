@@ -1,4 +1,4 @@
-#define TRACE_MODULE _s1enbmsg
+#define TRACE_MODULE _testpacket
 
 #include "core_debug.h"
 #include "core_pkbuf.h"
@@ -8,156 +8,6 @@
 #include "s1ap_build.h"
 #include "s1ap_conv.h"
 #include "s1ap_path.h"
-
-#if USE_USRSCTP == 1
-#ifndef INET
-#define INET            1
-#endif
-#ifndef INET6
-#define INET6           1
-#endif
-#if HAVE_USRSCTP_H
-#include <usrsctp.h>
-#endif
-#endif
-
-net_sock_t *tests1ap_enb_connect(void)
-{
-    char buf[INET_ADDRSTRLEN];
-    status_t rv;
-    mme_context_t *mme = mme_self();
-#if USE_USRSCTP == 1
-    struct sockaddr_in remote_addr;
-    struct socket *psock = NULL;
-    const int on = 1;
-#else
-    net_sock_t *sock = NULL;
-#endif
-
-    if (!mme) return NULL;
-
-#if USE_USRSCTP == 1
-    mme_self()->s1ap_addr = inet_addr("127.0.0.1");
-
-    /* You should not change SOCK_STREAM to SOCK_SEQPACKET at this time.
-     * if you wanna to use SOCK_SEQPACKET, you need to update s1ap_sendto() */
-    if (!(psock = usrsctp_socket(AF_INET, SOCK_STREAM, IPPROTO_SCTP,
-                    NULL, NULL, 0, NULL)))
-    {
-        d_error("usrsctp_socket error");
-        return NULL;
-    }
-
-    if (usrsctp_setsockopt(psock, IPPROTO_SCTP, SCTP_RECVRCVINFO,
-                &on, sizeof(int)) < 0)
-    {
-        d_error("usrsctp_setsockopt SCTP_RECVRCVINFO failed");
-        return NULL;
-    }
-
-    memset((void *)&remote_addr, 0, sizeof(struct sockaddr_in));
-    remote_addr.sin_family = AF_INET;
-    remote_addr.sin_len = sizeof(struct sockaddr_in);
-    remote_addr.sin_port = htons(mme_self()->s1ap_port);
-    remote_addr.sin_addr.s_addr = mme_self()->s1ap_addr;
-    if (usrsctp_connect(psock, (struct sockaddr *)&remote_addr,
-                sizeof(struct sockaddr_in)) == -1)
-    {
-        d_error("usrsctp_connect error");
-        return NULL;
-    }
-
-    return (net_sock_t *)psock;
-#else
-    rv = net_open_ext(&sock, mme->s1ap_addr, 
-            INET_NTOP(&mme->s1ap_addr, buf), 0, mme->s1ap_port, 
-            SOCK_SEQPACKET, IPPROTO_SCTP, SCTP_S1AP_PPID, 0);
-    if (rv != CORE_OK) return NULL;
-
-    return sock;
-#endif
-}
-
-status_t tests1ap_enb_close(net_sock_t *sock)
-{
-#if USE_USRSCTP == 1
-    usrsctp_close((struct socket *)sock);
-    return CORE_OK;
-#else
-    return net_close(sock);
-#endif
-}
-
-int tests1ap_enb_send(net_sock_t *sock, pkbuf_t *sendbuf)
-{
-    return s1ap_sendto(sock, sendbuf, mme_self()->s1ap_addr,
-            mme_self()->s1ap_port);
-}
-
-int tests1ap_enb_read(net_sock_t *sock, pkbuf_t *recvbuf)
-{
-    int rc = 0;
-
-#if USE_USRSCTP == 1
-	struct socket *psock = (struct socket *)sock;
-	struct sockaddr_in addr;
-	char name[INET6_ADDRSTRLEN];
-	ssize_t n = 0;
-	int flags = 0;
-	socklen_t from_len;
-	socklen_t infolen;
-	struct sctp_rcvinfo rcv_info;
-	unsigned int infotype = 0;
-
-    while(1)
-    {
-        n = usrsctp_recvv(psock, recvbuf->payload, MAX_SDU_LEN,
-                (struct sockaddr *)&addr, &from_len, (void *)&rcv_info,
-                &infolen, &infotype, &flags);
-        if (n > 0) {
-            if (flags & MSG_NOTIFICATION)
-            {
-                /* Nothing to do */
-            }
-            else
-            {
-                c_uint32_t ppid = ntohl(rcv_info.rcv_ppid);
-                if ((flags & MSG_EOR) && ppid == SCTP_S1AP_PPID)
-                {
-                    if (n > 0)
-                    {
-                        rc = n;
-                        break;
-                    }
-                }
-            }
-        }
-    }
-#else
-    while(1)
-    {
-        rc = net_read(sock, recvbuf->payload, recvbuf->len, 0);
-        if (rc == -2) 
-        {
-            continue;
-        }
-        else if (rc <= 0)
-        {
-            if (sock->sndrcv_errno == EAGAIN)
-            {
-                continue;
-            }
-            break;
-        }
-        else
-        {
-            break;
-        }
-    }
-#endif
-
-    return rc;
-}
 
 net_sock_t *testgtpu_enb_connect(void)
 {
@@ -284,7 +134,30 @@ int testgtpu_enb_send(net_sock_t *sock, c_uint32_t src_ip, c_uint32_t dst_ip)
 
 int testgtpu_enb_read(net_sock_t *sock, pkbuf_t *recvbuf)
 {
-    return tests1ap_enb_read(sock, recvbuf);
+    int rc = 0;
+
+    while(1)
+    {
+        rc = net_read(sock, recvbuf->payload, recvbuf->len, 0);
+        if (rc == -2) 
+        {
+            continue;
+        }
+        else if (rc <= 0)
+        {
+            if (sock->sndrcv_errno == EAGAIN)
+            {
+                continue;
+            }
+            break;
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    return rc;
 }
 
 status_t tests1ap_build_setup_req(
