@@ -118,19 +118,11 @@ status_t s1ap_open(void)
 
 status_t s1ap_final()
 {
-    accept_thread_should_stop = 1;
     while(usrsctp_finish() != 0)
     {
         d_error("try to finsih SCTP\n");
         core_sleep(time_from_msec(1000));
     }
-
-#if 0
-    thread_delete(accept_thread);
-#else
-    d_error("[FIXME] should delete accept_thread : "
-            "how to release usrsctp_accept() blocking?");
-#endif
     return CORE_OK;
 }
 
@@ -142,9 +134,16 @@ status_t s1ap_close()
     d_assert(mme_self()->s1ap_sock != NULL, return CORE_ERROR,
             "S1-ENB path already opened");
 
+    accept_thread_should_stop = 1;
+
     psock = (struct socket *)mme_self()->s1ap_sock;
     usrsctp_close(psock);
-
+#if 0
+    thread_delete(accept_thread);
+#else
+    d_error("[FIXME] should delete accept_thread : "
+            "how to release usrsctp_accept() blocking?");
+#endif
     return CORE_OK;
 }
 
