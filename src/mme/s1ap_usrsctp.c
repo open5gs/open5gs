@@ -125,13 +125,13 @@ status_t s1ap_close()
 
     accept_thread_should_stop = 1;
     usrsctp_close(psock);
-#if 0 /* FIXME : how to release usrsctp_accept() blocking */
     while(usrsctp_finish() != 0)
     {
         d_error("try to finsih SCTP\n");
         core_sleep(time_from_msec(1000));
     }
 
+#if 0 /* FIXME : how to release usrsctp_accept() blocking */
     thread_delete(accept_thread);
 #endif
 
@@ -158,7 +158,7 @@ status_t s1ap_sendto(net_sock_t *s, pkbuf_t *pkbuf,
     memset((void *)&sndinfo, 0, sizeof(struct sctp_sndinfo));
     sndinfo.snd_ppid = htonl(SCTP_S1AP_PPID);
     sent = usrsctp_sendv(psock, pkbuf->payload, pkbuf->len, 
-            NULL, 0,
+            NULL, 0,  /* Only SOCK_STREAM is supported at this time */
             (void *)&sndinfo, (socklen_t)sizeof(struct sctp_sndinfo),
             SCTP_SENDV_SNDINFO, 0);
 
@@ -204,12 +204,20 @@ static int s1ap_usrsctp_recv_cb(struct socket *sock,
     union sctp_sockstore addr, void *data, size_t datalen,
     struct sctp_rcvinfo rcv, int flags, void *ulp_info)
 {
-    if (data) {
-        if (flags & MSG_NOTIFICATION) {
+    if (data == NULL)
+    {
+        usrsctp_close(sock);
+    }
+    else
+    {
+        if (flags & MSG_NOTIFICATION)
+        {
             handle_notification((union sctp_notification *)data, datalen);
-        } else {
+        }
+        else
+        {
             c_uint32_t ppid = ntohl(rcv.rcv_ppid);
-            if (ppid == SCTP_S1AP_PPID)
+            if ((flags & MSG_EOR) && ppid == SCTP_S1AP_PPID)
             {
                 event_t e;
                 pkbuf_t *pkbuf;

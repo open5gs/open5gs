@@ -39,6 +39,8 @@ net_sock_t *tests1ap_enb_connect(void)
 #if USE_USRSCTP == 1
     mme_self()->s1ap_addr = inet_addr("127.0.0.1");
 
+    /* You should not change SOCK_STREAM to SOCK_SEQPACKET at this time.
+     * if you wanna to use SOCK_SEQPACKET, you need to update s1ap_sendto() */
     if (!(psock = usrsctp_socket(AF_INET, SOCK_STREAM, IPPROTO_SCTP,
                     NULL, NULL, 0, NULL)))
     {
@@ -120,10 +122,13 @@ int tests1ap_enb_read(net_sock_t *sock, pkbuf_t *recvbuf)
             else
             {
                 c_uint32_t ppid = ntohl(rcv_info.rcv_ppid);
-                if (ppid == SCTP_S1AP_PPID && n > 0)
+                if ((flags & MSG_EOR) && ppid == SCTP_S1AP_PPID)
                 {
-                    rc = n;
-                    break;
+                    if (n > 0)
+                    {
+                        rc = n;
+                        break;
+                    }
                 }
             }
         }
