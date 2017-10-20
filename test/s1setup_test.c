@@ -9,7 +9,7 @@
 #include "testutil.h"
 #include "testpacket.h"
 
-#define NUM_OF_TEST_DUPLICATED_ENB 1
+#define NUM_OF_TEST_DUPLICATED_ENB 4
 
 static void s1setup_test1(abts_case *tc, void *data)
 {
@@ -108,9 +108,7 @@ abts_suite *test_s1setup(abts_suite *suite)
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, s1setup_test1, NULL);
-#if 0
     abts_run_test(suite, s1setup_test2, NULL);
-#endif
 
     return suite;
 }

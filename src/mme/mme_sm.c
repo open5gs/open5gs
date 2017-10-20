@@ -57,9 +57,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
             net_sock_t *sock = (net_sock_t *)event_get_param1(e);
             d_assert(sock, break, "Null param");
             c_uint32_t addr = (c_uint32_t)event_get_param2(e);
-            d_assert(addr, break, "Null param");
             c_uint16_t port = (c_uint16_t)event_get_param3(e);
-            d_assert(port, break, "Null param");
 
             d_trace(1, "eNB-S1 accepted[%s] in master_sm module\n", 
                 INET_NTOP(&addr, buf));

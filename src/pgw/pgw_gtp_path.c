@@ -73,7 +73,7 @@ static int _gtpv1_tun_recv_cb(net_link_t *net_link, void *data)
     }
     else
     {
-        d_error("Can not find bearer");
+        d_warn("Can not find bearer");
     }
 
     pkbuf_free(recvbuf);

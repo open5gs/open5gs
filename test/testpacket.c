@@ -38,7 +38,7 @@ net_sock_t *tests1ap_enb_connect(void)
 #if USE_USRSCTP == 1
     mme_self()->s1ap_addr = inet_addr("127.0.0.1");
 
-    if (!(psock = usrsctp_socket(AF_INET, SOCK_SEQPACKET, IPPROTO_SCTP,
+    if (!(psock = usrsctp_socket(AF_INET, SOCK_STREAM, IPPROTO_SCTP,
                     NULL, NULL, 0, NULL)))
     {
         d_error("usrsctp_socket error");

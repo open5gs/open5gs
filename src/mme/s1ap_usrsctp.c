@@ -19,14 +19,20 @@
 
 #define LOCAL_UDP_PORT  9899
 
+static void handle_notification(union sctp_notification *notif, size_t n);
 static int s1ap_usrsctp_recv_cb(struct socket *sock,
         union sctp_sockstore addr, void *data, size_t datalen,
         struct sctp_rcvinfo rcv, int flags, void *ulp_info);
 
 static void debug_printf(const char *format, ...);
 
+int accept_thread_should_stop = 0;
+static thread_id accept_thread;
+static void *THREAD_FUNC accept_main(thread_id id, void *data);
+
 status_t s1ap_open(void)
 {
+    status_t rv;
     char buf[INET_ADDRSTRLEN];
 
     struct socket *psock = NULL;
@@ -63,7 +69,7 @@ status_t s1ap_open(void)
     if (usrsctp_setsockopt(psock, IPPROTO_SCTP, SCTP_RECVRCVINFO,
                 &on, sizeof(int)) < 0)
     {
-        d_error("usrsctp_setsockopt SCTP_RECVRCVINFO");
+        d_error("usrsctp_setsockopt SCTP_RECVRCVINFO failed");
         return CORE_ERROR;
     }
 
@@ -76,7 +82,7 @@ status_t s1ap_open(void)
         if (usrsctp_setsockopt(psock, IPPROTO_SCTP, SCTP_EVENT,
                     &event, sizeof(struct sctp_event)) < 0)
         {
-            d_error("usrsctp_setsockopt SCTP_EVENT");
+            d_error("usrsctp_setsockopt SCTP_EVENT failed");
             return CORE_ERROR;
         }
     }
@@ -101,6 +107,9 @@ status_t s1ap_open(void)
         return CORE_ERROR;
     }
 
+    rv = thread_create(&accept_thread, NULL, accept_main, NULL);
+    if (rv != CORE_OK) return rv;
+
     d_trace(1, "s1_enb_listen() %s:%d\n", 
         INET_NTOP(&mme_self()->s1ap_addr, buf), mme_self()->s1ap_port);
 
@@ -109,12 +118,22 @@ status_t s1ap_open(void)
 
 status_t s1ap_close()
 {
+    struct socket *psock = (struct socket *)mme_self()->s1ap_sock;
     d_assert(mme_self(), return CORE_ERROR, "Null param");
     d_assert(mme_self()->s1ap_sock != NULL, return CORE_ERROR,
             "S1-ENB path already opened");
 
-    usrsctp_close((struct socket *)mme_self()->s1ap_sock);
-    while(usrsctp_finish() != 0) core_sleep(time_from_msec(50));
+    accept_thread_should_stop = 1;
+    usrsctp_close(psock);
+#if 0 /* FIXME : how to release usrsctp_accept() blocking */
+    while(usrsctp_finish() != 0)
+    {
+        d_error("try to finsih SCTP\n");
+        core_sleep(time_from_msec(1000));
+    }
+
+    thread_delete(accept_thread);
+#endif
 
     return CORE_OK;
 }
@@ -131,22 +150,15 @@ status_t s1ap_sendto(net_sock_t *s, pkbuf_t *pkbuf,
     char buf[INET_ADDRSTRLEN];
     ssize_t sent;
     struct socket *psock = (struct socket *)s;
-    struct sockaddr_in remote_addr;
     struct sctp_sndinfo sndinfo;
 
     d_assert(s, return CORE_ERROR, "Null param");
     d_assert(pkbuf, return CORE_ERROR, "Null param");
 
-    memset((void *)&remote_addr, 0, sizeof(struct sockaddr_in));
-    remote_addr.sin_family = AF_INET;
-    remote_addr.sin_len = sizeof(struct sockaddr_in);
-    remote_addr.sin_port = htons(port);
-    remote_addr.sin_addr.s_addr = addr;
-
     memset((void *)&sndinfo, 0, sizeof(struct sctp_sndinfo));
     sndinfo.snd_ppid = htonl(SCTP_S1AP_PPID);
     sent = usrsctp_sendv(psock, pkbuf->payload, pkbuf->len, 
-            (struct sockaddr *)&remote_addr, 1,
+            NULL, 0,
             (void *)&sndinfo, (socklen_t)sizeof(struct sctp_sndinfo),
             SCTP_SENDV_SNDINFO, 0);
 
@@ -155,14 +167,75 @@ status_t s1ap_sendto(net_sock_t *s, pkbuf_t *pkbuf,
     d_trace_hex(10, pkbuf->payload, pkbuf->len);
     if (sent < 0 || sent != pkbuf->len)
     {
-        d_error("net_send error (%d:%s)", 
-                s->sndrcv_errno, strerror(s->sndrcv_errno));
+        d_error("sent : %d, pkbuf->len : %d\n", sent, pkbuf->len);
         return CORE_ERROR;
     }
     pkbuf_free(pkbuf);
 
     return CORE_OK;
 }
+
+static void *THREAD_FUNC accept_main(thread_id id, void *data)
+{
+    event_t e;
+
+    struct socket *sock = NULL;
+    struct sockaddr_in remote_addr;
+    socklen_t addr_len;
+
+    while (!accept_thread_should_stop)
+    {
+        if ((sock = usrsctp_accept((struct socket *)mme_self()->s1ap_sock,
+                    (struct sockaddr *)&remote_addr, &addr_len)) == NULL)
+        {
+            d_error("usrsctp_accept failed");
+            continue;
+        }
+
+        event_set(&e, MME_EVT_S1AP_LO_ACCEPT);
+        event_set_param1(&e, (c_uintptr_t)sock);
+        mme_event_send(&e);
+    }
+
+    return NULL;
+}
+
+static int s1ap_usrsctp_recv_cb(struct socket *sock,
+    union sctp_sockstore addr, void *data, size_t datalen,
+    struct sctp_rcvinfo rcv, int flags, void *ulp_info)
+{
+    if (data) {
+        if (flags & MSG_NOTIFICATION) {
+            handle_notification((union sctp_notification *)data, datalen);
+        } else {
+            c_uint32_t ppid = ntohl(rcv.rcv_ppid);
+            if (ppid == SCTP_S1AP_PPID)
+            {
+                event_t e;
+                pkbuf_t *pkbuf;
+
+                pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+                d_assert(pkbuf, return 1, );
+
+                pkbuf->len = datalen;
+                memcpy(pkbuf->payload, data, pkbuf->len);
+
+                event_set(&e, MME_EVT_S1AP_MESSAGE);
+                event_set_param1(&e, (c_uintptr_t)sock);
+                event_set_param2(&e, (c_uintptr_t)pkbuf);
+                mme_event_send(&e);
+            }
+            else
+            {
+                d_warn("Unknwon PPID(%d) for data length(%ld)\n",
+                        ppid, datalen);
+            }
+        }
+        free(data);
+    }
+    return (1);
+}
+
 
 static void
 handle_association_change_event(struct sctp_assoc_change *sac)
@@ -362,50 +435,6 @@ handle_notification(union sctp_notification *notif, size_t n)
     default:
         break;
     }
-}
-
-static int s1ap_usrsctp_recv_cb(struct socket *sock,
-    union sctp_sockstore addr, void *data, size_t datalen,
-    struct sctp_rcvinfo rcv, int flags, void *ulp_info)
-{
-    if (data) {
-        if (flags & MSG_NOTIFICATION) {
-            handle_notification((union sctp_notification *)data, datalen);
-        } else {
-            event_t e;
-            pkbuf_t *pkbuf;
-            c_uint32_t sin_addr = addr.sin.sin_addr.s_addr;
-            c_uint16_t sin_port = ntohs(addr.sin.sin_port);
-            c_uint32_t ppid = ntohl(rcv.rcv_ppid);
-
-            if (ppid == SCTP_S1AP_PPID)
-            {
-                /* FIXME : we need to find when eNB connects MME firstly */
-                mme_enb_t *enb = mme_enb_find_by_sock((net_sock_t *)sock);
-                if (!enb)
-                {
-                    event_set(&e, MME_EVT_S1AP_LO_ACCEPT);
-                    event_set_param1(&e, (c_uintptr_t)sock);
-                    event_set_param2(&e, (c_uintptr_t)&sin_addr);
-                    event_set_param3(&e, (c_uintptr_t)&sin_port);
-                    mme_event_send(&e);
-                }
-
-                pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-                d_assert(pkbuf, return 1, );
-
-                pkbuf->len = datalen;
-                memcpy(pkbuf->payload, data, pkbuf->len);
-
-                event_set(&e, MME_EVT_S1AP_MESSAGE);
-                event_set_param1(&e, (c_uintptr_t)sock);
-                event_set_param2(&e, (c_uintptr_t)pkbuf);
-                mme_event_send(&e);
-            }
-        }
-        free(data);
-    }
-    return (1);
 }
 
 static void debug_printf(const char *format, ...)
