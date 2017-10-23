@@ -163,6 +163,52 @@ AC_DEFINE_UNQUOTED([PACKAGE_VERSION_PATCHLEVEL],
         [`echo $PACKAGE_VERSION | $SED 's/^\([[^\.]]\+\)\.\([[^\.]]\+\)\.\([[^\.]]\+\).*/\3/'`],
         [Patch version of this package])
 
+# adl_RECURSIVE_EVAL(VALUE, RESULT)
+# =================================
+# Interpolate the VALUE in loop until it doesn't change,
+# and set the result to $RESULT.
+# WARNING: It's easy to get an infinite loop with some unsane input.
+# For example ${datadir} becomes ${datarootdir}, and then ${prefix}/share, and
+# finally ${prefix} is replaced by the prefix.
+AC_DEFUN([adl_RECURSIVE_EVAL],
+[_lcl_receval="$1"
+$2=`(test "x$prefix" = xNONE && prefix="$ac_default_prefix"
+     test "x$exec_prefix" = xNONE && exec_prefix="${prefix}"
+     _lcl_receval_old=''
+     while test "[$]_lcl_receval_old" != "[$]_lcl_receval"; do
+       _lcl_receval_old="[$]_lcl_receval"
+       eval _lcl_receval="\"[$]_lcl_receval\""
+     done
+     echo "[$]_lcl_receval")`])
+
+adl_RECURSIVE_EVAL(["${libdir}"], [LIB_DIR])
+adl_RECURSIVE_EVAL(["${sysconfdir}"], [SYSCONF_DIR])
+AC_SUBST(LIB_DIR)
+AC_SUBST(SYSCONF_DIR)
+
+AC_SUBST(systemd_unit_dir)
+AC_ARG_WITH(
+    systemd-unit-dir,
+    AS_HELP_STRING(
+            [--with-systemdsystemunitdir=DIR],
+            [systemd unit directory @<:@SYSTEMD_UNIT_DIR@:>@
+        Defaults to the correct value for debian /etc/systemd/system/]
+    ),
+    [
+            systemd_unit_dir="$withval"
+    ],
+    [
+        # default to the systemd admin unit directory
+        which pkg-config
+        pkg_config_exists=$?
+        if test x"$pkg_config_exists" = x"0"; then
+            systemd_unit_dir=`pkg-config systemd --variable=systemdsystemunitdir`
+        else
+            systemd_unit_dir="/etc/systemd/system/"
+        fi
+    ]
+)
+
 ##################################
 #### Checks for header files. ####
 ##################################
@@ -430,6 +476,7 @@ AC_CONFIG_FILES([support/freeDiameter/hss.conf])
 AC_CONFIG_FILES([support/freeDiameter/pgw.conf])
 AC_CONFIG_FILES([support/freeDiameter/pcrf.conf])
 #AC_CONFIG_FILES([support/freeDiameter/dict_legacy_xml.conf])
+AC_CONFIG_FILES([support/systemd/Makefile])
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 

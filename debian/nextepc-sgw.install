@@ -1,0 +1,2 @@
+usr/bin/nextepc-sgwd
+lib/systemd/system/nextepc-sgwd.service

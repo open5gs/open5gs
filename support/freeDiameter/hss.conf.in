@@ -107,7 +107,7 @@ ListenOn = "10.1.35.214";
 # Default : NO DEFAULT
 #TLS_Cred = "<x509 certif file.PEM>" , "<x509 private key file.PEM>";
 #TLS_Cred = "/etc/ssl/certs/freeDiameter.pem", "/etc/ssl/private/freeDiameter.key";
-TLS_Cred = "@prefix@/etc/freeDiameter/hss.cert.pem", "@prefix@/etc/freeDiameter/hss.key.pem";
+TLS_Cred = "@SYSCONF_DIR@/freeDiameter/hss.cert.pem", "@SYSCONF_DIR@/freeDiameter/hss.key.pem";
 
 # Certificate authority / trust anchors
 # The file containing the list of trusted Certificate Authorities (PEM list)
@@ -115,7 +115,7 @@ TLS_Cred = "@prefix@/etc/freeDiameter/hss.cert.pem", "@prefix@/etc/freeDiameter/
 # The directive can appear several times to specify several files.
 # Default : GNUTLS default behavior
 #TLS_CA = "<file.PEM>";
-TLS_CA = "@prefix@/etc/freeDiameter/cacert.pem";
+TLS_CA = "@SYSCONF_DIR@/freeDiameter/cacert.pem";
 
 # Certificate Revocation List file
 # The information about revoked certificates.
@@ -223,14 +223,14 @@ TLS_CA = "@prefix@/etc/freeDiameter/cacert.pem";
 #  4 - full    - display the complete information on a single long line
 #  8 - tree    - display the complete information in an easier to read format spanning several lines.
 
-LoadExtension = "@prefix@/lib/nextepc/dbg_msg_dumps.so" : "0x8888";
-LoadExtension = "@prefix@/lib/nextepc/dict_rfc5777.so";
-LoadExtension = "@prefix@/lib/nextepc/dict_mip6i.so";
-LoadExtension = "@prefix@/lib/nextepc/dict_nasreq.so";
-LoadExtension = "@prefix@/lib/nextepc/dict_nas_mipv6.so";
-LoadExtension = "@prefix@/lib/nextepc/dict_dcca.so";
-LoadExtension = "@prefix@/lib/nextepc/dict_dcca_3gpp.so";
-LoadExtension = "@prefix@/lib/nextepc/dict_s6a.so";
+LoadExtension = "@LIB_DIR@/nextepc/dbg_msg_dumps.so" : "0x8888";
+LoadExtension = "@LIB_DIR@/nextepc/dict_rfc5777.so";
+LoadExtension = "@LIB_DIR@/nextepc/dict_mip6i.so";
+LoadExtension = "@LIB_DIR@/nextepc/dict_nasreq.so";
+LoadExtension = "@LIB_DIR@/nextepc/dict_nas_mipv6.so";
+LoadExtension = "@LIB_DIR@/nextepc/dict_dcca.so";
+LoadExtension = "@LIB_DIR@/nextepc/dict_dcca_3gpp.so";
+LoadExtension = "@LIB_DIR@/nextepc/dict_s6a.so";
 
 
 ##############################################################

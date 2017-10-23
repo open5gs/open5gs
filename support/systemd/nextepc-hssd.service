@@ -1,0 +1,13 @@
+[Unit]
+Description=NextEPC HSS Daemon
+After=networking.service
+
+[Service]
+Type=simple
+Restart=always
+ExecStart=/usr/bin/nextepc-hssd -f /etc/nextepc/hss.cfg
+RestartSec=2
+RestartPreventExitStatus=1
+
+[Install]
+WantedBy=multi-user.target
