@@ -829,8 +829,10 @@ abts_suite *testnetlib(abts_suite *suite)
     abts_run_test(suite, netlib1, NULL);
     abts_run_test(suite, netlib2, NULL);
     abts_run_test(suite, netlib3, NULL);
+#if USE_USRSCTP != 1
     abts_run_test(suite, netlib4, NULL);
     abts_run_test(suite, netlib5, NULL);
+#endif
     abts_run_test(suite, netlib6, NULL);
 #if LINUX == 1
     abts_run_test(suite, netlib7, NULL);

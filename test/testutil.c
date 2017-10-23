@@ -44,7 +44,7 @@ void test_terminate(void)
     core_terminate();
 }
 
-status_t test_initialize(void)
+status_t test_initialize(char *config_path)
 {
     status_t rv;
 
@@ -53,7 +53,7 @@ status_t test_initialize(void)
     atexit(test_terminate);
 
     core_initialize();
-    rv = app_initialize(NULL, NULL);
+    rv = app_initialize(config_path, NULL);
     if (rv == CORE_OK)
     {
         while(1)

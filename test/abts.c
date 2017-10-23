@@ -428,6 +428,7 @@ int main(int argc, const char *const argv[]) {
     int rv;
     int list_provided = 0;
     abts_suite *suite = NULL;
+    const char *config_path = NULL;
 
     d_trace_global_off();
     d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
@@ -456,6 +457,10 @@ int main(int argc, const char *const argv[]) {
             d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_FULL);
             continue;
         }
+        if (!strcmp(argv[i], "-f")) {
+            config_path = argv[++i];
+            continue;
+        }
         if (argv[i][0] == '-') {
             fprintf(stderr, "Invalid option: `%s'\n", argv[i]);
             exit(1);
@@ -463,7 +468,7 @@ int main(int argc, const char *const argv[]) {
         list_provided = 1;
     }
 
-    rv = test_initialize();
+    rv = test_initialize((char*)config_path);
     if (rv != CORE_OK) 
         return EXIT_FAILURE;
 

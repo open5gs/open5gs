@@ -39,7 +39,7 @@ AM_CFLAGS = \
 
 AM_LDFLAGS = -export-dynamic
 
-TESTS = testepc
+TESTS = checkepc.sh
 
 MAINTAINERCLEANFILES = Makefile.in 
 MOSTLYCLEANFILES = core *.stackdump

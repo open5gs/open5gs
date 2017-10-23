@@ -66,6 +66,5 @@ MAINTAINERCLEANFILES = \
     build-aux/ar-lib build-aux/config.guess build-aux/depcomp \
 	build-aux/ltmain.sh build-aux/test-driver build-aux/compile \
 	build-aux/config.sub build-aux/missing build-aux/install-sh \
-	.cscope.out .cscope.out.in .cscope.files .cscope.out.po \
     Makefile.in
 MOSTLYCLEANFILES = core *.stackdump
