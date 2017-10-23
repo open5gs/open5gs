@@ -183,8 +183,10 @@ $2=`(test "x$prefix" = xNONE && prefix="$ac_default_prefix"
 
 adl_RECURSIVE_EVAL(["${libdir}"], [LIB_DIR])
 adl_RECURSIVE_EVAL(["${sysconfdir}"], [SYSCONF_DIR])
+adl_RECURSIVE_EVAL(["${localstatedir}"], [LOCALSTATE_DIR])
 AC_SUBST(LIB_DIR)
 AC_SUBST(SYSCONF_DIR)
+AC_SUBST(LOCALSTATE_DIR)
 
 AC_SUBST(systemd_unit_dir)
 AC_ARG_WITH(
