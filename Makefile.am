@@ -56,6 +56,7 @@ dist_freeDiameter_DATA = \
 
 install-data-hook:
 	$(MKDIR_P) $(DESTDIR)/$(localstatedir)/log
+	$(MKDIR_P) $(DESTDIR)/$(localstatedir)/run
 
 CLEANFILES = symtbl.c
 DISTCLEANFILES = $(DIST_ARCHIVES)

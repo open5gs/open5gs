@@ -2,11 +2,14 @@
 
 #include "core_debug.h"
 #include "core_thread.h"
+#include "core_file.h"
 
 #include "context.h"
 #include "logger.h"
 
 #include "app.h"
+
+#define DEFAULT_PID_DIR_PATH LOCALSTATE_DIR "run/"
 
 static thread_id logger_thread = 0;
 static void *THREAD_FUNC logger_main(thread_id id, void *data);
@@ -85,4 +88,63 @@ static void *THREAD_FUNC logger_main(thread_id id, void *data)
     d_assert(ret == 0, return NULL, "Failed to intialize Logger");
 
     return NULL;
+}
+
+status_t logger_restart()
+{
+    status_t rv;
+
+    if (logger_thread)
+    {
+        thread_delete(logger_thread);
+        
+        if (context_self()->log_path)
+        {
+            d_print("  Logging '%s'\n", context_self()->log_path);
+            rv = thread_create(&logger_thread, NULL, 
+                    logger_main, context_self()->log_path);
+            if (rv != CORE_OK) return rv;
+        }
+    }
+
+    return CORE_OK;
+}
+
+status_t app_log_pid(const char *name)
+{
+    file_t *pid_file = NULL;
+    file_info_t finfo;
+    static pid_t saved_pid = -1;
+    pid_t mypid;
+    status_t rv;
+    char fname[MAX_FILEPATH_LEN];
+    char buf[128];
+
+    d_assert(name, return CORE_ERROR, );
+
+    snprintf(fname, sizeof(fname), "%snextepc-%sd.pid",
+            DEFAULT_PID_DIR_PATH, name);
+    mypid = getpid();
+    if (mypid != saved_pid
+        && file_stat(&finfo, fname, FILE_INFO_MTIME) == CORE_OK)
+    {
+#if 0 /* FIXME : we need to check pid file overwritten */
+        d_warn("pid file %s overwritten -- Unclean "
+                "shutdown of previous NextEPC run?", fname);
+#endif
+    }
+
+    if ((rv = file_open(&pid_file, fname,
+            FILE_WRITE | FILE_CREATE | FILE_TRUNCATE,
+            FILE_UREAD | FILE_UWRITE | FILE_GREAD | FILE_WREAD)) != CORE_OK)
+    {
+        d_error("could not create %s", fname);
+        return CORE_ERROR;
+    }
+    snprintf(buf, sizeof(buf), "%" C_PID_T_FMT "\r\n", mypid);
+    file_puts(buf, pid_file);
+    file_close(pid_file);
+    saved_pid = mypid;
+
+    return CORE_OK;
 }

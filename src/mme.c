@@ -7,6 +7,8 @@
 #include "context.h"
 #include "app.h"
 
+const char *app_name = "mme";
+
 status_t app_initialize(char *config_path, char *log_path)
 {
     status_t rv;
@@ -42,3 +44,4 @@ void app_terminate(void)
 
     app_did_terminate();
 }
+

@@ -46,6 +46,11 @@ static int check_signal(int signum)
 
             return 1;
         }
+        case SIGHUP:
+        {
+            logger_restart();
+            break;
+        }
         case SIGUSR1:
         {
             break;
@@ -126,6 +131,7 @@ int main(int argc, char *argv[])
     atexit(terminate);
 
     core_initialize();
+    app_log_pid(app_name);
     if (app_initialize(config_path, log_path) != CORE_OK)
     {
         d_fatal("NextEPC initialization failed. Aborted");

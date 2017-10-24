@@ -153,6 +153,32 @@ AC_SUBST(uint64_t_hex_fmt)
 AC_SUBST(int64_literal)
 AC_SUBST(uint64_literal)
 
+AC_CHECK_SIZEOF(pid_t, 8)
+
+if test "$ac_cv_sizeof_pid_t" = "$ac_cv_sizeof_short"; then
+    pid_t_fmt='#define C_PID_T_FMT "hd"'
+elif test "$ac_cv_sizeof_pid_t" = "$ac_cv_sizeof_int"; then
+    pid_t_fmt='#define C_PID_T_FMT "d"'
+elif test "$ac_cv_sizeof_pid_t" = "$ac_cv_sizeof_long"; then
+    pid_t_fmt='#define C_PID_T_FMT "ld"'
+elif test "$ac_cv_sizeof_pid_t" = "$ac_cv_sizeof_long_long"; then
+    pid_t_fmt='#define C_PID_T_FMT APR_INT64_T_FMT'
+else
+    pid_t_fmt='#error Can not determine the proper size for pid_t'
+fi
+
+case $host in
+   *-solaris*)
+       if test "$ac_cv_sizeof_long" = "8"; then
+         pid_t_fmt='#define C_PID_T_FMT "d"'
+       else
+         pid_t_fmt='#define C_PID_T_FMT "ld"'
+       fi
+       ;;
+esac
+
+AC_SUBST(pid_t_fmt)
+
 AC_DEFINE_UNQUOTED([PACKAGE_VERSION_MAJOR],
         [`echo $PACKAGE_VERSION | $SED 's/^\([[^\.]]\+\)\.\([[^\.]]\+\)\.\([[^\.]]\+\).*/\1/'`],
         [Major version of this package])

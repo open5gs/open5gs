@@ -19,6 +19,8 @@ static semaphore_id sgw_sem2 = 0;
 static semaphore_id hss_sem1 = 0;
 static semaphore_id hss_sem2 = 0;
 
+const char *app_name = "epc";
+
 status_t app_initialize(char *config_path, char *log_path)
 {
     pid_t pid;

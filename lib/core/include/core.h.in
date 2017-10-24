@@ -211,6 +211,8 @@ typedef  c_int32_t             	c_intptr_t;
 @uint64_t_fmt@
 @uint64_t_hex_fmt@
 
+@pid_t_fmt@
+
 #ifdef INT16_MIN
 #define C_INT16_MIN   INT16_MIN
 #else

@@ -13,7 +13,7 @@ AM_CPPFLAGS = \
 AM_CFLAGS = \
 	-Wall -Werror
 
-DEFS = @DEFS@ -DSYSCONFDIR=\"$(sysconfdir)/\"
+DEFS = @DEFS@ -DSYSCONF_DIR=\"$(sysconfdir)/\"
 
 MAINTAINERCLEANFILES = Makefile.in 
 MOSTLYCLEANFILES = *.stackdump

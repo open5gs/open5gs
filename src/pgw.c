@@ -7,6 +7,8 @@
 #include "context.h"
 #include "app.h"
 
+const char *app_name = "pgw";
+
 status_t app_initialize(char *config_path, char *log_path)
 {
     status_t rv;

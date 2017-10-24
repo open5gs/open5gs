@@ -6,7 +6,7 @@
 
 #include "context.h"
 
-#define DEFAULT_CONFIG_FILE_PATH SYSCONFDIR PACKAGE ".conf"
+#define DEFAULT_CONFIG_FILE_PATH SYSCONF_DIR PACKAGE ".conf"
 
 static context_t self;
 
