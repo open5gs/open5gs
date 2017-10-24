@@ -2,7 +2,7 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = lib src test support/systemd
+SUBDIRS = lib src support test
 
 bin_PROGRAMS = nextepc-mmed nextepc-hssd nextepc-sgwd nextepc-pgwd nextepc-pcrfd nextepc-epcd
 
@@ -33,26 +33,6 @@ nextepc_epcd_LDFLAGS = -export-dynamic
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \
     -I$(top_srcdir)/src
-
-sysconf_DATA = \
-	support/nextepc.conf
-
-freeDiameterdir = ${sysconfdir}/freeDiameter
-freeDiameter_DATA = \
-	support/freeDiameter/mme.conf \
-	support/freeDiameter/hss.conf \
-	support/freeDiameter/pgw.conf \
-	support/freeDiameter/pcrf.conf
-dist_freeDiameter_DATA = \
-	support/freeDiameter/cacert.pem \
-	support/freeDiameter/mme.key.pem \
-	support/freeDiameter/mme.cert.pem \
-	support/freeDiameter/hss.key.pem \
-	support/freeDiameter/hss.cert.pem \
-	support/freeDiameter/pgw.key.pem \
-	support/freeDiameter/pgw.cert.pem \
-	support/freeDiameter/pcrf.key.pem \
-	support/freeDiameter/pcrf.cert.pem
 
 install-data-hook:
 	$(MKDIR_P) $(DESTDIR)/$(localstatedir)/log

@@ -189,23 +189,9 @@ AC_DEFINE_UNQUOTED([PACKAGE_VERSION_PATCHLEVEL],
         [`echo $PACKAGE_VERSION | $SED 's/^\([[^\.]]\+\)\.\([[^\.]]\+\)\.\([[^\.]]\+\).*/\3/'`],
         [Patch version of this package])
 
-# adl_RECURSIVE_EVAL(VALUE, RESULT)
-# =================================
-# Interpolate the VALUE in loop until it doesn't change,
-# and set the result to $RESULT.
-# WARNING: It's easy to get an infinite loop with some unsane input.
-# For example ${datadir} becomes ${datarootdir}, and then ${prefix}/share, and
-# finally ${prefix} is replaced by the prefix.
-AC_DEFUN([adl_RECURSIVE_EVAL],
-[_lcl_receval="$1"
-$2=`(test "x$prefix" = xNONE && prefix="$ac_default_prefix"
-     test "x$exec_prefix" = xNONE && exec_prefix="${prefix}"
-     _lcl_receval_old=''
-     while test "[$]_lcl_receval_old" != "[$]_lcl_receval"; do
-       _lcl_receval_old="[$]_lcl_receval"
-       eval _lcl_receval="\"[$]_lcl_receval\""
-     done
-     echo "[$]_lcl_receval")`])
+##################################
+#### Checks for Directories. #####
+##################################
 
 adl_RECURSIVE_EVAL(["${libdir}"], [LIB_DIR])
 adl_RECURSIVE_EVAL(["${sysconfdir}"], [SYSCONF_DIR])
@@ -234,6 +220,28 @@ AC_ARG_WITH(
         else
             systemd_unit_dir="/etc/systemd/system/"
         fi
+    ]
+)
+
+case $host in
+    *-apple-darwin*)
+        ;;
+    *)
+        AC_SUBST(logrotate_conf_dir)
+        ;;
+esac
+AC_ARG_WITH(
+    logrotate-conf-dir,
+    AS_HELP_STRING(
+            [--with-logrotateconfdir=DIR],
+            [logrotate conf directory @<:@LOGROTATE_CONF_DIR@:>@
+        Defaults to the correct value for debian /etc/logrotate.d/]
+    ),
+    [
+            logrotate_conf_dir="$withval"
+    ],
+    [
+        logrotate_conf_dir="/etc/logrotate.d/"
     ]
 )
 
@@ -497,14 +505,18 @@ AC_CONFIG_FILES([src/sgw/Makefile])
 AC_CONFIG_FILES([src/pgw/Makefile])
 AC_CONFIG_FILES([src/pcrf/Makefile])
 AC_CONFIG_FILES([src/Makefile])
-AC_CONFIG_FILES([test/Makefile])
-AC_CONFIG_FILES([support/nextepc.conf])
 AC_CONFIG_FILES([support/freeDiameter/mme.conf])
 AC_CONFIG_FILES([support/freeDiameter/hss.conf])
 AC_CONFIG_FILES([support/freeDiameter/pgw.conf])
 AC_CONFIG_FILES([support/freeDiameter/pcrf.conf])
 #AC_CONFIG_FILES([support/freeDiameter/dict_legacy_xml.conf])
+AC_CONFIG_FILES([support/freeDiameter/Makefile])
 AC_CONFIG_FILES([support/systemd/Makefile])
+AC_CONFIG_FILES([support/logrotate/nextepc])
+AC_CONFIG_FILES([support/logrotate/Makefile])
+AC_CONFIG_FILES([support/nextepc.conf])
+AC_CONFIG_FILES([support/Makefile])
+AC_CONFIG_FILES([test/Makefile])
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 

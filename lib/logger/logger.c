@@ -93,7 +93,9 @@ int logger_start(const char *path)
     int ret, count = 0;
     size_t nbytes;
     ssize_t r;
+#if 0  /* deprecated by logrotate */
     file_info_t finfo;
+#endif
     int us;
     fd_set readfd;
     struct timeval timer_val;
@@ -195,6 +197,7 @@ int logger_start(const char *path)
                         (long)r, (long)nbytes);
             }
 
+#if 0 /* Deprecated by logrotate */
             if (count % FILE_CHECK_CYCLE == 0)
             {
                 file_info_get(&finfo, FILE_INFO_SIZE, g_file);
@@ -203,6 +206,7 @@ int logger_start(const char *path)
                     log_file_backup();
                 }
             }
+#endif
 
             count++;
         }

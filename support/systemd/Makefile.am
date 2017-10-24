@@ -11,3 +11,6 @@ unitdir = ${systemd_unit_dir}
 unit_DATA = $(unitfiles)
 
 EXTRA_DIST = $(unitfiles)
+
+MAINTAINERCLEANFILES = Makefile.in 
+MOSTLYCLEANFILES = *.stackdump
