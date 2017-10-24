@@ -218,7 +218,7 @@ AC_ARG_WITH(
         if test x"$pkg_config_exists" = x"0"; then
             systemd_unit_dir=`pkg-config systemd --variable=systemdsystemunitdir`
         else
-            systemd_unit_dir="/etc/systemd/system/"
+            systemd_unit_dir="${sysconfdir}/systemd/system/"
         fi
     ]
 )
@@ -241,7 +241,7 @@ AC_ARG_WITH(
             logrotate_conf_dir="$withval"
     ],
     [
-        logrotate_conf_dir="/etc/logrotate.d/"
+        logrotate_conf_dir="${sysconfdir}/logrotate.d/"
     ]
 )
 
