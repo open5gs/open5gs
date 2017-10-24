@@ -122,8 +122,8 @@ int logger_start(const char *path)
             ret = unlink(D_LOGD_IPC_PATH);
             if (ret != 0)
             {
-                fprintf(stderr, "unlink() failed. (%d:%s)\n",
-                        errno, strerror(errno));
+                fprintf(stderr, "unlink(`%s`) failed. (%d:%s)\n",
+                        D_LOGD_IPC_PATH, errno, strerror(errno));
                 return -1;
             }
             ret = bind(us, (struct sockaddr *)&svaddr, sizeof(svaddr));
@@ -211,6 +211,8 @@ int logger_start(const char *path)
     file_close(g_file);
 
     close(us);
+
+    unlink(D_LOGD_IPC_PATH);
 
     return 0;
 }
