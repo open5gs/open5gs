@@ -1,14 +1,15 @@
-@LOCALSTATE_DIR@/log/nextepc.log {
+@LOCALSTATE_DIR@/log/nextepc/*.log {
     daily
     sharedscripts
     missingok
     compress
     rotate 14
+    create 640 @current_user@ @current_group@
 
     postrotate
-        for i in nextepc-pcrfd nextepc-pgwd nextepc-sgwd nextepc-hssd nextepc-mmed nextepc-epcd; do
-            if [ -e @LOCALSTATE_DIR@/run/$i.pid ] ; then
-                kill -HUP `cat @LOCALSTATE_DIR@/run/$i.pid`
+        for i in pcrfd pgwd sgwd hssd mmed epcd; do
+            if [ -e @LOCALSTATE_DIR@/run/nextepc/$i.pid ] ; then
+                kill -HUP `cat @LOCALSTATE_DIR@/run/nextepc/$i.pid`
             fi
         done
     endscript

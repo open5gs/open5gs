@@ -464,6 +464,14 @@ FREEDIAMETER_DIR=freeDiameter-1.2.1
 AC_SUBST(FREEDIAMETER_DIR)
 
 #####################
+#### Misc. ####
+#####################
+current_user=`id -u -n`
+AC_SUBST(current_user)
+current_group=`id -g -n`
+AC_SUBST(current_group)
+
+#####################
 #### Conclusion. ####
 #####################
 

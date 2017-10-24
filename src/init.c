@@ -9,7 +9,7 @@
 
 #include "app.h"
 
-#define DEFAULT_PID_DIR_PATH LOCALSTATE_DIR "run/"
+#define DEFAULT_PID_DIR_PATH LOCALSTATE_DIR "run/nextepc/"
 
 static thread_id logger_thread = 0;
 static void *THREAD_FUNC logger_main(thread_id id, void *data);
@@ -122,8 +122,7 @@ status_t app_log_pid(const char *name)
 
     d_assert(name, return CORE_ERROR, );
 
-    snprintf(fname, sizeof(fname), "%snextepc-%sd.pid",
-            DEFAULT_PID_DIR_PATH, name);
+    snprintf(fname, sizeof(fname), "%s%sd.pid", DEFAULT_PID_DIR_PATH, name);
     mypid = getpid();
     if (mypid != saved_pid
         && file_stat(&finfo, fname, FILE_INFO_MTIME) == CORE_OK)
