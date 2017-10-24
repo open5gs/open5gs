@@ -223,13 +223,7 @@ AC_ARG_WITH(
     ]
 )
 
-case $host in
-    *-apple-darwin*)
-        ;;
-    *)
-        AC_SUBST(logrotate_conf_dir)
-        ;;
-esac
+AC_SUBST(logrotate_conf_dir)
 AC_ARG_WITH(
     logrotate-conf-dir,
     AS_HELP_STRING(
@@ -241,7 +235,36 @@ AC_ARG_WITH(
             logrotate_conf_dir="$withval"
     ],
     [
-        logrotate_conf_dir="${sysconfdir}/logrotate.d/"
+            case $host in
+                *-apple-darwin*)
+                    logrotate_conf_dir=""
+                    ;;
+                *)
+                    logrotate_conf_dir="${sysconfdir}/logrotate.d/"
+                    ;;
+            esac
+    ]
+)
+AC_SUBST(newsyslog_conf_dir)
+AC_ARG_WITH(
+    newsyslog-conf-dir,
+    AS_HELP_STRING(
+            [--with-newsyslogconfdir=DIR],
+            [newsyslog conf directory @<:@NEWSYSLOG_CONF_DIR@:>@
+        Defaults to the correct value for Mac OS X /etc/newsyslog.d/]
+    ),
+    [
+            newsyslog_conf_dir="$withval"
+    ],
+    [
+            case $host in
+                *-apple-darwin*)
+                    newsyslog_conf_dir="${sysconfdir}/newsyslog.d/"
+                    ;;
+                *)
+                    newsyslog_conf_dir=""
+                    ;;
+            esac
     ]
 )
 
@@ -522,6 +545,8 @@ AC_CONFIG_FILES([support/freeDiameter/Makefile])
 AC_CONFIG_FILES([support/systemd/Makefile])
 AC_CONFIG_FILES([support/logrotate/nextepc])
 AC_CONFIG_FILES([support/logrotate/Makefile])
+AC_CONFIG_FILES([support/newsyslog/nextepc.conf])
+AC_CONFIG_FILES([support/newsyslog/Makefile])
 AC_CONFIG_FILES([support/nextepc.conf])
 AC_CONFIG_FILES([support/Makefile])
 AC_CONFIG_FILES([test/Makefile])
