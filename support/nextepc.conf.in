@@ -24,8 +24,8 @@
 #RELATIVE_CAPACITY : 255,
     NETWORK :
     {
-      S1AP_IPV4 : "10.1.35.215",
-      GTPC_IPV4: "10.1.35.215",
+      S1AP_IPV4 : "127.76.0.1",
+      GTPC_IPV4: "127.76.0.1",
     }
     GUMMEI:
     [
@@ -67,8 +67,8 @@
     NETWORK :
     [
       {
-        GTPC_IPV4: "10.1.35.216",
-        GTPU_IPV4: "10.1.35.216",
+        GTPC_IPV4: "127.76.0.2",
+        GTPU_IPV4: "127.76.0.2",
       }
     ]
   }
@@ -78,8 +78,8 @@
     FD_CONF_PATH : "@SYSCONF_DIR@/freeDiameter/pgw.conf",
     NETWORK :
     {
-      GTPC_IPV4: "10.1.35.219",
-      GTPU_IPV4: "10.1.35.219"
+      GTPC_IPV4: "127.76.0.3",
+      GTPU_IPV4: "127.76.0.3"
     }
     UE_NETWORK:
     [

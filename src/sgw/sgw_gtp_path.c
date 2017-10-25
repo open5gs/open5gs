@@ -102,7 +102,7 @@ static int _gtpv1_u_recv_cb(net_sock_t *sock, void *data)
         return -1;
     }
 
-    d_trace(50, "S1-U PDU received from ENB\n");
+    d_trace(50, "GTP-U PDU received\n");
     d_trace_hex(50, pkbuf->payload, pkbuf->len);
 
     gtp_h = (gtp_header_t *)pkbuf->payload;
