@@ -31,15 +31,6 @@ const schema = {
             "pattern": "Only hexadecimal digits are allowed"
           }
         },
-        "op": {
-          "type": "string",
-          "title": "Operator Key (OP)*",
-          "required": true,
-          "pattern": "^[0-9a-fA-F\\s]+$",
-          "messages": {
-            "pattern": "Only hexadecimal digits are allowed"
-          }
-        },
         "amf": {
           "type": "string",
           "title": "Authentication Management Field (AMF)*",
@@ -48,7 +39,23 @@ const schema = {
           "messages": {
             "pattern": "Only hexadecimal digits are allowed"
           }
-        }
+        },
+        "op_type": {
+          "type": "number",
+          "title": "USIM Type",
+          "enum": [0, 1],
+          "enumNames": ["OPc", "OP"],
+          "default": 0,
+        },
+        "op_value": {
+          "type": "string",
+          "title": "Operator Key (OPc/OP)*",
+          "required": true,
+          "pattern": "^[0-9a-fA-F\\s]+$",
+          "messages": {
+            "pattern": "Only hexadecimal digits are allowed"
+          }
+        },
       }
     },
     "ambr": {
@@ -277,13 +284,16 @@ const uiSchema = {
   },
   "security" : {
     "k" : {
-      classNames: "col-xs-12",
-    },
-    "op" : {
       classNames: "col-xs-7",
     },
     "amf" : {
       classNames: "col-xs-5",
+    },
+    "op_type" : {
+      classNames: "col-xs-3",
+    },
+    "op_value" : {
+      classNames: "col-xs-8",
     },
   },
   "ambr" : {

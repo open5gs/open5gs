@@ -17,8 +17,8 @@ import traverse from 'traverse';
 const formData = {
   "security": {
     k: "465B5CE8 B199B49F AA5F0A2E E238A6BC",
-    op: "5F1D289C 5D354D0A 140C2548 F5F3E3BA",
-    amf: "8000"
+    amf: "8000",
+    op_value: "E8ED289D EBA952E4 283B54E8 8E6183CA",
   },
   "ambr": {
     "downlink": 1024000,
@@ -88,17 +88,37 @@ class Document extends Component {
         if (this.key == 'downlink') this.update(Number(x));
         if (this.key == 'uplink') this.update(Number(x));
       })
+
+      if (subscriber.data.security) {
+        if (subscriber.data.security.opc) {
+          subscriber.data.security.op_type = 0;
+          subscriber.data.security.op_value = subscriber.data.security.opc;
+        } else {
+          subscriber.data.security.op_type = 1;
+          subscriber.data.security.op_value = subscriber.data.security.op;
+        }
+      }
+
       this.setState({ formData: subscriber.data })
     } else {
       this.setState({ formData });
     }
 
-    profiles.data.map(profile => 
+    profiles.data.map(profile => {
       traverse(profile).forEach(function(x) {
         if (this.key == 'downlink') this.update(Number(x));
         if (this.key == 'uplink') this.update(Number(x));
       })
-    );
+      if (profile.security) {
+        if (profile.security.opc) {
+          profile.security.op_type = 0;
+          profile.security.op_value = profile.security.opc;
+        } else {
+          profile.security.op_type = 1;
+          profile.security.op_value = profile.security.op;
+        }
+      }
+    });
 
     if (status.response) {
       NProgress.configure({ 
@@ -181,6 +201,15 @@ class Document extends Component {
 
   handleSubmit = (formData) => {
     const { dispatch, action } = this.props;
+    if (formData.security) {
+      if (formData.security.op_type === 1) {
+        formData.security.op = formData.security.op_value;
+        formData.security.opc = null;
+      } else {
+        formData.security.op = null;
+        formData.security.opc = formData.security.op_value;
+      }
+    }
 
     NProgress.configure({ 
       parent: '#nprogress-base-form',

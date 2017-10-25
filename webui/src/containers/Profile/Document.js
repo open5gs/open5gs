@@ -16,8 +16,8 @@ import traverse from 'traverse';
 const formData = {
   "security": {
     k: "465B5CE8 B199B49F AA5F0A2E E238A6BC",
-    op: "5F1D289C 5D354D0A 140C2548 F5F3E3BA",
-    amf: "8000"
+    amf: "8000",
+    op_value: "E8ED289D EBA952E4 283B54E8 8E6183CA",
   },
   "ambr": {
     "downlink": 1024000,
@@ -81,6 +81,16 @@ class Document extends Component {
         if (this.key == 'downlink') this.update(Number(x));
         if (this.key == 'uplink') this.update(Number(x));
       })
+
+      if (profile.data.security) {
+        if (profile.data.security.opc) {
+          profile.data.security.op_type = 0;
+          profile.data.security.op_value = profile.data.security.opc;
+        } else {
+          profile.data.security.op_type = 1;
+          profile.data.security.op_value = profile.data.security.op;
+        }
+      }
       this.setState({ formData: profile.data })
     } else {
       this.setState({ formData });
@@ -162,6 +172,16 @@ class Document extends Component {
 
   handleSubmit = (formData) => {
     const { dispatch, action } = this.props;
+
+    if (formData.security) {
+      if (formData.security.op_type === 1) {
+        formData.security.op = formData.security.op_value;
+        formData.security.opc = null;
+      } else {
+        formData.security.op = null;
+        formData.security.opc = formData.security.op_value;
+      }
+    }
 
     NProgress.configure({ 
       parent: '#nprogress-base-form',

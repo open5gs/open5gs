@@ -8,6 +8,7 @@ const Subscriber = new Schema({
   security: {
     k: String,
     op: String,
+    opc: String,
     amf: String,
     rand: String,
     sqn: Schema.Types.Long

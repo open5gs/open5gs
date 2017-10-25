@@ -199,10 +199,18 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
                     {security.k}
                     <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>K</span>
                   </div>
-                  <div className="data">
-                    {security.op}
-                    <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>OP</span>
-                  </div>
+                  {security.opc &&
+                    <div className="data">
+                      {security.opc}
+                      <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>OPc</span>
+                    </div>
+                  }
+                  {security.op &&
+                    <div className="data">
+                      {security.op}
+                      <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>OP</span>
+                    </div>
+                  }
                   <div className="data">
                     {security.amf}
                     <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>AMF</span>
