@@ -85,7 +85,11 @@ static void *THREAD_FUNC logger_main(thread_id id, void *data)
     char *path = data;
 
     ret = logger_start(path);
-    d_assert(ret == 0, return NULL, "Failed to intialize Logger");
+    if (ret != 0)
+    {
+        d_error("Failed to initialize logger.");
+        d_error("Check file permission for `%s`", path); 
+    }
 
     return NULL;
 }
