@@ -4,6 +4,8 @@ import PropTypes from 'prop-types';
 import withWidth, { SMALL } from 'helpers/with-width';
 import { Form } from 'components';
 
+import traverse from 'traverse';
+
 const schema = {
   "title": "Subscriber Configuration",
   "type": "object",
@@ -480,13 +482,26 @@ class Edit extends Component {
   getFormDataFromProfile(profile) {
     let formData;
     
-    
     formData = Object.assign({}, this.props.profiles.filter(p => p._id === profile)[0]);
     formData = Object.assign(formData, { profile });
 
     delete formData.title;
     delete formData._id;
     delete formData.__v;
+
+    traverse(formData).forEach(function(x) {
+      if (this.key == 'downlink') this.update(Number(x));
+      if (this.key == 'uplink') this.update(Number(x));
+    })
+    if (formData.security) {
+      if (formData.security.opc) {
+        formData.security.op_type = 0;
+        formData.security.op_value = formData.security.opc;
+      } else {
+        formData.security.op_type = 1;
+        formData.security.op_value = formData.security.op;
+      }
+    }
 
     return formData;
   }

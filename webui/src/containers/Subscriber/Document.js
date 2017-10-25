@@ -104,22 +104,6 @@ class Document extends Component {
       this.setState({ formData });
     }
 
-    profiles.data.map(profile => {
-      traverse(profile).forEach(function(x) {
-        if (this.key == 'downlink') this.update(Number(x));
-        if (this.key == 'uplink') this.update(Number(x));
-      })
-      if (profile.security) {
-        if (profile.security.opc) {
-          profile.security.op_type = 0;
-          profile.security.op_value = profile.security.opc;
-        } else {
-          profile.security.op_type = 1;
-          profile.security.op_value = profile.security.op;
-        }
-      }
-    });
-
     if (status.response) {
       NProgress.configure({ 
         parent: 'body',
