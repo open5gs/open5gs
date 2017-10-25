@@ -105,7 +105,10 @@ static int hss_s6a_air_cb( struct msg **msg, struct avp *avp,
     memcpy(visited_plmn_id, hdr->avp_value->os.data, hdr->avp_value->os.len);
 #endif
 
-    milenage_opc(auth_info.k, auth_info.op, opc);
+    if (auth_info.use_opc)
+        memcpy(opc, auth_info.opc, sizeof(opc));
+    else
+        milenage_opc(auth_info.k, auth_info.op, opc);
     milenage_generate(opc, auth_info.amf, auth_info.k,
         core_uint64_to_buffer(auth_info.sqn, HSS_SQN_LEN, sqn), auth_info.rand,
         autn, ik, ck, ak, xres, &xres_len);

@@ -15,6 +15,8 @@ extern "C" {
 
 typedef struct _hss_db_auth_info_t {
     c_uint8_t       k[HSS_KEY_LEN];
+    c_uint8_t       use_opc;
+    c_uint8_t       opc[HSS_KEY_LEN];
     c_uint8_t       op[HSS_KEY_LEN];
     c_uint8_t       amf[HSS_AMF_LEN];
     c_uint8_t       rand[RAND_LEN];

@@ -297,6 +297,12 @@ status_t hss_db_auth_info(
             utf8 = (char *)bson_iter_utf8(&inner_iter, &length);
             memcpy(auth_info->k, CORE_HEX(utf8, length, buf), HSS_KEY_LEN);
         }
+        else if (!strcmp(key, "opc") && BSON_ITER_HOLDS_UTF8(&inner_iter)) 
+        {
+            utf8 = (char *)bson_iter_utf8(&inner_iter, &length);
+            auth_info->use_opc = 1;
+            memcpy(auth_info->opc, CORE_HEX(utf8, length, buf), HSS_KEY_LEN);
+        }
         else if (!strcmp(key, "op") && BSON_ITER_HOLDS_UTF8(&inner_iter)) 
         {
             utf8 = (char *)bson_iter_utf8(&inner_iter, &length);
