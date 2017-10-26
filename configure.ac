@@ -218,7 +218,7 @@ AC_ARG_WITH(
         if test x"$pkg_config_exists" = x"0"; then
             systemd_unit_dir=`pkg-config systemd --variable=systemdsystemunitdir`
         else
-            systemd_unit_dir="${sysconfdir}/systemd/system/"
+            systemd_unit_dir="/etc/systemd/system/"
         fi
     ]
 )
@@ -240,7 +240,7 @@ AC_ARG_WITH(
                     logrotate_conf_dir=""
                     ;;
                 *)
-                    logrotate_conf_dir="${sysconfdir}/logrotate.d/"
+                    logrotate_conf_dir="/etc/logrotate.d/"
                     ;;
             esac
     ]
@@ -259,7 +259,7 @@ AC_ARG_WITH(
     [
             case $host in
                 *-apple-darwin*)
-                    newsyslog_conf_dir="${sysconfdir}/newsyslog.d/"
+                    newsyslog_conf_dir="/etc/newsyslog.d/"
                     ;;
                 *)
                     newsyslog_conf_dir=""
