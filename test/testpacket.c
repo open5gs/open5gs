@@ -9,12 +9,16 @@
 #include "s1ap_conv.h"
 #include "s1ap_path.h"
 
+extern int test_only_control_plane;
+
 net_sock_t *testgtpu_enb_connect(void)
 {
     char buf[INET_ADDRSTRLEN];
     int rc;
     mme_context_t *mme = mme_self();
     net_sock_t *sock = NULL;
+
+    if (test_only_control_plane) return (net_sock_t *)1;
 
     if (!mme) return NULL;
 
@@ -27,6 +31,8 @@ net_sock_t *testgtpu_enb_connect(void)
 
 status_t testgtpu_enb_close(net_sock_t *sock)
 {
+    if (test_only_control_plane) return CORE_OK;
+
     return net_close(sock);
 }
 
@@ -89,6 +95,8 @@ int testgtpu_enb_send(net_sock_t *sock, c_uint32_t src_ip, c_uint32_t dst_ip)
         } un;
     } *icmp_h = NULL;
 
+    if (test_only_control_plane) return 0;
+
     hi = mme_ue_first();
     if (!hi) return -1;
     mme_ue = mme_ue_this(hi);
@@ -146,6 +154,8 @@ int testgtpu_enb_send(net_sock_t *sock, c_uint32_t src_ip, c_uint32_t dst_ip)
 int testgtpu_enb_read(net_sock_t *sock, pkbuf_t *recvbuf)
 {
     int rc = 0;
+
+    if (test_only_control_plane) return 0;
 
     while(1)
     {

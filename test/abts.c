@@ -28,6 +28,7 @@ static int verbose = 1;
 static int exclude = 0;
 static int quiet = 0;
 static int list_tests = 0;
+int test_only_control_plane = 0;
 
 const char **testlist = NULL;
 
@@ -423,8 +424,6 @@ void abts_not_impl(abts_case *tc, const char *message, int lineno)
     }
 }
 
-int disable_data_plane_test = 0;
-
 int main(int argc, const char *const argv[]) {
     int i;
     int rv;
@@ -461,7 +460,10 @@ int main(int argc, const char *const argv[]) {
         }
         if (!strcmp(argv[i], "-f")) {
             config_path = argv[++i];
-            disable_data_plane_test = 1;
+            continue;
+        }
+        if (!strcmp(argv[i], "-c")) {
+            test_only_control_plane = 1;
             continue;
         }
         if (argv[i][0] == '-') {

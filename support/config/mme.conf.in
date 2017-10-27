@@ -1,6 +1,6 @@
 {
   DB_URI : "mongodb://localhost/nextepc",
-  LOG_PATH : "/var/log/nextepc/mme.log",
+  LOG_PATH : "@LOCALSTATE_DIR@/log/nextepc/nextepc.log",
   TRACE:
   {
     S1AP: 1,
@@ -12,7 +12,7 @@
 
   MME :
   {
-    FD_CONF_PATH : "/etc/nextepc/freeDiameter/mme.conf",
+    FD_CONF_PATH : "@SYSCONF_DIR@/nextepc/freeDiameter/mme.conf",
     DEFAULT_PAGING_DRX : "v64",
 #RELATIVE_CAPACITY : 255,
     NETWORK :

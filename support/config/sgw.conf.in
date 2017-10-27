@@ -1,5 +1,6 @@
 {
-  LOG_PATH : "/var/log/nextepc/sgw.log",
+  DB_URI : "mongodb://localhost/nextepc",
+  LOG_PATH : "@LOCALSTATE_DIR@/log/nextepc/nextepc.log",
   TRACE:
   {
     GTP: 1,

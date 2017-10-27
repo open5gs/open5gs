@@ -2,5 +2,5 @@ usr/bin/nextepc-mmed
 etc/nextepc/freeDiameter/mme.conf
 etc/nextepc/freeDiameter/mme.cert.pem
 etc/nextepc/freeDiameter/mme.key.pem
-debian/etc/nextepc/mme.conf etc/nextepc
+etc/nextepc/mme.conf
 support/systemd/nextepc-mmed.service lib/systemd/system

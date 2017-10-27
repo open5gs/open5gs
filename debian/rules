@@ -14,5 +14,11 @@ export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 %:
 	dh $@ --with autoreconf --with systemd
 
-#override_dh_auto_test:
-	# skip 'make test' as currently it expects config/log in system paths
+override_dh_auto_test:
+	mkdir -p debian/test/etc/nextepc/freeDiameter debian/test/var/log/nextepc
+	sed 's?@SYSCONF_DIR@?'`pwd`'/debian/test/etc?g;s?@LOCALSTATE_DIR@?'`pwd`'/debian/test/var?g' support/config/nextepc.conf.in > debian/test/etc/nextepc/nextepc.conf
+	for i in `find support/freeDiameter -name '*.conf.in' -printf "%f\n" | sed 's/.in$$//g'`; do \
+		sed 's?@SYSCONF_DIR@/nextepc?'`pwd`'/support?g;s?@LIB_DIR@/nextepc/\([_a-z0-9]*\)\.so?'`pwd`'/lib/fd/extensions/\1/.libs/\1.so?g' support/freeDiameter/$$i.in > debian/test/etc/nextepc/freeDiameter/$$i; \
+	done;
+	test/testepc -f debian/test/etc/nextepc/nextepc.conf -c
+	rm -rf debian/test

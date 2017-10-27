@@ -1,0 +1,15 @@
+{
+  DB_URI : "mongodb://localhost/nextepc",
+  LOG_PATH : "@LOCALSTATE_DIR@/log/nextepc/nextepc.log",
+  TRACE:
+  {
+    FD: 1,
+    OTHERS: 1,
+  }
+
+  PCRF :
+  {
+    FD_CONF_PATH : "@SYSCONF_DIR@/nextepc/freeDiameter/pcrf.conf",
+  }
+
+}

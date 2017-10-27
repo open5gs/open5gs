@@ -2,5 +2,5 @@ usr/bin/nextepc-hssd
 etc/nextepc/freeDiameter/hss.conf
 etc/nextepc/freeDiameter/hss.cert.pem
 etc/nextepc/freeDiameter/hss.key.pem
-debian/etc/nextepc/hss.conf etc/nextepc
+etc/nextepc/hss.conf
 support/systemd/nextepc-hssd.service lib/systemd/system

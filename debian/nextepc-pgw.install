@@ -2,5 +2,6 @@ usr/bin/nextepc-pgwd
 etc/nextepc/freeDiameter/pgw.conf
 etc/nextepc/freeDiameter/pgw.cert.pem
 etc/nextepc/freeDiameter/pgw.key.pem
-debian/etc/nextepc/pgw.conf etc/nextepc
+etc/nextepc/pgw.conf
 support/systemd/nextepc-pgwd.service lib/systemd/system
+support/network/nextepc etc/network/interfaces.d

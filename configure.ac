@@ -459,10 +459,15 @@ AC_CONFIG_FILES([src/pgw/Makefile])
 AC_CONFIG_FILES([src/pcrf/Makefile])
 AC_CONFIG_FILES([src/Makefile])
 AC_CONFIG_FILES([support/config/nextepc.conf])
+AC_CONFIG_FILES([support/config/mme.conf])
+AC_CONFIG_FILES([support/config/sgw.conf])
+AC_CONFIG_FILES([support/config/pgw.conf])
+AC_CONFIG_FILES([support/config/hss.conf])
+AC_CONFIG_FILES([support/config/pcrf.conf])
 AC_CONFIG_FILES([support/config/Makefile])
 AC_CONFIG_FILES([support/freeDiameter/mme.conf])
-AC_CONFIG_FILES([support/freeDiameter/hss.conf])
 AC_CONFIG_FILES([support/freeDiameter/pgw.conf])
+AC_CONFIG_FILES([support/freeDiameter/hss.conf])
 AC_CONFIG_FILES([support/freeDiameter/pcrf.conf])
 AC_CONFIG_FILES([support/freeDiameter/Makefile])
 AC_CONFIG_FILES([support/systemd/nextepc-mmed.service])
@@ -486,7 +491,8 @@ source code location    : ${srcdir}
 compiler                : ${CC}
 compiler flags          : ${CFLAGS}
 linker flags            : ${LDFLAGS} ${LIBS}
-exec directory          : ${BIN_DIR}
+bin directory           : ${BIN_DIR}
+lib directory           : ${LIB_DIR}/nextepc
 config directory        : ${SYSCONF_DIR}/nextepc
 log directory           : ${LOCALSTATE_DIR}/log/nextepc
 "

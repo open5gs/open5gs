@@ -1,3 +1,3 @@
 usr/bin/nextepc-sgwd
-debian/etc/nextepc/sgw.conf etc/nextepc
+etc/nextepc/sgw.conf
 support/systemd/nextepc-sgwd.service lib/systemd/system

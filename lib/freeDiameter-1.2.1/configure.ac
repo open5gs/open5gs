@@ -104,14 +104,29 @@ AC_DEFINE_UNQUOTED([FD_PROJECT_VERSION_API],
         [6],
         [API version of this package])
 
-PREFIX=$ac_default_prefix
-if test "x$prefix" != "xNONE"; then
-    PREFIX=$prefix
-fi
+# adl_RECURSIVE_EVAL(VALUE, RESULT)
+# =================================
+# Interpolate the VALUE in loop until it doesn't change,
+# and set the result to $RESULT.
+# WARNING: It's easy to get an infinite loop with some unsane input.
+# For example ${datadir} becomes ${datarootdir}, and then ${prefix}/share, and
+# finally ${prefix} is replaced by the prefix.
+AC_DEFUN([adl_RECURSIVE_EVAL],
+[_lcl_receval="$1"
+$2=`(test "x$prefix" = xNONE && prefix="$ac_default_prefix"
+     test "x$exec_prefix" = xNONE && exec_prefix="${prefix}"
+     _lcl_receval_old=''
+     while test "[$]_lcl_receval_old" != "[$]_lcl_receval"; do
+       _lcl_receval_old="[$]_lcl_receval"
+       eval _lcl_receval="\"[$]_lcl_receval\""
+     done
+     echo "[$]_lcl_receval")`])
+adl_RECURSIVE_EVAL(["${libdir}"], [LIB_DIR])
+adl_RECURSIVE_EVAL(["${sysconfdir}"], [SYSCONF_DIR])
 AC_DEFINE_UNQUOTED([DEFAULT_CONF_PATH],
-        ["${PREFIX}/etc/freeDiameter"], [Default Configuration Path])
+        ["${SYSCONF_DIR}/nextepc/freeDiameter"], [Default Configuration Path])
 AC_DEFINE_UNQUOTED([DEFAULT_EXTENSIONS_PATH],
-        ["${PREFIX}/lib/freeDiameter"], [Default Configuration Path])
+        ["${LIB_DIR}/nextepc"], [Default Extensions Path])
 AC_SUBST(PREFIX)
 
 
@@ -172,6 +187,6 @@ source code location    : ${srcdir}
 compiler                : ${CC}
 compiler flags          : ${CFLAGS}
 linker flags            : ${LDFLAGS} ${LIBS}
-config directory        : `eval echo \`echo ${sysconfdir}/freeDiameter\``
-extention directory     : `eval echo \`echo ${localstatedir}/freeDiameter\``
+config directory        : ${SYSCONF_DIR}/nextepc/freeDiameter
+extensions directory    : ${LIB_DIR}/nextepc
 "
