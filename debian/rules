@@ -1,7 +1,7 @@
 #!/usr/bin/make -f
 
 # Uncomment this to turn on verbose mode.
-#export DH_VERBOSE=1
+export DH_VERBOSE=1
 
 DEBIAN  := $(shell dpkg-parsechangelog | grep ^Version: | cut -d' ' -f2)
 DEBVERS := $(shell echo '$(DEBIAN)' | cut -d- -f1)
@@ -14,5 +14,5 @@ export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 %:
 	dh $@ --with autoreconf --with systemd
 
-override_dh_auto_test:
+#override_dh_auto_test:
 	# skip 'make test' as currently it expects config/log in system paths

@@ -1,4 +1,5 @@
 usr/lib/*/nextepc/*
-var/log
-etc/nextepc.conf
-etc/freeDiameter/cacert.pem
+var/log/nextepc
+var/run/nextepc
+etc/nextepc/freeDiameter/cacert.pem
+support/logrotate/nextepc /etc/logrotate.d
