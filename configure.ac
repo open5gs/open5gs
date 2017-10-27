@@ -16,9 +16,6 @@ dnl Must come before AM_INIT_AUTOMAKE.
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([1.10 -Wall -Werror foreign])
 
-# Minimum Autoconf version required.
-AC_PREREQ(2.63)
-
 # Where to generate output; srcdir location.
 AC_CONFIG_HEADERS([config.h:config.in])dnl Keep filename to 8.3 for MS-DOS.
 AC_CONFIG_SRCDIR([main.c])
@@ -63,18 +60,22 @@ AH_VERBATIM([_REENTRANT],
 #endif
 ])
 
-dnl Checks CC and freinds
-AC_PROG_CC
-AC_PROG_CPP
-AC_PROG_INSTALL
-AC_PROG_AWK
-AC_PROG_SED
-#AC_PROG_YACC
-#AC_PROG_LEX
-AM_PROG_AR
+dnl kernel style compile messages
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
-dnl libtool
+dnl Checks CC and freinds
+AC_PROG_MAKE_SET
+AC_PROG_MKDIR_P
+AC_PROG_CC
+AC_PROG_INSTALL
+AM_PROG_AR
 LT_INIT
+
+AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
+if test "x$PKG_CONFIG" = "xno"; then
+	AC_MSG_ERROR([You need to install pkg-config])
+fi
+PKG_PROG_PKG_CONFIG([0.20])
 
 dnl Checks for compile flag
 AX_CHECK_COMPILE_FLAG([-Wno-unused-result], [CFLAGS="$CFLAGS -Wno-unused-result"])
@@ -193,80 +194,14 @@ AC_DEFINE_UNQUOTED([PACKAGE_VERSION_PATCHLEVEL],
 #### Checks for Directories. #####
 ##################################
 
+adl_RECURSIVE_EVAL(["${bindir}"], [BIN_DIR])
 adl_RECURSIVE_EVAL(["${libdir}"], [LIB_DIR])
 adl_RECURSIVE_EVAL(["${sysconfdir}"], [SYSCONF_DIR])
 adl_RECURSIVE_EVAL(["${localstatedir}"], [LOCALSTATE_DIR])
+AC_SUBST(BIN_DIR)
 AC_SUBST(LIB_DIR)
 AC_SUBST(SYSCONF_DIR)
 AC_SUBST(LOCALSTATE_DIR)
-
-AC_SUBST(systemd_unit_dir)
-AC_ARG_WITH(
-    systemd-unit-dir,
-    AS_HELP_STRING(
-            [--with-systemdsystemunitdir=DIR],
-            [systemd unit directory @<:@SYSTEMD_UNIT_DIR@:>@
-        Defaults to the correct value for debian /etc/systemd/system/]
-    ),
-    [
-            systemd_unit_dir="$withval"
-    ],
-    [
-        # default to the systemd admin unit directory
-        which pkg-config
-        pkg_config_exists=$?
-        if test x"$pkg_config_exists" = x"0"; then
-            systemd_unit_dir=`pkg-config systemd --variable=systemdsystemunitdir`
-        else
-            systemd_unit_dir="/etc/systemd/system/"
-        fi
-    ]
-)
-
-AC_SUBST(logrotate_conf_dir)
-AC_ARG_WITH(
-    logrotate-conf-dir,
-    AS_HELP_STRING(
-            [--with-logrotateconfdir=DIR],
-            [logrotate conf directory @<:@LOGROTATE_CONF_DIR@:>@
-        Defaults to the correct value for debian /etc/logrotate.d/]
-    ),
-    [
-            logrotate_conf_dir="$withval"
-    ],
-    [
-            case $host in
-                *-apple-darwin*)
-                    logrotate_conf_dir=""
-                    ;;
-                *)
-                    logrotate_conf_dir="/etc/logrotate.d/"
-                    ;;
-            esac
-    ]
-)
-AC_SUBST(newsyslog_conf_dir)
-AC_ARG_WITH(
-    newsyslog-conf-dir,
-    AS_HELP_STRING(
-            [--with-newsyslogconfdir=DIR],
-            [newsyslog conf directory @<:@NEWSYSLOG_CONF_DIR@:>@
-        Defaults to the correct value for Mac OS X /etc/newsyslog.d/]
-    ),
-    [
-            newsyslog_conf_dir="$withval"
-    ],
-    [
-            case $host in
-                *-apple-darwin*)
-                    newsyslog_conf_dir="/etc/newsyslog.d/"
-                    ;;
-                *)
-                    newsyslog_conf_dir=""
-                    ;;
-            esac
-    ]
-)
 
 ##################################
 #### Checks for header files. ####
@@ -487,14 +422,6 @@ FREEDIAMETER_DIR=freeDiameter-1.2.1
 AC_SUBST(FREEDIAMETER_DIR)
 
 #####################
-#### Misc. ####
-#####################
-current_user=`id -u -n`
-AC_SUBST(current_user)
-current_group=`id -g -n`
-AC_SUBST(current_group)
-
-#####################
 #### Conclusion. ####
 #####################
 
@@ -502,11 +429,7 @@ AC_CONFIG_SUBDIRS([lib/freeDiameter-1.2.1])
 
 AC_CONFIG_FILES([lib/core/include/core.h])
 AC_CONFIG_FILES([lib/core/src/Makefile])
-case $host in
-   *)
-       AC_CONFIG_FILES([lib/core/src/unix/Makefile])
-       ;;
-esac
+AC_CONFIG_FILES([lib/core/src/unix/Makefile])
 AC_CONFIG_FILES([lib/core/test/Makefile])
 AC_CONFIG_FILES([lib/core/Makefile])
 AC_CONFIG_FILES([lib/logger/Makefile])
@@ -515,7 +438,6 @@ AC_CONFIG_FILES([lib/s1ap/asn1c/Makefile])
 AC_CONFIG_FILES([lib/s1ap/Makefile])
 AC_CONFIG_FILES([lib/nas/Makefile])
 AC_CONFIG_FILES([lib/fd/extensions/dbg_msg_dumps/Makefile])
-#AC_CONFIG_FILES([lib/fd/extensions/dict_legacy_xml/Makefile])
 AC_CONFIG_FILES([lib/fd/extensions/dict_rfc5777/Makefile])
 AC_CONFIG_FILES([lib/fd/extensions/dict_mip6i/Makefile])
 AC_CONFIG_FILES([lib/fd/extensions/dict_nasreq/Makefile])
@@ -536,18 +458,20 @@ AC_CONFIG_FILES([src/sgw/Makefile])
 AC_CONFIG_FILES([src/pgw/Makefile])
 AC_CONFIG_FILES([src/pcrf/Makefile])
 AC_CONFIG_FILES([src/Makefile])
+AC_CONFIG_FILES([support/config/nextepc.conf])
+AC_CONFIG_FILES([support/config/Makefile])
 AC_CONFIG_FILES([support/freeDiameter/mme.conf])
 AC_CONFIG_FILES([support/freeDiameter/hss.conf])
 AC_CONFIG_FILES([support/freeDiameter/pgw.conf])
 AC_CONFIG_FILES([support/freeDiameter/pcrf.conf])
-#AC_CONFIG_FILES([support/freeDiameter/dict_legacy_xml.conf])
 AC_CONFIG_FILES([support/freeDiameter/Makefile])
-AC_CONFIG_FILES([support/systemd/Makefile])
+AC_CONFIG_FILES([support/systemd/nextepc-mmed.service])
+AC_CONFIG_FILES([support/systemd/nextepc-sgwd.service])
+AC_CONFIG_FILES([support/systemd/nextepc-pgwd.service])
+AC_CONFIG_FILES([support/systemd/nextepc-hssd.service])
+AC_CONFIG_FILES([support/systemd/nextepc-pcrfd.service])
 AC_CONFIG_FILES([support/logrotate/nextepc])
-AC_CONFIG_FILES([support/logrotate/Makefile])
 AC_CONFIG_FILES([support/newsyslog/nextepc.conf])
-AC_CONFIG_FILES([support/newsyslog/Makefile])
-AC_CONFIG_FILES([support/nextepc.conf])
 AC_CONFIG_FILES([support/Makefile])
 AC_CONFIG_FILES([test/Makefile])
 AC_CONFIG_FILES([Makefile])
@@ -562,6 +486,7 @@ source code location    : ${srcdir}
 compiler                : ${CC}
 compiler flags          : ${CFLAGS}
 linker flags            : ${LDFLAGS} ${LIBS}
-config file directory   : `eval echo \`echo ${sysconfdir}\``
-log file directory      : `eval echo \`echo ${prefix}/var/log\``
+exec directory          : ${BIN_DIR}
+config directory        : ${SYSCONF_DIR}/nextepc
+log directory           : ${LOCALSTATE_DIR}/log/nextepc
 "

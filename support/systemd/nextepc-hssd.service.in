@@ -1,11 +1,11 @@
 [Unit]
-Description=NextEPC PCRF Daemon
+Description=NextEPC HSS Daemon
 After=networking.service
 
 [Service]
 Type=simple
 Restart=always
-ExecStart=/usr/bin/nextepc-pcrfd -f /etc/nextepc/pcrfd.cfg
+ExecStart=@BIN_DIR@/nextepc-hssd -f @SYSCONF_DIR@/nextepc/hss.conf
 RestartSec=2
 RestartPreventExitStatus=1
 

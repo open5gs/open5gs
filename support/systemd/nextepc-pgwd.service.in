@@ -5,7 +5,7 @@ After=networking.service
 [Service]
 Type=simple
 Restart=always
-ExecStart=/usr/bin/nextepc-pgwd -f /etc/nextepc/pgw.cfg
+ExecStart=@BIN_DIR@/nextepc-pgwd -f @SYSCONF_DIR@/nextepc/pgw.conf
 RestartSec=2
 RestartPreventExitStatus=1
 

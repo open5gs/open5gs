@@ -6,8 +6,6 @@
 
 #include "context.h"
 
-#define DEFAULT_CONFIG_FILE_PATH SYSCONF_DIR PACKAGE ".conf"
-
 static context_t self;
 
 static int context_initialized = 0;
@@ -39,7 +37,7 @@ context_t* context_self()
     return &self;
 }
 
-status_t context_read_file(char *file_path)
+status_t context_read_file()
 {
     char buf[MAX_ERROR_STRING_LEN];
     config_t *config = &self.config;
@@ -50,8 +48,7 @@ status_t context_read_file(char *file_path)
     size_t json_len;
     int result;
 
-    config->path = file_path;
-    if (config->path == NULL) config->path = DEFAULT_CONFIG_FILE_PATH;
+    d_assert(config->path, return CORE_ERROR,);
 
     rv = file_open(&file, config->path, FILE_READ, FILE_OS_DEFAULT);
     if (rv != CORE_OK) 

@@ -9,7 +9,8 @@
 
 #include "app.h"
 
-#define DEFAULT_PID_DIR_PATH LOCALSTATE_DIR "run/nextepc/"
+#define DEFAULT_PID_DIR_PATH LOCALSTATE_DIR "run/" PACKAGE
+#define DEFAULT_CONFIG_FILE_PATH SYSCONF_DIR PACKAGE "/nextepc.conf"
 
 static thread_id logger_thread = 0;
 static void *THREAD_FUNC logger_main(thread_id id, void *data);
@@ -21,7 +22,11 @@ status_t app_will_initialize(char *config_path, char *log_path)
 
     context_init();
 
-    rv = context_read_file(config_path);
+    context_self()->config.path = config_path;
+    if (context_self()->config.path == NULL)
+        context_self()->config.path = DEFAULT_CONFIG_FILE_PATH;
+
+    rv = context_read_file();
     if (rv != CORE_OK) return rv;
 
     rv = context_parse_config();
@@ -126,7 +131,7 @@ status_t app_log_pid(const char *name)
 
     d_assert(name, return CORE_ERROR, );
 
-    snprintf(fname, sizeof(fname), "%s%sd.pid", DEFAULT_PID_DIR_PATH, name);
+    snprintf(fname, sizeof(fname), "%s/%sd.pid", DEFAULT_PID_DIR_PATH, name);
     mypid = getpid();
     if (mypid != saved_pid
         && file_stat(&finfo, fname, FILE_INFO_MTIME) == CORE_OK)

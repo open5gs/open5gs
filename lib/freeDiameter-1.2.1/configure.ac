@@ -14,9 +14,6 @@ dnl Must come before AM_INIT_AUTOMAKE.
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([1.10 -Wall -Werror foreign])
 
-# Minimum Autoconf version required.
-AC_PREREQ(2.63)
-
 # Where to generate output; srcdir location.
 AC_CONFIG_HEADERS([include/freeDiameter/config.h])
 AC_CANONICAL_HOST
@@ -66,17 +63,16 @@ AH_BOTTOM([
 #endif /* FD_IS_CONFIG */
 ])
 
+dnl kernel style compile messages
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
+
 dnl Checks CC and freinds
+AC_PROG_MAKE_SET
 AC_PROG_CC
-AC_PROG_CPP
 AC_PROG_INSTALL
-AC_PROG_AWK
-AC_PROG_SED
 AC_PROG_YACC
 AC_PROG_LEX
 AM_PROG_AR
-
-dnl libtool
 LT_INIT([dlopen])
 
 dnl Check Endian
@@ -176,6 +172,6 @@ source code location    : ${srcdir}
 compiler                : ${CC}
 compiler flags          : ${CFLAGS}
 linker flags            : ${LDFLAGS} ${LIBS}
-default conf path       : `eval echo \`echo ${prefix}/etc/freeDiameter\``
-default extention path  : `eval echo \`echo ${prefix}/lib/freeDiameter\``
+config directory        : `eval echo \`echo ${sysconfdir}/freeDiameter\``
+extention directory     : `eval echo \`echo ${localstatedir}/freeDiameter\``
 "

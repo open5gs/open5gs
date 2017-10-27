@@ -1,8 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-SUBDIRS = freeDiameter
-
-sysconf_DATA = nextepc.conf
+SUBDIRS = config freeDiameter
 
 MAINTAINERCLEANFILES = Makefile.in 
 MOSTLYCLEANFILES = *.stackdump

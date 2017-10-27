@@ -4,7 +4,7 @@
     missingok
     compress
     rotate 14
-    create 640 @current_user@ @current_group@
+    create 640 nextepc nextepc
 
     postrotate
         for i in pcrfd pgwd sgwd hssd mmed epcd; do

@@ -1,13 +1,11 @@
-freeDiameterdir = ${sysconfdir}/freeDiameter
-
-freeDiameter_DATA = \
+configfiles = \
 	mme.conf \
 	hss.conf \
 	pgw.conf \
 	pcrf.conf \
-	$(NULL)
+    $(NULL)
 
-dist_freeDiameter_DATA = \
+pemfiles = \
 	cacert.pem \
 	mme.key.pem \
 	mme.cert.pem \
@@ -17,7 +15,11 @@ dist_freeDiameter_DATA = \
 	pgw.cert.pem \
 	pcrf.key.pem \
 	pcrf.cert.pem \
-	$(NULL)
+    $(NULL)
+
+freeDiameterdir = ${sysconfdir}/nextepc/freeDiameter
+
+freeDiameter_DATA = ${configfiles} ${pemfiles}
 
 MAINTAINERCLEANFILES = Makefile.in 
 MOSTLYCLEANFILES = *.stackdump

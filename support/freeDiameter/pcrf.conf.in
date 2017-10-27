@@ -107,7 +107,7 @@ ListenOn = "127.76.0.5";
 # Default : NO DEFAULT
 #TLS_Cred = "<x509 certif file.PEM>" , "<x509 private key file.PEM>";
 #TLS_Cred = "/etc/ssl/certs/freeDiameter.pem", "/etc/ssl/private/freeDiameter.key";
-TLS_Cred = "@SYSCONF_DIR@/freeDiameter/pcrf.cert.pem", "@SYSCONF_DIR@/freeDiameter/pcrf.key.pem";
+TLS_Cred = "@SYSCONF_DIR@/nextepc/freeDiameter/pcrf.cert.pem", "@SYSCONF_DIR@/nextepc/freeDiameter/pcrf.key.pem";
 
 # Certificate authority / trust anchors
 # The file containing the list of trusted Certificate Authorities (PEM list)
@@ -115,7 +115,7 @@ TLS_Cred = "@SYSCONF_DIR@/freeDiameter/pcrf.cert.pem", "@SYSCONF_DIR@/freeDiamet
 # The directive can appear several times to specify several files.
 # Default : GNUTLS default behavior
 #TLS_CA = "<file.PEM>";
-TLS_CA = "@SYSCONF_DIR@/freeDiameter/cacert.pem";
+TLS_CA = "@SYSCONF_DIR@/nextepc/freeDiameter/cacert.pem";
 
 # Certificate Revocation List file
 # The information about revoked certificates.
@@ -230,7 +230,7 @@ LoadExtension = "@LIB_DIR@/nextepc/dict_nasreq.so";
 LoadExtension = "@LIB_DIR@/nextepc/dict_nas_mipv6.so";
 LoadExtension = "@LIB_DIR@/nextepc/dict_dcca.so";
 LoadExtension = "@LIB_DIR@/nextepc/dict_dcca_3gpp.so";
-#LoadExtension = "@LIB_DIR@/nextepc/dict_legacy_xml.so" : "@SYSCONF_DIR@/freeDiameter/dict_legacy_xml.conf";
+#LoadExtension = "@LIB_DIR@/nextepc/dict_legacy_xml.so" : "@SYSCONF_DIR@/nextepc/freeDiameter/dict_legacy_xml.conf";
 
 
 ##############################################################

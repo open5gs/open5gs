@@ -1,11 +1,11 @@
 [Unit]
-Description=NextEPC S-GW Daemon
+Description=NextEPC MME Daemon
 After=networking.service
 
 [Service]
 Type=simple
 Restart=always
-ExecStart=/usr/bin/nextepc-sgwd -f /etc/nextepc/sgw.cfg
+ExecStart=@BIN_DIR@/nextepc-mmed -f @SYSCONF_DIR@/nextepc/mme.conf
 RestartSec=2
 RestartPreventExitStatus=1
 

@@ -19,7 +19,7 @@
 
   MME :
   {
-    FD_CONF_PATH : "@SYSCONF_DIR@/freeDiameter/mme.conf",
+    FD_CONF_PATH : "@SYSCONF_DIR@/nextepc/freeDiameter/mme.conf",
     DEFAULT_PAGING_DRX : "v64",
 #RELATIVE_CAPACITY : 255,
     NETWORK :
@@ -59,7 +59,7 @@
 
   HSS :
   {
-    FD_CONF_PATH : "@SYSCONF_DIR@/freeDiameter/hss.conf",
+    FD_CONF_PATH : "@SYSCONF_DIR@/nextepc/freeDiameter/hss.conf",
   }
 
   SGW :
@@ -75,7 +75,7 @@
 
   PGW :
   {
-    FD_CONF_PATH : "@SYSCONF_DIR@/freeDiameter/pgw.conf",
+    FD_CONF_PATH : "@SYSCONF_DIR@/nextepc/freeDiameter/pgw.conf",
     NETWORK :
     {
       GTPC_IPV4: "127.76.0.3",
@@ -97,7 +97,7 @@
 
   PCRF :
   {
-    FD_CONF_PATH : "@SYSCONF_DIR@/freeDiameter/pcrf.conf",
+    FD_CONF_PATH : "@SYSCONF_DIR@/nextepc/freeDiameter/pcrf.conf",
   }
 
 }

@@ -36,9 +36,7 @@ AM_CPPFLAGS = \
 
 install-data-hook:
 	$(MKDIR_P) $(DESTDIR)/$(localstatedir)/log/nextepc
-#	chown $(current_user):$(current_group) $(DESTDIR)/$(localstatedir)/log/nextepc
 	$(MKDIR_P) $(DESTDIR)/$(localstatedir)/run/nextepc
-#	chown $(current_user):$(current_group) $(DESTDIR)/$(localstatedir)/run/nextepc
 
 CLEANFILES = symtbl.c
 DISTCLEANFILES = $(DIST_ARCHIVES)

@@ -51,7 +51,7 @@ CORE_DECLARE(status_t)      context_init(void);
 CORE_DECLARE(status_t)      context_final(void);
 CORE_DECLARE(context_t*)    context_self(void);
 
-CORE_DECLARE(status_t)      context_read_file(char *file_path);
+CORE_DECLARE(status_t)      context_read_file(void);
 CORE_DECLARE(status_t)      context_parse_config(void);
 CORE_DECLARE(status_t)      context_setup_trace_module(void);
 

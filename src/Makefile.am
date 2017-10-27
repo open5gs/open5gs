@@ -83,7 +83,9 @@ AM_CPPFLAGS = \
 AM_CFLAGS = \
 	-Wall -Werror
 
-DEFS = @DEFS@ -DLOCALSTATE_DIR=\"$(localstatedir)/\"
+DEFS = @DEFS@ \
+	   -DSYSCONF_DIR=\"$(sysconfdir)/\" \
+	   -DLOCALSTATE_DIR=\"$(localstatedir)/\"
 
 MAINTAINERCLEANFILES = Makefile.in
 MOSTLYCLEANFILES = core *.stackdump
