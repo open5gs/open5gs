@@ -2,6 +2,7 @@
 
 #include "core_file.h"
 #include "core_debug.h"
+#include "core_lib.h"
 #include <mongoc.h>
 
 #include "context.h"
@@ -27,6 +28,9 @@ status_t context_final()
     d_assert(context_initialized == 1, return CORE_ERROR,
             "Context already has been finalized");
 
+    if (self.config.bson)
+        bson_destroy(self.config.bson);
+
     context_initialized = 0;
 
     return CORE_OK;
@@ -44,8 +48,9 @@ status_t context_read_file()
     status_t rv;
     file_t *file;
 
-    jsmn_parser parser;
+    bson_error_t error;
     size_t json_len;
+    jsmn_parser parser;
     int result;
 
     d_assert(config->path, return CORE_ERROR,);
@@ -85,6 +90,13 @@ status_t context_read_file()
         return CORE_ERROR;
     }
 
+    config->bson = bson_new_from_json((const uint8_t *)config->json, -1, &error);;
+    if (config->bson == NULL)
+    {
+        d_fatal("Failed to parse configuration file '%s'", config->path);
+        return CORE_ERROR;
+    }
+
     d_print("  Config '%s'\n", config->path);
 
     return CORE_OK;
@@ -93,132 +105,126 @@ status_t context_read_file()
 status_t context_parse_config()
 {
     config_t *config = &self.config;
+    bson_iter_t iter, child1_iter, child2_iter;
+    c_uint32_t length = 0;
 
-    char *json = config->json;
-    jsmntok_t *token = config->token;
+    d_assert(config, return CORE_ERROR, );
 
-    typedef enum { START, ROOT, SKIP, STOP } parse_state;
-    parse_state state = START;
-
-    size_t root_tokens = 0;
-    size_t skip_tokens = 0;
-    size_t i, j, m, n;
-
-    for (i = 0, j = 1; j > 0; i++, j--)
+    if (!bson_iter_init(&iter, config->bson))
     {
-        jsmntok_t *t = &token[i];
+        d_error("bson_iter_init failed in this document");
+        return CORE_ERROR;
+    }
 
-        j += t->size;
-
-        switch (state)
+    while(bson_iter_next(&iter))
+    {
+        const char *key = bson_iter_key(&iter);
+        if (!strcmp(key, "DB_URI") && BSON_ITER_HOLDS_UTF8(&iter))
         {
-            case START:
+            self.db_uri = bson_iter_utf8(&iter, &length);
+        }
+        else if (!strcmp(key, "LOG") && BSON_ITER_HOLDS_DOCUMENT(&iter))
+        {
+            bson_iter_recurse(&iter, &child1_iter);
+            while(bson_iter_next(&child1_iter))
             {
-                state = ROOT;
-                root_tokens = t->size;
-
-                break;
-            }
-            case ROOT:
-            {
-                if (jsmntok_equal(json, t, "DB_URI") == 0)
+                const char *child1_key = bson_iter_key(&child1_iter);
+                if (!strcmp(child1_key, "FILE") &&
+                    BSON_ITER_HOLDS_UTF8(&child1_iter))
                 {
-                    self.db_uri = jsmntok_to_string(json, t+1);
+                    self.log.file = bson_iter_utf8(&child1_iter, &length);
                 }
-                else if (jsmntok_equal(json, t, "LOG_PATH") == 0)
+                else if (!strcmp(child1_key, "SOCKET") &&
+                        BSON_ITER_HOLDS_DOCUMENT(&iter))
                 {
-                    self.log_path = jsmntok_to_string(json, t+1);
-                }
-                else if (jsmntok_equal(json, t, "TRACE") == 0)
-                {
-                    for (m = 1, n = 1; n > 0; m++, n--)
+                    bson_iter_recurse(&child1_iter, &child2_iter);
+                    while(bson_iter_next(&child2_iter))
                     {
-                        n += (t+m)->size;
-
-                        char *v = jsmntok_to_string(json, t+m+1);
-                        if (jsmntok_equal(json, t+m, "S1AP") == 0)
+                        const char *child2_key = bson_iter_key(&child2_iter);
+                        if (!strcmp(child2_key, "FILE") &&
+                            BSON_ITER_HOLDS_UTF8(&child2_iter))
                         {
-                            if (v) self.trace_level.s1ap = atoi(v);
+                            self.log.socket.file =
+                                bson_iter_utf8(&child2_iter, &length);
                         }
-                        else if (jsmntok_equal(json, t+m, "NAS") == 0)
+                        else if (!strcmp(child2_key, "UNIX_DOMAIN") &&
+                            BSON_ITER_HOLDS_UTF8(&child2_iter))
                         {
-                            if (v) self.trace_level.nas = atoi(v);
-                        }
-                        else if (jsmntok_equal(json, t+m, "FD") == 0)
-                        {
-                            if (v) self.trace_level.fd = atoi(v);
-                        }
-                        else if (jsmntok_equal(json, t+m, "GTP") == 0)
-                        {
-                            if (v) self.trace_level.gtp = atoi(v);
-                        }
-                        else if (jsmntok_equal(json, t+m, "OTHERS") == 0)
-                        {
-                            if (v) self.trace_level.others = atoi(v);
+                            self.log.socket.unix_domain =
+                                bson_iter_utf8(&child2_iter, &length);
                         }
                     }
+
                 }
-                else if (jsmntok_equal(json, t, "NODE") == 0)
+            }
+        }
+        else if (!strcmp(key, "TRACE") && BSON_ITER_HOLDS_DOCUMENT(&iter))
+        {
+            bson_iter_recurse(&iter, &child1_iter);
+            while(bson_iter_next(&child1_iter))
+            {
+                const char *child1_key = bson_iter_key(&child1_iter);
+                if (!strcmp(child1_key, "S1AP") &&
+                    BSON_ITER_HOLDS_INT32(&child1_iter))
                 {
-                    for (m = 1, n = 1; n > 0; m++, n--)
-                    {
-                        n += (t+m)->size;
-
-                        char *v = jsmntok_to_string(json, t+m+1);
-                        if (jsmntok_equal(json, t+m, "DISABLE_HSS") == 0)
-                        {
-                            if (v) self.hidden.disable_hss = atoi(v);
-                        }
-                        else if (jsmntok_equal(json, t+m, "DISABLE_SGW") == 0)
-                        {
-                            if (v) self.hidden.disable_sgw = atoi(v);
-                        }
-                        else if (jsmntok_equal(json, t+m, "DISABLE_PGW") == 0)
-                        {
-                            if (v) self.hidden.disable_pgw = atoi(v);
-                        }
-                        else if (jsmntok_equal(json, t+m, "DISABLE_PCRF") == 0)
-                        {
-                            if (v) self.hidden.disable_pcrf = atoi(v);
-                        }
-                    }
+                    self.trace_level.s1ap = bson_iter_int32(&child1_iter);
                 }
-
-                state = SKIP;
-                skip_tokens = t->size;
-
-                root_tokens--;
-                if (root_tokens == 0) state = STOP;
-
-                break;
+                else if (!strcmp(child1_key, "NAS") &&
+                    BSON_ITER_HOLDS_INT32(&child1_iter))
+                {
+                    self.trace_level.nas = bson_iter_int32(&child1_iter);
+                }
+                else if (!strcmp(child1_key, "FD") &&
+                    BSON_ITER_HOLDS_INT32(&child1_iter))
+                {
+                    self.trace_level.fd = bson_iter_int32(&child1_iter);
+                }
+                else if (!strcmp(child1_key, "GTP") &&
+                    BSON_ITER_HOLDS_INT32(&child1_iter))
+                {
+                    self.trace_level.gtp = bson_iter_int32(&child1_iter);
+                }
+                else if (!strcmp(child1_key, "OTHERS") &&
+                    BSON_ITER_HOLDS_INT32(&child1_iter))
+                {
+                    self.trace_level.others = bson_iter_int32(&child1_iter);
+                }
             }
-            case SKIP:
+        }
+        else if (!strcmp(key, "NODE") && BSON_ITER_HOLDS_DOCUMENT(&iter))
+        {
+            bson_iter_recurse(&iter, &child1_iter);
+            while(bson_iter_next(&child1_iter))
             {
-                skip_tokens += t->size;
-
-                skip_tokens--;
-                if (skip_tokens == 0) state = ROOT;
-
-                break;
+                const char *child1_key = bson_iter_key(&child1_iter);
+                if (!strcmp(child1_key, "DISABLE_HSS") &&
+                    BSON_ITER_HOLDS_INT32(&child1_iter))
+                {
+                    self.node.disable_hss = bson_iter_int32(&child1_iter);
+                }
+                else if (!strcmp(child1_key, "DISABLE_SGW") &&
+                    BSON_ITER_HOLDS_INT32(&child1_iter))
+                {
+                    self.node.disable_sgw = bson_iter_int32(&child1_iter);
+                }
+                else if (!strcmp(child1_key, "DISABLE_PGW") &&
+                    BSON_ITER_HOLDS_INT32(&child1_iter))
+                {
+                    self.node.disable_pgw = bson_iter_int32(&child1_iter);
+                }
+                else if (!strcmp(child1_key, "DISABLE_PCRF") &&
+                    BSON_ITER_HOLDS_INT32(&child1_iter))
+                {
+                    self.node.disable_pcrf = bson_iter_int32(&child1_iter);
+                }
             }
-            case STOP:
-            {
-                break;
-            }
-            default:
-            {
-                d_error("Failed to parse configuration in the state(%u)", 
-                        state);
-                break;
-            }
-
         }
     }
 
     return CORE_OK;
 }
 
-status_t context_db_init(char *db_uri)
+status_t context_db_init(const char *db_uri)
 {
     bson_t reply;
     bson_error_t error;

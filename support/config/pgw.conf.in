@@ -1,31 +1,39 @@
 {
-  LOG_PATH : "@LOCALSTATE_DIR@/log/nextepc/pgw.log",
-  TRACE:
+  "LOG" :
   {
-    FD: 1,
-    GTP: 1,
-    OTHERS: 1,
-  }
-
-  PGW :
-  {
-    FD_CONF_PATH : "@SYSCONF_DIR@/nextepc/freeDiameter/pgw.conf",
-    NETWORK :
+    "SOCKET" :
     {
-      GTPC_IPV4: "127.76.0.3",
-      GTPU_IPV4: "127.76.0.3"
+      "FILE" : "@LOCALSTATE_DIR@/log/nextepc/pgw.log",
+      "UNIX_DOMAIN" : "/tmp/nextepc-pgwd.sock"
     }
-    UE_NETWORK:
+  },
+  "TRACE" :
+  {
+    "FD": 1,
+    "GTP": 1,
+    "OTHERS": 1
+  },
+
+  "PGW" :
+  {
+    "FD_CONF_PATH" : "@SYSCONF_DIR@/nextepc/freeDiameter/pgw.conf",
+    "NETWORK" :
+    {
+      "GTPC_IPV4" : "127.76.0.3",
+      "GTPU_IPV4" : "127.76.0.3"
+    },
+    "UE_NETWORK":
     [
       {
-        IF_NAME: "pgwtun",
-        IPV4_POOL: "45.45.0.1/16"
+        "IF_NAME" : "pgwtun",
+        "IPV4_POOL" : "45.45.0.1/16"
       }
-    ]
-    DNS :
+    ],
+    "DNS" :
     {
-      PRIMARY_IPV4: "8.8.8.8",
-      SECONDARY_IPV4: "4.4.4.4"
+      "PRIMARY_IPV4" : "8.8.8.8",
+      "SECONDARY_IPV4" : "4.4.4.4"
     }
   }
+
 }

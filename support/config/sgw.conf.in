@@ -1,19 +1,27 @@
 {
-  LOG_PATH : "@LOCALSTATE_DIR@/log/nextepc/sgw.log",
-  TRACE:
+  "LOG" :
   {
-    GTP: 1,
-    OTHERS: 1,
-  }
+    "SOCKET" :
+    {
+      "FILE" : "@LOCALSTATE_DIR@/log/nextepc/sgw.log",
+      "UNIX_DOMAIN" : "/tmp/nextepc-sgwd.sock"
+    }
+  },
+  "TRACE" :
+  {
+    "GTP": 1,
+    "OTHERS": 1
+  },
 
-  SGW :
+  "SGW" :
   {
-    NETWORK :
+    "NETWORK" :
     [
       {
-        GTPC_IPV4: "127.76.0.2",
-        GTPU_IPV4: "127.76.0.2",
+        "GTPC_IPV4" : "127.76.0.2",
+        "GTPU_IPV4" : "127.76.0.2"
       }
     ]
   }
+
 }

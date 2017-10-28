@@ -1,6 +1,7 @@
 #include "core_debug.h"
 #include "core_param.h"
 #include "core_file.h"
+#include "core_thread.h"
 
 #include <syslog.h>
 #include <sys/socket.h>
@@ -9,45 +10,192 @@
 
 int g_trace_mask = 1;
 
-int g_msg_to = D_MSG_TO_LOGD | D_MSG_TO_STDOUT;
+int g_msg_to = D_MSG_TO_STDOUT;
 
 int g_console_connected = 0;
 int g_syslog_connected = 0;
-int g_logd_connected = 0;
+int g_socket_connected = 0;
 
 int g_log_level_console = D_LOG_LEVEL_FULL;
 int g_log_level_stdout = D_LOG_LEVEL_FULL;
 int g_log_level_syslog = D_LOG_LEVEL_FULL;
-int g_log_level_logd = D_LOG_LEVEL_FULL;
+int g_log_level_socket = D_LOG_LEVEL_FULL;
 
-int g_console_fd = -1;
-int g_logd_fd = -1;
-struct sockaddr_un g_logd_addr;
+static int g_console_fd = -1;
+static int g_socket_fd = -1;
+static struct sockaddr_un g_socket_addr;
 
-void d_msg_init()
+static thread_id socket_thread = 0;
+static void *THREAD_FUNC socket_main(thread_id id, void *data);
+static int socket_handler(const char *path);
+
+void d_msg_register_syslog(const char *name)
 {
-    openlog("libcore", 0, LOG_DAEMON);
+    d_assert(name, return, );
 
+    openlog(name, 0, LOG_DAEMON);
     g_syslog_connected = 1;
-
-    g_logd_fd = socket(AF_UNIX, SOCK_DGRAM, 0);
-    d_assert(g_logd_fd >= 0, return,
-            "socket() failed. (%d:%s)\n", errno, strerror(errno));
-
-    g_logd_addr.sun_family = AF_UNIX;
-    strcpy(g_logd_addr.sun_path, D_LOGD_IPC_PATH);
-
-    g_logd_connected = 1;
 }
 
-void d_msg_final()
+void d_msg_deregister_syslog()
 {
     g_syslog_connected = 0;
     closelog();
+}
 
-    g_logd_connected = 0;
-    close(g_logd_fd);
-    g_logd_fd = -1;
+void d_msg_register_socket(const char *name, const char *log_file)
+{
+    status_t rv;
+
+    d_assert(name, return, );
+
+    g_socket_fd = socket(AF_UNIX, SOCK_DGRAM, 0);
+    d_assert(g_socket_fd >= 0, return,
+            "socket() failed. (%d:%s)\n", errno, strerror(errno));
+
+    g_socket_addr.sun_family = AF_UNIX;
+    strcpy(g_socket_addr.sun_path, name);
+
+    rv = thread_create(&socket_thread, NULL, socket_main, (void*)log_file);
+    d_assert(rv == CORE_OK, return, "socket thread creation failed");
+
+    g_socket_connected = 1;
+    d_msg_to(D_MSG_TO_SOCKET, 1);
+}
+
+void d_msg_deregister_socket()
+{
+    d_msg_to(D_MSG_TO_SOCKET, 0);
+    g_socket_connected = 0;
+
+    thread_delete(socket_thread);
+
+    close(g_socket_fd);
+    g_socket_fd = -1;
+}
+
+static void *THREAD_FUNC socket_main(thread_id id, void *data)
+{
+    int ret;
+    char *path = data;
+
+    ret = socket_handler(path);
+    if (ret != 0)
+    {
+        d_error("Failed to initialize logger.");
+        d_error("Check file permission for `%s`", path); 
+    }
+
+    return NULL;
+}
+
+static int socket_handler(const char *path)
+{
+    status_t rv;
+    int ret;
+    size_t nbytes;
+    ssize_t r;
+    int us;
+    fd_set readfd;
+    struct timeval timer_val;
+    struct sockaddr_un svaddr;
+    file_t *g_file = NULL;
+    char g_buffer[1024];
+
+    us = socket(AF_UNIX, SOCK_DGRAM, 0);
+    if (us < 0)
+    {
+        d_error("socket() failed. (%d:%s)", errno, strerror(errno));
+        return -1;
+    }
+    memcpy(&svaddr, &g_socket_addr, sizeof(struct sockaddr_un));
+
+    ret = bind(us, (struct sockaddr *)&svaddr, sizeof(svaddr));
+    if (ret != 0)
+    {
+        if (errno == EADDRINUSE)
+        {
+            ret = file_remove(svaddr.sun_path);
+            if (ret != 0)
+            {
+                d_error("unlink(`%s`) failed. (%d:%s)",
+                        svaddr.sun_path, errno, strerror(errno));
+                return -1;
+            }
+            ret = bind(us, (struct sockaddr *)&svaddr, sizeof(svaddr));
+            if (ret != 0)
+            {
+                d_error("bind() failed 2. (%d:%s)", errno, strerror(errno));
+                return -1;
+            }
+        }
+        else
+        {
+            d_error("bind() failed. (%d:%s)", errno, strerror(errno));
+            return -1;
+        }
+    }
+
+    rv = file_open(&g_file, path,
+            FILE_CREATE | FILE_WRITE| FILE_APPEND,
+            FILE_UREAD | FILE_UWRITE | FILE_GREAD);
+    if (rv != CORE_OK)
+    {
+        d_error("Cannot open log file '%s'", path);
+        close(us);
+        return -1;
+    }
+
+    while (!thread_should_stop())
+    {
+        timer_val.tv_sec = 0;
+        timer_val.tv_usec = 50000;
+        FD_ZERO(&readfd);
+        FD_SET(us, &readfd);
+
+        r = select (us+1, &readfd, NULL, NULL, &timer_val);
+        if (r == -1)
+        {
+            if (errno == EINTR)
+                break;
+            d_error("select() error(%d: %s)", errno, strerror(errno));
+        }
+
+        if (r == 0)
+            continue;
+
+        if (FD_ISSET(us, &readfd))
+        {
+            r = read(us, g_buffer, sizeof(g_buffer));
+
+            if (r < 0)
+            {
+                if (errno == EINTR)
+                    break;
+                d_error("read() failed. (%d:%s)", errno, strerror(errno));
+                continue;
+            }
+
+            if (r == 0)
+                continue;
+
+            nbytes = r;
+            rv = file_write(g_file, g_buffer, &nbytes);
+            if (rv != CORE_OK || r != nbytes)
+            {
+                d_error("Cannot write %ld bytes to log file (%ld written)",
+                        (long)r, (long)nbytes);
+            }
+        }
+    }
+
+    file_close(g_file);
+
+    close(us);
+
+    file_remove(svaddr.sun_path);
+
+    return 0;
 }
 
 void d_msg_register_console(int console_fd)
@@ -83,10 +231,10 @@ void d_msg_to(int to, int on_off)
                 g_msg_to | D_MSG_TO_SYSLOG :
                 g_msg_to & ~D_MSG_TO_SYSLOG;
             break;
-        case D_MSG_TO_LOGD:
+        case D_MSG_TO_SOCKET:
             g_msg_to = on_off ?
-                g_msg_to | D_MSG_TO_LOGD :
-                g_msg_to & ~D_MSG_TO_LOGD;
+                g_msg_to | D_MSG_TO_SOCKET :
+                g_msg_to & ~D_MSG_TO_SOCKET;
             break;
         case D_MSG_TO_ALL:
             g_msg_to = on_off ? D_MSG_TO_ALL : 0;
@@ -114,14 +262,14 @@ void d_log_set_level(int to, int level)
         case D_MSG_TO_SYSLOG:
             g_log_level_syslog = level;
             break;
-        case D_MSG_TO_LOGD:
-            g_log_level_logd = level;
+        case D_MSG_TO_SOCKET:
+            g_log_level_socket = level;
             break;
         case D_MSG_TO_ALL:
             g_log_level_console = level;
             g_log_level_stdout = level;
             g_log_level_syslog = level;
-            g_log_level_logd = level;
+            g_log_level_socket = level;
             break;
         default:
             break;
@@ -138,8 +286,8 @@ int d_log_get_level(int to)
             return g_log_level_stdout;
         case D_MSG_TO_SYSLOG:
             return g_log_level_syslog;
-        case D_MSG_TO_LOGD:
-            return g_log_level_logd;
+        case D_MSG_TO_SOCKET:
+            return g_log_level_socket;
         default:
             break;
     }
@@ -160,14 +308,14 @@ void d_log_full(int to)
         case D_MSG_TO_SYSLOG:
             g_log_level_syslog = D_LOG_LEVEL_FULL;
             break;
-        case D_MSG_TO_LOGD:
-            g_log_level_logd = D_LOG_LEVEL_FULL;
+        case D_MSG_TO_SOCKET:
+            g_log_level_socket = D_LOG_LEVEL_FULL;
             break;
         case D_MSG_TO_ALL:
             g_log_level_console = D_LOG_LEVEL_FULL;
             g_log_level_stdout = D_LOG_LEVEL_FULL;
             g_log_level_syslog = D_LOG_LEVEL_FULL;
-            g_log_level_logd = D_LOG_LEVEL_FULL;
+            g_log_level_socket = D_LOG_LEVEL_FULL;
             break;
         default:
             break;
@@ -187,14 +335,14 @@ void d_log_off(int to)
         case D_MSG_TO_SYSLOG:
             g_log_level_syslog = D_LOG_LEVEL_NONE;
             break;
-        case D_MSG_TO_LOGD:
-            g_log_level_logd = D_LOG_LEVEL_NONE;
+        case D_MSG_TO_SOCKET:
+            g_log_level_socket = D_LOG_LEVEL_NONE;
             break;
         case D_MSG_TO_ALL:
             g_log_level_console = D_LOG_LEVEL_NONE;
             g_log_level_stdout = D_LOG_LEVEL_NONE;
             g_log_level_syslog = D_LOG_LEVEL_NONE;
-            g_log_level_logd = D_LOG_LEVEL_NONE;
+            g_log_level_socket = D_LOG_LEVEL_NONE;
             break;
         default:
             break;
@@ -283,10 +431,10 @@ int d_msg(int tp, int lv, c_time_t t, char *fn, int ln, char *fmt, ...)
             {
                 syslog(LOG_DEBUG, "%s", fstr);
             }
-            if (g_logd_connected && (g_msg_to & D_MSG_TO_LOGD))
+            if (g_socket_connected && (g_msg_to & D_MSG_TO_SOCKET))
             {
-                sendto(g_logd_fd, fstr, n, 0,
-                    (struct sockaddr *)&g_logd_addr, sizeof(g_logd_addr));
+                sendto(g_socket_fd, fstr, n, 0,
+                    (struct sockaddr *)&g_socket_addr, sizeof(g_socket_addr));
             }
             if (g_console_connected && (g_msg_to & D_MSG_TO_CONSOLE))
             {
@@ -310,10 +458,10 @@ int d_msg(int tp, int lv, c_time_t t, char *fn, int ln, char *fmt, ...)
             {
                 syslog(LOG_DEBUG, "%s", fstr);
             }
-            if (g_logd_connected && (g_msg_to & D_MSG_TO_LOGD))
+            if (g_socket_connected && (g_msg_to & D_MSG_TO_SOCKET))
             {
-                sendto(g_logd_fd, fstr, n, 0,
-                    (struct sockaddr *)&g_logd_addr, sizeof(g_logd_addr));
+                sendto(g_socket_fd, fstr, n, 0,
+                    (struct sockaddr *)&g_socket_addr, sizeof(g_socket_addr));
             }
             if (g_console_connected && (g_msg_to & D_MSG_TO_CONSOLE))
             {
@@ -353,12 +501,12 @@ int d_msg(int tp, int lv, c_time_t t, char *fn, int ln, char *fmt, ...)
             {
                 syslog(LOG_INFO, "[%s\n", fstr + 13);
             }
-            if (g_logd_connected && (g_msg_to & D_MSG_TO_LOGD) &&
-                    lv <= g_log_level_logd)
+            if (g_socket_connected && (g_msg_to & D_MSG_TO_SOCKET) &&
+                    lv <= g_log_level_socket)
             {
                 fstr[n++] = '\n';
-                sendto(g_logd_fd, fstr, n, 0,
-                    (struct sockaddr *)&g_logd_addr, sizeof(g_logd_addr));
+                sendto(g_socket_fd, fstr, n, 0,
+                    (struct sockaddr *)&g_socket_addr, sizeof(g_socket_addr));
             }
             if (g_console_connected && (g_msg_to & D_MSG_TO_CONSOLE) &&
                     lv <= g_log_level_console)
@@ -384,11 +532,11 @@ int d_msg(int tp, int lv, c_time_t t, char *fn, int ln, char *fmt, ...)
             {
                 syslog(LOG_CRIT, "[%s\n", fstr + 13);
             }
-            if (g_logd_connected && (g_msg_to & D_MSG_TO_LOGD))
+            if (g_socket_connected && (g_msg_to & D_MSG_TO_SOCKET))
             {
                 fstr[n++] = '\n';
-                sendto(g_logd_fd, fstr, n, 0,
-                    (struct sockaddr *)&g_logd_addr, sizeof(g_logd_addr));
+                sendto(g_socket_fd, fstr, n, 0,
+                    (struct sockaddr *)&g_socket_addr, sizeof(g_socket_addr));
             }
             if (g_console_connected && (g_msg_to & D_MSG_TO_CONSOLE))
             {

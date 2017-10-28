@@ -1,15 +1,22 @@
 {
-  DB_URI : "mongodb://localhost/nextepc",
-  LOG_PATH : "@LOCALSTATE_DIR@/log/nextepc/hss.log",
-  TRACE:
+  "DB_URI" : "mongodb://localhost/nextepc",
+  "LOG" :
   {
-    FD: 1,
-    OTHERS: 1,
-  }
+    "SOCKET" :
+    {
+      "FILE" : "@LOCALSTATE_DIR@/log/nextepc/hss.log",
+      "UNIX_DOMAIN" : "/tmp/nextepc-hssd.sock"
+    }
+  },
+  "TRACE" :
+  {
+    "FD": 1,
+    "OTHERS": 1
+  },
 
-  HSS :
+  "HSS" :
   {
-    FD_CONF_PATH : "@SYSCONF_DIR@/nextepc/freeDiameter/hss.conf",
+    "FD_CONF_PATH" : "@SYSCONF_DIR@/nextepc/freeDiameter/hss.conf"
   }
 
 }

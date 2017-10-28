@@ -51,7 +51,6 @@ status_t core_initialize(void)
     tlv_init();
     tm_init();
     msgq_init();
-    d_msg_init();
     signal_init();
 
     return CORE_OK;
@@ -65,7 +64,6 @@ void core_terminate(void)
     }
 
     /* Reverse ordered finalization */
-    d_msg_final();
     msgq_final();
     tm_final();
     tlv_final();

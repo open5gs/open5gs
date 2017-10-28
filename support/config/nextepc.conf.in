@@ -1,103 +1,109 @@
 {
-  DB_URI : "mongodb://localhost/nextepc",
-  LOG_PATH : "@LOCALSTATE_DIR@/log/nextepc/nextepc.log",
-  TRACE:
+  "DB_URI" : "mongodb://localhost/nextepc",
+  "LOG" :
   {
-    S1AP: 1,
-    NAS: 1,
-    FD: 1,
-    GTP: 1,
-    OTHERS: 1,
-  }
-  NODE:
-  {
-    DISABLE_HSS: 0,
-    DISABLE_SGW: 0,
-    DISABLE_PGW: 0,
-    DISABLE_PCRF: 0
-  }
-
-  MME :
-  {
-    FD_CONF_PATH : "@SYSCONF_DIR@/nextepc/freeDiameter/mme.conf",
-    DEFAULT_PAGING_DRX : "v64",
-#RELATIVE_CAPACITY : 255,
-    NETWORK :
+    "SOCKET" :
     {
-      S1AP_IPV4 : "127.76.0.1",
-      GTPC_IPV4: "127.76.0.1",
+      "FILE" : "@LOCALSTATE_DIR@/log/nextepc/nextepc.log",
+      "UNIX_DOMAIN" : "/tmp/nextepc-epcd.sock"
     }
-    GUMMEI:
+  },
+  "TRACE" :
+  {
+    "S1AP": 1,
+    "NAS": 1,
+    "FD": 1,
+    "GTP": 1,
+    "OTHERS": 1
+  },
+  "NODE":
+  {
+    "DISABLE_HSS": 0,
+    "DISABLE_SGW": 0,
+    "DISABLE_PGW": 0,
+    "DISABLE_PCRF": 0
+  },
+
+  "MME" :
+  {
+    "FD_CONF_PATH" : "@SYSCONF_DIR@/nextepc/freeDiameter/mme.conf",
+    "DEFAULT_PAGING_DRX" : "v64",
+    "NETWORK" :
+    {
+      "S1AP_IPV4" : "127.76.0.1",
+      "GTPC_IPV4" : "127.76.0.1"
+    },
+    "GUMMEI" :
     [
       {
-        PLMN_ID : 
+        "PLMN_ID" : 
         {
-          MCC : "001",
-          MNC : "01"
-        }
-        MME_GID : 2,
-        MME_CODE : 1
+          "MCC" : "001",
+          "MNC" : "01"
+        },
+        "MME_GID" : 2,
+        "MME_CODE" : 1
       }
-    ] 
-    TAI:
+    ],
+    "TAI":
     [
       {
-        PLMN_ID :
+        "PLMN_ID" :
         {
-          MCC: "001",
-          MNC: "01",
-        }
-        TAC: 12345
+          "MCC": "001",
+          "MNC": "01"
+        },
+        "TAC": 12345
       }
-    ]
-    SECURITY :
+    ],
+    "SECURITY" :
     {
-      INTEGRITY_ORDER : [ "EIA1", "EIA2", "EIA0" ]
-      CIPHERING_ORDER : [ "EEA0", "EEA1", "EEA2" ]
+      "INTEGRITY_ORDER" : [ "EIA1", "EIA2", "EIA0" ],
+      "CIPHERING_ORDER" : [ "EEA0", "EEA1", "EEA2" ]
     }
-  }
+  },
 
-  HSS :
+  "HSS" :
   {
-    FD_CONF_PATH : "@SYSCONF_DIR@/nextepc/freeDiameter/hss.conf",
-  }
+    "FD_CONF_PATH" : "@SYSCONF_DIR@/nextepc/freeDiameter/hss.conf"
+  },
 
-  SGW :
+  "SGW" :
   {
-    NETWORK :
+    "NETWORK" :
     [
       {
-        GTPC_IPV4: "127.76.0.2",
-        GTPU_IPV4: "127.76.0.2",
+        "GTPC_IPV4" : "127.76.0.2",
+        "GTPU_IPV4" : "127.76.0.2"
       }
     ]
-  }
+  },
 
-  PGW :
+  "PGW" :
   {
-    FD_CONF_PATH : "@SYSCONF_DIR@/nextepc/freeDiameter/pgw.conf",
-    NETWORK :
+    "FD_CONF_PATH" : "@SYSCONF_DIR@/nextepc/freeDiameter/pgw.conf",
+    "NETWORK" :
     {
-      GTPC_IPV4: "127.76.0.3",
-      GTPU_IPV4: "127.76.0.3"
-    }
-    UE_NETWORK:
+      "GTPC_IPV4" : "127.76.0.3",
+      "GTPU_IPV4" : "127.76.0.3"
+    },
+    "UE_NETWORK":
     [
       {
-        IF_NAME: "pgwtun",
-        IPV4_POOL: "45.45.0.1/16"
+        "IF_NAME" : "pgwtun",
+        "IPV4_POOL" : "45.45.0.1/16"
       }
-    ]
-    DNS :
+    ],
+    "DNS" :
     {
-      PRIMARY_IPV4: "8.8.8.8",
-      SECONDARY_IPV4: "4.4.4.4"
+      "PRIMARY_IPV4" : "8.8.8.8",
+      "SECONDARY_IPV4" : "4.4.4.4"
     }
-  }
+  },
 
-  PCRF :
+  "PCRF" :
   {
-    FD_CONF_PATH : "@SYSCONF_DIR@/nextepc/freeDiameter/pcrf.conf",
+    "FD_CONF_PATH" : "@SYSCONF_DIR@/nextepc/freeDiameter/pcrf.conf"
   }
 
 }

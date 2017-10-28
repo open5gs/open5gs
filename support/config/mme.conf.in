@@ -1,71 +1,78 @@
 {
-  LOG_PATH : "@LOCALSTATE_DIR@/log/nextepc/mme.log",
-  TRACE:
+  "LOG" :
   {
-    S1AP: 1,
-    NAS: 1,
-    FD: 1,
-    GTP: 1,
-    OTHERS: 1,
-  }
-
-  MME :
-  {
-    FD_CONF_PATH : "@SYSCONF_DIR@/nextepc/freeDiameter/mme.conf",
-    DEFAULT_PAGING_DRX : "v64",
-#RELATIVE_CAPACITY : 255,
-    NETWORK :
+    "SOCKET" :
     {
-      S1AP_IPV4 : "127.76.0.1",
-      GTPC_IPV4: "127.76.0.1",
+      "FILE" : "@LOCALSTATE_DIR@/log/nextepc/mme.log",
+      "UNIX_DOMAIN" : "/tmp/nextepc-mmed.sock"
     }
-    GUMMEI:
+  },
+  "TRACE" :
+  {
+    "S1AP": 1,
+    "NAS": 1,
+    "FD": 1,
+    "GTP": 1,
+    "OTHERS": 1
+  },
+
+  "MME" :
+  {
+    "FD_CONF_PATH" : "@SYSCONF_DIR@/nextepc/freeDiameter/mme.conf",
+    "DEFAULT_PAGING_DRX" : "v64",
+    "NETWORK" :
+    {
+      "S1AP_IPV4" : "127.76.0.1",
+      "GTPC_IPV4" : "127.76.0.1"
+    },
+    "GUMMEI" :
     [
       {
-        PLMN_ID : 
+        "PLMN_ID" : 
         {
-          MCC : "001",
-          MNC : "01"
-        }
-        MME_GID : 2,
-        MME_CODE : 1
+          "MCC" : "001",
+          "MNC" : "01"
+        },
+        "MME_GID" : 2,
+        "MME_CODE" : 1
       }
-    ] 
-    TAI:
+    ],
+    "TAI":
     [
       {
-        PLMN_ID :
+        "PLMN_ID" :
         {
-          MCC: "001",
-          MNC: "01",
-        }
-        TAC: 12345
+          "MCC": "001",
+          "MNC": "01"
+        },
+        "TAC": 12345
+      }
+    ],
+    "SECURITY" :
+    {
+      "INTEGRITY_ORDER" : [ "EIA1", "EIA2", "EIA0" ],
+      "CIPHERING_ORDER" : [ "EEA0", "EEA1", "EEA2" ]
+    }
+  },
+
+  "SGW" :
+  {
+    "NETWORK" :
+    [
+      {
+        "GTPC_IPV4" : "127.76.0.2",
+        "GTPU_IPV4" : "127.76.0.2"
       }
     ]
-    SECURITY :
+  },
+
+  "PGW" :
+  {
+    "NETWORK" :
     {
-      INTEGRITY_ORDER : [ "EIA1", "EIA2", "EIA0" ]
-      CIPHERING_ORDER : [ "EEA0", "EEA1", "EEA2" ]
+      "GTPC_IPV4" : "127.76.0.3",
+      "GTPU_IPV4" : "127.76.0.3"
     }
   }
 
-  SGW :
-  {
-    NETWORK :
-    [
-      {
-        GTPC_IPV4: "127.76.0.2",
-        GTPU_IPV4: "127.76.0.2",
-      }
-    ]
-  }
-
-  PGW :
-  {
-    NETWORK :
-    {
-      GTPC_IPV4: "127.76.0.3",
-      GTPU_IPV4: "127.76.0.3"
-    }
-  }
 }

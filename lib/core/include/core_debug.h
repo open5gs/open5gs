@@ -25,9 +25,9 @@ extern int g_trace_mask;
 #define D_MSG_TO_CONSOLE    0x00000001
 #define D_MSG_TO_STDOUT     0x00000002
 #define D_MSG_TO_SYSLOG     0x00000004
-#define D_MSG_TO_LOGD       0x00000008
+#define D_MSG_TO_SOCKET     0x00000008
 #define D_MSG_TO_ALL        (D_MSG_TO_CONSOLE | D_MSG_TO_STDOUT | \
-                             D_MSG_TO_SYSLOG | D_MSG_TO_LOGD)
+                             D_MSG_TO_SYSLOG | D_MSG_TO_SOCKET)
 
 #define D_LOG_LEVEL_NONE    0
 #define D_LOG_LEVEL_FATAL   1
@@ -138,12 +138,11 @@ CORE_DECLARE(int) d_msg(int tp, int lv, c_time_t t, char *fn, int ln,
         expr; \
     }
 
-void d_msg_init();
-
-void d_msg_final();
-
+void d_msg_register_syslog(const char *name);
+void d_msg_deregister_syslog();
+void d_msg_register_socket(const char *name, const char *log_file);
+void d_msg_deregister_socket();
 void d_msg_register_console(int console_fd);
-
 void d_msg_deregister_console();
 
 void d_msg_to(int to, int on_off);
@@ -197,8 +196,6 @@ void d_trace_level(int *mod_name, int level);
  * Equivalent to trace_level(0).
  */
 void d_trace_off(int *mod_name);
-
-#define D_LOGD_IPC_PATH "/tmp/dlogmesg"
 
 #ifdef __cplusplus
 }

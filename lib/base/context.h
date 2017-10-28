@@ -16,6 +16,7 @@ typedef struct _config_t {
     char *path;
     char json[MAX_CONFIG_FILE_SIZE+1];
     jsmntok_t token[MAX_NUM_OF_CONFIG_TOKEN];
+    void *bson;
 } config_t;
 
 #define MAX_DB_URI_LEN          256
@@ -23,12 +24,18 @@ typedef struct _config_t {
 typedef struct _context_t {
     config_t config;
 
-    char *log_path;
-
-    char *db_uri;
+    const char *db_uri;
     void *db_client;
     char *db_name;
     void *database;
+
+    struct {
+        const char *file;
+        struct {
+            const char *unix_domain;
+            const char *file;
+        } socket;
+    } log;
 
     struct {
         int s1ap;
@@ -43,7 +50,7 @@ typedef struct _context_t {
         int disable_sgw;
         int disable_pgw;
         int disable_pcrf;
-    } hidden;
+    } node;
 
 } context_t;
 
@@ -55,7 +62,7 @@ CORE_DECLARE(status_t)      context_read_file(void);
 CORE_DECLARE(status_t)      context_parse_config(void);
 CORE_DECLARE(status_t)      context_setup_trace_module(void);
 
-CORE_DECLARE(status_t)      context_db_init(char *db_uri);
+CORE_DECLARE(status_t)      context_db_init(const char *db_uri);
 CORE_DECLARE(status_t)      context_db_final(void);
 
 #ifdef __cplusplus
