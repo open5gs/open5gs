@@ -11,11 +11,12 @@ Build-Depends: debhelper (>= 9),
                flex,
                bison,
                libsctp-dev,
-               libssl-dev,
                libgnutls28-dev,
                libgcrypt-dev,
+               libssl-dev,
                libmongoc-dev,
-               libbson-dev
+               libbson-dev,
+               mongodb
 Standards-Version: 3.9.6
 Vcs-Browser: https://github.com/acetcom/nextepc
 Vcs-Git: git://github.com/acetcom/nextepc
@@ -67,7 +68,8 @@ Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         nextepc-core (= ${binary:Version})
+         nextepc-core (= ${binary:Version}),
+         iproute2
 Description: Open Source based 3GPP EPC PGW (Packet Data Network Gateway)
  NextEPC is a C-language Open Source implementation of the 3GPP Evolved
  Packet Core, i.e. the core network of an LTE network.
@@ -83,8 +85,9 @@ Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         nextepc-core (= ${binary:Version})
-Description: Open Source based 3GPP EPC PGW (Policy and Charging Rules Function)
+         nextepc-core (= ${binary:Version}),
+         mongodb
+Description: Open Source based 3GPP EPC PCRF (Policy and Charging Rules Function)
  NextEPC is a C-language Open Source implementation of the 3GPP Evolved
  Packet Core, i.e. the core network of an LTE network.
  .

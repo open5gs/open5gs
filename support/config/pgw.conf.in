@@ -1,6 +1,5 @@
 {
-  DB_URI : "mongodb://localhost/nextepc",
-  LOG_PATH : "@LOCALSTATE_DIR@/log/nextepc/nextepc.log",
+  LOG_PATH : "@LOCALSTATE_DIR@/log/nextepc/pgw.log",
   TRACE:
   {
     FD: 1,

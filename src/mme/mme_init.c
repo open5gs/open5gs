@@ -6,7 +6,6 @@
 #include "mme_event.h"
 
 #include "mme_fd_path.h"
-#include "mme_gtp_path.h"
 #include "s1ap_path.h"
 
 static thread_id sm_thread;
@@ -39,11 +38,6 @@ status_t mme_initialize()
     rv = thread_create(&net_thread, NULL, net_main, NULL);
     if (rv != CORE_OK) return rv;
 
-    rv = mme_gtp_open();
-    if (rv != CORE_OK) return rv;
-    rv = s1ap_open();
-    if (rv != CORE_OK) return rv;
-    
     initialized = 1;
 
     return CORE_OK;
@@ -52,10 +46,6 @@ status_t mme_initialize()
 void mme_terminate(void)
 {
     if (!initialized) return;
-
-    mme_gtp_close();
-    s1ap_close(mme_self()->s1ap_sock);
-    mme_self()->s1ap_sock = NULL;
 
     thread_delete(net_thread);
     thread_delete(sm_thread);

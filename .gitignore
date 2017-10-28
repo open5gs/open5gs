@@ -14,6 +14,7 @@ lib/freeDiameter-*/include/freeDiameter/version.h
 lib/freeDiameter-*/include/freeDiameter/config.h.in
 lib/freeDiameter-*/include/freeDiameter/freeDiameter-host.h
 lib/core/include/core.h
+support/systemd/nextepc-*.service
 support/logrotate/nextepc
 
 # autotools
