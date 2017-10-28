@@ -1,10 +1,11 @@
 [Unit]
 Description=NextEPC PCRF Daemon
-After=networking.service
+After=networking.service mongodb.service
 
 [Service]
 Type=simple
 Restart=always
+ExecStartPre=/bin/sleep 2
 ExecStart=@BIN_DIR@/nextepc-pcrfd -f @SYSCONF_DIR@/nextepc/pcrf.conf
 RestartSec=2
 RestartPreventExitStatus=1

@@ -1,5 +1,5 @@
 [Unit]
-Description=NextEPC S-GW Daemon
+Description=NextEPC P-GW Daemon
 After=networking.service
 
 [Service]
