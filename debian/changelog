@@ -1,3 +1,11 @@
+nextepc (0.2) UNRELEASED; urgency=medium
+
+  * Add metapackage
+  * debian/rules
+    - override_dh_auto_test is re-enabled
+
+ --  Sukchan Lee <acetcom@gmail.com>  Sun, 29 Oct 2017 12:39:30 +0000
+
 nextepc (0.1.1) UNRELEASED; urgency=medium
 
   * Initial release.

@@ -85,8 +85,8 @@ Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         nextepc-core (= ${binary:Version}),
-         mongodb
+         mongodb,
+         nextepc-core (= ${binary:Version})
 Description: Open Source based 3GPP EPC PCRF (Policy and Charging Rules Function)
  NextEPC is a C-language Open Source implementation of the 3GPP Evolved
  Packet Core, i.e. the core network of an LTE network.
@@ -101,8 +101,8 @@ Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         nextepc-core (= ${binary:Version}),
-         mongodb
+         mongodb,
+         nextepc-core (= ${binary:Version})
 Description: Open Source based 3GPP EPC HSS (Home Subscriber Server)
  NextEPC is a C-language Open Source implementation of the 3GPP Evolved
  Packet Core, i.e. the core network of an LTE network.
@@ -113,3 +113,21 @@ Description: Open Source based 3GPP EPC HSS (Home Subscriber Server)
  information, etc.  It implements the S6a interface towards the MME
  using the DIAMETER protocol.
 
+Package: nextepc
+Architecture: any
+Multi-Arch: same
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         mongodb,
+         nextepc-core (= ${binary:Version}),
+         nextepc-mme (= ${binary:Version}),
+         nextepc-sgw (= ${binary:Version}),
+         nextepc-pgw (= ${binary:Version}),
+         nextepc-hss (= ${binary:Version}),
+         nextepc-pcrf (= ${binary:Version})
+Description: Open Source based 3GPP EPC (metapackage)
+ NextEPC is a C-language Open Source implementation of the 3GPP Evolved
+ Packet Core, i.e. the core network of an LTE network.
+ .
+ This is a metapackage that depends on all the nextepc parts.
+ (MME, SGW, PGW, HSS, PCRF)
