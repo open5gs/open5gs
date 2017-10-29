@@ -36,7 +36,12 @@ AM_CPPFLAGS = \
 
 install-data-hook:
 	$(MKDIR_P) $(DESTDIR)/$(localstatedir)/log/nextepc
-	$(MKDIR_P) $(DESTDIR)/$(localstatedir)/run/nextepc
+	$(MKDIR_P) $(DESTDIR)/$(localstatedir)/run/nextepc-mmed
+	$(MKDIR_P) $(DESTDIR)/$(localstatedir)/run/nextepc-sgwd
+	$(MKDIR_P) $(DESTDIR)/$(localstatedir)/run/nextepc-pgwd
+	$(MKDIR_P) $(DESTDIR)/$(localstatedir)/run/nextepc-pcrfd
+	$(MKDIR_P) $(DESTDIR)/$(localstatedir)/run/nextepc-hssd
+	$(MKDIR_P) $(DESTDIR)/$(localstatedir)/run/nextepc-epcd
 
 CLEANFILES = symtbl.c
 DISTCLEANFILES = $(DIST_ARCHIVES)

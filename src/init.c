@@ -8,7 +8,7 @@
 
 #include "app.h"
 
-#define DEFAULT_PID_DIR_PATH LOCALSTATE_DIR "run/" PACKAGE
+#define DEFAULT_RUNTIME_DIR_PATH LOCALSTATE_DIR "run/"
 #define DEFAULT_CONFIG_FILE_PATH SYSCONF_DIR PACKAGE "/nextepc.conf"
 
 status_t app_socket_log_start();
@@ -113,15 +113,14 @@ status_t app_log_pid(const char *name)
 
     d_assert(name, return CORE_ERROR, );
 
-    snprintf(fname, sizeof(fname), "%s/%sd.pid", DEFAULT_PID_DIR_PATH, name);
+    snprintf(fname, sizeof(fname), "%snextepc-%sd/pid",
+            DEFAULT_RUNTIME_DIR_PATH, name);
     mypid = getpid();
     if (mypid != saved_pid
         && file_stat(&finfo, fname, FILE_INFO_MTIME) == CORE_OK)
     {
-#if 0 /* FIXME : we need to check pid file overwritten */
         d_warn("pid file %s overwritten -- Unclean "
                 "shutdown of previous NextEPC run?", fname);
-#endif
     }
 
     if ((rv = file_open(&pid_file, fname,

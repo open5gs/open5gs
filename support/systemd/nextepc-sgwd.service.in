@@ -4,6 +4,13 @@ After=networking.service
 
 [Service]
 Type=simple
+
+User=nextepc
+Group=nextepc
+
+RuntimeDirectory=nextepc-sgwd
+PIDFile=@LIB_DIR@/run/nextepc-sgwd/pid
+
 Restart=always
 ExecStart=@BIN_DIR@/nextepc-sgwd -f @SYSCONF_DIR@/nextepc/sgw.conf
 RestartSec=2

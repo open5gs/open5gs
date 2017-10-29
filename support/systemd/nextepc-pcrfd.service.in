@@ -4,6 +4,13 @@ After=networking.service mongodb.service
 
 [Service]
 Type=simple
+
+User=nextepc
+Group=nextepc
+
+RuntimeDirectory=nextepc-pcrfd
+PIDFile=@LIB_DIR@/run/nextepc-pcrfd/pid
+
 Restart=always
 ExecStartPre=/bin/sleep 2
 ExecStart=@BIN_DIR@/nextepc-pcrfd -f @SYSCONF_DIR@/nextepc/pcrf.conf

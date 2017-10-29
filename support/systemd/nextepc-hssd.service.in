@@ -4,6 +4,13 @@ After=networking.service mongodb.service
 
 [Service]
 Type=simple
+
+User=nextepc
+Group=nextepc
+
+RuntimeDirectory=nextepc-hssd
+PIDFile=@LIB_DIR@/run/nextepc-hssd/pid
+
 Restart=always
 ExecStartPre=/bin/sleep 2
 ExecStart=@BIN_DIR@/nextepc-hssd -f @SYSCONF_DIR@/nextepc/hss.conf
