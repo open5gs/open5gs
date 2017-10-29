@@ -11,8 +11,10 @@
 #define DEFAULT_RUNTIME_DIR_PATH LOCALSTATE_DIR "run/"
 #define DEFAULT_CONFIG_FILE_PATH SYSCONF_DIR PACKAGE "/nextepc.conf"
 
-status_t app_socket_log_start();
-status_t app_socket_log_stop();
+static status_t app_logger_init();
+static status_t app_logger_final();
+static status_t app_logger_start();
+static status_t app_logger_stop();
 
 status_t app_will_initialize(char *config_path, char *log_path)
 {
@@ -36,6 +38,9 @@ status_t app_will_initialize(char *config_path, char *log_path)
     {
         d_trace_level(&_app_init, others);
     }
+    
+    rv = app_logger_init();
+    if (rv != CORE_OK) return rv;
 
     if (context_self()->db_uri)
     {
@@ -48,14 +53,15 @@ status_t app_will_initialize(char *config_path, char *log_path)
 
 status_t app_did_initialize(char *config_path, char *log_path)
 {
-    app_socket_log_start();
+    status_t rv = app_logger_start();
+    if (rv != CORE_OK) return rv;
 
     return CORE_OK;
 }
 
 void app_will_terminate(void)
 {
-    app_socket_log_stop();
+    app_logger_stop();
 }
 
 void app_did_terminate(void)
@@ -65,40 +71,9 @@ void app_did_terminate(void)
         context_db_final();
     }
 
+    app_logger_final();
+
     context_final();
-}
-
-status_t app_socket_log_start()
-{
-    if (context_self()->log.socket.file &&
-        context_self()->log.socket.unix_domain)
-    {
-        d_msg_register_socket(
-                context_self()->log.socket.unix_domain,
-                context_self()->log.socket.file);
-        d_print("  Logging '%s'\n", context_self()->log.socket.file);
-    }
-
-    return CORE_OK;
-}
-
-status_t app_socket_log_stop()
-{
-    if (context_self()->log.socket.file &&
-        context_self()->log.socket.unix_domain)
-    {
-        d_msg_deregister_socket();
-    }
-    
-    return CORE_OK;
-}
-
-status_t logger_restart()
-{
-    app_socket_log_stop();
-    app_socket_log_start();
-
-    return CORE_OK;
 }
 
 status_t app_log_pid(const char *name)
@@ -137,3 +112,120 @@ status_t app_log_pid(const char *name)
 
     return CORE_OK;
 }
+
+status_t app_logger_restart()
+{
+    app_logger_stop();
+    app_logger_final();
+
+    app_logger_init();
+    app_logger_start();
+
+    return CORE_OK;
+}
+
+static status_t app_logger_init()
+{
+    status_t rv;
+
+    if (context_self()->log.console >= 0)
+    {
+        rv = d_msg_console_init(context_self()->log.console);
+        if (rv != CORE_OK) 
+        {
+            d_error("console logger init failed : (file:%d)",
+                context_self()->log.console);
+            return rv;
+        }
+        d_print("  Console Logging '%d'\n", context_self()->log.console);
+    }
+    if (context_self()->log.syslog)
+    {
+        d_msg_syslog_init(context_self()->log.syslog);
+        d_print("  Syslog Logging '%s'\n", context_self()->log.syslog);
+    }
+    if (context_self()->log.socket.file &&
+        context_self()->log.socket.unix_domain)
+    {
+        rv = d_msg_socket_init(context_self()->log.socket.unix_domain);
+        if (rv != CORE_OK) 
+        {
+            d_error("socket logger init failed : (unix_domain:%s, file:%s)",
+                context_self()->log.socket.unix_domain,
+                context_self()->log.socket.file);
+            return rv;
+        }
+        d_print("  Socket Logging '%s' on %s\n",
+                context_self()->log.socket.file,
+                context_self()->log.socket.unix_domain);
+    }
+    if (context_self()->log.file)
+    {
+        rv = d_msg_file_init(context_self()->log.file);
+        if (rv != CORE_OK) 
+        {
+            d_error("file logger init failed : (file:%s)",
+                context_self()->log.file);
+            return rv;
+        }
+        d_print("  File Logging '%s'\n", context_self()->log.file);
+    }
+
+    return CORE_OK;
+}
+
+
+static status_t app_logger_start()
+{
+    status_t rv;
+
+    if (context_self()->log.socket.file &&
+        context_self()->log.socket.unix_domain)
+    {
+        rv = d_msg_socket_start(context_self()->log.socket.file);
+        if (rv != CORE_OK) 
+        {
+            d_error("socket logger start failed : (unix_domain:%s, file:%s)",
+                context_self()->log.socket.unix_domain,
+                context_self()->log.socket.file);
+            return rv;
+        }
+    }
+
+    return CORE_OK;
+}
+
+static status_t app_logger_stop()
+{
+    if (context_self()->log.socket.file &&
+        context_self()->log.socket.unix_domain)
+    {
+        d_msg_socket_stop();
+    }
+    
+    return CORE_OK;
+}
+
+static status_t app_logger_final()
+{
+    if (context_self()->log.console >= 0)
+    {
+        d_msg_console_final();
+    }
+    if (context_self()->log.syslog)
+    {
+        d_msg_syslog_final();
+    }
+    if (context_self()->log.socket.file &&
+        context_self()->log.socket.unix_domain)
+    {
+        d_msg_socket_final();
+    }
+    if (context_self()->log.file)
+    {
+        d_msg_file_final();
+    }
+    
+    return CORE_OK;
+}
+

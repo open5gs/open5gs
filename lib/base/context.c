@@ -110,6 +110,8 @@ status_t context_parse_config()
 
     d_assert(config, return CORE_ERROR, );
 
+    self.log.console = -1;
+
     if (!bson_iter_init(&iter, config->bson))
     {
         d_error("bson_iter_init failed in this document");
@@ -129,10 +131,15 @@ status_t context_parse_config()
             while(bson_iter_next(&child1_iter))
             {
                 const char *child1_key = bson_iter_key(&child1_iter);
-                if (!strcmp(child1_key, "FILE") &&
+                if (!strcmp(child1_key, "CONSOLE") &&
+                    BSON_ITER_HOLDS_INT32(&child1_iter))
+                {
+                    self.log.console = bson_iter_int32(&child1_iter);
+                }
+                else if (!strcmp(child1_key, "SYSLOG") &&
                     BSON_ITER_HOLDS_UTF8(&child1_iter))
                 {
-                    self.log.file = bson_iter_utf8(&child1_iter, &length);
+                    self.log.syslog = bson_iter_utf8(&child1_iter, &length);
                 }
                 else if (!strcmp(child1_key, "SOCKET") &&
                         BSON_ITER_HOLDS_DOCUMENT(&iter))
@@ -154,7 +161,11 @@ status_t context_parse_config()
                                 bson_iter_utf8(&child2_iter, &length);
                         }
                     }
-
+                }
+                else if (!strcmp(child1_key, "FILE") &&
+                    BSON_ITER_HOLDS_UTF8(&child1_iter))
+                {
+                    self.log.file = bson_iter_utf8(&child1_iter, &length);
                 }
             }
         }

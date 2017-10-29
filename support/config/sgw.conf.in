@@ -1,10 +1,11 @@
 {
   "LOG" :
   {
+    "FILE" : "@LOCALSTATE_DIR@/log/nextepc/sgw.log",
     "SOCKET" :
     {
-      "FILE" : "@LOCALSTATE_DIR@/log/nextepc/sgw.log",
-      "UNIX_DOMAIN" : "/tmp/nextepc-sgwd.sock"
+      "UNIX_DOMAIN" : "/tmp/nextepc-sgwd.sock",
+      "FILE" : 0
     }
   },
   "TRACE" :

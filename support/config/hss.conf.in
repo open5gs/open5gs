@@ -2,10 +2,11 @@
   "DB_URI" : "mongodb://localhost/nextepc",
   "LOG" :
   {
+    "FILE" : "@LOCALSTATE_DIR@/log/nextepc/hss.log",
     "SOCKET" :
     {
-      "FILE" : "@LOCALSTATE_DIR@/log/nextepc/hss.log",
-      "UNIX_DOMAIN" : "/tmp/nextepc-hssd.sock"
+      "UNIX_DOMAIN" : "/tmp/nextepc-hssd.sock",
+      "FILE" : 0
     }
   },
   "TRACE" :

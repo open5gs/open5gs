@@ -15,11 +15,13 @@ int g_msg_to = D_MSG_TO_STDOUT;
 int g_console_connected = 0;
 int g_syslog_connected = 0;
 int g_socket_connected = 0;
+int g_file_connected = 0;
 
 int g_log_level_console = D_LOG_LEVEL_FULL;
 int g_log_level_stdout = D_LOG_LEVEL_FULL;
 int g_log_level_syslog = D_LOG_LEVEL_FULL;
 int g_log_level_socket = D_LOG_LEVEL_FULL;
+int g_log_level_file = D_LOG_LEVEL_FULL;
 
 static int g_console_fd = -1;
 static int g_socket_fd = -1;
@@ -29,7 +31,26 @@ static thread_id socket_thread = 0;
 static void *THREAD_FUNC socket_main(thread_id id, void *data);
 static int socket_handler(const char *path);
 
-void d_msg_register_syslog(const char *name)
+static file_t *g_file = NULL;
+
+status_t d_msg_console_init(int console_fd)
+{
+    d_assert(console_fd >= 0, return CORE_ERROR,
+            "param 'console_fd' is invalid");
+
+    g_console_fd = console_fd;
+    g_console_connected = 1;
+
+    return CORE_OK;
+}
+
+void d_msg_console_final()
+{
+    g_console_connected = 0;
+    g_console_fd = -1;
+}
+
+void d_msg_syslog_init(const char *name)
 {
     d_assert(name, return, );
 
@@ -37,39 +58,53 @@ void d_msg_register_syslog(const char *name)
     g_syslog_connected = 1;
 }
 
-void d_msg_deregister_syslog()
+void d_msg_syslog_final()
 {
     g_syslog_connected = 0;
     closelog();
 }
 
-void d_msg_register_socket(const char *name, const char *log_file)
+status_t d_msg_socket_init(const char *name)
 {
-    status_t rv;
-
-    d_assert(name, return, );
+    d_assert(name, return CORE_ERROR, );
 
     g_socket_fd = socket(AF_UNIX, SOCK_DGRAM, 0);
-    d_assert(g_socket_fd >= 0, return,
+    d_assert(g_socket_fd >= 0, return CORE_ERROR,
             "socket() failed. (%d:%s)\n", errno, strerror(errno));
 
     g_socket_addr.sun_family = AF_UNIX;
     strcpy(g_socket_addr.sun_path, name);
 
-    rv = thread_create(&socket_thread, NULL, socket_main, (void*)log_file);
-    d_assert(rv == CORE_OK, return, "socket thread creation failed");
+    return CORE_OK;
+}
+
+status_t d_msg_socket_start(const char *file)
+{
+    status_t rv;
+
+    d_assert(file, return CORE_ERROR, );
+
+    rv = thread_create(&socket_thread, NULL, socket_main, (void*)file);
+    d_assert(rv == CORE_OK, return CORE_ERROR,
+            "socket thread creation failed");
 
     g_socket_connected = 1;
     d_msg_to(D_MSG_TO_SOCKET, 1);
+
+    return CORE_OK;
 }
 
-void d_msg_deregister_socket()
+void d_msg_socket_stop()
 {
     d_msg_to(D_MSG_TO_SOCKET, 0);
     g_socket_connected = 0;
 
-    thread_delete(socket_thread);
+    if (socket_thread)
+        thread_delete(socket_thread);
+}
 
+void d_msg_socket_final()
+{
     close(g_socket_fd);
     g_socket_fd = -1;
 }
@@ -99,7 +134,7 @@ static int socket_handler(const char *path)
     fd_set readfd;
     struct timeval timer_val;
     struct sockaddr_un svaddr;
-    file_t *g_file = NULL;
+    file_t *file = NULL;
     char g_buffer[1024];
 
     us = socket(AF_UNIX, SOCK_DGRAM, 0);
@@ -136,7 +171,7 @@ static int socket_handler(const char *path)
         }
     }
 
-    rv = file_open(&g_file, path,
+    rv = file_open(&file, path,
             FILE_CREATE | FILE_WRITE| FILE_APPEND,
             FILE_UREAD | FILE_UWRITE | FILE_GREAD);
     if (rv != CORE_OK)
@@ -180,7 +215,7 @@ static int socket_handler(const char *path)
                 continue;
 
             nbytes = r;
-            rv = file_write(g_file, g_buffer, &nbytes);
+            rv = file_write(file, g_buffer, &nbytes);
             if (rv != CORE_OK || r != nbytes)
             {
                 d_error("Cannot write %ld bytes to log file (%ld written)",
@@ -189,7 +224,7 @@ static int socket_handler(const char *path)
         }
     }
 
-    file_close(g_file);
+    file_close(file);
 
     close(us);
 
@@ -198,18 +233,33 @@ static int socket_handler(const char *path)
     return 0;
 }
 
-void d_msg_register_console(int console_fd)
+status_t d_msg_file_init(const char *file)
 {
-    d_assert(console_fd >= 0, return, "param 'console_fd' is invalid");
+    status_t rv;
 
-    g_console_fd = console_fd;
-    g_console_connected = 1;
+    d_assert(file, return CORE_ERROR, );
+
+    rv = file_open(&g_file, file,
+            FILE_CREATE | FILE_WRITE| FILE_APPEND,
+            FILE_UREAD | FILE_UWRITE | FILE_GREAD);
+    if (rv != CORE_OK)
+    {
+        d_error("Cannot open log file '%s'", file);
+        return CORE_ERROR;
+    }
+
+    g_file_connected = 1;
+    d_msg_to(D_MSG_TO_FILE, 1);
+
+    return CORE_OK;
 }
 
-void d_msg_deregister_console()
+void d_msg_file_final()
 {
-    g_console_connected = 0;
-    g_console_fd = -1;
+    d_msg_to(D_MSG_TO_FILE, 0);
+    g_file_connected = 0;
+
+    file_close(g_file);
 }
 
 void d_msg_to(int to, int on_off)
@@ -235,6 +285,11 @@ void d_msg_to(int to, int on_off)
             g_msg_to = on_off ?
                 g_msg_to | D_MSG_TO_SOCKET :
                 g_msg_to & ~D_MSG_TO_SOCKET;
+            break;
+        case D_MSG_TO_FILE:
+            g_msg_to = on_off ?
+                g_msg_to | D_MSG_TO_FILE :
+                g_msg_to & ~D_MSG_TO_FILE;
             break;
         case D_MSG_TO_ALL:
             g_msg_to = on_off ? D_MSG_TO_ALL : 0;
@@ -265,6 +320,9 @@ void d_log_set_level(int to, int level)
         case D_MSG_TO_SOCKET:
             g_log_level_socket = level;
             break;
+        case D_MSG_TO_FILE:
+            g_log_level_socket = level;
+            break;
         case D_MSG_TO_ALL:
             g_log_level_console = level;
             g_log_level_stdout = level;
@@ -288,6 +346,8 @@ int d_log_get_level(int to)
             return g_log_level_syslog;
         case D_MSG_TO_SOCKET:
             return g_log_level_socket;
+        case D_MSG_TO_FILE:
+            return g_log_level_socket;
         default:
             break;
     }
@@ -309,6 +369,9 @@ void d_log_full(int to)
             g_log_level_syslog = D_LOG_LEVEL_FULL;
             break;
         case D_MSG_TO_SOCKET:
+            g_log_level_socket = D_LOG_LEVEL_FULL;
+            break;
+        case D_MSG_TO_FILE:
             g_log_level_socket = D_LOG_LEVEL_FULL;
             break;
         case D_MSG_TO_ALL:
@@ -336,6 +399,9 @@ void d_log_off(int to)
             g_log_level_syslog = D_LOG_LEVEL_NONE;
             break;
         case D_MSG_TO_SOCKET:
+            g_log_level_socket = D_LOG_LEVEL_NONE;
+            break;
+        case D_MSG_TO_FILE:
             g_log_level_socket = D_LOG_LEVEL_NONE;
             break;
         case D_MSG_TO_ALL:
@@ -436,6 +502,11 @@ int d_msg(int tp, int lv, c_time_t t, char *fn, int ln, char *fmt, ...)
                 sendto(g_socket_fd, fstr, n, 0,
                     (struct sockaddr *)&g_socket_addr, sizeof(g_socket_addr));
             }
+            if (g_file_connected && (g_msg_to & D_MSG_TO_FILE))
+            {
+                size_t nbytes = n;
+                file_write(g_file, fstr, &nbytes);
+            }
             if (g_console_connected && (g_msg_to & D_MSG_TO_CONSOLE))
             {
                 if (fstr[n-1] == '\n')
@@ -462,6 +533,11 @@ int d_msg(int tp, int lv, c_time_t t, char *fn, int ln, char *fmt, ...)
             {
                 sendto(g_socket_fd, fstr, n, 0,
                     (struct sockaddr *)&g_socket_addr, sizeof(g_socket_addr));
+            }
+            if (g_file_connected && (g_msg_to & D_MSG_TO_FILE))
+            {
+                size_t nbytes = n;
+                file_write(g_file, fstr, &nbytes);
             }
             if (g_console_connected && (g_msg_to & D_MSG_TO_CONSOLE))
             {
@@ -508,6 +584,14 @@ int d_msg(int tp, int lv, c_time_t t, char *fn, int ln, char *fmt, ...)
                 sendto(g_socket_fd, fstr, n, 0,
                     (struct sockaddr *)&g_socket_addr, sizeof(g_socket_addr));
             }
+            if (g_file_connected && (g_msg_to & D_MSG_TO_FILE))
+            {
+                size_t nbytes;
+
+                fstr[n++] = '\n';
+                nbytes = n;
+                file_write(g_file, fstr, &nbytes);
+            }
             if (g_console_connected && (g_msg_to & D_MSG_TO_CONSOLE) &&
                     lv <= g_log_level_console)
             {
@@ -537,6 +621,14 @@ int d_msg(int tp, int lv, c_time_t t, char *fn, int ln, char *fmt, ...)
                 fstr[n++] = '\n';
                 sendto(g_socket_fd, fstr, n, 0,
                     (struct sockaddr *)&g_socket_addr, sizeof(g_socket_addr));
+            }
+            if (g_file_connected && (g_msg_to & D_MSG_TO_FILE))
+            {
+                size_t nbytes;
+
+                fstr[n++] = '\n';
+                nbytes = n;
+                file_write(g_file, fstr, &nbytes);
             }
             if (g_console_connected && (g_msg_to & D_MSG_TO_CONSOLE))
             {

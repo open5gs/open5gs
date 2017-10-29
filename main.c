@@ -49,7 +49,7 @@ static int check_signal(int signum)
         case SIGHUP:
         {
             d_info("SIGHUP received");
-            logger_restart();
+            app_logger_restart();
             break;
         }
         case SIGUSR1:

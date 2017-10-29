@@ -30,11 +30,13 @@ typedef struct _context_t {
     void *database;
 
     struct {
-        const char *file;
+        int console;
+        const char *syslog;
         struct {
             const char *unix_domain;
             const char *file;
         } socket;
+        const char *file;
     } log;
 
     struct {

@@ -26,8 +26,10 @@ extern int g_trace_mask;
 #define D_MSG_TO_STDOUT     0x00000002
 #define D_MSG_TO_SYSLOG     0x00000004
 #define D_MSG_TO_SOCKET     0x00000008
+#define D_MSG_TO_FILE       0x00000010
 #define D_MSG_TO_ALL        (D_MSG_TO_CONSOLE | D_MSG_TO_STDOUT | \
-                             D_MSG_TO_SYSLOG | D_MSG_TO_SOCKET)
+                             D_MSG_TO_SYSLOG | D_MSG_TO_SOCKET | \
+                             D_MSG_TO_FILE )
 
 #define D_LOG_LEVEL_NONE    0
 #define D_LOG_LEVEL_FATAL   1
@@ -138,12 +140,17 @@ CORE_DECLARE(int) d_msg(int tp, int lv, c_time_t t, char *fn, int ln,
         expr; \
     }
 
-void d_msg_register_syslog(const char *name);
-void d_msg_deregister_syslog();
-void d_msg_register_socket(const char *name, const char *log_file);
-void d_msg_deregister_socket();
-void d_msg_register_console(int console_fd);
-void d_msg_deregister_console();
+status_t d_msg_console_init(int console_fd);
+void d_msg_console_final();
+void d_msg_syslog_init(const char *name);
+void d_msg_syslog_final();
+status_t d_msg_socket_init(const char *name);
+void d_msg_socket_final();
+status_t d_msg_socket_start(const char *file);
+void d_msg_socket_stop();
+void d_msg_socket_final();
+status_t d_msg_file_init(const char *file);
+void d_msg_file_final();
 
 void d_msg_to(int to, int on_off);
 
