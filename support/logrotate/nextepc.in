@@ -8,8 +8,8 @@
 
     postrotate
         for i in pcrfd pgwd sgwd hssd mmed epcd; do
-            if [ -e @LOCALSTATE_DIR@/run/nextepc/$i.pid ] ; then
-                kill -HUP `cat @LOCALSTATE_DIR@/run/nextepc/$i.pid`
+            if [ -e @LOCALSTATE_DIR@/run/nextepc-$i/pid ] ; then
+                kill -HUP `cat @LOCALSTATE_DIR@/run/nextepc-$i/pid`
             fi
         done
     endscript
