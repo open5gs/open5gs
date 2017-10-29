@@ -9,7 +9,7 @@
 
 const char *app_name = "hss";
 
-status_t app_initialize(char *config_path, char *log_path)
+status_t app_initialize(const char *config_path, const char *log_path)
 {
     status_t rv;
     int others = 0;
@@ -28,7 +28,7 @@ status_t app_initialize(char *config_path, char *log_path)
     d_assert(rv == CORE_OK, return rv, "Failed to intialize HSS");
     d_trace(1, "HSS initialize...done\n");
 
-    rv = app_did_initialize(config_path, log_path);
+    rv = app_did_initialize();
     if (rv != CORE_OK) return rv;
 
     return CORE_OK;

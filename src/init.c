@@ -8,15 +8,15 @@
 
 #include "app.h"
 
-#define DEFAULT_RUNTIME_DIR_PATH LOCALSTATE_DIR "run/"
 #define DEFAULT_CONFIG_FILE_PATH SYSCONF_DIR PACKAGE "/nextepc.conf"
+#define DEFAULT_RUNTIME_DIR_PATH LOCALSTATE_DIR "run/"
 
 static status_t app_logger_init();
 static status_t app_logger_final();
 static status_t app_logger_start();
 static status_t app_logger_stop();
 
-status_t app_will_initialize(char *config_path, char *log_path)
+status_t app_will_initialize(const char *config_path, const char *log_path)
 {
     status_t rv;
     int others = 0;
@@ -39,6 +39,7 @@ status_t app_will_initialize(char *config_path, char *log_path)
         d_trace_level(&_app_init, others);
     }
     
+    context_self()->log.path = log_path;
     rv = app_logger_init();
     if (rv != CORE_OK) return rv;
 
@@ -51,7 +52,7 @@ status_t app_will_initialize(char *config_path, char *log_path)
     return CORE_OK;
 }
 
-status_t app_did_initialize(char *config_path, char *log_path)
+status_t app_did_initialize(void)
 {
     status_t rv = app_logger_start();
     if (rv != CORE_OK) return rv;
@@ -76,39 +77,44 @@ void app_did_terminate(void)
     context_final();
 }
 
-status_t app_log_pid(const char *name)
+status_t app_log_pid(const char *pid_path)
 {
     file_t *pid_file = NULL;
     file_info_t finfo;
     static pid_t saved_pid = -1;
     pid_t mypid;
     status_t rv;
-    char fname[MAX_FILEPATH_LEN];
+    char default_pid_path[MAX_FILEPATH_LEN];
     char buf[128];
 
-    d_assert(name, return CORE_ERROR, );
-
-    snprintf(fname, sizeof(fname), "%snextepc-%sd/pid",
-            DEFAULT_RUNTIME_DIR_PATH, name);
-    mypid = getpid();
-    if (mypid != saved_pid
-        && file_stat(&finfo, fname, FILE_INFO_MTIME) == CORE_OK)
+    if (pid_path == NULL)
     {
-        d_warn("pid file %s overwritten -- Unclean "
-                "shutdown of previous NextEPC run?", fname);
+        snprintf(default_pid_path, sizeof(default_pid_path),
+                "%snextepc-%sd/pid", DEFAULT_RUNTIME_DIR_PATH, app_name);
+        pid_path = default_pid_path;
     }
 
-    if ((rv = file_open(&pid_file, fname,
+    mypid = getpid();
+    if (mypid != saved_pid
+        && file_stat(&finfo, pid_path, FILE_INFO_MTIME) == CORE_OK)
+    {
+        d_warn("pid file %s overwritten -- Unclean "
+                "shutdown of previous NextEPC run?", pid_path);
+    }
+
+    if ((rv = file_open(&pid_file, pid_path,
             FILE_WRITE | FILE_CREATE | FILE_TRUNCATE,
             FILE_UREAD | FILE_UWRITE | FILE_GREAD | FILE_WREAD)) != CORE_OK)
     {
-        d_error("could not create %s", fname);
+        d_error("could not create %s", pid_path);
         return CORE_ERROR;
     }
     snprintf(buf, sizeof(buf), "%" C_PID_T_FMT "\r\n", mypid);
     file_puts(buf, pid_file);
     file_close(pid_file);
     saved_pid = mypid;
+
+    d_print("  PID[%" C_PID_T_FMT "] : '%s'\n", saved_pid, pid_path);
 
     return CORE_OK;
 }
@@ -147,6 +153,9 @@ static status_t app_logger_init()
     if (context_self()->log.socket.file &&
         context_self()->log.socket.unix_domain)
     {
+        if (context_self()->log.path)
+            context_self()->log.socket.file = context_self()->log.path;
+
         rv = d_msg_socket_init(context_self()->log.socket.unix_domain);
         if (rv != CORE_OK) 
         {
@@ -161,6 +170,9 @@ static status_t app_logger_init()
     }
     if (context_self()->log.file)
     {
+        if (context_self()->log.path)
+            context_self()->log.file = context_self()->log.path;
+
         rv = d_msg_file_init(context_self()->log.file);
         if (rv != CORE_OK) 
         {

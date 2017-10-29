@@ -30,7 +30,8 @@ static void show_help(const char *name)
            "   -h                   Show help\n"
            "   -d                   Start as daemon\n"
            "   -f                   Set configuration file name\n"
-           "   -l log_path          Fork log daemon with file path to be logged to\n"
+           "   -l log_file          Log file path to be logged to\n"
+           "   -p pid_file          PID file path\n"
            "\n", name);
 }
 
@@ -81,10 +82,11 @@ int main(int argc, char *argv[])
      */
     char *config_path = NULL;
     char *log_path = NULL;
+    char *pid_path = NULL;
 
     while (1)
     {
-        int opt = getopt (argc, argv, "vhdf:l:");
+        int opt = getopt (argc, argv, "vhdf:l:p:");
         if (opt == -1)
             break;
 
@@ -120,6 +122,9 @@ int main(int argc, char *argv[])
             case 'l':
                 log_path = optarg;
                 break;
+            case 'p':
+                pid_path = optarg;
+                break;
             default:
                 show_help(argv[0]);
                 return EXIT_FAILURE;
@@ -132,7 +137,7 @@ int main(int argc, char *argv[])
     atexit(terminate);
 
     core_initialize();
-    app_log_pid(app_name);
+    app_log_pid(pid_path);
     if (app_initialize(config_path, log_path) != CORE_OK)
     {
         d_fatal("NextEPC initialization failed. Aborted");

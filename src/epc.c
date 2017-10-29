@@ -21,7 +21,7 @@ static semaphore_id hss_sem2 = 0;
 
 const char *app_name = "epc";
 
-status_t app_initialize(char *config_path, char *log_path)
+status_t app_initialize(const char *config_path, const char *log_path)
 {
     pid_t pid;
     status_t rv;
@@ -228,7 +228,7 @@ status_t app_initialize(char *config_path, char *log_path)
         if (hss_sem1) semaphore_wait(hss_sem1);
     }
 
-    rv = app_did_initialize(config_path, log_path);
+    rv = app_did_initialize();
     if (rv != CORE_OK) return rv;
 
     d_trace(1, "MME try to initialize\n");
