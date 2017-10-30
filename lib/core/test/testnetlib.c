@@ -827,6 +827,10 @@ abts_suite *testnetlib(abts_suite *suite)
     suite = ADD_SUITE(suite);
 
     abts_run_test(suite, netlib1, NULL);
+    /*
+     * OpenSUSE OBS
+     *   line 429 failed
+     */
 #if 0 /* FIXME : This test is not working */
     abts_run_test(suite, netlib2, NULL);
 #endif
