@@ -1,17 +1,17 @@
-nextepc (0.2ubuntu1~zesty) zesty; urgency=medium
-
-  * Ubuntu 17.04
-
- -- Sukchan Lee <acetcom@gmail.com>  Mon, 30 Oct 2017 05:29:52 +0000
-
-nextepc (0.2ubuntu1~artful) artful; urgency=medium
+nextepc (0.2-1~artful) artful; urgency=medium
 
   * Ubuntu 17.10(amd64)
   * Currently, `mongodb` is not available in Ubuntu 17.10(i386)
 
- -- Sukchan Lee <acetcom@gmail.com>  Mon, 30 Oct 2017 04:13:16 +0000
+ -- Sukchan Lee <acetcom@gmail.com>  Mon, 30 Oct 2017 06:50:47 +0000
 
-nextepc (0.2ubuntu1~xenial) xenial; urgency=medium
+nextepc (0.2-1~zesty) zesty; urgency=medium
+
+  * Ubuntu 17.04
+
+ -- Sukchan Lee <acetcom@gmail.com>  Mon, 30 Oct 2017 06:47:55 +0000
+
+nextepc (0.2-1~xenial) xenial; urgency=medium
 
   * Add matapackage
   * dh_overide_auto_test is re-enabled
