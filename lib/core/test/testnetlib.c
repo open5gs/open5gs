@@ -527,7 +527,6 @@ abts_suite *testnetlib(abts_suite *suite)
     suite = ADD_SUITE(suite);
 
     abts_run_test(suite, netlib1, NULL);
-    (111:Connection refused)
     /*
      * OpenSUSE OBS
      * - Ubuntu 17.04 i586 failed
