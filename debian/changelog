@@ -1,6 +1,13 @@
+nextepc (0.2ubuntu1~zesty) zesty; urgency=medium
+
+  * Ubuntu 17.04
+
+ -- Sukchan Lee <acetcom@gmail.com>  Mon, 30 Oct 2017 05:29:52 +0000
+
 nextepc (0.2ubuntu1~artful) artful; urgency=medium
 
-  * Ubuntu 17.x
+  * Ubuntu 17.10(amd64)
+  * Currently, `mongodb` is not available in Ubuntu 17.10(i386)
 
  -- Sukchan Lee <acetcom@gmail.com>  Mon, 30 Oct 2017 04:13:16 +0000
 
