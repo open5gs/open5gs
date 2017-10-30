@@ -43,7 +43,7 @@ install-data-hook:
 	$(MKDIR_P) $(DESTDIR)/$(localstatedir)/run/nextepc-hssd
 	$(MKDIR_P) $(DESTDIR)/$(localstatedir)/run/nextepc-epcd
 
-CLEANFILES = -R data
+CLEANFILES = -R data debian/test
 DISTCLEANFILES = $(DIST_ARCHIVES)
 MAINTAINERCLEANFILES = \
     configure config.in \

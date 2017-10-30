@@ -15,26 +15,29 @@ export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 	dh $@ --with autoreconf --with systemd
 
 override_dh_auto_test:
+	mongodb_exclude_list=; \
+	sctp_exclude_list=; \
+	mongodb_forked=no; \
+	remove_db_uri_conf=; \
+	if which mongod > /dev/null; then \
+		if ! ps -ef | grep mongod | grep -v grep > /dev/null; then \
+			mongodb_forked=yes; \
+			mongod --fork --logpath debian/test/var/log/mongodb.log --dbpath debian/test/db; \
+		fi; \
+	else \
+	    remove_db_uri_conf="/DB_URI/d"; \
+		mongodb_exclude_list="-x s1setup_test attach_test volte_test handover_test"; \
+	fi; \
 	mkdir -p debian/test/db debian/test/etc/nextepc/freeDiameter debian/test/var/log/nextepc; \
-	sed 's?@SYSCONF_DIR@?'`pwd`'/debian/test/etc?g;s?@LOCALSTATE_DIR@?'`pwd`'/debian/test/var?g' support/config/nextepc.conf.in > debian/test/etc/nextepc/nextepc.conf; \
+	sed -e 's?@SYSCONF_DIR@?'`pwd`'/debian/test/etc?g;s?@LOCALSTATE_DIR@?'`pwd`'/debian/test/var?g;'$$remove_db_uri_conf'' support/config/nextepc.conf.in > debian/test/etc/nextepc/nextepc.conf; \
 	for i in `find support/freeDiameter -name '*.conf.in' -printf "%f\n" | sed 's/.in$$//g'`; do \
 		sed 's?@SYSCONF_DIR@/nextepc?'`pwd`'/support?g;s?@LIB_DIR@/nextepc/\([_a-z0-9]*\)\.so?'`pwd`'/lib/fd/extensions/\1/.libs/\1.so?g' support/freeDiameter/$$i.in > debian/test/etc/nextepc/freeDiameter/$$i; \
 	done; \
-	testcore_excluded_list=; \
-	testepc_excluded_list=; \
 	if ! cat /proc/net/protocols | grep SCTP > /dev/null; then \
-		testcore_excluded_list="-x testsctp"; \
-		testepc_excluded_list="-x s1setup_test attach_test volte_test handover_test"; \
+		sctp_exclude_list="-x testsctp s1setup_test attach_test volte_test handover_test"; \
 	fi; \
-	mongodb_required=yes; \
-	if ps -ef | grep mongod | grep -v grep > /dev/null; then \
-		mongodb_required=no; \
-	fi; \
-	if test "x$$mongodb_required" = xyes; then \
-		mongod --fork --logpath debian/test/var/log/mongodb.log --dbpath debian/test/db; \
-	fi; \
-	lib/core/test/testcore $$testcore_excluded_list || exit; \
-	test/testepc -f debian/test/etc/nextepc/nextepc.conf -c $$testepc_excluded_list || exit; \
-	if test "x$$mongodb_required" = xyes; then \
+	lib/core/test/testcore $$sctp_exclude_list || exit; \
+	test/testepc -f debian/test/etc/nextepc/nextepc.conf -c $$sctp_exclude_list $$mongodb_exclude_list || exit; \
+	if test "x$$mongodb_forked" = xyes; then \
 		pkill mongod; \
 	fi;

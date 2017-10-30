@@ -1,3 +1,15 @@
+nextepc (0.2-1~artful2) artful; urgency=medium
+
+  * Fix the compile error [-Werror=pointer]
+
+ -- Sukchan Lee <acetcom@gmail.com>  Mon, 30 Oct 2017 13:14:42 +0000
+
+nextepc (0.2-1~artful1) artful; urgency=medium
+
+  * Remove mongodb build-dependancy for Ubuntu 17.10(i386)
+
+ -- Sukchan Lee <acetcom@gmail.com>  Mon, 30 Oct 2017 12:46:58 +0000
+
 nextepc (0.2-1~artful) artful; urgency=medium
 
   * Ubuntu 17.10(amd64)

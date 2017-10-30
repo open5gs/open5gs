@@ -20,7 +20,7 @@ void fsm_init(void *s, void *_e)
     fsm_t *fsm = s;
     event_t *e = _e;
 
-    if (fsm->initial != (fsm_state_t)0)
+    if (fsm->initial != NULL)
     {
         (*fsm->initial)(s, e);
         if (fsm->initial != fsm->state)
@@ -46,7 +46,7 @@ void fsm_dispatch(void *s, void *_e)
     fsm->state = (fsm_handler_t)0;
 
     (*tmp)(s, e);
-    if (fsm->state != (fsm_state_t)0)
+    if (fsm->state != NULL)
     {
         if (e)
         {
@@ -91,7 +91,7 @@ void fsm_final(void *s, void *_e)
         }
     }
 
-    if (fsm->final != (fsm_state_t)0)
+    if (fsm->final != NULL)
     {
         (*fsm->final)(s, e);
     }
