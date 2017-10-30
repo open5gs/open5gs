@@ -106,6 +106,7 @@ static void start_tcp_server()
     {
         sleep(1);
     }
+    sleep(1);
     return;
 }
 
@@ -542,7 +543,7 @@ abts_suite *testnetlib(abts_suite *suite)
 [  542s]  (net_lib.c:408)
 [  542s] [10/30 07:48:38.730] ASSERT: !(net_sock). net_sock is NULL
     */
-#if 0
+#if 1
     abts_run_test(suite, netlib2, NULL);
 #endif
     abts_run_test(suite, netlib3, NULL);
