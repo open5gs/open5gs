@@ -346,7 +346,9 @@ int net_open_ext(net_sock_t **net_sock,
                 (struct sockaddr *)&sock_addr, sizeof(sock_addr));
         if (rc < 0)
         {
-            d_error("connect error(proto:%d remote:%s dport:%d lport:%d)",
+            d_error("connect error(%d:%s)(proto:%d remote:%s dport:%d lport:%d)",
+                    errno,
+                    strerror(errno),
                     proto,
                     remote_host,
                     rport,

@@ -23,7 +23,7 @@ override_dh_auto_test:
 	testcore_excluded_list=; \
 	testepc_excluded_list=; \
 	if ! cat /proc/net/protocols | grep SCTP > /dev/null; then \
-		testcore_excluded_list="-x testnetlib"; \
+		testcore_excluded_list="-x testsctp"; \
 		testepc_excluded_list="-x s1setup_test attach_test volte_test handover_test"; \
 	fi; \
 	mongodb_required=yes; \
@@ -37,5 +37,4 @@ override_dh_auto_test:
 	test/testepc -f debian/test/etc/nextepc/nextepc.conf -c $$testepc_excluded_list || exit; \
 	if test "x$$mongodb_required" = xyes; then \
 		pkill mongod; \
-	fi; \
-	rm -rf debian/test;
+	fi;

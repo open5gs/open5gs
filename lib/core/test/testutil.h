@@ -63,6 +63,7 @@ abts_suite *testtlv(abts_suite *suite);
 abts_suite *testaes(abts_suite *suite);
 abts_suite *testsha2(abts_suite *suite);
 abts_suite *testnetlib(abts_suite *suite);
+abts_suite *testsctp(abts_suite *suite);
 abts_suite *testtime(abts_suite *suite);
 abts_suite *testtimer(abts_suite *suite);
 abts_suite *testthread(abts_suite *suite);

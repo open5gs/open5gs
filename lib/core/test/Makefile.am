@@ -9,6 +9,10 @@ testcore_SOURCES = \
 	testpkbuf.c testmisc.c testhash.c \
     abts.h  abts_tests.h testutil.c testutil.h
 
+if !USRSCTP
+testcore_SOURCES += testsctp.c
+endif
+
 testcore_LDADD = \
     $(top_srcdir)/lib/core/src/libcore.la
 

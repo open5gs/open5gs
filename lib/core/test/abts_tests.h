@@ -29,6 +29,9 @@ const struct testlist {
     {testaes},
     {testsha2},
     {testnetlib},
+#if USE_USRSCTP != 1
+    {testsctp},
+#endif
     {testtime},
     {testtimer},
     {testthread},
