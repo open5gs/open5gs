@@ -12,7 +12,7 @@ RuntimeDirectory=nextepc-hssd
 PIDFile=@LIB_DIR@/run/nextepc-hssd/pid
 
 Restart=always
-ExecStartPre=/bin/sleep 2
+ExecStartPre=/bin/sleep 5
 ExecStart=@BIN_DIR@/nextepc-hssd -f @SYSCONF_DIR@/nextepc/hss.conf
 RestartSec=2
 RestartPreventExitStatus=1
