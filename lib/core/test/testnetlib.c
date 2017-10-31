@@ -531,6 +531,7 @@ abts_suite *testnetlib(abts_suite *suite)
     /*
      * OpenSUSE OBS
      * - Ubuntu 17.04 i586 failed
+     * - Jinyoung Fixed
      *
 [  542s] testnetlib          :  Line 262: expected <0>, but saw <-1>
 [  542s] [10/30 07:48:38.730] ERRR: connect error(111:Connection refused)(proto:6 remote:127.0.0.1 dport:5121 lport:0) (net_lib.c:353)
@@ -543,9 +544,7 @@ abts_suite *testnetlib(abts_suite *suite)
 [  542s]  (net_lib.c:408)
 [  542s] [10/30 07:48:38.730] ASSERT: !(net_sock). net_sock is NULL
     */
-#if 1
     abts_run_test(suite, netlib2, NULL);
-#endif
     abts_run_test(suite, netlib3, NULL);
     abts_run_test(suite, netlib4, NULL);
 #if LINUX == 1

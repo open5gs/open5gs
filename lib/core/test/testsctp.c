@@ -104,6 +104,7 @@ static void start_stream_sctp_server()
     {
         sleep(1);
     }
+    sleep(1);
     return;
 }
 
