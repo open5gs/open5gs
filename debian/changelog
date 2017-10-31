@@ -1,3 +1,27 @@
+nextepc (0.2-4~xenial2) xenial; urgency=medium
+
+  * Fix the bug nextepc-pgwd post install script
+
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 31 Oct 2017 14:07:54 +0000
+
+nextepc (0.2-4~artful) artful; urgency=medium
+
+  * Fix the bug nextepc-pgwd post install script
+
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 31 Oct 2017 14:06:31 +0000
+
+nextepc (0.2-4~zesty) zesty; urgency=medium
+
+  * Fix the bug nextepc-pgwd post install script
+
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 31 Oct 2017 14:04:23 +0000
+
+nextepc (0.2-4~xenial) xenial; urgency=medium
+
+  * Fix the bug nextepc-pgwd post install script
+
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 31 Oct 2017 14:01:58 +0000
+
 nextepc (0.2-3~artful) artful; urgency=medium
 
   * MongoDB re-connect using systemd
