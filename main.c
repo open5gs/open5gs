@@ -80,6 +80,7 @@ int main(int argc, char *argv[])
      *
      * Keep the order of starting-up
      */
+    status_t rv;
     char *config_path = NULL;
     char *log_path = NULL;
     char *pid_path = NULL;
@@ -138,8 +139,12 @@ int main(int argc, char *argv[])
 
     core_initialize();
     app_log_pid(pid_path);
-    if (app_initialize(config_path, log_path) != CORE_OK)
+    rv = app_initialize(config_path, log_path);
+    if (rv != CORE_OK)
     {
+        if (rv == CORE_EAGAIN)
+            return EXIT_SUCCESS;
+
         d_fatal("NextEPC initialization failed. Aborted");
         return EXIT_FAILURE;
     }

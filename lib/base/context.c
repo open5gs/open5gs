@@ -271,7 +271,7 @@ status_t context_db_init(const char *db_uri)
     if (!mongoc_client_get_server_status(self.db_client, NULL, &reply, &error)) 
     {
         d_error("Failed to conect to server [%s]", db_uri);
-        return CORE_ERROR;
+        return CORE_EAGAIN;
     }
 
     d_assert(bson_iter_init_find(&iter, &reply, "ok"), 

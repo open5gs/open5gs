@@ -49,7 +49,7 @@ status_t app_will_initialize(const char *config_path, const char *log_path)
         if (rv != CORE_OK) return rv;
     }
 
-    return CORE_OK;
+    return rv;
 }
 
 status_t app_did_initialize(void)
@@ -57,7 +57,7 @@ status_t app_did_initialize(void)
     status_t rv = app_logger_start();
     if (rv != CORE_OK) return rv;
 
-    return CORE_OK;
+    return rv;
 }
 
 void app_will_terminate(void)
