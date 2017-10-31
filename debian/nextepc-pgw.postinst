@@ -21,6 +21,13 @@ set -e
 case "$1" in
     configure)
     if ! grep "pgwtun" /proc/net/dev > /dev/null; then
+        echo "" >> /etc/network/interfaces
+        echo "auto pgwtun" >> /etc/network/interfaces
+        echo "iface pgwtun inet static " >> /etc/network/interfaces
+        echo "address 45.45.0.1" >> /etc/network/interfaces
+        echo "netmask 255.255.0.0" >> /etc/network/interfaces
+        echo "pre-up ip tuntap add name pgwtun mode tun" >> /etc/network/interfaces
+        echo "post-down ip tuntap del name pgwtun mode tun" >> /etc/network/interfaces
         ifup pgwtun
     fi
     ;;
