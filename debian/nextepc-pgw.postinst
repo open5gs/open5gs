@@ -20,7 +20,7 @@ set -e
 
 case "$1" in
     configure)
-    if ! grep "source-directory /etc/network/interfaces.d" /etc/network/interfaces > /dev/null; then
+    if ! grep "source-directory" /etc/network/interfaces | grep "/etc/network/interfaces.d" > /dev/null; then
         echo "source-directory /etc/network/interfaces.d" >> /etc/network/interfaces
     fi 
     if ! grep "pgwtun" /proc/net/dev > /dev/null; then
