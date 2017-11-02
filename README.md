@@ -7,7 +7,7 @@ NextEPC provides the MME (Mobility Management Engine), which terminates the S1 i
 
 NextEPC provides the SGW (Serving Gateway) which is situated between the MME and PGW.  It implements the S11 interface to the MME, and the S5 interface to the PGW.
 
-NextEPC provides the PGW or PDN-GW (Packet Data Network Gateway) element f the EPC, i.e. the gateway between the EPC and the external packet data network, such as the public Internet.  It implements the S5 interface towards the S-GW, the SGi interface towards the Internet, and the S7 interface towards the PCRF.
+NextEPC provides the PGW or PDN-GW (Packet Data Network Gateway) element of the EPC, i.e. the gateway between the EPC and the external packet data network, such as the public Internet.  It implements the S5 interface towards the S-GW, the SGi interface towards the Internet, and the S7 interface towards the PCRF.
 
 NextEPC provides the HSS (Home Subscriber Server) element of the EPC, i.e. the central database of mobile network subscribers, with their IMSI, MSISDN, cryptographic key materials, service subscription information, etc.  It implements the S6a interface towards the MME using the DIAMETER protocol.
 
@@ -35,7 +35,7 @@ Configuraiton
 Configuration files are located `/etc/nextepc` directory. 
 
 Let's modify first the `/etc/nextepc/mme.conf` to set your IP address which is connected to eNodeB. For example, if your IP address is 192.168.0.6, both MME.NETWORK.S1AP_IPV4 and SGW.NETWORK.GTPU_IPV4 are changed as follows.
-```json
+```
   MME :
   {
     NETWORK :
@@ -55,7 +55,7 @@ Let's modify first the `/etc/nextepc/mme.conf` to set your IP address which is c
 ```
 
 And then, modify `/etc/nextepc/sgw.conf` to set your IP address. SGW.NETWORK.GTPU_IPV4 is updated with 192.168.0.6.
-```json
+```
   SGW :
   {
     NETWORK :
@@ -75,7 +75,7 @@ sudo route add -net 45.45.0.0 192.168.0.6
 
 The followings are the **GUMMEI** and **TAI** of the *MME* currently set to Default. Your *eNodeB* will also have a **PLMN ID** and **TAC** set. Refer to these parameters to change the setting of MME or eNodeB.
 
-```json
+```
 GUMMEI:
 {
   PLMN_ID : 
@@ -99,7 +99,7 @@ TAI:
 
 For reference, MME can set several GUMMEI and TAI as **JSON array notation** as follows.
 
-```json
+```
 GUMMEI:
 [
   {
