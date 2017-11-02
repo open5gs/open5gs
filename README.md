@@ -1,180 +1,81 @@
-Building NextEPC
+What's NextEPC
 ================
 
-This post will guide you on how to get installed with **NextEPC**. To date, **NextEPC** has been compiled and tested on GNU/Linux distributions(Debian, Ubuntu, Fedora, OpenSUSE) and FreeBSD.
+NextEPC is a C-language Open Source implementation of the 3GPP Evolved Packet Core, i.e. the core network of an LTE network.
 
-We will describe this guide using **Ubuntu 16.04 LTS (Xenial)**. You'll need to install **Ubuntu** if you don't have it installed already. To get the latest Ubuntu version, please visit the official Ubuntu website: [https://www.ubuntu.com/download/](https://www.ubuntu.com/download/). 
+NextEPC provides the MME (Mobility Management Engine), which terminates the S1 interfaces from the eNodeBs cells in the cellular network, and interfaces via S11 to the SGW as well as via S6a to the HSS.
 
-## Install the dependencies for building the source
+NextEPC provides the SGW (Serving Gateway) which is situated between the MME and PGW.  It implements the S11 interface to the MME, and the S5 interface to the PGW.
 
-The first step is to use **apt-get** to install all depedencies.
+NextEPC provides the PGW or PDN-GW (Packet Data Network Gateway) element f the EPC, i.e. the gateway between the EPC and the external packet data network, such as the public Internet.  It implements the S5 interface towards the S-GW, the SGi interface towards the Internet, and the S7 interface towards the PCRF.
 
-```bash
-sudo apt-get -y install git gcc flex bison make autoconf libtool pkg-config libsctp-dev libssl-dev libgnutls-dev libgcrypt-dev libmongoc-dev libbson-dev mongodb
-```
+NextEPC provides the HSS (Home Subscriber Server) element of the EPC, i.e. the central database of mobile network subscribers, with their IMSI, MSISDN, cryptographic key materials, service subscription information, etc.  It implements the S6a interface towards the MME using the DIAMETER protocol.
 
-## Retrieve the latest version of the source package
+NextEPC contains the PCRF (Policy and Charging Rules Function), which controls the service quality (QoS) of individual connections and how to account/charge related traffic.  It implements the Gx interface towards the PGW using the DIAMETER protocol.
 
-```bash
-git clone https://github.com/acetcom/nextepc
-```
+Installation 
+============
 
-## Configure the build
+## Install with a Package Manager
 
-```bash
-cd nextepc
-test -f configure || autoreconf -iv
-CFLAGS='-O2' ./configure --prefix=`pwd`/install
-```
-
-## Compiling
-
-Hopefully, once you have completed the autotools configuration, you only need to run:
+The nextepc package is available on recent versions of Ubuntu.
 
 ```bash
-make -j `nproc`
+sudo add-apt-repository ppa:acetcom/nextepc
+sudo apt-get update
+sudo apt-get install nextepc
 ```
 
-## Installing
+That's it!
 
-Once the compilation is complete, you can install in the configured paths with:
+Configuraiton 
+=============
+## Configuration IP connectivity
 
-```bash
-make install
-```
-(this might require sudo depending on the configured target directories)
+Configuration files are located `/etc/nextepc` directory. 
 
-Web Setup
-=========
-
-NextEPC is configured with **Mongo DB**, which manages _Subscriber Information_ mainly, and **Configuration File** made in _JSON_ format.
-
-The configuration file can be modified using a general editor such as vi or emacs, but _Subscriber Information_ can be managed properly using _Mongo DB Client_.
-
-NextEPC provides **Web User Interface** solely designed to manage _Subscriber Information_ in an easy way without using _Mongo DB Client_. Let's how to install it from now on.
-
-## Install Node.js and NPM
-
-To get the latest **Node.js** and **NPM** version, you can visit the official **Node.js** website:
-[https://nodesjs.org/en/download/](https://nodesjs.org/en/download/).
-
-Or, you can install _Node.js_ and _NPM_ on **Ubuntu** as follows:
-
-```bash
-sudo apt-get -y install curl
-curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
-sudo apt-get -y install nodejs
-```
-
-## Install the dependencies for building the source
-
-The first step is to use **npm** to install all depedencies.
-
-```bash
-cd nextepc/webui
-npm install
-```
-
-## Build Web User Interface
-```bash
-npm run build
-```
-
-## Running Web Server
-
-```bash
-npm run start
-```
-
-## Login with default account
-
-Use **Web Browser** to connect it. _http://localhost:3000_
-
-  * Username : admin
-  * Password : 1423
-
-Then, you can change your password in _Account_ Menu.
-
-Network Configuration
-=====================
-
-NextEPC consists of five nodes such as _MME, SGW, PGW, HSS and PCRF_. Basically, each node can be installed in a physically separate host or in the same host.
-
-We will run these five nodes that make up NextEPC in a **Single Host**. The reason is why it is the easiest way to understand how to configure NextEPC network.
-
-## IP Configuration
-
-In order to run _MME, HSS, SGW, PGW, and PCRF_ on a **Single Host**, IP address is set by using **IP aliasing**.
-
-```bash
-sudo ifconfig eth1:hss 10.1.35.214/24 up
-sudo ifconfig eth1:mme 10.1.35.215/24 up
-sudo ifconfig eth1:sgw_s5 10.1.35.216/24 up
-sudo ifconfig eth1:sgw_s11 10.1.35.217/24 up
-sudo ifconfig eth1:pcrf 10.1.35.218/24 up
-sudo ifconfig eth1:pgw 10.1.35.219/24 up
-```
-
-## Setup for Data Path
-
-Use the **TUN Driver** to make _Data Path_ to be used by the **PGW**.
-
-```bash
-sudo ip tuntap add name pgwtun mode tun
-sudo ifconfig pgwtun 45.45.0.1/16 up
-```
-
-## Check Configuration File
-
-A configuration file is located `etc/nextepc.conf` from the installed paths. If you need to change the IP address for a particular problem, you should modify `XXXX_IPV4` field in the configuration file.
-
-For example, if you want the IP aliasing address of *PGW* to be _10.1.35.254_, `PGW.NETWORK.S5C_IPV4` and `PGW_NETWORK.S5U_IPV4` field should be updated like the followings.
-
-<pre>
-  PGW :
+Let's modify first the `/etc/nextepc/mme.conf` to set your IP address which is connected to eNodeB. For example, if your IP address is 192.168.0.6, both MME.NETWORK.S1AP_IPV4 and SGW.NETWORK.GTPU_IPV4 are changed as follows.
+```json
+  MME :
   {
-    FD_CONF_PATH : "/etc/freeDiameter
-
     NETWORK :
     {
-      S5C_IPV4: "10.1.35.254",
-      S5U_IPV4: "10.1.35.254"
+      S1AP_IPV4: "192.168.0.6",
+      GTPC_IPV4: "127.76.0.1"
     }
-
-    TUNNEL:
+  },
+  SGW :
+  {
+    NETWORK :
     {
-      DEV_NAME: "pgwtun"
-    }
-
-    IP_POOL :
-    {
-      CIDR: 45.45.45.0/24
-    }
-
-    DNS :
-    {
-      PRIMARY_IPV4: "8.8.8.8",
-      SECONDARY_IPV4: "4.4.4.4"
+      GTPC_IPV4: "127.76.0.2",
+      GTPU_IPV4: "192.168.0.6"
     }
   }
-</pre>
-
-## Testing Network Configuration
-
-Once you are done, run the testing script.
-```bash
-./test/testepc
 ```
-You can see the simulated packet through **Wireshark**.  _(FILTER : s1ap || gtpv2 || diameter)_
 
-Running NextEPC
-===============
+And then, modify `/etc/nextepc/sgw.conf` to set your IP address. SGW.NETWORK.GTPU_IPV4 is updated with 192.168.0.6.
+```json
+  SGW :
+  {
+    NETWORK :
+    {
+      GTPC_IPV4: "127.76.0.2",
+      GTPU_IPV4: "192.168.0.6"
+    }
+  }
+```
+
+Finally, you should modify the routing table of the router, which is connected to the nextepc installed host. The following command is just a sample. The configuration method for each router will be different.
+```bash
+sudo route add -net 45.45.0.0 192.168.0.6
+```
 
 ## Update GUMMEI and TAI
 
 The followings are the **GUMMEI** and **TAI** of the *MME* currently set to Default. Your *eNodeB* will also have a **PLMN ID** and **TAC** set. Refer to these parameters to change the setting of MME or eNodeB.
 
-<pre>
+```json
 GUMMEI:
 {
   PLMN_ID : 
@@ -194,11 +95,11 @@ TAI:
   }
   TAC: 12345
 }
-</pre>
+```
 
 For reference, MME can set several GUMMEI and TAI as **JSON array notation** as follows.
 
-<pre>
+```json
 GUMMEI:
 [
   {
@@ -239,29 +140,71 @@ TAI:
     TAC: 6789
   }
 ]
-</pre>
+```
+
+## Restart MME and SGW.
+
+```bash
+systemctl restart nextepc-mmed
+systemctl restart nextepc-sgwd
+```
+
+Now, S1-Setup is ready! 
+
+Web User Interface 
+==================
+
+## Install Node.js and NPM
+
+To get the latest **Node.js** and **NPM** version, you can visit the official **Node.js** website:
+[https://nodesjs.org/en/download/](https://nodesjs.org/en/download/).
+
+Or, you can install _Node.js_ and _NPM_ on **Ubuntu** as follows:
+
+```bash
+sudo apt-get -y install curl gnupg
+curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+sudo apt-get -y install nodejs
+```
+
+## Install the dependencies for building the source
+
+The first step is to use **npm** to install all depedencies.
+
+```bash
+cd nextepc/webui
+npm install
+```
+
+## Build Web User Interface
+```bash
+npm run build
+```
+
+## Running Web Server
+
+```bash
+npm run start
+```
+
+This will start a server available on [http://localhost:3000](http://localhost:3000).
+
+## Login with default account
+
+Use **Web Browser** to connect it. _http://localhost:3000_
+
+  * Username : admin
+  * Password : 1423
+
+Then, you can change your password in _Account_ Menu.
 
 ## Register Subscriber Information
 
-There is only one setting for this guide. The _Subscriber Information_ required for **HSS** should be registered in _Mongo DB_. Let's run the **Web User Interface** with `npm run start` as mentioned eariler.
-
-Connect http://localhost:3000 using Web Browser.
+There is only one setting for this guide. The _Subscriber Information_ required for **HSS** should be registered in _Mongo DB_. 
 
   * Go to Subscriber Menu
   * Click + Button to add Subscriber Information
-  * Fill IMSI, Security(K, OP, AMF), APN in the Form
+  * Fill IMSI, Security(K, OPc, AMF), APN in the Form
   * Click the `SAVE` Button
 
-## Running NextEPC
-
-Generally, to use NextEPC in several hosts, you must use an independent daemon called _mmed, sgwd, pgwd, hssd, and pcrfd_.
-
-However, we are preparing a more convenient daemon named **epcd**. It enables to service all five nodes of NextEPC.
-
-```bash
-./epcd
-```
-
 Turn on your **eNodeB** and **Mobile**. Check Wireshark!
-
-Hopefully, you can see the real packet for TAU/Service Request, Dedicated Bearer, Multiple APN, and S1/X2-Handover.
