@@ -1,3 +1,21 @@
+nextepc (0.2-5~artful) artful; urgency=medium
+
+  * Relase 0.2
+
+ -- Sukchan Lee <acetcom@gmail.com>  Thu, 02 Nov 2017 07:13:23 +0000
+
+nextepc (0.2-5~zesty) zesty; urgency=medium
+
+  * Relase 0.2
+
+ -- Sukchan Lee <acetcom@gmail.com>  Thu, 02 Nov 2017 07:12:17 +0000
+
+nextepc (0.2-5~xenial) xenial; urgency=medium
+
+  * Release 0.2
+
+ -- Sukchan Lee <acetcom@gmail.com>  Thu, 02 Nov 2017 07:11:16 +0000
+
 nextepc (0.2-4~xenial2) xenial; urgency=medium
 
   * Fix the bug nextepc-pgwd post install script
