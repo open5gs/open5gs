@@ -1,3 +1,21 @@
+nextepc (0.2-6~zesty) zesty; urgency=medium
+
+  * postrm script is improved to purge package completely.
+
+ -- Sukchan Lee <acetcom@gmail.com>  Fri, 03 Nov 2017 02:25:37 +0000
+
+nextepc (0.2-6~xenial) xenial; urgency=medium
+
+  * postrm script is improved to purge package completely.
+
+ -- Sukchan Lee <acetcom@gmail.com>  Fri, 03 Nov 2017 02:23:54 +0000
+
+nextepc (0.2-6~artful) artful; urgency=medium
+
+  * postrm script is improved to purge package completely.
+
+ -- Sukchan Lee <acetcom@gmail.com>  Fri, 03 Nov 2017 02:00:14 +0000
+
 nextepc (0.2-5~artful) artful; urgency=medium
 
   * Relase 0.2
