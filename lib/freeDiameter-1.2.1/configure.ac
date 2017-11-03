@@ -144,6 +144,7 @@ AC_SEARCH_LIBS([pthread_barrier_wait], [pthread],
                         [Define to 1 if you have pthread_barrier_wait in libpthread])],
              [])
 AC_SEARCH_LIBS([dlopen], [dl dld])
+AC_SEARCH_LIBS([sctp_sendmsg], [sctp])
 
 AC_SEARCH_LIBS([gnutls_global_init], [gnutls],, [have_gnutls_lib=no])
 if test x$have_gnutls_lib == xno; then
