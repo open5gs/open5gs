@@ -74,7 +74,7 @@ Description: Open Source based 3GPP EPC PGW (Packet Data Network Gateway)
  Packet Core, i.e. the core network of an LTE network.
  .
  This package provides the PGW or PDN-GW (Packet Data Network Gateway)
- element f the EPC, i.e. the gateway between the EPC and the external
+ element of the EPC, i.e. the gateway between the EPC and the external
  packet data network, such as the public Internet.  It implements the S5
  interface towards the S-GW, the SGi interface towards the Internet,
  and the S7 interface towards the PCRF.
