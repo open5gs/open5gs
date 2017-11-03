@@ -131,28 +131,45 @@ AC_SUBST(PREFIX)
 
 
 AC_CHECK_FUNCS([strndup])
+
 AC_CHECK_DECL([ntohll],[AC_DEFINE([HAVE_NTOHLL], [1],
               [Define to 1 if you have ntohll.])])
-AC_CHECK_LIB([rt], [clock_gettime],
+AC_CHECK_DECL([AI_ADDRCONFIG],
+              [AC_DEFINE([HAVE_AI_ADDRCONFIG], [1], [Define AI_ADDRCONFIG])], [], [[#include <netdb.h>]])
+
+AC_SEARCH_LIBS([clock_gettime], [rt],
              [AC_DEFINE([HAVE_CLOCK_GETTIME], [1], [Define clock_gettime])])
-AC_CHECK_LIB([pthread], [pthread_barrier_wait],
+AC_SEARCH_LIBS([pthread_barrier_wait], [pthread],
              [AC_DEFINE([HAVE_PTHREAD_BAR], [1],
                         [Define to 1 if you have pthread_barrier_wait in libpthread])],
              [])
-AC_CHECK_DECL([AI_ADDRCONFIG],
-              [AC_DEFINE([HAVE_AI_ADDRCONFIG], [1], [Define AI_ADDRCONFIG])], [], [[#include <netdb.h>]])
-AC_CHECK_LIB([gnutls], [gnutls_hash],
+AC_SEARCH_LIBS([dlopen], [dl dld])
+
+AC_SEARCH_LIBS([gnutls_global_init], [gnutls],, [have_gnutls_lib=no])
+if test x$have_gnutls_lib == xno; then
+  AC_MSG_ERROR([You must install the GnuTLS libraries and development headers to enable GnuTLS support.])
+fi
+AC_SEARCH_LIBS([gnutls_hash], [gnutls],
              [AC_DEFINE(GNUTLS_VERSION_210, 1,
               [Define to 1 if you have gnutls 2.10 installed])], [])
-AC_CHECK_LIB([gnutls], [gnutls_transport_set_vec_push_function],
+AC_SEARCH_LIBS([gnutls_transport_set_vec_push_function], [gnutls], 
              [AC_DEFINE(GNUTLS_VERSION_212, 1,
               [Define to 1 if you have gnutls 2.10 installed])], [])
-AC_CHECK_LIB([gnutls], [gnutls_x509_trust_list_verify_crt],
+AC_SEARCH_LIBS([gnutls_x509_trust_list_verify_crt], [gnutls],
              [AC_DEFINE(GNUTLS_VERSION_300, 1,
               [Define to 1 if you have gnutls 3.0 installed])], [])
-AC_CHECK_LIB([gnutls], [gnutls_handshake_set_timeout],
+AC_SEARCH_LIBS([gnutls_handshake_set_timeout], [gnutls],
              [AC_DEFINE(GNUTLS_VERSION_310, 1,
               [Define to 1 if you have gnutls 3.1 installed])], [])
+
+AC_SEARCH_LIBS([gcry_control], [gcrypt],, [have_gcrypt_lib=no])
+if test x$have_gcrypt_lib == xno; then
+  AC_MSG_ERROR([You must install the Libgcrypt libraries and development headers to enable Libgcrypt support.])
+fi
+AC_SEARCH_LIBS([idna_strerror], [idn],, [have_idn_lib=no])
+if test x$have_idn_lib == xno; then
+  AC_MSG_ERROR([You must install the GNU Libidn libraries and development headers to enable GNU Libidn support.])
+fi
 
 AC_CACHE_CHECK([whether sctp_connectx function accepts 4 arguments],
                [ap_cv_sctp_connectx],

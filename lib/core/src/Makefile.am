@@ -27,7 +27,8 @@ libcore_la_DEPENDENCIES = \
     $(top_srcdir)/lib/core/src/@OSDIR@/libcore@OSDIR@.la
 
 libcore_la_LIBADD = \
-    $(top_srcdir)/lib/core/src/@OSDIR@/libcore@OSDIR@.la
+    $(top_srcdir)/lib/core/src/@OSDIR@/libcore@OSDIR@.la \
+	@CORE_LIBS@
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include/arch/@OSDIR@ \

@@ -381,43 +381,26 @@ AC_CHECK_FUNCS(\
     sched_yield \
 )
 
-AC_CHECK_FUNCS(socket, , AC_CHECK_LIB(socket, socket))
-AC_CHECK_FUNCS(inet_addr, , AC_CHECK_LIB(nsl, inet_addr))
+AC_SUBST(CORE_LIBS)
+AC_SEARCH_LIBS(gethostbyname, nsl)
+AC_SEARCH_LIBS(gethostname, nsl)
+AC_SEARCH_LIBS(socket, socket)
+AC_SEARCH_LIBS([pthread_mutex_init], pthread)
 
-AC_CHECK_LIB([pthread], [pthread_mutex_init], [LIBS="${LIBS} -lpthread"])
-AC_CHECK_LIB([dl], [dlopen], [LIBS="${LIBS} -ldl"])
-AC_CHECK_LIB([sctp], [sctp_sendmsg], [have_sctp_lib=yes], [have_sctp_lib=no])
-if test "$have_sctp_lib" == "yes"; then
-  LIBS="${LIBS} -lsctp"
-else
-  AC_CHECK_LIB([usrsctp], [usrsctp_init], [have_usrsctp_lib=yes], [have_usrsctp_lib=no])
-  if test "$have_usrsctp_lib" == "yes"; then
-    LIBS="${LIBS} -lusrsctp"
+AC_SEARCH_LIBS([sctp_sendmsg], [sctp], [have_sctp_lib=yes], [have_sctp_lib=no])
+if test x$have_sctp_lib == xno; then
+  AC_SEARCH_LIBS([usrsctp_init], [usrsctp], [have_usrsctp_lib=yes], [have_usrsctp_lib=no])
+  if test x$have_usrsctp_lib == xno; then
+    AC_MSG_ERROR([You must install the SCTP libraries and development headers to enable SCTP support.])
+  else
     AC_DEFINE([USE_USRSCTP], [1], [Define to 1 if you have the usrsctp library.])
   fi 
 fi
 AM_CONDITIONAL([USRSCTP], [test x$have_usrsctp_lib = xyes])
-AC_CHECK_LIB([gnutls], [gnutls_global_init], [have_gnutls_lib=yes], [have_gnutls_lib=no])
-if test "$have_gnutls_lib" == "yes"; then
-  LIBS="${LIBS} -lgnutls"
-else
-  AC_MSG_ERROR([You must install the GnuTLS libraries and development headers to enable GnuTLS support.])
-fi
-AC_CHECK_LIB([gcrypt], [gcry_control], [have_gcrypt_lib=yes], [have_gcrypt_lib=no])
-if test "$have_gcrypt_lib" == "yes"; then
-  LIBS="${LIBS} -lgcrypt"
-else
-  AC_MSG_ERROR([You must install the Libgcrypt libraries and development headers to enable Libgcrypt support.])
-fi
-AC_CHECK_LIB([idn], [idna_strerror], [have_idn_lib=yes], [have_idn_lib=no])
-if test "$have_idn_lib" == "yes"; then
-  LIBS="${LIBS} -lidn"
-else
-  AC_MSG_ERROR([You must install the GNU Libidn libraries and development headers to enable GNU Libidn support.])
-fi
+CORE_LIBS="$LIBS"
+LIBS=""
 
 PKG_CHECK_MODULES([MONGOC], libmongoc-1.0 >= 1.3.1)
-LIBS="$LIBS $MONGOC_LIBS"
 FREEDIAMETER_DIR=freeDiameter-1.2.1
 AC_SUBST(FREEDIAMETER_DIR)
 
@@ -492,7 +475,7 @@ host                    : ${host}
 source code location    : ${srcdir}
 compiler                : ${CC}
 compiler flags          : ${CFLAGS}
-linker flags            : ${LDFLAGS} ${LIBS}
+linker flags            : ${LDFLAGS} ${CORE_LIBS} ${MONGOC_LIBS}
 bin directory           : ${BIN_DIR}
 lib directory           : ${LIB_DIR}/nextepc
 config directory        : ${SYSCONF_DIR}/nextepc
