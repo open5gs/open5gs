@@ -385,7 +385,7 @@ AC_SUBST(CORE_LIBS)
 AC_SEARCH_LIBS(gethostbyname, nsl)
 AC_SEARCH_LIBS(gethostname, nsl)
 AC_SEARCH_LIBS(socket, socket)
-AC_SEARCH_LIBS([pthread_mutex_init], pthread)
+AC_SEARCH_LIBS(pthread_barrier_wait, pthread)
 
 AC_SEARCH_LIBS([sctp_sendmsg], [sctp], [have_sctp_lib=yes], [have_sctp_lib=no])
 if test x$have_sctp_lib == xno; then

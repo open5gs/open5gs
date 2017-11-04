@@ -11,7 +11,10 @@
 /* Server */
 #include "app.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdate-time"
 static char *compile_time = __DATE__ " " __TIME__;
+#pragma GCC diagnostic pop
 
 static void show_version()
 {
