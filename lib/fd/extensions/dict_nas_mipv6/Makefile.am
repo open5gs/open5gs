@@ -5,14 +5,6 @@ pkglib_LTLIBRARIES = dict_nas_mipv6.la
 dict_nas_mipv6_la_SOURCES = \
 	dict_nas_mipv6.c
 
-dict_nas_mipv6_la_DEPENDENCIES = \
-    $(top_srcdir)/lib/@FREEDIAMETER_DIR@/libfdcore/libfdcore.la \
-    $(top_srcdir)/lib/@FREEDIAMETER_DIR@/libfdproto/libfdproto.la
-
-dict_nas_mipv6_la_LIBADD = \
-    $(top_srcdir)/lib/@FREEDIAMETER_DIR@/libfdcore/libfdcore.la \
-    $(top_srcdir)/lib/@FREEDIAMETER_DIR@/libfdproto/libfdproto.la
-
 AM_LDFLAGS = \
 	-module -avoid-version -shared
 

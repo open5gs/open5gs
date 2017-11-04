@@ -5,14 +5,6 @@ pkglib_LTLIBRARIES = dict_nasreq.la
 dict_nasreq_la_SOURCES = \
 	dict_nasreq.c
 
-dict_nasreq_la_DEPENDENCIES = \
-    $(top_srcdir)/lib/@FREEDIAMETER_DIR@/libfdcore/libfdcore.la \
-    $(top_srcdir)/lib/@FREEDIAMETER_DIR@/libfdproto/libfdproto.la
-
-dict_nasreq_la_LIBADD = \
-    $(top_srcdir)/lib/@FREEDIAMETER_DIR@/libfdcore/libfdcore.la \
-    $(top_srcdir)/lib/@FREEDIAMETER_DIR@/libfdproto/libfdproto.la
-
 AM_LDFLAGS = \
 	-module -avoid-version -shared
 
