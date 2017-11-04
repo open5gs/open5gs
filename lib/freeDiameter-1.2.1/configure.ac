@@ -135,6 +135,7 @@ AC_CHECK_DECL([AI_ADDRCONFIG],
 
 AC_SEARCH_LIBS([clock_gettime], [rt],
              [AC_DEFINE([HAVE_CLOCK_GETTIME], [1], [Define clock_gettime])])
+AC_SEARCH_LIBS([dlopen], [dl dld])
 AC_SEARCH_LIBS([pthread_barrier_wait], [pthread],
              [AC_DEFINE([HAVE_PTHREAD_BAR], [1],
                         [Define to 1 if you have pthread_barrier_wait in libpthread])],
