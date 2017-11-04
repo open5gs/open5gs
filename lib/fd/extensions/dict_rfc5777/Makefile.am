@@ -5,6 +5,14 @@ pkglib_LTLIBRARIES = dict_rfc5777.la
 dict_rfc5777_la_SOURCES = \
 	dict_rfc5777.c
 
+dict_rfc5777_la_DEPENDENCIES = \
+    $(top_srcdir)/lib/@FREEDIAMETER_DIR@/libfdcore/libfdcore.la \
+    $(top_srcdir)/lib/@FREEDIAMETER_DIR@/libfdproto/libfdproto.la
+
+dict_rfc5777_la_LIBADD = \
+    $(top_srcdir)/lib/@FREEDIAMETER_DIR@/libfdcore/libfdcore.la \
+    $(top_srcdir)/lib/@FREEDIAMETER_DIR@/libfdproto/libfdproto.la
+
 AM_LDFLAGS = \
 	-module -avoid-version -shared
 

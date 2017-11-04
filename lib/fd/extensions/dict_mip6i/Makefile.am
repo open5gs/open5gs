@@ -5,6 +5,14 @@ pkglib_LTLIBRARIES = dict_mip6i.la
 dict_mip6i_la_SOURCES = \
 	dict_mip6i.c
 
+dict_mip6i_la_DEPENDENCIES = \
+    $(top_srcdir)/lib/@FREEDIAMETER_DIR@/libfdcore/libfdcore.la \
+    $(top_srcdir)/lib/@FREEDIAMETER_DIR@/libfdproto/libfdproto.la
+
+dict_mip6i_la_LIBADD = \
+    $(top_srcdir)/lib/@FREEDIAMETER_DIR@/libfdcore/libfdcore.la \
+    $(top_srcdir)/lib/@FREEDIAMETER_DIR@/libfdproto/libfdproto.la
+
 AM_LDFLAGS = \
 	-module -avoid-version -shared
 
