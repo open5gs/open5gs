@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-noinst_LTLIBRARIES = libgtp.la
+pkglib_LTLIBRARIES = libgtp.la
 
 libgtp_la_SOURCES = \
 	gtp_message.h gtp_types.h gtp_conv.h gtp_path.h gtp_xact.h \

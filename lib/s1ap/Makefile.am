@@ -2,7 +2,7 @@
 
 SUBDIRS = asn1c
 
-noinst_LTLIBRARIES = libs1ap.la
+pkglib_LTLIBRARIES = libs1ap.la
 
 libs1ap_la_SOURCES = \
 	s1ap_asn1c.h s1ap_ies_defs.h s1ap_message.h \

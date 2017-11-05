@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-noinst_LTLIBRARIES = libcoreunix.la
+pkglib_LTLIBRARIES = libcoreunix.la
 
 libcoreunix_la_SOURCES = \
     ../../include/arch/core_private_common.h \

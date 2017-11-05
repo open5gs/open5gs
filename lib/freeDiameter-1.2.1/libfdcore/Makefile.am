@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-lib_LTLIBRARIES = libfdcore.la
+pkglib_LTLIBRARIES = libfdcore.la
 
 libfdcore_la_SOURCES = \
 	fdcore-internal.h \

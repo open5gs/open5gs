@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-noinst_LTLIBRARIES = libnas.la
+pkglib_LTLIBRARIES = libnas.la
 
 libnas_la_SOURCES = \
 	nas_message.h nas_ies.h nas_types.h \

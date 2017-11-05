@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-noinst_LTLIBRARIES = libfdgx.la
+pkglib_LTLIBRARIES = libfdgx.la
 
 libfdgx_la_SOURCES = \
 	gx_dict.h gx_message.h dict_init.c gx_message.c

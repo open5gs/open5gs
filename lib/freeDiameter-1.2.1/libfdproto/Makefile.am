@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-lib_LTLIBRARIES = libfdproto.la
+pkglib_LTLIBRARIES = libfdproto.la
 
 libfdproto_la_SOURCES = \
 	fdproto-internal.h \

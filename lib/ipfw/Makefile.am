@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in.
 
-noinst_LTLIBRARIES = libipfw.la
+pkglib_LTLIBRARIES = libipfw.la
 
 libipfw_la_SOURCES = \
 	ipfw2.h \

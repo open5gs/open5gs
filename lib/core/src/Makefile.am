@@ -2,7 +2,7 @@
 
 SUBDIRS = @OSDIR@
 
-noinst_LTLIBRARIES = libcore.la
+pkglib_LTLIBRARIES = libcore.la
 
 libcore_la_SOURCES = \
 	../include/core_aes_cmac.h ../include/core_aes.h ../include/core_cond.h \

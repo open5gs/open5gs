@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-noinst_LTLIBRARIES = libbase.la
+pkglib_LTLIBRARIES = libbase.la
 
 libbase_la_SOURCES = \
 	types.h context.h \

@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in.
 
-noinst_LTLIBRARIES = liblogger.la
+pkglib_LTLIBRARIES = liblogger.la
 
 liblogger_la_SOURCES = \
 	logger.h logger.c

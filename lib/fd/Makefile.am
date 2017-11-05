@@ -2,7 +2,7 @@
 
 SUBDIRS = extensions gx s6a
 
-noinst_LTLIBRARIES = libfd.la
+pkglib_LTLIBRARIES = libfd.la
 
 libfd_la_SOURCES = \
 	fd_message.h fd_logger.h fd_lib.h \
