@@ -802,8 +802,14 @@ ASN_MODULE_SOURCES+=per_encoder.c
 ASN_MODULE_INCLUDES+=per_opentype.h
 ASN_MODULE_SOURCES+=per_opentype.c
 
-pkglib_LTLIBRARIES=libs1apasn1c.la
+noinst_LTLIBRARIES=libs1apasn1c.la
 libs1apasn1c_la_SOURCES=$(ASN_MODULE_INCLUDES) $(ASN_MODULE_SOURCES)
+
+libs1apasn1c_la_DEPENDENCIES = \
+    $(top_srcdir)/lib/core/src/libcore.la
+
+libs1apasn1c_la_LIBADD = \
+    $(top_srcdir)/lib/core/src/libcore.la
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include

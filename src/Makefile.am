@@ -17,10 +17,8 @@ libmme_la_LIBADD = \
 
 libhss_la_SOURCES = $(COMMON_INCLUDES) hss.c $(COMMON_SOURCES)
 libhss_la_DEPENDENCIES = \
-    $(top_srcdir)/lib/base/libbase.la \
     $(top_srcdir)/src/hss/libhss.la
 libhss_la_LIBADD = \
-    $(top_srcdir)/lib/base/libbase.la \
     $(top_srcdir)/src/hss/libhss.la
 
 libsgw_la_SOURCES = $(COMMON_INCLUDES) sgw.c $(COMMON_SOURCES)

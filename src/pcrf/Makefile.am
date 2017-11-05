@@ -7,12 +7,10 @@ libpcrf_la_SOURCES = \
 	pcrf_init.c pcrf_context.c pcrf_fd_path.c
 
 libpcrf_la_DEPENDENCIES = \
-    $(top_srcdir)/lib/core/src/libcore.la \
 	$(top_srcdir)/lib/fd/gx/libfdgx.la \
     $(top_srcdir)/lib/fd/libfd.la
 
 libpcrf_la_LIBADD = \
-    $(top_srcdir)/lib/core/src/libcore.la \
 	$(top_srcdir)/lib/fd/gx/libfdgx.la \
     $(top_srcdir)/lib/fd/libfd.la
 

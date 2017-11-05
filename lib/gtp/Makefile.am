@@ -7,9 +7,13 @@ libgtp_la_SOURCES = \
 	gtp_message.c gtp_types.c gtp_conv.c gtp_path.c gtp_xact.c
 
 libgtp_la_DEPENDENCIES = \
+    $(top_srcdir)/lib/core/src/@OSDIR@/libcore@OSDIR@.la \
+    $(top_srcdir)/lib/core/src/libcore.la \
     $(top_srcdir)/lib/base/libbase.la
 
 libgtp_la_LIBADD = \
+    $(top_srcdir)/lib/core/src/@OSDIR@/libcore@OSDIR@.la \
+    $(top_srcdir)/lib/core/src/libcore.la \
     $(top_srcdir)/lib/base/libbase.la
 
 AM_CPPFLAGS = \

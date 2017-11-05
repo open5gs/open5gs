@@ -9,11 +9,9 @@ libsgw_la_SOURCES = \
 	sgw_gtp_path.c sgw_sm.c sgw_s11_handler.c sgw_s5c_handler.c
 
 libsgw_la_DEPENDENCIES = \
-    $(top_srcdir)/lib/core/src/libcore.la \
     $(top_srcdir)/lib/gtp/libgtp.la
 
 libsgw_la_LIBADD = \
-    $(top_srcdir)/lib/core/src/libcore.la \
     $(top_srcdir)/lib/gtp/libgtp.la
 
 AM_CPPFLAGS = \

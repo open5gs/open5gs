@@ -381,11 +381,11 @@ AC_CHECK_FUNCS(\
     sched_yield \
 )
 
-AC_SUBST(CORE_LIBS)
 AC_SEARCH_LIBS(gethostbyname, nsl)
 AC_SEARCH_LIBS(gethostname, nsl)
 AC_SEARCH_LIBS(socket, socket)
 AC_SEARCH_LIBS(pthread_barrier_wait, pthread)
+AC_SEARCH_LIBS(gnutls_global_set_log_level, gnutls)
 
 AC_SEARCH_LIBS([sctp_sendmsg], [sctp], [have_sctp_lib=yes], [have_sctp_lib=no])
 if test x$have_sctp_lib == xno; then
@@ -397,8 +397,6 @@ if test x$have_sctp_lib == xno; then
   fi 
 fi
 AM_CONDITIONAL([USRSCTP], [test x$have_usrsctp_lib = xyes])
-CORE_LIBS="$LIBS"
-LIBS=""
 
 PKG_CHECK_MODULES([MONGOC], libmongoc-1.0 >= 1.3.1)
 FREEDIAMETER_DIR=freeDiameter-1.2.1
@@ -475,7 +473,7 @@ host                    : ${host}
 source code location    : ${srcdir}
 compiler                : ${CC}
 compiler flags          : ${CFLAGS}
-linker flags            : ${LDFLAGS} ${CORE_LIBS} ${MONGOC_LIBS}
+linker flags            : ${LDFLAGS} ${LIBS} ${MONGOC_LIBS}
 bin directory           : ${BIN_DIR}
 lib directory           : ${LIB_DIR}/nextepc
 config directory        : ${SYSCONF_DIR}/nextepc

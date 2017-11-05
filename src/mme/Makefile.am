@@ -29,7 +29,6 @@ libmme_la_SOURCES += s1ap_sctp.c
 endif
 
 libmme_la_DEPENDENCIES = \
-    $(top_srcdir)/lib/core/src/libcore.la \
     $(top_srcdir)/lib/s1ap/libs1ap.la \
     $(top_srcdir)/lib/nas/libnas.la \
 	$(top_srcdir)/lib/fd/s6a/libfds6a.la \
@@ -37,7 +36,6 @@ libmme_la_DEPENDENCIES = \
     $(top_srcdir)/lib/gtp/libgtp.la
 
 libmme_la_LIBADD = \
-    $(top_srcdir)/lib/core/src/libcore.la \
     $(top_srcdir)/lib/s1ap/libs1ap.la \
     $(top_srcdir)/lib/nas/libnas.la \
 	$(top_srcdir)/lib/fd/s6a/libfds6a.la \

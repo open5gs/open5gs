@@ -19,16 +19,15 @@ libcore_la_SOURCES = \
 	../include/core_atomic.h ../include/core_portable.h \
 	../include/core_version.h ../include/core_event.h ../include/core_hash.h \
 	../include/core_jsmn.h \
-	version.c debug.c fsm.c msgq.c ringbuf.c timer.c tlv.c tlv_msg.c \
+	version.c fsm.c msgq.c ringbuf.c timer.c tlv.c tlv_msg.c \
 	aes.c aes_cmac.c sha1.c sha1_hmac.c sha2.c sha2_hmac.c misc.c event.c \
-	hash.c jsmn.c
+	hash.c jsmn.c start.c
 
 libcore_la_DEPENDENCIES = \
     $(top_srcdir)/lib/core/src/@OSDIR@/libcore@OSDIR@.la
 
 libcore_la_LIBADD = \
-    $(top_srcdir)/lib/core/src/@OSDIR@/libcore@OSDIR@.la \
-	@CORE_LIBS@
+    $(top_srcdir)/lib/core/src/@OSDIR@/libcore@OSDIR@.la
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include/arch/@OSDIR@ \

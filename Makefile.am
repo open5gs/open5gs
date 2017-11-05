@@ -8,27 +8,21 @@ bin_PROGRAMS = nextepc-mmed nextepc-hssd nextepc-sgwd nextepc-pgwd nextepc-pcrfd
 
 dist_nextepc_mmed_SOURCES = main.c
 nextepc_mmed_LDADD = $(top_srcdir)/src/libmme.la
-nextepc_mmed_LDFLAGS = -export-dynamic
 
 dist_nextepc_hssd_SOURCES = main.c
 nextepc_hssd_LDADD = $(top_srcdir)/src/libhss.la
-nextepc_hssd_LDFLAGS = -export-dynamic
 
 dist_nextepc_sgwd_SOURCES = main.c
 nextepc_sgwd_LDADD = $(top_srcdir)/src/libsgw.la
-nextepc_sgwd_LDFLAGS = -export-dynamic
 
 dist_nextepc_pgwd_SOURCES = main.c
 nextepc_pgwd_LDADD = $(top_srcdir)/src/libpgw.la
-nextepc_pgwd_LDFLAGS = -export-dynamic
 
 dist_nextepc_pcrfd_SOURCES = main.c
 nextepc_pcrfd_LDADD = $(top_srcdir)/src/libpcrf.la
-nextepc_pcrfd_LDFLAGS = -export-dynamic
 
 dist_nextepc_epcd_SOURCES = main.c
 nextepc_epcd_LDADD = $(top_srcdir)/src/libepc.la
-nextepc_epcd_LDFLAGS = -export-dynamic
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \

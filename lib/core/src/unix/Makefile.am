@@ -8,8 +8,8 @@ libcoreunix_la_SOURCES = \
     ../../include/arch/unix/core_arch_mutex.h \
     ../../include/arch/unix/core_arch_semaphore.h \
     ../../include/arch/unix/core_arch_thread.h \
-    cond.c file.c net_lib.c thread.c errorcodes.c mutex.c rwlock.c \
-    start.c time.c semaphore.c signal.c pkbuf.c rand.c atomic.c
+    debug.c cond.c file.c net_lib.c thread.c errorcodes.c mutex.c rwlock.c \
+    time.c semaphore.c signal.c pkbuf.c rand.c atomic.c
 
 AM_CPPFLAGS = \
     -I$(top_srcdir) \

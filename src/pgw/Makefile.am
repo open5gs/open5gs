@@ -13,14 +13,12 @@ libpgw_la_SOURCES = \
 	pgw_fd_path.c pgw_gx_handler.c
 
 libpgw_la_DEPENDENCIES = \
-    $(top_srcdir)/lib/core/src/libcore.la \
 	$(top_srcdir)/lib/fd/gx/libfdgx.la \
     $(top_srcdir)/lib/fd/libfd.la \
     $(top_srcdir)/lib/gtp/libgtp.la \
     $(top_srcdir)/lib/ipfw/libipfw.la
 
 libpgw_la_LIBADD = \
-    $(top_srcdir)/lib/core/src/libcore.la \
 	$(top_srcdir)/lib/fd/gx/libfdgx.la \
     $(top_srcdir)/lib/fd/libfd.la \
     $(top_srcdir)/lib/gtp/libgtp.la \

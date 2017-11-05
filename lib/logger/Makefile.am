@@ -5,6 +5,9 @@ pkglib_LTLIBRARIES = liblogger.la
 liblogger_la_SOURCES = \
 	logger.h logger.c
 
+AM_LDFLAGS = \
+	-avoid-version -shared
+
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/lib/core/include
 

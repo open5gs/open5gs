@@ -37,9 +37,5 @@ AM_CFLAGS = \
 	-Wall -Werror \
 	-Wno-unused-function -Wno-unused-variable
 
-AM_LDFLAGS = -export-dynamic
-
-TESTS = checkepc.sh
-
 MAINTAINERCLEANFILES = Makefile.in 
 MOSTLYCLEANFILES = core *.stackdump

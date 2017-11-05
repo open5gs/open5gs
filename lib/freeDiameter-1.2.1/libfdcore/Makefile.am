@@ -10,7 +10,11 @@ libfdcore_la_SOURCES = \
 	p_out.c p_psm.c p_sr.c routing_dispatch.c server.c tcp.c \
 	fdd.tab.y lex.fdd.l version.c
 
-libfdcore_la_LIBADD = $(LIBS)
+libfdcore_la_DEPENDENCIES = \
+	$(top_srcdir)/libfdproto/libfdproto.la
+
+libfdcore_la_LIBADD = \
+	$(top_srcdir)/libfdproto/libfdproto.la
 
 if SCTP
 libfdcore_la_SOURCES += sctp.c sctp3436.c

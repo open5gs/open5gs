@@ -2,7 +2,7 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = libfdcore libfdproto
+SUBDIRS = libfdproto libfdcore
 
 MAINTAINERCLEANFILES = \
     configure include/freeDiameter/config.h.in \

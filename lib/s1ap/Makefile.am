@@ -2,7 +2,7 @@
 
 SUBDIRS = asn1c
 
-pkglib_LTLIBRARIES = libs1ap.la
+noinst_LTLIBRARIES = libs1ap.la
 
 libs1ap_la_SOURCES = \
 	s1ap_asn1c.h s1ap_ies_defs.h s1ap_message.h \
@@ -10,10 +10,12 @@ libs1ap_la_SOURCES = \
 	s1ap_ies_encoder.c s1ap_ies_decoder.c s1ap_ies_free.c s1ap_ies_xer_print.c
 
 libs1ap_la_DEPENDENCIES = \
+    $(top_srcdir)/lib/core/src/libcore.la \
     $(top_srcdir)/lib/base/libbase.la \
     $(top_srcdir)/lib/s1ap/asn1c/libs1apasn1c.la
 
 libs1ap_la_LIBADD = \
+    $(top_srcdir)/lib/core/src/libcore.la \
     $(top_srcdir)/lib/base/libbase.la \
     $(top_srcdir)/lib/s1ap/asn1c/libs1apasn1c.la
 

@@ -7,12 +7,12 @@ libhss_la_SOURCES = \
 	milenage.c hss_kdf.c hss_init.c hss_context.c hss_fd_path.c
 
 libhss_la_DEPENDENCIES = \
-    $(top_srcdir)/lib/core/src/libcore.la \
+    $(top_srcdir)/lib/base/libbase.la \
 	$(top_srcdir)/lib/fd/s6a/libfds6a.la \
     $(top_srcdir)/lib/fd/libfd.la
 
 libhss_la_LIBADD = \
-    $(top_srcdir)/lib/core/src/libcore.la \
+    $(top_srcdir)/lib/base/libbase.la \
 	$(top_srcdir)/lib/fd/s6a/libfds6a.la \
     $(top_srcdir)/lib/fd/libfd.la
 

@@ -6,7 +6,15 @@ libbase_la_SOURCES = \
 	types.h context.h \
 	types.c context.c
 
-libbase_la_LIBADD = @MONGOC_LIBS@
+libbase_la_DEPENDENCIES = \
+    $(top_srcdir)/lib/core/src/@OSDIR@/libcore@OSDIR@.la \
+    $(top_srcdir)/lib/core/src/libcore.la \
+	@MONGOC_LIBS@
+
+libbase_la_LIBADD = \
+    $(top_srcdir)/lib/core/src/@OSDIR@/libcore@OSDIR@.la \
+    $(top_srcdir)/lib/core/src/libcore.la \
+	@MONGOC_LIBS@
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \
