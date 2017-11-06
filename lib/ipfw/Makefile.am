@@ -1,15 +1,12 @@
 ## Process this file with automake to produce Makefile.in.
 
-noinst_LTLIBRARIES = libipfw.la
+pkglib_LTLIBRARIES = libipfw.la
 
 libipfw_la_SOURCES = \
 	ipfw2.h \
 	ipfw2.c dummynet.c ipv6.c tables.c \
 	expand_number.c humanize_number.c \
 	glue.c
-
-AM_LDFLAGS = \
-	-avoid-version -shared
 
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/lib/ipfw/objs/include_e \
