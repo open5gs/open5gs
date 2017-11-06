@@ -14,7 +14,6 @@ testcore_SOURCES += testsctp.c
 endif
 
 testcore_LDADD = \
-    $(top_srcdir)/lib/core/src/@OSDIR@/libcore@OSDIR@.la \
     $(top_srcdir)/lib/core/src/libcore.la
 
 AM_CPPFLAGS = \

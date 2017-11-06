@@ -1,7 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-SUBDIRS = @OSDIR@
-
+AUTOMAKE_OPTIONS = subdir-objects
 pkglib_LTLIBRARIES = libcore.la
 
 libcore_la_SOURCES = \
@@ -19,22 +18,27 @@ libcore_la_SOURCES = \
 	../include/core_atomic.h ../include/core_portable.h \
 	../include/core_version.h ../include/core_event.h ../include/core_hash.h \
 	../include/core_jsmn.h \
-	version.c fsm.c msgq.c ringbuf.c timer.c tlv.c tlv_msg.c \
+	\
+	debug.c version.c fsm.c msgq.c ringbuf.c timer.c tlv.c tlv_msg.c \
 	aes.c aes_cmac.c sha1.c sha1_hmac.c sha2.c sha2_hmac.c misc.c event.c \
-	hash.c jsmn.c start.c
-
-libcore_la_DEPENDENCIES = \
-    $(top_srcdir)/lib/core/src/@OSDIR@/libcore@OSDIR@.la
-
-libcore_la_LIBADD = \
-    $(top_srcdir)/lib/core/src/@OSDIR@/libcore@OSDIR@.la
+	hash.c jsmn.c \
+	\
+    ../include/arch/core_private_common.h \
+    ../include/arch/unix/core_arch_file.h \
+    ../include/arch/unix/core_arch_mutex.h \
+    ../include/arch/unix/core_arch_semaphore.h \
+    ../include/arch/unix/core_arch_thread.h \
+	unix/start.c unix/errorcodes.c unix/pkbuf.c \
+	unix/rand.c unix/time.c unix/file.c unix/net_lib.c \
+	unix/thread.c unix/signal.c \
+	unix/atomic.c unix/cond.c unix/mutex.c unix/rwlock.c unix/semaphore.c
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include/arch/@OSDIR@ \
     -I$(top_srcdir)/lib/core/include
 
 AM_CFLAGS = \
-	-Wall -Werror
+	-Wall -Werror @OSCPPFLAGS@
 
 MAINTAINERCLEANFILES = Makefile.in 
 MOSTLYCLEANFILES = core *.stackdump
