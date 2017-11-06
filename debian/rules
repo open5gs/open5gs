@@ -29,9 +29,9 @@ override_dh_auto_test:
 		mongodb_exclude_list="-x s1setup_test attach_test volte_test handover_test"; \
 	fi; \
 	mkdir -p debian/test/db debian/test/etc/nextepc/freeDiameter debian/test/var/log/nextepc; \
-	sed -e 's?@SYSCONF_DIR@?'`pwd`'/debian/test/etc?g;s?@LOCALSTATE_DIR@?'`pwd`'/debian/test/var?g;'$$remove_db_uri_conf'' support/config/nextepc.conf.in > debian/test/etc/nextepc/nextepc.conf; \
+	sed -e 's?\([_a-z0-9]*\)\.conf?'`pwd`'/debian/test/etc/nextepc/freeDiameter/\1.conf?g;s?@LOCALSTATE_DIR@?'`pwd`'/debian/test/var?g;'$$remove_db_uri_conf'' support/config/nextepc.conf.in > debian/test/etc/nextepc/nextepc.conf; \
 	for i in `find support/freeDiameter -name '*.conf.in' -printf "%f\n" | sed 's/.in$$//g'`; do \
-		sed 's?@SYSCONF_DIR@/nextepc?'`pwd`'/support?g;s?@LIB_DIR@/nextepc/freeDiameter/\([_a-z0-9]*\)\.so?'`pwd`'/lib/freeDiameter-1.2.1/extensions/\1/.libs/\1.so?g' support/freeDiameter/$$i.in > debian/test/etc/nextepc/freeDiameter/$$i; \
+		sed 's?@SYSCONF_DIR@/nextepc?'`pwd`'/support?g;s?\([_a-z0-9]*\)\.so?'`pwd`'/lib/freeDiameter-1.2.1/extensions/\1/.libs/\1.so?g' support/freeDiameter/$$i.in > debian/test/etc/nextepc/freeDiameter/$$i; \
 	done; \
 	if ! cat /proc/net/protocols | grep SCTP > /dev/null; then \
 		sctp_exclude_list="-x testsctp s1setup_test attach_test volte_test handover_test"; \

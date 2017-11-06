@@ -16,7 +16,7 @@
   },
   "PCRF" :
   {
-    "FD_CONF_PATH" : "@SYSCONF_DIR@/nextepc/freeDiameter/pcrf.conf"
+    "FD_CONF_PATH" : "pcrf.conf"
   }
 
 }

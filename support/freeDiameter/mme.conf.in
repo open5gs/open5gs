@@ -223,14 +223,14 @@ TLS_CA = "@SYSCONF_DIR@/nextepc/freeDiameter/cacert.pem";
 #  4 - full    - display the complete information on a single long line
 #  8 - tree    - display the complete information in an easier to read format spanning several lines.
 
-LoadExtension = "@LIB_DIR@/nextepc/freeDiameter/dbg_msg_dumps.so" : "0x8888";
-LoadExtension = "@LIB_DIR@/nextepc/freeDiameter/dict_rfc5777.so";
-LoadExtension = "@LIB_DIR@/nextepc/freeDiameter/dict_mip6i.so";
-LoadExtension = "@LIB_DIR@/nextepc/freeDiameter/dict_nasreq.so";
-LoadExtension = "@LIB_DIR@/nextepc/freeDiameter/dict_nas_mipv6.so";
-LoadExtension = "@LIB_DIR@/nextepc/freeDiameter/dict_dcca.so";
-LoadExtension = "@LIB_DIR@/nextepc/freeDiameter/dict_dcca_3gpp.so";
-LoadExtension = "@LIB_DIR@/nextepc/freeDiameter/dict_s6a.so";
+LoadExtension = "dbg_msg_dumps.so" : "0x8888";
+LoadExtension = "dict_rfc5777.so";
+LoadExtension = "dict_mip6i.so";
+LoadExtension = "dict_nasreq.so";
+LoadExtension = "dict_nas_mipv6.so";
+LoadExtension = "dict_dcca.so";
+LoadExtension = "dict_dcca_3gpp.so";
+LoadExtension = "dict_s6a.so";
 
 
 ##############################################################

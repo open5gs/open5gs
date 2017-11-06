@@ -19,7 +19,7 @@
 
   "MME" :
   {
-    "FD_CONF_PATH" : "@SYSCONF_DIR@/nextepc/freeDiameter/mme.conf",
+    "FD_CONF_PATH" : "mme.conf",
     "DEFAULT_PAGING_DRX" : "v64",
     "NETWORK" :
     {

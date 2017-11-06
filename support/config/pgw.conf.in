@@ -17,7 +17,7 @@
 
   "PGW" :
   {
-    "FD_CONF_PATH" : "@SYSCONF_DIR@/nextepc/freeDiameter/pgw.conf",
+    "FD_CONF_PATH" : "pgw.conf",
     "NETWORK" :
     {
       "GTPC_IPV4" : "127.76.0.3",

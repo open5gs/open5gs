@@ -1550,7 +1550,11 @@ int net_link_promisc(net_link_t *net_link, int enable)
 /** Close network interface */
 int net_link_close(net_link_t *net_link)
 {
-    d_assert(net_link,return -1, "net_link is NULL\n");
+    if (!net_link)
+    {
+        d_error("net_link is NULL");
+        return -1;
+    }
     /* Disable promisc mode if enabled */
     net_link_promisc(net_link, 0);
     close(net_link->fd);
@@ -1562,7 +1566,11 @@ int net_link_close(net_link_t *net_link)
 /** Close network interface */
 int net_raw_close(net_link_t *net_link)
 {
-    d_assert(net_link,return -1, "net_link is NULL\n");
+    if (!net_link)
+    {
+        d_error("net_link is NULL");
+        return -1;
+    }
     close(net_link->fd);
     pool_free_node(&link_pool, net_link);
     return 0;
@@ -1570,7 +1578,11 @@ int net_raw_close(net_link_t *net_link)
 
 int net_tun_close(net_link_t *net_link)
 {
-    d_assert(net_link,return -1, "net_link is NULL\n");
+    if (!net_link)
+    {
+        d_error("net_link is NULL");
+        return -1;
+    }
     close(net_link->fd);
     pool_free_node(&link_pool, net_link);
     return 0;
