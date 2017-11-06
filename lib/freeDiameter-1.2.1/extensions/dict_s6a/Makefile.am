@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-pkglib_LTLIBRARIES = dict_s6a.la
+extlib_LTLIBRARIES = dict_s6a.la
 
 dict_s6a_la_SOURCES = \
 	dict_s6a.c

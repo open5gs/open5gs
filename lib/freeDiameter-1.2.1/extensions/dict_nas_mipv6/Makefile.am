@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-pkglib_LTLIBRARIES = dict_nas_mipv6.la
+extlib_LTLIBRARIES = dict_nas_mipv6.la
 
 dict_nas_mipv6_la_SOURCES = \
 	dict_nas_mipv6.c

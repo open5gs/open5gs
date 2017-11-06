@@ -119,12 +119,14 @@ $2=`(test "x$prefix" = xNONE && prefix="$ac_default_prefix"
      echo "[$]_lcl_receval")`])
 adl_RECURSIVE_EVAL(["${libdir}"], [LIB_DIR])
 adl_RECURSIVE_EVAL(["${sysconfdir}"], [SYSCONF_DIR])
+
+AC_SUBST(extlibdir)
+extlibdir=${libdir}/nextepc/freeDiameter
 AC_DEFINE_UNQUOTED([DEFAULT_CONF_PATH],
         ["${SYSCONF_DIR}/nextepc/freeDiameter"], [Default Configuration Path])
 AC_DEFINE_UNQUOTED([DEFAULT_EXTENSIONS_PATH],
-        ["${LIB_DIR}/nextepc"], [Default Extensions Path])
+        ["${LIB_DIR}/nextepc/freeDiameter"], [Default Extensions Path])
 AC_SUBST(PREFIX)
-
 
 AC_CHECK_FUNCS([strndup])
 

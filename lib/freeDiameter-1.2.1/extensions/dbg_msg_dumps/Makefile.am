@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-pkglib_LTLIBRARIES = dbg_msg_dumps.la
+extlib_LTLIBRARIES = dbg_msg_dumps.la
 
 dbg_msg_dumps_la_SOURCES = \
 	dbg_msg_dumps.c

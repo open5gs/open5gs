@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-pkglib_LTLIBRARIES = dict_mip6i.la
+extlib_LTLIBRARIES = dict_mip6i.la
 
 dict_mip6i_la_SOURCES = \
 	dict_mip6i.c

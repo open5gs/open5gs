@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-pkglib_LTLIBRARIES = dict_rfc5777.la
+extlib_LTLIBRARIES = dict_rfc5777.la
 
 dict_rfc5777_la_SOURCES = \
 	dict_rfc5777.c

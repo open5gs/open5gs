@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-pkglib_LTLIBRARIES = dict_nasreq.la
+extlib_LTLIBRARIES = dict_nasreq.la
 
 dict_nasreq_la_SOURCES = \
 	dict_nasreq.c
