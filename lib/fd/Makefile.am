@@ -2,8 +2,6 @@
 
 AUTOMAKE_OPTIONS = subdir-objects
 
-SUBDIRS = extensions
-
 pkglib_LTLIBRARIES = libfd.la
 
 libfd_la_SOURCES = \

@@ -69,11 +69,25 @@ static int dict_dcca_entry(char * conffile)
 	
     /* Applications section */
     {
+#if 0 /* modified by acetcom */
 	/* DCCA */
 	{
 	    struct dict_application_data data = {        4, "Diameter Credit Control Application" 			};
 	    CHECK_dict_new( DICT_APPLICATION, &data, NULL, &dcca);
 	}                                
+#else
+                /* Create the vendors */
+                {
+                        struct dict_vendor_data vendor_data = { 10415, "3GPP" };
+                        CHECK_FCT(fd_dict_new(fd_g_config->cnf_dict, DICT_VENDOR, &vendor_data, NULL, NULL));
+                }
+                {
+                        struct dict_object * vendor;
+                        CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_VENDOR, VENDOR_BY_NAME, "3GPP", &vendor, ENOENT));
+                        struct dict_application_data app_data = { 16777238, "Gx" };
+                        CHECK_FCT(fd_dict_new(fd_g_config->cnf_dict, DICT_APPLICATION, &app_data, vendor, &dcca));
+                }
+#endif /* end of modification */
     }
 	
     /* Result codes */
@@ -1362,7 +1376,7 @@ static int dict_dcca_entry(char * conffile)
 		    { "Origin-Realm", RULE_REQUIRED, -1, 1 },
 		    { "Destination-Realm", RULE_REQUIRED, -1, 1 },
 		    { "Auth-Application-Id", RULE_REQUIRED, -1, 1 },
-		    { "Service-Context-Id", RULE_REQUIRED, -1, 1 },
+		    { "Service-Context-Id", RULE_OPTIONAL, -1, 1 },
 		    { "CC-Request-Type", RULE_REQUIRED, -1, 1 },
 		    { "CC-Request-Number", RULE_REQUIRED, -1, 1 },
 		    { "Destination-Host", RULE_OPTIONAL, -1, 1 },
@@ -1446,7 +1460,7 @@ static int dict_dcca_entry(char * conffile)
 	    struct local_rules_definition rules[] = 
 		{ 	 
 		    { "Session-Id", RULE_FIXED_HEAD, -1, 1 },
-		    { "Result-Code", RULE_REQUIRED, -1, 1 },
+		    { "Result-Code", RULE_OPTIONAL, -1, 1 },
 		    { "Origin-Host", RULE_REQUIRED, -1, 1 },
 		    { "Origin-Realm", RULE_REQUIRED, -1, 1 },
 		    { "Auth-Application-Id", RULE_REQUIRED, -1, 1 },
