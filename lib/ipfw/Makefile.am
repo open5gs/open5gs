@@ -8,6 +8,9 @@ libipfw_la_SOURCES = \
 	expand_number.c humanize_number.c \
 	glue.c
 
+AM_LDFLAGS = \
+	-version-info @LIBVERSION@
+
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/lib/ipfw/objs/include_e \
 	-include glue.h \

@@ -19,6 +19,9 @@ libs1ap_la_LIBADD = \
     $(top_srcdir)/lib/base/libbase.la \
     $(top_srcdir)/lib/s1ap/asn1c/libs1apasn1c.la
 
+AM_LDFLAGS = \
+	-version-info @LIBVERSION@
+
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \
     -I$(top_srcdir)/lib/base \

@@ -811,6 +811,9 @@ libs1apasn1c_la_DEPENDENCIES = \
 libs1apasn1c_la_LIBADD = \
     $(top_srcdir)/lib/core/src/libcore.la
 
+AM_LDFLAGS = \
+	-version-info @LIBVERSION@
+
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include
 

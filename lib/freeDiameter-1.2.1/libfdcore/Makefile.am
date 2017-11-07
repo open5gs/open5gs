@@ -25,6 +25,9 @@ AM_LFLAGS = -p -Cem -Pfdd
 
 BUILT_SOURCES = fdd.tab.h
 
+AM_LDFLAGS = \
+	-version-info @LIBVERSION@
+
 AM_CPPFLAGS = \
     -I$(top_srcdir)/include
 

@@ -26,6 +26,9 @@ libfd_la_LIBADD = \
     $(top_srcdir)/lib/@FREEDIAMETER_DIR@/libfdcore/libfdcore.la \
     $(top_srcdir)/lib/@FREEDIAMETER_DIR@/libfdproto/libfdproto.la
 
+AM_LDFLAGS = \
+	-version-info @LIBVERSION@
+
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \
 	-I$(top_srcdir)/lib/base \

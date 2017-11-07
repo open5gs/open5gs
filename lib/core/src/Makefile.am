@@ -33,6 +33,9 @@ libcore_la_SOURCES = \
 	unix/thread.c unix/signal.c \
 	unix/atomic.c unix/cond.c unix/mutex.c unix/rwlock.c unix/semaphore.c
 
+AM_LDFLAGS = \
+	-version-info @LIBVERSION@
+
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include/arch/@OSDIR@ \
     -I$(top_srcdir)/lib/core/include

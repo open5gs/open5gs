@@ -8,6 +8,9 @@ libfdproto_la_SOURCES = \
 	lists.c log.c messages.c ostr.c portability.c rt_data.c \
 	sessions.c utils.c version.c
 
+AM_LDFLAGS = \
+	-version-info @LIBVERSION@
+
 AM_CPPFLAGS = \
     -I$(top_srcdir)/include
 

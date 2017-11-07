@@ -10,6 +10,9 @@ dnl implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 AC_INIT([NEXTEPC], [0.2.0], [acetcom@gmail.com])
 
+AC_SUBST(LIBVERSION)
+LIBVERSION=1:0:0
+
 CORE_CONFIG_NICE(config.nice)
 
 dnl Must come before AM_INIT_AUTOMAKE.

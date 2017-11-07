@@ -13,6 +13,9 @@ libbase_la_LIBADD = \
     $(top_srcdir)/lib/core/src/libcore.la \
 	@MONGOC_LIBS@
 
+AM_LDFLAGS = \
+	-version-info @LIBVERSION@
+
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \
 	@MONGOC_CFLAGS@
