@@ -17,7 +17,7 @@ CORE_CONFIG_NICE(config.nice)
 
 dnl Must come before AM_INIT_AUTOMAKE.
 AC_CONFIG_AUX_DIR([build-aux])
-AM_INIT_AUTOMAKE([1.10 -Wall -Werror foreign])
+AM_INIT_AUTOMAKE([1.10 -Wall -Werror foreign subdir-objects])
 
 # Where to generate output; srcdir location.
 AC_CONFIG_HEADERS([config.h:config.in])dnl Keep filename to 8.3 for MS-DOS.
@@ -72,7 +72,7 @@ AC_PROG_MKDIR_P
 AC_PROG_CC
 AC_PROG_INSTALL
 AM_PROG_AR
-LT_INIT
+LT_INIT([pic-only disable-static])
 
 AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
 if test "x$PKG_CONFIG" = "xno"; then

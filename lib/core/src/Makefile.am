@@ -1,6 +1,5 @@
 ## Process this file with automake to produce Makefile.in
 
-AUTOMAKE_OPTIONS = subdir-objects
 pkglib_LTLIBRARIES = libcore.la
 
 libcore_la_SOURCES = \

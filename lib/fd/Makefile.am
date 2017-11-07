@@ -1,7 +1,5 @@
 ## Process this file with automake to produce Makefile.in
 
-AUTOMAKE_OPTIONS = subdir-objects
-
 pkglib_LTLIBRARIES = libfd.la
 
 libfd_la_SOURCES = \

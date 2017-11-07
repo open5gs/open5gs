@@ -72,7 +72,7 @@ AC_PROG_INSTALL
 AC_PROG_YACC
 AC_PROG_LEX
 AM_PROG_AR
-LT_INIT([dlopen])
+LT_INIT([dlopen pic-only disable-static])
 
 dnl Check Endian
 AC_C_BIGENDIAN
