@@ -3,27 +3,28 @@
 pkglib_LTLIBRARIES = libbase.la
 
 libbase_la_SOURCES = \
-	types.h context.h \
-	types.c context.c
+	types.h types.c \
+	$(NULL)
 
 libbase_la_DEPENDENCIES = \
-    $(top_srcdir)/lib/core/src/libcore.la
+    $(top_srcdir)/lib/core/src/libcore.la \
+	$(NULL)
 
 libbase_la_LIBADD = \
     $(top_srcdir)/lib/core/src/libcore.la \
-	@MONGOC_LIBS@
+	$(NULL)
 
 AM_LDFLAGS = \
-	-version-info @LIBVERSION@
+	-version-info @LIBVERSION@ \
+	$(NULL)
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \
-	@MONGOC_CFLAGS@
+	$(NULL)
 
 AM_CFLAGS = \
-	-Wall -Werror
-
-DEFS = @DEFS@ -DSYSCONF_DIR=\"$(sysconfdir)/\"
+	-Wall -Werror \
+	$(NULL)
 
 MAINTAINERCLEANFILES = Makefile.in 
 MOSTLYCLEANFILES = *.stackdump

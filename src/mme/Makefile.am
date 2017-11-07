@@ -20,7 +20,8 @@ libmme_la_SOURCES = \
 	emm_sm.c emm_handler.c emm_build.c \
 	esm_sm.c esm_handler.c esm_build.c \
 	mme_gtp_path.c mme_s11_build.c mme_s11_handler.c \
-	mme_sm.c 
+	mme_sm.c \
+	$(NULL)
 
 if USRSCTP
 libmme_la_SOURCES += s1ap_usrsctp.c
@@ -32,13 +33,17 @@ libmme_la_DEPENDENCIES = \
     $(top_srcdir)/lib/s1ap/libs1ap.la \
     $(top_srcdir)/lib/nas/libnas.la \
 	$(top_srcdir)/lib/fd/libfd.la \
-    $(top_srcdir)/lib/gtp/libgtp.la
+    $(top_srcdir)/lib/gtp/libgtp.la \
+    $(top_srcdir)/src/app/libapp.la \
+	$(NULL)
 
 libmme_la_LIBADD = \
     $(top_srcdir)/lib/s1ap/libs1ap.la \
     $(top_srcdir)/lib/nas/libnas.la \
     $(top_srcdir)/lib/fd/libfd.la \
-    $(top_srcdir)/lib/gtp/libgtp.la
+    $(top_srcdir)/lib/gtp/libgtp.la \
+    $(top_srcdir)/src/app/libapp.la \
+	$(NULL)
 
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/lib/core/include \
@@ -49,10 +54,13 @@ AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/fd/s6a \
     -I$(top_srcdir)/lib/fd \
     -I$(top_srcdir)/lib/gtp \
-	-I$(top_srcdir)/lib/@FREEDIAMETER_DIR@/include
+	-I$(top_srcdir)/lib/@FREEDIAMETER_DIR@/include \
+	-I$(top_srcdir)/src/app \
+	$(NULL)
 
 AM_CFLAGS = \
-	-Wall -Werror
+	-Wall -Werror \
+	$(NULL)
 
 MAINTAINERCLEANFILES = Makefile.in
 MOSTLYCLEANFILES = core *.stackdump

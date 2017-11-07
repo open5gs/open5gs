@@ -26,7 +26,8 @@ nextepc_epcd_LDADD = $(top_srcdir)/src/libepc.la
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \
-    -I$(top_srcdir)/src
+    -I$(top_srcdir)/src/app \
+	$(NULL)
 
 install-data-hook:
 	$(MKDIR_P) $(DESTDIR)/$(localstatedir)/log/nextepc

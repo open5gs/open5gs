@@ -10,17 +10,22 @@ libpgw_la_SOURCES = \
 	pgw_ipfw.c \
     pgw_init.c pgw_event.c pgw_context.c pgw_sm.c \
 	pgw_gtp_path.c pgw_s5c_build.c pgw_s5c_handler.c \
-	pgw_fd_path.c pgw_gx_handler.c
+	pgw_fd_path.c pgw_gx_handler.c \
+	$(NULL)
 
 libpgw_la_DEPENDENCIES = \
     $(top_srcdir)/lib/fd/libfd.la \
     $(top_srcdir)/lib/gtp/libgtp.la \
-    $(top_srcdir)/lib/ipfw/libipfw.la
+    $(top_srcdir)/lib/ipfw/libipfw.la \
+    $(top_srcdir)/src/app/libapp.la \
+	$(NULL)
 
 libpgw_la_LIBADD = \
     $(top_srcdir)/lib/fd/libfd.la \
     $(top_srcdir)/lib/gtp/libgtp.la \
-    $(top_srcdir)/lib/ipfw/libipfw.la
+    $(top_srcdir)/lib/ipfw/libipfw.la \
+    $(top_srcdir)/src/app/libapp.la \
+	$(NULL)
 
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/lib/core/include \
@@ -29,10 +34,13 @@ AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/fd \
     -I$(top_srcdir)/lib/gtp \
 	-I$(top_srcdir)/lib/@FREEDIAMETER_DIR@/include \
-    -I$(top_srcdir)/lib/ipfw
+    -I$(top_srcdir)/lib/ipfw \
+	-I$(top_srcdir)/src/app \
+	$(NULL)
 
 AM_CFLAGS = \
-	-Wall -Werror
+	-Wall -Werror \
+	$(NULL)
 
 MAINTAINERCLEANFILES = Makefile.in
 MOSTLYCLEANFILES = core *.stackdump

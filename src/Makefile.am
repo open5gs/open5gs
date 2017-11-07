@@ -1,66 +1,53 @@
 ## Process this file with automake to produce Makefile.in.
 
-SUBDIRS = mme hss sgw pgw pcrf
+SUBDIRS = app mme hss sgw pgw pcrf
 
 noinst_LTLIBRARIES = libmme.la libhss.la libsgw.la libpgw.la libpcrf.la libepc.la
 
-COMMON_SOURCES = init.c
-COMMON_INCLUDES = app.h
+libmme_la_SOURCES = mme.c
+libmme_la_DEPENDENCIES = $(top_srcdir)/src/mme/libmme.la 
+libmme_la_LIBADD = $(top_srcdir)/src/mme/libmme.la
 
-libmme_la_SOURCES = $(COMMON_INCLUDES) mme.c $(COMMON_SOURCES)
-libmme_la_DEPENDENCIES = \
-    $(top_srcdir)/src/mme/libmme.la
-libmme_la_LIBADD = \
-    $(top_srcdir)/src/mme/libmme.la
+libhss_la_SOURCES = hss.c
+libhss_la_DEPENDENCIES = $(top_srcdir)/src/hss/libhss.la
+libhss_la_LIBADD = $(top_srcdir)/src/hss/libhss.la
 
-libhss_la_SOURCES = $(COMMON_INCLUDES) hss.c $(COMMON_SOURCES)
-libhss_la_DEPENDENCIES = \
-    $(top_srcdir)/src/hss/libhss.la
-libhss_la_LIBADD = \
-    $(top_srcdir)/src/hss/libhss.la
+libsgw_la_SOURCES = sgw.c
+libsgw_la_DEPENDENCIES = $(top_srcdir)/src/sgw/libsgw.la
+libsgw_la_LIBADD = $(top_srcdir)/src/sgw/libsgw.la 
 
-libsgw_la_SOURCES = $(COMMON_INCLUDES) sgw.c $(COMMON_SOURCES)
-libsgw_la_DEPENDENCIES = \
-    $(top_srcdir)/src/sgw/libsgw.la
-libsgw_la_LIBADD = \
-    $(top_srcdir)/src/sgw/libsgw.la
+libpgw_la_SOURCES = pgw.c
+libpgw_la_DEPENDENCIES = $(top_srcdir)/src/pgw/libpgw.la
+libpgw_la_LIBADD = $(top_srcdir)/src/pgw/libpgw.la
 
-libpgw_la_SOURCES = $(COMMON_INCLUDES) pgw.c $(COMMON_SOURCES)
-libpgw_la_DEPENDENCIES = \
-    $(top_srcdir)/src/pgw/libpgw.la
-libpgw_la_LIBADD = \
-    $(top_srcdir)/src/pgw/libpgw.la
+libpcrf_la_SOURCES = pcrf.c
+libpcrf_la_DEPENDENCIES = $(top_srcdir)/src/pcrf/libpcrf.la 
+libpcrf_la_LIBADD = $(top_srcdir)/src/pcrf/libpcrf.la 
 
-libpcrf_la_SOURCES = $(COMMON_INCLUDES) pcrf.c $(COMMON_SOURCES)
-libpcrf_la_DEPENDENCIES = \
-    $(top_srcdir)/src/pcrf/libpcrf.la
-libpcrf_la_LIBADD = \
-    $(top_srcdir)/src/pcrf/libpcrf.la
-
-libepc_la_SOURCES = $(COMMON_INCLUDES) epc.c $(COMMON_SOURCES)
+libepc_la_SOURCES = epc.c
 libepc_la_DEPENDENCIES = \
     $(top_srcdir)/src/mme/libmme.la \
     $(top_srcdir)/src/hss/libhss.la \
     $(top_srcdir)/src/sgw/libsgw.la \
     $(top_srcdir)/src/pgw/libpgw.la \
-    $(top_srcdir)/src/pcrf/libpcrf.la
+    $(top_srcdir)/src/pcrf/libpcrf.la \
+	$(NULL)
 libepc_la_LIBADD = \
     $(top_srcdir)/src/mme/libmme.la \
     $(top_srcdir)/src/hss/libhss.la \
     $(top_srcdir)/src/sgw/libsgw.la \
     $(top_srcdir)/src/pgw/libpgw.la \
-    $(top_srcdir)/src/pcrf/libpcrf.la
+    $(top_srcdir)/src/pcrf/libpcrf.la \
+	$(NULL)
 
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/lib/core/include \
-	-I$(top_srcdir)/lib/base
+	-I$(top_srcdir)/src/app \
+	$(NULL)
 
 AM_CFLAGS = \
-	-Wall -Werror
-
-DEFS = @DEFS@ \
-	   -DSYSCONF_DIR=\"$(sysconfdir)/\" \
-	   -DLOCALSTATE_DIR=\"$(localstatedir)/\"
+	-Wall -Werror \
+	$(NULL)
 
 MAINTAINERCLEANFILES = Makefile.in
 MOSTLYCLEANFILES = core *.stackdump
