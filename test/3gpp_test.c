@@ -5,7 +5,7 @@
 
 #include "testutil.h"
 
-static void _base_test1(abts_case *tc, void *data)
+static void _3gpp_test1(abts_case *tc, void *data)
 {
     status_t rv;
     plmn_id_t plmn_id;
@@ -26,11 +26,11 @@ static void _base_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, 2, plmn_id_mnc_len(&plmn_id));
 }
 
-abts_suite *test_base(abts_suite *suite)
+abts_suite *test_3gpp(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
-    abts_run_test(suite, _base_test1, NULL);
+    abts_run_test(suite, _3gpp_test1, NULL);
 
     return suite;
 }

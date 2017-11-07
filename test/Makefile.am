@@ -5,7 +5,7 @@ bin_PROGRAMS = testepc
 testepc_SOURCES = \
 	abts.h abts_tests.h testutil.h \
 	abts.c testutil.c testpacket.h testpacket.c \
-	base_test.c s1ap_message_test.c nas_message_test.c gtp_message_test.c \
+	3gpp_test.c s1ap_message_test.c nas_message_test.c gtp_message_test.c \
 	security_test.c s1setup_test.c attach_test.c volte_test.c handover_test.c \
 	$(NULL)
 
@@ -21,7 +21,7 @@ testepc_LDADD = \
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \
-    -I$(top_srcdir)/lib/base \
+    -I$(top_srcdir)/lib/3gpp \
     -I$(top_srcdir)/lib/s1ap/asn1c \
     -I$(top_srcdir)/lib/s1ap \
     -I$(top_srcdir)/lib/nas \

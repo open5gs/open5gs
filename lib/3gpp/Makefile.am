@@ -1,16 +1,16 @@
 ## Process this file with automake to produce Makefile.in
 
-pkglib_LTLIBRARIES = libbase.la
+pkglib_LTLIBRARIES = lib3gpp.la
 
-libbase_la_SOURCES = \
+lib3gpp_la_SOURCES = \
 	types.h types.c \
 	$(NULL)
 
-libbase_la_DEPENDENCIES = \
+lib3gpp_la_DEPENDENCIES = \
     $(top_srcdir)/lib/core/src/libcore.la \
 	$(NULL)
 
-libbase_la_LIBADD = \
+lib3gpp_la_LIBADD = \
     $(top_srcdir)/lib/core/src/libcore.la \
 	$(NULL)
 

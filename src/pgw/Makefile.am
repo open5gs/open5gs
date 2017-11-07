@@ -29,7 +29,7 @@ libpgw_la_LIBADD = \
 
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/lib/core/include \
-    -I$(top_srcdir)/lib/base \
+    -I$(top_srcdir)/lib/3gpp \
     -I$(top_srcdir)/lib/fd/gx \
     -I$(top_srcdir)/lib/fd \
     -I$(top_srcdir)/lib/gtp \
