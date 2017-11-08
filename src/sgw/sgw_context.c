@@ -3,8 +3,8 @@
 #include "core_debug.h"
 #include "core_pool.h"
 #include "core_index.h"
-#include "core_jsmn.h"
 #include "core_lib.h"
+#include <mongoc.h>
 
 #include "types.h"
 #include "gtp_types.h"
@@ -107,135 +107,82 @@ status_t sgw_context_parse_config()
 {
     status_t rv;
     config_t *config = &context_self()->config;
+    bson_iter_t iter;
+    c_uint32_t length = 0;
 
-    char *json = config->json;
-    jsmntok_t *token = config->token;
-
-    typedef enum {
-        START, ROOT,
-        SGW_START, SGW_ROOT,
-        SKIP, STOP
-    } parse_state;
-    parse_state state = START;
-    parse_state stack = STOP;
-
-    size_t root_tokens = 0;
-    size_t sgw_tokens = 0;
-    size_t skip_tokens = 0;
-    int i, j, m, n;
-    int arr, size;
+    d_assert(config, return CORE_ERROR, );
 
     rv = sgw_context_prepare();
     if (rv != CORE_OK) return rv;
 
-    for (i = 0, j = 1; j > 0; i++, j--)
+    if (!bson_iter_init(&iter, config->bson))
     {
-        jsmntok_t *t = &token[i];
+        d_error("bson_iter_init failed in this document");
+        return CORE_ERROR;
+    }
 
-        j += t->size;
-
-        switch (state)
+    while(bson_iter_next(&iter))
+    {
+        const char *key = bson_iter_key(&iter);
+        if (!strcmp(key, "SGW") && BSON_ITER_HOLDS_DOCUMENT(&iter))
         {
-            case START:
+            bson_iter_t sgw_iter;
+            bson_iter_recurse(&iter, &sgw_iter);
+            while(bson_iter_next(&sgw_iter))
             {
-                state = ROOT;
-                root_tokens = t->size;
-
-                break;
-            }
-            case ROOT:
-            {
-                if (jsmntok_equal(json, t, "SGW") == 0)
+                const char *sgw_key = bson_iter_key(&sgw_iter);
+                if (!strcmp(sgw_key, "NETWORK"))
                 {
-                    state = SGW_START;
-                }
-                else
-                {
-                    state = SKIP;
-                    stack = ROOT;
-                    skip_tokens = t->size;
+                    bson_iter_t network_iter;
 
-                    root_tokens--;
-                    if (root_tokens == 0) state = STOP;
-                }
-                break;
-            }
-            case SGW_START:
-            {
-                state = SGW_ROOT;
-                sgw_tokens = t->size;
-
-                break;
-            }
-            case SGW_ROOT:
-            {
-                if (jsmntok_equal(json, t, "NETWORK") == 0)
-                {
-                    m = 1;
-                    size = 1;
-
-                    if ((t+1)->type == JSMN_ARRAY)
+                    if (BSON_ITER_HOLDS_ARRAY(&sgw_iter))
                     {
-                        m = 2;
-                    }
-
-                    for (arr = 0; arr < size; arr++)
-                    {
-                        for (n = 1; n > 0; m++, n--)
+                        bson_iter_t array_iter;
+                        bson_iter_recurse(&sgw_iter, &array_iter);
+                        if (bson_iter_next(&array_iter))
                         {
-                            n += (t+m)->size;
+                            /* We will pick only first item of SGW.NETWORK
+                             * if the type is an array */
+                            bson_iter_recurse(&array_iter, &network_iter);
+                        }
+                    }
+                    else if (BSON_ITER_HOLDS_DOCUMENT(&sgw_iter))
+                    {
+                        bson_iter_recurse(&sgw_iter, &network_iter);
+                    }
+                    else
+                        d_assert(0, return CORE_ERROR,);
 
-                            if (jsmntok_equal(json, t+m, "GTPC_IPV4") == 0)
-                            {
-                                char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.gtpc_addr = inet_addr(v);
-                            }
-                            else if (jsmntok_equal(json, t+m, "GTPC_PORT") == 0)
-                            {
-                                char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.gtpc_port = atoi(v);
-                            }
-                            else if (jsmntok_equal(json, t+m, "GTPU_IPV4") == 0)
-                            {
-                                char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.gtpu_addr = inet_addr(v);
-                            }
-                            else if (jsmntok_equal(json, t+m, "GTPU_PORT") == 0)
-                            {
-                                char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.gtpu_port = atoi(v);
-                            }
+                    while(bson_iter_next(&network_iter))
+                    {
+                        const char *network_key = bson_iter_key(&network_iter);
+                        if (!strcmp(network_key, "GTPC_IPV4") &&
+                            BSON_ITER_HOLDS_UTF8(&network_iter))
+                        {
+                            const char *v =
+                                bson_iter_utf8(&network_iter, &length);
+                            if (v) self.gtpc_addr = inet_addr(v);
+                        }
+                        else if (!strcmp(network_key, "GTPC_PORT") &&
+                            BSON_ITER_HOLDS_INT32(&network_iter))
+                        {
+                            self.gtpc_port = bson_iter_int32(&network_iter);
+                        }
+                        else if (!strcmp(network_key, "GTPU_IPV4") &&
+                            BSON_ITER_HOLDS_UTF8(&network_iter))
+                        {
+                            const char *v =
+                                bson_iter_utf8(&network_iter, &length);
+                            if (v) self.gtpu_addr = inet_addr(v);
+                        }
+                        else if (!strcmp(network_key, "GTPU_PORT") &&
+                            BSON_ITER_HOLDS_UTF8(&network_iter))
+                        {
+                            self.gtpu_port = bson_iter_int32(&network_iter);
                         }
                     }
                 }
-
-                state = SKIP;
-                stack = SGW_ROOT;
-                skip_tokens = t->size;
-
-                sgw_tokens--;
-                if (sgw_tokens == 0) stack = ROOT;
-                break;
             }
-            case SKIP:
-            {
-                skip_tokens += t->size;
-
-                skip_tokens--;
-                if (skip_tokens == 0) state = stack;
-                break;
-            }
-            case STOP:
-            {
-                break;
-            }
-            default:
-            {
-                d_error("Failed to parse configuration in the state(%u)", 
-                        state);
-                break;
-            }
-
         }
     }
 

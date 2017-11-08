@@ -49,7 +49,7 @@ typedef struct _served_gummei {
 } served_gummei_t;
 
 typedef struct _mme_context_t {
-    char            *fd_conf_path;  /* MME freeDiameter conf path */
+    const char      *fd_conf_path;  /* MME freeDiameter conf path */
 
     c_uint32_t      s1ap_addr;      /* MME S1AP local address */
     c_uint16_t      s1ap_port;      /* MME S1AP local port */

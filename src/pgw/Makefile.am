@@ -36,6 +36,7 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/lib/@FREEDIAMETER_DIR@/include \
     -I$(top_srcdir)/lib/ipfw \
 	-I$(top_srcdir)/src/app \
+	@MONGOC_CFLAGS@ \
 	$(NULL)
 
 AM_CFLAGS = \

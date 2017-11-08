@@ -24,7 +24,7 @@ typedef struct _hss_db_auth_info_t {
 } hss_db_auth_info_t;
 
 typedef struct _hss_context_t {
-    char        *fd_conf_path;          /* HSS freeDiameter conf path */
+    const char  *fd_conf_path;          /* HSS freeDiameter conf path */
 
     void        *subscriberCollection;
     mutex_id    db_lock;

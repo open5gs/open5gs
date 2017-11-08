@@ -3,6 +3,7 @@
 #include "core_debug.h"
 #include "core_pool.h"
 #include "core_lib.h"
+#include <mongoc.h>
 
 #include "gtp_path.h"
 #include "s1ap_message.h"
@@ -206,179 +207,180 @@ status_t mme_context_parse_config()
 {
     status_t rv;
     config_t *config = &context_self()->config;
+    bson_iter_t iter;
+    c_uint32_t length = 0;
 
-    char *json = config->json;
-    jsmntok_t *token = config->token;
-
-    typedef enum { 
-        START, ROOT, 
-        MME_START, MME_ROOT, 
-        SGW_START, SGW_ROOT, 
-        PGW_START, PGW_ROOT, 
-        SKIP, STOP 
-    } parse_state;
-    parse_state state = START;
-    parse_state stack = STOP;
-
-    size_t root_tokens = 0;
-    size_t mme_tokens = 0;
-    size_t sgw_tokens = 0;
-    size_t pgw_tokens = 0;
-    size_t skip_tokens = 0;
-    int i, j, m, n, p, q;
-    int arr, size, arr1, size1;
+    d_assert(config, return CORE_ERROR, );
 
     rv = mme_context_prepare();
     if (rv != CORE_OK) return rv;
 
-    for (i = 0, j = 1; j > 0; i++, j--)
+    if (!bson_iter_init(&iter, config->bson))
     {
-        jsmntok_t *t = &token[i];
+        d_error("bson_iter_init failed in this document");
+        return CORE_ERROR;
+    }
 
-        j += t->size;
-
-        switch (state)
+    while(bson_iter_next(&iter))
+    {
+        const char *key = bson_iter_key(&iter);
+        if (!strcmp(key, "MME") && BSON_ITER_HOLDS_DOCUMENT(&iter))
         {
-            case START:
+            bson_iter_t mme_iter;
+            bson_iter_recurse(&iter, &mme_iter);
+            while(bson_iter_next(&mme_iter))
             {
-                state = ROOT;
-                root_tokens = t->size;
+                const char *mme_key = bson_iter_key(&mme_iter);
+                if (!strcmp(mme_key, "RELATIVE_CAPACITY") &&
+                    BSON_ITER_HOLDS_INT32(&mme_iter))
+                {
+                    self.relative_capacity = bson_iter_int32(&mme_iter);
+                }
+                else if (!strcmp(mme_key, "FD_CONF_PATH") &&
+                    BSON_ITER_HOLDS_UTF8(&mme_iter))
+                {
+                    self.fd_conf_path = bson_iter_utf8(&mme_iter, &length);
+                }
+                else if (!strcmp(mme_key, "NETWORK"))
+                {
+                    bson_iter_t network_iter;
 
-                break;
-            }
-            case ROOT:
-            {
-                if (jsmntok_equal(json, t, "MME") == 0)
-                {
-                    state = MME_START;
-                }
-                else if (jsmntok_equal(json, t, "SGW") == 0)
-                {
-                    state = SGW_START;
-                }
-                else if (jsmntok_equal(json, t, "PGW") == 0)
-                {
-                    state = PGW_START;
-                }
-                else
-                {
-                    state = SKIP;
-                    stack = ROOT;
-                    skip_tokens = t->size;
-
-                    root_tokens--;
-                    if (root_tokens == 0) state = STOP;
-                }
-
-                break;
-            }
-            case MME_START:
-            {
-                state = MME_ROOT;
-                mme_tokens = t->size;
-
-                break;
-            }
-            case MME_ROOT:
-            {
-                if (jsmntok_equal(json, t, "RELATIVE_CAPACITY") == 0)
-                {
-                    char *v = jsmntok_to_string(json, t+1);
-                    if (v) self.relative_capacity = atoi(v);
-                }
-                else if (jsmntok_equal(json, t, "FD_CONF_PATH") == 0)
-                {
-                    self.fd_conf_path = jsmntok_to_string(json, t+1);
-                }
-                else if (jsmntok_equal(json, t, "NETWORK") == 0)
-                {
-                    m = 1;
-                    size = 1;
-
-                    if ((t+1)->type == JSMN_ARRAY)
+                    if (BSON_ITER_HOLDS_ARRAY(&mme_iter))
                     {
-                        m = 2;
+                        bson_iter_t array_iter;
+                        bson_iter_recurse(&mme_iter, &array_iter);
+                        if (bson_iter_next(&array_iter))
+                            bson_iter_recurse(&array_iter, &network_iter);
                     }
-
-                    for (arr = 0; arr < size; arr++)
+                    else if (BSON_ITER_HOLDS_DOCUMENT(&mme_iter))
                     {
-                        for (n = 1; n > 0; m++, n--)
-                        {
-                            n += (t+m)->size;
+                        bson_iter_recurse(&mme_iter, &network_iter);
+                    }
+                    else
+                        d_assert(0, return CORE_ERROR,);
 
-                            if (jsmntok_equal(json, t+m, "S1AP_IPV4") == 0)
-                            {
-                                char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.s1ap_addr = inet_addr(v);
-                            }
-                            else if (jsmntok_equal(json, t+m, "S1AP_PORT") == 0)
-                            {
-                                char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.s1ap_port = atoi(v);
-                            }
-                            else if (jsmntok_equal(json, t+m, "GTPC_IPV4") == 0)
-                            {
-                                char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.gtpc_addr = inet_addr(v);
-                            }
-                            else if (jsmntok_equal(json, t+m, "GTPC_PORT") == 0)
-                            {
-                                char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.gtpc_port = atoi(v);
-                            }
+                    while(bson_iter_next(&network_iter))
+                    {
+                        const char *network_key = bson_iter_key(&network_iter);
+                        if (!strcmp(network_key, "S1AP_IPV4") &&
+                            BSON_ITER_HOLDS_UTF8(&network_iter))
+                        {
+                            const char *v = 
+                                    bson_iter_utf8(&network_iter, &length);
+                            if (v) self.s1ap_addr = inet_addr(v);
+                        }
+                        else if (!strcmp(network_key, "S1AP_PORT") &&
+                            BSON_ITER_HOLDS_INT32(&network_iter))
+                        {
+                            self.s1ap_port = bson_iter_int32(&network_iter);
+                        }
+                        else if (!strcmp(network_key, "GTPC_IPV4") &&
+                            BSON_ITER_HOLDS_UTF8(&network_iter))
+                        {
+                            const char *v = 
+                                    bson_iter_utf8(&network_iter, &length);
+                            if (v) self.gtpc_addr = inet_addr(v);
+                        }
+                        else if (!strcmp(network_key, "GTPC_PORT") &&
+                            BSON_ITER_HOLDS_INT32(&network_iter))
+                        {
+                            self.gtpc_port = bson_iter_int32(&network_iter);
                         }
                     }
                 }
-                else if (jsmntok_equal(json, t, "GUMMEI") == 0)
+                else if (!strcmp(mme_key, "GUMMEI"))
                 {
-                    m = 1;
-                    size = 1;
+                    int gummei_index = 0;
+                    bson_iter_t gummei_array;
 
-                    if ((t+1)->type == JSMN_ARRAY)
+                    if (BSON_ITER_HOLDS_ARRAY(&mme_iter))
                     {
-                        m = 2;
-                        size = (t+1)->size;
+                        bson_iter_recurse(&mme_iter, &gummei_array);
+                        d_assert(bson_iter_next(&gummei_array),
+                                return CORE_ERROR,);
                     }
-
-                    self.max_num_of_served_gummei = size;
-                    for (arr = 0; arr < size; arr++)
+                    else if (BSON_ITER_HOLDS_DOCUMENT(&mme_iter))
                     {
-                        served_gummei_t *gummei = &self.served_gummei[arr];
-                        for (n = 1; n > 0; m++, n--)
+                        memcpy(&gummei_array, &mme_iter, sizeof(gummei_array));
+                    }
+                    else
+                        d_assert(0, return CORE_ERROR,);
+
+                    do 
+                    {
+                        served_gummei_t *gummei = NULL;
+                        bson_iter_t gummei_iter;
+                        const char *gummei_index_key =
+                            bson_iter_key(&gummei_array);
+
+                        d_assert(gummei_index_key, return CORE_ERROR,);
+                        if (BSON_ITER_HOLDS_ARRAY(&mme_iter))
+                            gummei_index = atoi(gummei_index_key);
+                        d_assert(gummei_index < MAX_NUM_OF_SERVED_GUMMEI,
+                                return CORE_ERROR,
+                                "GUMMEI Overflow : %d", gummei_index);
+                        gummei = &self.served_gummei[gummei_index];
+
+                        bson_iter_recurse(&gummei_array, &gummei_iter);
+                        while(bson_iter_next(&gummei_iter))
                         {
-                            n += (t+m)->size;
-
-                            if (jsmntok_equal(json, t+m, "PLMN_ID") == 0)
+                            const char *gummei_key =
+                                bson_iter_key(&gummei_iter);
+                            if (!strcmp(gummei_key, "PLMN_ID"))
                             {
-                                p = 1;
-                                size1 = 1;
+                                int plmn_id_index = 0;
+                                bson_iter_t plmn_id_array;
 
-                                if ((t+m+1)->type == JSMN_ARRAY)
+                                if (BSON_ITER_HOLDS_ARRAY(&gummei_iter))
                                 {
-                                    p = 2;
-                                    size1 = (t+m+1)->size;
+                                    bson_iter_recurse(&gummei_iter,
+                                            &plmn_id_array);
+                                    d_assert(bson_iter_next(&plmn_id_array),
+                                            return CORE_ERROR,);
                                 }
-
-                                for (arr1 = 0; arr1 < size1; arr1++)
+                                else if (BSON_ITER_HOLDS_DOCUMENT(&gummei_iter))
                                 {
-                                    char *mcc = NULL, *mnc = NULL;
-                                    for (q = 1; q > 0; p++, q--)
+                                    memcpy(&plmn_id_array,
+                                        &gummei_iter, sizeof(plmn_id_array));
+                                }
+                                else
+                                    d_assert(0, return CORE_ERROR,);
+
+                                do 
+                                {
+                                    bson_iter_t plmn_id_iter;
+                                    const char *mcc = NULL, *mnc = NULL;
+                                    const char *plmn_id_index_key =
+                                        bson_iter_key(&plmn_id_array);
+
+                                    d_assert(plmn_id_index_key,
+                                            return CORE_ERROR, );
+                                    if (BSON_ITER_HOLDS_ARRAY(&gummei_iter))
+                                        plmn_id_index = atoi(plmn_id_index_key);
+                                    d_assert(plmn_id_index < MAX_PLMN_ID,
+                                        return CORE_ERROR,
+                                        "PLMN_ID Overflow : %d", plmn_id_index);
+
+                                    bson_iter_recurse(
+                                            &plmn_id_array, &plmn_id_iter);
+                                    while(bson_iter_next(&plmn_id_iter))
                                     {
-                                        q += (t+m+p)->size;
-                                        if (jsmntok_equal(
-                                                    json, t+m+p, "MCC") == 0)
+                                        const char *plmn_id_key =
+                                            bson_iter_key(&plmn_id_iter);
+
+                                        if (!strcmp(plmn_id_key, "MCC") &&
+                                            BSON_ITER_HOLDS_UTF8(&plmn_id_iter))
                                         {
-                                            mcc = jsmntok_to_string(
-                                                    json, t+m+p+1);
-                                        }
-                                        else if (jsmntok_equal(
-                                                    json, t+m+p, "MNC") == 0)
+                                            mcc = bson_iter_utf8(
+                                                    &plmn_id_iter, &length);
+                                        } else if (
+                                            !strcmp(plmn_id_key, "MNC") &&
+                                            BSON_ITER_HOLDS_UTF8(&plmn_id_iter))
                                         {
-                                            mnc = jsmntok_to_string(
-                                                    json, t+m+p+1);
+                                            mnc = bson_iter_utf8(
+                                                    &plmn_id_iter, &length);
                                         }
                                     }
-
                                     if (mcc && mnc)
                                     {
                                         plmn_id_build(&gummei->
@@ -387,119 +389,166 @@ status_t mme_context_parse_config()
                                             atoi(mnc), strlen(mnc));
                                         gummei->num_of_plmn_id++;
                                     }
-                                }
-                            } 
-                            else if (jsmntok_equal(json, t+m, "MME_GID") == 0)
-                            {
-                                p = 1;
-                                size1 = 1;
-
-                                if ((t+m+1)->type == JSMN_ARRAY)
-                                {
-                                    p = 2;
-                                    size1 = (t+m+1)->size;
-                                }
-
-                                for (arr1 = 0; arr1 < size1; arr1++)
-                                {
-                                    char *v = jsmntok_to_string(json, t+m+p);
-                                    if (v) 
-                                    {
-                                        gummei->mme_gid
-                                            [gummei->num_of_mme_gid] = atoi(v);
-                                        gummei->num_of_mme_gid++;
-                                    }
-                                    p++;
-                                }
+                                } while(
+                                    BSON_ITER_HOLDS_ARRAY(&gummei_iter) &&
+                                    bson_iter_next(&plmn_id_array));
                             }
-                            else if (jsmntok_equal(json, t+m, "MME_CODE") == 0)
+                            else if (!strcmp(gummei_key, "MME_GID"))
                             {
-                                p = 1;
-                                size1 = 1;
+                                int mme_gid_index = 0;
+                                bson_iter_t mme_gid_array;
 
-                                if ((t+m+1)->type == JSMN_ARRAY)
+                                if (BSON_ITER_HOLDS_ARRAY(&gummei_iter))
                                 {
-                                    p = 2;
-                                    size1 = (t+m+1)->size;
+                                    bson_iter_recurse(&gummei_iter,
+                                            &mme_gid_array);
+                                    d_assert(bson_iter_next(&mme_gid_array),
+                                            return CORE_ERROR,);
                                 }
+                                else if (BSON_ITER_HOLDS_INT32(&gummei_iter))
+                                {
+                                    memcpy(&mme_gid_array, &gummei_iter,
+                                            sizeof(mme_gid_array));
+                                }
+                                else
+                                    d_assert(0, return CORE_ERROR,);
 
-                                for (arr1 = 0; arr1 < size1; arr1++)
+                                do
                                 {
-                                    char *v = jsmntok_to_string(json, t+m+p);
-                                    if (v) 
-                                    {
-                                        gummei->mme_code
-                                            [gummei->num_of_mme_code] = atoi(v);
-                                        gummei->num_of_mme_code++;
-                                    }
-                                    p++;
+                                    const char *mme_gid_index_key =
+                                        bson_iter_key(&mme_gid_array);
+
+                                    d_assert(mme_gid_index_key,
+                                            return CORE_ERROR,);
+                                    if (BSON_ITER_HOLDS_ARRAY(&gummei_iter))
+                                        mme_gid_index = atoi(mme_gid_index_key);
+                                    d_assert(mme_gid_index < GRP_PER_MME,
+                                            return CORE_ERROR,
+                                            "MME_GID Overflow : %d",
+                                                mme_gid_index);
+                                    gummei->mme_gid[mme_gid_index] = 
+                                        bson_iter_int32(&mme_gid_array);
+                                    gummei->num_of_mme_gid++;
+                                } while(
+                                    BSON_ITER_HOLDS_ARRAY(&gummei_iter) &&
+                                    bson_iter_next(&mme_gid_array));
+                            }
+                            else if (!strcmp(gummei_key, "MME_CODE"))
+                            {
+                                int mme_code_index = 0;
+                                bson_iter_t mme_code_array;
+
+                                if (BSON_ITER_HOLDS_ARRAY(&gummei_iter))
+                                {
+                                    bson_iter_recurse(&gummei_iter,
+                                            &mme_code_array);
+                                    d_assert(bson_iter_next(&mme_code_array),
+                                            return CORE_ERROR,);
                                 }
+                                else if (BSON_ITER_HOLDS_INT32(&gummei_iter))
+                                {
+                                    memcpy(&mme_code_array, &gummei_iter,
+                                            sizeof(mme_code_array));
+                                }
+                                else
+                                    d_assert(0, return CORE_ERROR,);
+
+                                do
+                                {
+                                    const char *mme_code_index_key =
+                                        bson_iter_key(&mme_code_array);
+
+                                    d_assert(mme_code_index_key,
+                                            return CORE_ERROR,);
+                                    if (BSON_ITER_HOLDS_ARRAY(&gummei_iter))
+                                        mme_code_index = 
+                                            atoi(mme_code_index_key);
+                                    d_assert(mme_code_index < CODE_PER_MME,
+                                            return CORE_ERROR,
+                                            "MME_CODE Overflow : %d",
+                                                mme_code_index);
+                                    gummei->mme_code[mme_code_index] = 
+                                        bson_iter_int32(&mme_code_array);
+                                    gummei->num_of_mme_code++;
+                                } while(
+                                    BSON_ITER_HOLDS_ARRAY(&gummei_iter) &&
+                                    bson_iter_next(&mme_code_array));
                             }
                         }
-                    }
+                        self.max_num_of_served_gummei++;
+                    } while(
+                        BSON_ITER_HOLDS_ARRAY(&mme_iter) &&
+                        bson_iter_next(&gummei_array));
                 }
-                else if (jsmntok_equal(json, t, "TAI") == 0)
+                else if (!strcmp(mme_key, "TAI"))
                 {
-                    m = 1;
-                    size = 1;
+                    int tai_index = 0;
+                    bson_iter_t tai_array;
 
-                    if ((t+1)->type == JSMN_ARRAY)
+                    if (BSON_ITER_HOLDS_ARRAY(&mme_iter))
                     {
-                        m = 2;
-                        size = (t+1)->size;
+                        bson_iter_recurse(&mme_iter, &tai_array);
+                        d_assert(bson_iter_next(&tai_array),
+                                return CORE_ERROR,);
                     }
-
-                    for (arr = 0; arr < size; arr++)
+                    else if (BSON_ITER_HOLDS_DOCUMENT(&mme_iter))
                     {
-                        char *mcc = NULL, *mnc = NULL, *tac = NULL;
+                        memcpy(&tai_array, &mme_iter, sizeof(tai_array));
+                    }
+                    else
+                        d_assert(0, return CORE_ERROR,);
 
-                        for (n = 1; n > 0; m++, n--)
+                    do 
+                    {
+                        const char *mcc = NULL, *mnc = NULL;
+                        c_uint16_t tac = 0;
+
+                        bson_iter_t tai_iter;
+                        const char *tai_index_key =
+                            bson_iter_key(&tai_array);
+
+                        d_assert(tai_index_key, return CORE_ERROR,);
+                        if (BSON_ITER_HOLDS_ARRAY(&mme_iter))
+                            tai_index = atoi(tai_index_key);
+                        d_assert(tai_index < MAX_NUM_OF_SERVED_TAI,
+                                return CORE_ERROR,
+                                "TAI Overflow : %d", tai_index);
+
+                        bson_iter_recurse(&tai_array, &tai_iter);
+                        while(bson_iter_next(&tai_iter))
                         {
-                            n += (t+m)->size;
+                            const char *tai_key =
+                                bson_iter_key(&tai_iter);
 
-                            if (jsmntok_equal(json, t+m, "PLMN_ID") == 0)
+                            if (!strcmp(tai_key, "PLMN_ID") &&
+                                BSON_ITER_HOLDS_DOCUMENT(&tai_iter))
                             {
-                                p = 1;
-                                size1 = 1;
-
-                                if ((t+m+1)->type == JSMN_ARRAY)
+                                bson_iter_t plmn_id_iter;
+                                bson_iter_recurse(&tai_iter, &plmn_id_iter);
+                                while(bson_iter_next(&plmn_id_iter))
                                 {
-                                    p = 2;
-                                }
-
-                                for (arr1 = 0; arr1 < size1; arr1++)
-                                {
-                                    for (q = 1; q > 0; p++, q--)
+                                    const char *plmn_id_key =
+                                        bson_iter_key(&plmn_id_iter);
+                                    if (!strcmp(plmn_id_key, "MCC") &&
+                                        BSON_ITER_HOLDS_UTF8(&plmn_id_iter))
                                     {
-                                        q += (t+m+p)->size;
-                                        if (jsmntok_equal(
-                                                    json, t+m+p, "MCC") == 0)
-                                        {
-                                            mcc = jsmntok_to_string(
-                                                    json, t+m+p+1);
-                                        }
-                                        else if (jsmntok_equal(
-                                                    json, t+m+p, "MNC") == 0)
-                                        {
-                                            mnc = jsmntok_to_string(
-                                                    json, t+m+p+1);
-                                        }
+                                        mcc = bson_iter_utf8(
+                                                &plmn_id_iter, &length);
+                                    }
+                                    else if (!strcmp(plmn_id_key, "MNC") &&
+                                        BSON_ITER_HOLDS_UTF8(&plmn_id_iter))
+                                    {
+                                        mnc = bson_iter_utf8(
+                                                &plmn_id_iter, &length);
                                     }
                                 }
                             }
-                            else if (jsmntok_equal(json, t+m, "TAC") == 0)
+                            else if (!strcmp(tai_key, "TAC") &&
+                                    BSON_ITER_HOLDS_INT32(&tai_iter))
                             {
-                                p = 1;
-
-                                if ((t+m+1)->type == JSMN_ARRAY)
-                                {
-                                    p = 2;
-                                }
-
-                                tac = jsmntok_to_string(json, t+m+p);
+                                tac = bson_iter_int32(&tai_iter);
                             }
                         }
-
                         if (mcc && mnc && tac)
                         {
                             tai_t *tai = &self.served_tai[
@@ -507,237 +556,276 @@ status_t mme_context_parse_config()
                            
                             plmn_id_build(&tai->plmn_id,
                                 atoi(mcc), atoi(mnc), strlen(mnc));
-                            tai->tac = atoi(tac);
+                            tai->tac = tac;
 
                             self.max_num_of_served_tai++;
                         }
-                    }
+                    } while(
+                        BSON_ITER_HOLDS_ARRAY(&mme_iter) &&
+                        bson_iter_next(&tai_array));
                 }
-                else if (jsmntok_equal(json, t, "SECURITY") == 0)
+                else if (!strcmp(mme_key, "SECURITY") &&
+                        BSON_ITER_HOLDS_DOCUMENT(&mme_iter))
                 {
-                    for (m = 1, n = 1; n > 0; m++, n--)
+                    bson_iter_t security_iter;
+
+                    bson_iter_recurse(&mme_iter, &security_iter);
+                    while(bson_iter_next(&security_iter))
                     {
-                        n += (t+m)->size;
-                        if (jsmntok_equal(json, t+m, "INTEGRITY_ORDER") == 0)
+                        const char *security_key =
+                            bson_iter_key(&security_iter);
+                        if (!strcmp(security_key, "INTEGRITY_ORDER"))
                         {
-                            p = 1;
-                            size = 1;
+                            int integrity_index = 0;
+                            bson_iter_t integrity_array;
 
-                            if ((t+m+1)->type == JSMN_ARRAY)
+                            if (BSON_ITER_HOLDS_ARRAY(&security_iter))
                             {
-                                p = 2;
-                                size = (t+m+1)->size;
+                                bson_iter_recurse(&security_iter,
+                                        &integrity_array);
+                                d_assert(bson_iter_next(&integrity_array),
+                                        return CORE_ERROR,);
                             }
-
-                            for (arr = 0; arr < size; arr++)
+                            else if (BSON_ITER_HOLDS_UTF8(&security_iter))
                             {
-                                char *v = jsmntok_to_string(json, t+m+p);
-                                if (v) 
+                                memcpy(&integrity_array, &security_iter,
+                                        sizeof(integrity_array));
+                            }
+                            else
+                                d_assert(0, return CORE_ERROR,);
+
+                            do 
+                            {
+                                const char *integrity_index_key =
+                                    bson_iter_key(&integrity_array);
+                                const char *v =
+                                    bson_iter_utf8(&integrity_array, &length);
+
+                                d_assert(integrity_index_key,
+                                        return CORE_ERROR,);
+                                if (BSON_ITER_HOLDS_ARRAY(&security_iter))
+                                    integrity_index = atoi(integrity_index_key);
+                                d_assert(integrity_index < MAX_NUM_OF_ALGORITHM,
+                                        return CORE_ERROR,
+                                        "Integrity Overflow : %d",
+                                            integrity_index);
+                                if (v)
                                 {
                                     if (strcmp(v, "EIA0") == 0)
                                     {
-                                        self.integrity_order[arr] = 
+                                        self.integrity_order[integrity_index] = 
                                             NAS_SECURITY_ALGORITHMS_EIA0;
                                         self.num_of_integrity_order++;
                                     }
                                     else if (strcmp(v, "EIA1") == 0)
                                     {
-                                        self.integrity_order[arr] = 
+                                        self.integrity_order[integrity_index] = 
                                             NAS_SECURITY_ALGORITHMS_128_EIA1;
                                         self.num_of_integrity_order++;
                                     }
                                     else if (strcmp(v, "EIA2") == 0)
                                     {
-                                        self.integrity_order[arr] = 
+                                        self.integrity_order[integrity_index] = 
                                             NAS_SECURITY_ALGORITHMS_128_EIA2;
                                         self.num_of_integrity_order++;
                                     }
                                     else if (strcmp(v, "EIA3") == 0)
                                     {
-                                        self.integrity_order[arr] = 
+                                        self.integrity_order[integrity_index] = 
                                             NAS_SECURITY_ALGORITHMS_128_EIA3;
                                         self.num_of_integrity_order++;
                                     }
                                 }
-
-                                p++;
-                            }
+                            } while(
+                                BSON_ITER_HOLDS_ARRAY(&security_iter) &&
+                                bson_iter_next(&integrity_array));
                         }
-                        else if (jsmntok_equal(json, t+m, "CIPHERING_ORDER") == 0)
+                        else if (!strcmp(security_key, "CIPHERING_ORDER"))
                         {
-                            p = 1;
-                            size = 1;
+                            int ciphering_index = 0;
+                            bson_iter_t ciphering_array;
 
-                            if ((t+m+1)->type == JSMN_ARRAY)
+                            if (BSON_ITER_HOLDS_ARRAY(&security_iter))
                             {
-                                p = 2;
-                                size = (t+m+1)->size;
+                                bson_iter_recurse(&security_iter,
+                                        &ciphering_array);
+                                d_assert(bson_iter_next(&ciphering_array),
+                                        return CORE_ERROR,);
                             }
-
-                            for (arr = 0; arr < size; arr++)
+                            else if (BSON_ITER_HOLDS_UTF8(&security_iter))
                             {
-                                char *v = jsmntok_to_string(json, t+m+p);
-                                if (v) 
+                                memcpy(&ciphering_array, &security_iter,
+                                        sizeof(ciphering_array));
+                            }
+                            else
+                                d_assert(0, return CORE_ERROR,);
+
+                            do 
+                            {
+                                const char *ciphering_index_key =
+                                    bson_iter_key(&ciphering_array);
+                                const char *v =
+                                    bson_iter_utf8(&ciphering_array, &length);
+
+                                d_assert(ciphering_index_key,
+                                        return CORE_ERROR,);
+                                if (BSON_ITER_HOLDS_ARRAY(&security_iter))
+                                    ciphering_index = atoi(ciphering_index_key);
+                                d_assert(ciphering_index < MAX_NUM_OF_ALGORITHM,
+                                        return CORE_ERROR,
+                                        "Ciphering Overflow : %d",
+                                            ciphering_index);
+                                if (v)
                                 {
                                     if (strcmp(v, "EEA0") == 0)
                                     {
-                                        self.ciphering_order[arr] = 
+                                        self.ciphering_order[ciphering_index] = 
                                             NAS_SECURITY_ALGORITHMS_EEA0;
                                         self.num_of_ciphering_order++;
                                     }
                                     else if (strcmp(v, "EEA1") == 0)
                                     {
-                                        self.ciphering_order[arr] = 
+                                        self.ciphering_order[ciphering_index] = 
                                             NAS_SECURITY_ALGORITHMS_128_EEA1;
                                         self.num_of_ciphering_order++;
                                     }
                                     else if (strcmp(v, "EEA2") == 0)
                                     {
-                                        self.ciphering_order[arr] = 
+                                        self.ciphering_order[ciphering_index] = 
                                             NAS_SECURITY_ALGORITHMS_128_EEA2;
                                         self.num_of_ciphering_order++;
                                     }
                                     else if (strcmp(v, "EEA3") == 0)
                                     {
-                                        self.ciphering_order[arr] = 
+                                        self.ciphering_order[ciphering_index] = 
                                             NAS_SECURITY_ALGORITHMS_128_EEA3;
                                         self.num_of_ciphering_order++;
                                     }
                                 }
-                                p++;
-                            }
+                            } while(
+                                BSON_ITER_HOLDS_ARRAY(&security_iter) &&
+                                bson_iter_next(&ciphering_array));
                         }
                     }
                 }
-
-                state = SKIP;
-                stack = MME_ROOT;
-                skip_tokens = t->size;
-
-                mme_tokens--;
-                if (mme_tokens == 0) stack = ROOT;
-                break;
             }
-            case SGW_START:
+        }
+        else if (!strcmp(key, "SGW") && BSON_ITER_HOLDS_DOCUMENT(&iter))
+        {
+            bson_iter_t sgw_iter;
+            bson_iter_recurse(&iter, &sgw_iter);
+            while(bson_iter_next(&sgw_iter))
             {
-                state = SGW_ROOT;
-                sgw_tokens = t->size;
-
-                break;
-            }
-            case SGW_ROOT:
-            {
-                if (jsmntok_equal(json, t, "NETWORK") == 0)
+                const char *sgw_key = bson_iter_key(&sgw_iter);
+                if (!strcmp(sgw_key, "NETWORK"))
                 {
-                    m = 1;
-                    size = 1;
+                    int network_index = 0;
+                    bson_iter_t network_array;
 
-                    if ((t+1)->type == JSMN_ARRAY)
+                    if (BSON_ITER_HOLDS_ARRAY(&sgw_iter))
                     {
-                        m = 2;
-                        size = (t+1)->size;
+                        bson_iter_recurse(&sgw_iter, &network_array);
+                        d_assert(bson_iter_next(&network_array),
+                                return CORE_ERROR,);
                     }
-
-                    for (arr = 0; arr < size; arr++)
+                    else if (BSON_ITER_HOLDS_DOCUMENT(&sgw_iter))
                     {
-                        mme_sgw_t *sgw = mme_sgw_add();
-                        d_assert(sgw, return CORE_ERROR, 
-                                "Can't add SGW context");
-                        sgw->port = GTPV2_C_UDP_PORT;
+                        memcpy(&network_array, &sgw_iter,
+                                sizeof(network_array));
+                    }
+                    else
+                        d_assert(0, return CORE_ERROR,);
 
-                        for (n = 1; n > 0; m++, n--)
+                    do 
+                    {
+                        bson_iter_t network_iter;
+                        const char *network_index_key =
+                            bson_iter_key(&network_array);
+                        const char *addr = NULL;
+                        c_uint16_t port = GTPV2_C_UDP_PORT;
+
+                        d_assert(network_index_key, return CORE_ERROR,);
+                        if (BSON_ITER_HOLDS_ARRAY(&sgw_iter))
+                            network_index = atoi(network_index_key);
+                        d_assert(network_index < MAX_NUM_OF_GTP_NODE,
+                                return CORE_ERROR,
+                                "GTP NODE Overflow : %d", network_index);
+
+                        bson_iter_recurse(&network_array, &network_iter);
+                        while(bson_iter_next(&network_iter))
                         {
-                            n += (t+m)->size;
+                            const char *network_key =
+                                bson_iter_key(&network_iter);
 
-                            if (jsmntok_equal(json, t+m, "GTPC_IPV4") == 0)
+                            if (!strcmp(network_key, "GTPC_IPV4") &&
+                                    BSON_ITER_HOLDS_UTF8(&network_iter))
                             {
-                                char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) sgw->addr = inet_addr(v);
+                                addr = bson_iter_utf8(&network_iter, &length);
                             }
-                            else if (jsmntok_equal(json, t+m, "GTPC_PORT") == 0)
+                            else if (!strcmp(network_key, "GTPC_PORT") &&
+                                    BSON_ITER_HOLDS_INT32(&network_iter))
                             {
-                                char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) sgw->port = atoi(v);
+                                port = bson_iter_int32(&network_iter);
                             }
                         }
-                    }
+
+                        if (addr && port)
+                        {
+                            mme_sgw_t *sgw = mme_sgw_add();
+                            d_assert(sgw, return CORE_ERROR,);
+
+                            sgw->addr = inet_addr(addr);
+                            sgw->port = port;
+                        }
+                    } while(
+                        BSON_ITER_HOLDS_ARRAY(&sgw_iter) &&
+                        bson_iter_next(&network_array));
                 }
-
-                state = SKIP;
-                stack = SGW_ROOT;
-                skip_tokens = t->size;
-
-                sgw_tokens--;
-                if (sgw_tokens == 0) stack = ROOT;
-                break;
             }
-            case PGW_START:
+        }
+        else if (!strcmp(key, "PGW") && BSON_ITER_HOLDS_DOCUMENT(&iter))
+        {
+            bson_iter_t pgw_iter;
+            bson_iter_recurse(&iter, &pgw_iter);
+            while(bson_iter_next(&pgw_iter))
             {
-                state = PGW_ROOT;
-                pgw_tokens = t->size;
-
-                break;
-            }
-            case PGW_ROOT:
-            {
-                if (jsmntok_equal(json, t, "NETWORK") == 0)
+                const char *pgw_key = bson_iter_key(&pgw_iter);
+                if (!strcmp(pgw_key, "NETWORK"))
                 {
-                    m = 1;
-                    size = 1;
+                    bson_iter_t network_iter;
 
-                    if ((t+1)->type == JSMN_ARRAY)
+                    if (BSON_ITER_HOLDS_ARRAY(&pgw_iter))
                     {
-                        m = 2;
-                        size = (t+1)->size;
+                        bson_iter_t array_iter;
+                        bson_iter_recurse(&pgw_iter, &array_iter);
+                        if (bson_iter_next(&array_iter))
+                            bson_iter_recurse(&array_iter, &network_iter);
                     }
-
-                    for (arr = 0; arr < size; arr++)
+                    else if (BSON_ITER_HOLDS_DOCUMENT(&pgw_iter))
                     {
-                        for (n = 1; n > 0; m++, n--)
-                        {
-                            n += (t+m)->size;
+                        bson_iter_recurse(&pgw_iter, &network_iter);
+                    }
+                    else
+                        d_assert(0, return CORE_ERROR,);
 
-                            if (jsmntok_equal(json, t+m, "GTPC_IPV4") == 0)
-                            {
-                                char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.s5c_addr = inet_addr(v);
-                            }
-                            else if (jsmntok_equal(json, t+m, "GTPC_PORT") == 0)
-                            {
-                                char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.s5c_port = atoi(v);
-                            }
+                    while(bson_iter_next(&network_iter))
+                    {
+                        const char *network_key = bson_iter_key(&network_iter);
+                        if (!strcmp(network_key, "GTPC_IPV4") &&
+                            BSON_ITER_HOLDS_UTF8(&network_iter))
+                        {
+                            const char *v = 
+                                    bson_iter_utf8(&network_iter, &length);
+                            if (v) self.s5c_addr = inet_addr(v);
+                        }
+                        else if (!strcmp(network_key, "GTPC_PORT") &&
+                            BSON_ITER_HOLDS_INT32(&network_iter))
+                        {
+                            self.s5c_port = bson_iter_int32(&network_iter);
                         }
                     }
                 }
-
-                state = SKIP;
-                stack = PGW_ROOT;
-                skip_tokens = t->size;
-
-                pgw_tokens--;
-                if (pgw_tokens == 0) stack = ROOT;
-                break;
             }
-            case SKIP:
-            {
-                skip_tokens += t->size;
-
-                skip_tokens--;
-                if (skip_tokens == 0) state = stack;
-                break;
-            }
-            case STOP:
-            {
-                break;
-            }
-            default:
-            {
-                d_error("Failed to parse configuration in the state(%u)", 
-                        state);
-                break;
-            }
-
         }
     }
 

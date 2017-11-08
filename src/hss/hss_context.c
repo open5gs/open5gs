@@ -70,100 +70,36 @@ status_t hss_context_parse_config()
 {
     status_t rv;
     config_t *config = &context_self()->config;
+    bson_iter_t iter;
+    c_uint32_t length = 0;
 
-    char *json = config->json;
-    jsmntok_t *token = config->token;
-
-    typedef enum {
-        START, ROOT,
-        HSS_START, HSS_ROOT,
-        SKIP, STOP
-    } parse_state;
-    parse_state state = START;
-    parse_state stack = STOP;
-
-    size_t root_tokens = 0;
-    size_t hss_tokens = 0;
-    size_t skip_tokens = 0;
-    int i, j;
+    d_assert(config, return CORE_ERROR, );
 
     rv = hss_context_prepare();
     if (rv != CORE_OK) return rv;
 
-    for (i = 0, j = 1; j > 0; i++, j--)
+    if (!bson_iter_init(&iter, config->bson))
     {
-        jsmntok_t *t = &token[i];
+        d_error("bson_iter_init failed in this document");
+        return CORE_ERROR;
+    }
 
-        j += t->size;
-
-        switch (state)
+    while(bson_iter_next(&iter))
+    {
+        const char *key = bson_iter_key(&iter);
+        if (!strcmp(key, "HSS") && BSON_ITER_HOLDS_DOCUMENT(&iter))
         {
-            case START:
+            bson_iter_t hss_iter;
+            bson_iter_recurse(&iter, &hss_iter);
+            while(bson_iter_next(&hss_iter))
             {
-                state = ROOT;
-                root_tokens = t->size;
-
-                break;
-            }
-            case ROOT:
-            {
-                if (jsmntok_equal(json, t, "HSS") == 0)
+                const char *hss_key = bson_iter_key(&hss_iter);
+                if (!strcmp(hss_key, "FD_CONF_PATH") &&
+                    BSON_ITER_HOLDS_UTF8(&hss_iter))
                 {
-                    state = HSS_START;
+                    self.fd_conf_path = bson_iter_utf8(&hss_iter, &length);
                 }
-                else
-                {
-                    state = SKIP;
-                    stack = ROOT;
-                    skip_tokens = t->size;
-
-                    root_tokens--;
-                    if (root_tokens == 0) state = STOP;
-                }
-
-                break;
             }
-            case HSS_START:
-            {
-                state = HSS_ROOT;
-                hss_tokens = t->size;
-
-                break;
-            }
-            case HSS_ROOT:
-            {
-                if (jsmntok_equal(json, t, "FD_CONF_PATH") == 0)
-                {
-                    self.fd_conf_path = jsmntok_to_string(json, t+1);
-                }
-
-                state = SKIP;
-                stack = HSS_ROOT;
-                skip_tokens = t->size;
-
-                hss_tokens--;
-                if (hss_tokens == 0) stack = ROOT;
-                break;
-            }
-            case SKIP:
-            {
-                skip_tokens += t->size;
-
-                skip_tokens--;
-                if (skip_tokens == 0) state = stack;
-                break;
-            }
-            case STOP:
-            {
-                break;
-            }
-            default:
-            {
-                d_error("Failed to parse configuration in the state(%u)", 
-                        state);
-                break;
-            }
-
         }
     }
 

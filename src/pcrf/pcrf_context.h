@@ -12,7 +12,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 typedef struct _pcrf_context_t {
-    char        *fd_conf_path;          /* PCRF freeDiameter conf path */
+    const char  *fd_conf_path;          /* PCRF freeDiameter conf path */
 
     void        *subscriberCollection;
     mutex_id    db_lock;

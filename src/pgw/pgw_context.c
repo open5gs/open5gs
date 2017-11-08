@@ -3,6 +3,7 @@
 #include "core_pool.h"
 #include "core_index.h"
 #include "core_lib.h"
+#include <mongoc.h>
 
 #include "fd_lib.h"
 #include "gtp_path.h"
@@ -139,138 +140,138 @@ status_t pgw_context_parse_config()
 {
     status_t rv;
     config_t *config = &context_self()->config;
+    bson_iter_t iter;
+    c_uint32_t length = 0;
 
-    char *json = config->json;
-    jsmntok_t *token = config->token;
-
-    typedef enum {
-        START, ROOT,
-        PGW_START, PGW_ROOT,
-        SKIP, STOP
-    } parse_state;
-    parse_state state = START;
-    parse_state stack = STOP;
-
-    size_t root_tokens = 0;
-    size_t pgw_tokens = 0;
-    size_t skip_tokens = 0;
-    int i, j, m, n;
-    int arr, size;
+    d_assert(config, return CORE_ERROR, );
 
     rv = pgw_context_prepare();
     if (rv != CORE_OK) return rv;
 
-    for (i = 0, j = 1; j > 0; i++, j--)
+    if (!bson_iter_init(&iter, config->bson))
     {
-        jsmntok_t *t = &token[i];
+        d_error("bson_iter_init failed in this document");
+        return CORE_ERROR;
+    }
 
-        j += t->size;
-
-        switch (state)
+    while(bson_iter_next(&iter))
+    {
+        const char *key = bson_iter_key(&iter);
+        if (!strcmp(key, "PGW") && BSON_ITER_HOLDS_DOCUMENT(&iter))
         {
-            case START:
+            bson_iter_t pgw_iter;
+            bson_iter_recurse(&iter, &pgw_iter);
+            while(bson_iter_next(&pgw_iter))
             {
-                state = ROOT;
-                root_tokens = t->size;
-
-                break;
-            }
-            case ROOT:
-            {
-                if (jsmntok_equal(json, t, "PGW") == 0)
+                const char *pgw_key = bson_iter_key(&pgw_iter);
+                if (!strcmp(pgw_key, "FD_CONF_PATH") &&
+                    BSON_ITER_HOLDS_UTF8(&pgw_iter))
                 {
-                    state = PGW_START;
+                    self.fd_conf_path = bson_iter_utf8(&pgw_iter, &length);
                 }
-                else
+                else if (!strcmp(pgw_key, "NETWORK"))
                 {
-                    state = SKIP;
-                    stack = ROOT;
-                    skip_tokens = t->size;
+                    bson_iter_t network_iter;
 
-                    root_tokens--;
-                    if (root_tokens == 0) state = STOP;
-                }
-                break;
-            }
-            case PGW_START:
-            {
-                state = PGW_ROOT;
-                pgw_tokens = t->size;
-
-                break;
-            }
-            case PGW_ROOT:
-            {
-                if (jsmntok_equal(json, t, "FD_CONF_PATH") == 0)
-                {
-                    self.fd_conf_path = jsmntok_to_string(json, t+1);
-                }
-                else if (jsmntok_equal(json, t, "NETWORK") == 0)
-                {
-                    m = 1;
-                    size = 1;
-
-                    if ((t+1)->type == JSMN_ARRAY)
+                    if (BSON_ITER_HOLDS_ARRAY(&pgw_iter))
                     {
-                        m = 2;
-                    }
-
-                    for (arr = 0; arr < size; arr++)
-                    {
-                        for (n = 1; n > 0; m++, n--)
+                        bson_iter_t array_iter;
+                        bson_iter_recurse(&pgw_iter, &array_iter);
+                        if (bson_iter_next(&array_iter))
                         {
-                            n += (t+m)->size;
+                            /* We will pick only first item of SGW.NETWORK
+                             * if the type is an array */
+                            bson_iter_recurse(&array_iter, &network_iter);
+                        }
+                    }
+                    else if (BSON_ITER_HOLDS_DOCUMENT(&pgw_iter))
+                    {
+                        bson_iter_recurse(&pgw_iter, &network_iter);
+                    }
+                    else
+                        d_assert(0, return CORE_ERROR,);
 
-                            if (jsmntok_equal(json, t+m, "GTPC_IPV4") == 0)
-                            {
-                                char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.gtpc_addr = inet_addr(v);
-                            }
-                            else if (jsmntok_equal(json, t+m, "GTPC_PORT") == 0)
-                            {
-                                char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.gtpc_port = atoi(v);
-                            }
-                            else if (jsmntok_equal(json, t+m, "GTPU_IPV4") == 0)
-                            {
-                                char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.gtpu_addr = inet_addr(v);
-                            }
-                            else if (jsmntok_equal(json, t+m, "GTPU_PORT") == 0)
-                            {
-                                char *v = jsmntok_to_string(json, t+m+1);
-                                if (v) self.gtpu_port = atoi(v);
-                            }
+                    while(bson_iter_next(&network_iter))
+                    {
+                        const char *network_key = bson_iter_key(&network_iter);
+                        if (!strcmp(network_key, "GTPC_IPV4") &&
+                            BSON_ITER_HOLDS_UTF8(&network_iter))
+                        {
+                            const char *v =
+                                bson_iter_utf8(&network_iter, &length);
+                            if (v) self.gtpc_addr = inet_addr(v);
+                        }
+                        else if (!strcmp(network_key, "GTPC_PORT") &&
+                            BSON_ITER_HOLDS_INT32(&network_iter))
+                        {
+                            self.gtpc_port = bson_iter_int32(&network_iter);
+                        }
+                        else if (!strcmp(network_key, "GTPU_IPV4") &&
+                            BSON_ITER_HOLDS_UTF8(&network_iter))
+                        {
+                            const char *v =
+                                bson_iter_utf8(&network_iter, &length);
+                            if (v) self.gtpu_addr = inet_addr(v);
+                        }
+                        else if (!strcmp(network_key, "GTPU_PORT") &&
+                            BSON_ITER_HOLDS_UTF8(&network_iter))
+                        {
+                            self.gtpu_port = bson_iter_int32(&network_iter);
                         }
                     }
                 }
-                else if (jsmntok_equal(json, t, "UE_NETWORK") == 0)
+                else if (!strcmp(pgw_key, "UE_NETWORK"))
                 {
-                    m = 1;
-                    size = 1;
+                    int ue_network_index = 0;
+                    bson_iter_t ue_network_array;
 
-                    if ((t+1)->type == JSMN_ARRAY)
+                    if (BSON_ITER_HOLDS_ARRAY(&pgw_iter))
                     {
-                        m = 2;
-                        size = (t+1)->size;
+                        bson_iter_recurse(&pgw_iter, &ue_network_array);
+                        d_assert(bson_iter_next(&ue_network_array),
+                                return CORE_ERROR,);
                     }
-
-                    for (arr = 0; arr < size; arr++)
+                    else if (BSON_ITER_HOLDS_DOCUMENT(&pgw_iter))
                     {
-                        char *if_name = NULL;
+                        memcpy(&ue_network_array, &pgw_iter,
+                                sizeof(ue_network_array));
+                    }
+                    else
+                        d_assert(0, return CORE_ERROR,);
+
+                    do 
+                    {
+                        bson_iter_t ue_network_iter;
+                        const char *ue_network_index_key =
+                            bson_iter_key(&ue_network_array);
+                        const char *if_name = NULL;
                         c_uint32_t addr = 0;
                         c_uint8_t bits = 0;
-                        for (n = 1; n > 0; m++, n--)
-                        {
-                            n += (t+m)->size;
 
-                            if (jsmntok_equal(json, t+m, "IF_NAME") == 0)
+                        d_assert(ue_network_index_key, return CORE_ERROR,);
+                        if (BSON_ITER_HOLDS_ARRAY(&pgw_iter))
+                            ue_network_index = atoi(ue_network_index_key);
+                        d_assert(ue_network_index < MAX_NUM_OF_GTP_NODE,
+                                return CORE_ERROR,
+                                "GTP NODE Overflow : %d", ue_network_index);
+
+                        bson_iter_recurse(&ue_network_array, &ue_network_iter);
+                        while(bson_iter_next(&ue_network_iter))
+                        {
+                            const char *ue_network_key =
+                                bson_iter_key(&ue_network_iter);
+
+                            if (!strcmp(ue_network_key, "IF_NAME") &&
+                                BSON_ITER_HOLDS_UTF8(&ue_network_iter))
                             {
-                                if_name = jsmntok_to_string(json, t+m+1);
+                                if_name = 
+                                    bson_iter_utf8(&ue_network_iter, &length);
                             }
-                            else if (jsmntok_equal(json, t+m, "IPV4_POOL") == 0)
+                            else if (!strcmp(ue_network_key, "IPV4_POOL") &&
+                                    BSON_ITER_HOLDS_UTF8(&ue_network_iter))
                             {
-                                char *v = jsmntok_to_string(json, t+m+1);
+                                char *v = (char *)bson_iter_utf8(
+                                        &ue_network_iter, &length);
                                 if (v)
                                 {
                                     char *str = strsep(&v, "/");
@@ -293,54 +294,34 @@ status_t pgw_context_parse_config()
                                 bits;
                             self.num_of_ue_network++;
                         }
-                    }
+                    } while(
+                        BSON_ITER_HOLDS_ARRAY(&pgw_iter) &&
+                        bson_iter_next(&ue_network_array));
                 }
-                else if (jsmntok_equal(json, t, "DNS") == 0)
+                else if (!strcmp(pgw_key, "DNS") &&
+                    BSON_ITER_HOLDS_DOCUMENT(&pgw_iter))
                 {
-                    for (m = 1, n = 1; n > 0; m++, n--)
+                    bson_iter_t dns_iter;
+                    bson_iter_recurse(&pgw_iter, &dns_iter);
+                    while(bson_iter_next(&dns_iter))
                     {
-                        n += (t+m)->size;
-                        if (jsmntok_equal(json, t+m, "PRIMARY_IPV4") == 0)
+                        const char *dns_key = bson_iter_key(&dns_iter);
+                        if (!strcmp(dns_key, "PRIMARY_IPV4") &&
+                            BSON_ITER_HOLDS_UTF8(&dns_iter))
                         {
-                            char *v = jsmntok_to_string(json, t+m+1);
+                            const char *v = bson_iter_utf8(&dns_iter, &length);
                             if (v) self.primary_dns_addr = inet_addr(v);
+
                         }
-                        else if (jsmntok_equal(
-                                    json, t+m, "SECONDARY_IPV4") == 0)
+                        else if (!strcmp(dns_key, "SECONDARY_IPV4") &&
+                            BSON_ITER_HOLDS_UTF8(&dns_iter))
                         {
-                            char *v = jsmntok_to_string(json, t+m+1);
+                            const char *v = bson_iter_utf8(&dns_iter, &length);
                             if (v) self.secondary_dns_addr = inet_addr(v);
                         }
                     }
                 }
-
-                state = SKIP;
-                stack = PGW_ROOT;
-                skip_tokens = t->size;
-
-                pgw_tokens--;
-                if (pgw_tokens == 0) stack = ROOT;
-                break;
             }
-            case SKIP:
-            {
-                skip_tokens += t->size;
-
-                skip_tokens--;
-                if (skip_tokens == 0) state = stack;
-                break;
-            }
-            case STOP:
-            {
-                break;
-            }
-            default:
-            {
-                d_error("Failed to parse configuration in the state(%u)", 
-                        state);
-                break;
-            }
-
         }
     }
 

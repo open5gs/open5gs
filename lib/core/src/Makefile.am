@@ -16,11 +16,9 @@ libcore_la_SOURCES = \
 	../include/core_timer.h ../include/core_tlv.h ../include/core_tlv_msg.h \
 	../include/core_atomic.h ../include/core_portable.h \
 	../include/core_version.h ../include/core_event.h ../include/core_hash.h \
-	../include/core_jsmn.h \
 	\
-	debug.c version.c fsm.c msgq.c ringbuf.c timer.c tlv.c tlv_msg.c \
+	debug.c version.c fsm.c msgq.c ringbuf.c timer.c tlv.c tlv_msg.c hash.c \
 	aes.c aes_cmac.c sha1.c sha1_hmac.c sha2.c sha2_hmac.c misc.c event.c \
-	hash.c jsmn.c \
 	\
     ../include/arch/core_private_common.h \
     ../include/arch/unix/core_arch_file.h \

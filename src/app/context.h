@@ -3,7 +3,6 @@
 
 #include "core_debug.h"
 #include "core_param.h"
-#include "core_jsmn.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -15,7 +14,6 @@ extern "C" {
 typedef struct _config_t {
     const char *path;
     char json[MAX_CONFIG_FILE_SIZE+1];
-    jsmntok_t token[MAX_NUM_OF_CONFIG_TOKEN];
     void *bson;
 } config_t;
 

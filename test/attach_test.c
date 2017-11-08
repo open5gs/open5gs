@@ -39,7 +39,7 @@ static void attach_test1(abts_case *tc, void *data)
         "010221d9";
     char *_initial_context_setup_request = 
         "00090080d8000006 00000005c0010000 9d00080002000100 42000a183e800000"
-        "603e800000001800 8086000034008080 450009200f800a01 23d8000000017127"
+        "603e800000001800 8086000034008080 450009200f807f4c 0002000000017127"
         "45c2015402074202 49064000f1105ba0 00485221c1010909 08696e7465726e65"
         "7405012d2d00025e 06fefeeeee030327 2980c22304030000 0480211002000010"
         "8106080808088306 04040404000d0408 080808000d040404 0404500bf600f110"
@@ -261,13 +261,11 @@ static void attach_test1(abts_case *tc, void *data)
      * We cannot check it since SGW S1U ADDR is changed
      * from configuration file
      */ 
-#if 0 
     recvbuf->len = 233;
     ABTS_TRUE(tc, memcmp(recvbuf->payload, 
         CORE_HEX(_initial_context_setup_request, 
             strlen(_initial_context_setup_request), tmp),
         recvbuf->len) == 0);
-#endif
     pkbuf_free(recvbuf);
 
     /* Send UE Capability Info Indication */

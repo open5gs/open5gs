@@ -24,6 +24,7 @@ AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/3gpp \
     -I$(top_srcdir)/lib/gtp \
 	-I$(top_srcdir)/src/app \
+	@MONGOC_CFLAGS@ \
 	$(NULL)
 
 AM_CFLAGS = \

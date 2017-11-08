@@ -209,7 +209,7 @@ status_t pgw_gtp_open()
 
         /* Open Tun interface */
         rc = net_tun_open(&pgw_self()->ue_network[i].tun_link,
-                pgw_self()->ue_network[i].if_name, 0);
+                (char *)pgw_self()->ue_network[i].if_name, 0);
         if (rc != 0)
         {
             d_error("Can not open tun(dev : %s)",

@@ -50,8 +50,6 @@ status_t context_read_file()
 
     bson_error_t error;
     size_t json_len;
-    jsmn_parser parser;
-    int result;
 
     d_assert(config->path, return CORE_ERROR,);
 
@@ -73,23 +71,6 @@ status_t context_read_file()
     }
     file_close(file);
 
-    jsmn_init(&parser);
-    result = jsmn_parse(&parser, config->json, strlen(config->json), 
-        config->token, sizeof(config->token)/sizeof(config->token[0]));
-    if (result < 0) 
-    {
-        d_fatal("Failed to parse configuration file '%s' (jsmnerr = %d)", 
-                config->path, result);
-        return CORE_ERROR;
-    }
-
-    if (result < 1 || config->token[0].type != JSMN_OBJECT) 
-    {
-        d_fatal("Failed to parse configuration file '%s' (OBJECT expected)",
-                config->path);
-        return CORE_ERROR;
-    }
-
     config->bson = bson_new_from_json((const uint8_t *)config->json, -1, &error);;
     if (config->bson == NULL)
     {
@@ -102,15 +83,24 @@ status_t context_read_file()
     return CORE_OK;
 }
 
+static status_t context_prepare()
+{
+    self.log.console = -1;
+
+    return CORE_OK;
+}
+
 status_t context_parse_config()
 {
+    status_t rv;
     config_t *config = &self.config;
-    bson_iter_t iter, child1_iter, child2_iter;
+    bson_iter_t iter;
     c_uint32_t length = 0;
 
     d_assert(config, return CORE_ERROR, );
 
-    self.log.console = -1;
+    rv = context_prepare();
+    if (rv != CORE_OK) return rv;
 
     if (!bson_iter_init(&iter, config->bson))
     {
@@ -127,106 +117,110 @@ status_t context_parse_config()
         }
         else if (!strcmp(key, "LOG") && BSON_ITER_HOLDS_DOCUMENT(&iter))
         {
-            bson_iter_recurse(&iter, &child1_iter);
-            while(bson_iter_next(&child1_iter))
+            bson_iter_t log_iter;
+            bson_iter_recurse(&iter, &log_iter);
+            while(bson_iter_next(&log_iter))
             {
-                const char *child1_key = bson_iter_key(&child1_iter);
-                if (!strcmp(child1_key, "CONSOLE") &&
-                    BSON_ITER_HOLDS_INT32(&child1_iter))
+                const char *log_key = bson_iter_key(&log_iter);
+                if (!strcmp(log_key, "CONSOLE") &&
+                    BSON_ITER_HOLDS_INT32(&log_iter))
                 {
-                    self.log.console = bson_iter_int32(&child1_iter);
+                    self.log.console = bson_iter_int32(&log_iter);
                 }
-                else if (!strcmp(child1_key, "SYSLOG") &&
-                    BSON_ITER_HOLDS_UTF8(&child1_iter))
+                else if (!strcmp(log_key, "SYSLOG") &&
+                    BSON_ITER_HOLDS_UTF8(&log_iter))
                 {
-                    self.log.syslog = bson_iter_utf8(&child1_iter, &length);
+                    self.log.syslog = bson_iter_utf8(&log_iter, &length);
                 }
-                else if (!strcmp(child1_key, "SOCKET") &&
-                        BSON_ITER_HOLDS_DOCUMENT(&iter))
+                else if (!strcmp(log_key, "SOCKET") &&
+                        BSON_ITER_HOLDS_DOCUMENT(&log_iter))
                 {
-                    bson_iter_recurse(&child1_iter, &child2_iter);
-                    while(bson_iter_next(&child2_iter))
+                    bson_iter_t socket_iter;
+                    bson_iter_recurse(&log_iter, &socket_iter);
+                    while(bson_iter_next(&socket_iter))
                     {
-                        const char *child2_key = bson_iter_key(&child2_iter);
-                        if (!strcmp(child2_key, "FILE") &&
-                            BSON_ITER_HOLDS_UTF8(&child2_iter))
+                        const char *socket_key = bson_iter_key(&socket_iter);
+                        if (!strcmp(socket_key, "FILE") &&
+                            BSON_ITER_HOLDS_UTF8(&socket_iter))
                         {
                             self.log.socket.file =
-                                bson_iter_utf8(&child2_iter, &length);
+                                bson_iter_utf8(&socket_iter, &length);
                         }
-                        else if (!strcmp(child2_key, "UNIX_DOMAIN") &&
-                            BSON_ITER_HOLDS_UTF8(&child2_iter))
+                        else if (!strcmp(socket_key, "UNIX_DOMAIN") &&
+                            BSON_ITER_HOLDS_UTF8(&socket_iter))
                         {
                             self.log.socket.unix_domain =
-                                bson_iter_utf8(&child2_iter, &length);
+                                bson_iter_utf8(&socket_iter, &length);
                         }
                     }
                 }
-                else if (!strcmp(child1_key, "FILE") &&
-                    BSON_ITER_HOLDS_UTF8(&child1_iter))
+                else if (!strcmp(log_key, "FILE") &&
+                    BSON_ITER_HOLDS_UTF8(&log_iter))
                 {
-                    self.log.file = bson_iter_utf8(&child1_iter, &length);
+                    self.log.file = bson_iter_utf8(&log_iter, &length);
                 }
             }
         }
         else if (!strcmp(key, "TRACE") && BSON_ITER_HOLDS_DOCUMENT(&iter))
         {
-            bson_iter_recurse(&iter, &child1_iter);
-            while(bson_iter_next(&child1_iter))
+            bson_iter_t trace_iter;
+            bson_iter_recurse(&iter, &trace_iter);
+            while(bson_iter_next(&trace_iter))
             {
-                const char *child1_key = bson_iter_key(&child1_iter);
-                if (!strcmp(child1_key, "S1AP") &&
-                    BSON_ITER_HOLDS_INT32(&child1_iter))
+                const char *trace_key = bson_iter_key(&trace_iter);
+                if (!strcmp(trace_key, "S1AP") &&
+                    BSON_ITER_HOLDS_INT32(&trace_iter))
                 {
-                    self.trace_level.s1ap = bson_iter_int32(&child1_iter);
+                    self.trace_level.s1ap = bson_iter_int32(&trace_iter);
                 }
-                else if (!strcmp(child1_key, "NAS") &&
-                    BSON_ITER_HOLDS_INT32(&child1_iter))
+                else if (!strcmp(trace_key, "NAS") &&
+                    BSON_ITER_HOLDS_INT32(&trace_iter))
                 {
-                    self.trace_level.nas = bson_iter_int32(&child1_iter);
+                    self.trace_level.nas = bson_iter_int32(&trace_iter);
                 }
-                else if (!strcmp(child1_key, "FD") &&
-                    BSON_ITER_HOLDS_INT32(&child1_iter))
+                else if (!strcmp(trace_key, "FD") &&
+                    BSON_ITER_HOLDS_INT32(&trace_iter))
                 {
-                    self.trace_level.fd = bson_iter_int32(&child1_iter);
+                    self.trace_level.fd = bson_iter_int32(&trace_iter);
                 }
-                else if (!strcmp(child1_key, "GTP") &&
-                    BSON_ITER_HOLDS_INT32(&child1_iter))
+                else if (!strcmp(trace_key, "GTP") &&
+                    BSON_ITER_HOLDS_INT32(&trace_iter))
                 {
-                    self.trace_level.gtp = bson_iter_int32(&child1_iter);
+                    self.trace_level.gtp = bson_iter_int32(&trace_iter);
                 }
-                else if (!strcmp(child1_key, "OTHERS") &&
-                    BSON_ITER_HOLDS_INT32(&child1_iter))
+                else if (!strcmp(trace_key, "OTHERS") &&
+                    BSON_ITER_HOLDS_INT32(&trace_iter))
                 {
-                    self.trace_level.others = bson_iter_int32(&child1_iter);
+                    self.trace_level.others = bson_iter_int32(&trace_iter);
                 }
             }
         }
         else if (!strcmp(key, "NODE") && BSON_ITER_HOLDS_DOCUMENT(&iter))
         {
-            bson_iter_recurse(&iter, &child1_iter);
-            while(bson_iter_next(&child1_iter))
+            bson_iter_t node_iter;
+            bson_iter_recurse(&iter, &node_iter);
+            while(bson_iter_next(&node_iter))
             {
-                const char *child1_key = bson_iter_key(&child1_iter);
-                if (!strcmp(child1_key, "DISABLE_HSS") &&
-                    BSON_ITER_HOLDS_INT32(&child1_iter))
+                const char *node_key = bson_iter_key(&node_iter);
+                if (!strcmp(node_key, "DISABLE_HSS") &&
+                    BSON_ITER_HOLDS_INT32(&node_iter))
                 {
-                    self.node.disable_hss = bson_iter_int32(&child1_iter);
+                    self.node.disable_hss = bson_iter_int32(&node_iter);
                 }
-                else if (!strcmp(child1_key, "DISABLE_SGW") &&
-                    BSON_ITER_HOLDS_INT32(&child1_iter))
+                else if (!strcmp(node_key, "DISABLE_SGW") &&
+                    BSON_ITER_HOLDS_INT32(&node_iter))
                 {
-                    self.node.disable_sgw = bson_iter_int32(&child1_iter);
+                    self.node.disable_sgw = bson_iter_int32(&node_iter);
                 }
-                else if (!strcmp(child1_key, "DISABLE_PGW") &&
-                    BSON_ITER_HOLDS_INT32(&child1_iter))
+                else if (!strcmp(node_key, "DISABLE_PGW") &&
+                    BSON_ITER_HOLDS_INT32(&node_iter))
                 {
-                    self.node.disable_pgw = bson_iter_int32(&child1_iter);
+                    self.node.disable_pgw = bson_iter_int32(&node_iter);
                 }
-                else if (!strcmp(child1_key, "DISABLE_PCRF") &&
-                    BSON_ITER_HOLDS_INT32(&child1_iter))
+                else if (!strcmp(node_key, "DISABLE_PCRF") &&
+                    BSON_ITER_HOLDS_INT32(&node_iter))
                 {
-                    self.node.disable_pcrf = bson_iter_int32(&child1_iter);
+                    self.node.disable_pcrf = bson_iter_int32(&node_iter);
                 }
             }
         }

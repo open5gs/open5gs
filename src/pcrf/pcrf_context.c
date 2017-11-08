@@ -71,100 +71,36 @@ status_t pcrf_context_parse_config()
 {
     status_t rv;
     config_t *config = &context_self()->config;
+    bson_iter_t iter;
+    c_uint32_t length = 0;
 
-    char *json = config->json;
-    jsmntok_t *token = config->token;
-
-    typedef enum {
-        START, ROOT,
-        PCRF_START, PCRF_ROOT,
-        SKIP, STOP
-    } parse_state;
-    parse_state state = START;
-    parse_state stack = STOP;
-
-    size_t root_tokens = 0;
-    size_t pcrf_tokens = 0;
-    size_t skip_tokens = 0;
-    int i, j;
+    d_assert(config, return CORE_ERROR, );
 
     rv = pcrf_context_prepare();
     if (rv != CORE_OK) return rv;
 
-    for (i = 0, j = 1; j > 0; i++, j--)
+    if (!bson_iter_init(&iter, config->bson))
     {
-        jsmntok_t *t = &token[i];
+        d_error("bson_iter_init failed in this document");
+        return CORE_ERROR;
+    }
 
-        j += t->size;
-
-        switch (state)
+    while(bson_iter_next(&iter))
+    {
+        const char *key = bson_iter_key(&iter);
+        if (!strcmp(key, "PCRF") && BSON_ITER_HOLDS_DOCUMENT(&iter))
         {
-            case START:
+            bson_iter_t pcrf_iter;
+            bson_iter_recurse(&iter, &pcrf_iter);
+            while(bson_iter_next(&pcrf_iter))
             {
-                state = ROOT;
-                root_tokens = t->size;
-
-                break;
-            }
-            case ROOT:
-            {
-                if (jsmntok_equal(json, t, "PCRF") == 0)
+                const char *pcrf_key = bson_iter_key(&pcrf_iter);
+                if (!strcmp(pcrf_key, "FD_CONF_PATH") &&
+                    BSON_ITER_HOLDS_UTF8(&pcrf_iter))
                 {
-                    state = PCRF_START;
+                    self.fd_conf_path = bson_iter_utf8(&pcrf_iter, &length);
                 }
-                else
-                {
-                    state = SKIP;
-                    stack = ROOT;
-                    skip_tokens = t->size;
-
-                    root_tokens--;
-                    if (root_tokens == 0) state = STOP;
-                }
-
-                break;
             }
-            case PCRF_START:
-            {
-                state = PCRF_ROOT;
-                pcrf_tokens = t->size;
-
-                break;
-            }
-            case PCRF_ROOT:
-            {
-                if (jsmntok_equal(json, t, "FD_CONF_PATH") == 0)
-                {
-                    self.fd_conf_path = jsmntok_to_string(json, t+1);
-                }
-
-                state = SKIP;
-                stack = PCRF_ROOT;
-                skip_tokens = t->size;
-
-                pcrf_tokens--;
-                if (pcrf_tokens == 0) stack = ROOT;
-                break;
-            }
-            case SKIP:
-            {
-                skip_tokens += t->size;
-
-                skip_tokens--;
-                if (skip_tokens == 0) state = stack;
-                break;
-            }
-            case STOP:
-            {
-                break;
-            }
-            default:
-            {
-                d_error("Failed to parse configuration in the state(%u)", 
-                        state);
-                break;
-            }
-
         }
     }
 

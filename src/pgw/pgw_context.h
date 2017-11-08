@@ -30,14 +30,14 @@ typedef struct _pgw_context_t {
     c_uint32_t      gtpu_port;  /* PGW GTP-U local port */
     net_sock_t*     gtpu_sock;  /* PGW GTP-U local listen socket */
 
-    char*           fd_conf_path;   /* PGW freeDiameter conf path */
+    const char*     fd_conf_path;   /* PGW freeDiameter conf path */
 
     msgq_id         queue_id;       /* Qsesssess for processing PGW control plane */
     tm_service_t    tm_service;     /* Timer Service */
 
     struct {
         net_link_t* tun_link;       /* PGW Tun Interace for U-plane */
-        char *if_name;
+        const char *if_name;
         struct {
             c_uint32_t addr;
             c_uint8_t  bits;
