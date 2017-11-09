@@ -12,12 +12,12 @@
 
 char *EVT_NAME_UNKNOWN = "UNKNOWN";
 
-msgq_id event_create(void)
+msgq_id event_create(int opt)
 {
     msgq_id queue_id = 0;
 
     /* Start threads */
-    queue_id = msgq_create(EVT_Q_DEPTH, EVENT_SIZE, MSGQ_O_BLOCK);
+    queue_id = msgq_create(EVT_Q_DEPTH, EVENT_SIZE, opt);
     d_assert(queue_id != 0, return CORE_ERROR, "Message queue creation failed");
 
     return queue_id;

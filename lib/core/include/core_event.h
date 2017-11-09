@@ -73,7 +73,7 @@ extern char *EVT_NAME_UNKNOWN;
  *
  * @return event queue or 0
  */
-CORE_DECLARE(msgq_id) event_create(void);
+CORE_DECLARE(msgq_id) event_create(int opt);
 
 /**
  * Delete event message queue

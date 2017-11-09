@@ -407,9 +407,10 @@ status_t pgw_sgw_remove(pgw_sgw_t *sgw)
 {
     d_assert(sgw, return CORE_ERROR, "Null param");
 
+    list_remove(&self.sgw_list, sgw);
+
     gtp_xact_delete_all(sgw);
 
-    list_remove(&self.sgw_list, sgw);
     pool_free_node(&pgw_sgw_pool, sgw);
 
     return CORE_OK;
@@ -635,9 +636,10 @@ status_t pgw_bearer_remove(pgw_bearer_t *bearer)
     d_assert(bearer, return CORE_ERROR, "Null param");
     d_assert(bearer->sess, return CORE_ERROR, "Null param");
 
+    list_remove(&bearer->sess->bearer_list, bearer);
+
     pgw_pf_remove_all(bearer);
 
-    list_remove(&bearer->sess->bearer_list, bearer);
     index_free(&pgw_bearer_pool, bearer);
 
     return CORE_OK;
@@ -948,10 +950,9 @@ pgw_pf_t *pgw_pf_add(pgw_bearer_t *bearer, c_uint32_t precedence)
     d_assert(pf, return NULL, "Null param");
 
     pf->identifier = NEXT_ID(bearer->pf_identifier, 1, 15);
+    pf->bearer = bearer;
 
     list_append(&bearer->pf_list, pf);
-
-    pf->bearer = bearer;
 
     return pf;
 }

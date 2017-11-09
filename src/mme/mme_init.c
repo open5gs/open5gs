@@ -68,7 +68,7 @@ static void *THREAD_FUNC sm_main(thread_id id, void *data)
 
     memset(&event, 0, sizeof(event_t));
 
-    mme_self()->queue_id = event_create();
+    mme_self()->queue_id = event_create(MSGQ_O_BLOCK);
     d_assert(mme_self()->queue_id, return NULL, 
             "MME event queue creation failed");
     tm_service_init(&mme_self()->tm_service);

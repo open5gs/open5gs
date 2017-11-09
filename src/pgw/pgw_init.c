@@ -69,7 +69,7 @@ static void *THREAD_FUNC sm_main(thread_id id, void *data)
 
     memset(&event, 0, sizeof(event_t));
 
-    pgw_self()->queue_id = event_create();
+    pgw_self()->queue_id = event_create(MSGQ_O_BLOCK);
     d_assert(pgw_self()->queue_id, return NULL, 
             "PGW event queue creation failed");
     tm_service_init(&pgw_self()->tm_service);

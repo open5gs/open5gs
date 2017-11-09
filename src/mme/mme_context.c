@@ -956,9 +956,9 @@ status_t mme_sgw_remove(mme_sgw_t *sgw)
 {
     d_assert(sgw, return CORE_ERROR, "Null param");
 
-    gtp_xact_delete_all(sgw);
-
     list_remove(&self.sgw_list, sgw);
+
+    gtp_xact_delete_all(sgw);
     pool_free_node(&mme_sgw_pool, sgw);
 
     return CORE_OK;
@@ -1127,11 +1127,11 @@ enb_ue_t* enb_ue_add(mme_enb_t *enb)
     d_assert(enb_ue, return NULL, "Null param");
 
     enb_ue->mme_ue_s1ap_id = NEXT_ID(self.mme_ue_s1ap_id, 1, 0xffffffff);
+    enb_ue->enb = enb;
+
     hash_set(self.mme_ue_s1ap_id_hash, &enb_ue->mme_ue_s1ap_id, 
             sizeof(enb_ue->mme_ue_s1ap_id), enb_ue);
     list_append(&enb->enb_ue_list, enb_ue);
-
-    enb_ue->enb = enb;
 
     return enb_ue;
 
@@ -1150,12 +1150,12 @@ status_t enb_ue_remove(enb_ue_t *enb_ue)
     d_assert(enb_ue, return CORE_ERROR, "Null param");
     d_assert(enb_ue->enb, return CORE_ERROR, "Null param");
 
-    rv = source_ue_deassociate_target_ue(enb_ue);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "Null param");
-    
     list_remove(&enb_ue->enb->enb_ue_list, enb_ue);
     hash_set(self.mme_ue_s1ap_id_hash, &enb_ue->mme_ue_s1ap_id, 
             sizeof(enb_ue->mme_ue_s1ap_id), NULL);
+
+    rv = source_ue_deassociate_target_ue(enb_ue);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "Null param");
 
     index_free(&enb_ue_pool, enb_ue);
 
@@ -1679,7 +1679,6 @@ mme_sess_t *mme_sess_add(mme_ue_t *mme_ue, c_uint8_t pti)
     d_assert(sess, return NULL, "Null param");
 
     list_init(&sess->bearer_list);
-    list_append(&mme_ue->sess_list, sess);
 
     sess->mme_ue = mme_ue;
     sess->pti = pti;
@@ -1688,6 +1687,8 @@ mme_sess_t *mme_sess_add(mme_ue_t *mme_ue, c_uint8_t pti)
     d_assert(bearer, mme_sess_remove(sess); return NULL, 
             "Can't add default bearer context");
 
+    list_append(&mme_ue->sess_list, sess);
+
     return sess;
 }
 
@@ -1695,13 +1696,14 @@ status_t mme_sess_remove(mme_sess_t *sess)
 {
     d_assert(sess, return CORE_ERROR, "Null param");
     d_assert(sess->mme_ue, return CORE_ERROR, "Null param");
+    
+    list_remove(&sess->mme_ue->sess_list, sess);
 
     mme_bearer_remove_all(sess);
 
     NAS_CLEAR_DATA(&sess->ue_pco);
     TLV_CLEAR_DATA(&sess->pgw_pco);
 
-    list_remove(&sess->mme_ue->sess_list, sess);
     index_free(&mme_sess_pool, sess);
 
     return CORE_OK;
@@ -1799,11 +1801,11 @@ mme_bearer_t* mme_bearer_add(mme_sess_t *sess)
 
     bearer->ebi = NEXT_ID(mme_ue->ebi, MIN_EPS_BEARER_ID, MAX_EPS_BEARER_ID);
 
-    list_append(&sess->bearer_list, bearer);
-    
     bearer->mme_ue = mme_ue;
     bearer->sess = sess;
 
+    list_append(&sess->bearer_list, bearer);
+    
     event_set_param1(&e, (c_uintptr_t)bearer->index);
     fsm_create(&bearer->sm, esm_state_initial, esm_state_final);
     fsm_init(&bearer->sm, &e);
@@ -1822,9 +1824,10 @@ status_t mme_bearer_remove(mme_bearer_t *bearer)
     fsm_final(&bearer->sm, &e);
     fsm_clear(&bearer->sm);
 
+    list_remove(&bearer->sess->bearer_list, bearer);
+
     TLV_CLEAR_DATA(&bearer->tft);
     
-    list_remove(&bearer->sess->bearer_list, bearer);
     index_free(&mme_bearer_pool, bearer);
 
     return CORE_OK;

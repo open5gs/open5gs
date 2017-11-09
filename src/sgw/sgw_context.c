@@ -252,9 +252,10 @@ status_t sgw_mme_remove(sgw_mme_t *mme)
 {
     d_assert(mme, return CORE_ERROR, "Null param");
 
+    list_remove(&self.mme_list, mme);
+
     gtp_xact_delete_all(mme);
 
-    list_remove(&self.mme_list, mme);
     pool_free_node(&sgw_mme_pool, mme);
 
     return CORE_OK;
@@ -324,9 +325,10 @@ status_t sgw_pgw_remove(sgw_pgw_t *pgw)
 {
     d_assert(pgw, return CORE_ERROR, "Null param");
 
+    list_remove(&self.pgw_list, pgw);
+
     gtp_xact_delete_all(pgw);
 
-    list_remove(&self.pgw_list, pgw);
     pool_free_node(&sgw_pgw_pool, pgw);
 
     return CORE_OK;
@@ -527,8 +529,6 @@ sgw_sess_t *sgw_sess_add(
     /* Set APN */
     core_cpystrn(sess->pdn.apn, apn, MAX_APN_LEN+1);
 
-    list_append(&sgw_ue->sess_list, sess);
-
     sess->sgw_ue = sgw_ue;
 
     list_init(&sess->bearer_list);
@@ -538,6 +538,8 @@ sgw_sess_t *sgw_sess_add(
             "Can't add default bearer context");
     bearer->ebi = ebi;
 
+    list_append(&sgw_ue->sess_list, sess);
+
     return sess;
 }
 
@@ -546,9 +548,10 @@ status_t sgw_sess_remove(sgw_sess_t *sess)
     d_assert(sess, return CORE_ERROR, "Null param");
     d_assert(sess->sgw_ue, return CORE_ERROR, "Null param");
 
+    list_remove(&sess->sgw_ue->sess_list, sess);
+
     sgw_bearer_remove_all(sess);
 
-    list_remove(&sess->sgw_ue->sess_list, sess);
     index_free(&sgw_sess_pool, sess);
 
     return CORE_OK;
@@ -632,8 +635,6 @@ sgw_bearer_t* sgw_bearer_add(sgw_sess_t *sess)
     index_alloc(&sgw_bearer_pool, &bearer);
     d_assert(bearer, return NULL, "Bearer context allocation failed");
 
-    list_append(&sess->bearer_list, bearer);
-    
     bearer->sgw_ue = sgw_ue;
     bearer->sess = sess;
 
@@ -645,6 +646,8 @@ sgw_bearer_t* sgw_bearer_add(sgw_sess_t *sess)
     tunnel = sgw_tunnel_add(bearer, GTP_F_TEID_S5_S8_SGW_GTP_U);
     d_assert(tunnel, return NULL, "Tunnel context allocation failed");
 
+    list_append(&sess->bearer_list, bearer);
+    
     return bearer;
 }
 
@@ -655,13 +658,14 @@ status_t sgw_bearer_remove(sgw_bearer_t *bearer)
     d_assert(bearer, return CORE_ERROR, "Null param");
     d_assert(bearer->sess, return CORE_ERROR, "Null param");
 
+    list_remove(&bearer->sess->bearer_list, bearer);
+
     sgw_tunnel_remove_all(bearer);
 
     /* Free the buffered packets */
     for (i = 0; i < bearer->num_buffered_pkt; i++)
         pkbuf_free(bearer->buffered_pkts[i]);
 
-    list_remove(&bearer->sess->bearer_list, bearer);
     index_free(&sgw_bearer_pool, bearer);
 
     return CORE_OK;
