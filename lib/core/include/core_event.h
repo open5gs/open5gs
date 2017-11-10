@@ -10,7 +10,6 @@ extern "C" {
 #endif /* __cplusplus */
 
 #define EVENT_SIZE sizeof(event_t)
-#define EVENT_WAIT_TIMEOUT 10000 /* 10 msec */
 
 #define event_set(__ptr_e, __evnt) ((__ptr_e)->event = (__evnt))
 #define event_get(__ptr_e) ((__ptr_e)->event)
