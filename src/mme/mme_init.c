@@ -80,9 +80,10 @@ static void *THREAD_FUNC sm_main(thread_id id, void *data)
 
     prev_tm = time_now();
 
+#define EVENT_LOOP_TIMEOUT 50   /* 50ms */
     while ((!thread_should_stop()))
     {
-        rv = event_timedrecv(mme_self()->queue_id, &event, EVENT_WAIT_TIMEOUT);
+        rv = event_timedrecv(mme_self()->queue_id, &event, EVENT_LOOP_TIMEOUT);
 
         d_assert(rv != CORE_ERROR, continue,
                 "While receiving a event message, error occurs");
@@ -90,7 +91,7 @@ static void *THREAD_FUNC sm_main(thread_id id, void *data)
         now_tm = time_now();
 
         /* if the gap is over 10 ms, execute preriodic jobs */
-        if (now_tm - prev_tm > EVENT_WAIT_TIMEOUT)
+        if (now_tm - prev_tm > EVENT_LOOP_TIMEOUT * 1000)
         {
             tm_execute_tm_service(
                     &mme_self()->tm_service, mme_self()->queue_id);
@@ -118,7 +119,7 @@ static void *THREAD_FUNC net_main(thread_id id, void *data)
 {
     while (!thread_should_stop())
     {
-        net_fds_read_run(50); 
+        net_fds_read_run(EVENT_LOOP_TIMEOUT); 
     }
 
     return NULL;
