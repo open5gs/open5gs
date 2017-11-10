@@ -135,6 +135,8 @@ static void attach_test1(abts_case *tc, void *data)
         "\"__v\" : 0 "
       "}";
 
+    core_sleep(time_from_msec(300));
+
     /* eNB connects to MME */
     sock = tests1ap_enb_connect();
     ABTS_PTR_NOTNULL(tc, sock);
@@ -430,8 +432,6 @@ static void attach_test1(abts_case *tc, void *data)
     /* eNB disonncect from SGW */
     rv = testgtpu_enb_close(gtpu);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
-
-    core_sleep(time_from_msec(300));
 }
 
 /**************************************************************
@@ -495,6 +495,9 @@ static void attach_test2(abts_case *tc, void *data)
       "}";
 
     c_uint8_t tmp[MAX_SDU_LEN];
+
+    core_sleep(time_from_msec(300));
+
     /* eNB connects to MME */
     sock = tests1ap_enb_connect();
     ABTS_PTR_NOTNULL(tc, sock);
@@ -676,8 +679,6 @@ static void attach_test2(abts_case *tc, void *data)
     /* eNB disonncect from MME */
     rv = tests1ap_enb_close(sock);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
-
-    core_sleep(time_from_msec(300));
 }
 
 /**************************************************************
@@ -770,6 +771,8 @@ static void attach_test3(abts_case *tc, void *data)
         "}, "
         "\"__v\" : 0 "
       "}";
+
+    core_sleep(time_from_msec(300));
 
     /* eNB connects to MME */
     sock = tests1ap_enb_connect();
