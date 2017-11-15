@@ -323,6 +323,7 @@ ssize_t sock_recv(sock_id id, void *buf, size_t len, int flags,
     }
     else
     {
+        *addrlen = sizeof(struct sockaddr);
         size = recvfrom(sock->fd, buf, len, flags, src_addr, addrlen);
     }
 
