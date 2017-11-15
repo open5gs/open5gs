@@ -67,7 +67,7 @@ static void sock_test2(abts_case *tc, void *data)
     rv = tcp_create(&tcp, AF_INET6, NULL, SRV_PORT, NULL, 0, SOCK_F_BIND);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    rv = thread_create(&recv_thread, NULL, recv_main, NULL);
+    rv = thread_create(&recv_thread, NULL, recv_main, tc);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     rv = sock_accept(&tcp2, tcp);
@@ -125,7 +125,7 @@ static void sock_test3(abts_case *tc, void *data)
     rv = udp_create(&udp, AF_INET, NULL, SRV_PORT, NULL, 0, SOCK_F_BIND);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    rv = thread_create(&send_thread, NULL, send_main, NULL);
+    rv = thread_create(&send_thread, NULL, send_main, tc);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     size = sock_recv(udp, buf, STRLEN, 0, &src_addr, &addrlen);

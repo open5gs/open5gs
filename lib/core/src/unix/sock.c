@@ -33,7 +33,7 @@ status_t sock_init(void)
 
     max_fd = 0;
     list_init(&fd_list);
-    memset(&read_fds, 0, sizeof(struct fd_set));
+    memset(&read_fds, 0, sizeof(fd_set));
 
     return CORE_OK;
 }

@@ -16,14 +16,12 @@ extern "C" {
 #define SOCK_F_CONNECT              (1 << 1)
 
 #define SOCK_NTOP(__aDDR, __bUF) \
-    __aDDR ? \
-        ((struct sockaddr_in *)__aDDR)->sin_family == AF_INET ? \
-            inet_ntop(AF_INET, &(((struct sockaddr_in *)__aDDR)->sin_addr), \
-                __bUF, INET_ADDRSTRLEN) : \
-        ((struct sockaddr_in6 *)__aDDR)->sin6_family == AF_INET6 ? \
-            inet_ntop(AF_INET6, &(((struct sockaddr_in6 *)__aDDR)->sin6_addr), \
-                __bUF, INET6_ADDRSTRLEN) : "Unknown Family" : \
-    "Null Address"
+    ((struct sockaddr_in *)__aDDR)->sin_family == AF_INET ? \
+        inet_ntop(AF_INET, &(((struct sockaddr_in *)__aDDR)->sin_addr), \
+            __bUF, INET_ADDRSTRLEN) : \
+    ((struct sockaddr_in6 *)__aDDR)->sin6_family == AF_INET6 ? \
+        inet_ntop(AF_INET6, &(((struct sockaddr_in6 *)__aDDR)->sin6_addr), \
+            __bUF, INET6_ADDRSTRLEN) : "Unknown Family"
 
 /**
  * @defgroup core_sockopt Socket option definitions
