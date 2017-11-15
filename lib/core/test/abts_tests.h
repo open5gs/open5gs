@@ -29,6 +29,7 @@ const struct testlist {
     {testaes},
     {testsha2},
     {testnetlib},
+    {testsock},
 #if USE_USRSCTP != 1
     {testsctp},
 #endif

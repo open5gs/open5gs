@@ -12,6 +12,7 @@
 #include "core_semaphore.h"
 #include "core_thread.h"
 #include "core_net.h"
+#include "core_sock.h"
 #include "core_file.h"
 #include "core_pkbuf.h"
 #include "core_signal.h"
@@ -46,6 +47,7 @@ status_t core_initialize(void)
     atomic_init();
     thread_init();
     net_init();
+    sock_init();
     file_init();
     pkbuf_init();
     tlv_init();
@@ -69,6 +71,7 @@ void core_terminate(void)
     tlv_final();
     pkbuf_final();
     file_final();
+    sock_final();
     net_final();
     thread_final();
     atomic_final();
