@@ -77,7 +77,7 @@ status_t sctp_open(sock_id *new,
 }
 
 int sctp_write(sock_id id, const void *msg, size_t len,
-        struct sockaddr *to, socklen_t tolen,
+        c_sockaddr_t *to, socklen_t tolen,
         c_uint32_t ppid, c_uint16_t stream_no)
 {
     sock_t *sock = (sock_t *)id;
@@ -85,7 +85,7 @@ int sctp_write(sock_id id, const void *msg, size_t len,
 
     d_assert(id, return -1, );
     
-    size = sctp_sendmsg(sock->fd, msg, len, to, tolen,
+    size = sctp_sendmsg(sock->fd, msg, len, &to->sa, tolen,
             htonl(ppid),
             0,  /* flags */
             stream_no,
@@ -101,7 +101,7 @@ int sctp_write(sock_id id, const void *msg, size_t len,
 }
 
 int sctp_read(sock_id id, void *msg, size_t len,
-        struct sockaddr *from, socklen_t *fromlen,
+        c_sockaddr_t *from, socklen_t *fromlen,
         c_uint32_t *ppid, c_uint16_t *stream_no)
 {
     sock_t *sock = (sock_t *)id;
@@ -114,8 +114,10 @@ int sctp_read(sock_id id, void *msg, size_t len,
 
     do
     {
+        if (fromlen)
+            *fromlen = sizeof(c_sockaddr_t);
         size = sctp_recvmsg(sock->fd, msg, len,
-                    from, fromlen, &sinfo, &flags);
+                    &from->sa, fromlen, &sinfo, &flags);
         if (size < 0)
         {
             d_error("sctp_read(len:%ld) failed(%d:%s)",

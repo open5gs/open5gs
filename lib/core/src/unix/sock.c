@@ -100,7 +100,7 @@ status_t sock_bind(sock_id id, const char *host, c_uint16_t port)
 {
     sock_t *sock = (sock_t *)id;
     struct addrinfo *result, *rp;
-    char buf[INET6_ADDRSTRLEN];
+    char buf[CORE_ADDRSTRLEN];
 
     d_assert(sock, return CORE_ERROR,);
     d_assert(sock->flags & SOCK_F_BIND, return CORE_ERROR,);
@@ -148,7 +148,7 @@ status_t sock_connect(sock_id id, const char *host, c_uint16_t port)
     sock_t *sock = (sock_t *)id;
     int rc;
     struct addrinfo *result, *rp;
-    char buf[INET6_ADDRSTRLEN];
+    char buf[CORE_ADDRSTRLEN];
 
     d_assert(id, return CORE_ERROR,);
     d_assert(sock->flags & SOCK_F_CONNECT, return CORE_ERROR,);
@@ -232,7 +232,7 @@ status_t sock_accept(sock_id *new, sock_id id)
 }
 
 ssize_t sock_write(sock_id id, const void *buf, size_t len, int flags,
-        const struct sockaddr *dest_addr, socklen_t addrlen)
+        const c_sockaddr_t *dest_addr, socklen_t addrlen)
 {
     sock_t *sock = (sock_t *)id;
     ssize_t size;
@@ -243,7 +243,7 @@ ssize_t sock_write(sock_id id, const void *buf, size_t len, int flags,
     {
         d_assert(dest_addr, return -1,);
         d_assert(addrlen, return -1,);
-        size = sendto(sock->fd, buf, len, flags, dest_addr, addrlen);
+        size = sendto(sock->fd, buf, len, flags, &dest_addr->sa, addrlen);
     }
     else
     {
@@ -260,7 +260,7 @@ ssize_t sock_write(sock_id id, const void *buf, size_t len, int flags,
 }
 
 ssize_t sock_read(sock_id id, void *buf, size_t len, int flags,
-        struct sockaddr *src_addr, socklen_t *addrlen)
+        c_sockaddr_t *src_addr, socklen_t *addrlen)
 {
     sock_t *sock = (sock_t *)id;
     ssize_t size;
@@ -269,7 +269,9 @@ ssize_t sock_read(sock_id id, void *buf, size_t len, int flags,
 
     if (sock->type == SOCK_DGRAM && !(sock->flags & SOCK_F_CONNECT))
     {
-        size = recvfrom(sock->fd, buf, len, flags, src_addr, addrlen);
+        if (addrlen)
+            *addrlen = sizeof(c_sockaddr_t);
+        size = recvfrom(sock->fd, buf, len, flags, &src_addr->sa, addrlen);
     }
     else
     {
@@ -284,56 +286,6 @@ ssize_t sock_read(sock_id id, void *buf, size_t len, int flags,
 
     return size;
 }
-
-status_t sock_setsockopt(sock_id id, c_int32_t opt, c_int32_t on)
-{
-    sock_t *sock = (sock_t *)id;
-    int one;
-    status_t rv;
-
-
-    d_assert(sock, return CORE_ERROR,);
-    if (on)
-        one = 1;
-    else
-        one = 0;
-
-    switch(opt)
-    {
-        case SOCK_O_REUSEADDR:
-            if (on != sock_is_option_set(sock, SOCK_O_REUSEADDR))
-            {
-                if (setsockopt(sock->fd, SOL_SOCKET, SO_REUSEADDR,
-                            (void *)&one, sizeof(int)) == -1)
-                {
-                    return errno;
-                }
-                sock_set_option(sock, SOCK_O_REUSEADDR, on);
-            }
-            break;
-        case SOCK_O_NONBLOCK:
-            if (sock_is_option_set(sock, SOCK_O_NONBLOCK) != on)
-            {
-                if (on)
-                {
-                    if ((rv = sononblock(sock->fd)) != CORE_OK) 
-                        return rv;
-                }
-                else
-                {
-                    if ((rv = soblock(sock->fd)) != CORE_OK)
-                        return rv;
-                }
-                sock_set_option(sock, SOCK_O_NONBLOCK, on);
-            }
-            break;
-        default:
-            d_error("Not implemented(%d)", opt);
-            return CORE_EINVAL;
-    }
-
-    return CORE_OK; 
-}         
 
 status_t sock_register(sock_id id, sock_handler handler, void *data) 
 {
@@ -434,6 +386,127 @@ int sock_select_loop(c_time_t timeout)
     return 0;
 }
 
+const char *sock_ntop(c_sockaddr_t *sockaddr, char *buf, int buflen)
+{
+    int family;
+    d_assert(buf, return NULL,);
+    d_assert(sockaddr, return NULL,);
+
+    family = sockaddr->sa.sa_family;
+    switch(family)
+    {
+        case AF_INET:
+            d_assert(buflen >= INET_ADDRSTRLEN, return NULL,);
+            return inet_ntop(family,
+                    &sockaddr->sin.sin_addr, buf, INET_ADDRSTRLEN);
+        case AF_INET6:
+            d_assert(buflen >= CORE_ADDRSTRLEN, return NULL,);
+            return inet_ntop(family,
+                    &sockaddr->sin6.sin6_addr, buf, INET6_ADDRSTRLEN);
+        default:
+            d_assert(0, return NULL,);
+    }
+}
+
+status_t sock_pton(const char *hostname, c_uint16_t port,
+        c_sockaddr_t *sockaddr)
+{
+    struct addrinfo *result, *rp;
+
+    d_assert(sockaddr, return CORE_ERROR,);
+
+    result = resolver(AF_UNSPEC, SOCK_STREAM, 0,
+           hostname, port, hostname ? 0 : AI_PASSIVE);
+    d_assert(result, return CORE_ERROR,);
+
+    memset(sockaddr, 0, sizeof(c_sockaddr_t));
+    for (rp = result; rp != NULL; rp = rp->ai_next)
+    {
+        if (rp->ai_family != AF_INET && rp->ai_family != AF_INET6)
+            continue;
+
+        sockaddr->sa.sa_family = rp->ai_family;
+        memcpy(&sockaddr->sa, rp->ai_addr, rp->ai_addrlen);
+        if (rp->ai_family == AF_INET)
+            sockaddr->sin.sin_port = htons(port);
+        else if (rp->ai_family == AF_INET6)
+            sockaddr->sin6.sin6_port = htons(port);
+        break;
+    }
+    freeaddrinfo(result);
+
+    if (rp == NULL)
+    {
+        d_error("sock_pton(%d:%d) failed(%d:%s)",
+                hostname, port, errno, strerror(errno));
+        return CORE_ERROR;
+    }
+
+    return CORE_OK;
+}
+
+socklen_t sock_len(c_sockaddr_t *sockaddr)
+{
+    d_assert(sockaddr, return CORE_ERROR,);
+    d_assert(sockaddr->sa.sa_family == AF_INET ||
+            sockaddr->sa.sa_family == AF_INET6, return CORE_ERROR,);
+
+    if (sockaddr->sa.sa_family == AF_INET)
+        return sizeof(struct sockaddr_in);
+    else if (sockaddr->sa.sa_family == AF_INET6)
+        return sizeof(struct sockaddr_in6);
+    else
+        d_assert(0, return CORE_ERROR,);
+}
+
+status_t sock_setsockopt(sock_id id, c_int32_t opt, c_int32_t on)
+{
+    sock_t *sock = (sock_t *)id;
+    int one;
+    status_t rv;
+
+    d_assert(sock, return CORE_ERROR,);
+    if (on)
+        one = 1;
+    else
+        one = 0;
+
+    switch(opt)
+    {
+        case SOCK_O_REUSEADDR:
+            if (on != sock_is_option_set(sock, SOCK_O_REUSEADDR))
+            {
+                if (setsockopt(sock->fd, SOL_SOCKET, SO_REUSEADDR,
+                            (void *)&one, sizeof(int)) == -1)
+                {
+                    return errno;
+                }
+                sock_set_option(sock, SOCK_O_REUSEADDR, on);
+            }
+            break;
+        case SOCK_O_NONBLOCK:
+            if (sock_is_option_set(sock, SOCK_O_NONBLOCK) != on)
+            {
+                if (on)
+                {
+                    if ((rv = sononblock(sock->fd)) != CORE_OK) 
+                        return rv;
+                }
+                else
+                {
+                    if ((rv = soblock(sock->fd)) != CORE_OK)
+                        return rv;
+                }
+                sock_set_option(sock, SOCK_O_NONBLOCK, on);
+            }
+            break;
+        default:
+            d_error("Not implemented(%d)", opt);
+            return CORE_EINVAL;
+    }
+
+    return CORE_OK; 
+}         
 static status_t soblock(int sd)
 {
 /* BeOS uses setsockopt at present for non blocking... */

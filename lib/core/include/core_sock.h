@@ -12,14 +12,6 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define SOCK_NTOP(__aDDR, __bUF) \
-    ((struct sockaddr_in *)__aDDR)->sin_family == AF_INET ? \
-        inet_ntop(AF_INET, &(((struct sockaddr_in *)__aDDR)->sin_addr), \
-            __bUF, INET_ADDRSTRLEN) : \
-    ((struct sockaddr_in6 *)__aDDR)->sin6_family == AF_INET6 ? \
-        inet_ntop(AF_INET6, &(((struct sockaddr_in6 *)__aDDR)->sin6_addr), \
-            __bUF, INET6_ADDRSTRLEN) : "Unknown Family"
-
 /**
  * @defgroup sock_flags Socket flags definitions
  * @{
@@ -78,6 +70,12 @@ extern "C" {
 
 typedef c_uintptr_t sock_id;
 typedef int (*sock_handler)(sock_id sock, void *data);
+typedef union _c_sockaddr_t {
+    struct sockaddr_storage ss;
+    struct sockaddr_in sin;
+    struct sockaddr_in6 sin6;
+    struct sockaddr sa;
+} c_sockaddr_t;
 
 CORE_DECLARE(status_t) sock_init(void);
 CORE_DECLARE(status_t) sock_final(void);
@@ -96,10 +94,19 @@ CORE_DECLARE(status_t) sock_accept(sock_id *new, sock_id id);
 
 CORE_DECLARE(ssize_t) sock_write(sock_id id,
         const void *buf, size_t len, int flags,
-        const struct sockaddr *dest_addr, socklen_t addrlen);
+        const c_sockaddr_t *dest_addr, socklen_t addrlen);
 CORE_DECLARE(ssize_t) sock_read(sock_id id,
         void *buf, size_t len, int flags,
-        struct sockaddr *src_addr, socklen_t *addrlen);
+        c_sockaddr_t *src_addr, socklen_t *addrlen);
+
+#define CORE_ADDRSTRLEN INET6_ADDRSTRLEN
+#define SOCK_NTOP(__aDDR, __bUF) \
+    sock_ntop((c_sockaddr_t *)__aDDR, buf, CORE_ADDRSTRLEN)
+CORE_DECLARE(const char *)sock_ntop(c_sockaddr_t *sockaddr,
+        char *buf, int buflen);
+CORE_DECLARE(status_t) sock_pton(const char *hostname, c_uint16_t port,
+        c_sockaddr_t *sockaddr);
+CORE_DECLARE(socklen_t) sock_len(c_sockaddr_t *sockaddr);
 
 CORE_DECLARE(status_t) sock_setsockopt(sock_id id, c_int32_t opt, c_int32_t on);
 
