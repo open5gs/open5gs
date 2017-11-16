@@ -8,28 +8,27 @@
 
 #define DATASTR "This is a test"
 #define STRLEN 8092
-#define SRV_PORT 7777
-#define CLI_PORT 7778
+#define PORT 7777
 
 static void sock_test1(abts_case *tc, void *data)
 {
     sock_id udp;
     status_t rv;
 
-    rv = udp_open(&udp, AF_UNSPEC, 0, SRV_PORT, NULL, 0, SOCK_F_BIND);
+    rv = udp_open(&udp, AF_UNSPEC, 0, PORT, NULL, 0, SOCK_F_BIND);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     
     rv = sock_delete(udp);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     rv = udp_open(&udp, AF_UNSPEC,
-            "127.0.0.1", SRV_PORT, NULL, 0, SOCK_F_BIND);
+            "127.0.0.1", PORT, NULL, 0, SOCK_F_BIND);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     
     rv = sock_delete(udp);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    rv = udp_open(&udp, AF_UNSPEC, "::1", SRV_PORT, NULL, 0, SOCK_F_BIND);
+    rv = udp_open(&udp, AF_UNSPEC, "::1", PORT, NULL, 0, SOCK_F_BIND);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     
     rv = sock_delete(udp);
@@ -45,10 +44,10 @@ static void *THREAD_FUNC test2_main(thread_id id, void *data)
     char str[STRLEN];
     ssize_t size;
 
-    rv = tcp_open(&tcp, AF_UNSPEC, NULL, 0, "::1", SRV_PORT, SOCK_F_CONNECT);
+    rv = tcp_open(&tcp, AF_UNSPEC, NULL, 0, "::1", PORT, SOCK_F_CONNECT);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    size = sock_recv(tcp, str, STRLEN, 0, NULL, NULL);
+    size = sock_read(tcp, str, STRLEN, 0, NULL, NULL);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
 
     rv = sock_delete(tcp);
@@ -64,7 +63,7 @@ static void sock_test2(abts_case *tc, void *data)
     status_t rv;
     ssize_t size;
 
-    rv = tcp_open(&tcp, AF_INET6, NULL, SRV_PORT, NULL, 0, SOCK_F_BIND);
+    rv = tcp_open(&tcp, AF_INET6, NULL, PORT, NULL, 0, SOCK_F_BIND);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     rv = thread_create(&test2_thread, NULL, test2_main, tc);
@@ -73,7 +72,7 @@ static void sock_test2(abts_case *tc, void *data)
     rv = sock_accept(&tcp2, tcp);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    size = sock_send(tcp2, DATASTR, strlen(DATASTR), 0, NULL, 0);
+    size = sock_write(tcp2, DATASTR, strlen(DATASTR), 0, NULL, 0);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
 
     thread_join(&rv, test2_thread);
@@ -102,12 +101,12 @@ static void *THREAD_FUNC test3_main(thread_id id, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     memset(&dst_addr, 0, sizeof(dst_addr));
-    dst_addr.sin_port = htons(SRV_PORT);
+    dst_addr.sin_port = htons(PORT);
     dst_addr.sin_family = AF_INET;
     rc = inet_pton(AF_INET, "127.0.0.1", &(dst_addr.sin_addr));
     ABTS_INT_EQUAL(tc, 1, rc);
 
-    size = sock_send(udp, DATASTR, strlen(DATASTR), 0,
+    size = sock_write(udp, DATASTR, strlen(DATASTR), 0,
             (struct sockaddr *)&dst_addr, sizeof(struct sockaddr));
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
 
@@ -123,21 +122,23 @@ static void sock_test3(abts_case *tc, void *data)
     sock_id udp;
     status_t rv;
     ssize_t size;
-    struct sockaddr src_addr;
+    struct sockaddr_in src_addr;
     socklen_t addrlen;
     char str[STRLEN];
     char buf[INET6_ADDRSTRLEN];
 
-    rv = udp_open(&udp, AF_INET, NULL, SRV_PORT, NULL, 0, SOCK_F_BIND);
+    rv = udp_open(&udp, AF_INET, NULL, PORT, NULL, 0, SOCK_F_BIND);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     rv = thread_create(&test3_thread, NULL, test3_main, tc);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    size = sock_recv(udp, str, STRLEN, 0, &src_addr, &addrlen);
+    addrlen = sizeof(src_addr);
+    size = sock_read(udp, str, STRLEN, 0,
+            (struct sockaddr *)&src_addr, &addrlen);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
-    ABTS_INT_EQUAL(tc, addrlen, sizeof(src_addr));
-    ABTS_STR_EQUAL(tc, SOCK_NTOP(&src_addr, buf), "127.0.0.1");
+    ABTS_INT_EQUAL(tc, sizeof(src_addr), addrlen);
+    ABTS_STR_EQUAL(tc, "127.0.0.1", SOCK_NTOP(&src_addr, buf));
 
     thread_join(&rv, test3_thread);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), rv);
@@ -156,13 +157,13 @@ static void *THREAD_FUNC test4_main(thread_id id, void *data)
     ssize_t size;
 
     rv = udp_open(&udp, AF_UNSPEC,
-            NULL, 0, "127.0.0.1", SRV_PORT, SOCK_F_CONNECT);
+            NULL, 0, "127.0.0.1", PORT, SOCK_F_CONNECT);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    size = sock_send(udp, DATASTR, strlen(DATASTR), 0, NULL, 0);
+    size = sock_write(udp, DATASTR, strlen(DATASTR), 0, NULL, 0);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
 
-    size = sock_recv(udp, str, STRLEN, 0, NULL, NULL);
+    size = sock_read(udp, str, STRLEN, 0, NULL, NULL);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
 
     rv = sock_delete(udp);
@@ -177,20 +178,26 @@ static void sock_test4(abts_case *tc, void *data)
     sock_id udp;
     status_t rv;
     ssize_t size;
-    struct sockaddr src_addr;
+    struct sockaddr_in src_addr;
     socklen_t addrlen;
     char str[STRLEN];
+    char buf[INET6_ADDRSTRLEN];
 
-    rv = udp_open(&udp, AF_INET, NULL, SRV_PORT, NULL, 0, SOCK_F_BIND);
+    rv = udp_open(&udp, AF_INET, NULL, PORT, NULL, 0, SOCK_F_BIND);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     rv = thread_create(&test4_thread, NULL, test4_main, tc);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    size = sock_recv(udp, str, STRLEN, 0, &src_addr, &addrlen);
+    addrlen = sizeof(src_addr);
+    size = sock_read(udp, str, STRLEN, 0,
+            (struct sockaddr *)&src_addr, &addrlen);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
+    ABTS_INT_EQUAL(tc, sizeof(src_addr), addrlen);
+    ABTS_STR_EQUAL(tc, "127.0.0.1", SOCK_NTOP(&src_addr, buf));
 
-    size = sock_send(udp, DATASTR, strlen(DATASTR), 0, &src_addr, addrlen);
+    size = sock_write(udp, DATASTR, strlen(DATASTR), 0,
+            (struct sockaddr *)&src_addr, addrlen);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
 
     thread_join(&rv, test4_thread);
@@ -203,11 +210,6 @@ static void sock_test4(abts_case *tc, void *data)
 abts_suite *testsock(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
-
-#if 0
-    extern int _sock;
-    d_trace_level(&_sock, 1);
-#endif
 
     abts_run_test(suite, sock_test1, NULL);
     abts_run_test(suite, sock_test2, NULL);

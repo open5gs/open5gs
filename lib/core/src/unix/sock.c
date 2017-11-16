@@ -96,56 +96,6 @@ status_t sock_delete(sock_id id)
     return CORE_OK;
 }
 
-status_t sock_setsockopt(sock_id id, c_int32_t opt, c_int32_t on)
-{
-    sock_t *sock = (sock_t *)id;
-    int one;
-    status_t rv;
-
-
-    d_assert(sock, return CORE_ERROR,);
-    if (on)
-        one = 1;
-    else
-        one = 0;
-
-    switch(opt)
-    {
-        case SOCK_O_REUSEADDR:
-            if (on != sock_is_option_set(sock, SOCK_O_REUSEADDR))
-            {
-                if (setsockopt(sock->fd, SOL_SOCKET, SO_REUSEADDR,
-                            (void *)&one, sizeof(int)) == -1)
-                {
-                    return errno;
-                }
-                sock_set_option(sock, SOCK_O_REUSEADDR, on);
-            }
-            break;
-        case SOCK_O_NONBLOCK:
-            if (sock_is_option_set(sock, SOCK_O_NONBLOCK) != on)
-            {
-                if (on)
-                {
-                    if ((rv = sononblock(sock->fd)) != CORE_OK) 
-                        return rv;
-                }
-                else
-                {
-                    if ((rv = soblock(sock->fd)) != CORE_OK)
-                        return rv;
-                }
-                sock_set_option(sock, SOCK_O_NONBLOCK, on);
-            }
-            break;
-        default:
-            d_error("Not implemented(%d)", opt);
-            return CORE_EINVAL;
-    }
-
-    return CORE_OK; 
-}         
-
 status_t sock_bind(sock_id id, const char *host, c_uint16_t port)
 {
     sock_t *sock = (sock_t *)id;
@@ -281,7 +231,7 @@ status_t sock_accept(sock_id *new, sock_id id)
     return CORE_OK;
 }
 
-ssize_t sock_send(sock_id id, const void *buf, size_t len, int flags,
+ssize_t sock_write(sock_id id, const void *buf, size_t len, int flags,
         const struct sockaddr *dest_addr, socklen_t addrlen)
 {
     sock_t *sock = (sock_t *)id;
@@ -302,13 +252,14 @@ ssize_t sock_send(sock_id id, const void *buf, size_t len, int flags,
 
     if (size < 0)
     {
-        d_error("send(len:%ld) failed(%d:%s)", len, errno, strerror(errno));
+        d_error("sock_write(len:%ld) failed(%d:%s)",
+                len, errno, strerror(errno));
     }
 
     return size;
 }
 
-ssize_t sock_recv(sock_id id, void *buf, size_t len, int flags,
+ssize_t sock_read(sock_id id, void *buf, size_t len, int flags,
         struct sockaddr *src_addr, socklen_t *addrlen)
 {
     sock_t *sock = (sock_t *)id;
@@ -318,7 +269,6 @@ ssize_t sock_recv(sock_id id, void *buf, size_t len, int flags,
 
     if (sock->type == SOCK_DGRAM && !(sock->flags & SOCK_F_CONNECT))
     {
-        *addrlen = sizeof(struct sockaddr);
         size = recvfrom(sock->fd, buf, len, flags, src_addr, addrlen);
     }
     else
@@ -328,11 +278,62 @@ ssize_t sock_recv(sock_id id, void *buf, size_t len, int flags,
 
     if (size < 0)
     {
-        d_error("recv(len:%ld) failed(%d:%s)", len, errno, strerror(errno));
+        d_error("sock_read(len:%ld) failed(%d:%s)",
+                len, errno, strerror(errno));
     }
 
     return size;
 }
+
+status_t sock_setsockopt(sock_id id, c_int32_t opt, c_int32_t on)
+{
+    sock_t *sock = (sock_t *)id;
+    int one;
+    status_t rv;
+
+
+    d_assert(sock, return CORE_ERROR,);
+    if (on)
+        one = 1;
+    else
+        one = 0;
+
+    switch(opt)
+    {
+        case SOCK_O_REUSEADDR:
+            if (on != sock_is_option_set(sock, SOCK_O_REUSEADDR))
+            {
+                if (setsockopt(sock->fd, SOL_SOCKET, SO_REUSEADDR,
+                            (void *)&one, sizeof(int)) == -1)
+                {
+                    return errno;
+                }
+                sock_set_option(sock, SOCK_O_REUSEADDR, on);
+            }
+            break;
+        case SOCK_O_NONBLOCK:
+            if (sock_is_option_set(sock, SOCK_O_NONBLOCK) != on)
+            {
+                if (on)
+                {
+                    if ((rv = sononblock(sock->fd)) != CORE_OK) 
+                        return rv;
+                }
+                else
+                {
+                    if ((rv = soblock(sock->fd)) != CORE_OK)
+                        return rv;
+                }
+                sock_set_option(sock, SOCK_O_NONBLOCK, on);
+            }
+            break;
+        default:
+            d_error("Not implemented(%d)", opt);
+            return CORE_EINVAL;
+    }
+
+    return CORE_OK; 
+}         
 
 status_t sock_register(sock_id id, sock_handler handler, void *data) 
 {

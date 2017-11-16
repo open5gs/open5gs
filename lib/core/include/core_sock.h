@@ -52,7 +52,7 @@ extern "C" {
 #define SOCK_O_INCOMPLETE_READ  (1 << 11) /**< Set on non-blocking sockets
                                    * (timeout != 0) on which the
                                    * previous read() did not fill a buffer
-                                   * completely.  the next sock_recv() 
+                                   * completely.  the next sock_read() 
                                    * will first call select()/poll() rather than
                                    * going straight into read().  (Can also
                                    * be set by an application to force a
@@ -86,8 +86,6 @@ CORE_DECLARE(status_t) sock_create(
         sock_id *id, int family, int type, int protocol, int flags);
 CORE_DECLARE(status_t) sock_delete(sock_id id);
 
-CORE_DECLARE(status_t) sock_setsockopt(sock_id id, c_int32_t opt, c_int32_t on);
-
 CORE_DECLARE(status_t) sock_bind(sock_id id,
         const char *host, c_uint16_t port);
 CORE_DECLARE(status_t) sock_connect(sock_id id,
@@ -96,12 +94,14 @@ CORE_DECLARE(status_t) sock_connect(sock_id id,
 CORE_DECLARE(status_t) sock_listen(sock_id id);
 CORE_DECLARE(status_t) sock_accept(sock_id *new, sock_id id);
 
-CORE_DECLARE(ssize_t) sock_send(sock_id id,
+CORE_DECLARE(ssize_t) sock_write(sock_id id,
         const void *buf, size_t len, int flags,
         const struct sockaddr *dest_addr, socklen_t addrlen);
-CORE_DECLARE(ssize_t) sock_recv(sock_id id,
+CORE_DECLARE(ssize_t) sock_read(sock_id id,
         void *buf, size_t len, int flags,
         struct sockaddr *src_addr, socklen_t *addrlen);
+
+CORE_DECLARE(status_t) sock_setsockopt(sock_id id, c_int32_t opt, c_int32_t on);
 
 CORE_DECLARE(status_t) sock_register(sock_id id,
         sock_handler handler, void *data); 

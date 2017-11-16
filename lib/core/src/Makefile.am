@@ -33,6 +33,10 @@ libcore_la_SOURCES = \
 	unix/sock.c unix/udp.c unix/tcp.c \
 	$(NULL)
 
+if !USRSCTP
+libcore_la_SOURCES += ../include_core_sctp.h unix/sctp.c
+endif
+
 AM_LDFLAGS = \
 	-version-info @LIBVERSION@ \
 	$(NULL)

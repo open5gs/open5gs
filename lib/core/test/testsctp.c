@@ -1,325 +1,233 @@
-#define TRACE_MODULE _testsctp
 #include "core_debug.h"
-#include "core_net.h"
+#include "core_thread.h"
+#include "core_sctp.h"
+
 #include "testutil.h"
 
-#define TEST_SERVER_PORT    5121
-#define TEST_BUFFER_SIZE    1024
+#define DATASTR "This is a test"
+#define STRLEN 8092
+#define PORT 7777
+#define PPID 12345
 
-#define TEST_MAX_NUM     4
-
-static char buffer[TEST_BUFFER_SIZE];
-static int sctp_stream_server_started = 0;
-static int sctp_seq_server_started = 0;
-
-pthread_t streamserver_tid, seqserver_tid;
-net_sock_t *streamserver_sock,*seqserver_sock;
-
-static void *sctp_stream_session_main(void *param)
+static void sctp_test1(abts_case *tc, void *data)
 {
-    int rc;
+    sock_id sctp;
+    status_t rv;
 
-    net_sock_t *net_sock = (net_sock_t *)param;
-    while (1)
-    {
-        rc = net_read(net_sock, buffer, TEST_BUFFER_SIZE, 1);
-        if (rc > 0)
-        {
-            if (!strncmp(buffer, "QUIT",4))
-            {
-                break;
-            }
-            else
-            {
-                /* Send received data */
-                rc = net_send(net_sock, buffer, rc);
-            }
-        }
-        else if (rc == 0)
-        {
-            /* Timeout */
-        }
-        else
-        {
-            if (rc != -2 && net_sock->sndrcv_errno != EAGAIN)
-                break;
-        }
-    }
+    rv = sctp_open(&sctp, AF_UNSPEC, SOCK_SEQPACKET,
+            0, PORT, NULL, 0, SOCK_F_BIND);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    
+    rv = sock_delete(sctp);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    net_close(net_sock);
+    rv = sctp_open(&sctp, AF_UNSPEC, SOCK_STREAM,
+            "127.0.0.1", PORT, NULL, 0, SOCK_F_BIND);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    
+    rv = sock_delete(sctp);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
+    rv = sctp_open(&sctp, AF_UNSPEC, SOCK_SEQPACKET,
+            "::1", PORT, NULL, 0, SOCK_F_BIND);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    
+    rv = sock_delete(sctp);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+}
+
+static thread_id test2_thread;
+static void *THREAD_FUNC test2_main(thread_id id, void *data)
+{
+    abts_case *tc = data;
+    status_t rv;
+    sock_id sctp;
+    char str[STRLEN];
+    ssize_t size;
+    c_uint32_t ppid;
+
+    rv = sctp_open(&sctp, AF_UNSPEC, SOCK_SEQPACKET,
+            NULL, 0, "::1", PORT, SOCK_F_CONNECT);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    size = sctp_read(sctp, str, STRLEN, NULL, NULL, &ppid, NULL);
+    ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
+    ABTS_INT_EQUAL(tc, PPID, ppid);
+
+    rv = sock_delete(sctp);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    thread_exit(id, size);
     return NULL;
 }
 
-static void start_stream_sctp_session(net_sock_t *net_sock)
+static void sctp_test2(abts_case *tc, void *data)
 {
-    pthread_t tid;
+    sock_id sctp, sctp2;
+    status_t rv;
+    ssize_t size;
 
-    pthread_create(&tid, NULL, sctp_stream_session_main, (void *)net_sock);
-    pthread_detach(tid);
-    return;
+    rv = sctp_open(&sctp, AF_INET6, SOCK_STREAM,
+            NULL, PORT, NULL, 0, SOCK_F_BIND);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    rv = thread_create(&test2_thread, NULL, test2_main, tc);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    rv = sock_accept(&sctp2, sctp);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    size = sctp_write(sctp2, DATASTR, strlen(DATASTR),
+            NULL, 0, PPID, 0);
+    ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
+
+    thread_join(&rv, test2_thread);
+    ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
+
+    rv = sock_delete(sctp2);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    rv = sock_delete(sctp);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
 }
 
-static void *sctp_stream_server_main(void *param)
+static thread_id test3_thread;
+static void *THREAD_FUNC test3_main(thread_id id, void *data)
 {
+    abts_case *tc = data;
+    status_t rv;
+    sock_id sctp;
+    struct sockaddr_in dst_addr;
+    socklen_t addrlen;
+    char str[STRLEN];
+    ssize_t size;
     int rc;
-    net_sock_t *new_sock;
 
-    rc = net_listen(&streamserver_sock, 
-            SOCK_STREAM, IPPROTO_SCTP, TEST_SERVER_PORT);
-    if (rc != 0)
-    {
-        d_error("net_sctp_listen Error(rc = %d)\n",rc);
-        return NULL;
-    }
+    rv = sctp_open(&sctp, AF_INET, SOCK_SEQPACKET, NULL, 0, NULL, 0, 0);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    sctp_stream_server_started = 1;
+    memset(&dst_addr, 0, sizeof(dst_addr));
+    dst_addr.sin_port = htons(PORT);
+    dst_addr.sin_family = AF_INET;
+    rc = inet_pton(AF_INET, "127.0.0.1", &(dst_addr.sin_addr));
+    ABTS_INT_EQUAL(tc, 1, rc);
 
-    while (1)
-    {
-        rc = net_accept(&new_sock, streamserver_sock, 1);
-        if (rc >0)
-        {
-            /* New connection arrived. Start session */
-            start_stream_sctp_session(new_sock);
-        }
-        else if (rc == 0)
-        {
-            /* Timeout */
-        }
-        else
-        {
-            /* Error occured */
-            break;
-        }
-    }
+    size = sctp_write(sctp, DATASTR, strlen(DATASTR),
+            (struct sockaddr *)&dst_addr, sizeof(struct sockaddr), PPID, 0);
+    ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
 
+    rv = sock_delete(sctp);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    thread_exit(id, size);
     return NULL;
 }
 
-static void start_stream_sctp_server()
+static void sctp_test3(abts_case *tc, void *data)
 {
-    pthread_create(&streamserver_tid, NULL, sctp_stream_server_main, NULL);
-    while (sctp_stream_server_started == 0)
-    {
-        sleep(1);
-    }
-    sleep(1);
-    return;
+    sock_id sctp;
+    status_t rv;
+    ssize_t size;
+    struct sockaddr_in src_addr;
+    socklen_t addrlen;
+    char str[STRLEN];
+    char buf[INET6_ADDRSTRLEN];
+    c_uint32_t ppid;
+
+    rv = sctp_open(&sctp, AF_INET, SOCK_SEQPACKET,
+            NULL, PORT, NULL, 0, SOCK_F_BIND);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    rv = thread_create(&test3_thread, NULL, test3_main, tc);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    addrlen = sizeof(src_addr);
+    size = sctp_read(sctp, str, STRLEN,
+            (struct sockaddr *)&src_addr, &addrlen, &ppid, NULL);
+    ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
+    ABTS_INT_EQUAL(tc, sizeof(src_addr), addrlen);
+    ABTS_INT_EQUAL(tc, PPID, ppid);
+    ABTS_STR_EQUAL(tc, "127.0.0.1", SOCK_NTOP(&src_addr, buf));
+    
+    thread_join(&rv, test3_thread);
+    ABTS_INT_EQUAL(tc, strlen(DATASTR), rv);
+
+    rv = sock_delete(sctp);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
 }
 
-static void stop_stream_sctp_server()
+static thread_id test4_thread;
+static void *THREAD_FUNC test4_main(thread_id id, void *data)
 {
-    net_close(streamserver_sock);
-    pthread_join(streamserver_tid, NULL);
-}
+    abts_case *tc = data;
+    status_t rv;
+    sock_id sctp;
+    char str[STRLEN];
+    ssize_t size;
+    c_uint32_t ppid;
 
-static void *sctp_seq_server_main(void *param)
-{
-    int rc;
+    rv = sctp_open(&sctp, AF_UNSPEC, SOCK_STREAM,
+            NULL, 0, "::1", PORT, SOCK_F_CONNECT);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    rc = net_listen(&seqserver_sock, 
-            SOCK_SEQPACKET, IPPROTO_SCTP, TEST_SERVER_PORT);
-    if (rc != 0)
-    {
-        d_error("net_sctp Error(rc = %d)\n",rc);
-        return NULL;
-    }
+    size = sctp_write(sctp, DATASTR, strlen(DATASTR), NULL, 0, PPID, 0);
+    ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
 
-    sctp_seq_server_started = 1;
+    size = sctp_read(sctp, str, STRLEN, NULL, NULL, &ppid, NULL);
+    ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
+    ABTS_INT_EQUAL(tc, PPID, ppid);
 
-    while (1)
-    {
-        d_trace(1,"Wait for data....\n");
-        rc = net_read(seqserver_sock, buffer, TEST_BUFFER_SIZE, 2);
-        if (rc >0)
-        {
-            d_trace(1,"RECV %d bytes\n", rc);
-            if (!strncmp(buffer, "QUIT",4))
-            {
-                break;
-            }
-            else
-            {
-                /* Send received data */
-                rc = net_send(seqserver_sock, buffer, rc);
-                d_trace(1,"SEND %d bytes\n", rc);
-                if (rc == -1)
-                {
-                    printf("error = %d\n", seqserver_sock->sndrcv_errno);
-                }
-            }
-        }
-        else if (rc == 0)
-        {
-            /* Timeout */
-        }
-        else
-        {
-            /* Error occured */
-            if (rc != -2 && seqserver_sock->sndrcv_errno != EAGAIN)
-                break;
-        }
-    }
+    rv = sock_delete(sctp);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
+    thread_exit(id, size);
     return NULL;
 }
 
-static void start_seq_sctp_server()
+static void sctp_test4(abts_case *tc, void *data)
 {
-    pthread_create(&seqserver_tid, NULL, sctp_seq_server_main, NULL);
-    while (sctp_seq_server_started == 0)
-    {
-        sleep(1);
-    }
-    return;
-}
+    sock_id sctp;
+    status_t rv;
+    ssize_t size;
+    struct sockaddr_in6 src_addr;
+    socklen_t addrlen;
+    char str[STRLEN];
+    c_uint32_t ppid;
+    char buf[INET6_ADDRSTRLEN];
 
-static void stop_seq_sctp_server()
-{
-    net_close(seqserver_sock);
-    pthread_join(seqserver_tid, NULL);
-}
+    rv = sctp_open(&sctp, AF_INET6, SOCK_SEQPACKET,
+            NULL, PORT, NULL, 0, SOCK_F_BIND);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-static void test_sctp1(abts_case *tc, void *data)
-{
-    int rc = 0;
-    net_sock_t *net_sock[TEST_MAX_NUM];
-    char inputbuf[TEST_MAX_NUM][25];
-    char outputbuf[TEST_MAX_NUM][25];
-    int i;
+    rv = thread_create(&test4_thread, NULL, test4_main, tc);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    /* Start SCTP Server */
-    start_stream_sctp_server();
+    addrlen = sizeof(src_addr);
+    size = sctp_read(sctp, str, STRLEN, (struct sockaddr *)&src_addr, &addrlen, &ppid, NULL);
+    ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
+    ABTS_INT_EQUAL(tc, sizeof(src_addr), addrlen);
+    ABTS_STR_EQUAL(tc, "::1", SOCK_NTOP(&src_addr, buf));
+    ABTS_INT_EQUAL(tc, PPID, ppid);
 
-    /* Connect to invalid port */
-    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_FATAL);
-    for (i =0 ; i<TEST_MAX_NUM; i++)
-    {
-        net_sock[i] = NULL;
-        rc = net_open(&net_sock[i], "127.0.0.1", 0,TEST_SERVER_PORT + 1,
-                SOCK_STREAM, IPPROTO_SCTP);
-        ABTS_INT_EQUAL(tc, -1, rc);
-        ABTS_PTR_NULL(tc, net_sock[i]);
-    }
-    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_FULL);
+    size = sctp_write(sctp, DATASTR, strlen(DATASTR),
+            (struct sockaddr *)&src_addr, addrlen, PPID, 0);
+    ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
 
-    for (i =0 ; i<TEST_MAX_NUM; i++)
-    {
-        net_sock[i] = NULL;
-        rc = net_open(&net_sock[i], "127.0.0.1", 0, TEST_SERVER_PORT,
-                SOCK_STREAM, IPPROTO_SCTP);
-        ABTS_INT_EQUAL(tc, 0, rc);
-        ABTS_PTR_NOTNULL(tc, net_sock[i]);
-    }
+    thread_join(&rv, test4_thread);
+    ABTS_INT_EQUAL(tc, strlen(DATASTR), rv);
 
-    for (i=0; i< TEST_MAX_NUM; i++)
-    {
-        sprintf(inputbuf[i],"asdf%d",i);
-        memset(outputbuf[i], 0, sizeof(outputbuf[i]));
-        rc = net_send(net_sock[i], inputbuf[i], strlen(inputbuf[i])+1);
-        ABTS_INT_EQUAL(tc, strlen(inputbuf[i])+1, rc);
-        rc = 0;
-        while (1)
-        {
-            int n;
-            n = net_read(net_sock[i], outputbuf[i], sizeof(outputbuf[1]), 1);
-            if (n < 0 && net_sock[i]->sndrcv_errno == EAGAIN)
-                continue;
-            rc += n;
-            if (n == 0 || n == 6)
-                break;
-        }
-        ABTS_INT_EQUAL(tc, 6, rc);
-        ABTS_INT_EQUAL(tc, 6, strlen(outputbuf[i])+1);
-        ABTS_STR_EQUAL(tc, inputbuf[i], outputbuf[i]);
-    }
-
-    for (i = 0 ; i< TEST_MAX_NUM; i++)
-    {
-        rc = net_close(net_sock[i]);
-        ABTS_INT_EQUAL(tc, 0, rc);
-    }
-
-    stop_stream_sctp_server();
-}
-
-static void test_sctp2(abts_case *tc, void *data)
-{
-    int rc = 0;
-    net_sock_t *net_sock[TEST_MAX_NUM];
-    char inputbuf[TEST_MAX_NUM][25];
-    char outputbuf[TEST_MAX_NUM][25];
-    int i;
-
-    /* Connect to invalid port.
-     * In SCTP cases, net_open should be success always
-     */
-    for (i =0 ; i<TEST_MAX_NUM; i++)
-    {
-        net_sock[i] = NULL;
-        rc = net_open(&net_sock[i], "127.0.0.1", 0, TEST_SERVER_PORT + 1,
-                SOCK_SEQPACKET, IPPROTO_SCTP);
-        ABTS_INT_EQUAL(tc, 0, rc);
-        ABTS_PTR_NOTNULL(tc, net_sock[i]);
-    }
-
-    for (i = 0 ; i< TEST_MAX_NUM; i++)
-    {
-        rc = net_close(net_sock[i]);
-        ABTS_INT_EQUAL(tc, 0, rc);
-    }
-
-    /* Start SCTP Server */
-    start_seq_sctp_server();
-
-    for (i =0 ; i<TEST_MAX_NUM; i++)
-    {
-        net_sock[i] = NULL;
-        rc = net_open(&net_sock[i], "127.0.0.1", 0, TEST_SERVER_PORT,
-                SOCK_SEQPACKET, IPPROTO_SCTP);
-        ABTS_INT_EQUAL(tc, 0, rc);
-        ABTS_PTR_NOTNULL(tc, net_sock[i]);
-    }
-
-    for (i=0; i< TEST_MAX_NUM; i++)
-    {
-        sprintf(inputbuf[i],"asdf%d",i);
-        memset(outputbuf[i], 0, sizeof(outputbuf[i]));
-        rc = net_sendto(net_sock[i], inputbuf[i], strlen(inputbuf[i])+1, 
-                inet_addr("127.0.0.1"), TEST_SERVER_PORT);
-        ABTS_INT_EQUAL(tc, strlen(inputbuf[i])+1, rc);
-        rc = 0;
-        while (1)
-        {
-            int n;
-            n = net_read(net_sock[i], outputbuf[i], sizeof(outputbuf[i]), 1);
-            if (n < 0 && net_sock[i]->sndrcv_errno == EAGAIN)
-                continue;
-            rc += n;
-            if (n == 0 || n == 6)
-                break;
-        }
-        ABTS_INT_EQUAL(tc, 6, rc);
-        ABTS_INT_EQUAL(tc, 6, strlen(outputbuf[i])+1);
-        ABTS_STR_EQUAL(tc, inputbuf[i], outputbuf[i]);
-    }
-
-    for (i = 0 ; i< TEST_MAX_NUM; i++)
-    {
-        rc = net_close(net_sock[i]);
-        ABTS_INT_EQUAL(tc, 0, rc);
-    }
-
-    stop_seq_sctp_server();
+    rv = sock_delete(sctp);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
 }
 
 abts_suite *testsctp(abts_suite *suite)
 {
     suite = ADD_SUITE(suite);
 
-    abts_run_test(suite, test_sctp1, NULL);
-    abts_run_test(suite, test_sctp2, NULL);
+    abts_run_test(suite, sctp_test1, NULL);
+    abts_run_test(suite, sctp_test2, NULL);
+    abts_run_test(suite, sctp_test3, NULL);
+    abts_run_test(suite, sctp_test4, NULL);
 
     return suite;
 }
