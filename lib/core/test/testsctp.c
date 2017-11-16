@@ -105,11 +105,11 @@ static void *THREAD_FUNC test3_main(thread_id id, void *data)
     rv = sctp_open(&sctp, AF_INET, SOCK_SEQPACKET, NULL, 0, NULL, 0, 0);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    rv = sock_pton("127.0.0.1", PORT, &to);
+    rv = core_pton("127.0.0.1", PORT, &to);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     size = sctp_write(sctp, DATASTR, strlen(DATASTR),
-            &to, sock_len(&to), PPID, 0);
+            &to, sockaddr_len(&to), PPID, 0);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
 
     rv = sock_delete(sctp);
@@ -141,7 +141,7 @@ static void sctp_test3(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
     ABTS_INT_EQUAL(tc, sizeof(struct sockaddr_in), fromlen);
     ABTS_INT_EQUAL(tc, PPID, ppid);
-    ABTS_STR_EQUAL(tc, "127.0.0.1", SOCK_NTOP(&from, buf));
+    ABTS_STR_EQUAL(tc, "127.0.0.1", CORE_NTOP(&from, buf));
     
     thread_join(&rv, test3_thread);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), rv);
@@ -199,7 +199,7 @@ static void sctp_test4(abts_case *tc, void *data)
     size = sctp_read(sctp, str, STRLEN, &from, &fromlen, &ppid, NULL);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
     ABTS_INT_EQUAL(tc, sizeof(struct sockaddr_in6), fromlen);
-    ABTS_STR_EQUAL(tc, "::1", SOCK_NTOP(&from, buf));
+    ABTS_STR_EQUAL(tc, "::1", CORE_NTOP(&from, buf));
     ABTS_INT_EQUAL(tc, PPID, ppid);
 
     size = sctp_write(sctp, DATASTR, strlen(DATASTR), &from, fromlen, PPID, 0);

@@ -99,23 +99,25 @@ CORE_DECLARE(ssize_t) sock_read(sock_id id,
         void *buf, size_t len, int flags,
         c_sockaddr_t *src_addr, socklen_t *addrlen);
 
-#define CORE_ADDRSTRLEN INET6_ADDRSTRLEN
-#define SOCK_NTOP(__aDDR, __bUF) \
-    sock_ntop((c_sockaddr_t *)__aDDR, buf, CORE_ADDRSTRLEN)
-CORE_DECLARE(const char *)sock_ntop(c_sockaddr_t *sockaddr,
-        char *buf, int buflen);
-CORE_DECLARE(status_t) sock_pton(const char *hostname, c_uint16_t port,
-        c_sockaddr_t *sockaddr);
-CORE_DECLARE(socklen_t) sock_len(c_sockaddr_t *sockaddr);
-
-CORE_DECLARE(status_t) sock_setsockopt(sock_id id, c_int32_t opt, c_int32_t on);
-
 CORE_DECLARE(status_t) sock_register(sock_id id,
         sock_handler handler, void *data); 
 CORE_DECLARE(status_t) sock_unregister(sock_id id);
 CORE_DECLARE(int) sock_is_registered(sock_id id);
 
 CORE_DECLARE(int) sock_select_loop(c_time_t timeout);
+
+#define CORE_ADDRSTRLEN INET6_ADDRSTRLEN
+#define CORE_NTOP(__aDDR, __bUF) \
+    core_ntop((c_sockaddr_t *)__aDDR, buf, CORE_ADDRSTRLEN)
+CORE_DECLARE(const char *)core_ntop(c_sockaddr_t *sockaddr,
+        char *buf, int buflen);
+CORE_DECLARE(status_t) core_pton(const char *hostname, c_uint16_t port,
+        c_sockaddr_t *sockaddr);
+
+CORE_DECLARE(socklen_t) sockaddr_len(c_sockaddr_t *sockaddr);
+CORE_DECLARE(int) sockaddr_is_equal(c_sockaddr_t *a, c_sockaddr_t *b);
+
+CORE_DECLARE(status_t) sock_setsockopt(sock_id id, c_int32_t opt, c_int32_t on);
 
 #ifdef __cplusplus
 }

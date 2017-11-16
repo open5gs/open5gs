@@ -125,7 +125,7 @@ status_t sock_bind(sock_id id, const char *host, c_uint16_t port)
         if (bind(sock->fd, rp->ai_addr, rp->ai_addrlen) == 0)
         {
             d_trace(1, "socket bind %s:%d\n",
-                    SOCK_NTOP(rp->ai_addr, buf), port);
+                    CORE_NTOP(rp->ai_addr, buf), port);
             break;
         }
         close(sock->fd);
@@ -170,7 +170,7 @@ status_t sock_connect(sock_id id, const char *host, c_uint16_t port)
         if (rc == 0 || (rc != 0 && errno == EINPROGRESS))
         {
             d_trace(1, "socket connect %s:%d\n",
-                    SOCK_NTOP(rp->ai_addr, buf), port);
+                    CORE_NTOP(rp->ai_addr, buf), port);
             break;
         }
 
@@ -386,7 +386,7 @@ int sock_select_loop(c_time_t timeout)
     return 0;
 }
 
-const char *sock_ntop(c_sockaddr_t *sockaddr, char *buf, int buflen)
+const char *core_ntop(c_sockaddr_t *sockaddr, char *buf, int buflen)
 {
     int family;
     d_assert(buf, return NULL,);
@@ -404,11 +404,12 @@ const char *sock_ntop(c_sockaddr_t *sockaddr, char *buf, int buflen)
             return inet_ntop(family,
                     &sockaddr->sin6.sin6_addr, buf, INET6_ADDRSTRLEN);
         default:
-            d_assert(0, return NULL,);
+            d_assert(0, return NULL,
+                    "Unknown family(%d)", sockaddr->sa.sa_family);
     }
 }
 
-status_t sock_pton(const char *hostname, c_uint16_t port,
+status_t core_pton(const char *hostname, c_uint16_t port,
         c_sockaddr_t *sockaddr)
 {
     struct addrinfo *result, *rp;
@@ -445,7 +446,7 @@ status_t sock_pton(const char *hostname, c_uint16_t port,
     return CORE_OK;
 }
 
-socklen_t sock_len(c_sockaddr_t *sockaddr)
+socklen_t sockaddr_len(c_sockaddr_t *sockaddr)
 {
     d_assert(sockaddr, return CORE_ERROR,);
     d_assert(sockaddr->sa.sa_family == AF_INET ||
@@ -456,7 +457,28 @@ socklen_t sock_len(c_sockaddr_t *sockaddr)
     else if (sockaddr->sa.sa_family == AF_INET6)
         return sizeof(struct sockaddr_in6);
     else
-        d_assert(0, return CORE_ERROR,);
+        d_assert(0, return CORE_ERROR,
+                "Unknown family(%d)", sockaddr->sa.sa_family);
+}
+
+int sockaddr_is_equal(c_sockaddr_t *a, c_sockaddr_t *b)
+{
+    d_assert(a, return 0,);
+    d_assert(b, return 0,);
+
+    if (a->sa.sa_family != b->sa.sa_family)
+        return 0;
+
+    if (a->sa.sa_family == AF_INET && memcmp(
+        &a->sin.sin_addr, &b->sin.sin_addr, sizeof(struct in_addr)) == 0)
+        return 1;
+    else if (a->sa.sa_family == AF_INET6 && memcmp(
+        &a->sin6.sin6_addr, &b->sin6.sin6_addr, sizeof(struct in6_addr)) == 0)
+        return 1;
+    else
+        d_assert(0, return 0, "Unknown family(%d)", a->sa.sa_family);
+
+    return 0;
 }
 
 status_t sock_setsockopt(sock_id id, c_int32_t opt, c_int32_t on)
