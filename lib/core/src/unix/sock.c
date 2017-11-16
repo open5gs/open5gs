@@ -96,7 +96,7 @@ status_t sock_delete(sock_id id)
     return CORE_OK;
 }
 
-status_t sock_opt_set(sock_id id, c_int32_t opt, c_int32_t on)
+status_t sock_setsockopt(sock_id id, c_int32_t opt, c_int32_t on)
 {
     sock_t *sock = (sock_t *)id;
     int one;
@@ -111,19 +111,19 @@ status_t sock_opt_set(sock_id id, c_int32_t opt, c_int32_t on)
 
     switch(opt)
     {
-        case CORE_SO_REUSEADDR:
-            if (on != sock_is_option_set(sock, CORE_SO_REUSEADDR))
+        case SOCK_O_REUSEADDR:
+            if (on != sock_is_option_set(sock, SOCK_O_REUSEADDR))
             {
                 if (setsockopt(sock->fd, SOL_SOCKET, SO_REUSEADDR,
                             (void *)&one, sizeof(int)) == -1)
                 {
                     return errno;
                 }
-                sock_set_option(sock, CORE_SO_REUSEADDR, on);
+                sock_set_option(sock, SOCK_O_REUSEADDR, on);
             }
             break;
-        case CORE_SO_NONBLOCK:
-            if (sock_is_option_set(sock, CORE_SO_NONBLOCK) != on)
+        case SOCK_O_NONBLOCK:
+            if (sock_is_option_set(sock, SOCK_O_NONBLOCK) != on)
             {
                 if (on)
                 {
@@ -135,7 +135,7 @@ status_t sock_opt_set(sock_id id, c_int32_t opt, c_int32_t on)
                     if ((rv = soblock(sock->fd)) != CORE_OK)
                         return rv;
                 }
-                sock_set_option(sock, CORE_SO_NONBLOCK, on);
+                sock_set_option(sock, SOCK_O_NONBLOCK, on);
             }
             break;
         default:
@@ -165,7 +165,7 @@ status_t sock_bind(sock_id id, const char *host, c_uint16_t port)
         if (sock->fd < 0)
             continue;
 
-        if (sock_opt_set(id, CORE_SO_REUSEADDR, 1) == CORE_ERROR)
+        if (sock_setsockopt(id, SOCK_O_REUSEADDR, 1) == CORE_ERROR)
         {
             d_error("setsockopt(%s:%d) failed(%d:%s)",
                     host, port, errno, strerror(errno));
@@ -277,7 +277,6 @@ status_t sock_accept(sock_id *new, sock_id id)
     d_assert(rv == CORE_OK && (*new), return CORE_ERROR,);
     remote_sock = (sock_t *)(*new);
     remote_sock->fd = remote_fd;
-    remote_sock->flags = SOCK_F_CONNECT;
 
     return CORE_OK;
 }
@@ -290,15 +289,15 @@ ssize_t sock_send(sock_id id, const void *buf, size_t len, int flags,
 
     d_assert(id, return -1, );
     
-    if (sock->flags & SOCK_F_CONNECT)
-    {
-        size = send(sock->fd, buf, len, flags);
-    }
-    else
+    if (sock->type == SOCK_DGRAM && !(sock->flags & SOCK_F_CONNECT))
     {
         d_assert(dest_addr, return -1,);
         d_assert(addrlen, return -1,);
         size = sendto(sock->fd, buf, len, flags, dest_addr, addrlen);
+    }
+    else
+    {
+        size = send(sock->fd, buf, len, flags);
     }
 
     if (size < 0)
@@ -317,14 +316,14 @@ ssize_t sock_recv(sock_id id, void *buf, size_t len, int flags,
 
     d_assert(id, return -1,);
 
-    if (sock->flags & SOCK_F_CONNECT)
-    {
-        size = recv(sock->fd, buf, len, flags);
-    }
-    else
+    if (sock->type == SOCK_DGRAM && !(sock->flags & SOCK_F_CONNECT))
     {
         *addrlen = sizeof(struct sockaddr);
         size = recvfrom(sock->fd, buf, len, flags, src_addr, addrlen);
+    }
+    else
+    {
+        size = recv(sock->fd, buf, len, flags);
     }
 
     if (size < 0)
@@ -347,7 +346,7 @@ status_t sock_register(sock_id id, sock_handler handler, void *data)
         return CORE_ERROR;
     }
 
-    if (sock_opt_set(id, CORE_SO_NONBLOCK, 1) == CORE_ERROR)
+    if (sock_setsockopt(id, SOCK_O_NONBLOCK, 1) == CORE_ERROR)
     {
         d_error("cannot set socket to non-block");
         return CORE_ERROR;

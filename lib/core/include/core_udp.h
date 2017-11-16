@@ -7,7 +7,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-CORE_DECLARE(status_t) udp_create(sock_id *new,
+CORE_DECLARE(status_t) udp_open(sock_id *new,
         int family,
         const char *local_host, c_uint16_t local_port,
         const char *remote_host, c_uint16_t remote_port,

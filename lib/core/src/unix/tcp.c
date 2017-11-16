@@ -1,9 +1,9 @@
 #define TRACE_MODULE _tcp
 
 #include "core_debug.h"
-#include "core_udp.h"
+#include "core_sock.h"
 
-status_t tcp_create(sock_id *new,
+status_t tcp_open(sock_id *new,
         int family,
         const char *local_host, c_uint16_t local_port,
         const char *remote_host, c_uint16_t remote_port,
