@@ -58,7 +58,7 @@ sudo rm -Rf /var/log/nextepc
 
 ## Debian, CentOS, Fedora, OpenSUSE, FreeBSD, and Mac OS X
 
-For these OS, you should build NextEPC from the code. First clone this [repository](https://github.com/acetcom/nextepc.git) and then follow instructions described in the [documentation](https://nextepc.org/docs/). 
+For these OS, you should build NextEPC from the code. First clone this [repository](https://github.com/acetcom/nextepc.git) and then follow instructions described in the [documentation](http://nextepc.org/docs/). 
 
 * ### [FreeBSD](http://nextepc.org/docs/build/1-freebsd)
 * ### [Mac OS X](http://nextepc.org/docs/build/2-macosx)
