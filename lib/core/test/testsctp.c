@@ -7,6 +7,7 @@
 #define DATASTR "This is a test"
 #define STRLEN 8092
 #define PORT 7777
+#define PORT2 7778
 #define PPID 12345
 
 static void sctp_test1(abts_case *tc, void *data)

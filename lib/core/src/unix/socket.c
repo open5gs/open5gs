@@ -44,20 +44,15 @@ status_t sock_create(sock_id *new, int family, int type, int protocol)
     memset(sock, 0, sizeof(sock_t));
 
     sock->family = family;
-    sock->type = type;
-    sock->protocol = protocol;
-
-    sock->fd = socket(sock->family, sock->type, sock->protocol);
+    sock->fd = socket(sock->family, type, protocol);
     if (sock->fd < 0)
     {
         d_warn("socket create(%d:%d:%d) failed(%d:%s)",
-                sock->family, sock->type, sock->protocol,
-                errno, strerror(errno));
+                sock->family, type, protocol, errno, strerror(errno));
         return CORE_ERROR;
     }
 
-    d_trace(1, "socket create(%d:%d:%d)\n",
-            sock->family, sock->type, sock->protocol);
+    d_trace(1, "socket create(%d:%d:%d)\n", sock->family, type, protocol);
 
     *new = (sock_id)sock;
 
@@ -159,8 +154,6 @@ status_t sock_accept(sock_id *new, c_sockaddr_t *addr, sock_id id)
     memset(new_sock, 0, sizeof(sock_t));
 
     new_sock->family = sock->family;
-    new_sock->type = sock->type;
-    new_sock->protocol = sock->protocol;
     new_sock->fd = new_fd;
 
     *new = (sock_id)new_sock;

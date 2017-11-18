@@ -105,3 +105,39 @@ status_t udp_client(sock_id *new,
 
     return CORE_OK;
 }
+
+status_t udp_connect(sock_id id, const char *hostname, c_uint16_t port)
+{
+    status_t rv;
+    c_sockaddr_t *sa;
+    sock_t *sock = (sock_t *)id;
+    char buf[CORE_ADDRSTRLEN];
+
+    d_assert(id, return CORE_ERROR,);
+
+    rv = core_getaddrinfo(&sa, sock->family, hostname, port, 0);
+    d_assert(rv == CORE_OK && sa, return CORE_ERROR,);
+
+    while(sa)
+    {
+        if (connect(sock->fd, &sa->sa, sa->sa_len) == 0)
+        {
+            d_trace(1, "udp connect %s:%d\n", CORE_NTOP(sa, buf), port);
+            break;
+        }
+
+        sa = sa->next;
+    }
+
+    if (sa == NULL)
+    {
+        d_error("udp connect(%d:%s:%d) failed(%d:%s)",
+                sock->family, hostname, port, errno, strerror(errno));
+        return CORE_ERROR;
+    }
+
+    rv = core_freeaddrinfo(sa);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    return CORE_OK;
+}

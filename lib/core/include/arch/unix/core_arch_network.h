@@ -26,9 +26,6 @@ typedef struct _sock_t {
     index_t index;
     
     int family;
-    int type;
-    int protocol;
-
     int fd;
 
     sock_handler handler;

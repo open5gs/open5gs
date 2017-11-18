@@ -161,7 +161,7 @@ int core_sctp_sendmsg(sock_id id, const void *msg, size_t len,
             0); /* context */
     if (size < 0)
     {
-        d_error("sctp_write(len:%ld) failed(%d:%s)",
+        d_error("sctp_sendmsg(len:%ld) failed(%d:%s)",
                 len, errno, strerror(errno));
     }
 
@@ -187,7 +187,7 @@ int core_sctp_recvmsg(sock_id id, void *msg, size_t len,
                     &sinfo, &flags);
         if (size < 0)
         {
-            d_error("sctp_read(len:%ld) failed(%d:%s)",
+            d_error("sctp_recvmsg(len:%ld) failed(%d:%s)",
                     len, errno, strerror(errno));
 
             return size;

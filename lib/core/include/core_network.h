@@ -100,6 +100,8 @@ CORE_DECLARE(status_t) udp_server(sock_id *new,
         int family, const char *hostname, c_uint16_t port);
 CORE_DECLARE(status_t) udp_client(sock_id *new,
         int family, const char *hostname, c_uint16_t port);
+CORE_DECLARE(status_t) udp_connect(sock_id id,
+        const char *hostname, c_uint16_t port);
 
 /*
  * TCP Socket

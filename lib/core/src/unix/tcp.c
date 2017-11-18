@@ -41,7 +41,7 @@ status_t tcp_server(sock_id *new,
     if (sa == NULL)
     {
         d_error("tcp bind(%d:%s:%d) failed(%d:%s)",
-                family, hostname, port, errno, strerror(errno));
+                sock->family, hostname, port, errno, strerror(errno));
         return CORE_ERROR;
     }
 
@@ -87,7 +87,7 @@ status_t tcp_client(sock_id *new,
     if (sa == NULL)
     {
         d_error("tcp connect(%d:%s:%d) failed(%d:%s)",
-                family, hostname, port, errno, strerror(errno));
+                sock->family, hostname, port, errno, strerror(errno));
         return CORE_ERROR;
     }
 
