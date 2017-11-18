@@ -16,66 +16,133 @@ NextEPC contains the PCRF (Policy and Charging Rules Function), which controls t
 Installation 
 ============
 
-## Install with a Package Manager
+This post will guide you on how to get installed **NextEPC** with your environment. To date, NextEPC has been tested on GNU/Linux distributions(Debian, Ubuntu, CentOS, Fedora, OpenSUSE), FreeBSD, and Mac OS X.
 
-The nextepc package is available on recent versions of Ubuntu.
+
+
+## Ubuntu
+
+To get the latest Ubuntu version, please visit the official Ubuntu website: [https://www.ubuntu.com/download/](https://www.ubuntu.com/download/). 
+
+* ### Install with a Package Manager
+
+The Nextepc package is available on the recent versions of Ubuntu.
 
 ```bash
 sudo add-apt-repository ppa:acetcom/nextepc
 sudo apt-get update
 sudo apt-get install nextepc
 ```
+This will create a virtual network interface named as *pgwtun*. It is automatically removed by uninstalling NextEPC.
 
-That's it!
+```markdown
+ifconfig pgwtun
+pgwtun    Link encap:UNSPEC  HWaddr 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00  
+          inet addr:45.45.0.1  P-t-P:45.45.0.1  Mask:255.255.0.0
+          ...
+```
+
+
+
+* ### Uninstall NextEPC
+
+```bash
+sudo apt-get purge nextepc-core
+```
+
+You may need to remove manually /var/log/nextepc unless it is empty.
+```bash
+sudo rm -Rf /var/log/nextepc
+```
+
+
+## Debian, CentOS, Fedora, OpenSUSE, FreeBSD, and Mac OS X
+
+For these OS, you should build NextEPC from the code. First clone this [repository](https://github.com/acetcom/nextepc.git) and then follow instructions described in the [documentation](https://nextepc.org/docs/). 
+
+* ### [FreeBSD](/docs/build/1-freebsd)
+* ### [Mac OS X](/docs/build/2-macosx)
+* ### [CentOS](/docs/build/3-centos)
+* ### [Fedora](/docs/build/4-fedora)
+* ### [Ubuntu](/docs/build/5-ubuntu)
 
 Configuraiton 
 =============
-## Configuration IP connectivity
 
-Configuration files are located `/etc/nextepc` directory. 
+In LTE, there are tons of configurable parameters. This page will guide you to set essential parameters up. The configuration consists of two parts: IP network connectivity and LTE network settings.
 
-Let's modify first the `/etc/nextepc/mme.conf` to set your IP address which is connected to eNodeB. For example, if your IP address is 192.168.0.6, both MME.NETWORK.S1AP_IPV4 and SGW.NETWORK.GTPU_IPV4 are changed as follows.
-```
+## 1. IP Connectivity between Network Entities
+
+The minimum requirement of having IP connectvity is to modify the configuration files of MME and SGW. Once NextEPC has been installed, you can find [JSON](https://www.json.org/)-format configuration files in `/etc/nextepc/*.conf`.
+
+Before setting up, please decide a network interface to run NextEPC, and then the IP address of the interface needs to be recorded in the configuration files (Note that the IPv6 support requires v0.3.0 or higher).
+
+### Modification of MME config
+
+Open `/etc/nextepc/mme.conf` file, and find an item in MME &rarr; NETWORK &rarr; S1AP_IPV4. Please set your IP address for S1AP_IPV4 putting double quotes around it.  
+
+```json
   MME :
   {
     NETWORK :
     {
-      S1AP_IPV4: "192.168.0.6",
+      S1AP_IPV4: "<ip address>",
       GTPC_IPV4: "127.76.0.1"
     }
   },
+```
+
+Similarily, find the next item in SGW &rarr; NETWORK &rarr; GTPU_IPV4 in the same file. Please set your IP address for GTPU_IPV4 putting double quotes around it, again.  
+
+```json
   SGW :
   {
     NETWORK :
     {
       GTPC_IPV4: "127.76.0.2",
-      GTPU_IPV4: "192.168.0.6"
+      GTPU_IPV4: "<ip address>"
     }
   }
 ```
 
-And then, modify `/etc/nextepc/sgw.conf` to set your IP address. SGW.NETWORK.GTPU_IPV4 is updated with 192.168.0.6.
-```
+Save and exit.
+
+
+### Modification of SGW config
+
+Open `/etc/nextepc/sgw.conf` file, and find an item in SGW &rarr; NETWORK &rarr; GTPU_IPV4. Please set your IP address for GTPU_IPV4 putting double quotes around it.
+
+```json
   SGW :
   {
     NETWORK :
     {
       GTPC_IPV4: "127.76.0.2",
-      GTPU_IPV4: "192.168.0.6"
+      GTPU_IPV4: "<ip address>"
     }
   }
 ```
 
-Finally, you should modify the routing table of the router, which is connected to the nextepc installed host. The following command is just a sample. The configuration method for each router will be different.
+Save and exit.
+
+
+### Adding a route for UE to have Internet connectivity
+
+By default, a LTE UE will receive a IP address with the network address of 45.45.0.0/16. If you have a [NAT](https://en.wikipedia.org/wiki/Network_address_translation) router (e.g., wireless router, cable modem, etc), the LTE UE can reach Internet in uplink, but it cannot in downlink. It's because the NAT router has no idea on 45.45.0.0/16, so adding a route is required. Please refer to the user manual to know how to add a static route in your router.
+
+Add a route of 45.45.0.0/16 to go the ip address mentioned above. For example, a command for Linux will be:
+
 ```bash
-sudo route add -net 45.45.0.0 192.168.0.6
+sudo ip route add 45.45.0.0/16 via <ip address>
 ```
 
-## Update GUMMEI and TAI
+## 2. LTE Network Settings
 
-The followings are the **GUMMEI** and **TAI** of the *MME* currently set to Default. Your *eNodeB* will also have a **PLMN ID** and **TAC** set. Refer to these parameters to change the setting of MME or eNodeB.
+### PLMN and TAC
 
-```
+By default, LTE PLMN and TAC are set as shown in the following:
+
+```json
 GUMMEI:
 {
   PLMN_ID : 
@@ -97,69 +164,32 @@ TAI:
 }
 ```
 
-For reference, MME can set several GUMMEI and TAI as **JSON array notation** as follows.
+The LTE EnodeBs need to be set to use the same values of PLMN and TAC in NextEPC. If you want to change them, please modifiy in `/etc/nextepc/mme.conf`.
 
-```
-GUMMEI:
-[
-  {
-    PLMN_ID : 
-    {
-      MCC : "001",
-      MNC : "01"
-    }
-    MME_GID : 2,
-    MME_CODE : 1
-  },
-  {
-    PLMN_ID : 
-    {
-      MCC : "005",
-      MNC : "05"
-    }
-    MME_GID : 5,
-    MME_CODE : 6
-  },
-]
-TAI:
-[
-  {
-    PLMN_ID :
-    {
-      MCC: "001",
-      MNC: "01",
-    }
-    TAC: 12345
-  },
-  {
-    PLMN_ID :
-    {
-      MCC: "005",
-      MNC: "05",
-    }
-    TAC: 6789
-  }
-]
-```
 
-## Restart MME and SGW.
+### Restarting MME and SGW.
+
+After changing conf files, please restart NextEPC daemons.
 
 ```bash
 systemctl restart nextepc-mmed
 systemctl restart nextepc-sgwd
 ```
 
-Now, S1-Setup is ready! 
 
-Web User Interface 
-==================
+Web UI
+======
 
-## Install Node.js and NPM
+NextEPC has a number of configuration files corresponding to LTE network entities, which are in [JSON](https://www.json.org/) format. The LTE user subcription information of NextEPC is stored and maintained by [Mongo DB](https://www.mongodb.com/). Configuration files, located in `etc/nextepc/*.conf` can be easily modified using a general text editor such as [vi](http://www.vim.org/) or [emacs](https://www.gnu.org/s/emacs/), while managing the subscriber information requires a [Mongo DB client](https://docs.mongodb.com/ecosystem/tools/).
 
-To get the latest **Node.js** and **NPM** version, you can visit the official **Node.js** website:
+NextEPC provides an alternative management interface for customers to manage their subscriber information in an easy way, that is **Web User Interface**. The following shows how to install the Web UI of NextEPC.
+
+## 1. Install Node.js and NPM
+
+To get the latest [Node.js](https://nodejs.org/) and [NPM](https://www.npmjs.com/), please visit the official Node.js website:
 [https://nodesjs.org/en/download/](https://nodesjs.org/en/download/).
 
-Or, you can install _Node.js_ and _NPM_ on **Ubuntu** as follows:
+Or, you can install [Node.js](https://nodejs.org/) and [NPM](https://www.npmjs.com/) if you're using [Ubuntu](https://www.ubuntu.com):
 
 ```bash
 sudo apt-get -y install curl gnupg
@@ -167,44 +197,49 @@ curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
 sudo apt-get -y install nodejs
 ```
 
-## Install the dependencies for building the source
+## 2. Obtain the source code
 
-The first step is to use **npm** to install all depedencies.
+```bash
+git clone https://github.com/acetcom/nextepc
+```
+
+## 3. Install the dependencies to build the code
 
 ```bash
 cd nextepc/webui
 npm install
 ```
 
-## Build Web User Interface
+## 4. Build
 ```bash
 npm run build
 ```
 
-## Running Web Server
+## 5. Running
 
 ```bash
 npm run start
 ```
 
-This will start a server available on [http://localhost:3000](http://localhost:3000).
+Now the web server is running on _http://localhost:3000_.
 
-## Login with default account
+## 6. Login with the default account
 
-Use **Web Browser** to connect it. _http://localhost:3000_
+Open _http://localhost:3000_. Login with **admin**.
 
   * Username : admin
   * Password : 1423
 
-Then, you can change your password in _Account_ Menu.
+Please change the password in _Account_ Menu.
 
-## Register Subscriber Information
+## 7. Register a subscriber
 
-There is only one setting for this guide. The _Subscriber Information_ required for **HSS** should be registered in _Mongo DB_. 
+Using Web UI, you can add a subscriber without a Mongo DB client. 
 
-  * Go to Subscriber Menu
-  * Click + Button to add Subscriber Information
-  * Fill IMSI, Security(K, OPc, AMF), APN in the Form
-  * Click the `SAVE` Button
+  * Go to Subscriber Menu.
+  * Click `+` Button to add a new subscriber.
+  * Fill the IMSI, security context(K, OPc, AMF), and APN of the subscriber.
+  * Click `SAVE` Button
 
-Turn on your **eNodeB** and **Mobile**. Check Wireshark!
+This addition affects immediately NextEPC without restaring any daemon.
+
