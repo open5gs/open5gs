@@ -405,7 +405,10 @@ status_t core_getaddrinfo(c_sockaddr_t **sa,
     hints.ai_flags = flags;
 
     if (hostname == NULL)
+    {
         hints.ai_flags |= AI_PASSIVE;
+        hostname = family == AF_INET6 ? "::" : "0.0.0.0";
+    }
 
     snprintf(service, sizeof(service), "%u", port);
 

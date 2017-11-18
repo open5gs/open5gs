@@ -7,7 +7,12 @@
 #include <netinet/sctp.h>
 #endif
 
-static status_t setup_sctp(sock_id id);
+static status_t subscribe_to_events(sock_id id);
+static status_t set_paddrparams(sock_id id, c_uint32_t spp_hbinterval);
+static status_t set_rtoinfo(sock_id id,
+        c_uint32_t srto_initial, c_uint32_t srto_min, c_uint32_t srto_max);
+static status_t set_initmsg(sock_id id,
+        c_uint32_t sinit_max_attempts, c_uint32_t sinit_max_init_timeo);
 
 status_t sctp_socket(sock_id *new, int family, int type)
 {
@@ -16,7 +21,30 @@ status_t sctp_socket(sock_id *new, int family, int type)
     rv = sock_create(new, family, type, IPPROTO_SCTP);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
-    rv = setup_sctp(*new);
+    rv = subscribe_to_events(*new);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    /* heartbit interval : 5 secs */
+    rv = set_paddrparams(*new, 5000);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    /*
+     * RTO info
+     * 
+     * initial : 3 secs
+     * min : 1 sec
+     * max : 5 secs
+     */
+    rv = set_rtoinfo(*new, 3000, 1000, 5000);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    /*
+     * INITMSG
+     * 
+     * max attemtps : 4
+     * max initial timeout : 8 secs
+     */
+    rv = set_initmsg(*new, 4, 8000);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
     return CORE_OK;
@@ -41,11 +69,6 @@ status_t sctp_server(sock_id *new,
         sock = (sock_t *)*new;
 
         d_assert(sock_setsockopt(*new, SOCK_O_REUSEADDR, 1) == CORE_OK,
-                return CORE_ERROR,
-                "setsockopt(%s:%d) failed(%d:%s)",
-                CORE_NTOP(sa, buf), port, errno, strerror(errno));
-
-        d_assert(setup_sctp(*new) == CORE_OK,
                 return CORE_ERROR,
                 "setsockopt(%s:%d) failed(%d:%s)",
                 CORE_NTOP(sa, buf), port, errno, strerror(errno));
@@ -95,11 +118,6 @@ status_t sctp_client(sock_id *new,
         if (rv != CORE_OK) continue;
         
         sock = (sock_t *)*new;
-
-        d_assert(setup_sctp(*new) == CORE_OK,
-                return CORE_ERROR,
-                "setsockopt(%s:%d) failed(%d:%s)",
-                CORE_NTOP(sa, buf), port, errno, strerror(errno));
 
         if (connect(sock->fd, &sa->sa, sa->sa_len) == 0)
         {
@@ -395,37 +413,3 @@ static status_t set_initmsg(sock_id id,
 
     return CORE_OK;
 }
-
-status_t setup_sctp(sock_id id)
-{
-    status_t rv;
-
-    rv = subscribe_to_events(id);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
-
-    /* heartbit interval : 5 secs */
-    rv = set_paddrparams(id, 5000);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
-
-    /*
-     * RTO info
-     * 
-     * initial : 3 secs
-     * min : 1 sec
-     * max : 5 secs
-     */
-    rv = set_rtoinfo(id, 3000, 1000, 5000);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
-
-    /*
-     * INITMSG
-     * 
-     * max attemtps : 4
-     * max initial timeout : 8 secs
-     */
-    rv = set_initmsg(id, 4, 8000);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
-
-    return CORE_OK;
-}
-
