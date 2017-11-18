@@ -1,23 +1,13 @@
-#ifndef __CORE_SOCK_H__
-#define __CORE_SOCK_H__
+#ifndef __CORE_NETWORK_H__
+#define __CORE_NETWORK_H__
 
 #include "core_errno.h"
+#include "core_list.h"
 #include "core_time.h"
-
-#if HAVE_ARPA_INET_H
-#include <arpa/inet.h>
-#endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
-
-/**
- * @defgroup sock_flags Socket flags definitions
- * @{
- */
-#define SOCK_F_BIND             (1 << 0)
-#define SOCK_F_CONNECT          (1 << 1)
 
 /**
  * @defgroup sock_option Socket option definitions
@@ -70,54 +60,104 @@ extern "C" {
 
 typedef c_uintptr_t sock_id;
 typedef int (*sock_handler)(sock_id sock, void *data);
-typedef union _c_sockaddr_t {
-    struct sockaddr_storage ss;
-    struct sockaddr_in sin;
-    struct sockaddr_in6 sin6;
-    struct sockaddr sa;
-} c_sockaddr_t;
 
+typedef struct c_sockaddr_t c_sockaddr_t;
+struct c_sockaddr_t {
+    c_sockaddr_t *next;
+
+    socklen_t sa_len;
+    union {
+        struct sockaddr_storage ss;
+        struct sockaddr_in sin;
+        struct sockaddr_in6 sin6;
+        struct sockaddr sa;
+    };
+};
+
+
+/*
+ * Socket
+ */
 CORE_DECLARE(status_t) sock_init(void);
 CORE_DECLARE(status_t) sock_final(void);
 
 CORE_DECLARE(status_t) sock_create(
-        sock_id *id, int family, int type, int protocol, int flags);
+        sock_id *id, int family, int type, int protocol);
 CORE_DECLARE(status_t) sock_delete(sock_id id);
 
-CORE_DECLARE(status_t) sock_bind(sock_id id,
-        const char *host, c_uint16_t port);
-CORE_DECLARE(status_t) sock_connect(sock_id id,
-        const char *host, c_uint16_t port);
+CORE_DECLARE(status_t) sock_bind(sock_id id, c_sockaddr_t *sa);
+CORE_DECLARE(status_t) sock_connect(sock_id id, c_sockaddr_t *sa);
 
 CORE_DECLARE(status_t) sock_listen(sock_id id);
-CORE_DECLARE(status_t) sock_accept(sock_id *new, sock_id id);
+CORE_DECLARE(status_t) sock_accept(sock_id *new,
+        c_sockaddr_t *addr, sock_id id);
 
-CORE_DECLARE(ssize_t) sock_write(sock_id id,
-        const void *buf, size_t len, int flags,
-        const c_sockaddr_t *dest_addr, socklen_t addrlen);
-CORE_DECLARE(ssize_t) sock_read(sock_id id,
-        void *buf, size_t len, int flags,
-        c_sockaddr_t *src_addr, socklen_t *addrlen);
+/*
+ * UDP Socket
+ */
+CORE_DECLARE(status_t) udp_socket(sock_id *new, int family);
+CORE_DECLARE(status_t) udp_server(sock_id *new,
+        int family, const char *hostname, c_uint16_t port);
+CORE_DECLARE(status_t) udp_client(sock_id *new,
+        int family, const char *hostname, c_uint16_t port);
 
+/*
+ * TCP Socket
+ */
+CORE_DECLARE(status_t) tcp_server(sock_id *new,
+        int family, const char *hostname, c_uint16_t port);
+CORE_DECLARE(status_t) tcp_client(sock_id *new,
+        int family, const char *hostname, c_uint16_t port);
+
+/*
+ * SCTP Socket
+ */
+CORE_DECLARE(status_t) sctp_socket(sock_id *new, int family, int type);
+CORE_DECLARE(status_t) sctp_server(sock_id *new,
+        int family, int type, const char *hostname, c_uint16_t port);
+CORE_DECLARE(status_t) sctp_client(sock_id *new,
+        int family, int type, const char *hostname, c_uint16_t port);
+CORE_DECLARE(int) core_sctp_sendmsg(sock_id id, const void *msg, size_t len,
+        c_sockaddr_t *to, c_uint32_t ppid, c_uint16_t stream_no);
+#define CORE_SCTP_REMOTE_CLOSED     -2
+CORE_DECLARE(int) core_sctp_recvmsg(sock_id id, void *msg, size_t len,
+        c_sockaddr_t *from, c_uint32_t *ppid, c_uint16_t *stream_no);
+/*
+ * Send/Recv
+ */
+CORE_DECLARE(ssize_t) core_send(sock_id id,
+        const void *buf, size_t len, int flags);
+CORE_DECLARE(ssize_t) core_sendto(sock_id id,
+        const void *buf, size_t len, int flags, const c_sockaddr_t *to);
+CORE_DECLARE(ssize_t) core_recv(sock_id id, void *buf, size_t len, int flags);
+CORE_DECLARE(ssize_t) core_recvfrom(sock_id id,
+        void *buf, size_t len, int flags, c_sockaddr_t *from);
+
+/*
+ * Select Loop
+ */
 CORE_DECLARE(status_t) sock_register(sock_id id,
         sock_handler handler, void *data); 
 CORE_DECLARE(status_t) sock_unregister(sock_id id);
 CORE_DECLARE(int) sock_is_registered(sock_id id);
-
 CORE_DECLARE(int) sock_select_loop(c_time_t timeout);
+
+/*
+ * Misc.
+ */
+CORE_DECLARE(status_t) sock_setsockopt(sock_id id, c_int32_t opt, c_int32_t on);
+
+CORE_DECLARE(status_t) core_getaddrinfo(c_sockaddr_t **sa, 
+        int family, const char *hostname, c_uint16_t port, int flags);
+CORE_DECLARE(status_t) core_freeaddrinfo(c_sockaddr_t *sa);
 
 #define CORE_ADDRSTRLEN INET6_ADDRSTRLEN
 #define CORE_NTOP(__aDDR, __bUF) \
     core_ntop((c_sockaddr_t *)__aDDR, buf, CORE_ADDRSTRLEN)
 CORE_DECLARE(const char *)core_ntop(c_sockaddr_t *sockaddr,
         char *buf, int buflen);
-CORE_DECLARE(status_t) core_pton(const char *hostname, c_uint16_t port,
-        c_sockaddr_t *sockaddr);
 
-CORE_DECLARE(socklen_t) sockaddr_len(c_sockaddr_t *sockaddr);
 CORE_DECLARE(int) sockaddr_is_equal(c_sockaddr_t *a, c_sockaddr_t *b);
-
-CORE_DECLARE(status_t) sock_setsockopt(sock_id id, c_int32_t opt, c_int32_t on);
 
 #ifdef __cplusplus
 }

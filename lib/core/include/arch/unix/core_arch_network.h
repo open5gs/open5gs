@@ -1,9 +1,21 @@
-#ifndef __CORE_ARCH_SOCK_H__
-#define __CORE_ARCH_SOCK_H__
+#ifndef __CORE_ARCH_NETWORK_H__
+#define __CORE_ARCH_NETWORK_H__
 
 #include "core_list.h"
 #include "core_index.h"
-#include "core_sock.h"
+#include "core_network.h"
+
+#if HAVE_ARPA_INET_H
+#include <arpa/inet.h>
+#endif
+
+#if HAVE_NETDB_H
+#include <netdb.h>
+#endif
+
+#if HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -16,7 +28,6 @@ typedef struct _sock_t {
     int family;
     int type;
     int protocol;
-    int flags;
 
     int fd;
 

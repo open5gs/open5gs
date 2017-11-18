@@ -1,91 +1,141 @@
 #define TRACE_MODULE _sctp
 
 #include "core_debug.h"
-#include "core_arch_sock.h"
-#include "core_sctp.h"
+#include "core_arch_network.h"
 
 #if HAVE_NETINET_SCTP_H
 #include <netinet/sctp.h>
 #endif
 
-static status_t subscribe_to_events(sock_id id);
-static status_t set_paddrparams(sock_id id, c_uint32_t spp_hbinterval);
-static status_t set_rtoinfo(sock_id id,
-        c_uint32_t srto_initial, c_uint32_t srto_min, c_uint32_t srto_max);
-static status_t set_initmsg(sock_id id,
-        c_uint32_t sinit_max_attempts, c_uint32_t sinit_max_init_timeo);
+static status_t setup_sctp(sock_id id);
 
-status_t sctp_open(sock_id *new,
-        int family,
-        int type,
-        const char *local_host, c_uint16_t local_port,
-        const char *remote_host, c_uint16_t remote_port,
-        int flags)
+status_t sctp_socket(sock_id *new, int family, int type)
 {
     status_t rv;
-    sock_id id;
 
-    rv = sock_create(new, family, type, IPPROTO_SCTP, flags);
-    d_assert(new, return CORE_ERROR,);
-    id = *new;
-
-    if (flags & SOCK_F_BIND)
-    {
-        rv = sock_bind(id, local_host, local_port);
-        d_assert(rv == CORE_OK, return CORE_ERROR,);
-    }
-
-    if (flags & SOCK_F_CONNECT)
-    {
-        rv = sock_connect(id, remote_host, remote_port);
-        d_assert(rv == CORE_OK, return CORE_ERROR,);
-    }
-
-    rv = subscribe_to_events(id);
+    rv = sock_create(new, family, type, IPPROTO_SCTP);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
-    /* heartbit interval : 5 secs */
-    rv = set_paddrparams(id, 5000);
+    rv = setup_sctp(*new);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
-
-    /*
-     * RTO info
-     * 
-     * initial : 3 secs
-     * min : 1 sec
-     * max : 5 secs
-     */
-    rv = set_rtoinfo(id, 3000, 1000, 5000);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
-
-    /*
-     * INITMSG
-     * 
-     * max attemtps : 4
-     * max initial timeout : 8 secs
-     */
-    rv = set_initmsg(id, 4, 8000);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
-
-    if (flags & SOCK_F_BIND)
-    {
-        rv = sock_listen(id);
-        d_assert(rv == CORE_OK, return CORE_ERROR,);
-    }
 
     return CORE_OK;
 }
 
-int sctp_write(sock_id id, const void *msg, size_t len,
-        c_sockaddr_t *to, socklen_t tolen,
-        c_uint32_t ppid, c_uint16_t stream_no)
+status_t sctp_server(sock_id *new,
+        int family, int type, const char *hostname, c_uint16_t port)
+{
+    status_t rv;
+    c_sockaddr_t *sa;
+    sock_t *sock = NULL;
+    char buf[CORE_ADDRSTRLEN];
+
+    rv = core_getaddrinfo(&sa, family, hostname, port, AI_PASSIVE);
+    d_assert(rv == CORE_OK && sa, return CORE_ERROR,);
+
+    while(sa)
+    {
+        rv = sctp_socket(new, sa->sa.sa_family, type);
+        if (rv != CORE_OK) continue;
+        
+        sock = (sock_t *)*new;
+
+        d_assert(sock_setsockopt(*new, SOCK_O_REUSEADDR, 1) == CORE_OK,
+                return CORE_ERROR,
+                "setsockopt(%s:%d) failed(%d:%s)",
+                CORE_NTOP(sa, buf), port, errno, strerror(errno));
+
+        d_assert(setup_sctp(*new) == CORE_OK,
+                return CORE_ERROR,
+                "setsockopt(%s:%d) failed(%d:%s)",
+                CORE_NTOP(sa, buf), port, errno, strerror(errno));
+
+        if (bind(sock->fd, &sa->sa, sa->sa_len) == 0)
+        {
+            d_trace(1, "sctp bind %s:%d\n", CORE_NTOP(sa, buf), port);
+            break;
+        }
+
+        rv = sock_delete(*new);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+        sa = sa->next;
+    }
+
+    if (sa == NULL)
+    {
+        d_error("sctp bind(%d:%s:%d) failed(%d:%s)",
+                family, hostname, port, errno, strerror(errno));
+        return CORE_ERROR;
+    }
+
+    rv = core_freeaddrinfo(sa);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    rv = sock_listen(*new);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    return CORE_OK;
+}
+
+status_t sctp_client(sock_id *new,
+        int family, int type, const char *hostname, c_uint16_t port)
+{
+    status_t rv;
+    c_sockaddr_t *sa;
+    sock_t *sock = NULL;
+    char buf[CORE_ADDRSTRLEN];
+
+    rv = core_getaddrinfo(&sa, family, hostname, port, 0);
+    d_assert(rv == CORE_OK && sa, return CORE_ERROR,);
+
+    while(sa)
+    {
+        rv = sctp_socket(new, sa->sa.sa_family, type);
+        if (rv != CORE_OK) continue;
+        
+        sock = (sock_t *)*new;
+
+        d_assert(setup_sctp(*new) == CORE_OK,
+                return CORE_ERROR,
+                "setsockopt(%s:%d) failed(%d:%s)",
+                CORE_NTOP(sa, buf), port, errno, strerror(errno));
+
+        if (connect(sock->fd, &sa->sa, sa->sa_len) == 0)
+        {
+            d_trace(1, "sctp connect %s:%d\n", CORE_NTOP(sa, buf), port);
+            break;
+        }
+
+        rv = sock_delete(*new);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+        sa = sa->next;
+    }
+
+    if (sa == NULL)
+    {
+        d_error("sctp connect(%d:%s:%d) failed(%d:%s)",
+                family, hostname, port, errno, strerror(errno));
+        return CORE_ERROR;
+    }
+
+    rv = core_freeaddrinfo(sa);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    return CORE_OK;
+}
+
+int core_sctp_sendmsg(sock_id id, const void *msg, size_t len,
+        c_sockaddr_t *to, c_uint32_t ppid, c_uint16_t stream_no)
 {
     sock_t *sock = (sock_t *)id;
     int size;
 
     d_assert(id, return -1, );
     
-    size = sctp_sendmsg(sock->fd, msg, len, &to->sa, tolen,
+    size = sctp_sendmsg(sock->fd, msg, len,
+            to ? &to->sa : NULL, to ? to->sa_len : 0,
             htonl(ppid),
             0,  /* flags */
             stream_no,
@@ -100,12 +150,12 @@ int sctp_write(sock_id id, const void *msg, size_t len,
     return size;
 }
 
-int sctp_read(sock_id id, void *msg, size_t len,
-        c_sockaddr_t *from, socklen_t *fromlen,
-        c_uint32_t *ppid, c_uint16_t *stream_no)
+int core_sctp_recvmsg(sock_id id, void *msg, size_t len,
+        c_sockaddr_t *from, c_uint32_t *ppid, c_uint16_t *stream_no)
 {
     sock_t *sock = (sock_t *)id;
     int size;
+    socklen_t addrlen = sizeof(c_sockaddr_t);
 
     int flags = 0;
     struct sctp_sndrcvinfo sinfo;
@@ -114,10 +164,9 @@ int sctp_read(sock_id id, void *msg, size_t len,
 
     do
     {
-        if (fromlen)
-            *fromlen = sizeof(c_sockaddr_t);
         size = sctp_recvmsg(sock->fd, msg, len,
-                    &from->sa, fromlen, &sinfo, &flags);
+                    from ? &from->sa : NULL, from ? &addrlen : NULL,
+                    &sinfo, &flags);
         if (size < 0)
         {
             d_error("sctp_read(len:%ld) failed(%d:%s)",
@@ -125,6 +174,8 @@ int sctp_read(sock_id id, void *msg, size_t len,
 
             return size;
         }
+        if (from)
+            from->sa_len = addrlen;
 
         if (!(flags & MSG_NOTIFICATION)) 
             break;
@@ -344,3 +395,37 @@ static status_t set_initmsg(sock_id id,
 
     return CORE_OK;
 }
+
+status_t setup_sctp(sock_id id)
+{
+    status_t rv;
+
+    rv = subscribe_to_events(id);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    /* heartbit interval : 5 secs */
+    rv = set_paddrparams(id, 5000);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    /*
+     * RTO info
+     * 
+     * initial : 3 secs
+     * min : 1 sec
+     * max : 5 secs
+     */
+    rv = set_rtoinfo(id, 3000, 1000, 5000);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    /*
+     * INITMSG
+     * 
+     * max attemtps : 4
+     * max initial timeout : 8 secs
+     */
+    rv = set_initmsg(id, 4, 8000);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    return CORE_OK;
+}
+

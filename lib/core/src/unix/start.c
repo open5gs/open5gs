@@ -12,7 +12,7 @@
 #include "core_semaphore.h"
 #include "core_thread.h"
 #include "core_net.h"
-#include "core_sock.h"
+#include "core_network.h"
 #include "core_file.h"
 #include "core_pkbuf.h"
 #include "core_signal.h"

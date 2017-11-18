@@ -16,7 +16,7 @@ libcore_la_SOURCES = \
 	../include/core_timer.h ../include/core_tlv.h ../include/core_tlv_msg.h \
 	../include/core_atomic.h ../include/core_portable.h \
 	../include/core_version.h ../include/core_event.h ../include/core_hash.h \
-	../include/core_sock.h ../include/core_udp.h ../include/core_tcp.h \
+	../include/core_network.h \
 	\
 	debug.c version.c fsm.c msgq.c ringbuf.c timer.c tlv.c tlv_msg.c hash.c \
 	aes.c aes_cmac.c sha1.c sha1_hmac.c sha2.c sha2_hmac.c misc.c event.c \
@@ -30,11 +30,11 @@ libcore_la_SOURCES = \
 	unix/rand.c unix/time.c unix/file.c unix/net_lib.c \
 	unix/thread.c unix/signal.c \
 	unix/atomic.c unix/cond.c unix/mutex.c unix/rwlock.c unix/semaphore.c \
-	unix/sock.c unix/udp.c unix/tcp.c \
+	unix/socket.c unix/udp.c unix/tcp.c \
 	$(NULL)
 
 if !USRSCTP
-libcore_la_SOURCES += ../include_core_sctp.h unix/sctp.c
+libcore_la_SOURCES += unix/sctp.c
 endif
 
 AM_LDFLAGS = \

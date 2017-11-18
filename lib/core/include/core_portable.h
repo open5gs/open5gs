@@ -22,7 +22,7 @@
 #define __CORE_PORTABLE_H__
 
 #include "core_thread.h"
-#include "core_sock.h"
+#include "core_network.h"
 
 #ifdef __cplusplus
 extern "C" {
