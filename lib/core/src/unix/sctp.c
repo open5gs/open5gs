@@ -144,6 +144,48 @@ status_t sctp_client(sock_id *new,
     return CORE_OK;
 }
 
+status_t sctp_connect(sock_id id, const char *hostname, c_uint16_t port,
+        c_sockaddr_t *result)
+{
+    status_t rv;
+    c_sockaddr_t *sa;
+    sock_t *sock = (sock_t *)id;
+    char buf[CORE_ADDRSTRLEN];
+
+    d_assert(id, return CORE_ERROR,);
+
+    rv = core_getaddrinfo(&sa, sock->family, hostname, port, 0);
+    d_assert(rv == CORE_OK && sa, return CORE_ERROR,);
+
+    while(sa)
+    {
+        if (connect(sock->fd, &sa->sa, sa->sa_len) == 0)
+        {
+            d_trace(1, "sctp connect %s:%d\n", CORE_NTOP(sa, buf), port);
+            if (result)
+            {
+                memcpy(&result->sa, &sa->sa, sa->sa_len);
+                result->sa_len = sa->sa_len;
+            }
+            break;
+        }
+
+        sa = sa->next;
+    }
+
+    if (sa == NULL)
+    {
+        d_error("sctp connect(%d:%s:%d) failed(%d:%s)",
+               sock->family, hostname, port, errno, strerror(errno));
+        return CORE_ERROR;
+    }
+
+    rv = core_freeaddrinfo(sa);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    return CORE_OK;
+}
+
 int core_sctp_sendmsg(sock_id id, const void *msg, size_t len,
         c_sockaddr_t *to, c_uint32_t ppid, c_uint16_t stream_no)
 {

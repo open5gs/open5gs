@@ -206,6 +206,75 @@ static void sctp_test4(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 }
 
+static thread_id test5_thread;
+static void *THREAD_FUNC test5_main(thread_id id, void *data)
+{
+    abts_case *tc = data;
+    status_t rv;
+    sock_id sctp;
+    char str[STRLEN];
+    c_sockaddr_t sa;
+    c_uint32_t ppid;
+    ssize_t size;
+    char buf[CORE_ADDRSTRLEN];
+
+    rv = sctp_server(&sctp, AF_INET6, SOCK_SEQPACKET, NULL, PORT2);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    rv = sctp_connect(sctp, "::1", PORT, &sa);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    ABTS_INT_EQUAL(tc, sizeof(struct sockaddr_in6), sa.sa_len);
+    ABTS_STR_EQUAL(tc, "::1", CORE_NTOP(&sa, buf));
+
+    size = core_sctp_sendmsg(sctp, DATASTR, strlen(DATASTR), &sa, PPID, 0);
+    ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
+
+    size = core_sctp_recvmsg(sctp, str, STRLEN, &sa, &ppid, NULL);
+    ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
+    ABTS_INT_EQUAL(tc, sizeof(struct sockaddr_in6), sa.sa_len);
+    ABTS_STR_EQUAL(tc, "::1", CORE_NTOP(&sa, buf));
+    ABTS_INT_EQUAL(tc, PPID, ppid);
+
+    rv = sock_delete(sctp);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    thread_exit(id, size);
+    return NULL;
+}
+
+static void sctp_test5(abts_case *tc, void *data)
+{
+    sock_id sctp;
+    status_t rv;
+    ssize_t size;
+    c_sockaddr_t sa;
+    socklen_t addrlen;
+    char str[STRLEN];
+    c_uint32_t ppid;
+    char buf[CORE_ADDRSTRLEN];
+
+    rv = sctp_server(&sctp, AF_INET6, SOCK_SEQPACKET, NULL, PORT);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    rv = thread_create(&test5_thread, NULL, test5_main, tc);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    size = core_sctp_recvmsg(sctp, str, STRLEN, &sa, &ppid, NULL);
+    ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
+    ABTS_INT_EQUAL(tc, sizeof(struct sockaddr_in6), sa.sa_len);
+    ABTS_STR_EQUAL(tc, "::1", CORE_NTOP(&sa, buf));
+    ABTS_INT_EQUAL(tc, PPID, ppid);
+
+    size = core_sctp_sendmsg(sctp, DATASTR, strlen(DATASTR), &sa, ppid, 0);
+    ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
+
+    thread_join(&rv, test5_thread);
+    ABTS_INT_EQUAL(tc, strlen(DATASTR), rv);
+
+    rv = sock_delete(sctp);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+}
+
 abts_suite *testsctp(abts_suite *suite)
 {
     suite = ADD_SUITE(suite);
@@ -214,6 +283,7 @@ abts_suite *testsctp(abts_suite *suite)
     abts_run_test(suite, sctp_test2, NULL);
     abts_run_test(suite, sctp_test3, NULL);
     abts_run_test(suite, sctp_test4, NULL);
+    abts_run_test(suite, sctp_test5, NULL);
 
     return suite;
 }
