@@ -3,6 +3,7 @@
 #include "core_debug.h"
 #include "core_pkbuf.h"
 #include "core_lib.h"
+#include "core_network.h"
 
 #include "mme_context.h"
 #include "s1ap_path.h"
@@ -17,7 +18,7 @@
 #include <usrsctp.h>
 #endif
 
-net_sock_t *tests1ap_enb_connect(void)
+status_t tests1ap_enb_connect(sock_id *new)
 {
     char buf[INET_ADDRSTRLEN];
     status_t rv;
@@ -26,7 +27,7 @@ net_sock_t *tests1ap_enb_connect(void)
     struct socket *psock = NULL;
     const int on = 1;
 
-    if (!mme) return NULL;
+    if (!mme) return CORE_ERROR;
 
     /* You should not change SOCK_STREAM to SOCK_SEQPACKET at this time.
      * if you wanna to use SOCK_SEQPACKET, you need to update s1ap_sendto() */
@@ -34,14 +35,14 @@ net_sock_t *tests1ap_enb_connect(void)
                     NULL, NULL, 0, NULL)))
     {
         d_error("usrsctp_socket error");
-        return NULL;
+        return CORE_ERROR;
     }
 
     if (usrsctp_setsockopt(psock, IPPROTO_SCTP, SCTP_RECVRCVINFO,
                 &on, sizeof(int)) < 0)
     {
         d_error("usrsctp_setsockopt SCTP_RECVRCVINFO failed");
-        return NULL;
+        return CORE_ERROR;
     }
 
     memset((void *)&remote_addr, 0, sizeof(struct sockaddr_in));
@@ -53,29 +54,31 @@ net_sock_t *tests1ap_enb_connect(void)
                 sizeof(struct sockaddr_in)) == -1)
     {
         d_error("usrsctp_connect error");
-        return NULL;
+        return CORE_ERROR;
     }
 
-    return (net_sock_t *)psock;
-}
+    *new = (sock_id)psock;
 
-status_t tests1ap_enb_close(net_sock_t *sock)
-{
-    usrsctp_close((struct socket *)sock);
     return CORE_OK;
 }
 
-int tests1ap_enb_send(net_sock_t *sock, pkbuf_t *sendbuf)
+status_t tests1ap_enb_close(sock_id id)
 {
-    return s1ap_sendto(sock, sendbuf, mme_self()->s1ap_addr,
+    usrsctp_close((struct socket *)id);
+    return CORE_OK;
+}
+
+status_t tests1ap_enb_send(sock_id id, pkbuf_t *sendbuf)
+{
+    return s1ap_sendto((net_sock_t *)id, sendbuf, mme_self()->s1ap_addr,
             mme_self()->s1ap_port);
 }
 
-int tests1ap_enb_read(net_sock_t *sock, pkbuf_t *recvbuf)
+int tests1ap_enb_read(sock_id id, pkbuf_t *recvbuf)
 {
     int rc = 0;
 
-	struct socket *psock = (struct socket *)sock;
+	struct socket *psock = (struct socket *)id;
 	struct sockaddr_in addr;
 	char name[INET6_ADDRSTRLEN];
 	ssize_t n = 0;
