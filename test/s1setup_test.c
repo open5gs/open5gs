@@ -56,7 +56,7 @@ static void s1setup_test1(abts_case *tc, void *data)
     core_sleep(time_from_msec(300));
 }
 
-#define NUM_OF_TEST_ENB 32
+#define NUM_OF_TEST_ENB 4
 
 static void s1setup_test2(abts_case *tc, void *data)
 {
