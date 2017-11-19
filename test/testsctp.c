@@ -2,62 +2,59 @@
 
 #include "core_debug.h"
 #include "core_pkbuf.h"
+#include "core_network.h"
 
 #include "mme_context.h"
 #include "s1ap_path.h"
 
-net_sock_t *tests1ap_enb_connect(void)
+status_t tests1ap_enb_connect(sock_id *new)
 {
     char buf[INET_ADDRSTRLEN];
     status_t rv;
+    struct in_addr mme_s1ap_addr;
+
     mme_context_t *mme = mme_self();
-    net_sock_t *sock = NULL;
+    mme_s1ap_addr.s_addr = mme->s1ap_addr;
 
-    if (!mme) return NULL;
+    if (!mme) return CORE_ERROR;
 
-    rv = net_open_ext(&sock, mme->s1ap_addr, 
-            INET_NTOP(&mme->s1ap_addr, buf), 0, mme->s1ap_port, 
-            SOCK_SEQPACKET, IPPROTO_SCTP, SCTP_S1AP_PPID, 0);
-    if (rv != CORE_OK) return NULL;
+    rv = sctp_client(new, AF_UNSPEC, SOCK_STREAM,
+            inet_ntoa(mme_s1ap_addr), mme->s1ap_port);
+    if (rv != CORE_OK) return CORE_ERROR;
 
-    return sock;
+    return CORE_OK;
 }
 
-status_t tests1ap_enb_close(net_sock_t *sock)
+status_t tests1ap_enb_close(sock_id id)
 {
-    return net_close(sock);
+    return sock_delete(id);
 }
 
-int tests1ap_enb_send(net_sock_t *sock, pkbuf_t *sendbuf)
+status_t tests1ap_enb_send(sock_id id, pkbuf_t *sendbuf)
 {
-    return s1ap_sendto(sock, sendbuf, mme_self()->s1ap_addr,
-            mme_self()->s1ap_port);
-}
-
-int tests1ap_enb_read(net_sock_t *sock, pkbuf_t *recvbuf)
-{
-    int rc = 0;
-
-    while(1)
+    int size = core_sctp_sendmsg(id,
+            sendbuf->payload, sendbuf->len, NULL, 18, 0);
+    if (size < 0 || size != sendbuf->len)
     {
-        rc = net_read(sock, recvbuf->payload, recvbuf->len, 0);
-        if (rc == -2) 
-        {
-            continue;
-        }
-        else if (rc <= 0)
-        {
-            if (sock->sndrcv_errno == EAGAIN)
-            {
-                continue;
-            }
-            break;
-        }
-        else
-        {
-            break;
-        }
+        return CORE_ERROR;
     }
 
-    return rc;
+    pkbuf_free(sendbuf);
+    return CORE_OK;
+}
+
+int tests1ap_enb_read(sock_id id, pkbuf_t *recvbuf)
+{
+    c_uint32_t ppid;
+    int size = core_sctp_recvmsg(id,
+            recvbuf->payload, MAX_SDU_LEN, NULL, &ppid, NULL);
+#if 0
+    if (ppid != 18)
+    {
+        d_error("Invalid PPID = %d\n", ppid);
+    }
+#endif
+    recvbuf->len = size;
+
+    return size;
 }

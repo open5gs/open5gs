@@ -14,7 +14,7 @@
 static void s1setup_test1(abts_case *tc, void *data)
 {
     status_t rv;
-    net_sock_t *sock[NUM_OF_TEST_DUPLICATED_ENB];
+    sock_id sock[NUM_OF_TEST_DUPLICATED_ENB];
     pkbuf_t *sendbuf;
     pkbuf_t *recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     s1ap_message_t message;
@@ -23,8 +23,8 @@ static void s1setup_test1(abts_case *tc, void *data)
 
     for (i = 0; i < NUM_OF_TEST_DUPLICATED_ENB; i++)
     {
-        sock[i] = tests1ap_enb_connect();
-        ABTS_PTR_NOTNULL(tc, sock[i]);
+        rv = tests1ap_enb_connect(&sock[i]);
+        ABTS_INT_EQUAL(tc, CORE_OK, rv);
     }
 
     for (i = 0; i < NUM_OF_TEST_DUPLICATED_ENB; i++)
@@ -61,7 +61,7 @@ static void s1setup_test1(abts_case *tc, void *data)
 static void s1setup_test2(abts_case *tc, void *data)
 {
     status_t rv;
-    net_sock_t *sock[NUM_OF_TEST_ENB];
+    sock_id sock[NUM_OF_TEST_ENB];
     pkbuf_t *sendbuf;
     pkbuf_t *recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     s1ap_message_t message;
@@ -70,8 +70,8 @@ static void s1setup_test2(abts_case *tc, void *data)
 
     for (i = 0; i < NUM_OF_TEST_ENB; i++)
     {
-        sock[i] = tests1ap_enb_connect();
-        ABTS_PTR_NOTNULL(tc, sock[i]);
+        rv = tests1ap_enb_connect(&sock[i]);
+        ABTS_INT_EQUAL(tc, CORE_OK, rv);
     }
 
     for (i = 0; i < NUM_OF_TEST_ENB; i++)

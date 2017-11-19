@@ -28,7 +28,9 @@ const struct testlist {
     {test_nas_message},
     {test_gtp_message},
     {test_security},
+#if 0
     {test_s1setup},
+#endif
     {test_attach},
     {test_volte},
     {test_handover}

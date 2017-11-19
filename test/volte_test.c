@@ -14,7 +14,7 @@
 static void volte_test1(abts_case *tc, void *data)
 {
     status_t rv;
-    net_sock_t *sock;
+    sock_id sock;
     pkbuf_t *sendbuf;
     pkbuf_t *recvbuf;
     s1ap_message_t message;
@@ -98,8 +98,8 @@ static void volte_test1(abts_case *tc, void *data)
     "}";
 
     /* eNB connects to MME */
-    sock = tests1ap_enb_connect();
-    ABTS_PTR_NOTNULL(tc, sock);
+    rv = tests1ap_enb_connect(&sock);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     /* Send S1-Setup Reqeust */
     rv = tests1ap_build_setup_req(
@@ -325,7 +325,7 @@ static void volte_test1(abts_case *tc, void *data)
 static void volte_test2(abts_case *tc, void *data)
 {
     status_t rv;
-    net_sock_t *sock;
+    sock_id sock;
     pkbuf_t *sendbuf;
     pkbuf_t *recvbuf;
     s1ap_message_t message;
@@ -409,8 +409,8 @@ static void volte_test2(abts_case *tc, void *data)
     "}";
 
     /* eNB connects to MME */
-    sock = tests1ap_enb_connect();
-    ABTS_PTR_NOTNULL(tc, sock);
+    rv = tests1ap_enb_connect(&sock);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     /* Send S1-Setup Reqeust */
     rv = tests1ap_build_setup_req(
