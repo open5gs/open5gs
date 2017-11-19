@@ -157,9 +157,11 @@ CORE_DECLARE(status_t) core_freeaddrinfo(c_sockaddr_t *sa);
 
 #define CORE_ADDRSTRLEN INET6_ADDRSTRLEN
 #define CORE_NTOP(__aDDR, __bUF) \
-    core_ntop((c_sockaddr_t *)__aDDR, buf, CORE_ADDRSTRLEN)
-CORE_DECLARE(const char *)core_ntop(c_sockaddr_t *sockaddr,
+    core_inet_ntop((c_sockaddr_t *)__aDDR, buf, CORE_ADDRSTRLEN)
+CORE_DECLARE(const char *)core_inet_ntop(c_sockaddr_t *sockaddr,
         char *buf, int buflen);
+CORE_DECLARE(status_t) core_inet_pton(
+        int family, const char *src, c_sockaddr_t *dst);
 
 CORE_DECLARE(int) sockaddr_is_equal(c_sockaddr_t *a, c_sockaddr_t *b);
 

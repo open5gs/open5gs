@@ -463,7 +463,7 @@ status_t core_freeaddrinfo(c_sockaddr_t *sa)
     return CORE_OK;
 }
 
-const char *core_ntop(c_sockaddr_t *sockaddr, char *buf, int buflen)
+const char *core_inet_ntop(c_sockaddr_t *sockaddr, char *buf, int buflen)
 {
     int family;
     d_assert(buf, return NULL,);
@@ -481,8 +481,28 @@ const char *core_ntop(c_sockaddr_t *sockaddr, char *buf, int buflen)
             return inet_ntop(family,
                     &sockaddr->sin6.sin6_addr, buf, INET6_ADDRSTRLEN);
         default:
-            d_assert(0, return NULL,
-                    "Unknown family(%d)", sockaddr->sa.sa_family);
+            d_assert(0, return NULL, "Unknown family(%d)", family);
+    }
+}
+
+status_t core_inet_pton(int family, const char *src, c_sockaddr_t *dst)
+{
+    d_assert(src, return CORE_ERROR,);
+    d_assert(dst, return CORE_ERROR,);
+
+    dst->sa.sa_family = family;
+    switch(family)
+    {
+        case AF_INET:
+            dst->sa_len = sizeof(struct sockaddr_in);
+            return inet_pton(family, src, &dst->sin.sin_addr) == 1 ?
+                CORE_OK : CORE_ERROR;
+        case AF_INET6:
+            dst->sa_len = sizeof(struct sockaddr_in6);
+            return inet_pton(family, src, &dst->sin6.sin6_addr) == 1 ?
+                 CORE_OK : CORE_ERROR;
+        default:
+            d_assert(0, return CORE_ERROR, "Unknown family(%d)", family);
     }
 }
 

@@ -273,6 +273,21 @@ static void sock_test6(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 }
 
+static void sock_test7(abts_case *tc, void *data)
+{
+    c_sockaddr_t sa;
+    char buf[CORE_ADDRSTRLEN];
+    status_t rv;
+
+    rv = core_inet_pton(AF_INET, "127.0.0.1", &sa);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    ABTS_STR_EQUAL(tc, "127.0.0.1", CORE_NTOP(&sa, buf));
+
+    rv = core_inet_pton(AF_INET6, "::1", &sa);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    ABTS_STR_EQUAL(tc, "::1", CORE_NTOP(&sa, buf));
+}
+
 
 abts_suite *testsock(abts_suite *suite)
 {
@@ -284,6 +299,7 @@ abts_suite *testsock(abts_suite *suite)
     abts_run_test(suite, sock_test4, NULL);
     abts_run_test(suite, sock_test5, NULL);
     abts_run_test(suite, sock_test6, NULL);
+    abts_run_test(suite, sock_test7, NULL);
 
     return suite;
 }
