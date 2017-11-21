@@ -1,4 +1,4 @@
-#define TRACE_MODULE _socket
+#define TRACE_MODULE _sock
 
 #include "core_debug.h"
 #include "core_pkbuf.h"

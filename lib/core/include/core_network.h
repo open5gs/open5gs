@@ -2,7 +2,6 @@
 #define __CORE_NETWORK_H__
 
 #include "core_errno.h"
-#include "core_list.h"
 #include "core_time.h"
 
 #ifdef __cplusplus
