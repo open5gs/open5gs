@@ -469,11 +469,14 @@ static void *sess_hash_keygen(c_uint8_t *out, int *out_len,
     return out;
 }
 
-pgw_sess_t *pgw_sess_add(
+pgw_sess_t *pgw_sess_add(gtp_f_teid_t *sgw_s5c_teid,
         c_uint8_t *imsi, int imsi_len, c_int8_t *apn, c_uint8_t ebi)
 {
     pgw_sess_t *sess = NULL;
     pgw_bearer_t *bearer = NULL;
+    pgw_sgw_t *sgw = NULL;
+    c_uint32_t addr = 0;
+    c_uint16_t port = 0;
 
     index_alloc(&pgw_sess_pool, &sess);
     d_assert(sess, return NULL, "Null param");
@@ -485,6 +488,22 @@ pgw_sess_t *pgw_sess_add(
     sess->imsi_len = imsi_len;
     memcpy(sess->imsi, imsi, sess->imsi_len);
     core_buffer_to_bcd(sess->imsi, sess->imsi_len, sess->imsi_bcd);
+
+    addr = sgw_s5c_teid->ipv4_addr;
+    port = GTPV2_C_UDP_PORT;
+
+    sgw = pgw_sgw_find(addr, port);
+    if (!sgw)
+    {
+        sgw = pgw_sgw_add();
+        d_assert(sgw, return NULL, "Can't add SGW-GTP node");
+
+        sgw->addr = addr;
+        sgw->port = port;
+        sgw->sock = pgw_self()->gtpc_sock;
+    }
+    /* Setup GTP Node between PGW and SGW */
+    CONNECT_SGW_GTP_NODE(sess, sgw);
 
     /* Set APN */
     core_cpystrn(sess->pdn.apn, apn, MAX_APN_LEN+1);
@@ -570,9 +589,15 @@ pgw_sess_t *pgw_sess_find_or_add_by_message(gtp_message_t *gtp_message)
     gtp_create_session_request_t *req = &gtp_message->create_session_request;
     c_int8_t apn[MAX_APN_LEN];
 
-    if (req->sender_f_teid_for_control_plane.presence == 0)
+    if (req->imsi.presence == 0)
     {
         d_error("No IMSI");
+        return NULL;
+    }
+
+    if (req->sender_f_teid_for_control_plane.presence == 0)
+    {
+        d_error("No Sender F-TEID");
         return NULL;
     }
 
@@ -581,12 +606,24 @@ pgw_sess_t *pgw_sess_find_or_add_by_message(gtp_message_t *gtp_message)
         d_error("No APN");
         return NULL;
     }
+    if (req->bearer_contexts_to_be_created.presence == 0)
+    {
+        d_error("No Bearer");
+        return NULL;
+    }
+    if (req->bearer_contexts_to_be_created.eps_bearer_id.presence == 0)
+    {
+        d_error("No EPS Bearer ID");
+        return NULL;
+    }
 
     apn_parse(apn, req->access_point_name.data, req->access_point_name.len);
     sess = pgw_sess_find_by_imsi_apn(req->imsi.data, req->imsi.len, apn);
     if (!sess)
     {
-        sess = pgw_sess_add(req->imsi.data, req->imsi.len, apn,
+        sess = pgw_sess_add(
+            req->sender_f_teid_for_control_plane.data,
+            req->imsi.data, req->imsi.len, apn,
             req->bearer_contexts_to_be_created.eps_bearer_id.u8);
         d_assert(sess, return NULL, "No Session Context");
     }

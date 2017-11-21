@@ -660,18 +660,14 @@ out:
     return CORE_ERROR;
 }
 
-status_t gtp_xact_receive(gtp_node_t *gnode, pkbuf_t *pkbuf,
-        gtp_xact_t **xact, gtp_message_t *message)
+status_t gtp_xact_receive(
+        gtp_node_t *gnode, gtp_header_t *h, gtp_xact_t **xact)
 {
     char buf[INET_ADDRSTRLEN];
     status_t rv;
     gtp_xact_t *new = NULL;
-    gtp_header_t *h = NULL;
 
     d_assert(gnode, return CORE_ERROR, "Null param");
-    d_assert(pkbuf, return CORE_ERROR, "Null param");
-    d_assert(pkbuf->payload, return CORE_ERROR, "Null param");
-    h = pkbuf->payload;
     d_assert(h, return CORE_ERROR, "Null param");
 
     new = gtp_xact_find_by_xid(gnode, h->type, GTP_SQN_TO_XID(h->sqn));
@@ -687,13 +683,8 @@ status_t gtp_xact_receive(gtp_node_t *gnode, pkbuf_t *pkbuf,
     rv = gtp_xact_update_rx(new, h->type);
     if (rv != CORE_OK)
     {
-        pkbuf_free(pkbuf);
         return rv;
     }
-
-    rv = gtp_parse_msg(message, pkbuf);
-    d_assert(rv == CORE_OK, 
-            pkbuf_free(pkbuf); return CORE_ERROR, "parse error");
 
     *xact = new;
     return CORE_OK;

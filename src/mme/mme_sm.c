@@ -344,28 +344,26 @@ void mme_state_operational(fsm_t *s, event_t *e)
         case MME_EVT_S11_MESSAGE:
         {
             status_t rv;
-            gtp_node_t *gnode = NULL;
-            c_uint32_t addr = (c_uint32_t)event_get_param1(e);
-            c_uint16_t port = (c_uint16_t)event_get_param2(e);
-            pkbuf_t *pkbuf = (pkbuf_t *)event_get_param3(e);
+            pkbuf_t *pkbuf = (pkbuf_t *)event_get_param1(e);
             gtp_xact_t *xact = NULL;
             gtp_message_t message;
             mme_ue_t *mme_ue = NULL;
 
             d_assert(pkbuf, break, "Null param");
-            gnode = mme_sgw_find(addr, port);
-            d_assert(gnode, pkbuf_free(pkbuf); break, "Null param");
-
-            rv = gtp_xact_receive(gnode, pkbuf, &xact, &message);
-            if (rv != CORE_OK)
-                break;
-
-            d_assert(xact, return, "Null param");
+            rv = gtp_parse_msg(&message, pkbuf);
+            d_assert(rv == CORE_OK, pkbuf_free(pkbuf); break, "parse error");
 
             mme_ue = mme_ue_find_by_teid(message.h.teid);
             d_assert(mme_ue, pkbuf_free(pkbuf); break, 
                     "No UE Context(TEID:%d)", message.h.teid);
-                    
+
+            rv = gtp_xact_receive(mme_ue->sgw, &message.h, &xact);
+            if (rv != CORE_OK)
+            {
+                pkbuf_free(pkbuf);
+                break;
+            }
+
             switch(message.h.type)
             {
                 case GTP_CREATE_SESSION_RESPONSE_TYPE:

@@ -37,11 +37,6 @@ void sgw_s11_handle_create_session_request(gtp_xact_t *s11_xact,
 
     req = &gtp_message->create_session_request;
 
-    if (req->sender_f_teid_for_control_plane.presence == 0)
-    {
-        d_error("No TEID");
-        return;
-    }
     if (req->bearer_contexts_to_be_created.presence == 0)
     {
         d_error("No Bearer");
@@ -77,6 +72,7 @@ void sgw_s11_handle_create_session_request(gtp_xact_t *s11_xact,
         sess = sgw_sess_add(sgw_ue, apn,
                 req->bearer_contexts_to_be_created.eps_bearer_id.u8);
     }
+
     d_assert(sess, return, "Null param");
     bearer = sgw_default_bearer_in_sess(sess);
     d_assert(bearer, return, "Null param");
@@ -117,7 +113,6 @@ void sgw_s11_handle_create_session_request(gtp_xact_t *s11_xact,
     }
 
     /* Setup GTP Node */
-    CONNECT_MME_GTP_NODE(sgw_ue, s11_xact);
     CONNECT_PGW_GTP_NODE(sess, pgw);
 
     req->pgw_s5_s8_address_for_control_plane_or_pmip.presence = 0;

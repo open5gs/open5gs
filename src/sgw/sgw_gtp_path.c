@@ -16,10 +16,8 @@ static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
     event_t e;
     status_t rv;
     gtp_header_t *gtp_h = NULL;
+    c_uint32_t teid = 0;
     pkbuf_t *pkbuf = NULL;
-    c_uint32_t addr = 0;
-    c_uint16_t port = 0;
-    sgw_mme_t *mme = NULL;
 
     d_assert(sock, return -1, "Null param");
 
@@ -34,39 +32,20 @@ static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
 
     gtp_h = (gtp_header_t *)pkbuf->payload;
     d_assert(gtp_h, return -1, "Null param");
+    d_assert(gtp_h->teid_presence, return -1,);
+    teid = ntohl(gtp_h->teid);
 
-    addr = sock->remote.sin_addr.s_addr;
-    port = ntohs(sock->remote.sin_port);
-
-    mme = sgw_mme_find(addr, port);
-    if (!mme && gtp_h->teid == 0)
+    if (SGW_S5C_TEID(teid))
     {
-        mme = sgw_mme_add();
-        d_assert(mme, return -1, "Can't add MME-GTP node");
-
-        mme->addr = addr;
-        mme->port = port;
-        mme->sock = sock;
-    }
-
-    if (mme)
-    {
-        d_trace(10, "S11 PDU received from MME\n");
-
-        event_set(&e, SGW_EVT_S11_MESSAGE);
-        event_set_param1(&e, (c_uintptr_t)mme);
-        event_set_param2(&e, (c_uintptr_t)pkbuf);
-    
+        d_trace(10, "S5C PDU received from PGW\n");
+        event_set(&e, SGW_EVT_S5C_MESSAGE);
     }
     else
     {
-        d_trace(10, "S5C PDU received from PGW\n");
-
-        event_set(&e, SGW_EVT_S5C_MESSAGE);
-        event_set_param1(&e, (c_uintptr_t)addr);
-        event_set_param2(&e, (c_uintptr_t)port);
-        event_set_param3(&e, (c_uintptr_t)pkbuf);
+        d_trace(10, "S11 PDU received from MME\n");
+        event_set(&e, SGW_EVT_S11_MESSAGE);
     }
+    event_set_param1(&e, (c_uintptr_t)pkbuf);
 
     d_trace_hex(10, pkbuf->payload, pkbuf->len);
 
@@ -240,222 +219,6 @@ static int _gtpv1_u_recv_cb(net_sock_t *sock, void *data)
     pkbuf_free(pkbuf);
     return 0;
 }
-
-
-#if 0
-static int _gtpv1_s5u_recv_cb(net_sock_t *sock, void *data)
-{
-    pkbuf_t *pkbuf = NULL;
-    gtp_node_t gnode;
-    gtp_header_t *gtp_h = NULL;
-    sgw_bearer_t *bearer = NULL;
-    c_uint32_t teid;
-
-    d_assert(sock, return -1, "Null param");
-
-    pkbuf = gtp_read(sock);
-    if (pkbuf == NULL)
-    {
-        if (sock->sndrcv_errno == EAGAIN)
-            return 0;
-
-        return -1;
-    }
-
-    d_trace(50, "S5-U PDU received from PGW\n");
-    d_trace_hex(50, pkbuf->payload, pkbuf->len);
-
-    gtp_h = (gtp_header_t *)pkbuf->payload;
-    if (gtp_h->type == GTPU_MSGTYPE_ECHO_REQ)
-    {
-        pkbuf_t *echo_rsp;
-
-        d_trace(3, "Received echo-req");
-        echo_rsp = gtp_handle_echo_req(pkbuf);
-        if (echo_rsp)
-        {
-            /* Echo reply */
-            d_trace(3, "Send echo-rsp to peer(PGW) ");
-
-            gnode.addr = sock->remote.sin_addr.s_addr;
-            gnode.port = GTPV1_U_UDP_PORT;
-            gnode.sock = sgw_self()->s5u_sock;
-
-            gtp_send(&gnode, echo_rsp);
-            pkbuf_free(echo_rsp);
-        }
-    }
-    else if (gtp_h->type == GTPU_MSGTYPE_GPDU)
-    {
-        teid = ntohl(gtp_h->teid);
-
-        d_trace(50, "Recv GPDU (teid = 0x%x)",teid);
-
-        bearer = sgw_bearer_find_by_sgw_s5u_teid(teid);
-        if (bearer)
-        {
-            if (bearer->enb_s1u_teid)
-            {
-                /* Convert Teid and send to enodeB  via s1u */
-                gtp_h->teid =  htonl(bearer->enb_s1u_teid);
-                
-                gnode.addr = bearer->enb_s1u_addr;
-                gnode.port = GTPV1_U_UDP_PORT;
-                gnode.sock = sgw_self()->s1u_sock;
-
-                /* If there is buffered packet, send it first */
-                if (bearer->num_buffered_pkt)
-                {
-                    int i;
-                    for (i = 0; i < bearer->num_buffered_pkt; i++)
-                    {
-                        gtp_h = 
-                            (gtp_header_t *)bearer->buffered_pkts[i]->payload;
-                        gtp_h->teid =  htonl(bearer->enb_s1u_teid);
-
-                        gtp_send(&gnode, bearer->buffered_pkts[i]);
-                        pkbuf_free(bearer->buffered_pkts[i]);
-                    }
-                    bearer->num_buffered_pkt = 0;
-                }
-
-                gtp_send(&gnode, pkbuf);
-            }
-            else
-            {
-                /* S1U path is deactivated.
-                 * Send downlink_data_notification to MME.
-                 *
-                 */
-                sgw_ue_t *sgw_ue = NULL;
-
-                d_assert(bearer->sess, pkbuf_free(pkbuf); return 0,
-                        "Session is NULL");
-                d_assert(bearer->sess->sgw_ue, pkbuf_free(pkbuf); return 0,
-                        "SGW_UE  is NULL");
-
-                sgw_ue = bearer->sess->sgw_ue;
-
-                if ((SGW_GET_UE_STATE(sgw_ue) & SGW_S1U_INACTIVE))
-                {
-                    if ( !(SGW_GET_UE_STATE(sgw_ue) & SGW_DL_NOTI_SENT))
-                    {
-                        event_t e;
-                        status_t rv;
-
-                        event_set(&e, SGW_EVT_LO_DLDATA_NOTI);
-                        event_set_param1(&e, (c_uintptr_t)bearer->index);
-                        rv = sgw_event_send(&e);
-                        if (rv != CORE_OK)
-                        {
-                            d_error("sgw_event_send error");
-                            pkbuf_free(pkbuf);
-                            return -1;
-                        }
-
-                        SGW_SET_UE_STATE(sgw_ue, SGW_DL_NOTI_SENT);
-                    }
-
-                    /* Buffer the packet */
-                    if (bearer->num_buffered_pkt < MAX_NUM_BUFFER_PKT)
-                    {
-                        bearer->buffered_pkts[bearer->num_buffered_pkt++] = 
-                            pkbuf;
-                        return 0;
-                    }
-                }
-                else
-                {
-                    /* UE is S1U_ACTIVE state but there is no s1u teid */
-                    d_warn("UE is ACITVE but there is no matched "
-                            "s1u_teid(tedid = 0x%x)",teid);
-
-                    /* Just drop it */
-                }
-
-            }
-        }
-    }
-
-    pkbuf_free(pkbuf);
-    return 0;
-}
-
-static int _gtpv1_s1u_recv_cb(net_sock_t *sock, void *data)
-{
-    pkbuf_t *pkbuf = NULL;
-    gtp_node_t gnode;
-    gtp_header_t *gtp_h = NULL;
-    sgw_tunnel_t *tunnel = NULL;
-    c_uint32_t teid;
-
-    d_assert(sock, return -1, "Null param");
-
-    pkbuf = gtp_read(sock);
-    if (pkbuf == NULL)
-    {
-        if (sock->sndrcv_errno == EAGAIN)
-            return 0;
-
-        return -1;
-    }
-
-    d_trace(50, "S1-U PDU received from ENB\n");
-    d_trace_hex(50, pkbuf->payload, pkbuf->len);
-
-    gtp_h = (gtp_header_t *)pkbuf->payload;
-    if (gtp_h->type == GTPU_MSGTYPE_ECHO_REQ)
-    {
-        pkbuf_t *echo_rsp;
-
-        d_trace(3, "Received echo-req\n");
-        echo_rsp = gtp_handle_echo_req(pkbuf);
-        if (echo_rsp)
-        {
-            /* Echo reply */
-            d_trace(3, "Send echo-rsp to peer(ENB)\n");
-
-            gnode.addr = sock->remote.sin_addr.s_addr;
-            gnode.port = GTPV1_U_UDP_PORT;
-            gnode.sock = sgw_self()->s1u_sock;
-
-            gtp_send(&gnode, echo_rsp);
-            pkbuf_free(echo_rsp);
-        }
-    }
-    else if (gtp_h->type == GTPU_MSGTYPE_GPDU || 
-                gtp_h->type == GTPU_MSGTYPE_END_MARKER)
-    {
-        teid = ntohl(gtp_h->teid);
-        d_trace(50, "Recv GPDU (teid = 0x%x) from ENB\n",teid);
-
-        tunnel = sgw_tunnel_find_by_teid(teid);
-        if (tunnel)
-        {
-            gtp_h->teid =  htonl(tunnel->remote_teid);
-            
-            gnode.addr = tunnel->remote_addr;
-            gnode.port = GTPV1_U_UDP_PORT;
-            if (tunnel->interface_type == GTP_F_TEID_S1_U_SGW_GTP_U)
-                gnode.sock = sgw_self()->s5u_sock;
-            else if (tunnel->interface_type ==
-                    GTP_F_TEID_SGW_GTP_U_FOR_DL_DATA_FORWARDING)
-                gnode.sock = sgw_self()->s1u_sock;
-            else if (tunnel->interface_type ==
-                    GTP_F_TEID_SGW_GTP_U_FOR_UL_DATA_FORWARDING)
-                gnode.sock = sgw_self()->s1u_sock;
-            else
-                d_assert(0, return -1, "Invalid type(%d)",
-                        tunnel->interface_type);
-
-            gtp_send(&gnode, pkbuf);
-        }
-    }
-
-    pkbuf_free(pkbuf);
-    return 0;
-}
-#endif
 
 status_t sgw_gtp_open()
 {

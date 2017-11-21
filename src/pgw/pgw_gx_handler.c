@@ -23,9 +23,6 @@ void pgw_gx_handle_cca_initial_request(
     d_assert(cca_message, return, "Null param");
     d_assert(req, return, "Null param");
 
-    /* Setup GTP Node between PGW and SGW */
-    CONNECT_SGW_GTP_NODE(sess, xact);
-
     /* Send Create Session Request with Creating Default Bearer */
     memset(&h, 0, sizeof(gtp_header_t));
     h.type = GTP_CREATE_SESSION_RESPONSE_TYPE;

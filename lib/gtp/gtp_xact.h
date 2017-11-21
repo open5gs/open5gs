@@ -74,8 +74,7 @@ CORE_DECLARE(status_t) gtp_xact_commit(gtp_xact_t *xact);
 CORE_DECLARE(status_t) gtp_xact_timeout(index_t index, c_uintptr_t event);
 
 CORE_DECLARE(status_t) gtp_xact_receive(
-        gtp_node_t *gnode, pkbuf_t *pkbuf,
-        gtp_xact_t **xact, gtp_message_t *gtp_message);
+        gtp_node_t *gnode, gtp_header_t *h, gtp_xact_t **xact);
 
 CORE_DECLARE(gtp_xact_t *) gtp_xact_find(index_t index);
 CORE_DECLARE(gtp_xact_t *)gtp_xact_find_by_xid(

@@ -377,17 +377,41 @@ sgw_pgw_t* sgw_pgw_next(sgw_pgw_t *pgw)
     return list_next(pgw);
 }
 
-sgw_ue_t* sgw_ue_add(
+sgw_ue_t* sgw_ue_add(gtp_f_teid_t *mme_s11_teid,
         c_uint8_t *imsi, int imsi_len, c_int8_t *apn, c_uint8_t ebi)
 {
     sgw_ue_t *sgw_ue = NULL;
     sgw_sess_t *sess = NULL;
+    sgw_mme_t *mme = NULL;
+    c_uint32_t addr = 0;
+    c_uint16_t port = 0;
+
+    d_assert(mme_s11_teid, return NULL, "Null param");
+    d_assert(imsi, return NULL, "Null param");
+    d_assert(imsi_len, return NULL, "Null param");
+    d_assert(apn, return NULL, "Null param");
+    d_assert(ebi, return NULL, "Null param");
 
     index_alloc(&sgw_ue_pool, &sgw_ue);
     d_assert(sgw_ue, return NULL, "Null param");
 
     sgw_ue->sgw_s11_teid = sgw_ue->index;
     sgw_ue->sgw_s11_addr = sgw_self()->gtpc_addr;
+
+    addr = mme_s11_teid->ipv4_addr;
+    port = GTPV2_C_UDP_PORT;
+
+    mme = sgw_mme_find(addr, port);
+    if (!mme)
+    {
+        mme = sgw_mme_add();
+        d_assert(mme, return NULL, "Can't add MME-GTP node");
+
+        mme->addr = addr;
+        mme->port = port;
+        mme->sock = sgw_self()->gtpc_sock;
+    }
+    CONNECT_MME_GTP_NODE(sgw_ue, mme);
 
     /* Set IMSI */
     sgw_ue->imsi_len = imsi_len;
@@ -433,7 +457,7 @@ status_t sgw_ue_remove_all()
     return CORE_OK;
 }
 
-sgw_ue_t* sgw_ue_find(index_t index)
+static sgw_ue_t* sgw_ue_find(index_t index)
 {
     d_assert(index, return NULL, "Invalid index = 0x%x", index);
     return index_find(&sgw_ue_pool, index);
@@ -469,9 +493,15 @@ sgw_ue_t *sgw_ue_find_or_add_by_message(gtp_message_t *gtp_message)
 
     gtp_create_session_request_t *req = &gtp_message->create_session_request;
 
-    if (req->sender_f_teid_for_control_plane.presence == 0)
+    if (req->imsi.presence == 0)
     {
         d_error("No IMSI");
+        return NULL;
+    }
+
+    if (req->sender_f_teid_for_control_plane.presence == 0)
+    {
+        d_error("No Sender F-TEID");
         return NULL;
     }
 
@@ -480,13 +510,25 @@ sgw_ue_t *sgw_ue_find_or_add_by_message(gtp_message_t *gtp_message)
         d_error("No APN");
         return NULL;
     }
+    if (req->bearer_contexts_to_be_created.presence == 0)
+    {
+        d_error("No Bearer");
+        return NULL;
+    }
+    if (req->bearer_contexts_to_be_created.eps_bearer_id.presence == 0)
+    {
+        d_error("No EPS Bearer ID");
+        return NULL;
+    }
 
     sgw_ue = sgw_ue_find_by_imsi(req->imsi.data, req->imsi.len);
     if (!sgw_ue)
     {
         c_int8_t apn[MAX_APN_LEN];
         apn_parse(apn, req->access_point_name.data, req->access_point_name.len);
-        sgw_ue = sgw_ue_add(req->imsi.data, req->imsi.len, apn,
+        sgw_ue = sgw_ue_add(
+            req->sender_f_teid_for_control_plane.data,
+            req->imsi.data, req->imsi.len, apn,
             req->bearer_contexts_to_be_created.eps_bearer_id.u8);
         d_assert(sgw_ue, return NULL, "No UE Context");
     }
@@ -523,7 +565,7 @@ sgw_sess_t *sgw_sess_add(
     index_alloc(&sgw_sess_pool, &sess);
     d_assert(sess, return NULL, "Null param");
 
-    sess->sgw_s5c_teid = sess->index;
+    sess->sgw_s5c_teid = SGW_S5C_INDEX_TO_TEID(sess->index);
     sess->sgw_s5c_addr = sgw_self()->gtpc_addr;
 
     /* Set APN */
@@ -574,7 +616,7 @@ status_t sgw_sess_remove_all(sgw_ue_t *sgw_ue)
     return CORE_OK;
 }
 
-sgw_sess_t* sgw_sess_find(index_t index)
+static sgw_sess_t* sgw_sess_find(index_t index)
 {
     d_assert(index, return NULL, "Invalid Index");
     return index_find(&sgw_sess_pool, index);
@@ -582,7 +624,7 @@ sgw_sess_t* sgw_sess_find(index_t index)
 
 sgw_sess_t* sgw_sess_find_by_teid(c_uint32_t teid)
 {
-    return sgw_sess_find(teid);
+    return sgw_sess_find(SGW_S5C_TEID_TO_INDEX(teid));
 }
 
 sgw_sess_t* sgw_sess_find_by_apn(sgw_ue_t *sgw_ue, c_int8_t *apn)

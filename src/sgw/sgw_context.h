@@ -8,6 +8,7 @@
 #include "core_hash.h"
 
 #include "gtp_xact.h"
+#include "gtp_types.h"
 #include "types.h"
 
 #include "sgw_sm.h"
@@ -65,11 +66,11 @@ typedef struct _sgw_ue_t {
 
     list_t          sess_list;
 
-#define CONNECT_MME_GTP_NODE(__sGW, __xACT) \
+#define CONNECT_MME_GTP_NODE(__sGW, __gNODE) \
     do { \
-        d_assert((__sGW), return, "Null param"); \
-        d_assert((__xACT), return, "Null param"); \
-        (__sGW)->mme = (__xACT)->gnode; \
+        d_assert((__sGW), return NULL, "Null param"); \
+        d_assert((__gNODE), return NULL, "Null param"); \
+        (__sGW)->mme = (__gNODE); \
     } while(0)
     sgw_mme_t       *mme;
 } sgw_ue_t;
@@ -79,7 +80,12 @@ typedef struct _sgw_sess_t {
     index_t         index;      /* An index of this node */
 
     /* IMPORTANT! 
-     * SGW-S5C-F-TEID is same with an index */
+     * SGW-S5C-TEID     = INDEX         | 0x80000000 
+     * INDEX            = SGW-S5C-TEID  & ~0x80000000
+     */
+#define SGW_S5C_TEID(__tEID) (__tEID & 0x80000000)
+#define SGW_S5C_TEID_TO_INDEX(__iNDEX) (__iNDEX & ~0x80000000)
+#define SGW_S5C_INDEX_TO_TEID(__iNDEX) (__iNDEX | 0x80000000)
     c_uint32_t      sgw_s5c_teid;       
     c_uint32_t      sgw_s5c_addr;       
     c_uint32_t      pgw_s5c_teid;   /* PGW-S5C-F-TEID */
@@ -97,7 +103,7 @@ typedef struct _sgw_sess_t {
         d_assert((__gNODE), return, "Null param"); \
         (__sESS)->pgw = __gNODE; \
     } while(0)
-    sgw_mme_t       *pgw;
+    sgw_pgw_t       *pgw;
     sgw_ue_t        *sgw_ue;
 } sgw_sess_t;
 
@@ -157,12 +163,11 @@ CORE_DECLARE(sgw_pgw_t*)    sgw_pgw_find(c_uint32_t addr, c_uint16_t port);
 CORE_DECLARE(sgw_pgw_t*)    sgw_pgw_first(void);
 CORE_DECLARE(sgw_pgw_t*)    sgw_pgw_next(sgw_pgw_t *pgw);
 
-CORE_DECLARE(sgw_ue_t*)     sgw_ue_add(c_uint8_t *imsi, int imsi_len,
-                                c_int8_t *apn, c_uint8_t id);
+CORE_DECLARE(sgw_ue_t*)     sgw_ue_add(gtp_f_teid_t *mme_s11_teid,
+        c_uint8_t *imsi, int imsi_len, c_int8_t *apn, c_uint8_t ebi);
 CORE_DECLARE(status_t)      sgw_ue_remove(sgw_ue_t *sgw_ue);
 CORE_DECLARE(status_t)      sgw_ue_remove_all();
 
-CORE_DECLARE(sgw_ue_t*)     sgw_ue_find(index_t index);
 CORE_DECLARE(sgw_ue_t*)     sgw_ue_find_by_imsi(c_uint8_t *imsi, int imsi_len);
 CORE_DECLARE(sgw_ue_t*)     sgw_ue_find_by_imsi_bcd(c_int8_t *imsi_bcd);
 CORE_DECLARE(sgw_ue_t*)     sgw_ue_find_by_teid(c_uint32_t teid);
@@ -177,7 +182,6 @@ CORE_DECLARE(sgw_sess_t*)   sgw_sess_add(sgw_ue_t *sgw_ue,
                                 c_int8_t *apn, c_uint8_t ebi);
 CORE_DECLARE(status_t )     sgw_sess_remove(sgw_sess_t *sess);
 CORE_DECLARE(status_t )     sgw_sess_remove_all(sgw_ue_t *sgw_ue);
-CORE_DECLARE(sgw_sess_t*)   sgw_sess_find(index_t index);
 CORE_DECLARE(sgw_sess_t*)   sgw_sess_find_by_apn(
                                 sgw_ue_t *sgw_ue, c_int8_t *apn);
 CORE_DECLARE(sgw_sess_t*)   sgw_sess_find_by_ebi(

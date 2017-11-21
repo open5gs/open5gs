@@ -35,9 +35,7 @@ static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
     d_trace_hex(10, pkbuf->payload, pkbuf->len);
 
     event_set(&e, MME_EVT_S11_MESSAGE);
-    event_set_param1(&e, (c_uintptr_t)addr);
-    event_set_param2(&e, (c_uintptr_t)port);
-    event_set_param3(&e, (c_uintptr_t)pkbuf);
+    event_set_param1(&e, (c_uintptr_t)pkbuf);
     rv = mme_event_send(&e);
     if (rv != CORE_OK)
     {

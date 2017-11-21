@@ -86,9 +86,6 @@ static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
     event_t e;
     status_t rv;
     pkbuf_t *pkbuf = NULL;
-    c_uint32_t addr;
-    c_uint16_t port;
-    pgw_sgw_t *sgw = NULL;
 
     d_assert(sock, return -1, "Null param");
 
@@ -104,23 +101,8 @@ static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
     d_trace(10, "S5-C PDU received from PGW\n");
     d_trace_hex(10, pkbuf->payload, pkbuf->len);
 
-    addr = sock->remote.sin_addr.s_addr;
-    port = ntohs(sock->remote.sin_port);
-
-    sgw = pgw_sgw_find(addr, port);
-    if (!sgw)
-    {
-        sgw = pgw_sgw_add();
-        d_assert(sgw, return -1, "Can't add MME-GTP node");
-
-        sgw->addr = addr;
-        sgw->port = port;
-        sgw->sock = sock;
-    }
-
     event_set(&e, PGW_EVT_S5C_MESSAGE);
-    event_set_param1(&e, (c_uintptr_t)sgw);
-    event_set_param2(&e, (c_uintptr_t)pkbuf);
+    event_set_param1(&e, (c_uintptr_t)pkbuf);
     rv = pgw_event_send(&e);
     if (rv != CORE_OK)
     {

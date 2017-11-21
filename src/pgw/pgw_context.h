@@ -92,11 +92,11 @@ typedef struct _pgw_sess_t {
     list_t          bearer_list;
 
     /* Related Context */
-#define CONNECT_SGW_GTP_NODE(__sESS, __xACT) \
+#define CONNECT_SGW_GTP_NODE(__sESS, __gNODE) \
     do { \
-        d_assert((__sESS), return, "Null param"); \
-        d_assert((__xACT), return, "Null param"); \
-        (__sESS)->sgw = (__xACT)->gnode; \
+        d_assert((__sESS), return NULL, "Null param"); \
+        d_assert((__gNODE), return NULL, "Null param"); \
+        (__sESS)->sgw = (__gNODE); \
     } while(0)
     pgw_sgw_t       *sgw;
 } pgw_sess_t;
@@ -175,8 +175,8 @@ CORE_DECLARE(pgw_sgw_t*)    pgw_sgw_find(c_uint32_t addr, c_uint16_t port);
 CORE_DECLARE(pgw_sgw_t*)    pgw_sgw_first(void);
 CORE_DECLARE(pgw_sgw_t*)    pgw_sgw_next(pgw_sgw_t *sgw);
 
-CORE_DECLARE(pgw_sess_t*)   pgw_sess_add(
-        c_uint8_t *imsi, int imsi_len, c_int8_t *apn, c_uint8_t id);
+CORE_DECLARE(pgw_sess_t*)   pgw_sess_add(gtp_f_teid_t *sgw_s5c_teid,
+        c_uint8_t *imsi, int imsi_len, c_int8_t *apn, c_uint8_t ebi);
 CORE_DECLARE(status_t )     pgw_sess_remove(pgw_sess_t *sess);
 CORE_DECLARE(status_t )     pgw_sess_remove_all();
 CORE_DECLARE(pgw_sess_t*)   pgw_sess_find(index_t index);
