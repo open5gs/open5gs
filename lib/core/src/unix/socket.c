@@ -89,6 +89,8 @@ status_t sock_bind(sock_id id, c_sockaddr_t *sa)
         return CORE_ERROR;
     }
 
+    memcpy(&sock->local_addr, sa, sizeof(sock->local_addr));
+
     d_trace(1, "socket bind %s:%d\n", CORE_NTOP(sa, buf), sa->sin.sin_port);
 
     return CORE_OK;
@@ -108,6 +110,8 @@ status_t sock_connect(sock_id id, c_sockaddr_t *sa)
                 CORE_NTOP(sa, buf), sa->sin.sin_port, errno, strerror(errno));
         return CORE_ERROR;
     }
+
+    memcpy(&sock->remote_addr, sa, sizeof(sock->remote_addr));
 
     d_trace(1, "socket connect %s:%d\n", CORE_NTOP(sa, buf), sa->sin.sin_port);
 
@@ -130,24 +134,25 @@ status_t sock_listen(sock_id id)
     return CORE_OK;
 }
 
-status_t sock_accept(sock_id *new, c_sockaddr_t *addr, sock_id id)
+status_t sock_accept(sock_id *new, sock_id id)
 {
     sock_t *sock = (sock_t *)id;
     sock_t *new_sock = NULL;
 
     int new_fd = -1;
-    socklen_t addrlen = sizeof(c_sockaddr_t);
+    c_sockaddr_t sa;
+
+    memset(&sa, 0, sizeof(sa));
+    sa.sa_len = sizeof(sa.ss);
 
     d_assert(id, return CORE_ERROR,);
-    d_assert(addr, return CORE_ERROR,);
 
-    new_fd = accept(sock->fd, &addr->sa, &addrlen);
+    new_fd = accept(sock->fd, &sa.sa, &sa.sa_len);
     if (new_fd < 0)
     {
         d_error("accept failed(%d:%s)", errno, strerror(errno));
         return CORE_ERROR;
     }
-    addr->sa_len = addrlen;
 
     index_alloc(&sock_pool, &new_sock);
     d_assert(new_sock, return CORE_ENOMEM,);
@@ -156,9 +161,33 @@ status_t sock_accept(sock_id *new, c_sockaddr_t *addr, sock_id id)
     new_sock->family = sock->family;
     new_sock->fd = new_fd;
 
+    memcpy(&new_sock->remote_addr, &sa, sizeof(new_sock->remote_addr));
+
     *new = (sock_id)new_sock;
 
     return CORE_OK;
+}
+
+int sock_family_get(sock_id id)
+{
+    sock_t *sock = (sock_t *)id;
+    d_assert(id, return -1,);
+
+    return sock->family;
+}
+c_sockaddr_t * sock_local_addr_get(sock_id id)
+{
+    sock_t *sock = (sock_t *)id;
+    d_assert(id, return NULL,);
+
+    return &sock->local_addr;
+}
+c_sockaddr_t * sock_remote_addr_get(sock_id id)
+{
+    sock_t *sock = (sock_t *)id;
+    d_assert(id, return NULL,);
+
+    return &sock->remote_addr;
 }
 
 ssize_t core_send(sock_id id, const void *buf, size_t len, int flags)
@@ -219,11 +248,12 @@ ssize_t core_recvfrom(sock_id id,
 {
     sock_t *sock = (sock_t *)id;
     ssize_t size;
-    socklen_t addrlen = sizeof(c_sockaddr_t);
+    socklen_t addrlen;
 
     d_assert(id, return -1,);
     d_assert(from, return -1,);
 
+    addrlen = sizeof(from->ss);
     size = recvfrom(sock->fd, buf, len, flags, &from->sa, &addrlen);
     if (size < 0)
     {

@@ -28,6 +28,9 @@ typedef struct _sock_t {
     int family;
     int fd;
 
+    c_sockaddr_t local_addr;
+    c_sockaddr_t remote_addr;
+
     sock_handler handler;
     void *data;
 

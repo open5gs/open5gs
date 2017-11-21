@@ -63,7 +63,6 @@ static void sctp_test2(abts_case *tc, void *data)
 {
     status_t rv;
     sock_id sctp, sctp2;
-    c_sockaddr_t sa;
     ssize_t size;
 
     rv = sctp_server(&sctp, AF_INET6, SOCK_STREAM, NULL, PORT);
@@ -72,7 +71,7 @@ static void sctp_test2(abts_case *tc, void *data)
     rv = thread_create(&test2_thread, NULL, test2_main, tc);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    rv = sock_accept(&sctp2, &sa, sctp);
+    rv = sock_accept(&sctp2, sctp);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     size = core_sctp_sendmsg(sctp2, DATASTR, strlen(DATASTR), NULL,  PPID, 0);
