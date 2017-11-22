@@ -1,7 +1,6 @@
 #define TRACE_MODULE _sgw_path
 #include "core_debug.h"
 #include "core_pkbuf.h"
-#include "core_net.h"
 
 #include "types.h"
 #include "gtp_types.h"
@@ -11,7 +10,7 @@
 #include "sgw_event.h"
 #include "sgw_gtp_path.h"
 
-static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
+static int _gtpv2_c_recv_cb(sock_id sock, void *data)
 {
     event_t e;
     status_t rv;
@@ -60,7 +59,7 @@ static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
     return 0;
 }
 
-static int _gtpv1_u_recv_cb(net_sock_t *sock, void *data)
+static int _gtpv1_u_recv_cb(sock_id sock, void *data)
 {
     status_t rv;
     pkbuf_t *pkbuf = NULL;
@@ -98,9 +97,9 @@ static int _gtpv1_u_recv_cb(net_sock_t *sock, void *data)
             /* Echo reply */
             d_trace(3, "Send echo-rsp to peer\n");
 
-            gnode.addr.sin.sin_addr.s_addr = sock->remote.sin_addr.s_addr;
-            gnode.addr.c_sa_port = sock->remote.sin_port;
-            gnode.addr.c_sa_family = AF_INET;
+            gnode.addr.sin.sin_addr.s_addr = from.sin.sin_addr.s_addr;
+            gnode.addr.c_sa_port = from.c_sa_port;
+            gnode.addr.c_sa_family = from.c_sa_family;
             gnode.sock = sock;
 
             gtp_send(&gnode, echo_rsp);

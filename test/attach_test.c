@@ -19,7 +19,7 @@ static void attach_test1(abts_case *tc, void *data)
 {
     status_t rv;
     sock_id sock;
-    net_sock_t *gtpu;
+    sock_id gtpu;
     pkbuf_t *sendbuf;
     pkbuf_t *recvbuf;
     s1ap_message_t message;
@@ -143,7 +143,7 @@ static void attach_test1(abts_case *tc, void *data)
 
     /* eNB connects to SGW */
     gtpu = testgtpu_enb_connect();
-    ABTS_PTR_NOTNULL(tc, gtpu);
+    ABTS_INT_NEQUAL(tc, 0, gtpu);
 
     /* Send S1-Setup Reqeust */
     rv = tests1ap_build_setup_req(

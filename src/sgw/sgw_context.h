@@ -3,7 +3,6 @@
 
 #include "core_list.h"
 #include "core_errno.h"
-#include "core_net.h"
 #include "core_event.h"
 #include "core_hash.h"
 
@@ -24,11 +23,11 @@ typedef gtp_node_t sgw_pgw_t;
 typedef struct _sgw_context_t {
     c_uint32_t      gtpc_addr; /* GTP-U local address */
     c_uint32_t      gtpc_port; /* GTP-U local port */
-    net_sock_t*     gtpc_sock; /* GTP-U local listen socket */
+    sock_id         gtpc_sock; /* GTP-U local listen socket */
 
     c_uint32_t      gtpu_addr; /* GTP-U local address */
     c_uint32_t      gtpu_port; /* GTP-U local port */
-    net_sock_t*     gtpu_sock; /* GTP-U local listen socket */
+    sock_id         gtpu_sock; /* GTP-U local listen socket */
 
     msgq_id         queue_id;  /* Queue for processing SGW control plane */
     tm_service_t    tm_service;/* Timer Service */

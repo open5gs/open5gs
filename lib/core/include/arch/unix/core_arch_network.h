@@ -2,7 +2,6 @@
 #define __CORE_ARCH_NETWORK_H__
 
 #include "core_list.h"
-#include "core_index.h"
 #include "core_network.h"
 
 #if HAVE_ARPA_INET_H
@@ -23,7 +22,6 @@ extern "C" {
 
 typedef struct _sock_t {
     lnode_t node;
-    index_t index;
     
     int family;
 

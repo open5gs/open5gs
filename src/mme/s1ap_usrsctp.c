@@ -2,6 +2,7 @@
 
 #include "core_debug.h"
 #include "core_thread.h"
+#include "core_net.h"
 
 #include "mme_event.h"
 

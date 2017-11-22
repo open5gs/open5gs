@@ -1,5 +1,6 @@
 #define TRACE_MODULE _mme_sm
 #include "core_debug.h"
+#include "core_net.h"
 
 #include "s1ap_message.h"
 #include "nas_message.h"

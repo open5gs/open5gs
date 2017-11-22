@@ -4,6 +4,7 @@
 #include "core_pkbuf.h"
 #include "core_lib.h"
 #include "core_network.h"
+#include "core_net.h"
 
 #include "mme_context.h"
 #include "s1ap_path.h"

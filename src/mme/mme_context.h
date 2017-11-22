@@ -4,7 +4,6 @@
 #include "core_list.h"
 #include "core_index.h"
 #include "core_errno.h"
-#include "core_net.h"
 #include "core_sha2.h"
 #include "core_hash.h"
 
@@ -57,7 +56,7 @@ typedef struct _mme_context_t {
 
     c_uint32_t      gtpc_addr;      /* MME GTPC local address */
     c_uint16_t      gtpc_port;      /* MME GTPC local port */
-    net_sock_t      *gtpc_sock;     /* MME GTPC local listen socket */
+    sock_id         gtpc_sock;     /* MME GTPC local listen socket */
 
     c_uint32_t      s5c_addr;       /* PGW S5C remote address */
     c_uint16_t      s5c_port;       /* PGW S5C remote port */

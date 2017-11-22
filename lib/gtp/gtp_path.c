@@ -1,41 +1,31 @@
 #define TRACE_MODULE _gtp_path
 #include "core_debug.h"
 #include "core_pkbuf.h"
-#include "core_net.h"
 
 #include "types.h"
 #include "gtp_message.h"
 #include "gtp_path.h"
 
-status_t gtp_listen(net_sock_t **sock, 
-    net_sock_handler handler, c_uint32_t ipv4, c_uint16_t port, void *data)
+status_t gtp_listen(sock_id *sock, 
+    sock_handler handler, c_uint32_t ipv4, c_uint16_t port, void *data)
 {
     char buf[CORE_ADDRSTRLEN];
-    int rc;
+    status_t rv;
     c_sockaddr_t addr;
 
     memset(&addr, 0, sizeof(c_sockaddr_t));
     addr.sin.sin_addr.s_addr = ipv4;
     addr.c_sa_family = AF_INET;
     addr.c_sa_port = htons(port);
-    
-    rc = net_listen_ext(sock, SOCK_DGRAM, IPPROTO_UDP, 0, ipv4, port);
-    if (rc != 0)
-    {
-        d_error("Can't establish GTP[%s:%d] path(%d:%s)",
-            CORE_NTOP(&addr, buf), ntohs(addr.c_sa_port),
-            errno, strerror(errno));
-        return CORE_ERROR;
-    }
 
-    rc = net_register_sock(*sock, handler, data);
-    if (rc != 0)
-    {
-        d_error("Can't establish GTP path(%d:%s)",
-            errno, strerror(errno));
-        net_close(*sock);
-        return CORE_ERROR;
-    }
+    rv = udp_socket(sock, AF_INET);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    rv = sock_bind(*sock, &addr);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    rv = sock_register(*sock, handler, NULL);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
 
     d_trace(1, "gtp_listen() %s:%d\n",
            CORE_NTOP(&addr, buf), ntohs(addr.c_sa_port));
@@ -43,21 +33,20 @@ status_t gtp_listen(net_sock_t **sock,
     return CORE_OK;
 }
 
-status_t gtp_close(net_sock_t *sock)
+status_t gtp_close(sock_id sock)
 {
-    d_assert(sock, return CORE_ERROR, "Null param");
+    d_assert(sock, return CORE_ERROR,);
 
-    net_unregister_sock(sock);
-    net_close(sock);
+    sock_delete(sock);
 
     return CORE_OK;
 }
 
-status_t gtp_recv(net_sock_t *sock, pkbuf_t **pkbuf)
+status_t gtp_recv(sock_id sock, pkbuf_t **pkbuf)
 {
-    int r;
+    ssize_t size;
 
-    d_assert(sock, return CORE_ERROR, "Null param");
+    d_assert(sock, return CORE_ERROR,);
 
     *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     if ((*pkbuf) == NULL)
@@ -67,37 +56,37 @@ status_t gtp_recv(net_sock_t *sock, pkbuf_t **pkbuf)
         d_fatal("Can't allocate pkbuf");
 
         /* Read data from socket to exit from select */
-        net_read(sock, tmp_buf, MAX_SDU_LEN, 0);
+        core_recv(sock, tmp_buf, MAX_SDU_LEN, 0);
 
         return CORE_ERROR;
     }
 
-    r = net_read(sock, (*pkbuf)->payload, (*pkbuf)->len, 0);
-    if (r <= 0)
+    size = core_recv(sock, (*pkbuf)->payload, (*pkbuf)->len, 0);
+    if (size <= 0)
     {
         pkbuf_free((*pkbuf));
 
-        if (sock->sndrcv_errno != EAGAIN)
+        if (errno != EAGAIN)
         {
-            d_warn("net_read failed(%d:%s)", 
-                    sock->sndrcv_errno, strerror(sock->sndrcv_errno));
+            d_warn("net_read failed(%d:%s)", errno, strerror(errno));
         }
 
         return CORE_ERROR;
     }
     else
     {
-        (*pkbuf)->len = r;
+        (*pkbuf)->len = size;
 
         return CORE_OK;;
     }
 }
 
-status_t gtp_recvfrom(net_sock_t *sock, pkbuf_t **pkbuf, c_sockaddr_t *from)
+status_t gtp_recvfrom(sock_id sock, pkbuf_t **pkbuf, c_sockaddr_t *from)
 {
-    int r;
+    ssize_t size;
 
-    d_assert(sock, return CORE_ERROR, "Null param");
+    d_assert(sock, return CORE_ERROR,);
+    d_assert(from, return CORE_ERROR,);
 
     *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     if ((*pkbuf) == NULL)
@@ -107,27 +96,26 @@ status_t gtp_recvfrom(net_sock_t *sock, pkbuf_t **pkbuf, c_sockaddr_t *from)
         d_fatal("Can't allocate pkbuf");
 
         /* Read data from socket to exit from select */
-        net_read(sock, tmp_buf, MAX_SDU_LEN, 0);
+        core_recv(sock, tmp_buf, MAX_SDU_LEN, 0);
 
         return CORE_ERROR;
     }
 
-    r = net_read(sock, (*pkbuf)->payload, (*pkbuf)->len, 0);
-    if (r <= 0)
+    size = core_recvfrom(sock, (*pkbuf)->payload, (*pkbuf)->len, 0, from);
+    if (size <= 0)
     {
         pkbuf_free((*pkbuf));
 
-        if (sock->sndrcv_errno != EAGAIN)
+        if (errno != EAGAIN)
         {
-            d_warn("net_read failed(%d:%s)", 
-                    sock->sndrcv_errno, strerror(sock->sndrcv_errno));
+            d_warn("core_recv failed(%d:%s)", errno, strerror(errno));
         }
 
         return CORE_ERROR;
     }
     else
     {
-        (*pkbuf)->len = r;
+        (*pkbuf)->len = size;
 
         return CORE_OK;;
     }
@@ -137,22 +125,20 @@ status_t gtp_send(gtp_node_t *gnode, pkbuf_t *pkbuf)
 {
     char buf[CORE_ADDRSTRLEN];
     ssize_t sent;
-    net_sock_t *sock = NULL;
+    sock_id sock = 0;
 
     d_assert(gnode, return CORE_ERROR, "Null param");
     d_assert(pkbuf, return CORE_ERROR, "Null param");
     sock = gnode->sock;
     d_assert(sock, return CORE_ERROR, "Null param");
 
-    sent = sendto(sock->sock_id, pkbuf->payload, pkbuf->len, 0,
-            &gnode->addr.sa, sizeof(gnode->addr.sin));
+    sent = core_sendto(sock, pkbuf->payload, pkbuf->len, 0, &gnode->addr);
     d_trace(50, "Sent %d->%d bytes to [%s:%d]\n", pkbuf->len, sent, 
             CORE_NTOP(&gnode->addr, buf), ntohs(gnode->addr.c_sa_port));
     d_trace_hex(50, pkbuf->payload, pkbuf->len);
     if (sent < 0 || sent != pkbuf->len)
     {
-        d_error("net_send error (%d:%s)", 
-                sock->sndrcv_errno, strerror(sock->sndrcv_errno));
+        d_error("core_sendto failed(%d:%s)", errno, strerror(errno));
         return CORE_ERROR;
     }
 

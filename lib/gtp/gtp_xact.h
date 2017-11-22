@@ -4,7 +4,6 @@
 #include "core_pkbuf.h"
 #include "core_list.h"
 #include "core_index.h"
-#include "core_net.h"
 #include "core_timer.h"
 
 #include "gtp_path.h"

@@ -3,7 +3,6 @@
 
 #include "core_list.h"
 #include "core_errno.h"
-#include "core_net.h"
 #include "core_hash.h"
 
 #include "gtp_types.h"
@@ -24,11 +23,11 @@ typedef struct _pgw_context_t {
 
     c_uint32_t      gtpc_addr;  /* PGW GTP-C local address */
     c_uint32_t      gtpc_port;  /* PGW GTP-C local port */
-    net_sock_t*     gtpc_sock;  /* PGW GTP-C local listen socket */
+    sock_id         gtpc_sock;  /* PGW GTP-C local listen socket */
 
     c_uint32_t      gtpu_addr;  /* PGW GTP-U local address */
     c_uint32_t      gtpu_port;  /* PGW GTP-U local port */
-    net_sock_t*     gtpu_sock;  /* PGW GTP-U local listen socket */
+    sock_id         gtpu_sock;  /* PGW GTP-U local listen socket */
 
     const char*     fd_conf_path;   /* PGW freeDiameter conf path */
 
@@ -36,7 +35,7 @@ typedef struct _pgw_context_t {
     tm_service_t    tm_service;     /* Timer Service */
 
     struct {
-        net_link_t* tun_link;       /* PGW Tun Interace for U-plane */
+        sock_id     tun_link;       /* PGW Tun Interace for U-plane */
         const char *if_name;
         struct {
             c_uint32_t addr;

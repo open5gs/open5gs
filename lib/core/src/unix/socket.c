@@ -1,5 +1,6 @@
 #define TRACE_MODULE _sock
 
+#include "core_pool.h"
 #include "core_debug.h"
 #include "core_pkbuf.h"
 
@@ -11,7 +12,7 @@ static int max_fd;
 static list_t fd_list;
 static fd_set read_fds;
 
-index_declare(sock_pool, sock_t, MAX_SOCK_POOL_SIZE);
+pool_declare(sock_pool, sock_t, MAX_SOCK_POOL_SIZE);
 
 static status_t sononblock(int sd);
 static status_t soblock(int sd);
@@ -20,7 +21,7 @@ static void fd_dispatch(fd_set *fds);
 
 status_t sock_init(void)
 {
-    index_init(&sock_pool, MAX_SOCK_POOL_SIZE);
+    pool_init(&sock_pool, MAX_SOCK_POOL_SIZE);
 
     max_fd = 0;
     list_init(&fd_list);
@@ -30,7 +31,7 @@ status_t sock_init(void)
 }
 status_t sock_final(void)
 {
-    index_final(&sock_pool);
+    pool_final(&sock_pool);
 
     return CORE_OK;
 }
@@ -39,7 +40,7 @@ status_t sock_create(sock_id *new)
 {
     sock_t *sock = NULL;
 
-    index_alloc(&sock_pool, &sock);
+    pool_alloc_node(&sock_pool, &sock);
     d_assert(sock, return CORE_ENOMEM,);
     memset(sock, 0, sizeof(sock_t));
 
@@ -61,7 +62,7 @@ status_t sock_delete(sock_id id)
         close(sock->fd);
     sock->fd = -1;
 
-    index_free(&sock_pool, sock);
+    pool_free_node(&sock_pool, sock);
     return CORE_OK;
 }
 
@@ -178,7 +179,7 @@ status_t sock_accept(sock_id *new, sock_id id)
         return CORE_ERROR;
     }
 
-    index_alloc(&sock_pool, &new_sock);
+    pool_alloc_node(&sock_pool, &new_sock);
     d_assert(new_sock, return CORE_ENOMEM,);
     memset(new_sock, 0, sizeof(sock_t));
 
@@ -276,13 +277,10 @@ ssize_t core_recvfrom(sock_id id,
 {
     sock_t *sock = (sock_t *)id;
     ssize_t size;
-    socklen_t addrlen;
+    socklen_t addrlen = sizeof(struct sockaddr_storage);
 
     d_assert(id, return -1,);
     d_assert(from, return -1,);
-
-    addrlen = sockaddr_len(from);
-    d_assert(addrlen, return -1,);
 
     size = recvfrom(sock->fd, buf, len, flags, &from->sa, &addrlen);
     if (size < 0)
@@ -341,7 +339,7 @@ int sock_is_registered(sock_id id)
     d_assert(id, return CORE_ERROR,);
     for (iter = list_first(&fd_list); iter != NULL; iter = list_next(iter))
     {
-        if (iter->index == sock->index)
+        if (iter == sock)
         {
             return 1;
         }

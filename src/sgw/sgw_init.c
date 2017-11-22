@@ -67,7 +67,7 @@ static void *THREAD_FUNC sgw_main(thread_id id, void *data)
 #define EVENT_LOOP_TIMEOUT 10   /* 10ms */
     while ((!thread_should_stop()))
     {
-        net_fds_read_run(EVENT_LOOP_TIMEOUT); 
+        sock_select_loop(EVENT_LOOP_TIMEOUT); 
         do
         {
             rv = event_recv(sgw_self()->queue_id, &event);

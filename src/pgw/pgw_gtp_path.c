@@ -1,7 +1,6 @@
 #define TRACE_MODULE _pgw_gtp_path
 #include "core_debug.h"
 #include "core_pkbuf.h"
-#include "core_net.h"
 
 #include "types.h"
 #include "gtp_path.h"
@@ -10,7 +9,7 @@
 #include "pgw_event.h"
 #include "pgw_gtp_path.h"
 
-static int _gtpv1_tun_recv_cb(net_link_t *net_link, void *data)
+static int _gtpv1_tun_recv_cb(sock_id sock, void *data)
 {
     pkbuf_t *recvbuf = NULL;
     int n;
@@ -20,7 +19,7 @@ static int _gtpv1_tun_recv_cb(net_link_t *net_link, void *data)
     recvbuf = pkbuf_alloc(GTPV1U_HEADER_LEN, MAX_SDU_LEN);
     d_assert(recvbuf, return -1, "pkbuf_alloc error");
 
-    n = net_link_read(net_link, recvbuf->payload, recvbuf->len, 0);
+    n = core_recv(sock, recvbuf->payload, recvbuf->len, 0);
     if (n <= 0)
     {
         pkbuf_free(recvbuf);
@@ -68,7 +67,7 @@ static int _gtpv1_tun_recv_cb(net_link_t *net_link, void *data)
         gnode.sock = pgw_self()->gtpu_sock;
         d_trace(50, "Send S5U PDU (teid = 0x%x)to SGW(%s)\n",
                 bearer->sgw_s5u_teid,
-                INET_NTOP(&gnode.addr, buf));
+                CORE_NTOP(&gnode.addr, buf));
 
         rv =  gtp_send(&gnode, recvbuf);
     }
@@ -82,7 +81,7 @@ static int _gtpv1_tun_recv_cb(net_link_t *net_link, void *data)
 
 }
 
-static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
+static int _gtpv2_c_recv_cb(sock_id sock, void *data)
 {
     event_t e;
     status_t rv;
@@ -115,7 +114,7 @@ static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
     return 0;
 }
 
-static int _gtpv1_u_recv_cb(net_sock_t *sock, void *data)
+static int _gtpv1_u_recv_cb(sock_id sock, void *data)
 {
     status_t rv;
     pkbuf_t *pkbuf = NULL;
@@ -144,8 +143,8 @@ static int _gtpv1_u_recv_cb(net_sock_t *sock, void *data)
         return -1;
     }
 
-    if (net_link_write(pgw_self()->ue_network[(c_uintptr_t)data].tun_link,
-                pkbuf->payload, pkbuf->len) <= 0)
+    if (core_send(pgw_self()->ue_network[(c_uintptr_t)data].tun_link,
+                pkbuf->payload, pkbuf->len, 0) <= 0)
     {
         d_error("Can not send packets to tuntap");
     }
@@ -160,7 +159,9 @@ status_t pgw_gtp_open()
     status_t rv;
     int i;
     int rc;
+#if 0 /* ADDR */
     char buf[INET_ADDRSTRLEN];
+#endif
 
     rv = gtp_listen(&pgw_self()->gtpc_sock, _gtpv2_c_recv_cb, 
             pgw_self()->gtpc_addr, pgw_self()->gtpc_port, NULL);
@@ -192,7 +193,7 @@ status_t pgw_gtp_open()
          */
 
         /* Open Tun interface */
-        rc = net_tun_open(&pgw_self()->ue_network[i].tun_link,
+        rc = tun_open(&pgw_self()->ue_network[i].tun_link,
                 (char *)pgw_self()->ue_network[i].if_name, 0);
         if (rc != 0)
         {
@@ -212,25 +213,31 @@ status_t pgw_gtp_open()
 
         /* Set P-to-P IP address with Netmask
          * Note that Linux will skip this configuration */
-        rc = net_tun_set_ipv4(pgw_self()->ue_network[i].tun_link, 
+        rc = tun_set_ipv4(pgw_self()->ue_network[i].tun_link, 
                 pgw_self()->ue_network[i].ipv4.addr,
                 pgw_self()->ue_network[i].ipv4.bits);
         if (rc != 0)
         {
+#if 0 /* ADDR */
             d_error("Can not configure tun(dev : %s for %s/%d)",
                     pgw_self()->ue_network[i].if_name,
                     INET_NTOP(&pgw_self()->ue_network[i].ipv4.addr, buf),
                     pgw_self()->ue_network[i].ipv4.bits);
+#else
+            d_error("Can not configure tun(dev : %s for /%d)",
+                    pgw_self()->ue_network[i].if_name,
+                    pgw_self()->ue_network[i].ipv4.bits);
+#endif
             return CORE_ERROR;
         }
 
-        rc = net_register_link(pgw_self()->ue_network[i].tun_link,
+        rc = sock_register(pgw_self()->ue_network[i].tun_link,
                 _gtpv1_tun_recv_cb, (void *)(c_uintptr_t)i);
         if (rc != 0)
         {
             d_error("Can not register tun(dev : %s)",
                     pgw_self()->ue_network[i].if_name);
-            net_tun_close(pgw_self()->ue_network[i].tun_link);
+            sock_delete(pgw_self()->ue_network[i].tun_link);
             return CORE_ERROR;
         }
     }
@@ -240,27 +247,13 @@ status_t pgw_gtp_open()
 
 status_t pgw_gtp_close()
 {
-    status_t rv;
     int i;
 
-    rv = gtp_close(pgw_self()->gtpc_sock);
-    if (rv != CORE_OK)
-    {
-        d_error("Can't close GTP-C Path for MME");
-        return rv;
-    }
-
-    rv = gtp_close(pgw_self()->gtpu_sock);
-    if (rv != CORE_OK)
-    {
-        d_error("Can't close GTP-U Path for MME");
-        return rv;
-    }
-
+    sock_delete(pgw_self()->gtpc_sock);
+    sock_delete(pgw_self()->gtpu_sock);
     for (i = 0; i < pgw_self()->num_of_ue_network; i++)
     {
-        net_unregister_link(pgw_self()->ue_network[i].tun_link);
-        net_tun_close(pgw_self()->ue_network[i].tun_link);
+        sock_delete(pgw_self()->ue_network[i].tun_link);
     }
 
     return CORE_OK;

@@ -119,7 +119,7 @@ static void *THREAD_FUNC net_main(thread_id id, void *data)
 {
     while (!thread_should_stop())
     {
-        net_fds_read_run(EVENT_LOOP_TIMEOUT); 
+        sock_select_loop(EVENT_LOOP_TIMEOUT); 
     }
 
     return NULL;

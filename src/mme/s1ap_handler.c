@@ -1,6 +1,7 @@
 #define TRACE_MODULE _s1ap_handler
 
 #include "core_debug.h"
+#include "core_net.h"
 
 #include "mme_event.h"
 

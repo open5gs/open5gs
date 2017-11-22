@@ -1,13 +1,12 @@
 #define TRACE_MODULE _mme_s11_path
 #include "core_debug.h"
 #include "core_pkbuf.h"
-#include "core_net.h"
 
 #include "mme_event.h"
 #include "mme_gtp_path.h"
 #include "mme_s11_build.h"
 
-static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
+static int _gtpv2_c_recv_cb(sock_id sock, void *data)
 {
     status_t rv;
     event_t e;

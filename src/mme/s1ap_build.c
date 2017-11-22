@@ -1,6 +1,7 @@
 #define TRACE_MODULE _s1ap_build
 
 #include "core_debug.h"
+#include "core_net.h"
 
 #include "s6a_message.h"
 

@@ -11,29 +11,37 @@
 
 extern int test_only_control_plane;
 
-net_sock_t *testgtpu_enb_connect(void)
+sock_id testgtpu_enb_connect(void)
 {
     char buf[INET_ADDRSTRLEN];
-    int rc;
+    status_t rv;
     mme_context_t *mme = mme_self();
-    net_sock_t *sock = NULL;
+    sock_id sock = 0;
+    c_sockaddr_t addr;
 
-    if (test_only_control_plane) return (net_sock_t *)1;
+    if (test_only_control_plane) return 1;
 
-    if (!mme) return NULL;
+    if (!mme) return 0;
 
-    rc = net_listen_ext(&sock, SOCK_DGRAM, IPPROTO_UDP,
-            0, mme->gtpc_addr, GTPV1_U_UDP_PORT);
-    if (rc != 0) return NULL;
+    memset(&addr, 0, sizeof(c_sockaddr_t));
+    addr.sin.sin_addr.s_addr = mme->gtpc_addr;
+    addr.c_sa_family = AF_INET;
+    addr.c_sa_port = htons(GTPV1_U_UDP_PORT);
+
+    rv = udp_socket(&sock, AF_INET);
+    d_assert(rv == CORE_OK, return 0,);
+
+    rv = sock_bind(sock, &addr);
+    d_assert(rv == CORE_OK, return 0,);
 
     return sock;
 }
 
-status_t testgtpu_enb_close(net_sock_t *sock)
+status_t testgtpu_enb_close(sock_id sock)
 {
     if (test_only_control_plane) return CORE_OK;
 
-    return net_close(sock);
+    return sock_delete(sock);
 }
 
 static uint16_t in_cksum(uint16_t *addr, int len)
@@ -63,7 +71,7 @@ static uint16_t in_cksum(uint16_t *addr, int len)
   return answer;
 }
 
-int testgtpu_enb_send(net_sock_t *sock, c_uint32_t src_ip, c_uint32_t dst_ip)
+int testgtpu_enb_send(sock_id sock, c_uint32_t src_ip, c_uint32_t dst_ip)
 {
     hash_index_t *hi = NULL;
     mme_ue_t *mme_ue = NULL;
@@ -152,7 +160,7 @@ int testgtpu_enb_send(net_sock_t *sock, c_uint32_t src_ip, c_uint32_t dst_ip)
     return 0;
 }
 
-int testgtpu_enb_read(net_sock_t *sock, pkbuf_t *recvbuf)
+int testgtpu_enb_read(sock_id sock, pkbuf_t *recvbuf)
 {
     int rc = 0;
 
@@ -160,14 +168,14 @@ int testgtpu_enb_read(net_sock_t *sock, pkbuf_t *recvbuf)
 
     while(1)
     {
-        rc = net_read(sock, recvbuf->payload, recvbuf->len, 0);
+        rc = core_recv(sock, recvbuf->payload, recvbuf->len, 0);
         if (rc == -2) 
         {
             continue;
         }
         else if (rc <= 0)
         {
-            if (sock->sndrcv_errno == EAGAIN)
+            if (errno == EAGAIN)
             {
                 continue;
             }

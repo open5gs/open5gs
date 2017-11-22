@@ -792,8 +792,10 @@ pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
     hash_index_t *hi = NULL;
     pgw_sess_t *sess = NULL;
     struct ip *iph =  NULL;
+#if 0 /* ADDR */
     char buf1[INET_ADDRSTRLEN];
     char buf2[INET_ADDRSTRLEN];
+#endif
 
     d_assert(pkt, return NULL, "pkt is NULL");
 
@@ -805,10 +807,12 @@ pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
         return NULL;
     }
 
+#if 0 /* ADDR */
     d_trace(50, "Src(%s)-> Dst(%s), Protocol: %d\n",
             INET_NTOP(&iph->ip_src.s_addr,buf1),
             INET_NTOP(&iph->ip_dst.s_addr,buf2),
             iph->ip_p);
+#endif
 
     /* TODO: Need to use the method of FAST matching algorithm and 
      *          implementation .
@@ -818,9 +822,11 @@ pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
     for (hi = pgw_sess_first(); hi; hi = pgw_sess_next(hi))
     {
         sess = pgw_sess_this(hi);
+#if 0 /* ADDR */
         d_trace(50, "Dst(%s) in Pkt : PAA(%s) in PDN\n",
                 INET_NTOP(&iph->ip_dst.s_addr,buf1),
                 INET_NTOP(&sess->pdn.paa.ipv4_addr, buf2));
+#endif
 
         if (iph->ip_dst.s_addr == sess->pdn.paa.ipv4_addr)
         {
