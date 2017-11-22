@@ -278,14 +278,14 @@ status_t sgw_mme_remove_all()
     return CORE_OK;
 }
 
-sgw_mme_t* sgw_mme_find(c_uint32_t addr, c_uint16_t port)
+sgw_mme_t* sgw_mme_find(c_uint32_t addr)
 {
     sgw_mme_t *mme = NULL;
     
     mme = sgw_mme_first();
     while (mme)
     {
-        if (mme->addr.sin.sin_addr.s_addr == addr && mme->port == port)
+        if (mme->addr.sin.sin_addr.s_addr == addr)
             break;
 
         mme = sgw_mme_next(mme);
@@ -351,14 +351,14 @@ status_t sgw_pgw_remove_all()
     return CORE_OK;
 }
 
-sgw_pgw_t* sgw_pgw_find(c_uint32_t addr, c_uint16_t port)
+sgw_pgw_t* sgw_pgw_find(c_uint32_t addr)
 {
     sgw_pgw_t *pgw = NULL;
     
     pgw = sgw_pgw_first();
     while (pgw)
     {
-        if (pgw->addr.sin.sin_addr.s_addr == addr && pgw->port == port)
+        if (pgw->addr.sin.sin_addr.s_addr == addr)
             break;
 
         pgw = sgw_pgw_next(pgw);
@@ -384,7 +384,6 @@ sgw_ue_t* sgw_ue_add(gtp_f_teid_t *mme_s11_teid,
     sgw_sess_t *sess = NULL;
     sgw_mme_t *mme = NULL;
     c_uint32_t addr = 0;
-    c_uint16_t port = 0;
 
     d_assert(mme_s11_teid, return NULL, "Null param");
     d_assert(imsi, return NULL, "Null param");
@@ -399,16 +398,15 @@ sgw_ue_t* sgw_ue_add(gtp_f_teid_t *mme_s11_teid,
     sgw_ue->sgw_s11_addr = sgw_self()->gtpc_addr;
 
     addr = mme_s11_teid->ipv4_addr;
-    port = GTPV2_C_UDP_PORT;
 
-    mme = sgw_mme_find(addr, port);
+    mme = sgw_mme_find(addr);
     if (!mme)
     {
         mme = sgw_mme_add();
         d_assert(mme, return NULL, "Can't add MME-GTP node");
 
         mme->addr.sin.sin_addr.s_addr = addr;
-        mme->port = port;
+        mme->addr.c_sa_port = htons(GTPV2_C_UDP_PORT);
         mme->sock = sgw_self()->gtpc_sock;
     }
     CONNECT_MME_GTP_NODE(sgw_ue, mme);

@@ -440,7 +440,6 @@ CORE_DECLARE(status_t)      mme_context_setup_trace_module(void);
 CORE_DECLARE(mme_sgw_t*)    mme_sgw_add(void);
 CORE_DECLARE(status_t)      mme_sgw_remove(mme_sgw_t *sgw);
 CORE_DECLARE(status_t)      mme_sgw_remove_all(void);
-CORE_DECLARE(mme_sgw_t*)    mme_sgw_find(c_uint32_t addr, c_uint16_t port);
 CORE_DECLARE(mme_sgw_t*)    mme_sgw_first(void);
 CORE_DECLARE(mme_sgw_t*)    mme_sgw_next(mme_sgw_t *sgw);
 

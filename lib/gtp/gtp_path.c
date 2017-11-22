@@ -8,16 +8,23 @@
 #include "gtp_path.h"
 
 status_t gtp_listen(net_sock_t **sock, 
-    net_sock_handler handler, c_uint32_t addr, c_uint16_t port, void *data)
+    net_sock_handler handler, c_uint32_t ipv4, c_uint16_t port, void *data)
 {
-    char buf[INET_ADDRSTRLEN];
+    char buf[CORE_ADDRSTRLEN];
     int rc;
+    c_sockaddr_t addr;
+
+    memset(&addr, 0, sizeof(c_sockaddr_t));
+    addr.sin.sin_addr.s_addr = ipv4;
+    addr.c_sa_family = AF_INET;
+    addr.c_sa_port = htons(port);
     
-    rc = net_listen_ext(sock, SOCK_DGRAM, IPPROTO_UDP, 0, addr, port);
+    rc = net_listen_ext(sock, SOCK_DGRAM, IPPROTO_UDP, 0, ipv4, port);
     if (rc != 0)
     {
         d_error("Can't establish GTP[%s:%d] path(%d:%s)",
-            INET_NTOP(&addr, buf), port, errno, strerror(errno));
+            CORE_NTOP(&addr, buf), ntohs(addr.c_sa_port),
+            errno, strerror(errno));
         return CORE_ERROR;
     }
 
@@ -30,7 +37,8 @@ status_t gtp_listen(net_sock_t **sock,
         return CORE_ERROR;
     }
 
-    d_trace(1, "gtp_listen() %s:%d\n", INET_NTOP(&addr, buf), port);
+    d_trace(1, "gtp_listen() %s:%d\n",
+           CORE_NTOP(&addr, buf), ntohs(addr.c_sa_port));
 
     return CORE_OK;
 }
@@ -88,7 +96,7 @@ pkbuf_t *gtp_read(net_sock_t *sock)
 
 status_t gtp_send(gtp_node_t *gnode, pkbuf_t *pkbuf)
 {
-    char buf[INET_ADDRSTRLEN];
+    char buf[CORE_ADDRSTRLEN];
     ssize_t sent;
     net_sock_t *sock = NULL;
 
@@ -98,9 +106,9 @@ status_t gtp_send(gtp_node_t *gnode, pkbuf_t *pkbuf)
     d_assert(sock, return CORE_ERROR, "Null param");
 
     sent = net_sendto(sock, pkbuf->payload, pkbuf->len, 
-            gnode->addr.sin.sin_addr.s_addr, gnode->port);
+            gnode->addr.sin.sin_addr.s_addr, ntohs(gnode->addr.c_sa_port));
     d_trace(50, "Sent %d->%d bytes to [%s:%d]\n", pkbuf->len, sent, 
-            INET_NTOP(&gnode->addr, buf), gnode->port);
+            CORE_NTOP(&gnode->addr, buf), ntohs(gnode->addr.c_sa_port));
     d_trace_hex(50, pkbuf->payload, pkbuf->len);
     if (sent < 0 || sent != pkbuf->len)
     {

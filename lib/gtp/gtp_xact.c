@@ -77,7 +77,7 @@ gtp_xact_t *gtp_xact_local_create(
         gtp_node_t *gnode, gtp_header_t *hdesc, pkbuf_t *pkbuf)
 {
     status_t rv;
-    char buf[INET_ADDRSTRLEN];
+    char buf[CORE_ADDRSTRLEN];
     gtp_xact_t *xact = NULL;
 
     d_assert(gnode, return NULL, "Null param");
@@ -116,14 +116,14 @@ gtp_xact_t *gtp_xact_local_create(
     d_trace(3, "[%d] %s Create  peer %s:%d\n",
             xact->xid,
             xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-            INET_NTOP(&gnode->addr, buf), gnode->port);
+            CORE_NTOP(&gnode->addr, buf), ntohs(gnode->addr.c_sa_port));
 
     return xact;
 }
 
 gtp_xact_t *gtp_xact_remote_create(gtp_node_t *gnode, c_uint32_t sqn)
 {
-    char buf[INET_ADDRSTRLEN];
+    char buf[CORE_ADDRSTRLEN];
     gtp_xact_t *xact = NULL;
 
     d_assert(gnode, return NULL, "Null param");
@@ -159,7 +159,7 @@ gtp_xact_t *gtp_xact_remote_create(gtp_node_t *gnode, c_uint32_t sqn)
     d_trace(3, "[%d] %s Create  peer %s:%d\n",
             xact->xid,
             xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-            INET_NTOP(&gnode->addr, buf), gnode->port);
+            CORE_NTOP(&gnode->addr, buf), ntohs(gnode->addr.c_sa_port));
 
     return xact;
 }
@@ -185,7 +185,7 @@ void gtp_xact_delete_all(gtp_node_t *gnode)
 status_t gtp_xact_update_tx(gtp_xact_t *xact,
         gtp_header_t *hdesc, pkbuf_t *pkbuf)
 {
-    char buf[INET_ADDRSTRLEN];
+    char buf[CORE_ADDRSTRLEN];
     gtp_xact_stage_t stage;
     gtp_header_t *h = NULL;
     
@@ -198,7 +198,8 @@ status_t gtp_xact_update_tx(gtp_xact_t *xact,
             xact->xid,
             xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
             hdesc->type,
-            INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+            CORE_NTOP(&xact->gnode->addr, buf),
+            ntohs(xact->gnode->addr.c_sa_port));
 
     stage = gtp_xact_get_stage(hdesc->type, xact->xid);
     if (xact->org == GTP_LOCAL_ORIGINATOR)
@@ -211,7 +212,8 @@ status_t gtp_xact_update_tx(gtp_xact_t *xact,
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                     xact->step, hdesc->type,
-                    INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+                    CORE_NTOP(&xact->gnode->addr, buf),
+                    ntohs(xact->gnode->addr.c_sa_port));
                 break;
 
             case GTP_XACT_INTERMEDIATE_STAGE:
@@ -223,7 +225,8 @@ status_t gtp_xact_update_tx(gtp_xact_t *xact,
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                     xact->step, hdesc->type,
-                    INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+                    CORE_NTOP(&xact->gnode->addr, buf),
+                    ntohs(xact->gnode->addr.c_sa_port));
                 break;
 
             default:
@@ -244,7 +247,8 @@ status_t gtp_xact_update_tx(gtp_xact_t *xact,
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                     xact->step, hdesc->type,
-                    INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+                    CORE_NTOP(&xact->gnode->addr, buf),
+                    ntohs(xact->gnode->addr.c_sa_port));
                 break;
 
             default:
@@ -280,14 +284,15 @@ status_t gtp_xact_update_tx(gtp_xact_t *xact,
 status_t gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type)
 {
     status_t rv = CORE_OK;
-    char buf[INET_ADDRSTRLEN];
+    char buf[CORE_ADDRSTRLEN];
     gtp_xact_stage_t stage;
 
     d_trace(3, "[%d] %s UPD RX-%d  peer %s:%d\n",
             xact->xid,
             xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
             type,
-            INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+            CORE_NTOP(&xact->gnode->addr, buf),
+            ntohs(xact->gnode->addr.c_sa_port));
 
     stage = gtp_xact_get_stage(type, xact->xid);
     if (xact->org == GTP_LOCAL_ORIGINATOR)
@@ -308,7 +313,8 @@ status_t gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type)
                         xact->xid,
                         xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                         xact->step, type,
-                        INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+                        CORE_NTOP(&xact->gnode->addr, buf),
+                        ntohs(xact->gnode->addr.c_sa_port));
 
                     pkbuf = xact->seq[2].pkbuf;
                     if (pkbuf)
@@ -322,8 +328,8 @@ status_t gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type)
                                 xact->org == GTP_LOCAL_ORIGINATOR ?
                                     "LOCAL " : "REMOTE",
                                 xact->step, type,
-                                INET_NTOP(&xact->gnode->addr, buf),
-                                xact->gnode->port);
+                                CORE_NTOP(&xact->gnode->addr, buf),
+                                ntohs(xact->gnode->addr.c_sa_port));
                         rv = gtp_send(xact->gnode, pkbuf);
                         d_assert(rv == CORE_OK, return CORE_ERROR,
                                 "gtp_send error");
@@ -336,8 +342,8 @@ status_t gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type)
                                 xact->org == GTP_LOCAL_ORIGINATOR ?
                                     "LOCAL " : "REMOTE",
                                 xact->step, type,
-                                INET_NTOP(&xact->gnode->addr, buf),
-                                xact->gnode->port);
+                                CORE_NTOP(&xact->gnode->addr, buf),
+                                ntohs(xact->gnode->addr.c_sa_port));
                     }
 
                     return CORE_EAGAIN;
@@ -348,7 +354,8 @@ status_t gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type)
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                     xact->step, type,
-                    INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+                    CORE_NTOP(&xact->gnode->addr, buf),
+                    ntohs(xact->gnode->addr.c_sa_port));
 
                 if (xact->tm_holding)
                     tm_start(xact->tm_holding);
@@ -361,7 +368,8 @@ status_t gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type)
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                     xact->step, type,
-                    INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+                    CORE_NTOP(&xact->gnode->addr, buf),
+                    ntohs(xact->gnode->addr.c_sa_port));
 
                 break;
 
@@ -384,7 +392,8 @@ status_t gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type)
                         xact->xid,
                         xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                         xact->step, type,
-                        INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+                        CORE_NTOP(&xact->gnode->addr, buf),
+                        ntohs(xact->gnode->addr.c_sa_port));
 
                     pkbuf = xact->seq[1].pkbuf;
                     if (pkbuf)
@@ -398,8 +407,8 @@ status_t gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type)
                                 xact->org == GTP_LOCAL_ORIGINATOR ?
                                     "LOCAL " : "REMOTE",
                                 xact->step, type,
-                                INET_NTOP(&xact->gnode->addr, buf),
-                                xact->gnode->port);
+                                CORE_NTOP(&xact->gnode->addr, buf),
+                                ntohs(xact->gnode->addr.c_sa_port));
                         rv = gtp_send(xact->gnode, pkbuf);
                         d_assert(rv == CORE_OK, return CORE_ERROR,
                                 "gtp_send error");
@@ -412,8 +421,8 @@ status_t gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type)
                                 xact->org == GTP_LOCAL_ORIGINATOR ?
                                     "LOCAL " : "REMOTE",
                                 xact->step, type,
-                                INET_NTOP(&xact->gnode->addr, buf),
-                                xact->gnode->port);
+                                CORE_NTOP(&xact->gnode->addr, buf),
+                                ntohs(xact->gnode->addr.c_sa_port));
                     }
 
                     return CORE_EAGAIN;
@@ -424,7 +433,8 @@ status_t gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type)
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                     xact->step, type,
-                    INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+                    CORE_NTOP(&xact->gnode->addr, buf),
+                    ntohs(xact->gnode->addr.c_sa_port));
 
                 if (xact->tm_holding)
                     tm_start(xact->tm_holding);
@@ -440,7 +450,8 @@ status_t gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type)
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                     xact->step, type,
-                    INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+                    CORE_NTOP(&xact->gnode->addr, buf),
+                    ntohs(xact->gnode->addr.c_sa_port));
 
                 /* continue */
                 break;
@@ -468,7 +479,7 @@ status_t gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type)
 status_t gtp_xact_commit(gtp_xact_t *xact)
 {
     status_t rv;
-    char buf[INET_ADDRSTRLEN];
+    char buf[CORE_ADDRSTRLEN];
 
     c_uint8_t type;
     pkbuf_t *pkbuf = NULL;
@@ -480,7 +491,8 @@ status_t gtp_xact_commit(gtp_xact_t *xact)
     d_trace(3, "[%d] %s Commit  peer %s:%d\n",
             xact->xid,
             xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-            INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+            CORE_NTOP(&xact->gnode->addr, buf),
+            ntohs(xact->gnode->addr.c_sa_port));
 
     type = xact->seq[xact->step-1].type;
     stage = gtp_xact_get_stage(type, xact->xid);
@@ -496,7 +508,8 @@ status_t gtp_xact_commit(gtp_xact_t *xact)
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                     xact->step, type,
-                    INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+                    CORE_NTOP(&xact->gnode->addr, buf),
+                    ntohs(xact->gnode->addr.c_sa_port));
 
                 if (xact->tm_response)
                     tm_start(xact->tm_response);
@@ -513,7 +526,8 @@ status_t gtp_xact_commit(gtp_xact_t *xact)
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                     xact->step, type,
-                    INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+                    CORE_NTOP(&xact->gnode->addr, buf),
+                    ntohs(xact->gnode->addr.c_sa_port));
 
                 if (xact->step == 2)
                 {
@@ -540,7 +554,8 @@ status_t gtp_xact_commit(gtp_xact_t *xact)
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                     xact->step, type,
-                    INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+                    CORE_NTOP(&xact->gnode->addr, buf),
+                    ntohs(xact->gnode->addr.c_sa_port));
 
                 if (xact->tm_response)
                     tm_start(xact->tm_response);
@@ -554,7 +569,8 @@ status_t gtp_xact_commit(gtp_xact_t *xact)
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                     xact->step, type,
-                    INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+                    CORE_NTOP(&xact->gnode->addr, buf),
+                    ntohs(xact->gnode->addr.c_sa_port));
 
                 if (xact->step == 3)
                 {
@@ -582,7 +598,7 @@ status_t gtp_xact_commit(gtp_xact_t *xact)
 
 status_t gtp_xact_timeout(index_t index, c_uintptr_t event)
 {
-    char buf[INET_ADDRSTRLEN];
+    char buf[CORE_ADDRSTRLEN];
     gtp_xact_t *xact = NULL;
     
     d_assert(index, goto out, "Invalid Index");
@@ -597,8 +613,8 @@ status_t gtp_xact_timeout(index_t index, c_uintptr_t event)
                 xact->xid,
                 xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                 xact->step, xact->seq[xact->step-1].type,
-                INET_NTOP(&xact->gnode->addr, buf),
-                xact->gnode->port);
+                CORE_NTOP(&xact->gnode->addr, buf),
+                ntohs(xact->gnode->addr.c_sa_port));
 
         if (--xact->response_rcount > 0)
         {
@@ -620,8 +636,8 @@ status_t gtp_xact_timeout(index_t index, c_uintptr_t event)
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                     xact->step, xact->seq[xact->step-1].type,
-                    INET_NTOP(&xact->gnode->addr, buf),
-                    xact->gnode->port);
+                    CORE_NTOP(&xact->gnode->addr, buf),
+                    ntohs(xact->gnode->addr.c_sa_port));
             gtp_xact_delete(xact);
         }
     }
@@ -632,8 +648,8 @@ status_t gtp_xact_timeout(index_t index, c_uintptr_t event)
                 xact->xid,
                 xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                 xact->step, xact->seq[xact->step-1].type,
-                INET_NTOP(&xact->gnode->addr, buf),
-                xact->gnode->port);
+                CORE_NTOP(&xact->gnode->addr, buf),
+                ntohs(xact->gnode->addr.c_sa_port));
 
         if (--xact->holding_rcount > 0)
         {
@@ -647,8 +663,8 @@ status_t gtp_xact_timeout(index_t index, c_uintptr_t event)
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                     xact->step, xact->seq[xact->step-1].type,
-                    INET_NTOP(&xact->gnode->addr, buf),
-                    xact->gnode->port);
+                    CORE_NTOP(&xact->gnode->addr, buf),
+                    ntohs(xact->gnode->addr.c_sa_port));
             gtp_xact_delete(xact);
         }
     }
@@ -663,7 +679,7 @@ out:
 status_t gtp_xact_receive(
         gtp_node_t *gnode, gtp_header_t *h, gtp_xact_t **xact)
 {
-    char buf[INET_ADDRSTRLEN];
+    char buf[CORE_ADDRSTRLEN];
     status_t rv;
     gtp_xact_t *new = NULL;
 
@@ -678,7 +694,7 @@ status_t gtp_xact_receive(
     d_trace(3, "[%d] %s Receive peer %s:%d\n",
             new->xid,
             new->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-            INET_NTOP(&gnode->addr, buf), gnode->port);
+            CORE_NTOP(&gnode->addr, buf), ntohs(gnode->addr.c_sa_port));
 
     rv = gtp_xact_update_rx(new, h->type);
     if (rv != CORE_OK)
@@ -749,7 +765,7 @@ static gtp_xact_stage_t gtp_xact_get_stage(c_uint8_t type, c_uint32_t xid)
 gtp_xact_t *gtp_xact_find_by_xid(
         gtp_node_t *gnode, c_uint8_t type, c_uint32_t xid)
 {
-    char buf[INET_ADDRSTRLEN];
+    char buf[CORE_ADDRSTRLEN];
     gtp_xact_t *xact = NULL;
 
     d_assert(gnode, return NULL, "Null param");
@@ -785,7 +801,7 @@ gtp_xact_t *gtp_xact_find_by_xid(
         d_trace(3, "[%d] %s Find    peer %s:%d\n",
                 xact->xid,
                 xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-                INET_NTOP(&gnode->addr, buf), gnode->port);
+                CORE_NTOP(&gnode->addr, buf), ntohs(gnode->addr.c_sa_port));
     }
 
     return xact;
@@ -817,7 +833,7 @@ void gtp_xact_deassociate(gtp_xact_t *xact1, gtp_xact_t *xact2)
 
 static status_t gtp_xact_delete(gtp_xact_t *xact)
 {
-    char buf[INET_ADDRSTRLEN];
+    char buf[CORE_ADDRSTRLEN];
 
     d_assert(xact, , "Null param");
     d_assert(xact->gnode, , "Null param");
@@ -825,7 +841,7 @@ static status_t gtp_xact_delete(gtp_xact_t *xact)
     d_trace(3, "[%d] %s Delete  peer %s:%d\n",
             xact->xid,
             xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-            INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+            CORE_NTOP(&xact->gnode->addr, buf), ntohs(xact->gnode->addr.c_sa_port));
 
     if (xact->seq[0].pkbuf)
         pkbuf_free(xact->seq[0].pkbuf);

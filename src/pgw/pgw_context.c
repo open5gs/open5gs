@@ -433,14 +433,14 @@ status_t pgw_sgw_remove_all()
     return CORE_OK;
 }
 
-pgw_sgw_t* pgw_sgw_find(c_uint32_t addr, c_uint16_t port)
+pgw_sgw_t* pgw_sgw_find(c_uint32_t addr)
 {
     pgw_sgw_t *sgw = NULL;
     
     sgw = pgw_sgw_first();
     while (sgw)
     {
-        if (sgw->addr.sin.sin_addr.s_addr == addr && sgw->port == port)
+        if (sgw->addr.sin.sin_addr.s_addr == addr)
             break;
 
         sgw = pgw_sgw_next(sgw);
@@ -476,7 +476,6 @@ pgw_sess_t *pgw_sess_add(gtp_f_teid_t *sgw_s5c_teid,
     pgw_bearer_t *bearer = NULL;
     pgw_sgw_t *sgw = NULL;
     c_uint32_t addr = 0;
-    c_uint16_t port = 0;
 
     index_alloc(&pgw_sess_pool, &sess);
     d_assert(sess, return NULL, "Null param");
@@ -490,16 +489,14 @@ pgw_sess_t *pgw_sess_add(gtp_f_teid_t *sgw_s5c_teid,
     core_buffer_to_bcd(sess->imsi, sess->imsi_len, sess->imsi_bcd);
 
     addr = sgw_s5c_teid->ipv4_addr;
-    port = GTPV2_C_UDP_PORT;
-
-    sgw = pgw_sgw_find(addr, port);
+    sgw = pgw_sgw_find(addr);
     if (!sgw)
     {
         sgw = pgw_sgw_add();
         d_assert(sgw, return NULL, "Can't add SGW-GTP node");
 
         sgw->addr.sin.sin_addr.s_addr = addr;
-        sgw->port = port;
+        sgw->addr.c_sa_port = htons(GTPV2_C_UDP_PORT);
         sgw->sock = pgw_self()->gtpc_sock;
     }
     /* Setup GTP Node between PGW and SGW */

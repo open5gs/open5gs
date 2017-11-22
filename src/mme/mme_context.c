@@ -778,7 +778,6 @@ status_t mme_context_parse_config()
 
                             core_inet_pton(AF_INET, addr, &sgw->addr);
                             sgw->addr.c_sa_port = htons(port);
-                            sgw->port = port;
                         }
                     } while(
                         BSON_ITER_HOLDS_ARRAY(&sgw_iter) &&
@@ -982,22 +981,6 @@ status_t mme_sgw_remove_all()
     }
 
     return CORE_OK;
-}
-
-mme_sgw_t* mme_sgw_find(c_uint32_t addr, c_uint16_t port)
-{
-    mme_sgw_t *sgw = NULL;
-    
-    sgw = mme_sgw_first();
-    while (sgw)
-    {
-        if (sgw->addr.sin.sin_addr.s_addr == addr && sgw->port == port)
-            break;
-
-        sgw = mme_sgw_next(sgw);
-    }
-
-    return sgw;
 }
 
 mme_sgw_t* mme_sgw_first()

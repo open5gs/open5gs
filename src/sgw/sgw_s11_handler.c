@@ -22,7 +22,6 @@ void sgw_s11_handle_create_session_request(gtp_xact_t *s11_xact,
     gtp_f_teid_t *pgw_s5c_teid = NULL;
     sgw_pgw_t *pgw = NULL;
     c_uint32_t addr;
-    c_uint16_t port;
     gtp_f_teid_t sgw_s5c_teid, sgw_s5u_teid;
     gtp_uli_t uli;
 
@@ -99,16 +98,15 @@ void sgw_s11_handle_create_session_request(gtp_xact_t *s11_xact,
     d_assert(pgw_s5c_teid, return, "Null param");
 
     addr = pgw_s5c_teid->ipv4_addr;
-    port = GTPV2_C_UDP_PORT;
 
-    pgw = sgw_pgw_find(addr, port);
+    pgw = sgw_pgw_find(addr);
     if (!pgw)
     {
         pgw = sgw_pgw_add();
         d_assert(pgw, return, "Can't add PGW-GTP node");
 
         pgw->addr.sin.sin_addr.s_addr = addr;
-        pgw->port = port;
+        pgw->addr.c_sa_port = htons(GTPV2_C_UDP_PORT);
         pgw->sock = sgw_self()->gtpc_sock;
     }
 

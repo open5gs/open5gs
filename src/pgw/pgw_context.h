@@ -171,7 +171,7 @@ CORE_DECLARE(status_t)      pgw_context_setup_trace_module(void);
 CORE_DECLARE(pgw_sgw_t*)    pgw_sgw_add(void);
 CORE_DECLARE(status_t)      pgw_sgw_remove(pgw_sgw_t *sgw);
 CORE_DECLARE(status_t)      pgw_sgw_remove_all(void);
-CORE_DECLARE(pgw_sgw_t*)    pgw_sgw_find(c_uint32_t addr, c_uint16_t port);
+CORE_DECLARE(pgw_sgw_t*)    pgw_sgw_find(c_uint32_t addr);
 CORE_DECLARE(pgw_sgw_t*)    pgw_sgw_first(void);
 CORE_DECLARE(pgw_sgw_t*)    pgw_sgw_next(pgw_sgw_t *sgw);
 

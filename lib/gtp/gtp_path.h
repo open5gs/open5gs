@@ -20,7 +20,6 @@ typedef struct _gtp_node_t {
     lnode_t         node;           /**< A node of list_t */
 
     c_sockaddr_t    addr;           /**< Network byte order IP Address */
-    c_uint16_t      port;           /**< Host byte order Port number */
     net_sock_t      *sock;          /**< Socket Descriptor */
 
     list_t          local_list;    
