@@ -53,15 +53,14 @@ status_t gtp_close(net_sock_t *sock)
     return CORE_OK;
 }
 
-pkbuf_t *gtp_read(net_sock_t *sock)
+status_t gtp_recv(net_sock_t *sock, pkbuf_t **pkbuf)
 {
-    pkbuf_t *pkb;
     int r;
 
-    d_assert(sock, return NULL, "Null param");
+    d_assert(sock, return CORE_ERROR, "Null param");
 
-    pkb = pkbuf_alloc(0, MAX_SDU_LEN);
-    if (pkb == NULL)
+    *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    if ((*pkbuf) == NULL)
     {
         char tmp_buf[MAX_SDU_LEN];
 
@@ -70,13 +69,13 @@ pkbuf_t *gtp_read(net_sock_t *sock)
         /* Read data from socket to exit from select */
         net_read(sock, tmp_buf, MAX_SDU_LEN, 0);
 
-        return NULL;
+        return CORE_ERROR;
     }
 
-    r = net_read(sock, pkb->payload, pkb->len, 0);
+    r = net_read(sock, (*pkbuf)->payload, (*pkbuf)->len, 0);
     if (r <= 0)
     {
-        pkbuf_free(pkb);
+        pkbuf_free((*pkbuf));
 
         if (sock->sndrcv_errno != EAGAIN)
         {
@@ -84,13 +83,53 @@ pkbuf_t *gtp_read(net_sock_t *sock)
                     sock->sndrcv_errno, strerror(sock->sndrcv_errno));
         }
 
-        return NULL;
+        return CORE_ERROR;
     }
     else
     {
-        pkb->len = r;
+        (*pkbuf)->len = r;
 
-        return pkb;
+        return CORE_OK;;
+    }
+}
+
+status_t gtp_recvfrom(net_sock_t *sock, pkbuf_t **pkbuf, c_sockaddr_t *from)
+{
+    int r;
+
+    d_assert(sock, return CORE_ERROR, "Null param");
+
+    *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    if ((*pkbuf) == NULL)
+    {
+        char tmp_buf[MAX_SDU_LEN];
+
+        d_fatal("Can't allocate pkbuf");
+
+        /* Read data from socket to exit from select */
+        net_read(sock, tmp_buf, MAX_SDU_LEN, 0);
+
+        return CORE_ERROR;
+    }
+
+    r = net_read(sock, (*pkbuf)->payload, (*pkbuf)->len, 0);
+    if (r <= 0)
+    {
+        pkbuf_free((*pkbuf));
+
+        if (sock->sndrcv_errno != EAGAIN)
+        {
+            d_warn("net_read failed(%d:%s)", 
+                    sock->sndrcv_errno, strerror(sock->sndrcv_errno));
+        }
+
+        return CORE_ERROR;
+    }
+    else
+    {
+        (*pkbuf)->len = r;
+
+        return CORE_OK;;
     }
 }
 

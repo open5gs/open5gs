@@ -21,10 +21,10 @@ static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
 
     d_assert(sock, return -1, "Null param");
 
-    pkbuf = gtp_read(sock);
-    if (pkbuf == NULL)
+    rv = gtp_recv(sock, &pkbuf);
+    if (rv != CORE_OK)
     {
-        if (sock->sndrcv_errno == EAGAIN)
+        if (errno == EAGAIN)
             return 0;
 
         return -1;
@@ -62,7 +62,9 @@ static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
 
 static int _gtpv1_u_recv_cb(net_sock_t *sock, void *data)
 {
+    status_t rv;
     pkbuf_t *pkbuf = NULL;
+    c_sockaddr_t from;
     gtp_node_t gnode;
     gtp_header_t *gtp_h = NULL;
     sgw_bearer_t *bearer = NULL;
@@ -72,10 +74,10 @@ static int _gtpv1_u_recv_cb(net_sock_t *sock, void *data)
 
     d_assert(sock, return -1, "Null param");
 
-    pkbuf = gtp_read(sock);
-    if (pkbuf == NULL)
+    rv = gtp_recvfrom(sock, &pkbuf, &from);
+    if (rv != CORE_OK)
     {
-        if (sock->sndrcv_errno == EAGAIN)
+        if (errno == EAGAIN)
             return 0;
 
         return -1;

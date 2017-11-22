@@ -993,7 +993,7 @@ mme_sgw_t* mme_sgw_next(mme_sgw_t *sgw)
     return list_next(sgw);
 }
 
-mme_enb_t* mme_enb_add(net_sock_t *sock)
+mme_enb_t* mme_enb_add(sock_id sock)
 {
     mme_enb_t *enb = NULL;
     event_t e;
@@ -1059,7 +1059,7 @@ mme_enb_t* mme_enb_find(index_t index)
     return index_find(&mme_enb_pool, index);
 }
 
-mme_enb_t* mme_enb_find_by_sock(net_sock_t *sock)
+mme_enb_t* mme_enb_find_by_sock(sock_id sock)
 {
     d_assert(sock, return NULL,"Invalid param");
     return (mme_enb_t *)hash_get(self.s1ap_sock_hash, &sock, sizeof(sock));

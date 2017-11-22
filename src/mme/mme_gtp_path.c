@@ -9,29 +9,22 @@
 
 static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
 {
-    char buf[INET_ADDRSTRLEN];
     status_t rv;
     event_t e;
     pkbuf_t *pkbuf = NULL;
-    c_uint32_t addr;
-    c_uint16_t port;
 
     d_assert(sock, return -1, "Null param");
 
-    pkbuf = gtp_read(sock);
-    if (pkbuf == NULL)
+    rv = gtp_recv(sock, &pkbuf);
+    if (rv != CORE_OK)
     {
-        if (sock->sndrcv_errno == EAGAIN)
+        if (errno == EAGAIN)
             return 0;
 
         return -1;
     }
 
-    addr = sock->remote.sin_addr.s_addr;
-    port = ntohs(sock->remote.sin_port);
-
-    d_trace(10, "S11_PDU is received from SGW[%s:%d]\n",
-            INET_NTOP(&addr, buf), port);
+    d_trace(10, "S11_PDU is received from SGW\n");
     d_trace_hex(10, pkbuf->payload, pkbuf->len);
 
     event_set(&e, MME_EVT_S11_MESSAGE);

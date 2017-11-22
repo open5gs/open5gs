@@ -29,14 +29,14 @@ void s1ap_state_final(fsm_t *s, event_t *e)
 void s1ap_state_operational(fsm_t *s, event_t *e)
 {
     mme_enb_t *enb = NULL;
-    net_sock_t *sock = NULL;
+    sock_id sock = 0;
 
     d_assert(s, return, "Null param");
     d_assert(e, return, "Null param");
 
     mme_sm_trace(3, e);
 
-    sock = (net_sock_t *)event_get_param1(e);
+    sock = (sock_id)event_get_param1(e);
     d_assert(sock, return, "Null param");
     enb = mme_enb_find_by_sock(sock);
     d_assert(enb, return, "Null param");

@@ -74,13 +74,13 @@ void mme_state_operational(fsm_t *s, event_t *e)
             {
                 d_error("Can't close S1AP path");
             }
-            mme_self()->s1ap_sock = NULL;
+            mme_self()->s1ap_sock = 0;
 
             break;
         }
         case MME_EVT_S1AP_LO_ACCEPT:
         {
-            net_sock_t *sock = (net_sock_t *)event_get_param1(e);
+            sock_id sock = (sock_id)event_get_param1(e);
             d_assert(sock, break, "Null param");
             c_uint32_t addr = (c_uint32_t)event_get_param2(e);
             c_uint16_t port = (c_uint16_t)event_get_param3(e);
@@ -116,9 +116,9 @@ void mme_state_operational(fsm_t *s, event_t *e)
         case MME_EVT_S1AP_LO_CONNREFUSED:
         {
             mme_enb_t *enb = NULL;
-            net_sock_t *sock = NULL;
+            sock_id sock = 0;
 
-            sock = (net_sock_t *)event_get_param1(e);
+            sock = (sock_id)event_get_param1(e);
             d_assert(sock, break, "Null param");
             
             enb = mme_enb_find_by_sock(sock);
@@ -139,10 +139,10 @@ void mme_state_operational(fsm_t *s, event_t *e)
         {
             s1ap_message_t message;
             mme_enb_t *enb = NULL;
-            net_sock_t *sock = NULL;
+            sock_id sock = 0;
             pkbuf_t *pkbuf = NULL;
 
-            sock = (net_sock_t *)event_get_param1(e);
+            sock = (sock_id)event_get_param1(e);
             d_assert(sock, break, "Null param");
             
             pkbuf = (pkbuf_t *)event_get_param2(e);

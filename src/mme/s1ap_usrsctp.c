@@ -64,7 +64,7 @@ status_t s1ap_open(void)
         return CORE_ERROR;
     }
 
-    mme_self()->s1ap_sock = (net_sock_t *)psock;
+    mme_self()->s1ap_sock = (sock_id)psock;
 
     if (usrsctp_setsockopt(psock, IPPROTO_SCTP, SCTP_RECVRCVINFO,
                 &on, sizeof(int)) < 0)
@@ -131,7 +131,7 @@ status_t s1ap_close()
     struct socket *psock = NULL;
 
     d_assert(mme_self(), return CORE_ERROR, "Null param");
-    d_assert(mme_self()->s1ap_sock != NULL, return CORE_ERROR,
+    d_assert(mme_self()->s1ap_sock, return CORE_ERROR,
             "S1-ENB path already opened");
 
     accept_thread_should_stop = 1;
@@ -147,21 +147,21 @@ status_t s1ap_close()
     return CORE_OK;
 }
 
-status_t s1ap_sctp_close(net_sock_t *sock)
+status_t s1ap_sctp_close(sock_id sock)
 {
     usrsctp_close((struct socket *)sock);
     return CORE_OK;
 }
 
-status_t s1ap_sendto(net_sock_t *s, pkbuf_t *pkbuf,
+status_t s1ap_sendto(sock_id sock, pkbuf_t *pkbuf,
         c_uint32_t addr, c_uint16_t port)
 {
     char buf[INET_ADDRSTRLEN];
     ssize_t sent;
-    struct socket *psock = (struct socket *)s;
+    struct socket *psock = (struct socket *)sock;
     struct sctp_sndinfo sndinfo;
 
-    d_assert(s, return CORE_ERROR, "Null param");
+    d_assert(sock, return CORE_ERROR, "Null param");
     d_assert(pkbuf, return CORE_ERROR, "Null param");
 
     memset((void *)&sndinfo, 0, sizeof(struct sctp_sndinfo));

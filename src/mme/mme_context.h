@@ -53,7 +53,7 @@ typedef struct _mme_context_t {
 
     c_uint32_t      s1ap_addr;      /* MME S1AP local address */
     c_uint16_t      s1ap_port;      /* MME S1AP local port */
-    net_sock_t      *s1ap_sock;     /* MME S1AP local listen socket */
+    sock_id         s1ap_sock;      /* MME S1AP local listen socket */
 
     c_uint32_t      gtpc_addr;      /* MME GTPC local address */
     c_uint16_t      gtpc_port;      /* MME GTPC local port */
@@ -115,7 +115,7 @@ typedef struct _mme_enb_t {
     c_uint32_t      enb_id;     /* eNB_ID received from eNB */
     c_uint32_t      s1ap_addr;  /* eNB S1AP IP address */
     c_uint16_t      s1ap_port;  /* eNB S1AP Port */
-    net_sock_t      *s1ap_sock; /* eNB S1AP Socket */
+    sock_id         s1ap_sock;  /* eNB S1AP Socket */
 
     c_uint8_t       num_of_tai;
     tai_t           tai[MAX_NUM_OF_TAC * MAX_NUM_OF_BPLMN];
@@ -443,11 +443,11 @@ CORE_DECLARE(status_t)      mme_sgw_remove_all(void);
 CORE_DECLARE(mme_sgw_t*)    mme_sgw_first(void);
 CORE_DECLARE(mme_sgw_t*)    mme_sgw_next(mme_sgw_t *sgw);
 
-CORE_DECLARE(mme_enb_t*)    mme_enb_add(net_sock_t *sock);
+CORE_DECLARE(mme_enb_t*)    mme_enb_add(sock_id sock);
 CORE_DECLARE(status_t)      mme_enb_remove(mme_enb_t *enb);
 CORE_DECLARE(status_t)      mme_enb_remove_all(void);
 CORE_DECLARE(mme_enb_t*)    mme_enb_find(index_t index);
-CORE_DECLARE(mme_enb_t*)    mme_enb_find_by_sock(net_sock_t *sock);
+CORE_DECLARE(mme_enb_t*)    mme_enb_find_by_sock(sock_id sock);
 CORE_DECLARE(mme_enb_t*)    mme_enb_find_by_enb_id(c_uint32_t enb_id);
 CORE_DECLARE(status_t)      mme_enb_set_enb_id(
         mme_enb_t *enb, c_uint32_t enb_id);

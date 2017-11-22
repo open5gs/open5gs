@@ -30,7 +30,9 @@ CORE_DECLARE(status_t) gtp_listen(net_sock_t **sock,
     net_sock_handler handler, c_uint32_t addr, c_uint16_t port, void *data);
 CORE_DECLARE(status_t) gtp_close(net_sock_t *sock);
 
-CORE_DECLARE(pkbuf_t *) gtp_read(net_sock_t *sock);
+CORE_DECLARE(status_t) gtp_recv(net_sock_t *sock, pkbuf_t **pkbuf);
+CORE_DECLARE(status_t) gtp_recvfrom(net_sock_t *sock,
+        pkbuf_t **pkbuf, c_sockaddr_t *from);
 CORE_DECLARE(status_t) gtp_send(gtp_node_t *gnode, pkbuf_t *pkbuf);
 
 CORE_DECLARE(pkbuf_t*) gtp_handle_echo_req(pkbuf_t *pkt);

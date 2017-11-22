@@ -70,7 +70,7 @@ status_t tests1ap_enb_close(sock_id id)
 
 status_t tests1ap_enb_send(sock_id id, pkbuf_t *sendbuf)
 {
-    return s1ap_sendto((net_sock_t *)id, sendbuf, mme_self()->s1ap_addr,
+    return s1ap_sendto(id, sendbuf, mme_self()->s1ap_addr,
             mme_self()->s1ap_port);
 }
 
