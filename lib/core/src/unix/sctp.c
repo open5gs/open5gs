@@ -73,7 +73,7 @@ status_t sctp_server(sock_id *new,
                 "setsockopt(%s:%d) failed(%d:%s)",
                 CORE_NTOP(sa, buf), port, errno, strerror(errno));
 
-        if (bind(sock->fd, &sa->sa, sa->sa_len) == 0)
+        if (sock_bind(*new, sa) == CORE_OK)
         {
             d_trace(1, "sctp bind %s:%d\n", CORE_NTOP(sa, buf), port);
             break;
@@ -119,7 +119,7 @@ status_t sctp_client(sock_id *new,
         
         sock = (sock_t *)*new;
 
-        if (connect(sock->fd, &sa->sa, sa->sa_len) == 0)
+        if (sock_connect(*new, sa) == CORE_OK)
         {
             d_trace(1, "sctp connect %s:%d\n", CORE_NTOP(sa, buf), port);
             break;
@@ -159,7 +159,7 @@ status_t sctp_connect(sock_id id, const char *hostname, c_uint16_t port,
 
     while(sa)
     {
-        if (connect(sock->fd, &sa->sa, sa->sa_len) == 0)
+        if (sock_connect(id, sa) == CORE_OK)
         {
             d_trace(1, "sctp connect %s:%d\n", CORE_NTOP(sa, buf), port);
             if (result)
