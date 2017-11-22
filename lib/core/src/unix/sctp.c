@@ -207,20 +207,17 @@ int core_sctp_recvmsg(sock_id id, void *msg, size_t len,
 {
     sock_t *sock = (sock_t *)id;
     int size;
-    socklen_t addrlen = 0;
+    socklen_t addrlen = sizeof(struct sockaddr_storage);
 
     int flags = 0;
     struct sctp_sndrcvinfo sinfo;
 
     d_assert(id, return -1,);
 
-    if (from)
-        addrlen = sockaddr_len(from);
-
     do
     {
         size = sctp_recvmsg(sock->fd, msg, len,
-                    from ? &from->sa : NULL, addrlen,
+                    from ? &from->sa : NULL,  from ? &addrlen : NULL,
                     &sinfo, &flags);
         if (size < 0)
         {

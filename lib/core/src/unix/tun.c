@@ -3,6 +3,10 @@
 #include "core_debug.h"
 #include "core_arch_network.h"
 
+#if LINUX == 1
+#include <linux/if_tun.h>
+#endif
+
 #if HAVE_NET_ROUTE_H
 #include <net/route.h>
 #endif
