@@ -107,7 +107,7 @@ void sgw_s11_handle_create_session_request(gtp_xact_t *s11_xact,
         pgw = sgw_pgw_add();
         d_assert(pgw, return, "Can't add PGW-GTP node");
 
-        pgw->addr = addr;
+        pgw->addr.sin.sin_addr.s_addr = addr;
         pgw->port = port;
         pgw->sock = sgw_self()->gtpc_sock;
     }

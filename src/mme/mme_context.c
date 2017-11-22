@@ -140,6 +140,7 @@ static status_t mme_context_validation()
                 context_self()->config.path);
         return CORE_ERROR;
     }
+#if 0 /* ADDR */
     while(sgw)
     {
         if (sgw->addr == 0)
@@ -150,6 +151,7 @@ static status_t mme_context_validation()
         }
         sgw = mme_sgw_next(sgw);
     }
+#endif
     self.sgw = mme_sgw_first();
 
     if (self.max_num_of_served_gummei == 0)
@@ -774,7 +776,8 @@ status_t mme_context_parse_config()
                             mme_sgw_t *sgw = mme_sgw_add();
                             d_assert(sgw, return CORE_ERROR,);
 
-                            sgw->addr = inet_addr(addr);
+                            core_inet_pton(AF_INET, addr, &sgw->addr);
+                            sgw->addr.c_sa_port = htons(port);
                             sgw->port = port;
                         }
                     } while(
@@ -988,7 +991,7 @@ mme_sgw_t* mme_sgw_find(c_uint32_t addr, c_uint16_t port)
     sgw = mme_sgw_first();
     while (sgw)
     {
-        if (sgw->addr == addr && sgw->port == port)
+        if (sgw->addr.sin.sin_addr.s_addr == addr && sgw->port == port)
             break;
 
         sgw = mme_sgw_next(sgw);

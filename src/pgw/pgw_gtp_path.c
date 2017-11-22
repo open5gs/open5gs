@@ -62,7 +62,7 @@ static int _gtpv1_tun_recv_cb(net_link_t *net_link, void *data)
         gtp_h->teid = htonl(bearer->sgw_s5u_teid);
 
         /* Send to SGW */
-        gnode.addr = bearer->sgw_s5u_addr;
+        gnode.addr.sin.sin_addr.s_addr = bearer->sgw_s5u_addr;
         gnode.port = GTPV1_U_UDP_PORT;
         gnode.sock = pgw_self()->gtpu_sock;
         d_trace(50, "Send S5U PDU (teid = 0x%x)to SGW(%s)\n",

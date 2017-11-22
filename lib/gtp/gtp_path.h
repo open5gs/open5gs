@@ -3,6 +3,7 @@
 
 #include "core_pkbuf.h"
 #include "core_net.h"
+#include "core_network.h"
 #include "core_list.h"
 
 #ifdef __cplusplus
@@ -18,7 +19,7 @@ extern "C" {
 typedef struct _gtp_node_t {
     lnode_t         node;           /**< A node of list_t */
 
-    c_uint32_t      addr;           /**< Network byte order IP Address */
+    c_sockaddr_t    addr;           /**< Network byte order IP Address */
     c_uint16_t      port;           /**< Host byte order Port number */
     net_sock_t      *sock;          /**< Socket Descriptor */
 

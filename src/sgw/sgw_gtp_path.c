@@ -96,7 +96,7 @@ static int _gtpv1_u_recv_cb(net_sock_t *sock, void *data)
             /* Echo reply */
             d_trace(3, "Send echo-rsp to peer\n");
 
-            gnode.addr = sock->remote.sin_addr.s_addr;
+            gnode.addr.sin.sin_addr.s_addr = sock->remote.sin_addr.s_addr;
             gnode.port = ntohs(sock->remote.sin_port);
             gnode.sock = sock;
 
@@ -131,7 +131,7 @@ static int _gtpv1_u_recv_cb(net_sock_t *sock, void *data)
 
             s5u_tunnel = sgw_s5u_tunnel_in_bearer(bearer);
             d_assert(s5u_tunnel, return -1, "Null param");
-            gnode.addr = s5u_tunnel->remote_addr;
+            gnode.addr.sin.sin_addr.s_addr = s5u_tunnel->remote_addr;
 
             gtp_h->teid = htonl(s5u_tunnel->remote_teid);
             gtp_send(&gnode, pkbuf);
@@ -143,7 +143,7 @@ static int _gtpv1_u_recv_cb(net_sock_t *sock, void *data)
 
             s1u_tunnel = sgw_s1u_tunnel_in_bearer(bearer);
             d_assert(s1u_tunnel, return -1, "Null param");
-            gnode.addr = s1u_tunnel->remote_addr;
+            gnode.addr.sin.sin_addr.s_addr = s1u_tunnel->remote_addr;
 
             if (s1u_tunnel->remote_teid)
             {
@@ -291,7 +291,7 @@ status_t sgw_gtp_send_end_marker(sgw_bearer_t *bearer)
     h->type = GTPU_MSGTYPE_END_MARKER;
     h->teid =  htonl(s1u_tunnel->remote_teid);
     
-    gnode.addr = s1u_tunnel->remote_addr;
+    gnode.addr.sin.sin_addr.s_addr = s1u_tunnel->remote_addr;
     gnode.port = GTPV1_U_UDP_PORT;
     gnode.sock = sgw_self()->gtpu_sock;
 

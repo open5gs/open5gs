@@ -139,7 +139,7 @@ int testgtpu_enb_send(net_sock_t *sock, c_uint32_t src_ip, c_uint32_t dst_ip)
     icmp_h->checksum = in_cksum(
             (unsigned short *)icmp_h, sizeof(struct icmp_header_t));
 
-    gnode.addr = bearer->sgw_s1u_addr;
+    gnode.addr.sin.sin_addr.s_addr = bearer->sgw_s1u_addr;
     gnode.port = GTPV1_U_UDP_PORT;
     gnode.sock = sock;
 

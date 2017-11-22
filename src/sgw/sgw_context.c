@@ -285,7 +285,7 @@ sgw_mme_t* sgw_mme_find(c_uint32_t addr, c_uint16_t port)
     mme = sgw_mme_first();
     while (mme)
     {
-        if (mme->addr == addr && mme->port == port)
+        if (mme->addr.sin.sin_addr.s_addr == addr && mme->port == port)
             break;
 
         mme = sgw_mme_next(mme);
@@ -358,7 +358,7 @@ sgw_pgw_t* sgw_pgw_find(c_uint32_t addr, c_uint16_t port)
     pgw = sgw_pgw_first();
     while (pgw)
     {
-        if (pgw->addr == addr && pgw->port == port)
+        if (pgw->addr.sin.sin_addr.s_addr == addr && pgw->port == port)
             break;
 
         pgw = sgw_pgw_next(pgw);
@@ -407,7 +407,7 @@ sgw_ue_t* sgw_ue_add(gtp_f_teid_t *mme_s11_teid,
         mme = sgw_mme_add();
         d_assert(mme, return NULL, "Can't add MME-GTP node");
 
-        mme->addr = addr;
+        mme->addr.sin.sin_addr.s_addr = addr;
         mme->port = port;
         mme->sock = sgw_self()->gtpc_sock;
     }

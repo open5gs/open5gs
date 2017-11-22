@@ -98,7 +98,7 @@ status_t gtp_send(gtp_node_t *gnode, pkbuf_t *pkbuf)
     d_assert(sock, return CORE_ERROR, "Null param");
 
     sent = net_sendto(sock, pkbuf->payload, pkbuf->len, 
-            gnode->addr, gnode->port);
+            gnode->addr.sin.sin_addr.s_addr, gnode->port);
     d_trace(50, "Sent %d->%d bytes to [%s:%d]\n", pkbuf->len, sent, 
             INET_NTOP(&gnode->addr, buf), gnode->port);
     d_trace_hex(50, pkbuf->payload, pkbuf->len);
