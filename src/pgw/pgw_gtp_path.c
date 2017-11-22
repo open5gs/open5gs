@@ -19,7 +19,7 @@ static int _gtpv1_tun_recv_cb(sock_id sock, void *data)
     recvbuf = pkbuf_alloc(GTPV1U_HEADER_LEN, MAX_SDU_LEN);
     d_assert(recvbuf, return -1, "pkbuf_alloc error");
 
-    n = core_recv(sock, recvbuf->payload, recvbuf->len, 0);
+    n = sock_read(sock, recvbuf->payload, recvbuf->len);
     if (n <= 0)
     {
         pkbuf_free(recvbuf);
@@ -143,8 +143,8 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
         return -1;
     }
 
-    if (core_send(pgw_self()->ue_network[(c_uintptr_t)data].tun_link,
-                pkbuf->payload, pkbuf->len, 0) <= 0)
+    if (sock_write(pgw_self()->ue_network[(c_uintptr_t)data].tun_link,
+                pkbuf->payload, pkbuf->len) <= 0)
     {
         d_error("Can not send packets to tuntap");
     }

@@ -141,6 +141,9 @@ CORE_DECLARE(status_t) tun_set_ipv4(sock_id id,
 /*
  * Send/Recv
  */
+CORE_DECLARE(ssize_t) sock_write(sock_id id, const void *buf, size_t len);
+CORE_DECLARE(ssize_t) sock_read(sock_id id, void *buf, size_t len);
+
 CORE_DECLARE(ssize_t) core_send(sock_id id,
         const void *buf, size_t len, int flags);
 CORE_DECLARE(ssize_t) core_sendto(sock_id id,

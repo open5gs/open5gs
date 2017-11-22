@@ -215,6 +215,40 @@ c_sockaddr_t *sock_remote_addr_get(sock_id id)
     return &sock->remote_addr;
 }
 
+ssize_t sock_write(sock_id id, const void *buf, size_t len)
+{
+    sock_t *sock = (sock_t *)id;
+    ssize_t size;
+
+    d_assert(id, return -1,);
+
+    size = write(sock->fd, buf, len);
+    if (size < 0)
+    {
+        d_error("sock_write(len:%ld) failed(%d:%s)",
+                len, errno, strerror(errno));
+    }
+
+    return size;
+}
+
+ssize_t sock_read(sock_id id, void *buf, size_t len)
+{
+    sock_t *sock = (sock_t *)id;
+    ssize_t size;
+
+    d_assert(id, return -1,);
+
+    size = read(sock->fd, buf, len);
+    if (size < 0)
+    {
+        d_error("sock_read(len:%ld) failed(%d:%s)",
+                len, errno, strerror(errno));
+    }
+
+    return size;
+}
+
 ssize_t core_send(sock_id id, const void *buf, size_t len, int flags)
 {
     sock_t *sock = (sock_t *)id;
@@ -225,7 +259,7 @@ ssize_t core_send(sock_id id, const void *buf, size_t len, int flags)
     size = send(sock->fd, buf, len, flags);
     if (size < 0)
     {
-        d_error("sock_send(len:%ld) failed(%d:%s)",
+        d_error("core_send(len:%ld) failed(%d:%s)",
                 len, errno, strerror(errno));
     }
 
@@ -248,7 +282,7 @@ ssize_t core_sendto(sock_id id,
     size = sendto(sock->fd, buf, len, flags, &to->sa, addrlen);
     if (size < 0)
     {
-        d_error("sock_sendto(len:%ld) failed(%d:%s)",
+        d_error("core_sendto(len:%ld) failed(%d:%s)",
                 len, errno, strerror(errno));
     }
 
@@ -265,7 +299,7 @@ ssize_t core_recv(sock_id id, void *buf, size_t len, int flags)
     size = recv(sock->fd, buf, len, flags);
     if (size < 0)
     {
-        d_error("sock_recvfrom(len:%ld) failed(%d:%s)",
+        d_error("core_recv(len:%ld) failed(%d:%s)",
                 len, errno, strerror(errno));
     }
 
@@ -285,7 +319,7 @@ ssize_t core_recvfrom(sock_id id,
     size = recvfrom(sock->fd, buf, len, flags, &from->sa, &addrlen);
     if (size < 0)
     {
-        d_error("sock_recvfrom(len:%ld) failed(%d:%s)",
+        d_error("corek_recvfrom(len:%ld) failed(%d:%s)",
                 len, errno, strerror(errno));
     }
 
