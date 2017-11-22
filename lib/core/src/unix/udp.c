@@ -20,7 +20,6 @@ status_t udp_server(sock_id *new,
 {
     status_t rv;
     c_sockaddr_t *sa;
-    sock_t *sock = NULL;
     char buf[CORE_ADDRSTRLEN];
 
     rv = core_getaddrinfo(&sa, family, hostname, port, AI_PASSIVE);
@@ -28,11 +27,9 @@ status_t udp_server(sock_id *new,
 
     while(sa)
     {
-        rv = udp_socket(new, sa->sa.sa_family);
+        rv = udp_socket(new, sa->c_sa_family);
         if (rv != CORE_OK) continue;
         
-        sock = (sock_t *)*new;
-
         d_assert(sock_setsockopt(*new, SOCK_O_REUSEADDR, 1) == CORE_OK,
                 return CORE_ERROR,
                 "setsockopt(%s:%d) failed(%d:%s)",
@@ -76,7 +73,7 @@ status_t udp_client(sock_id *new,
 
     while(sa)
     {
-        rv = udp_socket(new, sa->sa.sa_family);
+        rv = udp_socket(new, sa->c_sa_family);
         if (rv != CORE_OK) continue;
         
         sock = (sock_t *)*new;

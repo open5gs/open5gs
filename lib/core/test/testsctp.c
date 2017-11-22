@@ -135,7 +135,7 @@ static void sctp_test3(abts_case *tc, void *data)
 
     size = core_sctp_recvmsg(sctp, str, STRLEN, &sa, &ppid, NULL);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
-    ABTS_INT_EQUAL(tc, sizeof(struct sockaddr_in), sa.sa_len);
+    ABTS_INT_EQUAL(tc, sizeof(struct sockaddr_in), sa.c_sa_len);
     ABTS_INT_EQUAL(tc, PPID, ppid);
     ABTS_STR_EQUAL(tc, "127.0.0.1", CORE_NTOP(&sa, buf));
     
@@ -191,7 +191,7 @@ static void sctp_test4(abts_case *tc, void *data)
 
     size = core_sctp_recvmsg(sctp, str, STRLEN, &sa, &ppid, NULL);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
-    ABTS_INT_EQUAL(tc, sizeof(struct sockaddr_in6), sa.sa_len);
+    ABTS_INT_EQUAL(tc, sizeof(struct sockaddr_in6), sa.c_sa_len);
     ABTS_STR_EQUAL(tc, "::1", CORE_NTOP(&sa, buf));
     ABTS_INT_EQUAL(tc, PPID, ppid);
 
@@ -212,7 +212,7 @@ static void *THREAD_FUNC test5_main(thread_id id, void *data)
     status_t rv;
     sock_id sctp;
     char str[STRLEN];
-    c_sockaddr_t sa;
+    c_sockaddr_t sa, *remote_addr;
     c_uint32_t ppid;
     ssize_t size;
     char buf[CORE_ADDRSTRLEN];
@@ -220,17 +220,19 @@ static void *THREAD_FUNC test5_main(thread_id id, void *data)
     rv = sctp_server(&sctp, AF_INET6, SOCK_SEQPACKET, NULL, PORT2);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    rv = sctp_connect(sctp, "::1", PORT, &sa);
+    rv = sctp_connect(sctp, "::1", PORT);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
-    ABTS_INT_EQUAL(tc, sizeof(struct sockaddr_in6), sa.sa_len);
-    ABTS_STR_EQUAL(tc, "::1", CORE_NTOP(&sa, buf));
+    remote_addr = sock_remote_addr_get(sctp);
+    ABTS_INT_EQUAL(tc, sizeof(struct sockaddr_in6), remote_addr->c_sa_len);
+    ABTS_STR_EQUAL(tc, "::1", CORE_NTOP(remote_addr, buf));
 
-    size = core_sctp_sendmsg(sctp, DATASTR, strlen(DATASTR), &sa, PPID, 0);
+    size = core_sctp_sendmsg(sctp, DATASTR, strlen(DATASTR),
+            remote_addr, PPID, 0);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
 
     size = core_sctp_recvmsg(sctp, str, STRLEN, &sa, &ppid, NULL);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
-    ABTS_INT_EQUAL(tc, sizeof(struct sockaddr_in6), sa.sa_len);
+    ABTS_INT_EQUAL(tc, sizeof(struct sockaddr_in6), sa.c_sa_len);
     ABTS_STR_EQUAL(tc, "::1", CORE_NTOP(&sa, buf));
     ABTS_INT_EQUAL(tc, PPID, ppid);
 
@@ -260,7 +262,7 @@ static void sctp_test5(abts_case *tc, void *data)
 
     size = core_sctp_recvmsg(sctp, str, STRLEN, &sa, &ppid, NULL);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
-    ABTS_INT_EQUAL(tc, sizeof(struct sockaddr_in6), sa.sa_len);
+    ABTS_INT_EQUAL(tc, sizeof(struct sockaddr_in6), sa.c_sa_len);
     ABTS_STR_EQUAL(tc, "::1", CORE_NTOP(&sa, buf));
     ABTS_INT_EQUAL(tc, PPID, ppid);
 

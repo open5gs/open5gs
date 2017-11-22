@@ -55,7 +55,6 @@ status_t sctp_server(sock_id *new,
 {
     status_t rv;
     c_sockaddr_t *sa;
-    sock_t *sock = NULL;
     char buf[CORE_ADDRSTRLEN];
 
     rv = core_getaddrinfo(&sa, family, hostname, port, AI_PASSIVE);
@@ -63,11 +62,9 @@ status_t sctp_server(sock_id *new,
 
     while(sa)
     {
-        rv = sctp_socket(new, sa->sa.sa_family, type);
+        rv = sctp_socket(new, sa->c_sa_family, type);
         if (rv != CORE_OK) continue;
         
-        sock = (sock_t *)*new;
-
         d_assert(sock_setsockopt(*new, SOCK_O_REUSEADDR, 1) == CORE_OK,
                 return CORE_ERROR,
                 "setsockopt(%s:%d) failed(%d:%s)",
@@ -106,7 +103,6 @@ status_t sctp_client(sock_id *new,
 {
     status_t rv;
     c_sockaddr_t *sa;
-    sock_t *sock = NULL;
     char buf[CORE_ADDRSTRLEN];
 
     rv = core_getaddrinfo(&sa, family, hostname, port, 0);
@@ -114,11 +110,9 @@ status_t sctp_client(sock_id *new,
 
     while(sa)
     {
-        rv = sctp_socket(new, sa->sa.sa_family, type);
+        rv = sctp_socket(new, sa->c_sa_family, type);
         if (rv != CORE_OK) continue;
         
-        sock = (sock_t *)*new;
-
         if (sock_connect(*new, sa) == CORE_OK)
         {
             d_trace(1, "sctp connect %s:%d\n", CORE_NTOP(sa, buf), port);
@@ -144,8 +138,7 @@ status_t sctp_client(sock_id *new,
     return CORE_OK;
 }
 
-status_t sctp_connect(sock_id id, const char *hostname, c_uint16_t port,
-        c_sockaddr_t *result)
+status_t sctp_connect(sock_id id, const char *hostname, c_uint16_t port)
 {
     status_t rv;
     c_sockaddr_t *sa;
@@ -162,11 +155,6 @@ status_t sctp_connect(sock_id id, const char *hostname, c_uint16_t port,
         if (sock_connect(id, sa) == CORE_OK)
         {
             d_trace(1, "sctp connect %s:%d\n", CORE_NTOP(sa, buf), port);
-            if (result)
-            {
-                memcpy(&result->sa, &sa->sa, sa->sa_len);
-                result->sa_len = sa->sa_len;
-            }
             break;
         }
 
@@ -195,7 +183,7 @@ int core_sctp_sendmsg(sock_id id, const void *msg, size_t len,
     d_assert(id, return -1, );
     
     size = sctp_sendmsg(sock->fd, msg, len,
-            to ? &to->sa : NULL, to ? to->sa_len : 0,
+            to ? &to->sa : NULL, to ? to->c_sa_len : 0,
             htonl(ppid),
             0,  /* flags */
             stream_no,
@@ -235,7 +223,7 @@ int core_sctp_recvmsg(sock_id id, void *msg, size_t len,
             return size;
         }
         if (from)
-            from->sa_len = addrlen;
+            from->c_sa_len = addrlen;
 
         if (!(flags & MSG_NOTIFICATION)) 
             break;

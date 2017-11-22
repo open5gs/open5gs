@@ -64,7 +64,10 @@ typedef struct c_sockaddr_t c_sockaddr_t;
 struct c_sockaddr_t {
     c_sockaddr_t *next;
 
-    socklen_t sa_len;
+    socklen_t c_sa_len;
+    socklen_t c_sa_port;
+#define c_sa_family sa.sa_family
+#define c_sa_port sin.sin_port
     union {
         struct sockaddr_storage ss;
         struct sockaddr_in sin;
@@ -122,7 +125,7 @@ CORE_DECLARE(status_t) sctp_server(sock_id *new,
 CORE_DECLARE(status_t) sctp_client(sock_id *new,
         int family, int type, const char *hostname, c_uint16_t port);
 CORE_DECLARE(status_t) sctp_connect(sock_id id,
-        const char *hostname, c_uint16_t port, c_sockaddr_t *result);
+        const char *hostname, c_uint16_t port);
 CORE_DECLARE(int) core_sctp_sendmsg(sock_id id, const void *msg, size_t len,
         c_sockaddr_t *to, c_uint32_t ppid, c_uint16_t stream_no);
 #define CORE_SCTP_REMOTE_CLOSED     -2

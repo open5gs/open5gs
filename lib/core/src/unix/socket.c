@@ -82,7 +82,7 @@ status_t sock_bind(sock_id id, c_sockaddr_t *sa)
     d_assert(sock, return CORE_ERROR,);
     d_assert(sa, return CORE_ERROR,);
 
-    if (bind(sock->fd, &sa->sa, sa->sa_len) != 0)
+    if (bind(sock->fd, &sa->sa, sa->c_sa_len) != 0)
     {
         d_error("socket bind(%s:%d) failed(%d:%s)",
                 CORE_NTOP(sa, buf), sa->sin.sin_port, errno, strerror(errno));
@@ -104,7 +104,7 @@ status_t sock_connect(sock_id id, c_sockaddr_t *sa)
     d_assert(sock, return CORE_ERROR,);
     d_assert(sa, return CORE_ERROR,);
 
-    if (connect(sock->fd, &sa->sa, sa->sa_len) != 0)
+    if (connect(sock->fd, &sa->sa, sa->c_sa_len) != 0)
     {
         d_error("socket connect(%s:%d) failed(%d:%s)",
                 CORE_NTOP(sa, buf), sa->sin.sin_port, errno, strerror(errno));
@@ -143,11 +143,11 @@ status_t sock_accept(sock_id *new, sock_id id)
     c_sockaddr_t sa;
 
     memset(&sa, 0, sizeof(sa));
-    sa.sa_len = sizeof(sa.ss);
+    sa.c_sa_len = sizeof(sa.ss);
 
     d_assert(id, return CORE_ERROR,);
 
-    new_fd = accept(sock->fd, &sa.sa, &sa.sa_len);
+    new_fd = accept(sock->fd, &sa.sa, &sa.c_sa_len);
     if (new_fd < 0)
     {
         d_error("accept failed(%d:%s)", errno, strerror(errno));
@@ -216,7 +216,7 @@ ssize_t core_sendto(sock_id id,
     d_assert(id, return -1,);
     d_assert(to, return -1,);
 
-    size = sendto(sock->fd, buf, len, flags, &to->sa, to->sa_len);
+    size = sendto(sock->fd, buf, len, flags, &to->sa, to->c_sa_len);
     if (size < 0)
     {
         d_error("sock_sendto(len:%ld) failed(%d:%s)",
@@ -260,7 +260,7 @@ ssize_t core_recvfrom(sock_id id,
         d_error("sock_recvfrom(len:%ld) failed(%d:%s)",
                 len, errno, strerror(errno));
     }
-    from->sa_len = addrlen;
+    from->c_sa_len = addrlen;
 
     return size;
 }
@@ -456,7 +456,7 @@ status_t core_getaddrinfo(c_sockaddr_t **sa,
 
         new_sa = core_calloc(1, sizeof(c_sockaddr_t));
         memcpy(&new_sa->sa, ai->ai_addr, ai->ai_addrlen);
-        new_sa->sa_len = ai->ai_addrlen;
+        new_sa->c_sa_len = ai->ai_addrlen;
         new_sa->sin.sin_port = htons(port);
         d_trace(3, "addr:%s, port:%d\n", CORE_NTOP(new_sa, buf), port);
 
@@ -499,7 +499,7 @@ const char *core_inet_ntop(c_sockaddr_t *sockaddr, char *buf, int buflen)
     d_assert(buf, return NULL,);
     d_assert(sockaddr, return NULL,);
 
-    family = sockaddr->sa.sa_family;
+    family = sockaddr->c_sa_family;
     switch(family)
     {
         case AF_INET:
@@ -520,15 +520,15 @@ status_t core_inet_pton(int family, const char *src, c_sockaddr_t *dst)
     d_assert(src, return CORE_ERROR,);
     d_assert(dst, return CORE_ERROR,);
 
-    dst->sa.sa_family = family;
+    dst->c_sa_family = family;
     switch(family)
     {
         case AF_INET:
-            dst->sa_len = sizeof(struct sockaddr_in);
+            dst->c_sa_len = sizeof(struct sockaddr_in);
             return inet_pton(family, src, &dst->sin.sin_addr) == 1 ?
                 CORE_OK : CORE_ERROR;
         case AF_INET6:
-            dst->sa_len = sizeof(struct sockaddr_in6);
+            dst->c_sa_len = sizeof(struct sockaddr_in6);
             return inet_pton(family, src, &dst->sin6.sin6_addr) == 1 ?
                  CORE_OK : CORE_ERROR;
         default:
@@ -541,17 +541,17 @@ int sockaddr_is_equal(c_sockaddr_t *a, c_sockaddr_t *b)
     d_assert(a, return 0,);
     d_assert(b, return 0,);
 
-    if (a->sa.sa_family != b->sa.sa_family)
+    if (a->c_sa_family != b->c_sa_family)
         return 0;
 
-    if (a->sa.sa_family == AF_INET && memcmp(
+    if (a->c_sa_family == AF_INET && memcmp(
         &a->sin.sin_addr, &b->sin.sin_addr, sizeof(struct in_addr)) == 0)
         return 1;
-    else if (a->sa.sa_family == AF_INET6 && memcmp(
+    else if (a->c_sa_family == AF_INET6 && memcmp(
         &a->sin6.sin6_addr, &b->sin6.sin6_addr, sizeof(struct in6_addr)) == 0)
         return 1;
     else
-        d_assert(0, return 0, "Unknown family(%d)", a->sa.sa_family);
+        d_assert(0, return 0, "Unknown family(%d)", a->c_sa_family);
 
     return 0;
 }
