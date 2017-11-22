@@ -64,8 +64,6 @@ typedef struct c_sockaddr_t c_sockaddr_t;
 struct c_sockaddr_t {
     c_sockaddr_t *next;
 
-    socklen_t c_sa_len;
-    socklen_t c_sa_port;
 #define c_sa_family sa.sa_family
 #define c_sa_port sin.sin_port
     union {
@@ -177,6 +175,7 @@ CORE_DECLARE(const char *)core_inet_ntop(c_sockaddr_t *sockaddr,
 CORE_DECLARE(status_t) core_inet_pton(
         int family, const char *src, c_sockaddr_t *dst);
 
+CORE_DECLARE(socklen_t) sockaddr_len(const c_sockaddr_t *sa);
 CORE_DECLARE(int) sockaddr_is_equal(c_sockaddr_t *a, c_sockaddr_t *b);
 
 #ifdef __cplusplus

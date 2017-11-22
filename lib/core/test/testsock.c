@@ -132,7 +132,6 @@ static void sock_test3(abts_case *tc, void *data)
 
     size = core_recvfrom(udp, str, STRLEN, 0, &sa);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
-    ABTS_INT_EQUAL(tc, sizeof(struct sockaddr_in), sa.c_sa_len);
     ABTS_STR_EQUAL(tc, "127.0.0.1", CORE_NTOP(&sa, buf));
 
     thread_join(&rv, test3_thread);
@@ -185,7 +184,6 @@ static void sock_test4(abts_case *tc, void *data)
 
     size = core_recvfrom(udp, str, STRLEN, 0, &sa);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
-    ABTS_INT_EQUAL(tc, sizeof(struct sockaddr_in), sa.c_sa_len);
     ABTS_STR_EQUAL(tc, "127.0.0.1", CORE_NTOP(&sa, buf));
 
     size = core_sendto(udp, DATASTR, strlen(DATASTR), 0, &sa);
@@ -247,7 +245,6 @@ static void sock_test5(abts_case *tc, void *data)
 
     size = core_recvfrom(udp, str, STRLEN, 0, &sa);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
-    ABTS_INT_EQUAL(tc, sizeof(struct sockaddr_in6), sa.c_sa_len);
     ABTS_STR_EQUAL(tc, "::1", CORE_NTOP(&sa, buf));
 
     size = core_send(udp, DATASTR, strlen(DATASTR), 0);

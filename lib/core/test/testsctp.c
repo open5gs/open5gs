@@ -135,7 +135,6 @@ static void sctp_test3(abts_case *tc, void *data)
 
     size = core_sctp_recvmsg(sctp, str, STRLEN, &sa, &ppid, NULL);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
-    ABTS_INT_EQUAL(tc, sizeof(struct sockaddr_in), sa.c_sa_len);
     ABTS_INT_EQUAL(tc, PPID, ppid);
     ABTS_STR_EQUAL(tc, "127.0.0.1", CORE_NTOP(&sa, buf));
     
@@ -191,7 +190,6 @@ static void sctp_test4(abts_case *tc, void *data)
 
     size = core_sctp_recvmsg(sctp, str, STRLEN, &sa, &ppid, NULL);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
-    ABTS_INT_EQUAL(tc, sizeof(struct sockaddr_in6), sa.c_sa_len);
     ABTS_STR_EQUAL(tc, "::1", CORE_NTOP(&sa, buf));
     ABTS_INT_EQUAL(tc, PPID, ppid);
 
@@ -223,7 +221,6 @@ static void *THREAD_FUNC test5_main(thread_id id, void *data)
     rv = sctp_connect(sctp, "::1", PORT);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     remote_addr = sock_remote_addr_get(sctp);
-    ABTS_INT_EQUAL(tc, sizeof(struct sockaddr_in6), remote_addr->c_sa_len);
     ABTS_STR_EQUAL(tc, "::1", CORE_NTOP(remote_addr, buf));
 
     size = core_sctp_sendmsg(sctp, DATASTR, strlen(DATASTR),
@@ -232,7 +229,6 @@ static void *THREAD_FUNC test5_main(thread_id id, void *data)
 
     size = core_sctp_recvmsg(sctp, str, STRLEN, &sa, &ppid, NULL);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
-    ABTS_INT_EQUAL(tc, sizeof(struct sockaddr_in6), sa.c_sa_len);
     ABTS_STR_EQUAL(tc, "::1", CORE_NTOP(&sa, buf));
     ABTS_INT_EQUAL(tc, PPID, ppid);
 
@@ -262,7 +258,6 @@ static void sctp_test5(abts_case *tc, void *data)
 
     size = core_sctp_recvmsg(sctp, str, STRLEN, &sa, &ppid, NULL);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
-    ABTS_INT_EQUAL(tc, sizeof(struct sockaddr_in6), sa.c_sa_len);
     ABTS_STR_EQUAL(tc, "::1", CORE_NTOP(&sa, buf));
     ABTS_INT_EQUAL(tc, PPID, ppid);
 

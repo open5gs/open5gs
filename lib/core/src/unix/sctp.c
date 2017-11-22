@@ -179,11 +179,15 @@ int core_sctp_sendmsg(sock_id id, const void *msg, size_t len,
 {
     sock_t *sock = (sock_t *)id;
     int size;
+    socklen_t addrlen = 0;
 
     d_assert(id, return -1, );
+
+    if (to)
+        addrlen = sockaddr_len(to);
     
     size = sctp_sendmsg(sock->fd, msg, len,
-            to ? &to->sa : NULL, to ? to->c_sa_len : 0,
+            to ? &to->sa : NULL, addrlen,
             htonl(ppid),
             0,  /* flags */
             stream_no,
@@ -203,17 +207,20 @@ int core_sctp_recvmsg(sock_id id, void *msg, size_t len,
 {
     sock_t *sock = (sock_t *)id;
     int size;
-    socklen_t addrlen = sizeof(struct sockaddr_storage);
+    socklen_t addrlen = 0;
 
     int flags = 0;
     struct sctp_sndrcvinfo sinfo;
 
     d_assert(id, return -1,);
 
+    if (from)
+        addrlen = sockaddr_len(from);
+
     do
     {
         size = sctp_recvmsg(sock->fd, msg, len,
-                    from ? &from->sa : NULL, from ? &addrlen : NULL,
+                    from ? &from->sa : NULL, addrlen,
                     &sinfo, &flags);
         if (size < 0)
         {
@@ -222,8 +229,6 @@ int core_sctp_recvmsg(sock_id id, void *msg, size_t len,
 
             return size;
         }
-        if (from)
-            from->c_sa_len = addrlen;
 
         if (!(flags & MSG_NOTIFICATION)) 
             break;
