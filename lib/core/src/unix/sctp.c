@@ -18,7 +18,7 @@ status_t sctp_socket(sock_id *new, int family, int type)
 {
     status_t rv;
 
-    rv = sock_create(new, family, type, IPPROTO_SCTP);
+    rv = sock_socket(new, family, type, IPPROTO_SCTP);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
     rv = subscribe_to_events(*new);

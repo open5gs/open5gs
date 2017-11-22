@@ -406,6 +406,7 @@ sgw_ue_t* sgw_ue_add(gtp_f_teid_t *mme_s11_teid,
         d_assert(mme, return NULL, "Can't add MME-GTP node");
 
         mme->addr.sin.sin_addr.s_addr = addr;
+        mme->addr.c_sa_family = AF_INET;
         mme->addr.c_sa_port = htons(GTPV2_C_UDP_PORT);
         mme->sock = sgw_self()->gtpc_sock;
     }

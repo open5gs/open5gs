@@ -16,7 +16,7 @@ status_t tcp_server(sock_id *new,
 
     while(sa)
     {
-        rv = sock_create(new, sa->c_sa_family, SOCK_STREAM, IPPROTO_TCP);
+        rv = sock_socket(new, sa->c_sa_family, SOCK_STREAM, IPPROTO_TCP);
         if (rv != CORE_OK) continue;
         
         sock = (sock_t *)*new;
@@ -67,7 +67,7 @@ status_t tcp_client(sock_id *new,
 
     while(sa)
     {
-        rv = sock_create(new, sa->c_sa_family, SOCK_STREAM, IPPROTO_TCP);
+        rv = sock_socket(new, sa->c_sa_family, SOCK_STREAM, IPPROTO_TCP);
         if (rv != CORE_OK) continue;
         
         sock = (sock_t *)*new;

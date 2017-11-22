@@ -30,7 +30,7 @@ libcore_la_SOURCES = \
 	unix/rand.c unix/time.c unix/file.c unix/net_lib.c \
 	unix/thread.c unix/signal.c \
 	unix/atomic.c unix/cond.c unix/mutex.c unix/rwlock.c unix/semaphore.c \
-	unix/socket.c unix/udp.c unix/tcp.c \
+	unix/socket.c unix/udp.c unix/tcp.c unix/tun.c \
 	$(NULL)
 
 if !USRSCTP

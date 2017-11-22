@@ -83,10 +83,11 @@ struct c_sockaddr_t {
 CORE_DECLARE(status_t) sock_init(void);
 CORE_DECLARE(status_t) sock_final(void);
 
-CORE_DECLARE(status_t) sock_create(
-        sock_id *id, int family, int type, int protocol);
+CORE_DECLARE(status_t) sock_create(sock_id *new);
 CORE_DECLARE(status_t) sock_delete(sock_id id);
 
+CORE_DECLARE(status_t) sock_socket(
+        sock_id *id, int family, int type, int protocol);
 CORE_DECLARE(status_t) sock_bind(sock_id id, c_sockaddr_t *sa);
 CORE_DECLARE(status_t) sock_connect(sock_id id, c_sockaddr_t *sa);
 
@@ -131,6 +132,14 @@ CORE_DECLARE(int) core_sctp_sendmsg(sock_id id, const void *msg, size_t len,
 #define CORE_SCTP_REMOTE_CLOSED     -2
 CORE_DECLARE(int) core_sctp_recvmsg(sock_id id, void *msg, size_t len,
         c_sockaddr_t *from, c_uint32_t *ppid, c_uint16_t *stream_no);
+/*
+ * TUN Driver
+ */
+CORE_DECLARE(status_t) tun_open(sock_id *new,
+        char *ifname, int is_tap);
+CORE_DECLARE(status_t) tun_set_ipv4(sock_id id,
+        c_uint32_t ip_addr, c_uint8_t bits);
+
 /*
  * Send/Recv
  */

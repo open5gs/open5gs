@@ -107,6 +107,7 @@ void sgw_s11_handle_create_session_request(gtp_xact_t *s11_xact,
 
         pgw->addr.sin.sin_addr.s_addr = addr;
         pgw->addr.c_sa_port = htons(GTPV2_C_UDP_PORT);
+        pgw->addr.c_sa_family = AF_INET;
         pgw->sock = sgw_self()->gtpc_sock;
     }
 

@@ -144,8 +144,8 @@ status_t gtp_send(gtp_node_t *gnode, pkbuf_t *pkbuf)
     sock = gnode->sock;
     d_assert(sock, return CORE_ERROR, "Null param");
 
-    sent = net_sendto(sock, pkbuf->payload, pkbuf->len, 
-            gnode->addr.sin.sin_addr.s_addr, ntohs(gnode->addr.c_sa_port));
+    sent = sendto(sock->sock_id, pkbuf->payload, pkbuf->len, 0,
+            &gnode->addr.sa, sizeof(gnode->addr.sin));
     d_trace(50, "Sent %d->%d bytes to [%s:%d]\n", pkbuf->len, sent, 
             CORE_NTOP(&gnode->addr, buf), ntohs(gnode->addr.c_sa_port));
     d_trace_hex(50, pkbuf->payload, pkbuf->len);

@@ -497,6 +497,7 @@ pgw_sess_t *pgw_sess_add(gtp_f_teid_t *sgw_s5c_teid,
 
         sgw->addr.sin.sin_addr.s_addr = addr;
         sgw->addr.c_sa_port = htons(GTPV2_C_UDP_PORT);
+        sgw->addr.c_sa_family = AF_INET;
         sgw->sock = pgw_self()->gtpc_sock;
     }
     /* Setup GTP Node between PGW and SGW */

@@ -7,7 +7,7 @@ status_t udp_socket(sock_id *new, int family)
 {
     status_t rv;
 
-    rv = sock_create(new, family, SOCK_DGRAM, IPPROTO_UDP);
+    rv = sock_socket(new, family, SOCK_DGRAM, IPPROTO_UDP);
     d_assert(rv == CORE_OK && new, return CORE_ERROR,);
 
     d_trace(1, "udp socket(%d)\n", family);

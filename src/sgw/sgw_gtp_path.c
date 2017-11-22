@@ -100,6 +100,7 @@ static int _gtpv1_u_recv_cb(net_sock_t *sock, void *data)
 
             gnode.addr.sin.sin_addr.s_addr = sock->remote.sin_addr.s_addr;
             gnode.addr.c_sa_port = sock->remote.sin_port;
+            gnode.addr.c_sa_family = AF_INET;
             gnode.sock = sock;
 
             gtp_send(&gnode, echo_rsp);
@@ -119,6 +120,7 @@ static int _gtpv1_u_recv_cb(net_sock_t *sock, void *data)
 
         /* Convert TEID */
         gnode.addr.c_sa_port = htons(GTPV1_U_UDP_PORT);
+        gnode.addr.c_sa_family = AF_INET;
         gnode.sock = sgw_self()->gtpu_sock;
             
         if (tunnel->interface_type == 
@@ -295,6 +297,7 @@ status_t sgw_gtp_send_end_marker(sgw_bearer_t *bearer)
     
     gnode.addr.sin.sin_addr.s_addr = s1u_tunnel->remote_addr;
     gnode.addr.c_sa_port = htons(GTPV1_U_UDP_PORT);
+    gnode.addr.c_sa_family = AF_INET;
     gnode.sock = sgw_self()->gtpu_sock;
 
     rv = gtp_send(&gnode, pkbuf);

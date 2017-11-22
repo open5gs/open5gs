@@ -141,6 +141,7 @@ int testgtpu_enb_send(net_sock_t *sock, c_uint32_t src_ip, c_uint32_t dst_ip)
 
     gnode.addr.sin.sin_addr.s_addr = bearer->sgw_s1u_addr;
     gnode.addr.c_sa_port = htons(GTPV1_U_UDP_PORT);
+    gnode.addr.c_sa_family = AF_INET;
     gnode.sock = sock;
 
     rv = gtp_send(&gnode, pkbuf);

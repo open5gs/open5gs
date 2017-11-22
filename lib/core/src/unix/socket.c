@@ -35,7 +35,7 @@ status_t sock_final(void)
     return CORE_OK;
 }
 
-status_t sock_create(sock_id *new, int family, int type, int protocol)
+status_t sock_create(sock_id *new)
 {
     sock_t *sock = NULL;
 
@@ -43,16 +43,7 @@ status_t sock_create(sock_id *new, int family, int type, int protocol)
     d_assert(sock, return CORE_ENOMEM,);
     memset(sock, 0, sizeof(sock_t));
 
-    sock->family = family;
-    sock->fd = socket(sock->family, type, protocol);
-    if (sock->fd < 0)
-    {
-        d_warn("socket create(%d:%d:%d) failed(%d:%s)",
-                sock->family, type, protocol, errno, strerror(errno));
-        return CORE_ERROR;
-    }
-
-    d_trace(1, "socket create(%d:%d:%d)\n", sock->family, type, protocol);
+    sock->fd = -1;
 
     *new = (sock_id)sock;
 
@@ -71,6 +62,30 @@ status_t sock_delete(sock_id id)
     sock->fd = -1;
 
     index_free(&sock_pool, sock);
+    return CORE_OK;
+}
+
+status_t sock_socket(sock_id *new, int family, int type, int protocol)
+{
+    status_t rv;
+    sock_t *sock = NULL;
+
+    rv = sock_create(new);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    sock = (sock_t *)(*new);
+
+    sock->family = family;
+    sock->fd = socket(sock->family, type, protocol);
+    if (sock->fd < 0)
+    {
+        d_warn("socket create(%d:%d:%d) failed(%d:%s)",
+                sock->family, type, protocol, errno, strerror(errno));
+        return CORE_ERROR;
+    }
+
+    d_trace(1, "socket create(%d:%d:%d)\n", sock->family, type, protocol);
+
     return CORE_OK;
 }
 
