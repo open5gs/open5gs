@@ -112,9 +112,8 @@ typedef struct _mme_enb_t {
     fsm_t           sm;     /* A state machine */
 
     c_uint32_t      enb_id;     /* eNB_ID received from eNB */
-    c_uint32_t      s1ap_addr;  /* eNB S1AP IP address */
-    c_uint16_t      s1ap_port;  /* eNB S1AP Port */
-    sock_id         s1ap_sock;  /* eNB S1AP Socket */
+    sock_id         sock;       /* eNB S1AP Socket */
+    c_sockaddr_t    addr;       /* eNB S1AP Address */
 
     c_uint8_t       num_of_tai;
     tai_t           tai[MAX_NUM_OF_TAC * MAX_NUM_OF_BPLMN];

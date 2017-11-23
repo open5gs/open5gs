@@ -1001,13 +1001,12 @@ mme_enb_t* mme_enb_add(sock_id sock)
     index_alloc(&mme_enb_pool, &enb);
     d_assert(enb, return NULL, "Null param");
 
-    enb->s1ap_sock = sock;
+    enb->sock = sock;
     list_init(&enb->enb_ue_list);
 
-    hash_set(self.s1ap_sock_hash,
-            &enb->s1ap_sock, sizeof(enb->s1ap_sock), enb);
+    hash_set(self.s1ap_sock_hash, &enb->sock, sizeof(enb->sock), enb);
     
-    event_set_param1(&e, (c_uintptr_t)enb->s1ap_sock);
+    event_set_param1(&e, (c_uintptr_t)enb->sock);
     fsm_create(&enb->sm, s1ap_state_initial, s1ap_state_final);
     fsm_init(&enb->sm, &e);
 
@@ -1019,20 +1018,20 @@ status_t mme_enb_remove(mme_enb_t *enb)
     event_t e;
 
     d_assert(enb, return CORE_ERROR, "Null param");
-    d_assert(enb->s1ap_sock, return CORE_ERROR, "Null param");
+    d_assert(enb->sock, return CORE_ERROR, "Null param");
 
-    event_set_param1(&e, (c_uintptr_t)enb->s1ap_sock);
+    event_set_param1(&e, (c_uintptr_t)enb->sock);
     fsm_final(&enb->sm, &e);
     fsm_clear(&enb->sm);
 
     hash_set(self.s1ap_sock_hash,
-            &enb->s1ap_sock, sizeof(enb->s1ap_sock), NULL);
+            &enb->sock, sizeof(enb->sock), NULL);
     if (enb->enb_id)
         hash_set(self.enb_id_hash, &enb->enb_id, sizeof(enb->enb_id), NULL);
 
     enb_ue_remove_in_enb(enb);
 
-    s1ap_sctp_close(enb->s1ap_sock);
+    s1ap_sctp_close(enb->sock);
 
     index_free(&mme_enb_pool, enb);
 

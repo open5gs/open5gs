@@ -1,8 +1,8 @@
 #define TRACE_MODULE _s1ap_usrsctp
 
 #include "core_debug.h"
-#include "core_thread.h"
 #include "core_net.h"
+#include "core_thread.h"
 
 #include "mme_event.h"
 
@@ -154,10 +154,8 @@ status_t s1ap_sctp_close(sock_id sock)
     return CORE_OK;
 }
 
-status_t s1ap_sendto(sock_id sock, pkbuf_t *pkbuf,
-        c_uint32_t addr, c_uint16_t port)
+status_t s1ap_send(sock_id sock, pkbuf_t *pkbuf)
 {
-    char buf[INET_ADDRSTRLEN];
     ssize_t sent;
     struct socket *psock = (struct socket *)sock;
     struct sctp_sndinfo sndinfo;
@@ -168,12 +166,11 @@ status_t s1ap_sendto(sock_id sock, pkbuf_t *pkbuf,
     memset((void *)&sndinfo, 0, sizeof(struct sctp_sndinfo));
     sndinfo.snd_ppid = htonl(SCTP_S1AP_PPID);
     sent = usrsctp_sendv(psock, pkbuf->payload, pkbuf->len, 
-            NULL, 0,  /* Only SOCK_STREAM is supported at this time */
+            NULL, 0,
             (void *)&sndinfo, (socklen_t)sizeof(struct sctp_sndinfo),
             SCTP_SENDV_SNDINFO, 0);
 
-    d_trace(10,"Sent %d->%d bytes to [%s:%d]\n", 
-            pkbuf->len, sent, INET_NTOP(&addr, buf), port);
+    d_trace(10,"Sent %d->%d bytes\n", pkbuf->len, sent);
     d_trace_hex(10, pkbuf->payload, pkbuf->len);
     if (sent < 0 || sent != pkbuf->len)
     {
@@ -190,20 +187,26 @@ static void *THREAD_FUNC accept_main(thread_id id, void *data)
     event_t e;
 
     struct socket *sock = NULL;
-    struct sockaddr_in remote_addr;
-    socklen_t addr_len;
+    c_sockaddr_t addr, *paddr = NULL;
+    socklen_t addrlen = sizeof(struct sockaddr_storage);
 
     while (!accept_thread_should_stop)
     {
+        memset(&addr, 0, sizeof(c_sockaddr_t));
         if ((sock = usrsctp_accept((struct socket *)mme_self()->s1ap_sock,
-                    (struct sockaddr *)&remote_addr, &addr_len)) == NULL)
+                    &addr.sa, &addrlen)) == NULL)
         {
             d_error("usrsctp_accept failed");
             continue;
         }
 
+        paddr = core_calloc(1, sizeof(c_sockaddr_t));
+        d_assert(paddr, return NULL,);
+        memcpy(paddr, &addr, sizeof(c_sockaddr_t));
+
         event_set(&e, MME_EVT_S1AP_LO_ACCEPT);
         event_set_param1(&e, (c_uintptr_t)sock);
+        event_set_param2(&e, (c_uintptr_t)paddr);
         mme_event_send(&e);
     }
 

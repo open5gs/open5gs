@@ -17,9 +17,9 @@ status_t s1ap_send_to_enb(mme_enb_t *enb, pkbuf_t *pkbuf)
     status_t rv = CORE_ERROR;
     d_assert(enb,,);
     d_assert(pkbuf,,);
-    d_assert(enb->s1ap_sock,,);
+    d_assert(enb->sock,,);
 
-    rv = s1ap_sendto(enb->s1ap_sock, pkbuf, enb->s1ap_addr, enb->s1ap_port);
+    rv = s1ap_send(enb->sock, pkbuf);
     if (rv != CORE_OK)
     {
         d_error("s1_send error");

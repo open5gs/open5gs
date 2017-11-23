@@ -10,6 +10,9 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#define SCTP_S1AP_PPID 18
+#define SCTP_X2AP_PPID 27
+
 CORE_DECLARE(status_t) s1ap_open();
 CORE_DECLARE(status_t) s1ap_close();
 
@@ -17,8 +20,7 @@ CORE_DECLARE(status_t) s1ap_sctp_close(sock_id sock);
 
 CORE_DECLARE(status_t) s1ap_final();
 
-CORE_DECLARE(status_t) s1ap_sendto(sock_id sock, pkbuf_t *pkb,
-        c_uint32_t addr, c_uint16_t port);
+CORE_DECLARE(status_t) s1ap_send(sock_id sock, pkbuf_t *pkb);
 CORE_DECLARE(status_t) s1ap_send_to_enb(mme_enb_t *enb, pkbuf_t *pkb);
 CORE_DECLARE(status_t) s1ap_delayed_send_to_enb(mme_enb_t *enb,
         pkbuf_t *pkbuf, c_uint32_t duration);

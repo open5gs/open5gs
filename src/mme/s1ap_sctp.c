@@ -73,19 +73,15 @@ static int s1ap_accept_cb(sock_id id, void *data)
     rv = sock_accept(&new, id);
     if (rv == CORE_OK)
     {
-        c_sockaddr_t *addr = sock_remote_addr_get(new);;
+        c_sockaddr_t *addr = sock_remote_addr_get(new);
         event_t e;
 
-        c_uint32_t ip = addr->sin.sin_addr.s_addr;
-        c_uint16_t port = ntohs(addr->c_sa_port);
         d_trace(1, "eNB-S1 accepted[%s] in s1_path module\n", 
             CORE_NTOP(addr, buf));
 
         event_set(&e, MME_EVT_S1AP_LO_ACCEPT);
         event_set_param1(&e, (c_uintptr_t)new);
-        event_set_param2(&e, (c_uintptr_t)ip);
-        event_set_param3(&e, (c_uintptr_t)port);
-        /* FIXME : how to close remote_sock */
+        event_set_param2(&e, (c_uintptr_t)addr);
         mme_event_send(&e);
 
         return 0;
@@ -173,49 +169,16 @@ int s1ap_recv_cb(sock_id sock, void *data)
     return 0;
 }
 
-#if 0 /* deprecated */
-status_t s1ap_send(net_sock_t *s, pkbuf_t *pkbuf)
+status_t s1ap_send(sock_id sock, pkbuf_t *pkbuf)
 {
-    char buf[INET_ADDRSTRLEN];
-
-    ssize_t sent;
-
-    d_assert(s, return CORE_ERROR, "Null param");
-    d_assert(pkbuf, return CORE_ERROR, "Null param");
-
-    sent = net_send(s, pkbuf->payload, pkbuf->len);
-    d_trace(10,"Sent %d->%d bytes to [%s:%d]\n", 
-            pkbuf->len, sent, INET_NTOP(&s->remote.sin_addr.s_addr, buf), 
-            ntohs(s->remote.sin_port));
-    d_trace_hex(10, pkbuf->payload, pkbuf->len);
-    if (sent < 0 || sent != pkbuf->len)
-    {
-        d_error("net_send error (%d:%s)", 
-                s->sndrcv_errno, strerror(s->sndrcv_errno));
-        return CORE_ERROR;
-    }
-    pkbuf_free(pkbuf);
-
-    return CORE_OK;
-}
-#endif
-
-status_t s1ap_sendto(sock_id sock, pkbuf_t *pkbuf,
-        c_uint32_t ipv4, c_uint16_t port)
-{
-#if 0 /* ADDR */
-    char buf[CORE_ADDRSTRLEN];
-#endif
     int sent;
 
-    d_assert(sock, return CORE_ERROR, "Null param");
-    d_assert(pkbuf, return CORE_ERROR, "Null param");
+    d_assert(sock, return CORE_ERROR,);
+    d_assert(pkbuf, return CORE_ERROR,);
 
-    sent = core_sctp_sendmsg(sock, pkbuf->payload, pkbuf->len, NULL, 18, 0);
-#if 0 /* ADDR */
-    d_trace(10,"Sent %d->%d bytes to [%s:%d]\n", 
-            pkbuf->len, sent, INET_NTOP(&addr, buf), port);
-#endif
+    sent = core_sctp_sendmsg(sock, pkbuf->payload, pkbuf->len,
+            NULL, SCTP_S1AP_PPID, 0);
+    d_trace(10,"Sent %d->%d bytes\n", pkbuf->len, sent);
     d_trace_hex(10, pkbuf->payload, pkbuf->len);
     if (sent < 0 || sent != pkbuf->len)
     {

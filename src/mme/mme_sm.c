@@ -1,6 +1,5 @@
 #define TRACE_MODULE _mme_sm
 #include "core_debug.h"
-#include "core_net.h"
 
 #include "s1ap_message.h"
 #include "nas_message.h"
@@ -38,7 +37,7 @@ void mme_state_final(fsm_t *s, event_t *e)
 void mme_state_operational(fsm_t *s, event_t *e)
 {
     status_t rv;
-    char buf[INET_ADDRSTRLEN];
+    char buf[CORE_ADDRSTRLEN];
 
     mme_sm_trace(3, e);
 
@@ -82,12 +81,12 @@ void mme_state_operational(fsm_t *s, event_t *e)
         case MME_EVT_S1AP_LO_ACCEPT:
         {
             sock_id sock = (sock_id)event_get_param1(e);
-            d_assert(sock, break, "Null param");
-            c_uint32_t addr = (c_uint32_t)event_get_param2(e);
-            c_uint16_t port = (c_uint16_t)event_get_param3(e);
+            d_assert(sock, break,);
+            c_sockaddr_t *addr = (c_sockaddr_t *)event_get_param2(e);
+            d_assert(addr, break,);
 
             d_trace(1, "eNB-S1 accepted[%s] in master_sm module\n", 
-                INET_NTOP(&addr, buf));
+                CORE_NTOP(addr, buf));
                     
             mme_enb_t *enb = mme_enb_find_by_sock(sock);
             if (!enb)
@@ -99,18 +98,21 @@ void mme_state_operational(fsm_t *s, event_t *e)
 
                 mme_enb_t *enb = mme_enb_add(sock);
                 d_assert(enb, break, "Null param");
-                enb->s1ap_addr = addr;
-                enb->s1ap_port = port;
+                memcpy(&enb->addr, addr, sizeof(c_sockaddr_t));
             }
             else
             {
                 d_warn("eNB context duplicated with IP-address [%s]!!!", 
-                        INET_NTOP(&addr, buf));
+                        CORE_NTOP(addr, buf));
 #if USE_USRSCTP != 1
                 sock_delete(sock);
 #endif
                 d_warn("S1 Socket Closed");
             }
+
+#if USE_USRSCTP == 1
+            core_free(addr);
+#endif
             
             break;
         }
