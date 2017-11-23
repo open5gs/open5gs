@@ -105,13 +105,14 @@ status_t sock_bind(sock_id id, c_sockaddr_t *sa)
     if (bind(sock->fd, &sa->sa, addrlen) != 0)
     {
         d_error("socket bind(%s:%d) failed(%d:%s)",
-                CORE_NTOP(sa, buf), sa->sin.sin_port, errno, strerror(errno));
+                CORE_NTOP(sa, buf), ntohs(sa->c_sa_port),
+                errno, strerror(errno));
         return CORE_ERROR;
     }
 
     memcpy(&sock->local_addr, sa, sizeof(sock->local_addr));
 
-    d_trace(1, "socket bind %s:%d\n", CORE_NTOP(sa, buf), sa->sin.sin_port);
+    d_trace(1, "socket bind %s:%d\n", CORE_NTOP(sa, buf), ntohs(sa->c_sa_port));
 
     return CORE_OK;
 }
@@ -131,13 +132,15 @@ status_t sock_connect(sock_id id, c_sockaddr_t *sa)
     if (connect(sock->fd, &sa->sa, addrlen) != 0)
     {
         d_error("socket connect(%s:%d) failed(%d:%s)",
-                CORE_NTOP(sa, buf), sa->sin.sin_port, errno, strerror(errno));
+                CORE_NTOP(sa, buf), ntohs(sa->c_sa_port),
+                errno, strerror(errno));
         return CORE_ERROR;
     }
 
     memcpy(&sock->remote_addr, sa, sizeof(sock->remote_addr));
 
-    d_trace(1, "socket connect %s:%d\n", CORE_NTOP(sa, buf), sa->sin.sin_port);
+    d_trace(1, "socket connect %s:%d\n", CORE_NTOP(sa, buf),
+            ntohs(sa->c_sa_port));
 
     return CORE_OK;
 }

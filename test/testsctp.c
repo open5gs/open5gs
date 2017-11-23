@@ -7,6 +7,10 @@
 #include "mme_context.h"
 #include "s1ap_path.h"
 
+#if 1 /* ADDR */
+#include <arpa/inet.h>
+#endif
+
 status_t tests1ap_enb_connect(sock_id *new)
 {
     char buf[INET_ADDRSTRLEN];
@@ -46,14 +50,13 @@ status_t tests1ap_enb_send(sock_id id, pkbuf_t *sendbuf)
 int tests1ap_enb_read(sock_id id, pkbuf_t *recvbuf)
 {
     c_uint32_t ppid;
-    int size = core_sctp_recvmsg(id,
-            recvbuf->payload, MAX_SDU_LEN, NULL, &ppid, NULL);
-#if 0
-    if (ppid != 18)
+    int size;
+
+    do
     {
-        d_error("Invalid PPID = %d\n", ppid);
-    }
-#endif
+        size = core_sctp_recvmsg(id,
+            recvbuf->payload, MAX_SDU_LEN, NULL, &ppid, NULL);
+    } while(size <= 0);
     recvbuf->len = size;
 
     return size;

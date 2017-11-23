@@ -93,8 +93,8 @@ void mme_state_operational(fsm_t *s, event_t *e)
             if (!enb)
             {
 #if USE_USRSCTP != 1
-                int rc = net_register_sock(sock, s1ap_recv_cb, NULL);
-                d_assert(rc == 0, break, "register _s1ap_recv_cb failed");
+                status_t rv = sock_register(sock, s1ap_recv_cb, NULL);
+                d_assert(rv == CORE_OK, break, "register s1ap_recv_cb failed");
 #endif
 
                 mme_enb_t *enb = mme_enb_add(sock);
@@ -107,7 +107,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 d_warn("eNB context duplicated with IP-address [%s]!!!", 
                         INET_NTOP(&addr, buf));
 #if USE_USRSCTP != 1
-                net_close(sock);
+                sock_delete(sock);
 #endif
                 d_warn("S1 Socket Closed");
             }

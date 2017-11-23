@@ -16,7 +16,8 @@
 
 #include "core.h"
 #include "core_lib.h"
-#include "core_net.h"
+
+#include "core_arch_network.h"
 
 static char *stuffbuffer(char *buf, size_t bufsize, const char *s)
 {

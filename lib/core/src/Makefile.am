@@ -8,7 +8,7 @@ libcore_la_SOURCES = \
 	../include/core_fsm.h ../include/core_general.h ../include/core.h \
 	../include/core.h.in ../include/core_index.h ../include/core_lib.h \
 	../include/core_list.h ../include/core_msgq.h ../include/core_mutex.h \
-	../include/core_net.h ../include/core_param.h ../include/core_pkbuf.h \
+	../include/core_network.h ../include/core_param.h ../include/core_pkbuf.h \
 	../include/core_pool.h ../include/core_queue.h ../include/core_ringbuf.h \
 	../include/core_rwlock.h ../include/core_semaphore.h ../include/core_sha1.h \
 	../include/core_sha1_hmac.h ../include/core_sha2.h ../include/core_sha2_hmac.h \
@@ -16,7 +16,6 @@ libcore_la_SOURCES = \
 	../include/core_timer.h ../include/core_tlv.h ../include/core_tlv_msg.h \
 	../include/core_atomic.h ../include/core_portable.h \
 	../include/core_version.h ../include/core_event.h ../include/core_hash.h \
-	../include/core_network.h \
 	\
 	debug.c version.c fsm.c msgq.c ringbuf.c timer.c tlv.c tlv_msg.c hash.c \
 	aes.c aes_cmac.c sha1.c sha1_hmac.c sha2.c sha2_hmac.c misc.c event.c \
@@ -27,7 +26,7 @@ libcore_la_SOURCES = \
     ../include/arch/unix/core_arch_semaphore.h \
     ../include/arch/unix/core_arch_thread.h \
 	unix/start.c unix/errorcodes.c unix/pkbuf.c \
-	unix/rand.c unix/time.c unix/file.c unix/net_lib.c \
+	unix/rand.c unix/time.c unix/file.c \
 	unix/thread.c unix/signal.c \
 	unix/atomic.c unix/cond.c unix/mutex.c unix/rwlock.c unix/semaphore.c \
 	unix/socket.c unix/udp.c unix/tcp.c unix/tun.c \

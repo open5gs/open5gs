@@ -107,6 +107,9 @@ abts_suite *test_s1setup(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
+    extern int _sctp;
+    d_trace_level(&_sctp, 10);
+
     abts_run_test(suite, s1setup_test1, NULL);
     abts_run_test(suite, s1setup_test2, NULL);
 

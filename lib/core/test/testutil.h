@@ -62,7 +62,6 @@ abts_suite *testfsm(abts_suite *suite);
 abts_suite *testtlv(abts_suite *suite);
 abts_suite *testaes(abts_suite *suite);
 abts_suite *testsha2(abts_suite *suite);
-abts_suite *testnetlib(abts_suite *suite);
 abts_suite *testsock(abts_suite *suite);
 abts_suite *testsctp(abts_suite *suite);
 abts_suite *testtime(abts_suite *suite);

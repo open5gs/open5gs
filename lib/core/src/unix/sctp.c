@@ -221,8 +221,11 @@ int core_sctp_recvmsg(sock_id id, void *msg, size_t len,
                     &sinfo, &flags);
         if (size < 0)
         {
-            d_error("sctp_recvmsg(len:%ld) failed(%d:%s)",
-                    len, errno, strerror(errno));
+            if (errno != EAGAIN)
+            {
+                d_error("sctp_recvmsg(%d) failed(%d:%s)",
+                        size, errno, strerror(errno));
+            }
 
             return size;
         }

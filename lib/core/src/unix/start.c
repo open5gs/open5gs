@@ -11,7 +11,6 @@
 #include "core_rwlock.h"
 #include "core_semaphore.h"
 #include "core_thread.h"
-#include "core_net.h"
 #include "core_network.h"
 #include "core_file.h"
 #include "core_pkbuf.h"
@@ -46,7 +45,6 @@ status_t core_initialize(void)
     rwlock_init();
     atomic_init();
     thread_init();
-    net_init();
     sock_init();
     file_init();
     pkbuf_init();
@@ -72,7 +70,6 @@ void core_terminate(void)
     pkbuf_final();
     file_final();
     sock_final();
-    net_final();
     thread_final();
     atomic_final();
     rwlock_final();

@@ -4,7 +4,6 @@
 #include "core_general.h"
 #include "core_debug.h"
 #include "core_pool.h"
-#include "core_net.h"
 
 pool_declare(file_pool, file_t, MAX_NUM_OF_FILE);
 
