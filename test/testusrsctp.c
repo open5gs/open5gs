@@ -93,22 +93,16 @@ int tests1ap_enb_read(sock_id id, pkbuf_t *recvbuf)
         n = usrsctp_recvv(psock, recvbuf->payload, MAX_SDU_LEN,
                 (struct sockaddr *)&addr, &from_len, (void *)&rcv_info,
                 &infolen, &infotype, &flags);
-        if (n > 0) {
+        if (n > 0)
+        {
             if (flags & MSG_NOTIFICATION)
             {
                 /* Nothing to do */
             }
-            else
+            else if (flags & MSG_EOR)
             {
-                c_uint32_t ppid = ntohl(rcv_info.rcv_ppid);
-                if ((flags & MSG_EOR) && ppid == SCTP_S1AP_PPID)
-                {
-                    if (n > 0)
-                    {
-                        rc = n;
-                        break;
-                    }
-                }
+                rc = n;
+                break;
             }
         }
     }

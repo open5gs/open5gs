@@ -98,22 +98,16 @@ void mme_state_operational(fsm_t *s, event_t *e)
 
                 mme_enb_t *enb = mme_enb_add(sock);
                 d_assert(enb, break, "Null param");
-                memcpy(&enb->addr, addr, sizeof(c_sockaddr_t));
+                enb->addr = addr;
             }
             else
             {
                 d_warn("eNB context duplicated with IP-address [%s]!!!", 
                         CORE_NTOP(addr, buf));
-#if USE_USRSCTP != 1
                 sock_delete(sock);
-#endif
                 d_warn("S1 Socket Closed");
             }
 
-#if USE_USRSCTP == 1
-            core_free(addr);
-#endif
-            
             break;
         }
         case MME_EVT_S1AP_LO_CONNREFUSED:

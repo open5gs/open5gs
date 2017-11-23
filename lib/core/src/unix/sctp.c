@@ -237,7 +237,7 @@ int core_sctp_recvmsg(sock_id id, void *msg, size_t len,
         {
             union sctp_notification *not = (union sctp_notification *)msg;
 
-            switch( not->sn_header.sn_type ) 
+            switch(not->sn_header.sn_type) 
             {
                 case SCTP_ASSOC_CHANGE :
                     d_trace(3, "SCTP_ASSOC_CHANGE"

@@ -16,8 +16,6 @@ extern "C" {
 CORE_DECLARE(status_t) s1ap_open();
 CORE_DECLARE(status_t) s1ap_close();
 
-CORE_DECLARE(status_t) s1ap_sctp_close(sock_id sock);
-
 CORE_DECLARE(status_t) s1ap_final();
 
 CORE_DECLARE(status_t) s1ap_send(sock_id sock, pkbuf_t *pkb);

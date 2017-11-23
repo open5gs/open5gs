@@ -44,15 +44,8 @@ status_t s1ap_open(void)
 
 status_t s1ap_close()
 {
-    s1ap_sctp_close(mme_self()->s1ap_sock);
+    sock_delete(mme_self()->s1ap_sock);
     mme_self()->s1ap_sock = 0;
-
-    return CORE_OK;
-}
-
-status_t s1ap_sctp_close(sock_id sock)
-{
-    sock_delete(sock);
 
     return CORE_OK;
 }

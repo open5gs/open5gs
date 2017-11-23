@@ -1031,7 +1031,10 @@ status_t mme_enb_remove(mme_enb_t *enb)
 
     enb_ue_remove_in_enb(enb);
 
-    s1ap_sctp_close(enb->sock);
+    sock_delete(enb->sock);
+#if USE_USRSCTP == 1
+    core_free(enb->addr);
+#endif
 
     index_free(&mme_enb_pool, enb);
 

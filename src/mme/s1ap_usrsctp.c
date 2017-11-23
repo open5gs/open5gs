@@ -20,7 +20,6 @@
 
 #define LOCAL_UDP_PORT  9899
 
-static void handle_notification(union sctp_notification *notif, size_t n);
 static int s1ap_usrsctp_recv_cb(struct socket *sock,
         union sctp_sockstore addr, void *data, size_t datalen,
         struct sctp_rcvinfo rcv, int flags, void *ulp_info);
@@ -148,7 +147,7 @@ status_t s1ap_close()
     return CORE_OK;
 }
 
-status_t s1ap_sctp_close(sock_id sock)
+status_t sock_delete(sock_id sock)
 {
     usrsctp_close((struct socket *)sock);
     return CORE_OK;
@@ -187,26 +186,23 @@ static void *THREAD_FUNC accept_main(thread_id id, void *data)
     event_t e;
 
     struct socket *sock = NULL;
-    c_sockaddr_t addr, *paddr = NULL;
+    c_sockaddr_t *addr = NULL;
     socklen_t addrlen = sizeof(struct sockaddr_storage);
 
     while (!accept_thread_should_stop)
     {
-        memset(&addr, 0, sizeof(c_sockaddr_t));
+        addr = core_calloc(1, sizeof(c_sockaddr_t));
         if ((sock = usrsctp_accept((struct socket *)mme_self()->s1ap_sock,
-                    &addr.sa, &addrlen)) == NULL)
+                    &addr->sa, &addrlen)) == NULL)
         {
             d_error("usrsctp_accept failed");
+            core_free(addr);
             continue;
         }
 
-        paddr = core_calloc(1, sizeof(c_sockaddr_t));
-        d_assert(paddr, return NULL,);
-        memcpy(paddr, &addr, sizeof(c_sockaddr_t));
-
         event_set(&e, MME_EVT_S1AP_LO_ACCEPT);
         event_set_param1(&e, (c_uintptr_t)sock);
-        event_set_param2(&e, (c_uintptr_t)paddr);
+        event_set_param2(&e, (c_uintptr_t)addr);
         mme_event_send(&e);
     }
 
@@ -219,239 +215,83 @@ static int s1ap_usrsctp_recv_cb(struct socket *sock,
 {
     if (data)
     {
+        event_t e;
+
+#undef MSG_NOTIFICATION
+#define MSG_NOTIFICATION 0x2000
         if (flags & MSG_NOTIFICATION)
         {
-            handle_notification((union sctp_notification *)data, datalen);
+            union sctp_notification *not = (union sctp_notification *)data;
+            if (not->sn_header.sn_length == (c_uint32_t)datalen)
+            {
+                switch(not->sn_header.sn_type) 
+                {
+                    case SCTP_ASSOC_CHANGE :
+                        d_trace(3, "SCTP_ASSOC_CHANGE"
+                                "(type:0x%x, flags:0x%x, state:0x%x)\n", 
+                                not->sn_assoc_change.sac_type,
+                                not->sn_assoc_change.sac_flags,
+                                not->sn_assoc_change.sac_state);
+
+                        if (not->sn_assoc_change.sac_state == 
+                                SCTP_SHUTDOWN_COMP ||
+                            not->sn_assoc_change.sac_state == 
+                                SCTP_COMM_LOST)
+                        {
+                            event_set(&e, MME_EVT_S1AP_LO_CONNREFUSED);
+                            event_set_param1(&e, (c_uintptr_t)sock);
+                            mme_event_send(&e);
+                            break;
+                        }
+
+                        if (not->sn_assoc_change.sac_state == SCTP_COMM_UP)
+                            d_trace(3, "SCTP_COMM_UP\n");
+
+                        break;
+                    case SCTP_PEER_ADDR_CHANGE:
+                        break;
+                    case SCTP_SEND_FAILED :
+                        d_error("SCTP_SEND_FAILED"
+                                "(type:0x%x, flags:0x%x, error:0x%x)\n", 
+                                not->sn_send_failed_event.ssfe_type,
+                                not->sn_send_failed_event.ssfe_flags,
+                                not->sn_send_failed_event.ssfe_error);
+                        break;
+                    case SCTP_SHUTDOWN_EVENT :
+                        event_set(&e, MME_EVT_S1AP_LO_CONNREFUSED);
+                        event_set_param1(&e, (c_uintptr_t)sock);
+                        mme_event_send(&e);
+                        break;
+                    default :
+                        d_error("Discarding event with unknown "
+                                "flags = 0x%x, type 0x%x", 
+                                flags, not->sn_header.sn_type);
+                        break;
+                }
+            }
+        }
+        else if (flags & MSG_EOR)
+        {
+            pkbuf_t *pkbuf;
+
+            pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+            d_assert(pkbuf, return 1, );
+
+            pkbuf->len = datalen;
+            memcpy(pkbuf->payload, data, pkbuf->len);
+
+            event_set(&e, MME_EVT_S1AP_MESSAGE);
+            event_set_param1(&e, (c_uintptr_t)sock);
+            event_set_param2(&e, (c_uintptr_t)pkbuf);
+            mme_event_send(&e);
         }
         else
         {
-            c_uint32_t ppid = ntohl(rcv.rcv_ppid);
-            if ((flags & MSG_EOR) && ppid == SCTP_S1AP_PPID)
-            {
-                event_t e;
-                pkbuf_t *pkbuf;
-
-                pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-                d_assert(pkbuf, return 1, );
-
-                pkbuf->len = datalen;
-                memcpy(pkbuf->payload, data, pkbuf->len);
-
-                event_set(&e, MME_EVT_S1AP_MESSAGE);
-                event_set_param1(&e, (c_uintptr_t)sock);
-                event_set_param2(&e, (c_uintptr_t)pkbuf);
-                mme_event_send(&e);
-            }
-            else
-            {
-                d_warn("Unknwon PPID(%d) for data length(%ld)\n",
-                        ppid, datalen);
-            }
+            d_error("Not engough buffer. Need more recv : 0x%x", flags);
         }
         free(data);
     }
     return (1);
-}
-
-
-static void
-handle_association_change_event(struct sctp_assoc_change *sac)
-{
-    unsigned int i, n;
-
-    printf("Association change ");
-    switch (sac->sac_state) {
-    case SCTP_COMM_UP:
-        printf("SCTP_COMM_UP");
-        break;
-    case SCTP_COMM_LOST:
-        printf("SCTP_COMM_LOST");
-        break;
-    case SCTP_RESTART:
-        printf("SCTP_RESTART");
-        break;
-    case SCTP_SHUTDOWN_COMP:
-        printf("SCTP_SHUTDOWN_COMP");
-        break;
-    case SCTP_CANT_STR_ASSOC:
-        printf("SCTP_CANT_STR_ASSOC");
-        break;
-    default:
-        printf("UNKNOWN");
-        break;
-    }
-    printf(", streams (in/out) = (%u/%u)",
-           sac->sac_inbound_streams, sac->sac_outbound_streams);
-    n = sac->sac_length - sizeof(struct sctp_assoc_change);
-    if (((sac->sac_state == SCTP_COMM_UP) ||
-         (sac->sac_state == SCTP_RESTART)) && (n > 0)) {
-        printf(", supports");
-        for (i = 0; i < n; i++) {
-            switch (sac->sac_info[i]) {
-            case SCTP_ASSOC_SUPPORTS_PR:
-                printf(" PR");
-                break;
-            case SCTP_ASSOC_SUPPORTS_AUTH:
-                printf(" AUTH");
-                break;
-            case SCTP_ASSOC_SUPPORTS_ASCONF:
-                printf(" ASCONF");
-                break;
-            case SCTP_ASSOC_SUPPORTS_MULTIBUF:
-                printf(" MULTIBUF");
-                break;
-            case SCTP_ASSOC_SUPPORTS_RE_CONFIG:
-                printf(" RE-CONFIG");
-                break;
-            default:
-                printf(" UNKNOWN(0x%02x)", sac->sac_info[i]);
-                break;
-            }
-        }
-    } else if (((sac->sac_state == SCTP_COMM_LOST) ||
-                (sac->sac_state == SCTP_CANT_STR_ASSOC)) && (n > 0)) {
-        printf(", ABORT =");
-        for (i = 0; i < n; i++) {
-            printf(" 0x%02x", sac->sac_info[i]);
-        }
-    }
-    printf(".\n");
-    if ((sac->sac_state == SCTP_CANT_STR_ASSOC) ||
-        (sac->sac_state == SCTP_SHUTDOWN_COMP) ||
-        (sac->sac_state == SCTP_COMM_LOST)) {
-        exit(0);
-    }
-    return;
-}
-
-static void
-handle_peer_address_change_event(struct sctp_paddr_change *spc)
-{
-    char addr_buf[INET6_ADDRSTRLEN];
-    const char *addr;
-    struct sockaddr_in *sin;
-    struct sockaddr_in6 *sin6;
-    struct sockaddr_conn *sconn;
-
-    switch (spc->spc_aaddr.ss_family) {
-    case AF_INET:
-        sin = (struct sockaddr_in *)&spc->spc_aaddr;
-        addr = inet_ntop(AF_INET, &sin->sin_addr, addr_buf, INET_ADDRSTRLEN);
-        break;
-    case AF_INET6:
-        sin6 = (struct sockaddr_in6 *)&spc->spc_aaddr;
-        addr = inet_ntop(AF_INET6, &sin6->sin6_addr, addr_buf, INET6_ADDRSTRLEN);
-        break;
-    case AF_CONN:
-        sconn = (struct sockaddr_conn *)&spc->spc_aaddr;
-#ifdef _WIN32
-        _snprintf(addr_buf, INET6_ADDRSTRLEN, "%p", sconn->sconn_addr);
-#else
-        snprintf(addr_buf, INET6_ADDRSTRLEN, "%p", sconn->sconn_addr);
-#endif
-        addr = addr_buf;
-        break;
-    default:
-#ifdef _WIN32
-        _snprintf(addr_buf, INET6_ADDRSTRLEN, "Unknown family %d", spc->spc_aaddr.ss_family);
-#else
-        snprintf(addr_buf, INET6_ADDRSTRLEN, "Unknown family %d", spc->spc_aaddr.ss_family);
-#endif
-        addr = addr_buf;
-        break;
-    }
-    printf("Peer address %s is now ", addr);
-    switch (spc->spc_state) {
-    case SCTP_ADDR_AVAILABLE:
-        printf("SCTP_ADDR_AVAILABLE");
-        break;
-    case SCTP_ADDR_UNREACHABLE:
-        printf("SCTP_ADDR_UNREACHABLE");
-        break;
-    case SCTP_ADDR_REMOVED:
-        printf("SCTP_ADDR_REMOVED");
-        break;
-    case SCTP_ADDR_ADDED:
-        printf("SCTP_ADDR_ADDED");
-        break;
-    case SCTP_ADDR_MADE_PRIM:
-        printf("SCTP_ADDR_MADE_PRIM");
-        break;
-    case SCTP_ADDR_CONFIRMED:
-        printf("SCTP_ADDR_CONFIRMED");
-        break;
-    default:
-        printf("UNKNOWN");
-        break;
-    }
-    printf(" (error = 0x%08x).\n", spc->spc_error);
-    return;
-}
-
-static void
-handle_send_failed_event(struct sctp_send_failed_event *ssfe)
-{
-    size_t i, n;
-
-    if (ssfe->ssfe_flags & SCTP_DATA_UNSENT) {
-        printf("Unsent ");
-    }
-    if (ssfe->ssfe_flags & SCTP_DATA_SENT) {
-        printf("Sent ");
-    }
-    if (ssfe->ssfe_flags & ~(SCTP_DATA_SENT | SCTP_DATA_UNSENT)) {
-        printf("(flags = %x) ", ssfe->ssfe_flags);
-    }
-    printf("message with PPID = %u, SID = %u, flags: 0x%04x due to error = 0x%08x",
-           ntohl(ssfe->ssfe_info.snd_ppid), ssfe->ssfe_info.snd_sid,
-           ssfe->ssfe_info.snd_flags, ssfe->ssfe_error);
-    n = ssfe->ssfe_length - sizeof(struct sctp_send_failed_event);
-    for (i = 0; i < n; i++) {
-        printf(" 0x%02x", ssfe->ssfe_data[i]);
-    }
-    printf(".\n");
-    return;
-}
-
-static void
-handle_notification(union sctp_notification *notif, size_t n)
-{
-    if (notif->sn_header.sn_length != (uint32_t)n) {
-        return;
-    }
-    switch (notif->sn_header.sn_type) {
-    case SCTP_ASSOC_CHANGE:
-        handle_association_change_event(&(notif->sn_assoc_change));
-        break;
-    case SCTP_PEER_ADDR_CHANGE:
-        handle_peer_address_change_event(&(notif->sn_paddr_change));
-        break;
-    case SCTP_REMOTE_ERROR:
-        break;
-    case SCTP_SHUTDOWN_EVENT:
-        break;
-    case SCTP_ADAPTATION_INDICATION:
-        break;
-    case SCTP_PARTIAL_DELIVERY_EVENT:
-        break;
-    case SCTP_AUTHENTICATION_EVENT:
-        break;
-    case SCTP_SENDER_DRY_EVENT:
-        break;
-    case SCTP_NOTIFICATIONS_STOPPED_EVENT:
-        break;
-    case SCTP_SEND_FAILED_EVENT:
-        handle_send_failed_event(&(notif->sn_send_failed_event));
-        break;
-    case SCTP_STREAM_RESET_EVENT:
-        break;
-    case SCTP_ASSOC_RESET_EVENT:
-        break;
-    case SCTP_STREAM_CHANGE_EVENT:
-        break;
-    default:
-        break;
-    }
 }
 
 static void debug_printf(const char *format, ...)
