@@ -4,7 +4,6 @@
 #include "core_pkbuf.h"
 #include "core_lib.h"
 #include "core_network.h"
-#include "core_net.h"
 
 #include "mme_context.h"
 #include "s1ap_path.h"
@@ -19,53 +18,40 @@
 #include <usrsctp.h>
 #endif
 
+status_t s1ap_usrsctp_socket(sock_id *new,
+    int family, int type,
+    int (*receive_cb)(struct socket *sock, union sctp_sockstore addr,
+        void *data, size_t datalen, struct sctp_rcvinfo, int flags,
+        void *ulp_info));
+status_t s1ap_usrsctp_connect(sock_id id, c_sockaddr_t *sa);
+
 status_t tests1ap_enb_connect(sock_id *new)
 {
-    char buf[INET_ADDRSTRLEN];
     status_t rv;
+    char buf[CORE_ADDRSTRLEN];
+    c_sockaddr_t addr;
+
     mme_context_t *mme = mme_self();
-    struct sockaddr_in remote_addr;
-    struct socket *psock = NULL;
-    const int on = 1;
 
     if (!mme) return CORE_ERROR;
 
-    /* You should not change SOCK_STREAM to SOCK_SEQPACKET at this time.
-     * if you wanna to use SOCK_SEQPACKET, you need to update s1ap_sendto() */
-    if (!(psock = usrsctp_socket(AF_INET, SOCK_STREAM, IPPROTO_SCTP,
-                    NULL, NULL, 0, NULL)))
-    {
-        d_error("usrsctp_socket error");
-        return CORE_ERROR;
-    }
+    rv = s1ap_usrsctp_socket(new, AF_INET, SOCK_STREAM, NULL);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
 
-    if (usrsctp_setsockopt(psock, IPPROTO_SCTP, SCTP_RECVRCVINFO,
-                &on, sizeof(int)) < 0)
-    {
-        d_error("usrsctp_setsockopt SCTP_RECVRCVINFO failed");
-        return CORE_ERROR;
-    }
+    memset(&addr, 0, sizeof(addr));
+    addr.c_sa_family = AF_INET;
+    addr.c_sa_port = htons(mme_self()->s1ap_port);
+    addr.sin.sin_addr.s_addr = mme_self()->s1ap_addr;
 
-    memset((void *)&remote_addr, 0, sizeof(struct sockaddr_in));
-    remote_addr.sin_family = AF_INET;
-    remote_addr.sin_len = sizeof(struct sockaddr_in);
-    remote_addr.sin_port = htons(mme_self()->s1ap_port);
-    remote_addr.sin_addr.s_addr = mme_self()->s1ap_addr;
-    if (usrsctp_connect(psock, (struct sockaddr *)&remote_addr,
-                sizeof(struct sockaddr_in)) == -1)
-    {
-        d_error("usrsctp_connect error");
-        return CORE_ERROR;
-    }
-
-    *new = (sock_id)psock;
+    rv = s1ap_usrsctp_connect(*new, &addr);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
 
     return CORE_OK;
 }
 
 status_t tests1ap_enb_close(sock_id id)
 {
-    usrsctp_close((struct socket *)id);
+    sock_delete(id);
     return CORE_OK;
 }
 
@@ -95,6 +81,8 @@ int tests1ap_enb_read(sock_id id, pkbuf_t *recvbuf)
                 &infolen, &infotype, &flags);
         if (n > 0)
         {
+#undef MSG_NOTIFICATION
+#define MSG_NOTIFICATION 0x2000
             if (flags & MSG_NOTIFICATION)
             {
                 /* Nothing to do */

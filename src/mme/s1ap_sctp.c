@@ -9,11 +9,19 @@
 
 static int s1ap_accept_cb(sock_id sock, void *data);
 
+status_t s1ap_init(c_uint16_t port)
+{
+    return CORE_OK;
+}
+
+status_t s1ap_final()
+{
+    return CORE_OK;
+}
+
 status_t s1ap_open(void)
 {
-#if 0 /* ADDR */
     char buf[CORE_ADDRSTRLEN];
-#endif
     status_t rv;
     c_sockaddr_t addr;
 
@@ -34,10 +42,8 @@ status_t s1ap_open(void)
     rv = sock_register(mme_self()->s1ap_sock, s1ap_accept_cb, NULL);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
-#if 0 /* ADDR */
     d_trace(1, "s1_enb_listen() %s:%d\n", 
-        INET_NTOP(&mme_self()->s1ap_addr, buf), mme_self()->s1ap_port);
-#endif
+            CORE_NTOP(&addr, buf), CORE_PORT(&addr));
 
     return CORE_OK;
 }
@@ -47,11 +53,6 @@ status_t s1ap_close()
     sock_delete(mme_self()->s1ap_sock);
     mme_self()->s1ap_sock = 0;
 
-    return CORE_OK;
-}
-
-status_t s1ap_final()
-{
     return CORE_OK;
 }
 

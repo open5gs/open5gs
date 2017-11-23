@@ -1,7 +1,6 @@
 #define TRACE_MODULE _s1ap_usrsctp
 
 #include "core_debug.h"
-#include "core_net.h"
 #include "core_thread.h"
 
 #include "mme_event.h"
@@ -18,8 +17,6 @@
 #include <usrsctp.h>
 #endif
 
-#define LOCAL_UDP_PORT  9899
-
 static int s1ap_usrsctp_recv_cb(struct socket *sock,
         union sctp_sockstore addr, void *data, size_t datalen,
         struct sctp_rcvinfo rcv, int flags, void *ulp_info);
@@ -30,88 +27,14 @@ int accept_thread_should_stop = 0;
 static thread_id accept_thread;
 static void *THREAD_FUNC accept_main(thread_id id, void *data);
 
-status_t s1ap_open(void)
+status_t s1ap_init(c_uint16_t port)
 {
-    status_t rv;
-    char buf[INET_ADDRSTRLEN];
-
-    struct socket *psock = NULL;
-    struct sockaddr_in local_addr;
-    const int on = 1;
-    struct sctp_event event;
-    c_uint16_t event_types[] = {
-        SCTP_ASSOC_CHANGE,
-        SCTP_PEER_ADDR_CHANGE,
-        SCTP_REMOTE_ERROR,
-        SCTP_SHUTDOWN_EVENT,
-        SCTP_ADAPTATION_INDICATION,
-        SCTP_PARTIAL_DELIVERY_EVENT
-    };
-    int i;
-
-    usrsctp_init(LOCAL_UDP_PORT, NULL, debug_printf);
+    usrsctp_init(port, NULL, debug_printf);
 #ifdef SCTP_DEBUG
     usrsctp_sysctl_set_sctp_debug_on(SCTP_DEBUG_ALL);
 #endif
     usrsctp_sysctl_set_sctp_blackhole(2);
     usrsctp_sysctl_set_sctp_enable_sack_immediately(1);
-
-    if (!(psock = usrsctp_socket(
-            AF_INET, SOCK_STREAM, IPPROTO_SCTP, s1ap_usrsctp_recv_cb,
-            NULL, 0, NULL)))
-    {
-        d_error("usrsctp_socket failed");
-        return CORE_ERROR;
-    }
-
-    mme_self()->s1ap_sock = (sock_id)psock;
-
-    if (usrsctp_setsockopt(psock, IPPROTO_SCTP, SCTP_RECVRCVINFO,
-                &on, sizeof(int)) < 0)
-    {
-        d_error("usrsctp_setsockopt SCTP_RECVRCVINFO failed");
-        return CORE_ERROR;
-    }
-
-    memset(&event, 0, sizeof(event));
-    event.se_assoc_id = SCTP_FUTURE_ASSOC;
-    event.se_on = 1;
-    for (i = 0; i < (int)(sizeof(event_types)/sizeof(c_uint16_t)); i++)
-    {
-        event.se_type = event_types[i];
-        if (usrsctp_setsockopt(psock, IPPROTO_SCTP, SCTP_EVENT,
-                    &event, sizeof(struct sctp_event)) < 0)
-        {
-            d_error("usrsctp_setsockopt SCTP_EVENT failed");
-            return CORE_ERROR;
-        }
-    }
-
-    memset((void *)&local_addr, 0, sizeof(struct sockaddr_in));
-    local_addr.sin_family = AF_INET;
-    local_addr.sin_len = sizeof(struct sockaddr_in);
-    local_addr.sin_port = htons(mme_self()->s1ap_port);
-    local_addr.sin_addr.s_addr = mme_self()->s1ap_addr;
-
-    if (usrsctp_bind(psock, (struct sockaddr *)&local_addr,
-                sizeof(struct sockaddr_in)) == -1)
-    {
-        d_error("usrsctp_bind failed(%s:%d)",
-            INET_NTOP(&mme_self()->s1ap_addr, buf), mme_self()->s1ap_port);
-        return CORE_ERROR;
-    }
-
-    if (usrsctp_listen(psock, 1) < 0)
-    {
-        d_error("usrsctp_listen failed");
-        return CORE_ERROR;
-    }
-
-    rv = thread_create(&accept_thread, NULL, accept_main, NULL);
-    if (rv != CORE_OK) return rv;
-
-    d_trace(1, "s1_enb_listen() %s:%d\n", 
-        INET_NTOP(&mme_self()->s1ap_addr, buf), mme_self()->s1ap_port);
 
     return CORE_OK;
 }
@@ -126,18 +49,160 @@ status_t s1ap_final()
     return CORE_OK;
 }
 
+status_t s1ap_usrsctp_socket(sock_id *new,
+    int family, int type,
+    int (*receive_cb)(struct socket *sock, union sctp_sockstore addr,
+        void *data, size_t datalen, struct sctp_rcvinfo, int flags,
+        void *ulp_info))
+{
+    struct socket *sock = NULL;
+    const int on = 1;
+    struct sctp_event event;
+    c_uint16_t event_types[] = {
+        SCTP_ASSOC_CHANGE,
+        SCTP_PEER_ADDR_CHANGE,
+        SCTP_REMOTE_ERROR,
+        SCTP_SHUTDOWN_EVENT,
+        SCTP_ADAPTATION_INDICATION,
+        SCTP_PARTIAL_DELIVERY_EVENT
+    };
+    int i;
+
+    if (!(sock = usrsctp_socket(family, type, IPPROTO_SCTP,
+            receive_cb, NULL, 0, NULL)))
+    {
+        d_error("usrsctp_socket failed");
+        return CORE_ERROR;
+    }
+
+    if (usrsctp_setsockopt(sock, IPPROTO_SCTP, SCTP_RECVRCVINFO,
+                &on, sizeof(int)) < 0)
+    {
+        d_error("usrsctp_setsockopt SCTP_RECVRCVINFO failed");
+        return CORE_ERROR;
+    }
+
+    memset(&event, 0, sizeof(event));
+    event.se_assoc_id = SCTP_FUTURE_ASSOC;
+    event.se_on = 1;
+    for (i = 0; i < (int)(sizeof(event_types)/sizeof(c_uint16_t)); i++)
+    {
+        event.se_type = event_types[i];
+        if (usrsctp_setsockopt(sock, IPPROTO_SCTP, SCTP_EVENT,
+                    &event, sizeof(struct sctp_event)) < 0)
+        {
+            d_error("usrsctp_setsockopt SCTP_EVENT failed");
+            return CORE_ERROR;
+        }
+    }
+
+    *new = (sock_id)sock;
+
+    return CORE_OK;
+}
+
+status_t s1ap_usrsctp_bind(sock_id id, c_sockaddr_t *sa)
+{
+    struct socket *sock = (struct socket *)id;
+    char buf[CORE_ADDRSTRLEN];
+    socklen_t addrlen;
+
+    d_assert(sock, return CORE_ERROR,);
+    d_assert(sa, return CORE_ERROR,);
+
+    addrlen = sockaddr_len(sa);
+    d_assert(addrlen, return CORE_ERROR,);
+
+    if (usrsctp_bind(sock, &sa->sa, addrlen) != 0)
+    {
+        d_error("usrsctp_bind(%s:%d) failed",
+                CORE_NTOP(sa, buf), CORE_PORT(sa));
+        return CORE_ERROR;
+    }
+
+    d_trace(1, "socket bind %s:%d\n", CORE_NTOP(sa, buf), CORE_PORT(sa));
+
+    return CORE_OK;
+}
+
+status_t s1ap_usrsctp_connect(sock_id id, c_sockaddr_t *sa)
+{
+    struct socket *sock = (struct socket *)id;
+    char buf[CORE_ADDRSTRLEN];
+    socklen_t addrlen;
+
+    d_assert(sock, return CORE_ERROR,);
+    d_assert(sa, return CORE_ERROR,);
+
+    addrlen = sockaddr_len(sa);
+    d_assert(addrlen, return CORE_ERROR,);
+
+    if (usrsctp_connect(sock, &sa->sa, addrlen) != 0)
+    {
+        d_error("usrsctp_connect(%s:%d)", CORE_NTOP(sa, buf), CORE_PORT(sa));
+        return CORE_ERROR;
+    }
+
+    d_trace(1, "socket connect %s:%d\n", CORE_NTOP(sa, buf), CORE_PORT(sa));
+
+    return CORE_OK;
+}
+
+status_t s1ap_usrsctp_listen(sock_id id)
+{
+    int rc;
+    struct socket *sock = (struct socket *)id;
+    d_assert(sock, return CORE_ERROR,);
+
+    rc = usrsctp_listen(sock, 5);
+    if (rc < 0)
+    {
+        d_error("usrsctp_listen failed");
+        return CORE_ERROR;
+    }
+
+    return CORE_OK;
+}
+
+status_t s1ap_open(void)
+{
+    status_t rv;
+    char buf[CORE_ADDRSTRLEN];
+    c_sockaddr_t addr;
+
+    rv = s1ap_usrsctp_socket((sock_id *)&mme_self()->s1ap_sock,
+            AF_INET, SOCK_STREAM, s1ap_usrsctp_recv_cb);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    memset(&addr, 0, sizeof(addr));
+    addr.c_sa_family = AF_INET;
+    addr.c_sa_port = htons(mme_self()->s1ap_port);
+    addr.sin.sin_addr.s_addr = mme_self()->s1ap_addr;
+
+    rv = s1ap_usrsctp_bind(mme_self()->s1ap_sock, &addr);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    rv = s1ap_usrsctp_listen(mme_self()->s1ap_sock);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    rv = thread_create(&accept_thread, NULL, accept_main, NULL);
+    if (rv != CORE_OK) return rv;
+
+    d_trace(1, "s1_enb_listen() %s:%d\n",
+        CORE_NTOP(&addr, buf), CORE_PORT(&addr));
+
+    return CORE_OK;
+}
+
 status_t s1ap_close()
 {
-    struct socket *psock = NULL;
-
     d_assert(mme_self(), return CORE_ERROR, "Null param");
     d_assert(mme_self()->s1ap_sock, return CORE_ERROR,
             "S1-ENB path already opened");
 
     accept_thread_should_stop = 1;
 
-    psock = (struct socket *)mme_self()->s1ap_sock;
-    usrsctp_close(psock);
+    sock_delete(mme_self()->s1ap_sock);
 #if 0
     thread_delete(accept_thread);
 #else
@@ -153,18 +218,18 @@ status_t sock_delete(sock_id sock)
     return CORE_OK;
 }
 
-status_t s1ap_send(sock_id sock, pkbuf_t *pkbuf)
+status_t s1ap_send(sock_id id, pkbuf_t *pkbuf)
 {
     ssize_t sent;
-    struct socket *psock = (struct socket *)sock;
+    struct socket *sock = (struct socket *)id;
     struct sctp_sndinfo sndinfo;
 
-    d_assert(sock, return CORE_ERROR, "Null param");
+    d_assert(id, return CORE_ERROR, "Null param");
     d_assert(pkbuf, return CORE_ERROR, "Null param");
 
     memset((void *)&sndinfo, 0, sizeof(struct sctp_sndinfo));
     sndinfo.snd_ppid = htonl(SCTP_S1AP_PPID);
-    sent = usrsctp_sendv(psock, pkbuf->payload, pkbuf->len, 
+    sent = usrsctp_sendv(sock, pkbuf->payload, pkbuf->len, 
             NULL, 0,
             (void *)&sndinfo, (socklen_t)sizeof(struct sctp_sndinfo),
             SCTP_SENDV_SNDINFO, 0);

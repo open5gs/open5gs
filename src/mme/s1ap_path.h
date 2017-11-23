@@ -13,10 +13,11 @@ extern "C" {
 #define SCTP_S1AP_PPID 18
 #define SCTP_X2AP_PPID 27
 
+CORE_DECLARE(status_t) s1ap_init(c_uint16_t port);
+CORE_DECLARE(status_t) s1ap_final();
+
 CORE_DECLARE(status_t) s1ap_open();
 CORE_DECLARE(status_t) s1ap_close();
-
-CORE_DECLARE(status_t) s1ap_final();
 
 CORE_DECLARE(status_t) s1ap_send(sock_id sock, pkbuf_t *pkb);
 CORE_DECLARE(status_t) s1ap_send_to_enb(mme_enb_t *enb, pkbuf_t *pkb);

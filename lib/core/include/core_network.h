@@ -173,6 +173,8 @@ CORE_DECLARE(status_t) core_freeaddrinfo(c_sockaddr_t *sa);
 #define CORE_ADDRSTRLEN INET6_ADDRSTRLEN
 #define CORE_NTOP(__aDDR, __bUF) \
     core_inet_ntop((c_sockaddr_t *)__aDDR, buf, CORE_ADDRSTRLEN)
+#define CORE_PORT(__aDDR) \
+    ntohs((__aDDR)->c_sa_port)
 CORE_DECLARE(const char *)core_inet_ntop(c_sockaddr_t *sockaddr,
         char *buf, int buflen);
 CORE_DECLARE(status_t) core_inet_pton(

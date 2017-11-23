@@ -33,6 +33,10 @@ status_t mme_initialize()
     ret = mme_fd_init();
     if (ret != 0) return CORE_ERROR;
 
+#define USRSCTP_LOCAL_UDP_PORT 9899
+    rv = s1ap_init(USRSCTP_LOCAL_UDP_PORT);
+    if (rv != CORE_OK) return rv;
+
     rv = thread_create(&sm_thread, NULL, sm_main, NULL);
     if (rv != CORE_OK) return rv;
     rv = thread_create(&net_thread, NULL, net_main, NULL);
