@@ -19,8 +19,13 @@ CORE_DECLARE(status_t) s1ap_final();
 CORE_DECLARE(status_t) s1ap_open();
 CORE_DECLARE(status_t) s1ap_close();
 
-CORE_DECLARE(status_t) s1ap_sctp_delete(sock_id sock);
+CORE_DECLARE(status_t) s1ap_server(sock_id *new,
+        int family, int type, const char *hostname, c_uint16_t port);
+CORE_DECLARE(status_t) s1ap_client(sock_id *new,
+        int family, int type, const char *hostname, c_uint16_t port);
+CORE_DECLARE(status_t) s1ap_delete(sock_id sock);
 
+CORE_DECLARE(status_t) s1ap_recv(sock_id id, pkbuf_t *pkbuf);
 CORE_DECLARE(status_t) s1ap_send(sock_id sock,
         pkbuf_t *pkbuf, c_sockaddr_t *addr);
 CORE_DECLARE(status_t) s1ap_send_to_enb(mme_enb_t *enb, pkbuf_t *pkb);

@@ -18,7 +18,6 @@ static void s1setup_test1(abts_case *tc, void *data)
     pkbuf_t *sendbuf;
     pkbuf_t *recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     s1ap_message_t message;
-    int rc;
     int i;
 
     for (i = 0; i < NUM_OF_TEST_DUPLICATED_ENB; i++)
@@ -36,8 +35,8 @@ static void s1setup_test1(abts_case *tc, void *data)
         rv = tests1ap_enb_send(sock[i], sendbuf);
         ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-        rc = tests1ap_enb_read(sock[i], recvbuf);
-        ABTS_INT_NEQUAL(tc, 0, rc);
+        rv = tests1ap_enb_read(sock[i], recvbuf);
+        ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
         rv = s1ap_decode_pdu(&message, recvbuf);
         ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -65,7 +64,6 @@ static void s1setup_test2(abts_case *tc, void *data)
     pkbuf_t *sendbuf;
     pkbuf_t *recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     s1ap_message_t message;
-    int rc;
     int i;
 
     for (i = 0; i < NUM_OF_TEST_ENB; i++)
@@ -83,8 +81,8 @@ static void s1setup_test2(abts_case *tc, void *data)
         rv = tests1ap_enb_send(sock[i], sendbuf);
         ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-        rc = tests1ap_enb_read(sock[i], recvbuf);
-        ABTS_INT_NEQUAL(tc, 0, rc);
+        rv = tests1ap_enb_read(sock[i], recvbuf);
+        ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
         rv = s1ap_decode_pdu(&message, recvbuf);
         ABTS_INT_EQUAL(tc, CORE_OK, rv);

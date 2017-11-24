@@ -108,7 +108,9 @@ static status_t mme_context_prepare()
 {
     self.relative_capacity = 0xff;
 
+#if 0
     self.s1ap_port = S1AP_SCTP_PORT;
+#endif
     self.gtpc_port = GTPV2_C_UDP_PORT;
     self.s5c_port = GTPV2_C_UDP_PORT;
 
@@ -123,12 +125,14 @@ static status_t mme_context_validation()
                 context_self()->config.path);
         return CORE_ERROR;
     }
+#if 0
     if (self.s1ap_addr == 0)
     {
         d_error("No MME.NEWORK.S1AP_IPV4 in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
+#endif
     if (self.gtpc_addr == 0)
     {
         d_error("No MME.NEWORK.GTPC_IPV4 in '%s'",
@@ -270,14 +274,18 @@ status_t mme_context_parse_config()
                         if (!strcmp(network_key, "S1AP_IPV4") &&
                             BSON_ITER_HOLDS_UTF8(&network_iter))
                         {
+#if 0
                             const char *v = 
                                     bson_iter_utf8(&network_iter, &length);
                             if (v) self.s1ap_addr = inet_addr(v);
+#endif
                         }
                         else if (!strcmp(network_key, "S1AP_PORT") &&
                             BSON_ITER_HOLDS_INT32(&network_iter))
                         {
+#if 0
                             self.s1ap_port = bson_iter_int32(&network_iter);
+#endif
                         }
                         else if (!strcmp(network_key, "GTPC_IPV4") &&
                             BSON_ITER_HOLDS_UTF8(&network_iter))
@@ -1042,7 +1050,7 @@ status_t mme_enb_remove(mme_enb_t *enb)
     enb_ue_remove_in_enb(enb);
 
     if (enb->sock_type == SOCK_STREAM)
-        s1ap_sctp_delete(enb->sock);
+        s1ap_delete(enb->sock);
     core_free(enb->addr);
 
     index_free(&mme_enb_pool, enb);

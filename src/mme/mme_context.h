@@ -50,8 +50,10 @@ typedef struct _served_gummei {
 typedef struct _mme_context_t {
     const char      *fd_conf_path;  /* MME freeDiameter conf path */
 
+#if 0
     c_uint32_t      s1ap_addr;      /* MME S1AP local address */
     c_uint16_t      s1ap_port;      /* MME S1AP local port */
+#endif
     sock_id         s1ap_sock;      /* MME S1AP local listen socket */
 
     c_uint32_t      gtpc_addr;      /* MME GTPC local address */

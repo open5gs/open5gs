@@ -17,10 +17,20 @@
 #include <usrsctp.h>
 #endif
 
+static status_t s1ap_usrsctp_socket(sock_id *new,
+    int family, int type,
+    int (*receive_cb)(struct socket *sock, union sctp_sockstore addr,
+        void *data, size_t datalen, struct sctp_rcvinfo, int flags,
+        void *ulp_info));
+static status_t s1ap_usrsctp_bind(sock_id id, c_sockaddr_t *sa);
+static status_t s1ap_usrsctp_connect(sock_id id, c_sockaddr_t *sa);
+static status_t s1ap_usrsctp_listen(sock_id id);
+
 static int s1ap_usrsctp_recv_cb(struct socket *sock,
         union sctp_sockstore addr, void *data, size_t datalen,
         struct sctp_rcvinfo rcv, int flags, void *ulp_info);
 
+static c_sockaddr_t *usrsctp_remote_addr(union sctp_sockstore *store);
 static void debug_printf(const char *format, ...);
 
 status_t s1ap_init(c_uint16_t port)
@@ -45,7 +55,184 @@ status_t s1ap_final()
     return CORE_OK;
 }
 
-status_t s1ap_usrsctp_socket(sock_id *new,
+status_t s1ap_server(sock_id *new,
+        int family, int type, const char *hostname, c_uint16_t port)
+{
+    status_t rv;
+    c_sockaddr_t *sa;
+    char buf[CORE_ADDRSTRLEN];
+
+    rv = core_getaddrinfo(&sa, family, hostname, port, AI_PASSIVE);
+    d_assert(rv == CORE_OK && sa, return CORE_ERROR,);
+
+    while(sa)
+    {
+        rv = s1ap_usrsctp_socket(new,
+                sa->c_sa_family, type, s1ap_usrsctp_recv_cb);
+        if (rv != CORE_OK) continue;
+        
+        if (s1ap_usrsctp_bind(*new, sa) == CORE_OK)
+        {
+            d_trace(1, "s1ap_server %s:%d\n", CORE_NTOP(sa, buf), port);
+            break;
+        }
+
+        rv = s1ap_delete(*new);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+        sa = sa->next;
+    }
+
+    if (sa == NULL)
+    {
+        d_error("usrsctp bind(%d:%s:%d)", family, hostname, port);
+        return CORE_ERROR;
+    }
+
+    rv = core_freeaddrinfo(sa);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    rv = s1ap_usrsctp_listen(*new);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    return CORE_OK;
+}
+
+status_t s1ap_client(sock_id *new,
+        int family, int type, const char *hostname, c_uint16_t port)
+{
+    status_t rv;
+    c_sockaddr_t *sa;
+    char buf[CORE_ADDRSTRLEN];
+
+    rv = core_getaddrinfo(&sa, family, hostname, port, 0);
+    d_assert(rv == CORE_OK && sa, return CORE_ERROR,);
+
+    while(sa)
+    {
+        rv = s1ap_usrsctp_socket(new, sa->c_sa_family, type, NULL);
+        if (rv != CORE_OK) continue;
+        
+        if (s1ap_usrsctp_connect(*new, sa) == CORE_OK)
+        {
+            d_trace(1, "s1ap_client %s:%d\n", CORE_NTOP(sa, buf), port);
+            break;
+        }
+
+        rv = s1ap_delete(*new);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+        sa = sa->next;
+    }
+
+    if (sa == NULL)
+    {
+        d_error("s1ap_client(%d:%s:%d) failed", family, hostname, port);
+        return CORE_ERROR;
+    }
+
+    rv = core_freeaddrinfo(sa);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    return CORE_OK;
+}
+
+status_t s1ap_open(void)
+{
+    status_t rv;
+    int family = AF_INET;
+    int type = SOCK_SEQPACKET;
+    const char *hostname = NULL;
+    c_uint16_t port = 36412;
+
+    rv = s1ap_server(&mme_self()->s1ap_sock, family, type, hostname, port);
+    if (rv != CORE_OK)
+    {
+        d_error("s1ap_server(%d:%d:%s:%d) failed",
+                family, type, hostname, port);
+        return CORE_ERROR;
+    }
+    
+    return CORE_OK;
+}
+
+status_t s1ap_close()
+{
+    s1ap_delete(mme_self()->s1ap_sock);
+    return CORE_OK;
+}
+
+status_t s1ap_delete(sock_id sock)
+{
+    d_assert(sock, return CORE_ERROR,);
+    usrsctp_close((struct socket *)sock);
+    return CORE_OK;
+}
+
+status_t s1ap_recv(sock_id id, pkbuf_t *pkbuf)
+{
+	struct socket *sock = (struct socket *)id;
+	struct sockaddr_in addr;
+	ssize_t n = 0;
+	int flags = 0;
+	socklen_t from_len;
+	socklen_t infolen;
+	struct sctp_rcvinfo rcv_info;
+	unsigned int infotype = 0;
+
+    while(1)
+    {
+        n = usrsctp_recvv(sock, pkbuf->payload, MAX_SDU_LEN,
+                (struct sockaddr *)&addr, &from_len, (void *)&rcv_info,
+                &infolen, &infotype, &flags);
+        if (n > 0)
+        {
+#undef MSG_NOTIFICATION
+#define MSG_NOTIFICATION 0x2000
+            if (flags & MSG_NOTIFICATION)
+            {
+                /* Nothing to do */
+            }
+            else if (flags & MSG_EOR)
+            {
+                break;
+            }
+        }
+    }
+
+    pkbuf->len = n;
+    return CORE_OK;
+}
+
+status_t s1ap_send(sock_id id, pkbuf_t *pkbuf, c_sockaddr_t *addr)
+{
+    ssize_t sent;
+    struct socket *sock = (struct socket *)id;
+    struct sctp_sndinfo sndinfo;
+
+    d_assert(id, return CORE_ERROR, "Null param");
+    d_assert(pkbuf, return CORE_ERROR, "Null param");
+
+    memset((void *)&sndinfo, 0, sizeof(struct sctp_sndinfo));
+    sndinfo.snd_ppid = htonl(SCTP_S1AP_PPID);
+    sent = usrsctp_sendv(sock, pkbuf->payload, pkbuf->len, 
+            addr ? &addr->sa : NULL, addr ? 1 : 0,
+            (void *)&sndinfo, (socklen_t)sizeof(struct sctp_sndinfo),
+            SCTP_SENDV_SNDINFO, 0);
+
+    d_trace(10,"Sent %d->%d bytes\n", pkbuf->len, sent);
+    d_trace_hex(10, pkbuf->payload, pkbuf->len);
+    if (sent < 0 || sent != pkbuf->len)
+    {
+        d_error("sent : %d, pkbuf->len : %d\n", sent, pkbuf->len);
+        return CORE_ERROR;
+    }
+    pkbuf_free(pkbuf);
+
+    return CORE_OK;
+}
+
+static status_t s1ap_usrsctp_socket(sock_id *new,
     int family, int type,
     int (*receive_cb)(struct socket *sock, union sctp_sockstore addr,
         void *data, size_t datalen, struct sctp_rcvinfo, int flags,
@@ -97,7 +284,7 @@ status_t s1ap_usrsctp_socket(sock_id *new,
     return CORE_OK;
 }
 
-status_t s1ap_usrsctp_bind(sock_id id, c_sockaddr_t *sa)
+static status_t s1ap_usrsctp_bind(sock_id id, c_sockaddr_t *sa)
 {
     struct socket *sock = (struct socket *)id;
     char buf[CORE_ADDRSTRLEN];
@@ -116,12 +303,12 @@ status_t s1ap_usrsctp_bind(sock_id id, c_sockaddr_t *sa)
         return CORE_ERROR;
     }
 
-    d_trace(1, "socket bind %s:%d\n", CORE_NTOP(sa, buf), CORE_PORT(sa));
+    d_trace(3, "usrsctp_bind %s:%d\n", CORE_NTOP(sa, buf), CORE_PORT(sa));
 
     return CORE_OK;
 }
 
-status_t s1ap_usrsctp_connect(sock_id id, c_sockaddr_t *sa)
+static status_t s1ap_usrsctp_connect(sock_id id, c_sockaddr_t *sa)
 {
     struct socket *sock = (struct socket *)id;
     char buf[CORE_ADDRSTRLEN];
@@ -139,12 +326,12 @@ status_t s1ap_usrsctp_connect(sock_id id, c_sockaddr_t *sa)
         return CORE_ERROR;
     }
 
-    d_trace(1, "socket connect %s:%d\n", CORE_NTOP(sa, buf), CORE_PORT(sa));
+    d_trace(3, "usrsctp_connect %s:%d\n", CORE_NTOP(sa, buf), CORE_PORT(sa));
 
     return CORE_OK;
 }
 
-status_t s1ap_usrsctp_listen(sock_id id)
+static status_t s1ap_usrsctp_listen(sock_id id)
 {
     int rc;
     struct socket *sock = (struct socket *)id;
@@ -158,102 +345,6 @@ status_t s1ap_usrsctp_listen(sock_id id)
     }
 
     return CORE_OK;
-}
-
-status_t s1ap_open(void)
-{
-    status_t rv;
-    char buf[CORE_ADDRSTRLEN];
-    c_sockaddr_t addr;
-
-    rv = s1ap_usrsctp_socket((sock_id *)&mme_self()->s1ap_sock,
-            AF_INET, SOCK_SEQPACKET, s1ap_usrsctp_recv_cb);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
-
-    memset(&addr, 0, sizeof(addr));
-    addr.c_sa_family = AF_INET;
-    addr.c_sa_port = htons(mme_self()->s1ap_port);
-    addr.sin.sin_addr.s_addr = mme_self()->s1ap_addr;
-
-    rv = s1ap_usrsctp_bind(mme_self()->s1ap_sock, &addr);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
-
-    rv = s1ap_usrsctp_listen(mme_self()->s1ap_sock);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
-
-    d_trace(1, "s1_enb_listen() %s:%d\n",
-        CORE_NTOP(&addr, buf), CORE_PORT(&addr));
-
-    return CORE_OK;
-}
-
-status_t s1ap_close()
-{
-    d_assert(mme_self(), return CORE_ERROR, "Null param");
-    d_assert(mme_self()->s1ap_sock, return CORE_ERROR,
-            "S1-ENB path already opened");
-
-    s1ap_sctp_delete(mme_self()->s1ap_sock);
-    return CORE_OK;
-}
-
-status_t s1ap_sctp_delete(sock_id sock)
-{
-    usrsctp_close((struct socket *)sock);
-    return CORE_OK;
-}
-
-status_t s1ap_send(sock_id id, pkbuf_t *pkbuf, c_sockaddr_t *addr)
-{
-    ssize_t sent;
-    struct socket *sock = (struct socket *)id;
-    struct sctp_sndinfo sndinfo;
-
-    d_assert(id, return CORE_ERROR, "Null param");
-    d_assert(pkbuf, return CORE_ERROR, "Null param");
-
-    memset((void *)&sndinfo, 0, sizeof(struct sctp_sndinfo));
-    sndinfo.snd_ppid = htonl(SCTP_S1AP_PPID);
-    sent = usrsctp_sendv(sock, pkbuf->payload, pkbuf->len, 
-            addr ? &addr->sa : NULL, addr ? 1 : 0,
-            (void *)&sndinfo, (socklen_t)sizeof(struct sctp_sndinfo),
-            SCTP_SENDV_SNDINFO, 0);
-
-    d_trace(10,"Sent %d->%d bytes\n", pkbuf->len, sent);
-    d_trace_hex(10, pkbuf->payload, pkbuf->len);
-    if (sent < 0 || sent != pkbuf->len)
-    {
-        d_error("sent : %d, pkbuf->len : %d\n", sent, pkbuf->len);
-        return CORE_ERROR;
-    }
-    pkbuf_free(pkbuf);
-
-    return CORE_OK;
-}
-
-c_sockaddr_t *usrsctp_remote_addr_get(union sctp_sockstore *store)
-{
-    c_sockaddr_t *addr = NULL;
-
-    d_assert(store, return NULL,);
-
-    addr = core_calloc(1, sizeof(c_sockaddr_t));
-    d_assert(addr, return NULL,);
-
-    addr->c_sa_family = store->sin.sin_family;
-    switch(addr->c_sa_family)
-    {
-        case AF_INET:
-            memcpy(&addr->sin, &store->sin, sizeof(struct sockaddr_in));
-            break;
-        case AF_INET6:
-            memcpy(&addr->sin6, &store->sin6, sizeof(struct sockaddr_in6));
-            break;
-        default:
-            d_assert(0, return NULL,);
-    }
-
-    return addr;
 }
 
 static int s1ap_usrsctp_recv_cb(struct socket *sock,
@@ -286,7 +377,7 @@ static int s1ap_usrsctp_recv_cb(struct socket *sock,
                                 SCTP_COMM_LOST)
                         {
                             c_sockaddr_t *c_addr =
-                                usrsctp_remote_addr_get(&addr);
+                                usrsctp_remote_addr(&addr);
                             d_assert(c_addr, return 1,);
 
                             event_set(&e, MME_EVT_S1AP_LO_CONNREFUSED);
@@ -300,7 +391,7 @@ static int s1ap_usrsctp_recv_cb(struct socket *sock,
                         else if (not->sn_assoc_change.sac_state == SCTP_COMM_UP)
                         {
                             c_sockaddr_t *c_addr =
-                                usrsctp_remote_addr_get(&addr);
+                                usrsctp_remote_addr(&addr);
                             d_assert(c_addr, return 1,);
 
                             event_set(&e, MME_EVT_S1AP_LO_ACCEPT);
@@ -324,7 +415,7 @@ static int s1ap_usrsctp_recv_cb(struct socket *sock,
                         break;
                     case SCTP_SHUTDOWN_EVENT :
                     {
-                        c_sockaddr_t *c_addr = usrsctp_remote_addr_get(&addr);
+                        c_sockaddr_t *c_addr = usrsctp_remote_addr(&addr);
                         d_assert(c_addr, return 1,);
 
                         event_set(&e, MME_EVT_S1AP_LO_CONNREFUSED);
@@ -351,7 +442,7 @@ static int s1ap_usrsctp_recv_cb(struct socket *sock,
 
             pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
             d_assert(pkbuf, return 1, );
-            c_addr = usrsctp_remote_addr_get(&addr);
+            c_addr = usrsctp_remote_addr(&addr);
             d_assert(c_addr, return 1,);
 
             pkbuf->len = datalen;
@@ -374,6 +465,31 @@ static int s1ap_usrsctp_recv_cb(struct socket *sock,
         free(data);
     }
     return (1);
+}
+
+static c_sockaddr_t *usrsctp_remote_addr(union sctp_sockstore *store)
+{
+    c_sockaddr_t *addr = NULL;
+
+    d_assert(store, return NULL,);
+
+    addr = core_calloc(1, sizeof(c_sockaddr_t));
+    d_assert(addr, return NULL,);
+
+    addr->c_sa_family = store->sin.sin_family;
+    switch(addr->c_sa_family)
+    {
+        case AF_INET:
+            memcpy(&addr->sin, &store->sin, sizeof(struct sockaddr_in));
+            break;
+        case AF_INET6:
+            memcpy(&addr->sin6, &store->sin6, sizeof(struct sockaddr_in6));
+            break;
+        default:
+            d_assert(0, return NULL,);
+    }
+
+    return addr;
 }
 
 static void debug_printf(const char *format, ...)

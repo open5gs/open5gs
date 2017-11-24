@@ -21,39 +21,56 @@ status_t s1ap_final()
 
 status_t s1ap_open(void)
 {
-    char buf[CORE_ADDRSTRLEN];
     status_t rv;
-    c_sockaddr_t addr;
+    int family = AF_INET;
+    int type = SOCK_STREAM;
+    const char *hostname = NULL;
+    c_uint16_t port = 36412;
 
-    memset(&addr, 0, sizeof(c_sockaddr_t));
-    addr.sin.sin_addr.s_addr = mme_self()->s1ap_addr;
-    addr.c_sa_family = AF_INET;
-    addr.c_sa_port = htons(mme_self()->s1ap_port);
-
-    rv = sctp_socket(&mme_self()->s1ap_sock, AF_INET, SOCK_STREAM);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
-
-    rv = sock_bind(mme_self()->s1ap_sock, &addr);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
-
-    rv = sock_listen(mme_self()->s1ap_sock);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
-
-    rv = sock_register(mme_self()->s1ap_sock, s1ap_accept_cb, NULL);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
-
-    d_trace(1, "s1_enb_listen() %s:%d\n", 
-            CORE_NTOP(&addr, buf), CORE_PORT(&addr));
-
+    rv = s1ap_server(&mme_self()->s1ap_sock, family, type, hostname, port);
+    if (rv != CORE_OK)
+    {
+        d_error("s1ap_server(%d:%d:%s:%d) failed",
+                family, type, hostname, port);
+        return CORE_ERROR;
+    }
+    
     return CORE_OK;
 }
 
 status_t s1ap_close()
 {
-    return s1ap_sctp_delete(mme_self()->s1ap_sock);
+    return s1ap_delete(mme_self()->s1ap_sock);
 }
 
-status_t s1ap_sctp_delete(sock_id sock)
+status_t s1ap_server(sock_id *new,
+        int family, int type, const char *hostname, c_uint16_t port)
+{
+    status_t rv;
+    c_sockaddr_t *addr = NULL;
+    char buf[CORE_ADDRSTRLEN];
+
+    rv = sctp_server(new, family, type, hostname, port);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    rv = sock_register(mme_self()->s1ap_sock, s1ap_accept_cb, NULL);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    addr = sock_local_addr_get(*new);
+    d_assert(addr, return CORE_ERROR,);
+
+    d_trace(1, "s1ap_server %s:%d\n", CORE_NTOP(addr, buf), CORE_PORT(addr));
+
+    return CORE_OK;
+}
+
+status_t s1ap_client(sock_id *new,
+        int family, int type, const char *hostname, c_uint16_t port)
+{
+    return sctp_client(new, family, type, hostname, port);
+}
+
+status_t s1ap_delete(sock_id sock)
 {
     d_assert(sock, return CORE_ERROR,);
     return sock_delete(sock);
@@ -99,7 +116,7 @@ static int s1ap_accept_cb(sock_id id, void *data)
 
 }
 
-static status_t s1ap_recv(sock_id sock, pkbuf_t *pkbuf)
+static status_t s1ap_recv_handler(sock_id sock, pkbuf_t *pkbuf)
 {
     event_t e;
     c_sockaddr_t *addr = NULL;
@@ -185,7 +202,7 @@ int s1ap_recv_cb(sock_id sock, void *data)
 
     pkbuf->len = rc;
 
-    rv = s1ap_recv(sock, pkbuf);
+    rv = s1ap_recv_handler(sock, pkbuf);
     if (rv != CORE_OK)
     {
         d_error("s1_recv() failed");
@@ -193,6 +210,20 @@ int s1ap_recv_cb(sock_id sock, void *data)
     }
 
     return 0;
+}
+
+status_t s1ap_recv(sock_id id, pkbuf_t *pkbuf)
+{
+    int size;
+
+    size = core_sctp_recvmsg(id, pkbuf->payload, MAX_SDU_LEN, NULL, NULL, NULL);
+    if (size <= 0)
+    {
+        return CORE_ERROR;
+    }
+
+    pkbuf->len = size;
+    return CORE_OK;;
 }
 
 status_t s1ap_send(sock_id sock, pkbuf_t *pkbuf, c_sockaddr_t *addr)

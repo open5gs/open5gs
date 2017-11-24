@@ -18,7 +18,6 @@ static void volte_test1(abts_case *tc, void *data)
     pkbuf_t *sendbuf;
     pkbuf_t *recvbuf;
     s1ap_message_t message;
-    int rc;
     int i;
     int msgindex = 0;
 
@@ -110,8 +109,8 @@ static void volte_test1(abts_case *tc, void *data)
 
     /* Receive S1-Setup Response */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = s1ap_decode_pdu(&message, recvbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     s1ap_free_pdu(&message);
@@ -147,8 +146,8 @@ static void volte_test1(abts_case *tc, void *data)
 
     /* Receive Authentication Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send Authentication Response */
@@ -159,8 +158,8 @@ static void volte_test1(abts_case *tc, void *data)
 
     /* Receive Security mode Command */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send Security mode Complete */
@@ -171,8 +170,8 @@ static void volte_test1(abts_case *tc, void *data)
 
     /* Receive ESM Information Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send ESM Information Response */
@@ -185,8 +184,8 @@ static void volte_test1(abts_case *tc, void *data)
      * Attach Accept + 
      * Activate Default Bearer Context Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send UE Capability Info Indication */
@@ -211,8 +210,8 @@ static void volte_test1(abts_case *tc, void *data)
 
     /* Receive EMM information */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send PDN Connectivity Request */
@@ -226,8 +225,8 @@ static void volte_test1(abts_case *tc, void *data)
     /* Receive E-RAB Setup Request +
      * Activate default EPS bearer context request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send E-RAB Setup Response */
@@ -247,8 +246,8 @@ static void volte_test1(abts_case *tc, void *data)
     /* Receive E-RAB Setup Request +
      * Activate dedicated EPS bearer context request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send Activate dedicated EPS bearer context accept */
@@ -276,8 +275,8 @@ static void volte_test1(abts_case *tc, void *data)
     /* Receive E-RAB Release Command +
      * Deactivate EPS bearer context request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send E-RAB Release Response */
@@ -302,8 +301,8 @@ static void volte_test1(abts_case *tc, void *data)
 
     /* Receive PDN Connectivity Reject */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /********** Remove Subscriber in Database */
@@ -329,7 +328,6 @@ static void volte_test2(abts_case *tc, void *data)
     pkbuf_t *sendbuf;
     pkbuf_t *recvbuf;
     s1ap_message_t message;
-    int rc;
     int i;
     int msgindex = 0;
 
@@ -421,8 +419,8 @@ static void volte_test2(abts_case *tc, void *data)
 
     /* Receive S1-Setup Response */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = s1ap_decode_pdu(&message, recvbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     s1ap_free_pdu(&message);
@@ -458,8 +456,8 @@ static void volte_test2(abts_case *tc, void *data)
 
     /* Receive Authentication Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send Authentication Response */
@@ -470,8 +468,8 @@ static void volte_test2(abts_case *tc, void *data)
 
     /* Receive Security mode Command */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send Security mode Complete */
@@ -482,8 +480,8 @@ static void volte_test2(abts_case *tc, void *data)
 
     /* Receive ESM Information Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send ESM Information Response */
@@ -496,8 +494,8 @@ static void volte_test2(abts_case *tc, void *data)
      * Attach Accept + 
      * Activate Default Bearer Context Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send UE Capability Info Indication */
@@ -522,15 +520,15 @@ static void volte_test2(abts_case *tc, void *data)
 
     /* Receive EMM information */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Receive E-RAB Setup Request + 
      * Activate dedicated EPS bearer context request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send E-RAB Setup Response */

@@ -11,6 +11,32 @@
 
 extern int test_only_control_plane;
 
+status_t tests1ap_enb_connect(sock_id *new)
+{
+    status_t rv;
+
+    rv = s1ap_client(new, AF_INET, SOCK_STREAM, NULL, 36412);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    return CORE_OK;
+}
+
+status_t tests1ap_enb_close(sock_id id)
+{
+    s1ap_delete(id);
+    return CORE_OK;
+}
+
+status_t tests1ap_enb_read(sock_id id, pkbuf_t *recvbuf)
+{
+    return s1ap_recv(id, recvbuf);
+}
+
+status_t tests1ap_enb_send(sock_id id, pkbuf_t *sendbuf)
+{
+    return s1ap_send(id, sendbuf, NULL);
+}
+
 sock_id testgtpu_enb_connect(void)
 {
     char buf[INET_ADDRSTRLEN];
@@ -71,7 +97,7 @@ static uint16_t in_cksum(uint16_t *addr, int len)
   return answer;
 }
 
-int testgtpu_enb_send(sock_id sock, c_uint32_t src_ip, c_uint32_t dst_ip)
+status_t testgtpu_enb_send(sock_id sock, c_uint32_t src_ip, c_uint32_t dst_ip)
 {
     hash_index_t *hi = NULL;
     mme_ue_t *mme_ue = NULL;
@@ -155,12 +181,10 @@ int testgtpu_enb_send(sock_id sock, c_uint32_t src_ip, c_uint32_t dst_ip)
     rv = gtp_send(&gnode, pkbuf);
     pkbuf_free(pkbuf);
 
-    if (rv != CORE_OK) return -1;
-
-    return 0;
+    return rv;
 }
 
-int testgtpu_enb_read(sock_id sock, pkbuf_t *recvbuf)
+status_t testgtpu_enb_read(sock_id sock, pkbuf_t *recvbuf)
 {
     int rc = 0;
 
@@ -186,8 +210,9 @@ int testgtpu_enb_read(sock_id sock, pkbuf_t *recvbuf)
             break;
         }
     }
+    recvbuf->len = rc;
 
-    return rc;
+    return CORE_OK;
 }
 
 status_t tests1ap_build_setup_req(

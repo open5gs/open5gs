@@ -9,12 +9,6 @@ testepc_SOURCES = \
 	security_test.c s1setup_test.c attach_test.c volte_test.c handover_test.c \
 	$(NULL)
 
-if USRSCTP
-testepc_SOURCES += testusrsctp.c
-else
-testepc_SOURCES += testsctp.c
-endif
-
 testepc_LDADD = \
     $(top_srcdir)/src/libepc.la \
 	$(NULL)

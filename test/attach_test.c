@@ -23,7 +23,6 @@ static void attach_test1(abts_case *tc, void *data)
     pkbuf_t *sendbuf;
     pkbuf_t *recvbuf;
     s1ap_message_t message;
-    int rc;
     int i;
     int msgindex = 0;
 
@@ -154,8 +153,8 @@ static void attach_test1(abts_case *tc, void *data)
 
     /* Receive S1-Setup Response */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = s1ap_decode_pdu(&message, recvbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     s1ap_free_pdu(&message);
@@ -209,8 +208,8 @@ static void attach_test1(abts_case *tc, void *data)
 
     /* Receive Authentication Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     ABTS_TRUE(tc, memcmp(recvbuf->payload, 
         CORE_HEX(_authentication_request, strlen(_authentication_request), tmp),
         recvbuf->len) == 0);
@@ -224,11 +223,11 @@ static void attach_test1(abts_case *tc, void *data)
 
     /* Receive Security mode Command */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     ABTS_TRUE(tc, memcmp(recvbuf->payload,
         CORE_HEX(_security_mode_command, strlen(_security_mode_command), tmp),
         recvbuf->len) == 0);
-    ABTS_INT_NEQUAL(tc, 0, rc);
     pkbuf_free(recvbuf);
 
     /* Send Security mode Complete */
@@ -239,7 +238,8 @@ static void attach_test1(abts_case *tc, void *data)
 
     /* Receive ESM Information Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     ABTS_TRUE(tc, memcmp(recvbuf->payload, 
         CORE_HEX(_esm_information_request, strlen(_security_mode_command), tmp),
         recvbuf->len) == 0);
@@ -255,7 +255,8 @@ static void attach_test1(abts_case *tc, void *data)
      * Attach Accept + 
      * Activate Default Bearer Context Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     /* 
      * We cannot check it since SGW S1U ADDR is changed
      * from configuration file
@@ -288,7 +289,8 @@ static void attach_test1(abts_case *tc, void *data)
 
     /* Receive EMM information */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     CORE_HEX(_emm_information, strlen(_emm_information), tmp);
     ABTS_TRUE(tc, memcmp(recvbuf->payload, tmp, 28) == 0);
     ABTS_TRUE(tc, memcmp(recvbuf->payload+43, tmp+43, 3) == 0);
@@ -303,7 +305,8 @@ static void attach_test1(abts_case *tc, void *data)
 
     /* Receive GTP-U ICMP Packet */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = testgtpu_enb_read(gtpu, recvbuf);
+    rv = testgtpu_enb_read(gtpu, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /*****************************************************************
@@ -318,8 +321,8 @@ static void attach_test1(abts_case *tc, void *data)
 
     /* Receive ESM Information Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send ESM Information Response */
@@ -332,8 +335,8 @@ static void attach_test1(abts_case *tc, void *data)
      * Attach Accept + 
      * Activate Default Bearer Context Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send Attach Complete + 
@@ -345,7 +348,8 @@ static void attach_test1(abts_case *tc, void *data)
 
     /* Receive EMM information */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     core_sleep(time_from_msec(300));
@@ -358,7 +362,8 @@ static void attach_test1(abts_case *tc, void *data)
 
     /* Receive UE Context Release Command */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send UE Context Release Complete */
@@ -379,7 +384,8 @@ static void attach_test1(abts_case *tc, void *data)
 
     /* Receive Identity Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /********** Remove Subscriber in Database */
@@ -405,14 +411,14 @@ static void attach_test1(abts_case *tc, void *data)
 
     /* Receive Attach Reject */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Receive UE Release Command */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send UE Release Complete */
@@ -441,7 +447,6 @@ static void attach_test2(abts_case *tc, void *data)
     pkbuf_t *sendbuf;
     pkbuf_t *recvbuf;
     s1ap_message_t message;
-    int rc;
     int i;
     int msgindex = 3;
 
@@ -507,8 +512,8 @@ static void attach_test2(abts_case *tc, void *data)
 
     /* Receive S1-Setup Response */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = s1ap_decode_pdu(&message, recvbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     s1ap_free_pdu(&message);
@@ -547,8 +552,8 @@ static void attach_test2(abts_case *tc, void *data)
 
     /* Receive Authentication Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send Authentication Response */
@@ -559,8 +564,8 @@ static void attach_test2(abts_case *tc, void *data)
 
     /* Receive Security mode Command */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
     
     /* Send Security mode Complete */
@@ -571,7 +576,8 @@ static void attach_test2(abts_case *tc, void *data)
 
     /* Receive ESM Information Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send ESM Information Response */
@@ -584,7 +590,8 @@ static void attach_test2(abts_case *tc, void *data)
      * Attach Accept + 
      * Activate Default Bearer Context Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send UE Capability Info Indication */
@@ -619,8 +626,8 @@ static void attach_test2(abts_case *tc, void *data)
 
     /* Receive ESM Information Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send ESM Information Response */
@@ -633,7 +640,8 @@ static void attach_test2(abts_case *tc, void *data)
      * Attach Accept + 
      * Activate Default Bearer Context Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send Attach Complete + 
@@ -645,7 +653,8 @@ static void attach_test2(abts_case *tc, void *data)
 
     /* Receive EMM information */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /*****************************************************************
@@ -660,8 +669,8 @@ static void attach_test2(abts_case *tc, void *data)
 
     /* Receive Authentication Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456826"));
@@ -686,7 +695,6 @@ static void attach_test3(abts_case *tc, void *data)
     pkbuf_t *sendbuf;
     pkbuf_t *recvbuf;
     s1ap_message_t message;
-    int rc;
     int i;
     int msgindex = 6;
 
@@ -783,8 +791,8 @@ static void attach_test3(abts_case *tc, void *data)
 
     /* Receive S1-Setup Response */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = s1ap_decode_pdu(&message, recvbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     s1ap_free_pdu(&message);
@@ -826,8 +834,8 @@ static void attach_test3(abts_case *tc, void *data)
 
     /* Receive Authentication Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     ABTS_TRUE(tc, memcmp(recvbuf->payload,
         CORE_HEX(_authentication_request, strlen(_authentication_request), tmp),
         recvbuf->len) == 0);
@@ -841,11 +849,11 @@ static void attach_test3(abts_case *tc, void *data)
 
     /* Receive Security mode Command */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     ABTS_TRUE(tc, memcmp(recvbuf->payload,
         CORE_HEX(_security_mode_command, strlen(_security_mode_command), tmp),
         recvbuf->len) == 0);
-    ABTS_INT_NEQUAL(tc, 0, rc);
     pkbuf_free(recvbuf);
 
     /* Send Security mode Complete */
@@ -856,7 +864,8 @@ static void attach_test3(abts_case *tc, void *data)
 
     /* Receive ESM Information Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     ABTS_TRUE(tc, memcmp(recvbuf->payload,
         CORE_HEX(_esm_information_request, strlen(_security_mode_command), tmp),
         recvbuf->len) == 0);
@@ -872,7 +881,8 @@ static void attach_test3(abts_case *tc, void *data)
      * Attach Accept +
      * Activate Default Bearer Context Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send UE Capability Info Indication */
@@ -897,7 +907,8 @@ static void attach_test3(abts_case *tc, void *data)
 
     /* Receive EMM information */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     CORE_HEX(_emm_information, strlen(_emm_information), tmp);
     ABTS_TRUE(tc, memcmp(recvbuf->payload, tmp, 28) == 0);
     ABTS_TRUE(tc, memcmp(recvbuf->payload+43, tmp+43, 3) == 0);
@@ -913,7 +924,8 @@ static void attach_test3(abts_case *tc, void *data)
 
     /* Receive UE Release Command */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     ABTS_TRUE(tc, memcmp(recvbuf->payload,
         CORE_HEX(_ue_context_release_command, 
         strlen(_ue_context_release_command), tmp),
@@ -936,7 +948,8 @@ static void attach_test3(abts_case *tc, void *data)
 
     /* Receive Initial Context Setup Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send UE Capability Info Indication */
