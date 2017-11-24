@@ -488,9 +488,6 @@ status_t core_getaddrinfo(c_sockaddr_t **sa,
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = flags;
 
-    if (hostname == NULL)
-        hints.ai_flags |= AI_PASSIVE;
-
     snprintf(service, sizeof(service), "%u", port);
 
     rc = getaddrinfo(hostname, service, &hints, &ai_list);

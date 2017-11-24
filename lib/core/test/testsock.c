@@ -94,11 +94,12 @@ static void *THREAD_FUNC test3_main(thread_id id, void *data)
     char str[STRLEN];
     ssize_t size;
     int rc;
+    char buf[CORE_ADDRSTRLEN];
 
     rv = udp_socket(&udp, AF_INET);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    rv = core_getaddrinfo(&sa, AF_UNSPEC, "127.0.0.1", PORT, 0);
+    rv = core_getaddrinfo(&sa, AF_INET, NULL, PORT, 0);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     size = core_sendto(udp, DATASTR, strlen(DATASTR), 0, sa);
@@ -150,7 +151,7 @@ static void *THREAD_FUNC test4_main(thread_id id, void *data)
     char str[STRLEN];
     ssize_t size;
 
-    rv = udp_client(&udp, AF_INET, "127.0.0.1", PORT);
+    rv = udp_client(&udp, AF_INET, NULL, PORT);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     size = core_send(udp, DATASTR, strlen(DATASTR), 0);
@@ -208,7 +209,7 @@ static void *THREAD_FUNC test5_main(thread_id id, void *data)
     rv = udp_server(&udp, AF_INET6, NULL, PORT2);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    rv = udp_connect(udp, "::1", PORT);
+    rv = udp_connect(udp, NULL, PORT);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     size = core_send(udp, DATASTR, strlen(DATASTR), 0);
@@ -237,7 +238,7 @@ static void sock_test5(abts_case *tc, void *data)
     rv = udp_server(&udp, AF_INET6, NULL, PORT);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    rv = udp_connect(udp, "::1", PORT2);
+    rv = udp_connect(udp, NULL, PORT2);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     rv = thread_create(&test5_thread, NULL, test5_main, tc);

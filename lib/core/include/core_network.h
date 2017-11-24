@@ -4,6 +4,10 @@
 #include "core_errno.h"
 #include "core_time.h"
 
+#if HAVE_NETDB_H
+#include <netdb.h>
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
