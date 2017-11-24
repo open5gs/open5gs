@@ -203,7 +203,7 @@ status_t s1ap_send(sock_id sock, pkbuf_t *pkbuf, c_sockaddr_t *addr)
     d_assert(pkbuf, return CORE_ERROR,);
 
     sent = core_sctp_sendmsg(sock, pkbuf->payload, pkbuf->len,
-            NULL, SCTP_S1AP_PPID, 0);
+            addr, SCTP_S1AP_PPID, 0);
     d_trace(10,"Sent %d->%d bytes\n", pkbuf->len, sent);
     d_trace_hex(10, pkbuf->payload, pkbuf->len);
     if (sent < 0 || sent != pkbuf->len)

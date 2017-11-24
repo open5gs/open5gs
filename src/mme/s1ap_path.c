@@ -19,7 +19,8 @@ status_t s1ap_send_to_enb(mme_enb_t *enb, pkbuf_t *pkbuf)
     d_assert(pkbuf,,);
     d_assert(enb->sock,,);
 
-    rv = s1ap_send(enb->sock, pkbuf, enb->addr);
+    rv = s1ap_send(enb->sock, pkbuf,
+            enb->sock_type == SOCK_STREAM ? NULL : enb->addr);
     if (rv != CORE_OK)
     {
         d_error("s1_send error");

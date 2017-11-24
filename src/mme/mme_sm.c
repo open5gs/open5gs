@@ -89,11 +89,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
             d_trace(1, "eNB-S1 accepted[%s] in master_sm module\n", 
                 CORE_NTOP(addr, buf));
                     
-            if (mme_enb_sock_is_stream(sock))
-                enb = mme_enb_find_by_sock(sock);
-            else
-                enb = mme_enb_find_by_addr(addr);
-
+            enb = mme_enb_find_by_addr(addr);
             if (!enb)
             {
 #if USE_USRSCTP != 1
@@ -125,7 +121,13 @@ void mme_state_operational(fsm_t *s, event_t *e)
             addr = (c_sockaddr_t *)event_get_param2(e);
             d_assert(addr, break, "Null param");
 
-            if (mme_enb_sock_is_stream(sock))
+            /* 
+             * <Connection Refused>
+             * if socket type is SOCK_STREAM,
+             * I'm not sure whether address is available or not.
+             * So, I'll use 'sock_id' at this point.
+             */
+            if (mme_enb_sock_type(sock) == SOCK_STREAM)
                 enb = mme_enb_find_by_sock(sock);
             else
                 enb = mme_enb_find_by_addr(addr);
@@ -161,10 +163,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
             pkbuf = (pkbuf_t *)event_get_param3(e);
             d_assert(pkbuf, break, "Null param");
 
-            if (mme_enb_sock_is_stream(sock))
-                enb = mme_enb_find_by_sock(sock);
-            else
-                enb = mme_enb_find_by_addr(addr);
+            enb = mme_enb_find_by_addr(addr);
             core_free(addr);
 
             d_assert(enb, break, "No eNB context");

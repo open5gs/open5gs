@@ -113,6 +113,7 @@ typedef struct _mme_enb_t {
     fsm_t           sm;     /* A state machine */
 
     c_uint32_t      enb_id;     /* eNB_ID received from eNB */
+    int             sock_type;  /* SOCK_STREAM or SOCK_SEQPACKET */
     sock_id         sock;       /* eNB S1AP Socket */
     c_sockaddr_t    *addr;      /* eNB S1AP Address */
 
@@ -454,7 +455,7 @@ CORE_DECLARE(status_t)      mme_enb_set_enb_id(
 CORE_DECLARE(hash_index_t *) mme_enb_first();
 CORE_DECLARE(hash_index_t *) mme_enb_next(hash_index_t *hi);
 CORE_DECLARE(mme_enb_t *)    mme_enb_this(hash_index_t *hi);
-CORE_DECLARE(int)           mme_enb_sock_is_stream(sock_id sock);
+CORE_DECLARE(int)           mme_enb_sock_type(sock_id sock);
 
 CORE_DECLARE(mme_ue_t*)     mme_ue_add(enb_ue_t *enb_ue);
 CORE_DECLARE(status_t)      mme_ue_remove(mme_ue_t *mme_ue);
