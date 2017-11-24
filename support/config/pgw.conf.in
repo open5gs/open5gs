@@ -20,8 +20,8 @@
     "FD_CONF_PATH" : "pgw.conf",
     "NETWORK" :
     {
-      "GTPC_IPV4" : "127.76.0.3",
-      "GTPU_IPV4" : "127.76.0.3"
+      "GTPC_IPV4" : "127.0.0.3",
+      "GTPU_IPV4" : "127.0.0.3"
     },
     "UE_NETWORK":
     [

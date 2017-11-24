@@ -39,7 +39,7 @@ static void attach_test1(abts_case *tc, void *data)
         "010221d9";
     char *_initial_context_setup_request = 
         "00090080d8000006 00000005c0010000 9d00080002000100 42000a183e800000"
-        "603e800000001800 8086000034008080 450009200f807f4c 0002000000017127"
+        "603e800000001800 8086000034008080 450009200f807f00 0002000000017127"
         "45c2015402074202 49064000f1105ba0 00485221c1010909 08696e7465726e65"
         "7405012d2d00025e 06fefeeeee030327 2980c22304030000 0480211002000010"
         "8106080808088306 04040404000d0408 080808000d040404 0404500bf600f110"
@@ -211,7 +211,6 @@ static void attach_test1(abts_case *tc, void *data)
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rc = tests1ap_enb_read(sock, recvbuf);
     ABTS_INT_NEQUAL(tc, 0, rc);
-    recvbuf->len = 63;
     ABTS_TRUE(tc, memcmp(recvbuf->payload, 
         CORE_HEX(_authentication_request, strlen(_authentication_request), tmp),
         recvbuf->len) == 0);
@@ -226,7 +225,6 @@ static void attach_test1(abts_case *tc, void *data)
     /* Receive Security mode Command */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rc = tests1ap_enb_read(sock, recvbuf);
-    recvbuf->len = 43;
     ABTS_TRUE(tc, memcmp(recvbuf->payload,
         CORE_HEX(_security_mode_command, strlen(_security_mode_command), tmp),
         recvbuf->len) == 0);
@@ -242,7 +240,6 @@ static void attach_test1(abts_case *tc, void *data)
     /* Receive ESM Information Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rc = tests1ap_enb_read(sock, recvbuf);
-    recvbuf->len = 36;
     ABTS_TRUE(tc, memcmp(recvbuf->payload, 
         CORE_HEX(_esm_information_request, strlen(_security_mode_command), tmp),
         recvbuf->len) == 0);
@@ -263,7 +260,6 @@ static void attach_test1(abts_case *tc, void *data)
      * We cannot check it since SGW S1U ADDR is changed
      * from configuration file
      */ 
-    recvbuf->len = 233;
     ABTS_TRUE(tc, memcmp(recvbuf->payload, 
         CORE_HEX(_initial_context_setup_request, 
             strlen(_initial_context_setup_request), tmp),
@@ -832,7 +828,6 @@ static void attach_test3(abts_case *tc, void *data)
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rc = tests1ap_enb_read(sock, recvbuf);
     ABTS_INT_NEQUAL(tc, 0, rc);
-    recvbuf->len = 63;
     ABTS_TRUE(tc, memcmp(recvbuf->payload,
         CORE_HEX(_authentication_request, strlen(_authentication_request), tmp),
         recvbuf->len) == 0);
@@ -847,7 +842,6 @@ static void attach_test3(abts_case *tc, void *data)
     /* Receive Security mode Command */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rc = tests1ap_enb_read(sock, recvbuf);
-    recvbuf->len = 43;
     ABTS_TRUE(tc, memcmp(recvbuf->payload,
         CORE_HEX(_security_mode_command, strlen(_security_mode_command), tmp),
         recvbuf->len) == 0);
@@ -863,7 +857,6 @@ static void attach_test3(abts_case *tc, void *data)
     /* Receive ESM Information Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rc = tests1ap_enb_read(sock, recvbuf);
-    recvbuf->len = 36;
     ABTS_TRUE(tc, memcmp(recvbuf->payload,
         CORE_HEX(_esm_information_request, strlen(_security_mode_command), tmp),
         recvbuf->len) == 0);
@@ -921,7 +914,6 @@ static void attach_test3(abts_case *tc, void *data)
     /* Receive UE Release Command */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rc = tests1ap_enb_read(sock, recvbuf);
-    recvbuf->len = 23;
     ABTS_TRUE(tc, memcmp(recvbuf->payload,
         CORE_HEX(_ue_context_release_command, 
         strlen(_ue_context_release_command), tmp),
