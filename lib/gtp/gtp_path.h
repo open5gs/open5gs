@@ -9,9 +9,6 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define GTPV2_C_UDP_PORT                2123
-#define GTPV1_U_UDP_PORT                2152
-
 /**
  * This structure represents the commonalities of GTP node such as MME, SGW,
  * PGW gateway. Some of members may not be used by the specific type of node */

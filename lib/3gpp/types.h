@@ -8,6 +8,8 @@ extern "C" {
 #endif /* __cplusplus */
 
 #define S1AP_SCTP_PORT              36412
+#define GTPV2_C_UDP_PORT            2123
+#define GTPV1_U_UDP_PORT            2152
 
 #define SCTP_S1AP_PPID              18
 #define SCTP_X2AP_PPID              27
@@ -19,6 +21,9 @@ extern "C" {
 #define MAX_NUM_OF_TUNNEL           3   /* Num of Tunnel per Bearer */
 #define MAX_NUM_OF_PF               16  /* Num of Packet Filter per Bearer */
 #define MAX_NUM_OF_GTP_NODE         8
+
+#define MAX_NUM_OF_SERVER           8
+#define MAX_NUM_OF_CLINET           8
 
 #define MAX_POOL_OF_UE              (MAX_NUM_OF_ENB * MAX_NUM_OF_UE)
 #define MAX_POOL_OF_SESS            (MAX_POOL_OF_UE * MAX_NUM_OF_SESS)

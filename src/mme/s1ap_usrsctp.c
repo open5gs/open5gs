@@ -62,25 +62,34 @@ status_t s1ap_final()
 status_t s1ap_open(void)
 {
     status_t rv;
-    int family = AF_INET;
     int type = SOCK_SEQPACKET;
-    const char *hostname = NULL;
-    c_uint16_t port = S1AP_SCTP_PORT;
+    mme_s1ap_t *s1ap = NULL;
 
-    rv = s1ap_server(&mme_self()->s1ap_sock, family, type, hostname, port);
-    if (rv != CORE_OK)
+    for (s1ap = mme_s1ap_first(); s1ap; s1ap = mme_s1ap_next(s1ap))
     {
-        d_error("s1ap_server(%d:%d:%s:%d) failed",
-                family, type, hostname, port);
-        return CORE_ERROR;
+        rv = s1ap_server(&s1ap->sock, s1ap->domain, type,
+                s1ap->hostname, s1ap->port);
+        if (rv != CORE_OK)
+        {
+            d_error("s1ap_server(%d:%d:[%s]:%d) failed",
+                    s1ap->domain, type, s1ap->hostname, s1ap->port);
+            return CORE_ERROR;
+        }
     }
-    
+
     return CORE_OK;
 }
 
 status_t s1ap_close()
 {
-    return s1ap_delete(mme_self()->s1ap_sock);
+    mme_s1ap_t *s1ap = NULL;
+
+    for (s1ap = mme_s1ap_first(); s1ap; s1ap = mme_s1ap_next(s1ap))
+    {
+        s1ap_delete(s1ap->sock);
+    }
+
+    return CORE_OK;
 }
 
 status_t s1ap_delete(sock_id sock)
@@ -108,7 +117,7 @@ status_t s1ap_server(sock_id *new,
         
         if (s1ap_usrsctp_bind(*new, sa) == CORE_OK)
         {
-            d_trace(1, "s1ap_server %s:%d\n", CORE_NTOP(sa, buf), port);
+            d_trace(1, "s1ap_server [%s]:%d\n", CORE_NTOP(sa, buf), port);
             break;
         }
 
@@ -120,7 +129,7 @@ status_t s1ap_server(sock_id *new,
 
     if (sa == NULL)
     {
-        d_error("usrsctp bind(%d:%s:%d)", family, hostname, port);
+        d_error("usrsctp bind %d:[%s]:%d", family, hostname, port);
         return CORE_ERROR;
     }
 
@@ -150,7 +159,7 @@ status_t s1ap_client(sock_id *new,
         
         if (s1ap_usrsctp_connect(*new, sa) == CORE_OK)
         {
-            d_trace(1, "s1ap_client %s:%d\n", CORE_NTOP(sa, buf), port);
+            d_trace(1, "s1ap_client [%s]:%d\n", CORE_NTOP(sa, buf), port);
             break;
         }
 
@@ -162,7 +171,7 @@ status_t s1ap_client(sock_id *new,
 
     if (sa == NULL)
     {
-        d_error("s1ap_client(%d:%s:%d) failed", family, hostname, port);
+        d_error("s1ap_client %d:[%s]:%d failed", family, hostname, port);
         return CORE_ERROR;
     }
 
@@ -301,12 +310,12 @@ static status_t s1ap_usrsctp_bind(sock_id id, c_sockaddr_t *sa)
 
     if (usrsctp_bind(sock, &sa->sa, addrlen) != 0)
     {
-        d_error("usrsctp_bind(%s:%d) failed",
+        d_error("usrsctp_bind [%s]:%d failed",
                 CORE_NTOP(sa, buf), CORE_PORT(sa));
         return CORE_ERROR;
     }
 
-    d_trace(3, "usrsctp_bind %s:%d\n", CORE_NTOP(sa, buf), CORE_PORT(sa));
+    d_trace(3, "usrsctp_bind [%s]:%d\n", CORE_NTOP(sa, buf), CORE_PORT(sa));
 
     return CORE_OK;
 }
@@ -325,11 +334,11 @@ static status_t s1ap_usrsctp_connect(sock_id id, c_sockaddr_t *sa)
 
     if (usrsctp_connect(sock, &sa->sa, addrlen) != 0)
     {
-        d_error("usrsctp_connect(%s:%d)", CORE_NTOP(sa, buf), CORE_PORT(sa));
+        d_error("usrsctp_connect [%s]:%d", CORE_NTOP(sa, buf), CORE_PORT(sa));
         return CORE_ERROR;
     }
 
-    d_trace(3, "usrsctp_connect %s:%d\n", CORE_NTOP(sa, buf), CORE_PORT(sa));
+    d_trace(3, "usrsctp_connect [%s]:%d\n", CORE_NTOP(sa, buf), CORE_PORT(sa));
 
     return CORE_OK;
 }

@@ -19,9 +19,11 @@
 
 static mme_context_t self;
 
-pool_declare(mme_sgw_pool, mme_sgw_t, MAX_NUM_OF_GTP_NODE);
+pool_declare(mme_s1ap_pool, mme_s1ap_t, MAX_NUM_OF_SERVER);
 
+pool_declare(mme_sgw_pool, mme_sgw_t, MAX_NUM_OF_CLINET);
 index_declare(mme_enb_pool, mme_enb_t, MAX_NUM_OF_ENB);
+
 index_declare(mme_ue_pool, mme_ue_t, MAX_POOL_OF_UE);
 index_declare(enb_ue_pool, enb_ue_t, MAX_POOL_OF_UE);
 index_declare(mme_sess_pool, mme_sess_t, MAX_POOL_OF_SESS);
@@ -37,7 +39,9 @@ status_t mme_context_init()
     /* Initialize MME context */
     memset(&self, 0, sizeof(mme_context_t));
 
-    pool_init(&mme_sgw_pool, MAX_NUM_OF_GTP_NODE);
+    pool_init(&mme_s1ap_pool, MAX_NUM_OF_SERVER);
+    list_init(&self.s1ap_list);
+    pool_init(&mme_sgw_pool, MAX_NUM_OF_CLINET);
     list_init(&self.sgw_list);
 
     index_init(&mme_enb_pool, MAX_NUM_OF_ENB);
@@ -66,8 +70,11 @@ status_t mme_context_final()
     d_assert(context_initialized == 1, return CORE_ERROR,
             "MME context already has been finalized");
 
+    mme_s1ap_remove_all();
+    
     mme_sgw_remove_all();
     mme_enb_remove_all();
+
     mme_ue_remove_all();
 
     d_assert(self.enb_sock_hash, , "Null param");
@@ -92,6 +99,8 @@ status_t mme_context_final()
     index_final(&mme_enb_pool);
     pool_final(&mme_sgw_pool);
 
+    pool_final(&mme_s1ap_pool);
+
     context_initialized = 0;
 
     return CORE_OK;
@@ -106,9 +115,6 @@ static status_t mme_context_prepare()
 {
     self.relative_capacity = 0xff;
 
-#if 0
-    self.s1ap_port = S1AP_SCTP_PORT;
-#endif
     self.gtpc_port = GTPV2_C_UDP_PORT;
     self.s5c_port = GTPV2_C_UDP_PORT;
 
@@ -123,14 +129,12 @@ static status_t mme_context_validation()
                 context_self()->config.path);
         return CORE_ERROR;
     }
-#if 0
-    if (self.s1ap_addr == 0)
+    if (mme_s1ap_first() == NULL)
     {
-        d_error("No MME.NEWORK.S1AP_IPV4 in '%s'",
+        d_error("No MME.S1AP in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
-#endif
     if (self.gtpc_addr == 0)
     {
         d_error("No MME.NEWORK.GTPC_IPV4 in '%s'",
@@ -248,6 +252,91 @@ status_t mme_context_parse_config()
                 {
                     self.fd_conf_path = bson_iter_utf8(&mme_iter, &length);
                 }
+                else if (!strcmp(mme_key, "S1AP"))
+                {
+                    int s1ap_index = 0;
+                    bson_iter_t s1ap_array;
+
+                    if (BSON_ITER_HOLDS_ARRAY(&mme_iter))
+                    {
+                        bson_iter_recurse(&mme_iter, &s1ap_array);
+                        d_assert(bson_iter_next(&s1ap_array),
+                                return CORE_ERROR,);
+                    }
+                    else if (BSON_ITER_HOLDS_DOCUMENT(&mme_iter))
+                    {
+                        memcpy(&s1ap_array, &mme_iter,
+                                sizeof(s1ap_array));
+                    }
+                    else
+                        d_assert(0, return CORE_ERROR,);
+
+                    do 
+                    {
+                        bson_iter_t s1ap_iter;
+                        const char *s1ap_index_key =
+                            bson_iter_key(&s1ap_array);
+
+                        int domain = AF_UNSPEC;
+                        const char *hostname = NULL;
+                        c_uint16_t port = S1AP_SCTP_PORT;
+                        mme_s1ap_t *s1ap = NULL;
+
+                        d_assert(s1ap_index_key, return CORE_ERROR,);
+                        if (BSON_ITER_HOLDS_ARRAY(&mme_iter))
+                            s1ap_index = atoi(s1ap_index_key);
+                        d_assert(s1ap_index < MAX_NUM_OF_SERVER,
+                                return CORE_ERROR,
+                                "GTP NODE Overflow : %d", s1ap_index);
+
+                        bson_iter_recurse(&s1ap_array, &s1ap_iter);
+                        while(bson_iter_next(&s1ap_iter))
+                        {
+                            const char *s1ap_key =
+                                bson_iter_key(&s1ap_iter);
+
+                            if (!strcmp(s1ap_key, "DOMAIN") &&
+                                    BSON_ITER_HOLDS_UTF8(&s1ap_iter))
+                            {
+                                const char *v =
+                                    bson_iter_utf8(&s1ap_iter, &length);
+                                if (v)
+                                {
+                                    if (!strcmp(v, "AF_INET") ||
+                                        !strcmp(v, "PF_INET"))
+                                    {
+                                        domain = AF_INET;
+                                    }
+                                    else if (!strcmp(v, "AF_INET6") ||
+                                        !strcmp(v, "PF_INET6"))
+                                    {
+                                        domain = AF_INET6;
+                                    }
+                                    else
+                                    {
+                                        d_warn("Unknown domain(%s)", v);
+                                    }
+                                }
+                            }
+                            else if (!strcmp(s1ap_key, "HOSTNAME") &&
+                                    BSON_ITER_HOLDS_UTF8(&s1ap_iter))
+                            {
+                                hostname = bson_iter_utf8(&s1ap_iter, &length);
+                            }
+                            else if (!strcmp(s1ap_key, "PORT") &&
+                                    BSON_ITER_HOLDS_INT32(&s1ap_iter))
+                            {
+                                port = bson_iter_int32(&s1ap_iter);
+                            }
+                        }
+
+                        s1ap = mme_s1ap_add(domain, hostname, port);
+                        d_assert(s1ap, return CORE_ERROR,);
+
+                    } while(
+                        BSON_ITER_HOLDS_ARRAY(&mme_iter) &&
+                        bson_iter_next(&s1ap_array));
+                }
                 else if (!strcmp(mme_key, "NETWORK"))
                 {
                     bson_iter_t network_iter;
@@ -269,23 +358,7 @@ status_t mme_context_parse_config()
                     while(bson_iter_next(&network_iter))
                     {
                         const char *network_key = bson_iter_key(&network_iter);
-                        if (!strcmp(network_key, "S1AP_IPV4") &&
-                            BSON_ITER_HOLDS_UTF8(&network_iter))
-                        {
-#if 0
-                            const char *v = 
-                                    bson_iter_utf8(&network_iter, &length);
-                            if (v) self.s1ap_addr = inet_addr(v);
-#endif
-                        }
-                        else if (!strcmp(network_key, "S1AP_PORT") &&
-                            BSON_ITER_HOLDS_INT32(&network_iter))
-                        {
-#if 0
-                            self.s1ap_port = bson_iter_int32(&network_iter);
-#endif
-                        }
-                        else if (!strcmp(network_key, "GTPC_IPV4") &&
+                        if (!strcmp(network_key, "GTPC_IPV4") &&
                             BSON_ITER_HOLDS_UTF8(&network_iter))
                         {
                             const char *v = 
@@ -758,7 +831,7 @@ status_t mme_context_parse_config()
                         d_assert(network_index_key, return CORE_ERROR,);
                         if (BSON_ITER_HOLDS_ARRAY(&sgw_iter))
                             network_index = atoi(network_index_key);
-                        d_assert(network_index < MAX_NUM_OF_GTP_NODE,
+                        d_assert(network_index < MAX_NUM_OF_CLINET,
                                 return CORE_ERROR,
                                 "GTP NODE Overflow : %d", network_index);
 
@@ -939,6 +1012,62 @@ status_t mme_context_setup_trace_module()
     }
 
     return CORE_OK;
+}
+
+mme_s1ap_t* mme_s1ap_add(
+        int domain, const char *hostname, c_uint16_t port)
+{
+    mme_s1ap_t *s1ap = NULL;
+
+    pool_alloc_node(&mme_s1ap_pool, &s1ap);
+    d_assert(s1ap, return NULL, "Null param");
+    memset(s1ap, 0, sizeof(mme_s1ap_t));
+
+    s1ap->domain = domain;
+    s1ap->hostname = hostname;
+    s1ap->port = port;
+
+    list_append(&self.s1ap_list, s1ap);
+    
+    return s1ap;
+}
+
+status_t mme_s1ap_remove(mme_s1ap_t *s1ap)
+{
+    d_assert(s1ap, return CORE_ERROR, "Null param");
+
+    list_remove(&self.s1ap_list, s1ap);
+
+    pool_free_node(&mme_s1ap_pool, s1ap);
+
+    return CORE_OK;
+}
+
+status_t mme_s1ap_remove_all()
+{
+    mme_s1ap_t *s1ap = NULL, *next_s1ap = NULL;
+    
+    s1ap = mme_s1ap_first();
+    while (s1ap)
+    {
+        next_s1ap = mme_s1ap_next(s1ap);
+
+        mme_s1ap_remove(s1ap);
+
+        s1ap = next_s1ap;
+    }
+
+    return CORE_OK;
+}
+
+mme_s1ap_t* mme_s1ap_first()
+{
+    return list_first(&self.s1ap_list);
+}
+
+mme_s1ap_t* mme_s1ap_next(mme_s1ap_t *s1ap)
+{
+    return list_next(s1ap);
 }
 
 mme_sgw_t* mme_sgw_add()
@@ -1124,15 +1253,16 @@ mme_enb_t *mme_enb_this(hash_index_t *hi)
 
 int mme_enb_sock_type(sock_id sock)
 {
+    mme_s1ap_t *s1ap = NULL;
+
     d_assert(sock, return 0,);
-    if (mme_self()->s1ap_sock == sock)
+
+    for (s1ap = mme_s1ap_first(); s1ap; s1ap = mme_s1ap_next(s1ap))
     {
-        return SOCK_SEQPACKET;
+        if (s1ap->sock == sock) return SOCK_SEQPACKET;
     }
-    else
-    {
-        return SOCK_STREAM;
-    }
+
+    return SOCK_STREAM;
 }
 
 

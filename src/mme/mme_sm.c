@@ -69,12 +69,11 @@ void mme_state_operational(fsm_t *s, event_t *e)
             {
                 d_error("Can't close S11-GTP path");
             }
-            rv = s1ap_close(mme_self()->s1ap_sock);
+            rv = s1ap_close();
             if (rv != CORE_OK)
             {
                 d_error("Can't close S1AP path");
             }
-            mme_self()->s1ap_sock = 0;
 
             break;
         }

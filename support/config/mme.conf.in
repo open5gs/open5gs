@@ -21,6 +21,15 @@
   {
     "FD_CONF_PATH" : "mme.conf",
     "DEFAULT_PAGING_DRX" : "v64",
+    "S1AP" :
+    [
+      {
+        "DOMAIN" : "AF_INET"
+      },
+      {
+        "DOMAIN" : "AF_INET6"
+      }
+    ],
     "NETWORK" :
     {
       "S1AP_IPV4" : "127.0.0.1",

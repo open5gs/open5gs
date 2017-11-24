@@ -35,6 +35,7 @@ extern "C" {
 
 typedef struct _enb_ue_t enb_ue_t;
 typedef struct _mme_ue_t mme_ue_t;
+
 typedef gtp_node_t mme_sgw_t;
 
 typedef struct _served_gummei {
@@ -50,15 +51,12 @@ typedef struct _served_gummei {
 typedef struct _mme_context_t {
     const char      *fd_conf_path;  /* MME freeDiameter conf path */
 
-#if 0
-    c_uint32_t      s1ap_addr;      /* MME S1AP local address */
-    c_uint16_t      s1ap_port;      /* MME S1AP local port */
-#endif
-    sock_id         s1ap_sock;      /* MME S1AP local listen socket */
+    list_t          s1ap_list;      /* MME S1AP Socket  List */
+    list_t          sgw_list;       /* SGW GTP Node List */
 
     c_uint32_t      gtpc_addr;      /* MME GTPC local address */
     c_uint16_t      gtpc_port;      /* MME GTPC local port */
-    sock_id         gtpc_sock;     /* MME GTPC local listen socket */
+    sock_id         gtpc_sock;      /* MME GTPC local listen socket */
 
     c_uint32_t      s5c_addr;       /* PGW S5C remote address */
     c_uint16_t      s5c_port;       /* PGW S5C remote port */
@@ -99,8 +97,6 @@ typedef struct _mme_context_t {
     /* Timer value */
     c_uint32_t      t3413_value; /* Paging retry timer */
 
-    list_t          sgw_list;  /* SGW GTP Node List */
-
     hash_t          *enb_sock_hash;         /* hash table for ENB Socket */
     hash_t          *enb_addr_hash;         /* hash table for ENB Address */
     hash_t          *enb_id_hash;           /* hash table for ENB-ID */
@@ -108,6 +104,16 @@ typedef struct _mme_context_t {
     hash_t          *imsi_ue_hash;          /* hash table (IMSI : MME_UE) */
     hash_t          *guti_ue_hash;          /* hash table (GUTI : MME_UE) */
 } mme_context_t;
+
+typedef struct _mme_s1ap_t {
+    lnode_t         node;   /* A node of list_t */
+
+    int             domain;
+    const char      *hostname;
+    c_uint16_t      port;
+
+    sock_id         sock;   /* MME S1AP Socket */
+} mme_s1ap_t;
 
 typedef struct _mme_enb_t {
     lnode_t         node;   /* A node of list_t */
@@ -438,6 +444,13 @@ CORE_DECLARE(mme_context_t*) mme_self(void);
 
 CORE_DECLARE(status_t)      mme_context_parse_config(void);
 CORE_DECLARE(status_t)      mme_context_setup_trace_module(void);
+
+CORE_DECLARE(mme_s1ap_t*)   mme_s1ap_add(
+        int domain, const char *hostname, c_uint16_t port);
+CORE_DECLARE(status_t)      mme_s1ap_remove(mme_s1ap_t *s1ap);
+CORE_DECLARE(status_t)      mme_s1ap_remove_all(void);
+CORE_DECLARE(mme_s1ap_t*)   mme_s1ap_first(void);
+CORE_DECLARE(mme_s1ap_t*)   mme_s1ap_next(mme_s1ap_t *s1ap);
 
 CORE_DECLARE(mme_sgw_t*)    mme_sgw_add(void);
 CORE_DECLARE(status_t)      mme_sgw_remove(mme_sgw_t *sgw);
