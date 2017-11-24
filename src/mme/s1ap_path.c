@@ -12,6 +12,43 @@
 #include "s1ap_build.h"
 #include "s1ap_path.h"
 
+status_t s1ap_open(void)
+{
+    status_t rv;
+#if USE_USRSCTP != 1
+    int type = SOCK_STREAM;
+#else
+    int type = SOCK_SEQPACKET;
+#endif
+    mme_s1ap_t *s1ap = NULL;
+
+    for (s1ap = mme_s1ap_first(); s1ap; s1ap = mme_s1ap_next(s1ap))
+    {
+        rv = s1ap_server(&s1ap->sock, s1ap->domain, type,
+                s1ap->hostname, s1ap->port);
+        if (rv != CORE_OK)
+        {
+            d_error("s1ap_server(%d:%d:[%s]:%d) failed",
+                    s1ap->domain, type, s1ap->hostname, s1ap->port);
+            return CORE_ERROR;
+        }
+    }
+
+    return CORE_OK;
+}
+
+status_t s1ap_close()
+{
+    mme_s1ap_t *s1ap = NULL;
+
+    for (s1ap = mme_s1ap_first(); s1ap; s1ap = mme_s1ap_next(s1ap))
+    {
+        s1ap_delete(s1ap->sock);
+    }
+
+    return CORE_OK;
+}
+
 status_t s1ap_send_to_enb(mme_enb_t *enb, pkbuf_t *pkbuf)
 {
     status_t rv = CORE_ERROR;

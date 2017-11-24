@@ -25,9 +25,6 @@
     [
       {
         "DOMAIN" : "AF_INET"
-      },
-      {
-        "DOMAIN" : "AF_INET6"
       }
     ],
     "NETWORK" :

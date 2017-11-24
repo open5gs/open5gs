@@ -32,10 +32,7 @@
     "S1AP" :
     [
       {
-        "HOSTNAME" : "127.0.0.1"
-      },
-      {
-        "HOSTNAME" : "::1"
+        "DOMAIN" : "AF_INET"
       }
     ],
     "NETWORK" :

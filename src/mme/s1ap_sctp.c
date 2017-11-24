@@ -19,30 +19,6 @@ status_t s1ap_final()
     return CORE_OK;
 }
 
-status_t s1ap_open(void)
-{
-    status_t rv;
-    int family = AF_INET;
-    int type = SOCK_STREAM;
-    const char *hostname = NULL;
-    c_uint16_t port = S1AP_SCTP_PORT;
-
-    rv = s1ap_server(&mme_self()->s1ap_sock, family, type, hostname, port);
-    if (rv != CORE_OK)
-    {
-        d_error("s1ap_server %d:%d:[%s]:%d failed",
-                family, type, hostname, port);
-        return CORE_ERROR;
-    }
-    
-    return CORE_OK;
-}
-
-status_t s1ap_close()
-{
-    return s1ap_delete(mme_self()->s1ap_sock);
-}
-
 status_t s1ap_server(sock_id *new,
         int family, int type, const char *hostname, c_uint16_t port)
 {
@@ -53,7 +29,7 @@ status_t s1ap_server(sock_id *new,
     rv = sctp_server(new, family, type, hostname, port);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
-    rv = sock_register(mme_self()->s1ap_sock, s1ap_accept_handler, NULL);
+    rv = sock_register(*new, s1ap_accept_handler, NULL);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
     addr = sock_local_addr_get(*new);

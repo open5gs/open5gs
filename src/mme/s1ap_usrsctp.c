@@ -59,39 +59,6 @@ status_t s1ap_final()
     return CORE_OK;
 }
 
-status_t s1ap_open(void)
-{
-    status_t rv;
-    int type = SOCK_SEQPACKET;
-    mme_s1ap_t *s1ap = NULL;
-
-    for (s1ap = mme_s1ap_first(); s1ap; s1ap = mme_s1ap_next(s1ap))
-    {
-        rv = s1ap_server(&s1ap->sock, s1ap->domain, type,
-                s1ap->hostname, s1ap->port);
-        if (rv != CORE_OK)
-        {
-            d_error("s1ap_server(%d:%d:[%s]:%d) failed",
-                    s1ap->domain, type, s1ap->hostname, s1ap->port);
-            return CORE_ERROR;
-        }
-    }
-
-    return CORE_OK;
-}
-
-status_t s1ap_close()
-{
-    mme_s1ap_t *s1ap = NULL;
-
-    for (s1ap = mme_s1ap_first(); s1ap; s1ap = mme_s1ap_next(s1ap))
-    {
-        s1ap_delete(s1ap->sock);
-    }
-
-    return CORE_OK;
-}
-
 status_t s1ap_delete(sock_id sock)
 {
     d_assert(sock, return CORE_ERROR,);
