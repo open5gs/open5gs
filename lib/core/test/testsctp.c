@@ -21,13 +21,13 @@ static void sctp_test1(abts_case *tc, void *data)
     rv = sock_delete(sctp);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    rv = sctp_server(&sctp, AF_UNSPEC, SOCK_STREAM, "127.0.0.1", PORT);
+    rv = sctp_server(&sctp, AF_INET, SOCK_STREAM, NULL, PORT);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     
     rv = sock_delete(sctp);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    rv = sctp_server(&sctp, AF_UNSPEC, SOCK_SEQPACKET, "::1", PORT);
+    rv = sctp_server(&sctp, AF_UNSPEC, SOCK_SEQPACKET, NULL, PORT);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     
     rv = sock_delete(sctp);
@@ -45,7 +45,7 @@ static void *THREAD_FUNC test2_main(thread_id id, void *data)
     c_uint32_t ppid;
     c_sockaddr_t sa;
 
-    rv = sctp_client(&sctp, AF_UNSPEC, SOCK_SEQPACKET, "::1", PORT);
+    rv = sctp_client(&sctp, AF_UNSPEC, SOCK_SEQPACKET, NULL, PORT);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     size = core_sctp_recvmsg(sctp, str, STRLEN, &sa, &ppid, NULL);
@@ -101,7 +101,7 @@ static void *THREAD_FUNC test3_main(thread_id id, void *data)
     rv = sctp_socket(&sctp, AF_INET, SOCK_SEQPACKET);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    rv = core_getaddrinfo(&sa, AF_UNSPEC, "127.0.0.1", PORT, 0);
+    rv = core_getaddrinfo(&sa, AF_INET, NULL, PORT, 0);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     size = core_sctp_sendmsg(sctp, DATASTR, strlen(DATASTR), sa, PPID, 0);
@@ -155,7 +155,7 @@ static void *THREAD_FUNC test4_main(thread_id id, void *data)
     ssize_t size;
     c_uint32_t ppid;
 
-    rv = sctp_client(&sctp, AF_UNSPEC, SOCK_STREAM, "::1", PORT);
+    rv = sctp_client(&sctp, AF_UNSPEC, SOCK_STREAM, NULL, PORT);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     size = core_sctp_sendmsg(sctp, DATASTR, strlen(DATASTR), NULL, PPID, 0);
@@ -218,7 +218,7 @@ static void *THREAD_FUNC test5_main(thread_id id, void *data)
     rv = sctp_server(&sctp, AF_INET6, SOCK_SEQPACKET, NULL, PORT2);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    rv = sctp_connect(sctp, "::1", PORT);
+    rv = sctp_connect(sctp, NULL, PORT);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     remote_addr = sock_remote_addr_get(sctp);
     ABTS_STR_EQUAL(tc, "::1", CORE_NTOP(remote_addr, buf));
