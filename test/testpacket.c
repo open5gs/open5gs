@@ -15,7 +15,7 @@ status_t tests1ap_enb_connect(sock_id *new)
 {
     status_t rv;
 
-    rv = s1ap_client(new, AF_INET, SOCK_STREAM, NULL, 36412);
+    rv = s1ap_client(new, AF_INET, SOCK_STREAM, NULL, S1AP_SCTP_PORT);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
     return CORE_OK;
@@ -23,8 +23,7 @@ status_t tests1ap_enb_connect(sock_id *new)
 
 status_t tests1ap_enb_close(sock_id id)
 {
-    s1ap_delete(id);
-    return CORE_OK;
+    return s1ap_delete(id);
 }
 
 status_t tests1ap_enb_read(sock_id id, pkbuf_t *recvbuf)
@@ -37,30 +36,29 @@ status_t tests1ap_enb_send(sock_id id, pkbuf_t *sendbuf)
     return s1ap_send(id, sendbuf, NULL);
 }
 
-sock_id testgtpu_enb_connect(void)
+status_t testgtpu_enb_connect(sock_id *new)
 {
     char buf[INET_ADDRSTRLEN];
     status_t rv;
     mme_context_t *mme = mme_self();
-    sock_id sock = 0;
     c_sockaddr_t addr;
 
-    if (test_only_control_plane) return 1;
+    if (test_only_control_plane) return CORE_OK;
 
-    if (!mme) return 0;
+    if (!mme) return CORE_ERROR;
 
     memset(&addr, 0, sizeof(c_sockaddr_t));
     addr.sin.sin_addr.s_addr = mme->gtpc_addr;
     addr.c_sa_family = AF_INET;
     addr.c_sa_port = htons(GTPV1_U_UDP_PORT);
 
-    rv = udp_socket(&sock, AF_INET);
-    d_assert(rv == CORE_OK, return 0,);
+    rv = udp_socket(new, AF_INET);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
 
-    rv = sock_bind(sock, &addr);
-    d_assert(rv == CORE_OK, return 0,);
+    rv = sock_bind(*new, &addr);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
 
-    return sock;
+    return CORE_OK;
 }
 
 status_t testgtpu_enb_close(sock_id sock)

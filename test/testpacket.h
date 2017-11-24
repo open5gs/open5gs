@@ -12,7 +12,7 @@ CORE_DECLARE(status_t) tests1ap_enb_close(sock_id id);
 CORE_DECLARE(status_t) tests1ap_enb_send(sock_id id, pkbuf_t *sendbuf);
 CORE_DECLARE(status_t) tests1ap_enb_read(sock_id id, pkbuf_t *recvbuf);
 
-CORE_DECLARE(sock_id) testgtpu_enb_connect(void);
+CORE_DECLARE(status_t) testgtpu_enb_connect(sock_id *new);
 CORE_DECLARE(status_t) testgtpu_enb_close(sock_id sock);
 CORE_DECLARE(status_t) testgtpu_enb_send(sock_id sock,
         c_uint32_t src_ip, c_uint32_t dst_ip);

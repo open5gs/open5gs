@@ -17,8 +17,6 @@
 
 #define MAX_CELL_PER_ENB            8
 
-#define S1AP_SCTP_PORT              36412
-
 static mme_context_t self;
 
 pool_declare(mme_sgw_pool, mme_sgw_t, MAX_NUM_OF_GTP_NODE);
@@ -864,13 +862,8 @@ status_t mme_context_setup_trace_module()
         d_trace_level(&_s1ap_build, s1ap);
         extern int _s1ap_handler;
         d_trace_level(&_s1ap_handler, s1ap);
-#if USE_USRSCTP == 1
-        extern int _s1ap_usrsctp;
-        d_trace_level(&_s1ap_usrsctp, s1ap);
-#else
         extern int _s1ap_sctp;
         d_trace_level(&_s1ap_sctp, s1ap);
-#endif
         extern int _s1ap_path;
         d_trace_level(&_s1ap_path, s1ap);
         extern int _s1ap_recv;

@@ -10,9 +10,6 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define SCTP_S1AP_PPID 18
-#define SCTP_X2AP_PPID 27
-
 CORE_DECLARE(status_t) s1ap_init(c_uint16_t port);
 CORE_DECLARE(status_t) s1ap_final();
 
@@ -25,9 +22,12 @@ CORE_DECLARE(status_t) s1ap_client(sock_id *new,
         int family, int type, const char *hostname, c_uint16_t port);
 CORE_DECLARE(status_t) s1ap_delete(sock_id sock);
 
-CORE_DECLARE(status_t) s1ap_recv(sock_id id, pkbuf_t *pkbuf);
+CORE_DECLARE(int) s1ap_recv_handler(sock_id sock, void *data);
+
 CORE_DECLARE(status_t) s1ap_send(sock_id sock,
         pkbuf_t *pkbuf, c_sockaddr_t *addr);
+CORE_DECLARE(status_t) s1ap_recv(sock_id id, pkbuf_t *pkbuf);
+
 CORE_DECLARE(status_t) s1ap_send_to_enb(mme_enb_t *enb, pkbuf_t *pkb);
 CORE_DECLARE(status_t) s1ap_delayed_send_to_enb(mme_enb_t *enb,
         pkbuf_t *pkbuf, c_uint32_t duration);
@@ -55,8 +55,6 @@ CORE_DECLARE(status_t) s1ap_send_handover_cancel_ack(enb_ue_t *source_ue);
 
 CORE_DECLARE(status_t) s1ap_send_mme_status_transfer(
         enb_ue_t *target_ue, S1ap_ENBStatusTransferIEs_t *ies);
-
-int s1ap_recv_cb(sock_id sock, void *data);
 
 #ifdef __cplusplus
 }

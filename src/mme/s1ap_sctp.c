@@ -7,7 +7,7 @@
 
 #include "s1ap_path.h"
 
-static int s1ap_accept_cb(sock_id sock, void *data);
+static int s1ap_accept_handler(sock_id sock, void *data);
 
 status_t s1ap_init(c_uint16_t port)
 {
@@ -25,7 +25,7 @@ status_t s1ap_open(void)
     int family = AF_INET;
     int type = SOCK_STREAM;
     const char *hostname = NULL;
-    c_uint16_t port = 36412;
+    c_uint16_t port = S1AP_SCTP_PORT;
 
     rv = s1ap_server(&mme_self()->s1ap_sock, family, type, hostname, port);
     if (rv != CORE_OK)
@@ -53,7 +53,7 @@ status_t s1ap_server(sock_id *new,
     rv = sctp_server(new, family, type, hostname, port);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
-    rv = sock_register(mme_self()->s1ap_sock, s1ap_accept_cb, NULL);
+    rv = sock_register(mme_self()->s1ap_sock, s1ap_accept_handler, NULL);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
     addr = sock_local_addr_get(*new);
@@ -76,7 +76,42 @@ status_t s1ap_delete(sock_id sock)
     return sock_delete(sock);
 }
 
-static int s1ap_accept_cb(sock_id id, void *data)
+status_t s1ap_send(sock_id sock, pkbuf_t *pkbuf, c_sockaddr_t *addr)
+{
+    int sent;
+
+    d_assert(sock, return CORE_ERROR,);
+    d_assert(pkbuf, return CORE_ERROR,);
+
+    sent = core_sctp_sendmsg(sock, pkbuf->payload, pkbuf->len,
+            addr, SCTP_S1AP_PPID, 0);
+    d_trace(10,"Sent %d->%d bytes\n", pkbuf->len, sent);
+    d_trace_hex(10, pkbuf->payload, pkbuf->len);
+    if (sent < 0 || sent != pkbuf->len)
+    {
+        d_error("core_sctp_sendmsg error (%d:%s)", errno, strerror(errno));
+        return CORE_ERROR;
+    }
+    pkbuf_free(pkbuf);
+
+    return CORE_OK;
+}
+
+status_t s1ap_recv(sock_id id, pkbuf_t *pkbuf)
+{
+    int size;
+
+    size = core_sctp_recvmsg(id, pkbuf->payload, MAX_SDU_LEN, NULL, NULL, NULL);
+    if (size <= 0)
+    {
+        return CORE_ERROR;
+    }
+
+    pkbuf->len = size;
+    return CORE_OK;;
+}
+
+static int s1ap_accept_handler(sock_id id, void *data)
 {
     char buf[CORE_ADDRSTRLEN];
     status_t rv;
@@ -113,17 +148,64 @@ static int s1ap_accept_cb(sock_id id, void *data)
 
         return -1;
     }
-
 }
 
-static status_t s1ap_recv_handler(sock_id sock, pkbuf_t *pkbuf)
+int s1ap_recv_handler(sock_id sock, void *data)
 {
+    status_t rv;
+    pkbuf_t *pkbuf;
+    int size;
     event_t e;
     c_sockaddr_t *addr = NULL;
-    status_t rv;
 
-    d_assert(sock, return CORE_ERROR, "Null param");
-    d_assert(pkbuf, return CORE_ERROR, "Null param");
+    d_assert(sock, return -1, "Null param");
+
+    pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    if (pkbuf == NULL)
+    {
+        char tmp_buf[MAX_SDU_LEN];
+
+        d_fatal("Can't allocate pkbuf");
+
+        /* Read data from socket to exit from select */
+        core_recv(sock, tmp_buf, MAX_SDU_LEN, 0);
+
+        return -1;
+    }
+
+    size = core_sctp_recvmsg(sock, pkbuf->payload, pkbuf->len,
+            NULL, NULL, NULL);
+    if (size <= 0)
+    {
+        pkbuf_free(pkbuf);
+
+        if (errno == 0 || errno == EAGAIN)
+            return 0;
+
+        if (size == CORE_SCTP_REMOTE_CLOSED)
+        {
+            addr = core_calloc(1, sizeof(c_sockaddr_t));
+            d_assert(addr, return -1,);
+            memcpy(addr, sock_remote_addr_get(sock), sizeof(c_sockaddr_t));
+
+            event_set(&e, MME_EVT_S1AP_LO_CONNREFUSED);
+            event_set_param1(&e, (c_uintptr_t)sock);
+            event_set_param2(&e, (c_uintptr_t)addr);
+            if (mme_event_send(&e) != CORE_OK)
+            {
+                pkbuf_free(pkbuf);
+                core_free(addr);
+            }
+
+            return 0;
+        }
+
+        d_error("core_sctp_recvmsg(%d) failed(%d:%s)",
+                size, errno, strerror(errno));
+        return -1;
+    }
+
+    pkbuf->len = size;
 
     d_trace(10, "S1AP_PDU is received from eNB-Inf\n");
     d_trace_hex(10, pkbuf->payload, pkbuf->len);
@@ -143,106 +225,5 @@ static status_t s1ap_recv_handler(sock_id sock, pkbuf_t *pkbuf)
         core_free(addr);
     }
     
-    return rv;
-}
-
-int s1ap_recv_cb(sock_id sock, void *data)
-{
-    status_t rv;
-    pkbuf_t *pkbuf;
-    int rc;
-    event_t e;
-
-    d_assert(sock, return -1, "Null param");
-
-    pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    if (pkbuf == NULL)
-    {
-        char tmp_buf[MAX_SDU_LEN];
-
-        d_fatal("Can't allocate pkbuf");
-
-        /* Read data from socket to exit from select */
-        core_recv(sock, tmp_buf, MAX_SDU_LEN, 0);
-
-        return -1;
-    }
-
-    rc = core_sctp_recvmsg(sock, pkbuf->payload, pkbuf->len,
-            NULL, NULL, NULL);
-    if (rc <= 0)
-    {
-        pkbuf_free(pkbuf);
-
-        if (errno == 0 || errno == EAGAIN)
-            return 0;
-
-        if (rc == CORE_SCTP_REMOTE_CLOSED)
-        {
-            c_sockaddr_t *addr = core_calloc(1, sizeof(c_sockaddr_t));
-            d_assert(addr, return -1,);
-            memcpy(addr, sock_remote_addr_get(sock), sizeof(c_sockaddr_t));
-
-            event_set(&e, MME_EVT_S1AP_LO_CONNREFUSED);
-            event_set_param1(&e, (c_uintptr_t)sock);
-            event_set_param2(&e, (c_uintptr_t)addr);
-            if (mme_event_send(&e) != CORE_OK)
-            {
-                pkbuf_free(pkbuf);
-                core_free(addr);
-            }
-
-            return 0;
-        }
-
-        d_error("core_sctp_recvmsg(%d) failed(%d:%s)",
-                rc, errno, strerror(errno));
-        return -1;
-    }
-
-    pkbuf->len = rc;
-
-    rv = s1ap_recv_handler(sock, pkbuf);
-    if (rv != CORE_OK)
-    {
-        d_error("s1_recv() failed");
-        return -1;
-    }
-
     return 0;
-}
-
-status_t s1ap_recv(sock_id id, pkbuf_t *pkbuf)
-{
-    int size;
-
-    size = core_sctp_recvmsg(id, pkbuf->payload, MAX_SDU_LEN, NULL, NULL, NULL);
-    if (size <= 0)
-    {
-        return CORE_ERROR;
-    }
-
-    pkbuf->len = size;
-    return CORE_OK;;
-}
-
-status_t s1ap_send(sock_id sock, pkbuf_t *pkbuf, c_sockaddr_t *addr)
-{
-    int sent;
-
-    d_assert(sock, return CORE_ERROR,);
-    d_assert(pkbuf, return CORE_ERROR,);
-
-    sent = core_sctp_sendmsg(sock, pkbuf->payload, pkbuf->len,
-            addr, SCTP_S1AP_PPID, 0);
-    d_trace(10,"Sent %d->%d bytes\n", pkbuf->len, sent);
-    d_trace_hex(10, pkbuf->payload, pkbuf->len);
-    if (sent < 0 || sent != pkbuf->len)
-    {
-        d_error("core_sctp_sendmsg error (%d:%s)", errno, strerror(errno));
-        return CORE_ERROR;
-    }
-    pkbuf_free(pkbuf);
-
-    return CORE_OK;
 }

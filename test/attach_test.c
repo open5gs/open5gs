@@ -141,8 +141,8 @@ static void attach_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     /* eNB connects to SGW */
-    gtpu = testgtpu_enb_connect();
-    ABTS_INT_NEQUAL(tc, 0, gtpu);
+    rv = testgtpu_enb_connect(&gtpu);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     /* Send S1-Setup Reqeust */
     rv = tests1ap_build_setup_req(
