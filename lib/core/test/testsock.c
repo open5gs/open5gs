@@ -289,17 +289,13 @@ abts_suite *testsock(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
-#if 0
     abts_run_test(suite, sock_test1, NULL);
-#endif
     abts_run_test(suite, sock_test2, NULL);
-#if 0
     abts_run_test(suite, sock_test3, NULL);
     abts_run_test(suite, sock_test4, NULL);
     abts_run_test(suite, sock_test5, NULL);
     abts_run_test(suite, sock_test6, NULL);
     abts_run_test(suite, sock_test7, NULL);
-#endif
 
     return suite;
 }
