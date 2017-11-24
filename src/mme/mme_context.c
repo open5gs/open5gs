@@ -1009,6 +1009,7 @@ mme_enb_t* mme_enb_add(sock_id sock, c_sockaddr_t *addr)
 
     enb->sock = sock;
     enb->addr = addr;
+    enb->sock_type = mme_enb_sock_type(enb->sock);
 
     list_init(&enb->enb_ue_list);
 
@@ -1040,7 +1041,7 @@ status_t mme_enb_remove(mme_enb_t *enb)
 
     enb_ue_remove_in_enb(enb);
 
-    if (mme_enb_sock_is_stream(enb->sock))
+    if (enb->sock_type == SOCK_STREAM)
         s1ap_sctp_delete(enb->sock);
     core_free(enb->addr);
 
@@ -1120,10 +1121,17 @@ mme_enb_t *mme_enb_this(hash_index_t *hi)
     return hash_this_val(hi);
 }
 
-int mme_enb_sock_is_stream(sock_id sock)
+int mme_enb_sock_type(sock_id sock)
 {
     d_assert(sock, return 0,);
-    return (mme_self()->s1ap_sock != sock);
+    if (mme_self()->s1ap_sock == sock)
+    {
+        return SOCK_SEQPACKET;
+    }
+    else
+    {
+        return SOCK_STREAM;
+    }
 }
 
 

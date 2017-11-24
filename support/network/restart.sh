@@ -9,9 +9,8 @@ if [ "$SYSTEM" = "Linux" ]; then
     ip addr add 45.45.0.1/16 dev pgwtun
     ip link set pgwtun up
 else
-    ifconfig lo0 alias 127.76.0.1 netmask 255.255.255.255
-    ifconfig lo0 alias 127.76.0.2 netmask 255.255.255.255
-    ifconfig lo0 alias 127.76.0.3 netmask 255.255.255.255
-    ifconfig lo0 alias 127.76.0.4 netmask 255.255.255.255
-    ifconfig lo0 alias 127.76.0.5 netmask 255.255.255.255
+    ifconfig lo0 alias 127.0.0.2 netmask 255.255.255.255
+    ifconfig lo0 alias 127.0.0.3 netmask 255.255.255.255
+    ifconfig lo0 alias 127.0.0.4 netmask 255.255.255.255
+    ifconfig lo0 alias 127.0.0.5 netmask 255.255.255.255
 fi

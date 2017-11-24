@@ -31,8 +31,8 @@
     "DEFAULT_PAGING_DRX" : "v64",
     "NETWORK" :
     {
-      "S1AP_IPV4" : "127.76.0.1",
-      "GTPC_IPV4" : "127.76.0.1"
+      "S1AP_IPV4" : "127.0.0.1",
+      "GTPC_IPV4" : "127.0.0.1"
     },
     "GUMMEI" :
     [
@@ -74,8 +74,8 @@
     "NETWORK" :
     [
       {
-        "GTPC_IPV4" : "127.76.0.2",
-        "GTPU_IPV4" : "127.76.0.2"
+        "GTPC_IPV4" : "127.0.0.2",
+        "GTPU_IPV4" : "127.0.0.2"
       }
     ]
   },
@@ -85,8 +85,8 @@
     "FD_CONF_PATH" : "pgw.conf",
     "NETWORK" :
     {
-      "GTPC_IPV4" : "127.76.0.3",
-      "GTPU_IPV4" : "127.76.0.3"
+      "GTPC_IPV4" : "127.0.0.3",
+      "GTPU_IPV4" : "127.0.0.3"
     },
     "UE_NETWORK":
     [

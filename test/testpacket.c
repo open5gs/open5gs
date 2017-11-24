@@ -632,7 +632,7 @@ status_t tests1ap_build_initial_context_setup_response(pkbuf_t **pkbuf, int i)
     char *payload[TESTS1AP_MAX_MESSAGE] = { 
         "2009"
         "0025000003000040 05c00100009d0008 400200010033400f 000032400a0a1f7f"
-        "4c000100000001",
+        "00000100000001",
         "",
         "",
 

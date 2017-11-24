@@ -95,5 +95,6 @@ int tests1ap_enb_read(sock_id id, pkbuf_t *recvbuf)
         }
     }
 
+    recvbuf->len = rc;
     return rc;
 }
