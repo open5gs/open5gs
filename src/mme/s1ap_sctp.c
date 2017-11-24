@@ -50,10 +50,13 @@ status_t s1ap_open(void)
 
 status_t s1ap_close()
 {
-    sock_delete(mme_self()->s1ap_sock);
-    mme_self()->s1ap_sock = 0;
+    return s1ap_sctp_delete(mme_self()->s1ap_sock);
+}
 
-    return CORE_OK;
+status_t s1ap_sctp_delete(sock_id sock)
+{
+    d_assert(sock, return CORE_ERROR,);
+    return sock_delete(sock);
 }
 
 static int s1ap_accept_cb(sock_id id, void *data)
@@ -67,8 +70,12 @@ static int s1ap_accept_cb(sock_id id, void *data)
     rv = sock_accept(&new, id);
     if (rv == CORE_OK)
     {
-        c_sockaddr_t *addr = sock_remote_addr_get(new);
+        c_sockaddr_t *addr = NULL;
         event_t e;
+
+        addr = core_calloc(1, sizeof(c_sockaddr_t));
+        d_assert(addr, return -1,);
+        memcpy(addr, sock_remote_addr_get(new), sizeof(c_sockaddr_t));
 
         d_trace(1, "eNB-S1 accepted[%s] in s1_path module\n", 
             CORE_NTOP(addr, buf));
@@ -76,7 +83,10 @@ static int s1ap_accept_cb(sock_id id, void *data)
         event_set(&e, MME_EVT_S1AP_LO_ACCEPT);
         event_set_param1(&e, (c_uintptr_t)new);
         event_set_param2(&e, (c_uintptr_t)addr);
-        mme_event_send(&e);
+        if (mme_event_send(&e) != CORE_OK)
+        {
+            core_free(addr);
+        }
 
         return 0;
     }
@@ -92,6 +102,8 @@ static int s1ap_accept_cb(sock_id id, void *data)
 static status_t s1ap_recv(sock_id sock, pkbuf_t *pkbuf)
 {
     event_t e;
+    c_sockaddr_t *addr = NULL;
+    status_t rv;
 
     d_assert(sock, return CORE_ERROR, "Null param");
     d_assert(pkbuf, return CORE_ERROR, "Null param");
@@ -99,10 +111,22 @@ static status_t s1ap_recv(sock_id sock, pkbuf_t *pkbuf)
     d_trace(10, "S1AP_PDU is received from eNB-Inf\n");
     d_trace_hex(10, pkbuf->payload, pkbuf->len);
 
+    addr = core_calloc(1, sizeof(c_sockaddr_t));
+    d_assert(addr, return -1,);
+    memcpy(addr, sock_remote_addr_get(sock), sizeof(c_sockaddr_t));
+
     event_set(&e, MME_EVT_S1AP_MESSAGE);
     event_set_param1(&e, (c_uintptr_t)sock);
-    event_set_param2(&e, (c_uintptr_t)pkbuf);
-    return mme_event_send(&e);
+    event_set_param2(&e, (c_uintptr_t)addr);
+    event_set_param3(&e, (c_uintptr_t)pkbuf);
+    rv = mme_event_send(&e);
+    if (rv != CORE_OK)
+    {
+        pkbuf_free(pkbuf);
+        core_free(addr);
+    }
+    
+    return rv;
 }
 
 int s1ap_recv_cb(sock_id sock, void *data)
@@ -138,9 +162,18 @@ int s1ap_recv_cb(sock_id sock, void *data)
 
         if (rc == CORE_SCTP_REMOTE_CLOSED)
         {
+            c_sockaddr_t *addr = core_calloc(1, sizeof(c_sockaddr_t));
+            d_assert(addr, return -1,);
+            memcpy(addr, sock_remote_addr_get(sock), sizeof(c_sockaddr_t));
+
             event_set(&e, MME_EVT_S1AP_LO_CONNREFUSED);
             event_set_param1(&e, (c_uintptr_t)sock);
-            mme_event_send(&e);
+            event_set_param2(&e, (c_uintptr_t)addr);
+            if (mme_event_send(&e) != CORE_OK)
+            {
+                pkbuf_free(pkbuf);
+                core_free(addr);
+            }
 
             return 0;
         }
@@ -155,7 +188,6 @@ int s1ap_recv_cb(sock_id sock, void *data)
     rv = s1ap_recv(sock, pkbuf);
     if (rv != CORE_OK)
     {
-        pkbuf_free(pkbuf);
         d_error("s1_recv() failed");
         return -1;
     }
@@ -163,7 +195,7 @@ int s1ap_recv_cb(sock_id sock, void *data)
     return 0;
 }
 
-status_t s1ap_send(sock_id sock, pkbuf_t *pkbuf)
+status_t s1ap_send(sock_id sock, pkbuf_t *pkbuf, c_sockaddr_t *addr)
 {
     int sent;
 

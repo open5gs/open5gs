@@ -51,13 +51,13 @@ status_t tests1ap_enb_connect(sock_id *new)
 
 status_t tests1ap_enb_close(sock_id id)
 {
-    sock_delete(id);
+    s1ap_sctp_delete(id);
     return CORE_OK;
 }
 
 status_t tests1ap_enb_send(sock_id id, pkbuf_t *sendbuf)
 {
-    return s1ap_send(id, sendbuf);
+    return s1ap_send(id, sendbuf, NULL);
 }
 
 int tests1ap_enb_read(sock_id id, pkbuf_t *recvbuf)

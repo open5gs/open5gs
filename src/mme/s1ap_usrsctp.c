@@ -23,10 +23,6 @@ static int s1ap_usrsctp_recv_cb(struct socket *sock,
 
 static void debug_printf(const char *format, ...);
 
-int accept_thread_should_stop = 0;
-static thread_id accept_thread;
-static void *THREAD_FUNC accept_main(thread_id id, void *data);
-
 status_t s1ap_init(c_uint16_t port)
 {
     usrsctp_init(port, NULL, debug_printf);
@@ -171,7 +167,7 @@ status_t s1ap_open(void)
     c_sockaddr_t addr;
 
     rv = s1ap_usrsctp_socket((sock_id *)&mme_self()->s1ap_sock,
-            AF_INET, SOCK_STREAM, s1ap_usrsctp_recv_cb);
+            AF_INET, SOCK_SEQPACKET, s1ap_usrsctp_recv_cb);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
     memset(&addr, 0, sizeof(addr));
@@ -185,9 +181,6 @@ status_t s1ap_open(void)
     rv = s1ap_usrsctp_listen(mme_self()->s1ap_sock);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
-    rv = thread_create(&accept_thread, NULL, accept_main, NULL);
-    if (rv != CORE_OK) return rv;
-
     d_trace(1, "s1_enb_listen() %s:%d\n",
         CORE_NTOP(&addr, buf), CORE_PORT(&addr));
 
@@ -200,25 +193,17 @@ status_t s1ap_close()
     d_assert(mme_self()->s1ap_sock, return CORE_ERROR,
             "S1-ENB path already opened");
 
-    accept_thread_should_stop = 1;
-
-    sock_delete(mme_self()->s1ap_sock);
-#if 0
-    thread_delete(accept_thread);
-#else
-    d_error("[FIXME] should delete accept_thread : "
-            "how to release usrsctp_accept() blocking?");
-#endif
+    s1ap_sctp_delete(mme_self()->s1ap_sock);
     return CORE_OK;
 }
 
-status_t sock_delete(sock_id sock)
+status_t s1ap_sctp_delete(sock_id sock)
 {
     usrsctp_close((struct socket *)sock);
     return CORE_OK;
 }
 
-status_t s1ap_send(sock_id id, pkbuf_t *pkbuf)
+status_t s1ap_send(sock_id id, pkbuf_t *pkbuf, c_sockaddr_t *addr)
 {
     ssize_t sent;
     struct socket *sock = (struct socket *)id;
@@ -230,7 +215,7 @@ status_t s1ap_send(sock_id id, pkbuf_t *pkbuf)
     memset((void *)&sndinfo, 0, sizeof(struct sctp_sndinfo));
     sndinfo.snd_ppid = htonl(SCTP_S1AP_PPID);
     sent = usrsctp_sendv(sock, pkbuf->payload, pkbuf->len, 
-            NULL, 0,
+            addr ? &addr->sa : NULL, addr ? 1 : 0,
             (void *)&sndinfo, (socklen_t)sizeof(struct sctp_sndinfo),
             SCTP_SENDV_SNDINFO, 0);
 
@@ -246,32 +231,29 @@ status_t s1ap_send(sock_id id, pkbuf_t *pkbuf)
     return CORE_OK;
 }
 
-static void *THREAD_FUNC accept_main(thread_id id, void *data)
+c_sockaddr_t *usrsctp_remote_addr_get(union sctp_sockstore *store)
 {
-    event_t e;
-
-    struct socket *sock = NULL;
     c_sockaddr_t *addr = NULL;
-    socklen_t addrlen = sizeof(struct sockaddr_storage);
 
-    while (!accept_thread_should_stop)
+    d_assert(store, return NULL,);
+
+    addr = core_calloc(1, sizeof(c_sockaddr_t));
+    d_assert(addr, return NULL,);
+
+    addr->c_sa_family = store->sin.sin_family;
+    switch(addr->c_sa_family)
     {
-        addr = core_calloc(1, sizeof(c_sockaddr_t));
-        if ((sock = usrsctp_accept((struct socket *)mme_self()->s1ap_sock,
-                    &addr->sa, &addrlen)) == NULL)
-        {
-            d_error("usrsctp_accept failed");
-            core_free(addr);
-            continue;
-        }
-
-        event_set(&e, MME_EVT_S1AP_LO_ACCEPT);
-        event_set_param1(&e, (c_uintptr_t)sock);
-        event_set_param2(&e, (c_uintptr_t)addr);
-        mme_event_send(&e);
+        case AF_INET:
+            memcpy(&addr->sin, &store->sin, sizeof(struct sockaddr_in));
+            break;
+        case AF_INET6:
+            memcpy(&addr->sin6, &store->sin6, sizeof(struct sockaddr_in6));
+            break;
+        default:
+            d_assert(0, return NULL,);
     }
 
-    return NULL;
+    return addr;
 }
 
 static int s1ap_usrsctp_recv_cb(struct socket *sock,
@@ -303,14 +285,32 @@ static int s1ap_usrsctp_recv_cb(struct socket *sock,
                             not->sn_assoc_change.sac_state == 
                                 SCTP_COMM_LOST)
                         {
+                            c_sockaddr_t *c_addr =
+                                usrsctp_remote_addr_get(&addr);
+                            d_assert(c_addr, return 1,);
+
                             event_set(&e, MME_EVT_S1AP_LO_CONNREFUSED);
                             event_set_param1(&e, (c_uintptr_t)sock);
-                            mme_event_send(&e);
-                            break;
+                            event_set_param2(&e, (c_uintptr_t)c_addr);
+                            if (mme_event_send(&e) != CORE_OK)
+                            {
+                                core_free(c_addr);
+                            }
                         }
+                        else if (not->sn_assoc_change.sac_state == SCTP_COMM_UP)
+                        {
+                            c_sockaddr_t *c_addr =
+                                usrsctp_remote_addr_get(&addr);
+                            d_assert(c_addr, return 1,);
 
-                        if (not->sn_assoc_change.sac_state == SCTP_COMM_UP)
-                            d_trace(3, "SCTP_COMM_UP\n");
+                            event_set(&e, MME_EVT_S1AP_LO_ACCEPT);
+                            event_set_param1(&e, (c_uintptr_t)sock);
+                            event_set_param2(&e, (c_uintptr_t)c_addr);
+                            if (mme_event_send(&e) != CORE_OK)
+                            {
+                                core_free(c_addr);
+                            }
+                        }
 
                         break;
                     case SCTP_PEER_ADDR_CHANGE:
@@ -323,10 +323,19 @@ static int s1ap_usrsctp_recv_cb(struct socket *sock,
                                 not->sn_send_failed_event.ssfe_error);
                         break;
                     case SCTP_SHUTDOWN_EVENT :
+                    {
+                        c_sockaddr_t *c_addr = usrsctp_remote_addr_get(&addr);
+                        d_assert(c_addr, return 1,);
+
                         event_set(&e, MME_EVT_S1AP_LO_CONNREFUSED);
                         event_set_param1(&e, (c_uintptr_t)sock);
-                        mme_event_send(&e);
+                        event_set_param2(&e, (c_uintptr_t)c_addr);
+                        if (mme_event_send(&e) != CORE_OK)
+                        {
+                            core_free(c_addr);
+                        }
                         break;
+                    }
                     default :
                         d_error("Discarding event with unknown "
                                 "flags = 0x%x, type 0x%x", 
@@ -338,17 +347,25 @@ static int s1ap_usrsctp_recv_cb(struct socket *sock,
         else if (flags & MSG_EOR)
         {
             pkbuf_t *pkbuf;
+            c_sockaddr_t *c_addr = NULL;
 
             pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
             d_assert(pkbuf, return 1, );
+            c_addr = usrsctp_remote_addr_get(&addr);
+            d_assert(c_addr, return 1,);
 
             pkbuf->len = datalen;
             memcpy(pkbuf->payload, data, pkbuf->len);
 
             event_set(&e, MME_EVT_S1AP_MESSAGE);
             event_set_param1(&e, (c_uintptr_t)sock);
-            event_set_param2(&e, (c_uintptr_t)pkbuf);
-            mme_event_send(&e);
+            event_set_param2(&e, (c_uintptr_t)c_addr);
+            event_set_param3(&e, (c_uintptr_t)pkbuf);
+            if (mme_event_send(&e) != CORE_OK)
+            {
+                pkbuf_free(pkbuf);
+                core_free(c_addr);
+            }
         }
         else
         {

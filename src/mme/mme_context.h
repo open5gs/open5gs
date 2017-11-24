@@ -99,7 +99,8 @@ typedef struct _mme_context_t {
 
     list_t          sgw_list;  /* SGW GTP Node List */
 
-    hash_t          *s1ap_sock_hash;        /* hash table for S1AP IP address */
+    hash_t          *enb_sock_hash;         /* hash table for ENB Socket */
+    hash_t          *enb_addr_hash;         /* hash table for ENB Address */
     hash_t          *enb_id_hash;           /* hash table for ENB-ID */
     hash_t          *mme_ue_s1ap_id_hash;   /* hash table for MME-UE-S1AP-ID */
     hash_t          *imsi_ue_hash;          /* hash table (IMSI : MME_UE) */
@@ -441,17 +442,19 @@ CORE_DECLARE(status_t)      mme_sgw_remove_all(void);
 CORE_DECLARE(mme_sgw_t*)    mme_sgw_first(void);
 CORE_DECLARE(mme_sgw_t*)    mme_sgw_next(mme_sgw_t *sgw);
 
-CORE_DECLARE(mme_enb_t*)    mme_enb_add(sock_id sock);
+CORE_DECLARE(mme_enb_t*)    mme_enb_add(sock_id sock, c_sockaddr_t *addr);
 CORE_DECLARE(status_t)      mme_enb_remove(mme_enb_t *enb);
 CORE_DECLARE(status_t)      mme_enb_remove_all(void);
 CORE_DECLARE(mme_enb_t*)    mme_enb_find(index_t index);
 CORE_DECLARE(mme_enb_t*)    mme_enb_find_by_sock(sock_id sock);
+CORE_DECLARE(mme_enb_t*)    mme_enb_find_by_addr(c_sockaddr_t *addr);
 CORE_DECLARE(mme_enb_t*)    mme_enb_find_by_enb_id(c_uint32_t enb_id);
 CORE_DECLARE(status_t)      mme_enb_set_enb_id(
         mme_enb_t *enb, c_uint32_t enb_id);
 CORE_DECLARE(hash_index_t *) mme_enb_first();
 CORE_DECLARE(hash_index_t *) mme_enb_next(hash_index_t *hi);
 CORE_DECLARE(mme_enb_t *)    mme_enb_this(hash_index_t *hi);
+CORE_DECLARE(int)           mme_enb_sock_is_stream(sock_id sock);
 
 CORE_DECLARE(mme_ue_t*)     mme_ue_add(enb_ue_t *enb_ue);
 CORE_DECLARE(status_t)      mme_ue_remove(mme_ue_t *mme_ue);

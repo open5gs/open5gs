@@ -19,7 +19,10 @@ CORE_DECLARE(status_t) s1ap_final();
 CORE_DECLARE(status_t) s1ap_open();
 CORE_DECLARE(status_t) s1ap_close();
 
-CORE_DECLARE(status_t) s1ap_send(sock_id sock, pkbuf_t *pkb);
+CORE_DECLARE(status_t) s1ap_sctp_delete(sock_id sock);
+
+CORE_DECLARE(status_t) s1ap_send(sock_id sock,
+        pkbuf_t *pkbuf, c_sockaddr_t *addr);
 CORE_DECLARE(status_t) s1ap_send_to_enb(mme_enb_t *enb, pkbuf_t *pkb);
 CORE_DECLARE(status_t) s1ap_delayed_send_to_enb(mme_enb_t *enb,
         pkbuf_t *pkbuf, c_uint32_t duration);

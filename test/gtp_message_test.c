@@ -1,13 +1,15 @@
 #include "core_pkbuf.h"
 #include "core_lib.h"
 #include "core_debug.h"
-#include "core_net.h"
 
 #include "types.h"
 #include "gtp_types.h"
 #include "gtp_message.h"
 
 #include "testutil.h"
+
+/* ADDR */
+#include <arpa/inet.h>
 
 static void gtp_message_test1(abts_case *tc, void *data)
 {

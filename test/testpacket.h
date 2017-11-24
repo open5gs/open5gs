@@ -1,7 +1,6 @@
 #ifndef __TESTS1AP_H__
 #define __TESTS1AP_H__
 
-#include "core_net.h"
 #include "core_network.h"
 
 #ifdef __cplusplus

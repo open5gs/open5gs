@@ -84,11 +84,16 @@ void mme_state_operational(fsm_t *s, event_t *e)
             d_assert(sock, break,);
             c_sockaddr_t *addr = (c_sockaddr_t *)event_get_param2(e);
             d_assert(addr, break,);
+            mme_enb_t *enb = NULL;
 
             d_trace(1, "eNB-S1 accepted[%s] in master_sm module\n", 
                 CORE_NTOP(addr, buf));
                     
-            mme_enb_t *enb = mme_enb_find_by_sock(sock);
+            if (mme_enb_sock_is_stream(sock))
+                enb = mme_enb_find_by_sock(sock);
+            else
+                enb = mme_enb_find_by_addr(addr);
+
             if (!enb)
             {
 #if USE_USRSCTP != 1
@@ -96,9 +101,8 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 d_assert(rv == CORE_OK, break, "register s1ap_recv_cb failed");
 #endif
 
-                mme_enb_t *enb = mme_enb_add(sock);
+                mme_enb_t *enb = mme_enb_add(sock, addr);
                 d_assert(enb, break, "Null param");
-                enb->addr = addr;
             }
             else
             {
@@ -114,11 +118,19 @@ void mme_state_operational(fsm_t *s, event_t *e)
         {
             mme_enb_t *enb = NULL;
             sock_id sock = 0;
+            c_sockaddr_t *addr = NULL;
 
             sock = (sock_id)event_get_param1(e);
             d_assert(sock, break, "Null param");
-            
-            enb = mme_enb_find_by_sock(sock);
+            addr = (c_sockaddr_t *)event_get_param2(e);
+            d_assert(addr, break, "Null param");
+
+            if (mme_enb_sock_is_stream(sock))
+                enb = mme_enb_find_by_sock(sock);
+            else
+                enb = mme_enb_find_by_addr(addr);
+            core_free(addr);
+
             if (enb)
             {
                 d_trace(1, "eNB-S1[%x] connection refused!!!\n", 
@@ -137,22 +149,32 @@ void mme_state_operational(fsm_t *s, event_t *e)
             s1ap_message_t message;
             mme_enb_t *enb = NULL;
             sock_id sock = 0;
+            c_sockaddr_t *addr = NULL;
             pkbuf_t *pkbuf = NULL;
 
             sock = (sock_id)event_get_param1(e);
             d_assert(sock, break, "Null param");
+
+            addr = (c_sockaddr_t *)event_get_param2(e);
+            d_assert(addr, break, "Null param");
             
-            pkbuf = (pkbuf_t *)event_get_param2(e);
+            pkbuf = (pkbuf_t *)event_get_param3(e);
             d_assert(pkbuf, break, "Null param");
 
-            enb = mme_enb_find_by_sock(sock);
+            if (mme_enb_sock_is_stream(sock))
+                enb = mme_enb_find_by_sock(sock);
+            else
+                enb = mme_enb_find_by_addr(addr);
+            core_free(addr);
+
             d_assert(enb, break, "No eNB context");
             d_assert(FSM_STATE(&enb->sm), break, "No S1AP State Machine");
 
             d_assert(s1ap_decode_pdu(&message, pkbuf) == CORE_OK,
                     pkbuf_free(pkbuf); break, "Can't decode S1AP_PDU");
-            event_set_param3(e, (c_uintptr_t)&message);
 
+            event_set_param1(e, (c_uintptr_t)enb->index);
+            event_set_param4(e, (c_uintptr_t)&message);
             fsm_dispatch(&enb->sm, (fsm_event_t*)e);
 
             s1ap_free_pdu(&message);
