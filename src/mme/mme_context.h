@@ -108,7 +108,7 @@ typedef struct _mme_context_t {
 typedef struct _mme_s1ap_t {
     lnode_t         node;   /* A node of list_t */
 
-    int             domain;
+    int             family;
     const char      *hostname;
     c_uint16_t      port;
 
@@ -446,7 +446,7 @@ CORE_DECLARE(status_t)      mme_context_parse_config(void);
 CORE_DECLARE(status_t)      mme_context_setup_trace_module(void);
 
 CORE_DECLARE(mme_s1ap_t*)   mme_s1ap_add(
-        int domain, const char *hostname, c_uint16_t port);
+        int family, const char *hostname, c_uint16_t port);
 CORE_DECLARE(status_t)      mme_s1ap_remove(mme_s1ap_t *s1ap);
 CORE_DECLARE(status_t)      mme_s1ap_remove_all(void);
 CORE_DECLARE(mme_s1ap_t*)   mme_s1ap_first(void);

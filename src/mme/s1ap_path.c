@@ -24,12 +24,12 @@ status_t s1ap_open(void)
 
     for (s1ap = mme_s1ap_first(); s1ap; s1ap = mme_s1ap_next(s1ap))
     {
-        rv = s1ap_server(&s1ap->sock, s1ap->domain, type,
+        rv = s1ap_server(&s1ap->sock, s1ap->family, type,
                 s1ap->hostname, s1ap->port);
         if (rv != CORE_OK)
         {
-            d_error("s1ap_server(%d:%d:[%s]:%d) failed",
-                    s1ap->domain, type, s1ap->hostname, s1ap->port);
+            d_error("s1ap_server %d:%d:[%s]:%d failed",
+                    s1ap->family, type, s1ap->hostname, s1ap->port);
             return CORE_ERROR;
         }
     }

@@ -276,7 +276,7 @@ status_t mme_context_parse_config()
                         const char *s1ap_index_key =
                             bson_iter_key(&s1ap_array);
 
-                        int domain = AF_UNSPEC;
+                        int family = AF_UNSPEC;
                         const char *hostname = NULL;
                         c_uint16_t port = S1AP_SCTP_PORT;
                         mme_s1ap_t *s1ap = NULL;
@@ -294,7 +294,7 @@ status_t mme_context_parse_config()
                             const char *s1ap_key =
                                 bson_iter_key(&s1ap_iter);
 
-                            if (!strcmp(s1ap_key, "DOMAIN") &&
+                            if (!strcmp(s1ap_key, "FAMILY") &&
                                     BSON_ITER_HOLDS_UTF8(&s1ap_iter))
                             {
                                 const char *v =
@@ -304,16 +304,16 @@ status_t mme_context_parse_config()
                                     if (!strcmp(v, "AF_INET") ||
                                         !strcmp(v, "PF_INET"))
                                     {
-                                        domain = AF_INET;
+                                        family = AF_INET;
                                     }
                                     else if (!strcmp(v, "AF_INET6") ||
                                         !strcmp(v, "PF_INET6"))
                                     {
-                                        domain = AF_INET6;
+                                        family = AF_INET6;
                                     }
                                     else
                                     {
-                                        d_warn("Unknown domain(%s)", v);
+                                        d_warn("Unknown family(%s)", v);
                                     }
                                 }
                             }
@@ -329,7 +329,7 @@ status_t mme_context_parse_config()
                             }
                         }
 
-                        s1ap = mme_s1ap_add(domain, hostname, port);
+                        s1ap = mme_s1ap_add(family, hostname, port);
                         d_assert(s1ap, return CORE_ERROR,);
 
                     } while(
@@ -1014,7 +1014,7 @@ status_t mme_context_setup_trace_module()
 }
 
 mme_s1ap_t* mme_s1ap_add(
-        int domain, const char *hostname, c_uint16_t port)
+        int family, const char *hostname, c_uint16_t port)
 {
     mme_s1ap_t *s1ap = NULL;
 
@@ -1022,7 +1022,7 @@ mme_s1ap_t* mme_s1ap_add(
     d_assert(s1ap, return NULL, "Null param");
     memset(s1ap, 0, sizeof(mme_s1ap_t));
 
-    s1ap->domain = domain;
+    s1ap->family = family;
     s1ap->hostname = hostname;
     s1ap->port = port;
 
