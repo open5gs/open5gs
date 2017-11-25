@@ -136,7 +136,6 @@ static void sctp_test3(abts_case *tc, void *data)
     size = core_sctp_recvmsg(sctp, str, STRLEN, &sa, &ppid, NULL);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
     ABTS_INT_EQUAL(tc, PPID, ppid);
-    ABTS_STR_EQUAL(tc, "127.0.0.1", CORE_ADDR(&sa, buf));
     
     thread_join(&rv, test3_thread);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), rv);
