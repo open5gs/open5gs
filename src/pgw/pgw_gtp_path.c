@@ -61,13 +61,13 @@ static int _gtpv1_tun_recv_cb(sock_id sock, void *data)
         gtp_h->teid = htonl(bearer->sgw_s5u_teid);
 
         /* Send to SGW */
-        gnode.addr.sin.sin_addr.s_addr = bearer->sgw_s5u_addr;
-        gnode.addr.c_sa_port = htons(GTPV1_U_UDP_PORT);
-        gnode.addr.c_sa_family = AF_INET;
+        gnode.old_addr.sin.sin_addr.s_addr = bearer->sgw_s5u_addr;
+        gnode.old_addr.c_sa_port = htons(GTPV1_U_UDP_PORT);
+        gnode.old_addr.c_sa_family = AF_INET;
         gnode.sock = pgw_self()->gtpu_sock;
         d_trace(50, "Send S5U PDU (teid = 0x%x)to SGW(%s)\n",
                 bearer->sgw_s5u_teid,
-                CORE_ADDR(&gnode.addr, buf));
+                CORE_ADDR(&gnode.old_addr, buf));
 
         rv =  gtp_send(&gnode, recvbuf);
     }

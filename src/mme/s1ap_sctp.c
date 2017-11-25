@@ -103,7 +103,7 @@ static int s1ap_accept_handler(sock_id id, void *data)
 
         addr = core_calloc(1, sizeof(c_sockaddr_t));
         d_assert(addr, return -1,);
-        memcpy(addr, sock_remote_addr_get(new), sizeof(c_sockaddr_t));
+        memcpy(addr, sock_remote_addr(new), sizeof(c_sockaddr_t));
 
         d_trace(1, "eNB-S1 accepted[%s]:%d in s1_path module\n", 
             CORE_ADDR(addr, buf), CORE_PORT(addr));
@@ -162,7 +162,7 @@ int s1ap_recv_handler(sock_id sock, void *data)
         {
             addr = core_calloc(1, sizeof(c_sockaddr_t));
             d_assert(addr, return -1,);
-            memcpy(addr, sock_remote_addr_get(sock), sizeof(c_sockaddr_t));
+            memcpy(addr, sock_remote_addr(sock), sizeof(c_sockaddr_t));
 
             event_set(&e, MME_EVT_S1AP_LO_CONNREFUSED);
             event_set_param1(&e, (c_uintptr_t)sock);
@@ -188,7 +188,7 @@ int s1ap_recv_handler(sock_id sock, void *data)
 
     addr = core_calloc(1, sizeof(c_sockaddr_t));
     d_assert(addr, return -1,);
-    memcpy(addr, sock_remote_addr_get(sock), sizeof(c_sockaddr_t));
+    memcpy(addr, sock_remote_addr(sock), sizeof(c_sockaddr_t));
 
     event_set(&e, MME_EVT_S1AP_MESSAGE);
     event_set_param1(&e, (c_uintptr_t)sock);

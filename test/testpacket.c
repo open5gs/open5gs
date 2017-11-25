@@ -171,9 +171,9 @@ status_t testgtpu_enb_send(sock_id sock, c_uint32_t src_ip, c_uint32_t dst_ip)
     icmp_h->checksum = in_cksum(
             (unsigned short *)icmp_h, sizeof(struct icmp_header_t));
 
-    gnode.addr.sin.sin_addr.s_addr = bearer->sgw_s1u_addr;
-    gnode.addr.c_sa_port = htons(GTPV1_U_UDP_PORT);
-    gnode.addr.c_sa_family = AF_INET;
+    gnode.old_addr.sin.sin_addr.s_addr = bearer->sgw_s1u_addr;
+    gnode.old_addr.c_sa_port = htons(GTPV1_U_UDP_PORT);
+    gnode.old_addr.c_sa_family = AF_INET;
     gnode.sock = sock;
 
     rv = gtp_send(&gnode, pkbuf);

@@ -97,9 +97,9 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
             /* Echo reply */
             d_trace(3, "Send echo-rsp to peer\n");
 
-            gnode.addr.sin.sin_addr.s_addr = from.sin.sin_addr.s_addr;
-            gnode.addr.c_sa_port = from.c_sa_port;
-            gnode.addr.c_sa_family = from.c_sa_family;
+            gnode.old_addr.sin.sin_addr.s_addr = from.sin.sin_addr.s_addr;
+            gnode.old_addr.c_sa_port = from.c_sa_port;
+            gnode.old_addr.c_sa_family = from.c_sa_family;
             gnode.sock = sock;
 
             gtp_send(&gnode, echo_rsp);
@@ -118,8 +118,8 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
         d_assert(bearer, return -1, "Null param");
 
         /* Convert TEID */
-        gnode.addr.c_sa_port = htons(GTPV1_U_UDP_PORT);
-        gnode.addr.c_sa_family = AF_INET;
+        gnode.old_addr.c_sa_port = htons(GTPV1_U_UDP_PORT);
+        gnode.old_addr.c_sa_family = AF_INET;
         gnode.sock = sgw_self()->gtpu_sock;
             
         if (tunnel->interface_type == 
@@ -134,7 +134,7 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
 
             s5u_tunnel = sgw_s5u_tunnel_in_bearer(bearer);
             d_assert(s5u_tunnel, return -1, "Null param");
-            gnode.addr.sin.sin_addr.s_addr = s5u_tunnel->remote_addr;
+            gnode.old_addr.sin.sin_addr.s_addr = s5u_tunnel->remote_addr;
 
             gtp_h->teid = htonl(s5u_tunnel->remote_teid);
             gtp_send(&gnode, pkbuf);
@@ -146,7 +146,7 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
 
             s1u_tunnel = sgw_s1u_tunnel_in_bearer(bearer);
             d_assert(s1u_tunnel, return -1, "Null param");
-            gnode.addr.sin.sin_addr.s_addr = s1u_tunnel->remote_addr;
+            gnode.old_addr.sin.sin_addr.s_addr = s1u_tunnel->remote_addr;
 
             if (s1u_tunnel->remote_teid)
             {
@@ -294,9 +294,9 @@ status_t sgw_gtp_send_end_marker(sgw_bearer_t *bearer)
     h->type = GTPU_MSGTYPE_END_MARKER;
     h->teid =  htonl(s1u_tunnel->remote_teid);
     
-    gnode.addr.sin.sin_addr.s_addr = s1u_tunnel->remote_addr;
-    gnode.addr.c_sa_port = htons(GTPV1_U_UDP_PORT);
-    gnode.addr.c_sa_family = AF_INET;
+    gnode.old_addr.sin.sin_addr.s_addr = s1u_tunnel->remote_addr;
+    gnode.old_addr.c_sa_port = htons(GTPV1_U_UDP_PORT);
+    gnode.old_addr.c_sa_family = AF_INET;
     gnode.sock = sgw_self()->gtpu_sock;
 
     rv = gtp_send(&gnode, pkbuf);

@@ -1,15 +1,13 @@
 #include "core_pkbuf.h"
 #include "core_lib.h"
 #include "core_debug.h"
+#include "core_network.h"
 
 #include "types.h"
 #include "gtp_types.h"
 #include "gtp_message.h"
 
 #include "testutil.h"
-
-/* ADDR */
-#include <arpa/inet.h>
 
 static void gtp_message_test1(abts_case *tc, void *data)
 {
@@ -43,6 +41,7 @@ static void gtp_message_test1(abts_case *tc, void *data)
     c_int16_t size = 0;
 
     pkbuf_t *pkbuf = NULL;
+    c_sockaddr_t sa;
 
     memset(&req, 0, sizeof(gtp_create_session_request_t));
 
@@ -81,7 +80,8 @@ static void gtp_message_test1(abts_case *tc, void *data)
     s11.ipv4 = 1;
     s11.interface_type = GTP_F_TEID_S11_MME_GTP_C;
     s11.teid = htonl(0x80000084);
-    s11.ipv4_addr = inet_addr("10.50.54.10");
+    core_inet_pton(AF_INET, "10.50.54.10", &sa);
+    s11.ipv4_addr = sa.sin.sin_addr.s_addr;
     req.sender_f_teid_for_control_plane.presence = 1;
     req.sender_f_teid_for_control_plane.data = &s11;
     req.sender_f_teid_for_control_plane.len = GTP_F_TEID_IPV4_LEN;
@@ -89,7 +89,8 @@ static void gtp_message_test1(abts_case *tc, void *data)
     memset(&s5, 0, sizeof(gtp_f_teid_t));
     s5.ipv4 = 1;
     s5.interface_type = GTP_F_TEID_S5_S8_PGW_GTP_C;
-    s5.ipv4_addr = inet_addr("10.50.54.37");
+    core_inet_pton(AF_INET, "10.50.54.37", &sa);
+    s5.ipv4_addr = sa.sin.sin_addr.s_addr;
     req.pgw_s5_s8_address_for_control_plane_or_pmip.presence = 1;
     req.pgw_s5_s8_address_for_control_plane_or_pmip.data = &s5;
     req.pgw_s5_s8_address_for_control_plane_or_pmip.len = GTP_F_TEID_IPV4_LEN;

@@ -193,21 +193,21 @@ status_t sock_accept(sock_id *new, sock_id id)
     return CORE_OK;
 }
 
-int sock_family_get(sock_id id)
+int sock_family(sock_id id)
 {
     sock_t *sock = (sock_t *)id;
     d_assert(id, return -1,);
 
     return sock->family;
 }
-c_sockaddr_t *sock_local_addr_get(sock_id id)
+c_sockaddr_t *sock_local_addr(sock_id id)
 {
     sock_t *sock = (sock_t *)id;
     d_assert(id, return NULL,);
 
     return &sock->local_addr;
 }
-c_sockaddr_t *sock_remote_addr_get(sock_id id)
+c_sockaddr_t *sock_remote_addr(sock_id id)
 {
     sock_t *sock = (sock_t *)id;
     d_assert(id, return NULL,);

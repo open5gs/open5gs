@@ -92,9 +92,9 @@ CORE_DECLARE(status_t) sock_connect(sock_id id, c_sockaddr_t *sa);
 CORE_DECLARE(status_t) sock_listen(sock_id id);
 CORE_DECLARE(status_t) sock_accept(sock_id *new, sock_id id);
 
-CORE_DECLARE(int) sock_family_get(sock_id id);
-CORE_DECLARE(c_sockaddr_t *) sock_local_addr_get(sock_id id);
-CORE_DECLARE(c_sockaddr_t *) sock_remote_addr_get(sock_id id);
+CORE_DECLARE(int) sock_family(sock_id id);
+CORE_DECLARE(c_sockaddr_t *) sock_local_addr(sock_id id);
+CORE_DECLARE(c_sockaddr_t *) sock_remote_addr(sock_id id);
 
 /*
  * UDP Socket

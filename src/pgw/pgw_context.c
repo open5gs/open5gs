@@ -440,7 +440,7 @@ pgw_sgw_t* pgw_sgw_find(c_uint32_t addr)
     sgw = pgw_sgw_first();
     while (sgw)
     {
-        if (sgw->addr.sin.sin_addr.s_addr == addr)
+        if (sgw->old_addr.sin.sin_addr.s_addr == addr)
             break;
 
         sgw = pgw_sgw_next(sgw);
@@ -495,9 +495,9 @@ pgw_sess_t *pgw_sess_add(gtp_f_teid_t *sgw_s5c_teid,
         sgw = pgw_sgw_add();
         d_assert(sgw, return NULL, "Can't add SGW-GTP node");
 
-        sgw->addr.sin.sin_addr.s_addr = addr;
-        sgw->addr.c_sa_port = htons(GTPV2_C_UDP_PORT);
-        sgw->addr.c_sa_family = AF_INET;
+        sgw->old_addr.sin.sin_addr.s_addr = addr;
+        sgw->old_addr.c_sa_port = htons(GTPV2_C_UDP_PORT);
+        sgw->old_addr.c_sa_family = AF_INET;
         sgw->sock = pgw_self()->gtpc_sock;
     }
     /* Setup GTP Node between PGW and SGW */

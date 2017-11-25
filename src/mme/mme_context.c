@@ -151,7 +151,7 @@ static status_t mme_context_validation()
 #if 0 /* ADDR */
     while(sgw)
     {
-        if (sgw->addr == 0)
+        if (sgw->old_addr == 0)
         {
             d_error("No SGW.NEWORK.GTPC_IPV4 in '%s'",
                     context_self()->config.path);
@@ -857,8 +857,8 @@ status_t mme_context_parse_config()
                             mme_sgw_t *sgw = mme_sgw_add();
                             d_assert(sgw, return CORE_ERROR,);
 
-                            core_inet_pton(AF_INET, addr, &sgw->addr);
-                            sgw->addr.c_sa_port = htons(port);
+                            core_inet_pton(AF_INET, addr, &sgw->old_addr);
+                            sgw->old_addr.c_sa_port = htons(port);
                         }
                     } while(
                         BSON_ITER_HOLDS_ARRAY(&sgw_iter) &&

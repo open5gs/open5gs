@@ -15,7 +15,7 @@ extern "C" {
 typedef struct _gtp_node_t {
     lnode_t         node;           /**< A node of list_t */
 
-    c_sockaddr_t    addr;           /**< Network byte order IP Address */
+    c_sockaddr_t    old_addr;       /**< Will be removed */
     sock_id         sock;           /**< Socket Descriptor */
 
     list_t          local_list;    
