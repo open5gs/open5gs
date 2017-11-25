@@ -179,7 +179,7 @@ status_t s1ap_send(sock_id id, pkbuf_t *pkbuf, c_sockaddr_t *addr)
 status_t s1ap_recv(sock_id id, pkbuf_t *pkbuf)
 {
 	struct socket *sock = (struct socket *)id;
-	struct sockaddr_in addr;
+    c_sockaddr_t addr;
 	ssize_t n = 0;
 	int flags = 0;
 	socklen_t from_len;
@@ -190,7 +190,7 @@ status_t s1ap_recv(sock_id id, pkbuf_t *pkbuf)
     while(1)
     {
         n = usrsctp_recvv(sock, pkbuf->payload, MAX_SDU_LEN,
-                (struct sockaddr *)&addr, &from_len, (void *)&rcv_info,
+                &addr.sa, &from_len, (void *)&rcv_info,
                 &infolen, &infotype, &flags);
         if (n > 0)
         {
@@ -213,7 +213,7 @@ status_t s1ap_recv(sock_id id, pkbuf_t *pkbuf)
 
 static status_t s1ap_usrsctp_socket(sock_id *new,
     int family, int type,
-    int (*receive_cb)(struct socket *sock, union sctp_sockstore addr,
+    int (*receive_cb)(struct socket *sock, union sctp_sockstore store,
         void *data, size_t datalen, struct sctp_rcvinfo, int flags,
         void *ulp_info))
 {
@@ -327,7 +327,7 @@ static status_t s1ap_usrsctp_listen(sock_id id)
 }
 
 static int s1ap_usrsctp_recv_handler(struct socket *sock,
-    union sctp_sockstore addr, void *data, size_t datalen,
+    union sctp_sockstore store, void *data, size_t datalen,
     struct sctp_rcvinfo rcv, int flags, void *ulp_info)
 {
     if (data)
@@ -355,30 +355,30 @@ static int s1ap_usrsctp_recv_handler(struct socket *sock,
                             not->sn_assoc_change.sac_state == 
                                 SCTP_COMM_LOST)
                         {
-                            c_sockaddr_t *c_addr =
-                                usrsctp_remote_addr(&addr);
-                            d_assert(c_addr, return 1,);
+                            c_sockaddr_t *addr =
+                                usrsctp_remote_addr(&store);
+                            d_assert(addr, return 1,);
 
                             event_set(&e, MME_EVT_S1AP_LO_CONNREFUSED);
                             event_set_param1(&e, (c_uintptr_t)sock);
-                            event_set_param2(&e, (c_uintptr_t)c_addr);
+                            event_set_param2(&e, (c_uintptr_t)addr);
                             if (mme_event_send(&e) != CORE_OK)
                             {
-                                core_free(c_addr);
+                                core_free(addr);
                             }
                         }
                         else if (not->sn_assoc_change.sac_state == SCTP_COMM_UP)
                         {
-                            c_sockaddr_t *c_addr =
-                                usrsctp_remote_addr(&addr);
-                            d_assert(c_addr, return 1,);
+                            c_sockaddr_t *addr =
+                                usrsctp_remote_addr(&store);
+                            d_assert(addr, return 1,);
 
                             event_set(&e, MME_EVT_S1AP_LO_ACCEPT);
                             event_set_param1(&e, (c_uintptr_t)sock);
-                            event_set_param2(&e, (c_uintptr_t)c_addr);
+                            event_set_param2(&e, (c_uintptr_t)addr);
                             if (mme_event_send(&e) != CORE_OK)
                             {
-                                core_free(c_addr);
+                                core_free(addr);
                             }
                         }
 
@@ -394,15 +394,15 @@ static int s1ap_usrsctp_recv_handler(struct socket *sock,
                         break;
                     case SCTP_SHUTDOWN_EVENT :
                     {
-                        c_sockaddr_t *c_addr = usrsctp_remote_addr(&addr);
-                        d_assert(c_addr, return 1,);
+                        c_sockaddr_t *addr = usrsctp_remote_addr(&store);
+                        d_assert(addr, return 1,);
 
                         event_set(&e, MME_EVT_S1AP_LO_CONNREFUSED);
                         event_set_param1(&e, (c_uintptr_t)sock);
-                        event_set_param2(&e, (c_uintptr_t)c_addr);
+                        event_set_param2(&e, (c_uintptr_t)addr);
                         if (mme_event_send(&e) != CORE_OK)
                         {
-                            core_free(c_addr);
+                            core_free(addr);
                         }
                         break;
                     }
@@ -417,24 +417,24 @@ static int s1ap_usrsctp_recv_handler(struct socket *sock,
         else if (flags & MSG_EOR)
         {
             pkbuf_t *pkbuf;
-            c_sockaddr_t *c_addr = NULL;
+            c_sockaddr_t *addr = NULL;
 
             pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
             d_assert(pkbuf, return 1, );
-            c_addr = usrsctp_remote_addr(&addr);
-            d_assert(c_addr, return 1,);
+            addr = usrsctp_remote_addr(&store);
+            d_assert(addr, return 1,);
 
             pkbuf->len = datalen;
             memcpy(pkbuf->payload, data, pkbuf->len);
 
             event_set(&e, MME_EVT_S1AP_MESSAGE);
             event_set_param1(&e, (c_uintptr_t)sock);
-            event_set_param2(&e, (c_uintptr_t)c_addr);
+            event_set_param2(&e, (c_uintptr_t)addr);
             event_set_param3(&e, (c_uintptr_t)pkbuf);
             if (mme_event_send(&e) != CORE_OK)
             {
                 pkbuf_free(pkbuf);
-                core_free(c_addr);
+                core_free(addr);
             }
         }
         else

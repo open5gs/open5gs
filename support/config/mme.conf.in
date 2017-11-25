@@ -24,12 +24,14 @@
     "S1AP" :
     [
       {
-        "DOMAIN" : "AF_INET"
+        "HOSTNAME" : "127.0.0.1"
+      },
+      {
+        "HOSTNAME" : "::1"
       }
     ],
     "NETWORK" :
     {
-      "S1AP_IPV4" : "127.0.0.1",
       "GTPC_IPV4" : "127.0.0.1"
     },
     "GUMMEI" :

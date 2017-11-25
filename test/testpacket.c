@@ -15,7 +15,7 @@ status_t tests1ap_enb_connect(sock_id *new)
 {
     status_t rv;
 
-    rv = s1ap_client(new, AF_INET, SOCK_STREAM, NULL, S1AP_SCTP_PORT);
+    rv = s1ap_client(new, AF_UNSPEC, SOCK_STREAM, NULL, S1AP_SCTP_PORT);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
     return CORE_OK;
