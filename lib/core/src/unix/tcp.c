@@ -24,11 +24,11 @@ status_t tcp_server(sock_id *new,
         d_assert(sock_setsockopt(*new, SOCK_O_REUSEADDR, 1) == CORE_OK,
                 return CORE_ERROR,
                 "setsockopt(%s:%d) failed(%d:%s)",
-                CORE_NTOP(sa, buf), port, errno, strerror(errno));
+                CORE_ADDR(sa, buf), port, errno, strerror(errno));
 
         if (sock_bind(*new, sa) == CORE_OK)
         {
-            d_trace(1, "tcp bind %s:%d\n", CORE_NTOP(sa, buf), port);
+            d_trace(1, "tcp bind %s:%d\n", CORE_ADDR(sa, buf), port);
             break;
         }
 
@@ -74,7 +74,7 @@ status_t tcp_client(sock_id *new,
 
         if (sock_connect(*new, sa) == CORE_OK)
         {
-            d_trace(1, "tcp connect %s:%d\n", CORE_NTOP(sa, buf), port);
+            d_trace(1, "tcp connect %s:%d\n", CORE_ADDR(sa, buf), port);
             break;
         }
 

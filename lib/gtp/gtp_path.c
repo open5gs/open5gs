@@ -27,7 +27,7 @@ status_t gtp_listen(sock_id *sock,
     rv = sock_register(*sock, handler, NULL);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
-    d_trace(1, "gtp_listen() %s:%d\n", CORE_NTOP(&addr, buf), CORE_PORT(&addr));
+    d_trace(1, "gtp_listen() %s:%d\n", CORE_ADDR(&addr, buf), CORE_PORT(&addr));
 
     return CORE_OK;
 }
@@ -133,7 +133,7 @@ status_t gtp_send(gtp_node_t *gnode, pkbuf_t *pkbuf)
 
     sent = core_sendto(sock, pkbuf->payload, pkbuf->len, 0, &gnode->addr);
     d_trace(50, "Sent %d->%d bytes to [%s:%d]\n", pkbuf->len, sent, 
-            CORE_NTOP(&gnode->addr, buf), CORE_PORT(&gnode->addr));
+            CORE_ADDR(&gnode->addr, buf), CORE_PORT(&gnode->addr));
     d_trace_hex(50, pkbuf->payload, pkbuf->len);
     if (sent < 0 || sent != pkbuf->len)
     {

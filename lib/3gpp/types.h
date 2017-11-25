@@ -14,16 +14,16 @@ extern "C" {
 #define SCTP_S1AP_PPID              18
 #define SCTP_X2AP_PPID              27
 
+#define MAX_NUM_OF_S1AP_SERVER      4
+#define MAX_NUM_OF_GTP_SERVER       4
+#define MAX_NUM_OF_GTP_CLIENT       16
+
 #define MAX_NUM_OF_ENB              128
 #define MAX_NUM_OF_UE               128
 #define MAX_NUM_OF_SESS             4
 #define MAX_NUM_OF_BEARER           4
 #define MAX_NUM_OF_TUNNEL           3   /* Num of Tunnel per Bearer */
 #define MAX_NUM_OF_PF               16  /* Num of Packet Filter per Bearer */
-#define MAX_NUM_OF_GTP_NODE         8
-
-#define MAX_NUM_OF_SERVER           8
-#define MAX_NUM_OF_CLINET           8
 
 #define MAX_POOL_OF_UE              (MAX_NUM_OF_ENB * MAX_NUM_OF_UE)
 #define MAX_POOL_OF_SESS            (MAX_POOL_OF_UE * MAX_NUM_OF_SESS)

@@ -12,8 +12,8 @@
 #include "context.h"
 #include "sgw_context.h"
 
-pool_declare(sgw_mme_pool, sgw_mme_t, MAX_NUM_OF_GTP_NODE);
-pool_declare(sgw_pgw_pool, sgw_pgw_t, MAX_NUM_OF_GTP_NODE);
+pool_declare(sgw_mme_pool, sgw_mme_t, MAX_NUM_OF_GTP_CLIENT);
+pool_declare(sgw_pgw_pool, sgw_pgw_t, MAX_NUM_OF_GTP_CLIENT);
 
 static sgw_context_t self;
 
@@ -31,9 +31,9 @@ status_t sgw_context_init()
 
     memset(&self, 0, sizeof(sgw_context_t));
 
-    pool_init(&sgw_mme_pool, MAX_NUM_OF_GTP_NODE);
+    pool_init(&sgw_mme_pool, MAX_NUM_OF_GTP_CLIENT);
     list_init(&self.mme_list);
-    pool_init(&sgw_pgw_pool, MAX_NUM_OF_GTP_NODE);
+    pool_init(&sgw_pgw_pool, MAX_NUM_OF_GTP_CLIENT);
     list_init(&self.pgw_list);
 
     index_init(&sgw_ue_pool, MAX_POOL_OF_UE);

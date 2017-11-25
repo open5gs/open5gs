@@ -86,7 +86,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
             mme_enb_t *enb = NULL;
 
             d_trace(1, "eNB-S1 accepted[%s] in master_sm module\n", 
-                CORE_NTOP(addr, buf));
+                CORE_ADDR(addr, buf));
                     
             enb = mme_enb_find_by_addr(addr);
             if (!enb)
@@ -102,7 +102,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
             else
             {
                 d_warn("eNB context duplicated with IP-address [%s]!!!", 
-                        CORE_NTOP(addr, buf));
+                        CORE_ADDR(addr, buf));
                 sock_delete(sock);
                 d_warn("S1 Socket Closed");
             }

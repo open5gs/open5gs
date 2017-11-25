@@ -67,7 +67,7 @@ static int _gtpv1_tun_recv_cb(sock_id sock, void *data)
         gnode.sock = pgw_self()->gtpu_sock;
         d_trace(50, "Send S5U PDU (teid = 0x%x)to SGW(%s)\n",
                 bearer->sgw_s5u_teid,
-                CORE_NTOP(&gnode.addr, buf));
+                CORE_ADDR(&gnode.addr, buf));
 
         rv =  gtp_send(&gnode, recvbuf);
     }

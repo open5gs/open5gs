@@ -35,7 +35,7 @@ status_t s1ap_server(sock_id *new,
     addr = sock_local_addr_get(*new);
     d_assert(addr, return CORE_ERROR,);
 
-    d_trace(1, "s1ap_server [%s]:%d\n", CORE_NTOP(addr, buf), CORE_PORT(addr));
+    d_trace(1, "s1ap_server [%s]:%d\n", CORE_ADDR(addr, buf), CORE_PORT(addr));
 
     return CORE_OK;
 }
@@ -106,7 +106,7 @@ static int s1ap_accept_handler(sock_id id, void *data)
         memcpy(addr, sock_remote_addr_get(new), sizeof(c_sockaddr_t));
 
         d_trace(1, "eNB-S1 accepted[%s]:%d in s1_path module\n", 
-            CORE_NTOP(addr, buf), CORE_PORT(addr));
+            CORE_ADDR(addr, buf), CORE_PORT(addr));
 
         event_set(&e, MME_EVT_S1AP_LO_ACCEPT);
         event_set_param1(&e, (c_uintptr_t)new);

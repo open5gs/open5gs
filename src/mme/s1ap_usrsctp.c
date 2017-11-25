@@ -84,7 +84,7 @@ status_t s1ap_server(sock_id *new,
         
         if (s1ap_usrsctp_bind(*new, sa) == CORE_OK)
         {
-            d_trace(1, "s1ap_server [%s]:%d\n", CORE_NTOP(sa, buf), port);
+            d_trace(1, "s1ap_server [%s]:%d\n", CORE_ADDR(sa, buf), port);
             break;
         }
 
@@ -126,7 +126,7 @@ status_t s1ap_client(sock_id *new,
         
         if (s1ap_usrsctp_connect(*new, sa) == CORE_OK)
         {
-            d_trace(1, "s1ap_client [%s]:%d\n", CORE_NTOP(sa, buf), port);
+            d_trace(1, "s1ap_client [%s]:%d\n", CORE_ADDR(sa, buf), port);
             break;
         }
 
@@ -278,11 +278,11 @@ static status_t s1ap_usrsctp_bind(sock_id id, c_sockaddr_t *sa)
     if (usrsctp_bind(sock, &sa->sa, addrlen) != 0)
     {
         d_error("usrsctp_bind [%s]:%d failed",
-                CORE_NTOP(sa, buf), CORE_PORT(sa));
+                CORE_ADDR(sa, buf), CORE_PORT(sa));
         return CORE_ERROR;
     }
 
-    d_trace(3, "usrsctp_bind [%s]:%d\n", CORE_NTOP(sa, buf), CORE_PORT(sa));
+    d_trace(3, "usrsctp_bind [%s]:%d\n", CORE_ADDR(sa, buf), CORE_PORT(sa));
 
     return CORE_OK;
 }
@@ -301,11 +301,11 @@ static status_t s1ap_usrsctp_connect(sock_id id, c_sockaddr_t *sa)
 
     if (usrsctp_connect(sock, &sa->sa, addrlen) != 0)
     {
-        d_error("usrsctp_connect [%s]:%d", CORE_NTOP(sa, buf), CORE_PORT(sa));
+        d_error("usrsctp_connect [%s]:%d", CORE_ADDR(sa, buf), CORE_PORT(sa));
         return CORE_ERROR;
     }
 
-    d_trace(3, "usrsctp_connect [%s]:%d\n", CORE_NTOP(sa, buf), CORE_PORT(sa));
+    d_trace(3, "usrsctp_connect [%s]:%d\n", CORE_ADDR(sa, buf), CORE_PORT(sa));
 
     return CORE_OK;
 }

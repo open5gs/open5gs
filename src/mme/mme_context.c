@@ -19,11 +19,10 @@
 
 static mme_context_t self;
 
-pool_declare(mme_s1ap_pool, mme_s1ap_t, MAX_NUM_OF_SERVER);
+pool_declare(mme_s1ap_pool, mme_s1ap_t, MAX_NUM_OF_S1AP_SERVER);
+pool_declare(mme_sgw_pool, mme_sgw_t, MAX_NUM_OF_GTP_CLIENT);
 
-pool_declare(mme_sgw_pool, mme_sgw_t, MAX_NUM_OF_CLINET);
 index_declare(mme_enb_pool, mme_enb_t, MAX_NUM_OF_ENB);
-
 index_declare(mme_ue_pool, mme_ue_t, MAX_POOL_OF_UE);
 index_declare(enb_ue_pool, enb_ue_t, MAX_POOL_OF_UE);
 index_declare(mme_sess_pool, mme_sess_t, MAX_POOL_OF_SESS);
@@ -39,9 +38,9 @@ status_t mme_context_init()
     /* Initialize MME context */
     memset(&self, 0, sizeof(mme_context_t));
 
-    pool_init(&mme_s1ap_pool, MAX_NUM_OF_SERVER);
+    pool_init(&mme_s1ap_pool, MAX_NUM_OF_S1AP_SERVER);
     list_init(&self.s1ap_list);
-    pool_init(&mme_sgw_pool, MAX_NUM_OF_CLINET);
+    pool_init(&mme_sgw_pool, MAX_NUM_OF_GTP_CLIENT);
     list_init(&self.sgw_list);
 
     index_init(&mme_enb_pool, MAX_NUM_OF_ENB);
@@ -285,7 +284,7 @@ status_t mme_context_parse_config()
                         d_assert(s1ap_index_key, return CORE_ERROR,);
                         if (BSON_ITER_HOLDS_ARRAY(&mme_iter))
                             s1ap_index = atoi(s1ap_index_key);
-                        d_assert(s1ap_index < MAX_NUM_OF_SERVER,
+                        d_assert(s1ap_index < MAX_NUM_OF_S1AP_SERVER,
                                 return CORE_ERROR,
                                 "GTP NODE Overflow : %d", s1ap_index);
 
@@ -831,7 +830,7 @@ status_t mme_context_parse_config()
                         d_assert(network_index_key, return CORE_ERROR,);
                         if (BSON_ITER_HOLDS_ARRAY(&sgw_iter))
                             network_index = atoi(network_index_key);
-                        d_assert(network_index < MAX_NUM_OF_CLINET,
+                        d_assert(network_index < MAX_NUM_OF_GTP_CLIENT,
                                 return CORE_ERROR,
                                 "GTP NODE Overflow : %d", network_index);
 

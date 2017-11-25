@@ -143,7 +143,7 @@ status_t s1ap_build_downlink_nas_transport(
     d_trace(3, "[S1AP] downlinkNASTransport : "
             "UE[eNB-UE-S1AP-ID(%d)] <-- eNB[%s:%d]\n",
             enb_ue->enb_ue_s1ap_id,
-            CORE_NTOP(enb_ue->enb->addr, buf), enb_ue->enb->enb_id);
+            CORE_ADDR(enb_ue->enb->addr, buf), enb_ue->enb->enb_id);
 
     return CORE_OK;
 }
@@ -302,7 +302,7 @@ status_t s1ap_build_initial_context_setup_request(
     d_trace(3, "[S1AP] Initial Context Setup Request : "
             "UE[eNB-UE-S1AP-ID(%d)] <-- eNB[%s:%d]\n",
             enb_ue->enb_ue_s1ap_id,
-            CORE_NTOP(enb_ue->enb->addr, buf), enb_ue->enb->enb_id);
+            CORE_ADDR(enb_ue->enb->addr, buf), enb_ue->enb->enb_id);
 
     if (emmbuf && emmbuf->len)
     {
@@ -402,7 +402,7 @@ status_t s1ap_build_e_rab_setup_request(
     d_trace(3, "[S1AP] E-RAB Setup Request : "
             "UE[eNB-UE-S1AP-ID(%d)] <-- eNB[%s:%d]\n",
             enb_ue->enb_ue_s1ap_id,
-            CORE_NTOP(enb_ue->enb->addr, buf), enb_ue->enb->enb_id);
+            CORE_ADDR(enb_ue->enb->addr, buf), enb_ue->enb->enb_id);
 
     pkbuf_free(esmbuf);
 
@@ -470,7 +470,7 @@ status_t s1ap_build_e_rab_release_command(pkbuf_t **s1apbuf,
     d_trace(3, "[S1AP] E-RAB Release Command : "
             "UE[eNB-UE-S1AP-ID(%d)] <-- eNB[%s:%d]\n",
             enb_ue->enb_ue_s1ap_id,
-            CORE_NTOP(enb_ue->enb->addr, buf), enb_ue->enb->enb_id);
+            CORE_ADDR(enb_ue->enb->addr, buf), enb_ue->enb->enb_id);
 
     pkbuf_free(esmbuf);
 
@@ -526,7 +526,7 @@ status_t s1ap_build_ue_context_release_commmand(
     d_trace(3, "[S1AP] UE Context Release Command : "
             "UE[mME-UE-S1AP-ID(%d)] <-- eNB[%s:%d]\n",
             enb_ue->mme_ue_s1ap_id,
-            CORE_NTOP(enb_ue->enb->addr, buf), enb_ue->enb->enb_id);
+            CORE_ADDR(enb_ue->enb->addr, buf), enb_ue->enb->enb_id);
 
     return CORE_OK;
 }
@@ -633,7 +633,7 @@ status_t s1ap_build_path_switch_ack(pkbuf_t **s1apbuf, mme_ue_t *mme_ue)
     d_trace(3, "[S1AP] Path Switch Ack : "
             "UE[mME-UE-S1AP-ID(%d)] <-- eNB[%s:%d]\n",
             enb_ue->mme_ue_s1ap_id,
-            CORE_NTOP(enb_ue->enb->addr, buf), enb_ue->enb->enb_id);
+            CORE_ADDR(enb_ue->enb->addr, buf), enb_ue->enb->enb_id);
 
     return CORE_OK;
 }
@@ -772,7 +772,7 @@ status_t s1ap_build_handover_command(pkbuf_t **s1apbuf, enb_ue_t *source_ue)
     d_trace(3, "[S1AP] Handover Command : ",
             "UE[mME-UE-S1AP-ID(%d)] <-- eNB[%s:%d]\n",
             source_ue->mme_ue_s1ap_id,
-            CORE_NTOP(&source_ue->enb->addr, buf), source_ue->enb->enb_id);
+            CORE_ADDR(source_ue->enb->addr, buf), source_ue->enb->enb_id);
 
     return CORE_OK;
 }
@@ -804,7 +804,7 @@ status_t s1ap_build_handover_preparation_failure(
     d_trace(3, "[S1AP] Handover Preparation Failure : ",
             "UE[mME-UE-S1AP-ID(%d)] <-- eNB[%s:%d]\n",
             source_ue->mme_ue_s1ap_id,
-            CORE_NTOP(&source_ue->enb->addr, buf), source_ue->enb->enb_id);
+            CORE_ADDR(source_ue->enb->addr, buf), source_ue->enb->enb_id);
 
     return CORE_OK;
 }
@@ -946,7 +946,7 @@ status_t s1ap_build_handover_request(
     d_trace(3, "[S1AP] Handover Request : ",
             "UE[mME-UE-S1AP-ID(%d)] <-- eNB[%s:%d]\n",
             target_ue->mme_ue_s1ap_id,
-            CORE_NTOP(target_ue->enb->addr, buf), target_ue->enb->enb_id);
+            CORE_ADDR(target_ue->enb->addr, buf), target_ue->enb->enb_id);
 
     return CORE_OK;
 }
@@ -978,7 +978,7 @@ status_t s1ap_build_handover_cancel_ack(pkbuf_t **s1apbuf, enb_ue_t *source_ue)
     d_trace(3, "[S1AP] Handover Cancel Ack : ",
             "UE[mME-UE-S1AP-ID(%d)] <-- eNB[%s:%d]\n",
             source_ue->mme_ue_s1ap_id,
-            CORE_NTOP(&source_ue->enb->addr, buf), source_ue->enb->enb_id);
+            CORE_ADDR(source_ue->enb->addr, buf), source_ue->enb->enb_id);
 
     return CORE_OK;
 }
@@ -1030,7 +1030,7 @@ status_t s1ap_build_mme_status_transfer(pkbuf_t **s1apbuf,
     d_trace(3, "[S1AP] MME Status Transfer : ",
             "UE[mME-UE-S1AP-ID(%d)] <-- eNB[%s:%d]\n",
             target_ue->mme_ue_s1ap_id,
-            CORE_NTOP(target_ue->enb->addr, buf), target_ue->enb->enb_id);
+            CORE_ADDR(target_ue->enb->addr, buf), target_ue->enb->enb_id);
 
     return CORE_OK;
 }

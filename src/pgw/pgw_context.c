@@ -13,7 +13,7 @@
 
 static pgw_context_t self;
 
-pool_declare(pgw_sgw_pool, pgw_sgw_t, MAX_NUM_OF_GTP_NODE);
+pool_declare(pgw_sgw_pool, pgw_sgw_t, MAX_NUM_OF_GTP_CLIENT);
 
 index_declare(pgw_sess_pool, pgw_sess_t, MAX_POOL_OF_SESS);
 index_declare(pgw_bearer_pool, pgw_bearer_t, MAX_POOL_OF_BEARER);
@@ -30,7 +30,7 @@ status_t pgw_context_init()
 
     memset(&self, 0, sizeof(pgw_context_t));
 
-    pool_init(&pgw_sgw_pool, MAX_NUM_OF_GTP_NODE);
+    pool_init(&pgw_sgw_pool, MAX_NUM_OF_GTP_CLIENT);
     list_init(&self.sgw_list);
 
     index_init(&pgw_sess_pool, MAX_POOL_OF_SESS);
@@ -251,7 +251,7 @@ status_t pgw_context_parse_config()
                         d_assert(ue_network_index_key, return CORE_ERROR,);
                         if (BSON_ITER_HOLDS_ARRAY(&pgw_iter))
                             ue_network_index = atoi(ue_network_index_key);
-                        d_assert(ue_network_index < MAX_NUM_OF_GTP_NODE,
+                        d_assert(ue_network_index < MAX_NUM_OF_GTP_CLIENT,
                                 return CORE_ERROR,
                                 "GTP NODE Overflow : %d", ue_network_index);
 
