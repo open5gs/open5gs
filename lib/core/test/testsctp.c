@@ -136,7 +136,7 @@ static void sctp_test3(abts_case *tc, void *data)
     size = core_sctp_recvmsg(sctp, str, STRLEN, &sa, &ppid, NULL);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
     ABTS_INT_EQUAL(tc, PPID, ppid);
-    ABTS_STR_EQUAL(tc, "127.0.0.1", CORE_NTOP(&sa, buf));
+    ABTS_STR_EQUAL(tc, "127.0.0.1", CORE_ADDR(&sa, buf));
     
     thread_join(&rv, test3_thread);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), rv);
@@ -190,7 +190,7 @@ static void sctp_test4(abts_case *tc, void *data)
 
     size = core_sctp_recvmsg(sctp, str, STRLEN, &sa, &ppid, NULL);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
-    ABTS_STR_EQUAL(tc, "::1", CORE_NTOP(&sa, buf));
+    ABTS_STR_EQUAL(tc, "::1", CORE_ADDR(&sa, buf));
     ABTS_INT_EQUAL(tc, PPID, ppid);
 
     size = core_sctp_sendmsg(sctp, DATASTR, strlen(DATASTR), &sa, PPID, 0);
@@ -220,8 +220,8 @@ static void *THREAD_FUNC test5_main(thread_id id, void *data)
 
     rv = sctp_connect(sctp, NULL, PORT);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
-    remote_addr = sock_remote_addr_get(sctp);
-    ABTS_STR_EQUAL(tc, "::1", CORE_NTOP(remote_addr, buf));
+    remote_addr = sock_remote_addr(sctp);
+    ABTS_STR_EQUAL(tc, "::1", CORE_ADDR(remote_addr, buf));
 
     size = core_sctp_sendmsg(sctp, DATASTR, strlen(DATASTR),
             remote_addr, PPID, 0);
@@ -229,7 +229,7 @@ static void *THREAD_FUNC test5_main(thread_id id, void *data)
 
     size = core_sctp_recvmsg(sctp, str, STRLEN, &sa, &ppid, NULL);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
-    ABTS_STR_EQUAL(tc, "::1", CORE_NTOP(&sa, buf));
+    ABTS_STR_EQUAL(tc, "::1", CORE_ADDR(&sa, buf));
     ABTS_INT_EQUAL(tc, PPID, ppid);
 
     rv = sock_delete(sctp);
@@ -258,7 +258,7 @@ static void sctp_test5(abts_case *tc, void *data)
 
     size = core_sctp_recvmsg(sctp, str, STRLEN, &sa, &ppid, NULL);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
-    ABTS_STR_EQUAL(tc, "::1", CORE_NTOP(&sa, buf));
+    ABTS_STR_EQUAL(tc, "::1", CORE_ADDR(&sa, buf));
     ABTS_INT_EQUAL(tc, PPID, ppid);
 
     size = core_sctp_sendmsg(sctp, DATASTR, strlen(DATASTR), &sa, ppid, 0);
