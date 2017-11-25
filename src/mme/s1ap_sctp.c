@@ -32,7 +32,7 @@ status_t s1ap_server(sock_id *new,
     rv = sock_register(*new, s1ap_accept_handler, NULL);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
-    addr = sock_local_addr_get(*new);
+    addr = sock_local_addr(*new);
     d_assert(addr, return CORE_ERROR,);
 
     d_trace(1, "s1ap_server [%s]:%d\n", CORE_ADDR(addr, buf), CORE_PORT(addr));
