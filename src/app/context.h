@@ -49,11 +49,17 @@ typedef struct _context_t {
     } trace_level;
 
     struct {
-        int disable_hss;
-        int disable_sgw;
-        int disable_pgw;
-        int disable_pcrf;
-    } node;
+        /* Element */
+        int no_hss;
+        int no_sgw;
+        int no_pgw;
+        int no_pcrf;
+
+        /* Network */
+        int no_ipv4;
+        int no_ipv6;
+        int prefer_ipv4;
+    } parameter;
 
 } context_t;
 

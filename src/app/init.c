@@ -9,7 +9,7 @@
 #include "app.h"
 
 #define DEFAULT_CONFIG_FILE_PATH_JSON SYSCONF_DIR PACKAGE "/nextepc.json"
-#define DEFAULT_CONFIG_FILE_PATH SYSCONF_DIR PACKAGE "/nextepc.json"
+#define DEFAULT_CONFIG_FILE_PATH SYSCONF_DIR PACKAGE "/nextepc.conf"
 #define DEFAULT_RUNTIME_DIR_PATH LOCALSTATE_DIR "run/"
 
 static status_t app_logger_init();
@@ -34,8 +34,10 @@ status_t app_will_initialize(const char *config_path, const char *log_path)
     rv = context_read_old_file();
     if (rv != CORE_OK) return rv;
 
+#if 0
     rv = context_parse_old_config();
     if (rv != CORE_OK) return rv;
+#endif
 
     rv = context_read_file();
     if (rv != CORE_OK) return rv;

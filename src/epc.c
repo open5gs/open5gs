@@ -41,7 +41,7 @@ status_t app_initialize(const char *config_path, const char *log_path)
     semaphore_create(&pcrf_sem1, 0); /* copied to PCRF/PGW/SGW/HSS process */
     semaphore_create(&pcrf_sem2, 0); /* copied to PCRF/PGW/SGW/HSS process */
 
-    if (context_self()->node.disable_pcrf == 0)
+    if (context_self()->parameter.no_pcrf == 0)
     {
         pid = fork();
         d_assert(pid >= 0, _exit(EXIT_FAILURE), "fork() failed");
@@ -85,7 +85,7 @@ status_t app_initialize(const char *config_path, const char *log_path)
     semaphore_create(&pgw_sem1, 0); /* copied to PGW/SGW/HSS process */
     semaphore_create(&pgw_sem2, 0); /* copied to PGW/SGW/HSS process */
 
-    if (context_self()->node.disable_pgw == 0)
+    if (context_self()->parameter.no_pgw == 0)
     {
         pid = fork();
         d_assert(pid >= 0, _exit(EXIT_FAILURE), "fork() failed");
@@ -133,7 +133,7 @@ status_t app_initialize(const char *config_path, const char *log_path)
     semaphore_create(&sgw_sem1, 0); /* copied to SGW/HSS process */
     semaphore_create(&sgw_sem2, 0); /* copied to SGW/HSS process */
 
-    if (context_self()->node.disable_sgw == 0)
+    if (context_self()->parameter.no_sgw == 0)
     {
         pid = fork();
         d_assert(pid >= 0, _exit(EXIT_FAILURE), "fork() failed");
@@ -183,7 +183,7 @@ status_t app_initialize(const char *config_path, const char *log_path)
     semaphore_create(&hss_sem1, 0); /* copied to HSS process */
     semaphore_create(&hss_sem2, 0); /* copied to HSS process */
 
-    if (context_self()->node.disable_hss == 0)
+    if (context_self()->parameter.no_hss == 0)
     {
         pid = fork();
         d_assert(pid >= 0, _exit(EXIT_FAILURE), "fork() failed");
@@ -247,7 +247,7 @@ void app_terminate(void)
     mme_terminate();
     d_trace(1, "MME terminate...done\n");
 
-    if (context_self()->node.disable_hss == 0)
+    if (context_self()->parameter.no_hss == 0)
     {
         if (hss_sem2) semaphore_post(hss_sem2);
         if (hss_sem1) semaphore_wait(hss_sem1);
@@ -255,7 +255,7 @@ void app_terminate(void)
     if (hss_sem1) semaphore_delete(hss_sem1);
     if (hss_sem2) semaphore_delete(hss_sem2);
 
-    if (context_self()->node.disable_sgw == 0)
+    if (context_self()->parameter.no_sgw == 0)
     {
         if (sgw_sem2) semaphore_post(sgw_sem2);
         if (sgw_sem1) semaphore_wait(sgw_sem1);
@@ -263,7 +263,7 @@ void app_terminate(void)
     if (sgw_sem1) semaphore_delete(sgw_sem1);
     if (sgw_sem2) semaphore_delete(sgw_sem2);
 
-    if (context_self()->node.disable_pgw == 0)
+    if (context_self()->parameter.no_pgw == 0)
     {
         if (pgw_sem2) semaphore_post(pgw_sem2);
         if (pgw_sem1) semaphore_wait(pgw_sem1);
@@ -271,7 +271,7 @@ void app_terminate(void)
     if (pgw_sem1) semaphore_delete(pgw_sem1);
     if (pgw_sem2) semaphore_delete(pgw_sem2);
 
-    if (context_self()->node.disable_pcrf == 0)
+    if (context_self()->parameter.no_pcrf == 0)
     {
         if (pcrf_sem2) semaphore_post(pcrf_sem2);
         if (pcrf_sem1) semaphore_wait(pcrf_sem1);

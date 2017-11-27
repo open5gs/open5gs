@@ -8,6 +8,7 @@
 #include <yaml.h>
 #include <mongoc.h>
 
+#include "yaml_helper.h"
 #include "context.h"
 
 static context_t self;
@@ -131,174 +132,196 @@ static status_t context_prepare()
 
 status_t context_parse_config()
 {
+    status_t rv;
     config_t *config = &self.config;
     yaml_document_t *document = NULL;
-    yaml_node_t *node = NULL;
+    yaml_node_pair_t *root_pair;
+    yaml_node_t *root_node = NULL;
 
     d_assert(config, return CORE_ERROR,);
     document = config->document;
     d_assert(document, return CORE_ERROR,);
 
-    for (node = document->nodes.start; node < document->nodes.top; node++)
-    {
-#if 0
-        switch (node->type)
-        {
-            case YAML_SCALAR_NODE:
-                printf("SCALAR: %s\n", node->data.scalar.value);
-                break;
-            case YAML_SEQUENCE_NODE:
-                printf("SEQUENCE\n");
-                break;
-            case YAML_MAPPING_NODE:
-                printf("MAPPIGNG\n");
-                break;
-            default:
-                d_assert(0, return CORE_ERROR,);
-                break;
-        }
-#endif
-    }
-
-    return CORE_OK;
-}
-
-status_t context_parse_old_config()
-{
-    status_t rv;
-    config_t *config = &self.config;
-    bson_iter_t iter;
-    c_uint32_t length = 0;
-
-    d_assert(config, return CORE_ERROR, );
-
     rv = context_prepare();
     if (rv != CORE_OK) return rv;
 
-    if (!bson_iter_init(&iter, config->bson))
+    root_node = yaml_document_get_root_node(document);
+    if (root_node == NULL || root_node->type != YAML_MAPPING_NODE)
     {
-        d_error("bson_iter_init failed in this document");
-        return CORE_ERROR;
+        d_warn("No content in configuration file '%s'", config->path);
+        return CORE_OK;
     }
-
-    while(bson_iter_next(&iter))
+    for (root_pair = root_node->data.mapping.pairs.start;
+        root_pair < root_node->data.mapping.pairs.top; root_pair++)
     {
-        const char *key = bson_iter_key(&iter);
-        if (!strcmp(key, "DB_URI") && BSON_ITER_HOLDS_UTF8(&iter))
+        const char *root_key =
+            YAML_MAPPING_KEY(document, root_pair);
+        d_assert(root_key, return CORE_ERROR,);
+
+        if (!strcmp(root_key, "dbUri"))
         {
-            self.db_uri = bson_iter_utf8(&iter, &length);
+            self.db_uri = YAML_MAPPING_VALUE(document, root_pair);
         }
-        else if (!strcmp(key, "LOG") && BSON_ITER_HOLDS_DOCUMENT(&iter))
+        else if (!strcmp(root_key, "logger"))
         {
-            bson_iter_t log_iter;
-            bson_iter_recurse(&iter, &log_iter);
-            while(bson_iter_next(&log_iter))
+            yaml_node_pair_t *logger_pair = NULL;
+            yaml_node_t *logger_node = 
+                yaml_document_get_node(document, root_pair->value);
+            if (logger_node == NULL || logger_node->type != YAML_MAPPING_NODE)
+                continue;
+
+            for (logger_pair = logger_node->data.mapping.pairs.start;
+                logger_pair < logger_node->data.mapping.pairs.top;
+                logger_pair++)
             {
-                const char *log_key = bson_iter_key(&log_iter);
-                if (!strcmp(log_key, "CONSOLE") &&
-                    BSON_ITER_HOLDS_INT32(&log_iter))
+                const char *logger_key =
+                    YAML_MAPPING_KEY(document, logger_pair);
+                d_assert(logger_key, return CORE_ERROR,);
+                if (!strcmp(logger_key, "file"))
                 {
-                    self.log.console = bson_iter_int32(&log_iter);
+                    self.log.file = YAML_MAPPING_VALUE(document, logger_pair);
                 }
-                else if (!strcmp(log_key, "SYSLOG") &&
-                    BSON_ITER_HOLDS_UTF8(&log_iter))
+                else if (!strcmp(logger_key, "console"))
                 {
-                    self.log.syslog = bson_iter_utf8(&log_iter, &length);
+                    const char *v = YAML_MAPPING_VALUE(document, logger_pair);
+                    if (v) self.log.console = atoi(v);
                 }
-                else if (!strcmp(log_key, "SOCKET") &&
-                        BSON_ITER_HOLDS_DOCUMENT(&log_iter))
+                else if (!strcmp(logger_key, "syslog"))
                 {
-                    bson_iter_t socket_iter;
-                    bson_iter_recurse(&log_iter, &socket_iter);
-                    while(bson_iter_next(&socket_iter))
+                    self.log.syslog = YAML_MAPPING_VALUE(document, logger_pair);
+                }
+                else if (!strcmp(logger_key, "network"))
+                {
+                    yaml_node_pair_t *network_pair = NULL;
+                    yaml_node_t *network_node = 
+                        yaml_document_get_node(document, logger_pair->value);
+                    if (network_node == NULL ||
+                        network_node->type != YAML_MAPPING_NODE)
+                        continue;
+
+                    for (network_pair = network_node->data.mapping.pairs.start;
+                        network_pair < network_node->data.mapping.pairs.top;
+                        network_pair++)
                     {
-                        const char *socket_key = bson_iter_key(&socket_iter);
-                        if (!strcmp(socket_key, "FILE") &&
-                            BSON_ITER_HOLDS_UTF8(&socket_iter))
+                        const char *network_key =
+                            YAML_MAPPING_KEY(document, network_pair);
+                        d_assert(network_key, return CORE_ERROR,);
+                        if (!strcmp(network_key, "path"))
                         {
-                            self.log.socket.file =
-                                bson_iter_utf8(&socket_iter, &length);
+                            self.log.socket.file = 
+                                YAML_MAPPING_VALUE(document, network_pair);
                         }
-                        else if (!strcmp(socket_key, "UNIX_DOMAIN") &&
-                            BSON_ITER_HOLDS_UTF8(&socket_iter))
+                        else if (!strcmp(network_key, "unixDomain"))
                         {
-                            self.log.socket.unix_domain =
-                                bson_iter_utf8(&socket_iter, &length);
+                            self.log.socket.unix_domain = 
+                                YAML_MAPPING_VALUE(document, network_pair);
                         }
                     }
                 }
-                else if (!strcmp(log_key, "FILE") &&
-                    BSON_ITER_HOLDS_UTF8(&log_iter))
+                else if (!strcmp(logger_key, "trace"))
                 {
-                    self.log.file = bson_iter_utf8(&log_iter, &length);
+                    yaml_node_pair_t *trace_pair = NULL;
+                    yaml_node_t *trace_node = 
+                        yaml_document_get_node(document, logger_pair->value);
+                    if (trace_node == NULL ||
+                        trace_node->type != YAML_MAPPING_NODE)
+                        continue;
+
+                    for (trace_pair = trace_node->data.mapping.pairs.start;
+                        trace_pair < trace_node->data.mapping.pairs.top;
+                        trace_pair++)
+                    {
+                        const char *trace_key =
+                            YAML_MAPPING_KEY(document, trace_pair);
+                        d_assert(trace_key, return CORE_ERROR,);
+                        if (!strcmp(trace_key, "s1ap"))
+                        {
+                            const char *v =
+                                YAML_MAPPING_VALUE(document, trace_pair);
+                            if (v) self.trace_level.s1ap = atoi(v);
+                        }
+                        else if (!strcmp(trace_key, "nas"))
+                        {
+                            const char *v =
+                                YAML_MAPPING_VALUE(document, trace_pair);
+                            if (v) self.trace_level.nas = atoi(v);
+                        }
+                        else if (!strcmp(trace_key, "diameter"))
+                        {
+                            const char *v =
+                                YAML_MAPPING_VALUE(document, trace_pair);
+                            if (v) self.trace_level.fd = atoi(v);
+                        }
+                        else if (!strcmp(trace_key, "gtp"))
+                        {
+                            const char *v =
+                                YAML_MAPPING_VALUE(document, trace_pair);
+                            if (v) self.trace_level.gtp = atoi(v);
+                        }
+                        else if (!strcmp(trace_key, "others"))
+                        {
+                            const char *v =
+                                YAML_MAPPING_VALUE(document, trace_pair);
+                            if (v) self.trace_level.others = atoi(v);
+                        }
+                    }
                 }
             }
         }
-        else if (!strcmp(key, "TRACE") && BSON_ITER_HOLDS_DOCUMENT(&iter))
+        else if (!strcmp(root_key, "parameter"))
         {
-            bson_iter_t trace_iter;
-            bson_iter_recurse(&iter, &trace_iter);
-            while(bson_iter_next(&trace_iter))
+            yaml_node_pair_t *parameter_pair = NULL;
+            yaml_node_t *parameter_node = 
+                yaml_document_get_node(document, root_pair->value);
+            if (parameter_node == NULL ||
+                parameter_node->type != YAML_MAPPING_NODE)
+                continue;
+
+            for (parameter_pair = parameter_node->data.mapping.pairs.start;
+                parameter_pair < parameter_node->data.mapping.pairs.top;
+                parameter_pair++)
             {
-                const char *trace_key = bson_iter_key(&trace_iter);
-                if (!strcmp(trace_key, "S1AP") &&
-                    BSON_ITER_HOLDS_INT32(&trace_iter))
+                const char *parameter_key =
+                    YAML_MAPPING_KEY(document, parameter_pair);
+                d_assert(parameter_key, return CORE_ERROR,);
+                if (!strcmp(parameter_key, "no_hss"))
                 {
-                    self.trace_level.s1ap = bson_iter_int32(&trace_iter);
+                    self.parameter.no_hss =
+                        YAML_MAPPING_BOOL(document, parameter_pair);
                 }
-                else if (!strcmp(trace_key, "NAS") &&
-                    BSON_ITER_HOLDS_INT32(&trace_iter))
+                else if (!strcmp(parameter_key, "no_sgw"))
                 {
-                    self.trace_level.nas = bson_iter_int32(&trace_iter);
+                    self.parameter.no_sgw =
+                        YAML_MAPPING_BOOL(document, parameter_pair);
                 }
-                else if (!strcmp(trace_key, "FD") &&
-                    BSON_ITER_HOLDS_INT32(&trace_iter))
+                else if (!strcmp(parameter_key, "no_pgw"))
                 {
-                    self.trace_level.fd = bson_iter_int32(&trace_iter);
+                    self.parameter.no_pgw =
+                        YAML_MAPPING_BOOL(document, parameter_pair);
                 }
-                else if (!strcmp(trace_key, "GTP") &&
-                    BSON_ITER_HOLDS_INT32(&trace_iter))
+                else if (!strcmp(parameter_key, "no_pcrf"))
                 {
-                    self.trace_level.gtp = bson_iter_int32(&trace_iter);
+                    self.parameter.no_pcrf =
+                        YAML_MAPPING_BOOL(document, parameter_pair);
                 }
-                else if (!strcmp(trace_key, "OTHERS") &&
-                    BSON_ITER_HOLDS_INT32(&trace_iter))
+                else if (!strcmp(parameter_key, "no_ipv4"))
                 {
-                    self.trace_level.others = bson_iter_int32(&trace_iter);
+                    self.parameter.no_ipv4 =
+                        YAML_MAPPING_BOOL(document, parameter_pair);
                 }
-            }
-        }
-        else if (!strcmp(key, "NODE") && BSON_ITER_HOLDS_DOCUMENT(&iter))
-        {
-            bson_iter_t node_iter;
-            bson_iter_recurse(&iter, &node_iter);
-            while(bson_iter_next(&node_iter))
-            {
-                const char *node_key = bson_iter_key(&node_iter);
-                if (!strcmp(node_key, "DISABLE_HSS") &&
-                    BSON_ITER_HOLDS_INT32(&node_iter))
+                else if (!strcmp(parameter_key, "no_ipv6"))
                 {
-                    self.node.disable_hss = bson_iter_int32(&node_iter);
+                    self.parameter.no_ipv6 =
+                        YAML_MAPPING_BOOL(document, parameter_pair);
                 }
-                else if (!strcmp(node_key, "DISABLE_SGW") &&
-                    BSON_ITER_HOLDS_INT32(&node_iter))
+                else if (!strcmp(parameter_key, "prefer_ipv4"))
                 {
-                    self.node.disable_sgw = bson_iter_int32(&node_iter);
-                }
-                else if (!strcmp(node_key, "DISABLE_PGW") &&
-                    BSON_ITER_HOLDS_INT32(&node_iter))
-                {
-                    self.node.disable_pgw = bson_iter_int32(&node_iter);
-                }
-                else if (!strcmp(node_key, "DISABLE_PCRF") &&
-                    BSON_ITER_HOLDS_INT32(&node_iter))
-                {
-                    self.node.disable_pcrf = bson_iter_int32(&node_iter);
+                    self.parameter.prefer_ipv4 =
+                        YAML_MAPPING_BOOL(document, parameter_pair);
                 }
             }
         }
     }
-
     return CORE_OK;
 }
 
