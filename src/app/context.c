@@ -158,7 +158,7 @@ status_t context_parse_config()
             YAML_MAPPING_KEY(document, root_pair);
         d_assert(root_key, return CORE_ERROR,);
 
-        if (!strcmp(root_key, "dbUri"))
+        if (!strcmp(root_key, "db_uri"))
         {
             self.db_uri = YAML_MAPPING_VALUE(document, root_pair);
         }

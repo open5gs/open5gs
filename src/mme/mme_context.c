@@ -3,12 +3,15 @@
 #include "core_debug.h"
 #include "core_pool.h"
 #include "core_lib.h"
+
+#include <yaml.h>
 #include <mongoc.h>
 
 #include "gtp_path.h"
 #include "s1ap_message.h"
 #include "fd_lib.h"
 
+#include "yaml_helper.h"
 #include "context.h"
 #include "nas_conv.h"
 #include "mme_context.h"
@@ -213,7 +216,7 @@ static status_t mme_context_validation()
     return CORE_OK;
 }
 
-status_t mme_context_parse_config()
+status_t mme_context_parse_old_config()
 {
     status_t rv;
     config_t *config = &context_self()->config;
@@ -279,7 +282,9 @@ status_t mme_context_parse_config()
                         int family = AF_UNSPEC;
                         const char *hostname = NULL;
                         c_uint16_t port = S1AP_SCTP_PORT;
+#if 0
                         mme_s1ap_t *s1ap = NULL;
+#endif
 
                         d_assert(s1ap_index_key, return CORE_ERROR,);
                         if (BSON_ITER_HOLDS_ARRAY(&mme_iter))
@@ -329,8 +334,10 @@ status_t mme_context_parse_config()
                             }
                         }
 
+#if 0
                         s1ap = mme_s1ap_add(family, hostname, port);
                         d_assert(s1ap, return CORE_ERROR,);
+#endif
 
                     } while(
                         BSON_ITER_HOLDS_ARRAY(&mme_iter) &&
@@ -373,6 +380,7 @@ status_t mme_context_parse_config()
                 }
                 else if (!strcmp(mme_key, "GUMMEI"))
                 {
+#if 0
                     int gummei_index = 0;
                     bson_iter_t gummei_array;
 
@@ -562,6 +570,7 @@ status_t mme_context_parse_config()
                     } while(
                         BSON_ITER_HOLDS_ARRAY(&mme_iter) &&
                         bson_iter_next(&gummei_array));
+#endif
                 }
                 else if (!strcmp(mme_key, "TAI"))
                 {
@@ -909,6 +918,531 @@ status_t mme_context_parse_config()
                     }
                 }
             }
+        }
+    }
+
+#if 0
+    rv = mme_context_validation();
+    if (rv != CORE_OK) return rv;
+#endif
+
+    return CORE_OK;
+}
+
+status_t mme_context_parse_config()
+{
+    status_t rv;
+    config_t *config = &context_self()->config;
+    yaml_document_t *document = NULL;
+    yaml_node_pair_t *root_pair;
+    yaml_node_t *root_node = NULL;
+
+    d_assert(config, return CORE_ERROR,);
+    document = config->document;
+    d_assert(document, return CORE_ERROR,);
+
+#if 0
+    rv = context_prepare();
+    if (rv != CORE_OK) return rv;
+#endif
+
+    root_node = yaml_document_get_root_node(document);
+    if (root_node == NULL || root_node->type != YAML_MAPPING_NODE)
+    {
+        d_warn("No content in configuration file '%s'", config->path);
+        return CORE_OK;
+    }
+    for (root_pair = root_node->data.mapping.pairs.start;
+        root_pair < root_node->data.mapping.pairs.top; root_pair++)
+    {
+        const char *root_key =
+            YAML_MAPPING_KEY(document, root_pair);
+        d_assert(root_key, return CORE_ERROR,);
+
+        if (!strcmp(root_key, "mme"))
+        {
+            yaml_node_pair_t *mme_pair = NULL;
+            yaml_node_t *mme_node = 
+                yaml_document_get_node(document, root_pair->value);
+            if (mme_node == NULL ||
+                mme_node->type != YAML_MAPPING_NODE)
+                continue;
+
+            for (mme_pair = mme_node->data.mapping.pairs.start;
+                mme_pair < mme_node->data.mapping.pairs.top;
+                mme_pair++)
+            {
+                const char *mme_key =
+                    YAML_MAPPING_KEY(document, mme_pair);
+                d_assert(mme_key, return CORE_ERROR,);
+                if (!strcmp(mme_key, "freeDiameterConfigPath"))
+                {
+                    self.fd_conf_path =
+                        YAML_MAPPING_VALUE(document, mme_pair);
+                }
+                else if (!strcmp(mme_key, "relativeCapabity"))
+                {
+                    const char *v =  YAML_MAPPING_VALUE(document, mme_pair);
+                    if (v) self.relative_capacity = atoi(v);
+                }
+                else if (!strcmp(mme_key, "s1ap"))
+                {
+                    yaml_node_item_t *s1ap_item = NULL;
+                    yaml_node_pair_t *s1ap_pair = NULL;
+                    yaml_node_t *s1ap_node = NULL;
+                    yaml_node_t *s1ap_iter = NULL;
+
+                    s1ap_node = yaml_document_get_node(
+                            document, mme_pair->value);
+                    if (s1ap_node == NULL)
+                        continue;
+
+                    if (s1ap_node->type == YAML_SEQUENCE_NODE)
+                    {
+                        s1ap_item = s1ap_node->data.sequence.items.start;
+                        s1ap_iter = yaml_document_get_node(
+                                document, *s1ap_item);
+                        d_assert(s1ap_iter, return CORE_ERROR,);
+                    }
+                    else if (s1ap_node->type == YAML_MAPPING_NODE)
+                    {
+                        s1ap_iter = s1ap_node;
+                    }
+                    else
+                        d_assert(0, return CORE_ERROR,);
+                
+                    do
+                    {
+                        int family = AF_UNSPEC;
+                        const char *hostname = NULL;
+                        c_uint16_t port = S1AP_SCTP_PORT;
+                        mme_s1ap_t *s1ap = NULL;
+
+                        for (s1ap_pair = s1ap_iter->data.mapping.pairs.start;
+                            s1ap_pair < s1ap_iter->data.mapping.pairs.top;
+                            s1ap_pair++)
+                        {
+                            const char *s1ap_key =
+                                YAML_MAPPING_KEY(document, s1ap_pair);
+                            d_assert(s1ap_key, return CORE_ERROR,);
+                            if (!strcmp(s1ap_key, "hostname"))
+                            {
+                                hostname =
+                                    YAML_MAPPING_VALUE(document, s1ap_pair);
+                            }
+                            else if (!strcmp(s1ap_key, "family"))
+                            {
+                                const char *v =
+                                    YAML_MAPPING_VALUE(document, s1ap_pair);
+                                if (v)
+                                {
+                                    if (!strcmp(v, "AF_INET") ||
+                                        !strcmp(v, "PF_INET"))
+                                    {
+                                        family = AF_INET;
+                                    }
+                                    else if (!strcmp(v, "AF_INET6") ||
+                                        !strcmp(v, "PF_INET6"))
+                                    {
+                                        family = AF_INET6;
+                                    }
+                                    else
+                                    {
+                                        d_warn("Unknown family(%s)", v);
+                                    }
+                                }
+                            }
+                            else if (!strcmp(s1ap_key, "port"))
+                            {
+                                const char *v =
+                                    YAML_MAPPING_VALUE(document, s1ap_pair);
+                                if (v)
+                                    port = atoi(v);
+                            }
+                        }
+
+                        s1ap = mme_s1ap_add(family, hostname, port);
+                        d_assert(s1ap, return CORE_ERROR,);
+
+                        if (s1ap_item)
+                        {
+                            s1ap_item++;
+                            s1ap_iter = yaml_document_get_node(
+                                    document, *s1ap_item);
+                        }
+                    } while(s1ap_item &&
+                            s1ap_item < s1ap_node->data.sequence.items.top);
+                }
+                else if (!strcmp(mme_key, "gtpc"))
+                {
+                    yaml_node_item_t *gtpc_item = NULL;
+                    yaml_node_pair_t *gtpc_pair = NULL;
+                    yaml_node_t *gtpc_node = NULL;
+                    yaml_node_t *gtpc_iter = NULL;
+
+                    gtpc_node = yaml_document_get_node(
+                            document, mme_pair->value);
+                    if (gtpc_node == NULL)
+                        continue;
+
+                    if (gtpc_node->type == YAML_SEQUENCE_NODE)
+                    {
+                        gtpc_item = gtpc_node->data.sequence.items.start;
+                        gtpc_iter = yaml_document_get_node(
+                                document, *gtpc_item);
+                        d_assert(gtpc_iter, return CORE_ERROR,);
+                    }
+                    else if (gtpc_node->type == YAML_MAPPING_NODE)
+                    {
+                        gtpc_iter = gtpc_node;
+                    }
+                    else
+                        d_assert(0, return CORE_ERROR,);
+                
+                    do
+                    {
+                        int family = AF_UNSPEC;
+#if 0
+                        const char *hostname = NULL;
+                        c_uint16_t port = S1AP_SCTP_PORT;
+                        mme_gtpc_t *gtpc = NULL;
+#endif
+
+                        for (gtpc_pair = gtpc_iter->data.mapping.pairs.start;
+                            gtpc_pair < gtpc_iter->data.mapping.pairs.top;
+                            gtpc_pair++)
+                        {
+                            const char *gtpc_key =
+                                YAML_MAPPING_KEY(document, gtpc_pair);
+                            d_assert(gtpc_key, return CORE_ERROR,);
+                            if (!strcmp(gtpc_key, "hostname"))
+                            {
+                                const char *v = 
+                                    YAML_MAPPING_VALUE(document, gtpc_pair);
+                                if (v) self.gtpc_addr = inet_addr(v);
+                            }
+                            else if (!strcmp(gtpc_key, "family"))
+                            {
+                                const char *v =
+                                    YAML_MAPPING_VALUE(document, gtpc_pair);
+                                if (v)
+                                {
+                                    if (!strcmp(v, "AF_INET") ||
+                                        !strcmp(v, "PF_INET"))
+                                    {
+                                        family = AF_INET;
+                                    }
+                                    else if (!strcmp(v, "AF_INET6") ||
+                                        !strcmp(v, "PF_INET6"))
+                                    {
+                                        family = AF_INET6;
+                                    }
+                                    else
+                                    {
+                                        d_warn("Unknown family(%s)", v);
+                                    }
+                                }
+                            }
+                            else if (!strcmp(gtpc_key, "port"))
+                            {
+                                const char *v = 
+                                    YAML_MAPPING_VALUE(document, gtpc_pair);
+                                if (v) self.gtpc_port = atoi(v);
+                            }
+                        }
+
+#if 0
+                        gtpc = mme_gtpc_add(family, hostname, port);
+                        d_assert(gtpc, return CORE_ERROR,);
+#endif
+
+                        if (gtpc_item)
+                        {
+                            gtpc_item++;
+                            gtpc_iter = yaml_document_get_node(
+                                    document, *gtpc_item);
+                        }
+                    } while(gtpc_item &&
+                            gtpc_item < gtpc_node->data.sequence.items.top);
+                }
+                else if (!strcmp(mme_key, "gummei"))
+                {
+                    yaml_node_item_t *gummei_item = NULL;
+                    yaml_node_pair_t *gummei_pair = NULL;
+                    yaml_node_t *gummei_node = NULL;
+                    yaml_node_t *gummei_iter = NULL;
+
+                    gummei_node = yaml_document_get_node(
+                            document, mme_pair->value);
+                    if (gummei_node == NULL)
+                        continue;
+
+                    if (gummei_node->type == YAML_SEQUENCE_NODE)
+                    {
+                        gummei_item = gummei_node->data.sequence.items.start;
+                        gummei_iter = yaml_document_get_node(
+                                document, *gummei_item);
+                        d_assert(gummei_iter, return CORE_ERROR,);
+                    }
+                    else if (gummei_node->type == YAML_MAPPING_NODE)
+                    {
+                        gummei_iter = gummei_node;
+                    }
+                    else
+                        d_assert(0, return CORE_ERROR,);
+                
+                    do
+                    {
+                        served_gummei_t *gummei = NULL;
+                        d_assert(self.max_num_of_served_gummei <=
+                                MAX_NUM_OF_SERVED_GUMMEI, return CORE_ERROR,);
+                        gummei = &self.served_gummei[
+                            self.max_num_of_served_gummei];
+
+                        for (gummei_pair =
+                                gummei_iter->data.mapping.pairs.start;
+                            gummei_pair < gummei_iter->data.mapping.pairs.top;
+                            gummei_pair++)
+                        {
+                            const char *gummei_key =
+                                YAML_MAPPING_KEY(document, gummei_pair);
+                            d_assert(gummei_key, return CORE_ERROR,);
+                            if (!strcmp(gummei_key, "plmn_id"))
+                            {
+                                yaml_node_item_t *plmn_id_item = NULL;
+                                yaml_node_pair_t *plmn_id_pair = NULL;
+                                yaml_node_t *plmn_id_node = NULL;
+                                yaml_node_t *plmn_id_iter = NULL;
+
+                                plmn_id_node = yaml_document_get_node(
+                                        document, gummei_pair->value);
+                                if (plmn_id_node == NULL)
+                                    continue;
+
+                                if (plmn_id_node->type == YAML_SEQUENCE_NODE)
+                                {
+                                    plmn_id_item = 
+                                        plmn_id_node->data.sequence.items.start;
+                                    plmn_id_iter = yaml_document_get_node(
+                                            document, *plmn_id_item);
+                                    d_assert(plmn_id_iter, return CORE_ERROR,);
+                                }
+                                else if (plmn_id_node->type ==
+                                        YAML_MAPPING_NODE)
+                                {
+                                    plmn_id_iter = plmn_id_node;
+                                }
+                                else
+                                    d_assert(0, return CORE_ERROR,);
+                            
+                                do
+                                {
+                                    plmn_id_t *plmn_id = NULL;
+                                    const char *mcc = NULL, *mnc = NULL;
+
+                                    d_assert(gummei->num_of_plmn_id <=
+                                            MAX_PLMN_ID, return CORE_ERROR,);
+                                    plmn_id = &gummei->plmn_id[
+                                            gummei->num_of_plmn_id];
+
+                                    for (plmn_id_pair = plmn_id_iter->
+                                            data.mapping.pairs.start;
+                                        plmn_id_pair < plmn_id_iter->
+                                            data.mapping.pairs.top;
+                                        plmn_id_pair++)
+                                    {
+                                        const char *plmn_id_key =
+                                            YAML_MAPPING_KEY(
+                                                document, plmn_id_pair);
+                                        d_assert(plmn_id_key,
+                                            return CORE_ERROR,);
+                                        if (!strcmp(plmn_id_key, "mcc"))
+                                        {
+                                            mcc = YAML_MAPPING_VALUE(
+                                                    document, plmn_id_pair);
+                                        }
+                                        else if (!strcmp(plmn_id_key, "mnc"))
+                                        {
+                                            mnc = YAML_MAPPING_VALUE(
+                                                    document, plmn_id_pair);
+                                        }
+                                    }
+
+                                    if (mcc && mnc)
+                                    {
+                                        plmn_id_build(plmn_id,
+                                            atoi(mcc), atoi(mnc), strlen(mnc));
+                                        gummei->num_of_plmn_id++;
+                                    }
+
+                                    if (plmn_id_item)
+                                    {
+                                        plmn_id_item++;
+                                        plmn_id_iter = yaml_document_get_node(
+                                                document, *plmn_id_item);
+                                    }
+                                } while(plmn_id_item &&
+                                        plmn_id_item <
+                                        plmn_id_node->data.sequence.items.top);
+                            }
+                            else if (!strcmp(gummei_key, "mme_gid"))
+                            {
+                                yaml_node_item_t *mme_gid_item = NULL;
+                                yaml_node_t *mme_gid_node = NULL;
+                                yaml_node_t *mme_gid_iter = NULL;
+
+                                mme_gid_node = yaml_document_get_node(
+                                        document, gummei_pair->value);
+                                if (mme_gid_node == NULL)
+                                    continue;
+
+                                if (mme_gid_node->type == YAML_SCALAR_NODE)
+                                {
+                                    const char *v = NULL;
+                                    c_uint16_t *mme_gid = NULL;
+                                    d_assert(gummei->num_of_mme_gid <=
+                                            GRP_PER_MME, return CORE_ERROR,);
+                                    mme_gid = &gummei->mme_gid[
+                                            gummei->num_of_mme_gid];
+
+                                    v = YAML_MAPPING_VALUE(
+                                                document, gummei_pair);
+                                    if (v)
+                                    {
+                                        *mme_gid = atoi(v);
+                                        gummei->num_of_mme_gid++;
+                                    }
+                                    continue;
+                                }
+                                else if (mme_gid_node->type ==
+                                        YAML_SEQUENCE_NODE)
+                                {
+                                    mme_gid_item = 
+                                        mme_gid_node->data.sequence.items.start;
+                                    mme_gid_iter = yaml_document_get_node(
+                                            document, *mme_gid_item);
+                                    d_assert(mme_gid_iter, return CORE_ERROR,);
+                                }
+                                else
+                                    d_assert(0, return CORE_ERROR,);
+
+                                do
+                                {
+                                    const char *v = NULL;
+                                    c_uint16_t *mme_gid = NULL;
+
+                                    d_assert(gummei->num_of_mme_gid <=
+                                            MAX_PLMN_ID, return CORE_ERROR,);
+                                    mme_gid = &gummei->mme_gid[
+                                            gummei->num_of_mme_gid];
+
+                                    v = (const char *)mme_gid_iter->
+                                        data.scalar.value;
+                                    if (v)
+                                    {
+                                        *mme_gid = atoi(v);
+                                        gummei->num_of_mme_gid++;
+                                    }
+
+                                    if (mme_gid_item)
+                                    {
+                                        mme_gid_item++;
+                                        mme_gid_iter = yaml_document_get_node(
+                                                document, *mme_gid_item);
+                                    }
+                                } while(mme_gid_item &&
+                                        mme_gid_item <
+                                        mme_gid_node->data.sequence.items.top);
+
+                            }
+                            else if (!strcmp(gummei_key, "mme_code"))
+                            {
+                                yaml_node_item_t *mme_code_item = NULL;
+                                yaml_node_t *mme_code_node = NULL;
+                                yaml_node_t *mme_code_iter = NULL;
+
+                                mme_code_node = yaml_document_get_node(
+                                        document, gummei_pair->value);
+                                if (mme_code_node == NULL)
+                                    continue;
+
+                                if (mme_code_node->type == YAML_SCALAR_NODE)
+                                {
+                                    const char *v = NULL;
+                                    c_uint8_t *mme_code = NULL;
+                                    d_assert(gummei->num_of_mme_code <=
+                                            GRP_PER_MME, return CORE_ERROR,);
+                                    mme_code = &gummei->mme_code[
+                                            gummei->num_of_mme_code];
+
+                                    v = YAML_MAPPING_VALUE(
+                                                document, gummei_pair);
+                                    if (v)
+                                    {
+                                        *mme_code = atoi(v);
+                                        gummei->num_of_mme_code++;
+                                    }
+                                    continue;
+                                }
+                                else if (mme_code_node->type ==
+                                        YAML_SEQUENCE_NODE)
+                                {
+                                    mme_code_item = 
+                                        mme_code_node->data.sequence.items.start;
+                                    mme_code_iter = yaml_document_get_node(
+                                            document, *mme_code_item);
+                                    d_assert(mme_code_iter, return CORE_ERROR,);
+                                }
+                                else
+                                    d_assert(0, return CORE_ERROR,);
+
+                                do
+                                {
+                                    const char *v = NULL;
+                                    c_uint8_t *mme_code = NULL;
+
+                                    d_assert(gummei->num_of_mme_code <=
+                                            MAX_PLMN_ID, return CORE_ERROR,);
+                                    mme_code = &gummei->mme_code[
+                                            gummei->num_of_mme_code];
+
+                                    v = (const char *)mme_code_iter->
+                                        data.scalar.value;
+                                    if (v)
+                                    {
+                                        *mme_code = atoi(v);
+                                        gummei->num_of_mme_code++;
+                                    }
+
+                                    if (mme_code_item)
+                                    {
+                                        mme_code_item++;
+                                        mme_code_iter = yaml_document_get_node(
+                                                document, *mme_code_item);
+                                    }
+                                } while(mme_code_item &&
+                                        mme_code_item <
+                                        mme_code_node->data.sequence.items.top);
+                            }
+                        }
+
+                        self.max_num_of_served_gummei++;
+                        if (gummei_item)
+                        {
+                            gummei_item++;
+                            gummei_iter = yaml_document_get_node(
+                                    document, *gummei_item);
+                        }
+                    } while(gummei_item &&
+                            gummei_item < gummei_node->data.sequence.items.top);
+                }
+            }
+        }
+        else if (!strcmp(root_key, "sgw"))
+        {
+        }
+        else if (!strcmp(root_key, "pgw"))
+        {
         }
     }
 

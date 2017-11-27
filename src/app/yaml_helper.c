@@ -43,4 +43,3 @@ int YAML_MAPPING_BOOL(
 
     return 0;
 }
-

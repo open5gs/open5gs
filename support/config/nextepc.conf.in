@@ -1,4 +1,4 @@
-dbUri: "mongodb://localhost/nextepc"
+db_uri: "mongodb://localhost/nextepc"
 
 logger:
     file: "@LOCALSTATE_DIR@/log/nextepc/nextepc.log"
@@ -21,14 +21,11 @@ parameter:
 mme:
     freeDiameterConfigPath: "mme.conf"
 
-    defaultPagingDRX: v64
-
     s1ap:
       - hostname: "127.0.0.1"
       - hostname: "::1"
     gtpc:
       - hostname: "127.0.0.1"
-      - hostname: "::1"
 
     gummei: 
       - plmn_id:
@@ -43,8 +40,8 @@ mme:
         tac: 12345
 
     security:
-        integrityOrder : [ EIA1, EIA2, EIA0 ]
-        cipheringOrder : [ EEA0, EEA1, EEA2 ]
+        integrity_order : [ EIA1, EIA2, EIA0 ]
+        ciphering_order : [ EEA0, EEA1, EEA2 ]
 
 hss:
     freeDiameterConfigPath: "hss.conf"
@@ -52,26 +49,22 @@ hss:
 sgw:
     gtpc:
       - hostname: "127.0.0.2"
-      - hostname: ::2
     gtpu:
       - hostname: "127.0.0.2"
-      - hostname: "::2"
 
 pgw:
     freeDiameterConfigPath: "pgw.conf"
 
     gtpc:
       - hostname: "127.0.0.3"
-      - hostname: "::3"
     gtpu:
       - hostname: "127.0.0.3"
-      - hostname: "::3"
 
     pdn:
       - family: AF_INET
         pool: "45.45.0.1/16"
         dns: ["8.8.8.8", "4.4.4.4"]
-#        ifName: pgwtun
+#        if_name: pgwtun
 #        apn: internet
 
 pcrf:

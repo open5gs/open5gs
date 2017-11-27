@@ -442,6 +442,7 @@ CORE_DECLARE(status_t)      mme_context_init(void);
 CORE_DECLARE(status_t)      mme_context_final(void);
 CORE_DECLARE(mme_context_t*) mme_self(void);
 
+CORE_DECLARE(status_t)      mme_context_parse_old_config(void);
 CORE_DECLARE(status_t)      mme_context_parse_config(void);
 CORE_DECLARE(status_t)      mme_context_setup_trace_module(void);
 
