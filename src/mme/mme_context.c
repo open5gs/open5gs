@@ -282,7 +282,7 @@ status_t mme_context_parse_old_config()
                         int family = AF_UNSPEC;
                         const char *hostname = NULL;
                         c_uint16_t port = S1AP_SCTP_PORT;
-#if 0
+#if 1
                         mme_s1ap_t *s1ap = NULL;
 #endif
 
@@ -334,7 +334,7 @@ status_t mme_context_parse_old_config()
                             }
                         }
 
-#if 0
+#if 1
                         s1ap = mme_s1ap_add(family, hostname, port);
                         d_assert(s1ap, return CORE_ERROR,);
 #endif
@@ -380,7 +380,7 @@ status_t mme_context_parse_old_config()
                 }
                 else if (!strcmp(mme_key, "GUMMEI"))
                 {
-#if 0
+#if 1
                     int gummei_index = 0;
                     bson_iter_t gummei_array;
 
@@ -934,8 +934,11 @@ status_t mme_context_parse_config()
     status_t rv;
     config_t *config = &context_self()->config;
     yaml_document_t *document = NULL;
+    yaml_iter_t root_iter;
+#if 0
     yaml_node_pair_t *root_pair;
     yaml_node_t *root_node = NULL;
+#endif
 
     d_assert(config, return CORE_ERROR,);
     document = config->document;
@@ -945,7 +948,138 @@ status_t mme_context_parse_config()
     rv = context_prepare();
     if (rv != CORE_OK) return rv;
 #endif
+    yaml_iter_init(&root_iter, document);
+    while(yaml_iter_next(&root_iter))
+    {
+        const char *root_key = yaml_iter_key(&root_iter);
+        d_assert(root_key, return CORE_ERROR,);
+        printf("root_key = %s\n", root_key);
+        if (!strcmp(root_key, "mme"))
+        {
+            yaml_iter_t mme_iter;
+            yaml_iter_recurse(&root_iter, &mme_iter);
+            while(yaml_iter_next(&mme_iter))
+            {
+                const char *mme_key = yaml_iter_key(&mme_iter);
+                d_assert(mme_key, return CORE_ERROR,);
+                printf("mme_key = %s\n", mme_key);
+                if (!strcmp(mme_key, "freeDiameterConfigPath"))
+                {
+                    self.fd_conf_path = yaml_iter_value(&mme_iter);
+                }
+                else if (!strcmp(mme_key, "relative_capacity"))
+                {
+                    const char *v = yaml_iter_value(&mme_iter);
+                    if (v) self.relative_capacity = atoi(v);
+                }
+                else if (!strcmp(mme_key, "s1ap"))
+                {
+                    yaml_iter_t s1ap_array, s1ap_iter;
+                    yaml_iter_recurse(&mme_iter, &s1ap_array);
+                    while(yaml_iter_next(&s1ap_array))
+                    {
+                        if (yaml_iter_type(&s1ap_array) == YAML_MAPPING_NODE)
+                            memcpy(&s1ap_iter, &s1ap_array,
+                                    sizeof(yaml_iter_t));
+                        else if (yaml_iter_type(&s1ap_array) ==
+                                YAML_SEQUENCE_NODE)
+                        {
+                            yaml_iter_recurse(&s1ap_array, &s1ap_iter);
+                            d_assert(yaml_iter_next(&s1ap_iter),
+                                    return CORE_ERROR,);
+                        }
+                        else
+                            d_assert(0, return CORE_ERROR,);
 
+                        do
+                        {
+                            const char *s1ap_key = yaml_iter_key(&s1ap_iter);
+                            d_assert(s1ap_key, return CORE_ERROR,);
+                            printf("s1ap_ley = %s\n", s1ap_key);
+                        } while(
+                            yaml_iter_type(&s1ap_array) ==
+                                YAML_SEQUENCE_NODE &&
+                            yaml_iter_next(&s1ap_iter));
+                    }
+                }
+                else if (!strcmp(mme_key, "gummei"))
+                {
+                    yaml_iter_t gummei_array, gummei_iter;
+                    yaml_iter_recurse(&mme_iter, &gummei_array);
+                    while(yaml_iter_next(&gummei_array))
+                    {
+                        if (yaml_iter_type(&gummei_array) ==
+                                YAML_MAPPING_NODE)
+                            memcpy(&gummei_iter, &gummei_array,
+                                    sizeof(yaml_iter_t));
+                        else if (yaml_iter_type(&gummei_array) ==
+                                YAML_SEQUENCE_NODE)
+                        {
+                            yaml_iter_recurse(&gummei_array, &gummei_iter);
+                            d_assert(yaml_iter_next(&gummei_iter),
+                                    return CORE_ERROR,);
+                        }
+                        else
+                            d_assert(0, return CORE_ERROR,);
+
+                        do
+                        {
+                            const char *gummei_key =
+                                yaml_iter_key(&gummei_iter);
+                            d_assert(gummei_key, return CORE_ERROR,);
+                            if (!strcmp(gummei_key, "plmn_id"))
+                            {
+
+                            }
+                            else if (!strcmp(gummei_key, "mme_gid"))
+                            {
+#if 0
+                                yaml_iter_t mme_gid_array, mme_gid_iter;
+                                yaml_iter_recurse(&gummei_iter, &mme_gid_array);
+
+                                if (yaml_iter_type(&mme_gid_array) ==
+                                        YAML_SCALAR_NODE)
+                                    memcpy(&mme_gid_iter, &mme_gid_array,
+                                            sizeof(yaml_iter_t));
+                                else if (yaml_iter_type(&mme_gid_array) ==
+                                        YAML_SEQUENCE_NODE)
+                                {
+                                    yaml_iter_recurse(&mme_gid_array,
+                                            &mme_gid_iter);
+                                    d_assert(yaml_iter_next(&mme_gid_iter),
+                                            return CORE_ERROR,);
+                                }
+                                else
+                                    d_assert(0, return CORE_ERROR,);
+
+                                do
+                                {
+                                    const char *v =
+                                        yaml_iter_value(&mme_gid_iter);
+                                    printf("v = %s\n", v);
+                                } while(
+                                    yaml_iter_type(&mme_gid_array) ==
+                                        YAML_SEQUENCE_NODE &&
+                                    yaml_iter_next(&mme_gid_iter));
+#endif
+                            }
+                        } while(
+                            yaml_iter_type(&gummei_array) ==
+                                YAML_SEQUENCE_NODE &&
+                            yaml_iter_next(&gummei_iter));
+                    }
+                }
+            }
+        }
+        else if (!strcmp(root_key, "sgw"))
+        {
+        }
+        else if (!strcmp(root_key, "pgw"))
+        {
+        }
+    }
+
+#if 0
     root_node = yaml_document_get_root_node(document);
     if (root_node == NULL || root_node->type != YAML_MAPPING_NODE)
     {
@@ -1010,7 +1144,7 @@ status_t mme_context_parse_config()
                     }
                     else
                         d_assert(0, return CORE_ERROR,);
-                
+
                     do
                     {
                         int family = AF_UNSPEC;
@@ -1445,6 +1579,7 @@ status_t mme_context_parse_config()
         {
         }
     }
+#endif
 
     rv = mme_context_validation();
     if (rv != CORE_OK) return rv;

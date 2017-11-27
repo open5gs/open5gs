@@ -135,8 +135,7 @@ status_t context_parse_config()
     status_t rv;
     config_t *config = &self.config;
     yaml_document_t *document = NULL;
-    yaml_node_pair_t *root_pair;
-    yaml_node_t *root_node = NULL;
+    yaml_iter_t root_iter;
 
     d_assert(config, return CORE_ERROR,);
     document = config->document;
@@ -145,123 +144,87 @@ status_t context_parse_config()
     rv = context_prepare();
     if (rv != CORE_OK) return rv;
 
-    root_node = yaml_document_get_root_node(document);
-    if (root_node == NULL || root_node->type != YAML_MAPPING_NODE)
+    yaml_iter_init(&root_iter, document);
+    while(yaml_iter_next(&root_iter))
     {
-        d_warn("No content in configuration file '%s'", config->path);
-        return CORE_OK;
-    }
-    for (root_pair = root_node->data.mapping.pairs.start;
-        root_pair < root_node->data.mapping.pairs.top; root_pair++)
-    {
-        const char *root_key =
-            YAML_MAPPING_KEY(document, root_pair);
+        const char *root_key = yaml_iter_key(&root_iter);
         d_assert(root_key, return CORE_ERROR,);
-
         if (!strcmp(root_key, "db_uri"))
         {
-            self.db_uri = YAML_MAPPING_VALUE(document, root_pair);
+            self.db_uri = yaml_iter_value(&root_iter);
         }
         else if (!strcmp(root_key, "logger"))
         {
-            yaml_node_pair_t *logger_pair = NULL;
-            yaml_node_t *logger_node = 
-                yaml_document_get_node(document, root_pair->value);
-            if (logger_node == NULL || logger_node->type != YAML_MAPPING_NODE)
-                continue;
-
-            for (logger_pair = logger_node->data.mapping.pairs.start;
-                logger_pair < logger_node->data.mapping.pairs.top;
-                logger_pair++)
+            yaml_iter_t logger_iter;
+            yaml_iter_recurse(&root_iter, &logger_iter);
+            while(yaml_iter_next(&logger_iter))
             {
-                const char *logger_key =
-                    YAML_MAPPING_KEY(document, logger_pair);
+                const char *logger_key = yaml_iter_key(&logger_iter);
                 d_assert(logger_key, return CORE_ERROR,);
                 if (!strcmp(logger_key, "file"))
                 {
-                    self.logger.file = YAML_MAPPING_VALUE(document, logger_pair);
+                    self.logger.file = yaml_iter_value(&logger_iter);
                 }
                 else if (!strcmp(logger_key, "console"))
                 {
-                    const char *v = YAML_MAPPING_VALUE(document, logger_pair);
+                    const char *v = yaml_iter_value(&logger_iter);
                     if (v) self.logger.console = atoi(v);
                 }
                 else if (!strcmp(logger_key, "syslog"))
                 {
-                    self.logger.syslog = YAML_MAPPING_VALUE(document, logger_pair);
+                    self.logger.syslog = yaml_iter_value(&logger_iter);
                 }
                 else if (!strcmp(logger_key, "network"))
                 {
-                    yaml_node_pair_t *network_pair = NULL;
-                    yaml_node_t *network_node = 
-                        yaml_document_get_node(document, logger_pair->value);
-                    if (network_node == NULL ||
-                        network_node->type != YAML_MAPPING_NODE)
-                        continue;
-
-                    for (network_pair = network_node->data.mapping.pairs.start;
-                        network_pair < network_node->data.mapping.pairs.top;
-                        network_pair++)
+                    yaml_iter_t network_iter;
+                    yaml_iter_recurse(&logger_iter, &network_iter);
+                    while(yaml_iter_next(&network_iter))
                     {
-                        const char *network_key =
-                            YAML_MAPPING_KEY(document, network_pair);
+                        const char *network_key = yaml_iter_key(&network_iter);
                         d_assert(network_key, return CORE_ERROR,);
                         if (!strcmp(network_key, "file"))
                         {
                             self.logger.network.file = 
-                                YAML_MAPPING_VALUE(document, network_pair);
+                                yaml_iter_value(&network_iter);
                         }
                         else if (!strcmp(network_key, "unixDomain"))
                         {
                             self.logger.network.unix_domain = 
-                                YAML_MAPPING_VALUE(document, network_pair);
+                                yaml_iter_value(&network_iter);
                         }
                     }
                 }
                 else if (!strcmp(logger_key, "trace"))
                 {
-                    yaml_node_pair_t *trace_pair = NULL;
-                    yaml_node_t *trace_node = 
-                        yaml_document_get_node(document, logger_pair->value);
-                    if (trace_node == NULL ||
-                        trace_node->type != YAML_MAPPING_NODE)
-                        continue;
-
-                    for (trace_pair = trace_node->data.mapping.pairs.start;
-                        trace_pair < trace_node->data.mapping.pairs.top;
-                        trace_pair++)
+                    yaml_iter_t trace_iter;
+                    yaml_iter_recurse(&logger_iter, &trace_iter);
+                    while(yaml_iter_next(&trace_iter))
                     {
-                        const char *trace_key =
-                            YAML_MAPPING_KEY(document, trace_pair);
+                        const char *trace_key = yaml_iter_key(&trace_iter);
                         d_assert(trace_key, return CORE_ERROR,);
                         if (!strcmp(trace_key, "s1ap"))
                         {
-                            const char *v =
-                                YAML_MAPPING_VALUE(document, trace_pair);
+                            const char *v = yaml_iter_value(&trace_iter);
                             if (v) self.logger.trace.s1ap = atoi(v);
                         }
                         else if (!strcmp(trace_key, "nas"))
                         {
-                            const char *v =
-                                YAML_MAPPING_VALUE(document, trace_pair);
+                            const char *v = yaml_iter_value(&trace_iter);
                             if (v) self.logger.trace.nas = atoi(v);
                         }
                         else if (!strcmp(trace_key, "diameter"))
                         {
-                            const char *v =
-                                YAML_MAPPING_VALUE(document, trace_pair);
+                            const char *v = yaml_iter_value(&trace_iter);
                             if (v) self.logger.trace.fd = atoi(v);
                         }
                         else if (!strcmp(trace_key, "gtp"))
                         {
-                            const char *v =
-                                YAML_MAPPING_VALUE(document, trace_pair);
+                            const char *v = yaml_iter_value(&trace_iter);
                             if (v) self.logger.trace.gtp = atoi(v);
                         }
                         else if (!strcmp(trace_key, "others"))
                         {
-                            const char *v =
-                                YAML_MAPPING_VALUE(document, trace_pair);
+                            const char *v = yaml_iter_value(&trace_iter);
                             if (v) self.logger.trace.others = atoi(v);
                         }
                     }
@@ -270,54 +233,46 @@ status_t context_parse_config()
         }
         else if (!strcmp(root_key, "parameter"))
         {
-            yaml_node_pair_t *parameter_pair = NULL;
-            yaml_node_t *parameter_node = 
-                yaml_document_get_node(document, root_pair->value);
-            if (parameter_node == NULL ||
-                parameter_node->type != YAML_MAPPING_NODE)
-                continue;
-
-            for (parameter_pair = parameter_node->data.mapping.pairs.start;
-                parameter_pair < parameter_node->data.mapping.pairs.top;
-                parameter_pair++)
+            yaml_iter_t parameter_iter;
+            yaml_iter_recurse(&root_iter, &parameter_iter);
+            while(yaml_iter_next(&parameter_iter))
             {
-                const char *parameter_key =
-                    YAML_MAPPING_KEY(document, parameter_pair);
+                const char *parameter_key = yaml_iter_key(&parameter_iter);
                 d_assert(parameter_key, return CORE_ERROR,);
                 if (!strcmp(parameter_key, "no_hss"))
                 {
                     self.parameter.no_hss =
-                        YAML_MAPPING_BOOL(document, parameter_pair);
+                        yaml_iter_bool(&parameter_iter);
                 }
                 else if (!strcmp(parameter_key, "no_sgw"))
                 {
                     self.parameter.no_sgw =
-                        YAML_MAPPING_BOOL(document, parameter_pair);
+                        yaml_iter_bool(&parameter_iter);
                 }
                 else if (!strcmp(parameter_key, "no_pgw"))
                 {
                     self.parameter.no_pgw =
-                        YAML_MAPPING_BOOL(document, parameter_pair);
+                        yaml_iter_bool(&parameter_iter);
                 }
                 else if (!strcmp(parameter_key, "no_pcrf"))
                 {
                     self.parameter.no_pcrf =
-                        YAML_MAPPING_BOOL(document, parameter_pair);
+                        yaml_iter_bool(&parameter_iter);
                 }
                 else if (!strcmp(parameter_key, "no_ipv4"))
                 {
                     self.parameter.no_ipv4 =
-                        YAML_MAPPING_BOOL(document, parameter_pair);
+                        yaml_iter_bool(&parameter_iter);
                 }
                 else if (!strcmp(parameter_key, "no_ipv6"))
                 {
                     self.parameter.no_ipv6 =
-                        YAML_MAPPING_BOOL(document, parameter_pair);
+                        yaml_iter_bool(&parameter_iter);
                 }
                 else if (!strcmp(parameter_key, "prefer_ipv4"))
                 {
                     self.parameter.prefer_ipv4 =
-                        YAML_MAPPING_BOOL(document, parameter_pair);
+                        yaml_iter_bool(&parameter_iter);
                 }
             }
         }
