@@ -125,7 +125,7 @@ status_t context_read_old_file()
 
 static status_t context_prepare()
 {
-    self.log.console = -1;
+    self.logger.console = -1;
 
     return CORE_OK;
 }
@@ -179,16 +179,16 @@ status_t context_parse_config()
                 d_assert(logger_key, return CORE_ERROR,);
                 if (!strcmp(logger_key, "file"))
                 {
-                    self.log.file = YAML_MAPPING_VALUE(document, logger_pair);
+                    self.logger.file = YAML_MAPPING_VALUE(document, logger_pair);
                 }
                 else if (!strcmp(logger_key, "console"))
                 {
                     const char *v = YAML_MAPPING_VALUE(document, logger_pair);
-                    if (v) self.log.console = atoi(v);
+                    if (v) self.logger.console = atoi(v);
                 }
                 else if (!strcmp(logger_key, "syslog"))
                 {
-                    self.log.syslog = YAML_MAPPING_VALUE(document, logger_pair);
+                    self.logger.syslog = YAML_MAPPING_VALUE(document, logger_pair);
                 }
                 else if (!strcmp(logger_key, "network"))
                 {
@@ -206,14 +206,14 @@ status_t context_parse_config()
                         const char *network_key =
                             YAML_MAPPING_KEY(document, network_pair);
                         d_assert(network_key, return CORE_ERROR,);
-                        if (!strcmp(network_key, "path"))
+                        if (!strcmp(network_key, "file"))
                         {
-                            self.log.socket.file = 
+                            self.logger.network.file = 
                                 YAML_MAPPING_VALUE(document, network_pair);
                         }
                         else if (!strcmp(network_key, "unixDomain"))
                         {
-                            self.log.socket.unix_domain = 
+                            self.logger.network.unix_domain = 
                                 YAML_MAPPING_VALUE(document, network_pair);
                         }
                     }
@@ -238,31 +238,31 @@ status_t context_parse_config()
                         {
                             const char *v =
                                 YAML_MAPPING_VALUE(document, trace_pair);
-                            if (v) self.trace_level.s1ap = atoi(v);
+                            if (v) self.logger.trace.s1ap = atoi(v);
                         }
                         else if (!strcmp(trace_key, "nas"))
                         {
                             const char *v =
                                 YAML_MAPPING_VALUE(document, trace_pair);
-                            if (v) self.trace_level.nas = atoi(v);
+                            if (v) self.logger.trace.nas = atoi(v);
                         }
                         else if (!strcmp(trace_key, "diameter"))
                         {
                             const char *v =
                                 YAML_MAPPING_VALUE(document, trace_pair);
-                            if (v) self.trace_level.fd = atoi(v);
+                            if (v) self.logger.trace.fd = atoi(v);
                         }
                         else if (!strcmp(trace_key, "gtp"))
                         {
                             const char *v =
                                 YAML_MAPPING_VALUE(document, trace_pair);
-                            if (v) self.trace_level.gtp = atoi(v);
+                            if (v) self.logger.trace.gtp = atoi(v);
                         }
                         else if (!strcmp(trace_key, "others"))
                         {
                             const char *v =
                                 YAML_MAPPING_VALUE(document, trace_pair);
-                            if (v) self.trace_level.others = atoi(v);
+                            if (v) self.logger.trace.others = atoi(v);
                         }
                     }
                 }

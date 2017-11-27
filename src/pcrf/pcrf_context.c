@@ -112,8 +112,8 @@ status_t pcrf_context_parse_config()
 
 status_t pcrf_context_setup_trace_module()
 {
-    int fd = context_self()->trace_level.fd;
-    int others = context_self()->trace_level.others;
+    int fd = context_self()->logger.trace.fd;
+    int others = context_self()->logger.trace.others;
 
     if (fd)
     {

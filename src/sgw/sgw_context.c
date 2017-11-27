@@ -194,8 +194,8 @@ status_t sgw_context_parse_config()
 
 status_t sgw_context_setup_trace_module()
 {
-    int gtp = context_self()->trace_level.gtp;
-    int others = context_self()->trace_level.others;
+    int gtp = context_self()->logger.trace.gtp;
+    int others = context_self()->logger.trace.others;
 
     if (gtp)
     {

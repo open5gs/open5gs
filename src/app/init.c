@@ -45,13 +45,13 @@ status_t app_will_initialize(const char *config_path, const char *log_path)
     rv = context_parse_config();
     if (rv != CORE_OK) return rv;
 
-    others = context_self()->trace_level.others;
+    others = context_self()->logger.trace.others;
     if (others)
     {
         d_trace_level(&_app_init, others);
     }
     
-    context_self()->log.path = log_path;
+    context_self()->logger.path = log_path;
     rv = app_logger_init();
     if (rv != CORE_OK) return rv;
 
@@ -146,53 +146,53 @@ static status_t app_logger_init()
 {
     status_t rv;
 
-    if (context_self()->log.console >= 0)
+    if (context_self()->logger.console >= 0)
     {
-        rv = d_msg_console_init(context_self()->log.console);
+        rv = d_msg_console_init(context_self()->logger.console);
         if (rv != CORE_OK) 
         {
             d_error("console logger init failed : (file:%d)",
-                context_self()->log.console);
+                context_self()->logger.console);
             return rv;
         }
-        d_print("  Console Logging '%d'\n", context_self()->log.console);
+        d_print("  Console Logging '%d'\n", context_self()->logger.console);
     }
-    if (context_self()->log.syslog)
+    if (context_self()->logger.syslog)
     {
-        d_msg_syslog_init(context_self()->log.syslog);
-        d_print("  Syslog Logging '%s'\n", context_self()->log.syslog);
+        d_msg_syslog_init(context_self()->logger.syslog);
+        d_print("  Syslog Logging '%s'\n", context_self()->logger.syslog);
     }
-    if (context_self()->log.socket.file &&
-        context_self()->log.socket.unix_domain)
+    if (context_self()->logger.network.file &&
+        context_self()->logger.network.unix_domain)
     {
-        if (context_self()->log.path)
-            context_self()->log.socket.file = context_self()->log.path;
+        if (context_self()->logger.path)
+            context_self()->logger.network.file = context_self()->logger.path;
 
-        rv = d_msg_socket_init(context_self()->log.socket.unix_domain);
+        rv = d_msg_network_init(context_self()->logger.network.unix_domain);
         if (rv != CORE_OK) 
         {
-            d_error("socket logger init failed : (unix_domain:%s, file:%s)",
-                context_self()->log.socket.unix_domain,
-                context_self()->log.socket.file);
+            d_error("Network logger init failed : (unix_domain:%s, file:%s)",
+                context_self()->logger.network.unix_domain,
+                context_self()->logger.network.file);
             return rv;
         }
-        d_print("  Socket Logging '%s' on %s\n",
-                context_self()->log.socket.file,
-                context_self()->log.socket.unix_domain);
+        d_print("  Network Logging '%s' on %s\n",
+                context_self()->logger.network.file,
+                context_self()->logger.network.unix_domain);
     }
-    if (context_self()->log.file)
+    if (context_self()->logger.file)
     {
-        if (context_self()->log.path)
-            context_self()->log.file = context_self()->log.path;
+        if (context_self()->logger.path)
+            context_self()->logger.file = context_self()->logger.path;
 
-        rv = d_msg_file_init(context_self()->log.file);
+        rv = d_msg_file_init(context_self()->logger.file);
         if (rv != CORE_OK) 
         {
             d_error("file logger init failed : (file:%s)",
-                context_self()->log.file);
+                context_self()->logger.file);
             return rv;
         }
-        d_print("  File Logging '%s'\n", context_self()->log.file);
+        d_print("  File Logging '%s'\n", context_self()->logger.file);
     }
 
     return CORE_OK;
@@ -203,15 +203,15 @@ static status_t app_logger_start()
 {
     status_t rv;
 
-    if (context_self()->log.socket.file &&
-        context_self()->log.socket.unix_domain)
+    if (context_self()->logger.network.file &&
+        context_self()->logger.network.unix_domain)
     {
-        rv = d_msg_socket_start(context_self()->log.socket.file);
+        rv = d_msg_network_start(context_self()->logger.network.file);
         if (rv != CORE_OK) 
         {
-            d_error("socket logger start failed : (unix_domain:%s, file:%s)",
-                context_self()->log.socket.unix_domain,
-                context_self()->log.socket.file);
+            d_error("Network logger start failed : (unix_domain:%s, file:%s)",
+                context_self()->logger.network.unix_domain,
+                context_self()->logger.network.file);
             return rv;
         }
     }
@@ -221,10 +221,10 @@ static status_t app_logger_start()
 
 static status_t app_logger_stop()
 {
-    if (context_self()->log.socket.file &&
-        context_self()->log.socket.unix_domain)
+    if (context_self()->logger.network.file &&
+        context_self()->logger.network.unix_domain)
     {
-        d_msg_socket_stop();
+        d_msg_network_stop();
     }
     
     return CORE_OK;
@@ -232,20 +232,20 @@ static status_t app_logger_stop()
 
 static status_t app_logger_final()
 {
-    if (context_self()->log.console >= 0)
+    if (context_self()->logger.console >= 0)
     {
         d_msg_console_final();
     }
-    if (context_self()->log.syslog)
+    if (context_self()->logger.syslog)
     {
         d_msg_syslog_final();
     }
-    if (context_self()->log.socket.file &&
-        context_self()->log.socket.unix_domain)
+    if (context_self()->logger.network.file &&
+        context_self()->logger.network.unix_domain)
     {
-        d_msg_socket_final();
+        d_msg_network_final();
     }
-    if (context_self()->log.file)
+    if (context_self()->logger.file)
     {
         d_msg_file_final();
     }

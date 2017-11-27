@@ -36,17 +36,17 @@ typedef struct _context_t {
         struct {
             const char *unix_domain;
             const char *file;
-        } socket;
+        } network;
         const char *file;
-    } log;
 
-    struct {
-        int s1ap;
-        int nas;
-        int gtp;
-        int fd;
-        int others;
-    } trace_level;
+        struct {
+            int s1ap;
+            int nas;
+            int gtp;
+            int fd;
+            int others;
+        } trace;
+    } logger;
 
     struct {
         /* Element */

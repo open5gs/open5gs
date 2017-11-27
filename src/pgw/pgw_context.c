@@ -333,9 +333,9 @@ status_t pgw_context_parse_config()
 
 status_t pgw_context_setup_trace_module()
 {
-    int fd = context_self()->trace_level.fd;
-    int gtp = context_self()->trace_level.gtp;
-    int others = context_self()->trace_level.others;
+    int fd = context_self()->logger.trace.fd;
+    int gtp = context_self()->logger.trace.gtp;
+    int others = context_self()->logger.trace.others;
 
     if (fd)
     {

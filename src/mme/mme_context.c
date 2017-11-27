@@ -920,11 +920,11 @@ status_t mme_context_parse_config()
 
 status_t mme_context_setup_trace_module()
 {
-    int s1ap = context_self()->trace_level.s1ap;
-    int nas = context_self()->trace_level.nas;
-    int fd = context_self()->trace_level.fd;
-    int gtp = context_self()->trace_level.gtp;
-    int others = context_self()->trace_level.others;
+    int s1ap = context_self()->logger.trace.s1ap;
+    int nas = context_self()->logger.trace.nas;
+    int fd = context_self()->logger.trace.fd;
+    int gtp = context_self()->logger.trace.gtp;
+    int others = context_self()->logger.trace.others;
 
     if (s1ap)
     {

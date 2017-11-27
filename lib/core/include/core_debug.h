@@ -25,10 +25,10 @@ extern int g_trace_mask;
 #define D_MSG_TO_CONSOLE    0x00000001
 #define D_MSG_TO_STDOUT     0x00000002
 #define D_MSG_TO_SYSLOG     0x00000004
-#define D_MSG_TO_SOCKET     0x00000008
+#define D_MSG_TO_NETWORK     0x00000008
 #define D_MSG_TO_FILE       0x00000010
 #define D_MSG_TO_ALL        (D_MSG_TO_CONSOLE | D_MSG_TO_STDOUT | \
-                             D_MSG_TO_SYSLOG | D_MSG_TO_SOCKET | \
+                             D_MSG_TO_SYSLOG | D_MSG_TO_NETWORK | \
                              D_MSG_TO_FILE )
 
 #define D_LOG_LEVEL_NONE    0
@@ -144,11 +144,11 @@ status_t d_msg_console_init(int console_fd);
 void d_msg_console_final();
 void d_msg_syslog_init(const char *name);
 void d_msg_syslog_final();
-status_t d_msg_socket_init(const char *name);
-void d_msg_socket_final();
-status_t d_msg_socket_start(const char *file);
-void d_msg_socket_stop();
-void d_msg_socket_final();
+status_t d_msg_network_init(const char *name);
+void d_msg_network_final();
+status_t d_msg_network_start(const char *file);
+void d_msg_network_stop();
+void d_msg_network_final();
 status_t d_msg_file_init(const char *file);
 void d_msg_file_final();
 
