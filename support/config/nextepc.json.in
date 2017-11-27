@@ -1,0 +1,118 @@
+{
+  "DB_URI" : "mongodb://localhost/nextepc",
+  "LOG" :
+  {
+    "FILE" : "@LOCALSTATE_DIR@/log/nextepc/nextepc.log",
+    "SOCKET" :
+    {
+      "UNIX_DOMAIN" : "/tmp/nextepc-epcd.sock",
+      "FILE" : 0
+    }
+  },
+  "TRACE" :
+  {
+    "S1AP": 1,
+    "NAS": 1,
+    "FD": 1,
+    "GTP": 1,
+    "OTHERS": 1
+  },
+  "NODE":
+  {
+    "DISABLE_HSS": 0,
+    "DISABLE_SGW": 0,
+    "DISABLE_PGW": 0,
+    "DISABLE_PCRF": 0
+  },
+
+  "MME" :
+  {
+    "FD_CONF_PATH" : "mme.conf",
+    "DEFAULT_PAGING_DRX" : "v64",
+    "S1AP" :
+    [
+      {
+        "HOSTNAME" : "127.0.0.1"
+      },
+      {
+        "HOSTNAME" : "::1"
+      }
+    ],
+    "NETWORK" :
+    {
+      "GTPC_IPV4" : "127.0.0.1"
+    },
+    "GUMMEI" :
+    [
+      {
+        "PLMN_ID" : 
+        {
+          "MCC" : "001",
+          "MNC" : "01"
+        },
+        "MME_GID" : 2,
+        "MME_CODE" : 1
+      }
+    ],
+    "TAI":
+    [
+      {
+        "PLMN_ID" :
+        {
+          "MCC": "001",
+          "MNC": "01"
+        },
+        "TAC": 12345
+      }
+    ],
+    "SECURITY" :
+    {
+      "INTEGRITY_ORDER" : [ "EIA1", "EIA2", "EIA0" ],
+      "CIPHERING_ORDER" : [ "EEA0", "EEA1", "EEA2" ]
+    }
+  },
+
+  "HSS" :
+  {
+    "FD_CONF_PATH" : "hss.conf"
+  },
+
+  "SGW" :
+  {
+    "NETWORK" :
+    [
+      {
+        "GTPC_IPV4" : "127.0.0.2",
+        "GTPU_IPV4" : "127.0.0.2"
+      }
+    ]
+  },
+
+  "PGW" :
+  {
+    "FD_CONF_PATH" : "pgw.conf",
+    "NETWORK" :
+    {
+      "GTPC_IPV4" : "127.0.0.3",
+      "GTPU_IPV4" : "127.0.0.3"
+    },
+    "UE_NETWORK":
+    [
+      {
+        "IF_NAME" : "pgwtun",
+        "IPV4_POOL" : "45.45.0.1/16"
+      }
+    ],
+    "DNS" :
+    {
+      "PRIMARY_IPV4" : "8.8.8.8",
+      "SECONDARY_IPV4" : "4.4.4.4"
+    }
+  },
+
+  "PCRF" :
+  {
+    "FD_CONF_PATH" : "pcrf.conf"
+  }
+
+}

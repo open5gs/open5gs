@@ -13,6 +13,7 @@ libapp_la_DEPENDENCIES = \
 
 libapp_la_LIBADD = \
     $(top_srcdir)/lib/core/src/libcore.la \
+	@YAML_LIBS@ \
 	@MONGOC_LIBS@ \
 	$(NULL)
 

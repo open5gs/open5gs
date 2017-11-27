@@ -1,118 +1,78 @@
-{
-  "DB_URI" : "mongodb://localhost/nextepc",
-  "LOG" :
-  {
-    "FILE" : "@LOCALSTATE_DIR@/log/nextepc/nextepc.log",
-    "SOCKET" :
-    {
-      "UNIX_DOMAIN" : "/tmp/nextepc-epcd.sock",
-      "FILE" : 0
-    }
-  },
-  "TRACE" :
-  {
-    "S1AP": 1,
-    "NAS": 1,
-    "FD": 1,
-    "GTP": 1,
-    "OTHERS": 1
-  },
-  "NODE":
-  {
-    "DISABLE_HSS": 0,
-    "DISABLE_SGW": 0,
-    "DISABLE_PGW": 0,
-    "DISABLE_PCRF": 0
-  },
+dbUri: "mongodb://localhost/nextepc"
 
-  "MME" :
-  {
-    "FD_CONF_PATH" : "mme.conf",
-    "DEFAULT_PAGING_DRX" : "v64",
-    "S1AP" :
-    [
-      {
-        "HOSTNAME" : "127.0.0.1"
-      },
-      {
-        "HOSTNAME" : "::1"
-      }
-    ],
-    "NETWORK" :
-    {
-      "GTPC_IPV4" : "127.0.0.1"
-    },
-    "GUMMEI" :
-    [
-      {
-        "PLMN_ID" : 
-        {
-          "MCC" : "001",
-          "MNC" : "01"
-        },
-        "MME_GID" : 2,
-        "MME_CODE" : 1
-      }
-    ],
-    "TAI":
-    [
-      {
-        "PLMN_ID" :
-        {
-          "MCC": "001",
-          "MNC": "01"
-        },
-        "TAC": 12345
-      }
-    ],
-    "SECURITY" :
-    {
-      "INTEGRITY_ORDER" : [ "EIA1", "EIA2", "EIA0" ],
-      "CIPHERING_ORDER" : [ "EEA0", "EEA1", "EEA2" ]
-    }
-  },
+logger:
+    path: "@LOCALSTATE_DIR@/log/nextepc/nextepc.log"
+    trace: 
+        s1ap: 1
+        nas: 1
+        diameter: 1
+        gtp: 1
+        others: 1
 
-  "HSS" :
-  {
-    "FD_CONF_PATH" : "hss.conf"
-  },
+parameter:
+#    no_hss: true
+#    no_sgw: true
+#    no_pgw: true
+#    no_pcrf: true
+#    no_ipv4: true
+#    no_ipv6: true
+#    prefer_ipv4: true
 
-  "SGW" :
-  {
-    "NETWORK" :
-    [
-      {
-        "GTPC_IPV4" : "127.0.0.2",
-        "GTPU_IPV4" : "127.0.0.2"
-      }
-    ]
-  },
+mme:
+    freeDiameterConfigPath: "mme.conf"
 
-  "PGW" :
-  {
-    "FD_CONF_PATH" : "pgw.conf",
-    "NETWORK" :
-    {
-      "GTPC_IPV4" : "127.0.0.3",
-      "GTPU_IPV4" : "127.0.0.3"
-    },
-    "UE_NETWORK":
-    [
-      {
-        "IF_NAME" : "pgwtun",
-        "IPV4_POOL" : "45.45.0.1/16"
-      }
-    ],
-    "DNS" :
-    {
-      "PRIMARY_IPV4" : "8.8.8.8",
-      "SECONDARY_IPV4" : "4.4.4.4"
-    }
-  },
+    defaultPagingDRX: v64
 
-  "PCRF" :
-  {
-    "FD_CONF_PATH" : "pcrf.conf"
-  }
+    s1ap:
+      - hostname: "127.0.0.1"
+      - hostname: "::1"
+    gtpc:
+      - hostname: "127.0.0.1"
+      - hostname: "::1"
 
-}
+    gummei: 
+      - plmn_id:
+          mcc: "001"
+          mnc: "01"
+        mme_gid: 2
+        mme_code: 1
+    tai:
+      - plmn_id:
+          mcc: "001"
+          mnc: "01"
+        tac: 12345
+
+    security:
+        integrityOrder : [ EIA1, EIA2, EIA0 ]
+        cipheringOrder : [ EEA0, EEA1, EEA2 ]
+
+hss:
+    freeDiameterConfigPath: "hss.conf"
+
+sgw:
+    gtpc:
+      - hostname: "127.0.0.2"
+      - hostname: ::2
+    gtpu:
+      - hostname: "127.0.0.2"
+      - hostname: "::2"
+
+pgw:
+    freeDiameterConfigPath: "pgw.conf"
+
+    gtpc:
+      - hostname: "127.0.0.3"
+      - hostname: "::3"
+    gtpu:
+      - hostname: "127.0.0.3"
+      - hostname: "::3"
+
+    pdn:
+      - family: AF_INET
+        pool: "45.45.0.1/16"
+        dns: ["8.8.8.8", "4.4.4.4"]
+#        ifName: pgwtun
+#        apn: internet
+
+pcrf:
+    freeDiameterConfigPath: "pcrf.conf"

@@ -401,6 +401,7 @@ if test x$have_sctp_lib == xno; then
 fi
 AM_CONDITIONAL([USRSCTP], [test x$have_usrsctp_lib = xyes])
 
+PKG_CHECK_MODULES([YAML], yaml-0.1 >= 0.1.7)
 PKG_CHECK_MODULES([MONGOC], libmongoc-1.0 >= 1.3.1)
 FREEDIAMETER_DIR=freeDiameter-1.2.1
 AC_SUBST(FREEDIAMETER_DIR)
@@ -431,6 +432,7 @@ AC_CONFIG_FILES([src/pgw/Makefile])
 AC_CONFIG_FILES([src/pcrf/Makefile])
 AC_CONFIG_FILES([src/Makefile])
 AC_CONFIG_FILES([support/config/nextepc.conf])
+AC_CONFIG_FILES([support/config/nextepc.json])
 AC_CONFIG_FILES([support/config/mme.conf])
 AC_CONFIG_FILES([support/config/sgw.conf])
 AC_CONFIG_FILES([support/config/pgw.conf])
@@ -464,8 +466,8 @@ version                 : ${PACKAGE_VERSION}
 host                    : ${host}
 source code location    : ${srcdir}
 compiler                : ${CC}
-compiler flags          : ${CFLAGS}
-linker flags            : ${LDFLAGS} ${LIBS} ${MONGOC_LIBS}
+compiler flags          : ${CFLAGS} ${YAML_CFLAGS} ${MONGOC_CFLAGS} 
+linker flags            : ${LDFLAGS} ${LIBS} ${YAML_LIBS} ${MONGOC_LIBS}
 bin directory           : ${BIN_DIR}
 lib directory           : ${LIB_DIR}/nextepc
 config directory        : ${SYSCONF_DIR}/nextepc

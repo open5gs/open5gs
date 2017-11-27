@@ -1,5 +1,6 @@
 configfiles = \
 	nextepc.conf \
+	nextepc.json \
 	mme.conf \
 	sgw.conf \
 	pgw.conf \

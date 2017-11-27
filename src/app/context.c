@@ -3,6 +3,9 @@
 #include "core_file.h"
 #include "core_debug.h"
 #include "core_lib.h"
+#include "core_pkbuf.h"
+
+#include <yaml.h>
 #include <mongoc.h>
 
 #include "context.h"
@@ -30,6 +33,11 @@ status_t context_final()
 
     if (self.config.bson)
         bson_destroy(self.config.bson);
+    if (self.config.document)
+    {
+        yaml_document_delete(self.config.document);
+        core_free(self.config.document);
+    }
 
     context_initialized = 0;
 
@@ -43,6 +51,37 @@ context_t* context_self()
 
 status_t context_read_file()
 {
+    config_t *config = &self.config;
+    FILE *file;
+    yaml_parser_t parser;
+    yaml_document_t *document = NULL;
+
+    d_assert(config->path, return CORE_ERROR,);
+
+    file = fopen(config->path, "rb");
+    d_assert(file, return CORE_ERROR,);
+
+    d_assert(yaml_parser_initialize(&parser), return CORE_ERROR,);
+    yaml_parser_set_input_file(&parser, file);
+
+    document = core_calloc(1, sizeof(yaml_document_t));
+    if (!yaml_parser_load(&parser, document))
+    {
+        d_fatal("Failed to parse configuration file '%s'", config->path);
+        core_free(document);
+        return CORE_ERROR;
+    }
+
+    config->document = document;
+
+    yaml_parser_delete(&parser);
+    d_assert(!fclose(file),,);
+
+    return CORE_OK;
+}
+
+status_t context_read_old_file()
+{
     char buf[MAX_ERROR_STRING_LEN];
     config_t *config = &self.config;
     status_t rv;
@@ -51,13 +90,13 @@ status_t context_read_file()
     bson_error_t error;
     size_t json_len;
 
-    d_assert(config->path, return CORE_ERROR,);
+    d_assert(config->old_path, return CORE_ERROR,);
 
-    rv = file_open(&file, config->path, FILE_READ, FILE_OS_DEFAULT);
+    rv = file_open(&file, config->old_path, FILE_READ, FILE_OS_DEFAULT);
     if (rv != CORE_OK) 
     {
         d_fatal("Can't open configuration file '%s' (errno = %d, %s)", 
-            config->path, rv, core_strerror(rv, buf, MAX_ERROR_STRING_LEN));
+            config->old_path, rv, core_strerror(rv, buf, MAX_ERROR_STRING_LEN));
         return rv;
     }
 
@@ -66,7 +105,7 @@ status_t context_read_file()
     if (rv != CORE_OK) 
     {
         d_fatal("Can't read configuration file '%s' (errno = %d, %s)", 
-            config->path, rv, core_strerror(rv, buf, MAX_ERROR_STRING_LEN));
+            config->old_path, rv, core_strerror(rv, buf, MAX_ERROR_STRING_LEN));
         return rv;
     }
     file_close(file);
@@ -74,11 +113,11 @@ status_t context_read_file()
     config->bson = bson_new_from_json((const uint8_t *)config->json, -1, &error);;
     if (config->bson == NULL)
     {
-        d_fatal("Failed to parse configuration file '%s'", config->path);
+        d_fatal("Failed to parse configuration file '%s'", config->old_path);
         return CORE_ERROR;
     }
 
-    d_print("  Config '%s'\n", config->path);
+    d_print("  Config '%s'\n", config->old_path);
 
     return CORE_OK;
 }
@@ -91,6 +130,40 @@ static status_t context_prepare()
 }
 
 status_t context_parse_config()
+{
+    config_t *config = &self.config;
+    yaml_document_t *document = NULL;
+    yaml_node_t *node = NULL;
+
+    d_assert(config, return CORE_ERROR,);
+    document = config->document;
+    d_assert(document, return CORE_ERROR,);
+
+    for (node = document->nodes.start; node < document->nodes.top; node++)
+    {
+#if 0
+        switch (node->type)
+        {
+            case YAML_SCALAR_NODE:
+                printf("SCALAR: %s\n", node->data.scalar.value);
+                break;
+            case YAML_SEQUENCE_NODE:
+                printf("SEQUENCE\n");
+                break;
+            case YAML_MAPPING_NODE:
+                printf("MAPPIGNG\n");
+                break;
+            default:
+                d_assert(0, return CORE_ERROR,);
+                break;
+        }
+#endif
+    }
+
+    return CORE_OK;
+}
+
+status_t context_parse_old_config()
 {
     status_t rv;
     config_t *config = &self.config;
