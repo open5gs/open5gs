@@ -192,6 +192,8 @@ status_t context_parse_config()
                             self.logger.network.unix_domain = 
                                 yaml_iter_value(&network_iter);
                         }
+                        else
+                            d_warn("unknown key `%s`", network_key);
                     }
                 }
                 else if (!strcmp(logger_key, "trace"))
@@ -227,6 +229,8 @@ status_t context_parse_config()
                             const char *v = yaml_iter_value(&trace_iter);
                             if (v) self.logger.trace.others = atoi(v);
                         }
+                        else
+                            d_warn("unknown key `%s`", trace_key);
                     }
                 }
             }
@@ -274,6 +278,8 @@ status_t context_parse_config()
                     self.parameter.prefer_ipv4 =
                         yaml_iter_bool(&parameter_iter);
                 }
+                else
+                    d_warn("unknown key `%s`", parameter_key);
             }
         }
     }

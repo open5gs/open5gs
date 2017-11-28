@@ -19,7 +19,7 @@ parameter:
 #    prefer_ipv4: true
 
 mme:
-    freeDiameterConfigPath: "mme.conf"
+    freeDiameter: "mme.conf"
 
     s1ap:
       - hostname: "127.0.0.1"
@@ -44,7 +44,7 @@ mme:
         ciphering_order : [ EEA0, EEA1, EEA2 ]
 
 hss:
-    freeDiameterConfigPath: "hss.conf"
+    freeDiameter: "hss.conf"
 
 sgw:
     gtpc:
@@ -53,7 +53,7 @@ sgw:
       - hostname: "127.0.0.2"
 
 pgw:
-    freeDiameterConfigPath: "pgw.conf"
+    freeDiameter: "pgw.conf"
 
     gtpc:
       - hostname: "127.0.0.3"
@@ -61,11 +61,9 @@ pgw:
       - hostname: "127.0.0.3"
 
     pdn:
-      - family: AF_INET
-        pool: "45.45.0.1/16"
+      - pool: "45.45.0.1/16"
         dns: ["8.8.8.8", "4.4.4.4"]
-#        if_name: pgwtun
-#        apn: internet
+#        interface: pgwtun
 
 pcrf:
-    freeDiameterConfigPath: "pcrf.conf"
+    freeDiameter: "pcrf.conf"
