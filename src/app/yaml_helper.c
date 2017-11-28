@@ -129,6 +129,10 @@ const char *yaml_iter_value(yaml_iter_t *iter)
     d_assert(iter->document, return NULL,);
     d_assert(iter->node, return NULL,);
 
+    if (iter->node->type == YAML_SCALAR_NODE)
+    {
+        return (const char *)iter->node->data.scalar.value;
+    }
     if (iter->node->type == YAML_MAPPING_NODE)
     {
         yaml_node_t *node = NULL;
@@ -140,8 +144,19 @@ const char *yaml_iter_value(yaml_iter_t *iter)
 
         return (const char *)node->data.scalar.value;
     }
+    else if (iter->node->type == YAML_SEQUENCE_NODE)
+    {
+        yaml_node_t *node = NULL;
+
+        d_assert(iter->item, return NULL,);
+        node = yaml_document_get_node(iter->document, *iter->item);
+        d_assert(node, return NULL,);
+        d_assert(node->type == YAML_SCALAR_NODE, return NULL,);
+
+        return (const char *)node->data.scalar.value;
+    }
     else
-        d_assert(0, return NULL,"type = %d\n", iter->node->type);
+        d_assert(0, return NULL,);
 }
 
 int yaml_iter_bool(yaml_iter_t *iter)

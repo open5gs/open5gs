@@ -1029,39 +1029,59 @@ status_t mme_context_parse_config()
                             d_assert(gummei_key, return CORE_ERROR,);
                             if (!strcmp(gummei_key, "plmn_id"))
                             {
+                                yaml_iter_t plmn_id_array, plmn_id_iter;
+                                yaml_iter_recurse(&gummei_iter, &plmn_id_array);
+                                while(yaml_iter_next(&plmn_id_array))
+                                {
+                                    if (yaml_iter_type(&plmn_id_array)
+                                            == YAML_MAPPING_NODE)
+                                        memcpy(&plmn_id_iter, &plmn_id_array,
+                                                sizeof(yaml_iter_t));
+                                    else if (yaml_iter_type(&plmn_id_array) ==
+                                            YAML_SEQUENCE_NODE)
+                                    {
+                                        yaml_iter_recurse(&plmn_id_array,
+                                                &plmn_id_iter);
+                                        d_assert(yaml_iter_next(&plmn_id_iter),
+                                                return CORE_ERROR,);
+                                    }
+                                    else
+                                        d_assert(0, return CORE_ERROR,);
 
+                                    do
+                                    {
+                                        const char *plmn_id_key =
+                                            yaml_iter_key(&plmn_id_iter);
+                                        d_assert(plmn_id_key,
+                                                return CORE_ERROR,);
+                                        printf("plmn_id_ley = %s\n",
+                                                plmn_id_key);
+                                    } while(
+                                        yaml_iter_type(&plmn_id_array) ==
+                                            YAML_SEQUENCE_NODE &&
+                                        yaml_iter_next(&plmn_id_iter));
+                                }
                             }
                             else if (!strcmp(gummei_key, "mme_gid"))
                             {
-#if 0
-                                yaml_iter_t mme_gid_array, mme_gid_iter;
-                                yaml_iter_recurse(&gummei_iter, &mme_gid_array);
+                                yaml_iter_t mme_gid_iter;
+                                yaml_iter_recurse(&gummei_iter, &mme_gid_iter);
+                                d_assert(yaml_iter_type(&mme_gid_iter) !=
+                                    YAML_MAPPING_NODE, return CORE_ERROR,);
 
-                                if (yaml_iter_type(&mme_gid_array) ==
-                                        YAML_SCALAR_NODE)
-                                    memcpy(&mme_gid_iter, &mme_gid_array,
-                                            sizeof(yaml_iter_t));
-                                else if (yaml_iter_type(&mme_gid_array) ==
+                                if (yaml_iter_type(&mme_gid_iter) ==
                                         YAML_SEQUENCE_NODE)
-                                {
-                                    yaml_iter_recurse(&mme_gid_array,
-                                            &mme_gid_iter);
                                     d_assert(yaml_iter_next(&mme_gid_iter),
                                             return CORE_ERROR,);
-                                }
-                                else
-                                    d_assert(0, return CORE_ERROR,);
-
                                 do
                                 {
-                                    const char *v =
-                                        yaml_iter_value(&mme_gid_iter);
+                                    const char *v = yaml_iter_value(
+                                            &mme_gid_iter);
                                     printf("v = %s\n", v);
                                 } while(
-                                    yaml_iter_type(&mme_gid_array) ==
+                                    yaml_iter_type(&mme_gid_iter) ==
                                         YAML_SEQUENCE_NODE &&
                                     yaml_iter_next(&mme_gid_iter));
-#endif
                             }
                         } while(
                             yaml_iter_type(&gummei_array) ==
