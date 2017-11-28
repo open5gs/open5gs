@@ -574,6 +574,7 @@ status_t mme_context_parse_old_config()
                 }
                 else if (!strcmp(mme_key, "TAI"))
                 {
+#if 0
                     int tai_index = 0;
                     bson_iter_t tai_array;
 
@@ -655,6 +656,7 @@ status_t mme_context_parse_old_config()
                     } while(
                         BSON_ITER_HOLDS_ARRAY(&mme_iter) &&
                         bson_iter_next(&tai_array));
+#endif
                 }
                 else if (!strcmp(mme_key, "SECURITY") &&
                         BSON_ITER_HOLDS_DOCUMENT(&mme_iter))
@@ -1031,6 +1033,7 @@ status_t mme_context_parse_config()
                                 MAX_NUM_OF_SERVED_GUMMEI, return CORE_ERROR,);
                         gummei = &self.served_gummei[
                             self.max_num_of_served_gummei];
+                        d_assert(gummei, return CORE_ERROR,);
 
                         if (yaml_iter_type(&gummei_array) ==
                                 YAML_MAPPING_NODE)
@@ -1065,6 +1068,7 @@ status_t mme_context_parse_config()
                                             MAX_PLMN_ID, return CORE_ERROR,);
                                     plmn_id = &gummei->plmn_id[
                                         gummei->num_of_plmn_id];
+                                    d_assert(plmn_id, return CORE_ERROR,);
 
                                     if (yaml_iter_type(&plmn_id_array) ==
                                             YAML_MAPPING_NODE)
@@ -1125,6 +1129,7 @@ status_t mme_context_parse_config()
                                             GRP_PER_MME, return CORE_ERROR,);
                                     mme_gid = &gummei->mme_gid[
                                         gummei->num_of_mme_gid];
+                                    d_assert(mme_gid, return CORE_ERROR,);
 
                                     if (yaml_iter_type(&mme_gid_iter) ==
                                             YAML_SEQUENCE_NODE)
@@ -1159,6 +1164,7 @@ status_t mme_context_parse_config()
                                             CODE_PER_MME, return CORE_ERROR,);
                                     mme_code = &gummei->mme_code[
                                         gummei->num_of_mme_code];
+                                    d_assert(mme_code, return CORE_ERROR,);
 
                                     if (yaml_iter_type(&mme_code_iter) ==
                                             YAML_SEQUENCE_NODE)
@@ -1198,6 +1204,211 @@ status_t mme_context_parse_config()
                         }
                     } while(yaml_iter_type(&gummei_array) ==
                             YAML_SEQUENCE_NODE);
+                }
+                else if (!strcmp(mme_key, "tai"))
+                {
+                    yaml_iter_t tai_array, tai_iter;
+                    yaml_iter_recurse(&mme_iter, &tai_array);
+                    do
+                    {
+                        tai_t *tai = NULL;
+                        plmn_id_t *plmn_id = NULL;
+                        const char *mcc = NULL, *mnc = NULL;
+                        c_uint16_t tac = 0;
+
+                        d_assert(self.max_num_of_served_tai <=
+                                MAX_NUM_OF_SERVED_TAI, return CORE_ERROR,);
+                        tai = &self.served_tai[
+                            self.max_num_of_served_tai];
+                        d_assert(tai, return CORE_ERROR,);
+                        plmn_id = &tai->plmn_id;
+                        d_assert(plmn_id, return CORE_ERROR,);
+
+                        if (yaml_iter_type(&tai_array) == YAML_MAPPING_NODE)
+                        {
+                            memcpy(&tai_iter, &tai_array, sizeof(yaml_iter_t));
+                        }
+                        else if (yaml_iter_type(&tai_array) ==
+                            YAML_SEQUENCE_NODE)
+                        {
+                            if (!yaml_iter_next(&tai_array))
+                                break;
+                            yaml_iter_recurse(&tai_array,
+                                    &tai_iter);
+                        }
+
+                        while(yaml_iter_next(&tai_iter))
+                        {
+                            const char *tai_key =
+                                yaml_iter_key(&tai_iter);
+                            d_assert(tai_key,
+                                    return CORE_ERROR,);
+                            if (!strcmp(tai_key, "plmn_id"))
+                            {
+                                yaml_iter_t plmn_id_iter;
+
+                                yaml_iter_recurse(&tai_iter, &plmn_id_iter);
+                                while(yaml_iter_next(&plmn_id_iter))
+                                {
+                                    const char *plmn_id_key =
+                                        yaml_iter_key(&plmn_id_iter);
+                                    d_assert(plmn_id_key,
+                                            return CORE_ERROR,);
+                                    if (!strcmp(plmn_id_key, "mcc"))
+                                    {
+                                        mcc =
+                                            yaml_iter_value(&plmn_id_iter);
+                                    }
+                                    else if (!strcmp(plmn_id_key, "mnc"))
+                                    {
+                                        mnc =
+                                            yaml_iter_value(&plmn_id_iter);
+                                    }
+                                }
+
+                                if (mcc && mnc)
+                                {
+                                    plmn_id_build(plmn_id,
+                                        atoi(mcc), atoi(mnc), strlen(mnc));
+                                }
+                            }
+                            else if (!strcmp(tai_key, "tac"))
+                            {
+                                const char *v = yaml_iter_value(&tai_iter);
+                                if (v) tac = atoi(v);
+                            }
+                            else
+                                d_warn("unknown key `%s`", tai_key);
+                        }
+
+                        if (mcc && mnc && tac)
+                        {
+                            self.max_num_of_served_tai++;
+                        }
+                        else
+                        {
+                            d_warn("Ignore tai : mcc(%p), mnc(%p), tac(%d)",
+                                mcc, mnc, tac);
+                        }
+                    } while(yaml_iter_type(&tai_array) ==
+                            YAML_SEQUENCE_NODE);
+                }
+                else if (!strcmp(mme_key, "security"))
+                {
+                    yaml_iter_t security_iter;
+                    yaml_iter_recurse(&mme_iter, &security_iter);
+                    while(yaml_iter_next(&security_iter))
+                    {
+                        const char *security_key =
+                            yaml_iter_key(&security_iter);
+                        d_assert(security_key, return CORE_ERROR,);
+                        if (!strcmp(security_key, "integrity_order"))
+                        {
+                            yaml_iter_t integrity_order_iter;
+                            yaml_iter_recurse(&security_iter,
+                                    &integrity_order_iter);
+                            d_assert(yaml_iter_type(&integrity_order_iter) !=
+                                YAML_MAPPING_NODE, return CORE_ERROR,);
+
+                            do
+                            {
+                                const char *v = NULL;
+
+                                if (yaml_iter_type(&integrity_order_iter) ==
+                                        YAML_SEQUENCE_NODE)
+                                {
+                                    if (!yaml_iter_next(&integrity_order_iter))
+                                        break;
+                                }
+
+                                v = yaml_iter_value(&integrity_order_iter);
+                                if (v) 
+                                {
+                                    int integrity_index = 
+                                        self.num_of_integrity_order;
+                                    if (strcmp(v, "EIA0") == 0)
+                                    {
+                                        self.integrity_order[integrity_index] = 
+                                            NAS_SECURITY_ALGORITHMS_EIA0;
+                                        self.num_of_integrity_order++;
+                                    }
+                                    else if (strcmp(v, "EIA1") == 0)
+                                    {
+                                        self.integrity_order[integrity_index] = 
+                                            NAS_SECURITY_ALGORITHMS_128_EIA1;
+                                        self.num_of_integrity_order++;
+                                    }
+                                    else if (strcmp(v, "EIA2") == 0)
+                                    {
+                                        self.integrity_order[integrity_index] = 
+                                            NAS_SECURITY_ALGORITHMS_128_EIA2;
+                                        self.num_of_integrity_order++;
+                                    }
+                                    else if (strcmp(v, "EIA3") == 0)
+                                    {
+                                        self.integrity_order[integrity_index] = 
+                                            NAS_SECURITY_ALGORITHMS_128_EIA3;
+                                        self.num_of_integrity_order++;
+                                    }
+                                }
+                            } while(
+                                yaml_iter_type(&integrity_order_iter) ==
+                                    YAML_SEQUENCE_NODE);
+                        }
+                        else if (!strcmp(security_key, "ciphering_order"))
+                        {
+                            yaml_iter_t ciphering_order_iter;
+                            yaml_iter_recurse(&security_iter,
+                                    &ciphering_order_iter);
+                            d_assert(yaml_iter_type(&ciphering_order_iter) !=
+                                YAML_MAPPING_NODE, return CORE_ERROR,);
+
+                            do
+                            {
+                                const char *v = NULL;
+
+                                if (yaml_iter_type(&ciphering_order_iter) ==
+                                        YAML_SEQUENCE_NODE)
+                                {
+                                    if (!yaml_iter_next(&ciphering_order_iter))
+                                        break;
+                                }
+
+                                v = yaml_iter_value(&ciphering_order_iter);
+                                if (v) 
+                                {
+                                    int ciphering_index = 
+                                        self.num_of_ciphering_order;
+                                    if (strcmp(v, "EEA0") == 0)
+                                    {
+                                        self.ciphering_order[ciphering_index] = 
+                                            NAS_SECURITY_ALGORITHMS_EEA0;
+                                        self.num_of_ciphering_order++;
+                                    }
+                                    else if (strcmp(v, "EEA1") == 0)
+                                    {
+                                        self.ciphering_order[ciphering_index] = 
+                                            NAS_SECURITY_ALGORITHMS_128_EEA1;
+                                        self.num_of_ciphering_order++;
+                                    }
+                                    else if (strcmp(v, "EEA2") == 0)
+                                    {
+                                        self.ciphering_order[ciphering_index] = 
+                                            NAS_SECURITY_ALGORITHMS_128_EEA2;
+                                        self.num_of_ciphering_order++;
+                                    }
+                                    else if (strcmp(v, "EEA3") == 0)
+                                    {
+                                        self.ciphering_order[ciphering_index] = 
+                                            NAS_SECURITY_ALGORITHMS_128_EEA3;
+                                        self.num_of_ciphering_order++;
+                                    }
+                                }
+                            } while(
+                                yaml_iter_type(&ciphering_order_iter) ==
+                                    YAML_SEQUENCE_NODE);
+                        }
+                    }
                 }
             }
         }
