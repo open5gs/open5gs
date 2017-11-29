@@ -24,9 +24,6 @@ status_t mme_initialize()
     rv = mme_context_init();
     if (rv != CORE_OK) return rv;
 
-    rv = mme_context_parse_old_config();
-    if (rv != CORE_OK) return rv;
-
     rv = mme_context_parse_config();
     if (rv != CORE_OK) return rv;
 

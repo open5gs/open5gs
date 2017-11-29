@@ -71,7 +71,6 @@ CORE_DECLARE(status_t)      context_read_file(void);
 CORE_DECLARE(status_t)      context_parse_config(void);
 
 CORE_DECLARE(status_t)      context_read_old_file(void);
-CORE_DECLARE(status_t)      context_parse_old_config(void);
 
 CORE_DECLARE(status_t)      context_db_init(const char *db_uri);
 CORE_DECLARE(status_t)      context_db_final(void);
