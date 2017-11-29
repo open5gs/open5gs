@@ -32,8 +32,6 @@ status_t context_final()
     d_assert(context_initialized == 1, return CORE_ERROR,
             "Context already has been finalized");
 
-    if (self.config.bson)
-        bson_destroy(self.config.bson);
     if (self.config.document)
     {
         yaml_document_delete(self.config.document);
@@ -77,48 +75,6 @@ status_t context_read_file()
 
     yaml_parser_delete(&parser);
     d_assert(!fclose(file),,);
-
-    return CORE_OK;
-}
-
-status_t context_read_old_file()
-{
-    char buf[MAX_ERROR_STRING_LEN];
-    config_t *config = &self.config;
-    status_t rv;
-    file_t *file;
-
-    bson_error_t error;
-    size_t json_len;
-
-    d_assert(config->old_path, return CORE_ERROR,);
-
-    rv = file_open(&file, config->old_path, FILE_READ, FILE_OS_DEFAULT);
-    if (rv != CORE_OK) 
-    {
-        d_fatal("Can't open configuration file '%s' (errno = %d, %s)", 
-            config->old_path, rv, core_strerror(rv, buf, MAX_ERROR_STRING_LEN));
-        return rv;
-    }
-
-    json_len = MAX_CONFIG_FILE_SIZE;
-    rv = file_read(file, config->json, &json_len);
-    if (rv != CORE_OK) 
-    {
-        d_fatal("Can't read configuration file '%s' (errno = %d, %s)", 
-            config->old_path, rv, core_strerror(rv, buf, MAX_ERROR_STRING_LEN));
-        return rv;
-    }
-    file_close(file);
-
-    config->bson = bson_new_from_json((const uint8_t *)config->json, -1, &error);;
-    if (config->bson == NULL)
-    {
-        d_fatal("Failed to parse configuration file '%s'", config->old_path);
-        return CORE_ERROR;
-    }
-
-    d_print("  Config '%s'\n", config->old_path);
 
     return CORE_OK;
 }
@@ -217,7 +173,7 @@ status_t context_parse_config()
                         else if (!strcmp(trace_key, "diameter"))
                         {
                             const char *v = yaml_iter_value(&trace_iter);
-                            if (v) self.logger.trace.fd = atoi(v);
+                            if (v) self.logger.trace.diameter = atoi(v);
                         }
                         else if (!strcmp(trace_key, "gtp"))
                         {

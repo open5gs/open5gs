@@ -231,13 +231,13 @@ pgw:
 #  <Example>
 #
 #  o Multiple IPv4 Pool
-#    pdn:
+#    ue_network:
 #      addr:
 #        - 45.45.0.1/16
 #        - 46.46.0.1/16
 #
 #  o Multiple Interface
-#    pdn:
+#    ue_network:
 #      - addr: 45.45.0.1/16
 #        dev: pgwtun1
 #      - addr:
@@ -246,7 +246,7 @@ pgw:
 #        dev: pgwtun2
 #
 #  o Pool allocated per-APN
-#    pdn:
+#    ue_network:
 #      - addr: 45.45.0.1/16
 #        dev: pgwtun1
 #        apn : internet
@@ -256,7 +256,7 @@ pgw:
 #        dev: pgwtun2
 #        apn : volte
 #
-    pdn:
+    ue_network:
       addr: 45.45.0.1/16
 
     dns:

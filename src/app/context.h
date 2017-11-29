@@ -12,10 +12,7 @@ extern "C" {
 #define MAX_NUM_OF_CONFIG_TOKEN 256
 
 typedef struct _config_t {
-    const char *old_path;
     const char *path;
-    char json[MAX_CONFIG_FILE_SIZE+1];
-    void *bson;
     void *document;
 } config_t;
 
@@ -43,7 +40,7 @@ typedef struct _context_t {
             int s1ap;
             int nas;
             int gtp;
-            int fd;
+            int diameter;
             int others;
         } trace;
     } logger;
@@ -69,8 +66,6 @@ CORE_DECLARE(context_t*)    context_self(void);
 
 CORE_DECLARE(status_t)      context_read_file(void);
 CORE_DECLARE(status_t)      context_parse_config(void);
-
-CORE_DECLARE(status_t)      context_read_old_file(void);
 
 CORE_DECLARE(status_t)      context_db_init(const char *db_uri);
 CORE_DECLARE(status_t)      context_db_final(void);

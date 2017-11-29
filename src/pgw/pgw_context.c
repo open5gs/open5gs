@@ -109,230 +109,34 @@ static status_t pgw_context_validation()
 {
     if (self.fd_conf_path == NULL)
     {
-        d_error("No PGW.FD_CONF_PATH in '%s'",
+        d_error("No pgw.freeDiameter in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
     if (self.gtpc_addr == 0)
     {
-        d_error("No PGW.NEWORK.GTPC_IPV4 in '%s'",
+        d_error("No pgw.gtpc in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
     if (self.gtpu_addr == 0)
     {
-        d_error("No PGW.NEWORK.GTPU_IPV4 in '%s'",
+        d_error("No pgw.gtpu in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
     if (self.num_of_ue_network == 0)
     {
-        d_error("No PGW.UE_NETWORK.IPV4_POOL in '%s'",
+        d_error("No pgw.pdn.addr in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
-    if (self.primary_dns_addr == 0)
+    if (self.dns.primary == 0)
     {
-        d_error("No PGW.DNS.PRIMARY_IPV4 in '%s'",
+        d_error("No pgw.dns in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
-    return CORE_OK;
-}
-
-status_t pgw_context_parse_old_config()
-{
-    status_t rv;
-    config_t *config = &context_self()->config;
-    bson_iter_t iter;
-    c_uint32_t length = 0;
-
-    d_assert(config, return CORE_ERROR, );
-
-    rv = pgw_context_prepare();
-    if (rv != CORE_OK) return rv;
-
-    if (!bson_iter_init(&iter, config->bson))
-    {
-        d_error("bson_iter_init failed in this document");
-        return CORE_ERROR;
-    }
-
-    while(bson_iter_next(&iter))
-    {
-        const char *key = bson_iter_key(&iter);
-        if (!strcmp(key, "PGW") && BSON_ITER_HOLDS_DOCUMENT(&iter))
-        {
-            bson_iter_t pgw_iter;
-            bson_iter_recurse(&iter, &pgw_iter);
-            while(bson_iter_next(&pgw_iter))
-            {
-                const char *pgw_key = bson_iter_key(&pgw_iter);
-                if (!strcmp(pgw_key, "FD_CONF_PATH") &&
-                    BSON_ITER_HOLDS_UTF8(&pgw_iter))
-                {
-                    self.fd_conf_path = bson_iter_utf8(&pgw_iter, &length);
-                }
-#if 0
-                else if (!strcmp(pgw_key, "NETWORK"))
-                {
-                    bson_iter_t network_iter;
-
-                    if (BSON_ITER_HOLDS_ARRAY(&pgw_iter))
-                    {
-                        bson_iter_t array_iter;
-                        bson_iter_recurse(&pgw_iter, &array_iter);
-                        if (bson_iter_next(&array_iter))
-                        {
-                            /* We will pick only first item of SGW.NETWORK
-                             * if the type is an array */
-                            bson_iter_recurse(&array_iter, &network_iter);
-                        }
-                    }
-                    else if (BSON_ITER_HOLDS_DOCUMENT(&pgw_iter))
-                    {
-                        bson_iter_recurse(&pgw_iter, &network_iter);
-                    }
-                    else
-                        d_assert(0, return CORE_ERROR,);
-
-                    while(bson_iter_next(&network_iter))
-                    {
-                        const char *network_key = bson_iter_key(&network_iter);
-                        if (!strcmp(network_key, "GTPC_IPV4") &&
-                            BSON_ITER_HOLDS_UTF8(&network_iter))
-                        {
-                            const char *v =
-                                bson_iter_utf8(&network_iter, &length);
-                            if (v) self.gtpc_addr = inet_addr(v);
-                        }
-                        else if (!strcmp(network_key, "GTPC_PORT") &&
-                            BSON_ITER_HOLDS_INT32(&network_iter))
-                        {
-                            self.gtpc_port = bson_iter_int32(&network_iter);
-                        }
-                        else if (!strcmp(network_key, "GTPU_IPV4") &&
-                            BSON_ITER_HOLDS_UTF8(&network_iter))
-                        {
-                            const char *v =
-                                bson_iter_utf8(&network_iter, &length);
-                            if (v) self.gtpu_addr = inet_addr(v);
-                        }
-                        else if (!strcmp(network_key, "GTPU_PORT") &&
-                            BSON_ITER_HOLDS_UTF8(&network_iter))
-                        {
-                            self.gtpu_port = bson_iter_int32(&network_iter);
-                        }
-                    }
-                }
-#endif
-                else if (!strcmp(pgw_key, "UE_NETWORK"))
-                {
-#if 0
-                    int ue_network_index = 0;
-                    bson_iter_t ue_network_array;
-
-                    if (BSON_ITER_HOLDS_ARRAY(&pgw_iter))
-                    {
-                        bson_iter_recurse(&pgw_iter, &ue_network_array);
-                        d_assert(bson_iter_next(&ue_network_array),
-                                return CORE_ERROR,);
-                    }
-                    else if (BSON_ITER_HOLDS_DOCUMENT(&pgw_iter))
-                    {
-                        memcpy(&ue_network_array, &pgw_iter,
-                                sizeof(ue_network_array));
-                    }
-                    else
-                        d_assert(0, return CORE_ERROR,);
-
-                    do 
-                    {
-                        bson_iter_t ue_network_iter;
-                        const char *ue_network_index_key =
-                            bson_iter_key(&ue_network_array);
-                        const char *if_name = NULL;
-                        c_uint32_t addr = 0;
-                        c_uint8_t bits = 0;
-
-                        d_assert(ue_network_index_key, return CORE_ERROR,);
-                        if (BSON_ITER_HOLDS_ARRAY(&pgw_iter))
-                            ue_network_index = atoi(ue_network_index_key);
-                        d_assert(ue_network_index < MAX_NUM_OF_GTP_CLIENT,
-                                return CORE_ERROR,
-                                "GTP NODE Overflow : %d", ue_network_index);
-
-                        bson_iter_recurse(&ue_network_array, &ue_network_iter);
-                        while(bson_iter_next(&ue_network_iter))
-                        {
-                            const char *ue_network_key =
-                                bson_iter_key(&ue_network_iter);
-
-                            if (!strcmp(ue_network_key, "IF_NAME") &&
-                                BSON_ITER_HOLDS_UTF8(&ue_network_iter))
-                            {
-                                if_name = 
-                                    bson_iter_utf8(&ue_network_iter, &length);
-                            }
-                            else if (!strcmp(ue_network_key, "IPV4_POOL") &&
-                                    BSON_ITER_HOLDS_UTF8(&ue_network_iter))
-                            {
-                                char *v = (char *)bson_iter_utf8(
-                                        &ue_network_iter, &length);
-                                if (v)
-                                {
-                                    char *str = strsep(&v, "/");
-                                    if (str)
-                                    {
-                                        addr = inet_addr(str);
-                                        bits = atoi(v);
-                                    }
-                                }
-                            }
-                        }
-
-                        if (addr && bits)
-                        {
-                            self.ue_network[self.num_of_ue_network].if_name =
-                                if_name;
-                            self.ue_network[self.num_of_ue_network].ipv4.addr =
-                                addr;
-                            self.ue_network[self.num_of_ue_network].ipv4.bits =
-                                bits;
-                            self.num_of_ue_network++;
-                        }
-                    } while(
-                        BSON_ITER_HOLDS_ARRAY(&pgw_iter) &&
-                        bson_iter_next(&ue_network_array));
-#endif
-                }
-                else if (!strcmp(pgw_key, "DNS") &&
-                    BSON_ITER_HOLDS_DOCUMENT(&pgw_iter))
-                {
-                    bson_iter_t dns_iter;
-                    bson_iter_recurse(&pgw_iter, &dns_iter);
-                    while(bson_iter_next(&dns_iter))
-                    {
-                        const char *dns_key = bson_iter_key(&dns_iter);
-                        if (!strcmp(dns_key, "PRIMARY_IPV4") &&
-                            BSON_ITER_HOLDS_UTF8(&dns_iter))
-                        {
-                            const char *v = bson_iter_utf8(&dns_iter, &length);
-                            if (v) self.primary_dns_addr = inet_addr(v);
-
-                        }
-                        else if (!strcmp(dns_key, "SECONDARY_IPV4") &&
-                            BSON_ITER_HOLDS_UTF8(&dns_iter))
-                        {
-                            const char *v = bson_iter_utf8(&dns_iter, &length);
-                            if (v) self.secondary_dns_addr = inet_addr(v);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     return CORE_OK;
 }
 
@@ -503,10 +307,10 @@ status_t pgw_context_parse_config()
 
                     } while(yaml_iter_type(&gtpu_array) == YAML_SEQUENCE_NODE);
                 }
-                else if (!strcmp(pgw_key, "pdn"))
+                else if (!strcmp(pgw_key, "ue_network"))
                 {
-                    yaml_iter_t pdn_array, pdn_iter;
-                    yaml_iter_recurse(&pgw_iter, &pdn_array);
+                    yaml_iter_t ue_network_array, ue_network_iter;
+                    yaml_iter_recurse(&pgw_iter, &ue_network_array);
                     do
                     {
                         c_uint32_t addr = 0;
@@ -516,27 +320,31 @@ status_t pgw_context_parse_config()
 
                         d_assert(self.num_of_ue_network <=
                                 MAX_NUM_OF_UE_NETWORK, return CORE_ERROR,);
-                        if (yaml_iter_type(&pdn_array) == YAML_MAPPING_NODE)
+                        if (yaml_iter_type(&ue_network_array) ==
+                                YAML_MAPPING_NODE)
                         {
-                            memcpy(&pdn_iter, &pdn_array, sizeof(yaml_iter_t));
+                            memcpy(&ue_network_iter, &ue_network_array,
+                                    sizeof(yaml_iter_t));
                         }
-                        else if (yaml_iter_type(&pdn_array) ==
+                        else if (yaml_iter_type(&ue_network_array) ==
                             YAML_SEQUENCE_NODE)
                         {
-                            if (!yaml_iter_next(&pdn_array))
+                            if (!yaml_iter_next(&ue_network_array))
                                 break;
-                            yaml_iter_recurse(&pdn_array, &pdn_iter);
+                            yaml_iter_recurse(&ue_network_array,
+                                    &ue_network_iter);
                         }
 
-                        while(yaml_iter_next(&pdn_iter))
+                        while(yaml_iter_next(&ue_network_iter))
                         {
-                            const char *pdn_key = yaml_iter_key(&pdn_iter);
-                            d_assert(pdn_key,
+                            const char *ue_network_key =
+                                yaml_iter_key(&ue_network_iter);
+                            d_assert(ue_network_key,
                                     return CORE_ERROR,);
-                            if (!strcmp(pdn_key, "addr"))
+                            if (!strcmp(ue_network_key, "addr"))
                             {
                                 yaml_iter_t addr_iter;
-                                yaml_iter_recurse(&pdn_iter, &addr_iter);
+                                yaml_iter_recurse(&ue_network_iter, &addr_iter);
                                 d_assert(yaml_iter_type(&addr_iter) !=
                                     YAML_MAPPING_NODE, return CORE_ERROR,);
 
@@ -545,7 +353,7 @@ status_t pgw_context_parse_config()
                                     char *v = NULL;
 
 #if 0
-                                    d_assert(pdn->num_of_addr <=
+                                    d_assert(ue_network->num_of_addr <=
                                             MAX_NUM_OF_PDN_ADDR,
                                             return CORE_ERROR,);
 #endif
@@ -571,17 +379,17 @@ status_t pgw_context_parse_config()
                                     yaml_iter_type(&addr_iter) ==
                                         YAML_SEQUENCE_NODE);
                             }
-                            else if (!strcmp(pdn_key, "dev"))
+                            else if (!strcmp(ue_network_key, "dev"))
                             {
-                                dev = yaml_iter_value(&pdn_iter);
+                                dev = yaml_iter_value(&ue_network_iter);
                             }
-                            else if (!strcmp(pdn_key, "apn"))
+                            else if (!strcmp(ue_network_key, "apn"))
                             {
-                                apn = yaml_iter_value(&pdn_iter);
+                                apn = yaml_iter_value(&ue_network_iter);
                                 d_warn("Not implemented");
                             }
                             else
-                                d_warn("unknown key `%s`", pdn_key);
+                                d_warn("unknown key `%s`", ue_network_key);
                         }
 
                         if (addr && bits)
@@ -596,10 +404,11 @@ status_t pgw_context_parse_config()
                         }
                         else
                         {
-                            d_warn("Ignore pdn : addr(0x%x), bits(%d)",
+                            d_warn("Ignore ue_network : addr(0x%x), bits(%d)",
                                     addr, bits);
                         }
-                    } while(yaml_iter_type(&pdn_array) == YAML_SEQUENCE_NODE);
+                    } while(yaml_iter_type(&ue_network_array) ==
+                            YAML_SEQUENCE_NODE);
                 }
                 else if (!strcmp(pgw_key, "dns"))
                 {
@@ -625,11 +434,11 @@ status_t pgw_context_parse_config()
                         {
                             if (count == 0)
                             {
-                                self.primary_dns_addr = inet_addr(v);
+                                self.dns.primary = inet_addr(v);
                             }
                             else if (count == 1)
                             {
-                                self.secondary_dns_addr = inet_addr(v);
+                                self.dns.secondary = inet_addr(v);
                             }
                             else
                                 d_warn("Ignored %d DNS(%s)", count, v);
@@ -692,23 +501,23 @@ status_t pgw_context_parse_config()
 
 status_t pgw_context_setup_trace_module()
 {
-    int fd = context_self()->logger.trace.fd;
+    int diameter = context_self()->logger.trace.diameter;
     int gtp = context_self()->logger.trace.gtp;
     int others = context_self()->logger.trace.others;
 
-    if (fd)
+    if (diameter)
     {
-        if (fd <= 1) fd_g_debug_lvl = FD_LOG_ERROR;
-        else if (fd <= 3) fd_g_debug_lvl = FD_LOG_NOTICE;
-        else if (fd <= 5) fd_g_debug_lvl = FD_LOG_DEBUG;
+        if (diameter <= 1) fd_g_debug_lvl = FD_LOG_ERROR;
+        else if (diameter <= 3) fd_g_debug_lvl = FD_LOG_NOTICE;
+        else if (diameter <= 5) fd_g_debug_lvl = FD_LOG_DEBUG;
         else fd_g_debug_lvl = FD_LOG_ANNOYING;
 
         extern int _pgw_fd_path;
-        d_trace_level(&_pgw_fd_path, fd);
+        d_trace_level(&_pgw_fd_path, diameter);
         extern int _fd_init;
-        d_trace_level(&_fd_init, fd);
+        d_trace_level(&_fd_init, diameter);
         extern int _fd_logger;
-        d_trace_level(&_fd_logger, fd);
+        d_trace_level(&_fd_logger, diameter);
     }
 
     if (gtp)

@@ -61,7 +61,7 @@ pgw:
     gtpu:
       - hostname: 127.0.0.3
 
-    pdn:
+    ue_network:
       - addr: 45.45.0.1/16
         dev: pgwtun
 

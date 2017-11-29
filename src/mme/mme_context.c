@@ -127,19 +127,19 @@ static status_t mme_context_validation()
 {
     if (self.fd_conf_path == NULL)
     {
-        d_error("No MME.FD_CONF_PATH in '%s'",
+        d_error("No mme.freeDiameter in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
     if (mme_s1ap_first() == NULL)
     {
-        d_error("No MME.S1AP in '%s'",
+        d_error("No mme.s1ap in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
     if (self.gtpc_addr == 0)
     {
-        d_error("No MME.NEWORK.GTPC_IPV4 in '%s'",
+        d_error("No mme.gtpc in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
@@ -147,7 +147,7 @@ static status_t mme_context_validation()
     mme_sgw_t *sgw = mme_sgw_first();
     if (sgw == NULL)
     {
-        d_error("No SGW.NEWORK in '%s'",
+        d_error("No sgw.gtpc in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
@@ -167,48 +167,48 @@ static status_t mme_context_validation()
 
     if (self.max_num_of_served_gummei == 0)
     {
-        d_error("No MME.GUMMEI in '%s'",
+        d_error("No mme.gummei in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
 
     if (self.served_gummei[0].num_of_plmn_id == 0)
     {
-        d_error("No MME.GUMMEI.PLMN_ID in '%s'",
+        d_error("No mme.gummei.plmn_id in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
 
     if (self.served_gummei[0].num_of_mme_gid == 0)
     {
-        d_error("No MME.GUMMEI.MME_GID in '%s'",
+        d_error("No mme.gummei.mme_gid in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
 
     if (self.served_gummei[0].num_of_mme_code == 0)
     {
-        d_error("No MME.GUMMEI.MME_CODE in '%s'",
+        d_error("No mme.gummei.mme_code in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
 
     if (self.max_num_of_served_tai == 0)
     {
-        d_error("No MME.TAI(PLMN_ID.MCC.MNC|TAC) in '%s'",
+        d_error("No mme.tai in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
 
     if (self.num_of_integrity_order == 0)
     {
-        d_error("No MME.SECURITY.INTEGRITY_ORDER in '%s'",
+        d_error("No mme.security.integrity_order in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
     if (self.num_of_ciphering_order == 0)
     {
-        d_error("No MME.SECURITY.CIPHERING_ORDER in '%s'",
+        d_error("no mme.security.ciphering_order in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
@@ -944,7 +944,7 @@ status_t mme_context_setup_trace_module()
 {
     int s1ap = context_self()->logger.trace.s1ap;
     int nas = context_self()->logger.trace.nas;
-    int fd = context_self()->logger.trace.fd;
+    int diameter = context_self()->logger.trace.diameter;
     int gtp = context_self()->logger.trace.gtp;
     int others = context_self()->logger.trace.others;
 
@@ -988,19 +988,19 @@ status_t mme_context_setup_trace_module()
         d_trace_level(&_nas_ies, nas);
     }
 
-    if (fd)
+    if (diameter)
     {
-        if (fd <= 1) fd_g_debug_lvl = FD_LOG_ERROR;
-        else if (fd <= 3) fd_g_debug_lvl = FD_LOG_NOTICE;
-        else if (fd <= 5) fd_g_debug_lvl = FD_LOG_DEBUG;
+        if (diameter <= 1) fd_g_debug_lvl = FD_LOG_ERROR;
+        else if (diameter <= 3) fd_g_debug_lvl = FD_LOG_NOTICE;
+        else if (diameter <= 5) fd_g_debug_lvl = FD_LOG_DEBUG;
         else fd_g_debug_lvl = FD_LOG_ANNOYING;
 
         extern int _mme_fd_path;
-        d_trace_level(&_mme_fd_path, fd);
+        d_trace_level(&_mme_fd_path, diameter);
         extern int _fd_init;
-        d_trace_level(&_fd_init, fd);
+        d_trace_level(&_fd_init, diameter);
         extern int _fd_logger;
-        d_trace_level(&_fd_logger, fd);
+        d_trace_level(&_fd_logger, diameter);
     }
 
     if (gtp)

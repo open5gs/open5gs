@@ -44,8 +44,10 @@ typedef struct _pgw_context_t {
     } ue_network[MAX_NUM_OF_UE_NETWORK];
     c_uint8_t       num_of_ue_network;
 
-    c_uint32_t      primary_dns_addr;
-    c_uint32_t      secondary_dns_addr;
+    struct {
+        c_uint32_t primary;
+        c_uint32_t secondary;
+    } dns;
 
     list_t          sgw_list;  /* SGW GTP Node List */
     list_t          ip_pool_list;

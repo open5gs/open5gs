@@ -60,7 +60,7 @@ static status_t hss_context_validation()
 {
     if (self.fd_conf_path == NULL)
     {
-        d_error("No HSS.FD_CONF_PATH in '%s'",
+        d_error("No hss.freeDiameter in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
@@ -113,22 +113,22 @@ status_t hss_context_parse_config()
 
 status_t hss_context_setup_trace_module()
 {
-    int fd = context_self()->logger.trace.fd;
+    int diameter = context_self()->logger.trace.diameter;
     int others = context_self()->logger.trace.others;
 
-    if (fd)
+    if (diameter)
     {
-        if (fd <= 1) fd_g_debug_lvl = FD_LOG_ERROR;
-        else if (fd <= 3) fd_g_debug_lvl = FD_LOG_NOTICE;
-        else if (fd <= 5) fd_g_debug_lvl = FD_LOG_DEBUG;
+        if (diameter <= 1) fd_g_debug_lvl = FD_LOG_ERROR;
+        else if (diameter <= 3) fd_g_debug_lvl = FD_LOG_NOTICE;
+        else if (diameter <= 5) fd_g_debug_lvl = FD_LOG_DEBUG;
         else fd_g_debug_lvl = FD_LOG_ANNOYING;
 
         extern int _hss_fd_path;
-        d_trace_level(&_hss_fd_path, fd);
+        d_trace_level(&_hss_fd_path, diameter);
         extern int _fd_init;
-        d_trace_level(&_fd_init, fd);
+        d_trace_level(&_fd_init, diameter);
         extern int _fd_logger;
-        d_trace_level(&_fd_logger, fd);
+        d_trace_level(&_fd_logger, diameter);
     }
 
     if (others)

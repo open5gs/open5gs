@@ -93,13 +93,13 @@ static status_t sgw_context_validation()
 {
     if (self.gtpc_addr == 0)
     {
-        d_error("No SGW.NEWORK.GTPC_IPV4 in '%s'",
+        d_error("No sgw.gtpc in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
     if (self.gtpu_addr == 0)
     {
-        d_error("No SGW.NEWORK.GTPU_IPV4 in '%s'",
+        d_error("No sgw.gtpu in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }

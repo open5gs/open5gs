@@ -362,12 +362,12 @@ static c_int16_t pgw_pco_build(c_uint8_t *pco_buf, tlv_pco_t *tlv_pco)
                     /* Primary DNS Server IP Address */
                     pco_ipcp.options[0].type = 129; 
                     pco_ipcp.options[0].len = 6; 
-                    pco_ipcp.options[0].addr = pgw_self()->primary_dns_addr;
+                    pco_ipcp.options[0].addr = pgw_self()->dns.primary;
 
                     /* Secondary DNS Server IP Address */
                     pco_ipcp.options[1].type = 131; 
                     pco_ipcp.options[1].len = 6; 
-                    pco_ipcp.options[1].addr = pgw_self()->secondary_dns_addr;
+                    pco_ipcp.options[1].addr = pgw_self()->dns.secondary;
 
                     pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
                     pgw.ids[pgw.num_of_id].len = len;
@@ -381,12 +381,12 @@ static c_int16_t pgw_pco_build(c_uint8_t *pco_buf, tlv_pco_t *tlv_pco)
             {
                 pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
                 pgw.ids[pgw.num_of_id].len = 4;
-                pgw.ids[pgw.num_of_id].data = &pgw_self()->primary_dns_addr;
+                pgw.ids[pgw.num_of_id].data = &pgw_self()->dns.primary;
                 pgw.num_of_id++;
 
                 pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
                 pgw.ids[pgw.num_of_id].len = 4;
-                pgw.ids[pgw.num_of_id].data = &pgw_self()->secondary_dns_addr;
+                pgw.ids[pgw.num_of_id].data = &pgw_self()->dns.secondary;
 
                 pgw.num_of_id++;
                 break;
