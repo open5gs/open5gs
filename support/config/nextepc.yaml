@@ -10,39 +10,51 @@ logger:
         others: 1
 
 # 
-#  Disable use of IPv4 addresses (only IPv6)
-#    o Type : boolean
-#    o Default : IPv6 enabled
+#  <IPv4>
 #
-#  <Example>
-#    no_ipv4: true
+#  o Disable use of IPv4 addresses (only IPv6)
+#    Type : BOOLEAN
+#    Default : IPv4 enabled
 #
-#
-#  Disable use of IPv6 addresses (only IPv4)
-#    o Type : boolean
-#    o Default : IPv6 enabled
-#
-#  <Example>
-#    no_ipv6: true
+#  o IPv4 disabled
+#    parameter:
+#      no_ipv4: true
 #
 #
-#  Prefer IPv4 instead of IPv6 for estabishing new GTP connections.
-#    o Type : boolean
-#    o Default : IPv6 is attempted first.
+#  <IPv6>
 #
-#  <Example>
-#    prefer_ipv4: true
+#  o Disable use of IPv6 addresses (only IPv4)
+#    Type : BOOLEAN
+#    Default : IPv6 enabled
+#
+#  o IPv6 disabled
+#    parameter:
+#      no_ipv6: true
 #
 #
-#  Disable load of EPC elements (Only applicable `nextepc-epcd`)
-#    o Type : boolean
-#    o Default : load all HSS/SGW/PGW/PCRF/MME element
+#  <GTP Client Preference>
 #
-#  <Example>
-#    no_hss: true
-#    no_sgw: true
-#    no_pgw: true
-#    no_pcrf: true
+#  o Prefer IPv4 instead of IPv6 for estabishing new GTP connections.
+#    Type : BOOLEAN
+#    Default : IPv6 is attempted first.
+#
+#  o IPv4 preferred
+#    parameter:
+#      prefer_ipv4: true
+#
+#
+#  <EPC elements>
+#
+#  o Disable EPC elements (Only applicable `nextepc-epcd`)
+#    Type : BOOLEAN
+#    Default : load all HSS/SGW/PGW/PCRF/MME element
+#
+#  o Disable HSS/SGW/PGW/PCRF
+#    parameter:
+#      no_hss: true
+#      no_sgw: true
+#      no_pgw: true
+#      no_pcrf: true
 #
 parameter:
 
@@ -50,14 +62,14 @@ mme:
     freeDiameter: mme.conf
 
 #
-#  Specify local addresses the S1AP server must bind to
-#    o 'family' Type : enum
-#      0  : AF_UNSPEC
-#      2  : AF_INET
-#      30 : AF_INET6
-#    o Default : liston on all address available
+#  <S1AP Server>>
 #
-#  <Example>
+#  o Specify local addresses the S1AP server must bind to
+#    Type 'family' : ENUM
+#      0  - AF_UNSPEC
+#      2  - AF_INET
+#      30 - AF_INET6
+#    Default : listen on all address available
 #
 #  o Single S1AP Server(0.0.0.0:36412)
 #    s1ap:
@@ -79,9 +91,7 @@ mme:
         hostname: localhost
 
 #
-#  Specify GUMMEI
-#
-#  <Example>
+#  <GUMMEI>
 #
 #  o Multiple GUMMEI
 #    gummei: 
@@ -108,9 +118,7 @@ mme:
       mme_code: 1
 
 #
-#  Specify TAI
-#
-#  <Example>
+#  <TAI>
 #
 #  o Multiple TAI
 #    tai:
@@ -137,20 +145,64 @@ hss:
     freeDiameter: hss.conf
 
 sgw:
+#
+#  ------------------------ MME --------------------------
+#
+#  o Specify default SGW addresses the GTP-C must connect to
+#    Type 'family' : ENUM
+#      0  - AF_UNSPEC
+#      2  - AF_INET
+#      30 - AF_INET6
+#    Default : None
+#
+#  o Only first address is attempted. Others are ignored.
+#
+#  o 127.0.0.2:2123 is attempted. [::2]:2123 is ignored.
+#    gtpc:
+#      - hostname: 127.0.0.2
+#      - hostname: ::2
+#
+#  o [::2]:2123 and [::10]:2123 is ignored. 127.0.0.2:2123 is attempted.
+#    parameter:
+#      - no_ipv6: true
+#    gtpc:
+#      - hostname: ::2
+#      - hostname: 127.0.0.2
+#      - hostname: ::10
+#
+#
+#  ------------------------ SGW --------------------------
+#
+#  o Specify local addresses the GTP-C server must bind to
+#    Type 'family' : Enum
+#      0  - AF_UNSPEC
+#      2  - AF_INET
+#      30 - AF_INET6
+#    Default : liston on all address available
+#
+#  o Single GTP-C Server(127.0.0.2:2123)
+#    gtpu:
+#      hostname: 127.0.0.2
+#
+#  o Multiple GTP-C Server(127.0.0.2:2124, [::2]:2123)
+#    gtpu:
+#      - hostname: 127.0.0.2
+#        port: 2124
+#      - hostname: ::2
+#
     gtpc:
       - hostname: 127.0.0.2
       - hostname: ::2
 
 #
-#  Specify local addresses the GTP-U server must bind to
-#    o 'family' Type : enum
-#      0  : AF_UNSPEC
-#      2  : AF_INET
-#      30 : AF_INET6
-#    o Default : liston on all address available
+#  <GTP-U Server>
+#  o Specify local addresses the GTP-U server must bind to
+#    Type 'family' : ENUM
+#      0  - AF_UNSPEC
+#      2  - AF_INET
+#      30 - AF_INET6
+#    Default : listen on all address available
 #
-#
-#  <Example>
 #
 #  o Multiple GTP-U Server([::]:2152)
 #    gtpu:
@@ -171,19 +223,15 @@ pgw:
 #
 #  ------------------------ MME --------------------------
 #
-#  Specify default PGW addresses the GTP-C must connect to
-#    o 'family' Type : enum
-#      0  : AF_UNSPEC
-#      2  : AF_INET
-#      30 : AF_INET6
-#    o Default : None
+#  o Specify default PGW addresses the GTP-C must connect to
+#    Type 'family' : ENUM
+#      0  - AF_UNSPEC
+#      2  - AF_INET
+#      30 - AF_INET6
+#    Default : None
 #
-#  <NOTE>
-#    o only first address is attempted. Others are ignored.
-#    o if HSS provide PGW addresss(per-UE),
-#      it overwrites configuration.
-#
-#  <Example>
+#  o Only first address is attempted. Others are ignored.
+#  o if HSS provide PGW addresss(per-UE), it overwrites configuration.
 #
 #  o 127.0.0.3:2123 is attempted. [::3]:2123 is ignored.
 #    gtpc:
@@ -198,14 +246,12 @@ pgw:
 #
 #  ------------------------ PGW --------------------------
 #
-#  Specify local addresses the GTP-C server must bind to
-#    o 'family' Type : enum
-#      0  : AF_UNSPEC
-#      2  : AF_INET
-#      30 : AF_INET6
-#    o Default : liston on all address available
-#
-#  <Example>
+#  o Specify local addresses the GTP-C server must bind to
+#    Type 'family' : Enum
+#      0  - AF_UNSPEC
+#      2  - AF_INET
+#      30 - AF_INET6
+#    Default : liston on all address available
 #
 #  o Single GTP-C Server(127.0.0.3:2123)
 #    gtpu:
@@ -226,17 +272,15 @@ pgw:
       - hostname: ::3
 
 #
-#  Specify PDN network with UE IP pool
+#  <UE network>
 #
-#  <Example>
-#
-#  o Multiple IPv4 Pool
+#  o Multiple IPv4 Address
 #    ue_network:
 #      addr:
 #        - 45.45.0.1/16
 #        - 46.46.0.1/16
 #
-#  o Multiple Interface
+#  o Multiple Device
 #    ue_network:
 #      - addr: 45.45.0.1/16
 #        dev: pgwtun1
@@ -245,7 +289,7 @@ pgw:
 #          - 47.47.0.1/16
 #        dev: pgwtun2
 #
-#  o Pool allocated per-APN
+#  o Multple APN
 #    ue_network:
 #      - addr: 45.45.0.1/16
 #        dev: pgwtun1
