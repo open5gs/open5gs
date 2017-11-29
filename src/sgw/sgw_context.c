@@ -278,7 +278,11 @@ status_t sgw_context_parse_config()
                             else if (!strcmp(gtpc_key, "port"))
                             {
                                 const char *v = yaml_iter_value(&gtpc_iter);
-                                if (v) port = atoi(v);
+                                if (v)
+                                {
+                                    port = atoi(v);
+                                    self.gtpc_port = port;
+                                }
                             }
                             else
                                 d_warn("unknown key `%s`", gtpc_key);
@@ -346,7 +350,11 @@ status_t sgw_context_parse_config()
                             else if (!strcmp(gtpu_key, "port"))
                             {
                                 const char *v = yaml_iter_value(&gtpu_iter);
-                                if (v) port = atoi(v);
+                                if (v)
+                                {
+                                    port = atoi(v);
+                                    self.gtpu_port = port;
+                                }
                             }
                             else
                                 d_warn("unknown key `%s`", gtpu_key);

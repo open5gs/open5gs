@@ -367,7 +367,11 @@ status_t mme_context_parse_config()
                             else if (!strcmp(gtpc_key, "port"))
                             {
                                 const char *v = yaml_iter_value(&gtpc_iter);
-                                if (v) port = atoi(v);
+                                if (v)
+                                {
+                                    port = atoi(v);
+                                    self.gtpc_port = port;
+                                }
                             }
                             else
                                 d_warn("unknown key `%s`", gtpc_key);
@@ -912,7 +916,11 @@ status_t mme_context_parse_config()
                             else if (!strcmp(gtpc_key, "port"))
                             {
                                 const char *v = yaml_iter_value(&gtpc_iter);
-                                if (v) port = atoi(v);
+                                if (v)
+                                {
+                                    port = atoi(v);
+                                    self.gtpc_port = port;
+                                }
                             }
                             else if (!strcmp(gtpc_key, "apn"))
                             {

@@ -226,7 +226,11 @@ status_t pgw_context_parse_config()
                             else if (!strcmp(gtpc_key, "port"))
                             {
                                 const char *v = yaml_iter_value(&gtpc_iter);
-                                if (v) port = atoi(v);
+                                if (v)
+                                {
+                                    port = atoi(v);
+                                    self.gtpc_port = port;
+                                }
                             }
                             else
                                 d_warn("unknown key `%s`", gtpc_key);
@@ -294,7 +298,11 @@ status_t pgw_context_parse_config()
                             else if (!strcmp(gtpu_key, "port"))
                             {
                                 const char *v = yaml_iter_value(&gtpu_iter);
-                                if (v) port = atoi(v);
+                                if (v)
+                                {
+                                    port = atoi(v);
+                                    self.gtpu_port = port;
+                                }
                             }
                             else
                                 d_warn("unknown key `%s`", gtpu_key);
@@ -386,7 +394,7 @@ status_t pgw_context_parse_config()
                             else if (!strcmp(ue_network_key, "apn"))
                             {
                                 apn = yaml_iter_value(&ue_network_iter);
-                                d_warn("Not implemented");
+                                d_warn("Not implemented apn=%s", apn);
                             }
                             else
                                 d_warn("unknown key `%s`", ue_network_key);
