@@ -14,7 +14,9 @@ logger:
 #
 #  o Disable use of IPv4 addresses (only IPv6)
 #    Type : BOOLEAN
-#    Default : IPv4 enabled
+#
+#  o IPv4 enabled
+#    parameter:
 #
 #  o IPv4 disabled
 #    parameter:
@@ -25,7 +27,9 @@ logger:
 #
 #  o Disable use of IPv6 addresses (only IPv4)
 #    Type : BOOLEAN
-#    Default : IPv6 enabled
+#
+#  o IPv6 enabled
+#    parameter:
 #
 #  o IPv6 disabled
 #    parameter:
@@ -38,6 +42,9 @@ logger:
 #    Type : BOOLEAN
 #    Default : IPv6 is attempted first.
 #
+#  o IPv6 preferred
+#    parameter:
+#
 #  o IPv4 preferred
 #    parameter:
 #      prefer_ipv4: true
@@ -47,7 +54,9 @@ logger:
 #
 #  o Disable EPC elements (Only applicable `nextepc-epcd`)
 #    Type : BOOLEAN
-#    Default : load all HSS/SGW/PGW/PCRF/MME element
+#
+#  o Enable HSS/SGW/PGW/PCRF
+#    parameter:
 #
 #  o Disable HSS/SGW/PGW/PCRF
 #    parameter:
@@ -69,7 +78,9 @@ mme:
 #      0  - AF_UNSPEC
 #      2  - AF_INET
 #      30 - AF_INET6
-#    Default : listen on all address available
+#
+#  o S1AP Server(all address avaiable)
+#    s1ap:
 #
 #  o Single S1AP Server(0.0.0.0:36412)
 #    s1ap:
@@ -153,7 +164,6 @@ sgw:
 #      0  - AF_UNSPEC
 #      2  - AF_INET
 #      30 - AF_INET6
-#    Default : None
 #
 #  o Only first address is attempted. Others are ignored.
 #
@@ -201,8 +211,9 @@ sgw:
 #      0  - AF_UNSPEC
 #      2  - AF_INET
 #      30 - AF_INET6
-#    Default : listen on all address available
 #
+#  o GPU-U Server(all address avaiable)
+#    gtpu:
 #
 #  o Multiple GTP-U Server([::]:2152)
 #    gtpu:
@@ -228,7 +239,6 @@ pgw:
 #      0  - AF_UNSPEC
 #      2  - AF_INET
 #      30 - AF_INET6
-#    Default : None
 #
 #  o Only first address is attempted. Others are ignored.
 #  o if HSS provide PGW addresss(per-UE), it overwrites configuration.
@@ -251,14 +261,16 @@ pgw:
 #      0  - AF_UNSPEC
 #      2  - AF_INET
 #      30 - AF_INET6
-#    Default : liston on all address available
+#
+#  o GPU-C Server(all address avaiable)
+#    gtpc:
 #
 #  o Single GTP-C Server(127.0.0.3:2123)
-#    gtpu:
+#    gtpc:
 #      hostname: 127.0.0.3
 #
 #  o Multiple GTP-C Server(127.0.0.3:2124, [::3]:2123)
-#    gtpu:
+#    gtpc:
 #      - hostname: 127.0.0.3
 #        port: 2124
 #      - hostname: ::3
@@ -274,11 +286,11 @@ pgw:
 #
 #  <UE network>
 #
-#  o Multiple IPv4 Address
+#  o Multiple IP Address
 #    ue_network:
 #      addr:
 #        - 45.45.0.1/16
-#        - 46.46.0.1/16
+#        - 2001:200:903::1/96
 #
 #  o Multiple Device
 #    ue_network:
@@ -286,17 +298,17 @@ pgw:
 #        dev: pgwtun1
 #      - addr:
 #          - 46.46.0.1/16
-#          - 47.47.0.1/16
+#          - 2001:200:903::1/96
 #        dev: pgwtun2
 #
-#  o Multple APN
+#  o Per-APN
 #    ue_network:
 #      - addr: 45.45.0.1/16
 #        dev: pgwtun1
 #        apn : internet
 #      - addr:
 #          - 46.46.0.1/16
-#          - 47.47.0.1/16
+#          - 2001:200:903::1/96
 #        dev: pgwtun2
 #        apn : volte
 #
