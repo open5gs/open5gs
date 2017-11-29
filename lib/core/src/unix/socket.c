@@ -6,6 +6,8 @@
 
 #include "core_arch_network.h"
 
+#include <ifaddrs.h>
+
 #define MAX_SOCK_POOL_SIZE          512
 
 static int max_fd;
@@ -474,6 +476,75 @@ status_t sock_setsockopt(sock_id id, c_int32_t opt, c_int32_t on)
     return CORE_OK; 
 }         
 
+status_t core_getifaddrs(c_sockaddr_t **sa)
+{
+	struct ifaddrs *iflist, *cur;
+    c_sockaddr_t *prev_sa;
+    int rc;
+
+    d_assert(sa, return CORE_ERROR,);
+
+	rc = getifaddrs(&iflist);
+    if (rc != 0)
+    {
+        d_error("getifaddrs failed(%d:%s)", errno, strerror(errno));
+        return CORE_ERROR;
+    }
+
+    prev_sa = NULL;
+	for (cur = iflist; cur != NULL; cur = cur->ifa_next)
+    {
+        c_sockaddr_t *new_sa, *ptr;
+
+		if (cur->ifa_addr == NULL) /* may happen with ppp interfaces */
+			continue;
+
+        ptr = (c_sockaddr_t *)cur->ifa_addr;
+        if (cur->ifa_addr->sa_family == AF_INET)
+        {
+#ifndef IN_IS_ADDR_LOOPBACK
+#define IN_IS_ADDR_LOOPBACK(a) \
+  ((((long int) (a)->s_addr) & ntohl(0xff000000)) == ntohl(0x7f000000))
+#endif /* IN_IS_ADDR_LOOPBACK */
+
+/* An IP equivalent to IN6_IS_ADDR_UNSPECIFIED */
+#ifndef IN_IS_ADDR_UNSPECIFIED
+#define IN_IS_ADDR_UNSPECIFIED(a) \
+  (((long int) (a)->s_addr) == 0x00000000)
+#endif /* IN_IS_ADDR_UNSPECIFIED */
+            if (IN_IS_ADDR_UNSPECIFIED(&ptr->sin.sin_addr) ||
+                IN_IS_ADDR_LOOPBACK(&ptr->sin.sin_addr))
+                continue;
+        }
+        else if (cur->ifa_addr->sa_family == AF_INET6)
+        {
+            if (IN6_IS_ADDR_UNSPECIFIED(&ptr->sin6.sin6_addr) ||
+                IN6_IS_ADDR_LOOPBACK(&ptr->sin6.sin6_addr) ||
+                IN6_IS_ADDR_MULTICAST(&ptr->sin6.sin6_addr) ||
+                IN6_IS_ADDR_LINKLOCAL(&ptr->sin6.sin6_addr) ||
+                IN6_IS_ADDR_SITELOCAL(&ptr->sin6.sin6_addr))
+                continue;
+        }
+        else
+            continue;
+
+
+        new_sa = core_calloc(1, sizeof(c_sockaddr_t));
+        memcpy(&new_sa->sa, cur->ifa_addr, sockaddr_len(cur->ifa_addr));
+
+        if (!prev_sa)
+            *sa = new_sa;
+        else
+            prev_sa->next = new_sa;
+
+        prev_sa = new_sa;
+	}
+
+	freeifaddrs(iflist);
+
+    return CORE_OK;
+}
+
 status_t core_getaddrinfo(c_sockaddr_t **sa, 
         int family, const char *hostname, c_uint16_t port, int flags)
 {
@@ -482,6 +553,8 @@ status_t core_getaddrinfo(c_sockaddr_t **sa,
     struct addrinfo hints, *ai, *ai_list;
     c_sockaddr_t *prev_sa;
     char buf[CORE_ADDRSTRLEN];
+
+    d_assert(sa, return CORE_ERROR,);
 
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = family;
@@ -547,10 +620,13 @@ status_t core_freeaddrinfo(c_sockaddr_t *sa)
     return CORE_OK;
 }
 
-const char *core_inet_ntop(c_sockaddr_t *sockaddr, char *buf, int buflen)
+const char *core_inet_ntop(void *sa, char *buf, int buflen)
 {
     int family;
+    c_sockaddr_t *sockaddr = NULL;
+
     d_assert(buf, return NULL,);
+    sockaddr = sa;
     d_assert(sockaddr, return NULL,);
 
     family = sockaddr->c_sa_family;
@@ -569,9 +645,12 @@ const char *core_inet_ntop(c_sockaddr_t *sockaddr, char *buf, int buflen)
     }
 }
 
-status_t core_inet_pton(int family, const char *src, c_sockaddr_t *dst)
+status_t core_inet_pton(int family, const char *src, void *sa)
 {
+    c_sockaddr_t *dst = NULL;
+
     d_assert(src, return CORE_ERROR,);
+    dst = sa;
     d_assert(dst, return CORE_ERROR,);
 
     dst->c_sa_family = family;
@@ -588,24 +667,30 @@ status_t core_inet_pton(int family, const char *src, c_sockaddr_t *dst)
     }
 }
 
-socklen_t sockaddr_len(const c_sockaddr_t *sa)
+socklen_t sockaddr_len(const void *sa)
 {
+    const c_sockaddr_t *sockaddr = sa;
+
     d_assert(sa, return 0,);
 
-    switch(sa->c_sa_family)
+    switch(sockaddr->c_sa_family)
     {
         case AF_INET:
             return sizeof(struct sockaddr_in);
         case AF_INET6:
             return sizeof(struct sockaddr_in6);
         default:
-            d_assert(0, return 0, "Unknown family(%d)", sa->c_sa_family);
+            d_assert(0, return 0, "Unknown family(%d)", sockaddr->c_sa_family);
     }
 }
 
-int sockaddr_is_equal(c_sockaddr_t *a, c_sockaddr_t *b)
+int sockaddr_is_equal(void *p, void *q)
 {
+    c_sockaddr_t *a, *b;
+
+    a = p;
     d_assert(a, return 0,);
+    b = q;
     d_assert(b, return 0,);
 
     if (a->c_sa_family != b->c_sa_family)

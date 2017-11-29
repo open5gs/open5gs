@@ -62,8 +62,14 @@ typedef int (*sock_handler)(sock_id sock, void *data);
 
 typedef struct c_sockaddr_t c_sockaddr_t;
 struct c_sockaddr_t {
-    c_sockaddr_t *next;
-
+    /* Reserved Area
+     *   - should not add any atrribute in here
+     *
+     *   e.g) 
+     *   struct sockaddr sa;
+     *   ...
+     *   sockaddr_len((c_sockaddr_t *)&sa);
+     */
 #define c_sa_family sa.sa_family
 #define c_sa_port sin.sin_port
     union {
@@ -72,6 +78,11 @@ struct c_sockaddr_t {
         struct sockaddr_in6 sin6;
         struct sockaddr sa;
     };
+
+    /* User Area
+     *   - Add your attribute 
+     */
+    c_sockaddr_t *next;
 };
 
 
@@ -166,6 +177,7 @@ CORE_DECLARE(int) sock_select_loop(c_time_t timeout);
  */
 CORE_DECLARE(status_t) sock_setsockopt(sock_id id, c_int32_t opt, c_int32_t on);
 
+CORE_DECLARE(status_t) core_getifaddrs(c_sockaddr_t **sa);
 CORE_DECLARE(status_t) core_getaddrinfo(c_sockaddr_t **sa, 
         int family, const char *hostname, c_uint16_t port, int flags);
 CORE_DECLARE(status_t) core_freeaddrinfo(c_sockaddr_t *sa);
@@ -175,13 +187,11 @@ CORE_DECLARE(status_t) core_freeaddrinfo(c_sockaddr_t *sa);
     core_inet_ntop(__aDDR, buf, CORE_ADDRSTRLEN)
 #define CORE_PORT(__aDDR) \
     ntohs((__aDDR)->c_sa_port)
-CORE_DECLARE(const char *)core_inet_ntop(c_sockaddr_t *sockaddr,
-        char *buf, int buflen);
-CORE_DECLARE(status_t) core_inet_pton(
-        int family, const char *src, c_sockaddr_t *dst);
+CORE_DECLARE(const char *)core_inet_ntop(void *sa, char *buf, int buflen);
+CORE_DECLARE(status_t) core_inet_pton(int family, const char *src, void *sa);
 
-CORE_DECLARE(socklen_t) sockaddr_len(const c_sockaddr_t *sa);
-CORE_DECLARE(int) sockaddr_is_equal(c_sockaddr_t *a, c_sockaddr_t *b);
+CORE_DECLARE(socklen_t) sockaddr_len(const void *sa);
+CORE_DECLARE(int) sockaddr_is_equal(void *p, void *q);
 
 #ifdef __cplusplus
 }

@@ -16,6 +16,14 @@
 #include <sys/socket.h>
 #endif
 
+#if HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
+#endif
+
+#if HAVE_IFADDRS_H
+#include <ifaddrs.h>
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */

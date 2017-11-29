@@ -285,6 +285,17 @@ static void sock_test7(abts_case *tc, void *data)
     ABTS_STR_EQUAL(tc, "::1", CORE_ADDR(&sa, buf));
 }
 
+static void sock_test8(abts_case *tc, void *data)
+{
+    c_sockaddr_t *sa, *iter;
+    status_t rv;
+
+    rv = core_getifaddrs(&sa);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    rv = core_freeaddrinfo(sa);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+}
 
 abts_suite *testsock(abts_suite *suite)
 {
@@ -297,6 +308,7 @@ abts_suite *testsock(abts_suite *suite)
     abts_run_test(suite, sock_test5, NULL);
     abts_run_test(suite, sock_test6, NULL);
     abts_run_test(suite, sock_test7, NULL);
+    abts_run_test(suite, sock_test8, NULL);
 
     return suite;
 }
