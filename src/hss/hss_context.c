@@ -4,6 +4,8 @@
 #include "core_lib.h"
 
 #include <mongoc.h>
+#include <yaml.h>
+#include "yaml_helper.h"
 
 #include "fd_lib.h"
 
@@ -70,35 +72,35 @@ status_t hss_context_parse_config()
 {
     status_t rv;
     config_t *config = &context_self()->config;
-    bson_iter_t iter;
-    c_uint32_t length = 0;
+    yaml_document_t *document = NULL;
+    yaml_iter_t root_iter;
 
-    d_assert(config, return CORE_ERROR, );
+    d_assert(config, return CORE_ERROR,);
+    document = config->document;
+    d_assert(document, return CORE_ERROR,);
 
     rv = hss_context_prepare();
     if (rv != CORE_OK) return rv;
 
-    if (!bson_iter_init(&iter, config->bson))
+    yaml_iter_init(&root_iter, document);
+    while(yaml_iter_next(&root_iter))
     {
-        d_error("bson_iter_init failed in this document");
-        return CORE_ERROR;
-    }
-
-    while(bson_iter_next(&iter))
-    {
-        const char *key = bson_iter_key(&iter);
-        if (!strcmp(key, "HSS") && BSON_ITER_HOLDS_DOCUMENT(&iter))
+        const char *root_key = yaml_iter_key(&root_iter);
+        d_assert(root_key, return CORE_ERROR,);
+        if (!strcmp(root_key, "hss"))
         {
-            bson_iter_t hss_iter;
-            bson_iter_recurse(&iter, &hss_iter);
-            while(bson_iter_next(&hss_iter))
+            yaml_iter_t hss_iter;
+            yaml_iter_recurse(&root_iter, &hss_iter);
+            while(yaml_iter_next(&hss_iter))
             {
-                const char *hss_key = bson_iter_key(&hss_iter);
-                if (!strcmp(hss_key, "FD_CONF_PATH") &&
-                    BSON_ITER_HOLDS_UTF8(&hss_iter))
+                const char *hss_key = yaml_iter_key(&hss_iter);
+                d_assert(hss_key, return CORE_ERROR,);
+                if (!strcmp(hss_key, "freeDiameter"))
                 {
-                    self.fd_conf_path = bson_iter_utf8(&hss_iter, &length);
+                    self.fd_conf_path = yaml_iter_value(&hss_iter);
                 }
+                else
+                    d_warn("unknown key `%s`", hss_key);
             }
         }
     }

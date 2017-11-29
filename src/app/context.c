@@ -5,10 +5,10 @@
 #include "core_lib.h"
 #include "core_pkbuf.h"
 
-#include <yaml.h>
 #include <mongoc.h>
-
+#include <yaml.h>
 #include "yaml_helper.h"
+
 #include "context.h"
 
 static context_t self;

@@ -4,7 +4,10 @@
 #include "core_pool.h"
 #include "core_index.h"
 #include "core_lib.h"
+
 #include <mongoc.h>
+#include <yaml.h>
+#include "yaml_helper.h"
 
 #include "types.h"
 #include "gtp_types.h"
@@ -103,6 +106,7 @@ static status_t sgw_context_validation()
     return CORE_OK;
 }
 
+#if 0
 status_t sgw_context_parse_config()
 {
     status_t rv;
@@ -182,6 +186,181 @@ status_t sgw_context_parse_config()
                         }
                     }
                 }
+            }
+        }
+    }
+
+    rv = sgw_context_validation();
+    if (rv != CORE_OK) return rv;
+
+    return CORE_OK;
+}
+#endif
+status_t sgw_context_parse_config()
+{
+    status_t rv;
+    config_t *config = &context_self()->config;
+    yaml_document_t *document = NULL;
+    yaml_iter_t root_iter;
+
+    d_assert(config, return CORE_ERROR,);
+    document = config->document;
+    d_assert(document, return CORE_ERROR,);
+
+    rv = sgw_context_prepare();
+    if (rv != CORE_OK) return rv;
+
+    yaml_iter_init(&root_iter, document);
+    while(yaml_iter_next(&root_iter))
+    {
+        const char *root_key = yaml_iter_key(&root_iter);
+        d_assert(root_key, return CORE_ERROR,);
+        if (!strcmp(root_key, "sgw"))
+        {
+            yaml_iter_t sgw_iter;
+            yaml_iter_recurse(&root_iter, &sgw_iter);
+            while(yaml_iter_next(&sgw_iter))
+            {
+                const char *sgw_key = yaml_iter_key(&sgw_iter);
+                d_assert(sgw_key, return CORE_ERROR,);
+                if (!strcmp(sgw_key, "gtpc"))
+                {
+                    yaml_iter_t gtpc_array, gtpc_iter;
+                    yaml_iter_recurse(&sgw_iter, &gtpc_array);
+                    do
+                    {
+#if 0
+                        sgw_gtpc_t *gtpc = NULL;
+#endif
+                        int family = AF_UNSPEC;
+                        const char *hostname = NULL;
+                        c_uint16_t port = GTPV2_C_UDP_PORT;
+
+                        if (yaml_iter_type(&gtpc_array) == YAML_MAPPING_NODE)
+                        {
+                            memcpy(&gtpc_iter, &gtpc_array,
+                                    sizeof(yaml_iter_t));
+                        }
+                        else if (yaml_iter_type(&gtpc_array) ==
+                            YAML_SEQUENCE_NODE)
+                        {
+                            if (!yaml_iter_next(&gtpc_array))
+                                break;
+                            yaml_iter_recurse(&gtpc_array, &gtpc_iter);
+                        }
+
+                        while(yaml_iter_next(&gtpc_iter))
+                        {
+                            const char *gtpc_key =
+                                yaml_iter_key(&gtpc_iter);
+                            d_assert(gtpc_key,
+                                    return CORE_ERROR,);
+                            if (!strcmp(gtpc_key, "family"))
+                            {
+                                const char *v = yaml_iter_value(&gtpc_iter);
+                                if (v) family = atoi(v);
+                                if (family != AF_UNSPEC &&
+                                    family != AF_INET && family != AF_INET6)
+                                {
+                                    d_warn("Ignore family(%d) : AF_UNSPEC(0), "
+                                        "AF_INET(2), AF_INET6(30) ", family);
+                                    family = AF_UNSPEC;
+                                }
+                            }
+                            else if (!strcmp(gtpc_key, "hostname"))
+                            {
+                                hostname = yaml_iter_value(&gtpc_iter);
+#if 1
+                                if (hostname)
+                                    self.gtpc_addr = inet_addr(hostname);
+#endif
+                            }
+                            else if (!strcmp(gtpc_key, "port"))
+                            {
+                                const char *v = yaml_iter_value(&gtpc_iter);
+                                if (v) port = atoi(v);
+                            }
+                            else
+                                d_warn("unknown key `%s`", gtpc_key);
+                        }
+
+#if 0
+                        gtpc = sgw_gtpc_add(family, hostname, port);
+                        d_assert(gtpc, return CORE_ERROR,);
+#endif
+
+                    } while(yaml_iter_type(&gtpc_array) == YAML_SEQUENCE_NODE);
+                }
+                else if (!strcmp(sgw_key, "gtpu"))
+                {
+                    yaml_iter_t gtpu_array, gtpu_iter;
+                    yaml_iter_recurse(&sgw_iter, &gtpu_array);
+                    do
+                    {
+#if 0
+                        sgw_gtpu_t *gtpu = NULL;
+#endif
+                        int family = AF_UNSPEC;
+                        const char *hostname = NULL;
+                        c_uint16_t port = GTPV1_U_UDP_PORT;
+
+                        if (yaml_iter_type(&gtpu_array) == YAML_MAPPING_NODE)
+                        {
+                            memcpy(&gtpu_iter, &gtpu_array,
+                                    sizeof(yaml_iter_t));
+                        }
+                        else if (yaml_iter_type(&gtpu_array) ==
+                            YAML_SEQUENCE_NODE)
+                        {
+                            if (!yaml_iter_next(&gtpu_array))
+                                break;
+                            yaml_iter_recurse(&gtpu_array, &gtpu_iter);
+                        }
+
+                        while(yaml_iter_next(&gtpu_iter))
+                        {
+                            const char *gtpu_key =
+                                yaml_iter_key(&gtpu_iter);
+                            d_assert(gtpu_key,
+                                    return CORE_ERROR,);
+                            if (!strcmp(gtpu_key, "family"))
+                            {
+                                const char *v = yaml_iter_value(&gtpu_iter);
+                                if (v) family = atoi(v);
+                                if (family != AF_UNSPEC &&
+                                    family != AF_INET && family != AF_INET6)
+                                {
+                                    d_warn("Ignore family(%d) : AF_UNSPEC(0), "
+                                        "AF_INET(2), AF_INET6(30) ", family);
+                                    family = AF_UNSPEC;
+                                }
+                            }
+                            else if (!strcmp(gtpu_key, "hostname"))
+                            {
+                                hostname = yaml_iter_value(&gtpu_iter);
+#if 1
+                                if (hostname)
+                                    self.gtpu_addr = inet_addr(hostname);
+#endif
+                            }
+                            else if (!strcmp(gtpu_key, "port"))
+                            {
+                                const char *v = yaml_iter_value(&gtpu_iter);
+                                if (v) port = atoi(v);
+                            }
+                            else
+                                d_warn("unknown key `%s`", gtpu_key);
+                        }
+
+#if 0
+                        gtpu = sgw_gtpu_add(family, hostname, port);
+                        d_assert(gtpu, return CORE_ERROR,);
+#endif
+
+                    } while(yaml_iter_type(&gtpu_array) == YAML_SEQUENCE_NODE);
+                }
+                else
+                    d_warn("unknown key `%s`", sgw_key);
             }
         }
     }
