@@ -917,6 +917,7 @@ status_t mme_context_parse_config()
                             else if (!strcmp(gtpc_key, "apn"))
                             {
                                 apn = yaml_iter_value(&gtpc_iter);
+                                printf("apn = [%s]\n", apn);
                             }
                             else
                                 d_warn("unknown key `%s`", gtpc_key);

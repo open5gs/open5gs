@@ -3,7 +3,11 @@
 #include "core_pool.h"
 #include "core_index.h"
 #include "core_lib.h"
+
 #include <mongoc.h>
+#include <yaml.h>
+#include "yaml_helper.h"
+
 
 #include "fd_lib.h"
 #include "gtp_path.h"
@@ -136,7 +140,7 @@ static status_t pgw_context_validation()
     return CORE_OK;
 }
 
-status_t pgw_context_parse_config()
+status_t pgw_context_parse_old_config()
 {
     status_t rv;
     config_t *config = &context_self()->config;
@@ -169,6 +173,7 @@ status_t pgw_context_parse_config()
                 {
                     self.fd_conf_path = bson_iter_utf8(&pgw_iter, &length);
                 }
+#if 0
                 else if (!strcmp(pgw_key, "NETWORK"))
                 {
                     bson_iter_t network_iter;
@@ -220,8 +225,10 @@ status_t pgw_context_parse_config()
                         }
                     }
                 }
+#endif
                 else if (!strcmp(pgw_key, "UE_NETWORK"))
                 {
+#if 0
                     int ue_network_index = 0;
                     bson_iter_t ue_network_array;
 
@@ -297,6 +304,7 @@ status_t pgw_context_parse_config()
                     } while(
                         BSON_ITER_HOLDS_ARRAY(&pgw_iter) &&
                         bson_iter_next(&ue_network_array));
+#endif
                 }
                 else if (!strcmp(pgw_key, "DNS") &&
                     BSON_ITER_HOLDS_DOCUMENT(&pgw_iter))
@@ -321,6 +329,357 @@ status_t pgw_context_parse_config()
                         }
                     }
                 }
+            }
+        }
+    }
+
+    return CORE_OK;
+}
+
+status_t pgw_context_parse_config()
+{
+    status_t rv;
+    config_t *config = &context_self()->config;
+    yaml_document_t *document = NULL;
+    yaml_iter_t root_iter;
+
+    d_assert(config, return CORE_ERROR,);
+    document = config->document;
+    d_assert(document, return CORE_ERROR,);
+
+    rv = pgw_context_prepare();
+    if (rv != CORE_OK) return rv;
+
+    yaml_iter_init(&root_iter, document);
+    while(yaml_iter_next(&root_iter))
+    {
+        const char *root_key = yaml_iter_key(&root_iter);
+        d_assert(root_key, return CORE_ERROR,);
+        if (!strcmp(root_key, "pgw"))
+        {
+            yaml_iter_t pgw_iter;
+            yaml_iter_recurse(&root_iter, &pgw_iter);
+            while(yaml_iter_next(&pgw_iter))
+            {
+                const char *pgw_key = yaml_iter_key(&pgw_iter);
+                d_assert(pgw_key, return CORE_ERROR,);
+                if (!strcmp(pgw_key, "freeDiameter"))
+                {
+                    self.fd_conf_path = yaml_iter_value(&pgw_iter);
+                }
+                else if (!strcmp(pgw_key, "gtpc"))
+                {
+                    yaml_iter_t gtpc_array, gtpc_iter;
+                    yaml_iter_recurse(&pgw_iter, &gtpc_array);
+                    do
+                    {
+#if 0
+                        pgw_gtpc_t *gtpc = NULL;
+#endif
+                        int family = AF_UNSPEC;
+                        const char *hostname = NULL;
+                        c_uint16_t port = GTPV2_C_UDP_PORT;
+
+                        if (yaml_iter_type(&gtpc_array) == YAML_MAPPING_NODE)
+                        {
+                            memcpy(&gtpc_iter, &gtpc_array,
+                                    sizeof(yaml_iter_t));
+                        }
+                        else if (yaml_iter_type(&gtpc_array) ==
+                            YAML_SEQUENCE_NODE)
+                        {
+                            if (!yaml_iter_next(&gtpc_array))
+                                break;
+                            yaml_iter_recurse(&gtpc_array, &gtpc_iter);
+                        }
+
+                        while(yaml_iter_next(&gtpc_iter))
+                        {
+                            const char *gtpc_key =
+                                yaml_iter_key(&gtpc_iter);
+                            d_assert(gtpc_key,
+                                    return CORE_ERROR,);
+                            if (!strcmp(gtpc_key, "family"))
+                            {
+                                const char *v = yaml_iter_value(&gtpc_iter);
+                                if (v) family = atoi(v);
+                                if (family != AF_UNSPEC &&
+                                    family != AF_INET && family != AF_INET6)
+                                {
+                                    d_warn("Ignore family(%d) : AF_UNSPEC(0), "
+                                        "AF_INET(2), AF_INET6(30) ", family);
+                                    family = AF_UNSPEC;
+                                }
+                            }
+                            else if (!strcmp(gtpc_key, "hostname"))
+                            {
+                                hostname = yaml_iter_value(&gtpc_iter);
+#if 1
+                                if (hostname)
+                                    self.gtpc_addr = inet_addr(hostname);
+#endif
+                            }
+                            else if (!strcmp(gtpc_key, "port"))
+                            {
+                                const char *v = yaml_iter_value(&gtpc_iter);
+                                if (v) port = atoi(v);
+                            }
+                            else
+                                d_warn("unknown key `%s`", gtpc_key);
+                        }
+
+#if 0
+                        gtpc = pgw_gtpc_add(family, hostname, port);
+                        d_assert(gtpc, return CORE_ERROR,);
+#endif
+
+                    } while(yaml_iter_type(&gtpc_array) == YAML_SEQUENCE_NODE);
+                }
+                else if (!strcmp(pgw_key, "gtpu"))
+                {
+                    yaml_iter_t gtpu_array, gtpu_iter;
+                    yaml_iter_recurse(&pgw_iter, &gtpu_array);
+                    do
+                    {
+#if 0
+                        pgw_gtpu_t *gtpu = NULL;
+#endif
+                        int family = AF_UNSPEC;
+                        const char *hostname = NULL;
+                        c_uint16_t port = GTPV1_U_UDP_PORT;
+
+                        if (yaml_iter_type(&gtpu_array) == YAML_MAPPING_NODE)
+                        {
+                            memcpy(&gtpu_iter, &gtpu_array,
+                                    sizeof(yaml_iter_t));
+                        }
+                        else if (yaml_iter_type(&gtpu_array) ==
+                            YAML_SEQUENCE_NODE)
+                        {
+                            if (!yaml_iter_next(&gtpu_array))
+                                break;
+                            yaml_iter_recurse(&gtpu_array, &gtpu_iter);
+                        }
+
+                        while(yaml_iter_next(&gtpu_iter))
+                        {
+                            const char *gtpu_key =
+                                yaml_iter_key(&gtpu_iter);
+                            d_assert(gtpu_key,
+                                    return CORE_ERROR,);
+                            if (!strcmp(gtpu_key, "family"))
+                            {
+                                const char *v = yaml_iter_value(&gtpu_iter);
+                                if (v) family = atoi(v);
+                                if (family != AF_UNSPEC &&
+                                    family != AF_INET && family != AF_INET6)
+                                {
+                                    d_warn("Ignore family(%d) : AF_UNSPEC(0), "
+                                        "AF_INET(2), AF_INET6(30) ", family);
+                                    family = AF_UNSPEC;
+                                }
+                            }
+                            else if (!strcmp(gtpu_key, "hostname"))
+                            {
+                                hostname = yaml_iter_value(&gtpu_iter);
+#if 1
+                                if (hostname)
+                                    self.gtpu_addr = inet_addr(hostname);
+#endif
+                            }
+                            else if (!strcmp(gtpu_key, "port"))
+                            {
+                                const char *v = yaml_iter_value(&gtpu_iter);
+                                if (v) port = atoi(v);
+                            }
+                            else
+                                d_warn("unknown key `%s`", gtpu_key);
+                        }
+
+#if 0
+                        gtpu = pgw_gtpu_add(family, hostname, port);
+                        d_assert(gtpu, return CORE_ERROR,);
+#endif
+
+                    } while(yaml_iter_type(&gtpu_array) == YAML_SEQUENCE_NODE);
+                }
+                else if (!strcmp(pgw_key, "pdn"))
+                {
+                    yaml_iter_t pdn_array, pdn_iter;
+                    yaml_iter_recurse(&pgw_iter, &pdn_array);
+                    do
+                    {
+                        c_uint32_t addr = 0;
+                        c_uint8_t bits = 0;
+                        const char *dev = NULL;
+                        const char *apn = NULL;
+
+                        d_assert(self.num_of_ue_network <=
+                                MAX_NUM_OF_UE_NETWORK, return CORE_ERROR,);
+                        if (yaml_iter_type(&pdn_array) == YAML_MAPPING_NODE)
+                        {
+                            memcpy(&pdn_iter, &pdn_array, sizeof(yaml_iter_t));
+                        }
+                        else if (yaml_iter_type(&pdn_array) ==
+                            YAML_SEQUENCE_NODE)
+                        {
+                            if (!yaml_iter_next(&pdn_array))
+                                break;
+                            yaml_iter_recurse(&pdn_array, &pdn_iter);
+                        }
+
+                        while(yaml_iter_next(&pdn_iter))
+                        {
+                            const char *pdn_key = yaml_iter_key(&pdn_iter);
+                            d_assert(pdn_key,
+                                    return CORE_ERROR,);
+                            if (!strcmp(pdn_key, "addr"))
+                            {
+                                yaml_iter_t addr_iter;
+                                yaml_iter_recurse(&pdn_iter, &addr_iter);
+                                d_assert(yaml_iter_type(&addr_iter) !=
+                                    YAML_MAPPING_NODE, return CORE_ERROR,);
+
+                                do
+                                {
+                                    char *v = NULL;
+
+#if 0
+                                    d_assert(pdn->num_of_addr <=
+                                            MAX_NUM_OF_PDN_ADDR,
+                                            return CORE_ERROR,);
+#endif
+
+                                    if (yaml_iter_type(&addr_iter) ==
+                                            YAML_SEQUENCE_NODE)
+                                    {
+                                        if (!yaml_iter_next(&addr_iter))
+                                            break;
+                                    }
+
+                                    v = (char *)yaml_iter_value(&addr_iter);
+                                    if (v)
+                                    {
+                                        char *str = strsep(&v, "/");
+                                        if (str)
+                                        {
+                                            addr = inet_addr(str);
+                                            bits = atoi(v);
+                                        }
+                                    }
+                                } while(
+                                    yaml_iter_type(&addr_iter) ==
+                                        YAML_SEQUENCE_NODE);
+                            }
+                            else if (!strcmp(pdn_key, "dev"))
+                            {
+                                dev = yaml_iter_value(&pdn_iter);
+                            }
+                            else if (!strcmp(pdn_key, "apn"))
+                            {
+                                apn = yaml_iter_value(&pdn_iter);
+                                d_warn("Not implemented");
+                            }
+                            else
+                                d_warn("unknown key `%s`", pdn_key);
+                        }
+
+                        if (addr && bits)
+                        {
+                            self.ue_network[self.num_of_ue_network].ipv4.addr =
+                                addr;
+                            self.ue_network[self.num_of_ue_network].ipv4.bits =
+                                bits;
+                            self.ue_network[self.num_of_ue_network].if_name =
+                                dev;
+                            self.num_of_ue_network++;
+                        }
+                        else
+                        {
+                            d_warn("Ignore pdn : addr(0x%x), bits(%d)",
+                                    addr, bits);
+                        }
+                    } while(yaml_iter_type(&pdn_array) == YAML_SEQUENCE_NODE);
+                }
+                else if (!strcmp(pgw_key, "dns"))
+                {
+                    int count = 0;
+                    yaml_iter_t dns_iter;
+                    yaml_iter_recurse(&pgw_iter, &dns_iter);
+                    d_assert(yaml_iter_type(&dns_iter) !=
+                        YAML_MAPPING_NODE, return CORE_ERROR,);
+
+                    do
+                    {
+                        const char *v = NULL;
+
+                        if (yaml_iter_type(&dns_iter) ==
+                                YAML_SEQUENCE_NODE)
+                        {
+                            if (!yaml_iter_next(&dns_iter))
+                                break;
+                        }
+
+                        v = yaml_iter_value(&dns_iter);
+                        if (v)
+                        {
+                            if (count == 0)
+                            {
+                                self.primary_dns_addr = inet_addr(v);
+                            }
+                            else if (count == 1)
+                            {
+                                self.secondary_dns_addr = inet_addr(v);
+                            }
+                            else
+                                d_warn("Ignored %d DNS(%s)", count, v);
+                        }
+
+                        count++;
+                    } while(
+                        yaml_iter_type(&dns_iter) ==
+                            YAML_SEQUENCE_NODE);
+                }
+                else if (!strcmp(pgw_key, "dns6"))
+                {
+                    int count = 0;
+                    yaml_iter_t dns6_iter;
+                    yaml_iter_recurse(&pgw_iter, &dns6_iter);
+                    d_assert(yaml_iter_type(&dns6_iter) !=
+                        YAML_MAPPING_NODE, return CORE_ERROR,);
+
+                    do
+                    {
+                        const char *v = NULL;
+
+                        if (yaml_iter_type(&dns6_iter) ==
+                                YAML_SEQUENCE_NODE)
+                        {
+                            if (!yaml_iter_next(&dns6_iter))
+                                break;
+                        }
+
+                        v = yaml_iter_value(&dns6_iter);
+                        if (v)
+                        {
+                            if (count == 0)
+                            {
+                            }
+                            else if (count == 1)
+                            {
+                            }
+                            else
+                                d_warn("Ignored %d DNS(%s)", count, v);
+                        }
+
+                        count++;
+                    } while(
+                        yaml_iter_type(&dns6_iter) ==
+                            YAML_SEQUENCE_NODE);
+                }
+                else
+                    d_warn("unknown key `%s`", pgw_key);
+
             }
         }
     }

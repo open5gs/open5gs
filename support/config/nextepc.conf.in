@@ -1,7 +1,7 @@
-db_uri: "mongodb://localhost/nextepc"
+db_uri: mongodb://localhost/nextepc
 
 logger:
-    file: "@LOCALSTATE_DIR@/log/nextepc/nextepc.log"
+    file: @LOCALSTATE_DIR@/log/nextepc/nextepc.log
     trace: 
         s1ap: 1
         nas: 1
@@ -19,24 +19,24 @@ parameter:
 #    prefer_ipv4: true
 
 mme:
-    freeDiameter: "mme.conf"
+    freeDiameter: mme.conf
 
     s1ap:
-      - hostname: "127.0.0.1"
-      - hostname: "::1"
+      - hostname: 127.0.0.1
+      - hostname: ::1
     gtpc:
-      - hostname: "127.0.0.1"
+      - hostname: 127.0.0.1
 
     gummei: 
       - plmn_id:
-          mcc: "001"
-          mnc: "01"
+          mcc: 001
+          mnc: 01
         mme_gid: 2
         mme_code: 1
     tai:
       - plmn_id:
-          mcc: "001"
-          mnc: "01"
+          mcc: 001
+          mnc: 01
         tac: 12345
 
     security:
@@ -44,26 +44,34 @@ mme:
         ciphering_order : [ EEA0, EEA1, EEA2 ]
 
 hss:
-    freeDiameter: "hss.conf"
+    freeDiameter: hss.conf
 
 sgw:
     gtpc:
-      - hostname: "127.0.0.2"
+      - hostname: 127.0.0.2
     gtpu:
-      - hostname: "127.0.0.2"
+      - hostname: 127.0.0.2
 
 pgw:
-    freeDiameter: "pgw.conf"
+    freeDiameter: pgw.conf
 
     gtpc:
-      - hostname: "127.0.0.3"
+      - hostname: 127.0.0.3
+
     gtpu:
-      - hostname: "127.0.0.3"
+      - hostname: 127.0.0.3
 
     pdn:
-      - pool: "45.45.0.1/16"
-        dns: ["8.8.8.8", "4.4.4.4"]
-#        interface: pgwtun
+      - addr: 45.45.0.1/16
+        dev: pgwtun
+
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+
+    dns6:
+      - 2001:4860:4860::8888
+      - 2001:4860:4860::8844
 
 pcrf:
     freeDiameter: "pcrf.conf"

@@ -1,0 +1,270 @@
+db_uri: mongodb://localhost/nextepc
+
+logger:
+    file: @LOCALSTATE_DIR@/log/nextepc/nextepc.log
+    trace: 
+        s1ap: 1
+        nas: 1
+        diameter: 1
+        gtp: 1
+        others: 1
+
+# 
+#  Disable use of IPv4 addresses (only IPv6)
+#    o Type : boolean
+#    o Default : IPv6 enabled
+#
+#  <Example>
+#    no_ipv4: true
+#
+#
+#  Disable use of IPv6 addresses (only IPv4)
+#    o Type : boolean
+#    o Default : IPv6 enabled
+#
+#  <Example>
+#    no_ipv6: true
+#
+#
+#  Prefer IPv4 instead of IPv6 for estabishing new GTP connections.
+#    o Type : boolean
+#    o Default : IPv6 is attempted first.
+#
+#  <Example>
+#    prefer_ipv4: true
+#
+#
+#  Disable load of EPC elements (Only applicable `nextepc-epcd`)
+#    o Type : boolean
+#    o Default : load all HSS/SGW/PGW/PCRF/MME element
+#
+#  <Example>
+#    no_hss: true
+#    no_sgw: true
+#    no_pgw: true
+#    no_pcrf: true
+#
+parameter:
+
+mme:
+    freeDiameter: mme.conf
+
+#
+#  Specify local addresses the S1AP server must bind to
+#    o 'family' Type : enum
+#      0  : AF_UNSPEC
+#      2  : AF_INET
+#      30 : AF_INET6
+#    o Default : liston on all address available
+#
+#  <Example>
+#
+#  o Single S1AP Server(0.0.0.0:36412)
+#    s1ap:
+#      - family: 2
+#
+#  o Multiple S1AP Server(127.0.0.1:36412, [::1]:36413)
+#    s1ap:
+#      - family: 2
+#        hostname: localhost
+#      - hostname: ::1
+#        port: 36413
+#
+    s1ap:
+
+    gtpc:
+      - family: 2
+        hostname: localhost
+      - family: 30
+        hostname: localhost
+
+#
+#  Specify GUMMEI
+#
+#  <Example>
+#
+#  o Multiple GUMMEI
+#    gummei: 
+#      - plmn_id:
+#          mcc: 001
+#          mnc: 01
+#        mme_gid: 2
+#        mme_code: 1
+#      - plmn_id:
+#          - mcc: 002
+#            mnc: 02
+#          - mcc: 003
+#            mnc: 03
+#        mme_gid: [3, 4]
+#        mme_code:
+#          - 2
+#          - 3
+#
+    gummei: 
+      plmn_id:
+        mcc: 001
+        mnc: 01
+      mme_gid: 2
+      mme_code: 1
+
+#
+#  Specify TAI
+#
+#  <Example>
+#
+#  o Multiple TAI
+#    tai:
+#      - plmn_id:
+#          mcc: 001
+#          mnc: 01
+#        tac: 12345
+#      - plmn_id:
+#          mcc: 002
+#          mnc: 02
+#        tac: 12346
+#
+    tai:
+      plmn_id:
+        mcc: 001
+        mnc: 01
+      tac: 12345
+
+    security:
+        integrity_order : [ EIA1, EIA2, EIA0 ]
+        ciphering_order : [ EEA0, EEA1, EEA2 ]
+
+hss:
+    freeDiameter: hss.conf
+
+sgw:
+    gtpc:
+      - hostname: 127.0.0.2
+      - hostname: ::2
+
+#
+#  Specify local addresses the GTP-U server must bind to
+#    o 'family' Type : enum
+#      0  : AF_UNSPEC
+#      2  : AF_INET
+#      30 : AF_INET6
+#    o Default : liston on all address available
+#
+#
+#  <Example>
+#
+#  o Multiple GTP-U Server([::]:2152)
+#    gtpu:
+#      - family: 30
+#
+#  o Multiple GTP-U Server(127.0.0.1:2153, [::1]:2152)
+#    gtpu:
+#      - family: 2
+#        hostname: localhost
+#        port: 2153
+#      - hostname: ::1
+#
+    gtpu:
+
+pgw:
+    freeDiameter: pgw.conf
+
+#
+#  ------------------------ MME --------------------------
+#
+#  Specify default PGW addresses the GTP-C must connect to
+#    o 'family' Type : enum
+#      0  : AF_UNSPEC
+#      2  : AF_INET
+#      30 : AF_INET6
+#    o Default : None
+#
+#  <NOTE>
+#    o only first address is attempted. Others are ignored.
+#    o if HSS provide PGW addresss(per-UE),
+#      it overwrites configuration.
+#
+#  <Example>
+#
+#  o 127.0.0.3:2123 is attempted. [::3]:2123 is ignored.
+#    gtpc:
+#      - hostname: 127.0.0.3
+#      - hostname: ::3
+#
+#  o [::3]:2123 is attempted. [127.0.0.3]:2123 is ignored.
+#    gtpc:
+#      - hostname: ::3
+#      - hostname: 127.0.0.3
+#
+#
+#  ------------------------ PGW --------------------------
+#
+#  Specify local addresses the GTP-C server must bind to
+#    o 'family' Type : enum
+#      0  : AF_UNSPEC
+#      2  : AF_INET
+#      30 : AF_INET6
+#    o Default : liston on all address available
+#
+#  <Example>
+#
+#  o Single GTP-C Server(127.0.0.3:2123)
+#    gtpu:
+#      hostname: 127.0.0.3
+#
+#  o Multiple GTP-C Server(127.0.0.3:2124, [::3]:2123)
+#    gtpu:
+#      - hostname: 127.0.0.3
+#        port: 2124
+#      - hostname: ::3
+#
+    gtpc:
+      - hostname: 127.0.0.3
+      - hostname: ::3
+
+    gtpu:
+      - hostname: 127.0.0.3
+      - hostname: ::3
+
+#
+#  Specify PDN network with UE IP pool
+#
+#  <Example>
+#
+#  o Multiple IPv4 Pool
+#    pdn:
+#      addr:
+#        - 45.45.0.1/16
+#        - 46.46.0.1/16
+#
+#  o Multiple Interface
+#    pdn:
+#      - addr: 45.45.0.1/16
+#        dev: pgwtun1
+#      - addr:
+#          - 46.46.0.1/16
+#          - 47.47.0.1/16
+#        dev: pgwtun2
+#
+#  o Pool allocated per-APN
+#    pdn:
+#      - addr: 45.45.0.1/16
+#        dev: pgwtun1
+#        apn : internet
+#      - addr:
+#          - 46.46.0.1/16
+#          - 47.47.0.1/16
+#        dev: pgwtun2
+#        apn : volte
+#
+    pdn:
+      addr: 45.45.0.1/16
+
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    dns6:
+      - 2001:4860:4860::8888
+      - 2001:4860:4860::8844
+
+pcrf:
+    freeDiameter: "pcrf.conf"
