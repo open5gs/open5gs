@@ -6,12 +6,13 @@
 #include "core_index.h"
 #include "core_timer.h"
 
-#include "gtp_path.h"
 #include "gtp_message.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
+
+typedef struct _gtp_node_t gtp_node_t;
 
 /**
  * Transaction context

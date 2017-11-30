@@ -1,10 +1,55 @@
 #define TRACE_MODULE _gtp_path
+
 #include "core_debug.h"
 #include "core_pkbuf.h"
 
 #include "types.h"
 #include "gtp_message.h"
+#include "gtp_node.h"
+
 #include "gtp_path.h"
+
+status_t gtp_server(sock_id *new, c_sockaddr_t *sa, sock_handler handler)
+{
+    status_t rv;
+    char buf[CORE_ADDRSTRLEN];
+
+    while(sa)
+    {
+        rv = udp_socket(new, sa->c_sa_family);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+        d_assert(sock_setsockopt(*new, SOCK_O_REUSEADDR, 1) == CORE_OK,
+                return CORE_ERROR,
+                "setsockopt(%s:%d) failed(%d:%s)",
+                CORE_ADDR(sa, buf), CORE_PORT(sa), errno, strerror(errno));
+
+        if (sock_bind(*new, sa) == CORE_OK)
+        {
+            d_trace(1, "udp bind %s:%d\n", CORE_ADDR(sa, buf), CORE_PORT(sa));
+            break;
+        }
+
+        rv = sock_delete(*new);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+        sa = sa->next;
+    }
+
+    if (sa == NULL)
+    {
+        d_error("udp bind(%s:%d) failed(%d:%s)",
+                CORE_ADDR(sa, buf), CORE_PORT(sa), errno, strerror(errno));
+        return CORE_ERROR;
+    }
+
+    rv = sock_register(*new, handler, NULL);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    d_trace(1, "gtp_server [%s]:%d\n", CORE_ADDR(sa, buf), CORE_PORT(sa));
+
+    return CORE_OK;
+}
 
 status_t gtp_listen(sock_id *sock, 
     sock_handler handler, c_uint32_t ipv4, c_uint16_t port, void *data)

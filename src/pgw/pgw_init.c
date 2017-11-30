@@ -3,8 +3,11 @@
 #include "core_debug.h"
 #include "core_thread.h"
 
+#include "gtp_xact.h"
+
 #include "pgw_context.h"
 #include "pgw_event.h"
+#include "pgw_sm.h"
 
 #include "pgw_fd_path.h"
 

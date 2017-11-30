@@ -16,6 +16,7 @@
 #include "nas_path.h"
 #include "s1ap_path.h"
 #include "mme_gtp_path.h"
+#include "mme_sm.h"
 
 void emm_state_initial(fsm_t *s, event_t *e)
 {

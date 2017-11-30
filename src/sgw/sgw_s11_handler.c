@@ -5,6 +5,7 @@
 
 #include "gtp_types.h"
 #include "gtp_conv.h"
+#include "gtp_node.h"
 
 #include "sgw_event.h"
 #include "sgw_context.h"

@@ -11,6 +11,8 @@
 
 #include "types.h"
 #include "gtp_types.h"
+#include "gtp_node.h"
+#include "gtp_xact.h"
 
 #include "context.h"
 #include "sgw_context.h"

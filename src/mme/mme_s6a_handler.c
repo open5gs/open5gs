@@ -6,6 +6,7 @@
 #include "nas_path.h"
 #include "s1ap_path.h"
 
+#include "mme_sm.h"
 #include "mme_s6a_handler.h"
 
 void mme_s6a_handle_aia(mme_ue_t *mme_ue, s6a_aia_message_t *aia_message)

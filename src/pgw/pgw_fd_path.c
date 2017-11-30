@@ -4,6 +4,8 @@
 #include "core_pool.h"
 #include "core_lib.h"
 
+#include "gtp_xact.h"
+
 #include "fd_lib.h"
 #include "gx_dict.h"
 #include "gx_message.h"

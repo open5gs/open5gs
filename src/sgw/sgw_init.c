@@ -3,7 +3,10 @@
 #include "core_debug.h"
 #include "core_thread.h"
 
+#include "gtp_xact.h"
+
 #include "sgw_context.h"
+#include "sgw_sm.h"
 #include "sgw_event.h"
 
 static thread_id sgw_thread;

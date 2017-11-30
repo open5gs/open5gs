@@ -3,24 +3,15 @@
 
 #include "core_pkbuf.h"
 #include "core_network.h"
-#include "core_list.h"
+
+typedef struct _gtp_node_t gtp_node_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
-/**
- * This structure represents the commonalities of GTP node such as MME, SGW,
- * PGW gateway. Some of members may not be used by the specific type of node */
-typedef struct _gtp_node_t {
-    lnode_t         node;           /**< A node of list_t */
-
-    c_sockaddr_t    old_addr;       /**< Will be removed */
-    sock_id         sock;           /**< Socket Descriptor */
-
-    list_t          local_list;    
-    list_t          remote_list;   
-} gtp_node_t;
+CORE_DECLARE(status_t) gtp_server(sock_id *new,
+        c_sockaddr_t *sa, sock_handler handler);
 
 CORE_DECLARE(status_t) gtp_listen(sock_id *sock, 
     sock_handler handler, c_uint32_t addr, c_uint16_t port, void *data);

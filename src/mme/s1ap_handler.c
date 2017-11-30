@@ -14,6 +14,8 @@
 #include "s1ap_build.h"
 #include "s1ap_handler.h"
 
+#include "mme_sm.h"
+
 void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
 {
     char buf[CORE_ADDRSTRLEN];

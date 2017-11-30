@@ -3,8 +3,10 @@
 
 #include "s1ap_message.h"
 #include "nas_message.h"
+#include "gtp_xact.h"
 
 #include "mme_event.h"
+#include "mme_sm.h"
 
 #include "s1ap_handler.h"
 #include "s1ap_path.h"

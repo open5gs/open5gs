@@ -4,8 +4,10 @@
 
 #include "gtp_types.h"
 #include "gtp_conv.h"
+#include "gtp_xact.h"
 
 #include "mme_event.h"
+#include "mme_sm.h"
 #include "mme_context.h"
 
 #include "s1ap_path.h"

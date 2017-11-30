@@ -2,6 +2,10 @@
 #include "core_debug.h"
 #include "core_pkbuf.h"
 
+#include "gtp_node.h"
+#include "gtp_path.h"
+#include "gtp_xact.h"
+
 #include "mme_event.h"
 #include "mme_gtp_path.h"
 #include "mme_s11_build.h"

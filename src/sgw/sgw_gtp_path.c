@@ -4,6 +4,7 @@
 
 #include "types.h"
 #include "gtp_types.h"
+#include "gtp_node.h"
 #include "gtp_path.h"
 
 #include "sgw_context.h"

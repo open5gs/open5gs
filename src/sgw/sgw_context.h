@@ -2,21 +2,23 @@
 #define __SGW_CONTEXT_H__
 
 #include "core_list.h"
+#include "core_index.h"
 #include "core_errno.h"
 #include "core_event.h"
 #include "core_hash.h"
+#include "core_network.h"
 
-#include "gtp_xact.h"
-#include "gtp_types.h"
 #include "types.h"
-
-#include "sgw_sm.h"
+#include "gtp_types.h"
+#include "gtp_message.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
 typedef struct _sgw_tunnel_t sgw_tunnel_t;
+
+typedef struct _gtp_node_t gtp_node_t;
 typedef gtp_node_t sgw_mme_t;
 typedef gtp_node_t sgw_pgw_t;
 

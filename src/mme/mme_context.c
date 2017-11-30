@@ -3,13 +3,16 @@
 #include "core_debug.h"
 #include "core_pool.h"
 #include "core_lib.h"
+#include "core_msgq.h"
+#include "core_fsm.h"
 
 #include <mongoc.h>
 #include <yaml.h>
 #include "yaml_helper.h"
 
-#include "gtp_path.h"
 #include "s1ap_message.h"
+#include "gtp_xact.h"
+#include "gtp_node.h"
 #include "fd_lib.h"
 
 #include "context.h"
@@ -17,12 +20,14 @@
 #include "mme_context.h"
 #include "mme_event.h"
 #include "s1ap_path.h"
+#include "mme_sm.h"
 
 #define MAX_CELL_PER_ENB            8
 
 static mme_context_t self;
 
 pool_declare(mme_s1ap_pool, mme_s1ap_t, MAX_NUM_OF_S1AP_SERVER);
+pool_declare(mme_gtpc_pool, mme_gtpc_t, MAX_NUM_OF_GTP_SERVER);
 pool_declare(mme_sgw_pool, mme_sgw_t, MAX_NUM_OF_GTP_CLIENT);
 
 index_declare(mme_enb_pool, mme_enb_t, MAX_NUM_OF_ENB);
@@ -43,6 +48,8 @@ status_t mme_context_init()
 
     pool_init(&mme_s1ap_pool, MAX_NUM_OF_S1AP_SERVER);
     list_init(&self.s1ap_list);
+    pool_init(&mme_gtpc_pool, MAX_NUM_OF_GTP_SERVER);
+    list_init(&self.gtpc_list);
     pool_init(&mme_sgw_pool, MAX_NUM_OF_GTP_CLIENT);
     list_init(&self.sgw_list);
 
@@ -73,6 +80,7 @@ status_t mme_context_final()
             "MME context already has been finalized");
 
     mme_s1ap_remove_all();
+    mme_gtpc_remove_all();
     
     mme_sgw_remove_all();
     mme_enb_remove_all();
@@ -102,6 +110,7 @@ status_t mme_context_final()
     pool_final(&mme_sgw_pool);
 
     pool_final(&mme_s1ap_pool);
+    pool_final(&mme_gtpc_pool);
 
     context_initialized = 0;
 
@@ -1097,6 +1106,59 @@ mme_s1ap_t* mme_s1ap_first()
 mme_s1ap_t* mme_s1ap_next(mme_s1ap_t *s1ap)
 {
     return list_next(s1ap);
+}
+
+mme_gtpc_t* mme_gtpc_add(c_sockaddr_t *addr)
+{
+    mme_gtpc_t *gtpc = NULL;
+
+    pool_alloc_node(&mme_gtpc_pool, &gtpc);
+    d_assert(gtpc, return NULL, "Null param");
+    memset(gtpc, 0, sizeof(mme_gtpc_t));
+
+    gtpc->addr = addr;
+
+    list_append(&self.gtpc_list, gtpc);
+    
+    return gtpc;
+}
+
+status_t mme_gtpc_remove(mme_gtpc_t *gtpc)
+{
+    d_assert(gtpc, return CORE_ERROR, "Null param");
+
+    list_remove(&self.gtpc_list, gtpc);
+
+    pool_free_node(&mme_gtpc_pool, gtpc);
+
+    return CORE_OK;
+}
+
+status_t mme_gtpc_remove_all()
+{
+    mme_gtpc_t *gtpc = NULL, *next_gtpc = NULL;
+    
+    gtpc = mme_gtpc_first();
+    while (gtpc)
+    {
+        next_gtpc = mme_gtpc_next(gtpc);
+
+        mme_gtpc_remove(gtpc);
+
+        gtpc = next_gtpc;
+    }
+
+    return CORE_OK;
+}
+
+mme_gtpc_t* mme_gtpc_first()
+{
+    return list_first(&self.gtpc_list);
+}
+
+mme_gtpc_t* mme_gtpc_next(mme_gtpc_t *gtpc)
+{
+    return list_next(gtpc);
 }
 
 mme_sgw_t* mme_sgw_add()

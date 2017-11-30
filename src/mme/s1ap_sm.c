@@ -5,10 +5,11 @@
 #include "nas_message.h"
 #include "gtp_message.h"
 
-#include "mme_event.h"
-
 #include "s1ap_build.h"
 #include "s1ap_handler.h"
+
+#include "mme_event.h"
+#include "mme_sm.h"
 
 void s1ap_state_initial(fsm_t *s, event_t *e)
 {

@@ -3,6 +3,7 @@
 
 #include "sgw_context.h"
 #include "sgw_event.h"
+#include "sgw_sm.h"
 #include "sgw_gtp_path.h"
 #include "sgw_s11_handler.h"
 #include "sgw_s5c_handler.h"

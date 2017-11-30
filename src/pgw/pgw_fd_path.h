@@ -9,6 +9,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
+typedef struct _gtp_xact_t gtp_xact_t;
+
 CORE_DECLARE(int) pgw_fd_init(void);
 CORE_DECLARE(void) pgw_fd_final(void);
 

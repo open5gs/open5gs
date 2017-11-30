@@ -2,11 +2,17 @@
 
 #include "core_debug.h"
 #include "core_thread.h"
+#include "core_msgq.h"
+#include "core_fsm.h"
+
+#include "gtp_xact.h"
 
 #include "mme_event.h"
 
 #include "mme_fd_path.h"
 #include "s1ap_path.h"
+
+#include "mme_sm.h"
 
 static thread_id sm_thread;
 static void *THREAD_FUNC sm_main(thread_id id, void *data);

@@ -7,6 +7,7 @@
 
 #include "nas_security.h"
 #include "esm_build.h"
+#include "mme_sm.h"
 
 status_t esm_build_pdn_connectivity_reject(
         pkbuf_t **pkbuf, mme_sess_t *sess, nas_esm_cause_t esm_cause)

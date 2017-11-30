@@ -2,13 +2,15 @@
 #define __PGW_CONTEXT_H__
 
 #include "core_list.h"
+#include "core_index.h"
 #include "core_errno.h"
 #include "core_hash.h"
+#include "core_network.h"
+#include "core_msgq.h"
+#include "core_timer.h"
 
 #include "gtp_types.h"
-#include "gtp_xact.h"
-
-#include "pgw_sm.h"
+#include "gtp_message.h"
 
 #define MAX_NUM_OF_UE_NETWORK 16
 
@@ -16,6 +18,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
+typedef struct _gtp_node_t gtp_node_t;
 typedef gtp_node_t pgw_sgw_t;
 
 typedef struct _pgw_context_t {

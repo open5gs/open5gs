@@ -7,6 +7,7 @@
 #include "emm_build.h"
 #include "nas_path.h"
 #include "mme_event.h"
+#include "mme_sm.h"
 
 status_t nas_send_to_enb(mme_ue_t *mme_ue, pkbuf_t *pkbuf)
 {

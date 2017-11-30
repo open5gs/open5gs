@@ -8,9 +8,11 @@
 #include <yaml.h>
 #include "yaml_helper.h"
 
+#include "gtp_node.h"
+#include "gtp_path.h"
+#include "gtp_xact.h"
 
 #include "fd_lib.h"
-#include "gtp_path.h"
 
 #include "context.h"
 #include "pgw_context.h"

@@ -4,8 +4,11 @@
 #include "core_event.h"
 
 #include "types.h"
-#include "gtp_xact.h"
 #include "gtp_message.h"
+#include "gtp_node.h"
+#include "gtp_path.h"
+
+#include "gtp_xact.h"
 
 #define SIZE_OF_GTP_XACT_POOL       64
 #define GTP_MIN_XACT_ID             1
