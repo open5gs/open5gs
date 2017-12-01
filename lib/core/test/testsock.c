@@ -13,21 +13,34 @@
 static void sock_test1(abts_case *tc, void *data)
 {
     sock_id udp;
+    c_sockaddr_t *addr;
     status_t rv;
 
-    rv = udp_server(&udp, AF_UNSPEC, NULL, PORT);
+    rv = core_getaddrinfo(&addr, AF_UNSPEC, NULL, PORT, AI_PASSIVE);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = udp_server(&udp, addr);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = core_freeaddrinfo(addr);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     
     rv = sock_delete(udp);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    rv = udp_server(&udp, AF_UNSPEC, "127.0.0.1", PORT);
+    rv = core_getaddrinfo(&addr, AF_UNSPEC, "127.0.0.1", PORT, AI_PASSIVE);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = udp_server(&udp, addr);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = core_freeaddrinfo(addr);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     
     rv = sock_delete(udp);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    rv = udp_server(&udp, AF_UNSPEC, "::1", PORT);
+    rv = core_getaddrinfo(&addr, AF_UNSPEC, "::1", PORT, AI_PASSIVE);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = udp_server(&udp, addr);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = core_freeaddrinfo(addr);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     
     rv = sock_delete(udp);
@@ -40,10 +53,15 @@ static void *THREAD_FUNC test2_main(thread_id id, void *data)
     abts_case *tc = data;
     status_t rv;
     sock_id tcp;
+    c_sockaddr_t *addr;
     char str[STRLEN];
     ssize_t size;
 
-    rv = tcp_client(&tcp, AF_UNSPEC, "::1", PORT);
+    rv = core_getaddrinfo(&addr, AF_UNSPEC, "::1", PORT, AI_PASSIVE);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tcp_client(&tcp, addr);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = core_freeaddrinfo(addr);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     size = core_recv(tcp, str, STRLEN, 0);
@@ -60,9 +78,14 @@ static void sock_test2(abts_case *tc, void *data)
 {
     status_t rv;
     sock_id tcp, tcp2;
+    c_sockaddr_t *addr;
     ssize_t size;
 
-    rv = tcp_server(&tcp, AF_INET6, NULL, PORT);
+    rv = core_getaddrinfo(&addr, AF_INET6, NULL, PORT, AI_PASSIVE);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tcp_server(&tcp, addr);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = core_freeaddrinfo(addr);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     rv = thread_create(&test2_thread, NULL, test2_main, tc);
@@ -120,12 +143,16 @@ static void sock_test3(abts_case *tc, void *data)
     sock_id udp;
     status_t rv;
     ssize_t size;
-    c_sockaddr_t sa;
+    c_sockaddr_t sa, *addr;
     socklen_t addrlen;
     char str[STRLEN];
     char buf[CORE_ADDRSTRLEN];
 
-    rv = udp_server(&udp, AF_INET, NULL, PORT);
+    rv = core_getaddrinfo(&addr, AF_INET, NULL, PORT, AI_PASSIVE);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = udp_server(&udp, addr);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = core_freeaddrinfo(addr);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     rv = thread_create(&test3_thread, NULL, test3_main, tc);
@@ -148,10 +175,15 @@ static void *THREAD_FUNC test4_main(thread_id id, void *data)
     abts_case *tc = data;
     status_t rv;
     sock_id udp;
+    c_sockaddr_t *addr;
     char str[STRLEN];
     ssize_t size;
 
-    rv = udp_client(&udp, AF_INET, NULL, PORT);
+    rv = core_getaddrinfo(&addr, AF_INET, NULL, PORT, 0);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = udp_client(&udp, addr);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = core_freeaddrinfo(addr);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     size = core_send(udp, DATASTR, strlen(DATASTR), 0);
@@ -172,12 +204,16 @@ static void sock_test4(abts_case *tc, void *data)
     sock_id udp;
     status_t rv;
     ssize_t size;
-    c_sockaddr_t sa;
+    c_sockaddr_t sa, *addr;
     socklen_t addrlen;
     char str[STRLEN];
     char buf[CORE_ADDRSTRLEN];
 
-    rv = udp_server(&udp, AF_INET, NULL, PORT);
+    rv = core_getaddrinfo(&addr, AF_INET, NULL, PORT, AI_PASSIVE);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = udp_server(&udp, addr);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = core_freeaddrinfo(addr);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     rv = thread_create(&test4_thread, NULL, test4_main, tc);
@@ -203,13 +239,22 @@ static void *THREAD_FUNC test5_main(thread_id id, void *data)
     abts_case *tc = data;
     status_t rv;
     sock_id udp;
+    c_sockaddr_t *addr;
     char str[STRLEN];
     ssize_t size;
 
-    rv = udp_server(&udp, AF_INET6, NULL, PORT2);
+    rv = core_getaddrinfo(&addr, AF_INET6, NULL, PORT2, AI_PASSIVE);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = udp_server(&udp, addr);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = core_freeaddrinfo(addr);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    rv = udp_connect(udp, NULL, PORT);
+    rv = core_getaddrinfo(&addr, AF_INET6, NULL, PORT, 0);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = udp_connect(udp, addr);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = core_freeaddrinfo(addr);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     size = core_send(udp, DATASTR, strlen(DATASTR), 0);
@@ -230,15 +275,23 @@ static void sock_test5(abts_case *tc, void *data)
     sock_id udp;
     status_t rv;
     ssize_t size;
-    c_sockaddr_t sa;
+    c_sockaddr_t sa, *addr;
     socklen_t addrlen;
     char str[STRLEN];
     char buf[CORE_ADDRSTRLEN];
 
-    rv = udp_server(&udp, AF_INET6, NULL, PORT);
+    rv = core_getaddrinfo(&addr, AF_INET6, NULL, PORT, AI_PASSIVE);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = udp_server(&udp, addr);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = core_freeaddrinfo(addr);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    rv = udp_connect(udp, NULL, PORT2);
+    rv = core_getaddrinfo(&addr, AF_INET6, NULL, PORT2, 0);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = udp_connect(udp, addr);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = core_freeaddrinfo(addr);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     rv = thread_create(&test5_thread, NULL, test5_main, tc);

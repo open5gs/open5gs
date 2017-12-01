@@ -3,50 +3,45 @@
 #include "core_debug.h"
 #include "core_arch_network.h"
 
-status_t tcp_server(sock_id *new,
-        int family, const char *hostname, c_uint16_t port)
+status_t tcp_server(sock_id *new, c_sockaddr_t *addr)
 {
     status_t rv;
-    c_sockaddr_t *sa;
-    sock_t *sock = NULL;
+    c_sockaddr_t *iter;
     char buf[CORE_ADDRSTRLEN];
 
-    rv = core_getaddrinfo(&sa, family, hostname, port, AI_PASSIVE);
-    d_assert(rv == CORE_OK && sa, return CORE_ERROR,);
+    d_assert(new, return CORE_ERROR,);
+    d_assert(addr, return CORE_ERROR,);
 
-    while(sa)
+    iter = addr;
+    while(iter)
     {
-        rv = sock_socket(new, sa->c_sa_family, SOCK_STREAM, IPPROTO_TCP);
+        rv = sock_socket(new, iter->c_sa_family, SOCK_STREAM, IPPROTO_TCP);
         if (rv != CORE_OK) continue;
         
-        sock = (sock_t *)*new;
-
         d_assert(sock_setsockopt(*new, SOCK_O_REUSEADDR, 1) == CORE_OK,
                 return CORE_ERROR,
-                "setsockopt(%s:%d) failed(%d:%s)",
-                CORE_ADDR(sa, buf), port, errno, strerror(errno));
+                "setsockopt [%s]:%d failed(%d:%s)",
+                CORE_ADDR(iter, buf), CORE_PORT(iter), errno, strerror(errno));
 
-        if (sock_bind(*new, sa) == CORE_OK)
+        if (sock_bind(*new, iter) == CORE_OK)
         {
-            d_trace(1, "tcp bind %s:%d\n", CORE_ADDR(sa, buf), port);
+            d_trace(1, "tcp_server() [%s]:%d\n",
+                    CORE_ADDR(iter, buf), CORE_PORT(iter));
             break;
         }
 
         rv = sock_delete(*new);
         d_assert(rv == CORE_OK, return CORE_ERROR,);
 
-        sa = sa->next;
+        iter = iter->next;
     }
 
-    if (sa == NULL)
+    if (iter == NULL)
     {
-        d_error("tcp bind(%d:%s:%d) failed(%d:%s)",
-                sock->family, hostname, port, errno, strerror(errno));
+        d_error("tcp_server() [%s]:%d failed(%d:%s)",
+                CORE_ADDR(addr, buf), CORE_PORT(addr), errno, strerror(errno));
         return CORE_ERROR;
     }
-
-    rv = core_freeaddrinfo(sa);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
 
     rv = sock_listen(*new);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
@@ -54,45 +49,40 @@ status_t tcp_server(sock_id *new,
     return CORE_OK;
 }
 
-status_t tcp_client(sock_id *new,
-        int family, const char *hostname, c_uint16_t port)
+status_t tcp_client(sock_id *new, c_sockaddr_t *addr)
 {
     status_t rv;
-    c_sockaddr_t *sa;
-    sock_t *sock = NULL;
+    c_sockaddr_t *iter;
     char buf[CORE_ADDRSTRLEN];
 
-    rv = core_getaddrinfo(&sa, family, hostname, port, 0);
-    d_assert(rv == CORE_OK && sa, return CORE_ERROR,);
+    d_assert(new, return CORE_ERROR,);
+    d_assert(addr, return CORE_ERROR,);
 
-    while(sa)
+    iter = addr;
+    while(iter)
     {
-        rv = sock_socket(new, sa->c_sa_family, SOCK_STREAM, IPPROTO_TCP);
+        rv = sock_socket(new, iter->c_sa_family, SOCK_STREAM, IPPROTO_TCP);
         if (rv != CORE_OK) continue;
         
-        sock = (sock_t *)*new;
-
-        if (sock_connect(*new, sa) == CORE_OK)
+        if (sock_connect(*new, iter) == CORE_OK)
         {
-            d_trace(1, "tcp connect %s:%d\n", CORE_ADDR(sa, buf), port);
+            d_trace(1, "tcp_client() [%s]:%d\n",
+                    CORE_ADDR(iter, buf), CORE_PORT(iter));
             break;
         }
 
         rv = sock_delete(*new);
         d_assert(rv == CORE_OK, return CORE_ERROR,);
 
-        sa = sa->next;
+        iter = iter->next;
     }
 
-    if (sa == NULL)
+    if (iter == NULL)
     {
-        d_error("tcp connect(%d:%s:%d) failed(%d:%s)",
-                sock->family, hostname, port, errno, strerror(errno));
+        d_error("tcp_client() [%s]:%d failed(%d:%s)",
+                CORE_ADDR(addr, buf), CORE_PORT(addr), errno, strerror(errno));
         return CORE_ERROR;
     }
-
-    rv = core_freeaddrinfo(sa);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
 
     return CORE_OK;
 }
