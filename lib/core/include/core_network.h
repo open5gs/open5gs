@@ -3,6 +3,7 @@
 
 #include "core_errno.h"
 #include "core_time.h"
+#include "core_list.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -63,7 +64,7 @@ typedef int (*sock_handler)(sock_id sock, void *data);
 typedef struct c_sockaddr_t c_sockaddr_t;
 struct c_sockaddr_t {
     /* Reserved Area
-     *   - should not add any atrribute in here
+     *   - Should not add any atrribute in this area.
      *
      *   e.g) 
      *   struct sockaddr sa;
@@ -80,23 +81,33 @@ struct c_sockaddr_t {
     };
 
     /* User Area
-     *   - Add your attribute 
+     *   - Could add your attribute.
      */
     c_sockaddr_t *next;
 };
 
+typedef list_t c_socklist_t;
+
+typedef struct _c_socknode_t {
+    lnode_t node;
+    c_sockaddr_t *addr;
+} c_socknode_t;
+
+/*
+ * Init/Final
+ */
+CORE_DECLARE(status_t) network_init(void);
+CORE_DECLARE(status_t) network_final(void);
 
 /*
  * Socket
  */
-CORE_DECLARE(status_t) sock_init(void);
-CORE_DECLARE(status_t) sock_final(void);
-
 CORE_DECLARE(status_t) sock_create(sock_id *new);
 CORE_DECLARE(status_t) sock_delete(sock_id id);
 
 CORE_DECLARE(status_t) sock_socket(
         sock_id *id, int family, int type, int protocol);
+CORE_DECLARE(status_t) sock_setsockopt(sock_id id, c_int32_t opt, c_int32_t on);
 CORE_DECLARE(status_t) sock_bind(sock_id id, c_sockaddr_t *sa);
 CORE_DECLARE(status_t) sock_connect(sock_id id, c_sockaddr_t *sa);
 
@@ -106,6 +117,34 @@ CORE_DECLARE(status_t) sock_accept(sock_id *new, sock_id id);
 CORE_DECLARE(int) sock_family(sock_id id);
 CORE_DECLARE(c_sockaddr_t *) sock_local_addr(sock_id id);
 CORE_DECLARE(c_sockaddr_t *) sock_remote_addr(sock_id id);
+
+/*
+ * Socket Address
+ */
+CORE_DECLARE(status_t) sockaddr_init(void);
+CORE_DECLARE(status_t) sockaddr_final(void);
+
+CORE_DECLARE(c_socknode_t *) socknode_add(c_socklist_t *list,
+    int family, const char *hostname, c_uint16_t port, int flags);
+CORE_DECLARE(status_t) socknode_remove(c_socklist_t *list, c_socknode_t *node);
+CORE_DECLARE(status_t) socknode_remove_all(c_socklist_t *list);
+
+CORE_DECLARE(socklen_t) sockaddr_len(const void *sa);
+CORE_DECLARE(int) sockaddr_is_equal(void *p, void *q);
+
+CORE_DECLARE(status_t) core_getifaddrs(c_sockaddr_t **sa);
+CORE_DECLARE(status_t) core_getaddrinfo(c_sockaddr_t **sa, 
+        int family, const char *hostname, c_uint16_t port, int flags);
+CORE_DECLARE(status_t) core_freeaddrinfo(c_sockaddr_t *sa);
+
+#define CORE_ADDRSTRLEN INET6_ADDRSTRLEN
+#define CORE_ADDR(__aDDR, __bUF) \
+    core_inet_ntop(__aDDR, buf, CORE_ADDRSTRLEN)
+#define CORE_PORT(__aDDR) \
+    ntohs((__aDDR)->c_sa_port)
+CORE_DECLARE(const char *)core_inet_ntop(void *sa, char *buf, int buflen);
+CORE_DECLARE(status_t) core_inet_pton(int family, const char *src, void *sa);
+
 
 /*
  * UDP Socket
@@ -171,27 +210,6 @@ CORE_DECLARE(status_t) sock_register(sock_id id,
 CORE_DECLARE(status_t) sock_unregister(sock_id id);
 CORE_DECLARE(int) sock_is_registered(sock_id id);
 CORE_DECLARE(int) sock_select_loop(c_time_t timeout);
-
-/*
- * Misc.
- */
-CORE_DECLARE(status_t) sock_setsockopt(sock_id id, c_int32_t opt, c_int32_t on);
-
-CORE_DECLARE(status_t) core_getifaddrs(c_sockaddr_t **sa);
-CORE_DECLARE(status_t) core_getaddrinfo(c_sockaddr_t **sa, 
-        int family, const char *hostname, c_uint16_t port, int flags);
-CORE_DECLARE(status_t) core_freeaddrinfo(c_sockaddr_t *sa);
-
-#define CORE_ADDRSTRLEN INET6_ADDRSTRLEN
-#define CORE_ADDR(__aDDR, __bUF) \
-    core_inet_ntop(__aDDR, buf, CORE_ADDRSTRLEN)
-#define CORE_PORT(__aDDR) \
-    ntohs((__aDDR)->c_sa_port)
-CORE_DECLARE(const char *)core_inet_ntop(void *sa, char *buf, int buflen);
-CORE_DECLARE(status_t) core_inet_pton(int family, const char *src, void *sa);
-
-CORE_DECLARE(socklen_t) sockaddr_len(const void *sa);
-CORE_DECLARE(int) sockaddr_is_equal(void *p, void *q);
 
 #ifdef __cplusplus
 }

@@ -45,7 +45,7 @@ status_t core_initialize(void)
     rwlock_init();
     atomic_init();
     thread_init();
-    sock_init();
+    network_init();
     file_init();
     pkbuf_init();
     tlv_init();
@@ -69,7 +69,7 @@ void core_terminate(void)
     tlv_final();
     pkbuf_final();
     file_final();
-    sock_final();
+    network_final();
     thread_final();
     atomic_final();
     rwlock_final();

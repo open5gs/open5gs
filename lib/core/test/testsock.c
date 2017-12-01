@@ -260,18 +260,6 @@ static void sock_test5(abts_case *tc, void *data)
 
 static void sock_test6(abts_case *tc, void *data)
 {
-    c_sockaddr_t *sa;
-    status_t rv;
-
-    rv = core_getaddrinfo(&sa, AF_UNSPEC, NULL, PORT, 0);
-    ABTS_INT_EQUAL(tc, CORE_OK, rv);
-
-    rv = core_freeaddrinfo(sa);
-    ABTS_INT_EQUAL(tc, CORE_OK, rv);
-}
-
-static void sock_test7(abts_case *tc, void *data)
-{
     c_sockaddr_t sa;
     char buf[CORE_ADDRSTRLEN];
     status_t rv;
@@ -285,16 +273,60 @@ static void sock_test7(abts_case *tc, void *data)
     ABTS_STR_EQUAL(tc, "::1", CORE_ADDR(&sa, buf));
 }
 
-static void sock_test8(abts_case *tc, void *data)
+static void sock_test7(abts_case *tc, void *data)
 {
-    c_sockaddr_t *sa, *iter;
+    c_sockaddr_t *sa;
     status_t rv;
+
+    rv = core_getaddrinfo(&sa, AF_UNSPEC, NULL, PORT, 0);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    rv = core_freeaddrinfo(sa);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     rv = core_getifaddrs(&sa);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     rv = core_freeaddrinfo(sa);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
+}
+
+static void sock_test8(abts_case *tc, void *data)
+{
+    c_socknode_t *node;
+    c_sockaddr_t *addr;
+    list_t list;
+    char buf[CORE_ADDRSTRLEN];
+
+    list_init(&list);
+    node = socknode_add(&list, AF_UNSPEC, NULL, PORT, 0);
+    ABTS_PTR_NOTNULL(tc, node);
+    node = socknode_add(&list, AF_UNSPEC, NULL, PORT, 1);
+    ABTS_PTR_NOTNULL(tc, node);
+
+    node = list_first(&list);
+    ABTS_PTR_NOTNULL(tc, node);
+    addr = node->addr;
+    ABTS_PTR_NOTNULL(tc, addr);
+    ABTS_STR_EQUAL(tc, "::1", CORE_ADDR(addr, buf));
+    ABTS_INT_EQUAL(tc, PORT, CORE_PORT(addr));
+    addr = addr->next;
+    ABTS_PTR_NOTNULL(tc, addr);
+    ABTS_STR_EQUAL(tc, "127.0.0.1", CORE_ADDR(addr, buf));
+    ABTS_INT_EQUAL(tc, PORT, CORE_PORT(addr));
+
+    node = list_next(node);
+    ABTS_PTR_NOTNULL(tc, node);
+    addr = node->addr;
+    ABTS_PTR_NOTNULL(tc, addr);
+    ABTS_STR_EQUAL(tc, "0.0.0.0", CORE_ADDR(addr, buf));
+    ABTS_INT_EQUAL(tc, PORT, CORE_PORT(addr));
+    addr = addr->next;
+    ABTS_PTR_NOTNULL(tc, addr);
+    ABTS_STR_EQUAL(tc, "::", CORE_ADDR(addr, buf));
+    ABTS_INT_EQUAL(tc, PORT, CORE_PORT(addr));
+
+    socknode_remove_all(&list);
 }
 
 abts_suite *testsock(abts_suite *suite)
