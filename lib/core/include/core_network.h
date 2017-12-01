@@ -88,8 +88,14 @@ struct c_sockaddr_t {
 
 typedef list_t c_socklist_t;
 
+#define SOCKNODE_TYPE_NONE          0
+#define SOCKNODE_TYPE_IPV4          1
+#define SOCKNODE_TYPE_IPV6          2
+#define SOCKNODE_TYPE_IPV4_AND_IPV6 3
 typedef struct _c_socknode_t {
     lnode_t node;
+
+    int type;
     c_sockaddr_t *addr;
 } c_socknode_t;
 
@@ -125,9 +131,11 @@ CORE_DECLARE(status_t) sockaddr_init(void);
 CORE_DECLARE(status_t) sockaddr_final(void);
 
 CORE_DECLARE(c_socknode_t *) socknode_add(c_socklist_t *list,
-    int family, const char *hostname, c_uint16_t port, int flags);
+        int family, const char *hostname, c_uint16_t port, int flags);
 CORE_DECLARE(status_t) socknode_remove(c_socklist_t *list, c_socknode_t *node);
 CORE_DECLARE(status_t) socknode_remove_all(c_socklist_t *list);
+CORE_DECLARE(status_t) socknode_getifaddrs_to_list(
+        c_socklist_t *list, c_uint16_t port);
 
 CORE_DECLARE(socklen_t) sockaddr_len(const void *sa);
 CORE_DECLARE(int) sockaddr_is_equal(void *p, void *q);
