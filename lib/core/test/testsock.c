@@ -301,7 +301,6 @@ static void sock_test7(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, addr);
     ABTS_STR_EQUAL(tc, "::1", CORE_ADDR(addr, buf));
     ABTS_INT_EQUAL(tc, PORT, CORE_PORT(addr));
-    ABTS_INT_EQUAL(tc, SOCKNODE_TYPE_IPV6, node->type);
 
     node = list_next(node);
     ABTS_PTR_NOTNULL(tc, node);
@@ -309,14 +308,12 @@ static void sock_test7(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, addr);
     ABTS_STR_EQUAL(tc, "0.0.0.0", CORE_ADDR(addr, buf));
     ABTS_INT_EQUAL(tc, PORT, CORE_PORT(addr));
-    ABTS_INT_EQUAL(tc, SOCKNODE_TYPE_IPV4, node->type);
 
     node = list_next(node);
     ABTS_PTR_NOTNULL(tc, node);
     addr = node->addr;
     ABTS_PTR_NOTNULL(tc, addr);
     ABTS_INT_EQUAL(tc, PORT, CORE_PORT(addr));
-    ABTS_INT_EQUAL(tc, SOCKNODE_TYPE_IPV4_AND_IPV6, node->type);
 
     rv = socknode_getifaddrs_to_list(&list, PORT);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);

@@ -292,7 +292,7 @@ c_sockaddr_t *sock_remote_addr(sock_id id)
  * Socket Address
  */
 static c_socknode_t *socknode_add_internal(
-        c_socklist_t *list, int type, c_sockaddr_t *addr)
+        c_socklist_t *list, c_sockaddr_t *addr)
 {
     c_socknode_t *node = NULL;
 
@@ -300,7 +300,6 @@ static c_socknode_t *socknode_add_internal(
     d_assert(node, return NULL,);
     memset(node, 0, sizeof(c_socknode_t));
 
-    node->type = type;
     node->addr = addr;
 
     list_append(list, node);
@@ -312,13 +311,7 @@ c_socknode_t *socknode_add(c_socklist_t *list,
     int family, const char *hostname, c_uint16_t port, int flags)
 {
     status_t rv;
-
     c_sockaddr_t *addr = NULL;
-    int type = 0;
-
-    c_sockaddr_t *iter = NULL;
-    int ipv4 = 0;
-    int ipv6 = 0;
 
     rv = core_getaddrinfo(&addr, family, hostname, port, flags);
     if (rv != CORE_OK)
@@ -329,25 +322,8 @@ c_socknode_t *socknode_add(c_socklist_t *list,
     }
 
     d_assert(addr, return NULL,);
-    iter = addr;
-    while(iter)
-    {
-        if (iter->c_sa_family == AF_INET) ipv4 = 1;
-        else if (iter->c_sa_family == AF_INET6) ipv6 = 1;
-        else
-            d_assert(0, return NULL, "family = %d\n", iter->c_sa_family);
 
-        iter = iter->next;
-    }
-    d_assert(ipv4 || ipv6, return NULL,);
-
-    if (ipv4 && ipv6) type = SOCKNODE_TYPE_IPV4_AND_IPV6;
-    else if (ipv4) type = SOCKNODE_TYPE_IPV4;
-    else if (ipv6) type = SOCKNODE_TYPE_IPV6;
-    else
-        d_assert(0, return NULL,);
-
-    return socknode_add_internal(list, type, addr);
+    return socknode_add_internal(list, addr);
 }
 
 status_t socknode_remove(c_socklist_t *list, c_socknode_t *node)
@@ -392,18 +368,12 @@ status_t socknode_getifaddrs_to_list(c_socklist_t *list, c_uint16_t port)
 
 	for (cur = iflist; cur != NULL; cur = cur->ifa_next)
     {
-        c_sockaddr_t *ptr;
-
         c_sockaddr_t *addr = NULL;
-        int type = 0;
-
-        int ipv4 = 0;
-        int ipv6 = 0;
 
 		if (cur->ifa_addr == NULL) /* may happen with ppp interfaces */
 			continue;
 
-        ptr = (c_sockaddr_t *)cur->ifa_addr;
+        addr = (c_sockaddr_t *)cur->ifa_addr;
         if (cur->ifa_addr->sa_family == AF_INET)
         {
 #ifndef IN_IS_ADDR_LOOPBACK
@@ -416,38 +386,28 @@ status_t socknode_getifaddrs_to_list(c_socklist_t *list, c_uint16_t port)
 #define IN_IS_ADDR_UNSPECIFIED(a) \
   (((long int) (a)->s_addr) == 0x00000000)
 #endif /* IN_IS_ADDR_UNSPECIFIED */
-            if (IN_IS_ADDR_UNSPECIFIED(&ptr->sin.sin_addr) ||
-                IN_IS_ADDR_LOOPBACK(&ptr->sin.sin_addr))
+            if (IN_IS_ADDR_UNSPECIFIED(&addr->sin.sin_addr) ||
+                IN_IS_ADDR_LOOPBACK(&addr->sin.sin_addr))
                 continue;
-            ipv4 = 1;
         }
         else if (cur->ifa_addr->sa_family == AF_INET6)
         {
-            if (IN6_IS_ADDR_UNSPECIFIED(&ptr->sin6.sin6_addr) ||
-                IN6_IS_ADDR_LOOPBACK(&ptr->sin6.sin6_addr) ||
-                IN6_IS_ADDR_MULTICAST(&ptr->sin6.sin6_addr) ||
-                IN6_IS_ADDR_LINKLOCAL(&ptr->sin6.sin6_addr) ||
-                IN6_IS_ADDR_SITELOCAL(&ptr->sin6.sin6_addr))
+            if (IN6_IS_ADDR_UNSPECIFIED(&addr->sin6.sin6_addr) ||
+                IN6_IS_ADDR_LOOPBACK(&addr->sin6.sin6_addr) ||
+                IN6_IS_ADDR_MULTICAST(&addr->sin6.sin6_addr) ||
+                IN6_IS_ADDR_LINKLOCAL(&addr->sin6.sin6_addr) ||
+                IN6_IS_ADDR_SITELOCAL(&addr->sin6.sin6_addr))
                 continue;
-            ipv6 = 1;
         }
         else
             continue;
-
-        d_assert(ipv4 || ipv6, return CORE_ERROR,);
-
-        if (ipv4 && ipv6) type = SOCKNODE_TYPE_IPV4_AND_IPV6;
-        else if (ipv4) type = SOCKNODE_TYPE_IPV4;
-        else if (ipv6) type = SOCKNODE_TYPE_IPV6;
-        else
-            d_assert(0, return CORE_ERROR,);
 
         addr = core_calloc(1, sizeof(c_sockaddr_t));
         d_assert(addr, return CORE_ERROR,);
         memcpy(&addr->sa, cur->ifa_addr, sockaddr_len(cur->ifa_addr));
         addr->c_sa_port = htons(port);
 
-        d_assert(socknode_add_internal(list, type, addr), return CORE_ERROR,);
+        d_assert(socknode_add_internal(list, addr), return CORE_ERROR,);
 	}
 
 	freeifaddrs(iflist);
