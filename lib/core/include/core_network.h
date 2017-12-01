@@ -153,15 +153,15 @@ CORE_DECLARE(status_t) core_inet_pton(int family, const char *src, void *sa);
  * UDP Socket
  */
 CORE_DECLARE(status_t) udp_socket(sock_id *new, int family);
-CORE_DECLARE(status_t) udp_server(sock_id *new, c_sockaddr_t *addr);
-CORE_DECLARE(status_t) udp_client(sock_id *new, c_sockaddr_t *addr);
-CORE_DECLARE(status_t) udp_connect(sock_id id, c_sockaddr_t *addr);
+CORE_DECLARE(status_t) udp_server(sock_id *new, c_sockaddr_t *sa_list);
+CORE_DECLARE(status_t) udp_client(sock_id *new, c_sockaddr_t *sa_list);
+CORE_DECLARE(status_t) udp_connect(sock_id id, c_sockaddr_t *sa_list);
 
 /*
  * TCP Socket
  */
-CORE_DECLARE(status_t) tcp_server(sock_id *new, c_sockaddr_t *addr);
-CORE_DECLARE(status_t) tcp_client(sock_id *new, c_sockaddr_t *addr);
+CORE_DECLARE(status_t) tcp_server(sock_id *new, c_sockaddr_t *sa_list);
+CORE_DECLARE(status_t) tcp_client(sock_id *new, c_sockaddr_t *sa_list);
 
 /*
  * SCTP Socket

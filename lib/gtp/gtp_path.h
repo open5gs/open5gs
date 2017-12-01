@@ -11,7 +11,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 CORE_DECLARE(status_t) gtp_server(sock_id *new,
-        c_sockaddr_t *sa, sock_handler handler);
+        c_sockaddr_t *sa_list, sock_handler handler);
 
 CORE_DECLARE(status_t) gtp_listen(sock_id *sock, 
     sock_handler handler, c_uint32_t addr, c_uint16_t port, void *data);

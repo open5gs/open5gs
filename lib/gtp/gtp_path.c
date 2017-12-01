@@ -9,18 +9,19 @@
 
 #include "gtp_path.h"
 
-status_t gtp_server(sock_id *new, c_sockaddr_t *sa, sock_handler handler)
+status_t gtp_server(sock_id *new, c_sockaddr_t *sa_list, sock_handler handler)
 {
     status_t rv;
     char buf[CORE_ADDRSTRLEN];
 
-    rv = sock_register(*new, handler, NULL);
+    rv = udp_server(new, sa_list);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
     rv = sock_register(*new, handler, NULL);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
-    d_trace(1, "gtp_server() [%s]:%d\n", CORE_ADDR(sa, buf), CORE_PORT(sa));
+    d_trace(1, "gtp_server() [%s]:%d\n",
+            CORE_ADDR(sa_list, buf), CORE_PORT(sa_list));
 
     return CORE_OK;
 }
