@@ -57,13 +57,14 @@ typedef struct _mme_context_t {
     const char      *fd_conf_path;  /* MME freeDiameter conf path */
 
     list_t          s1ap_list;      /* MME S1AP Server List */
-    c_socklist_t    gtpc4_list;     /* MME GTPC IPv4 Server List */
-    c_socklist_t    gtpc6_list;     /* MME GTPC IPv6 Server List */
     list_t          sgw_list;       /* SGW GTPC Client List */
 
-    c_uint32_t      gtpc_addr;      /* MME GTPC local address */
-    c_uint16_t      gtpc_port;      /* MME GTPC local port */
-    sock_id         gtpc_sock;      /* MME GTPC local listen socket */
+    c_uint16_t      gtpc_port;      /* Default GTPC Port */
+
+    c_socklist_t    gtpc4_list;     /* MME GTPC IPv4 Server List */
+    c_sockaddr_t    *gtpc4_addr;    /* MME GTPC IPv4 Address */
+    c_socklist_t    gtpc6_list;     /* MME GTPC IPv6 Server List */
+    c_sockaddr_t    *gtpc6_addr;    /* MME GTPC IPv6 Address */
 
     c_uint32_t      s5c_addr;       /* PGW S5C remote address */
     c_uint16_t      s5c_port;       /* PGW S5C remote port */
@@ -193,7 +194,8 @@ struct _mme_ue_t {
     /* IMPORTANT!
      * MME-S11-TEID is same with an index */
     c_uint32_t      mme_s11_teid;
-    c_uint32_t      mme_s11_addr;
+    c_sockaddr_t    *mme_s11_ipv4;    /* MME S11 IPv4 Address */
+    c_sockaddr_t    *mme_s11_ipv6;    /* MME S11 IPv6 Address */
 
     c_uint32_t      sgw_s11_teid;
     c_uint32_t      sgw_s11_addr;

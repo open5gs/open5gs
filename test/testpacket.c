@@ -50,11 +50,11 @@ status_t testgtpu_enb_connect(sock_id *new)
 
     if (test_only_control_plane) return CORE_OK;
 
+    d_assert(mme, return CORE_ERROR,);
+    d_assert(mme->gtpc4_addr, return CORE_ERROR,);
     if (!mme) return CORE_ERROR;
 
-    memset(&addr, 0, sizeof(c_sockaddr_t));
-    addr.sin.sin_addr.s_addr = mme->gtpc_addr;
-    addr.c_sa_family = AF_INET;
+    memcpy(&addr, mme->gtpc4_addr, sizeof(c_sockaddr_t));
     addr.c_sa_port = htons(GTPV1_U_UDP_PORT);
 
     rv = udp_socket(new, AF_INET);

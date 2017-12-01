@@ -4,6 +4,8 @@
 #include "core_list.h"
 #include "core_network.h"
 
+#include "gtp_types.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */

@@ -342,6 +342,7 @@ CORE_DECLARE(c_int16_t) gtp_build_uli(
 
 #define GTP_F_TEID_IPV4_LEN                                 9
 #define GTP_F_TEID_IPV6_LEN                                 21
+#define GTP_F_TEID_IPV4_AND_IPV6_LEN                        25
 typedef struct _gtp_f_teid_t {
 ED3(c_uint8_t ipv4:1;,
     c_uint8_t ipv6:1;,
@@ -350,6 +351,10 @@ ED3(c_uint8_t ipv4:1;,
     union {
         c_uint32_t ipv4_addr;
         c_uint8_t ipv6_addr[IPV6_LEN];
+        struct {
+            c_uint32_t ipv4_addr;
+            c_uint8_t ipv6_addr[IPV6_LEN];
+        } both;
     };
 } __attribute__ ((packed)) gtp_f_teid_t;
 

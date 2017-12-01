@@ -61,7 +61,16 @@ status_t mme_gtp_open()
         temp = node->sock; /* FIXME ADDR : Shoud be removed */
     }
 
-#if 0
+    for (node = list_first(&mme_self()->gtpc4_list);
+            node; node = list_next(node))
+    {
+        mme_self()->gtpc4_addr = sock_local_addr(node->sock);
+        if (mme_self()->gtpc4_addr)
+        {
+            break;
+        }
+    }
+
     for (node = list_first(&mme_self()->gtpc6_list);
             node; node = list_next(node))
     {
@@ -72,7 +81,19 @@ status_t mme_gtp_open()
             return rv;
         }
     }
-#endif
+
+    for (node = list_first(&mme_self()->gtpc6_list);
+            node; node = list_next(node))
+    {
+        mme_self()->gtpc6_addr = sock_local_addr(node->sock);
+        if (mme_self()->gtpc6_addr)
+        {
+            break;
+        }
+    }
+
+    d_assert(mme_self()->gtpc4_addr || mme_self()->gtpc6_addr,
+            return CORE_ERROR, "No GTP Server");
 
     /* FIXME : socket descriptor needs in gnode when packet is sending initilly */
     while(sgw)
@@ -94,13 +115,11 @@ status_t mme_gtp_close()
         sock_delete(node->sock);
     }
 
-#if 0
     for (node = list_first(&mme_self()->gtpc6_list);
             node; node = list_next(node))
     {
         sock_delete(node->sock);
     }
-#endif
 
     return CORE_OK;
 }

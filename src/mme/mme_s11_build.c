@@ -71,13 +71,39 @@ status_t mme_s11_build_create_session_request(
     req->rat_type.u8 = GTP_RAT_TYPE_EUTRAN;
 
     memset(&mme_s11_teid, 0, sizeof(gtp_f_teid_t));
-    mme_s11_teid.ipv4 = 1;
     mme_s11_teid.interface_type = GTP_F_TEID_S11_MME_GTP_C;
     mme_s11_teid.teid = htonl(mme_ue->mme_s11_teid);
-    mme_s11_teid.ipv4_addr = mme_ue->mme_s11_addr;
+    if (mme_ue->mme_s11_ipv4 && mme_ue->mme_s11_ipv6)
+    {
+        mme_s11_teid.ipv4 = 1;
+        mme_s11_teid.both.ipv4_addr = mme_ue->mme_s11_ipv4->sin.sin_addr.s_addr;
+        mme_s11_teid.ipv6 = 1;
+        memcpy(mme_s11_teid.both.ipv6_addr,
+            mme_ue->mme_s11_ipv6->sin6.sin6_addr.s6_addr, 
+            sizeof(mme_s11_teid.ipv6_addr));
+        req->sender_f_teid_for_control_plane.len =
+            GTP_F_TEID_IPV4_AND_IPV6_LEN;
+    }
+    else if (mme_ue->mme_s11_ipv4)
+    {
+        mme_s11_teid.ipv4 = 1;
+        mme_s11_teid.ipv4_addr = mme_ue->mme_s11_ipv4->sin.sin_addr.s_addr;
+        req->sender_f_teid_for_control_plane.len = GTP_F_TEID_IPV4_LEN;
+    }
+    else if (mme_ue->mme_s11_ipv6)
+    {
+        mme_s11_teid.ipv4 = 1;
+        mme_s11_teid.both.ipv4_addr = mme_ue->mme_s11_ipv4->sin.sin_addr.s_addr;
+        mme_s11_teid.ipv6 = 1;
+        memcpy(mme_s11_teid.ipv6_addr,
+            mme_ue->mme_s11_ipv6->sin6.sin6_addr.s6_addr, 
+            sizeof(mme_s11_teid.ipv6_addr));
+        req->sender_f_teid_for_control_plane.len = GTP_F_TEID_IPV6_LEN;
+    }
+    else
+        d_assert(0, return CORE_ERROR,);
     req->sender_f_teid_for_control_plane.presence = 1;
     req->sender_f_teid_for_control_plane.data = &mme_s11_teid;
-    req->sender_f_teid_for_control_plane.len = GTP_F_TEID_IPV4_LEN;
 
     memset(&pgw_s5c_teid, 0, sizeof(gtp_f_teid_t));
     pgw_s5c_teid.ipv4 = 1;

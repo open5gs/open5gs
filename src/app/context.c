@@ -86,6 +86,17 @@ static status_t context_prepare()
     return CORE_OK;
 }
 
+static status_t context_validation()
+{
+    if (self.parameter.no_ipv4 == 1 && self.parameter.no_ipv6 == 1)
+    {
+        d_error("Both `no_ipv4` and `no_ipv6` set to `true` in `%s`",
+                context_self()->config.path);
+        return CORE_ERROR;
+    }
+
+    return CORE_OK;
+}
 status_t context_parse_config()
 {
     status_t rv;
@@ -239,6 +250,10 @@ status_t context_parse_config()
             }
         }
     }
+
+    rv = context_validation();
+    if (rv != CORE_OK) return rv;
+
     return CORE_OK;
 }
 

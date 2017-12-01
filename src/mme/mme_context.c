@@ -148,7 +148,9 @@ static status_t mme_context_validation()
                 context_self()->config.path);
         return CORE_ERROR;
     }
-    if (self.gtpc_addr == 0)
+
+    if (list_first(&self.gtpc4_list) == NULL &&
+        list_first(&self.gtpc6_list) == NULL)
     {
         d_error("No mme.gtpc in '%s'",
                 context_self()->config.path);
@@ -382,10 +384,6 @@ status_t mme_context_parse_config()
                             else if (!strcmp(gtpc_key, "hostname"))
                             {
                                 hostname = yaml_iter_value(&gtpc_iter);
-#if 1
-                                if (hostname)
-                                    self.gtpc_addr = inet_addr(hostname);
-#endif
                             }
                             else if (!strcmp(gtpc_key, "port"))
                             {
@@ -1525,7 +1523,8 @@ mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
     list_init(&mme_ue->sess_list);
 
     mme_ue->mme_s11_teid = mme_ue->index;
-    mme_ue->mme_s11_addr = mme_self()->gtpc_addr;
+    mme_ue->mme_s11_ipv4 = mme_self()->gtpc4_addr;
+    mme_ue->mme_s11_ipv6 = mme_self()->gtpc6_addr;
 
     /* Create t3413 timer */
     mme_ue->t3413 = timer_create(&self.tm_service, MME_EVT_EMM_T3413,
