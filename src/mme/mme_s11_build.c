@@ -92,8 +92,6 @@ status_t mme_s11_build_create_session_request(
     }
     else if (mme_ue->mme_s11_ipv6)
     {
-        mme_s11_teid.ipv4 = 1;
-        mme_s11_teid.both.ipv4_addr = mme_ue->mme_s11_ipv4->sin.sin_addr.s_addr;
         mme_s11_teid.ipv6 = 1;
         memcpy(mme_s11_teid.ipv6_addr,
             mme_ue->mme_s11_ipv6->sin6.sin6_addr.s6_addr, 
