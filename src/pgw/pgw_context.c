@@ -198,6 +198,13 @@ status_t pgw_context_parse_config()
                                 break;
                             yaml_iter_recurse(&gtpc_array, &gtpc_iter);
                         }
+                        else if (yaml_iter_type(&gtpc_array) ==
+                                YAML_SCALAR_NODE)
+                        {
+                            break;
+                        }
+                        else
+                            d_assert(0, return CORE_ERROR,);
 
                         while(yaml_iter_next(&gtpc_iter))
                         {
@@ -270,6 +277,13 @@ status_t pgw_context_parse_config()
                                 break;
                             yaml_iter_recurse(&gtpu_array, &gtpu_iter);
                         }
+                        else if (yaml_iter_type(&gtpu_array) ==
+                                YAML_SCALAR_NODE)
+                        {
+                            break;
+                        }
+                        else
+                            d_assert(0, return CORE_ERROR,);
 
                         while(yaml_iter_next(&gtpu_iter))
                         {
@@ -344,6 +358,13 @@ status_t pgw_context_parse_config()
                             yaml_iter_recurse(&ue_network_array,
                                     &ue_network_iter);
                         }
+                        else if (yaml_iter_type(&ue_network_array) ==
+                                YAML_SCALAR_NODE)
+                        {
+                            break;
+                        }
+                        else
+                            d_assert(0, return CORE_ERROR,);
 
                         while(yaml_iter_next(&ue_network_iter))
                         {

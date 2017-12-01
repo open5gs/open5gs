@@ -41,7 +41,6 @@ typedef struct _mme_ue_t mme_ue_t;
 typedef struct _gtp_node_t gtp_node_t;
 typedef struct _gtp_xact_t gtp_xact_t;
 
-typedef gtp_node_t mme_gtpc_t;
 typedef gtp_node_t mme_sgw_t;
 
 typedef struct _served_gummei {
@@ -58,7 +57,8 @@ typedef struct _mme_context_t {
     const char      *fd_conf_path;  /* MME freeDiameter conf path */
 
     list_t          s1ap_list;      /* MME S1AP Server List */
-    list_t          gtpc_list;      /* MME GTPC Server List */
+    c_socklist_t    gtpc4_list;     /* MME GTPC IPv4 Server List */
+    c_socklist_t    gtpc6_list;     /* MME GTPC IPv6 Server List */
     list_t          sgw_list;       /* SGW GTPC Client List */
 
     c_uint32_t      gtpc_addr;      /* MME GTPC local address */
@@ -458,12 +458,6 @@ CORE_DECLARE(status_t)      mme_s1ap_remove(mme_s1ap_t *s1ap);
 CORE_DECLARE(status_t)      mme_s1ap_remove_all(void);
 CORE_DECLARE(mme_s1ap_t*)   mme_s1ap_first(void);
 CORE_DECLARE(mme_s1ap_t*)   mme_s1ap_next(mme_s1ap_t *s1ap);
-
-CORE_DECLARE(mme_gtpc_t*)   mme_gtpc_add(c_sockaddr_t *addr);
-CORE_DECLARE(status_t)      mme_gtpc_remove(mme_gtpc_t *gtpc);
-CORE_DECLARE(status_t)      mme_gtpc_remove_all(void);
-CORE_DECLARE(mme_gtpc_t*)   mme_gtpc_first(void);
-CORE_DECLARE(mme_gtpc_t*)   mme_gtpc_next(mme_gtpc_t *gtpc);
 
 CORE_DECLARE(mme_sgw_t*)    mme_sgw_add(void);
 CORE_DECLARE(status_t)      mme_sgw_remove(mme_sgw_t *sgw);

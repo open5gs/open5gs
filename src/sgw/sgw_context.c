@@ -108,96 +108,6 @@ static status_t sgw_context_validation()
     return CORE_OK;
 }
 
-#if 0
-status_t sgw_context_parse_config()
-{
-    status_t rv;
-    config_t *config = &context_self()->config;
-    bson_iter_t iter;
-    c_uint32_t length = 0;
-
-    d_assert(config, return CORE_ERROR, );
-
-    rv = sgw_context_prepare();
-    if (rv != CORE_OK) return rv;
-
-    if (!bson_iter_init(&iter, config->bson))
-    {
-        d_error("bson_iter_init failed in this document");
-        return CORE_ERROR;
-    }
-
-    while(bson_iter_next(&iter))
-    {
-        const char *key = bson_iter_key(&iter);
-        if (!strcmp(key, "SGW") && BSON_ITER_HOLDS_DOCUMENT(&iter))
-        {
-            bson_iter_t sgw_iter;
-            bson_iter_recurse(&iter, &sgw_iter);
-            while(bson_iter_next(&sgw_iter))
-            {
-                const char *sgw_key = bson_iter_key(&sgw_iter);
-                if (!strcmp(sgw_key, "NETWORK"))
-                {
-                    bson_iter_t network_iter;
-
-                    if (BSON_ITER_HOLDS_ARRAY(&sgw_iter))
-                    {
-                        bson_iter_t array_iter;
-                        bson_iter_recurse(&sgw_iter, &array_iter);
-                        if (bson_iter_next(&array_iter))
-                        {
-                            /* We will pick only first item of SGW.NETWORK
-                             * if the type is an array */
-                            bson_iter_recurse(&array_iter, &network_iter);
-                        }
-                    }
-                    else if (BSON_ITER_HOLDS_DOCUMENT(&sgw_iter))
-                    {
-                        bson_iter_recurse(&sgw_iter, &network_iter);
-                    }
-                    else
-                        d_assert(0, return CORE_ERROR,);
-
-                    while(bson_iter_next(&network_iter))
-                    {
-                        const char *network_key = bson_iter_key(&network_iter);
-                        if (!strcmp(network_key, "GTPC_IPV4") &&
-                            BSON_ITER_HOLDS_UTF8(&network_iter))
-                        {
-                            const char *v =
-                                bson_iter_utf8(&network_iter, &length);
-                            if (v) self.gtpc_addr = inet_addr(v);
-                        }
-                        else if (!strcmp(network_key, "GTPC_PORT") &&
-                            BSON_ITER_HOLDS_INT32(&network_iter))
-                        {
-                            self.gtpc_port = bson_iter_int32(&network_iter);
-                        }
-                        else if (!strcmp(network_key, "GTPU_IPV4") &&
-                            BSON_ITER_HOLDS_UTF8(&network_iter))
-                        {
-                            const char *v =
-                                bson_iter_utf8(&network_iter, &length);
-                            if (v) self.gtpu_addr = inet_addr(v);
-                        }
-                        else if (!strcmp(network_key, "GTPU_PORT") &&
-                            BSON_ITER_HOLDS_UTF8(&network_iter))
-                        {
-                            self.gtpu_port = bson_iter_int32(&network_iter);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    rv = sgw_context_validation();
-    if (rv != CORE_OK) return rv;
-
-    return CORE_OK;
-}
-#endif
 status_t sgw_context_parse_config()
 {
     status_t rv;
@@ -250,6 +160,13 @@ status_t sgw_context_parse_config()
                                 break;
                             yaml_iter_recurse(&gtpc_array, &gtpc_iter);
                         }
+                        else if (yaml_iter_type(&gtpc_array) ==
+                                YAML_SCALAR_NODE)
+                        {
+                            break;
+                        }
+                        else
+                            d_assert(0, return CORE_ERROR,);
 
                         while(yaml_iter_next(&gtpc_iter))
                         {
@@ -322,6 +239,13 @@ status_t sgw_context_parse_config()
                                 break;
                             yaml_iter_recurse(&gtpu_array, &gtpu_iter);
                         }
+                        else if (yaml_iter_type(&gtpu_array) ==
+                                YAML_SCALAR_NODE)
+                        {
+                            break;
+                        }
+                        else
+                            d_assert(0, return CORE_ERROR,);
 
                         while(yaml_iter_next(&gtpu_iter))
                         {

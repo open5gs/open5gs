@@ -90,7 +90,9 @@ typedef list_t c_socklist_t;
 
 typedef struct _c_socknode_t {
     lnode_t node;
-    c_sockaddr_t *addr;
+
+    sock_id sock;
+    c_sockaddr_t *sa_list;
 } c_socknode_t;
 
 /*

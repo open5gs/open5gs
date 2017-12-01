@@ -27,7 +27,6 @@
 static mme_context_t self;
 
 pool_declare(mme_s1ap_pool, mme_s1ap_t, MAX_NUM_OF_S1AP_SERVER);
-pool_declare(mme_gtpc_pool, mme_gtpc_t, MAX_NUM_OF_GTP_SERVER);
 pool_declare(mme_sgw_pool, mme_sgw_t, MAX_NUM_OF_GTP_CLIENT);
 
 index_declare(mme_enb_pool, mme_enb_t, MAX_NUM_OF_ENB);
@@ -48,8 +47,10 @@ status_t mme_context_init()
 
     pool_init(&mme_s1ap_pool, MAX_NUM_OF_S1AP_SERVER);
     list_init(&self.s1ap_list);
-    pool_init(&mme_gtpc_pool, MAX_NUM_OF_GTP_SERVER);
-    list_init(&self.gtpc_list);
+
+    list_init(&self.gtpc4_list);
+    list_init(&self.gtpc6_list);
+
     pool_init(&mme_sgw_pool, MAX_NUM_OF_GTP_CLIENT);
     list_init(&self.sgw_list);
 
@@ -80,7 +81,6 @@ status_t mme_context_final()
             "MME context already has been finalized");
 
     mme_s1ap_remove_all();
-    mme_gtpc_remove_all();
     
     mme_sgw_remove_all();
     mme_enb_remove_all();
@@ -109,8 +109,10 @@ status_t mme_context_final()
     index_final(&mme_enb_pool);
     pool_final(&mme_sgw_pool);
 
+    socknode_remove_all(&self.gtpc4_list);
+    socknode_remove_all(&self.gtpc6_list);
+
     pool_final(&mme_s1ap_pool);
-    pool_final(&mme_gtpc_pool);
 
     context_initialized = 0;
 
@@ -284,6 +286,13 @@ status_t mme_context_parse_config()
                                 break;
                             yaml_iter_recurse(&s1ap_array, &s1ap_iter);
                         }
+                        else if (yaml_iter_type(&s1ap_array) ==
+                            YAML_SCALAR_NODE)
+                        {
+                            break;
+                        }
+                        else
+                            d_assert(0, return CORE_ERROR,);
 
                         while(yaml_iter_next(&s1ap_iter))
                         {
@@ -327,9 +336,7 @@ status_t mme_context_parse_config()
                     yaml_iter_recurse(&mme_iter, &gtpc_array);
                     do
                     {
-#if 0
-                        mme_gtpc_t *gtpc = NULL;
-#endif
+                        c_socknode_t *node = NULL;
                         int family = AF_UNSPEC;
                         const char *hostname = NULL;
                         c_uint16_t port = GTPV2_C_UDP_PORT;
@@ -346,6 +353,13 @@ status_t mme_context_parse_config()
                                 break;
                             yaml_iter_recurse(&gtpc_array, &gtpc_iter);
                         }
+                        else if (yaml_iter_type(&gtpc_array) ==
+                            YAML_SCALAR_NODE)
+                        {
+                            break;
+                        }
+                        else
+                            d_assert(0, return CORE_ERROR,);
 
                         while(yaml_iter_next(&gtpc_iter))
                         {
@@ -386,12 +400,50 @@ status_t mme_context_parse_config()
                                 d_warn("unknown key `%s`", gtpc_key);
                         }
 
-#if 0
-                        gtpc = mme_gtpc_add(family, hostname, port);
-                        d_assert(gtpc, return CORE_ERROR,);
-#endif
-
+                        if (context_self()->parameter.no_ipv4 == 0)
+                        {
+                            node = socknode_add(&self.gtpc4_list,
+                                family, hostname, port, AI_PASSIVE);
+                            d_assert(node, return CORE_ERROR,);
+                            rv = socknode_filter_family(
+                                    &self.gtpc4_list, AF_INET);
+                            d_assert(rv == CORE_OK, return CORE_ERROR,);
+                        }
+                        
+                        if (context_self()->parameter.no_ipv6 == 0)
+                        {
+                            node = socknode_add(&self.gtpc6_list,
+                                family, hostname, port, AI_PASSIVE);
+                            d_assert(node, return CORE_ERROR,);
+                            rv = socknode_filter_family(
+                                    &self.gtpc6_list, AF_INET6);
+                            d_assert(rv == CORE_OK, return CORE_ERROR,);
+                        }
                     } while(yaml_iter_type(&gtpc_array) == YAML_SEQUENCE_NODE);
+
+                    if (list_first(&self.gtpc4_list) == NULL &&
+                        list_first(&self.gtpc6_list) == NULL)
+                    {
+                        if (context_self()->parameter.no_ipv4 == 0)
+                        {
+                            rv = socknode_getifaddrs_to_list(
+                                    &self.gtpc4_list, self.gtpc_port);
+                            d_assert(rv == CORE_OK, return CORE_ERROR,);
+                            rv = socknode_filter_family(
+                                    &self.gtpc4_list, AF_INET);
+                            d_assert(rv == CORE_OK, return CORE_ERROR,);
+                        }
+
+                        if (context_self()->parameter.no_ipv6 == 0)
+                        {
+                            rv = socknode_getifaddrs_to_list(
+                                    &self.gtpc6_list, self.gtpc_port);
+                            d_assert(rv == CORE_OK, return CORE_ERROR,);
+                            rv = socknode_filter_family(&self.gtpc6_list,
+                                    AF_INET6);
+                            d_assert(rv == CORE_OK, return CORE_ERROR,);
+                        }
+                    }
                 }
                 else if (!strcmp(mme_key, "gummei"))
                 {
@@ -420,6 +472,13 @@ status_t mme_context_parse_config()
                             yaml_iter_recurse(&gummei_array,
                                     &gummei_iter);
                         }
+                        else if (yaml_iter_type(&gummei_array) ==
+                            YAML_SCALAR_NODE)
+                        {
+                            break;
+                        }
+                        else
+                            d_assert(0, return CORE_ERROR,);
 
                         while(yaml_iter_next(&gummei_iter))
                         {
@@ -455,6 +514,13 @@ status_t mme_context_parse_config()
                                         yaml_iter_recurse(&plmn_id_array,
                                                 &plmn_id_iter);
                                     }
+                                    else if (yaml_iter_type(&plmn_id_array) ==
+                                        YAML_SCALAR_NODE)
+                                    {
+                                        break;
+                                    }
+                                    else
+                                        d_assert(0, return CORE_ERROR,);
 
                                     while(yaml_iter_next(&plmn_id_iter))
                                     {
@@ -607,6 +673,12 @@ status_t mme_context_parse_config()
                             yaml_iter_recurse(&tai_array,
                                     &tai_iter);
                         }
+                        else if (yaml_iter_type(&tai_array) == YAML_SCALAR_NODE)
+                        {
+                            break;
+                        }
+                        else
+                            d_assert(0, return CORE_ERROR,);
 
                         while(yaml_iter_next(&tai_iter))
                         {
@@ -816,6 +888,13 @@ status_t mme_context_parse_config()
                                 break;
                             yaml_iter_recurse(&gtpc_array, &gtpc_iter);
                         }
+                        else if (yaml_iter_type(&gtpc_array) ==
+                                YAML_SCALAR_NODE)
+                        {
+                            break;
+                        }
+                        else
+                            d_assert(0, return CORE_ERROR,);
 
                         while(yaml_iter_next(&gtpc_iter))
                         {
@@ -895,6 +974,13 @@ status_t mme_context_parse_config()
                                 break;
                             yaml_iter_recurse(&gtpc_array, &gtpc_iter);
                         }
+                        else if (yaml_iter_type(&gtpc_array) ==
+                                YAML_SCALAR_NODE)
+                        {
+                            break;
+                        }
+                        else
+                            d_assert(0, return CORE_ERROR,);
 
                         while(yaml_iter_next(&gtpc_iter))
                         {
@@ -1106,59 +1192,6 @@ mme_s1ap_t* mme_s1ap_first()
 mme_s1ap_t* mme_s1ap_next(mme_s1ap_t *s1ap)
 {
     return list_next(s1ap);
-}
-
-mme_gtpc_t* mme_gtpc_add(c_sockaddr_t *addr)
-{
-    mme_gtpc_t *gtpc = NULL;
-
-    pool_alloc_node(&mme_gtpc_pool, &gtpc);
-    d_assert(gtpc, return NULL, "Null param");
-    memset(gtpc, 0, sizeof(mme_gtpc_t));
-
-    gtpc->addr = addr;
-
-    list_append(&self.gtpc_list, gtpc);
-    
-    return gtpc;
-}
-
-status_t mme_gtpc_remove(mme_gtpc_t *gtpc)
-{
-    d_assert(gtpc, return CORE_ERROR, "Null param");
-
-    list_remove(&self.gtpc_list, gtpc);
-
-    pool_free_node(&mme_gtpc_pool, gtpc);
-
-    return CORE_OK;
-}
-
-status_t mme_gtpc_remove_all()
-{
-    mme_gtpc_t *gtpc = NULL, *next_gtpc = NULL;
-    
-    gtpc = mme_gtpc_first();
-    while (gtpc)
-    {
-        next_gtpc = mme_gtpc_next(gtpc);
-
-        mme_gtpc_remove(gtpc);
-
-        gtpc = next_gtpc;
-    }
-
-    return CORE_OK;
-}
-
-mme_gtpc_t* mme_gtpc_first()
-{
-    return list_first(&self.gtpc_list);
-}
-
-mme_gtpc_t* mme_gtpc_next(mme_gtpc_t *gtpc)
-{
-    return list_next(gtpc);
 }
 
 mme_sgw_t* mme_sgw_add()

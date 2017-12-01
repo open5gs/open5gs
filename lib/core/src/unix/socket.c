@@ -292,18 +292,18 @@ c_sockaddr_t *sock_remote_addr(sock_id id)
  * Socket Address
  */
 static c_socknode_t *socknode_add_internal(
-        c_socklist_t *list, c_sockaddr_t *addr)
+        c_socklist_t *list, c_sockaddr_t *sa_list)
 {
     c_socknode_t *node = NULL;
 
     d_assert(list, return NULL,);
-    d_assert(addr, return NULL,);
+    d_assert(sa_list, return NULL,);
 
     pool_alloc_node(&socknode_pool, &node);
     d_assert(node, return NULL,);
     memset(node, 0, sizeof(c_socknode_t));
 
-    node->addr = addr;
+    node->sa_list = sa_list;
 
     list_append(list, node);
     
@@ -314,9 +314,9 @@ c_socknode_t *socknode_add(c_socklist_t *list,
     int family, const char *hostname, c_uint16_t port, int flags)
 {
     status_t rv;
-    c_sockaddr_t *addr = NULL;
+    c_sockaddr_t *sa_list = NULL;
 
-    rv = core_getaddrinfo(&addr, family, hostname, port, flags);
+    rv = core_getaddrinfo(&sa_list, family, hostname, port, flags);
     if (rv != CORE_OK)
     {
         d_error("core_getaddrinfo(%d:%s:%d:0x%x)",
@@ -324,7 +324,7 @@ c_socknode_t *socknode_add(c_socklist_t *list,
         return NULL;
     }
 
-    return socknode_add_internal(list, addr);
+    return socknode_add_internal(list, sa_list);
 }
 
 status_t socknode_remove(c_socklist_t *list, c_socknode_t *node)
@@ -333,7 +333,7 @@ status_t socknode_remove(c_socklist_t *list, c_socknode_t *node)
 
     list_remove(list, node);
 
-    core_freeaddrinfo(node->addr);
+    core_freeaddrinfo(node->sa_list);
     pool_free_node(&socknode_pool, node);
 
     return CORE_OK;
@@ -430,17 +430,17 @@ status_t socknode_filter_family(c_socklist_t *list, int family)
         next_node = list_next(node);
 
         prev_addr = NULL;
-        addr = node->addr;
+        addr = node->sa_list;
         while(addr)
         {
             next_addr = addr->next;
 
-            if (addr->c_sa_family == family)
+            if (addr->c_sa_family != family)
             {
                 if (prev_addr)
                     prev_addr->next = addr->next;
                 else
-                    node->addr = addr->next;
+                    node->sa_list = addr->next;
                 core_free(addr);
             }
 
@@ -448,7 +448,7 @@ status_t socknode_filter_family(c_socklist_t *list, int family)
             addr = next_addr;
         }
 
-        if (node->addr == NULL)
+        if (node->sa_list == NULL)
             socknode_remove(list, node);
 
         node = next_node;

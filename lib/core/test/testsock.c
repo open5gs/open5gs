@@ -344,33 +344,33 @@ static void sock_test7(abts_case *tc, void *data)
 
     node = socknode_add(&list, AF_INET6, NULL, PORT, 0);
     ABTS_PTR_NOTNULL(tc, node);
-    rv = socknode_filter_family(&list, AF_INET);
+    rv = socknode_filter_family(&list, AF_INET6);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     node = list_first(&list);
     ABTS_PTR_NOTNULL(tc, node);
-    rv = socknode_filter_family(&list, AF_INET6);
+    rv = socknode_filter_family(&list, AF_INET);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     node = list_first(&list);
     ABTS_PTR_NULL(tc, node);
 
     node = socknode_add(&list, AF_INET, NULL, PORT, AI_PASSIVE);
     ABTS_PTR_NOTNULL(tc, node);
-    rv = socknode_filter_family(&list, AF_INET6);
+    rv = socknode_filter_family(&list, AF_INET);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     node = list_first(&list);
     ABTS_PTR_NOTNULL(tc, node);
-    rv = socknode_filter_family(&list, AF_INET);
+    rv = socknode_filter_family(&list, AF_INET6);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     node = list_first(&list);
     ABTS_PTR_NULL(tc, node);
 
     node = socknode_add(&list, AF_UNSPEC, NULL, PORT, 0);
     ABTS_PTR_NOTNULL(tc, node);
-    rv = socknode_filter_family(&list, AF_INET);
+    rv = socknode_filter_family(&list, AF_INET6);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     node = list_first(&list);
     ABTS_PTR_NOTNULL(tc, node);
-    rv = socknode_filter_family(&list, AF_INET6);
+    rv = socknode_filter_family(&list, AF_INET);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     node = list_first(&list);
     ABTS_PTR_NULL(tc, node);
@@ -384,21 +384,21 @@ static void sock_test7(abts_case *tc, void *data)
 
     node = list_first(&list);
     ABTS_PTR_NOTNULL(tc, node);
-    addr = node->addr;
+    addr = node->sa_list;
     ABTS_PTR_NOTNULL(tc, addr);
     ABTS_STR_EQUAL(tc, "::1", CORE_ADDR(addr, buf));
     ABTS_INT_EQUAL(tc, PORT, CORE_PORT(addr));
 
     node = list_next(node);
     ABTS_PTR_NOTNULL(tc, node);
-    addr = node->addr;
+    addr = node->sa_list;
     ABTS_PTR_NOTNULL(tc, addr);
     ABTS_STR_EQUAL(tc, "0.0.0.0", CORE_ADDR(addr, buf));
     ABTS_INT_EQUAL(tc, PORT, CORE_PORT(addr));
 
     node = list_next(node);
     ABTS_PTR_NOTNULL(tc, node);
-    addr = node->addr;
+    addr = node->sa_list;
     ABTS_PTR_NOTNULL(tc, addr);
     ABTS_INT_EQUAL(tc, PORT, CORE_PORT(addr));
 
