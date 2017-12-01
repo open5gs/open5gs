@@ -125,8 +125,10 @@ CORE_DECLARE(c_socknode_t *) socknode_add(c_socklist_t *list,
         int family, const char *hostname, c_uint16_t port, int flags);
 CORE_DECLARE(status_t) socknode_remove(c_socklist_t *list, c_socknode_t *node);
 CORE_DECLARE(status_t) socknode_remove_all(c_socklist_t *list);
+
 CORE_DECLARE(status_t) socknode_getifaddrs_to_list(
         c_socklist_t *list, c_uint16_t port);
+CORE_DECLARE(status_t) socknode_filter_family(c_socklist_t *list, int family);
 
 CORE_DECLARE(socklen_t) sockaddr_len(const void *sa);
 CORE_DECLARE(int) sockaddr_is_equal(void *p, void *q);

@@ -296,6 +296,9 @@ static c_socknode_t *socknode_add_internal(
 {
     c_socknode_t *node = NULL;
 
+    d_assert(list, return NULL,);
+    d_assert(addr, return NULL,);
+
     pool_alloc_node(&socknode_pool, &node);
     d_assert(node, return NULL,);
     memset(node, 0, sizeof(c_socknode_t));
@@ -321,8 +324,6 @@ c_socknode_t *socknode_add(c_socklist_t *list,
         return NULL;
     }
 
-    d_assert(addr, return NULL,);
-
     return socknode_add_internal(list, addr);
 }
 
@@ -337,12 +338,13 @@ status_t socknode_remove(c_socklist_t *list, c_socknode_t *node)
 
     return CORE_OK;
 }
+
 status_t socknode_remove_all(c_socklist_t *list)
 {
     c_socknode_t *node = NULL, *next_node = NULL;
     
     node = list_first(list);
-    while (node)
+    while(node)
     {
         next_node = list_next(node);
 
@@ -415,74 +417,46 @@ status_t socknode_getifaddrs_to_list(c_socklist_t *list, c_uint16_t port)
     return CORE_OK;
 }
 
-status_t core_getifaddrs(c_sockaddr_t **sa)
+status_t socknode_filter_family(c_socklist_t *list, int family)
 {
-	struct ifaddrs *iflist, *cur;
-    c_sockaddr_t *prev_sa;
-    int rc;
+    c_socknode_t *node = NULL, *next_node = NULL;
 
-    d_assert(sa, return CORE_ERROR,);
-
-	rc = getifaddrs(&iflist);
-    if (rc != 0)
+    d_assert(list, return CORE_ERROR,);
+    node = list_first(list);
+    while(node)
     {
-        d_error("getifaddrs failed(%d:%s)", errno, strerror(errno));
-        return CORE_ERROR;
+        c_sockaddr_t *addr = NULL, *prev_addr = NULL, *next_addr = NULL;
+
+        next_node = list_next(node);
+
+        prev_addr = NULL;
+        addr = node->addr;
+        while(addr)
+        {
+            next_addr = addr->next;
+
+            if (addr->c_sa_family == family)
+            {
+                if (prev_addr)
+                    prev_addr->next = addr->next;
+                else
+                    node->addr = addr->next;
+                core_free(addr);
+            }
+
+            prev_addr = addr;
+            addr = next_addr;
+        }
+
+        if (node->addr == NULL)
+            socknode_remove(list, node);
+
+        node = next_node;
     }
-
-    prev_sa = NULL;
-	for (cur = iflist; cur != NULL; cur = cur->ifa_next)
-    {
-        c_sockaddr_t *new_sa, *ptr;
-
-		if (cur->ifa_addr == NULL) /* may happen with ppp interfaces */
-			continue;
-
-        ptr = (c_sockaddr_t *)cur->ifa_addr;
-        if (cur->ifa_addr->sa_family == AF_INET)
-        {
-#ifndef IN_IS_ADDR_LOOPBACK
-#define IN_IS_ADDR_LOOPBACK(a) \
-  ((((long int) (a)->s_addr) & ntohl(0xff000000)) == ntohl(0x7f000000))
-#endif /* IN_IS_ADDR_LOOPBACK */
-
-/* An IP equivalent to IN6_IS_ADDR_UNSPECIFIED */
-#ifndef IN_IS_ADDR_UNSPECIFIED
-#define IN_IS_ADDR_UNSPECIFIED(a) \
-  (((long int) (a)->s_addr) == 0x00000000)
-#endif /* IN_IS_ADDR_UNSPECIFIED */
-            if (IN_IS_ADDR_UNSPECIFIED(&ptr->sin.sin_addr) ||
-                IN_IS_ADDR_LOOPBACK(&ptr->sin.sin_addr))
-                continue;
-        }
-        else if (cur->ifa_addr->sa_family == AF_INET6)
-        {
-            if (IN6_IS_ADDR_UNSPECIFIED(&ptr->sin6.sin6_addr) ||
-                IN6_IS_ADDR_LOOPBACK(&ptr->sin6.sin6_addr) ||
-                IN6_IS_ADDR_MULTICAST(&ptr->sin6.sin6_addr) ||
-                IN6_IS_ADDR_LINKLOCAL(&ptr->sin6.sin6_addr) ||
-                IN6_IS_ADDR_SITELOCAL(&ptr->sin6.sin6_addr))
-                continue;
-        }
-        else
-            continue;
-
-
-        new_sa = core_calloc(1, sizeof(c_sockaddr_t));
-        memcpy(&new_sa->sa, cur->ifa_addr, sockaddr_len(cur->ifa_addr));
-
-        if (!prev_sa)
-            *sa = new_sa;
-        else
-            prev_sa->next = new_sa;
-
-        prev_sa = new_sa;
-	}
-
-	freeifaddrs(iflist);
 
     return CORE_OK;
 }
+
 
 status_t core_getaddrinfo(c_sockaddr_t **sa, 
         int family, const char *hostname, c_uint16_t port, int flags)
