@@ -40,6 +40,8 @@ static int _gtpv1_tun_recv_cb(sock_id sock, void *data)
         gtp_node_t gnode;
         char buf[INET_ADDRSTRLEN];
 
+        memset(&gnode, 0, sizeof(gtp_node_t));
+
         /* Add GTP-U header */
         rv = pkbuf_header(recvbuf, GTPV1U_HEADER_LEN);
         if (rv != CORE_OK)

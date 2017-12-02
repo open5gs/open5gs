@@ -151,14 +151,23 @@ status_t gtp_send(gtp_node_t *gnode, pkbuf_t *pkbuf)
     sock = gnode->sock;
     d_assert(sock, return CORE_ERROR, "Null param");
 
-    sent = core_sendto(sock, pkbuf->payload, pkbuf->len, 0, &gnode->old_addr);
-    d_trace(50, "Sent %d->%d bytes to [%s:%d]\n", pkbuf->len, sent, 
-            CORE_ADDR(&gnode->old_addr, buf), CORE_PORT(&gnode->old_addr));
-    d_trace_hex(50, pkbuf->payload, pkbuf->len);
-    if (sent < 0 || sent != pkbuf->len)
+    if (gnode->addr)
     {
-        d_error("core_sendto failed(%d:%s)", errno, strerror(errno));
-        return CORE_ERROR;
+        /* New interface */
+        d_assert(0, return CORE_ERROR,);
+    }
+    else
+    {
+        /* Old interface : Will be removed */
+        sent = core_sendto(sock, pkbuf->payload, pkbuf->len, 0, &gnode->old_addr);
+        d_trace(50, "Sent %d->%d bytes to [%s:%d]\n", pkbuf->len, sent, 
+                CORE_ADDR(&gnode->old_addr, buf), CORE_PORT(&gnode->old_addr));
+        d_trace_hex(50, pkbuf->payload, pkbuf->len);
+        if (sent < 0 || sent != pkbuf->len)
+        {
+            d_error("core_sendto failed(%d:%s)", errno, strerror(errno));
+            return CORE_ERROR;
+        }
     }
 
     return CORE_OK;

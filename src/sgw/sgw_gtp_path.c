@@ -73,6 +73,7 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
     int i;
 
     d_assert(sock, return -1, "Null param");
+    memset(&gnode, 0, sizeof(gtp_node_t));
 
     rv = gtp_recvfrom(sock, &pkbuf, &from);
     if (rv != CORE_OK)
@@ -295,6 +296,7 @@ status_t sgw_gtp_send_end_marker(sgw_bearer_t *bearer)
     h->type = GTPU_MSGTYPE_END_MARKER;
     h->teid =  htonl(s1u_tunnel->remote_teid);
     
+    memset(&gnode, 0, sizeof(gtp_node_t));
     gnode.old_addr.sin.sin_addr.s_addr = s1u_tunnel->remote_addr;
     gnode.old_addr.c_sa_port = htons(GTPV1_U_UDP_PORT);
     gnode.old_addr.c_sa_family = AF_INET;
