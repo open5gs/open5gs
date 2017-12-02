@@ -109,8 +109,8 @@ status_t mme_context_final()
     index_final(&mme_enb_pool);
     pool_final(&mme_sgw_pool);
 
-    socknode_remove_all(&self.gtpc4_list);
-    socknode_remove_all(&self.gtpc6_list);
+    sock_remove_all_nodes(&self.gtpc4_list);
+    sock_remove_all_nodes(&self.gtpc6_list);
 
     pool_final(&mme_s1ap_pool);
 
@@ -338,7 +338,7 @@ status_t mme_context_parse_config()
                     yaml_iter_recurse(&mme_iter, &gtpc_array);
                     do
                     {
-                        c_socknode_t *node = NULL;
+                        sock_node_t *node = NULL;
                         int family = AF_UNSPEC;
                         const char *hostname = NULL;
                         c_uint16_t port = GTPV2_C_UDP_PORT;
@@ -400,20 +400,20 @@ status_t mme_context_parse_config()
 
                         if (context_self()->parameter.no_ipv4 == 0)
                         {
-                            node = socknode_add(&self.gtpc4_list,
+                            node = sock_add_node(&self.gtpc4_list,
                                 family, hostname, port, AI_PASSIVE);
                             d_assert(node, return CORE_ERROR,);
-                            rv = socknode_filter_family(
+                            rv = sock_filter_node(
                                     &self.gtpc4_list, AF_INET);
                             d_assert(rv == CORE_OK, return CORE_ERROR,);
                         }
                         
                         if (context_self()->parameter.no_ipv6 == 0)
                         {
-                            node = socknode_add(&self.gtpc6_list,
+                            node = sock_add_node(&self.gtpc6_list,
                                 family, hostname, port, AI_PASSIVE);
                             d_assert(node, return CORE_ERROR,);
-                            rv = socknode_filter_family(
+                            rv = sock_filter_node(
                                     &self.gtpc6_list, AF_INET6);
                             d_assert(rv == CORE_OK, return CORE_ERROR,);
                         }
@@ -424,20 +424,20 @@ status_t mme_context_parse_config()
                     {
                         if (context_self()->parameter.no_ipv4 == 0)
                         {
-                            rv = socknode_getifaddrs_to_list(
+                            rv = sock_get_all_nodes(
                                     &self.gtpc4_list, self.gtpc_port);
                             d_assert(rv == CORE_OK, return CORE_ERROR,);
-                            rv = socknode_filter_family(
+                            rv = sock_filter_node(
                                     &self.gtpc4_list, AF_INET);
                             d_assert(rv == CORE_OK, return CORE_ERROR,);
                         }
 
                         if (context_self()->parameter.no_ipv6 == 0)
                         {
-                            rv = socknode_getifaddrs_to_list(
+                            rv = sock_get_all_nodes(
                                     &self.gtpc6_list, self.gtpc_port);
                             d_assert(rv == CORE_OK, return CORE_ERROR,);
-                            rv = socknode_filter_family(&self.gtpc6_list,
+                            rv = sock_filter_node(&self.gtpc6_list,
                                     AF_INET6);
                             d_assert(rv == CORE_OK, return CORE_ERROR,);
                         }

@@ -61,9 +61,9 @@ typedef struct _mme_context_t {
 
     c_uint16_t      gtpc_port;      /* Default GTPC Port */
 
-    c_socklist_t    gtpc4_list;     /* MME GTPC IPv4 Server List */
+    list_t    gtpc4_list;     /* MME GTPC IPv4 Server List */
     c_sockaddr_t    *gtpc4_addr;    /* MME GTPC IPv4 Address */
-    c_socklist_t    gtpc6_list;     /* MME GTPC IPv6 Server List */
+    list_t    gtpc6_list;     /* MME GTPC IPv6 Server List */
     c_sockaddr_t    *gtpc6_addr;    /* MME GTPC IPv6 Address */
 
     c_uint32_t      s5c_addr;       /* PGW S5C remote address */

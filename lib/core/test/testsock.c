@@ -335,51 +335,51 @@ static void sock_test6(abts_case *tc, void *data)
 static void sock_test7(abts_case *tc, void *data)
 {
     status_t rv;
-    c_socknode_t *node;
+    sock_node_t *node;
     c_sockaddr_t *addr;
-    c_socklist_t list;
+    list_t list;
     char buf[CORE_ADDRSTRLEN];
 
     list_init(&list);
 
-    node = socknode_add(&list, AF_INET6, NULL, PORT, 0);
+    node = sock_add_node(&list, AF_INET6, NULL, PORT, 0);
     ABTS_PTR_NOTNULL(tc, node);
-    rv = socknode_filter_family(&list, AF_INET6);
+    rv = sock_filter_node(&list, AF_INET6);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     node = list_first(&list);
     ABTS_PTR_NOTNULL(tc, node);
-    rv = socknode_filter_family(&list, AF_INET);
-    ABTS_INT_EQUAL(tc, CORE_OK, rv);
-    node = list_first(&list);
-    ABTS_PTR_NULL(tc, node);
-
-    node = socknode_add(&list, AF_INET, NULL, PORT, AI_PASSIVE);
-    ABTS_PTR_NOTNULL(tc, node);
-    rv = socknode_filter_family(&list, AF_INET);
-    ABTS_INT_EQUAL(tc, CORE_OK, rv);
-    node = list_first(&list);
-    ABTS_PTR_NOTNULL(tc, node);
-    rv = socknode_filter_family(&list, AF_INET6);
+    rv = sock_filter_node(&list, AF_INET);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     node = list_first(&list);
     ABTS_PTR_NULL(tc, node);
 
-    node = socknode_add(&list, AF_UNSPEC, NULL, PORT, 0);
+    node = sock_add_node(&list, AF_INET, NULL, PORT, AI_PASSIVE);
     ABTS_PTR_NOTNULL(tc, node);
-    rv = socknode_filter_family(&list, AF_INET6);
+    rv = sock_filter_node(&list, AF_INET);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     node = list_first(&list);
     ABTS_PTR_NOTNULL(tc, node);
-    rv = socknode_filter_family(&list, AF_INET);
+    rv = sock_filter_node(&list, AF_INET6);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     node = list_first(&list);
     ABTS_PTR_NULL(tc, node);
 
-    node = socknode_add(&list, AF_INET6, NULL, PORT, 0);
+    node = sock_add_node(&list, AF_UNSPEC, NULL, PORT, 0);
     ABTS_PTR_NOTNULL(tc, node);
-    node = socknode_add(&list, AF_INET, NULL, PORT, AI_PASSIVE);
+    rv = sock_filter_node(&list, AF_INET6);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    node = list_first(&list);
     ABTS_PTR_NOTNULL(tc, node);
-    node = socknode_add(&list, AF_UNSPEC, NULL, PORT, AI_PASSIVE);
+    rv = sock_filter_node(&list, AF_INET);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    node = list_first(&list);
+    ABTS_PTR_NULL(tc, node);
+
+    node = sock_add_node(&list, AF_INET6, NULL, PORT, 0);
+    ABTS_PTR_NOTNULL(tc, node);
+    node = sock_add_node(&list, AF_INET, NULL, PORT, AI_PASSIVE);
+    ABTS_PTR_NOTNULL(tc, node);
+    node = sock_add_node(&list, AF_UNSPEC, NULL, PORT, AI_PASSIVE);
     ABTS_PTR_NOTNULL(tc, node);
 
     node = list_first(&list);
@@ -402,10 +402,10 @@ static void sock_test7(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, addr);
     ABTS_INT_EQUAL(tc, PORT, CORE_PORT(addr));
 
-    rv = socknode_getifaddrs_to_list(&list, PORT);
+    rv = sock_get_all_nodes(&list, PORT);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    socknode_remove_all(&list);
+    sock_remove_all_nodes(&list);
 }
 
 abts_suite *testsock(abts_suite *suite)

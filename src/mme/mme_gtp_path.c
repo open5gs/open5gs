@@ -46,7 +46,7 @@ status_t mme_gtp_open()
 {
     status_t rv;
     mme_sgw_t *sgw = mme_sgw_first();
-    c_socknode_t *node;
+    sock_node_t *node;
     sock_id temp;  /* FIXME ADDR */
 
     for (node = list_first(&mme_self()->gtpc4_list);
@@ -107,7 +107,7 @@ status_t mme_gtp_open()
 
 status_t mme_gtp_close()
 {
-    c_socknode_t *node;
+    sock_node_t *node;
 
     for (node = list_first(&mme_self()->gtpc4_list);
             node; node = list_next(node))
