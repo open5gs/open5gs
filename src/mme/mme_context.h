@@ -41,8 +41,6 @@ typedef struct _mme_ue_t mme_ue_t;
 typedef struct _gtp_node_t gtp_node_t;
 typedef struct _gtp_xact_t gtp_xact_t;
 
-typedef gtp_node_t mme_sgw_t;
-
 typedef struct _served_gummei {
     c_uint32_t      num_of_plmn_id;
     plmn_id_t       plmn_id[MAX_PLMN_ID];
@@ -57,7 +55,6 @@ typedef struct _mme_context_t {
     const char      *fd_conf_path;  /* MME freeDiameter conf path */
 
     list_t          s1ap_list;      /* MME S1AP Server List */
-    list_t          old_sgw_list;   /* SGW GTPC Client List */
 
     c_uint16_t      gtpc_port;      /* Default GTPC Port */
 
@@ -67,6 +64,7 @@ typedef struct _mme_context_t {
     c_sockaddr_t    *gtpc6_addr;    /* MME GTPC IPv6 Address */
 
     list_t          sgw_list;       /* SGW GTPC Client List */
+    gtp_node_t      *sgw;           /* Iterator for SGW round-robin */
 
     c_uint32_t      s5c_addr;       /* PGW S5C remote address */
     c_uint16_t      s5c_port;       /* PGW S5C remote port */
@@ -77,8 +75,6 @@ typedef struct _mme_context_t {
     /* Generator for unique identification */
     c_uint32_t      mme_ue_s1ap_id; /* mme_ue_s1ap_id generator */
     c_uint32_t      m_tmsi;         /* m_tmsi generator */
-    /* Iterator for SGW round-robin */
-    mme_sgw_t       *sgw;
 
     /* defined in 'nas_ies.h'
      * #define NAS_SECURITY_ALGORITHMS_EIA0        0
@@ -341,11 +337,11 @@ struct _mme_ue_t {
         d_assert((__mME), break, "Null param"); \
         (__mME)->sgw = self.sgw; \
         d_assert(((__mME)->sgw), break, "Null param"); \
-        self.sgw = mme_sgw_next((__mME)->sgw); \
-        if (!self.sgw) self.sgw = mme_sgw_first(); \
+        self.sgw = list_next((__mME)->sgw); \
+        if (!self.sgw) self.sgw = list_first(&mme_self()->sgw_list); \
         d_assert(self.sgw, break, "Null param"); \
     } while(0)
-    mme_sgw_t       *sgw;
+    gtp_node_t      *sgw;
 };
 
 #define MME_HAVE_SGW_S1U_PATH(__sESS) \
@@ -462,12 +458,6 @@ CORE_DECLARE(status_t)      mme_s1ap_remove(mme_s1ap_t *s1ap);
 CORE_DECLARE(status_t)      mme_s1ap_remove_all(void);
 CORE_DECLARE(mme_s1ap_t*)   mme_s1ap_first(void);
 CORE_DECLARE(mme_s1ap_t*)   mme_s1ap_next(mme_s1ap_t *s1ap);
-
-CORE_DECLARE(mme_sgw_t*)    mme_sgw_add(void);
-CORE_DECLARE(status_t)      mme_sgw_remove(mme_sgw_t *sgw);
-CORE_DECLARE(status_t)      mme_sgw_remove_all(void);
-CORE_DECLARE(mme_sgw_t*)    mme_sgw_first(void);
-CORE_DECLARE(mme_sgw_t*)    mme_sgw_next(mme_sgw_t *sgw);
 
 CORE_DECLARE(mme_enb_t*)    mme_enb_add(sock_id sock, c_sockaddr_t *addr);
 CORE_DECLARE(status_t)      mme_enb_remove(mme_enb_t *enb);

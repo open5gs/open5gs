@@ -27,7 +27,6 @@
 static mme_context_t self;
 
 pool_declare(mme_s1ap_pool, mme_s1ap_t, MAX_NUM_OF_S1AP_SERVER);
-pool_declare(mme_sgw_pool, mme_sgw_t, MAX_NUM_OF_GTP_CLIENT);
 
 index_declare(mme_enb_pool, mme_enb_t, MAX_NUM_OF_ENB);
 index_declare(mme_ue_pool, mme_ue_t, MAX_POOL_OF_UE);
@@ -53,9 +52,6 @@ status_t mme_context_init()
 
     gtp_node_init();
     list_init(&self.sgw_list);
-
-    pool_init(&mme_sgw_pool, MAX_NUM_OF_GTP_CLIENT);
-    list_init(&self.old_sgw_list);
 
     index_init(&mme_enb_pool, MAX_NUM_OF_ENB);
     index_init(&mme_ue_pool, MAX_POOL_OF_UE);
@@ -84,10 +80,8 @@ status_t mme_context_final()
             "MME context already has been finalized");
 
     mme_s1ap_remove_all();
-    
-    mme_sgw_remove_all();
-    mme_enb_remove_all();
 
+    mme_enb_remove_all();
     mme_ue_remove_all();
 
     d_assert(self.enb_sock_hash, , "Null param");
@@ -110,7 +104,6 @@ status_t mme_context_final()
     index_final(&enb_ue_pool);
 
     index_final(&mme_enb_pool);
-    pool_final(&mme_sgw_pool);
 
     gtp_remove_all_nodes(&self.sgw_list);
     gtp_node_final();
@@ -169,27 +162,7 @@ static status_t mme_context_validation()
                 context_self()->config.path);
         return CORE_ERROR;
     }
-
-    mme_sgw_t *sgw = mme_sgw_first();
-    if (sgw == NULL)
-    {
-        d_error("No sgw.gtpc in '%s'",
-                context_self()->config.path);
-        return CORE_ERROR;
-    }
-#if 0 /* ADDR */
-    while(sgw)
-    {
-        if (sgw->old_addr == 0)
-        {
-            d_error("No SGW.NEWORK.GTPC_IPV4 in '%s'",
-                    context_self()->config.path);
-            return CORE_ERROR;
-        }
-        sgw = mme_sgw_next(sgw);
-    }
-#endif
-    self.sgw = mme_sgw_first();
+    self.sgw = list_first(&self.sgw_list);
 
     if (self.max_num_of_served_gummei == 0)
     {
@@ -693,10 +666,8 @@ status_t mme_context_parse_config()
 
                         while(yaml_iter_next(&tai_iter))
                         {
-                            const char *tai_key =
-                                yaml_iter_key(&tai_iter);
-                            d_assert(tai_key,
-                                    return CORE_ERROR,);
+                            const char *tai_key = yaml_iter_key(&tai_iter);
+                            d_assert(tai_key, return CORE_ERROR,);
                             if (!strcmp(tai_key, "plmn_id"))
                             {
                                 yaml_iter_t plmn_id_iter;
@@ -882,7 +853,7 @@ status_t mme_context_parse_config()
                     yaml_iter_recurse(&mme_iter, &gtpc_array);
                     do
                     {
-                        mme_sgw_t *sgw = NULL;
+                        gtp_node_t *sgw = NULL;
                         int family = AF_UNSPEC;
                         const char *hostname = NULL;
                         c_uint16_t port = GTPV2_C_UDP_PORT;
@@ -937,15 +908,6 @@ status_t mme_context_parse_config()
                             else
                                 d_warn("unknown key `%s`", gtpc_key);
                         }
-
-#if 1
-                        sgw = mme_sgw_add();
-                        d_assert(sgw, return CORE_ERROR,);
-
-                        d_assert(hostname, return CORE_ERROR,);
-                        core_inet_pton(AF_INET, hostname, &sgw->old_addr);
-                        sgw->old_addr.c_sa_port = htons(port);
-#endif
 
                         sgw = gtp_add_node(&self.sgw_list,
                                 family, hostname, port);
@@ -1136,6 +1098,8 @@ status_t mme_context_setup_trace_module()
     {
         extern int _mme_s11_handler;
         d_trace_level(&_mme_s11_handler, gtp);
+        extern int _gtp_node;
+        d_trace_level(&_gtp_node, gtp);
         extern int _gtp_path;
         d_trace_level(&_gtp_path, gtp);
         extern int _mme_s11_path;
@@ -1218,62 +1182,6 @@ mme_s1ap_t* mme_s1ap_first()
 mme_s1ap_t* mme_s1ap_next(mme_s1ap_t *s1ap)
 {
     return list_next(s1ap);
-}
-
-mme_sgw_t* mme_sgw_add()
-{
-    mme_sgw_t *sgw = NULL;
-
-    pool_alloc_node(&mme_sgw_pool, &sgw);
-    d_assert(sgw, return NULL, "Null param");
-
-    memset(sgw, 0, sizeof(mme_sgw_t));
-
-    list_init(&sgw->local_list);
-    list_init(&sgw->remote_list);
-
-    list_append(&self.old_sgw_list, sgw);
-    
-    return sgw;
-}
-
-status_t mme_sgw_remove(mme_sgw_t *sgw)
-{
-    d_assert(sgw, return CORE_ERROR, "Null param");
-
-    list_remove(&self.old_sgw_list, sgw);
-
-    gtp_xact_delete_all(sgw);
-    pool_free_node(&mme_sgw_pool, sgw);
-
-    return CORE_OK;
-}
-
-status_t mme_sgw_remove_all()
-{
-    mme_sgw_t *sgw = NULL, *next_sgw = NULL;
-    
-    sgw = mme_sgw_first();
-    while (sgw)
-    {
-        next_sgw = mme_sgw_next(sgw);
-
-        mme_sgw_remove(sgw);
-
-        sgw = next_sgw;
-    }
-
-    return CORE_OK;
-}
-
-mme_sgw_t* mme_sgw_first()
-{
-    return list_first(&self.old_sgw_list);
-}
-
-mme_sgw_t* mme_sgw_next(mme_sgw_t *sgw)
-{
-    return list_next(sgw);
 }
 
 mme_enb_t* mme_enb_add(sock_id sock, c_sockaddr_t *addr)
@@ -1554,6 +1462,8 @@ mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
     mme_ue->mme_s11_ipv4 = mme_self()->gtpc4_addr;
     mme_ue->mme_s11_ipv6 = mme_self()->gtpc6_addr;
 
+    CONNECT_SGW_GTP_NODE(mme_ue);
+    
     /* Create t3413 timer */
     mme_ue->t3413 = timer_create(&self.tm_service, MME_EVT_EMM_T3413,
             self.t3413_value * 1000);
@@ -1564,8 +1474,6 @@ mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
     fsm_create(&mme_ue->sm, emm_state_initial, emm_state_final);
     fsm_init(&mme_ue->sm, &e);
 
-    CONNECT_SGW_GTP_NODE(mme_ue);
-    
     return mme_ue;
 }
 

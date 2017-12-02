@@ -45,9 +45,7 @@ static int _gtpv2_c_recv_cb(sock_id sock, void *data)
 static status_t mme_gtp_server()
 {
     status_t rv;
-    mme_sgw_t *sgw = mme_sgw_first();
     sock_node_t *snode;
-    sock_id temp;  /* FIXME ADDR */
 
     for (snode = list_first(&mme_self()->gtpc4_list);
             snode; snode = list_next(snode))
@@ -58,7 +56,6 @@ static status_t mme_gtp_server()
             d_error("Can't establish GTP-C Path for SGW");
             return rv;
         }
-        temp = snode->sock; /* FIXME ADDR : Shoud be removed */
     }
 
     for (snode = list_first(&mme_self()->gtpc4_list);
@@ -94,13 +91,6 @@ static status_t mme_gtp_server()
 
     d_assert(mme_self()->gtpc4_addr || mme_self()->gtpc6_addr,
             return CORE_ERROR, "No GTP Server");
-
-    /* FIXME : socket descriptor needs in gnode when packet is sending initilly */
-    while(sgw)
-    {
-        sgw->sock = temp;
-        sgw = mme_sgw_next(sgw);
-    }
 
     return CORE_OK;
 }

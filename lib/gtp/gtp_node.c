@@ -3,6 +3,7 @@
 #include "core_debug.h"
 
 #include "gtp_node.h"
+#include "gtp_xact.h"
 
 pool_declare(gtp_node_pool, gtp_node_t, MAX_NUM_OF_GTP_CLIENT);
 
@@ -60,6 +61,8 @@ status_t gtp_remove_node(list_t *list, gtp_node_t *node)
     d_assert(node, return CORE_ERROR,);
 
     list_remove(list, node);
+
+    gtp_xact_delete_all(node);
 
     core_freeaddrinfo(node->sa_list);
     pool_free_node(&gtp_node_pool, node);

@@ -318,6 +318,8 @@ status_t sgw_context_setup_trace_module()
         d_trace_level(&_sgw_s11_handler, gtp);
         extern int _sgw_s11_handler;
         d_trace_level(&_sgw_s11_handler, gtp);
+        extern int _gtp_node;
+        d_trace_level(&_gtp_node, gtp);
         extern int _gtp_path;
         d_trace_level(&_gtp_path, gtp);
         extern int _sgw_path;

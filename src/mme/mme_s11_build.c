@@ -16,7 +16,6 @@ status_t mme_s11_build_create_session_request(
 {
     status_t rv;
     pdn_t *pdn = NULL;
-    mme_sgw_t *sgw = NULL;
     mme_ue_t *mme_ue = NULL;
     mme_bearer_t *bearer = NULL;
     gtp_message_t gtp_message;
@@ -41,8 +40,6 @@ status_t mme_s11_build_create_session_request(
     d_assert(pgw_ipv4_addr, return CORE_ERROR, "Null param");
     mme_ue = sess->mme_ue;
     d_assert(mme_ue, return CORE_ERROR, "Null param");
-    sgw = mme_ue->sgw;
-    d_assert(sgw, return CORE_ERROR, "Null param");
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));
 
