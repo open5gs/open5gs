@@ -4,25 +4,31 @@ pkglib_LTLIBRARIES = libgtp.la
 
 libgtp_la_SOURCES = \
 	gtp_message.h gtp_types.h gtp_conv.h gtp_node.h gtp_path.h gtp_xact.h \
-	gtp_message.c gtp_types.c gtp_conv.c gtp_node.c gtp_path.c gtp_xact.c
+	gtp_message.c gtp_types.c gtp_conv.c gtp_node.c gtp_path.c gtp_xact.c \
+	$(NULL)
 
 libgtp_la_DEPENDENCIES = \
     $(top_srcdir)/lib/core/src/libcore.la \
-    $(top_srcdir)/lib/3gpp/lib3gpp.la
+    $(top_srcdir)/lib/3gpp/lib3gpp.la \
+	$(NULL)
 
 libgtp_la_LIBADD = \
     $(top_srcdir)/lib/core/src/libcore.la \
-    $(top_srcdir)/lib/3gpp/lib3gpp.la
+    $(top_srcdir)/lib/3gpp/lib3gpp.la \
+	$(NULL)
 
 AM_LDFLAGS = \
-	-version-info @LIBVERSION@
+	-version-info @LIBVERSION@ \
+	$(NULL)
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \
-    -I$(top_srcdir)/lib/3gpp
+    -I$(top_srcdir)/lib/3gpp \
+	$(NULL)
 
 AM_CFLAGS = \
-	-Wall -Werror
+	-Wall -Werror \
+	$(NULL)
 
 MAINTAINERCLEANFILES = Makefile.in 
 MOSTLYCLEANFILES = *.stackdump

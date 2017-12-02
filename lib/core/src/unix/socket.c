@@ -7,14 +7,14 @@
 #include "core_arch_network.h"
 
 #define MAX_SOCK_POOL_SIZE              512
-#define MAX_SOCKNODE_POOL_SIZE          512
+#define MAX_SOCK_NODE_POOL_SIZE         512
 
 static int max_fd;
 static list_t fd_list;
 static fd_set read_fds;
 
 pool_declare(sock_pool, sock_t, MAX_SOCK_POOL_SIZE);
-pool_declare(sock_node_pool, sock_node_t, MAX_SOCKNODE_POOL_SIZE);
+pool_declare(sock_node_pool, sock_node_t, MAX_SOCK_NODE_POOL_SIZE);
 
 static status_t sononblock(int sd);
 static status_t soblock(int sd);
@@ -27,7 +27,7 @@ static void fd_dispatch(fd_set *fds);
 status_t network_init(void)
 {
     pool_init(&sock_pool, MAX_SOCK_POOL_SIZE);
-    pool_init(&sock_node_pool, MAX_SOCKNODE_POOL_SIZE);
+    pool_init(&sock_node_pool, MAX_SOCK_NODE_POOL_SIZE);
 
     max_fd = 0;
     list_init(&fd_list);
@@ -310,10 +310,14 @@ static sock_node_t *sock_add_node_internal(list_t *list, c_sockaddr_t *sa_list)
 }
 
 sock_node_t *sock_add_node(list_t *list,
-    int family, const char *hostname, c_uint16_t port, int flags)
+    int family, const char *hostname, c_uint16_t port)
 {
     status_t rv;
     c_sockaddr_t *sa_list = NULL;
+    int flags = 0;
+
+    if (hostname == NULL)
+        flags = AI_PASSIVE;
 
     rv = core_getaddrinfo(&sa_list, family, hostname, port, flags);
     if (rv != CORE_OK)

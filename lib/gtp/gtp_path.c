@@ -9,19 +9,37 @@
 
 #include "gtp_path.h"
 
-status_t gtp_server(sock_id *new, c_sockaddr_t *sa_list, sock_handler handler)
+status_t gtp_server(sock_node_t *snode, sock_handler handler)
 {
     status_t rv;
     char buf[CORE_ADDRSTRLEN];
 
-    rv = udp_server(new, sa_list);
+    d_assert(snode, return CORE_ERROR,);
+
+    rv = udp_server(&snode->sock, snode->sa_list);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
-    rv = sock_register(*new, handler, NULL);
+    rv = sock_register(snode->sock, handler, NULL);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
     d_trace(1, "gtp_server() [%s]:%d\n",
-            CORE_ADDR(sa_list, buf), CORE_PORT(sa_list));
+            CORE_ADDR(snode->sa_list, buf), CORE_PORT(snode->sa_list));
+
+    return CORE_OK;
+}
+
+status_t gtp_client(gtp_node_t *gnode)
+{
+    status_t rv;
+    char buf[CORE_ADDRSTRLEN];
+
+    d_assert(gnode, return CORE_ERROR,);
+
+    rv = udp_client(&gnode->sock, gnode->sa_list);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    d_trace(1, "gtp_client() [%s]:%d\n",
+            CORE_ADDR(gnode->sa_list, buf), CORE_PORT(gnode->sa_list));
 
     return CORE_OK;
 }
@@ -151,7 +169,7 @@ status_t gtp_send(gtp_node_t *gnode, pkbuf_t *pkbuf)
     sock = gnode->sock;
     d_assert(sock, return CORE_ERROR, "Null param");
 
-    if (gnode->addr)
+    if (gnode->sa_list)
     {
         /* New interface */
         d_assert(0, return CORE_ERROR,);

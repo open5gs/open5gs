@@ -122,7 +122,7 @@ CORE_DECLARE(c_sockaddr_t *) sock_remote_addr(sock_id id);
  * Socket Address
  */
 CORE_DECLARE(sock_node_t *) sock_add_node(list_t *list,
-        int family, const char *hostname, c_uint16_t port, int flags);
+        int family, const char *hostname, c_uint16_t port);
 CORE_DECLARE(status_t) sock_remove_node(list_t *list, sock_node_t *node);
 CORE_DECLARE(status_t) sock_remove_all_nodes(list_t *list);
 

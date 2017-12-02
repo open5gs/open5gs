@@ -10,8 +10,8 @@ typedef struct _gtp_node_t gtp_node_t;
 extern "C" {
 #endif /* __cplusplus */
 
-CORE_DECLARE(status_t) gtp_server(sock_id *new,
-        c_sockaddr_t *sa_list, sock_handler handler);
+CORE_DECLARE(status_t) gtp_server(sock_node_t *snode, sock_handler handler);
+CORE_DECLARE(status_t) gtp_client(gtp_node_t *gnode);
 
 CORE_DECLARE(status_t) gtp_listen(sock_id *sock, 
     sock_handler handler, c_uint32_t addr, c_uint16_t port, void *data);

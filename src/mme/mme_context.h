@@ -57,14 +57,16 @@ typedef struct _mme_context_t {
     const char      *fd_conf_path;  /* MME freeDiameter conf path */
 
     list_t          s1ap_list;      /* MME S1AP Server List */
-    list_t          sgw_list;       /* SGW GTPC Client List */
+    list_t          old_sgw_list;   /* SGW GTPC Client List */
 
     c_uint16_t      gtpc_port;      /* Default GTPC Port */
 
-    list_t    gtpc4_list;     /* MME GTPC IPv4 Server List */
+    list_t          gtpc4_list;     /* MME GTPC IPv4 Server List */
     c_sockaddr_t    *gtpc4_addr;    /* MME GTPC IPv4 Address */
-    list_t    gtpc6_list;     /* MME GTPC IPv6 Server List */
+    list_t          gtpc6_list;     /* MME GTPC IPv6 Server List */
     c_sockaddr_t    *gtpc6_addr;    /* MME GTPC IPv6 Address */
+
+    list_t          sgw_list;       /* SGW GTPC Client List */
 
     c_uint32_t      s5c_addr;       /* PGW S5C remote address */
     c_uint16_t      s5c_port;       /* PGW S5C remote port */

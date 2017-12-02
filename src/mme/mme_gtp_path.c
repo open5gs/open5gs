@@ -42,39 +42,39 @@ static int _gtpv2_c_recv_cb(sock_id sock, void *data)
     return 0;
 }
 
-status_t mme_gtp_open()
+static status_t mme_gtp_server()
 {
     status_t rv;
     mme_sgw_t *sgw = mme_sgw_first();
-    sock_node_t *node;
+    sock_node_t *snode;
     sock_id temp;  /* FIXME ADDR */
 
-    for (node = list_first(&mme_self()->gtpc4_list);
-            node; node = list_next(node))
+    for (snode = list_first(&mme_self()->gtpc4_list);
+            snode; snode = list_next(snode))
     {
-        rv = gtp_server(&node->sock, node->sa_list, _gtpv2_c_recv_cb);
+        rv = gtp_server(snode, _gtpv2_c_recv_cb);
         if (rv != CORE_OK)
         {
             d_error("Can't establish GTP-C Path for SGW");
             return rv;
         }
-        temp = node->sock; /* FIXME ADDR : Shoud be removed */
+        temp = snode->sock; /* FIXME ADDR : Shoud be removed */
     }
 
-    for (node = list_first(&mme_self()->gtpc4_list);
-            node; node = list_next(node))
+    for (snode = list_first(&mme_self()->gtpc4_list);
+            snode; snode = list_next(snode))
     {
-        mme_self()->gtpc4_addr = sock_local_addr(node->sock);
+        mme_self()->gtpc4_addr = sock_local_addr(snode->sock);
         if (mme_self()->gtpc4_addr)
         {
             break;
         }
     }
 
-    for (node = list_first(&mme_self()->gtpc6_list);
-            node; node = list_next(node))
+    for (snode = list_first(&mme_self()->gtpc6_list);
+            snode; snode = list_next(snode))
     {
-        rv = gtp_server(&node->sock, node->sa_list, _gtpv2_c_recv_cb);
+        rv = gtp_server(snode, _gtpv2_c_recv_cb);
         if (rv != CORE_OK)
         {
             d_error("Can't establish GTP-C Path for SGW");
@@ -82,10 +82,10 @@ status_t mme_gtp_open()
         }
     }
 
-    for (node = list_first(&mme_self()->gtpc6_list);
-            node; node = list_next(node))
+    for (snode = list_first(&mme_self()->gtpc6_list);
+            snode; snode = list_next(snode))
     {
-        mme_self()->gtpc6_addr = sock_local_addr(node->sock);
+        mme_self()->gtpc6_addr = sock_local_addr(snode->sock);
         if (mme_self()->gtpc6_addr)
         {
             break;
@@ -105,20 +105,59 @@ status_t mme_gtp_open()
     return CORE_OK;
 }
 
-status_t mme_gtp_close()
+static status_t mme_gtp_client()
 {
-    sock_node_t *node;
+    status_t rv;
+    gtp_node_t *gnode = NULL;
 
-    for (node = list_first(&mme_self()->gtpc4_list);
-            node; node = list_next(node))
+    for (gnode = list_first(&mme_self()->sgw_list);
+            gnode; gnode = list_next(gnode))
     {
-        sock_delete(node->sock);
+        rv = gtp_client(gnode);
+        if (rv != CORE_OK)
+        {
+            d_error("Can't connect GTP-C Path to SGW");
+            return rv;
+        }
     }
 
-    for (node = list_first(&mme_self()->gtpc6_list);
-            node; node = list_next(node))
+    return CORE_OK;
+}
+
+status_t mme_gtp_open()
+{
+    status_t rv;
+    
+    rv = mme_gtp_server();
+    if (rv != CORE_OK) return CORE_ERROR;
+
+    rv = mme_gtp_client();
+    if (rv != CORE_OK) return CORE_ERROR;
+
+    return CORE_OK;
+}
+
+status_t mme_gtp_close()
+{
+    sock_node_t *snode;
+    gtp_node_t *gnode;
+
+    for (snode = list_first(&mme_self()->gtpc4_list);
+            snode; snode = list_next(snode))
     {
-        sock_delete(node->sock);
+        sock_delete(snode->sock);
+    }
+
+    for (snode = list_first(&mme_self()->gtpc6_list);
+            snode; snode = list_next(snode))
+    {
+        sock_delete(snode->sock);
+    }
+
+    for (gnode = list_first(&mme_self()->sgw_list);
+            gnode; gnode = list_next(gnode))
+    {
+        sock_delete(gnode->sock);
     }
 
     return CORE_OK;
