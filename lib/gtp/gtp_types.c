@@ -404,22 +404,22 @@ c_int16_t gtp_build_f_teid(
     if (f_teid->addr && f_teid->addr6)
     {
         target.ipv4 = 1;
-        target.both.ipv4_addr = f_teid->addr->sin.sin_addr.s_addr;
+        target.ip.both.addr = f_teid->addr->sin.sin_addr.s_addr;
         target.ipv6 = 1;
-        memcpy(target.both.ipv6_addr,
+        memcpy(target.ip.both.addr6,
                 f_teid->addr6->sin6.sin6_addr.s6_addr, IPV6_LEN);
         size = GTP_F_TEID_IPV4_AND_IPV6_LEN;
     }
     else if (f_teid->addr)
     {
         target.ipv4 = 1;
-        target.ipv4_addr = f_teid->addr->sin.sin_addr.s_addr;
+        target.ip.addr = f_teid->addr->sin.sin_addr.s_addr;
         size = GTP_F_TEID_IPV4_LEN;
     }
     else if (f_teid->addr6)
     {
         target.ipv6 = 1;
-        memcpy(target.ipv6_addr,
+        memcpy(target.ip.addr6,
                 f_teid->addr6->sin6.sin6_addr.s6_addr, IPV6_LEN);
         size = GTP_F_TEID_IPV6_LEN;
     }

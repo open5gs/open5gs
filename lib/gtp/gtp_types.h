@@ -347,20 +347,14 @@ CORE_DECLARE(c_int16_t) gtp_build_uli(
 #define GTP_F_TEID_IPV4_AND_IPV6_LEN                        25
 #define GTP_MAX_F_TEID_LEN                                  25
 typedef struct _gtp_f_teid_t {
-ED3(c_uint8_t ipv4:1;,
-    c_uint8_t ipv6:1;,
-    c_uint8_t interface_type:6;)
-    c_uint32_t teid;
-    union {
-        c_uint32_t ipv4_addr;
-        c_uint8_t ipv6_addr[IPV6_LEN];
-        struct {
-            c_uint32_t ipv4_addr;
-            c_uint8_t ipv6_addr[IPV6_LEN];
-        } both;
-    };
-    c_sockaddr_t *addr;
-    c_sockaddr_t *addr6;
+ED3(c_uint8_t       ipv4:1;,
+    c_uint8_t       ipv6:1;,
+    c_uint8_t       interface_type:6;)
+    c_uint32_t      teid;
+    ip_t            ip;
+
+    c_sockaddr_t    *addr;
+    c_sockaddr_t    *addr6;
 } __attribute__ ((packed)) gtp_f_teid_t;
 
 CORE_DECLARE(c_int16_t) gtp_build_f_teid(

@@ -93,6 +93,26 @@ typedef struct _guti_t {
 } __attribute__ ((packed)) guti_t;
 
 /**************************************************
+ * Common Structure
+ * S1AP : 9.2.2.1 Transport Layer Address, See 36.414
+ * GTP : 8.22 Fully Qualified TEID (F-TEID) */
+typedef struct _ip_t {
+    union {
+        /* GTP_F_TEID_IPV4 */
+        c_uint32_t addr;
+
+        /* GTP_F_TEID_IPV6 */
+        c_uint8_t addr6[IPV6_LEN];
+
+        /* GTP_F_TEID_BOTH */
+        struct {
+            c_uint32_t addr;
+            c_uint8_t addr6[IPV6_LEN];
+        } both;
+    };
+} ip_t;
+
+/**************************************************
  * 8.14 PDN Address Allocation (PAA) */
 #define PAA_IPV4_LEN                                    5
 #define PAA_IPV6_LEN                                    18
@@ -106,14 +126,25 @@ typedef struct _paa_t {
 ED2(c_uint8_t spare:5;,
     c_uint8_t pdn_type:3;)
     union {
-        c_uint32_t ipv4_addr;;
+        /* GTP_PDN_TYPE_IPV4 */
+        c_uint32_t addr;      
+
+        /* GTP_PDN_TYPE_IPV6 */
         struct {
-            c_uint8_t ipv6_len;
-            c_uint8_t ipv6_addr[IPV6_LEN];
+            c_uint8_t len;
+            c_uint8_t addr6[IPV6_LEN];
         };
-        c_uint8_t ipv6_addr2[IPV6_LEN];
+
+        /* GTP_PDN_TYPE_BOTH */
+        struct {
+            c_uint32_t addr;      
+
+            struct {
+                c_uint8_t len;
+                c_uint8_t addr6[IPV6_LEN];
+            };
+        } both;
     };
-    c_uint32_t ipv4_addr2;
 } __attribute__ ((packed)) paa_t;
 
 #define MAX_BIT_RATE C_UINT64_C(10000000000)

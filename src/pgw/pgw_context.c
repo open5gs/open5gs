@@ -691,7 +691,7 @@ pgw_sess_t *pgw_sess_add(gtp_f_teid_t *sgw_s5c_teid,
     memcpy(sess->imsi, imsi, sess->imsi_len);
     core_buffer_to_bcd(sess->imsi, sess->imsi_len, sess->imsi_bcd);
 
-    addr = sgw_s5c_teid->ipv4_addr;
+    addr = sgw_s5c_teid->ip.addr;
     sgw = pgw_sgw_find(addr);
     if (!sgw)
     {
@@ -1031,7 +1031,7 @@ pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
                 INET_NTOP(&sess->pdn.paa.ipv4_addr, buf2));
 #endif
 
-        if (iph->ip_dst.s_addr == sess->pdn.paa.ipv4_addr)
+        if (iph->ip_dst.s_addr == sess->pdn.paa.addr)
         {
             /* Found */
 

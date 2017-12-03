@@ -71,13 +71,13 @@ void pgw_s5c_handle_create_session_request(
     sgw_s5c_teid = req->sender_f_teid_for_control_plane.data;
     d_assert(sgw_s5c_teid, return, "Null param");
     sess->sgw_s5c_teid = ntohl(sgw_s5c_teid->teid);
-    sess->sgw_s5c_addr = sgw_s5c_teid->ipv4_addr;
+    sess->sgw_s5c_addr = sgw_s5c_teid->ip.addr;
 
     /* Control Plane(DL) : SGW-S5U */
     sgw_s5u_teid = req->bearer_contexts_to_be_created.s5_s8_u_sgw_f_teid.data;
     d_assert(sgw_s5u_teid, return, "Null param");
     bearer->sgw_s5u_teid = ntohl(sgw_s5u_teid->teid);
-    bearer->sgw_s5u_addr = sgw_s5u_teid->ipv4_addr;
+    bearer->sgw_s5u_addr = sgw_s5u_teid->ip.addr;
 
     decoded = gtp_parse_bearer_qos(&bearer_qos,
         &req->bearer_contexts_to_be_created.bearer_level_qos);
@@ -161,7 +161,7 @@ void pgw_s5c_handle_create_bearer_response(
     /* Data Plane(DL) : SGW-S5U */
     sgw_s5u_teid = req->bearer_contexts.s5_s8_u_sgw_f_teid.data;
     bearer->sgw_s5u_teid = ntohl(sgw_s5u_teid->teid);
-    bearer->sgw_s5u_addr = sgw_s5u_teid->ipv4_addr;
+    bearer->sgw_s5u_addr = sgw_s5u_teid->ip.addr;
 
     rv = gtp_xact_commit(xact);
     d_assert(rv == CORE_OK, return, "xact_commit error");

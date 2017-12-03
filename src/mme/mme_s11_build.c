@@ -82,7 +82,7 @@ status_t mme_s11_build_create_session_request(
     {
         /* FIXME */
         pgw_s5c_teid.ipv4 = 1;
-        pgw_s5c_teid.ipv4_addr = pdn->pgw.ipv4_addr;
+        pgw_s5c_teid.ip.addr = pdn->pgw.ipv4_addr;
         req->pgw_s5_s8_address_for_control_plane_or_pmip.presence = 1;
         req->pgw_s5_s8_address_for_control_plane_or_pmip.len =
             GTP_F_TEID_IPV4_LEN;
@@ -196,7 +196,7 @@ status_t mme_s11_build_modify_bearer_request(pkbuf_t **pkbuf,
     memset(&enb_s1u_teid, 0, sizeof(gtp_f_teid_t));
     enb_s1u_teid.ipv4 = 1;
     enb_s1u_teid.interface_type = GTP_F_TEID_S1_U_ENODEB_GTP_U;
-    enb_s1u_teid.ipv4_addr = bearer->enb_s1u_addr;
+    enb_s1u_teid.ip.addr = bearer->enb_s1u_addr;
     enb_s1u_teid.teid = htonl(bearer->enb_s1u_teid);
     req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.presence = 1;
     req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.data = &enb_s1u_teid;
@@ -310,7 +310,7 @@ status_t mme_s11_build_create_bearer_response(
     memset(&enb_s1u_teid, 0, sizeof(gtp_f_teid_t));
     enb_s1u_teid.ipv4 = 1;
     enb_s1u_teid.interface_type = GTP_F_TEID_S1_U_ENODEB_GTP_U;
-    enb_s1u_teid.ipv4_addr = bearer->enb_s1u_addr;
+    enb_s1u_teid.ip.addr = bearer->enb_s1u_addr;
     enb_s1u_teid.teid = htonl(bearer->enb_s1u_teid);
     rsp->bearer_contexts.s1_u_enodeb_f_teid.presence = 1;
     rsp->bearer_contexts.s1_u_enodeb_f_teid.data = &enb_s1u_teid;
@@ -320,7 +320,7 @@ status_t mme_s11_build_create_bearer_response(
     memset(&sgw_s1u_teid, 0, sizeof(gtp_f_teid_t));
     sgw_s1u_teid.ipv4 = 1;
     sgw_s1u_teid.interface_type = GTP_F_TEID_S1_U_SGW_GTP_U;
-    sgw_s1u_teid.ipv4_addr = bearer->sgw_s1u_addr;
+    sgw_s1u_teid.ip.addr = bearer->sgw_s1u_addr;
     sgw_s1u_teid.teid = htonl(bearer->sgw_s1u_teid);
     rsp->bearer_contexts.s4_u_sgsn_f_teid.presence = 1;
     rsp->bearer_contexts.s4_u_sgsn_f_teid.data = &sgw_s1u_teid;
@@ -433,7 +433,7 @@ status_t mme_s11_build_create_indirect_data_forwarding_tunnel_request(
                 dl_teid[i].ipv4 = 1;
                 dl_teid[i].interface_type =
                     GTP_F_TEID_ENODEB_GTP_U_FOR_DL_DATA_FORWARDING;
-                dl_teid[i].ipv4_addr = bearer->enb_dl_addr;
+                dl_teid[i].ip.addr = bearer->enb_dl_addr;
                 dl_teid[i].teid = htonl(bearer->enb_dl_teid);
                 d_assert(bearers[i], return CORE_ERROR,);
                 bearers[i]->s1_u_enodeb_f_teid.presence = 1;
@@ -447,7 +447,7 @@ status_t mme_s11_build_create_indirect_data_forwarding_tunnel_request(
                 ul_teid[i].ipv4 = 1;
                 ul_teid[i].interface_type =
                     GTP_F_TEID_ENODEB_GTP_U_FOR_UL_DATA_FORWARDING;
-                ul_teid[i].ipv4_addr = bearer->enb_ul_addr;
+                ul_teid[i].ip.addr = bearer->enb_ul_addr;
                 ul_teid[i].teid = htonl(bearer->enb_ul_teid);
                 d_assert(bearers[i], return CORE_ERROR,);
                 bearers[i]->s12_rnc_f_teid.presence = 1;

@@ -514,7 +514,7 @@ sgw_ue_t* sgw_ue_add(gtp_f_teid_t *mme_s11_teid,
     sgw_ue->sgw_s11_teid = sgw_ue->index;
     sgw_ue->sgw_s11_addr = sgw_self()->gtpc_addr;
 
-    addr = mme_s11_teid->ipv4_addr;
+    addr = mme_s11_teid->ip.addr;
 
     mme = sgw_mme_find(addr);
     if (!mme)

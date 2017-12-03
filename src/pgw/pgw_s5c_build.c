@@ -46,7 +46,7 @@ status_t pgw_s5c_build_create_session_response(
     memset(&pgw_s5c_teid, 0, sizeof(gtp_f_teid_t));
     pgw_s5c_teid.ipv4 = 1;
     pgw_s5c_teid.interface_type = GTP_F_TEID_S5_S8_PGW_GTP_C;
-    pgw_s5c_teid.ipv4_addr = sess->pgw_s5c_addr;
+    pgw_s5c_teid.ip.addr = sess->pgw_s5c_addr;
     pgw_s5c_teid.teid = htonl(sess->pgw_s5c_teid);
     rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
         presence = 1;
@@ -58,7 +58,7 @@ status_t pgw_s5c_build_create_session_response(
     /* PDN Address Allocation */
     d_assert(sess->ip_pool, return CORE_ERROR, "No IP Pool");
     sess->pdn.paa.pdn_type = GTP_PDN_TYPE_IPV4;
-    sess->pdn.paa.ipv4_addr = sess->ip_pool->ue_addr;
+    sess->pdn.paa.addr = sess->ip_pool->ue_addr;
 
     rsp->pdn_address_allocation.presence = 1;
     rsp->pdn_address_allocation.data = &sess->pdn.paa;
@@ -93,7 +93,7 @@ status_t pgw_s5c_build_create_session_response(
     memset(&pgw_s5u_teid, 0, sizeof(gtp_f_teid_t));
     pgw_s5u_teid.ipv4 = 1;
     pgw_s5u_teid.interface_type = GTP_F_TEID_S5_S8_PGW_GTP_U;
-    pgw_s5u_teid.ipv4_addr = bearer->pgw_s5u_addr;
+    pgw_s5u_teid.ip.addr = bearer->pgw_s5u_addr;
     pgw_s5u_teid.teid = htonl(bearer->pgw_s5u_teid);
     rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.presence = 1;
     rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.data = &pgw_s5u_teid;
@@ -197,7 +197,7 @@ status_t pgw_s5c_build_create_bearer_request(
     memset(&pgw_s5u_teid, 0, sizeof(gtp_f_teid_t));
     pgw_s5u_teid.ipv4 = 1;
     pgw_s5u_teid.interface_type = GTP_F_TEID_S5_S8_PGW_GTP_U;
-    pgw_s5u_teid.ipv4_addr = bearer->pgw_s5u_addr;
+    pgw_s5u_teid.ip.addr = bearer->pgw_s5u_addr;
     pgw_s5u_teid.teid = htonl(bearer->pgw_s5u_teid);
     req->bearer_contexts.s5_s8_u_sgw_f_teid.presence = 1;
     req->bearer_contexts.s5_s8_u_sgw_f_teid.data = &pgw_s5u_teid;
