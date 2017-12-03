@@ -27,6 +27,7 @@
 
 #include "core_debug.h"
 #include "core_lib.h"
+#include "core_network.h"
 
 #include "gtp_types.h"
 #include "gtp_message.h"
@@ -377,6 +378,57 @@ c_int16_t gtp_build_uli(
         size += sizeof(target.lai);
     }
 
+    octet->len = size;
+
+    return octet->len;
+}
+
+c_int16_t gtp_build_f_teid(
+        tlv_octet_t *octet, gtp_f_teid_t *f_teid, void *data, int data_len)
+{
+    gtp_f_teid_t target;
+    c_int16_t size = 0;
+
+    d_assert(f_teid, return -1, "Null param");
+    d_assert(octet, return -1, "Null param");
+    d_assert(data, return -1, "Null param");
+    d_assert(data_len, return -1, "Null param");
+
+    octet->data = data;
+
+    memcpy(&target, f_teid, sizeof(gtp_f_teid_t));
+
+    target.interface_type = f_teid->interface_type;
+    target.teid = htonl(f_teid->teid);
+
+    if (f_teid->addr && f_teid->addr6)
+    {
+        target.ipv4 = 1;
+        target.both.ipv4_addr = f_teid->addr->sin.sin_addr.s_addr;
+        target.ipv6 = 1;
+        memcpy(target.both.ipv6_addr,
+                f_teid->addr6->sin6.sin6_addr.s6_addr, IPV6_LEN);
+        size = GTP_F_TEID_IPV4_AND_IPV6_LEN;
+    }
+    else if (f_teid->addr)
+    {
+        target.ipv4 = 1;
+        target.ipv4_addr = f_teid->addr->sin.sin_addr.s_addr;
+        size = GTP_F_TEID_IPV4_LEN;
+    }
+    else if (f_teid->addr6)
+    {
+        target.ipv6 = 1;
+        memcpy(target.ipv6_addr,
+                f_teid->addr6->sin6.sin6_addr.s6_addr, IPV6_LEN);
+        size = GTP_F_TEID_IPV6_LEN;
+    }
+    else
+        d_assert(0, return -1,);
+
+    d_assert(size <= data_len, return -1, "encode error");
+
+    memcpy(octet->data, &target, size);
     octet->len = size;
 
     return octet->len;

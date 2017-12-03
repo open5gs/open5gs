@@ -1,7 +1,11 @@
 #ifndef __GTP_CONV_H__
 #define __GTP_CONV_H__
 
-#include "gtp_message.h"
+#include "core_errno.h"
+
+typedef struct _tlv_bearer_context_t tlv_bearer_context_t;
+typedef struct _gtp_create_indirect_data_forwarding_tunnel_request_t gtp_create_indirect_data_forwarding_tunnel_request_t;
+typedef struct _gtp_create_indirect_data_forwarding_tunnel_response_t gtp_create_indirect_data_forwarding_tunnel_response_t;
 
 #ifdef __cplusplus
 extern "C" {

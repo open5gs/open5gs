@@ -2,6 +2,8 @@
 
 #include "core_debug.h"
 
+#include "gtp_message.h"
+#include "gtp_types.h"
 #include "gtp_conv.h"
 
 void gtp_bearers_in_create_indirect_tunnel_request(

@@ -58,16 +58,17 @@ typedef struct _mme_context_t {
 
     c_uint16_t      gtpc_port;      /* Default GTPC Port */
 
-    list_t          gtpc4_list;     /* MME GTPC IPv4 Server List */
-    c_sockaddr_t    *gtpc4_addr;    /* MME GTPC IPv4 Address */
-    list_t          gtpc6_list;     /* MME GTPC IPv6 Server List */
-    c_sockaddr_t    *gtpc6_addr;    /* MME GTPC IPv6 Address */
+    list_t          gtpc_list;      /* MME GTPC IPv4 Server List */
+    c_sockaddr_t    *gtpc_addr;     /* MME GTPC IPv4 Address */
+    list_t          gtpc_list6;     /* MME GTPC IPv6 Server List */
+    c_sockaddr_t    *gtpc_addr6;    /* MME GTPC IPv6 Address */
 
     list_t          sgw_list;       /* SGW GTPC Client List */
     gtp_node_t      *sgw;           /* Iterator for SGW round-robin */
 
     list_t          pgw_list;       /* PGW GTPC Client List */
-    gtp_node_t      *pgw;           /* First Node Selected */
+    c_sockaddr_t    *pgw_addr;      /* First IPv4 Address Selected */
+    c_sockaddr_t    *pgw_addr6;     /* First IPv6 Address Selected */
 
     msgq_id         queue_id;       /* Queue for processing MME control plane */
     tm_service_t    tm_service;     /* Timer Service */

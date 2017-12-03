@@ -51,10 +51,10 @@ status_t testgtpu_enb_connect(sock_id *new)
     if (test_only_control_plane) return CORE_OK;
 
     d_assert(mme, return CORE_ERROR,);
-    d_assert(mme->gtpc4_addr, return CORE_ERROR,);
+    d_assert(mme->gtpc_addr, return CORE_ERROR,);
     if (!mme) return CORE_ERROR;
 
-    memcpy(&addr, mme->gtpc4_addr, sizeof(c_sockaddr_t));
+    memcpy(&addr, mme->gtpc_addr, sizeof(c_sockaddr_t));
     addr.c_sa_port = htons(GTPV1_U_UDP_PORT);
 
     rv = udp_socket(new, AF_INET);
