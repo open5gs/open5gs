@@ -133,6 +133,7 @@ CORE_DECLARE(status_t) core_getaddrinfo(c_sockaddr_t **sa_list,
         int family, const char *hostname, c_uint16_t port, int flags);
 CORE_DECLARE(status_t) core_freeaddrinfo(c_sockaddr_t *sa_list);
 CORE_DECLARE(status_t) core_filteraddrinfo(c_sockaddr_t **sa_list, int family);
+CORE_DECLARE(status_t) core_sortaddrinfo(c_sockaddr_t **sa_list, int family);
 
 #define CORE_ADDRSTRLEN INET6_ADDRSTRLEN
 #define CORE_ADDR(__aDDR, __bUF) \

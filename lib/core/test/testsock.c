@@ -1,5 +1,6 @@
 #include "core_debug.h"
 #include "core_thread.h"
+#include "core_pkbuf.h"
 
 #include "core_network.h"
 
@@ -327,6 +328,18 @@ static void sock_test6(abts_case *tc, void *data)
 
     rv = core_getaddrinfo(&paddr, AF_UNSPEC, NULL, PORT, 0);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    rv = core_sortaddrinfo(&paddr, AF_INET6);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    ABTS_STR_EQUAL(tc, "::1", CORE_ADDR(paddr, buf));
+    ABTS_PTR_NOTNULL(tc, paddr->next);
+    ABTS_STR_EQUAL(tc, "127.0.0.1", CORE_ADDR(paddr->next, buf));
+
+    rv = core_sortaddrinfo(&paddr, AF_INET);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    ABTS_STR_EQUAL(tc, "127.0.0.1", CORE_ADDR(paddr, buf));
+    ABTS_PTR_NOTNULL(tc, paddr->next);
+    ABTS_STR_EQUAL(tc, "::1", CORE_ADDR(paddr->next, buf));
 
     rv = core_freeaddrinfo(paddr);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);

@@ -89,6 +89,7 @@ status_t gtp_remove_all_nodes(list_t *list)
 
 status_t gtp_filter_node(list_t *list, int family)
 {
+    status_t rv;
     gtp_node_t *node = NULL, *next_node = NULL;
 
     d_assert(list, return CORE_ERROR,);
@@ -98,10 +99,32 @@ status_t gtp_filter_node(list_t *list, int family)
     {
         next_node = list_next(node);
 
-        core_filteraddrinfo(&node->sa_list, family);
+        rv = core_filteraddrinfo(&node->sa_list, family);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
 
         if (node->sa_list == NULL)
             gtp_remove_node(list, node);
+
+        node = next_node;
+    }
+
+    return CORE_OK;
+}
+
+status_t gtp_sort_node(list_t *list, int family)
+{
+    status_t rv;
+    gtp_node_t *node = NULL, *next_node = NULL;
+
+    d_assert(list, return CORE_ERROR,);
+
+    node = list_first(list);
+    while(node)
+    {
+        next_node = list_next(node);
+
+        rv = core_sortaddrinfo(&node->sa_list, family);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
 
         node = next_node;
     }

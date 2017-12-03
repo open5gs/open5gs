@@ -519,28 +519,63 @@ status_t core_freeaddrinfo(c_sockaddr_t *sa)
 
 status_t core_filteraddrinfo(c_sockaddr_t **sa_list, int family)
 {
-    c_sockaddr_t *addr = NULL, *prev_addr = NULL, *next_addr = NULL;
+    c_sockaddr_t *addr = NULL, *prev = NULL, *next = NULL;
 
     d_assert(sa_list, return CORE_ERROR,);
 
-    prev_addr = NULL;
+    prev = NULL;
     addr = *sa_list;
     while(addr)
     {
-        next_addr = addr->next;
+        next = addr->next;
 
         if (addr->c_sa_family != family)
         {
-            if (prev_addr)
-                prev_addr->next = addr->next;
+            if (prev)
+                prev->next = addr->next;
             else
                 *sa_list = addr->next;
             core_free(addr);
         }
 
-        prev_addr = addr;
-        addr = next_addr;
+        prev = addr;
+        addr = next;
     }
+
+    return CORE_OK;
+}
+
+status_t core_sortaddrinfo(c_sockaddr_t **sa_list, int family)
+{
+    c_sockaddr_t *head = NULL, *addr = NULL, *new = NULL, *old = NULL;
+
+    d_assert(sa_list, return CORE_ERROR,);
+
+    old = *sa_list;
+    while(old)
+    {
+        addr = old;
+
+        old = old->next;
+
+        if (head == NULL || addr->c_sa_family == family)
+        {
+            addr->next = head;
+            head = addr;
+        }
+        else
+        {
+            new = head;
+            while(new->next != NULL && new->next->c_sa_family != family)
+            {
+                new = new->next;
+            }
+            addr->next = new->next;
+            new->next = addr;
+        }
+    }
+    
+    *sa_list = head;
 
     return CORE_OK;
 }

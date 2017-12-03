@@ -32,6 +32,7 @@ CORE_DECLARE(gtp_node_t *) gtp_add_node(list_t *list,
 CORE_DECLARE(status_t) gtp_remove_node(list_t *list, gtp_node_t *node);
 CORE_DECLARE(status_t) gtp_remove_all_nodes(list_t *list);
 CORE_DECLARE(status_t) gtp_filter_node(list_t *list, int family);
+CORE_DECLARE(status_t) gtp_sort_node(list_t *list, int family);
 
 #ifdef __cplusplus
 }

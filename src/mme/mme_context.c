@@ -928,6 +928,16 @@ status_t mme_context_parse_config()
                         rv = gtp_filter_node(&self.sgw_list, AF_INET);
                         d_assert(rv == CORE_OK, return CORE_ERROR,);
                     }
+                    if (context_self()->parameter.prefer_ipv4 == 1)
+                    {
+                        rv = gtp_sort_node(&self.sgw_list, AF_INET);
+                        d_assert(rv == CORE_OK, return CORE_ERROR,);
+                    }
+                    else
+                    {
+                        rv = gtp_sort_node(&self.sgw_list, AF_INET6);
+                        d_assert(rv == CORE_OK, return CORE_ERROR,);
+                    }
                 }
             }
         }
