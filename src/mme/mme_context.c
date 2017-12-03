@@ -158,7 +158,7 @@ static status_t mme_context_validation()
 
     if (list_first(&self.sgw_list) == NULL)
     {
-        d_error("No sgw.gtpc.hostname in '%s'",
+        d_error("No sgw.gtpc in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
@@ -300,7 +300,8 @@ status_t mme_context_parse_config()
                                     family = AF_UNSPEC;
                                 }
                             }
-                            else if (!strcmp(s1ap_key, "hostname"))
+                            else if (!strcmp(s1ap_key, "addr") ||
+                                    !strcmp(s1ap_key, "name"))
                             {
                                 hostname = yaml_iter_value(&s1ap_iter);
                             }
@@ -367,7 +368,8 @@ status_t mme_context_parse_config()
                                     family = AF_UNSPEC;
                                 }
                             }
-                            else if (!strcmp(gtpc_key, "hostname"))
+                            else if (!strcmp(gtpc_key, "addr") ||
+                                    !strcmp(gtpc_key, "name"))
                             {
                                 hostname = yaml_iter_value(&gtpc_iter);
                             }
@@ -896,7 +898,8 @@ status_t mme_context_parse_config()
                                     family = AF_UNSPEC;
                                 }
                             }
-                            else if (!strcmp(gtpc_key, "hostname"))
+                            else if (!strcmp(gtpc_key, "addr") ||
+                                    !strcmp(gtpc_key, "name"))
                             {
                                 hostname = yaml_iter_value(&gtpc_iter);
                             }
@@ -988,7 +991,8 @@ status_t mme_context_parse_config()
                                     family = AF_UNSPEC;
                                 }
                             }
-                            else if (!strcmp(gtpc_key, "hostname"))
+                            else if (!strcmp(gtpc_key, "addr") ||
+                                    !strcmp(gtpc_key, "name"))
                             {
                                 hostname = yaml_iter_value(&gtpc_iter);
 #if 1

@@ -224,7 +224,8 @@ status_t pgw_context_parse_config()
                                     family = AF_UNSPEC;
                                 }
                             }
-                            else if (!strcmp(gtpc_key, "hostname"))
+                            else if (!strcmp(gtpc_key, "addr") ||
+                                    !strcmp(gtpc_key, "name"))
                             {
                                 hostname = yaml_iter_value(&gtpc_iter);
 #if 1
@@ -303,7 +304,8 @@ status_t pgw_context_parse_config()
                                     family = AF_UNSPEC;
                                 }
                             }
-                            else if (!strcmp(gtpu_key, "hostname"))
+                            else if (!strcmp(gtpu_key, "addr") ||
+                                    !strcmp(gtpu_key, "name"))
                             {
                                 hostname = yaml_iter_value(&gtpu_iter);
 #if 1

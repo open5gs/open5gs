@@ -74,32 +74,33 @@ mme:
 #  <S1AP Server>>
 #
 #  o Specify local addresses the S1AP server must bind to
-#    Type 'family' : ENUM
-#      0  - AF_UNSPEC
-#      2  - AF_INET
-#      30 - AF_INET6
 #
 #  o S1AP Server(all address avaiable)
 #    s1ap:
 #
 #  o Single S1AP Server(0.0.0.0:36412)
 #    s1ap:
-#      - family: 2
+#      addr:
 #
 #  o Multiple S1AP Server(127.0.0.1:36412, [::1]:36413)
 #    s1ap:
-#      - family: 2
-#        hostname: localhost
-#      - hostname: ::1
-#        port: 36413
+#      name: localhost
 #
     s1ap:
 
+#
+#  <GTP-C Server>>
+#
+#  o Specify local addresses the GTP-C server must bind to
+#
+#  o Multiple GTP-C Server(127.0.0.1:2123, [::1]:2123)
+#    gtpc:
+#      - addr: 127.0.0.1
+#      - addr: ::1
+#
     gtpc:
-      - family: 2
-        hostname: localhost
-      - family: 30
-        hostname: localhost
+      - addr: 127.0.0.1
+      - addr: ::1
 
 #
 #  <GUMMEI>
@@ -159,73 +160,37 @@ sgw:
 #
 #  ------------------------ MME --------------------------
 #
-#  o Specify default SGW addresses the GTP-C must connect to
-#    Type 'family' : ENUM
-#      0  - AF_UNSPEC
-#      2  - AF_INET
-#      30 - AF_INET6
+#  o Specify SGW addresses the GTP-C must connect to
 #
-#  o Only first address is attempted. Others are ignored.
-#
-#  o 127.0.0.2:2123 is attempted. [::2]:2123 is ignored.
+#  o Single GTP-C Client(127.0.0.2:2123)
 #    gtpc:
-#      - hostname: 127.0.0.2
-#      - hostname: ::2
+#      addr: 127.0.0.2
 #
-#  o [::2]:2123 and [::10]:2123 is ignored. 127.0.0.2:2123 is attempted.
-#    parameter:
-#      - no_ipv6: true
+#  o MME selects SGW with round-robin manner per UE-basis
 #    gtpc:
-#      - hostname: ::2
-#      - hostname: 127.0.0.2
-#      - hostname: ::10
-#
+#      - name: sgw1.nextepc.org
+#      - addr: 192.168.0.1
+#      - name: sgw2.nextepc.org
 #
 #  ------------------------ SGW --------------------------
 #
 #  o Specify local addresses the GTP-C server must bind to
-#    Type 'family' : Enum
-#      0  - AF_UNSPEC
-#      2  - AF_INET
-#      30 - AF_INET6
-#    Default : liston on all address available
 #
 #  o Single GTP-C Server(127.0.0.2:2123)
-#    gtpu:
-#      hostname: 127.0.0.2
-#
-#  o Multiple GTP-C Server(127.0.0.2:2124, [::2]:2123)
-#    gtpu:
-#      - hostname: 127.0.0.2
-#        port: 2124
-#      - hostname: ::2
+#    gtpc:
+#      addr: 127.0.0.2
 #
     gtpc:
-      - hostname: 127.0.0.2
-      - hostname: ::2
+      addr: 127.0.0.2
 
 #
-#  <GTP-U Server>
+#  <GTP-U Server>>
+#
 #  o Specify local addresses the GTP-U server must bind to
-#    Type 'family' : ENUM
-#      0  - AF_UNSPEC
-#      2  - AF_INET
-#      30 - AF_INET6
 #
-#  o GPU-U Server(all address avaiable)
+#  o GTP-U Server(all address avaiable)
 #    gtpu:
-#
-#  o Multiple GTP-U Server([::]:2152)
-#    gtpu:
-#      - family: 30
-#
-#  o Multiple GTP-U Server(127.0.0.1:2153, [::1]:2152)
-#    gtpu:
-#      - family: 2
-#        hostname: localhost
-#        port: 2153
-#      - hostname: ::1
-#
+#    
     gtpu:
 
 pgw:
@@ -234,59 +199,44 @@ pgw:
 #
 #  ------------------------ MME --------------------------
 #
-#  o Specify default PGW addresses the GTP-C must connect to
-#    Type 'family' : ENUM
-#      0  - AF_UNSPEC
-#      2  - AF_INET
-#      30 - AF_INET6
+#  o Specify PGW addresses the GTP-C must connect to
 #
 #  o Only first address is attempted. Others are ignored.
 #  o if HSS provide PGW addresss(per-UE), it overwrites configuration.
 #
 #  o 127.0.0.3:2123 is attempted. [::3]:2123 is ignored.
 #    gtpc:
-#      - hostname: 127.0.0.3
-#      - hostname: ::3
-#
-#  o [::3]:2123 is attempted. [127.0.0.3]:2123 is ignored.
-#    gtpc:
-#      - hostname: ::3
-#      - hostname: 127.0.0.3
-#
+#      - addr: 127.0.0.3
+#      - addr: ::3
 #
 #  ------------------------ PGW --------------------------
 #
 #  o Specify local addresses the GTP-C server must bind to
-#    Type 'family' : Enum
-#      0  - AF_UNSPEC
-#      2  - AF_INET
-#      30 - AF_INET6
-#
-#  o GPU-C Server(all address avaiable)
-#    gtpc:
 #
 #  o Single GTP-C Server(127.0.0.3:2123)
 #    gtpc:
-#      hostname: 127.0.0.3
-#
-#  o Multiple GTP-C Server(127.0.0.3:2124, [::3]:2123)
-#    gtpc:
-#      - hostname: 127.0.0.3
-#        port: 2124
-#      - hostname: ::3
+#      addr: 127.0.0.3
 #
     gtpc:
-      - hostname: 127.0.0.3
-      - hostname: ::3
+      addr: 127.0.0.3
 
+#
+#  <GTP-U Server>>
+#
+#  o Specify local addresses the GTP-U server must bind to
+#
+#  o Multiple GTP-U Server(127.0.0.3:2152, [::3]:2152)
+#    gtpu:
+#      - addr: 127.0.0.3
+#      - addr: ::3
     gtpu:
-      - hostname: 127.0.0.3
-      - hostname: ::3
+      - addr: 127.0.0.3
+      - addr: ::3
 
 #
 #  <UE network>
 #
-#  o Multiple IP Address
+#  o IPv4/IPv6 with `pgwtun` device
 #    ue_network:
 #      addr:
 #        - 45.45.0.1/16
@@ -315,6 +265,11 @@ pgw:
     ue_network:
       addr: 45.45.0.1/16
 
+#
+#  <Domain Name Server>
+#
+#  o primary/secondary can be configured. Others is ignored
+#
     dns:
       - 8.8.8.8
       - 8.8.4.4
