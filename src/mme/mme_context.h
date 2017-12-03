@@ -66,8 +66,8 @@ typedef struct _mme_context_t {
     list_t          sgw_list;       /* SGW GTPC Client List */
     gtp_node_t      *sgw;           /* Iterator for SGW round-robin */
 
-    c_uint32_t      s5c_addr;       /* PGW S5C remote address */
-    c_uint16_t      s5c_port;       /* PGW S5C remote port */
+    list_t          pgw_list;       /* PGW GTPC Client List */
+    gtp_node_t      *pgw;           /* First Node Selected */
 
     msgq_id         queue_id;       /* Queue for processing MME control plane */
     tm_service_t    tm_service;     /* Timer Service */
@@ -373,9 +373,6 @@ typedef struct _mme_sess_t {
 #define MME_UE_HAVE_APN(__mME) \
     ((__mME) && (mme_sess_first(__mME)) && \
     ((mme_sess_first(__mME))->pdn))
-#define MME_GET_PGW_IPV4_ADDR(__sESS) \
-    (((__sESS) && ((__sESS)->pdn) && (((__sESS)->pdn)->pgw.ipv4_addr)) ? \
-      (((__sESS)->pdn)->pgw.ipv4_addr) : (mme_self()->s5c_addr))
     pdn_t           *pdn;
 
     /* Save Protocol Configuration Options from UE */

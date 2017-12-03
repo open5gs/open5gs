@@ -52,6 +52,7 @@ status_t mme_context_init()
 
     gtp_node_init();
     list_init(&self.sgw_list);
+    list_init(&self.pgw_list);
 
     index_init(&mme_enb_pool, MAX_NUM_OF_ENB);
     index_init(&mme_ue_pool, MAX_POOL_OF_UE);
@@ -106,6 +107,7 @@ status_t mme_context_final()
     index_final(&mme_enb_pool);
 
     gtp_remove_all_nodes(&self.sgw_list);
+    gtp_remove_all_nodes(&self.pgw_list);
     gtp_node_final();
 
     sock_remove_all_nodes(&self.gtpc4_list);
@@ -128,7 +130,6 @@ static status_t mme_context_prepare()
     self.relative_capacity = 0xff;
 
     self.gtpc_port = GTPV2_C_UDP_PORT;
-    self.s5c_port = GTPV2_C_UDP_PORT;
 
     return CORE_OK;
 }
@@ -163,6 +164,14 @@ static status_t mme_context_validation()
         return CORE_ERROR;
     }
     self.sgw = list_first(&self.sgw_list);
+
+    if (list_first(&self.pgw_list) == NULL)
+    {
+        d_error("No pgw.gtpc in '%s'",
+                context_self()->config.path);
+        return CORE_ERROR;
+    }
+    self.pgw = list_first(&self.pgw_list);
 
     if (self.max_num_of_served_gummei == 0)
     {
@@ -328,7 +337,7 @@ status_t mme_context_parse_config()
                         sock_node_t *node = NULL;
                         int family = AF_UNSPEC;
                         const char *hostname = NULL;
-                        c_uint16_t port = GTPV2_C_UDP_PORT;
+                        c_uint16_t port = self.gtpc_port;
 
                         if (yaml_iter_type(&gtpc_array) == YAML_MAPPING_NODE)
                         {
@@ -858,7 +867,7 @@ status_t mme_context_parse_config()
                         gtp_node_t *sgw = NULL;
                         int family = AF_UNSPEC;
                         const char *hostname = NULL;
-                        c_uint16_t port = GTPV2_C_UDP_PORT;
+                        c_uint16_t port = self.gtpc_port;
 
                         if (yaml_iter_type(&gtpc_array) == YAML_MAPPING_NODE)
                         {
@@ -955,13 +964,10 @@ status_t mme_context_parse_config()
                     yaml_iter_recurse(&mme_iter, &gtpc_array);
                     do
                     {
-#if 0
-                        mme_pgw_t *pgw = NULL;
-#endif
+                        gtp_node_t *pgw = NULL;
                         int family = AF_UNSPEC;
                         const char *hostname = NULL;
-                        c_uint16_t port = GTPV2_C_UDP_PORT;
-                        const char *apn = NULL;
+                        c_uint16_t port = self.gtpc_port;
 
                         if (yaml_iter_type(&gtpc_array) == YAML_MAPPING_NODE)
                         {
@@ -1005,35 +1011,42 @@ status_t mme_context_parse_config()
                                     !strcmp(gtpc_key, "name"))
                             {
                                 hostname = yaml_iter_value(&gtpc_iter);
-#if 1
-                                if (hostname)
-                                    self.s5c_addr = inet_addr(hostname);
-#endif
                             }
                             else if (!strcmp(gtpc_key, "port"))
                             {
                                 const char *v = yaml_iter_value(&gtpc_iter);
-                                if (v)
-                                {
-                                    port = atoi(v);
-                                    self.gtpc_port = port;
-                                }
-                            }
-                            else if (!strcmp(gtpc_key, "apn"))
-                            {
-                                apn = yaml_iter_value(&gtpc_iter);
-                                printf("apn = [%s]\n", apn);
+                                if (v) port = atoi(v);
                             }
                             else
                                 d_warn("unknown key `%s`", gtpc_key);
                         }
 
-#if 0
-                        pgw = mme_pgw_add();
+                        pgw = gtp_add_node(&self.pgw_list,
+                                family, hostname, port);
                         d_assert(pgw, return CORE_ERROR,);
-#endif
 
                     } while(yaml_iter_type(&gtpc_array) == YAML_SEQUENCE_NODE);
+
+                    if (context_self()->parameter.no_ipv4 == 1)
+                    {
+                        rv = gtp_filter_node(&self.pgw_list, AF_INET6);
+                        d_assert(rv == CORE_OK, return CORE_ERROR,);
+                    }
+                    if (context_self()->parameter.no_ipv6 == 1)
+                    {
+                        rv = gtp_filter_node(&self.pgw_list, AF_INET);
+                        d_assert(rv == CORE_OK, return CORE_ERROR,);
+                    }
+                    if (context_self()->parameter.prefer_ipv4 == 1)
+                    {
+                        rv = gtp_sort_node(&self.pgw_list, AF_INET);
+                        d_assert(rv == CORE_OK, return CORE_ERROR,);
+                    }
+                    else
+                    {
+                        rv = gtp_sort_node(&self.pgw_list, AF_INET6);
+                        d_assert(rv == CORE_OK, return CORE_ERROR,);
+                    }
                 }
             }
         }
