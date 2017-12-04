@@ -16,14 +16,14 @@ status_t gtp_server(sock_node_t *snode, sock_handler handler)
 
     d_assert(snode, return CORE_ERROR,);
 
-    rv = udp_server(&snode->sock, snode->sa_list);
+    rv = udp_server(&snode->sock, snode->list);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
     rv = sock_register(snode->sock, handler, NULL);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
     d_trace(1, "gtp_server() [%s]:%d\n",
-            CORE_ADDR(snode->sa_list, buf), CORE_PORT(snode->sa_list));
+            CORE_ADDR(snode->list, buf), CORE_PORT(snode->list));
 
     return CORE_OK;
 }

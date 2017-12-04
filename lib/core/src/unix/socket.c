@@ -292,38 +292,38 @@ c_sockaddr_t *sock_remote_addr(sock_id id)
  * Socket Address
  */
 
-sock_node_t *sock_add_node(list_t *list,
-    int family, const char *hostname, c_uint16_t port)
+status_t sock_add_node(
+        list_t *list, sock_node_t **node, c_sockaddr_t *sa_list, int family)
 {
     status_t rv;
-    sock_node_t *node = NULL;
-    c_sockaddr_t *sa_list = NULL;
-    int flags = 0;
+    c_sockaddr_t *new = NULL;
 
-    d_assert(list, return NULL,);
+    d_assert(list, return CORE_ERROR,);
+    d_assert(node, return CORE_ERROR,);
+    d_assert(sa_list, return CORE_ERROR,);
 
-    if (hostname == NULL)
-        flags = AI_PASSIVE;
+    rv = core_copyaddrinfo(&new, sa_list);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    d_assert(new, return CORE_ERROR,);
 
-    rv = core_getaddrinfo(&sa_list, family, hostname, port, flags);
-    if (rv != CORE_OK)
+    if (family != AF_UNSPEC)
     {
-        d_error("core_getaddrinfo(%d:%s:%d:0x%x)",
-                family, hostname, port, flags);
-        return NULL;
+        rv = core_filteraddrinfo(&new, family);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
     }
 
-    d_assert(sa_list, return NULL,);
+    if (new)
+    {
+        pool_alloc_node(&sock_node_pool, node);
+        d_assert(*node, return CORE_ERROR,);
+        memset(*node, 0, sizeof(sock_node_t));
 
-    pool_alloc_node(&sock_node_pool, &node);
-    d_assert(node, return NULL,);
-    memset(node, 0, sizeof(sock_node_t));
+        (*node)->list = new;
 
-    node->sa_list = sa_list;
+        list_append(list, *node);
+    }
 
-    list_append(list, node);
-    
-    return node;
+    return CORE_OK;
 }
 
 status_t sock_remove_node(list_t *list, sock_node_t *node)
@@ -332,7 +332,7 @@ status_t sock_remove_node(list_t *list, sock_node_t *node)
 
     list_remove(list, node);
 
-    core_freeaddrinfo(node->sa_list);
+    core_freeaddrinfo(node->list);
     pool_free_node(&sock_node_pool, node);
 
     return CORE_OK;
@@ -355,13 +355,11 @@ status_t sock_remove_all_nodes(list_t *list)
     return CORE_OK;
 }
 
-status_t sock_get_all_nodes(list_t *list, c_uint16_t port)
+status_t sock_probe_node(list_t *list, list_t *list6, c_uint16_t port)
 {
     sock_node_t *node = NULL;
 	struct ifaddrs *iflist, *cur;
     int rc;
-
-    d_assert(list, return CORE_ERROR,);
 
 	rc = getifaddrs(&iflist);
     if (rc != 0)
@@ -415,9 +413,19 @@ status_t sock_get_all_nodes(list_t *list, c_uint16_t port)
         d_assert(node, return CORE_ERROR,);
         memset(node, 0, sizeof(sock_node_t));
 
-        node->sa_list = addr;
+        node->list = addr;
 
-        list_append(list, node);
+        if (addr->c_sa_family == AF_INET)
+        {
+            if (list) list_append(list, node);
+        }
+        else if (addr->c_sa_family == AF_INET6)
+        {
+            if (list6) list_append(list6, node);
+        }
+        else
+            d_assert(0, return CORE_ERROR,);
+
 	}
 
 	freeifaddrs(iflist);
@@ -425,29 +433,14 @@ status_t sock_get_all_nodes(list_t *list, c_uint16_t port)
     return CORE_OK;
 }
 
-status_t sock_filter_node(list_t *list, int family)
+status_t core_getaddrinfo(c_sockaddr_t **sa_list, 
+        int family, const char *hostname, c_uint16_t port, int flags)
 {
-    sock_node_t *node = NULL, *next_node = NULL;
-
-    d_assert(list, return CORE_ERROR,);
-
-    node = list_first(list);
-    while(node)
-    {
-        next_node = list_next(node);
-
-        core_filteraddrinfo(&node->sa_list, family);
-
-        if (node->sa_list == NULL)
-            sock_remove_node(list, node);
-
-        node = next_node;
-    }
-
-    return CORE_OK;
+    *sa_list = NULL;
+    return core_addaddrinfo(sa_list, family, hostname, port, flags);
 }
 
-status_t core_getaddrinfo(c_sockaddr_t **sa_list, 
+status_t core_addaddrinfo(c_sockaddr_t **sa_list, 
         int family, const char *hostname, c_uint16_t port, int flags)
 {
     int rc;
@@ -474,6 +467,11 @@ status_t core_getaddrinfo(c_sockaddr_t **sa_list,
     }
 
     prev = NULL;
+    if (*sa_list)
+    {
+        prev = *sa_list;
+        while(prev->next) prev = prev->next;
+    }
     ai = ai_list;
     while(ai)
     {
@@ -509,21 +507,6 @@ status_t core_getaddrinfo(c_sockaddr_t **sa_list,
     return CORE_OK;
 }
 
-status_t core_freeaddrinfo(c_sockaddr_t *sa_list)
-{
-    c_sockaddr_t *next = NULL, *addr = NULL;
-
-    addr = sa_list;
-    while(addr)
-    {
-        next = addr->next;
-        core_free(addr);
-        addr = next;
-    }
-
-    return CORE_OK;
-}
-
 status_t core_filteraddrinfo(c_sockaddr_t **sa_list, int family)
 {
     c_sockaddr_t *addr = NULL, *prev = NULL, *next = NULL;
@@ -543,9 +526,13 @@ status_t core_filteraddrinfo(c_sockaddr_t **sa_list, int family)
             else
                 *sa_list = addr->next;
             core_free(addr);
+
+        }
+        else
+        {
+            prev = addr;
         }
 
-        prev = addr;
         addr = next;
     }
 
@@ -604,6 +591,21 @@ status_t core_sortaddrinfo(c_sockaddr_t **sa_list, int family)
     }
     
     *sa_list = head;
+
+    return CORE_OK;
+}
+
+status_t core_freeaddrinfo(c_sockaddr_t *sa_list)
+{
+    c_sockaddr_t *next = NULL, *addr = NULL;
+
+    addr = sa_list;
+    while(addr)
+    {
+        next = addr->next;
+        core_free(addr);
+        addr = next;
+    }
 
     return CORE_OK;
 }

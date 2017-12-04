@@ -326,7 +326,8 @@ static void sock_test6(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     ABTS_STR_EQUAL(tc, "::1", CORE_ADDR(&addr, buf));
 
-    rv = core_getaddrinfo(&paddr, AF_UNSPEC, NULL, PORT, 0);
+    paddr = NULL;
+    rv = core_addaddrinfo(&paddr, AF_UNSPEC, NULL, PORT, 0);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     rv = core_sortaddrinfo(&paddr, AF_INET6);
@@ -356,6 +357,10 @@ static void sock_test6(abts_case *tc, void *data)
     rv = core_copyaddrinfo(&dst, paddr);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     ABTS_STR_EQUAL(tc, "127.0.0.1", CORE_ADDR(dst, buf));
+    rv = core_addaddrinfo(&dst, AF_UNSPEC, NULL, PORT, 0);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    ABTS_STR_EQUAL(tc, "127.0.0.1", CORE_ADDR(dst, buf));
+
     rv = core_freeaddrinfo(dst);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
@@ -366,6 +371,19 @@ static void sock_test6(abts_case *tc, void *data)
     rv = core_copyaddrinfo(&dst, paddr);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     ABTS_PTR_NULL(tc, dst);
+
+    paddr = NULL;
+    rv = core_addaddrinfo(&paddr, AF_INET, "127.0.0.1", PORT, 0);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    rv = core_addaddrinfo(&paddr, AF_INET, "127.0.0.2", PORT, 0);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    rv = core_addaddrinfo(&paddr, AF_INET, "127.0.0.3", PORT, 0);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    rv = core_filteraddrinfo(&paddr, AF_INET6);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
 }
 
 static void sock_test7(abts_case *tc, void *data)
@@ -373,72 +391,26 @@ static void sock_test7(abts_case *tc, void *data)
     status_t rv;
     sock_node_t *node;
     c_sockaddr_t *addr;
-    list_t list;
-    char buf[CORE_ADDRSTRLEN];
+    list_t list, list6;
 
     list_init(&list);
+    list_init(&list6);
 
-    node = sock_add_node(&list, AF_INET6, "localhost", PORT);
-    ABTS_PTR_NOTNULL(tc, node);
-    rv = sock_filter_node(&list, AF_INET6);
+    rv = core_getaddrinfo(&addr, AF_UNSPEC, "localhost", PORT, 0);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
-    node = list_first(&list);
-    ABTS_PTR_NOTNULL(tc, node);
-    rv = sock_filter_node(&list, AF_INET);
+
+    rv = sock_add_node(&list, &node, addr, AF_INET);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
-    node = list_first(&list);
-    ABTS_PTR_NULL(tc, node);
 
-    node = sock_add_node(&list, AF_INET, NULL, PORT);
-    ABTS_PTR_NOTNULL(tc, node);
-    rv = sock_filter_node(&list, AF_INET);
+    rv = sock_add_node(&list6, &node, addr, AF_INET6);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
-    node = list_first(&list);
-    ABTS_PTR_NOTNULL(tc, node);
-    rv = sock_filter_node(&list, AF_INET6);
-    ABTS_INT_EQUAL(tc, CORE_OK, rv);
-    node = list_first(&list);
-    ABTS_PTR_NULL(tc, node);
 
-    node = sock_add_node(&list, AF_UNSPEC, "localhost", PORT);
-    ABTS_PTR_NOTNULL(tc, node);
-    rv = sock_filter_node(&list, AF_INET6);
-    ABTS_INT_EQUAL(tc, CORE_OK, rv);
-    node = list_first(&list);
-    ABTS_PTR_NOTNULL(tc, node);
-    rv = sock_filter_node(&list, AF_INET);
-    ABTS_INT_EQUAL(tc, CORE_OK, rv);
-    node = list_first(&list);
-    ABTS_PTR_NULL(tc, node);
+    core_freeaddrinfo(addr);
 
-    node = sock_add_node(&list, AF_INET6, "localhost", PORT);
-    ABTS_PTR_NOTNULL(tc, node);
-    node = sock_add_node(&list, AF_INET, NULL, PORT);
-    ABTS_PTR_NOTNULL(tc, node);
-    node = sock_add_node(&list, AF_UNSPEC, NULL, PORT);
-    ABTS_PTR_NOTNULL(tc, node);
+    sock_remove_all_nodes(&list);
+    sock_remove_all_nodes(&list6);
 
-    node = list_first(&list);
-    ABTS_PTR_NOTNULL(tc, node);
-    addr = node->sa_list;
-    ABTS_PTR_NOTNULL(tc, addr);
-    ABTS_STR_EQUAL(tc, "::1", CORE_ADDR(addr, buf));
-    ABTS_INT_EQUAL(tc, PORT, CORE_PORT(addr));
-
-    node = list_next(node);
-    ABTS_PTR_NOTNULL(tc, node);
-    addr = node->sa_list;
-    ABTS_PTR_NOTNULL(tc, addr);
-    ABTS_STR_EQUAL(tc, "0.0.0.0", CORE_ADDR(addr, buf));
-    ABTS_INT_EQUAL(tc, PORT, CORE_PORT(addr));
-
-    node = list_next(node);
-    ABTS_PTR_NOTNULL(tc, node);
-    addr = node->sa_list;
-    ABTS_PTR_NOTNULL(tc, addr);
-    ABTS_INT_EQUAL(tc, PORT, CORE_PORT(addr));
-
-    rv = sock_get_all_nodes(&list, PORT);
+    rv = sock_probe_node(&list, &list6, PORT);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     sock_remove_all_nodes(&list);

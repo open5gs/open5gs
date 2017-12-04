@@ -90,7 +90,7 @@ typedef struct _sock_node_t {
     lnode_t node;
 
     sock_id sock;
-    c_sockaddr_t *sa_list;
+    c_sockaddr_t *list;
 } sock_node_t;
 
 /*
@@ -121,21 +121,22 @@ CORE_DECLARE(c_sockaddr_t *) sock_remote_addr(sock_id id);
 /*
  * Socket Address
  */
-CORE_DECLARE(sock_node_t *) sock_add_node(list_t *list,
-        int family, const char *hostname, c_uint16_t port);
+CORE_DECLARE(status_t) sock_add_node(
+        list_t *list, sock_node_t **node, c_sockaddr_t *sa_list, int family);
 CORE_DECLARE(status_t) sock_remove_node(list_t *list, sock_node_t *node);
 CORE_DECLARE(status_t) sock_remove_all_nodes(list_t *list);
-
-CORE_DECLARE(status_t) sock_get_all_nodes(list_t *list, c_uint16_t port);
-CORE_DECLARE(status_t) sock_filter_node(list_t *list, int family);
+CORE_DECLARE(status_t) sock_probe_node(
+        list_t *list, list_t *list6, c_uint16_t port);
 
 CORE_DECLARE(status_t) core_getaddrinfo(c_sockaddr_t **sa_list, 
         int family, const char *hostname, c_uint16_t port, int flags);
-CORE_DECLARE(status_t) core_freeaddrinfo(c_sockaddr_t *sa_list);
+CORE_DECLARE(status_t) core_addaddrinfo(c_sockaddr_t **sa_list, 
+        int family, const char *hostname, c_uint16_t port, int flags);
 CORE_DECLARE(status_t) core_copyaddrinfo(
         c_sockaddr_t **dst, const c_sockaddr_t *src);
 CORE_DECLARE(status_t) core_filteraddrinfo(c_sockaddr_t **sa_list, int family);
 CORE_DECLARE(status_t) core_sortaddrinfo(c_sockaddr_t **sa_list, int family);
+CORE_DECLARE(status_t) core_freeaddrinfo(c_sockaddr_t *sa_list);
 
 #define CORE_ADDRSTRLEN INET6_ADDRSTRLEN
 #define CORE_ADDR(__aDDR, __bUF) \
