@@ -132,6 +132,8 @@ CORE_DECLARE(status_t) sock_filter_node(list_t *list, int family);
 CORE_DECLARE(status_t) core_getaddrinfo(c_sockaddr_t **sa_list, 
         int family, const char *hostname, c_uint16_t port, int flags);
 CORE_DECLARE(status_t) core_freeaddrinfo(c_sockaddr_t *sa_list);
+CORE_DECLARE(status_t) core_copyaddrinfo(
+        c_sockaddr_t **dst, const c_sockaddr_t *src);
 CORE_DECLARE(status_t) core_filteraddrinfo(c_sockaddr_t **sa_list, int family);
 CORE_DECLARE(status_t) core_sortaddrinfo(c_sockaddr_t **sa_list, int family);
 

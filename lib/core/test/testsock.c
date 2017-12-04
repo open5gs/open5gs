@@ -314,7 +314,7 @@ static void sock_test5(abts_case *tc, void *data)
 
 static void sock_test6(abts_case *tc, void *data)
 {
-    c_sockaddr_t addr, *paddr;
+    c_sockaddr_t addr, *paddr, *dst;
     char buf[CORE_ADDRSTRLEN];
     status_t rv;
 
@@ -335,14 +335,37 @@ static void sock_test6(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, paddr->next);
     ABTS_STR_EQUAL(tc, "127.0.0.1", CORE_ADDR(paddr->next, buf));
 
+    rv = core_copyaddrinfo(&dst, paddr);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    ABTS_STR_EQUAL(tc, "::1", CORE_ADDR(dst, buf));
+    ABTS_PTR_NOTNULL(tc, paddr->next);
+    ABTS_STR_EQUAL(tc, "127.0.0.1", CORE_ADDR(dst->next, buf));
+    rv = core_freeaddrinfo(dst);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
     rv = core_sortaddrinfo(&paddr, AF_INET);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     ABTS_STR_EQUAL(tc, "127.0.0.1", CORE_ADDR(paddr, buf));
     ABTS_PTR_NOTNULL(tc, paddr->next);
     ABTS_STR_EQUAL(tc, "::1", CORE_ADDR(paddr->next, buf));
 
-    rv = core_freeaddrinfo(paddr);
+    rv = core_filteraddrinfo(&paddr, AF_INET);
+    ABTS_PTR_NOTNULL(tc, paddr);
+    ABTS_STR_EQUAL(tc, "127.0.0.1", CORE_ADDR(paddr, buf));
+
+    rv = core_copyaddrinfo(&dst, paddr);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    ABTS_STR_EQUAL(tc, "127.0.0.1", CORE_ADDR(dst, buf));
+    rv = core_freeaddrinfo(dst);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    rv = core_filteraddrinfo(&paddr, AF_INET6);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    ABTS_PTR_NULL(tc, paddr);
+
+    rv = core_copyaddrinfo(&dst, paddr);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    ABTS_PTR_NULL(tc, dst);
 }
 
 static void sock_test7(abts_case *tc, void *data)

@@ -15,10 +15,20 @@ extern "C" {
  * PGW gateway. Some of members may not be used by the specific type of node */
 typedef struct _gtp_node_t {
     lnode_t         node;           /**< A node of list_t */
-    c_sockaddr_t    *sa_list;       /**< Socket Address List */
+
+    /* Socket Address List
+     * - INPUT: family, hostname, port */
+    c_sockaddr_t    *sa_list;
+
+    /* IPv4/IPv6 address
+     * - INPUT: GTP_F_TEID */
+    ip_t            ip;             
+
+    /* Socket instance
+     * - INPUT: sa_list or ip */
+    sock_id         sock;
 
     c_sockaddr_t    old_addr;       /**< Will be removed */
-    sock_id         sock;           /**< Socket Descriptor */
 
     list_t          local_list;    
     list_t          remote_list;   
