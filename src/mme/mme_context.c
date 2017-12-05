@@ -426,10 +426,7 @@ status_t mme_context_parse_config()
 
                         if (context_self()->parameter.no_ipv4 == 0)
                         {
-                            rv = core_copyaddrinfo(&list, head);
-                            d_assert(rv == CORE_OK, return CORE_ERROR,);
-                            rv = core_filteraddrinfo(&list, AF_INET);
-                            d_assert(rv == CORE_OK, return CORE_ERROR,);
+                            rv = core_ipv4addrinfo(&list, head);
                             if (list)
                             {
                                 node = sock_add_node(&self.gtpc_list, list);
@@ -439,10 +436,7 @@ status_t mme_context_parse_config()
 
                         if (context_self()->parameter.no_ipv6 == 0)
                         {
-                            rv = core_copyaddrinfo(&list6, head);
-                            d_assert(rv == CORE_OK, return CORE_ERROR,);
-                            rv = core_filteraddrinfo(&list6, AF_INET6);
-                            d_assert(rv == CORE_OK, return CORE_ERROR,);
+                            rv = core_ipv6addrinfo(&list6, head);
                             if (list6)
                             {
                                 node = sock_add_node(&self.gtpc_list, list6);
@@ -978,28 +972,11 @@ status_t mme_context_parse_config()
                             d_assert(rv == CORE_OK, return CORE_ERROR,);
                         }
 
-                        rv = core_copyaddrinfo(&list, head);
+                        rv = core_preferred_addrinfo(&list, head,
+                                context_self()->parameter.no_ipv4,
+                                context_self()->parameter.no_ipv6,
+                                context_self()->parameter.prefer_ipv4);
                         d_assert(rv == CORE_OK, return CORE_ERROR,);
-                        if (context_self()->parameter.no_ipv4 == 1)
-                        {
-                            rv = core_filteraddrinfo(&list, AF_INET6);
-                            d_assert(rv == CORE_OK, return CORE_ERROR,);
-                        }
-                        if (context_self()->parameter.no_ipv6 == 1)
-                        {
-                            rv = core_filteraddrinfo(&list, AF_INET);
-                            d_assert(rv == CORE_OK, return CORE_ERROR,);
-                        }
-                        if (context_self()->parameter.prefer_ipv4 == 1)
-                        {
-                            rv = core_sortaddrinfo(&list, AF_INET);
-                            d_assert(rv == CORE_OK, return CORE_ERROR,);
-                        }
-                        else
-                        {
-                            rv = core_sortaddrinfo(&list, AF_INET6);
-                            d_assert(rv == CORE_OK, return CORE_ERROR,);
-                        }
 
                         if (list)
                         {

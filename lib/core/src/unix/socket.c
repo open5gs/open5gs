@@ -424,6 +424,21 @@ status_t core_getaddrinfo(c_sockaddr_t **sa_list,
     return core_addaddrinfo(sa_list, family, hostname, port, flags);
 }
 
+status_t core_freeaddrinfo(c_sockaddr_t *sa_list)
+{
+    c_sockaddr_t *next = NULL, *addr = NULL;
+
+    addr = sa_list;
+    while(addr)
+    {
+        next = addr->next;
+        core_free(addr);
+        addr = next;
+    }
+
+    return CORE_OK;
+}
+
 status_t core_addaddrinfo(c_sockaddr_t **sa_list, 
         int family, const char *hostname, c_uint16_t port, int flags)
 {
@@ -579,19 +594,59 @@ status_t core_sortaddrinfo(c_sockaddr_t **sa_list, int family)
     return CORE_OK;
 }
 
-status_t core_freeaddrinfo(c_sockaddr_t *sa_list)
+status_t core_ipv4addrinfo(c_sockaddr_t **dst, const c_sockaddr_t *src)
 {
-    c_sockaddr_t *next = NULL, *addr = NULL;
+    status_t rv;
 
-    addr = sa_list;
-    while(addr)
+    rv = core_copyaddrinfo(dst, src);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    rv = core_filteraddrinfo(dst, AF_INET);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    return rv;
+}
+
+status_t core_ipv6addrinfo(c_sockaddr_t **dst, const c_sockaddr_t *src)
+{
+    status_t rv;
+
+    rv = core_copyaddrinfo(dst, src);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    rv = core_filteraddrinfo(dst, AF_INET6);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    return rv;
+}
+
+status_t core_preferred_addrinfo(c_sockaddr_t **dst,
+        c_sockaddr_t *src, int no_ipv4, int no_ipv6, int prefer_ipv4)
+{
+    status_t rv;
+
+    rv = core_copyaddrinfo(dst, src);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    if (no_ipv4 == 1)
     {
-        next = addr->next;
-        core_free(addr);
-        addr = next;
+        rv = core_filteraddrinfo(dst, AF_INET6);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
+    }
+    if (no_ipv6 == 1)
+    {
+        rv = core_filteraddrinfo(dst, AF_INET);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
+    }
+    if (prefer_ipv4 == 1)
+    {
+        rv = core_sortaddrinfo(dst, AF_INET);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
+    }
+    else
+    {
+        rv = core_sortaddrinfo(dst, AF_INET6);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
     }
 
-    return CORE_OK;
+    return rv;
 }
 
 const char *core_inet_ntop(void *sa, char *buf, int buflen)

@@ -362,30 +362,10 @@ sgw_mme_t* sgw_mme_add(gtp_f_teid_t *f_teid)
     rv = gtp_f_teid_to_sockaddr(f_teid, self.gtpc_port, &head);
     d_assert(rv == CORE_OK, return NULL,);
 
-    rv = core_copyaddrinfo(&list, head);
-    d_assert(rv == CORE_OK, return NULL,);
-
-    if (context_self()->parameter.no_ipv4 == 1)
-    {
-        rv = core_filteraddrinfo(&list, AF_INET6);
-        d_assert(rv == CORE_OK, return NULL,);
-    }
-    if (context_self()->parameter.no_ipv6 == 1)
-    {
-        rv = core_filteraddrinfo(&list, AF_INET);
-        d_assert(rv == CORE_OK, return NULL,);
-    }
-    if (context_self()->parameter.prefer_ipv4 == 1)
-    {
-        rv = core_sortaddrinfo(&list, AF_INET);
-        d_assert(rv == CORE_OK, return NULL,);
-    }
-    else
-    {
-        rv = core_sortaddrinfo(&list, AF_INET6);
-        d_assert(rv == CORE_OK, return NULL,);
-    }
-
+    rv = core_preferred_addrinfo(&list, head,
+            context_self()->parameter.no_ipv4,
+            context_self()->parameter.no_ipv6,
+            context_self()->parameter.prefer_ipv4);
     d_assert(list, return NULL,);
 
     mme = gtp_add_node(&self.mme_list, list);
@@ -516,15 +496,12 @@ sgw_pgw_t* sgw_pgw_next(sgw_pgw_t *pgw)
     return list_next(pgw);
 }
 
-sgw_ue_t* sgw_ue_add(gtp_f_teid_t *mme_s11_teid,
+sgw_ue_t* sgw_ue_add(
         c_uint8_t *imsi, int imsi_len, c_int8_t *apn, c_uint8_t ebi)
 {
     sgw_ue_t *sgw_ue = NULL;
     sgw_sess_t *sess = NULL;
-    sgw_mme_t *mme = NULL;
-    c_uint32_t addr = 0;
 
-    d_assert(mme_s11_teid, return NULL, "Null param");
     d_assert(imsi, return NULL, "Null param");
     d_assert(imsi_len, return NULL, "Null param");
     d_assert(apn, return NULL, "Null param");
@@ -535,20 +512,6 @@ sgw_ue_t* sgw_ue_add(gtp_f_teid_t *mme_s11_teid,
 
     sgw_ue->sgw_s11_teid = sgw_ue->index;
     sgw_ue->sgw_s11_addr = sgw_self()->gtpc_addr;
-
-    addr = mme_s11_teid->ip.addr;
-
-    mme = sgw_mme_find(&mme_s11_teid->ip);
-    if (!mme)
-    {
-        status_t rv;
-        mme = sgw_mme_add(mme_s11_teid);
-        d_assert(mme, return NULL, "Can't add MME-GTP node");
-
-        rv = gtp_client(mme);
-        d_assert(rv == CORE_OK, return NULL,);
-    }
-    CONNECT_MME_GTP_NODE(sgw_ue, mme);
 
     /* Set IMSI */
     sgw_ue->imsi_len = imsi_len;
@@ -626,8 +589,9 @@ sgw_ue_t* sgw_ue_find_by_teid(c_uint32_t teid)
 
 sgw_ue_t *sgw_ue_find_or_add_by_message(gtp_message_t *gtp_message)
 {
+    status_t rv;
     sgw_ue_t *sgw_ue = NULL;
-
+    sgw_mme_t *mme = NULL;
     gtp_create_session_request_t *req = &gtp_message->create_session_request;
 
     if (req->imsi.presence == 0)
@@ -661,13 +625,28 @@ sgw_ue_t *sgw_ue_find_or_add_by_message(gtp_message_t *gtp_message)
     sgw_ue = sgw_ue_find_by_imsi(req->imsi.data, req->imsi.len);
     if (!sgw_ue)
     {
+        gtp_f_teid_t *mme_s11_teid = NULL;
         c_int8_t apn[MAX_APN_LEN];
+
+        mme_s11_teid = req->sender_f_teid_for_control_plane.data;
+        d_assert(mme_s11_teid, return NULL,);
+        mme = sgw_mme_find(&mme_s11_teid->ip);
+        if (!mme)
+        {
+            mme = sgw_mme_add(mme_s11_teid);
+            d_assert(mme, return NULL,);
+
+            rv = gtp_client(mme);
+            d_assert(rv == CORE_OK, return NULL,);
+        }
+
         apn_parse(apn, req->access_point_name.data, req->access_point_name.len);
         sgw_ue = sgw_ue_add(
-            req->sender_f_teid_for_control_plane.data,
             req->imsi.data, req->imsi.len, apn,
             req->bearer_contexts_to_be_created.eps_bearer_id.u8);
-        d_assert(sgw_ue, return NULL, "No UE Context");
+        d_assert(sgw_ue, return NULL,);
+
+        CONNECT_MME_GTP_NODE(sgw_ue, mme);
     }
 
     return sgw_ue;

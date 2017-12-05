@@ -164,7 +164,7 @@ CORE_DECLARE(sgw_pgw_t*)    sgw_pgw_find(c_uint32_t addr);
 CORE_DECLARE(sgw_pgw_t*)    sgw_pgw_first(void);
 CORE_DECLARE(sgw_pgw_t*)    sgw_pgw_next(sgw_pgw_t *pgw);
 
-CORE_DECLARE(sgw_ue_t*)     sgw_ue_add(gtp_f_teid_t *mme_s11_teid,
+CORE_DECLARE(sgw_ue_t*)     sgw_ue_add(
         c_uint8_t *imsi, int imsi_len, c_int8_t *apn, c_uint8_t ebi);
 CORE_DECLARE(status_t)      sgw_ue_remove(sgw_ue_t *sgw_ue);
 CORE_DECLARE(status_t)      sgw_ue_remove_all();
