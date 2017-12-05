@@ -121,8 +121,7 @@ CORE_DECLARE(c_sockaddr_t *) sock_remote_addr(sock_id id);
 /*
  * Socket Address
  */
-CORE_DECLARE(status_t) sock_add_node(
-        list_t *list, sock_node_t **node, c_sockaddr_t *sa_list, int family);
+CORE_DECLARE(sock_node_t *) sock_add_node(list_t *list, c_sockaddr_t *sa_list);
 CORE_DECLARE(status_t) sock_remove_node(list_t *list, sock_node_t *node);
 CORE_DECLARE(status_t) sock_remove_all_nodes(list_t *list);
 CORE_DECLARE(status_t) sock_probe_node(

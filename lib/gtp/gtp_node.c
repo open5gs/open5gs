@@ -27,22 +27,11 @@ status_t gtp_node_final(void)
     return CORE_OK;
 }
 
-gtp_node_t *gtp_add_node(list_t *list,
-    int family, const char *hostname, c_uint16_t port)
+gtp_node_t *gtp_add_node(list_t *list, c_sockaddr_t *sa_list)
 {
-    status_t rv;
     gtp_node_t *node = NULL;
-    c_sockaddr_t *sa_list = NULL;
 
     d_assert(list, return NULL,);
-
-    rv = core_getaddrinfo(&sa_list, family, hostname, port, 0);
-    if (rv != CORE_OK)
-    {
-        d_error("core_getaddrinfo(%d:%s:%d)", family, hostname, port);
-        return NULL;
-    }
-
     d_assert(sa_list, return NULL,);
 
     pool_alloc_node(&gtp_node_pool, &node);

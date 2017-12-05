@@ -37,8 +37,7 @@ typedef struct _gtp_node_t {
 CORE_DECLARE(status_t) gtp_node_init(void);
 CORE_DECLARE(status_t) gtp_node_final(void);
 
-CORE_DECLARE(gtp_node_t *) gtp_add_node(list_t *list,
-    int family, const char *hostname, c_uint16_t port);
+CORE_DECLARE(gtp_node_t *) gtp_add_node(list_t *list, c_sockaddr_t *sa_list);
 CORE_DECLARE(status_t) gtp_remove_node(list_t *list, gtp_node_t *node);
 CORE_DECLARE(status_t) gtp_remove_all_nodes(list_t *list);
 CORE_DECLARE(status_t) gtp_filter_node(list_t *list, int family);

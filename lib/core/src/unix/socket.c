@@ -292,38 +292,22 @@ c_sockaddr_t *sock_remote_addr(sock_id id)
  * Socket Address
  */
 
-status_t sock_add_node(
-        list_t *list, sock_node_t **node, c_sockaddr_t *sa_list, int family)
+sock_node_t *sock_add_node(list_t *list, c_sockaddr_t *sa_list)
 {
-    status_t rv;
-    c_sockaddr_t *new = NULL;
+    sock_node_t *node = NULL;
 
-    d_assert(list, return CORE_ERROR,);
-    d_assert(node, return CORE_ERROR,);
-    d_assert(sa_list, return CORE_ERROR,);
+    d_assert(list, return NULL,);
+    d_assert(sa_list, return NULL,);
 
-    rv = core_copyaddrinfo(&new, sa_list);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
-    d_assert(new, return CORE_ERROR,);
+    pool_alloc_node(&sock_node_pool, &node);
+    d_assert(node, return NULL,);
+    memset(node, 0, sizeof(sock_node_t));
 
-    if (family != AF_UNSPEC)
-    {
-        rv = core_filteraddrinfo(&new, family);
-        d_assert(rv == CORE_OK, return CORE_ERROR,);
-    }
+    node->list = sa_list;
 
-    if (new)
-    {
-        pool_alloc_node(&sock_node_pool, node);
-        d_assert(*node, return CORE_ERROR,);
-        memset(*node, 0, sizeof(sock_node_t));
+    list_append(list, node);
 
-        (*node)->list = new;
-
-        list_append(list, *node);
-    }
-
-    return CORE_OK;
+    return node;
 }
 
 status_t sock_remove_node(list_t *list, sock_node_t *node)
