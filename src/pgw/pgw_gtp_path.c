@@ -160,19 +160,54 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
 status_t pgw_gtp_open()
 {
     status_t rv;
+    sock_node_t *snode;
     int i;
     int rc;
-#if 0 /* ADDR */
-    char buf[INET_ADDRSTRLEN];
-#endif
 
-    rv = gtp_listen(&pgw_self()->gtpc_sock, _gtpv2_c_recv_cb, 
-            pgw_self()->gtpc_addr, pgw_self()->gtpc_port, NULL);
-    if (rv != CORE_OK)
+    for (snode = list_first(&pgw_self()->gtpc_list);
+            snode; snode = list_next(snode))
     {
-        d_error("Can't establish GTP-C Path for PGW");
-        return rv;
+        rv = gtp_server(snode, _gtpv2_c_recv_cb);
+        if (rv != CORE_OK)
+        {
+            d_error("Can't establish GTP-C Path for SGW");
+            return rv;
+        }
     }
+
+    for (snode = list_first(&pgw_self()->gtpc_list);
+            snode; snode = list_next(snode))
+    {
+        pgw_self()->gtpc_addr = sock_local_addr(snode->sock);
+        if (pgw_self()->gtpc_addr)
+        {
+            break;
+        }
+    }
+
+    for (snode = list_first(&pgw_self()->gtpc_list6);
+            snode; snode = list_next(snode))
+    {
+        rv = gtp_server(snode, _gtpv2_c_recv_cb);
+        if (rv != CORE_OK)
+        {
+            d_error("Can't establish GTP-C Path for SGW");
+            return rv;
+        }
+    }
+
+    for (snode = list_first(&pgw_self()->gtpc_list6);
+            snode; snode = list_next(snode))
+    {
+        pgw_self()->gtpc_addr6 = sock_local_addr(snode->sock);
+        if (pgw_self()->gtpc_addr6)
+        {
+            break;
+        }
+    }
+
+    d_assert(pgw_self()->gtpc_addr || pgw_self()->gtpc_addr6,
+            return CORE_ERROR, "No GTP Server");
 
     rv = gtp_listen(&pgw_self()->gtpu_sock, _gtpv1_u_recv_cb, 
             pgw_self()->gtpu_addr, pgw_self()->gtpu_port, NULL);
@@ -251,8 +286,20 @@ status_t pgw_gtp_open()
 status_t pgw_gtp_close()
 {
     int i;
+    sock_node_t *snode;
 
-    sock_delete(pgw_self()->gtpc_sock);
+    for (snode = list_first(&pgw_self()->gtpc_list);
+            snode; snode = list_next(snode))
+    {
+        sock_delete(snode->sock);
+    }
+
+    for (snode = list_first(&pgw_self()->gtpc_list6);
+            snode; snode = list_next(snode))
+    {
+        sock_delete(snode->sock);
+    }
+
     sock_delete(pgw_self()->gtpu_sock);
     for (i = 0; i < pgw_self()->num_of_ue_network; i++)
     {

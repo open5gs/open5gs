@@ -23,9 +23,12 @@ typedef struct _gtp_node_t gtp_node_t;
 typedef struct _pgw_context_t {
     c_uint32_t      pgw_addr;  /* PGW local address */
 
-    c_uint32_t      gtpc_addr;  /* PGW GTP-C local address */
-    c_uint32_t      gtpc_port;  /* PGW GTP-C local port */
-    sock_id         gtpc_sock;  /* PGW GTP-C local listen socket */
+    c_uint32_t      gtpc_port;      /* PGW GTP-C local port */
+
+    list_t          gtpc_list;      /* PGW GTPC IPv4 Server List */
+    c_sockaddr_t    *gtpc_addr;     /* PGW GTPC IPv4 Address */
+    list_t          gtpc_list6;     /* PGW GTPC IPv6 Server List */
+    c_sockaddr_t    *gtpc_addr6;    /* PGW GTPC IPv6 Address */
 
     c_uint32_t      gtpu_addr;  /* PGW GTP-U local address */
     c_uint32_t      gtpu_port;  /* PGW GTP-U local port */
@@ -70,7 +73,8 @@ typedef struct _pgw_sess_t {
     /* IMPORTANT! 
      * PGW-S5C-F-TEID is same with an index */
     c_uint32_t      pgw_s5c_teid;       
-    c_uint32_t      pgw_s5c_addr;       
+    c_sockaddr_t    *pgw_s5c_ipv4;  /* PGW S5C IPv4 Address */
+    c_sockaddr_t    *pgw_s5c_ipv6;  /* PGW S5C IPv6 Address */
 
     c_uint32_t      sgw_s5c_teid;
     c_uint32_t      sgw_s5c_addr;

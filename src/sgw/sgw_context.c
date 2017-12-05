@@ -99,7 +99,7 @@ static status_t sgw_context_validation()
     if (list_first(&self.gtpc_list) == NULL &&
         list_first(&self.gtpc_list6) == NULL)
     {
-        d_error("No mme.gtpc in '%s'",
+        d_error("No sgw.gtpc in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
@@ -139,88 +139,6 @@ status_t sgw_context_parse_config()
             {
                 const char *sgw_key = yaml_iter_key(&sgw_iter);
                 d_assert(sgw_key, return CORE_ERROR,);
-#if 0
-                if (!strcmp(sgw_key, "gtpc"))
-                {
-                    yaml_iter_t gtpc_array, gtpc_iter;
-                    yaml_iter_recurse(&sgw_iter, &gtpc_array);
-                    do
-                    {
-#if 0
-                        sgw_gtpc_t *gtpc = NULL;
-#endif
-                        int family = AF_UNSPEC;
-                        const char *hostname = NULL;
-                        c_uint16_t port = GTPV2_C_UDP_PORT;
-
-                        if (yaml_iter_type(&gtpc_array) == YAML_MAPPING_NODE)
-                        {
-                            memcpy(&gtpc_iter, &gtpc_array,
-                                    sizeof(yaml_iter_t));
-                        }
-                        else if (yaml_iter_type(&gtpc_array) ==
-                            YAML_SEQUENCE_NODE)
-                        {
-                            if (!yaml_iter_next(&gtpc_array))
-                                break;
-                            yaml_iter_recurse(&gtpc_array, &gtpc_iter);
-                        }
-                        else if (yaml_iter_type(&gtpc_array) ==
-                                YAML_SCALAR_NODE)
-                        {
-                            break;
-                        }
-                        else
-                            d_assert(0, return CORE_ERROR,);
-
-                        while(yaml_iter_next(&gtpc_iter))
-                        {
-                            const char *gtpc_key =
-                                yaml_iter_key(&gtpc_iter);
-                            d_assert(gtpc_key,
-                                    return CORE_ERROR,);
-                            if (!strcmp(gtpc_key, "family"))
-                            {
-                                const char *v = yaml_iter_value(&gtpc_iter);
-                                if (v) family = atoi(v);
-                                if (family != AF_UNSPEC &&
-                                    family != AF_INET && family != AF_INET6)
-                                {
-                                    d_warn("Ignore family(%d) : AF_UNSPEC(0), "
-                                        "AF_INET(2), AF_INET6(30) ", family);
-                                    family = AF_UNSPEC;
-                                }
-                            }
-                            else if (!strcmp(gtpc_key, "addr") ||
-                                    !strcmp(gtpc_key, "name"))
-                            {
-                                hostname = yaml_iter_value(&gtpc_iter);
-#if 1
-                                if (hostname)
-                                    self.old_gtpc_addr = inet_addr(hostname);
-#endif
-                            }
-                            else if (!strcmp(gtpc_key, "port"))
-                            {
-                                const char *v = yaml_iter_value(&gtpc_iter);
-                                if (v)
-                                {
-                                    port = atoi(v);
-                                    self.gtpc_port = port;
-                                }
-                            }
-                            else
-                                d_warn("unknown key `%s`", gtpc_key);
-                        }
-
-#if 0
-                        gtpc = sgw_gtpc_add(family, hostname, port);
-                        d_assert(gtpc, return CORE_ERROR,);
-#endif
-
-                    } while(yaml_iter_type(&gtpc_array) == YAML_SEQUENCE_NODE);
-                }
-#else
                 if (!strcmp(sgw_key, "gtpc"))
                 {
                     yaml_iter_t gtpc_array, gtpc_iter;
@@ -349,7 +267,6 @@ status_t sgw_context_parse_config()
                         d_assert(rv == CORE_OK, return CORE_ERROR,);
                     }
                 }
-#endif
                 else if (!strcmp(sgw_key, "gtpu"))
                 {
                     yaml_iter_t gtpu_array, gtpu_iter;

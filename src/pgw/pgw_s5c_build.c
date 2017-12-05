@@ -3,6 +3,7 @@
 #include "core_debug.h"
 
 #include "gtp_types.h"
+#include "gtp_conv.h"
 #include "gtp_message.h"
 #include "gx_message.h"
 
@@ -23,6 +24,7 @@ status_t pgw_s5c_build_create_session_response(
 
     gtp_cause_t cause;
     gtp_f_teid_t pgw_s5c_teid, pgw_s5u_teid;
+    int len;
     c_uint8_t pco_buf[MAX_PCO_LEN];
     c_int16_t pco_len;
 
@@ -44,10 +46,11 @@ status_t pgw_s5c_build_create_session_response(
 
     /* Control Plane(UL) : PGW-S5C */
     memset(&pgw_s5c_teid, 0, sizeof(gtp_f_teid_t));
-    pgw_s5c_teid.ipv4 = 1;
     pgw_s5c_teid.interface_type = GTP_F_TEID_S5_S8_PGW_GTP_C;
-    pgw_s5c_teid.ip.addr = sess->pgw_s5c_addr;
     pgw_s5c_teid.teid = htonl(sess->pgw_s5c_teid);
+    rv = gtp_sockaddr_to_f_teid(
+            sess->pgw_s5c_ipv4, sess->pgw_s5c_ipv6, &pgw_s5c_teid, &len);
+    d_assert(rv == CORE_OK, return CORE_ERROR, );
     rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
         presence = 1;
     rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
