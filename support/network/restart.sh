@@ -13,4 +13,8 @@ else
     ifconfig lo0 alias 127.0.0.3 netmask 255.255.255.255
     ifconfig lo0 alias 127.0.0.4 netmask 255.255.255.255
     ifconfig lo0 alias 127.0.0.5 netmask 255.255.255.255
+    ifconfig lo0 inet6 alias fe80::2 prefixlen 64
+    ifconfig lo0 inet6 alias fe80::3 prefixlen 64
+    ifconfig lo0 inet6 alias fe80::4 prefixlen 64
+    ifconfig lo0 inet6 alias fe80::5 prefixlen 64
 fi
