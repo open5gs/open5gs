@@ -80,7 +80,7 @@ status_t gtp_add_node(list_t *list, gtp_node_t **node,
     return CORE_OK;
 }
 
-gtp_node_t *gtp_add_node_by_teid(list_t *list, gtp_f_teid_t *f_teid,
+gtp_node_t *gtp_add_node_by_f_teid(list_t *list, gtp_f_teid_t *f_teid,
         c_uint16_t port, int no_ipv4, int no_ipv6, int prefer_ipv4)
 {
     status_t rv;
@@ -139,7 +139,7 @@ status_t gtp_remove_all_nodes(list_t *list)
     return CORE_OK;
 }
 
-gtp_node_t* gtp_find(list_t *list, ip_t *ip)
+gtp_node_t* gtp_find_by_ip(list_t *list, ip_t *ip)
 {
     gtp_node_t *node = NULL;
     

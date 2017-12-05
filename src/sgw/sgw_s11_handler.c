@@ -99,10 +99,10 @@ void sgw_s11_handle_create_session_request(gtp_xact_t *s11_xact,
     pgw_s5c_teid = req->pgw_s5_s8_address_for_control_plane_or_pmip.data;
     d_assert(pgw_s5c_teid, return, "Null param");
 
-    pgw = gtp_find(&sgw_self()->pgw_list, &pgw_s5c_teid->ip);
+    pgw = gtp_find_by_ip(&sgw_self()->pgw_list, &pgw_s5c_teid->ip);
     if (!pgw)
     {
-        pgw = gtp_add_node_by_teid(
+        pgw = gtp_add_node_by_f_teid(
             &sgw_self()->pgw_list, pgw_s5c_teid, sgw_self()->gtpc_port,
             context_self()->parameter.no_ipv4,
             context_self()->parameter.no_ipv6,

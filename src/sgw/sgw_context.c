@@ -479,10 +479,10 @@ sgw_ue_t *sgw_ue_find_or_add_by_message(gtp_message_t *gtp_message)
 
         mme_s11_teid = req->sender_f_teid_for_control_plane.data;
         d_assert(mme_s11_teid, return NULL,);
-        mme = gtp_find(&sgw_self()->mme_list, &mme_s11_teid->ip);
+        mme = gtp_find_by_ip(&sgw_self()->mme_list, &mme_s11_teid->ip);
         if (!mme)
         {
-            mme = gtp_add_node_by_teid(
+            mme = gtp_add_node_by_f_teid(
                 &sgw_self()->mme_list, mme_s11_teid, sgw_self()->gtpc_port,
                 context_self()->parameter.no_ipv4,
                 context_self()->parameter.no_ipv6,
