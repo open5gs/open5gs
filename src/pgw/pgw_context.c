@@ -86,7 +86,7 @@ status_t pgw_context_final()
     index_final(&pgw_bearer_pool);
     index_final(&pgw_sess_pool);
 
-    pgw_sgw_remove_all();
+    gtp_remove_all_nodes(&self.sgw_list);
     gtp_node_final();
 
     context_initiaized = 0;
@@ -589,78 +589,6 @@ status_t pgw_context_setup_trace_module()
     return CORE_OK;
 }
 
-pgw_sgw_t* pgw_sgw_add(gtp_f_teid_t *f_teid)
-{
-    status_t rv;
-    pgw_sgw_t *sgw = NULL;
-    c_sockaddr_t *head = NULL, *list = NULL;
-
-    d_assert(f_teid, return NULL,);
-
-    rv = gtp_f_teid_to_sockaddr(f_teid, self.gtpc_port, &head);
-    d_assert(rv == CORE_OK, return NULL,);
-
-    rv = core_preferred_addrinfo(&list, head,
-            context_self()->parameter.no_ipv4,
-            context_self()->parameter.no_ipv6,
-            context_self()->parameter.prefer_ipv4);
-    d_assert(list, return NULL,);
-
-    sgw = gtp_add_node(&self.sgw_list, list);
-    d_assert(sgw, return NULL,);
-
-    memcpy(&sgw->ip, &f_teid->ip, sizeof(ip_t));
-
-    list_init(&sgw->local_list);
-    list_init(&sgw->remote_list);
-
-    core_freeaddrinfo(head);
-
-    return sgw;
-}
-
-status_t pgw_sgw_remove(pgw_sgw_t *sgw)
-{
-    d_assert(sgw, return CORE_ERROR,);
-
-    gtp_remove_node(&self.sgw_list, sgw);
-
-    return CORE_OK;
-}
-
-status_t pgw_sgw_remove_all()
-{
-    pgw_sgw_t *sgw = NULL, *next_sgw = NULL;
-    
-    sgw = list_first(&self.sgw_list);
-    while (sgw)
-    {
-        next_sgw = list_next(sgw);
-
-        pgw_sgw_remove(sgw);
-
-        sgw = next_sgw;
-    }
-
-    return CORE_OK;
-}
-
-pgw_sgw_t* pgw_sgw_find(ip_t *ip)
-{
-    pgw_sgw_t *sgw = NULL;
-    
-    sgw = list_first(&self.sgw_list);
-    while (sgw)
-    {
-        if (memcmp(&sgw->ip, ip, sizeof(ip_t)) == 0)
-            break;
-
-        sgw = list_next(sgw);
-    }
-
-    return sgw;
-}
-
 static void *sess_hash_keygen(c_uint8_t *out, int *out_len,
         c_uint8_t *imsi, int imsi_len, c_int8_t *apn)
 {
@@ -769,7 +697,7 @@ pgw_sess_t *pgw_sess_find_or_add_by_message(gtp_message_t *gtp_message)
 {
     status_t rv;
     pgw_sess_t *sess = NULL;
-    pgw_sgw_t *sgw = NULL;
+    gtp_node_t *sgw = NULL;
 
     gtp_create_session_request_t *req = &gtp_message->create_session_request;
     c_int8_t apn[MAX_APN_LEN];
@@ -810,10 +738,14 @@ pgw_sess_t *pgw_sess_find_or_add_by_message(gtp_message_t *gtp_message)
 
         sgw_s5c_teid = req->sender_f_teid_for_control_plane.data;
         d_assert(sgw_s5c_teid, return NULL,);
-        sgw = pgw_sgw_find(&sgw_s5c_teid->ip);
+        sgw = gtp_find(&pgw_self()->sgw_list, &sgw_s5c_teid->ip);
         if (!sgw)
         {
-            sgw = pgw_sgw_add(sgw_s5c_teid);
+            sgw = gtp_add_node_by_teid(
+                &pgw_self()->sgw_list, sgw_s5c_teid, pgw_self()->gtpc_port,
+                context_self()->parameter.no_ipv4,
+                context_self()->parameter.no_ipv6,
+                context_self()->parameter.prefer_ipv4);
             d_assert(sgw, return NULL,);
 
             rv = gtp_client(sgw);

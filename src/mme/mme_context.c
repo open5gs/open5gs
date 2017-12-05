@@ -337,7 +337,7 @@ status_t mme_context_parse_config()
 #define MAX_NUM_OF_HOSTNAME     16
                         const char *hostname[MAX_NUM_OF_HOSTNAME];
                         c_uint16_t port = self.gtpc_port;
-                        c_sockaddr_t *head = NULL, *list = NULL, *list6 = NULL;
+                        c_sockaddr_t *list = NULL;
                         sock_node_t *node = NULL;
 
                         if (yaml_iter_type(&gtpc_array) == YAML_MAPPING_NODE)
@@ -416,35 +416,29 @@ status_t mme_context_parse_config()
                                 d_warn("unknown key `%s`", gtpc_key);
                         }
 
-                        head = NULL;
+                        list = NULL;
                         for (i = 0; i < num; i++)
                         {
-                            rv = core_addaddrinfo(&head,
+                            rv = core_addaddrinfo(&list,
                                     family, hostname[i], port, AI_PASSIVE);
                             d_assert(rv == CORE_OK, return CORE_ERROR,);
                         }
 
                         if (context_self()->parameter.no_ipv4 == 0)
                         {
-                            rv = core_ipv4addrinfo(&list, head);
-                            if (list)
-                            {
-                                node = sock_add_node(&self.gtpc_list, list);
-                                d_assert(node, return CORE_ERROR,);
-                            }
+                            rv = sock_add_node(&self.gtpc_list,
+                                    &node, list, AF_INET);
+                            d_assert(rv == CORE_OK, return CORE_ERROR,);
                         }
 
                         if (context_self()->parameter.no_ipv6 == 0)
                         {
-                            rv = core_ipv6addrinfo(&list6, head);
-                            if (list6)
-                            {
-                                node = sock_add_node(&self.gtpc_list, list6);
-                                d_assert(node, return CORE_ERROR,);
-                            }
+                            rv = sock_add_node(&self.gtpc_list,
+                                    &node, list, AF_INET6);
+                            d_assert(rv == CORE_OK, return CORE_ERROR,);
                         }
 
-                        core_freeaddrinfo(head);
+                        core_freeaddrinfo(list);
 
                     } while(yaml_iter_type(&gtpc_array) == YAML_SEQUENCE_NODE);
 
@@ -885,7 +879,7 @@ status_t mme_context_parse_config()
                     do
                     {
                         gtp_node_t *sgw = NULL;
-                        c_sockaddr_t *head = NULL, *list = NULL;
+                        c_sockaddr_t *list = NULL;
                         int family = AF_UNSPEC;
                         int i, num = 0;
 #define MAX_NUM_OF_HOSTNAME     16
@@ -964,27 +958,21 @@ status_t mme_context_parse_config()
                                 d_warn("unknown key `%s`", gtpc_key);
                         }
 
-                        head = NULL;
+                        list = NULL;
                         for (i = 0; i < num; i++)
                         {
-                            rv = core_addaddrinfo(&head,
+                            rv = core_addaddrinfo(&list,
                                     family, hostname[i], port, AI_PASSIVE);
                             d_assert(rv == CORE_OK, return CORE_ERROR,);
                         }
 
-                        rv = core_preferred_addrinfo(&list, head,
+                        rv = gtp_add_node(&self.sgw_list, &sgw, list,
                                 context_self()->parameter.no_ipv4,
                                 context_self()->parameter.no_ipv6,
                                 context_self()->parameter.prefer_ipv4);
                         d_assert(rv == CORE_OK, return CORE_ERROR,);
 
-                        if (list)
-                        {
-                            sgw = gtp_add_node(&self.sgw_list, list);
-                            d_assert(sgw, return CORE_ERROR,);
-                        }
-
-                        core_freeaddrinfo(head);
+                        core_freeaddrinfo(list);
 
                     } while(yaml_iter_type(&gtpc_array) == YAML_SEQUENCE_NODE);
                 }
@@ -1005,7 +993,7 @@ status_t mme_context_parse_config()
                     do
                     {
                         gtp_node_t *pgw = NULL;
-                        c_sockaddr_t *head = NULL, *list = NULL;
+                        c_sockaddr_t *list = NULL;
                         int family = AF_UNSPEC;
                         int i, num = 0;
 #define MAX_NUM_OF_HOSTNAME     16
@@ -1084,33 +1072,21 @@ status_t mme_context_parse_config()
                                 d_warn("unknown key `%s`", gtpc_key);
                         }
 
-                        head = NULL;
+                        list = NULL;
                         for (i = 0; i < num; i++)
                         {
-                            rv = core_addaddrinfo(&head,
+                            rv = core_addaddrinfo(&list,
                                     family, hostname[i], port, AI_PASSIVE);
                             d_assert(rv == CORE_OK, return CORE_ERROR,);
                         }
 
-                        rv = core_copyaddrinfo(&list, head);
+                        rv = gtp_add_node(&self.pgw_list, &pgw, list,
+                                context_self()->parameter.no_ipv4,
+                                context_self()->parameter.no_ipv6,
+                                context_self()->parameter.prefer_ipv4);
                         d_assert(rv == CORE_OK, return CORE_ERROR,);
-                        if (context_self()->parameter.no_ipv4 == 1)
-                        {
-                            rv = core_filteraddrinfo(&list, AF_INET6);
-                            d_assert(rv == CORE_OK, return CORE_ERROR,);
-                        }
-                        if (context_self()->parameter.no_ipv6 == 1)
-                        {
-                            rv = core_filteraddrinfo(&list, AF_INET);
-                            d_assert(rv == CORE_OK, return CORE_ERROR,);
-                        }
-                        if (list)
-                        {
-                            pgw = gtp_add_node(&self.pgw_list, list);
-                            d_assert(pgw, return CORE_ERROR,);
-                        }
 
-                        core_freeaddrinfo(head);
+                        core_freeaddrinfo(list);
 
                     } while(yaml_iter_type(&gtpc_array) == YAML_SEQUENCE_NODE);
                 }

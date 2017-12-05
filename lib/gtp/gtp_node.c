@@ -2,6 +2,7 @@
 
 #include "core_debug.h"
 
+#include "gtp_conv.h"
 #include "gtp_node.h"
 #include "gtp_xact.h"
 
@@ -27,21 +28,80 @@ status_t gtp_node_final(void)
     return CORE_OK;
 }
 
-gtp_node_t *gtp_add_node(list_t *list, c_sockaddr_t *sa_list)
+status_t gtp_add_node(list_t *list, gtp_node_t **node,
+        c_sockaddr_t *all_list, int no_ipv4, int no_ipv6, int prefer_ipv4)
 {
+    status_t rv;
+    gtp_node_t *new_node = NULL;
+    c_sockaddr_t *preferred_list = NULL;
+
+    d_assert(list, return CORE_ERROR,);
+    d_assert(all_list, return CORE_ERROR,);
+
+    rv = core_copyaddrinfo(&preferred_list, all_list);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    if (no_ipv4 == 1)
+    {
+        rv = core_filteraddrinfo(&preferred_list, AF_INET6);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
+    }
+    if (no_ipv6 == 1)
+    {
+        rv = core_filteraddrinfo(&preferred_list, AF_INET);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
+    }
+    if (prefer_ipv4 == 1)
+    {
+        rv = core_sortaddrinfo(&preferred_list, AF_INET);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
+    }
+    else
+    {
+        rv = core_sortaddrinfo(&preferred_list, AF_INET6);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
+    }
+
+    if (preferred_list)
+    {
+        pool_alloc_node(&gtp_node_pool, &new_node);
+        d_assert(new_node, return CORE_ERROR,);
+        memset(new_node, 0, sizeof(gtp_node_t));
+
+        new_node->sa_list = preferred_list;
+
+        list_init(&new_node->local_list);
+        list_init(&new_node->remote_list);
+
+        list_append(list, new_node);
+    }
+
+    *node = new_node;
+
+    return CORE_OK;
+}
+
+gtp_node_t *gtp_add_node_by_teid(list_t *list, gtp_f_teid_t *f_teid,
+        c_uint16_t port, int no_ipv4, int no_ipv6, int prefer_ipv4)
+{
+    status_t rv;
     gtp_node_t *node = NULL;
+    c_sockaddr_t *sa_list = NULL;
 
     d_assert(list, return NULL,);
-    d_assert(sa_list, return NULL,);
+    d_assert(f_teid, return NULL,);
+    d_assert(port, return NULL,);
 
-    pool_alloc_node(&gtp_node_pool, &node);
-    d_assert(node, return NULL,);
-    memset(node, 0, sizeof(gtp_node_t));
+    rv = gtp_f_teid_to_sockaddr(f_teid, port, &sa_list);
+    d_assert(rv == CORE_OK, return NULL,);
 
-    node->sa_list = sa_list;
+    rv = gtp_add_node(list, &node, sa_list, no_ipv4, no_ipv6, prefer_ipv4);
+    d_assert(rv == CORE_OK, return NULL,);
 
-    list_append(list, node);
-    
+    if (node)
+        memcpy(&node->ip, &f_teid->ip, sizeof(ip_t));
+
+    core_freeaddrinfo(sa_list);
+
     return node;
 }
 
@@ -79,48 +139,18 @@ status_t gtp_remove_all_nodes(list_t *list)
     return CORE_OK;
 }
 
-status_t gtp_filter_node(list_t *list, int family)
+gtp_node_t* gtp_find(list_t *list, ip_t *ip)
 {
-    status_t rv;
-    gtp_node_t *node = NULL, *next_node = NULL;
-
-    d_assert(list, return CORE_ERROR,);
-
+    gtp_node_t *node = NULL;
+    
     node = list_first(list);
-    while(node)
+    while (node)
     {
-        next_node = list_next(node);
+        if (memcmp(&node->ip, ip, sizeof(ip_t)) == 0)
+            break;
 
-        rv = core_filteraddrinfo(&node->sa_list, family);
-        d_assert(rv == CORE_OK, return CORE_ERROR,);
-
-        if (node->sa_list == NULL)
-            gtp_remove_node(list, node);
-
-        node = next_node;
+        node = list_next(node);
     }
 
-    return CORE_OK;
+    return node;
 }
-
-status_t gtp_sort_node(list_t *list, int family)
-{
-    status_t rv;
-    gtp_node_t *node = NULL, *next_node = NULL;
-
-    d_assert(list, return CORE_ERROR,);
-
-    node = list_first(list);
-    while(node)
-    {
-        next_node = list_next(node);
-
-        rv = core_sortaddrinfo(&node->sa_list, family);
-        d_assert(rv == CORE_OK, return CORE_ERROR,);
-
-        node = next_node;
-    }
-
-    return CORE_OK;
-}
-

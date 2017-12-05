@@ -8,6 +8,7 @@
 #include "gtp_node.h"
 #include "gtp_path.h"
 
+#include "context.h"
 #include "sgw_event.h"
 #include "sgw_context.h"
 #include "sgw_gtp_path.h"
@@ -22,7 +23,7 @@ void sgw_s11_handle_create_session_request(gtp_xact_t *s11_xact,
     pkbuf_t *pkbuf = NULL;
     gtp_f_teid_t *mme_s11_teid = NULL;
     gtp_f_teid_t *pgw_s5c_teid = NULL;
-    sgw_pgw_t *pgw = NULL;
+    gtp_node_t *pgw = NULL;
     gtp_f_teid_t sgw_s5c_teid, sgw_s5u_teid;
     gtp_uli_t uli;
 
@@ -98,10 +99,14 @@ void sgw_s11_handle_create_session_request(gtp_xact_t *s11_xact,
     pgw_s5c_teid = req->pgw_s5_s8_address_for_control_plane_or_pmip.data;
     d_assert(pgw_s5c_teid, return, "Null param");
 
-    pgw = sgw_pgw_find(&pgw_s5c_teid->ip);
+    pgw = gtp_find(&sgw_self()->pgw_list, &pgw_s5c_teid->ip);
     if (!pgw)
     {
-        pgw = sgw_pgw_add(pgw_s5c_teid);
+        pgw = gtp_add_node_by_teid(
+            &sgw_self()->pgw_list, pgw_s5c_teid, sgw_self()->gtpc_port,
+            context_self()->parameter.no_ipv4,
+            context_self()->parameter.no_ipv6,
+            context_self()->parameter.prefer_ipv4);
         d_assert(pgw, return,);
 
         rv = gtp_client(pgw);

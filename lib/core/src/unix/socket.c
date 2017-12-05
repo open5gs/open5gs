@@ -292,22 +292,37 @@ c_sockaddr_t *sock_remote_addr(sock_id id)
  * Socket Address
  */
 
-sock_node_t *sock_add_node(list_t *list, c_sockaddr_t *sa_list)
+status_t sock_add_node(
+        list_t *list, sock_node_t **node, c_sockaddr_t *sa_list, int family)
 {
-    sock_node_t *node = NULL;
+    status_t rv;
+    c_sockaddr_t *new_list = NULL;
 
-    d_assert(list, return NULL,);
-    d_assert(sa_list, return NULL,);
+    d_assert(list, return CORE_OK,);
+    d_assert(node, return CORE_OK,);
+    d_assert(sa_list, return CORE_OK,);
 
-    pool_alloc_node(&sock_node_pool, &node);
-    d_assert(node, return NULL,);
-    memset(node, 0, sizeof(sock_node_t));
+    rv = core_copyaddrinfo(&new_list, sa_list);
+    d_assert(rv == CORE_OK, return CORE_OK,);
 
-    node->list = sa_list;
+    if (family != AF_UNSPEC)
+    {
+        rv = core_filteraddrinfo(&new_list, family);
+        d_assert(rv == CORE_OK, return CORE_OK,);
+    }
 
-    list_append(list, node);
+    if (new_list)
+    {
+        pool_alloc_node(&sock_node_pool, node);
+        d_assert(*node, return CORE_OK,);
+        memset(*node, 0, sizeof(sock_node_t));
 
-    return node;
+        (*node)->list = new_list;
+
+        list_append(list, *node);
+    }
+
+    return CORE_OK;
 }
 
 status_t sock_remove_node(list_t *list, sock_node_t *node)
@@ -592,61 +607,6 @@ status_t core_sortaddrinfo(c_sockaddr_t **sa_list, int family)
     *sa_list = head;
 
     return CORE_OK;
-}
-
-status_t core_ipv4addrinfo(c_sockaddr_t **dst, const c_sockaddr_t *src)
-{
-    status_t rv;
-
-    rv = core_copyaddrinfo(dst, src);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
-    rv = core_filteraddrinfo(dst, AF_INET);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
-
-    return rv;
-}
-
-status_t core_ipv6addrinfo(c_sockaddr_t **dst, const c_sockaddr_t *src)
-{
-    status_t rv;
-
-    rv = core_copyaddrinfo(dst, src);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
-    rv = core_filteraddrinfo(dst, AF_INET6);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
-
-    return rv;
-}
-
-status_t core_preferred_addrinfo(c_sockaddr_t **dst,
-        c_sockaddr_t *src, int no_ipv4, int no_ipv6, int prefer_ipv4)
-{
-    status_t rv;
-
-    rv = core_copyaddrinfo(dst, src);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
-    if (no_ipv4 == 1)
-    {
-        rv = core_filteraddrinfo(dst, AF_INET6);
-        d_assert(rv == CORE_OK, return CORE_ERROR,);
-    }
-    if (no_ipv6 == 1)
-    {
-        rv = core_filteraddrinfo(dst, AF_INET);
-        d_assert(rv == CORE_OK, return CORE_ERROR,);
-    }
-    if (prefer_ipv4 == 1)
-    {
-        rv = core_sortaddrinfo(dst, AF_INET);
-        d_assert(rv == CORE_OK, return CORE_ERROR,);
-    }
-    else
-    {
-        rv = core_sortaddrinfo(dst, AF_INET6);
-        d_assert(rv == CORE_OK, return CORE_ERROR,);
-    }
-
-    return rv;
 }
 
 const char *core_inet_ntop(void *sa, char *buf, int buflen)

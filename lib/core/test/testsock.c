@@ -399,7 +399,7 @@ static void sock_test7(abts_case *tc, void *data)
     rv = core_getaddrinfo(&addr, AF_UNSPEC, "localhost", PORT, 0);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    node = sock_add_node(&list, addr);
+    rv = sock_add_node(&list, &node, addr, AF_INET);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     core_freeaddrinfo(addr);

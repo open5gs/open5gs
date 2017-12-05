@@ -17,10 +17,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 typedef struct _sgw_tunnel_t sgw_tunnel_t;
-
 typedef struct _gtp_node_t gtp_node_t;
-typedef gtp_node_t sgw_mme_t;
-typedef gtp_node_t sgw_pgw_t;
 
 typedef struct _sgw_context_t {
     c_uint32_t      gtpc_addr; /* GTP-U local address */
@@ -73,7 +70,7 @@ typedef struct _sgw_ue_t {
         d_assert((__gNODE), return NULL, "Null param"); \
         (__sGW)->mme = (__gNODE); \
     } while(0)
-    sgw_mme_t       *mme;
+    gtp_node_t       *mme;
 } sgw_ue_t;
 
 typedef struct _sgw_sess_t {
@@ -104,7 +101,7 @@ typedef struct _sgw_sess_t {
         d_assert((__gNODE), return, "Null param"); \
         (__sESS)->pgw = __gNODE; \
     } while(0)
-    sgw_pgw_t       *pgw;
+    gtp_node_t      *pgw;
     sgw_ue_t        *sgw_ue;
 } sgw_sess_t;
 
@@ -149,16 +146,6 @@ CORE_DECLARE(sgw_context_t*) sgw_self(void);
 
 CORE_DECLARE(status_t)      sgw_context_parse_config(void);
 CORE_DECLARE(status_t)      sgw_context_setup_trace_module(void);
-
-CORE_DECLARE(sgw_mme_t*)    sgw_mme_add(gtp_f_teid_t *f_teid);
-CORE_DECLARE(status_t)      sgw_mme_remove(sgw_mme_t *mme);
-CORE_DECLARE(status_t)      sgw_mme_remove_all(void);
-CORE_DECLARE(sgw_mme_t*)    sgw_mme_find(ip_t *ip);
-
-CORE_DECLARE(sgw_pgw_t*)    sgw_pgw_add(gtp_f_teid_t *f_teid);
-CORE_DECLARE(status_t)      sgw_pgw_remove(sgw_pgw_t *pgw);
-CORE_DECLARE(status_t)      sgw_pgw_remove_all(void);
-CORE_DECLARE(sgw_pgw_t*)    sgw_pgw_find(ip_t *ip);
 
 CORE_DECLARE(sgw_ue_t*)     sgw_ue_add(
         c_uint8_t *imsi, int imsi_len, c_int8_t *apn, c_uint8_t ebi);

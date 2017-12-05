@@ -19,7 +19,6 @@ extern "C" {
 #endif /* __cplusplus */
 
 typedef struct _gtp_node_t gtp_node_t;
-typedef gtp_node_t pgw_sgw_t;
 
 typedef struct _pgw_context_t {
     c_uint32_t      pgw_addr;  /* PGW local address */
@@ -102,7 +101,7 @@ typedef struct _pgw_sess_t {
         d_assert((__gNODE), return NULL, "Null param"); \
         (__sESS)->sgw = (__gNODE); \
     } while(0)
-    pgw_sgw_t       *sgw;
+    gtp_node_t      *sgw;
 } pgw_sess_t;
 
 typedef struct _pgw_bearer_t {
@@ -171,11 +170,6 @@ CORE_DECLARE(pgw_context_t*) pgw_self(void);
 
 CORE_DECLARE(status_t)      pgw_context_parse_config(void);
 CORE_DECLARE(status_t)      pgw_context_setup_trace_module(void);
-
-CORE_DECLARE(pgw_sgw_t*)    pgw_sgw_add(gtp_f_teid_t *f_teid);
-CORE_DECLARE(status_t)      pgw_sgw_remove(pgw_sgw_t *sgw);
-CORE_DECLARE(status_t)      pgw_sgw_remove_all(void);
-CORE_DECLARE(pgw_sgw_t*)    pgw_sgw_find(ip_t *ip);
 
 CORE_DECLARE(pgw_sess_t*)   pgw_sess_add(
         c_uint8_t *imsi, int imsi_len, c_int8_t *apn, c_uint8_t ebi);

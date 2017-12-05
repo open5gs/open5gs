@@ -66,8 +66,8 @@ status_t sgw_context_final()
     index_final(&sgw_sess_pool);
     index_final(&sgw_ue_pool);
 
-    sgw_mme_remove_all();
-    sgw_pgw_remove_all();
+    gtp_remove_all_nodes(&self.mme_list);
+    gtp_remove_all_nodes(&self.pgw_list);
     gtp_node_final();
 
     context_initialized = 0;
@@ -345,150 +345,6 @@ status_t sgw_context_setup_trace_module()
     return CORE_OK;
 }
 
-sgw_mme_t* sgw_mme_add(gtp_f_teid_t *f_teid)
-{
-    status_t rv;
-    sgw_mme_t *mme = NULL;
-    c_sockaddr_t *head = NULL, *list = NULL;
-
-    d_assert(f_teid, return NULL,);
-
-    rv = gtp_f_teid_to_sockaddr(f_teid, self.gtpc_port, &head);
-    d_assert(rv == CORE_OK, return NULL,);
-
-    rv = core_preferred_addrinfo(&list, head,
-            context_self()->parameter.no_ipv4,
-            context_self()->parameter.no_ipv6,
-            context_self()->parameter.prefer_ipv4);
-    d_assert(list, return NULL,);
-
-    mme = gtp_add_node(&self.mme_list, list);
-    d_assert(mme, return NULL,);
-
-    memcpy(&mme->ip, &f_teid->ip, sizeof(ip_t));
-
-    list_init(&mme->local_list);
-    list_init(&mme->remote_list);
-
-    core_freeaddrinfo(head);
-
-    return mme;
-}
-
-status_t sgw_mme_remove(sgw_mme_t *mme)
-{
-    d_assert(mme, return CORE_ERROR,);
-
-    gtp_remove_node(&self.mme_list, mme);
-
-    return CORE_OK;
-}
-
-status_t sgw_mme_remove_all()
-{
-    sgw_mme_t *mme = NULL, *next_mme = NULL;
-    
-    mme = list_first(&self.mme_list);
-    while (mme)
-    {
-        next_mme = list_next(mme);
-
-        sgw_mme_remove(mme);
-
-        mme = next_mme;
-    }
-
-    return CORE_OK;
-}
-
-sgw_mme_t* sgw_mme_find(ip_t *ip)
-{
-    sgw_mme_t *mme = NULL;
-    
-    mme = list_first(&self.mme_list);
-    while (mme)
-    {
-        if (memcmp(&mme->ip, ip, sizeof(ip_t)) == 0)
-            break;
-
-        mme = list_next(mme);
-    }
-
-    return mme;
-}
-
-sgw_pgw_t* sgw_pgw_add(gtp_f_teid_t *f_teid)
-{
-    status_t rv;
-    sgw_pgw_t *pgw = NULL;
-    c_sockaddr_t *head = NULL, *list = NULL;
-
-    d_assert(f_teid, return NULL,);
-
-    rv = gtp_f_teid_to_sockaddr(f_teid, self.gtpc_port, &head);
-    d_assert(rv == CORE_OK, return NULL,);
-
-    rv = core_preferred_addrinfo(&list, head,
-            context_self()->parameter.no_ipv4,
-            context_self()->parameter.no_ipv6,
-            context_self()->parameter.prefer_ipv4);
-    d_assert(list, return NULL,);
-
-    pgw = gtp_add_node(&self.pgw_list, list);
-    d_assert(pgw, return NULL,);
-
-    memcpy(&pgw->ip, &f_teid->ip, sizeof(ip_t));
-
-    list_init(&pgw->local_list);
-    list_init(&pgw->remote_list);
-
-    core_freeaddrinfo(head);
-
-    return pgw;
-}
-
-status_t sgw_pgw_remove(sgw_pgw_t *pgw)
-{
-    d_assert(pgw, return CORE_ERROR,);
-
-    gtp_remove_node(&self.pgw_list, pgw);
-
-    return CORE_OK;
-}
-
-status_t sgw_pgw_remove_all()
-{
-    sgw_pgw_t *pgw = NULL, *next_pgw = NULL;
-    
-    pgw = list_first(&self.pgw_list);
-    while (pgw)
-    {
-        next_pgw = list_next(pgw);
-
-        sgw_pgw_remove(pgw);
-
-        pgw = next_pgw;
-    }
-
-    return CORE_OK;
-}
-
-sgw_pgw_t* sgw_pgw_find(ip_t *ip)
-{
-    sgw_pgw_t *pgw = NULL;
-    
-    pgw = list_first(&self.pgw_list);
-    while (pgw)
-    {
-        if (memcmp(&pgw->ip, ip, sizeof(ip_t)) == 0)
-            break;
-
-        pgw = list_next(pgw);
-    }
-
-    return pgw;
-}
-
 sgw_ue_t* sgw_ue_add(
         c_uint8_t *imsi, int imsi_len, c_int8_t *apn, c_uint8_t ebi)
 {
@@ -584,7 +440,7 @@ sgw_ue_t *sgw_ue_find_or_add_by_message(gtp_message_t *gtp_message)
 {
     status_t rv;
     sgw_ue_t *sgw_ue = NULL;
-    sgw_mme_t *mme = NULL;
+    gtp_node_t *mme = NULL;
     gtp_create_session_request_t *req = &gtp_message->create_session_request;
 
     if (req->imsi.presence == 0)
@@ -623,10 +479,14 @@ sgw_ue_t *sgw_ue_find_or_add_by_message(gtp_message_t *gtp_message)
 
         mme_s11_teid = req->sender_f_teid_for_control_plane.data;
         d_assert(mme_s11_teid, return NULL,);
-        mme = sgw_mme_find(&mme_s11_teid->ip);
+        mme = gtp_find(&sgw_self()->mme_list, &mme_s11_teid->ip);
         if (!mme)
         {
-            mme = sgw_mme_add(mme_s11_teid);
+            mme = gtp_add_node_by_teid(
+                &sgw_self()->mme_list, mme_s11_teid, sgw_self()->gtpc_port,
+                context_self()->parameter.no_ipv4,
+                context_self()->parameter.no_ipv6,
+                context_self()->parameter.prefer_ipv4);
             d_assert(mme, return NULL,);
 
             rv = gtp_client(mme);
