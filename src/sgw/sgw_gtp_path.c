@@ -228,14 +228,52 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
 status_t sgw_gtp_open()
 {
     status_t rv;
+    sock_node_t *snode;
 
-    rv = gtp_listen(&sgw_self()->gtpc_sock, _gtpv2_c_recv_cb, 
-            sgw_self()->gtpc_addr, sgw_self()->gtpc_port, NULL);
-    if (rv != CORE_OK)
+    for (snode = list_first(&sgw_self()->gtpc_list);
+            snode; snode = list_next(snode))
     {
-        d_error("Can't establish GTP-C Path for MME/PGW");
-        return rv;
+        rv = gtp_server(snode, _gtpv2_c_recv_cb);
+        if (rv != CORE_OK)
+        {
+            d_error("Can't establish GTP-C Path for SGW");
+            return rv;
+        }
     }
+
+    for (snode = list_first(&sgw_self()->gtpc_list);
+            snode; snode = list_next(snode))
+    {
+        sgw_self()->gtpc_addr = sock_local_addr(snode->sock);
+        if (sgw_self()->gtpc_addr)
+        {
+            break;
+        }
+    }
+
+    for (snode = list_first(&sgw_self()->gtpc_list6);
+            snode; snode = list_next(snode))
+    {
+        rv = gtp_server(snode, _gtpv2_c_recv_cb);
+        if (rv != CORE_OK)
+        {
+            d_error("Can't establish GTP-C Path for SGW");
+            return rv;
+        }
+    }
+
+    for (snode = list_first(&sgw_self()->gtpc_list6);
+            snode; snode = list_next(snode))
+    {
+        sgw_self()->gtpc_addr6 = sock_local_addr(snode->sock);
+        if (sgw_self()->gtpc_addr6)
+        {
+            break;
+        }
+    }
+
+    d_assert(sgw_self()->gtpc_addr || sgw_self()->gtpc_addr6,
+            return CORE_ERROR, "No GTP Server");
 
     rv = gtp_listen(&sgw_self()->gtpu_sock, _gtpv1_u_recv_cb, 
             sgw_self()->gtpu_addr, sgw_self()->gtpu_port, NULL);
@@ -252,11 +290,18 @@ status_t sgw_gtp_close()
 {
     status_t rv;
 
-    rv = gtp_close(sgw_self()->gtpc_sock);
-    if (rv != CORE_OK)
+    sock_node_t *snode;
+
+    for (snode = list_first(&sgw_self()->gtpc_list);
+            snode; snode = list_next(snode))
     {
-        d_error("Can't close GTP-C Path for MME/PGW");
-        return rv;
+        sock_delete(snode->sock);
+    }
+
+    for (snode = list_first(&sgw_self()->gtpc_list6);
+            snode; snode = list_next(snode))
+    {
+        sock_delete(snode->sock);
     }
 
     rv = gtp_close(sgw_self()->gtpu_sock);

@@ -13,6 +13,7 @@
 #include "s1ap_message.h"
 #include "gtp_xact.h"
 #include "gtp_node.h"
+#include "gtp_path.h"
 #include "fd_lib.h"
 
 #include "context.h"
@@ -970,6 +971,9 @@ status_t mme_context_parse_config()
                                 context_self()->parameter.no_ipv4,
                                 context_self()->parameter.no_ipv6,
                                 context_self()->parameter.prefer_ipv4);
+                        d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+                        rv = gtp_client(sgw);
                         d_assert(rv == CORE_OK, return CORE_ERROR,);
 
                         core_freeaddrinfo(list);

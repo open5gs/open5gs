@@ -20,9 +20,12 @@ typedef struct _sgw_tunnel_t sgw_tunnel_t;
 typedef struct _gtp_node_t gtp_node_t;
 
 typedef struct _sgw_context_t {
-    c_uint32_t      gtpc_addr; /* GTP-U local address */
-    c_uint32_t      gtpc_port; /* GTP-U local port */
-    sock_id         gtpc_sock; /* GTP-U local listen socket */
+    c_uint32_t      gtpc_port;      /* Default GTPC port */
+
+    list_t          gtpc_list;      /* SGW GTPC IPv4 Server List */
+    c_sockaddr_t    *gtpc_addr;     /* SGW GTPC IPv4 Address */
+    list_t          gtpc_list6;     /* SGW GTPC IPv6 Server List */
+    c_sockaddr_t    *gtpc_addr6;    /* SGW GTPC IPv6 Address */
 
     c_uint32_t      gtpu_addr; /* GTP-U local address */
     c_uint32_t      gtpu_port; /* GTP-U local port */
@@ -44,7 +47,8 @@ typedef struct _sgw_ue_t {
     /* IMPORTANT! 
      * SGW-S11-F-TEID is same with an index */
     c_uint32_t      sgw_s11_teid;       
-    c_uint32_t      sgw_s11_addr;       
+    c_sockaddr_t    *sgw_s11_ipv4;  /* SGW S11 IPv4 Address */
+    c_sockaddr_t    *sgw_s11_ipv6;  /* SGW S11 IPv6 Address */
     c_uint32_t      mme_s11_teid;   /* MME-S11-F-TEID */
     c_uint32_t      mme_s11_addr;   /* MME-S11-F-TEID IPv4 Address */
 
@@ -85,7 +89,8 @@ typedef struct _sgw_sess_t {
 #define SGW_S5C_TEID_TO_INDEX(__iNDEX) (__iNDEX & ~0x80000000)
 #define SGW_S5C_INDEX_TO_TEID(__iNDEX) (__iNDEX | 0x80000000)
     c_uint32_t      sgw_s5c_teid;       
-    c_uint32_t      sgw_s5c_addr;       
+    c_sockaddr_t    *sgw_s5c_ipv4;  /* SGW S5C IPv4 Address */
+    c_sockaddr_t    *sgw_s5c_ipv6;  /* SGW S5C IPv6 Address */
     c_uint32_t      pgw_s5c_teid;   /* PGW-S5C-F-TEID */
     c_uint32_t      pgw_s5c_addr;   /* PGW-S5C-F-TEID IPv4 Address */
 

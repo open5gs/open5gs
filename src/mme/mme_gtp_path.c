@@ -42,10 +42,11 @@ static int _gtpv2_c_recv_cb(sock_id sock, void *data)
     return 0;
 }
 
-static status_t mme_gtp_server()
+status_t mme_gtp_open()
 {
     status_t rv;
     sock_node_t *snode;
+    gtp_node_t *gnode;
 
     for (snode = list_first(&mme_self()->gtpc_list);
             snode; snode = list_next(snode))
@@ -92,25 +93,6 @@ static status_t mme_gtp_server()
     d_assert(mme_self()->gtpc_addr || mme_self()->gtpc_addr6,
             return CORE_ERROR, "No GTP Server");
 
-    return CORE_OK;
-}
-
-static status_t mme_gtp_client()
-{
-    status_t rv;
-    gtp_node_t *gnode = NULL;
-
-    for (gnode = list_first(&mme_self()->sgw_list);
-            gnode; gnode = list_next(gnode))
-    {
-        rv = gtp_client(gnode);
-        if (rv != CORE_OK)
-        {
-            d_error("Can't connect GTP-C Path to SGW");
-            return rv;
-        }
-    }
-
     mme_self()->sgw = list_first(&mme_self()->sgw_list);
     d_assert(mme_self()->sgw, return CORE_ERROR,);
 
@@ -146,19 +128,6 @@ static status_t mme_gtp_client()
 
     d_assert(mme_self()->pgw_addr || mme_self()->pgw_addr6,
             return CORE_ERROR,);
-
-    return CORE_OK;
-}
-
-status_t mme_gtp_open()
-{
-    status_t rv;
-    
-    rv = mme_gtp_server();
-    if (rv != CORE_OK) return CORE_ERROR;
-
-    rv = mme_gtp_client();
-    if (rv != CORE_OK) return CORE_ERROR;
 
     return CORE_OK;
 }

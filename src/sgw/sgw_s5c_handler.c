@@ -3,6 +3,7 @@
 #include "core_debug.h"
 #include "core_lib.h"
 
+#include "gtp_conv.h"
 #include "gtp_types.h"
 
 #include "sgw_event.h"
@@ -25,6 +26,7 @@ void sgw_s5c_handle_create_session_response(gtp_xact_t *s5c_xact,
     gtp_f_teid_t sgw_s11_teid;
     gtp_f_teid_t *pgw_s5u_teid = NULL;
     gtp_f_teid_t sgw_s1u_teid;
+    int len;
 
     d_assert(sess, return, "Null param");
     sgw_ue = sess->sgw_ue;
@@ -84,13 +86,14 @@ void sgw_s5c_handle_create_session_response(gtp_xact_t *s5c_xact,
 
     /* Send Control Plane(UL) : SGW-S11 */
     memset(&sgw_s11_teid, 0, sizeof(gtp_f_teid_t));
-    sgw_s11_teid.ipv4 = 1;
     sgw_s11_teid.interface_type = GTP_F_TEID_S11_S4_SGW_GTP_C;
-    sgw_s11_teid.ip.addr = sgw_ue->sgw_s11_addr;
     sgw_s11_teid.teid = htonl(sgw_ue->sgw_s11_teid);
+    rv = gtp_sockaddr_to_f_teid(
+            sgw_ue->sgw_s11_ipv4, sgw_ue->sgw_s11_ipv6, &sgw_s11_teid, &len);
+    d_assert(rv == CORE_OK, return, );
     rsp->sender_f_teid_for_control_plane.presence = 1;
     rsp->sender_f_teid_for_control_plane.data = &sgw_s11_teid;
-    rsp->sender_f_teid_for_control_plane.len = GTP_F_TEID_IPV4_LEN;
+    rsp->sender_f_teid_for_control_plane.len = len;
 
     /* Send Data Plane(UL) : SGW-S1U */
     memset(&sgw_s1u_teid, 0, sizeof(gtp_f_teid_t));

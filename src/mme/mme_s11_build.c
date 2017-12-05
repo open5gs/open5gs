@@ -71,6 +71,7 @@ status_t mme_s11_build_create_session_request(
     mme_s11_teid.teid = htonl(mme_ue->mme_s11_teid);
     rv = gtp_sockaddr_to_f_teid(
             mme_ue->mme_s11_ipv4, mme_ue->mme_s11_ipv6, &mme_s11_teid, &len);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
     req->sender_f_teid_for_control_plane.presence = 1;
     req->sender_f_teid_for_control_plane.data = &mme_s11_teid;
     req->sender_f_teid_for_control_plane.len = len;
@@ -92,6 +93,7 @@ status_t mme_s11_build_create_session_request(
     {
         rv = gtp_sockaddr_to_f_teid(
             mme_self()->pgw_addr, mme_self()->pgw_addr6, &pgw_s5c_teid, &len);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
         req->pgw_s5_s8_address_for_control_plane_or_pmip.presence = 1;
         req->pgw_s5_s8_address_for_control_plane_or_pmip.data = &pgw_s5c_teid;
         req->pgw_s5_s8_address_for_control_plane_or_pmip.len = len;
