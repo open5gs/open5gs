@@ -154,15 +154,11 @@ CORE_DECLARE(sgw_mme_t*)    sgw_mme_add(gtp_f_teid_t *f_teid);
 CORE_DECLARE(status_t)      sgw_mme_remove(sgw_mme_t *mme);
 CORE_DECLARE(status_t)      sgw_mme_remove_all(void);
 CORE_DECLARE(sgw_mme_t*)    sgw_mme_find(ip_t *ip);
-CORE_DECLARE(sgw_mme_t*)    sgw_mme_first(void);
-CORE_DECLARE(sgw_mme_t*)    sgw_mme_next(sgw_mme_t *mme);
 
-CORE_DECLARE(sgw_pgw_t*)    sgw_pgw_add(void);
+CORE_DECLARE(sgw_pgw_t*)    sgw_pgw_add(gtp_f_teid_t *f_teid);
 CORE_DECLARE(status_t)      sgw_pgw_remove(sgw_pgw_t *pgw);
 CORE_DECLARE(status_t)      sgw_pgw_remove_all(void);
-CORE_DECLARE(sgw_pgw_t*)    sgw_pgw_find(c_uint32_t addr);
-CORE_DECLARE(sgw_pgw_t*)    sgw_pgw_first(void);
-CORE_DECLARE(sgw_pgw_t*)    sgw_pgw_next(sgw_pgw_t *pgw);
+CORE_DECLARE(sgw_pgw_t*)    sgw_pgw_find(ip_t *ip);
 
 CORE_DECLARE(sgw_ue_t*)     sgw_ue_add(
         c_uint8_t *imsi, int imsi_len, c_int8_t *apn, c_uint8_t ebi);

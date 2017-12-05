@@ -172,14 +172,12 @@ CORE_DECLARE(pgw_context_t*) pgw_self(void);
 CORE_DECLARE(status_t)      pgw_context_parse_config(void);
 CORE_DECLARE(status_t)      pgw_context_setup_trace_module(void);
 
-CORE_DECLARE(pgw_sgw_t*)    pgw_sgw_add(void);
+CORE_DECLARE(pgw_sgw_t*)    pgw_sgw_add(gtp_f_teid_t *f_teid);
 CORE_DECLARE(status_t)      pgw_sgw_remove(pgw_sgw_t *sgw);
 CORE_DECLARE(status_t)      pgw_sgw_remove_all(void);
-CORE_DECLARE(pgw_sgw_t*)    pgw_sgw_find(c_uint32_t addr);
-CORE_DECLARE(pgw_sgw_t*)    pgw_sgw_first(void);
-CORE_DECLARE(pgw_sgw_t*)    pgw_sgw_next(pgw_sgw_t *sgw);
+CORE_DECLARE(pgw_sgw_t*)    pgw_sgw_find(ip_t *ip);
 
-CORE_DECLARE(pgw_sess_t*)   pgw_sess_add(gtp_f_teid_t *sgw_s5c_teid,
+CORE_DECLARE(pgw_sess_t*)   pgw_sess_add(
         c_uint8_t *imsi, int imsi_len, c_int8_t *apn, c_uint8_t ebi);
 CORE_DECLARE(status_t )     pgw_sess_remove(pgw_sess_t *sess);
 CORE_DECLARE(status_t )     pgw_sess_remove_all();

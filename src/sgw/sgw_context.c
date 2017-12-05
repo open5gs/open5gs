@@ -19,9 +19,6 @@
 #include "context.h"
 #include "sgw_context.h"
 
-pool_declare(sgw_mme_pool, sgw_mme_t, MAX_NUM_OF_GTP_CLIENT);
-pool_declare(sgw_pgw_pool, sgw_pgw_t, MAX_NUM_OF_GTP_CLIENT);
-
 static sgw_context_t self;
 
 index_declare(sgw_ue_pool, sgw_ue_t, MAX_POOL_OF_UE);
@@ -40,7 +37,6 @@ status_t sgw_context_init()
 
     gtp_node_init();
     list_init(&self.mme_list);
-    pool_init(&sgw_pgw_pool, MAX_NUM_OF_GTP_CLIENT);
     list_init(&self.pgw_list);
 
     index_init(&sgw_ue_pool, MAX_POOL_OF_UE);
@@ -61,7 +57,6 @@ status_t sgw_context_final()
             "SGW context already has been finalized");
 
     sgw_ue_remove_all();
-    sgw_pgw_remove_all();
 
     d_assert(self.imsi_ue_hash, , "Null param");
     hash_destroy(self.imsi_ue_hash);
@@ -71,9 +66,8 @@ status_t sgw_context_final()
     index_final(&sgw_sess_pool);
     index_final(&sgw_ue_pool);
 
-    pool_final(&sgw_pgw_pool);
-
     sgw_mme_remove_all();
+    sgw_pgw_remove_all();
     gtp_node_final();
 
     context_initialized = 0;
@@ -423,32 +417,41 @@ sgw_mme_t* sgw_mme_find(ip_t *ip)
     return mme;
 }
 
-sgw_pgw_t* sgw_pgw_add()
+sgw_pgw_t* sgw_pgw_add(gtp_f_teid_t *f_teid)
 {
+    status_t rv;
     sgw_pgw_t *pgw = NULL;
+    c_sockaddr_t *head = NULL, *list = NULL;
 
-    pool_alloc_node(&sgw_pgw_pool, &pgw);
-    d_assert(pgw, return NULL, "Null param");
+    d_assert(f_teid, return NULL,);
 
-    memset(pgw, 0, sizeof(sgw_pgw_t));
+    rv = gtp_f_teid_to_sockaddr(f_teid, self.gtpc_port, &head);
+    d_assert(rv == CORE_OK, return NULL,);
+
+    rv = core_preferred_addrinfo(&list, head,
+            context_self()->parameter.no_ipv4,
+            context_self()->parameter.no_ipv6,
+            context_self()->parameter.prefer_ipv4);
+    d_assert(list, return NULL,);
+
+    pgw = gtp_add_node(&self.pgw_list, list);
+    d_assert(pgw, return NULL,);
+
+    memcpy(&pgw->ip, &f_teid->ip, sizeof(ip_t));
 
     list_init(&pgw->local_list);
     list_init(&pgw->remote_list);
 
-    list_append(&self.pgw_list, pgw);
-    
+    core_freeaddrinfo(head);
+
     return pgw;
 }
 
 status_t sgw_pgw_remove(sgw_pgw_t *pgw)
 {
-    d_assert(pgw, return CORE_ERROR, "Null param");
+    d_assert(pgw, return CORE_ERROR,);
 
-    list_remove(&self.pgw_list, pgw);
-
-    gtp_xact_delete_all(pgw);
-
-    pool_free_node(&sgw_pgw_pool, pgw);
+    gtp_remove_node(&self.pgw_list, pgw);
 
     return CORE_OK;
 }
@@ -457,10 +460,10 @@ status_t sgw_pgw_remove_all()
 {
     sgw_pgw_t *pgw = NULL, *next_pgw = NULL;
     
-    pgw = sgw_pgw_first();
+    pgw = list_first(&self.pgw_list);
     while (pgw)
     {
-        next_pgw = sgw_pgw_next(pgw);
+        next_pgw = list_next(pgw);
 
         sgw_pgw_remove(pgw);
 
@@ -470,30 +473,20 @@ status_t sgw_pgw_remove_all()
     return CORE_OK;
 }
 
-sgw_pgw_t* sgw_pgw_find(c_uint32_t addr)
+sgw_pgw_t* sgw_pgw_find(ip_t *ip)
 {
     sgw_pgw_t *pgw = NULL;
     
-    pgw = sgw_pgw_first();
+    pgw = list_first(&self.pgw_list);
     while (pgw)
     {
-        if (pgw->old_addr.sin.sin_addr.s_addr == addr)
+        if (memcmp(&pgw->ip, ip, sizeof(ip_t)) == 0)
             break;
 
-        pgw = sgw_pgw_next(pgw);
+        pgw = list_next(pgw);
     }
 
     return pgw;
-}
-
-sgw_pgw_t* sgw_pgw_first()
-{
-    return list_first(&self.pgw_list);
-}
-
-sgw_pgw_t* sgw_pgw_next(sgw_pgw_t *pgw)
-{
-    return list_next(pgw);
 }
 
 sgw_ue_t* sgw_ue_add(

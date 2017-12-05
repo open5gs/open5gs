@@ -6,6 +6,7 @@
 #include "gtp_types.h"
 #include "gtp_conv.h"
 #include "gtp_node.h"
+#include "gtp_path.h"
 
 #include "sgw_event.h"
 #include "sgw_context.h"
@@ -22,7 +23,6 @@ void sgw_s11_handle_create_session_request(gtp_xact_t *s11_xact,
     gtp_f_teid_t *mme_s11_teid = NULL;
     gtp_f_teid_t *pgw_s5c_teid = NULL;
     sgw_pgw_t *pgw = NULL;
-    c_uint32_t addr;
     gtp_f_teid_t sgw_s5c_teid, sgw_s5u_teid;
     gtp_uli_t uli;
 
@@ -88,38 +88,36 @@ void sgw_s11_handle_create_session_request(gtp_xact_t *s11_xact,
     /* Send Control Plane(DL) : SGW-S5C */
     memset(&sgw_s5c_teid, 0, sizeof(gtp_f_teid_t));
     sgw_s5c_teid.teid = htonl(sess->sgw_s5c_teid);
+    sgw_s5c_teid.ipv4 = 1;
     sgw_s5c_teid.ip.addr = sess->sgw_s5c_addr;
     sgw_s5c_teid.interface_type = GTP_F_TEID_S5_S8_SGW_GTP_C;
     req->sender_f_teid_for_control_plane.presence = 1;
     req->sender_f_teid_for_control_plane.data = &sgw_s5c_teid;
     req->sender_f_teid_for_control_plane.len = GTP_F_TEID_IPV4_LEN;
 
-    /* Remove PGW-S5C */
     pgw_s5c_teid = req->pgw_s5_s8_address_for_control_plane_or_pmip.data;
     d_assert(pgw_s5c_teid, return, "Null param");
 
-    addr = pgw_s5c_teid->ip.addr;
-
-    pgw = sgw_pgw_find(addr);
+    pgw = sgw_pgw_find(&pgw_s5c_teid->ip);
     if (!pgw)
     {
-        pgw = sgw_pgw_add();
-        d_assert(pgw, return, "Can't add PGW-GTP node");
+        pgw = sgw_pgw_add(pgw_s5c_teid);
+        d_assert(pgw, return,);
 
-        pgw->old_addr.sin.sin_addr.s_addr = addr;
-        pgw->old_addr.c_sa_port = htons(GTPV2_C_UDP_PORT);
-        pgw->old_addr.c_sa_family = AF_INET;
-        pgw->sock = sgw_self()->gtpc_sock;
+        rv = gtp_client(pgw);
+        d_assert(rv == CORE_OK, return,);
     }
 
     /* Setup GTP Node */
     CONNECT_PGW_GTP_NODE(sess, pgw);
 
+    /* Remove PGW-S5C */
     req->pgw_s5_s8_address_for_control_plane_or_pmip.presence = 0;
 
     /* Data Plane(DL) : SGW-S5U */
     memset(&sgw_s5u_teid, 0, sizeof(gtp_f_teid_t));
     sgw_s5u_teid.teid = htonl(s5u_tunnel->local_teid);
+    sgw_s5u_teid.ipv4 = s5u_tunnel->local_addr;
     sgw_s5u_teid.ip.addr = s5u_tunnel->local_addr;
     sgw_s5u_teid.interface_type = GTP_F_TEID_S5_S8_SGW_GTP_U;
     req->bearer_contexts_to_be_created.s5_s8_u_sgw_f_teid.presence = 1;
