@@ -186,8 +186,9 @@ status_t sgw_context_parse_config()
                                 if (family != AF_UNSPEC &&
                                     family != AF_INET && family != AF_INET6)
                                 {
-                                    d_warn("Ignore family(%d) : AF_UNSPEC(0), "
-                                        "AF_INET(2), AF_INET6(30) ", family);
+                                    d_warn("Ignore family(%d) : AF_UNSPEC(%d), "
+                                        "AF_INET(%d), AF_INET6(%d) ", 
+                                        family, AF_UNSPEC, AF_INET, AF_INET6);
                                     family = AF_UNSPEC;
                                 }
                             }
@@ -313,8 +314,9 @@ status_t sgw_context_parse_config()
                                 if (family != AF_UNSPEC &&
                                     family != AF_INET && family != AF_INET6)
                                 {
-                                    d_warn("Ignore family(%d) : AF_UNSPEC(0), "
-                                        "AF_INET(2), AF_INET6(30) ", family);
+                                    d_warn("Ignore family(%d) : AF_UNSPEC(%d), "
+                                        "AF_INET(%d), AF_INET6(%d) ", 
+                                        family, AF_UNSPEC, AF_INET, AF_INET6);
                                     family = AF_UNSPEC;
                                 }
                             }

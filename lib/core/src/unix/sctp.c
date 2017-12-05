@@ -72,7 +72,8 @@ status_t sctp_server(sock_id *new,
 
         if (sock_bind(*new, sa) == CORE_OK)
         {
-            d_trace(1, "sctp bind %s:%d\n", CORE_ADDR(sa, buf), port);
+            d_trace(1, "sctp bind %d:%s:%d\n",
+                    sa->c_sa_family, CORE_ADDR(sa, buf), port);
             break;
         }
 

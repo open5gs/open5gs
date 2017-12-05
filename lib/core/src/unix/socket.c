@@ -371,6 +371,12 @@ status_t sock_probe_node(list_t *list, list_t *list6, c_uint16_t port)
     {
         c_sockaddr_t *addr = NULL;
 
+        if (cur->ifa_flags & IFF_LOOPBACK)
+            continue;
+
+        if (cur->ifa_flags & IFF_POINTOPOINT)
+            continue;
+
 		if (cur->ifa_addr == NULL) /* may happen with ppp interfaces */
 			continue;
 
