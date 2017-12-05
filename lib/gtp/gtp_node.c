@@ -51,6 +51,9 @@ status_t gtp_remove_node(list_t *list, gtp_node_t *node)
 
     list_remove(list, node);
 
+    if (node->sock)
+        sock_delete(node->sock);
+
     gtp_xact_delete_all(node);
 
     core_freeaddrinfo(node->sa_list);

@@ -15,11 +15,16 @@ extern "C" {
 
 /* Create Indirect Data Forwarding Tunnel Request/Response */
 CORE_DECLARE(void) gtp_bearers_in_create_indirect_tunnel_request(
-        tlv_bearer_context_t *bearers[][GTP_MAX_NUM_OF_INDIRECT_TUNNEL],
-        gtp_create_indirect_data_forwarding_tunnel_request_t *req);
+    tlv_bearer_context_t *bearers[][GTP_MAX_NUM_OF_INDIRECT_TUNNEL],
+    gtp_create_indirect_data_forwarding_tunnel_request_t *req);
 CORE_DECLARE(void) gtp_bearers_in_create_indirect_tunnel_response(
-        tlv_bearer_context_t *bearers[][GTP_MAX_NUM_OF_INDIRECT_TUNNEL],
-        gtp_create_indirect_data_forwarding_tunnel_response_t *rsp);
+    tlv_bearer_context_t *bearers[][GTP_MAX_NUM_OF_INDIRECT_TUNNEL],
+    gtp_create_indirect_data_forwarding_tunnel_response_t *rsp);
+
+CORE_DECLARE(status_t) gtp_f_teid_to_sockaddr(
+    gtp_f_teid_t *f_teid, c_uint16_t port, c_sockaddr_t **list);
+CORE_DECLARE(status_t) gtp_sockaddr_to_f_teid(
+    c_sockaddr_t *addr, c_sockaddr_t *addr6, gtp_f_teid_t *f_teid, int *len);
 
 #ifdef __cplusplus
 }

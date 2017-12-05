@@ -150,10 +150,10 @@ CORE_DECLARE(sgw_context_t*) sgw_self(void);
 CORE_DECLARE(status_t)      sgw_context_parse_config(void);
 CORE_DECLARE(status_t)      sgw_context_setup_trace_module(void);
 
-CORE_DECLARE(sgw_mme_t*)    sgw_mme_add(void);
+CORE_DECLARE(sgw_mme_t*)    sgw_mme_add(gtp_f_teid_t *f_teid);
 CORE_DECLARE(status_t)      sgw_mme_remove(sgw_mme_t *mme);
 CORE_DECLARE(status_t)      sgw_mme_remove_all(void);
-CORE_DECLARE(sgw_mme_t*)    sgw_mme_find(c_uint32_t addr);
+CORE_DECLARE(sgw_mme_t*)    sgw_mme_find(ip_t *ip);
 CORE_DECLARE(sgw_mme_t*)    sgw_mme_first(void);
 CORE_DECLARE(sgw_mme_t*)    sgw_mme_next(sgw_mme_t *mme);
 

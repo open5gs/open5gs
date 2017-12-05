@@ -352,13 +352,7 @@ ED3(c_uint8_t       ipv4:1;,
     c_uint8_t       interface_type:6;)
     c_uint32_t      teid;
     ip_t            ip;
-
-    c_sockaddr_t    *addr;
-    c_sockaddr_t    *addr6;
 } __attribute__ ((packed)) gtp_f_teid_t;
-
-CORE_DECLARE(c_int16_t) gtp_build_f_teid(
-        tlv_octet_t *octet, gtp_f_teid_t *f_teid, void *data, int data_len);
 
 /* 8.44 UE Time Zone */
 #define GTP_UE_TIME_ZONE_NO_ADJUSTMENT_FOR_DAYLIGHT_SAVING_TIME 0

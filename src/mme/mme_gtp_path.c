@@ -166,7 +166,6 @@ status_t mme_gtp_open()
 status_t mme_gtp_close()
 {
     sock_node_t *snode;
-    gtp_node_t *gnode;
 
     for (snode = list_first(&mme_self()->gtpc_list);
             snode; snode = list_next(snode))
@@ -178,12 +177,6 @@ status_t mme_gtp_close()
             snode; snode = list_next(snode))
     {
         sock_delete(snode->sock);
-    }
-
-    for (gnode = list_first(&mme_self()->sgw_list);
-            gnode; gnode = list_next(gnode))
-    {
-        sock_delete(gnode->sock);
     }
 
     return CORE_OK;

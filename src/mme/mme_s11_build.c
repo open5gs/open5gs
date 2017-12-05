@@ -25,8 +25,7 @@ status_t mme_s11_build_create_session_request(
     gtp_uli_t uli;
     char uli_buf[GTP_MAX_ULI_LEN];
     gtp_f_teid_t mme_s11_teid, pgw_s5c_teid;
-    char mme_s11_teid_buf[GTP_MAX_F_TEID_LEN];
-    char pgw_s5c_teid_buf[GTP_MAX_F_TEID_LEN];
+    int len;
     gtp_ambr_t ambr;
     gtp_bearer_qos_t bearer_qos;
     char bearer_qos_buf[GTP_BEARER_QOS_LEN];
@@ -69,12 +68,12 @@ status_t mme_s11_build_create_session_request(
 
     memset(&mme_s11_teid, 0, sizeof(gtp_f_teid_t));
     mme_s11_teid.interface_type = GTP_F_TEID_S11_MME_GTP_C;
-    mme_s11_teid.teid = mme_ue->mme_s11_teid;
-    mme_s11_teid.addr = mme_ue->mme_s11_ipv4;
-    mme_s11_teid.addr6 = mme_ue->mme_s11_ipv6;
+    mme_s11_teid.teid = htonl(mme_ue->mme_s11_teid);
+    rv = gtp_sockaddr_to_f_teid(
+            mme_ue->mme_s11_ipv4, mme_ue->mme_s11_ipv6, &mme_s11_teid, &len);
     req->sender_f_teid_for_control_plane.presence = 1;
-    gtp_build_f_teid(&req->sender_f_teid_for_control_plane,
-            &mme_s11_teid, mme_s11_teid_buf, GTP_MAX_F_TEID_LEN);
+    req->sender_f_teid_for_control_plane.data = &mme_s11_teid;
+    req->sender_f_teid_for_control_plane.len = len;
 
     memset(&pgw_s5c_teid, 0, sizeof(gtp_f_teid_t));
     pgw_s5c_teid.interface_type = GTP_F_TEID_S5_S8_PGW_GTP_C;
@@ -91,11 +90,11 @@ status_t mme_s11_build_create_session_request(
     }
     else
     {
-        pgw_s5c_teid.addr = mme_self()->pgw_addr;
-        pgw_s5c_teid.addr6 = mme_self()->pgw_addr6;
+        rv = gtp_sockaddr_to_f_teid(
+            mme_self()->pgw_addr, mme_self()->pgw_addr6, &pgw_s5c_teid, &len);
         req->pgw_s5_s8_address_for_control_plane_or_pmip.presence = 1;
-        gtp_build_f_teid(&req->pgw_s5_s8_address_for_control_plane_or_pmip,
-                &pgw_s5c_teid, pgw_s5c_teid_buf, GTP_MAX_F_TEID_LEN);
+        req->pgw_s5_s8_address_for_control_plane_or_pmip.data = &pgw_s5c_teid;
+        req->pgw_s5_s8_address_for_control_plane_or_pmip.len = len;
     }
 
     req->access_point_name.presence = 1;

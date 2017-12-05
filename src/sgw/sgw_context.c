@@ -11,7 +11,9 @@
 
 #include "types.h"
 #include "gtp_types.h"
+#include "gtp_conv.h"
 #include "gtp_node.h"
+#include "gtp_path.h"
 #include "gtp_xact.h"
 
 #include "context.h"
@@ -36,7 +38,7 @@ status_t sgw_context_init()
 
     memset(&self, 0, sizeof(sgw_context_t));
 
-    pool_init(&sgw_mme_pool, MAX_NUM_OF_GTP_CLIENT);
+    gtp_node_init();
     list_init(&self.mme_list);
     pool_init(&sgw_pgw_pool, MAX_NUM_OF_GTP_CLIENT);
     list_init(&self.pgw_list);
@@ -59,7 +61,6 @@ status_t sgw_context_final()
             "SGW context already has been finalized");
 
     sgw_ue_remove_all();
-    sgw_mme_remove_all();
     sgw_pgw_remove_all();
 
     d_assert(self.imsi_ue_hash, , "Null param");
@@ -70,8 +71,10 @@ status_t sgw_context_final()
     index_final(&sgw_sess_pool);
     index_final(&sgw_ue_pool);
 
-    pool_final(&sgw_mme_pool);
     pool_final(&sgw_pgw_pool);
+
+    sgw_mme_remove_all();
+    gtp_node_final();
 
     context_initialized = 0;
     
@@ -348,32 +351,61 @@ status_t sgw_context_setup_trace_module()
     return CORE_OK;
 }
 
-sgw_mme_t* sgw_mme_add()
+sgw_mme_t* sgw_mme_add(gtp_f_teid_t *f_teid)
 {
+    status_t rv;
     sgw_mme_t *mme = NULL;
+    c_sockaddr_t *head = NULL, *list = NULL;
 
-    pool_alloc_node(&sgw_mme_pool, &mme);
-    d_assert(mme, return NULL, "Null param");
+    d_assert(f_teid, return NULL,);
 
-    memset(mme, 0, sizeof(sgw_mme_t));
+    rv = gtp_f_teid_to_sockaddr(f_teid, self.gtpc_port, &head);
+    d_assert(rv == CORE_OK, return NULL,);
+
+    rv = core_copyaddrinfo(&list, head);
+    d_assert(rv == CORE_OK, return NULL,);
+
+    if (context_self()->parameter.no_ipv4 == 1)
+    {
+        rv = core_filteraddrinfo(&list, AF_INET6);
+        d_assert(rv == CORE_OK, return NULL,);
+    }
+    if (context_self()->parameter.no_ipv6 == 1)
+    {
+        rv = core_filteraddrinfo(&list, AF_INET);
+        d_assert(rv == CORE_OK, return NULL,);
+    }
+    if (context_self()->parameter.prefer_ipv4 == 1)
+    {
+        rv = core_sortaddrinfo(&list, AF_INET);
+        d_assert(rv == CORE_OK, return NULL,);
+    }
+    else
+    {
+        rv = core_sortaddrinfo(&list, AF_INET6);
+        d_assert(rv == CORE_OK, return NULL,);
+    }
+
+    d_assert(list, return NULL,);
+
+    mme = gtp_add_node(&self.mme_list, list);
+    d_assert(mme, return NULL,);
+
+    memcpy(&mme->ip, &f_teid->ip, sizeof(ip_t));
 
     list_init(&mme->local_list);
     list_init(&mme->remote_list);
 
-    list_append(&self.mme_list, mme);
-    
+    core_freeaddrinfo(head);
+
     return mme;
 }
 
 status_t sgw_mme_remove(sgw_mme_t *mme)
 {
-    d_assert(mme, return CORE_ERROR, "Null param");
+    d_assert(mme, return CORE_ERROR,);
 
-    list_remove(&self.mme_list, mme);
-
-    gtp_xact_delete_all(mme);
-
-    pool_free_node(&sgw_mme_pool, mme);
+    gtp_remove_node(&self.mme_list, mme);
 
     return CORE_OK;
 }
@@ -382,10 +414,10 @@ status_t sgw_mme_remove_all()
 {
     sgw_mme_t *mme = NULL, *next_mme = NULL;
     
-    mme = sgw_mme_first();
+    mme = list_first(&self.mme_list);
     while (mme)
     {
-        next_mme = sgw_mme_next(mme);
+        next_mme = list_next(mme);
 
         sgw_mme_remove(mme);
 
@@ -395,30 +427,20 @@ status_t sgw_mme_remove_all()
     return CORE_OK;
 }
 
-sgw_mme_t* sgw_mme_find(c_uint32_t addr)
+sgw_mme_t* sgw_mme_find(ip_t *ip)
 {
     sgw_mme_t *mme = NULL;
     
-    mme = sgw_mme_first();
+    mme = list_first(&self.mme_list);
     while (mme)
     {
-        if (mme->old_addr.sin.sin_addr.s_addr == addr)
+        if (memcmp(&mme->ip, ip, sizeof(ip_t)) == 0)
             break;
 
-        mme = sgw_mme_next(mme);
+        mme = list_next(mme);
     }
 
     return mme;
-}
-
-sgw_mme_t* sgw_mme_first()
-{
-    return list_first(&self.mme_list);
-}
-
-sgw_mme_t* sgw_mme_next(sgw_mme_t *mme)
-{
-    return list_next(mme);
 }
 
 sgw_pgw_t* sgw_pgw_add()
@@ -516,16 +538,15 @@ sgw_ue_t* sgw_ue_add(gtp_f_teid_t *mme_s11_teid,
 
     addr = mme_s11_teid->ip.addr;
 
-    mme = sgw_mme_find(addr);
+    mme = sgw_mme_find(&mme_s11_teid->ip);
     if (!mme)
     {
-        mme = sgw_mme_add();
+        status_t rv;
+        mme = sgw_mme_add(mme_s11_teid);
         d_assert(mme, return NULL, "Can't add MME-GTP node");
 
-        mme->old_addr.sin.sin_addr.s_addr = addr;
-        mme->old_addr.c_sa_family = AF_INET;
-        mme->old_addr.c_sa_port = htons(GTPV2_C_UDP_PORT);
-        mme->sock = sgw_self()->gtpc_sock;
+        rv = gtp_client(mme);
+        d_assert(rv == CORE_OK, return NULL,);
     }
     CONNECT_MME_GTP_NODE(sgw_ue, mme);
 
