@@ -96,9 +96,9 @@ gtp_node_t *gtp_add_node_by_f_teid(list_t *list, gtp_f_teid_t *f_teid,
 
     rv = gtp_add_node(list, &node, sa_list, no_ipv4, no_ipv6, prefer_ipv4);
     d_assert(rv == CORE_OK, return NULL,);
+    d_assert(node, return NULL,);
 
-    if (node)
-        memcpy(&node->ip, &f_teid->ip, sizeof(ip_t));
+    memcpy(&node->ip, &f_teid->ip, sizeof(ip_t));
 
     core_freeaddrinfo(sa_list);
 

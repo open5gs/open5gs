@@ -247,7 +247,7 @@ status_t sgw_context_parse_config()
 
                         if (context_self()->parameter.no_ipv6 == 0)
                         {
-                            rv = sock_add_node(&self.gtpc_list,
+                            rv = sock_add_node(&self.gtpc_list6,
                                     &node, list, AF_INET6);
                             d_assert(rv == CORE_OK, return CORE_ERROR,);
                         }

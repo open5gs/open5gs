@@ -66,19 +66,22 @@ status_t gtp_f_teid_to_sockaddr(
 
         addr->sin.sin_addr.s_addr = f_teid->ip.both.addr;
         memcpy(addr6->sin6.sin6_addr.s6_addr, f_teid->ip.both.addr6, IPV6_LEN);
+
+        *list = addr;
     }
     else if (f_teid->ipv4)
     {
         addr->sin.sin_addr.s_addr = f_teid->ip.addr;
         core_free(addr6);
+
+        *list = addr;
     }
     else if (f_teid->ipv6)
     {
-        addr6 = core_calloc(1, sizeof(c_sockaddr_t));
-        d_assert(addr6, return CORE_ERROR,);
-
         memcpy(addr6->sin6.sin6_addr.s6_addr, f_teid->ip.addr6, IPV6_LEN);
         core_free(addr);
+
+        *list = addr6;
     }
     else
     {
@@ -86,8 +89,6 @@ status_t gtp_f_teid_to_sockaddr(
         core_free(addr6);
         d_assert(0, return CORE_ERROR,);
     }
-
-    *list = addr;
 
     return CORE_OK;
 }

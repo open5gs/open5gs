@@ -95,14 +95,16 @@ mme:
 #
 #  o Specify local addresses the GTP-C server must bind to
 #
-#  o Multiple GTP-C Server(127.0.0.1:2123, [::1]:2123)
+#  o GTP-C Server(127.0.0.1:2123, [::1]:2123)
 #    gtpc:
-#      - addr: 127.0.0.1
-#      - addr: ::1
+#      - addr: 
+#        - 127.0.0.1
+#        - ::1
 #
     gtpc:
-      - addr: 127.0.0.1
-      - addr: ::1
+      - addr: 
+        - 127.0.0.1
+        - ::1
 
 #
 #  <GUMMEI>
@@ -180,10 +182,14 @@ sgw:
 #
 #  o Single GTP-C Server(127.0.0.2:2123)
 #    gtpc:
-#      addr: 127.0.0.2
+#      addr:
+#        - 127.0.0.2
+#        - fec0::2
 #
     gtpc:
-      addr: 127.0.0.2
+      addr:
+        - 127.0.0.2
+        - fec0::2
 
 #
 #  <GTP-U Server>>
@@ -223,7 +229,9 @@ pgw:
 #      addr: 127.0.0.3
 #
     gtpc:
-      addr: 127.0.0.3
+      addr:
+        - 127.0.0.3
+        - fec0::3
 
 #
 #  <GTP-U Server>>

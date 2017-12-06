@@ -56,7 +56,7 @@ status_t pgw_s5c_build_create_session_response(
     rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
         data = &pgw_s5c_teid;
     rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
-        len = GTP_F_TEID_IPV4_LEN;
+        len = len;
 
     /* PDN Address Allocation */
     d_assert(sess->ip_pool, return CORE_ERROR, "No IP Pool");
