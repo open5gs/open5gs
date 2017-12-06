@@ -5,7 +5,10 @@
 
 #include "gtp_conv.h"
 #include "gtp_types.h"
+#include "gtp_node.h"
+#include "gtp_path.h"
 
+#include "context.h"
 #include "sgw_event.h"
 #include "sgw_context.h"
 #include "sgw_gtp_path.h"
@@ -15,6 +18,7 @@ void sgw_s5c_handle_create_session_response(gtp_xact_t *s5c_xact,
     sgw_sess_t *sess, gtp_message_t *gtp_message)
 {
     status_t rv;
+    gtp_node_t *pgw = NULL;
     gtp_xact_t *s11_xact = NULL;
     sgw_bearer_t *bearer = NULL;
     sgw_tunnel_t *s1u_tunnel = NULL, *s5u_tunnel = NULL;
@@ -81,6 +85,23 @@ void sgw_s5c_handle_create_session_response(gtp_xact_t *s5c_xact,
     d_assert(pgw_s5u_teid, return, "Null param");
     s5u_tunnel->remote_teid = ntohl(pgw_s5u_teid->teid);
     s5u_tunnel->remote_addr = pgw_s5u_teid->ip.addr;
+    pgw = gtp_find_node(&sgw_self()->pgw_s5u_list, pgw_s5u_teid);
+    if (!pgw)
+    {
+        pgw = gtp_connect_node(&sgw_self()->pgw_s5u_list, pgw_s5u_teid,
+            sgw_self()->gtpu_port,
+            context_self()->parameter.no_ipv4,
+            context_self()->parameter.no_ipv6,
+            context_self()->parameter.prefer_ipv4);
+        d_assert(pgw, return,);
+
+        rv = gtp_client(pgw);
+        d_assert(rv == CORE_OK, return,);
+    }
+    /* Setup GTP Node */
+    SETUP_GTP_NODE(s5u_tunnel, pgw);
+
+    /* Remove S5C-F-TEID */
     rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.presence = 0;
 
     /* Send Control Plane(UL) : SGW-S11 */
@@ -193,6 +214,7 @@ void sgw_s5c_handle_create_bearer_request(gtp_xact_t *s5c_xact,
     sgw_sess_t *sess, gtp_message_t *gtp_message)
 {
     status_t rv;
+    gtp_node_t *pgw = NULL;
     gtp_xact_t *s11_xact = NULL;
     sgw_bearer_t *bearer = NULL;
     sgw_tunnel_t *s1u_tunnel = NULL, *s5u_tunnel = NULL;
@@ -244,6 +266,23 @@ void sgw_s5c_handle_create_bearer_request(gtp_xact_t *s5c_xact,
     d_assert(pgw_s5u_teid, return, "Null param");
     s5u_tunnel->remote_teid = ntohl(pgw_s5u_teid->teid);
     s5u_tunnel->remote_addr = pgw_s5u_teid->ip.addr;
+    pgw = gtp_find_node(&sgw_self()->pgw_s5u_list, pgw_s5u_teid);
+    if (!pgw)
+    {
+        pgw = gtp_connect_node(&sgw_self()->pgw_s5u_list, pgw_s5u_teid,
+            sgw_self()->gtpu_port,
+            context_self()->parameter.no_ipv4,
+            context_self()->parameter.no_ipv6,
+            context_self()->parameter.prefer_ipv4);
+        d_assert(pgw, return,);
+
+        rv = gtp_client(pgw);
+        d_assert(rv == CORE_OK, return,);
+    }
+    /* Setup GTP Node */
+    SETUP_GTP_NODE(s5u_tunnel, pgw);
+
+    /* Remove S5U-F-TEID */
     req->bearer_contexts.s5_s8_u_sgw_f_teid.presence = 0;
 
     /* Send Data Plane(UL) : SGW-S1U */

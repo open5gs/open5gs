@@ -40,7 +40,8 @@ status_t pgw_context_init()
     list_init(&self.gtpc_list6);
 
     gtp_node_init();
-    list_init(&self.sgw_list);
+    list_init(&self.sgw_s5c_list);
+    list_init(&self.sgw_s5u_list);
 
     index_init(&pgw_sess_pool, MAX_POOL_OF_SESS);
     index_init(&pgw_bearer_pool, MAX_POOL_OF_BEARER);
@@ -89,7 +90,8 @@ status_t pgw_context_final()
     index_final(&pgw_bearer_pool);
     index_final(&pgw_sess_pool);
 
-    gtp_remove_all_nodes(&self.sgw_list);
+    gtp_remove_all_nodes(&self.sgw_s5c_list);
+    gtp_remove_all_nodes(&self.sgw_s5u_list);
     gtp_node_final();
 
     sock_remove_all_nodes(&self.gtpc_list);
@@ -765,10 +767,10 @@ gtp_node_t *pgw_sgw_add_by_message(gtp_message_t *message)
 
     sgw_s5c_teid = req->sender_f_teid_for_control_plane.data;
     d_assert(sgw_s5c_teid, return NULL,);
-    sgw = gtp_find_node(&pgw_self()->sgw_list, &sgw_s5c_teid->ip);
+    sgw = gtp_find_node(&pgw_self()->sgw_s5c_list, sgw_s5c_teid);
     if (!sgw)
     {
-        sgw = gtp_connect_node(&pgw_self()->sgw_list, sgw_s5c_teid,
+        sgw = gtp_connect_node(&pgw_self()->sgw_s5c_list, sgw_s5c_teid,
             pgw_self()->gtpc_port,
             context_self()->parameter.no_ipv4,
             context_self()->parameter.no_ipv6,
@@ -816,76 +818,6 @@ pgw_sess_t *pgw_sess_add_by_message(gtp_message_t *message)
         sess = pgw_sess_add(req->imsi.data, req->imsi.len, apn,
             req->bearer_contexts_to_be_created.eps_bearer_id.u8);
         d_assert(sess, return NULL, "No Session Context");
-    }
-
-    return sess;
-}
-
-pgw_sess_t *pgw_sess_find_or_add_by_message(gtp_message_t *gtp_message)
-{
-    status_t rv;
-    pgw_sess_t *sess = NULL;
-    gtp_node_t *sgw = NULL;
-
-    gtp_create_session_request_t *req = &gtp_message->create_session_request;
-    c_int8_t apn[MAX_APN_LEN];
-
-    if (req->imsi.presence == 0)
-    {
-        d_error("No IMSI");
-        return NULL;
-    }
-
-    if (req->sender_f_teid_for_control_plane.presence == 0)
-    {
-        d_error("No Sender F-TEID");
-        return NULL;
-    }
-
-    if (req->access_point_name.presence == 0)
-    {
-        d_error("No APN");
-        return NULL;
-    }
-    if (req->bearer_contexts_to_be_created.presence == 0)
-    {
-        d_error("No Bearer");
-        return NULL;
-    }
-    if (req->bearer_contexts_to_be_created.eps_bearer_id.presence == 0)
-    {
-        d_error("No EPS Bearer ID");
-        return NULL;
-    }
-
-    apn_parse(apn, req->access_point_name.data, req->access_point_name.len);
-    sess = pgw_sess_find_by_imsi_apn(req->imsi.data, req->imsi.len, apn);
-    if (!sess)
-    {
-        gtp_f_teid_t *sgw_s5c_teid = NULL;
-
-        sgw_s5c_teid = req->sender_f_teid_for_control_plane.data;
-        d_assert(sgw_s5c_teid, return NULL,);
-        sgw = gtp_find_node(&pgw_self()->sgw_list, &sgw_s5c_teid->ip);
-        if (!sgw)
-        {
-            sgw = gtp_connect_node(&pgw_self()->sgw_list, sgw_s5c_teid,
-                pgw_self()->gtpc_port,
-                context_self()->parameter.no_ipv4,
-                context_self()->parameter.no_ipv6,
-                context_self()->parameter.prefer_ipv4);
-            d_assert(sgw, return NULL,);
-
-            rv = gtp_client(sgw);
-            d_assert(rv == CORE_OK, return NULL,);
-        }
-
-        sess = pgw_sess_add(req->imsi.data, req->imsi.len, apn,
-            req->bearer_contexts_to_be_created.eps_bearer_id.u8);
-        d_assert(sess, return NULL, "No Session Context");
-
-        /* Setup GTP Node between PGW and SGW */
-        SETUP_GTP_NODE(sess, sgw);
     }
 
     return sess;

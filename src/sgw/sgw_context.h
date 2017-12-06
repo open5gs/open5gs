@@ -34,8 +34,10 @@ typedef struct _sgw_context_t {
     msgq_id         queue_id;  /* Queue for processing SGW control plane */
     tm_service_t    tm_service;/* Timer Service */
 
-    list_t          mme_list;  /* MME GTP Node List */
-    list_t          pgw_list;  /* PGW GTP Node List */
+    list_t          mme_s11_list;  /* MME GTPC Node List */
+    list_t          pgw_s5c_list;  /* PGW GTPC Node List */
+    list_t          enb_s1u_list;  /* eNB GTPU Node List */
+    list_t          pgw_s5u_list;  /* PGW GTPU Node List */
 
     hash_t          *imsi_ue_hash;  /* hash table (IMSI : SGW_UE) */
 } sgw_context_t;
@@ -123,6 +125,7 @@ typedef struct _sgw_tunnel_t {
 
     /* Related Context */
     sgw_bearer_t    *bearer;
+    gtp_node_t      *gnode;
 } sgw_tunnel_t;
 
 CORE_DECLARE(status_t)      sgw_context_init(void);

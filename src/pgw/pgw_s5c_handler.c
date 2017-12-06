@@ -4,7 +4,10 @@
 #include "core_lib.h"
 
 #include "gtp_types.h"
+#include "gtp_node.h"
+#include "gtp_path.h"
 
+#include "context.h"
 #include "pgw_event.h"
 #include "pgw_context.h"
 #include "pgw_gtp_path.h"
@@ -13,7 +16,9 @@
 void pgw_s5c_handle_create_session_request(
         gtp_xact_t *xact, pgw_sess_t *sess, gtp_create_session_request_t *req)
 {
+    status_t rv;
     gtp_f_teid_t *sgw_s5c_teid, *sgw_s5u_teid;
+    gtp_node_t *sgw = NULL;
     pgw_bearer_t *bearer = NULL;
     gtp_bearer_qos_t bearer_qos;
     gtp_ambr_t *ambr = NULL;
@@ -72,6 +77,21 @@ void pgw_s5c_handle_create_session_request(
     d_assert(sgw_s5u_teid, return, "Null param");
     bearer->sgw_s5u_teid = ntohl(sgw_s5u_teid->teid);
     bearer->sgw_s5u_addr = sgw_s5u_teid->ip.addr;
+    sgw = gtp_find_node(&pgw_self()->sgw_s5u_list, sgw_s5u_teid);
+    if (!sgw)
+    {
+        sgw = gtp_connect_node(&pgw_self()->sgw_s5u_list, sgw_s5u_teid,
+            pgw_self()->gtpu_port,
+            context_self()->parameter.no_ipv4,
+            context_self()->parameter.no_ipv6,
+            context_self()->parameter.prefer_ipv4);
+        d_assert(sgw, return,);
+
+        rv = gtp_client(sgw);
+        d_assert(rv == CORE_OK, return,);
+    }
+    /* Setup GTP Node */
+    SETUP_GTP_NODE(bearer, sgw);
 
     decoded = gtp_parse_bearer_qos(&bearer_qos,
         &req->bearer_contexts_to_be_created.bearer_level_qos);
@@ -114,6 +134,7 @@ void pgw_s5c_handle_create_bearer_response(
 {
     status_t rv;
     gtp_f_teid_t *sgw_s5u_teid, *pgw_s5u_teid;
+    gtp_node_t *sgw = NULL;
     pgw_bearer_t *bearer = NULL;
 
     d_assert(xact, return, "Null param");
@@ -156,6 +177,21 @@ void pgw_s5c_handle_create_bearer_response(
     sgw_s5u_teid = req->bearer_contexts.s5_s8_u_sgw_f_teid.data;
     bearer->sgw_s5u_teid = ntohl(sgw_s5u_teid->teid);
     bearer->sgw_s5u_addr = sgw_s5u_teid->ip.addr;
+    sgw = gtp_find_node(&pgw_self()->sgw_s5u_list, sgw_s5u_teid);
+    if (!sgw)
+    {
+        sgw = gtp_connect_node(&pgw_self()->sgw_s5u_list, sgw_s5u_teid,
+            pgw_self()->gtpu_port,
+            context_self()->parameter.no_ipv4,
+            context_self()->parameter.no_ipv6,
+            context_self()->parameter.prefer_ipv4);
+        d_assert(sgw, return,);
+
+        rv = gtp_client(sgw);
+        d_assert(rv == CORE_OK, return,);
+    }
+    /* Setup GTP Node */
+    SETUP_GTP_NODE(bearer, sgw);
 
     rv = gtp_xact_commit(xact);
     d_assert(rv == CORE_OK, return, "xact_commit error");

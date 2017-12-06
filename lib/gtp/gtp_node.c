@@ -6,11 +6,13 @@
 #include "gtp_node.h"
 #include "gtp_xact.h"
 
-pool_declare(gtp_node_pool, gtp_node_t, MAX_NUM_OF_GTP_CLIENT);
+#define MAX_GTP_NODE_POOL_SIZE          512
+
+pool_declare(gtp_node_pool, gtp_node_t, MAX_GTP_NODE_POOL_SIZE);
 
 status_t gtp_node_init(void)
 {
-    pool_init(&gtp_node_pool, MAX_NUM_OF_GTP_CLIENT);
+    pool_init(&gtp_node_pool, MAX_GTP_NODE_POOL_SIZE);
 
     return CORE_OK;
 }
@@ -114,14 +116,42 @@ status_t gtp_remove_all_nodes(list_t *list)
     return CORE_OK;
 }
 
-gtp_node_t* gtp_find_node(list_t *list, ip_t *ip)
+static ip_t *gtp_node_ip(ip_t *ip, gtp_f_teid_t *f_teid)
+{
+    d_assert(ip, return NULL,);
+    d_assert(f_teid, return NULL,);
+
+    memset(ip, 0, sizeof(ip_t));
+    if (f_teid->ipv4 && f_teid->ipv6)
+    {
+        ip->both.addr = f_teid->ip.both.addr;
+        memcpy(ip->both.addr6, f_teid->ip.both.addr6, IPV6_LEN);
+    }
+    else if (f_teid->ipv4)
+    {
+        ip->addr = f_teid->ip.addr;
+    }
+    else if (f_teid->ipv6)
+    {
+        memcpy(ip->addr6, f_teid->ip.addr6, IPV6_LEN);
+    }
+    else
+        d_assert(0, return NULL,);
+
+    return ip;
+}
+
+gtp_node_t* gtp_find_node(list_t *list, gtp_f_teid_t *f_teid)
 {
     gtp_node_t *node = NULL;
     
     node = list_first(list);
     while (node)
     {
-        if (memcmp(&node->ip, ip, sizeof(ip_t)) == 0)
+        ip_t ip;
+
+        d_assert(gtp_node_ip(&ip, f_teid), return NULL,);
+        if (memcmp(&node->ip, &ip, sizeof(ip_t)) == 0)
             break;
 
         node = list_next(node);
@@ -136,6 +166,7 @@ gtp_node_t *gtp_connect_node(list_t *list, gtp_f_teid_t *f_teid,
     status_t rv;
     gtp_node_t *node = NULL;
     c_sockaddr_t *sa_list = NULL;
+    ip_t ip;
 
     d_assert(list, return NULL,);
     d_assert(f_teid, return NULL,);
@@ -148,7 +179,8 @@ gtp_node_t *gtp_connect_node(list_t *list, gtp_f_teid_t *f_teid,
     d_assert(rv == CORE_OK, return NULL,);
     d_assert(node, return NULL,);
 
-    memcpy(&node->ip, &f_teid->ip, sizeof(ip_t));
+    d_assert(gtp_node_ip(&ip, f_teid), return NULL,);
+    memcpy(&node->ip, &ip, sizeof(ip_t));
 
     core_freeaddrinfo(sa_list);
 

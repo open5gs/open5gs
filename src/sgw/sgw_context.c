@@ -39,8 +39,10 @@ status_t sgw_context_init()
     list_init(&self.gtpc_list6);
 
     gtp_node_init();
-    list_init(&self.mme_list);
-    list_init(&self.pgw_list);
+    list_init(&self.mme_s11_list);
+    list_init(&self.pgw_s5c_list);
+    list_init(&self.enb_s1u_list);
+    list_init(&self.pgw_s5u_list);
 
     index_init(&sgw_ue_pool, MAX_POOL_OF_UE);
     index_init(&sgw_sess_pool, MAX_POOL_OF_SESS);
@@ -69,8 +71,10 @@ status_t sgw_context_final()
     index_final(&sgw_sess_pool);
     index_final(&sgw_ue_pool);
 
-    gtp_remove_all_nodes(&self.mme_list);
-    gtp_remove_all_nodes(&self.pgw_list);
+    gtp_remove_all_nodes(&self.mme_s11_list);
+    gtp_remove_all_nodes(&self.pgw_s5c_list);
+    gtp_remove_all_nodes(&self.enb_s1u_list);
+    gtp_remove_all_nodes(&self.pgw_s5u_list);
     gtp_node_final();
 
     sock_remove_all_nodes(&self.gtpc_list);
@@ -417,10 +421,10 @@ gtp_node_t *sgw_mme_add_by_message(gtp_message_t *message)
 
     mme_s11_teid = req->sender_f_teid_for_control_plane.data;
     d_assert(mme_s11_teid, return NULL,);
-    mme = gtp_find_node(&sgw_self()->mme_list, &mme_s11_teid->ip);
+    mme = gtp_find_node(&sgw_self()->mme_s11_list, mme_s11_teid);
     if (!mme)
     {
-        mme = gtp_connect_node(&sgw_self()->mme_list, mme_s11_teid,
+        mme = gtp_connect_node(&sgw_self()->mme_s11_list, mme_s11_teid,
             sgw_self()->gtpc_port,
             context_self()->parameter.no_ipv4,
             context_self()->parameter.no_ipv6,

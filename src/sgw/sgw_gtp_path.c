@@ -65,7 +65,6 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
     status_t rv;
     pkbuf_t *pkbuf = NULL;
     c_sockaddr_t from;
-    gtp_node_t gnode;
     gtp_header_t *gtp_h = NULL;
     sgw_bearer_t *bearer = NULL;
     sgw_tunnel_t *tunnel = NULL;
@@ -73,7 +72,6 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
     int i;
 
     d_assert(sock, return -1, "Null param");
-    memset(&gnode, 0, sizeof(gtp_node_t));
 
     rv = gtp_recvfrom(sock, &pkbuf, &from);
     if (rv != CORE_OK)
@@ -96,6 +94,9 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
         echo_rsp = gtp_handle_echo_req(pkbuf);
         if (echo_rsp)
         {
+            gtp_node_t gnode;
+            memset(&gnode, 0, sizeof(gtp_node_t));
+
             /* Echo reply */
             d_trace(3, "Send echo-rsp to peer\n");
 
@@ -120,10 +121,6 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
         d_assert(bearer, return -1, "Null param");
 
         /* Convert TEID */
-        gnode.old_addr.c_sa_port = htons(GTPV1_U_UDP_PORT);
-        gnode.old_addr.c_sa_family = AF_INET;
-        gnode.sock = sgw_self()->gtpu_sock;
-            
         if (tunnel->interface_type == 
                 GTP_F_TEID_S1_U_SGW_GTP_U ||
             tunnel->interface_type ==
@@ -136,10 +133,8 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
 
             s5u_tunnel = sgw_s5u_tunnel_in_bearer(bearer);
             d_assert(s5u_tunnel, return -1, "Null param");
-            gnode.old_addr.sin.sin_addr.s_addr = s5u_tunnel->remote_addr;
-
             gtp_h->teid = htonl(s5u_tunnel->remote_teid);
-            gtp_send(&gnode, pkbuf);
+            gtp_send(s5u_tunnel->gnode, pkbuf);
         }
         else if (tunnel->interface_type == GTP_F_TEID_S5_S8_SGW_GTP_U)
         {
@@ -148,8 +143,6 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
 
             s1u_tunnel = sgw_s1u_tunnel_in_bearer(bearer);
             d_assert(s1u_tunnel, return -1, "Null param");
-            gnode.old_addr.sin.sin_addr.s_addr = s1u_tunnel->remote_addr;
-
             if (s1u_tunnel->remote_teid)
             {
                 /* If there is buffered packet, send it first */
@@ -158,13 +151,13 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
                     gtp_h = (gtp_header_t *)bearer->buffered_pkts[i]->payload;
                     gtp_h->teid =  htonl(s1u_tunnel->remote_teid);
 
-                    gtp_send(&gnode, bearer->buffered_pkts[i]);
+                    gtp_send(s1u_tunnel->gnode, bearer->buffered_pkts[i]);
                     pkbuf_free(bearer->buffered_pkts[i]);
                 }
                 bearer->num_buffered_pkt = 0;
 
                 gtp_h->teid = htonl(s1u_tunnel->remote_teid);
-                gtp_send(&gnode, pkbuf);
+                gtp_send(s1u_tunnel->gnode, pkbuf);
             }
             else
             {

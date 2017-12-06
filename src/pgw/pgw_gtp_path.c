@@ -37,10 +37,6 @@ static int _gtpv1_tun_recv_cb(sock_id sock, void *data)
     if (bearer)
     {
         gtp_header_t *gtp_h = NULL;
-        gtp_node_t gnode;
-        char buf[INET_ADDRSTRLEN];
-
-        memset(&gnode, 0, sizeof(gtp_node_t));
 
         /* Add GTP-U header */
         rv = pkbuf_header(recvbuf, GTPV1U_HEADER_LEN);
@@ -64,15 +60,9 @@ static int _gtpv1_tun_recv_cb(sock_id sock, void *data)
         gtp_h->teid = htonl(bearer->sgw_s5u_teid);
 
         /* Send to SGW */
-        gnode.old_addr.sin.sin_addr.s_addr = bearer->sgw_s5u_addr;
-        gnode.old_addr.c_sa_port = htons(GTPV1_U_UDP_PORT);
-        gnode.old_addr.c_sa_family = AF_INET;
-        gnode.sock = pgw_self()->gtpu_sock;
-        d_trace(50, "Send S5U PDU (teid = 0x%x)to SGW(%s)\n",
-                bearer->sgw_s5u_teid,
-                CORE_ADDR(&gnode.old_addr, buf));
-
-        rv =  gtp_send(&gnode, recvbuf);
+        d_trace(50, "Send S5U PDU (teid = 0x%x) to SGW\n",
+                bearer->sgw_s5u_teid);
+        rv =  gtp_send(bearer->gnode, recvbuf);
     }
     else
     {

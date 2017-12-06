@@ -54,7 +54,8 @@ typedef struct _pgw_context_t {
         c_uint32_t secondary;
     } dns;
 
-    list_t          sgw_list;  /* SGW GTP Node List */
+    list_t          sgw_s5c_list;  /* SGW GTPC Node List */
+    list_t          sgw_s5u_list;  /* SGW GTPU Node List */
     list_t          ip_pool_list;
 
     hash_t          *sess_hash; /* hash table (IMSI+APN) */
@@ -119,6 +120,7 @@ typedef struct _pgw_bearer_t {
     list_t          pf_list;
 
     pgw_sess_t      *sess;
+    gtp_node_t      *gnode;
 } pgw_bearer_t;
 
 typedef struct _pgw_rule_t {
