@@ -94,18 +94,17 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
         echo_rsp = gtp_handle_echo_req(pkbuf);
         if (echo_rsp)
         {
-            gtp_node_t gnode;
-            memset(&gnode, 0, sizeof(gtp_node_t));
+            ssize_t sent;
 
             /* Echo reply */
             d_trace(3, "Send echo-rsp to peer\n");
 
-            gnode.old_addr.sin.sin_addr.s_addr = from.sin.sin_addr.s_addr;
-            gnode.old_addr.c_sa_port = from.c_sa_port;
-            gnode.old_addr.c_sa_family = from.c_sa_family;
-            gnode.sock = sock;
-
-            gtp_send(&gnode, echo_rsp);
+            sent = core_sendto(sock,
+                    echo_rsp->payload, echo_rsp->len, 0, &from);
+            if (sent < 0 || sent != pkbuf->len)
+            {
+                d_error("core_sendto failed(%d:%s)", errno, strerror(errno));
+            }
             pkbuf_free(echo_rsp);
         }
     }
