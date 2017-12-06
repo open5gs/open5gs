@@ -63,13 +63,7 @@ typedef struct _sgw_ue_t {
 
     list_t          sess_list;
 
-#define CONNECT_MME_GTP_NODE(__sGW, __gNODE) \
-    do { \
-        d_assert((__sGW), return NULL, "Null param"); \
-        d_assert((__gNODE), return NULL, "Null param"); \
-        (__sGW)->mme = (__gNODE); \
-    } while(0)
-    gtp_node_t       *mme;
+    gtp_node_t       *gnode;
 } sgw_ue_t;
 
 typedef struct _sgw_sess_t {
@@ -92,13 +86,7 @@ typedef struct _sgw_sess_t {
     list_t          bearer_list;
 
     /* Related Context */
-#define CONNECT_PGW_GTP_NODE(__sESS, __gNODE) \
-    do { \
-        d_assert((__sESS), return, "Null param"); \
-        d_assert((__gNODE), return, "Null param"); \
-        (__sESS)->pgw = __gNODE; \
-    } while(0)
-    gtp_node_t      *pgw;
+    gtp_node_t      *gnode;
     sgw_ue_t        *sgw_ue;
 } sgw_sess_t;
 

@@ -72,7 +72,7 @@ void sgw_state_operational(fsm_t *s, event_t *e)
                 sgw_ue = sgw_ue_find_by_teid(message.h.teid);
             d_assert(sgw_ue, pkbuf_free(pkbuf); break, "No Session Context");
 
-            rv = gtp_xact_receive(sgw_ue->mme, &message.h, &xact);
+            rv = gtp_xact_receive(sgw_ue->gnode, &message.h, &xact);
             if (rv != CORE_OK)
             {
                 pkbuf_free(pkbuf);
@@ -137,7 +137,7 @@ void sgw_state_operational(fsm_t *s, event_t *e)
             sess = sgw_sess_find_by_teid(message.h.teid);
             d_assert(sess, pkbuf_free(pkbuf); break, "No Session Context");
 
-            rv = gtp_xact_receive(sess->pgw, &message.h, &xact);
+            rv = gtp_xact_receive(sess->gnode, &message.h, &xact);
             if (rv != CORE_OK)
             {
                 pkbuf_free(pkbuf);

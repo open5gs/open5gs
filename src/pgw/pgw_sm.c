@@ -91,7 +91,7 @@ void pgw_state_operational(fsm_t *s, event_t *e)
                     pkbuf_free(recvbuf); pkbuf_free(copybuf); break,
                     "No Session Context");
 
-            rv = gtp_xact_receive(sess->sgw, &message->h, &xact);
+            rv = gtp_xact_receive(sess->gnode, &message->h, &xact);
             if (rv != CORE_OK)
             {
                 pkbuf_free(recvbuf);

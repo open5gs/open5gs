@@ -376,7 +376,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
             d_assert(mme_ue, pkbuf_free(pkbuf); break, 
                     "No UE Context(TEID:%d)", message.h.teid);
 
-            rv = gtp_xact_receive(mme_ue->sgw, &message.h, &xact);
+            rv = gtp_xact_receive(mme_ue->gnode, &message.h, &xact);
             if (rv != CORE_OK)
             {
                 pkbuf_free(pkbuf);

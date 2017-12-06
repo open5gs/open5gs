@@ -93,13 +93,7 @@ typedef struct _pgw_sess_t {
     list_t          bearer_list;
 
     /* Related Context */
-#define CONNECT_SGW_GTP_NODE(__sESS, __gNODE) \
-    do { \
-        d_assert((__sESS), return NULL, "Null param"); \
-        d_assert((__gNODE), return NULL, "Null param"); \
-        (__sESS)->sgw = (__gNODE); \
-    } while(0)
-    gtp_node_t      *sgw;
+    gtp_node_t      *gnode;
 } pgw_sess_t;
 
 typedef struct _pgw_bearer_t {

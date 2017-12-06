@@ -1536,8 +1536,14 @@ mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
     list_init(&mme_ue->sess_list);
 
     mme_ue->mme_s11_teid = mme_ue->index;
-    CONNECT_SGW_GTP_NODE(mme_ue);
-    
+
+    if (mme_self()->sgw == NULL)
+        mme_self()->sgw = list_first(&mme_self()->sgw_list);
+
+    SETUP_GTP_NODE(mme_ue, mme_self()->sgw);
+
+    mme_self()->sgw = list_next(mme_self()->sgw);
+
     /* Create t3413 timer */
     mme_ue->t3413 = timer_create(&self.tm_service, MME_EVT_EMM_T3413,
             self.t3413_value * 1000);

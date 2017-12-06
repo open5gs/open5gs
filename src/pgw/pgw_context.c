@@ -813,7 +813,7 @@ pgw_sess_t *pgw_sess_find_or_add_by_message(gtp_message_t *gtp_message)
         d_assert(sess, return NULL, "No Session Context");
 
         /* Setup GTP Node between PGW and SGW */
-        CONNECT_SGW_GTP_NODE(sess, sgw);
+        SETUP_GTP_NODE(sess, sgw);
     }
 
     return sess;

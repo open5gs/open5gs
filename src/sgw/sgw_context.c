@@ -555,7 +555,7 @@ sgw_ue_t *sgw_ue_find_or_add_by_message(gtp_message_t *gtp_message)
             req->bearer_contexts_to_be_created.eps_bearer_id.u8);
         d_assert(sgw_ue, return NULL,);
 
-        CONNECT_MME_GTP_NODE(sgw_ue, mme);
+        SETUP_GTP_NODE(sgw_ue, mme);
     }
 
     return sgw_ue;

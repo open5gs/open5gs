@@ -262,7 +262,7 @@ void sgw_s5c_handle_create_bearer_request(gtp_xact_t *s5c_xact,
     rv = gtp_build_msg(&pkbuf, gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
-    s11_xact = gtp_xact_local_create(sgw_ue->mme, &gtp_message->h, pkbuf);
+    s11_xact = gtp_xact_local_create(sgw_ue->gnode, &gtp_message->h, pkbuf);
     d_assert(s11_xact, return, "Null param");
 
     gtp_xact_associate(s5c_xact, s11_xact);

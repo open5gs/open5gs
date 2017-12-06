@@ -10,6 +10,13 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#define SETUP_GTP_NODE(__cTX, __gNODE) \
+    do { \
+        d_assert((__cTX), break, "Null param"); \
+        d_assert((__gNODE), break, "Null param"); \
+        (__cTX)->gnode = __gNODE; \
+    } while(0)
+
 /**
  * This structure represents the commonalities of GTP node such as MME, SGW,
  * PGW gateway. Some of members may not be used by the specific type of node */

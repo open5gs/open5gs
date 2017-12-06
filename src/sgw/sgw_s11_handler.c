@@ -115,7 +115,7 @@ void sgw_s11_handle_create_session_request(gtp_xact_t *s11_xact,
     }
 
     /* Setup GTP Node */
-    CONNECT_PGW_GTP_NODE(sess, pgw);
+    SETUP_GTP_NODE(sess, pgw);
 
     /* Remove PGW-S5C */
     req->pgw_s5_s8_address_for_control_plane_or_pmip.presence = 0;
@@ -145,7 +145,7 @@ void sgw_s11_handle_create_session_request(gtp_xact_t *s11_xact,
     rv = gtp_build_msg(&pkbuf, gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
-    s5c_xact = gtp_xact_local_create(sess->pgw, &gtp_message->h, pkbuf);
+    s5c_xact = gtp_xact_local_create(sess->gnode, &gtp_message->h, pkbuf);
     d_assert(s5c_xact, return, "Null param");
 
     gtp_xact_associate(s11_xact, s5c_xact);
@@ -281,7 +281,7 @@ void sgw_s11_handle_delete_session_request(gtp_xact_t *s11_xact,
     rv = gtp_build_msg(&pkbuf, gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
-    s5c_xact = gtp_xact_local_create(sess->pgw, &gtp_message->h, pkbuf);
+    s5c_xact = gtp_xact_local_create(sess->gnode, &gtp_message->h, pkbuf);
     d_assert(s5c_xact, return, "Null param");
 
     gtp_xact_associate(s11_xact, s5c_xact);
@@ -515,7 +515,7 @@ void sgw_s11_handle_lo_dldata_notification(sgw_bearer_t *bearer)
     rv = gtp_build_msg(&pkbuf, &gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
-    xact = gtp_xact_local_create(sgw_ue->mme, &gtp_message.h, pkbuf);
+    xact = gtp_xact_local_create(sgw_ue->gnode, &gtp_message.h, pkbuf);
     d_assert(xact, return, "Null param");
 
     rv = gtp_xact_commit(xact);

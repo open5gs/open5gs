@@ -327,16 +327,7 @@ struct _mme_ue_t {
         c_uint8_t response;
     } gtp_counter[MAX_NUM_OF_GTP_COUNTER];
 
-#define CONNECT_SGW_GTP_NODE(__mME) \
-    do { \
-        d_assert((__mME), break, "Null param"); \
-        (__mME)->sgw = self.sgw; \
-        d_assert(((__mME)->sgw), break, "Null param"); \
-        self.sgw = list_next((__mME)->sgw); \
-        if (!self.sgw) self.sgw = list_first(&mme_self()->sgw_list); \
-        d_assert(self.sgw, break, "Null param"); \
-    } while(0)
-    gtp_node_t      *sgw;
+    gtp_node_t      *gnode;
 };
 
 #define MME_HAVE_SGW_S1U_PATH(__sESS) \
