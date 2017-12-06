@@ -70,14 +70,8 @@ typedef struct _pgw_sess_t {
     lnode_t         node;       /**< A node of list_t */
     index_t         index;      /**< An index of this node */
 
-    /* IMPORTANT! 
-     * PGW-S5C-F-TEID is same with an index */
-    c_uint32_t      pgw_s5c_teid;       
-    c_sockaddr_t    *pgw_s5c_ipv4;  /* PGW S5C IPv4 Address */
-    c_sockaddr_t    *pgw_s5c_ipv6;  /* PGW S5C IPv6 Address */
-
-    c_uint32_t      sgw_s5c_teid;
-    c_uint32_t      sgw_s5c_addr;
+    c_uint32_t      pgw_s5c_teid;   /* PGW-S5C-TEID is derived from INDEX */
+    c_uint32_t      sgw_s5c_teid;   /* SGW-S5C-TEID is received from SGW */
 
     /* IMSI */
     c_uint8_t       imsi[MAX_IMSI_LEN];

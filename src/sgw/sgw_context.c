@@ -417,8 +417,6 @@ sgw_ue_t* sgw_ue_add(
     d_assert(sgw_ue, return NULL, "Null param");
 
     sgw_ue->sgw_s11_teid = sgw_ue->index;
-    sgw_ue->sgw_s11_ipv4 = sgw_self()->gtpc_addr;
-    sgw_ue->sgw_s11_ipv6 = sgw_self()->gtpc_addr6;
 
     /* Set IMSI */
     sgw_ue->imsi_len = imsi_len;
@@ -593,8 +591,6 @@ sgw_sess_t *sgw_sess_add(
     d_assert(sess, return NULL, "Null param");
 
     sess->sgw_s5c_teid = SGW_S5C_INDEX_TO_TEID(sess->index);
-    sess->sgw_s5c_ipv4 = sgw_self()->gtpc_addr;
-    sess->sgw_s5c_ipv6 = sgw_self()->gtpc_addr6;
 
     /* Set APN */
     core_cpystrn(sess->pdn.apn, apn, MAX_APN_LEN+1);

@@ -85,14 +85,13 @@ void sgw_s11_handle_create_session_request(gtp_xact_t *s11_xact,
     mme_s11_teid = req->sender_f_teid_for_control_plane.data;
     d_assert(mme_s11_teid, return, "Null param");
     sgw_ue->mme_s11_teid = ntohl(mme_s11_teid->teid);
-    sgw_ue->mme_s11_addr = mme_s11_teid->ip.addr;
 
     /* Send Control Plane(DL) : SGW-S5C */
     memset(&sgw_s5c_teid, 0, sizeof(gtp_f_teid_t));
     sgw_s5c_teid.interface_type = GTP_F_TEID_S5_S8_SGW_GTP_C;
     sgw_s5c_teid.teid = htonl(sess->sgw_s5c_teid);
     rv = gtp_sockaddr_to_f_teid(
-            sess->sgw_s5c_ipv4, sess->sgw_s5c_ipv6, &sgw_s5c_teid, &len);
+        sgw_self()->gtpc_addr,  sgw_self()->gtpc_addr6, &sgw_s5c_teid, &len);
     d_assert(rv == CORE_OK, return,);
     req->sender_f_teid_for_control_plane.presence = 1;
     req->sender_f_teid_for_control_plane.data = &sgw_s5c_teid;

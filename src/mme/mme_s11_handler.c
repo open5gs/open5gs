@@ -72,7 +72,6 @@ void mme_s11_handle_create_session_response(
     /* Control Plane(UL) : SGW-S11 */
     sgw_s11_teid = rsp->sender_f_teid_for_control_plane.data;
     mme_ue->sgw_s11_teid = ntohl(sgw_s11_teid->teid);
-    mme_ue->sgw_s11_addr = sgw_s11_teid->ip.addr;
 
     memcpy(&pdn->paa, rsp->pdn_address_allocation.data,
             rsp->pdn_address_allocation.len);

@@ -73,7 +73,6 @@ void sgw_s5c_handle_create_session_response(gtp_xact_t *s5c_xact,
                 data;
     d_assert(pgw_s5c_teid, return, "Null param");
     sess->pgw_s5c_teid = ntohl(pgw_s5c_teid->teid);
-    sess->pgw_s5c_addr = pgw_s5c_teid->ip.addr;
     rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
                 presence = 0;
 
@@ -89,7 +88,8 @@ void sgw_s5c_handle_create_session_response(gtp_xact_t *s5c_xact,
     sgw_s11_teid.interface_type = GTP_F_TEID_S11_S4_SGW_GTP_C;
     sgw_s11_teid.teid = htonl(sgw_ue->sgw_s11_teid);
     rv = gtp_sockaddr_to_f_teid(
-            sgw_ue->sgw_s11_ipv4, sgw_ue->sgw_s11_ipv6, &sgw_s11_teid, &len);
+            sgw_self()->gtpc_addr, sgw_self()->gtpc_addr6,
+            &sgw_s11_teid, &len);
     d_assert(rv == CORE_OK, return, );
     rsp->sender_f_teid_for_control_plane.presence = 1;
     rsp->sender_f_teid_for_control_plane.data = &sgw_s11_teid;

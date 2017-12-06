@@ -71,7 +71,6 @@ void pgw_s5c_handle_create_session_request(
     sgw_s5c_teid = req->sender_f_teid_for_control_plane.data;
     d_assert(sgw_s5c_teid, return, "Null param");
     sess->sgw_s5c_teid = ntohl(sgw_s5c_teid->teid);
-    sess->sgw_s5c_addr = sgw_s5c_teid->ip.addr;
 
     /* Control Plane(DL) : SGW-S5U */
     sgw_s5u_teid = req->bearer_contexts_to_be_created.s5_s8_u_sgw_f_teid.data;

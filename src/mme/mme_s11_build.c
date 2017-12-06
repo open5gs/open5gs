@@ -70,7 +70,8 @@ status_t mme_s11_build_create_session_request(
     mme_s11_teid.interface_type = GTP_F_TEID_S11_MME_GTP_C;
     mme_s11_teid.teid = htonl(mme_ue->mme_s11_teid);
     rv = gtp_sockaddr_to_f_teid(
-            mme_ue->mme_s11_ipv4, mme_ue->mme_s11_ipv6, &mme_s11_teid, &len);
+            mme_self()->gtpc_addr, mme_self()->gtpc_addr6,
+            &mme_s11_teid, &len);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
     req->sender_f_teid_for_control_plane.presence = 1;
     req->sender_f_teid_for_control_plane.data = &mme_s11_teid;

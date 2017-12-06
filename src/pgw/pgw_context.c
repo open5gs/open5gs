@@ -666,8 +666,6 @@ pgw_sess_t *pgw_sess_add(
     d_assert(sess, return NULL, "Null param");
 
     sess->pgw_s5c_teid = sess->index;  /* derived from an index */
-    sess->pgw_s5c_ipv4 = pgw_self()->gtpc_addr;
-    sess->pgw_s5c_ipv6 = pgw_self()->gtpc_addr6;
 
     /* Set IMSI */
     sess->imsi_len = imsi_len;

@@ -1536,9 +1536,6 @@ mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
     list_init(&mme_ue->sess_list);
 
     mme_ue->mme_s11_teid = mme_ue->index;
-    mme_ue->mme_s11_ipv4 = mme_self()->gtpc_addr;
-    mme_ue->mme_s11_ipv6 = mme_self()->gtpc_addr6;
-
     CONNECT_SGW_GTP_NODE(mme_ue);
     
     /* Create t3413 timer */

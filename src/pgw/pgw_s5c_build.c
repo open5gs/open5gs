@@ -49,7 +49,7 @@ status_t pgw_s5c_build_create_session_response(
     pgw_s5c_teid.interface_type = GTP_F_TEID_S5_S8_PGW_GTP_C;
     pgw_s5c_teid.teid = htonl(sess->pgw_s5c_teid);
     rv = gtp_sockaddr_to_f_teid(
-            sess->pgw_s5c_ipv4, sess->pgw_s5c_ipv6, &pgw_s5c_teid, &len);
+        pgw_self()->gtpc_addr, pgw_self()->gtpc_addr6, &pgw_s5c_teid, &len);
     d_assert(rv == CORE_OK, return CORE_ERROR, );
     rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
         presence = 1;

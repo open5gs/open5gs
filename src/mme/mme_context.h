@@ -190,14 +190,8 @@ struct _mme_ue_t {
     c_int8_t        imsi_bcd[MAX_IMSI_BCD_LEN+1];
     guti_t          guti;
 
-    /* IMPORTANT!
-     * MME-S11-TEID is same with an index */
-    c_uint32_t      mme_s11_teid;
-    c_sockaddr_t    *mme_s11_ipv4;    /* MME S11 IPv4 Address */
-    c_sockaddr_t    *mme_s11_ipv6;    /* MME S11 IPv6 Address */
-
-    c_uint32_t      sgw_s11_teid;
-    c_uint32_t      sgw_s11_addr;
+    c_uint32_t      mme_s11_teid;   /* MME-S11-TEID is derived from INDEX */
+    c_uint32_t      sgw_s11_teid;   /* SGW-S11-TEID is received from SGW */
 
     /* UE Info */
     tai_t           tai;
@@ -351,13 +345,12 @@ struct _mme_ue_t {
       (mme_default_bearer_in_sess(__sESS)->sgw_s1u_addr)))
 
 #define MME_HAVE_SGW_S11_PATH(__mME) \
-     ((__mME) && ((__mME)->sgw_s11_teid) && ((__mME)->sgw_s11_addr))
+     ((__mME) && ((__mME)->sgw_s11_teid))
 
 #define CLEAR_SGW_S11_PATH(__mME) \
     do { \
         d_assert((__mME), break, "Null param"); \
         (__mME)->sgw_s11_teid = 0; \
-        (__mME)->sgw_s11_addr = 0; \
     } while(0)
 typedef struct _mme_sess_t {
     lnode_t         node;       /* A node of list_t */
