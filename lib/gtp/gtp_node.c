@@ -80,31 +80,6 @@ status_t gtp_add_node(list_t *list, gtp_node_t **node,
     return CORE_OK;
 }
 
-gtp_node_t *gtp_add_node_by_f_teid(list_t *list, gtp_f_teid_t *f_teid,
-        c_uint16_t port, int no_ipv4, int no_ipv6, int prefer_ipv4)
-{
-    status_t rv;
-    gtp_node_t *node = NULL;
-    c_sockaddr_t *sa_list = NULL;
-
-    d_assert(list, return NULL,);
-    d_assert(f_teid, return NULL,);
-    d_assert(port, return NULL,);
-
-    rv = gtp_f_teid_to_sockaddr(f_teid, port, &sa_list);
-    d_assert(rv == CORE_OK, return NULL,);
-
-    rv = gtp_add_node(list, &node, sa_list, no_ipv4, no_ipv6, prefer_ipv4);
-    d_assert(rv == CORE_OK, return NULL,);
-    d_assert(node, return NULL,);
-
-    memcpy(&node->ip, &f_teid->ip, sizeof(ip_t));
-
-    core_freeaddrinfo(sa_list);
-
-    return node;
-}
-
 status_t gtp_remove_node(list_t *list, gtp_node_t *node)
 {
     d_assert(node, return CORE_ERROR,);
@@ -139,7 +114,7 @@ status_t gtp_remove_all_nodes(list_t *list)
     return CORE_OK;
 }
 
-gtp_node_t* gtp_find_by_ip(list_t *list, ip_t *ip)
+gtp_node_t* gtp_find_node(list_t *list, ip_t *ip)
 {
     gtp_node_t *node = NULL;
     
@@ -154,3 +129,29 @@ gtp_node_t* gtp_find_by_ip(list_t *list, ip_t *ip)
 
     return node;
 }
+
+gtp_node_t *gtp_connect_node(list_t *list, gtp_f_teid_t *f_teid,
+        c_uint16_t port, int no_ipv4, int no_ipv6, int prefer_ipv4)
+{
+    status_t rv;
+    gtp_node_t *node = NULL;
+    c_sockaddr_t *sa_list = NULL;
+
+    d_assert(list, return NULL,);
+    d_assert(f_teid, return NULL,);
+    d_assert(port, return NULL,);
+
+    rv = gtp_f_teid_to_sockaddr(f_teid, port, &sa_list);
+    d_assert(rv == CORE_OK, return NULL,);
+
+    rv = gtp_add_node(list, &node, sa_list, no_ipv4, no_ipv6, prefer_ipv4);
+    d_assert(rv == CORE_OK, return NULL,);
+    d_assert(node, return NULL,);
+
+    memcpy(&node->ip, &f_teid->ip, sizeof(ip_t));
+
+    core_freeaddrinfo(sa_list);
+
+    return node;
+}
+

@@ -417,11 +417,11 @@ gtp_node_t *sgw_mme_add_by_message(gtp_message_t *message)
 
     mme_s11_teid = req->sender_f_teid_for_control_plane.data;
     d_assert(mme_s11_teid, return NULL,);
-    mme = gtp_find_by_ip(&sgw_self()->mme_list, &mme_s11_teid->ip);
+    mme = gtp_find_node(&sgw_self()->mme_list, &mme_s11_teid->ip);
     if (!mme)
     {
-        mme = gtp_add_node_by_f_teid(
-            &sgw_self()->mme_list, mme_s11_teid, sgw_self()->gtpc_port,
+        mme = gtp_connect_node(&sgw_self()->mme_list, mme_s11_teid,
+            sgw_self()->gtpc_port,
             context_self()->parameter.no_ipv4,
             context_self()->parameter.no_ipv6,
             context_self()->parameter.prefer_ipv4);

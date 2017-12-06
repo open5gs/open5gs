@@ -765,11 +765,11 @@ gtp_node_t *pgw_sgw_add_by_message(gtp_message_t *message)
 
     sgw_s5c_teid = req->sender_f_teid_for_control_plane.data;
     d_assert(sgw_s5c_teid, return NULL,);
-    sgw = gtp_find_by_ip(&pgw_self()->sgw_list, &sgw_s5c_teid->ip);
+    sgw = gtp_find_node(&pgw_self()->sgw_list, &sgw_s5c_teid->ip);
     if (!sgw)
     {
-        sgw = gtp_add_node_by_f_teid(
-            &pgw_self()->sgw_list, sgw_s5c_teid, pgw_self()->gtpc_port,
+        sgw = gtp_connect_node(&pgw_self()->sgw_list, sgw_s5c_teid,
+            pgw_self()->gtpc_port,
             context_self()->parameter.no_ipv4,
             context_self()->parameter.no_ipv6,
             context_self()->parameter.prefer_ipv4);
@@ -866,11 +866,11 @@ pgw_sess_t *pgw_sess_find_or_add_by_message(gtp_message_t *gtp_message)
 
         sgw_s5c_teid = req->sender_f_teid_for_control_plane.data;
         d_assert(sgw_s5c_teid, return NULL,);
-        sgw = gtp_find_by_ip(&pgw_self()->sgw_list, &sgw_s5c_teid->ip);
+        sgw = gtp_find_node(&pgw_self()->sgw_list, &sgw_s5c_teid->ip);
         if (!sgw)
         {
-            sgw = gtp_add_node_by_f_teid(
-                &pgw_self()->sgw_list, sgw_s5c_teid, pgw_self()->gtpc_port,
+            sgw = gtp_connect_node(&pgw_self()->sgw_list, sgw_s5c_teid,
+                pgw_self()->gtpc_port,
                 context_self()->parameter.no_ipv4,
                 context_self()->parameter.no_ipv6,
                 context_self()->parameter.prefer_ipv4);

@@ -39,12 +39,13 @@ CORE_DECLARE(status_t) gtp_node_final(void);
 
 CORE_DECLARE(status_t) gtp_add_node(list_t *list, gtp_node_t **node,
         c_sockaddr_t *sa_list, int no_ipv4, int no_ipv6, int prefer_ipv4);
-CORE_DECLARE(gtp_node_t *) gtp_add_node_by_f_teid(
-        list_t *list, gtp_f_teid_t *f_teid,
-        c_uint16_t port, int no_ipv4, int no_ipv6, int prefer_ipv4);
 CORE_DECLARE(status_t) gtp_remove_node(list_t *list, gtp_node_t *node);
 CORE_DECLARE(status_t) gtp_remove_all_nodes(list_t *list);
-CORE_DECLARE(gtp_node_t *) gtp_find_by_ip(list_t *list, ip_t *ip);
+
+CORE_DECLARE(gtp_node_t *) gtp_find_node(list_t *list, ip_t *ip);
+CORE_DECLARE(gtp_node_t *) gtp_connect_node(
+        list_t *list, gtp_f_teid_t *f_teid,
+        c_uint16_t port, int no_ipv4, int no_ipv6, int prefer_ipv4);
 
 #ifdef __cplusplus
 }
