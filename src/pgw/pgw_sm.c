@@ -3,6 +3,7 @@
 #include "core_debug.h"
 #include "core_lib.h"
 
+#include "gtp_node.h"
 #include "fd_lib.h"
 #include "gx_message.h"
 
@@ -83,10 +84,17 @@ void pgw_state_operational(fsm_t *s, event_t *e)
                     pkbuf_free(recvbuf); pkbuf_free(copybuf); break,
                     "parse error");
 
-            if (message->h.type == GTP_CREATE_SESSION_REQUEST_TYPE)
-                sess = pgw_sess_find_or_add_by_message(message);
+            if (message->h.teid == 0)
+            {
+                gtp_node_t *sgw = pgw_sgw_add_by_message(message);
+                d_assert(sgw, pkbuf_free(recvbuf);pkbuf_free(copybuf); break,);
+                sess = pgw_sess_add_by_message(message);
+                SETUP_GTP_NODE(sess, sgw);
+            }
             else
+            {
                 sess = pgw_sess_find_by_teid(message->h.teid);
+            }
             d_assert(sess,
                     pkbuf_free(recvbuf); pkbuf_free(copybuf); break,
                     "No Session Context");

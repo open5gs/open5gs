@@ -14,8 +14,8 @@
 #include "sgw_gtp_path.h"
 #include "sgw_s11_handler.h"
 
-void sgw_s11_handle_create_session_request(gtp_xact_t *s11_xact,
-        sgw_ue_t *sgw_ue, gtp_message_t *gtp_message)
+void sgw_s11_handle_create_session_request(
+        gtp_xact_t *s11_xact, sgw_ue_t *sgw_ue, gtp_message_t *gtp_message)
 {
     status_t rv;
     c_uint16_t decoded;
@@ -34,7 +34,6 @@ void sgw_s11_handle_create_session_request(gtp_xact_t *s11_xact,
     sgw_tunnel_t *s5u_tunnel = NULL;
 
     d_assert(s11_xact, return, "Null param");
-    d_assert(sgw_ue, return, "Null param");
     d_assert(gtp_message, return, "Null param");
 
     req = &gtp_message->create_session_request;
@@ -49,9 +48,29 @@ void sgw_s11_handle_create_session_request(gtp_xact_t *s11_xact,
         d_error("No EPS Bearer ID");
         return;
     }
-    if (req->access_point_name.presence == 0)
+
+    d_assert(sgw_ue, return, "Null param");
+    sess = sgw_sess_find_by_ebi(sgw_ue,
+            req->bearer_contexts_to_be_created.eps_bearer_id.u8);
+    if (!sess)
     {
-        d_error("No APN");
+        c_int8_t apn[MAX_APN_LEN];
+
+        if (req->access_point_name.presence == 0)
+        {
+            d_error("No APN");
+            return;
+        }
+
+        apn_parse(apn, req->access_point_name.data, req->access_point_name.len);
+        sess = sgw_sess_add(sgw_ue, apn,
+                req->bearer_contexts_to_be_created.eps_bearer_id.u8);
+        d_assert(sess, return, "Null param");
+    }
+
+    if (req->sender_f_teid_for_control_plane.presence == 0)
+    {
+        d_error("No Sender F-TEID");
         return;
     }
     if (req->pgw_s5_s8_address_for_control_plane_or_pmip.presence == 0)
@@ -63,16 +82,6 @@ void sgw_s11_handle_create_session_request(gtp_xact_t *s11_xact,
     {
         d_error("No User Location Inforamtion");
         return;
-    }
-
-    sess = sgw_sess_find_by_ebi(sgw_ue,
-            req->bearer_contexts_to_be_created.eps_bearer_id.u8);
-    if (!sess)
-    {
-        c_int8_t apn[MAX_APN_LEN];
-        apn_parse(apn, req->access_point_name.data, req->access_point_name.len);
-        sess = sgw_sess_add(sgw_ue, apn,
-                req->bearer_contexts_to_be_created.eps_bearer_id.u8);
     }
 
     d_assert(sess, return, "Null param");

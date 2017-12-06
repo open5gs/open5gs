@@ -163,6 +163,9 @@ CORE_DECLARE(pgw_context_t*) pgw_self(void);
 CORE_DECLARE(status_t)      pgw_context_parse_config(void);
 CORE_DECLARE(status_t)      pgw_context_setup_trace_module(void);
 
+CORE_DECLARE(gtp_node_t *)  pgw_sgw_add_by_message(gtp_message_t *message);
+CORE_DECLARE(pgw_sess_t *)  pgw_sess_add_by_message(gtp_message_t *message);
+
 CORE_DECLARE(pgw_sess_t*)   pgw_sess_add(
         c_uint8_t *imsi, int imsi_len, c_int8_t *apn, c_uint8_t ebi);
 CORE_DECLARE(status_t )     pgw_sess_remove(pgw_sess_t *sess);
@@ -171,8 +174,6 @@ CORE_DECLARE(pgw_sess_t*)   pgw_sess_find(index_t index);
 CORE_DECLARE(pgw_sess_t*)   pgw_sess_find_by_teid(c_uint32_t teid);
 CORE_DECLARE(pgw_sess_t*)   pgw_sess_find_by_imsi_apn(
         c_uint8_t *imsi, int imsi_len, c_int8_t *apn);
-CORE_DECLARE(pgw_sess_t *)  pgw_sess_find_or_add_by_message(
-        gtp_message_t *gtp_message);
 CORE_DECLARE(hash_index_t *)  pgw_sess_first();
 CORE_DECLARE(hash_index_t *)  pgw_sess_next(hash_index_t *hi);
 CORE_DECLARE(pgw_sess_t *)  pgw_sess_this(hash_index_t *hi);

@@ -26,7 +26,7 @@ void pgw_s5c_handle_create_session_request(
     bearer = pgw_default_bearer_in_sess(sess);
     d_assert(bearer, return, "Null param");
 
-    if (req->sender_f_teid_for_control_plane.presence == 0)
+    if (req->imsi.presence == 0)
     {
         d_error("No IMSI");
         return;
@@ -39,11 +39,6 @@ void pgw_s5c_handle_create_session_request(
     if (req->bearer_contexts_to_be_created.presence == 0)
     {
         d_error("No Bearer");
-        return;
-    }
-    if (req->bearer_contexts_to_be_created.eps_bearer_id.presence == 0)
-    {
-        d_error("No EPS Bearer ID");
         return;
     }
     if (req->bearer_contexts_to_be_created.bearer_level_qos.presence == 0)

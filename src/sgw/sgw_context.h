@@ -132,16 +132,16 @@ CORE_DECLARE(sgw_context_t*) sgw_self(void);
 CORE_DECLARE(status_t)      sgw_context_parse_config(void);
 CORE_DECLARE(status_t)      sgw_context_setup_trace_module(void);
 
-CORE_DECLARE(sgw_ue_t*)     sgw_ue_add(
-        c_uint8_t *imsi, int imsi_len, c_int8_t *apn, c_uint8_t ebi);
+CORE_DECLARE(gtp_node_t *)  sgw_mme_add_by_message(gtp_message_t *message);
+CORE_DECLARE(sgw_ue_t *)    sgw_ue_add_by_message(gtp_message_t *message);
+
+CORE_DECLARE(sgw_ue_t*)     sgw_ue_add(c_uint8_t *imsi, int imsi_len);
 CORE_DECLARE(status_t)      sgw_ue_remove(sgw_ue_t *sgw_ue);
 CORE_DECLARE(status_t)      sgw_ue_remove_all();
 
 CORE_DECLARE(sgw_ue_t*)     sgw_ue_find_by_imsi(c_uint8_t *imsi, int imsi_len);
 CORE_DECLARE(sgw_ue_t*)     sgw_ue_find_by_imsi_bcd(c_int8_t *imsi_bcd);
 CORE_DECLARE(sgw_ue_t*)     sgw_ue_find_by_teid(c_uint32_t teid);
-CORE_DECLARE(sgw_ue_t *)    sgw_ue_find_or_add_by_message(
-                                gtp_message_t *gtp_message);
 
 CORE_DECLARE(hash_index_t *) sgw_ue_first();
 CORE_DECLARE(hash_index_t *) sgw_ue_next(hash_index_t *hi);

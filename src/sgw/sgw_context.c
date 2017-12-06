@@ -402,16 +402,65 @@ status_t sgw_context_setup_trace_module()
     return CORE_OK;
 }
 
-sgw_ue_t* sgw_ue_add(
-        c_uint8_t *imsi, int imsi_len, c_int8_t *apn, c_uint8_t ebi)
+gtp_node_t *sgw_mme_add_by_message(gtp_message_t *message)
+{
+    status_t rv;
+    gtp_node_t *mme = NULL;
+    gtp_f_teid_t *mme_s11_teid = NULL;
+    gtp_create_session_request_t *req = &message->create_session_request;
+
+    if (req->sender_f_teid_for_control_plane.presence == 0)
+    {
+        d_error("No Sender F-TEID");
+        return NULL;
+    }
+
+    mme_s11_teid = req->sender_f_teid_for_control_plane.data;
+    d_assert(mme_s11_teid, return NULL,);
+    mme = gtp_find_by_ip(&sgw_self()->mme_list, &mme_s11_teid->ip);
+    if (!mme)
+    {
+        mme = gtp_add_node_by_f_teid(
+            &sgw_self()->mme_list, mme_s11_teid, sgw_self()->gtpc_port,
+            context_self()->parameter.no_ipv4,
+            context_self()->parameter.no_ipv6,
+            context_self()->parameter.prefer_ipv4);
+        d_assert(mme, return NULL,);
+
+        rv = gtp_client(mme);
+        d_assert(rv == CORE_OK, return NULL,);
+    }
+
+    return mme;
+}
+
+sgw_ue_t *sgw_ue_add_by_message(gtp_message_t *message)
 {
     sgw_ue_t *sgw_ue = NULL;
-    sgw_sess_t *sess = NULL;
+    gtp_create_session_request_t *req = &message->create_session_request;
+
+    if (req->imsi.presence == 0)
+    {
+        d_error("No IMSI");
+        return NULL;
+    }
+
+    sgw_ue = sgw_ue_find_by_imsi(req->imsi.data, req->imsi.len);
+    if (!sgw_ue)
+    {
+        sgw_ue = sgw_ue_add(req->imsi.data, req->imsi.len);
+        d_assert(sgw_ue, return NULL,);
+    }
+
+    return sgw_ue;
+}
+
+sgw_ue_t *sgw_ue_add(c_uint8_t *imsi, int imsi_len)
+{
+    sgw_ue_t *sgw_ue = NULL;
 
     d_assert(imsi, return NULL, "Null param");
     d_assert(imsi_len, return NULL, "Null param");
-    d_assert(apn, return NULL, "Null param");
-    d_assert(ebi, return NULL, "Null param");
 
     index_alloc(&sgw_ue_pool, &sgw_ue);
     d_assert(sgw_ue, return NULL, "Null param");
@@ -424,9 +473,6 @@ sgw_ue_t* sgw_ue_add(
     core_buffer_to_bcd(sgw_ue->imsi, sgw_ue->imsi_len, sgw_ue->imsi_bcd);
 
     list_init(&sgw_ue->sess_list);
-
-    sess = sgw_sess_add(sgw_ue, apn, ebi);
-    d_assert(sess, index_free(&sgw_ue_pool, sgw_ue); return NULL, "Null param");
 
     hash_set(self.imsi_ue_hash, sgw_ue->imsi, sgw_ue->imsi_len, sgw_ue);
 
@@ -490,75 +536,6 @@ sgw_ue_t* sgw_ue_find_by_imsi(c_uint8_t *imsi, int imsi_len)
 sgw_ue_t* sgw_ue_find_by_teid(c_uint32_t teid)
 {
     return sgw_ue_find(teid);
-}
-
-sgw_ue_t *sgw_ue_find_or_add_by_message(gtp_message_t *gtp_message)
-{
-    status_t rv;
-    sgw_ue_t *sgw_ue = NULL;
-    gtp_node_t *mme = NULL;
-    gtp_create_session_request_t *req = &gtp_message->create_session_request;
-
-    if (req->imsi.presence == 0)
-    {
-        d_error("No IMSI");
-        return NULL;
-    }
-
-    if (req->sender_f_teid_for_control_plane.presence == 0)
-    {
-        d_error("No Sender F-TEID");
-        return NULL;
-    }
-
-    if (req->access_point_name.presence == 0)
-    {
-        d_error("No APN");
-        return NULL;
-    }
-    if (req->bearer_contexts_to_be_created.presence == 0)
-    {
-        d_error("No Bearer");
-        return NULL;
-    }
-    if (req->bearer_contexts_to_be_created.eps_bearer_id.presence == 0)
-    {
-        d_error("No EPS Bearer ID");
-        return NULL;
-    }
-
-    sgw_ue = sgw_ue_find_by_imsi(req->imsi.data, req->imsi.len);
-    if (!sgw_ue)
-    {
-        gtp_f_teid_t *mme_s11_teid = NULL;
-        c_int8_t apn[MAX_APN_LEN];
-
-        mme_s11_teid = req->sender_f_teid_for_control_plane.data;
-        d_assert(mme_s11_teid, return NULL,);
-        mme = gtp_find_by_ip(&sgw_self()->mme_list, &mme_s11_teid->ip);
-        if (!mme)
-        {
-            mme = gtp_add_node_by_f_teid(
-                &sgw_self()->mme_list, mme_s11_teid, sgw_self()->gtpc_port,
-                context_self()->parameter.no_ipv4,
-                context_self()->parameter.no_ipv6,
-                context_self()->parameter.prefer_ipv4);
-            d_assert(mme, return NULL,);
-
-            rv = gtp_client(mme);
-            d_assert(rv == CORE_OK, return NULL,);
-        }
-
-        apn_parse(apn, req->access_point_name.data, req->access_point_name.len);
-        sgw_ue = sgw_ue_add(
-            req->imsi.data, req->imsi.len, apn,
-            req->bearer_contexts_to_be_created.eps_bearer_id.u8);
-        d_assert(sgw_ue, return NULL,);
-
-        SETUP_GTP_NODE(sgw_ue, mme);
-    }
-
-    return sgw_ue;
 }
 
 hash_index_t *sgw_ue_first()

@@ -1537,6 +1537,7 @@ mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
 
     mme_ue->mme_s11_teid = mme_ue->index;
 
+    /* Setup SGW with round-robin manner */
     if (mme_self()->sgw == NULL)
         mme_self()->sgw = list_first(&mme_self()->sgw_list);
 
