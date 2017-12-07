@@ -351,7 +351,19 @@ ED3(c_uint8_t       ipv4:1;,
     c_uint8_t       ipv6:1;,
     c_uint8_t       interface_type:6;)
     c_uint32_t      teid;
-    ip_t            ip;
+    union {
+        /* GTP_F_TEID_IPV4 */
+        c_uint32_t addr;
+
+        /* GTP_F_TEID_IPV6 */
+        c_uint8_t addr6[IPV6_LEN];
+
+        /* GTP_F_TEID_BOTH */
+        struct {
+            c_uint32_t addr;
+            c_uint8_t addr6[IPV6_LEN];
+        } both;
+    };
 } __attribute__ ((packed)) gtp_f_teid_t;
 
 /* 8.44 UE Time Zone */

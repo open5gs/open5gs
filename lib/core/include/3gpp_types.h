@@ -15,8 +15,6 @@ extern "C" {
 #define SCTP_X2AP_PPID              27
 
 #define MAX_NUM_OF_S1AP_SERVER      4
-#define MAX_NUM_OF_GTP_SERVER       4
-#define MAX_NUM_OF_GTP_CLIENT       16
 
 #define MAX_NUM_OF_ENB              128
 #define MAX_NUM_OF_UE               128
@@ -98,14 +96,12 @@ typedef struct _guti_t {
  * S1AP : 9.2.2.1 Transport Layer Address, See 36.414
  * GTP : 8.22 Fully Qualified TEID (F-TEID) */
 typedef struct _ip_t {
+ED3(c_uint8_t       ipv4:1;,
+    c_uint8_t       ipv6:1;,
+    c_uint8_t       reserved:6;)
     union {
-        /* GTP_F_TEID_IPV4 */
         c_uint32_t addr;
-
-        /* GTP_F_TEID_IPV6 */
         c_uint8_t addr6[IPV6_LEN];
-
-        /* GTP_F_TEID_BOTH */
         struct {
             c_uint32_t addr;
             c_uint8_t addr6[IPV6_LEN];

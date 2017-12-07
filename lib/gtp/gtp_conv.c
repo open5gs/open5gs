@@ -64,21 +64,21 @@ status_t gtp_f_teid_to_sockaddr(
     {
         addr->next = addr6;
 
-        addr->sin.sin_addr.s_addr = f_teid->ip.both.addr;
-        memcpy(addr6->sin6.sin6_addr.s6_addr, f_teid->ip.both.addr6, IPV6_LEN);
+        addr->sin.sin_addr.s_addr = f_teid->both.addr;
+        memcpy(addr6->sin6.sin6_addr.s6_addr, f_teid->both.addr6, IPV6_LEN);
 
         *list = addr;
     }
     else if (f_teid->ipv4)
     {
-        addr->sin.sin_addr.s_addr = f_teid->ip.addr;
+        addr->sin.sin_addr.s_addr = f_teid->addr;
         core_free(addr6);
 
         *list = addr;
     }
     else if (f_teid->ipv6)
     {
-        memcpy(addr6->sin6.sin6_addr.s6_addr, f_teid->ip.addr6, IPV6_LEN);
+        memcpy(addr6->sin6.sin6_addr.s6_addr, f_teid->addr6, IPV6_LEN);
         core_free(addr);
 
         *list = addr6;
@@ -98,27 +98,22 @@ status_t gtp_sockaddr_to_f_teid(
 {
     d_assert(f_teid, return CORE_ERROR,);
 
-    f_teid->ipv4 = 0;
-    f_teid->ipv6 = 0;
-
-    memset(&f_teid->ip, 0, sizeof(ip_t));
-
     if (addr && addr6)
     {
         f_teid->ipv4 = 1;
-        f_teid->ip.both.addr = addr->sin.sin_addr.s_addr;
+        f_teid->both.addr = addr->sin.sin_addr.s_addr;
         f_teid->ipv6 = 1;
-        memcpy(f_teid->ip.both.addr6, addr6->sin6.sin6_addr.s6_addr, IPV6_LEN);
+        memcpy(f_teid->both.addr6, addr6->sin6.sin6_addr.s6_addr, IPV6_LEN);
     }
     else if (addr)
     {
         f_teid->ipv4 = 1;
-        f_teid->ip.addr = addr->sin.sin_addr.s_addr;
+        f_teid->addr = addr->sin.sin_addr.s_addr;
     }
     else if (addr6)
     {
         f_teid->ipv6 = 1;
-        memcpy(f_teid->ip.addr6, addr6->sin6.sin6_addr.s6_addr, IPV6_LEN);
+        memcpy(f_teid->addr6, addr6->sin6.sin6_addr.s6_addr, IPV6_LEN);
     }
     else
         d_assert(0, return CORE_ERROR,);
@@ -155,16 +150,16 @@ gtp_f_teid_t *gtp_f_teid_copy(gtp_f_teid_t *dst, gtp_f_teid_t *src)
 
     if (dst->ipv4 && dst->ipv6)
     {
-        dst->ip.both.addr = src->ip.both.addr;
-        memcpy(dst->ip.both.addr6, src->ip.both.addr6, IPV6_LEN);
+        dst->both.addr = src->both.addr;
+        memcpy(dst->both.addr6, src->both.addr6, IPV6_LEN);
     }
     else if (dst->ipv4)
     {
-        dst->ip.addr = src->ip.addr;
+        dst->addr = src->addr;
     }
     else if (dst->ipv6)
     {
-        memcpy(dst->ip.addr6, src->ip.addr6, IPV6_LEN);
+        memcpy(dst->addr6, src->addr6, IPV6_LEN);
     }
     else
         d_assert(0, return NULL,);
