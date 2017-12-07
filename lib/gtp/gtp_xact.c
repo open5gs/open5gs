@@ -3,7 +3,7 @@
 #include "core_pool.h"
 #include "core_event.h"
 
-#include "types.h"
+#include "3gpp_types.h"
 #include "gtp_message.h"
 #include "gtp_node.h"
 #include "gtp_path.h"

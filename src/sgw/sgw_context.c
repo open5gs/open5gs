@@ -9,7 +9,6 @@
 #include <yaml.h>
 #include "yaml_helper.h"
 
-#include "types.h"
 #include "gtp_types.h"
 #include "gtp_conv.h"
 #include "gtp_node.h"

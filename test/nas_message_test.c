@@ -1,11 +1,12 @@
 #include "core_pkbuf.h"
 #include "core_lib.h"
 
-#include "testutil.h"
+#include "3gpp_types.h"
 
-#include "types.h"
 #include "nas_message.h"
 #include "nas_security.h"
+
+#include "testutil.h"
 
 static void nas_message_test1(abts_case *tc, void *data)
 {

@@ -11,12 +11,10 @@ libs1ap_la_SOURCES = \
 
 libs1ap_la_DEPENDENCIES = \
     $(top_srcdir)/lib/core/src/libcore.la \
-    $(top_srcdir)/lib/3gpp/lib3gpp.la \
     $(top_srcdir)/lib/s1ap/asn1c/libs1apasn1c.la
 
 libs1ap_la_LIBADD = \
     $(top_srcdir)/lib/core/src/libcore.la \
-    $(top_srcdir)/lib/3gpp/lib3gpp.la \
     $(top_srcdir)/lib/s1ap/asn1c/libs1apasn1c.la
 
 AM_LDFLAGS = \

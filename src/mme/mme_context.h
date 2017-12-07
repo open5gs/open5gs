@@ -12,7 +12,7 @@
 #include "core_msgq.h"
 #include "core_timer.h"
 
-#include "types.h"
+#include "3gpp_types.h"
 #include "s1ap_message.h"
 #include "nas_message.h"
 #include "s6a_message.h"

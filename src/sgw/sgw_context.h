@@ -8,7 +8,7 @@
 #include "core_hash.h"
 #include "core_network.h"
 
-#include "types.h"
+#include "3gpp_types.h"
 #include "gtp_types.h"
 #include "gtp_message.h"
 

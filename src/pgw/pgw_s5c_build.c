@@ -2,12 +2,12 @@
 
 #include "core_debug.h"
 
+#include "3gpp_types.h"
 #include "gtp_types.h"
 #include "gtp_conv.h"
 #include "gtp_message.h"
 #include "gx_message.h"
 
-#include "types.h"
 #include "pgw_context.h"
 
 static c_int16_t pgw_pco_build(c_uint8_t *pco_buf, tlv_pco_t *tlv_pco);

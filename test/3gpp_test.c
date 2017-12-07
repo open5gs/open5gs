@@ -1,7 +1,7 @@
 #include "core_lib.h"
 #include "core_debug.h"
 
-#include "types.h"
+#include "3gpp_types.h"
 
 #include "testutil.h"
 

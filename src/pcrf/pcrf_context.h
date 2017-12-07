@@ -4,7 +4,7 @@
 #include "core_errno.h"
 #include "core_mutex.h"
 
-#include "types.h"
+#include "3gpp_types.h"
 #include "gx_message.h"
 
 #ifdef __cplusplus

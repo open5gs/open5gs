@@ -3,7 +3,7 @@
 #include "core_debug.h"
 #include "core_pkbuf.h"
 
-#include "types.h"
+#include "3gpp_types.h"
 #include "gtp_message.h"
 #include "gtp_node.h"
 

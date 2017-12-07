@@ -3,7 +3,7 @@
 #include "core_debug.h"
 #include "core_param.h"
 
-#include "types.h"
+#include "3gpp_types.h"
 #include "s1ap_message.h"
 
 static inline int s1ap_encode_initiating_message(

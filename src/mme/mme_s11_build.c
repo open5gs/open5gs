@@ -7,7 +7,7 @@
 #include "gtp_message.h"
 #include "gtp_node.h"
 
-#include "types.h"
+#include "3gpp_types.h"
 #include "mme_context.h"
 
 #include "mme_s11_build.h"

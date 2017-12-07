@@ -9,12 +9,10 @@ libgtp_la_SOURCES = \
 
 libgtp_la_DEPENDENCIES = \
     $(top_srcdir)/lib/core/src/libcore.la \
-    $(top_srcdir)/lib/3gpp/lib3gpp.la \
 	$(NULL)
 
 libgtp_la_LIBADD = \
     $(top_srcdir)/lib/core/src/libcore.la \
-    $(top_srcdir)/lib/3gpp/lib3gpp.la \
 	$(NULL)
 
 AM_LDFLAGS = \
@@ -23,7 +21,6 @@ AM_LDFLAGS = \
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \
-    -I$(top_srcdir)/lib/3gpp \
 	$(NULL)
 
 AM_CFLAGS = \

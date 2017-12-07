@@ -2,7 +2,7 @@
 #define __GTP_TYPES_H__
 
 #include "core_tlv_msg.h"
-#include "types.h"
+#include "3gpp_types.h"
 
 typedef struct c_sockaddr_t c_sockaddr_t;
 

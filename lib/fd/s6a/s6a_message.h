@@ -7,7 +7,7 @@ extern "C" {
 
 #include "core_sha2.h"
 
-#include "types.h"
+#include "3gpp_types.h"
 
 typedef struct _e_utran_vector_t {
     c_uint8_t               xres[MAX_RES_LEN];

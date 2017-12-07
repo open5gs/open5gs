@@ -5,7 +5,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#include "types.h"
+#include "3gpp_types.h"
 
 typedef struct _gx_cca_message_t {
 #define GX_CC_REQUEST_TYPE_INITIAL_REQUEST      1

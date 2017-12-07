@@ -3,7 +3,7 @@
 #include "core_debug.h"
 #include "core_lib.h"
 
-#include "types.h"
+#include "3gpp_types.h"
 
 #define PLMN_ID_DIGIT1(x) (((x) / 100) % 10)
 #define PLMN_ID_DIGIT2(x) (((x) / 10) % 10)
