@@ -410,6 +410,7 @@ static void sock_test7(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     sock_remove_all_nodes(&list);
+    sock_remove_all_nodes(&list6);
 }
 
 abts_suite *testsock(abts_suite *suite)
