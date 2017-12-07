@@ -28,8 +28,6 @@ typedef struct _gtp_node_t {
 
     sock_id         sock;           /* Socket instance */
 
-    c_sockaddr_t    old_addr;       /* Will be removed */
-
     list_t          local_list;    
     list_t          remote_list;   
 } gtp_node_t;

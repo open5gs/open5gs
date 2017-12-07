@@ -196,45 +196,28 @@ status_t gtp_send(gtp_node_t *gnode, pkbuf_t *pkbuf)
     char buf[CORE_ADDRSTRLEN];
     ssize_t sent;
     sock_id sock = 0;
+    c_sockaddr_t *addr = NULL;
 
     d_assert(gnode, return CORE_ERROR, "Null param");
     d_assert(pkbuf, return CORE_ERROR, "Null param");
     sock = gnode->sock;
     d_assert(sock, return CORE_ERROR, "Null param");
 
-    if (gnode->sa_list)
-    {
-        sock_id sock = 0;
-        c_sockaddr_t *addr = NULL;
-        /* New interface */
-        sock = gnode->sock;
-        d_assert(sock, return CORE_ERROR,);
-        addr = sock_remote_addr(sock);
-        d_assert(addr, return CORE_ERROR,);
+    /* New interface */
+    sock = gnode->sock;
+    d_assert(sock, return CORE_ERROR,);
+    addr = sock_remote_addr(sock);
+    d_assert(addr, return CORE_ERROR,);
 
-        sent = core_send(sock, pkbuf->payload, pkbuf->len, 0);
-        d_trace(50, "Sent %d->%d bytes to [%s:%d]\n", pkbuf->len, sent, 
-                CORE_ADDR(addr, buf), CORE_PORT(addr));
-        d_trace_hex(50, pkbuf->payload, pkbuf->len);
-        if (sent < 0 || sent != pkbuf->len)
-        {
-            d_error("core_send [%s]:%d failed(%d:%s)",
-                CORE_ADDR(addr, buf), CORE_PORT(addr), errno, strerror(errno));
-            return CORE_ERROR;
-        }
-    }
-    else
+    sent = core_send(sock, pkbuf->payload, pkbuf->len, 0);
+    d_trace(50, "Sent %d->%d bytes to [%s:%d]\n", pkbuf->len, sent, 
+            CORE_ADDR(addr, buf), CORE_PORT(addr));
+    d_trace_hex(50, pkbuf->payload, pkbuf->len);
+    if (sent < 0 || sent != pkbuf->len)
     {
-        /* Old interface : Will be removed */
-        sent = core_sendto(sock, pkbuf->payload, pkbuf->len, 0, &gnode->old_addr);
-        d_trace(50, "Sent %d->%d bytes to [%s:%d]\n", pkbuf->len, sent, 
-                CORE_ADDR(&gnode->old_addr, buf), CORE_PORT(&gnode->old_addr));
-        d_trace_hex(50, pkbuf->payload, pkbuf->len);
-        if (sent < 0 || sent != pkbuf->len)
-        {
-            d_error("core_sendto failed(%d:%s)", errno, strerror(errno));
-            return CORE_ERROR;
-        }
+        d_error("core_send [%s]:%d failed(%d:%s)",
+            CORE_ADDR(addr, buf), CORE_PORT(addr), errno, strerror(errno));
+        return CORE_ERROR;
     }
 
     return CORE_OK;

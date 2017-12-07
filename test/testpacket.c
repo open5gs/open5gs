@@ -110,7 +110,8 @@ status_t testgtpu_enb_send(sock_id sock, c_uint32_t src_ip, c_uint32_t dst_ip)
     status_t rv;
     pkbuf_t *pkbuf = NULL;
     gtp_header_t *gtp_h = NULL;
-    gtp_node_t gnode;
+    ssize_t sent;
+    c_sockaddr_t to;
     struct ip *ip_h =  NULL;
     struct icmp_header_t {
         c_int8_t type;
@@ -176,16 +177,16 @@ status_t testgtpu_enb_send(sock_id sock, c_uint32_t src_ip, c_uint32_t dst_ip)
     icmp_h->checksum = in_cksum(
             (unsigned short *)icmp_h, sizeof(struct icmp_header_t));
 
-    memset(&gnode, 0, sizeof(gtp_node_t));
-    gnode.old_addr.sin.sin_addr.s_addr = bearer->sgw_s1u_addr;
-    gnode.old_addr.c_sa_port = htons(GTPV1_U_UDP_PORT);
-    gnode.old_addr.c_sa_family = AF_INET;
-    gnode.sock = sock;
-
-    rv = gtp_send(&gnode, pkbuf);
+    memset(&to, 0, sizeof(c_sockaddr_t));
+    to.sin.sin_addr.s_addr = bearer->sgw_s1u_addr;
+    to.c_sa_port = htons(GTPV1_U_UDP_PORT);
+    to.c_sa_family = AF_INET;
+    sent = core_sendto(sock, pkbuf->payload, pkbuf->len, 0, &to);
     pkbuf_free(pkbuf);
+    if (sent < 0 || sent != pkbuf->len)
+        return CORE_ERROR;
 
-    return rv;
+    return CORE_OK;
 }
 
 status_t testgtpu_enb_read(sock_id sock, pkbuf_t *recvbuf)
