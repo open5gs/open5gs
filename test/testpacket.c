@@ -178,9 +178,27 @@ status_t testgtpu_enb_send(sock_id sock, c_uint32_t src_ip, c_uint32_t dst_ip)
             (unsigned short *)icmp_h, sizeof(struct icmp_header_t));
 
     memset(&to, 0, sizeof(c_sockaddr_t));
-    to.sin.sin_addr.s_addr = bearer->sgw_s1u_addr;
     to.c_sa_port = htons(GTPV1_U_UDP_PORT);
-    to.c_sa_family = AF_INET;
+
+    if (bearer->sgw_s1u_ip.ipv4 && bearer->sgw_s1u_ip.ipv6)
+    {
+        to.c_sa_family = AF_INET6;
+        memcpy(to.sin6.sin6_addr.s6_addr,
+                bearer->sgw_s1u_ip.both.addr6, IPV6_LEN);
+    }
+    else if (bearer->sgw_s1u_ip.ipv4)
+    {
+        to.c_sa_family = AF_INET;
+        to.sin.sin_addr.s_addr = bearer->sgw_s1u_ip.addr;
+    }
+    else if (bearer->sgw_s1u_ip.ipv6)
+    {
+        to.c_sa_family = AF_INET6;
+        memcpy(to.sin6.sin6_addr.s6_addr, bearer->sgw_s1u_ip.addr6, IPV6_LEN);
+    }
+    else
+        d_assert(0, return CORE_ERROR,);
+
     sent = core_sendto(sock, pkbuf->payload, pkbuf->len, 0, &to);
     pkbuf_free(pkbuf);
     if (sent < 0 || sent != pkbuf->len)

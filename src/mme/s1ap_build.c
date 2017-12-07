@@ -151,6 +151,7 @@ status_t s1ap_build_downlink_nas_transport(
 status_t s1ap_build_initial_context_setup_request(
             pkbuf_t **s1apbuf, mme_ue_t *mme_ue, pkbuf_t *emmbuf)
 {
+    status_t rv;
     char buf[CORE_ADDRSTRLEN];
 
     int encoded;
@@ -229,12 +230,9 @@ status_t s1ap_build_initial_context_setup_request(
                         gbrQosInformation;
             }
 
-            e_rab->transportLayerAddress.size = 4;
-            e_rab->transportLayerAddress.buf = core_calloc(
-                    e_rab->transportLayerAddress.size, sizeof(c_uint8_t));
-            memcpy(e_rab->transportLayerAddress.buf, &bearer->sgw_s1u_addr,
-                    e_rab->transportLayerAddress.size);
-
+            rv = s1ap_ip_to_BIT_STRING(
+                    &bearer->sgw_s1u_ip, &e_rab->transportLayerAddress);
+            d_assert(rv == CORE_OK, return CORE_ERROR,);
             s1ap_uint32_to_OCTET_STRING(bearer->sgw_s1u_teid, &e_rab->gTP_TEID);
 
             if (emmbuf && emmbuf->len)
@@ -317,6 +315,7 @@ status_t s1ap_build_e_rab_setup_request(
 {
     char buf[CORE_ADDRSTRLEN];
 
+    status_t rv;
     int encoded;
     s1ap_message_t message;
     S1ap_E_RABSetupRequestIEs_t *ies = &message.s1ap_E_RABSetupRequestIEs;
@@ -376,12 +375,9 @@ status_t s1ap_build_e_rab_setup_request(
         e_rab->e_RABlevelQoSParameters.gbrQosInformation = gbrQosInformation;
     }
 
-    e_rab->transportLayerAddress.size = 4;
-    e_rab->transportLayerAddress.buf = 
-        core_calloc(e_rab->transportLayerAddress.size, sizeof(c_uint8_t));
-    memcpy(e_rab->transportLayerAddress.buf, &bearer->sgw_s1u_addr,
-            e_rab->transportLayerAddress.size);
-
+    rv = s1ap_ip_to_BIT_STRING(
+            &bearer->sgw_s1u_ip, &e_rab->transportLayerAddress);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
     s1ap_uint32_to_OCTET_STRING(bearer->sgw_s1u_teid, &e_rab->gTP_TEID);
 
     nasPdu = &e_rab->nAS_PDU;
@@ -807,6 +803,7 @@ status_t s1ap_build_handover_request(
         pkbuf_t **s1apbuf, mme_ue_t *mme_ue, enb_ue_t *target_ue,
         S1ap_HandoverRequiredIEs_t *required)
 {
+    status_t rv;
     char buf[CORE_ADDRSTRLEN];
 
     int encoded;
@@ -884,12 +881,9 @@ status_t s1ap_build_handover_request(
                         gbrQosInformation;
             }
 
-            e_rab->transportLayerAddress.size = 4;
-            e_rab->transportLayerAddress.buf = core_calloc(
-                    e_rab->transportLayerAddress.size, sizeof(c_uint8_t));
-            memcpy(e_rab->transportLayerAddress.buf, &bearer->sgw_s1u_addr,
-                    e_rab->transportLayerAddress.size);
-
+            rv = s1ap_ip_to_BIT_STRING(
+                    &bearer->sgw_s1u_ip, &e_rab->transportLayerAddress);
+            d_assert(rv == CORE_OK, return CORE_ERROR,);
             s1ap_uint32_to_OCTET_STRING(bearer->sgw_s1u_teid, &e_rab->gTP_TEID);
 
             ASN_SEQUENCE_ADD(&ies->e_RABToBeSetupListHOReq, e_rab);

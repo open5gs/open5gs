@@ -85,7 +85,8 @@ void mme_s11_handle_create_session_response(
     /* Data Plane(UL) : SGW-S1U */
     sgw_s1u_teid = rsp->bearer_contexts_created.s1_u_enodeb_f_teid.data;
     bearer->sgw_s1u_teid = ntohl(sgw_s1u_teid->teid);
-    bearer->sgw_s1u_addr = sgw_s1u_teid->addr;
+    rv = gtp_f_teid_to_ip(sgw_s1u_teid, &bearer->sgw_s1u_ip);
+    d_assert(rv == CORE_OK, return,);
 
     d_trace(3, "[GTP] Create Session Response : "
             "MME[%d] <-- SGW[%d]\n", mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
@@ -209,6 +210,7 @@ void mme_s11_handle_delete_session_response(
 void mme_s11_handle_create_bearer_request(
         gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_create_bearer_request_t *req)
 {
+    status_t rv;
     mme_bearer_t *bearer = NULL;
     mme_sess_t *sess = NULL;
 
@@ -263,7 +265,8 @@ void mme_s11_handle_create_bearer_request(
     /* Data Plane(UL) : SGW-S1U */
     sgw_s1u_teid = req->bearer_contexts.s1_u_enodeb_f_teid.data;
     bearer->sgw_s1u_teid = ntohl(sgw_s1u_teid->teid);
-    bearer->sgw_s1u_addr = sgw_s1u_teid->addr;
+    rv = gtp_f_teid_to_ip(sgw_s1u_teid, &bearer->sgw_s1u_ip);
+    d_assert(rv == CORE_OK, return,);
 
     /* Bearer QoS */
     d_assert(gtp_parse_bearer_qos(&bearer_qos,

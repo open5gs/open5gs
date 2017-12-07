@@ -320,10 +320,10 @@ status_t mme_s11_build_create_bearer_response(
     
     /* Data Plane(UL) : SGW-S1U */
     memset(&sgw_s1u_teid, 0, sizeof(gtp_f_teid_t));
-    sgw_s1u_teid.ipv4 = 1;
     sgw_s1u_teid.interface_type = GTP_F_TEID_S1_U_SGW_GTP_U;
-    sgw_s1u_teid.addr = bearer->sgw_s1u_addr;
     sgw_s1u_teid.teid = htonl(bearer->sgw_s1u_teid);
+    rv = gtp_ip_to_f_teid(&bearer->sgw_s1u_ip, &sgw_s1u_teid, &len);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
     rsp->bearer_contexts.s4_u_sgsn_f_teid.presence = 1;
     rsp->bearer_contexts.s4_u_sgsn_f_teid.data = &sgw_s1u_teid;
     rsp->bearer_contexts.s4_u_sgsn_f_teid.len = GTP_F_TEID_IPV4_LEN;

@@ -398,7 +398,7 @@ typedef struct _mme_bearer_t {
     c_uint32_t      enb_s1u_teid;
     ip_t            enb_s1u_ip;
     c_uint32_t      sgw_s1u_teid;
-    c_uint32_t      sgw_s1u_addr;
+    ip_t            sgw_s1u_ip;
 
     c_uint32_t      target_s1u_teid;    /* Target S1U TEID from HO-Req-Ack */
     ip_t            target_s1u_ip;      /* Target S1U ADDR from HO-Req-Ack */
