@@ -670,6 +670,7 @@ status_t s1ap_build_path_switch_failure(pkbuf_t **s1apbuf,
 
 status_t s1ap_build_handover_command(pkbuf_t **s1apbuf, enb_ue_t *source_ue)
 {
+    status_t rv;
     char buf[CORE_ADDRSTRLEN];
 
     int encoded;
@@ -709,12 +710,9 @@ status_t s1ap_build_handover_command(pkbuf_t **s1apbuf, enb_ue_t *source_ue)
                 e_rab->dL_transportLayerAddress =
                     (S1ap_TransportLayerAddress_t *)
                     core_calloc(1, sizeof(S1ap_TransportLayerAddress_t));
-                e_rab->dL_transportLayerAddress->size = 4;
-                e_rab->dL_transportLayerAddress->buf = core_calloc(
-                        e_rab->dL_transportLayerAddress->size, sizeof(c_uint8_t));
-                memcpy(e_rab->dL_transportLayerAddress->buf,
-                        &bearer->sgw_dl_addr,
-                        e_rab->dL_transportLayerAddress->size);
+                rv = s1ap_ip_to_BIT_STRING(
+                        &bearer->sgw_dl_ip, e_rab->dL_transportLayerAddress);
+                d_assert(rv == CORE_OK, return CORE_ERROR,);
 
                 e_rab->dL_gTP_TEID = (S1ap_GTP_TEID_t *)
                     core_calloc(1, sizeof(S1ap_GTP_TEID_t));
@@ -727,13 +725,9 @@ status_t s1ap_build_handover_command(pkbuf_t **s1apbuf, enb_ue_t *source_ue)
                 e_rab->uL_S1ap_TransportLayerAddress =
                     (S1ap_TransportLayerAddress_t *)
                     core_calloc(1, sizeof(S1ap_TransportLayerAddress_t));
-                e_rab->uL_S1ap_TransportLayerAddress->size = 4;
-                e_rab->uL_S1ap_TransportLayerAddress->buf = core_calloc(
-                        e_rab->uL_S1ap_TransportLayerAddress->size,
-                        sizeof(c_uint8_t));
-                memcpy(e_rab->uL_S1ap_TransportLayerAddress->buf,
-                        &bearer->sgw_ul_addr,
-                        e_rab->uL_S1ap_TransportLayerAddress->size);
+                rv = s1ap_ip_to_BIT_STRING(
+                    &bearer->sgw_ul_ip, e_rab->uL_S1ap_TransportLayerAddress);
+                d_assert(rv == CORE_OK, return CORE_ERROR,);
 
                 e_rab->uL_S1ap_GTP_TEID = (S1ap_GTP_TEID_t *)
                     core_calloc(1, sizeof(S1ap_GTP_TEID_t));

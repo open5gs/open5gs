@@ -289,8 +289,9 @@ void s1ap_handle_initial_context_setup_response(
         memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf, 
                 sizeof(bearer->enb_s1u_teid));
         bearer->enb_s1u_teid = ntohl(bearer->enb_s1u_teid);
-        memcpy(&bearer->enb_s1u_addr, e_rab->transportLayerAddress.buf,
-                sizeof(bearer->enb_s1u_addr));
+        rv = s1ap_BIT_STRING_to_ip(
+                &e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
+        d_assert(rv == CORE_OK, return,);
 
         if (FSM_CHECK(&bearer->sm, esm_state_active))
         {
@@ -308,6 +309,7 @@ void s1ap_handle_initial_context_setup_response(
 void s1ap_handle_e_rab_setup_response(
         mme_enb_t *enb, s1ap_message_t *message)
 {
+    status_t rv;
     char buf[CORE_ADDRSTRLEN];
     int i;
 
@@ -347,8 +349,9 @@ void s1ap_handle_e_rab_setup_response(
         memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf, 
                 sizeof(bearer->enb_s1u_teid));
         bearer->enb_s1u_teid = ntohl(bearer->enb_s1u_teid);
-        memcpy(&bearer->enb_s1u_addr, e_rab->transportLayerAddress.buf,
-                sizeof(bearer->enb_s1u_addr));
+        rv = s1ap_BIT_STRING_to_ip(
+                &e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
+        d_assert(rv == CORE_OK, return,);
 
         if (FSM_CHECK(&bearer->sm, esm_state_active))
         {
@@ -661,8 +664,9 @@ void s1ap_handle_path_switch_request(
         memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf, 
                 sizeof(bearer->enb_s1u_teid));
         bearer->enb_s1u_teid = ntohl(bearer->enb_s1u_teid);
-        memcpy(&bearer->enb_s1u_addr, e_rab->transportLayerAddress.buf,
-                sizeof(bearer->enb_s1u_addr));
+        rv = s1ap_BIT_STRING_to_ip(
+                &e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
+        d_assert(rv == CORE_OK, return,);
 
         GTP_COUNTER_INCREMENT(
                 mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_PATH_SWITCH);
@@ -776,8 +780,9 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
         memcpy(&bearer->target_s1u_teid, e_rab->gTP_TEID.buf, 
                 sizeof(bearer->target_s1u_teid));
         bearer->target_s1u_teid = ntohl(bearer->target_s1u_teid);
-        memcpy(&bearer->target_s1u_addr, e_rab->transportLayerAddress.buf,
-                sizeof(bearer->target_s1u_addr));
+        rv = s1ap_BIT_STRING_to_ip(
+                &e_rab->transportLayerAddress, &bearer->target_s1u_ip);
+        d_assert(rv == CORE_OK, return,);
 
         if (e_rab->dL_transportLayerAddress && e_rab->dL_gTP_TEID)
         {
@@ -786,8 +791,9 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
             memcpy(&bearer->enb_dl_teid, e_rab->dL_gTP_TEID->buf, 
                     sizeof(bearer->enb_dl_teid));
             bearer->enb_dl_teid = ntohl(bearer->enb_dl_teid);
-            memcpy(&bearer->enb_dl_addr, e_rab->dL_transportLayerAddress->buf,
-                    sizeof(bearer->enb_dl_addr));
+            rv = s1ap_BIT_STRING_to_ip(
+                    e_rab->dL_transportLayerAddress, &bearer->enb_dl_ip);
+            d_assert(rv == CORE_OK, return,);
         }
 
         if (e_rab->uL_S1ap_TransportLayerAddress && e_rab->uL_S1ap_GTP_TEID)
@@ -797,9 +803,9 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
             memcpy(&bearer->enb_ul_teid, e_rab->uL_S1ap_GTP_TEID->buf, 
                     sizeof(bearer->enb_ul_teid));
             bearer->enb_ul_teid = ntohl(bearer->enb_ul_teid);
-            memcpy(&bearer->enb_ul_addr,
-                    e_rab->uL_S1ap_TransportLayerAddress->buf,
-                    sizeof(bearer->enb_ul_addr));
+            rv = s1ap_BIT_STRING_to_ip(
+                    e_rab->uL_S1ap_TransportLayerAddress, &bearer->enb_ul_ip);
+            d_assert(rv == CORE_OK, return,);
         }
     }
 
@@ -1004,7 +1010,7 @@ void s1ap_handle_handover_notification(mme_enb_t *enb, s1ap_message_t *message)
         while(bearer)
         {
             bearer->enb_s1u_teid = bearer->target_s1u_teid;
-            bearer->enb_s1u_addr = bearer->target_s1u_addr;
+            memcpy(&bearer->enb_s1u_ip, &bearer->target_s1u_ip, sizeof(ip_t));
 
             GTP_COUNTER_INCREMENT(
                     mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_HANDOVER_NOTIFY);

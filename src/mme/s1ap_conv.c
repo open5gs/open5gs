@@ -145,23 +145,22 @@ status_t s1ap_ip_to_BIT_STRING(ip_t *ip, BIT_STRING_t *bit_string)
 
     if (ip->ipv4 && ip->ipv6)
     {
-        ip->ipv4 = 1;
-        ip->ipv6 = 1;
+        bit_string->size = IPV4V6_LEN;
+        bit_string->buf = core_calloc(bit_string->size, sizeof(c_uint8_t));
         memcpy(bit_string->buf, &ip->both.addr, IPV4_LEN);
         memcpy(bit_string->buf+IPV4_LEN, &ip->both.addr6, IPV6_LEN);
-        bit_string->size = IPV4V6_LEN;
     }
     else if (ip->ipv4)
     {
-        ip->ipv4 = 1;
-        memcpy(bit_string->buf, &ip->addr, IPV4_LEN);
         bit_string->size = IPV4_LEN;
+        bit_string->buf = core_calloc(bit_string->size, sizeof(c_uint8_t));
+        memcpy(bit_string->buf, &ip->addr, IPV4_LEN);
     }
     else if (ip->ipv6)
     {
-        ip->ipv6 = 1;
-        memcpy(bit_string->buf, &ip->addr6, IPV6_LEN);
         bit_string->size = IPV6_LEN;
+        bit_string->buf = core_calloc(bit_string->size, sizeof(c_uint8_t));
+        memcpy(bit_string->buf, &ip->addr6, IPV6_LEN);
     }
     else
         d_assert(0, return CORE_ERROR,);

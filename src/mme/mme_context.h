@@ -332,8 +332,7 @@ struct _mme_ue_t {
 
 #define MME_HAVE_SGW_S1U_PATH(__sESS) \
     ((__sESS) && (mme_bearer_first(__sESS)) && \
-     ((mme_default_bearer_in_sess(__sESS)->sgw_s1u_teid) && \
-      (mme_default_bearer_in_sess(__sESS)->sgw_s1u_addr)))
+     ((mme_default_bearer_in_sess(__sESS)->sgw_s1u_teid)))
 
 #define MME_HAVE_SGW_S11_PATH(__mME) \
      ((__mME) && ((__mME)->sgw_s11_teid))
@@ -371,27 +370,23 @@ typedef struct _mme_sess_t {
 } mme_sess_t;
 
 #define MME_HAVE_ENB_S1U_PATH(__bEARER) \
-    ((__bEARER) && ((__bEARER)->enb_s1u_teid) && ((__bEARER)->enb_s1u_addr))
+    ((__bEARER) && ((__bEARER)->enb_s1u_teid))
 
 #define MME_HAVE_ENB_DL_INDIRECT_TUNNEL(__bEARER) \
-    ((__bEARER) && ((__bEARER)->enb_dl_teid) && ((__bEARER)->enb_dl_addr))
+    ((__bEARER) && ((__bEARER)->enb_dl_teid))
 #define MME_HAVE_ENB_UL_INDIRECT_TUNNEL(__bEARER) \
-    ((__bEARER) && ((__bEARER)->enb_ul_teid) && ((__bEARER)->enb_ul_addr))
+    ((__bEARER) && ((__bEARER)->enb_ul_teid))
 #define MME_HAVE_SGW_DL_INDIRECT_TUNNEL(__bEARER) \
-    ((__bEARER) && ((__bEARER)->sgw_dl_teid) && ((__bEARER)->sgw_dl_addr))
+    ((__bEARER) && ((__bEARER)->sgw_dl_teid))
 #define MME_HAVE_SGW_UL_INDIRECT_TUNNEL(__bEARER) \
-    ((__bEARER) && ((__bEARER)->sgw_ul_teid) && ((__bEARER)->sgw_ul_addr))
+    ((__bEARER) && ((__bEARER)->sgw_ul_teid))
 #define CLEAR_INDIRECT_TUNNEL(__bEARER) \
     do { \
         d_assert((__bEARER), break, "Null param"); \
         (__bEARER)->enb_dl_teid = 0; \
-        (__bEARER)->enb_dl_addr = 0; \
         (__bEARER)->enb_ul_teid = 0; \
-        (__bEARER)->enb_ul_addr = 0; \
         (__bEARER)->sgw_dl_teid = 0; \
-        (__bEARER)->sgw_dl_addr = 0; \
         (__bEARER)->sgw_ul_teid = 0; \
-        (__bEARER)->sgw_ul_addr = 0; \
     } while(0)
 typedef struct _mme_bearer_t {
     lnode_t         node;           /* A node of list_t */
@@ -401,22 +396,22 @@ typedef struct _mme_bearer_t {
     c_uint8_t       ebi;            /* EPS Bearer ID */    
 
     c_uint32_t      enb_s1u_teid;
-    c_uint32_t      enb_s1u_addr;
+    ip_t            enb_s1u_ip;
     c_uint32_t      sgw_s1u_teid;
     c_uint32_t      sgw_s1u_addr;
 
-    c_uint32_t      target_s1u_teid;  /* Target S1U TEID from HO-Req-Ack */
-    c_uint32_t      target_s1u_addr;  /* Target S1U ADDR from HO-Req-Ack */
+    c_uint32_t      target_s1u_teid;    /* Target S1U TEID from HO-Req-Ack */
+    ip_t            target_s1u_ip;      /* Target S1U ADDR from HO-Req-Ack */
 
     c_uint32_t      enb_dl_teid;
-    c_uint32_t      enb_dl_addr;
+    ip_t            enb_dl_ip;
     c_uint32_t      enb_ul_teid;
-    c_uint32_t      enb_ul_addr;
+    ip_t            enb_ul_ip;
 
     c_uint32_t      sgw_dl_teid;
-    c_uint32_t      sgw_dl_addr;
+    ip_t            sgw_dl_ip;
     c_uint32_t      sgw_ul_teid;
-    c_uint32_t      sgw_ul_addr;
+    ip_t            sgw_ul_ip;
 
     qos_t           qos;
     tlv_octet_t     tft;   /* Saved TFT */

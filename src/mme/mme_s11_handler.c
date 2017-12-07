@@ -401,7 +401,8 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
             d_assert(teid, return,);
 
             bearer->sgw_dl_teid = ntohl(teid->teid);
-            bearer->sgw_dl_addr = teid->addr;
+            rv = gtp_f_teid_to_ip(teid, &bearer->sgw_dl_ip);
+            d_assert(rv == CORE_OK, return,);
         }
         if (bearers[i]->s2b_u_epdg_f_teid_5.presence)
         {
@@ -409,7 +410,8 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
             d_assert(teid, return,);
 
             bearer->sgw_ul_teid = ntohl(teid->teid);
-            bearer->sgw_ul_addr = teid->addr;
+            rv = gtp_f_teid_to_ip(teid, &bearer->sgw_ul_ip);
+            d_assert(rv == CORE_OK, return,);
         }
     }
 

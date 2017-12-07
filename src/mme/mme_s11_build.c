@@ -177,6 +177,7 @@ status_t mme_s11_build_modify_bearer_request(pkbuf_t **pkbuf,
     gtp_modify_bearer_request_t *req = &gtp_message.modify_bearer_request;
 
     gtp_f_teid_t enb_s1u_teid;
+    int len;
     gtp_uli_t uli;
     char uli_buf[GTP_MAX_ULI_LEN];
 
@@ -195,14 +196,13 @@ status_t mme_s11_build_modify_bearer_request(pkbuf_t **pkbuf,
 
     /* Data Plane(DL) : ENB-S1U */
     memset(&enb_s1u_teid, 0, sizeof(gtp_f_teid_t));
-    enb_s1u_teid.ipv4 = 1;
     enb_s1u_teid.interface_type = GTP_F_TEID_S1_U_ENODEB_GTP_U;
-    enb_s1u_teid.addr = bearer->enb_s1u_addr;
     enb_s1u_teid.teid = htonl(bearer->enb_s1u_teid);
+    rv = gtp_ip_to_f_teid(&bearer->enb_s1u_ip, &enb_s1u_teid, &len);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
     req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.presence = 1;
     req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.data = &enb_s1u_teid;
-    req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.len = 
-        GTP_F_TEID_IPV4_LEN;
+    req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.len = len;
 
     if (uli_presence)
     {
@@ -284,6 +284,7 @@ status_t mme_s11_build_create_bearer_response(
 
     gtp_cause_t cause;
     gtp_f_teid_t enb_s1u_teid, sgw_s1u_teid;
+    int len;
     gtp_uli_t uli;
     char uli_buf[GTP_MAX_ULI_LEN];
 
@@ -309,13 +310,13 @@ status_t mme_s11_build_create_bearer_response(
 
     /* Data Plane(DL) : ENB-S1U */
     memset(&enb_s1u_teid, 0, sizeof(gtp_f_teid_t));
-    enb_s1u_teid.ipv4 = 1;
     enb_s1u_teid.interface_type = GTP_F_TEID_S1_U_ENODEB_GTP_U;
-    enb_s1u_teid.addr = bearer->enb_s1u_addr;
     enb_s1u_teid.teid = htonl(bearer->enb_s1u_teid);
+    rv = gtp_ip_to_f_teid(&bearer->enb_s1u_ip, &enb_s1u_teid, &len);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
     rsp->bearer_contexts.s1_u_enodeb_f_teid.presence = 1;
     rsp->bearer_contexts.s1_u_enodeb_f_teid.data = &enb_s1u_teid;
-    rsp->bearer_contexts.s1_u_enodeb_f_teid.len = GTP_F_TEID_IPV4_LEN;
+    rsp->bearer_contexts.s1_u_enodeb_f_teid.len = len;
     
     /* Data Plane(UL) : SGW-S1U */
     memset(&sgw_s1u_teid, 0, sizeof(gtp_f_teid_t));
@@ -415,6 +416,7 @@ status_t mme_s11_build_create_indirect_data_forwarding_tunnel_request(
     tlv_bearer_context_t *bearers[GTP_MAX_NUM_OF_INDIRECT_TUNNEL];
     gtp_f_teid_t dl_teid[GTP_MAX_NUM_OF_INDIRECT_TUNNEL];
     gtp_f_teid_t ul_teid[GTP_MAX_NUM_OF_INDIRECT_TUNNEL];
+    int len;
 
     d_assert(mme_ue, return CORE_ERROR, "Null param");
 
@@ -431,29 +433,29 @@ status_t mme_s11_build_create_indirect_data_forwarding_tunnel_request(
             if (MME_HAVE_ENB_DL_INDIRECT_TUNNEL(bearer))
             {
                 memset(&dl_teid[i], 0, sizeof(gtp_f_teid_t));
-                dl_teid[i].ipv4 = 1;
                 dl_teid[i].interface_type =
                     GTP_F_TEID_ENODEB_GTP_U_FOR_DL_DATA_FORWARDING;
-                dl_teid[i].addr = bearer->enb_dl_addr;
                 dl_teid[i].teid = htonl(bearer->enb_dl_teid);
+                rv = gtp_ip_to_f_teid(&bearer->enb_dl_ip, &dl_teid[i], &len);
+                d_assert(rv == CORE_OK, return CORE_ERROR,);
                 d_assert(bearers[i], return CORE_ERROR,);
                 bearers[i]->s1_u_enodeb_f_teid.presence = 1;
                 bearers[i]->s1_u_enodeb_f_teid.data = &dl_teid[i];
-                bearers[i]->s1_u_enodeb_f_teid.len = GTP_F_TEID_IPV4_LEN;
+                bearers[i]->s1_u_enodeb_f_teid.len = len;
             }
 
             if (MME_HAVE_ENB_UL_INDIRECT_TUNNEL(bearer))
             {
                 memset(&ul_teid[i], 0, sizeof(gtp_f_teid_t));
-                ul_teid[i].ipv4 = 1;
                 ul_teid[i].interface_type =
                     GTP_F_TEID_ENODEB_GTP_U_FOR_UL_DATA_FORWARDING;
-                ul_teid[i].addr = bearer->enb_ul_addr;
                 ul_teid[i].teid = htonl(bearer->enb_ul_teid);
+                rv = gtp_ip_to_f_teid(&bearer->enb_ul_ip, &ul_teid[i], &len);
+                d_assert(rv == CORE_OK, return CORE_ERROR,);
                 d_assert(bearers[i], return CORE_ERROR,);
                 bearers[i]->s12_rnc_f_teid.presence = 1;
                 bearers[i]->s12_rnc_f_teid.data = &ul_teid[i];
-                bearers[i]->s12_rnc_f_teid.len = GTP_F_TEID_IPV4_LEN;
+                bearers[i]->s12_rnc_f_teid.len = len;
             }
 
             if (MME_HAVE_ENB_DL_INDIRECT_TUNNEL(bearer) ||
