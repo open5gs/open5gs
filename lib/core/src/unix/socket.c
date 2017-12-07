@@ -90,6 +90,22 @@ status_t sock_delete(sock_id id)
     return CORE_OK;
 }
 
+status_t sock_delete_list(list_t *list)
+{
+    status_t rv;
+    sock_node_t *snode;
+
+    d_assert(list, return CORE_ERROR,);
+
+    for (snode = list_first(list); snode; snode = list_next(snode))
+    {
+        rv = sock_delete(snode->sock);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
+    }
+
+    return CORE_OK;
+}
+
 status_t sock_socket(sock_id *new, int family, int type, int protocol)
 {
     status_t rv;

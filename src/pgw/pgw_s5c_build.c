@@ -49,8 +49,10 @@ status_t pgw_s5c_build_create_session_response(
     pgw_s5c_teid.interface_type = GTP_F_TEID_S5_S8_PGW_GTP_C;
     pgw_s5c_teid.teid = htonl(sess->pgw_s5c_teid);
     rv = gtp_sockaddr_to_f_teid(
-        pgw_self()->gtpc_addr, pgw_self()->gtpc_addr6, &pgw_s5c_teid, &len);
-    d_assert(rv == CORE_OK, return CORE_ERROR, );
+        pgw_self()->gtpc_addr, pgw_self()->gtpc_addr6, &pgw_s5c_teid);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    len = gtp_f_teid_len(&pgw_s5c_teid);
+    d_assert(len > 0, return CORE_ERROR,);
     rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
         presence = 1;
     rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
@@ -94,13 +96,16 @@ status_t pgw_s5c_build_create_session_response(
 
     /* Data Plane(UL) : PGW-S5U */
     memset(&pgw_s5u_teid, 0, sizeof(gtp_f_teid_t));
-    pgw_s5u_teid.ipv4 = 1;
     pgw_s5u_teid.interface_type = GTP_F_TEID_S5_S8_PGW_GTP_U;
-    pgw_s5u_teid.ip.addr = bearer->pgw_s5u_addr;
     pgw_s5u_teid.teid = htonl(bearer->pgw_s5u_teid);
+    rv = gtp_sockaddr_to_f_teid(
+        pgw_self()->gtpu_addr, pgw_self()->gtpu_addr6, &pgw_s5u_teid);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    len = gtp_f_teid_len(&pgw_s5u_teid);
+    d_assert(len > 0, return CORE_ERROR,);
     rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.presence = 1;
     rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.data = &pgw_s5u_teid;
-    rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.len = GTP_F_TEID_IPV4_LEN;
+    rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.len = len;
 
     gtp_message.h.type = type;
     rv = gtp_build_msg(pkbuf, &gtp_message);
@@ -198,13 +203,16 @@ status_t pgw_s5c_build_create_bearer_request(
 
     /* Data Plane(UL) : PGW_S5U */
     memset(&pgw_s5u_teid, 0, sizeof(gtp_f_teid_t));
-    pgw_s5u_teid.ipv4 = 1;
     pgw_s5u_teid.interface_type = GTP_F_TEID_S5_S8_PGW_GTP_U;
-    pgw_s5u_teid.ip.addr = bearer->pgw_s5u_addr;
     pgw_s5u_teid.teid = htonl(bearer->pgw_s5u_teid);
+    rv = gtp_sockaddr_to_f_teid(
+        pgw_self()->gtpu_addr, pgw_self()->gtpu_addr6, &pgw_s5u_teid);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    len = gtp_f_teid_len(&pgw_s5u_teid);
+    d_assert(len > 0, return CORE_ERROR,);
     req->bearer_contexts.s5_s8_u_sgw_f_teid.presence = 1;
     req->bearer_contexts.s5_s8_u_sgw_f_teid.data = &pgw_s5u_teid;
-    req->bearer_contexts.s5_s8_u_sgw_f_teid.len = GTP_F_TEID_IPV4_LEN;
+    req->bearer_contexts.s5_s8_u_sgw_f_teid.len = len;
 
     /* Bearer QoS */
     memset(&bearer_qos, 0, sizeof(bearer_qos));

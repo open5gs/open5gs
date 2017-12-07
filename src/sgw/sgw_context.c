@@ -37,6 +37,8 @@ status_t sgw_context_init()
 
     list_init(&self.gtpc_list);
     list_init(&self.gtpc_list6);
+    list_init(&self.gtpu_list);
+    list_init(&self.gtpu_list6);
 
     gtp_node_init();
     list_init(&self.mme_s11_list);
@@ -79,6 +81,8 @@ status_t sgw_context_final()
 
     sock_remove_all_nodes(&self.gtpc_list);
     sock_remove_all_nodes(&self.gtpc_list6);
+    sock_remove_all_nodes(&self.gtpu_list);
+    sock_remove_all_nodes(&self.gtpu_list6);
 
     context_initialized = 0;
     
@@ -107,7 +111,8 @@ static status_t sgw_context_validation()
                 context_self()->config.path);
         return CORE_ERROR;
     }
-    if (self.gtpu_addr == 0)
+    if (list_first(&self.gtpu_list) == NULL &&
+        list_first(&self.gtpu_list6) == NULL)
     {
         d_error("No sgw.gtpu in '%s'",
                 context_self()->config.path);
@@ -151,7 +156,6 @@ status_t sgw_context_parse_config()
                     {
                         int family = AF_UNSPEC;
                         int i, num = 0;
-#define MAX_NUM_OF_HOSTNAME     16
                         const char *hostname[MAX_NUM_OF_HOSTNAME];
                         c_uint16_t port = self.gtpc_port;
                         c_sockaddr_t *list = NULL;
@@ -278,12 +282,12 @@ status_t sgw_context_parse_config()
                     yaml_iter_recurse(&sgw_iter, &gtpu_array);
                     do
                     {
-#if 0
-                        sgw_gtpu_t *gtpu = NULL;
-#endif
                         int family = AF_UNSPEC;
-                        const char *hostname = NULL;
-                        c_uint16_t port = GTPV1_U_UDP_PORT;
+                        int i, num = 0;
+                        const char *hostname[MAX_NUM_OF_HOSTNAME];
+                        c_uint16_t port = self.gtpu_port;
+                        c_sockaddr_t *list = NULL;
+                        sock_node_t *node = NULL;
 
                         if (yaml_iter_type(&gtpu_array) == YAML_MAPPING_NODE)
                         {
@@ -298,7 +302,7 @@ status_t sgw_context_parse_config()
                             yaml_iter_recurse(&gtpu_array, &gtpu_iter);
                         }
                         else if (yaml_iter_type(&gtpu_array) ==
-                                YAML_SCALAR_NODE)
+                            YAML_SCALAR_NODE)
                         {
                             break;
                         }
@@ -327,11 +331,27 @@ status_t sgw_context_parse_config()
                             else if (!strcmp(gtpu_key, "addr") ||
                                     !strcmp(gtpu_key, "name"))
                             {
-                                hostname = yaml_iter_value(&gtpu_iter);
-#if 1
-                                if (hostname)
-                                    self.gtpu_addr = inet_addr(hostname);
-#endif
+                                yaml_iter_t hostname_iter;
+                                yaml_iter_recurse(&gtpu_iter, &hostname_iter);
+                                d_assert(yaml_iter_type(&hostname_iter) !=
+                                    YAML_MAPPING_NODE, return CORE_ERROR,);
+
+                                do
+                                {
+                                    if (yaml_iter_type(&hostname_iter) ==
+                                            YAML_SEQUENCE_NODE)
+                                    {
+                                        if (!yaml_iter_next(&hostname_iter))
+                                            break;
+                                    }
+
+                                    d_assert(num <= MAX_NUM_OF_HOSTNAME,
+                                            return CORE_ERROR,);
+                                    hostname[num++] = 
+                                        yaml_iter_value(&hostname_iter);
+                                } while(
+                                    yaml_iter_type(&hostname_iter) ==
+                                        YAML_SEQUENCE_NODE);
                             }
                             else if (!strcmp(gtpu_key, "port"))
                             {
@@ -346,12 +366,43 @@ status_t sgw_context_parse_config()
                                 d_warn("unknown key `%s`", gtpu_key);
                         }
 
-#if 0
-                        gtpu = sgw_gtpu_add(family, hostname, port);
-                        d_assert(gtpu, return CORE_ERROR,);
-#endif
+                        list = NULL;
+                        for (i = 0; i < num; i++)
+                        {
+                            rv = core_addaddrinfo(&list,
+                                    family, hostname[i], port, AI_PASSIVE);
+                            d_assert(rv == CORE_OK, return CORE_ERROR,);
+                        }
+
+                        if (context_self()->parameter.no_ipv4 == 0)
+                        {
+                            rv = sock_add_node(&self.gtpu_list,
+                                    &node, list, AF_INET);
+                            d_assert(rv == CORE_OK, return CORE_ERROR,);
+                        }
+
+                        if (context_self()->parameter.no_ipv6 == 0)
+                        {
+                            rv = sock_add_node(&self.gtpu_list6,
+                                    &node, list, AF_INET6);
+                            d_assert(rv == CORE_OK, return CORE_ERROR,);
+                        }
+
+                        core_freeaddrinfo(list);
 
                     } while(yaml_iter_type(&gtpu_array) == YAML_SEQUENCE_NODE);
+
+                    if (list_first(&self.gtpu_list) == NULL &&
+                        list_first(&self.gtpu_list6) == NULL)
+                    {
+                        rv = sock_probe_node(
+                                context_self()->parameter.no_ipv4 ?
+                                    NULL : &self.gtpu_list,
+                                context_self()->parameter.no_ipv6 ?
+                                    NULL : &self.gtpu_list6,
+                                self.gtpu_port);
+                        d_assert(rv == CORE_OK, return CORE_ERROR,);
+                    }
                 }
                 else
                     d_warn("unknown key `%s`", sgw_key);
@@ -813,7 +864,6 @@ sgw_tunnel_t* sgw_tunnel_add(sgw_bearer_t *bearer, c_uint8_t interface_type)
 
     tunnel->interface_type = interface_type;
     tunnel->local_teid = tunnel->index;
-    tunnel->local_addr = sgw_self()->gtpu_addr;
 
     tunnel->bearer = bearer;
 

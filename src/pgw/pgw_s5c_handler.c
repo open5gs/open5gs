@@ -76,7 +76,6 @@ void pgw_s5c_handle_create_session_request(
     sgw_s5u_teid = req->bearer_contexts_to_be_created.s5_s8_u_sgw_f_teid.data;
     d_assert(sgw_s5u_teid, return, "Null param");
     bearer->sgw_s5u_teid = ntohl(sgw_s5u_teid->teid);
-    bearer->sgw_s5u_addr = sgw_s5u_teid->ip.addr;
     sgw = gtp_find_node(&pgw_self()->sgw_s5u_list, sgw_s5u_teid);
     if (!sgw)
     {
@@ -176,7 +175,6 @@ void pgw_s5c_handle_create_bearer_response(
     /* Data Plane(DL) : SGW-S5U */
     sgw_s5u_teid = req->bearer_contexts.s5_s8_u_sgw_f_teid.data;
     bearer->sgw_s5u_teid = ntohl(sgw_s5u_teid->teid);
-    bearer->sgw_s5u_addr = sgw_s5u_teid->ip.addr;
     sgw = gtp_find_node(&pgw_self()->sgw_s5u_list, sgw_s5u_teid);
     if (!sgw)
     {

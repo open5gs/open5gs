@@ -150,62 +150,30 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
 status_t pgw_gtp_open()
 {
     status_t rv;
-    sock_node_t *snode;
     int i;
     int rc;
 
-    for (snode = list_first(&pgw_self()->gtpc_list);
-            snode; snode = list_next(snode))
-    {
-        rv = gtp_server(snode, _gtpv2_c_recv_cb);
-        if (rv != CORE_OK)
-        {
-            d_error("Can't establish GTP-C Path for SGW");
-            return rv;
-        }
-    }
+    rv = gtp_server_list(&pgw_self()->gtpc_list, _gtpv2_c_recv_cb);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    rv = gtp_server_list(&pgw_self()->gtpc_list6, _gtpv2_c_recv_cb);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
 
-    for (snode = list_first(&pgw_self()->gtpc_list);
-            snode; snode = list_next(snode))
-    {
-        pgw_self()->gtpc_addr = sock_local_addr(snode->sock);
-        if (pgw_self()->gtpc_addr)
-        {
-            break;
-        }
-    }
-
-    for (snode = list_first(&pgw_self()->gtpc_list6);
-            snode; snode = list_next(snode))
-    {
-        rv = gtp_server(snode, _gtpv2_c_recv_cb);
-        if (rv != CORE_OK)
-        {
-            d_error("Can't establish GTP-C Path for SGW");
-            return rv;
-        }
-    }
-
-    for (snode = list_first(&pgw_self()->gtpc_list6);
-            snode; snode = list_next(snode))
-    {
-        pgw_self()->gtpc_addr6 = sock_local_addr(snode->sock);
-        if (pgw_self()->gtpc_addr6)
-        {
-            break;
-        }
-    }
+    pgw_self()->gtpc_addr = gtp_local_addr_first(&pgw_self()->gtpc_list);
+    pgw_self()->gtpc_addr6 = gtp_local_addr_first(&pgw_self()->gtpc_list6);
 
     d_assert(pgw_self()->gtpc_addr || pgw_self()->gtpc_addr6,
             return CORE_ERROR, "No GTP Server");
 
-    rv = gtp_listen(&pgw_self()->gtpu_sock, _gtpv1_u_recv_cb, 
-            pgw_self()->gtpu_addr, pgw_self()->gtpu_port, NULL);
-    if (rv != CORE_OK)
-    {
-        d_error("Can't establish GTP-U Path for PGW");
-        return rv;
-    }
+    rv = gtp_server_list(&pgw_self()->gtpu_list, _gtpv1_u_recv_cb);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    rv = gtp_server_list(&pgw_self()->gtpu_list6, _gtpv1_u_recv_cb);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    pgw_self()->gtpu_addr = gtp_local_addr_first(&pgw_self()->gtpu_list);
+    pgw_self()->gtpu_addr6 = gtp_local_addr_first(&pgw_self()->gtpu_list6);
+
+    d_assert(pgw_self()->gtpu_addr || pgw_self()->gtpu_addr6,
+            return CORE_ERROR, "No GTP Server");
 
     for (i = 0; i < pgw_self()->num_of_ue_network; i++)
     {
@@ -276,21 +244,13 @@ status_t pgw_gtp_open()
 status_t pgw_gtp_close()
 {
     int i;
-    sock_node_t *snode;
 
-    for (snode = list_first(&pgw_self()->gtpc_list);
-            snode; snode = list_next(snode))
-    {
-        sock_delete(snode->sock);
-    }
+    sock_delete_list(&pgw_self()->gtpc_list);
+    sock_delete_list(&pgw_self()->gtpc_list6);
 
-    for (snode = list_first(&pgw_self()->gtpc_list6);
-            snode; snode = list_next(snode))
-    {
-        sock_delete(snode->sock);
-    }
+    sock_delete_list(&pgw_self()->gtpu_list);
+    sock_delete_list(&pgw_self()->gtpu_list6);
 
-    sock_delete(pgw_self()->gtpu_sock);
     for (i = 0; i < pgw_self()->num_of_ue_network; i++)
     {
         sock_delete(pgw_self()->ue_network[i].tun_link);

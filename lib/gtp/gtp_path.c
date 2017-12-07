@@ -44,6 +44,39 @@ status_t gtp_client(gtp_node_t *gnode)
     return CORE_OK;
 }
 
+status_t gtp_server_list(list_t *list, sock_handler handler)
+{
+    status_t rv;
+    sock_node_t *snode = NULL;
+
+    d_assert(list, return CORE_ERROR,);
+    d_assert(handler, return CORE_ERROR,);
+
+    for (snode = list_first(list); snode; snode = list_next(snode))
+    {
+        rv = gtp_server(snode, handler);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
+    }
+
+    return CORE_OK;
+}
+
+c_sockaddr_t *gtp_local_addr_first(list_t *list)
+{
+    sock_node_t *snode = NULL;
+    c_sockaddr_t *addr = NULL;
+
+    d_assert(list, return NULL,);
+
+    for (snode = list_first(list); snode; snode = list_next(snode))
+    {
+        addr = sock_local_addr(snode->sock);
+        if (addr) return addr;
+    }
+
+    return NULL;
+}
+
 status_t gtp_listen(sock_id *sock, 
     sock_handler handler, c_uint32_t ipv4, c_uint16_t port, void *data)
 {

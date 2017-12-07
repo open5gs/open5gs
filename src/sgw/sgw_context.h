@@ -21,15 +21,17 @@ typedef struct _gtp_node_t gtp_node_t;
 
 typedef struct _sgw_context_t {
     c_uint32_t      gtpc_port;      /* Default GTPC port */
+    c_uint32_t      gtpu_port;      /* Default GTPU port */
 
     list_t          gtpc_list;      /* SGW GTPC IPv4 Server List */
     c_sockaddr_t    *gtpc_addr;     /* SGW GTPC IPv4 Address */
     list_t          gtpc_list6;     /* SGW GTPC IPv6 Server List */
     c_sockaddr_t    *gtpc_addr6;    /* SGW GTPC IPv6 Address */
 
-    c_uint32_t      gtpu_addr; /* GTP-U local address */
-    c_uint32_t      gtpu_port; /* GTP-U local port */
-    sock_id         gtpu_sock; /* GTP-U local listen socket */
+    list_t          gtpu_list;      /* SGW GTPU IPv4 Server List */
+    c_sockaddr_t    *gtpu_addr;     /* SGW GTPU IPv4 Address */
+    list_t          gtpu_list6;     /* SGW GTPU IPv6 Server List */
+    c_sockaddr_t    *gtpu_addr6;    /* SGW GTPU IPv6 Address */
 
     msgq_id         queue_id;  /* Queue for processing SGW control plane */
     tm_service_t    tm_service;/* Timer Service */
@@ -119,9 +121,7 @@ typedef struct _sgw_tunnel_t {
     c_uint8_t       interface_type;
 
     c_uint32_t      local_teid;
-    c_uint32_t      local_addr;
     c_uint32_t      remote_teid;
-    c_uint32_t      remote_addr;
 
     /* Related Context */
     sgw_bearer_t    *bearer;

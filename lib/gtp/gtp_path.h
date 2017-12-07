@@ -13,6 +13,9 @@ extern "C" {
 CORE_DECLARE(status_t) gtp_server(sock_node_t *snode, sock_handler handler);
 CORE_DECLARE(status_t) gtp_client(gtp_node_t *gnode);
 
+CORE_DECLARE(status_t) gtp_server_list(list_t *list, sock_handler handler);
+CORE_DECLARE(c_sockaddr_t *) gtp_local_addr_first(list_t *list);
+
 CORE_DECLARE(status_t) gtp_listen(sock_id *sock, 
     sock_handler handler, c_uint32_t addr, c_uint16_t port, void *data);
 CORE_DECLARE(status_t) gtp_close(sock_id sock);

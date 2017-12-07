@@ -336,7 +336,6 @@ status_t mme_context_parse_config()
                     {
                         int family = AF_UNSPEC;
                         int i, num = 0;
-#define MAX_NUM_OF_HOSTNAME     16
                         const char *hostname[MAX_NUM_OF_HOSTNAME];
                         c_uint16_t port = self.gtpc_port;
                         c_sockaddr_t *list = NULL;
@@ -885,7 +884,6 @@ status_t mme_context_parse_config()
                         c_sockaddr_t *list = NULL;
                         int family = AF_UNSPEC;
                         int i, num = 0;
-#define MAX_NUM_OF_HOSTNAME     16
                         const char *hostname[MAX_NUM_OF_HOSTNAME];
                         c_uint16_t port = self.gtpc_port;
 
@@ -1003,7 +1001,6 @@ status_t mme_context_parse_config()
                         c_sockaddr_t *list = NULL;
                         int family = AF_UNSPEC;
                         int i, num = 0;
-#define MAX_NUM_OF_HOSTNAME     16
                         const char *hostname[MAX_NUM_OF_HOSTNAME];
                         c_uint16_t port = self.gtpc_port;
 

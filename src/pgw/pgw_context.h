@@ -21,18 +21,20 @@ extern "C" {
 typedef struct _gtp_node_t gtp_node_t;
 
 typedef struct _pgw_context_t {
-    c_uint32_t      pgw_addr;  /* PGW local address */
+    c_uint32_t      pgw_addr;       /* PGW local address */
 
     c_uint32_t      gtpc_port;      /* PGW GTP-C local port */
+    c_uint32_t      gtpu_port;      /* PGW GTP-U local port */
 
     list_t          gtpc_list;      /* PGW GTPC IPv4 Server List */
     c_sockaddr_t    *gtpc_addr;     /* PGW GTPC IPv4 Address */
     list_t          gtpc_list6;     /* PGW GTPC IPv6 Server List */
     c_sockaddr_t    *gtpc_addr6;    /* PGW GTPC IPv6 Address */
 
-    c_uint32_t      gtpu_addr;  /* PGW GTP-U local address */
-    c_uint32_t      gtpu_port;  /* PGW GTP-U local port */
-    sock_id         gtpu_sock;  /* PGW GTP-U local listen socket */
+    list_t          gtpu_list;      /* PGW GTPU IPv4 Server List */
+    c_sockaddr_t    *gtpu_addr;     /* PGW GTPU IPv4 Address */
+    list_t          gtpu_list6;     /* PGW GTPU IPv6 Server List */
+    c_sockaddr_t    *gtpu_addr6;    /* PGW GTPU IPv6 Address */
 
     const char*     fd_conf_path;   /* PGW freeDiameter conf path */
 
@@ -103,13 +105,8 @@ typedef struct _pgw_bearer_t {
 
     c_uint8_t       ebi;
 
-    /* IMPORTANT! 
-     * PGW-S5U-TEID is same with an index */
-    c_uint32_t      pgw_s5u_teid;
-    c_uint32_t      pgw_s5u_addr;
-
-    c_uint32_t      sgw_s5u_teid;  
-    c_uint32_t      sgw_s5u_addr;
+    c_uint32_t      pgw_s5u_teid; /* PGW_S5U is derived from INDEX */
+    c_uint32_t      sgw_s5u_teid; /* SGW_S5U is received from SGW */
 
     /* QoS Infomration */
     qos_t           qos;

@@ -220,88 +220,39 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
 status_t sgw_gtp_open()
 {
     status_t rv;
-    sock_node_t *snode;
 
-    for (snode = list_first(&sgw_self()->gtpc_list);
-            snode; snode = list_next(snode))
-    {
-        rv = gtp_server(snode, _gtpv2_c_recv_cb);
-        if (rv != CORE_OK)
-        {
-            d_error("Can't establish GTP-C Path for SGW");
-            return rv;
-        }
-    }
+    rv = gtp_server_list(&sgw_self()->gtpc_list, _gtpv2_c_recv_cb);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    rv = gtp_server_list(&sgw_self()->gtpc_list6, _gtpv2_c_recv_cb);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
 
-    for (snode = list_first(&sgw_self()->gtpc_list);
-            snode; snode = list_next(snode))
-    {
-        sgw_self()->gtpc_addr = sock_local_addr(snode->sock);
-        if (sgw_self()->gtpc_addr)
-        {
-            break;
-        }
-    }
-
-    for (snode = list_first(&sgw_self()->gtpc_list6);
-            snode; snode = list_next(snode))
-    {
-        rv = gtp_server(snode, _gtpv2_c_recv_cb);
-        if (rv != CORE_OK)
-        {
-            d_error("Can't establish GTP-C Path for SGW");
-            return rv;
-        }
-    }
-
-    for (snode = list_first(&sgw_self()->gtpc_list6);
-            snode; snode = list_next(snode))
-    {
-        sgw_self()->gtpc_addr6 = sock_local_addr(snode->sock);
-        if (sgw_self()->gtpc_addr6)
-        {
-            break;
-        }
-    }
+    sgw_self()->gtpc_addr = gtp_local_addr_first(&sgw_self()->gtpc_list);
+    sgw_self()->gtpc_addr6 = gtp_local_addr_first(&sgw_self()->gtpc_list6);
 
     d_assert(sgw_self()->gtpc_addr || sgw_self()->gtpc_addr6,
             return CORE_ERROR, "No GTP Server");
 
-    rv = gtp_listen(&sgw_self()->gtpu_sock, _gtpv1_u_recv_cb, 
-            sgw_self()->gtpu_addr, sgw_self()->gtpu_port, NULL);
-    if (rv != CORE_OK)
-    {
-        d_error("Can't establish GTP-U Path for eNB/SGW");
-        return rv;
-    }
+    rv = gtp_server_list(&sgw_self()->gtpu_list, _gtpv1_u_recv_cb);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    rv = gtp_server_list(&sgw_self()->gtpu_list6, _gtpv1_u_recv_cb);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    sgw_self()->gtpu_addr = gtp_local_addr_first(&sgw_self()->gtpu_list);
+    sgw_self()->gtpu_addr6 = gtp_local_addr_first(&sgw_self()->gtpu_list6);
+
+    d_assert(sgw_self()->gtpu_addr || sgw_self()->gtpu_addr6,
+            return CORE_ERROR, "No GTP Server");
 
     return CORE_OK;
 }
 
 status_t sgw_gtp_close()
 {
-    status_t rv;
+    sock_delete_list(&sgw_self()->gtpc_list);
+    sock_delete_list(&sgw_self()->gtpc_list6);
 
-    sock_node_t *snode;
-
-    for (snode = list_first(&sgw_self()->gtpc_list);
-            snode; snode = list_next(snode))
-    {
-        sock_delete(snode->sock);
-    }
-
-    for (snode = list_first(&sgw_self()->gtpc_list6);
-            snode; snode = list_next(snode))
-    {
-        sock_delete(snode->sock);
-    }
-
-    rv = gtp_close(sgw_self()->gtpu_sock);
-    if (rv != CORE_OK)
-    {
-        d_error("Can't close GTP-U Path for eNB/PGW");
-        return rv;
-    }
+    sock_delete_list(&sgw_self()->gtpu_list);
+    sock_delete_list(&sgw_self()->gtpu_list6);
 
     return CORE_OK;
 }
@@ -311,7 +262,6 @@ status_t sgw_gtp_send_end_marker(sgw_bearer_t *bearer)
     status_t rv;
     pkbuf_t *pkbuf = NULL;
     gtp_header_t *h = NULL;
-    gtp_node_t gnode;
     sgw_tunnel_t *s1u_tunnel = NULL;
 
     d_assert(bearer, return CORE_ERROR,);
@@ -333,13 +283,7 @@ status_t sgw_gtp_send_end_marker(sgw_bearer_t *bearer)
     h->type = GTPU_MSGTYPE_END_MARKER;
     h->teid =  htonl(s1u_tunnel->remote_teid);
     
-    memset(&gnode, 0, sizeof(gtp_node_t));
-    gnode.old_addr.sin.sin_addr.s_addr = s1u_tunnel->remote_addr;
-    gnode.old_addr.c_sa_port = htons(GTPV1_U_UDP_PORT);
-    gnode.old_addr.c_sa_family = AF_INET;
-    gnode.sock = sgw_self()->gtpu_sock;
-
-    rv = gtp_send(&gnode, pkbuf);
+    rv = gtp_send(s1u_tunnel->gnode, pkbuf);
     d_assert(rv == CORE_OK, , "gtp send failed");
     pkbuf_free(pkbuf);
 

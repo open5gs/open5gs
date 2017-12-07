@@ -104,6 +104,7 @@ CORE_DECLARE(status_t) network_final(void);
  */
 CORE_DECLARE(status_t) sock_create(sock_id *new);
 CORE_DECLARE(status_t) sock_delete(sock_id id);
+CORE_DECLARE(status_t) sock_delete_list(list_t *list);
 
 CORE_DECLARE(status_t) sock_socket(
         sock_id *id, int family, int type, int protocol);
