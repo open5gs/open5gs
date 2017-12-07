@@ -52,7 +52,6 @@ status_t testgtpu_enb_connect(sock_id *new)
 
     d_assert(mme, return CORE_ERROR,);
     d_assert(mme->gtpc_addr, return CORE_ERROR,);
-    if (!mme) return CORE_ERROR;
 
     memcpy(&addr, mme->gtpc_addr, sizeof(c_sockaddr_t));
     addr.c_sa_port = htons(GTPV1_U_UDP_PORT);
@@ -180,6 +179,7 @@ status_t testgtpu_enb_send(sock_id sock, c_uint32_t src_ip, c_uint32_t dst_ip)
     memset(&to, 0, sizeof(c_sockaddr_t));
     to.c_sa_port = htons(GTPV1_U_UDP_PORT);
 
+#if 0
     if (bearer->sgw_s1u_ip.ipv4 && bearer->sgw_s1u_ip.ipv6)
     {
         to.c_sa_family = AF_INET6;
@@ -198,6 +198,10 @@ status_t testgtpu_enb_send(sock_id sock, c_uint32_t src_ip, c_uint32_t dst_ip)
     }
     else
         d_assert(0, return CORE_ERROR,);
+#else
+    to.c_sa_family = AF_INET;
+    to.sin.sin_addr.s_addr = bearer->sgw_s1u_ip.addr;
+#endif
 
     sent = core_sendto(sock, pkbuf->payload, pkbuf->len, 0, &to);
     pkbuf_free(pkbuf);

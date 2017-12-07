@@ -260,10 +260,12 @@ static void attach_test1(abts_case *tc, void *data)
      * We cannot check it since SGW S1U ADDR is changed
      * from configuration file
      */ 
+#if 0
     ABTS_TRUE(tc, memcmp(recvbuf->payload, 
         CORE_HEX(_initial_context_setup_request, 
             strlen(_initial_context_setup_request), tmp),
         recvbuf->len) == 0);
+#endif
     pkbuf_free(recvbuf);
 
     /* Send UE Capability Info Indication */

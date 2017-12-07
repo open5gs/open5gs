@@ -78,11 +78,11 @@ mme:
 #  o S1AP Server(all address avaiable)
 #    s1ap:
 #
-#  o Single S1AP Server(0.0.0.0:36412)
+#  o S1AP Server(0.0.0.0:36412)
 #    s1ap:
 #      addr:
 #
-#  o Multiple S1AP Server(127.0.0.1:36412, [::1]:36413)
+#  o S1AP Server(127.0.0.1:36412, [::1]:36413)
 #    s1ap:
 #      name: localhost
 #
@@ -97,14 +97,12 @@ mme:
 #
 #  o GTP-C Server(127.0.0.1:2123, [::1]:2123)
 #    gtpc:
-#      - addr: 
-#        - 127.0.0.1
-#        - ::1
+#      - addr: 127.0.0.1
+#      - addr: ::1
 #
     gtpc:
-      - addr: 
-        - 127.0.0.1
-        - ::1
+      - addr: 127.0.0.1
+      - addr: ::1
 
 #
 #  <GUMMEI>
@@ -166,25 +164,43 @@ sgw:
 #
 #  o Specify SGW addresses the GTP-C must connect to
 #
-#  o Single GTP-C Client(127.0.0.2:2123)
+#  o One SGW is defined. If prefer_ipv4 is not true, [fec0::2] is selected.
 #    gtpc:
-#      addr: 127.0.0.2
+#      addr:
+#        - 127.0.0.2
+#        - fec0::2
 #
-#  o MME selects SGW with round-robin manner per UE-basis
+#  o Two SGW are defined. MME selects SGW with round-robin manner per UE
 #    gtpc:
-#      - name: sgw1.nextepc.org
-#      - addr: 192.168.0.1
-#      - name: sgw2.nextepc.org
+#      - addr: 127.0.0.2
+#      - addr: fec0::2
+#
+#  o Three SGW are defined. MME selects SGW with round-robin manner per UE
+#    gtpc:
+#      - addr
+#        - 127.0.0.2
+#        - fec0::2
+#      - addr
+#        - 127.0.0.12
+#        - fec0::12
+#      - addr
+#        - 127.0.0.22
+#        - fec0::22
 #
 #  ------------------------ SGW --------------------------
 #
 #  o Specify local addresses the GTP-C server must bind to
 #
-#  o Single GTP-C Server(127.0.0.2:2123)
+#  o GTP-C Server(127.0.0.2:2123, [fec0::2]:2123)
 #    gtpc:
 #      addr:
 #        - 127.0.0.2
 #        - fec0::2
+#
+#  o Same configuration(127.0.0.2:2123, [fec0::2]:2123) as below.
+#    gtpc:
+#      - addr: 127.0.0.2
+#      - addr: fec0::2
 #
     gtpc:
       addr:
@@ -199,10 +215,7 @@ sgw:
 #  o GTP-U Server(all address avaiable)
 #    gtpu:
 #    
-
-#    gtpu:
     gtpu:
-      addr: 127.0.0.2
 
 pgw:
     freeDiameter: pgw.conf
@@ -212,21 +225,29 @@ pgw:
 #
 #  o Specify PGW addresses the GTP-C must connect to
 #
-#  o Only first address is attempted. Others are ignored.
+#  o Only first node is attempted. others are ignored.
 #  o if HSS provide PGW addresss(per-UE), it overwrites configuration.
 #
-#  o 127.0.0.3:2123 is attempted. [::3]:2123 is ignored.
+#  o Two PGW are defined. 127.0.0.3:2123 is attempted. [::3]:2123 is ignored.
 #    gtpc:
 #      - addr: 127.0.0.3
 #      - addr: ::3
+#
+#  o One PGW is defined. if prefer_ipv4 is not true, [fec0::3] is selected.
+#    gtpc:
+#      - addr: 
+#        - 127.0.0.3
+#        - fec0::3
 #
 #  ------------------------ PGW --------------------------
 #
 #  o Specify local addresses the GTP-C server must bind to
 #
-#  o Single GTP-C Server(127.0.0.3:2123)
+#  o GTP-C Server(127.0.0.3:2123, [fec0::3]:2123)
 #    gtpc:
-#      addr: 127.0.0.3
+#      addr:
+#        - 127.0.0.3
+#        - fec0::3
 #
     gtpc:
       addr:
@@ -238,13 +259,13 @@ pgw:
 #
 #  o Specify local addresses the GTP-U server must bind to
 #
-#  o Multiple GTP-U Server(127.0.0.3:2152, [::3]:2152)
+#  o GTP-U Server(127.0.0.3:2152, [::3]:2152)
 #    gtpu:
 #      - addr: 127.0.0.3
-#      - addr: ::3
+#      - addr: fec0::3
     gtpu:
       - addr: 127.0.0.3
-#      - addr: ::3
+      - addr: fec0::3
 
 #
 #  <UE network>
