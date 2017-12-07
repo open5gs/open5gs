@@ -24,9 +24,9 @@ typedef struct _gtp_node_t {
     lnode_t         node;           /* A node of list_t */
 
     c_sockaddr_t    *sa_list;       /* Socket Address List */
-    gtp_f_teid_t    f_teid;         /* GTP F-TEID */
 
     sock_id         sock;           /* Socket instance */
+    ip_t            ip;             /* Socket Address */
 
     list_t          local_list;    
     list_t          remote_list;   

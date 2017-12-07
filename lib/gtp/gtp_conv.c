@@ -167,3 +167,61 @@ gtp_f_teid_t *gtp_f_teid_copy(gtp_f_teid_t *dst, gtp_f_teid_t *src)
     return dst;
 }
 
+ip_t *gtp_f_teid_to_ip(ip_t *ip, gtp_f_teid_t *f_teid)
+{
+    d_assert(ip, return NULL,);
+    d_assert(f_teid, return NULL,);
+
+    memset(ip, 0, sizeof(ip_t));
+
+    ip->ipv4 = f_teid->ipv4;
+    ip->ipv6 = f_teid->ipv6;
+
+    if (ip->ipv4 && ip->ipv6)
+    {
+        ip->both.addr = f_teid->both.addr;
+        memcpy(ip->both.addr6, f_teid->both.addr6, IPV6_LEN);
+        ip->len = GTP_F_TEID_IPV4_AND_IPV6_LEN;
+    }
+    else if (ip->ipv4)
+    {
+        ip->addr = f_teid->addr;
+        ip->len = GTP_F_TEID_IPV4_LEN;
+    }
+    else if (ip->ipv6)
+    {
+        memcpy(ip->addr6, f_teid->addr6, IPV6_LEN);
+        ip->len = GTP_F_TEID_IPV6_LEN;
+    }
+    else
+        d_assert(0, return NULL,);
+
+    return ip;
+}
+
+gtp_f_teid_t *gtp_ip_to_f_teid(gtp_f_teid_t *f_teid, ip_t *ip)
+{
+    d_assert(ip, return NULL,);
+    d_assert(f_teid, return NULL,);
+
+    f_teid->ipv4 = ip->ipv4;
+    f_teid->ipv6 = ip->ipv6;
+
+    if (f_teid->ipv4 && f_teid->ipv6)
+    {
+        f_teid->both.addr = ip->both.addr;
+        memcpy(f_teid->both.addr6, ip->both.addr6, IPV6_LEN);
+    }
+    else if (f_teid->ipv4)
+    {
+        f_teid->addr = ip->addr;
+    }
+    else if (f_teid->ipv6)
+    {
+        memcpy(f_teid->addr6, ip->addr6, IPV6_LEN);
+    }
+    else
+        d_assert(0, return NULL,);
+
+    return f_teid;
+}

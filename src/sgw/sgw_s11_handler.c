@@ -438,11 +438,11 @@ void sgw_s11_handle_create_bearer_response(gtp_xact_t *s11_xact,
 
     /* Data Plane(DL) : PGW-S5U */
     d_assert(s5u_tunnel->gnode, return,);
-    len = gtp_f_teid_len(&s5u_tunnel->gnode->f_teid);
-    d_assert(len > 0, return,);
-    d_assert(gtp_f_teid_copy(&pgw_s5u_teid, &s5u_tunnel->gnode->f_teid), return,);
     pgw_s5u_teid.interface_type = GTP_F_TEID_S5_S8_PGW_GTP_U;
     pgw_s5u_teid.teid = htonl(s5u_tunnel->remote_teid);
+    d_assert(gtp_ip_to_f_teid(&pgw_s5u_teid, &s5u_tunnel->gnode->ip), return,);
+    len = gtp_f_teid_len(&pgw_s5u_teid);
+    d_assert(len > 0, return,);
     req->bearer_contexts.s5_s8_u_pgw_f_teid.presence = 1;
     req->bearer_contexts.s5_s8_u_pgw_f_teid.data = &pgw_s5u_teid;
     req->bearer_contexts.s5_s8_u_pgw_f_teid.len = len;

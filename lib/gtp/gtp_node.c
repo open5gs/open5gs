@@ -119,20 +119,17 @@ status_t gtp_remove_all_nodes(list_t *list)
 gtp_node_t* gtp_find_node(list_t *list, gtp_f_teid_t *f_teid)
 {
     gtp_node_t *node = NULL;
-    gtp_f_teid_t ip;
-    int len;
+    ip_t ip;
 
     d_assert(list, return NULL,);
     d_assert(f_teid, return NULL,);
 
-    len = gtp_f_teid_len(f_teid);
-    d_assert(len > 0, return NULL,); 
-    d_assert(gtp_f_teid_copy(&ip, f_teid), return NULL,);
+    d_assert(gtp_f_teid_to_ip(&ip, f_teid), return NULL,);
 
     node = list_first(list);
     while (node)
     {
-        if (memcmp(&node->f_teid, &ip, len) == 0)
+        if (memcmp(&node->ip, &ip, ip.len) == 0)
             break;
 
         node = list_next(node);
@@ -159,7 +156,7 @@ gtp_node_t *gtp_connect_node(list_t *list, gtp_f_teid_t *f_teid,
     d_assert(rv == CORE_OK, return NULL,);
     d_assert(node, return NULL,);
 
-    d_assert(gtp_f_teid_copy(&node->f_teid, f_teid), return NULL,);
+    d_assert(gtp_f_teid_to_ip(&node->ip, f_teid), return NULL,);
 
     core_freeaddrinfo(sa_list);
 

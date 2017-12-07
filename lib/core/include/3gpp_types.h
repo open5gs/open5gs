@@ -96,9 +96,6 @@ typedef struct _guti_t {
  * S1AP : 9.2.2.1 Transport Layer Address, See 36.414
  * GTP : 8.22 Fully Qualified TEID (F-TEID) */
 typedef struct _ip_t {
-ED3(c_uint8_t       ipv4:1;,
-    c_uint8_t       ipv6:1;,
-    c_uint8_t       reserved:6;)
     union {
         c_uint32_t addr;
         c_uint8_t addr6[IPV6_LEN];
@@ -107,6 +104,10 @@ ED3(c_uint8_t       ipv4:1;,
             c_uint8_t addr6[IPV6_LEN];
         } both;
     };
+    c_uint32_t      len;
+ED3(c_uint8_t       ipv4:1;,
+    c_uint8_t       ipv6:1;,
+    c_uint8_t       reserved:6;)
 } ip_t;
 
 /**************************************************

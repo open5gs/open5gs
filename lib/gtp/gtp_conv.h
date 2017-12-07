@@ -8,6 +8,7 @@ typedef struct _gtp_create_indirect_data_forwarding_tunnel_request_t gtp_create_
 typedef struct _gtp_create_indirect_data_forwarding_tunnel_response_t gtp_create_indirect_data_forwarding_tunnel_response_t;
 typedef struct c_sockaddr_t c_sockaddr_t;
 typedef struct _gtp_f_teid_t gtp_f_teid_t;
+typedef struct _ip_t ip_t;
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,8 +29,8 @@ CORE_DECLARE(status_t) gtp_f_teid_to_sockaddr(
 CORE_DECLARE(status_t) gtp_sockaddr_to_f_teid(
     c_sockaddr_t *addr, c_sockaddr_t *addr6, gtp_f_teid_t *f_teid);
 CORE_DECLARE(int) gtp_f_teid_len(gtp_f_teid_t *f_teid);
-CORE_DECLARE(gtp_f_teid_t *) gtp_f_teid_copy(
-        gtp_f_teid_t *dst, gtp_f_teid_t *src);
+CORE_DECLARE(ip_t *) gtp_f_teid_to_ip(ip_t *ip, gtp_f_teid_t *f_teid);
+CORE_DECLARE(gtp_f_teid_t *) gtp_ip_to_f_teid(gtp_f_teid_t *f_teid, ip_t *ip);
 
 #ifdef __cplusplus
 }
