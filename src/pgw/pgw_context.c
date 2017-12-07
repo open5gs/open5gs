@@ -804,7 +804,6 @@ pgw_sess_t* pgw_sess_find_by_imsi_apn(
 
 gtp_node_t *pgw_sgw_add_by_message(gtp_message_t *message)
 {
-    status_t rv;
     gtp_node_t *sgw = NULL;
     gtp_f_teid_t *sgw_s5c_teid = NULL;
 
@@ -821,15 +820,12 @@ gtp_node_t *pgw_sgw_add_by_message(gtp_message_t *message)
     sgw = gtp_find_node(&pgw_self()->sgw_s5c_list, sgw_s5c_teid);
     if (!sgw)
     {
-        sgw = gtp_connect_node(&pgw_self()->sgw_s5c_list, sgw_s5c_teid,
+        sgw = gtp_connect_to_node(&pgw_self()->sgw_s5c_list, sgw_s5c_teid,
             pgw_self()->gtpc_port,
             context_self()->parameter.no_ipv4,
             context_self()->parameter.no_ipv6,
             context_self()->parameter.prefer_ipv4);
         d_assert(sgw, return NULL,);
-
-        rv = gtp_client(sgw);
-        d_assert(rv == CORE_OK, return NULL,);
     }
 
     return sgw;

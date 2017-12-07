@@ -35,7 +35,6 @@ extern "C" {
 #define MAX_NUM_OF_PACKET_FILTER    16  /* Num of Packet Filter per Bearer */
 
 #define MAX_SDU_LEN             2048
-#define IPV6_LEN                16
 #define PLMN_ID_LEN             3
 
 #define BCD_TO_BUFFER_LEN(x)    (((x)+1)/2)
@@ -95,6 +94,9 @@ typedef struct _guti_t {
  * Common Structure
  * S1AP : 9.2.2.1 Transport Layer Address, See 36.414
  * GTP : 8.22 Fully Qualified TEID (F-TEID) */
+#define IPV4_LEN                4
+#define IPV6_LEN                16
+#define IPV4V6_LEN              20
 typedef struct _ip_t {
     union {
         c_uint32_t addr;

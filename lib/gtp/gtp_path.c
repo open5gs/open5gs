@@ -5,6 +5,7 @@
 
 #include "3gpp_types.h"
 #include "gtp_message.h"
+#include "gtp_conv.h"
 #include "gtp_node.h"
 
 #include "gtp_path.h"
@@ -44,6 +45,36 @@ status_t gtp_client(gtp_node_t *gnode)
     return CORE_OK;
 }
 
+gtp_node_t *gtp_connect_to_node(list_t *list, gtp_f_teid_t *f_teid,
+        c_uint16_t port, int no_ipv4, int no_ipv6, int prefer_ipv4)
+{
+    status_t rv;
+    gtp_node_t *node = NULL;
+    c_sockaddr_t *sa_list = NULL;
+
+    d_assert(list, return NULL,);
+    d_assert(f_teid, return NULL,);
+    d_assert(port, return NULL,);
+
+    rv = gtp_f_teid_to_sockaddr(f_teid, port, &sa_list);
+    d_assert(rv == CORE_OK, return NULL,);
+
+    rv = gtp_add_node(list, &node, sa_list, no_ipv4, no_ipv6, prefer_ipv4);
+    d_assert(rv == CORE_OK, return NULL,);
+    d_assert(node, return NULL,);
+
+    rv = gtp_f_teid_to_ip(f_teid, &node->ip);
+    d_assert(rv == CORE_OK, return NULL,);
+
+    rv = gtp_client(node);
+    d_assert(rv == CORE_OK, return NULL,);
+
+    core_freeaddrinfo(sa_list);
+
+    return node;
+}
+
+
 status_t gtp_server_list(list_t *list, sock_handler handler)
 {
     status_t rv;
@@ -75,41 +106,6 @@ c_sockaddr_t *gtp_local_addr_first(list_t *list)
     }
 
     return NULL;
-}
-
-status_t gtp_listen(sock_id *sock, 
-    sock_handler handler, c_uint32_t ipv4, c_uint16_t port, void *data)
-{
-    char buf[CORE_ADDRSTRLEN];
-    status_t rv;
-    c_sockaddr_t addr;
-
-    memset(&addr, 0, sizeof(c_sockaddr_t));
-    addr.sin.sin_addr.s_addr = ipv4;
-    addr.c_sa_family = AF_INET;
-    addr.c_sa_port = htons(port);
-
-    rv = udp_socket(sock, AF_INET);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
-
-    rv = sock_bind(*sock, &addr);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
-
-    rv = sock_register(*sock, handler, NULL);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
-
-    d_trace(1, "gtp_listen() %s:%d\n", CORE_ADDR(&addr, buf), CORE_PORT(&addr));
-
-    return CORE_OK;
-}
-
-status_t gtp_close(sock_id sock)
-{
-    d_assert(sock, return CORE_ERROR,);
-
-    sock_delete(sock);
-
-    return CORE_OK;
 }
 
 status_t gtp_recv(sock_id sock, pkbuf_t **pkbuf)

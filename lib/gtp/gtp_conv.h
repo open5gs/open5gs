@@ -27,10 +27,10 @@ CORE_DECLARE(void) gtp_bearers_in_create_indirect_tunnel_response(
 CORE_DECLARE(status_t) gtp_f_teid_to_sockaddr(
     gtp_f_teid_t *f_teid, c_uint16_t port, c_sockaddr_t **list);
 CORE_DECLARE(status_t) gtp_sockaddr_to_f_teid(
-    c_sockaddr_t *addr, c_sockaddr_t *addr6, gtp_f_teid_t *f_teid);
-CORE_DECLARE(int) gtp_f_teid_len(gtp_f_teid_t *f_teid);
-CORE_DECLARE(ip_t *) gtp_f_teid_to_ip(ip_t *ip, gtp_f_teid_t *f_teid);
-CORE_DECLARE(gtp_f_teid_t *) gtp_ip_to_f_teid(gtp_f_teid_t *f_teid, ip_t *ip);
+    c_sockaddr_t *addr, c_sockaddr_t *addr6, gtp_f_teid_t *f_teid, int *len);
+CORE_DECLARE(status_t) gtp_f_teid_to_ip(gtp_f_teid_t *f_teid, ip_t *ip);
+CORE_DECLARE(status_t) gtp_ip_to_f_teid(
+        ip_t *ip, gtp_f_teid_t *f_teid, int *len);
 
 #ifdef __cplusplus
 }

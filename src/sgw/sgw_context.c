@@ -458,7 +458,6 @@ status_t sgw_context_setup_trace_module()
 
 gtp_node_t *sgw_mme_add_by_message(gtp_message_t *message)
 {
-    status_t rv;
     gtp_node_t *mme = NULL;
     gtp_f_teid_t *mme_s11_teid = NULL;
     gtp_create_session_request_t *req = &message->create_session_request;
@@ -474,15 +473,12 @@ gtp_node_t *sgw_mme_add_by_message(gtp_message_t *message)
     mme = gtp_find_node(&sgw_self()->mme_s11_list, mme_s11_teid);
     if (!mme)
     {
-        mme = gtp_connect_node(&sgw_self()->mme_s11_list, mme_s11_teid,
+        mme = gtp_connect_to_node(&sgw_self()->mme_s11_list, mme_s11_teid,
             sgw_self()->gtpc_port,
             context_self()->parameter.no_ipv4,
             context_self()->parameter.no_ipv6,
             context_self()->parameter.prefer_ipv4);
         d_assert(mme, return NULL,);
-
-        rv = gtp_client(mme);
-        d_assert(rv == CORE_OK, return NULL,);
     }
 
     return mme;

@@ -94,7 +94,7 @@ status_t gtp_f_teid_to_sockaddr(
 }
 
 status_t gtp_sockaddr_to_f_teid(
-    c_sockaddr_t *addr, c_sockaddr_t *addr6, gtp_f_teid_t *f_teid)
+    c_sockaddr_t *addr, c_sockaddr_t *addr6, gtp_f_teid_t *f_teid, int *len)
 {
     d_assert(f_teid, return CORE_ERROR,);
 
@@ -104,16 +104,19 @@ status_t gtp_sockaddr_to_f_teid(
         f_teid->both.addr = addr->sin.sin_addr.s_addr;
         f_teid->ipv6 = 1;
         memcpy(f_teid->both.addr6, addr6->sin6.sin6_addr.s6_addr, IPV6_LEN);
+        *len = GTP_F_TEID_IPV4V6_LEN;
     }
     else if (addr)
     {
         f_teid->ipv4 = 1;
         f_teid->addr = addr->sin.sin_addr.s_addr;
+        *len = GTP_F_TEID_IPV4_LEN;
     }
     else if (addr6)
     {
         f_teid->ipv6 = 1;
         memcpy(f_teid->addr6, addr6->sin6.sin6_addr.s6_addr, IPV6_LEN);
+        *len = GTP_F_TEID_IPV6_LEN;
     }
     else
         d_assert(0, return CORE_ERROR,);
@@ -121,56 +124,10 @@ status_t gtp_sockaddr_to_f_teid(
     return CORE_OK;
 }
 
-int gtp_f_teid_len(gtp_f_teid_t *f_teid)
+status_t gtp_f_teid_to_ip(gtp_f_teid_t *f_teid, ip_t *ip)
 {
-    int len = 0;
-
-    if (f_teid->ipv4 && f_teid->ipv6)
-        len = GTP_F_TEID_IPV4_AND_IPV6_LEN;
-    else if (f_teid->ipv4)
-        len = GTP_F_TEID_IPV4_LEN;
-    else if (f_teid->ipv6)
-        len = GTP_F_TEID_IPV6_LEN;
-    else
-        d_assert(0, return 0,);
-
-    return len;
-}
-
-gtp_f_teid_t *gtp_f_teid_copy(gtp_f_teid_t *dst, gtp_f_teid_t *src)
-{
-    d_assert(src, return NULL,);
-    d_assert(dst, return NULL,);
-
-    memset(dst, 0, sizeof(gtp_f_teid_t));
-    dst->ipv4 = src->ipv4;
-    dst->ipv6 = src->ipv6;
-    dst->interface_type = 0;
-    dst->teid = 0;
-
-    if (dst->ipv4 && dst->ipv6)
-    {
-        dst->both.addr = src->both.addr;
-        memcpy(dst->both.addr6, src->both.addr6, IPV6_LEN);
-    }
-    else if (dst->ipv4)
-    {
-        dst->addr = src->addr;
-    }
-    else if (dst->ipv6)
-    {
-        memcpy(dst->addr6, src->addr6, IPV6_LEN);
-    }
-    else
-        d_assert(0, return NULL,);
-
-    return dst;
-}
-
-ip_t *gtp_f_teid_to_ip(ip_t *ip, gtp_f_teid_t *f_teid)
-{
-    d_assert(ip, return NULL,);
-    d_assert(f_teid, return NULL,);
+    d_assert(ip, return CORE_ERROR,);
+    d_assert(f_teid, return CORE_ERROR,);
 
     memset(ip, 0, sizeof(ip_t));
 
@@ -181,28 +138,28 @@ ip_t *gtp_f_teid_to_ip(ip_t *ip, gtp_f_teid_t *f_teid)
     {
         ip->both.addr = f_teid->both.addr;
         memcpy(ip->both.addr6, f_teid->both.addr6, IPV6_LEN);
-        ip->len = GTP_F_TEID_IPV4_AND_IPV6_LEN;
+        ip->len = IPV4V6_LEN;
     }
     else if (ip->ipv4)
     {
         ip->addr = f_teid->addr;
-        ip->len = GTP_F_TEID_IPV4_LEN;
+        ip->len = IPV4_LEN;
     }
     else if (ip->ipv6)
     {
         memcpy(ip->addr6, f_teid->addr6, IPV6_LEN);
-        ip->len = GTP_F_TEID_IPV6_LEN;
+        ip->len = IPV6_LEN;
     }
     else
-        d_assert(0, return NULL,);
+        d_assert(0, return CORE_ERROR,);
 
-    return ip;
+    return CORE_OK;
 }
 
-gtp_f_teid_t *gtp_ip_to_f_teid(gtp_f_teid_t *f_teid, ip_t *ip)
+status_t gtp_ip_to_f_teid(ip_t *ip, gtp_f_teid_t *f_teid, int *len)
 {
-    d_assert(ip, return NULL,);
-    d_assert(f_teid, return NULL,);
+    d_assert(ip, return CORE_ERROR,);
+    d_assert(f_teid, return CORE_ERROR,);
 
     f_teid->ipv4 = ip->ipv4;
     f_teid->ipv6 = ip->ipv6;
@@ -211,17 +168,20 @@ gtp_f_teid_t *gtp_ip_to_f_teid(gtp_f_teid_t *f_teid, ip_t *ip)
     {
         f_teid->both.addr = ip->both.addr;
         memcpy(f_teid->both.addr6, ip->both.addr6, IPV6_LEN);
+        *len = GTP_F_TEID_IPV4V6_LEN;
     }
     else if (f_teid->ipv4)
     {
         f_teid->addr = ip->addr;
+        *len = GTP_F_TEID_IPV4_LEN;
     }
     else if (f_teid->ipv6)
     {
         memcpy(f_teid->addr6, ip->addr6, IPV6_LEN);
+        *len = GTP_F_TEID_IPV6_LEN;
     }
     else
-        d_assert(0, return NULL,);
+        d_assert(0, return CORE_ERROR,);
 
-    return f_teid;
+    return CORE_OK;
 }

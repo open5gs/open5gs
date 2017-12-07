@@ -100,10 +100,8 @@ void sgw_s11_handle_create_session_request(
     sgw_s5c_teid.interface_type = GTP_F_TEID_S5_S8_SGW_GTP_C;
     sgw_s5c_teid.teid = htonl(sess->sgw_s5c_teid);
     rv = gtp_sockaddr_to_f_teid(
-        sgw_self()->gtpc_addr, sgw_self()->gtpc_addr6, &sgw_s5c_teid);
+        sgw_self()->gtpc_addr, sgw_self()->gtpc_addr6, &sgw_s5c_teid, &len);
     d_assert(rv == CORE_OK, return,);
-    len = gtp_f_teid_len(&sgw_s5c_teid);
-    d_assert(len > 0, return,);
     req->sender_f_teid_for_control_plane.presence = 1;
     req->sender_f_teid_for_control_plane.data = &sgw_s5c_teid;
     req->sender_f_teid_for_control_plane.len = len;
@@ -114,15 +112,12 @@ void sgw_s11_handle_create_session_request(
     pgw = gtp_find_node(&sgw_self()->pgw_s5c_list, pgw_s5c_teid);
     if (!pgw)
     {
-        pgw = gtp_connect_node(&sgw_self()->pgw_s5c_list, pgw_s5c_teid,
+        pgw = gtp_connect_to_node(&sgw_self()->pgw_s5c_list, pgw_s5c_teid,
             sgw_self()->gtpc_port,
             context_self()->parameter.no_ipv4,
             context_self()->parameter.no_ipv6,
             context_self()->parameter.prefer_ipv4);
         d_assert(pgw, return,);
-
-        rv = gtp_client(pgw);
-        d_assert(rv == CORE_OK, return,);
     }
     /* Setup GTP Node */
     SETUP_GTP_NODE(sess, pgw);
@@ -135,10 +130,8 @@ void sgw_s11_handle_create_session_request(
     sgw_s5u_teid.teid = htonl(s5u_tunnel->local_teid);
     sgw_s5u_teid.interface_type = GTP_F_TEID_S5_S8_SGW_GTP_U;
     rv = gtp_sockaddr_to_f_teid(
-        sgw_self()->gtpu_addr,  sgw_self()->gtpu_addr6, &sgw_s5u_teid);
+        sgw_self()->gtpu_addr,  sgw_self()->gtpu_addr6, &sgw_s5u_teid, &len);
     d_assert(rv == CORE_OK, return,);
-    len = gtp_f_teid_len(&sgw_s5u_teid);
-    d_assert(len > 0, return,);
     req->bearer_contexts_to_be_created.s5_s8_u_sgw_f_teid.presence = 1;
     req->bearer_contexts_to_be_created.s5_s8_u_sgw_f_teid.data = &sgw_s5u_teid;
     req->bearer_contexts_to_be_created.s5_s8_u_sgw_f_teid.len = len;
@@ -235,15 +228,12 @@ CORE_DECLARE(void) sgw_s11_handle_modify_bearer_request(gtp_xact_t *s11_xact,
     enb = gtp_find_node(&sgw_self()->enb_s1u_list, enb_s1u_teid);
     if (!enb)
     {
-        enb = gtp_connect_node(&sgw_self()->enb_s1u_list, enb_s1u_teid,
+        enb = gtp_connect_to_node(&sgw_self()->enb_s1u_list, enb_s1u_teid,
             sgw_self()->gtpu_port,
             context_self()->parameter.no_ipv4,
             context_self()->parameter.no_ipv6,
             context_self()->parameter.prefer_ipv4);
         d_assert(enb, return,);
-
-        rv = gtp_client(enb);
-        d_assert(rv == CORE_OK, return,);
     }
     /* Setup GTP Node */
     SETUP_GTP_NODE(s1u_tunnel, enb);
@@ -397,15 +387,12 @@ void sgw_s11_handle_create_bearer_response(gtp_xact_t *s11_xact,
     enb = gtp_find_node(&sgw_self()->enb_s1u_list, enb_s1u_teid);
     if (!enb)
     {
-        enb = gtp_connect_node(&sgw_self()->enb_s1u_list, enb_s1u_teid,
+        enb = gtp_connect_to_node(&sgw_self()->enb_s1u_list, enb_s1u_teid,
             sgw_self()->gtpu_port,
             context_self()->parameter.no_ipv4,
             context_self()->parameter.no_ipv6,
             context_self()->parameter.prefer_ipv4);
         d_assert(enb, return,);
-
-        rv = gtp_client(enb);
-        d_assert(rv == CORE_OK, return,);
     }
     /* Setup GTP Node */
     SETUP_GTP_NODE(s1u_tunnel, enb);
@@ -428,10 +415,8 @@ void sgw_s11_handle_create_bearer_response(gtp_xact_t *s11_xact,
     sgw_s5u_teid.interface_type = GTP_F_TEID_S5_S8_SGW_GTP_U;
     sgw_s5u_teid.teid = htonl(s5u_tunnel->local_teid);
     rv = gtp_sockaddr_to_f_teid(
-        sgw_self()->gtpu_addr,  sgw_self()->gtpu_addr6, &sgw_s5u_teid);
+        sgw_self()->gtpu_addr,  sgw_self()->gtpu_addr6, &sgw_s5u_teid, &len);
     d_assert(rv == CORE_OK, return,);
-    len = gtp_f_teid_len(&sgw_s5u_teid);
-    d_assert(len > 0, return,);
     req->bearer_contexts.s5_s8_u_sgw_f_teid.presence = 1;
     req->bearer_contexts.s5_s8_u_sgw_f_teid.data = &sgw_s5u_teid;
     req->bearer_contexts.s5_s8_u_sgw_f_teid.len = len;
@@ -440,9 +425,7 @@ void sgw_s11_handle_create_bearer_response(gtp_xact_t *s11_xact,
     d_assert(s5u_tunnel->gnode, return,);
     pgw_s5u_teid.interface_type = GTP_F_TEID_S5_S8_PGW_GTP_U;
     pgw_s5u_teid.teid = htonl(s5u_tunnel->remote_teid);
-    d_assert(gtp_ip_to_f_teid(&pgw_s5u_teid, &s5u_tunnel->gnode->ip), return,);
-    len = gtp_f_teid_len(&pgw_s5u_teid);
-    d_assert(len > 0, return,);
+    rv = gtp_ip_to_f_teid(&s5u_tunnel->gnode->ip, &pgw_s5u_teid, &len);
     req->bearer_contexts.s5_s8_u_pgw_f_teid.presence = 1;
     req->bearer_contexts.s5_s8_u_pgw_f_teid.data = &pgw_s5u_teid;
     req->bearer_contexts.s5_s8_u_pgw_f_teid.len = len;
@@ -646,15 +629,12 @@ void sgw_s11_handle_create_indirect_data_forwarding_tunnel_request(
             enb = gtp_find_node(&sgw_self()->enb_s1u_list, req_teid);
             if (!enb)
             {
-                enb = gtp_connect_node(&sgw_self()->enb_s1u_list, req_teid,
+                enb = gtp_connect_to_node(&sgw_self()->enb_s1u_list, req_teid,
                     sgw_self()->gtpu_port,
                     context_self()->parameter.no_ipv4,
                     context_self()->parameter.no_ipv6,
                     context_self()->parameter.prefer_ipv4);
                 d_assert(enb, return,);
-
-                rv = gtp_client(enb);
-                d_assert(rv == CORE_OK, return,);
             }
             /* Setup GTP Node */
             SETUP_GTP_NODE(tunnel, enb);
@@ -662,10 +642,8 @@ void sgw_s11_handle_create_indirect_data_forwarding_tunnel_request(
             memset(&rsp_dl_teid[i], 0, sizeof(gtp_f_teid_t));
             rsp_dl_teid[i].interface_type = tunnel->interface_type;
             rsp_dl_teid[i].teid = htonl(tunnel->local_teid);
-            rv = gtp_sockaddr_to_f_teid(
-                sgw_self()->gtpu_addr, sgw_self()->gtpu_addr6, &rsp_dl_teid[i]);
-            d_assert(rv == CORE_OK, return,);
-            len = gtp_f_teid_len(&rsp_dl_teid[i]);
+            rv = gtp_sockaddr_to_f_teid(sgw_self()->gtpu_addr,
+                    sgw_self()->gtpu_addr6, &rsp_dl_teid[i], &len);
             d_assert(len > 0, return,);
             rsp_bearers[i]->s4_u_sgsn_f_teid.presence = 1;
             rsp_bearers[i]->s4_u_sgsn_f_teid.data = &rsp_dl_teid[i];
@@ -685,15 +663,12 @@ void sgw_s11_handle_create_indirect_data_forwarding_tunnel_request(
             enb = gtp_find_node(&sgw_self()->enb_s1u_list, req_teid);
             if (!enb)
             {
-                enb = gtp_connect_node(&sgw_self()->enb_s1u_list, req_teid,
+                enb = gtp_connect_to_node(&sgw_self()->enb_s1u_list, req_teid,
                     sgw_self()->gtpu_port,
                     context_self()->parameter.no_ipv4,
                     context_self()->parameter.no_ipv6,
                     context_self()->parameter.prefer_ipv4);
                 d_assert(enb, return,);
-
-                rv = gtp_client(enb);
-                d_assert(rv == CORE_OK, return,);
             }
             /* Setup GTP Node */
             SETUP_GTP_NODE(tunnel, enb);
@@ -701,11 +676,9 @@ void sgw_s11_handle_create_indirect_data_forwarding_tunnel_request(
             memset(&rsp_ul_teid[i], 0, sizeof(gtp_f_teid_t));
             rsp_ul_teid[i].teid = htonl(tunnel->local_teid);
             rsp_ul_teid[i].interface_type = tunnel->interface_type;
-            rv = gtp_sockaddr_to_f_teid(
-                sgw_self()->gtpu_addr, sgw_self()->gtpu_addr6, &rsp_ul_teid[i]);
+            rv = gtp_sockaddr_to_f_teid(sgw_self()->gtpu_addr,
+                    sgw_self()->gtpu_addr6, &rsp_ul_teid[i], &len);
             d_assert(rv == CORE_OK, return,);
-            len = gtp_f_teid_len(&rsp_ul_teid[i]);
-            d_assert(len > 0, return,);
             rsp_bearers[i]->s2b_u_epdg_f_teid_5.presence = 1;
             rsp_bearers[i]->s2b_u_epdg_f_teid_5.data = &rsp_ul_teid[i];
             rsp_bearers[i]->s2b_u_epdg_f_teid_5.len = len;
