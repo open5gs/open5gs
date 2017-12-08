@@ -66,6 +66,9 @@ gtp_node_t *gtp_connect_to_node(list_t *list, gtp_f_teid_t *f_teid,
     rv = gtp_f_teid_to_ip(f_teid, &node->ip);
     d_assert(rv == CORE_OK, return NULL,);
 
+    rv = sock_fill_scope_id_in_local(node->sa_list);
+    d_assert(rv == CORE_OK, return NULL,);
+
     rv = gtp_client(node);
     d_assert(rv == CORE_OK, return NULL,);
 
@@ -73,7 +76,6 @@ gtp_node_t *gtp_connect_to_node(list_t *list, gtp_f_teid_t *f_teid,
 
     return node;
 }
-
 
 status_t gtp_server_list(list_t *list, sock_handler handler)
 {

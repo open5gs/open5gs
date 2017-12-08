@@ -162,46 +162,46 @@ sgw:
 #
 #  o Specify SGW addresses the GTP-C must connect to
 #
-#  o One SGW is defined. If prefer_ipv4 is not true, [fec0::2] is selected.
+#  o One SGW is defined. If prefer_ipv4 is not true, [fe80::2%@LO_DEV@] is selected.
 #    gtpc:
 #      addr:
 #        - 127.0.0.2
-#        - fec0::2
+#        - fe80::2%@LO_DEV@
 #
 #  o Two SGW are defined. MME selects SGW with round-robin manner per UE
 #    gtpc:
 #      - addr: 127.0.0.2
-#      - addr: fec0::2
+#      - addr: fe80::2%@LO_DEV@
 #
 #  o Three SGW are defined. MME selects SGW with round-robin manner per UE
 #    gtpc:
 #      - addr
 #        - 127.0.0.2
-#        - fec0::2
+#        - fe80::2%@LO_DEV@
 #      - addr
 #        - 127.0.0.12
-#        - fec0::12
+#        - fec0::12%@LO_DEV@
 #      - name: sgw3.nextepc.org
 #
 #  ------------------------ SGW --------------------------
 #
 #  o Specify local addresses the GTP-C server must bind to
 #
-#  o GTP-C Server(127.0.0.2:2123, [fec0::2]:2123)
+#  o GTP-C Server(127.0.0.2:2123, [fe80::2%@LO_DEV@]:2123)
 #    gtpc:
 #      addr:
 #        - 127.0.0.2
-#        - fec0::2
+#        - fe80::2%@LO_DEV@
 #
-#  o Same configuration(127.0.0.2:2123, [fec0::2]:2123) as below.
+#  o Same configuration(127.0.0.2:2123, [fe80::2%@LO_DEV@]:2123) as below.
 #    gtpc:
 #      - addr: 127.0.0.2
-#      - addr: fec0::2
+#      - addr: fe80::2%@LO_DEV@
 #
     gtpc:
       addr:
         - 127.0.0.2
-        - fec0::2
+        - fe80::2%@LO_DEV@
 
 #
 #  <GTP-U Server>>
@@ -224,31 +224,31 @@ pgw:
 #  o Only first node is attempted. others are ignored.
 #  o if HSS provide PGW addresss(per-UE), it overwrites configuration.
 #
-#  o Two PGW are defined. 127.0.0.3:2123 is attempted. [::3]:2123 is ignored.
+#  o Two PGW are defined. 127.0.0.3:2123 is attempted. [fe80::3%@LO_DEV@]:2123 is ignored.
 #    gtpc:
 #      - addr: 127.0.0.3
-#      - addr: ::3
+#      - addr: fe80::3%@LO_DEV@
 #
-#  o One PGW is defined. if prefer_ipv4 is not true, [fec0::2] is selected.
+#  o One PGW is defined. if prefer_ipv4 is not true, [fe80::2%@LO_DEV@] is selected.
 #    gtpc:
 #      - addr: 
 #        - 127.0.0.3
-#        - fec0::3
+#        - fe80::3%@LO_DEV@
 #
 #  ------------------------ PGW --------------------------
 #
 #  o Specify local addresses the GTP-C server must bind to
 #
-#  o GTP-C Server(127.0.0.3:2123, [fec0::3]:2123)
+#  o GTP-C Server(127.0.0.3:2123, [fe80::3%@LO_DEV@]:2123)
 #    gtpc:
 #      addr:
 #        - 127.0.0.3
-#        - fec0::3
+#        - fe80::3%@LO_DEV@
 #
     gtpc:
       addr:
         - 127.0.0.3
-        - fec0::3
+        - fe80::3%@LO_DEV@
 
 #
 #  <GTP-U Server>>
@@ -258,10 +258,10 @@ pgw:
 #  o GTP-U Server(127.0.0.3:2152, [::3]:2152)
 #    gtpu:
 #      - addr: 127.0.0.3
-#      - addr: fec0::3
+#      - addr: fe80::3%@LO_DEV@
     gtpu:
       - addr: 127.0.0.3
-      - addr: fec0::3
+      - addr: fe80::3%@LO_DEV@
 
 #
 #  <UE network>

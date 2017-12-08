@@ -459,6 +459,61 @@ status_t sock_probe_node(list_t *list, list_t *list6, c_uint16_t port)
     return CORE_OK;
 }
 
+status_t sock_fill_scope_id_in_local(c_sockaddr_t *sa_list)
+{
+	struct ifaddrs *iflist = NULL, *cur;
+    int rc;
+    c_sockaddr_t *addr, *ifaddr;
+
+    for (addr = sa_list; addr != NULL; addr = addr->next)
+    {
+        if (addr->c_sa_family != AF_INET6)
+            continue;
+
+        if (!IN6_IS_ADDR_LINKLOCAL(&addr->sin6.sin6_addr))
+            continue;
+
+        if (addr->sin6.sin6_scope_id != 0)
+            continue;
+
+        if (iflist == NULL)
+        {
+            rc = getifaddrs(&iflist);
+            if (rc != 0)
+            {
+                d_error("getifaddrs failed(%d:%s)", errno, strerror(errno));
+                return CORE_ERROR;
+            }
+        }
+
+        for (cur = iflist; cur != NULL; cur = cur->ifa_next)
+        {
+            ifaddr = (c_sockaddr_t *)cur->ifa_addr;
+
+            if (cur->ifa_addr == NULL) /* may happen with ppp interfaces */
+                continue;
+
+            if (cur->ifa_addr->sa_family != AF_INET6)
+                continue;
+
+            if (!IN6_IS_ADDR_LINKLOCAL(&ifaddr->sin6.sin6_addr))
+                continue;
+
+            if (memcmp(&addr->sin6.sin6_addr,
+                    &ifaddr->sin6.sin6_addr, sizeof(struct in6_addr)) == 0)
+            {
+                /* Fill Scope ID in localhost */
+                addr->sin6.sin6_scope_id = ifaddr->sin6.sin6_scope_id;
+            }
+        }
+    }
+
+    if (iflist)
+        freeifaddrs(iflist);
+
+    return CORE_OK;
+}
+
 status_t core_getaddrinfo(c_sockaddr_t **sa_list, 
         int family, const char *hostname, c_uint16_t port, int flags)
 {
