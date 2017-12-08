@@ -59,8 +59,6 @@ status_t testgtpu_enb_connect(sock_id *new)
     if (test_only_control_plane) return CORE_OK;
 
     d_assert(mme, return CORE_ERROR,);
-    d_assert(mme->gtpc_addr, return CORE_ERROR,);
-    d_assert(mme->gtpc_addr6, return CORE_ERROR,);
 
     family = AF_INET6;
     if (context_self()->parameter.no_ipv6) family = AF_INET;
@@ -71,11 +69,13 @@ status_t testgtpu_enb_connect(sock_id *new)
 
     if (family == AF_INET)
     {
+        d_assert(mme->gtpc_addr, return CORE_ERROR,);
         memcpy(&addr, mme->gtpc_addr, sizeof(c_sockaddr_t));
         addr.c_sa_port = htons(GTPV1_U_UDP_PORT);
     }
     else
     {
+        d_assert(mme->gtpc_addr6, return CORE_ERROR,);
         memcpy(&addr, mme->gtpc_addr6, sizeof(c_sockaddr_t));
         addr.c_sa_port = htons(GTPV1_U_UDP_PORT);
     }
@@ -724,8 +724,6 @@ status_t tests1ap_build_initial_context_setup_response(
         core_calloc(1, sizeof(S1ap_E_RABSetupItemCtxtSURes_t));
     e_rab->e_RAB_ID = ebi;
 
-    d_assert(mme_self()->gtpc_addr, return CORE_ERROR,);
-    d_assert(mme_self()->gtpc_addr6, return CORE_ERROR,);
     rv = gtp_sockaddr_to_f_teid(
             mme_self()->gtpc_addr, mme_self()->gtpc_addr6, &f_teid, &len);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
