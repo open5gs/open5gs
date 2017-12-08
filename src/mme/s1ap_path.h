@@ -17,7 +17,7 @@ CORE_DECLARE(status_t) s1ap_open();
 CORE_DECLARE(status_t) s1ap_close();
 
 CORE_DECLARE(status_t) s1ap_server(sock_id *new,
-        int family, int type, const char *hostname, c_uint16_t port);
+        int type, c_sockaddr_t *sa_list);
 CORE_DECLARE(status_t) s1ap_client(sock_id *new,
         int family, int type, const char *hostname, c_uint16_t port);
 CORE_DECLARE(status_t) s1ap_delete(sock_id sock);

@@ -20,18 +20,20 @@ status_t s1ap_open(void)
 #else
     int type = SOCK_SEQPACKET;
 #endif
-    mme_s1ap_t *s1ap = NULL;
+    sock_node_t *snode = NULL;
 
-    for (s1ap = mme_s1ap_first(); s1ap; s1ap = mme_s1ap_next(s1ap))
+    for (snode = list_first(&mme_self()->s1ap_list);
+            snode; snode = list_next(snode))
     {
-        rv = s1ap_server(&s1ap->sock, s1ap->family, type,
-                s1ap->hostname, s1ap->port);
-        if (rv != CORE_OK)
-        {
-            d_error("s1ap_server %d:%d:[%s]:%d failed",
-                    s1ap->family, type, s1ap->hostname, s1ap->port);
-            return CORE_ERROR;
-        }
+        rv = s1ap_server(&snode->sock, type, snode->list);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
+    }
+
+    for (snode = list_first(&mme_self()->s1ap_list6);
+            snode; snode = list_next(snode))
+    {
+        rv = s1ap_server(&snode->sock, type, snode->list);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
     }
 
     return CORE_OK;
@@ -39,11 +41,17 @@ status_t s1ap_open(void)
 
 status_t s1ap_close()
 {
-    mme_s1ap_t *s1ap = NULL;
+    sock_node_t *snode = NULL;
 
-    for (s1ap = mme_s1ap_first(); s1ap; s1ap = mme_s1ap_next(s1ap))
+    for (snode = list_first(&mme_self()->s1ap_list);
+            snode; snode = list_next(snode))
     {
-        s1ap_delete(s1ap->sock);
+        s1ap_delete(snode->sock);
+    }
+    for (snode = list_first(&mme_self()->s1ap_list6);
+            snode; snode = list_next(snode))
+    {
+        s1ap_delete(snode->sock);
     }
 
     return CORE_OK;

@@ -54,9 +54,11 @@ typedef struct _served_gummei {
 typedef struct _mme_context_t {
     const char      *fd_conf_path;  /* MME freeDiameter conf path */
 
-    list_t          s1ap_list;      /* MME S1AP Server List */
-
+    c_uint16_t      s1ap_port;      /* Default S1AP Port */
     c_uint16_t      gtpc_port;      /* Default GTPC Port */
+
+    list_t          s1ap_list;      /* MME S1AP IPv4 Server List */
+    list_t          s1ap_list6;     /* MME S1AP IPv6 Server List */
 
     list_t          gtpc_list;      /* MME GTPC IPv4 Server List */
     c_sockaddr_t    *gtpc_addr;     /* MME GTPC IPv4 Address */
@@ -111,16 +113,6 @@ typedef struct _mme_context_t {
     hash_t          *imsi_ue_hash;          /* hash table (IMSI : MME_UE) */
     hash_t          *guti_ue_hash;          /* hash table (GUTI : MME_UE) */
 } mme_context_t;
-
-typedef struct _mme_s1ap_t {
-    lnode_t         node;   /* A node of list_t */
-
-    int             family;
-    const char      *hostname;
-    c_uint16_t      port;
-
-    sock_id         sock;   /* MME S1AP Socket */
-} mme_s1ap_t;
 
 typedef struct _mme_enb_t {
     lnode_t         node;   /* A node of list_t */
@@ -428,13 +420,6 @@ CORE_DECLARE(mme_context_t*) mme_self(void);
 
 CORE_DECLARE(status_t)      mme_context_parse_config(void);
 CORE_DECLARE(status_t)      mme_context_setup_trace_module(void);
-
-CORE_DECLARE(mme_s1ap_t*)   mme_s1ap_add(
-        int family, const char *hostname, c_uint16_t port);
-CORE_DECLARE(status_t)      mme_s1ap_remove(mme_s1ap_t *s1ap);
-CORE_DECLARE(status_t)      mme_s1ap_remove_all(void);
-CORE_DECLARE(mme_s1ap_t*)   mme_s1ap_first(void);
-CORE_DECLARE(mme_s1ap_t*)   mme_s1ap_next(mme_s1ap_t *s1ap);
 
 CORE_DECLARE(mme_enb_t*)    mme_enb_add(sock_id sock, c_sockaddr_t *addr);
 CORE_DECLARE(status_t)      mme_enb_remove(mme_enb_t *enb);

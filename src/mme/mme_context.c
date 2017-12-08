@@ -27,8 +27,6 @@
 
 static mme_context_t self;
 
-pool_declare(mme_s1ap_pool, mme_s1ap_t, MAX_NUM_OF_S1AP_SERVER);
-
 index_declare(mme_enb_pool, mme_enb_t, MAX_NUM_OF_ENB);
 index_declare(mme_ue_pool, mme_ue_t, MAX_POOL_OF_UE);
 index_declare(enb_ue_pool, enb_ue_t, MAX_POOL_OF_UE);
@@ -45,8 +43,8 @@ status_t mme_context_init()
     /* Initialize MME context */
     memset(&self, 0, sizeof(mme_context_t));
 
-    pool_init(&mme_s1ap_pool, MAX_NUM_OF_S1AP_SERVER);
     list_init(&self.s1ap_list);
+    list_init(&self.s1ap_list6);
 
     list_init(&self.gtpc_list);
     list_init(&self.gtpc_list6);
@@ -81,8 +79,6 @@ status_t mme_context_final()
     d_assert(context_initialized == 1, return CORE_ERROR,
             "MME context already has been finalized");
 
-    mme_s1ap_remove_all();
-
     mme_enb_remove_all();
     mme_ue_remove_all();
 
@@ -111,10 +107,10 @@ status_t mme_context_final()
     gtp_remove_all_nodes(&self.pgw_list);
     gtp_node_final();
 
+    sock_remove_all_nodes(&self.s1ap_list);
+    sock_remove_all_nodes(&self.s1ap_list6);
     sock_remove_all_nodes(&self.gtpc_list);
     sock_remove_all_nodes(&self.gtpc_list6);
-
-    pool_final(&mme_s1ap_pool);
 
     context_initialized = 0;
 
@@ -130,6 +126,7 @@ static status_t mme_context_prepare()
 {
     self.relative_capacity = 0xff;
 
+    self.s1ap_port = S1AP_SCTP_PORT;
     self.gtpc_port = GTPV2_C_UDP_PORT;
 
     return CORE_OK;
@@ -143,7 +140,9 @@ static status_t mme_context_validation()
                 context_self()->config.path);
         return CORE_ERROR;
     }
-    if (mme_s1ap_first() == NULL)
+
+    if (list_first(&self.s1ap_list) == NULL &&
+        list_first(&self.s1ap_list6) == NULL)
     {
         d_error("No mme.s1ap in '%s'",
                 context_self()->config.path);
@@ -265,10 +264,12 @@ status_t mme_context_parse_config()
                     yaml_iter_recurse(&mme_iter, &s1ap_array);
                     do
                     {
-                        mme_s1ap_t *s1ap = NULL;
                         int family = AF_UNSPEC;
-                        const char *hostname = NULL;
-                        c_uint16_t port = S1AP_SCTP_PORT;
+                        int i, num = 0;
+                        const char *hostname[MAX_NUM_OF_HOSTNAME];
+                        c_uint16_t port = self.s1ap_port;
+                        c_sockaddr_t *list = NULL;
+                        sock_node_t *node = NULL;
 
                         if (yaml_iter_type(&s1ap_array) == YAML_MAPPING_NODE)
                         {
@@ -312,21 +313,78 @@ status_t mme_context_parse_config()
                             else if (!strcmp(s1ap_key, "addr") ||
                                     !strcmp(s1ap_key, "name"))
                             {
-                                hostname = yaml_iter_value(&s1ap_iter);
+                                yaml_iter_t hostname_iter;
+                                yaml_iter_recurse(&s1ap_iter, &hostname_iter);
+                                d_assert(yaml_iter_type(&hostname_iter) !=
+                                    YAML_MAPPING_NODE, return CORE_ERROR,);
+
+                                do
+                                {
+                                    if (yaml_iter_type(&hostname_iter) ==
+                                            YAML_SEQUENCE_NODE)
+                                    {
+                                        if (!yaml_iter_next(&hostname_iter))
+                                            break;
+                                    }
+
+                                    d_assert(num <= MAX_NUM_OF_HOSTNAME,
+                                            return CORE_ERROR,);
+                                    hostname[num++] = 
+                                        yaml_iter_value(&hostname_iter);
+                                } while(
+                                    yaml_iter_type(&hostname_iter) ==
+                                        YAML_SEQUENCE_NODE);
                             }
                             else if (!strcmp(s1ap_key, "port"))
                             {
                                 const char *v = yaml_iter_value(&s1ap_iter);
-                                if (v) port = atoi(v);
+                                if (v)
+                                {
+                                    port = atoi(v);
+                                    self.s1ap_port = port;
+                                }
                             }
                             else
                                 d_warn("unknown key `%s`", s1ap_key);
                         }
 
-                        s1ap = mme_s1ap_add(family, hostname, port);
-                        d_assert(s1ap, return CORE_ERROR,);
+                        list = NULL;
+                        for (i = 0; i < num; i++)
+                        {
+                            rv = core_addaddrinfo(&list,
+                                    family, hostname[i], port, AI_PASSIVE);
+                            d_assert(rv == CORE_OK, return CORE_ERROR,);
+                        }
+
+                        if (context_self()->parameter.no_ipv4 == 0)
+                        {
+                            rv = sock_add_node(&self.s1ap_list,
+                                    &node, list, AF_INET);
+                            d_assert(rv == CORE_OK, return CORE_ERROR,);
+                        }
+
+                        if (context_self()->parameter.no_ipv6 == 0)
+                        {
+                            rv = sock_add_node(&self.s1ap_list6,
+                                    &node, list, AF_INET6);
+                            d_assert(rv == CORE_OK, return CORE_ERROR,);
+                        }
+
+                        core_freeaddrinfo(list);
 
                     } while(yaml_iter_type(&s1ap_array) == YAML_SEQUENCE_NODE);
+
+                    if (list_first(&self.s1ap_list) == NULL &&
+                        list_first(&self.s1ap_list6) == NULL)
+                    {
+                        rv = sock_probe_node(
+                                context_self()->parameter.no_ipv4 ?
+                                    NULL : &self.s1ap_list,
+                                context_self()->parameter.no_ipv6 ?
+                                    NULL : &self.s1ap_list6,
+                                self.s1ap_port);
+                        d_assert(rv == CORE_OK, return CORE_ERROR,);
+                    }
                 }
                 else if (!strcmp(mme_key, "gtpc"))
                 {
@@ -1202,62 +1260,6 @@ status_t mme_context_setup_trace_module()
     return CORE_OK;
 }
 
-mme_s1ap_t* mme_s1ap_add(
-        int family, const char *hostname, c_uint16_t port)
-{
-    mme_s1ap_t *s1ap = NULL;
-
-    pool_alloc_node(&mme_s1ap_pool, &s1ap);
-    d_assert(s1ap, return NULL, "Null param");
-    memset(s1ap, 0, sizeof(mme_s1ap_t));
-
-    s1ap->family = family;
-    s1ap->hostname = hostname;
-    s1ap->port = port;
-
-    list_append(&self.s1ap_list, s1ap);
-    
-    return s1ap;
-}
-
-status_t mme_s1ap_remove(mme_s1ap_t *s1ap)
-{
-    d_assert(s1ap, return CORE_ERROR, "Null param");
-
-    list_remove(&self.s1ap_list, s1ap);
-
-    pool_free_node(&mme_s1ap_pool, s1ap);
-
-    return CORE_OK;
-}
-
-status_t mme_s1ap_remove_all()
-{
-    mme_s1ap_t *s1ap = NULL, *next_s1ap = NULL;
-    
-    s1ap = mme_s1ap_first();
-    while (s1ap)
-    {
-        next_s1ap = mme_s1ap_next(s1ap);
-
-        mme_s1ap_remove(s1ap);
-
-        s1ap = next_s1ap;
-    }
-
-    return CORE_OK;
-}
-
-mme_s1ap_t* mme_s1ap_first()
-{
-    return list_first(&self.s1ap_list);
-}
-
-mme_s1ap_t* mme_s1ap_next(mme_s1ap_t *s1ap)
-{
-    return list_next(s1ap);
-}
-
 mme_enb_t* mme_enb_add(sock_id sock, c_sockaddr_t *addr)
 {
     mme_enb_t *enb = NULL;
@@ -1385,18 +1387,23 @@ mme_enb_t *mme_enb_this(hash_index_t *hi)
 
 int mme_enb_sock_type(sock_id sock)
 {
-    mme_s1ap_t *s1ap = NULL;
+    sock_node_t *snode = NULL;
 
-    d_assert(sock, return 0,);
+    d_assert(sock, return SOCK_STREAM,);
 
-    for (s1ap = mme_s1ap_first(); s1ap; s1ap = mme_s1ap_next(s1ap))
+    for (snode = list_first(&mme_self()->s1ap_list);
+            snode; snode = list_next(snode))
     {
-        if (s1ap->sock == sock) return SOCK_SEQPACKET;
+        if (snode->sock == sock) return SOCK_SEQPACKET;
+    }
+    for (snode = list_first(&mme_self()->s1ap_list6);
+            snode; snode = list_next(snode))
+    {
+        if (snode->sock == sock) return SOCK_SEQPACKET;
     }
 
     return SOCK_STREAM;
 }
-
 
 /** enb_ue_context handling function */
 enb_ue_t* enb_ue_add(mme_enb_t *enb)
