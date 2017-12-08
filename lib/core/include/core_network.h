@@ -170,11 +170,10 @@ CORE_DECLARE(status_t) tcp_client(sock_id *new, c_sockaddr_t *sa_list);
  */
 CORE_DECLARE(status_t) sctp_socket(sock_id *new, int family, int type);
 CORE_DECLARE(status_t) sctp_server(sock_id *new,
-        int family, int type, const char *hostname, c_uint16_t port);
-CORE_DECLARE(status_t) sctp_client(sock_id *new,
-        int family, int type, const char *hostname, c_uint16_t port);
-CORE_DECLARE(status_t) sctp_connect(sock_id id,
-        const char *hostname, c_uint16_t port);
+        int type, c_sockaddr_t *sa_list);
+CORE_DECLARE(status_t) sctp_client(sock_id *new, 
+        int type, c_sockaddr_t *sa_list);
+CORE_DECLARE(status_t) sctp_connect(sock_id id, c_sockaddr_t *sa_list);
 CORE_DECLARE(int) core_sctp_sendmsg(sock_id id, const void *msg, size_t len,
         c_sockaddr_t *to, c_uint32_t ppid, c_uint16_t stream_no);
 #define CORE_SCTP_REMOTE_CLOSED     -2

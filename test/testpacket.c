@@ -19,8 +19,13 @@ extern int test_only_control_plane;
 status_t tests1ap_enb_connect(sock_id *new)
 {
     status_t rv;
+    sock_node_t *snode = NULL;
 
-    rv = s1ap_client(new, AF_UNSPEC, SOCK_STREAM, NULL, S1AP_SCTP_PORT);
+    snode = list_first(&mme_self()->s1ap_list);
+    if (!snode) snode = list_first(&mme_self()->s1ap_list6);
+    d_assert(snode, return CORE_ERROR,);
+
+    rv = sctp_client(new, SOCK_STREAM, snode->list);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
     return CORE_OK;
