@@ -24,11 +24,13 @@ AC_CONFIG_HEADERS([config.h:config.in])dnl Keep filename to 8.3 for MS-DOS.
 AC_CONFIG_SRCDIR([main.c])
 AC_CANONICAL_HOST
 
+LO_DEV="lo0"
 case $host in
     *linux*)
         OSDIR="unix"
         OSCPPFLAGS="-DLINUX=1"
         IPFW_CPPFLAGS="-DNEED_SYSCTLBYNAME -DNEED_SIN_LEN"
+        LO_DEV="lo"
         ;;
     *-apple-darwin*)
         OSDIR="unix"
@@ -41,6 +43,7 @@ esac
 AC_SUBST(OSCPPFLAGS)
 AC_SUBST(OSDIR)
 AC_SUBST(IPFW_CPPFLAGS)
+AC_SUBST(LO_DEV)
 
 AH_TOP([
 #ifndef __NEXTEPC_CONFIG_H__
