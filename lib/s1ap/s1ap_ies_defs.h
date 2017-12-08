@@ -30,7 +30,7 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-09-13 23:14:37.540116 by acetcom
+ * Created on: 2017-12-08 15:46:41.467538 by acetcom
  * from ['S1AP-PDU.asn']
  ******************************************************************************/
 #include "s1ap_asn1c.h"
