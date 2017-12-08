@@ -30,7 +30,7 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-09-13 23:14:37.559559 by acetcom
+ * Created on: 2017-12-08 15:46:41.493356 by acetcom
  * from ['S1AP-PDU.asn']
  ******************************************************************************/
 #define TRACE_MODULE _s1ap_ies_decoder
@@ -105,9 +105,9 @@ int s1ap_decode_s1ap_deactivatetraceies(
                 }
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_deactivatetraceies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_deactivatetraceies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_DeactivateTrace, s1ap_DeactivateTrace_p);
-                return -1;
+                break;
         }
     }
 
@@ -159,9 +159,9 @@ int s1ap_decode_s1ap_enbdirectinformationtransferies(
                 }
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_enbdirectinformationtransferies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_enbdirectinformationtransferies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENBDirectInformationTransfer, s1ap_ENBDirectInformationTransfer_p);
-                return -1;
+                break;
         }
     }
 
@@ -271,9 +271,9 @@ int s1ap_decode_s1ap_e_rabreleaseresponseies(
                 s1ap_E_RABReleaseResponseIEs->presenceMask |= S1AP_E_RABRELEASERESPONSEIES_CRITICALITYDIAGNOSTICS_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_e_rabreleaseresponseies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_e_rabreleaseresponseies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABReleaseResponse, s1ap_E_RABReleaseResponse_p);
-                return -1;
+                break;
         }
     }
 
@@ -337,9 +337,9 @@ int s1ap_decode_s1ap_uplinknonueassociatedlppatransport_ies(
                 }
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_uplinknonueassociatedlppatransport_ies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_uplinknonueassociatedlppatransport_ies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UplinkNonUEAssociatedLPPaTransport, s1ap_UplinkNonUEAssociatedLPPaTransport_p);
-                return -1;
+                break;
         }
     }
 
@@ -415,9 +415,9 @@ int s1ap_decode_s1ap_tracestarties(
                 }
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_tracestarties", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_tracestarties", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_TraceStart, s1ap_TraceStart_p);
-                return -1;
+                break;
         }
     }
 
@@ -509,9 +509,9 @@ int s1ap_decode_s1ap_writereplacewarningresponseies(
                 s1ap_WriteReplaceWarningResponseIEs->presenceMask |= S1AP_WRITEREPLACEWARNINGRESPONSEIES_CRITICALITYDIAGNOSTICS_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_writereplacewarningresponseies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_writereplacewarningresponseies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_WriteReplaceWarningResponse, s1ap_WriteReplaceWarningResponse_p);
-                return -1;
+                break;
         }
     }
 
@@ -587,9 +587,9 @@ int s1ap_decode_s1ap_handovercancelies(
                 }
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_handovercancelies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_handovercancelies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverCancel, s1ap_HandoverCancel_p);
-                return -1;
+                break;
         }
     }
 
@@ -679,9 +679,9 @@ int s1ap_decode_s1ap_handoverpreparationfailureies(
                 s1ap_HandoverPreparationFailureIEs->presenceMask |= S1AP_HANDOVERPREPARATIONFAILUREIES_CRITICALITYDIAGNOSTICS_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_handoverpreparationfailureies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_handoverpreparationfailureies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverPreparationFailure, s1ap_HandoverPreparationFailure_p);
-                return -1;
+                break;
         }
     }
 
@@ -771,9 +771,9 @@ int s1ap_decode_s1ap_uecontextreleaserequest_ies(
                 s1ap_UEContextReleaseRequest_IEs->presenceMask |= S1AP_UECONTEXTRELEASEREQUEST_IES_GWCONTEXTRELEASEINDICATION_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_uecontextreleaserequest_ies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_uecontextreleaserequest_ies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEContextReleaseRequest, s1ap_UEContextReleaseRequest_p);
-                return -1;
+                break;
         }
     }
 
@@ -957,9 +957,9 @@ int s1ap_decode_s1ap_initialuemessage_ies(
                 s1ap_InitialUEMessage_IEs->presenceMask |= S1AP_INITIALUEMESSAGE_IES_RELAYNODE_INDICATOR_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_initialuemessage_ies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_initialuemessage_ies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialUEMessage, s1ap_InitialUEMessage_p);
-                return -1;
+                break;
         }
     }
 
@@ -1037,9 +1037,9 @@ int s1ap_decode_s1ap_killrequesties(
                 s1ap_KillRequestIEs->presenceMask |= S1AP_KILLREQUESTIES_WARNINGAREALIST_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_killrequesties", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_killrequesties", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_KillRequest, s1ap_KillRequest_p);
-                return -1;
+                break;
         }
     }
 
@@ -1225,9 +1225,9 @@ int s1ap_decode_s1ap_writereplacewarningrequesties(
                 s1ap_WriteReplaceWarningRequestIEs->presenceMask |= S1AP_WRITEREPLACEWARNINGREQUESTIES_CONCURRENTWARNINGMESSAGEINDICATOR_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_writereplacewarningrequesties", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_writereplacewarningrequesties", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_WriteReplaceWarningRequest, s1ap_WriteReplaceWarningRequest_p);
-                return -1;
+                break;
         }
     }
 
@@ -1303,9 +1303,9 @@ int s1ap_decode_s1ap_uecapabilityinfoindicationies(
                 }
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_uecapabilityinfoindicationies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_uecapabilityinfoindicationies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UECapabilityInfoIndication, s1ap_UECapabilityInfoIndication_p);
-                return -1;
+                break;
         }
     }
 
@@ -1381,9 +1381,9 @@ int s1ap_decode_s1ap_locationreportingfailureindicationies(
                 }
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_locationreportingfailureindicationies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_locationreportingfailureindicationies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_LocationReportingFailureIndication, s1ap_LocationReportingFailureIndication_p);
-                return -1;
+                break;
         }
     }
 
@@ -1651,9 +1651,9 @@ int s1ap_decode_s1ap_initialcontextsetuprequesties(
                 s1ap_InitialContextSetupRequestIEs->presenceMask |= S1AP_INITIALCONTEXTSETUPREQUESTIES_MANAGEMENTBASEDMDTALLOWED_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_initialcontextsetuprequesties", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_initialcontextsetuprequesties", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialContextSetupRequest, s1ap_InitialContextSetupRequest_p);
-                return -1;
+                break;
         }
     }
 
@@ -1753,9 +1753,9 @@ int s1ap_decode_s1ap_locationreporties(
                 }
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_locationreporties", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_locationreporties", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_LocationReport, s1ap_LocationReport_p);
-                return -1;
+                break;
         }
     }
 
@@ -1869,9 +1869,9 @@ int s1ap_decode_s1ap_uplinknastransport_ies(
                 s1ap_UplinkNASTransport_IEs->presenceMask |= S1AP_UPLINKNASTRANSPORT_IES_GW_TRANSPORTLAYERADDRESS_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_uplinknastransport_ies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_uplinknastransport_ies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UplinkNASTransport, s1ap_UplinkNASTransport_p);
-                return -1;
+                break;
         }
     }
 
@@ -1949,9 +1949,9 @@ int s1ap_decode_s1ap_uecontextmodificationresponseies(
                 s1ap_UEContextModificationResponseIEs->presenceMask |= S1AP_UECONTEXTMODIFICATIONRESPONSEIES_CRITICALITYDIAGNOSTICS_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_uecontextmodificationresponseies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_uecontextmodificationresponseies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEContextModificationResponse, s1ap_UEContextModificationResponse_p);
-                return -1;
+                break;
         }
     }
 
@@ -2113,9 +2113,9 @@ int s1ap_decode_s1ap_uecontextmodificationrequesties(
                 s1ap_UEContextModificationRequestIEs->presenceMask |= S1AP_UECONTEXTMODIFICATIONREQUESTIES_REGISTEREDLAI_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_uecontextmodificationrequesties", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_uecontextmodificationrequesties", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEContextModificationRequest, s1ap_UEContextModificationRequest_p);
-                return -1;
+                break;
         }
     }
 
@@ -2191,9 +2191,9 @@ int s1ap_decode_s1ap_locationreportingcontrolies(
                 }
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_locationreportingcontrolies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_locationreportingcontrolies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_LocationReportingControl, s1ap_LocationReportingControl_p);
-                return -1;
+                break;
         }
     }
 
@@ -2349,9 +2349,9 @@ int s1ap_decode_s1ap_uplinks1cdma2000tunnelingies(
                 s1ap_UplinkS1cdma2000tunnelingIEs->presenceMask |= S1AP_UPLINKS1CDMA2000TUNNELINGIES_EUTRANROUNDTRIPDELAYESTIMATIONINFO_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_uplinks1cdma2000tunnelingies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_uplinks1cdma2000tunnelingies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UplinkS1cdma2000tunneling, s1ap_UplinkS1cdma2000tunneling_p);
-                return -1;
+                break;
         }
     }
 
@@ -2615,9 +2615,9 @@ int s1ap_decode_s1ap_handoverrequesties(
                 s1ap_HandoverRequestIEs->presenceMask |= S1AP_HANDOVERREQUESTIES_MANAGEMENTBASEDMDTALLOWED_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_handoverrequesties", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_handoverrequesties", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequest, s1ap_HandoverRequest_p);
-                return -1;
+                break;
         }
     }
 
@@ -2841,9 +2841,9 @@ int s1ap_decode_s1ap_handoverrequiredies(
                 s1ap_HandoverRequiredIEs->presenceMask |= S1AP_HANDOVERREQUIREDIES_PS_SERVICENOTAVAILABLE_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_handoverrequiredies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_handoverrequiredies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequired, s1ap_HandoverRequired_p);
-                return -1;
+                break;
         }
     }
 
@@ -2897,9 +2897,9 @@ int s1ap_decode_s1ap_mmeconfigurationupdateacknowledgeies(
                 s1ap_MMEConfigurationUpdateAcknowledgeIEs->presenceMask |= S1AP_MMECONFIGURATIONUPDATEACKNOWLEDGEIES_CRITICALITYDIAGNOSTICS_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_mmeconfigurationupdateacknowledgeies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_mmeconfigurationupdateacknowledgeies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MMEConfigurationUpdateAcknowledge, s1ap_MMEConfigurationUpdateAcknowledge_p);
-                return -1;
+                break;
         }
     }
 
@@ -2991,9 +2991,9 @@ int s1ap_decode_s1ap_killresponseies(
                 s1ap_KillResponseIEs->presenceMask |= S1AP_KILLRESPONSEIES_CRITICALITYDIAGNOSTICS_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_killresponseies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_killresponseies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_KillResponse, s1ap_KillResponse_p);
-                return -1;
+                break;
         }
     }
 
@@ -3069,9 +3069,9 @@ int s1ap_decode_s1ap_mmestatustransferies(
                 }
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_mmestatustransferies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_mmestatustransferies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MMEStatusTransfer, s1ap_MMEStatusTransfer_p);
-                return -1;
+                break;
         }
     }
 
@@ -3153,9 +3153,9 @@ int s1ap_decode_s1ap_mmeconfigurationupdateies(
                 s1ap_MMEConfigurationUpdateIEs->presenceMask |= S1AP_MMECONFIGURATIONUPDATEIES_RELATIVEMMECAPACITY_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_mmeconfigurationupdateies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_mmeconfigurationupdateies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MMEConfigurationUpdate, s1ap_MMEConfigurationUpdate_p);
-                return -1;
+                break;
         }
     }
 
@@ -3247,9 +3247,9 @@ int s1ap_decode_s1ap_e_rabmodifyrequesties(
                 ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABToBeModifiedListBearerModReq, s1apERABToBeModifiedListBearerModReq_p);
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_e_rabmodifyrequesties", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_e_rabmodifyrequesties", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABModifyRequest, s1ap_E_RABModifyRequest_p);
-                return -1;
+                break;
         }
     }
 
@@ -3329,9 +3329,9 @@ int s1ap_decode_s1ap_enbconfigurationupdatefailureies(
                 s1ap_ENBConfigurationUpdateFailureIEs->presenceMask |= S1AP_ENBCONFIGURATIONUPDATEFAILUREIES_CRITICALITYDIAGNOSTICS_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_enbconfigurationupdatefailureies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_enbconfigurationupdatefailureies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENBConfigurationUpdateFailure, s1ap_ENBConfigurationUpdateFailure_p);
-                return -1;
+                break;
         }
     }
 
@@ -3395,9 +3395,9 @@ int s1ap_decode_s1ap_reseties(
                 }
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_reseties", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_reseties", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Reset, s1ap_Reset_p);
-                return -1;
+                break;
         }
     }
 
@@ -3503,9 +3503,9 @@ int s1ap_decode_s1ap_s1setupresponseies(
                 s1ap_S1SetupResponseIEs->presenceMask |= S1AP_S1SETUPRESPONSEIES_CRITICALITYDIAGNOSTICS_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_s1setupresponseies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_s1setupresponseies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_S1SetupResponse, s1ap_S1SetupResponse_p);
-                return -1;
+                break;
         }
     }
 
@@ -3637,9 +3637,9 @@ int s1ap_decode_s1ap_pagingies(
                 s1ap_PagingIEs->presenceMask |= S1AP_PAGINGIES_PAGINGPRIORITY_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_pagingies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_pagingies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Paging, s1ap_Paging_p);
-                return -1;
+                break;
         }
     }
 
@@ -3693,9 +3693,9 @@ int s1ap_decode_s1ap_enbconfigurationupdateacknowledgeies(
                 s1ap_ENBConfigurationUpdateAcknowledgeIEs->presenceMask |= S1AP_ENBCONFIGURATIONUPDATEACKNOWLEDGEIES_CRITICALITYDIAGNOSTICS_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_enbconfigurationupdateacknowledgeies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_enbconfigurationupdateacknowledgeies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENBConfigurationUpdateAcknowledge, s1ap_ENBConfigurationUpdateAcknowledge_p);
-                return -1;
+                break;
         }
     }
 
@@ -3801,9 +3801,9 @@ int s1ap_decode_s1ap_e_rabreleasecommandies(
                 s1ap_E_RABReleaseCommandIEs->presenceMask |= S1AP_E_RABRELEASECOMMANDIES_NAS_PDU_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_e_rabreleasecommandies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_e_rabreleasecommandies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABReleaseCommand, s1ap_E_RABReleaseCommand_p);
-                return -1;
+                break;
         }
     }
 
@@ -3893,9 +3893,9 @@ int s1ap_decode_s1ap_pathswitchrequestfailureies(
                 s1ap_PathSwitchRequestFailureIEs->presenceMask |= S1AP_PATHSWITCHREQUESTFAILUREIES_CRITICALITYDIAGNOSTICS_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_pathswitchrequestfailureies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_pathswitchrequestfailureies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_PathSwitchRequestFailure, s1ap_PathSwitchRequestFailure_p);
-                return -1;
+                break;
         }
     }
 
@@ -4005,9 +4005,9 @@ int s1ap_decode_s1ap_e_rabmodifyresponseies(
                 s1ap_E_RABModifyResponseIEs->presenceMask |= S1AP_E_RABMODIFYRESPONSEIES_CRITICALITYDIAGNOSTICS_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_e_rabmodifyresponseies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_e_rabmodifyresponseies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABModifyResponse, s1ap_E_RABModifyResponse_p);
-                return -1;
+                break;
         }
     }
 
@@ -4095,9 +4095,9 @@ int s1ap_decode_s1ap_handovernotifyies(
                 }
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_handovernotifyies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_handovernotifyies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverNotify, s1ap_HandoverNotify_p);
-                return -1;
+                break;
         }
     }
 
@@ -4175,9 +4175,9 @@ int s1ap_decode_s1ap_handovercancelacknowledgeies(
                 s1ap_HandoverCancelAcknowledgeIEs->presenceMask |= S1AP_HANDOVERCANCELACKNOWLEDGEIES_CRITICALITYDIAGNOSTICS_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_handovercancelacknowledgeies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_handovercancelacknowledgeies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverCancelAcknowledge, s1ap_HandoverCancelAcknowledge_p);
-                return -1;
+                break;
         }
     }
 
@@ -4267,9 +4267,9 @@ int s1ap_decode_s1ap_initialcontextsetupfailureies(
                 s1ap_InitialContextSetupFailureIEs->presenceMask |= S1AP_INITIALCONTEXTSETUPFAILUREIES_CRITICALITYDIAGNOSTICS_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_initialcontextsetupfailureies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_initialcontextsetupfailureies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialContextSetupFailure, s1ap_InitialContextSetupFailure_p);
-                return -1;
+                break;
         }
     }
 
@@ -4417,9 +4417,9 @@ int s1ap_decode_s1ap_handovercommandies(
                 s1ap_HandoverCommandIEs->presenceMask |= S1AP_HANDOVERCOMMANDIES_CRITICALITYDIAGNOSTICS_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_handovercommandies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_handovercommandies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverCommand, s1ap_HandoverCommand_p);
-                return -1;
+                break;
         }
     }
 
@@ -4471,9 +4471,9 @@ int s1ap_decode_s1ap_mmedirectinformationtransferies(
                 }
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_mmedirectinformationtransferies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_mmedirectinformationtransferies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MMEDirectInformationTransfer, s1ap_MMEDirectInformationTransfer_p);
-                return -1;
+                break;
         }
     }
 
@@ -4569,9 +4569,9 @@ int s1ap_decode_s1ap_errorindicationies(
                 s1ap_ErrorIndicationIEs->presenceMask |= S1AP_ERRORINDICATIONIES_CRITICALITYDIAGNOSTICS_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_errorindicationies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_errorindicationies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ErrorIndication, s1ap_ErrorIndication_p);
-                return -1;
+                break;
         }
     }
 
@@ -4651,9 +4651,9 @@ int s1ap_decode_s1ap_overloadstarties(
                 s1ap_OverloadStartIEs->presenceMask |= S1AP_OVERLOADSTARTIES_TRAFFICLOADREDUCTIONINDICATION_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_overloadstarties", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_overloadstarties", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_OverloadStart, s1ap_OverloadStart_p);
-                return -1;
+                break;
         }
     }
 
@@ -4717,9 +4717,9 @@ int s1ap_decode_s1ap_downlinknonueassociatedlppatransport_ies(
                 }
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_downlinknonueassociatedlppatransport_ies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_downlinknonueassociatedlppatransport_ies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_DownlinkNonUEAssociatedLPPaTransport, s1ap_DownlinkNonUEAssociatedLPPaTransport_p);
-                return -1;
+                break;
         }
     }
 
@@ -4853,9 +4853,9 @@ int s1ap_decode_s1ap_handoverrequestacknowledgeies(
                 s1ap_HandoverRequestAcknowledgeIEs->presenceMask |= S1AP_HANDOVERREQUESTACKNOWLEDGEIES_CRITICALITYDIAGNOSTICS_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_handoverrequestacknowledgeies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_handoverrequestacknowledgeies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverRequestAcknowledge, s1ap_HandoverRequestAcknowledge_p);
-                return -1;
+                break;
         }
     }
 
@@ -4943,9 +4943,9 @@ int s1ap_decode_s1ap_downlinkueassociatedlppatransport_ies(
                 }
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_downlinkueassociatedlppatransport_ies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_downlinkueassociatedlppatransport_ies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_DownlinkUEAssociatedLPPaTransport, s1ap_DownlinkUEAssociatedLPPaTransport_p);
-                return -1;
+                break;
         }
     }
 
@@ -5035,9 +5035,9 @@ int s1ap_decode_s1ap_uecontextmodificationfailureies(
                 s1ap_UEContextModificationFailureIEs->presenceMask |= S1AP_UECONTEXTMODIFICATIONFAILUREIES_CRITICALITYDIAGNOSTICS_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_uecontextmodificationfailureies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_uecontextmodificationfailureies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEContextModificationFailure, s1ap_UEContextModificationFailure_p);
-                return -1;
+                break;
         }
     }
 
@@ -5091,9 +5091,9 @@ int s1ap_decode_s1ap_mmeconfigurationtransferies(
                 s1ap_MMEConfigurationTransferIEs->presenceMask |= S1AP_MMECONFIGURATIONTRANSFERIES_SONCONFIGURATIONTRANSFERMCT_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_mmeconfigurationtransferies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_mmeconfigurationtransferies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MMEConfigurationTransfer, s1ap_MMEConfigurationTransfer_p);
-                return -1;
+                break;
         }
     }
 
@@ -5243,9 +5243,9 @@ int s1ap_decode_s1ap_pathswitchrequestacknowledgeies(
                 s1ap_PathSwitchRequestAcknowledgeIEs->presenceMask |= S1AP_PATHSWITCHREQUESTACKNOWLEDGEIES_MME_UE_S1AP_ID_2_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_pathswitchrequestacknowledgeies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_pathswitchrequestacknowledgeies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_PathSwitchRequestAcknowledge, s1ap_PathSwitchRequestAcknowledge_p);
-                return -1;
+                break;
         }
     }
 
@@ -5325,9 +5325,9 @@ int s1ap_decode_s1ap_s1setupfailureies(
                 s1ap_S1SetupFailureIEs->presenceMask |= S1AP_S1SETUPFAILUREIES_CRITICALITYDIAGNOSTICS_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_s1setupfailureies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_s1setupfailureies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_S1SetupFailure, s1ap_S1SetupFailure_p);
-                return -1;
+                break;
         }
     }
 
@@ -5407,9 +5407,9 @@ int s1ap_decode_s1ap_mmeconfigurationupdatefailureies(
                 s1ap_MMEConfigurationUpdateFailureIEs->presenceMask |= S1AP_MMECONFIGURATIONUPDATEFAILUREIES_CRITICALITYDIAGNOSTICS_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_mmeconfigurationupdatefailureies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_mmeconfigurationupdatefailureies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MMEConfigurationUpdateFailure, s1ap_MMEConfigurationUpdateFailure_p);
-                return -1;
+                break;
         }
     }
 
@@ -5517,9 +5517,9 @@ int s1ap_decode_s1ap_initialcontextsetupresponseies(
                 s1ap_InitialContextSetupResponseIEs->presenceMask |= S1AP_INITIALCONTEXTSETUPRESPONSEIES_CRITICALITYDIAGNOSTICS_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_initialcontextsetupresponseies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_initialcontextsetupresponseies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialContextSetupResponse, s1ap_InitialContextSetupResponse_p);
-                return -1;
+                break;
         }
     }
 
@@ -5637,9 +5637,9 @@ int s1ap_decode_s1ap_downlinks1cdma2000tunnelingies(
                 }
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_downlinks1cdma2000tunnelingies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_downlinks1cdma2000tunnelingies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_DownlinkS1cdma2000tunneling, s1ap_DownlinkS1cdma2000tunneling_p);
-                return -1;
+                break;
         }
     }
 
@@ -5693,9 +5693,9 @@ int s1ap_decode_s1ap_overloadstopies(
                 s1ap_OverloadStopIEs->presenceMask |= S1AP_OVERLOADSTOPIES_GUMMEILIST_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_overloadstopies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_overloadstopies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_OverloadStop, s1ap_OverloadStop_p);
-                return -1;
+                break;
         }
     }
 
@@ -5791,9 +5791,9 @@ int s1ap_decode_s1ap_enbconfigurationupdateies(
                 s1ap_ENBConfigurationUpdateIEs->presenceMask |= S1AP_ENBCONFIGURATIONUPDATEIES_DEFAULTPAGINGDRX_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_enbconfigurationupdateies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_enbconfigurationupdateies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENBConfigurationUpdate, s1ap_ENBConfigurationUpdate_p);
-                return -1;
+                break;
         }
     }
 
@@ -5881,9 +5881,9 @@ int s1ap_decode_s1ap_tracefailureindicationies(
                 }
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_tracefailureindicationies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_tracefailureindicationies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_TraceFailureIndication, s1ap_TraceFailureIndication_p);
-                return -1;
+                break;
         }
     }
 
@@ -5937,9 +5937,9 @@ int s1ap_decode_s1ap_enbconfigurationtransferies(
                 s1ap_ENBConfigurationTransferIEs->presenceMask |= S1AP_ENBCONFIGURATIONTRANSFERIES_SONCONFIGURATIONTRANSFERECT_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_enbconfigurationtransferies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_enbconfigurationtransferies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENBConfigurationTransfer, s1ap_ENBConfigurationTransfer_p);
-                return -1;
+                break;
         }
     }
 
@@ -6017,9 +6017,9 @@ int s1ap_decode_s1ap_handoverfailureies(
                 s1ap_HandoverFailureIEs->presenceMask |= S1AP_HANDOVERFAILUREIES_CRITICALITYDIAGNOSTICS_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_handoverfailureies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_handoverfailureies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverFailure, s1ap_HandoverFailure_p);
-                return -1;
+                break;
         }
     }
 
@@ -6129,9 +6129,9 @@ int s1ap_decode_s1ap_e_rabsetupresponseies(
                 s1ap_E_RABSetupResponseIEs->presenceMask |= S1AP_E_RABSETUPRESPONSEIES_CRITICALITYDIAGNOSTICS_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_e_rabsetupresponseies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_e_rabsetupresponseies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABSetupResponse, s1ap_E_RABSetupResponse_p);
-                return -1;
+                break;
         }
     }
 
@@ -6195,9 +6195,9 @@ int s1ap_decode_s1ap_uecontextreleasecommand_ies(
                 }
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_uecontextreleasecommand_ies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_uecontextreleasecommand_ies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEContextReleaseCommand, s1ap_UEContextReleaseCommand_p);
-                return -1;
+                break;
         }
     }
 
@@ -6353,9 +6353,9 @@ int s1ap_decode_s1ap_pathswitchrequesties(
                 s1ap_PathSwitchRequestIEs->presenceMask |= S1AP_PATHSWITCHREQUESTIES_SOURCEMME_GUMMEI_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_pathswitchrequesties", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_pathswitchrequesties", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_PathSwitchRequest, s1ap_PathSwitchRequest_p);
-                return -1;
+                break;
         }
     }
 
@@ -6459,9 +6459,9 @@ int s1ap_decode_s1ap_downlinknastransport_ies(
                 s1ap_DownlinkNASTransport_IEs->presenceMask |= S1AP_DOWNLINKNASTRANSPORT_IES_SUBSCRIBERPROFILEIDFORRFP_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_downlinknastransport_ies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_downlinknastransport_ies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_DownlinkNASTransport, s1ap_DownlinkNASTransport_p);
-                return -1;
+                break;
         }
     }
 
@@ -6539,9 +6539,9 @@ int s1ap_decode_s1ap_e_rabreleaseindicationies(
                 ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABList, s1apERABList_p);
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_e_rabreleaseindicationies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_e_rabreleaseindicationies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABReleaseIndication, s1ap_E_RABReleaseIndication_p);
-                return -1;
+                break;
         }
     }
 
@@ -6645,9 +6645,9 @@ int s1ap_decode_s1ap_s1setuprequesties(
                 s1ap_S1SetupRequestIEs->presenceMask |= S1AP_S1SETUPREQUESTIES_CSG_IDLIST_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_s1setuprequesties", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_s1setuprequesties", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_S1SetupRequest, s1ap_S1SetupRequest_p);
-                return -1;
+                break;
         }
     }
 
@@ -6735,9 +6735,9 @@ int s1ap_decode_s1ap_nasnondeliveryindication_ies(
                 }
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_nasnondeliveryindication_ies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_nasnondeliveryindication_ies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_NASNonDeliveryIndication, s1ap_NASNonDeliveryIndication_p);
-                return -1;
+                break;
         }
     }
 
@@ -6851,9 +6851,9 @@ int s1ap_decode_s1ap_celltraffictraceies(
                 s1ap_CellTrafficTraceIEs->presenceMask |= S1AP_CELLTRAFFICTRACEIES_PRIVACYINDICATOR_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_celltraffictraceies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_celltraffictraceies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_CellTrafficTrace, s1ap_CellTrafficTrace_p);
-                return -1;
+                break;
         }
     }
 
@@ -6945,9 +6945,9 @@ int s1ap_decode_s1ap_e_rabsetuprequesties(
                 ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABToBeSetupListBearerSUReq, s1apERABToBeSetupListBearerSUReq_p);
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_e_rabsetuprequesties", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_e_rabsetuprequesties", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABSetupRequest, s1ap_E_RABSetupRequest_p);
-                return -1;
+                break;
         }
     }
 
@@ -7023,9 +7023,9 @@ int s1ap_decode_s1ap_enbstatustransferies(
                 }
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_enbstatustransferies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_enbstatustransferies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENBStatusTransfer, s1ap_ENBStatusTransfer_p);
-                return -1;
+                break;
         }
     }
 
@@ -7095,9 +7095,9 @@ int s1ap_decode_s1ap_resetacknowledgeies(
                 s1ap_ResetAcknowledgeIEs->presenceMask |= S1AP_RESETACKNOWLEDGEIES_CRITICALITYDIAGNOSTICS_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_resetacknowledgeies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_resetacknowledgeies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ResetAcknowledge, s1ap_ResetAcknowledge_p);
-                return -1;
+                break;
         }
     }
 
@@ -7175,9 +7175,9 @@ int s1ap_decode_s1ap_uecontextreleasecomplete_ies(
                 s1ap_UEContextReleaseComplete_IEs->presenceMask |= S1AP_UECONTEXTRELEASECOMPLETE_IES_CRITICALITYDIAGNOSTICS_PRESENT;
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_uecontextreleasecomplete_ies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_uecontextreleasecomplete_ies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UEContextReleaseComplete, s1ap_UEContextReleaseComplete_p);
-                return -1;
+                break;
         }
     }
 
@@ -7265,9 +7265,9 @@ int s1ap_decode_s1ap_uplinkueassociatedlppatransport_ies(
                 }
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
+                d_warn("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
                 ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_UplinkUEAssociatedLPPaTransport, s1ap_UplinkUEAssociatedLPPaTransport_p);
-                return -1;
+                break;
         }
     }
 
@@ -7302,8 +7302,8 @@ int s1ap_decode_s1ap_e_rabfailedtosetuplisthoreqack(
                 ASN_SEQUENCE_ADD(&s1ap_E_RABFailedtoSetupListHOReqAckIEs->s1ap_E_RABFailedtoSetupItemHOReqAck, s1apERABFailedToSetupItemHOReqAck_p);
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
-                return -1;
+                d_warn("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
+                break;
         }
     }
     return decoded;
@@ -7336,8 +7336,8 @@ int s1ap_decode_s1ap_e_rabreleaselistbearerrelcomp(
                 ASN_SEQUENCE_ADD(&s1ap_E_RABReleaseListBearerRelCompIEs->s1ap_E_RABReleaseItemBearerRelComp, s1apERABReleaseItemBearerRelComp_p);
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
-                return -1;
+                d_warn("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
+                break;
         }
     }
     return decoded;
@@ -7370,8 +7370,8 @@ int s1ap_decode_s1ap_e_rabtobesetuplisthoreq(
                 ASN_SEQUENCE_ADD(&s1ap_E_RABToBeSetupListHOReqIEs->s1ap_E_RABToBeSetupItemHOReq, s1apERABToBeSetupItemHOReq_p);
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
-                return -1;
+                d_warn("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
+                break;
         }
     }
     return decoded;
@@ -7404,8 +7404,8 @@ int s1ap_decode_s1ap_e_rabtobemodifiedlistbearermodreq(
                 ASN_SEQUENCE_ADD(&s1ap_E_RABToBeModifiedListBearerModReqIEs->s1ap_E_RABToBeModifiedItemBearerModReq, s1apERABToBeModifiedItemBearerModReq_p);
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
-                return -1;
+                d_warn("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
+                break;
         }
     }
     return decoded;
@@ -7438,8 +7438,8 @@ int s1ap_decode_s1ap_e_rabadmittedlist(
                 ASN_SEQUENCE_ADD(&s1ap_E_RABAdmittedListIEs->s1ap_E_RABAdmittedItem, s1apERABAdmittedItem_p);
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
-                return -1;
+                d_warn("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
+                break;
         }
     }
     return decoded;
@@ -7472,8 +7472,8 @@ int s1ap_decode_s1ap_e_rabtobesetuplistbearersureq(
                 ASN_SEQUENCE_ADD(&s1ap_E_RABToBeSetupListBearerSUReqIEs->s1ap_E_RABToBeSetupItemBearerSUReq, s1apERABToBeSetupItemBearerSUReq_p);
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
-                return -1;
+                d_warn("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
+                break;
         }
     }
     return decoded;
@@ -7506,8 +7506,8 @@ int s1ap_decode_s1ap_e_rabdataforwardinglist(
                 ASN_SEQUENCE_ADD(&s1ap_E_RABDataForwardingListIEs->s1ap_E_RABDataForwardingItem, s1apERABDataForwardingItem_p);
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
-                return -1;
+                d_warn("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
+                break;
         }
     }
     return decoded;
@@ -7540,8 +7540,8 @@ int s1ap_decode_s1ap_e_rabtobeswitcheddllist(
                 ASN_SEQUENCE_ADD(&s1ap_E_RABToBeSwitchedDLListIEs->s1ap_E_RABToBeSwitchedDLItem, s1apERABToBeSwitchedDLItem_p);
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
-                return -1;
+                d_warn("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
+                break;
         }
     }
     return decoded;
@@ -7574,8 +7574,8 @@ int s1ap_decode_s1ap_e_rabsetuplistctxtsures(
                 ASN_SEQUENCE_ADD(&s1ap_E_RABSetupListCtxtSUResIEs->s1ap_E_RABSetupItemCtxtSURes, s1apERABSetupItemCtxtSURes_p);
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
-                return -1;
+                d_warn("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
+                break;
         }
     }
     return decoded;
@@ -7608,8 +7608,8 @@ int s1ap_decode_s1ap_e_rabtobeswitchedullist(
                 ASN_SEQUENCE_ADD(&s1ap_E_RABToBeSwitchedULListIEs->s1ap_E_RABToBeSwitchedULItem, s1apERABToBeSwitchedULItem_p);
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
-                return -1;
+                d_warn("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
+                break;
         }
     }
     return decoded;
@@ -7642,8 +7642,8 @@ int s1ap_decode_s1ap_bearers_subjecttostatustransfer_list(
                 ASN_SEQUENCE_ADD(&s1ap_Bearers_SubjectToStatusTransfer_ListIEs->s1ap_Bearers_SubjectToStatusTransfer_Item, s1apBearersSubjectToStatusTransferItem_p);
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
-                return -1;
+                d_warn("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
+                break;
         }
     }
     return decoded;
@@ -7676,8 +7676,8 @@ int s1ap_decode_s1ap_e_rablist(
                 ASN_SEQUENCE_ADD(&s1ap_E_RABListIEs->s1ap_E_RABItem, s1apERABItem_p);
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
-                return -1;
+                d_warn("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
+                break;
         }
     }
     return decoded;
@@ -7710,8 +7710,8 @@ int s1ap_decode_s1ap_tailist(
                 ASN_SEQUENCE_ADD(&s1ap_TAIListIEs->s1ap_TAIItem, s1apTAIItem_p);
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
-                return -1;
+                d_warn("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
+                break;
         }
     }
     return decoded;
@@ -7744,8 +7744,8 @@ int s1ap_decode_s1ap_ue_associatedlogicals1_connectionlistres(
                 ASN_SEQUENCE_ADD(&s1ap_UE_associatedLogicalS1_ConnectionListResIEs->s1ap_UE_associatedLogicalS1_ConnectionItemRes, s1apUEassociatedLogicalS1ConnectionItem_p);
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
-                return -1;
+                d_warn("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
+                break;
         }
     }
     return decoded;
@@ -7778,8 +7778,8 @@ int s1ap_decode_s1ap_e_rabsetuplistbearersures(
                 ASN_SEQUENCE_ADD(&s1ap_E_RABSetupListBearerSUResIEs->s1ap_E_RABSetupItemBearerSURes, s1apERABSetupItemBearerSURes_p);
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
-                return -1;
+                d_warn("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
+                break;
         }
     }
     return decoded;
@@ -7812,8 +7812,8 @@ int s1ap_decode_s1ap_e_rabmodifylistbearermodres(
                 ASN_SEQUENCE_ADD(&s1ap_E_RABModifyListBearerModResIEs->s1ap_E_RABModifyItemBearerModRes, s1apERABModifyItemBearerModRes_p);
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
-                return -1;
+                d_warn("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
+                break;
         }
     }
     return decoded;
@@ -7846,8 +7846,8 @@ int s1ap_decode_s1ap_e_rabtobesetuplistctxtsureq(
                 ASN_SEQUENCE_ADD(&s1ap_E_RABToBeSetupListCtxtSUReqIEs->s1ap_E_RABToBeSetupItemCtxtSUReq, s1apERABToBeSetupItemCtxtSUReq_p);
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
-                return -1;
+                d_warn("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
+                break;
         }
     }
     return decoded;
@@ -7880,8 +7880,8 @@ int s1ap_decode_s1ap_e_rabinformationlist(
                 ASN_SEQUENCE_ADD(&s1ap_E_RABInformationListIEs->s1ap_E_RABInformationList, s1apERABInformationListItem_p);
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
-                return -1;
+                d_warn("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
+                break;
         }
     }
     return decoded;
@@ -7914,8 +7914,8 @@ int s1ap_decode_s1ap_ue_associatedlogicals1_connectionlistresack(
                 ASN_SEQUENCE_ADD(&s1ap_UE_associatedLogicalS1_ConnectionListResAckIEs->s1ap_UE_associatedLogicalS1_ConnectionItemResAck, s1apUEassociatedLogicalS1ConnectionItem_p);
             } break;
             default:
-                d_error("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
-                return -1;
+                d_warn("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
+                break;
         }
     }
     return decoded;
