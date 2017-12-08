@@ -12,6 +12,7 @@
 static int max_fd;
 static list_t fd_list;
 static fd_set read_fds;
+static mutex_id mutex;
 
 pool_declare(sock_pool, sock_t, MAX_SOCK_POOL_SIZE);
 pool_declare(sock_node_pool, sock_node_t, MAX_SOCK_NODE_POOL_SIZE);
@@ -26,6 +27,8 @@ static void fd_dispatch(fd_set *fds);
  */
 status_t network_init(void)
 {
+    mutex_create(&mutex, MUTEX_DEFAULT);
+
     pool_init(&sock_pool, MAX_SOCK_POOL_SIZE);
     pool_init(&sock_node_pool, MAX_SOCK_NODE_POOL_SIZE);
 
@@ -53,6 +56,8 @@ status_t network_final(void)
             pool_size(&sock_node_pool));
     pool_final(&sock_pool);
     pool_final(&sock_node_pool);
+
+    mutex_delete(mutex);
 
     return CORE_OK;
 }
@@ -854,6 +859,8 @@ status_t sock_register(sock_id id, sock_handler handler, void *data)
         return CORE_ERROR;
     }
 
+    mutex_lock(mutex);
+
     if (sock->fd > max_fd)
     {
         max_fd = sock->fd;
@@ -863,6 +870,8 @@ status_t sock_register(sock_id id, sock_handler handler, void *data)
 
     list_append(&fd_list, sock);
 
+    mutex_unlock(mutex);
+
     return CORE_OK;
 }
 
@@ -870,7 +879,11 @@ status_t sock_unregister(sock_id id)
 {
     d_assert(id, return CORE_ERROR,);
 
+    mutex_lock(mutex);
+
     list_remove(&fd_list, id);
+
+    mutex_unlock(mutex);
 
     return CORE_OK;
 }
@@ -880,15 +893,19 @@ int sock_is_registered(sock_id id)
     sock_t *sock = (sock_t *)id;
     sock_t *iter = NULL;
 
+    mutex_lock(mutex);
+
     d_assert(id, return CORE_ERROR,);
     for (iter = list_first(&fd_list); iter != NULL; iter = list_next(iter))
     {
         if (iter == sock)
         {
+            mutex_unlock(mutex);
             return 1;
         }
     }
 
+    mutex_unlock(mutex);
     return 0;
 }
 
@@ -994,16 +1011,22 @@ static void set_fds(fd_set *fds)
 {
     sock_t *sock = NULL;
 
+    mutex_lock(mutex);
+
     FD_ZERO(fds);
     for (sock = list_first(&fd_list); sock != NULL; sock = list_next(sock))
     {
         FD_SET(sock->fd, fds);
     }
+
+    mutex_unlock(mutex);
 }
 
 static void fd_dispatch(fd_set *fds)
 {
     sock_t *sock = NULL;
+
+    mutex_lock(mutex);
 
     for (sock = list_first(&fd_list); sock != NULL; sock = list_next(sock))
     {
@@ -1015,4 +1038,6 @@ static void fd_dispatch(fd_set *fds)
             }
         }
     }
+
+    mutex_unlock(mutex);
 }
