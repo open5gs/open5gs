@@ -50,48 +50,43 @@ status_t sctp_socket(sock_id *new, int family, int type)
     return CORE_OK;
 }
 
-status_t sctp_server(sock_id *new,
-        int family, int type, const char *hostname, c_uint16_t port)
+status_t sctp_server(sock_id *new, int type, c_sockaddr_t *sa_list)
 {
     status_t rv;
-    c_sockaddr_t *sa;
+    c_sockaddr_t *addr;
     char buf[CORE_ADDRSTRLEN];
 
-    rv = core_getaddrinfo(&sa, family, hostname, port, AI_PASSIVE);
-    d_assert(rv == CORE_OK && sa, return CORE_ERROR,);
-
-    while(sa)
+    addr = sa_list;
+    while(addr)
     {
-        rv = sctp_socket(new, sa->c_sa_family, type);
+        rv = sctp_socket(new, addr->c_sa_family, type);
         if (rv != CORE_OK) continue;
         
         d_assert(sock_setsockopt(*new, SOCK_O_REUSEADDR, 1) == CORE_OK,
                 return CORE_ERROR,
-                "setsockopt(%s:%d) failed(%d:%s)",
-                CORE_ADDR(sa, buf), port, errno, strerror(errno));
+                "setsockopt [%s]:%d failed(%d:%s)",
+                CORE_ADDR(addr, buf), CORE_PORT(addr), errno, strerror(errno));
 
-        if (sock_bind(*new, sa) == CORE_OK)
+        if (sock_bind(*new, addr) == CORE_OK)
         {
-            d_trace(1, "sctp bind %d:%s:%d\n",
-                    sa->c_sa_family, CORE_ADDR(sa, buf), port);
+            d_trace(1, "sctp_server() [%s]:%d\n",
+                    CORE_ADDR(addr, buf), CORE_PORT(addr));
             break;
         }
 
         rv = sock_delete(*new);
         d_assert(rv == CORE_OK, return CORE_ERROR,);
 
-        sa = sa->next;
+        addr = addr->next;
     }
 
-    if (sa == NULL)
+    if (addr == NULL)
     {
-        d_error("sctp bind(%d:%s:%d) failed(%d:%s)",
-                family, hostname, port, errno, strerror(errno));
+        d_error("sctp_server() [%s]:%d failed(%d:%s)",
+                CORE_ADDR(sa_list, buf), CORE_PORT(sa_list),
+                errno, strerror(errno));
         return CORE_ERROR;
     }
-
-    rv = core_freeaddrinfo(sa);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
 
     rv = sock_listen(*new);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
@@ -99,78 +94,69 @@ status_t sctp_server(sock_id *new,
     return CORE_OK;
 }
 
-status_t sctp_client(sock_id *new,
-        int family, int type, const char *hostname, c_uint16_t port)
+status_t sctp_client(sock_id *new, int type, c_sockaddr_t *sa_list)
 {
     status_t rv;
-    c_sockaddr_t *sa;
+    c_sockaddr_t *addr;
     char buf[CORE_ADDRSTRLEN];
 
-    rv = core_getaddrinfo(&sa, family, hostname, port, 0);
-    d_assert(rv == CORE_OK && sa, return CORE_ERROR,);
-
-    while(sa)
+    addr = sa_list;
+    while(addr)
     {
-        rv = sctp_socket(new, sa->c_sa_family, type);
+        rv = sctp_socket(new, addr->c_sa_family, type);
         if (rv != CORE_OK) continue;
         
-        if (sock_connect(*new, sa) == CORE_OK)
+        if (sock_connect(*new, addr) == CORE_OK)
         {
-            d_trace(1, "sctp connect %s:%d\n", CORE_ADDR(sa, buf), port);
+            d_trace(1, "sctp_client() [%s]:%d\n",
+                    CORE_ADDR(addr, buf), CORE_PORT(addr));
             break;
         }
 
         rv = sock_delete(*new);
         d_assert(rv == CORE_OK, return CORE_ERROR,);
 
-        sa = sa->next;
+        addr = addr->next;
     }
 
-    if (sa == NULL)
+    if (addr == NULL)
     {
-        d_error("sctp connect(%d:%s:%d) failed(%d:%s)",
-                family, hostname, port, errno, strerror(errno));
+        d_error("sctp_client() [%s]:%d failed(%d:%s)",
+                CORE_ADDR(sa_list, buf), CORE_PORT(sa_list),
+                errno, strerror(errno));
         return CORE_ERROR;
     }
-
-    rv = core_freeaddrinfo(sa);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
 
     return CORE_OK;
 }
 
-status_t sctp_connect(sock_id id, const char *hostname, c_uint16_t port)
+status_t sctp_connect(sock_id id, c_sockaddr_t *sa_list)
 {
-    status_t rv;
-    c_sockaddr_t *sa;
-    sock_t *sock = (sock_t *)id;
+    c_sockaddr_t *addr;
     char buf[CORE_ADDRSTRLEN];
 
     d_assert(id, return CORE_ERROR,);
 
-    rv = core_getaddrinfo(&sa, sock->family, hostname, port, 0);
-    d_assert(rv == CORE_OK && sa, return CORE_ERROR,);
-
-    while(sa)
+    addr = sa_list;
+    while(addr)
     {
-        if (sock_connect(id, sa) == CORE_OK)
+        if (sock_connect(id, addr) == CORE_OK)
         {
-            d_trace(1, "sctp connect %s:%d\n", CORE_ADDR(sa, buf), port);
+            d_trace(1, "sctp_connect() [%s]:%d\n",
+                    CORE_ADDR(addr, buf), CORE_PORT(addr));
             break;
         }
 
-        sa = sa->next;
+        addr = addr->next;
     }
 
-    if (sa == NULL)
+    if (addr == NULL)
     {
-        d_error("sctp connect(%d:%s:%d) failed(%d:%s)",
-               sock->family, hostname, port, errno, strerror(errno));
+        d_error("sctp_connect() [%s]:%d failed(%d:%s)",
+                CORE_ADDR(sa_list, buf), CORE_PORT(sa_list),
+                errno, strerror(errno));
         return CORE_ERROR;
     }
-
-    rv = core_freeaddrinfo(sa);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
 
     return CORE_OK;
 }
@@ -257,7 +243,6 @@ int core_sctp_recvmsg(sock_id id, void *msg, size_t len,
 
                     if (not->sn_assoc_change.sac_state == SCTP_COMM_UP)
                         d_trace(3, "SCTP_COMM_UP\n");
-
                     break;
                 case SCTP_SEND_FAILED :
                     d_error("SCTP_SEND_FAILED"

@@ -19,31 +19,23 @@ status_t s1ap_final()
     return CORE_OK;
 }
 
-status_t s1ap_server(sock_id *new,
-        int family, int type, const char *hostname, c_uint16_t port)
+status_t s1ap_server(sock_node_t *snode, int type)
 {
     status_t rv;
-    c_sockaddr_t *addr = NULL;
     char buf[CORE_ADDRSTRLEN];
 
-    rv = sctp_server(new, family, type, hostname, port);
+    d_assert(snode, return CORE_ERROR,);
+
+    rv = sctp_server(&snode->sock, type, snode->list);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
-    rv = sock_register(*new, s1ap_accept_handler, NULL);
+    rv = sock_register(snode->sock, s1ap_accept_handler, NULL);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
-    addr = sock_local_addr(*new);
-    d_assert(addr, return CORE_ERROR,);
-
-    d_trace(1, "s1ap_server [%s]:%d\n", CORE_ADDR(addr, buf), CORE_PORT(addr));
+    d_trace(1, "s1ap_server() [%s]:%d\n",
+            CORE_ADDR(snode->list, buf), CORE_PORT(snode->list));
 
     return CORE_OK;
-}
-
-status_t s1ap_client(sock_id *new,
-        int family, int type, const char *hostname, c_uint16_t port)
-{
-    return sctp_client(new, family, type, hostname, port);
 }
 
 status_t s1ap_delete(sock_id sock)
@@ -155,9 +147,6 @@ int s1ap_recv_handler(sock_id sock, void *data)
     {
         pkbuf_free(pkbuf);
 
-        if (errno == 0 || errno == EAGAIN)
-            return 0;
-
         if (size == CORE_SCTP_REMOTE_CLOSED)
         {
             addr = core_calloc(1, sizeof(c_sockaddr_t));
@@ -169,16 +158,18 @@ int s1ap_recv_handler(sock_id sock, void *data)
             event_set_param2(&e, (c_uintptr_t)addr);
             if (mme_event_send(&e) != CORE_OK)
             {
-                pkbuf_free(pkbuf);
                 core_free(addr);
             }
 
             return 0;
         }
 
-        d_error("core_sctp_recvmsg(%d) failed(%d:%s)",
-                size, errno, strerror(errno));
-        return -1;
+        if (errno != EAGAIN)
+        {
+            d_error("core_sctp_recvmsg(%d) failed(%d:%s)",
+                    size, errno, strerror(errno));
+        }
+        return 0;
     }
 
     pkbuf->len = size;

@@ -12,6 +12,9 @@
 #include "s1ap_build.h"
 #include "s1ap_path.h"
 
+static status_t s1ap_server_list(list_t *list, int type);
+static status_t s1ap_delete_list(list_t *list);
+
 status_t s1ap_open(void)
 {
     status_t rv;
@@ -20,36 +23,44 @@ status_t s1ap_open(void)
 #else
     int type = SOCK_SEQPACKET;
 #endif
-    sock_node_t *snode = NULL;
 
-    for (snode = list_first(&mme_self()->s1ap_list);
-            snode; snode = list_next(snode))
-    {
-        rv = s1ap_server(&snode->sock, type, snode->list);
-        d_assert(rv == CORE_OK, return CORE_ERROR,);
-    }
-
-    for (snode = list_first(&mme_self()->s1ap_list6);
-            snode; snode = list_next(snode))
-    {
-        rv = s1ap_server(&snode->sock, type, snode->list);
-        d_assert(rv == CORE_OK, return CORE_ERROR,);
-    }
+    rv = s1ap_server_list(&mme_self()->s1ap_list, type);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    rv = s1ap_server_list(&mme_self()->s1ap_list6, type);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
 
     return CORE_OK;
 }
 
 status_t s1ap_close()
 {
+    s1ap_delete_list(&mme_self()->s1ap_list);
+    s1ap_delete_list(&mme_self()->s1ap_list6);
+
+    return CORE_OK;
+}
+
+static status_t s1ap_server_list(list_t *list, int type)
+{
+    status_t rv;
     sock_node_t *snode = NULL;
 
-    for (snode = list_first(&mme_self()->s1ap_list);
-            snode; snode = list_next(snode))
+    d_assert(list, return CORE_ERROR,);
+
+    for (snode = list_first(list); snode; snode = list_next(snode))
     {
-        s1ap_delete(snode->sock);
+        rv = s1ap_server(snode, type);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
     }
-    for (snode = list_first(&mme_self()->s1ap_list6);
-            snode; snode = list_next(snode))
+
+    return CORE_OK;
+}
+
+static status_t s1ap_delete_list(list_t *list)
+{
+    sock_node_t *snode = NULL;
+
+    for (snode = list_first(list); snode; snode = list_next(snode))
     {
         s1ap_delete(snode->sock);
     }
