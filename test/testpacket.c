@@ -9,6 +9,7 @@
 #include "s1ap_path.h"
 
 #include "gtp_message.h"
+#include "gtp_conv.h"
 #include "gtp_node.h"
 #include "gtp_path.h"
 
@@ -684,7 +685,72 @@ status_t tests1ap_build_ue_capability_info_indication(pkbuf_t **pkbuf, int i)
     return CORE_OK;
 }
 
-status_t tests1ap_build_initial_context_setup_response(pkbuf_t **pkbuf, int i)
+status_t tests1ap_build_initial_context_setup_response(
+        pkbuf_t **pkbuf, c_uint8_t ebi, c_uint32_t teid)
+{
+    int erval = -1;
+
+    status_t rv;
+    hash_index_t *hi = NULL;
+    mme_enb_t *enb = NULL;
+    enb_ue_t *enb_ue = NULL;
+    gtp_f_teid_t f_teid;
+    ip_t ip;
+    int len;
+
+    s1ap_message_t message;
+    S1ap_InitialContextSetupResponseIEs_t *ies = NULL;
+    S1ap_E_RABSetupItemCtxtSURes_t *e_rab = NULL;
+
+    memset(&message, 0, sizeof(s1ap_message_t));
+
+    ies = &message.s1ap_InitialContextSetupResponseIEs;
+
+    message.direction = S1AP_PDU_PR_successfulOutcome;
+    message.procedureCode = S1ap_ProcedureCode_id_InitialContextSetup;
+
+    hi = mme_enb_first();
+    d_assert(hi, return CORE_ERROR,);
+    enb = mme_enb_this(hi);
+    d_assert(enb, return CORE_ERROR,);
+    enb_ue = enb_ue_first_in_enb(enb);
+    d_assert(enb_ue, return CORE_ERROR,);
+
+    ies->mme_ue_s1ap_id = enb_ue->mme_ue_s1ap_id;
+    ies->eNB_UE_S1AP_ID = enb_ue->enb_ue_s1ap_id;
+
+    e_rab = (S1ap_E_RABSetupItemCtxtSURes_t *)
+        core_calloc(1, sizeof(S1ap_E_RABSetupItemCtxtSURes_t));
+    e_rab->e_RAB_ID = ebi;
+
+    d_assert(mme_self()->gtpc_addr, return CORE_ERROR,);
+    d_assert(mme_self()->gtpc_addr6, return CORE_ERROR,);
+    rv = gtp_sockaddr_to_f_teid(
+            mme_self()->gtpc_addr, mme_self()->gtpc_addr6, &f_teid, &len);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    rv = gtp_f_teid_to_ip(&f_teid, &ip);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    rv = s1ap_ip_to_BIT_STRING(&ip, &e_rab->transportLayerAddress);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    s1ap_uint32_to_OCTET_STRING(teid, &e_rab->gTP_TEID);
+
+    ASN_SEQUENCE_ADD(&ies->e_RABSetupListCtxtSURes, e_rab);
+
+    erval = s1ap_encode_pdu(pkbuf, &message);
+    s1ap_free_pdu(&message);
+
+    if (erval < 0)
+    {
+        d_error("s1ap_encode_error : (%d)", erval);
+        return CORE_ERROR;
+    }
+
+    return CORE_OK;
+}
+
+status_t tests1ap_build_initial_context_setup_response_static(
+        pkbuf_t **pkbuf, int i)
 {
     char *payload[TESTS1AP_MAX_MESSAGE] = { 
         "2009"

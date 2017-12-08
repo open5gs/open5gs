@@ -23,6 +23,8 @@ static inline int s1ap_encode_downlink_nas_transport(
     s1ap_message_t *message_p, pkbuf_t *pkbuf);
 static inline int s1ap_encode_initial_context_setup_request(
     s1ap_message_t *message_p, pkbuf_t *pkbuf);
+static inline int s1ap_encode_initial_context_setup_response(
+    s1ap_message_t *message_p, pkbuf_t *pkbuf);
 static inline int s1ap_encode_e_rab_setup_request(
     s1ap_message_t *message_p, pkbuf_t *pkbuf);
 static inline int s1ap_encode_e_rab_release_command(
@@ -178,6 +180,13 @@ static inline int s1ap_encode_successfull_outcome(
                     s1ap_xer_print_s1ap_s1setupresponse, 
                     s1ap_xer__print2sp, message_p);
             ret = s1ap_encode_s1setup_response(message_p, pkbuf);
+            break;
+
+        case S1ap_ProcedureCode_id_InitialContextSetup:
+            s1ap_encode_xer_print_message(
+                    s1ap_xer_print_s1ap_initialcontextsetupresponse, 
+                    s1ap_xer__print2sp, message_p);
+            ret = s1ap_encode_initial_context_setup_response(message_p, pkbuf);
             break;
 
         case S1ap_ProcedureCode_id_PathSwitchRequest:
@@ -427,6 +436,46 @@ static inline int s1ap_encode_initial_context_setup_request(
                     &pdu, pkbuf->payload, MAX_SDU_LEN);
 
     ASN_STRUCT_FREE_CONTENTS_ONLY(*td, &initialContextSetupRequest);
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1AP_PDU, &pdu);
+
+    if (enc_ret.encoded < 0)
+    {
+        d_error("Encoding of %s failed", td->name);
+    }
+
+    return enc_ret.encoded;
+}
+
+static inline int s1ap_encode_initial_context_setup_response(
+        s1ap_message_t *message_p, pkbuf_t *pkbuf)
+{
+    asn_enc_rval_t enc_ret = {0};
+
+    S1AP_PDU_t pdu;
+    S1ap_InitialContextSetupResponse_t initialContextSetupResponse;
+    asn_TYPE_descriptor_t *td = &asn_DEF_S1ap_InitialContextSetupResponse;
+
+    memset(&initialContextSetupResponse, 0, 
+            sizeof(S1ap_InitialContextSetupResponse_t));
+    if (s1ap_encode_s1ap_initialcontextsetupresponseies(
+            &initialContextSetupResponse, 
+            &message_p->s1ap_InitialContextSetupResponseIEs) < 0) 
+    {
+        d_error("Encoding of %s failed", td->name);
+        return -1;
+    }
+
+    memset(&pdu, 0, sizeof (S1AP_PDU_t));
+    pdu.present = S1AP_PDU_PR_successfulOutcome;
+    pdu.choice.initiatingMessage.procedureCode = message_p->procedureCode;
+    pdu.choice.initiatingMessage.criticality = S1ap_Criticality_reject;
+    ANY_fromType_aper(&pdu.choice.successfulOutcome.value,
+            td, &initialContextSetupResponse);
+
+    enc_ret = aper_encode_to_buffer(&asn_DEF_S1AP_PDU, 
+                    &pdu, pkbuf->payload, MAX_SDU_LEN);
+
+    ASN_STRUCT_FREE_CONTENTS_ONLY(*td, &initialContextSetupResponse);
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1AP_PDU, &pdu);
 
     if (enc_ret.encoded < 0)

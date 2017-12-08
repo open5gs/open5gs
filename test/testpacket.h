@@ -31,6 +31,8 @@ CORE_DECLARE(status_t) tests1ap_build_esm_information_response(
 CORE_DECLARE(status_t) tests1ap_build_ue_capability_info_indication(
         pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_initial_context_setup_response(
+        pkbuf_t **pkbuf, c_uint8_t ebi, c_uint32_t teid);
+CORE_DECLARE(status_t) tests1ap_build_initial_context_setup_response_static(
         pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_attach_complete(pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_emm_status(pkbuf_t **pkbuf, int i);

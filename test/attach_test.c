@@ -277,7 +277,8 @@ static void attach_test1(abts_case *tc, void *data)
     core_sleep(time_from_msec(300));
 
     /* Send Initial Context Setup Response */
-    rv = tests1ap_build_initial_context_setup_response(&sendbuf, msgindex);
+    rv = tests1ap_build_initial_context_setup_response_static(
+            &sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -604,7 +605,8 @@ static void attach_test2(abts_case *tc, void *data)
     core_sleep(time_from_msec(300));
 
     /* Send Initial Context Setup Response */
-    rv = tests1ap_build_initial_context_setup_response(&sendbuf, msgindex);
+    rv = tests1ap_build_initial_context_setup_response_static(
+            &sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -895,7 +897,8 @@ static void attach_test3(abts_case *tc, void *data)
     core_sleep(time_from_msec(300));
 
     /* Send Initial Context Setup Response */
-    rv = tests1ap_build_initial_context_setup_response(&sendbuf, msgindex);
+    rv = tests1ap_build_initial_context_setup_response_static(
+            &sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -962,7 +965,8 @@ static void attach_test3(abts_case *tc, void *data)
     core_sleep(time_from_msec(300));
 
     /* Send Initial Context Setup Response */
-    rv = tests1ap_build_initial_context_setup_response(&sendbuf, msgindex+1);
+    rv = tests1ap_build_initial_context_setup_response_static(
+            &sendbuf, msgindex+1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);

@@ -21,8 +21,6 @@ extern "C" {
 typedef struct _gtp_node_t gtp_node_t;
 
 typedef struct _pgw_context_t {
-    c_uint32_t      pgw_addr;       /* PGW local address */
-
     c_uint32_t      gtpc_port;      /* PGW GTP-C local port */
     c_uint32_t      gtpu_port;      /* PGW GTP-U local port */
 
