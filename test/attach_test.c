@@ -277,8 +277,8 @@ static void attach_test1(abts_case *tc, void *data)
     core_sleep(time_from_msec(300));
 
     /* Send Initial Context Setup Response */
-    rv = tests1ap_build_initial_context_setup_response_static(
-            &sendbuf, msgindex);
+    rv = tests1ap_build_initial_context_setup_response(&sendbuf,
+            16777373, 1, 5, 1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -301,8 +301,7 @@ static void attach_test1(abts_case *tc, void *data)
     core_sleep(time_from_msec(300));
 
     /* Send GTP-U ICMP Packet */
-    rv = testgtpu_enb_send(gtpu,
-            inet_addr("45.45.0.2"), inet_addr("45.45.0.1"));
+    rv = testgtpu_enb_send(inet_addr("45.45.0.2"), inet_addr("45.45.0.1"));
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     /* Receive GTP-U ICMP Packet */

@@ -13,6 +13,7 @@
 #include "gtp_node.h"
 #include "gtp_path.h"
 
+#include "context.h"
 #include "mme_context.h"
 
 extern int test_only_control_plane;
@@ -53,18 +54,31 @@ status_t testgtpu_enb_connect(sock_id *new)
     status_t rv;
     mme_context_t *mme = mme_self();
     c_sockaddr_t addr;
+    int family = AF_UNSPEC;
 
     if (test_only_control_plane) return CORE_OK;
 
     d_assert(mme, return CORE_ERROR,);
     d_assert(mme->gtpc_addr, return CORE_ERROR,);
+    d_assert(mme->gtpc_addr6, return CORE_ERROR,);
 
-    memcpy(&addr, mme->gtpc_addr, sizeof(c_sockaddr_t));
-    addr.c_sa_port = htons(GTPV1_U_UDP_PORT);
+    family = AF_INET6;
+    if (context_self()->parameter.no_ipv6) family = AF_INET;
+    else if (context_self()->parameter.prefer_ipv4) family = AF_INET;
 
-    rv = udp_socket(new, AF_INET);
+    rv = udp_socket(new, family);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
+    if (family == AF_INET)
+    {
+        memcpy(&addr, mme->gtpc_addr, sizeof(c_sockaddr_t));
+        addr.c_sa_port = htons(GTPV1_U_UDP_PORT);
+    }
+    else
+    {
+        memcpy(&addr, mme->gtpc_addr6, sizeof(c_sockaddr_t));
+        addr.c_sa_port = htons(GTPV1_U_UDP_PORT);
+    }
     rv = sock_bind(*new, &addr);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
@@ -105,8 +119,9 @@ static uint16_t in_cksum(uint16_t *addr, int len)
   return answer;
 }
 
-status_t testgtpu_enb_send(sock_id sock, c_uint32_t src_ip, c_uint32_t dst_ip)
+status_t testgtpu_enb_send(c_uint32_t src_ip, c_uint32_t dst_ip)
 {
+    sock_id sock = 0;
     hash_index_t *hi = NULL;
     mme_ue_t *mme_ue = NULL;
     mme_sess_t *sess = NULL;
@@ -116,7 +131,7 @@ status_t testgtpu_enb_send(sock_id sock, c_uint32_t src_ip, c_uint32_t dst_ip)
     pkbuf_t *pkbuf = NULL;
     gtp_header_t *gtp_h = NULL;
     ssize_t sent;
-    c_sockaddr_t to;
+    c_sockaddr_t sgw;
     struct ip *ip_h =  NULL;
     struct icmp_header_t {
         c_int8_t type;
@@ -182,37 +197,31 @@ status_t testgtpu_enb_send(sock_id sock, c_uint32_t src_ip, c_uint32_t dst_ip)
     icmp_h->checksum = in_cksum(
             (unsigned short *)icmp_h, sizeof(struct icmp_header_t));
 
-    memset(&to, 0, sizeof(c_sockaddr_t));
-    to.c_sa_port = htons(GTPV1_U_UDP_PORT);
-
-#if 0
-    if (bearer->sgw_s1u_ip.ipv4 && bearer->sgw_s1u_ip.ipv6)
+    memset(&sgw, 0, sizeof(c_sockaddr_t));
+    sgw.c_sa_port = htons(GTPV1_U_UDP_PORT);
+    if (bearer->sgw_s1u_ip.ipv6)
     {
-        to.c_sa_family = AF_INET6;
-        memcpy(to.sin6.sin6_addr.s6_addr,
+        sgw.c_sa_family = AF_INET6;
+        memcpy(sgw.sin6.sin6_addr.s6_addr,
                 bearer->sgw_s1u_ip.both.addr6, IPV6_LEN);
-    }
-    else if (bearer->sgw_s1u_ip.ipv4)
-    {
-        to.c_sa_family = AF_INET;
-        to.sin.sin_addr.s_addr = bearer->sgw_s1u_ip.addr;
-    }
-    else if (bearer->sgw_s1u_ip.ipv6)
-    {
-        to.c_sa_family = AF_INET6;
-        memcpy(to.sin6.sin6_addr.s6_addr, bearer->sgw_s1u_ip.addr6, IPV6_LEN);
+        rv = sock_fill_scope_id_in_local(&sgw);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
     }
     else
-        d_assert(0, return CORE_ERROR,);
-#else
-    to.c_sa_family = AF_INET;
-    to.sin.sin_addr.s_addr = bearer->sgw_s1u_ip.addr;
-#endif
+    {
+        sgw.c_sa_family = AF_INET;
+        sgw.sin.sin_addr.s_addr = bearer->sgw_s1u_ip.addr;
+    }
 
-    sent = core_sendto(sock, pkbuf->payload, pkbuf->len, 0, &to);
+    rv = udp_client(&sock, &sgw);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    sent = core_send(sock, pkbuf->payload, pkbuf->len, 0);
     pkbuf_free(pkbuf);
     if (sent < 0 || sent != pkbuf->len)
         return CORE_ERROR;
+
+    sock_delete(sock);
 
     return CORE_OK;
 }
@@ -686,14 +695,13 @@ status_t tests1ap_build_ue_capability_info_indication(pkbuf_t **pkbuf, int i)
 }
 
 status_t tests1ap_build_initial_context_setup_response(
-        pkbuf_t **pkbuf, c_uint8_t ebi, c_uint32_t teid)
+        pkbuf_t **pkbuf, 
+        c_uint32_t mme_ue_s1ap_id, c_uint32_t enb_ue_s1ap_id,
+        c_uint8_t ebi, c_uint32_t teid)
 {
     int erval = -1;
 
     status_t rv;
-    hash_index_t *hi = NULL;
-    mme_enb_t *enb = NULL;
-    enb_ue_t *enb_ue = NULL;
     gtp_f_teid_t f_teid;
     ip_t ip;
     int len;
@@ -709,15 +717,8 @@ status_t tests1ap_build_initial_context_setup_response(
     message.direction = S1AP_PDU_PR_successfulOutcome;
     message.procedureCode = S1ap_ProcedureCode_id_InitialContextSetup;
 
-    hi = mme_enb_first();
-    d_assert(hi, return CORE_ERROR,);
-    enb = mme_enb_this(hi);
-    d_assert(enb, return CORE_ERROR,);
-    enb_ue = enb_ue_first_in_enb(enb);
-    d_assert(enb_ue, return CORE_ERROR,);
-
-    ies->mme_ue_s1ap_id = enb_ue->mme_ue_s1ap_id;
-    ies->eNB_UE_S1AP_ID = enb_ue->enb_ue_s1ap_id;
+    ies->mme_ue_s1ap_id = mme_ue_s1ap_id;
+    ies->eNB_UE_S1AP_ID = enb_ue_s1ap_id;
 
     e_rab = (S1ap_E_RABSetupItemCtxtSURes_t *)
         core_calloc(1, sizeof(S1ap_E_RABSetupItemCtxtSURes_t));
