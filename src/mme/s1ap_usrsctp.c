@@ -97,7 +97,7 @@ status_t sctp_server(sock_id *new, int type, c_sockaddr_t *sa_list)
         
         if (s1ap_usrsctp_bind(*new, addr) == CORE_OK)
         {
-            d_trace(1, "s1ap_server [%s]:%d\n",
+            d_trace(3, "sctp_server [%s]:%d\n",
                     CORE_ADDR(addr, buf), CORE_PORT(addr));
             break;
         }
@@ -110,7 +110,7 @@ status_t sctp_server(sock_id *new, int type, c_sockaddr_t *sa_list)
 
     if (addr == NULL)
     {
-        d_error("s1ap_server [%s]:%d failed",
+        d_error("sctp_server [%s]:%d failed",
                     CORE_ADDR(addr, buf), CORE_PORT(addr));
         return CORE_ERROR;
     }
@@ -135,7 +135,7 @@ status_t sctp_client(sock_id *new, int type, c_sockaddr_t *sa_list)
         
         if (s1ap_usrsctp_connect(*new, addr) == CORE_OK)
         {
-            d_trace(1, "s1ap_client [%s]:%d\n",
+            d_trace(3, "sctp_client [%s]:%d\n",
                     CORE_ADDR(addr, buf), CORE_PORT(addr));
             break;
         }
@@ -148,7 +148,7 @@ status_t sctp_client(sock_id *new, int type, c_sockaddr_t *sa_list)
 
     if (addr == NULL)
     {
-        d_error("s1ap_client [%s]:%d failed", 
+        d_error("sctp_client [%s]:%d failed", 
                     CORE_ADDR(addr, buf), CORE_PORT(addr));
         return CORE_ERROR;
     }
