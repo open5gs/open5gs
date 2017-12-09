@@ -276,16 +276,20 @@ status_t tests1ap_build_setup_req(
     ies = &message.s1ap_S1SetupRequestIEs;
 
     s1ap_uint32_to_ENB_ID(present, enb_id, &ies->global_ENB_ID.eNB_ID);
-    s1ap_buffer_to_OCTET_STRING(&mme_self()->served_tai[0].plmn_id,
+    s1ap_buffer_to_OCTET_STRING(&mme_self()->served_gummei[0].plmn_id[0],
             PLMN_ID_LEN, &ies->global_ENB_ID.pLMNidentity);
 
     supportedTA = (S1ap_SupportedTAs_Item_t *)
         core_calloc(1, sizeof(S1ap_SupportedTAs_Item_t));
+#if 0 /* FIXTAI */
     s1ap_uint16_to_OCTET_STRING(
             mme_self()->served_tai[0].tac, &supportedTA->tAC);
+#else
+    s1ap_uint16_to_OCTET_STRING(12345, &supportedTA->tAC);
+#endif
     plmnIdentity = (S1ap_PLMNidentity_t *)
         core_calloc(1, sizeof(S1ap_PLMNidentity_t));
-    s1ap_buffer_to_OCTET_STRING(&mme_self()->served_tai[0].plmn_id,
+    s1ap_buffer_to_OCTET_STRING(&mme_self()->served_gummei[0].plmn_id[0],
             PLMN_ID_LEN, plmnIdentity);
     ASN_SEQUENCE_ADD(&supportedTA->broadcastPLMNs, plmnIdentity);
 

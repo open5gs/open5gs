@@ -65,6 +65,10 @@ void emm_handle_attach_request(
             sizeof(nas_eps_attach_type_t));
     mme_ue->nas_eps.type = MME_EPS_TYPE_ATTACH_REQUEST;
 
+    /* Copy TAI and ECGI from enb_ue */
+    memcpy(&mme_ue->tai, &enb_ue->nas.tai, sizeof(tai_t));
+    memcpy(&mme_ue->e_cgi, &enb_ue->nas.e_cgi, sizeof(e_cgi_t));
+
     /* Store UE specific information */
     if (attach_request->presencemask &
         NAS_ATTACH_REQUEST_LAST_VISITED_REGISTERED_TAI_PRESENT)
@@ -73,14 +77,11 @@ void emm_handle_attach_request(
             &attach_request->last_visited_registered_tai;
 
         memcpy(&mme_ue->visited_plmn_id, 
-                &last_visited_registered_tai->plmn_id,
-                PLMN_ID_LEN);
+                &last_visited_registered_tai->plmn_id, PLMN_ID_LEN);
     }
     else
     {
-        /* FIXME : what will do if we don't know last visited plmn_id */
-        memcpy(&mme_ue->visited_plmn_id,
-                &mme_self()->served_tai[0].plmn_id, PLMN_ID_LEN);
+        memcpy(&mme_ue->visited_plmn_id, &mme_ue->tai.plmn_id, PLMN_ID_LEN);
     }
 
     memcpy(&mme_ue->ue_network_capability, 
@@ -89,10 +90,6 @@ void emm_handle_attach_request(
     memcpy(&mme_ue->ms_network_capability, 
             &attach_request->ms_network_capability,
             sizeof(attach_request->ms_network_capability));
-
-    /* Copy TAI and ECGI from enb_ue */
-    memcpy(&mme_ue->tai, &enb_ue->nas.tai, sizeof(tai_t));
-    memcpy(&mme_ue->e_cgi, &enb_ue->nas.e_cgi, sizeof(e_cgi_t));
 
     switch(eps_mobile_identity->imsi.type)
     {
@@ -467,6 +464,10 @@ void emm_handle_tau_request(
             sizeof(nas_eps_update_type_t));
     mme_ue->nas_eps.type = MME_EPS_TYPE_TAU_REQUEST;
 
+    /* Copy TAI and ECGI from enb_ue */
+    memcpy(&mme_ue->tai, &enb_ue->nas.tai, sizeof(tai_t));
+    memcpy(&mme_ue->e_cgi, &enb_ue->nas.e_cgi, sizeof(e_cgi_t));
+
     /* Store UE specific information */
     if (tau_request->presencemask &
         NAS_TRACKING_AREA_UPDATE_REQUEST_LAST_VISITED_REGISTERED_TAI_PRESENT)
@@ -475,14 +476,11 @@ void emm_handle_tau_request(
             &tau_request->last_visited_registered_tai;
 
         memcpy(&mme_ue->visited_plmn_id, 
-                &last_visited_registered_tai->plmn_id,
-                PLMN_ID_LEN);
+                &last_visited_registered_tai->plmn_id, PLMN_ID_LEN);
     }
     else
     {
-        /* FIXME : what will do if we don't know last visited plmn_id */
-        memcpy(&mme_ue->visited_plmn_id,
-                &mme_self()->served_tai[0].plmn_id, PLMN_ID_LEN);
+        memcpy(&mme_ue->visited_plmn_id, &mme_ue->tai.plmn_id, PLMN_ID_LEN);
     }
 
     if (tau_request->presencemask &
@@ -500,10 +498,6 @@ void emm_handle_tau_request(
                 &tau_request->ms_network_capability,
                 sizeof(tau_request->ms_network_capability));
     }
-
-    /* Copy TAI and ECGI from enb_ue */
-    memcpy(&mme_ue->tai, &enb_ue->nas.tai, sizeof(tai_t));
-    memcpy(&mme_ue->e_cgi, &enb_ue->nas.e_cgi, sizeof(e_cgi_t));
 
     /* TODO: 
      *   1) Consider if MME is changed or not.

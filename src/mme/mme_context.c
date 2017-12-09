@@ -757,7 +757,6 @@ status_t mme_context_parse_config()
                         tai_t *tai = NULL;
                         plmn_id_t *plmn_id = NULL;
                         const char *mcc = NULL, *mnc = NULL;
-                        c_uint16_t tac = 0;
 
                         d_assert(self.max_num_of_served_tai <=
                                 MAX_NUM_OF_SERVED_TAI, return CORE_ERROR,);
@@ -822,20 +821,20 @@ status_t mme_context_parse_config()
                             else if (!strcmp(tai_key, "tac"))
                             {
                                 const char *v = yaml_iter_value(&tai_iter);
-                                if (v) tac = atoi(v);
+                                if (v) tai->tac = atoi(v);
                             }
                             else
                                 d_warn("unknown key `%s`", tai_key);
                         }
 
-                        if (mcc && mnc && tac)
+                        if (mcc && mnc && tai->tac)
                         {
                             self.max_num_of_served_tai++;
                         }
                         else
                         {
                             d_warn("Ignore tai : mcc(%p), mnc(%p), tac(%d)",
-                                mcc, mnc, tac);
+                                mcc, mnc, tai->tac);
                         }
                     } while(yaml_iter_type(&tai_array) ==
                             YAML_SEQUENCE_NODE);
