@@ -109,11 +109,13 @@ status_t gtp_sockaddr_to_f_teid(
     else if (addr)
     {
         f_teid->ipv4 = 1;
+        f_teid->ipv6 = 0;
         f_teid->addr = addr->sin.sin_addr.s_addr;
         *len = GTP_F_TEID_IPV4_LEN;
     }
     else if (addr6)
     {
+        f_teid->ipv4 = 0;
         f_teid->ipv6 = 1;
         memcpy(f_teid->addr6, addr6->sin6.sin6_addr.s6_addr, IPV6_LEN);
         *len = GTP_F_TEID_IPV6_LEN;
