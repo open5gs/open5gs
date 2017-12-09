@@ -264,7 +264,7 @@ static void handover_test1(abts_case *tc, void *data)
     core_sleep(time_from_msec(300));
 
     /* Send Path Switch Request */
-    rv = tests1ap_build_path_switch_request(&sendbuf, 0);
+    rv = tests1ap_build_path_switch_request(&sendbuf, 16777690, 1, 2, 5, 1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock2, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -290,7 +290,7 @@ static void handover_test1(abts_case *tc, void *data)
     pkbuf_free(recvbuf);
 
     /* Send Path Switch Request */
-    rv = tests1ap_build_path_switch_request(&sendbuf, 1);
+    rv = tests1ap_build_path_switch_request(&sendbuf, 16777690, 2, 2, 5, 1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock1, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -609,7 +609,7 @@ static void handover_test2(abts_case *tc, void *data)
     pkbuf_free(recvbuf);
 
     /* Send Handover Request Ack */
-    rv = tests1ap_build_handover_request_ack(&sendbuf, 0);
+    rv = tests1ap_build_handover_request_ack(&sendbuf, 33554629, 8, 2, 5, 1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock2, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -677,7 +677,7 @@ static void handover_test2(abts_case *tc, void *data)
     pkbuf_free(recvbuf);
 
     /* Send Handover Request Ack */
-    rv = tests1ap_build_handover_request_ack(&sendbuf, 1);
+    rv = tests1ap_build_handover_request_ack(&sendbuf, 33554630, 13, 2, 5, 1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock1, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -745,7 +745,7 @@ static void handover_test2(abts_case *tc, void *data)
     pkbuf_free(recvbuf);
 
     /* Send Handover Request Ack */
-    rv = tests1ap_build_handover_request_ack(&sendbuf, 2);
+    rv = tests1ap_build_handover_request_ack(&sendbuf, 33554631, 9, 2, 5, 1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock2, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);

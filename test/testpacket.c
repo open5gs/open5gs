@@ -752,68 +752,6 @@ status_t tests1ap_build_initial_context_setup_response(
     return CORE_OK;
 }
 
-status_t tests1ap_build_initial_context_setup_response_static(
-        pkbuf_t **pkbuf, int i)
-{
-    char *payload[TESTS1AP_MAX_MESSAGE] = { 
-        "2009"
-        "0025000003000040 05c00100009d0008 400200010033400f 000032400a0a1f7f"
-        "00000100000001",
-        "",
-        "",
-
-        "2009002200000300 0040020001000840 02001f0033400f00 0032400a0a1f0a01"
-        "23c501000508",
-        "",
-        "",
-
-        "2009"
-        "0025000003000040 05c0020000c80008 400200020033400f 000032400a0a1f0a"
-        "0123a701000008",
-
-        "2009"
-        "0025000003000040 05c0020000c70008 400200040033400f 000032400a0a1f0a"
-        "0123a701000208",
-
-        "",
-
-
-        "2009"
-        "0025000003000040 05c0010001da0008 400200010033400f 000032400a0a1f7f"
-        "00000101000008",
-
-        "2009"
-        "0025000003000040 05c0020000c40008 4002000c0033400f 000032400a0a1f7f"
-        "00000101000808",
-    };
-    c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
-        41,
-        0,
-        0,
-
-        38,
-        0,
-        0,
-
-        41,
-        41,
-        0,
-
-        41,
-        41,
-    };
-    char hexbuf[MAX_SDU_LEN];
-    
-    *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    if (!(*pkbuf)) return CORE_ERROR;
-
-    (*pkbuf)->len = len[i];
-    memcpy((*pkbuf)->payload, CORE_HEX(payload[i], strlen(payload[i]), hexbuf),
-            (*pkbuf)->len);
-
-    return CORE_OK;
-}
-
 status_t tests1ap_build_attach_complete(pkbuf_t **pkbuf, int i)
 {
     char *payload[TESTS1AP_MAX_MESSAGE] = {
@@ -1259,58 +1197,6 @@ status_t tests1ap_build_e_rab_setup_response(
     return CORE_OK;
 }
 
-status_t tests1ap_build_e_rab_setup_response_static(pkbuf_t **pkbuf, int i)
-{
-    char *payload[TESTS1AP_MAX_MESSAGE] = { 
-        "2005002600000300 004005c00200003c 0008400300010000 1c400f000027400a"
-        "0c1f0a012da50100 b410",
-        "2005002600000300 004005c00200003c 0008400300010000 1c400f000027400a"
-        "0e1f0a012da50100 b410",
-        "",
-
-        "",
-        "",
-        "",
-
-        "",
-        "",
-        "",
-
-        "2005002600000300 004005c00200003c 0008400300010000 1c400f000027400a"
-        "0c1f7f0000010100 b410",
-
-        "2005"
-        "0025000003000040 05c0020000c40008 4002000c001c400f 000027400a0c1f7f"
-        "00000101000810",
-    };
-    c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
-        42,
-        42,
-        0,
-
-        0,
-        0,
-        0,
-
-        0,
-        0,
-        0,
-
-        42,
-        41,
-    };
-    char hexbuf[MAX_SDU_LEN];
-    
-    *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    if (!(*pkbuf)) return CORE_ERROR;
-
-    (*pkbuf)->len = len[i];
-    memcpy((*pkbuf)->payload, CORE_HEX(payload[i], strlen(payload[i]), hexbuf),
-            (*pkbuf)->len);
-
-    return CORE_OK;
-}
-
 status_t tests1ap_build_e_rab_release_response(pkbuf_t **pkbuf, int i)
 {
     char *payload[TESTS1AP_MAX_MESSAGE] = { 
@@ -1498,53 +1384,103 @@ status_t tests1ap_build_deactivate_bearer_accept(
 }
 
 status_t tests1ap_build_path_switch_request(
-        pkbuf_t **pkbuf, int i)
+        pkbuf_t **pkbuf, 
+        c_uint32_t mme_ue_s1ap_id, c_uint32_t enb_ue_s1ap_id,
+        int num_of_bearer, c_uint8_t ebi, c_uint32_t teid)
 {
-    char *payload[TESTS1AP_MAX_MESSAGE] = { 
-        "0003"
-        "005d000007000800 0200010016001d01 0017000a0a1f7f00 0001010000080017"
-        "000a0c1f7f000001 0100001000580005 c0010001da006440 080000f1103631d6"
-        "20004340060000f1 105ba0006b400518 000c0000009d4007 0000f110000201",
-        "0003"
-        "005d000007000800 0200020016001d01 0017000a0a1f0a01 2d83010001080017"
-        "000a0c1f0a012d83 0100011000580005 c0010001da006440 080000f110046153"
-        "80004340060000f1 105ba0006b400518 000c0000009d4007 0000f110000201",
-        "",
+    int erval = -1;
 
-        "",
-        "",
-        "",
+    status_t rv;
+    int i;
+    enb_ue_t *enb_ue = NULL;
+    mme_ue_t *mme_ue = NULL;
 
-        "",
-        "",
-        "",
+    s1ap_message_t message;
+    S1ap_PathSwitchRequestIEs_t *ies =
+            &message.s1ap_PathSwitchRequestIEs;
+    S1ap_E_RABToBeSwitchedDLItem_t *e_rab = NULL;
+    S1ap_EUTRAN_CGI_t *eutran_cgi = &ies->eutran_cgi;
 
-    };
-    c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
-        97,
-        97,
-        0,
+    memset(&message, 0, sizeof(s1ap_message_t));
 
-        0,
-        0,
-        0,
+    ies->eNB_UE_S1AP_ID = enb_ue_s1ap_id;
+    ies->sourceMME_UE_S1AP_ID = mme_ue_s1ap_id;
 
-        0,
-        0,
-        0,
-    };
-    char hexbuf[MAX_SDU_LEN];
-    
-    *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    if (!(*pkbuf)) return CORE_ERROR;
+    enb_ue = enb_ue_find_by_mme_ue_s1ap_id(mme_ue_s1ap_id);
+    d_assert(enb_ue, return CORE_ERROR,);
+    mme_ue = enb_ue->mme_ue;
+    d_assert(mme_ue, return CORE_ERROR,);
 
-    (*pkbuf)->len = len[i];
-    memcpy((*pkbuf)->payload, CORE_HEX(payload[i], strlen(payload[i]), hexbuf),
-            (*pkbuf)->len);
+    for (i = 0; i < num_of_bearer; i++)
+    {
+        gtp_f_teid_t f_teid;
+        ip_t ip;
+        int len;
+
+        e_rab = (S1ap_E_RABToBeSwitchedDLItem_t *)
+            core_calloc(1, sizeof(S1ap_E_RABToBeSwitchedDLItem_t));
+        e_rab->e_RAB_ID = ebi+i;
+
+        rv = gtp_sockaddr_to_f_teid(
+                mme_self()->gtpc_addr, mme_self()->gtpc_addr6, &f_teid, &len);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
+        rv = gtp_f_teid_to_ip(&f_teid, &ip);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+        rv = s1ap_ip_to_BIT_STRING(&ip, &e_rab->transportLayerAddress);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
+        s1ap_uint32_to_OCTET_STRING(teid+i, &e_rab->gTP_TEID);
+
+        ASN_SEQUENCE_ADD(&ies->e_RABToBeSwitchedDLList, e_rab);
+    }
+
+    s1ap_buffer_to_OCTET_STRING(
+            &mme_ue->e_cgi.plmn_id, PLMN_ID_LEN, &ies->eutran_cgi.pLMNidentity);
+    eutran_cgi->cell_ID.size = 4;
+    eutran_cgi->cell_ID.buf =  core_calloc(
+         eutran_cgi->cell_ID.size, sizeof(c_uint8_t));
+    d_assert(eutran_cgi->cell_ID.buf, return CORE_ERROR,);
+    eutran_cgi->cell_ID.buf[0] = (mme_ue->e_cgi.cell_id >> 24);
+    eutran_cgi->cell_ID.buf[1] = (mme_ue->e_cgi.cell_id >> 16);
+    eutran_cgi->cell_ID.buf[2] = (mme_ue->e_cgi.cell_id >> 8);
+    eutran_cgi->cell_ID.buf[3] = (mme_ue->e_cgi.cell_id);
+    eutran_cgi->cell_ID.bits_unused = 4;
+
+    s1ap_uint16_to_OCTET_STRING(
+            mme_ue->tai.tac, &ies->tai.tAC);
+    s1ap_buffer_to_OCTET_STRING(
+            &mme_ue->tai.plmn_id, PLMN_ID_LEN, &ies->tai.pLMNidentity);
+
+    ies->ueSecurityCapabilities.encryptionAlgorithms.size = 2;
+    ies->ueSecurityCapabilities.encryptionAlgorithms.buf = 
+        core_calloc(ies->ueSecurityCapabilities.encryptionAlgorithms.size, 
+                    sizeof(c_uint8_t));
+    ies->ueSecurityCapabilities.encryptionAlgorithms.bits_unused = 0;
+    ies->ueSecurityCapabilities.encryptionAlgorithms.buf[0] = 
+        (mme_ue->ue_network_capability.eea << 1);
+
+    ies->ueSecurityCapabilities.integrityProtectionAlgorithms.size = 2;
+    ies->ueSecurityCapabilities.integrityProtectionAlgorithms.buf =
+        core_calloc(ies->ueSecurityCapabilities.
+                        integrityProtectionAlgorithms.size, sizeof(c_uint8_t));
+    ies->ueSecurityCapabilities.integrityProtectionAlgorithms.bits_unused = 0;
+    ies->ueSecurityCapabilities.integrityProtectionAlgorithms.buf[0] =
+        (mme_ue->ue_network_capability.eia << 1);
+
+    message.procedureCode = S1ap_ProcedureCode_id_PathSwitchRequest;
+    message.direction = S1AP_PDU_PR_initiatingMessage;
+
+    erval = s1ap_encode_pdu(pkbuf, &message);
+    s1ap_free_pdu(&message);
+
+    if (erval < 0)
+    {
+        d_error("s1ap_encode_error : (%d)", erval);
+        return CORE_ERROR;
+    }
 
     return CORE_OK;
 }
-
 
 status_t tests1ap_build_handover_required(
         pkbuf_t **pkbuf, int i)
@@ -1617,7 +1553,107 @@ status_t tests1ap_build_handover_required(
     return CORE_OK;
 }
 
-status_t tests1ap_build_handover_request_ack(
+CORE_DECLARE(status_t) tests1ap_build_handover_request_ack(
+        pkbuf_t **pkbuf, 
+        c_uint32_t mme_ue_s1ap_id, c_uint32_t enb_ue_s1ap_id,
+        int num_of_bearer, c_uint8_t ebi, c_uint32_t teid)
+{
+    char hexbuf[MAX_SDU_LEN];
+    char *payload =
+        "00 80810bf900d8af40 00a0339057801f47 88009e81de2c20a4"
+        "81de2c404a00ef16 2000010044013f21 2249008093efd243 3914cd2aa0a0142f"
+        "f2214d6dfb82c194 0b10080000020040 bbfd55aeab41ad80 8fd50398381c08fd"
+        "503983804d037868 baa016423342bc3a 18b58fa084ca833f a17970acfc10e84e"
+        "0004f14550d00096 c88900";
+    int erval = -1;
+
+    status_t rv;
+    int i;
+
+    s1ap_message_t message;
+    S1ap_HandoverRequestAcknowledgeIEs_t *ies =
+            &message.s1ap_HandoverRequestAcknowledgeIEs;
+    S1ap_E_RABAdmittedItem_t *e_rab = NULL;
+    S1ap_Target_ToSource_TransparentContainer_t *container =
+        &ies->target_ToSource_TransparentContainer;
+
+    memset(&message, 0, sizeof(s1ap_message_t));
+
+    ies->eNB_UE_S1AP_ID = enb_ue_s1ap_id;
+    ies->mme_ue_s1ap_id = mme_ue_s1ap_id;
+
+   for (i = 0; i < num_of_bearer; i++)
+    {
+        gtp_f_teid_t f_teid1, f_teid2, f_teid3;
+        ip_t ip1, ip2, ip3;
+        int len;
+
+        e_rab = (S1ap_E_RABAdmittedItem_t *)
+            core_calloc(1, sizeof(S1ap_E_RABAdmittedItem_t));
+        e_rab->e_RAB_ID = ebi+i;
+
+        rv = gtp_sockaddr_to_f_teid(
+                mme_self()->gtpc_addr, mme_self()->gtpc_addr6, &f_teid1, &len);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
+        rv = gtp_f_teid_to_ip(&f_teid1, &ip1);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+        rv = s1ap_ip_to_BIT_STRING(&ip1, &e_rab->transportLayerAddress);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
+        s1ap_uint32_to_OCTET_STRING(teid+i, &e_rab->gTP_TEID);
+
+        rv = gtp_sockaddr_to_f_teid(
+                mme_self()->gtpc_addr, mme_self()->gtpc_addr6, &f_teid2, &len);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
+        rv = gtp_f_teid_to_ip(&f_teid2, &ip2);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+        e_rab->dL_transportLayerAddress =
+            (S1ap_TransportLayerAddress_t *)
+            core_calloc(1, sizeof(S1ap_TransportLayerAddress_t));
+        rv = s1ap_ip_to_BIT_STRING(&ip2, e_rab->dL_transportLayerAddress);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
+        e_rab->dL_gTP_TEID = (S1ap_GTP_TEID_t *)
+            core_calloc(1, sizeof(S1ap_GTP_TEID_t));
+        s1ap_uint32_to_OCTET_STRING(teid+i+10, e_rab->dL_gTP_TEID);
+
+        rv = gtp_sockaddr_to_f_teid(
+                mme_self()->gtpc_addr, mme_self()->gtpc_addr6, &f_teid3, &len);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
+        rv = gtp_f_teid_to_ip(&f_teid3, &ip3);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+        e_rab->uL_S1ap_TransportLayerAddress =
+            (S1ap_TransportLayerAddress_t *)
+            core_calloc(1, sizeof(S1ap_TransportLayerAddress_t));
+        rv = s1ap_ip_to_BIT_STRING(&ip3, e_rab->uL_S1ap_TransportLayerAddress);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
+        e_rab->uL_S1ap_GTP_TEID = (S1ap_GTP_TEID_t *)
+            core_calloc(1, sizeof(S1ap_GTP_TEID_t));
+        s1ap_uint32_to_OCTET_STRING(teid+i+20, e_rab->uL_S1ap_GTP_TEID);
+
+        ASN_SEQUENCE_ADD(&ies->e_RABAdmittedList, e_rab);
+    }
+
+    s1ap_buffer_to_OCTET_STRING(
+            CORE_HEX(payload, strlen(payload), hexbuf), 132, container);
+
+    message.procedureCode = S1ap_ProcedureCode_id_HandoverResourceAllocation;
+    message.direction = S1AP_PDU_PR_successfulOutcome;
+
+    erval = s1ap_encode_pdu(pkbuf, &message);
+    s1ap_free_pdu(&message);
+
+    if (erval < 0)
+    {
+        d_error("s1ap_encode_error : (%d)", erval);
+        return CORE_ERROR;
+    }
+
+    return CORE_OK;
+}
+
+status_t tests1ap_build_handover_request_ack_static(
         pkbuf_t **pkbuf, int i)
 {
     char *payload[TESTS1AP_MAX_MESSAGE] = { 
