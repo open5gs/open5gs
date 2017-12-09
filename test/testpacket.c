@@ -1584,8 +1584,8 @@ CORE_DECLARE(status_t) tests1ap_build_handover_request_ack(
 
    for (i = 0; i < num_of_bearer; i++)
     {
-        gtp_f_teid_t f_teid1, f_teid2, f_teid3;
-        ip_t ip1, ip2, ip3;
+        gtp_f_teid_t f_teid;
+        ip_t ip;
         int len;
 
         e_rab = (S1ap_E_RABAdmittedItem_t *)
@@ -1593,40 +1593,28 @@ CORE_DECLARE(status_t) tests1ap_build_handover_request_ack(
         e_rab->e_RAB_ID = ebi+i;
 
         rv = gtp_sockaddr_to_f_teid(
-                mme_self()->gtpc_addr, mme_self()->gtpc_addr6, &f_teid1, &len);
+                mme_self()->gtpc_addr, mme_self()->gtpc_addr6, &f_teid, &len);
         d_assert(rv == CORE_OK, return CORE_ERROR,);
-        rv = gtp_f_teid_to_ip(&f_teid1, &ip1);
+        rv = gtp_f_teid_to_ip(&f_teid, &ip);
         d_assert(rv == CORE_OK, return CORE_ERROR,);
 
-        rv = s1ap_ip_to_BIT_STRING(&ip1, &e_rab->transportLayerAddress);
+        rv = s1ap_ip_to_BIT_STRING(&ip, &e_rab->transportLayerAddress);
         d_assert(rv == CORE_OK, return CORE_ERROR,);
         s1ap_uint32_to_OCTET_STRING(teid+i, &e_rab->gTP_TEID);
-
-        rv = gtp_sockaddr_to_f_teid(
-                mme_self()->gtpc_addr, mme_self()->gtpc_addr6, &f_teid2, &len);
-        d_assert(rv == CORE_OK, return CORE_ERROR,);
-        rv = gtp_f_teid_to_ip(&f_teid2, &ip2);
-        d_assert(rv == CORE_OK, return CORE_ERROR,);
 
         e_rab->dL_transportLayerAddress =
             (S1ap_TransportLayerAddress_t *)
             core_calloc(1, sizeof(S1ap_TransportLayerAddress_t));
-        rv = s1ap_ip_to_BIT_STRING(&ip2, e_rab->dL_transportLayerAddress);
+        rv = s1ap_ip_to_BIT_STRING(&ip, e_rab->dL_transportLayerAddress);
         d_assert(rv == CORE_OK, return CORE_ERROR,);
         e_rab->dL_gTP_TEID = (S1ap_GTP_TEID_t *)
             core_calloc(1, sizeof(S1ap_GTP_TEID_t));
         s1ap_uint32_to_OCTET_STRING(teid+i+10, e_rab->dL_gTP_TEID);
 
-        rv = gtp_sockaddr_to_f_teid(
-                mme_self()->gtpc_addr, mme_self()->gtpc_addr6, &f_teid3, &len);
-        d_assert(rv == CORE_OK, return CORE_ERROR,);
-        rv = gtp_f_teid_to_ip(&f_teid3, &ip3);
-        d_assert(rv == CORE_OK, return CORE_ERROR,);
-
         e_rab->uL_S1ap_TransportLayerAddress =
             (S1ap_TransportLayerAddress_t *)
             core_calloc(1, sizeof(S1ap_TransportLayerAddress_t));
-        rv = s1ap_ip_to_BIT_STRING(&ip3, e_rab->uL_S1ap_TransportLayerAddress);
+        rv = s1ap_ip_to_BIT_STRING(&ip, e_rab->uL_S1ap_TransportLayerAddress);
         d_assert(rv == CORE_OK, return CORE_ERROR,);
         e_rab->uL_S1ap_GTP_TEID = (S1ap_GTP_TEID_t *)
             core_calloc(1, sizeof(S1ap_GTP_TEID_t));
