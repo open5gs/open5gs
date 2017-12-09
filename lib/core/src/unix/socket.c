@@ -404,6 +404,8 @@ status_t sock_probe_node(list_t *list, list_t *list6, c_uint16_t port)
         addr = (c_sockaddr_t *)cur->ifa_addr;
         if (cur->ifa_addr->sa_family == AF_INET)
         {
+            if (!list) continue;
+
 #ifndef IN_IS_ADDR_LOOPBACK
 #define IN_IS_ADDR_LOOPBACK(a) \
   ((((long int) (a)->s_addr) & ntohl(0xff000000)) == ntohl(0x7f000000))
@@ -420,6 +422,8 @@ status_t sock_probe_node(list_t *list, list_t *list6, c_uint16_t port)
         }
         else if (cur->ifa_addr->sa_family == AF_INET6)
         {
+            if (!list6) continue;
+
             if (IN6_IS_ADDR_UNSPECIFIED(&addr->sin6.sin6_addr) ||
                 IN6_IS_ADDR_LOOPBACK(&addr->sin6.sin6_addr) ||
                 IN6_IS_ADDR_MULTICAST(&addr->sin6.sin6_addr) ||
@@ -443,11 +447,13 @@ status_t sock_probe_node(list_t *list, list_t *list6, c_uint16_t port)
 
         if (addr->c_sa_family == AF_INET)
         {
-            if (list) list_append(list, node);
+            d_assert(list, return CORE_ERROR,);
+            list_append(list, node);
         }
         else if (addr->c_sa_family == AF_INET6)
         {
-            if (list6) list_append(list6, node);
+            d_assert(list6, return CORE_ERROR,);
+            list_append(list6, node);
         }
         else
             d_assert(0, return CORE_ERROR,);
