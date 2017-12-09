@@ -202,8 +202,12 @@ status_t testgtpu_enb_send(c_uint32_t src_ip, c_uint32_t dst_ip)
     if (bearer->sgw_s1u_ip.ipv6)
     {
         sgw.c_sa_family = AF_INET6;
-        memcpy(sgw.sin6.sin6_addr.s6_addr,
-                bearer->sgw_s1u_ip.both.addr6, IPV6_LEN);
+        if (bearer->sgw_s1u_ip.ipv4)
+            memcpy(sgw.sin6.sin6_addr.s6_addr,
+                    bearer->sgw_s1u_ip.both.addr6, IPV6_LEN);
+        else
+            memcpy(sgw.sin6.sin6_addr.s6_addr,
+                    bearer->sgw_s1u_ip.addr6, IPV6_LEN);
         rv = sock_fill_scope_id_in_local(&sgw);
         d_assert(rv == CORE_OK, return CORE_ERROR,);
     }
