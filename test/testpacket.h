@@ -21,10 +21,6 @@ CORE_DECLARE(status_t) tests1ap_build_setup_req(
         pkbuf_t **pkbuf, S1ap_ENB_ID_PR present, c_uint32_t enb_id);
 CORE_DECLARE(status_t) tests1ap_build_initial_ue_msg(pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_identity_response(pkbuf_t **pkbuf, int i);
-CORE_DECLARE(status_t) tests1ap_build_initial_context_setup_response(
-        pkbuf_t **pkbuf, 
-        c_uint32_t mme_ue_s1ap_id, c_uint32_t enb_ue_s1ap_id,
-        c_uint8_t ebi, c_uint32_t teid);
 CORE_DECLARE(status_t) tests1ap_build_authentication_response(
         pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_security_mode_complete(
@@ -53,6 +49,10 @@ CORE_DECLARE(status_t) tests1ap_build_pdn_connectivity_request(
 CORE_DECLARE(status_t) tests1ap_build_pdn_disconnectivity_request(
         pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_e_rab_setup_response(
+        pkbuf_t **pkbuf, 
+        c_uint32_t mme_ue_s1ap_id, c_uint32_t enb_ue_s1ap_id,
+        c_uint8_t ebi, c_uint32_t teid);
+CORE_DECLARE(status_t) tests1ap_build_e_rab_setup_response_static(
         pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_e_rab_release_response(
         pkbuf_t **pkbuf, int i);

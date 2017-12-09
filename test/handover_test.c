@@ -248,7 +248,7 @@ static void handover_test1(abts_case *tc, void *data)
     pkbuf_free(recvbuf);
 
     /* Send E-RAB Setup Response */
-    rv = tests1ap_build_e_rab_setup_response(&sendbuf, msgindex);
+    rv = tests1ap_build_e_rab_setup_response(&sendbuf, 33554492, 1, 6, 2);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock1, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -581,7 +581,7 @@ static void handover_test2(abts_case *tc, void *data)
     pkbuf_free(recvbuf);
 
     /* Send E-RAB Setup Response */
-    rv = tests1ap_build_e_rab_setup_response(&sendbuf, msgindex);
+    rv = tests1ap_build_e_rab_setup_response(&sendbuf, 33554628, 12, 6, 2);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock1, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);

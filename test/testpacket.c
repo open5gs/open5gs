@@ -1199,7 +1199,63 @@ status_t tests1ap_build_pdn_disconnectivity_request(
     return CORE_OK;
 }
 
-status_t tests1ap_build_e_rab_setup_response(pkbuf_t **pkbuf, int i)
+status_t tests1ap_build_e_rab_setup_response(
+        pkbuf_t **pkbuf, 
+        c_uint32_t mme_ue_s1ap_id, c_uint32_t enb_ue_s1ap_id,
+        c_uint8_t ebi, c_uint32_t teid)
+{
+    int erval = -1;
+
+    status_t rv;
+    gtp_f_teid_t f_teid;
+    ip_t ip;
+    int len;
+
+    s1ap_message_t message;
+    S1ap_E_RABSetupResponseIEs_t *ies = NULL;
+    S1ap_E_RABSetupItemBearerSURes_t *e_rab = NULL;
+
+    memset(&message, 0, sizeof(s1ap_message_t));
+
+    ies = &message.s1ap_E_RABSetupResponseIEs;
+
+    message.direction = S1AP_PDU_PR_successfulOutcome;
+    message.procedureCode = S1ap_ProcedureCode_id_E_RABSetup;
+
+    ies->mme_ue_s1ap_id = mme_ue_s1ap_id;
+    ies->eNB_UE_S1AP_ID = enb_ue_s1ap_id;
+
+    e_rab = (S1ap_E_RABSetupItemBearerSURes_t *)
+        core_calloc(1, sizeof(S1ap_E_RABSetupItemBearerSURes_t));
+    e_rab->e_RAB_ID = ebi;
+
+    rv = gtp_sockaddr_to_f_teid(
+            mme_self()->gtpc_addr, mme_self()->gtpc_addr6, &f_teid, &len);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    rv = gtp_f_teid_to_ip(&f_teid, &ip);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    rv = s1ap_ip_to_BIT_STRING(&ip, &e_rab->transportLayerAddress);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    s1ap_uint32_to_OCTET_STRING(teid, &e_rab->gTP_TEID);
+
+    ies->presenceMask |= 
+           S1AP_E_RABSETUPRESPONSEIES_E_RABSETUPLISTBEARERSURES_PRESENT;
+    ASN_SEQUENCE_ADD(&ies->e_RABSetupListBearerSURes, e_rab);
+
+    erval = s1ap_encode_pdu(pkbuf, &message);
+    s1ap_free_pdu(&message);
+
+    if (erval < 0)
+    {
+        d_error("s1ap_encode_error : (%d)", erval);
+        return CORE_ERROR;
+    }
+
+    return CORE_OK;
+}
+
+status_t tests1ap_build_e_rab_setup_response_static(pkbuf_t **pkbuf, int i)
 {
     char *payload[TESTS1AP_MAX_MESSAGE] = { 
         "2005002600000300 004005c00200003c 0008400300010000 1c400f000027400a"
