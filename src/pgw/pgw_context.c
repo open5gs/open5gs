@@ -197,6 +197,7 @@ status_t pgw_context_parse_config()
                         int i, num = 0;
                         const char *hostname[MAX_NUM_OF_HOSTNAME];
                         c_uint16_t port = self.gtpc_port;
+                        const char *dev = NULL;
                         c_sockaddr_t *list = NULL;
                         sock_node_t *node = NULL;
 
@@ -273,6 +274,10 @@ status_t pgw_context_parse_config()
                                     self.gtpc_port = port;
                                 }
                             }
+                            else if (!strcmp(gtpc_key, "dev"))
+                            {
+                                dev = yaml_iter_value(&gtpc_iter);
+                            }
                             else
                                 d_warn("unknown key `%s`", gtpc_key);
                         }
@@ -281,25 +286,39 @@ status_t pgw_context_parse_config()
                         for (i = 0; i < num; i++)
                         {
                             rv = core_addaddrinfo(&list,
-                                    family, hostname[i], port, AI_PASSIVE);
+                                    family, hostname[i], port, 0);
                             d_assert(rv == CORE_OK, return CORE_ERROR,);
                         }
 
-                        if (context_self()->parameter.no_ipv4 == 0)
+                        if (list)
                         {
-                            rv = sock_add_node(&self.gtpc_list,
-                                    &node, list, AF_INET);
-                            d_assert(rv == CORE_OK, return CORE_ERROR,);
+                            if (context_self()->parameter.no_ipv4 == 0)
+                            {
+                                rv = sock_add_node(&self.gtpc_list,
+                                        &node, list, AF_INET);
+                                d_assert(rv == CORE_OK, return CORE_ERROR,);
+                            }
+
+                            if (context_self()->parameter.no_ipv6 == 0)
+                            {
+                                rv = sock_add_node(&self.gtpc_list6,
+                                        &node, list, AF_INET6);
+                                d_assert(rv == CORE_OK, return CORE_ERROR,);
+                            }
+
+                            core_freeaddrinfo(list);
                         }
 
-                        if (context_self()->parameter.no_ipv6 == 0)
+                        if (dev)
                         {
-                            rv = sock_add_node(&self.gtpc_list6,
-                                    &node, list, AF_INET6);
+                            rv = sock_probe_node(
+                                    context_self()->parameter.no_ipv4 ?
+                                        NULL : &self.gtpc_list,
+                                    context_self()->parameter.no_ipv6 ?
+                                        NULL : &self.gtpc_list6,
+                                    dev, self.gtpc_port);
                             d_assert(rv == CORE_OK, return CORE_ERROR,);
                         }
-
-                        core_freeaddrinfo(list);
 
                     } while(yaml_iter_type(&gtpc_array) == YAML_SEQUENCE_NODE);
 
@@ -311,7 +330,7 @@ status_t pgw_context_parse_config()
                                     NULL : &self.gtpc_list,
                                 context_self()->parameter.no_ipv6 ?
                                     NULL : &self.gtpc_list6,
-                                self.gtpc_port);
+                                NULL, self.gtpc_port);
                         d_assert(rv == CORE_OK, return CORE_ERROR,);
                     }
                 }
@@ -325,6 +344,7 @@ status_t pgw_context_parse_config()
                         int i, num = 0;
                         const char *hostname[MAX_NUM_OF_HOSTNAME];
                         c_uint16_t port = self.gtpu_port;
+                        const char *dev = NULL;
                         c_sockaddr_t *list = NULL;
                         sock_node_t *node = NULL;
 
@@ -401,6 +421,10 @@ status_t pgw_context_parse_config()
                                     self.gtpu_port = port;
                                 }
                             }
+                            else if (!strcmp(gtpu_key, "dev"))
+                            {
+                                dev = yaml_iter_value(&gtpu_iter);
+                            }
                             else
                                 d_warn("unknown key `%s`", gtpu_key);
                         }
@@ -409,25 +433,39 @@ status_t pgw_context_parse_config()
                         for (i = 0; i < num; i++)
                         {
                             rv = core_addaddrinfo(&list,
-                                    family, hostname[i], port, AI_PASSIVE);
+                                    family, hostname[i], port, 0);
                             d_assert(rv == CORE_OK, return CORE_ERROR,);
                         }
 
-                        if (context_self()->parameter.no_ipv4 == 0)
+                        if (list)
                         {
-                            rv = sock_add_node(&self.gtpu_list,
-                                    &node, list, AF_INET);
-                            d_assert(rv == CORE_OK, return CORE_ERROR,);
+                            if (context_self()->parameter.no_ipv4 == 0)
+                            {
+                                rv = sock_add_node(&self.gtpu_list,
+                                        &node, list, AF_INET);
+                                d_assert(rv == CORE_OK, return CORE_ERROR,);
+                            }
+
+                            if (context_self()->parameter.no_ipv6 == 0)
+                            {
+                                rv = sock_add_node(&self.gtpu_list6,
+                                        &node, list, AF_INET6);
+                                d_assert(rv == CORE_OK, return CORE_ERROR,);
+                            }
+
+                            core_freeaddrinfo(list);
                         }
 
-                        if (context_self()->parameter.no_ipv6 == 0)
+                        if (dev)
                         {
-                            rv = sock_add_node(&self.gtpu_list6,
-                                    &node, list, AF_INET6);
+                            rv = sock_probe_node(
+                                    context_self()->parameter.no_ipv4 ?
+                                        NULL : &self.gtpu_list,
+                                    context_self()->parameter.no_ipv6 ?
+                                        NULL : &self.gtpu_list6,
+                                    dev, self.gtpu_port);
                             d_assert(rv == CORE_OK, return CORE_ERROR,);
                         }
-
-                        core_freeaddrinfo(list);
 
                     } while(yaml_iter_type(&gtpu_array) == YAML_SEQUENCE_NODE);
 
@@ -439,7 +477,7 @@ status_t pgw_context_parse_config()
                                     NULL : &self.gtpu_list,
                                 context_self()->parameter.no_ipv6 ?
                                     NULL : &self.gtpu_list6,
-                                self.gtpu_port);
+                                NULL, self.gtpu_port);
                         d_assert(rv == CORE_OK, return CORE_ERROR,);
                     }
                 }

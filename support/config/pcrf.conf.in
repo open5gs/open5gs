@@ -1,22 +1,12 @@
-{
-  "DB_URI" : "mongodb://localhost/nextepc",
-  "LOG" :
-  {
-    "FILE" : "@LOCALSTATE_DIR@/log/nextepc/pcrf.log",
-    "SOCKET" :
-    {
-      "UNIX_DOMAIN" : "/tmp/nextepc-pcrfd.sock",
-      "FILE" : 0
-    }
-  },
-  "TRACE" :
-  {
-    "FD": 1,
-    "OTHERS": 1
-  },
-  "PCRF" :
-  {
-    "FD_CONF_PATH" : "pcrf.conf"
-  }
+### For reference, see `nextepc.conf`
 
-}
+db_uri: mongodb://localhost/nextepc
+
+logger:
+    file: @LOCALSTATE_DIR@/log/nextepc/pcrf.log
+    trace: 
+        diameter: 1
+        others: 1
+
+pcrf:
+    freeDiameter: pcrf.conf

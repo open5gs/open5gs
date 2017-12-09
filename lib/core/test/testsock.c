@@ -11,6 +11,10 @@
 #define PORT 7777
 #define PORT2 7778
 
+#ifndef AI_PASSIVE
+#define AI_PASSIVE 1
+#endif
+
 static void sock_test1(abts_case *tc, void *data)
 {
     sock_id udp;
@@ -406,7 +410,7 @@ static void sock_test7(abts_case *tc, void *data)
 
     sock_remove_all_nodes(&list);
 
-    rv = sock_probe_node(&list, &list6, PORT);
+    rv = sock_probe_node(&list, &list6, NULL, PORT);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     sock_remove_all_nodes(&list);

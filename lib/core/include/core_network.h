@@ -128,7 +128,7 @@ CORE_DECLARE(status_t) sock_remove_node(list_t *list, sock_node_t *node);
 CORE_DECLARE(status_t) sock_remove_all_nodes(list_t *list);
 
 CORE_DECLARE(status_t) sock_probe_node(
-        list_t *list, list_t *list6, c_uint16_t port);
+        list_t *list, list_t *list6, const char *dev, c_uint16_t port);
 CORE_DECLARE(status_t) sock_fill_scope_id_in_local(c_sockaddr_t *sa_list);
 
 CORE_DECLARE(status_t) core_getaddrinfo(c_sockaddr_t **sa_list, 

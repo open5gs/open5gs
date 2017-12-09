@@ -1,87 +1,50 @@
-{
-  "LOG" :
-  {
-    "FILE" : "@LOCALSTATE_DIR@/log/nextepc/mme.log",
-    "SOCKET" :
-    {
-      "UNIX_DOMAIN" : "/tmp/nextepc-mmed.sock",
-      "FILE" : 0
-    }
-  },
-  "TRACE" :
-  {
-    "S1AP": 1,
-    "NAS": 1,
-    "FD": 1,
-    "GTP": 1,
-    "OTHERS": 1
-  },
+### For reference, see `nextepc.conf`
 
-  "MME" :
-  {
-    "FD_CONF_PATH" : "mme.conf",
-    "DEFAULT_PAGING_DRX" : "v64",
-    "S1AP" :
-    [
-      {
-        "HOSTNAME" : "127.0.0.1"
-      },
-      {
-        "HOSTNAME" : "::1"
-      }
-    ],
-    "NETWORK" :
-    {
-      "GTPC_IPV4" : "127.0.0.1"
-    },
-    "GUMMEI" :
-    [
-      {
-        "PLMN_ID" : 
-        {
-          "MCC" : "001",
-          "MNC" : "01"
-        },
-        "MME_GID" : 2,
-        "MME_CODE" : 1
-      }
-    ],
-    "TAI":
-    [
-      {
-        "PLMN_ID" :
-        {
-          "MCC": "001",
-          "MNC": "01"
-        },
-        "TAC": 12345
-      }
-    ],
-    "SECURITY" :
-    {
-      "INTEGRITY_ORDER" : [ "EIA1", "EIA2", "EIA0" ],
-      "CIPHERING_ORDER" : [ "EEA0", "EEA1", "EEA2" ]
-    }
-  },
+db_uri: mongodb://localhost/nextepc
 
-  "SGW" :
-  {
-    "NETWORK" :
-    [
-      {
-        "GTPC_IPV4" : "127.0.0.2",
-        "GTPU_IPV4" : "127.0.0.2"
-      }
-    ]
-  },
+logger:
+    file: @LOCALSTATE_DIR@/log/nextepc/mme.log
+    trace: 
+        s1ap: 1
+        nas: 1
+        diameter: 1
+        gtp: 1
+        others: 1
 
-  "PGW" :
-  {
-    "NETWORK" :
-    {
-      "GTPC_IPV4" : "127.0.0.3",
-      "GTPU_IPV4" : "127.0.0.3"
-    }
-  }
+parameter:
+#   no_ipv4: true
+#   no_ipv6: true
+#   prefer_ipv4: true
 
-}
+mme:
+    freeDiameter: mme.conf
+    s1ap:
+    gtpc:
+      - addr: 127.0.0.1
+      - addr: ::1
+    gummei: 
+      plmn_id:
+        mcc: 001
+        mnc: 01
+      mme_gid: 2
+      mme_code: 1
+    tai:
+      plmn_id:
+        mcc: 001
+        mnc: 01
+      tac: 12345
+    security:
+        integrity_order : [ EIA1, EIA2, EIA0 ]
+        ciphering_order : [ EEA0, EEA1, EEA2 ]
+
+sgw:
+    gtpc:
+      addr:
+        - 127.0.0.2
+        - fe80::2%@LO_DEV@
+
+pgw:
+    gtpc:
+      addr:
+        - 127.0.0.3
+        - fe80::3%@LO_DEV@

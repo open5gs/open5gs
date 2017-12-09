@@ -375,7 +375,8 @@ status_t sock_remove_all_nodes(list_t *list)
     return CORE_OK;
 }
 
-status_t sock_probe_node(list_t *list, list_t *list6, c_uint16_t port)
+status_t sock_probe_node(
+        list_t *list, list_t *list6, const char *dev, c_uint16_t port)
 {
     sock_node_t *node = NULL;
 	struct ifaddrs *iflist, *cur;
@@ -400,6 +401,9 @@ status_t sock_probe_node(list_t *list, list_t *list6, c_uint16_t port)
 
 		if (cur->ifa_addr == NULL) /* may happen with ppp interfaces */
 			continue;
+
+        if (dev && strcmp(dev, cur->ifa_name) != 0)
+            continue;
 
         addr = (c_sockaddr_t *)cur->ifa_addr;
         if (cur->ifa_addr->sa_family == AF_INET)
@@ -574,15 +578,11 @@ status_t core_addaddrinfo(c_sockaddr_t **sa_list,
         prev = *sa_list;
         while(prev->next) prev = prev->next;
     }
-    ai = ai_list;
-    while(ai)
+    for (ai = ai_list; ai; ai = ai->ai_next)
     {
         c_sockaddr_t *new;
         if (ai->ai_family != AF_INET && ai->ai_family != AF_INET6)
-        {
-            ai = ai->ai_next;
             continue;
-        }
 
         new = core_calloc(1, sizeof(c_sockaddr_t));
         memcpy(&new->sa, ai->ai_addr, ai->ai_addrlen);
@@ -595,8 +595,8 @@ status_t core_addaddrinfo(c_sockaddr_t **sa_list,
             prev->next = new;
 
         prev = new;
-        ai = ai->ai_next;
     }
+
     freeaddrinfo(ai_list);
 
     if (prev == NULL)

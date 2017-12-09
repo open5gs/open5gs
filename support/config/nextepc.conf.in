@@ -78,9 +78,13 @@ mme:
 #  o S1AP Server(all address avaiable)
 #    s1ap:
 #
+#  o S1AP Server(address avaiable in `eth0` interface)
+#    s1ap:
+#      dev: eth0
+#
 #  o S1AP Server(0.0.0.0:36412)
 #    s1ap:
-#      addr:
+#      addr: 0.0.0.0
 #
 #  o S1AP Server(127.0.0.1:36412, [::1]:36413)
 #    s1ap:
