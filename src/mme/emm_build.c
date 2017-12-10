@@ -17,7 +17,8 @@ status_t emm_build_attach_accept(
     nas_eps_attach_result_t *eps_attach_result = 
         &attach_accept->eps_attach_result;
     nas_gprs_timer_t *t3412_value = &attach_accept->t3412_value;
-    nas_tracking_area_identity_list_t *tai_list = &attach_accept->tai_list;
+    tai0_list_t tai0_list;
+    tai2_list_t tai2_list;
     nas_eps_mobile_identity_t *guti = &attach_accept->guti;
     nas_gprs_timer_t *t3402_value = &attach_accept->t3402_value;
     nas_gprs_timer_t *t3423_value = &attach_accept->t3423_value;
@@ -40,10 +41,12 @@ status_t emm_build_attach_accept(
     t3412_value->unit = NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_DECI_HH;
     t3412_value->value = 9;
 
-    tai_list->length = 6;
-    tai_list->type = 2;
-    tai_list->num = 0; /* +1 = 1 elements */
-    memcpy(&tai_list->type2.tai[0], &mme_ue->tai, sizeof(tai_t));
+    memset(&tai0_list, 0, sizeof(tai0_list_t));
+    memset(&tai2_list, 0, sizeof(tai2_list_t));
+    tai2_list.type = TAI2_TYPE;
+    tai2_list.num = 1;
+    memcpy(&tai2_list.tai[0], &mme_ue->tai, sizeof(tai_t));
+    nas_tai_list_build(&attach_accept->tai_list, &tai0_list, &tai2_list);
 
     attach_accept->esm_message_container.buffer = esmbuf->payload;
     attach_accept->esm_message_container.length = esmbuf->len;
@@ -281,6 +284,8 @@ status_t emm_build_tau_accept(pkbuf_t **emmbuf, mme_ue_t *mme_ue)
     nas_message_t message;
     nas_tracking_area_update_accept_t *tau_accept = 
         &message.emm.tracking_area_update_accept;
+    tai0_list_t tai0_list;
+    tai2_list_t tai2_list;
 
     memset(&message, 0, sizeof(message));
     message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
@@ -300,11 +305,12 @@ status_t emm_build_tau_accept(pkbuf_t **emmbuf, mme_ue_t *mme_ue)
     tau_accept->presencemask |= 
         NAS_TRACKING_AREA_UPDATE_ACCEPT_TAI_LIST_PRESENT;
 
-    tau_accept->tai_list.length = 6;
-    tau_accept->tai_list.type = 2;
-    tau_accept->tai_list.num = 0; /* +1 = 1 elements */
-
-    memcpy(&tau_accept->tai_list.type2.tai[0], &mme_ue->tai, sizeof(tai_t));
+    memset(&tai0_list, 0, sizeof(tai0_list_t));
+    memset(&tai2_list, 0, sizeof(tai2_list_t));
+    tai2_list.type = TAI2_TYPE;
+    tai2_list.num = 1;
+    memcpy(&tai2_list.tai[0], &mme_ue->tai, sizeof(tai_t));
+    nas_tai_list_build(&tau_accept->tai_list, &tai0_list, &tai2_list);
 
     /* Set EPS bearer context status */
     tau_accept->presencemask |= 

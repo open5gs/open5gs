@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-12-08 15:47:05.418551 by acetcom
+ * Created on: 2017-12-10 14:27:23.929926 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -1466,20 +1466,6 @@ c_int16_t nas_decode_tracking_area_identity_list(nas_tracking_area_identity_list
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
     memcpy(tracking_area_identity_list, pkbuf->payload - size, size);
 
-    {
-        int i = 0;
-        if (tracking_area_identity_list->type == NAS_TRACKING_AREA_IDENTITY_LIST_ONE_PLMN_NON_CONSECUTIVE_TACS)
-            for (i = 0; i < tracking_area_identity_list->num + 1 && i < NAS_MAX_TRACKING_AREA_IDENTITY; i++)
-                tracking_area_identity_list->type0.tac[i] = ntohs(tracking_area_identity_list->type0.tac[i]);
-        else if (tracking_area_identity_list->type == NAS_TRACKING_AREA_IDENTITY_LIST_ONE_PLMN_CONSECUTIVE_TACS)
-            tracking_area_identity_list->type1.tac = ntohs(tracking_area_identity_list->type1.tac);
-        else if (tracking_area_identity_list->type == NAS_TRACKING_AREA_IDENTITY_LIST_MANY_PLMNS)
-            for (i = 0; i < tracking_area_identity_list->num + 1 && i < NAS_MAX_TRACKING_AREA_IDENTITY; i++)
-                tracking_area_identity_list->type2.tai[i].tac = ntohs(tracking_area_identity_list->type2.tai[i].tac);
-        else
-            return -1;
-    }
-
     d_trace(5, "  TRACKING_AREA_IDENTITY_LIST - ");
     d_trace_hex(5, pkbuf->payload - size, size);
 
@@ -1492,20 +1478,6 @@ c_int16_t nas_encode_tracking_area_identity_list(pkbuf_t *pkbuf, nas_tracking_ar
     nas_tracking_area_identity_list_t target;
 
     memcpy(&target, tracking_area_identity_list, sizeof(nas_tracking_area_identity_list_t));
-    {
-        int i = 0;
-        if (tracking_area_identity_list->type == NAS_TRACKING_AREA_IDENTITY_LIST_ONE_PLMN_NON_CONSECUTIVE_TACS)
-            for (i = 0; i < tracking_area_identity_list->num + 1 && i < NAS_MAX_TRACKING_AREA_IDENTITY; i++)
-                target.type0.tac[i] = htons(tracking_area_identity_list->type0.tac[i]);
-        else if (tracking_area_identity_list->type == NAS_TRACKING_AREA_IDENTITY_LIST_ONE_PLMN_CONSECUTIVE_TACS)
-            target.type1.tac = htons(tracking_area_identity_list->type1.tac);
-        else if (tracking_area_identity_list->type == NAS_TRACKING_AREA_IDENTITY_LIST_MANY_PLMNS)
-            for (i = 0; i < tracking_area_identity_list->num + 1 && i < NAS_MAX_TRACKING_AREA_IDENTITY; i++)
-                target.type2.tai[i].tac = htons(tracking_area_identity_list->type2.tai[i].tac);
-        else
-            return -1;
-    }
-
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
     memcpy(pkbuf->payload - size, &target, size);
 

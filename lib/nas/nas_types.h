@@ -733,32 +733,41 @@ typedef tai_t nas_tracking_area_identity_t;
 
 /* 9.9.3.33 Tracking area identity list
  * M LV 7-97 */
-#define NAS_MAX_TRACKING_AREA_IDENTITY 16
-#define NAS_TRACKING_AREA_IDENTITY_LIST_ONE_PLMN_NON_CONSECUTIVE_TACS 0
-#define NAS_TRACKING_AREA_IDENTITY_LIST_ONE_PLMN_CONSECUTIVE_TACS     1
-#define NAS_TRACKING_AREA_IDENTITY_LIST_MANY_PLMNS                    2
-typedef struct _nas_tracking_area_identity_type0 {
-    plmn_id_t plmn_id;
-    c_uint16_t tac[NAS_MAX_TRACKING_AREA_IDENTITY];
-} __attribute__ ((packed)) nas_tracking_area_identity_type0;
+#define TAI0_TYPE                   0
+#define TAI1_TYPE                   1
+#define TAI2_TYPE                   2
+typedef struct _tai0_list_t {
+    struct {
+    ED3(c_uint8_t spare:1;,
+        c_uint8_t type:2;,
+        c_uint8_t num:5;)
+        plmn_id_t plmn_id;
+        c_uint16_t tac[MAX_NUM_OF_TAI];
+    } __attribute__ ((packed)) tai[MAX_NUM_OF_TAI];
+} __attribute__ ((packed)) tai0_list_t;
 
-typedef nas_tracking_area_identity_t nas_tracking_area_identity_type1;
-
-typedef struct _nas_tracking_area_identity_type2 {
-    nas_tracking_area_identity_type1 tai[NAS_MAX_TRACKING_AREA_IDENTITY];
-} __attribute__ ((packed)) nas_tracking_area_identity_type2;
-
-typedef struct nas_tracking_area_identity_list_t {
-    c_uint8_t length;
+typedef struct _tai2_list_t {
 ED3(c_uint8_t spare:1;,
     c_uint8_t type:2;,
     c_uint8_t num:5;)
+    tai_t tai[MAX_NUM_OF_TAI];
+} __attribute__ ((packed)) tai2_list_t;
+
+typedef struct _nas_tracking_area_identity_list_t {
+    c_uint8_t length;
     union {
-        nas_tracking_area_identity_type0 type0;
-        nas_tracking_area_identity_type1 type1;
-        nas_tracking_area_identity_type2 type2;
+        tai0_list_t list0;
+        tai2_list_t list2;
+        struct {
+            tai0_list_t list0;
+            tai2_list_t list2;
+        } __attribute__ ((packed)) both;
     };
 } __attribute__ ((packed)) nas_tracking_area_identity_list_t;
+
+CORE_DECLARE(void) nas_tai_list_build(
+        nas_tracking_area_identity_list_t *target,
+        tai0_list_t *source0, tai2_list_t *source2);
 
 /* 9.9.3.34 UE network capability
  * M LV  3-14 */

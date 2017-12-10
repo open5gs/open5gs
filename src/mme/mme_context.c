@@ -199,12 +199,63 @@ static status_t mme_context_validation()
         return CORE_ERROR;
     }
 
-    if (self.max_num_of_served_tai == 0)
+    if (self.num_of_served_tai == 0)
     {
         d_error("No mme.tai in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
+
+#if 0 /* For debuggin, will be removed */
+    {
+        int i = 0, j = 0, k = 0;
+        for (k = 0; k < self.num_of_served_tai; k++)
+        {
+            tai0_list_t *list0 = &self.served_tai[k].list0;
+            d_assert(list0, return CORE_ERROR,);
+            tai2_list_t *list2 = &self.served_tai[k].list2;
+            d_assert(list2, return CORE_ERROR,);
+
+            for (i = 0; list0->tai[i].num; i++)
+            {
+                d_assert(list0->tai[i].type == TAI0_TYPE,
+                    return CORE_ERROR, "type = %d", list0->tai[i].type);
+                printf("i:%d ", i);
+                printf("type: %d ", list0->tai[i].type);
+
+                d_assert(list0->tai[i].num < MAX_NUM_OF_TAI,
+                        return CORE_ERROR, "num = %d", list0->tai[i].num);
+                printf("num: %d ", list0->tai[i].num);
+
+                printf("tac: ");
+                for (j = 0; j < list0->tai[i].num; j++) 
+                {
+                    printf("%d, ", list0->tai[i].tac[j]);
+                }
+                printf("\n");
+            }
+
+            if (list2->num)
+            {
+                d_assert(list2->type == TAI1_TYPE || list2->type == TAI2_TYPE,
+                    return CORE_ERROR, "type = %d", list2->type);
+                printf("type: %d ", list2->type);
+
+                /* <Spec> target->num = source->num - 1 */
+                d_assert(list2->num < MAX_NUM_OF_TAI,
+                        return CORE_ERROR, "num = %d", list2->num);
+                printf("num: %d ", list2->num);
+
+                printf("tac: ");
+                for (i = 0; i < list2->num; i++) 
+                {
+                    printf("%d, ", list2->tai[i].tac);
+                }
+            }
+            printf("\n\n\n");
+        }
+    }
+#endif
 
     if (self.num_of_integrity_order == 0)
     {
@@ -750,21 +801,24 @@ status_t mme_context_parse_config()
                 }
                 else if (!strcmp(mme_key, "tai"))
                 {
+                    int num_of_list0 = 0;
+                    tai0_list_t *list0 = NULL;
+                    tai2_list_t *list2 = NULL;
+
+                    d_assert(self.num_of_served_tai <=
+                            MAX_NUM_OF_SERVED_TAI, return CORE_ERROR,);
+                    list0 = &self.served_tai[self.num_of_served_tai].list0;
+                    d_assert(list0, return CORE_ERROR,);
+                    list2 = &self.served_tai[self.num_of_served_tai].list2;
+                    d_assert(list2, return CORE_ERROR,);
+
                     yaml_iter_t tai_array, tai_iter;
                     yaml_iter_recurse(&mme_iter, &tai_array);
                     do
                     {
-                        tai_t *tai = NULL;
-                        plmn_id_t *plmn_id = NULL;
                         const char *mcc = NULL, *mnc = NULL;
-
-                        d_assert(self.max_num_of_served_tai <=
-                                MAX_NUM_OF_SERVED_TAI, return CORE_ERROR,);
-                        tai = &self.served_tai[
-                            self.max_num_of_served_tai];
-                        d_assert(tai, return CORE_ERROR,);
-                        plmn_id = &tai->plmn_id;
-                        d_assert(plmn_id, return CORE_ERROR,);
+                        c_uint16_t tac[MAX_NUM_OF_TAI];
+                        int num_of_tac = 0;
 
                         if (yaml_iter_type(&tai_array) == YAML_MAPPING_NODE)
                         {
@@ -802,42 +856,92 @@ status_t mme_context_parse_config()
                                             return CORE_ERROR,);
                                     if (!strcmp(plmn_id_key, "mcc"))
                                     {
-                                        mcc =
-                                            yaml_iter_value(&plmn_id_iter);
+                                        mcc = yaml_iter_value(&plmn_id_iter);
                                     }
                                     else if (!strcmp(plmn_id_key, "mnc"))
                                     {
-                                        mnc =
-                                            yaml_iter_value(&plmn_id_iter);
+                                        mnc = yaml_iter_value(&plmn_id_iter);
                                     }
-                                }
-
-                                if (mcc && mnc)
-                                {
-                                    plmn_id_build(plmn_id,
-                                        atoi(mcc), atoi(mnc), strlen(mnc));
                                 }
                             }
                             else if (!strcmp(tai_key, "tac"))
                             {
-                                const char *v = yaml_iter_value(&tai_iter);
-                                if (v) tai->tac = atoi(v);
+                                yaml_iter_t tac_iter;
+                                yaml_iter_recurse(&tai_iter, &tac_iter);
+                                d_assert(yaml_iter_type(&tac_iter) !=
+                                    YAML_MAPPING_NODE, return CORE_ERROR,);
+
+                                do
+                                {
+                                    const char *v = NULL;
+
+                                    d_assert(num_of_tac <=
+                                            MAX_NUM_OF_TAI, return CORE_ERROR,);
+                                    if (yaml_iter_type(&tac_iter) ==
+                                            YAML_SEQUENCE_NODE)
+                                    {
+                                        if (!yaml_iter_next(&tac_iter))
+                                            break;
+                                    }
+
+                                    v = yaml_iter_value(&tac_iter);
+                                    if (v) 
+                                    {
+                                        tac[num_of_tac] = atoi(v);
+                                        num_of_tac++;
+                                    }
+                                } while(
+                                    yaml_iter_type(&tac_iter) ==
+                                        YAML_SEQUENCE_NODE);
                             }
                             else
                                 d_warn("unknown key `%s`", tai_key);
                         }
 
-                        if (mcc && mnc && tai->tac)
+                        if (mcc && mnc && num_of_tac)
                         {
-                            self.max_num_of_served_tai++;
+                            if (num_of_tac == 1)
+                            {
+                                plmn_id_build(
+                                    &list2->tai[list2->num].plmn_id,
+                                    atoi(mcc), atoi(mnc), strlen(mnc));
+                                list2->tai[list2->num].tac = tac[0];
+
+                                list2->num++;
+                                if (list2->num > 1)
+                                    list2->type = TAI2_TYPE;
+                                else
+                                    list2->type = TAI1_TYPE;
+                            }
+                            else if (num_of_tac > 1)
+                            {
+                                int i;
+                                plmn_id_build(
+                                    &list0->tai[num_of_list0].plmn_id,
+                                    atoi(mcc), atoi(mnc), strlen(mnc));
+                                for (i = 0; i < num_of_tac; i++)
+                                {
+                                    list0->tai[num_of_list0].tac[i] = tac[i];
+                                }
+
+                                list0->tai[num_of_list0].num = num_of_tac;
+                                list0->tai[num_of_list0].type = TAI0_TYPE;
+
+                                num_of_list0++;
+                            }
                         }
                         else
                         {
-                            d_warn("Ignore tai : mcc(%p), mnc(%p), tac(%d)",
-                                mcc, mnc, tai->tac);
+                            d_warn("Ignore tai : mcc(%p), mnc(%p), "
+                                    "num_of_tac(%d)", mcc, mnc, num_of_tac);
                         }
                     } while(yaml_iter_type(&tai_array) ==
                             YAML_SEQUENCE_NODE);
+
+                    if (list2->num || num_of_list0)
+                    {
+                        self.num_of_served_tai++;
+                    }
                 }
                 else if (!strcmp(mme_key, "security"))
                 {

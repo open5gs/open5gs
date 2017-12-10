@@ -32,7 +32,6 @@ extern "C" {
 #define MAX_NUM_OF_SERVED_GUMMEI    8
 #define MAX_NUM_OF_ALGORITHM        8
 
-#define MAX_NUM_OF_TAC              256
 #define MAX_NUM_OF_BPLMN            6
 
 typedef struct _enb_ue_t enb_ue_t;
@@ -72,12 +71,16 @@ typedef struct _mme_context_t {
     c_sockaddr_t    *pgw_addr;      /* First IPv4 Address Selected */
     c_sockaddr_t    *pgw_addr6;     /* First IPv6 Address Selected */
 
-    msgq_id         queue_id;       /* Queue for processing MME control plane */
-    tm_service_t    tm_service;     /* Timer Service */
+    /* Served GUMME */
+    c_uint8_t       max_num_of_served_gummei;
+    served_gummei_t served_gummei[MAX_NUM_OF_SERVED_GUMMEI];
 
-    /* Generator for unique identification */
-    c_uint32_t      mme_ue_s1ap_id; /* mme_ue_s1ap_id generator */
-    c_uint32_t      m_tmsi;         /* m_tmsi generator */
+    /* Served TAI */
+    c_uint8_t       num_of_served_tai;
+    struct {
+        tai0_list_t list0;
+        tai2_list_t list2;
+    } served_tai[MAX_NUM_OF_SERVED_TAI];
 
     /* defined in 'nas_ies.h'
      * #define NAS_SECURITY_ALGORITHMS_EIA0        0
@@ -94,17 +97,15 @@ typedef struct _mme_context_t {
     c_uint8_t       num_of_integrity_order;
     c_uint8_t       integrity_order[MAX_NUM_OF_ALGORITHM];
 
-    /* S1SetupRequest */
-    c_uint8_t       max_num_of_served_tai;
-    tai_t           served_tai[MAX_NUM_OF_SERVED_TAI];
-
     /* S1SetupResponse */
-    c_uint8_t       max_num_of_served_gummei;
-    served_gummei_t served_gummei[MAX_NUM_OF_SERVED_GUMMEI];
     c_uint8_t       relative_capacity;
 
     /* Timer value */
-    c_uint32_t      t3413_value; /* Paging retry timer */
+    c_uint32_t      t3413_value;            /* Paging retry timer */
+
+    /* Generator for unique identification */
+    c_uint32_t      mme_ue_s1ap_id;         /* mme_ue_s1ap_id generator */
+    c_uint32_t      m_tmsi;                 /* m_tmsi generator */
 
     hash_t          *enb_sock_hash;         /* hash table for ENB Socket */
     hash_t          *enb_addr_hash;         /* hash table for ENB Address */
@@ -112,6 +113,10 @@ typedef struct _mme_context_t {
     hash_t          *mme_ue_s1ap_id_hash;   /* hash table for MME-UE-S1AP-ID */
     hash_t          *imsi_ue_hash;          /* hash table (IMSI : MME_UE) */
     hash_t          *guti_ue_hash;          /* hash table (GUTI : MME_UE) */
+
+    /* System */
+    msgq_id         queue_id;       /* Queue for processing MME control plane */
+    tm_service_t    tm_service;     /* Timer Service */
 } mme_context_t;
 
 typedef struct _mme_enb_t {
@@ -125,7 +130,7 @@ typedef struct _mme_enb_t {
     c_sockaddr_t    *addr;      /* eNB S1AP Address */
 
     c_uint8_t       num_of_tai;
-    tai_t           tai[MAX_NUM_OF_TAC * MAX_NUM_OF_BPLMN];
+    tai_t           tai[MAX_NUM_OF_TAI * MAX_NUM_OF_BPLMN];
 
     list_t          enb_ue_list;
 

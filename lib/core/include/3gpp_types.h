@@ -73,6 +73,8 @@ CORE_DECLARE(c_uint16_t) plmn_id_mnc_len(plmn_id_t *plmn_id);
 CORE_DECLARE(void *) plmn_id_build(plmn_id_t *plmn_id, 
         c_uint16_t mcc, c_uint16_t mnc, c_uint16_t mnc_len);
 
+#define MAX_NUM_OF_TAI              16
+
 typedef struct _tai_t {
     plmn_id_t plmn_id;
     c_uint16_t tac;
