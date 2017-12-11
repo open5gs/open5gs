@@ -265,6 +265,7 @@ status_t tests1ap_build_setup_req(
         pkbuf_t **pkbuf, S1ap_ENB_ID_PR present, c_uint32_t enb_id)
 {
     int erval = -1;
+    int tac = 12345;
 
     s1ap_message_t message;
     S1ap_S1SetupRequestIEs_t *ies;
@@ -281,12 +282,11 @@ status_t tests1ap_build_setup_req(
 
     supportedTA = (S1ap_SupportedTAs_Item_t *)
         core_calloc(1, sizeof(S1ap_SupportedTAs_Item_t));
-#if 0 /* FIXTAI */
-    s1ap_uint16_to_OCTET_STRING(
-            mme_self()->served_tai[0].tac, &supportedTA->tAC);
-#else
-    s1ap_uint16_to_OCTET_STRING(12345, &supportedTA->tAC);
-#endif
+    if (mme_self()->served_tai[0].list2.tai[0].tac)
+        tac = mme_self()->served_tai[0].list2.tai[0].tac;
+    else
+        tac = mme_self()->served_tai[0].list0.tai[0].tac[0];
+    s1ap_uint16_to_OCTET_STRING(tac, &supportedTA->tAC);
     plmnIdentity = (S1ap_PLMNidentity_t *)
         core_calloc(1, sizeof(S1ap_PLMNidentity_t));
     s1ap_buffer_to_OCTET_STRING(&mme_self()->served_gummei[0].plmn_id[0],
@@ -319,14 +319,14 @@ status_t tests1ap_build_initial_ue_msg(pkbuf_t **pkbuf, int i)
     char *payload[TESTS1AP_MAX_MESSAGE] = {
         "000c405800000500 0800020001001a00 302f177ca0b38802 0741020809101010"
         "3254869104e060c0 4000050221d011d1 5c0a003103e5e034 9011035758a65d01"
-        "00004300060000f1 105ba00064400800 00f1101079baf000 86400130",
+        "00004300060000f1 1030390064400800 00f1101079baf000 86400130",
 
         "000c40809c00"
         "0005000800030002 00001a0073721711 a73a12070741020b f600f11000020100"
         "00000105e060c040 0100210221d011d1 271a808021100100 0010810600000000"
         "830600000000000d 00000a005255f501 10225c0a003103e5 c03e1355f501aaaa"
         "11035758a6200b60 1404ef65233b8878 d290400804026004 00021f025d0107e0"
-        "004300060055f501 1022006440080055 f5010019d0100086 400130",
+        "004300060000f110 3039006440080055 f5010019d0100086 400130",
 
         "000c40809c00"
         "0005000800030001 00001a007372178c 3e3cff070741020b f600f11000020100"
@@ -343,16 +343,16 @@ status_t tests1ap_build_initial_ue_msg(pkbuf_t **pkbuf, int i)
 
         "000c405300000500 080003001100001a 002a2917acba67c4 8207410108091010"
         "103254866205f0f0 000000000e023cd0 11d1270780000a00 000d00c100430006"
-        "0000f1102b670064 40080000f1109d67 aa500086400130",
+        "0000f11030390064 40080000f1109d67 aa500086400130",
 
         "000c405300000500 080003002100001a 002a2917bcba67c4 8207410108091010"
         "103254866205f0f0 000000000e023cd0 11d1270780000a00 000d00c100430006"
-        "0000f1102b670064 40080000f1109d67 aa500086400130",
+        "0000f11030390064 40080000f1109d67 aa500086400130",
 
 
         "000c"
         "404c000005000800 020002001a002423 0741710809101010 3254767905f0f000"
-        "0000000e0201d011 d1270780000a0000 0d00c10043000600 00f1102b67006440"
+        "0000000e0201d011 d1270780000a0000 0d00c10043000600 00f1103039006440"
         "080000f11054f640 100086400130",
         "",
         "",
@@ -361,7 +361,7 @@ status_t tests1ap_build_initial_ue_msg(pkbuf_t **pkbuf, int i)
         "000c"
         "4068000005000800 020001001a00403f 0741720809101010 3254861002e06000"
         "210207d011d1271a 8080211001000010 8106000000008306 00000000000d0000"
-        "0a005c0a00901103 4f18a6f15d010000 4300060000f1105b a0006440080000f1"
+        "0a005c0a00901103 4f18a6f15d010000 4300060000f11030 39006440080000f1"
         "1004615380008640 0130",
 
         "000c"

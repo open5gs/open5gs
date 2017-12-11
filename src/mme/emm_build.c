@@ -17,8 +17,6 @@ status_t emm_build_attach_accept(
     nas_eps_attach_result_t *eps_attach_result = 
         &attach_accept->eps_attach_result;
     nas_gprs_timer_t *t3412_value = &attach_accept->t3412_value;
-    tai0_list_t tai0_list;
-    tai2_list_t tai2_list;
     int served_tai_index = 0;
     nas_eps_mobile_identity_t *guti = &attach_accept->guti;
     nas_gprs_timer_t *t3402_value = &attach_accept->t3402_value;
@@ -43,21 +41,12 @@ status_t emm_build_attach_accept(
     t3412_value->value = 9;
 
     served_tai_index = mme_find_served_tai(&mme_ue->tai);
-    if (served_tai_index < 0)
-    {
-        memset(&tai0_list, 0, sizeof(tai0_list_t));
-        memset(&tai2_list, 0, sizeof(tai2_list_t));
-        tai2_list.type = TAI2_TYPE;
-        tai2_list.num = 1;
-        memcpy(&tai2_list.tai[0], &mme_ue->tai, sizeof(tai_t));
-        nas_tai_list_build(&attach_accept->tai_list, &tai0_list, &tai2_list);
-    }
-    else
-    {
-        nas_tai_list_build(&attach_accept->tai_list,
-                &mme_self()->served_tai[served_tai_index].list0,
-                &mme_self()->served_tai[served_tai_index].list2);
-    }
+    d_assert(served_tai_index >= 0 &&
+            served_tai_index < MAX_NUM_OF_SERVED_TAI, return CORE_ERROR,
+            "Cannot find Served TAI. Check 'mme.tai' configuration");
+    nas_tai_list_build(&attach_accept->tai_list,
+            &mme_self()->served_tai[served_tai_index].list0,
+            &mme_self()->served_tai[served_tai_index].list2);
 
     attach_accept->esm_message_container.buffer = esmbuf->payload;
     attach_accept->esm_message_container.length = esmbuf->len;
@@ -295,8 +284,7 @@ status_t emm_build_tau_accept(pkbuf_t **emmbuf, mme_ue_t *mme_ue)
     nas_message_t message;
     nas_tracking_area_update_accept_t *tau_accept = 
         &message.emm.tracking_area_update_accept;
-    tai0_list_t tai0_list;
-    tai2_list_t tai2_list;
+    int served_tai_index = 0;
 
     memset(&message, 0, sizeof(message));
     message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
@@ -316,12 +304,13 @@ status_t emm_build_tau_accept(pkbuf_t **emmbuf, mme_ue_t *mme_ue)
     tau_accept->presencemask |= 
         NAS_TRACKING_AREA_UPDATE_ACCEPT_TAI_LIST_PRESENT;
 
-    memset(&tai0_list, 0, sizeof(tai0_list_t));
-    memset(&tai2_list, 0, sizeof(tai2_list_t));
-    tai2_list.type = TAI2_TYPE;
-    tai2_list.num = 1;
-    memcpy(&tai2_list.tai[0], &mme_ue->tai, sizeof(tai_t));
-    nas_tai_list_build(&tau_accept->tai_list, &tai0_list, &tai2_list);
+    served_tai_index = mme_find_served_tai(&mme_ue->tai);
+    d_assert(served_tai_index >= 0 &&
+            served_tai_index < MAX_NUM_OF_SERVED_TAI, return CORE_ERROR,
+            "Cannot find Served TAI. Check 'mme.tai' configuration");
+    nas_tai_list_build(&tau_accept->tai_list,
+            &mme_self()->served_tai[served_tai_index].list0,
+            &mme_self()->served_tai[served_tai_index].list2);
 
     /* Set EPS bearer context status */
     tau_accept->presencemask |= 

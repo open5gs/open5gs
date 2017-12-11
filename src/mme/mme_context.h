@@ -129,8 +129,8 @@ typedef struct _mme_enb_t {
     sock_id         sock;       /* eNB S1AP Socket */
     c_sockaddr_t    *addr;      /* eNB S1AP Address */
 
-    c_uint8_t       num_of_tai;
-    tai_t           tai[MAX_NUM_OF_TAI * MAX_NUM_OF_BPLMN];
+    c_uint8_t       num_of_supported_ta_list;
+    tai_t           supported_ta_list[MAX_NUM_OF_TAI * MAX_NUM_OF_BPLMN];
 
     list_t          enb_ue_list;
 

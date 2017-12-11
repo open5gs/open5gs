@@ -23,8 +23,7 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
     S1ap_S1SetupRequestIEs_t *ies = NULL;
     pkbuf_t *s1apbuf = NULL;
     c_uint32_t enb_id;
-    int i,j;
-    int num_of_tai = 0;
+    int i, j;
 
     d_assert(enb, return, "Null param");
     d_assert(enb->sock, return, "Null param");
@@ -36,6 +35,7 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
     s1ap_ENB_ID_to_uint32(&ies->global_ENB_ID.eNB_ID, &enb_id);
 
     /* Parse Supported TA */
+    enb->num_of_supported_ta_list = 0;
     for (i = 0; i < ies->supportedTAs.list.count; i++)
     {
         S1ap_SupportedTAs_Item_t *tai = NULL;
@@ -50,18 +50,20 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
             pLMNidentity = 
                 (S1ap_PLMNidentity_t *)tai->broadcastPLMNs.list.array[j];
 
-            memcpy(&enb->tai[num_of_tai].tac, tAC->buf, sizeof(c_uint16_t));
-            enb->tai[num_of_tai].tac = ntohs(enb->tai[num_of_tai].tac);
+            memcpy(&enb->supported_ta_list[enb->num_of_supported_ta_list].tac,
+                    tAC->buf, sizeof(c_uint16_t));
+            enb->supported_ta_list[enb->num_of_supported_ta_list].tac = 
+                ntohs(enb->supported_ta_list
+                        [enb->num_of_supported_ta_list].tac);
 
-            memcpy(&enb->tai[num_of_tai].plmn_id, pLMNidentity->buf, 
-                    sizeof(plmn_id_t));
-            num_of_tai++;
+            memcpy(&enb->supported_ta_list
+                        [enb->num_of_supported_ta_list].plmn_id,
+                    pLMNidentity->buf, sizeof(plmn_id_t));
+            enb->num_of_supported_ta_list++;
         }
     }
 
-    enb->num_of_tai = num_of_tai;
-
-    if (enb->num_of_tai == 0)
+    if (enb->num_of_supported_ta_list == 0)
     {
         d_error("No supported TA exist in s1stup_req messages");
     }
@@ -98,20 +100,6 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
 
     ies = &message->s1ap_InitialUEMessage_IEs;
     d_assert(ies, return, "Null param");
-
-    tai = &ies->tai;
-    d_assert(tai, return,);
-    pLMNidentity = &tai->pLMNidentity;
-    d_assert(pLMNidentity && pLMNidentity->size == sizeof(plmn_id_t), return,);
-    tAC = &tai->tAC;
-    d_assert(tAC && tAC->size == sizeof(c_uint16_t), return,);
-
-    eutran_cgi = &ies->eutran_cgi;
-    d_assert(eutran_cgi, return,);
-    pLMNidentity = &eutran_cgi->pLMNidentity;
-    d_assert(pLMNidentity && pLMNidentity->size == sizeof(plmn_id_t), return,);
-    cell_ID = &eutran_cgi->cell_ID;
-    d_assert(cell_ID, return,);
 
     enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
     if (!enb_ue)
@@ -154,10 +142,24 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
         }
     }
 
+    tai = &ies->tai;
+    d_assert(tai, return,);
+    pLMNidentity = &tai->pLMNidentity;
+    d_assert(pLMNidentity && pLMNidentity->size == sizeof(plmn_id_t), return,);
+    tAC = &tai->tAC;
+    d_assert(tAC && tAC->size == sizeof(c_uint16_t), return,);
+
     memcpy(&enb_ue->nas.tai.plmn_id, pLMNidentity->buf, 
             sizeof(enb_ue->nas.tai.plmn_id));
     memcpy(&enb_ue->nas.tai.tac, tAC->buf, sizeof(enb_ue->nas.tai.tac));
     enb_ue->nas.tai.tac = ntohs(enb_ue->nas.tai.tac);
+    
+    eutran_cgi = &ies->eutran_cgi;
+    d_assert(eutran_cgi, return,);
+    pLMNidentity = &eutran_cgi->pLMNidentity;
+    d_assert(pLMNidentity && pLMNidentity->size == sizeof(plmn_id_t), return,);
+    cell_ID = &eutran_cgi->cell_ID;
+    d_assert(cell_ID, return,);
     memcpy(&enb_ue->nas.e_cgi.plmn_id, pLMNidentity->buf, 
             sizeof(enb_ue->nas.e_cgi.plmn_id));
     memcpy(&enb_ue->nas.e_cgi.cell_id, cell_ID->buf,
@@ -520,9 +522,10 @@ void s1ap_handle_paging(mme_ue_t *mme_ue)
     for (hi = mme_enb_first(); hi; hi = mme_enb_next(hi))
     {
         enb = mme_enb_this(hi);
-        for (i = 0; i < enb->num_of_tai; i++)
+        for (i = 0; i < enb->num_of_supported_ta_list; i++)
         {
-            if (!memcmp(&enb->tai[i], &mme_ue->tai, sizeof(tai_t)))
+            if (!memcmp(&enb->supported_ta_list[i],
+                        &mme_ue->tai, sizeof(tai_t)))
             {
                 if (mme_ue->last_paging_msg)
                     s1apbuf = mme_ue->last_paging_msg;

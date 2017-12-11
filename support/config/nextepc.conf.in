@@ -141,11 +141,29 @@ mme:
 #      - plmn_id:
 #          mcc: 001
 #          mnc: 01
-#        tac: 12345
+#        tac: [1, 2, 3]
+#    tai:
 #      - plmn_id:
 #          mcc: 002
 #          mnc: 02
-#        tac: 12346
+#        tac: 4
+#      - plmn_id:
+#          mcc: 003
+#          mnc: 03
+#        tac: 5
+#    tai:
+#      - plmn_id:
+#          mcc: 004
+#          mnc: 04
+#        tac: [6, 7]
+#      - plmn_id:
+#          mcc: 005
+#          mnc: 05
+#        tac: 8
+#      - plmn_id:
+#          mcc: 006
+#          mnc: 06
+#        tac: [9, 10]
 #
     tai:
       plmn_id:

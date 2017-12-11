@@ -164,6 +164,7 @@ static void attach_test1(abts_case *tc, void *data)
         context_self()->db_name, "subscribers");
     ABTS_PTR_NOTNULL(tc, collection);
 
+    /********** Insert Subscriber in Database */
     doc = bson_new_from_json((const uint8_t *)json, -1, &error);;
     ABTS_PTR_NOTNULL(tc, doc);
     ABTS_TRUE(tc, mongoc_collection_insert(collection, 
@@ -528,6 +529,7 @@ static void attach_test2(abts_case *tc, void *data)
         context_self()->db_name, "subscribers");
     ABTS_PTR_NOTNULL(tc, collection);
 
+    /********** Insert Subscriber in Database */
     ABTS_TRUE(tc, mongoc_collection_insert(collection, 
                 MONGOC_INSERT_NONE, doc, NULL, &error));
     bson_destroy(doc);
@@ -808,6 +810,7 @@ static void attach_test3(abts_case *tc, void *data)
         context_self()->db_name, "subscribers");
     ABTS_PTR_NOTNULL(tc, collection);
 
+    /********** Insert Subscriber in Database */
     ABTS_TRUE(tc, mongoc_collection_insert(collection,
                 MONGOC_INSERT_NONE, doc, NULL, &error));
     bson_destroy(doc);
