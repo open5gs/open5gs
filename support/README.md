@@ -1,7 +1,7 @@
 
 * Network Configuration
 user@host ~/Documents/git/nextepc/support$ \
-    sudo ./linux_netconfig.sh
+    sudo ./network/restart.sh
 
 * Generate Key & Cert for Diameter
 user@host ~/Documents/git/nextepc/support$ \
@@ -12,14 +12,14 @@ user@host ~/Documents/git/nextepc$ \
     sudo valgrind --leak-check=full --show-leak-kinds=all \
     --suppressions=support/valgrind/mongoc.suppressions \
     --suppressions=support/valgrind/freeDiameter.suppressions \
-    ./epcd
+    ./test/testepc
 
 * Generate Suppression File
 user@host ~/Documents/git/nextepc$ \
     sudo valgrind --leak-check=full --show-reachable=yes --error-limit=no \
     --gen-suppressions=all --log-file=support/valgrind/test.log \
     --suppressions=support/valgrind/mongoc.suppressions \
-    ./epcd
+    ./test/testepc
 
 user@host ~/Documents/git/nextepc/support/valgrind$ \
     sudo chown user:user test.log
