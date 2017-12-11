@@ -75,7 +75,7 @@ AM_PROG_AR
 LT_INIT([dlopen pic-only disable-static])
 
 dnl Checks for compile flag
-AX_CHECK_COMPILE_FLAG([-Wno-format-truncation], [CFLAGS="$CFLAGS -Wno-format-truncation"])
+dnl AX_CHECK_COMPILE_FLAG([-Wno-format-truncation],[CFLAGS="$CFLAGS -Wno-format-truncation"])
 
 dnl Check Endian
 AC_C_BIGENDIAN
