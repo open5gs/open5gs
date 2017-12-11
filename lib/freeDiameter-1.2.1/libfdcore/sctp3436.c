@@ -76,7 +76,7 @@ static void * demuxer(void * arg)
 	
 	/* Set the thread name */
 	{
-		char buf[48];
+		char buf[128];
 		snprintf(buf, sizeof(buf), "Demuxer (%d:%s)", conn->cc_socket, conn->cc_remid);
 		fd_log_threadname ( buf );
 	}
@@ -146,7 +146,7 @@ static void * decipher(void * arg)
 	
 	/* Set the thread name */
 	{
-		char buf[48];
+		char buf[128];
 		snprintf(buf, sizeof(buf), "Decipher (%hu@%d:%s)", ctx->strid, cnx->cc_socket, cnx->cc_remid);
 		fd_log_threadname ( buf );
 	}
