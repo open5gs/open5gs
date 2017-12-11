@@ -19,6 +19,7 @@ status_t emm_build_attach_accept(
     nas_gprs_timer_t *t3412_value = &attach_accept->t3412_value;
     tai0_list_t tai0_list;
     tai2_list_t tai2_list;
+    int served_tai_index = 0;
     nas_eps_mobile_identity_t *guti = &attach_accept->guti;
     nas_gprs_timer_t *t3402_value = &attach_accept->t3402_value;
     nas_gprs_timer_t *t3423_value = &attach_accept->t3423_value;
@@ -41,12 +42,22 @@ status_t emm_build_attach_accept(
     t3412_value->unit = NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_DECI_HH;
     t3412_value->value = 9;
 
-    memset(&tai0_list, 0, sizeof(tai0_list_t));
-    memset(&tai2_list, 0, sizeof(tai2_list_t));
-    tai2_list.type = TAI2_TYPE;
-    tai2_list.num = 1;
-    memcpy(&tai2_list.tai[0], &mme_ue->tai, sizeof(tai_t));
-    nas_tai_list_build(&attach_accept->tai_list, &tai0_list, &tai2_list);
+    served_tai_index = mme_find_served_tai(&mme_ue->tai);
+    if (served_tai_index < 0)
+    {
+        memset(&tai0_list, 0, sizeof(tai0_list_t));
+        memset(&tai2_list, 0, sizeof(tai2_list_t));
+        tai2_list.type = TAI2_TYPE;
+        tai2_list.num = 1;
+        memcpy(&tai2_list.tai[0], &mme_ue->tai, sizeof(tai_t));
+        nas_tai_list_build(&attach_accept->tai_list, &tai0_list, &tai2_list);
+    }
+    else
+    {
+        nas_tai_list_build(&attach_accept->tai_list,
+                &mme_self()->served_tai[served_tai_index].list0,
+                &mme_self()->served_tai[served_tai_index].list2);
+    }
 
     attach_accept->esm_message_container.buffer = esmbuf->payload;
     attach_accept->esm_message_container.length = esmbuf->len;

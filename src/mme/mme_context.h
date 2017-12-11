@@ -440,6 +440,19 @@ CORE_DECLARE(hash_index_t *) mme_enb_next(hash_index_t *hi);
 CORE_DECLARE(mme_enb_t *)    mme_enb_this(hash_index_t *hi);
 CORE_DECLARE(int)           mme_enb_sock_type(sock_id sock);
 
+CORE_DECLARE(enb_ue_t*)     enb_ue_add(mme_enb_t *enb);
+CORE_DECLARE(unsigned int)  enb_ue_count();
+CORE_DECLARE(status_t)      enb_ue_remove(enb_ue_t *enb_ue);
+CORE_DECLARE(status_t)      enb_ue_remove_in_enb(mme_enb_t *enb);
+CORE_DECLARE(status_t)      enb_ue_switch_to_enb(enb_ue_t *enb_ue, 
+                                mme_enb_t *new_enb);
+CORE_DECLARE(enb_ue_t*)     enb_ue_find(index_t index);
+CORE_DECLARE(enb_ue_t*)     enb_ue_find_by_enb_ue_s1ap_id(mme_enb_t *enb, 
+                                c_uint32_t enb_ue_s1ap_id);
+CORE_DECLARE(enb_ue_t*)     enb_ue_find_by_mme_ue_s1ap_id(c_uint32_t mme_ue_s1ap_id);
+CORE_DECLARE(enb_ue_t*)     enb_ue_first_in_enb(mme_enb_t *enb);
+CORE_DECLARE(enb_ue_t*)     enb_ue_next_in_enb(enb_ue_t *enb_ue);
+
 CORE_DECLARE(mme_ue_t*)     mme_ue_add(enb_ue_t *enb_ue);
 CORE_DECLARE(status_t)      mme_ue_remove(mme_ue_t *mme_ue);
 CORE_DECLARE(status_t)      mme_ue_remove_all();
@@ -497,18 +510,7 @@ CORE_DECLARE(status_t)      mme_pdn_remove_all(mme_ue_t *mme_ue);
 CORE_DECLARE(pdn_t*)        mme_pdn_find_by_apn(
                                 mme_ue_t *mme_ue, c_int8_t *apn);
 
-CORE_DECLARE(enb_ue_t*)     enb_ue_add(mme_enb_t *enb);
-CORE_DECLARE(unsigned int)  enb_ue_count();
-CORE_DECLARE(status_t)      enb_ue_remove(enb_ue_t *enb_ue);
-CORE_DECLARE(status_t)      enb_ue_remove_in_enb(mme_enb_t *enb);
-CORE_DECLARE(status_t)      enb_ue_switch_to_enb(enb_ue_t *enb_ue, 
-                                mme_enb_t *new_enb);
-CORE_DECLARE(enb_ue_t*)     enb_ue_find(index_t index);
-CORE_DECLARE(enb_ue_t*)     enb_ue_find_by_enb_ue_s1ap_id(mme_enb_t *enb, 
-                                c_uint32_t enb_ue_s1ap_id);
-CORE_DECLARE(enb_ue_t*)     enb_ue_find_by_mme_ue_s1ap_id(c_uint32_t mme_ue_s1ap_id);
-CORE_DECLARE(enb_ue_t*)     enb_ue_first_in_enb(mme_enb_t *enb);
-CORE_DECLARE(enb_ue_t*)     enb_ue_next_in_enb(enb_ue_t *enb_ue);
+CORE_DECLARE(int)           mme_find_served_tai(tai_t *tai);
 
 #ifdef __cplusplus
 }

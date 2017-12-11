@@ -33,7 +33,7 @@ extern "C" {
 #define NAX_MAX_ADDITIONAL_INFORMATION_LEN 255
 typedef struct _nas_additional_information_t {
     c_uint8_t length;
-    c_uint32_t buffer[NAX_MAX_ADDITIONAL_INFORMATION_LEN];
+    c_uint8_t buffer[NAX_MAX_ADDITIONAL_INFORMATION_LEN];
 } __attribute__ ((packed)) nas_additional_information_t;
 
 /* 9.9.2.0A Device properties
@@ -609,7 +609,7 @@ ED3(c_uint8_t type:4;,
 #define NAS_MAX_MESSAGE_CONTAINER_LEN 250
 typedef struct _nas_message_container_t {
     c_uint8_t length;
-    c_uint16_t buffer[NAS_MAX_MESSAGE_CONTAINER_LEN];
+    c_uint8_t buffer[NAS_MAX_MESSAGE_CONTAINER_LEN];
 } __attribute__ ((packed)) nas_message_container_t;
 
 /* 9.9.3.23 NAS security algorithms
@@ -733,6 +733,7 @@ typedef tai_t nas_tracking_area_identity_t;
 
 /* 9.9.3.33 Tracking area identity list
  * M LV 7-97 */
+#define NAS_MAX_TAI_LIST_LEN        96
 #define TAI0_TYPE                   0
 #define TAI1_TYPE                   1
 #define TAI2_TYPE                   2
@@ -755,14 +756,7 @@ ED3(c_uint8_t spare:1;,
 
 typedef struct _nas_tracking_area_identity_list_t {
     c_uint8_t length;
-    union {
-        tai0_list_t list0;
-        tai2_list_t list2;
-        struct {
-            tai0_list_t list0;
-            tai2_list_t list2;
-        } __attribute__ ((packed)) both;
-    };
+    c_uint8_t buffer[NAS_MAX_TAI_LIST_LEN];
 } __attribute__ ((packed)) nas_tracking_area_identity_list_t;
 
 CORE_DECLARE(void) nas_tai_list_build(

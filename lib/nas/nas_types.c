@@ -225,63 +225,75 @@ void nas_tai_list_build(
         nas_tracking_area_identity_list_t *target,
         tai0_list_t *source0, tai2_list_t *source2)
 {
-    int i = 0, j = 0, length = 0;
-    tai0_list_t *target0 = NULL;
-    tai2_list_t *target2 = NULL;
+    int i = 0, j = 0, size = 0;
+
+    tai0_list_t target0;
+    tai2_list_t target2;
 
     d_assert(target, return,);
     d_assert(source0, return,);
     d_assert(source2, return,);
 
-
-    target0 = &target->list0;
-    memset(target0, 0, sizeof(tai0_list_t));
+    memset(target, 0, sizeof(nas_tracking_area_identity_list_t));
+    memset(&target0, 0, sizeof(tai0_list_t));
+    memset(&target2, 0, sizeof(tai2_list_t));
 
     for (i = 0; source0->tai[i].num; i++)
     {
         d_assert(source0->tai[i].type == TAI0_TYPE,
             return, "type = %d", source0->tai[i].type);
-        target0->tai[i].type = source0->tai[i].type;
+        target0.tai[i].type = source0->tai[i].type;
 
         /* <Spec> target->num = source->num - 1 */
         d_assert(source0->tai[i].num < MAX_NUM_OF_TAI,
                 return, "num = %d", source0->tai[i].num);
-        target0->tai[i].num = source0->tai[i].num - 1;
-
-        memcpy(&target0->tai[i].plmn_id,
+        target0.tai[i].num = source0->tai[i].num - 1;
+        memcpy(&target0.tai[i].plmn_id,
                &source0->tai[i].plmn_id, PLMN_ID_LEN);
+
         for (j = 0; j < source0->tai[i].num; j++) 
         {
-            target0->tai[i].tac[j] = htons(source0->tai[i].tac[j]);
+            target0.tai[i].tac[j] = htons(source0->tai[i].tac[j]);
         }
-        length += (1 + 3 + 2 * source0->tai[i].num);
+
+        size = (1 + 3 + 2 * source0->tai[i].num);
+        if ((target->length + size) > NAS_MAX_TAI_LIST_LEN)
+        {
+            d_warn("Overflow: Ignore remained TAI LIST(length:%d, size:%d)",
+                    target->length, size);
+            return;
+        }
+        memcpy(target->buffer + target->length, &target0.tai[i], size);
+        target->length += size;
     }
 
     if (source2->num)
     {
-        if (source0->tai[0].num)
-            target2 = &target->both.list2;
-        else
-            target2 = &target->list2;
-        memset(target2, 0, sizeof(tai2_list_t));
+        memset(&target2, 0, sizeof(target2));
 
         d_assert(source2->type == TAI1_TYPE || source2->type == TAI2_TYPE,
             return, "type = %d", source2->type);
-        target2->type = source2->type;
+        target2.type = source2->type;
 
         /* <Spec> target->num = source->num - 1 */
         d_assert(source2->num < MAX_NUM_OF_TAI,
                 return, "num = %d", source2->num);
-        target2->num = source2->num - 1;
+        target2.num = source2->num - 1;
 
+        size = (1 + (3 + 2) * source2->num);
+        if ((target->length + size) > NAS_MAX_TAI_LIST_LEN)
+        {
+            d_warn("Overflow: Ignore remained TAI LIST(length:%d, size:%d)",
+                    target->length, size);
+            return;
+        }
         for (i = 0; i < source2->num; i++) 
         {
-            memcpy(&target2->tai[i].plmn_id,
+            memcpy(&target2.tai[i].plmn_id,
                    &source2->tai[i].plmn_id, PLMN_ID_LEN);
-            target2->tai[i].tac = htons(source2->tai[i].tac);
+            target2.tai[i].tac = htons(source2->tai[i].tac);
         }
-        length += (1 + 3 + 2 * source2->num);
+        memcpy(target->buffer + target->length, &target2, size);
+        target->length += size;
     }
-
-    target->length = length;
 }

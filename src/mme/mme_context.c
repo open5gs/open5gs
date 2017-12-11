@@ -206,56 +206,13 @@ static status_t mme_context_validation()
         return CORE_ERROR;
     }
 
-#if 0 /* For debuggin, will be removed */
+    if (self.served_tai[0].list0.tai[0].num == 0 &&
+        self.served_tai[0].list2.num == 0)
     {
-        int i = 0, j = 0, k = 0;
-        for (k = 0; k < self.num_of_served_tai; k++)
-        {
-            tai0_list_t *list0 = &self.served_tai[k].list0;
-            d_assert(list0, return CORE_ERROR,);
-            tai2_list_t *list2 = &self.served_tai[k].list2;
-            d_assert(list2, return CORE_ERROR,);
-
-            for (i = 0; list0->tai[i].num; i++)
-            {
-                d_assert(list0->tai[i].type == TAI0_TYPE,
-                    return CORE_ERROR, "type = %d", list0->tai[i].type);
-                printf("i:%d ", i);
-                printf("type: %d ", list0->tai[i].type);
-
-                d_assert(list0->tai[i].num < MAX_NUM_OF_TAI,
-                        return CORE_ERROR, "num = %d", list0->tai[i].num);
-                printf("num: %d ", list0->tai[i].num);
-
-                printf("tac: ");
-                for (j = 0; j < list0->tai[i].num; j++) 
-                {
-                    printf("%d, ", list0->tai[i].tac[j]);
-                }
-                printf("\n");
-            }
-
-            if (list2->num)
-            {
-                d_assert(list2->type == TAI1_TYPE || list2->type == TAI2_TYPE,
-                    return CORE_ERROR, "type = %d", list2->type);
-                printf("type: %d ", list2->type);
-
-                /* <Spec> target->num = source->num - 1 */
-                d_assert(list2->num < MAX_NUM_OF_TAI,
-                        return CORE_ERROR, "num = %d", list2->num);
-                printf("num: %d ", list2->num);
-
-                printf("tac: ");
-                for (i = 0; i < list2->num; i++) 
-                {
-                    printf("%d, ", list2->tai[i].tac);
-                }
-            }
-            printf("\n\n\n");
-        }
+        d_error("No mme.tai.plmn_id|tac in '%s'",
+                context_self()->config.path);
+        return CORE_ERROR;
     }
-#endif
 
     if (self.num_of_integrity_order == 0)
     {
@@ -2460,4 +2417,57 @@ pdn_t* mme_pdn_find_by_apn(mme_ue_t *mme_ue, c_int8_t *apn)
     }
 
     return NULL;
+}
+
+int mme_find_served_tai(tai_t *tai)
+{
+    int i = 0, j = 0, k = 0;
+
+    d_assert(tai, return -1,);
+
+    for (i = 0; i < self.num_of_served_tai; i++)
+    {
+        tai0_list_t *list0 = &self.served_tai[i].list0;
+        d_assert(list0, return -1,);
+        tai2_list_t *list2 = &self.served_tai[i].list2;
+        d_assert(list2, return -1,);
+
+        for (j = 0; list0->tai[j].num; j++)
+        {
+            d_assert(list0->tai[j].type == TAI0_TYPE,
+                return -1, "type = %d", list0->tai[j].type);
+            d_assert(list0->tai[j].num < MAX_NUM_OF_TAI,
+                    return -1, "num = %d", list0->tai[j].num);
+
+            for (k = 0; k < list0->tai[j].num; k++) 
+            {
+                if (memcmp(&list0->tai[j].plmn_id,
+                            &tai->plmn_id, PLMN_ID_LEN) == 0 && 
+                    list0->tai[j].tac[k] == tai->tac)
+                {
+                    return i;
+                }
+            }
+        }
+
+        if (list2->num)
+        {
+            d_assert(list2->type == TAI1_TYPE || list2->type == TAI2_TYPE,
+                return -1, "type = %d", list2->type);
+            d_assert(list2->num < MAX_NUM_OF_TAI,
+                    return -1, "num = %d", list2->num);
+
+            for (j = 0; j < list2->num; j++) 
+            {
+                if (memcmp(&list2->tai[j].plmn_id,
+                            &tai->plmn_id, PLMN_ID_LEN) == 0 && 
+                    list2->tai[j].tac == tai->tac)
+                {
+                    return i;
+                }
+            }
+        }
+    }
+
+    return -1;
 }
