@@ -10,6 +10,10 @@
 #define PORT2 7778
 #define PPID 12345
 
+#ifndef AI_PASSIVE
+#define AI_PASSIVE 1
+#endif
+
 static void sctp_test1(abts_case *tc, void *data)
 {
     sock_id sctp;

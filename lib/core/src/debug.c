@@ -244,7 +244,8 @@ status_t d_msg_file_init(const char *file)
             FILE_UREAD | FILE_UWRITE | FILE_GREAD);
     if (rv != CORE_OK)
     {
-        d_error("Cannot open log file '%s'", file);
+        d_error("CHECK PERMISSION of Installation Directory...");
+        d_error("Cannot create LOG file '%s'", file);
         return CORE_ERROR;
     }
 

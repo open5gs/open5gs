@@ -106,7 +106,8 @@ status_t app_log_pid(const char *pid_path)
             FILE_WRITE | FILE_CREATE | FILE_TRUNCATE,
             FILE_UREAD | FILE_UWRITE | FILE_GREAD | FILE_WREAD)) != CORE_OK)
     {
-        d_error("could not create %s", pid_path);
+        d_error("CHECK PERMISSION of Installation Directory...");
+        d_error("Cannot create PID file:`%s`", pid_path);
         return CORE_ERROR;
     }
     snprintf(buf, sizeof(buf), "%" C_PID_T_FMT "\r\n", mypid);
