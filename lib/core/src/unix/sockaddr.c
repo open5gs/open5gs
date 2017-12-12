@@ -496,7 +496,6 @@ CORE_DECLARE(status_t) core_ipsubnet(
         }
     }
 
-    memcpy(ipsub->addr, ipsub->sub, sizeof ipsub->sub);
     fix_subnet(ipsub);
 
     return CORE_OK;

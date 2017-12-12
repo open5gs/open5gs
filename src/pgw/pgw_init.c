@@ -30,6 +30,9 @@ status_t pgw_initialize()
     rv = pgw_context_setup_trace_module();
     if (rv != CORE_OK) return rv;
 
+    rv = pgw_ue_pool_generate();
+    if (rv != CORE_OK) return rv;
+
     rv = pgw_ip_pool_generate();
     if (rv != CORE_OK) return rv;
 

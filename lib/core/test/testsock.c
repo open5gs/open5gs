@@ -433,6 +433,12 @@ static void sock_test8(abts_case *tc, void *data)
 
     rv = core_ipsubnet(&ipsub, "cafe::1", "64");
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    rv = core_ipsubnet(&ipsub, "172.16.0.1", NULL);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    rv = core_ipsubnet(&ipsub, "cafe::1", NULL);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
 }
 
 abts_suite *testsock(abts_suite *suite)

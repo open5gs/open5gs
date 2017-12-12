@@ -96,8 +96,7 @@ typedef struct _sock_node_t {
 typedef struct ipsubnet_t {
     int family;
 
-    c_uint32_t addr[4]; /* big enough for IPv4 and IPv6 addresses */
-    c_uint32_t sub[4];
+    c_uint32_t sub[4]; /* big enough for IPv4 and IPv6 addresses */
     c_uint32_t mask[4];
 } ipsubnet_t;
 
