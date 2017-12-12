@@ -93,6 +93,14 @@ typedef struct _sock_node_t {
     c_sockaddr_t *list;
 } sock_node_t;
 
+typedef struct ipsubnet_t {
+    int family;
+
+    c_uint32_t addr[4]; /* big enough for IPv4 and IPv6 addresses */
+    c_uint32_t sub[4];
+    c_uint32_t mask[4];
+} ipsubnet_t;
+
 /*
  * Init/Final
  */
@@ -120,7 +128,7 @@ CORE_DECLARE(c_sockaddr_t *) sock_local_addr(sock_id id);
 CORE_DECLARE(c_sockaddr_t *) sock_remote_addr(sock_id id);
 
 /*
- * Socket Address
+ * Socket Node
  */
 CORE_DECLARE(status_t) sock_add_node(
         list_t *list, sock_node_t **node, c_sockaddr_t *sa_list, int family);
@@ -131,6 +139,9 @@ CORE_DECLARE(status_t) sock_probe_node(
         list_t *list, list_t *list6, const char *dev, c_uint16_t port);
 CORE_DECLARE(status_t) sock_fill_scope_id_in_local(c_sockaddr_t *sa_list);
 
+/*
+ * Socket Address
+ */
 CORE_DECLARE(status_t) core_getaddrinfo(c_sockaddr_t **sa_list, 
         int family, const char *hostname, c_uint16_t port, int flags);
 CORE_DECLARE(status_t) core_freeaddrinfo(c_sockaddr_t *sa_list);
@@ -153,6 +164,8 @@ CORE_DECLARE(status_t) core_inet_pton(int family, const char *src, void *addr);
 CORE_DECLARE(socklen_t) sockaddr_len(const void *addr);
 CORE_DECLARE(int) sockaddr_is_equal(void *p, void *q);
 
+CORE_DECLARE(status_t) core_ipsubnet(
+        ipsubnet_t *ipsub, const char *ipstr, const char *mask_or_numbits);
 /*
  * UDP Socket
  */
