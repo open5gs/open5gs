@@ -209,7 +209,11 @@ status_t tun_set_ipv6(sock_id id, ipsubnet_t *ipaddr, ipsubnet_t *ipsub)
     char buf[512];
     int len;
     struct rt_msghdr *rtm;
+#if 0
     struct sockaddr_in6 dst, gw;
+#else
+    struct sockaddr_in6 dst;
+#endif
 	struct sockaddr_in6 *paddr;
 
     d_assert(ipaddr, return CORE_ERROR,);
@@ -255,11 +259,6 @@ status_t tun_set_ipv6(sock_id id, ipsubnet_t *ipaddr, ipsubnet_t *ipsub)
 
     close(fd); /* SOCK_DGRAM */
 
-#if 1
-    return CORE_OK;
-#endif
-
-
     fd = socket(PF_ROUTE, SOCK_RAW, 0);
     if (fd < 0)
     {
@@ -267,6 +266,32 @@ status_t tun_set_ipv6(sock_id id, ipsubnet_t *ipaddr, ipsubnet_t *ipsub)
         return CORE_ERROR;
     }
 
+    (void)memset(&buf, 0, sizeof(buf));
+    rtm = (struct rt_msghdr *)buf;
+    rtm->rtm_type = RTM_DELETE;
+    rtm->rtm_version = RTM_VERSION;
+    rtm->rtm_pid = getpid();
+    rtm->rtm_seq = 0;
+    rtm->rtm_addrs = RTA_DST;
+    paddr = (struct sockaddr_in6 *)(rtm + 1);
+
+	(void)memset(&dst, '\0', sizeof(dst));
+	dst.sin6_family = ipaddr->family;
+    memcpy(dst.sin6_addr.s6_addr, ipaddr->sub, sizeof ipsub->sub);
+	dst.sin6_len = sizeof(dst);
+	(void)memcpy(paddr, &dst, sizeof(dst));
+    paddr = (struct sockaddr_in6 *)((char *)paddr +
+            CORE_ALIGN(sizeof(*paddr), sizeof(c_uintptr_t)));
+
+    len = (char*)paddr - buf;
+    rtm->rtm_msglen = len;
+    if (write(fd, buf, len) < 0)
+    {
+        d_error("Can't add routing(%s)", strerror(errno));
+        return CORE_ERROR;
+    }
+
+#if 0
     (void)memset(&buf, 0, sizeof(buf));
     rtm = (struct rt_msghdr *)buf;
     rtm->rtm_type = RTM_ADD;
@@ -308,6 +333,7 @@ status_t tun_set_ipv6(sock_id id, ipsubnet_t *ipaddr, ipsubnet_t *ipsub)
         d_error("Can't add routing(%s)", strerror(errno));
         return CORE_ERROR;
     }
+#endif
 
     close(fd); /* PF_ROUTE, SOCK_RAW */
 
