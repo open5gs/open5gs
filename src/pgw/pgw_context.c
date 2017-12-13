@@ -32,19 +32,11 @@ typedef struct _ue_pool_t {
     int head, tail;
     int size, avail;
     mutex_id mut;
-    pgw_ip_t *free[MAX_POOL_OF_SESS], pool[MAX_POOL_OF_SESS];
+    pgw_ue_ip_t *free[MAX_POOL_OF_SESS], pool[MAX_POOL_OF_SESS];
 } ue_pool_t;
-
-typedef struct _ue_pool6_t {
-    int head, tail;
-    int size, avail;
-    mutex_id mut;
-    pgw_ip_t *free[MAX_POOL_OF_SESS], pool[MAX_POOL_OF_SESS];
-} ue_pool6_t;
 
 #define INVALID_POOL_INDEX       MAX_NUM_OF_UE_POOL
 static ue_pool_t ue_pool[MAX_NUM_OF_UE_POOL];
-static ue_pool6_t ue_pool6[MAX_NUM_OF_UE_POOL];
 
 static int context_initiaized = 0;
 
@@ -73,10 +65,7 @@ status_t pgw_context_init()
     pool_init(&pgw_pf_pool, MAX_POOL_OF_PF);
 
     for (i = 0; i < MAX_NUM_OF_UE_POOL; i++)
-    {
         pool_init(&ue_pool[i], MAX_POOL_OF_UE);
-        pool_init(&ue_pool6[i], MAX_POOL_OF_UE);
-    }
 
     self.sess_hash = hash_make();
 
@@ -120,8 +109,17 @@ status_t pgw_context_final()
 
     for (i = 0; i < MAX_NUM_OF_UE_POOL; i++)
     {
+        if (index_size(&ue_pool[i]) != pool_avail(&ue_pool[i]))
+        {
+            d_warn("[%d] %d not freed in ue_pool[%d] in PGW-Context",
+                    i, index_size(&ue_pool[i]) - pool_avail(&ue_pool[i]),
+                    index_size(&ue_pool[i]));
+        }
+        d_trace(3, "[%d] %d not freed in ue_pool[%d] in PGW-Context\n",
+                i, index_size(&ue_pool[i]) - pool_avail(&ue_pool[i]),
+                index_size(&ue_pool[i]));
+
         pool_final(&ue_pool[i]);
-        pool_final(&ue_pool6[i]);
     }
 
     index_final(&pgw_bearer_pool);
@@ -152,8 +150,6 @@ static status_t pgw_context_prepare()
     self.gtpu_port = GTPV1_U_UDP_PORT;
 
     self.tun_ifname = "pgwtun";
-    self.default_ue_pool_index = INVALID_POOL_INDEX;
-    self.default_ue_pool6_index = INVALID_POOL_INDEX;
 
     return CORE_OK;
 }
@@ -1532,13 +1528,13 @@ status_t pgw_ue_pool_generate()
 {
     status_t rv;
     int i, j;
-    int pool_index = 0;
 
     for (i = 0; i < self.num_of_ue_pool; i++)
     {
+        int pool_index = 0;
         ipsubnet_t ipaddr, ipsub;
         c_uint32_t bits;
-        c_uint32_t count;
+        c_uint32_t mask_count;
         c_uint32_t broadcast[4];
 
         rv = core_ipsubnet(&ipaddr, self.ue_pool[i].ipstr, NULL);
@@ -1553,20 +1549,20 @@ status_t pgw_ue_pool_generate()
         if (ipsub.family == AF_INET)
         {
             if (bits == 32)
-                count = 1;
+                mask_count = 1;
             else if (bits < 32)
-                count = (0xffffffff >> bits) + 1;
+                mask_count = (0xffffffff >> bits) + 1;
             else
                 d_assert(0, return CORE_ERROR,);
         }
         else if (ipsub.family == AF_INET6)
         {
             if (bits == 128)
-                count = 1;
+                mask_count = 1;
             else if (bits > 96 && bits < 128)
-                count = (0xffffffff >> (bits - 96)) + 1;
+                mask_count = (0xffffffff >> (bits - 96)) + 1;
             else if (bits <= 96)
-                count = 0xffffffff;
+                mask_count = 0xffffffff;
             else
                 d_assert(0, return CORE_ERROR,);
         }
@@ -1580,31 +1576,43 @@ status_t pgw_ue_pool_generate()
             broadcast[j] = ipsub.sub[j] + ~ipsub.mask[j];
         }
 
-        for (j = 0; j < count && pool_index < MAX_POOL_OF_SESS; j++)
+        for (j = 0; j < mask_count && pool_index < MAX_POOL_OF_SESS; j++)
         {
+            pgw_ue_ip_t *ue_ip = NULL;
+            int maxbytes = 0;
+            int lastindex = 0;
+
+            ue_ip = &ue_pool[i].pool[pool_index];
+            d_assert(ue_ip, return CORE_ERROR,);
+            memset(ue_ip, 0, sizeof *ue_ip);
+
             if (ipsub.family == AF_INET)
             {
-                pgw_ip_t *ip = &ue_pool[i].pool[pool_index];
-                ip->addr = ipaddr.sub[0] + htonl(j);
-
-                /* Exclude Network Address */
-                if (ip->addr == ipsub.sub[0]) continue;
-
-                /* Exclude Broadcast Address */
-                if (ip->addr == broadcast[0]) continue;
-
-                /* Exclude TUN IP Address */
-                if (ip->addr == ipaddr.sub[0]) continue;
+                maxbytes = 4;
+                lastindex = 0;
             }
             else if (ipsub.family == AF_INET6)
             {
+                maxbytes = 16;
+                lastindex = 3;
             }
-            else
-                d_assert(0, return CORE_ERROR,);
 
+            memcpy(ue_ip->addr, ipsub.sub, maxbytes);
+            ue_ip->addr[lastindex] += htonl(j);
+
+            /* Exclude Network Address */
+            if (memcmp(ue_ip->addr, ipsub.sub, maxbytes) == 0) continue;
+
+            /* Exclude Broadcast Address */
+            if (memcmp(ue_ip->addr, broadcast, maxbytes) == 0) continue;
+
+            /* Exclude TUN IP Address */
+            if (memcmp(ue_ip->addr, ipaddr.sub, maxbytes) == 0) continue;
+            
             pool_index++;
         }
     }
+
     return CORE_OK;
 }
 
@@ -1632,10 +1640,17 @@ static c_uint8_t find_ue_pool_index(int family, const char *apn)
 
     if (pool_index == INVALID_POOL_INDEX)
     {
-        if (family == AF_INET)
-            pool_index = self.default_ue_pool_index;
-        else if (family == AF_INET6)
-            pool_index = self.default_ue_pool6_index;
+        for (i = 0; i < self.num_of_ue_pool; i++)
+        {
+            if (self.ue_pool[i].apn == NULL)
+            {
+                if (self.ue_pool[i].family == family)
+                {
+                    pool_index = i;
+                    break;
+                }
+            }
+        }
     }
 
     if (pool_index == INVALID_POOL_INDEX)
@@ -1647,59 +1662,32 @@ static c_uint8_t find_ue_pool_index(int family, const char *apn)
     return pool_index;
 }
 
-pgw_ip_t *pgw_addr_alloc(const char *apn)
+pgw_ue_ip_t *pgw_ue_ip_alloc(int family, const char *apn)
 {
     c_uint8_t pool_index = INVALID_POOL_INDEX;
-    pgw_ip_t *ip = NULL;
+    pgw_ue_ip_t *ue_ip = NULL;
 
     d_assert(apn, return NULL,);
 
-    pool_index = find_ue_pool_index(AF_INET, apn);
+    pool_index = find_ue_pool_index(family, apn);
     d_assert(pool_index < MAX_NUM_OF_UE_POOL, return NULL,);
 
-    pool_alloc_node(&ue_pool[pool_index], &ip);
-    d_assert(ip, return NULL,);
-    memset(ip, 0, sizeof *ip);
-    ip->ipv4 = 1;
-    ip->index = pool_index;
+    pool_alloc_node(&ue_pool[pool_index], &ue_ip);
+    d_assert(ue_ip, return NULL,);
+    ue_ip->index = pool_index;
 
-    return ip;
+    return ue_ip;
 }
 
-pgw_ip_t *pgw_addr6_alloc(const char *apn)
-{
-    c_uint8_t pool_index = INVALID_POOL_INDEX;
-    pgw_ip_t *ip = NULL;
-
-    d_assert(apn, return NULL,);
-
-    pool_index = find_ue_pool_index(AF_INET6, apn);
-    d_assert(pool_index < MAX_NUM_OF_UE_POOL, return NULL,);
-
-    pool_alloc_node(&ue_pool6[pool_index], &ip);
-    d_assert(ip, return NULL,);
-    memset(ip, 0, sizeof *ip);
-    ip->ipv6 = 1;
-    ip->index = pool_index;
-
-    return ip;
-}
-
-status_t pgw_addr_free(pgw_ip_t *ip)
+status_t pgw_ue_ip_free(pgw_ue_ip_t *ue_ip)
 {
     c_uint8_t pool_index;
 
-    d_assert(ip, return CORE_ERROR,);
-    pool_index = ip->index;
+    d_assert(ue_ip, return CORE_ERROR,);
+    pool_index = ue_ip->index;
 
     d_assert(pool_index < MAX_NUM_OF_UE_POOL, return CORE_ERROR,);
-    if (ip->ipv4 && ip->ipv6 == 0)
-        pool_free_node(&ue_pool[pool_index], ip);
-    else if (ip->ipv6 && ip->ipv4 == 0)
-        pool_free_node(&ue_pool6[pool_index], ip);
-    else
-        d_assert(0, return CORE_ERROR,);
-    
+    pool_free_node(&ue_pool[pool_index], ue_ip);
 
     return CORE_OK;
 }

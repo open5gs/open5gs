@@ -49,8 +49,6 @@ typedef struct _pgw_context_t {
         int family;                 /* AF_INET or AF_INET6 */
     } ue_pool[MAX_NUM_OF_UE_POOL];
     c_uint8_t       num_of_ue_pool;
-    c_uint8_t        default_ue_pool_index;      /* IPv4 Default Pool Index */
-    c_uint8_t        default_ue_pool6_index;     /* IPv6 Default Pool Index */
 
     struct {
         sock_id     tun_link;       /* PGW Tun Interace for U-plane */
@@ -80,15 +78,10 @@ typedef struct _pgw_ip_pool_t {
     c_uint32_t      ue_addr;
 } pgw_ip_pool_t;
 
-typedef struct _pgw_ip_t {
-ED3(c_uint8_t       ipv4:1;,
-    c_uint8_t       ipv6:1;,
-    c_uint8_t       index:6;)
-    union {
-        c_uint32_t  addr;
-        c_uint32_t  addr6[4];
-    };
-} pgw_ip_t;
+typedef struct _pgw_ue_ip_t {
+    c_uint8_t       index;      /* Pool index */
+    c_uint32_t      addr[4];
+} pgw_ue_ip_t;
 
 typedef struct _pgw_sess_t {
     lnode_t         node;       /**< A node of list_t */
@@ -231,9 +224,8 @@ CORE_DECLARE(pgw_ip_pool_t*) pgw_ip_pool_alloc();
 CORE_DECLARE(status_t )     pgw_ip_pool_free(pgw_ip_pool_t *ip_pool);
 
 CORE_DECLARE(status_t )     pgw_ue_pool_generate();
-CORE_DECLARE(pgw_ip_t *)    pgw_addr_alloc(const char *apn);
-CORE_DECLARE(pgw_ip_t *)    pgw_addr6_alloc(const char *apn);
-CORE_DECLARE(status_t)      pgw_addr_free(pgw_ip_t *ip);
+CORE_DECLARE(pgw_ue_ip_t *) pgw_ue_ip_alloc(int family, const char *apn);
+CORE_DECLARE(status_t)      pgw_ue_ip_free(pgw_ue_ip_t *ip);
 
 #ifdef __cplusplus
 }
