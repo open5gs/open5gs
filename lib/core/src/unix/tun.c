@@ -361,10 +361,15 @@ status_t tun_set_ip(sock_id id, const char *ipstr, const char *mask_or_numbits)
     {
         rv = tun_set_ipv4(id, &ipaddr, &ipsub);
     }
-    else
+    else if (ipsub.family == AF_INET6)
     {
+#if 0
         rv = tun_set_ipv6(id, &ipaddr, &ipsub);
+#endif
+        return CORE_OK;
     }
+    else
+        d_assert(0, return CORE_ERROR,);
 
     return rv;
 }
