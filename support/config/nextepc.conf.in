@@ -288,34 +288,32 @@ pgw:
 #
 #  <UE Pool>
 #
-#  o Single IPv4 Pool
-#    $ sudo ip addr add 172.16.0.1/16 dev pgwtun
+#  o IPv4 Pool
+#    $ sudo ip addr add 45.45.0.1/16 dev pgwtun
 #
 #    ue_pool:
-#      addr: 172.16.0.1/16
+#      addr: 45.45.0.1/16
 #
-#  o Multiple IP Pool
-#    $ sudo ip addr add 172.16.0.1/16 dev pgwtun
+#  o IPv4/IPv6 Pool
+#    $ sudo ip addr add 45.45.0.1/16 dev pgwtun
+#    $ sudo ip addr add cafe:1::1/64 dev pgwtun
+#
+#    ue_pool:
+#      - addr: 45.45.0.1/16
+#      - addr: cafe:1::1/64
+#
+#
+#  o Specific APN(e.g 'volte') uses 45.46.0.1/16, cafe:2::1/64
+#    All other APN uses 45.45.0.1/16, cafe:1::1/64
+#    $ sudo ip addr add 45.45.0.1/16 dev pgwtun
+#    $ sudo ip addr add 45.46.0.1/16 dev pgwtun
 #    $ sudo ip addr add cafe:1::1/64 dev pgwtun
 #    $ sudo ip addr add cafe:2::1/64 dev pgwtun
 #
 #    ue_pool:
-#      - addr: 172.16.0.1/16
+#      - addr: 45.45.0.1/16
 #      - addr: cafe:1::1/64
-#      - addr: cafe:2::1/64
-#
-#
-#  o Specific APN(e.g 'volte') uses 172.17.0.1/16, cafe:2::1/64
-#    All other APN uses 172.16.0.1/16, cafe:1::1/64
-#    $ sudo ip addr add 172.16.0.1/16 dev pgwtun
-#    $ sudo ip addr add 172.17.0.1/16 dev pgwtun
-#    $ sudo ip addr add cafe:1::1/64 dev pgwtun
-#    $ sudo ip addr add cafe:2::1/64 dev pgwtun
-#
-#    ue_pool:
-#      - addr: 172.16.0.1/16
-#      - addr: cafe:1::1/64
-#      - addr: 172.17.0.1/16
+#      - addr: 45.46.0.1/16
 #        apn: volte
 #      - addr: cafe:2::1/64
 #        apn: volte
