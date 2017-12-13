@@ -3,6 +3,7 @@
 #include "core_pool.h"
 #include "core_index.h"
 #include "core_lib.h"
+#include "core_network.h"
 
 #include <mongoc.h>
 #include <yaml.h>
@@ -27,10 +28,22 @@ index_declare(pgw_bearer_pool, pgw_bearer_t, MAX_POOL_OF_BEARER);
 pool_declare(pgw_ip_pool_pool, pgw_ip_pool_t, MAX_POOL_OF_SESS);
 pool_declare(pgw_pf_pool, pgw_pf_t, MAX_POOL_OF_PF);
 
+typedef struct _ue_pool_t {
+    int head, tail;
+    int size, avail;
+    mutex_id mut;
+    pgw_ue_ip_t *free[MAX_POOL_OF_SESS], pool[MAX_POOL_OF_SESS];
+} ue_pool_t;
+
+#define INVALID_POOL_INDEX       MAX_NUM_OF_UE_POOL
+static ue_pool_t ue_pool[MAX_NUM_OF_UE_POOL];
+
 static int context_initiaized = 0;
 
 status_t pgw_context_init()
 {
+    int i;
+
     d_assert(context_initiaized == 0, return CORE_ERROR,
             "PGW context already has been initialized");
 
@@ -51,6 +64,9 @@ status_t pgw_context_init()
     pool_init(&pgw_ip_pool_pool, MAX_POOL_OF_SESS);
     pool_init(&pgw_pf_pool, MAX_POOL_OF_PF);
 
+    for (i = 0; i < MAX_NUM_OF_UE_POOL; i++)
+        pool_init(&ue_pool[i], MAX_POOL_OF_UE);
+
     self.sess_hash = hash_make();
 
     context_initiaized = 1;
@@ -60,6 +76,8 @@ status_t pgw_context_init()
 
 status_t pgw_context_final()
 {
+    int i;
+
     d_assert(context_initiaized == 1, return CORE_ERROR,
             "PGW context already has been finalized");
 
@@ -89,6 +107,21 @@ status_t pgw_context_final()
     pool_final(&pgw_pf_pool);
     pool_final(&pgw_ip_pool_pool);
 
+    for (i = 0; i < MAX_NUM_OF_UE_POOL; i++)
+    {
+        if (index_size(&ue_pool[i]) != pool_avail(&ue_pool[i]))
+        {
+            d_warn("[%d] %d not freed in ue_pool[%d] in PGW-Context",
+                    i, index_size(&ue_pool[i]) - pool_avail(&ue_pool[i]),
+                    index_size(&ue_pool[i]));
+        }
+        d_trace(3, "[%d] %d not freed in ue_pool[%d] in PGW-Context\n",
+                i, index_size(&ue_pool[i]) - pool_avail(&ue_pool[i]),
+                index_size(&ue_pool[i]));
+
+        pool_final(&ue_pool[i]);
+    }
+
     index_final(&pgw_bearer_pool);
     index_final(&pgw_sess_pool);
 
@@ -116,6 +149,8 @@ static status_t pgw_context_prepare()
     self.gtpc_port = GTPV2_C_UDP_PORT;
     self.gtpu_port = GTPV1_U_UDP_PORT;
 
+    self.tun_ifname = "pgwtun";
+
     return CORE_OK;
 }
 
@@ -138,12 +173,6 @@ static status_t pgw_context_validation()
         list_first(&self.gtpu_list6) == NULL)
     {
         d_error("No pgw.gtpu in '%s'",
-                context_self()->config.path);
-        return CORE_ERROR;
-    }
-    if (self.num_of_ue_network == 0)
-    {
-        d_error("No pgw.pdn.addr in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
@@ -481,34 +510,33 @@ status_t pgw_context_parse_config()
                         d_assert(rv == CORE_OK, return CORE_ERROR,);
                     }
                 }
-                else if (!strcmp(pgw_key, "ue_network"))
+                else if (!strcmp(pgw_key, "ue_pool"))
                 {
-                    yaml_iter_t ue_network_array, ue_network_iter;
-                    yaml_iter_recurse(&pgw_iter, &ue_network_array);
+                    yaml_iter_t ue_pool_array, ue_pool_iter;
+                    yaml_iter_recurse(&pgw_iter, &ue_pool_array);
                     do
                     {
-                        c_uint32_t addr = 0;
-                        c_uint8_t bits = 0;
-                        const char *dev = NULL;
+                        const char *ipstr = NULL;
+                        const char *mask_or_numbits = NULL;
                         const char *apn = NULL;
 
-                        d_assert(self.num_of_ue_network <=
-                                MAX_NUM_OF_UE_NETWORK, return CORE_ERROR,);
-                        if (yaml_iter_type(&ue_network_array) ==
+                        d_assert(self.num_of_ue_pool <=
+                                MAX_NUM_OF_UE_POOL, return CORE_ERROR,);
+                        if (yaml_iter_type(&ue_pool_array) ==
                                 YAML_MAPPING_NODE)
                         {
-                            memcpy(&ue_network_iter, &ue_network_array,
+                            memcpy(&ue_pool_iter, &ue_pool_array,
                                     sizeof(yaml_iter_t));
                         }
-                        else if (yaml_iter_type(&ue_network_array) ==
+                        else if (yaml_iter_type(&ue_pool_array) ==
                             YAML_SEQUENCE_NODE)
                         {
-                            if (!yaml_iter_next(&ue_network_array))
+                            if (!yaml_iter_next(&ue_pool_array))
                                 break;
-                            yaml_iter_recurse(&ue_network_array,
-                                    &ue_network_iter);
+                            yaml_iter_recurse(&ue_pool_array,
+                                    &ue_pool_iter);
                         }
-                        else if (yaml_iter_type(&ue_network_array) ==
+                        else if (yaml_iter_type(&ue_pool_array) ==
                                 YAML_SCALAR_NODE)
                         {
                             break;
@@ -516,79 +544,47 @@ status_t pgw_context_parse_config()
                         else
                             d_assert(0, return CORE_ERROR,);
 
-                        while(yaml_iter_next(&ue_network_iter))
+                        while(yaml_iter_next(&ue_pool_iter))
                         {
-                            const char *ue_network_key =
-                                yaml_iter_key(&ue_network_iter);
-                            d_assert(ue_network_key,
+                            const char *ue_pool_key =
+                                yaml_iter_key(&ue_pool_iter);
+                            d_assert(ue_pool_key,
                                     return CORE_ERROR,);
-                            if (!strcmp(ue_network_key, "addr"))
+                            if (!strcmp(ue_pool_key, "addr"))
                             {
-                                yaml_iter_t addr_iter;
-                                yaml_iter_recurse(&ue_network_iter, &addr_iter);
-                                d_assert(yaml_iter_type(&addr_iter) !=
-                                    YAML_MAPPING_NODE, return CORE_ERROR,);
-
-                                do
+                                char *v =
+                                    (char *)yaml_iter_value(&ue_pool_iter);
+                                if (v)
                                 {
-                                    char *v = NULL;
-
-#if 0
-                                    d_assert(ue_network->num_of_addr <=
-                                            MAX_NUM_OF_PDN_ADDR,
-                                            return CORE_ERROR,);
-#endif
-
-                                    if (yaml_iter_type(&addr_iter) ==
-                                            YAML_SEQUENCE_NODE)
+                                    ipstr = (const char *)strsep(&v, "/");
+                                    if (ipstr)
                                     {
-                                        if (!yaml_iter_next(&addr_iter))
-                                            break;
+                                        mask_or_numbits = (const char *)v;
                                     }
-
-                                    v = (char *)yaml_iter_value(&addr_iter);
-                                    if (v)
-                                    {
-                                        char *str = strsep(&v, "/");
-                                        if (str)
-                                        {
-                                            addr = inet_addr(str);
-                                            bits = atoi(v);
-                                        }
-                                    }
-                                } while(
-                                    yaml_iter_type(&addr_iter) ==
-                                        YAML_SEQUENCE_NODE);
+                                }
                             }
-                            else if (!strcmp(ue_network_key, "dev"))
+                            else if (!strcmp(ue_pool_key, "apn"))
                             {
-                                dev = yaml_iter_value(&ue_network_iter);
-                            }
-                            else if (!strcmp(ue_network_key, "apn"))
-                            {
-                                apn = yaml_iter_value(&ue_network_iter);
-                                d_warn("Not implemented apn=%s", apn);
+                                apn = yaml_iter_value(&ue_pool_iter);
                             }
                             else
-                                d_warn("unknown key `%s`", ue_network_key);
+                                d_warn("unknown key `%s`", ue_pool_key);
                         }
 
-                        if (addr && bits)
+                        if (ipstr && mask_or_numbits)
                         {
-                            self.ue_network[self.num_of_ue_network].ipv4.addr =
-                                addr;
-                            self.ue_network[self.num_of_ue_network].ipv4.bits =
-                                bits;
-                            self.ue_network[self.num_of_ue_network].if_name =
-                                dev;
-                            self.num_of_ue_network++;
+                            self.ue_pool[self.num_of_ue_pool].ipstr = ipstr;
+                            self.ue_pool[self.num_of_ue_pool].mask_or_numbits =
+                                mask_or_numbits;
+                            self.ue_pool[self.num_of_ue_pool].apn = apn;
+                            self.num_of_ue_pool++;
                         }
                         else
                         {
-                            d_warn("Ignore ue_network : addr(0x%x), bits(%d)",
-                                    addr, bits);
+                            d_warn("Ignore : addr(%s/%s), apn(%s)",
+                                    ipstr, mask_or_numbits, apn);
                         }
-                    } while(yaml_iter_type(&ue_network_array) ==
+                    } while(yaml_iter_type(&ue_pool_array) ==
                             YAML_SEQUENCE_NODE);
                 }
                 else if (!strcmp(pgw_key, "dns"))
@@ -775,8 +771,8 @@ pgw_sess_t *pgw_sess_add(
             "Can't add default bearer context");
     bearer->ebi = ebi;
 
-    sess->ip_pool = pgw_ip_pool_alloc();
-    d_assert(sess->ip_pool, pgw_sess_remove(sess); return NULL, 
+    sess->ue_ip = pgw_ue_ip_alloc(AF_INET, apn);
+    d_assert(sess->ue_ip, pgw_sess_remove(sess); return NULL, 
             "Can't add default bearer context");
 
     /* Generate Hash Key : IMSI + APN */
@@ -794,7 +790,7 @@ status_t pgw_sess_remove(pgw_sess_t *sess)
 
     hash_set(self.sess_hash, sess->hash_keybuf, sess->hash_keylen, NULL);
 
-    pgw_ip_pool_free(sess->ip_pool);
+    pgw_ue_ip_free(sess->ue_ip);
 
     pgw_bearer_remove_all(sess);
 
@@ -1332,82 +1328,170 @@ pgw_pf_t* pgw_pf_next(pgw_pf_t *pf)
     return list_next(pf);
 }
 
-status_t pgw_ip_pool_generate()
+status_t pgw_ue_pool_generate()
 {
+    status_t rv;
     int i, j;
-    int pool_index = 0;
 
-    for (i = 0; i < self.num_of_ue_network; i++)
+    for (i = 0; i < self.num_of_ue_pool; i++)
     {
-        c_uint32_t mask = 
-            htonl(0xffffffff << (32 - self.ue_network[i].ipv4.bits));
-        c_uint32_t prefix = self.ue_network[i].ipv4.addr & mask;
+        int pool_index = 0;
+        ipsubnet_t ipaddr, ipsub;
+        c_uint32_t bits;
+        c_uint32_t mask_count;
+        c_uint32_t broadcast[4];
 
-#if 1   /* Update IP assign rule from bradon's comment */
-        c_uint32_t broadcast = prefix + ~mask;
+        rv = core_ipsubnet(&ipaddr, self.ue_pool[i].ipstr, NULL);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
 
-        for (j = 1; j < (0xffffffff >> self.ue_network[i].ipv4.bits) &&
-                pool_index < MAX_POOL_OF_SESS; j++)
+        rv = core_ipsubnet(&ipsub,
+                self.ue_pool[i].ipstr, self.ue_pool[i].mask_or_numbits);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+        d_assert(self.ue_pool[i].mask_or_numbits, return CORE_ERROR,);
+        bits = atoi(self.ue_pool[i].mask_or_numbits);
+        if (ipsub.family == AF_INET)
         {
-            pgw_ip_pool_t *ip_pool = &pgw_ip_pool_pool.pool[pool_index];
-            ip_pool->ue_addr = prefix + htonl(j);
+            if (bits == 32)
+                mask_count = 1;
+            else if (bits < 32)
+                mask_count = (0xffffffff >> bits) + 1;
+            else
+                d_assert(0, return CORE_ERROR,);
+        }
+        else if (ipsub.family == AF_INET6)
+        {
+            if (bits == 128)
+                mask_count = 1;
+            else if (bits > 96 && bits < 128)
+                mask_count = (0xffffffff >> (bits - 96)) + 1;
+            else if (bits <= 96)
+                mask_count = 0xffffffff;
+            else
+                d_assert(0, return CORE_ERROR,);
+        }
+        else
+            d_assert(0, return CORE_ERROR,);
+
+        self.ue_pool[i].family = ipsub.family;
+        
+        for (j = 0; j < 4; j++)
+        {
+            broadcast[j] = ipsub.sub[j] + ~ipsub.mask[j];
+        }
+
+        for (j = 0; j < mask_count && pool_index < MAX_POOL_OF_SESS; j++)
+        {
+            pgw_ue_ip_t *ue_ip = NULL;
+            int maxbytes = 0;
+            int lastindex = 0;
+
+            ue_ip = &ue_pool[i].pool[pool_index];
+            d_assert(ue_ip, return CORE_ERROR,);
+            memset(ue_ip, 0, sizeof *ue_ip);
+
+            if (ipsub.family == AF_INET)
+            {
+                maxbytes = 4;
+                lastindex = 0;
+            }
+            else if (ipsub.family == AF_INET6)
+            {
+                maxbytes = 16;
+                lastindex = 3;
+            }
+
+            memcpy(ue_ip->addr, ipsub.sub, maxbytes);
+            ue_ip->addr[lastindex] += htonl(j);
 
             /* Exclude Network Address */
-            if (ip_pool->ue_addr == prefix) continue;
+            if (memcmp(ue_ip->addr, ipsub.sub, maxbytes) == 0) continue;
 
             /* Exclude Broadcast Address */
-            if (ip_pool->ue_addr == broadcast) continue;
+            if (memcmp(ue_ip->addr, broadcast, maxbytes) == 0) continue;
 
             /* Exclude TUN IP Address */
-            if (ip_pool->ue_addr == self.ue_network[i].ipv4.addr) continue;
-
+            if (memcmp(ue_ip->addr, ipaddr.sub, maxbytes) == 0) continue;
+            
             pool_index++;
         }
-#else   /* Deprecated */
-        /* Exclude X.X.X.0, X.X.X.255 addresses from ip pool */
-        c_uint32_t exclude_mask[] = { 0, 255 };
-
-        for (j = 1; j < (0xffffffff >> self.ip_pool[i].mask) && 
-                pool_index < MAX_NUM_OF_SESS; j++)
-        {
-            int exclude = 0;
-            pgw_ip_pool_t *ip_pool = &pgw_ip_pool_pool.pool[pool_index];
-            ip_pool->ue_addr = prefix + htonl(j);
-
-            for (k = 0; k < sizeof(exclude_mask)/sizeof(exclude_mask[0]); k++)
-            {
-                if ((htonl(ip_pool->ue_addr) & 0x000000ff) == exclude_mask[k])
-                {
-                    exclude = 1;
-                }
-            }
-
-            if (exclude)
-            {
-                continue;
-            }
-            pool_index++;
-        }
-#endif
     }
 
     return CORE_OK;
 }
-pgw_ip_pool_t* pgw_ip_pool_alloc()
+
+static c_uint8_t find_ue_pool_index(int family, const char *apn)
 {
-    pgw_ip_pool_t *ip_pool = NULL;
+    int i;
+    c_uint8_t pool_index = INVALID_POOL_INDEX;
 
-    pool_alloc_node(&pgw_ip_pool_pool, &ip_pool);
-    d_assert(ip_pool, return NULL, "IP Pool context allocation failed");
+    d_assert(apn, return INVALID_POOL_INDEX,);
+    d_assert(family == AF_INET || family == AF_INET6,
+            return INVALID_POOL_INDEX,);
 
-    list_append(&self.ip_pool_list, ip_pool);
+    for (i = 0; i < self.num_of_ue_pool; i++)
+    {
+        if (self.ue_pool[i].apn)
+        {
+            if (self.ue_pool[i].family == family &&
+                strcmp(self.ue_pool[i].apn, apn) == 0)
+            {
+                pool_index = i;
+                break;
+            }
+        }
+    }
 
-    return ip_pool;
+    if (pool_index == INVALID_POOL_INDEX)
+    {
+        for (i = 0; i < self.num_of_ue_pool; i++)
+        {
+            if (self.ue_pool[i].apn == NULL)
+            {
+                if (self.ue_pool[i].family == family)
+                {
+                    pool_index = i;
+                    break;
+                }
+            }
+        }
+    }
+
+    if (pool_index == INVALID_POOL_INDEX)
+    {
+        d_error("CHECK CONFIGURATION: Cannot find UE Pool");
+        return INVALID_POOL_INDEX;
+    }
+
+    return pool_index;
 }
-status_t pgw_ip_pool_free(pgw_ip_pool_t *ip_pool)
+
+pgw_ue_ip_t *pgw_ue_ip_alloc(int family, const char *apn)
 {
-    list_remove(&self.ip_pool_list, ip_pool);
-    pool_free_node(&pgw_ip_pool_pool, ip_pool);
+    c_uint8_t pool_index = INVALID_POOL_INDEX;
+    pgw_ue_ip_t *ue_ip = NULL;
+
+    d_assert(apn, return NULL,);
+
+    pool_index = find_ue_pool_index(family, apn);
+    d_assert(pool_index < MAX_NUM_OF_UE_POOL, return NULL,);
+
+    pool_alloc_node(&ue_pool[pool_index], &ue_ip);
+    d_assert(ue_ip, return NULL,);
+    ue_ip->index = pool_index;
+
+    return ue_ip;
+}
+
+status_t pgw_ue_ip_free(pgw_ue_ip_t *ue_ip)
+{
+    c_uint8_t pool_index;
+
+    d_assert(ue_ip, return CORE_ERROR,);
+    pool_index = ue_ip->index;
+
+    d_assert(pool_index < MAX_NUM_OF_UE_POOL, return CORE_ERROR,);
+    pool_free_node(&ue_pool[pool_index], ue_ip);
 
     return CORE_OK;
 }

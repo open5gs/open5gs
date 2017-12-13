@@ -59,9 +59,9 @@ status_t pgw_s5c_build_create_session_response(
         len = len;
 
     /* PDN Address Allocation */
-    d_assert(sess->ip_pool, return CORE_ERROR, "No IP Pool");
+    d_assert(sess->ue_ip, return CORE_ERROR, "No IP Pool");
     sess->pdn.paa.pdn_type = GTP_PDN_TYPE_IPV4;
-    sess->pdn.paa.addr = sess->ip_pool->ue_addr;
+    sess->pdn.paa.addr = sess->ue_ip->addr[0];
 
     rsp->pdn_address_allocation.presence = 1;
     rsp->pdn_address_allocation.data = &sess->pdn.paa;

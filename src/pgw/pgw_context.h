@@ -12,7 +12,7 @@
 #include "gtp_types.h"
 #include "gtp_message.h"
 
-#define MAX_NUM_OF_UE_NETWORK 16
+#define MAX_NUM_OF_UE_POOL 16
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,15 +39,15 @@ typedef struct _pgw_context_t {
     msgq_id         queue_id;       /* Qsesssess for processing PGW control plane */
     tm_service_t    tm_service;     /* Timer Service */
 
+    sock_id         tun_sock;       /* PGW Tun Interace for UE */
+    const char      *tun_ifname;    /* default : pgwtun */
     struct {
-        sock_id     tun_link;       /* PGW Tun Interace for U-plane */
-        const char *if_name;
-        struct {
-            c_uint32_t addr;
-            c_uint8_t  bits;
-        } ipv4;
-    } ue_network[MAX_NUM_OF_UE_NETWORK];
-    c_uint8_t       num_of_ue_network;
+        const char  *ipstr;         /* IP : "172.16.0.1", "cafe::1", ... */
+        const char  *mask_or_numbits;   /* MASK : "16, 64, ... */
+        const char  *apn;           /* APN : "internet", "volte", .. */
+        int family;                 /* AF_INET or AF_INET6 */
+    } ue_pool[MAX_NUM_OF_UE_POOL];
+    c_uint8_t       num_of_ue_pool;
 
     struct {
         c_uint32_t primary;
@@ -67,6 +67,11 @@ typedef struct _pgw_ip_pool_t {
     c_uint32_t      ue_addr;
 } pgw_ip_pool_t;
 
+typedef struct _pgw_ue_ip_t {
+    c_uint8_t       index;      /* Pool index */
+    c_uint32_t      addr[4];
+} pgw_ue_ip_t;
+
 typedef struct _pgw_sess_t {
     lnode_t         node;       /**< A node of list_t */
     index_t         index;      /**< An index of this node */
@@ -81,7 +86,7 @@ typedef struct _pgw_sess_t {
 
     /* APN Configuration */
     pdn_t           pdn;
-    pgw_ip_pool_t*  ip_pool;
+    pgw_ue_ip_t*    ue_ip;
 
     /* User-Lication-Info */
     tai_t           tai;
@@ -203,9 +208,9 @@ CORE_DECLARE(pgw_pf_t*)     pgw_pf_find_by_id(
 CORE_DECLARE(pgw_pf_t*)     pgw_pf_first(pgw_bearer_t *bearer);
 CORE_DECLARE(pgw_pf_t*)     pgw_pf_next(pgw_pf_t *pf);
 
-CORE_DECLARE(status_t )     pgw_ip_pool_generate();
-CORE_DECLARE(pgw_ip_pool_t*) pgw_ip_pool_alloc();
-CORE_DECLARE(status_t )     pgw_ip_pool_free(pgw_ip_pool_t *ip_pool);
+CORE_DECLARE(status_t )     pgw_ue_pool_generate();
+CORE_DECLARE(pgw_ue_ip_t *) pgw_ue_ip_alloc(int family, const char *apn);
+CORE_DECLARE(status_t)      pgw_ue_ip_free(pgw_ue_ip_t *ip);
 
 #ifdef __cplusplus
 }

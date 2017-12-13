@@ -286,37 +286,41 @@ pgw:
       - addr: fe80::3%@LO_DEV@
 
 #
-#  <UE network>
+#  <UE Pool>
 #
-#  o IPv4/IPv6 with `pgwtun` device
-#    ue_network:
-#      addr:
-#        - 45.45.0.1/16
-#        - 2001:200:903::1/96
+#  o IPv4 Pool
+#    $ sudo ip addr add 45.45.0.1/16 dev pgwtun
 #
-#  o Multiple Device
-#    ue_network:
+#    ue_pool:
+#      addr: 45.45.0.1/16
+#
+#  o IPv4/IPv6 Pool
+#    $ sudo ip addr add 45.45.0.1/16 dev pgwtun
+#    $ sudo ip addr add cafe:1::1/64 dev pgwtun
+#
+#    ue_pool:
 #      - addr: 45.45.0.1/16
-#        dev: pgwtun1
-#      - addr:
-#          - 46.46.0.1/16
-#          - 2001:200:903::1/96
-#        dev: pgwtun2
+#      - addr: cafe:1::1/64
 #
-#  o Per-APN
-#    ue_network:
+#
+#  o Specific APN(e.g 'volte') uses 45.46.0.1/16, cafe:2::1/64
+#    All other APN uses 45.45.0.1/16, cafe:1::1/64
+#    $ sudo ip addr add 45.45.0.1/16 dev pgwtun
+#    $ sudo ip addr add 45.46.0.1/16 dev pgwtun
+#    $ sudo ip addr add cafe:1::1/64 dev pgwtun
+#    $ sudo ip addr add cafe:2::1/64 dev pgwtun
+#
+#    ue_pool:
 #      - addr: 45.45.0.1/16
-#        dev: pgwtun1
-#        apn : internet
-#      - addr:
-#          - 46.46.0.1/16
-#          - 2001:200:903::1/96
-#        dev: pgwtun2
-#        apn : volte
+#      - addr: cafe:1::1/64
+#      - addr: 45.46.0.1/16
+#        apn: volte
+#      - addr: cafe:2::1/64
+#        apn: volte
 #
-    ue_network:
-      addr: 45.45.0.1/16
-      dev: pgwtun
+    ue_pool:
+      - addr: 45.45.0.1/16
+      - addr: cafe::1/64
 
 #
 #  <Domain Name Server>

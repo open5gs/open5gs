@@ -417,6 +417,30 @@ static void sock_test7(abts_case *tc, void *data)
     sock_remove_all_nodes(&list6);
 }
 
+static void sock_test8(abts_case *tc, void *data)
+{
+    status_t rv;
+    ipsubnet_t ipsub;
+
+    rv = core_ipsubnet(&ipsub, "127.0.0.1", "8");
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    rv = core_ipsubnet(&ipsub, "fe80::1", "64");
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    rv = core_ipsubnet(&ipsub, "172.16.0.1", "16");
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    rv = core_ipsubnet(&ipsub, "cafe::1", "64");
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    rv = core_ipsubnet(&ipsub, "172.16.0.1", NULL);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    rv = core_ipsubnet(&ipsub, "cafe::1", NULL);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+}
+
 abts_suite *testsock(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -428,6 +452,7 @@ abts_suite *testsock(abts_suite *suite)
     abts_run_test(suite, sock_test5, NULL);
     abts_run_test(suite, sock_test6, NULL);
     abts_run_test(suite, sock_test7, NULL);
+    abts_run_test(suite, sock_test8, NULL);
 
     return suite;
 }
