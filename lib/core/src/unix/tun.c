@@ -7,6 +7,7 @@
 #include <linux/if_tun.h>
 #else
 #include <netinet6/in6_var.h>
+#include <netinet6/nd6.h>
 #endif
 
 #if HAVE_NET_ROUTE_H
@@ -243,6 +244,9 @@ status_t tun_set_ipv6(sock_id id, ipsubnet_t *ipaddr, ipsubnet_t *ipsub)
 	mask.sin6_len = sizeof(mask);
 	(void)memcpy(&ifa.ifra_prefixmask, &mask, sizeof(ifa.ifra_prefixmask));
 
+    ifa.ifra_lifetime.ia6t_vltime = ND6_INFINITE_LIFETIME;
+    ifa.ifra_lifetime.ia6t_pltime = ND6_INFINITE_LIFETIME;
+
 	if (ioctl(fd, SIOCAIFADDR_IN6, &ifa) == -1) {
 		d_error("Can't IP address(dev:%s err:%s)",
                 sock->ifname, strerror(errno));
@@ -254,6 +258,7 @@ status_t tun_set_ipv6(sock_id id, ipsubnet_t *ipaddr, ipsubnet_t *ipsub)
 #if 1
     return CORE_OK;
 #endif
+
 
     fd = socket(PF_ROUTE, SOCK_RAW, 0);
     if (fd < 0)
@@ -267,7 +272,7 @@ status_t tun_set_ipv6(sock_id id, ipsubnet_t *ipaddr, ipsubnet_t *ipsub)
     rtm->rtm_type = RTM_ADD;
     rtm->rtm_version = RTM_VERSION;
     rtm->rtm_pid = getpid();
-    rtm->rtm_seq = 1;
+    rtm->rtm_seq = 0;
     rtm->rtm_flags = RTF_UP | RTF_GATEWAY;
     rtm->rtm_addrs = RTA_DST | RTA_GATEWAY | RTA_NETMASK;
     paddr = (struct sockaddr_in6 *)(rtm + 1);
@@ -332,9 +337,7 @@ status_t tun_set_ip(sock_id id, const char *ipstr, const char *mask_or_numbits)
     }
     else
     {
-#if 0
         rv = tun_set_ipv6(id, &ipaddr, &ipsub);
-#endif
     }
 
     return rv;
