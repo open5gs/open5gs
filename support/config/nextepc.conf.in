@@ -324,10 +324,6 @@ pgw:
       - addr: 45.45.0.1/16
       - addr: cafe::1/64
 
-    ue_network:
-      addr: 45.45.0.1/16
-      dev: pgwtun
-
 #
 #  <Domain Name Server>
 #

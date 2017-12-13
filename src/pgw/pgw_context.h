@@ -12,7 +12,6 @@
 #include "gtp_types.h"
 #include "gtp_message.h"
 
-#define MAX_NUM_OF_UE_NETWORK 16
 #define MAX_NUM_OF_UE_POOL 16
 
 #ifdef __cplusplus
@@ -49,16 +48,6 @@ typedef struct _pgw_context_t {
         int family;                 /* AF_INET or AF_INET6 */
     } ue_pool[MAX_NUM_OF_UE_POOL];
     c_uint8_t       num_of_ue_pool;
-
-    struct {
-        sock_id     tun_link;       /* PGW Tun Interace for U-plane */
-        const char *if_name;
-        struct {
-            c_uint32_t addr;
-            c_uint8_t  bits;
-        } ipv4;
-    } ue_network[MAX_NUM_OF_UE_NETWORK];
-    c_uint8_t       num_of_ue_network;
 
     struct {
         c_uint32_t primary;
@@ -218,10 +207,6 @@ CORE_DECLARE(pgw_pf_t*)     pgw_pf_find_by_id(
                                 pgw_bearer_t *pgw_bearer, c_uint8_t id);
 CORE_DECLARE(pgw_pf_t*)     pgw_pf_first(pgw_bearer_t *bearer);
 CORE_DECLARE(pgw_pf_t*)     pgw_pf_next(pgw_pf_t *pf);
-
-CORE_DECLARE(status_t )     pgw_ip_pool_generate();
-CORE_DECLARE(pgw_ip_pool_t*) pgw_ip_pool_alloc();
-CORE_DECLARE(status_t )     pgw_ip_pool_free(pgw_ip_pool_t *ip_pool);
 
 CORE_DECLARE(status_t )     pgw_ue_pool_generate();
 CORE_DECLARE(pgw_ue_ip_t *) pgw_ue_ip_alloc(int family, const char *apn);

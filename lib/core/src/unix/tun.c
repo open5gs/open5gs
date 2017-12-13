@@ -79,7 +79,7 @@ cleanup:
 #endif
 }
 
-status_t tun_set_ipv4(sock_id id, c_uint32_t ip_addr, c_uint8_t bits)
+static status_t tun_set_ipv4(sock_id id, c_uint32_t ip_addr, c_uint8_t bits)
 {
 #if LINUX != 1
     sock_t *sock = NULL;
@@ -186,4 +186,29 @@ status_t tun_set_ipv4(sock_id id, c_uint32_t ip_addr, c_uint8_t bits)
 #endif  /* LINUX == 1 */
 
 	return 0;
+}
+
+status_t tun_set_ip(sock_id id, const char *ipstr, const char *mask_or_numbits)
+{
+    ipsubnet_t ipsub;
+    status_t rv;
+
+    d_assert(id, return CORE_ERROR,);
+    d_assert(ipstr, return CORE_ERROR,);
+    d_assert(mask_or_numbits, return CORE_ERROR,);
+
+    rv = core_ipsubnet(&ipsub, ipstr, NULL);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    if (ipsub.family == AF_INET)
+    {
+        rv = tun_set_ipv4(id, ipsub.sub[0], atoi(mask_or_numbits));
+    }
+    else
+    {
+        d_warn("Not support : %d\n", ipsub.family);
+        rv = CORE_OK;
+    }
+
+    return rv;
 }

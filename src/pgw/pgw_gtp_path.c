@@ -136,8 +136,7 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
         return -1;
     }
 
-    if (sock_write(pgw_self()->ue_network[(c_uintptr_t)data].tun_link,
-                pkbuf->payload, pkbuf->len) <= 0)
+    if (sock_write(pgw_self()->tun_sock, pkbuf->payload, pkbuf->len) <= 0)
     {
         d_error("Can not send packets to tuntap");
     }
@@ -175,67 +174,59 @@ status_t pgw_gtp_open()
     d_assert(pgw_self()->gtpu_addr || pgw_self()->gtpu_addr6,
             return CORE_ERROR, "No GTP Server");
 
-    for (i = 0; i < pgw_self()->num_of_ue_network; i++)
+    /* NOTE : tun device can be created via following command.
+     *
+     * $ sudo ip tuntap add name pgwtun mode tun
+     *
+     * Also, before running pgw, assign the one IP from IP pool of UE 
+     * to pgwtun. The IP should not be assigned to UE
+     *
+     * $ sudo ifconfig pgwtun 45.45.0.1/16 up
+     *
+     */
+
+    /* Open Tun interface */
+    rc = tun_open(&pgw_self()->tun_sock, (char *)pgw_self()->tun_ifname, 0);
+    if (rc != 0)
     {
-        /* NOTE : tun device can be created via following command.
-         *
-         * $ sudo ip tuntap add name pgwtun mode tun
-         *
-         * Also, before running pgw, assign the one IP from IP pool of UE 
-         * to pgwtun. The IP should not be assigned to UE
-         *
-         * $ sudo ifconfig pgwtun 45.45.0.1/16 up
-         *
-         */
+        d_error("Can not open tun(dev : %s)", pgw_self()->tun_ifname);
+        return CORE_ERROR;
+    }
 
-        /* Open Tun interface */
-        rc = tun_open(&pgw_self()->ue_network[i].tun_link,
-                (char *)pgw_self()->ue_network[i].if_name, 0);
+    /* 
+     * On Linux, it is possible to create a persistent tun/tap 
+     * interface which will continue to exist even if nextepc quit, 
+     * although this is normally not required. 
+     * It can be useful to set up a tun/tap interface owned 
+     * by a non-root user, so nextepc can be started without 
+     * needing any root privileges at all.
+     */
+
+    /* Set P-to-P IP address with Netmask
+     * Note that Linux will skip this configuration */
+    for (i = 0; i < pgw_self()->num_of_ue_pool; i++)
+    {
+        rc = tun_set_ip(pgw_self()->tun_sock, 
+                pgw_self()->ue_pool[i].ipstr,
+                pgw_self()->ue_pool[i].mask_or_numbits);
         if (rc != 0)
         {
-            d_error("Can not open tun(dev : %s)",
-                    pgw_self()->ue_network[i].if_name);
+            d_error("Can not configure tun(dev : %s for %s/%s)",
+                    pgw_self()->tun_ifname,
+                    pgw_self()->ue_pool[i].ipstr,
+                    pgw_self()->ue_pool[i].mask_or_numbits);
+
             return CORE_ERROR;
         }
+    }
 
-        /* 
-         * On Linux, it is possible to create a persistent tun/tap 
-         * interface which will continue to exist even if nextepc quit, 
-         * although this is normally not required. 
-         * It can be useful to set up a tun/tap interface owned 
-         * by a non-root user, so nextepc can be started without 
-         * needing any root privileges at all.
-         */
-
-        /* Set P-to-P IP address with Netmask
-         * Note that Linux will skip this configuration */
-        rc = tun_set_ipv4(pgw_self()->ue_network[i].tun_link, 
-                pgw_self()->ue_network[i].ipv4.addr,
-                pgw_self()->ue_network[i].ipv4.bits);
-        if (rc != 0)
-        {
-#if 0 /* ADDR */
-            d_error("Can not configure tun(dev : %s for %s/%d)",
-                    pgw_self()->ue_network[i].if_name,
-                    INET_NTOP(&pgw_self()->ue_network[i].ipv4.addr, buf),
-                    pgw_self()->ue_network[i].ipv4.bits);
-#else
-            d_error("Can not configure tun(dev : %s for /%d)",
-                    pgw_self()->ue_network[i].if_name,
-                    pgw_self()->ue_network[i].ipv4.bits);
-#endif
-            return CORE_ERROR;
-        }
-
-        rc = sock_register(pgw_self()->ue_network[i].tun_link,
-                _gtpv1_tun_recv_cb, (void *)(c_uintptr_t)i);
-        if (rc != 0)
-        {
-            d_error("Can not register tun(dev : %s)",
-                    pgw_self()->ue_network[i].if_name);
-            sock_delete(pgw_self()->ue_network[i].tun_link);
-            return CORE_ERROR;
-        }
+    rc = sock_register(pgw_self()->tun_sock, _gtpv1_tun_recv_cb, NULL);
+    if (rc != 0)
+    {
+        d_error("Can not register tun(dev : %s)",
+                pgw_self()->tun_ifname);
+        sock_delete(pgw_self()->tun_sock);
+        return CORE_ERROR;
     }
 
     return CORE_OK;
@@ -243,18 +234,13 @@ status_t pgw_gtp_open()
 
 status_t pgw_gtp_close()
 {
-    int i;
-
     sock_delete_list(&pgw_self()->gtpc_list);
     sock_delete_list(&pgw_self()->gtpc_list6);
 
     sock_delete_list(&pgw_self()->gtpu_list);
     sock_delete_list(&pgw_self()->gtpu_list6);
 
-    for (i = 0; i < pgw_self()->num_of_ue_network; i++)
-    {
-        sock_delete(pgw_self()->ue_network[i].tun_link);
-    }
+    sock_delete(pgw_self()->tun_sock);
 
     return CORE_OK;
 }

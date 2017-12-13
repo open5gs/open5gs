@@ -198,8 +198,8 @@ CORE_DECLARE(int) core_sctp_recvmsg(sock_id id, void *msg, size_t len,
  */
 CORE_DECLARE(status_t) tun_open(sock_id *new,
         char *ifname, int is_tap);
-CORE_DECLARE(status_t) tun_set_ipv4(sock_id id,
-        c_uint32_t ip_addr, c_uint8_t bits);
+CORE_DECLARE(status_t) tun_set_ip(sock_id id,
+        const char *ipstr, const char *mask_or_numbits);
 
 /*
  * Send/Recv
