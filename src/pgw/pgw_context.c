@@ -887,8 +887,8 @@ pgw_sess_t *pgw_sess_add(
             "Can't add default bearer context");
     bearer->ebi = ebi;
 
-    sess->ip_pool = pgw_ip_pool_alloc();
-    d_assert(sess->ip_pool, pgw_sess_remove(sess); return NULL, 
+    sess->ue_ip = pgw_ue_ip_alloc(AF_INET, apn);
+    d_assert(sess->ue_ip, pgw_sess_remove(sess); return NULL, 
             "Can't add default bearer context");
 
     /* Generate Hash Key : IMSI + APN */
@@ -906,7 +906,7 @@ status_t pgw_sess_remove(pgw_sess_t *sess)
 
     hash_set(self.sess_hash, sess->hash_keybuf, sess->hash_keylen, NULL);
 
-    pgw_ip_pool_free(sess->ip_pool);
+    pgw_ue_ip_free(sess->ue_ip);
 
     pgw_bearer_remove_all(sess);
 

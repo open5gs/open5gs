@@ -37,9 +37,6 @@ static int context_initialized = 0;
 
 status_t mme_context_init()
 {
-    printf("%ld\n", sizeof mme_bearer_pool);
-    printf("%ld\n", sizeof mme_sess_pool);
-    printf("%ld\n", sizeof mme_ue_pool);
     d_assert(context_initialized == 0, return CORE_ERROR,
             "MME context already has been context_initialized");
 

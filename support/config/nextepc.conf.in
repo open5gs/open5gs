@@ -321,7 +321,7 @@ pgw:
 #        apn: volte
 #
     ue_pool:
-      - addr: 172.16.0.1/16
+      - addr: 45.45.0.1/16
       - addr: cafe::1/64
 
     ue_network:

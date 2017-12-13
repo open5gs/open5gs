@@ -97,7 +97,7 @@ typedef struct _pgw_sess_t {
 
     /* APN Configuration */
     pdn_t           pdn;
-    pgw_ip_pool_t*  ip_pool;
+    pgw_ue_ip_t*    ue_ip;
 
     /* User-Lication-Info */
     tai_t           tai;
