@@ -311,7 +311,7 @@ static void attach_test1(abts_case *tc, void *data)
     pkbuf_free(recvbuf);
 
 #if LINUX == 1
-    rv = testgtpu_enb_send("cafe::1", "cafe::1");
+    rv = testgtpu_enb_send("cafe::2", "cafe::1");
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
 #if 0

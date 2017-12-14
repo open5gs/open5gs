@@ -1076,7 +1076,7 @@ pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
     iph = (struct ip *)pkt->payload;
 
     /* FIXME : Only support IPV4 */
-    if (iph->ip_v != 4) /* IPv4 */
+    if (iph->ip_v != 4 && iph->ip_v != 6) /* IPv4 */
     {
         return NULL;
     }
