@@ -778,6 +778,7 @@ pgw_sess_t *pgw_sess_add(
     }
     else
         d_assert(0, return NULL, "Unsupported PDN Type(%d)", pdn_type);
+    sess->pdn.pdn_type = pdn_type;
 
     /* Generate Hash Key : IMSI + APN */
     sess_hash_keygen(sess->hash_keybuf, &sess->hash_keylen,
@@ -1078,28 +1079,39 @@ pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
     pgw_bearer_t *bearer = NULL;
     hash_index_t *hi = NULL;
     pgw_sess_t *sess = NULL;
-    struct ip *iph =  NULL;
-#if 0 /* ADDR */
-    char buf1[INET_ADDRSTRLEN];
-    char buf2[INET_ADDRSTRLEN];
-#endif
+    struct ip *ip_h =  NULL;
+    struct ip6_hdr *ip6_h =  NULL;
+    char buf1[CORE_ADDRSTRLEN];
+    char buf2[CORE_ADDRSTRLEN];
 
     d_assert(pkt, return NULL, "pkt is NULL");
 
-    iph = (struct ip *)pkt->payload;
-
-    /* FIXME : Only support IPV4 */
-    if (iph->ip_v != 4 && iph->ip_v != 6) /* IPv4 */
+    ip_h = (struct ip *)pkt->payload;
+    if (ip_h->ip_v == 4)
     {
-        return NULL;
+        ip_h = (struct ip *)pkt->payload;
+        ip6_h = NULL;
+    }
+    else if (ip_h->ip_v == 6)
+    {
+        ip_h = NULL;
+        ip6_h = (struct ip6_hdr *)pkt->payload;
+    }
+    else
+    {
+        d_error("Invalid IP version = %d\n", ip_h->ip_v);
     }
 
-#if 0 /* ADDR */
-    d_trace(50, "Src(%s)-> Dst(%s), Protocol: %d\n",
-            INET_NTOP(&iph->ip_src.s_addr,buf1),
-            INET_NTOP(&iph->ip_dst.s_addr,buf2),
-            iph->ip_p);
-#endif
+    if (ip_h)
+        d_trace(50, "[%s] -> [%s], Protocol: %d\n",
+                INET_NTOP(&ip_h->ip_src.s_addr,buf1),
+                INET_NTOP(&ip_h->ip_dst.s_addr,buf2),
+                ip_h->ip_p);
+    else if (ip6_h)
+        d_trace(50, "[%s]-> Dst[%s], Protocol: %d\n",
+                INET6_NTOP(&ip6_h->ip6_src.s6_addr,buf1),
+                INET6_NTOP(&ip6_h->ip6_dst.s6_addr,buf2),
+                ip6_h->ip6_nxt);
 
     /* TODO: Need to use the method of FAST matching algorithm and 
      *          implementation .
@@ -1109,13 +1121,16 @@ pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
     for (hi = pgw_sess_first(); hi; hi = pgw_sess_next(hi))
     {
         sess = pgw_sess_this(hi);
-#if 0 /* ADDR */
-        d_trace(50, "Dst(%s) in Pkt : PAA(%s) in PDN\n",
-                INET_NTOP(&iph->ip_dst.s_addr,buf1),
-                INET_NTOP(&sess->pdn.paa.ipv4_addr, buf2));
-#endif
 
-        if (iph->ip_dst.s_addr == sess->pdn.paa.addr)
+        if (sess->ipv4)
+            d_trace(50, "PAA IPv4:%s, ip_h:%p\n",
+                    INET_NTOP(&sess->ipv4->addr, buf1), ip_h);
+        if (sess->ipv6)
+            d_trace(50, "PAA IPv6:%s, ip6_h:%p\n",
+                    INET6_NTOP(&sess->ipv6->addr, buf1), ip6_h);
+
+        if (ip_h && sess->ipv4 &&
+                ip_h->ip_dst.s_addr == sess->ipv4->addr[0])
         {
             /* Found */
 
@@ -1149,9 +1164,9 @@ pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
                         continue;
                     }
 
-                    if (((iph->ip_src.s_addr & pf->rule.ipv4.local.mask) ==
+                    if (((ip_h->ip_src.s_addr & pf->rule.ipv4.local.mask) ==
                           pf->rule.ipv4.local.addr)  &&
-                        ((iph->ip_dst.s_addr & pf->rule.ipv4.remote.mask) ==
+                        ((ip_h->ip_dst.s_addr & pf->rule.ipv4.remote.mask) ==
                           pf->rule.ipv4.remote.addr))
                     {
                         /* Protocol match */
@@ -1161,13 +1176,13 @@ pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
                             break;
                         }
 
-                        if (pf->rule.proto == iph->ip_p)
+                        if (pf->rule.proto == ip_h->ip_p)
                         {
                             if (pf->rule.proto == IPPROTO_TCP)
                             {
                                 struct tcphdr *tcph = 
                                     (struct tcphdr *)
-                                    ((char *)iph + (iph->ip_hl)*4);
+                                    ((char *)ip_h + (ip_h->ip_hl)*4);
 
                                 /* Source port */
                                 if (pf->rule.port.local.low && 
@@ -1206,7 +1221,7 @@ pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
                             {
                                 struct udphdr *udph = 
                                     (struct udphdr *)
-                                    ((char *)iph + (iph->ip_hl)*4);
+                                    ((char *)ip_h + (ip_h->ip_hl)*4);
 
                                 /* Source port */
                                 if (pf->rule.port.local.low && 
@@ -1259,6 +1274,22 @@ pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
                     break;
                 }
 
+            }
+
+            return (bearer ? bearer : default_bearer);
+        }
+        else if (ip6_h && sess->ipv6 &&
+                memcmp(ip6_h->ip6_dst.s6_addr,
+                      sess->ipv6->addr, sizeof sess->ipv6->addr) == 0)
+        {
+            default_bearer = pgw_default_bearer_in_sess(sess);
+            d_assert(default_bearer, return NULL, "No default Bearer");
+
+            bearer = pgw_bearer_next(default_bearer);
+            /* Find the bearer with matched */
+            for (; bearer; bearer = pgw_bearer_next(bearer))
+            {
+                /* TODO */
             }
 
             return (bearer ? bearer : default_bearer);
