@@ -1152,10 +1152,24 @@ ED3(c_uint8_t type:4;,
 
 /* 9.9.4.9 PDN address
  * M LV 6-14 */
+#define NAS_PDN_ADDRESS_IPV4_LEN 5
+#define NAS_PDN_ADDRESS_IPV6_LEN 9
+#define NAS_PDN_ADDRESS_IPV4V6_LEN 13
 typedef struct _nas_pdn_address_t {
     c_uint8_t length;
-    paa_t paa;
-} nas_pdn_address_t;
+ED2(c_uint8_t reserved:5;,
+    c_uint8_t pdn_type:3;)
+    union {
+        c_uint32_t addr;      
+        struct {
+            c_uint8_t addr6[IPV6_LEN/2]; /* Interface Identifer Only */
+        };
+        struct {
+            c_uint8_t addr6[IPV6_LEN/2]; /* Interface Identifer Only */
+            c_uint32_t addr;      
+        } both;
+    };
+} __attribute__ ((packed)) nas_pdn_address_t;
 
 /* 9.9.4.11 Protocol configuration options
  * See subclause 10.5.6.3 in 3GPP TS 24.008 [13].
@@ -1197,9 +1211,9 @@ ED3(c_uint8_t spare:3;,  /* allowed in A/Gb mode or Iu mode */
 #define NAS_PDN_CONNECTIVITY_PDN_TYPE_NON_IP        5
 typedef struct _nas_request_type_t {
 ED4(c_uint8_t spare1:1;,
-    c_uint8_t request_type:3;,
+    c_uint8_t pdn_type:3;,
     c_uint8_t spare2:1;,
-    c_uint8_t pdn_type:3;)
+    c_uint8_t request_type:3;)
 } __attribute__ ((packed)) nas_request_type_t;
 
 /* 9.9.4.15 Traffic flow aggregate description

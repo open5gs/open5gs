@@ -121,7 +121,7 @@ typedef struct _paa_t {
 /* 8.34 PDN Type  */
 #define GTP_PDN_TYPE_IPV4                               1
 #define GTP_PDN_TYPE_IPV6                               2
-#define GTP_PDN_TYPE_BOTH                               3
+#define GTP_PDN_TYPE_IPV4V6                             3
 #define GTP_PDN_TYPE_NON_IP                             4
 ED2(c_uint8_t spare:5;,
     c_uint8_t pdn_type:3;)
@@ -138,7 +138,6 @@ ED2(c_uint8_t spare:5;,
         /* GTP_PDN_TYPE_BOTH */
         struct {
             c_uint32_t addr;      
-
             struct {
                 c_uint8_t len;
                 c_uint8_t addr6[IPV6_LEN];
@@ -217,10 +216,10 @@ typedef struct _pcc_rule_t {
 typedef struct _pdn_t {
     c_uint32_t      context_identifier;
     c_int8_t        apn[MAX_APN_LEN+1];
-#define S6A_PDN_TYPE_IPV4                       0
-#define S6A_PDN_TYPE_IPV6                       1
-#define S6A_PDN_TYPE_IPV4_AND_IPV6              2
-#define S6A_PDN_TYPE_IPV4_OR_IPV6               3
+#define HSS_PDN_TYPE_IPV4                       0
+#define HSS_PDN_TYPE_IPV6                       1
+#define HSS_PDN_TYPE_IPV4V6                     2
+#define HSS_PDN_TYPE_IPV4_OR_IPV6               3
     c_int8_t        pdn_type;
 
     qos_t           qos;

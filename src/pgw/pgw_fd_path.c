@@ -39,7 +39,7 @@ void pgw_gx_send_ccr(gtp_xact_t *xact, pgw_sess_t *sess,
     struct session *session = NULL;
 
     d_assert(sess, return, "Null param");
-    d_assert(sess->ue_ip, return, "Null param");
+    d_assert(sess->ipv4 || sess->ipv6, return, "Null param");
 
     /* Create the random value to store with the session */
     pool_alloc_node(&pgw_gx_sess_pool, &mi);
@@ -138,8 +138,16 @@ void pgw_gx_send_ccr(gtp_xact_t *xact, pgw_sess_t *sess,
         /* Set Framed-IP-Address */
         CHECK_FCT_DO( fd_msg_avp_new(gx_framed_ip_address, 0, &avp),
                 goto out );
-        val.os.data = (c_uint8_t*)&sess->ue_ip->addr[0];
-        val.os.len = sizeof(sess->ue_ip->addr[0]);
+        if (sess->ipv6)
+        {
+            val.os.data = (c_uint8_t*)&sess->ipv6->addr;
+            val.os.len = 16;
+        }
+        else
+        {
+            val.os.data = (c_uint8_t*)&sess->ipv4->addr;
+            val.os.len = 4;
+        }
         CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
         CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
 

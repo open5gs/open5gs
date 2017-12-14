@@ -107,13 +107,42 @@ status_t mme_s11_build_create_session_request(
     req->selection_mode.u8 = 
         GTP_SELECTION_MODE_MS_OR_NETWORK_PROVIDED_APN | 0xfc;
 
+    d_assert(sess->request_type.pdn_type ==
+            NAS_PDN_CONNECTIVITY_PDN_TYPE_IPV4 ||
+            sess->request_type.pdn_type ==
+            NAS_PDN_CONNECTIVITY_PDN_TYPE_IPV6 ||
+            sess->request_type.pdn_type ==
+            NAS_PDN_CONNECTIVITY_PDN_TYPE_IPV4V6, return CORE_ERROR,
+            "UE PDN Configuration Error(%d)", sess->request_type.pdn_type);
+    if (pdn->pdn_type == HSS_PDN_TYPE_IPV4 ||
+        pdn->pdn_type == HSS_PDN_TYPE_IPV6 ||
+        pdn->pdn_type == HSS_PDN_TYPE_IPV4V6)
+    {
+        req->pdn_type.u8 = ((pdn->pdn_type + 1) & sess->request_type.pdn_type);
+        d_assert(req->pdn_type.u8 != 0, return CORE_ERROR,
+                "PDN Configuration Error:(%d, %d)",
+                pdn->pdn_type, sess->request_type.pdn_type);
+    }
+    else if (pdn->pdn_type == HSS_PDN_TYPE_IPV4_OR_IPV6)
+    {
+        req->pdn_type.u8 = sess->request_type.pdn_type;
+    }
+    else
+        d_assert(0, return CORE_ERROR,
+                "HSS PDN Confiugration Error(%d)", pdn->pdn_type);
     req->pdn_type.presence = 1;
-    req->pdn_type.u8 = GTP_PDN_TYPE_IPV4;
 
-    pdn->paa.pdn_type = GTP_PDN_TYPE_IPV4;
-    req->pdn_address_allocation.presence = 1;
+    pdn->paa.pdn_type = req->pdn_type.u8;
     req->pdn_address_allocation.data = &pdn->paa;
-    req->pdn_address_allocation.len = PAA_IPV4_LEN;
+    if (req->pdn_type.u8 == GTP_PDN_TYPE_IPV4)
+        req->pdn_address_allocation.len = PAA_IPV4_LEN;
+    else if (req->pdn_type.u8 == GTP_PDN_TYPE_IPV6)
+        req->pdn_address_allocation.len = PAA_IPV6_LEN;
+    else if (req->pdn_type.u8 == GTP_PDN_TYPE_IPV4V6)
+        req->pdn_address_allocation.len = PAA_IPV4V6_LEN;
+    else
+        d_assert(0, return CORE_ERROR, "Not supported(%d)", req->pdn_type.u8);
+    req->pdn_address_allocation.presence = 1;
 
     req->maximum_apn_restriction.presence = 1;
     req->maximum_apn_restriction.u8 = GTP_APN_NO_RESTRICTION;

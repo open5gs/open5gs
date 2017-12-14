@@ -132,8 +132,27 @@ status_t esm_build_activate_default_bearer_context_request(
     core_cpystrn(access_point_name->apn, pdn->apn,
             c_min(access_point_name->length, MAX_APN_LEN) + 1);
 
-    pdn_address->length = PAA_IPV4_LEN;
-    memcpy(&pdn_address->paa, &pdn->paa, pdn_address->length);
+    pdn_address->pdn_type = pdn->paa.pdn_type;
+    if (pdn_address->pdn_type == GTP_PDN_TYPE_IPV4)
+    {
+        pdn_address->addr = pdn->paa.addr;
+        pdn_address->length = NAS_PDN_ADDRESS_IPV4_LEN;
+    }
+    else if (pdn_address->pdn_type == GTP_PDN_TYPE_IPV6)
+    {
+        memcpy(pdn_address->addr6, pdn->paa.addr6+IPV6_LEN/2, IPV6_LEN/2);
+        pdn_address->length = NAS_PDN_ADDRESS_IPV6_LEN;
+    }
+    else if (pdn_address->pdn_type == GTP_PDN_TYPE_IPV4V6)
+    {
+        pdn_address->both.addr = pdn->paa.both.addr;
+        memcpy(pdn_address->both.addr6,
+                pdn->paa.both.addr6+IPV6_LEN/2, IPV6_LEN/2);
+        pdn_address->length = NAS_PDN_ADDRESS_IPV4V6_LEN;
+    }
+    else
+        d_assert(0, return CORE_ERROR,
+                "Invalid PDN_TYPE(%d)", pdn->paa.pdn_type);
 
     if (pdn->ambr.downlink || pdn->ambr.uplink)
     {

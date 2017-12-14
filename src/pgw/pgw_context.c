@@ -727,7 +727,8 @@ static void *sess_hash_keygen(c_uint8_t *out, int *out_len,
 }
 
 pgw_sess_t *pgw_sess_add(
-        c_uint8_t *imsi, int imsi_len, c_int8_t *apn, c_uint8_t ebi)
+        c_uint8_t *imsi, int imsi_len, c_int8_t *apn, 
+        c_uint8_t pdn_type, c_uint8_t ebi)
 {
     pgw_sess_t *sess = NULL;
     pgw_bearer_t *bearer = NULL;
@@ -754,9 +755,29 @@ pgw_sess_t *pgw_sess_add(
             "Can't add default bearer context");
     bearer->ebi = ebi;
 
-    sess->ue_ip = pgw_ue_ip_alloc(AF_INET, apn);
-    d_assert(sess->ue_ip, pgw_sess_remove(sess); return NULL, 
-            "Can't add default bearer context");
+    if (pdn_type == GTP_PDN_TYPE_IPV4)
+    {
+        sess->ipv4 = pgw_ue_ip_alloc(AF_INET, apn);
+        d_assert(sess->ipv4, pgw_sess_remove(sess); return NULL, 
+                "Can't allocate IPv4 Pool");
+    }
+    else if (pdn_type == GTP_PDN_TYPE_IPV6)
+    {
+        sess->ipv6 = pgw_ue_ip_alloc(AF_INET6, apn);
+        d_assert(sess->ipv6, pgw_sess_remove(sess); return NULL, 
+                "Can't allocate IPv6 Pool");
+    }
+    else if (pdn_type == GTP_PDN_TYPE_IPV4V6)
+    {
+        sess->ipv4 = pgw_ue_ip_alloc(AF_INET, apn);
+        d_assert(sess->ipv4, pgw_sess_remove(sess); return NULL, 
+                "Can't allocate IPv4 Pool");
+        sess->ipv6 = pgw_ue_ip_alloc(AF_INET6, apn);
+        d_assert(sess->ipv6, pgw_sess_remove(sess); return NULL, 
+                "Can't allocate IPv6 Pool");
+    }
+    else
+        d_assert(0, return NULL, "Unsupported PDN Type(%d)", pdn_type);
 
     /* Generate Hash Key : IMSI + APN */
     sess_hash_keygen(sess->hash_keybuf, &sess->hash_keylen,
@@ -773,7 +794,10 @@ status_t pgw_sess_remove(pgw_sess_t *sess)
 
     hash_set(self.sess_hash, sess->hash_keybuf, sess->hash_keylen, NULL);
 
-    pgw_ue_ip_free(sess->ue_ip);
+    if (sess->ipv4)
+        pgw_ue_ip_free(sess->ipv4);
+    if (sess->ipv6)
+        pgw_ue_ip_free(sess->ipv6);
 
     pgw_bearer_remove_all(sess);
 
@@ -874,12 +898,18 @@ pgw_sess_t *pgw_sess_add_by_message(gtp_message_t *message)
         d_error("No EPS Bearer ID");
         return NULL;
     }
+    if (req->pdn_type.presence == 0)
+    {
+        d_error("No PDN Type");
+        return NULL;
+    }
 
     apn_parse(apn, req->access_point_name.data, req->access_point_name.len);
     sess = pgw_sess_find_by_imsi_apn(req->imsi.data, req->imsi.len, apn);
     if (!sess)
     {
         sess = pgw_sess_add(req->imsi.data, req->imsi.len, apn,
+            req->pdn_type.u8,
             req->bearer_contexts_to_be_created.eps_bearer_id.u8);
         d_assert(sess, return NULL, "No Session Context");
     }

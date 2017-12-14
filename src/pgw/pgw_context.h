@@ -86,7 +86,8 @@ typedef struct _pgw_sess_t {
 
     /* APN Configuration */
     pdn_t           pdn;
-    pgw_ue_ip_t*    ue_ip;
+    pgw_ue_ip_t*    ipv4;
+    pgw_ue_ip_t*    ipv6;
 
     /* User-Lication-Info */
     tai_t           tai;
@@ -169,7 +170,8 @@ CORE_DECLARE(gtp_node_t *)  pgw_sgw_add_by_message(gtp_message_t *message);
 CORE_DECLARE(pgw_sess_t *)  pgw_sess_add_by_message(gtp_message_t *message);
 
 CORE_DECLARE(pgw_sess_t*)   pgw_sess_add(
-        c_uint8_t *imsi, int imsi_len, c_int8_t *apn, c_uint8_t ebi);
+        c_uint8_t *imsi, int imsi_len, c_int8_t *apn,
+        c_uint8_t pdn_type, c_uint8_t ebi);
 CORE_DECLARE(status_t )     pgw_sess_remove(pgw_sess_t *sess);
 CORE_DECLARE(status_t )     pgw_sess_remove_all();
 CORE_DECLARE(pgw_sess_t*)   pgw_sess_find(index_t index);
