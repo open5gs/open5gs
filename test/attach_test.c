@@ -310,9 +310,18 @@ static void attach_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
-#if 0
+#if LINUX == 1
     rv = testgtpu_enb_send("cafe::2", "cafe::1");
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+#if 0
+    /* Receive GTP-U ICMP Packet */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rv = testgtpu_enb_read(gtpu, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    pkbuf_free(recvbuf);
+#endif
+
 #endif
 
     /*****************************************************************

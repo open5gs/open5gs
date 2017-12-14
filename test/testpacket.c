@@ -224,7 +224,7 @@ status_t testgtpu_enb_send(const char *src_ip, const char *dst_ip)
     bearer = mme_bearer_first(sess);
     d_assert(bearer, return -1,);
 
-    pkbuf = pkbuf_alloc(0, 100 /* enough for ICMP; use smaller buffer */);
+    pkbuf = pkbuf_alloc(0, 200 /* enough for ICMP; use smaller buffer */);
     d_assert(pkbuf, return CORE_ERROR,);
     memset(pkbuf->payload, 0, pkbuf->len);
     
@@ -261,26 +261,40 @@ status_t testgtpu_enb_send(const char *src_ip, const char *dst_ip)
     }
     else if (dst_ipsub.family == AF_INET6)
     {
-        char cksumbuf[100];
+        char cksumbuf[200];
         char *ptr = NULL;
 
-        gtp_h->length = 
-            htons(sizeof(struct ip6_hdr) + sizeof(struct icmp6_hdr));
+        char *icmp6_data = NULL;
+        int icmp6_datalen = 56;
+
+        char hexbuf[100];
+        char *hexraw =
+            "9805325a 00000000 ea950900 00000000"
+            "00101011 12131415 16171819 1a1b1c1d 1e1f"
+            "00202021 22232425 26272829 2a2b2c2d 2e2f"
+            "00303031 32333435 3637";
+
+        gtp_h->length = htons(sizeof(struct ip6_hdr) +
+                sizeof(struct icmp6_hdr) + icmp6_datalen);
 
         ip6_h = (struct ip6_hdr *)(pkbuf->payload + GTPV1U_HEADER_LEN);
-        ip6_h->ip6_flow = htonl(0x600857c7);
-        ip6_h->ip6_plen = htons(sizeof(struct icmp6_hdr));
+        ip6_h->ip6_flow = htonl(0x600d5a92);
+        ip6_h->ip6_plen = htons(sizeof(struct icmp6_hdr) + icmp6_datalen);
         ip6_h->ip6_nxt = 58;  /* ICMPv6 */
         ip6_h->ip6_hlim = 64;
         memcpy(ip6_h->ip6_src.s6_addr, src_ipsub.sub, sizeof src_ipsub.sub);
         memcpy(ip6_h->ip6_dst.s6_addr, dst_ipsub.sub, sizeof dst_ipsub.sub);
         
-        icmp6_h = (struct icmp6_hdr *)
-                (pkbuf->payload + GTPV1U_HEADER_LEN + sizeof(struct ip6_hdr));
+        icmp6_h =
+            (struct icmp6_hdr *)((c_uint8_t*)ip6_h + sizeof(struct ip6_hdr));
         icmp6_h->icmp6_type = 128;
-        icmp6_h->icmp6_code = 8;
-        icmp6_h->icmp6_seq = rand();
-        icmp6_h->icmp6_id = rand();
+        icmp6_h->icmp6_code = 0;
+        icmp6_h->icmp6_seq = 1;
+        icmp6_h->icmp6_id = htons(0x5b13);
+
+        icmp6_data = (char *)((c_uint8_t*)icmp6_h + sizeof(struct icmp6_hdr));
+        memcpy(icmp6_data,
+                CORE_HEX(hexraw, strlen(hexraw), hexbuf), icmp6_datalen);
 
         /* create pseudo-header */
         memset(cksumbuf, 0, sizeof cksumbuf);
@@ -299,11 +313,12 @@ status_t testgtpu_enb_send(const char *src_ip, const char *dst_ip)
         ptr += 1;
 
         memcpy(ptr, icmp6_h, sizeof(struct icmp6_hdr));
+        ptr += sizeof(struct icmp6_hdr);
+        memcpy(ptr, icmp6_data, icmp6_datalen);
 
 #define IPV6_PSEUDO_HDR 48
-#define CKSUM_SIZE 2
-        icmp6_h->icmp6_cksum = in_cksum( (unsigned short *)cksumbuf,
-                IPV6_PSEUDO_HDR+sizeof(struct icmp6_hdr)+CKSUM_SIZE);
+        icmp6_h->icmp6_cksum = in_cksum((unsigned short *)cksumbuf,
+                IPV6_PSEUDO_HDR + sizeof(struct icmp6_hdr) + icmp6_datalen);
     }
     else
         d_assert(0, return -1,);
