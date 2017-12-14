@@ -21,7 +21,8 @@ CORE_DECLARE(status_t) tests1ap_enb_read(sock_id id, pkbuf_t *recvbuf);
 CORE_DECLARE(status_t) testgtpu_enb_connect(sock_id *new);
 CORE_DECLARE(status_t) testgtpu_enb_close(sock_id sock);
 CORE_DECLARE(status_t) testgtpu_enb_read(sock_id sock, pkbuf_t *recvbuf);
-CORE_DECLARE(status_t) testgtpu_enb_send(c_uint32_t src_ip, c_uint32_t dst_ip);
+CORE_DECLARE(status_t) testgtpu_enb_send(
+        const char *src_ip, const char *dst_ip);
 
 CORE_DECLARE(status_t) tests1ap_build_setup_req(
         pkbuf_t **pkbuf, S1ap_ENB_ID_PR present, c_uint32_t enb_id);

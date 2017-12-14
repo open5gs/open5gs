@@ -154,7 +154,7 @@ static uint16_t in_cksum(uint16_t *addr, int len)
   return answer;
 }
 
-status_t testgtpu_enb_send(c_uint32_t src_ip, c_uint32_t dst_ip)
+status_t testgtpu_enb_send(const char *src_ip, const char *dst_ip)
 {
     sock_id sock = 0;
     hash_index_t *hi = NULL;
@@ -166,6 +166,7 @@ status_t testgtpu_enb_send(c_uint32_t src_ip, c_uint32_t dst_ip)
     pkbuf_t *pkbuf = NULL;
     gtp_header_t *gtp_h = NULL;
     ssize_t sent;
+    ipsubnet_t src_ipsub, dst_ipsub;
     c_sockaddr_t sgw;
     struct ip *ip_h =  NULL;
     struct icmp_header_t {
@@ -188,49 +189,124 @@ status_t testgtpu_enb_send(c_uint32_t src_ip, c_uint32_t dst_ip)
         } un;
     } *icmp_h = NULL;
 
+    struct ip6_hdr *ip6_h =  NULL;
+    struct icmp6_hdr
+    {
+        uint8_t     icmp6_type;   /* type field */
+        uint8_t     icmp6_code;   /* code field */
+        uint16_t    icmp6_cksum;  /* checksum field */
+        union
+        {
+            uint32_t  icmp6_un_data32[1]; /* type-specific field */
+#define icmp6_data16    icmp6_dataun.icmp6_un_data16
+#define icmp6_id        icmp6_data16[0]  /* echo request/reply */
+#define icmp6_seq       icmp6_data16[1]  /* echo request/reply */
+            uint16_t  icmp6_un_data16[2]; /* type-specific field */
+            uint8_t   icmp6_un_data8[4];  /* type-specific field */
+        } icmp6_dataun;
+    } *icmp6_h = NULL;
+
     if (test_only_control_plane) return 0;
 
+    d_assert(src_ip, return -1,);
+    d_assert(dst_ip, return -1,);
+    rv = core_ipsubnet(&src_ipsub, src_ip, NULL);
+    d_assert(rv == CORE_OK, return -1,);
+    rv = core_ipsubnet(&dst_ipsub, dst_ip, NULL);
+    d_assert(rv == CORE_OK, return -1,);
+
     hi = mme_ue_first();
-    if (!hi) return -1;
+    d_assert(hi, return -1,);
     mme_ue = mme_ue_this(hi);
-    if (!mme_ue) return -1;
+    d_assert(mme_ue, return -1,);
     sess = mme_sess_first(mme_ue);
-    if (!sess) return -1;
+    d_assert(sess, return -1,);
     bearer = mme_bearer_first(sess);
-    if (!bearer) return -1;
+    d_assert(bearer, return -1,);
 
     pkbuf = pkbuf_alloc(0, 100 /* enough for ICMP; use smaller buffer */);
     d_assert(pkbuf, return CORE_ERROR,);
     memset(pkbuf->payload, 0, pkbuf->len);
     
     gtp_h = (gtp_header_t *)pkbuf->payload;
-    ip_h = (struct ip *)(pkbuf->payload + GTPV1U_HEADER_LEN);
-    icmp_h = (struct icmp_header_t *)
-            (pkbuf->payload + GTPV1U_HEADER_LEN + sizeof(struct ip));
-
     gtp_h->flags = 0x30;
     gtp_h->type = GTPU_MSGTYPE_GPDU;
     gtp_h->teid = htonl(1);
-    gtp_h->length = htons(sizeof(struct ip) + sizeof(struct icmp_header_t));
 
-    ip_h->ip_v = 4;
-    ip_h->ip_hl = 5;
-    ip_h->ip_tos = 0;
-    ip_h->ip_id = rand();
-    ip_h->ip_off = 0;
-    ip_h->ip_ttl = 255;
-    ip_h->ip_p = IPPROTO_ICMP;
-    ip_h->ip_len = gtp_h->length;
-    ip_h->ip_src.s_addr = src_ip;
-    ip_h->ip_dst.s_addr = dst_ip;
-    ip_h->ip_sum = in_cksum(
-            (unsigned short *)ip_h, sizeof(struct ip));
-    
-    icmp_h->type = 8;
-    icmp_h->un.echo.sequence = rand();
-    icmp_h->un.echo.id = rand();
-    icmp_h->checksum = in_cksum(
-            (unsigned short *)icmp_h, sizeof(struct icmp_header_t));
+    if (dst_ipsub.family == AF_INET)
+    {
+        gtp_h->length = htons(sizeof(struct ip) + sizeof(struct icmp_header_t));
+
+        ip_h = (struct ip *)(pkbuf->payload + GTPV1U_HEADER_LEN);
+        ip_h->ip_v = 4;
+        ip_h->ip_hl = 5;
+        ip_h->ip_tos = 0;
+        ip_h->ip_id = rand();
+        ip_h->ip_off = 0;
+        ip_h->ip_ttl = 255;
+        ip_h->ip_p = IPPROTO_ICMP;
+        ip_h->ip_len = gtp_h->length;
+        ip_h->ip_src.s_addr = src_ipsub.sub[0];
+        ip_h->ip_dst.s_addr = dst_ipsub.sub[0];
+        ip_h->ip_sum = in_cksum(
+                (unsigned short *)ip_h, sizeof(struct ip));
+        
+        icmp_h = (struct icmp_header_t *)
+                (pkbuf->payload + GTPV1U_HEADER_LEN + sizeof(struct ip));
+        icmp_h->type = 8;
+        icmp_h->un.echo.sequence = rand();
+        icmp_h->un.echo.id = rand();
+        icmp_h->checksum = in_cksum(
+                (unsigned short *)icmp_h, sizeof(struct icmp_header_t));
+    }
+    else if (dst_ipsub.family == AF_INET6)
+    {
+        char cksumbuf[100];
+        char *ptr = NULL;
+
+        gtp_h->length = 
+            htons(sizeof(struct ip6_hdr) + sizeof(struct icmp6_hdr));
+
+        ip6_h = (struct ip6_hdr *)(pkbuf->payload + GTPV1U_HEADER_LEN);
+        ip6_h->ip6_flow = htonl(0x600857c7);
+        ip6_h->ip6_plen = htons(sizeof(struct icmp6_hdr));
+        ip6_h->ip6_nxt = 58;  /* ICMPv6 */
+        ip6_h->ip6_hlim = 64;
+        memcpy(ip6_h->ip6_src.s6_addr, src_ipsub.sub, sizeof src_ipsub.sub);
+        memcpy(ip6_h->ip6_dst.s6_addr, dst_ipsub.sub, sizeof dst_ipsub.sub);
+        
+        icmp6_h = (struct icmp6_hdr *)
+                (pkbuf->payload + GTPV1U_HEADER_LEN + sizeof(struct ip6_hdr));
+        icmp6_h->icmp6_type = 128;
+        icmp6_h->icmp6_code = 8;
+        icmp6_h->icmp6_seq = rand();
+        icmp6_h->icmp6_id = rand();
+
+        /* create pseudo-header */
+        memset(cksumbuf, 0, sizeof cksumbuf);
+        ptr = cksumbuf;
+        memcpy(ptr, src_ipsub.sub, sizeof src_ipsub.sub);
+        ptr += sizeof src_ipsub.sub;
+        memcpy(ptr, dst_ipsub.sub, sizeof dst_ipsub.sub);
+        ptr += sizeof dst_ipsub.sub;
+
+        ptr += 2;
+        memcpy(ptr, &ip6_h->ip6_plen, 2);
+        ptr += 2;
+
+        ptr += 3;
+        *ptr = ip6_h->ip6_nxt;
+        ptr += 1;
+
+        memcpy(ptr, icmp6_h, sizeof(struct icmp6_hdr));
+
+#define IPV6_PSEUDO_HDR 48
+#define CKSUM_SIZE 2
+        icmp6_h->icmp6_cksum = in_cksum( (unsigned short *)cksumbuf,
+                IPV6_PSEUDO_HDR+sizeof(struct icmp6_hdr)+CKSUM_SIZE);
+    }
+    else
+        d_assert(0, return -1,);
 
     memset(&sgw, 0, sizeof(c_sockaddr_t));
     sgw.c_sa_port = htons(GTPV1_U_UDP_PORT);
