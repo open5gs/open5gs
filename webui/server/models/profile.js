@@ -20,7 +20,7 @@ const Profile = new Schema({
   pdn: [{
     apn: { $type: String, required: true },
     type: {
-      $type: Number, default: 0 // IPv4
+      $type: Number, default: 2 // IPv4, IPv6 and dualstack IPv4v6
     },
     qos: {
       qci: Number,
