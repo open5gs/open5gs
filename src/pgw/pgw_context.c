@@ -25,7 +25,6 @@ static pgw_context_t self;
 index_declare(pgw_sess_pool, pgw_sess_t, MAX_POOL_OF_SESS);
 index_declare(pgw_bearer_pool, pgw_bearer_t, MAX_POOL_OF_BEARER);
 
-pool_declare(pgw_ip_pool_pool, pgw_ip_pool_t, MAX_POOL_OF_SESS);
 pool_declare(pgw_pf_pool, pgw_pf_t, MAX_POOL_OF_PF);
 
 typedef struct _ue_pool_t {
@@ -36,7 +35,7 @@ typedef struct _ue_pool_t {
 } ue_pool_t;
 
 #define INVALID_POOL_INDEX       MAX_NUM_OF_UE_POOL
-static ue_pool_t ue_pool[MAX_NUM_OF_UE_POOL];
+static ue_pool_t ue_ip_pool[MAX_NUM_OF_UE_POOL];
 
 static int context_initiaized = 0;
 
@@ -61,11 +60,10 @@ status_t pgw_context_init()
     index_init(&pgw_sess_pool, MAX_POOL_OF_SESS);
     index_init(&pgw_bearer_pool, MAX_POOL_OF_BEARER);
 
-    pool_init(&pgw_ip_pool_pool, MAX_POOL_OF_SESS);
     pool_init(&pgw_pf_pool, MAX_POOL_OF_PF);
 
     for (i = 0; i < MAX_NUM_OF_UE_POOL; i++)
-        pool_init(&ue_pool[i], MAX_POOL_OF_UE);
+        pool_init(&ue_ip_pool[i], MAX_POOL_OF_UE);
 
     self.sess_hash = hash_make();
 
@@ -86,40 +84,25 @@ status_t pgw_context_final()
     d_assert(self.sess_hash, , "Null param");
     hash_destroy(self.sess_hash);
 
-    if (index_size(&pgw_sess_pool) != pool_avail(&pgw_sess_pool))
+    if (index_used(&pgw_sess_pool))
         d_warn("%d not freed in pgw_sess_pool[%d] in PGW-Context",
-                index_size(&pgw_sess_pool) - pool_avail(&pgw_sess_pool),
-                index_size(&pgw_sess_pool));
+                index_used(&pgw_sess_pool), index_size(&pgw_sess_pool));
     d_trace(3, "%d not freed in pgw_sess_pool[%d] in PGW-Context\n",
-            index_size(&pgw_sess_pool) - pool_avail(&pgw_sess_pool),
-            index_size(&pgw_sess_pool));
-
-    if (index_size(&pgw_ip_pool_pool) != pool_avail(&pgw_ip_pool_pool))
-    {
-        d_warn("%d not freed in pgw_ip_pool[%d] in PGW-Context",
-                index_size(&pgw_ip_pool_pool) - pool_avail(&pgw_ip_pool_pool),
-                index_size(&pgw_ip_pool_pool));
-    }
-    d_trace(3, "%d not freed in pgw_ip_pool[%d] in PGW-Context\n",
-            index_size(&pgw_ip_pool_pool) - pool_avail(&pgw_ip_pool_pool),
-            index_size(&pgw_ip_pool_pool));
+            index_used(&pgw_sess_pool), index_size(&pgw_sess_pool));
 
     pool_final(&pgw_pf_pool);
-    pool_final(&pgw_ip_pool_pool);
 
     for (i = 0; i < MAX_NUM_OF_UE_POOL; i++)
     {
-        if (index_size(&ue_pool[i]) != pool_avail(&ue_pool[i]))
+        if (pool_used(&ue_ip_pool[i]))
         {
-            d_warn("[%d] %d not freed in ue_pool[%d] in PGW-Context",
-                    i, index_size(&ue_pool[i]) - pool_avail(&ue_pool[i]),
-                    index_size(&ue_pool[i]));
+            d_warn("[%d] %d not freed in ue_ip_pool[%d] in PGW-Context",
+                    i, pool_used(&ue_ip_pool[i]), index_size(&ue_ip_pool[i]));
         }
-        d_trace(3, "[%d] %d not freed in ue_pool[%d] in PGW-Context\n",
-                i, index_size(&ue_pool[i]) - pool_avail(&ue_pool[i]),
-                index_size(&ue_pool[i]));
+        d_trace(3, "[%d] %d not freed in ue_ip_pool[%d] in PGW-Context\n",
+                i, pool_used(&ue_ip_pool[i]), index_size(&ue_ip_pool[i]));
 
-        pool_final(&ue_pool[i]);
+        pool_final(&ue_ip_pool[i]);
     }
 
     index_final(&pgw_bearer_pool);
@@ -1335,7 +1318,7 @@ status_t pgw_ue_pool_generate()
 
     for (i = 0; i < self.num_of_ue_pool; i++)
     {
-        int pool_index = 0;
+        int index = 0;
         ipsubnet_t ipaddr, ipsub;
         c_uint32_t bits;
         c_uint32_t mask_count;
@@ -1380,13 +1363,13 @@ status_t pgw_ue_pool_generate()
             broadcast[j] = ipsub.sub[j] + ~ipsub.mask[j];
         }
 
-        for (j = 0; j < mask_count && pool_index < MAX_POOL_OF_SESS; j++)
+        for (j = 0; j < mask_count && index < MAX_POOL_OF_SESS; j++)
         {
             pgw_ue_ip_t *ue_ip = NULL;
             int maxbytes = 0;
             int lastindex = 0;
 
-            ue_ip = &ue_pool[i].pool[pool_index];
+            ue_ip = &ue_ip_pool[i].pool[index];
             d_assert(ue_ip, return CORE_ERROR,);
             memset(ue_ip, 0, sizeof *ue_ip);
 
@@ -1412,9 +1395,10 @@ status_t pgw_ue_pool_generate()
 
             /* Exclude TUN IP Address */
             if (memcmp(ue_ip->addr, ipaddr.sub, maxbytes) == 0) continue;
-            
-            pool_index++;
+
+            index++;
         }
+        ue_ip_pool[i].size = ue_ip_pool[i].avail = index;
     }
 
     return CORE_OK;
@@ -1434,7 +1418,8 @@ static c_uint8_t find_ue_pool_index(int family, const char *apn)
         if (self.ue_pool[i].apn)
         {
             if (self.ue_pool[i].family == family &&
-                strcmp(self.ue_pool[i].apn, apn) == 0)
+                strcmp(self.ue_pool[i].apn, apn) == 0 &&
+                pool_avail(&ue_ip_pool[i]))
             {
                 pool_index = i;
                 break;
@@ -1448,7 +1433,8 @@ static c_uint8_t find_ue_pool_index(int family, const char *apn)
         {
             if (self.ue_pool[i].apn == NULL)
             {
-                if (self.ue_pool[i].family == family)
+                if (self.ue_pool[i].family == family &&
+                    pool_avail(&ue_ip_pool[i]))
                 {
                     pool_index = i;
                     break;
@@ -1476,7 +1462,7 @@ pgw_ue_ip_t *pgw_ue_ip_alloc(int family, const char *apn)
     pool_index = find_ue_pool_index(family, apn);
     d_assert(pool_index < MAX_NUM_OF_UE_POOL, return NULL,);
 
-    pool_alloc_node(&ue_pool[pool_index], &ue_ip);
+    pool_alloc_node(&ue_ip_pool[pool_index], &ue_ip);
     d_assert(ue_ip, return NULL,);
     ue_ip->index = pool_index;
 
@@ -1491,7 +1477,7 @@ status_t pgw_ue_ip_free(pgw_ue_ip_t *ue_ip)
     pool_index = ue_ip->index;
 
     d_assert(pool_index < MAX_NUM_OF_UE_POOL, return CORE_ERROR,);
-    pool_free_node(&ue_pool[pool_index], ue_ip);
+    pool_free_node(&ue_ip_pool[pool_index], ue_ip);
 
     return CORE_OK;
 }
