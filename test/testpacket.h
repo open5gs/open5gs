@@ -2,10 +2,16 @@
 #define __TESTS1AP_H__
 
 #include "core_network.h"
+#include "core_pkbuf.h"
+
+#include "s1ap_message.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
+
+CORE_DECLARE(status_t) testpacket_init();
+CORE_DECLARE(status_t) testpacket_final();
 
 CORE_DECLARE(status_t) tests1ap_enb_connect(sock_id *new);
 CORE_DECLARE(status_t) tests1ap_enb_close(sock_id id);

@@ -1,7 +1,6 @@
 #define TRACE_MODULE _testpacket
 
 #include "core_debug.h"
-#include "core_pkbuf.h"
 #include "core_lib.h"
 
 #include "s1ap_build.h"
@@ -17,6 +16,50 @@
 #include "mme_context.h"
 
 extern int test_only_control_plane;
+
+#define TEST_ENB_ADDR "127.0.0.5"
+#if LINUX == 1
+#define TEST_ENB_ADDR6 "fe80::1%lo"
+#else
+#define TEST_ENB_ADDR6 "fe80::1%lo0"
+#endif
+static c_sockaddr_t *test_enb_addr = NULL;
+static c_sockaddr_t *test_enb_addr6 = NULL;
+
+status_t testpacket_init()
+{
+    status_t rv;
+
+    rv = core_getaddrinfo(&test_enb_addr,
+            AF_INET, TEST_ENB_ADDR, GTPV1_U_UDP_PORT, 0);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+/* There is no default link-local address,
+ * If you want to test it, you need set the IPv6 address in some interface */
+#if LINUX != 1 
+    rv = core_getaddrinfo(&test_enb_addr6,
+            AF_INET6, TEST_ENB_ADDR6, GTPV1_U_UDP_PORT, 0);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+#endif
+
+    return CORE_OK;
+}
+
+status_t testpacket_final()
+{
+    if (test_enb_addr)
+    {
+        core_freeaddrinfo(test_enb_addr);
+        test_enb_addr = NULL;
+    }
+    if (test_enb_addr6)
+    {
+        core_freeaddrinfo(test_enb_addr6);
+        test_enb_addr6 = NULL;
+    }
+
+    return CORE_OK;
+}
 
 status_t tests1ap_enb_connect(sock_id *new)
 {
@@ -52,34 +95,26 @@ status_t testgtpu_enb_connect(sock_id *new)
 {
     char buf[INET_ADDRSTRLEN];
     status_t rv;
-    mme_context_t *mme = mme_self();
-    c_sockaddr_t addr;
+    c_sockaddr_t *addr = NULL;
     int family = AF_UNSPEC;
 
     if (test_only_control_plane) return CORE_OK;
 
-    d_assert(mme, return CORE_ERROR,);
-
     family = AF_INET6;
     if (context_self()->parameter.no_ipv6) family = AF_INET;
     else if (context_self()->parameter.prefer_ipv4) family = AF_INET;
+    else if (test_enb_addr6 == NULL) family = AF_INET;
 
     rv = udp_socket(new, family);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
-    if (family == AF_INET)
-    {
-        d_assert(mme->gtpc_addr, return CORE_ERROR,);
-        memcpy(&addr, mme->gtpc_addr, sizeof(c_sockaddr_t));
-        addr.c_sa_port = htons(GTPV1_U_UDP_PORT);
-    }
+    if (family == AF_INET) addr = test_enb_addr;
+    else if (family == AF_INET6) addr = test_enb_addr6;
     else
-    {
-        d_assert(mme->gtpc_addr6, return CORE_ERROR,);
-        memcpy(&addr, mme->gtpc_addr6, sizeof(c_sockaddr_t));
-        addr.c_sa_port = htons(GTPV1_U_UDP_PORT);
-    }
-    rv = sock_bind(*new, &addr);
+        d_assert(0, return CORE_ERROR,);
+
+    d_assert(addr, return CORE_ERROR,);
+    rv = sock_bind(*new, addr);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
     return CORE_OK;
@@ -732,8 +767,7 @@ status_t tests1ap_build_initial_context_setup_response(
         core_calloc(1, sizeof(S1ap_E_RABSetupItemCtxtSURes_t));
     e_rab->e_RAB_ID = ebi;
 
-    rv = gtp_sockaddr_to_f_teid(
-            mme_self()->gtpc_addr, mme_self()->gtpc_addr6, &f_teid, &len);
+    rv = gtp_sockaddr_to_f_teid(test_enb_addr, test_enb_addr6, &f_teid, &len);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
     rv = gtp_f_teid_to_ip(&f_teid, &ip);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
@@ -1174,9 +1208,8 @@ status_t tests1ap_build_e_rab_setup_response(
     e_rab = (S1ap_E_RABSetupItemBearerSURes_t *)
         core_calloc(1, sizeof(S1ap_E_RABSetupItemBearerSURes_t));
     e_rab->e_RAB_ID = ebi;
-
-    rv = gtp_sockaddr_to_f_teid(
-            mme_self()->gtpc_addr, mme_self()->gtpc_addr6, &f_teid, &len);
+ 
+    rv = gtp_sockaddr_to_f_teid(test_enb_addr, test_enb_addr6, &f_teid, &len);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
     rv = gtp_f_teid_to_ip(&f_teid, &ip);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
@@ -1426,7 +1459,7 @@ status_t tests1ap_build_path_switch_request(
         e_rab->e_RAB_ID = ebi+i;
 
         rv = gtp_sockaddr_to_f_teid(
-                mme_self()->gtpc_addr, mme_self()->gtpc_addr6, &f_teid, &len);
+                test_enb_addr, test_enb_addr6, &f_teid, &len);
         d_assert(rv == CORE_OK, return CORE_ERROR,);
         rv = gtp_f_teid_to_ip(&f_teid, &ip);
         d_assert(rv == CORE_OK, return CORE_ERROR,);
@@ -1597,7 +1630,7 @@ CORE_DECLARE(status_t) tests1ap_build_handover_request_ack(
         e_rab->e_RAB_ID = ebi+i;
 
         rv = gtp_sockaddr_to_f_teid(
-                mme_self()->gtpc_addr, mme_self()->gtpc_addr6, &f_teid, &len);
+                test_enb_addr, test_enb_addr6, &f_teid, &len);
         d_assert(rv == CORE_OK, return CORE_ERROR,);
         rv = gtp_f_teid_to_ip(&f_teid, &ip);
         d_assert(rv == CORE_OK, return CORE_ERROR,);
