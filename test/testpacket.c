@@ -264,15 +264,17 @@ status_t testgtpu_enb_send(const char *src_ip, const char *dst_ip)
         char cksumbuf[200];
         char *ptr = NULL;
 
-        char *icmp6_data = NULL;
+        int icmp6_datalen = 0;
+#if 0
         int icmp6_datalen = 56;
-
-        char hexbuf[100];
+        char *icmp6_data = NULL;
+        char hexbuf[200];
         char *hexraw =
             "9805325a 00000000 ea950900 00000000"
-            "00101011 12131415 16171819 1a1b1c1d 1e1f"
-            "00202021 22232425 26272829 2a2b2c2d 2e2f"
-            "00303031 32333435 3637";
+            "10111213 14151617 18191a1b 1c1d1e1f"
+            "20212223 24252627 28292a2b 2c2d2e2f"
+            "30313233 34353637";
+#endif
 
         gtp_h->length = htons(sizeof(struct ip6_hdr) +
                 sizeof(struct icmp6_hdr) + icmp6_datalen);
@@ -289,12 +291,14 @@ status_t testgtpu_enb_send(const char *src_ip, const char *dst_ip)
             (struct icmp6_hdr *)((c_uint8_t*)ip6_h + sizeof(struct ip6_hdr));
         icmp6_h->icmp6_type = 128;
         icmp6_h->icmp6_code = 0;
-        icmp6_h->icmp6_seq = 1;
-        icmp6_h->icmp6_id = htons(0x5b13);
+        icmp6_h->icmp6_seq = rand();
+        icmp6_h->icmp6_id = rand();
 
+#if 0
         icmp6_data = (char *)((c_uint8_t*)icmp6_h + sizeof(struct icmp6_hdr));
         memcpy(icmp6_data,
                 CORE_HEX(hexraw, strlen(hexraw), hexbuf), icmp6_datalen);
+#endif
 
         /* create pseudo-header */
         memset(cksumbuf, 0, sizeof cksumbuf);
@@ -313,8 +317,10 @@ status_t testgtpu_enb_send(const char *src_ip, const char *dst_ip)
         ptr += 1;
 
         memcpy(ptr, icmp6_h, sizeof(struct icmp6_hdr));
+#if 0
         ptr += sizeof(struct icmp6_hdr);
         memcpy(ptr, icmp6_data, icmp6_datalen);
+#endif
 
 #define IPV6_PSEUDO_HDR 48
         icmp6_h->icmp6_cksum = in_cksum((unsigned short *)cksumbuf,
