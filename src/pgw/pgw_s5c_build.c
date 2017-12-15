@@ -8,6 +8,8 @@
 #include "gtp_message.h"
 #include "gx_message.h"
 
+#include "ipfw2.h"
+
 #include "pgw_context.h"
 
 static c_int16_t pgw_pco_build(c_uint8_t *pco_buf, tlv_pco_t *tlv_pco);
@@ -248,7 +250,7 @@ status_t pgw_s5c_build_create_bearer_request(
             j++; len += 2;
         }
 
-        if (pf->rule.ip.local.addr[0])
+        if (pf->rule.ipv4_local)
         {
             tft.pf[i].component[j].type = 
                 GTP_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE;
@@ -257,13 +259,35 @@ status_t pgw_s5c_build_create_bearer_request(
             j++; len += 9;
         }
 
-        if (pf->rule.ip.remote.addr)
+        if (pf->rule.ipv4_remote)
         {
             tft.pf[i].component[j].type = 
                 GTP_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE;
             tft.pf[i].component[j].ipv4.addr = pf->rule.ip.remote.addr[0];
             tft.pf[i].component[j].ipv4.mask = pf->rule.ip.remote.mask[0];
             j++; len += 9;
+        }
+
+        if (pf->rule.ipv6_local)
+        {
+            tft.pf[i].component[j].type = 
+                GTP_PACKET_FILTER_IPV6_LOCAL_ADDRESS_PREFIX_LENGTH_TYPE;
+            memcpy(tft.pf[i].component[j].ipv6.addr, pf->rule.ip.local.addr,
+                    sizeof pf->rule.ip.local.addr);
+            tft.pf[i].component[j].ipv6.prefixlen =
+                contigmask((c_uint8_t *)pf->rule.ip.local.mask, 128);
+            j++; len += 18;
+        }
+
+        if (pf->rule.ipv6_remote)
+        {
+            tft.pf[i].component[j].type = 
+                GTP_PACKET_FILTER_IPV6_REMOTE_ADDRESS_PREFIX_LENGTH_TYPE;
+            memcpy(tft.pf[i].component[j].ipv6.addr, pf->rule.ip.remote.addr,
+                    sizeof pf->rule.ip.remote.addr);
+            tft.pf[i].component[j].ipv6.prefixlen =
+                contigmask((c_uint8_t *)pf->rule.ip.remote.mask, 128);
+            j++; len += 18;
         }
 
         if (pf->rule.port.local.low)

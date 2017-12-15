@@ -129,6 +129,11 @@ typedef struct _pgw_bearer_t {
 
 typedef struct _pgw_rule_t {
     c_uint8_t proto;
+ED5(c_uint8_t ipv4_local:1;,
+    c_uint8_t ipv4_remote:1;,
+    c_uint8_t ipv6_local:1;,
+    c_uint8_t ipv6_remote:1;,
+    c_uint8_t reserved:4;)
     struct {
         struct {
             c_uint32_t addr[4];

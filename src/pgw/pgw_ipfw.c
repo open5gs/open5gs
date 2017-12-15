@@ -78,23 +78,48 @@ status_t pgw_compile_packet_filter(pgw_rule_t *pgw_rule, c_int8_t *description)
             case O_IP_SRC_MASK:
             {
                 uint32_t *a = ((ipfw_insn_u32 *)cmd)->d;
+                pgw_rule->ipv4_local = 1;
                 pgw_rule->ip.local.addr[0] = a[0];
                 if (cmd->opcode == O_IP_SRC_MASK)
                     pgw_rule->ip.local.mask[0] = a[1];
                 else
                     pgw_rule->ip.local.mask[0] = 0xffffffff;
-
                 break;
             }
             case O_IP_DST:
             case O_IP_DST_MASK:
             {
                 uint32_t *a = ((ipfw_insn_u32 *)cmd)->d;
+                pgw_rule->ipv4_remote = 1;
                 pgw_rule->ip.remote.addr[0] = a[0];
                 if (cmd->opcode == O_IP_DST_MASK)
                     pgw_rule->ip.remote.mask[0] = a[1];
                 else
                     pgw_rule->ip.remote.mask[0] = 0xffffffff;
+                break;
+            }
+            case O_IP6_SRC:
+            case O_IP6_SRC_MASK:
+            {
+                uint32_t *a = ((ipfw_insn_u32 *)cmd)->d;
+                pgw_rule->ipv6_local = 1;
+                memcpy(pgw_rule->ip.local.addr, a, IPV6_LEN);
+                if (cmd->opcode == O_IP6_SRC_MASK)
+                    memcpy(pgw_rule->ip.local.mask, a+4, IPV6_LEN);
+                else
+                    n2mask((struct in6_addr *)pgw_rule->ip.local.mask, 128);
+                break;
+            }
+            case O_IP6_DST:
+            case O_IP6_DST_MASK:
+            {
+                uint32_t *a = ((ipfw_insn_u32 *)cmd)->d;
+                pgw_rule->ipv6_remote = 1;
+                memcpy(pgw_rule->ip.remote.addr, a, IPV6_LEN);
+                if (cmd->opcode == O_IP6_DST_MASK)
+                    memcpy(pgw_rule->ip.remote.mask, a+4, IPV6_LEN);
+                else
+                    n2mask((struct in6_addr *)pgw_rule->ip.remote.mask, 128);
                 break;
             }
             case O_IP_SRCPORT:
