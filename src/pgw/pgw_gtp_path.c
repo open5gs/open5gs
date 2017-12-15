@@ -10,6 +10,40 @@
 #include "pgw_event.h"
 #include "pgw_gtp_path.h"
 
+static status_t pgw_gtp_send_to_bearer(pgw_bearer_t *bearer, pkbuf_t *sendbuf)
+{
+    status_t rv;
+    gtp_header_t *gtp_h = NULL;
+
+    /* Add GTP-U header */
+    rv = pkbuf_header(sendbuf, GTPV1U_HEADER_LEN);
+    if (rv != CORE_OK)
+    {
+        d_error("pkbuf_header error");
+        pkbuf_free(sendbuf);
+        return CORE_ERROR;
+    }
+    
+    gtp_h = (gtp_header_t *)sendbuf->payload;
+    /* Bits    8  7  6  5  4  3  2  1
+     *        +--+--+--+--+--+--+--+--+
+     *        |version |PT| 1| E| S|PN|
+     *        +--+--+--+--+--+--+--+--+
+     *         0  0  1   1  0  0  0  0
+     */
+    gtp_h->flags = 0x30;
+    gtp_h->type = GTPU_MSGTYPE_GPDU;
+    gtp_h->length = htons(sendbuf->len);
+    gtp_h->teid = htonl(bearer->sgw_s5u_teid);
+
+    /* Send to SGW */
+    d_trace(50, "Send S5U PDU (teid = 0x%x) to SGW\n",
+            bearer->sgw_s5u_teid);
+    rv =  gtp_send(bearer->gnode, sendbuf);
+
+    return rv;
+}
+
 static int _gtpv1_tun_recv_cb(sock_id sock, void *data)
 {
     pkbuf_t *recvbuf = NULL;
@@ -36,37 +70,41 @@ static int _gtpv1_tun_recv_cb(sock_id sock, void *data)
     bearer = pgw_bearer_find_by_packet(recvbuf);
     if (bearer)
     {
-        gtp_header_t *gtp_h = NULL;
-
-        /* Add GTP-U header */
-        rv = pkbuf_header(recvbuf, GTPV1U_HEADER_LEN);
-        if (rv != CORE_OK)
-        {
-            d_error("pkbuf_header error");
-            pkbuf_free(recvbuf);
-            return -1;
-        }
-        
-        gtp_h = (gtp_header_t *)recvbuf->payload;
-        /* Bits    8  7  6  5  4  3  2  1
-         *        +--+--+--+--+--+--+--+--+
-         *        |version |PT| 1| E| S|PN|
-         *        +--+--+--+--+--+--+--+--+
-         *         0  0  1   1  0  0  0  0
-         */
-        gtp_h->flags = 0x30;
-        gtp_h->type = GTPU_MSGTYPE_GPDU;
-        gtp_h->length = htons(n);
-        gtp_h->teid = htonl(bearer->sgw_s5u_teid);
-
-        /* Send to SGW */
-        d_trace(50, "Send S5U PDU (teid = 0x%x) to SGW\n",
-                bearer->sgw_s5u_teid);
-        rv =  gtp_send(bearer->gnode, recvbuf);
+        /* Unicast */
+        rv = pgw_gtp_send_to_bearer(bearer, recvbuf);
+        d_assert(rv == CORE_OK,, "pgw_gtp_send_to_bearer failed");
     }
     else
     {
-        d_trace(3, "Can not find bearer\n");
+        struct ip *ip_h =  NULL;
+        struct ip6_hdr *ip6_h =  NULL;
+
+        ip_h = (struct ip *)recvbuf->payload;
+        if (ip_h->ip_v == 6)
+        {
+            ip6_h = (struct ip6_hdr *)recvbuf->payload;
+            if (IN6_IS_ADDR_MULTICAST(&ip6_h->ip6_dst))
+            {
+                hash_index_t *hi = NULL;
+
+                /* IPv6 Multicast */
+                for (hi = pgw_sess_first(); hi; hi = pgw_sess_next(hi))
+                {
+                    pgw_sess_t *sess = pgw_sess_this(hi);
+                    d_assert(sess, return 0,);
+                    if (sess->ipv6)
+                    {
+                        /* PDN IPv6 is avaiable */
+                        pgw_bearer_t *bearer = pgw_default_bearer_in_sess(sess);
+                        d_assert(bearer, return 0,);
+
+                        rv = pgw_gtp_send_to_bearer(bearer, recvbuf);
+                        d_assert(rv == CORE_OK,,
+                                "pgw_gtp_send_to_bearer failed");
+                    }
+                }
+            }
+        }
     }
 
     pkbuf_free(recvbuf);

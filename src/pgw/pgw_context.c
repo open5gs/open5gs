@@ -1056,10 +1056,7 @@ pgw_bearer_t* pgw_bearer_next(pgw_bearer_t *bearer)
 
 pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
 {
-    pgw_bearer_t *default_bearer = NULL;
-    pgw_bearer_t *bearer = NULL;
     hash_index_t *hi = NULL;
-    pgw_sess_t *sess = NULL;
     struct ip *ip_h =  NULL;
     struct ip6_hdr *ip6_h =  NULL;
     c_uint32_t *src_addr = NULL;
@@ -1115,7 +1112,8 @@ pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
 
     for (hi = pgw_sess_first(); hi; hi = pgw_sess_next(hi))
     {
-        sess = pgw_sess_this(hi);
+        pgw_sess_t *sess = pgw_sess_this(hi);
+        d_assert(sess, return NULL,);
 
         if (sess->ipv4)
             d_trace(50, "PAA IPv4:%s\n", INET_NTOP(&sess->ipv4->addr, buf));
@@ -1125,6 +1123,8 @@ pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
         if ((sess->ipv4 && memcmp(dst_addr, sess->ipv4->addr, addr_len) == 0) ||
             (sess->ipv6 && memcmp(dst_addr, sess->ipv6->addr, addr_len) == 0))
         {
+            pgw_bearer_t *default_bearer = NULL;
+            pgw_bearer_t *bearer = NULL;
             /* Found */
 
             /* Save the default bearer */
