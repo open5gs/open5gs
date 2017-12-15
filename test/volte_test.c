@@ -547,11 +547,15 @@ static void volte_test2(abts_case *tc, void *data)
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-#if 0 /* Classification Rule Tester */
+#if 0 /* TFT Rule Tester */
     core_sleep(time_from_msec(300));
 
     /* Send GTP-U ICMP Packet */
+#if 1
     rv = testgtpu_enb_send("45.45.0.2", "45.45.0.1");
+#else
+    rv = testgtpu_enb_send("cafe::2", "cafe::1");
+#endif
 
     core_sleep(time_from_msec(300));
 #endif
@@ -576,7 +580,9 @@ abts_suite *test_volte(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
+#if 0
     abts_run_test(suite, volte_test1, NULL);
+#endif
     abts_run_test(suite, volte_test2, NULL);
 
     return suite;

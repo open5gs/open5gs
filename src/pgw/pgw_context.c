@@ -1179,7 +1179,7 @@ pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
                         continue;
                     }
 
-                    for (k = 0; k < 3; k++)
+                    for (k = 0; k < 4; k++)
                     {
                         src_mask[k] = src_addr[k] & pf->rule.ip.local.mask[k];
                         dst_mask[k] = dst_addr[k] & pf->rule.ip.remote.mask[k];
