@@ -340,6 +340,14 @@ const uiSchema = {
           classNames: "col-xs-6"
         },
       },
+      "pgw" : {
+        "addr" : {
+          classNames: "col-xs-6"
+        },
+        "addr6" : {
+          classNames: "col-xs-6"
+        },
+      },
       "pcc_rule": {
         "items": {
           "flow": {
