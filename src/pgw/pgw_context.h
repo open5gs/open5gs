@@ -12,8 +12,6 @@
 #include "gtp_types.h"
 #include "gtp_message.h"
 
-#define MAX_NUM_OF_UE_POOL 16
-
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -41,6 +39,7 @@ typedef struct _pgw_context_t {
 
     sock_id         tun_sock;       /* PGW Tun Interace for UE */
     const char      *tun_ifname;    /* default : pgwtun */
+#define MAX_NUM_OF_UE_POOL 16
     struct {
         const char  *ipstr;         /* IP : "172.16.0.1", "cafe::1", ... */
         const char  *mask_or_numbits;   /* MASK : "16, 64, ... */
@@ -52,7 +51,11 @@ typedef struct _pgw_context_t {
     struct {
         c_uint32_t primary;
         c_uint32_t secondary;
-    } dns;
+    } old_dns;
+
+#define MAX_NUM_OF_DNS              2
+    const char      *dns[2];        /* Primary/Secondanry */
+    const char      *dns6[2];       /* Primary/Secondanry */
 
     list_t          sgw_s5c_list;  /* SGW GTPC Node List */
     list_t          sgw_s5u_list;  /* SGW GTPU Node List */

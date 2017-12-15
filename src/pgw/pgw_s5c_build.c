@@ -325,8 +325,10 @@ status_t pgw_s5c_build_create_bearer_request(
 
 static c_int16_t pgw_pco_build(c_uint8_t *pco_buf, tlv_pco_t *tlv_pco)
 {
+    status_t rv;
     pco_t ue, pgw;
     pco_ipcp_t pco_ipcp;
+    ipsubnet_t dns_primary, dns_secondary, dns6_primary, dns6_secondary;
     c_int8_t size = 0;
     int i = 0;
 
@@ -368,14 +370,26 @@ static c_int16_t pgw_pco_build(c_uint8_t *pco_buf, tlv_pco_t *tlv_pco)
                     pco_ipcp.len = htons(len);
 
                     /* Primary DNS Server IP Address */
-                    pco_ipcp.options[0].type = 129; 
-                    pco_ipcp.options[0].len = 6; 
-                    pco_ipcp.options[0].addr = pgw_self()->dns.primary;
+                    if (pgw_self()->dns[0])
+                    {
+                        rv = core_ipsubnet(
+                                &dns_primary, pgw_self()->dns[0], NULL);
+                        d_assert(rv == CORE_OK, return CORE_ERROR,);
+                        pco_ipcp.options[0].type = 129; 
+                        pco_ipcp.options[0].len = 6; 
+                        pco_ipcp.options[0].addr = dns_primary.sub[0];
+                    }
 
                     /* Secondary DNS Server IP Address */
-                    pco_ipcp.options[1].type = 131; 
-                    pco_ipcp.options[1].len = 6; 
-                    pco_ipcp.options[1].addr = pgw_self()->dns.secondary;
+                    if (pgw_self()->dns[1])
+                    {
+                        rv = core_ipsubnet(
+                                &dns_secondary, pgw_self()->dns[1], NULL);
+                        d_assert(rv == CORE_OK, return CORE_ERROR,);
+                        pco_ipcp.options[1].type = 131; 
+                        pco_ipcp.options[1].len = 6; 
+                        pco_ipcp.options[1].addr = dns_secondary.sub[0];
+                    }
 
                     pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
                     pgw.ids[pgw.num_of_id].len = len;
@@ -387,19 +401,59 @@ static c_int16_t pgw_pco_build(c_uint8_t *pco_buf, tlv_pco_t *tlv_pco)
             }
             case PCO_ID_DNS_SERVER_IPV4_ADDRESS_REQUEST:
             {
-                pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
-                pgw.ids[pgw.num_of_id].len = 4;
-                pgw.ids[pgw.num_of_id].data = &pgw_self()->dns.primary;
-                pgw.num_of_id++;
+                if (pgw_self()->dns[0])
+                {
+                    rv = core_ipsubnet(
+                            &dns_primary, pgw_self()->dns[0], NULL);
+                    d_assert(rv == CORE_OK, return CORE_ERROR,);
+                    pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
+                    pgw.ids[pgw.num_of_id].len = IPV4_LEN;
+                    pgw.ids[pgw.num_of_id].data = dns_primary.sub;
+                    pgw.num_of_id++;
+                }
 
-                pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
-                pgw.ids[pgw.num_of_id].len = 4;
-                pgw.ids[pgw.num_of_id].data = &pgw_self()->dns.secondary;
+                if (pgw_self()->dns[1])
+                {
+                    rv = core_ipsubnet(
+                            &dns_secondary, pgw_self()->dns[1], NULL);
+                    d_assert(rv == CORE_OK, return CORE_ERROR,);
+                    pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
+                    pgw.ids[pgw.num_of_id].len = IPV4_LEN;
+                    pgw.ids[pgw.num_of_id].data = dns_secondary.sub;
+                    pgw.num_of_id++;
+                }
+                break;
+            }
+            case PCO_ID_DNS_SERVER_IPV6_ADDRESS_REQUEST:
+            {
+                if (pgw_self()->dns6[0])
+                {
+                    rv = core_ipsubnet(
+                            &dns6_primary, pgw_self()->dns6[0], NULL);
+                    d_assert(rv == CORE_OK, return CORE_ERROR,);
+                    pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
+                    pgw.ids[pgw.num_of_id].len = IPV6_LEN;
+                    pgw.ids[pgw.num_of_id].data = dns6_primary.sub;
+                    pgw.num_of_id++;
+                }
 
-                pgw.num_of_id++;
+                if (pgw_self()->dns6[1])
+                {
+                    rv = core_ipsubnet(
+                            &dns6_secondary, pgw_self()->dns6[1], NULL);
+                    d_assert(rv == CORE_OK, return CORE_ERROR,);
+                    pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
+                    pgw.ids[pgw.num_of_id].len = IPV6_LEN;
+                    pgw.ids[pgw.num_of_id].data = dns6_secondary.sub;
+                    pgw.num_of_id++;
+                }
                 break;
             }
             case PCO_ID_IP_ADDRESS_ALLOCATION_VIA_NAS_SIGNALLING:
+                /* TODO */
+                break;
+            case PCO_ID_IPV4_LINK_MTU_REQUEST:
+                /* TODO */
                 break;
             default:
                 d_warn("Unknown PCO ID:(0x%x)", ue.ids[i].id);

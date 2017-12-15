@@ -159,7 +159,7 @@ static status_t pgw_context_validation()
                 context_self()->config.path);
         return CORE_ERROR;
     }
-    if (self.dns.primary == 0)
+    if (self.dns[0] == NULL && self.dns6[0] == NULL)
     {
         d_error("No pgw.dns in '%s'",
                 context_self()->config.path);
@@ -592,58 +592,31 @@ status_t pgw_context_parse_config()
                         v = yaml_iter_value(&dns_iter);
                         if (v)
                         {
-                            if (count == 0)
+                            ipsubnet_t ipsub;
+                            rv = core_ipsubnet(&ipsub, v, NULL);
+                            d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+                            if (ipsub.family == AF_INET)
                             {
-                                self.dns.primary = inet_addr(v);
+                                if (self.dns[0] && self.dns[1])
+                                    d_warn("Ignore DNS : %s", v);
+                                else if (self.dns[0]) self.dns[1] = v;
+                                else self.dns[0] = v;
                             }
-                            else if (count == 1)
+                            else if (ipsub.family == AF_INET6)
                             {
-                                self.dns.secondary = inet_addr(v);
+                                if (self.dns6[0] && self.dns6[1])
+                                    d_warn("Ignore DNS : %s", v);
+                                else if (self.dns6[0]) self.dns6[1] = v;
+                                else self.dns6[0] = v;
                             }
                             else
-                                d_warn("Ignored %d DNS(%s)", count, v);
+                                d_warn("Ignore DNS : %s", v);
                         }
 
                         count++;
                     } while(
                         yaml_iter_type(&dns_iter) ==
-                            YAML_SEQUENCE_NODE);
-                }
-                else if (!strcmp(pgw_key, "dns6"))
-                {
-                    int count = 0;
-                    yaml_iter_t dns6_iter;
-                    yaml_iter_recurse(&pgw_iter, &dns6_iter);
-                    d_assert(yaml_iter_type(&dns6_iter) !=
-                        YAML_MAPPING_NODE, return CORE_ERROR,);
-
-                    do
-                    {
-                        const char *v = NULL;
-
-                        if (yaml_iter_type(&dns6_iter) ==
-                                YAML_SEQUENCE_NODE)
-                        {
-                            if (!yaml_iter_next(&dns6_iter))
-                                break;
-                        }
-
-                        v = yaml_iter_value(&dns6_iter);
-                        if (v)
-                        {
-                            if (count == 0)
-                            {
-                            }
-                            else if (count == 1)
-                            {
-                            }
-                            else
-                                d_warn("Ignored %d DNS(%s)", count, v);
-                        }
-
-                        count++;
-                    } while(
-                        yaml_iter_type(&dns6_iter) ==
                             YAML_SEQUENCE_NODE);
                 }
                 else
