@@ -755,17 +755,22 @@ pgw_sess_t *pgw_sess_add(
             "Can't add default bearer context");
     bearer->ebi = ebi;
 
+    sess->pdn.paa.pdn_type = pdn_type;
     if (pdn_type == GTP_PDN_TYPE_IPV4)
     {
         sess->ipv4 = pgw_ue_ip_alloc(AF_INET, apn);
         d_assert(sess->ipv4, pgw_sess_remove(sess); return NULL, 
                 "Can't allocate IPv4 Pool");
+        sess->pdn.paa.addr = sess->ipv4->addr[0];
     }
     else if (pdn_type == GTP_PDN_TYPE_IPV6)
     {
         sess->ipv6 = pgw_ue_ip_alloc(AF_INET6, apn);
         d_assert(sess->ipv6, pgw_sess_remove(sess); return NULL, 
                 "Can't allocate IPv6 Pool");
+
+        sess->pdn.paa.len = pgw_ue_ip_prefixlen(sess->ipv6);
+        memcpy(sess->pdn.paa.addr6, sess->ipv6->addr, IPV6_LEN);
     }
     else if (pdn_type == GTP_PDN_TYPE_IPV4V6)
     {
@@ -775,10 +780,13 @@ pgw_sess_t *pgw_sess_add(
         sess->ipv6 = pgw_ue_ip_alloc(AF_INET6, apn);
         d_assert(sess->ipv6, pgw_sess_remove(sess); return NULL, 
                 "Can't allocate IPv6 Pool");
+
+        sess->pdn.paa.both.addr = sess->ipv4->addr[0];
+        sess->pdn.paa.both.len = pgw_ue_ip_prefixlen(sess->ipv6);
+        memcpy(sess->pdn.paa.both.addr6, sess->ipv6->addr, IPV6_LEN);
     }
     else
         d_assert(0, return NULL, "Unsupported PDN Type(%d)", pdn_type);
-    sess->pdn.pdn_type = pdn_type;
 
     /* Generate Hash Key : IMSI + APN */
     sess_hash_keygen(sess->hash_keybuf, &sess->hash_keylen,
@@ -1381,7 +1389,7 @@ status_t pgw_ue_pool_generate()
     {
         int index = 0;
         ipsubnet_t ipaddr, ipsub;
-        c_uint32_t bits;
+        c_uint32_t prefixlen;
         c_uint32_t mask_count;
         c_uint32_t broadcast[4];
 
@@ -1393,23 +1401,23 @@ status_t pgw_ue_pool_generate()
         d_assert(rv == CORE_OK, return CORE_ERROR,);
 
         d_assert(self.ue_pool[i].mask_or_numbits, return CORE_ERROR,);
-        bits = atoi(self.ue_pool[i].mask_or_numbits);
+        prefixlen = atoi(self.ue_pool[i].mask_or_numbits);
         if (ipsub.family == AF_INET)
         {
-            if (bits == 32)
+            if (prefixlen == 32)
                 mask_count = 1;
-            else if (bits < 32)
-                mask_count = (0xffffffff >> bits) + 1;
+            else if (prefixlen < 32)
+                mask_count = (0xffffffff >> prefixlen) + 1;
             else
                 d_assert(0, return CORE_ERROR,);
         }
         else if (ipsub.family == AF_INET6)
         {
-            if (bits == 128)
+            if (prefixlen == 128)
                 mask_count = 1;
-            else if (bits > 96 && bits < 128)
-                mask_count = (0xffffffff >> (bits - 96)) + 1;
-            else if (bits <= 96)
+            else if (prefixlen > 96 && prefixlen < 128)
+                mask_count = (0xffffffff >> (prefixlen - 96)) + 1;
+            else if (prefixlen <= 96)
                 mask_count = 0xffffffff;
             else
                 d_assert(0, return CORE_ERROR,);
@@ -1541,4 +1549,15 @@ status_t pgw_ue_ip_free(pgw_ue_ip_t *ue_ip)
     pool_free_node(&ue_ip_pool[pool_index], ue_ip);
 
     return CORE_OK;
+}
+
+c_uint8_t pgw_ue_ip_prefixlen(pgw_ue_ip_t *ue_ip)
+{
+    d_assert(ue_ip, return CORE_ERROR,);
+
+    c_uint8_t index = ue_ip->index;
+    d_assert(index < MAX_NUM_OF_UE_POOL, return CORE_ERROR,);
+    d_assert(pgw_self()->ue_pool[index].mask_or_numbits,
+            return CORE_ERROR,);
+    return atoi(pgw_self()->ue_pool[index].mask_or_numbits);
 }

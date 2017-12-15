@@ -213,6 +213,7 @@ CORE_DECLARE(pgw_pf_t*)     pgw_pf_next(pgw_pf_t *pf);
 CORE_DECLARE(status_t )     pgw_ue_pool_generate();
 CORE_DECLARE(pgw_ue_ip_t *) pgw_ue_ip_alloc(int family, const char *apn);
 CORE_DECLARE(status_t)      pgw_ue_ip_free(pgw_ue_ip_t *ip);
+CORE_DECLARE(c_uint8_t)     pgw_ue_ip_prefixlen(pgw_ue_ip_t *ue_ip);
 
 #ifdef __cplusplus
 }

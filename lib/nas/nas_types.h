@@ -1162,10 +1162,10 @@ ED2(c_uint8_t reserved:5;,
     union {
         c_uint32_t addr;      
         struct {
-            c_uint8_t addr6[IPV6_LEN/2]; /* Interface Identifer Only */
+            c_uint8_t addr6[IPV6_LEN>>1]; /* Interface Identifer Only */
         };
         struct {
-            c_uint8_t addr6[IPV6_LEN/2]; /* Interface Identifer Only */
+            c_uint8_t addr6[IPV6_LEN>>1]; /* Interface Identifer Only */
             c_uint32_t addr;      
         } both;
     };

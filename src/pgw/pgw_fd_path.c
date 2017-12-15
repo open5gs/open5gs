@@ -136,20 +136,28 @@ void pgw_gx_send_ccr(gtp_xact_t *xact, pgw_sess_t *sess,
         CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
 
         /* Set Framed-IP-Address */
-        CHECK_FCT_DO( fd_msg_avp_new(gx_framed_ip_address, 0, &avp),
-                goto out );
-        if (sess->ipv6)
+        if (sess->ipv4)
         {
-            val.os.data = (c_uint8_t*)&sess->ipv6->addr;
-            val.os.len = 16;
-        }
-        else
-        {
+            CHECK_FCT_DO( fd_msg_avp_new(gx_framed_ip_address, 0, &avp),
+                    goto out );
             val.os.data = (c_uint8_t*)&sess->ipv4->addr;
             val.os.len = 4;
+            CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
+            CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp),
+                    goto out );
         }
-        CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
-        CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
+
+        /* Set Framed-IP-Address-Prefix */
+        if (sess->ipv6)
+        {
+            CHECK_FCT_DO( fd_msg_avp_new(gx_framed_ipv6_prefix, 0, &avp),
+                    goto out );
+            val.os.data = (c_uint8_t*)&sess->pdn.paa;
+            val.os.len = PAA_IPV6_LEN;
+            CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
+            CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp),
+                    goto out );
+        }
 
         /* Set IP-Can-Type */
         CHECK_FCT_DO( fd_msg_avp_new(gx_ip_can_type, 0, &avp),

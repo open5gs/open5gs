@@ -61,26 +61,11 @@ status_t pgw_s5c_build_create_session_response(
     /* PDN Address Allocation */
     rsp->pdn_address_allocation.data = &sess->pdn.paa;
     if (sess->ipv4 && sess->ipv6)
-    {
-        sess->pdn.paa.pdn_type = GTP_PDN_TYPE_IPV4V6;
-        sess->pdn.paa.both.addr = sess->ipv4->addr[0];
-        sess->pdn.paa.both.len = IPV6_LEN;
-        memcpy(sess->pdn.paa.both.addr6, sess->ipv6->addr, IPV6_LEN);
         rsp->pdn_address_allocation.len = PAA_IPV4V6_LEN;
-    }
     else if (sess->ipv4)
-    {
-        sess->pdn.paa.pdn_type = GTP_PDN_TYPE_IPV4;
-        sess->pdn.paa.addr = sess->ipv4->addr[0];
         rsp->pdn_address_allocation.len = PAA_IPV4_LEN;
-    }
     else if (sess->ipv6)
-    {
-        sess->pdn.paa.pdn_type = GTP_PDN_TYPE_IPV6;
-        sess->pdn.paa.len = IPV6_LEN;
-        memcpy(sess->pdn.paa.addr6, sess->ipv6->addr, IPV6_LEN);
         rsp->pdn_address_allocation.len = PAA_IPV6_LEN;
-    }
     else
         d_assert(0, return CORE_ERROR, "No IP Pool");
     rsp->pdn_address_allocation.presence = 1;

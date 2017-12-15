@@ -137,12 +137,12 @@ ED2(c_uint8_t spare:5;,
 
         /* GTP_PDN_TYPE_BOTH */
         struct {
-            c_uint32_t addr;      
             struct {
                 c_uint8_t len;
                 c_uint8_t addr6[IPV6_LEN];
             };
-        } both;
+            c_uint32_t addr;      
+        } __attribute__ ((packed)) both;
     };
 } __attribute__ ((packed)) paa_t;
 

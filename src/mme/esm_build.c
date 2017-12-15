@@ -140,14 +140,14 @@ status_t esm_build_activate_default_bearer_context_request(
     }
     else if (pdn_address->pdn_type == GTP_PDN_TYPE_IPV6)
     {
-        memcpy(pdn_address->addr6, pdn->paa.addr6+IPV6_LEN/2, IPV6_LEN/2);
+        memcpy(pdn_address->addr6, pdn->paa.addr6+(IPV6_LEN>>1), IPV6_LEN>>1);
         pdn_address->length = NAS_PDN_ADDRESS_IPV6_LEN;
     }
     else if (pdn_address->pdn_type == GTP_PDN_TYPE_IPV4V6)
     {
         pdn_address->both.addr = pdn->paa.both.addr;
         memcpy(pdn_address->both.addr6,
-                pdn->paa.both.addr6+IPV6_LEN/2, IPV6_LEN/2);
+                pdn->paa.both.addr6+(IPV6_LEN>>1), IPV6_LEN>>1);
         pdn_address->length = NAS_PDN_ADDRESS_IPV4V6_LEN;
     }
     else
