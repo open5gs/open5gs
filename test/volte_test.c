@@ -371,7 +371,7 @@ static void volte_test2(abts_case *tc, void *data)
             "\"description\" : \"permit out udp from any 1-65535 to 10.200.136.98/32 23454\","
             "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd31\" } },"
           "{ \"direction\" : 1,"
-            "\"description\" : \"permit out udp from any 50020 to 10.200.136.98/32 1-65535\","
+            "\"description\" : \"permit out ip from 45.45.0.1 to any\","
             "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd30\" } },"
           "{ \"direction\" : 2,"
             "\"description\" : \"permit out udp from any 1-65535 to 10.200.136.98/32 23455\","
@@ -546,6 +546,15 @@ static void volte_test2(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+#if 0 /* Classification Rule Tester */
+    core_sleep(time_from_msec(300));
+
+    /* Send GTP-U ICMP Packet */
+    rv = testgtpu_enb_send("45.45.0.2", "45.45.0.1");
+
+    core_sleep(time_from_msec(300));
+#endif
 
     /********** Remove Subscriber in Database */
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456819"));

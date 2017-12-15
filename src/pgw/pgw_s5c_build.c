@@ -248,21 +248,21 @@ status_t pgw_s5c_build_create_bearer_request(
             j++; len += 2;
         }
 
-        if (pf->rule.ipv4.local.addr)
+        if (pf->rule.ip.local.addr[0])
         {
             tft.pf[i].component[j].type = 
                 GTP_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE;
-            tft.pf[i].component[j].ipv4.addr = pf->rule.ipv4.local.addr;
-            tft.pf[i].component[j].ipv4.mask = pf->rule.ipv4.local.mask;
+            tft.pf[i].component[j].ipv4.addr = pf->rule.ip.local.addr[0];
+            tft.pf[i].component[j].ipv4.mask = pf->rule.ip.local.mask[0];
             j++; len += 9;
         }
 
-        if (pf->rule.ipv4.remote.addr)
+        if (pf->rule.ip.remote.addr)
         {
             tft.pf[i].component[j].type = 
                 GTP_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE;
-            tft.pf[i].component[j].ipv4.addr = pf->rule.ipv4.remote.addr;
-            tft.pf[i].component[j].ipv4.mask = pf->rule.ipv4.remote.mask;
+            tft.pf[i].component[j].ipv4.addr = pf->rule.ip.remote.addr[0];
+            tft.pf[i].component[j].ipv4.mask = pf->rule.ip.remote.mask[0];
             j++; len += 9;
         }
 

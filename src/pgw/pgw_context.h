@@ -131,14 +131,14 @@ typedef struct _pgw_rule_t {
     c_uint8_t proto;
     struct {
         struct {
-            c_uint32_t addr;
-            c_uint32_t mask;
+            c_uint32_t addr[4];
+            c_uint32_t mask[4];
         } local;
         struct {
-            c_uint32_t addr;
-            c_uint32_t mask;
+            c_uint32_t addr[4];
+            c_uint32_t mask[4];
         } remote;
-    } ipv4;
+    } ip;
     struct {
         struct {
             c_uint16_t low;
