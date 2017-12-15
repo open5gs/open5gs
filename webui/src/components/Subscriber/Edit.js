@@ -151,10 +151,15 @@ const schema = {
             "type": "object",
             "title": "",
             "properties": {
-              "ipv4": {
+              "addr": {
                 "type": "string",
                 "title": "PGW IPv4 Address",
                 "format" : "ipv4"
+              },
+              "addr6": {
+                "type": "string",
+                "title": "PGW IPv6 Address",
+                "format" : "ipv6"
               },
             }
           },

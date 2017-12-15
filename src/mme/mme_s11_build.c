@@ -78,14 +78,34 @@ status_t mme_s11_build_create_session_request(
 
     memset(&pgw_s5c_teid, 0, sizeof(gtp_f_teid_t));
     pgw_s5c_teid.interface_type = GTP_F_TEID_S5_S8_PGW_GTP_C;
-    if (pdn->pgw.ipv4_addr)
+    if (pdn->pgw_ip.ipv4 || pdn->pgw_ip.ipv6)
     {
-        /* FIXME */
-        pgw_s5c_teid.ipv4 = 1;
-        pgw_s5c_teid.addr = pdn->pgw.ipv4_addr;
+        pgw_s5c_teid.ipv4 = pdn->pgw_ip.ipv4;
+        pgw_s5c_teid.ipv6 = pdn->pgw_ip.ipv6;
+        if (pgw_s5c_teid.ipv4 && pgw_s5c_teid.ipv6)
+        {
+            pgw_s5c_teid.both.addr = pdn->pgw_ip.both.addr;
+            memcpy(pgw_s5c_teid.both.addr6, pdn->pgw_ip.both.addr6,
+                    sizeof pdn->pgw_ip.both.addr6);
+            req->pgw_s5_s8_address_for_control_plane_or_pmip.len =
+                GTP_F_TEID_IPV4V6_LEN;
+        }
+        else if (pgw_s5c_teid.ipv4)
+        {
+            /* pdn->pgw_ip always uses both ip address memory */
+            pgw_s5c_teid.addr = pdn->pgw_ip.both.addr;
+            req->pgw_s5_s8_address_for_control_plane_or_pmip.len =
+                GTP_F_TEID_IPV4_LEN;
+        }
+        else if (pgw_s5c_teid.ipv6)
+        {
+            /* pdn->pgw_ip always uses both ip address memory */
+            memcpy(pgw_s5c_teid.addr6, pdn->pgw_ip.both.addr6,
+                    sizeof pdn->pgw_ip.both.addr6);
+            req->pgw_s5_s8_address_for_control_plane_or_pmip.len =
+                GTP_F_TEID_IPV6_LEN;
+        }
         req->pgw_s5_s8_address_for_control_plane_or_pmip.presence = 1;
-        req->pgw_s5_s8_address_for_control_plane_or_pmip.len =
-            GTP_F_TEID_IPV4_LEN;
         req->pgw_s5_s8_address_for_control_plane_or_pmip.data =
             &pgw_s5c_teid;
     }

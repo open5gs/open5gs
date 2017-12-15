@@ -226,10 +226,7 @@ typedef struct _pdn_t {
     bitrate_t       ambr; /* APN-AMBR */
 
     paa_t           paa;
-    struct {
-        c_uint32_t ipv4_addr;
-        c_uint8_t ipv6_addr[IPV6_LEN];
-    } pgw;
+    ip_t            pgw_ip;
 } pdn_t;
 
 CORE_DECLARE(c_int16_t) apn_build(c_int8_t *dst, c_int8_t *src, c_int16_t len);

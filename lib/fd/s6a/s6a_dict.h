@@ -13,6 +13,7 @@ extern "C" {
 #define S6A_AVP_CODE_CONTEXT_IDENTIFIER     (1423)
 #define S6A_AVP_CODE_ALL_APN_CONFIG_INC_IND (1428)
 #define S6A_AVP_CODE_APN_CONFIGURATION      (1430)
+#define S6A_AVP_CODE_MIP_HOME_AGENT_ADDRESS (334)
 
 #define S6A_RAT_TYPE_WLAN                   0
 #define S6A_RAT_TYPE_VIRTUAL                1
