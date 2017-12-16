@@ -190,7 +190,7 @@ static status_t decode_ipv6_header(
         }
     }
 
-    while(p < endp && !done)
+    while(p < endp)
     {
         struct ip6_ext *ext = (struct ip6_ext *)p;
         switch(nxt)
@@ -216,6 +216,9 @@ static status_t decode_ipv6_header(
                 break;     
 
         }
+        if (done)
+            break;
+
         nxt = ext->ip6e_nxt;
     }
 
