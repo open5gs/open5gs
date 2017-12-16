@@ -144,6 +144,10 @@
 #include <netinet/ip_icmp.h>
 #endif
 
+#if HAVE_NETINET_ICMP6_H
+#include <netinet/icmp6.h>
+#endif
+
 #if HAVE_NETINET_UDP_H
 #include <netinet/udp.h>
 #endif

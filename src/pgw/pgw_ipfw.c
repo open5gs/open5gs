@@ -241,6 +241,7 @@ pgw_bearer_t*pgw_bearer_find_by_packet(pkbuf_t *pkt)
     char buf[CORE_ADDRSTRLEN];
 
     d_assert(pkt, return NULL, "pkt is NULL");
+    d_assert(pkt->payload, return NULL, "pkt is NULL");
 
     ip_h = (struct ip *)pkt->payload;
     if (ip_h->ip_v == 4)

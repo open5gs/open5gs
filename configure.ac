@@ -265,7 +265,7 @@ AC_CHECK_HEADERS(netinet/ip.h netinet/ip6.h netinet/ip_icmp.h net/route.h,,,[[
 #endif
 ]])
 
-AC_CHECK_HEADERS(netinet/ip_icmp.h,,,[[
+AC_CHECK_HEADERS(netinet/ip_icmp.h netinet/icmp6.h,,,[[
 #include <sys/types.h>
 #if HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
