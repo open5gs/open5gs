@@ -1832,10 +1832,10 @@ status_t testgtpu_build_ping(
     gtp_header_t *gtp_h = NULL;
     ipsubnet_t src_ipsub, dst_ipsub;
     struct ip *ip_h = NULL;
-    struct icmphdr *icmp_h = NULL;
+    struct icmp6_hdr *icmp_h = NULL;
 
     struct ip6_hdr *ip6_h =  NULL;
-    struct icmphdr *icmp6_h = NULL;
+    struct icmp6_hdr *icmp6_h = NULL;
 
     if (test_only_control_plane) return CORE_OK;
 
@@ -1857,7 +1857,7 @@ status_t testgtpu_build_ping(
 
     if (dst_ipsub.family == AF_INET)
     {
-        gtp_h->length = htons(sizeof(struct ip) + sizeof(struct icmphdr));
+        gtp_h->length = htons(sizeof(struct ip) + sizeof(struct icmp6_hdr));
 
         ip_h = (struct ip *)(pkbuf->payload + GTPV1U_HEADER_LEN);
         ip_h->ip_v = 4;
@@ -1873,13 +1873,13 @@ status_t testgtpu_build_ping(
         ip_h->ip_sum = in_cksum(
                 (unsigned short *)ip_h, sizeof(struct ip));
         
-        icmp_h = (struct icmphdr *)
+        icmp_h = (struct icmp6_hdr *)
                 (pkbuf->payload + GTPV1U_HEADER_LEN + sizeof(struct ip));
-        icmp_h->type = 8;
-        icmp_h->un.echo.sequence = rand();
-        icmp_h->un.echo.id = rand();
-        icmp_h->checksum = in_cksum(
-                (unsigned short *)icmp_h, sizeof(struct icmphdr));
+        icmp_h->icmp6_type = 8;
+        icmp_h->icmp6_seq = rand();
+        icmp_h->icmp6_id = rand();
+        icmp_h->icmp6_cksum = in_cksum(
+                (unsigned short *)icmp_h, sizeof(struct icmp6_hdr));
     }
     else if (dst_ipsub.family == AF_INET6)
     {
@@ -1899,24 +1899,24 @@ status_t testgtpu_build_ping(
 #endif
 
         gtp_h->length = htons(sizeof(struct ip6_hdr) +
-                sizeof(struct icmphdr) + icmp6_datalen);
+                sizeof(struct icmp6_hdr) + icmp6_datalen);
 
         ip6_h = (struct ip6_hdr *)(pkbuf->payload + GTPV1U_HEADER_LEN);
         ip6_h->ip6_flow = htonl(0x600d5a92);
-        ip6_h->ip6_plen = htons(sizeof(struct icmphdr) + icmp6_datalen);
+        ip6_h->ip6_plen = htons(sizeof(struct icmp6_hdr) + icmp6_datalen);
         ip6_h->ip6_nxt = 58;  /* ICMPv6 */
         ip6_h->ip6_hlim = 64;
         memcpy(ip6_h->ip6_src.s6_addr, src_ipsub.sub, sizeof src_ipsub.sub);
         memcpy(ip6_h->ip6_dst.s6_addr, dst_ipsub.sub, sizeof dst_ipsub.sub);
         
         icmp6_h =
-            (struct icmphdr *)((c_uint8_t*)ip6_h + sizeof(struct ip6_hdr));
-        icmp6_h->type = 128;
-        icmp6_h->un.echo.sequence = rand();
-        icmp6_h->un.echo.id = rand();
+            (struct icmp6_hdr *)((c_uint8_t*)ip6_h + sizeof(struct ip6_hdr));
+        icmp6_h->icmp6_type = 128;
+        icmp6_h->icmp6_seq = rand();
+        icmp6_h->icmp6_id = rand();
 
 #if 0
-        icmp6_data = (char *)((c_uint8_t*)icmp6_h + sizeof(struct icmphdr));
+        icmp6_data = (char *)((c_uint8_t*)icmp6_h + sizeof(struct icmp6_hdr));
         memcpy(icmp6_data,
                 CORE_HEX(hexraw, strlen(hexraw), hexbuf), icmp6_datalen);
 #endif
@@ -1937,15 +1937,15 @@ status_t testgtpu_build_ping(
         *ptr = ip6_h->ip6_nxt;
         ptr += 1;
 
-        memcpy(ptr, icmp6_h, sizeof(struct icmphdr));
+        memcpy(ptr, icmp6_h, sizeof(struct icmp6_hdr));
 #if 0
-        ptr += sizeof(struct icmphdr);
+        ptr += sizeof(struct icmp6_hdr);
         memcpy(ptr, icmp6_data, icmp6_datalen);
 #endif
 
 #define IPV6_PSEUDO_HDR 48
-        icmp6_h->checksum = in_cksum((unsigned short *)cksumbuf,
-                IPV6_PSEUDO_HDR + sizeof(struct icmphdr) + icmp6_datalen);
+        icmp6_h->icmp6_cksum = in_cksum((unsigned short *)cksumbuf,
+                IPV6_PSEUDO_HDR + sizeof(struct icmp6_hdr) + icmp6_datalen);
     }
     else
         d_assert(0, return CORE_ERROR,);
