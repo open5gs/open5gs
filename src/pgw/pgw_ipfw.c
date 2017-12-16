@@ -166,7 +166,7 @@ static status_t decode_ipv6_header(
     endp = p + ntohs(ip6_h->ip6_plen);
 
     jp = p + sizeof(struct ip6_hbh);
-    while(p != endp) /* Jumbo Frame */
+    while(p == endp) /* Jumbo Frame */
     {
         c_uint32_t jp_len = 0;
         struct ip6_opt_jumbo *jumbo = NULL;
