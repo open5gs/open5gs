@@ -245,6 +245,16 @@ status_t context_parse_config()
                     self.parameter.prefer_ipv4 =
                         yaml_iter_bool(&parameter_iter);
                 }
+                else if (!strcmp(parameter_key, "multicast"))
+                {
+                    self.parameter.multicast =
+                        yaml_iter_bool(&parameter_iter);
+                }
+                else if (!strcmp(parameter_key, "no_slaac"))
+                {
+                    self.parameter.no_slaac =
+                        yaml_iter_bool(&parameter_iter);
+                }
                 else
                     d_warn("unknown key `%s`", parameter_key);
             }

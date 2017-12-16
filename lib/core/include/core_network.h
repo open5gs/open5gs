@@ -5,6 +5,10 @@
 #include "core_time.h"
 #include "core_list.h"
 
+#if HAVE_ARPA_INET_H
+#include <arpa/inet.h>
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */

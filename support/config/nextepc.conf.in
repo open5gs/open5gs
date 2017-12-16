@@ -10,60 +10,29 @@ logger:
         others: 1
 
 # 
-#  <IPv4>
+# parameter:
 #
 #  o Disable use of IPv4 addresses (only IPv6)
-#    Type : BOOLEAN
-#
-#  o IPv4 enabled
-#    parameter:
-#
-#  o IPv4 disabled
-#    parameter:
 #      no_ipv4: true
 #
-#
-#  <IPv6>
-#
 #  o Disable use of IPv6 addresses (only IPv4)
-#    Type : BOOLEAN
-#
-#  o IPv6 enabled
-#    parameter:
-#
-#  o IPv6 disabled
-#    parameter:
 #      no_ipv6: true
 #
-#
-#  <GTP Client Preference>
-#
 #  o Prefer IPv4 instead of IPv6 for estabishing new GTP connections.
-#    Type : BOOLEAN
-#    Default : IPv6 is attempted first.
-#
-#  o IPv6 preferred
-#    parameter:
-#
-#  o IPv4 preferred
-#    parameter:
 #      prefer_ipv4: true
 #
-#
-#  <EPC elements>
-#
 #  o Disable EPC elements (Only applicable `nextepc-epcd`)
-#    Type : BOOLEAN
-#
-#  o Enable HSS/SGW/PGW/PCRF
-#    parameter:
-#
-#  o Disable HSS/SGW/PGW/PCRF
-#    parameter:
 #      no_hss: true
 #      no_sgw: true
 #      no_pgw: true
 #      no_pcrf: true
+#
+#  o Enable Multicast traffic to the UE
+#      multicast: true
+#
+#  o Disable Stateless Address Autoconfiguration for IPv6
+#      no_slaac: true
+#
 #
 parameter:
 

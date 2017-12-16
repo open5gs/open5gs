@@ -56,6 +56,8 @@ typedef struct _context_t {
         int no_ipv4;
         int no_ipv6;
         int prefer_ipv4;
+        int multicast;
+        int no_slaac;
     } parameter;
 
 } context_t;
