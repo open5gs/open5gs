@@ -303,9 +303,9 @@ static status_t pgw_gtp_handle_slacc(c_uint32_t teid, pkbuf_t *recvbuf)
         struct ip6_hdr *ip6_h = (struct ip6_hdr *)recvbuf->payload;
         if (ip6_h->ip6_nxt == IPPROTO_ICMPV6)
         {
-            struct icmphdr *icmp_h =
-                (struct icmphdr *)(recvbuf->payload + sizeof(struct ip6_hdr));
-            if (icmp_h->type == ND_ROUTER_SOLICIT)
+            struct icmp6_hdr *icmp_h =
+                (struct icmp6_hdr *)(recvbuf->payload + sizeof(struct ip6_hdr));
+            if (icmp_h->icmp6_type == ND_ROUTER_SOLICIT)
             {
                 pgw_bearer_t *bearer = NULL;
                 pgw_sess_t *sess = NULL;
