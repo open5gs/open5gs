@@ -552,10 +552,11 @@ static void volte_test2(abts_case *tc, void *data)
 
     /* Send GTP-U ICMP Packet */
 #if 1
-    rv = testgtpu_enb_send("45.45.0.2", "45.45.0.1");
+    rv = testgtpu_build_ping(&sendbuf, "45.45.0.2", "45.45.0.1");
 #else
-    rv = testgtpu_enb_send("cafe::2", "cafe::1");
+    rv = testgtpu_build_ping(&sendbuf, "cafe::2", "cafe::1");
 #endif
+    rv = testgtpu_enb_send(sendbuf);
 
     core_sleep(time_from_msec(300));
 #endif
@@ -580,9 +581,7 @@ abts_suite *test_volte(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
-#if 0
     abts_run_test(suite, volte_test1, NULL);
-#endif
     abts_run_test(suite, volte_test2, NULL);
 
     return suite;
