@@ -150,7 +150,82 @@ status_t pgw_compile_packet_filter(pgw_rule_t *pgw_rule, c_int8_t *description)
     return CORE_OK;
 }
 
-pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
+static status_t decode_ipv6_header(
+        struct ip6_hdr *ip6_h, c_uint8_t *proto, c_uint16_t *hlen)
+{
+    int done = 0;
+    c_uint8_t *p, *jp, *endp;
+    c_uint8_t nxt;          /* Next Header */
+
+    d_assert(ip6_h, return CORE_ERROR,);
+    d_assert(proto, return CORE_ERROR,);
+    d_assert(hlen, return CORE_ERROR,);
+
+    nxt = ip6_h->ip6_nxt;
+    p = (c_uint8_t *)ip6_h + sizeof(*ip6_h);
+    endp = p + ntohs(ip6_h->ip6_plen);
+
+    jp = p + sizeof(struct ip6_hbh);
+    while(p != endp) /* Jumbo Frame */
+    {
+        c_uint32_t jp_len = 0;
+        struct ip6_opt_jumbo *jumbo = NULL;
+
+        d_assert(nxt == 0, return CORE_ERROR,);
+
+        jumbo = (struct ip6_opt_jumbo *)jp;
+        memcpy(&jp_len, jumbo->ip6oj_jumbo_len, sizeof(jp_len));
+        jp_len = ntohl(jp_len);
+        switch(jumbo->ip6oj_type)
+        {
+            case IP6OPT_JUMBO:
+                endp = p + jp_len;
+                break;
+            case 0:
+                jp++;
+                break;
+            default:
+                jp += (sizeof(struct ip6_opt) + jp_len);
+                break;
+        }
+    }
+
+    while(p < endp && !done)
+    {
+        struct ip6_ext *ext = (struct ip6_ext *)p;
+        switch(nxt)
+        {
+            case IPPROTO_HOPOPTS:
+            case IPPROTO_ROUTING:
+            case IPPROTO_DSTOPTS:
+            case 135: /* mobility */
+            case 139: /* host identity, experimental */
+            case 140: /* shim6 */
+            case 253: /* testing, experimental */
+            case 254: /* testing, experimental */
+                p += ((ext->ip6e_len << 3) + 8);
+                break;
+            case IPPROTO_FRAGMENT:
+                p += sizeof(struct ip6_frag);
+                break;
+            case IPPROTO_AH:
+                p += ((ext->ip6e_len + 2) << 2);
+                break;
+            default: /* Upper Layer */
+                done = 1;
+                break;     
+
+        }
+        nxt = ext->ip6e_nxt;
+    }
+
+    *proto = nxt;
+    *hlen = p - (c_uint8_t *)ip6_h;
+
+    return CORE_OK;
+}
+
+pgw_bearer_t*pgw_bearer_find_by_packet(pkbuf_t *pkt)
 {
     hash_index_t *hi = NULL;
     struct ip *ip_h =  NULL;
@@ -159,7 +234,7 @@ pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
     c_uint32_t *dst_addr = NULL;
     int addr_len = 0;
     c_uint8_t proto = 0;
-    int ip_hlen = 0;
+    c_uint16_t ip_hlen = 0;
     char buf[CORE_ADDRSTRLEN];
 
     d_assert(pkt, return NULL, "pkt is NULL");
@@ -182,8 +257,7 @@ pgw_bearer_t* pgw_bearer_find_by_packet(pkbuf_t *pkt)
         ip_h = NULL;
         ip6_h = (struct ip6_hdr *)pkt->payload;
 
-        proto = ip6_h->ip6_nxt;
-        ip_hlen = 40;  /* TODO */
+        decode_ipv6_header(ip6_h, &proto, &ip_hlen);
 
         src_addr = (c_uint32_t *)ip6_h->ip6_src.s6_addr;
         dst_addr = (c_uint32_t *)ip6_h->ip6_dst.s6_addr;
