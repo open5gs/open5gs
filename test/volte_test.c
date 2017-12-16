@@ -38,7 +38,7 @@ static void volte_test1(abts_case *tc, void *data)
             "\"priority_level\" : 8,"
             "\"pre_emption_vulnerability\" : 1,"
             "\"pre_emption_capability\" : 1 } },"
-        "\"type\" : 0 },"
+        "\"type\" : 2 },"
       "{ \"apn\" : \"internet.ng2.mnet\","
         "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd2c\" },"
         "\"pcc_rule\" : ["
@@ -78,7 +78,7 @@ static void volte_test1(abts_case *tc, void *data)
             "\"priority_level\" : 6,"
             "\"pre_emption_vulnerability\" : 1,"
             "\"pre_emption_capability\" : 1 } },"
-        "\"type\" : 0 }"
+        "\"type\" : 2 }"
       "],"
       "\"ambr\" : {"
         "\"downlink\" : { \"$numberLong\" : \"1024000\" },"
@@ -349,7 +349,7 @@ static void volte_test2(abts_case *tc, void *data)
             "\"priority_level\" : 8,"
             "\"pre_emption_vulnerability\" : 1,"
             "\"pre_emption_capability\" : 1 } },"
-        "\"type\" : 0 },"
+        "\"type\" : 2 },"
       "{ \"apn\" : \"internet\","
         "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd2c\" },"
         "\"pcc_rule\" : ["
@@ -371,13 +371,13 @@ static void volte_test2(abts_case *tc, void *data)
             "\"description\" : \"permit out udp from any 1-65535 to 10.200.136.98/32 23454\","
             "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd31\" } },"
           "{ \"direction\" : 1,"
-            "\"description\" : \"permit out udp from any 50020 to 10.200.136.98/32 1-65535\","
+            "\"description\" : \"permit out ip from 45.45.0.1 to any\","
             "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd30\" } },"
           "{ \"direction\" : 2,"
-            "\"description\" : \"permit out udp from any 1-65535 to 10.200.136.98/32 23455\","
+            "\"description\" : \"permit out udp from any 1-65535 to 10.200.136.98/24 23455\","
             "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd2f\" } },"
           "{ \"direction\" : 1,"
-            "\"description\" : \"permit out udp from any 50021 to 10.200.136.98/32 1-65535\","
+            "\"description\" : \"permit out ip from cafe::1 to any\","
             "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd2e\" } } ]"
         "} ],"
         "\"ambr\" : {"
@@ -389,7 +389,7 @@ static void volte_test2(abts_case *tc, void *data)
             "\"priority_level\" : 6,"
             "\"pre_emption_vulnerability\" : 1,"
             "\"pre_emption_capability\" : 1 } },"
-        "\"type\" : 0 }"
+        "\"type\" : 2 }"
       "],"
       "\"ambr\" : {"
         "\"downlink\" : { \"$numberLong\" : \"1024000\" },"
@@ -547,6 +547,19 @@ static void volte_test2(abts_case *tc, void *data)
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
+#if 0 /* TFT Rule Tester */
+    core_sleep(time_from_msec(300));
+
+    /* Send GTP-U ICMP Packet */
+#if 1
+    rv = testgtpu_enb_send("45.45.0.2", "45.45.0.1");
+#else
+    rv = testgtpu_enb_send("cafe::2", "cafe::1");
+#endif
+
+    core_sleep(time_from_msec(300));
+#endif
+
     /********** Remove Subscriber in Database */
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456819"));
     ABTS_PTR_NOTNULL(tc, doc);
@@ -567,7 +580,9 @@ abts_suite *test_volte(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
+#if 0
     abts_run_test(suite, volte_test1, NULL);
+#endif
     abts_run_test(suite, volte_test2, NULL);
 
     return suite;

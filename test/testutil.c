@@ -21,7 +21,7 @@
 
 #include "app.h"
 #include "context.h"
-#include "mme_context.h"
+#include "testpacket.h"
 #include "abts.h"
 #include "testutil.h"
 
@@ -40,6 +40,7 @@ void test_terminate(void)
 {
     d_trace_global_on();
 
+    testpacket_final();
     app_terminate();
     core_terminate();
 }
@@ -54,6 +55,7 @@ status_t test_initialize(char *config_path)
 
     core_initialize();
     rv = app_initialize(config_path, NULL);
+    testpacket_init();
     if (rv == CORE_OK)
     {
         while(1)

@@ -142,7 +142,7 @@ const Pdn = styled.div`
     margin: 0px 32px;
 
     .small_data {
-      width: 60px;
+      width: 50px;
       font-size: 12px;
       margin: 4px;
     }
@@ -279,7 +279,8 @@ const View = ({ visible, disableOnClickOutside, profile, onEdit, onDelete, onHid
                       </div>
                     }
                     <div className="large_data"></div>
-                    <div className="small_data">{(pdn.pgw || {}).ipv4}</div>
+                    <div className="small_data">{(pdn.pgw || {}).addr}</div>
+                    <div className="small_data">{(pdn.pgw || {}).addr6}</div>
                   </div>
                   {pdn['pcc_rule'] !== undefined &&
                     pdn.pcc_rule.map((pcc_rule, index) =>

@@ -5,6 +5,10 @@
 #include "core_time.h"
 #include "core_list.h"
 
+#if HAVE_ARPA_INET_H
+#include <arpa/inet.h>
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -157,6 +161,11 @@ CORE_DECLARE(status_t) core_sortaddrinfo(c_sockaddr_t **sa_list, int family);
     core_inet_ntop(__aDDR, buf, CORE_ADDRSTRLEN)
 #define CORE_PORT(__aDDR) \
     ntohs((__aDDR)->c_sa_port)
+
+#define INET_NTOP(src, dst) \
+    inet_ntop(AF_INET,(void *)(c_uintptr_t)(src),(dst),INET_ADDRSTRLEN)
+#define INET6_NTOP(src, dst) \
+    inet_ntop(AF_INET6,(void *)(src),(dst),INET6_ADDRSTRLEN)
 CORE_DECLARE(const char *)core_inet_ntop(void *addr, char *buf, int buflen);
 CORE_DECLARE(status_t) core_inet_pton(int family, const char *src, void *addr);
 

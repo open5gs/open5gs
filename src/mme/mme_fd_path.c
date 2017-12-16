@@ -744,33 +744,45 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                                 fd_mip6_agent_info, &avpch3), return );
                         if (avpch3)
                         {
-                            CHECK_FCT_DO( fd_avp_search_avp(avpch3,
-                                fd_mip_home_agent_address, &avpch4), return );
-                            if (avpch4)
+                            CHECK_FCT_DO( fd_msg_browse(avpch3,
+                                MSG_BRW_FIRST_CHILD, &avpch4, NULL), return );
+                            while(avpch4) 
                             {
-                                struct sockaddr_storage ss;
-                                struct sockaddr_in *sin;
+                                CHECK_FCT_DO( 
+                                        fd_msg_avp_hdr(avpch4, &hdr), return );
+                                switch(hdr->avp_code)
+                                {
+                                    case S6A_AVP_CODE_MIP_HOME_AGENT_ADDRESS:
+                                    {
+                                        c_sockaddr_t addr;
 
-                                CHECK_FCT_DO(
-                                    fd_msg_avp_hdr(avpch4, &hdr), return );
-                                CHECK_FCT_DO(
-                                    fd_msg_avp_value_interpret(avpch4, &ss),
-                                    return);
-                                sin = (struct sockaddr_in *)&ss;
-                                d_assert(sin, return, "Null param");
-                                if (sin->sin_family == AF_INET)
-                                {
-                                    pdn->pgw.ipv4_addr = sin->sin_addr.s_addr;
+                                        CHECK_FCT_DO(
+                                            fd_msg_avp_value_interpret(avpch4,
+                                                &addr.sa), return );
+                                        if (addr.c_sa_family == AF_INET)
+                                        {
+                                            pdn->pgw_ip.ipv4 = 1;
+                                            pdn->pgw_ip.both.addr = 
+                                                addr.sin.sin_addr.s_addr;
+                                        }
+                                        else if (addr.c_sa_family == AF_INET6)
+                                        {
+                                            pdn->pgw_ip.ipv6 = 1;
+                                            memcpy(pdn->pgw_ip.both.addr6,
+                                                addr.sin6.sin6_addr.s6_addr,
+                                                IPV6_LEN);
+                                        }
+                                        else
+                                            error++;
+                                        break;
+                                    }
+                                    default:
+                                        error++;
+                                        break; 
                                 }
-                                else
-                                {
-                                    d_error("Not implemented(%d)",
-                                            sin->sin_family);
-                                }
+                                fd_msg_browse(avpch4, MSG_BRW_NEXT,
+                                        &avpch4, NULL);
                             }
-                            else
-                                error++;
-
                         }
 
                         CHECK_FCT_DO( fd_avp_search_avp(avpch2, s6a_ambr, 

@@ -12,8 +12,6 @@
 #include "gtp_types.h"
 #include "gtp_message.h"
 
-#define MAX_NUM_OF_UE_POOL 16
-
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -41,6 +39,7 @@ typedef struct _pgw_context_t {
 
     sock_id         tun_sock;       /* PGW Tun Interace for UE */
     const char      *tun_ifname;    /* default : pgwtun */
+#define MAX_NUM_OF_UE_POOL 16
     struct {
         const char  *ipstr;         /* IP : "172.16.0.1", "cafe::1", ... */
         const char  *mask_or_numbits;   /* MASK : "16, 64, ... */
@@ -52,7 +51,11 @@ typedef struct _pgw_context_t {
     struct {
         c_uint32_t primary;
         c_uint32_t secondary;
-    } dns;
+    } old_dns;
+
+#define MAX_NUM_OF_DNS              2
+    const char      *dns[2];        /* Primary/Secondanry */
+    const char      *dns6[2];       /* Primary/Secondanry */
 
     list_t          sgw_s5c_list;  /* SGW GTPC Node List */
     list_t          sgw_s5u_list;  /* SGW GTPU Node List */
@@ -86,7 +89,8 @@ typedef struct _pgw_sess_t {
 
     /* APN Configuration */
     pdn_t           pdn;
-    pgw_ue_ip_t*    ue_ip;
+    pgw_ue_ip_t*    ipv4;
+    pgw_ue_ip_t*    ipv6;
 
     /* User-Lication-Info */
     tai_t           tai;
@@ -125,16 +129,21 @@ typedef struct _pgw_bearer_t {
 
 typedef struct _pgw_rule_t {
     c_uint8_t proto;
+ED5(c_uint8_t ipv4_local:1;,
+    c_uint8_t ipv4_remote:1;,
+    c_uint8_t ipv6_local:1;,
+    c_uint8_t ipv6_remote:1;,
+    c_uint8_t reserved:4;)
     struct {
         struct {
-            c_uint32_t addr;
-            c_uint32_t mask;
+            c_uint32_t addr[4];
+            c_uint32_t mask[4];
         } local;
         struct {
-            c_uint32_t addr;
-            c_uint32_t mask;
+            c_uint32_t addr[4];
+            c_uint32_t mask[4];
         } remote;
-    } ipv4;
+    } ip;
     struct {
         struct {
             c_uint16_t low;
@@ -169,7 +178,8 @@ CORE_DECLARE(gtp_node_t *)  pgw_sgw_add_by_message(gtp_message_t *message);
 CORE_DECLARE(pgw_sess_t *)  pgw_sess_add_by_message(gtp_message_t *message);
 
 CORE_DECLARE(pgw_sess_t*)   pgw_sess_add(
-        c_uint8_t *imsi, int imsi_len, c_int8_t *apn, c_uint8_t ebi);
+        c_uint8_t *imsi, int imsi_len, c_int8_t *apn,
+        c_uint8_t pdn_type, c_uint8_t ebi);
 CORE_DECLARE(status_t )     pgw_sess_remove(pgw_sess_t *sess);
 CORE_DECLARE(status_t )     pgw_sess_remove_all();
 CORE_DECLARE(pgw_sess_t*)   pgw_sess_find(index_t index);
@@ -211,6 +221,7 @@ CORE_DECLARE(pgw_pf_t*)     pgw_pf_next(pgw_pf_t *pf);
 CORE_DECLARE(status_t )     pgw_ue_pool_generate();
 CORE_DECLARE(pgw_ue_ip_t *) pgw_ue_ip_alloc(int family, const char *apn);
 CORE_DECLARE(status_t)      pgw_ue_ip_free(pgw_ue_ip_t *ip);
+CORE_DECLARE(c_uint8_t)     pgw_ue_ip_prefixlen(pgw_ue_ip_t *ue_ip);
 
 #ifdef __cplusplus
 }

@@ -40,7 +40,7 @@ const Subscriber = new Schema({
   pdn: [{
     apn: { $type: String, required: true },
     type: {
-      $type: Number, default: 0 // IPv4
+      $type: Number, default: 2 // IPv4, IPv6 and dualstack IPv4v6
     },
     qos: {
       qci: Number,
@@ -59,7 +59,8 @@ const Subscriber = new Schema({
       uplink: Schema.Types.Long
     },
     pgw: {
-      ipv4: String
+      addr: String,
+      addr6: String
     },
     pcc_rule: [{
       flow: [{

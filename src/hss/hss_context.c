@@ -2,6 +2,7 @@
 
 #include "core_debug.h"
 #include "core_lib.h"
+#include "core_network.h"
 
 #include <mongoc.h>
 #include <yaml.h>
@@ -566,12 +567,32 @@ status_t hss_db_subscription_data(
                         {
                             const char *child3_key =
                                 bson_iter_key(&child3_iter);
-                            if (!strcmp(child3_key, "ipv4") &&
+                            if (!strcmp(child3_key, "addr") &&
                                 BSON_ITER_HOLDS_UTF8(&child3_iter))
                             {
-                                utf8 = (char *)bson_iter_utf8(
-                                        &child3_iter, &length);
-                                pdn->pgw.ipv4_addr = inet_addr(utf8);
+                                ipsubnet_t ipsub;
+                                const char *v = 
+                                    bson_iter_utf8(&child3_iter, &length);
+                                rv = core_ipsubnet(&ipsub, v, NULL);
+                                if (rv == CORE_OK)
+                                {
+                                    pdn->pgw_ip.ipv4 = 1;
+                                    pdn->pgw_ip.both.addr = ipsub.sub[0];
+                                }
+                            }
+                            else if (!strcmp(child3_key, "addr6") &&
+                                BSON_ITER_HOLDS_UTF8(&child3_iter))
+                            {
+                                ipsubnet_t ipsub;
+                                const char *v = 
+                                    bson_iter_utf8(&child3_iter, &length);
+                                rv = core_ipsubnet(&ipsub, v, NULL);
+                                if (rv == CORE_OK)
+                                {
+                                    pdn->pgw_ip.ipv6 = 1;
+                                    memcpy(pdn->pgw_ip.both.addr6,
+                                            ipsub.sub, sizeof(ipsub.sub));
+                                }
                             }
                         }
                     }

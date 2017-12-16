@@ -345,6 +345,9 @@ typedef struct _mme_sess_t {
 
     c_uint8_t       pti;        /* Procedure Trasaction Identity */
 
+    /* PDN Connectivity Request */
+    nas_request_type_t request_type; 
+
     /* mme_bearer_first(sess) : Default Bearer Context */
     list_t          bearer_list;
 

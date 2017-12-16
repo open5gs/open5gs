@@ -10,60 +10,29 @@ logger:
         others: 1
 
 # 
-#  <IPv4>
+# parameter:
 #
 #  o Disable use of IPv4 addresses (only IPv6)
-#    Type : BOOLEAN
-#
-#  o IPv4 enabled
-#    parameter:
-#
-#  o IPv4 disabled
-#    parameter:
 #      no_ipv4: true
 #
-#
-#  <IPv6>
-#
 #  o Disable use of IPv6 addresses (only IPv4)
-#    Type : BOOLEAN
-#
-#  o IPv6 enabled
-#    parameter:
-#
-#  o IPv6 disabled
-#    parameter:
 #      no_ipv6: true
 #
-#
-#  <GTP Client Preference>
-#
 #  o Prefer IPv4 instead of IPv6 for estabishing new GTP connections.
-#    Type : BOOLEAN
-#    Default : IPv6 is attempted first.
-#
-#  o IPv6 preferred
-#    parameter:
-#
-#  o IPv4 preferred
-#    parameter:
 #      prefer_ipv4: true
 #
-#
-#  <EPC elements>
-#
 #  o Disable EPC elements (Only applicable `nextepc-epcd`)
-#    Type : BOOLEAN
-#
-#  o Enable HSS/SGW/PGW/PCRF
-#    parameter:
-#
-#  o Disable HSS/SGW/PGW/PCRF
-#    parameter:
 #      no_hss: true
 #      no_sgw: true
 #      no_pgw: true
 #      no_pcrf: true
+#
+#  o Enable Multicast traffic to the UE
+#      multicast: true
+#
+#  o Disable Stateless Address Autoconfiguration for IPv6
+#      no_slaac: true
+#
 #
 parameter:
 
@@ -103,8 +72,6 @@ mme:
 #      - addr: ::1
 #
     gtpc:
-      - addr: 127.0.0.1
-      - addr: ::1
 
 #
 #  <GUMMEI>
@@ -223,7 +190,6 @@ sgw:
     gtpc:
       addr:
         - 127.0.0.2
-        - fe80::2%@LO_DEV@
 
 #
 #  <GTP-U Server>>
@@ -246,44 +212,49 @@ pgw:
 #  o Only first node is attempted. others are ignored.
 #  o if HSS provide PGW addresss(per-UE), it overwrites configuration.
 #
-#  o Two PGW are defined. 127.0.0.3:2123 is attempted. [fe80::3%@LO_DEV@]:2123 is ignored.
+#  o Two PGW are defined. 127.0.0.1:2123 is attempted. [::1]:2123 is ignored.
 #    gtpc:
-#      - addr: 127.0.0.3
-#      - addr: fe80::3%@LO_DEV@
+#      - addr: 127.0.0.1
+#      - addr: ::1
 #
-#  o One PGW is defined. if prefer_ipv4 is not true, [fe80::2%@LO_DEV@] is selected.
+#  o One PGW is defined. if prefer_ipv4 is not true, [::1] is selected.
 #    gtpc:
 #      - addr: 
-#        - 127.0.0.3
-#        - fe80::3%@LO_DEV@
+#        - 127.0.0.1
+#        - ::1
 #
 #  ------------------------ PGW --------------------------
 #
 #  o Specify local addresses the GTP-C server must bind to
 #
-#  o GTP-C Server(127.0.0.3:2123, [fe80::3%@LO_DEV@]:2123)
+#  o GTP-C Server(127.0.0.1:2123, [::1]:2123)
 #    gtpc:
 #      addr:
-#        - 127.0.0.3
-#        - fe80::3%@LO_DEV@
+#        - 127.0.0.1
+#        - ::1
+#
+#  o Same configuration(127.0.0.1:2123, [::1]:2123) as below.
+#    gtpc:
+#      - addr: 127.0.0.1
+#      - addr: ::1
 #
     gtpc:
       addr:
-        - 127.0.0.3
-        - fe80::3%@LO_DEV@
+        - 127.0.0.1
+        - ::1
 
 #
 #  <GTP-U Server>>
 #
 #  o Specify local addresses the GTP-U server must bind to
 #
-#  o GTP-U Server(127.0.0.3:2152, [::3]:2152)
+#  o GTP-U Server(127.0.0.1:2152, [::1]:2152)
 #    gtpu:
-#      - addr: 127.0.0.3
-#      - addr: fe80::3%@LO_DEV@
+#      - addr: 127.0.0.1
+#      - addr: ::1
     gtpu:
-      - addr: 127.0.0.3
-      - addr: fe80::3%@LO_DEV@
+      - addr: 127.0.0.1
+      - addr: ::1
 
 #
 #  <UE Pool>
@@ -330,7 +301,6 @@ pgw:
     dns:
       - 8.8.8.8
       - 8.8.4.4
-    dns6:
       - 2001:4860:4860::8888
       - 2001:4860:4860::8844
 

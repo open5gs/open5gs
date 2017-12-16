@@ -4,10 +4,6 @@
 #include "core_list.h"
 #include "core_network.h"
 
-#if HAVE_ARPA_INET_H
-#include <arpa/inet.h>
-#endif
-
 #if HAVE_NETDB_H
 #include <netdb.h>
 #endif

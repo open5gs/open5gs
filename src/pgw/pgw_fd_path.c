@@ -39,7 +39,7 @@ void pgw_gx_send_ccr(gtp_xact_t *xact, pgw_sess_t *sess,
     struct session *session = NULL;
 
     d_assert(sess, return, "Null param");
-    d_assert(sess->ue_ip, return, "Null param");
+    d_assert(sess->ipv4 || sess->ipv6, return, "Null param");
 
     /* Create the random value to store with the session */
     pool_alloc_node(&pgw_gx_sess_pool, &mi);
@@ -136,12 +136,28 @@ void pgw_gx_send_ccr(gtp_xact_t *xact, pgw_sess_t *sess,
         CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
 
         /* Set Framed-IP-Address */
-        CHECK_FCT_DO( fd_msg_avp_new(gx_framed_ip_address, 0, &avp),
-                goto out );
-        val.os.data = (c_uint8_t*)&sess->ue_ip->addr[0];
-        val.os.len = sizeof(sess->ue_ip->addr[0]);
-        CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
-        CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
+        if (sess->ipv4)
+        {
+            CHECK_FCT_DO( fd_msg_avp_new(gx_framed_ip_address, 0, &avp),
+                    goto out );
+            val.os.data = (c_uint8_t*)&sess->ipv4->addr;
+            val.os.len = 4;
+            CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
+            CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp),
+                    goto out );
+        }
+
+        /* Set Framed-IP-Address-Prefix */
+        if (sess->ipv6)
+        {
+            CHECK_FCT_DO( fd_msg_avp_new(gx_framed_ipv6_prefix, 0, &avp),
+                    goto out );
+            val.os.data = (c_uint8_t*)&sess->pdn.paa;
+            val.os.len = PAA_IPV6_LEN;
+            CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
+            CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp),
+                    goto out );
+        }
 
         /* Set IP-Can-Type */
         CHECK_FCT_DO( fd_msg_avp_new(gx_ip_can_type, 0, &avp),

@@ -72,7 +72,7 @@ static void attach_test1(abts_case *tc, void *data)
                 "\"pre_emption_capability\" : 1"
               "} "
             "}, "
-            "\"type\" : 0"
+            "\"type\" : 2"
           "}"
         "],"
         "\"ambr\" : { "
@@ -112,7 +112,7 @@ static void attach_test1(abts_case *tc, void *data)
                 "\"pre_emption_capability\" : 1"
               "} "
             "}, "
-            "\"type\" : 0"
+            "\"type\" : 2"
           "}"
         "],"
         "\"ambr\" : { "
@@ -302,7 +302,16 @@ static void attach_test1(abts_case *tc, void *data)
     core_sleep(time_from_msec(300));
 
     /* Send GTP-U ICMP Packet */
-    rv = testgtpu_enb_send(inet_addr("45.45.0.2"), inet_addr("45.45.0.1"));
+    rv = testgtpu_enb_send("45.45.0.2", "45.45.0.1");
+
+    /* Receive GTP-U ICMP Packet */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rv = testgtpu_enb_read(gtpu, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    pkbuf_free(recvbuf);
+
+#if LINUX == 1
+    rv = testgtpu_enb_send("cafe::2", "cafe::1");
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     /* Receive GTP-U ICMP Packet */
@@ -310,6 +319,7 @@ static void attach_test1(abts_case *tc, void *data)
     rv = testgtpu_enb_read(gtpu, recvbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
+#endif
 
     /*****************************************************************
      * Attach Request : Known GUTI, Integrity Protected, MAC Matched
@@ -476,7 +486,7 @@ static void attach_test2(abts_case *tc, void *data)
                 "\"pre_emption_capability\" : 1"
               "} "
             "}, "
-            "\"type\" : 0"
+            "\"type\" : 2"
           "}"
         "],"
         "\"ambr\" : { "
@@ -759,7 +769,7 @@ static void attach_test3(abts_case *tc, void *data)
                 "\"pre_emption_capability\" : 1"
               "} "
             "}, "
-            "\"type\" : 0"
+            "\"type\" : 2"
           "}"
         "],"
         "\"ambr\" : { "

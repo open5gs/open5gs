@@ -224,6 +224,7 @@ ED3(c_uint8_t code:3;,
 #define GTP_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE 17
 #define GTP_PACKET_FILTER_IPV6_REMOTE_ADDRESS_TYPE 32
 #define GTP_PACKET_FILTER_IPV6_REMOTE_ADDRESS_PREFIX_LENGTH_TYPE 33
+#define GTP_PACKET_FILTER_IPV6_LOCAL_ADDRESS_TYPE 34
 #define GTP_PACKET_FILTER_IPV6_LOCAL_ADDRESS_PREFIX_LENGTH_TYPE 35
 #define GTP_PACKET_FILTER_SINGLE_LOCAL_PORT_TYPE 64
 #define GTP_PACKET_FILTER_LOCAL_PORT_RANGE_TYPE 65
@@ -240,6 +241,14 @@ ED3(c_uint8_t code:3;,
                     c_uint32_t addr;
                     c_uint32_t mask;
                 } ipv4;
+                struct {
+                    c_uint32_t addr[4];
+                    c_uint8_t prefixlen;
+                } ipv6;
+                struct {
+                    c_uint32_t addr[4];
+                    c_uint32_t mask[4];
+                } ipv6_mask;
                 struct {
                     c_uint16_t low;
                     c_uint16_t high;

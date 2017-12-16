@@ -121,7 +121,7 @@ typedef struct _paa_t {
 /* 8.34 PDN Type  */
 #define GTP_PDN_TYPE_IPV4                               1
 #define GTP_PDN_TYPE_IPV6                               2
-#define GTP_PDN_TYPE_BOTH                               3
+#define GTP_PDN_TYPE_IPV4V6                             3
 #define GTP_PDN_TYPE_NON_IP                             4
 ED2(c_uint8_t spare:5;,
     c_uint8_t pdn_type:3;)
@@ -137,13 +137,12 @@ ED2(c_uint8_t spare:5;,
 
         /* GTP_PDN_TYPE_BOTH */
         struct {
-            c_uint32_t addr;      
-
             struct {
                 c_uint8_t len;
                 c_uint8_t addr6[IPV6_LEN];
             };
-        } both;
+            c_uint32_t addr;      
+        } __attribute__ ((packed)) both;
     };
 } __attribute__ ((packed)) paa_t;
 
@@ -217,20 +216,17 @@ typedef struct _pcc_rule_t {
 typedef struct _pdn_t {
     c_uint32_t      context_identifier;
     c_int8_t        apn[MAX_APN_LEN+1];
-#define S6A_PDN_TYPE_IPV4                       0
-#define S6A_PDN_TYPE_IPV6                       1
-#define S6A_PDN_TYPE_IPV4_AND_IPV6              2
-#define S6A_PDN_TYPE_IPV4_OR_IPV6               3
+#define HSS_PDN_TYPE_IPV4                       0
+#define HSS_PDN_TYPE_IPV6                       1
+#define HSS_PDN_TYPE_IPV4V6                     2
+#define HSS_PDN_TYPE_IPV4_OR_IPV6               3
     c_int8_t        pdn_type;
 
     qos_t           qos;
     bitrate_t       ambr; /* APN-AMBR */
 
     paa_t           paa;
-    struct {
-        c_uint32_t ipv4_addr;
-        c_uint8_t ipv6_addr[IPV6_LEN];
-    } pgw;
+    ip_t            pgw_ip;
 } pdn_t;
 
 CORE_DECLARE(c_int16_t) apn_build(c_int8_t *dst, c_int8_t *src, c_int16_t len);
@@ -244,10 +240,12 @@ CORE_DECLARE(c_int16_t) apn_parse(c_int8_t *dst, c_int8_t *src, c_int16_t len);
  * RFC 1661 [102] */
 #define PCO_PPP_FOR_USE_WITH_IP_PDP_TYPE_OR_IP_PDN_TYPE 0
 
-#define PCO_ID_INTERNET_PROTOCOL_CONTROL_PROTOCOL 0x8021
-#define PCO_ID_CHALLENGE_HANDSHAKE_AUTHENTICATION_PROTOCOL 0xc223
-#define PCO_ID_DNS_SERVER_IPV4_ADDRESS_REQUEST 0x000d
-#define PCO_ID_IP_ADDRESS_ALLOCATION_VIA_NAS_SIGNALLING 0x000a
+#define PCO_ID_INTERNET_PROTOCOL_CONTROL_PROTOCOL           0x8021
+#define PCO_ID_CHALLENGE_HANDSHAKE_AUTHENTICATION_PROTOCOL  0xc223
+#define PCO_ID_DNS_SERVER_IPV6_ADDRESS_REQUEST              0x0003
+#define PCO_ID_DNS_SERVER_IPV4_ADDRESS_REQUEST              0x000d
+#define PCO_ID_IP_ADDRESS_ALLOCATION_VIA_NAS_SIGNALLING     0x000a
+#define PCO_ID_IPV4_LINK_MTU_REQUEST                        0x0010
 typedef struct _pco_ipcp_options_t {
     c_uint8_t type;
     c_uint8_t len;

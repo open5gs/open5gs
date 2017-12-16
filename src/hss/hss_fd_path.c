@@ -3,6 +3,7 @@
 #include "core_debug.h"
 #include "core_lib.h"
 #include "core_sha2.h"
+#include "core_network.h"
 
 #include "fd_lib.h"
 #include "s6a_dict.h"
@@ -205,6 +206,7 @@ static int hss_s6a_ulr_cb( struct msg **msg, struct avp *avp,
     c_uint32_t result_code = 0;
     s6a_subscription_data_t subscription_data;
     struct sockaddr_in sin;
+    struct sockaddr_in6 sin6;
 
     d_assert(msg, return EINVAL,);
 	
@@ -412,18 +414,35 @@ static int hss_s6a_ulr_cb( struct msg **msg, struct avp *avp,
                     MSG_BRW_LAST_CHILD, eps_subscribed_qos_profile) );
 
                 /* Set MIP6-Agent-Info */
-                if (pdn->pgw.ipv4_addr)
+                if (pdn->pgw_ip.ipv4 || pdn->pgw_ip.ipv6)
                 {
                     CHECK_FCT( fd_msg_avp_new(fd_mip6_agent_info, 0,
                                 &mip6_agent_info) );
-                    CHECK_FCT( fd_msg_avp_new(fd_mip_home_agent_address, 0,
-                                &mip_home_agent_address) );
-                    sin.sin_family = AF_INET;
-                    sin.sin_addr.s_addr = pdn->pgw.ipv4_addr;
-                    CHECK_FCT( fd_msg_avp_value_encode (
-                                &sin, mip_home_agent_address ) );
-                    CHECK_FCT( fd_msg_avp_add(mip6_agent_info,
+
+                    if (pdn->pgw_ip.ipv4)
+                    {
+                        CHECK_FCT( fd_msg_avp_new(fd_mip_home_agent_address, 0,
+                                    &mip_home_agent_address) );
+                        sin.sin_family = AF_INET;
+                        sin.sin_addr.s_addr = pdn->pgw_ip.both.addr;
+                        CHECK_FCT( fd_msg_avp_value_encode (
+                                    &sin, mip_home_agent_address ) );
+                        CHECK_FCT( fd_msg_avp_add(mip6_agent_info,
                                 MSG_BRW_LAST_CHILD, mip_home_agent_address) );
+                    }
+
+                    if (pdn->pgw_ip.ipv6)
+                    {
+                        CHECK_FCT( fd_msg_avp_new(fd_mip_home_agent_address, 0,
+                                    &mip_home_agent_address) );
+                        sin6.sin6_family = AF_INET6;
+                        memcpy(sin6.sin6_addr.s6_addr, pdn->pgw_ip.both.addr6,
+                                sizeof pdn->pgw_ip.both.addr6);
+                        CHECK_FCT( fd_msg_avp_value_encode (
+                                    &sin6, mip_home_agent_address ) );
+                        CHECK_FCT( fd_msg_avp_add(mip6_agent_info,
+                                MSG_BRW_LAST_CHILD, mip_home_agent_address) );
+                    }
 
                     CHECK_FCT( fd_msg_avp_add(apn_configuration, 
                             MSG_BRW_LAST_CHILD, mip6_agent_info) );

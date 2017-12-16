@@ -198,8 +198,9 @@ status_t sock_bind(sock_id id, c_sockaddr_t *addr)
 
     if (bind(sock->fd, &addr->sa, addrlen) != 0)
     {
-        d_error("socket bind [%s]:%d failed(%d:%s)",
-                CORE_ADDR(addr, buf), CORE_PORT(addr), errno, strerror(errno));
+        d_error("socket bind(%d) [%s]:%d failed(%d:%s)",
+                addr->c_sa_family, CORE_ADDR(addr, buf), CORE_PORT(addr),
+                errno, strerror(errno));
         return CORE_ERROR;
     }
 
