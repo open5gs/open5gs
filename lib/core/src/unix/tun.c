@@ -352,8 +352,8 @@ status_t tun_set_ip(sock_id id, ipsubnet_t *gw, ipsubnet_t *sub)
 
     if (gw->family == AF_INET)
         rv = tun_set_ipv4(id, gw, sub);
-    else if (gw->family == AF_INET6)
 #if 0
+    else if (gw->family == AF_INET6)
         rv = tun_set_ipv6(id, gw, sub);
 #endif
     else
