@@ -13,7 +13,7 @@
 
 #define PGW_GTP_HANDLED     1
 
-c_uint16_t pgw_in_cksum(c_uint16_t *addr, int len);
+c_uint16_t in_cksum(c_uint16_t *addr, int len);
 static status_t pgw_gtp_handle_multicast(pkbuf_t *recvbuf);
 static status_t pgw_gtp_handle_slacc(c_uint32_t teid, pkbuf_t *recvbuf);
 static status_t pgw_gtp_send_to_bearer(pgw_bearer_t *bearer, pkbuf_t *sendbuf);
@@ -367,12 +367,12 @@ static status_t pgw_gtp_send_router_advertisement(pgw_sess_t *sess)
 {
     status_t rv;
     pkbuf_t *pkbuf = NULL;
-    c_uint8_t *p = NULL;
     pgw_bearer_t *bearer = NULL;
     ipsubnet_t src_ipsub, dst_ipsub;
-    struct ip6_hdr *ip6_h =  NULL;
     c_uint16_t plen = 0;
     c_uint8_t nxt = 0;
+    c_uint8_t *p = NULL;
+    struct ip6_hdr *ip6_h =  NULL;
     struct nd_router_advert *advert_h = NULL;
     struct nd_opt_prefix_info *prefix = NULL;
 
@@ -382,15 +382,20 @@ static status_t pgw_gtp_send_router_advertisement(pgw_sess_t *sess)
 
     pkbuf = pkbuf_alloc(GTPV1U_HEADER_LEN, 200);
     d_assert(pkbuf, return CORE_ERROR,);
-    pkbuf->len = 88;
+    pkbuf->len = sizeof *ip6_h + sizeof *advert_h + sizeof *prefix;
+    memset(pkbuf->payload, 0, pkbuf->len);
+
+    p = (c_uint8_t *)pkbuf->payload;
+    ip6_h = (struct ip6_hdr *)p;
+    advert_h = (struct nd_router_advert *)((c_uint8_t *)ip6_h + sizeof *ip6_h);
+    prefix = (struct nd_opt_prefix_info *)
+        ((c_uint8_t*)advert_h + sizeof *advert_h);
 
     rv = core_ipsubnet(&src_ipsub, "fe80::1", NULL);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
     rv = core_ipsubnet(&dst_ipsub, "ff02::1", NULL);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
-    advert_h = (struct nd_router_advert *)(pkbuf->payload + sizeof *ip6_h);
-    memset(advert_h, 0, sizeof *advert_h);
     advert_h->nd_ra_type = ND_ROUTER_ADVERT;
     advert_h->nd_ra_code = 0;
     advert_h->nd_ra_curhoplimit = 64;
@@ -399,35 +404,29 @@ static status_t pgw_gtp_send_router_advertisement(pgw_sess_t *sess)
     advert_h->nd_ra_reachable = 0;
     advert_h->nd_ra_retransmit = 0;
 
-    prefix = (struct nd_opt_prefix_info *)
-        ((c_uint8_t*)advert_h + sizeof *advert_h);
-    memset(prefix, 0, sizeof *prefix);
     prefix->nd_opt_pi_type = ND_OPT_PREFIX_INFORMATION;
     prefix->nd_opt_pi_len = 4; /* 32bytes */
-    prefix->nd_opt_pi_prefix_len = 64;
+    prefix->nd_opt_pi_prefix_len = pgw_ue_ip_prefixlen(sess->ipv6);
     prefix->nd_opt_pi_flags_reserved =
         ND_OPT_PI_FLAG_ONLINK|ND_OPT_PI_FLAG_AUTO;
     prefix->nd_opt_pi_valid_time = htonl(0xffffffff); /* Infinite */
     prefix->nd_opt_pi_preferred_time = htonl(0xffffffff); /* Infinite */
-    memcpy(prefix->nd_opt_pi_prefix.s6_addr, sess->ipv6->addr, IPV6_LEN/2);
+    memcpy(prefix->nd_opt_pi_prefix.s6_addr,
+            sess->ipv6->addr, prefix->nd_opt_pi_prefix_len);
 
     /* For IPv6 Pseudo-Header */
-    plen = htons(48);
+    plen = htons(sizeof *advert_h + sizeof *prefix);
     nxt = IPPROTO_ICMPV6;
 
-    p = (c_uint8_t *)pkbuf->payload;
-    memset(p, 0, sizeof *ip6_h);
     memcpy(p, src_ipsub.sub, sizeof src_ipsub.sub);
     p += sizeof src_ipsub.sub;
     memcpy(p, dst_ipsub.sub, sizeof dst_ipsub.sub);
     p += sizeof dst_ipsub.sub;
     p += 2; memcpy(p, &plen, 2); p += 2;
     p += 3; *p = nxt; p += 1;
-    advert_h->nd_ra_cksum = pgw_in_cksum(
+    advert_h->nd_ra_cksum = in_cksum(
             (c_uint16_t *)pkbuf->payload, pkbuf->len);
 
-    ip6_h = (struct ip6_hdr *)pkbuf->payload;
-    memset(ip6_h, 0, sizeof *ip6_h);
     ip6_h->ip6_flow = htonl(0x60000001);
     ip6_h->ip6_plen = plen;
     ip6_h->ip6_nxt = nxt;  /* ICMPv6 */
@@ -442,7 +441,7 @@ static status_t pgw_gtp_send_router_advertisement(pgw_sess_t *sess)
     return rv;
 }
 
-c_uint16_t pgw_in_cksum(c_uint16_t *addr, int len)
+c_uint16_t in_cksum(c_uint16_t *addr, int len)
 {
     int nleft = len;
     c_uint32_t sum = 0;
