@@ -7,13 +7,9 @@ logger:
         others: 1
 
 parameter:
-#   no_ipv4: true
-#   no_ipv6: true
-#   prefer_ipv4: true
 
 sgw:
     gtpc:
       addr:
         - 127.0.0.2
-        - fe80::2%@LO_DEV@
     gtpu:

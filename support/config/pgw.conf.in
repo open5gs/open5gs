@@ -3,33 +3,28 @@
 db_uri: mongodb://localhost/nextepc
 
 logger:
-    file: @LOCALSTATE_DIR@/log/nextepc/pgw.log
+    file: @LOCALSTATE_DIR@/log/nextepc/nextepc.log
     trace: 
         diameter: 1
         gtp: 1
         others: 1
 
 parameter:
-#   no_ipv4: true
-#   no_ipv6: true
-#   prefer_ipv4: true
 
 pgw:
     freeDiameter: pgw.conf
     gtpc:
       addr:
-        - 127.0.0.3
-        - fe80::3%@LO_DEV@
+        - 127.0.0.1
+        - ::1
     gtpu:
-      - addr: 127.0.0.3
-      - addr: fe80::3%@LO_DEV@
-    ue_network:
-      addr: 45.45.0.1/16
-      dev: pgwtun
+      - addr: 127.0.0.1
+      - addr: ::1
+    ue_pool:
+      - addr: 45.45.0.1/16
+      - addr: cafe::1/64
     dns:
       - 8.8.8.8
       - 8.8.4.4
-    dns6:
       - 2001:4860:4860::8888
       - 2001:4860:4860::8844
-
