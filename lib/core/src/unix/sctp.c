@@ -217,10 +217,7 @@ int core_sctp_recvmsg(sock_id id, void *msg, size_t len,
             return size;
         }
 
-        if (!(flags & MSG_NOTIFICATION)) 
-            break;
-
-        if (flags & MSG_EOR) 
+        if (flags & MSG_NOTIFICATION)
         {
             union sctp_notification *not = (union sctp_notification *)msg;
 
@@ -261,11 +258,15 @@ int core_sctp_recvmsg(sock_id id, void *msg, size_t len,
                     break;
             }
         }
+        else if (flags & MSG_EOR)
+        {
+            break;
+        }
         else
         {
-            d_error("Not engough buffer. Need more recv : 0x%x", flags);
-            return CORE_ERROR;
+            return CORE_SCTP_EAGAIN;
         }
+        
     } while(1);
 
     if (ppid)

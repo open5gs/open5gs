@@ -72,6 +72,7 @@ status_t s1ap_recv(sock_id id, pkbuf_t *pkbuf)
     size = core_sctp_recvmsg(id, pkbuf->payload, MAX_SDU_LEN, NULL, NULL, NULL);
     if (size <= 0)
     {
+        printf("asdklfjaklsdjfasdf\n");
         return CORE_ERROR;
     }
 
@@ -147,6 +148,10 @@ int s1ap_recv_handler(sock_id sock, void *data)
     {
         pkbuf_free(pkbuf);
 
+        if (size == CORE_SCTP_EAGAIN)
+        {
+            return 0;
+        }
         if (size == CORE_SCTP_REMOTE_CLOSED)
         {
             addr = core_calloc(1, sizeof(c_sockaddr_t));
@@ -169,6 +174,7 @@ int s1ap_recv_handler(sock_id sock, void *data)
             d_error("core_sctp_recvmsg(%d) failed(%d:%s)",
                     size, errno, strerror(errno));
         }
+
         return 0;
     }
 
