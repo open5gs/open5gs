@@ -342,29 +342,20 @@ status_t tun_set_ipv6(sock_id id, ipsubnet_t *ipaddr, ipsubnet_t *ipsub)
 	return CORE_OK;
 }
 
-status_t tun_set_ip(sock_id id, const char *ipstr, const char *mask_or_numbits)
+status_t tun_set_ip(sock_id id, ipsubnet_t *gw, ipsubnet_t *sub)
 {
-    ipsubnet_t ipaddr, ipsub;
     status_t rv;
 
     d_assert(id, return CORE_ERROR,);
-    d_assert(ipstr, return CORE_ERROR,);
-    d_assert(mask_or_numbits, return CORE_ERROR,);
+    d_assert(gw, return CORE_ERROR,);
+    d_assert(sub, return CORE_ERROR,);
 
-    rv = core_ipsubnet(&ipaddr, ipstr, NULL);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
-
-    rv = core_ipsubnet(&ipsub, ipstr, mask_or_numbits);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
-
-    if (ipsub.family == AF_INET)
-    {
-        rv = tun_set_ipv4(id, &ipaddr, &ipsub);
-    }
+    if (gw->family == AF_INET)
+        rv = tun_set_ipv4(id, gw, sub);
+    else if (gw->family == AF_INET6)
+        rv = tun_set_ipv6(id, gw, sub);
     else
-    {
-        rv = tun_set_ipv6(id, &ipaddr, &ipsub);
-    }
+        d_assert(0, return CORE_ERROR,);
 
     return rv;
 }

@@ -15,7 +15,7 @@
 
 c_uint16_t in_cksum(c_uint16_t *addr, int len);
 static status_t pgw_gtp_handle_multicast(pkbuf_t *recvbuf);
-static status_t pgw_gtp_handle_slacc(c_uint32_t teid, pkbuf_t *recvbuf);
+static status_t pgw_gtp_handle_slacc(pgw_sess_t *sess, pkbuf_t *recvbuf);
 static status_t pgw_gtp_send_to_bearer(pgw_bearer_t *bearer, pkbuf_t *sendbuf);
 static status_t pgw_gtp_send_router_advertisement(pgw_sess_t *sess);
 
@@ -102,6 +102,13 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
     pkbuf_t *pkbuf = NULL;
     c_uint32_t size = GTPV1U_HEADER_LEN;
     gtp_header_t *gtp_h = NULL;
+    struct ip *ip_h = NULL;
+
+    c_uint32_t teid;
+    pgw_bearer_t *bearer = NULL;
+    pgw_sess_t *sess = NULL;
+    pgw_subnet_t *subnet = NULL;
+    pgw_dev_t *dev = NULL;
 
     d_assert(sock, return -1, "Null param");
 
@@ -119,23 +126,32 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
     d_trace_hex(50, pkbuf->payload, pkbuf->len);
 
 
-    d_assert(pkbuf->payload, return 0,);
+    d_assert(pkbuf->payload, goto cleanup,);
     gtp_h = pkbuf->payload;
     if (gtp_h->flags & GTPU_FLAGS_S) size += 4;
+    teid = ntohl(gtp_h->teid);
 
     /* Remove GTP header and send packets to TUN interface */
-    if (pkbuf_header(pkbuf, -size) != CORE_OK)
-    {
-        d_error("pkbuf_header error");
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, goto cleanup,);
 
-        pkbuf_free(pkbuf);
-        return -1;
-    }
+    ip_h = pkbuf->payload;
+    d_assert(ip_h, goto cleanup,);
+
+    bearer = pgw_bearer_find_by_pgw_s5u_teid(teid);
+    d_assert(bearer, goto cleanup,);
+    sess = bearer->sess;
+    d_assert(sess, goto cleanup,);
+
+    if (ip_h->ip_v == 4 && sess->ipv4)
+        subnet = sess->ipv4->subnet;
+    else if (ip_h->ip_v == 6 && sess->ipv6)
+        subnet = sess->ipv6->subnet;
+    d_assert(subnet, goto cleanup,);
 
     /* Check IPv6 */
-    if (context_self()->parameter.no_slaac == 0)
+    if (context_self()->parameter.no_slaac == 0 && ip_h->ip_v == 6)
     {
-        rv = pgw_gtp_handle_slacc(ntohl(gtp_h->teid), pkbuf);
+        rv = pgw_gtp_handle_slacc(sess, pkbuf);
         if (rv == PGW_GTP_HANDLED)
         {
             pkbuf_free(pkbuf);
@@ -144,11 +160,12 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
         d_assert(rv == CORE_OK,, "pgw_gtp_handle_slacc() failed");
     }
 
-    if (sock_write(pgw_self()->tun_sock, pkbuf->payload, pkbuf->len) <= 0)
-    {
-        d_error("Can not send packets to tuntap");
-    }
+    dev = subnet->dev;
+    d_assert(dev, goto cleanup,);
+    if (sock_write(dev->sock, pkbuf->payload, pkbuf->len) <= 0)
+        d_error("sock_write() failed");
 
+cleanup:
     pkbuf_free(pkbuf);
     return 0;
 }
@@ -156,9 +173,8 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
 status_t pgw_gtp_open()
 {
     status_t rv;
-#if 0
-    int i;
-#endif
+    pgw_dev_t *dev = NULL;
+    pgw_subnet_t *subnet = NULL;
     int rc;
 
     rv = gtp_server_list(&pgw_self()->gtpc_list, _gtpv2_c_recv_cb);
@@ -195,11 +211,22 @@ status_t pgw_gtp_open()
      */
 
     /* Open Tun interface */
-    rc = tun_open(&pgw_self()->tun_sock, (char *)pgw_self()->tun_ifname, 0);
-    if (rc != 0)
+    for (dev = pgw_dev_first(); dev; dev = pgw_dev_next(dev))
     {
-        d_error("Can not open tun(dev : %s)", pgw_self()->tun_ifname);
-        return CORE_ERROR;
+        rc = tun_open(&dev->sock, (char *)dev->ifname, 0);
+        if (rc != 0)
+        {
+            d_error("tun_open(dev:%s) failed", dev->ifname);
+            return CORE_ERROR;
+        }
+
+        rc = sock_register(dev->sock, _gtpv1_tun_recv_cb, NULL);
+        if (rc != 0)
+        {
+            d_error("sock_register(dev:%s) failed", dev->ifname);
+            sock_delete(dev->sock);
+            return CORE_ERROR;
+        }
     }
 
     /* 
@@ -213,31 +240,15 @@ status_t pgw_gtp_open()
 
     /* Set P-to-P IP address with Netmask
      * Note that Linux will skip this configuration */
-#if 0
-    for (i = 0; i < pgw_self()->num_of_ue_pool; i++)
+    for (subnet = pgw_subnet_first(); subnet; subnet = pgw_subnet_next(subnet))
     {
-        rc = tun_set_ip(pgw_self()->tun_sock, 
-                pgw_self()->ue_pool[i].ipstr,
-                pgw_self()->ue_pool[i].mask_or_numbits);
+        d_assert(subnet->dev, return CORE_ERROR,);
+        rc = tun_set_ip(subnet->dev->sock, &subnet->gw, &subnet->sub);
         if (rc != 0)
         {
-            d_error("Can not configure tun(dev : %s for %s/%s)",
-                    pgw_self()->tun_ifname,
-                    pgw_self()->ue_pool[i].ipstr,
-                    pgw_self()->ue_pool[i].mask_or_numbits);
-
+            d_error("tun_set_ip(dev:%s) failed", subnet->dev->ifname);
             return CORE_ERROR;
         }
-    }
-#endif
-
-    rc = sock_register(pgw_self()->tun_sock, _gtpv1_tun_recv_cb, NULL);
-    if (rc != 0)
-    {
-        d_error("Can not register tun(dev : %s)",
-                pgw_self()->tun_ifname);
-        sock_delete(pgw_self()->tun_sock);
-        return CORE_ERROR;
     }
 
     return CORE_OK;
@@ -245,13 +256,16 @@ status_t pgw_gtp_open()
 
 status_t pgw_gtp_close()
 {
+    pgw_dev_t *dev = NULL;
+
     sock_delete_list(&pgw_self()->gtpc_list);
     sock_delete_list(&pgw_self()->gtpc_list6);
 
     sock_delete_list(&pgw_self()->gtpu_list);
     sock_delete_list(&pgw_self()->gtpu_list6);
 
-    sock_delete(pgw_self()->tun_sock);
+    for (dev = pgw_dev_first(); dev; dev = pgw_dev_next(dev))
+        sock_delete(dev->sock);
 
     return CORE_OK;
 }
@@ -294,11 +308,12 @@ static status_t pgw_gtp_handle_multicast(pkbuf_t *recvbuf)
     return CORE_OK;
 }
 
-static status_t pgw_gtp_handle_slacc(c_uint32_t teid, pkbuf_t *recvbuf)
+static status_t pgw_gtp_handle_slacc(pgw_sess_t *sess, pkbuf_t *recvbuf)
 {
     status_t rv;
     struct ip *ip_h = NULL;
 
+    d_assert(sess, return CORE_ERROR,);
     d_assert(recvbuf, return CORE_ERROR,);
     d_assert(recvbuf->payload, return CORE_ERROR,);
     ip_h = (struct ip *)recvbuf->payload;
@@ -311,15 +326,6 @@ static status_t pgw_gtp_handle_slacc(c_uint32_t teid, pkbuf_t *recvbuf)
                 (struct icmp6_hdr *)(recvbuf->payload + sizeof(struct ip6_hdr));
             if (icmp_h->icmp6_type == ND_ROUTER_SOLICIT)
             {
-                pgw_bearer_t *bearer = NULL;
-                pgw_sess_t *sess = NULL;
-
-                bearer = pgw_bearer_find_by_pgw_s5u_teid(teid);
-                d_assert(teid, return CORE_ERROR,
-                        "cannot find teid = %d", teid);
-                sess = bearer->sess;
-                d_assert(sess, return CORE_ERROR,);
-
                 if (sess->ipv6)
                 {
                     rv = pgw_gtp_send_router_advertisement(sess);

@@ -22,8 +22,9 @@ extern "C" {
 typedef struct _gtp_node_t gtp_node_t;
 
 typedef struct _pgw_context_t {
-    c_uint32_t      gtpc_port;      /* PGW GTP-C local port */
-    c_uint32_t      gtpu_port;      /* PGW GTP-U local port */
+    c_uint32_t      gtpc_port;      /* Default: PGW GTP-C local port */
+    c_uint32_t      gtpu_port;      /* Default: PGW GTP-U local port */
+    const char      *tun_ifname;    /* Default:: pgwtun */
 
     list_t          gtpc_list;      /* PGW GTPC IPv4 Server List */
     c_sockaddr_t    *gtpc_addr;     /* PGW GTPC IPv4 Address */
@@ -42,9 +43,6 @@ typedef struct _pgw_context_t {
 
     msgq_id         queue_id;       /* Qsesssess for processing PGW control plane */
     tm_service_t    tm_service;     /* Timer Service */
-
-    sock_id         tun_sock;       /* PGW Tun Interace for UE */
-    const char      *tun_ifname;    /* default : pgwtun */
 
 #define MAX_NUM_OF_DNS              2
     const char      *dns[MAX_NUM_OF_DNS];  /* Primary/Secondanry */

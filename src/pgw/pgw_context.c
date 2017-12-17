@@ -1365,6 +1365,8 @@ pgw_subnet_t *pgw_subnet_add(
     d_assert(subnet, return NULL,);
     memset(subnet, 0, sizeof *subnet);
 
+    subnet->dev = dev;
+
     rv = core_ipsubnet(&subnet->gw, ipstr, NULL);
     d_assert(rv == CORE_OK, return NULL,);
 
