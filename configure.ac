@@ -265,7 +265,17 @@ AC_CHECK_HEADERS(netinet/ip.h netinet/ip6.h net/route.h,,,[[
 #endif
 ]])
 
-AC_CHECK_HEADERS(netinet/ip_icmp.h, [], [], [#include <netinet/ip.h>])
+AC_CHECK_HEADERS(netinet/ip_icmp.h netinet/icmp6.h,,,[[
+#include <sys/types.h>
+#if HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
+#endif
+#include <netinet/in.h>
+#if HAVE_NETINET_IN_SYSTM_H
+#include <netinet/in_systm.h>
+#endif
+#include <netinet/ip.h>
+]])
 
 ##########################################
 #### Checks for typedefs, structures, ####

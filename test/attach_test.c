@@ -301,8 +301,21 @@ static void attach_test1(abts_case *tc, void *data)
 
     core_sleep(time_from_msec(300));
 
+    rv = testgtpu_build_slacc_rs(&sendbuf, 0);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = testgtpu_enb_send(sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rv = testgtpu_enb_read(gtpu, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    pkbuf_free(recvbuf);
+
     /* Send GTP-U ICMP Packet */
-    rv = testgtpu_enb_send("45.45.0.2", "45.45.0.1");
+    rv = testgtpu_build_ping(&sendbuf, "45.45.0.2", "45.45.0.1");
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = testgtpu_enb_send(sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     /* Receive GTP-U ICMP Packet */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
@@ -311,7 +324,9 @@ static void attach_test1(abts_case *tc, void *data)
     pkbuf_free(recvbuf);
 
 #if LINUX == 1
-    rv = testgtpu_enb_send("cafe::2", "cafe::1");
+    rv = testgtpu_build_ping(&sendbuf, "cafe::2", "cafe::1");
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = testgtpu_enb_send(sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     /* Receive GTP-U ICMP Packet */

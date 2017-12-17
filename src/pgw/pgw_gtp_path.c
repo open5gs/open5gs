@@ -11,39 +11,13 @@
 #include "pgw_event.h"
 #include "pgw_gtp_path.h"
 
-static status_t pgw_gtp_send_to_bearer(pgw_bearer_t *bearer, pkbuf_t *sendbuf)
-{
-    status_t rv;
-    gtp_header_t *gtp_h = NULL;
+#define PGW_GTP_HANDLED     1
 
-    /* Add GTP-U header */
-    rv = pkbuf_header(sendbuf, GTPV1U_HEADER_LEN);
-    if (rv != CORE_OK)
-    {
-        d_error("pkbuf_header error");
-        pkbuf_free(sendbuf);
-        return CORE_ERROR;
-    }
-    
-    gtp_h = (gtp_header_t *)sendbuf->payload;
-    /* Bits    8  7  6  5  4  3  2  1
-     *        +--+--+--+--+--+--+--+--+
-     *        |version |PT| 1| E| S|PN|
-     *        +--+--+--+--+--+--+--+--+
-     *         0  0  1   1  0  0  0  0
-     */
-    gtp_h->flags = 0x30;
-    gtp_h->type = GTPU_MSGTYPE_GPDU;
-    gtp_h->length = htons(sendbuf->len);
-    gtp_h->teid = htonl(bearer->sgw_s5u_teid);
-
-    /* Send to SGW */
-    d_trace(50, "Send S5U PDU (teid = 0x%x) to SGW\n",
-            bearer->sgw_s5u_teid);
-    rv =  gtp_send(bearer->gnode, sendbuf);
-
-    return rv;
-}
+c_uint16_t in_cksum(c_uint16_t *addr, int len);
+static status_t pgw_gtp_handle_multicast(pkbuf_t *recvbuf);
+static status_t pgw_gtp_handle_slacc(c_uint32_t teid, pkbuf_t *recvbuf);
+static status_t pgw_gtp_send_to_bearer(pgw_bearer_t *bearer, pkbuf_t *sendbuf);
+static status_t pgw_gtp_send_router_advertisement(pgw_sess_t *sess);
 
 static int _gtpv1_tun_recv_cb(sock_id sock, void *data)
 {
@@ -73,41 +47,14 @@ static int _gtpv1_tun_recv_cb(sock_id sock, void *data)
     {
         /* Unicast */
         rv = pgw_gtp_send_to_bearer(bearer, recvbuf);
-        d_assert(rv == CORE_OK,, "pgw_gtp_send_to_bearer failed");
+        d_assert(rv == CORE_OK,, "pgw_gtp_send_to_bearer() failed");
     }
     else
     {
         if (context_self()->parameter.multicast)
         {
-            struct ip *ip_h =  NULL;
-            struct ip6_hdr *ip6_h =  NULL;
-
-            ip_h = (struct ip *)recvbuf->payload;
-            if (ip_h->ip_v == 6)
-            {
-                ip6_h = (struct ip6_hdr *)recvbuf->payload;
-                if (IN6_IS_ADDR_MULTICAST(&ip6_h->ip6_dst))
-                {
-                    hash_index_t *hi = NULL;
-
-                    /* IPv6 Multicast */
-                    for (hi = pgw_sess_first(); hi; hi = pgw_sess_next(hi))
-                    {
-                        pgw_sess_t *sess = pgw_sess_this(hi);
-                        d_assert(sess, return 0,);
-                        if (sess->ipv6)
-                        {
-                            /* PDN IPv6 is avaiable */
-                            pgw_bearer_t *bearer = pgw_default_bearer_in_sess(sess);
-                            d_assert(bearer, return 0,);
-
-                            rv = pgw_gtp_send_to_bearer(bearer, recvbuf);
-                            d_assert(rv == CORE_OK,,
-                                    "pgw_gtp_send_to_bearer failed");
-                        }
-                    }
-                }
-            }
+            rv = pgw_gtp_handle_multicast(recvbuf);
+            d_assert(rv != CORE_ERROR,, "pgw_gtp_handle_multicast() failed");
         }
     }
 
@@ -154,6 +101,7 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
     status_t rv;
     pkbuf_t *pkbuf = NULL;
     c_uint32_t size = GTPV1U_HEADER_LEN;
+    gtp_header_t *gtp_h = NULL;
 
     d_assert(sock, return -1, "Null param");
 
@@ -166,8 +114,14 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
         return -1;
     }
 
+    d_assert(pkbuf, return 0,);
     d_trace(50, "S5-U PDU received from SGW\n");
     d_trace_hex(50, pkbuf->payload, pkbuf->len);
+
+
+    d_assert(pkbuf->payload, return 0,);
+    gtp_h = pkbuf->payload;
+    if (gtp_h->flags & GTPU_FLAGS_S) size += 4;
 
     /* Remove GTP header and send packets to TUN interface */
     if (pkbuf_header(pkbuf, -size) != CORE_OK)
@@ -178,13 +132,24 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
         return -1;
     }
 
+    /* Check IPv6 */
+    if (context_self()->parameter.no_slaac == 0)
+    {
+        rv = pgw_gtp_handle_slacc(ntohl(gtp_h->teid), pkbuf);
+        if (rv == PGW_GTP_HANDLED)
+        {
+            pkbuf_free(pkbuf);
+            return 0;
+        }
+        d_assert(rv == CORE_OK,, "pgw_gtp_handle_slacc() failed");
+    }
+
     if (sock_write(pgw_self()->tun_sock, pkbuf->payload, pkbuf->len) <= 0)
     {
         d_error("Can not send packets to tuntap");
     }
 
     pkbuf_free(pkbuf);
-
     return 0;
 }
 
@@ -285,4 +250,221 @@ status_t pgw_gtp_close()
     sock_delete(pgw_self()->tun_sock);
 
     return CORE_OK;
+}
+
+static status_t pgw_gtp_handle_multicast(pkbuf_t *recvbuf)
+{
+    status_t rv;
+    struct ip *ip_h =  NULL;
+    struct ip6_hdr *ip6_h =  NULL;
+
+    ip_h = (struct ip *)recvbuf->payload;
+    if (ip_h->ip_v == 6)
+    {
+        ip6_h = (struct ip6_hdr *)recvbuf->payload;
+        if (IN6_IS_ADDR_MULTICAST(&ip6_h->ip6_dst))
+        {
+            hash_index_t *hi = NULL;
+
+            /* IPv6 Multicast */
+            for (hi = pgw_sess_first(); hi; hi = pgw_sess_next(hi))
+            {
+                pgw_sess_t *sess = pgw_sess_this(hi);
+                d_assert(sess, return CORE_ERROR,);
+                if (sess->ipv6)
+                {
+                    /* PDN IPv6 is avaiable */
+                    pgw_bearer_t *bearer = pgw_default_bearer_in_sess(sess);
+                    d_assert(bearer, return CORE_ERROR,);
+
+                    rv = pgw_gtp_send_to_bearer(bearer, recvbuf);
+                    d_assert(rv == CORE_OK,,
+                            "pgw_gtp_send_to_bearer failed");
+
+                    return PGW_GTP_HANDLED;
+                }
+            }
+        }
+    }
+
+    return CORE_OK;
+}
+
+static status_t pgw_gtp_handle_slacc(c_uint32_t teid, pkbuf_t *recvbuf)
+{
+    status_t rv;
+    struct ip *ip_h = NULL;
+
+    d_assert(recvbuf, return CORE_ERROR,);
+    d_assert(recvbuf->payload, return CORE_ERROR,);
+    ip_h = (struct ip *)recvbuf->payload;
+    if (ip_h->ip_v == 6)
+    {
+        struct ip6_hdr *ip6_h = (struct ip6_hdr *)recvbuf->payload;
+        if (ip6_h->ip6_nxt == IPPROTO_ICMPV6)
+        {
+            struct icmp6_hdr *icmp_h =
+                (struct icmp6_hdr *)(recvbuf->payload + sizeof(struct ip6_hdr));
+            if (icmp_h->icmp6_type == ND_ROUTER_SOLICIT)
+            {
+                pgw_bearer_t *bearer = NULL;
+                pgw_sess_t *sess = NULL;
+
+                bearer = pgw_bearer_find_by_pgw_s5u_teid(teid);
+                d_assert(teid, return CORE_ERROR,
+                        "cannot find teid = %d", teid);
+                sess = bearer->sess;
+                d_assert(sess, return CORE_ERROR,);
+
+                if (sess->ipv6)
+                {
+                    rv = pgw_gtp_send_router_advertisement(sess);
+                    d_assert(rv == CORE_OK,,"send router advertisement failed");
+                }
+                return PGW_GTP_HANDLED;
+            }
+        }
+    }
+
+    return CORE_OK;
+}
+
+static status_t pgw_gtp_send_to_bearer(pgw_bearer_t *bearer, pkbuf_t *sendbuf)
+{
+    status_t rv;
+    gtp_header_t *gtp_h = NULL;
+
+    /* Add GTP-U header */
+    rv = pkbuf_header(sendbuf, GTPV1U_HEADER_LEN);
+    if (rv != CORE_OK)
+    {
+        d_error("pkbuf_header error");
+        pkbuf_free(sendbuf);
+        return CORE_ERROR;
+    }
+    
+    gtp_h = (gtp_header_t *)sendbuf->payload;
+    /* Bits    8  7  6  5  4  3  2  1
+     *        +--+--+--+--+--+--+--+--+
+     *        |version |PT| 1| E| S|PN|
+     *        +--+--+--+--+--+--+--+--+
+     *         0  0  1   1  0  0  0  0
+     */
+    gtp_h->flags = 0x30;
+    gtp_h->type = GTPU_MSGTYPE_GPDU;
+    gtp_h->length = htons(sendbuf->len);
+    gtp_h->teid = htonl(bearer->sgw_s5u_teid);
+
+    /* Send to SGW */
+    d_trace(50, "Send S5U PDU (teid = 0x%x) to SGW\n",
+            bearer->sgw_s5u_teid);
+    rv =  gtp_send(bearer->gnode, sendbuf);
+
+    return rv;
+}
+
+static status_t pgw_gtp_send_router_advertisement(pgw_sess_t *sess)
+{
+    status_t rv;
+    pkbuf_t *pkbuf = NULL;
+    pgw_bearer_t *bearer = NULL;
+    ipsubnet_t src_ipsub, dst_ipsub;
+    c_uint16_t plen = 0;
+    c_uint8_t nxt = 0;
+    c_uint8_t *p = NULL;
+    struct ip6_hdr *ip6_h =  NULL;
+    struct nd_router_advert *advert_h = NULL;
+    struct nd_opt_prefix_info *prefix = NULL;
+
+    d_assert(sess, return CORE_ERROR,);
+    bearer = pgw_default_bearer_in_sess(sess);
+    d_assert(bearer, return CORE_ERROR,);
+
+    pkbuf = pkbuf_alloc(GTPV1U_HEADER_LEN, 200);
+    d_assert(pkbuf, return CORE_ERROR,);
+    pkbuf->len = sizeof *ip6_h + sizeof *advert_h + sizeof *prefix;
+    memset(pkbuf->payload, 0, pkbuf->len);
+
+    p = (c_uint8_t *)pkbuf->payload;
+    ip6_h = (struct ip6_hdr *)p;
+    advert_h = (struct nd_router_advert *)((c_uint8_t *)ip6_h + sizeof *ip6_h);
+    prefix = (struct nd_opt_prefix_info *)
+        ((c_uint8_t*)advert_h + sizeof *advert_h);
+
+    rv = core_ipsubnet(&src_ipsub, "fe80::1", NULL);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    rv = core_ipsubnet(&dst_ipsub, "ff02::1", NULL);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    advert_h->nd_ra_type = ND_ROUTER_ADVERT;
+    advert_h->nd_ra_code = 0;
+    advert_h->nd_ra_curhoplimit = 64;
+    advert_h->nd_ra_flags_reserved = 0;
+    advert_h->nd_ra_router_lifetime = htons(64800);  /* 64800s */
+    advert_h->nd_ra_reachable = 0;
+    advert_h->nd_ra_retransmit = 0;
+
+    prefix->nd_opt_pi_type = ND_OPT_PREFIX_INFORMATION;
+    prefix->nd_opt_pi_len = 4; /* 32bytes */
+    prefix->nd_opt_pi_prefix_len = pgw_ue_ip_prefixlen(sess->ipv6);
+    prefix->nd_opt_pi_flags_reserved =
+        ND_OPT_PI_FLAG_ONLINK|ND_OPT_PI_FLAG_AUTO;
+    prefix->nd_opt_pi_valid_time = htonl(0xffffffff); /* Infinite */
+    prefix->nd_opt_pi_preferred_time = htonl(0xffffffff); /* Infinite */
+    memcpy(prefix->nd_opt_pi_prefix.s6_addr,
+            sess->ipv6->addr, prefix->nd_opt_pi_prefix_len);
+
+    /* For IPv6 Pseudo-Header */
+    plen = htons(sizeof *advert_h + sizeof *prefix);
+    nxt = IPPROTO_ICMPV6;
+
+    memcpy(p, src_ipsub.sub, sizeof src_ipsub.sub);
+    p += sizeof src_ipsub.sub;
+    memcpy(p, dst_ipsub.sub, sizeof dst_ipsub.sub);
+    p += sizeof dst_ipsub.sub;
+    p += 2; memcpy(p, &plen, 2); p += 2;
+    p += 3; *p = nxt; p += 1;
+    advert_h->nd_ra_cksum = in_cksum((c_uint16_t *)pkbuf->payload, pkbuf->len);
+
+    ip6_h->ip6_flow = htonl(0x60000001);
+    ip6_h->ip6_plen = plen;
+    ip6_h->ip6_nxt = nxt;  /* ICMPv6 */
+    ip6_h->ip6_hlim = 0xff;
+    memcpy(ip6_h->ip6_src.s6_addr, src_ipsub.sub, sizeof src_ipsub.sub);
+    memcpy(ip6_h->ip6_dst.s6_addr, dst_ipsub.sub, sizeof dst_ipsub.sub);
+    
+    rv = pgw_gtp_send_to_bearer(bearer, pkbuf);
+    d_assert(rv == CORE_OK,, "pgw_gtp_send_to_bearer() faild");
+
+    pkbuf_free(pkbuf);
+    return rv;
+}
+
+c_uint16_t in_cksum(c_uint16_t *addr, int len)
+{
+    int nleft = len;
+    c_uint32_t sum = 0;
+    c_uint16_t *w = addr;
+    c_uint16_t answer = 0;
+
+    // Adding 16 bits sequentially in sum
+    while (nleft > 1)
+    {
+        sum += *w;
+        nleft -= 2;
+        w++;
+    }
+
+    // If an odd byte is left
+    if (nleft == 1)
+    {
+        *(c_uint8_t *) (&answer) = *(c_uint8_t *) w;
+        sum += answer;
+    }
+
+    sum = (sum >> 16) + (sum & 0xffff);
+    sum += (sum >> 16);
+    answer = ~sum;
+
+    return answer;
 }
