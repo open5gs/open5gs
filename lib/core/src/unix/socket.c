@@ -9,6 +9,14 @@
 #define MAX_SOCK_POOL_SIZE              512
 #define MAX_SOCK_NODE_POOL_SIZE         512
 
+#if NO_FD_LOCK
+#define FD_LOCK
+#define FD_UNLOCK
+#else
+#define FD_LOCK mutex_lock(mutex);
+#define FD_UNLOCK mutex_unlock(mutex);
+#endif
+
 static int max_fd;
 static list_t fd_list;
 static fd_set read_fds;
@@ -659,7 +667,7 @@ status_t sock_register(sock_id id, sock_handler handler, void *data)
         return CORE_ERROR;
     }
 
-    mutex_lock(mutex);
+    FD_LOCK
 
     if (sock->fd > max_fd)
     {
@@ -670,7 +678,7 @@ status_t sock_register(sock_id id, sock_handler handler, void *data)
 
     list_append(&fd_list, sock);
 
-    mutex_unlock(mutex);
+    FD_UNLOCK
 
     return CORE_OK;
 }
@@ -679,11 +687,11 @@ status_t sock_unregister(sock_id id)
 {
     d_assert(id, return CORE_ERROR,);
 
-    mutex_lock(mutex);
+    FD_LOCK
 
     list_remove(&fd_list, id);
 
-    mutex_unlock(mutex);
+    FD_UNLOCK
 
     return CORE_OK;
 }
@@ -693,19 +701,19 @@ int sock_is_registered(sock_id id)
     sock_t *sock = (sock_t *)id;
     sock_t *iter = NULL;
 
-    mutex_lock(mutex);
+    FD_LOCK
 
     d_assert(id, return CORE_ERROR,);
     for (iter = list_first(&fd_list); iter != NULL; iter = list_next(iter))
     {
         if (iter == sock)
         {
-            mutex_unlock(mutex);
+            FD_UNLOCK
             return 1;
         }
     }
 
-    mutex_unlock(mutex);
+    FD_UNLOCK
     return 0;
 }
 
@@ -811,7 +819,7 @@ static void set_fds(fd_set *fds)
 {
     sock_t *sock = NULL;
 
-    mutex_lock(mutex);
+    FD_LOCK
 
     FD_ZERO(fds);
     for (sock = list_first(&fd_list); sock != NULL; sock = list_next(sock))
@@ -819,14 +827,14 @@ static void set_fds(fd_set *fds)
         FD_SET(sock->fd, fds);
     }
 
-    mutex_unlock(mutex);
+    FD_UNLOCK
 }
 
 static void fd_dispatch(fd_set *fds)
 {
     sock_t *sock = NULL;
 
-    mutex_lock(mutex);
+    FD_LOCK
 
     for (sock = list_first(&fd_list); sock != NULL; sock = list_next(sock))
     {
@@ -839,5 +847,5 @@ static void fd_dispatch(fd_set *fds)
         }
     }
 
-    mutex_unlock(mutex);
+    FD_UNLOCK
 }

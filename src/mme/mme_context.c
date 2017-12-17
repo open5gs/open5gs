@@ -5,6 +5,7 @@
 #include "core_lib.h"
 #include "core_msgq.h"
 #include "core_fsm.h"
+#include "core_network.h"
 
 #include <mongoc.h>
 #include <yaml.h>
@@ -1402,8 +1403,12 @@ status_t mme_enb_remove(mme_enb_t *enb)
 
     enb_ue_remove_in_enb(enb);
 
+#ifdef NO_FD_LOCK
+#else
+#error do not use lock in socket fd
     if (enb->sock_type == SOCK_STREAM)
         s1ap_delete(enb->sock);
+#endif
     core_free(enb->addr);
 
     index_free(&mme_enb_pool, enb);
