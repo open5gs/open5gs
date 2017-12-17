@@ -424,8 +424,7 @@ static status_t pgw_gtp_send_router_advertisement(pgw_sess_t *sess)
     p += sizeof dst_ipsub.sub;
     p += 2; memcpy(p, &plen, 2); p += 2;
     p += 3; *p = nxt; p += 1;
-    advert_h->nd_ra_cksum = in_cksum(
-            (c_uint16_t *)pkbuf->payload, pkbuf->len);
+    advert_h->nd_ra_cksum = in_cksum((c_uint16_t *)pkbuf->payload, pkbuf->len);
 
     ip6_h->ip6_flow = htonl(0x60000001);
     ip6_h->ip6_plen = plen;

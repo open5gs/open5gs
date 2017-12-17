@@ -254,7 +254,7 @@ AC_CHECK_HEADERS( \
     sys/uio.h \
 )
 
-AC_CHECK_HEADERS(netinet/ip.h netinet/ip6.h netinet/ip_icmp.h net/route.h,,,[[
+AC_CHECK_HEADERS(netinet/ip.h netinet/ip6.h net/route.h,,,[[
 #include <sys/types.h>
 #if HAVE_SYS_SOCKET_H
 #include <sys/socket.h>

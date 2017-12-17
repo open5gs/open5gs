@@ -1828,11 +1828,13 @@ status_t testgtpu_build_ping(
     if (dst_ipsub.family == AF_INET)
     {
         struct ip *ip_h = NULL;
-        struct icmp6_hdr *icmp_h = NULL;
+        struct icmp *icmp_h = NULL;
 
-        gtp_h->length = htons(sizeof *ip_h + sizeof *icmp_h);
+        gtp_h->length = htons(sizeof *ip_h + ICMP_MINLEN);
 
         ip_h = (struct ip *)(pkbuf->payload + GTPV1U_HEADER_LEN);
+        icmp_h = (struct icmp *)((c_uint8_t *)ip_h + sizeof *ip_h);
+
         ip_h->ip_v = 4;
         ip_h->ip_hl = 5;
         ip_h->ip_tos = 0;
@@ -1845,11 +1847,10 @@ status_t testgtpu_build_ping(
         ip_h->ip_dst.s_addr = dst_ipsub.sub[0];
         ip_h->ip_sum = in_cksum((c_uint16_t *)ip_h, sizeof *ip_h);
         
-        icmp_h = (struct icmp6_hdr *)((c_uint8_t *)ip_h + sizeof *ip_h);
-        icmp_h->icmp6_type = 8;
-        icmp_h->icmp6_seq = rand();
-        icmp_h->icmp6_id = rand();
-        icmp_h->icmp6_cksum = in_cksum((c_uint16_t *)icmp_h, sizeof *icmp_h);
+        icmp_h->icmp_type = 8;
+        icmp_h->icmp_seq = rand();
+        icmp_h->icmp_id = rand();
+        icmp_h->icmp_cksum = in_cksum((c_uint16_t *)icmp_h, ICMP_MINLEN);
     }
     else if (dst_ipsub.family == AF_INET6)
     {
