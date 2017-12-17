@@ -3,7 +3,7 @@
 db_uri: mongodb://localhost/nextepc
 
 logger:
-    file: @LOCALSTATE_DIR@/log/nextepc/mme.log
+    file: @LOCALSTATE_DIR@/log/nextepc/nextepc.log
     trace: 
         s1ap: 1
         nas: 1
@@ -12,16 +12,11 @@ logger:
         others: 1
 
 parameter:
-#   no_ipv4: true
-#   no_ipv6: true
-#   prefer_ipv4: true
 
 mme:
     freeDiameter: mme.conf
     s1ap:
     gtpc:
-      - addr: 127.0.0.1
-      - addr: ::1
     gummei: 
       plmn_id:
         mcc: 001
@@ -41,10 +36,9 @@ sgw:
     gtpc:
       addr:
         - 127.0.0.2
-        - fe80::2%@LO_DEV@
 
 pgw:
     gtpc:
       addr:
-        - 127.0.0.3
-        - fe80::3%@LO_DEV@
+        - 127.0.0.1
+        - ::1

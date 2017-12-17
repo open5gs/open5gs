@@ -21,12 +21,6 @@ logger:
 #  o Prefer IPv4 instead of IPv6 for estabishing new GTP connections.
 #      prefer_ipv4: true
 #
-#  o Disable EPC elements (Only applicable `nextepc-epcd`)
-#      no_hss: true
-#      no_sgw: true
-#      no_pgw: true
-#      no_pcrf: true
-#
 #  o Enable Multicast traffic to the UE
 #      multicast: true
 #
@@ -288,6 +282,23 @@ pgw:
 #        apn: volte
 #      - addr: cafe:2::1/64
 #        apn: volte
+#
+#  o Multiple Devices(Default:pgwtun)
+#    $ sudo ip addr add 45.45.0.1/16 dev pgwtun
+#    $ sudo ip addr add cafe:1::1/64 dev pgwtun2
+#    $ sudo ip addr add 45.46.0.1/16 dev pgwtun3
+#    $ sudo ip addr add cafe:2::1/64 dev pgwtun3
+#
+#    ue_pool:
+#      - addr: 45.45.0.1/16
+#      - addr: cafe:1::1/64
+#        dev: pgwtun2
+#      - addr: 45.46.0.1/16
+#        apn: volte
+#        dev: pgwtun3
+#      - addr: cafe:2::1/64
+#        apn: volte
+#        dev: pgwtun3
 #
     ue_pool:
       - addr: 45.45.0.1/16
