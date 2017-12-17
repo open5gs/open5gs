@@ -30,22 +30,10 @@ index_declare(pgw_bearer_pool, pgw_bearer_t, MAX_POOL_OF_BEARER);
 
 pool_declare(pgw_pf_pool, pgw_pf_t, MAX_POOL_OF_PF);
 
-typedef struct _ue_pool_t {
-    int head, tail;
-    int size, avail;
-    mutex_id mut;
-    pgw_ue_ip_t *free[MAX_POOL_OF_SESS], pool[MAX_POOL_OF_SESS];
-} ue_pool_t;
-
-#define INVALID_POOL_INDEX       MAX_NUM_OF_UE_POOL
-static ue_pool_t ue_ip_pool[MAX_NUM_OF_UE_POOL];
-
 static int context_initiaized = 0;
 
 status_t pgw_context_init()
 {
-    int i;
-
     d_assert(context_initiaized == 0, return CORE_ERROR,
             "PGW context already has been initialized");
 
@@ -70,9 +58,6 @@ status_t pgw_context_init()
 
     pool_init(&pgw_pf_pool, MAX_POOL_OF_PF);
 
-    for (i = 0; i < MAX_NUM_OF_UE_POOL; i++)
-        pool_init(&ue_ip_pool[i], MAX_POOL_OF_UE);
-
     self.sess_hash = hash_make();
 
     context_initiaized = 1;
@@ -82,8 +67,6 @@ status_t pgw_context_init()
 
 status_t pgw_context_final()
 {
-    int i;
-
     d_assert(context_initiaized == 1, return CORE_ERROR,
             "PGW context already has been finalized");
 
@@ -97,19 +80,6 @@ status_t pgw_context_final()
                 index_used(&pgw_sess_pool), index_size(&pgw_sess_pool));
     d_trace(3, "%d not freed in pgw_sess_pool[%d] in PGW-Context\n",
             index_used(&pgw_sess_pool), index_size(&pgw_sess_pool));
-
-    for (i = 0; i < MAX_NUM_OF_UE_POOL; i++)
-    {
-        if (pool_used(&ue_ip_pool[i]))
-        {
-            d_warn("[%d] %d not freed in ue_ip_pool[%d] in PGW-Context",
-                    i, pool_used(&ue_ip_pool[i]), index_size(&ue_ip_pool[i]));
-        }
-        d_trace(3, "[%d] %d not freed in ue_ip_pool[%d] in PGW-Context\n",
-                i, pool_used(&ue_ip_pool[i]), index_size(&ue_ip_pool[i]));
-
-        pool_final(&ue_ip_pool[i]);
-    }
 
     pgw_dev_remove_all();
     pgw_subnet_remove_all();
@@ -518,8 +488,6 @@ status_t pgw_context_parse_config()
                         const char *apn = NULL;
                         const char *dev = self.tun_ifname;
 
-                        d_assert(self.num_of_ue_pool <=
-                                MAX_NUM_OF_UE_POOL, return CORE_ERROR,);
                         if (yaml_iter_type(&ue_pool_array) ==
                                 YAML_MAPPING_NODE)
                         {
@@ -575,12 +543,6 @@ status_t pgw_context_parse_config()
 
                         if (ipstr && mask_or_numbits)
                         {
-                            self.ue_pool[self.num_of_ue_pool].ipstr = ipstr;
-                            self.ue_pool[self.num_of_ue_pool].mask_or_numbits =
-                                mask_or_numbits;
-                            self.ue_pool[self.num_of_ue_pool].apn = apn;
-                            self.num_of_ue_pool++;
-
                             subnet = pgw_subnet_add(
                                     ipstr, mask_or_numbits, apn, dev);
                             d_assert(subnet, return CORE_ERROR,);
@@ -1154,54 +1116,41 @@ pgw_pf_t* pgw_pf_next(pgw_pf_t *pf)
 
 status_t pgw_ue_pool_generate()
 {
-    status_t rv;
-    int i, j;
+    int j;
+    pgw_subnet_t *subnet = NULL;
 
-    for (i = 0; i < self.num_of_ue_pool; i++)
+    for (subnet = pgw_subnet_first(); subnet; subnet = pgw_subnet_next(subnet))
     {
         int index = 0;
-        ipsubnet_t ipaddr, ipsub;
-        c_uint32_t prefixlen;
         c_uint32_t mask_count;
         c_uint32_t broadcast[4];
 
-        rv = core_ipsubnet(&ipaddr, self.ue_pool[i].ipstr, NULL);
-        d_assert(rv == CORE_OK, return CORE_ERROR,);
-
-        rv = core_ipsubnet(&ipsub,
-                self.ue_pool[i].ipstr, self.ue_pool[i].mask_or_numbits);
-        d_assert(rv == CORE_OK, return CORE_ERROR,);
-
-        d_assert(self.ue_pool[i].mask_or_numbits, return CORE_ERROR,);
-        prefixlen = atoi(self.ue_pool[i].mask_or_numbits);
-        if (ipsub.family == AF_INET)
+        if (subnet->family == AF_INET)
         {
-            if (prefixlen == 32)
+            if (subnet->prefixlen == 32)
                 mask_count = 1;
-            else if (prefixlen < 32)
-                mask_count = (0xffffffff >> prefixlen) + 1;
+            else if (subnet->prefixlen < 32)
+                mask_count = (0xffffffff >> subnet->prefixlen) + 1;
             else
                 d_assert(0, return CORE_ERROR,);
         }
-        else if (ipsub.family == AF_INET6)
+        else if (subnet->family == AF_INET6)
         {
-            if (prefixlen == 128)
+            if (subnet->prefixlen == 128)
                 mask_count = 1;
-            else if (prefixlen > 96 && prefixlen < 128)
-                mask_count = (0xffffffff >> (prefixlen - 96)) + 1;
-            else if (prefixlen <= 96)
+            else if (subnet->prefixlen > 96 && subnet->prefixlen < 128)
+                mask_count = (0xffffffff >> (subnet->prefixlen - 96)) + 1;
+            else if (subnet->prefixlen <= 96)
                 mask_count = 0xffffffff;
             else
                 d_assert(0, return CORE_ERROR,);
         }
         else
             d_assert(0, return CORE_ERROR,);
-
-        self.ue_pool[i].family = ipsub.family;
         
         for (j = 0; j < 4; j++)
         {
-            broadcast[j] = ipsub.sub[j] + ~ipsub.mask[j];
+            broadcast[j] = subnet->sub.sub[j] + ~subnet->sub.mask[j];
         }
 
         for (j = 0; j < mask_count && index < MAX_POOL_OF_SESS; j++)
@@ -1210,128 +1159,117 @@ status_t pgw_ue_pool_generate()
             int maxbytes = 0;
             int lastindex = 0;
 
-            ue_ip = &ue_ip_pool[i].pool[index];
+            ue_ip = &subnet->pool.pool[index];
             d_assert(ue_ip, return CORE_ERROR,);
             memset(ue_ip, 0, sizeof *ue_ip);
 
-            if (ipsub.family == AF_INET)
+            if (subnet->family == AF_INET)
             {
                 maxbytes = 4;
                 lastindex = 0;
             }
-            else if (ipsub.family == AF_INET6)
+            else if (subnet->family == AF_INET6)
             {
                 maxbytes = 16;
                 lastindex = 3;
             }
 
-            memcpy(ue_ip->addr, ipsub.sub, maxbytes);
+            memcpy(ue_ip->addr, subnet->sub.sub, maxbytes);
             ue_ip->addr[lastindex] += htonl(j);
+            ue_ip->subnet = subnet;
 
             /* Exclude Network Address */
-            if (memcmp(ue_ip->addr, ipsub.sub, maxbytes) == 0) continue;
+            if (memcmp(ue_ip->addr, subnet->sub.sub, maxbytes) == 0) continue;
 
             /* Exclude Broadcast Address */
             if (memcmp(ue_ip->addr, broadcast, maxbytes) == 0) continue;
 
             /* Exclude TUN IP Address */
-            if (memcmp(ue_ip->addr, ipaddr.sub, maxbytes) == 0) continue;
+            if (memcmp(ue_ip->addr, subnet->gw.sub, maxbytes) == 0) continue;
 
             index++;
         }
-        ue_ip_pool[i].size = ue_ip_pool[i].avail = index;
+        subnet->pool.size = subnet->pool.avail = index;
     }
 
     return CORE_OK;
 }
 
-static c_uint8_t find_ue_pool_index(int family, const char *apn)
+static pgw_subnet_t *find_subnet(int family, const char *apn)
 {
-    int i;
-    c_uint8_t pool_index = INVALID_POOL_INDEX;
+    pgw_subnet_t *subnet = NULL;
 
-    d_assert(apn, return INVALID_POOL_INDEX,);
-    d_assert(family == AF_INET || family == AF_INET6,
-            return INVALID_POOL_INDEX,);
+    d_assert(apn, return NULL,);
+    d_assert(family == AF_INET || family == AF_INET6, return NULL,);
 
-    for (i = 0; i < self.num_of_ue_pool; i++)
+    for (subnet = pgw_subnet_first(); subnet; subnet = pgw_subnet_next(subnet))
     {
-        if (self.ue_pool[i].apn)
+        if (strlen(subnet->apn))
         {
-            if (self.ue_pool[i].family == family &&
-                strcmp(self.ue_pool[i].apn, apn) == 0 &&
-                pool_avail(&ue_ip_pool[i]))
+            if (subnet->family == family && strcmp(subnet->apn, apn) == 0 &&
+                pool_avail(&subnet->pool))
             {
-                pool_index = i;
-                break;
+                return subnet;
             }
         }
     }
 
-    if (pool_index == INVALID_POOL_INDEX)
+    for (subnet = pgw_subnet_first(); subnet; subnet = pgw_subnet_next(subnet))
     {
-        for (i = 0; i < self.num_of_ue_pool; i++)
+        if (strlen(subnet->apn) == 0)
         {
-            if (self.ue_pool[i].apn == NULL)
+            if (subnet->family == family &&
+                pool_avail(&subnet->pool))
             {
-                if (self.ue_pool[i].family == family &&
-                    pool_avail(&ue_ip_pool[i]))
-                {
-                    pool_index = i;
-                    break;
-                }
+                return subnet;
             }
         }
     }
 
-    if (pool_index == INVALID_POOL_INDEX)
-    {
+    if (subnet == NULL)
         d_error("CHECK CONFIGURATION: Cannot find UE Pool");
-        return INVALID_POOL_INDEX;
-    }
 
-    return pool_index;
+    return subnet;
 }
 
 pgw_ue_ip_t *pgw_ue_ip_alloc(int family, const char *apn)
 {
-    c_uint8_t pool_index = INVALID_POOL_INDEX;
+    pgw_subnet_t *subnet = NULL;
     pgw_ue_ip_t *ue_ip = NULL;
 
     d_assert(apn, return NULL,);
 
-    pool_index = find_ue_pool_index(family, apn);
-    d_assert(pool_index < MAX_NUM_OF_UE_POOL, return NULL,);
+    subnet = find_subnet(family, apn);
+    d_assert(subnet, return NULL,);
 
-    pool_alloc_node(&ue_ip_pool[pool_index], &ue_ip);
+    pool_alloc_node(&subnet->pool, &ue_ip);
     d_assert(ue_ip, return NULL,);
-    ue_ip->index = pool_index;
 
     return ue_ip;
 }
 
 status_t pgw_ue_ip_free(pgw_ue_ip_t *ue_ip)
 {
-    c_uint8_t pool_index;
+    pgw_subnet_t *subnet = NULL;
 
     d_assert(ue_ip, return CORE_ERROR,);
-    pool_index = ue_ip->index;
+    subnet = ue_ip->subnet;
 
-    d_assert(pool_index < MAX_NUM_OF_UE_POOL, return CORE_ERROR,);
-    pool_free_node(&ue_ip_pool[pool_index], ue_ip);
+    d_assert(subnet, return CORE_ERROR,);
+    pool_free_node(&subnet->pool, ue_ip);
 
     return CORE_OK;
 }
 
 c_uint8_t pgw_ue_ip_prefixlen(pgw_ue_ip_t *ue_ip)
 {
-    d_assert(ue_ip, return CORE_ERROR,);
+    pgw_subnet_t *subnet = NULL;
 
-    c_uint8_t index = ue_ip->index;
-    d_assert(index < MAX_NUM_OF_UE_POOL, return CORE_ERROR,);
-    d_assert(pgw_self()->ue_pool[index].mask_or_numbits,
-            return CORE_ERROR,);
-    return atoi(pgw_self()->ue_pool[index].mask_or_numbits);
+    d_assert(ue_ip, return -1,);
+    subnet = ue_ip->subnet;
+    d_assert(subnet, return -1,);
+
+    return subnet->prefixlen;
 }
 
 pgw_dev_t *pgw_dev_add(const char *ifname)
@@ -1436,6 +1374,11 @@ pgw_subnet_t *pgw_subnet_add(
     if (apn)
         strcpy(subnet->apn, apn);
 
+    subnet->family = subnet->gw.family;
+    subnet->prefixlen = atoi(mask_or_numbits);
+
+    pool_init(&subnet->pool, MAX_POOL_OF_UE);
+
     list_append(&self.subnet_list, subnet);
 
     return subnet;
@@ -1446,6 +1389,16 @@ status_t pgw_subnet_remove(pgw_subnet_t *subnet)
     d_assert(subnet, return CORE_ERROR, "Null param");
 
     list_remove(&self.subnet_list, subnet);
+
+    if (pool_used(&subnet->pool))
+    {
+        d_warn("%d not freed in ue_ip_pool[%d] in PGW-Context",
+                pool_used(&subnet->pool), pool_size(&subnet->pool));
+    }
+    d_trace(3, "%d not freed in ue_ip_pool[%d] in PGW-Context\n",
+            pool_used(&subnet->pool), pool_size(&subnet->pool));
+    pool_final(&subnet->pool);
+
     pool_free_node(&pgw_subnet_pool, subnet);
 
     return CORE_OK;

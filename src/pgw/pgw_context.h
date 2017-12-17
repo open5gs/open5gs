@@ -45,23 +45,10 @@ typedef struct _pgw_context_t {
 
     sock_id         tun_sock;       /* PGW Tun Interace for UE */
     const char      *tun_ifname;    /* default : pgwtun */
-#define MAX_NUM_OF_UE_POOL 16
-    struct {
-        const char  *ipstr;         /* IP : "172.16.0.1", "cafe::1", ... */
-        const char  *mask_or_numbits;   /* MASK : "16, 64, ... */
-        const char  *apn;           /* APN : "internet", "volte", .. */
-        int family;                 /* AF_INET or AF_INET6 */
-    } ue_pool[MAX_NUM_OF_UE_POOL];
-    c_uint8_t       num_of_ue_pool;
-
-    struct {
-        c_uint32_t primary;
-        c_uint32_t secondary;
-    } old_dns;
 
 #define MAX_NUM_OF_DNS              2
-    const char      *dns[2];        /* Primary/Secondanry */
-    const char      *dns6[2];       /* Primary/Secondanry */
+    const char      *dns[MAX_NUM_OF_DNS];  /* Primary/Secondanry */
+    const char      *dns6[MAX_NUM_OF_DNS]; /* Primary/Secondanry */
 
     list_t          sgw_s5c_list;  /* SGW GTPC Node List */
     list_t          sgw_s5u_list;  /* SGW GTPU Node List */
@@ -69,6 +56,14 @@ typedef struct _pgw_context_t {
 
     hash_t          *sess_hash; /* hash table (IMSI+APN) */
 } pgw_context_t;
+
+typedef struct _pgw_subnet_t pgw_subnet_t;
+typedef struct _pgw_ue_ip_t {
+    c_uint32_t      addr[4];
+
+    /* Related Context */
+    pgw_subnet_t    *subnet;
+} pgw_ue_ip_t;
 
 typedef struct _pgw_dev_t {
     lnode_t     node;
@@ -85,15 +80,20 @@ typedef struct _pgw_subnet_t {
     ipsubnet_t  sub;                    /* Subnet : cafe::0/64 */
     ipsubnet_t  gw;                     /* Gateway : cafe::1 */
     c_int8_t    apn[MAX_APN_LEN];       /* APN : "internet", "volte", .. */
-    int family;                         /* AF_INET or AF_INET6 */
 
+    int         family;                 /* AF_INET or AF_INET6 */
+    c_uint8_t   prefixlen;              /* prefixlen */
+
+    struct {
+        int head, tail;
+        int size, avail;
+        mutex_id mut;
+        pgw_ue_ip_t *free[MAX_POOL_OF_SESS], pool[MAX_POOL_OF_SESS];
+    } pool;
+
+    /* Related Context */
     pgw_dev_t   *dev;
 } pgw_subnet_t;
-
-typedef struct _pgw_ue_ip_t {
-    c_uint8_t       index;      /* Pool index */
-    c_uint32_t      addr[4];
-} pgw_ue_ip_t;
 
 typedef struct _pgw_sess_t {
     lnode_t         node;       /**< A node of list_t */

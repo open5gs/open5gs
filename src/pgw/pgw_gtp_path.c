@@ -156,7 +156,9 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
 status_t pgw_gtp_open()
 {
     status_t rv;
+#if 0
     int i;
+#endif
     int rc;
 
     rv = gtp_server_list(&pgw_self()->gtpc_list, _gtpv2_c_recv_cb);
@@ -211,6 +213,7 @@ status_t pgw_gtp_open()
 
     /* Set P-to-P IP address with Netmask
      * Note that Linux will skip this configuration */
+#if 0
     for (i = 0; i < pgw_self()->num_of_ue_pool; i++)
     {
         rc = tun_set_ip(pgw_self()->tun_sock, 
@@ -226,6 +229,7 @@ status_t pgw_gtp_open()
             return CORE_ERROR;
         }
     }
+#endif
 
     rc = sock_register(pgw_self()->tun_sock, _gtpv1_tun_recv_cb, NULL);
     if (rc != 0)
