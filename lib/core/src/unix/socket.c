@@ -734,17 +734,8 @@ int sock_select_loop(c_time_t timeout)
     if (rc < 0)
     {
         if (errno != EINTR && errno != 0)
-        {
-            if (errno == EBADF)
-            {
-                d_error("[FIXME] socket should be closed here(%d:%s)", 
-                        errno, strerror(errno));
-            }
-            else
-            {
-                d_error("select failed(%d:%s)", errno, strerror(errno));
-            }
-        }
+            d_error("select failed(%d:%s)", errno, strerror(errno));
+
         return rc;
     }
 
