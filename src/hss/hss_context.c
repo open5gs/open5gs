@@ -315,7 +315,7 @@ status_t hss_db_increment_sqn(char *imsi_bcd)
     bson_t *query = NULL;
     bson_t *update = NULL;
     bson_error_t error;
-    c_uint64_t max_sqn = 0x7ffffffffff;
+    c_uint64_t max_sqn = HSS_MAX_SQN;
 
     mutex_lock(self.db_lock);
 

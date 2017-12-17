@@ -13,9 +13,6 @@
 #include "hss_kdf.h"
 #include "milenage.h"
 
-#define HSS_SQN_LEN 6
-#define HSS_AK_LEN 6
-
 /* handler for fallback cb */
 static struct disp_hdl *hdl_s6a_fb = NULL; 
 /* handler for Authentication-Information-Request cb */
@@ -38,6 +35,7 @@ static int hss_s6a_air_cb( struct msg **msg, struct avp *avp,
         struct session *session, void *opaque, enum disp_action *act)
 {
 	struct msg *ans, *qry;
+    struct avp *avpch;
     struct avp *avp_e_utran_vector, *avp_xres, *avp_kasme, *avp_rand, *avp_autn;
     struct avp_hdr *hdr;
     union avp_value val;
@@ -52,6 +50,9 @@ static int hss_s6a_air_cb( struct msg **msg, struct avp *avp,
     c_uint8_t xres[MAX_RES_LEN];
     c_uint8_t kasme[SHA256_DIGEST_SIZE];
     size_t xres_len = 8;
+
+#define MAC_S_LEN 8
+    c_uint8_t mac_s[MAC_S_LEN];
 
     hss_db_auth_info_t auth_info;
     c_uint8_t zero[RAND_LEN];
@@ -84,6 +85,43 @@ static int hss_s6a_air_cb( struct msg **msg, struct avp *avp,
         core_generate_random_bytes(auth_info.rand, RAND_LEN);
     }
 
+    if (auth_info.use_opc)
+        memcpy(opc, auth_info.opc, sizeof(opc));
+    else
+        milenage_opc(auth_info.k, auth_info.op, opc);
+
+    CHECK_FCT( fd_msg_search_avp(qry, s6a_req_eutran_auth_info, &avp) );
+    if (avp)
+    {
+        CHECK_FCT( fd_avp_search_avp(avp, 
+                s6a_re_synchronization_info, &avpch) );
+        if (avpch)
+        {
+            CHECK_FCT( fd_msg_avp_hdr(avpch, &hdr) );
+            hss_kdf_sqn(opc, auth_info.k, auth_info.amf,
+                    hdr->avp_value->os.data, sqn, mac_s);
+            if (memcmp(mac_s, hdr->avp_value->os.data +
+                        RAND_LEN + HSS_SQN_LEN, MAC_S_LEN) == 0)
+            {
+                core_generate_random_bytes(auth_info.rand, RAND_LEN);
+                auth_info.sqn = core_buffer_to_uint64(sqn, HSS_SQN_LEN);
+                auth_info.sqn = (auth_info.sqn + 32) & HSS_MAX_SQN;
+            }
+            else
+            {
+                d_error("Re-synch MAC failed for IMSI:`%s`", imsi_bcd);
+                d_print("MAC_S: ");
+                d_print_hex(mac_s, MAC_S_LEN);
+                d_print_hex(hdr->avp_value->os.data +
+                        RAND_LEN + HSS_SQN_LEN, MAC_S_LEN);
+                d_print("SQN: ");
+                d_print_hex(sqn, HSS_SQN_LEN);
+                result_code = S6A_DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE;
+                goto out;
+            }
+        }
+    }
+
     rv = hss_db_update_rand_and_sqn(imsi_bcd, auth_info.rand, auth_info.sqn);
     if (rv != CORE_OK)
     {
@@ -106,10 +144,6 @@ static int hss_s6a_air_cb( struct msg **msg, struct avp *avp,
     memcpy(visited_plmn_id, hdr->avp_value->os.data, hdr->avp_value->os.len);
 #endif
 
-    if (auth_info.use_opc)
-        memcpy(opc, auth_info.opc, sizeof(opc));
-    else
-        milenage_opc(auth_info.k, auth_info.op, opc);
     milenage_generate(opc, auth_info.amf, auth_info.k,
         core_uint64_to_buffer(auth_info.sqn, HSS_SQN_LEN, sqn), auth_info.rand,
         autn, ik, ck, ak, xres, &xres_len);

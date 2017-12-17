@@ -92,46 +92,6 @@ static void attach_test1(abts_case *tc, void *data)
         "}, "
         "\"__v\" : 0 "
       "}";
-    const char *json2 =
-      "{"
-        "\"_id\" : { \"$oid\" : \"697223158b8861d7605378c6\" }, "
-        "\"imsi\" : \"001010123456815\", "
-        "\"pdn\" : ["
-          "{"
-            "\"apn\" : \"internet\", "
-            "\"_id\" : { \"$oid\" : \"697223158b8861d7605378c7\" }, "
-            "\"ambr\" : {"
-              "\"uplink\" : { \"$numberLong\" : \"1024000\" }, "
-              "\"downlink\" : { \"$numberLong\" : \"1024000\" } "
-            "},"
-            "\"qos\" : { "
-              "\"qci\" : 9, "
-              "\"arp\" : { "
-                "\"priority_level\" : 8,"
-                "\"pre_emption_vulnerability\" : 1, "
-                "\"pre_emption_capability\" : 1"
-              "} "
-            "}, "
-            "\"type\" : 2"
-          "}"
-        "],"
-        "\"ambr\" : { "
-          "\"uplink\" : { \"$numberLong\" : \"1024000\" }, "
-          "\"downlink\" : { \"$numberLong\" : \"1024000\" } "
-        "},"
-        "\"subscribed_rau_tau_timer\" : 12,"
-        "\"network_access_mode\" : 2, "
-        "\"subscriber_status\" : 0, "
-        "\"access_restriction_data\" : 32, "
-        "\"security\" : { "
-          "\"k\" : \"465B5CE8 B199B49F AA5F0A2E E238A6BC\", "
-          "\"op\" : \"5F1D289C 5D354D0A 140C2548 F5F3E3BA\", "
-          "\"amf\" : \"8000\", "
-          "\"sqn\" : { \"$numberLong\" : \"64\" }, "
-          "\"rand\" : \"20080C38 18183B52 2614162C 07601D0D\" "
-        "}, "
-        "\"__v\" : 0 "
-      "}";
 
     core_sleep(time_from_msec(300));
 
@@ -172,21 +132,6 @@ static void attach_test1(abts_case *tc, void *data)
     bson_destroy(doc);
 
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456819"));
-    ABTS_PTR_NOTNULL(tc, doc);
-    do
-    {
-        count = mongoc_collection_count (
-            collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
-    } while (count == 0);
-    bson_destroy(doc);
-
-    doc = bson_new_from_json((const uint8_t *)json2, -1, &error);;
-    ABTS_PTR_NOTNULL(tc, doc);
-    ABTS_TRUE(tc, mongoc_collection_insert(collection, 
-                MONGOC_INSERT_NONE, doc, NULL, &error));
-    bson_destroy(doc);
-
-    doc = BCON_NEW("imsi", BCON_UTF8("001010123456815"));
     ABTS_PTR_NOTNULL(tc, doc);
     do
     {
@@ -417,12 +362,6 @@ static void attach_test1(abts_case *tc, void *data)
 
     /********** Remove Subscriber in Database */
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456819"));
-    ABTS_PTR_NOTNULL(tc, doc);
-    ABTS_TRUE(tc, mongoc_collection_remove(collection, 
-            MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error)) 
-    bson_destroy(doc);
-
-    doc = BCON_NEW("imsi", BCON_UTF8("001010123456815"));
     ABTS_PTR_NOTNULL(tc, doc);
     ABTS_TRUE(tc, mongoc_collection_remove(collection, 
             MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error)) 
@@ -701,6 +640,20 @@ static void attach_test2(abts_case *tc, void *data)
     rv = tests1ap_enb_read(sock, recvbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
+
+    /* Send Authentication Authentication Failure */
+    rv = tests1ap_build_authentication_failure(&sendbuf, msgindex+2);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* Receive Authentication Request */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    pkbuf_free(recvbuf);
+
+    core_sleep(time_from_msec(300));
 
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456826"));
     ABTS_PTR_NOTNULL(tc, doc);

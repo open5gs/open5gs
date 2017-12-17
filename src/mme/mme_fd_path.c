@@ -26,7 +26,8 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg);
 static void mme_s6a_ula_cb(void *data, struct msg **msg);
 
 /* MME Sends Authentication Information Request to HSS */
-void mme_s6a_send_air(mme_ue_t *mme_ue)
+void mme_s6a_send_air(mme_ue_t *mme_ue,
+    nas_authentication_failure_parameter_t *authentication_failure_parameter)
 {
     struct msg *req = NULL;
     struct avp *avp;
@@ -34,6 +35,8 @@ void mme_s6a_send_air(mme_ue_t *mme_ue)
     union avp_value val;
     struct sess_state *mi = NULL, *svg;
     struct session *session = NULL;
+
+    c_uint8_t resync[AUTS_LEN + RAND_LEN];
 
     d_assert(mme_ue, return, "Null param");
 
@@ -92,6 +95,19 @@ void mme_s6a_send_air(mme_ue_t *mme_ue)
     val.u32 = 1;
     CHECK_FCT_DO( fd_msg_avp_setvalue(avpch, &val), goto out );
     CHECK_FCT_DO( fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch), goto out );
+
+    if (authentication_failure_parameter)
+    {
+        CHECK_FCT_DO( fd_msg_avp_new(s6a_re_synchronization_info, 0, &avpch),
+                goto out );
+        memcpy(resync, mme_ue->rand, RAND_LEN);
+        memcpy(resync+RAND_LEN,
+                authentication_failure_parameter->auts, AUTS_LEN);
+        val.os.len = RAND_LEN+AUTS_LEN;
+        val.os.data = resync;
+        CHECK_FCT_DO( fd_msg_avp_setvalue(avpch, &val), goto out );
+        CHECK_FCT_DO( fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch), goto out );
+    }
 
     CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
 

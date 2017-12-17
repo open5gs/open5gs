@@ -24,6 +24,8 @@ CORE_DECLARE(status_t) tests1ap_build_initial_ue_msg(pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_identity_response(pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_authentication_response(
         pkbuf_t **pkbuf, int i);
+CORE_DECLARE(status_t) tests1ap_build_authentication_failure(
+        pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_security_mode_complete(
         pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_esm_information_response(

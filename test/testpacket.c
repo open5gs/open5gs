@@ -341,6 +341,58 @@ status_t tests1ap_build_authentication_response(pkbuf_t **pkbuf, int i)
     return CORE_OK;
 }
 
+status_t tests1ap_build_authentication_failure(pkbuf_t **pkbuf, int i)
+{
+    char *payload[TESTS1AP_MAX_MESSAGE] = {
+        "",
+        "",
+        "",
+
+        "",
+        "",
+        "000d"
+        "403d000005000000 0200030008000200 21001a001413075c 15300e9a73df7ef8"
+        "05f893f312a930a9 8f006440080000f1 100019b010004340 060000f1100001",
+
+        "",
+        "",
+        "",
+
+        "",
+        "",
+        "",
+
+    };
+
+    c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
+        0,
+        0,
+        0,
+
+        0,
+        0,
+        65,
+
+        0,
+        0,
+        0,
+
+        0,
+        0,
+        0,
+    };
+    char hexbuf[MAX_SDU_LEN];
+    
+    *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    if (!(*pkbuf)) return CORE_ERROR;
+
+    (*pkbuf)->len = len[i];
+    memcpy((*pkbuf)->payload, CORE_HEX(payload[i], strlen(payload[i]), hexbuf),
+            (*pkbuf)->len);
+
+    return CORE_OK;
+}
+
 status_t tests1ap_build_security_mode_complete(pkbuf_t **pkbuf, int i)
 {
     char *payload[TESTS1AP_MAX_MESSAGE] = {

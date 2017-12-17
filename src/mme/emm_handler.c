@@ -154,7 +154,7 @@ void emm_handle_attach_request(
             }
             else
             {
-                mme_s6a_send_air(mme_ue);
+                mme_s6a_send_air(mme_ue, NULL);
             }
         }
     }
@@ -270,7 +270,7 @@ void emm_handle_identity_response(
             }
             else
             {
-                mme_s6a_send_air(mme_ue);
+                mme_s6a_send_air(mme_ue, NULL);
             }
         }
     }
@@ -286,7 +286,7 @@ void emm_handle_identity_response(
         {
             if (MME_HAVE_SGW_S11_PATH(mme_ue))
             {
-                mme_s6a_send_air(mme_ue);
+                mme_s6a_send_air(mme_ue, NULL);
             }
             else
             {
@@ -307,7 +307,7 @@ void emm_handle_identity_response(
         {
             if (MME_HAVE_SGW_S11_PATH(mme_ue))
             {
-                mme_s6a_send_air(mme_ue);
+                mme_s6a_send_air(mme_ue, NULL);
             }
             else
             {
@@ -410,7 +410,7 @@ void emm_handle_service_request(
         {
             if (MME_HAVE_SGW_S11_PATH(mme_ue))
             {
-                mme_s6a_send_air(mme_ue);
+                mme_s6a_send_air(mme_ue, NULL);
             }
             else
             {
@@ -547,7 +547,7 @@ void emm_handle_tau_request(
             if (MME_HAVE_SGW_S11_PATH(mme_ue))
             {
                 /* Re-authentication */
-                mme_s6a_send_air(mme_ue);
+                mme_s6a_send_air(mme_ue, NULL);
             }
             else
             {

@@ -170,7 +170,7 @@ void mme_s11_handle_delete_session_response(
     {
         GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_DELETE_SESSION,
             CLEAR_SGW_S11_PATH(mme_ue);
-            mme_s6a_send_air(mme_ue);
+            mme_s6a_send_air(mme_ue, NULL);
         );
 
         mme_sess_remove(sess);

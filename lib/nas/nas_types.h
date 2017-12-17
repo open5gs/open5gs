@@ -229,7 +229,7 @@ ED4(c_uint8_t type:4;,
  * O TLV 16 */
 typedef struct _nas_authentication_failure_parameter_t {
     c_uint8_t length;
-    c_uint8_t parameter[14];
+    c_uint8_t auts[AUTS_LEN];
 } __attribute__ ((packed)) nas_authentication_failure_parameter_t;
 
 /* 9.9.3.2 Authentication parameter AUTN

@@ -41,6 +41,7 @@ extern "C" {
 
 #define RAND_LEN                16
 #define AUTN_LEN                16
+#define AUTS_LEN                14
 #define MAX_RES_LEN             16
 
 #define MAX_APN_LEN             100
