@@ -69,7 +69,7 @@ typedef struct _pgw_dev_t {
     c_int8_t    ifname[IFNAMSIZ];
     sock_id     sock;
 
-    c_uint8_t   link_local_addr[IPV6_LEN];
+    c_sockaddr_t *link_local_addr;
 } pgw_dev_t;
 
 typedef struct _pgw_subnet_t {

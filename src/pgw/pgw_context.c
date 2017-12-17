@@ -1294,6 +1294,10 @@ status_t pgw_dev_remove(pgw_dev_t *dev)
     d_assert(dev, return CORE_ERROR, "Null param");
 
     list_remove(&self.dev_list, dev);
+
+    if (dev->link_local_addr)
+        core_freeaddrinfo(dev->link_local_addr);
+
     pool_free_node(&pgw_dev_pool, dev);
 
     return CORE_OK;

@@ -15,7 +15,7 @@
 
 c_uint16_t in_cksum(c_uint16_t *addr, int len);
 static status_t pgw_gtp_handle_multicast(pkbuf_t *recvbuf);
-static status_t pgw_gtp_handle_slacc(pgw_sess_t *sess, pkbuf_t *recvbuf);
+static status_t pgw_gtp_handle_slaac(pgw_sess_t *sess, pkbuf_t *recvbuf);
 static status_t pgw_gtp_send_to_bearer(pgw_bearer_t *bearer, pkbuf_t *sendbuf);
 static status_t pgw_gtp_send_router_advertisement(pgw_sess_t *sess);
 
@@ -151,13 +151,13 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
     /* Check IPv6 */
     if (context_self()->parameter.no_slaac == 0 && ip_h->ip_v == 6)
     {
-        rv = pgw_gtp_handle_slacc(sess, pkbuf);
+        rv = pgw_gtp_handle_slaac(sess, pkbuf);
         if (rv == PGW_GTP_HANDLED)
         {
             pkbuf_free(pkbuf);
             return 0;
         }
-        d_assert(rv == CORE_OK,, "pgw_gtp_handle_slacc() failed");
+        d_assert(rv == CORE_OK,, "pgw_gtp_handle_slaac() failed");
     }
 
     dev = subnet->dev;
@@ -251,6 +251,10 @@ status_t pgw_gtp_open()
         }
     }
 
+    /* Link-Local Address for PGW_TUN */
+    for (dev = pgw_dev_first(); dev; dev = pgw_dev_next(dev))
+        dev->link_local_addr = core_link_local_addr_by_dev(dev->ifname);
+
     return CORE_OK;
 }
 
@@ -308,7 +312,7 @@ static status_t pgw_gtp_handle_multicast(pkbuf_t *recvbuf)
     return CORE_OK;
 }
 
-static status_t pgw_gtp_handle_slacc(pgw_sess_t *sess, pkbuf_t *recvbuf)
+static status_t pgw_gtp_handle_slaac(pgw_sess_t *sess, pkbuf_t *recvbuf)
 {
     status_t rv;
     struct ip *ip_h = NULL;
@@ -377,8 +381,14 @@ static status_t pgw_gtp_send_router_advertisement(pgw_sess_t *sess)
 {
     status_t rv;
     pkbuf_t *pkbuf = NULL;
+
     pgw_bearer_t *bearer = NULL;
-    ipsubnet_t src_ipsub, dst_ipsub;
+    pgw_ue_ip_t *ue_ip = NULL;
+    pgw_subnet_t *subnet = NULL;
+    pgw_dev_t *dev = NULL;
+
+    ipsubnet_t src_ipsub;
+    ipsubnet_t dst_ipsub;
     c_uint16_t plen = 0;
     c_uint8_t nxt = 0;
     c_uint8_t *p = NULL;
@@ -389,6 +399,12 @@ static status_t pgw_gtp_send_router_advertisement(pgw_sess_t *sess)
     d_assert(sess, return CORE_ERROR,);
     bearer = pgw_default_bearer_in_sess(sess);
     d_assert(bearer, return CORE_ERROR,);
+    ue_ip = sess->ipv6;
+    d_assert(ue_ip, return CORE_ERROR,);
+    subnet = ue_ip->subnet;
+    d_assert(subnet, return CORE_ERROR,);
+    dev = subnet->dev;
+    d_assert(dev, return CORE_ERROR,);
 
     pkbuf = pkbuf_alloc(GTPV1U_HEADER_LEN, 200);
     d_assert(pkbuf, return CORE_ERROR,);
@@ -403,6 +419,10 @@ static status_t pgw_gtp_send_router_advertisement(pgw_sess_t *sess)
 
     rv = core_ipsubnet(&src_ipsub, "fe80::1", NULL);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
+    if (dev->link_local_addr)
+        memcpy(src_ipsub.sub, dev->link_local_addr->sin6.sin6_addr.s6_addr,
+                sizeof src_ipsub.sub);
+
     rv = core_ipsubnet(&dst_ipsub, "ff02::1", NULL);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 

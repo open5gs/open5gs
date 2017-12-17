@@ -155,6 +155,7 @@ CORE_DECLARE(status_t) core_copyaddrinfo(
         c_sockaddr_t **dst, const c_sockaddr_t *src);
 CORE_DECLARE(status_t) core_filteraddrinfo(c_sockaddr_t **sa_list, int family);
 CORE_DECLARE(status_t) core_sortaddrinfo(c_sockaddr_t **sa_list, int family);
+CORE_DECLARE(c_sockaddr_t *) core_link_local_addr_by_dev(const char *dev);
 
 #define CORE_ADDRSTRLEN INET6_ADDRSTRLEN
 #define CORE_ADDR(__aDDR, __bUF) \

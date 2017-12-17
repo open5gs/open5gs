@@ -179,6 +179,49 @@ status_t core_sortaddrinfo(c_sockaddr_t **sa_list, int family)
     return CORE_OK;
 }
 
+c_sockaddr_t *core_link_local_addr_by_dev(const char *dev)
+{
+	struct ifaddrs *iflist, *cur;
+    int rc;
+
+    d_assert(dev, return NULL,);
+
+	rc = getifaddrs(&iflist);
+    if (rc != 0)
+    {
+        d_error("getifaddrs failed(%d:%s)", errno, strerror(errno));
+        return NULL;
+    }
+
+	for (cur = iflist; cur != NULL; cur = cur->ifa_next)
+    {
+        c_sockaddr_t *addr = NULL;
+
+		if (cur->ifa_addr == NULL) /* may happen with ppp interfaces */
+			continue;
+
+        if (strcmp(dev, cur->ifa_name) != 0)
+            continue;
+
+        if (cur->ifa_addr->sa_family == AF_INET)
+            continue;
+
+        addr = (c_sockaddr_t *)cur->ifa_addr;
+        if (!IN6_IS_ADDR_LINKLOCAL(&addr->sin6.sin6_addr)) 
+            continue;
+
+        addr = core_calloc(1, sizeof(c_sockaddr_t));
+        d_assert(addr, return NULL,);
+        memcpy(&addr->sa, cur->ifa_addr, sockaddr_len(cur->ifa_addr));
+
+        freeifaddrs(iflist);
+        return addr;
+	}
+
+	freeifaddrs(iflist);
+    return NULL;
+}
+
 const char *core_inet_ntop(void *sa, char *buf, int buflen)
 {
     int family;
