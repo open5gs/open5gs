@@ -22,6 +22,9 @@
 
 static pgw_context_t self;
 
+pool_declare(pgw_dev_pool, pgw_dev_t, MAX_NUM_OF_DEV);
+pool_declare(pgw_subnet_pool, pgw_subnet_t, MAX_NUM_OF_SUBNET);
+
 index_declare(pgw_sess_pool, pgw_sess_t, MAX_POOL_OF_SESS);
 index_declare(pgw_bearer_pool, pgw_bearer_t, MAX_POOL_OF_BEARER);
 
@@ -57,6 +60,11 @@ status_t pgw_context_init()
     list_init(&self.sgw_s5c_list);
     list_init(&self.sgw_s5u_list);
 
+    list_init(&self.dev_list);
+    pool_init(&pgw_dev_pool, MAX_NUM_OF_DEV);
+    list_init(&self.subnet_list);
+    pool_init(&pgw_subnet_pool, MAX_NUM_OF_SUBNET);
+
     index_init(&pgw_sess_pool, MAX_POOL_OF_SESS);
     index_init(&pgw_bearer_pool, MAX_POOL_OF_BEARER);
 
@@ -90,8 +98,6 @@ status_t pgw_context_final()
     d_trace(3, "%d not freed in pgw_sess_pool[%d] in PGW-Context\n",
             index_used(&pgw_sess_pool), index_size(&pgw_sess_pool));
 
-    pool_final(&pgw_pf_pool);
-
     for (i = 0; i < MAX_NUM_OF_UE_POOL; i++)
     {
         if (pool_used(&ue_ip_pool[i]))
@@ -105,8 +111,15 @@ status_t pgw_context_final()
         pool_final(&ue_ip_pool[i]);
     }
 
+    pgw_dev_remove_all();
+    pgw_subnet_remove_all();
+
     index_final(&pgw_bearer_pool);
     index_final(&pgw_sess_pool);
+    pool_final(&pgw_pf_pool);
+
+    pool_final(&pgw_dev_pool);
+    pool_final(&pgw_subnet_pool);
 
     gtp_remove_all_nodes(&self.sgw_s5c_list);
     gtp_remove_all_nodes(&self.sgw_s5u_list);
@@ -499,9 +512,11 @@ status_t pgw_context_parse_config()
                     yaml_iter_recurse(&pgw_iter, &ue_pool_array);
                     do
                     {
+                        pgw_subnet_t *subnet = NULL;
                         const char *ipstr = NULL;
                         const char *mask_or_numbits = NULL;
                         const char *apn = NULL;
+                        const char *dev = self.tun_ifname;
 
                         d_assert(self.num_of_ue_pool <=
                                 MAX_NUM_OF_UE_POOL, return CORE_ERROR,);
@@ -550,6 +565,10 @@ status_t pgw_context_parse_config()
                             {
                                 apn = yaml_iter_value(&ue_pool_iter);
                             }
+                            else if (!strcmp(ue_pool_key, "dev"))
+                            {
+                                dev = yaml_iter_value(&ue_pool_iter);
+                            }
                             else
                                 d_warn("unknown key `%s`", ue_pool_key);
                         }
@@ -561,6 +580,10 @@ status_t pgw_context_parse_config()
                                 mask_or_numbits;
                             self.ue_pool[self.num_of_ue_pool].apn = apn;
                             self.num_of_ue_pool++;
+
+                            subnet = pgw_subnet_add(
+                                    ipstr, mask_or_numbits, apn, dev);
+                            d_assert(subnet, return CORE_ERROR,);
                         }
                         else
                         {
@@ -1309,4 +1332,148 @@ c_uint8_t pgw_ue_ip_prefixlen(pgw_ue_ip_t *ue_ip)
     d_assert(pgw_self()->ue_pool[index].mask_or_numbits,
             return CORE_ERROR,);
     return atoi(pgw_self()->ue_pool[index].mask_or_numbits);
+}
+
+pgw_dev_t *pgw_dev_add(const char *ifname)
+{
+    pgw_dev_t *dev = NULL;
+
+    d_assert(ifname, return NULL,);
+
+    pool_alloc_node(&pgw_dev_pool, &dev);
+    d_assert(dev, return NULL,);
+    memset(dev, 0, sizeof *dev);
+
+    strcpy(dev->ifname, ifname);
+
+    list_append(&self.dev_list, dev);
+
+    return dev;
+}
+
+status_t pgw_dev_remove(pgw_dev_t *dev)
+{
+    d_assert(dev, return CORE_ERROR, "Null param");
+
+    list_remove(&self.dev_list, dev);
+    pool_free_node(&pgw_dev_pool, dev);
+
+    return CORE_OK;
+}
+
+status_t pgw_dev_remove_all()
+{
+    pgw_dev_t *dev = NULL, *next_dev = NULL;
+
+    dev = pgw_dev_first();
+    while (dev)
+    {
+        next_dev = pgw_dev_next(dev);
+
+        pgw_dev_remove(dev);
+
+        dev = next_dev;
+    }
+
+    return CORE_OK;
+}
+
+pgw_dev_t* pgw_dev_find_by_ifname(const char *ifname)
+{
+    pgw_dev_t *dev = NULL;
+
+    d_assert(ifname, return NULL,);
+    
+    dev = pgw_dev_first();
+    while (dev)
+    {
+        if (strcmp(dev->ifname, ifname) == 0)
+            return dev;
+
+        dev = pgw_dev_next(dev);
+    }
+
+    return CORE_OK;
+}
+
+pgw_dev_t* pgw_dev_first()
+{
+    return list_first(&self.dev_list);
+}
+
+pgw_dev_t* pgw_dev_next(pgw_dev_t *dev)
+{
+    return list_next(dev);
+}
+
+pgw_subnet_t *pgw_subnet_add(
+        const char *ipstr, const char *mask_or_numbits,
+        const char *apn, const char *ifname)
+{
+    status_t rv;
+    pgw_dev_t *dev = NULL;
+    pgw_subnet_t *subnet = NULL;
+
+    d_assert(ipstr, return NULL,);
+    d_assert(mask_or_numbits, return NULL,);
+    d_assert(ifname, return NULL,);
+
+    dev = pgw_dev_find_by_ifname(ifname);
+    if (!dev)
+        dev = pgw_dev_add(ifname);
+    d_assert(dev, return NULL,);
+
+    pool_alloc_node(&pgw_subnet_pool, &subnet);
+    d_assert(subnet, return NULL,);
+    memset(subnet, 0, sizeof *subnet);
+
+    rv = core_ipsubnet(&subnet->gw, ipstr, NULL);
+    d_assert(rv == CORE_OK, return NULL,);
+
+    rv = core_ipsubnet(&subnet->sub, ipstr, mask_or_numbits);
+    d_assert(rv == CORE_OK, return NULL,);
+
+    if (apn)
+        strcpy(subnet->apn, apn);
+
+    list_append(&self.subnet_list, subnet);
+
+    return subnet;
+}
+
+status_t pgw_subnet_remove(pgw_subnet_t *subnet)
+{
+    d_assert(subnet, return CORE_ERROR, "Null param");
+
+    list_remove(&self.subnet_list, subnet);
+    pool_free_node(&pgw_subnet_pool, subnet);
+
+    return CORE_OK;
+}
+
+status_t pgw_subnet_remove_all()
+{
+    pgw_subnet_t *subnet = NULL, *next_subnet = NULL;
+
+    subnet = pgw_subnet_first();
+    while (subnet)
+    {
+        next_subnet = pgw_subnet_next(subnet);
+
+        pgw_subnet_remove(subnet);
+
+        subnet = next_subnet;
+    }
+
+    return CORE_OK;
+}
+
+pgw_subnet_t* pgw_subnet_first()
+{
+    return list_first(&self.subnet_list);
+}
+
+pgw_subnet_t* pgw_subnet_next(pgw_subnet_t *subnet)
+{
+    return list_next(subnet);
 }

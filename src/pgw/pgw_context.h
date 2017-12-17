@@ -16,6 +16,9 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#define MAX_NUM_OF_DEV          16
+#define MAX_NUM_OF_SUBNET       16
+
 typedef struct _gtp_node_t gtp_node_t;
 
 typedef struct _pgw_context_t {
@@ -31,6 +34,9 @@ typedef struct _pgw_context_t {
     c_sockaddr_t    *gtpu_addr;     /* PGW GTPU IPv4 Address */
     list_t          gtpu_list6;     /* PGW GTPU IPv6 Server List */
     c_sockaddr_t    *gtpu_addr6;    /* PGW GTPU IPv6 Address */
+
+    list_t          dev_list;       /* PGW Tun Device List */
+    list_t          subnet_list;    /* PGW UE Subnet List */
 
     const char*     fd_conf_path;   /* PGW freeDiameter conf path */
 
@@ -64,11 +70,25 @@ typedef struct _pgw_context_t {
     hash_t          *sess_hash; /* hash table (IMSI+APN) */
 } pgw_context_t;
 
-typedef struct _pgw_ip_pool_t {
-    lnode_t         node; /**< A node of list_t */
+typedef struct _pgw_dev_t {
+    lnode_t     node;
 
-    c_uint32_t      ue_addr;
-} pgw_ip_pool_t;
+    c_int8_t    ifname[IFNAMSIZ];
+    sock_id     sock;
+
+    c_uint8_t   link_local_addr[IPV6_LEN];
+} pgw_dev_t;
+
+typedef struct _pgw_subnet_t {
+    lnode_t     node;
+
+    ipsubnet_t  sub;                    /* Subnet : cafe::0/64 */
+    ipsubnet_t  gw;                     /* Gateway : cafe::1 */
+    c_int8_t    apn[MAX_APN_LEN];       /* APN : "internet", "volte", .. */
+    int family;                         /* AF_INET or AF_INET6 */
+
+    pgw_dev_t   *dev;
+} pgw_subnet_t;
 
 typedef struct _pgw_ue_ip_t {
     c_uint8_t       index;      /* Pool index */
@@ -222,6 +242,21 @@ CORE_DECLARE(status_t )     pgw_ue_pool_generate();
 CORE_DECLARE(pgw_ue_ip_t *) pgw_ue_ip_alloc(int family, const char *apn);
 CORE_DECLARE(status_t)      pgw_ue_ip_free(pgw_ue_ip_t *ip);
 CORE_DECLARE(c_uint8_t)     pgw_ue_ip_prefixlen(pgw_ue_ip_t *ue_ip);
+
+CORE_DECLARE(pgw_dev_t*)    pgw_dev_add(const char *ifname);
+CORE_DECLARE(status_t )     pgw_dev_remove(pgw_dev_t *dev);
+CORE_DECLARE(status_t )     pgw_dev_remove_all();
+CORE_DECLARE(pgw_dev_t*)    pgw_dev_find_by_ifname(const char *ifname);
+CORE_DECLARE(pgw_dev_t*)    pgw_dev_first();
+CORE_DECLARE(pgw_dev_t*)    pgw_dev_next(pgw_dev_t *dev);
+
+CORE_DECLARE(pgw_subnet_t*) pgw_subnet_add(
+        const char *ipstr, const char *mask_or_numbits,
+        const char *apn, const char *ifname);
+CORE_DECLARE(status_t )     pgw_subnet_remove(pgw_subnet_t *subnet);
+CORE_DECLARE(status_t )     pgw_subnet_remove_all();
+CORE_DECLARE(pgw_subnet_t*) pgw_subnet_first();
+CORE_DECLARE(pgw_subnet_t*) pgw_subnet_next(pgw_subnet_t *subnet);
 
 #ifdef __cplusplus
 }
