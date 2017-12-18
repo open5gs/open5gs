@@ -3,7 +3,7 @@
 db_uri: mongodb://localhost/nextepc
 
 logger:
-    file: @LOCALSTATE_DIR@/log/nextepc/nextepc.log
+    file: @LOCALSTATE_DIR@/log/nextepc/mme.log
     trace: 
         s1ap: 1
         nas: 1
