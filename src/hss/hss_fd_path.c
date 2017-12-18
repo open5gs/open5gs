@@ -98,8 +98,7 @@ static int hss_s6a_air_cb( struct msg **msg, struct avp *avp,
         if (avpch)
         {
             CHECK_FCT( fd_msg_avp_hdr(avpch, &hdr) );
-            hss_kdf_sqn(opc, auth_info.k, auth_info.amf,
-                    hdr->avp_value->os.data, sqn, mac_s);
+            hss_kdf_sqn(opc, auth_info.k, hdr->avp_value->os.data, sqn, mac_s);
             if (memcmp(mac_s, hdr->avp_value->os.data +
                         RAND_LEN + HSS_SQN_LEN, MAC_S_LEN) == 0)
             {

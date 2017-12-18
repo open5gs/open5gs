@@ -1034,13 +1034,9 @@ abts_suite *test_attach(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
-#if 0
     abts_run_test(suite, attach_test1, NULL);
-#endif
     abts_run_test(suite, attach_test2, NULL);
-#if 0
     abts_run_test(suite, attach_test3, NULL);
-#endif
 
     return suite;
 }

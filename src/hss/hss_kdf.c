@@ -34,12 +34,12 @@ void hss_kdf_kasme(const c_uint8_t *ck, const c_uint8_t *ik,
 }
 
 void hss_kdf_sqn(
-    const c_uint8_t *opc, const c_uint8_t *k, 
-    const c_uint8_t *amf, const c_uint8_t *auts,
+    const c_uint8_t *opc, const c_uint8_t *k, const c_uint8_t *auts,
     c_uint8_t *sqn_ms, c_uint8_t *mac_s)
 {
     int i;
     c_uint8_t ak[HSS_AK_LEN];
+    c_uint8_t amf[2] = { 0, 0 };
     const c_uint8_t *rand = auts;
     const c_uint8_t *conc_sqn_ms = auts + RAND_LEN;
 
