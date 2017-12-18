@@ -25,7 +25,7 @@ override_dh_auto_test:
 			mongod --fork --logpath debian/test/var/log/mongodb.log --dbpath debian/test/db; \
 		fi; \
 	else \
-	    remove_db_uri_conf="/DB_URI/d"; \
+	    remove_db_uri_conf="/db_uri/d"; \
 		mongodb_exclude_list="-x s1setup_test attach_test volte_test handover_test"; \
 	fi; \
 	mkdir -p debian/test/db debian/test/etc/nextepc/freeDiameter debian/test/var/log/nextepc; \

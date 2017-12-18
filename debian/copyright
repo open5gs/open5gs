@@ -4,7 +4,7 @@ Source: https://github.com/acetcom/nextepc
 
 Files: *
 Copyright: 2017 NextEPC Group
-License: GPL-3
+License: AGPL-3
 
 Files: lib/freeDiameter-1.2.1/*
 Copyright: 2008-2011, WIDE Project and NICT
