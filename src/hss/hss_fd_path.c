@@ -104,7 +104,8 @@ static int hss_s6a_air_cb( struct msg **msg, struct avp *avp,
             {
                 core_generate_random_bytes(auth_info.rand, RAND_LEN);
                 auth_info.sqn = core_buffer_to_uint64(sqn, HSS_SQN_LEN);
-                auth_info.sqn = (auth_info.sqn + 32) & HSS_MAX_SQN;
+                /* 33.102 C.3.4 Guide : IND + 1 */
+                auth_info.sqn = (auth_info.sqn + 32 + 1) & HSS_MAX_SQN;
             }
             else
             {
